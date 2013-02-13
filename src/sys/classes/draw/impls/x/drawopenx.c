@@ -49,7 +49,7 @@
 
    Note for Fortran Programmers:
    Whenever indicating null character data in a Fortran code,
-   PETSC_NULL_CHARACTER must be employed; using PETSC_NULL is not
+   PETSC_NULL_CHARACTER must be employed; using NULL is not
    correct for character data!  Thus, PETSC_NULL_CHARACTER can be
    used for the display and title input parameters.
 

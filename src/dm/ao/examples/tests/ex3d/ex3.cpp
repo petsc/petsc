@@ -47,7 +47,7 @@ int main(int argc, char** argv)
   //ierr = ISView(isapp,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   ierr = AOCreate(PETSC_COMM_WORLD, &ao);CHKERRQ(ierr);
-  ierr = AOSetIS(ao, isapp, PETSC_NULL);CHKERRQ(ierr); 
+  ierr = AOSetIS(ao, isapp, NULL);CHKERRQ(ierr); 
   ierr = AOSetType(ao, AOMEMORYSCALABLE);CHKERRQ(ierr);
   ierr = AOSetFromOptions(ao);CHKERRQ(ierr);
   

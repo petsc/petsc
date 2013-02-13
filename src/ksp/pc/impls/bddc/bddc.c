@@ -3805,7 +3805,7 @@ static PetscErrorCode PCBDDCSetupCoarseEnvironment(PC pc,PetscScalar* coarse_sub
   PetscBool setsym,issym=PETSC_FALSE;
 
   PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject)pc,&comm);CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject)pc,&prec_comm);CHKERRQ(ierr);
   ins_local_primal_indices = 0;
   ins_coarse_mat_vals      = 0;
   localsizes2              = 0;

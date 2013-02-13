@@ -658,6 +658,15 @@ prepend-path PATH %s
       self.addDefine('UNUSED', ' ')
     self.popLanguage()
 
+  def configureDeprecated(self):
+    '''Check if __attribute((deprecated)) is supported'''
+    self.pushLanguage(self.languages.clanguage)
+    if self.checkCompile('__attribute((deprecated)) static int myfunc(void) { return 1;}', ''):
+      self.addDefine('DEPRECATED', '__attribute((deprecated))')
+    else:
+      self.addDefine('DEPRECATED', ' ')
+    self.popLanguage()
+
   def configureExpect(self):
     '''Sees if the __builtin_expect directive is supported'''
     self.pushLanguage(self.languages.clanguage)
@@ -914,6 +923,7 @@ prepend-path PATH %s
     self.executeTest(self.configureInline)
     self.executeTest(self.configurePrefetch)
     self.executeTest(self.configureUnused)
+    self.executeTest(self.configureDeprecated)
     self.executeTest(self.configureExpect);
     self.executeTest(self.configureFunctionName);
     self.executeTest(self.configureIntptrt);

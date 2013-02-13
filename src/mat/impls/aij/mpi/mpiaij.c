@@ -5752,7 +5752,12 @@ EXTERN_C_END
 
        This sets local rows and cannot be used to set off-processor values.
 
-       You cannot later use MatSetValues() to change values in this matrix.
+       Use of this routine is discouraged because it is inflexible and cumbersome to use. It is extremely rare that a
+       legacy application natively assembles into exactly this split format. The code to do so is nontrivial and does
+       not easily support in-place reassembly. It is recommended to use MatSetValues() (or a variant thereof) because
+       the resulting assembly is easier to implement, will work with any matrix format, and the user does not have to
+       keep track of the underlying array. Use MatSetOption(A,MAT_IGNORE_OFF_PROC_ENTRIES,PETSC_TRUE) to disable all
+       communication if it is known that only local entries will be set.
 
 .keywords: matrix, aij, compressed row, sparse, parallel
 
@@ -5773,7 +5778,6 @@ PetscErrorCode  MatCreateMPIAIJWithSplitArrays(MPI_Comm comm,PetscInt m,PetscInt
   ierr = MatSetType(*mat,MATMPIAIJ);CHKERRQ(ierr);
   maij = (Mat_MPIAIJ*) (*mat)->data;
 
-  maij->donotstash     = PETSC_TRUE;
   (*mat)->preallocated = PETSC_TRUE;
 
   ierr = PetscLayoutSetUp((*mat)->rmap);CHKERRQ(ierr);
@@ -5789,6 +5793,7 @@ PetscErrorCode  MatCreateMPIAIJWithSplitArrays(MPI_Comm comm,PetscInt m,PetscInt
 
   ierr = MatAssemblyBegin(*mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatSetOption(*mat,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

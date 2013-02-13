@@ -71,8 +71,8 @@ struct ComponentPair {
   std::pair<PetscScalar,PetscScalar> rootCongestion;
 
   ComponentPair() {
-    first = PETSC_NULL;
-    second = PETSC_NULL;
+    first = NULL;
+    second = NULL;
   }
 
   int getIndex(Component *c) {
@@ -223,7 +223,7 @@ PetscErrorCode AugmentedLowStretchSpanningTree(Mat mat,Mat *prefact,PetscBool au
   PetscErrorCode    ierr;
   PetscFunctionBegin;
 
-  ierr = MatGetSize(mat,PETSC_NULL,&n);CHKERRQ(ierr);
+  ierr = MatGetSize(mat,NULL,&n);CHKERRQ(ierr);
 
   Graph g(n);
 
@@ -820,10 +820,10 @@ PetscErrorCode DecomposeSubTree(Graph& g,const PetscInt root,
     if (!get(edge_keep_g,*e)) {
       edgeIndex = get(edge_index_g,*e);
       
-      if (edgeComponentMap[edgeIndex].get(0) == PETSC_NULL) {
+      if (!edgeComponentMap[edgeIndex].get(0)) {
         edgeComponentMap[edgeIndex].put(0,currComponent);
       } else {
-        assert(edgeComponentMap[edgeIndex].get(1) == PETSC_NULL);
+        if (edgeComponentMap[edgeIndex].get(1)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"expected edgeComponentMap[edgeIndex].get(1) == NULL");
         edgeComponentMap[edgeIndex].put(1,currComponent);
       }
     }
