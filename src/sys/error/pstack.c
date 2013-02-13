@@ -1,6 +1,5 @@
 
 #include <petscsys.h>        /*I  "petscsys.h"   I*/
-#include <petscthreadcomm.h>
 
 #if defined(PETSC_USE_DEBUG)
 

@@ -128,6 +128,31 @@ PetscErrorCode PetscThreadCommCreate(MPI_Comm comm,PetscThreadComm *tcomm)
   PetscFunctionReturn(0);
 }
 
+#if defined(PETSC_USE_DEBUG)
+
+PetscErrorCode PetscThreadCommStackCreate_kernel(PetscInt trank)
+{
+  PetscStack *petscstack_in;
+  if (trank && PetscStackActive()) return 0;
+
+  petscstack_in              = (PetscStack*)malloc(sizeof(PetscStack));
+  petscstack_in->currentsize = 0;
+  PetscThreadLocalSetValue((PetscThreadKey*)&petscstack,petscstack_in);
+  return 0;
+}
+
+/* Creates stack frames for the threads */
+#undef __FUNCT__
+#define __FUNCT__ "PetscThreadCommStackCreate"
+PetscErrorCode  PetscThreadCommStackCreate(void)
+{
+  PetscErrorCode ierr;
+
+  ierr = PetscThreadCommRunKernel0(PETSC_COMM_SELF,(PetscThreadKernel)PetscThreadCommStackCreate_kernel);CHKERRQ(ierr);
+  ierr = PetscThreadCommBarrier(PETSC_COMM_SELF);CHKERRQ(ierr);
+  return 0;
+}
+
 PetscErrorCode PetscThreadCommStackDestroy_kernel(PetscInt trank)
 {
   if (trank && PetscStackActive()) {
@@ -149,6 +174,24 @@ PetscErrorCode  PetscThreadCommStackDestroy(void)
   ierr = PetscThreadCommBarrier(PETSC_COMM_SELF);CHKERRQ(ierr);
   return 0;
 }
+#else
+#undef __FUNCT__
+#define __FUNCT__ "PetscThreadCommStackCreate"
+PetscErrorCode  PetscThreadCommStackCreate(void)
+{
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscThreadCommStackDestroy"
+PetscErrorCode  PetscThreadCommStackDestroy(void)
+{
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
+}
+
+#endif
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscThreadCommDestroy"
@@ -1193,29 +1236,6 @@ PetscErrorCode PetscThreadCommAttach(MPI_Comm comm,PetscThreadComm tcomm)
     ierr = MPI_Attr_put(comm,Petsc_ThreadComm_keyval,tcomm);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
-}
-
-PetscErrorCode PetscThreadCommStackCreate_kernel(PetscInt trank)
-{
-  PetscStack *petscstack_in;
-  if (!trank) return 0;
-
-  petscstack_in              = (PetscStack*)malloc(sizeof(PetscStack));
-  petscstack_in->currentsize = 0;
-  PetscThreadLocalSetValue((PetscThreadKey*)&petscstack,petscstack_in);
-  return 0;
-}
-
-/* Creates stack frames for the threads */
-#undef __FUNCT__
-#define __FUNCT__ "PetscThreadCommStackCreate"
-PetscErrorCode  PetscThreadCommStackCreate(void)
-{
-  PetscErrorCode ierr;
-
-  ierr = PetscThreadCommRunKernel0(PETSC_COMM_SELF,(PetscThreadKernel)PetscThreadCommStackCreate_kernel);CHKERRQ(ierr);
-  ierr = PetscThreadCommBarrier(PETSC_COMM_SELF);CHKERRQ(ierr);
-  return 0;
 }
 
 #undef __FUNCT__
