@@ -108,9 +108,12 @@ PetscErrorCode PetscSectionClone(PetscSection section, PetscSection *newSection)
   }
   ierr = PetscSectionSetUp(*newSection);CHKERRQ(ierr);
   for (p = pStart; p < pEnd; ++p) {
-    PetscInt       cdof, fcdof = 0;
+    PetscInt       off, cdof, fcdof = 0;
     const PetscInt *cInd;
 
+    /* Must set offsets in case they do not agree with the prefix sums */
+    ierr = PetscSectionGetOffset(section, p, &off);CHKERRQ(ierr);
+    ierr = PetscSectionSetOffset(*newSection, p, off);CHKERRQ(ierr);
     ierr = PetscSectionGetConstraintDof(section, p, &cdof);CHKERRQ(ierr);
     if (cdof) {
       ierr = PetscSectionGetConstraintIndices(section, p, &cInd);CHKERRQ(ierr);
