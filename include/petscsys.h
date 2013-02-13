@@ -380,7 +380,7 @@ M*/
 .seealso: PETSC_DECIDE, PETSC_DEFAULT, PETSC_IGNORE, PETSC_DETERMINE
 
 M*/
-#define PETSC_NULL           0
+#define PETSC_NULL           NULL
 
 /*MC
     PETSC_IGNORE - same as NULL, means PETSc will ignore this argument
