@@ -272,6 +272,8 @@ PETSC_EXTERN PetscErrorCode PCFactorSetDropTolerance(PC,PetscReal,PetscReal,Pets
 PETSC_EXTERN PetscErrorCode PCASMSetLocalSubdomains(PC,PetscInt,IS[],IS[]);
 PETSC_EXTERN PetscErrorCode PCASMSetTotalSubdomains(PC,PetscInt,IS[],IS[]);
 PETSC_EXTERN PetscErrorCode PCASMSetOverlap(PC,PetscInt);
+PETSC_EXTERN PetscErrorCode PCASMSetDMSubdomains(PC,PetscBool);
+PETSC_EXTERN PetscErrorCode PCASMGetDMSubdomains(PC,PetscBool*);
 PETSC_EXTERN PetscErrorCode PCASMSetSortIndices(PC,PetscBool );
 
 /*E
@@ -337,6 +339,8 @@ PETSC_EXTERN const char *const PCGASMTypes[];
 PETSC_EXTERN PetscErrorCode PCGASMSetSubdomains(PC,PetscInt,IS[],IS[]);
 PETSC_EXTERN PetscErrorCode PCGASMSetTotalSubdomains(PC,PetscInt,PetscBool);
 PETSC_EXTERN PetscErrorCode PCGASMSetOverlap(PC,PetscInt);
+PETSC_EXTERN PetscErrorCode PCGASMSetDMSubdomains(PC,PetscBool);
+PETSC_EXTERN PetscErrorCode PCGASMGetDMSubdomains(PC,PetscBool*);
 PETSC_EXTERN PetscErrorCode PCGASMSetSortIndices(PC,PetscBool );
 
 PETSC_EXTERN PetscErrorCode PCGASMSetType(PC,PCGASMType);

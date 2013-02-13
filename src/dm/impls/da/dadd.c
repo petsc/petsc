@@ -1,4 +1,4 @@
-#include <petsc-private/daimpl.h>   /*I   "petscdmda.h"   I*/
+#include <petsc-private/daimpl.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "DMDACreatePatchIS"
@@ -313,63 +313,6 @@ PetscErrorCode DMDASubDomainIS_Private(DM dm,DM subdm,IS *iis,IS *ois)
   PetscFunctionReturn(0);
 }
 
-
-#undef __FUNCT__
-#define __FUNCT__ "DMDASetUseDomainDecomposition"
-/*@
-  DMDASetUseDomainDecomposition - sets option controlling whether DMCreateDomainDecomposition() is used.
-
-  Logically collective.
-
-  Input Parameters:
-- dm   - the DM object of type DA
-+ flag - PETSC_TRUE or PETSC_FALSE according to whether DMCreateDomainDecomposition() returns geometrically-defined or null subdomains.
-
-.seealso DMDAGetUseDomainDecomposition()
-@*/
-PetscErrorCode DMDASetUseDomainDecomposition(DM dm, PetscBool flag)
-{
-  DM_DA          *dd = (DM_DA*)dm->data;
-  PetscBool      isda;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  ierr = PetscObjectTypeCompare((PetscObject)dm,DMDA,&isda);CHKERRQ(ierr);
-  if (!isda) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"DM must be of type DMDA");
-  dd->decompositiondm = flag;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "DMDAGetUseDomainDecomposition"
-/*@
-  DMDAGetUseDomainDecomposition - returns option controlling whether DMCreateDomainDecomposition() is used.
-
-  Logically collective.
-
-  Input Parameters:
-. dm   - the DM object of type DA
-
-  Output Parameters:
-. flag - PETSC_TRUE or PETSC_FALSE according to whether DMCreateDomainDecomposition returns geometrically-defined or null subdomains.
-
-.seealso DMDASetUseDomainDecomposition()
-@*/
-PetscErrorCode DMDAGetUseDomainDecomposition(DM dm,PetscBool *flag)
-{
-  DM_DA          *dd = (DM_DA*)dm->data;
-  PetscBool      isda;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  ierr = PetscObjectTypeCompare((PetscObject)dm,DMDA,&isda);CHKERRQ(ierr);
-  if (!isda) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"DM must be of type DMDA");
-  if (flag) *flag = dd->decompositiondm;
-  PetscFunctionReturn(0);
-}
-
 #undef __FUNCT__
 #define __FUNCT__ "DMCreateDomainDecomposition_DA"
 PetscErrorCode DMCreateDomainDecomposition_DA(DM dm,PetscInt *len,char ***names,IS **iis,IS **ois,DM **subdm)
@@ -377,19 +320,8 @@ PetscErrorCode DMCreateDomainDecomposition_DA(DM dm,PetscInt *len,char ***names,
   PetscErrorCode ierr;
   IS             iis0,ois0;
   DM             subdm0;
-  DM_DA          *dd = (DM_DA*)dm->data;
 
   PetscFunctionBegin;
-  /* fix to enable PCASM default behavior as taking overlap from the matrix */
-  if (!dd->decompositiondm) {
-    if (len) *len=0;
-    if (names) *names=0;
-    if (iis) *iis=0;
-    if (ois) *ois=0;
-    if (subdm) *subdm=0;
-    PetscFunctionReturn(0);
-  }
-
   if (len) *len = 1;
 
   if (iis) {ierr = PetscMalloc(sizeof(IS*),iis);CHKERRQ(ierr);}

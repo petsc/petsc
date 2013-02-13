@@ -149,9 +149,6 @@ PETSC_EXTERN PetscErrorCode DMDAVecRestoreArrayDOF(DM,Vec,void *);
 
 PETSC_EXTERN PetscErrorCode DMDASplitComm2d(MPI_Comm,PetscInt,PetscInt,PetscInt,MPI_Comm*);
 
-PETSC_EXTERN PetscErrorCode DMDASetUseDomainDecomposition(DM,PetscBool);
-PETSC_EXTERN PetscErrorCode DMDAGetUseDomainDecomposition(DM,PetscBool*);
-
 PETSC_EXTERN PetscErrorCode DMDACreatePatchIS(DM,MatStencil*,MatStencil*,IS*);
 
 /*S
