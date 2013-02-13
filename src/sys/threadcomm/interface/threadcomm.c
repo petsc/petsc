@@ -8,6 +8,7 @@ PetscBool               PetscThreadCommRegisterAllCalled = PETSC_FALSE;
 PetscFunctionList       PetscThreadCommList              = NULL;
 PetscMPIInt             Petsc_ThreadComm_keyval          = MPI_KEYVAL_INVALID;
 PetscThreadCommJobQueue PetscJobQueue                    = NULL;
+PetscThreadComm         PetscThreadCommWorld             = NULL;
 
 /* Logging support */
 PetscLogEvent ThreadComm_RunKernel, ThreadComm_Barrier;
@@ -68,6 +69,8 @@ PetscErrorCode PetscGetNCores(PetscInt *ncores)
   Output Parameters:
 . tcommp - pointer to the thread communicator
 
+  Notes: If no thread communicator is on the MPI_Comm then the global thread communicator
+         is returned.
   Level: Intermediate
 
 .seealso: PetscThreadCommCreate(), PetscThreadCommDestroy()
@@ -80,8 +83,9 @@ PetscErrorCode PetscCommGetThreadComm(MPI_Comm comm,PetscThreadComm *tcommp)
 
   PetscFunctionBegin;
   ierr = MPI_Attr_get(comm,Petsc_ThreadComm_keyval,(PetscThreadComm*)&ptr,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"MPI_Comm does not have a thread communicator");
-  *tcommp      = (PetscThreadComm)ptr;
+  if (!flg) {
+     *tcommp = PetscThreadCommWorld;
+  } else *tcommp      = (PetscThreadComm)ptr;
   PetscFunctionReturn(0);
 }
 
@@ -124,6 +128,28 @@ PetscErrorCode PetscThreadCommCreate(MPI_Comm comm,PetscThreadComm *tcomm)
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode PetscThreadCommStackDestroy_kernel(PetscInt trank)
+{
+  if (trank && PetscStackActive()) {
+    PetscStack *petscstack_in;
+    petscstack_in = (PetscStack*)PetscThreadLocalGetValue(petscstack);
+    free(petscstack_in);
+    PetscThreadLocalSetValue((PetscThreadKey*)&petscstack,(PetscStack*)0);
+  }
+  return 0;
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscThreadCommStackDestroy"
+/*  PetscFunctionBegin;  so that make rule checkbadPetscFunctionBegin works */
+PetscErrorCode  PetscThreadCommStackDestroy(void)
+{
+  PetscErrorCode ierr;
+  ierr = PetscThreadCommRunKernel0(PETSC_COMM_SELF,(PetscThreadKernel)PetscThreadCommStackDestroy_kernel);CHKERRQ(ierr);
+  ierr = PetscThreadCommBarrier(PETSC_COMM_SELF);CHKERRQ(ierr);
+  return 0;
+}
+
 #undef __FUNCT__
 #define __FUNCT__ "PetscThreadCommDestroy"
 /*
@@ -145,6 +171,7 @@ PetscErrorCode PetscThreadCommDestroy(PetscThreadComm *tcomm)
   PetscFunctionBegin;
   if (!*tcomm) PetscFunctionReturn(0);
   if (!--(*tcomm)->refct) {
+    ierr = PetscThreadCommStackDestroy();CHKERRQ(ierr);
     /* Destroy the implementation specific data struct */
     if ((*tcomm)->ops->destroy) (*(*tcomm)->ops->destroy)(*tcomm);
 
@@ -1168,6 +1195,29 @@ PetscErrorCode PetscThreadCommAttach(MPI_Comm comm,PetscThreadComm tcomm)
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode PetscThreadCommStackCreate_kernel(PetscInt trank)
+{
+  PetscStack *petscstack_in;
+  if (!trank) return 0;
+
+  petscstack_in              = (PetscStack*)malloc(sizeof(PetscStack));
+  petscstack_in->currentsize = 0;
+  PetscThreadLocalSetValue((PetscThreadKey*)&petscstack,petscstack_in);
+  return 0;
+}
+
+/* Creates stack frames for the threads */
+#undef __FUNCT__
+#define __FUNCT__ "PetscThreadCommStackCreate"
+PetscErrorCode  PetscThreadCommStackCreate(void)
+{
+  PetscErrorCode ierr;
+
+  ierr = PetscThreadCommRunKernel0(PETSC_COMM_SELF,(PetscThreadKernel)PetscThreadCommStackCreate_kernel);CHKERRQ(ierr);
+  ierr = PetscThreadCommBarrier(PETSC_COMM_SELF);CHKERRQ(ierr);
+  return 0;
+}
+
 #undef __FUNCT__
 #define __FUNCT__ "PetscThreadCommInitialize"
 /*
@@ -1186,7 +1236,8 @@ PetscErrorCode PetscThreadCommInitialize(void)
   if (Petsc_ThreadComm_keyval == MPI_KEYVAL_INVALID) {
     ierr = MPI_Keyval_create(Petsc_CopyThreadComm,Petsc_DelThreadComm,&Petsc_ThreadComm_keyval,(void*)0);CHKERRQ(ierr);
   }
-  ierr = PetscThreadCommCreate(PETSC_COMM_WORLD,&tcomm);CHKERRQ(ierr);
+  ierr = PetscThreadCommCreate(PETSC_COMM_WORLD,&PetscThreadCommWorld);CHKERRQ(ierr);
+  tcomm = PetscThreadCommWorld;
   ierr = PetscThreadCommSetNThreads(tcomm,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = PetscThreadCommSetAffinities(tcomm,NULL);CHKERRQ(ierr);
   ierr = PetscNew(struct _p_PetscThreadCommJobQueue,&PetscJobQueue);CHKERRQ(ierr);
@@ -1207,11 +1258,9 @@ PetscErrorCode PetscThreadCommInitialize(void)
   PetscJobQueue->kernel_ctr = 0;
   tcomm->job_ctr            = 0;
 
-  ierr = PetscThreadCommAttach(PETSC_COMM_WORLD,tcomm);CHKERRQ(ierr);
-  ierr = PetscThreadCommAttach(PETSC_COMM_SELF,tcomm);CHKERRQ(ierr);
-
   ierr = PetscThreadCommSetType(tcomm,NOTHREAD);CHKERRQ(ierr);
   ierr = PetscThreadCommReductionCreate(tcomm,&tcomm->red);CHKERRQ(ierr);
+  ierr = PetscThreadCommStackCreate();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

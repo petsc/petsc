@@ -118,6 +118,11 @@ struct _p_PetscThreadComm{
   PetscInt                nkernels;     /* Maximum kernels launched */
 };
 
+/* Global thread communicator that manages all the threads. Other threadcomms
+   use threads from PetscThreadCommWorld
+*/
+extern PetscThreadComm PetscThreadCommWorld;
+
 /* register thread communicator models */
 PETSC_EXTERN PetscErrorCode PetscThreadCommRegister(const char[],const char[],const char[],PetscErrorCode(*)(PetscThreadComm));
 PETSC_EXTERN PetscErrorCode PetscThreadCommRegisterAll(const char path[]);

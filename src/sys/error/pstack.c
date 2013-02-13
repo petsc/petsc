@@ -28,7 +28,7 @@ PetscErrorCode  PetscStackDepublish(void)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscStackCreate_kernel(PetscInt trank)
+PetscErrorCode PetscStackCreate(void)
 {
   PetscStack *petscstack_in;
   if (PetscStackActive()) return 0;
@@ -36,17 +36,6 @@ PetscErrorCode PetscStackCreate_kernel(PetscInt trank)
   petscstack_in              = (PetscStack*)malloc(sizeof(PetscStack));
   petscstack_in->currentsize = 0;
   PetscThreadLocalSetValue((PetscThreadKey*)&petscstack,petscstack_in);
-  return 0;
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "PetscStackCreate"
-PetscErrorCode  PetscStackCreate(void)
-{
-  PetscErrorCode ierr;
-
-  ierr = PetscThreadCommRunKernel0(PETSC_COMM_SELF,(PetscThreadKernel)PetscStackCreate_kernel);CHKERRQ(ierr);
-  ierr = PetscThreadCommBarrier(PETSC_COMM_SELF);CHKERRQ(ierr);
   return 0;
 }
 
@@ -74,26 +63,15 @@ PetscErrorCode  PetscStackView(FILE *file)
   return 0;
 }
 
-PetscErrorCode PetscStackDestroy_kernel(PetscInt trank)
+PetscErrorCode PetscStackDestroy(void)
 {
   if (PetscStackActive()) {
     PetscStack *petscstack_in;
     petscstack_in = (PetscStack*)PetscThreadLocalGetValue(petscstack);
     free(petscstack_in);
     PetscThreadLocalSetValue((PetscThreadKey*)&petscstack,(PetscStack*)0);
+    PetscThreadLocalDestroy(petscstack); /* Deletes pthread_key if it was used */
   }
-  return 0;
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "PetscStackDestroy"
-/*  PetscFunctionBegin;  so that make rule checkbadPetscFunctionBegin works */
-PetscErrorCode  PetscStackDestroy(void)
-{
-  PetscErrorCode ierr;
-  ierr = PetscThreadCommRunKernel0(PETSC_COMM_SELF,(PetscThreadKernel)PetscStackDestroy_kernel);CHKERRQ(ierr);
-  ierr = PetscThreadCommBarrier(PETSC_COMM_SELF);CHKERRQ(ierr);
-  PetscThreadLocalDestroy(petscstack); /* Deletes pthread_key if it was used */
   return 0;
 }
 
