@@ -403,7 +403,7 @@ PetscErrorCode  ISLocalToGlobalMappingApplyIS(ISLocalToGlobalMapping mapping,IS 
 
 #undef __FUNCT__
 #define __FUNCT__ "ISLocalToGlobalMappingApply"
-/*@C
+/*@
    ISLocalToGlobalMappingApply - Takes a list of integers in a local numbering
    and converts them to the global numbering.
 
