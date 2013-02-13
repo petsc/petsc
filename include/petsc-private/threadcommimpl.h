@@ -119,9 +119,9 @@ struct _p_PetscThreadComm{
 };
 
 /* Global thread communicator that manages all the threads. Other threadcomms
-   use threads from PetscThreadCommWorld
+   use threads from PETSC_THREAD_COMM_WORLD
 */
-extern PetscThreadComm PetscThreadCommWorld;
+extern PetscThreadComm PETSC_THREAD_COMM_WORLD;
 
 /* register thread communicator models */
 PETSC_EXTERN PetscErrorCode PetscThreadCommRegister(const char[],const char[],const char[],PetscErrorCode(*)(PetscThreadComm));

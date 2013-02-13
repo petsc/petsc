@@ -8,7 +8,7 @@ PetscBool               PetscThreadCommRegisterAllCalled = PETSC_FALSE;
 PetscFunctionList       PetscThreadCommList              = NULL;
 PetscMPIInt             Petsc_ThreadComm_keyval          = MPI_KEYVAL_INVALID;
 PetscThreadCommJobQueue PetscJobQueue                    = NULL;
-PetscThreadComm         PetscThreadCommWorld             = NULL;
+PetscThreadComm         PETSC_THREAD_COMM_WORLD             = NULL;
 
 /* Logging support */
 PetscLogEvent ThreadComm_RunKernel, ThreadComm_Barrier;
@@ -84,7 +84,7 @@ PetscErrorCode PetscCommGetThreadComm(MPI_Comm comm,PetscThreadComm *tcommp)
   PetscFunctionBegin;
   ierr = MPI_Attr_get(comm,Petsc_ThreadComm_keyval,(PetscThreadComm*)&ptr,&flg);CHKERRQ(ierr);
   if (!flg) {
-     *tcommp = PetscThreadCommWorld;
+     *tcommp = PETSC_THREAD_COMM_WORLD;
   } else *tcommp      = (PetscThreadComm)ptr;
   PetscFunctionReturn(0);
 }
@@ -1256,8 +1256,8 @@ PetscErrorCode PetscThreadCommInitialize(void)
   if (Petsc_ThreadComm_keyval == MPI_KEYVAL_INVALID) {
     ierr = MPI_Keyval_create(Petsc_CopyThreadComm,Petsc_DelThreadComm,&Petsc_ThreadComm_keyval,(void*)0);CHKERRQ(ierr);
   }
-  ierr = PetscThreadCommCreate(PETSC_COMM_WORLD,&PetscThreadCommWorld);CHKERRQ(ierr);
-  tcomm = PetscThreadCommWorld;
+  ierr = PetscThreadCommCreate(PETSC_COMM_WORLD,&PETSC_THREAD_COMM_WORLD);CHKERRQ(ierr);
+  tcomm = PETSC_THREAD_COMM_WORLD;
   ierr = PetscThreadCommSetNThreads(tcomm,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = PetscThreadCommSetAffinities(tcomm,NULL);CHKERRQ(ierr);
   ierr = PetscNew(struct _p_PetscThreadCommJobQueue,&PetscJobQueue);CHKERRQ(ierr);
