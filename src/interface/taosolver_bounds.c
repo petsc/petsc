@@ -136,6 +136,64 @@ PetscErrorCode TaoComputeVariableBounds(TaoSolver tao)
     PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "TaoSetInequalityBounds"
+/*@
+  TaoSetInequalityBounds - Sets the upper and lower bounds
+
+  Logically collective on TaoSolver
+
+  Input Parameters:
++ tao - the TaoSolver context
+. IL  - vector of lower bounds 
+- IU  - vector of upper bounds
+
+  Level: beginner
+
+.seealso: TaoSetObjectiveRoutine(), TaoSetHessianRoutine() TaoSetObjectiveAndGradientRoutine()
+@*/
+
+PetscErrorCode TaoSetInequalityBounds(TaoSolver tao, Vec IL, Vec IU)
+{
+    PetscErrorCode ierr;
+    PetscFunctionBegin;
+    PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);
+    if (IL) {
+	PetscValidHeaderSpecific(IL,VEC_CLASSID,2);
+	PetscObjectReference((PetscObject)IL);
+    }
+    if (IU) {
+	PetscValidHeaderSpecific(IU,VEC_CLASSID,3);
+	PetscObjectReference((PetscObject)IU);
+    }
+    if (tao->IL) {
+	ierr = VecDestroy(&tao->IL); CHKERRQ(ierr);
+    }
+    if (tao->IU) {
+	ierr = VecDestroy(&tao->IU); CHKERRQ(ierr);
+    }	
+
+    tao->IL = IL;
+    tao->IU = IU;
+	
+    PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
+#define __FUNCT__ "TaoGetInequalityBounds"
+PetscErrorCode TaoGetInequalityBounds(TaoSolver tao, Vec *IL, Vec *IU)
+{
+    PetscFunctionBegin;
+    PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);
+    if (IL) {
+	*IL=tao->IL;
+    }
+    if (IU) {
+	*IU=tao->IU;
+    }
+    PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoComputeConstraints"
@@ -206,7 +264,7 @@ $      func (TaoSolver tao, Vec x, Vec c, void *ctx);
 
   Level: intermediate
 
-.seealso: TaoSetObjectiveRoutine(), TaoSetHessianRoutine() TaoSetObjectiveAndGradientRoutine(), TaoSetVariableBounds()
+.seealso: TaoSetObjectiveRoutine(), TaoSetHessianRoutine() TaoSetObjectiveAndGradientRoutine(), TaoSetVariablevBounds()
 
 @*/
 PetscErrorCode TaoSetConstraintsRoutine(TaoSolver tao, Vec c, PetscErrorCode (*func)(TaoSolver, Vec, Vec, void*), void *ctx)

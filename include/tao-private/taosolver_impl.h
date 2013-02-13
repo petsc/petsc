@@ -71,6 +71,8 @@ struct _p_TaoSolver {
     Vec stepdirection;
     Vec XL;
     Vec XU;
+    Vec IL;
+    Vec IU;
     Mat hessian;
     Mat hessian_pre;
     Vec sep_objective;
