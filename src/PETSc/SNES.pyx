@@ -258,11 +258,10 @@ cdef class SNES(Object):
         cdef object ihist = array_i(size, idata)
         return (rhist, ihist)
 
-    def logConvergenceHistory(self, its, norm, linear_its=0):
-        cdef PetscInt  ival1 = asInt(its)
-        cdef PetscReal rval  = asReal(norm)
-        cdef PetscInt  ival2 = asInt(linear_its)
-        CHKERR( SNESLogConvergenceHistory(self.snes, ival1, rval, ival2) )
+    def logConvergenceHistory(self, norm, linear_its=0):
+        cdef PetscReal rval = asReal(norm)
+        cdef PetscInt  ival = asInt(linear_its)
+        CHKERR( SNESLogConvergenceHistory(self.snes, rval, ival) )
 
     # --- monitoring ---
 

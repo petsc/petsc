@@ -467,20 +467,7 @@ KSPSetResidualNorm(KSP ksp, PetscReal rnorm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPLogConvergenceHistory"
-static PetscErrorCode
-KSPLogConvergenceHistory(KSP ksp, PetscInt its, PetscReal rnorm)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  if (its < 0)   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,
-                       "iteration number must be nonnegative");
-  if (rnorm < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,
-                         "residual norm must be nonnegative");
-  KSPLogResidualHistory(ksp,rnorm);
-  PetscFunctionReturn(0);
-}
+#define KSPLogConvergenceHistory KSPLogResidualHistory
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPConvergenceTestCall"
@@ -511,21 +498,6 @@ KSPSetConvergedReason(KSP ksp, KSPConvergedReason reason)
 }
 
 /* ---------------------------------------------------------------- */
-
-#undef __FUNCT__
-#define __FUNCT__ "SNESLogResidualHistoryCall"
-static PetscErrorCode
-SNESLogConvergenceHistory(SNES snes, PetscInt its, PetscReal fnorm, PetscInt lits)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
-  if (its < 0)   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,
-                         "iteration number must be nonnegative");
-  if (fnorm < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,
-                         "function norm must be nonnegative");
-  SNESLogConvHistory(snes,fnorm,its);
-  PetscFunctionReturn(0);
-}
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESConvergenceTestCall"

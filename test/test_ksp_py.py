@@ -30,7 +30,7 @@ class MyKSP(object):
         its = ksp.getIterationNumber()
         rnorm = r.norm()
         ksp.setResidualNorm(rnorm)
-        ksp.logConvergenceHistory(its, rnorm)
+        ksp.logConvergenceHistory(rnorm)
         ksp.monitor(its, rnorm)
         reason = ksp.callConvergenceTest(its, rnorm)
         if not reason:

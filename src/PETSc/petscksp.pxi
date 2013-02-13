@@ -157,7 +157,7 @@ cdef extern from * nogil:
 cdef extern from "custom.h" nogil:
     int KSPSetIterationNumber(PetscKSP,PetscInt)
     int KSPSetResidualNorm(PetscKSP,PetscReal)
-    int KSPLogConvergenceHistory(PetscKSP,PetscInt,PetscReal)
+    int KSPLogConvergenceHistory(PetscKSP,PetscReal)
     int KSPConvergenceTestCall(PetscKSP,PetscInt,PetscReal,PetscKSPConvergedReason*)
     int KSPSetConvergedReason(PetscKSP,PetscKSPConvergedReason)
 

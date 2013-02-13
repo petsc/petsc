@@ -50,24 +50,32 @@ EXTERN_C_END
 #undef __FUNCT__
 #define __FUNCT__ "KSPLogHistory"
 PETSC_STATIC_INLINE
-PetscErrorCode KSPLogHistory(KSP ksp,PetscInt iter,PetscReal rnorm)
+PetscErrorCode KSPLogHistory(KSP ksp,PetscReal rnorm)
 {
-  /*PetscErrorCode ierr;*/
+  PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  KSPLogResidualHistory(ksp,rnorm);
+#if !defined(PETSC_VERSION_LE) || PETSC_VERSION_LE(3,3,0)
+  ierr=0;KSPLogResidualHistory(ksp,rnorm);;CHKERRQ(ierr);
+#else
+  ierr = KSPLogResidualHistory(ksp,rnorm);CHKERRQ(ierr);
+#endif
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESLogHistory"
 PETSC_STATIC_INLINE
-PetscErrorCode SNESLogHistory(SNES snes,PetscInt iter,PetscReal rnorm,PetscInt lits)
+PetscErrorCode SNESLogHistory(SNES snes,PetscReal rnorm,PetscInt lits)
 {
-  /*PetscErrorCode ierr;*/
+    PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
-  SNESLogConvHistory(snes,rnorm,lits);
+#if !defined(PETSC_VERSION_LE) || PETSC_VERSION_LE(3,3,0)
+  ierr=0;SNESLogConvHistory(snes,rnorm,lits);CHKERRQ(ierr);
+#else
+  ierr = SNESLogConvergenceHistory(snes,rnorm,lits);CHKERRQ(ierr);
+#endif
   PetscFunctionReturn(0);
 }
 

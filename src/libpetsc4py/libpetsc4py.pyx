@@ -1358,7 +1358,7 @@ cdef extern from * nogil:
     PetscErrorCode KSPBuildSolution(PetscKSP,PetscVec,PetscVec*)
     PetscErrorCode KSPBuildResidual(PetscKSP,PetscVec,PetscVec,PetscVec*)
     PetscErrorCode KSPConverged(PetscKSP,PetscInt,PetscReal,KSPConvergedReason*)
-    PetscErrorCode KSPLogHistory(PetscKSP,PetscInt,PetscReal)
+    PetscErrorCode KSPLogHistory(PetscKSP,PetscReal)
     PetscErrorCode KSPMonitor(PetscKSP,PetscInt,PetscReal)
 
 
@@ -1613,7 +1613,7 @@ cdef PetscErrorCode KSPSolve_Python_default(
     CHKERR( VecNorm(R,NORM_2,&rnorm)     )
     #
     CHKERR( KSPConverged(ksp,ksp.iter,rnorm,&ksp.reason) )
-    CHKERR( KSPLogHistory(ksp,ksp.iter,ksp.norm) )
+    CHKERR( KSPLogHistory(ksp,ksp.norm) )
     CHKERR( KSPMonitor(ksp,ksp.iter,ksp.norm) )
     for its from 0 <= its < ksp.max_its:
         if ksp.reason: break
@@ -1626,7 +1626,7 @@ cdef PetscErrorCode KSPSolve_Python_default(
         #
         KSPPostStep_Python(ksp)
         CHKERR( KSPConverged(ksp,ksp.iter,rnorm,&ksp.reason) )
-        CHKERR( KSPLogHistory(ksp,ksp.iter,ksp.norm) )
+        CHKERR( KSPLogHistory(ksp,ksp.norm) )
         CHKERR( KSPMonitor(ksp,ksp.iter,ksp.norm) )
     #
     return FunctionEnd()
@@ -1711,7 +1711,7 @@ cdef extern from * nogil:
     PetscErrorCode SNESGetConvergedReason(PetscSNES,SNESConvergedReason*)
     PetscErrorCode SNES_KSPSolve(PetscSNES,PetscKSP,PetscVec,PetscVec,)
     PetscErrorCode SNESConverged(PetscSNES,PetscInt,PetscReal,PetscReal,PetscReal,SNESConvergedReason*)
-    PetscErrorCode SNESLogHistory(PetscSNES,PetscInt,PetscReal,PetscInt)
+    PetscErrorCode SNESLogHistory(PetscSNES,PetscReal,PetscInt)
     PetscErrorCode SNESMonitor(PetscSNES,PetscInt,PetscReal)
     PetscErrorCode SNESSetFromOptions(PetscSNES)
 
@@ -1898,7 +1898,7 @@ cdef PetscErrorCode SNESSolve_Python_default(
     CHKERR( VecNorm(F,NORM_2,&fnorm)      )
     #
     CHKERR( SNESConverged(snes,snes.iter,xnorm,ynorm,fnorm,&snes.reason) )
-    CHKERR( SNESLogHistory(snes,snes.iter,snes.norm,lits) )
+    CHKERR( SNESLogHistory(snes,snes.norm,lits) )
     CHKERR( SNESMonitor(snes,snes.iter,snes.norm) )
     for its from 0 <= its < snes.max_its:
         if snes.reason: break
@@ -1917,7 +1917,7 @@ cdef PetscErrorCode SNESSolve_Python_default(
         #
         SNESPostStep_Python(snes)
         CHKERR( SNESConverged(snes,snes.iter,xnorm,ynorm,fnorm,&snes.reason) )
-        CHKERR( SNESLogHistory(snes,snes.iter,snes.norm,lits) )
+        CHKERR( SNESLogHistory(snes,snes.norm,lits) )
         CHKERR( SNESMonitor(snes,snes.iter,snes.norm) )
     #
     return FunctionEnd()

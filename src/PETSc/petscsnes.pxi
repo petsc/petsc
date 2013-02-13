@@ -111,7 +111,7 @@ cdef extern from * nogil:
                           PetscSNESConvergedReason*,void*) except PETSC_ERR_PYTHON
     int SNESSetConvergenceHistory(PetscSNES,PetscReal[],PetscInt[],PetscInt,PetscBool)
     int SNESGetConvergenceHistory(PetscSNES,PetscReal*[],PetscInt*[],PetscInt*)
-    int SNESLogConvergenceHistory(PetscSNES,PetscInt,PetscReal,PetscInt)
+    int SNESLogConvergenceHistory(PetscSNES,PetscReal,PetscInt)
 
     int SNESMonitorSet(PetscSNES,PetscSNESMonitorFunction,void*,PetscSNESCtxDel)
     int SNESMonitorCancel(PetscSNES)

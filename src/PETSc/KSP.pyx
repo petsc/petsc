@@ -252,10 +252,9 @@ cdef class KSP(Object):
         CHKERR( KSPGetResidualHistory(self.ksp, &data, &size) )
         return array_r(size, data)
 
-    def logConvergenceHistory(self, its, rnorm):
-        cdef PetscInt  ival = asInt(its)
+    def logConvergenceHistory(self, rnorm):
         cdef PetscReal rval = asReal(rnorm)
-        CHKERR( KSPLogConvergenceHistory(self.ksp, ival, rval) )
+        CHKERR( KSPLogConvergenceHistory(self.ksp, rval) )
 
     # --- monitoring ---
 
