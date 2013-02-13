@@ -1027,13 +1027,10 @@
 	  <b>petsc-dev</b>
 	</p>
         <ul>
-	  <li>
-	    Threads can be used via native pthread lockfree implementation or OpenMP.
-	  </li>
           <li>
             Configure and build PETSc with the additional configure options
             <ul>
-              <li> --with-pthreadclasses and/or --with-openmp </li>
+              <li> --with-threadcomm --with-pthreadclasses and/or --with-openmp </li>
             </ul>
           </li>
 
@@ -1048,7 +1045,6 @@
                 -mat_no_inode -preload off
               </li>
             </ul>
-	    *Note: For using threaded vector and matrix operations enable the flag PETSC_THREADCOMM_ACTIVE in $PETSC_DIR/$PETSC_ARCH/include/petscconf.h
           </li>
         </ul>
 

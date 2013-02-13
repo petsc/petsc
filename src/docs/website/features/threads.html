@@ -52,10 +52,33 @@
       </p>
 
       <ul>
-        <li><a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/installation.html#threads">Installing PETSc to use the pthreads</a></li>
+        <li><a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/installation.html#threads">Installation of PETSc with threads</a></li>
+
+	<li>
+	  Quick summary of usage in petsc-dev:
+	  <ul>
+	    <li>
+	      Threads can be used via native pthread lockfree implementation or OpenMP.
+	    </li>
+	    <li>
+	      The three important run-time options for using threads are:
+	      <ul>
+		<li> -threadcomm_nthreads &ltnthreads&gt: Sets the number of threads </li>
+		<li> -threadcomm_affinities &ltlist_of_affinities&gt: Sets the core affinities of threads </li>
+		<li> -threadcomm_type &ltnothread,pthread,openmp&gt: Threading model (OpenMP, pthread, nothread) </li>
+	      </ul>
+            </li>
+	    <li>
+	      Run with -help to see the avialable options with threads.
+	    </li>
+	    <li>
+	      A few tutorial examples are located at $PETSC_DIR/src/sys/threadcomm/examples/tutorials
+	    </li>
+	  </ul>
+	</li>
 
         <li>
-          Quick summary of usage:
+          Quick summary of usage in petsc-3.3:
           <ul>
             <li>The VecType VECSEQPTHREAD or VECPTHREAD maybe used
               with VecSetType() or -vec_type seqpthread or pthread
@@ -76,7 +99,7 @@
               the command line options to
               use the pthread classes.</li>
           </ul>
-        </li>
+	</li>
 
         <li>We could use your help in further developing PETSc with threads; see <a href="../developers/index.html">petsc-dev</a></li>
       </ul>
