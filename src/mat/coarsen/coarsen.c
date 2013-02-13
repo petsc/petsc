@@ -275,7 +275,7 @@ PetscErrorCode  MatCoarsenCreate(MPI_Comm comm, MatCoarsen *newcrs)
 #if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = MatInitializePackage(NULL);CHKERRQ(ierr);
 #endif
-  ierr = PetscHeaderCreate(agg, _p_MatCoarsen, struct _MatCoarsenOps, MAT_COARSEN_CLASSID,-1,"MatCoarsen","Matrix/graph coarsen",
+  ierr = PetscHeaderCreate(agg, _p_MatCoarsen, struct _MatCoarsenOps, MAT_COARSEN_CLASSID,"MatCoarsen","Matrix/graph coarsen",
                            "MatCoarsen", comm, MatCoarsenDestroy, MatCoarsenView);CHKERRQ(ierr);
 
   *newcrs = agg;

@@ -1026,7 +1026,7 @@ PetscErrorCode  PetscShellCreate(MPI_Comm comm, PetscShell *shell)
   ierr = PetscShellInitializePackage(NULL);CHKERRQ(ierr);
 #endif
   PetscValidPointer(shell,2);
-  ierr = PetscHeaderCreate(shell_,_p_PetscShell,PetscInt,PETSC_SHELL_CLASSID,0,"PetscShell","String message interpreter and dependence organizer","shell",comm,PetscShellDestroy,PetscShellView);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(shell_,_p_PetscShell,PetscInt,PETSC_SHELL_CLASSID,"PetscShell","String message interpreter and dependence organizer","shell",comm,PetscShellDestroy,PetscShellView);CHKERRQ(ierr);
 
   shell_->visitor     = NULL;
   shell_->component   = NULL;

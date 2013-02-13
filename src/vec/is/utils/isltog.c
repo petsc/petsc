@@ -200,7 +200,7 @@ PetscErrorCode  ISLocalToGlobalMappingCreate(MPI_Comm cm,PetscInt n,const PetscI
   ierr = ISInitializePackage(NULL);CHKERRQ(ierr);
 #endif
 
-  ierr = PetscHeaderCreate(*mapping,_p_ISLocalToGlobalMapping,int,IS_LTOGM_CLASSID,0,"ISLocalToGlobalMapping","Local to global mapping","IS",
+  ierr = PetscHeaderCreate(*mapping,_p_ISLocalToGlobalMapping,int,IS_LTOGM_CLASSID,"ISLocalToGlobalMapping","Local to global mapping","IS",
                            cm,ISLocalToGlobalMappingDestroy,ISLocalToGlobalMappingView);CHKERRQ(ierr);
   (*mapping)->n = n;
   /*

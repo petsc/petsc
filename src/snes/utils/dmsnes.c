@@ -68,7 +68,7 @@ static PetscErrorCode DMSNESCreate(MPI_Comm comm,DMSNES *kdm)
 #if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = SNESInitializePackage(NULL);CHKERRQ(ierr);
 #endif
-  ierr = PetscHeaderCreate(*kdm, _p_DMSNES, struct _DMSNESOps, DMSNES_CLASSID, -1, "DMSNES", "DMSNES", "DMSNES", comm, DMSNESDestroy, DMSNESView);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(*kdm, _p_DMSNES, struct _DMSNESOps, DMSNES_CLASSID,  "DMSNES", "DMSNES", "DMSNES", comm, DMSNESDestroy, DMSNESView);CHKERRQ(ierr);
   ierr = PetscMemzero((*kdm)->ops, sizeof(struct _DMSNESOps));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

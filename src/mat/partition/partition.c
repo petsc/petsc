@@ -406,7 +406,7 @@ PetscErrorCode  MatPartitioningCreate(MPI_Comm comm,MatPartitioning *newp)
 #if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = MatInitializePackage(NULL);CHKERRQ(ierr);
 #endif
-  ierr = PetscHeaderCreate(part,_p_MatPartitioning,struct _MatPartitioningOps,MAT_PARTITIONING_CLASSID,-1,"MatPartitioning","Matrix/graph partitioning","MatOrderings",comm,MatPartitioningDestroy,MatPartitioningView);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(part,_p_MatPartitioning,struct _MatPartitioningOps,MAT_PARTITIONING_CLASSID,"MatPartitioning","Matrix/graph partitioning","MatOrderings",comm,MatPartitioningDestroy,MatPartitioningView);CHKERRQ(ierr);
   part->vertex_weights = NULL;
   part->part_weights   = NULL;
 

@@ -126,8 +126,7 @@ PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*PetscObjectViewerFunction)(PetscOb
     Input Parameters:
 +   tp - the data structure type of the object (for example _p_Vec)
 .   pops - the data structure type of the objects operations (for example VecOps)
-.   cook - the classid associated with this object (for example VEC_CLASSID)
-.   t - type (no longer should be used)
+.   classid - the classid associated with this object (for example VEC_CLASSID)
 .   class_name - string name of class; should be static (for example "Vec")
 .   com - the MPI Communicator
 .   des - the destroy routine for this object (for example VecDestroy())
@@ -143,16 +142,16 @@ PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*PetscObjectViewerFunction)(PetscOb
 .seealso: PetscHeaderDestroy(), PetscClassIdRegister()
 
 @*/
-#define PetscHeaderCreate(h,tp,pops,cook,t,class_name,descr,mansec,com,des,vie) \
+#define PetscHeaderCreate(h,tp,pops,classid,class_name,descr,mansec,com,des,vie) \
   (PetscNew(struct tp,&(h)) ||                                                  \
    PetscNew(PetscOps,&(((PetscObject)(h))->bops)) ||                            \
    PetscNew(pops,&((h)->ops)) ||                                                \
-   PetscHeaderCreate_Private((PetscObject)h,cook,t,class_name,descr,mansec,com,(PetscObjectFunction)des,(PetscObjectViewerFunction)vie) || \
+   PetscHeaderCreate_Private((PetscObject)h,classid,class_name,descr,mansec,com,(PetscObjectFunction)des,(PetscObjectViewerFunction)vie) || \
    PetscLogObjectCreate(h) ||                                                   \
    PetscLogObjectMemory(h, sizeof(struct tp) + sizeof(PetscOps) + sizeof(pops)))
 
 PETSC_EXTERN PetscErrorCode PetscComposedQuantitiesDestroy(PetscObject obj);
-PETSC_EXTERN PetscErrorCode PetscHeaderCreate_Private(PetscObject,PetscClassId,PetscInt,const char[],const char[],const char[],MPI_Comm,PetscErrorCode (*)(PetscObject*),PetscErrorCode (*)(PetscObject,PetscViewer));
+PETSC_EXTERN PetscErrorCode PetscHeaderCreate_Private(PetscObject,PetscClassId,const char[],const char[],const char[],MPI_Comm,PetscErrorCode (*)(PetscObject*),PetscErrorCode (*)(PetscObject,PetscViewer));
 
 /*@C
     PetscHeaderDestroy - Final step in destroying a PetscObject

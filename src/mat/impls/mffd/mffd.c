@@ -710,7 +710,7 @@ PetscErrorCode  MatCreate_MFFD(Mat A)
   ierr = MatMFFDInitializePackage(NULL);CHKERRQ(ierr);
 #endif
 
-  ierr = PetscHeaderCreate(mfctx,_p_MatMFFD,struct _MFOps,MATMFFD_CLASSID,0,"MatMFFD","Matrix-free Finite Differencing","Mat",((PetscObject)A)->comm,MatDestroy_MFFD,MatView_MFFD);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(mfctx,_p_MatMFFD,struct _MFOps,MATMFFD_CLASSID,"MatMFFD","Matrix-free Finite Differencing","Mat",((PetscObject)A)->comm,MatDestroy_MFFD,MatView_MFFD);CHKERRQ(ierr);
 
   mfctx->sp                       = 0;
   mfctx->error_rel                = PETSC_SQRT_MACHINE_EPSILON;

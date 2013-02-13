@@ -27,7 +27,7 @@ static PetscErrorCode DMKSPCreate(MPI_Comm comm,DMKSP *kdm)
 #if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = KSPInitializePackage(NULL);CHKERRQ(ierr);
 #endif
-  ierr = PetscHeaderCreate(*kdm, _p_DMKSP, struct _DMKSPOps, DMKSP_CLASSID, -1, "DMKSP", "DMKSP", "DMKSP", comm, DMKSPDestroy, NULL);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(*kdm, _p_DMKSP, struct _DMKSPOps, DMKSP_CLASSID, "DMKSP", "DMKSP", "DMKSP", comm, DMKSPDestroy, NULL);CHKERRQ(ierr);
   ierr = PetscMemzero((*kdm)->ops, sizeof(struct _DMKSPOps));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

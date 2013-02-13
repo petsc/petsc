@@ -329,7 +329,7 @@ PetscErrorCode  PCCreate(MPI_Comm comm,PC *newpc)
   ierr = PCInitializePackage(NULL);CHKERRQ(ierr);
 #endif
 
-  ierr = PetscHeaderCreate(pc,_p_PC,struct _PCOps,PC_CLASSID,-1,"PC","Preconditioner","PC",comm,PCDestroy,PCView);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(pc,_p_PC,struct _PCOps,PC_CLASSID,"PC","Preconditioner","PC",comm,PCDestroy,PCView);CHKERRQ(ierr);
 
   pc->mat                  = 0;
   pc->pmat                 = 0;

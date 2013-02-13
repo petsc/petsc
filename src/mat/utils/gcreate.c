@@ -71,7 +71,7 @@ PetscErrorCode  MatCreate(MPI_Comm comm,Mat *A)
   ierr = MatInitializePackage(NULL);CHKERRQ(ierr);
 #endif
 
-  ierr = PetscHeaderCreate(B,_p_Mat,struct _MatOps,MAT_CLASSID,0,"Mat","Matrix","Mat",comm,MatDestroy,MatView);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(B,_p_Mat,struct _MatOps,MAT_CLASSID,"Mat","Matrix","Mat",comm,MatDestroy,MatView);CHKERRQ(ierr);
   ierr = PetscLayoutCreate(comm,&B->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutCreate(comm,&B->cmap);CHKERRQ(ierr);
 

@@ -35,7 +35,7 @@ PetscErrorCode SNESLineSearchCreate(MPI_Comm comm, SNESLineSearch *outlinesearch
   PetscValidPointer(outlinesearch,2);
   *outlinesearch = NULL;
 
-  ierr = PetscHeaderCreate(linesearch,_p_LineSearch,struct _LineSearchOps,SNESLINESEARCH_CLASSID, 0,"SNESLineSearch","Linesearch","SNESLineSearch",comm,SNESLineSearchDestroy,SNESLineSearchView);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(linesearch,_p_LineSearch,struct _LineSearchOps,SNESLINESEARCH_CLASSID, "SNESLineSearch","Linesearch","SNESLineSearch",comm,SNESLineSearchDestroy,SNESLineSearchView);CHKERRQ(ierr);
 
   linesearch->ops->precheck  = NULL;
   linesearch->ops->postcheck = NULL;

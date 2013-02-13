@@ -40,7 +40,7 @@ PetscErrorCode PetscSFCreate(MPI_Comm comm,PetscSF *sf)
   ierr = PetscSFInitializePackage(NULL);CHKERRQ(ierr);
 #endif
 
-  ierr = PetscHeaderCreate(b,_p_PetscSF,struct _PetscSFOps,PETSCSF_CLASSID,-1,"PetscSF","Star Forest","PetscSF",comm,PetscSFDestroy,PetscSFView);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(b,_p_PetscSF,struct _PetscSFOps,PETSCSF_CLASSID,"PetscSF","Star Forest","PetscSF",comm,PetscSFDestroy,PetscSFView);CHKERRQ(ierr);
 
   b->nroots    = -1;
   b->nleaves   = -1;

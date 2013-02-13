@@ -46,7 +46,7 @@ PetscErrorCode  PetscDrawCreate(MPI_Comm comm,const char display[],const char ti
   ierr = PetscDrawInitializePackage(NULL);CHKERRQ(ierr);
 #endif
   *indraw = 0;
-  ierr = PetscHeaderCreate(draw,_p_PetscDraw,struct _PetscDrawOps,PETSC_DRAW_CLASSID,-1,"Draw","Graphics","Draw",comm,PetscDrawDestroy,0);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(draw,_p_PetscDraw,struct _PetscDrawOps,PETSC_DRAW_CLASSID,"Draw","Graphics","Draw",comm,PetscDrawDestroy,0);CHKERRQ(ierr);
 
   draw->data    = 0;
   ierr          = PetscStrallocpy(title,&draw->title);CHKERRQ(ierr);

@@ -9307,7 +9307,7 @@ PetscErrorCode  MatTransposeColoringCreate(Mat mat,ISColoring iscoloring,MatTran
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(MAT_TransposeColoringCreate,mat,0,0,0);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
-  ierr = PetscHeaderCreate(c,_p_MatTransposeColoring,int,MAT_TRANSPOSECOLORING_CLASSID,0,"MatTransposeColoring","Matrix product C=A*B^T via coloring","Mat",comm,MatTransposeColoringDestroy,0);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(c,_p_MatTransposeColoring,int,MAT_TRANSPOSECOLORING_CLASSID,"MatTransposeColoring","Matrix product C=A*B^T via coloring","Mat",comm,MatTransposeColoringDestroy,0);CHKERRQ(ierr);
 
   c->ctype = iscoloring->ctype;
   if (mat->ops->transposecoloringcreate) {
