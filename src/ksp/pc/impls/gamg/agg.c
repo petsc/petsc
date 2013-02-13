@@ -250,7 +250,6 @@ PetscErrorCode PCSetCoordinates_AGG(PC pc, PetscInt ndm, PetscInt a_nloc, PetscR
   PetscErrorCode ierr;
   PetscInt       arrsz,kk,ii,jj,nloc,ndatarows,ndf;
   Mat            mat = pc->pmat;
-  /* MPI_Comm     wcomm = ((PetscObject)pc)->comm; */
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
@@ -933,10 +932,11 @@ PetscErrorCode PCGAMGgraph_AGG(PC pc,const Mat Amat,Mat *a_Gmat)
   PC_GAMG_AGG               *pc_gamg_agg = (PC_GAMG_AGG*)pc_gamg->subctx;
   PetscMPIInt               rank,size;
   Mat                       Gmat;
-  MPI_Comm                  wcomm = ((PetscObject)Amat)->comm;
+  MPI_Comm                  wcomm;
   PetscBool /* set,flg , */ symm;
 
   PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)Amat,&wcomm);CHKERRQ(ierr);
 #if defined PETSC_USE_LOG
   ierr = PetscLogEventBegin(PC_GAMGGgraph_AGG,0,0,0,0);CHKERRQ(ierr);
 #endif
@@ -1102,12 +1102,13 @@ PetscErrorCode PCGAMGProlongator_AGG(PC pc,const Mat Amat,const Mat Gmat,PetscCo
   PetscInt       Istart,Iend,nloc,ii,jj,kk,my0,nLocalSelected,bs;
   Mat            Prol;
   PetscMPIInt    rank, size;
-  MPI_Comm       wcomm  = ((PetscObject)Amat)->comm;
+  MPI_Comm       wcomm;
   const PetscInt col_bs = data_cols;
   PetscReal      *data_w_ghost;
   PetscInt       myCrs0, nbnodes=0, *flid_fgid;
 
   PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)Amat,&wcomm);CHKERRQ(ierr);
 #if defined PETSC_USE_LOG
   ierr = PetscLogEventBegin(PC_GAMGProlongator_AGG,0,0,0,0);CHKERRQ(ierr);
 #endif
@@ -1249,9 +1250,10 @@ PetscErrorCode PCGAMGOptprol_AGG(PC pc,const Mat Amat,Mat *a_P)
   PetscInt       jj;
   PetscMPIInt    rank,size;
   Mat            Prol  = *a_P;
-  MPI_Comm       wcomm = ((PetscObject)Amat)->comm;
+  MPI_Comm       wcomm;
 
   PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)Amat,&wcomm);CHKERRQ(ierr);
 #if defined PETSC_USE_LOG
   ierr = PetscLogEventBegin(PC_GAMGOptprol_AGG,0,0,0,0);CHKERRQ(ierr);
 #endif
@@ -1370,17 +1372,18 @@ PetscErrorCode PCGAMGOptprol_AGG(PC pc,const Mat Amat,Mat *a_P)
 #define __FUNCT__ "PCGAMGKKTProl_AGG"
 PetscErrorCode PCGAMGKKTProl_AGG(PC pc,const Mat Prol11,const Mat A21,Mat *a_P22)
 {
-  PetscErrorCode ierr;
-  PC_MG          *mg      = (PC_MG*)pc->data;
-  PC_GAMG        *pc_gamg = (PC_GAMG*)mg->innerctx;
-  const PetscInt verbose  = pc_gamg->verbose;
+  PetscErrorCode   ierr;
+  PC_MG            *mg      = (PC_MG*)pc->data;
+  PC_GAMG          *pc_gamg = (PC_GAMG*)mg->innerctx;
+  const PetscInt   verbose  = pc_gamg->verbose;
   /* PC_GAMG_AGG    *pc_gamg_agg = (PC_GAMG_AGG*)pc_gamg->subctx;  */
   PetscMPIInt      rank,size;
   Mat              Prol22,Tmat,Gmat;
-  MPI_Comm         wcomm = ((PetscObject)pc)->comm;
+  MPI_Comm         wcomm;
   PetscCoarsenData *agg_lists;
 
   PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)pc,&wcomm);CHKERRQ(ierr);
 #if defined PETSC_USE_LOG
   ierr = PetscLogEventBegin(PC_GAMGKKTProl_AGG,0,0,0,0);CHKERRQ(ierr);
 #endif

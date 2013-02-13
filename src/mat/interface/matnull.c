@@ -98,12 +98,12 @@ PetscErrorCode MatNullSpaceCreateRigidBody(Vec coords,MatNullSpace *sp)
   N   /= dim;
   switch (dim) {
   case 1:
-    ierr = MatNullSpaceCreate(((PetscObject)coords)->comm,PETSC_TRUE,0,NULL,sp);CHKERRQ(ierr);
+    ierr = MatNullSpaceCreate(PetscObjectComm((PetscObject)coords),PETSC_TRUE,0,NULL,sp);CHKERRQ(ierr);
     break;
   case 2:
   case 3:
     nmodes = (dim == 2) ? 3 : 6;
-    ierr   = VecCreate(((PetscObject)coords)->comm,&vec[0]);CHKERRQ(ierr);
+    ierr   = VecCreate(PetscObjectComm((PetscObject)coords),&vec[0]);CHKERRQ(ierr);
     ierr   = VecSetSizes(vec[0],dim*n,dim*N);CHKERRQ(ierr);
     ierr   = VecSetBlockSize(vec[0],dim);CHKERRQ(ierr);
     ierr   = VecSetUp(vec[0]);CHKERRQ(ierr);
@@ -150,7 +150,7 @@ PetscErrorCode MatNullSpaceCreateRigidBody(Vec coords,MatNullSpace *sp)
       ierr = VecMAXPY(vec[i],i,dots,vec);CHKERRQ(ierr);
       ierr = VecNormalize(vec[i],NULL);CHKERRQ(ierr);
     }
-    ierr = MatNullSpaceCreate(((PetscObject)coords)->comm,PETSC_FALSE,nmodes,vec,sp);CHKERRQ(ierr);
+    ierr = MatNullSpaceCreate(PetscObjectComm((PetscObject)coords),PETSC_FALSE,nmodes,vec,sp);CHKERRQ(ierr);
     for (i=0; i<nmodes; i++) {ierr = VecDestroy(&vec[i]);CHKERRQ(ierr);}
   }
   PetscFunctionReturn(0);
@@ -181,7 +181,7 @@ PetscErrorCode MatNullSpaceView(MatNullSpace sp,PetscViewer viewer)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp,MAT_NULLSPACE_CLASSID,1);
-  if (!viewer) viewer = PETSC_VIEWER_STDOUT_(((PetscObject)sp)->comm);
+  if (!viewer) viewer = PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)sp));
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
   PetscCheckSameComm(sp,1,viewer,2);
 
@@ -421,7 +421,7 @@ PetscErrorCode  MatNullSpaceTest(MatNullSpace sp,Mat mat,PetscBool  *isNull)
   }
   l = sp->vec;
 
-  ierr = PetscViewerASCIIGetStdout(((PetscObject)sp)->comm,&viewer);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)sp),&viewer);CHKERRQ(ierr);
   if (sp->has_cnst) {
     ierr = VecDuplicate(l,&r);CHKERRQ(ierr);
     ierr = VecGetSize(l,&N);CHKERRQ(ierr);
@@ -432,11 +432,11 @@ PetscErrorCode  MatNullSpaceTest(MatNullSpace sp,Mat mat,PetscBool  *isNull)
     if (nrm >= 1.e-7) consistent = PETSC_FALSE;
     if (flg1) {
       if (consistent) {
-        ierr = PetscPrintf(((PetscObject)sp)->comm,"Constants are likely null vector");CHKERRQ(ierr);
+        ierr = PetscPrintf(PetscObjectComm((PetscObject)sp),"Constants are likely null vector");CHKERRQ(ierr);
       } else {
-        ierr = PetscPrintf(((PetscObject)sp)->comm,"Constants are unlikely null vector ");CHKERRQ(ierr);
+        ierr = PetscPrintf(PetscObjectComm((PetscObject)sp),"Constants are unlikely null vector ");CHKERRQ(ierr);
       }
-      ierr = PetscPrintf(((PetscObject)sp)->comm,"|| A * 1/N || = %G\n",nrm);CHKERRQ(ierr);
+      ierr = PetscPrintf(PetscObjectComm((PetscObject)sp),"|| A * 1/N || = %G\n",nrm);CHKERRQ(ierr);
     }
     if (!consistent && flg1) {ierr = VecView(r,viewer);CHKERRQ(ierr);}
     if (!consistent && flg2) {ierr = VecView(r,viewer);CHKERRQ(ierr);}
@@ -449,18 +449,18 @@ PetscErrorCode  MatNullSpaceTest(MatNullSpace sp,Mat mat,PetscBool  *isNull)
     if (nrm >= 1.e-7) consistent = PETSC_FALSE;
     if (flg1) {
       if (consistent) {
-        ierr = PetscPrintf(((PetscObject)sp)->comm,"Null vector %D is likely null vector",j);CHKERRQ(ierr);
+        ierr = PetscPrintf(PetscObjectComm((PetscObject)sp),"Null vector %D is likely null vector",j);CHKERRQ(ierr);
       } else {
-        ierr       = PetscPrintf(((PetscObject)sp)->comm,"Null vector %D unlikely null vector ",j);CHKERRQ(ierr);
+        ierr       = PetscPrintf(PetscObjectComm((PetscObject)sp),"Null vector %D unlikely null vector ",j);CHKERRQ(ierr);
         consistent = PETSC_FALSE;
       }
-      ierr = PetscPrintf(((PetscObject)sp)->comm,"|| A * v[%D] || = %G\n",j,nrm);CHKERRQ(ierr);
+      ierr = PetscPrintf(PetscObjectComm((PetscObject)sp),"|| A * v[%D] || = %G\n",j,nrm);CHKERRQ(ierr);
     }
     if (!consistent && flg1) {ierr = VecView(l,viewer);CHKERRQ(ierr);}
     if (!consistent && flg2) {ierr = VecView(l,viewer);CHKERRQ(ierr);}
   }
 
-  if (sp->remove) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_SUP,"Cannot test a null space provided as a function with MatNullSpaceSetFunction()");
+  if (sp->remove) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Cannot test a null space provided as a function with MatNullSpaceSetFunction()");
   if (isNull) *isNull = consistent;
   PetscFunctionReturn(0);
 }

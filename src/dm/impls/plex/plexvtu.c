@@ -21,10 +21,11 @@ static PetscErrorCode TransferWrite(PetscViewer viewer,FILE *fp,PetscMPIInt sran
 {
   PetscMPIInt    rank;
   PetscErrorCode ierr;
-  MPI_Comm       comm = ((PetscObject)viewer)->comm;
+  MPI_Comm       comm;
   MPI_Datatype   mpidatatype;
 
   PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   ierr = PetscDataTypeToMPIDataType(datatype,&mpidatatype);CHKERRQ(ierr);
 
@@ -114,7 +115,7 @@ static PetscErrorCode DMPlexGetVTKConnectivity(DM dm,PieceInfo *piece,PetscVTKIn
 */
 PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm,PetscViewer viewer)
 {
-  MPI_Comm                 comm = ((PetscObject)dm)->comm;
+  MPI_Comm                 comm;
   PetscViewer_VTK          *vtk = (PetscViewer_VTK*)viewer->data;
   PetscViewerVTKObjectLink link;
   FILE                     *fp;
@@ -125,8 +126,9 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm,PetscViewer viewer)
   void                     *buffer = NULL;
 
   PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);
 #if defined(PETSC_USE_COMPLEX)
-  SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_SUP,"Complex values not supported");
+  SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Complex values not supported");
 #endif
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);

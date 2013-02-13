@@ -62,7 +62,7 @@ static PetscErrorCode  KSPSolve_FBCGS(KSP ksp)
   P2 = ksp->work[7];
 
   /* Only supports right preconditioning */
-  if (ksp->pc_side != PC_RIGHT) SETERRQ1(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"KSP fbcgs does not support %s",PCSides[ksp->pc_side]);
+  if (ksp->pc_side != PC_RIGHT) SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"KSP fbcgs does not support %s",PCSides[ksp->pc_side]);
   if (!ksp->guess_zero) {
     if (!bcgs->guess) {
       ierr = VecDuplicate(X,&bcgs->guess);CHKERRQ(ierr);
@@ -115,7 +115,7 @@ static PetscErrorCode  KSPSolve_FBCGS(KSP ksp)
     ierr = MatMult(pc->mat,P2,V);CHKERRQ(ierr); /* v <- A p2 */
 
     ierr = VecDot(V,RP,&d1);CHKERRQ(ierr);
-    if (d1 == 0.0) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_PLIB,"Divide by zero");
+    if (d1 == 0.0) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"Divide by zero");
     alpha = rho / d1; /* alpha <- rho / (v,rp) */
     ierr  = VecWAXPY(S,-alpha,V,R);CHKERRQ(ierr); /* s <- r - alpha v */
 

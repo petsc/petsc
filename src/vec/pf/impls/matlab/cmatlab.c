@@ -88,7 +88,7 @@ PetscErrorCode  PFCreate_Matlab(PF pf,void *value)
   matlab->dimin  = pf->dimin;
   matlab->dimout = pf->dimout;
 
-  ierr = PetscMatlabEngineCreate(((PetscObject)pf)->comm,NULL,&matlab->mengine);CHKERRQ(ierr);
+  ierr = PetscMatlabEngineCreate(PetscObjectComm((PetscObject)pf),NULL,&matlab->mengine);CHKERRQ(ierr);
 
   if (value) {
     ierr = PetscStrallocpy((char*)value,&matlab->string);CHKERRQ(ierr);

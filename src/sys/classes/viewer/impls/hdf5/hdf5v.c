@@ -80,7 +80,7 @@ PetscErrorCode  PetscViewerFileSetName_HDF5(PetscViewer viewer, const char name[
   /* Set up file access property list with parallel I/O access */
   plist_id = H5Pcreate(H5P_FILE_ACCESS);
 #if defined(PETSC_HAVE_H5PSET_FAPL_MPIO)
-  herr = H5Pset_fapl_mpio(plist_id, ((PetscObject)viewer)->comm, info);CHKERRQ(herr);
+  herr = H5Pset_fapl_mpio(plist_id, PetscObjectComm((PetscObject)viewer), info);CHKERRQ(herr);
 #endif
   /* Create or open the file collectively */
   switch (hdf5->btype) {

@@ -190,7 +190,7 @@ PetscErrorCode  PetscViewerCreate_Matlab(PetscViewer viewer)
 
   PetscFunctionBegin;
   ierr         = PetscNewLog(viewer,PetscViewer_Matlab,&e);CHKERRQ(ierr);
-  ierr         = MPI_Comm_rank(((PetscObject)viewer)->comm,&e->rank);CHKERRQ(ierr);
+  ierr         = MPI_Comm_rank(PetscObjectComm((PetscObject)viewer),&e->rank);CHKERRQ(ierr);
   e->btype     = (PetscFileMode)-1;
   viewer->data = (void*) e;
 

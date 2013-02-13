@@ -66,7 +66,7 @@ static PetscErrorCode TSAdaptSetFromOptions_CFL(TSAdapt adapt)
   ierr = PetscOptionsHead("CFL adaptive controller options");CHKERRQ(ierr);
   ierr = PetscOptionsReal("-ts_adapt_cfl_safety","Safety factor relative to target error","",cfl->safety,&cfl->safety,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-ts_adapt_cfl_always_accept","Always accept the step regardless of whether local truncation error meets goal","",cfl->always_accept,&cfl->always_accept,NULL);CHKERRQ(ierr);
-  if (!cfl->always_accept) SETERRQ(((PetscObject)adapt)->comm,PETSC_ERR_SUP,"step rejection not implemented yet");
+  if (!cfl->always_accept) SETERRQ(PetscObjectComm((PetscObject)adapt),PETSC_ERR_SUP,"step rejection not implemented yet");
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

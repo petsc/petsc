@@ -38,8 +38,8 @@ PetscErrorCode DMDAGetWireBasketInterpolation(DM da,PC_Exotic *exotic,Mat Agloba
 
   PetscFunctionBegin;
   ierr = DMDAGetInfo(da,&dim,0,0,0,&mp,&np,&pp,&dof,0,0,0,0,0);CHKERRQ(ierr);
-  if (dof != 1) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_SUP,"Only for single field problems");
-  if (dim != 3) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_SUP,"Only coded for 3d problems");
+  if (dof != 1) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Only for single field problems");
+  if (dim != 3) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Only coded for 3d problems");
   ierr   = DMDAGetCorners(da,0,0,0,&m,&n,&p);CHKERRQ(ierr);
   ierr   = DMDAGetGhostCorners(da,&istart,&jstart,&kstart,&mwidth,&nwidth,&pwidth);CHKERRQ(ierr);
   istart = istart ? -1 : 0;
@@ -257,7 +257,7 @@ PetscErrorCode DMDAGetWireBasketInterpolation(DM da,PC_Exotic *exotic,Mat Agloba
   ierr = ISLocalToGlobalMappingApply(ltg,26,gl,gl);CHKERRQ(ierr);
   /* PetscIntView(26,gl,PETSC_VIEWER_STDOUT_WORLD); */
   ierr = PetscMalloc(26*mp*np*pp*sizeof(PetscInt),&globals);CHKERRQ(ierr);
-  ierr = MPI_Allgather(gl,26,MPIU_INT,globals,26,MPIU_INT,((PetscObject)da)->comm);CHKERRQ(ierr);
+  ierr = MPI_Allgather(gl,26,MPIU_INT,globals,26,MPIU_INT,PetscObjectComm((PetscObject)da));CHKERRQ(ierr);
 
   /* Number the coarse grid points from 0 to Ntotal */
   ierr = MatGetSize(Aglobal,&Nt,NULL);CHKERRQ(ierr);
@@ -278,7 +278,7 @@ PetscErrorCode DMDAGetWireBasketInterpolation(DM da,PC_Exotic *exotic,Mat Agloba
   /* construct global interpolation matrix */
   ierr = MatGetLocalSize(Aglobal,&Ng,NULL);CHKERRQ(ierr);
   if (reuse == MAT_INITIAL_MATRIX) {
-    ierr = MatCreateAIJ(((PetscObject)da)->comm,Ng,PETSC_DECIDE,PETSC_DECIDE,Ntotal,Nint+Nsurf,NULL,Nint+Nsurf,NULL,P);CHKERRQ(ierr);
+    ierr = MatCreateAIJ(PetscObjectComm((PetscObject)da),Ng,PETSC_DECIDE,PETSC_DECIDE,Ntotal,Nint+Nsurf,NULL,Nint+Nsurf,NULL,P);CHKERRQ(ierr);
   } else {
     ierr = MatZeroEntries(*P);CHKERRQ(ierr);
   }
@@ -297,8 +297,8 @@ PetscErrorCode DMDAGetWireBasketInterpolation(DM da,PC_Exotic *exotic,Mat Agloba
   {
     Vec         x,y;
     PetscScalar *yy;
-    ierr = VecCreateMPI(((PetscObject)da)->comm,Ng,PETSC_DETERMINE,&y);CHKERRQ(ierr);
-    ierr = VecCreateMPI(((PetscObject)da)->comm,PETSC_DETERMINE,Ntotal,&x);CHKERRQ(ierr);
+    ierr = VecCreateMPI(PetscObjectComm((PetscObject)da),Ng,PETSC_DETERMINE,&y);CHKERRQ(ierr);
+    ierr = VecCreateMPI(PetscObjectComm((PetscObject)da),PETSC_DETERMINE,Ntotal,&x);CHKERRQ(ierr);
     ierr = VecSet(x,1.0);CHKERRQ(ierr);
     ierr = MatMult(*P,x,y);CHKERRQ(ierr);
     ierr = VecGetArray(y,&yy);CHKERRQ(ierr);
@@ -348,8 +348,8 @@ PetscErrorCode DMDAGetFaceInterpolation(DM da,PC_Exotic *exotic,Mat Aglobal,MatR
 
   PetscFunctionBegin;
   ierr = DMDAGetInfo(da,&dim,0,0,0,&mp,&np,&pp,&dof,0,0,0,0,0);CHKERRQ(ierr);
-  if (dof != 1) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_SUP,"Only for single field problems");
-  if (dim != 3) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_SUP,"Only coded for 3d problems");
+  if (dof != 1) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Only for single field problems");
+  if (dim != 3) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Only coded for 3d problems");
   ierr   = DMDAGetCorners(da,0,0,0,&m,&n,&p);CHKERRQ(ierr);
   ierr   = DMDAGetGhostCorners(da,&istart,&jstart,&kstart,&mwidth,&nwidth,&pwidth);CHKERRQ(ierr);
   istart = istart ? -1 : 0;
@@ -535,7 +535,7 @@ PetscErrorCode DMDAGetFaceInterpolation(DM da,PC_Exotic *exotic,Mat Aglobal,MatR
   ierr = ISLocalToGlobalMappingApply(ltg,6,gl,gl);CHKERRQ(ierr);
   /* PetscIntView(6,gl,PETSC_VIEWER_STDOUT_WORLD); */
   ierr = PetscMalloc(6*mp*np*pp*sizeof(PetscInt),&globals);CHKERRQ(ierr);
-  ierr = MPI_Allgather(gl,6,MPIU_INT,globals,6,MPIU_INT,((PetscObject)da)->comm);CHKERRQ(ierr);
+  ierr = MPI_Allgather(gl,6,MPIU_INT,globals,6,MPIU_INT,PetscObjectComm((PetscObject)da));CHKERRQ(ierr);
 
   /* Number the coarse grid points from 0 to Ntotal */
   ierr = MatGetSize(Aglobal,&Nt,NULL);CHKERRQ(ierr);
@@ -556,7 +556,7 @@ PetscErrorCode DMDAGetFaceInterpolation(DM da,PC_Exotic *exotic,Mat Aglobal,MatR
   /* construct global interpolation matrix */
   ierr = MatGetLocalSize(Aglobal,&Ng,NULL);CHKERRQ(ierr);
   if (reuse == MAT_INITIAL_MATRIX) {
-    ierr = MatCreateAIJ(((PetscObject)da)->comm,Ng,PETSC_DECIDE,PETSC_DECIDE,Ntotal,Nint+Nsurf,NULL,Nint,NULL,P);CHKERRQ(ierr);
+    ierr = MatCreateAIJ(PetscObjectComm((PetscObject)da),Ng,PETSC_DECIDE,PETSC_DECIDE,Ntotal,Nint+Nsurf,NULL,Nint,NULL,P);CHKERRQ(ierr);
   } else {
     ierr = MatZeroEntries(*P);CHKERRQ(ierr);
   }
@@ -576,8 +576,8 @@ PetscErrorCode DMDAGetFaceInterpolation(DM da,PC_Exotic *exotic,Mat Aglobal,MatR
   {
     Vec         x,y;
     PetscScalar *yy;
-    ierr = VecCreateMPI(((PetscObject)da)->comm,Ng,PETSC_DETERMINE,&y);CHKERRQ(ierr);
-    ierr = VecCreateMPI(((PetscObject)da)->comm,PETSC_DETERMINE,Ntotal,&x);CHKERRQ(ierr);
+    ierr = VecCreateMPI(PetscObjectComm((PetscObject)da),Ng,PETSC_DETERMINE,&y);CHKERRQ(ierr);
+    ierr = VecCreateMPI(PetscObjectComm((PetscObject)da),PETSC_DETERMINE,Ntotal,&x);CHKERRQ(ierr);
     ierr = VecSet(x,1.0);CHKERRQ(ierr);
     ierr = MatMult(*P,x,y);CHKERRQ(ierr);
     ierr = VecGetArray(y,&yy);CHKERRQ(ierr);
@@ -666,13 +666,13 @@ PetscErrorCode PCSetUp_Exotic(PC pc)
   MatReuse       reuse = (ex->P) ? MAT_REUSE_MATRIX : MAT_INITIAL_MATRIX;
 
   PetscFunctionBegin;
-  if (!pc->dm) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONGSTATE,"Need to call PCSetDM() before using this PC");
+  if (!pc->dm) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Need to call PCSetDM() before using this PC");
   ierr = PCGetOperators(pc,NULL,&A,NULL);CHKERRQ(ierr);
   if (ex->type == PC_EXOTIC_FACE) {
     ierr = DMDAGetFaceInterpolation(pc->dm,ex,A,reuse,&ex->P);CHKERRQ(ierr);
   } else if (ex->type == PC_EXOTIC_WIREBASKET) {
     ierr = DMDAGetWireBasketInterpolation(pc->dm,ex,A,reuse,&ex->P);CHKERRQ(ierr);
-  } else SETERRQ1(((PetscObject)pc)->comm,PETSC_ERR_PLIB,"Unknown exotic coarse space %d",ex->type);
+  } else SETERRQ1(PetscObjectComm((PetscObject)pc),PETSC_ERR_PLIB,"Unknown exotic coarse space %d",ex->type);
   ierr = PCMGSetInterpolation(pc,1,ex->P);CHKERRQ(ierr);
   /* if PC has attached DM we must remove it or the PCMG will use it to compute incorrect sized vectors and interpolations */
   ierr = PCSetDM(pc,NULL);CHKERRQ(ierr);
@@ -719,7 +719,7 @@ PetscErrorCode PCView_Exotic(PC pc,PetscViewer viewer)
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);  /* should not need to push this twice? */
       ierr = PetscViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
-      ierr = MPI_Comm_rank(((PetscObject)pc)->comm,&rank);CHKERRQ(ierr);
+      ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)pc),&rank);CHKERRQ(ierr);
       if (!rank) {
         ierr = KSPView(ctx->ksp,sviewer);CHKERRQ(ierr);
       }

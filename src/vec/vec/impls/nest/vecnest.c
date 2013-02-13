@@ -12,7 +12,7 @@ static PetscErrorCode VecAssemblyBegin_Nest(Vec v)
 
   PetscFunctionBegin;
   for (i=0; i<vs->nb; i++) {
-    if (!vs->v[i]) SETERRQ(((PetscObject)v)->comm,PETSC_ERR_SUP,"Nest  vector cannot contain NULL blocks");
+    if (!vs->v[i]) SETERRQ(PetscObjectComm((PetscObject)v),PETSC_ERR_SUP,"Nest  vector cannot contain NULL blocks");
     ierr = VecAssemblyBegin(vs->v[i]);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -96,7 +96,7 @@ static PetscErrorCode VecDuplicate_Nest(Vec x,Vec *y)
   for (i=0; i<bx->nb; i++) {
     ierr = VecDuplicate(bx->v[i],&sub[i]);CHKERRQ(ierr);
   }
-  ierr = VecCreateNest(((PetscObject)x)->comm,bx->nb,bx->is,sub,&Y);CHKERRQ(ierr);
+  ierr = VecCreateNest(PetscObjectComm((PetscObject)x),bx->nb,bx->is,sub,&Y);CHKERRQ(ierr);
   for (i=0; i<bx->nb; i++) {
     ierr = VecDestroy(&sub[i]);CHKERRQ(ierr);
   }
@@ -676,7 +676,7 @@ static PetscErrorCode  VecGetSubVector_Nest(Vec X,IS is,Vec *x)
       break;
     }
   }
-  if (!*x) SETERRQ(((PetscObject)is)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Index set not found in nested Vec");
+  if (!*x) SETERRQ(PetscObjectComm((PetscObject)is),PETSC_ERR_ARG_OUTOFRANGE,"Index set not found in nested Vec");
   PetscFunctionReturn(0);
 }
 
@@ -864,7 +864,7 @@ static PetscErrorCode VecNestGetSubVecs_Private(Vec x,PetscInt m,const PetscInt 
   if (!m) PetscFunctionReturn(0);
   for (i=0; i<m; i++) {
     row = idxm[i];
-    if (row >= b->nb) SETERRQ2(((PetscObject)x)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %D max %D",row,b->nb-1);
+    if (row >= b->nb) SETERRQ2(PetscObjectComm((PetscObject)x),PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %D max %D",row,b->nb-1);
     vec[i] = b->v[row];
   }
   PetscFunctionReturn(0);
@@ -991,7 +991,7 @@ static PetscErrorCode  VecNestSetSubVec_Private(Vec X,PetscInt idxm,Vec x)
   ierr = VecGetBlockSize(x,&bs);CHKERRQ(ierr);
 
   /* create the new IS */
-  ierr = ISCreateStride(((PetscObject)x)->comm,n,offset,1,&is);CHKERRQ(ierr);
+  ierr = ISCreateStride(PetscObjectComm((PetscObject)x),n,offset,1,&is);CHKERRQ(ierr);
   ierr = ISSetBlockSize(is,bs);CHKERRQ(ierr);
 
   /* check if they are equal */
@@ -1172,7 +1172,7 @@ static PetscErrorCode VecSetUp_Nest_Private(Vec V,PetscInt nb,Vec x[])
   if (ctx->setup_called) PetscFunctionReturn(0);
 
   ctx->nb = nb;
-  if (ctx->nb < 0) SETERRQ(((PetscObject)V)->comm,PETSC_ERR_ARG_WRONG,"Cannot create VECNEST with < 0 blocks.");
+  if (ctx->nb < 0) SETERRQ(PetscObjectComm((PetscObject)V),PETSC_ERR_ARG_WRONG,"Cannot create VECNEST with < 0 blocks.");
 
   /* Create space */
   ierr = PetscMalloc(ctx->nb*sizeof(Vec),&ctx->v);CHKERRQ(ierr);
@@ -1202,7 +1202,7 @@ static PetscErrorCode VecSetUp_NestIS_Private(Vec V,PetscInt nb,IS is[])
     for (i=0; i<ctx->nb; i++) {
       ierr = ISGetSize(is[i],&M);CHKERRQ(ierr);
       ierr = VecGetSize(ctx->v[i],&N);CHKERRQ(ierr);
-      if (M != N) SETERRQ3(((PetscObject)V)->comm,PETSC_ERR_ARG_INCOMP,"In slot %D, IS of size %D is not compatible with Vec of size %D",i,M,N);
+      if (M != N) SETERRQ3(PetscObjectComm((PetscObject)V),PETSC_ERR_ARG_INCOMP,"In slot %D, IS of size %D is not compatible with Vec of size %D",i,M,N);
       ierr = ISGetLocalSize(is[i],&m);CHKERRQ(ierr);
       ierr = VecGetLocalSize(ctx->v[i],&n);CHKERRQ(ierr);
       if (m != n) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"In slot %D, IS of local size %D is not compatible with Vec of local size %D",i,m,n);
@@ -1211,8 +1211,8 @@ static PetscErrorCode VecSetUp_NestIS_Private(Vec V,PetscInt nb,IS is[])
         PetscInt  start;
         PetscBool contiguous;
         ierr = ISContiguousLocal(is[i],offset,offset+n,&start,&contiguous);CHKERRQ(ierr);
-        if (!contiguous) SETERRQ1(((PetscObject)V)->comm,PETSC_ERR_SUP,"Index set %D is not contiguous with layout of matching vector",i);
-        if (start != 0) SETERRQ1(((PetscObject)V)->comm,PETSC_ERR_SUP,"Index set %D introduces overlap or a hole",i);
+        if (!contiguous) SETERRQ1(PetscObjectComm((PetscObject)V),PETSC_ERR_SUP,"Index set %D is not contiguous with layout of matching vector",i);
+        if (start != 0) SETERRQ1(PetscObjectComm((PetscObject)V),PETSC_ERR_SUP,"Index set %D introduces overlap or a hole",i);
       }
 #endif
       ierr = PetscObjectReference((PetscObject)is[i]);CHKERRQ(ierr);

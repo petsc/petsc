@@ -184,9 +184,9 @@ PetscErrorCode DMCreateSubDM_DA(DM dm, PetscInt numFields, PetscInt fields[], IS
   DM_DA          *da = (DM_DA*)dm->data;
 
   PetscFunctionBegin;
-  if (da->dim != 2) SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_SUP,"Support only implemented for 2d");
+  if (da->dim != 2) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Support only implemented for 2d");
   if (subdm) {
-    ierr = DMDACreate2d(((PetscObject)dm)->comm,da->bx,da->by,da->stencil_type,da->M,da->N,da->m,da->n,numFields,da->s,da->lx,da->ly,subdm);CHKERRQ(ierr);
+    ierr = DMDACreate2d(PetscObjectComm((PetscObject)dm),da->bx,da->by,da->stencil_type,da->M,da->N,da->m,da->n,numFields,da->s,da->lx,da->ly,subdm);CHKERRQ(ierr);
   }
   if (is) {
     PetscInt *indices,cnt = 0, dof = da->w,i,j;
@@ -197,7 +197,7 @@ PetscErrorCode DMCreateSubDM_DA(DM dm, PetscInt numFields, PetscInt fields[], IS
       }
     }
     if (cnt != da->Nlocal*numFields/dof) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Count does not equal expected value");
-    ierr = ISCreateGeneral(((PetscObject)dm)->comm,da->Nlocal*numFields/dof,indices,PETSC_OWN_POINTER,is);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PetscObjectComm((PetscObject)dm),da->Nlocal*numFields/dof,indices,PETSC_OWN_POINTER,is);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -223,7 +223,7 @@ PetscErrorCode DMCreateFieldDecomposition_DA(DM dm, PetscInt *len,char ***nameli
     ierr = DMRestoreGlobalVector(dm,&v);CHKERRQ(ierr);
     ierr = PetscMalloc(dof*sizeof(IS),islist);CHKERRQ(ierr);
     for (i=0; i<dof; i++) {
-      ierr = ISCreateStride(((PetscObject)dm)->comm,n/dof,rstart+i,dof,&(*islist)[i]);CHKERRQ(ierr);
+      ierr = ISCreateStride(PetscObjectComm((PetscObject)dm),n/dof,rstart+i,dof,&(*islist)[i]);CHKERRQ(ierr);
     }
   }
   if (namelist) {
@@ -237,7 +237,7 @@ PetscErrorCode DMCreateFieldDecomposition_DA(DM dm, PetscInt *len,char ***nameli
   if (dmlist) {
     DM da;
 
-    ierr = DMDACreate(((PetscObject)dm)->comm, &da);CHKERRQ(ierr);
+    ierr = DMDACreate(PetscObjectComm((PetscObject)dm), &da);CHKERRQ(ierr);
     ierr = DMDASetDim(da, dd->dim);CHKERRQ(ierr);
     ierr = DMDASetSizes(da, dd->M, dd->N, dd->P);CHKERRQ(ierr);
     ierr = DMDASetNumProcs(da, dd->m, dd->n, dd->p);CHKERRQ(ierr);

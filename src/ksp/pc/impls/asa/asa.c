@@ -301,7 +301,7 @@ PetscErrorCode PCSetRichardsonScale_ASA(KSP ksp, PetscReal spec_rad, PetscReal r
          should do. asa_lev->spec_rad has to be an upper bound on rho(A). */
       spec_rad_inv = 1.0/spec_rad;
       ierr = KSPRichardsonSetScale(ksp, spec_rad_inv);CHKERRQ(ierr);
-    } else SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP, "Unknown PC type for smoother. Please specify scaling factor with -pc_asa_richardson_scale\n");
+    } else SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP, "Unknown PC type for smoother. Please specify scaling factor with -pc_asa_richardson_scale\n");
   }
   PetscFunctionReturn(0);
 }
@@ -2045,7 +2045,7 @@ PetscErrorCode  PCCreate_ASA(PC pc)
   asa->levels    = 0;
   asa->levellist = 0;
 
-  asa->comm = ((PetscObject)pc)->comm;
+  ierr = PetscObjectGetComm((PetscObject)pc,&asa->comm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

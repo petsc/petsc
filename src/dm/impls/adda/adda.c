@@ -36,7 +36,7 @@ PetscErrorCode  DMDestroy_ADDA(DM dm)
 PetscErrorCode  DMView_ADDA(DM dm, PetscViewer v)
 {
   PetscFunctionBegin;
-  SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_SUP, "Not implemented yet");
+  SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP, "Not implemented yet");
   PetscFunctionReturn(0);
 }
 
@@ -59,7 +59,7 @@ PetscErrorCode  DMCreateGlobalVector_ADDA(DM dm, Vec *vec)
 PetscErrorCode  DMCreateColoring_ADDA(DM dm, ISColoringType ctype,MatType mtype,ISColoring *coloring)
 {
   PetscFunctionBegin;
-  SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_SUP, "Not implemented yet");
+  SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP, "Not implemented yet");
   PetscFunctionReturn(0);
 }
 
@@ -72,7 +72,7 @@ PetscErrorCode  DMCreateMatrix_ADDA(DM dm, MatType mtype, Mat *mat)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  ierr = MatCreate(((PetscObject)dm)->comm, mat);CHKERRQ(ierr);
+  ierr = MatCreate(PetscObjectComm((PetscObject)dm), mat);CHKERRQ(ierr);
   ierr = MatSetSizes(*mat, dd->lsize, dd->lsize, PETSC_DECIDE, PETSC_DECIDE);CHKERRQ(ierr);
   ierr = MatSetType(*mat, mtype);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -110,7 +110,7 @@ PetscErrorCode  DMADDAGetMatrixNS(DM dm, DM dmc, MatType mtype, Mat *mat)
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidHeaderSpecific(dmc, DM_CLASSID, 2);
   PetscCheckSameComm(dm, 1, dmc, 2);
-  ierr = MatCreate(((PetscObject)dm)->comm, mat);CHKERRQ(ierr);
+  ierr = MatCreate(PetscObjectComm((PetscObject)dm), mat);CHKERRQ(ierr);
   ierr = MatSetSizes(*mat, dd->lsize, ddc->lsize, PETSC_DECIDE, PETSC_DECIDE);CHKERRQ(ierr);
   ierr = MatSetType(*mat, mtype);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -130,7 +130,7 @@ PetscErrorCode  DMCreateInterpolation_ADDA(DM dm1,DM dm2,Mat *mat,Vec *vec)
 PetscErrorCode  DMRefine_ADDA(DM dm, MPI_Comm comm, DM *dmf)
 {
   PetscFunctionBegin;
-  SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_SUP, "Not implemented yet");
+  SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP, "Not implemented yet");
   PetscFunctionReturn(0);
 }
 
@@ -152,7 +152,7 @@ PetscErrorCode  DMCoarsen_ADDA(DM dm, MPI_Comm comm,DM *dmc)
     nodesc[i] = (dd->nodes[i] % dd->refine[i]) ? dd->nodes[i] / dd->refine[i] + 1 : dd->nodes[i] / dd->refine[i];
   }
   dofc = (dd->dof % dd->dofrefine) ? dd->dof / dd->dofrefine + 1 : dd->dof / dd->dofrefine;
-  ierr = DMADDACreate(((PetscObject)dm)->comm, dd->dim, nodesc, dd->procs, dofc, dd->periodic, dmc);CHKERRQ(ierr);
+  ierr = DMADDACreate(PetscObjectComm((PetscObject)dm), dd->dim, nodesc, dd->procs, dofc, dd->periodic, dmc);CHKERRQ(ierr);
   ierr = PetscFree(nodesc);CHKERRQ(ierr);
   /* copy refinement factors */
   ierr = DMADDASetRefinement(*dmc, dd->refine, dd->dofrefine);CHKERRQ(ierr);
@@ -266,7 +266,7 @@ PetscErrorCode  DMCreateAggregates_ADDA(DM dmc,DM dmf,Mat *rest)
   PetscValidHeaderSpecific(dmc, DM_CLASSID, 1);
   PetscValidHeaderSpecific(dmf, DM_CLASSID, 2);
   PetscValidPointer(rest,3);
-  if (ddc->dim != ddf->dim) SETERRQ2(((PetscObject)dmf)->comm,PETSC_ERR_ARG_INCOMP,"Dimensions of ADDA do not match %D %D", ddc->dim, ddf->dim);CHKERRQ(ierr);
+  if (ddc->dim != ddf->dim) SETERRQ2(PetscObjectComm((PetscObject)dmf),PETSC_ERR_ARG_INCOMP,"Dimensions of ADDA do not match %D %D", ddc->dim, ddf->dim);CHKERRQ(ierr);
 /*   if (dmc->dof != dmf->dof) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"DOF of ADDA do not match %D %D", dmc->dof, dmf->dof);CHKERRQ(ierr); */
   dim  = ddc->dim;
   dofc = ddc->dof;

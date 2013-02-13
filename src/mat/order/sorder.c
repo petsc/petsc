@@ -16,7 +16,7 @@ extern PetscErrorCode MatGetOrdering_Flow_SeqAIJ(Mat,MatOrderingType,IS*,IS*);
 PetscErrorCode MatGetOrdering_Flow(Mat mat,MatOrderingType type,IS *irow,IS *icol)
 {
   PetscFunctionBegin;
-  SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_SUP,"Cannot do default flow ordering for matrix type");
+  SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Cannot do default flow ordering for matrix type");
 #if !defined(PETSC_USE_DEBUG)
   PetscFunctionReturn(0);
 #endif
@@ -77,7 +77,7 @@ PetscErrorCode  MatGetOrdering_RowLength(Mat mat,MatOrderingType type,IS *irow,I
 
   PetscFunctionBegin;
   ierr = MatGetRowIJ(mat,0,PETSC_FALSE,PETSC_TRUE,&n,&ia,&ja,&done);CHKERRQ(ierr);
-  if (!done) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_SUP,"Cannot get rows for matrix");
+  if (!done) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Cannot get rows for matrix");
 
   ierr = PetscMalloc2(n,PetscInt,&lens,n,PetscInt,&permr);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
@@ -190,8 +190,8 @@ PetscErrorCode  MatGetOrdering(Mat mat,MatOrderingType type,IS *rperm,IS *cperm)
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidPointer(rperm,2);
   PetscValidPointer(cperm,3);
-  if (!mat->assembled) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
-  if (mat->factortype) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
+  if (!mat->assembled) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  if (mat->factortype) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
 
   /* This code is terrible. MatGetOrdering() multiple dispatch should use matrix and this code should move to impls/aij/mpi. */
   ierr = PetscObjectTypeCompare((PetscObject)mat,MATMPIAIJ,&ismpiaij);CHKERRQ(ierr);
@@ -211,7 +211,7 @@ PetscErrorCode  MatGetOrdering(Mat mat,MatOrderingType type,IS *rperm,IS *cperm)
     for (i=0; i+rstart<rend; i++) idx[i] = rstart + lidx[i];
     ierr = ISRestoreIndices(lrowperm,&lidx);CHKERRQ(ierr);
     ierr = ISDestroy(&lrowperm);CHKERRQ(ierr);
-    ierr = ISCreateGeneral(((PetscObject)mat)->comm,rend-rstart,idx,PETSC_OWN_POINTER,rperm);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PetscObjectComm((PetscObject)mat),rend-rstart,idx,PETSC_OWN_POINTER,rperm);CHKERRQ(ierr);
     ierr = ISSetPermutation(*rperm);CHKERRQ(ierr);
     /* Remap column index set to global space */
     ierr = ISGetIndices(lcolperm,&lidx);CHKERRQ(ierr);
@@ -219,7 +219,7 @@ PetscErrorCode  MatGetOrdering(Mat mat,MatOrderingType type,IS *rperm,IS *cperm)
     for (i=0; i+rstart<rend; i++) idx[i] = rstart + lidx[i];
     ierr = ISRestoreIndices(lcolperm,&lidx);CHKERRQ(ierr);
     ierr = ISDestroy(&lcolperm);CHKERRQ(ierr);
-    ierr = ISCreateGeneral(((PetscObject)mat)->comm,rend-rstart,idx,PETSC_OWN_POINTER,cperm);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PetscObjectComm((PetscObject)mat),rend-rstart,idx,PETSC_OWN_POINTER,cperm);CHKERRQ(ierr);
     ierr = ISSetPermutation(*cperm);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
@@ -261,7 +261,7 @@ PetscErrorCode  MatGetOrdering(Mat mat,MatOrderingType type,IS *rperm,IS *cperm)
   if (mmat != nmat) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Must be square matrix, rows %D columns %D",mmat,nmat);
 
   if (!MatOrderingRegisterAllCalled) {ierr = MatOrderingRegisterAll(NULL);CHKERRQ(ierr);}
-  ierr = PetscFunctionListFind(((PetscObject)mat)->comm,MatOrderingList,type,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
+  ierr = PetscFunctionListFind(PetscObjectComm((PetscObject)mat),MatOrderingList,type,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Unknown or unregistered type: %s",type);
 
   ierr = PetscLogEventBegin(MAT_GetOrdering,mat,0,0,0);CHKERRQ(ierr);

@@ -104,7 +104,7 @@ PetscErrorCode DMDAGetNatural_Private(DM da,PetscInt *outNlocal,IS *isnatural)
     }
   }
   *outNlocal = Nlocal;
-  ierr       = ISCreateGeneral(((PetscObject)da)->comm,Nlocal,lidx,PETSC_OWN_POINTER,isnatural);CHKERRQ(ierr);
+  ierr       = ISCreateGeneral(PetscObjectComm((PetscObject)da),Nlocal,lidx,PETSC_OWN_POINTER,isnatural);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -153,7 +153,7 @@ PetscErrorCode  DMDAGetAO(DM da,AO *ao)
     PetscInt       Nlocal;
 
     ierr = DMDAGetNatural_Private(da,&Nlocal,&isnatural);CHKERRQ(ierr);
-    ierr = ISCreateStride(((PetscObject)da)->comm,Nlocal,dd->base,1,&ispetsc);CHKERRQ(ierr);
+    ierr = ISCreateStride(PetscObjectComm((PetscObject)da),Nlocal,dd->base,1,&ispetsc);CHKERRQ(ierr);
     ierr = AOCreateBasicIS(isnatural,ispetsc,&dd->ao);CHKERRQ(ierr);
     ierr = PetscLogObjectParent(da,dd->ao);CHKERRQ(ierr);
     ierr = ISDestroy(&ispetsc);CHKERRQ(ierr);

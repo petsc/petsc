@@ -40,7 +40,7 @@ PetscErrorCode PCReset_GAMG(PC pc)
 
   PetscFunctionBegin;
   if (pc_gamg->data) { /* this should not happen, cleaned up in SetUp */
-    PetscPrintf(((PetscObject)pc)->comm,"***[%d]%s this should not happen, cleaned up in SetUp\n",0,__FUNCT__);
+    PetscPrintf(PetscObjectComm((PetscObject)pc),"***[%d]%s this should not happen, cleaned up in SetUp\n",0,__FUNCT__);
     ierr = PetscFree(pc_gamg->data);CHKERRQ(ierr);
   }
   pc_gamg->data = NULL; pc_gamg->data_sz = 0;
@@ -529,7 +529,7 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
   PC_GAMG        *pc_gamg = (PC_GAMG*)mg->innerctx;
   Mat            Pmat     = pc->pmat;
   PetscInt       fine_level,level,level1,bs,M,qq,lidx,nASMBlocksArr[GAMG_MAXLEVELS];
-  MPI_Comm       wcomm = ((PetscObject)pc)->comm;
+  MPI_Comm       wcomm;
   PetscMPIInt    rank,size,nactivepe;
   Mat            Aarr[GAMG_MAXLEVELS],Parr[GAMG_MAXLEVELS];
   PetscReal      emaxs[GAMG_MAXLEVELS];
@@ -540,6 +540,7 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
   PetscBool      stokes = PETSC_FALSE, redo_mesh_setup = (PetscBool)(!pc_gamg->reuse_prol);
 
   PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)pc,&wcomm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(wcomm,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(wcomm,&size);CHKERRQ(ierr);
 
@@ -1360,7 +1361,7 @@ PetscErrorCode PCGAMGSetType_GAMG(PC pc, PCGAMGType type)
   PetscErrorCode ierr,(*r)(PC);
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListFind(((PetscObject)pc)->comm,GAMGList,type,PETSC_FALSE,(PetscVoidStarFunction)&r);CHKERRQ(ierr);
+  ierr = PetscFunctionListFind(PetscObjectComm((PetscObject)pc),GAMGList,type,PETSC_FALSE,(PetscVoidStarFunction)&r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown GAMG type %s given",type);
   ierr = (*r)(pc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1376,9 +1377,10 @@ PetscErrorCode PCSetFromOptions_GAMG(PC pc)
   PC_GAMG        *pc_gamg = (PC_GAMG*)mg->innerctx;
   PetscBool      flag;
   PetscInt       two   = 2;
-  MPI_Comm       wcomm = ((PetscObject)pc)->comm;
+  MPI_Comm       wcomm;
 
   PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)pc,&wcomm);CHKERRQ(ierr);
   ierr = PetscOptionsHead("GAMG options");CHKERRQ(ierr);
   {
     /* -pc_gamg_verbose */

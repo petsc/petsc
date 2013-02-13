@@ -8,7 +8,7 @@
 typedef struct {
   KSP          ksp;
   PC           pc;                   /* actual preconditioner used on each processor */
-  Vec          xsub,ysub;            /* vectors of a subcommunicator to hold parallel vectors of ((PetscObject)pc)->comm */
+  Vec          xsub,ysub;            /* vectors of a subcommunicator to hold parallel vectors of PetscObjectComm((PetscObject)pc) */
   Vec          xdup,ydup;            /* parallel vector that congregates xsub or ysub facilitating vector scattering */
   Mat          pmats;                /* matrix and optional preconditioner matrix belong to a subcommunicator */
   VecScatter   scatterin,scatterout; /* scatter used to move all values to each processor group (subcommunicator) */
@@ -58,13 +58,14 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
   PetscMPIInt    size;
   MatReuse       reuse = MAT_INITIAL_MATRIX;
   MatStructure   str   = DIFFERENT_NONZERO_PATTERN;
-  MPI_Comm       comm  = ((PetscObject)pc)->comm,subcomm;
+  MPI_Comm       comm,subcomm;
   Vec            vec;
   PetscMPIInt    subsize,subrank;
   const char     *prefix;
   const PetscInt *range;
 
   PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)pc,&comm);CHKERRQ(ierr);
   ierr = MatGetVecs(pc->pmat,&vec,0);CHKERRQ(ierr);
   ierr = VecGetSize(vec,&m);CHKERRQ(ierr);
 
@@ -108,7 +109,7 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
     ierr = VecCreateMPIWithArray(subcomm,1,mloc_sub,PETSC_DECIDE,NULL,&red->xsub);CHKERRQ(ierr);
 
     /* create xdup and ydup. ydup has empty local arrays because ysub's arrays will be place into it.
-       Note: we use communicator dupcomm, not ((PetscObject)pc)->comm! */
+       Note: we use communicator dupcomm, not PetscObjectComm((PetscObject)pc)! */
     ierr = VecCreateMPI(red->psubcomm->dupparent,mloc_sub,PETSC_DECIDE,&red->xdup);CHKERRQ(ierr);
     ierr = VecCreateMPIWithArray(red->psubcomm->dupparent,1,mloc_sub,PETSC_DECIDE,NULL,&red->ydup);CHKERRQ(ierr);
 
@@ -287,7 +288,7 @@ PetscErrorCode  PCRedundantSetNumber(PC pc,PetscInt nredundant)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  if (nredundant <= 0) SETERRQ1(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONG, "num of redundant pc %D must be positive",nredundant);
+  if (nredundant <= 0) SETERRQ1(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONG, "num of redundant pc %D must be positive",nredundant);
   ierr = PetscTryMethod(pc,"PCRedundantSetNumber_C",(PC,PetscInt),(pc,nredundant));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -483,7 +484,7 @@ PetscErrorCode  PCCreate_Redundant(PC pc)
 
   PetscFunctionBegin;
   ierr = PetscNewLog(pc,PC_Redundant,&red);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(((PetscObject)pc)->comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)pc),&size);CHKERRQ(ierr);
 
   red->nsubcomm       = size;
   red->useparallelmat = PETSC_TRUE;

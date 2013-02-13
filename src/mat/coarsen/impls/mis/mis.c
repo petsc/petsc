@@ -32,7 +32,7 @@ PetscErrorCode maxIndSetAgg(IS perm,Mat Gmat,PetscBool strict_aggs,PetscInt verb
   PetscErrorCode   ierr;
   PetscBool        isMPI;
   Mat_SeqAIJ       *matA, *matB = 0;
-  MPI_Comm         wcomm = ((PetscObject)Gmat)->comm;
+  MPI_Comm         wcomm;
   Vec              locState, ghostState;
   PetscInt         num_fine_ghosts,kk,n,ix,j,*idx,*ii,iter,Iend,my0,nremoved;
   Mat_MPIAIJ       *mpimat = 0;
@@ -48,6 +48,7 @@ PetscErrorCode maxIndSetAgg(IS perm,Mat Gmat,PetscBool strict_aggs,PetscInt verb
   PetscCoarsenData *agg_lists;
 
   PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)Gmat,&wcomm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(wcomm, &mype);CHKERRQ(ierr);
   ierr = MPI_Comm_size(wcomm, &npe);CHKERRQ(ierr);
 
@@ -337,7 +338,8 @@ static PetscErrorCode MatCoarsenApply_MIS(MatCoarsen coarse)
   if (!coarse->perm) {
     IS       perm;
     PetscInt n,m;
-    MPI_Comm wcomm = ((PetscObject)mat)->comm;
+    MPI_Comm wcomm;
+    ierr = PetscObjectGetComm((PetscObject)mat,&wcomm);CHKERRQ(ierr);
     ierr = MatGetLocalSize(mat, &m, &n);CHKERRQ(ierr);
     ierr = ISCreateStride(wcomm, m, 0, 1, &perm);CHKERRQ(ierr);
     ierr = maxIndSetAgg(perm, mat, coarse->strict_aggs, coarse->verbose, &coarse->agg_lists);CHKERRQ(ierr);
@@ -359,7 +361,7 @@ PetscErrorCode MatCoarsenView_MIS(MatCoarsen coarse,PetscViewer viewer)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(coarse,MAT_COARSEN_CLASSID,1);
-  ierr = MPI_Comm_rank(((PetscObject)coarse)->comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)coarse),&rank);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     ierr = PetscViewerASCIISynchronizedPrintf(viewer,"  [%d] MIS aggregator\n",rank);CHKERRQ(ierr);

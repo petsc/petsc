@@ -87,7 +87,7 @@ static PetscErrorCode MatMult_Clique(Mat A,Vec X,Vec Y)
   PetscCliqScalar       *y;
   Mat_Clique            *cliq=(Mat_Clique*)A->spptr;
   cliq::DistSparseMatrix<PetscCliqScalar> *cmat=cliq->cmat;
-  cliq::mpi::Comm cxxcomm(((PetscObject)A)->comm);
+  cliq::mpi::Comm cxxcomm(PetscObjectComm((PetscObject)A));
 
   PetscFunctionBegin;
   if (!cmat) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Clique matrix cmat is not created yet");
@@ -128,11 +128,11 @@ PetscErrorCode MatView_Clique(Mat A,PetscViewer viewer)
       ierr = PetscViewerASCIIUseTabs(viewer,PETSC_FALSE);CHKERRQ(ierr);
       ierr = PetscObjectPrintClassNamePrefixType((PetscObject)A,viewer,"Matrix Object");CHKERRQ(ierr);
       ierr = PetscViewerASCIIUseTabs(viewer,PETSC_TRUE);CHKERRQ(ierr);
-      ierr = PetscPrintf(((PetscObject)viewer)->comm,"Clique matrix\n");CHKERRQ(ierr);
+      ierr = PetscPrintf(PetscObjectComm((PetscObject)viewer),"Clique matrix\n");CHKERRQ(ierr);
       ierr = MatComputeExplicitOperator(A,&Aaij);CHKERRQ(ierr);
       ierr = MatView(Aaij,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
       ierr = MatDestroy(&Aaij);CHKERRQ(ierr);
-    } else SETERRQ(((PetscObject)viewer)->comm,PETSC_ERR_SUP,"Format");
+    } else SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Format");
   }
   PetscFunctionReturn(0);
 }
@@ -291,7 +291,7 @@ PetscErrorCode MatGetFactor_aij_clique(Mat A,MatFactorType ftype,Mat *F)
 
   PetscFunctionBegin;
   ierr = PetscCliqueInitializePackage(NULL);CHKERRQ(ierr);
-  ierr = MatCreate(((PetscObject)A)->comm,&B);CHKERRQ(ierr);
+  ierr = MatCreate(PetscObjectComm((PetscObject)A),&B);CHKERRQ(ierr);
   ierr = MatSetSizes(B,A->rmap->n,A->cmap->n,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
   ierr = MatSetUp(B);CHKERRQ(ierr);
@@ -303,7 +303,7 @@ PetscErrorCode MatGetFactor_aij_clique(Mat A,MatFactorType ftype,Mat *F)
 
   ierr = PetscNewLog(B,Mat_Clique,&cliq);CHKERRQ(ierr);
   B->spptr            = (void*)cliq;
-  cliq::mpi::Comm cxxcomm(((PetscObject)A)->comm);
+  cliq::mpi::Comm cxxcomm(PetscObjectComm((PetscObject)A));
   ierr = PetscCommDuplicate(cxxcomm,&(cliq->cliq_comm),NULL);CHKERRQ(ierr);
   cliq->rhs           = new cliq::DistVector<PetscCliqScalar>(A->rmap->N,cliq->cliq_comm);
   cliq->xNodal        = new cliq::DistNodalVector<PetscCliqScalar>();
@@ -321,7 +321,7 @@ PetscErrorCode MatGetFactor_aij_clique(Mat A,MatFactorType ftype,Mat *F)
   B->assembled    = PETSC_FALSE;
 
   /* Set Clique options */
-  ierr = PetscOptionsBegin(((PetscObject)A)->comm,((PetscObject)A)->prefix,"Clique Options","Mat");CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)A),((PetscObject)A)->prefix,"Clique Options","Mat");CHKERRQ(ierr);
   cliq->cutoff      = 128;  /* maximum size of leaf node */
   cliq->numDistSeps = 1;    /* number of distributed separators to try */
   cliq->numSeqSeps  = 1;    /* number of sequential separators to try */

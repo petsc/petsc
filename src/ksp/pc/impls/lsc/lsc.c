@@ -20,7 +20,7 @@ static PetscErrorCode PCLSCAllocate_Private(PC pc)
 
   PetscFunctionBegin;
   if (lsc->allocated) PetscFunctionReturn(0);
-  ierr = KSPCreate(((PetscObject)pc)->comm,&lsc->kspL);CHKERRQ(ierr);
+  ierr = KSPCreate(PetscObjectComm((PetscObject)pc),&lsc->kspL);CHKERRQ(ierr);
   ierr = PetscObjectIncrementTabLevel((PetscObject)lsc->kspL,(PetscObject)pc,1);CHKERRQ(ierr);
   ierr = KSPSetType(lsc->kspL,KSPPREONLY);CHKERRQ(ierr);
   ierr = KSPSetOptionsPrefix(lsc->kspL,((PetscObject)pc)->prefix);CHKERRQ(ierr);

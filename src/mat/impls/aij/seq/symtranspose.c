@@ -179,7 +179,7 @@ PetscErrorCode MatTranspose_SeqAIJ_FAST(Mat A,MatReuse reuse,Mat *B)
   /* Clean up temporary space and complete requests. */
   ierr = PetscFree(atfill);CHKERRQ(ierr);
   if (reuse == MAT_INITIAL_MATRIX) {
-    ierr = MatCreateSeqAIJWithArrays(((PetscObject)A)->comm,an,am,ati,atj,ata,&At);CHKERRQ(ierr);
+    ierr = MatCreateSeqAIJWithArrays(PetscObjectComm((PetscObject)A),an,am,ati,atj,ata,&At);CHKERRQ(ierr);
 
     at          = (Mat_SeqAIJ*)(At->data);
     at->free_a  = PETSC_TRUE;

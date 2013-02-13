@@ -18,9 +18,9 @@ PetscErrorCode VecDuplicate_Shared(Vec win,Vec *v)
 
   PetscFunctionBegin;
   /* first processor allocates entire array and sends it's address to the others */
-  ierr = PetscSharedMalloc(((PetscObject)win)->comm,win->map->n*sizeof(PetscScalar),win->map->N*sizeof(PetscScalar),(void**)&array);CHKERRQ(ierr);
+  ierr = PetscSharedMalloc(PetscObjectComm((PetscObject)win),win->map->n*sizeof(PetscScalar),win->map->N*sizeof(PetscScalar),(void**)&array);CHKERRQ(ierr);
 
-  ierr = VecCreate(((PetscObject)win)->comm,v);CHKERRQ(ierr);
+  ierr = VecCreate(PetscObjectComm((PetscObject)win),v);CHKERRQ(ierr);
   ierr = VecSetSizes(*v,win->map->n,win->map->N);CHKERRQ(ierr);
   ierr = VecCreate_MPI_Private(*v,PETSC_FALSE,w->nghost,array);CHKERRQ(ierr);
   ierr = PetscLayoutReference(win->map,&(*v)->map);CHKERRQ(ierr);
@@ -47,8 +47,8 @@ PetscErrorCode  VecCreate_Shared(Vec vv)
   PetscScalar    *array;
 
   PetscFunctionBegin;
-  ierr = PetscSplitOwnership(((PetscObject)vv)->comm,&vv->map->n,&vv->map->N);CHKERRQ(ierr);
-  ierr = PetscSharedMalloc(((PetscObject)vv)->comm,vv->map->n*sizeof(PetscScalar),vv->map->N*sizeof(PetscScalar),(void**)&array);CHKERRQ(ierr);
+  ierr = PetscSplitOwnership(PetscObjectComm((PetscObject)vv),&vv->map->n,&vv->map->N);CHKERRQ(ierr);
+  ierr = PetscSharedMalloc(PetscObjectComm((PetscObject)vv),vv->map->n*sizeof(PetscScalar),vv->map->N*sizeof(PetscScalar),(void**)&array);CHKERRQ(ierr);
 
   ierr = VecCreate_MPI_Private(vv,PETSC_FALSE,0,array);CHKERRQ(ierr);
   vv->ops->duplicate = VecDuplicate_Shared;
@@ -171,7 +171,7 @@ PetscErrorCode  VecCreate_Shared(Vec vv)
   PetscMPIInt    size;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(((PetscObject)vv)->comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)vv),&size);CHKERRQ(ierr);
   if (size > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"No supported for shared memory vector objects on this machine");
   ierr = VecCreate_Seq(vv);CHKERRQ(ierr);
   PetscFunctionReturn(0);

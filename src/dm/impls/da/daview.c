@@ -21,7 +21,7 @@ PetscErrorCode DMView_DA_Matlab(DM da,PetscViewer viewer)
   const char       *fnames[] = {"dimension","m","n","p","dof","stencil_width","bx","by","bz","stencil_type"};
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(((PetscObject)da)->comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)da),&rank);CHKERRQ(ierr);
   if (!rank) {
     ierr = DMDAGetInfo(da,&dim,&m,&n,&p,0,0,0,&dof,&swidth,&bx,&by,&bz,&stencil);CHKERRQ(ierr);
     mx   = mxCreateStructMatrix(1,1,8,(const char**)fnames);
@@ -91,7 +91,7 @@ PetscErrorCode DMView_DA_VTK(DM da, PetscViewer viewer)
 
   PetscFunctionBegin;
   ierr = DMDAGetInfo(da, &dim, &M, &N, &P, NULL, NULL, NULL, &dof, NULL, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
-  if (!da->coordinates) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_SUP, "VTK output requires DMDA coordinates.");
+  if (!da->coordinates) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP, "VTK output requires DMDA coordinates.");
   /* Write Header */
   ierr = PetscViewerASCIIPrintf(viewer,"# vtk DataFile Version 2.0\n");CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"Structured Mesh Example\n");CHKERRQ(ierr);

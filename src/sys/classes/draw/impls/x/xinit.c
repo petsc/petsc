@@ -281,14 +281,14 @@ PetscErrorCode  PetscDrawSetSave_X(PetscDraw draw,const char *filename)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
 #if defined(PETSC_HAVE_POPEN)
-  ierr = MPI_Comm_rank(((PetscObject)draw)->comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)draw),&rank);CHKERRQ(ierr);
   if (!rank) {
     ierr = PetscSNPrintf(command,PETSC_MAX_PATH_LEN,"rm -fr %s %s.m4v",draw->savefilename,draw->savefilename);CHKERRQ(ierr);
-    ierr = PetscPOpen(((PetscObject)draw)->comm,NULL,command,"r",&fd);CHKERRQ(ierr);
-    ierr = PetscPClose(((PetscObject)draw)->comm,fd,NULL);CHKERRQ(ierr);
+    ierr = PetscPOpen(PetscObjectComm((PetscObject)draw),NULL,command,"r",&fd);CHKERRQ(ierr);
+    ierr = PetscPClose(PetscObjectComm((PetscObject)draw),fd,NULL);CHKERRQ(ierr);
     ierr = PetscSNPrintf(command,PETSC_MAX_PATH_LEN,"mkdir %s",draw->savefilename);CHKERRQ(ierr);
-    ierr = PetscPOpen(((PetscObject)draw)->comm,NULL,command,"r",&fd);CHKERRQ(ierr);
-    ierr = PetscPClose(((PetscObject)draw)->comm,fd,NULL);CHKERRQ(ierr);
+    ierr = PetscPOpen(PetscObjectComm((PetscObject)draw),NULL,command,"r",&fd);CHKERRQ(ierr);
+    ierr = PetscPClose(PetscObjectComm((PetscObject)draw),fd,NULL);CHKERRQ(ierr);
   }
 #endif
   PetscFunctionReturn(0);
@@ -309,7 +309,7 @@ PetscErrorCode PetscDrawSave_X(PetscDraw draw)
   PetscMPIInt             rank;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(((PetscObject)draw)->comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)draw),&rank);CHKERRQ(ierr);
   if (rank) PetscFunctionReturn(0);
   if (!draw->savefilename) PetscFunctionReturn(0);
   if (draw->savefilecount == -1) {
@@ -319,11 +319,11 @@ PetscErrorCode PetscDrawSave_X(PetscDraw draw)
   }
 
   if (!asv) {
-    asv = create_asvisual(drawx->disp, 0, 0, 0);if (!asv) SETERRQ(((PetscObject)draw)->comm,PETSC_ERR_PLIB,"Cannot create AfterImage ASVisual");
+    asv = create_asvisual(drawx->disp, 0, 0, 0);if (!asv) SETERRQ(PetscObjectComm((PetscObject)draw),PETSC_ERR_PLIB,"Cannot create AfterImage ASVisual");
   }
   image   = XGetImage(drawx->disp, drawx->drw ? drawx->drw : drawx->win, 0, 0, drawx->w, drawx->h, AllPlanes, ZPixmap);
-  if (!image) SETERRQ(((PetscObject)draw)->comm,PETSC_ERR_PLIB,"Cannot XGetImage()");\
-  asimage = picture_ximage2asimage (asv,image,0,0);if (!asimage) SETERRQ(((PetscObject)draw)->comm,PETSC_ERR_PLIB,"Cannot create AfterImage ASImage");
+  if (!image) SETERRQ(PetscObjectComm((PetscObject)draw),PETSC_ERR_PLIB,"Cannot XGetImage()");\
+  asimage = picture_ximage2asimage (asv,image,0,0);if (!asimage) SETERRQ(PetscObjectComm((PetscObject)draw),PETSC_ERR_PLIB,"Cannot create AfterImage ASImage");
   ierr    = PetscSNPrintf(filename,PETSC_MAX_PATH_LEN,"%s/%s_%d.Gif",draw->savefilename,draw->savefilename,draw->savefilecount++);CHKERRQ(ierr);
   ASImage2file(asimage, 0, filename,ASIT_Gif,0);
 

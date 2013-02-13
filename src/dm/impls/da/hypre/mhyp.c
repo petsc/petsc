@@ -68,7 +68,7 @@ PetscErrorCode MatHYPRE_IJMatrixCreate(Mat A,HYPRE_IJMatrix *ij)
   rend   = A->rmap->rend;
   cstart = A->cmap->rstart;
   cend   = A->cmap->rend;
-  PetscStackCallStandard(HYPRE_IJMatrixCreate,(((PetscObject)A)->comm,rstart,rend-1,cstart,cend-1,ij));
+  PetscStackCallStandard(HYPRE_IJMatrixCreate,(PetscObjectComm((PetscObject)A),rstart,rend-1,cstart,cend-1,ij));
   PetscStackCallStandard(HYPRE_IJMatrixSetObjectType,(*ij,HYPRE_PARCSR));
   {
     PetscBool      same;
@@ -260,7 +260,7 @@ PetscErrorCode MatHYPRE_IJMatrixLink(Mat A,HYPRE_IJMatrix *ij)
   PetscValidType(A,1);
   PetscValidPointer(ij,2);
   ierr = PetscObjectTypeCompare((PetscObject)A,MATMPIAIJ,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_SUP,"Can only use with PETSc MPIAIJ matrices");
+  if (!flg) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Can only use with PETSc MPIAIJ matrices");
   ierr = MatSetUp(A);CHKERRQ(ierr);
 
   ierr   = PetscLogEventBegin(MAT_Convert,A,0,0,0);CHKERRQ(ierr);
@@ -268,7 +268,7 @@ PetscErrorCode MatHYPRE_IJMatrixLink(Mat A,HYPRE_IJMatrix *ij)
   rend   = A->rmap->rend;
   cstart = A->cmap->rstart;
   cend   = A->cmap->rend;
-  PetscStackCallStandard(HYPRE_IJMatrixCreate,(((PetscObject)A)->comm,rstart,rend-1,cstart,cend-1,ij));
+  PetscStackCallStandard(HYPRE_IJMatrixCreate,(PetscObjectComm((PetscObject)A),rstart,rend-1,cstart,cend-1,ij));
   PetscStackCallStandard(HYPRE_IJMatrixSetObjectType,(*ij,HYPRE_PARCSR));
 
   PetscStackCallStandard(HYPRE_IJMatrixInitialize,(*ij));
@@ -353,7 +353,7 @@ PetscErrorCode  MatZeroRowsLocal_HYPREStruct_3d(Mat mat,PetscInt nrow,const Pets
   Mat_HYPREStruct *ex = (Mat_HYPREStruct*) mat->data;
 
   PetscFunctionBegin;
-  if (x && b) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_SUP,"No support");
+  if (x && b) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"No support");
   ierr      = PetscMemzero(values,7*sizeof(PetscScalar));CHKERRQ(ierr);
   values[3] = d;
   for (i=0; i<nrow; i++) {
@@ -411,8 +411,8 @@ PetscErrorCode  MatSetupDM_HYPREStruct(Mat mat,DM da)
   ex->hbox.imax[2] = iupper[2];
 
   /* create the hypre grid object and set its information */
-  if (dof > 1) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_SUP,"Currently only support for scalar problems");
-  if (px || py || pz) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_SUP,"Ask us to add periodic support by calling HYPRE_StructGridSetPeriodic()");
+  if (dof > 1) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Currently only support for scalar problems");
+  if (px || py || pz) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Ask us to add periodic support by calling HYPRE_StructGridSetPeriodic()");
   PetscStackCallStandard(HYPRE_StructGridCreate,(ex->hcomm,dim,&ex->hgrid));
   PetscStackCallStandard(HYPRE_StructGridSetExtents,(ex->hgrid,ilower,iupper));
   PetscStackCallStandard(HYPRE_StructGridAssemble,(ex->hgrid));
@@ -422,8 +422,8 @@ PetscErrorCode  MatSetupDM_HYPREStruct(Mat mat,DM da)
   PetscStackCallStandard(HYPRE_StructGridSetNumGhost,(ex->hgrid,sw));
 
   /* create the hypre stencil object and set its information */
-  if (sw[0] > 1) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_SUP,"Ask us to add support for wider stencils");
-  if (st == DMDA_STENCIL_BOX) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_SUP,"Ask us to add support for box stencils");
+  if (sw[0] > 1) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Ask us to add support for wider stencils");
+  if (st == DMDA_STENCIL_BOX) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Ask us to add support for box stencils");
   if (dim == 1) {
     PetscInt offsets[3][1] = {{-1},{0},{1}};
     ssize = 3;
@@ -478,7 +478,7 @@ PetscErrorCode  MatSetupDM_HYPREStruct(Mat mat,DM da)
     mat->ops->zeroentries    = MatZeroEntries_HYPREStruct_3d;
 
     ierr = MatZeroEntries_HYPREStruct_3d(mat);CHKERRQ(ierr);
-  } else SETERRQ(((PetscObject)da)->comm,PETSC_ERR_SUP,"Only support for 3d DMDA currently");
+  } else SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Only support for 3d DMDA currently");
 
   /* get values that will be used repeatedly in MatSetValuesLocal() and MatZeroRowsLocal() repeatedly */
   ierr        = MatGetOwnershipRange(mat,&ex->rstart,NULL);CHKERRQ(ierr);
@@ -582,7 +582,7 @@ PetscErrorCode  MatCreate_HYPREStruct(Mat B)
 
   ex->needsinitialization = PETSC_TRUE;
 
-  ierr = MPI_Comm_dup(((PetscObject)B)->comm,&(ex->hcomm));CHKERRQ(ierr);
+  ierr = MPI_Comm_dup(PetscObjectComm((PetscObject)B),&(ex->hcomm));CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatSetupDM_C","MatSetupDM_HYPREStruct",MatSetupDM_HYPREStruct);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATHYPRESTRUCT);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -737,7 +737,7 @@ PetscErrorCode  MatZeroRowsLocal_HYPRESStruct_3d(Mat mat,PetscInt nrow,const Pet
   PetscInt row,*entries;
 
   PetscFunctionBegin;
-  if (x && b) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_SUP,"No support");
+  if (x && b) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"No support");
   ierr = PetscMalloc(7*nvars*sizeof(PetscInt),&entries);CHKERRQ(ierr);
 
   ierr = PetscMalloc(nvars*sizeof(PetscScalar*),&values);CHKERRQ(ierr);
@@ -855,7 +855,7 @@ PetscErrorCode  MatSetupDM_HYPRESStruct(Mat mat,DM da)
   ex->nvars= dof;
 
   /* create the hypre grid object and set its information */
-  if (px || py || pz) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_SUP,"Ask us to add periodic support by calling HYPRE_SStructGridSetPeriodic()");
+  if (px || py || pz) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Ask us to add periodic support by calling HYPRE_SStructGridSetPeriodic()");
   PetscStackCallStandard(HYPRE_SStructGridCreate,(ex->hcomm,dim,nparts,&ex->ss_grid));
 
   PetscStackCallStandard(HYPRE_SStructGridSetExtents,(ex->ss_grid,part,ex->hbox.imin,ex->hbox.imax));
@@ -874,8 +874,8 @@ PetscErrorCode  MatSetupDM_HYPRESStruct(Mat mat,DM da)
   /* PetscStackCallStandard(HYPRE_SStructGridSetNumGhost,(ex->ss_grid,sw)); */
 
   /* create the hypre stencil object and set its information */
-  if (sw[0] > 1) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_SUP,"Ask us to add support for wider stencils");
-  if (st == DMDA_STENCIL_BOX) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_SUP,"Ask us to add support for box stencils");
+  if (sw[0] > 1) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Ask us to add support for wider stencils");
+  if (st == DMDA_STENCIL_BOX) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Ask us to add support for box stencils");
 
   if (dim == 1) {
     PetscInt offsets[3][1] = {{-1},{0},{1}};
@@ -959,7 +959,7 @@ PetscErrorCode  MatSetupDM_HYPRESStruct(Mat mat,DM da)
     mat->ops->zeroentries    = MatZeroEntries_HYPRESStruct_3d;
 
     ierr = MatZeroEntries_HYPRESStruct_3d(mat);CHKERRQ(ierr);
-  } else SETERRQ(((PetscObject)da)->comm,PETSC_ERR_SUP,"Only support for 3d DMDA currently");
+  } else SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Only support for 3d DMDA currently");
 
   /* get values that will be used repeatedly in MatSetValuesLocal() and MatZeroRowsLocal() repeatedly */
   ierr = MatGetOwnershipRange(mat,&ex->rstart,NULL);CHKERRQ(ierr);
@@ -1112,7 +1112,7 @@ PetscErrorCode  MatCreate_HYPRESStruct(Mat B)
 
   ex->needsinitialization = PETSC_TRUE;
 
-  ierr = MPI_Comm_dup(((PetscObject)B)->comm,&(ex->hcomm));CHKERRQ(ierr);
+  ierr = MPI_Comm_dup(PetscObjectComm((PetscObject)B),&(ex->hcomm));CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatSetupDM_C","MatSetupDM_HYPRESStruct",MatSetupDM_HYPRESStruct);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATHYPRESSTRUCT);CHKERRQ(ierr);
   PetscFunctionReturn(0);

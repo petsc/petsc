@@ -287,7 +287,7 @@ PetscErrorCode  MatCreateSubMatrix(Mat A,IS isrow,IS iscol,Mat *newmat)
   PetscValidPointer(newmat,4);
   *newmat = 0;
 
-  ierr = MatCreate(((PetscObject)A)->comm,&N);CHKERRQ(ierr);
+  ierr = MatCreate(PetscObjectComm((PetscObject)A),&N);CHKERRQ(ierr);
   ierr = ISGetLocalSize(isrow,&m);CHKERRQ(ierr);
   ierr = ISGetLocalSize(iscol,&n);CHKERRQ(ierr);
   ierr = MatSetSizes(N,m,n,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
@@ -317,8 +317,8 @@ PetscErrorCode  MatCreateSubMatrix(Mat A,IS isrow,IS iscol,Mat *newmat)
   ierr = PetscLayoutSetUp(N->cmap);CHKERRQ(ierr);
 
   ierr = MatGetVecs(A,&Na->rwork,&Na->lwork);CHKERRQ(ierr);
-  ierr = VecCreate(((PetscObject)isrow)->comm,&left);CHKERRQ(ierr);
-  ierr = VecCreate(((PetscObject)iscol)->comm,&right);CHKERRQ(ierr);
+  ierr = VecCreate(PetscObjectComm((PetscObject)isrow),&left);CHKERRQ(ierr);
+  ierr = VecCreate(PetscObjectComm((PetscObject)iscol),&right);CHKERRQ(ierr);
   ierr = VecSetSizes(left,m,PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = VecSetSizes(right,n,PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = VecSetUp(left);CHKERRQ(ierr);
@@ -369,7 +369,7 @@ PetscErrorCode  MatSubMatrixUpdate(Mat N,Mat A,IS isrow,IS iscol)
   PetscValidHeaderSpecific(isrow,IS_CLASSID,3);
   PetscValidHeaderSpecific(iscol,IS_CLASSID,4);
   ierr = PetscObjectTypeCompare((PetscObject)N,MATSUBMATRIX,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_WRONG,"Matrix has wrong type");
+  if (!flg) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Matrix has wrong type");
 
   Na   = (Mat_SubMatrix*)N->data;
   ierr = ISEqual(isrow,Na->isrow,&flg);CHKERRQ(ierr);

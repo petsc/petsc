@@ -48,11 +48,11 @@ PetscErrorCode PCSetCoordinates_GEO(PC pc, PetscInt ndm, PetscInt a_nloc, PetscR
   ierr = MatGetOwnershipRange(Amat, &my0, &Iend);CHKERRQ(ierr);
   nloc = (Iend-my0)/bs;
 
-  if (nloc!=a_nloc) SETERRQ2(((PetscObject)Amat)->comm,PETSC_ERR_ARG_WRONG, "Stokes not supported nloc = %d %d.",a_nloc,nloc);
-  if ((Iend-my0)%bs!=0) SETERRQ1(((PetscObject)Amat)->comm,PETSC_ERR_ARG_WRONG, "Bad local size %d.",nloc);
+  if (nloc!=a_nloc) SETERRQ2(PetscObjectComm((PetscObject)Amat),PETSC_ERR_ARG_WRONG, "Stokes not supported nloc = %d %d.",a_nloc,nloc);
+  if ((Iend-my0)%bs!=0) SETERRQ1(PetscObjectComm((PetscObject)Amat),PETSC_ERR_ARG_WRONG, "Bad local size %d.",nloc);
 
   pc_gamg->data_cell_rows = 1;
-  if (coords==0 && nloc > 0) SETERRQ(((PetscObject)Amat)->comm,PETSC_ERR_ARG_WRONG, "Need coordinates for pc_gamg_type 'geo'.");
+  if (coords==0 && nloc > 0) SETERRQ(PetscObjectComm((PetscObject)Amat),PETSC_ERR_ARG_WRONG, "Need coordinates for pc_gamg_type 'geo'.");
   pc_gamg->data_cell_cols = ndm; /* coordinates */
 
   arrsz = nloc*pc_gamg->data_cell_rows*pc_gamg->data_cell_cols;
@@ -88,7 +88,7 @@ EXTERN_C_END
 PetscErrorCode PCSetData_GEO(PC pc, Mat m)
 {
   PetscFunctionBegin;
-  SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_PLIB,"GEO MG needs coordinates");
+  SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_PLIB,"GEO MG needs coordinates");
 }
 
 /* -------------------------------------------------------------------------- */
@@ -125,8 +125,7 @@ PetscErrorCode PCSetFromOptions_GEO(PC pc)
   ierr = PCSetFromOptions_GAMG(pc);CHKERRQ(ierr);
 
   if (pc_gamg->verbose) {
-    MPI_Comm wcomm = ((PetscObject)pc)->comm;
-    PetscPrintf(wcomm,"[%d]%s done\n",0,__FUNCT__);
+    PetscPrintf(PetscObjectComm((PetscObject)pc),"[%d]%s done\n",0,__FUNCT__);
   }
   PetscFunctionReturn(0);
 }
@@ -571,11 +570,12 @@ PetscErrorCode PCGAMGgraph_GEO(PC pc,const Mat Amat,Mat *a_Gmat)
   const PetscInt  verbose  = pc_gamg->verbose;
   const PetscReal vfilter  = pc_gamg->threshold;
   PetscMPIInt     rank,size;
-  MPI_Comm        wcomm = ((PetscObject)Amat)->comm;
+  MPI_Comm        wcomm;
   Mat             Gmat;
   PetscBool       set,flg,symm;
 
   PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)Amat,&wcomm);CHKERRQ(ierr);
 #if defined PETSC_USE_LOG
   ierr = PetscLogEventBegin(PC_GAMGGgraph_GEO,0,0,0,0);CHKERRQ(ierr);
 #endif
@@ -618,10 +618,11 @@ PetscErrorCode PCGAMGcoarsen_GEO(PC a_pc,Mat *a_Gmat,PetscCoarsenData **a_llist_
   GAMGNode       *gnodes;
   PetscInt       *permute;
   Mat            Gmat  = *a_Gmat;
-  MPI_Comm       wcomm = ((PetscObject)Gmat)->comm;
+  MPI_Comm       wcomm;
   MatCoarsen     crs;
 
   PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)a_pc,&wcomm);CHKERRQ(ierr);
 #if defined PETSC_USE_LOG
   ierr = PetscLogEventBegin(PC_GAMGCoarsen_GEO,0,0,0,0);CHKERRQ(ierr);
 #endif
@@ -713,11 +714,12 @@ PetscErrorCode PCGAMGProlongator_GEO(PC pc,const Mat Amat,const Mat Gmat,PetscCo
   PetscInt       Istart,Iend,nloc,my0,jj,kk,ncols,nLocalSelected,bs,*clid_flid;
   Mat            Prol;
   PetscMPIInt    rank, size;
-  MPI_Comm       wcomm = ((PetscObject)Amat)->comm;
+  MPI_Comm       wcomm;
   IS             selected_2,selected_1;
   const PetscInt *selected_idx;
 
   PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)Amat,&wcomm);CHKERRQ(ierr);
 #if defined PETSC_USE_LOG
   ierr = PetscLogEventBegin(PC_GAMGProlongator_GEO,0,0,0,0);CHKERRQ(ierr);
 #endif

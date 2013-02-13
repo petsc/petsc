@@ -72,7 +72,7 @@ static PetscErrorCode PetscViewerFlush_VTK(PetscViewer viewer)
   PetscViewerVTKObjectLink link,next;
 
   PetscFunctionBegin;
-  if (vtk->link && (!vtk->dm || !vtk->write)) SETERRQ(((PetscObject)viewer)->comm,PETSC_ERR_ARG_WRONGSTATE,"No fields or no grid");
+  if (vtk->link && (!vtk->dm || !vtk->write)) SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_ARG_WRONGSTATE,"No fields or no grid");
   if (vtk->write) {ierr = (*vtk->write)(vtk->dm,viewer);CHKERRQ(ierr);}
   for (link=vtk->link; link; link=next) {
     next = link->next;
@@ -103,14 +103,14 @@ PetscErrorCode  PetscViewerFileSetName_VTK(PetscViewer viewer,const char name[])
   ierr = PetscStrcasecmp(name+len-4,".vtu",&isvtu);CHKERRQ(ierr);
   if (isvtk) {
     if (viewer->format == PETSC_VIEWER_DEFAULT) {ierr = PetscViewerSetFormat(viewer,PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);}
-    if (viewer->format != PETSC_VIEWER_ASCII_VTK) SETERRQ2(((PetscObject)viewer)->comm,PETSC_ERR_ARG_INCOMP,"Cannot use file '%s' with format %s, should have '.vtk' extension",name,PetscViewerFormats[viewer->format]);
+    if (viewer->format != PETSC_VIEWER_ASCII_VTK) SETERRQ2(PetscObjectComm((PetscObject)viewer),PETSC_ERR_ARG_INCOMP,"Cannot use file '%s' with format %s, should have '.vtk' extension",name,PetscViewerFormats[viewer->format]);
   } else if (isvts) {
     if (viewer->format == PETSC_VIEWER_DEFAULT) {ierr = PetscViewerSetFormat(viewer,PETSC_VIEWER_VTK_VTS);CHKERRQ(ierr);}
-    if (viewer->format != PETSC_VIEWER_VTK_VTS) SETERRQ2(((PetscObject)viewer)->comm,PETSC_ERR_ARG_INCOMP,"Cannot use file '%s' with format %s, should have '.vts' extension",name,PetscViewerFormats[viewer->format]);
+    if (viewer->format != PETSC_VIEWER_VTK_VTS) SETERRQ2(PetscObjectComm((PetscObject)viewer),PETSC_ERR_ARG_INCOMP,"Cannot use file '%s' with format %s, should have '.vts' extension",name,PetscViewerFormats[viewer->format]);
   } else if (isvtu) {
     if (viewer->format == PETSC_VIEWER_DEFAULT) {ierr = PetscViewerSetFormat(viewer,PETSC_VIEWER_VTK_VTU);CHKERRQ(ierr);}
-    if (viewer->format != PETSC_VIEWER_VTK_VTU) SETERRQ2(((PetscObject)viewer)->comm,PETSC_ERR_ARG_INCOMP,"Cannot use file '%s' with format %s, should have '.vts' extension",name,PetscViewerFormats[viewer->format]);
-  } else SETERRQ1(((PetscObject)viewer)->comm,PETSC_ERR_ARG_UNKNOWN_TYPE,"File '%s' has unrecognized extension",name);
+    if (viewer->format != PETSC_VIEWER_VTK_VTU) SETERRQ2(PetscObjectComm((PetscObject)viewer),PETSC_ERR_ARG_INCOMP,"Cannot use file '%s' with format %s, should have '.vts' extension",name,PetscViewerFormats[viewer->format]);
+  } else SETERRQ1(PetscObjectComm((PetscObject)viewer),PETSC_ERR_ARG_UNKNOWN_TYPE,"File '%s' has unrecognized extension",name);
   ierr = PetscStrallocpy(name,&vtk->filename);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -141,7 +141,7 @@ PetscErrorCode  PetscViewerVTKAddField_VTK(PetscViewer viewer,PetscObject dm,Pet
 
   PetscFunctionBegin;
   if (vtk->dm) {
-    if (dm != vtk->dm) SETERRQ(((PetscObject)viewer)->comm,PETSC_ERR_ARG_INCOMP,"Cannot write a field from more than one grid to the same VTK file");
+    if (dm != vtk->dm) SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_ARG_INCOMP,"Cannot write a field from more than one grid to the same VTK file");
   }
   vtk->dm    = dm;
   vtk->write = PetscViewerVTKWriteFunction;
@@ -255,9 +255,9 @@ PetscErrorCode PetscViewerVTKFWrite(PetscViewer viewer,FILE *fp,const void *data
   PetscMPIInt    rank;
 
   PetscFunctionBegin;
-  if (n < 0) SETERRQ1(((PetscObject)viewer)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Trying to write a negative amount of data %D",n);
+  if (n < 0) SETERRQ1(PetscObjectComm((PetscObject)viewer),PETSC_ERR_ARG_OUTOFRANGE,"Trying to write a negative amount of data %D",n);
   if (!n) PetscFunctionReturn(0);
-  ierr = MPI_Comm_rank(((PetscObject)viewer)->comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)viewer),&rank);CHKERRQ(ierr);
   if (!rank) {
     size_t      count;
     PetscInt    size;
@@ -278,7 +278,7 @@ PetscErrorCode PetscViewerVTKFWrite(PetscViewer viewer,FILE *fp,const void *data
     case PETSC_CHAR:
       size = sizeof(char);
       break;
-    default: SETERRQ(((PetscObject)viewer)->comm,PETSC_ERR_SUP,"Data type not supported");
+    default: SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Data type not supported");
     }
     bytes = PetscVTKIntCast(size*n);
 

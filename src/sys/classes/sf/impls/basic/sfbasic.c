@@ -319,7 +319,7 @@ static PetscErrorCode PetscSFSetUp_Basic(PetscSF sf)
   MPI_Request *rootreqs,*leafreqs;
 
   PetscFunctionBegin;
-  comm = ((PetscObject)sf)->comm;
+  ierr = PetscObjectGetComm((PetscObject)sf,&comm);CHKERRQ(ierr);
   ierr = PetscObjectGetNewTag((PetscObject)sf,&bas->tag);CHKERRQ(ierr);
   /*
    * Inform roots about how many leaves and from which ranks
@@ -413,7 +413,7 @@ static PetscErrorCode PetscSFBasicPackGetUnpackOp(PetscSF sf,PetscSFBasicPack li
   else if (op == MPI_MIN || op == MPIU_MIN) *UnpackOp = link->UnpackMin;
   else if (op == MPI_MAXLOC) *UnpackOp = link->UnpackMaxloc;
   else if (op == MPI_MINLOC) *UnpackOp = link->UnpackMinloc;
-  else SETERRQ(((PetscObject)sf)->comm,PETSC_ERR_SUP,"No support for MPI_Op");
+  else SETERRQ(PetscObjectComm((PetscObject)sf),PETSC_ERR_SUP,"No support for MPI_Op");
   PetscFunctionReturn(0);
 }
 #undef __FUNCT__
@@ -428,7 +428,7 @@ static PetscErrorCode PetscSFBasicPackGetFetchAndOp(PetscSF sf,PetscSFBasicPack 
   else if (op == MPI_MIN || op == MPIU_MIN) *FetchAndOp = link->FetchAndMin;
   else if (op == MPI_MAXLOC) *FetchAndOp = link->FetchAndMaxloc;
   else if (op == MPI_MINLOC) *FetchAndOp = link->FetchAndMinloc;
-  else SETERRQ(((PetscObject)sf)->comm,PETSC_ERR_SUP,"No support for MPI_Op");
+  else SETERRQ(PetscObjectComm((PetscObject)sf),PETSC_ERR_SUP,"No support for MPI_Op");
   PetscFunctionReturn(0);
 }
 
@@ -543,7 +543,7 @@ static PetscErrorCode PetscSFBasicGetPackInUse(PetscSF sf,MPI_Datatype unit,cons
       PetscFunctionReturn(0);
     }
   }
-  SETERRQ(((PetscObject)sf)->comm,PETSC_ERR_ARG_WRONGSTATE,"Could not find pack");
+  SETERRQ(PetscObjectComm((PetscObject)sf),PETSC_ERR_ARG_WRONGSTATE,"Could not find pack");
   PetscFunctionReturn(0);
 }
 
@@ -584,7 +584,7 @@ static PetscErrorCode PetscSFReset_Basic(PetscSF sf)
   PetscFunctionBegin;
   ierr = PetscFree(bas->iranks);CHKERRQ(ierr);
   ierr = PetscFree2(bas->ioffset,bas->irootloc);CHKERRQ(ierr);
-  if (bas->inuse) SETERRQ(((PetscObject)sf)->comm,PETSC_ERR_ARG_WRONGSTATE,"Outstanding operation has not been completed");
+  if (bas->inuse) SETERRQ(PetscObjectComm((PetscObject)sf),PETSC_ERR_ARG_WRONGSTATE,"Outstanding operation has not been completed");
   for (link=bas->avail; link; link=next) {
     next = link->next;
     ierr = MPI_Type_free(&link->unit);CHKERRQ(ierr);
@@ -649,14 +649,14 @@ static PetscErrorCode PetscSFBcastBegin_Basic(PetscSF sf,MPI_Datatype unit,const
   /* Eagerly post leaf receives */
   for (i=0; i<nleafranks; i++) {
     PetscMPIInt n = leafoffset[i+1] - leafoffset[i];
-    ierr = MPI_Irecv(link->leaf+leafoffset[i]*unitbytes,n,unit,leafranks[i],bas->tag,((PetscObject)sf)->comm,&leafreqs[i]);CHKERRQ(ierr);
+    ierr = MPI_Irecv(link->leaf+leafoffset[i]*unitbytes,n,unit,leafranks[i],bas->tag,PetscObjectComm((PetscObject)sf),&leafreqs[i]);CHKERRQ(ierr);
   }
   /* Pack and send root data */
   for (i=0; i<nrootranks; i++) {
     PetscMPIInt n          = rootoffset[i+1] - rootoffset[i];
     void        *packstart = link->root+rootoffset[i]*unitbytes;
     (*link->Pack)(n,rootloc+rootoffset[i],rootdata,packstart);
-    ierr = MPI_Isend(packstart,n,unit,rootranks[i],bas->tag,((PetscObject)sf)->comm,&rootreqs[i]);CHKERRQ(ierr);
+    ierr = MPI_Isend(packstart,n,unit,rootranks[i],bas->tag,PetscObjectComm((PetscObject)sf),&rootreqs[i]);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -708,14 +708,14 @@ PetscErrorCode PetscSFReduceBegin_Basic(PetscSF sf,MPI_Datatype unit,const void 
   /* Eagerly post root receives */
   for (i=0; i<nrootranks; i++) {
     PetscMPIInt n = rootoffset[i+1] - rootoffset[i];
-    ierr = MPI_Irecv(link->root+rootoffset[i]*unitbytes,n,unit,rootranks[i],bas->tag,((PetscObject)sf)->comm,&rootreqs[i]);CHKERRQ(ierr);
+    ierr = MPI_Irecv(link->root+rootoffset[i]*unitbytes,n,unit,rootranks[i],bas->tag,PetscObjectComm((PetscObject)sf),&rootreqs[i]);CHKERRQ(ierr);
   }
   /* Pack and send leaf data */
   for (i=0; i<nleafranks; i++) {
     PetscMPIInt n          = leafoffset[i+1] - leafoffset[i];
     void        *packstart = link->leaf+leafoffset[i]*unitbytes;
     (*link->Pack)(n,leafloc+leafoffset[i],leafdata,packstart);
-    ierr = MPI_Isend(packstart,n,unit,leafranks[i],bas->tag,((PetscObject)sf)->comm,&leafreqs[i]);CHKERRQ(ierr);
+    ierr = MPI_Isend(packstart,n,unit,leafranks[i],bas->tag,PetscObjectComm((PetscObject)sf),&leafreqs[i]);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -782,7 +782,7 @@ static PetscErrorCode PetscSFFetchAndOpEnd_Basic(PetscSF sf,MPI_Datatype unit,vo
   /* Post leaf receives */
   for (i=0; i<nleafranks; i++) {
     PetscMPIInt n = leafoffset[i+1] - leafoffset[i];
-    ierr = MPI_Irecv(link->leaf+leafoffset[i]*unitbytes,n,unit,leafranks[i],bas->tag,((PetscObject)sf)->comm,&leafreqs[i]);CHKERRQ(ierr);
+    ierr = MPI_Irecv(link->leaf+leafoffset[i]*unitbytes,n,unit,leafranks[i],bas->tag,PetscObjectComm((PetscObject)sf),&leafreqs[i]);CHKERRQ(ierr);
   }
   /* Process local fetch-and-op, post root sends */
   ierr = PetscSFBasicPackGetFetchAndOp(sf,link,op,&FetchAndOp);CHKERRQ(ierr);
@@ -791,7 +791,7 @@ static PetscErrorCode PetscSFFetchAndOpEnd_Basic(PetscSF sf,MPI_Datatype unit,vo
     void        *packstart = link->root+rootoffset[i]*unitbytes;
 
     (*FetchAndOp)(n,rootloc+rootoffset[i],rootdata,packstart);
-    ierr = MPI_Isend(packstart,n,unit,rootranks[i],bas->tag,((PetscObject)sf)->comm,&rootreqs[i]);CHKERRQ(ierr);
+    ierr = MPI_Isend(packstart,n,unit,rootranks[i],bas->tag,PetscObjectComm((PetscObject)sf),&rootreqs[i]);CHKERRQ(ierr);
   }
   ierr = PetscSFBasicPackWaitall(sf,link);CHKERRQ(ierr);
   for (i=0; i<nleafranks; i++) {

@@ -168,7 +168,7 @@ PetscErrorCode  PFApplyVec(PF pf,Vec x,Vec y)
 
     ierr  = VecGetLocalSize(y,&lsize);CHKERRQ(ierr);
     lsize = pf->dimin*lsize/pf->dimout;
-    ierr  = VecCreateMPI(((PetscObject)y)->comm,lsize,PETSC_DETERMINE,&x);CHKERRQ(ierr);
+    ierr  = VecCreateMPI(PetscObjectComm((PetscObject)y),lsize,PETSC_DETERMINE,&x);CHKERRQ(ierr);
     nox   = PETSC_TRUE;
     ierr  = VecGetOwnershipRange(x,&rstart,&rend);CHKERRQ(ierr);
     ierr  = VecGetArray(x,&xx);CHKERRQ(ierr);
@@ -279,7 +279,7 @@ PetscErrorCode  PFView(PF pf,PetscViewer viewer)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pf,PF_CLASSID,1);
   if (!viewer) {
-    ierr = PetscViewerASCIIGetStdout(((PetscObject)pf)->comm,&viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)pf),&viewer);CHKERRQ(ierr);
   }
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
   PetscCheckSameComm(pf,1,viewer,2);
@@ -426,7 +426,7 @@ PetscErrorCode  PFSetType(PF pf,PFType type,void *ctx)
   pf->data = 0;
 
   /* Determine the PFCreateXXX routine for a particular function */
-  ierr = PetscFunctionListFind(((PetscObject)pf)->comm,PFunctionList,type,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
+  ierr = PetscFunctionListFind(PetscObjectComm((PetscObject)pf),PFunctionList,type,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested PF type %s",type);
   pf->ops->destroy  = 0;
   pf->ops->view     = 0;

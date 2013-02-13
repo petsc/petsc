@@ -25,7 +25,7 @@ PetscErrorCode  VecMatlabEnginePut_DA2d(PetscObject obj,void *mengine)
 
   PetscFunctionBegin;
   ierr = VecGetDM(vec, &da);CHKERRQ(ierr);
-  if (!da) SETERRQ(((PetscObject)vec)->comm,PETSC_ERR_ARG_WRONGSTATE,"Vector not associated with a DMDA");
+  if (!da) SETERRQ(PetscObjectComm((PetscObject)vec),PETSC_ERR_ARG_WRONGSTATE,"Vector not associated with a DMDA");
   ierr = DMDAGetGhostCorners(da,0,0,0,&m,&n,0);CHKERRQ(ierr);
 
   ierr = VecGetArray(vec,&array);CHKERRQ(ierr);
@@ -821,7 +821,7 @@ PetscErrorCode  DMDAGetArray(DM da,PetscBool ghosted,void *vptr)
     break;
   }
   default:
-    SETERRQ1(((PetscObject)da)->comm,PETSC_ERR_SUP,"Dimension %D not supported",dd->dim);
+    SETERRQ1(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Dimension %D not supported",dd->dim);
   }
 
 done:

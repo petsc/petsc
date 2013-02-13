@@ -275,7 +275,7 @@ PetscErrorCode DMGetNamedGlobalVector(DM dm,const char *name,Vec *X)
     PetscBool match;
     ierr = PetscStrcmp(name,link->name,&match);CHKERRQ(ierr);
     if (match) {
-      if (link->status != DMVEC_STATUS_IN) SETERRQ1(((PetscObject)dm)->comm,PETSC_ERR_ARG_WRONGSTATE,"Vec name '%s' already checked out",name);
+      if (link->status != DMVEC_STATUS_IN) SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Vec name '%s' already checked out",name);
       goto found;
     }
   }
@@ -325,14 +325,14 @@ PetscErrorCode DMRestoreNamedGlobalVector(DM dm,const char *name,Vec *X)
     PetscBool match;
     ierr = PetscStrcmp(name,link->name,&match);CHKERRQ(ierr);
     if (match) {
-      if (link->status != DMVEC_STATUS_OUT) SETERRQ1(((PetscObject)dm)->comm,PETSC_ERR_ARG_WRONGSTATE,"Vec name '%s' was not checked out",name);
-      if (link->X != *X) SETERRQ1(((PetscObject)dm)->comm,PETSC_ERR_ARG_INCOMP,"Attempt to restore Vec name '%s', but Vec does not match the cache",name);
+      if (link->status != DMVEC_STATUS_OUT) SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Vec name '%s' was not checked out",name);
+      if (link->X != *X) SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_INCOMP,"Attempt to restore Vec name '%s', but Vec does not match the cache",name);
       link->status = DMVEC_STATUS_IN;
       *X           = NULL;
       PetscFunctionReturn(0);
     }
   }
-  SETERRQ1(((PetscObject)dm)->comm,PETSC_ERR_ARG_INCOMP,"Could not find Vec name '%s' to restore",name);
+  SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_INCOMP,"Could not find Vec name '%s' to restore",name);
   PetscFunctionReturn(0);
 }
 
@@ -369,7 +369,7 @@ PetscErrorCode DMGetNamedLocalVector(DM dm,const char *name,Vec *X)
     PetscBool match;
     ierr = PetscStrcmp(name,link->name,&match);CHKERRQ(ierr);
     if (match) {
-      if (link->status != DMVEC_STATUS_IN) SETERRQ1(((PetscObject)dm)->comm,PETSC_ERR_ARG_WRONGSTATE,"Vec name '%s' already checked out",name);
+      if (link->status != DMVEC_STATUS_IN) SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Vec name '%s' already checked out",name);
       goto found;
     }
   }
@@ -419,13 +419,13 @@ PetscErrorCode DMRestoreNamedLocalVector(DM dm,const char *name,Vec *X)
     PetscBool match;
     ierr = PetscStrcmp(name,link->name,&match);CHKERRQ(ierr);
     if (match) {
-      if (link->status != DMVEC_STATUS_OUT) SETERRQ1(((PetscObject)dm)->comm,PETSC_ERR_ARG_WRONGSTATE,"Vec name '%s' was not checked out",name);
-      if (link->X != *X) SETERRQ1(((PetscObject)dm)->comm,PETSC_ERR_ARG_INCOMP,"Attempt to restore Vec name '%s', but Vec does not match the cache",name);
+      if (link->status != DMVEC_STATUS_OUT) SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Vec name '%s' was not checked out",name);
+      if (link->X != *X) SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_INCOMP,"Attempt to restore Vec name '%s', but Vec does not match the cache",name);
       link->status = DMVEC_STATUS_IN;
       *X           = NULL;
       PetscFunctionReturn(0);
     }
   }
-  SETERRQ1(((PetscObject)dm)->comm,PETSC_ERR_ARG_INCOMP,"Could not find Vec name '%s' to restore",name);
+  SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_INCOMP,"Could not find Vec name '%s' to restore",name);
   PetscFunctionReturn(0);
 }

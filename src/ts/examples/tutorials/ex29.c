@@ -45,7 +45,7 @@ static PetscErrorCode CoefficientCoarsenHook(DM dm, DM dmc,void *ctx)
   PetscFunctionBegin;
   ierr = PetscObjectQuery((PetscObject)dm,"coefficientdm",(PetscObject*)&cdm);CHKERRQ(ierr);
 
-  if (!cdm) SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_ARG_WRONGSTATE,"The coefficient DM needs to be set up!");
+  if (!cdm) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"The coefficient DM needs to be set up!");
 
   ierr = DMDAGetReducedDMDA(dmc,2,&cdmc);CHKERRQ(ierr);
   ierr = PetscObjectCompose((PetscObject)dmc,"coefficientdm",(PetscObject)cdmc);CHKERRQ(ierr);
@@ -87,7 +87,7 @@ static PetscErrorCode CoefficientSubDomainRestrictHook(DM dm,DM subdm,void *ctx)
   PetscFunctionBegin;
   ierr = PetscObjectQuery((PetscObject)dm,"coefficientdm",(PetscObject*)&cdm);CHKERRQ(ierr);
 
-  if (!cdm) SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_ARG_WRONGSTATE,"The coefficient DM needs to be set up!");
+  if (!cdm) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"The coefficient DM needs to be set up!");
 
   ierr = DMDAGetReducedDMDA(subdm,2,&csubdm);CHKERRQ(ierr);
   ierr = PetscObjectCompose((PetscObject)subdm,"coefficientdm",(PetscObject)csubdm);CHKERRQ(ierr);

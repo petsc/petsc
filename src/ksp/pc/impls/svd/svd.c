@@ -37,7 +37,7 @@ typedef enum {READ=1, WRITE=2, READ_WRITE=3} AccessMode;
 static PetscErrorCode PCSetUp_SVD(PC pc)
 {
 #if defined(PETSC_MISSING_LAPACK_GESVD)
-  SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_SUP,"GESVD - Lapack routine is unavailable\nNot able to provide singular value estimates.");
+  SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"GESVD - Lapack routine is unavailable\nNot able to provide singular value estimates.");
 #else
   PC_SVD         *jac = (PC_SVD*)pc->data;
   PetscErrorCode ierr;
@@ -144,7 +144,7 @@ static PetscErrorCode PCSVDGetVec(PC pc,PCSide side,AccessMode amode,Vec x,Vec *
   PetscMPIInt    size;
 
   PetscFunctionBegin;
-  ierr  = MPI_Comm_size(((PetscObject)pc)->comm,&size);CHKERRQ(ierr);
+  ierr  = MPI_Comm_size(PetscObjectComm((PetscObject)pc),&size);CHKERRQ(ierr);
   *xred = NULL;
   switch (side) {
   case PC_LEFT:
@@ -169,7 +169,7 @@ static PetscErrorCode PCSVDGetVec(PC pc,PCSide side,AccessMode amode,Vec x,Vec *
       *xred = jac->rightred;
     }
     break;
-  default: SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_PLIB,"Side must be LEFT or RIGHT");
+  default: SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_PLIB,"Side must be LEFT or RIGHT");
   }
   PetscFunctionReturn(0);
 }
@@ -183,7 +183,7 @@ static PetscErrorCode PCSVDRestoreVec(PC pc,PCSide side,AccessMode amode,Vec x,V
   PetscMPIInt    size;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(((PetscObject)pc)->comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)pc),&size);CHKERRQ(ierr);
   switch (side) {
   case PC_LEFT:
     if (size != 1 && amode & WRITE) {
@@ -197,7 +197,7 @@ static PetscErrorCode PCSVDRestoreVec(PC pc,PCSide side,AccessMode amode,Vec x,V
       ierr = VecScatterEnd(jac->right2red,jac->rightred,x,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
     }
     break;
-  default: SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_PLIB,"Side must be LEFT or RIGHT");
+  default: SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_PLIB,"Side must be LEFT or RIGHT");
   }
   *xred = NULL;
   PetscFunctionReturn(0);
@@ -313,7 +313,7 @@ static PetscErrorCode PCSetFromOptions_SVD(PC pc)
   ierr = PetscOptionsBool("-pc_svd_monitor","Monitor the conditioning, and extremal singular values","None",jac->monitor ? PETSC_TRUE : PETSC_FALSE,&flg,&set);CHKERRQ(ierr);
   if (set) {                    /* Should make PCSVDSetMonitor() */
     if (flg && !jac->monitor) {
-      ierr = PetscViewerASCIIOpen(((PetscObject)pc)->comm,"stdout",&jac->monitor);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIOpen(PetscObjectComm((PetscObject)pc),"stdout",&jac->monitor);CHKERRQ(ierr);
     } else if (!flg) {
       ierr = PetscViewerDestroy(&jac->monitor);CHKERRQ(ierr);
     }

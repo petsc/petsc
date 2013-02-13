@@ -52,7 +52,7 @@ PetscErrorCode  TSSetType(TS ts,TSType type)
   ierr = PetscObjectTypeCompare((PetscObject) ts, type, &match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
 
-  ierr = PetscFunctionListFind(((PetscObject)ts)->comm,TSList, type,PETSC_TRUE, (void (**)(void)) &r);CHKERRQ(ierr);
+  ierr = PetscFunctionListFind(PetscObjectComm((PetscObject)ts),TSList, type,PETSC_TRUE, (void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown TS type: %s", type);
   if (ts->ops->destroy) {
     ierr = (*(ts)->ops->destroy)(ts);CHKERRQ(ierr);

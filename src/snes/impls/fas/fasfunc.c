@@ -98,7 +98,7 @@ PetscErrorCode SNESFASSetLevels(SNES snes, PetscInt levels, MPI_Comm * comms)
   MPI_Comm       comm;
 
   PetscFunctionBegin;
-  comm = ((PetscObject)snes)->comm;
+  ierr = PetscObjectGetComm((PetscObject)snes,&comm);CHKERRQ(ierr);
   if (levels == fas->levels) {
     if (!comms) PetscFunctionReturn(0);
   }
@@ -187,15 +187,15 @@ PetscErrorCode SNESFASGetCycleSNES(SNES snes,PetscInt level,SNES *lsnes)
   PetscInt i;
 
   PetscFunctionBegin;
-  if (level > fas->levels-1) SETERRQ2(((PetscObject)snes)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Requested level %D from SNESFAS containing %D levels",level,fas->levels);
-  if (fas->level !=  fas->levels - 1) SETERRQ2(((PetscObject)snes)->comm,PETSC_ERR_ARG_OUTOFRANGE,"SNESFASGetCycleSNES may only be called on the finest-level SNES.",level,fas->level);
+  if (level > fas->levels-1) SETERRQ2(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_OUTOFRANGE,"Requested level %D from SNESFAS containing %D levels",level,fas->levels);
+  if (fas->level !=  fas->levels - 1) SETERRQ2(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_OUTOFRANGE,"SNESFASGetCycleSNES may only be called on the finest-level SNES.",level,fas->level);
 
   *lsnes = snes;
   for (i = fas->level; i > level; i--) {
     *lsnes = fas->next;
     fas    = (SNES_FAS*)(*lsnes)->data;
   }
-  if (fas->level != level) SETERRQ(((PetscObject)snes)->comm,PETSC_ERR_PLIB,"SNESFAS level hierarchy corrupt");
+  if (fas->level != level) SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_PLIB,"SNESFAS level hierarchy corrupt");
   PetscFunctionReturn(0);
 }
 
@@ -352,7 +352,7 @@ PetscErrorCode SNESFASSetMonitor(SNES snes, PetscBool flg)
       ierr = SNESFASGetCycleSNES(snes, i, &levelsnes);CHKERRQ(ierr);
       fas  = (SNES_FAS*)levelsnes->data;
       if (flg) {
-        fas->monitor = PETSC_VIEWER_STDOUT_(((PetscObject)levelsnes)->comm);CHKERRQ(ierr);
+        fas->monitor = PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)levelsnes));CHKERRQ(ierr);
         /* set the monitors for the upsmoother and downsmoother */
         ierr = SNESMonitorCancel(levelsnes);CHKERRQ(ierr);
         ierr = SNESMonitorSet(levelsnes,SNESMonitorDefault,NULL,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
@@ -440,7 +440,7 @@ PetscErrorCode SNESFASCycleCreateSmoother_Private(SNES snes, SNES *smooth)
   fas  = (SNES_FAS*)snes->data;
   ierr = SNESGetOptionsPrefix(fas->fine, &optionsprefix);CHKERRQ(ierr);
   /* create the default smoother */
-  ierr = SNESCreate(((PetscObject)snes)->comm, &nsmooth);CHKERRQ(ierr);
+  ierr = SNESCreate(PetscObjectComm((PetscObject)snes), &nsmooth);CHKERRQ(ierr);
   if (fas->level == 0) {
     sprintf(tprefix,"fas_coarse_");
     ierr = SNESAppendOptionsPrefix(nsmooth, optionsprefix);CHKERRQ(ierr);

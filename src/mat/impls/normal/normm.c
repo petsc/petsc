@@ -199,7 +199,7 @@ PetscErrorCode MatGetDiagonal_Normal(Mat N,Vec v)
     }
     ierr = MatRestoreRow(A,i,&nnz,&cols,&mvalues);CHKERRQ(ierr);
   }
-  ierr   = MPI_Allreduce(work,diag,A->cmap->N,MPIU_SCALAR,MPIU_SUM,((PetscObject)N)->comm);CHKERRQ(ierr);
+  ierr   = MPI_Allreduce(work,diag,A->cmap->N,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)N));CHKERRQ(ierr);
   rstart = N->cmap->rstart;
   rend   = N->cmap->rend;
   ierr   = VecGetArray(v,&values);CHKERRQ(ierr);
@@ -237,7 +237,7 @@ PetscErrorCode  MatCreateNormal(Mat A,Mat *N)
 
   PetscFunctionBegin;
   ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
-  ierr = MatCreate(((PetscObject)A)->comm,N);CHKERRQ(ierr);
+  ierr = MatCreate(PetscObjectComm((PetscObject)A),N);CHKERRQ(ierr);
   ierr = MatSetSizes(*N,n,n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)*N,MATNORMAL);CHKERRQ(ierr);
 
@@ -247,7 +247,7 @@ PetscErrorCode  MatCreateNormal(Mat A,Mat *N)
   Na->A      = A;
   Na->scale  = 1.0;
 
-  ierr = VecCreateMPI(((PetscObject)A)->comm,m,PETSC_DECIDE,&Na->w);CHKERRQ(ierr);
+  ierr = VecCreateMPI(PetscObjectComm((PetscObject)A),m,PETSC_DECIDE,&Na->w);CHKERRQ(ierr);
 
   (*N)->ops->destroy          = MatDestroy_Normal;
   (*N)->ops->mult             = MatMult_Normal;

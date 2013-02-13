@@ -78,7 +78,7 @@ PetscErrorCode MatCreateFFT(MPI_Comm comm,PetscInt ndim,const PetscInt dim[],Mat
   FFT->ops->destroy = MatDestroy_FFT;
 
   /* get runtime options */
-  ierr = PetscOptionsBegin(((PetscObject)FFT)->comm,((PetscObject)FFT)->prefix,"FFT Options","Mat");CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)FFT),((PetscObject)FFT)->prefix,"FFT Options","Mat");CHKERRQ(ierr);
   PetscOptionsEnd();
 
   *A = FFT;

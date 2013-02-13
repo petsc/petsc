@@ -46,7 +46,7 @@ PetscErrorCode    KSPSetUp_AGMRES(KSP ksp)
   PetscInt       lwork   = PetscMax(8 * N + 16, 4 * neig * (N - neig));
 
   PetscFunctionBegin;
-  if (ksp->pc_side == PC_SYMMETRIC) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"no symmetric preconditioning for KSPAGMRES");
+  if (ksp->pc_side == PC_SYMMETRIC) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"no symmetric preconditioning for KSPAGMRES");
   max_k = agmres->max_k;
   N     = MAXKSPSIZE;
   /* Preallocate space during the call to KSPSetup_GMRES for the Krylov basis */
@@ -171,7 +171,7 @@ static PetscErrorCode KSPComputeShifts_GMRES(KSP ksp)
   /* Now, compute the Shifts values */
   ierr = PetscMalloc2(max_k,PetscScalar,&Rshift,max_k,PetscScalar,&Ishift);CHKERRQ(ierr);
   ierr = KSPComputeEigenvalues(kspgmres, max_k, Rshift, Ishift, &m);CHKERRQ(ierr);
-  if (m < max_k) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_PLIB, "Unable to compute the Shifts for the Newton basis");
+  if (m < max_k) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB, "Unable to compute the Shifts for the Newton basis");
   else {
     ierr = KSPAGMRESLejaOrdering(Rshift, Ishift, agmres->Rshift, agmres->Ishift, max_k);CHKERRQ(ierr);
 
@@ -430,7 +430,7 @@ static PetscErrorCode KSPAGMRESBuildHessenberg(KSP ksp)
       *H(j,j) = (*RLOC(j,j+1) + Rshift[j-1] * *RLOC(j,j));
       *H(j+1,j) = *RLOC(j+1,j+1);
       j++;
-    } else SETERRQ(((PetscObject)ksp)->comm, PETSC_ERR_ORDER, "BAD ORDERING OF THE SHIFTS VALUES IN THE NEWTON BASIS");
+    } else SETERRQ(PetscObjectComm((PetscObject)ksp), PETSC_ERR_ORDER, "BAD ORDERING OF THE SHIFTS VALUES IN THE NEWTON BASIS");
   }
   for (j = max_k; j< KspSize; j++) { /* take into account the norm of the augmented vectors */
     for (i = 0; i <= j+1; i++) *H(i,j) = *RLOC(i, j+1)/Scale[j];
@@ -473,28 +473,28 @@ static PetscErrorCode KSPAGMRESBuildSoln(KSP ksp,PetscInt it)
   }
   /* QR factorize the Hessenberg matrix */
 #if defined(PETSC_MISSING_LAPACK_GEQRF)
-  SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"GEQRF - Lapack routine is unavailable.");
+  SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"GEQRF - Lapack routine is unavailable.");
 #else
   PetscStackCall("LAPACKgeqrf",LAPACKgeqrf_(&lC, &KspSize, agmres->hh_origin, &ldH, agmres->tau, agmres->work, &lwork, &info));
-  if (info) SETERRQ1 (((PetscObject)ksp)->comm, PETSC_ERR_LIB,"Error in LAPACK routine XGEQRF INFO=%d", info);
+  if (info) SETERRQ1 (PetscObjectComm((PetscObject)ksp), PETSC_ERR_LIB,"Error in LAPACK routine XGEQRF INFO=%d", info);
 #endif
   /* Update the right hand side of the least square problem */
   ierr = PetscMemzero(agmres->nrs, N*sizeof(PetscScalar));CHKERRQ(ierr);
 
   agmres->nrs[0] = ksp->rnorm;
 #if defined(PETSC_MISSING_LAPACK_ORMQR)
-  SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"GEQRF - Lapack routine is unavailable.");
+  SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"GEQRF - Lapack routine is unavailable.");
 #else
   PetscStackCall("LAPACKormqr",LAPACKormqr_("L", "T", &lC, &nrhs, &KspSize, agmres->hh_origin, &ldH, agmres->tau, agmres->nrs, &N, agmres->work, &lwork, &info));
-  if (info) SETERRQ1 (((PetscObject)ksp)->comm, PETSC_ERR_LIB,"Error in LAPACK routine XORMQR INFO=%d",info);
+  if (info) SETERRQ1 (PetscObjectComm((PetscObject)ksp), PETSC_ERR_LIB,"Error in LAPACK routine XORMQR INFO=%d",info);
 #endif
   ksp->rnorm = PetscAbsScalar(agmres->nrs[KspSize]);
   /* solve the least-square problem */
 #if defined(PETSC_MISSING_LAPACK_TRTRS)
-  SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"TRTRS - Lapack routine is unavailable.");
+  SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"TRTRS - Lapack routine is unavailable.");
 #else
   PetscStackCall("LAPACKtrtrs",LAPACKtrtrs_("U", "N", "N", &KspSize, &nrhs, agmres->hh_origin, &ldH, agmres->nrs, &N, &info));
-  if (info) SETERRQ1 (((PetscObject)ksp)->comm, PETSC_ERR_LIB,"Error in LAPACK routine XTRTRS INFO=%d",info);
+  if (info) SETERRQ1 (PetscObjectComm((PetscObject)ksp), PETSC_ERR_LIB,"Error in LAPACK routine XTRTRS INFO=%d",info);
 #endif
   /* Accumulate the correction to the solution of the preconditioned problem in VEC_TMP */
   ierr = VecZeroEntries(VEC_TMP);CHKERRQ(ierr);

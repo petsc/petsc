@@ -461,7 +461,7 @@ PetscErrorCode  KSPBCGSLSetEll(KSP ksp, PetscInt ell)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (ell < 1) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_ARG_OUTOFRANGE, "KSPBCGSLSetEll: second argument must be positive");
+  if (ell < 1) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_OUTOFRANGE, "KSPBCGSLSetEll: second argument must be positive");
   PetscValidLogicalCollectiveInt(ksp,ell,2);
 
   if (!ksp->setupstage) bcgsl->ell = ell;

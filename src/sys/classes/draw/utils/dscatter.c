@@ -54,10 +54,10 @@ PetscErrorCode  PetscDrawSPCreate(PetscDraw draw,int dim,PetscDrawSP *drawsp)
   PetscValidPointer(drawsp,3);
   ierr = PetscObjectTypeCompare(obj,PETSC_DRAW_NULL,&isnull);CHKERRQ(ierr);
   if (isnull) {
-    ierr = PetscDrawOpenNull(((PetscObject)obj)->comm,(PetscDraw*)drawsp);CHKERRQ(ierr);
+    ierr = PetscDrawOpenNull(PetscObjectComm((PetscObject)obj),(PetscDraw*)drawsp);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
-  ierr = PetscHeaderCreate(sp,_p_PetscDrawSP,int,PETSC_DRAWSP_CLASSID,"PetscDrawSP","Scatter plot","Draw",((PetscObject)obj)->comm,PetscDrawSPDestroy,0);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(sp,_p_PetscDrawSP,int,PETSC_DRAWSP_CLASSID,"PetscDrawSP","Scatter plot","Draw",PetscObjectComm((PetscObject)obj),PetscDrawSPDestroy,0);CHKERRQ(ierr);
 
   sp->view    = 0;
   sp->destroy = 0;
@@ -328,7 +328,7 @@ PetscErrorCode  PetscDrawSPDraw(PetscDrawSP sp, PetscBool clear)
   ierr = PetscDrawAxisSetLimits(sp->axis,xmin,xmax,ymin,ymax);CHKERRQ(ierr);
   ierr = PetscDrawAxisDraw(sp->axis);CHKERRQ(ierr);
 
-  ierr = MPI_Comm_rank(((PetscObject)sp)->comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)sp),&rank);CHKERRQ(ierr);
   if (!rank) {
     for (i=0; i<dim; i++) {
       for (j=0; j<nopts; j++) {

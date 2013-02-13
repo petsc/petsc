@@ -284,7 +284,7 @@ PetscErrorCode  KSPFischerGuessCreate(KSP ksp,PetscInt method,PetscInt maxl,KSPF
     ierr = KSPFischerGuessCreate_Method1(ksp,maxl,(KSPFischerGuess_Method1**)itg);CHKERRQ(ierr);
   } else if (method == 2) {
     ierr = KSPFischerGuessCreate_Method2(ksp,maxl,(KSPFischerGuess_Method2**)itg);CHKERRQ(ierr);
-  } else SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Method can only be 1 or 2");
+  } else SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_OUTOFRANGE,"Method can only be 1 or 2");
   (*itg)->method = method;
   (*itg)->curl   = 0;
   (*itg)->maxl   = maxl;

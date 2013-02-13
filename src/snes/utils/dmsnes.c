@@ -221,7 +221,7 @@ PetscErrorCode DMGetDMSNES(DM dm,DMSNES *snesdm)
   *snesdm = (DMSNES) dm->dmsnes;
   if (!*snesdm) {
     ierr = PetscInfo(dm,"Creating new DMSNES\n");CHKERRQ(ierr);
-    ierr = DMSNESCreate(((PetscObject)dm)->comm,snesdm);CHKERRQ(ierr);
+    ierr = DMSNESCreate(PetscObjectComm((PetscObject)dm),snesdm);CHKERRQ(ierr);
 
     dm->dmsnes = (PetscObject) *snesdm;
 
@@ -261,7 +261,7 @@ PetscErrorCode DMGetDMSNESWrite(DM dm,DMSNES *snesdm)
   if (sdm->originaldm != dm) {  /* Copy on write */
     DMSNES oldsdm = sdm;
     ierr       = PetscInfo(dm,"Copying DMSNES due to write\n");CHKERRQ(ierr);
-    ierr       = DMSNESCreate(((PetscObject)dm)->comm,&sdm);CHKERRQ(ierr);
+    ierr       = DMSNESCreate(PetscObjectComm((PetscObject)dm),&sdm);CHKERRQ(ierr);
     ierr       = DMSNESCopy(oldsdm,sdm);CHKERRQ(ierr);
     ierr       = DMSNESDestroy((DMSNES*)&dm->dmsnes);CHKERRQ(ierr);
     dm->dmsnes = (PetscObject)sdm;

@@ -132,7 +132,7 @@ PetscErrorCode DMGetDMKSP(DM dm,DMKSP *kspdm)
   *kspdm = (DMKSP) dm->dmksp;
   if (!*kspdm) {
     ierr      = PetscInfo(dm,"Creating new DMKSP\n");CHKERRQ(ierr);
-    ierr      = DMKSPCreate(((PetscObject)dm)->comm,kspdm);CHKERRQ(ierr);
+    ierr      = DMKSPCreate(PetscObjectComm((PetscObject)dm),kspdm);CHKERRQ(ierr);
     dm->dmksp = (PetscObject) *kspdm;
     ierr      = DMCoarsenHookAdd(dm,DMCoarsenHook_DMKSP,NULL,NULL);CHKERRQ(ierr);
     ierr      = DMRefineHookAdd(dm,DMRefineHook_DMKSP,NULL,NULL);CHKERRQ(ierr);
@@ -169,7 +169,7 @@ PetscErrorCode DMGetDMKSPWrite(DM dm,DMKSP *kspdm)
   if (kdm->originaldm != dm) {  /* Copy on write */
     DMKSP oldkdm = kdm;
     ierr      = PetscInfo(dm,"Copying DMKSP due to write\n");CHKERRQ(ierr);
-    ierr      = DMKSPCreate(((PetscObject)dm)->comm,&kdm);CHKERRQ(ierr);
+    ierr      = DMKSPCreate(PetscObjectComm((PetscObject)dm),&kdm);CHKERRQ(ierr);
     ierr      = DMKSPCopy(oldkdm,kdm);CHKERRQ(ierr);
     ierr      = DMKSPDestroy((DMKSP*)&dm->dmksp);CHKERRQ(ierr);
     dm->dmksp = (PetscObject)kdm;

@@ -20,7 +20,7 @@ PetscErrorCode MatView_MPIAdj_ASCII(Mat A,PetscViewer viewer)
   if (format == PETSC_VIEWER_ASCII_INFO) {
     PetscFunctionReturn(0);
   } else if (format == PETSC_VIEWER_ASCII_MATLAB) {
-    SETERRQ(((PetscObject)A)->comm,PETSC_ERR_SUP,"MATLAB format not supported");
+    SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"MATLAB format not supported");
   } else {
     ierr = PetscViewerASCIIUseTabs(viewer,PETSC_FALSE);CHKERRQ(ierr);
     ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_TRUE);CHKERRQ(ierr);
@@ -184,7 +184,7 @@ PetscErrorCode MatEqual_MPIAdj(Mat A,Mat B,PetscBool * flg)
   /* if a->j are the same */
   ierr = PetscMemcmp(a->j,b->j,(a->nz)*sizeof(PetscInt),&flag);CHKERRQ(ierr);
 
-  ierr = MPI_Allreduce(&flag,flg,1,MPIU_BOOL,MPI_LAND,((PetscObject)A)->comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&flag,flg,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)A));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -445,7 +445,7 @@ PETSC_EXTERN_C PetscErrorCode MatMPIAdjCreateNonemptySubcommMat_MPIAdj(Mat A,Mat
 
   PetscFunctionBegin;
   *B    = NULL;
-  acomm = ((PetscObject)A)->comm;
+  ierr  = PetscObjectGetComm((PetscObject)A,&acomm);CHKERRQ(ierr);
   ierr  = MPI_Comm_size(acomm,&size);CHKERRQ(ierr);
   ierr  = MPI_Comm_size(acomm,&rank);CHKERRQ(ierr);
   ierr  = MatGetOwnershipRanges(A,&ranges);CHKERRQ(ierr);

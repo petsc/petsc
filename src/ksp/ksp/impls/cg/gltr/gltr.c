@@ -33,7 +33,7 @@ PetscErrorCode  KSPGLTRSetRadius(KSP ksp, PetscReal radius)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
-  if (radius < 0.0) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_ARG_OUTOFRANGE, "Radius negative");
+  if (radius < 0.0) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_OUTOFRANGE, "Radius negative");
   PetscValidLogicalCollectiveReal(ksp,radius,2);
   ierr = PetscTryMethod(ksp,"KSPGLTRSetRadius_C",(KSP,PetscReal),(ksp,radius));CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -144,7 +144,7 @@ PetscErrorCode  KSPGLTRGetLambda(KSP ksp, PetscReal *lambda)
 PetscErrorCode KSPSolve_GLTR(KSP ksp)
 {
 #if defined(PETSC_USE_COMPLEX)
-  SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP, "GLTR is not available for complex systems");
+  SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP, "GLTR is not available for complex systems");
 #else
   KSP_GLTR     *cg = (KSP_GLTR*)ksp->data;
   PetscReal    *t_soln, *t_diag, *t_offd, *e_valu, *e_vect, *e_rwrk;
@@ -178,8 +178,8 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
   /***************************************************************************/
 
   ierr = PCGetDiagonalScale(ksp->pc, &diagonalscale);CHKERRQ(ierr);
-  if (diagonalscale) SETERRQ1(((PetscObject)ksp)->comm,PETSC_ERR_SUP, "Krylov method %s does not support diagonal scaling", ((PetscObject)ksp)->type_name);
-  if (cg->radius < 0.0) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_ARG_OUTOFRANGE, "Input error: radius < 0");
+  if (diagonalscale) SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP, "Krylov method %s does not support diagonal scaling", ((PetscObject)ksp)->type_name);
+  if (cg->radius < 0.0) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_OUTOFRANGE, "Input error: radius < 0");
 
   /***************************************************************************/
   /* Get the workspace vectors and initialize variables                      */
@@ -931,7 +931,7 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
   iu = 1;
 
 #if defined(PETSC_MISSING_LAPACK_STEBZ)
-  SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"STEBZ - Lapack routine is unavailable.");
+  SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"STEBZ - Lapack routine is unavailable.");
 #else
   PetscStackCall("LAPACKstebz",LAPACKstebz_("I", "E", &t_size, &vl, &vu, &il, &iu, &cg->eigen_tol,cg->diag, cg->offd + 1, &e_valus, &e_splts, e_valu,e_iblk, e_splt, e_rwrk, e_iwrk, &info));
 
@@ -964,7 +964,7 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
     }
 
 #if defined(PETSC_MISSING_LAPACK_PTTRF)
-    SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"PTTRF - Lapack routine is unavailable.");
+    SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"PTTRF - Lapack routine is unavailable.");
 #else
     PetscStackCall("LAPACKpttrf",LAPACKpttrf_(&t_size, t_diag, t_offd + 1, &info));
 
@@ -986,7 +986,7 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
   for (i = 1; i < t_size; ++i) t_soln[i] = 0.0;
 
 #if defined(PETSC_MISSING_LAPACK_PTTRS)
-  SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"PTTRS - Lapack routine is unavailable.");
+  SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"PTTRS - Lapack routine is unavailable.");
 #else
   PetscStackCall("LAPACKpttrs",LAPACKpttrs_(&t_size, &nrhs, t_diag, t_offd + 1, t_soln, &nldb, &info));
 #endif
@@ -1024,7 +1024,7 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
       /***********************************************************************/
 
 #if defined(PETSC_MISSING_LAPACK_STEIN)
-      SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"STEIN - Lapack routine is unavailable.");
+      SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"STEIN - Lapack routine is unavailable.");
 #else
       PetscStackCall("LAPACKstein",LAPACKstein_(&t_size, cg->diag, cg->offd + 1, &e_valus, e_valu,e_iblk, e_splt, e_vect, &nldb,e_rwrk, e_iwrk, e_iwrk + t_size, &info));
 #endif
@@ -1129,7 +1129,7 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
       PetscMemcpy(e_rwrk, t_soln, sizeof(PetscReal)*t_size);
 
 #if defined(PETSC_MISSING_LAPACK_PTTRS)
-      SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"PTTRS - Lapack routine is unavailable.");
+      SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"PTTRS - Lapack routine is unavailable.");
 #else
       PetscStackCall("LAPACKpttrs",LAPACKpttrs_(&t_size, &nrhs, t_diag, t_offd + 1, e_rwrk, &nldb, &info));
 #endif
@@ -1164,7 +1164,7 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
       }
 
 #if defined(PETSC_MISSING_LAPACK_PTTRF)
-      SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"PTTRF - Lapack routine is unavailable.");
+      SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"PTTRF - Lapack routine is unavailable.");
 #else
       PetscStackCall("LAPACKpttrf",LAPACKpttrf_(&t_size, t_diag, t_offd + 1, &info));
 #endif
@@ -1188,7 +1188,7 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
       for (j = 1; j < t_size; ++j) t_soln[j] = 0.0;
 
 #if defined(PETSC_MISSING_LAPACK_PTTRS)
-      SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"PTTRS - Lapack routine is unavailable.");
+      SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"PTTRS - Lapack routine is unavailable.");
 #else
       PetscStackCall("LAPACKpttrs",LAPACKpttrs_(&t_size, &nrhs, t_diag, t_offd + 1, t_soln, &nldb, &info));
 #endif

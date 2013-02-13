@@ -62,14 +62,14 @@ PetscErrorCode  MatGetVecs_MPIAIJCUSP(Mat mat,Vec *right,Vec *left)
 
   PetscFunctionBegin;
   if (right) {
-    ierr = VecCreate(((PetscObject)mat)->comm,right);CHKERRQ(ierr);
+    ierr = VecCreate(PetscObjectComm((PetscObject)mat),right);CHKERRQ(ierr);
     ierr = VecSetSizes(*right,mat->cmap->n,PETSC_DETERMINE);CHKERRQ(ierr);
     ierr = VecSetBlockSize(*right,mat->rmap->bs);CHKERRQ(ierr);
     ierr = VecSetType(*right,VECCUSP);CHKERRQ(ierr);
     ierr = PetscLayoutReference(mat->cmap,&(*right)->map);CHKERRQ(ierr);
   }
   if (left) {
-    ierr = VecCreate(((PetscObject)mat)->comm,left);CHKERRQ(ierr);
+    ierr = VecCreate(PetscObjectComm((PetscObject)mat),left);CHKERRQ(ierr);
     ierr = VecSetSizes(*left,mat->rmap->n,PETSC_DETERMINE);CHKERRQ(ierr);
     ierr = VecSetBlockSize(*left,mat->rmap->bs);CHKERRQ(ierr);
     ierr = VecSetType(*left,VECCUSP);CHKERRQ(ierr);

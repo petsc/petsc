@@ -12,7 +12,7 @@ PetscErrorCode  MatGetMultiProcBlock_MPIAIJ(Mat mat, MPI_Comm subComm, MatReuse 
   PetscInt       *garrayCMap,col,i,j,*nnz,newRow,newCol;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(((PetscObject)mat)->comm,&commsize);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)mat),&commsize);CHKERRQ(ierr);
   ierr = MPI_Comm_size(subComm,&subCommSize);CHKERRQ(ierr);
 
   /* create subMat object with the relavent layout */
@@ -30,7 +30,7 @@ PetscErrorCode  MatGetMultiProcBlock_MPIAIJ(Mat mat, MPI_Comm subComm, MatReuse 
   }
 
   /* create a map of comm_rank from subComm to comm - should commRankMap and garrayCMap be kept for reused? */
-  ierr = MPI_Comm_rank(((PetscObject)mat)->comm,&commRank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)mat),&commRank);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(subComm,&subCommRank);CHKERRQ(ierr);
   ierr = PetscMalloc(subCommSize*sizeof(PetscMPIInt),&commRankMap);CHKERRQ(ierr);
   ierr = MPI_Allgather(&commRank,1,MPI_INT,commRankMap,1,MPI_INT,subComm);CHKERRQ(ierr);

@@ -1792,7 +1792,7 @@ PetscErrorCode PetscSectionSetFieldConstraintIndices(PetscSection s, PetscInt po
 #define __FUNCT__ "PetscSFConvertPartition"
 PetscErrorCode PetscSFConvertPartition(PetscSF sfPart, PetscSection partSection, IS partition, ISLocalToGlobalMapping *renumbering, PetscSF *sf)
 {
-  MPI_Comm       comm = ((PetscObject)sfPart)->comm;
+  MPI_Comm       comm;
   PetscSF        sfPoints;
   PetscInt       *partSizes,*partOffsets,p,i,numParts,numMyPoints,numPoints,count;
   const PetscInt *partArray;
@@ -1801,6 +1801,7 @@ PetscErrorCode PetscSFConvertPartition(PetscSF sfPart, PetscSection partSection,
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)sfPart,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
 
   /* Get the number of parts and sizes that I have to distribute */

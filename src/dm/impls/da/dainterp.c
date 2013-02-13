@@ -81,7 +81,7 @@ PetscErrorCode DMCreateInterpolation_DA_1D_Q1(DM dac,DM daf,Mat *A)
   ierr = DMDAGetGlobalIndices(dac,NULL,&idx_c);CHKERRQ(ierr);
 
   /* create interpolation matrix */
-  ierr = MatCreate(((PetscObject)dac)->comm,&mat);CHKERRQ(ierr);
+  ierr = MatCreate(PetscObjectComm((PetscObject)dac),&mat);CHKERRQ(ierr);
   ierr = MatSetSizes(mat,m_f,m_c,mx,Mx);CHKERRQ(ierr);
   ierr = MatSetType(mat,MATAIJ);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(mat,2,NULL);CHKERRQ(ierr);
@@ -207,7 +207,7 @@ PetscErrorCode DMCreateInterpolation_DA_1D_Q0(DM dac,DM daf,Mat *A)
   ierr = DMDAGetGlobalIndices(dac,NULL,&idx_c);CHKERRQ(ierr);
 
   /* create interpolation matrix */
-  ierr = MatCreate(((PetscObject)dac)->comm,&mat);CHKERRQ(ierr);
+  ierr = MatCreate(PetscObjectComm((PetscObject)dac),&mat);CHKERRQ(ierr);
   ierr = MatSetSizes(mat,m_f,m_c,mx,Mx);CHKERRQ(ierr);
   ierr = MatSetType(mat,MATAIJ);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(mat,2,NULL);CHKERRQ(ierr);
@@ -297,13 +297,13 @@ PetscErrorCode DMCreateInterpolation_DA_2D_Q1(DM dac,DM daf,Mat *A)
 
    In the standard case when size_f == size_c col_scale == 1 and col_shift == 0
    */
-  ierr      = MPI_Comm_size(((PetscObject)dac)->comm,&size_c);CHKERRQ(ierr);
-  ierr      = MPI_Comm_size(((PetscObject)daf)->comm,&size_f);CHKERRQ(ierr);
-  ierr      = MPI_Comm_rank(((PetscObject)daf)->comm,&rank_f);CHKERRQ(ierr);
+  ierr      = MPI_Comm_size(PetscObjectComm((PetscObject)dac),&size_c);CHKERRQ(ierr);
+  ierr      = MPI_Comm_size(PetscObjectComm((PetscObject)daf),&size_f);CHKERRQ(ierr);
+  ierr      = MPI_Comm_rank(PetscObjectComm((PetscObject)daf),&rank_f);CHKERRQ(ierr);
   col_scale = size_f/size_c;
   col_shift = Mx*My*(rank_f/size_c);
 
-  ierr = MatPreallocateInitialize(((PetscObject)daf)->comm,m_f*n_f,col_scale*m_c*n_c,dnz,onz);CHKERRQ(ierr);
+  ierr = MatPreallocateInitialize(PetscObjectComm((PetscObject)daf),m_f*n_f,col_scale*m_c*n_c,dnz,onz);CHKERRQ(ierr);
   for (j=j_start; j<j_start+n_f; j++) {
     for (i=i_start; i<i_start+m_f; i++) {
       /* convert to local "natural" numbering and then to PETSc global numbering */
@@ -335,7 +335,7 @@ PetscErrorCode DMCreateInterpolation_DA_2D_Q1(DM dac,DM daf,Mat *A)
       ierr = MatPreallocateSet(row,nc,cols,dnz,onz);CHKERRQ(ierr);
     }
   }
-  ierr = MatCreate(((PetscObject)daf)->comm,&mat);CHKERRQ(ierr);
+  ierr = MatCreate(PetscObjectComm((PetscObject)daf),&mat);CHKERRQ(ierr);
   ierr = MatSetSizes(mat,m_f*n_f,col_scale*m_c*n_c,mx*my,col_scale*Mx*My);CHKERRQ(ierr);
   ierr = MatSetType(mat,MATAIJ);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(mat,0,dnz);CHKERRQ(ierr);
@@ -483,14 +483,14 @@ PetscErrorCode DMCreateInterpolation_DA_2D_Q0(DM dac,DM daf,Mat *A)
   PetscFunctionBegin;
   ierr = DMDAGetInfo(dac,0,&Mx,&My,0,0,0,0,0,0,&bx,&by,0,0);CHKERRQ(ierr);
   ierr = DMDAGetInfo(daf,0,&mx,&my,0,0,0,0,&dof,0,0,0,0,0);CHKERRQ(ierr);
-  if (bx == DMDA_BOUNDARY_PERIODIC) SETERRQ(((PetscObject)daf)->comm,PETSC_ERR_ARG_WRONG,"Cannot handle periodic grid in x");
-  if (by == DMDA_BOUNDARY_PERIODIC) SETERRQ(((PetscObject)daf)->comm,PETSC_ERR_ARG_WRONG,"Cannot handle periodic grid in y");
+  if (bx == DMDA_BOUNDARY_PERIODIC) SETERRQ(PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_WRONG,"Cannot handle periodic grid in x");
+  if (by == DMDA_BOUNDARY_PERIODIC) SETERRQ(PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_WRONG,"Cannot handle periodic grid in y");
   ratioi = mx/Mx;
   ratioj = my/My;
-  if (ratioi*Mx != mx) SETERRQ(((PetscObject)daf)->comm,PETSC_ERR_ARG_WRONG,"Fine grid points must be multiple of coarse grid points in x");
-  if (ratioj*My != my) SETERRQ(((PetscObject)daf)->comm,PETSC_ERR_ARG_WRONG,"Fine grid points must be multiple of coarse grid points in y");
-  if (ratioi != 2) SETERRQ(((PetscObject)daf)->comm,PETSC_ERR_ARG_WRONG,"Coarsening factor in x must be 2");
-  if (ratioj != 2) SETERRQ(((PetscObject)daf)->comm,PETSC_ERR_ARG_WRONG,"Coarsening factor in y must be 2");
+  if (ratioi*Mx != mx) SETERRQ(PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_WRONG,"Fine grid points must be multiple of coarse grid points in x");
+  if (ratioj*My != my) SETERRQ(PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_WRONG,"Fine grid points must be multiple of coarse grid points in y");
+  if (ratioi != 2) SETERRQ(PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_WRONG,"Coarsening factor in x must be 2");
+  if (ratioj != 2) SETERRQ(PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_WRONG,"Coarsening factor in y must be 2");
 
   ierr = DMDAGetCorners(daf,&i_start,&j_start,0,&m_f,&n_f,0);CHKERRQ(ierr);
   ierr = DMDAGetGhostCorners(daf,&i_start_ghost,&j_start_ghost,0,&m_ghost,&n_ghost,0);CHKERRQ(ierr);
@@ -510,13 +510,13 @@ PetscErrorCode DMCreateInterpolation_DA_2D_Q0(DM dac,DM daf,Mat *A)
 
      In the standard case when size_f == size_c col_scale == 1 and col_shift == 0
   */
-  ierr      = MPI_Comm_size(((PetscObject)dac)->comm,&size_c);CHKERRQ(ierr);
-  ierr      = MPI_Comm_size(((PetscObject)daf)->comm,&size_f);CHKERRQ(ierr);
-  ierr      = MPI_Comm_rank(((PetscObject)daf)->comm,&rank_f);CHKERRQ(ierr);
+  ierr      = MPI_Comm_size(PetscObjectComm((PetscObject)dac),&size_c);CHKERRQ(ierr);
+  ierr      = MPI_Comm_size(PetscObjectComm((PetscObject)daf),&size_f);CHKERRQ(ierr);
+  ierr      = MPI_Comm_rank(PetscObjectComm((PetscObject)daf),&rank_f);CHKERRQ(ierr);
   col_scale = size_f/size_c;
   col_shift = Mx*My*(rank_f/size_c);
 
-  ierr = MatPreallocateInitialize(((PetscObject)daf)->comm,m_f*n_f,col_scale*m_c*n_c,dnz,onz);CHKERRQ(ierr);
+  ierr = MatPreallocateInitialize(PetscObjectComm((PetscObject)daf),m_f*n_f,col_scale*m_c*n_c,dnz,onz);CHKERRQ(ierr);
   for (j=j_start; j<j_start+n_f; j++) {
     for (i=i_start; i<i_start+m_f; i++) {
       /* convert to local "natural" numbering and then to PETSc global numbering */
@@ -542,7 +542,7 @@ PetscErrorCode DMCreateInterpolation_DA_2D_Q0(DM dac,DM daf,Mat *A)
       ierr       = MatPreallocateSet(row,nc,cols,dnz,onz);CHKERRQ(ierr);
     }
   }
-  ierr = MatCreate(((PetscObject)daf)->comm,&mat);CHKERRQ(ierr);
+  ierr = MatCreate(PetscObjectComm((PetscObject)daf),&mat);CHKERRQ(ierr);
   ierr = MatSetSizes(mat,m_f*n_f,col_scale*m_c*n_c,mx*my,col_scale*Mx*My);CHKERRQ(ierr);
   ierr = MatSetType(mat,MATAIJ);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(mat,0,dnz);CHKERRQ(ierr);
@@ -594,18 +594,18 @@ PetscErrorCode DMCreateInterpolation_DA_3D_Q0(DM dac,DM daf,Mat *A)
   PetscFunctionBegin;
   ierr = DMDAGetInfo(dac,0,&Mx,&My,&Mz,0,0,0,0,0,&bx,&by,&bz,0);CHKERRQ(ierr);
   ierr = DMDAGetInfo(daf,0,&mx,&my,&mz,0,0,0,&dof,0,0,0,0,0);CHKERRQ(ierr);
-  if (bx == DMDA_BOUNDARY_PERIODIC) SETERRQ(((PetscObject)daf)->comm,PETSC_ERR_ARG_WRONG,"Cannot handle periodic grid in x");
-  if (by == DMDA_BOUNDARY_PERIODIC) SETERRQ(((PetscObject)daf)->comm,PETSC_ERR_ARG_WRONG,"Cannot handle periodic grid in y");
-  if (bz == DMDA_BOUNDARY_PERIODIC) SETERRQ(((PetscObject)daf)->comm,PETSC_ERR_ARG_WRONG,"Cannot handle periodic grid in z");
+  if (bx == DMDA_BOUNDARY_PERIODIC) SETERRQ(PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_WRONG,"Cannot handle periodic grid in x");
+  if (by == DMDA_BOUNDARY_PERIODIC) SETERRQ(PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_WRONG,"Cannot handle periodic grid in y");
+  if (bz == DMDA_BOUNDARY_PERIODIC) SETERRQ(PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_WRONG,"Cannot handle periodic grid in z");
   ratioi = mx/Mx;
   ratioj = my/My;
   ratiol = mz/Mz;
-  if (ratioi*Mx != mx) SETERRQ(((PetscObject)daf)->comm,PETSC_ERR_ARG_WRONG,"Fine grid points must be multiple of coarse grid points in x");
-  if (ratioj*My != my) SETERRQ(((PetscObject)daf)->comm,PETSC_ERR_ARG_WRONG,"Fine grid points must be multiple of coarse grid points in y");
-  if (ratiol*Mz != mz) SETERRQ(((PetscObject)daf)->comm,PETSC_ERR_ARG_WRONG,"Fine grid points must be multiple of coarse grid points in z");
-  if (ratioi != 2 && ratioi != 1) SETERRQ(((PetscObject)daf)->comm,PETSC_ERR_ARG_WRONG,"Coarsening factor in x must be 1 or 2");
-  if (ratioj != 2 && ratioj != 1) SETERRQ(((PetscObject)daf)->comm,PETSC_ERR_ARG_WRONG,"Coarsening factor in y must be 1 or 2");
-  if (ratiol != 2 && ratiol != 1) SETERRQ(((PetscObject)daf)->comm,PETSC_ERR_ARG_WRONG,"Coarsening factor in z must be 1 or 2");
+  if (ratioi*Mx != mx) SETERRQ(PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_WRONG,"Fine grid points must be multiple of coarse grid points in x");
+  if (ratioj*My != my) SETERRQ(PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_WRONG,"Fine grid points must be multiple of coarse grid points in y");
+  if (ratiol*Mz != mz) SETERRQ(PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_WRONG,"Fine grid points must be multiple of coarse grid points in z");
+  if (ratioi != 2 && ratioi != 1) SETERRQ(PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_WRONG,"Coarsening factor in x must be 1 or 2");
+  if (ratioj != 2 && ratioj != 1) SETERRQ(PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_WRONG,"Coarsening factor in y must be 1 or 2");
+  if (ratiol != 2 && ratiol != 1) SETERRQ(PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_WRONG,"Coarsening factor in z must be 1 or 2");
 
   ierr = DMDAGetCorners(daf,&i_start,&j_start,&l_start,&m_f,&n_f,&p_f);CHKERRQ(ierr);
   ierr = DMDAGetGhostCorners(daf,&i_start_ghost,&j_start_ghost,&l_start_ghost,&m_ghost,&n_ghost,&p_ghost);CHKERRQ(ierr);
@@ -624,13 +624,13 @@ PetscErrorCode DMCreateInterpolation_DA_3D_Q0(DM dac,DM daf,Mat *A)
 
      In the standard case when size_f == size_c col_scale == 1 and col_shift == 0
   */
-  ierr      = MPI_Comm_size(((PetscObject)dac)->comm,&size_c);CHKERRQ(ierr);
-  ierr      = MPI_Comm_size(((PetscObject)daf)->comm,&size_f);CHKERRQ(ierr);
-  ierr      = MPI_Comm_rank(((PetscObject)daf)->comm,&rank_f);CHKERRQ(ierr);
+  ierr      = MPI_Comm_size(PetscObjectComm((PetscObject)dac),&size_c);CHKERRQ(ierr);
+  ierr      = MPI_Comm_size(PetscObjectComm((PetscObject)daf),&size_f);CHKERRQ(ierr);
+  ierr      = MPI_Comm_rank(PetscObjectComm((PetscObject)daf),&rank_f);CHKERRQ(ierr);
   col_scale = size_f/size_c;
   col_shift = Mx*My*Mz*(rank_f/size_c);
 
-  ierr = MatPreallocateInitialize(((PetscObject)daf)->comm,m_f*n_f*p_f,col_scale*m_c*n_c*p_c,dnz,onz);CHKERRQ(ierr);
+  ierr = MatPreallocateInitialize(PetscObjectComm((PetscObject)daf),m_f*n_f*p_f,col_scale*m_c*n_c*p_c,dnz,onz);CHKERRQ(ierr);
   for (l=l_start; l<l_start+p_f; l++) {
     for (j=j_start; j<j_start+n_f; j++) {
       for (i=i_start; i<i_start+m_f; i++) {
@@ -661,7 +661,7 @@ PetscErrorCode DMCreateInterpolation_DA_3D_Q0(DM dac,DM daf,Mat *A)
       }
     }
   }
-  ierr = MatCreate(((PetscObject)daf)->comm,&mat);CHKERRQ(ierr);
+  ierr = MatCreate(PetscObjectComm((PetscObject)daf),&mat);CHKERRQ(ierr);
   ierr = MatSetSizes(mat,m_f*n_f*p_f,col_scale*m_c*n_c*p_c,mx*my*mz,col_scale*Mx*My*Mz);CHKERRQ(ierr);
   ierr = MatSetType(mat,MATAIJ);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(mat,0,dnz);CHKERRQ(ierr);
@@ -751,7 +751,7 @@ PetscErrorCode DMCreateInterpolation_DA_3D_Q1(DM dac,DM daf,Mat *A)
   ierr = DMDAGetGlobalIndices(dac,NULL,&idx_c);CHKERRQ(ierr);
 
   /* create interpolation matrix, determining exact preallocation */
-  ierr = MatPreallocateInitialize(((PetscObject)dac)->comm,m_f*n_f*p_f,m_c*n_c*p_c,dnz,onz);CHKERRQ(ierr);
+  ierr = MatPreallocateInitialize(PetscObjectComm((PetscObject)dac),m_f*n_f*p_f,m_c*n_c*p_c,dnz,onz);CHKERRQ(ierr);
   /* loop over local fine grid nodes counting interpolating points */
   for (l=l_start; l<l_start+p_f; l++) {
     for (j=j_start; j<j_start+n_f; j++) {
@@ -801,7 +801,7 @@ PetscErrorCode DMCreateInterpolation_DA_3D_Q1(DM dac,DM daf,Mat *A)
       }
     }
   }
-  ierr = MatCreate(((PetscObject)dac)->comm,&mat);CHKERRQ(ierr);
+  ierr = MatCreate(PetscObjectComm((PetscObject)dac),&mat);CHKERRQ(ierr);
   ierr = MatSetSizes(mat,m_f*n_f*p_f,m_c*n_c*p_c,mx*my*mz,Mx*My*Mz);CHKERRQ(ierr);
   ierr = MatSetType(mat,MATAIJ);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(mat,0,dnz);CHKERRQ(ierr);
@@ -989,11 +989,11 @@ PetscErrorCode  DMCreateInterpolation_DA(DM dac,DM daf,Mat *A,Vec *scale)
 
   ierr = DMDAGetInfo(dac,&dimc,&Mc,&Nc,&Pc,&mc,&nc,&pc,&dofc,&sc,&bxc,&byc,&bzc,&stc);CHKERRQ(ierr);
   ierr = DMDAGetInfo(daf,&dimf,&Mf,&Nf,&Pf,&mf,&nf,&pf,&doff,&sf,&bxf,&byf,&bzf,&stf);CHKERRQ(ierr);
-  if (dimc != dimf) SETERRQ2(((PetscObject)daf)->comm,PETSC_ERR_ARG_INCOMP,"Dimensions of DMDA do not match %D %D",dimc,dimf);CHKERRQ(ierr);
-  if (dofc != doff) SETERRQ2(((PetscObject)daf)->comm,PETSC_ERR_ARG_INCOMP,"DOF of DMDA do not match %D %D",dofc,doff);CHKERRQ(ierr);
-  if (sc != sf) SETERRQ2(((PetscObject)daf)->comm,PETSC_ERR_ARG_INCOMP,"Stencil width of DMDA do not match %D %D",sc,sf);CHKERRQ(ierr);
-  if (bxc != bxf || byc != byf || bzc != bzf) SETERRQ(((PetscObject)daf)->comm,PETSC_ERR_ARG_INCOMP,"Boundary type different in two DMDAs");CHKERRQ(ierr);
-  if (stc != stf) SETERRQ(((PetscObject)daf)->comm,PETSC_ERR_ARG_INCOMP,"Stencil type different in two DMDAs");CHKERRQ(ierr);
+  if (dimc != dimf) SETERRQ2(PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"Dimensions of DMDA do not match %D %D",dimc,dimf);CHKERRQ(ierr);
+  if (dofc != doff) SETERRQ2(PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"DOF of DMDA do not match %D %D",dofc,doff);CHKERRQ(ierr);
+  if (sc != sf) SETERRQ2(PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"Stencil width of DMDA do not match %D %D",sc,sf);CHKERRQ(ierr);
+  if (bxc != bxf || byc != byf || bzc != bzf) SETERRQ(PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"Boundary type different in two DMDAs");CHKERRQ(ierr);
+  if (stc != stf) SETERRQ(PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"Stencil type different in two DMDAs");CHKERRQ(ierr);
   if (Mc < 2 && Mf > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Coarse grid requires at least 2 points in x direction");
   if (dimc > 1 && Nc < 2 && Nf > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Coarse grid requires at least 2 points in y direction");
   if (dimc > 2 && Pc < 2 && Pf > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Coarse grid requires at least 2 points in z direction");
@@ -1005,7 +1005,7 @@ PetscErrorCode  DMCreateInterpolation_DA(DM dac,DM daf,Mat *A,Vec *scale)
       ierr = DMCreateInterpolation_DA_2D_Q1(dac,daf,A);CHKERRQ(ierr);
     } else if (dimc == 3) {
       ierr = DMCreateInterpolation_DA_3D_Q1(dac,daf,A);CHKERRQ(ierr);
-    } else SETERRQ2(((PetscObject)daf)->comm,PETSC_ERR_SUP,"No support for this DMDA dimension %D for interpolation type %d",dimc,(int)ddc->interptype);
+    } else SETERRQ2(PetscObjectComm((PetscObject)daf),PETSC_ERR_SUP,"No support for this DMDA dimension %D for interpolation type %d",dimc,(int)ddc->interptype);
   } else if (ddc->interptype == DMDA_Q0) {
     if (dimc == 1) {
       ierr = DMCreateInterpolation_DA_1D_Q0(dac,daf,A);CHKERRQ(ierr);
@@ -1013,7 +1013,7 @@ PetscErrorCode  DMCreateInterpolation_DA(DM dac,DM daf,Mat *A,Vec *scale)
       ierr = DMCreateInterpolation_DA_2D_Q0(dac,daf,A);CHKERRQ(ierr);
     } else if (dimc == 3) {
       ierr = DMCreateInterpolation_DA_3D_Q0(dac,daf,A);CHKERRQ(ierr);
-    } else SETERRQ2(((PetscObject)daf)->comm,PETSC_ERR_SUP,"No support for this DMDA dimension %D for interpolation type %d",dimc,(int)ddc->interptype);
+    } else SETERRQ2(PetscObjectComm((PetscObject)daf),PETSC_ERR_SUP,"No support for this DMDA dimension %D for interpolation type %d",dimc,(int)ddc->interptype);
   }
   if (scale) {
     ierr = DMCreateInterpolationScale((DM)dac,(DM)daf,*A,scale);CHKERRQ(ierr);
@@ -1070,7 +1070,7 @@ PetscErrorCode DMCreateInjection_DA_1D(DM dac,DM daf,VecScatter *inject)
   }
 
 
-  ierr = ISCreateBlock(((PetscObject)daf)->comm,dof,nc,cols,PETSC_OWN_POINTER,&isf);CHKERRQ(ierr);
+  ierr = ISCreateBlock(PetscObjectComm((PetscObject)daf),dof,nc,cols,PETSC_OWN_POINTER,&isf);CHKERRQ(ierr);
   ierr = DMGetGlobalVector(dac,&vecc);CHKERRQ(ierr);
   ierr = DMGetGlobalVector(daf,&vecf);CHKERRQ(ierr);
   ierr = VecScatterCreate(vecf,isf,vecc,NULL,inject);CHKERRQ(ierr);
@@ -1136,7 +1136,7 @@ PetscErrorCode DMCreateInjection_DA_2D(DM dac,DM daf,VecScatter *inject)
     }
   }
 
-  ierr = ISCreateBlock(((PetscObject)daf)->comm,dof,nc,cols,PETSC_OWN_POINTER,&isf);CHKERRQ(ierr);
+  ierr = ISCreateBlock(PetscObjectComm((PetscObject)daf),dof,nc,cols,PETSC_OWN_POINTER,&isf);CHKERRQ(ierr);
   ierr = DMGetGlobalVector(dac,&vecc);CHKERRQ(ierr);
   ierr = DMGetGlobalVector(daf,&vecf);CHKERRQ(ierr);
   ierr = VecScatterCreate(vecf,isf,vecc,NULL,inject);CHKERRQ(ierr);
@@ -1219,7 +1219,7 @@ PetscErrorCode DMCreateInjection_DA_3D(DM dac,DM daf,VecScatter *inject)
     }
   }
 
-  ierr = ISCreateBlock(((PetscObject)daf)->comm,dof,nc,cols,PETSC_OWN_POINTER,&isf);CHKERRQ(ierr);
+  ierr = ISCreateBlock(PetscObjectComm((PetscObject)daf),dof,nc,cols,PETSC_OWN_POINTER,&isf);CHKERRQ(ierr);
   ierr = DMGetGlobalVector(dac,&vecc);CHKERRQ(ierr);
   ierr = DMGetGlobalVector(daf,&vecf);CHKERRQ(ierr);
   ierr = VecScatterCreate(vecf,isf,vecc,NULL,inject);CHKERRQ(ierr);
@@ -1245,11 +1245,11 @@ PetscErrorCode  DMCreateInjection_DA(DM dac,DM daf,VecScatter *inject)
 
   ierr = DMDAGetInfo(dac,&dimc,&Mc,&Nc,&Pc,&mc,&nc,&pc,&dofc,&sc,&bxc,&byc,&bzc,&stc);CHKERRQ(ierr);
   ierr = DMDAGetInfo(daf,&dimf,&Mf,&Nf,&Pf,&mf,&nf,&pf,&doff,&sf,&bxf,&byf,&bzf,&stf);CHKERRQ(ierr);
-  if (dimc != dimf) SETERRQ2(((PetscObject)daf)->comm,PETSC_ERR_ARG_INCOMP,"Dimensions of DMDA do not match %D %D",dimc,dimf);CHKERRQ(ierr);
-  if (dofc != doff) SETERRQ2(((PetscObject)daf)->comm,PETSC_ERR_ARG_INCOMP,"DOF of DMDA do not match %D %D",dofc,doff);CHKERRQ(ierr);
-  if (sc != sf) SETERRQ2(((PetscObject)daf)->comm,PETSC_ERR_ARG_INCOMP,"Stencil width of DMDA do not match %D %D",sc,sf);CHKERRQ(ierr);
-  if (bxc != bxf || byc != byf || bzc != bzf) SETERRQ(((PetscObject)daf)->comm,PETSC_ERR_ARG_INCOMP,"Boundary type different in two DMDAs");CHKERRQ(ierr);
-  if (stc != stf) SETERRQ(((PetscObject)daf)->comm,PETSC_ERR_ARG_INCOMP,"Stencil type different in two DMDAs");CHKERRQ(ierr);
+  if (dimc != dimf) SETERRQ2(PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"Dimensions of DMDA do not match %D %D",dimc,dimf);CHKERRQ(ierr);
+  if (dofc != doff) SETERRQ2(PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"DOF of DMDA do not match %D %D",dofc,doff);CHKERRQ(ierr);
+  if (sc != sf) SETERRQ2(PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"Stencil width of DMDA do not match %D %D",sc,sf);CHKERRQ(ierr);
+  if (bxc != bxf || byc != byf || bzc != bzf) SETERRQ(PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"Boundary type different in two DMDAs");CHKERRQ(ierr);
+  if (stc != stf) SETERRQ(PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"Stencil type different in two DMDAs");CHKERRQ(ierr);
   if (Mc < 2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Coarse grid requires at least 2 points in x direction");
   if (dimc > 1 && Nc < 2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Coarse grid requires at least 2 points in y direction");
   if (dimc > 2 && Pc < 2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Coarse grid requires at least 2 points in z direction");
@@ -1295,11 +1295,11 @@ PetscErrorCode  DMCreateAggregates_DA(DM dac,DM daf,Mat *rest)
 
   ierr = DMDAGetInfo(dac,&dimc,&Mc,&Nc,&Pc,&mc,&nc,&pc,&dofc,&sc,&bxc,&byc,&bzc,&stc);CHKERRQ(ierr);
   ierr = DMDAGetInfo(daf,&dimf,&Mf,&Nf,&Pf,&mf,&nf,&pf,&doff,&sf,&bxf,&byf,&bzf,&stf);CHKERRQ(ierr);
-  if (dimc != dimf) SETERRQ2(((PetscObject)daf)->comm,PETSC_ERR_ARG_INCOMP,"Dimensions of DMDA do not match %D %D",dimc,dimf);CHKERRQ(ierr);
-  if (dofc != doff) SETERRQ2(((PetscObject)daf)->comm,PETSC_ERR_ARG_INCOMP,"DOF of DMDA do not match %D %D",dofc,doff);CHKERRQ(ierr);
-  if (sc != sf) SETERRQ2(((PetscObject)daf)->comm,PETSC_ERR_ARG_INCOMP,"Stencil width of DMDA do not match %D %D",sc,sf);CHKERRQ(ierr);
-  if (bxc != bxf || byc != byf || bzc != bzf) SETERRQ(((PetscObject)daf)->comm,PETSC_ERR_ARG_INCOMP,"Boundary type different in two DMDAs");CHKERRQ(ierr);
-  if (stc != stf) SETERRQ(((PetscObject)daf)->comm,PETSC_ERR_ARG_INCOMP,"Stencil type different in two DMDAs");CHKERRQ(ierr);
+  if (dimc != dimf) SETERRQ2(PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"Dimensions of DMDA do not match %D %D",dimc,dimf);CHKERRQ(ierr);
+  if (dofc != doff) SETERRQ2(PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"DOF of DMDA do not match %D %D",dofc,doff);CHKERRQ(ierr);
+  if (sc != sf) SETERRQ2(PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"Stencil width of DMDA do not match %D %D",sc,sf);CHKERRQ(ierr);
+  if (bxc != bxf || byc != byf || bzc != bzf) SETERRQ(PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"Boundary type different in two DMDAs");CHKERRQ(ierr);
+  if (stc != stf) SETERRQ(PetscObjectComm((PetscObject)daf),PETSC_ERR_ARG_INCOMP,"Stencil type different in two DMDAs");CHKERRQ(ierr);
 
   if (Mf < Mc) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Coarse grid has more points than fine grid, Mc %D, Mf %D", Mc, Mf);
   if (Nf < Nc) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Coarse grid has more points than fine grid, Nc %D, Nf %D", Nc, Nf);
@@ -1329,7 +1329,7 @@ PetscErrorCode  DMCreateAggregates_DA(DM dac,DM daf,Mat *rest)
   max_agg_size = (Mf/Mc+1)*(Nf/Nc+1)*(Pf/Pc+1);
 
   /* create the matrix that will contain the restriction operator */
-  ierr = MatCreateAIJ(((PetscObject)daf)->comm, m_c*n_c*p_c*dofc, m_f*n_f*p_f*doff, Mc*Nc*Pc*dofc, Mf*Nf*Pf*doff,
+  ierr = MatCreateAIJ(PetscObjectComm((PetscObject)daf), m_c*n_c*p_c*dofc, m_f*n_f*p_f*doff, Mc*Nc*Pc*dofc, Mf*Nf*Pf*doff,
                       max_agg_size, NULL, max_agg_size, NULL, rest);CHKERRQ(ierr);
 
   /* store nodes in the fine grid here */

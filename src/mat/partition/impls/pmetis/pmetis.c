@@ -51,10 +51,10 @@ static PetscErrorCode MatPartitioningApply_Parmetis(MatPartitioning part,IS *par
     if (amat->rmap->n > 0) bs = mat->rmap->n/amat->rmap->n;
   }
   ierr = MatMPIAdjCreateNonemptySubcommMat(amat,&pmat);CHKERRQ(ierr);
-  ierr = MPI_Barrier(((PetscObject)part)->comm);CHKERRQ(ierr);
+  ierr = MPI_Barrier(PetscObjectComm((PetscObject)part));CHKERRQ(ierr);
 
   if (pmat) {
-    MPI_Comm   pcomm    = ((PetscObject)pmat)->comm,comm;
+    MPI_Comm   pcomm,comm;
     Mat_MPIAdj *adj     = (Mat_MPIAdj*)pmat->data;
     PetscInt   *vtxdist = pmat->rmap->range;
     PetscInt   *xadj    = adj->i;
@@ -63,6 +63,7 @@ static PetscErrorCode MatPartitioningApply_Parmetis(MatPartitioning part,IS *par
     real_t     *tpwgts,*ubvec;
     int        status;
 
+    ierr = PetscObjectGetComm((PetscObject)pmat,&pcomm);CHKERRQ(ierr);
 #if defined(PETSC_USE_DEBUG)
     /* check that matrix has no diagonal entries */
     {
@@ -117,9 +118,9 @@ static PetscErrorCode MatPartitioningApply_Parmetis(MatPartitioning part,IS *par
       }
     }
     ierr = PetscFree(locals);CHKERRQ(ierr);
-    ierr = ISCreateGeneral(((PetscObject)part)->comm,bs*amat->rmap->n,newlocals,PETSC_OWN_POINTER,partitioning);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PetscObjectComm((PetscObject)part),bs*amat->rmap->n,newlocals,PETSC_OWN_POINTER,partitioning);CHKERRQ(ierr);
   } else {
-    ierr = ISCreateGeneral(((PetscObject)part)->comm,amat->rmap->n,locals,PETSC_OWN_POINTER,partitioning);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PetscObjectComm((PetscObject)part),amat->rmap->n,locals,PETSC_OWN_POINTER,partitioning);CHKERRQ(ierr);
   }
 
   ierr = MatDestroy(&pmat);CHKERRQ(ierr);
@@ -137,7 +138,7 @@ PetscErrorCode MatPartitioningView_Parmetis(MatPartitioning part,PetscViewer vie
   PetscBool                iascii;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(((PetscObject)part)->comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)part),&rank);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     if (pmetis->parallel == 2) {
@@ -352,13 +353,15 @@ PetscErrorCode MatMeshToCellGraph(Mat mesh,PetscInt ncommonnodes,Mat *dual)
   Mat_MPIAdj     *adj   = (Mat_MPIAdj*)mesh->data,*newadj;
   PetscBool      flg;
   int            status;
+  MPI_Comm       comm;
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)mesh,MATMPIADJ,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Must use MPIAdj matrix type");
-
-  PetscStackCallParmetis(ParMETIS_V3_Mesh2Dual,(mesh->rmap->range,adj->i,adj->j,&numflag,&ncommonnodes,&newxadj,&newadjncy,&((PetscObject)mesh)->comm));
-  ierr   = MatCreateMPIAdj(((PetscObject)mesh)->comm,mesh->rmap->n,mesh->rmap->N,newxadj,newadjncy,NULL,dual);CHKERRQ(ierr);
+  
+  ierr = PetscObjectGetComm((PetscObject)mesh,&comm);CHKERRQ(ierr);
+  PetscStackCallParmetis(ParMETIS_V3_Mesh2Dual,(mesh->rmap->range,adj->i,adj->j,&numflag,&ncommonnodes,&newxadj,&newadjncy,&comm));
+  ierr   = MatCreateMPIAdj(PetscObjectComm((PetscObject)mesh),mesh->rmap->n,mesh->rmap->N,newxadj,newadjncy,NULL,dual);CHKERRQ(ierr);
   newadj = (Mat_MPIAdj*)(*dual)->data;
 
   newadj->freeaijwithfree = PETSC_TRUE; /* signal the matrix should be freed with system free since space was allocated by ParMETIS */

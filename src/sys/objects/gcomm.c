@@ -5,6 +5,38 @@
 #include <petsc-private/petscimpl.h>  /*I   "petscsys.h"    I*/
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscObjectComm"
+/*@C
+   PetscObjectComm - Gets the MPI communicator for any PetscObject   regardless of the type.
+
+   Not Collective
+
+   Input Parameter:
+.  obj - any PETSc object, for example a Vec, Mat or KSP. Thus must be
+         cast with a (PetscObject), for example,
+         SETERRQ(PetscObjectComm((PetscObject)mat,...);
+
+   Output Parameter:
+.  comm - the MPI communicator or MPI_COMM_NULL if object is not valid
+
+   Level: advanced
+
+   Notes: Never use this in the form
+$       comm = PetscObjectComm((PetscObject)obj); 
+        instead use PetscObjectGetComm()
+
+   Concepts: communicator^getting from object
+   Concepts: MPI communicator^getting from object
+
+.seealso: PetscObjectGetComm()
+@*/
+MPI_Comm  PetscObjectComm(PetscObject obj)
+{
+  if (!obj) return MPI_COMM_NULL;
+  return obj->comm;
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscObjectGetComm"
 /*@C
    PetscObjectGetComm - Gets the MPI communicator for any PetscObject,
@@ -25,6 +57,7 @@
    Concepts: communicator^getting from object
    Concepts: MPI communicator^getting from object
 
+.seealso: PetscObjectComm()
 @*/
 PetscErrorCode  PetscObjectGetComm(PetscObject obj,MPI_Comm *comm)
 {

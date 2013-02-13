@@ -45,14 +45,14 @@ static PetscErrorCode PCSetUp_Galerkin(PC pc)
   PetscFunctionBegin;
   if (!jac->x) {
     ierr = KSPGetOperatorsSet(jac->ksp,&a,NULL);CHKERRQ(ierr);
-    if (!a) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONGSTATE,"Must set operator of PCGALERKIN KSP with PCGalerkinGetKSP()/KSPSetOperators()");
+    if (!a) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must set operator of PCGALERKIN KSP with PCGalerkinGetKSP()/KSPSetOperators()");
     ierr   = KSPGetVecs(jac->ksp,1,&xx,1,&yy);CHKERRQ(ierr);
     jac->x = *xx;
     jac->b = *yy;
     ierr   = PetscFree(xx);CHKERRQ(ierr);
     ierr   = PetscFree(yy);CHKERRQ(ierr);
   }
-  if (!jac->R && !jac->P) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONGSTATE,"Must set restriction or interpolation of PCGALERKIN with PCGalerkinSetRestriction/Interpolation()");
+  if (!jac->R && !jac->P) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must set restriction or interpolation of PCGALERKIN with PCGalerkinSetRestriction/Interpolation()");
   /* should check here that sizes of R/P match size of a */
   PetscFunctionReturn(0);
 }
@@ -285,7 +285,7 @@ PetscErrorCode  PCCreate_Galerkin(PC pc)
   pc->ops->view            = PCView_Galerkin;
   pc->ops->applyrichardson = 0;
 
-  ierr = KSPCreate(((PetscObject)pc)->comm,&jac->ksp);CHKERRQ(ierr);
+  ierr = KSPCreate(PetscObjectComm((PetscObject)pc),&jac->ksp);CHKERRQ(ierr);
   ierr = PetscObjectIncrementTabLevel((PetscObject)jac->ksp,(PetscObject)pc,1);CHKERRQ(ierr);
 
   pc->data = (void*)jac;

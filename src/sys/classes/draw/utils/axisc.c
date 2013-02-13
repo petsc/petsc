@@ -30,12 +30,12 @@ PetscErrorCode  PetscDrawAxisCreate(PetscDraw draw,PetscDrawAxis *axis)
   PetscValidPointer(axis,2);
   ierr = PetscObjectTypeCompare(obj,PETSC_DRAW_NULL,&isnull);CHKERRQ(ierr);
   if (isnull) {
-    ierr = PetscDrawOpenNull(((PetscObject)obj)->comm,(PetscDraw*)axis);CHKERRQ(ierr);
+    ierr = PetscDrawOpenNull(PetscObjectComm((PetscObject)obj),(PetscDraw*)axis);CHKERRQ(ierr);
 
     (*axis)->win = draw;
     PetscFunctionReturn(0);
   }
-  ierr = PetscHeaderCreate(ad,_p_PetscDrawAxis,int,PETSC_DRAWAXIS_CLASSID,"PetscDrawAxis","Draw Axis","Draw",((PetscObject)obj)->comm,PetscDrawAxisDestroy,0);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(ad,_p_PetscDrawAxis,int,PETSC_DRAWAXIS_CLASSID,"PetscDrawAxis","Draw Axis","Draw",PetscObjectComm((PetscObject)obj),PetscDrawAxisDestroy,0);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(draw,ad);CHKERRQ(ierr);
 
   ad->xticks    = PetscADefTicks;
@@ -198,7 +198,7 @@ PetscErrorCode  PetscDrawAxisDraw(PetscDrawAxis axis)
 
   PetscFunctionBegin;
   if (!axis) PetscFunctionReturn(0);
-  ierr = MPI_Comm_rank(((PetscObject)axis)->comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)axis),&rank);CHKERRQ(ierr);
   if (rank) PetscFunctionReturn(0);
 
   if (axis->xlow == axis->xhigh) {axis->xlow -= .5; axis->xhigh += .5;}

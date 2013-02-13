@@ -480,7 +480,7 @@ PetscErrorCode ISPairToList(IS xis, IS yis, PetscInt *listlen, IS **islist)
   PetscCheckSameComm(xis,1,yis,2);
   PetscValidIntPointer(listlen,3);
   PetscValidPointer(islist,4);
-  comm = ((PetscObject)xis)->comm;
+  ierr = PetscObjectGetComm((PetscObject)xis,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &size);CHKERRQ(ierr);
   /* Extract, copy and sort the local indices and colors on the color. */

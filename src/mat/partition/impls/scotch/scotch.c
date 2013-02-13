@@ -53,7 +53,7 @@ PetscErrorCode MatPartitioningPTScotchSetImbalance_PTScotch(MatPartitioning part
   PetscFunctionBegin;
   if (imb==PETSC_DEFAULT) scotch->imbalance = 0.01;
   else {
-    if (imb<0.0 || imb>1.0) SETERRQ(((PetscObject)part)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Illegal value of imb. Must be in range [0,1]");
+    if (imb<0.0 || imb>1.0) SETERRQ(PetscObjectComm((PetscObject)part),PETSC_ERR_ARG_OUTOFRANGE,"Illegal value of imb. Must be in range [0,1]");
     scotch->imbalance = (double)imb;
   }
   PetscFunctionReturn(0);
@@ -271,7 +271,7 @@ PetscErrorCode MatPartitioningApply_PTScotch(MatPartitioning part,IS *partitioni
   SCOTCH_Strat             stradat;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(((PetscObject)part)->comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)part),&rank);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)mat,MATMPIADJ,&flg);CHKERRQ(ierr);
   if (!flg) {
     /* bs indicates if the converted matrix is "reduced" from the original and hence the
@@ -298,7 +298,7 @@ PetscErrorCode MatPartitioningApply_PTScotch(MatPartitioning part,IS *partitioni
   for (i=0; i<nparts; i++) velotab[i] = (SCOTCH_Num)(vwgttab[i] + 0.5);
   ierr = PetscFree(vwgttab);CHKERRQ(ierr);
 
-  ierr = SCOTCH_dgraphInit(&grafdat,((PetscObject)part)->comm);CHKERRQ(ierr);
+  ierr = SCOTCH_dgraphInit(&grafdat,PetscObjectComm((PetscObject)part));CHKERRQ(ierr);
 
   vertlocnbr = mat->rmap->range[rank+1] - mat->rmap->range[rank];
   edgelocnbr = adj->i[vertlocnbr];
@@ -335,9 +335,9 @@ PetscErrorCode MatPartitioningApply_PTScotch(MatPartitioning part,IS *partitioni
       }
     }
     ierr = PetscFree(locals);CHKERRQ(ierr);
-    ierr = ISCreateGeneral(((PetscObject)part)->comm,bs*mat->rmap->n,newlocals,PETSC_OWN_POINTER,partitioning);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PetscObjectComm((PetscObject)part),bs*mat->rmap->n,newlocals,PETSC_OWN_POINTER,partitioning);CHKERRQ(ierr);
   } else {
-    ierr = ISCreateGeneral(((PetscObject)part)->comm,mat->rmap->n,locals,PETSC_OWN_POINTER,partitioning);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PetscObjectComm((PetscObject)part),mat->rmap->n,locals,PETSC_OWN_POINTER,partitioning);CHKERRQ(ierr);
   }
 
   if (!flg) {

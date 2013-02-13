@@ -225,7 +225,7 @@ PetscErrorCode MatCreate_BSTRM(Mat A)
   PetscMPIInt    size;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(((PetscObject)A)->comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRQ(ierr);
   if (size == 1) {
     ierr = MatSetType(A,MATSEQBSTRM);CHKERRQ(ierr);
   } else {

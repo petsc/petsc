@@ -42,9 +42,9 @@ PetscErrorCode MatApply_USFFT_Private(Mat A, fftw_plan *plan, int direction, Vec
   if (!*plan) { /* create a plan then execute it*/
     if (usfft->dof == 1) {
 #if defined(PETSC_DEBUG_USFFT)
-      ierr = PetscPrintf(((PetscObject)A)->comm, "direction = %d, usfft->ndim = %d\n", direction, usfft->ndim);CHKERRQ(ierr);
+      ierr = PetscPrintf(PetscObjectComm((PetscObject)A), "direction = %d, usfft->ndim = %d\n", direction, usfft->ndim);CHKERRQ(ierr);
       for (int ii = 0; ii < usfft->ndim; ++ii) {
-        ierr = PetscPrintf(((PetscObject)A)->comm, "usfft->outdim[%d] = %d\n", ii, usfft->outdim[ii]);CHKERRQ(ierr);
+        ierr = PetscPrintf(PetscObjectComm((PetscObject)A), "usfft->outdim[%d] = %d\n", ii, usfft->outdim[ii]);CHKERRQ(ierr);
       }
 #endif
 

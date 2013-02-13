@@ -126,7 +126,7 @@ PetscErrorCode  MatMFFDSetType(Mat mat,MatMFFDType ftype)
     ierr = (*ctx->ops->destroy)(ctx);CHKERRQ(ierr);
   }
 
-  ierr =  PetscFunctionListFind(((PetscObject)ctx)->comm,MatMFFDList,ftype,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
+  ierr =  PetscFunctionListFind(PetscObjectComm((PetscObject)ctx),MatMFFDList,ftype,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown MatMFFD type %s given",ftype);
   ierr = (*r)(ctx);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)ctx,ftype);CHKERRQ(ierr);
@@ -346,7 +346,7 @@ PetscErrorCode MatMult_MFFD(Mat mat,Vec a,Vec y)
   PetscBool      zeroa;
 
   PetscFunctionBegin;
-  if (!ctx->current_u) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_ARG_WRONGSTATE,"MatMFFDSetBase() has not been called, this is often caused by forgetting to call \n\t\tMatAssemblyBegin/End on the first Mat in the SNES compute function");
+  if (!ctx->current_u) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"MatMFFDSetBase() has not been called, this is often caused by forgetting to call \n\t\tMatAssemblyBegin/End on the first Mat in the SNES compute function");
   /* We log matrix-free matrix-vector products separately, so that we can
      separate the performance monitoring from the cases that use conventional
      storage.  We may eventually modify event logging to associate events
@@ -507,7 +507,7 @@ PetscErrorCode MatDiagonalSet_MFFD(Mat mat,Vec ll,InsertMode mode)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (mode == INSERT_VALUES) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_SUP,"No diagonal set with INSERT_VALUES");
+  if (mode == INSERT_VALUES) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"No diagonal set with INSERT_VALUES");
   if (!aij->dshift) {
     ierr = VecDuplicate(ll,&aij->dshift);CHKERRQ(ierr);
   }
@@ -710,7 +710,7 @@ PetscErrorCode  MatCreate_MFFD(Mat A)
   ierr = MatMFFDInitializePackage(NULL);CHKERRQ(ierr);
 #endif
 
-  ierr = PetscHeaderCreate(mfctx,_p_MatMFFD,struct _MFOps,MATMFFD_CLASSID,"MatMFFD","Matrix-free Finite Differencing","Mat",((PetscObject)A)->comm,MatDestroy_MFFD,MatView_MFFD);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(mfctx,_p_MatMFFD,struct _MFOps,MATMFFD_CLASSID,"MatMFFD","Matrix-free Finite Differencing","Mat",PetscObjectComm((PetscObject)A),MatDestroy_MFFD,MatView_MFFD);CHKERRQ(ierr);
 
   mfctx->sp                       = 0;
   mfctx->error_rel                = PETSC_SQRT_MACHINE_EPSILON;
@@ -880,7 +880,7 @@ PetscErrorCode  MatMFFDGetH(Mat mat,PetscScalar *h)
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)mat,MATMFFD,&match);CHKERRQ(ierr);
-  if (!match) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_ARG_WRONG,"Not a MFFD matrix");
+  if (!match) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONG,"Not a MFFD matrix");
 
   *h = ctx->currenth;
   PetscFunctionReturn(0);
@@ -1122,7 +1122,7 @@ PetscErrorCode  MatMFFDSetHHistory(Mat J,PetscScalar history[],PetscInt nhistory
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)J,MATMFFD,&match);CHKERRQ(ierr);
-  if (!match) SETERRQ(((PetscObject)J)->comm,PETSC_ERR_ARG_WRONG,"Not a MFFD matrix");
+  if (!match) SETERRQ(PetscObjectComm((PetscObject)J),PETSC_ERR_ARG_WRONG,"Not a MFFD matrix");
   ctx->historyh    = history;
   ctx->maxcurrenth = nhistory;
   ctx->currenth    = 0.;

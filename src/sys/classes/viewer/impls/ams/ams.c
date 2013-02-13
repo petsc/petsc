@@ -22,7 +22,7 @@ PetscErrorCode PetscViewerAMSSetCommName_AMS(PetscViewer v,const char name[])
   PetscFunctionBegin;
   ierr = PetscOptionsGetInt(NULL,"-ams_port",&port,NULL);CHKERRQ(ierr);
   ierr = PetscInfo1(v,"Publishing with the AMS on port %d\n",port);CHKERRQ(ierr);
-  ierr = AMS_Comm_publish((char*)name,&vams->ams_comm,MPI_TYPE,((PetscObject)v)->comm,&port);CHKERRQ(ierr);
+  ierr = AMS_Comm_publish((char*)name,&vams->ams_comm,MPI_TYPE,PetscObjectComm((PetscObject)v),&port);CHKERRQ(ierr);
 
   ierr = PetscOptionsHasName(NULL,"-ams_printf",&flg);CHKERRQ(ierr);
   if (!flg) {
@@ -34,7 +34,7 @@ PetscErrorCode PetscViewerAMSSetCommName_AMS(PetscViewer v,const char name[])
   ierr = PetscOptionsGetString(NULL,"-ams_matlab",m,16,&flg);CHKERRQ(ierr);
   if (flg) {
     FILE *fp;
-    ierr = PetscStartMatlab(((PetscObject)v)->comm,m,"petscview",&fp);CHKERRQ(ierr);
+    ierr = PetscStartMatlab(PetscObjectComm((PetscObject)v),m,"petscview",&fp);CHKERRQ(ierr);
   }
 
   ierr = PetscGetHostName(m,64);CHKERRQ(ierr);
@@ -49,7 +49,7 @@ PetscErrorCode PetscViewerAMSSetCommName_AMS(PetscViewer v,const char name[])
       ierr = PetscStrcat(cmd,"/java -Djava.library.path=");CHKERRQ(ierr);
       ierr = PetscStrcat(cmd,PETSC_AMS_DIR);CHKERRQ(ierr);
       ierr = PetscStrcat(cmd,"/lib amsoptions -ams_server ${HOSTNAME}");CHKERRQ(ierr);
-      ierr = PetscPOpen(((PetscObject)v)->comm,m,cmd,"r",NULL);CHKERRQ(ierr);
+      ierr = PetscPOpen(PetscObjectComm((PetscObject)v),m,cmd,"r",NULL);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -64,7 +64,7 @@ PetscErrorCode PetscViewerAMSGetAMSComm_AMS(PetscViewer lab,AMS_Comm *ams_comm)
   PetscViewer_AMS *vams = (PetscViewer_AMS*)lab->data;
 
   PetscFunctionBegin;
-  if (vams->ams_comm == -1) SETERRQ(((PetscObject)lab)->comm,PETSC_ERR_ARG_WRONGSTATE,"AMS communicator name not yet set with PetscViewerAMSSetCommName()");
+  if (vams->ams_comm == -1) SETERRQ(PetscObjectComm((PetscObject)lab),PETSC_ERR_ARG_WRONGSTATE,"AMS communicator name not yet set with PetscViewerAMSSetCommName()");
   *ams_comm = vams->ams_comm;
   PetscFunctionReturn(0);
 }
@@ -205,7 +205,7 @@ static PetscErrorCode PetscViewerDestroy_AMS(PetscViewer viewer)
   /*
      Make sure that we mark that the stack is no longer published
   */
-  if (((PetscObject)viewer)->comm == PETSC_COMM_WORLD) {
+  if (PetscObjectComm((PetscObject)viewer) == PETSC_COMM_WORLD) {
     ierr = PetscStackDepublish();CHKERRQ(ierr);
   }
 
@@ -213,7 +213,7 @@ static PetscErrorCode PetscViewerDestroy_AMS(PetscViewer viewer)
   if (ierr) {
     char *err;
     AMS_Explain_error(ierr,&err);
-    SETERRQ(((PetscObject)viewer)->comm,ierr,err);
+    SETERRQ(PetscObjectComm((PetscObject)viewer),ierr,err);
   }
   ierr = PetscFree(vams);CHKERRQ(ierr);
   PetscFunctionReturn(0);

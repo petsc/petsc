@@ -21,10 +21,11 @@ PetscErrorCode PCGAMGCreateGraph(const Mat Amat, Mat *a_Gmat)
   PetscErrorCode ierr;
   PetscInt       Istart,Iend,Ii,jj,kk,ncols,nloc,NN,MM,bs;
   PetscMPIInt    rank, size;
-  MPI_Comm       wcomm = ((PetscObject)Amat)->comm;
+  MPI_Comm       wcomm;
   Mat            Gmat;
 
   PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)Amat,&wcomm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(wcomm,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(wcomm,&size);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(Amat, &Istart, &Iend);CHKERRQ(ierr);
@@ -105,13 +106,14 @@ PetscErrorCode PCGAMGFilterGraph(Mat *a_Gmat,const PetscReal vfilter,const Petsc
   PetscInt          Istart,Iend,Ii,jj,ncols,nnz0,nnz1, NN, MM, nloc;
   PetscMPIInt       rank, size;
   Mat               Gmat  = *a_Gmat, tGmat, matTrans;
-  MPI_Comm          wcomm = ((PetscObject)Gmat)->comm;
+  MPI_Comm          wcomm;
   const PetscScalar *vals;
   const PetscInt    *idx;
   PetscInt          *d_nnz, *o_nnz;
   Vec               diag;
 
   PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)Gmat,&wcomm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(wcomm,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(wcomm,&size);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(Gmat, &Istart, &Iend);CHKERRQ(ierr);
@@ -215,7 +217,7 @@ PetscErrorCode PCGAMGGetDataWithGhosts(const Mat Gmat,const PetscInt data_sz,con
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank,size;
-  MPI_Comm       wcomm = ((PetscObject)Gmat)->comm;
+  MPI_Comm       wcomm;
   Vec            tmp_crds;
   Mat_MPIAIJ     *mpimat = (Mat_MPIAIJ*)Gmat->data;
   PetscInt       nnodes,num_ghosts,dir,kk,jj,my0,Iend,nloc;
@@ -224,6 +226,7 @@ PetscErrorCode PCGAMGGetDataWithGhosts(const Mat Gmat,const PetscInt data_sz,con
   PetscBool      isMPIAIJ;
 
   PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)Gmat,&wcomm);CHKERRQ(ierr);
   ierr      = PetscObjectTypeCompare((PetscObject)Gmat, MATMPIAIJ, &isMPIAIJ);CHKERRQ(ierr);
   ierr      = MPI_Comm_rank(wcomm,&rank);CHKERRQ(ierr);
   ierr      = MPI_Comm_size(wcomm,&size);CHKERRQ(ierr);

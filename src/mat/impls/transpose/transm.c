@@ -96,7 +96,7 @@ PetscErrorCode  MatCreateTranspose(Mat A,Mat *N)
 
   PetscFunctionBegin;
   ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
-  ierr = MatCreate(((PetscObject)A)->comm,N);CHKERRQ(ierr);
+  ierr = MatCreate(PetscObjectComm((PetscObject)A),N);CHKERRQ(ierr);
   ierr = MatSetSizes(*N,n,m,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)*N,MATTRANSPOSEMAT);CHKERRQ(ierr);
 

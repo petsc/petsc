@@ -308,7 +308,7 @@ PetscErrorCode  PetscViewerView(PetscViewer v,PetscViewer viewer)
   PetscValidHeaderSpecific(v,PETSC_VIEWER_CLASSID,1);
   PetscValidType(v,1);
   if (!viewer) {
-    ierr = PetscViewerASCIIGetStdout(((PetscObject)v)->comm,&viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)v),&viewer);CHKERRQ(ierr);
   }
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
   PetscCheckSameComm(v,1,viewer,2);

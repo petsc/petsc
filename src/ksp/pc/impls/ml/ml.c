@@ -102,7 +102,7 @@ static PetscErrorCode PetscML_comm(double p[],void *ML_data)
   PetscScalar    *array;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(((PetscObject)A)->comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRQ(ierr);
   if (size == 1) return 0;
 
   ierr = VecPlaceArray(ml->y,p);CHKERRQ(ierr);
@@ -127,7 +127,7 @@ static int PetscML_matvec(ML_Operator *ML_data,int in_length,double p[],int out_
   PetscInt       i;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(((PetscObject)A)->comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRQ(ierr);
   if (size == 1) {
     ierr = VecPlaceArray(ml->x,p);CHKERRQ(ierr);
   } else {
@@ -264,7 +264,7 @@ static PetscErrorCode MatConvert_MPIAIJ_ML(Mat A,MatType newtype,MatReuse scall,
       ncols = bi[i+1] - bi[i];
       for (j=0; j<ncols; j++) *ca++ = *ba++;
     }
-  } else SETERRQ1(((PetscObject)A)->comm,PETSC_ERR_ARG_WRONG,"Invalid MatReuse %d",(int)scall);
+  } else SETERRQ1(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Invalid MatReuse %d",(int)scall);
   PetscFunctionReturn(0);
 }
 
@@ -469,8 +469,8 @@ PETSC_EXTERN_C PetscErrorCode PCSetCoordinates_ML(PC pc, PetscInt ndm, PetscInt 
   ierr = MatGetOwnershipRange(Amat, &my0, &Iend);CHKERRQ(ierr);
   nloc = (Iend-my0)/bs;
 
-  if (nloc!=a_nloc) SETERRQ2(((PetscObject)Amat)->comm,PETSC_ERR_ARG_WRONG, "Number of local blocks must locations = %d %d.",a_nloc,nloc);
-  if ((Iend-my0)%bs!=0) SETERRQ1(((PetscObject)Amat)->comm,PETSC_ERR_ARG_WRONG, "Bad local size %d.",nloc);
+  if (nloc!=a_nloc) SETERRQ2(PetscObjectComm((PetscObject)Amat),PETSC_ERR_ARG_WRONG, "Number of local blocks must locations = %d %d.",a_nloc,nloc);
+  if ((Iend-my0)%bs!=0) SETERRQ1(PetscObjectComm((PetscObject)Amat),PETSC_ERR_ARG_WRONG, "Bad local size %d.",nloc);
 
   oldarrsz    = pc_ml->dim * pc_ml->nloc;
   pc_ml->dim  = ndm;
@@ -583,7 +583,7 @@ PetscErrorCode PCSetUp_ML(PC pc)
 
   PetscFunctionBegin;
   A    = pc->pmat;
-  ierr = MPI_Comm_size(((PetscObject)A)->comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRQ(ierr);
 
   if (pc->setupcalled) {
     if (pc->flag == SAME_NONZERO_PATTERN && pc_ml->reuse_interpolation) {
@@ -604,7 +604,7 @@ PetscErrorCode PCSetUp_ML(PC pc)
       } else if (isSeq) {
         Aloc = A;
         ierr = PetscObjectReference((PetscObject)Aloc);CHKERRQ(ierr);
-      } else SETERRQ1(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONG, "Matrix type '%s' cannot be used with ML. ML can only handle AIJ matrices.",((PetscObject)A)->type_name);
+      } else SETERRQ1(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONG, "Matrix type '%s' cannot be used with ML. ML can only handle AIJ matrices.",((PetscObject)A)->type_name);
 
       ierr              = MatGetSize(Aloc,&m,&nlocal_allcols);CHKERRQ(ierr);
       PetscMLdata       = pc_ml->PetscMLdata;
@@ -670,7 +670,7 @@ PetscErrorCode PCSetUp_ML(PC pc)
   } else if (isSeq) {
     Aloc = A;
     ierr = PetscObjectReference((PetscObject)Aloc);CHKERRQ(ierr);
-  } else SETERRQ1(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONG, "Matrix type '%s' cannot be used with ML. ML can only handle AIJ matrices.",((PetscObject)A)->type_name);
+  } else SETERRQ1(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONG, "Matrix type '%s' cannot be used with ML. ML can only handle AIJ matrices.",((PetscObject)A)->type_name);
 
   /* create and initialize struct 'PetscMLdata' */
   ierr               = PetscNewLog(pc,FineGridCtx,&PetscMLdata);CHKERRQ(ierr);
@@ -717,7 +717,7 @@ PetscErrorCode PCSetUp_ML(PC pc)
   ierr = MatGetSize(Aloc,&m,&nlocal_allcols);CHKERRQ(ierr);
   ierr = MatGetBlockSize(A,&bs);CHKERRQ(ierr);
   PetscStackCall("ML_Create",ML_Create(&ml_object,pc_ml->MaxNlevels));
-  PetscStackCall("ML_Comm_Set_UsrComm",ML_Comm_Set_UsrComm(ml_object->comm,((PetscObject)A)->comm));
+  PetscStackCall("ML_Comm_Set_UsrComm",ML_Comm_Set_UsrComm(ml_object->comm,PetscObjectComm((PetscObject)A)));
   pc_ml->ml_object = ml_object;
   PetscStackCall("ML_Init_Amatrix",ML_Init_Amatrix(ml_object,0,m,m,PetscMLdata));
   PetscStackCall("ML_Set_Amatrix_Getrow",ML_Set_Amatrix_Getrow(ml_object,0,PetscML_getrow,PetscML_comm,nlocal_allcols));
@@ -745,7 +745,7 @@ PetscErrorCode PCSetUp_ML(PC pc)
       PetscInt          i,j,mlocal,nvec,M;
       const Vec         *vecs;
 
-      if (!mnull) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_USER,"Must provide explicit null space using MatSetNearNullSpace() to use user-specified null space");
+      if (!mnull) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_USER,"Must provide explicit null space using MatSetNearNullSpace() to use user-specified null space");
       ierr = MatGetSize(A,&M,NULL);CHKERRQ(ierr);
       ierr = MatGetLocalSize(Aloc,&mlocal,NULL);CHKERRQ(ierr);
       ierr = MatNullSpaceGetVecs(mnull,&has_const,&nvec,&vecs);CHKERRQ(ierr);
@@ -764,7 +764,7 @@ PetscErrorCode PCSetUp_ML(PC pc)
       break;
     case PCML_NULLSPACE_SCALAR:
       break;
-    default: SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_SUP,"Unknown null space type");
+    default: SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Unknown null space type");
     }
   }
   PetscStackCall("ML_Aggregate_Set_MaxCoarseSize",ML_Aggregate_Set_MaxCoarseSize(agg_object,pc_ml->MaxCoarseSize));
@@ -790,7 +790,7 @@ PetscErrorCode PCSetUp_ML(PC pc)
   agg_object->cheap_minimizing_energy   = (int)pc_ml->EnergyMinimizationCheap;
 
   if (pc_ml->Aux) {
-    if (!pc_ml->dim) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_USER,"Auxiliary matrix requires coordinates");
+    if (!pc_ml->dim) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_USER,"Auxiliary matrix requires coordinates");
     ml_object->Amat[0].aux_data->threshold = pc_ml->AuxThreshold;
     ml_object->Amat[0].aux_data->enable    = 1;
     ml_object->Amat[0].aux_data->max_level = 10;
@@ -815,7 +815,7 @@ PetscErrorCode PCSetUp_ML(PC pc)
       case 0: grid_info->x = pc_ml->coords + nlocghost * i; break;
       case 1: grid_info->y = pc_ml->coords + nlocghost * i; break;
       case 2: grid_info->z = pc_ml->coords + nlocghost * i; break;
-      default: SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_SIZ,"PCML coordinate dimension must be <= 3");
+      default: SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_SIZ,"PCML coordinate dimension must be <= 3");
       }
     }
     grid_info->Ndim = dim;
@@ -838,7 +838,7 @@ PetscErrorCode PCSetUp_ML(PC pc)
     if (!pc_ml->RepartitionType) {
       PetscInt i;
 
-      if (!pc_ml->dim) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_USER,"ML Zoltan repartitioning requires coordinates");
+      if (!pc_ml->dim) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_USER,"ML Zoltan repartitioning requires coordinates");
       PetscStackCall("ML_Repartition_Set_Partitioner",ML_Repartition_Set_Partitioner(ml_object,ML_USEZOLTAN));
       PetscStackCall("ML_Aggregate_Set_Dimensions",ML_Aggregate_Set_Dimensions(agg_object, pc_ml->dim));
 
@@ -860,7 +860,7 @@ PetscErrorCode PCSetUp_ML(PC pc)
   } else {
     PetscStackCall("ML_Gen_MultiLevelHierarchy_UsingAggregation",Nlevels = ML_Gen_MultiLevelHierarchy_UsingAggregation(ml_object,0,ML_INCREASING,agg_object));
   }
-  if (Nlevels<=0) SETERRQ1(((PetscObject)pc)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Nlevels %d must > 0",Nlevels);
+  if (Nlevels<=0) SETERRQ1(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"Nlevels %d must > 0",Nlevels);
   pc_ml->Nlevels = Nlevels;
   fine_level     = Nlevels - 1;
 
@@ -974,7 +974,7 @@ PetscErrorCode PCSetUp_ML(PC pc)
           case 0: array[dim * j + i] = grid_info->x[j]; break;
           case 1: array[dim * j + i] = grid_info->y[j]; break;
           case 2: array[dim * j + i] = grid_info->z[j]; break;
-          default: SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_SIZ,"PCML coordinate dimension must be <= 3");
+          default: SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_SIZ,"PCML coordinate dimension must be <= 3");
           }
         }
       }
@@ -1034,9 +1034,10 @@ PetscErrorCode PCSetFromOptions_ML(PC pc)
   PC_MG       *mg    = (PC_MG*)pc->data;
   PC_ML       *pc_ml = (PC_ML*)mg->innerctx;
   PetscMPIInt size;
-  MPI_Comm    comm = ((PetscObject)pc)->comm;
+  MPI_Comm    comm;
 
   PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)pc,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = PetscOptionsHead("ML options");CHKERRQ(ierr);
 
@@ -1111,7 +1112,7 @@ PetscErrorCode PCSetFromOptions_ML(PC pc)
 #else
     partindx = 1;
     ierr     = PetscOptionsEList("-pc_ml_repartitionType", "Repartitioning library to use","ML_Repartition_Set_Partitioner",part,2,part[1],&partindx,NULL);CHKERRQ(ierr);
-    if (!partindx) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_SUP_SYS,"ML not compiled with Zoltan");
+    if (!partindx) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP_SYS,"ML not compiled with Zoltan");
 #endif
     ierr = PetscOptionsBool("-pc_ml_Aux","Aggregate using auxiliary coordinate-based laplacian","None",pc_ml->Aux,&pc_ml->Aux,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-pc_ml_AuxThreshold","Auxiliary smoother drop tol","None",pc_ml->AuxThreshold,&pc_ml->AuxThreshold,NULL);CHKERRQ(ierr);

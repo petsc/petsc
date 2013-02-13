@@ -142,8 +142,8 @@ PetscErrorCode  MatCreateSNESMF(SNES snes,Mat *J)
     ierr = VecGetLocalSize(tmp,&n);CHKERRQ(ierr);
     ierr = VecGetSize(tmp,&N);CHKERRQ(ierr);
     ierr = DMRestoreGlobalVector(snes->dm,&tmp);CHKERRQ(ierr);
-  } else SETERRQ(((PetscObject)snes)->comm,PETSC_ERR_ARG_WRONGSTATE,"Must call SNESSetFunction() or SNESSetDM() first");
-  ierr = MatCreateMFFD(((PetscObject)snes)->comm,n,n,N,N,J);CHKERRQ(ierr);
+  } else SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE,"Must call SNESSetFunction() or SNESSetDM() first");
+  ierr = MatCreateMFFD(PetscObjectComm((PetscObject)snes),n,n,N,N,J);CHKERRQ(ierr);
   ierr = MatMFFDSetFunction(*J,(PetscErrorCode (*)(void*,Vec,Vec))SNESComputeFunction,snes);CHKERRQ(ierr);
 
   (*J)->ops->assemblyend = MatAssemblyEnd_SNESMF;

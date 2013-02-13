@@ -6,7 +6,7 @@ static const char help[] = "Tests PetscShell usage\n";
 #define __FUNCT__ "TestACall"
 PetscErrorCode  TestACall(PetscShell component, const char *message)
 {
-  MPI_Comm       comm = ((PetscObject)component)->comm;
+  MPI_Comm       comm = PetscObjectComm((PetscObject)component);
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -18,7 +18,7 @@ PetscErrorCode  TestACall(PetscShell component, const char *message)
 #define __FUNCT__ "TestBInitialize"
 PetscErrorCode  TestBInitialize(PetscShell component, const char *message)
 {
-  MPI_Comm       comm = ((PetscObject)component)->comm;
+  MPI_Comm       comm = PetscObjectComm((PetscObject)component);
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -30,7 +30,7 @@ PetscErrorCode  TestBInitialize(PetscShell component, const char *message)
 #define __FUNCT__ "TestBCall"
 PetscErrorCode  TestBCall(PetscShell component, const char *message)
 {
-  MPI_Comm       comm = ((PetscObject)component)->comm;
+  MPI_Comm       comm = PetscObjectComm((PetscObject)component);
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -42,7 +42,7 @@ PetscErrorCode  TestBCall(PetscShell component, const char *message)
 #define __FUNCT__ "TestCInitialize"
 PetscErrorCode  TestCInitialize(PetscShell component, const char *message)
 {
-  MPI_Comm       comm = ((PetscObject)component)->comm;
+  MPI_Comm       comm = PetscObjectComm((PetscObject)component);
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -54,7 +54,7 @@ PetscErrorCode  TestCInitialize(PetscShell component, const char *message)
 #define __FUNCT__ "TestCCall"
 PetscErrorCode  TestCCall(PetscShell component, const char *message)
 {
-  MPI_Comm       comm = ((PetscObject)component)->comm;
+  MPI_Comm       comm = PetscObjectComm((PetscObject)component);
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -84,7 +84,7 @@ PetscErrorCode main(int argc, char *argv[])
   ierr = PetscPrintf(PETSC_COMM_WORLD, "Registering dependence: TestIIA --> TestIA\n");CHKERRQ(ierr);
   ierr = PetscShellRegisterDependence(shell, "TestIIA", "TestIA");CHKERRQ(ierr);
   /**/
-  ierr = PetscShellCreate(((PetscObject)shell)->comm, &a);CHKERRQ(ierr);
+  ierr = PetscShellCreate(PetscObjectComm((PetscObject)shell), &a);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)a, "call", "call", (void (*)(void))TestACall);CHKERRQ(ierr);
   ierr = PetscShellRegisterComponentShell(shell, "TestA", a);CHKERRQ(ierr);
   /**/

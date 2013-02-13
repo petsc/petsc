@@ -112,7 +112,7 @@ static PetscErrorCode  SNESLineSearchApply_Shell(SNESLineSearch linesearch)
   /* apply the user function */
   if (shell->func) {
     ierr = (*shell->func)(linesearch, shell->ctx);CHKERRQ(ierr);
-  } else SETERRQ(((PetscObject)linesearch)->comm, PETSC_ERR_USER, "SNESLineSearchShell needs to have a shell function set with SNESLineSearchShellSetUserFunc");
+  } else SETERRQ(PetscObjectComm((PetscObject)linesearch), PETSC_ERR_USER, "SNESLineSearchShell needs to have a shell function set with SNESLineSearchShellSetUserFunc");
   PetscFunctionReturn(0);
 }
 

@@ -63,8 +63,8 @@ PetscErrorCode  PCSetType(PC pc,PCType type)
   ierr = PetscObjectTypeCompare((PetscObject)pc,type,&match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
 
-  ierr =  PetscFunctionListFind(((PetscObject)pc)->comm,PCList,type,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
-  if (!r) SETERRQ1(((PetscObject)pc)->comm,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested PC type %s",type);
+  ierr =  PetscFunctionListFind(PetscObjectComm((PetscObject)pc),PCList,type,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
+  if (!r) SETERRQ1(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested PC type %s",type);
   /* Destroy the previous private PC context */
   if (pc->ops->destroy) {
     ierr             =  (*pc->ops->destroy)(pc);CHKERRQ(ierr);

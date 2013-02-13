@@ -22,8 +22,8 @@ PetscErrorCode DMCreateCoordinateDM_DA(DM dm, DM *cdm)
     ierr = DMDAGetInfo(dm,0,&m,0,0,0,0,0,0,&s,&bx,0,0,0);CHKERRQ(ierr);
     ierr = DMDAGetCorners(dm,0,0,0,&l,0,0);CHKERRQ(ierr);
     ierr = PetscMalloc(size * sizeof(PetscInt), &lc);CHKERRQ(ierr);
-    ierr = MPI_Allgather(&l,1,MPIU_INT,lc,1,MPIU_INT,((PetscObject)dm)->comm);CHKERRQ(ierr);
-    ierr = DMDACreate1d(((PetscObject)dm)->comm,bx,m,1,s,lc,cdm);CHKERRQ(ierr);
+    ierr = MPI_Allgather(&l,1,MPIU_INT,lc,1,MPIU_INT,PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
+    ierr = DMDACreate1d(PetscObjectComm((PetscObject)dm),bx,m,1,s,lc,cdm);CHKERRQ(ierr);
     ierr = PetscFree(lc);CHKERRQ(ierr);
   } else if (da->dim == 2) {
     PetscInt         i,s,m,*lc,*ld,l,k,n,M,N;
@@ -33,14 +33,14 @@ PetscErrorCode DMCreateCoordinateDM_DA(DM dm, DM *cdm)
     ierr = DMDAGetCorners(dm,0,0,0,&l,&k,0);CHKERRQ(ierr);
     ierr = PetscMalloc2(size,PetscInt,&lc,size,PetscInt,&ld);CHKERRQ(ierr);
     /* only first M values in lc matter */
-    ierr = MPI_Allgather(&l,1,MPIU_INT,lc,1,MPIU_INT,((PetscObject)dm)->comm);CHKERRQ(ierr);
+    ierr = MPI_Allgather(&l,1,MPIU_INT,lc,1,MPIU_INT,PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
     /* every Mth value in ld matters */
-      ierr = MPI_Allgather(&k,1,MPIU_INT,ld,1,MPIU_INT,((PetscObject)dm)->comm);CHKERRQ(ierr);
+      ierr = MPI_Allgather(&k,1,MPIU_INT,ld,1,MPIU_INT,PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
       for (i = 0; i < N; ++i) ld[i] = ld[M*i];
       if (bx == DMDA_BOUNDARY_MIRROR || by == DMDA_BOUNDARY_MIRROR) {
-        ierr = DMDACreate2d(((PetscObject)dm)->comm,bx,by,DMDA_STENCIL_STAR,m,n,M,N,2,s,lc,ld,cdm);CHKERRQ(ierr);
+        ierr = DMDACreate2d(PetscObjectComm((PetscObject)dm),bx,by,DMDA_STENCIL_STAR,m,n,M,N,2,s,lc,ld,cdm);CHKERRQ(ierr);
       } else {
-        ierr = DMDACreate2d(((PetscObject)dm)->comm,bx,by,DMDA_STENCIL_BOX,m,n,M,N,2,s,lc,ld,cdm);CHKERRQ(ierr);
+        ierr = DMDACreate2d(PetscObjectComm((PetscObject)dm),bx,by,DMDA_STENCIL_BOX,m,n,M,N,2,s,lc,ld,cdm);CHKERRQ(ierr);
       }
       ierr = PetscFree2(lc,ld);CHKERRQ(ierr);
   } else if (da->dim == 3) {
@@ -51,13 +51,13 @@ PetscErrorCode DMCreateCoordinateDM_DA(DM dm, DM *cdm)
     ierr = DMDAGetCorners(dm,0,0,0,&l,&k,&q);CHKERRQ(ierr);
     ierr = PetscMalloc3(size,PetscInt,&lc,size,PetscInt,&ld,size,PetscInt,&le);CHKERRQ(ierr);
     /* only first M values in lc matter */
-    ierr = MPI_Allgather(&l,1,MPIU_INT,lc,1,MPIU_INT,((PetscObject)dm)->comm);CHKERRQ(ierr);
+    ierr = MPI_Allgather(&l,1,MPIU_INT,lc,1,MPIU_INT,PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
     /* every Mth value in ld matters */
-    ierr = MPI_Allgather(&k,1,MPIU_INT,ld,1,MPIU_INT,((PetscObject)dm)->comm);CHKERRQ(ierr);
+    ierr = MPI_Allgather(&k,1,MPIU_INT,ld,1,MPIU_INT,PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
     for (i = 0; i < N; ++i) ld[i] = ld[M*i];
-    ierr = MPI_Allgather(&q,1,MPIU_INT,le,1,MPIU_INT,((PetscObject)dm)->comm);CHKERRQ(ierr);
+    ierr = MPI_Allgather(&q,1,MPIU_INT,le,1,MPIU_INT,PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
     for (i = 0; i < P; ++i) le[i] = le[M*N*i];
-    ierr = DMDACreate3d(((PetscObject)dm)->comm,bx,by,bz,DMDA_STENCIL_BOX,m,n,p,M,N,P,3,s,lc,ld,le,cdm);CHKERRQ(ierr);
+    ierr = DMDACreate3d(PetscObjectComm((PetscObject)dm),bx,by,bz,DMDA_STENCIL_BOX,m,n,p,M,N,P,3,s,lc,ld,le,cdm);CHKERRQ(ierr);
     ierr = PetscFree3(lc,ld,le);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -331,8 +331,8 @@ PetscErrorCode  DMDAGetBoundingBox(DM da,PetscReal gmin[],PetscReal gmax[])
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   ierr = PetscMPIIntCast(dd->dim,&count);CHKERRQ(ierr);
   ierr = DMDAGetLocalBoundingBox(da,lmin,lmax);CHKERRQ(ierr);
-  if (gmin) {ierr = MPI_Allreduce(lmin,gmin,count,MPIU_REAL,MPIU_MIN,((PetscObject)da)->comm);CHKERRQ(ierr);}
-  if (gmax) {ierr = MPI_Allreduce(lmax,gmax,count,MPIU_REAL,MPIU_MAX,((PetscObject)da)->comm);CHKERRQ(ierr);}
+  if (gmin) {ierr = MPI_Allreduce(lmin,gmin,count,MPIU_REAL,MPIU_MIN,PetscObjectComm((PetscObject)da));CHKERRQ(ierr);}
+  if (gmax) {ierr = MPI_Allreduce(lmax,gmax,count,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)da));CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -384,11 +384,11 @@ PetscErrorCode  DMDAGetReducedDMDA(DM da,PetscInt nfields,DM *nda)
 
   ierr = DMDAGetOwnershipRanges(da,&lx,&ly,&lz);CHKERRQ(ierr);
   if (dim == 1) {
-    ierr = DMDACreate1d(((PetscObject)da)->comm,bx,M,nfields,s,dd->lx,nda);CHKERRQ(ierr);
+    ierr = DMDACreate1d(PetscObjectComm((PetscObject)da),bx,M,nfields,s,dd->lx,nda);CHKERRQ(ierr);
   } else if (dim == 2) {
-    ierr = DMDACreate2d(((PetscObject)da)->comm,bx,by,stencil_type,M,N,m,n,nfields,s,lx,ly,nda);CHKERRQ(ierr);
+    ierr = DMDACreate2d(PetscObjectComm((PetscObject)da),bx,by,stencil_type,M,N,m,n,nfields,s,lx,ly,nda);CHKERRQ(ierr);
   } else if (dim == 3) {
-    ierr = DMDACreate3d(((PetscObject)da)->comm,bx,by,bz,stencil_type,M,N,P,m,n,p,nfields,s,lx,ly,lz,nda);CHKERRQ(ierr);
+    ierr = DMDACreate3d(PetscObjectComm((PetscObject)da),bx,by,bz,stencil_type,M,N,P,m,n,p,nfields,s,lx,ly,lz,nda);CHKERRQ(ierr);
   }
   if (da->coordinates) {
     ierr = PetscObjectReference((PetscObject)da->coordinates);CHKERRQ(ierr);

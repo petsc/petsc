@@ -81,7 +81,7 @@ static PetscErrorCode SNESSetFromOptions_NCG(SNES snes)
   ierr = PetscOptionsEnum("-snes_ncg_type","NCG Beta type used","SNESNCGSetType",SNESNCGTypes,(PetscEnum)ncg->type,(PetscEnum*)&ncgtype,NULL);CHKERRQ(ierr);
   ierr = SNESNCGSetType(snes, ncgtype);CHKERRQ(ierr);
   if (debug) {
-    ncg->monitor = PETSC_VIEWER_STDOUT_(((PetscObject)snes)->comm);CHKERRQ(ierr);
+    ncg->monitor = PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)snes));CHKERRQ(ierr);
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   if (!snes->linesearch) {
@@ -149,7 +149,7 @@ PetscErrorCode SNESLineSearchApply_NCGLinear(SNESLineSearch linesearch)
   ierr  = MatMult(snes->jacobian, Y, W);CHKERRQ(ierr);
   ierr  = VecDot(Y, W, &ptAp);CHKERRQ(ierr);
   alpha = alpha / ptAp;
-  ierr  = PetscPrintf(((PetscObject)snes)->comm, "alpha: %G\n", PetscRealPart(alpha));CHKERRQ(ierr);
+  ierr  = PetscPrintf(PetscObjectComm((PetscObject)snes), "alpha: %G\n", PetscRealPart(alpha));CHKERRQ(ierr);
   ierr  = VecAXPY(X, alpha, Y);CHKERRQ(ierr);
   ierr  = SNESComputeFunction(snes, X, F);CHKERRQ(ierr);
 

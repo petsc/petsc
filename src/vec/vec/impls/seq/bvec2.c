@@ -40,7 +40,7 @@ PetscErrorCode VecPointwiseMax_Seq(Vec win,Vec xin,Vec yin)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscThreadCommRunKernel3(((PetscObject)win)->comm,(PetscThreadKernel)VecPointwiseMax_kernel,win,xin,yin);CHKERRQ(ierr);
+  ierr = PetscThreadCommRunKernel3(PetscObjectComm((PetscObject)win),(PetscThreadKernel)VecPointwiseMax_kernel,win,xin,yin);CHKERRQ(ierr);
   ierr = PetscLogFlops(win->map->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -96,7 +96,7 @@ PetscErrorCode VecPointwiseMin_Seq(Vec win,Vec xin,Vec yin)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscThreadCommRunKernel3(((PetscObject)win)->comm,(PetscThreadKernel)VecPointwiseMin_kernel,win,xin,yin);CHKERRQ(ierr);
+  ierr = PetscThreadCommRunKernel3(PetscObjectComm((PetscObject)win),(PetscThreadKernel)VecPointwiseMin_kernel,win,xin,yin);CHKERRQ(ierr);
   ierr = PetscLogFlops(win->map->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -152,7 +152,7 @@ PetscErrorCode VecPointwiseMaxAbs_Seq(Vec win,Vec xin,Vec yin)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscThreadCommRunKernel3(((PetscObject)win)->comm,(PetscThreadKernel)VecPointwiseMaxAbs_kernel,win,xin,yin);CHKERRQ(ierr);
+  ierr = PetscThreadCommRunKernel3(PetscObjectComm((PetscObject)win),(PetscThreadKernel)VecPointwiseMaxAbs_kernel,win,xin,yin);CHKERRQ(ierr);
   ierr = PetscLogFlops(win->map->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -221,7 +221,7 @@ PetscErrorCode VecPointwiseMult_Seq(Vec win,Vec xin,Vec yin)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscThreadCommRunKernel3(((PetscObject)win)->comm,(PetscThreadKernel)VecPointwiseMult_kernel,win,xin,yin);CHKERRQ(ierr);
+  ierr = PetscThreadCommRunKernel3(PetscObjectComm((PetscObject)win),(PetscThreadKernel)VecPointwiseMult_kernel,win,xin,yin);CHKERRQ(ierr);
   ierr = PetscLogFlops(win->map->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -285,7 +285,7 @@ PetscErrorCode VecPointwiseDivide_Seq(Vec win,Vec xin,Vec yin)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscThreadCommRunKernel3(((PetscObject)win)->comm,(PetscThreadKernel)VecPointwiseDivide_kernel,win,xin,yin);CHKERRQ(ierr);
+  ierr = PetscThreadCommRunKernel3(PetscObjectComm((PetscObject)win),(PetscThreadKernel)VecPointwiseDivide_kernel,win,xin,yin);CHKERRQ(ierr);
   ierr = PetscLogFlops(win->map->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -336,7 +336,7 @@ PetscErrorCode VecSetRandom_Seq(Vec xin,PetscRandom r)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscThreadCommRunKernel2(((PetscObject)xin)->comm,(PetscThreadKernel)VecSetRandom_kernel,xin,r);CHKERRQ(ierr);
+  ierr = PetscThreadCommRunKernel2(PetscObjectComm((PetscObject)xin),(PetscThreadKernel)VecSetRandom_kernel,xin,r);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 #else
@@ -386,7 +386,7 @@ PetscErrorCode VecConjugate_Seq(Vec xin)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscThreadCommRunKernel1(((PetscObject)xin)->comm,(PetscThreadKernel)VecConjugate_kernel,xin);CHKERRQ(ierr);
+  ierr = PetscThreadCommRunKernel1(PetscObjectComm((PetscObject)xin),(PetscThreadKernel)VecConjugate_kernel,xin);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 #else
@@ -449,7 +449,7 @@ PetscErrorCode VecCopy_Seq(Vec xin,Vec yin)
 
   PetscFunctionBegin;
   if (xin != yin) {
-    ierr = PetscThreadCommRunKernel2(((PetscObject)xin)->comm,(PetscThreadKernel)VecCopy_kernel,xin,yin);CHKERRQ(ierr);
+    ierr = PetscThreadCommRunKernel2(PetscObjectComm((PetscObject)xin),(PetscThreadKernel)VecCopy_kernel,xin,yin);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -503,7 +503,7 @@ PetscErrorCode VecSwap_Seq(Vec xin,Vec yin)
 
   PetscFunctionBegin;
   if (xin != yin) {
-    ierr = PetscThreadCommRunKernel2(((PetscObject)xin)->comm,(PetscThreadKernel)VecSwap_kernel,xin,yin);CHKERRQ(ierr);
+    ierr = PetscThreadCommRunKernel2(PetscObjectComm((PetscObject)xin),(PetscThreadKernel)VecSwap_kernel,xin,yin);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -576,17 +576,17 @@ PetscErrorCode VecNorm_Seq(Vec xin,NormType type,PetscReal *z)
 
   PetscFunctionBegin;
   if (type == NORM_2 || type == NORM_FROBENIUS) {
-    ierr = PetscThreadReductionBegin(((PetscObject)xin)->comm,THREADCOMM_SUM,PETSC_REAL,1,&red);CHKERRQ(ierr);
-    ierr = PetscThreadCommRunKernel3(((PetscObject)xin)->comm,(PetscThreadKernel)VecNorm_kernel,xin,(void*)&type,red);CHKERRQ(ierr);
+    ierr = PetscThreadReductionBegin(PetscObjectComm((PetscObject)xin),THREADCOMM_SUM,PETSC_REAL,1,&red);CHKERRQ(ierr);
+    ierr = PetscThreadCommRunKernel3(PetscObjectComm((PetscObject)xin),(PetscThreadKernel)VecNorm_kernel,xin,(void*)&type,red);CHKERRQ(ierr);
     ierr = PetscThreadReductionEnd(red,z);CHKERRQ(ierr);
     *z   = PetscSqrtReal(*z);
   } else if (type == NORM_INFINITY) {
-    ierr = PetscThreadReductionBegin(((PetscObject)xin)->comm,THREADCOMM_MAX,PETSC_REAL,1,&red);CHKERRQ(ierr);
-    ierr = PetscThreadCommRunKernel3(((PetscObject)xin)->comm,(PetscThreadKernel)VecNorm_kernel,xin,(void*)&type,red);CHKERRQ(ierr);
+    ierr = PetscThreadReductionBegin(PetscObjectComm((PetscObject)xin),THREADCOMM_MAX,PETSC_REAL,1,&red);CHKERRQ(ierr);
+    ierr = PetscThreadCommRunKernel3(PetscObjectComm((PetscObject)xin),(PetscThreadKernel)VecNorm_kernel,xin,(void*)&type,red);CHKERRQ(ierr);
     ierr = PetscThreadReductionEnd(red,z);CHKERRQ(ierr);
   } else if (type == NORM_1) {
-    ierr = PetscThreadReductionBegin(((PetscObject)xin)->comm,THREADCOMM_SUM,PETSC_REAL,1,&red);CHKERRQ(ierr);
-    ierr = PetscThreadCommRunKernel3(((PetscObject)xin)->comm,(PetscThreadKernel)VecNorm_kernel,xin,(void*)&type,red);CHKERRQ(ierr);
+    ierr = PetscThreadReductionBegin(PetscObjectComm((PetscObject)xin),THREADCOMM_SUM,PETSC_REAL,1,&red);CHKERRQ(ierr);
+    ierr = PetscThreadCommRunKernel3(PetscObjectComm((PetscObject)xin),(PetscThreadKernel)VecNorm_kernel,xin,(void*)&type,red);CHKERRQ(ierr);
     ierr = PetscThreadReductionEnd(red,z);CHKERRQ(ierr);
   } else if (type == NORM_1_AND_2) {
     ierr = VecNorm_Seq(xin,NORM_1,z);CHKERRQ(ierr);
@@ -1142,7 +1142,7 @@ PetscErrorCode VecDuplicate_Seq(Vec win,Vec *V)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = VecCreate(((PetscObject)win)->comm,V);CHKERRQ(ierr);
+  ierr = VecCreate(PetscObjectComm((PetscObject)win),V);CHKERRQ(ierr);
   ierr = PetscObjectSetPrecision((PetscObject)*V,((PetscObject)win)->precision);CHKERRQ(ierr);
   ierr = VecSetSizes(*V,win->map->n,win->map->n);CHKERRQ(ierr);
   ierr = VecSetType(*V,((PetscObject)win)->type_name);CHKERRQ(ierr);

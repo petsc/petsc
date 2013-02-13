@@ -124,7 +124,7 @@ PetscErrorCode MatApplyPAPt_Symbolic_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat *C)
   ierr = PetscMemzero(ca,(ci[pm]+1)*sizeof(MatScalar));CHKERRQ(ierr);
 
   /* put together the new matrix */
-  ierr           = MatCreateSeqAIJWithArrays(((PetscObject)A)->comm,pm,pm,ci,cj,ca,C);CHKERRQ(ierr);
+  ierr           = MatCreateSeqAIJWithArrays(PetscObjectComm((PetscObject)A),pm,pm,ci,cj,ca,C);CHKERRQ(ierr);
   (*C)->rmap->bs = P->cmap->bs;
   (*C)->cmap->bs = P->cmap->bs;
 

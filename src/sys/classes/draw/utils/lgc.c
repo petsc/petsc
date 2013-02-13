@@ -103,7 +103,7 @@ PetscErrorCode  PetscDrawLGSPDraw(PetscDrawLG lg,PetscDrawSP spin)
   ierr = PetscDrawAxisSetLimits(lg->axis,xmin,xmax,ymin,ymax);CHKERRQ(ierr);
   ierr = PetscDrawAxisDraw(lg->axis);CHKERRQ(ierr);
 
-  ierr = MPI_Comm_rank(((PetscObject)lg)->comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)lg),&rank);CHKERRQ(ierr);
   if (!rank) {
 
     dim   = lg->dim;
@@ -163,10 +163,10 @@ PetscErrorCode  PetscDrawLGCreate(PetscDraw draw,PetscInt dim,PetscDrawLG *outct
   PetscValidPointer(outctx,2);
   ierr = PetscObjectTypeCompare(obj,PETSC_DRAW_NULL,&isnull);CHKERRQ(ierr);
   if (isnull) {
-    ierr = PetscDrawOpenNull(((PetscObject)obj)->comm,(PetscDraw*)outctx);CHKERRQ(ierr);
+    ierr = PetscDrawOpenNull(PetscObjectComm((PetscObject)obj),(PetscDraw*)outctx);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
-  ierr = PetscHeaderCreate(lg,_p_PetscDrawLG,int,PETSC_DRAWLG_CLASSID,"PetscDrawLG","Line graph","Draw",((PetscObject)obj)->comm,PetscDrawLGDestroy,0);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(lg,_p_PetscDrawLG,int,PETSC_DRAWLG_CLASSID,"PetscDrawLG","Line graph","Draw",PetscObjectComm((PetscObject)obj),PetscDrawLGDestroy,0);CHKERRQ(ierr);
 
   lg->view    = 0;
   lg->destroy = 0;
@@ -478,7 +478,7 @@ PetscErrorCode  PetscDrawLGDraw(PetscDrawLG lg)
   ierr = PetscDrawAxisSetLimits(lg->axis,xmin,xmax,ymin,ymax);CHKERRQ(ierr);
   ierr = PetscDrawAxisDraw(lg->axis);CHKERRQ(ierr);
 
-  ierr = MPI_Comm_rank(((PetscObject)lg)->comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)lg),&rank);CHKERRQ(ierr);
   if (!rank) {
 
     for (i=0; i<dim; i++) {
@@ -548,9 +548,9 @@ PetscErrorCode  PetscDrawLGPrint(PetscDrawLG lg)
   if (xmin > xmax || ymin > ymax) PetscFunctionReturn(0);
 
   for (i = 0; i < dim; i++) {
-    PetscPrintf(((PetscObject)lg)->comm, "Line %d>\n", i);
+    PetscPrintf(PetscObjectComm((PetscObject)lg), "Line %d>\n", i);
     for (j = 0; j < nopts; j++) {
-      PetscPrintf(((PetscObject)lg)->comm, "  X: %g Y: %g\n", (double)lg->x[j*dim+i], (double)lg->y[j*dim+i]);
+      PetscPrintf(PetscObjectComm((PetscObject)lg), "  X: %g Y: %g\n", (double)lg->x[j*dim+i], (double)lg->y[j*dim+i]);
     }
   }
   PetscFunctionReturn(0);

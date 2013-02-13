@@ -342,7 +342,7 @@ static PetscErrorCode PetscDrawGetPopup_OpenGL(PetscDraw draw,PetscDraw *popup)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscDrawCreate(((PetscObject)draw)->comm,NULL,NULL,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,popup);CHKERRQ(ierr);
+  ierr = PetscDrawCreate(PetscObjectComm((PetscObject)draw),NULL,NULL,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,popup);CHKERRQ(ierr);
   ierr = PetscDrawSetType(*popup,((PetscObject)draw)->type_name);CHKERRQ(ierr);
 
   draw->popup = *popup;
@@ -1012,12 +1012,12 @@ static PetscErrorCode PetscDrawPause_OpenGL(PetscDraw draw)
   else if (draw->pause == -1) {
     PetscDrawButton button;
     PetscMPIInt     rank;
-    ierr = MPI_Comm_rank(((PetscObject)draw)->comm,&rank);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)draw),&rank);CHKERRQ(ierr);
     if (!rank) {
       ierr = PetscDrawGetMouseButton(draw,&button,0,0,0,0);CHKERRQ(ierr);
       if (button == PETSC_BUTTON_CENTER) draw->pause = 0;
     }
-    ierr = MPI_Bcast(&draw->pause,1,MPI_INT,0,((PetscObject)draw)->comm);CHKERRQ(ierr);
+    ierr = MPI_Bcast(&draw->pause,1,MPI_INT,0,PetscObjectComm((PetscObject)draw));CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

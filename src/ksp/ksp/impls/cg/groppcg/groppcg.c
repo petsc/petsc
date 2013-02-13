@@ -50,7 +50,7 @@ PetscErrorCode  KSPSolve_GROPPCG(KSP ksp)
 
   PetscFunctionBegin;
   ierr = PCGetDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
-  if (diagonalscale) SETERRQ1(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
+  if (diagonalscale) SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
 
   x = ksp->vec_sol;
   b = ksp->vec_rhs;
@@ -74,7 +74,7 @@ PetscErrorCode  KSPSolve_GROPPCG(KSP ksp)
   ierr = KSP_PCApply(ksp,r,z);CHKERRQ(ierr);                   /*     z <- Br   */
   ierr = VecCopy(z,p);CHKERRQ(ierr);                           /*     p <- z    */
   ierr = VecDotBegin(r,z,&gamma);CHKERRQ(ierr);                  /*     gamma <- z'*r       */
-  ierr = PetscCommSplitReductionBegin(((PetscObject)r)->comm);CHKERRQ(ierr);
+  ierr = PetscCommSplitReductionBegin(PetscObjectComm((PetscObject)r));CHKERRQ(ierr);
   ierr = KSP_MatMult(ksp,Amat,p,s);CHKERRQ(ierr);              /*     s <- Ap   */
   ierr = VecDotEnd(r,z,&gamma);CHKERRQ(ierr);                  /*     gamma <- z'*r       */
 
@@ -88,13 +88,13 @@ PetscErrorCode  KSPSolve_GROPPCG(KSP ksp)
     ierr = VecNorm(r,NORM_2,&dp);CHKERRQ(ierr);                /*     dp <- r'*r = e'*A'*A*e            */
     break;
   case KSP_NORM_NATURAL:
-    if (PetscIsInfOrNanScalar(gamma)) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_FP,"Infinite or not-a-number generated in dot product");
+    if (PetscIsInfOrNanScalar(gamma)) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_FP,"Infinite or not-a-number generated in dot product");
     dp = PetscSqrtReal(PetscAbsScalar(gamma));                  /*     dp <- r'*z = r'*B*r = e'*A'*B*A*e */
     break;
   case KSP_NORM_NONE:
     dp = 0.0;
     break;
-  default: SETERRQ1(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"%s",KSPNormTypes[ksp->normtype]);
+  default: SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"%s",KSPNormTypes[ksp->normtype]);
   }
   KSPLogResidualHistory(ksp,dp);
   ierr       = KSPMonitor(ksp,0,dp);CHKERRQ(ierr);
@@ -108,7 +108,7 @@ PetscErrorCode  KSPSolve_GROPPCG(KSP ksp)
     i++;
 
     ierr = VecDotBegin(p,s,&t);CHKERRQ(ierr);
-    ierr = PetscCommSplitReductionBegin(((PetscObject)p)->comm);CHKERRQ(ierr);
+    ierr = PetscCommSplitReductionBegin(PetscObjectComm((PetscObject)p));CHKERRQ(ierr);
 
     ierr = KSP_PCApply(ksp,s,S);CHKERRQ(ierr);         /*   S <- Bs       */
 
@@ -125,7 +125,7 @@ PetscErrorCode  KSPSolve_GROPPCG(KSP ksp)
       ierr = VecNormBegin(z,NORM_2,&dp);CHKERRQ(ierr);
     }
     ierr = VecDotBegin(r,z,&gammaNew);CHKERRQ(ierr);
-    ierr = PetscCommSplitReductionBegin(((PetscObject)r)->comm);CHKERRQ(ierr);
+    ierr = PetscCommSplitReductionBegin(PetscObjectComm((PetscObject)r));CHKERRQ(ierr);
 
     ierr = KSP_MatMult(ksp,Amat,z,Z);CHKERRQ(ierr);      /*   Z <- Az       */
 
@@ -137,7 +137,7 @@ PetscErrorCode  KSPSolve_GROPPCG(KSP ksp)
     ierr = VecDotEnd(r,z,&gammaNew);CHKERRQ(ierr);
 
     if (ksp->normtype == KSP_NORM_NATURAL) {
-      if (PetscIsInfOrNanScalar(gammaNew)) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_FP,"Infinite or not-a-number generated in dot product");
+      if (PetscIsInfOrNanScalar(gammaNew)) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_FP,"Infinite or not-a-number generated in dot product");
       dp = PetscSqrtReal(PetscAbsScalar(gammaNew));                  /*     dp <- r'*z = r'*B*r = e'*A'*B*A*e */
     } else if (ksp->normtype == KSP_NORM_NONE) {
       dp = 0.0;

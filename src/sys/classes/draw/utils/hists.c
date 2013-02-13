@@ -279,7 +279,7 @@ PetscErrorCode  PetscDrawHGDraw(PetscDrawHG hist)
   if (hist->numValues < 1) PetscFunctionReturn(0);
 
 #if 0
-  ierr = MPI_Comm_rank(((PetscObject)hist)->comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)hist),&rank);CHKERRQ(ierr);
   if (rank) PetscFunctionReturn(0);
 #endif
 
@@ -433,7 +433,7 @@ PetscErrorCode  PetscDrawHGPrint(PetscDrawHG hist)
       var  += values[p]*values[p];
     }
     /* Draw bins */
-    PetscPrintf(((PetscObject)hist)->comm, "Bin %2d (%6.2g - %6.2g): %.0g\n", 0, xmin, xmax, bins[0]);
+    PetscPrintf(PetscObjectComm((PetscObject)hist), "Bin %2d (%6.2g - %6.2g): %.0g\n", 0, xmin, xmax, bins[0]);
   } else {
     numBins    = hist->numBins;
     numBinsOld = hist->numBins;
@@ -467,7 +467,7 @@ PetscErrorCode  PetscDrawHGPrint(PetscDrawHG hist)
     for (i = 0; i < numBins; i++) {
       binLeft  = xmin + binSize*i;
       binRight = xmin + binSize*(i+1);
-      PetscPrintf(((PetscObject)hist)->comm, "Bin %2d (%6.2g - %6.2g): %.0g\n", i, binLeft, binRight, bins[i]);
+      PetscPrintf(PetscObjectComm((PetscObject)hist), "Bin %2d (%6.2g - %6.2g): %.0g\n", i, binLeft, binRight, bins[i]);
     }
     ierr = PetscDrawHGSetNumberBins(hist, numBinsOld);CHKERRQ(ierr);
   }
@@ -476,8 +476,8 @@ PetscErrorCode  PetscDrawHGPrint(PetscDrawHG hist)
     mean /= numValues;
     if (numValues > 1) var = (var - numValues*mean*mean) / (numValues-1);
     else var = 0.0;
-    PetscPrintf(((PetscObject)hist)->comm, "Mean: %G  Var: %G\n", mean, var);
-    PetscPrintf(((PetscObject)hist)->comm, "Total: %d\n", numValues);
+    PetscPrintf(PetscObjectComm((PetscObject)hist), "Mean: %G  Var: %G\n", mean, var);
+    PetscPrintf(PetscObjectComm((PetscObject)hist), "Total: %d\n", numValues);
   }
   PetscFunctionReturn(0);
 }

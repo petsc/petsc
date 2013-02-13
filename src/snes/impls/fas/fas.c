@@ -194,7 +194,7 @@ PetscErrorCode SNESSetUp_FAS(SNES snes)
     if (next) {
       /* for now -- assume the DM and the evaluation functions have been set externally */
       if (!next->dm) {
-        ierr = DMCoarsen(snes->dm, ((PetscObject)next)->comm, &next->dm);CHKERRQ(ierr);
+        ierr = DMCoarsen(snes->dm, PetscObjectComm((PetscObject)next), &next->dm);CHKERRQ(ierr);
         ierr = SNESSetDM(next, next->dm);CHKERRQ(ierr);
       }
       /* set the interpolation and restriction from the DM */
@@ -208,7 +208,7 @@ PetscErrorCode SNESSetUp_FAS(SNES snes)
       /* set the injection from the DM */
       if (!fas->inject) {
         ierr = DMCreateInjection(next->dm, snes->dm, &injscatter);CHKERRQ(ierr);
-        ierr = MatCreateScatter(((PetscObject)snes)->comm, injscatter, &fas->inject);CHKERRQ(ierr);
+        ierr = MatCreateScatter(PetscObjectComm((PetscObject)snes), injscatter, &fas->inject);CHKERRQ(ierr);
         ierr = VecScatterDestroy(&injscatter);CHKERRQ(ierr);
       }
     }
@@ -554,7 +554,7 @@ PetscErrorCode SNESFASCreateCoarseVec(SNES snes,Vec *Xcoarse)
     ierr = VecDuplicate(fas->rscale,Xcoarse);CHKERRQ(ierr);
   } else if (fas->inject) {
     ierr = MatGetVecs(fas->inject,Xcoarse,NULL);CHKERRQ(ierr);
-  } else SETERRQ(((PetscObject)snes)->comm,PETSC_ERR_ARG_WRONGSTATE,"Must set restriction or injection");CHKERRQ(ierr);
+  } else SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE,"Must set restriction or injection");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

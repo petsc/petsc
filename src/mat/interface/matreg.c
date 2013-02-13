@@ -48,7 +48,7 @@ PetscErrorCode  MatSetType(Mat mat, MatType matype)
     ierr = PetscStrcmp(matype,names->bname,&found);CHKERRQ(ierr);
     if (found) {
       PetscMPIInt size;
-      ierr = MPI_Comm_size(((PetscObject)mat)->comm,&size);CHKERRQ(ierr);
+      ierr = MPI_Comm_size(PetscObjectComm((PetscObject)mat),&size);CHKERRQ(ierr);
       if (size == 1) matype = names->sname;
       else matype = names->mname;
       break;
@@ -59,7 +59,7 @@ PetscErrorCode  MatSetType(Mat mat, MatType matype)
   ierr = PetscObjectTypeCompare((PetscObject)mat,matype,&sametype);CHKERRQ(ierr);
   if (sametype) PetscFunctionReturn(0);
 
-  ierr =  PetscFunctionListFind(((PetscObject)mat)->comm,MatList,matype,PETSC_TRUE,(void(**)(void))&r);CHKERRQ(ierr);
+  ierr =  PetscFunctionListFind(PetscObjectComm((PetscObject)mat),MatList,matype,PETSC_TRUE,(void(**)(void))&r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown Mat type given: %s",matype);
 
   /* free the old data structure if it existed */

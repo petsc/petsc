@@ -707,7 +707,7 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
     ierr = PCISSetUp(pc);CHKERRQ(ierr);
     /* Get stdout for dbg */
     if (pcbddc->dbg_flag) {
-      ierr = PetscViewerASCIIGetStdout(((PetscObject)pc)->comm,&pcbddc->dbg_viewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)pc),&pcbddc->dbg_viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIISynchronizedAllow(pcbddc->dbg_viewer,PETSC_TRUE);CHKERRQ(ierr);
     }
     /* Analyze local interface */
@@ -1065,10 +1065,11 @@ static PetscErrorCode PCBDDCCreateFETIDPOperators_BDDC(PC pc, Mat *fetidp_mat, P
   Mat            newmat;
   FETIDPPC_ctx   *fetidppc_ctx;
   PC             newpc;
-  MPI_Comm       comm = ((PetscObject)pc)->comm;
+  MPI_Comm       comm;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)pc,&comm);CHKERRQ(ierr);
   /* FETIDP linear matrix */
   ierr = PCBDDCCreateFETIDPMatContext(pc, &fetidpmat_ctx);CHKERRQ(ierr);
   ierr = PCBDDCSetupFETIDPMatContext(fetidpmat_ctx);CHKERRQ(ierr);
@@ -1569,7 +1570,7 @@ static PetscErrorCode PCBDDCAdaptNullSpace(PC pc)
   /* TODO : Orthonormalize vecs when new_nsp_size > 0! */
 
   ierr = KSPDestroy(&inv_change);CHKERRQ(ierr);
-  ierr = MatNullSpaceCreate(((PetscObject)pc)->comm,PETSC_FALSE,new_nsp_size,new_nsp_vecs,&new_nsp);CHKERRQ(ierr);
+  ierr = MatNullSpaceCreate(PetscObjectComm((PetscObject)pc),PETSC_FALSE,new_nsp_size,new_nsp_vecs,&new_nsp);CHKERRQ(ierr);
   ierr = PCBDDCSetNullSpace(pc,new_nsp);CHKERRQ(ierr);
   ierr = MatNullSpaceDestroy(&new_nsp);CHKERRQ(ierr);
   /*
@@ -2408,10 +2409,11 @@ static PetscErrorCode  PCBDDCScatterCoarseDataEnd(PC pc,Vec vec_from, Vec vec_to
   PC_BDDC        *pcbddc = (PC_BDDC*)(pc->data);
   PetscScalar    *array_to;
   PetscScalar    *array_from;
-  MPI_Comm       comm=((PetscObject)pc)->comm;
+  MPI_Comm       comm;
   PetscInt       i;
 
   PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)pc,&comm);CHKERRQ(ierr);
   switch (pcbddc->coarse_communications_type) {
   case SCATTERS_BDDC:
     ierr = VecScatterEnd(pcbddc->coarse_loc_to_glob,vec_from,vec_to,imode,smode);CHKERRQ(ierr);
@@ -3351,7 +3353,7 @@ static PetscErrorCode PCBDDCCoarseSetUp(PC pc)
       use_exact = 1;
       if (PetscAbsReal(value) > 1.e-4) use_exact = 0;
 
-      ierr = MPI_Allreduce(&use_exact,&use_exact_reduced,1,MPIU_INT,MPI_LAND,((PetscObject)pc)->comm);CHKERRQ(ierr);
+      ierr = MPI_Allreduce(&use_exact,&use_exact_reduced,1,MPIU_INT,MPI_LAND,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
       pcbddc->use_exact_dirichlet = (PetscBool) use_exact_reduced;
       if (dbg_flag) {
         ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
@@ -3372,7 +3374,7 @@ static PetscErrorCode PCBDDCCoarseSetUp(PC pc)
 
       use_exact = 1;
       if (PetscAbsReal(value) > 1.e-4) use_exact = 0;
-      ierr = MPI_Allreduce(&use_exact,&use_exact_reduced,1,MPIU_INT,MPI_LAND,((PetscObject)pc)->comm);CHKERRQ(ierr);
+      ierr = MPI_Allreduce(&use_exact,&use_exact_reduced,1,MPIU_INT,MPI_LAND,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
       if (dbg_flag) {
         ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Subdomain %04d infinity error for  Neumann  solve = % 1.14e \n",PetscGlobalRank,value);CHKERRQ(ierr);
         ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
@@ -3762,7 +3764,7 @@ static PetscErrorCode PCBDDCSetupCoarseEnvironment(PC pc,PetscScalar* coarse_sub
   Mat_IS   *matis    = (Mat_IS*)pc->pmat->data;
   PC_BDDC  *pcbddc   = (PC_BDDC*)pc->data;
   PC_IS    *pcis     = (PC_IS*)pc->data;
-  MPI_Comm prec_comm = ((PetscObject)pc)->comm;
+  MPI_Comm prec_comm;
   MPI_Comm coarse_comm;
 
   /* common to all choiches */
@@ -3803,6 +3805,7 @@ static PetscErrorCode PCBDDCSetupCoarseEnvironment(PC pc,PetscScalar* coarse_sub
   PetscBool setsym,issym=PETSC_FALSE;
 
   PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)pc,&comm);CHKERRQ(ierr);
   ins_local_primal_indices = 0;
   ins_coarse_mat_vals      = 0;
   localsizes2              = 0;
@@ -4856,8 +4859,8 @@ static PetscErrorCode PCBDDCManageLocalBoundaries(PC pc)
   PetscInt       total_counts,nodes_touched,where_values=1,vertex_size;
   PetscMPIInt    adapt_interface=0,adapt_interface_reduced=0,NEUMANNCNT=0;
   PetscBool      same_set;
-  MPI_Comm       interface_comm=((PetscObject)pc)->comm;
-  PetscBool      use_faces     =PETSC_FALSE,use_edges=PETSC_FALSE;
+  MPI_Comm       interface_comm;
+  PetscBool      use_faces = PETSC_FALSE,use_edges = PETSC_FALSE;
   const PetscInt *neumann_nodes;
   const PetscInt *dirichlet_nodes;
   IS             used_IS,*custom_ISForDofs;
@@ -4867,6 +4870,7 @@ static PetscErrorCode PCBDDCManageLocalBoundaries(PC pc)
   PetscInt       *queue_in_global_numbering;
 
   PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)pc,&interface_comm);CHKERRQ(ierr);
   /* Setup local adjacency graph */
   mat_graph->nvtxs=pcis->n;
   if (!mat_graph->xadj) NEUMANNCNT = 1;

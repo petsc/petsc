@@ -100,7 +100,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   PetscInt            *lnk,*owners_co,*coi,*coj,i,k,pnz,row;
   PetscInt            am=A->rmap->n,pN=P->cmap->N,pm=P->rmap->n,pn=P->cmap->n;
   PetscBT             lnkbt;
-  MPI_Comm            comm=((PetscObject)A)->comm;
+  MPI_Comm            comm;
   PetscMPIInt         size,rank,tagi,tagj,*len_si,*len_s,*len_ri,icompleted=0;
   PetscInt            **buf_rj,**buf_ri,**buf_ri_k;
   PetscInt            len,proc,*dnz,*onz,*owners;
@@ -117,6 +117,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
 #endif
 
   PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
 #if defined(PTAP_PROFILE)
   ierr = PetscGetTime(&t0);CHKERRQ(ierr);
 #endif
@@ -519,7 +520,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
   PetscInt            i,j,k,anz,pnz,apnz,nextap,row,*cj;
   MatScalar           *ada,*aoa,*apa,*pa,*ca,*pa_loc,*pa_oth,valtmp;
   PetscInt            am  =A->rmap->n,cm=C->rmap->n,pon=(p->B)->cmap->n;
-  MPI_Comm            comm=((PetscObject)C)->comm;
+  MPI_Comm            comm;
   PetscMPIInt         size,rank,taga,*len_s;
   PetscInt            *owners,proc,nrows,**buf_ri_k,**nextrow,**nextci;
   PetscInt            **buf_ri,**buf_rj;
@@ -535,6 +536,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
 #endif
 
   PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)C,&comm);CHKERRQ(ierr);
 #if defined(PTAP_PROFILE)
   ierr = PetscGetTime(&t0);CHKERRQ(ierr);
 #endif
@@ -542,7 +544,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
   ptap = c->ptap;
-  if (!ptap) SETERRQ(((PetscObject)C)->comm,PETSC_ERR_ARG_INCOMP,"MatPtAP() has not been called to create matrix C yet, cannot use MAT_REUSE_MATRIX");
+  if (!ptap) SETERRQ(PetscObjectComm((PetscObject)C),PETSC_ERR_ARG_INCOMP,"MatPtAP() has not been called to create matrix C yet, cannot use MAT_REUSE_MATRIX");
   merge    = ptap->merge;
   apa      = ptap->apa;
   scalable = ptap->scalable;

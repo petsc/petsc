@@ -259,7 +259,7 @@ PetscErrorCode  TSAlphaSetRadius_Alpha(TS ts,PetscReal radius)
   TS_Alpha *th = (TS_Alpha*)ts->data;
 
   PetscFunctionBegin;
-  if (radius < 0 || radius > 1) SETERRQ1(((PetscObject)ts)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Radius %G not in range [0,1]",radius);
+  if (radius < 0 || radius > 1) SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_OUTOFRANGE,"Radius %G not in range [0,1]",radius);
   th->Alpha_m = 0.5*(3-radius)/(1+radius);
   th->Alpha_f = 1/(1+radius);
   th->Gamma   = 0.5 + th->Alpha_m - th->Alpha_f;
@@ -416,7 +416,7 @@ PetscErrorCode  TSAlphaAdaptDefault(TS ts,PetscReal t,Vec X,Vec Xdot, PetscReal 
   {
     PetscBool match;
     ierr = PetscObjectTypeCompare((PetscObject)ts,TSALPHA,&match);CHKERRQ(ierr);
-    if (!match) SETERRQ(((PetscObject)ts)->comm,1,"Only for TSALPHA");
+    if (!match) SETERRQ(PetscObjectComm((PetscObject)ts),1,"Only for TSALPHA");
   }
 #endif
   th = (TS_Alpha*)ts->data;

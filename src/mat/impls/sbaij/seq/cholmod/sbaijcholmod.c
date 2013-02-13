@@ -66,7 +66,7 @@ PetscErrorCode  CholmodStart(Mat F)
 #define CHOLMOD_OPTION_SIZE_T(name,help) do {                            \
     PetscInt tmp = (PetscInt)c->name;                                    \
     ierr = PetscOptionsInt("-mat_cholmod_" #name,help,"None",tmp,&tmp,0);CHKERRQ(ierr); \
-    if (tmp < 0) SETERRQ(((PetscObject)F)->comm,PETSC_ERR_ARG_OUTOFRANGE,"value must be positive"); \
+    if (tmp < 0) SETERRQ(PetscObjectComm((PetscObject)F),PETSC_ERR_ARG_OUTOFRANGE,"value must be positive"); \
     c->name = (size_t)tmp;                                               \
 } while (0)
 
@@ -76,7 +76,7 @@ PetscErrorCode  CholmodStart(Mat F)
     c->name = (int)tmp;                                                  \
 } while (0)
 
-  ierr = PetscOptionsBegin(((PetscObject)F)->comm,((PetscObject)F)->prefix,"CHOLMOD Options","Mat");CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)F),((PetscObject)F)->prefix,"CHOLMOD Options","Mat");CHKERRQ(ierr);
   /* CHOLMOD handles first-time packing and refactor-packing separately, but we usually want them to be the same. */
   chol->pack = (PetscBool)c->final_pack;
 
@@ -108,13 +108,13 @@ PetscErrorCode  CholmodStart(Mat F)
     PetscReal tmp[] = {(PetscReal)c->zrelax[0],(PetscReal)c->zrelax[1],(PetscReal)c->zrelax[2]};
     PetscInt  n     = 3;
     ierr = PetscOptionsRealArray("-mat_cholmod_zrelax","3 real supernodal relaxed amalgamation parameters","None",tmp,&n,&flg);CHKERRQ(ierr);
-    if (flg && n != 3) SETERRQ(((PetscObject)F)->comm,PETSC_ERR_ARG_OUTOFRANGE,"must provide exactly 3 parameters to -mat_cholmod_zrelax");
+    if (flg && n != 3) SETERRQ(PetscObjectComm((PetscObject)F),PETSC_ERR_ARG_OUTOFRANGE,"must provide exactly 3 parameters to -mat_cholmod_zrelax");
     if (flg) while (n--) c->zrelax[n] = (double)tmp[n];
   }
   {
     PetscInt n,tmp[] = {(PetscInt)c->nrelax[0],(PetscInt)c->nrelax[1],(PetscInt)c->nrelax[2]};
     ierr = PetscOptionsIntArray("-mat_cholmod_nrelax","3 size_t supernodal relaxed amalgamation parameters","None",tmp,&n,&flg);CHKERRQ(ierr);
-    if (flg && n != 3) SETERRQ(((PetscObject)F)->comm,PETSC_ERR_ARG_OUTOFRANGE,"must provide exactly 3 parameters to -mat_cholmod_nrelax");
+    if (flg && n != 3) SETERRQ(PetscObjectComm((PetscObject)F),PETSC_ERR_ARG_OUTOFRANGE,"must provide exactly 3 parameters to -mat_cholmod_nrelax");
     if (flg) while (n--) c->nrelax[n] = (size_t)tmp[n];
   }
   CHOLMOD_OPTION_TRUTH(prefer_upper,"Work with upper triangular form [faster when using fill-reducing ordering, slower in natural ordering]");
@@ -306,8 +306,8 @@ static PetscErrorCode MatCholeskyFactorNumeric_CHOLMOD(Mat F,Mat A,const MatFact
   ierr     = (*chol->Wrap)(A,PETSC_TRUE,&cholA,&aijalloc);CHKERRQ(ierr);
   static_F = F;
   ierr     = !cholmod_X_factorize(&cholA,chol->factor,chol->common);
-  if (ierr) SETERRQ1(((PetscObject)F)->comm,PETSC_ERR_LIB,"CHOLMOD factorization failed with status %d",chol->common->status);
-  if (chol->common->status == CHOLMOD_NOT_POSDEF) SETERRQ1(((PetscObject)F)->comm,PETSC_ERR_MAT_CH_ZRPVT,"CHOLMOD detected that the matrix is not positive definite, failure at column %u",(unsigned)chol->factor->minor);
+  if (ierr) SETERRQ1(PetscObjectComm((PetscObject)F),PETSC_ERR_LIB,"CHOLMOD factorization failed with status %d",chol->common->status);
+  if (chol->common->status == CHOLMOD_NOT_POSDEF) SETERRQ1(PetscObjectComm((PetscObject)F),PETSC_ERR_MAT_CH_ZRPVT,"CHOLMOD detected that the matrix is not positive definite, failure at column %u",(unsigned)chol->factor->minor);
 
   if (aijalloc) {ierr = PetscFree3(cholA.p,cholA.i,cholA.x);CHKERRQ(ierr);}
 
@@ -332,16 +332,16 @@ PetscErrorCode  MatCholeskyFactorSymbolic_CHOLMOD(Mat F,Mat A,IS perm,const MatF
   static_F = F;
   if (chol->factor) {
     ierr = !cholmod_X_resymbol(&cholA,fset,fsize,(int)chol->pack,chol->factor,chol->common);
-    if (ierr) SETERRQ1(((PetscObject)F)->comm,PETSC_ERR_LIB,"CHOLMOD analysis failed with status %d",chol->common->status);
+    if (ierr) SETERRQ1(PetscObjectComm((PetscObject)F),PETSC_ERR_LIB,"CHOLMOD analysis failed with status %d",chol->common->status);
   } else if (perm) {
     const PetscInt *ip;
     ierr         = ISGetIndices(perm,&ip);CHKERRQ(ierr);
     chol->factor = cholmod_X_analyze_p(&cholA,(PetscInt*)ip,fset,fsize,chol->common);
-    if (!chol->factor) SETERRQ1(((PetscObject)F)->comm,PETSC_ERR_LIB,"CHOLMOD analysis failed with status %d",chol->common->status);
+    if (!chol->factor) SETERRQ1(PetscObjectComm((PetscObject)F),PETSC_ERR_LIB,"CHOLMOD analysis failed with status %d",chol->common->status);
     ierr = ISRestoreIndices(perm,&ip);CHKERRQ(ierr);
   } else {
     chol->factor = cholmod_X_analyze(&cholA,chol->common);
-    if (!chol->factor) SETERRQ1(((PetscObject)F)->comm,PETSC_ERR_LIB,"CHOLMOD analysis failed with status %d",chol->common->status);
+    if (!chol->factor) SETERRQ1(PetscObjectComm((PetscObject)F),PETSC_ERR_LIB,"CHOLMOD analysis failed with status %d",chol->common->status);
   }
 
   if (aijalloc) {ierr = PetscFree3(cholA.p,cholA.i,cholA.x);CHKERRQ(ierr);}
@@ -403,9 +403,9 @@ PetscErrorCode MatGetFactor_seqsbaij_cholmod(Mat A,MatFactorType ftype,Mat *F)
   if (ftype != MAT_FACTOR_CHOLESKY) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"CHOLMOD cannot do %s factorization with SBAIJ, only %s",
                                              MatFactorTypes[ftype],MatFactorTypes[MAT_FACTOR_CHOLESKY]);
   ierr = MatGetBlockSize(A,&bs);CHKERRQ(ierr);
-  if (bs != 1) SETERRQ1(((PetscObject)A)->comm,PETSC_ERR_SUP,"CHOLMOD only supports block size=1, given %D",bs);
+  if (bs != 1) SETERRQ1(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"CHOLMOD only supports block size=1, given %D",bs);
   /* Create the factorization matrix F */
-  ierr = MatCreate(((PetscObject)A)->comm,&B);CHKERRQ(ierr);
+  ierr = MatCreate(PetscObjectComm((PetscObject)A),&B);CHKERRQ(ierr);
   ierr = MatSetSizes(B,PETSC_DECIDE,PETSC_DECIDE,m,n);CHKERRQ(ierr);
   ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
   ierr = MatSeqSBAIJSetPreallocation(B,1,0,NULL);CHKERRQ(ierr);

@@ -240,7 +240,7 @@ PetscErrorCode KSPLGMRESCycle(PetscInt *itcount,KSP ksp)
 
     /* Catch error in happy breakdown and signal convergence and break from loop */
     if (hapend) {
-      if (!ksp->reason) SETERRQ1(((PetscObject)ksp)->comm,PETSC_ERR_PLIB,"You reached the happy break down,but convergence was not indicated. Residual norm = %G",res);
+      if (!ksp->reason) SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"You reached the happy break down,but convergence was not indicated. Residual norm = %G",res);
       break;
     }
   }
@@ -347,7 +347,7 @@ PetscErrorCode KSPSolve_LGMRES(KSP ksp)
   PetscInt       ii;        /*LGMRES_MOD variable */
 
   PetscFunctionBegin;
-  if (ksp->calc_sings && !lgmres->Rsvd) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_ORDER,"Must call KSPSetComputeSingularValues() before KSPSetUp() is called");
+  if (ksp->calc_sings && !lgmres->Rsvd) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ORDER,"Must call KSPSetComputeSingularValues() before KSPSetUp() is called");
 
   ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
 
@@ -744,8 +744,8 @@ PetscErrorCode  KSPLGMRESSetAugDim_LGMRES(KSP ksp,PetscInt aug_dim)
   KSP_LGMRES *lgmres = (KSP_LGMRES*)ksp->data;
 
   PetscFunctionBegin;
-  if (aug_dim < 0) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Augmentation dimension must be positive");
-  if (aug_dim > (lgmres->max_k -1)) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Augmentation dimension must be <= (restart size-1)");
+  if (aug_dim < 0) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_OUTOFRANGE,"Augmentation dimension must be positive");
+  if (aug_dim > (lgmres->max_k -1)) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_OUTOFRANGE,"Augmentation dimension must be <= (restart size-1)");
   lgmres->aug_dim = aug_dim;
   PetscFunctionReturn(0);
 }

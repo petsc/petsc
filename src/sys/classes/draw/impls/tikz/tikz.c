@@ -48,9 +48,9 @@ PetscErrorCode  PetscDrawDestroy_TikZ(PetscDraw draw)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFPrintf(((PetscObject)draw)->comm,win->fd,TikZ_END_FRAME);CHKERRQ(ierr);
-  ierr = PetscFPrintf(((PetscObject)draw)->comm,win->fd,TikZ_END_DOCUMENT);CHKERRQ(ierr);
-  ierr = PetscFClose(((PetscObject)draw)->comm,win->fd);CHKERRQ(ierr);
+  ierr = PetscFPrintf(PetscObjectComm((PetscObject)draw),win->fd,TikZ_END_FRAME);CHKERRQ(ierr);
+  ierr = PetscFPrintf(PetscObjectComm((PetscObject)draw),win->fd,TikZ_END_DOCUMENT);CHKERRQ(ierr);
+  ierr = PetscFClose(PetscObjectComm((PetscObject)draw),win->fd);CHKERRQ(ierr);
   ierr = PetscFree(win->filename);CHKERRQ(ierr);
   ierr = PetscFree(win);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -80,8 +80,8 @@ PetscErrorCode PetscDrawClear_TikZ(PetscDraw draw)
   PetscFunctionBegin;
   /* often PETSc generates unneeded clears, we want avoid creating empy pictures for them */
   if (!win->written) PetscFunctionReturn(0);
-  ierr = PetscFPrintf(((PetscObject)draw)->comm,win->fd,TikZ_END_FRAME);CHKERRQ(ierr);
-  ierr = PetscFPrintf(((PetscObject)draw)->comm,win->fd,TikZ_BEGIN_FRAME);CHKERRQ(ierr);
+  ierr = PetscFPrintf(PetscObjectComm((PetscObject)draw),win->fd,TikZ_END_FRAME);CHKERRQ(ierr);
+  ierr = PetscFPrintf(PetscObjectComm((PetscObject)draw),win->fd,TikZ_BEGIN_FRAME);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -94,7 +94,7 @@ PetscErrorCode PetscDrawLine_TikZ(PetscDraw draw,PetscReal xl,PetscReal yl,Petsc
 
   PetscFunctionBegin;
   win->written = PETSC_TRUE;
-  ierr = PetscFPrintf(((PetscObject)draw)->comm,win->fd,"\\draw [%s] (%g,%g) --(%g,%g);\n",TikZColorMap(cl),XTRANS(draw,xl),YTRANS(draw,yl),XTRANS(draw,xr),YTRANS(draw,yr));CHKERRQ(ierr);
+  ierr = PetscFPrintf(PetscObjectComm((PetscObject)draw),win->fd,"\\draw [%s] (%g,%g) --(%g,%g);\n",TikZColorMap(cl),XTRANS(draw,xl),YTRANS(draw,yl),XTRANS(draw,xr),YTRANS(draw,yr));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -107,7 +107,7 @@ PetscErrorCode PetscDrawString_TikZ(PetscDraw draw,PetscReal xl,PetscReal yl,int
 
   PetscFunctionBegin;
   win->written = PETSC_TRUE;
-  ierr = PetscFPrintf(((PetscObject)draw)->comm,win->fd,"\\node [above right, %s] at (%g,%g) {%s};\n",TikZColorMap(cl),XTRANS(draw,xl),YTRANS(draw,yl),text);CHKERRQ(ierr);
+  ierr = PetscFPrintf(PetscObjectComm((PetscObject)draw),win->fd,"\\node [above right, %s] at (%g,%g) {%s};\n",TikZColorMap(cl),XTRANS(draw,xl),YTRANS(draw,yl),text);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -124,7 +124,7 @@ PetscErrorCode PetscDrawBoxedString_TikZ(PetscDraw draw,PetscReal xl,PetscReal y
 
   PetscFunctionBegin;
   win->written = PETSC_TRUE;
-  ierr = PetscFPrintf(((PetscObject)draw)->comm,win->fd,"\\draw (%g,%g) node [rectangle, draw, align=center, inner sep=1ex] {%s};\n",XTRANS(draw,xl),YTRANS(draw,yl),text);CHKERRQ(ierr);
+  ierr = PetscFPrintf(PetscObjectComm((PetscObject)draw),win->fd,"\\draw (%g,%g) node [rectangle, draw, align=center, inner sep=1ex] {%s};\n",XTRANS(draw,xl),YTRANS(draw,yl),text);CHKERRQ(ierr);
 
   /* make up totally bogus height and width of box */
   ierr = PetscStrlen(text,&len);CHKERRQ(ierr);
@@ -197,9 +197,9 @@ PetscErrorCode  PetscDrawCreate_TikZ(PetscDraw draw)
     ierr = PetscObjectGetName((PetscObject)draw,&fname);CHKERRQ(ierr);
     ierr = PetscStrallocpy(fname,&win->filename);CHKERRQ(ierr);
   }
-  ierr = PetscFOpen(((PetscObject)draw)->comm,win->filename,"w",&win->fd);CHKERRQ(ierr);
-  ierr = PetscFPrintf(((PetscObject)draw)->comm,win->fd,TikZ_BEGIN_DOCUMENT);CHKERRQ(ierr);
-  ierr = PetscFPrintf(((PetscObject)draw)->comm,win->fd,TikZ_BEGIN_FRAME);CHKERRQ(ierr);
+  ierr = PetscFOpen(PetscObjectComm((PetscObject)draw),win->filename,"w",&win->fd);CHKERRQ(ierr);
+  ierr = PetscFPrintf(PetscObjectComm((PetscObject)draw),win->fd,TikZ_BEGIN_DOCUMENT);CHKERRQ(ierr);
+  ierr = PetscFPrintf(PetscObjectComm((PetscObject)draw),win->fd,TikZ_BEGIN_FRAME);CHKERRQ(ierr);
 
   win->written = PETSC_FALSE;
   PetscFunctionReturn(0);

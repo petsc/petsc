@@ -19,13 +19,13 @@ PetscErrorCode MatSetUpMultiply_MPIDense(Mat mat)
   ierr = VecCreateSeq(PETSC_COMM_SELF,mat->cmap->N,&mdn->lvec);CHKERRQ(ierr);
 
   /* Create temporary index set for building scatter gather */
-  ierr = ISCreateStride(((PetscObject)mat)->comm,mat->cmap->N,0,1,&from);CHKERRQ(ierr);
+  ierr = ISCreateStride(PetscObjectComm((PetscObject)mat),mat->cmap->N,0,1,&from);CHKERRQ(ierr);
   ierr = ISCreateStride(PETSC_COMM_SELF,mat->cmap->N,0,1,&to);CHKERRQ(ierr);
 
   /* Create temporary global vector to generate scatter context */
   /* n    = mdn->cowners[mdn->rank+1] - mdn->cowners[mdn->rank]; */
 
-  ierr = VecCreateMPIWithArray(((PetscObject)mat)->comm,1,mdn->nvec,mat->cmap->N,NULL,&gvec);CHKERRQ(ierr);
+  ierr = VecCreateMPIWithArray(PetscObjectComm((PetscObject)mat),1,mdn->nvec,mat->cmap->N,NULL,&gvec);CHKERRQ(ierr);
 
   /* Generate the scatter context */
   ierr = VecScatterCreate(gvec,from,mdn->lvec,to,&mdn->Mvctx);CHKERRQ(ierr);
@@ -60,7 +60,7 @@ PetscErrorCode MatGetSubMatrices_MPIDense(Mat C,PetscInt ismax,const IS isrow[],
   nstages_local = ismax/nmax + ((ismax % nmax) ? 1 : 0);
 
   /* Make sure every processor loops through the nstages */
-  ierr = MPI_Allreduce(&nstages_local,&nstages,1,MPIU_INT,MPI_MAX,((PetscObject)C)->comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&nstages_local,&nstages,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)C));CHKERRQ(ierr);
 
 
   for (i=0,pos=0; i<nstages; i++) {
@@ -96,7 +96,7 @@ PetscErrorCode MatGetSubMatrices_MPIDense_Local(Mat C,PetscInt ismax,const IS is
   PetscBool      sorted;
 
   PetscFunctionBegin;
-  comm = ((PetscObject)C)->comm;
+  ierr = PetscObjectGetComm((PetscObject)C,&comm);CHKERRQ(ierr);
   tag0 = ((PetscObject)C)->tag;
   size = c->size;
   rank = c->rank;

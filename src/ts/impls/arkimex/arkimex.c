@@ -620,7 +620,7 @@ static PetscErrorCode TSEvaluateStep_ARKIMEX(TS ts,PetscInt order,Vec X,PetscBoo
     h = ts->time_step; break;
   case TS_STEP_COMPLETE:
     h = ts->time_step_prev; break;
-  default: SETERRQ(((PetscObject)ts)->comm,PETSC_ERR_PLIB,"Invalid TSStepStatus");
+  default: SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_PLIB,"Invalid TSStepStatus");
   }
   if (order == tab->order) {
     if (ark->status == TS_STEP_INCOMPLETE) {
@@ -658,7 +658,7 @@ static PetscErrorCode TSEvaluateStep_ARKIMEX(TS ts,PetscInt order,Vec X,PetscBoo
   }
 unavailable:
   if (done) *done = PETSC_FALSE;
-  else SETERRQ3(((PetscObject)ts)->comm,PETSC_ERR_SUP,"ARKIMEX '%s' of order %D cannot evaluate step at order %D",tab->name,tab->order,order);
+  else SETERRQ3(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"ARKIMEX '%s' of order %D cannot evaluate step at order %D",tab->name,tab->order,order);
   PetscFunctionReturn(0);
 }
 
@@ -837,7 +837,7 @@ static PetscErrorCode TSInterpolate_ARKIMEX(TS ts,PetscReal itime,Vec X)
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  if (!Bt || !B) SETERRQ1(((PetscObject)ts)->comm,PETSC_ERR_SUP,"TSARKIMEX %s does not have an interpolation formula",ark->tableau->name);
+  if (!Bt || !B) SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"TSARKIMEX %s does not have an interpolation formula",ark->tableau->name);
   switch (ark->status) {
   case TS_STEP_INCOMPLETE:
   case TS_STEP_PENDING:
@@ -848,7 +848,7 @@ static PetscErrorCode TSInterpolate_ARKIMEX(TS ts,PetscReal itime,Vec X)
     h = ts->time_step_prev;
     t = (itime - ts->ptime)/h + 1; /* In the interval [0,1] */
     break;
-  default: SETERRQ(((PetscObject)ts)->comm,PETSC_ERR_PLIB,"Invalid TSStepStatus");
+  default: SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_PLIB,"Invalid TSStepStatus");
   }
   ierr = PetscMalloc2(s,PetscScalar,&bt,s,PetscScalar,&b);CHKERRQ(ierr);
   for (i=0; i<s; i++) bt[i] = b[i] = 0;
@@ -858,7 +858,7 @@ static PetscErrorCode TSInterpolate_ARKIMEX(TS ts,PetscReal itime,Vec X)
       b[i]  += h * B[i*pinterp+j] * tt;
     }
   }
-  if (ark->tableau->At[0*s+0] != 0.0) SETERRQ(((PetscObject)ts)->comm,PETSC_ERR_SUP,"First stage not explicit so starting stage not saved");
+  if (ark->tableau->At[0*s+0] != 0.0) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"First stage not explicit so starting stage not saved");
   ierr = VecCopy(ark->Y[0],X);CHKERRQ(ierr);
   ierr = VecMAXPY(X,s,bt,ark->YdotI);CHKERRQ(ierr);
   ierr = VecMAXPY(X,s,b,ark->YdotRHS);CHKERRQ(ierr);
@@ -1303,7 +1303,7 @@ PetscErrorCode  TSARKIMEXSetType_ARKIMEX(TS ts,TSARKIMEXType arktype)
       PetscFunctionReturn(0);
     }
   }
-  SETERRQ1(((PetscObject)ts)->comm,PETSC_ERR_ARG_UNKNOWN_TYPE,"Could not find '%s'",arktype);
+  SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_UNKNOWN_TYPE,"Could not find '%s'",arktype);
   PetscFunctionReturn(0);
 }
 #undef __FUNCT__

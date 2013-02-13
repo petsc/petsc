@@ -42,8 +42,7 @@ PetscErrorCode  KSPComputeExplicitOperator(KSP ksp,Mat *mat)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   PetscValidPointer(mat,2);
-  comm = ((PetscObject)ksp)->comm;
-
+  ierr = PetscObjectGetComm((PetscObject)ksp,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
 
   ierr = VecDuplicate(ksp->vec_sol,&in);CHKERRQ(ierr);
@@ -131,7 +130,7 @@ PetscErrorCode  KSPComputeEigenvaluesExplicitly(KSP ksp,PetscInt nmax,PetscReal 
   Mat               BA;
   PetscErrorCode    ierr;
   PetscMPIInt       size,rank;
-  MPI_Comm          comm = ((PetscObject)ksp)->comm;
+  MPI_Comm          comm;
   PetscScalar       *array;
   Mat               A;
   PetscInt          m,row,nz,i,n,dummy;
@@ -139,13 +138,14 @@ PetscErrorCode  KSPComputeEigenvaluesExplicitly(KSP ksp,PetscInt nmax,PetscReal 
   const PetscScalar *vals;
 
   PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)ksp,&comm);CHKERRQ(ierr);
   ierr = KSPComputeExplicitOperator(ksp,&BA);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
   ierr = MatGetSize(BA,&n,&n);CHKERRQ(ierr);
   if (size > 1) { /* assemble matrix on first processor */
-    ierr = MatCreate(((PetscObject)ksp)->comm,&A);CHKERRQ(ierr);
+    ierr = MatCreate(PetscObjectComm((PetscObject)ksp),&A);CHKERRQ(ierr);
     if (!rank) {
       ierr = MatSetSizes(A,n,n,n,n);CHKERRQ(ierr);
     } else {
@@ -237,7 +237,7 @@ PetscErrorCode  KSPComputeEigenvaluesExplicitly(KSP ksp,PetscInt nmax,PetscReal 
     imagpart = realpart + n;
     ierr     = PetscMalloc(5*n*sizeof(PetscReal),&work);CHKERRQ(ierr);
 #if defined(PETSC_MISSING_LAPACK_GEEV)
-    SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"GEEV - Lapack routine is unavailable\nNot able to provide eigen values.");
+    SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"GEEV - Lapack routine is unavailable\nNot able to provide eigen values.");
 #else
     {
       PetscBLASInt lierr;
@@ -276,7 +276,7 @@ PetscErrorCode  KSPComputeEigenvaluesExplicitly(KSP ksp,PetscInt nmax,PetscReal 
     ierr   = PetscMalloc(2*n*sizeof(PetscReal),&rwork);CHKERRQ(ierr);
     ierr   = PetscMalloc(n*sizeof(PetscScalar),&eigs);CHKERRQ(ierr);
 #if defined(PETSC_MISSING_LAPACK_GEEV)
-    SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"GEEV - Lapack routine is unavailable\nNot able to provide eigen values.");
+    SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"GEEV - Lapack routine is unavailable\nNot able to provide eigen values.");
 #else
     {
       PetscBLASInt lierr;
@@ -346,7 +346,7 @@ PetscErrorCode KSPPlotEigenContours_Private(KSP ksp,PetscInt neig,const PetscRea
   PetscDrawAxis  drawaxis;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(((PetscObject)ksp)->comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)ksp),&rank);CHKERRQ(ierr);
   if (rank) PetscFunctionReturn(0);
   M    = 80;
   N    = 80;

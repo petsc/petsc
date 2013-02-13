@@ -119,7 +119,7 @@ static PetscErrorCode PCSetUp_SupportGraph(PC pc)
   PetscFunctionBegin;
   if (!pc->setupcalled) {
     ierr = MatIsSymmetric(pc->pmat, 1.0e-9, &isSym);CHKERRQ(ierr);
-    if (!isSym) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONG,"matrix must be symmetric");
+    if (!isSym) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONG,"matrix must be symmetric");
     /* note that maxCong is being updated */
     ierr = AugmentedLowStretchSpanningTree(pc->pmat, &sg->pre, sg->augment, sg->tol, sg->maxCong);CHKERRQ(ierr);
   }

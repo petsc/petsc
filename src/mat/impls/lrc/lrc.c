@@ -30,7 +30,7 @@ PetscErrorCode MatMult_LRC(Mat N,Vec x,Vec y)
 
   ierr = VecGetArray(Na->work1,&w1);CHKERRQ(ierr);
   ierr = VecGetArray(Na->work2,&w2);CHKERRQ(ierr);
-  ierr = MPI_Allreduce(w1,w2,Na->nwork,MPIU_SCALAR,MPIU_SUM,((PetscObject)N)->comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(w1,w2,Na->nwork,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)N));CHKERRQ(ierr);
   ierr = VecRestoreArray(Na->work1,&w1);CHKERRQ(ierr);
   ierr = VecRestoreArray(Na->work2,&w2);CHKERRQ(ierr);
 
@@ -86,7 +86,7 @@ PetscErrorCode  MatCreateLRC(Mat A,Mat U, Mat V,Mat *N)
 
   PetscFunctionBegin;
   ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
-  ierr = MatCreate(((PetscObject)A)->comm,N);CHKERRQ(ierr);
+  ierr = MatCreate(PetscObjectComm((PetscObject)A),N);CHKERRQ(ierr);
   ierr = MatSetSizes(*N,n,n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)*N,MATLRC);CHKERRQ(ierr);
 

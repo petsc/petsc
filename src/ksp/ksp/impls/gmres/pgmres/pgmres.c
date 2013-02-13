@@ -115,7 +115,7 @@ static PetscErrorCode KSPPGMRESCycle(PetscInt *itcount,KSP ksp)
       }
       if (ksp->reason) break;
       /* Catch error in happy breakdown and signal convergence and break from loop */
-      if (hapend) SETERRQ1(((PetscObject)ksp)->comm,PETSC_ERR_PLIB,"You reached the happy break down, but convergence was not indicated. Residual norm = %G",res);
+      if (hapend) SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"You reached the happy break down, but convergence was not indicated. Residual norm = %G",res);
       if (!(it < pgmres->max_k+1 && ksp->its < ksp->max_it)) break;
 
       /* The it-2 column of H was not scaled when we computed Zcur, apply correction */
@@ -172,7 +172,7 @@ static PetscErrorCode KSPPGMRESCycle(PetscInt *itcount,KSP ksp)
     ierr = VecMDotBegin(Znext,it+1,&VEC_VV(0),HH(0,it));CHKERRQ(ierr);
 
     /* Start an asynchronous split-mode reduction, the result of the MDot and Norm will be collected on the next iteration. */
-    ierr = PetscCommSplitReductionBegin(((PetscObject)Znext)->comm);CHKERRQ(ierr);
+    ierr = PetscCommSplitReductionBegin(PetscObjectComm((PetscObject)Znext));CHKERRQ(ierr);
   }
 
   if (itcount) *itcount = it-1; /* Number of iterations actually completed. */
@@ -208,7 +208,7 @@ static PetscErrorCode KSPSolve_PGMRES(KSP ksp)
   PetscBool      guess_zero = ksp->guess_zero;
 
   PetscFunctionBegin;
-  if (ksp->calc_sings && !pgmres->Rsvd) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_ORDER,"Must call KSPSetComputeSingularValues() before KSPSetUp() is called");
+  if (ksp->calc_sings && !pgmres->Rsvd) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ORDER,"Must call KSPSetComputeSingularValues() before KSPSetUp() is called");
   ierr     = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
   ksp->its = 0;
   ierr     = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);

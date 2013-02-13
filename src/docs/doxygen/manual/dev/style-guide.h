@@ -146,9 +146,9 @@ instead use `if (!rank)` or `if (!v)` or `if (flg)` or `if (!flg)`.
   - MPI routines and macros that are not part of the 1.0 or 1.1 standard should not be used in PETSc without appropriate `./configure` checks and `#if defined()` checks the code. Code should also be provided that works if the MPI feature is not available. For example,
 \code
 #if defined(PETSC_HAVE_MPI_IN_PLACE)
-    ierr  = MPI_Allgatherv(MPI_IN_PLACE,0,MPI_DATATYPE_NULL,lens,recvcounts,displs,MPIU_INT,((PetscObject)A)->comm);CHKERRQ(ierr);
+    ierr  = MPI_Allgatherv(MPI_IN_PLACE,0,MPI_DATATYPE_NULL,lens,recvcounts,displs,MPIU_INT,PetscObjectComm((PetscObject)A));CHKERRQ(ierr);
 #else
-    ierr  = MPI_Allgatherv(lens+A->rmap->rstart,sendcount,MPIU_INT,lens,recvcounts,displs,MPIU_INT,((PetscObject)A)->comm);CHKERRQ(ierr);
+    ierr  = MPI_Allgatherv(lens+A->rmap->rstart,sendcount,MPIU_INT,lens,recvcounts,displs,MPIU_INT,PetscObjectComm((PetscObject)A));CHKERRQ(ierr);
 #endif
 \endcode
   - There shall be no %PETSc routines introduced that provide essentially the same functionality as an available MPI routine. For example, one should not write a routine `PetscGlobalSum()` that takes a scalar value and performs an `MPI_Allreduce()` on it. One should use `MPI_Allreduce()` directly in the code.

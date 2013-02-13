@@ -101,10 +101,10 @@ PetscErrorCode VecView_MPI_Draw_DA2d_Zoom(PetscDraw draw,void *ctx)
      Ideally we would use the PetscDrawAxis object to manage displaying the coordinate limits 
      but that may require some refactoring.
   */
-  ierr = MPI_Allreduce(&xmin,&xminf,1,MPIU_REAL,MPIU_MAX,((PetscObject)draw)->comm);CHKERRQ(ierr);
-  ierr = MPI_Allreduce(&xmax,&xmaxf,1,MPIU_REAL,MPIU_MAX,((PetscObject)draw)->comm);CHKERRQ(ierr);
-  ierr = MPI_Allreduce(&ymin,&yminf,1,MPIU_REAL,MPIU_MAX,((PetscObject)draw)->comm);CHKERRQ(ierr);
-  ierr = MPI_Allreduce(&ymax,&ymaxf,1,MPIU_REAL,MPIU_MAX,((PetscObject)draw)->comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&xmin,&xminf,1,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)draw));CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&xmax,&xmaxf,1,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)draw));CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&ymin,&yminf,1,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)draw));CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&ymax,&ymaxf,1,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)draw));CHKERRQ(ierr);
   ierr = PetscSNPrintf(value,16,"%f",xminf);CHKERRQ(ierr);
   ierr = PetscDrawString(draw,xminf,yminf - .05*(ymaxf - yminf),PETSC_DRAW_BLACK,value);CHKERRQ(ierr);
   ierr = PetscSNPrintf(value,16,"%f",xmaxf);CHKERRQ(ierr);
@@ -149,7 +149,7 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
   ierr = PetscViewerDrawGetBounds(viewer,&nbounds,&bounds);CHKERRQ(ierr);
 
   ierr = VecGetDM(xin,&da);CHKERRQ(ierr);
-  if (!da) SETERRQ(((PetscObject)xin)->comm,PETSC_ERR_ARG_WRONG,"Vector not generated from a DMDA");
+  if (!da) SETERRQ(PetscObjectComm((PetscObject)xin),PETSC_ERR_ARG_WRONG,"Vector not generated from a DMDA");
 
   ierr = PetscObjectGetComm((PetscObject)xin,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
@@ -342,7 +342,7 @@ PetscErrorCode VecView_MPI_HDF5_DA(Vec xin,PetscViewer viewer)
   ierr = PetscViewerHDF5GetTimestep(viewer, &timestep);CHKERRQ(ierr);
 
   ierr = VecGetDM(xin,&dm);CHKERRQ(ierr);
-  if (!dm) SETERRQ(((PetscObject)xin)->comm,PETSC_ERR_ARG_WRONG,"Vector not generated from a DMDA");
+  if (!dm) SETERRQ(PetscObjectComm((PetscObject)xin),PETSC_ERR_ARG_WRONG,"Vector not generated from a DMDA");
   da = (DM_DA*)dm->data;
 
   /* Create the dataspace for the dataset.
@@ -504,8 +504,8 @@ static PetscErrorCode DMDAArrayMPIIO(DM da,PetscViewer viewer,Vec xin,PetscBool 
     ierr = PetscViewerBinaryRead(viewer,tr,2,PETSC_INT);CHKERRQ(ierr);
     type = tr[0];
     rows = tr[1];
-    if (type != VEC_FILE_CLASSID) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_ARG_WRONG,"Not vector next in file");
-    if (rows != vecrows) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_ARG_SIZ,"Vector in file not same size as DMDA vector");
+    if (type != VEC_FILE_CLASSID) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_WRONG,"Not vector next in file");
+    if (rows != vecrows) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_SIZ,"Vector in file not same size as DMDA vector");
   } else {
     tr[0] = VEC_FILE_CLASSID;
     tr[1] = vecrows;
@@ -563,7 +563,7 @@ PetscErrorCode  VecView_MPI_DA(Vec xin,PetscViewer viewer)
 
   PetscFunctionBegin;
   ierr = VecGetDM(xin,&da);CHKERRQ(ierr);
-  if (!da) SETERRQ(((PetscObject)xin)->comm,PETSC_ERR_ARG_WRONG,"Vector not generated from a DMDA");
+  if (!da) SETERRQ(PetscObjectComm((PetscObject)xin),PETSC_ERR_ARG_WRONG,"Vector not generated from a DMDA");
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERVTK,&isvtk);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_HDF5)
@@ -575,7 +575,7 @@ PetscErrorCode  VecView_MPI_DA(Vec xin,PetscViewer viewer)
       ierr = VecView_MPI_Draw_DA1d(xin,viewer);CHKERRQ(ierr);
     } else if (dim == 2) {
       ierr = VecView_MPI_Draw_DA2d(xin,viewer);CHKERRQ(ierr);
-    } else SETERRQ1(((PetscObject)da)->comm,PETSC_ERR_SUP,"Cannot graphically view vector associated with this dimensional DMDA %D",dim);
+    } else SETERRQ1(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Cannot graphically view vector associated with this dimensional DMDA %D",dim);
   } else if (isvtk) {           /* Duplicate the Vec and hold a reference to the DM */
     Vec Y;
     ierr = PetscObjectReference((PetscObject)da);CHKERRQ(ierr);
@@ -760,7 +760,7 @@ PetscErrorCode  VecLoad_Default_DA(Vec xin, PetscViewer viewer)
 
   PetscFunctionBegin;
   ierr = VecGetDM(xin,&da);CHKERRQ(ierr);
-  if (!da) SETERRQ(((PetscObject)xin)->comm,PETSC_ERR_ARG_WRONG,"Vector not generated from a DMDA");
+  if (!da) SETERRQ(PetscObjectComm((PetscObject)xin),PETSC_ERR_ARG_WRONG,"Vector not generated from a DMDA");
 
 #if defined(PETSC_HAVE_HDF5)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERHDF5,&ishdf5);CHKERRQ(ierr);

@@ -40,12 +40,12 @@ PetscErrorCode VecMDot_Seq(Vec xin,PetscInt nv,const Vec yin[],PetscScalar *z)
   PetscInt                 *nvp,nreds,i,j;
 
   PetscFunctionBegin;
-  ierr = PetscThreadCommGetInts(((PetscObject)xin)->comm,&nvp,NULL,NULL);CHKERRQ(ierr);
+  ierr = PetscThreadCommGetInts(PetscObjectComm((PetscObject)xin),&nvp,NULL,NULL);CHKERRQ(ierr);
   for (i=0; i<nv; i+=nreds) {
     nreds = PetscMin(nv-i,PETSC_REDUCTIONS_MAX);
-    ierr  = PetscThreadReductionBegin(((PetscObject)xin)->comm,THREADCOMM_SUM,PETSC_SCALAR,nreds,&red);CHKERRQ(ierr);
+    ierr  = PetscThreadReductionBegin(PetscObjectComm((PetscObject)xin),THREADCOMM_SUM,PETSC_SCALAR,nreds,&red);CHKERRQ(ierr);
     *nvp  = nreds;
-    ierr  = PetscThreadCommRunKernel4(((PetscObject)xin)->comm,(PetscThreadKernel)VecMDot_kernel,xin,nvp,(Vec*)yin+i,red);CHKERRQ(ierr);
+    ierr  = PetscThreadCommRunKernel4(PetscObjectComm((PetscObject)xin),(PetscThreadKernel)VecMDot_kernel,xin,nvp,(Vec*)yin+i,red);CHKERRQ(ierr);
     for (j=0; j<nreds; j++) {
       ierr = PetscThreadReductionEnd(red,&z[i+j]);CHKERRQ(ierr);
     }
@@ -573,8 +573,8 @@ PetscErrorCode VecMax_Seq(Vec xin,PetscInt *idx,PetscReal *z)
     *z   = PETSC_MIN_REAL;
     *idx = -1;
   } else {
-    ierr = PetscThreadReductionBegin(((PetscObject)xin)->comm,THREADCOMM_MAXLOC,PETSC_REAL,1,&red);CHKERRQ(ierr);
-    ierr = PetscThreadCommRunKernel2(((PetscObject)xin)->comm,(PetscThreadKernel)VecMax_kernel,xin,red);CHKERRQ(ierr);
+    ierr = PetscThreadReductionBegin(PetscObjectComm((PetscObject)xin),THREADCOMM_MAXLOC,PETSC_REAL,1,&red);CHKERRQ(ierr);
+    ierr = PetscThreadCommRunKernel2(PetscObjectComm((PetscObject)xin),(PetscThreadKernel)VecMax_kernel,xin,red);CHKERRQ(ierr);
     ierr = PetscThreadReductionEnd(red,out);CHKERRQ(ierr);
     *z   = out[0];
     if (idx) *idx = (PetscInt)out[1];
@@ -644,8 +644,8 @@ PetscErrorCode VecMin_Seq(Vec xin,PetscInt *idx,PetscReal *z)
     *z   = PETSC_MAX_REAL;
     *idx = -1;
   } else {
-    ierr = PetscThreadReductionBegin(((PetscObject)xin)->comm,THREADCOMM_MINLOC,PETSC_REAL,1,&red);CHKERRQ(ierr);
-    ierr = PetscThreadCommRunKernel2(((PetscObject)xin)->comm,(PetscThreadKernel)VecMin_kernel,xin,red);CHKERRQ(ierr);
+    ierr = PetscThreadReductionBegin(PetscObjectComm((PetscObject)xin),THREADCOMM_MINLOC,PETSC_REAL,1,&red);CHKERRQ(ierr);
+    ierr = PetscThreadCommRunKernel2(PetscObjectComm((PetscObject)xin),(PetscThreadKernel)VecMin_kernel,xin,red);CHKERRQ(ierr);
     ierr = PetscThreadReductionEnd(red,out);CHKERRQ(ierr);
     *z   = out[0];
     if (idx) *idx = (PetscInt)out[1];
@@ -709,9 +709,9 @@ PetscErrorCode VecSet_Seq(Vec xin,PetscScalar alpha)
   PetscScalar    *scalar;
 
   PetscFunctionBegin;
-  ierr    = PetscThreadCommGetScalars(((PetscObject)xin)->comm,&scalar,NULL,NULL);CHKERRQ(ierr);
+  ierr    = PetscThreadCommGetScalars(PetscObjectComm((PetscObject)xin),&scalar,NULL,NULL);CHKERRQ(ierr);
   *scalar = alpha;
-  ierr    = PetscThreadCommRunKernel2(((PetscObject)xin)->comm,(PetscThreadKernel)VecSet_kernel,xin,scalar);CHKERRQ(ierr);
+  ierr    = PetscThreadCommRunKernel2(PetscObjectComm((PetscObject)xin),(PetscThreadKernel)VecSet_kernel,xin,scalar);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 #else
@@ -824,9 +824,9 @@ PetscErrorCode VecMAXPY_Seq(Vec xin,PetscInt nv,const PetscScalar *alpha,Vec *y)
 
   PetscFunctionBegin;
   ierr  = PetscLogFlops(nv*2.0*xin->map->n);
-  ierr  = PetscThreadCommGetInts(((PetscObject)xin)->comm,&int1,NULL,NULL);CHKERRQ(ierr);
+  ierr  = PetscThreadCommGetInts(PetscObjectComm((PetscObject)xin),&int1,NULL,NULL);CHKERRQ(ierr);
   *int1 = nv;
-  ierr  = PetscThreadCommRunKernel4(((PetscObject)xin)->comm,(PetscThreadKernel)VecMAXPY_kernel,xin,int1,(void*)alpha,y);CHKERRQ(ierr);
+  ierr  = PetscThreadCommRunKernel4(PetscObjectComm((PetscObject)xin),(PetscThreadKernel)VecMAXPY_kernel,xin,int1,(void*)alpha,y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 #else
@@ -951,9 +951,9 @@ PetscErrorCode VecAYPX_Seq(Vec yin,PetscScalar alpha,Vec xin)
     ierr = VecAXPY_Seq(yin,alpha,xin);CHKERRQ(ierr);
   } else {
     PetscScalar *scal1;
-    ierr   = PetscThreadCommGetScalars(((PetscObject)yin)->comm,&scal1,NULL,NULL);CHKERRQ(ierr);
+    ierr   = PetscThreadCommGetScalars(PetscObjectComm((PetscObject)yin),&scal1,NULL,NULL);CHKERRQ(ierr);
     *scal1 = alpha;
-    ierr   = PetscThreadCommRunKernel3(((PetscObject)yin)->comm,(PetscThreadKernel)VecAYPX_kernel,yin,scal1,xin);CHKERRQ(ierr);
+    ierr   = PetscThreadCommRunKernel3(PetscObjectComm((PetscObject)yin),(PetscThreadKernel)VecAYPX_kernel,yin,scal1,xin);CHKERRQ(ierr);
     if (alpha == (PetscScalar)-1.0) {
       ierr = PetscLogFlops(1.0*n);CHKERRQ(ierr);
     } else {
@@ -1060,9 +1060,9 @@ PetscErrorCode VecWAXPY_Seq(Vec win, PetscScalar alpha,Vec xin,Vec yin)
   PetscScalar        *scal1;
 
   PetscFunctionBegin;
-  ierr   = PetscThreadCommGetScalars(((PetscObject)win)->comm,&scal1,NULL,NULL);CHKERRQ(ierr);
+  ierr   = PetscThreadCommGetScalars(PetscObjectComm((PetscObject)win),&scal1,NULL,NULL);CHKERRQ(ierr);
   *scal1 = alpha;
-  ierr   = PetscThreadCommRunKernel4(((PetscObject)win)->comm,(PetscThreadKernel)VecWAXPY_kernel,win,scal1,xin,yin);CHKERRQ(ierr);
+  ierr   = PetscThreadCommRunKernel4(PetscObjectComm((PetscObject)win),(PetscThreadKernel)VecWAXPY_kernel,win,scal1,xin,yin);CHKERRQ(ierr);
   if (alpha == (PetscScalar)1.0) {
     ierr = PetscLogFlops(n);CHKERRQ(ierr);
   } else if (alpha == (PetscScalar)-1.0) {
@@ -1132,7 +1132,7 @@ PetscErrorCode VecMaxPointwiseDivide_Seq(Vec xin,Vec yin,PetscReal *max)
   }
   ierr = VecRestoreArrayRead(xin,&xx);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(yin,&yy);CHKERRQ(ierr);
-  ierr = MPI_Allreduce(&m,max,1,MPIU_REAL,MPIU_MAX,((PetscObject)xin)->comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&m,max,1,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)xin));CHKERRQ(ierr);
   ierr = PetscLogFlops(n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -26,12 +26,12 @@ static PetscErrorCode DMCreateMatrix_Composite_Nest(DM dm,MatType mtype,Mat *J)
       Mat sub = NULL;
       if (i == j) {
         ierr = DMCreateMatrix(rlink->dm,NULL,&sub);CHKERRQ(ierr);
-      } else if (com->FormCoupleLocations) SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_SUP,"Cannot manage off-diagonal parts yet");
+      } else if (com->FormCoupleLocations) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Cannot manage off-diagonal parts yet");
       submats[i*n+j] = sub;
     }
   }
 
-  ierr = MatCreateNest(((PetscObject)dm)->comm,n,isg,n,isg,submats,J);CHKERRQ(ierr);
+  ierr = MatCreateNest(PetscObjectComm((PetscObject)dm),n,isg,n,isg,submats,J);CHKERRQ(ierr);
 
   /* Disown references */
   for (i=0; i<n; i++) {ierr = ISDestroy(&isg[i]);CHKERRQ(ierr);}
@@ -60,7 +60,7 @@ static PetscErrorCode DMCreateMatrix_Composite_AIJ(DM dm,MatType mtype,Mat *J)
   /* use global vector to determine layout needed for matrix */
   m = com->n;
 
-  ierr = MatCreate(((PetscObject)dm)->comm,J);CHKERRQ(ierr);
+  ierr = MatCreate(PetscObjectComm((PetscObject)dm),J);CHKERRQ(ierr);
   ierr = MatSetSizes(*J,m,m,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = MatSetType(*J,mtype);CHKERRQ(ierr);
 
@@ -89,8 +89,8 @@ static PetscErrorCode DMCreateMatrix_Composite_AIJ(DM dm,MatType mtype,Mat *J)
     PetscFunctionReturn(0);
   }
 
-  ierr = MPI_Comm_rank(((PetscObject)dm)->comm,&rank);CHKERRQ(ierr);
-  ierr = MatPreallocateInitialize(((PetscObject)dm)->comm,m,m,dnz,onz);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm),&rank);CHKERRQ(ierr);
+  ierr = MatPreallocateInitialize(PetscObjectComm((PetscObject)dm),m,m,dnz,onz);CHKERRQ(ierr);
   /* loop over packed objects, handling one at at time */
   next = com->next;
   while (next) {

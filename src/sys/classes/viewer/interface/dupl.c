@@ -35,7 +35,7 @@ PetscErrorCode  PetscViewerGetSingleton(PetscViewer viewer,PetscViewer *outviewe
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   PetscValidPointer(outviewer,2);
-  ierr = MPI_Comm_size(((PetscObject)viewer)->comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)viewer),&size);CHKERRQ(ierr);
   if (size == 1) {
     ierr       = PetscObjectReference((PetscObject)viewer);CHKERRQ(ierr);
     *outviewer = viewer;
@@ -71,7 +71,7 @@ PetscErrorCode  PetscViewerRestoreSingleton(PetscViewer viewer,PetscViewer *outv
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
 
-  ierr = MPI_Comm_size(((PetscObject)viewer)->comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)viewer),&size);CHKERRQ(ierr);
   if (size == 1) {
     ierr = PetscObjectDereference((PetscObject)viewer);CHKERRQ(ierr);
     if (outviewer) *outviewer = 0;
@@ -117,7 +117,7 @@ PetscErrorCode  PetscViewerGetSubcomm(PetscViewer viewer,MPI_Comm subcomm,PetscV
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   PetscValidPointer(outviewer,3);
-  ierr = MPI_Comm_size(((PetscObject)viewer)->comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)viewer),&size);CHKERRQ(ierr);
   if (size == 1) {
     ierr       = PetscObjectReference((PetscObject)viewer);CHKERRQ(ierr);
     *outviewer = viewer;
@@ -153,7 +153,7 @@ PetscErrorCode  PetscViewerRestoreSubcomm(PetscViewer viewer,MPI_Comm subcomm,Pe
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
 
-  ierr = MPI_Comm_size(((PetscObject)viewer)->comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)viewer),&size);CHKERRQ(ierr);
   if (size == 1 || (outviewer && viewer == *outviewer)) {
     ierr = PetscObjectDereference((PetscObject)viewer);CHKERRQ(ierr);
     if (outviewer) *outviewer = 0;

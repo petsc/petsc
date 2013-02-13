@@ -146,7 +146,7 @@ static PetscErrorCode PCSetUp_HMPI(PC pc)
   if (size == 1) {  /* special case where copy of matrix is not needed */
     if (!red->setupcalled) {
       /* create the solver */
-      ierr = KSPCreate(((PetscObject)pc)->comm,&red->ksp);CHKERRQ(ierr);
+      ierr = KSPCreate(PetscObjectComm((PetscObject)pc),&red->ksp);CHKERRQ(ierr);
       ierr = PetscObjectIncrementTabLevel((PetscObject)red->ksp,(PetscObject)pc,1);CHKERRQ(ierr);
       ierr = KSPSetOptionsPrefix(red->ksp,"hmpi_");CHKERRQ(ierr); /* should actually append with global pc prefix */
       ierr = KSPSetOperators(red->ksp,red->gmat,red->gmat,red->flag);CHKERRQ(ierr);
@@ -279,8 +279,8 @@ PetscErrorCode  PCCreate_HMPI(PC pc)
   PetscMPIInt    size;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(((PetscObject)pc)->comm,&size);CHKERRQ(ierr);
-  if (size > 1) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_SIZ,"HMPI preconditioner only works for sequential solves");
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)pc),&size);CHKERRQ(ierr);
+  if (size > 1) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_SIZ,"HMPI preconditioner only works for sequential solves");
   if (!PETSC_COMM_LOCAL_WORLD) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"PETSc not initialized for PCMPI see the manual pages for PetscHMPISpawn() and PetscHMPIMerge()");
   /* caste the struct length to a PetscInt for easier MPI calls */
 

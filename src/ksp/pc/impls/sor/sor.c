@@ -136,7 +136,7 @@ PetscErrorCode  PCSORSetOmega_SOR(PC pc,PetscReal omega)
   PC_SOR *jac;
 
   PetscFunctionBegin;
-  if (omega >= 2.0 || omega <= 0.0) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Relaxation out of range");
+  if (omega >= 2.0 || omega <= 0.0) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"Relaxation out of range");
   jac        = (PC_SOR*)pc->data;
   jac->omega = omega;
   PetscFunctionReturn(0);

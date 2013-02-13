@@ -231,8 +231,8 @@ PetscErrorCode  PetscViewerMathematicaSetFromOptions(PetscViewer v)
   PetscErrorCode          ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(((PetscObject)v)->comm, &size);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(((PetscObject)v)->comm, &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)v), &size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)v), &rank);CHKERRQ(ierr);
 
   /* Get link name */
   ierr = PetscOptionsGetString("viewer_", "-math_linkname", linkname, 256, &opt);CHKERRQ(ierr);

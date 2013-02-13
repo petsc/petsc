@@ -14,7 +14,7 @@ PetscErrorCode MatConvert_Shell(Mat oldmat, MatType newtype,MatReuse reuse,Mat *
   PetscScalar    *array,zero = 0.0,one = 1.0;
 
   PetscFunctionBegin;
-  comm = ((PetscObject)oldmat)->comm;
+  ierr = PetscObjectGetComm((PetscObject)oldmat,&comm);CHKERRQ(ierr);
 
   ierr = MatGetOwnershipRange(oldmat,&start,&end);CHKERRQ(ierr);
   ierr = VecCreateMPI(comm,end-start,PETSC_DECIDE,&in);CHKERRQ(ierr);

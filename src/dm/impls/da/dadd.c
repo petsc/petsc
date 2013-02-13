@@ -21,7 +21,7 @@ PetscErrorCode DMDACreatePatchIS(DM da,MatStencil *lower,MatStencil *upper,IS *i
   DM_DA          *dd;
 
   PetscFunctionBegin;
-  comm = ((PetscObject)da)->comm;
+  ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   dd   = (DM_DA*)da->data;
 
@@ -195,7 +195,7 @@ PetscErrorCode DMCreateDomainDecompositionScatters_DA(DM dm,PetscInt nsubdms,DM 
   Vec            svec,dvec,slvec;
 
   PetscFunctionBegin;
-  if (nsubdms != 1) SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Cannot have more than one subdomain per processor (yet)");
+  if (nsubdms != 1) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Cannot have more than one subdomain per processor (yet)");
 
   /* allocate the arrays of scatters */
   if (iscat) {ierr = PetscMalloc(sizeof(VecScatter*),iscat);CHKERRQ(ierr);}

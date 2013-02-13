@@ -112,9 +112,9 @@ PetscErrorCode  MatCoarsenApply(MatCoarsen coarser)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(coarser,MAT_COARSEN_CLASSID,1);
   PetscValidPointer(coarser,2);
-  if (!coarser->graph->assembled) SETERRQ(((PetscObject)coarser)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
-  if (coarser->graph->factortype) SETERRQ(((PetscObject)coarser)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
-  if (!coarser->ops->apply) SETERRQ(((PetscObject)coarser)->comm,PETSC_ERR_ARG_WRONGSTATE,"Must set type with MatCoarsenSetFromOptions() or MatCoarsenSetType()");
+  if (!coarser->graph->assembled) SETERRQ(PetscObjectComm((PetscObject)coarser),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  if (coarser->graph->factortype) SETERRQ(PetscObjectComm((PetscObject)coarser),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
+  if (!coarser->ops->apply) SETERRQ(PetscObjectComm((PetscObject)coarser),PETSC_ERR_ARG_WRONGSTATE,"Must set type with MatCoarsenSetFromOptions() or MatCoarsenSetType()");
   ierr = PetscLogEventBegin(MAT_Coarsen,coarser,0,0,0);CHKERRQ(ierr);
   ierr = (*coarser->ops->apply)(coarser);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_Coarsen,coarser,0,0,0);CHKERRQ(ierr);
@@ -122,7 +122,7 @@ PetscErrorCode  MatCoarsenApply(MatCoarsen coarser)
   ierr = PetscOptionsGetBool(NULL,"-mat_coarsen_view",&flag,NULL);CHKERRQ(ierr);
   if (flag) {
     PetscViewer viewer;
-    ierr = PetscViewerASCIIGetStdout(((PetscObject)coarser)->comm,&viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)coarser),&viewer);CHKERRQ(ierr);
     ierr = MatCoarsenView(coarser,viewer);CHKERRQ(ierr);
     /* ierr = ISView(coarser->mis,viewer);CHKERRQ(ierr); */
   }
@@ -318,7 +318,7 @@ PetscErrorCode  MatCoarsenView(MatCoarsen agg,PetscViewer viewer)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(agg,MAT_COARSEN_CLASSID,1);
   if (!viewer) {
-    ierr = PetscViewerASCIIGetStdout(((PetscObject)agg)->comm,&viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)agg),&viewer);CHKERRQ(ierr);
   }
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
   PetscCheckSameComm(agg,1,viewer,2);
@@ -379,9 +379,9 @@ PetscErrorCode  MatCoarsenSetType(MatCoarsen coarser, MatCoarsenType type)
     coarser->setupcalled  = 0;
   }
 
-  ierr =  PetscFunctionListFind(((PetscObject)coarser)->comm,MatCoarsenList,type,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
+  ierr =  PetscFunctionListFind(PetscObjectComm((PetscObject)coarser),MatCoarsenList,type,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
 
-  if (!r) SETERRQ1(((PetscObject)coarser)->comm,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown coarsen type %s",type);
+  if (!r) SETERRQ1(PetscObjectComm((PetscObject)coarser),PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown coarsen type %s",type);
 
   coarser->ops->destroy = (PetscErrorCode (*)(MatCoarsen)) 0;
   coarser->ops->view    = (PetscErrorCode (*)(MatCoarsen,PetscViewer)) 0;
@@ -445,7 +445,7 @@ PetscErrorCode MatCoarsenGetData(MatCoarsen coarser, PetscCoarsenData **llist)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(coarser,MAT_COARSEN_CLASSID,1);
-  if (!coarser->agg_lists) SETERRQ(((PetscObject)coarser)->comm,PETSC_ERR_ARG_WRONGSTATE,"No linked list - generate it or call ApplyCoarsen");
+  if (!coarser->agg_lists) SETERRQ(PetscObjectComm((PetscObject)coarser),PETSC_ERR_ARG_WRONGSTATE,"No linked list - generate it or call ApplyCoarsen");
   *llist             = coarser->agg_lists;
   coarser->agg_lists = 0; /* giving up ownership */
   PetscFunctionReturn(0);

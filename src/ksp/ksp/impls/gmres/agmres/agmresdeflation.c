@@ -131,17 +131,17 @@ static PetscErrorCode KSPAGMRESSchurForm(KSP ksp, PetscBLASInt KspSize, PetscSca
   /* Compute the Schur form */
   if (IsReduced) {                /* The eigenvalue problem is already in reduced form, meaning that A is upper Hessenberg and B is triangular */
 #if defined(PETSC_MISSING_LAPACK_HGEQZ)
-    SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"HGEQZ - Lapack routine is unavailable.");
+    SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"HGEQZ - Lapack routine is unavailable.");
 #else
     PetscStackCall("LAPACKhgeqz",LAPACKhgeqz_("S", "I", "I", &KspSize, &ilo, &ihi, A, &ldA, B, &ldB, wr, wi, beta, Q, &N, Z, &N, work, &lwork, &info));
-    if (info) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_PLIB, "Error while calling LAPACK routine xhgeqz_");
+    if (info) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB, "Error while calling LAPACK routine xhgeqz_");
 #endif
   } else {
 #if defined(PETSC_MISSING_LAPACK_GGES)
-    SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"GGES - Lapack routine is unavailable.");
+    SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"GGES - Lapack routine is unavailable.");
 #else
     PetscStackCall("LAPACKgges",LAPACKgges_("V", "V", "N", NULL, &KspSize, A, &ldA, B, &ldB, &sdim, wr, wi, beta, Q, &N, Z, &N, work, &lwork, NULL, &info));
-    if (info) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_PLIB, "Error while calling LAPACK routine xgges_");
+    if (info) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB, "Error while calling LAPACK routine xgges_");
 #endif
   }
 
@@ -170,10 +170,10 @@ static PetscErrorCode KSPAGMRESSchurForm(KSP ksp, PetscBLASInt KspSize, PetscSca
     for (j = 0; j < r; j++) select[perm[KspSize-j-1]] = 1;
   }
 #if defined(PETSC_MISSING_LAPACK_TGSEN)
-  SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"GGES - Lapack routine is unavailable.");
+  SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"GGES - Lapack routine is unavailable.");
 #else
   PetscStackCall("LAPACKtgsen",LAPACKtgsen_(&ijob, &wantQ, &wantZ, select, &KspSize, A, &ldA, B, &ldB, wr, wi, beta, Q, &N, Z, &N, &r, NULL, NULL, &(Dif[0]), work, &lwork, iwork, &liwork, &info));
-  if (info == 1) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_PLIB, "UNABLE TO REORDER THE EIGENVALUES WITH THE LAPACK ROUTINE : ILL-CONDITIONED PROBLEM");
+  if (info == 1) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB, "UNABLE TO REORDER THE EIGENVALUES WITH THE LAPACK ROUTINE : ILL-CONDITIONED PROBLEM");
 #endif
   /*Extract the Schur vectors associated to the r smallest eigenvalues */
   ierr = PetscMemzero(Sr,(N+1)*r*sizeof(PetscScalar));CHKERRQ(ierr);
@@ -185,7 +185,7 @@ static PetscErrorCode KSPAGMRESSchurForm(KSP ksp, PetscBLASInt KspSize, PetscSca
 
   /* Broadcast Sr to all other processes to have consistent data;
    * FIXME should investigate how to get unique Schur vectors (unique QR factorization, probably the sign of rotations) */
-  ierr = MPI_Bcast(Sr, (N+1)*r, MPIU_SCALAR, agmres->First, ((PetscObject)ksp)->comm);
+  ierr = MPI_Bcast(Sr, (N+1)*r, MPIU_SCALAR, agmres->First, PetscObjectComm((PetscObject)ksp));
   /* Update the Shift values for the Newton basis. This is surely necessary when applying the DeflationPrecond */
   if (agmres->DeflPrecond) {
     ierr = KSPAGMRESLejaOrdering(wr, wi, agmres->Rshift, agmres->Ishift, max_k);CHKERRQ(ierr);

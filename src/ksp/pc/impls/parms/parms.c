@@ -57,8 +57,8 @@ static PetscErrorCode PCSetUp_PARMS(PC pc)
   PetscFunctionBegin;
   /* Get preconditioner matrix from PETSc and setup pARMS structs */
   ierr = PCGetOperators(pc,NULL,&pmat,NULL);CHKERRQ(ierr);
-  MPI_Comm_size(((PetscObject)pmat)->comm,&npro);
-  MPI_Comm_rank(((PetscObject)pmat)->comm,&rank);
+  MPI_Comm_size(PetscObjectComm((PetscObject)pmat),&npro);
+  MPI_Comm_rank(PetscObjectComm((PetscObject)pmat),&rank);
 
   ierr  = MatGetSize(pmat,&n,NULL);CHKERRQ(ierr);
   ierr  = PetscMalloc((npro+1)*sizeof(int),&mapptr);CHKERRQ(ierr);
@@ -78,7 +78,7 @@ static PetscErrorCode PCSetUp_PARMS(PC pc)
   }
 
   /* create pARMS map object */
-  parms_MapCreateFromPtr(&parms->map,(int)n,maptmp,mapptr,((PetscObject)pmat)->comm,1,NONINTERLACED);
+  parms_MapCreateFromPtr(&parms->map,(int)n,maptmp,mapptr,PetscObjectComm((PetscObject)pmat),1,NONINTERLACED);
 
   /* if created, destroy the previous pARMS matrix */
   if (parms->A) {

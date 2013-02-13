@@ -793,7 +793,7 @@ static PetscErrorCode ComputeKSPFETIDP(DomainData dd, KSP ksp_bddc, KSP *ksp_fet
   PetscFunctionBeginUser;
   ierr        = KSPGetPC(ksp_bddc,&pc);CHKERRQ(ierr);
   ierr        = PCBDDCCreateFETIDPOperators(pc,&F,&D);CHKERRQ(ierr);
-  ierr        = KSPCreate(((PetscObject)F)->comm,&temp_ksp);CHKERRQ(ierr);
+  ierr        = KSPCreate(PetscObjectComm((PetscObject)F),&temp_ksp);CHKERRQ(ierr);
   ierr        = KSPSetOperators(temp_ksp,F,F,SAME_PRECONDITIONER);CHKERRQ(ierr);
   ierr        = KSPSetType(temp_ksp,KSPCG);CHKERRQ(ierr);
   ierr        = KSPSetTolerances(temp_ksp,1.0e-8,1.0e-8,1.0e15,10000);CHKERRQ(ierr);

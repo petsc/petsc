@@ -305,14 +305,14 @@ PetscErrorCode PetscViewerSetFromOptions_Socket(PetscViewer v)
     are listed here for the GUI to display
   */
   ierr = PetscOptionsHead("Socket PetscViewer Options");CHKERRQ(ierr);
-  ierr = PetscOptionsGetenv(((PetscObject)v)->comm,"PETSC_VIEWER_SOCKET_PORT",sdef,16,&tflg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetenv(PetscObjectComm((PetscObject)v),"PETSC_VIEWER_SOCKET_PORT",sdef,16,&tflg);CHKERRQ(ierr);
   if (tflg) {
     ierr = PetscOptionsStringToInt(sdef,&def);CHKERRQ(ierr);
   } else def = PETSCSOCKETDEFAULTPORT;
   ierr = PetscOptionsInt("-viewer_socket_port","Port number to use for socket","PetscViewerSocketSetConnection",def,0,0);CHKERRQ(ierr);
 
   ierr = PetscOptionsString("-viewer_socket_machine","Machine to use for socket","PetscViewerSocketSetConnection",sdef,0,0,0);CHKERRQ(ierr);
-  ierr = PetscOptionsGetenv(((PetscObject)v)->comm,"PETSC_VIEWER_SOCKET_MACHINE",sdef,256,&tflg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetenv(PetscObjectComm((PetscObject)v),"PETSC_VIEWER_SOCKET_MACHINE",sdef,256,&tflg);CHKERRQ(ierr);
   if (!tflg) {
     ierr = PetscGetHostName(sdef,256);CHKERRQ(ierr);
   }
@@ -372,7 +372,7 @@ PetscErrorCode  PetscViewerSocketSetConnection(PetscViewer v,const char machine[
   /* PetscValidLogicalCollectiveInt(v,port,3); not a PetscInt */
   if (port <= 0) {
     char portn[16];
-    ierr = PetscOptionsGetenv(((PetscObject)v)->comm,"PETSC_VIEWER_SOCKET_PORT",portn,16,&tflg);CHKERRQ(ierr);
+    ierr = PetscOptionsGetenv(PetscObjectComm((PetscObject)v),"PETSC_VIEWER_SOCKET_PORT",portn,16,&tflg);CHKERRQ(ierr);
     if (tflg) {
       PetscInt pport;
       ierr = PetscOptionsStringToInt(portn,&pport);CHKERRQ(ierr);
@@ -380,7 +380,7 @@ PetscErrorCode  PetscViewerSocketSetConnection(PetscViewer v,const char machine[
     } else port = PETSCSOCKETDEFAULTPORT;
   }
   if (!machine) {
-    ierr = PetscOptionsGetenv(((PetscObject)v)->comm,"PETSC_VIEWER_SOCKET_MACHINE",mach,256,&tflg);CHKERRQ(ierr);
+    ierr = PetscOptionsGetenv(PetscObjectComm((PetscObject)v),"PETSC_VIEWER_SOCKET_MACHINE",mach,256,&tflg);CHKERRQ(ierr);
     if (!tflg) {
       ierr = PetscGetHostName(mach,256);CHKERRQ(ierr);
     }
@@ -388,7 +388,7 @@ PetscErrorCode  PetscViewerSocketSetConnection(PetscViewer v,const char machine[
     ierr = PetscStrncpy(mach,machine,256);CHKERRQ(ierr);
   }
 
-  ierr = MPI_Comm_rank(((PetscObject)v)->comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)v),&rank);CHKERRQ(ierr);
   if (!rank) {
     ierr = PetscStrcmp(mach,"server",&tflg);CHKERRQ(ierr);
     if (tflg) {

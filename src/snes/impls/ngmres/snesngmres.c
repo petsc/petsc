@@ -83,7 +83,7 @@ PetscErrorCode SNESSetUp_NGMRES(SNES snes)
   ierr = SNESGetOptionsPrefix(snes,&optionsprefix);CHKERRQ(ierr);
 
   if (ngmres->select_type == SNES_NGMRES_SELECT_LINESEARCH) {
-    ierr = SNESLineSearchCreate(((PetscObject)snes)->comm,&ngmres->additive_linesearch);CHKERRQ(ierr);
+    ierr = SNESLineSearchCreate(PetscObjectComm((PetscObject)snes),&ngmres->additive_linesearch);CHKERRQ(ierr);
     ierr = SNESLineSearchSetSNES(ngmres->additive_linesearch,snes);CHKERRQ(ierr);
     ierr = SNESLineSearchSetType(ngmres->additive_linesearch,SNESLINESEARCHL2);CHKERRQ(ierr);
     ierr = SNESLineSearchAppendOptionsPrefix(ngmres->additive_linesearch,"additive_");CHKERRQ(ierr);
@@ -116,7 +116,7 @@ PetscErrorCode SNESSetFromOptions_NGMRES(SNES snes)
   ierr = PetscOptionsInt("-snes_ngmres_restart_it","Tolerance iterations before restart","SNES",ngmres->restart_it,&ngmres->restart_it,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-snes_ngmres_monitor",  "Monitor actions of NGMRES",          "SNES",ngmres->monitor ? PETSC_TRUE : PETSC_FALSE,&debug,NULL);CHKERRQ(ierr);
   if (debug) {
-    ngmres->monitor = PETSC_VIEWER_STDOUT_(((PetscObject)snes)->comm);CHKERRQ(ierr);
+    ngmres->monitor = PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)snes));CHKERRQ(ierr);
   }
   ierr = PetscOptionsReal("-snes_ngmres_gammaA",   "Residual selection constant",   "SNES",ngmres->gammaA,&ngmres->gammaA,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-snes_ngmres_gammaC", "  Residual restart constant",     "SNES",ngmres->gammaC,&ngmres->gammaC,NULL);CHKERRQ(ierr);
@@ -210,7 +210,7 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
 
   if (!snes->norm_init_set) {
     ierr = VecNorm(F,NORM_2,&fnorm);CHKERRQ(ierr);
-    if (PetscIsInfOrNanReal(fnorm)) SETERRQ(((PetscObject)snes)->comm,PETSC_ERR_FP,"Infinite or not-a-number generated in function evaluation");
+    if (PetscIsInfOrNanReal(fnorm)) SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_FP,"Infinite or not-a-number generated in function evaluation");
   } else {
     fnorm               = snes->norm_init;
     snes->norm_init_set = PETSC_FALSE;
@@ -279,7 +279,7 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
     } else {
       ierr = VecNorm(FA,NORM_2,&fAnorm);CHKERRQ(ierr);
     }
-    if (PetscIsInfOrNanReal(fAnorm)) SETERRQ(((PetscObject)snes)->comm,PETSC_ERR_FP,"Infinite or not-a-number generated in function evaluation");
+    if (PetscIsInfOrNanReal(fAnorm)) SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_FP,"Infinite or not-a-number generated in function evaluation");
 
     /* combination (additive) or selection (multiplicative) of the N-GMRES solution */
     ierr          = SNESNGMRESSelect_Private(snes,k_restart,XM,FM,fMnorm,XA,FA,fAnorm,dnorm,fminnorm,dminnorm,X,F,Y,&fnorm);CHKERRQ(ierr);

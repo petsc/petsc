@@ -153,8 +153,8 @@ PetscErrorCode  MatShift(Mat Y,PetscScalar a)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(Y,MAT_CLASSID,1);
-  if (!Y->assembled) SETERRQ(((PetscObject)Y)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
-  if (Y->factortype) SETERRQ(((PetscObject)Y)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
+  if (!Y->assembled) SETERRQ(PetscObjectComm((PetscObject)Y),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  if (Y->factortype) SETERRQ(PetscObjectComm((PetscObject)Y),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
   MatCheckPreallocated(Y,1);
 
   if (Y->ops->shift) {
@@ -309,7 +309,7 @@ PetscErrorCode  MatComputeExplicitOperator(Mat inmat,Mat *mat)
   PetscValidHeaderSpecific(inmat,MAT_CLASSID,1);
   PetscValidPointer(mat,2);
 
-  comm = ((PetscObject)inmat)->comm;
+  ierr = PetscObjectGetComm((PetscObject)inmat,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
 
   ierr = MatGetLocalSize(inmat,&m,&n);CHKERRQ(ierr);

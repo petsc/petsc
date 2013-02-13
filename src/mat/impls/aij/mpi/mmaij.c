@@ -127,7 +127,7 @@ PetscErrorCode MatSetUpMultiply_MPIAIJ(Mat mat)
   }
 #if defined(PETSC_USE_DEBUG)
   i    = (PetscInt)useblockis;
-  ierr = MPI_Allreduce(&i,&j,1,MPIU_INT,MPI_MIN,((PetscObject)mat)->comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&i,&j,1,MPIU_INT,MPI_MIN,PetscObjectComm((PetscObject)mat));CHKERRQ(ierr);
   if (j!=i) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Use of blocked not consistant (I am usning blocked)");
 #endif
 
@@ -137,16 +137,16 @@ PetscErrorCode MatSetUpMultiply_MPIAIJ(Mat mat)
     ierr = PetscInfo(mat,"Using block index set to define scatter\n");CHKERRQ(ierr);
     ierr = PetscMalloc(iec*sizeof(PetscInt),&ga);CHKERRQ(ierr);
     for (i=0; i<iec; i++) ga[i] = garray[i*bs]/bs;
-    ierr = ISCreateBlock(((PetscObject)mat)->comm,bs,iec,ga,PETSC_OWN_POINTER,&from);CHKERRQ(ierr);
+    ierr = ISCreateBlock(PetscObjectComm((PetscObject)mat),bs,iec,ga,PETSC_OWN_POINTER,&from);CHKERRQ(ierr);
   } else {
-    ierr = ISCreateGeneral(((PetscObject)mat)->comm,ec,garray,PETSC_COPY_VALUES,&from);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PetscObjectComm((PetscObject)mat),ec,garray,PETSC_COPY_VALUES,&from);CHKERRQ(ierr);
   }
 
   ierr = ISCreateStride(PETSC_COMM_SELF,ec,0,1,&to);CHKERRQ(ierr);
 
   /* create temporary global vector to generate scatter context */
   /* This does not allocate the array's memory so is efficient */
-  ierr = VecCreateMPIWithArray(((PetscObject)mat)->comm,1,mat->cmap->n,mat->cmap->N,NULL,&gvec);CHKERRQ(ierr);
+  ierr = VecCreateMPIWithArray(PetscObjectComm((PetscObject)mat),1,mat->cmap->n,mat->cmap->N,NULL,&gvec);CHKERRQ(ierr);
 
   /* generate the scatter context */
   ierr = VecScatterCreate(gvec,from,aij->lvec,to,&aij->Mvctx);CHKERRQ(ierr);

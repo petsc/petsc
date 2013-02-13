@@ -46,7 +46,7 @@ PetscErrorCode ISDuplicate_Stride(IS is,IS *newIS)
   IS_Stride      *sub = (IS_Stride*)is->data;
 
   PetscFunctionBegin;
-  ierr = ISCreateStride(((PetscObject)is)->comm,sub->n,sub->first,sub->step,newIS);CHKERRQ(ierr);
+  ierr = ISCreateStride(PetscObjectComm((PetscObject)is),sub->n,sub->first,sub->step,newIS);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -64,7 +64,7 @@ PetscErrorCode ISInvertPermutation_Stride(IS is,PetscInt nlocal,IS *perm)
     IS             tmp;
     const PetscInt *indices,n = isstride->n;
     ierr = ISGetIndices(is,&indices);CHKERRQ(ierr);
-    ierr = ISCreateGeneral(((PetscObject)is)->comm,n,indices,PETSC_COPY_VALUES,&tmp);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PetscObjectComm((PetscObject)is),n,indices,PETSC_COPY_VALUES,&tmp);CHKERRQ(ierr);
     ierr = ISSetPermutation(tmp);CHKERRQ(ierr);
     ierr = ISRestoreIndices(is,&indices);CHKERRQ(ierr);
     ierr = ISInvertPermutation(tmp,nlocal,perm);CHKERRQ(ierr);
@@ -210,8 +210,8 @@ PetscErrorCode ISView_Stride(IS is,PetscViewer viewer)
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
-    ierr = MPI_Comm_rank(((PetscObject)is)->comm,&rank);CHKERRQ(ierr);
-    ierr = MPI_Comm_size(((PetscObject)is)->comm,&size);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)is),&rank);CHKERRQ(ierr);
+    ierr = MPI_Comm_size(PetscObjectComm((PetscObject)is),&size);CHKERRQ(ierr);
     if (size == 1) {
       if (is->isperm) {
         ierr = PetscViewerASCIIPrintf(viewer,"Index set is permutation\n");CHKERRQ(ierr);
@@ -281,7 +281,7 @@ static PetscErrorCode ISSetBlockSize_Stride(IS is,PetscInt bs)
   IS_Stride *sub = (IS_Stride*)is->data;
 
   PetscFunctionBegin;
-  if (sub->step != 1 && bs != 1) SETERRQ2(((PetscObject)is)->comm,PETSC_ERR_ARG_SIZ,"ISSTRIDE has stride %D, cannot be blocked of size %D",sub->step,bs);
+  if (sub->step != 1 && bs != 1) SETERRQ2(PetscObjectComm((PetscObject)is),PETSC_ERR_ARG_SIZ,"ISSTRIDE has stride %D, cannot be blocked of size %D",sub->step,bs);
   is->bs = bs;
   PetscFunctionReturn(0);
 }
@@ -364,7 +364,7 @@ PetscErrorCode  ISStrideSetStride_Stride(IS is,PetscInt n,PetscInt first,PetscIn
 
   PetscFunctionBegin;
   sub->n     = n;
-  ierr       = MPI_Allreduce(&n,&sub->N,1,MPIU_INT,MPI_SUM,((PetscObject)is)->comm);CHKERRQ(ierr);
+  ierr       = MPI_Allreduce(&n,&sub->N,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)is));CHKERRQ(ierr);
   sub->first = first;
   sub->step  = step;
   if (step > 0) {min = first; max = first + step*(n-1);}

@@ -30,10 +30,10 @@ PetscErrorCode AOView_MemoryScalable(AO ao,PetscViewer viewer)
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
-  if (!iascii) SETERRQ1(((PetscObject)viewer)->comm,PETSC_ERR_SUP,"Viewer type %s not supported for AO MemoryScalable",((PetscObject)viewer)->type_name);
+  if (!iascii) SETERRQ1(PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Viewer type %s not supported for AO MemoryScalable",((PetscObject)viewer)->type_name);
 
-  ierr = MPI_Comm_rank(((PetscObject)ao)->comm,&rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(((PetscObject)ao)->comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)ao),&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)ao),&size);CHKERRQ(ierr);
 
   ierr = PetscObjectGetNewTag((PetscObject)ao,&tag_app);CHKERRQ(ierr);
   ierr = PetscObjectGetNewTag((PetscObject)ao,&tag_petsc);CHKERRQ(ierr);
@@ -55,8 +55,8 @@ PetscErrorCode AOView_MemoryScalable(AO ao,PetscViewer viewer)
       len       = map->range[i+1] - map->range[i];
       app_loc   = app  + map->range[i];
       petsc_loc = petsc+ map->range[i];
-      ierr      = MPI_Recv(app_loc,(PetscMPIInt)len,MPIU_INT,i,tag_app,((PetscObject)ao)->comm,&status);CHKERRQ(ierr);
-      ierr      = MPI_Recv(petsc_loc,(PetscMPIInt)len,MPIU_INT,i,tag_petsc,((PetscObject)ao)->comm,&status);CHKERRQ(ierr);
+      ierr      = MPI_Recv(app_loc,(PetscMPIInt)len,MPIU_INT,i,tag_app,PetscObjectComm((PetscObject)ao),&status);CHKERRQ(ierr);
+      ierr      = MPI_Recv(petsc_loc,(PetscMPIInt)len,MPIU_INT,i,tag_petsc,PetscObjectComm((PetscObject)ao),&status);CHKERRQ(ierr);
       ierr      = PetscViewerASCIIPrintf(viewer,"Process [%D]\n",i);CHKERRQ(ierr);
       for (j=0; j<len; j++) {
         ierr = PetscViewerASCIIPrintf(viewer,"%3D  %3D    %3D  %3D\n",map->range[i]+j,app_loc[j],map->range[i]+j,petsc_loc[j]);CHKERRQ(ierr);
@@ -66,8 +66,8 @@ PetscErrorCode AOView_MemoryScalable(AO ao,PetscViewer viewer)
 
   } else {
     /* send values */
-    ierr = MPI_Send((void*)aomems->app_loc,map->n,MPIU_INT,0,tag_app,((PetscObject)ao)->comm);CHKERRQ(ierr);
-    ierr = MPI_Send((void*)aomems->petsc_loc,map->n,MPIU_INT,0,tag_petsc,((PetscObject)ao)->comm);CHKERRQ(ierr);
+    ierr = MPI_Send((void*)aomems->app_loc,map->n,MPIU_INT,0,tag_app,PetscObjectComm((PetscObject)ao));CHKERRQ(ierr);
+    ierr = MPI_Send((void*)aomems->petsc_loc,map->n,MPIU_INT,0,tag_petsc,PetscObjectComm((PetscObject)ao));CHKERRQ(ierr);
   }
   ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -103,7 +103,7 @@ PetscErrorCode AOMap_MemoryScalable_private(AO ao,PetscInt n,PetscInt *ia,PetscI
 {
   PetscErrorCode    ierr;
   AO_MemoryScalable *aomems = (AO_MemoryScalable*)ao->data;
-  MPI_Comm          comm    =((PetscObject)ao)->comm;
+  MPI_Comm          comm;
   PetscMPIInt       rank,size,tag1,tag2;
   PetscInt          *owner,*start,*nprocs,nsends,nreceives;
   PetscInt          nmax,count,*sindices,*rindices,i,j,idx,lastidx,*sindices2,*rindices2;
@@ -115,6 +115,7 @@ PetscErrorCode AOMap_MemoryScalable_private(AO ao,PetscInt n,PetscInt *ia,PetscI
   MPI_Status        *send_status,*send_status2;
 
   PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)ao,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
 

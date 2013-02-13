@@ -232,14 +232,14 @@ static PetscErrorCode PetscSFGetWindow(PetscSF sf,MPI_Datatype unit,void *array,
   PetscFunctionBegin;
   ierr = MPI_Type_get_extent(unit,&lb,&bytes);CHKERRQ(ierr);
   ierr = MPI_Type_get_true_extent(unit,&lb_true,&bytes_true);CHKERRQ(ierr);
-  if (lb != 0 || lb_true != 0) SETERRQ(((PetscObject)sf)->comm,PETSC_ERR_SUP,"No support for unit type with nonzero lower bound, write petsc-maint@mcs.anl.gov if you want this feature");
-  if (bytes != bytes_true) SETERRQ(((PetscObject)sf)->comm,PETSC_ERR_SUP,"No support for unit type with modified extent, write petsc-maint@mcs.anl.gov if you want this feature");
+  if (lb != 0 || lb_true != 0) SETERRQ(PetscObjectComm((PetscObject)sf),PETSC_ERR_SUP,"No support for unit type with nonzero lower bound, write petsc-maint@mcs.anl.gov if you want this feature");
+  if (bytes != bytes_true) SETERRQ(PetscObjectComm((PetscObject)sf),PETSC_ERR_SUP,"No support for unit type with modified extent, write petsc-maint@mcs.anl.gov if you want this feature");
   ierr = PetscMalloc(sizeof(*link),&link);CHKERRQ(ierr);
 
   link->bytes = bytes;
   link->addr  = array;
 
-  ierr = MPI_Win_create(array,(MPI_Aint)bytes*sf->nroots,(PetscMPIInt)bytes,MPI_INFO_NULL,((PetscObject)sf)->comm,&link->win);CHKERRQ(ierr);
+  ierr = MPI_Win_create(array,(MPI_Aint)bytes*sf->nroots,(PetscMPIInt)bytes,MPI_INFO_NULL,PetscObjectComm((PetscObject)sf),&link->win);CHKERRQ(ierr);
 
   link->epoch = epoch;
   link->next  = w->wins;
@@ -260,7 +260,7 @@ static PetscErrorCode PetscSFGetWindow(PetscSF sf,MPI_Datatype unit,void *array,
       ierr = MPI_Win_post(ingroup,postassert,*win);CHKERRQ(ierr);
       ierr = MPI_Win_start(outgroup,startassert,*win);CHKERRQ(ierr);
     } break;
-    default: SETERRQ(((PetscObject)sf)->comm,PETSC_ERR_PLIB,"Unknown synchronization type");
+    default: SETERRQ(PetscObjectComm((PetscObject)sf),PETSC_ERR_PLIB,"Unknown synchronization type");
     }
   }
   PetscFunctionReturn(0);
@@ -352,7 +352,7 @@ found:
       ierr = MPI_Win_complete(*win);CHKERRQ(ierr);
       ierr = MPI_Win_wait(*win);CHKERRQ(ierr);
     } break;
-    default: SETERRQ(((PetscObject)sf)->comm,PETSC_ERR_PLIB,"Unknown synchronization type");
+    default: SETERRQ(PetscObjectComm((PetscObject)sf),PETSC_ERR_PLIB,"Unknown synchronization type");
     }
   }
 
@@ -418,7 +418,7 @@ static PetscErrorCode PetscSFReset_Window(PetscSF sf)
   w->link = NULL;
   for (wlink=w->wins; wlink; wlink=wnext) {
     wnext = wlink->next;
-    if (wlink->inuse) SETERRQ1(((PetscObject)sf)->comm,PETSC_ERR_ARG_WRONGSTATE,"Window still in use with address %p",(void*)wlink->addr);
+    if (wlink->inuse) SETERRQ1(PetscObjectComm((PetscObject)sf),PETSC_ERR_ARG_WRONGSTATE,"Window still in use with address %p",(void*)wlink->addr);
     ierr = MPI_Win_free(&wlink->win);CHKERRQ(ierr);
     ierr = PetscFree(wlink);CHKERRQ(ierr);
   }
@@ -621,7 +621,7 @@ PETSC_EXTERN_C PetscErrorCode PetscSFCreate_Window(PetscSF sf)
     ierr = PetscOptionsGetBool(NULL,"-acknowledge_ompi_onesided_bug",&ackbug,NULL);CHKERRQ(ierr);
     if (ackbug) {
       ierr = PetscInfo(sf,"Acknowledged Open MPI bug, proceeding anyway. Expect memory corruption.");CHKERRQ(ierr);
-    } else SETERRQ(((PetscObject)sf)->comm,PETSC_ERR_LIB,"Open MPI is known to be buggy (https://svn.open-mpi.org/trac/ompi/ticket/1905 and 2656), use -acknowledge_ompi_onesided_bug to proceed");
+    } else SETERRQ(PetscObjectComm((PetscObject)sf),PETSC_ERR_LIB,"Open MPI is known to be buggy (https://svn.open-mpi.org/trac/ompi/ticket/1905 and 2656), use -acknowledge_ompi_onesided_bug to proceed");
   }
 #endif
   PetscFunctionReturn(0);

@@ -33,7 +33,7 @@ PetscErrorCode  VecCreate_Seq(Vec V)
   PetscMPIInt    size;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(((PetscObject)V)->comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)V),&size);CHKERRQ(ierr);
   if (size > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot create VECSEQ on more than one process");
 #if !defined(PETSC_USE_MIXED_PRECISION)
   ierr = PetscMalloc(n*sizeof(PetscScalar),&array);CHKERRQ(ierr);
@@ -68,7 +68,7 @@ PetscErrorCode  VecCreate_Seq(Vec V)
     s                  = (Vec_Seq*)V->data;
     s->array_allocated = (PetscScalar*)aarray;
   } break;
-  default: SETERRQ1(((PetscObject)V)->comm,PETSC_ERR_SUP,"No support for mixed precision %d",(int)(((PetscObject)V)->precision));
+  default: SETERRQ1(PetscObjectComm((PetscObject)V),PETSC_ERR_SUP,"No support for mixed precision %d",(int)(((PetscObject)V)->precision));
   }
 #endif
   PetscFunctionReturn(0);

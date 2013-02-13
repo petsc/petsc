@@ -165,7 +165,7 @@ PetscErrorCode  PCMGSetLevels(PC pc,PetscInt levels,MPI_Comm *comms)
 {
   PetscErrorCode ierr;
   PC_MG          *mg        = (PC_MG*)pc->data;
-  MPI_Comm       comm       = ((PetscObject)pc)->comm;
+  MPI_Comm       comm;
   PC_MG_Levels   **mglevels = mg->levels;
   PetscInt       i;
   PetscMPIInt    size;
@@ -176,6 +176,7 @@ PetscErrorCode  PCMGSetLevels(PC pc,PetscInt levels,MPI_Comm *comms)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidLogicalCollectiveInt(pc,levels,2);
+  ierr = PetscObjectGetComm((PetscObject)pc,&comm);CHKERRQ(ierr);
   if (mg->nlevels == levels) PetscFunctionReturn(0);
   if (mglevels) {
     /* changing the number of levels so free up the previous stuff */
@@ -399,7 +400,7 @@ PetscErrorCode PCSetFromOptions_MG(PC pc)
   if (flg) {
     PetscInt i;
     char     eventname[128];
-    if (!mglevels) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
+    if (!mglevels) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
     levels = mglevels[0]->levels;
     for (i=0; i<levels; i++) {
       sprintf(eventname,"MGSetup Level %d",(int)i);
@@ -774,11 +775,11 @@ PetscErrorCode PCSetUp_MG(PC pc)
   */
 #if defined(PETSC_USE_SOCKET_VIEWER)
   ierr = PetscOptionsGetBool(((PetscObject)pc)->prefix,"-pc_mg_dump_matlab",&dump,NULL);CHKERRQ(ierr);
-  if (dump) viewer = PETSC_VIEWER_SOCKET_(((PetscObject)pc)->comm);
+  if (dump) viewer = PETSC_VIEWER_SOCKET_(PetscObjectComm((PetscObject)pc));
   dump = PETSC_FALSE;
 #endif
   ierr = PetscOptionsGetBool(((PetscObject)pc)->prefix,"-pc_mg_dump_binary",&dump,NULL);CHKERRQ(ierr);
-  if (dump) viewer = PETSC_VIEWER_BINARY_(((PetscObject)pc)->comm);
+  if (dump) viewer = PETSC_VIEWER_BINARY_(PetscObjectComm((PetscObject)pc));
 
   if (viewer) {
     for (i=1; i<n; i++) {
@@ -889,7 +890,7 @@ PetscErrorCode  PCMGSetCycleType(PC pc,PCMGCycleType n)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  if (!mglevels) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
+  if (!mglevels) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
   PetscValidLogicalCollectiveInt(pc,n,2);
   levels = mglevels[0]->levels;
 
@@ -928,7 +929,7 @@ PetscErrorCode  PCMGMultiplicativeSetCycles(PC pc,PetscInt n)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  if (!mglevels) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
+  if (!mglevels) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
   PetscValidLogicalCollectiveInt(pc,n,2);
   levels = mglevels[0]->levels;
 
@@ -1033,7 +1034,7 @@ PetscErrorCode  PCMGSetNumberSmoothDown(PC pc,PetscInt n)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  if (!mglevels) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
+  if (!mglevels) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
   PetscValidLogicalCollectiveInt(pc,n,2);
   levels = mglevels[0]->levels;
 
@@ -1081,7 +1082,7 @@ PetscErrorCode  PCMGSetNumberSmoothUp(PC pc,PetscInt n)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  if (!mglevels) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
+  if (!mglevels) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
   PetscValidLogicalCollectiveInt(pc,n,2);
   levels = mglevels[0]->levels;
 

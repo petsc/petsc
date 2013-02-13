@@ -26,7 +26,7 @@ PetscErrorCode SNESSetFromOptions_Anderson(SNES snes)
   ierr = PetscOptionsInt("-snes_anderson_restart",   "Iterations before forced restart",   "SNES",ngmres->restart_periodic,&ngmres->restart_periodic,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-snes_anderson_restart_it","Tolerance iterations before restart","SNES",ngmres->restart_it,&ngmres->restart_it,NULL);CHKERRQ(ierr);
   if (debug) {
-    ngmres->monitor = PETSC_VIEWER_STDOUT_(((PetscObject)snes)->comm);CHKERRQ(ierr);
+    ngmres->monitor = PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)snes));CHKERRQ(ierr);
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   /* set the default type of the line search if the user hasn't already. */
@@ -91,7 +91,7 @@ PetscErrorCode SNESSolve_Anderson(SNES snes)
 
   if (!snes->norm_init_set) {
     ierr = VecNorm(F,NORM_2,&fnorm);CHKERRQ(ierr);
-    if (PetscIsInfOrNanReal(fnorm)) SETERRQ(((PetscObject)snes)->comm,PETSC_ERR_FP,"Infinite or not-a-number generated in function evaluation");
+    if (PetscIsInfOrNanReal(fnorm)) SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_FP,"Infinite or not-a-number generated in function evaluation");
   } else {
     fnorm               = snes->norm_init;
     snes->norm_init_set = PETSC_FALSE;

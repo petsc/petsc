@@ -111,7 +111,7 @@ PetscErrorCode MatDestroy_SeqMAIJ(Mat A)
 PetscErrorCode MatSetUp_MAIJ(Mat A)
 {
   PetscFunctionBegin;
-  SETERRQ(((PetscObject)A)->comm,PETSC_ERR_SUP,"Must use MatCreateMAIJ() to create MAIJ matrices");
+  SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Must use MatCreateMAIJ() to create MAIJ matrices");
   PetscFunctionReturn(0);
 }
 
@@ -200,7 +200,7 @@ PETSC_EXTERN_C PetscErrorCode MatCreate_MAIJ(Mat A)
   b->OAIJ = 0;
   b->ctx  = 0;
   b->w    = 0;
-  ierr    = MPI_Comm_size(((PetscObject)A)->comm,&size);CHKERRQ(ierr);
+  ierr    = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRQ(ierr);
   if (size == 1) {
     ierr = PetscObjectChangeTypeName((PetscObject)A,MATSEQMAIJ);CHKERRQ(ierr);
   } else {
@@ -3100,7 +3100,7 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqMAIJ(Mat A,Mat PP,PetscReal fill,Mat *C
   ierr = PetscMemzero(ca,(ci[cn]+1)*sizeof(MatScalar));CHKERRQ(ierr);
 
   /* put together the new matrix */
-  ierr = MatCreateSeqAIJWithArrays(((PetscObject)A)->comm,cn,cn,ci,cj,ca,C);CHKERRQ(ierr);
+  ierr = MatCreateSeqAIJWithArrays(PetscObjectComm((PetscObject)A),cn,cn,ci,cj,ca,C);CHKERRQ(ierr);
 
   /* MatCreateSeqAIJWithArrays flags matrix so PETSc doesn't free the user's arrays. */
   /* Since these are PETSc arrays, change flags to free them as necessary. */
@@ -3329,7 +3329,7 @@ PETSC_EXTERN_C PetscErrorCode MatConvert_MPIMAIJ_MPIAIJ(Mat A, MatType newtype,M
       onz[dof*i+j] = OAIJ->ilen[i];
     }
   }
-  ierr = MatCreateAIJ(((PetscObject)A)->comm,A->rmap->n,A->cmap->n,A->rmap->N,A->cmap->N,0,dnz,0,onz,&B);CHKERRQ(ierr);
+  ierr = MatCreateAIJ(PetscObjectComm((PetscObject)A),A->rmap->n,A->cmap->n,A->rmap->N,A->cmap->N,0,dnz,0,onz,&B);CHKERRQ(ierr);
   ierr = PetscFree2(dnz,onz);CHKERRQ(ierr);
 
   ierr   = PetscMalloc2(nmax,PetscInt,&icols,onmax,PetscInt,&oicols);CHKERRQ(ierr);
@@ -3428,7 +3428,7 @@ PetscErrorCode  MatCreateMAIJ(Mat A,PetscInt dof,Mat *maij)
 
   if (dof == 1) *maij = A;
   else {
-    ierr = MatCreate(((PetscObject)A)->comm,&B);CHKERRQ(ierr);
+    ierr = MatCreate(PetscObjectComm((PetscObject)A),&B);CHKERRQ(ierr);
     ierr = MatSetSizes(B,dof*A->rmap->n,dof*A->cmap->n,dof*A->rmap->N,dof*A->cmap->N);CHKERRQ(ierr);
     ierr = PetscLayoutSetBlockSize(B->rmap,dof);CHKERRQ(ierr);
     ierr = PetscLayoutSetBlockSize(B->cmap,dof);CHKERRQ(ierr);
@@ -3437,7 +3437,7 @@ PetscErrorCode  MatCreateMAIJ(Mat A,PetscInt dof,Mat *maij)
 
     B->assembled = PETSC_TRUE;
 
-    ierr = MPI_Comm_size(((PetscObject)A)->comm,&size);CHKERRQ(ierr);
+    ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRQ(ierr);
     if (size == 1) {
       Mat_SeqMAIJ *b;
 
@@ -3544,11 +3544,11 @@ PetscErrorCode  MatCreateMAIJ(Mat A,PetscInt dof,Mat *maij)
       ierr = VecSetType(b->w,VECSEQ);CHKERRQ(ierr);
 
       /* create two temporary Index sets for build scatter gather */
-      ierr = ISCreateBlock(((PetscObject)A)->comm,dof,n,mpiaij->garray,PETSC_COPY_VALUES,&from);CHKERRQ(ierr);
+      ierr = ISCreateBlock(PetscObjectComm((PetscObject)A),dof,n,mpiaij->garray,PETSC_COPY_VALUES,&from);CHKERRQ(ierr);
       ierr = ISCreateStride(PETSC_COMM_SELF,n*dof,0,1,&to);CHKERRQ(ierr);
 
       /* create temporary global vector to generate scatter context */
-      ierr = VecCreateMPIWithArray(((PetscObject)A)->comm,dof,dof*A->cmap->n,dof*A->cmap->N,NULL,&gvec);CHKERRQ(ierr);
+      ierr = VecCreateMPIWithArray(PetscObjectComm((PetscObject)A),dof,dof*A->cmap->n,dof*A->cmap->N,NULL,&gvec);CHKERRQ(ierr);
 
       /* generate the scatter context */
       ierr = VecScatterCreate(gvec,from,b->w,to,&b->ctx);CHKERRQ(ierr);

@@ -65,7 +65,7 @@ static PetscErrorCode PCSetUp_SACUSP(PC pc)
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)pc->pmat,MATSEQAIJCUSP,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_SUP,"Currently only handles CUSP matrices");
+  if (!flg) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Currently only handles CUSP matrices");
   if (pc->setupcalled != 0) {
     try {
       delete sa->SACUSP;
@@ -154,7 +154,7 @@ static PetscErrorCode PCApply_SACUSP(PC pc,Vec x,Vec y)
   /*how to apply a certain fixed number of iterations?*/
   ierr = PetscObjectTypeCompare((PetscObject)x,VECSEQCUSP,&flg1);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)y,VECSEQCUSP,&flg2);CHKERRQ(ierr);
-  if (!(flg1 && flg2)) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_SUP, "Currently only handles CUSP vectors");
+  if (!(flg1 && flg2)) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP, "Currently only handles CUSP vectors");
   if (!sac->SACUSP) {
     ierr = PCSetUp_SACUSP(pc);CHKERRQ(ierr);
   }

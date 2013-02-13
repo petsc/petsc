@@ -25,7 +25,7 @@ PetscErrorCode  DMCreateMatrix_Sliced(DM dm, MatType mtype,Mat *J)
 
   PetscFunctionBegin;
   bs   = slice->bs;
-  ierr = MatCreate(((PetscObject)dm)->comm,J);CHKERRQ(ierr);
+  ierr = MatCreate(PetscObjectComm((PetscObject)dm),J);CHKERRQ(ierr);
   ierr = MatSetSizes(*J,slice->n*bs,slice->n*bs,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = MatSetBlockSize(*J,bs);CHKERRQ(ierr);
   ierr = MatSetType(*J,mtype);CHKERRQ(ierr);
@@ -243,7 +243,7 @@ static PetscErrorCode  DMCreateGlobalVector_Sliced(DM dm,Vec *gvec)
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidPointer(gvec,2);
   *gvec = 0;
-  ierr  = VecCreateGhostBlock(((PetscObject)dm)->comm,slice->bs,slice->n*slice->bs,PETSC_DETERMINE,slice->Nghosts,slice->ghosts,gvec);CHKERRQ(ierr);
+  ierr  = VecCreateGhostBlock(PetscObjectComm((PetscObject)dm),slice->bs,slice->n*slice->bs,PETSC_DETERMINE,slice->Nghosts,slice->ghosts,gvec);CHKERRQ(ierr);
   ierr  = VecSetDM(*gvec,dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -257,7 +257,7 @@ static PetscErrorCode  DMGlobalToLocalBegin_Sliced(DM da,Vec g,InsertMode mode,V
 
   PetscFunctionBegin;
   ierr = VecGhostIsLocalForm(g,l,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_ARG_WRONG,"Local vector is not local form of global vector");
+  if (!flg) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_WRONG,"Local vector is not local form of global vector");
   ierr = VecGhostUpdateEnd(g,mode,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecGhostUpdateBegin(g,mode,SCATTER_FORWARD);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -272,7 +272,7 @@ static PetscErrorCode  DMGlobalToLocalEnd_Sliced(DM da,Vec g,InsertMode mode,Vec
 
   PetscFunctionBegin;
   ierr = VecGhostIsLocalForm(g,l,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_ARG_WRONG,"Local vector is not local form of global vector");
+  if (!flg) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_WRONG,"Local vector is not local form of global vector");
   ierr = VecGhostUpdateEnd(g,mode,SCATTER_FORWARD);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

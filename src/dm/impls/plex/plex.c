@@ -38,7 +38,7 @@ PetscErrorCode VecView_Plex_Local(Vec v, PetscViewer viewer)
     if (cdof && fdof && vdof) { /* Actually Q2 or some such, but visualize as Q1 */
       ft = (cdof == dim) ? PETSC_VTK_POINT_VECTOR_FIELD : PETSC_VTK_POINT_FIELD;
     } else if (cdof && vdof) {
-      SETERRQ(((PetscObject)viewer)->comm,PETSC_ERR_SUP,"No support for viewing mixed space with dofs at both vertices and cells");
+      SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"No support for viewing mixed space with dofs at both vertices and cells");
     } else if (cdof) {
       /* TODO: This assumption should be removed when there is a way of identifying whether a space is conceptually a
        * vector or just happens to have the same number of dofs as the dimension. */

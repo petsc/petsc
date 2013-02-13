@@ -217,7 +217,7 @@ PetscErrorCode DMGetDMTS(DM dm,DMTS *tsdm)
   *tsdm = (DMTS) dm->dmts;
   if (!*tsdm) {
     ierr = PetscInfo(dm,"Creating new DMTS\n");CHKERRQ(ierr);
-    ierr = DMTSCreate(((PetscObject)dm)->comm,tsdm);CHKERRQ(ierr);
+    ierr = DMTSCreate(PetscObjectComm((PetscObject)dm),tsdm);CHKERRQ(ierr);
     dm->dmts = (PetscObject) *tsdm;
     ierr = DMCoarsenHookAdd(dm,DMCoarsenHook_DMTS,DMRestrictHook_DMTS,NULL);CHKERRQ(ierr);
     ierr = DMSubDomainHookAdd(dm,DMSubDomainHook_DMTS,DMSubDomainRestrictHook_DMTS,NULL);CHKERRQ(ierr);
@@ -254,7 +254,7 @@ PetscErrorCode DMGetDMTSWrite(DM dm,DMTS *tsdm)
   if (sdm->originaldm != dm) {  /* Copy on write */
     DMTS oldsdm = sdm;
     ierr     = PetscInfo(dm,"Copying DMTS due to write\n");CHKERRQ(ierr);
-    ierr     = DMTSCreate(((PetscObject)dm)->comm,&sdm);CHKERRQ(ierr);
+    ierr     = DMTSCreate(PetscObjectComm((PetscObject)dm),&sdm);CHKERRQ(ierr);
     ierr     = DMTSCopy(oldsdm,sdm);CHKERRQ(ierr);
     ierr     = DMTSDestroy((DMTS*)&dm->dmts);CHKERRQ(ierr);
     dm->dmts = (PetscObject) sdm;

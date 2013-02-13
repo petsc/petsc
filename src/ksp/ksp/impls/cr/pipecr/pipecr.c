@@ -55,7 +55,7 @@ PetscErrorCode  KSPSolve_PIPECR(KSP ksp)
 
   PetscFunctionBegin;
   ierr = PCGetDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
-  if (diagonalscale) SETERRQ1(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
+  if (diagonalscale) SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
 
   X = ksp->vec_sol;
   B = ksp->vec_rhs;
@@ -82,7 +82,7 @@ PetscErrorCode  KSPSolve_PIPECR(KSP ksp)
   switch (ksp->normtype) {
   case KSP_NORM_PRECONDITIONED:
     ierr = VecNormBegin(U,NORM_2,&dp);CHKERRQ(ierr);           /*     dp <- u'*u = e'*A'*B'*B*A'*e'     */
-    ierr = PetscCommSplitReductionBegin(((PetscObject)U)->comm);CHKERRQ(ierr);
+    ierr = PetscCommSplitReductionBegin(PetscObjectComm((PetscObject)U));CHKERRQ(ierr);
     ierr = KSP_MatMult(ksp,Amat,U,W);CHKERRQ(ierr);            /*     w <- Au   */
     ierr = VecNormEnd(U,NORM_2,&dp);CHKERRQ(ierr);
     break;
@@ -90,7 +90,7 @@ PetscErrorCode  KSPSolve_PIPECR(KSP ksp)
     ierr = KSP_MatMult(ksp,Amat,U,W);CHKERRQ(ierr);
     dp   = 0.0;
     break;
-  default: SETERRQ1(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"%s",KSPNormTypes[ksp->normtype]);
+  default: SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"%s",KSPNormTypes[ksp->normtype]);
   }
   KSPLogResidualHistory(ksp,dp);
   ierr       = KSPMonitor(ksp,0,dp);CHKERRQ(ierr);
@@ -107,7 +107,7 @@ PetscErrorCode  KSPSolve_PIPECR(KSP ksp)
     }
     ierr = VecDotBegin(W,U,&gamma);CHKERRQ(ierr);
     ierr = VecDotBegin(M,W,&delta);CHKERRQ(ierr);
-    ierr = PetscCommSplitReductionBegin(((PetscObject)U)->comm);CHKERRQ(ierr);
+    ierr = PetscCommSplitReductionBegin(PetscObjectComm((PetscObject)U));CHKERRQ(ierr);
 
     ierr = KSP_MatMult(ksp,Amat,M,N);CHKERRQ(ierr);       /*   n <- Am       */
 

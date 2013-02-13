@@ -2398,6 +2398,8 @@ M*/
 
 M*/
 
+PETSC_EXTERN MPI_Comm PetscObjectComm(PetscObject);
+
 /*S
    PetscSubcomm - Context of MPI subcommunicators, used by PCREDUNDANT
 

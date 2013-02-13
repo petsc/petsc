@@ -21,7 +21,7 @@ PetscErrorCode  MatConvert_MPIAIJ_MPISBAIJ(Mat A, MatType newtype,MatReuse reuse
   const PetscInt    *cwork;
 
   PetscFunctionBegin;
-  if (!A->symmetric) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_USER,"Matrix must be symmetric. Call MatSetOption(mat,MAT_SYMMETRIC,PETSC_TRUE)");
+  if (!A->symmetric) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_USER,"Matrix must be symmetric. Call MatSetOption(mat,MAT_SYMMETRIC,PETSC_TRUE)");
   ierr = MatGetSize(A,&m,&n);CHKERRQ(ierr);
   ierr = MatGetLocalSize(A,&lm,&ln);CHKERRQ(ierr);
   ierr = PetscMalloc2(lm,PetscInt,&d_nnz,lm,PetscInt,&o_nnz);CHKERRQ(ierr);
@@ -32,7 +32,7 @@ PetscErrorCode  MatConvert_MPIAIJ_MPISBAIJ(Mat A, MatType newtype,MatReuse reuse
     o_nnz[i] = Ba->i[i+1] - Ba->i[i];
   }
 
-  ierr = MatCreate(((PetscObject)A)->comm,&M);CHKERRQ(ierr);
+  ierr = MatCreate(PetscObjectComm((PetscObject)A),&M);CHKERRQ(ierr);
   ierr = MatSetSizes(M,lm,ln,m,n);CHKERRQ(ierr);
   ierr = MatSetType(M,MATMPISBAIJ);CHKERRQ(ierr);
   ierr = MatSeqSBAIJSetPreallocation(M,1,0,d_nnz);CHKERRQ(ierr);
@@ -88,7 +88,7 @@ PetscErrorCode MatConvert_MPIBAIJ_MPISBAIJ(Mat A, MatType newtype,MatReuse reuse
     o_nnz[i] = Ba->i[i+1] - Ba->i[i];
   }
 
-  ierr = MatCreate(((PetscObject)A)->comm,&M);CHKERRQ(ierr);
+  ierr = MatCreate(PetscObjectComm((PetscObject)A),&M);CHKERRQ(ierr);
   ierr = MatSetSizes(M,lm,ln,m,n);CHKERRQ(ierr);
   ierr = MatSetType(M,MATMPISBAIJ);CHKERRQ(ierr);
   ierr = MatSeqSBAIJSetPreallocation(M,bs,0,d_nnz);CHKERRQ(ierr);

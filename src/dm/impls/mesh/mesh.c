@@ -204,8 +204,8 @@ PetscErrorCode DMMeshView_Sieve(const ALE::Obj<PETSC_MESH_TYPE>& mesh, PetscView
     ierr = DMMeshView_Sieve_Ascii(mesh, viewer);CHKERRQ(ierr);
   } else if (isbinary) {
     ierr = DMMeshView_Sieve_Binary(mesh, viewer);CHKERRQ(ierr);
-  } else if (isdraw) SETERRQ(((PetscObject)viewer)->comm,PETSC_ERR_SUP, "Draw viewer not implemented for DMMesh");
-  else SETERRQ1(((PetscObject)viewer)->comm,PETSC_ERR_SUP,"Viewer type %s not supported by this mesh object", ((PetscObject)viewer)->type_name);
+  } else if (isdraw) SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP, "Draw viewer not implemented for DMMesh");
+  else SETERRQ1(PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Viewer type %s not supported by this mesh object", ((PetscObject)viewer)->type_name);
   PetscFunctionReturn(0);
 }
 
@@ -2134,7 +2134,7 @@ PetscErrorCode DMMeshAssembleVector(Vec b, DM dm, SectionReal section, PetscInt 
   //firstElement = elementBundle->getLocalSizes()[bundle->getCommRank()];
   firstElement = 0;
 #if defined(PETSC_USE_COMPLEX)
-  SETERRQ(((PetscObject)mesh)->comm,PETSC_ERR_SUP, "SectionReal does not support complex update");
+  SETERRQ(PetscObjectComm((PetscObject)mesh),PETSC_ERR_SUP, "SectionReal does not support complex update");
 #else
   if (mode == INSERT_VALUES) {
     m->update(s, PETSC_MESH_TYPE::point_type(e + firstElement), v);

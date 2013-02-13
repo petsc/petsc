@@ -335,7 +335,7 @@ PetscErrorCode PetscShellCall_SO(PetscShell shell, const char *path, const char 
     /* HACK: is 'toupper' part of the C standard? Looks like starting with C89. */
     msgfunc[namelen] = toupper(msgfunc[namelen]);
   }
-  ierr = PetscDLLibrarySym(((PetscObject)shell)->comm, &PetscShellDLLibrariesLoaded, path, msgfunc, (void **)(&msg));CHKERRQ(ierr);
+  ierr = PetscDLLibrarySym(PetscObjectComm((PetscObject)shell), &PetscShellDLLibrariesLoaded, path, msgfunc, (void **)(&msg));CHKERRQ(ierr);
   ierr = PetscFree(msgfunc);CHKERRQ(ierr);
   if (msg) {
     ierr = (*msg)(shell);CHKERRQ(ierr);
@@ -351,7 +351,7 @@ PetscErrorCode PetscShellCall_SO(PetscShell shell, const char *path, const char 
   } else {
     ierr = PetscStrcat(callfunc, "call");CHKERRQ(ierr);
   }
-  ierr = PetscDLLibrarySym(((PetscObject)shell)->comm, &PetscShellDLLibrariesLoaded, path, callfunc, (void**)(&call));CHKERRQ(ierr);
+  ierr = PetscDLLibrarySym(PetscObjectComm((PetscObject)shell), &PetscShellDLLibrariesLoaded, path, callfunc, (void**)(&call));CHKERRQ(ierr);
   ierr = PetscFree(callfunc);CHKERRQ(ierr);
   if (call) {
     ierr = (*call)(shell, message);CHKERRQ(ierr);
@@ -371,12 +371,12 @@ PetscErrorCode PetscShellCall_NONE(PetscShell shell, const char *message)
   PetscErrorCode            ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListFind(((PetscObject)shell)->comm,((PetscObject)shell)->qlist,  message,PETSC_FALSE, (QueryFunction*)(&msg));CHKERRQ(ierr);
+  ierr = PetscFunctionListFind(PetscObjectComm((PetscObject)shell),((PetscObject)shell)->qlist,  message,PETSC_FALSE, (QueryFunction*)(&msg));CHKERRQ(ierr);
   if (msg) {
     ierr = (*msg)(shell);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
-  ierr = PetscFunctionListFind(((PetscObject)shell)->comm,((PetscObject)shell)->qlist,  "call",PETSC_FALSE, (QueryFunction*)(&call));CHKERRQ(ierr);
+  ierr = PetscFunctionListFind(PetscObjectComm((PetscObject)shell),((PetscObject)shell)->qlist,  "call",PETSC_FALSE, (QueryFunction*)(&call));CHKERRQ(ierr);
   if (call) {
     ierr = (*call)(shell, message);CHKERRQ(ierr);
     PetscFunctionReturn(0);
@@ -635,7 +635,7 @@ PetscErrorCode PetscShellView_Private(PetscShell shell, const char *key, PetscIn
   PetscFunctionBegin;
   PetscValidHeaderSpecific(shell,PETSC_SHELL_CLASSID,1);
   if (!viewer) {
-    ierr = PetscViewerASCIIGetStdout(((PetscObject)shell)->comm,&viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)shell),&viewer);CHKERRQ(ierr);
   }
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
   PetscCheckSameComm(shell,1,viewer,2);
@@ -808,7 +808,7 @@ PetscErrorCode  PetscShellRegisterKey_Private(PetscShell shell, const char key[]
   /* No such key found. */
   if (!component) {
     /* Create a new component for this key. */
-    ierr = PetscShellCreate(((PetscObject)shell)->comm, &component);CHKERRQ(ierr);
+    ierr = PetscShellCreate(PetscObjectComm((PetscObject)shell), &component);CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject)component, key);CHKERRQ(ierr);
   }
   if (shell->N >= shell->maxN) {

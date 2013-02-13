@@ -12,7 +12,7 @@ static PetscErrorCode DMDAVTKWriteAll_VTS(DM da,PetscViewer viewer)
 #else
   const char precision[] = "UnknownPrecision";
 #endif
-  MPI_Comm                 comm = ((PetscObject)da)->comm;
+  MPI_Comm                 comm;
   PetscViewer_VTK          *vtk = (PetscViewer_VTK*)viewer->data;
   PetscViewerVTKObjectLink link;
   FILE                     *fp;
@@ -28,7 +28,7 @@ static PetscErrorCode DMDAVTKWriteAll_VTS(DM da,PetscViewer viewer)
 #if defined(PETSC_USE_COMPLEX)
   SETERRQ(comm,PETSC_ERR_SUP,"Complex values not supported");
 #endif
-
+  ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,&dim, &mx,&my,&mz, 0,0,0, &bs,0,0,0,0,0);CHKERRQ(ierr);
@@ -79,7 +79,7 @@ static PetscErrorCode DMDAVTKWriteAll_VTS(DM da,PetscViewer viewer)
     case 3:
       ierr = PetscFPrintf(comm,fp,"    <Piece Extent=\"%D %D %D %D %D %D\">\n",xs,xs+xm-1,ys,ys+ym-1,zs,zs+zm-1);CHKERRQ(ierr);
       break;
-    default: SETERRQ1(((PetscObject)da)->comm,PETSC_ERR_SUP,"No support for dimension %D",dim);
+    default: SETERRQ1(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"No support for dimension %D",dim);
     }
 #endif
     ierr     = PetscFPrintf(comm,fp,"    <Piece Extent=\"%D %D %D %D %D %D\">\n",xs,xs+xm-1,ys,ys+ym-1,zs,zs+zm-1);CHKERRQ(ierr);
@@ -250,12 +250,12 @@ PetscErrorCode DMDAVTKWriteAll(PetscObject odm,PetscViewer viewer)
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERVTK,&isvtk);CHKERRQ(ierr);
-  if (!isvtk) SETERRQ1(((PetscObject)viewer)->comm,PETSC_ERR_ARG_INCOMP,"Cannot use viewer type %s",((PetscObject)viewer)->type_name);
+  if (!isvtk) SETERRQ1(PetscObjectComm((PetscObject)viewer),PETSC_ERR_ARG_INCOMP,"Cannot use viewer type %s",((PetscObject)viewer)->type_name);
   switch (viewer->format) {
   case PETSC_VIEWER_VTK_VTS:
     ierr = DMDAVTKWriteAll_VTS(dm,viewer);CHKERRQ(ierr);
     break;
-  default: SETERRQ1(((PetscObject)dm)->comm,PETSC_ERR_SUP,"No support for format '%s'",PetscViewerFormats[viewer->format]);
+  default: SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"No support for format '%s'",PetscViewerFormats[viewer->format]);
   }
   PetscFunctionReturn(0);
 }

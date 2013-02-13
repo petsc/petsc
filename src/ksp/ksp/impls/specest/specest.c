@@ -216,8 +216,8 @@ PetscErrorCode  KSPCreate_SpecEst(KSP ksp)
   spec->maxfactor  = 1.1;
   spec->richfactor = 1.0;
 
-  ierr = KSPCreate(((PetscObject)ksp)->comm,&spec->kspest);CHKERRQ(ierr);
-  ierr = KSPCreate(((PetscObject)ksp)->comm,&spec->kspcheap);CHKERRQ(ierr);
+  ierr = KSPCreate(PetscObjectComm((PetscObject)ksp),&spec->kspest);CHKERRQ(ierr);
+  ierr = KSPCreate(PetscObjectComm((PetscObject)ksp),&spec->kspcheap);CHKERRQ(ierr);
 
   /* Hold an empty PC */
   ierr = KSPGetPC(spec->kspest,&spec->pcnone);CHKERRQ(ierr);

@@ -48,7 +48,7 @@ int main(int argc,char **argv)
     PetscReal ynorm;
     PetscInt  j;
     ierr = VecNormBegin(y,NORM_2,&ynorm);CHKERRQ(ierr);
-    ierr = PetscCommSplitReductionBegin(((PetscObject)y)->comm);CHKERRQ(ierr);
+    ierr = PetscCommSplitReductionBegin(PetscObjectComm((PetscObject)y));CHKERRQ(ierr);
     for (j=0; j<3; j++) {
       ierr = VecScatterBegin(ctx,x,y,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
       ierr = VecScatterEnd(ctx,x,y,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);

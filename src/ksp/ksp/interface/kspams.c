@@ -36,7 +36,7 @@ PetscErrorCode KSPMonitorAMSCreate(KSP ksp,const char *amscommname,void **ctx)
   PetscFunctionBegin;
   ierr = PetscNewLog(ksp,KSPMonitor_AMS,&mon);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_AMS)
-  ierr      = PetscViewerAMSOpen(((PetscObject)ksp)->comm,amscommname,&mon->viewer);CHKERRQ(ierr);
+  ierr      = PetscViewerAMSOpen(PetscObjectComm((PetscObject)ksp),amscommname,&mon->viewer);CHKERRQ(ierr);
   mon->amem = -1;
 #endif
   *ctx = (void*)mon;
@@ -135,7 +135,7 @@ PetscErrorCode KSPMonitorAMS(KSP ksp,PetscInt n,PetscReal rnorm,void *ctx)
   PetscFunctionReturn(0);
 #else
   PetscFunctionBegin;
-  SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"Missing package AMS");
+  SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Missing package AMS");
   PetscFunctionReturn(0);
 #endif
 }

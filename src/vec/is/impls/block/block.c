@@ -100,7 +100,7 @@ PetscErrorCode ISInvertPermutation_Block(IS is,PetscInt nlocal,IS *isout)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(((PetscObject)is)->comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)is),&size);CHKERRQ(ierr);
   if (size == 1) {
     ierr = PetscMalloc(n*sizeof(PetscInt),&ii);CHKERRQ(ierr);
     for (i=0; i<n; i++) ii[idx[i]] = i;
@@ -171,7 +171,7 @@ PetscErrorCode ISDuplicate_Block(IS is,IS *newIS)
   IS_Block       *sub = (IS_Block*)is->data;
 
   PetscFunctionBegin;
-  ierr = ISCreateBlock(((PetscObject)is)->comm,is->bs,sub->n,sub->idx,PETSC_COPY_VALUES,newIS);CHKERRQ(ierr);
+  ierr = ISCreateBlock(PetscObjectComm((PetscObject)is),is->bs,sub->n,sub->idx,PETSC_COPY_VALUES,newIS);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -227,7 +227,7 @@ static PetscErrorCode ISOnComm_Block(IS is,MPI_Comm comm,PetscCopyMode mode,IS *
 static PetscErrorCode ISSetBlockSize_Block(IS is,PetscInt bs)
 {
   PetscFunctionBegin;
-  if (is->bs != bs) SETERRQ2(((PetscObject)is)->comm,PETSC_ERR_ARG_SIZ,"Cannot change block size for ISBLOCK from %D to %D",is->bs,bs);
+  if (is->bs != bs) SETERRQ2(PetscObjectComm((PetscObject)is),PETSC_ERR_ARG_SIZ,"Cannot change block size for ISBLOCK from %D to %D",is->bs,bs);
   PetscFunctionReturn(0);
 }
 
@@ -303,7 +303,7 @@ PetscErrorCode  ISBlockSetIndices_Block(IS is,PetscInt bs,PetscInt n,const Petsc
   PetscFunctionBegin;
   ierr = PetscFree(sub->idx);CHKERRQ(ierr);
   sub->n = n;
-  ierr = MPI_Allreduce(&n,&sub->N,1,MPIU_INT,MPI_SUM,((PetscObject)is)->comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&n,&sub->N,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)is));CHKERRQ(ierr);
   for (i=1; i<n; i++) {
     if (idx[i] < idx[i-1]) {sorted = PETSC_FALSE; break;}
   }
@@ -318,7 +318,7 @@ PetscErrorCode  ISBlockSetIndices_Block(IS is,PetscInt bs,PetscInt n,const Petsc
     ierr = PetscLogObjectMemory(is,n*sizeof(PetscInt));CHKERRQ(ierr);
     ierr = PetscMemcpy(sub->idx,idx,n*sizeof(PetscInt));CHKERRQ(ierr);
   } else if (mode == PETSC_OWN_POINTER) sub->idx = (PetscInt*) idx;
-  else SETERRQ(((PetscObject)is)->comm,PETSC_ERR_SUP,"Only supports PETSC_COPY_VALUES and PETSC_OWN_POINTER");
+  else SETERRQ(PetscObjectComm((PetscObject)is),PETSC_ERR_SUP,"Only supports PETSC_COPY_VALUES and PETSC_OWN_POINTER");
 
   sub->sorted = sorted;
   is->bs      = bs;

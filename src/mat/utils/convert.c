@@ -24,7 +24,7 @@ PetscErrorCode MatConvert_Basic(Mat mat, MatType newtype,MatReuse reuse,Mat *new
 
   if (ln == n) ln = PETSC_DECIDE; /* try to preserve column ownership */
 
-  ierr = MatCreate(((PetscObject)mat)->comm,&M);CHKERRQ(ierr);
+  ierr = MatCreate(PetscObjectComm((PetscObject)mat),&M);CHKERRQ(ierr);
   ierr = MatSetSizes(M,lm,ln,m,n);CHKERRQ(ierr);
   ierr = MatSetBlockSize(M,mat->rmap->bs);CHKERRQ(ierr);
   ierr = MatSetType(M,newtype);CHKERRQ(ierr);

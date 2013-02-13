@@ -43,7 +43,7 @@ typedef struct {
 /*  This is for multiple processors per block */
 typedef struct {
   PC           pc;                 /* preconditioner used on each subcommunicator */
-  Vec          xsub,ysub;          /* vectors of a subcommunicator to hold parallel vectors of ((PetscObject)pc)->comm */
+  Vec          xsub,ysub;          /* vectors of a subcommunicator to hold parallel vectors of PetscObjectComm((PetscObject)pc) */
   Mat          submats;            /* matrix and optional preconditioner matrix belong to a subcommunicator */
   PetscSubcomm psubcomm;
 } PC_BJacobi_Multiproc;

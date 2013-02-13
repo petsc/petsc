@@ -83,7 +83,7 @@ PetscErrorCode SectionRealView(SectionReal section, PetscViewer viewer)
   PetscValidHeaderSpecific(section, SECTIONREAL_CLASSID, 1);
   PetscValidType(section, 1);
   if (!viewer) {
-    ierr = PetscViewerASCIIGetStdout(((PetscObject)section)->comm,&viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)section),&viewer);CHKERRQ(ierr);
   }
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
   PetscCheckSameComm(section, 1, viewer, 2);
@@ -1271,7 +1271,7 @@ PetscErrorCode SectionIntView(SectionInt section, PetscViewer viewer)
   PetscValidHeaderSpecific(section, SECTIONINT_CLASSID, 1);
   PetscValidType(section, 1);
   if (!viewer) {
-    ierr = PetscViewerASCIIGetStdout(((PetscObject)section)->comm,&viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)section),&viewer);CHKERRQ(ierr);
   }
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
   PetscCheckSameComm(section, 1, viewer, 2);

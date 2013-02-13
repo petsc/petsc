@@ -213,7 +213,7 @@ PetscErrorCode  MatSchurComplementSet(Mat N,Mat A00,Mat Ap00,Mat A01,Mat A10,Mat
   Mat_SchurComplement *Na = (Mat_SchurComplement*)N->data;
 
   PetscFunctionBegin;
-  if (N->assembled) SETERRQ(((PetscObject)N)->comm,PETSC_ERR_ARG_WRONGSTATE,"Use MatSchurComplementUpdate() for already used matrix");
+  if (N->assembled) SETERRQ(PetscObjectComm((PetscObject)N),PETSC_ERR_ARG_WRONGSTATE,"Use MatSchurComplementUpdate() for already used matrix");
   PetscValidHeaderSpecific(A00,MAT_CLASSID,1);
   PetscValidHeaderSpecific(Ap00,MAT_CLASSID,2);
   PetscValidHeaderSpecific(A01,MAT_CLASSID,3);
@@ -353,7 +353,7 @@ PetscErrorCode  MatSchurComplementUpdate(Mat N,Mat A,Mat Ap,Mat B,Mat C,Mat D,Ma
   Mat_SchurComplement *Na = (Mat_SchurComplement*)N->data;
 
   PetscFunctionBegin;
-  if (!N->assembled) SETERRQ(((PetscObject)N)->comm,PETSC_ERR_ARG_WRONGSTATE,"Use MatSchurComplementSet() for new matrix");
+  if (!N->assembled) SETERRQ(PetscObjectComm((PetscObject)N),PETSC_ERR_ARG_WRONGSTATE,"Use MatSchurComplementSet() for new matrix");
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   PetscValidHeaderSpecific(B,MAT_CLASSID,2);
   PetscValidHeaderSpecific(C,MAT_CLASSID,3);
@@ -457,14 +457,14 @@ PetscErrorCode MatGetSchurComplement_Basic(Mat mat,IS isrow0,IS iscol0,IS isrow1
   if (mreuse == MAT_REUSE_MATRIX) PetscValidHeaderSpecific(*newmat,MAT_CLASSID,7);
   if (preuse == MAT_REUSE_MATRIX) PetscValidHeaderSpecific(*newpmat,MAT_CLASSID,9);
   PetscValidType(mat,1);
-  if (mat->factortype) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
+  if (mat->factortype) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
 
   if (mreuse != MAT_IGNORE_MATRIX) {
     /* Use MatSchurComplement */
     if (mreuse == MAT_REUSE_MATRIX) {
       ierr = MatSchurComplementGetSubmatrices(*newmat,&A,&Ap,&B,&C,&D);CHKERRQ(ierr);
-      if (!A || !Ap || !B || !C) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_ARG_WRONGSTATE,"Attempting to reuse matrix but Schur complement matrices unset");
-      if (A != Ap) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_ARG_WRONGSTATE,"Preconditioning matrix does not match operator");
+      if (!A || !Ap || !B || !C) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Attempting to reuse matrix but Schur complement matrices unset");
+      if (A != Ap) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Preconditioning matrix does not match operator");
       ierr = MatDestroy(&Ap);CHKERRQ(ierr); /* get rid of extra reference */
     }
     ierr = MatGetSubMatrix(mat,isrow0,iscol0,mreuse,&A);CHKERRQ(ierr);
@@ -479,7 +479,7 @@ PetscErrorCode MatGetSchurComplement_Basic(Mat mat,IS isrow0,IS iscol0,IS isrow1
       ierr = MatSchurComplementUpdate(*newmat,A,A,B,C,D,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
       break;
     default:
-      SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_SUP,"Unrecognized value of mreuse");
+      SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Unrecognized value of mreuse");
     }
   }
   if (preuse != MAT_IGNORE_MATRIX) {
@@ -501,7 +501,7 @@ PetscErrorCode MatGetSchurComplement_Basic(Mat mat,IS isrow0,IS iscol0,IS isrow1
     ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
     /* We need to compute S = D - C inv(diag(A)) B.  For row-oriented formats, it is easy to scale the rows of B and
      * for column-oriented formats the columns of C can be scaled.  Would skip creating a silly diagonal matrix. */
-    ierr = MatCreate(((PetscObject)A)->comm,&Ad);CHKERRQ(ierr);
+    ierr = MatCreate(PetscObjectComm((PetscObject)A),&Ad);CHKERRQ(ierr);
     ierr = MatSetSizes(Ad,m,n,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
     ierr = MatSetOptionsPrefix(Ad,((PetscObject)mat)->prefix);CHKERRQ(ierr);
     ierr = MatAppendOptionsPrefix(Ad,"diag_");CHKERRQ(ierr);
@@ -582,7 +582,7 @@ PetscErrorCode  MatGetSchurComplement(Mat mat,IS isrow0,IS iscol0,IS isrow1,IS i
   if (mreuse == MAT_REUSE_MATRIX) PetscValidHeaderSpecific(*newmat,MAT_CLASSID,7);
   if (preuse == MAT_REUSE_MATRIX) PetscValidHeaderSpecific(*newpmat,MAT_CLASSID,9);
   PetscValidType(mat,1);
-  if (mat->factortype) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
+  if (mat->factortype) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
 
   ierr = PetscObjectQueryFunction((PetscObject)mat,"MatGetSchurComplement_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
@@ -614,7 +614,7 @@ PetscErrorCode  MatCreate_SchurComplement(Mat N)
   N->assembled           = PETSC_FALSE;
   N->preallocated        = PETSC_FALSE;
 
-  ierr = KSPCreate(((PetscObject)N)->comm,&Na->ksp);CHKERRQ(ierr);
+  ierr = KSPCreate(PetscObjectComm((PetscObject)N),&Na->ksp);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)N,MATSCHURCOMPLEMENT);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

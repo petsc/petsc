@@ -31,7 +31,7 @@ static PetscErrorCode PCApply_Composite_Multiplicative(PC pc,Vec x,Vec y)
   Mat              mat  = pc->pmat;
 
   PetscFunctionBegin;
-  if (!next) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONGSTATE,"No composite preconditioners supplied via PCCompositeAddPC() or -pc_composite_pcs");
+  if (!next) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"No composite preconditioners supplied via PCCompositeAddPC() or -pc_composite_pcs");
   if (next->next && !jac->work2) { /* allocate second work vector */
     ierr = VecDuplicate(jac->work1,&jac->work2);CHKERRQ(ierr);
   }
@@ -68,7 +68,7 @@ static PetscErrorCode PCApplyTranspose_Composite_Multiplicative(PC pc,Vec x,Vec 
   Mat              mat  = pc->pmat;
 
   PetscFunctionBegin;
-  if (!next) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONGSTATE,"No composite preconditioners supplied via PCCompositeAddPC() or -pc_composite_pcs");
+  if (!next) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"No composite preconditioners supplied via PCCompositeAddPC() or -pc_composite_pcs");
   if (next->next && !jac->work2) { /* allocate second work vector */
     ierr = VecDuplicate(jac->work1,&jac->work2);CHKERRQ(ierr);
   }
@@ -114,8 +114,8 @@ static PetscErrorCode PCApply_Composite_Special(PC pc,Vec x,Vec y)
   PC_CompositeLink next = jac->head;
 
   PetscFunctionBegin;
-  if (!next) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONGSTATE,"No composite preconditioners supplied via PCCompositeAddPC() or -pc_composite_pcs");
-  if (!next->next || next->next->next) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONGSTATE,"Special composite preconditioners requires exactly two PCs");
+  if (!next) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"No composite preconditioners supplied via PCCompositeAddPC() or -pc_composite_pcs");
+  if (!next->next || next->next->next) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Special composite preconditioners requires exactly two PCs");
 
   ierr = PCApply(next->pc,x,jac->work1);CHKERRQ(ierr);
   ierr = PCApply(next->next->pc,jac->work1,y);CHKERRQ(ierr);
@@ -131,7 +131,7 @@ static PetscErrorCode PCApply_Composite_Additive(PC pc,Vec x,Vec y)
   PC_CompositeLink next = jac->head;
 
   PetscFunctionBegin;
-  if (!next) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONGSTATE,"No composite preconditioners supplied via PCCompositeAddPC() or -pc_composite_pcs");
+  if (!next) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"No composite preconditioners supplied via PCCompositeAddPC() or -pc_composite_pcs");
   ierr = PCApply(next->pc,x,y);CHKERRQ(ierr);
   while (next->next) {
     next = next->next;
@@ -151,7 +151,7 @@ static PetscErrorCode PCApplyTranspose_Composite_Additive(PC pc,Vec x,Vec y)
   PC_CompositeLink next = jac->head;
 
   PetscFunctionBegin;
-  if (!next) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONGSTATE,"No composite preconditioners supplied via PCCompositeAddPC() or -pc_composite_pcs");
+  if (!next) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"No composite preconditioners supplied via PCCompositeAddPC() or -pc_composite_pcs");
   ierr = PCApplyTranspose(next->pc,x,y);CHKERRQ(ierr);
   while (next->next) {
     next = next->next;
@@ -320,7 +320,7 @@ PetscErrorCode  PCCompositeSetType_Composite(PC pc,PCCompositeType type)
   } else if (type ==  PC_COMPOSITE_SPECIAL) {
     pc->ops->apply          = PCApply_Composite_Special;
     pc->ops->applytranspose = NULL;
-  } else SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONG,"Unkown composite preconditioner type");
+  } else SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONG,"Unkown composite preconditioner type");
   jac->type = type;
   PetscFunctionReturn(0);
 }
@@ -341,7 +341,7 @@ PetscErrorCode  PCCompositeAddPC_Composite(PC pc,PCType type)
   PetscFunctionBegin;
   ierr        = PetscNewLog(pc,struct _PC_CompositeLink,&ilink);CHKERRQ(ierr);
   ilink->next = 0;
-  ierr        = PCCreate(((PetscObject)pc)->comm,&ilink->pc);CHKERRQ(ierr);
+  ierr        = PCCreate(PetscObjectComm((PetscObject)pc),&ilink->pc);CHKERRQ(ierr);
   ierr        = PetscLogObjectParent((PetscObject)pc,(PetscObject)ilink->pc);CHKERRQ(ierr);
 
   jac  = (PC_Composite*)pc->data;
@@ -381,7 +381,7 @@ PetscErrorCode  PCCompositeGetPC_Composite(PC pc,PetscInt n,PC *subpc)
   jac  = (PC_Composite*)pc->data;
   next = jac->head;
   for (i=0; i<n; i++) {
-    if (!next->next) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_INCOMP,"Not enough PCs in composite preconditioner");
+    if (!next->next) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_INCOMP,"Not enough PCs in composite preconditioner");
     next = next->next;
   }
   *subpc = next->pc;

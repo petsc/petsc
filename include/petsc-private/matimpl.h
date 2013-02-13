@@ -584,7 +584,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck_none(Mat mat,const MatFactorInf
 
     ierr = PetscOptionsGetBool(NULL,"-mat_dump",&flg,NULL);CHKERRQ(ierr);
     if (flg) {
-      ierr = MatView(mat,PETSC_VIEWER_BINARY_(((PetscObject)mat)->comm));CHKERRQ(ierr);
+      ierr = MatView(mat,PETSC_VIEWER_BINARY_(PetscObjectComm((PetscObject)mat)));CHKERRQ(ierr);
     }
     SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %G tolerance %G",row,PetscAbsScalar(sctx->pv),_zero);
   }

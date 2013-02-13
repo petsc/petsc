@@ -179,9 +179,10 @@ PetscErrorCode MatMult_MPIFFTW(Mat A,Vec x,Vec y)
   Mat_FFTW       *fftw = (Mat_FFTW*)fft->data;
   PetscScalar    *x_array,*y_array;
   PetscInt       ndim=fft->ndim,*dim=fft->dim;
-  MPI_Comm       comm=((PetscObject)A)->comm;
+  MPI_Comm       comm;
 
   PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
   ierr = VecGetArray(x,&x_array);CHKERRQ(ierr);
   ierr = VecGetArray(y,&y_array);CHKERRQ(ierr);
   if (!fftw->p_forward) { /* create a plan, then excute it */
@@ -249,9 +250,10 @@ PetscErrorCode MatMultTranspose_MPIFFTW(Mat A,Vec x,Vec y)
   Mat_FFTW       *fftw = (Mat_FFTW*)fft->data;
   PetscScalar    *x_array,*y_array;
   PetscInt       ndim=fft->ndim,*dim=fft->dim;
-  MPI_Comm       comm=((PetscObject)A)->comm;
+  MPI_Comm       comm;
 
   PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
   ierr = VecGetArray(x,&x_array);CHKERRQ(ierr);
   ierr = VecGetArray(y,&y_array);CHKERRQ(ierr);
   if (!fftw->p_backward) { /* create a plan, then excute it */
@@ -382,7 +384,7 @@ PetscErrorCode  MatGetVecsFFTW_FFTW(Mat A,Vec *fin,Vec *fout,Vec *bout)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size,rank;
-  MPI_Comm       comm  = ((PetscObject)A)->comm;
+  MPI_Comm       comm;
   Mat_FFT        *fft  = (Mat_FFT*)A->data;
   Mat_FFTW       *fftw = (Mat_FFTW*)fft->data;
   PetscInt       N     = fft->N;
@@ -391,6 +393,7 @@ PetscErrorCode  MatGetVecsFFTW_FFTW(Mat A,Vec *fin,Vec *fout,Vec *bout)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   PetscValidType(A,1);
+  ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
 
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
@@ -632,7 +635,7 @@ EXTERN_C_BEGIN
 PetscErrorCode VecScatterPetscToFFTW_FFTW(Mat A,Vec x,Vec y)
 {
   PetscErrorCode ierr;
-  MPI_Comm       comm  =((PetscObject)A)->comm;
+  MPI_Comm       comm;
   Mat_FFT        *fft  = (Mat_FFT*)A->data;
   Mat_FFTW       *fftw = (Mat_FFTW*)fft->data;
   PetscInt       N     =fft->N;
@@ -644,13 +647,14 @@ PetscErrorCode VecScatterPetscToFFTW_FFTW(Mat A,Vec x,Vec y)
   VecScatter     vecscat;
   IS             list1,list2;
 #if !defined(PETSC_USE_COMPLEX)
-  PetscInt  i,j,k,partial_dim;
-  PetscInt  *indx1, *indx2, tempindx, tempindx1;
-  PetscInt  N1, n1,NM;
-  ptrdiff_t temp;
+  PetscInt       i,j,k,partial_dim;
+  PetscInt       *indx1, *indx2, tempindx, tempindx1;
+  PetscInt       N1, n1,NM;
+  ptrdiff_t      temp;
 #endif
 
   PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(y,&low,NULL);
@@ -870,7 +874,7 @@ EXTERN_C_BEGIN
 PetscErrorCode VecScatterFFTWToPetsc_FFTW(Mat A,Vec x,Vec y)
 {
   PetscErrorCode ierr;
-  MPI_Comm       comm  = ((PetscObject)A)->comm;
+  MPI_Comm       comm;
   Mat_FFT        *fft  = (Mat_FFT*)A->data;
   Mat_FFTW       *fftw = (Mat_FFTW*)fft->data;
   PetscInt       N     = fft->N;
@@ -889,6 +893,7 @@ PetscErrorCode VecScatterFFTWToPetsc_FFTW(Mat A,Vec x,Vec y)
 #endif
 
   PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(x,&low,NULL);CHKERRQ(ierr);
@@ -1086,7 +1091,7 @@ EXTERN_C_BEGIN
 PetscErrorCode MatCreate_FFTW(Mat A)
 {
   PetscErrorCode ierr;
-  MPI_Comm       comm=((PetscObject)A)->comm;
+  MPI_Comm       comm;
   Mat_FFT        *fft=(Mat_FFT*)A->data;
   Mat_FFTW       *fftw;
   PetscInt       n         =fft->n,N=fft->N,ndim=fft->ndim,*dim = fft->dim;
@@ -1104,6 +1109,7 @@ PetscErrorCode MatCreate_FFTW(Mat A)
 #endif
 
   PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
 
@@ -1229,7 +1235,7 @@ PetscErrorCode MatCreate_FFTW(Mat A)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"VecScatterFFTWToPetsc_C","VecScatterFFTWToPetsc_FFTW",VecScatterFFTWToPetsc_FFTW);CHKERRQ(ierr);
 
   /* get runtime options */
-  ierr = PetscOptionsBegin(((PetscObject)A)->comm,((PetscObject)A)->prefix,"FFTW Options","Mat");CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)A),((PetscObject)A)->prefix,"FFTW Options","Mat");CHKERRQ(ierr);
   ierr = PetscOptionsEList("-mat_fftw_plannerflags","Planner Flags","None",p_flags,4,p_flags[0],&p_flag,&flg);CHKERRQ(ierr);
   if (flg) fftw->p_flag = (unsigned)p_flag;
   ierr = PetscOptionsEnd();CHKERRQ(ierr);

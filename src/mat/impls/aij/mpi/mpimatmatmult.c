@@ -180,7 +180,7 @@ PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
 PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
 {
   PetscErrorCode     ierr;
-  MPI_Comm           comm=((PetscObject)A)->comm;
+  MPI_Comm           comm;
   Mat                Cmpi;
   Mat_PtAPMPI        *ptap;
   PetscFreeSpaceList free_space=NULL,current_space=NULL;
@@ -197,6 +197,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *
   PetscInt           nlnk_max,armax,prmax;
 
   PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
   if (A->cmap->rstart != P->rmap->rstart || A->cmap->rend != P->rmap->rend) {
     SETERRQ4(comm,PETSC_ERR_ARG_SIZ,"Matrix local dimensions are incompatible, (%D, %D) != (%D,%D)",A->cmap->rstart,A->cmap->rend,P->rmap->rstart,P->rmap->rend);
   }
@@ -388,7 +389,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIDense(Mat A,Mat B,PetscReal fill,Mat
   PetscInt               m     = A->rmap->n,n=B->cmap->n;
 
   PetscFunctionBegin;
-  ierr = MatCreate(((PetscObject)B)->comm,C);CHKERRQ(ierr);
+  ierr = MatCreate(PetscObjectComm((PetscObject)B),C);CHKERRQ(ierr);
   ierr = MatSetSizes(*C,m,n,A->rmap->N,B->cmap->N);CHKERRQ(ierr);
   ierr = MatSetBlockSizes(*C,A->rmap->bs,B->cmap->bs);CHKERRQ(ierr);
   ierr = MatSetType(*C,MATMPIDENSE);CHKERRQ(ierr);
@@ -407,7 +408,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIDense(Mat A,Mat B,PetscReal fill,Mat
                       from->n,MPI_Request,&contents->rwaits,
                       to->n,MPI_Request,&contents->swaits);CHKERRQ(ierr);
 
-  ierr = PetscContainerCreate(((PetscObject)A)->comm,&container);CHKERRQ(ierr);
+  ierr = PetscContainerCreate(PetscObjectComm((PetscObject)A),&container);CHKERRQ(ierr);
   ierr = PetscContainerSetPointer(container,contents);CHKERRQ(ierr);
   ierr = PetscContainerSetUserDestroy(container,MatMPIAIJ_MPIDenseDestroy);CHKERRQ(ierr);
   ierr = PetscObjectCompose((PetscObject)(*C),"workB",(PetscObject)container);CHKERRQ(ierr);
@@ -433,7 +434,7 @@ PetscErrorCode MatMPIDenseScatter(Mat A,Mat B,Mat C,Mat *outworkB)
   PetscInt               *sindices,*sstarts,*rindices,*rstarts;
   PetscMPIInt            *sprocs,*rprocs,nrecvs;
   MPI_Request            *swaits,*rwaits;
-  MPI_Comm               comm = ((PetscObject)A)->comm;
+  MPI_Comm               comm;
   PetscMPIInt            tag  = ((PetscObject)ctx)->tag,ncols = B->cmap->N, nrows = aij->B->cmap->n,imdex,nrowsB = B->rmap->n;
   MPI_Status             status;
   MPIAIJ_MPIDense        *contents;
@@ -441,6 +442,7 @@ PetscErrorCode MatMPIDenseScatter(Mat A,Mat B,Mat C,Mat *outworkB)
   Mat                    workB;
 
   PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
   ierr = PetscObjectQuery((PetscObject)C,"workB",(PetscObject*)&container);CHKERRQ(ierr);
   if (!container) SETERRQ(comm,PETSC_ERR_PLIB,"Container does not exist");
   ierr = PetscContainerGetPointer(container,(void**)&contents);CHKERRQ(ierr);
@@ -646,7 +648,7 @@ PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ_Scalable(Mat A,Mat P,Mat C)
 PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_Scalable(Mat A,Mat P,PetscReal fill,Mat *C)
 {
   PetscErrorCode     ierr;
-  MPI_Comm           comm=((PetscObject)A)->comm;
+  MPI_Comm           comm;
   Mat                Cmpi;
   Mat_PtAPMPI        *ptap;
   PetscFreeSpaceList free_space = NULL,current_space=NULL;
@@ -661,6 +663,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_Scalable(Mat A,Mat P,PetscReal f
   PetscScalar        *apa;
 
   PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
   /* create struct Mat_PtAPMPI and attached it to C later */
   ierr = PetscNew(Mat_PtAPMPI,&ptap);CHKERRQ(ierr);
 
@@ -819,7 +822,7 @@ PetscErrorCode MatTransposeMatMult_MPIAIJ_MPIAIJ(Mat P,Mat A,MatReuse scall,Pets
       Pt   = ptap->Pt;
       ierr = MatTranspose(P,scall,&Pt);CHKERRQ(ierr);
       ierr = MatMatMult(Pt,A,scall,fill,C);CHKERRQ(ierr);
-    } else SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not supported");
+    } else SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Not supported");
     PetscFunctionReturn(0);
   }
 
@@ -850,7 +853,7 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ(Mat P,Mat A,Mat C)
   PetscInt            i,j,k,anz,pnz,row,*cj;
   MatScalar           *ada,*aval,*ca,valtmp;
   PetscInt            am  =A->rmap->n,cm=C->rmap->n,pon=(p->B)->cmap->n;
-  MPI_Comm            comm=((PetscObject)C)->comm;
+  MPI_Comm            comm;
   PetscMPIInt         size,rank,taga,*len_s;
   PetscInt            *owners,proc,nrows,**buf_ri_k,**nextrow,**nextci;
   PetscInt            **buf_ri,**buf_rj;
@@ -864,6 +867,7 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ(Mat P,Mat A,Mat C)
   Mat_SeqAIJ          *a_loc;
 
   PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)C,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
@@ -1024,7 +1028,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(Mat P,Mat A,PetscReal f
   PetscInt            *lnk,*owners_co,*coi,*coj,i,k,pnz,row;
   PetscInt            am=A->rmap->n,pn=P->cmap->n;
   PetscBT             lnkbt;
-  MPI_Comm            comm=((PetscObject)A)->comm;
+  MPI_Comm            comm;
   PetscMPIInt         size,rank,tagi,tagj,*len_si,*len_s,*len_ri;
   PetscInt            **buf_rj,**buf_ri,**buf_ri_k;
   PetscInt            len,proc,*dnz,*onz,*owners;
@@ -1040,6 +1044,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(Mat P,Mat A,PetscReal f
   Mat_SeqAIJ          *a_loc, *pdt,*pot;
 
   PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
   /* check if matrix local sizes are compatible */
   if (A->rmap->rstart != P->rmap->rstart || A->rmap->rend != P->rmap->rend) {
     SETERRQ4(comm,PETSC_ERR_ARG_SIZ,"Matrix local dimensions are incompatible, A (%D, %D) != P (%D,%D)",A->rmap->rstart,A->rmap->rend,P->rmap->rstart,P->rmap->rend);
@@ -1366,7 +1371,7 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ_Scalable(Mat P,Mat A,Mat
   PetscInt            i,j,k,anz,pnz,row,*cj,nexta;
   MatScalar           *ada,*ca,valtmp;
   PetscInt            am  =A->rmap->n,cm=C->rmap->n,pon=(p->B)->cmap->n;
-  MPI_Comm            comm=((PetscObject)C)->comm;
+  MPI_Comm            comm;
   PetscMPIInt         size,rank,taga,*len_s;
   PetscInt            *owners,proc,nrows,**buf_ri_k,**nextrow,**nextci;
   PetscInt            **buf_ri,**buf_rj;
@@ -1380,6 +1385,7 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ_Scalable(Mat P,Mat A,Mat
   Mat_SeqAIJ          *a_loc;
 
   PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)C,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
@@ -1532,7 +1538,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_Scalable(Mat P,Mat A,Pe
   PetscInt            nnz;
   PetscInt            *lnk,*owners_co,*coi,*coj,i,k,pnz,row;
   PetscInt            am  =A->rmap->n,pn=P->cmap->n;
-  MPI_Comm            comm=((PetscObject)A)->comm;
+  MPI_Comm            comm;
   PetscMPIInt         size,rank,tagi,tagj,*len_si,*len_s,*len_ri;
   PetscInt            **buf_rj,**buf_ri,**buf_ri_k;
   PetscInt            len,proc,*dnz,*onz,*owners;
@@ -1548,6 +1554,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_Scalable(Mat P,Mat A,Pe
   Mat_SeqAIJ          *a_loc, *pdt,*pot;
 
   PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
   /* check if matrix local sizes are compatible */
   if (A->rmap->rstart != P->rmap->rstart || A->rmap->rend != P->rmap->rend) {
     SETERRQ4(comm,PETSC_ERR_ARG_SIZ,"Matrix local dimensions are incompatible, A (%D, %D) != P (%D,%D)",A->rmap->rstart,A->rmap->rend,P->rmap->rstart,P->rmap->rend);

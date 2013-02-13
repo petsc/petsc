@@ -25,11 +25,11 @@ static PetscErrorCode DMCreateMatrix_Shell(DM dm,MatType mtype,Mat *J)
       ierr = PetscInfo(dm,"Naively creating matrix using global vector distribution without preallocation");CHKERRQ(ierr);
       ierr = VecGetSize(shell->Xglobal,&M);CHKERRQ(ierr);
       ierr = VecGetLocalSize(shell->Xglobal,&m);CHKERRQ(ierr);
-      ierr = MatCreate(((PetscObject)dm)->comm,&shell->A);CHKERRQ(ierr);
+      ierr = MatCreate(PetscObjectComm((PetscObject)dm),&shell->A);CHKERRQ(ierr);
       ierr = MatSetSizes(shell->A,m,m,M,M);CHKERRQ(ierr);
       if (mtype) {ierr = MatSetType(shell->A,mtype);CHKERRQ(ierr);}
       ierr = MatSetUp(shell->A);CHKERRQ(ierr);
-    } else SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_USER,"Must call DMShellSetMatrix(), DMShellSetCreateMatrix(), or provide a vector");
+    } else SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"Must call DMShellSetMatrix(), DMShellSetCreateMatrix(), or provide a vector");
   }
   A = shell->A;
   /* the check below is tacky and incomplete */
@@ -40,7 +40,7 @@ static PetscErrorCode DMCreateMatrix_Shell(DM dm,MatType mtype,Mat *J)
     ierr = PetscObjectTypeCompare((PetscObject)A,MATMPIAIJ,&mpiaij);CHKERRQ(ierr);
     ierr = PetscStrcmp(mtype,MATAIJ,&aij);CHKERRQ(ierr);
     if (!flg) {
-      if (!(aij & (seqaij || mpiaij))) SETERRQ2(((PetscObject)dm)->comm,PETSC_ERR_ARG_NOTSAMETYPE,"Requested matrix of type %s, but only %s available",mtype,((PetscObject)A)->type_name);
+      if (!(aij & (seqaij || mpiaij))) SETERRQ2(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_NOTSAMETYPE,"Requested matrix of type %s, but only %s available",mtype,((PetscObject)A)->type_name);
     }
   }
   if (((PetscObject)A)->refct < 2) { /* We have an exclusive reference so we can give it out */
@@ -67,7 +67,7 @@ PetscErrorCode DMCreateGlobalVector_Shell(DM dm,Vec *gvec)
   PetscValidPointer(gvec,2);
   *gvec = 0;
   X     = shell->Xglobal;
-  if (!X) SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_USER,"Must call DMShellSetGlobalVector() or DMShellSetCreateGlobalVector()");
+  if (!X) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"Must call DMShellSetGlobalVector() or DMShellSetCreateGlobalVector()");
   if (((PetscObject)X)->refct < 2) { /* We have an exclusive reference so we can give it out */
     ierr  = PetscObjectReference((PetscObject)X);CHKERRQ(ierr);
     ierr  = VecZeroEntries(X);CHKERRQ(ierr);
@@ -93,7 +93,7 @@ PetscErrorCode DMCreateLocalVector_Shell(DM dm,Vec *gvec)
   PetscValidPointer(gvec,2);
   *gvec = 0;
   X     = shell->Xlocal;
-  if (!X) SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_USER,"Must call DMShellSetLocalVector() or DMShellSetCreateLocalVector()");
+  if (!X) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"Must call DMShellSetLocalVector() or DMShellSetCreateLocalVector()");
   if (((PetscObject)X)->refct < 2) { /* We have an exclusive reference so we can give it out */
     ierr  = PetscObjectReference((PetscObject)X);CHKERRQ(ierr);
     ierr  = VecZeroEntries(X);CHKERRQ(ierr);
@@ -310,7 +310,7 @@ static PetscErrorCode DMLoad_Shell(DM dm,PetscViewer v)
   DM_Shell       *shell = (DM_Shell*)dm->data;
 
   PetscFunctionBegin;
-  ierr = VecCreate(((PetscObject)dm)->comm,&shell->Xglobal);CHKERRQ(ierr);
+  ierr = VecCreate(PetscObjectComm((PetscObject)dm),&shell->Xglobal);CHKERRQ(ierr);
   ierr = VecLoad(shell->Xglobal,v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

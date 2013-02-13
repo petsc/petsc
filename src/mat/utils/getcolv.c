@@ -105,7 +105,7 @@ PetscErrorCode MatGetColumnNorms(Mat A,NormType type,PetscReal *norms)
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   if (A->ops->getcolumnnorms) {
     ierr = (*A->ops->getcolumnnorms)(A,type,norms);CHKERRQ(ierr);
-  } else SETERRQ(((PetscObject)A)->comm,PETSC_ERR_SUP,"Not coded for this matrix type");
+  } else SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Not coded for this matrix type");
   PetscFunctionReturn(0);
 }
 

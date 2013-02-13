@@ -165,7 +165,7 @@ PetscErrorCode  ISSetPermutation(IS is)
     PetscMPIInt    size;
     PetscErrorCode ierr;
 
-    ierr = MPI_Comm_size(((PetscObject)is)->comm,&size);CHKERRQ(ierr);
+    ierr = MPI_Comm_size(PetscObjectComm((PetscObject)is),&size);CHKERRQ(ierr);
     if (size == 1) {
       PetscInt       i,n,*idx;
       const PetscInt *iidx;
@@ -488,7 +488,7 @@ PetscErrorCode ISGetTotalIndices(IS is, const PetscInt *indices[])
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidPointer(indices,2);
-  ierr = MPI_Comm_size(((PetscObject)is)->comm, &size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)is), &size);CHKERRQ(ierr);
   if (size == 1) {
     ierr = (*is->ops->getindices)(is,indices);CHKERRQ(ierr);
   } else {
@@ -525,7 +525,7 @@ PetscErrorCode  ISRestoreTotalIndices(IS is, const PetscInt *indices[])
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidPointer(indices,2);
-  ierr = MPI_Comm_size(((PetscObject)is)->comm, &size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)is), &size);CHKERRQ(ierr);
   if (size == 1) {
     ierr = (*is->ops->restoreindices)(is,indices);CHKERRQ(ierr);
   } else {
@@ -568,7 +568,7 @@ PetscErrorCode  ISGetNonlocalIndices(IS is, const PetscInt *indices[])
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidPointer(indices,2);
-  ierr = MPI_Comm_size(((PetscObject)is)->comm, &size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)is), &size);CHKERRQ(ierr);
   if (size == 1) *indices = NULL;
   else {
     if (!is->total) {
@@ -715,7 +715,7 @@ PetscErrorCode  ISView(IS is,PetscViewer viewer)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   if (!viewer) {
-    ierr = PetscViewerASCIIGetStdout(((PetscObject)is)->comm,&viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)is),&viewer);CHKERRQ(ierr);
   }
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
   PetscCheckSameComm(is,1,viewer,2);
@@ -776,7 +776,7 @@ PetscErrorCode  ISToGeneral(IS is)
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   if (is->ops->togeneral) {
     ierr = (*is->ops->togeneral)(is);CHKERRQ(ierr);
-  } else SETERRQ1(((PetscObject)is)->comm,PETSC_ERR_SUP,"Not written for this type %s",((PetscObject)is)->type_name);
+  } else SETERRQ1(PetscObjectComm((PetscObject)is),PETSC_ERR_SUP,"Not written for this type %s",((PetscObject)is)->type_name);
   PetscFunctionReturn(0);
 }
 
@@ -918,7 +918,7 @@ PetscErrorCode  ISOnComm(IS is,MPI_Comm comm,PetscCopyMode mode,IS *newis)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidPointer(newis,3);
-  ierr = MPI_Comm_compare(((PetscObject)is)->comm,comm,&match);CHKERRQ(ierr);
+  ierr = MPI_Comm_compare(PetscObjectComm((PetscObject)is),comm,&match);CHKERRQ(ierr);
   if (mode != PETSC_COPY_VALUES && (match == MPI_IDENT || match == MPI_CONGRUENT)) {
     ierr   = PetscObjectReference((PetscObject)is);CHKERRQ(ierr);
     *newis = is;
@@ -950,7 +950,7 @@ PetscErrorCode  ISSetBlockSize(IS is,PetscInt bs)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidLogicalCollectiveInt(is,bs,2);
-  if (bs < 1) SETERRQ1(((PetscObject)is)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Block size %D, must be positive",bs);
+  if (bs < 1) SETERRQ1(PetscObjectComm((PetscObject)is),PETSC_ERR_ARG_OUTOFRANGE,"Block size %D, must be positive",bs);
   ierr = (*is->ops->setblocksize)(is,bs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

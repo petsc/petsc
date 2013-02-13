@@ -591,7 +591,7 @@ static PetscErrorCode SNESSetFromOptions_QN(SNES snes)
     ierr = SNESLineSearchSetType(linesearch, SNESLINESEARCHCP);CHKERRQ(ierr);
   }
   if (monflg) {
-    qn->monitor = PETSC_VIEWER_STDOUT_(((PetscObject)snes)->comm);CHKERRQ(ierr);
+    qn->monitor = PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)snes));CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

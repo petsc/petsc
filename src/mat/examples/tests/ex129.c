@@ -84,7 +84,7 @@ int main(int argc,char **args)
     const PetscScalar *vals;
     ierr = MatGetSize(A,&m,&n);CHKERRQ(ierr);
     ierr = MatGetType(A,&type);CHKERRQ(ierr);
-    ierr = MatCreate(((PetscObject)A)->comm,&F);CHKERRQ(ierr);
+    ierr = MatCreate(PetscObjectComm((PetscObject)A),&F);CHKERRQ(ierr);
     ierr = MatSetSizes(F,PETSC_DECIDE,PETSC_DECIDE,m,n);CHKERRQ(ierr);
     ierr = MatSetType(F,type);CHKERRQ(ierr);
     ierr = MatSetFromOptions(F);CHKERRQ(ierr);

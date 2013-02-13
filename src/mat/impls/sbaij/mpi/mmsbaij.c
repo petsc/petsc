@@ -77,7 +77,7 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ(Mat mat)
 
   /* generate the scatter context
      -- Mvctx and lvec are not used by MatMult_MPISBAIJ(), but usefule for some applications */
-  ierr = VecCreateMPIWithArray(((PetscObject)mat)->comm,1,mat->cmap->n,mat->cmap->N,NULL,&gvec);CHKERRQ(ierr);
+  ierr = VecCreateMPIWithArray(PetscObjectComm((PetscObject)mat),1,mat->cmap->n,mat->cmap->N,NULL,&gvec);CHKERRQ(ierr);
   ierr = VecScatterCreate(gvec,from,sbaij->lvec,to,&sbaij->Mvctx);CHKERRQ(ierr);
   ierr = VecDestroy(&gvec);CHKERRQ(ierr);
 
@@ -93,7 +93,7 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ(Mat mat)
 
   /* create parallel vector that is used by SBAIJ matrix to scatter from/into */
   lsize = (mbs + ec)*bs;
-  ierr  = VecCreateMPI(((PetscObject)mat)->comm,lsize,PETSC_DETERMINE,&sbaij->slvec0);CHKERRQ(ierr);
+  ierr  = VecCreateMPI(PetscObjectComm((PetscObject)mat),lsize,PETSC_DETERMINE,&sbaij->slvec0);CHKERRQ(ierr);
   ierr  = VecDuplicate(sbaij->slvec0,&sbaij->slvec1);CHKERRQ(ierr);
   ierr  = VecGetSize(sbaij->slvec0,&vec_size);CHKERRQ(ierr);
 
@@ -130,7 +130,7 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ(Mat mat)
   ierr = VecRestoreArray(sbaij->slvec0,&ptr);CHKERRQ(ierr);
 
   ierr = PetscFree(stmp);CHKERRQ(ierr);
-  ierr = MPI_Barrier(((PetscObject)mat)->comm);CHKERRQ(ierr);
+  ierr = MPI_Barrier(PetscObjectComm((PetscObject)mat));CHKERRQ(ierr);
 
   ierr = PetscLogObjectParent(mat,sbaij->sMvctx);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(mat,sbaij->slvec0);CHKERRQ(ierr);
@@ -257,7 +257,7 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ_2comm(Mat mat)
   ierr = ISCreateBlock(PETSC_COMM_SELF,bs,ec,stmp,PETSC_OWN_POINTER,&to);CHKERRQ(ierr);
 
   /* create temporary global vector to generate scatter context */
-  ierr = VecCreateMPIWithArray(((PetscObject)mat)->comm,1,mat->cmap->n,mat->cmap->N,NULL,&gvec);CHKERRQ(ierr);
+  ierr = VecCreateMPIWithArray(PetscObjectComm((PetscObject)mat),1,mat->cmap->n,mat->cmap->N,NULL,&gvec);CHKERRQ(ierr);
   ierr = VecScatterCreate(gvec,from,baij->lvec,to,&baij->Mvctx);CHKERRQ(ierr);
   ierr = VecDestroy(&gvec);CHKERRQ(ierr);
 

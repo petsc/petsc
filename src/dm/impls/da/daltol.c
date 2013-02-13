@@ -60,7 +60,7 @@ PetscErrorCode  DMDALocalToLocalCreate(DM da)
         }
       }
     }
-  } else SETERRQ1(((PetscObject)da)->comm,PETSC_ERR_ARG_CORRUPT,"DMDA has invalid dimension %D",dd->dim);
+  } else SETERRQ1(PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_CORRUPT,"DMDA has invalid dimension %D",dd->dim);
 
   ierr = VecScatterRemap(dd->ltol,idx,NULL);CHKERRQ(ierr);
   ierr = PetscFree(idx);CHKERRQ(ierr);

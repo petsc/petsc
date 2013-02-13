@@ -783,7 +783,7 @@ static PetscErrorCode TSGLVecNormWRMS(TS ts,Vec X,PetscReal *nrm)
   for (i=0; i<n; i++) sum += PetscAbsScalar(PetscSqr(x[i]*w[i]));
   ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(gl->W,&w);CHKERRQ(ierr);
-  ierr = MPI_Allreduce(&sum,&gsum,1,MPIU_REAL,MPIU_SUM,((PetscObject)ts)->comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&sum,&gsum,1,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)ts));CHKERRQ(ierr);
   ierr = VecGetSize(gl->W,&N);CHKERRQ(ierr);
   *nrm = PetscSqrtReal(gsum/(1.*N));
   PetscFunctionReturn(0);
@@ -805,7 +805,7 @@ PetscErrorCode  TSGLSetType_GL(TS ts,TSGLType type)
     ierr = (*gl->Destroy)(gl);CHKERRQ(ierr);
   }
 
-  ierr = PetscFunctionListFind(((PetscObject)ts)->comm,TSGLList,type,PETSC_TRUE,(PetscVoidStarFunction)&r);CHKERRQ(ierr);
+  ierr = PetscFunctionListFind(PetscObjectComm((PetscObject)ts),TSGLList,type,PETSC_TRUE,(PetscVoidStarFunction)&r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown TSGL type \"%s\" given",type);
   ierr = (*r)(ts);CHKERRQ(ierr);
   ierr = PetscStrcpy(gl->type_name,type);CHKERRQ(ierr);
@@ -821,7 +821,7 @@ PetscErrorCode  TSGLSetAcceptType_GL(TS ts,TSGLAcceptType type)
   TS_GL              *gl = (TS_GL*)ts->data;
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListFind(((PetscObject)ts)->comm,TSGLAcceptList,type,PETSC_TRUE,(PetscVoidStarFunction)&r);CHKERRQ(ierr);
+  ierr = PetscFunctionListFind(PetscObjectComm((PetscObject)ts),TSGLAcceptList,type,PETSC_TRUE,(PetscVoidStarFunction)&r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown TSGLAccept type \"%s\" given",type);
   gl->Accept = r;
   ierr = PetscStrncpy(gl->accept_name,type,sizeof(gl->accept_name));CHKERRQ(ierr);
@@ -837,7 +837,7 @@ PetscErrorCode  TSGLGetAdapt_GL(TS ts,TSGLAdapt *adapt)
 
   PetscFunctionBegin;
   if (!gl->adapt) {
-    ierr = TSGLAdaptCreate(((PetscObject)ts)->comm,&gl->adapt);CHKERRQ(ierr);
+    ierr = TSGLAdaptCreate(PetscObjectComm((PetscObject)ts),&gl->adapt);CHKERRQ(ierr);
     ierr = PetscObjectIncrementTabLevel((PetscObject)gl->adapt,(PetscObject)ts,1);CHKERRQ(ierr);
     ierr = PetscLogObjectParent(ts,gl->adapt);CHKERRQ(ierr);
   }

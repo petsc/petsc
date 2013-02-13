@@ -1129,16 +1129,16 @@ static PetscErrorCode MatCoarsenApply_HEM(MatCoarsen coarse)
 {
   /* MatCoarsen_HEM *HEM = (MatCoarsen_HEM*)coarse->subctx; */
   PetscErrorCode ierr;
-  Mat mat = coarse->graph;
+  Mat            mat = coarse->graph;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(coarse,MAT_COARSEN_CLASSID,1);
   if (!coarse->perm) {
-    IS perm;
+    IS       perm;
     PetscInt n,m;
-    MPI_Comm wcomm = ((PetscObject)mat)->comm;
+    
     ierr = MatGetLocalSize(mat, &m, &n);CHKERRQ(ierr);
-    ierr = ISCreateStride(wcomm, m, 0, 1, &perm);CHKERRQ(ierr);
+    ierr = ISCreateStride(PetscObjectComm((PetscObject)mat), m, 0, 1, &perm);CHKERRQ(ierr);
     ierr = heavyEdgeMatchAgg(perm, mat, coarse->verbose, &coarse->agg_lists);CHKERRQ(ierr);
     ierr = ISDestroy(&perm);CHKERRQ(ierr);
   } else {
@@ -1153,12 +1153,12 @@ PetscErrorCode MatCoarsenView_HEM(MatCoarsen coarse,PetscViewer viewer)
 {
   /* MatCoarsen_HEM *HEM = (MatCoarsen_HEM*)coarse->subctx; */
   PetscErrorCode ierr;
-  PetscMPIInt rank;
-  PetscBool iascii;
+  PetscMPIInt    rank;
+  PetscBool      iascii;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(coarse,MAT_COARSEN_CLASSID,1);
-  ierr = MPI_Comm_rank(((PetscObject)coarse)->comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)coarse),&rank);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     ierr = PetscViewerASCIISynchronizedPrintf(viewer,"  [%d] HEM aggregator\n",rank);CHKERRQ(ierr);

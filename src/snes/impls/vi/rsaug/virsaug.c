@@ -70,7 +70,7 @@ PetscErrorCode SNESVIComputeInactiveSetIS(Vec upper,Vec lower,Vec X,Vec F,IS *in
   }
 
   /* Create inactive set IS */
-  ierr = ISCreateGeneral(((PetscObject)upper)->comm,nloc_isact,idx_act,PETSC_OWN_POINTER,inact);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PetscObjectComm((PetscObject)upper),nloc_isact,idx_act,PETSC_OWN_POINTER,inact);CHKERRQ(ierr);
 
   ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(lower,&xl);CHKERRQ(ierr);
@@ -112,9 +112,9 @@ PetscErrorCode  DMCreateGlobalVector_SNESVIRSAUG(DM dm,Vec *vec)
 
   PetscFunctionBegin;
   ierr = PetscObjectQuery((PetscObject)dm,"VI",(PetscObject*)&isnes);CHKERRQ(ierr);
-  if (!isnes) SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_PLIB,"Composed SNES is missing");
+  if (!isnes) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"Composed SNES is missing");
   ierr = PetscContainerGetPointer(isnes,(void**)&dmsnesvi);CHKERRQ(ierr);
-  ierr = VecCreateMPI(((PetscObject)dm)->comm,dmsnesvi->n,PETSC_DETERMINE,vec);CHKERRQ(ierr);
+  ierr = VecCreateMPI(PetscObjectComm((PetscObject)dm),dmsnesvi->n,PETSC_DETERMINE,vec);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -215,7 +215,7 @@ PetscErrorCode  DMCoarsen_SNESVIRSAUG(DM dm1,MPI_Comm comm,DM *dm2)
     if (marked[k] != 0.0) coarseindex[cnt++] = k + rstart;
   }
   ierr = VecRestoreArray(coarsemarked,&marked);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(((PetscObject)coarsemarked)->comm,cnt,coarseindex,PETSC_OWN_POINTER,&inactive);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PetscObjectComm((PetscObject)coarsemarked),cnt,coarseindex,PETSC_OWN_POINTER,&inactive);CHKERRQ(ierr);
 
   ierr = DMClearGlobalVectors(dm1);CHKERRQ(ierr);
 
@@ -269,7 +269,7 @@ PetscErrorCode  DMSetVIRSAUG(DM dm,IS inactive)
 
   ierr = PetscObjectQuery((PetscObject)dm,"VI",(PetscObject*)&isnes);CHKERRQ(ierr);
   if (!isnes) {
-    ierr = PetscContainerCreate(((PetscObject)dm)->comm,&isnes);CHKERRQ(ierr);
+    ierr = PetscContainerCreate(PetscObjectComm((PetscObject)dm),&isnes);CHKERRQ(ierr);
     ierr = PetscContainerSetUserDestroy(isnes,(PetscErrorCode (*)(void*))DMDestroy_SNESVIRSAUG);CHKERRQ(ierr);
     ierr = PetscNew(DM_SNESVI,&dmsnesvi);CHKERRQ(ierr);
     ierr = PetscContainerSetPointer(isnes,(void*)dmsnesvi);CHKERRQ(ierr);
@@ -317,7 +317,7 @@ PetscErrorCode  SNESMonitorVIRSAUG(SNES snes,PetscInt its,PetscReal fgnorm,void 
 {
   PetscErrorCode    ierr;
   SNES_VIRSAUG      *vi    = (SNES_VIRSAUG*)snes->data;
-  PetscViewer       viewer = dummy ? (PetscViewer) dummy : PETSC_VIEWER_STDOUT_(((PetscObject)snes)->comm);
+  PetscViewer       viewer = dummy ? (PetscViewer) dummy : PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)snes));
   const PetscScalar *x,*xl,*xu,*f;
   PetscInt          i,n,act[2] = {0,0},fact[2],N;
   /* Number of components that actually hit the bounds (c.f. active variables) */
@@ -337,7 +337,7 @@ PetscErrorCode  SNESMonitorVIRSAUG(SNES snes,PetscInt its,PetscReal fgnorm,void 
     if (((PetscRealPart(x[i]) > PetscRealPart(xl[i]) + 1.e-8 || (PetscRealPart(f[i]) < 0.0)) && ((PetscRealPart(x[i]) < PetscRealPart(xu[i]) - 1.e-8) || PetscRealPart(f[i]) > 0.0))) rnorm += PetscRealPart(PetscConj(f[i])*f[i]);
     else if (PetscRealPart(x[i]) <= PetscRealPart(xl[i]) + 1.e-8 && PetscRealPart(f[i]) >= 0.0) act[0]++;
     else if (PetscRealPart(x[i]) >= PetscRealPart(xu[i]) - 1.e-8 && PetscRealPart(f[i]) <= 0.0) act[1]++;
-    else SETERRQ(((PetscObject)snes)->comm,PETSC_ERR_PLIB,"Can never get here");
+    else SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_PLIB,"Can never get here");
   }
 
   for (i=0; i<n; i++) {
@@ -348,9 +348,9 @@ PetscErrorCode  SNESMonitorVIRSAUG(SNES snes,PetscInt its,PetscReal fgnorm,void 
   ierr  = VecRestoreArrayRead(vi->xl,&xl);CHKERRQ(ierr);
   ierr  = VecRestoreArrayRead(vi->xu,&xu);CHKERRQ(ierr);
   ierr  = VecRestoreArrayRead(snes->vec_sol,&x);CHKERRQ(ierr);
-  ierr  = MPI_Allreduce(&rnorm,&fnorm,1,MPIU_REAL,MPIU_SUM,((PetscObject)snes)->comm);CHKERRQ(ierr);
-  ierr  = MPI_Allreduce(act,fact,2,MPIU_INT,MPI_SUM,((PetscObject)snes)->comm);CHKERRQ(ierr);
-  ierr  = MPI_Allreduce(act_bound,fact_bound,2,MPIU_INT,MPI_SUM,((PetscObject)snes)->comm);CHKERRQ(ierr);
+  ierr  = MPI_Allreduce(&rnorm,&fnorm,1,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)snes));CHKERRQ(ierr);
+  ierr  = MPI_Allreduce(act,fact,2,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)snes));CHKERRQ(ierr);
+  ierr  = MPI_Allreduce(act_bound,fact_bound,2,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)snes));CHKERRQ(ierr);
   fnorm = PetscSqrtReal(fnorm);
 
   ierr = PetscViewerASCIIAddTab(viewer,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
@@ -822,7 +822,7 @@ PetscErrorCode SNESSolveVI_SS(SNES snes)
 
   ierr = VecNormBegin(X,NORM_2,&xnorm);CHKERRQ(ierr);        /* xnorm <- ||x||  */
   ierr = VecNormEnd(X,NORM_2,&xnorm);CHKERRQ(ierr);
-  if (PetscIsInfOrNanReal(vi->merit)) SETERRQ(((PetscObject)X)->comm,PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
+  if (PetscIsInfOrNanReal(vi->merit)) SETERRQ(PetscObjectComm((PetscObject)X),PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
 
   ierr       = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
   snes->norm = vi->phinorm;
@@ -973,7 +973,7 @@ PetscErrorCode SNESVIGetActiveSetIS(SNES snes,Vec X,Vec F,IS *ISact)
   }
 
   /* Create active set IS */
-  ierr = ISCreateGeneral(((PetscObject)snes)->comm,nloc_isact,idx_act,PETSC_OWN_POINTER,ISact);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PetscObjectComm((PetscObject)snes),nloc_isact,idx_act,PETSC_OWN_POINTER,ISact);CHKERRQ(ierr);
 
   ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(Xl,&xl);CHKERRQ(ierr);
@@ -1004,7 +1004,7 @@ PetscErrorCode SNESVICreateSubVectors(SNES snes,PetscInt n,Vec *newv)
   Vec            v;
 
   PetscFunctionBegin;
-  ierr  = VecCreate(((PetscObject)snes)->comm,&v);CHKERRQ(ierr);
+  ierr  = VecCreate(PetscObjectComm((PetscObject)snes),&v);CHKERRQ(ierr);
   ierr  = VecSetSizes(v,n,PETSC_DECIDE);CHKERRQ(ierr);
   ierr  = VecSetFromOptions(v);CHKERRQ(ierr);
   *newv = v;
@@ -1031,7 +1031,7 @@ PetscErrorCode SNESVIResetPCandKSP(SNES snes,Mat Amat,Mat Pmat)
   const MatSolverPackage stype;
 
 
-  ierr = KSPCreate(((PetscObject)snes)->comm,&kspnew);CHKERRQ(ierr);
+  ierr = KSPCreate(PetscObjectComm((PetscObject)snes),&kspnew);CHKERRQ(ierr);
   kspnew->pc_side = snesksp->pc_side;
   kspnew->rtol    = snesksp->rtol;
   kspnew->abstol    = snesksp->abstol;
@@ -1079,7 +1079,7 @@ PetscErrorCode SNESVIComputeInactiveSetFnorm(SNES snes,Vec F,Vec X,PetscReal *fn
   ierr = VecRestoreArrayRead(vi->xl,&xl);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(vi->xu,&xu);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
-  ierr = MPI_Allreduce(&rnorm,fnorm,1,MPIU_REAL,MPIU_SUM,((PetscObject)snes)->comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&rnorm,fnorm,1,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)snes));CHKERRQ(ierr);
   *fnorm = PetscSqrtReal(*fnorm);
   PetscFunctionReturn(0);
 }
@@ -1127,7 +1127,7 @@ PetscErrorCode SNESSolveVI_RS(SNES snes)
   ierr = SNESVIComputeInactiveSetFnorm(snes,F,X,&fnorm);CHKERRQ(ierr);
   ierr = VecNormBegin(X,NORM_2,&xnorm);CHKERRQ(ierr);        /* xnorm <- ||x||  */
   ierr = VecNormEnd(X,NORM_2,&xnorm);CHKERRQ(ierr);
-  if (PetscIsInfOrNanReal(fnorm)) SETERRQ(((PetscObject)X)->comm,PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
+  if (PetscIsInfOrNanReal(fnorm)) SETERRQ(PetscObjectComm((PetscObject)X),PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
 
   ierr       = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
   snes->norm = fnorm;
@@ -1204,7 +1204,7 @@ PetscErrorCode SNESSolveVI_RS(SNES snes)
         ierr = ISDestroy(&keptrows);CHKERRQ(ierr);
         ierr = ISDestroy(&IS_inact);CHKERRQ(ierr);
 
-        ierr = ISCreateGeneral(((PetscObject)sness)->comm,cnt,nrows,PETSC_OWN_POINTER,&IS_inact);CHKERRQ(ierr);
+        ierr = ISCreateGeneral(PetscObjectComm((PetscObject)sness),cnt,nrows,PETSC_OWN_POINTER,&IS_inact);CHKERRQ(ierr);
         ierr = ISComplement(IS_inact,F->map->rstart,F->map->rend,&IS_act);CHKERRQ(ierr);
         ierr = MatGetSubMatrix(snes->jacobian,IS_inact,IS_inact,MAT_INITIAL_MATRIX,&jac_inact_inact);CHKERRQ(ierr);
       }
@@ -1215,8 +1215,8 @@ PetscErrorCode SNESSolveVI_RS(SNES snes)
     /*
     ierr = VecView(vi->xu,PETSC_VIEWER_BINARY_(((PetscObject)(vi->xu))->comm));CHKERRQ(ierr);
     ierr = VecView(vi->xl,PETSC_VIEWER_BINARY_(((PetscObject)(vi->xl))->comm));CHKERRQ(ierr);
-    ierr = VecView(X,PETSC_VIEWER_BINARY_(((PetscObject)X)->comm));CHKERRQ(ierr);
-    ierr = VecView(F,PETSC_VIEWER_BINARY_(((PetscObject)F)->comm));CHKERRQ(ierr);
+    ierr = VecView(X,PETSC_VIEWER_BINARY_(PetscObjectComm((PetscObject)X)));CHKERRQ(ierr);
+    ierr = VecView(F,PETSC_VIEWER_BINARY_(PetscObjectComm((PetscObject)F)));CHKERRQ(ierr);
     ierr = ISView(IS_inact,PETSC_VIEWER_BINARY_(((PetscObject)IS_inact)->comm));CHKERRQ(ierr);
      */
 
@@ -1419,7 +1419,7 @@ PetscErrorCode SNESVIRedundancyCheck_Matlab(SNES snes,IS is_act,IS *is_redact,vo
 
   /* Create IS for reduced active set of size 0, its size and indices will
    bet set by the Matlab function */
-  ierr = ISCreateGeneral(((PetscObject)snes)->comm,0,indices,PETSC_OWN_POINTER,is_redact);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PetscObjectComm((PetscObject)snes),0,indices,PETSC_OWN_POINTER,is_redact);CHKERRQ(ierr);
   /* call Matlab function in ctx */
   ierr    = PetscMemcpy(&ls,&snes,sizeof(snes));CHKERRQ(ierr);
   ierr    = PetscMemcpy(&l1,&is_act,sizeof(is_act));CHKERRQ(ierr);
@@ -1504,7 +1504,7 @@ PetscErrorCode SNESSolveVI_RSAUG(SNES snes)
   ierr = SNESVIComputeInactiveSetFnorm(snes,F,X,&fnorm);CHKERRQ(ierr);
   ierr = VecNormBegin(X,NORM_2,&xnorm);CHKERRQ(ierr);        /* xnorm <- ||x||  */
   ierr = VecNormEnd(X,NORM_2,&xnorm);CHKERRQ(ierr);
-  if (PetscIsInfOrNanReal(fnorm)) SETERRQ(((PetscObject)X)->comm,PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
+  if (PetscIsInfOrNanReal(fnorm)) SETERRQ(PetscObjectComm((PetscObject)X),PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
 
   ierr       = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
   snes->norm = fnorm;
@@ -1573,7 +1573,7 @@ PetscErrorCode SNESSolveVI_RSAUG(SNES snes)
       }
 
       /* Create augmented F and Y */
-      ierr = VecCreate(((PetscObject)snes)->comm,&F_aug);CHKERRQ(ierr);
+      ierr = VecCreate(PetscObjectComm((PetscObject)snes),&F_aug);CHKERRQ(ierr);
       ierr = VecSetSizes(F_aug,F->map->n+nkept,PETSC_DECIDE);CHKERRQ(ierr);
       ierr = VecSetFromOptions(F_aug);CHKERRQ(ierr);
       ierr = VecDuplicate(F_aug,&Y_aug);CHKERRQ(ierr);
@@ -1586,7 +1586,7 @@ PetscErrorCode SNESSolveVI_RSAUG(SNES snes)
       ierr = VecRestoreArray(F_aug,&f2);CHKERRQ(ierr);
 
       /* Create the augmented jacobian matrix */
-      ierr = MatCreate(((PetscObject)snes)->comm,&J_aug);CHKERRQ(ierr);
+      ierr = MatCreate(PetscObjectComm((PetscObject)snes),&J_aug);CHKERRQ(ierr);
       ierr = MatSetSizes(J_aug,X->map->n+nkept,X->map->n+nkept,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
       ierr = MatSetFromOptions(J_aug);CHKERRQ(ierr);
 
@@ -1823,7 +1823,7 @@ PetscErrorCode SNESSetUp_VIRSAUG(SNES snes)
     ierr = VecGetLocalSize(snes->vec_sol,&n);CHKERRQ(ierr);
     ierr = PetscMalloc(n*sizeof(PetscInt),&indices);CHKERRQ(ierr);
     for (i=0; i < n; i++) indices[i] = rstart + i;
-    ierr = ISCreateGeneral(((PetscObject)snes)->comm,n,indices,PETSC_OWN_POINTER,&vi->IS_inact_prev);
+    ierr = ISCreateGeneral(PetscObjectComm((PetscObject)snes),n,indices,PETSC_OWN_POINTER,&vi->IS_inact_prev);
   }
 
   if (snes->ops->solve == SNESSolveVI_SS) {
@@ -1922,7 +1922,7 @@ PetscErrorCode SNESLineSearchNo_VIRSAUG(SNES snes,void *lsctx,Vec x,Vec f,Vec y,
     } else {
       ierr = VecNorm(g,NORM_2,gnorm);CHKERRQ(ierr);  /* gnorm = || g || */
     }
-    if (PetscIsInfOrNanReal(*gnorm)) SETERRQ(((PetscObject)g)->comm,PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
+    if (PetscIsInfOrNanReal(*gnorm)) SETERRQ(PetscObjectComm((PetscObject)g),PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
   }
   if (snes->ls_monitor) {
     ierr = PetscViewerASCIIAddTab(snes->ls_monitor,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
@@ -2033,7 +2033,7 @@ PetscErrorCode SNESLineSearchCubic_VIRSAUG(SNES snes,void *lsctx,Vec x,Vec f,Vec
     ierr = PetscLogEventEnd(SNES_LineSearch,snes,x,f,g);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
-  if (PetscIsInfOrNanReal(*gnorm)) SETERRQ(((PetscObject)g)->comm,PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
+  if (PetscIsInfOrNanReal(*gnorm)) SETERRQ(PetscObjectComm((PetscObject)g),PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
   ierr = PetscInfo4(snes,"Initial fnorm %g gnorm %g alpha %g initslope %g\n",(double)fnorm,(double)*gnorm,(double)snes->ls_alpha,(double)initslope);CHKERRQ(ierr);
   if ((*gnorm)*(*gnorm) <= (1.0 - snes->ls_alpha)*fnorm*fnorm) { /* Sufficient reduction */
     if (snes->ls_monitor) {
@@ -2071,7 +2071,7 @@ PetscErrorCode SNESLineSearchCubic_VIRSAUG(SNES snes,void *lsctx,Vec x,Vec f,Vec
     ierr = PetscLogEventEnd(SNES_LineSearch,snes,x,f,g);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
-  if (PetscIsInfOrNanReal(*gnorm)) SETERRQ(((PetscObject)g)->comm,PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
+  if (PetscIsInfOrNanReal(*gnorm)) SETERRQ(PetscObjectComm((PetscObject)g),PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
   if (snes->ls_monitor) {
     ierr = PetscViewerASCIIAddTab(snes->ls_monitor,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(snes->ls_monitor,"    Line search: gnorm after quadratic fit %g\n",(double)(*gnorm));CHKERRQ(ierr);
@@ -2131,7 +2131,7 @@ PetscErrorCode SNESLineSearchCubic_VIRSAUG(SNES snes,void *lsctx,Vec x,Vec f,Vec
       ierr = PetscLogEventEnd(SNES_LineSearch,snes,x,f,g);CHKERRQ(ierr);
       PetscFunctionReturn(0);
     }
-    if (PetscIsInfOrNanReal(*gnorm)) SETERRQ(((PetscObject)g)->comm,PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
+    if (PetscIsInfOrNanReal(*gnorm)) SETERRQ(PetscObjectComm((PetscObject)g),PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
     if ((*gnorm)*(*gnorm) < (1.0 - snes->ls_alpha)*fnorm*fnorm) { /* is reduction enough? */
       if (snes->ls_monitor) {
         ierr = PetscPrintf(comm,"    Line search: Cubically determined step, current gnorm %g lambda=%18.16e\n",(double)(*gnorm),(double)lambda);CHKERRQ(ierr);
@@ -2163,7 +2163,7 @@ theend1:
         ierr = PetscLogEventEnd(SNES_LineSearch,snes,x,f,g);CHKERRQ(ierr);
         PetscFunctionReturn(0);
       }
-      if (PetscIsInfOrNanReal(*gnorm)) SETERRQ(((PetscObject)g)->comm,PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
+      if (PetscIsInfOrNanReal(*gnorm)) SETERRQ(PetscObjectComm((PetscObject)g),PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
       ierr = VecNormBegin(y,NORM_2,ynorm);CHKERRQ(ierr);
       ierr = VecNormEnd(y,NORM_2,ynorm);CHKERRQ(ierr);
     }
@@ -2237,7 +2237,7 @@ PetscErrorCode SNESLineSearchQuadratic_VIRSAUG(SNES snes,void *lsctx,Vec x,Vec f
     ierr = PetscLogEventEnd(SNES_LineSearch,snes,x,f,g);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
-  if (PetscIsInfOrNanReal(*gnorm)) SETERRQ(((PetscObject)g)->comm,PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
+  if (PetscIsInfOrNanReal(*gnorm)) SETERRQ(PetscObjectComm((PetscObject)g),PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
   if ((*gnorm)*(*gnorm) <= (1.0 - snes->ls_alpha)*fnorm*fnorm) { /* Sufficient reduction */
     if (snes->ls_monitor) {
       ierr = PetscViewerASCIIAddTab(snes->ls_monitor,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
@@ -2286,7 +2286,7 @@ PetscErrorCode SNESLineSearchQuadratic_VIRSAUG(SNES snes,void *lsctx,Vec x,Vec f
     } else {
       ierr = VecNorm(g,NORM_2,gnorm);CHKERRQ(ierr);
     }
-    if (PetscIsInfOrNanReal(*gnorm)) SETERRQ(((PetscObject)g)->comm,PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
+    if (PetscIsInfOrNanReal(*gnorm)) SETERRQ(PetscObjectComm((PetscObject)g),PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
     if ((*gnorm)*(*gnorm) < (1.0 - snes->ls_alpha)*fnorm*fnorm) { /* sufficient reduction */
       if (snes->ls_monitor) {
         ierr = PetscViewerASCIIAddTab(snes->ls_monitor,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
@@ -2319,7 +2319,7 @@ theend2:
 
       ierr = VecNormBegin(y,NORM_2,ynorm);CHKERRQ(ierr);
       ierr = VecNormEnd(y,NORM_2,ynorm);CHKERRQ(ierr);
-      if (PetscIsInfOrNanReal(*gnorm)) SETERRQ(((PetscObject)g)->comm,PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
+      if (PetscIsInfOrNanReal(*gnorm)) SETERRQ(PetscObjectComm((PetscObject)g),PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
     }
   }
   ierr = PetscLogEventEnd(SNES_LineSearch,snes,x,f,g);CHKERRQ(ierr);
@@ -2386,9 +2386,9 @@ PetscErrorCode SNESVIRSAUGSetVariableBounds(SNES snes, Vec xl, Vec xu)
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   PetscValidHeaderSpecific(xl,VEC_CLASSID,2);
   PetscValidHeaderSpecific(xu,VEC_CLASSID,3);
-  if (!snes->vec_func) SETERRQ(((PetscObject)snes)->comm,PETSC_ERR_ARG_WRONGSTATE,"Must call SNESSetFunction() first");
-  if (xl->map->N != snes->vec_func->map->N) SETERRQ2(((PetscObject)snes)->comm,PETSC_ERR_ARG_INCOMP,"Incompatible vector lengths lower bound = %D solution vector = %D",xl->map->N,snes->vec_func->map->N);
-  if (xu->map->N != snes->vec_func->map->N) SETERRQ2(((PetscObject)snes)->comm,PETSC_ERR_ARG_INCOMP,"Incompatible vector lengths: upper bound = %D solution vector = %D",xu->map->N,snes->vec_func->map->N);
+  if (!snes->vec_func) SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE,"Must call SNESSetFunction() first");
+  if (xl->map->N != snes->vec_func->map->N) SETERRQ2(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_INCOMP,"Incompatible vector lengths lower bound = %D solution vector = %D",xl->map->N,snes->vec_func->map->N);
+  if (xu->map->N != snes->vec_func->map->N) SETERRQ2(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_INCOMP,"Incompatible vector lengths: upper bound = %D solution vector = %D",xu->map->N,snes->vec_func->map->N);
   ierr   = SNESSetType(snes,SNESVIRS);CHKERRQ(ierr);
   vi     = (SNES_VIRSAUG*)snes->data;
   ierr   = PetscObjectReference((PetscObject)xl);CHKERRQ(ierr);
@@ -2401,7 +2401,7 @@ PetscErrorCode SNESVIRSAUGSetVariableBounds(SNES snes, Vec xl, Vec xu)
   ierr   = VecGetArrayRead(xl,&xxl);CHKERRQ(ierr);
   ierr   = VecGetArrayRead(xu,&xxu);CHKERRQ(ierr);
   for (i=0; i<n; i++) cnt += ((xxl[i] != SNES_VI_NINF) || (xxu[i] != SNES_VI_INF));
-  ierr = MPI_Allreduce(&cnt,&vi->ntruebounds,1,MPIU_INT,MPI_SUM,((PetscObject)snes)->comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&cnt,&vi->ntruebounds,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)snes));CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(xl,&xxl);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(xu,&xxu);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -2473,7 +2473,7 @@ PetscErrorCode  SNESLineSearchSetType_VIRSAUG(SNES snes, SNESLineSearchType type
     ierr = SNESLineSearchSet(snes,SNESLineSearchCubic_VIRSAUG,NULL);CHKERRQ(ierr);
     break;
   default:
-    SETERRQ(((PetscObject)snes)->comm, PETSC_ERR_SUP,"Unknown line search type");
+    SETERRQ(PetscObjectComm((PetscObject)snes), PETSC_ERR_SUP,"Unknown line search type");
     break;
   }
   snes->ls_type = type;

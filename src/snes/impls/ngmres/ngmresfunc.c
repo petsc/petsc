@@ -14,7 +14,7 @@ PetscErrorCode SNESNGMRESUpdateSubspace_Private(SNES snes,PetscInt ivec,PetscInt
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (ivec > l) SETERRQ2(((PetscObject)snes)->comm,PETSC_ERR_ARG_WRONGSTATE,"Cannot update vector %d with space size %d!",ivec,l);
+  if (ivec > l) SETERRQ2(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE,"Cannot update vector %d with space size %d!",ivec,l);
   ierr = VecCopy(F,Fdot[ivec]);CHKERRQ(ierr);
   ierr = VecCopy(X,Xdot[ivec]);CHKERRQ(ierr);
 
@@ -67,7 +67,7 @@ PetscErrorCode SNESNGMRESFormCombinedSolution_Private(SNES snes,PetscInt l,Vec X
     else beta[0] = 0.;
   } else {
 #if defined(PETSC_MISSING_LAPACK_GELSS)
-    SETERRQ(((PetscObject)snes)->comm,PETSC_ERR_SUP,"NGMRES with LS requires the LAPACK GELSS routine.");
+    SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_SUP,"NGMRES with LS requires the LAPACK GELSS routine.");
 #else
     ierr          = PetscBLASIntCast(l,&ngmres->m);CHKERRQ(ierr);
     ierr          = PetscBLASIntCast(l,&ngmres->n);CHKERRQ(ierr);
@@ -80,12 +80,12 @@ PetscErrorCode SNESNGMRESFormCombinedSolution_Private(SNES snes,PetscInt l,Vec X
     PetscStackCall("LAPACKgelss",LAPACKgelss_(&ngmres->m,&ngmres->n,&ngmres->nrhs,ngmres->h,&ngmres->lda,ngmres->beta,&ngmres->ldb,ngmres->s,&ngmres->rcond,&ngmres->rank,ngmres->work,&ngmres->lwork,&ngmres->info));
 #endif
     ierr = PetscFPTrapPop();CHKERRQ(ierr);
-    if (ngmres->info < 0) SETERRQ(((PetscObject)snes)->comm,PETSC_ERR_LIB,"Bad argument to GELSS");
-    if (ngmres->info > 0) SETERRQ(((PetscObject)snes)->comm,PETSC_ERR_LIB,"SVD failed to converge");
+    if (ngmres->info < 0) SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_LIB,"Bad argument to GELSS");
+    if (ngmres->info > 0) SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_LIB,"SVD failed to converge");
 #endif
   }
   for (i=0; i<l; i++) {
-    if (PetscIsInfOrNanScalar(beta[i])) SETERRQ(((PetscObject)snes)->comm,PETSC_ERR_LIB,"SVD generated inconsistent output");
+    if (PetscIsInfOrNanScalar(beta[i])) SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_LIB,"SVD generated inconsistent output");
   }
   alph_total = 0.;
   for (i = 0; i < l; i++) alph_total += beta[i];

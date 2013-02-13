@@ -51,7 +51,7 @@ PetscErrorCode  DMLocalToGlobalBegin_DA(DM da,Vec l,InsertMode mode,Vec g)
     ierr = VecScatterBegin(dd->gtol,l,g,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   } else if (mode == INSERT_VALUES) {
     ierr = VecScatterBegin(dd->ltog,l,g,mode,SCATTER_FORWARD);CHKERRQ(ierr);
-  } else SETERRQ(((PetscObject)da)->comm,PETSC_ERR_SUP,"Not yet implemented");
+  } else SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Not yet implemented");
   PetscFunctionReturn(0);
 }
 
@@ -70,7 +70,7 @@ PetscErrorCode  DMLocalToGlobalEnd_DA(DM da,Vec l,InsertMode mode,Vec g)
     ierr = VecScatterEnd(dd->gtol,l,g,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   } else if (mode == INSERT_VALUES) {
     ierr = VecScatterEnd(dd->ltog,l,g,mode,SCATTER_FORWARD);CHKERRQ(ierr);
-  } else SETERRQ(((PetscObject)da)->comm,PETSC_ERR_SUP,"Not yet implemented");
+  } else SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Not yet implemented");
   PetscFunctionReturn(0);
 }
 
@@ -105,7 +105,7 @@ PetscErrorCode DMDAGlobalToNatural_Create(DM da)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
-  if (!dd->natural) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_ORDER,"Natural layout vector not yet created; cannot scatter into it");
+  if (!dd->natural) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_ORDER,"Natural layout vector not yet created; cannot scatter into it");
 
   /* create the scatter context */
   ierr = VecGetLocalSize(dd->natural,&m);CHKERRQ(ierr);
@@ -113,8 +113,8 @@ PetscErrorCode DMDAGlobalToNatural_Create(DM da)
 
   ierr = DMDAGetNatural_Private(da,&Nlocal,&to);CHKERRQ(ierr);
   if (Nlocal != m) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Internal error: Nlocal %D local vector size %D",Nlocal,m);
-  ierr = ISCreateStride(((PetscObject)da)->comm,m,start,1,&from);CHKERRQ(ierr);
-  ierr = VecCreateMPIWithArray(((PetscObject)da)->comm,dd->w,dd->Nlocal,PETSC_DETERMINE,0,&global);CHKERRQ(ierr);
+  ierr = ISCreateStride(PetscObjectComm((PetscObject)da),m,start,1,&from);CHKERRQ(ierr);
+  ierr = VecCreateMPIWithArray(PetscObjectComm((PetscObject)da),dd->w,dd->Nlocal,PETSC_DETERMINE,0,&global);CHKERRQ(ierr);
   ierr = VecScatterCreate(global,from,dd->natural,to,&dd->gton);CHKERRQ(ierr);
   ierr = VecDestroy(&global);CHKERRQ(ierr);
   ierr = ISDestroy(&from);CHKERRQ(ierr);

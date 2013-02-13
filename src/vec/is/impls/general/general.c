@@ -13,7 +13,7 @@ PetscErrorCode ISDuplicate_General(IS is,IS *newIS)
   IS_General     *sub = (IS_General*)is->data;
 
   PetscFunctionBegin;
-  ierr = ISCreateGeneral(((PetscObject)is)->comm,sub->n,sub->idx,PETSC_COPY_VALUES,newIS);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PetscObjectComm((PetscObject)is),sub->n,sub->idx,PETSC_COPY_VALUES,newIS);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -87,7 +87,7 @@ static PetscErrorCode ISSetBlockSize_General(IS is,PetscInt bs)
   IS_General *sub = (IS_General*)is->data;
 
   PetscFunctionBegin;
-  if (sub->N % bs) SETERRQ2(((PetscObject)is)->comm,PETSC_ERR_ARG_SIZ,"Block size %D does not divide global size %D",bs,sub->N);
+  if (sub->N % bs) SETERRQ2(PetscObjectComm((PetscObject)is),PETSC_ERR_ARG_SIZ,"Block size %D does not divide global size %D",bs,sub->N);
   if (sub->n % bs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Block size %D does not divide local size %D",bs,sub->n);
 #if defined(PETSC_USE_DEBUG)
   {
@@ -184,7 +184,7 @@ PetscErrorCode ISInvertPermutation_General(IS is,PetscInt nlocal,IS *isout)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(((PetscObject)is)->comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)is),&size);CHKERRQ(ierr);
   if (size == 1) {
     ierr = PetscMalloc(n*sizeof(PetscInt),&ii);CHKERRQ(ierr);
     for (i=0; i<n; i++) ii[idx[i]] = i;
@@ -198,11 +198,11 @@ PetscErrorCode ISInvertPermutation_General(IS is,PetscInt nlocal,IS *isout)
     ierr = ISInvertPermutation(istmp,PETSC_DECIDE,&nistmp);CHKERRQ(ierr);
     ierr = ISDestroy(&istmp);CHKERRQ(ierr);
     /* get the part we need */
-    ierr = MPI_Scan(&nlocal,&nstart,1,MPIU_INT,MPI_SUM,((PetscObject)is)->comm);CHKERRQ(ierr);
+    ierr = MPI_Scan(&nlocal,&nstart,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)is));CHKERRQ(ierr);
 #if defined(PETSC_USE_DEBUG)
     {
       PetscMPIInt rank;
-      ierr = MPI_Comm_rank(((PetscObject)is)->comm,&rank);CHKERRQ(ierr);
+      ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)is),&rank);CHKERRQ(ierr);
       if (rank == size-1) {
         if (nstart != sub->N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Sum of nlocal lengths %d != total IS length %d",nstart,sub->N);
       }
@@ -210,7 +210,7 @@ PetscErrorCode ISInvertPermutation_General(IS is,PetscInt nlocal,IS *isout)
 #endif
     nstart -= nlocal;
     ierr    = ISGetIndices(nistmp,&idx);CHKERRQ(ierr);
-    ierr    = ISCreateGeneral(((PetscObject)is)->comm,nlocal,idx+nstart,PETSC_COPY_VALUES,isout);CHKERRQ(ierr);
+    ierr    = ISCreateGeneral(PetscObjectComm((PetscObject)is),nlocal,idx+nstart,PETSC_COPY_VALUES,isout);CHKERRQ(ierr);
     ierr    = ISRestoreIndices(nistmp,&idx);CHKERRQ(ierr);
     ierr    = ISDestroy(&nistmp);CHKERRQ(ierr);
   }
@@ -233,13 +233,13 @@ PetscErrorCode ISView_General_Binary(IS is,PetscViewer viewer)
   ierr = PetscViewerBinaryGetDescriptor(viewer,&fdes);CHKERRQ(ierr);
 
   /* determine maximum message to arrive */
-  ierr = MPI_Comm_rank(((PetscObject)is)->comm,&rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(((PetscObject)is)->comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)is),&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)is),&size);CHKERRQ(ierr);
 
   tr[0] = IS_FILE_CLASSID;
   tr[1] = isa->N;
   ierr  = PetscViewerBinaryWrite(viewer,tr,2,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
-  ierr  = MPI_Reduce(&isa->n,&len,1,MPIU_INT,MPI_SUM,0,((PetscObject)is)->comm);CHKERRQ(ierr);
+  ierr  = MPI_Reduce(&isa->n,&len,1,MPIU_INT,MPI_SUM,0,PetscObjectComm((PetscObject)is));CHKERRQ(ierr);
 
   ierr = PetscViewerFlowControlStart(viewer,&message_count,&flowcontrolcount);CHKERRQ(ierr);
   if (!rank) {
@@ -250,7 +250,7 @@ PetscErrorCode ISView_General_Binary(IS is,PetscViewer viewer)
     /* receive and save messages */
     for (j=1; j<size; j++) {
       ierr = PetscViewerFlowControlStepMaster(viewer,j,&message_count,flowcontrolcount);CHKERRQ(ierr);
-      ierr = MPI_Recv(values,mesgsize,MPIU_INT,j,tag,((PetscObject)is)->comm,&status);CHKERRQ(ierr);
+      ierr = MPI_Recv(values,mesgsize,MPIU_INT,j,tag,PetscObjectComm((PetscObject)is),&status);CHKERRQ(ierr);
       ierr = MPI_Get_count(&status,MPIU_INT,&mesglen);CHKERRQ(ierr);
       ierr = PetscBinaryWrite(fdes,values,(PetscInt)mesglen,PETSC_INT,PETSC_TRUE);CHKERRQ(ierr);
     }
@@ -259,7 +259,7 @@ PetscErrorCode ISView_General_Binary(IS is,PetscViewer viewer)
   } else {
     ierr = PetscViewerFlowControlStepWorker(viewer,rank,&message_count);CHKERRQ(ierr);
     ierr = PetscMPIIntCast(isa->n,&mesgsize);CHKERRQ(ierr);
-    ierr = MPI_Send(isa->idx,mesgsize,MPIU_INT,0,tag,((PetscObject)is)->comm);CHKERRQ(ierr);
+    ierr = MPI_Send(isa->idx,mesgsize,MPIU_INT,0,tag,PetscObjectComm((PetscObject)is));CHKERRQ(ierr);
     ierr = PetscViewerFlowControlEndWorker(viewer,&message_count);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -373,7 +373,7 @@ PetscErrorCode ISCreateGeneral_Private(IS is)
   PetscBool      flg    = PETSC_FALSE;
 
   PetscFunctionBegin;
-  ierr = MPI_Allreduce(&n,&sub->N,1,MPIU_INT,MPI_SUM,((PetscObject)is)->comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&n,&sub->N,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)is));CHKERRQ(ierr);
   for (i=1; i<n; i++) {
     if (idx[i] < idx[i-1]) {sorted = PETSC_FALSE; break;}
   }
@@ -391,7 +391,7 @@ PetscErrorCode ISCreateGeneral_Private(IS is)
   ierr = PetscOptionsGetBool(NULL,"-is_view",&flg,NULL);CHKERRQ(ierr);
   if (flg) {
     PetscViewer viewer;
-    ierr = PetscViewerASCIIGetStdout(((PetscObject)is)->comm,&viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)is),&viewer);CHKERRQ(ierr);
     ierr = ISView(is,viewer);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

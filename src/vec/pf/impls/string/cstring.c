@@ -65,17 +65,17 @@ PetscErrorCode  PFStringCreateFunction(PF pf,char *string,void **f)
   ierr = PetscStrallocpy(string,(char**)&pf->data);CHKERRQ(ierr);
 
   /* create the new C function and compile it */
-  ierr = PetscSharedTmp(((PetscObject)pf)->comm,&tmpshared);CHKERRQ(ierr);
-  ierr = PetscSharedWorkingDirectory(((PetscObject)pf)->comm,&wdshared);CHKERRQ(ierr);
+  ierr = PetscSharedTmp(PetscObjectComm((PetscObject)pf),&tmpshared);CHKERRQ(ierr);
+  ierr = PetscSharedWorkingDirectory(PetscObjectComm((PetscObject)pf),&wdshared);CHKERRQ(ierr);
   if (tmpshared) {  /* do it in /tmp since everyone has one */
-    ierr = PetscGetTmp(((PetscObject)pf)->comm,tmp,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
-    comm = ((PetscObject)pf)->comm;
+    ierr = PetscGetTmp(PetscObjectComm((PetscObject)pf),tmp,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
+    ierr = PetscObjectGetComm((PetscObject)pf,&comm);CHKERRQ(ierr);
   } else if (!wdshared) {  /* each one does in private /tmp */
-    ierr = PetscGetTmp(((PetscObject)pf)->comm,tmp,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
+    ierr = PetscGetTmp(PetscObjectComm((PetscObject)pf),tmp,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
     comm = PETSC_COMM_SELF;
   } else { /* do it in current directory */
     ierr = PetscStrcpy(tmp,".");CHKERRQ(ierr);
-    comm = ((PetscObject)pf)->comm;
+    ierr = PetscObjectGetComm((PetscObject)pf,&comm);CHKERRQ(ierr);
   }
   ierr = PetscOptionsGetBool(((PetscObject)pf)->prefix,"-pf_string_keep_files",&keeptmpfiles,NULL);CHKERRQ(ierr);
   if (keeptmpfiles) sprintf(task,"cd %s ; mkdir ${USERNAME} ; cd ${USERNAME} ; \\cp -f ${PETSC_DIR}/src/pf/impls/string/makefile ./makefile ; ke  MIN=%d NOUT=%d petscdlib STRINGFUNCTION=\"%s\" ; sync\n",tmp,(int)pf->dimin,(int)pf->dimout,string);
@@ -94,7 +94,7 @@ PetscErrorCode  PFStringCreateFunction(PF pf,char *string,void **f)
   ierr = PetscGetUserName(username,64);CHKERRQ(ierr);
   sprintf(lib,"%s/%s/libpetscdlib",tmp,username);
   ierr = PetscDLLibrarySym(comm,NULL,lib,"PFApply_String",f);CHKERRQ(ierr);
-  if (!f) SETERRQ1(((PetscObject)pf)->comm,PETSC_ERR_ARG_WRONGSTATE,"Cannot find function %s",lib);
+  if (!f) SETERRQ1(PetscObjectComm((PetscObject)pf),PETSC_ERR_ARG_WRONGSTATE,"Cannot find function %s",lib);
 #endif
   PetscFunctionReturn(0);
 }

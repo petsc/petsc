@@ -318,9 +318,12 @@ PetscErrorCode TSPseudoMonitorDefault(TS ts,PetscInt step,PetscReal ptime,Vec v,
 {
   TS_Pseudo      *pseudo = (TS_Pseudo*)ts->data;
   PetscErrorCode ierr;
-  PetscViewer    viewer = dummy ? (PetscViewer) dummy : PETSC_VIEWER_STDOUT_(((PetscObject)ts)->comm);
+  PetscViewer    viewer = (PetscViewer) dummy;
 
   PetscFunctionBegin;
+  if (!viewer) {
+    ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)ts),&viewer);CHKERRQ(ierr);
+  }
   if (pseudo->fnorm < 0) {      /* The last computed norm is stale, recompute */
     ierr = VecZeroEntries(pseudo->xdot);CHKERRQ(ierr);
     ierr = TSComputeIFunction(ts,ts->ptime,ts->vec_sol,pseudo->xdot,pseudo->func,PETSC_FALSE);CHKERRQ(ierr);
@@ -345,7 +348,7 @@ static PetscErrorCode TSSetFromOptions_Pseudo(TS ts)
   ierr = PetscOptionsHead("Pseudo-timestepping options");CHKERRQ(ierr);
   ierr = PetscOptionsBool("-ts_monitor_pseudo","Monitor convergence","TSPseudoMonitorDefault",flg,&flg,NULL);CHKERRQ(ierr);
   if (flg) {
-    ierr = PetscViewerASCIIOpen(((PetscObject)ts)->comm,"stdout",&viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIOpen(PetscObjectComm((PetscObject)ts),"stdout",&viewer);CHKERRQ(ierr);
     ierr = TSMonitorSet(ts,TSPseudoMonitorDefault,viewer,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
   }
   flg  = PETSC_FALSE;

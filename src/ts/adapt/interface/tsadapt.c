@@ -132,7 +132,7 @@ PetscErrorCode  TSAdaptSetType(TSAdapt adapt,TSAdaptType type)
   PetscErrorCode ierr,(*r)(TSAdapt);
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListFind(((PetscObject)adapt)->comm,TSAdaptList,type,PETSC_TRUE,(void(**)(void))&r);CHKERRQ(ierr);
+  ierr = PetscFunctionListFind(PetscObjectComm((PetscObject)adapt),TSAdaptList,type,PETSC_TRUE,(void(**)(void))&r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown TSAdapt type \"%s\" given",type);
   if (((PetscObject)adapt)->type_name) {ierr = (*adapt->ops->destroy)(adapt);CHKERRQ(ierr);}
   ierr = (*r)(adapt);CHKERRQ(ierr);
@@ -267,7 +267,7 @@ PetscErrorCode TSAdaptSetMonitor(TSAdapt adapt,PetscBool flg)
 
   PetscFunctionBegin;
   if (flg) {
-    if (!adapt->monitor) {ierr = PetscViewerASCIIOpen(((PetscObject)adapt)->comm,"stdout",&adapt->monitor);CHKERRQ(ierr);}
+    if (!adapt->monitor) {ierr = PetscViewerASCIIOpen(PetscObjectComm((PetscObject)adapt),"stdout",&adapt->monitor);CHKERRQ(ierr);}
   } else {
     ierr = PetscViewerDestroy(&adapt->monitor);CHKERRQ(ierr);
   }
@@ -433,9 +433,9 @@ PetscErrorCode TSAdaptCandidateAdd(TSAdapt adapt,const char name[],PetscInt orde
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(adapt,TSADAPT_CLASSID,1);
-  if (order < 1) SETERRQ1(((PetscObject)adapt)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Classical order %D must be a positive integer",order);
+  if (order < 1) SETERRQ1(PetscObjectComm((PetscObject)adapt),PETSC_ERR_ARG_OUTOFRANGE,"Classical order %D must be a positive integer",order);
   if (inuse) {
-    if (adapt->candidates.inuse_set) SETERRQ(((PetscObject)adapt)->comm,PETSC_ERR_ARG_WRONGSTATE,"Cannot set the inuse method twice, maybe forgot to call TSAdaptCandidatesClear()");
+    if (adapt->candidates.inuse_set) SETERRQ(PetscObjectComm((PetscObject)adapt),PETSC_ERR_ARG_WRONGSTATE,"Cannot set the inuse method twice, maybe forgot to call TSAdaptCandidatesClear()");
     adapt->candidates.inuse_set = PETSC_TRUE;
   }
   /* first slot if this is the current scheme, otherwise the next available slot */
@@ -521,8 +521,8 @@ PetscErrorCode TSAdaptChoose(TSAdapt adapt,TS ts,PetscReal h,PetscInt *next_sc,P
   PetscValidIntPointer(next_sc,4);
   PetscValidPointer(next_h,5);
   PetscValidIntPointer(accept,6);
-  if (adapt->candidates.n < 1) SETERRQ1(((PetscObject)adapt)->comm,PETSC_ERR_ARG_WRONGSTATE,"%D candidates have been registered",adapt->candidates.n);
-  if (!adapt->candidates.inuse_set) SETERRQ1(((PetscObject)adapt)->comm,PETSC_ERR_ARG_WRONGSTATE,"The current in-use scheme is not among the %D candidates",adapt->candidates.n);
+  if (adapt->candidates.n < 1) SETERRQ1(PetscObjectComm((PetscObject)adapt),PETSC_ERR_ARG_WRONGSTATE,"%D candidates have been registered",adapt->candidates.n);
+  if (!adapt->candidates.inuse_set) SETERRQ1(PetscObjectComm((PetscObject)adapt),PETSC_ERR_ARG_WRONGSTATE,"The current in-use scheme is not among the %D candidates",adapt->candidates.n);
   ierr = (*adapt->ops->choose)(adapt,ts,h,next_sc,next_h,accept,&wlte);CHKERRQ(ierr);
   if (*accept && ts->exact_final_time == TS_EXACTFINALTIME_MATCHSTEP) {
     /* Reduce time step if it overshoots max time */
@@ -534,8 +534,8 @@ PetscErrorCode TSAdaptChoose(TSAdapt adapt,TS ts,PetscReal h,PetscInt *next_sc,P
       else ts->reason = TS_CONVERGED_TIME;
     }
   }
-  if (*next_sc < 0 || adapt->candidates.n <= *next_sc) SETERRQ2(((PetscObject)adapt)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Chosen scheme %D not in valid range 0..%D",*next_sc,adapt->candidates.n-1);
-  if (!(*next_h > 0.)) SETERRQ1(((PetscObject)adapt)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Computed step size %G must be positive",*next_h);
+  if (*next_sc < 0 || adapt->candidates.n <= *next_sc) SETERRQ2(PetscObjectComm((PetscObject)adapt),PETSC_ERR_ARG_OUTOFRANGE,"Chosen scheme %D not in valid range 0..%D",*next_sc,adapt->candidates.n-1);
+  if (!(*next_h > 0.)) SETERRQ1(PetscObjectComm((PetscObject)adapt),PETSC_ERR_ARG_OUTOFRANGE,"Computed step size %G must be positive",*next_h);
 
   if (adapt->monitor) {
     ierr = PetscViewerASCIIAddTab(adapt->monitor,((PetscObject)adapt)->tablevel);CHKERRQ(ierr);

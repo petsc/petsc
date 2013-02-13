@@ -709,13 +709,13 @@ PetscErrorCode MatIJSetEdgesIS(Mat A, IS ix, IS iy)
   PetscCheckSameComm(ix,2,iy,3);
 
   if (!ix) {
-    ierr = ISCreateStride(((PetscObject)A)->comm, A->rmap->n, A->rmap->rstart, 1, &(iix));CHKERRQ(ierr);
+    ierr = ISCreateStride(PetscObjectComm((PetscObject)A), A->rmap->n, A->rmap->rstart, 1, &(iix));CHKERRQ(ierr);
     nix  = A->rmap->n;
   } else { 
     iix = ix;
   }
   if (!iy) {
-    ierr = ISCreateStride(((PetscObject)A)->comm, A->cmap->n, A->cmap->rstart, 1, &(iiy));CHKERRQ(ierr);
+    ierr = ISCreateStride(PetscObjectComm((PetscObject)A), A->cmap->n, A->cmap->rstart, 1, &(iiy));CHKERRQ(ierr);
     niy  = A->cmap->n;
   } else {
     iiy = iy;
@@ -1405,7 +1405,7 @@ PetscErrorCode MatDuplicate_IJ(Mat A, MatDuplicateOption op, Mat *B)
 
   PetscFunctionBegin;
   MatIJCheckAssembled(A,PETSC_TRUE,1);
-  ierr = MatCreate(((PetscObject)A)->comm, B);CHKERRQ(ierr);
+  ierr = MatCreate(PetscObjectComm((PetscObject)A), B);CHKERRQ(ierr);
   ierr = MatSetSizes(*B, A->rmap->n, A->cmap->n, A->rmap->N, A->cmap->N);CHKERRQ(ierr);
   ierr = MatSetType(*B, MATIJ);CHKERRQ(ierr);
   bij  = (Mat_IJ*)((*B)->data);
@@ -1721,8 +1721,8 @@ PetscErrorCode MatIJBinRenumber(Mat A, Mat *B)
   PetscFunctionBegin;
   ierr = MatIJLocalizeImage_Private(A);CHKERRQ(ierr);
   ierr = MatIJBinRenumberLocal_Private(A, MATIJ_LOCAL, pg->m, NULL, &iysize, &iyidx, &bsizes);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(((PetscObject)A)->comm, &size);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(((PetscObject)A)->comm, &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A), &size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)A), &rank);CHKERRQ(ierr);
   /*
    Since the new mapping is to the global bin numberings, we need to adjust the numberings further,
    by determining the local offsets for each bin: the sizes of each bin on the preceeding
@@ -1741,7 +1741,7 @@ PetscErrorCode MatIJBinRenumber(Mat A, Mat *B)
       ierr = PetscMPIIntCast(bsizes[b],&bsize);CHKERRQ(ierr);
     } else bsize = 0;
 
-    ierr = MPI_Scan(&bsize,&goffset,1,MPI_INT, MPI_SUM,((PetscObject)A)->comm);CHKERRQ(ierr);
+    ierr = MPI_Scan(&bsize,&goffset,1,MPI_INT, MPI_SUM,PetscObjectComm((PetscObject)A));CHKERRQ(ierr);
     if (pg->image[b] == g) {
       blow  = bhigh;
       bhigh = blow + bsizes[b];
@@ -1757,7 +1757,7 @@ PetscErrorCode MatIJBinRenumber(Mat A, Mat *B)
   } /* Loop over the global bins. */
   if (b != pg->n) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Traversed %D local bins, not the same as expected: %D", b, pg->n);
   /* Broadcast from the last rank the largest global bin size. */
-  ierr = MPI_Bcast(&NN,1,MPI_INT, rank-1,((PetscObject)A)->comm);CHKERRQ(ierr);
+  ierr = MPI_Bcast(&NN,1,MPI_INT, rank-1,PetscObjectComm((PetscObject)A));CHKERRQ(ierr);
   N    = NN;
   /* Now construct the new pseudograph. */
   /* The number of edges and the source vertices are the same as in the old pseudograph. */
@@ -1770,7 +1770,7 @@ PetscErrorCode MatIJBinRenumber(Mat A, Mat *B)
     if (len != blen) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of edges in the original pseudograph %D and the renumbering pseudograph %D do not match", len, blen);
   }
 #endif
-  ierr = MatCreate(((PetscObject)A)->comm, B);CHKERRQ(ierr);
+  ierr = MatCreate(PetscObjectComm((PetscObject)A), B);CHKERRQ(ierr);
   ierr = MatSetSizes(*B, A->rmap->n, PETSC_DETERMINE, PETSC_DETERMINE, N);CHKERRQ(ierr);
   ierr = MatIJSetEdges(*B, len, ixidx, iyidx);CHKERRQ(ierr);
   /* All ixidx indices are within the local ownership range, so no parallel assembly is required. */
@@ -1787,7 +1787,7 @@ PetscErrorCode MatTranspose_IJ(Mat A, MatReuse reuse, Mat *B)
   IS             ix, iy;
 
   PetscFunctionBegin;
-  ierr = MatCreate(((PetscObject)A)->comm, B);CHKERRQ(ierr);
+  ierr = MatCreate(PetscObjectComm((PetscObject)A), B);CHKERRQ(ierr);
   ierr = MatSetSizes(*B, A->cmap->n, A->rmap->n, A->cmap->N, A->rmap->N);CHKERRQ(ierr);
   ierr = MatSetType(*B, MATIJ);CHKERRQ(ierr);
   ierr = MatIJGetMultivalued(A,&multivalued);CHKERRQ(ierr);
@@ -1894,7 +1894,7 @@ PetscErrorCode MatTransposeMatMult_IJ_IJ(Mat A, Mat B, MatReuse reuse, PetscReal
   ierr = PetscFree(imgsizes1);CHKERRQ(ierr);
   ierr = PetscFree(imgsizes2);CHKERRQ(ierr);
   /* Now construct the new MatIJ. */
-  ierr = MatCreate(((PetscObject)A)->comm, &C);CHKERRQ(ierr);
+  ierr = MatCreate(PetscObjectComm((PetscObject)A), &C);CHKERRQ(ierr);
   ierr = MatSetSizes(C, A->cmap->n, B->cmap->n, A->cmap->N, B->cmap->N);CHKERRQ(ierr);
   ierr = MatSetType(C, MATIJ);CHKERRQ(ierr);
   ierr = MatIJSetEdges(C,count,ixidx,iyidx);CHKERRQ(ierr);

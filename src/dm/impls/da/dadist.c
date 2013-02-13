@@ -35,7 +35,7 @@ PetscErrorCode  DMCreateGlobalVector_DA(DM da,Vec *g)
   if (da->defaultSection) {
     ierr = DMCreateGlobalVector_Section_Private(da,g);CHKERRQ(ierr);
   } else {
-    ierr = VecCreate(((PetscObject)da)->comm,g);CHKERRQ(ierr);
+    ierr = VecCreate(PetscObjectComm((PetscObject)da),g);CHKERRQ(ierr);
     ierr = VecSetSizes(*g,dd->Nlocal,PETSC_DETERMINE);CHKERRQ(ierr);
     ierr = VecSetBlockSize(*g,dd->w);CHKERRQ(ierr);
     ierr = VecSetType(*g,da->vectype);CHKERRQ(ierr);
@@ -98,7 +98,7 @@ PetscErrorCode  DMDACreateNaturalVector(DM da,Vec *g)
       ierr = VecDuplicate(dd->natural,g);CHKERRQ(ierr);
     }
   } else { /* create the first version of this guy */
-    ierr = VecCreate(((PetscObject)da)->comm,g);CHKERRQ(ierr);
+    ierr = VecCreate(PetscObjectComm((PetscObject)da),g);CHKERRQ(ierr);
     ierr = VecSetSizes(*g,dd->Nlocal,PETSC_DETERMINE);CHKERRQ(ierr);
     ierr = VecSetBlockSize(*g, dd->w);CHKERRQ(ierr);
     ierr = VecSetType(*g,VECMPI);CHKERRQ(ierr);

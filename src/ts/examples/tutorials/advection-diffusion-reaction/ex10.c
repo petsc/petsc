@@ -537,12 +537,12 @@ PetscErrorCode MyMonitorSetUp(TS ts)
 
   ierr = TSGetDM(ts,&da);CHKERRQ(ierr);
   ierr = PetscNew(MyMonitorCtx,&ctx);CHKERRQ(ierr);
-  ierr = PetscViewerDrawOpen(((PetscObject)da)->comm,NULL,"",PETSC_DECIDE,PETSC_DECIDE,600,400,&ctx->viewer);CHKERRQ(ierr);
+  ierr = PetscViewerDrawOpen(PetscObjectComm((PetscObject)da),NULL,"",PETSC_DECIDE,PETSC_DECIDE,600,400,&ctx->viewer);CHKERRQ(ierr);
 
   ierr = DMDAGetCorners(da,&xs,NULL,NULL,&xm,NULL,NULL);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&M,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
   ierr = DMDAGetOwnershipRanges(da,&lx,NULL,NULL);CHKERRQ(ierr);
-  ierr = DMDACreate2d(((PetscObject)da)->comm,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,M,N,PETSC_DETERMINE,1,2,1,lx,NULL,&ctx->da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PetscObjectComm((PetscObject)da),DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,M,N,PETSC_DETERMINE,1,2,1,lx,NULL,&ctx->da);CHKERRQ(ierr);
   ierr = DMDASetFieldName(ctx->da,0,"He");CHKERRQ(ierr);
   ierr = DMDASetFieldName(ctx->da,1,"V");CHKERRQ(ierr);
   ierr = DMDASetCoordinateName(ctx->da,0,"X coordinate direction");CHKERRQ(ierr);
@@ -558,7 +558,7 @@ PetscErrorCode MyMonitorSetUp(TS ts)
       idx[cnt++] = dof*xi + xj + N;
     }
   }
-  ierr = ISCreateGeneral(((PetscObject)ts)->comm,2*N*xm,idx,PETSC_OWN_POINTER,&is);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PetscObjectComm((PetscObject)ts),2*N*xm,idx,PETSC_OWN_POINTER,&is);CHKERRQ(ierr);
   ierr = TSGetSolution(ts,&C);CHKERRQ(ierr);
   ierr = VecScatterCreate(C,is,ctx->He,NULL,&ctx->scatter);CHKERRQ(ierr);
   ierr = ISDestroy(&is);CHKERRQ(ierr);

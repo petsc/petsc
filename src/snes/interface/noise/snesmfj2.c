@@ -252,13 +252,13 @@ PetscErrorCode  SNESDefaultMatrixFreeCreate2(SNES snes,Vec x,Mat *J)
   ierr = PetscStrcpy(p,"-");CHKERRQ(ierr);
   if (((PetscObject)snes)->prefix) PetscStrcat(p,((PetscObject)snes)->prefix);
   if (flg) {
-    ierr = PetscPrintf(((PetscObject)snes)->comm," Matrix-free Options (via SNES):\n");CHKERRQ(ierr);
-    ierr = PetscPrintf(((PetscObject)snes)->comm,"   %ssnes_mf_err <err>: set sqrt of relative error in function (default %G)\n",p,mfctx->error_rel);CHKERRQ(ierr);
-    ierr = PetscPrintf(((PetscObject)snes)->comm,"   %ssnes_mf_umin <umin>: see users manual (default %G)\n",p,mfctx->umin);CHKERRQ(ierr);
-    ierr = PetscPrintf(((PetscObject)snes)->comm,"   %ssnes_mf_jorge: use Jorge More's method\n",p);CHKERRQ(ierr);
-    ierr = PetscPrintf(((PetscObject)snes)->comm,"   %ssnes_mf_compute_err: compute sqrt or relative error in function\n",p);CHKERRQ(ierr);
-    ierr = PetscPrintf(((PetscObject)snes)->comm,"   %ssnes_mf_freq_err <freq>: frequency to recompute this (default only once)\n",p);CHKERRQ(ierr);
-    ierr = PetscPrintf(((PetscObject)snes)->comm,"   %ssnes_mf_noise_file <file>: set file for printing noise info\n",p);CHKERRQ(ierr);
+    ierr = PetscPrintf(PetscObjectComm((PetscObject)snes)," Matrix-free Options (via SNES):\n");CHKERRQ(ierr);
+    ierr = PetscPrintf(PetscObjectComm((PetscObject)snes),"   %ssnes_mf_err <err>: set sqrt of relative error in function (default %G)\n",p,mfctx->error_rel);CHKERRQ(ierr);
+    ierr = PetscPrintf(PetscObjectComm((PetscObject)snes),"   %ssnes_mf_umin <umin>: see users manual (default %G)\n",p,mfctx->umin);CHKERRQ(ierr);
+    ierr = PetscPrintf(PetscObjectComm((PetscObject)snes),"   %ssnes_mf_jorge: use Jorge More's method\n",p);CHKERRQ(ierr);
+    ierr = PetscPrintf(PetscObjectComm((PetscObject)snes),"   %ssnes_mf_compute_err: compute sqrt or relative error in function\n",p);CHKERRQ(ierr);
+    ierr = PetscPrintf(PetscObjectComm((PetscObject)snes),"   %ssnes_mf_freq_err <freq>: frequency to recompute this (default only once)\n",p);CHKERRQ(ierr);
+    ierr = PetscPrintf(PetscObjectComm((PetscObject)snes),"   %ssnes_mf_noise_file <file>: set file for printing noise info\n",p);CHKERRQ(ierr);
   }
   ierr = VecDuplicate(x,&mfctx->w);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)x,&comm);CHKERRQ(ierr);

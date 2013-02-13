@@ -120,10 +120,10 @@ PetscErrorCode  VecDot(Vec x,Vec y,PetscScalar *val)
   PetscCheckSameTypeAndComm(x,1,y,2);
   PetscCheckSameSizeVec(x,y);
 
-  ierr = PetscLogEventBarrierBegin(VEC_DotBarrier,x,y,0,0,((PetscObject)x)->comm);CHKERRQ(ierr);
+  ierr = PetscLogEventBarrierBegin(VEC_DotBarrier,x,y,0,0,PetscObjectComm((PetscObject)x));CHKERRQ(ierr);
   ierr = (*x->ops->dot)(x,y,val);CHKERRQ(ierr);
-  ierr = PetscLogEventBarrierEnd(VEC_DotBarrier,x,y,0,0,((PetscObject)x)->comm);CHKERRQ(ierr);
-  if (PetscIsInfOrNanScalar(*val)) SETERRQ(((PetscObject)x)->comm,PETSC_ERR_FP,"Infinite or not-a-number generated in dot product");
+  ierr = PetscLogEventBarrierEnd(VEC_DotBarrier,x,y,0,0,PetscObjectComm((PetscObject)x));CHKERRQ(ierr);
+  if (PetscIsInfOrNanScalar(*val)) SETERRQ(PetscObjectComm((PetscObject)x),PETSC_ERR_FP,"Infinite or not-a-number generated in dot product");
   PetscFunctionReturn(0);
 }
 
@@ -222,7 +222,7 @@ PetscErrorCode  VecNorm(Vec x,NormType type,PetscReal *val)
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   PetscValidRealPointer(val,3);
   PetscValidType(x,1);
-  if (((PetscObject)x)->precision != sizeof(PetscReal)) SETERRQ(((PetscObject)x)->comm,PETSC_ERR_SUP,"Wrong precision of input argument");
+  if (((PetscObject)x)->precision != sizeof(PetscReal)) SETERRQ(PetscObjectComm((PetscObject)x),PETSC_ERR_SUP,"Wrong precision of input argument");
 
   /*
    * Cached data?
@@ -231,10 +231,10 @@ PetscErrorCode  VecNorm(Vec x,NormType type,PetscReal *val)
     ierr = PetscObjectComposedDataGetReal((PetscObject)x,NormIds[type],*val,flg);CHKERRQ(ierr);
     if (flg) PetscFunctionReturn(0);
   }
-  ierr = PetscLogEventBarrierBegin(VEC_NormBarrier,x,0,0,0,((PetscObject)x)->comm);CHKERRQ(ierr);
+  ierr = PetscLogEventBarrierBegin(VEC_NormBarrier,x,0,0,0,PetscObjectComm((PetscObject)x));CHKERRQ(ierr);
   ierr = (*x->ops->norm)(x,type,val);CHKERRQ(ierr);
-  ierr = PetscLogEventBarrierEnd(VEC_NormBarrier,x,0,0,0,((PetscObject)x)->comm);CHKERRQ(ierr);
-  if (PetscIsInfOrNanScalar(*val)) SETERRQ(((PetscObject)x)->comm,PETSC_ERR_FP,"Infinite or not-a-number generated in norm");
+  ierr = PetscLogEventBarrierEnd(VEC_NormBarrier,x,0,0,0,PetscObjectComm((PetscObject)x));CHKERRQ(ierr);
+  if (PetscIsInfOrNanScalar(*val)) SETERRQ(PetscObjectComm((PetscObject)x),PETSC_ERR_FP,"Infinite or not-a-number generated in norm");
 
   if (type!=NORM_1_AND_2) {
     ierr = PetscObjectComposedDataSetReal((PetscObject)x,NormIds[type],*val);CHKERRQ(ierr);
@@ -615,7 +615,7 @@ PetscErrorCode  VecAXPY(Vec y,PetscScalar alpha,Vec x)
   PetscValidType(y,1);
   PetscCheckSameTypeAndComm(x,3,y,1);
   PetscCheckSameSizeVec(x,y);
-  if (x == y) SETERRQ(((PetscObject)x)->comm,PETSC_ERR_ARG_IDN,"x and y cannot be the same vector");
+  if (x == y) SETERRQ(PetscObjectComm((PetscObject)x),PETSC_ERR_ARG_IDN,"x and y cannot be the same vector");
   PetscValidLogicalCollectiveScalar(y,alpha,2);
 
   ierr = PetscLogEventBegin(VEC_AXPY,x,y,0,0);CHKERRQ(ierr);
@@ -659,7 +659,7 @@ PetscErrorCode  VecAXPBY(Vec y,PetscScalar alpha,PetscScalar beta,Vec x)
   PetscValidType(y,1);
   PetscCheckSameTypeAndComm(x,4,y,1);
   PetscCheckSameSizeVec(x,y);
-  if (x == y) SETERRQ(((PetscObject)x)->comm,PETSC_ERR_ARG_IDN,"x and y cannot be the same vector");
+  if (x == y) SETERRQ(PetscObjectComm((PetscObject)x),PETSC_ERR_ARG_IDN,"x and y cannot be the same vector");
   PetscValidLogicalCollectiveScalar(y,alpha,2);
   PetscValidLogicalCollectiveScalar(y,beta,3);
 
@@ -710,8 +710,8 @@ PetscErrorCode  VecAXPBYPCZ(Vec z,PetscScalar alpha,PetscScalar beta,PetscScalar
   PetscCheckSameTypeAndComm(x,5,z,1);
   PetscCheckSameSizeVec(x,y);
   PetscCheckSameSizeVec(x,z);
-  if (x == y || x == z) SETERRQ(((PetscObject)x)->comm,PETSC_ERR_ARG_IDN,"x, y, and z must be different vectors");
-  if (y == z) SETERRQ(((PetscObject)y)->comm,PETSC_ERR_ARG_IDN,"x, y, and z must be different vectors");
+  if (x == y || x == z) SETERRQ(PetscObjectComm((PetscObject)x),PETSC_ERR_ARG_IDN,"x, y, and z must be different vectors");
+  if (y == z) SETERRQ(PetscObjectComm((PetscObject)y),PETSC_ERR_ARG_IDN,"x, y, and z must be different vectors");
   PetscValidLogicalCollectiveScalar(z,alpha,2);
   PetscValidLogicalCollectiveScalar(z,beta,3);
   PetscValidLogicalCollectiveScalar(z,gamma,4);
@@ -755,7 +755,7 @@ PetscErrorCode  VecAYPX(Vec y,PetscScalar alpha,Vec x)
   PetscValidHeaderSpecific(y,VEC_CLASSID,1);
   PetscValidType(x,3);
   PetscValidType(y,1);
-  if (x == y) SETERRQ(((PetscObject)x)->comm,PETSC_ERR_ARG_IDN,"x and y must be different vectors");
+  if (x == y) SETERRQ(PetscObjectComm((PetscObject)x),PETSC_ERR_ARG_IDN,"x and y must be different vectors");
   PetscValidLogicalCollectiveScalar(y,alpha,2);
 
   ierr = PetscLogEventBegin(VEC_AYPX,x,y,0,0);CHKERRQ(ierr);
@@ -1210,11 +1210,11 @@ PetscErrorCode  VecMDot(Vec x,PetscInt nv,const Vec y[],PetscScalar val[])
   PetscCheckSameTypeAndComm(x,2,*y,3);
   PetscCheckSameSizeVec(x,*y);
 
-  ierr = PetscLogEventBarrierBegin(VEC_MDotBarrier,x,*y,0,0,((PetscObject)x)->comm);CHKERRQ(ierr);
+  ierr = PetscLogEventBarrierBegin(VEC_MDotBarrier,x,*y,0,0,PetscObjectComm((PetscObject)x));CHKERRQ(ierr);
   ierr = (*x->ops->mdot)(x,nv,y,val);CHKERRQ(ierr);
-  ierr = PetscLogEventBarrierEnd(VEC_MDotBarrier,x,*y,0,0,((PetscObject)x)->comm);CHKERRQ(ierr);
+  ierr = PetscLogEventBarrierEnd(VEC_MDotBarrier,x,*y,0,0,PetscObjectComm((PetscObject)x));CHKERRQ(ierr);
   for (i=0; i<nv; i++) {
-    if (PetscIsInfOrNanScalar(val[i])) SETERRQ1(((PetscObject)x)->comm,PETSC_ERR_FP,"Infinite or not-a-number generated in mdot, entry %D",i);
+    if (PetscIsInfOrNanScalar(val[i])) SETERRQ1(PetscObjectComm((PetscObject)x),PETSC_ERR_FP,"Infinite or not-a-number generated in mdot, entry %D",i);
   }
   PetscFunctionReturn(0);
 }
@@ -1306,19 +1306,19 @@ PetscErrorCode  VecGetSubVector(Vec X,IS is,Vec *Y)
     PetscBool contiguous,gcontiguous;
     ierr = VecGetOwnershipRange(X,&gstart,&gend);CHKERRQ(ierr);
     ierr = ISContiguousLocal(is,gstart,gend,&start,&contiguous);CHKERRQ(ierr);
-    ierr = MPI_Allreduce(&contiguous,&gcontiguous,1,MPIU_BOOL,MPI_LAND,((PetscObject)is)->comm);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(&contiguous,&gcontiguous,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)is));CHKERRQ(ierr);
     if (gcontiguous) {          /* We can do a no-copy implementation */
       PetscInt    n,N;
       PetscScalar *x;
       PetscMPIInt size;
       ierr = ISGetLocalSize(is,&n);CHKERRQ(ierr);
       ierr = VecGetArray(X,&x);CHKERRQ(ierr);
-      ierr = MPI_Comm_size(((PetscObject)X)->comm,&size);CHKERRQ(ierr);
+      ierr = MPI_Comm_size(PetscObjectComm((PetscObject)X),&size);CHKERRQ(ierr);
       if (size == 1) {
-        ierr = VecCreateSeqWithArray(((PetscObject)X)->comm,1,n,x+start,&Z);CHKERRQ(ierr);
+        ierr = VecCreateSeqWithArray(PetscObjectComm((PetscObject)X),1,n,x+start,&Z);CHKERRQ(ierr);
       } else {
         ierr = ISGetSize(is,&N);CHKERRQ(ierr);
-        ierr = VecCreateMPIWithArray(((PetscObject)X)->comm,1,n,N,x+start,&Z);CHKERRQ(ierr);
+        ierr = VecCreateMPIWithArray(PetscObjectComm((PetscObject)X),1,n,N,x+start,&Z);CHKERRQ(ierr);
       }
       ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
     } else {                    /* Have to create a scatter and do a copy */
@@ -1326,7 +1326,7 @@ PetscErrorCode  VecGetSubVector(Vec X,IS is,Vec *Y)
       PetscInt   n,N;
       ierr = ISGetLocalSize(is,&n);CHKERRQ(ierr);
       ierr = ISGetSize(is,&N);CHKERRQ(ierr);
-      ierr = VecCreate(((PetscObject)is)->comm,&Z);CHKERRQ(ierr);
+      ierr = VecCreate(PetscObjectComm((PetscObject)is),&Z);CHKERRQ(ierr);
       ierr = VecSetSizes(Z,n,N);CHKERRQ(ierr);
       ierr = VecSetType(Z,((PetscObject)X)->type_name);CHKERRQ(ierr);
       ierr = VecScatterCreate(X,is,Z,NULL,&scatter);CHKERRQ(ierr);
@@ -1381,8 +1381,8 @@ PetscErrorCode  VecRestoreSubVector(Vec X,IS is,Vec *Y)
       PetscBool contiguous,gcontiguous;
       ierr = VecGetOwnershipRange(X,&gstart,&gend);CHKERRQ(ierr);
       ierr = ISContiguousLocal(is,gstart,gend,&start,&contiguous);CHKERRQ(ierr);
-      ierr = MPI_Allreduce(&contiguous,&gcontiguous,1,MPIU_BOOL,MPI_LAND,((PetscObject)is)->comm);CHKERRQ(ierr);
-      if (!gcontiguous) SETERRQ(((PetscObject)is)->comm,PETSC_ERR_SUP,"Unhandled case, values have been changed and need to be copied back into X");
+      ierr = MPI_Allreduce(&contiguous,&gcontiguous,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)is));CHKERRQ(ierr);
+      if (!gcontiguous) SETERRQ(PetscObjectComm((PetscObject)is),PETSC_ERR_SUP,"Unhandled case, values have been changed and need to be copied back into X");
     }
     ierr = VecDestroy(Y);CHKERRQ(ierr);
   }
@@ -1710,7 +1710,7 @@ PetscErrorCode  VecPlaceArray(Vec vec,const PetscScalar array[])
   if (array) PetscValidScalarPointer(array,2);
   if (vec->ops->placearray) {
     ierr = (*vec->ops->placearray)(vec,array);CHKERRQ(ierr);
-  } else SETERRQ(((PetscObject)vec)->comm,PETSC_ERR_SUP,"Cannot place array in this type of vector");
+  } else SETERRQ(PetscObjectComm((PetscObject)vec),PETSC_ERR_SUP,"Cannot place array in this type of vector");
   ierr = PetscObjectStateIncrease((PetscObject)vec);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1751,7 +1751,7 @@ PetscErrorCode  VecReplaceArray(Vec vec,const PetscScalar array[])
   PetscValidType(vec,1);
   if (vec->ops->replacearray) {
     ierr = (*vec->ops->replacearray)(vec,array);CHKERRQ(ierr);
-  } else SETERRQ(((PetscObject)vec)->comm,PETSC_ERR_SUP,"Cannot replace array in this type of vector");
+  } else SETERRQ(PetscObjectComm((PetscObject)vec),PETSC_ERR_SUP,"Cannot replace array in this type of vector");
   ierr = PetscObjectStateIncrease((PetscObject)vec);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
