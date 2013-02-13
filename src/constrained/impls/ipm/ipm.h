@@ -42,6 +42,7 @@ typedef struct {
   PetscBool monitorkkt;
   PetscBool usenest;
   PetscScalar alpha1,alpha2;
+  PetscScalar pushy,pushlam;
 } TAO_IPM;
 
 #endif /* ifndef __TAO_IPM_H */
