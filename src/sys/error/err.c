@@ -336,11 +336,12 @@ PetscErrorCode  PetscError(MPI_Comm comm,int line,const char *func,const char *f
   PetscBool      ismain,isunknown;
   PetscErrorCode ierr;
 
+  PetscFunctionBegin;
   if (!func) func = "User provided function";
   if (!file) file = "User file";
   if (!dir)   dir = " ";
+  if (comm == MPI_COMM_NULL) comm = PETSC_COMM_SELF;
 
-  PetscFunctionBegin;
   /* Compose the message evaluating the print format */
   if (mess) {
     va_start(Argp,mess);
