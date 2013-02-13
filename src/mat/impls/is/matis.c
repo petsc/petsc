@@ -13,7 +13,6 @@
 */
 
 #include <../src/mat/impls/is/matis.h>      /*I "petscmat.h" I*/
-#include <petsc-private/isimpl.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "MatDestroy_IS"
@@ -183,20 +182,6 @@ PetscErrorCode MatSetLocalToGlobalMapping_IS(Mat A,ISLocalToGlobalMapping rmappi
   ierr = ISDestroy(&from);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-#define ISG2LMapApply(mapping,n,in,out) 0; \
-  if (!(mapping)->globals) { \
-    PetscErrorCode _ierr = ISGlobalToLocalMappingApply((mapping),IS_GTOLM_MASK,0,0,0,0);CHKERRQ(_ierr); \
-  } \
-  { \
-    PetscInt _i,*_globals = (mapping)->globals,_start = (mapping)->globalstart,_end = (mapping)->globalend; \
-    for (_i=0; _i<n; _i++) { \
-      if (in[_i] < 0)           out[_i] = in[_i]; \
-      else if (in[_i] < _start) out[_i] = -1; \
-      else if (in[_i] > _end)   out[_i] = -1; \
-      else                      out[_i] = _globals[in[_i] - _start]; \
-    } \
-  }
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSetValues_IS"
