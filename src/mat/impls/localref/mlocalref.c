@@ -1,6 +1,5 @@
 
 #include <petsc-private/matimpl.h>          /*I "petscmat.h" I*/
-#include <petsc-private/isimpl.h>
 
 typedef struct {
   Mat Top;
@@ -103,14 +102,6 @@ static PetscErrorCode ISL2GCompose(IS is,ISLocalToGlobalMapping ltog,ISLocalToGl
   PetscValidPointer(cltog,3);
   ierr = ISGetLocalSize(is,&m);CHKERRQ(ierr);
   ierr = ISGetIndices(is,&idx);CHKERRQ(ierr);
-#if defined(PETSC_USE_DEBUG)
-  {
-    PetscInt i;
-    for (i=0; i<m; i++) {
-      if (idx[i] < 0 || ltog->n <= idx[i]) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"is[%D] = %D is not in the local range [0:%D]",i,idx[i],ltog->n);
-    }
-  }
-#endif
   ierr = PetscMalloc(m*sizeof(PetscInt),&idxm);CHKERRQ(ierr);
   if (ltog) {
     ierr = ISLocalToGlobalMappingApply(ltog,m,idx,idxm);CHKERRQ(ierr);
@@ -136,14 +127,6 @@ static PetscErrorCode ISL2GComposeBlock(IS is,ISLocalToGlobalMapping ltog,ISLoca
   PetscValidPointer(cltog,3);
   ierr = ISBlockGetLocalSize(is,&m);CHKERRQ(ierr);
   ierr = ISBlockGetIndices(is,&idx);CHKERRQ(ierr);
-#if defined(PETSC_USE_DEBUG)
-  {
-    PetscInt i;
-    for (i=0; i<m; i++) {
-      if (idx[i] < 0 || ltog->n <= idx[i]) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"is[%D] = %D is not in the local range [0:%D]",i,idx[i],ltog->n);
-    }
-  }
-#endif
   ierr = PetscMalloc(m*sizeof(PetscInt),&idxm);CHKERRQ(ierr);
   if (ltog) {
     ierr = ISLocalToGlobalMappingApply(ltog,m,idx,idxm);CHKERRQ(ierr);

@@ -4,6 +4,27 @@
 PetscClassId IS_LTOGM_CLASSID;
 
 #undef __FUNCT__
+#define __FUNCT__ "ISL2GMapApply"
+PetscErrorCode ISG2LMapApply(ISLocalToGlobalMapping mapping,PetscInt n,const PetscInt in[],PetscInt out[])
+{
+  PetscErrorCode ierr;
+  PetscInt       i,*globals = mapping->globals,start = mapping->globalstart,end = mapping->globalend;
+
+  PetscFunctionBegin;
+  if (!mapping->globals) {
+    ierr = ISGlobalToLocalMappingApply(mapping,IS_GTOLM_MASK,0,0,0,0);CHKERRQ(ierr);
+  }
+  for (i=0; i<n; i++) {
+    if (in[i] < 0)          out[i] = in[i];
+    else if (in[i] < start) out[i] = -1;
+    else if (in[i] > end)   out[i] = -1;
+    else                    out[i] = globals[in[i] - start];
+  }
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
 #define __FUNCT__ "ISLocalToGlobalMappingGetSize"
 /*@C
     ISLocalToGlobalMappingGetSize - Gets the local size of a local to global mapping.

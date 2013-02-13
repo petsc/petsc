@@ -141,20 +141,6 @@ typedef struct {
   PetscInt      *bowners;
 } VecStash;
 
-#if defined(PETSC_HAVE_CUSP)
-/*E
-    PetscCUSPFlag - indicates which memory (CPU, GPU, or none contains valid vector
-
-   PETSC_CUSP_UNALLOCATED  - no memory contains valid matrix entries; NEVER used for vectors
-   PETSC_CUSP_GPU - GPU has valid vector/matrix entries
-   PETSC_CUSP_CPU - CPU has valid vector/matrix entries
-   PETSC_CUSP_BOTH - Both GPU and CPU have valid vector/matrix entries and they match
-
-   Level: developer
-E*/
-typedef enum {PETSC_CUSP_UNALLOCATED,PETSC_CUSP_GPU,PETSC_CUSP_CPU,PETSC_CUSP_BOTH} PetscCUSPFlag;
-#endif
-
 struct _p_Vec {
   PETSCHEADER(struct _VecOps);
   PetscLayout            map;
