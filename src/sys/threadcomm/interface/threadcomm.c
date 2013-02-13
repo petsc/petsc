@@ -7,8 +7,6 @@ static PetscInt         N_CORES                          = -1;
 PetscBool               PetscThreadCommRegisterAllCalled = PETSC_FALSE;
 PetscFunctionList       PetscThreadCommList              = NULL;
 PetscMPIInt             Petsc_ThreadComm_keyval          = MPI_KEYVAL_INVALID;
-static MPI_Comm         comm_cached                      = MPI_COMM_NULL;
-static PetscThreadComm  tcomm_cached                     = 0;
 PetscThreadCommJobQueue PetscJobQueue                    = NULL;
 
 /* Logging support */
@@ -81,15 +79,9 @@ PetscErrorCode PetscCommGetThreadComm(MPI_Comm comm,PetscThreadComm *tcommp)
   void           *ptr;
 
   PetscFunctionBegin;
-  if (comm == comm_cached) {
-    *tcommp = tcomm_cached;
-    PetscFunctionReturn(0);
-  }
-  ierr = MPI_Attr_get(comm,Petsc_ThreadComm_keyval,&ptr,&flg);CHKERRQ(ierr);
+  ierr = MPI_Attr_get(comm,Petsc_ThreadComm_keyval,(PetscThreadComm*)&ptr,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"MPI_Comm does not have a thread communicator");
   *tcommp      = (PetscThreadComm)ptr;
-  comm_cached  = comm;
-  tcomm_cached = *tcommp;
   PetscFunctionReturn(0);
 }
 
@@ -117,11 +109,6 @@ PetscErrorCode PetscThreadCommCreate(MPI_Comm comm,PetscThreadComm *tcomm)
 
   PetscFunctionBegin;
   PetscValidPointer(tcomm,2);
-
-  /* always initialed the cached comms to zero since PetscInitialize() may be called multiple times */
-  comm_cached  = MPI_COMM_NULL;
-  tcomm_cached = 0;
-
 
   *tcomm = NULL;
 
