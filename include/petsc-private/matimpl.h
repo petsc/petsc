@@ -4,7 +4,6 @@
 
 #include <petscmat.h>
 #include <petsc-private/petscimpl.h>
-#include <petsc-private/vecimpl.h>
 
 /*
   This file defines the parts of the matrix data structure that are
