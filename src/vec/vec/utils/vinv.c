@@ -1404,7 +1404,7 @@ PetscErrorCode  VecEqual(Vec vec1,Vec vec2,PetscBool  *flg)
       }
     }
     /* combine results from all processors */
-    ierr = MPI_Allreduce(&flg1,flg,1,MPIU_BOOL,MPI_MIN,((PetscObject)vec1)->comm);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(&flg1,flg,1,MPIU_BOOL,MPI_MIN,PetscObjectComm((PetscObject)vec1));CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

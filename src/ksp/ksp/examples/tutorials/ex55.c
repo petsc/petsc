@@ -18,7 +18,7 @@ int main(int argc,char **args)
   Vec            xx,bb;
   KSP            ksp;
   PetscReal      soft_alpha = 1.e-3;
-  MPI_Comm       wcomm;
+  MPI_Comm       comm;
   PetscBool      use_coords = PETSC_FALSE;
   PetscMPIInt    npe,mype;
   PC             pc;
@@ -37,9 +37,9 @@ int main(int argc,char **args)
 
 
   PetscInitialize(&argc,&args,(char*)0,help);
-  wcomm = PETSC_COMM_WORLD;
-  ierr  = MPI_Comm_rank(wcomm, &mype);CHKERRQ(ierr);
-  ierr  = MPI_Comm_size(wcomm, &npe);CHKERRQ(ierr);
+  comm = PETSC_COMM_WORLD;
+  ierr  = MPI_Comm_rank(comm, &mype);CHKERRQ(ierr);
+  ierr  = MPI_Comm_size(comm, &npe);CHKERRQ(ierr);
   ierr  = PetscOptionsGetInt(NULL,"-ne",&ne,NULL);CHKERRQ(ierr);
   h     = 1./ne;
   /* ne*ne; number of global elements */
@@ -50,14 +50,14 @@ int main(int argc,char **args)
   if (mype==npe-1) m = (ne+1)*(ne+1) - (npe-1)*m;
   m *= 2;
   /* create stiffness matrix */
-  ierr = MatCreate(wcomm,&Amat);CHKERRQ(ierr);
+  ierr = MatCreate(comm,&Amat);CHKERRQ(ierr);
   ierr = MatSetSizes(Amat,m,m,M,M);CHKERRQ(ierr);
   ierr = MatSetBlockSize(Amat,2);CHKERRQ(ierr);
   ierr = MatSetType(Amat,MATAIJ);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(Amat,18,NULL);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(Amat,18,NULL,18,NULL);CHKERRQ(ierr);
 
-  ierr = MatCreate(wcomm,&Pmat);CHKERRQ(ierr);
+  ierr = MatCreate(comm,&Pmat);CHKERRQ(ierr);
   ierr = MatSetSizes(Pmat,m,m,M,M);CHKERRQ(ierr);
   ierr = MatSetBlockSize(Pmat,2);CHKERRQ(ierr);
   ierr = MatSetType(Pmat,MATAIJ);CHKERRQ(ierr);
@@ -67,7 +67,7 @@ int main(int argc,char **args)
   ierr = MatGetOwnershipRange(Amat,&Istart,&Iend);CHKERRQ(ierr);
   if (m != Iend - Istart) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"m %D does not equal Iend %D - Istart %D",m,Iend,Istart);
   /* Generate vectors */
-  ierr = VecCreate(wcomm,&xx);CHKERRQ(ierr);
+  ierr = VecCreate(comm,&xx);CHKERRQ(ierr);
   ierr = VecSetSizes(xx,m,M);CHKERRQ(ierr);
   ierr = VecSetFromOptions(xx);CHKERRQ(ierr);
   ierr = VecDuplicate(xx,&bb);CHKERRQ(ierr);
@@ -221,7 +221,7 @@ int main(int argc,char **args)
 
   if (!PETSC_TRUE) {
     PetscViewer viewer;
-    ierr = PetscViewerASCIIOpen(wcomm, "Amat.m", &viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIOpen(comm, "Amat.m", &viewer);CHKERRQ(ierr);
     ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_MATLAB);CHKERRQ(ierr);
     ierr = MatView(Amat,viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&viewer);
@@ -255,7 +255,7 @@ int main(int argc,char **args)
     PetscViewer viewer;
     Vec         res;
 
-    ierr = PetscObjectGetComm((PetscObject)bb,&wcomm);CHKERRQ(ierr);
+    ierr = PetscObjectGetComm((PetscObject)bb,&comm);CHKERRQ(ierr);
     ierr = VecNorm(bb, NORM_2, &norm2);CHKERRQ(ierr);
 
     ierr = VecDuplicate(xx, &res);CHKERRQ(ierr);
@@ -264,19 +264,19 @@ int main(int argc,char **args)
     ierr = VecDestroy(&res);CHKERRQ(ierr);
     ierr = VecNorm(bb, NORM_2, &norm);CHKERRQ(ierr);
     PetscPrintf(PETSC_COMM_WORLD,"[%d]%s |b-Ax|/|b|=%e, |b|=%e\n",0,__FUNCT__,norm/norm2,norm2);
-    ierr = PetscViewerASCIIOpen(wcomm, "residual.m", &viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIOpen(comm, "residual.m", &viewer);CHKERRQ(ierr);
     ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_MATLAB);CHKERRQ(ierr);
     ierr = VecView(bb,viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&viewer);
 
 
-    /* ierr = PetscViewerASCIIOpen(wcomm, "rhs.m", &viewer);CHKERRQ(ierr); */
+    /* ierr = PetscViewerASCIIOpen(comm, "rhs.m", &viewer);CHKERRQ(ierr); */
     /* ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_MATLAB); */
     /* CHKERRQ(ierr); */
     /* ierr = VecView(bb,viewer);CHKERRQ(ierr); */
     /* ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr); */
 
-    /* ierr = PetscViewerASCIIOpen(wcomm, "solution.m", &viewer);CHKERRQ(ierr); */
+    /* ierr = PetscViewerASCIIOpen(comm, "solution.m", &viewer);CHKERRQ(ierr); */
     /* ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_MATLAB); */
     /* CHKERRQ(ierr); */
     /* ierr = VecView(xx, viewer);CHKERRQ(ierr); */

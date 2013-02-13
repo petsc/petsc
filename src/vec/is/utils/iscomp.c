@@ -52,7 +52,7 @@ PetscErrorCode  ISEqual(IS is1,IS is2,PetscBool  *flg)
     PetscFunctionReturn(0);
   }
 
-  ierr = MPI_Comm_compare(((PetscObject)is1)->comm,((PetscObject)is2)->comm,&mflg);CHKERRQ(ierr);
+  ierr = MPI_Comm_compare(PetscObjectComm((PetscObject)is1),PetscObjectComm((PetscObject)is2),&mflg);CHKERRQ(ierr);
   if (mflg != MPI_CONGRUENT && mflg != MPI_IDENT) {
     *flg = PETSC_FALSE;
     PetscFunctionReturn(0);

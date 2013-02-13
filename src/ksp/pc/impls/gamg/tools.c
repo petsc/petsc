@@ -21,13 +21,13 @@ PetscErrorCode PCGAMGCreateGraph(const Mat Amat, Mat *a_Gmat)
   PetscErrorCode ierr;
   PetscInt       Istart,Iend,Ii,jj,kk,ncols,nloc,NN,MM,bs;
   PetscMPIInt    rank, size;
-  MPI_Comm       wcomm;
+  MPI_Comm       comm;
   Mat            Gmat;
 
   PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject)Amat,&wcomm);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(wcomm,&rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(wcomm,&size);CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject)Amat,&comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(Amat, &Istart, &Iend);CHKERRQ(ierr);
   ierr = MatGetSize(Amat, &MM, &NN);CHKERRQ(ierr);
   ierr = MatGetBlockSize(Amat, &bs);CHKERRQ(ierr);
@@ -58,7 +58,7 @@ PetscErrorCode PCGAMGCreateGraph(const Mat Amat, Mat *a_Gmat)
     }
 
     /* get scalar copy (norms) of matrix -- AIJ specific!!! */
-    ierr = MatCreateAIJ(wcomm, nloc, nloc, PETSC_DETERMINE, PETSC_DETERMINE,0, d_nnz, 0, o_nnz, &Gmat);CHKERRQ(ierr);
+    ierr = MatCreateAIJ(comm, nloc, nloc, PETSC_DETERMINE, PETSC_DETERMINE,0, d_nnz, 0, o_nnz, &Gmat);CHKERRQ(ierr);
 
     ierr = PetscFree(d_nnz);CHKERRQ(ierr);
     ierr = PetscFree(o_nnz);CHKERRQ(ierr);
@@ -106,16 +106,16 @@ PetscErrorCode PCGAMGFilterGraph(Mat *a_Gmat,const PetscReal vfilter,const Petsc
   PetscInt          Istart,Iend,Ii,jj,ncols,nnz0,nnz1, NN, MM, nloc;
   PetscMPIInt       rank, size;
   Mat               Gmat  = *a_Gmat, tGmat, matTrans;
-  MPI_Comm          wcomm;
+  MPI_Comm          comm;
   const PetscScalar *vals;
   const PetscInt    *idx;
   PetscInt          *d_nnz, *o_nnz;
   Vec               diag;
 
   PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject)Gmat,&wcomm);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(wcomm,&rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(wcomm,&size);CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject)Gmat,&comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(Gmat, &Istart, &Iend);CHKERRQ(ierr);
   nloc = Iend - Istart;
   ierr = MatGetSize(Gmat, &MM, &NN);CHKERRQ(ierr);
@@ -151,7 +151,7 @@ PetscErrorCode PCGAMGFilterGraph(Mat *a_Gmat,const PetscReal vfilter,const Petsc
     if (d_nnz[jj] > nloc) d_nnz[jj] = nloc;
     if (o_nnz[jj] > (MM-nloc)) o_nnz[jj] = MM - nloc;
   }
-  ierr = MatCreateAIJ(wcomm, nloc, nloc, MM, MM, 0, d_nnz, 0, o_nnz, &tGmat);CHKERRQ(ierr);
+  ierr = MatCreateAIJ(comm, nloc, nloc, MM, MM, 0, d_nnz, 0, o_nnz, &tGmat);CHKERRQ(ierr);
   ierr = PetscFree(d_nnz);CHKERRQ(ierr);
   ierr = PetscFree(o_nnz);CHKERRQ(ierr);
   if (symm) {
@@ -184,13 +184,13 @@ PetscErrorCode PCGAMGFilterGraph(Mat *a_Gmat,const PetscReal vfilter,const Petsc
 
   if (verbose) {
     if (verbose == 1) {
-      ierr = PetscPrintf(wcomm,"\t[%d]%s %g%% nnz after filtering, with threshold %g, %g nnz ave. (N=%d)\n",rank,__FUNCT__,
+      ierr = PetscPrintf(comm,"\t[%d]%s %g%% nnz after filtering, with threshold %g, %g nnz ave. (N=%d)\n",rank,__FUNCT__,
                          100.*(double)nnz1/(double)nnz0,vfilter,(double)nnz0/(double)nloc,MM);CHKERRQ(ierr);
     } else {
       PetscInt nnz[2],out[2];
       nnz[0] = nnz0; nnz[1] = nnz1;
-      ierr   = MPI_Allreduce(nnz, out, 2, MPIU_INT, MPI_SUM, wcomm);CHKERRQ(ierr);
-      ierr   = PetscPrintf(wcomm,"\t[%d]%s %g%% nnz after filtering, with threshold %g, %g nnz ave. (N=%d)\n",rank,__FUNCT__,
+      ierr   = MPI_Allreduce(nnz, out, 2, MPIU_INT, MPI_SUM, comm);CHKERRQ(ierr);
+      ierr   = PetscPrintf(comm,"\t[%d]%s %g%% nnz after filtering, with threshold %g, %g nnz ave. (N=%d)\n",rank,__FUNCT__,
                            100.*(double)out[1]/(double)out[0],vfilter,(double)out[0]/(double)MM,MM);CHKERRQ(ierr);
     }
   }
@@ -217,7 +217,7 @@ PetscErrorCode PCGAMGGetDataWithGhosts(const Mat Gmat,const PetscInt data_sz,con
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank,size;
-  MPI_Comm       wcomm;
+  MPI_Comm       comm;
   Vec            tmp_crds;
   Mat_MPIAIJ     *mpimat = (Mat_MPIAIJ*)Gmat->data;
   PetscInt       nnodes,num_ghosts,dir,kk,jj,my0,Iend,nloc;
@@ -226,10 +226,10 @@ PetscErrorCode PCGAMGGetDataWithGhosts(const Mat Gmat,const PetscInt data_sz,con
   PetscBool      isMPIAIJ;
 
   PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject)Gmat,&wcomm);CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject)Gmat,&comm);CHKERRQ(ierr);
   ierr      = PetscObjectTypeCompare((PetscObject)Gmat, MATMPIAIJ, &isMPIAIJ);CHKERRQ(ierr);
-  ierr      = MPI_Comm_rank(wcomm,&rank);CHKERRQ(ierr);
-  ierr      = MPI_Comm_size(wcomm,&size);CHKERRQ(ierr);
+  ierr      = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  ierr      = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr      = MatGetOwnershipRange(Gmat, &my0, &Iend);CHKERRQ(ierr);
   nloc      = Iend - my0;
   ierr      = VecGetLocalSize(mpimat->lvec, &num_ghosts);CHKERRQ(ierr);

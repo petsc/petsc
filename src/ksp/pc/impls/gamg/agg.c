@@ -337,7 +337,7 @@ static PetscErrorCode smoothAggs(const Mat Gmat_2, /* base (squared) graph */
   PetscErrorCode ierr;
   PetscBool      isMPI;
   Mat_SeqAIJ     *matA_1, *matB_1=0, *matA_2, *matB_2=0;
-  MPI_Comm       wcomm = ((PetscObject)Gmat_2)->comm;
+  MPI_Comm       comm;
   PetscMPIInt    rank,size;
   PetscInt       lid,*ii,*idx,ix,Iend,my0,kk,n,j;
   Mat_MPIAIJ     *mpimat_2 = 0, *mpimat_1=0;
@@ -348,14 +348,15 @@ static PetscErrorCode smoothAggs(const Mat Gmat_2, /* base (squared) graph */
   Vec            ghost_par_orig2;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(wcomm, &rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(wcomm, &size);CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject)Gmat_2,&comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(Gmat_1,&my0,&Iend);CHKERRQ(ierr);
 
   if (PETSC_FALSE) {
     PetscViewer viewer; char fname[32]; static int llev=0;
     sprintf(fname,"Gmat2_%d.m",llev++);
-    PetscViewerASCIIOpen(wcomm,fname,&viewer);
+    PetscViewerASCIIOpen(comm,fname,&viewer);
     ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_MATLAB);CHKERRQ(ierr);
     ierr = MatView(Gmat_2, viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&viewer);
@@ -738,7 +739,7 @@ static PetscErrorCode formProl0(const PetscCoarsenData *agg_llists, /* list from
 {
   PetscErrorCode ierr;
   PetscInt       Istart,my0,Iend,nloc,clid,flid,aggID,kk,jj,ii,mm,ndone,nSelected,minsz,nghosts,out_data_stride;
-  MPI_Comm       wcomm = ((PetscObject)a_Prol)->comm;
+  MPI_Comm       comm;
   PetscMPIInt    rank, size;
   PetscReal      *out_data;
   PetscCDPos     pos;
@@ -750,10 +751,11 @@ static PetscErrorCode formProl0(const PetscCoarsenData *agg_llists, /* list from
 #endif
 
   PetscFunctionBegin;
-  ierr    = MPI_Comm_rank(wcomm,&rank);CHKERRQ(ierr);
-  ierr    = MPI_Comm_size(wcomm,&size);CHKERRQ(ierr);
-  ierr    = MatGetOwnershipRange(a_Prol, &Istart, &Iend);CHKERRQ(ierr);
-  nloc    = (Iend-Istart)/bs; my0 = Istart/bs;
+  ierr = PetscObjectGetComm((PetscObject)a_Prol,&comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  ierr = MatGetOwnershipRange(a_Prol, &Istart, &Iend);CHKERRQ(ierr);
+  nloc = (Iend-Istart)/bs; my0 = Istart/bs;
   if ((Iend-Istart) % bs) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Iend %D - Istart %d must be divisible by bs %D",Iend,Istart,bs);
   Iend   /= bs;
   nghosts = data_stride/bs - nloc;
@@ -898,10 +900,10 @@ static PetscErrorCode formProl0(const PetscCoarsenData *agg_llists, /* list from
   ierr = MatAssemblyBegin(a_Prol,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(a_Prol,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-/* ierr = MPI_Allreduce(&ndone, &ii, 1, MPIU_INT, MPIU_SUM, wcomm); */
+/* ierr = MPI_Allreduce(&ndone, &ii, 1, MPIU_INT, MPIU_SUM, comm); */
 /* MatGetSize(a_Prol, &kk, &jj); */
-/* ierr = MPI_Allreduce(&minsz, &jj, 1, MPIU_INT, MPIU_MIN, wcomm); */
-/* PetscPrintf(wcomm," **** [%d]%s %d total done, %d nodes (%d local done), min agg. size = %d\n",rank,__FUNCT__,ii,kk/bs,ndone,jj); */
+/* ierr = MPI_Allreduce(&minsz, &jj, 1, MPIU_INT, MPIU_MIN, comm); */
+/* PetscPrintf(comm," **** [%d]%s %d total done, %d nodes (%d local done), min agg. size = %d\n",rank,__FUNCT__,ii,kk/bs,ndone,jj); */
 
 #if defined(OUT_AGGS)
   if (llev==1) fclose(file);
@@ -932,16 +934,16 @@ PetscErrorCode PCGAMGgraph_AGG(PC pc,const Mat Amat,Mat *a_Gmat)
   PC_GAMG_AGG               *pc_gamg_agg = (PC_GAMG_AGG*)pc_gamg->subctx;
   PetscMPIInt               rank,size;
   Mat                       Gmat;
-  MPI_Comm                  wcomm;
+  MPI_Comm                  comm;
   PetscBool /* set,flg , */ symm;
 
   PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject)Amat,&wcomm);CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject)Amat,&comm);CHKERRQ(ierr);
 #if defined PETSC_USE_LOG
   ierr = PetscLogEventBegin(PC_GAMGGgraph_AGG,0,0,0,0);CHKERRQ(ierr);
 #endif
-  ierr = MPI_Comm_rank(wcomm, &rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(wcomm, &size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
 
   /* ierr = MatIsSymmetricKnown(Amat, &set, &flg);CHKERRQ(ierr); || !(set && flg) -- this causes lot of symm calls */
   symm = (PetscBool)(pc_gamg_agg->sym_graph); /* && !pc_gamg_agg->square_graph; */
@@ -983,26 +985,27 @@ PetscErrorCode PCGAMGCoarsen_AGG(PC a_pc,Mat *a_Gmat1,PetscCoarsenData **agg_lis
   PetscInt       *permute;
   PetscBool      *bIndexSet;
   MatCoarsen     crs;
-  MPI_Comm       wcomm = ((PetscObject)Gmat1)->comm;
+  MPI_Comm       comm;
   PetscMPIInt    rank,size;
 
   PetscFunctionBegin;
 #if defined PETSC_USE_LOG
   ierr = PetscLogEventBegin(PC_GAMGCoarsen_AGG,0,0,0,0);CHKERRQ(ierr);
 #endif
-  ierr = MPI_Comm_rank(wcomm, &rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(wcomm, &size);CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject)Gmat1,&comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
   ierr = MatGetLocalSize(Gmat1, &n, &m);CHKERRQ(ierr);
   ierr = MatGetBlockSize(Gmat1, &bs);CHKERRQ(ierr);
   if (bs != 1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"bs %D must be 1",bs);
   nloc = n/bs;
 
   if (pc_gamg_agg->square_graph) {
-    if (verbose > 1) PetscPrintf(wcomm,"[%d]%s square graph\n",rank,__FUNCT__);
+    if (verbose > 1) PetscPrintf(comm,"[%d]%s square graph\n",rank,__FUNCT__);
     /* ierr = MatMatTransposeMult(Gmat1, Gmat1, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &Gmat2); */
     ierr = MatTransposeMatMult(Gmat1, Gmat1, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &Gmat2);CHKERRQ(ierr);
     if (verbose > 2) {
-      ierr = PetscPrintf(wcomm,"[%d]%s square graph done\n",rank,__FUNCT__);CHKERRQ(ierr);
+      ierr = PetscPrintf(comm,"[%d]%s square graph done\n",rank,__FUNCT__);CHKERRQ(ierr);
       /* check for symetry */
       if (verbose > 4) {
 
@@ -1030,13 +1033,13 @@ PetscErrorCode PCGAMGCoarsen_AGG(PC a_pc,Mat *a_Gmat1,PetscCoarsenData **agg_lis
   }
   ierr = PetscFree(bIndexSet);CHKERRQ(ierr);
 
-  if (verbose > 1) PetscPrintf(wcomm,"[%d]%s coarsen graph\n",rank,__FUNCT__);
+  if (verbose > 1) PetscPrintf(comm,"[%d]%s coarsen graph\n",rank,__FUNCT__);
 
   ierr = ISCreateGeneral(PETSC_COMM_SELF, nloc, permute, PETSC_USE_POINTER, &perm);CHKERRQ(ierr);
 #if defined PETSC_GAMG_USE_LOG
   ierr = PetscLogEventBegin(petsc_gamg_setup_events[SET4],0,0,0,0);CHKERRQ(ierr);
 #endif
-  ierr = MatCoarsenCreate(wcomm, &crs);CHKERRQ(ierr);
+  ierr = MatCoarsenCreate(comm, &crs);CHKERRQ(ierr);
   /* ierr = MatCoarsenSetType(crs, MATCOARSENMIS);CHKERRQ(ierr); */
   ierr = MatCoarsenSetFromOptions(crs);CHKERRQ(ierr);
   ierr = MatCoarsenSetGreedyOrdering(crs, perm);CHKERRQ(ierr);
@@ -1052,7 +1055,7 @@ PetscErrorCode PCGAMGCoarsen_AGG(PC a_pc,Mat *a_Gmat1,PetscCoarsenData **agg_lis
 #if defined PETSC_GAMG_USE_LOG
   ierr = PetscLogEventEnd(petsc_gamg_setup_events[SET4],0,0,0,0);CHKERRQ(ierr);
 #endif
-  if (verbose > 2) PetscPrintf(wcomm,"[%d]%s coarsen graph done\n",rank,__FUNCT__);
+  if (verbose > 2) PetscPrintf(comm,"[%d]%s coarsen graph done\n",rank,__FUNCT__);
 
   /* smooth aggs */
   if (Gmat2 != Gmat1) {
@@ -1061,7 +1064,7 @@ PetscErrorCode PCGAMGCoarsen_AGG(PC a_pc,Mat *a_Gmat1,PetscCoarsenData **agg_lis
     ierr     = MatDestroy(&Gmat1);CHKERRQ(ierr);
     *a_Gmat1 = Gmat2; /* output */
     ierr     = PetscCDGetMat(llist, &mat);CHKERRQ(ierr);
-    if (mat) SETERRQ(wcomm,PETSC_ERR_ARG_WRONG, "Auxilary matrix with squared graph????");
+    if (mat) SETERRQ(comm,PETSC_ERR_ARG_WRONG, "Auxilary matrix with squared graph????");
   } else {
     const PetscCoarsenData *llist = *agg_lists;
     /* see if we have a matrix that takes precedence (returned from MatCoarsenAppply) */
@@ -1074,7 +1077,7 @@ PetscErrorCode PCGAMGCoarsen_AGG(PC a_pc,Mat *a_Gmat1,PetscCoarsenData **agg_lis
 #if defined PETSC_USE_LOG
   ierr = PetscLogEventEnd(PC_GAMGCoarsen_AGG,0,0,0,0);CHKERRQ(ierr);
 #endif
-  if (verbose > 2) PetscPrintf(wcomm,"[%d]%s PCGAMGCoarsen_AGG done\n",rank,__FUNCT__);
+  if (verbose > 2) PetscPrintf(comm,"[%d]%s PCGAMGCoarsen_AGG done\n",rank,__FUNCT__);
   PetscFunctionReturn(0);
 }
 
@@ -1102,18 +1105,18 @@ PetscErrorCode PCGAMGProlongator_AGG(PC pc,const Mat Amat,const Mat Gmat,PetscCo
   PetscInt       Istart,Iend,nloc,ii,jj,kk,my0,nLocalSelected,bs;
   Mat            Prol;
   PetscMPIInt    rank, size;
-  MPI_Comm       wcomm;
+  MPI_Comm       comm;
   const PetscInt col_bs = data_cols;
   PetscReal      *data_w_ghost;
   PetscInt       myCrs0, nbnodes=0, *flid_fgid;
 
   PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject)Amat,&wcomm);CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject)Amat,&comm);CHKERRQ(ierr);
 #if defined PETSC_USE_LOG
   ierr = PetscLogEventBegin(PC_GAMGProlongator_AGG,0,0,0,0);CHKERRQ(ierr);
 #endif
-  ierr = MPI_Comm_rank(wcomm, &rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(wcomm, &size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(Amat, &Istart, &Iend);CHKERRQ(ierr);
   ierr = MatGetBlockSize(Amat, &bs);CHKERRQ(ierr);
   nloc = (Iend-Istart)/bs; my0 = Istart/bs;
@@ -1128,7 +1131,7 @@ PetscErrorCode PCGAMGProlongator_AGG(PC pc,const Mat Amat,const Mat Gmat,PetscCo
   }
 
   /* create prolongator, create P matrix */
-  ierr = MatCreate(wcomm, &Prol);CHKERRQ(ierr);
+  ierr = MatCreate(comm, &Prol);CHKERRQ(ierr);
   ierr = MatSetSizes(Prol,nloc*bs,nLocalSelected*col_bs,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = MatSetBlockSizes(Prol, bs, col_bs);CHKERRQ(ierr);
   ierr = MatSetType(Prol, MATAIJ);CHKERRQ(ierr);
@@ -1142,12 +1145,12 @@ PetscErrorCode PCGAMGProlongator_AGG(PC pc,const Mat Amat,const Mat Gmat,PetscCo
   /* can get all points "removed" */
   ierr =  MatGetSize(Prol, &kk, &ii);CHKERRQ(ierr);
   if (ii==0) {
-    if (verbose > 0) PetscPrintf(wcomm,"[%d]%s no selected points on coarse grid\n",rank,__FUNCT__);
+    if (verbose > 0) PetscPrintf(comm,"[%d]%s no selected points on coarse grid\n",rank,__FUNCT__);
     ierr = MatDestroy(&Prol);CHKERRQ(ierr);
     *a_P_out = NULL;  /* out */
     PetscFunctionReturn(0);
   }
-  if (verbose > 0) PetscPrintf(wcomm,"\t\t[%d]%s New grid %d nodes\n",rank,__FUNCT__,ii/col_bs);
+  if (verbose > 0) PetscPrintf(comm,"\t\t[%d]%s New grid %d nodes\n",rank,__FUNCT__,ii/col_bs);
   ierr = MatGetOwnershipRangeColumn(Prol, &myCrs0, &kk);CHKERRQ(ierr);
 
   if ((kk-myCrs0) % col_bs) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"(kk %D -myCrs0 %D) not divisible by col_bs %D",kk,myCrs0,col_bs);
@@ -1250,15 +1253,15 @@ PetscErrorCode PCGAMGOptprol_AGG(PC pc,const Mat Amat,Mat *a_P)
   PetscInt       jj;
   PetscMPIInt    rank,size;
   Mat            Prol  = *a_P;
-  MPI_Comm       wcomm;
+  MPI_Comm       comm;
 
   PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject)Amat,&wcomm);CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject)Amat,&comm);CHKERRQ(ierr);
 #if defined PETSC_USE_LOG
   ierr = PetscLogEventBegin(PC_GAMGOptprol_AGG,0,0,0,0);CHKERRQ(ierr);
 #endif
-  ierr = MPI_Comm_rank(wcomm, &rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(wcomm, &size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
 
   /* smooth P0 */
   for (jj = 0; jj < pc_gamg_agg->nsmooths; jj++) {
@@ -1276,7 +1279,7 @@ PetscErrorCode PCGAMGOptprol_AGG(PC pc,const Mat Amat,Mat *a_P)
       ierr = MatGetVecs(Amat, &xx, 0);CHKERRQ(ierr);
       {
         PetscRandom rctx;
-        ierr = PetscRandomCreate(wcomm,&rctx);CHKERRQ(ierr);
+        ierr = PetscRandomCreate(comm,&rctx);CHKERRQ(ierr);
         ierr = PetscRandomSetFromOptions(rctx);CHKERRQ(ierr);
         ierr = VecSetRandom(bb,rctx);CHKERRQ(ierr);
         ierr = PetscRandomDestroy(&rctx);CHKERRQ(ierr);
@@ -1298,7 +1301,7 @@ PetscErrorCode PCGAMGOptprol_AGG(PC pc,const Mat Amat,Mat *a_P)
         ierr = VecAssemblyEnd(bb);CHKERRQ(ierr);
       }
 
-      ierr = KSPCreate(wcomm,&eksp);CHKERRQ(ierr);
+      ierr = KSPCreate(comm,&eksp);CHKERRQ(ierr);
       ierr = KSPSetTolerances(eksp,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,10);CHKERRQ(ierr);
       ierr = KSPSetNormType(eksp, KSP_NORM_NONE);CHKERRQ(ierr);
       ierr = KSPSetOptionsPrefix(eksp,((PetscObject)pc)->prefix);CHKERRQ(ierr);
@@ -1321,7 +1324,7 @@ PetscErrorCode PCGAMGOptprol_AGG(PC pc,const Mat Amat,Mat *a_P)
 
       ierr = KSPComputeExtremeSingularValues(eksp, &emax, &emin);CHKERRQ(ierr);
       if (verbose > 0) {
-        PetscPrintf(wcomm,"\t\t\t%s smooth P0: max eigen=%e min=%e PC=%s\n",
+        PetscPrintf(comm,"\t\t\t%s smooth P0: max eigen=%e min=%e PC=%s\n",
                     __FUNCT__,emax,emin,PCJACOBI);
       }
       ierr = VecDestroy(&xx);CHKERRQ(ierr);
@@ -1379,16 +1382,16 @@ PetscErrorCode PCGAMGKKTProl_AGG(PC pc,const Mat Prol11,const Mat A21,Mat *a_P22
   /* PC_GAMG_AGG    *pc_gamg_agg = (PC_GAMG_AGG*)pc_gamg->subctx;  */
   PetscMPIInt      rank,size;
   Mat              Prol22,Tmat,Gmat;
-  MPI_Comm         wcomm;
+  MPI_Comm         comm;
   PetscCoarsenData *agg_lists;
 
   PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject)pc,&wcomm);CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject)pc,&comm);CHKERRQ(ierr);
 #if defined PETSC_USE_LOG
   ierr = PetscLogEventBegin(PC_GAMGKKTProl_AGG,0,0,0,0);CHKERRQ(ierr);
 #endif
-  ierr = MPI_Comm_rank(wcomm, &rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(wcomm, &size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
 
   /* form C graph */
   ierr = MatMatMult(A21, Prol11, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &Tmat);CHKERRQ(ierr);
@@ -1399,7 +1402,7 @@ PetscErrorCode PCGAMGKKTProl_AGG(PC pc,const Mat Prol11,const Mat A21,Mat *a_P22
   /* coarsen constraints */
   {
     MatCoarsen crs;
-    ierr = MatCoarsenCreate(wcomm, &crs);CHKERRQ(ierr);
+    ierr = MatCoarsenCreate(comm, &crs);CHKERRQ(ierr);
     ierr = MatCoarsenSetType(crs, MATCOARSENMIS);CHKERRQ(ierr);
     ierr = MatCoarsenSetAdjacency(crs, Gmat);CHKERRQ(ierr);
     ierr = MatCoarsenSetVerbose(crs, verbose);CHKERRQ(ierr);
@@ -1422,12 +1425,12 @@ PetscErrorCode PCGAMGKKTProl_AGG(PC pc,const Mat Prol11,const Mat A21,Mat *a_P22
       if (!ise) nLocalSelected++;
     }
 
-    ierr = MatCreate(wcomm,&Prol22);CHKERRQ(ierr);
+    ierr = MatCreate(comm,&Prol22);CHKERRQ(ierr);
     ierr = MatSetSizes(Prol22,nloc, nLocalSelected,PETSC_DETERMINE, PETSC_DETERMINE);CHKERRQ(ierr);
     ierr = MatSetType(Prol22, MATAIJ);CHKERRQ(ierr);
     ierr = MatSeqAIJSetPreallocation(Prol22,1,NULL);CHKERRQ(ierr);
     ierr = MatMPIAIJSetPreallocation(Prol22,1,NULL,1,NULL);CHKERRQ(ierr);
-    /* ierr = MatCreateAIJ(wcomm, */
+    /* ierr = MatCreateAIJ(comm, */
     /*                      nloc, nLocalSelected, */
     /*                      PETSC_DETERMINE, PETSC_DETERMINE, */
     /*                      1, NULL, 1, NULL, */

@@ -32,7 +32,7 @@ PetscErrorCode maxIndSetAgg(IS perm,Mat Gmat,PetscBool strict_aggs,PetscInt verb
   PetscErrorCode   ierr;
   PetscBool        isMPI;
   Mat_SeqAIJ       *matA, *matB = 0;
-  MPI_Comm         wcomm;
+  MPI_Comm         comm;
   Vec              locState, ghostState;
   PetscInt         num_fine_ghosts,kk,n,ix,j,*idx,*ii,iter,Iend,my0,nremoved;
   Mat_MPIAIJ       *mpimat = 0;
@@ -48,9 +48,9 @@ PetscErrorCode maxIndSetAgg(IS perm,Mat Gmat,PetscBool strict_aggs,PetscInt verb
   PetscCoarsenData *agg_lists;
 
   PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject)Gmat,&wcomm);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(wcomm, &mype);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(wcomm, &npe);CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject)Gmat,&comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm, &mype);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm, &npe);CHKERRQ(ierr);
 
   /* get submatrices */
   ierr = PetscObjectTypeCompare((PetscObject)Gmat, MATMPIAIJ, &isMPI);CHKERRQ(ierr);
@@ -249,7 +249,7 @@ PetscErrorCode maxIndSetAgg(IS perm,Mat Gmat,PetscBool strict_aggs,PetscInt verb
       {
         PetscInt t1, t2;
         t1   = nloc - nDone;
-        ierr = MPI_Allreduce(&t1, &t2, 1, MPIU_INT, MPI_SUM, wcomm);CHKERRQ(ierr); /* synchronous version */
+        ierr = MPI_Allreduce(&t1, &t2, 1, MPIU_INT, MPI_SUM, comm);CHKERRQ(ierr); /* synchronous version */
         if (t2 == 0) break;
       }
     } else break; /* all done */
@@ -258,12 +258,12 @@ PetscErrorCode maxIndSetAgg(IS perm,Mat Gmat,PetscBool strict_aggs,PetscInt verb
 
   if (verbose) {
     if (verbose == 1) {
-      ierr = PetscPrintf(wcomm,"\t[%d]%s removed %d of %d vertices.  %d selected.\n",mype,__FUNCT__,nremoved,nloc,nselected);CHKERRQ(ierr);
+      ierr = PetscPrintf(comm,"\t[%d]%s removed %d of %d vertices.  %d selected.\n",mype,__FUNCT__,nremoved,nloc,nselected);CHKERRQ(ierr);
     } else {
-      ierr = MPI_Allreduce(&nremoved, &n, 1, MPIU_INT, MPI_SUM, wcomm);CHKERRQ(ierr);
+      ierr = MPI_Allreduce(&nremoved, &n, 1, MPIU_INT, MPI_SUM, comm);CHKERRQ(ierr);
       ierr = MatGetSize(Gmat, &kk, &j);CHKERRQ(ierr);
-      ierr = MPI_Allreduce(&nselected, &j, 1, MPIU_INT, MPI_SUM, wcomm);CHKERRQ(ierr);
-      ierr = PetscPrintf(wcomm,"\t[%d]%s removed %d of %d vertices. (%d local)  %d selected.\n",mype,__FUNCT__,n,kk,nremoved,j);CHKERRQ(ierr);
+      ierr = MPI_Allreduce(&nselected, &j, 1, MPIU_INT, MPI_SUM, comm);CHKERRQ(ierr);
+      ierr = PetscPrintf(comm,"\t[%d]%s removed %d of %d vertices. (%d local)  %d selected.\n",mype,__FUNCT__,n,kk,nremoved,j);CHKERRQ(ierr);
     }
   }
 
@@ -302,7 +302,7 @@ PetscErrorCode maxIndSetAgg(IS perm,Mat Gmat,PetscBool strict_aggs,PetscInt verb
   /* for (kk=n=0,ix=my0;kk<nloc;kk++,ix++) { */
   /*   if (lid_removed[kk]) lid_gid[n++] = ix; */
   /* } */
-  /* ierr = PetscCDSetRemovedIS(agg_lists, wcomm, n, lid_gid);CHKERRQ(ierr); */
+  /* ierr = PetscCDSetRemovedIS(agg_lists, comm, n, lid_gid);CHKERRQ(ierr); */
 
   ierr = PetscFree(lid_cprowID);CHKERRQ(ierr);
   ierr = PetscFree(lid_gid);CHKERRQ(ierr);
@@ -338,10 +338,10 @@ static PetscErrorCode MatCoarsenApply_MIS(MatCoarsen coarse)
   if (!coarse->perm) {
     IS       perm;
     PetscInt n,m;
-    MPI_Comm wcomm;
-    ierr = PetscObjectGetComm((PetscObject)mat,&wcomm);CHKERRQ(ierr);
+    MPI_Comm comm;
+    ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
     ierr = MatGetLocalSize(mat, &m, &n);CHKERRQ(ierr);
-    ierr = ISCreateStride(wcomm, m, 0, 1, &perm);CHKERRQ(ierr);
+    ierr = ISCreateStride(comm, m, 0, 1, &perm);CHKERRQ(ierr);
     ierr = maxIndSetAgg(perm, mat, coarse->strict_aggs, coarse->verbose, &coarse->agg_lists);CHKERRQ(ierr);
     ierr = ISDestroy(&perm);CHKERRQ(ierr);
   } else {

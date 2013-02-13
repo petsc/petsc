@@ -459,7 +459,7 @@ PetscErrorCode heavyEdgeMatchAgg(IS perm,Mat a_Gmat,PetscInt verbose,PetscCoarse
 {
   PetscErrorCode   ierr;
   PetscBool        isMPI;
-  MPI_Comm         wcomm = ((PetscObject)a_Gmat)->comm;
+  MPI_Comm         comm;
   PetscInt         sub_it,kk,n,ix,*idx,*ii,iter,Iend,my0;
   PetscMPIInt      rank,size;
   const PetscInt   nloc = a_Gmat->rmap->n,n_iter=6; /* need to figure out how to stop this */
@@ -474,11 +474,12 @@ PetscErrorCode heavyEdgeMatchAgg(IS perm,Mat a_Gmat,PetscInt verbose,PetscCoarse
   PetscMPIInt      tag1,tag2;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(wcomm, &rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(wcomm, &size);CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject)a_Gmat,&comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(a_Gmat, &my0, &Iend);CHKERRQ(ierr);
-  ierr = PetscCommGetNewTag(wcomm, &tag1);CHKERRQ(ierr);
-  ierr = PetscCommGetNewTag(wcomm, &tag2);CHKERRQ(ierr);
+  ierr = PetscCommGetNewTag(comm, &tag1);CHKERRQ(ierr);
+  ierr = PetscCommGetNewTag(comm, &tag2);CHKERRQ(ierr);
 
   ierr = PetscMalloc(nloc*sizeof(PetscInt), &lid_gid);CHKERRQ(ierr); /* explicit array needed */
   ierr = PetscMalloc(nloc*sizeof(PetscInt), &lid_cprowID);CHKERRQ(ierr);
@@ -591,7 +592,7 @@ PetscErrorCode heavyEdgeMatchAgg(IS perm,Mat a_Gmat,PetscInt verbose,PetscCoarse
     /*       lid_rem[idx++] = kk + my0; */
     /*     } */
     /*   } */
-    /*   ierr = PetscCDSetRemovedIS(agg_llists, wcomm, idx, lid_rem);CHKERRQ(ierr); */
+    /*   ierr = PetscCDSetRemovedIS(agg_llists, comm, idx, lid_rem);CHKERRQ(ierr); */
     /*   ierr = PetscFree(lid_rem);CHKERRQ(ierr); */
     /* } */
 
@@ -683,7 +684,7 @@ PetscErrorCode heavyEdgeMatchAgg(IS perm,Mat a_Gmat,PetscInt verbose,PetscCoarse
     qsort(Edges, nEdges, sizeof(Edge), gamg_hem_compare);
 
     /* projection matrix */
-    ierr = MatCreateAIJ(wcomm, nloc, nloc, PETSC_DETERMINE, PETSC_DETERMINE, 1, 0, 1, 0, &P);CHKERRQ(ierr);
+    ierr = MatCreateAIJ(comm, nloc, nloc, PETSC_DETERMINE, PETSC_DETERMINE, 1, 0, 1, 0, &P);CHKERRQ(ierr);
 
     /* clear matched flags */
     for (kk=0; kk<nloc; kk++) lid_matched[kk] = PETSC_FALSE;
@@ -822,12 +823,12 @@ PetscErrorCode heavyEdgeMatchAgg(IS perm,Mat a_Gmat,PetscInt verbose,PetscCoarse
               *pt++ = gid; *pt++ = lid0;
             }
             /* send request tag1 [n, proc, n*[gid1,lid0] ] */
-            ierr = MPI_Isend(sbuff, 2*n+2, MPIU_INT, proc, tag1, wcomm, request);CHKERRQ(ierr);
+            ierr = MPI_Isend(sbuff, 2*n+2, MPIU_INT, proc, tag1, comm, request);CHKERRQ(ierr);
             /* post recieve */
             request        = (MPI_Request*)pt;
             rreqs2[nSend1] = request; /* cache recv request */
             pt             = (PetscInt*)(request+1);
-            ierr           = MPI_Irecv(pt, n*CHUNCK_SIZE, MPIU_INT, proc, tag2, wcomm, request);CHKERRQ(ierr);
+            ierr           = MPI_Irecv(pt, n*CHUNCK_SIZE, MPIU_INT, proc, tag2, comm, request);CHKERRQ(ierr);
             /* clear list */
             ierr = PetscCDRemoveAll(deleted_list, proc);CHKERRQ(ierr);
             nSend1++;
@@ -835,20 +836,20 @@ PetscErrorCode heavyEdgeMatchAgg(IS perm,Mat a_Gmat,PetscInt verbose,PetscCoarse
         }
         /* recieve requests, send response, clear lists */
         kk     = nactive_edges;
-        ierr   = MPI_Allreduce(&kk,&nactive_edges,1,MPIU_INT,MPI_SUM,wcomm);CHKERRQ(ierr); /* not correct syncronization and global */
+        ierr   = MPI_Allreduce(&kk,&nactive_edges,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr); /* not correct syncronization and global */
         nSend2 = 0;
         while (1) {
 #define BF_SZ 10000
           PetscMPIInt flag,count;
           PetscInt rbuff[BF_SZ],*pt,*pt2,*pt3,count2,*sbuff,count3;
           MPI_Request *request;
-          ierr = MPI_Iprobe(MPI_ANY_SOURCE, tag1, wcomm, &flag, &status);CHKERRQ(ierr);
+          ierr = MPI_Iprobe(MPI_ANY_SOURCE, tag1, comm, &flag, &status);CHKERRQ(ierr);
           if (!flag) break;
           ierr = MPI_Get_count(&status, MPIU_INT, &count);CHKERRQ(ierr);
           if (count > BF_SZ) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"buffer too small for recieve: %d",count);
           proc = status.MPI_SOURCE;
           /* recieve request tag1 [n, proc, n*[gid1,lid0] ] */
-          ierr = MPI_Recv(rbuff, count, MPIU_INT, proc, tag1, wcomm, &status);CHKERRQ(ierr);
+          ierr = MPI_Recv(rbuff, count, MPIU_INT, proc, tag1, comm, &status);CHKERRQ(ierr);
           /* count sends */
           pt = rbuff; count3 = count2 = 0;
           n  = *pt++; kk = *pt++;
@@ -891,7 +892,7 @@ PetscErrorCode heavyEdgeMatchAgg(IS perm,Mat a_Gmat,PetscInt verbose,PetscCoarse
             ierr = PetscCDRemoveAll(agg_llists, lid1);CHKERRQ(ierr);
           }
           /* send requested data tag2 *[lid0, n, n*[gid1] ] */
-          ierr = MPI_Isend(sbuff, count2, MPIU_INT, proc, tag2, wcomm, request);CHKERRQ(ierr);
+          ierr = MPI_Isend(sbuff, count2, MPIU_INT, proc, tag2, comm, request);CHKERRQ(ierr);
         }
 
         /* recieve tag2 *[lid0, n, n*[gid] ] */
@@ -1018,7 +1019,7 @@ PetscErrorCode heavyEdgeMatchAgg(IS perm,Mat a_Gmat,PetscInt verbose,PetscCoarse
         ierr = VecGetArray(ghostMaxPE, &cpcol_max_pe);CHKERRQ(ierr);
         ierr = VecRestoreArray(locMaxEdge, &lid_max_ew);CHKERRQ(ierr);
       } /* deal with deleted ghost */
-      if (verbose>2) PetscPrintf(wcomm,"\t[%d]%s %d.%d: %d active edges.\n",rank,__FUNCT__,iter,sub_it,nactive_edges);
+      if (verbose>2) PetscPrintf(comm,"\t[%d]%s %d.%d: %d active edges.\n",rank,__FUNCT__,iter,sub_it,nactive_edges);
       if (!nactive_edges) break;
     } /* sub_it loop */
 
@@ -1088,7 +1089,7 @@ PetscErrorCode heavyEdgeMatchAgg(IS perm,Mat a_Gmat,PetscInt verbose,PetscCoarse
     ierr = MatGetSize(a_Gmat, &MM, &NN);CHKERRQ(ierr);
     if (mxsz > MM-nloc) mxsz = MM-nloc;
 
-    ierr = MatCreateAIJ(wcomm, nloc, nloc,PETSC_DETERMINE, PETSC_DETERMINE,0, 0, mxsz, 0, &mat);CHKERRQ(ierr);
+    ierr = MatCreateAIJ(comm, nloc, nloc,PETSC_DETERMINE, PETSC_DETERMINE,0, 0, mxsz, 0, &mat);CHKERRQ(ierr);
 
     /* */
     for (kk=0,gid=my0; kk<nloc; kk++,gid++) {

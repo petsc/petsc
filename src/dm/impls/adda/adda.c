@@ -121,7 +121,7 @@ PetscErrorCode  DMADDAGetMatrixNS(DM dm, DM dmc, MatType mtype, Mat *mat)
 PetscErrorCode  DMCreateInterpolation_ADDA(DM dm1,DM dm2,Mat *mat,Vec *vec)
 {
   PetscFunctionBegin;
-  SETERRQ(((PetscObject)dm1)->comm,PETSC_ERR_SUP, "Not implemented yet");
+  SETERRQ(PetscObjectComm((PetscObject)dm1),PETSC_ERR_SUP, "Not implemented yet");
   PetscFunctionReturn(0);
 }
 
@@ -164,7 +164,7 @@ PetscErrorCode  DMCoarsen_ADDA(DM dm, MPI_Comm comm,DM *dmc)
 PetscErrorCode  DMCreateInjection_ADDA(DM dm1,DM dm2, VecScatter *ctx)
 {
   PetscFunctionBegin;
-  SETERRQ(((PetscObject)dm1)->comm,PETSC_ERR_SUP, "Not implemented yet");
+  SETERRQ(PetscObjectComm((PetscObject)dm1),PETSC_ERR_SUP, "Not implemented yet");
   PetscFunctionReturn(0);
 }
 
