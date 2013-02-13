@@ -26,6 +26,7 @@ const char *const PetscViewerFormats[] = {
   "DRAW_PORTS",
   "VTK_VTS",
   "VTK_VTU",
+  "BINARY_MATLAB",
   "NATIVE",
   "NOFORMAT",
   "PetscViewerFormat",

@@ -186,14 +186,6 @@ PETSC_EXTERN PetscErrorCode MatSetDM(Mat, DM);
 
 typedef struct NLF_DAAD* NLF;
 
-#include <petscbag.h>
-
-PETSC_EXTERN PetscErrorCode PetscViewerBinaryMatlabOpen(MPI_Comm, const char [], PetscViewer*);
-PETSC_EXTERN PetscErrorCode PetscViewerBinaryMatlabDestroy(PetscViewer*);
-PETSC_EXTERN PetscErrorCode PetscViewerBinaryMatlabOutputBag(PetscViewer, const char [], PetscBag);
-PETSC_EXTERN PetscErrorCode PetscViewerBinaryMatlabOutputVec(PetscViewer, const char [], Vec);
-PETSC_EXTERN PetscErrorCode PetscViewerBinaryMatlabOutputVecDA(PetscViewer, const char [], Vec, DM);
-
 #define DM_FILE_CLASSID 1211221
 
 /* FEM support */

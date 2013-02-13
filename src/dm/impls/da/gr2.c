@@ -551,15 +551,16 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "VecView_MPI_DA"
 PetscErrorCode  VecView_MPI_DA(Vec xin,PetscViewer viewer)
 {
-  DM             da;
-  PetscErrorCode ierr;
-  PetscInt       dim;
-  Vec            natural;
-  PetscBool      isdraw,isvtk;
+  DM                da;
+  PetscErrorCode    ierr;
+  PetscInt          dim;
+  Vec               natural;
+  PetscBool         isdraw,isvtk;
 #if defined(PETSC_HAVE_HDF5)
-  PetscBool ishdf5;
+  PetscBool         ishdf5;
 #endif
-  const char *prefix,*name;
+  const char        *prefix,*name;
+  PetscViewerFormat format;
 
   PetscFunctionBegin;
   ierr = VecGetDM(xin,&da);CHKERRQ(ierr);
@@ -612,7 +613,46 @@ PetscErrorCode  VecView_MPI_DA(Vec xin,PetscViewer viewer)
     ierr = DMDAGlobalToNaturalEnd(da,xin,INSERT_VALUES,natural);CHKERRQ(ierr);
     ierr = PetscObjectGetName((PetscObject)xin,&name);CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject)natural,name);CHKERRQ(ierr);
+
+    ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
+    if (format == PETSC_VIEWER_BINARY_MATLAB) {
+      /* temporarily remove viewer format so it won't trigger in the VecView() */
+      ierr = PetscViewerSetFormat(viewer,PETSC_VIEWER_DEFAULT);CHKERRQ(ierr);
+    }
+
     ierr = VecView(natural,viewer);CHKERRQ(ierr);
+
+    if (format == PETSC_VIEWER_BINARY_MATLAB) {
+      MPI_Comm    comm;
+      FILE        *info;
+      const char  *fieldname;
+      PetscInt    dim,ni,nj,nk,pi,pj,pk,dof,n;
+      PetscBool   flg;
+
+      /* set the viewer format back into the viewer */
+      ierr = PetscViewerSetFormat(viewer,format);CHKERRQ(ierr);
+      ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
+      ierr = PetscViewerBinaryGetInfoPointer(viewer,&info);CHKERRQ(ierr);
+      ierr = DMDAGetInfo(da,&dim,&ni,&nj,&nk,&pi,&pj,&pk,&dof,0,0,0,0,0);CHKERRQ(ierr);
+      ierr = PetscFPrintf(comm,info,"%%--- begin code written by PetscViewerBinary for MATLAB format ---%\n");CHKERRQ(ierr);
+      ierr = PetscFPrintf(comm,info,"%%$$ tmp = PetscBinaryRead(fd); \n");CHKERRQ(ierr);
+      if (dim == 1) { ierr = PetscFPrintf(comm,info,"%%$$ tmp = reshape(tmp,%d,%d);\n",dof,ni);CHKERRQ(ierr); }
+      if (dim == 2) { ierr = PetscFPrintf(comm,info,"%%$$ tmp = reshape(tmp,%d,%d,%d);\n",dof,ni,nj);CHKERRQ(ierr); }
+      if (dim == 3) { ierr = PetscFPrintf(comm,info,"%%$$ tmp = reshape(tmp,%d,%d,%d,%d);\n",dof,ni,nj,nk);CHKERRQ(ierr); }
+
+      for (n=0; n<dof; n++) {
+        ierr = DMDAGetFieldName(da,n,&fieldname);CHKERRQ(ierr);
+        ierr = PetscStrcmp(fieldname,"",&flg);CHKERRQ(ierr);
+        if (!flg) {
+          if (dim == 1) { ierr = PetscFPrintf(comm,info,"%%$$ Set.%s.%s = squeeze(tmp(%d,:))';\n",name,fieldname,n+1);CHKERRQ(ierr); }
+          if (dim == 2) { ierr = PetscFPrintf(comm,info,"%%$$ Set.%s.%s = squeeze(tmp(%d,:,:))';\n",name,fieldname,n+1);CHKERRQ(ierr); }
+          if (dim == 3) { ierr = PetscFPrintf(comm,info,"%%$$ Set.%s.%s = permute(squeeze(tmp(%d,:,:,:)),[2 1 3]);\n",name,fieldname,n+1);CHKERRQ(ierr);}
+        }
+      }
+      ierr = PetscFPrintf(comm,info,"%%$$ clear tmp; \n");CHKERRQ(ierr);
+      ierr = PetscFPrintf(comm,info,"%%--- end code written by PetscViewerBinary for MATLAB format ---%\n\n");CHKERRQ(ierr);
+    }
+
     ierr = VecDestroy(&natural);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

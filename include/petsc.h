@@ -7,3 +7,4 @@
 #include <petscdmadda.h>
 #include <petscdmcomposite.h>
 #include <petscdmmesh.h>
+#include <petscbag.h>

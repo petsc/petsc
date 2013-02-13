@@ -9,20 +9,21 @@
 #endif
 
 typedef struct  {
-  int           fdes;            /* file descriptor, ignored if using MPI IO */
+  int           fdes;                 /* file descriptor, ignored if using MPI IO */
 #if defined(PETSC_HAVE_MPIIO)
   PetscBool     MPIIO;
-  MPI_File      mfdes;           /* ignored unless using MPI IO */
+  MPI_File      mfdes;                /* ignored unless using MPI IO */
   MPI_Offset    moff;
 #endif
-  PetscFileMode btype;           /* read or write? */
-  FILE          *fdes_info;      /* optional file containing info on binary file*/
-  PetscBool     storecompressed; /* gzip the write binary file when closing it*/
+  PetscFileMode btype;                /* read or write? */
+  FILE          *fdes_info;           /* optional file containing info on binary file*/
+  PetscBool     storecompressed;      /* gzip the write binary file when closing it*/
   char          *filename;
-  PetscBool     skipinfo;        /* Don't create info file for writing; don't use for reading */
-  PetscBool     skipoptions;     /* don't use PETSc options database when loading */
-  PetscInt      flowcontrol;     /* allow only <flowcontrol> messages outstanding at a time while doing IO */
-  PetscBool     skipheader;      /* don't write header, only raw data */
+  PetscBool     skipinfo;             /* Don't create info file for writing; don't use for reading */
+  PetscBool     skipoptions;          /* don't use PETSc options database when loading */
+  PetscInt      flowcontrol;          /* allow only <flowcontrol> messages outstanding at a time while doing IO */
+  PetscBool     skipheader;           /* don't write header, only raw data */
+  PetscBool     matlabheaderwritten;  /* if format is PETSC_VIEWER_BINARY_MATLAB has the MATLAB .info header been written yet */
 } PetscViewer_Binary;
 
 #undef __FUNCT__
@@ -511,9 +512,19 @@ EXTERN_C_BEGIN
 PetscErrorCode  PetscViewerBinaryGetInfoPointer_Binary(PetscViewer viewer,FILE **file)
 {
   PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;;
+  PetscErrorCode     ierr;
+  MPI_Comm           comm;
 
   PetscFunctionBegin;
   *file = vbinary->fdes_info;
+  if (viewer->format == PETSC_VIEWER_BINARY_MATLAB && !vbinary->matlabheaderwritten) {
+    vbinary->matlabheaderwritten = PETSC_TRUE;
+    ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
+    ierr = PetscFPrintf(comm,*file,"%%--- begin code written by PetscViewerBinary for MATLAB format ---%\n");CHKERRQ(ierr);
+    ierr = PetscFPrintf(comm,*file,"%%$$ Set.filename = '%s';\n",vbinary->filename);CHKERRQ(ierr);
+    ierr = PetscFPrintf(comm,*file,"%%$$ fd = PetscOpenFile(Set.filename);\n");CHKERRQ(ierr);
+    ierr = PetscFPrintf(comm,*file,"%%--- end code written by PetscViewerBinary for MATLAB format ---%\n\n");CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -599,6 +610,16 @@ PetscErrorCode PetscViewerDestroy_Binary(PetscViewer v)
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
+  if (v->format == PETSC_VIEWER_BINARY_MATLAB) {
+    MPI_Comm comm;
+    FILE     *info;
+
+    ierr = PetscObjectGetComm((PetscObject)v,&comm);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryGetInfoPointer(v,&info);CHKERRQ(ierr);
+    ierr = PetscFPrintf(comm,info,"%%--- begin code written by PetscViewerBinary for MATLAB format ---%\n");CHKERRQ(ierr);
+    ierr = PetscFPrintf(comm,info,"%%$$ close(fd);\n");CHKERRQ(ierr);
+    ierr = PetscFPrintf(comm,info,"%%--- end code written by PetscViewerBinary for MATLAB format ---%\n\n");CHKERRQ(ierr);
+  }
   ierr = PetscViewerFileClose_Binary(v);CHKERRQ(ierr);
   ierr = PetscFree(vbinary);CHKERRQ(ierr);
   PetscFunctionReturn(0);

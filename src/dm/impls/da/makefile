@@ -10,7 +10,7 @@ SOURCEC  = da2.c da1.c da3.c daghost.c dacorn.c dagtol.c daltol.c \
            fdda.c grvtk.c dageometry.c dadd.c
 SOURCEH  = ../../../../include/petsc-private/daimpl.h ../../../../include/petscdmda.h
 LIBBASE  = libpetscdm
-DIRS     = usfft utils hypre
+DIRS     = usfft hypre
 LOCDIR   = src/dm/impls/da/
 MANSEC   = DM
 SUBMANSEC= DMDA

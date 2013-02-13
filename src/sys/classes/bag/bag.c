@@ -628,8 +628,9 @@ PetscErrorCode  PetscBagView(PetscBag bag,PetscViewer view)
       nitem = nitem->next;
     }
   } else if (isbinary) {
-    PetscInt classid           = PETSC_BAG_FILE_CLASSID, dtype;
-    PetscInt deprecatedbagsize = 0;
+    PetscInt          classid           = PETSC_BAG_FILE_CLASSID, dtype;
+    PetscInt          deprecatedbagsize = 0;
+    PetscViewerFormat format;
     ierr = PetscViewerBinaryWrite(view,&classid,1,PETSC_INT,PETSC_TRUE);CHKERRQ(ierr);
     ierr = PetscViewerBinaryWrite(view,&deprecatedbagsize,1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
     ierr = PetscViewerBinaryWrite(view,&bag->count,1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
@@ -651,7 +652,17 @@ PetscErrorCode  PetscBagView(PetscBag bag,PetscViewer view)
       }
       nitem = nitem->next;
     }
-  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for this viewer type");
+    ierr = PetscViewerGetFormat(view,&format);CHKERRQ(ierr);
+    if (format == PETSC_VIEWER_BINARY_MATLAB) {
+      MPI_Comm comm;
+      FILE     *info;
+      ierr = PetscObjectGetComm((PetscObject)view,&comm);CHKERRQ(ierr);
+      ierr = PetscViewerBinaryGetInfoPointer(view,&info);CHKERRQ(ierr);
+      ierr = PetscFPrintf(comm,info,"%%--- begin code written by PetscViewerBinary for MATLAB format ---%\n");CHKERRQ(ierr);
+      ierr = PetscFPrintf(comm,info,"%%$$ Set.%s = PetscBinaryRead(fd);\n",bag->bagname);CHKERRQ(ierr);
+      ierr = PetscFPrintf(comm,info,"%%--- end code written by PetscViewerBinary for MATLAB format ---%\n\n");CHKERRQ(ierr);
+    }
+  }
   PetscFunctionReturn(0);
 }
 

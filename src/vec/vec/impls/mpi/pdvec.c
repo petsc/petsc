@@ -351,6 +351,7 @@ PetscErrorCode VecView_MPI_Binary(Vec xin,PetscViewer viewer)
 #endif
   PetscBool         skipHeader;
   PetscInt          message_count,flowcontrolcount;
+  PetscViewerFormat format;
 
   PetscFunctionBegin;
   ierr = VecGetArrayRead(xin,&xarray);CHKERRQ(ierr);
@@ -394,6 +395,19 @@ PetscErrorCode VecView_MPI_Binary(Vec xin,PetscViewer viewer)
       ierr = PetscMPIIntCast(xin->map->n,&mesgsize);CHKERRQ(ierr);
       ierr = MPI_Send((void*)xarray,mesgsize,MPIU_SCALAR,0,tag,PetscObjectComm((PetscObject)xin));CHKERRQ(ierr);
       ierr = PetscViewerFlowControlEndWorker(viewer,&message_count);CHKERRQ(ierr);
+    }
+    ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
+    if (format == PETSC_VIEWER_BINARY_MATLAB) {
+      MPI_Comm   comm;
+      FILE       *info;
+      const char *name;
+
+      ierr = PetscObjectGetName((PetscObject)xin,&name);CHKERRQ(ierr);
+      ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
+      ierr = PetscViewerBinaryGetInfoPointer(viewer,&info);CHKERRQ(ierr);
+      ierr = PetscFPrintf(comm,info,"%%--- begin code written by PetscViewerBinary for MATLAB format ---%\n");CHKERRQ(ierr);
+      ierr = PetscFPrintf(comm,info,"%%$$ Set.%s = PetscBinaryRead(fd);\n",name);CHKERRQ(ierr);
+      ierr = PetscFPrintf(comm,info,"%%--- end code written by PetscViewerBinary for MATLAB format ---%\n\n");CHKERRQ(ierr);
     }
 #if defined(PETSC_HAVE_MPIIO)
   } else {

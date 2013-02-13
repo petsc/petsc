@@ -888,6 +888,7 @@ PetscErrorCode VecView_Seq_Binary(Vec xin,PetscViewer viewer)
   PetscBool         isMPIIO;
 #endif
   PetscBool         skipHeader;
+  PetscViewerFormat format;
 
   PetscFunctionBegin;
   /* Write vector header */
@@ -906,6 +907,19 @@ PetscErrorCode VecView_Seq_Binary(Vec xin,PetscViewer viewer)
     ierr = VecGetArrayRead(xin,&xv);CHKERRQ(ierr);
     ierr = PetscBinaryWrite(fdes,(void*)xv,n,PETSC_SCALAR,PETSC_FALSE);CHKERRQ(ierr);
     ierr = VecRestoreArrayRead(xin,&xv);CHKERRQ(ierr);
+    ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
+    if (format == PETSC_VIEWER_BINARY_MATLAB) {
+      MPI_Comm   comm;
+      FILE       *info;
+      const char *name;
+
+      ierr = PetscObjectGetName((PetscObject)xin,&name);CHKERRQ(ierr);
+      ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
+      ierr = PetscViewerBinaryGetInfoPointer(viewer,&info);CHKERRQ(ierr);
+      ierr = PetscFPrintf(comm,info,"%%--- begin code written by PetscViewerBinary for MATLAB format ---%\n");CHKERRQ(ierr);
+      ierr = PetscFPrintf(comm,info,"%%$$ Set.%s = PetscBinaryRead(fd);\n",name);CHKERRQ(ierr);
+      ierr = PetscFPrintf(comm,info,"%%--- end code written by PetscViewerBinary for MATLAB format ---%\n\n");CHKERRQ(ierr);
+    }
 #if defined(PETSC_HAVE_MPIIO)
   } else {
     MPI_Offset   off;
