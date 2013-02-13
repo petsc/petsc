@@ -143,7 +143,7 @@ rows, `n` columns, and a block size of `nb` is
 The arguments `nz` and `nnz` can be used to preallocate matrix
 memory by indicating the number of *block* nonzeros per row.  For good
 performance during matrix assembly, preallocation is crucial; however, the
-user can set `nz=0` and `nzz=PETSC_NULL` for %PETSc to dynamically
+user can set `nz=0` and `nzz=NULL` for %PETSc to dynamically
 allocate matrix memory as needed.  The %PETSc users manual
 discusses preallocation for the AIJ format; extension to the block AIJ
 format is straightforward.
@@ -176,8 +176,8 @@ must match the local size used in the `VecCreateMPI()` for `y`.
 The `n` used must match that used as the local size in
 `VecCreateMPI()` for `x`.
 
-The user must set `d_nz=0`, `o_nz=0`, `d_nnz=PETSC_NULL`, and
-`o_nnz=PETSC_NULL` for %PETSc to control dynamic allocation of matrix
+The user must set `d_nz=0`, `o_nz=0`, `d_nnz=NULL`, and
+`o_nnz=NULL` for %PETSc to control dynamic allocation of matrix
 memory space.  Analogous to `nz` and `nnz` for the routine
 `MatCreateSeqBAIJ()`, these arguments optionally specify
 block nonzero information for the diagonal (`d_nz` and `d_nnz`) and
