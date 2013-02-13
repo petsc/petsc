@@ -38,7 +38,7 @@ PetscErrorCode PetscGetNCores(PetscInt *ncores)
     {
       PetscErrorCode ierr;
       size_t         len = sizeof(N_CORES);
-      ierr = sysctlbyname("hw.activecpu",&N_CORES,&len,NULL,0); /* osx preferes activecpu over ncpu */
+      ierr = sysctlbyname("hw.activecpu",&N_CORES,&len,NULL,0);CHKERRQ(ierr); /* osx preferes activecpu over ncpu */
       if (ierr) { /* freebsd check ncpu */
         ierr = sysctlbyname("hw.ncpu",&N_CORES,&len,NULL,0);CHKERRQ(ierr);
       }
@@ -390,7 +390,7 @@ PetscErrorCode PetscThreadCommSetAffinities(PetscThreadComm tcomm,const PetscInt
   ierr = PetscFree(tcomm->affinities);CHKERRQ(ierr);
   ierr = PetscMalloc(tcomm->nworkThreads*sizeof(PetscInt),&tcomm->affinities);CHKERRQ(ierr);
 
-  if (affinities == NULL) {
+  if (!affinities) {
     /* Check if option is present in the options database */
     ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Thread comm - setting thread affinities",NULL);CHKERRQ(ierr);
     ierr = PetscOptionsIntArray("-threadcomm_affinities","Set core affinities of threads","PetscThreadCommSetAffinities",tcomm->affinities,&nmax,&flg);CHKERRQ(ierr);
@@ -1172,7 +1172,7 @@ PETSC_EXTERN_C PetscMPIInt MPIAPI Petsc_CopyThreadComm(MPI_Comm comm,PetscMPIInt
   *(void**)attr_out = tcomm;
 
   *flag = 1;
-  ierr  = PetscInfo1(0,"Copying thread communicator data in an MPI_Comm %ld\n",(long)comm);
+  ierr  = PetscInfo1(0,"Copying thread communicator data in an MPI_Comm %ld\n",(long)comm);CHKERRQ(ierr);
   if (ierr) PetscFunctionReturn((PetscMPIInt)ierr);
   PetscFunctionReturn(0);
 }
@@ -1193,7 +1193,7 @@ PetscMPIInt MPIAPI Petsc_DelThreadComm(MPI_Comm comm,PetscMPIInt keyval,void *at
 
   PetscFunctionBegin;
   ierr = PetscThreadCommDestroy((PetscThreadComm*)&attr);CHKERRQ(ierr);
-  ierr = PetscInfo1(0,"Deleting thread communicator data in an MPI_Comm %ld\n",(long)comm);if (ierr) PetscFunctionReturn((PetscMPIInt)ierr);
+  ierr = PetscInfo1(0,"Deleting thread communicator data in an MPI_Comm %ld\n",(long)comm);if (ierr) PetscFunctionReturn((PetscMPIInt)ierr);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

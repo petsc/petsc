@@ -158,8 +158,8 @@ PetscErrorCode ini_bou(Vec X,AppCtx* user)
   mux = user->mux = coors[0][M/2+10].x; /* For -pi < x < pi, this should be some angle between 0 and pi/2 */
   /* Change PM_min accordingly */
   user->PM_min = user->Pmax*sin(mux);
-  for(i=xs; i < xs+xm; i++) {
-    for(j=ys; j < ys+ym; j++) {
+  for (i=xs; i < xs+xm; i++) {
+    for (j=ys; j < ys+ym; j++) {
       xi = coors[j][i].x; yi = coors[j][i].y;
       p[j][i] = (0.5/(PETSC_PI*sigmax*sigmay*PetscSqrtScalar(1.0-rho*rho)))*PetscExpScalar(-0.5/(1-rho*rho)*(PetscPowScalar((xi-mux)/sigmax,2) + PetscPowScalar((yi-muy)/sigmay,2) - 2*rho*(xi-mux)*(yi-muy)/(sigmax*sigmay)));
     }
@@ -267,8 +267,8 @@ PetscErrorCode IFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ctx)
   ierr = DMDAVecGetArray(user->da,F,&f);CHKERRQ(ierr);
 
   user->disper_coe = PetscPowScalar((user->lambda*user->ws)/(2*user->H),2)*user->q*(1.0-PetscExpScalar(-t/user->lambda));
-  for(i=xs; i < xs+xm; i++) {
-    for(j=ys; j < ys+ym; j++) {
+  for (i=xs; i < xs+xm; i++) {
+    for (j=ys; j < ys+ym; j++) {
       ierr = adv1(p,coors[j][i].y,i,j,M,&p_adv1,user);CHKERRQ(ierr);
       ierr = adv2(p,coors[j][i].x,i,j,N,&p_adv2,user);CHKERRQ(ierr);
       ierr = diffuse(p,i,j,t,&p_diff,user);CHKERRQ(ierr);

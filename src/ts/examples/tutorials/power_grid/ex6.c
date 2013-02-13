@@ -145,8 +145,8 @@ PetscErrorCode ini_bou(Vec X,AppCtx* user)
   ierr = DMDAVecGetArray(cda,gc,&coors);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(user->da,X,&p);CHKERRQ(ierr);
   ierr = DMDAGetCorners(cda,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
-  for(i=xs; i < xs+xm; i++) {
-    for(j=ys; j < ys+ym; j++) {
+  for (i=xs; i < xs+xm; i++) {
+    for (j=ys; j < ys+ym; j++) {
       xi = coors[j][i].x; yi = coors[j][i].y;
       if (i == 0 || j == 0 || i == M-1 || j == N-1) p[j][i] = 0.0;
       else p[j][i] = (0.5/(PETSC_PI*sigmax*sigmay*PetscSqrtScalar(1.0-rho*rho)))*PetscExpScalar(-0.5/(1-rho*rho)*(PetscPowScalar((xi-mux)/sigmax,2) + PetscPowScalar((yi-muy)/sigmay,2) - 2*rho*(xi-mux)*(yi-muy)/(sigmax*sigmay)));
@@ -291,8 +291,8 @@ PetscErrorCode IFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ctx)
   ierr = DMDAVecGetArray(user->da,F,&f);CHKERRQ(ierr);
 
   user->disper_coe = PetscPowScalar((user->lambda*user->ws)/(2*user->H),2)*user->q*(1.0-PetscExpScalar(-t/user->lambda));
-  for(i=xs; i < xs+xm; i++) {
-    for(j=ys; j < ys+ym; j++) {
+  for (i=xs; i < xs+xm; i++) {
+    for (j=ys; j < ys+ym; j++) {
       if (i == 0 || j == 0 || i == M-1 || j == N-1) {
         ierr = BoundaryConditions(p,coors,i,j,M,N,f,user);CHKERRQ(ierr);
       } else {
