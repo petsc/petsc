@@ -1,7 +1,6 @@
 cdef extern from * nogil:
 
     enum: PETSC_DECIDE
-    enum: PETSC_IGNORE
     enum: PETSC_DEFAULT
     enum: PETSC_DETERMINE
 

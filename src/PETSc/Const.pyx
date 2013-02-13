@@ -1,7 +1,6 @@
 # --------------------------------------------------------------------
 
 DECIDE    = PETSC_DECIDE
-IGNORE    = PETSC_IGNORE
 DEFAULT   = PETSC_DEFAULT
 DETERMINE = PETSC_DETERMINE
 
