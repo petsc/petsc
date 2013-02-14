@@ -26,7 +26,7 @@ typedef struct {
   PetscBool  type_set;               /* if user set this value (so won't change it for symmetric problems) */
   PetscBool  same_subdomain_solvers; /* flag indicating whether all local solvers are same */
   PetscBool  sort_indices;           /* flag to sort subdomain indices */
-  PetscBool  use_dm_decomposition;   /* whether DM is allowed to define subdomains */
+  PetscBool  dm_subdomains;          /* whether DM is allowed to define subdomains */
 } PC_GASM;
 
 #undef __FUNCT__
@@ -286,7 +286,7 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
     if (osm->n == PETSC_DECIDE) {
       /* no subdomains given */
       /* try pc->dm first, if allowed */
-      if (osm->use_dm_decomposition && pc->dm) {
+      if (osm->dm_subdomains && pc->dm) {
         PetscInt  num_subdomains, d;
         char      **subdomain_names;
         IS        *inner_subdomain_is, *outer_subdomain_is;
@@ -661,17 +661,18 @@ static PetscErrorCode PCSetFromOptions_GASM(PC pc)
     if (symset && flg) osm->type = PC_GASM_BASIC;
   }
   ierr = PetscOptionsHead("Generalized additive Schwarz options");CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-pc_gasm_dm_subdomains","Use DMCreateDomainDecomposition() to define subdomains","PCGASMSetDMSubdomains",osm->dm_subdomains,&osm->dm_subdomains,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-pc_gasm_total_subdomains","Total number of subdomains across communicator","PCGASMSetTotalSubdomains",osm->n,&blocks,&flg);CHKERRQ(ierr);
   if (flg) {
     osm->create_local = PETSC_TRUE;
     ierr = PetscOptionsBool("-pc_gasm_subdomains_create_local","Whether to make autocreated subdomains local (true by default)","PCGASMSetTotalSubdomains",osm->create_local,&osm->create_local,NULL);CHKERRQ(ierr);
     ierr = PCGASMSetTotalSubdomains(pc,blocks,osm->create_local);CHKERRQ(ierr);
-    osm->use_dm_decomposition = PETSC_FALSE;
+    osm->dm_subdomains = PETSC_FALSE;
   }
   ierr = PetscOptionsInt("-pc_gasm_overlap","Number of overlapping degrees of freedom","PCGASMSetOverlap",osm->overlap,&ovl,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PCGASMSetOverlap(pc,ovl);CHKERRQ(ierr);
-    osm->use_dm_decomposition = PETSC_FALSE;
+    osm->dm_subdomains = PETSC_FALSE;
   }
   flg  = PETSC_FALSE;
   ierr = PetscOptionsEnum("-pc_gasm_type","Type of restriction/extension","PCGASMSetType",PCGASMTypes,(PetscEnum)osm->type,(PetscEnum*)&gasmtype,&flg);CHKERRQ(ierr);
@@ -1176,7 +1177,7 @@ PetscErrorCode  PCCreate_GASM(PC pc)
   osm->type                   = PC_GASM_RESTRICT;
   osm->same_subdomain_solvers = PETSC_TRUE;
   osm->sort_indices           = PETSC_TRUE;
-  osm->use_dm_decomposition   = PETSC_TRUE;
+  osm->dm_subdomains          = PETSC_FALSE;
 
   pc->data                 = (void*)osm;
   pc->ops->apply           = PCApply_GASM;
@@ -1758,5 +1759,81 @@ PetscErrorCode  PCGASMGetSubmatrices(PC pc,PetscInt *n,Mat *mat[])
   osm = (PC_GASM*)pc->data;
   if (n) *n = osm->n;
   if (mat) *mat = osm->pmat;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PCGASMSetDMSubdomains"
+/*@
+    PCGASMSetDMSubdomains - Indicates whether to use DMCreateDomainDecomposition() to define the subdomains, whenever possible.
+    Logically Collective
+
+    Input Parameter:
++   pc  - the preconditioner
+-   flg - boolean indicating whether to use subdomains defined by the DM
+
+    Options Database Key:
+.   -pc_gasm_dm_subdomains
+
+    Level: intermediate
+
+    Notes:
+    PCGASMSetTotalSubdomains() and PCGASMSetOverlap() take precedence over PCGASMSetDMSubdomains(),
+    so setting either of the first two effectively turns the latter off.
+
+.keywords: PC, ASM, DM, set, subdomains, additive Schwarz
+
+.seealso: PCGASMGetDMSubdomains(), PCGASMSetTotalSubdomains(), PCGASMSetOverlap()
+          PCGASMCreateSubdomains2D()
+@*/
+PetscErrorCode  PCGASMSetDMSubdomains(PC pc,PetscBool flg)
+{
+  PC_GASM        *osm = (PC_GASM*)pc->data;
+  PetscErrorCode ierr;
+  PetscBool      match;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  PetscValidLogicalCollectiveBool(pc,flg,2);
+  if (pc->setupcalled) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for a setup PC.");
+  ierr = PetscObjectTypeCompare((PetscObject)pc,PCGASM,&match);CHKERRQ(ierr);
+  if (match) {
+    osm->dm_subdomains = flg;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PCGASMGetDMSubdomains"
+/*@
+    PCGASMGetDMSubdomains - Returns flag indicating whether to use DMCreateDomainDecomposition() to define the subdomains, whenever possible.
+    Not Collective
+
+    Input Parameter:
+.   pc  - the preconditioner
+
+    Output Parameter:
+.   flg - boolean indicating whether to use subdomains defined by the DM
+
+    Level: intermediate
+
+.keywords: PC, ASM, DM, set, subdomains, additive Schwarz
+
+.seealso: PCGASMSetDMSubdomains(), PCGASMSetTotalSubdomains(), PCGASMSetOverlap()
+          PCGASMCreateSubdomains2D()
+@*/
+PetscErrorCode  PCGASMGetDMSubdomains(PC pc,PetscBool* flg)
+{
+  PC_GASM        *osm = (PC_GASM*)pc->data;
+  PetscErrorCode ierr;
+  PetscBool      match;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  PetscValidPointer(flg,2);
+  ierr = PetscObjectTypeCompare((PetscObject)pc,PCGASM,&match);CHKERRQ(ierr);
+  if (match) {
+    if (flg) *flg = osm->dm_subdomains;
+  }
   PetscFunctionReturn(0);
 }

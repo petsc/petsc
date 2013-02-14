@@ -50,6 +50,7 @@ typedef struct {
   PC_FieldSplitLink         head;
   PetscBool                 reset;                  /* indicates PCReset() has been last called on this object, hack */
   PetscBool                 suboptionsset;          /* Indicates that the KSPSetFromOptions() has been called on the sub-KSPs */
+  PetscBool                 dm_splits;              /* Whether to use DMCreateFieldDecomposition() whenever possible */
 } PC_FieldSplit;
 
 /*
@@ -313,7 +314,7 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
    */
   if (!ilink || jac->reset) {
     ierr = PetscOptionsGetBool(((PetscObject)pc)->prefix,"-pc_fieldsplit_detect_saddle_point",&stokes,NULL);CHKERRQ(ierr);
-    if (pc->dm && !stokes) {
+    if (pc->dm && jac->dm_splits && !stokes) {
       PetscInt  numFields, f, i, j;
       char      **fieldNames;
       IS        *fields;
@@ -1052,6 +1053,7 @@ static PetscErrorCode PCSetFromOptions_FieldSplit(PC pc)
   PetscFunctionBegin;
   ierr = PetscOptionsHead("FieldSplit options");CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_fieldsplit_real_diagonal","Use diagonal blocks of the operator","PCFieldSplitSetRealDiagonal",jac->realdiagonal,&jac->realdiagonal,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-pc_fieldsplit_dm_splits","Whether to use DMCreateFieldDecomposition() for splits","PCFieldSplitSetDMSplits",jac->dm_splits,&jac->dm_splits,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-pc_fieldsplit_block_size","Blocksize that defines number of fields","PCFieldSplitSetBlockSize",jac->bs,&bs,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PCFieldSplitSetBlockSize(pc,bs);CHKERRQ(ierr);
@@ -1697,6 +1699,80 @@ PetscErrorCode PCFieldSplitGetType(PC pc, PCCompositeType *type)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "PCFieldSplitSetDMSplits"
+/*@
+   PCFieldSplitSetDMSplits - Flags whether DMCreateFieldDecomposition() should be used to define the splits, whenever possible.
+
+   Logically Collective
+
+   Input Parameters:
++  pc   - the preconditioner context
+-  flg  - boolean indicating whether to use field splits defined by the DM
+
+   Options Database Key:
+.  -pc_fieldsplit_dm_splits 
+
+   Level: Intermediate
+
+.keywords: PC, DM, composite preconditioner, additive, multiplicative
+
+.seealso: PCFieldSplitGetDMSplits()
+
+@*/
+PetscErrorCode  PCFieldSplitSetDMSplits(PC pc,PetscBool flg)
+{
+  PC_FieldSplit  *jac = (PC_FieldSplit*)pc->data;
+  PetscBool      isfs;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  PetscValidLogicalCollectiveBool(pc,flg,2);
+  ierr = PetscObjectTypeCompare((PetscObject)pc,PCFIELDSPLIT,&isfs);CHKERRQ(ierr);
+  if (isfs) {
+    jac->dm_splits = flg;
+  }
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
+#define __FUNCT__ "PCFieldSplitGetDMSplits"
+/*@
+   PCFieldSplitGetDMSplits - Returns flag indicating whether DMCreateFieldDecomposition() should be used to define the splits, whenever possible.
+
+   Logically Collective
+
+   Input Parameter:
+.  pc   - the preconditioner context
+
+   Output Parameter:
+.  flg  - boolean indicating whether to use field splits defined by the DM
+
+   Level: Intermediate
+
+.keywords: PC, DM, composite preconditioner, additive, multiplicative
+
+.seealso: PCFieldSplitSetDMSplits()
+
+@*/
+PetscErrorCode  PCFieldSplitGetDMSplits(PC pc,PetscBool* flg)
+{
+  PC_FieldSplit  *jac = (PC_FieldSplit*)pc->data;
+  PetscBool      isfs;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  PetscValidPointer(flg,2);
+  ierr = PetscObjectTypeCompare((PetscObject)pc,PCFIELDSPLIT,&isfs);CHKERRQ(ierr);
+  if (isfs) {
+    if(flg) *flg = jac->dm_splits;
+  }
+  PetscFunctionReturn(0);
+}
+
 /* -------------------------------------------------------------------------------------*/
 /*MC
    PCFIELDSPLIT - Preconditioner created by combining separate preconditioners for individual
@@ -1786,6 +1862,7 @@ PetscErrorCode  PCCreate_FieldSplit(PC pc)
   jac->type               = PC_COMPOSITE_MULTIPLICATIVE;
   jac->schurpre           = PC_FIELDSPLIT_SCHUR_PRE_USER; /* Try user preconditioner first, fall back on diagonal */
   jac->schurfactorization = PC_FIELDSPLIT_SCHUR_FACT_FULL;
+  jac->dm_splits          = PETSC_FALSE;
 
   pc->data = (void*)jac;
 
