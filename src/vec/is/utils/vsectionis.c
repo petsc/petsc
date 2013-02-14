@@ -1292,7 +1292,7 @@ PetscErrorCode  PetscSectionView_ASCII(PetscSection s, PetscViewer viewer)
 
   PetscFunctionBegin;
   if (s->atlasLayout.numDof != 1) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot handle %d dof in a uniform section", s->atlasLayout.numDof);
-  ierr = MPI_Comm_rank(((PetscObject) viewer)->comm, &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)viewer), &rank);CHKERRQ(ierr);
   ierr = PetscViewerASCIISynchronizedAllow(viewer, PETSC_TRUE);CHKERRQ(ierr);
   ierr = PetscViewerASCIISynchronizedPrintf(viewer, "Process %d:\n", rank);CHKERRQ(ierr);
   for (p = 0; p < s->atlasLayout.pEnd - s->atlasLayout.pStart; ++p) {
@@ -1749,7 +1749,7 @@ PetscErrorCode PetscSFCreateRemoteOffsets(PetscSF sf, PetscSection rootSection, 
 @*/
 PetscErrorCode PetscSFCreateSectionSF(PetscSF sf, PetscSection rootSection, PetscInt remoteOffsets[], PetscSection leafSection, PetscSF *sectionSF)
 {
-  MPI_Comm          comm = ((PetscObject) sf)->comm;
+  MPI_Comm          comm;
   const PetscInt    *localPoints;
   const PetscSFNode *remotePoints;
   PetscInt          lpStart, lpEnd;
@@ -1765,6 +1765,7 @@ PetscErrorCode PetscSFCreateSectionSF(PetscSF sf, PetscSection rootSection, Pets
   /* Cannot check PetscValidIntPointer(remoteOffsets,3) because it can be NULL if sf does not reference any points in leafSection */
   PetscValidPointer(leafSection,4);
   PetscValidPointer(sectionSF,5);
+  ierr = PetscObjectGetComm((PetscObject)sf,&comm);CHKERRQ(ierr);
   ierr = PetscSFCreate(comm, sectionSF);CHKERRQ(ierr);
   ierr = PetscSectionGetChart(leafSection, &lpStart, &lpEnd);CHKERRQ(ierr);
   ierr = PetscSectionGetStorageSize(rootSection, &numSectionRoots);CHKERRQ(ierr);

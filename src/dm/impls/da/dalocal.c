@@ -194,7 +194,7 @@ PetscErrorCode DMDAGetHeightStratum(DM dm, PetscInt height, PetscInt *pStart, Pe
     /* All points */
     if (pStart) *pStart = 0;
     if (pEnd)   *pEnd   = nC+nV+nXF+nYF+nZF;
-  } else SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_ARG_OUTOFRANGE, "No points of height %d in the DA", height);
+  } else SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "No points of height %d in the DA", height);
   PetscFunctionReturn(0);
 }
 
@@ -243,7 +243,7 @@ PetscErrorCode DMDACreateSection(DM dm, PetscInt numComp[], PetscInt numVertexDo
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  ierr    = MPI_Comm_rank(((PetscObject) dm)->comm, &rank);CHKERRQ(ierr);
+  ierr    = MPI_Comm_rank(PetscObjectComm((PetscObject)dm), &rank);CHKERRQ(ierr);
   ierr    = DMDAGetNumCells(dm, &nC);CHKERRQ(ierr);
   ierr    = DMDAGetNumVertices(dm, &nVx, &nVy, &nVz, &nV);CHKERRQ(ierr);
   ierr    = DMDAGetNumFaces(dm, &nxF, &nXF, &nyF, &nYF, &nzF, &nZF);CHKERRQ(ierr);
@@ -254,7 +254,7 @@ PetscErrorCode DMDACreateSection(DM dm, PetscInt numComp[], PetscInt numVertexDo
   xfStart = vEnd;  xfEnd = xfStart+nXF;
   yfStart = xfEnd; yfEnd = yfStart+nYF;
   zfStart = yfEnd; zfEnd = zfStart+nZF;
-  if (zfEnd != fEnd) SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_PLIB, "Invalid face end %d, should be %d", zfEnd, fEnd);
+  if (zfEnd != fEnd) SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Invalid face end %d, should be %d", zfEnd, fEnd);
   /* Create local section */
   ierr = DMDAGetInfo(dm, 0,0,0,0,0,0,0, &numFields, 0,0,0,0,0);CHKERRQ(ierr);
   for (f = 0; f < numFields; ++f) {
@@ -266,7 +266,7 @@ PetscErrorCode DMDACreateSection(DM dm, PetscInt numComp[], PetscInt numVertexDo
       numFaceTotDof[2] += dim > 2 ? numFaceDof[f*dim+2] : 0;
     }
   }
-  ierr = PetscSectionCreate(((PetscObject) dm)->comm, &dm->defaultSection);CHKERRQ(ierr);
+  ierr = PetscSectionCreate(PetscObjectComm((PetscObject)dm), &dm->defaultSection);CHKERRQ(ierr);
   if (numFields > 1) {
     ierr = PetscSectionSetNumFields(dm->defaultSection, numFields);CHKERRQ(ierr);
     for (f = 0; f < numFields; ++f) {
@@ -705,8 +705,8 @@ PetscErrorCode DMDACreateSection(DM dm, PetscInt numComp[], PetscInt numVertexDo
     }
   }
   /* TODO: Remove duplication in leaf determination */
-  if (nleaves != nleavesCheck) SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_PLIB, "The number of leaves %d did not match the number of remote leaves %d", nleaves, nleavesCheck);
-  ierr = PetscSFCreate(((PetscObject) dm)->comm, &sf);CHKERRQ(ierr);
+  if (nleaves != nleavesCheck) SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "The number of leaves %d did not match the number of remote leaves %d", nleaves, nleavesCheck);
+  ierr = PetscSFCreate(PetscObjectComm((PetscObject)dm), &sf);CHKERRQ(ierr);
   ierr = PetscSFSetGraph(sf, pEnd, nleaves, localPoints, PETSC_OWN_POINTER, remotePoints, PETSC_OWN_POINTER);CHKERRQ(ierr);
   /* Create global section */
   ierr = PetscSectionCreateGlobalSection(dm->defaultSection, sf, PETSC_FALSE, &dm->defaultGlobalSection);CHKERRQ(ierr);

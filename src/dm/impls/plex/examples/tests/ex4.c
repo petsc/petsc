@@ -165,7 +165,7 @@ PetscErrorCode CreateSimplexHybrid_2D(MPI_Comm comm, DM dm)
   }
   ierr = PetscSectionSetUp(coordSection);CHKERRQ(ierr);
   ierr = PetscSectionGetStorageSize(coordSection, &coordSize);CHKERRQ(ierr);
-  ierr = VecCreate(((PetscObject) dm)->comm, &coordinates);CHKERRQ(ierr);
+  ierr = VecCreate(PetscObjectComm((PetscObject)dm), &coordinates);CHKERRQ(ierr);
   ierr = VecSetSizes(coordinates, coordSize, PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = VecSetFromOptions(coordinates);CHKERRQ(ierr);
   ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);

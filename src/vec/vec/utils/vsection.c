@@ -15,7 +15,7 @@ PetscErrorCode PetscSectionVecView_ASCII(PetscSection s, Vec v, PetscViewer view
 
   PetscFunctionBegin;
   if (s->atlasLayout.numDof != 1) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot handle %d dof in a uniform section", s->atlasLayout.numDof);
-  ierr = MPI_Comm_rank(((PetscObject) viewer)->comm, &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)viewer), &rank);CHKERRQ(ierr);
   ierr = VecGetArray(v, &array);CHKERRQ(ierr);
   ierr = PetscViewerASCIISynchronizedAllow(viewer, PETSC_TRUE);CHKERRQ(ierr);
   ierr = PetscViewerASCIISynchronizedPrintf(viewer, "Process %d:\n", rank);CHKERRQ(ierr);
@@ -76,7 +76,7 @@ PetscErrorCode PetscSectionVecView(PetscSection s, Vec v, PetscViewer viewer)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!viewer) {ierr = PetscViewerASCIIGetStdout(((PetscObject) v)->comm, &viewer);CHKERRQ(ierr);}
+  if (!viewer) {ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)v), &viewer);CHKERRQ(ierr);}
   PetscValidHeaderSpecific(v, VEC_CLASSID, 2);
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 3);
   ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &isascii);CHKERRQ(ierr);

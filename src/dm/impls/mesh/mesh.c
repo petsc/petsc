@@ -58,7 +58,7 @@ PetscErrorCode DMMeshGetMesh(DM dm, ALE::Obj<PETSC_MESH_TYPE>& m)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  if (mesh->useNewImpl) SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONG, "This method is only valid for C++ implementation meshes.");
+  if (mesh->useNewImpl) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "This method is only valid for C++ implementation meshes.");
   m = mesh->m;
   PetscFunctionReturn(0);
 }
@@ -225,7 +225,7 @@ PetscErrorCode DMMeshView_Mesh_Ascii(DM dm, PetscViewer viewer)
     PetscInt    pStart, pEnd, p;
     PetscMPIInt rank;
 
-    ierr = MPI_Comm_rank(((PetscObject) dm)->comm, &rank);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm), &rank);CHKERRQ(ierr);
     ierr = PetscObjectGetName((PetscObject) dm, &name);CHKERRQ(ierr);
     ierr = DMMeshGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
     ierr = DMMeshGetMaxSizes(dm, &maxConeSize, &maxSupportSize);CHKERRQ(ierr);
@@ -258,12 +258,13 @@ PetscErrorCode DMMeshView_Mesh_Ascii(DM dm, PetscViewer viewer)
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
     ierr = PetscSectionVecView(mesh->coordSection, mesh->coordinates, viewer);CHKERRQ(ierr);
   } else {
-    MPI_Comm    comm = ((PetscObject) dm)->comm;
+    MPI_Comm    comm;
     PetscInt    *sizes;
     PetscInt    depth, dim, d;
     PetscInt    pStart, pEnd, p;
     PetscMPIInt size;
 
+    ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);
     ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
     ierr = DMMeshGetDimension(dm, &dim);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer, "Mesh in %d dimensions:\n", dim);CHKERRQ(ierr);
@@ -385,21 +386,21 @@ PetscErrorCode DMCreateMatrix_Mesh(DM dm, MatType mtype, Mat *J)
 #endif
   if (!mtype) mtype = MATAIJ;
   if (mesh->useNewImpl) {
-    SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_SUP, "Not supported");
+    SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Not supported");
   } else {
     ALE::Obj<PETSC_MESH_TYPE>                    m;
     ALE::Obj<PETSC_MESH_TYPE::real_section_type> s;
     SectionReal                                  section;
     PetscBool                                    flag;
     ierr = DMMeshHasSectionReal(dm, "default", &flag);CHKERRQ(ierr);
-    if (!flag) SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONGSTATE, "Must set default section");
+    if (!flag) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "Must set default section");
     ierr = DMMeshGetSectionReal(dm, "default", &section);CHKERRQ(ierr);
     ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
     ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
     try {
       ierr = DMMeshCreateMatrix(m, s, mtype, J, -1, !dm->prealloc_only);CHKERRQ(ierr);
     } catch(ALE::Exception e) {
-      SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_LIB, e.message());
+      SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_LIB, e.message());
     }
     ierr = SectionRealDestroy(&section);CHKERRQ(ierr);
   }
@@ -554,13 +555,13 @@ PetscErrorCode DMCreateGlobalVector_Mesh(DM dm, Vec *gvec)
     PetscBool                 flag;
     ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
     ierr = DMMeshHasSectionReal(dm, "default", &flag);CHKERRQ(ierr);
-    if (!flag) SETERRQ(((PetscObject) dm)->comm,PETSC_ERR_ARG_WRONGSTATE, "Must set default section");
+    if (!flag) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE, "Must set default section");
     const ALE::Obj<PETSC_MESH_TYPE::order_type>& order = m->getFactory()->getGlobalOrder(m, "default", m->getRealSection("default"));
 
     localSize  = order->getLocalSize();
     globalSize = order->getGlobalSize();
   }
-  ierr = VecCreate(((PetscObject) dm)->comm, gvec);CHKERRQ(ierr);
+  ierr = VecCreate(PetscObjectComm((PetscObject)dm), gvec);CHKERRQ(ierr);
   ierr = VecSetSizes(*gvec, localSize, globalSize);CHKERRQ(ierr);
   ierr = VecSetFromOptions(*gvec);CHKERRQ(ierr);
   ierr = VecSetDM(*gvec, dm);CHKERRQ(ierr);
@@ -587,7 +588,7 @@ PetscErrorCode DMCreateLocalVector_Mesh(DM dm, Vec *lvec)
     PetscBool flag;
     ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
     ierr = DMMeshHasSectionReal(dm, "default", &flag);CHKERRQ(ierr);
-    if (!flag) SETERRQ(((PetscObject) dm)->comm,PETSC_ERR_ARG_WRONGSTATE, "Must set default section");
+    if (!flag) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE, "Must set default section");
     size = m->getRealSection("default")->getStorageSize();
   }
   ierr = VecCreate(PETSC_COMM_SELF, lvec);CHKERRQ(ierr);
@@ -610,7 +611,7 @@ PetscErrorCode DMCreateLocalToGlobalMapping_Mesh(DM dm)
 
   PetscFunctionBegin;
   ierr = DMMeshHasSectionReal(dm, "default", &flag);CHKERRQ(ierr);
-  if (!flag) SETERRQ(((PetscObject) dm)->comm,PETSC_ERR_ARG_WRONGSTATE, "Must set default section");
+  if (!flag) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE, "Must set default section");
   ierr = DMMeshGetSectionReal(dm,"default", &section);CHKERRQ(ierr);
   ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
   ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
@@ -859,7 +860,7 @@ PetscErrorCode DMMeshSetDimension(DM dm, PetscInt dim)
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidLogicalCollectiveInt(dm, dim, 2);
   if (mesh->useNewImpl) mesh->dim = dim;
-  else SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_SUP, "Cannot reset dimension of C++ mesh");
+  else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Cannot reset dimension of C++ mesh");
   PetscFunctionReturn(0);
 }
 
@@ -1095,10 +1096,10 @@ PetscErrorCode DMMeshSetCone(DM dm, PetscInt p, const PetscInt cone[])
     ierr = PetscSectionGetDof(mesh->coneSection, p, &dof);CHKERRQ(ierr);
     ierr = PetscSectionGetOffset(mesh->coneSection, p, &off);CHKERRQ(ierr);
     for (c = 0; c < dof; ++c) {
-      if ((cone[c] < pStart) || (cone[c] >= pEnd)) SETERRQ3(((PetscObject) dm)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Cone point %d is not in the valid range [%d. %d)", cone[c], pStart, pEnd);
+      if ((cone[c] < pStart) || (cone[c] >= pEnd)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Cone point %d is not in the valid range [%d. %d)", cone[c], pStart, pEnd);
       mesh->cones[off+c] = cone[c];
     }
-  } else SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_SUP, "This method does not make sense for the C++ Sieve implementation");
+  } else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "This method does not make sense for the C++ Sieve implementation");
   PetscFunctionReturn(0);
 }
 
@@ -1479,7 +1480,7 @@ PetscErrorCode DMMeshStratify(DM dm)
           ierr = DMMeshSetLabelValue(dm, "depth", p, 1);CHKERRQ(ierr);
         }
       }
-    } else SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_SUP, "Have not yet coded general stratification");
+    } else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Have not yet coded general stratification");
   } else {
     Obj<PETSC_MESH_TYPE> m;
     ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
@@ -1527,7 +1528,7 @@ PetscErrorCode DMMeshGetLabelValue(DM dm, const char name[], PetscInt point, Pet
       if (flg) break;
       next = next->next;
     }
-    if (!flg) SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONG, "No label named %s was found", name);CHKERRQ(ierr);
+    if (!flg) SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "No label named %s was found", name);CHKERRQ(ierr);
     /* Find, or add, label value */
     for (v = 0; v < next->numStrata; ++v) {
       for (p = next->stratumOffsets[v]; p < next->stratumOffsets[v]+next->stratumSizes[v]; ++p) {
@@ -1765,7 +1766,7 @@ PetscErrorCode DMMeshGetLabelIdIS(DM dm, const char name[], IS *ids)
       values[i] = *i_iter;
     }
   }
-  ierr = ISCreateGeneral(((PetscObject) dm)->comm, size, values, PETSC_OWN_POINTER, ids);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PetscObjectComm((PetscObject)dm), size, values, PETSC_OWN_POINTER, ids);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1904,7 +1905,7 @@ PetscErrorCode DMMeshJoinPoints(DM dm, const PetscInt points[], PetscInt *covere
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(points, 2);
   PetscValidPointer(coveredPoint, 3);
-  if (mesh->useNewImpl) SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_SUP, "Not yet supported");
+  if (mesh->useNewImpl) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Not yet supported");
   else {
     ALE::Obj<PETSC_MESH_TYPE> m;
     ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
@@ -2450,7 +2451,7 @@ PetscErrorCode DMMeshCreateNeighborCSR(DM dm, PetscInt *numVertices, PetscInt **
 
       ierr = DMMeshGetConeSize(dm, c, &corners);CHKERRQ(ierr);
       if (!cornersSeen[corners]) {
-        if (numFaceCases >= maxFaceCases) SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_PLIB, "Exceeded maximum number of face recognition cases");
+        if (numFaceCases >= maxFaceCases) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Exceeded maximum number of face recognition cases");
         cornersSeen[corners] = 1;
         if (corners == dim+1) {
           numFaceVertices[numFaceCases] = dim;
@@ -2488,7 +2489,7 @@ PetscErrorCode DMMeshCreateNeighborCSR(DM dm, PetscInt *numVertices, PetscInt **
         } else if ((dim == 3) && (corners == 27)) {
           numFaceVertices[numFaceCases] = 9;
           PetscInfo(dm, "Recognizing quadratic hexes and quadratic hex cohesive Lagrange cells\n");
-        } else SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Could not recognize number of face vertices for %d corners", corners);
+        } else SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Could not recognize number of face vertices for %d corners", corners);
         ++numFaceCases;
       }
     }
@@ -2605,7 +2606,7 @@ PetscErrorCode DMMeshCreateNeighborCSR(DM dm, PetscInt *numVertices, PetscInt **
     }
     ierr = PetscFree(neighborCells);CHKERRQ(ierr);
   } else if (depth == dim) {
-    SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONG, "Neighbor graph creation not implemented for interpolated meshes");
+    SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Neighbor graph creation not implemented for interpolated meshes");
 #if 0
     OffsetVisitor<typename Mesh::sieve_type> oV(*sieve, *overlapSieve, off);
     PetscInt p;
@@ -2626,7 +2627,7 @@ PetscErrorCode DMMeshCreateNeighborCSR(DM dm, PetscInt *numVertices, PetscInt **
     }
     offset = aV.getOffset();
 #endif
-  } else SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONG, "Neighbor graph creation not defined for partially interpolated meshes");
+  } else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Neighbor graph creation not defined for partially interpolated meshes");
 
   *numVertices = numCells;
   *offsets     = off;

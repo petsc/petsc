@@ -2616,7 +2616,7 @@ static PetscErrorCode PCBDDCCreateConstraintMatrix(PC pc)
     abs_tol=1.e-8;
     PetscStackCall("LAPACKsyevx",LAPACKsyevx_("V","A","U",&Bt,correlation_mat,&Bt,&dummy_real,&dummy_real,&dummy_int,&dummy_int,&abs_tol,&eigs_found,singular_vals,singular_vectors,&Bt,&temp_work,&lwork,iwork,ifail,&lierr));
 #else
-    SETERRQ(((PetscObject) pc)->comm, PETSC_ERR_SUP, "Not yet implemented for complexes when PETSC_MISSING_GESVD = 1");
+    SETERRQ(PetscObjectComm((PetscObject)pc), PETSC_ERR_SUP, "Not yet implemented for complexes when PETSC_MISSING_GESVD = 1");
 #endif
     if (lierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in query to SYEVX Lapack routine %d",(int)lierr);
     ierr = PetscFPTrapPop();CHKERRQ(ierr);
@@ -2771,7 +2771,7 @@ static PetscErrorCode PCBDDCCreateConstraintMatrix(PC pc)
 #if !defined(PETSC_USE_COMPLEX)
       PetscStackCall("LAPACKsyevx",LAPACKsyevx_("V","A","U",&Bt,correlation_mat,&Bt,&dummy_real,&dummy_real,&dummy_int,&dummy_int,&abs_tol,&eigs_found,singular_vals,singular_vectors,&Bt,work,&lwork,iwork,ifail,&lierr));
 #else
-      SETERRQ(((PetscObject) pc)->comm, PETSC_ERR_SUP, "Not yet implemented for complexes when PETSC_MISSING_GESVD = 1");
+      SETERRQ(PetscObjectComm((PetscObject)pc), PETSC_ERR_SUP, "Not yet implemented for complexes when PETSC_MISSING_GESVD = 1");
 #endif
       if (lierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in SYEVX Lapack routine %d",(int)lierr);
       ierr = PetscFPTrapPop();CHKERRQ(ierr);

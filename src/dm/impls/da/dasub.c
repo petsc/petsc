@@ -192,7 +192,7 @@ PetscErrorCode  DMDAGetProcessorSubsets(DM da, DMDADirection dir, MPI_Comm *subc
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da, DM_CLASSID, 1);
-  comm = ((PetscObject) da)->comm;
+  ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
   ierr = DMDAGetCorners(da, &xs, &ys, &zs, &xm, &ym, &zm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
   if (dir == DMDA_Z) {

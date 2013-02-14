@@ -223,7 +223,7 @@ PetscErrorCode MatSetValuesBatch_MPIAIJCUSP(Mat J, PetscInt Ne, PetscInt Nl, Pet
   //  nondiagonal: (i,j) such that i not in [firstRow, lastRow), or j not in [firstRow, lastRow)
   //   on-process: entries provided by elemMats
   //  off-process: entries received from other processes
-  MPI_Comm       comm = ((PetscObject) J)->comm;
+  MPI_Comm       comm;
   Mat_MPIAIJ     *j   = (Mat_MPIAIJ*) J->data;
   size_t         N    = Ne * Nl;     // Length of elemRows (dimension of unassembled space)
   size_t         No   = Ne * Nl*Nl;  // Length of elemMats (total number of values)
@@ -242,6 +242,7 @@ PetscErrorCode MatSetValuesBatch_MPIAIJCUSP(Mat J, PetscInt Ne, PetscInt Nl, Pet
   ValueArray d_elemMats(elemMats, elemMats + No);
 
   PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)J,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm, &numProcs);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   // get matrix information

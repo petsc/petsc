@@ -134,14 +134,14 @@ PetscErrorCode SetupSection(DM dm, AppCtx *user)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (1   != NUM_FIELDS)    SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONG, "Number of finite element fields %d must be 1", NUM_FIELDS);
-  if (dim != SPATIAL_DIM_0) SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_ARG_SIZ, "Spatial dimension %d should be %d", dim, SPATIAL_DIM_0);
+  if (1   != NUM_FIELDS)    SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Number of finite element fields %d must be 1", NUM_FIELDS);
+  if (dim != SPATIAL_DIM_0) SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_SIZ, "Spatial dimension %d should be %d", dim, SPATIAL_DIM_0);
   for (d = 0; d <= dim; ++d) {
     numDof[0*(dim+1)+d] = numDof_0[d];
   }
   for (f = 0; f < numFields; ++f) {
     for (d = 1; d < dim; ++d) {
-      if ((numDof[f*(dim+1)+d] > 0) && !user->interpolate) SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONG, "Mesh must be interpolated when unknowns are specified on edges or faces.");
+      if ((numDof[f*(dim+1)+d] > 0) && !user->interpolate) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Mesh must be interpolated when unknowns are specified on edges or faces.");
     }
   }
   ierr = DMPlexCreateSection(dm, dim, numFields, numComp, numDof, numBC, bcFields, bcPoints, &section);CHKERRQ(ierr);
@@ -154,13 +154,14 @@ PetscErrorCode SetupSection(DM dm, AppCtx *user)
 PetscErrorCode CheckFunctions(DM dm, PetscInt order, Vec u, AppCtx *user)
 {
   PetscScalar     (*exactFuncs[NUM_BASIS_COMPONENTS_TOTAL]) (const PetscReal x[]);
-  MPI_Comm        comm = ((PetscObject) dm)->comm;
+  MPI_Comm        comm;
   PetscInt        dim  = user->dim;
   PetscQuadrature q[NUM_FIELDS];
   PetscReal       error, tol = 1.0e-10;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);
   /* Setup quadrature and basis tabulation */
   q[0].numQuadPoints = NUM_QUADRATURE_POINTS_0;
   q[0].quadPoints    = points_0;

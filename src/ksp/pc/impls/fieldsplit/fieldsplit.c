@@ -172,7 +172,7 @@ static PetscErrorCode PCView_FieldSplit_Schur(PC pc,PetscViewer viewer)
       }
       break;
     default:
-      SETERRQ1(((PetscObject) pc)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Invalid Schur preconditioning type: %d", jac->schurpre);
+      SETERRQ1(PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_OUTOFRANGE, "Invalid Schur preconditioning type: %d", jac->schurpre);
     }
     ierr = PetscViewerASCIIPrintf(viewer,"  Split info:\n");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
@@ -332,16 +332,16 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
         ierr = PetscSNPrintf(optionname, sizeof(optionname), "-pc_fieldsplit_%D_fields", i);CHKERRQ(ierr);
         ierr = PetscOptionsGetIntArray(((PetscObject) pc)->prefix, optionname, ifields, &nfields, &flg);CHKERRQ(ierr);
         if (!flg) break;
-        if (numFields > 128) SETERRQ1(((PetscObject) pc)->comm,PETSC_ERR_SUP,"Cannot currently support %d > 128 fields", numFields);
+        if (numFields > 128) SETERRQ1(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Cannot currently support %d > 128 fields", numFields);
         ierr = DMCreateSubDM(pc->dm, nfields, ifields, &compField, &subdm[i]);CHKERRQ(ierr);
         if (nfields == 1) {
           ierr = PCFieldSplitSetIS(pc, fieldNames[ifields[0]], compField);CHKERRQ(ierr);
-          /* ierr = PetscPrintf(((PetscObject) pc)->comm, "%s Field Indices:", fieldNames[ifields[0]]);CHKERRQ(ierr);
+          /* ierr = PetscPrintf(PetscObjectComm((PetscObject)pc), "%s Field Indices:", fieldNames[ifields[0]]);CHKERRQ(ierr);
              ierr = ISView(compField, NULL);CHKERRQ(ierr); */
         } else {
           ierr = PetscSNPrintf(splitname, sizeof(splitname), "%D", i);CHKERRQ(ierr);
           ierr = PCFieldSplitSetIS(pc, splitname, compField);CHKERRQ(ierr);
-          /* ierr = PetscPrintf(((PetscObject) pc)->comm, "%s Field Indices:", splitname);CHKERRQ(ierr);
+          /* ierr = PetscPrintf(PetscObjectComm((PetscObject)pc), "%s Field Indices:", splitname);CHKERRQ(ierr);
              ierr = ISView(compField, NULL);CHKERRQ(ierr); */
         }
         ierr = ISDestroy(&compField);CHKERRQ(ierr);
@@ -432,11 +432,11 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
       ierr = ISComplement(ilink->is,nmin,nmax,&is2);CHKERRQ(ierr);
       ierr = PCFieldSplitSetIS(pc,"1",is2);CHKERRQ(ierr);
       ierr = ISDestroy(&is2);CHKERRQ(ierr);
-    } else SETERRQ(((PetscObject) pc)->comm,PETSC_ERR_SUP,"Must provide at least two sets of fields to PCFieldSplit()");
+    } else SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Must provide at least two sets of fields to PCFieldSplit()");
   }
 
 
-  if (jac->nsplits < 2) SETERRQ1(((PetscObject) pc)->comm,PETSC_ERR_PLIB,"Unhandled case, must have at least two fields, not %d", jac->nsplits);
+  if (jac->nsplits < 2) SETERRQ1(PetscObjectComm((PetscObject)pc),PETSC_ERR_PLIB,"Unhandled case, must have at least two fields, not %d", jac->nsplits);
   PetscFunctionReturn(0);
 }
 
@@ -674,7 +674,7 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
         DM dmInner;
 
         ierr = PetscSNPrintf(schurprefix, sizeof(schurprefix), "%sfieldsplit_%s_upper_", ((PetscObject)pc)->prefix ? ((PetscObject)pc)->prefix : "", ilink->splitname);CHKERRQ(ierr);
-        ierr = KSPCreate(((PetscObject) pc)->comm, &jac->kspupper);CHKERRQ(ierr);
+        ierr = KSPCreate(PetscObjectComm((PetscObject)pc), &jac->kspupper);CHKERRQ(ierr);
         ierr = KSPSetOptionsPrefix(jac->kspupper, schurprefix);CHKERRQ(ierr);
         ierr = KSPGetDM(jac->head->ksp, &dmInner);CHKERRQ(ierr);
         ierr = KSPSetDM(jac->kspupper, dmInner);CHKERRQ(ierr);

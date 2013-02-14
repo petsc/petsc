@@ -54,7 +54,7 @@ PetscErrorCode DMPatchZoom(DM dm, Vec X, MatStencil lower, MatStencil upper, MPI
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(((PetscObject) dm)->comm, &size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)dm), &size);CHKERRQ(ierr);
   /* Create patch DM */
   ierr = DMDAGetInfo(dm, &dim, &M, &N, &P, 0,0,0, &dof, 0,0,0,0, &st);CHKERRQ(ierr);
 
@@ -121,7 +121,7 @@ PetscErrorCode DMPatchZoom(DM dm, Vec X, MatStencil lower, MatStencil upper, MPI
   }
   ierr = ISRestoreIndices(is, &indices);CHKERRQ(ierr);
   ierr = ISDestroy(&is);CHKERRQ(ierr);
-  ierr = PetscSFCreate(((PetscObject) dm)->comm, sfzr);CHKERRQ(ierr);
+  ierr = PetscSFCreate(PetscObjectComm((PetscObject)dm), sfzr);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) *sfzr, "Restricted Map");CHKERRQ(ierr);
   ierr = PetscSFSetGraph(*sfzr, M*N*P, q, localPoints, PETSC_COPY_VALUES, remotePoints, PETSC_COPY_VALUES);CHKERRQ(ierr);
 
@@ -148,7 +148,7 @@ PetscErrorCode DMPatchZoom(DM dm, Vec X, MatStencil lower, MatStencil upper, MPI
   }
   ierr = ISRestoreIndices(is, &indices);CHKERRQ(ierr);
   ierr = ISDestroy(&is);CHKERRQ(ierr);
-  ierr = PetscSFCreate(((PetscObject) dm)->comm, sfz);CHKERRQ(ierr);
+  ierr = PetscSFCreate(PetscObjectComm((PetscObject)dm), sfz);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) *sfz, "Buffered Map");CHKERRQ(ierr);
   ierr = PetscSFSetGraph(*sfz, M*N*P, q, localPoints, PETSC_COPY_VALUES, remotePoints, PETSC_COPY_VALUES);CHKERRQ(ierr);
 
@@ -162,7 +162,7 @@ typedef enum {PATCH_COMM_TYPE_WORLD = 0, PATCH_COMM_TYPE_SELF = 1} PatchCommType
 #define __FUNCT__ "DMPatchSolve"
 PetscErrorCode DMPatchSolve(DM dm)
 {
-  MPI_Comm       comm = ((PetscObject) dm)->comm;
+  MPI_Comm       comm;
   MPI_Comm       commz;
   DM             dmc;
   PetscSF        sfz, sfzr;
@@ -174,6 +174,7 @@ PetscErrorCode DMPatchSolve(DM dm)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);  
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
   ierr = DMPatchGetCoarse(dm, &dmc);CHKERRQ(ierr);
@@ -384,7 +385,7 @@ PetscErrorCode DMCreateSubDM_Patch(DM dm, PetscInt numFields, PetscInt fields[],
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_SUP, "Tell me to code this");
+  SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Tell me to code this");
   PetscFunctionReturn(0);
 }
 

@@ -73,7 +73,7 @@ PetscErrorCode DMPlexVTKGetCellType(DM dm, PetscInt dim, PetscInt corners, Petsc
 #define __FUNCT__ "DMPlexVTKWriteCells_ASCII"
 PetscErrorCode DMPlexVTKWriteCells_ASCII(DM dm, FILE *fp, PetscInt *totalCells)
 {
-  MPI_Comm       comm = ((PetscObject) dm)->comm;
+  MPI_Comm       comm;
   IS             globalVertexNumbers;
   const PetscInt *gvertex;
   PetscInt       dim;
@@ -85,6 +85,7 @@ PetscErrorCode DMPlexVTKWriteCells_ASCII(DM dm, FILE *fp, PetscInt *totalCells)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);
   ierr = PetscCommGetNewTag(comm, &tag);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm, &numProcs);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
@@ -233,7 +234,7 @@ PetscErrorCode DMPlexVTKWriteCells_ASCII(DM dm, FILE *fp, PetscInt *totalCells)
 #define __FUNCT__ "DMPlexVTKWriteSection_ASCII"
 PetscErrorCode DMPlexVTKWriteSection_ASCII(DM dm, PetscSection section, PetscSection globalSection, Vec v, FILE *fp, PetscInt enforceDof, PetscInt precision, PetscReal scale)
 {
-  MPI_Comm           comm    = ((PetscObject) dm)->comm;
+  MPI_Comm           comm;
   const MPI_Datatype mpiType = MPIU_SCALAR;
   PetscScalar        *array;
   PetscInt           numDof = 0, maxDof;
@@ -243,6 +244,7 @@ PetscErrorCode DMPlexVTKWriteSection_ASCII(DM dm, PetscSection section, PetscSec
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidHeaderSpecific(v,VEC_CLASSID,4);
   if (precision < 0) precision = 6;
@@ -378,19 +380,20 @@ PetscErrorCode DMPlexVTKWriteSection_ASCII(DM dm, PetscSection section, PetscSec
 #define __FUNCT__ "DMPlexVTKWriteField_ASCII"
 PetscErrorCode DMPlexVTKWriteField_ASCII(DM dm, PetscSection section, PetscSection globalSection, Vec field, const char name[], FILE *fp, PetscInt enforceDof, PetscInt precision, PetscReal scale)
 {
-  MPI_Comm       comm   = ((PetscObject) dm)->comm;
+  MPI_Comm       comm;
   PetscInt       numDof = 0, maxDof;
   PetscInt       pStart, pEnd, p;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);
   ierr = PetscSectionGetChart(section, &pStart, &pEnd);CHKERRQ(ierr);
   for (p = pStart; p < pEnd; ++p) {
     ierr = PetscSectionGetDof(section, p, &numDof);CHKERRQ(ierr);
     if (numDof) break;
   }
   numDof = PetscMax(numDof, enforceDof);
-  ierr = MPI_Allreduce(&numDof, &maxDof, 1, MPIU_INT, MPI_MAX, ((PetscObject) dm)->comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&numDof, &maxDof, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
   if (!name) name = "Unknown";
   if (maxDof == 3) {
     ierr = PetscFPrintf(comm, fp, "VECTORS %s double\n", name);CHKERRQ(ierr);
@@ -406,7 +409,7 @@ PetscErrorCode DMPlexVTKWriteField_ASCII(DM dm, PetscSection section, PetscSecti
 #define __FUNCT__ "DMPlexVTKWriteAll_ASCII"
 static PetscErrorCode DMPlexVTKWriteAll_ASCII(DM dm, PetscViewer viewer)
 {
-  MPI_Comm                 comm = ((PetscObject) dm)->comm;
+  MPI_Comm                 comm;
   PetscViewer_VTK          *vtk = (PetscViewer_VTK*) viewer->data;
   FILE                     *fp;
   PetscViewerVTKObjectLink link;
@@ -419,6 +422,7 @@ static PetscErrorCode DMPlexVTKWriteAll_ASCII(DM dm, PetscViewer viewer)
   PetscErrorCode           ierr;
 
   PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);
   ierr = PetscFOpen(comm, vtk->filename, "wb", &fp);CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fp, "# vtk DataFile Version 2.0\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fp, "Simplicial Mesh Example\n");CHKERRQ(ierr);
@@ -441,12 +445,12 @@ static PetscErrorCode DMPlexVTKWriteAll_ASCII(DM dm, PetscViewer viewer)
       ierr = PetscSectionGetDof(globalCoordSection, p, &dof);CHKERRQ(ierr);
       if (dof > 0) ++localSize;
     }
-    ierr = PetscLayoutCreate(((PetscObject) dm)->comm, &vLayout);CHKERRQ(ierr);
+    ierr = PetscLayoutCreate(PetscObjectComm((PetscObject)dm), &vLayout);CHKERRQ(ierr);
     ierr = PetscLayoutSetLocalSize(vLayout, localSize);CHKERRQ(ierr);
     ierr = PetscLayoutSetBlockSize(vLayout, 1);CHKERRQ(ierr);
     ierr = PetscLayoutSetUp(vLayout);CHKERRQ(ierr);
   } else {
-    ierr = PetscSectionGetPointLayout(((PetscObject) dm)->comm, globalCoordSection, &vLayout);CHKERRQ(ierr);
+    ierr = PetscSectionGetPointLayout(PetscObjectComm((PetscObject)dm), globalCoordSection, &vLayout);CHKERRQ(ierr);
   }
   ierr = PetscLayoutGetSize(vLayout, &totVertices);CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fp, "POINTS %d double\n", totVertices);CHKERRQ(ierr);
@@ -517,10 +521,10 @@ static PetscErrorCode DMPlexVTKWriteAll_ASCII(DM dm, PetscViewer viewer)
         PetscContainer c;
 
         ierr = PetscObjectQuery(link->vec, "section", (PetscObject*) &c);CHKERRQ(ierr);
-        if (!c) SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONG, "Vector %s had no PetscSection composed with it", name);
+        if (!c) SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Vector %s had no PetscSection composed with it", name);
         ierr = PetscContainerGetPointer(c, (void**) &section);CHKERRQ(ierr);
       }
-      if (!section) SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONG, "Vector %s had no PetscSection composed with it", name);
+      if (!section) SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Vector %s had no PetscSection composed with it", name);
       ierr = PetscSectionCreateGlobalSection(section, dm->sf, PETSC_FALSE, &globalSection);CHKERRQ(ierr);
       ierr = DMPlexVTKWriteField_ASCII(dm, section, globalSection, X, name, fp, enforceDof, PETSC_DETERMINE, 1.0);CHKERRQ(ierr);
       ierr = PetscSectionDestroy(&globalSection);CHKERRQ(ierr);
@@ -547,10 +551,10 @@ static PetscErrorCode DMPlexVTKWriteAll_ASCII(DM dm, PetscViewer viewer)
         PetscContainer c;
 
         ierr = PetscObjectQuery(link->vec, "section", (PetscObject*) &c);CHKERRQ(ierr);
-        if (!c) SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONG, "Vector %s had no PetscSection composed with it", name);
+        if (!c) SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Vector %s had no PetscSection composed with it", name);
         ierr = PetscContainerGetPointer(c, (void**) &section);CHKERRQ(ierr);
       }
-      if (!section) SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONG, "Vector %s had no PetscSection composed with it", name);
+      if (!section) SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Vector %s had no PetscSection composed with it", name);
       ierr = PetscSectionCreateGlobalSection(section, dm->sf, PETSC_FALSE, &globalSection);CHKERRQ(ierr);
       ierr = DMPlexVTKWriteField_ASCII(dm, section, globalSection, X, name, fp, enforceDof, PETSC_DETERMINE, 1.0);CHKERRQ(ierr);
       ierr = PetscSectionDestroy(&globalSection);CHKERRQ(ierr);
@@ -593,7 +597,7 @@ PetscErrorCode DMPlexVTKWriteAll(PetscObject odm, PetscViewer viewer)
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
   ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERVTK, &isvtk);CHKERRQ(ierr);
-  if (!isvtk) SETERRQ1(((PetscObject) viewer)->comm, PETSC_ERR_ARG_INCOMP, "Cannot use viewer type %s", ((PetscObject)viewer)->type_name);
+  if (!isvtk) SETERRQ1(PetscObjectComm((PetscObject)viewer), PETSC_ERR_ARG_INCOMP, "Cannot use viewer type %s", ((PetscObject)viewer)->type_name);
   switch (viewer->format) {
   case PETSC_VIEWER_ASCII_VTK:
     ierr = DMPlexVTKWriteAll_ASCII(dm, viewer);CHKERRQ(ierr);
@@ -601,7 +605,7 @@ PetscErrorCode DMPlexVTKWriteAll(PetscObject odm, PetscViewer viewer)
   case PETSC_VIEWER_VTK_VTU:
     ierr = DMPlexVTKWriteAll_VTU(dm, viewer);CHKERRQ(ierr);
     break;
-  default: SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_SUP, "No support for format '%s'", PetscViewerFormats[viewer->format]);
+  default: SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "No support for format '%s'", PetscViewerFormats[viewer->format]);
   }
   PetscFunctionReturn(0);
 }

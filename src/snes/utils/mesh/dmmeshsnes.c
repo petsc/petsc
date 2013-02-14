@@ -27,7 +27,7 @@ PetscErrorCode DMMeshInterpolationSetDim(DM dm, PetscInt dim, DMMeshInterpolatio
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  if ((dim < 1) || (dim > 3)) SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension for points: %d", dim);
+  if ((dim < 1) || (dim > 3)) SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension for points: %d", dim);
   ctx->dim = dim;
   PetscFunctionReturn(0);
 }
@@ -49,7 +49,7 @@ PetscErrorCode DMMeshInterpolationSetDof(DM dm, PetscInt dof, DMMeshInterpolatio
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  if (dof < 1) SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Invalid number of components: %d", dof);
+  if (dof < 1) SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Invalid number of components: %d", dof);
   ctx->dof = dof;
   PetscFunctionReturn(0);
 }
@@ -73,8 +73,8 @@ PetscErrorCode DMMeshInterpolationAddPoints(DM dm, PetscInt n, PetscReal points[
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  if (ctx->dim < 0) SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONGSTATE, "The spatial dimension has not been set");
-  if (ctx->points)  SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONGSTATE, "Cannot add points multiple times yet");
+  if (ctx->dim < 0) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "The spatial dimension has not been set");
+  if (ctx->points)  SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "Cannot add points multiple times yet");
   ctx->nInput = n;
   ierr        = PetscMalloc(n*ctx->dim * sizeof(PetscReal), &ctx->points);CHKERRQ(ierr);
   ierr        = PetscMemcpy(ctx->points, points, n*ctx->dim * sizeof(PetscReal));CHKERRQ(ierr);
@@ -86,7 +86,7 @@ PetscErrorCode DMMeshInterpolationAddPoints(DM dm, PetscInt n, PetscReal points[
 PetscErrorCode DMMeshInterpolationSetUp(DM dm, DMMeshInterpolationInfo ctx, PetscBool redundantPoints)
 {
   ALE::Obj<PETSC_MESH_TYPE> m;
-  MPI_Comm                  comm = ((PetscObject) dm)->comm;
+  MPI_Comm                  comm;
   PetscScalar               *a;
   PetscInt                  p, q, i;
   PetscMPIInt               rank, size;
@@ -94,6 +94,7 @@ PetscErrorCode DMMeshInterpolationSetUp(DM dm, DMMeshInterpolationInfo ctx, Pets
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);

@@ -254,7 +254,7 @@ PetscErrorCode  PetscViewerHDF5PopGroup(PetscViewer viewer)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
-  if (!hdf5->groups) SETERRQ(((PetscObject) viewer)->comm, PETSC_ERR_ARG_WRONGSTATE, "HDF5 group stack is empty, cannot pop");
+  if (!hdf5->groups) SETERRQ(PetscObjectComm((PetscObject)viewer), PETSC_ERR_ARG_WRONGSTATE, "HDF5 group stack is empty, cannot pop");
   groupNode    = hdf5->groups;
   hdf5->groups = hdf5->groups->next;
   ierr         = PetscFree(groupNode->name);CHKERRQ(ierr);

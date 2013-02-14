@@ -14,7 +14,7 @@ PetscErrorCode DMCreateCoordinateDM_DA(DM dm, DM *cdm)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(((PetscObject) dm)->comm, &size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)dm), &size);CHKERRQ(ierr);
   if (da->dim == 1) {
     PetscInt         s,m,*lc,l;
     DMDABoundaryType bx;

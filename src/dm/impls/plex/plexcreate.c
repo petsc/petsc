@@ -61,7 +61,7 @@ PetscErrorCode DMPlexCreateSquareBoundary(DM dm, const PetscReal lower[], const 
     markerRight  = 0;
     markerLeft   = 0;
   }
-  ierr = MPI_Comm_rank(((PetscObject) dm)->comm, &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm), &rank);CHKERRQ(ierr);
   if (!rank) {
     PetscInt e, ex, ey;
 
@@ -127,7 +127,7 @@ PetscErrorCode DMPlexCreateSquareBoundary(DM dm, const PetscReal lower[], const 
   }
   ierr = PetscSectionSetUp(coordSection);CHKERRQ(ierr);
   ierr = PetscSectionGetStorageSize(coordSection, &coordSize);CHKERRQ(ierr);
-  ierr = VecCreate(((PetscObject) dm)->comm, &coordinates);CHKERRQ(ierr);
+  ierr = VecCreate(PetscObjectComm((PetscObject)dm), &coordinates);CHKERRQ(ierr);
   ierr = VecSetSizes(coordinates, coordSize, PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = VecSetFromOptions(coordinates);CHKERRQ(ierr);
   ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
@@ -169,10 +169,10 @@ PetscErrorCode DMPlexCreateCubeBoundary(DM dm, const PetscReal lower[], const Pe
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if ((faces[0] < 1) || (faces[1] < 1) || (faces[2] < 1)) SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_SUP, "Must have at least 1 face per side");
-  if ((faces[0] > 1) || (faces[1] > 1) || (faces[2] > 1)) SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_SUP, "Currently can't handle more than 1 face per side");
+  if ((faces[0] < 1) || (faces[1] < 1) || (faces[2] < 1)) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Must have at least 1 face per side");
+  if ((faces[0] > 1) || (faces[1] > 1) || (faces[2] > 1)) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Currently can't handle more than 1 face per side");
   ierr = PetscMalloc(numVertices*2 * sizeof(PetscReal), &coords);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(((PetscObject) dm)->comm, &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm), &rank);CHKERRQ(ierr);
   if (!rank) {
     PetscInt f;
 
@@ -225,7 +225,7 @@ PetscErrorCode DMPlexCreateCubeBoundary(DM dm, const PetscReal lower[], const Pe
   }
   ierr = PetscSectionSetUp(coordSection);CHKERRQ(ierr);
   ierr = PetscSectionGetStorageSize(coordSection, &coordSize);CHKERRQ(ierr);
-  ierr = VecCreate(((PetscObject) dm)->comm, &coordinates);CHKERRQ(ierr);
+  ierr = VecCreate(PetscObjectComm((PetscObject)dm), &coordinates);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) coordinates, "coordinates");CHKERRQ(ierr);
   ierr = VecSetSizes(coordinates, coordSize, PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = VecSetFromOptions(coordinates);CHKERRQ(ierr);
@@ -271,7 +271,7 @@ PetscErrorCode DMPlexCreateSquareMesh(DM dm, const PetscReal lower[], const Pets
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(((PetscObject) dm)->comm, &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm), &rank);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(((PetscObject) dm)->prefix, "-dm_plex_separate_marker", &markerSeparate, NULL);CHKERRQ(ierr);
   if (markerSeparate) {
     markerTop    = 3;
@@ -379,7 +379,7 @@ PetscErrorCode DMPlexCreateSquareMesh(DM dm, const PetscReal lower[], const Pets
     }
     ierr = PetscSectionSetUp(coordSection);CHKERRQ(ierr);
     ierr = PetscSectionGetStorageSize(coordSection, &coordSize);CHKERRQ(ierr);
-    ierr = VecCreate(((PetscObject) dm)->comm, &coordinates);CHKERRQ(ierr);
+    ierr = VecCreate(PetscObjectComm((PetscObject)dm), &coordinates);CHKERRQ(ierr);
     ierr = VecSetSizes(coordinates, coordSize, PETSC_DETERMINE);CHKERRQ(ierr);
     ierr = VecSetFromOptions(coordinates);CHKERRQ(ierr);
     ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
@@ -563,11 +563,11 @@ PetscErrorCode DMCreate_Plex(DM dm)
 
   mesh->refct             = 1;
   mesh->dim               = 0;
-  ierr                    = PetscSectionCreate(((PetscObject) dm)->comm, &mesh->coneSection);CHKERRQ(ierr);
+  ierr                    = PetscSectionCreate(PetscObjectComm((PetscObject)dm), &mesh->coneSection);CHKERRQ(ierr);
   mesh->maxConeSize       = 0;
   mesh->cones             = NULL;
   mesh->coneOrientations  = NULL;
-  ierr                    = PetscSectionCreate(((PetscObject) dm)->comm, &mesh->supportSection);CHKERRQ(ierr);
+  ierr                    = PetscSectionCreate(PetscObjectComm((PetscObject)dm), &mesh->supportSection);CHKERRQ(ierr);
   mesh->maxSupportSize    = 0;
   mesh->supports          = NULL;
   mesh->refinementUniform = PETSC_TRUE;
@@ -652,7 +652,7 @@ PetscErrorCode DMPlexClone(DM dm, DM *newdm)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(newdm,2);
-  ierr         = DMCreate(((PetscObject) dm)->comm, newdm);CHKERRQ(ierr);
+  ierr         = DMCreate(PetscObjectComm((PetscObject)dm), newdm);CHKERRQ(ierr);
   ierr         = PetscSFDestroy(&(*newdm)->sf);CHKERRQ(ierr);
   ierr         = PetscObjectReference((PetscObject) dm->sf);CHKERRQ(ierr);
   (*newdm)->sf = dm->sf;

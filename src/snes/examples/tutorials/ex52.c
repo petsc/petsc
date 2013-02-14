@@ -196,7 +196,7 @@ PetscErrorCode SetupSection(DM dm, AppCtx *user)
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  if (dim != SPATIAL_DIM_0) SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_ARG_SIZ, "Spatial dimension %d should be %d", dim, SPATIAL_DIM_0);
+  if (dim != SPATIAL_DIM_0) SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_SIZ, "Spatial dimension %d should be %d", dim, SPATIAL_DIM_0);
   ierr = DMPlexCreateSection(dm, dim, 1, numComp, numDof_0, numBC, NULL, NULL, &section);CHKERRQ(ierr);
   ierr = DMPlexSetDefaultSection(dm, section);CHKERRQ(ierr);
   PetscFunctionReturn(0);

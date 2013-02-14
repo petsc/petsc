@@ -762,8 +762,8 @@ PetscErrorCode ConstructCellBoundary(DM dm, User user)
       if ((neighbors[1] < cStart) || (neighbors[1] >= cEnd)) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_LIB, "Got invalid point %d which is not a cell", neighbors[1]);
       ierr = DMPlexGetLabelValue(dm, name, neighbors[0], &regionA);CHKERRQ(ierr);
       ierr = DMPlexGetLabelValue(dm, name, neighbors[1], &regionB);CHKERRQ(ierr);
-      if (regionA < 0) SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONG, "Invalid label %s: Cell %d has no value", name, neighbors[0]);
-      if (regionB < 0) SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONG, "Invalid label %s: Cell %d has no value", name, neighbors[1]);
+      if (regionA < 0) SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Invalid label %s: Cell %d has no value", name, neighbors[0]);
+      if (regionB < 0) SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Invalid label %s: Cell %d has no value", name, neighbors[1]);
       if (regionA != regionB) {
         ierr = DMPlexSetLabelValue(dm, bdname, faces[f], 1);CHKERRQ(ierr);
       }
@@ -804,7 +804,7 @@ PetscErrorCode SplitFaces(DM *dmSplit, const char labelName[], User user)
   PetscFunctionBeginUser;
   ierr = DMPlexHasLabel(dm, labelName, &hasLabel);CHKERRQ(ierr);
   if (!hasLabel) PetscFunctionReturn(0);
-  ierr = DMCreate(((PetscObject) dm)->comm, &sdm);CHKERRQ(ierr);
+  ierr = DMCreate(PetscObjectComm((PetscObject)dm), &sdm);CHKERRQ(ierr);
   ierr = DMSetType(sdm, DMPLEX);CHKERRQ(ierr);
   ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMPlexSetDimension(sdm, dim);CHKERRQ(ierr);
@@ -904,7 +904,7 @@ PetscErrorCode SplitFaces(DM *dmSplit, const char labelName[], User user)
   /* Convert coordinates */
   ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
   ierr = DMPlexGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
-  ierr = PetscSectionCreate(((PetscObject) dm)->comm, &newCoordSection);CHKERRQ(ierr);
+  ierr = PetscSectionCreate(PetscObjectComm((PetscObject)dm), &newCoordSection);CHKERRQ(ierr);
   ierr = PetscSectionSetNumFields(newCoordSection, 1);CHKERRQ(ierr);
   ierr = PetscSectionSetFieldComponents(newCoordSection, 0, dim);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(newCoordSection, vStart, vEnd);CHKERRQ(ierr);
@@ -956,7 +956,7 @@ PetscErrorCode SplitFaces(DM *dmSplit, const char labelName[], User user)
   PetscInt          numRoots, numLeaves;
   PetscMPIInt       numProcs;
 
-  ierr = MPI_Comm_size(((PetscObject) dm)->comm, &numProcs);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)dm), &numProcs);CHKERRQ(ierr);
   ierr = DMGetPointSF(dm, &sfPoint);CHKERRQ(ierr);
   ierr = DMGetPointSF(sdm, &gsfPoint);CHKERRQ(ierr);
   ierr = DMPlexGetChart(dm,&pStart,&pEnd);CHKERRQ(ierr);
@@ -1210,7 +1210,7 @@ PetscErrorCode ConstructGeometry(DM dm, Vec *facegeom, Vec *cellgeom, User user)
   ++coordSection->refcnt;
   ierr = DMPlexSetCoordinateSection(dmCell, coordSection);CHKERRQ(ierr);
   ierr = DMSetCoordinatesLocal(dmCell, coordinates);CHKERRQ(ierr);
-  ierr = PetscSectionCreate(((PetscObject) dm)->comm, &sectionCell);CHKERRQ(ierr);
+  ierr = PetscSectionCreate(PetscObjectComm((PetscObject)dm), &sectionCell);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(sectionCell, cStart, cEnd);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; ++c) {
@@ -1246,7 +1246,7 @@ PetscErrorCode ConstructGeometry(DM dm, Vec *facegeom, Vec *cellgeom, User user)
 
   /* Make normals and fill in ghost centroids */
   ierr = DMPlexClone(dm, &dmFace);CHKERRQ(ierr);
-  ierr = PetscSectionCreate(((PetscObject) dm)->comm, &sectionFace);CHKERRQ(ierr);
+  ierr = PetscSectionCreate(PetscObjectComm((PetscObject)dm), &sectionFace);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 1, &fStart, &fEnd);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(sectionFace, fStart, fEnd);CHKERRQ(ierr);
   for (f = fStart; f < fEnd; ++f) {
@@ -1270,7 +1270,7 @@ PetscErrorCode ConstructGeometry(DM dm, Vec *facegeom, Vec *cellgeom, User user)
     ierr = DMPlexVecGetClosure(dm, coordSection, coordinates, f, &coordSize, &coords);CHKERRQ(ierr);
     ierr = DMPlexPointLocalRef(dmFace, f, fgeom, &fg);CHKERRQ(ierr);
     /* Only support edges right now */
-    if (coordSize != dim*2) SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_SUP, "We only support edges right now");
+    if (coordSize != dim*2) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "We only support edges right now");
     fg->centroid[0] = 0.5*(coords[0] + coords[dim]);
     fg->centroid[1] = 0.5*(coords[1] + coords[dim+1]);
     fg->normal[0]   =  (coords[1] - coords[dim+1]);
@@ -1321,7 +1321,7 @@ PetscErrorCode ConstructGeometry(DM dm, Vec *facegeom, Vec *cellgeom, User user)
   }
   ierr = VecRestoreArray(*facegeom, &fgeom);CHKERRQ(ierr);
   ierr = VecRestoreArray(*cellgeom, &cgeom);CHKERRQ(ierr);
-  ierr = MPI_Allreduce(&minradius, &user->minradius, 1, MPIU_SCALAR, MPI_MIN, ((PetscObject) dm)->comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&minradius, &user->minradius, 1, MPIU_SCALAR, MPI_MIN, PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
   ierr = DMDestroy(&dmCell);CHKERRQ(ierr);
   ierr = DMDestroy(&dmFace);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1349,8 +1349,8 @@ PetscErrorCode CreatePartitionVec(DM dm, DM *dmCell, Vec *partition)
   ++coordSection->refcnt;
   ierr = DMPlexSetCoordinateSection(*dmCell, coordSection);CHKERRQ(ierr);
   ierr = DMSetCoordinatesLocal(*dmCell, coordinates);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(((PetscObject) dm)->comm, &rank);CHKERRQ(ierr);
-  ierr = PetscSectionCreate(((PetscObject) dm)->comm, &sectionCell);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm), &rank);CHKERRQ(ierr);
+  ierr = PetscSectionCreate(PetscObjectComm((PetscObject)dm), &sectionCell);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(*dmCell, 0, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(sectionCell, cStart, cEnd);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; ++c) {
@@ -1391,7 +1391,7 @@ PetscErrorCode CreateMassMatrix(DM dm, Vec *massMatrix, User user)
   ++coordSection->refcnt;
   ierr = DMPlexSetCoordinateSection(dmMass, coordSection);CHKERRQ(ierr);
   ierr = DMSetCoordinatesLocal(dmMass, coordinates);CHKERRQ(ierr);
-  ierr = PetscSectionCreate(((PetscObject) dm)->comm, &sectionMass);CHKERRQ(ierr);
+  ierr = PetscSectionCreate(PetscObjectComm((PetscObject)dm), &sectionMass);CHKERRQ(ierr);
   ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(sectionMass, vStart, vEnd);CHKERRQ(ierr);
   for (v = vStart; v < vEnd; ++v) {
@@ -1457,7 +1457,7 @@ PetscErrorCode SetUpLocalSpace(DM dm, User user)
 
   PetscFunctionBeginUser;
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
-  ierr = PetscSectionCreate(((PetscObject) dm)->comm, &stateSection);CHKERRQ(ierr);
+  ierr = PetscSectionCreate(PetscObjectComm((PetscObject)dm), &stateSection);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(stateSection, cStart, cEnd);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; ++c) {
     ierr = PetscSectionSetDof(stateSection, c, dof);CHKERRQ(ierr);
@@ -1994,7 +1994,7 @@ static PetscErrorCode OutputVTK(DM dm, const char *filename, PetscViewer *viewer
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = PetscViewerCreate(((PetscObject) dm)->comm, viewer);CHKERRQ(ierr);
+  ierr = PetscViewerCreate(PetscObjectComm((PetscObject)dm), viewer);CHKERRQ(ierr);
   ierr = PetscViewerSetType(*viewer, PETSCVIEWERVTK);CHKERRQ(ierr);
   ierr = PetscViewerFileSetName(*viewer, filename);CHKERRQ(ierr);
   PetscFunctionReturn(0);

@@ -31,7 +31,7 @@ static PetscErrorCode DMLabelView_Ascii(DMLabel label, PetscViewer viewer)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(((PetscObject) viewer)->comm, &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)viewer), &rank);CHKERRQ(ierr);
   if (label) {
     ierr = PetscViewerASCIIPrintf(viewer, "Label '%s':\n", label->name);CHKERRQ(ierr);
     if (label->bt) {ierr = PetscViewerASCIIPrintf(viewer, "  Index has been calculated in [%d, %d)\n", label->pStart, label->pEnd);CHKERRQ(ierr);}
@@ -60,7 +60,7 @@ PetscErrorCode DMLabelView(DMLabel label, PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
   if (iascii) {
     ierr = DMLabelView_Ascii(label, viewer);CHKERRQ(ierr);
-  } else SETERRQ1(((PetscObject) viewer)->comm, PETSC_ERR_SUP, "Viewer type %s not supported by this mesh object", ((PetscObject) viewer)->type_name);
+  } else SETERRQ1(PetscObjectComm((PetscObject)viewer), PETSC_ERR_SUP, "Viewer type %s not supported by this mesh object", ((PetscObject) viewer)->type_name);
   PetscFunctionReturn(0);
 }
 

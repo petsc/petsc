@@ -139,7 +139,7 @@ static PetscErrorCode KSPComputeShifts_GMRES(KSP ksp)
   /* Perform one cycle of classical GMRES (with the Arnoldi process) to get the Hessenberg matrix
    We assume here that the ksp is AGMRES and that the operators for the
    linear system have been set in this ksp */
-  ierr = KSPCreate(((PetscObject) ksp)->comm, &kspgmres);CHKERRQ(ierr);
+  ierr = KSPCreate(PetscObjectComm((PetscObject)ksp), &kspgmres);CHKERRQ(ierr);
   if (!ksp->pc) { ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr); }
   ierr = PCGetOperators(ksp->pc, &Amat, &Pmat, &flag);CHKERRQ(ierr);
   ierr = KSPSetOperators(kspgmres, Amat, Pmat, flag);CHKERRQ(ierr);

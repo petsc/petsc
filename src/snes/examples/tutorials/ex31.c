@@ -456,8 +456,8 @@ PetscErrorCode DMVecViewLocal(DM dm, Vec v, PetscViewer viewer)
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = MPI_Comm_rank(((PetscObject) dm)->comm, &rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(((PetscObject) dm)->comm, &numProcs);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm), &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)dm), &numProcs);CHKERRQ(ierr);
   ierr = DMGetLocalVector(dm, &lv);CHKERRQ(ierr);
   ierr = DMGlobalToLocalBegin(dm, v, INSERT_VALUES, lv);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(dm, v, INSERT_VALUES, lv);CHKERRQ(ierr);
@@ -527,7 +527,7 @@ PetscErrorCode PointOnBoundary_2D(const PetscScalar coords[], PetscBool onBd[])
 #define __FUNCT__ "CreateBoundaryPointIS_Square"
 PetscErrorCode CreateBoundaryPointIS_Square(DM dm, PetscInt *numBoundaries, PetscInt **numBoundaryConstraints, IS **boundaryPoints, IS **constraintIndices)
 {
-  MPI_Comm       comm = ((PetscObject) dm)->comm;
+  MPI_Comm       comm;
   PetscSection   coordSection;
   Vec            coordinates;
   PetscScalar    *coords;
@@ -540,6 +540,7 @@ PetscErrorCode CreateBoundaryPointIS_Square(DM dm, PetscInt *numBoundaries, Pets
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
+  ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);
   ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
   /* boundary 0: corners
      boundary 1: bottom
@@ -696,7 +697,7 @@ PetscErrorCode CreateBoundaryPointIS(DM dm, PetscInt *numBoundaries, PetscInt **
     CreateBoundaryPointIS_Cube(dm, numBoundaries, numBoundaryConstraints, boundaryPoints, constraintIndices);CHKERRQ(ierr);
     break;
   default:
-    SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONG, "No boundary creatin routine for dimension %d", dim);
+    SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "No boundary creatin routine for dimension %d", dim);
   }
   PetscFunctionReturn(0);
 }
@@ -751,8 +752,8 @@ PetscErrorCode SetupSection(DM dm, AppCtx *user)
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  if (dim != SPATIAL_DIM_0) SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_ARG_SIZ, "Spatial dimension %d should be %d", dim, SPATIAL_DIM_0);
-  if (dim != SPATIAL_DIM_1) SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_ARG_SIZ, "Spatial dimension %d should be %d", dim, SPATIAL_DIM_1);
+  if (dim != SPATIAL_DIM_0) SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_SIZ, "Spatial dimension %d should be %d", dim, SPATIAL_DIM_0);
+  if (dim != SPATIAL_DIM_1) SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_SIZ, "Spatial dimension %d should be %d", dim, SPATIAL_DIM_1);
   for (d = 0; d <= dim; ++d) {
     numDof[0*(dim+1)+d] = numDof_0[d];
     numDof[1*(dim+1)+d] = numDof_1[d];
@@ -760,7 +761,7 @@ PetscErrorCode SetupSection(DM dm, AppCtx *user)
   }
   for (f = 0; f < numFields; ++f) {
     for (d = 1; d < dim; ++d) {
-      if ((numDof[f*(dim+1)+d] > 0) && !user->interpolate) SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONG, "Mesh must be interpolated when unknowns are specified on edges or faces.");
+      if ((numDof[f*(dim+1)+d] > 0) && !user->interpolate) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Mesh must be interpolated when unknowns are specified on edges or faces.");
     }
   }
   if (user->bcType == FREE_SLIP) {
@@ -820,7 +821,7 @@ PetscErrorCode SetupExactSolution(DM dm, AppCtx *user)
   PetscFunctionBeginUser;
   switch (user->forcingType) {
   case FORCING_CONSTANT:
-    if (user->bcType == FREE_SLIP) SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONG, "Constant forcing is incompatible with freeslip boundary conditions");
+    if (user->bcType == FREE_SLIP) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Constant forcing is incompatible with freeslip boundary conditions");
     fem->f0Funcs[0] = f0_u_constant;
     break;
   case FORCING_LINEAR:
@@ -1004,10 +1005,10 @@ PetscErrorCode CreateNullSpaces(DM dm, PetscInt field, MatNullSpace *nullSpace)
   ierr = DMRestoreLocalVector(dm, &localNullVec);CHKERRQ(ierr);
   ierr = VecNormalize(nullVec, NULL);CHKERRQ(ierr);
   if (user->debug) {
-    ierr = PetscPrintf(((PetscObject) dm)->comm, "Pressure Null Space\n");CHKERRQ(ierr);
+    ierr = PetscPrintf(PetscObjectComm((PetscObject)dm), "Pressure Null Space\n");CHKERRQ(ierr);
     ierr = VecView(nullVec, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
-  ierr = MatNullSpaceCreate(((PetscObject) dm)->comm, PETSC_FALSE, 1, &nullVec, nullSpace);CHKERRQ(ierr);
+  ierr = MatNullSpaceCreate(PetscObjectComm((PetscObject)dm), PETSC_FALSE, 1, &nullVec, nullSpace);CHKERRQ(ierr);
   ierr = DMRestoreGlobalVector(dm, &nullVec);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1087,7 +1088,7 @@ PetscErrorCode FormJacobianAction(Mat J, Vec X,  Vec Y)
       ierr = VecView(Y, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
       ierr = PetscPrintf(PETSC_COMM_WORLD, "Difference:\n");CHKERRQ(ierr);
       ierr = VecView(r, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-      SETERRQ1(((PetscObject) J)->comm, PETSC_ERR_ARG_WRONG, "The difference with assembled multiply is too large %g", norm);
+      SETERRQ1(PetscObjectComm((PetscObject)J), PETSC_ERR_ARG_WRONG, "The difference with assembled multiply is too large %g", norm);
     }
     ierr = VecDestroy(&r);CHKERRQ(ierr);
   }

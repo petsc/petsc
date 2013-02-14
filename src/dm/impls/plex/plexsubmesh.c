@@ -51,7 +51,7 @@ static PetscErrorCode DMPlexMarkSubmesh_Uninterpolated(DM dm, DMLabel vertexLabe
 
       ierr = DMLabelGetValue(subpointMap, cell, &cellLoc);CHKERRQ(ierr);
       if (cellLoc == 2) continue;
-      if (cellLoc >= 0) SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_PLIB, "Cell %d has dimension %d in the surface label", cell, cellLoc);
+      if (cellLoc >= 0) SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Cell %d has dimension %d in the surface label", cell, cellLoc);
       ierr = DMPlexGetTransitiveClosure(dm, cell, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
       for (cl = 0; cl < closureSize*2; cl += 2) {
         const PetscInt point = closure[cl];
@@ -64,7 +64,7 @@ static PetscErrorCode DMPlexMarkSubmesh_Uninterpolated(DM dm, DMLabel vertexLabe
         }
       }
       if (!(*nFV)) {ierr = DMPlexGetNumFaceVertices_Internal(dm, numCorners, nFV);CHKERRQ(ierr);}
-      if (faceSize > *nFV) SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONG, "Invalid submesh: Too many vertices %d of an element on the surface", faceSize);
+      if (faceSize > *nFV) SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Invalid submesh: Too many vertices %d of an element on the surface", faceSize);
       if (faceSize == *nFV) {
         ++(*numFaces);
         for (cl = 0; cl < faceSize; ++cl) {
@@ -126,7 +126,7 @@ static PetscErrorCode DMPlexMarkSubmesh_Interpolated(DM dm, DMLabel vertexLabel,
 
       ierr = DMLabelGetValue(subpointMap, face, &faceLoc);CHKERRQ(ierr);
       if (faceLoc == dim-1) continue;
-      if (faceLoc >= 0) SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_PLIB, "Face %d has dimension %d in the surface label", face, faceLoc);
+      if (faceLoc >= 0) SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Face %d has dimension %d in the surface label", face, faceLoc);
       ierr = DMPlexGetTransitiveClosure(dm, face, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
       for (c = 0; c < closureSize*2; c += 2) {
         const PetscInt point = closure[c];
@@ -173,12 +173,14 @@ static PetscErrorCode DMPlexMarkSubmesh_Interpolated(DM dm, DMLabel vertexLabel,
 #define __FUNCT__ "DMPlexGetFaceOrientation"
 PetscErrorCode DMPlexGetFaceOrientation(DM dm, PetscInt cell, PetscInt numCorners, PetscInt indices[], PetscInt oppositeVertex, PetscInt origVertices[], PetscInt faceVertices[], PetscBool *posOriented)
 {
-  MPI_Comm       comm      = ((PetscObject) dm)->comm;
+  MPI_Comm       comm;
   PetscBool      posOrient = PETSC_FALSE;
   const PetscInt debug     = 0;
   PetscInt       cellDim, faceSize, f;
   PetscErrorCode ierr;
 
+  PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);
   ierr = DMPlexGetDimension(dm, &cellDim);CHKERRQ(ierr);
   if (debug) {PetscPrintf(comm, "cellDim: %d numCorners: %d\n", cellDim, numCorners);CHKERRQ(ierr);}
 
@@ -523,13 +525,14 @@ PetscErrorCode DMPlexGetOrientedFace(DM dm, PetscInt cell, PetscInt faceSize, co
 */
 PetscErrorCode DMPlexInsertFace_Private(DM dm, DM subdm, PetscInt numFaceVertices, const PetscInt faceVertices[], const PetscInt subfaceVertices[], PetscInt numCorners, PetscInt cell, PetscInt subcell, PetscInt firstFace, PetscInt *newFacePoint)
 {
-  MPI_Comm        comm    = ((PetscObject) dm)->comm;
+  MPI_Comm        comm;
   DM_Plex        *submesh = (DM_Plex*) subdm->data;
   const PetscInt *faces;
   PetscInt        numFaces, coneSize;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);
   ierr = DMPlexGetConeSize(subdm, subcell, &coneSize);CHKERRQ(ierr);
   if (coneSize != 1) SETERRQ2(comm, PETSC_ERR_ARG_OUTOFRANGE, "Cone size of cell %d is %d != 1", cell, coneSize);
 #if 0
@@ -600,7 +603,7 @@ PetscErrorCode DMPlexInsertFace_Private(DM dm, DM subdm, PetscInt numFaceVertice
 #define __FUNCT__ "DMPlexCreateSubmesh_Uninterpolated"
 static PetscErrorCode DMPlexCreateSubmesh_Uninterpolated(DM dm, const char vertexLabelName[], DM subdm)
 {
-  MPI_Comm        comm = ((PetscObject) dm)->comm;
+  MPI_Comm        comm;
   DMLabel         vertexLabel, subpointMap;
   IS              subvertexIS,  subcellIS;
   const PetscInt *subVertices, *subCells;
@@ -610,6 +613,7 @@ static PetscErrorCode DMPlexCreateSubmesh_Uninterpolated(DM dm, const char verte
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);
   /* Create subpointMap which marks the submesh */
   ierr = DMLabelCreate("subpoint_map", &subpointMap);CHKERRQ(ierr);
   ierr = DMPlexSetSubpointMap(subdm, subpointMap);CHKERRQ(ierr);
@@ -725,7 +729,7 @@ static PetscErrorCode DMPlexCreateSubmesh_Uninterpolated(DM dm, const char verte
 #define __FUNCT__ "DMPlexCreateSubmesh_Interpolated"
 static PetscErrorCode DMPlexCreateSubmesh_Interpolated(DM dm, const char vertexLabelName[], DM subdm)
 {
-  MPI_Comm         comm = ((PetscObject) dm)->comm;
+  MPI_Comm         comm;
   DMLabel          subpointMap, vertexLabel;
   IS              *subpointIS;
   const PetscInt **subpoints;
@@ -734,6 +738,7 @@ static PetscErrorCode DMPlexCreateSubmesh_Interpolated(DM dm, const char vertexL
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);
   /* Create subpointMap which marks the submesh */
   ierr = DMLabelCreate("subpoint_map", &subpointMap);CHKERRQ(ierr);
   ierr = DMPlexSetSubpointMap(subdm, subpointMap);CHKERRQ(ierr);
@@ -883,7 +888,7 @@ PetscErrorCode DMPlexCreateSubmesh(DM dm, const char vertexLabel[], DM *subdm)
   PetscValidPointer(subdm, 4);
   ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
-  ierr = DMCreate(((PetscObject) dm)->comm, subdm);CHKERRQ(ierr);
+  ierr = DMCreate(PetscObjectComm((PetscObject)dm), subdm);CHKERRQ(ierr);
   ierr = DMSetType(*subdm, DMPLEX);CHKERRQ(ierr);
   ierr = DMPlexSetDimension(*subdm, dim-1);CHKERRQ(ierr);
   if (depth == dim) {
@@ -938,7 +943,7 @@ PetscErrorCode DMPlexSetSubpointMap(DM dm, DMLabel subpointMap)
 */
 PetscErrorCode DMPlexCreateSubpointIS(DM dm, IS *subpointIS)
 {
-  MPI_Comm        comm = ((PetscObject) dm)->comm;
+  MPI_Comm        comm;
   DMLabel         subpointMap;
   IS              is;
   const PetscInt *opoints;
@@ -949,6 +954,7 @@ PetscErrorCode DMPlexCreateSubpointIS(DM dm, IS *subpointIS)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(subpointIS, 2);
+  ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);
   *subpointIS = NULL;
   ierr = DMPlexGetSubpointMap(dm, &subpointMap);CHKERRQ(ierr);
   if (subpointMap) {

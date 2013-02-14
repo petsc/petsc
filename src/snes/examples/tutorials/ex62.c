@@ -309,8 +309,8 @@ PetscErrorCode DMVecViewLocal(DM dm, Vec v, PetscViewer viewer)
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = MPI_Comm_rank(((PetscObject) dm)->comm, &rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(((PetscObject) dm)->comm, &numProcs);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm), &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)dm), &numProcs);CHKERRQ(ierr);
   ierr = DMGetLocalVector(dm, &lv);CHKERRQ(ierr);
   ierr = DMGlobalToLocalBegin(dm, v, INSERT_VALUES, lv);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(dm, v, INSERT_VALUES, lv);CHKERRQ(ierr);
@@ -402,15 +402,15 @@ PetscErrorCode SetupSection(DM dm, AppCtx *user)
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  if (dim != SPATIAL_DIM_0) SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_ARG_SIZ, "Spatial dimension %d should be %d", dim, SPATIAL_DIM_0);
-  if (dim != SPATIAL_DIM_1) SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_ARG_SIZ, "Spatial dimension %d should be %d", dim, SPATIAL_DIM_1);
+  if (dim != SPATIAL_DIM_0) SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_SIZ, "Spatial dimension %d should be %d", dim, SPATIAL_DIM_0);
+  if (dim != SPATIAL_DIM_1) SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_SIZ, "Spatial dimension %d should be %d", dim, SPATIAL_DIM_1);
   for (d = 0; d <= dim; ++d) {
     numDof[0*(dim+1)+d] = numDof_0[d];
     numDof[1*(dim+1)+d] = numDof_1[d];
   }
   for (f = 0; f < numFields; ++f) {
     for (d = 1; d < dim; ++d) {
-      if ((numDof[f*(dim+1)+d] > 0) && !user->interpolate) SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONG, "Mesh must be interpolated when unknowns are specified on edges or faces.");
+      if ((numDof[f*(dim+1)+d] > 0) && !user->interpolate) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Mesh must be interpolated when unknowns are specified on edges or faces.");
     }
   }
   if (user->bcType == DIRICHLET) {
@@ -509,10 +509,10 @@ PetscErrorCode CreatePressureNullSpace(DM dm, AppCtx *user, MatNullSpace *nullSp
   ierr = DMRestoreLocalVector(dm, &localVec);CHKERRQ(ierr);
   ierr = VecNormalize(vec, NULL);CHKERRQ(ierr);
   if (user->debug) {
-    ierr = PetscPrintf(((PetscObject) dm)->comm, "Pressure Null Space\n");CHKERRQ(ierr);
+    ierr = PetscPrintf(PetscObjectComm((PetscObject)dm), "Pressure Null Space\n");CHKERRQ(ierr);
     ierr = VecView(vec, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
-  ierr = MatNullSpaceCreate(((PetscObject) dm)->comm, PETSC_FALSE, 1, &vec, nullSpace);CHKERRQ(ierr);
+  ierr = MatNullSpaceCreate(PetscObjectComm((PetscObject)dm), PETSC_FALSE, 1, &vec, nullSpace);CHKERRQ(ierr);
   ierr = DMRestoreGlobalVector(dm, &vec);CHKERRQ(ierr);
   /* New style for field null spaces */
   {
@@ -597,7 +597,7 @@ PetscErrorCode FormJacobianAction(Mat J, Vec X,  Vec Y)
       ierr = VecView(Y, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
       ierr = PetscPrintf(PETSC_COMM_WORLD, "Difference:\n");CHKERRQ(ierr);
       ierr = VecView(r, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-      SETERRQ1(((PetscObject) J)->comm, PETSC_ERR_ARG_WRONG, "The difference with assembled multiply is too large %g", norm);
+      SETERRQ1(PetscObjectComm((PetscObject)J), PETSC_ERR_ARG_WRONG, "The difference with assembled multiply is too large %g", norm);
     }
     ierr = VecDestroy(&r);CHKERRQ(ierr);
   }
@@ -743,7 +743,7 @@ int main(int argc, char **argv)
     ierr = DMGlobalToLocalEnd(user.dm, u, INSERT_VALUES, uLocal);CHKERRQ(ierr);
 
     ierr = DMGetDefaultSection(user.dm, &s);CHKERRQ(ierr);
-    ierr = PetscContainerCreate(((PetscObject) uLocal)->comm, &c);CHKERRQ(ierr);
+    ierr = PetscContainerCreate(PetscObjectComm((PetscObject)uLocal), &c);CHKERRQ(ierr);
     ierr = PetscContainerSetPointer(c, s);CHKERRQ(ierr);
     ierr = PetscObjectCompose((PetscObject) uLocal, "section", (PetscObject) c);CHKERRQ(ierr);
     ierr = PetscContainerDestroy(&c);CHKERRQ(ierr);

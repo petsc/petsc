@@ -646,7 +646,7 @@ PetscErrorCode DMCreateMatrix_DA(DM da, MatType mtype,Mat *J)
 
     ierr = DMGetDefaultGlobalSection(da, &sectionGlobal);CHKERRQ(ierr);
     ierr = PetscSectionGetConstrainedStorageSize(sectionGlobal, &localSize);CHKERRQ(ierr);
-    ierr = MatCreate(((PetscObject) da)->comm, J);CHKERRQ(ierr);
+    ierr = MatCreate(PetscObjectComm((PetscObject)da), J);CHKERRQ(ierr);
     ierr = MatSetSizes(*J, localSize, localSize, PETSC_DETERMINE, PETSC_DETERMINE);CHKERRQ(ierr);
     ierr = MatSetType(*J, mtype);CHKERRQ(ierr);
     ierr = MatSetFromOptions(*J);CHKERRQ(ierr);
@@ -682,7 +682,7 @@ PetscErrorCode DMCreateMatrix_DA(DM da, MatType mtype,Mat *J)
         }
         /* Must have same blocksize on all procs (some might have no points) */
         bsLocal = bs;
-        ierr    = MPI_Allreduce(&bsLocal, &bs, 1, MPIU_INT, MPI_MAX, ((PetscObject) da)->comm);CHKERRQ(ierr);
+        ierr    = MPI_Allreduce(&bsLocal, &bs, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)da));CHKERRQ(ierr);
       }
       ierr = PetscMalloc4(localSize/bs, PetscInt, &dnz, localSize/bs, PetscInt, &onz, localSize/bs, PetscInt, &dnzu, localSize/bs, PetscInt, &onzu);CHKERRQ(ierr);
       ierr = PetscMemzero(dnz,  localSize/bs * sizeof(PetscInt));CHKERRQ(ierr);

@@ -122,7 +122,7 @@ static PetscErrorCode  KSPAGMRESRoddecGivens(PetscReal * c, PetscReal * s, Petsc
 PetscErrorCode KSPAGMRESRoddec(KSP ksp, PetscInt nvec)
 {
   KSP_AGMRES     *agmres = (KSP_AGMRES*) ksp->data;
-  MPI_Comm       comm    = ((PetscObject) ksp)->comm;
+  MPI_Comm       comm;
   PetscScalar    *Qloc   = agmres->Qloc;
   PetscScalar    *sgn    = agmres->sgn;
   PetscScalar    *tloc   = agmres->tloc;
@@ -141,6 +141,7 @@ PetscErrorCode KSPAGMRESRoddec(KSP ksp, PetscInt nvec)
 
 
   PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)ksp,&comm);CHKERRQ(ierr);
   tag  = 0x666;
   ierr = PetscLogEventBegin(KSP_AGMRESRoddec,ksp,0,0,0);CHKERRQ(ierr);
   ierr = PetscMemzero(agmres->Rloc, N*N*sizeof(PetscScalar));CHKERRQ(ierr);
@@ -248,7 +249,7 @@ PetscErrorCode KSPAGMRESRoddec(KSP ksp, PetscInt nvec)
 PetscErrorCode KSPAGMRESRodvec(KSP ksp, PetscInt nvec, PetscScalar *In, Vec Out)
 {
   KSP_AGMRES     *agmres  = (KSP_AGMRES*) ksp->data;
-  MPI_Comm       comm     = ((PetscObject) ksp)->comm;
+  MPI_Comm       comm;
   PetscScalar    *Qloc    = agmres->Qloc;
   PetscScalar    *sgn     = agmres->sgn;
   PetscScalar    *tloc    = agmres->tloc;
@@ -263,6 +264,7 @@ PetscErrorCode KSPAGMRESRodvec(KSP ksp, PetscInt nvec, PetscScalar *In, Vec Out)
   MPI_Status     status;
 
   PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)ksp,&comm);CHKERRQ(ierr);
   tag  = 0x666;
   pas  = 1;
   ierr = VecGetLocalSize(VEC_V(0), &nloc);CHKERRQ(ierr);

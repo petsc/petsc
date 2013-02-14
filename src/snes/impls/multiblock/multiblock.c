@@ -233,7 +233,7 @@ PetscErrorCode SNESSetUp_Multiblock(SNES snes)
     nslots      = (rend - rstart)/bs;
     for (i = 0; i < numBlocks; ++i) {
       if (mb->defaultblocks) {
-        ierr = ISCreateStride(((PetscObject) snes)->comm, nslots, rstart+i, numBlocks, &blocks->is);CHKERRQ(ierr);
+        ierr = ISCreateStride(PetscObjectComm((PetscObject)snes), nslots, rstart+i, numBlocks, &blocks->is);CHKERRQ(ierr);
       } else if (!blocks->is) {
         if (blocks->nfields > 1) {
           PetscInt *ii, j, k, nfields = blocks->nfields, *fields = blocks->fields;
@@ -244,9 +244,9 @@ PetscErrorCode SNESSetUp_Multiblock(SNES snes)
               ii[nfields*j + k] = rstart + bs*j + fields[k];
             }
           }
-          ierr = ISCreateGeneral(((PetscObject) snes)->comm, nslots*nfields, ii, PETSC_OWN_POINTER, &blocks->is);CHKERRQ(ierr);
+          ierr = ISCreateGeneral(PetscObjectComm((PetscObject)snes), nslots*nfields, ii, PETSC_OWN_POINTER, &blocks->is);CHKERRQ(ierr);
         } else {
-          ierr = ISCreateStride(((PetscObject) snes)->comm, nslots, rstart+blocks->fields[0], bs, &blocks->is);CHKERRQ(ierr);
+          ierr = ISCreateStride(PetscObjectComm((PetscObject)snes), nslots, rstart+blocks->fields[0], bs, &blocks->is);CHKERRQ(ierr);
         }
       }
       ierr = ISSorted(blocks->is, &sorted);CHKERRQ(ierr);
@@ -582,7 +582,7 @@ PetscErrorCode SNESSolve_Multiblock(SNES snes)
           blocks = blocks->next;
         }
       }
-    } else SETERRQ1(((PetscObject) snes)->comm, PETSC_ERR_SUP, "Unsupported or unknown composition", (int) mb->type);
+    } else SETERRQ1(PetscObjectComm((PetscObject)snes), PETSC_ERR_SUP, "Unsupported or unknown composition", (int) mb->type);
     CHKMEMQ;
     /* Compute F(X^{new}) */
     ierr = SNESComputeFunction(snes, X, F);CHKERRQ(ierr);
@@ -651,7 +651,7 @@ PetscErrorCode SNESMultiblockSetFields_Default(SNES snes, const char name[], Pet
 
   newblock->next = NULL;
 
-  ierr = SNESCreate(((PetscObject) snes)->comm, &newblock->snes);CHKERRQ(ierr);
+  ierr = SNESCreate(PetscObjectComm((PetscObject)snes), &newblock->snes);CHKERRQ(ierr);
   ierr = PetscObjectIncrementTabLevel((PetscObject) newblock->snes, (PetscObject) snes, 1);CHKERRQ(ierr);
   ierr = SNESSetType(newblock->snes, SNESNRICHARDSON);CHKERRQ(ierr);
   ierr = PetscLogObjectParent((PetscObject) snes, (PetscObject) newblock->snes);CHKERRQ(ierr);
@@ -703,7 +703,7 @@ PetscErrorCode SNESMultiblockSetIS_Default(SNES snes, const char name[], IS is)
 
   newblock->next = NULL;
 
-  ierr = SNESCreate(((PetscObject) snes)->comm, &newblock->snes);CHKERRQ(ierr);
+  ierr = SNESCreate(PetscObjectComm((PetscObject)snes), &newblock->snes);CHKERRQ(ierr);
   ierr = PetscObjectIncrementTabLevel((PetscObject) newblock->snes, (PetscObject) snes, 1);CHKERRQ(ierr);
   ierr = SNESSetType(newblock->snes, SNESNRICHARDSON);CHKERRQ(ierr);
   ierr = PetscLogObjectParent((PetscObject) snes, (PetscObject) newblock->snes);CHKERRQ(ierr);
@@ -733,8 +733,8 @@ PetscErrorCode  SNESMultiblockSetBlockSize_Default(SNES snes, PetscInt bs)
   SNES_Multiblock *mb = (SNES_Multiblock*) snes->data;
 
   PetscFunctionBegin;
-  if (bs < 1) SETERRQ1(((PetscObject) snes)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Blocksize must be positive, you gave %D", bs);
-  if (mb->bs > 0 && mb->bs != bs) SETERRQ2(((PetscObject) snes)->comm, PETSC_ERR_ARG_WRONGSTATE, "Cannot change blocksize from %D to %D after it has been set", mb->bs, bs);
+  if (bs < 1) SETERRQ1(PetscObjectComm((PetscObject)snes), PETSC_ERR_ARG_OUTOFRANGE, "Blocksize must be positive, you gave %D", bs);
+  if (mb->bs > 0 && mb->bs != bs) SETERRQ2(PetscObjectComm((PetscObject)snes), PETSC_ERR_ARG_WRONGSTATE, "Cannot change blocksize from %D to %D after it has been set", mb->bs, bs);
   mb->bs = bs;
   PetscFunctionReturn(0);
 }
@@ -775,7 +775,7 @@ PetscErrorCode  SNESMultiblockSetType_Default(SNES snes, PCCompositeType type)
   mb->type = type;
   if (type == PC_COMPOSITE_SCHUR) {
 #if 1
-    SETERRQ(((PetscObject) snes)->comm, PETSC_ERR_SUP, "The Schur composite type is not yet supported");
+    SETERRQ(PetscObjectComm((PetscObject)snes), PETSC_ERR_SUP, "The Schur composite type is not yet supported");
 #else
     snes->ops->solve = SNESSolve_Multiblock_Schur;
     snes->ops->view  = SNESView_Multiblock_Schur;
@@ -829,7 +829,7 @@ PetscErrorCode SNESMultiblockSetFields(SNES snes, const char name[], PetscInt n,
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   PetscValidCharPointer(name, 2);
-  if (n < 1) SETERRQ2(((PetscObject) snes)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Provided number of fields %D in split \"%s\" not positive", n, name);
+  if (n < 1) SETERRQ2(PetscObjectComm((PetscObject)snes), PETSC_ERR_ARG_OUTOFRANGE, "Provided number of fields %D in split \"%s\" not positive", n, name);
   PetscValidIntPointer(fields, 3);
   ierr = PetscTryMethod(snes, "SNESMultiblockSetFields_C", (SNES, const char[], PetscInt, const PetscInt*), (snes, name, n, fields));CHKERRQ(ierr);
   PetscFunctionReturn(0);

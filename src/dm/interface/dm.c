@@ -1016,7 +1016,7 @@ PetscErrorCode DMSetNullSpaceConstructor(DM dm, PetscInt field, PetscErrorCode (
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  if (field >= 10) SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Cannot handle %d >= 10 fields", field);
+  if (field >= 10) SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Cannot handle %d >= 10 fields", field);
   dm->nullspaceConstructors[field] = nullsp;
   PetscFunctionReturn(0);
 }
@@ -1124,7 +1124,7 @@ PetscErrorCode DMCreateFieldIS(DM dm, PetscInt *numFields, char ***fieldNames, I
     if (fields) {
       ierr = PetscMalloc(nF * sizeof(IS), fields);CHKERRQ(ierr);
       for (f = 0; f < nF; ++f) {
-        ierr = ISCreateGeneral(((PetscObject) dm)->comm, fieldSizes[f], fieldIndices[f], PETSC_OWN_POINTER, &(*fields)[f]);CHKERRQ(ierr);
+        ierr = ISCreateGeneral(PetscObjectComm((PetscObject)dm), fieldSizes[f], fieldIndices[f], PETSC_OWN_POINTER, &(*fields)[f]);CHKERRQ(ierr);
       }
     }
     ierr = PetscFree2(fieldSizes,fieldIndices);CHKERRQ(ierr);
@@ -1250,7 +1250,7 @@ PetscErrorCode DMCreateSubDM(DM dm, PetscInt numFields, PetscInt fields[], IS *i
   if (subdm) PetscValidPointer(subdm,5);
   if (dm->ops->createsubdm) {
     ierr = (*dm->ops->createsubdm)(dm, numFields, fields, is, subdm);CHKERRQ(ierr);
-  } else SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_SUP, "This type has no DMCreateSubDM implementation defined");
+  } else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "This type has no DMCreateSubDM implementation defined");
   PetscFunctionReturn(0);
 }
 
@@ -1360,7 +1360,7 @@ PetscErrorCode DMCreateDomainDecompositionScatters(DM dm,PetscInt n,DM *subdms,V
   PetscValidPointer(gscat,6);
   if (dm->ops->createddscatters) {
     ierr = (*dm->ops->createddscatters)(dm,n,subdms,iscat,oscat,gscat);CHKERRQ(ierr);
-  } else SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_SUP, "This type has no DMCreateDomainDecompositionLocalScatter implementation defined");
+  } else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "This type has no DMCreateDomainDecompositionLocalScatter implementation defined");
   PetscFunctionReturn(0);
 }
 
@@ -1615,7 +1615,7 @@ PetscErrorCode  DMGlobalToLocalBegin(DM dm,Vec g,InsertMode mode,Vec l)
   if (sf) {
     PetscScalar *lArray, *gArray;
 
-    if (mode == ADD_VALUES) SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Invalid insertion mode %D", mode);
+    if (mode == ADD_VALUES) SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Invalid insertion mode %D", mode);
     ierr = VecGetArray(l, &lArray);CHKERRQ(ierr);
     ierr = VecGetArray(g, &gArray);CHKERRQ(ierr);
     ierr = PetscSFBcastBegin(sf, MPIU_SCALAR, gArray, lArray);CHKERRQ(ierr);
@@ -1657,7 +1657,7 @@ PetscErrorCode  DMGlobalToLocalEnd(DM dm,Vec g,InsertMode mode,Vec l)
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   ierr = DMGetDefaultSF(dm, &sf);CHKERRQ(ierr);
   if (sf) {
-    if (mode == ADD_VALUES) SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Invalid insertion mode %D", mode);
+    if (mode == ADD_VALUES) SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Invalid insertion mode %D", mode);
 
     ierr = VecGetArray(l, &lArray);CHKERRQ(ierr);
     ierr = VecGetArray(g, &gArray);CHKERRQ(ierr);
@@ -1720,7 +1720,7 @@ PetscErrorCode  DMLocalToGlobalBegin(DM dm,Vec l,InsertMode mode,Vec g)
     case ADD_ALL_VALUES:
       op = MPI_SUM; break;
     default:
-      SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Invalid insertion mode %D", mode);
+      SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Invalid insertion mode %D", mode);
     }
     ierr = VecGetArray(l, &lArray);CHKERRQ(ierr);
     ierr = VecGetArray(g, &gArray);CHKERRQ(ierr);
@@ -1776,7 +1776,7 @@ PetscErrorCode  DMLocalToGlobalEnd(DM dm,Vec l,InsertMode mode,Vec g)
     case ADD_ALL_VALUES:
       op = MPI_SUM; break;
     default:
-      SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Invalid insertion mode %D", mode);
+      SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Invalid insertion mode %D", mode);
     }
     ierr = VecGetArray(l, &lArray);CHKERRQ(ierr);
     ierr = VecGetArray(g, &gArray);CHKERRQ(ierr);
@@ -2492,7 +2492,7 @@ PetscErrorCode DMConvert(DM dm, DMType newtype, DM *M)
     if (conv) goto foundconv;
 
     /* 2)  See if a specialized converter is known to the desired DM class. */
-    ierr = DMCreate(((PetscObject) dm)->comm, &B);CHKERRQ(ierr);
+    ierr = DMCreate(PetscObjectComm((PetscObject)dm), &B);CHKERRQ(ierr);
     ierr = DMSetType(B, newtype);CHKERRQ(ierr);
     ierr = PetscStrcpy(convname,"DMConvert_");CHKERRQ(ierr);
     ierr = PetscStrcat(convname,((PetscObject) dm)->type_name);CHKERRQ(ierr);
@@ -2519,7 +2519,7 @@ PetscErrorCode DMConvert(DM dm, DMType newtype, DM *M)
 #endif
 
     /* 5) Use a really basic converter. */
-    SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_SUP, "No conversion possible between DM types %s and %s", ((PetscObject) dm)->type_name, newtype);
+    SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "No conversion possible between DM types %s and %s", ((PetscObject) dm)->type_name, newtype);
 
 foundconv:
     ierr = PetscLogEventBegin(DM_Convert,dm,0,0,0);CHKERRQ(ierr);
@@ -2756,7 +2756,7 @@ PetscErrorCode DMGetDefaultGlobalSection(DM dm, PetscSection *section)
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(section, 2);
   if (!dm->defaultGlobalSection) {
-    if (!dm->defaultSection || !dm->sf) SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONGSTATE, "DM must have a default PetscSection and PetscSF in order to create a global PetscSection");
+    if (!dm->defaultSection || !dm->sf) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "DM must have a default PetscSection and PetscSF in order to create a global PetscSection");
     ierr = PetscSectionCreateGlobalSection(dm->defaultSection, dm->sf, PETSC_FALSE, &dm->defaultGlobalSection);CHKERRQ(ierr);
     ierr = PetscSectionGetValueLayout(PetscObjectComm((PetscObject)dm),dm->defaultGlobalSection,&dm->map);CHKERRQ(ierr);
   }
@@ -2878,7 +2878,7 @@ PetscErrorCode DMSetDefaultSF(DM dm, PetscSF sf)
 @*/
 PetscErrorCode DMCreateDefaultSF(DM dm, PetscSection localSection, PetscSection globalSection)
 {
-  MPI_Comm       comm = ((PetscObject) dm)->comm;
+  MPI_Comm       comm;
   PetscLayout    layout;
   const PetscInt *ranges;
   PetscInt       *local;
@@ -2888,6 +2888,7 @@ PetscErrorCode DMCreateDefaultSF(DM dm, PetscSection localSection, PetscSection 
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
@@ -3029,7 +3030,7 @@ PetscErrorCode DMSetNumFields(DM dm, PetscInt numFields)
   dm->numFields = numFields;
   ierr          = PetscMalloc(dm->numFields * sizeof(PetscObject), &dm->fields);CHKERRQ(ierr);
   for (f = 0; f < dm->numFields; ++f) {
-    ierr = PetscContainerCreate(((PetscObject) dm)->comm, (PetscContainer*) &dm->fields[f]);CHKERRQ(ierr);
+    ierr = PetscContainerCreate(PetscObjectComm((PetscObject)dm), (PetscContainer*) &dm->fields[f]);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -3041,8 +3042,8 @@ PetscErrorCode DMGetField(DM dm, PetscInt f, PetscObject *field)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(field, 2);
-  if (!dm->fields) SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONGSTATE, "Fields have not been setup in this DM. Call DMSetNumFields()");
-  if ((f < 0) || (f >= dm->numFields)) SETERRQ3(((PetscObject) dm)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Field %d should be in [%d,%d)", f, 0, dm->numFields);
+  if (!dm->fields) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "Fields have not been setup in this DM. Call DMSetNumFields()");
+  if ((f < 0) || (f >= dm->numFields)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Field %d should be in [%d,%d)", f, 0, dm->numFields);
   *field = dm->fields[f];
   PetscFunctionReturn(0);
 }
@@ -3235,7 +3236,7 @@ PetscErrorCode DMGetCoordinateDM(DM dm, DM *cdm)
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidPointer(cdm,2);
   if (!dm->coordinateDM) {
-    if (!dm->ops->createcoordinatedm) SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_SUP, "Unable to create coordinates for this DM");
+    if (!dm->ops->createcoordinatedm) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Unable to create coordinates for this DM");
     ierr = (*dm->ops->createcoordinatedm)(dm, &dm->coordinateDM);CHKERRQ(ierr);
   }
   *cdm = dm->coordinateDM;
@@ -3271,6 +3272,6 @@ PetscErrorCode DMLocatePoints(DM dm, Vec v, IS *cells)
   PetscValidPointer(cells,3);
   if (dm->ops->locatepoints) {
     ierr = (*dm->ops->locatepoints)(dm,v,cells);CHKERRQ(ierr);
-  } else SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_SUP, "Point location not available for this DM");
+  } else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Point location not available for this DM");
   PetscFunctionReturn(0);
 }
