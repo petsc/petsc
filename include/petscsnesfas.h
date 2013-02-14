@@ -4,7 +4,7 @@
 
 
 /*E
-    SNESFASType - Determines the type of multigrid method that is run.
+    SNESFASType - Determines the type of nonlinear multigrid method that is run.
 
    Level: beginner
 
