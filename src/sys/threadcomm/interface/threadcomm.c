@@ -141,7 +141,7 @@ PetscErrorCode PetscThreadCommStackCreate_kernel(PetscInt trank)
   return 0;
 }
 
-/* Creates stack frames for the threads */
+/* Creates stack frames for threads other than the main thread */
 #undef __FUNCT__
 #define __FUNCT__ "PetscThreadCommStackCreate"
 PetscErrorCode  PetscThreadCommStackCreate(void)
@@ -164,14 +164,17 @@ PetscErrorCode PetscThreadCommStackDestroy_kernel(PetscInt trank)
   return 0;
 }
 
+/* Destroy stack frames for threads other than main thread */
 #undef __FUNCT__
 #define __FUNCT__ "PetscThreadCommStackDestroy"
 /*  PetscFunctionBegin;  so that make rule checkbadPetscFunctionBegin works */
 PetscErrorCode  PetscThreadCommStackDestroy(void)
 {
   PetscErrorCode ierr;
+  PetscFunctionBegin;
   ierr = PetscThreadCommRunKernel0(PETSC_COMM_SELF,(PetscThreadKernel)PetscThreadCommStackDestroy_kernel);CHKERRQ(ierr);
   ierr = PetscThreadCommBarrier(PETSC_COMM_SELF);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
   return 0;
 }
 #else
