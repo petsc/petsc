@@ -383,6 +383,26 @@ PetscErrorCode  PetscStrncat(char s[],const char t[],size_t n)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscStrcmpNoError"
+/*
+   Only to be used with PetscCheck__FUNCT__()!
+
+   Will be removed once we eliminate the __FUNCT__ paradigm
+*/
+void  PetscStrcmpNoError(const char a[],const char b[],PetscBool  *flg)
+{
+  int c;
+
+  if (!a && !b)      *flg = PETSC_TRUE;
+  else if (!a || !b) *flg = PETSC_FALSE;
+  else {
+    c = strcmp(a,b);
+    if (c) *flg = PETSC_FALSE;
+    else   *flg = PETSC_TRUE;
+  }
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscStrcmp"
 /*@C
    PetscStrcmp - Compares two strings,

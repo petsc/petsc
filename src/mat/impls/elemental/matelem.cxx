@@ -813,12 +813,14 @@ static PetscErrorCode MatConvert_Elemental_Dense(Mat A,MatType newtype,MatReuse 
   PetscErrorCode     ierr;
   PetscInt           rrank,ridx,crank,cidx,nrows,ncols,i,j;
   PetscElemScalar    v;
+  PetscBool          s1,s2,s3;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
-  if (strcmp(newtype,MATDENSE) && strcmp(newtype,MATSEQDENSE) && strcmp(newtype,MATMPIDENSE)) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unsupported New MatType: must be MATDENSE, MATSEQDENSE or MATMPIDENSE");
-  }
+  ierr = PetscStrcmp(newtype,MATDENSE,&s1);CHKERRQ(ierr);
+  ierr = PetscStrcmp(newtype,MATSEQDENSE,&s2);CHKERRQ(ierr);
+  ierr = PetscStrcmp(newtype,MATMPIDENSE,&s3);CHKERRQ(ierr);
+  if (!s1 && !s2 && !s3) SETERRQ(comm,PETSC_ERR_SUP,"Unsupported New MatType: must be MATDENSE, MATSEQDENSE or MATMPIDENSE");
   ierr = MatCreate(comm,&Bmpi);CHKERRQ(ierr);
   ierr = MatSetSizes(Bmpi,A->rmap->n,A->cmap->n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = MatSetType(Bmpi,MATDENSE);CHKERRQ(ierr);

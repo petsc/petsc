@@ -2,7 +2,7 @@
 static char help[] ="Loads a previously saved TS.";
 
 /*
-   This example it not yet working. It loads a TS saved with TSView()
+   It loads a TS saved with TSView()
 
 */
 /*

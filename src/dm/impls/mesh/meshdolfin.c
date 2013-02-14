@@ -87,6 +87,10 @@ std::string XMLObject::parseString(const xmlChar* name, const xmlChar** attrs, c
   return "";
 };
 
+#if defined(PETSC_HAVE_STRING_H)
+#include <string.h>
+#endif
+
 bool XMLObject::parseBool(const xmlChar* name, const xmlChar** attrs, const char* attribute)
 {
   // Check that we got the data

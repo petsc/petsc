@@ -1149,6 +1149,8 @@ PETSC_EXTERN PetscErrorCode PetscStrArrayallocpy(const char *const*,char***);
 PETSC_EXTERN PetscErrorCode PetscStrArrayDestroy(char***);
 PETSC_EXTERN PetscErrorCode PetscStrreplace(MPI_Comm,const char[],char[],size_t);
 
+PETSC_EXTERN void PetscStrcmpNoError(const char[],const char[],PetscBool  *);
+
 /*S
     PetscToken - 'Token' used for managing tokenizing strings
 
@@ -1615,12 +1617,6 @@ PETSC_EXTERN PetscErrorCode PetscScalarView(PetscInt,const PetscScalar[],PetscVi
 #endif
 #if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
-#endif
-#if defined(PETSC_HAVE_STRINGS_H)
-#include <strings.h>
-#endif
-#if defined(PETSC_HAVE_STRING_H)
-#include <string.h>
 #endif
 
 #if defined(PETSC_HAVE_XMMINTRIN_H) && !defined(__CUDACC__)

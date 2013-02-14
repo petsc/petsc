@@ -4,11 +4,6 @@
 #if !defined(__PETSCERROR_H)
 #define __PETSCERROR_H
 
-#if defined(PETSC_HAVE_STRING_H)
-#include <string.h> /* for strcmp */
-#endif
-
-
 /*
    Defines the directory where the compiled source is located; used
    in printing error messages. Each makefile has an entry
@@ -625,9 +620,11 @@ M*/
 #define PetscRegister__FUNCT__()
 #endif
 
-#define PetscCheck__FUNCT__() do { \
-    if (strcmp(PETSC_FUNCTION_NAME,__FUNCT__) && strcmp(__FUNCT__,"User provided function")) { \
-      (*PetscErrorPrintf)("%s%s:%d: __FUNCT__=\"%s\" does not agree with %s=\"%s\"\n",__SDIR__,__FILE__,__LINE__,__FUNCT__,PetscStringize(PETSC_FUNCTION_NAME),PETSC_FUNCTION_NAME); \
+#define PetscCheck__FUNCT__() do { PetscBool _sc1,_sc2;                  \
+    PetscStrcmpNoError(PETSC_FUNCTION_NAME,__FUNCT__,&_sc1);\
+    PetscStrcmpNoError(__FUNCT__,"User provided function",&_sc2);\
+    if (!_sc1 && !_sc2) { \
+      printf("%s%s:%d: __FUNCT__=\"%s\" does not agree with %s=\"%s\"\n",__SDIR__,__FILE__,__LINE__,__FUNCT__,PetscStringize(PETSC_FUNCTION_NAME),PETSC_FUNCTION_NAME); \
     }                                                                   \
   } while (0)
 

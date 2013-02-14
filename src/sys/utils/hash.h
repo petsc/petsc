@@ -329,6 +329,9 @@ PETSC_STATIC_INLINE khint_t __ac_X31_hash_string(const char *s)
 /*! @function
   @abstract     Const char* comparison function
  */
+#if defined(PETSC_HAVE_STRING_H)
+#include <string.h>
+#endif
 #define kh_str_hash_equal(a, b) (strcmp(a, b) == 0)
 
 /* --- END OF HASH FUNCTIONS --- */

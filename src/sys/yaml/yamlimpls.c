@@ -1,4 +1,7 @@
 #include "yamlimpls.h"
+#if defined(PETSC_HAVE_STRING_H)
+#include <string.h>
+#endif
 
 void options_list_delete(options_list_t *options_list)
 {
