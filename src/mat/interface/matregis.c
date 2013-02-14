@@ -37,7 +37,6 @@ extern PetscErrorCode  MatCreate_MPIAIJCRL(Mat);
 extern PetscErrorCode  MatCreate_Scatter(Mat);
 extern PetscErrorCode  MatCreate_BlockMat(Mat);
 extern PetscErrorCode  MatCreate_Nest(Mat);
-extern PetscErrorCode  MatCreate_IJ(Mat);
 
 #if defined PETSC_HAVE_CUSP
 extern PetscErrorCode  MatCreate_SeqAIJCUSP(Mat);
@@ -129,7 +128,6 @@ PetscErrorCode  MatRegisterAll(const char path[])
   ierr = MatRegisterDynamic(MATBLOCKMAT,       path,"MatCreate_BlockMat",  MatCreate_BlockMat);CHKERRQ(ierr);
   ierr = MatRegisterDynamic(MATNEST,           path,"MatCreate_Nest",      MatCreate_Nest);CHKERRQ(ierr);
 
-  ierr = MatRegisterDynamic(MATIJ,             path,"MatCreate_IJ",   MatCreate_IJ);CHKERRQ(ierr);
 
 #if defined PETSC_HAVE_CUSP
   ierr = MatRegisterBaseName(MATAIJCUSP,MATSEQAIJCUSP,MATMPIAIJCUSP);CHKERRQ(ierr);

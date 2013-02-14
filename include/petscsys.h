@@ -1470,12 +1470,6 @@ PETSC_EXTERN PetscErrorCode PetscDLLibraryOpen(MPI_Comm,const char[],PetscDLLibr
 PETSC_EXTERN PetscErrorCode PetscDLLibraryClose(PetscDLLibrary);
 
 /*
-  PetscShell support.  Needs to be better documented.
-  Logically it is an extension of PetscDLLXXX, PetscObjectCompose, etc.
-*/
-#include <petscshell.h>
-
-/*
      Useful utility routines
 */
 PETSC_EXTERN PetscErrorCode PetscSplitOwnership(MPI_Comm,PetscInt*,PetscInt*);
