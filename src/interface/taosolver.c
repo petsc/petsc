@@ -86,6 +86,8 @@ PetscErrorCode TaoCreate(MPI_Comm comm, TaoSolver *newtao)
     tao->stepdirection=PETSC_NULL;
     tao->XL = PETSC_NULL;
     tao->XU = PETSC_NULL;
+    tao->IL = PETSC_NULL;
+    tao->IU = PETSC_NULL;
     tao->hessian = PETSC_NULL;
     tao->hessian_pre = PETSC_NULL;
     tao->jacobian = PETSC_NULL;
@@ -95,6 +97,10 @@ PetscErrorCode TaoCreate(MPI_Comm comm, TaoSolver *newtao)
     tao->jacobian_state_inv = PETSC_NULL;
     tao->jacobian_design = PETSC_NULL;
     tao->jacobian_design_pre = PETSC_NULL;
+    tao->jacobian_equality = PETSC_NULL;
+    tao->jacobian_equality_pre = PETSC_NULL;
+    tao->jacobian_inequality = PETSC_NULL;
+    tao->jacobian_inequality_pre = PETSC_NULL;
     tao->state_is = PETSC_NULL;
     tao->design_is = PETSC_NULL;
 
@@ -280,6 +286,8 @@ PetscErrorCode TaoDestroy(TaoSolver *tao)
 
   ierr = VecDestroy(&(*tao)->XL); CHKERRQ(ierr);
   ierr = VecDestroy(&(*tao)->XU); CHKERRQ(ierr);
+  ierr = VecDestroy(&(*tao)->IL); CHKERRQ(ierr);
+  ierr = VecDestroy(&(*tao)->IU); CHKERRQ(ierr);
   ierr = VecDestroy(&(*tao)->stepdirection); CHKERRQ(ierr);
   ierr = MatDestroy(&(*tao)->hessian_pre); CHKERRQ(ierr);
   ierr = MatDestroy(&(*tao)->hessian); CHKERRQ(ierr);
@@ -289,7 +297,10 @@ PetscErrorCode TaoDestroy(TaoSolver *tao)
   ierr = MatDestroy(&(*tao)->jacobian_state); CHKERRQ(ierr);
   ierr = MatDestroy(&(*tao)->jacobian_state_inv); CHKERRQ(ierr);
   ierr = MatDestroy(&(*tao)->jacobian_design_pre); CHKERRQ(ierr);
-  ierr = MatDestroy(&(*tao)->jacobian_design); CHKERRQ(ierr);
+  ierr = MatDestroy(&(*tao)->jacobian_equality); CHKERRQ(ierr);
+  ierr = MatDestroy(&(*tao)->jacobian_equality_pre); CHKERRQ(ierr);
+  ierr = MatDestroy(&(*tao)->jacobian_inequality); CHKERRQ(ierr);
+  ierr = MatDestroy(&(*tao)->jacobian_inequality_pre); CHKERRQ(ierr);
   ierr = ISDestroy(&(*tao)->state_is); CHKERRQ(ierr);
   ierr = ISDestroy(&(*tao)->design_is); CHKERRQ(ierr);
   ierr = TaoCancelMonitors(*tao); CHKERRQ(ierr);
