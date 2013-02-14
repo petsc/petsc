@@ -57,6 +57,30 @@ PetscErrorCode PetscGetNCores(PetscInt *ncores)
 
 PetscErrorCode PetscThreadCommWorldInitialize();
 #undef __FUNCT__
+#define __FUNCT__ "PetscGetThreadCommWorld"
+/*
+  PetscGetThreadCommWorld - Gets the global thread communicator.
+                            Creates it if it does not exist already.
+
+  Not Collective
+
+  Output Parameters:
+  tcommp - pointer to the global thread communicator
+
+  Level: Intermediate
+*/
+PetscErrorCode PetscGetThreadCommWorld(PetscThreadComm *tcommp)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  if (!PETSC_THREAD_COMM_WORLD) {
+    ierr = PetscThreadCommWorldInitialize();
+  }
+  *tcommp = PETSC_THREAD_COMM_WORLD;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscCommGetThreadComm"
 /*@C
   PetscCommGetThreadComm - Gets the thread communicator
@@ -85,10 +109,7 @@ PetscErrorCode PetscCommGetThreadComm(MPI_Comm comm,PetscThreadComm *tcommp)
   PetscFunctionBegin;
   ierr = MPI_Attr_get(comm,Petsc_ThreadComm_keyval,(PetscThreadComm*)&ptr,&flg);CHKERRQ(ierr);
   if (!flg) {
-    if (!PETSC_THREAD_COMM_WORLD) {
-      ierr = PetscThreadCommWorldInitialize();
-    }
-    *tcommp = PETSC_THREAD_COMM_WORLD;
+    ierr = PetscGetThreadCommWorld(tcommp);CHKERRQ(ierr);
   } else *tcommp      = (PetscThreadComm)ptr;
   PetscFunctionReturn(0);
 }
@@ -1235,6 +1256,7 @@ PetscErrorCode PetscThreadCommWorldInitialize(void)
   ierr = PetscThreadCommSetType(tcomm,NOTHREAD);CHKERRQ(ierr);
   ierr = PetscThreadCommReductionCreate(tcomm,&tcomm->red);CHKERRQ(ierr);
   ierr = PetscThreadCommStackCreate();CHKERRQ(ierr);
+  tcomm->refct++;
   PetscFunctionReturn(0);
 }
 

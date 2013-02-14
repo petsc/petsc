@@ -3,7 +3,6 @@
 static PetscBool PetscThreadCommPackageInitialized = PETSC_FALSE;
 
 extern PetscErrorCode PetscThreadCommDetach(MPI_Comm);
-extern PetscErrorCode PetscThreadCommDestroy(PetscThreadComm*);
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscThreadCommFinalizePackage"
