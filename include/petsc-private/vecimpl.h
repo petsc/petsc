@@ -11,29 +11,6 @@
 #include <petscvec.h>
 #include <petsc-private/petscimpl.h>
 
-/* ----------------------------------------------------------------------------*/
-typedef struct _n_PetscUniformSection *PetscUniformSection;
-struct _n_PetscUniformSection {
-  MPI_Comm comm;
-  PetscInt pStart, pEnd; /* The chart: all points are contained in [pStart, pEnd) */
-  PetscInt numDof;       /* Describes layout of storage, point --> (constant # of values, (p - pStart)*constant # of values) */
-};
-
-struct _n_PetscSection {
-  struct _n_PetscUniformSection atlasLayout;  /* Layout for the atlas */
-  PetscInt                     *atlasDof;     /* Describes layout of storage, point --> # of values */
-  PetscInt                     *atlasOff;     /* Describes layout of storage, point --> offset into storage */
-  PetscInt                      maxDof;       /* Maximum dof on any point */
-  PetscSection                  bc;           /* Describes constraints, point --> # local dofs which are constrained */
-  PetscInt                     *bcIndices;    /* Local indices for constrained dofs */
-  PetscInt                      refcnt;       /* Vecs obtained with VecDuplicate() and from MatGetVecs() reuse map of input object */
-  PetscBool                     setup;
-
-  PetscInt                      numFields;    /* The number of fields making up the degrees of freedom */
-  const char                  **fieldNames;   /* The field names */
-  PetscInt                     *numFieldComponents; /* The number of components in each field */
-  PetscSection                 *field;        /* A section describing the layout and constraints for each field */
-};
 
 /* ----------------------------------------------------------------------------*/
 
