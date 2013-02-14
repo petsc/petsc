@@ -8,13 +8,14 @@
 PETSC_EXTERN PetscClassId PETSCSF_CLASSID;
 
 /*S
-   PetscSF - PETSc object for communication using star forests
+   PetscSF - PETSc object for setting up and managing the communication of certain entries of arrays and Vecs between MPI processes.
+             It uses the concept of star forests to indicate and determine the communication patterns concisely and efficiently.
 
    Level: intermediate
 
   Concepts: star forest
 
-.seealso: PetscSFCreate()
+.seealso: PetscSFCreate(), VecScatter, VecScatterCreate()
 S*/
 typedef struct _p_PetscSF* PetscSF;
 
@@ -26,11 +27,17 @@ typedef struct _p_PetscSF* PetscSF;
 
    Level: beginner
 
+   Notes: The two approaches provided are
+$     PETSCSFBASIC which uses MPI 1 message passing to perform the communication and
+$     PETSCSFWINDOW which uses MPI 2 one-sided operations to perform the communication, this may be more efficient,
+$                   but may not be available for all MPI distributions. In particular OpenMPI has bugs in its one-sided
+$                   operations that prevent its use.
+
 .seealso: PetscSFSetType(), PetscSF
 J*/
 typedef const char *PetscSFType;
-#define PETSCSFWINDOW "window"
 #define PETSCSFBASIC  "basic"
+#define PETSCSFWINDOW "window"
 
 /*S
    PetscSFNode - specifier of owner and index
