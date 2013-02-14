@@ -1,6 +1,5 @@
 #include <petsc-private/fortranimpl.h>
 #include <petscpc.h>
-#include <petscpcmg.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define pcmgsetlevels_             PCMGSETLEVELS

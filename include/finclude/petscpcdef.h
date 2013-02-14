@@ -70,4 +70,8 @@
 #define PCAINVCUSP 'ainvcusp'
 #define PCBDDC 'bddc'
 
+#define PCMGType PetscEnum
+#define PCMGCycleType PetscEnum
+#define PCExoticType PetscEnum
+
 #endif

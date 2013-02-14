@@ -24,14 +24,4 @@
 #include <finclude/petscksp.h90>
         end module
 
-        module petscpcmgdef
-        use petsckspdef
-#include <finclude/petscpcmg.h>
-        end module
-
-        module petscpcmg
-        use petscpcmgdef
-        use petscksp
-#include <finclude/petscpcmg.h90>
-        end module
 

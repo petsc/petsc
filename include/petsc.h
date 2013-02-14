@@ -7,8 +7,6 @@
 #include <petscthreadcomm.h>
 #include <petscbt.h>
 
-#include <petscpcmg.h>
-
 #include <petscdmda.h>
 #include <petscdmadda.h>
 #include <petscdmcomposite.h>

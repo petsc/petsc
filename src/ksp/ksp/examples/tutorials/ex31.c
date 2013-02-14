@@ -35,7 +35,6 @@ static char help[] = "Solves 2D compressible Euler using multigrid.\n\n";
 
 #include <petscdmda.h>
 #include <petscksp.h>
-#include <petscpcmg.h>
 
 typedef struct {
   Vec rho;     /* The mass solution \rho */

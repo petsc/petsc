@@ -1,6 +1,5 @@
 
 #include <../src/ksp/pc/impls/mg/mgimpl.h>       /*I "petscksp.h" I*/
-/*I "petscpcmg.h"   I*/
 
 #undef __FUNCT__
 #define __FUNCT__ "PCMGDefaultResidual"

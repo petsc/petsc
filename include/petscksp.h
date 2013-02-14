@@ -172,7 +172,10 @@ PETSC_EXTERN PetscErrorCode PCBJacobiGetSubKSP(PC,PetscInt*,PetscInt*,KSP*[]);
 PETSC_EXTERN PetscErrorCode PCASMGetSubKSP(PC,PetscInt*,PetscInt*,KSP*[]);
 PETSC_EXTERN PetscErrorCode PCGASMGetSubKSP(PC,PetscInt*,PetscInt*,KSP*[]);
 PETSC_EXTERN PetscErrorCode PCFieldSplitGetSubKSP(PC,PetscInt*,KSP*[]);
-
+PETSC_EXTERN PetscErrorCode PCMGGetSmoother(PC,PetscInt,KSP*);
+PETSC_EXTERN PetscErrorCode PCMGGetSmootherDown(PC,PetscInt,KSP*);
+PETSC_EXTERN PetscErrorCode PCMGGetSmootherUp(PC,PetscInt,KSP*);
+PETSC_EXTERN PetscErrorCode PCMGGetCoarseSolve(PC,KSP*);
 PETSC_EXTERN PetscErrorCode PCGalerkinGetKSP(PC,KSP *);
 
 PETSC_EXTERN PetscErrorCode KSPBuildSolution(KSP,Vec,Vec *);

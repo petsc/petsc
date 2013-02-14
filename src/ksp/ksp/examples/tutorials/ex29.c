@@ -28,7 +28,6 @@ static char help[] = "Solves 2D inhomogeneous Laplacian using multigrid.\n\n";
 
 #include <petscdmda.h>
 #include <petscksp.h>
-#include <petscpcmg.h>
 
 extern PetscErrorCode ComputeMatrix(KSP,Mat,Mat,MatStructure*,void*);
 extern PetscErrorCode ComputeRHS(KSP,Vec,void*);

@@ -1,7 +1,7 @@
 #if !defined(__GAMG_IMPL)
 #define __GAMG_IMPL
-#include <petsc-private/pcimpl.h>   /*I "petscpc.h" I*/
-#include <../src/ksp/pc/impls/mg/mgimpl.h>                    /*I "petscpcmg.h" I*/
+#include <petsc-private/pcimpl.h>
+#include <../src/ksp/pc/impls/mg/mgimpl.h>                    /*I "petscksp.h" I*/
 #include <../src/mat/impls/aij/seq/aij.h>
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
 

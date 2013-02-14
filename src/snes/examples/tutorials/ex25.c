@@ -29,7 +29,6 @@ T*/
 
 #include <petscsnes.h>
 #include <petscdmda.h>
-#include <petscpcmg.h>
 
 extern PetscErrorCode FormFunctionLocal(DMDALocalInfo*,PetscScalar**,PetscScalar**,void*);
 
