@@ -19,7 +19,7 @@ EXTERN_C_END
 /* Global counters */
 PETSC_EXTERN PetscLogDouble petsc_BaseTime;
 
-/*
+/*MC
    PetscTime - Returns the current time of day in seconds.
 
    Synopsis:
@@ -38,18 +38,20 @@ PETSC_EXTERN PetscLogDouble petsc_BaseTime;
      .... perform some calculation ...
      printf("Time for operation %g\n",v);
 
+   Level: developer
+
    Notes:
    Since the PETSc libraries incorporate timing of phases and operations,
-   PetscTime() is intended only for timing of application codes.
-   The options database commands -log, -log_summary, and -log_all activate
+   we do not recomment every using PetscTime()
+   The options database command  -log_summary activate
    PETSc library timing. See the <A href="../../docs/manual.pdf">Users Manual</A> for more details.
 
-.seealso:  PetscTimeSubtract(), PetscTimeAdd()
+.seealso:  PetscTimeSubtract(), PetscTimeAdd(), PetscLogStageRegister(), PetscLogEventRegister(), PetscLogEventBegin(), PetscLogEventEnd()
 
 .keywords:  Petsc, time
-*/
+M*/
 
-/*
+/*MC
    PetscTimeSubtract - Subtracts the current time of day (in seconds) from
    the value v.
 
@@ -65,19 +67,22 @@ PETSC_EXTERN PetscLogDouble petsc_BaseTime;
    Output Parameter:
 .  v - time counter (v = v - current time)
 
+   Level: developer
 
    Notes:
    Since the PETSc libraries incorporate timing of phases and operations,
-   PetscTimeSubtract() is intended only for timing of application codes.
-   The options database commands -log, -log_summary, and -log_all activate
-   PETSc library timing.  See the <A href="../../docs/manual.pdf">Users Manual</A> for more details.
+   we do not every recommend using PetscTimeSubtract()
+   The options database command  -log_summary activates
+   PETSc library timing.  See the <A href="../../docs/manual.pdf">Users Manual</A> for more details, also
+   see PetscLogStageRegister(), PetscLogEventRegister(), PetscLogEventBegin(), PetscLogEventEnd() for how to register
+   stages and events in application codes. 
 
-.seealso:  PetscTime(), PetscTimeAdd()
+.seealso:  PetscTime(), PetscTimeAdd(), PetscLogStageRegister(), PetscLogEventRegister(), PetscLogEventBegin(), PetscLogEventEnd()
 
 .keywords:  Petsc, time, subtract
-*/
+M*/
 
-/*
+/*MC
    PetscTimeAdd - Adds the current time of day (in seconds) to the value v.
 
    Synopsis:
@@ -92,16 +97,18 @@ PETSC_EXTERN PetscLogDouble petsc_BaseTime;
    Output Parameter:
 .  v - time counter (v = v + current time)
 
+   Level: developer
+
    Notes:
    Since the PETSc libraries incorporate timing of phases and operations,
-   PetscTimeAdd() is intended only for timing of application codes.
+   we do not ever recommend using PetscTimeAdd().
    The options database command -log_summary activate
    PETSc library timing. See the <A href="../../docs/manual.pdf">Users Manual</A> for more details.
 
-.seealso:  PetscTime(), PetscTimeSubtract()
+.seealso:  PetscTime(), PetscTimeSubtract(), PetscLogStageRegister(), PetscLogEventRegister(), PetscLogEventBegin(), PetscLogEventEnd()
 
 .keywords:  Petsc, time, add
-*/
+M*/
 
 /* ------------------------------------------------------------------
     Some machines have very fast MPI_Wtime()
