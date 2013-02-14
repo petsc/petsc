@@ -3,7 +3,7 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC	 = iscomp.c iscoloring.c isltog.c isdiff.c isblock.c
+SOURCEC	 = iscomp.c iscoloring.c isltog.c isdiff.c isblock.c pmap.c
 SOURCEF	 =
 SOURCEH	 =
 LIBBASE	 = libpetscvec

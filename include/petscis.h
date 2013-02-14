@@ -276,6 +276,122 @@ PETSC_EXTERN PetscErrorCode ISCompressIndicesGeneral(PetscInt,PetscInt,PetscInt,
 PETSC_EXTERN PetscErrorCode ISCompressIndicesSorted(PetscInt,PetscInt,PetscInt,const IS[],IS[]);
 PETSC_EXTERN PetscErrorCode ISExpandIndicesGeneral(PetscInt,PetscInt,PetscInt,PetscInt,const IS[],IS[]);
 
+/*S
+     PetscLayout - defines layout of vectors and matrices across processes (which rows are owned by which processes)
+
+   Level: developer
+
+
+.seealso:  PetscLayoutCreate(), PetscLayoutDestroy()
+S*/
+typedef struct _n_PetscLayout* PetscLayout;
+struct _n_PetscLayout{
+  MPI_Comm               comm;
+  PetscInt               n,N;         /* local, global vector size */
+  PetscInt               rstart,rend; /* local start, local end + 1 */
+  PetscInt               *range;      /* the offset of each processor */
+  PetscInt               bs;          /* number of elements in each block (generally for multi-component problems) Do NOT multiply above numbers by bs */
+  PetscInt               refcnt;      /* MPI Vecs obtained with VecDuplicate() and from MatGetVecs() reuse map of input object */
+  ISLocalToGlobalMapping mapping;     /* mapping used in Vec/MatSetValuesLocal() */
+  ISLocalToGlobalMapping bmapping;    /* mapping used in Vec/MatSetValuesBlockedLocal() */
+  PetscInt               *trstarts;   /* local start for each thread */
+};
+
+PETSC_EXTERN PetscErrorCode PetscLayoutCreate(MPI_Comm,PetscLayout*);
+PETSC_EXTERN PetscErrorCode PetscLayoutSetUp(PetscLayout);
+PETSC_EXTERN PetscErrorCode PetscLayoutDestroy(PetscLayout*);
+PETSC_EXTERN PetscErrorCode PetscLayoutDuplicate(PetscLayout,PetscLayout*);
+PETSC_EXTERN PetscErrorCode PetscLayoutReference(PetscLayout,PetscLayout*);
+PETSC_EXTERN PetscErrorCode PetscLayoutSetLocalSize(PetscLayout,PetscInt);
+PETSC_EXTERN PetscErrorCode PetscLayoutGetLocalSize(PetscLayout,PetscInt *);
+PETSC_EXTERN PetscErrorCode PetscLayoutSetSize(PetscLayout,PetscInt);
+PETSC_EXTERN PetscErrorCode PetscLayoutGetSize(PetscLayout,PetscInt *);
+PETSC_EXTERN PetscErrorCode PetscLayoutSetBlockSize(PetscLayout,PetscInt);
+PETSC_EXTERN PetscErrorCode PetscLayoutGetBlockSize(PetscLayout,PetscInt*);
+PETSC_EXTERN PetscErrorCode PetscLayoutGetRange(PetscLayout,PetscInt *,PetscInt *);
+PETSC_EXTERN PetscErrorCode PetscLayoutGetRanges(PetscLayout,const PetscInt *[]);
+PETSC_EXTERN PetscErrorCode PetscLayoutSetISLocalToGlobalMapping(PetscLayout,ISLocalToGlobalMapping);
+PETSC_EXTERN PetscErrorCode PetscLayoutSetISLocalToGlobalMappingBlock(PetscLayout,ISLocalToGlobalMapping);
+PETSC_EXTERN PetscErrorCode PetscSFSetGraphLayout(PetscSF,PetscLayout,PetscInt,const PetscInt*,PetscCopyMode,const PetscInt*);
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscLayoutFindOwner"
+/*@C
+     PetscLayoutFindOwner - Find the owning rank for a global index
+
+    Not Collective
+
+   Input Parameters:
++    map - the layout
+-    idx - global index to find the owner of
+
+   Output Parameter:
+.    owner - the owning rank
+
+   Level: developer
+
+    Fortran Notes:
+      Not available from Fortran
+
+@*/
+PETSC_STATIC_INLINE PetscErrorCode PetscLayoutFindOwner(PetscLayout map,PetscInt idx,PetscInt *owner)
+{
+  PetscErrorCode ierr;
+  PetscMPIInt    lo = 0,hi,t;
+
+  PetscFunctionBegin;
+  *owner = -1;                  /* GCC erroneously issues warning about possibly uninitialized use when error condition */
+  if (!((map->n >= 0) && (map->N >= 0) && (map->range))) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"PetscLayoutSetUp() must be called first");
+  if (idx < 0 || idx > map->N) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Index %D is out of range",idx);
+  ierr = MPI_Comm_size(map->comm,&hi);CHKERRQ(ierr);
+  while (hi - lo > 1) {
+    t = lo + (hi - lo) / 2;
+    if (idx < map->range[t]) hi = t;
+    else                     lo = t;
+  }
+  *owner = lo;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscLayoutFindOwnerIndex"
+/*@C
+     PetscLayoutFindOwnerIndex - Find the owning rank and the local index for a global index
+
+    Not Collective
+
+   Input Parameters:
++    map   - the layout
+-    idx   - global index to find the owner of
+
+   Output Parameter:
++    owner - the owning rank
+-    lidx  - local index used by the owner for idx
+
+   Level: developer
+
+    Fortran Notes:
+      Not available from Fortran
+
+@*/
+PETSC_STATIC_INLINE PetscErrorCode PetscLayoutFindOwnerIndex(PetscLayout map,PetscInt idx,PetscInt *owner, PetscInt *lidx)
+{
+  PetscErrorCode ierr;
+  PetscMPIInt    lo = 0,hi,t;
+
+  PetscFunctionBegin;
+  if (!((map->n >= 0) && (map->N >= 0) && (map->range))) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"PetscLayoutSetUp() must be called first");
+  if (idx < 0 || idx > map->N) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Index %D is out of range",idx);
+  ierr = MPI_Comm_size(map->comm,&hi);CHKERRQ(ierr);
+  while (hi - lo > 1) {
+    t = lo + (hi - lo) / 2;
+    if (idx < map->range[t]) hi = t;
+    else                     lo = t;
+  }
+  *owner = lo;
+  *lidx  = idx-map->range[lo];
+  PetscFunctionReturn(0);
+}
 
 /* Reset __FUNCT__ in case the user does not define it themselves */
 #undef __FUNCT__
