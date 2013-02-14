@@ -21,6 +21,7 @@ echo "digraph G {" > $dotfilename
 #echo " size=\"5,10\"" >> $dotfilename
 #echo " ratio=\"0.3\"" >> $dotfilename
 echo " rankdir=LR" >> $dotfilename
+echo " node [color=red]" >> $dotfilename
 #echo " size=\"8,6\"; ratio=fill; node[fontsize=24];" >> $dotfilename
 
 
@@ -35,7 +36,7 @@ echo "    label = \"petsc-private\"; rank=\"10\"" >> $dotfilename
 for f in `ls include/petsc-private/*.h`
 do
   f2=${f#include/petsc-private/} 
-  echo "    ${f2%.h} [label=\"$f2\"];" >> $dotfilename
+  echo "    ${f2%.h} [label=\"$f2\",color=black];" >> $dotfilename
 done
 
 # Set connections
@@ -66,7 +67,7 @@ for f in `ls include/*.{h,hh}`
 do
   f2=${f#include/}
   f3=${f2/%.hh/2}
-  echo "  ${f3%.h} [label=\"$f2\"];" >> $dotfilename
+  echo "  ${f3%.h} [label=\"$f2\",color=black];" >> $dotfilename
 done
 
 # Set connections
