@@ -7,9 +7,9 @@ static char help[] = "Nest vector set subvector functionality.\n\n";
    Processors: n
 T*/
 
-#include <petsc.h>
+#include <petscvec.h>
 
-#include "../src/vec/vec/impls/nest/vecnestimpl.h"
+//#include "../src/vec/vec/impls/nest/vecnestimpl.h"
 
 #undef __FUNCT__
 #define __FUNCT__ "test_vec_ops"
