@@ -86,7 +86,7 @@ PetscErrorCode  AODestroy(AO *ao)
 }
 
 
-#include <../src/vec/is/impls/general/general.h>
+#include <../src/vec/is/is/impls/general/general.h>
 /* ---------------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "AOPetscToApplicationIS"

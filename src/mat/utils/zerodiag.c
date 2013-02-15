@@ -62,7 +62,7 @@ PetscErrorCode  MatReorderForNonzeroDiagonal(Mat mat,PetscReal abstol,IS ris,IS 
 extern PetscErrorCode MatGetRow_SeqAIJ(Mat,PetscInt,PetscInt*,PetscInt**,PetscScalar**);
 extern PetscErrorCode MatRestoreRow_SeqAIJ(Mat,PetscInt,PetscInt*,PetscInt**,PetscScalar**);
 
-#include <../src/vec/is/impls/general/general.h>
+#include <../src/vec/is/is/impls/general/general.h>
 
 EXTERN_C_BEGIN
 #undef __FUNCT__

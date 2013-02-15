@@ -1,10 +1,9 @@
 
 ALL: lib
 
-SOURCEH  =
-DIRS     = is
-LOCDIR   = src/vec/is
-MANSEC   = Vec
+LIBBASE  = libpetscvec
+DIRS     = general stride block
+LOCDIR   = src/vec/is/is/impls/
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

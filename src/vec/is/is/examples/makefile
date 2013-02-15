@@ -1,12 +1,7 @@
 
-ALL: lib
-
-SOURCEH  =
-DIRS     = is
-LOCDIR   = src/vec/is
-MANSEC   = Vec
+LOCDIR   = src/vec/is/is/examples/
+DIRS     = tests tutorials
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules
 include ${PETSC_DIR}/conf/test
-
