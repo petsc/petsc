@@ -2,6 +2,8 @@
 #if !defined(__PETSCBT_H)
 #define __PETSCBT_H
 
+#include <petscconf.h>
+
 /*S
      PetscBT - PETSc bitarrays
 

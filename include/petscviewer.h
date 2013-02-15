@@ -5,6 +5,8 @@
 #if !defined(__PETSCVIEWER_H)
 #define __PETSCVIEWER_H
 
+#include <petscsys.h>
+
 #if defined(PETSC_USE_EXTERN_CXX) && defined(__cplusplus)
 extern "C" {
 #endif
@@ -24,8 +26,6 @@ typedef struct _p_PetscViewer* PetscViewer;
 #if defined(PETSC_USE_EXTERN_CXX) && defined(__cplusplus)
 }
 #endif
-
-#include <petscsys.h>
 
 PETSC_EXTERN PetscClassId PETSC_VIEWER_CLASSID;
 
