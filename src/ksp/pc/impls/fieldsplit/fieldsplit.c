@@ -833,10 +833,6 @@ static PetscErrorCode PCApply_FieldSplit(PC pc,Vec x,Vec y)
   PetscInt          cnt,bs;
 
   PetscFunctionBegin;
-  if (jac->bs > 0) {
-    ierr = VecSetBlockSize(x,jac->bs);CHKERRQ(ierr);
-    ierr = VecSetBlockSize(y,jac->bs);CHKERRQ(ierr);
-  }
   CHKMEMQ;
   if (jac->type == PC_COMPOSITE_ADDITIVE) {
     if (jac->defaultsplit) {
