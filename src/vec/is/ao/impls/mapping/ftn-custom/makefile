@@ -1,0 +1,15 @@
+
+#requiresdefine   'PETSC_HAVE_FORTRAN'
+ALL: lib
+CFLAGS   =
+FFLAGS   =
+SOURCEC  = zaomappingf.c
+SOURCEF  =
+SOURCEH  =
+DIRS     =
+LIBBASE  = libpetscdm
+LOCDIR   = src/vec/is/aoimpls/mapping/ftn-custom/
+
+include ${PETSC_DIR}/conf/variables
+include ${PETSC_DIR}/conf/rules
+include ${PETSC_DIR}/conf/test

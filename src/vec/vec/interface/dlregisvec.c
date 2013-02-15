@@ -1,6 +1,8 @@
 
 #include <petsc-private/vecimpl.h>
 #include <petscpf.h>
+#include <petscsf.h>
+#include <petscao.h>
 
 static PetscBool ISPackageInitialized = PETSC_FALSE;
 #undef __FUNCT__
@@ -262,7 +264,9 @@ PetscErrorCode  PetscDLLibraryRegister_petscvec(const char path[])
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscSFInitializePackage(path);CHKERRQ(ierr);
   ierr = ISInitializePackage(path);CHKERRQ(ierr);
+  ierr = AOInitializePackage(path);CHKERRQ(ierr);
   ierr = VecInitializePackage(path);CHKERRQ(ierr);
   ierr = PFInitializePackage(path);CHKERRQ(ierr);
   PetscFunctionReturn(0);

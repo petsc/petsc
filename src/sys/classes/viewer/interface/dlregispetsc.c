@@ -1,6 +1,5 @@
 
 #include <petscdraw.h>
-#include <petscsf.h>
 
 extern PetscLogEvent PETSC_Barrier;
 
@@ -116,7 +115,6 @@ PetscErrorCode  PetscDLLibraryRegister_petscsys(const char path[])
   ierr = PetscDrawInitializePackage(path);CHKERRQ(ierr);
   ierr = PetscViewerInitializePackage(path);CHKERRQ(ierr);
   ierr = PetscRandomInitializePackage(path);CHKERRQ(ierr);
-  ierr = PetscSFInitializePackage(path);CHKERRQ(ierr);
 
 #if defined(PETSC_USE_SINGLE_LIBRARY)
   ierr = PetscDLLibraryRegister_petscvec(path);CHKERRQ(ierr);
