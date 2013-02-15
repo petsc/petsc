@@ -1,6 +1,5 @@
 
 #include <petsc-private/pcimpl.h>     /*I "petscpc.h" I*/
-#include <petscdmcomposite.h>
 
 /*
   There is a nice discussion of block preconditioners in
@@ -389,7 +388,6 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
         } else jac->bs = 1;
       }
 
-      ierr = PetscOptionsGetBool(((PetscObject)pc)->prefix,"-pc_fieldsplit_default",&fieldsplit_default,NULL);CHKERRQ(ierr);
       if (stokes) {
         IS       zerodiags,rest;
         PetscInt nmin,nmax;
@@ -408,6 +406,7 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
         ierr = ISDestroy(&rest);CHKERRQ(ierr);
       } else {
         if (jac->reset) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Cases not yet handled when PCReset() was used");
+        ierr = PetscOptionsGetBool(((PetscObject)pc)->prefix,"-pc_fieldsplit_default",&fieldsplit_default,NULL);CHKERRQ(ierr);
         if (!fieldsplit_default) {
           /* Allow user to set fields from command line,  if bs was known at the time of PCSetFromOptions_FieldSplit()
            then it is set there. This is not ideal because we should only have options set in XXSetFromOptions(). */
