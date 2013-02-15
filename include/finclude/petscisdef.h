@@ -14,6 +14,7 @@
 #endif
 
 #define PetscSF PetscFortranAddr
+#define PetscLayout PetscFortranAddr
 
 #define ISType PetscEnum
 #define ISLocalToGlobalMapping PetscFortranAddr
