@@ -300,7 +300,7 @@ PetscErrorCode FormIJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat *J
   }
 
   if (user->viewJacobian) {
-    ierr = PetscPrintf(((PetscObject)*Jpre)->comm,"Jpre:\n");CHKERRQ(ierr);
+    ierr = PetscPrintf(PetscObjectComm((PetscObject)*Jpre),"Jpre:\n");CHKERRQ(ierr);
     ierr = MatView(*Jpre,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

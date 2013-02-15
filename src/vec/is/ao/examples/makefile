@@ -1,9 +1,9 @@
 
-ALL: lib
+ALL:
 
-DIRS     = impls f90-mod interface examples dt
-LOCDIR   = src/dm/
-MANSEC   = DM
+LOCDIR   = src/vec/is/aoexamples/
+DIRS     = tests tutorials
+MANSEC   = AO
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules
