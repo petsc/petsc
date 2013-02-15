@@ -22,6 +22,7 @@ PetscErrorCode  MatFDColoringSetF(MatFDColoring fd,Vec F)
   PetscFunctionReturn(0);
 }
 
+#include <petscdraw.h>
 #undef __FUNCT__
 #define __FUNCT__ "MatFDColoringView_Draw_Zoom"
 static PetscErrorCode MatFDColoringView_Draw_Zoom(PetscDraw draw,void *Aa)

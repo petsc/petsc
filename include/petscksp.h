@@ -595,6 +595,7 @@ PETSC_EXTERN PetscErrorCode KSPPythonSetType(KSP,const char[]);
 PETSC_EXTERN PetscErrorCode PCPreSolve(PC,KSP);
 PETSC_EXTERN PetscErrorCode PCPostSolve(PC,KSP);
 
+#include <petscdrawtypes.h>
 PETSC_EXTERN PetscErrorCode KSPMonitorLGResidualNormCreate(const char[],const char[],int,int,int,int,PetscDrawLG*);
 PETSC_EXTERN PetscErrorCode KSPMonitorLGResidualNorm(KSP,PetscInt,PetscReal,void*);
 PETSC_EXTERN PetscErrorCode KSPMonitorLGResidualNormDestroy(PetscDrawLG*);

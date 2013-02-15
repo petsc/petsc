@@ -814,6 +814,7 @@ PetscErrorCode VecView_Seq_ASCII(Vec xin,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
+#include <petscdraw.h>
 #undef __FUNCT__
 #define __FUNCT__ "VecView_Seq_Draw_LG"
 PetscErrorCode VecView_Seq_Draw_LG(Vec xin,PetscViewer v)

@@ -1439,6 +1439,7 @@ PetscErrorCode MatView_MPIAIJ_Binary(Mat mat,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
+#include <petscdraw.h>
 #undef __FUNCT__
 #define __FUNCT__ "MatView_MPIAIJ_ASCIIorDraworSocket"
 PetscErrorCode MatView_MPIAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)

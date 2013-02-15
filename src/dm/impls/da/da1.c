@@ -8,6 +8,7 @@
 
 const char *const DMDABoundaryTypes[] = {"BOUNDARY_NONE","BOUNDARY_GHOSTED","BOUNDARY_PERIODIC","DMDA_",0};
 
+#include <petscdraw.h>
 #undef __FUNCT__
 #define __FUNCT__ "DMView_DA_1d"
 PetscErrorCode DMView_DA_1d(DM da,PetscViewer viewer)

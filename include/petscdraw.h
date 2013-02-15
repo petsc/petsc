@@ -4,6 +4,7 @@
 #if !defined(__PETSCDRAW_H)
 #define __PETSCDRAW_H
 #include <petscsys.h>
+#include <petscdrawtypes.h>
 
 PETSC_EXTERN PetscClassId PETSC_DRAW_CLASSID;
 
@@ -21,17 +22,6 @@ typedef const char* PetscDrawType;
 #define PETSC_DRAW_NULL       "null"
 #define PETSC_DRAW_WIN32      "win32"
 #define PETSC_DRAW_TIKZ       "tikz"
-
-/*S
-     PetscDraw - Abstract PETSc object for graphics
-
-   Level: beginner
-
-  Concepts: graphics
-
-.seealso:  PetscDrawCreate(), PetscDrawSetType(), PetscDrawType
-S*/
-typedef struct _p_PetscDraw* PetscDraw;
 
 PETSC_EXTERN PetscFunctionList PetscDrawList;
 PETSC_EXTERN PetscErrorCode PetscDrawRegisterAll(const char[]);
@@ -249,17 +239,6 @@ PETSC_EXTERN PetscErrorCode PetscDrawViewPortsCreateRect(PetscDraw,PetscInt,Pets
 PETSC_EXTERN PetscErrorCode PetscDrawViewPortsDestroy(PetscDrawViewPorts*);
 PETSC_EXTERN PetscErrorCode PetscDrawViewPortsSet(PetscDrawViewPorts*,PetscInt);
 
-/*S
-     PetscDrawAxis - Manages X-Y axis
-
-   Level: advanced
-
-  Concepts: graphics, axis
-
-.seealso:  PetscDrawAxisCreate(), PetscDrawAxisSetLimits(), PetscDrawAxisSetColors(), PetscDrawAxisSetLabels()
-S*/
-typedef struct _p_PetscDrawAxis* PetscDrawAxis;
-
 PETSC_EXTERN PetscClassId PETSC_DRAWAXIS_CLASSID;
 
 PETSC_EXTERN PetscErrorCode PetscDrawAxisCreate(PetscDraw,PetscDrawAxis *);
@@ -270,17 +249,6 @@ PETSC_EXTERN PetscErrorCode PetscDrawAxisGetLimits(PetscDrawAxis,PetscReal*,Pets
 PETSC_EXTERN PetscErrorCode PetscDrawAxisSetHoldLimits(PetscDrawAxis,PetscBool );
 PETSC_EXTERN PetscErrorCode PetscDrawAxisSetColors(PetscDrawAxis,int,int,int);
 PETSC_EXTERN PetscErrorCode PetscDrawAxisSetLabels(PetscDrawAxis,const char[],const char[],const char[]);
-
-/*S
-     PetscDrawLG - Manages drawing x-y plots
-
-   Level: advanced
-
-  Concepts: graphics, axis
-
-.seealso:  PetscDrawAxisCreate(), PetscDrawLGCreate(), PetscDrawLGAddPoint()
-S*/
-typedef struct _p_PetscDrawLG*   PetscDrawLG;
 
 PETSC_EXTERN PetscClassId PETSC_DRAWLG_CLASSID;
 
@@ -301,17 +269,6 @@ PETSC_EXTERN PetscErrorCode PetscDrawLGIndicateDataPoints(PetscDrawLG);
 PETSC_EXTERN PetscErrorCode PetscDrawLGSetLimits(PetscDrawLG,PetscReal,PetscReal,PetscReal,PetscReal);
 PETSC_EXTERN PetscErrorCode PetscDrawLGSetColors(PetscDrawLG,const int*);
 
-/*S
-     PetscDrawSP - Manages drawing scatter plots
-
-   Level: advanced
-
-  Concepts: graphics, scatter plots
-
-.seealso:  PetscDrawSPCreate()
-S*/
-typedef struct _p_PetscDrawSP*   PetscDrawSP;
-
 PETSC_EXTERN PetscClassId PETSC_DRAWSP_CLASSID;
 
 PETSC_EXTERN PetscErrorCode PetscDrawSPCreate(PetscDraw,int,PetscDrawSP *);
@@ -325,17 +282,6 @@ PETSC_EXTERN PetscErrorCode PetscDrawSPGetAxis(PetscDrawSP,PetscDrawAxis *);
 PETSC_EXTERN PetscErrorCode PetscDrawSPGetDraw(PetscDrawSP,PetscDraw *);
 PETSC_EXTERN PetscErrorCode PetscDrawSPSetLimits(PetscDrawSP,PetscReal,PetscReal,PetscReal,PetscReal);
 PETSC_EXTERN PetscErrorCode PetscDrawLGSPDraw(PetscDrawLG,PetscDrawSP);
-
-/*S
-     PetscDrawHG - Manages drawing histograms
-
-   Level: advanced
-
-  Concepts: graphics, histograms
-
-.seealso:  PetscDrawHGCreate()
-S*/
-typedef struct _p_PetscDrawHG*   PetscDrawHG;
 
 PETSC_EXTERN PetscClassId PETSC_DRAWHG_CLASSID;
 

@@ -1491,11 +1491,6 @@ $     PetscBool  flag = PetscNot(a)
 */
 #define PetscNot(a) ((a) ? PETSC_FALSE : PETSC_TRUE)
 
-/*
-    Defines basic graphics available from PETSc.
-*/
-#include <petscdraw.h>
-
 #if defined(PETSC_HAVE_VALGRIND)
 #  include <valgrind/valgrind.h>
 #  define PETSC_RUNNING_ON_VALGRIND RUNNING_ON_VALGRIND
@@ -2422,6 +2417,5 @@ PETSC_EXTERN PetscErrorCode PetscSubcommSetTypeGeneral(PetscSubcomm,PetscMPIInt,
 /* Reset __FUNCT__ in case the user does not define it themselves */
 #undef __FUNCT__
 #define __FUNCT__ "User provided function"
-
 
 #endif

@@ -1,4 +1,6 @@
 #include <petsc-private/fortranimpl.h>
+#include <petscdraw.h>
+
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define petscdrawtensorcontour_   PETSCDRAWTENSORCONTOUR
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)

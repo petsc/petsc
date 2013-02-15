@@ -1212,6 +1212,7 @@ PetscErrorCode  TSLoad(TS ts, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
+#include <petscdraw.h>
 #undef __FUNCT__
 #define __FUNCT__ "TSView"
 /*@C

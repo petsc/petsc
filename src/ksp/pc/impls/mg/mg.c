@@ -442,6 +442,7 @@ PetscErrorCode PCSetFromOptions_MG(PC pc)
 const char *const PCMGTypes[] = {"MULTIPLICATIVE","ADDITIVE","FULL","KASKADE","PCMGType","PC_MG",0};
 const char *const PCMGCycleTypes[] = {"invalid","v","w","PCMGCycleType","PC_MG_CYCLE",0};
 
+#include <petscdraw.h>
 #undef __FUNCT__
 #define __FUNCT__ "PCView_MG"
 PetscErrorCode PCView_MG(PC pc,PetscViewer viewer)

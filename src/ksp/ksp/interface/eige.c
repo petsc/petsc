@@ -332,6 +332,7 @@ static PetscErrorCode PolyEval(PetscInt nroots,const PetscReal *r,const PetscRea
   PetscFunctionReturn(0);
 }
 
+#include <petscdraw.h>
 #undef __FUNCT__
 #define __FUNCT__ "KSPPlotEigenContours_Private"
 /* collective on KSP */

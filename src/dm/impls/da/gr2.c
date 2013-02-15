@@ -5,6 +5,7 @@
 
 #include <petsc-private/daimpl.h>      /*I  "petscdmda.h"   I*/
 #include <petsc-private/vecimpl.h>
+#include <petscdraw.h>
 
 /*
         The data that is passed into the graphics callback

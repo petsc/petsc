@@ -6,6 +6,7 @@
 
 #include <petsc-private/daimpl.h>     /*I   "petscdmda.h"    I*/
 
+#include <petscdraw.h>
 #undef __FUNCT__
 #define __FUNCT__ "DMView_DA_3d"
 PetscErrorCode DMView_DA_3d(DM da,PetscViewer viewer)

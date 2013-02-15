@@ -522,6 +522,7 @@ PetscErrorCode  DMCompositeAddDM(DM dmc,DM dm)
   PetscFunctionReturn(0);
 }
 
+#include <petscdraw.h>
 extern PetscErrorCode  VecView_MPI(Vec,PetscViewer);
 EXTERN_C_BEGIN
 #undef __FUNCT__

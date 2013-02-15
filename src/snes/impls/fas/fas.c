@@ -389,6 +389,7 @@ PetscErrorCode SNESSetFromOptions_FAS(SNES snes)
   PetscFunctionReturn(0);
 }
 
+#include <petscdraw.h>
 #undef __FUNCT__
 #define __FUNCT__ "SNESView_FAS"
 PetscErrorCode SNESView_FAS(SNES snes, PetscViewer viewer)

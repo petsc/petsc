@@ -5,6 +5,7 @@
 #if !defined(_DRAWIMPL_H)
 #define _DRAWIMPL_H
 
+#include <petscdraw.h>
 #include <petsc-private/petscimpl.h>
 
 struct _PetscDrawOps {

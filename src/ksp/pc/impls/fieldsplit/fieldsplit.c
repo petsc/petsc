@@ -73,6 +73,7 @@ static Mat FieldSplitSchurPre(PC_FieldSplit *jac)
 }
 
 
+#include <petscdraw.h>
 #undef __FUNCT__
 #define __FUNCT__ "PCView_FieldSplit"
 static PetscErrorCode PCView_FieldSplit(PC pc,PetscViewer viewer)

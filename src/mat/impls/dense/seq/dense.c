@@ -1038,6 +1038,7 @@ static PetscErrorCode MatView_SeqDense_Binary(Mat A,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
+#include <petscdraw.h>
 #undef __FUNCT__
 #define __FUNCT__ "MatView_SeqDense_Draw_Zoom"
 PetscErrorCode MatView_SeqDense_Draw_Zoom(PetscDraw draw,void *Aa)

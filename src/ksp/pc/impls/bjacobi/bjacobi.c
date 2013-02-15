@@ -181,6 +181,7 @@ static PetscErrorCode PCSetFromOptions_BJacobi(PC pc)
   PetscFunctionReturn(0);
 }
 
+#include <petscdraw.h>
 #undef __FUNCT__
 #define __FUNCT__ "PCView_BJacobi"
 static PetscErrorCode PCView_BJacobi(PC pc,PetscViewer viewer)
