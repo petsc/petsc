@@ -3,7 +3,7 @@ CFLAGS	         =
 FFLAGS	         =
 CPPFLAGS         =
 FPPFLAGS         =
-LOCDIR   = src/sys/classes/sf/examples/tutorials/
+LOCDIR   = src/vec/is/sf/examples/tutorials/
 EXAMPLESC        = ex1.c
 EXAMPLESF        =
 

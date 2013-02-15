@@ -1,5 +1,5 @@
 
-LOCDIR   = src/sys/classes/sf/examples/
+LOCDIR   = src/vec/is/sf/examples/
 DIRS     = tutorials
 
 include ${PETSC_DIR}/conf/variables

@@ -2,7 +2,7 @@
 ALL: lib
 
 SOURCEH  =
-DIRS     = is utils
+DIRS     = is sf utils 
 LOCDIR   = src/vec/is
 MANSEC   = IS
 

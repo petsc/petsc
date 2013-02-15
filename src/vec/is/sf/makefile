@@ -4,7 +4,7 @@ SOURCEH	 = ../../../../include/petsc-private/sfimpl.h ../../../../include/petscs
 SOURCEC  =
 LIBBASE	 = libpetscsys
 DIRS	 = interface impls examples
-LOCDIR   = src/sys/classes/sf/
+LOCDIR   = src/vec/is/sf/
 MANSEC   = PetscSF
 
 include ${PETSC_DIR}/conf/variables

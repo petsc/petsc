@@ -1,10 +1,10 @@
 ALL: lib
 
 SOURCEH	 =
-SOURCEC  = dlregissf.c sfregi.c sf.c sftype.c
+SOURCEC  =
 LIBBASE	 = libpetscsys
-DIRS	 =
-LOCDIR   = src/sys/classes/sf/interface/
+DIRS	 = window basic
+LOCDIR   = src/vec/is/sf/impls/
 MANSEC   = PetscSF
 
 include ${PETSC_DIR}/conf/variables

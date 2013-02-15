@@ -1,13 +1,10 @@
-#requirespackage 'PETSC_HAVE_MPI_WIN_CREATE'
-#requirespackage 'PETSC_HAVE_MPI_TYPE_DUP'
-
 ALL: lib
 
 SOURCEH	 =
-SOURCEC  = sfwindow.c
+SOURCEC  = sfbasic.c
 LIBBASE	 = libpetscsys
 DIRS	 =
-LOCDIR   = src/sys/classes/sf/impls/window/
+LOCDIR   = src/vec/is/sf/impls/basic/
 MANSEC   = PetscSF
 
 include ${PETSC_DIR}/conf/variables
