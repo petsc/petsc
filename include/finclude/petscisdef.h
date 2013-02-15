@@ -10,7 +10,10 @@
 #if !defined(PETSC_USE_FORTRAN_DATATYPES)
 #define IS PetscFortranAddr
 #define ISColoring PetscFortranAddr
+#define PetscSection PetscFortranAddr
 #endif
+
+#define PetscSF PetscFortranAddr
 
 #define ISType PetscEnum
 #define ISLocalToGlobalMapping PetscFortranAddr
