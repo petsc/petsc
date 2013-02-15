@@ -2,9 +2,9 @@
 ALL: lib
 
 SOURCEH  =
-DIRS     = is
+DIRS     = is utils
 LOCDIR   = src/vec/is
-MANSEC   = Vec
+MANSEC   = IS
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules
