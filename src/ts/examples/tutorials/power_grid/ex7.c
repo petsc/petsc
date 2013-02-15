@@ -66,7 +66,7 @@ int main(int argc, char **argv)
   /* Create a 2D DA with dof = 1 */
   ierr = DMDACreate2d(PETSC_COMM_WORLD,user.bx,user.by,DMDA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,1,user.st_width,NULL,NULL,&user.da);CHKERRQ(ierr);
   /* Set x and y coordinates */
-  ierr = DMDASetUniformCoordinates(user.da,user.xmin,user.xmax,user.ymin,user.ymax,NULL,NULL);CHKERRQ(ierr);
+  ierr = DMDASetUniformCoordinates(user.da,user.xmin,user.xmax,user.ymin,user.ymax,0,0);CHKERRQ(ierr);
   ierr = DMDASetCoordinateName(user.da,0,"X - the angle");
   ierr = DMDASetCoordinateName(user.da,1,"Y - the speed");
 
