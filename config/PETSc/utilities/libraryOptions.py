@@ -63,7 +63,7 @@ class Configure(config.base.Configure):
 
     # used in src/mat/impls/sbaij/seq/relax.h
     if not self.isBGL():
-      self.addDefine('PETSC_USE_BACKWARD_LOOP','1')
+      self.addDefine('USE_BACKWARD_LOOP','1')
 
     self.useFortranKernels = self.framework.argDB['with-fortran-kernels']
     if not hasattr(self.compilers, 'FC') and self.useFortranKernels:
