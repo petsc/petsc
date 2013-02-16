@@ -699,6 +699,14 @@ PetscErrorCode SNESSolve_NASM(SNES snes)
 /*MC
   SNESNASM - Nonlinear Additive Schwartz
 
+   Options Database:
++  -snes_nasm_log - enable logging events for the communication and solve stages
+.  -snes_nasm_type <basic,restrict> - type of subdomain update used
+.  -snes_nasm_finaljacobian - compute the local and global jacobians of the final iterate
+.  -sub_snes_ - options prefix of the subdomain nonlinear solves
+.  -sub_ksp_ - options prefix of the subdomain Krylov solver
+-  -sub_pc_ - options prefix of the subdomain preconditioner
+
    Level: advanced
 
 .seealso: SNESCreate(), SNES, SNESSetType(), SNESType (for list of available types)
