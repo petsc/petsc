@@ -87,7 +87,7 @@ PetscErrorCode SNESSetUp_NASM(SNES snes)
 {
   SNES_NASM      *nasm = (SNES_NASM*)snes->data;
   PetscErrorCode ierr;
-  DM             dm;
+  DM             dm,subdm;
   DM             *subdms;
   PetscInt       i;
   const char     *optionsprefix;
@@ -123,13 +123,14 @@ PetscErrorCode SNESSetUp_NASM(SNES snes)
   ierr = PetscMalloc(nasm->n*sizeof(Vec),&nasm->b);CHKERRQ(ierr);
 
   for (i=0; i<nasm->n; i++) {
-    DM subdm;
     ierr = SNESGetFunction(nasm->subsnes[i],&F,NULL,NULL);CHKERRQ(ierr);
-    ierr = VecDuplicate(F,&nasm->x[i]);CHKERRQ(ierr);
-    ierr = VecDuplicate(F,&nasm->y[i]);CHKERRQ(ierr);
-    ierr = VecDuplicate(F,&nasm->b[i]);CHKERRQ(ierr);
-    ierr = SNESGetDM(nasm->subsnes[i],&subdm);CHKERRQ(ierr);
-    ierr = DMCreateLocalVector(subdm,&nasm->xl[i]);CHKERRQ(ierr);
+    if (!nasm->x[i]) {ierr = VecDuplicate(F,&nasm->x[i]);CHKERRQ(ierr);}
+    if (!nasm->y[i]) {ierr = VecDuplicate(F,&nasm->y[i]);CHKERRQ(ierr);}
+    if (!nasm->b[i]) {ierr = VecDuplicate(F,&nasm->b[i]);CHKERRQ(ierr);}
+    if (!nasm->xl[i]) {
+      ierr = SNESGetDM(nasm->subsnes[i],&subdm);CHKERRQ(ierr);
+      ierr = DMCreateLocalVector(subdm,&nasm->xl[i]);CHKERRQ(ierr);
+    }
     ierr = DMGlobalToLocalHookAdd(subdm,DMGlobalToLocalSubDomainDirichletHook_Private,NULL,nasm->xl[i]);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -208,6 +209,25 @@ PetscErrorCode SNESView_NASM(SNES snes, PetscViewer viewer)
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESNASMSetSubdomains"
+/*@
+   SNESNASMSetSubdomains - Manually Set the context required to restrict and solve subdomain problems.
+
+   Not Collective
+
+   Input Parameters:
++  SNES - the SNES context
+.  n - the number of local subdomains
+.  subsnes - solvers defined on the local subdomains
+.  iscatter - scatters into the nonoverlapping portions of the local subdomains
+.  oscatter - scatters into the overlapping portions of the local subdomains
+-  gscatter - scatters into the (ghosted) local vector of the local subdomain
+
+   Level: intermediate
+
+.keywords: SNES, NASM
+
+.seealso: SNESNASM, SNESNASMGetSubdomains()
+@*/
 PetscErrorCode SNESNASMSetSubdomains(SNES snes,PetscInt n,SNES subsnes[],VecScatter iscatter[],VecScatter oscatter[],VecScatter gscatter[])
 {
   PetscErrorCode ierr;
@@ -272,6 +292,109 @@ PetscErrorCode SNESNASMSetSubdomains_NASM(SNES snes,PetscInt n,SNES subsnes[],Ve
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
+
+#undef __FUNCT__
+#define __FUNCT__ "SNESNASMGetSubdomains"
+/*@
+   SNESNASMGetSubdomains - Get the local subdomain context.
+
+   Not Collective
+
+   Input Parameters:
+.  SNES - the SNES context
+
+   Output Parameters:
++  n - the number of local subdomains
+.  subsnes - solvers defined on the local subdomains
+.  iscatter - scatters into the nonoverlapping portions of the local subdomains
+.  oscatter - scatters into the overlapping portions of the local subdomains
+-  gscatter - scatters into the (ghosted) local vector of the local subdomain
+
+   Level: intermediate
+
+.keywords: SNES, NASM
+
+.seealso: SNESNASM, SNESNASMSetSubdomains()
+@*/
+PetscErrorCode SNESNASMGetSubdomains(SNES snes,PetscInt *n,SNES *subsnes[],VecScatter *iscatter[],VecScatter *oscatter[],VecScatter *gscatter[])
+{
+  PetscErrorCode ierr;
+  PetscErrorCode (*f)(SNES,PetscInt*,SNES**,VecScatter**,VecScatter**,VecScatter**);
+
+  PetscFunctionBegin;
+  ierr = PetscObjectQueryFunction((PetscObject)snes,"SNESNASMGetSubdomains_C",(void (**)(void))&f);CHKERRQ(ierr);
+  ierr = (f)(snes,n,subsnes,iscatter,oscatter,gscatter);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "SNESNASMGetSubdomains_NASM"
+PetscErrorCode SNESNASMGetSubdomains_NASM(SNES snes,PetscInt *n,SNES *subsnes[],VecScatter *iscatter[],VecScatter *oscatter[],VecScatter *gscatter[])
+{
+  SNES_NASM      *nasm = (SNES_NASM*)snes->data;
+
+  PetscFunctionBegin;
+  if (n) *n = nasm->n;
+  if (oscatter) *oscatter = nasm->oscatter;
+  if (iscatter) *iscatter = nasm->iscatter;
+  if (gscatter) *gscatter = nasm->gscatter;
+  if (subsnes)  *subsnes  = nasm->subsnes;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+#undef __FUNCT__
+#define __FUNCT__ "SNESNASMGetSubdomainVecs"
+/*@
+   SNESNASMGetSubdomainVecs - Get the processor-local subdomain vectors
+
+   Not Collective
+
+   Input Parameters:
+.  SNES - the SNES context
+
+   Output Parameters:
++  n - the number of local subdomains
+.  x - The subdomain solution vector
+.  y - The subdomain step vector
+.  b - The subdomain RHS vector
+-  xl - The subdomain local vectors (ghosted)
+
+   Level: developer
+
+.keywords: SNES, NASM
+
+.seealso: SNESNASM, SNESNASMGetSubdomains()
+@*/
+PetscErrorCode SNESNASMGetSubdomainVecs(SNES snes,PetscInt *n,Vec **x,Vec **y,Vec **b, Vec **xl)
+{
+  PetscErrorCode ierr;
+  PetscErrorCode (*f)(SNES,PetscInt*,Vec**,Vec**,Vec**,Vec**);
+
+  PetscFunctionBegin;
+  ierr = PetscObjectQueryFunction((PetscObject)snes,"SNESNASMGetSubdomainVecs_C",(void (**)(void))&f);CHKERRQ(ierr);
+  ierr = (f)(snes,n,x,y,b,xl);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "SNESNASMGetSubdomainVecs_NASM"
+PetscErrorCode SNESNASMGetSubdomainVecs_NASM(SNES snes,PetscInt *n,Vec **x,Vec **y,Vec **b,Vec **xl)
+{
+  SNES_NASM      *nasm = (SNES_NASM*)snes->data;
+
+  PetscFunctionBegin;
+  if (n)  *n  = nasm->n;
+  if (x)  *x  = nasm->x;
+  if (y)  *y  = nasm->y;
+  if (b)  *b  = nasm->b;
+  if (xl) *xl = nasm->xl;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESNASMSolveLocal_Private"
@@ -525,6 +648,10 @@ PetscErrorCode SNESCreate_NASM(SNES snes)
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESNASMSetSubdomains_C","SNESNASMSetSubdomains_NASM",
                                            SNESNASMSetSubdomains_NASM);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESNASMGetSubdomains_C","SNESNASMGetSubdomains_NASM",
+                                           SNESNASMGetSubdomains_NASM);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESNASMGetSubdomainVecs_C","SNESNASMGetSubdomainVecs_NASM",
+                                           SNESNASMGetSubdomainVecs_NASM);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
