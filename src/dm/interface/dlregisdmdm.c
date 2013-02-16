@@ -1,6 +1,6 @@
 
 #include <petsc-private/dmdaimpl.h>
-#include <petsc-private/pleximpl.h>
+#include <petsc-private/dmpleximpl.h>
 #if defined(PETSC_HAVE_SIEVE)
 #include <petsc-private/meshimpl.h>
 #endif

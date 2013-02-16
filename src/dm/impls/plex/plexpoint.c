@@ -1,4 +1,4 @@
-#include <petsc-private/pleximpl.h>   /*I      "petscdmplex.h"   I*/
+#include <petsc-private/dmpleximpl.h>   /*I      "petscdmplex.h"   I*/
 #include <petsc-private/isimpl.h>     /* for inline access to atlasOff */
 
 #undef __FUNCT__

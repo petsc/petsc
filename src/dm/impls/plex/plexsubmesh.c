@@ -1,4 +1,4 @@
-#include <petsc-private/pleximpl.h>   /*I      "petscdmplex.h"   I*/
+#include <petsc-private/dmpleximpl.h>   /*I      "petscdmplex.h"   I*/
 
 extern PetscErrorCode DMPlexGetNumFaceVertices_Internal(DM, PetscInt, PetscInt *);
 
