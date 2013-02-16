@@ -1,5 +1,5 @@
 
-#include <petsc-private/daimpl.h>
+#include <petsc-private/dmdaimpl.h>
 #include <petsc-private/pleximpl.h>
 #if defined(PETSC_HAVE_SIEVE)
 #include <petsc-private/meshimpl.h>

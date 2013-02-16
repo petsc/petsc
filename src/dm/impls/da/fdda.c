@@ -1,5 +1,5 @@
 
-#include <petsc-private/daimpl.h> /*I      "petscdmda.h"     I*/
+#include <petsc-private/dmdaimpl.h> /*I      "petscdmda.h"     I*/
 #include <petscmat.h>
 #include <petsc-private/matimpl.h>
 
