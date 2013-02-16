@@ -23,21 +23,6 @@ extern PetscErrorCode (*PetscPythonMonitorSet_C)(PetscObject,const char*);
 EXTERN_C_END
 
 #if PETSC_VERSION_(3,2,0)
-#define PetscShell                  PetscFwk
-#define PetscShellPythonCall        PetscFwkPythonCall
-#define PetscShellPythonLoadVTable  PetscFwkPythonLoadVTable
-#define PetscShellPythonClearVTable PetscFwkPythonClearVTable
-#endif
-EXTERN_C_BEGIN
-#define PetscShellPythonCall_C        PetscShellPythonCall
-#define PetscShellPythonLoadVTable_C  PetscShellPythonLoadVTable
-#define PetscShellPythonClearVTable_C PetscShellPythonClearVTable
-extern PetscErrorCode (*PetscShellPythonCall_C)(PetscShell,const char*,void*);
-extern PetscErrorCode (*PetscShellPythonLoadVTable_C)(PetscShell,const char*,const char*,void**);
-extern PetscErrorCode (*PetscShellPythonClearVTable_C)(PetscShell,void**);
-EXTERN_C_END
-
-#if PETSC_VERSION_(3,2,0)
 #define _MatOps_setup   setuppreallocation
 #define _TSOps_snes_its nonlinear_its
 #define _TSOps_ksp_its  linear_its

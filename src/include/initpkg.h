@@ -7,7 +7,6 @@ static PetscErrorCode PetscInitializePackageAll(const char path[])
   PetscErrorCode ierr;
   PetscFunctionBegin;
   ierr = PetscSysInitializePackage(path);CHKERRQ(ierr);
-  ierr = PetscShellInitializePackage(path);CHKERRQ(ierr);
   ierr = PetscDrawInitializePackage(path);CHKERRQ(ierr);
   ierr = PetscViewerInitializePackage(path);CHKERRQ(ierr);
   ierr = PetscRandomInitializePackage(path);CHKERRQ(ierr);

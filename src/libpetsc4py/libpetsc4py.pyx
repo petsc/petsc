@@ -2421,70 +2421,6 @@ cdef PetscErrorCode PetscPythonMonitorSet_Python(
 
 # --------------------------------------------------------------------
 
-cdef inline Object Shell_(PetscShell p):
-    cdef Shell ob = Shell.__new__(Shell)
-    ob.obj[0] = newRef(p)
-    return ob
-
-cdef PetscErrorCode PetscShellPython_Call(
-    PetscShell   component_p,
-    const_char *message_p,
-    void       *vtable_p,
-    ) \
-    except IERR with gil:
-    FunctionBegin(b"PetscShellPython_Call")
-    assert component_p != NULL
-    assert message_p   != NULL
-    assert vtable_p    != NULL
-    #
-    cdef component = Shell_(component_p)
-    cdef vtable = <object> vtable_p
-    cdef message = bytes2str(message_p)
-    #
-    cdef function = None
-    try:
-        function = getattr(vtable, message)
-    except AttributeError:
-        vtable(component, message)
-    else:
-        function(component)
-    return FunctionEnd()
-
-cdef PetscErrorCode PetscShellPython_LoadVTable(
-    PetscShell   component_p,
-    const_char *path_p,
-    const_char *name_p,
-    void       **vtable_p,
-    ) \
-    except IERR with gil:
-    FunctionBegin(b"PetscShellPython_LoadVTable")
-    assert component_p != NULL
-    assert path_p      != NULL
-    assert name_p      != NULL
-    assert vtable_p    != NULL
-    #
-    cdef path = bytes2str(path_p)
-    cdef name = bytes2str(name_p)
-    cdef module = load_module(path)
-    cdef vtable = getattr(module, name)
-    vtable_p[0] = <void*>vtable
-    Py_INCREF(<PyObject*>vtable_p[0])
-    return FunctionEnd()
-
-cdef PetscErrorCode PetscShellPython_ClearVTable(
-    PetscShell component_p,
-    void     **vtable_p,
-    ) \
-    except IERR with gil:
-    FunctionBegin(b"PetscShellPython_ClearVTable")
-    assert component_p != NULL
-    assert vtable_p    != NULL
-    Py_DECREF(<PyObject*>vtable_p[0])
-    vtable_p[0] = NULL
-    return FunctionEnd()
-
-# --------------------------------------------------------------------
-
 cdef extern from * nogil:
 
   char* MATPYTHON  '"python"'
@@ -2508,13 +2444,6 @@ cdef extern from * nogil:
   PetscErrorCode (*PetscPythonMonitorSet_C) \
       (PetscObject, const_char[]) except IERR
 
-  PetscErrorCode (*PetscShellPythonCall_C) \
-      (PetscShell,const_char[],void *) except IERR
-  PetscErrorCode (*PetscShellPythonLoadVTable_C) \
-      (PetscShell,const_char[],const_char[],void**) except IERR
-  PetscErrorCode (*PetscShellPythonClearVTable_C) \
-      (PetscShell,void**) except IERR
-
 
 cdef public PetscErrorCode PetscPythonRegisterAll(char path[]) except IERR:
     FunctionBegin(b"PetscPythonRegisterAll")
@@ -2529,14 +2458,6 @@ cdef public PetscErrorCode PetscPythonRegisterAll(char path[]) except IERR:
     # Python monitors
     global PetscPythonMonitorSet_C
     PetscPythonMonitorSet_C = PetscPythonMonitorSet_Python
-
-    # Python Shell support
-    global PetscShellPythonCall_C
-    PetscShellPythonCall_C = PetscShellPython_Call
-    global PetscShellPythonLoadVTable_C
-    PetscShellPythonLoadVTable_C = PetscShellPython_LoadVTable
-    global PetscShellPythonClearVTable_C
-    PetscShellPythonClearVTable_C = PetscShellPython_ClearVTable
 
     return FunctionEnd()
 

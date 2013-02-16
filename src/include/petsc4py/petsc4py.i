@@ -437,9 +437,8 @@ SWIG_From_dec(Type)(Type v) {
 /* ---------------------------------------------------------------- */
 
 %define SWIG_TYPECHECK_PETSC_OBJECT  500 %enddef
-%define SWIG_TYPECHECK_PETSC_SHELL   501 %enddef
-%define SWIG_TYPECHECK_PETSC_VIEWER  502 %enddef
-%define SWIG_TYPECHECK_PETSC_RANDOM  503 %enddef
+%define SWIG_TYPECHECK_PETSC_VIEWER  501 %enddef
+%define SWIG_TYPECHECK_PETSC_RANDOM  502 %enddef
 
 %define SWIG_TYPECHECK_PETSC_IS            510 %enddef
 %define SWIG_TYPECHECK_PETSC_IS_LTOGM      511 %enddef
@@ -567,7 +566,6 @@ SWIG_From_dec(Type)(Type v) {
 %petsc4py_comm( Petsc, Comm , MPI_Comm , MPI_COMM , MPI_COMM_NULL )
 
 %petsc4py_objt( Petsc , Object    , PetscObject            , PETSC_OBJECT        , PETSC_NULL )
-%petsc4py_objt( Petsc , Shell     , PetscShell             , PETSC_SHELL         , PETSC_NULL )
 %petsc4py_objt( Petsc , Viewer    , PetscViewer            , PETSC_VIEWER        , PETSC_NULL )
 %petsc4py_objt( Petsc , Random    , PetscRandom            , PETSC_RANDOM        , PETSC_NULL )
 %petsc4py_objt( Petsc , IS        , IS                     , PETSC_IS            , PETSC_NULL )

@@ -52,19 +52,6 @@ cdef api PetscObject* PyPetscObject_GetPtr(object arg) except NULL:
     retv = ob.obj
     return retv
 
-# -- Shell --
-
-cdef api object PyPetscShell_New(PetscShell arg):
-    cdef Shell retv = Shell()
-    setref(&retv.shell, arg)
-    return retv
-
-cdef api PetscShell PyPetscShell_Get(object arg) except ? NULL:
-    cdef PetscShell retv = NULL
-    cdef Shell ob = <Shell?> arg
-    retv = ob.shell
-    return retv
-
 # -- Viewer --
 
 cdef api object PyPetscViewer_New(PetscViewer arg):
