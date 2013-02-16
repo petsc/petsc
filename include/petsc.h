@@ -8,6 +8,7 @@
 #include <petscbt.h>
 #include <petscctable.h>
 #include <petscmatlab.h>
+#include <petscdraw.h>
 
 #include <petscdmda.h>
 #include <petscdmadda.h>
