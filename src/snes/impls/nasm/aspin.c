@@ -54,6 +54,30 @@ PetscErrorCode MatMultASPIN(Mat m,Vec X,Vec Y)
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "SNESCreate_ASPIN"
+/* -------------------------------------------------------------------------- */
+/*MC
+      SNESASPIN - Helper SNES type for Additive-Schwarz Preconditioned Inexact Newton
+
+   Options Database:
++  -npc_snes_ - options prefix of the nonlinear subdomain solver (must be of type NASM)
+.  -npc_sub_snes_ - options prefix of the subdomain nonlinear solves
+.  -npc_sub_ksp_ - options prefix of the subdomain Krylov solver
+-  -npc_sub_pc_ - options prefix of the subdomain preconditioner
+
+    Notes: This routine sets up an instance of NETWONLS with nonlinear left preconditioning.  It differs from other
+    similar functionality in SNES as it creates a linear shell matrix that corresponds to the product:
+
+    \sum_{i=0}^{N_b}J_b({X^b_{converged}})^{-1}J(X + \sum_{i=0}^{N_b}(X^b_{converged} - X^b))
+
+    which is the ASPIN preconditioned matrix. Similar solvers may be constructed by having matrix-free differencing of
+    nonlinear solves per linear iteration, but this is far more efficient when subdomain sparse-direct preconditioner
+    factorizations are reused on each application of J_b^{-1}.
+
+   Level: intermediate
+
+.seealso:  SNESCreate(), SNES, SNESSetType(), SNESNEWTONLS, SNESNASM, SNESGetPC(), SNESGetPCSide()
+
+M*/
 PetscErrorCode SNESCreate_ASPIN(SNES snes)
 {
   PetscErrorCode ierr;
