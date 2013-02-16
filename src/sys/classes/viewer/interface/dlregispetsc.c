@@ -1,5 +1,6 @@
 
 #include <petscdraw.h>
+#include <petscviewer.h>
 
 extern PetscLogEvent PETSC_Barrier;
 

@@ -4,7 +4,8 @@
 
 #include <petscviewer.h>
 
-#ifdef PETSC_HAVE_HDF5
+#if defined(PETSC_HAVE_HDF5)
+
 #include <hdf5.h>
 PETSC_EXTERN PetscErrorCode PetscViewerHDF5GetFileId(PetscViewer,hid_t*);
 PETSC_EXTERN PetscErrorCode PetscViewerHDF5OpenGroup(PetscViewer, hid_t *, hid_t *);
@@ -24,7 +25,8 @@ PETSC_STATIC_INLINE PetscErrorCode PetscHDF5IntCast(PetscInt a,hsize_t *b)
   *b =  (hsize_t)(a);
   PetscFunctionReturn(0);
 }
-#endif
+
+#endif  /* defined(PETSC_HAVE_HDF5) */
 
 PETSC_EXTERN PetscErrorCode PetscViewerHDF5WriteSDS(PetscViewer,float *,int,int *,int);
 
@@ -35,6 +37,5 @@ PETSC_EXTERN PetscErrorCode PetscViewerHDF5GetGroup(PetscViewer, const char **);
 PETSC_EXTERN PetscErrorCode PetscViewerHDF5IncrementTimestep(PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscViewerHDF5SetTimestep(PetscViewer,PetscInt);
 PETSC_EXTERN PetscErrorCode PetscViewerHDF5GetTimestep(PetscViewer,PetscInt*);
-
 
 #endif
