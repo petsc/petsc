@@ -13,6 +13,7 @@ typedef struct {
   VecScatter *gscatter;           /* scatter from global space to the subdomain local space */
   PCASMType  type;                /* ASM type */
   PetscBool  usesdm;              /* use the DM for setting up the subproblems */
+  PetscBool  finaljacobian;       /* compute the jacobian of the converged solution */
 
   /* logging events */
   PetscLogEvent eventrestrictinterp;
@@ -133,6 +134,7 @@ PetscErrorCode SNESSetUp_NASM(SNES snes)
     }
     ierr = DMGlobalToLocalHookAdd(subdm,DMGlobalToLocalSubDomainDirichletHook_Private,NULL,nasm->xl[i]);CHKERRQ(ierr);
   }
+  if (nasm->finaljacobian) {ierr = SNESSetUpMatrices(snes);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -152,6 +154,7 @@ PetscErrorCode SNESSetFromOptions_NASM(SNES snes)
   flg    = PETSC_FALSE;
   monflg = PETSC_TRUE;
   ierr   = PetscOptionsBool("-snes_nasm_log","Log times for subSNES solves and restriction","",monflg,&monflg,&flg);CHKERRQ(ierr);
+  ierr   = PetscOptionsBool("-snes_nasm_finaljacobian","Compute the global jacobian of the final iterate (for ASPIN)","",nasm->finaljacobian,&nasm->finaljacobian,NULL);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscLogEventRegister("SNESNASMSubSolve",((PetscObject)snes)->classid,&nasm->eventsubsolve);CHKERRQ(ierr);
     ierr = PetscLogEventRegister("SNESNASMRestrict",((PetscObject)snes)->classid,&nasm->eventrestrictinterp);CHKERRQ(ierr);
@@ -395,6 +398,50 @@ PetscErrorCode SNESNASMGetSubdomainVecs_NASM(SNES snes,PetscInt *n,Vec **x,Vec *
 }
 EXTERN_C_END
 
+#undef __FUNCT__
+#define __FUNCT__ "SNESNASMSetComputeFinalJacobian"
+/*@
+   SNESNASMSetComputeFinalJacobian - Schedules the computation of the global and subdomain jacobians upon convergence
+
+   Collective on SNES
+
+   Input Parameters:
++  SNES - the SNES context
+-  flg - indication of whether to compute the jacobians or not
+
+   Level: developer
+
+   Notes: This is used almost exclusively in the implementation of ASPIN, where the converged subdomain and global jacobian
+   is needed at each linear iteration.
+
+.keywords: SNES, NASM, ASPIN
+
+.seealso: SNESNASM, SNESNASMGetSubdomains()
+@*/
+PetscErrorCode SNESNASMSetComputeFinalJacobian(SNES snes,PetscBool flg)
+{
+  PetscErrorCode (*f)(SNES,PetscBool);
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectQueryFunction((PetscObject)snes,"SNESNASMSetComputeFinalJacobian_C",(void (**)(void))&f);CHKERRQ(ierr);
+  ierr = (f)(snes,flg);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "SNESNASMSetComputeFinalJacobian_NASM"
+PetscErrorCode SNESNASMSetComputeFinalJacobian_NASM(SNES snes,PetscBool flg)
+{
+  SNES_NASM      *nasm = (SNES_NASM*)snes->data;
+
+  PetscFunctionBegin;
+  nasm->finaljacobian = flg;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESNASMSolveLocal_Private"
@@ -495,6 +542,57 @@ PetscErrorCode SNESNASMSolveLocal_Private(SNES snes,Vec B,Vec Y,Vec X)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "SNESNASMComputeFinalJacobian_Private"
+PetscErrorCode SNESNASMComputeFinalJacobian_Private(SNES snes, Vec X)
+{
+  SNES_NASM      *nasm = (SNES_NASM*)snes->data;
+  SNES           subsnes;
+  PetscInt       i;
+  PetscErrorCode ierr;
+  Vec            Xlloc,Xl;
+  VecScatter     oscat,gscat;
+  DM             dm,subdm;
+  MatStructure   flg = DIFFERENT_NONZERO_PATTERN;
+
+  PetscFunctionBegin;
+  ierr = SNESComputeJacobian(snes,X,&snes->jacobian,&snes->jacobian_pre,&flg);CHKERRQ(ierr);
+  ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
+  if (nasm->eventrestrictinterp) {ierr = PetscLogEventBegin(nasm->eventrestrictinterp,snes,0,0,0);CHKERRQ(ierr);}
+  for (i=0; i<nasm->n; i++) {
+    /* scatter the solution to the local solution */
+    Xlloc = nasm->xl[i];
+    gscat   = nasm->gscatter[i];
+    oscat   = nasm->oscatter[i];
+    ierr = VecScatterBegin(gscat,X,Xlloc,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  }
+  if (nasm->eventrestrictinterp) {ierr = PetscLogEventEnd(nasm->eventrestrictinterp,snes,0,0,0);CHKERRQ(ierr);}
+
+  for (i=0; i<nasm->n; i++) {
+    Xlloc = nasm->xl[i];
+    gscat   = nasm->gscatter[i];
+    oscat   = nasm->oscatter[i];
+    ierr = VecScatterEnd(gscat,X,Xlloc,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  }
+
+  for (i=0; i<nasm->n; i++) {
+    Xl    = nasm->x[i];
+    Xlloc = nasm->xl[i];
+    subsnes = nasm->subsnes[i];
+    ierr    = SNESGetDM(subsnes,&subdm);CHKERRQ(ierr);
+    oscat   = nasm->oscatter[i];
+    gscat   = nasm->gscatter[i];
+    ierr    = DMSubDomainRestrict(dm,oscat,gscat,subdm);CHKERRQ(ierr);
+    ierr = DMLocalToGlobalBegin(subdm,Xlloc,INSERT_VALUES,Xl);CHKERRQ(ierr);
+    ierr = DMLocalToGlobalEnd(subdm,Xlloc,INSERT_VALUES,Xl);CHKERRQ(ierr);
+    ierr = SNESComputeJacobian(subsnes,Xl,&snes->jacobian,&subsnes->jacobian_pre,&flg);CHKERRQ(ierr);
+    ierr = KSPSetOperators(subsnes->ksp,subsnes->jacobian,subsnes->jacobian_pre,flg);CHKERRQ(ierr);
+  }
+
+  ierr = MPI_Barrier(PetscObjectComm((PetscObject)snes));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "SNESSolve_NASM"
 PetscErrorCode SNESSolve_NASM(SNES snes)
 {
@@ -506,6 +604,7 @@ PetscErrorCode SNESSolve_NASM(SNES snes)
   PetscReal      fnorm;
   PetscErrorCode ierr;
   SNESNormType   normtype;
+  SNES_NASM      *nasm = (SNES_NASM*)snes->data;
 
   PetscFunctionBegin;
   X = snes->vec_sol;
@@ -567,7 +666,7 @@ PetscErrorCode SNESSolve_NASM(SNES snes)
       ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
       if (snes->domainerror) {
         snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;
-        PetscFunctionReturn(0);
+        break;
       }
       ierr = VecNorm(F, NORM_2, &fnorm);CHKERRQ(ierr); /* fnorm <- ||F||  */
       if (PetscIsInfOrNanReal(fnorm)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"Infinite or not-a-number generated in norm");
@@ -581,12 +680,13 @@ PetscErrorCode SNESSolve_NASM(SNES snes)
     ierr       = SNESMonitor(snes,snes->iter,snes->norm);CHKERRQ(ierr);
     /* Test for convergence */
     if (normtype == SNES_NORM_FUNCTION) ierr = (*snes->ops->converged)(snes,snes->iter,0.0,0.0,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
-    if (snes->reason) PetscFunctionReturn(0);
+    if (snes->reason) break;
     /* Call general purpose update function */
     if (snes->ops->update) {
       ierr = (*snes->ops->update)(snes, snes->iter);CHKERRQ(ierr);
     }
   }
+  if (nasm->finaljacobian) {ierr = SNESNASMComputeFinalJacobian_Private(snes,X);CHKERRQ(ierr);}
   if (normtype == SNES_NORM_FUNCTION) {
     if (i == snes->max_its) {
       ierr = PetscInfo1(snes,"Maximum number of iterations has been reached: %D\n",snes->max_its);CHKERRQ(ierr);
@@ -627,6 +727,7 @@ PetscErrorCode SNESCreate_NASM(SNES snes)
   nasm->gscatter = 0;
 
   nasm->type = PC_ASM_BASIC;
+  nasm->finaljacobian = PETSC_FALSE;
 
   snes->ops->destroy        = SNESDestroy_NASM;
   snes->ops->setup          = SNESSetUp_NASM;
@@ -652,6 +753,8 @@ PetscErrorCode SNESCreate_NASM(SNES snes)
                                            SNESNASMGetSubdomains_NASM);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESNASMGetSubdomainVecs_C","SNESNASMGetSubdomainVecs_NASM",
                                            SNESNASMGetSubdomainVecs_NASM);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESNASMSetComputeFinalJacobian_C","SNESNASMSetComputeFinalJacobian_NASM",
+                                           SNESNASMSetComputeFinalJacobian_NASM);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
