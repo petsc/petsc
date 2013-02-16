@@ -1859,7 +1859,7 @@ PetscErrorCode  PCCreate_FieldSplit(PC pc)
   jac->type               = PC_COMPOSITE_MULTIPLICATIVE;
   jac->schurpre           = PC_FIELDSPLIT_SCHUR_PRE_USER; /* Try user preconditioner first, fall back on diagonal */
   jac->schurfactorization = PC_FIELDSPLIT_SCHUR_FACT_FULL;
-  jac->dm_splits          = PETSC_FALSE;
+  jac->dm_splits          = PETSC_TRUE;
 
   pc->data = (void*)jac;
 
