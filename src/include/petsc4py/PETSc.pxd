@@ -71,6 +71,7 @@ ctypedef public api class Object [
     object PyPetscObjectObject,
     ]:
     cdef __weakref__
+    cdef __dummy__
     cdef PetscObject oval
     cdef PetscObject *obj
     cdef object get_attr(self, char name[])

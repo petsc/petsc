@@ -97,7 +97,7 @@ cdef object PetscSetPyObj(PetscObject o, char name[], object p):
         dct = PetscGetPyDict(o, True)
     else:
         dct = PetscGetPyDict(o, False)
-        if dct is None: return 0
+        if dct is None: return None
     cdef str key = bytes2str(name)
     cdef PyObject *d = <PyObject*>dct
     cdef PyObject *k = <PyObject*>key
