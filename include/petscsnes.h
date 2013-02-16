@@ -4,7 +4,8 @@
 #if !defined(__PETSCSNES_H)
 #define __PETSCSNES_H
 #include <petscksp.h>
-#include <petscdmda.h>
+#include <petscdmtypes.h>
+#include <petscdmdatypes.h>
 
 /*S
      SNES - Abstract PETSc object that manages all nonlinear solves

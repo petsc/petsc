@@ -1,4 +1,5 @@
 #include <petsc-private/snesimpl.h>  /*I "petscsnes.h" I*/
+#include <petscdm.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESVISetComputeVariableBounds"

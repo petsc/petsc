@@ -4,6 +4,7 @@
 */
 
 #include <petsc-private/kspimpl.h>   /*I "petscksp.h" I*/
+#include <petscdm.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPComputeExtremeSingularValues"

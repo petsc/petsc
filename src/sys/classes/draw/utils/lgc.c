@@ -1,5 +1,5 @@
 
-#include <../src/sys/classes/draw/utils/lgimpl.h>  /*I   "petscdraw.h"  */
+#include <../src/sys/classes/draw/utils/lgimpl.h>  /*I   "petscdraw.h"  I*/
 PetscClassId PETSC_DRAWLG_CLASSID = 0;
 
 #undef __FUNCT__

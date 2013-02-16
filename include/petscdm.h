@@ -4,20 +4,9 @@
 #if !defined(__PETSCDM_H)
 #define __PETSCDM_H
 #include <petscmat.h>
+#include <petscdmtypes.h>
 
 PETSC_EXTERN PetscErrorCode DMInitializePackage(const char[]);
-/*S
-     DM - Abstract PETSc object that manages an abstract grid object and its interactions with the algebraic solvers
-
-   Level: intermediate
-
-  Concepts: grids, grid refinement
-
-   Notes: The DMDACreate() based object and the DMCompositeCreate() based object are examples of DMs
-
-.seealso:  DMCompositeCreate(), DMDACreate(), DMSetType(), DMType
-S*/
-typedef struct _p_DM* DM;
 
 PETSC_EXTERN PetscClassId DM_CLASSID;
 

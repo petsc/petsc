@@ -8,6 +8,7 @@
 #include <../src/ksp/pc/impls/mg/mgimpl.h>                    /*I "petscksp.h" I*/
 #include <../src/mat/impls/aij/seq/aij.h>
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
+#include <petscdm.h>            /* for DMDestroy(&pc->mg) hack */
 
 EXTERN_C_BEGIN
 /* HAVE_CONFIG_H flag is required by ML include files */

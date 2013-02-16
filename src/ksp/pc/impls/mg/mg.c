@@ -3,7 +3,7 @@
     Defines the multigrid preconditioner interface.
 */
 #include <../src/ksp/pc/impls/mg/mgimpl.h>                    /*I "petscksp.h" I*/
-
+#include <petscdm.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "PCMGMCycle_Private"

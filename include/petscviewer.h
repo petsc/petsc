@@ -6,26 +6,7 @@
 #define __PETSCVIEWER_H
 
 #include <petscsys.h>
-
-#if defined(PETSC_USE_EXTERN_CXX) && defined(__cplusplus)
-extern "C" {
-#endif
-
-/*S
-     PetscViewer - Abstract PETSc object that helps view (in ASCII, binary, graphically etc)
-         other PETSc objects
-
-   Level: beginner
-
-  Concepts: viewing
-
-.seealso:  PetscViewerCreate(), PetscViewerSetType(), PetscViewerType
-S*/
-typedef struct _p_PetscViewer* PetscViewer;
-
-#if defined(PETSC_USE_EXTERN_CXX) && defined(__cplusplus)
-}
-#endif
+#include <petscviewertypes.h>
 
 PETSC_EXTERN PetscClassId PETSC_VIEWER_CLASSID;
 

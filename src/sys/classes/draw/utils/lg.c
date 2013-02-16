@@ -1,5 +1,5 @@
 
-#include <../src/sys/classes/draw/utils/lgimpl.h>  /*I   "petscdraw.h"  */
+#include <../src/sys/classes/draw/utils/lgimpl.h>  /*I   "petscdraw.h"  I*/
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDrawLGAddCommonPoint"
