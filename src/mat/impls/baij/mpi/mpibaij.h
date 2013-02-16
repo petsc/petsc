@@ -2,6 +2,7 @@
 #if !defined(__MPIBAIJ_H)
 #define __MPIBAIJ_H
 #include <../src/mat/impls/baij/seq/baij.h>
+#include <petscctable.h>
 
 #if defined(PETSC_USE_CTABLE)
 #define PETSCTABLE PetscTable

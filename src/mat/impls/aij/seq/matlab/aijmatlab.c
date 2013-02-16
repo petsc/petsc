@@ -4,7 +4,7 @@
 
 */
 #include <../src/mat/impls/aij/seq/aij.h>
-
+#include <petscmatlab.h>
 #include <engine.h>   /* MATLAB include file */
 #include <mex.h>      /* MATLAB include file */
 

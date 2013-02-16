@@ -2,7 +2,7 @@
 /* Contributed by - Mark Adams */
 
 #include <petscsys.h>
-
+#include <petscctable.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscTableCreate"

@@ -543,11 +543,6 @@ PETSC_EXTERN PetscErrorCode MatCreateMPIAIJSumSeqAIJNumeric(Mat,Mat);
 PETSC_EXTERN PetscErrorCode MatMPIAIJGetLocalMat(Mat,MatReuse,Mat*);
 PETSC_EXTERN PetscErrorCode MatMPIAIJGetLocalMatCondensed(Mat,MatReuse,IS*,IS*,Mat*);
 PETSC_EXTERN PetscErrorCode MatGetBrowsOfAcols(Mat,Mat,MatReuse,IS*,IS*,Mat*);
-#if defined (PETSC_USE_CTABLE)
-PETSC_EXTERN PetscErrorCode MatGetCommunicationStructs(Mat, Vec *, PetscTable *, VecScatter *);
-#else
-PETSC_EXTERN PetscErrorCode MatGetCommunicationStructs(Mat, Vec *, PetscInt *[], VecScatter *);
-#endif
 PETSC_EXTERN PetscErrorCode MatGetGhosts(Mat, PetscInt *,const PetscInt *[]);
 
 PETSC_EXTERN PetscErrorCode MatIncreaseOverlap(Mat,PetscInt,IS[],PetscInt);
@@ -1400,7 +1395,7 @@ typedef const char* MatCoarsenType;
 /* linked list for aggregates */
 typedef struct _PetscCDIntNd{
   struct _PetscCDIntNd *next;
-  PetscInt   gid;
+  PetscInt             gid;
 }PetscCDIntNd;
 
 /* only used by node pool */
@@ -1410,19 +1405,14 @@ typedef struct _PetscCDArrNd{
 }PetscCDArrNd;
 
 typedef struct _PetscCoarsenData{
-  /* node pool */
-  PetscCDArrNd  pool_list;
+  PetscCDArrNd pool_list;  /* node pool */
   PetscCDIntNd *new_node;
-  PetscInt   new_left;
-  PetscInt   chk_sz;
+  PetscInt     new_left;
+  PetscInt     chk_sz;
   PetscCDIntNd *extra_nodes;
-  /* Array of lists */
-  PetscCDIntNd **array;
-  PetscInt size;
-  /* cache a Mat for communication data */
-  Mat mat;
-  /* cache IS of removed equations */
-  /* IS removedIS; */
+  PetscCDIntNd **array;  /* Array of lists */
+  PetscInt     size;
+  Mat          mat;  /* cache a Mat for communication data */
 }PetscCoarsenData;
 
 PETSC_EXTERN PetscErrorCode MatCoarsenCreate(MPI_Comm,MatCoarsen*);
@@ -1489,7 +1479,6 @@ PETSC_EXTERN PetscErrorCode MatCoarsenRegisterDestroy(void);
 PETSC_EXTERN PetscErrorCode MatCoarsenView(MatCoarsen,PetscViewer);
 PETSC_EXTERN PetscErrorCode MatCoarsenSetFromOptions(MatCoarsen);
 PETSC_EXTERN PetscErrorCode MatCoarsenGetType(MatCoarsen,MatCoarsenType*);
-
 
 PETSC_EXTERN PetscErrorCode MatMeshToVertexGraph(Mat,PetscInt,Mat*);
 PETSC_EXTERN PetscErrorCode MatMeshToCellGraph(Mat,PetscInt,Mat*);
@@ -1788,7 +1777,6 @@ PETSC_EXTERN PetscErrorCode MatMFFDRegisterDestroy(void);
 PETSC_EXTERN PetscErrorCode MatMFFDDSSetUmin(Mat,PetscReal);
 PETSC_EXTERN PetscErrorCode MatMFFDWPSetComputeNormU(Mat,PetscBool );
 
-
 PETSC_EXTERN PetscErrorCode PetscViewerMathematicaPutMatrix(PetscViewer, PetscInt, PetscInt, PetscReal *);
 PETSC_EXTERN PetscErrorCode PetscViewerMathematicaPutCSRMatrix(PetscViewer, PetscInt, PetscInt, PetscInt *, PetscInt *, PetscReal *);
 
@@ -1931,7 +1919,6 @@ PETSC_EXTERN PetscErrorCode MatNestGetSubMat(Mat,PetscInt,PetscInt,Mat*);
 PETSC_EXTERN PetscErrorCode MatNestSetVecType(Mat,VecType);
 PETSC_EXTERN PetscErrorCode MatNestSetSubMats(Mat,PetscInt,const IS[],PetscInt,const IS[],const Mat[]);
 PETSC_EXTERN PetscErrorCode MatNestSetSubMat(Mat,PetscInt,PetscInt,Mat);
-
 
 PETSC_EXTERN PetscErrorCode MatChop(Mat,PetscReal);
 

@@ -1206,18 +1206,6 @@ typedef struct _p_PetscObject* PetscObject;
 S*/
 typedef struct _n_PetscFunctionList *PetscFunctionList;
 
-/*S
-     PetscOpFunctionList - Linked list of operations on objects, implemented by functions, possibly stored in dynamic libraries,
-                    accessed by string op name together with declared string argument type names.
-
-   Level: advanced
-
-    Notes: This is used to implement double dispatch and multiple dispatch based on the type names of the function arguments
-
-.seealso:  PetscFunctionList, PetscOpFunctionListAdd(), PetscOpFunctionListFind(), PetscOpFunctionListDestroy()
-S*/
-typedef struct _n_PetscOpFunctionList *PetscOpFunctionList;
-
 /*E
   PetscFileMode - Access mode for a file.
 
@@ -1441,16 +1429,6 @@ PETSC_EXTERN PetscErrorCode PetscFunctionListDuplicate(PetscFunctionList,PetscFu
 PETSC_EXTERN PetscErrorCode PetscFunctionListView(PetscFunctionList,PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscFunctionListConcat(const char [],const char [],char []);
 PETSC_EXTERN PetscErrorCode PetscFunctionListGet(PetscFunctionList,const char ***,int*);
-
-/*
-    Multiple dispatch operation function lists. Lists of names of routines with corresponding
-    argument type names with function pointers or in dynamic link libraries that will be loaded
-    as needed.  Search on the op name and argument type names.
-*/
-PETSC_EXTERN PetscErrorCode PetscOpFunctionListAdd(MPI_Comm, PetscOpFunctionList*,const char[],PetscVoidFunction, const char[], PetscInt, char*[]);
-PETSC_EXTERN PetscErrorCode PetscOpFunctionListDestroy(PetscOpFunctionList*);
-PETSC_EXTERN PetscErrorCode PetscOpFunctionListFind(MPI_Comm, PetscOpFunctionList, PetscVoidFunction*, const char[], PetscInt, char*[]);
-PETSC_EXTERN PetscErrorCode PetscOpFunctionListView(PetscOpFunctionList,PetscViewer);
 
 /*S
      PetscDLLibrary - Linked list of dynamics libraries to search for functions
@@ -1788,11 +1766,6 @@ M*/
     const char *_p = (const char*)(a),*_end = (const char*)((a)+(n));   \
     for ( ; _p < _end; _p += PETSC_LEVEL1_DCACHE_LINESIZE) PETSC_Prefetch(_p,(rw),(t)); \
   } while (0)
-
-/*
-    Allows accessing MATLAB Engine
-*/
-#include <petscmatlab.h>
 
 /*
       Determine if some of the kernel computation routines use
@@ -2410,9 +2383,6 @@ PETSC_EXTERN PetscErrorCode PetscSubcommDestroy(PetscSubcomm*);
 PETSC_EXTERN PetscErrorCode PetscSubcommSetNumber(PetscSubcomm,PetscInt);
 PETSC_EXTERN PetscErrorCode PetscSubcommSetType(PetscSubcomm,PetscSubcommType);
 PETSC_EXTERN PetscErrorCode PetscSubcommSetTypeGeneral(PetscSubcomm,PetscMPIInt,PetscMPIInt,PetscMPIInt);
-
-#include <petscctable.h>
-
 
 /* Reset __FUNCT__ in case the user does not define it themselves */
 #undef __FUNCT__

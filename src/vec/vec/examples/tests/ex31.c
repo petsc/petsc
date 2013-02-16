@@ -1,6 +1,7 @@
 static const char help[] = "Demonstrates PetscMatlabEngineXXX()\n";
 
 #include <petscvec.h>
+#include <petscmatlab.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

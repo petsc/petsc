@@ -49,6 +49,7 @@ T*/
 */
 #include <petscdmda.h>
 #include <petscsnes.h>
+#include <petscmatlab.h>
 
 /*
    User-defined application context - contains data needed by the

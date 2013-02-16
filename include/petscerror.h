@@ -365,7 +365,6 @@ PETSC_EXTERN PetscErrorCode PetscDefaultSignalHandler(int,void*);
 PETSC_EXTERN PetscErrorCode PetscPushSignalHandler(PetscErrorCode (*)(int,void *),void*);
 PETSC_EXTERN PetscErrorCode PetscPopSignalHandler(void);
 
-
 /*MC
     PetscErrorPrintf - Prints error messages.
 

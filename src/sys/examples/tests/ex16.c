@@ -2,6 +2,7 @@
 static char help[] = "Demonstrates PetscMatlabEngineXXX()\n";
 
 #include <petscsys.h>
+#include <petscmatlab.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
