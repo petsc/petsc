@@ -25,10 +25,10 @@ static PetscErrorCode DMDAVTKWriteAll_VTS(DM da,PetscViewer viewer)
   PetscErrorCode           ierr;
 
   PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
 #if defined(PETSC_USE_COMPLEX)
   SETERRQ(comm,PETSC_ERR_SUP,"Complex values not supported");
 #endif
-  ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,&dim, &mx,&my,&mz, 0,0,0, &bs,0,0,0,0,0);CHKERRQ(ierr);
