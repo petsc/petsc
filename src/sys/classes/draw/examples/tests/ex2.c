@@ -2,6 +2,7 @@
 static char help[] = "Demonstrates use of color map\n";
 
 #include <petscsys.h>
+#include <petscdraw.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

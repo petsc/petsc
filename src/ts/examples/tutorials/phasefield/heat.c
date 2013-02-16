@@ -27,7 +27,7 @@ to generate binaryoutput then do mv binaryoutput InitialSolution.heat to obtain 
 */
 #include <petscdmda.h>
 #include <petscts.h>
-
+#include <petscdraw.h>
 
 /*
    User-defined routines

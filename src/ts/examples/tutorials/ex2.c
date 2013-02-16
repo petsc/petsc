@@ -43,6 +43,7 @@ timestepping.  Runtime options include:\n\
 */
 #include <petscts.h>
 #include <petscdmda.h>
+#include <petscdraw.h>
 
 /*
    User-defined application context - contains data needed by the

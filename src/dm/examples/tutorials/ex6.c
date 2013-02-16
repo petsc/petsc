@@ -2,6 +2,7 @@
 static char help[] = "Demonstrates using 3 DMDA's to manage a slightly non-trivial grid";
 
 #include <petscdmda.h>
+#include <petscdraw.h>
 
 struct _p_FA {
   MPI_Comm   comm[3];

@@ -2,6 +2,7 @@
 static char help[] = "Tests repeatedly setting a window type.\n";
 
 #include <petscsys.h>
+#include <petscdraw.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

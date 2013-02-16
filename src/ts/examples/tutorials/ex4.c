@@ -58,6 +58,7 @@ Input parameters include:\n\
 
 #include <petscdmda.h>
 #include <petscts.h>
+#include <petscdraw.h>
 
 /*
    User-defined application context - contains data needed by the

@@ -50,6 +50,7 @@ Evolve the Cahn-Hillard equations: logarithmic +  double obstacle (never shrinks
 */
 #include <petscdmda.h>
 #include <petscts.h>
+#include <petscdraw.h>
 
 extern PetscErrorCode FormFunction(TS,PetscReal,Vec,Vec,void*),FormInitialSolution(DM,Vec),MyMonitor(TS,PetscInt,PetscReal,Vec,void*),MyDestroy(void**),FormJacobian(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*,void*);
 typedef struct {PetscBool cahnhillard;PetscBool degenerate;PetscReal kappa;PetscInt energy;PetscReal tol;PetscReal theta,theta_c;PetscInt truncation;PetscBool netforce; PetscDrawViewPorts *ports;} UserCtx;

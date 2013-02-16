@@ -158,7 +158,8 @@ M*/
 $  TS_EXACTFINALTIME_STEPOVER    - Don't do anything if final time is exceeded
 $  TS_EXACTFINALTIME_INTERPOLATE - Interpolate back to final time
 $  TS_EXACTFINALTIME_MATCHSTEP - Adapt final time step to match the final time
-.seealso: TSGetConvergedReason()
+.seealso: TSGetConvergedReason(), TSSetExactFinalTime()
+
 E*/
 typedef enum {TS_EXACTFINALTIME_STEPOVER=0,TS_EXACTFINALTIME_INTERPOLATE=1,TS_EXACTFINALTIME_MATCHSTEP=2} TSExactFinalTimeOption;
 PETSC_EXTERN const char *const TSExactFinalTimeOptions[];
