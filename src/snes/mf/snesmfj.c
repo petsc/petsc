@@ -1,5 +1,6 @@
 
 #include <petsc-private/snesimpl.h>  /*I  "petscsnes.h" I*/
+#include <petscdm.h>                 /*I  "petscdm.h"   I*/
 #include <../src/mat/impls/mffd/mffdimpl.h>
 #include <petsc-private/matimpl.h>
 

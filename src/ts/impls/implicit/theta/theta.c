@@ -4,6 +4,7 @@
 #define PETSC_DESIRE_COMPLEX
 #include <petsc-private/tsimpl.h>                /*I   "petscts.h"   I*/
 #include <petscsnesfas.h>
+#include <petscdm.h>
 
 typedef struct {
   Vec          X,Xdot;                   /* Storage for one stage */

@@ -1,6 +1,7 @@
 
 #include <petsc-private/tsimpl.h>        /*I "petscts.h"  I*/
 #include <petscdmshell.h>
+#include <petscdmda.h>
 
 /* Logging support */
 PetscClassId  TS_CLASSID, DMTS_CLASSID;

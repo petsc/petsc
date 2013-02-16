@@ -4,6 +4,7 @@
 */
 
 #include <petsc-private/pcimpl.h>      /*I "petscpc.h" I*/
+#include <petscdm.h>
 
 PetscBool PCRegisterAllCalled = PETSC_FALSE;
 /*

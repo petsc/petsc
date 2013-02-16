@@ -10,6 +10,7 @@
 
 */
 #include <petsc-private/tsimpl.h>                /*I   "petscts.h"   I*/
+#include <petscdm.h>
 
 static TSARKIMEXType TSARKIMEXDefault = TSARKIMEX3;
 static PetscBool     TSARKIMEXRegisterAllCalled;

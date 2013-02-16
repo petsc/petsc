@@ -11,6 +11,7 @@
        n_local = maximum over all processors of n_local_true
 */
 #include <petsc-private/pcimpl.h>     /*I "petscpc.h" I*/
+#include <petscdm.h>
 
 typedef struct {
   PetscInt   n, n_local, n_local_true;

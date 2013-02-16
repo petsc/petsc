@@ -1,5 +1,6 @@
 
 #include <petsc-private/characteristicimpl.h> /*I "petsccharacteristic.h" I*/
+#include <petscdmda.h>
 
 PetscClassId  CHARACTERISTIC_CLASSID;
 PetscLogEvent CHARACTERISTIC_SetUp, CHARACTERISTIC_Solve, CHARACTERISTIC_QueueSetup, CHARACTERISTIC_DAUpdate;
