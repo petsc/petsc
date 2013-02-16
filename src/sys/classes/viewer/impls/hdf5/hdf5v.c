@@ -1,5 +1,5 @@
 #include <petsc-private/viewerimpl.h>    /*I   "petscsys.h"   I*/
-#include <hdf5.h>
+#include <petscviewerhdf5.h>    /*I   "petscviewerhdf5.h"   I*/
 
 typedef struct GroupList {
   const char       *name;
