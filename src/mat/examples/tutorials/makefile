@@ -4,7 +4,7 @@ FFLAGS	        =
 CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR          = src/mat/examples/tutorials/
-EXAMPLESC       = ex1.c ex2.c ex4.c ex5.c ex8.c ex9.c ex10.c ex11.c ex12.c ex13.c ex14.c ex15.c ex16.c ex17.c
+EXAMPLESC       = ex1.c ex2.c ex4.c ex5.c ex8.c ex9.c ex10.c ex11.c ex12.c ex13.c ex15.c ex16.c ex17.c
 EXAMPLESF       =
 MANSEC          = Mat
 
@@ -109,9 +109,6 @@ runex11:
 runex13:
 	-@${MPIEXEC}  ./ex13
 
-NP=1
-runex14:
-	-@${MPIEXEC}  -n ${NP} ./ex14 ${ARGS}
 
 runex15:
 	-@${MPIEXEC} -n 3 ./ex15 -mat_partitioning_type parmetis > ex15_1.tmp 2>&1;   \
