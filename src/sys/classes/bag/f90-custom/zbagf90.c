@@ -2,6 +2,7 @@
 #include <petsc-private/fortranimpl.h>
 #include <petscbag.h>
 #include <../src/sys/classes/bag/bagimpl.h>
+#include <petscviewer.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define petscbagdestroy_ PETSCBAGDESTROY

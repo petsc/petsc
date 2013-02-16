@@ -11,6 +11,7 @@
 */
 
 #include <petsc-private/petscimpl.h>        /*I  "petscsys.h"   I*/
+#include <petscviewer.h>
 #include <ctype.h>
 #if defined(PETSC_HAVE_MALLOC_H)
 #include <malloc.h>

@@ -1,6 +1,7 @@
 static char help[] = "Tests PetscHeapCreate)_\n\n";
 
 #include <../src/mat/utils/petscheap.h>
+#include <petscviewer.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

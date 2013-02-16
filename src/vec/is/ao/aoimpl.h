@@ -7,6 +7,7 @@
 
 #include <petscao.h>
 #include <petsc-private/petscimpl.h>
+#include <petscviewer.h>
 
 /*
     Defines the abstract AO operations

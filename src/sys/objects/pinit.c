@@ -4,6 +4,7 @@
 */
 #define PETSC_DESIRE_COMPLEX
 #include <petsc-private/petscimpl.h>        /*I  "petscsys.h"   I*/
+#include <petscviewer.h>
 
 #if defined(PETSC_HAVE_CUDA)
 #include <cublas.h>

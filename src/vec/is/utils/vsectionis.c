@@ -3,6 +3,7 @@
 */
 
 #include <petsc-private/isimpl.h>   /*I  "petscvec.h"   I*/
+#include <petscviewer.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSectionCreate"

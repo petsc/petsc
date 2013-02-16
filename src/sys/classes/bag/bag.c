@@ -1,6 +1,6 @@
 
 #include <../src/sys/classes/bag/bagimpl.h>     /*I  "petscbag.h"   I*/
-
+#include <petscviewer.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscBagRegister_Private"

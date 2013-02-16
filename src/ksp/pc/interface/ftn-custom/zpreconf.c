@@ -1,5 +1,6 @@
 #include <petsc-private/fortranimpl.h>
 #include <petscpc.h>
+#include <petscviewer.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define pcview_                    PCVIEW

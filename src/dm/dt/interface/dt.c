@@ -3,6 +3,7 @@
 #include <petscdt.h>            /*I "petscdt.h" I*/
 #include <petscblaslapack.h>
 #include <petsc-private/petscimpl.h>
+#include <petscviewer.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDTLegendreEval"

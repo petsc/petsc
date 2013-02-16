@@ -3,6 +3,7 @@
       Code that allows one to set the error handlers
 */
 #include <petsc-private/petscimpl.h>           /*I "petscsys.h" I*/
+#include <petscviewer.h>
 
 typedef struct _EH *EH;
 struct _EH {

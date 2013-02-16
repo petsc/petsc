@@ -7,7 +7,7 @@
 #ifndef __PETSCVEC_H
 #define __PETSCVEC_H
 #include <petscis.h>
-
+#include <petscviewer.h>
 
 /*S
      Vec - Abstract PETSc vector object

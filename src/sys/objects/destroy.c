@@ -3,7 +3,7 @@
      Provides utility routines for manulating any type of PETSc object.
 */
 #include <petsc-private/petscimpl.h>  /*I   "petscsys.h"    I*/
-
+#include <petscviewer.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscComposedQuantitiesDestroy"

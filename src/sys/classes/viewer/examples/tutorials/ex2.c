@@ -1,7 +1,7 @@
 
 static char help[] = "Demonstrates PetscOptionsGetViewer().\n\n";
 
-#include <petscsys.h>
+#include <petscviewer.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

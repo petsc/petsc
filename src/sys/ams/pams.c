@@ -1,5 +1,6 @@
 
 #include <petsc-private/petscimpl.h>        /*I    "petscsys.h"   I*/
+#include <petscviewer.h>
 
 /*
      If true then every PETSc object will be published with the AMS

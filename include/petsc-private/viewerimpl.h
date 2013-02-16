@@ -3,6 +3,7 @@
 #define _VIEWERIMPL
 
 #include <petsc-private/petscimpl.h>
+#include <petscviewer.h>
 
 struct _PetscViewerOps {
    PetscErrorCode (*destroy)(PetscViewer);

@@ -3,6 +3,7 @@
 #define __PETSCBT_H
 
 #include <petscconf.h>
+#include <petscviewer.h>
 
 /*S
      PetscBT - PETSc bitarrays

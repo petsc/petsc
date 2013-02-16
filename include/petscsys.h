@@ -1316,7 +1316,7 @@ PETSC_EXTERN PetscErrorCode PetscObjectProcessOptionsHandlers(PetscObject);
 PETSC_EXTERN PetscErrorCode PetscObjectDestroyOptionsHandlers(PetscObject);
 PETSC_EXTERN PetscErrorCode PetscObjectsGetGlobalNumbering(MPI_Comm,PetscInt,PetscObject*,PetscInt*,PetscInt*);
 
-#include <petscviewer.h>
+#include <petscviewertypes.h>
 #include <petscoptions.h>
 
 PETSC_EXTERN PetscErrorCode PetscMemoryShowUsage(PetscViewer,const char[]);

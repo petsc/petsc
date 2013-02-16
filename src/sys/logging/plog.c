@@ -10,6 +10,7 @@
 */
 #include <petsc-private/logimpl.h>        /*I    "petscsys.h"   I*/
 #include <petsctime.h>
+#include <petscviewer.h>
 #if defined(PETSC_HAVE_MPE)
 #include <mpe.h>
 #endif

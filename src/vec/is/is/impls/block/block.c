@@ -5,6 +5,7 @@
 */
 #include <petsc-private/isimpl.h>               /*I  "petscis.h"     I*/
 #include <petscvec.h>
+#include <petscviewer.h>
 
 typedef struct {
   PetscInt  N,n;                  /* number of blocks */

@@ -10,6 +10,7 @@ static char help[] = "Demonstrates using ISLocalToGlobalMappings.\n\n";
 T*/
 
 #include <petscis.h>
+#include <petscviewer.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

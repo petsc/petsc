@@ -5,6 +5,7 @@
 static char help[] = "Tests IS general routines.\n\n";
 
 #include <petscis.h>
+#include <petscviewer.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

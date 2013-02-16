@@ -1,5 +1,6 @@
 #include <../src/ts/characteristic/impls/da/slda.h>       /*I  "petsccharacteristic.h"  I*/
 #include <petscdmda.h>
+#include <petscviewer.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "CharacteristicView_DA"

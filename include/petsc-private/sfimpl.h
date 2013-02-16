@@ -3,6 +3,7 @@
 
 #include <petscsf.h>
 #include <petsc-private/petscimpl.h>
+#include <petscviewer.h>
 
 struct _PetscSFOps {
   PetscErrorCode (*Reset)(PetscSF);

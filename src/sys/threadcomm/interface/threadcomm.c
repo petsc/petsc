@@ -1,4 +1,5 @@
 #include <petsc-private/threadcommimpl.h>      /*I "petscthreadcomm.h" I*/
+#include <petscviewer.h>
 #if defined(PETSC_HAVE_MALLOC_H)
 #include <malloc.h>
 #endif
@@ -74,7 +75,7 @@ PetscErrorCode PetscGetThreadCommWorld(PetscThreadComm *tcommp)
   PetscErrorCode ierr;
   PetscFunctionBegin;
   if (!PETSC_THREAD_COMM_WORLD) {
-    ierr = PetscThreadCommWorldInitialize();
+    ierr = PetscThreadCommWorldInitialize();CHKERRQ(ierr);
   }
   *tcommp = PETSC_THREAD_COMM_WORLD;
   PetscFunctionReturn(0);

@@ -9,6 +9,7 @@ T*/
 
 
 #include <petscsnes.h>
+#include <petscdmda.h>
 
 /*
    User-defined application context - contains data needed by the

@@ -16,6 +16,7 @@ T*/
   includes petscsys.h.
 */
 #include <petscis.h>
+#include <petscviewer.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

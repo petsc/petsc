@@ -4,6 +4,7 @@
   logging of memory usage and some error checking
 */
 #include <petscsys.h>           /*I "petscsys.h" I*/
+#include <petscviewer.h>
 #if defined(PETSC_HAVE_MALLOC_H)
 #include <malloc.h>
 #endif

@@ -4,6 +4,7 @@
     dynamic libraries for many of the PETSc objects (including, e.g., KSP and PC).
 */
 #include <petsc-private/petscimpl.h>           /*I "petscsys.h" I*/
+#include <petscviewer.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscFunctionListGetPathAndFunction"
