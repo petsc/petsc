@@ -189,16 +189,19 @@ PetscErrorCode PetscThreadCommStackDestroy_kernel(PetscInt trank)
   return 0;
 }
 
-/* Destroy stack frames for threads other than main thread */
 #undef __FUNCT__
 #define __FUNCT__ "PetscThreadCommStackDestroy"
-/*  PetscFunctionBegin;  so that make rule checkbadPetscFunctionBegin works */
+/* Destroy stack frames for threads other than main thread
+ *
+ * The keyval may have been destroyed by the time this function is called, thus we must call
+ * PetscThreadCommRunKernel0_Private so that we never reference an MPI_Comm.
+ */
 PetscErrorCode  PetscThreadCommStackDestroy(void)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  ierr = PetscThreadCommRunKernel0(PETSC_COMM_SELF,(PetscThreadKernel)PetscThreadCommStackDestroy_kernel);CHKERRQ(ierr);
-  ierr = PetscThreadCommBarrier(PETSC_COMM_SELF);CHKERRQ(ierr);
+  ierr = PetscThreadCommRunKernel0_Private(PETSC_THREAD_COMM_WORLD,(PetscThreadKernel)PetscThreadCommStackDestroy_kernel);CHKERRQ(ierr);
+  PETSC_THREAD_COMM_WORLD = NULL;
   PetscFunctionReturn(0);
   return 0;
 }
