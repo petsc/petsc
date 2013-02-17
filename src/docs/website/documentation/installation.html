@@ -886,10 +886,9 @@
           <li>make</li>
           <li>make install DESTDIR=/tmp/petsc-pkg</li>
           <li>untar petsc tar ball</li>
+          <li>./configure --prefix=/opt/petsc/petsc-3.3-p0-openmpi --with-mpi-dir=/opt/openmpi</li>
           <li>make</li>
           <li>make install DESTDIR=/tmp/petsc-pkg</li>
-          <li>./configure --prefix=/opt/petsc/petsc-3.3-p0-openmpi --with-mpi-dir=/opt/openmpi</li>
-          <li>[build/install]
         </ul>
 
         </p>
@@ -903,7 +902,8 @@
         <h3><a name="pkgconfig">PETSc ./configure automatically generates Pkgconfig and module files for each install</a></h3>
 
        These can be found in ${PETSC_DIR}/${PETSC_ARCH}/lib/pkgconfig/PETSc.pc and ${PETSC_DIR}/${PETSC_ARCH}/lib/modules/${PETSC_VERSION}-${PETSC_ARCH}.
-        The module file may need to be edited for your particular system. Note that if --prefix is used then $PETSC_ARCH is not included in the above directories.
+        The module file may need to be edited for your particular system. Note that if --prefix is used then $PETSC_ARCH is not included in the above directories
+        nor is -${PETSC_ARCH} included in the module file name.
 
         </p>
 
