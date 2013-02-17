@@ -32,7 +32,7 @@ cdef class DMDA(DM):
     def create(self, dim=None, dof=None,
                sizes=None, proc_sizes=None, boundary_type=None,
                stencil_type=None, stencil_width=None,
-               bint setup=True, comm=None):
+               bint setup=True, ownership_ranges=None, comm=None):
         #
         cdef object arg = None
         try: arg = tuple(dim)
@@ -66,9 +66,8 @@ cdef class DMDA(DM):
         if ndim==PETSC_DECIDE: ndim = gdim
         if ndof==PETSC_DECIDE: ndof = 1
         # vertex distribution
-        lx = NULL # XXX implement!
-        ly = NULL # XXX implement!
-        lz = NULL # XXX implement!
+        if ownership_ranges is not None:
+            ranges_mem = asOwnershipRanges(ownership_ranges, &lx, &ly, &lz)
         # periodicity, stencil type & width
         if boundary_type is not None:
             asBoundary(boundary_type, &btx, &bty, &btz)
@@ -302,6 +301,18 @@ cdef class DMDA(DM):
         return ((toInt(x), toInt(x+m)),
                 (toInt(y), toInt(y+n)),
                 (toInt(z), toInt(z+p)))[:<Py_ssize_t>dim]
+
+    def getOwnershipRanges(self):
+        cdef PetscInt dim=0, m, n, p
+        cdef const_PetscInt *lx = NULL, *ly = NULL, *lz = NULL
+        CHKERR( DMDAGetInfo(self.dm, &dim,
+                            NULL, NULL, NULL,
+                            &m, &n, &p,
+                            NULL, NULL,
+                            NULL, NULL, NULL,
+                            NULL) )
+        CHKERR( DMDAGetOwnershipRanges(self.dm, &lx, &ly, &lz) )
+        return toOwnershipRanges(dim, m, n, p, lx, ly, lz)
 
     def getCorners(self):
         cdef PetscInt dim=0, x=0, y=0, z=0, m=0, n=0, p=0

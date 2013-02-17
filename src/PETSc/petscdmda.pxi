@@ -202,6 +202,31 @@ cdef inline tuple toDims(PetscInt dim,
         elif dim == 2: return (toInt(M), toInt(N))
         elif dim == 3: return (toInt(M), toInt(N), toInt(P))
 
+cdef inline tuple asOwnershipRanges(object ownership_ranges,
+                                   PetscInt **_x,
+                                   PetscInt **_y,
+                                   PetscInt **_z):
+    # Returns tuple controlling lifetime of pointers
+    cdef PetscInt dim, nlx, nly, nlz
+    ranges = tuple(ownership_ranges)
+    dim = len(ranges)
+    return (iarray_i(ranges[0], &nlx, _x),
+            iarray_i(ranges[1], &nly, _y),
+            iarray_i(ranges[1], &nlz, _z))
+
+cdef inline tuple toOwnershipRanges(PetscInt dim,
+                                    PetscInt m, PetscInt n, PetscInt p,
+                                    const_PetscInt *lx,
+                                    const_PetscInt *ly,
+                                    const_PetscInt *lz):
+    # Returns tuple of arrays containing ownership ranges as Python arrays
+    ranges = [array_i(m, lx)]
+    if dim > 1:
+        ranges.append(array_i(n, ly))
+    if dim > 2:
+        ranges.append(array_i(p, ly))
+    return tuple(ranges)
+
 # --------------------------------------------------------------------
 
 cdef class _DMDA_Vec_array(object):

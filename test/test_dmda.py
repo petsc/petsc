@@ -63,6 +63,14 @@ class BaseTestDA(object):
             self.assertEqual(s, starts[i])
             self.assertEqual(e-s, lsizes[i])
 
+    def testOwnershipRanges(self):
+        dim = self.da.getDim()
+        ownership_ranges = self.da.getOwnershipRanges()
+        procsizes = self.da.getProcSizes()
+        self.assertEqual(len(procsizes), len(ownership_ranges))
+        for i,m in enumerate(procsizes):
+            self.assertEqual(m, len(ownership_ranges[i]))
+
     def testCoordinates(self):
         self.da.setUniformCoordinates(0,1,0,1,0,1)
         #
