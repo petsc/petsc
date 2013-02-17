@@ -394,6 +394,8 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLayoutFindOwnerIndex(PetscLayout map,Pet
   PetscFunctionReturn(0);
 }
 
+PETSC_EXTERN PetscClassId PETSC_SECTION_CLASSID;
+
 /*S
   PetscSection - Mapping from integers in a designated range to contiguous sets of integers.
 
@@ -408,7 +410,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLayoutFindOwnerIndex(PetscLayout map,Pet
 
 .seealso:  PetscSectionCreate(), PetscSectionDestroy()
 S*/
-typedef struct _n_PetscSection *PetscSection;
+typedef struct _p_PetscSection *PetscSection;
 PETSC_EXTERN PetscErrorCode PetscSectionCreate(MPI_Comm,PetscSection*);
 PETSC_EXTERN PetscErrorCode PetscSectionClone(PetscSection, PetscSection*);
 PETSC_EXTERN PetscErrorCode PetscSectionGetNumFields(PetscSection, PetscInt *);

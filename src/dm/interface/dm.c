@@ -2713,10 +2713,11 @@ PetscErrorCode DMSetDefaultSection(DM dm, PetscSection section)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  ierr               = PetscSectionDestroy(&dm->defaultSection);CHKERRQ(ierr);
-  ierr               = PetscSectionDestroy(&dm->defaultGlobalSection);CHKERRQ(ierr);
+  PetscValidHeaderSpecific(section,PETSC_SECTION_CLASSID,2);
+  ierr = PetscObjectReference((PetscObject)section);CHKERRQ(ierr);
+  ierr = PetscSectionDestroy(&dm->defaultSection);CHKERRQ(ierr);
   dm->defaultSection = section;
-  ierr               = PetscSectionGetNumFields(dm->defaultSection, &numFields);CHKERRQ(ierr);
+  ierr = PetscSectionGetNumFields(dm->defaultSection, &numFields);CHKERRQ(ierr);
   if (numFields) {
     ierr = DMSetNumFields(dm, numFields);CHKERRQ(ierr);
     for (f = 0; f < numFields; ++f) {
@@ -2726,6 +2727,8 @@ PetscErrorCode DMSetDefaultSection(DM dm, PetscSection section)
       ierr = PetscObjectSetName(dm->fields[f], name);CHKERRQ(ierr);
     }
   }
+  /* The global section will be rebuilt in the next call to DMGetDefaultGlobalSection(). */
+  ierr = PetscSectionDestroy(&dm->defaultGlobalSection);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2785,8 +2788,9 @@ PetscErrorCode DMSetDefaultGlobalSection(DM dm, PetscSection section)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidHeaderSpecific(section,PETSC_SECTION_CLASSID,2);
+  ierr = PetscObjectReference((PetscObject)section);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&dm->defaultGlobalSection);CHKERRQ(ierr);
-
   dm->defaultGlobalSection = section;
   PetscFunctionReturn(0);
 }

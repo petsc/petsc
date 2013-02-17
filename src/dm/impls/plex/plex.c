@@ -1887,6 +1887,7 @@ PetscErrorCode DMCreateSubDM_Plex(DM dm, PetscInt numFields, PetscInt fields[], 
     ierr = DMPlexClone(dm, subdm);CHKERRQ(ierr);
     ierr = PetscSectionCreateSubsection(section, numFields, fields, &subsection);CHKERRQ(ierr);
     ierr = DMSetDefaultSection(*subdm, subsection);CHKERRQ(ierr);
+    ierr = PetscSectionDestroy(&subsection);CHKERRQ(ierr);
     for (f = 0; f < numFields; ++f) {
       (*subdm)->nullspaceConstructors[f] = dm->nullspaceConstructors[fields[f]];
       if ((*subdm)->nullspaceConstructors[f]) {
@@ -3620,6 +3621,7 @@ PetscErrorCode DMPlexShiftCoordinates_Private(DM dm, PetscInt depthShift[], DM d
   ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
   ierr = VecRestoreArray(newCoordinates, &newCoords);CHKERRQ(ierr);
   ierr = VecDestroy(&newCoordinates);CHKERRQ(ierr);
+  ierr = PetscSectionDestroy(&newCoordSection);CHKERRQ(ierr);
   ierr = PetscFree(depthEnd);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -6978,6 +6980,7 @@ PetscErrorCode CellRefinerSetCoordinates(CellRefiner refiner, DM dm, PetscInt de
     ierr = VecRestoreArray(coordinatesNew, &coordsNew);CHKERRQ(ierr);
     ierr = DMSetCoordinatesLocal(rdm, coordinatesNew);CHKERRQ(ierr);
     ierr = VecDestroy(&coordinatesNew);CHKERRQ(ierr);
+    ierr = PetscSectionDestroy(&coordSectionNew);CHKERRQ(ierr);
     break;
   default:
     SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unknown cell refiner %d", refiner);
@@ -8078,6 +8081,7 @@ PetscErrorCode DMCreateCoordinateDM_Plex(DM dm, DM *cdm)
   ierr = DMPlexClone(dm, cdm);CHKERRQ(ierr);
   ierr = PetscSectionCreate(PetscObjectComm((PetscObject)dm), &section);CHKERRQ(ierr);
   ierr = DMSetDefaultSection(*cdm, section);CHKERRQ(ierr);
+  ierr = PetscSectionDestroy(&section);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -8134,7 +8138,8 @@ PetscErrorCode DMPlexSetCoordinateSection(DM dm, PetscSection section)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidHeaderSpecific(section,PETSC_SECTION_CLASSID,2);
   ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
   ierr = DMSetDefaultSection(cdm, section);CHKERRQ(ierr);
   PetscFunctionReturn(0);

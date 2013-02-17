@@ -5,6 +5,8 @@
 #include <petsc-private/isimpl.h>   /*I  "petscvec.h"   I*/
 #include <petscviewer.h>
 
+PetscClassId PETSC_SECTION_CLASSID;
+
 #undef __FUNCT__
 #define __FUNCT__ "PetscSectionCreate"
 /*@
@@ -36,7 +38,12 @@ PetscErrorCode PetscSectionCreate(MPI_Comm comm, PetscSection *s)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscNew(struct _n_PetscSection, s);CHKERRQ(ierr);
+  PetscValidPointer(s,2);
+#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
+  ierr = ISInitializePackage(NULL);CHKERRQ(ierr);
+#endif
+
+  ierr = PetscHeaderCreate(*s,_p_PetscSection,int,PETSC_SECTION_CLASSID,"PetscSection","Section","IS",comm,PetscSectionDestroy,PetscSectionView);CHKERRQ(ierr);
 
   (*s)->atlasLayout.comm   = comm;
   (*s)->atlasLayout.pStart = -1;
@@ -1410,17 +1417,19 @@ PetscErrorCode PetscSectionReset(PetscSection s)
 
 .seealso: PetscSection, PetscSectionCreate()
 @*/
-PetscErrorCode  PetscSectionDestroy(PetscSection *s)
+PetscErrorCode PetscSectionDestroy(PetscSection *s)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (!*s) PetscFunctionReturn(0);
-  if (!(*s)->refcnt--) {
-    ierr = PetscSectionReset(*s);CHKERRQ(ierr);
-    ierr = PetscFree(*s);CHKERRQ(ierr);
+  PetscValidHeaderSpecific((*s),PETSC_SECTION_CLASSID,1);
+  if (--((PetscObject)(*s))->refct > 0) {
+    *s = NULL;
+    PetscFunctionReturn(0);
   }
-  *s = NULL;
+  ierr = PetscSectionReset(*s);CHKERRQ(ierr);
+  ierr = PetscHeaderDestroy(s);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

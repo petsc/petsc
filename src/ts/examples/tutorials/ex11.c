@@ -914,6 +914,7 @@ PetscErrorCode SplitFaces(DM *dmSplit, const char labelName[], User user)
   }
   ierr = PetscSectionSetUp(newCoordSection);CHKERRQ(ierr);
   ierr = DMPlexSetCoordinateSection(sdm, newCoordSection);CHKERRQ(ierr);
+  ierr = PetscSectionDestroy(&newCoordSection);CHKERRQ(ierr); /* relinquish our reference */
   ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
   ierr = DMSetCoordinatesLocal(sdm, coordinates);CHKERRQ(ierr);
   /* Convert labels */
@@ -1207,7 +1208,6 @@ PetscErrorCode ConstructGeometry(DM dm, Vec *facegeom, Vec *cellgeom, User user)
 
   /* Make cell centroids and volumes */
   ierr = DMPlexClone(dm, &dmCell);CHKERRQ(ierr);
-  ++coordSection->refcnt;
   ierr = DMPlexSetCoordinateSection(dmCell, coordSection);CHKERRQ(ierr);
   ierr = DMSetCoordinatesLocal(dmCell, coordinates);CHKERRQ(ierr);
   ierr = PetscSectionCreate(PetscObjectComm((PetscObject)dm), &sectionCell);CHKERRQ(ierr);
@@ -1218,6 +1218,7 @@ PetscErrorCode ConstructGeometry(DM dm, Vec *facegeom, Vec *cellgeom, User user)
   }
   ierr = PetscSectionSetUp(sectionCell);CHKERRQ(ierr);
   ierr = DMSetDefaultSection(dmCell, sectionCell);CHKERRQ(ierr);
+  ierr = PetscSectionDestroy(&sectionCell);CHKERRQ(ierr); /* relinquish our reference */
 
   ierr = DMCreateLocalVector(dmCell, cellgeom);CHKERRQ(ierr);
   ierr = VecGetArray(*cellgeom, &cgeom);CHKERRQ(ierr);
@@ -1254,6 +1255,7 @@ PetscErrorCode ConstructGeometry(DM dm, Vec *facegeom, Vec *cellgeom, User user)
   }
   ierr = PetscSectionSetUp(sectionFace);CHKERRQ(ierr);
   ierr = DMSetDefaultSection(dmFace, sectionFace);CHKERRQ(ierr);
+  ierr = PetscSectionDestroy(&sectionFace);CHKERRQ(ierr);
   ierr = DMCreateLocalVector(dmFace, facegeom);CHKERRQ(ierr);
   ierr = VecGetArray(*facegeom, &fgeom);CHKERRQ(ierr);
   minradius = PETSC_MAX_REAL;
@@ -1318,6 +1320,7 @@ PetscErrorCode ConstructGeometry(DM dm, Vec *facegeom, Vec *cellgeom, User user)
     }
     ierr = PetscSectionSetUp(sectionGrad);CHKERRQ(ierr);
     ierr = DMSetDefaultSection(user->dmGrad,sectionGrad);CHKERRQ(ierr);
+    ierr = PetscSectionDestroy(&sectionGrad);CHKERRQ(ierr);
   }
   ierr = VecRestoreArray(*facegeom, &fgeom);CHKERRQ(ierr);
   ierr = VecRestoreArray(*cellgeom, &cgeom);CHKERRQ(ierr);
@@ -1346,7 +1349,6 @@ PetscErrorCode CreatePartitionVec(DM dm, DM *dmCell, Vec *partition)
   ierr = DMPlexClone(dm, dmCell);CHKERRQ(ierr);
   ierr = DMGetPointSF(dm, &sfPoint);CHKERRQ(ierr);
   ierr = DMSetPointSF(*dmCell, sfPoint);CHKERRQ(ierr);
-  ++coordSection->refcnt;
   ierr = DMPlexSetCoordinateSection(*dmCell, coordSection);CHKERRQ(ierr);
   ierr = DMSetCoordinatesLocal(*dmCell, coordinates);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm), &rank);CHKERRQ(ierr);
@@ -1358,6 +1360,7 @@ PetscErrorCode CreatePartitionVec(DM dm, DM *dmCell, Vec *partition)
   }
   ierr = PetscSectionSetUp(sectionCell);CHKERRQ(ierr);
   ierr = DMSetDefaultSection(*dmCell, sectionCell);CHKERRQ(ierr);
+  ierr = PetscSectionDestroy(&sectionCell);CHKERRQ(ierr);
   ierr = DMCreateLocalVector(*dmCell, partition);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)*partition, "partition");CHKERRQ(ierr);
   ierr = VecGetArray(*partition, &part);CHKERRQ(ierr);
@@ -1388,7 +1391,6 @@ PetscErrorCode CreateMassMatrix(DM dm, Vec *massMatrix, User user)
   ierr = DMPlexGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
   ierr = DMPlexClone(dm, &dmMass);CHKERRQ(ierr);
-  ++coordSection->refcnt;
   ierr = DMPlexSetCoordinateSection(dmMass, coordSection);CHKERRQ(ierr);
   ierr = DMSetCoordinatesLocal(dmMass, coordinates);CHKERRQ(ierr);
   ierr = PetscSectionCreate(PetscObjectComm((PetscObject)dm), &sectionMass);CHKERRQ(ierr);
@@ -1402,6 +1404,7 @@ PetscErrorCode CreateMassMatrix(DM dm, Vec *massMatrix, User user)
   }
   ierr = PetscSectionSetUp(sectionMass);CHKERRQ(ierr);
   ierr = DMSetDefaultSection(dmMass, sectionMass);CHKERRQ(ierr);
+  ierr = PetscSectionDestroy(&sectionMass);CHKERRQ(ierr);
   ierr = DMGetLocalVector(dmMass, massMatrix);CHKERRQ(ierr);
   ierr = VecGetArray(*massMatrix, &m);CHKERRQ(ierr);
   ierr = VecGetDM(user->facegeom, &dmFace);CHKERRQ(ierr);
@@ -1489,9 +1492,7 @@ PetscErrorCode SetUpLocalSpace(DM dm, User user)
   ierr = PetscFree(cind);CHKERRQ(ierr);
   ierr = PetscSectionGetStorageSize(stateSection, &stateSize);CHKERRQ(ierr);
   ierr = DMSetDefaultSection(dm,stateSection);CHKERRQ(ierr);
-  if (0) {                      /* Crazy that DMSetDefaultSection does not increment refct */
-    ierr = PetscSectionDestroy(&stateSection);CHKERRQ(ierr);
-  }
+  ierr = PetscSectionDestroy(&stateSection);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
