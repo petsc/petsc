@@ -40,11 +40,10 @@ EXTERN_C_END
 #define __FUNCT__ "PetscThreadCommRunKernel_OpenMP"
 PetscErrorCode PetscThreadCommRunKernel_OpenMP(PetscThreadComm tcomm,PetscThreadCommJobCtx job)
 {
-  PetscErrorCode  ierr;
   PetscInt        trank=0;
 
   PetscFunctionBegin;
-#pragma omp parallel num_threads(tcomm->nworkThreads) shared(comm,job) private(trank,ierr)
+#pragma omp parallel num_threads(tcomm->nworkThreads) shared(job) private(trank)
   {
     trank = omp_get_thread_num();
     PetscRunKernel(trank,job->nargs,job);
