@@ -6,10 +6,10 @@ EXECUTABLE=driver
 all: ${EXECUTABLE}.exe
 
 SOURCEC=${EXECUTABLE}.c
-OBJSC=${EXECUTABLE}.o
-
 SOURCEF=App.f90
-OBJSF=App.o
+
+OBJSC=${SOURCEC:.c=.o}
+OBJSF=${SOURCEF:.f90=.o}
 
 ${EXECUTABLE}.exe: ${SOURCEC} ${SOURCEF}
 	-${PETSC_FCOMPILE}
@@ -19,3 +19,6 @@ ${EXECUTABLE}.exe: ${SOURCEC} ${SOURCEF}
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules
+
+OBJSC=${SOURCEC:.c=.o}
+OBJSF=${SOURCEF:.f90=.o}

@@ -6,12 +6,11 @@ EXECUTABLE=poisson3d
 all: ${EXECUTABLE}.exe
 
 SOURCEC=${EXECUTABLE}.c
-OBJSC=${EXECUTABLE}.o
-
 SOURCEF=del2lib.f90
-OBJSF=del2lib.o
-
 SOURCEH=del2mat.h
+
+OBJSC=${SOURCEC:.c=.o}
+OBJSF=${SOURCEF:.f90=.o}
 
 ${EXECUTABLE}.exe: ${SOURCEC} ${SOURCEF} ${SOURCEH}
 	-${PETSC_FCOMPILE}
@@ -21,3 +20,6 @@ ${EXECUTABLE}.exe: ${SOURCEC} ${SOURCEF} ${SOURCEH}
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules
+
+OBJSC=${SOURCEC:.c=.o}
+OBJSF=${SOURCEF:.f90=.o}
