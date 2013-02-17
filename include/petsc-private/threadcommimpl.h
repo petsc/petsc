@@ -96,7 +96,7 @@ extern PetscThreadCommJobQueue PetscJobQueue;
 typedef struct _PetscThreadCommOps* PetscThreadCommOps;
 struct _PetscThreadCommOps {
   PetscErrorCode (*destroy)(PetscThreadComm);
-  PetscErrorCode (*runkernel)(MPI_Comm,PetscThreadCommJobCtx);
+  PetscErrorCode (*runkernel)(PetscThreadComm,PetscThreadCommJobCtx);
   PetscErrorCode (*view)(PetscThreadComm,PetscViewer);
   PetscErrorCode (*barrier)(PetscThreadComm);
   PetscErrorCode (*getrank)(PetscInt*);

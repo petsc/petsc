@@ -163,14 +163,12 @@ PetscErrorCode PetscPThreadCommFinalize_LockFree(PetscThreadComm tcomm)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscThreadCommRunKernel_PThread_LockFree"
-PetscErrorCode PetscThreadCommRunKernel_PThread_LockFree(MPI_Comm comm,PetscThreadCommJobCtx job)
+PetscErrorCode PetscThreadCommRunKernel_PThread_LockFree(PetscThreadComm tcomm,PetscThreadCommJobCtx job)
 {
   PetscErrorCode          ierr;
-  PetscThreadComm         tcomm=0;
   PetscThreadComm_PThread ptcomm;
 
   PetscFunctionBegin;
-  ierr   = PetscCommGetThreadComm(comm,&tcomm);CHKERRQ(ierr);
   ptcomm = (PetscThreadComm_PThread)tcomm->data;
   if (ptcomm->ismainworker) {
     job->job_status[0]   = THREAD_JOB_RECIEVED;
@@ -179,7 +177,7 @@ PetscErrorCode PetscThreadCommRunKernel_PThread_LockFree(MPI_Comm comm,PetscThre
     job->job_status[0]   = THREAD_JOB_COMPLETED;
   }
   if (ptcomm->synchronizeafter) {
-    ierr = PetscThreadCommBarrier(comm);CHKERRQ(ierr);
+    ierr = (*tcomm->ops->barrier)(tcomm);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
