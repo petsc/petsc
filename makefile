@@ -17,7 +17,7 @@ test:
 	${MPIEXEC} ${VALGRIND} ${PYTHON} test/runtests.py < /dev/null
 
 install: build
-	${PYTHON} setup.py install ${INSTALLOPT} --home=${HOME}
+	${PYTHON} setup.py install --user ${INSTALLOPT}
 
 sdist: docs
 	${PYTHON} setup.py sdist ${SDISTOPT}
@@ -41,8 +41,8 @@ srcclean:
 fullclean: distclean srcclean docsclean
 
 uninstall:
-	-${RM} -r ${HOME}/lib{,64}/python/petsc4py
-	-${RM} -r ${HOME}/lib{,64}/python/petsc4py-*-py*.egg-info
+	-${RM} -r $(shell ${PYTHON} -m site --user-site)/petsc4py
+	-${RM} -r $(shell ${PYTHON} -m site --user-site)/petsc4py-*-py*.egg-info
 
 # ----
 
