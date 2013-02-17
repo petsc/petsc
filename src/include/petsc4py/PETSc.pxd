@@ -159,9 +159,9 @@ ctypedef public api class DM(Object) [
     ]:
     cdef PetscDM dm
 
-ctypedef public api class DA(DM) [
-    type   PyPetscDA_Type,
-    object PyPetscDAObject,
+ctypedef public api class DMDA(DM) [
+    type   PyPetscDMDA_Type,
+    object PyPetscDMDAObject,
     ]:
     pass
 

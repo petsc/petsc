@@ -3,8 +3,8 @@
 cdef extern from * nogil:
 
     ctypedef char* PetscDMType "const char*"
-    PetscDMType DMDA
-    PetscDMType DMADDA
+    PetscDMType DMDA_type "DMDA"
+    PetscDMType DMADDA_type "DMADDA"
     PetscDMType DMCOMPOSITE
     PetscDMType DMSLICED
     PetscDMType DMMESH

@@ -148,7 +148,7 @@ ny = OptDB.getInt('nz', n)
 nz = OptDB.getInt('ny', n)
 lambda_ = OptDB.getReal('lambda', 6.0)
 
-da = PETSc.DA().create([nx, ny, nz], stencil_width=1)
+da = PETSc.DMDA().create([nx, ny, nz], stencil_width=1)
 pde = Bratu3D(da, lambda_)
 
 snes = PETSc.SNES().create()

@@ -125,7 +125,7 @@ include "petscsnes.pxi"
 include "petscts.pxi"
 include "petscao.pxi"
 include "petscdm.pxi"
-include "petscda.pxi"
+include "petscdmda.pxi"
 
 # --------------------------------------------------------------------
 
@@ -152,7 +152,7 @@ include "SNES.pyx"
 include "TS.pyx"
 include "AO.pyx"
 include "DM.pyx"
-include "DA.pyx"
+include "DMDA.pyx"
 
 # --------------------------------------------------------------------
 

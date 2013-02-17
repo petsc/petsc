@@ -20,13 +20,13 @@ class BaseTestObject(object):
         type_reg = PETSc.__type_registry__
         classid = self.obj.getClassId()
         typeobj = self.CLASS
-        if isinstance(self.obj, PETSc.DA):
+        if isinstance(self.obj, PETSc.DMDA):
             typeobj = PETSc.DM
         self.assertTrue(type_reg[classid] is typeobj )
 
     def testLogClass(self):
         name = self.CLASS.__name__
-        if name == 'DA': name = 'DM'
+        if name == 'DMDA': name = 'DM'
         logcls = PETSc.Log.Class(name)
         classid = self.obj.getClassId()
         self.assertEqual(logcls.id, classid)
@@ -165,8 +165,8 @@ class TestObjectAO(BaseTestObject, unittest.TestCase):
     FACTORY = 'createMapping'
     TARGS = ([], [])
 
-class TestObjectDA(BaseTestObject, unittest.TestCase):
-    CLASS  = PETSc.DA
+class TestObjectDMDA(BaseTestObject, unittest.TestCase):
+    CLASS  = PETSc.DMDA
     FACTORY = 'create'
     TARGS = ([3,3,3],)
 

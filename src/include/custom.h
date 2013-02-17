@@ -693,16 +693,16 @@ TSSetTimeStepNumber(TS ts, PetscInt step)
 /* ---------------------------------------------------------------- */
 
 #undef __FUNCT__
-#define __FUNCT__ "DACreateND"
+#define __FUNCT__ "DMDACreateND"
 static PetscErrorCode
-DACreateND(MPI_Comm comm,
-           PetscInt dim,PetscInt dof,
-           PetscInt M,PetscInt N,PetscInt P,
-           PetscInt m,PetscInt n,PetscInt p,
-           const PetscInt lx[],const PetscInt ly[],const PetscInt lz[],
-           DMDABoundaryType bx,DMDABoundaryType by,DMDABoundaryType bz,
-           DMDAStencilType stencil_type,PetscInt stencil_width,
-           DM *dm)
+DMDACreateND(MPI_Comm comm,
+             PetscInt dim,PetscInt dof,
+             PetscInt M,PetscInt N,PetscInt P,
+             PetscInt m,PetscInt n,PetscInt p,
+             const PetscInt lx[],const PetscInt ly[],const PetscInt lz[],
+             DMDABoundaryType bx,DMDABoundaryType by,DMDABoundaryType bz,
+             DMDAStencilType stencil_type,PetscInt stencil_width,
+             DM *dm)
 {
   DM             da;
   PetscErrorCode ierr;

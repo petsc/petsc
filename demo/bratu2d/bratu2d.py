@@ -63,7 +63,7 @@ x.set(0) # zero inital guess
 snes.solve(b, x)
 
 if OptDB.getBool('plot', True):
-    da = PETSc.DA().create([nx,ny])
+    da = PETSc.DMDA().create([nx,ny])
     u = da.createGlobalVec()
     x.copy(u)
     draw = PETSc.Viewer.DRAW()

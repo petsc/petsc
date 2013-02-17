@@ -17,7 +17,7 @@ execfile('petsc-ksp.py')
 OptDB = PETSc.Options()
 
 if OptDB.getBool('plot', True):
-    da = PETSc.DA().create([m,n])
+    da = PETSc.DMDA().create([m,n])
     u = da.createGlobalVec()
     x.copy(u)
     draw = PETSc.Viewer.DRAW()

@@ -1,8 +1,8 @@
 # --------------------------------------------------------------------
 
 class DMType(object):
-    DA        = S_(DMDA)
-    ADDA      = S_(DMADDA)
+    DA        = S_(DMDA_type)
+    ADDA      = S_(DMADDA_type)
     COMPOSITE = S_(DMCOMPOSITE)
     SLICED    = S_(DMSLICED)
     MESH      = S_(DMMESH)

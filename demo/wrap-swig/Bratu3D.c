@@ -19,14 +19,6 @@
 
 #include "Bratu3D.h"
 
-#if PETSC_VERSION_(3,1,0)
-#define DMDAGetInfo(da,dim,M,N,P,m,n,p,dof,s,bx,by,bz,st) \
-        DAGetInfo((DA)da,dim,M,N,P,m,n,p,dof,s,bx,st)
-#define DMDAGetCorners(da,x,y,z,m,n,p) DAGetCorners((DA)da,x,y,z,m,n,p)
-#define DMDAVecGetArray(da,v,a)        DAVecGetArray((DA)da,v,a)
-#define DMDAVecRestoreArray(da,v,a)    DAVecRestoreArray((DA)da,v,a)
-#endif
-
 #undef  __FUNCT__
 #define __FUNCT__ "FormInitGuess"
 PetscErrorCode FormInitGuess(DM da, Vec X, Params *p)
@@ -64,7 +56,7 @@ PetscErrorCode FormInitGuess(DM da, Vec X, Params *p)
   ierr = DMDAVecGetArray(da,X,&x);CHKERRQ(ierr);
 
   /*
-    Get local grid boundaries (for 3-dimensional DA):
+    Get local grid boundaries (for 3-dimensional DMDA):
 
     - xs, ys, zs: starting grid indices (no ghost points)
 
@@ -134,7 +126,7 @@ PetscErrorCode FormFunction(DM da, Vec X, Vec F, Params *p)
 
   /*
     Scatter ghost points to local vector,using the 2-step process
-    DAGlobalToLocalBegin(),DAGlobalToLocalEnd().  By placing code
+    DMGlobalToLocalBegin(),DMGlobalToLocalEnd().  By placing code
     between these two statements, computations can be done while
     messages are in transition.
   */
@@ -227,7 +219,7 @@ PetscErrorCode FormJacobian(DM da, Vec X, Mat J, Params *p)
 
   /*
     Scatter ghost points to local vector, using the 2-step process
-    DAGlobalToLocalBegin(), DAGlobalToLocalEnd().  By placing code
+    DMGlobalToLocalBegin(), DMGlobalToLocalEnd().  By placing code
     between these two statements, computations can be done while
     messages are in transition.
   */

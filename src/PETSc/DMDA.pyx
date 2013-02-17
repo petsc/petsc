@@ -1,31 +1,31 @@
 # --------------------------------------------------------------------
 
-class DABoundaryType(object):
-    NONE     = DA_BOUNDARY_NONE
-    GHOSTED  = DA_BOUNDARY_GHOSTED
-    MIRROR   = DA_BOUNDARY_MIRROR
-    PERIODIC = DA_BOUNDARY_PERIODIC
+class DMDABoundaryType(object):
+    NONE     = DMDA_BOUNDARY_NONE
+    GHOSTED  = DMDA_BOUNDARY_GHOSTED
+    MIRROR   = DMDA_BOUNDARY_MIRROR
+    PERIODIC = DMDA_BOUNDARY_PERIODIC
 
-class DAStencilType(object):
-    STAR = DA_STENCIL_STAR
-    BOX  = DA_STENCIL_BOX
+class DMDAStencilType(object):
+    STAR = DMDA_STENCIL_STAR
+    BOX  = DMDA_STENCIL_BOX
 
-class DAInterpolationType(object):
-    Q0 = DA_INTERPOLATION_Q0
-    Q1 = DA_INTERPOLATION_Q1
+class DMDAInterpolationType(object):
+    Q0 = DMDA_INTERPOLATION_Q0
+    Q1 = DMDA_INTERPOLATION_Q1
 
-class DAElementType(object):
-    P1 = DA_ELEMENT_P1
-    Q1 = DA_ELEMENT_Q1
+class DMDAElementType(object):
+    P1 = DMDA_ELEMENT_P1
+    Q1 = DMDA_ELEMENT_Q1
 
 # --------------------------------------------------------------------
 
-cdef class DA(DM):
+cdef class DMDA(DM):
 
-    BoundaryType      = DABoundaryType
-    StencilType       = DAStencilType
-    InterpolationType = DAInterpolationType
-    ElementType       = DAElementType
+    BoundaryType      = DMDABoundaryType
+    StencilType       = DMDAStencilType
+    InterpolationType = DMDAInterpolationType
+    ElementType       = DMDAElementType
 
     #
 
@@ -44,10 +44,10 @@ cdef class DA(DM):
         cdef PetscInt M = 1, m = PETSC_DECIDE, *lx = NULL
         cdef PetscInt N = 1, n = PETSC_DECIDE, *ly = NULL
         cdef PetscInt P = 1, p = PETSC_DECIDE, *lz = NULL
-        cdef PetscDABoundaryType btx = DA_BOUNDARY_NONE
-        cdef PetscDABoundaryType bty = DA_BOUNDARY_NONE
-        cdef PetscDABoundaryType btz = DA_BOUNDARY_NONE
-        cdef PetscDAStencilType  stype = DA_STENCIL_BOX
+        cdef PetscDMDABoundaryType btx = DMDA_BOUNDARY_NONE
+        cdef PetscDMDABoundaryType bty = DMDA_BOUNDARY_NONE
+        cdef PetscDMDABoundaryType btz = DMDA_BOUNDARY_NONE
+        cdef PetscDMDAStencilType  stype = DMDA_STENCIL_BOX
         cdef PetscInt            swidth = 0
         # grid and proc sizes
         cdef object gsizes = sizes
@@ -76,14 +76,14 @@ cdef class DA(DM):
             stype = asStencil(stencil_type)
         if stencil_width is not None:
             swidth = asInt(stencil_width)
-        # create the DA object
+        # create the DMDA object
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
-        cdef PetscDA newda = NULL
-        CHKERR( DACreateND(ccomm, ndim, ndof,
-                           M, N, P, m, n, p, lx, ly, lz,
-                           btx, bty, btz, stype, swidth,
-                           &newda) )
-        if setup and ndim > 0: CHKERR( DASetUp(newda) )
+        cdef PetscDM newda = NULL
+        CHKERR( DMDACreateND(ccomm, ndim, ndof,
+                             M, N, P, m, n, p, lx, ly, lz,
+                             btx, bty, btz, stype, swidth,
+                             &newda) )
+        if setup and ndim > 0: CHKERR( DMSetUp(newda) )
         PetscCLEAR(self.obj); self.dm = newda
         return self
 
@@ -92,12 +92,12 @@ cdef class DA(DM):
         cdef PetscInt ndim = 0, ndof = 0
         cdef PetscInt M = 1, N = 1, P = 1
         cdef PetscInt m = 1, n = 1, p = 1
-        cdef PetscDABoundaryType btx = DA_BOUNDARY_NONE
-        cdef PetscDABoundaryType bty = DA_BOUNDARY_NONE
-        cdef PetscDABoundaryType btz = DA_BOUNDARY_NONE
-        cdef PetscDAStencilType  stype = DA_STENCIL_STAR
+        cdef PetscDMDABoundaryType btx = DMDA_BOUNDARY_NONE
+        cdef PetscDMDABoundaryType bty = DMDA_BOUNDARY_NONE
+        cdef PetscDMDABoundaryType btz = DMDA_BOUNDARY_NONE
+        cdef PetscDMDAStencilType  stype = DMDA_STENCIL_STAR
         cdef PetscInt            swidth = 0
-        CHKERR( DAGetInfo(self.dm,
+        CHKERR( DMDAGetInfo(self.dm,
                           &ndim,
                           &M, &N, &P,
                           &m, &n, &p,
@@ -105,7 +105,7 @@ cdef class DA(DM):
                           &btx, &bty, &btz,
                           &stype) )
         cdef const_PetscInt *lx = NULL, *ly = NULL, *lz = NULL
-        CHKERR( DAGetOwnershipRanges(self.dm, &lx, &ly, &lz) )
+        CHKERR( DMDAGetOwnershipRanges(self.dm, &lx, &ly, &lz) )
         cdef MPI_Comm comm = MPI_COMM_NULL
         CHKERR( PetscObjectGetComm(<PetscObject>self.dm, &comm) )
         #
@@ -118,44 +118,44 @@ cdef class DA(DM):
         if stencil_width is not None:
             swidth = asInt(stencil_width)
         #
-        cdef DA da = DA()
-        CHKERR( DACreateND(comm, ndim, ndof,
-                           M, N, P, m, n, p, lx, ly, lz,
-                           btx, bty, btz, stype, swidth,
-                           &da.dm) )
-        CHKERR( DASetUp(da.dm) )
+        cdef DMDA da = DMDA()
+        CHKERR( DMDACreateND(comm, ndim, ndof,
+                             M, N, P, m, n, p, lx, ly, lz,
+                             btx, bty, btz, stype, swidth,
+                             &da.dm) )
+        CHKERR( DMSetUp(da.dm) )
         return da
 
     #
 
     def setDim(self, dim):
         cdef PetscInt ndim = asInt(dim)
-        CHKERR( DASetDim(self.dm, ndim) )
+        CHKERR( DMDASetDim(self.dm, ndim) )
         
     def getDim(self):
         cdef PetscInt dim = 0
-        CHKERR( DAGetInfo(self.dm,
-                          &dim,
-                          NULL, NULL, NULL,
-                          NULL, NULL, NULL,
-                          NULL, NULL,
-                          NULL, NULL, NULL,
-                          NULL) )
+        CHKERR( DMDAGetInfo(self.dm,
+                            &dim,
+                            NULL, NULL, NULL,
+                            NULL, NULL, NULL,
+                            NULL, NULL,
+                            NULL, NULL, NULL,
+                            NULL) )
         return toInt(dim)
 
     def setDof(self, dof):
         cdef PetscInt ndof = asInt(dof)
-        CHKERR( DASetDof(self.dm, ndof) )
+        CHKERR( DMDASetDof(self.dm, ndof) )
 
     def getDof(self):
         cdef PetscInt dof = 0
-        CHKERR( DAGetInfo(self.dm,
-                          NULL,
-                          NULL, NULL, NULL,
-                          NULL, NULL, NULL,
-                          &dof, NULL,
-                          NULL, NULL, NULL,
-                          NULL) )
+        CHKERR( DMDAGetInfo(self.dm,
+                            NULL,
+                            NULL, NULL, NULL,
+                            NULL, NULL, NULL,
+                            &dof, NULL,
+                            NULL, NULL, NULL,
+                            NULL) )
         return toInt(dof)
 
     def setSizes(self, sizes):
@@ -166,23 +166,23 @@ cdef class DA(DM):
         cdef PetscInt P = 1
         gdim = asDims(gsizes, &M, &N, &P)
         cdef PetscInt dim = PETSC_DECIDE
-        CHKERR( DAGetDim(self.dm, &dim) )
+        CHKERR( DMDAGetDim(self.dm, &dim) )
         if dim == PETSC_DECIDE:
-            CHKERR( DASetDim(self.dm, gdim) )
-        CHKERR( DASetSizes(self.dm, M, N, P) )
+            CHKERR( DMDASetDim(self.dm, gdim) )
+        CHKERR( DMDASetSizes(self.dm, M, N, P) )
 
     def getSizes(self):
         cdef PetscInt dim = 0
         cdef PetscInt M = PETSC_DECIDE
         cdef PetscInt N = PETSC_DECIDE
         cdef PetscInt P = PETSC_DECIDE
-        CHKERR( DAGetInfo(self.dm,
-                          &dim,
-                          &M, &N, &P,
-                          NULL, NULL, NULL,
-                          NULL, NULL,
-                          NULL, NULL, NULL,
-                          NULL) )
+        CHKERR( DMDAGetInfo(self.dm,
+                            &dim,
+                            &M, &N, &P,
+                            NULL, NULL, NULL,
+                            NULL, NULL,
+                            NULL, NULL, NULL,
+                            NULL) )
         return toDims(dim, M, N, P)
 
     def setProcSizes(self, proc_sizes):
@@ -193,38 +193,38 @@ cdef class DA(DM):
         cdef PetscInt p = PETSC_DECIDE
         pdim = asDims(psizes, &m, &n, &p)
         cdef PetscInt dim = PETSC_DECIDE
-        CHKERR( DAGetDim(self.dm, &dim) )
+        CHKERR( DMDAGetDim(self.dm, &dim) )
         if dim == PETSC_DECIDE:
-            CHKERR( DASetDim(self.dm, pdim) )
-        CHKERR( DASetNumProcs(self.dm, m, n, p) )
+            CHKERR( DMDASetDim(self.dm, pdim) )
+        CHKERR( DMDASetNumProcs(self.dm, m, n, p) )
 
     def getProcSizes(self):
         cdef PetscInt dim = 0
         cdef PetscInt m = PETSC_DECIDE
         cdef PetscInt n = PETSC_DECIDE
         cdef PetscInt p = PETSC_DECIDE
-        CHKERR( DAGetInfo(self.dm,
-                          &dim,
-                          NULL, NULL, NULL,
-                          &m, &n, &p,
-                          NULL, NULL,
-                          NULL, NULL, NULL,
-                          NULL) )
+        CHKERR( DMDAGetInfo(self.dm,
+                            &dim,
+                            NULL, NULL, NULL,
+                            &m, &n, &p,
+                            NULL, NULL,
+                            NULL, NULL, NULL,
+                            NULL) )
         return toDims(dim, m, n, p)
 
     def setBoundaryType(self, boundary_type):
-        cdef PetscDABoundaryType btx = DA_BOUNDARY_NONE
-        cdef PetscDABoundaryType bty = DA_BOUNDARY_NONE
-        cdef PetscDABoundaryType btz = DA_BOUNDARY_NONE
+        cdef PetscDMDABoundaryType btx = DMDA_BOUNDARY_NONE
+        cdef PetscDMDABoundaryType bty = DMDA_BOUNDARY_NONE
+        cdef PetscDMDABoundaryType btz = DMDA_BOUNDARY_NONE
         asBoundary(boundary_type, &btx, &bty, &btz)
-        CHKERR( DASetBoundaryType(self.dm, btx, bty, btz) )
+        CHKERR( DMDASetBoundaryType(self.dm, btx, bty, btz) )
         
     def getBoundaryType(self):
         cdef PetscInt dim = 0
-        cdef PetscDABoundaryType btx = DA_BOUNDARY_NONE
-        cdef PetscDABoundaryType bty = DA_BOUNDARY_NONE
-        cdef PetscDABoundaryType btz = DA_BOUNDARY_NONE
-        CHKERR( DAGetInfo(self.dm,
+        cdef PetscDMDABoundaryType btx = DMDA_BOUNDARY_NONE
+        cdef PetscDMDABoundaryType bty = DMDA_BOUNDARY_NONE
+        cdef PetscDMDABoundaryType btz = DMDA_BOUNDARY_NONE
+        CHKERR( DMDAGetInfo(self.dm,
                           &dim,
                           NULL, NULL, NULL,
                           NULL, NULL, NULL,
@@ -234,12 +234,12 @@ cdef class DA(DM):
         return toDims(dim, btx, bty, btz)
 
     def setStencilType(self, stencil_type):
-        cdef PetscDAStencilType stype = asStencil(stencil_type)
-        CHKERR( DASetStencilType(self.dm, stype) )
+        cdef PetscDMDAStencilType stype = asStencil(stencil_type)
+        CHKERR( DMDASetStencilType(self.dm, stype) )
         
     def getStencilType(self):
-        cdef PetscDAStencilType stype = DA_STENCIL_BOX
-        CHKERR( DAGetInfo(self.dm,
+        cdef PetscDMDAStencilType stype = DMDA_STENCIL_BOX
+        CHKERR( DMDAGetInfo(self.dm,
                           NULL,
                           NULL, NULL, NULL,
                           NULL, NULL, NULL,
@@ -250,81 +250,81 @@ cdef class DA(DM):
 
     def setStencilWidth(self, stencil_width):
         cdef PetscInt swidth = asInt(stencil_width)
-        CHKERR( DASetStencilWidth(self.dm, swidth) )
+        CHKERR( DMDASetStencilWidth(self.dm, swidth) )
 
     def getStencilWidth(self):
         cdef PetscInt swidth = 0
-        CHKERR( DAGetInfo(self.dm,
-                          NULL,
-                          NULL, NULL, NULL,
-                          NULL, NULL, NULL,
-                          NULL, &swidth,
-                          NULL, NULL, NULL,
-                          NULL) )
+        CHKERR( DMDAGetInfo(self.dm,
+                            NULL,
+                            NULL, NULL, NULL,
+                            NULL, NULL, NULL,
+                            NULL, &swidth,
+                            NULL, NULL, NULL,
+                            NULL) )
         return toInt(swidth)
 
     def setStencil(self, stencil_type, stencil_width):
-        cdef PetscDAStencilType stype = asStencil(stencil_type)
+        cdef PetscDMDAStencilType stype = asStencil(stencil_type)
         cdef PetscInt swidth = asInt(stencil_width)
-        CHKERR( DASetStencilType(self.dm, stype) )
-        CHKERR( DASetStencilWidth(self.dm, swidth) )
+        CHKERR( DMDASetStencilType(self.dm, stype) )
+        CHKERR( DMDASetStencilWidth(self.dm, swidth) )
         
     def getStencil(self):
-        cdef PetscDAStencilType stype = DA_STENCIL_BOX
+        cdef PetscDMDAStencilType stype = DMDA_STENCIL_BOX
         cdef PetscInt swidth = 0
-        CHKERR( DAGetInfo(self.dm,
-                          NULL,
-                          NULL, NULL, NULL,
-                          NULL, NULL, NULL,
-                          NULL, &swidth,
-                          NULL, NULL, NULL,
-                          &stype) )
+        CHKERR( DMDAGetInfo(self.dm,
+                            NULL,
+                            NULL, NULL, NULL,
+                            NULL, NULL, NULL,
+                            NULL, &swidth,
+                            NULL, NULL, NULL,
+                            &stype) )
         return (toStencil(stype), toInt(swidth))
 
     #
 
     def getRanges(self):
         cdef PetscInt dim=0, x=0, y=0, z=0, m=0, n=0, p=0
-        CHKERR( DAGetDim(self.dm, &dim) )
-        CHKERR( DAGetCorners(self.dm,
-                             &x, &y, &z,
-                             &m, &n, &p) )
+        CHKERR( DMDAGetDim(self.dm, &dim) )
+        CHKERR( DMDAGetCorners(self.dm,
+                               &x, &y, &z,
+                               &m, &n, &p) )
         return ((toInt(x), toInt(x+m)),
                 (toInt(y), toInt(y+n)),
                 (toInt(z), toInt(z+p)))[:<Py_ssize_t>dim]
 
     def getGhostRanges(self):
         cdef PetscInt dim=0, x=0, y=0, z=0, m=0, n=0, p=0
-        CHKERR( DAGetDim(self.dm, &dim) )
-        CHKERR( DAGetGhostCorners(self.dm,
-                                  &x, &y, &z,
-                                  &m, &n, &p) )
+        CHKERR( DMDAGetDim(self.dm, &dim) )
+        CHKERR( DMDAGetGhostCorners(self.dm,
+                                    &x, &y, &z,
+                                    &m, &n, &p) )
         return ((toInt(x), toInt(x+m)),
                 (toInt(y), toInt(y+n)),
                 (toInt(z), toInt(z+p)))[:<Py_ssize_t>dim]
 
     def getCorners(self):
         cdef PetscInt dim=0, x=0, y=0, z=0, m=0, n=0, p=0
-        CHKERR( DAGetDim(self.dm, &dim) )
-        CHKERR( DAGetCorners(self.dm,
-                             &x, &y, &z,
-                             &m, &n, &p) )
+        CHKERR( DMDAGetDim(self.dm, &dim) )
+        CHKERR( DMDAGetCorners(self.dm,
+                               &x, &y, &z,
+                               &m, &n, &p) )
         return ((toInt(x), toInt(y), toInt(z))[:<Py_ssize_t>dim],
                 (toInt(m), toInt(n), toInt(p))[:<Py_ssize_t>dim])
 
     def getGhostCorners(self):
         cdef PetscInt dim=0, x=0, y=0, z=0, m=0, n=0, p=0
-        CHKERR( DAGetDim(self.dm, &dim) )
-        CHKERR( DAGetGhostCorners(self.dm,
-                                  &x, &y, &z,
-                                  &m, &n, &p) )
+        CHKERR( DMDAGetDim(self.dm, &dim) )
+        CHKERR( DMDAGetGhostCorners(self.dm,
+                                    &x, &y, &z,
+                                    &m, &n, &p) )
         return ((toInt(x), toInt(y), toInt(z))[:<Py_ssize_t>dim],
                 (toInt(m), toInt(n), toInt(p))[:<Py_ssize_t>dim])
 
     #
 
     def getVecArray(self, Vec vec not None):
-        return _DA_Vec_array(self, vec)
+        return _DMDA_Vec_array(self, vec)
 
     #
 
@@ -335,24 +335,24 @@ cdef class DA(DM):
         cdef PetscReal _xmin = asReal(xmin), _xmax = asReal(xmax)
         cdef PetscReal _ymin = asReal(ymin), _ymax = asReal(ymax)
         cdef PetscReal _zmin = asReal(zmin), _zmax = asReal(zmax)
-        CHKERR( DASetUniformCoordinates(self.dm,
-                                        _xmin, _xmax,
-                                        _ymin, _ymax,
-                                        _zmin, _zmax) )
+        CHKERR( DMDASetUniformCoordinates(self.dm,
+                                          _xmin, _xmax,
+                                          _ymin, _ymax,
+                                          _zmin, _zmax) )
 
     def getBoundingBox(self):
         cdef PetscInt i,dim=0
-        CHKERR( DAGetDim(self.dm, &dim) )
+        CHKERR( DMDAGetDim(self.dm, &dim) )
         cdef PetscReal gmin[3], gmax[3]
-        CHKERR( DAGetBoundingBox(self.dm, gmin, gmax) )
+        CHKERR( DMDAGetBoundingBox(self.dm, gmin, gmax) )
         return tuple([(toReal(gmin[i]), toReal(gmax[i]))
                       for i from 0 <= i < dim])
 
     def getLocalBoundingBox(self):
         cdef PetscInt i,dim=0
-        CHKERR( DAGetDim(self.dm, &dim) )
+        CHKERR( DMDAGetDim(self.dm, &dim) )
         cdef PetscReal lmin[3], lmax[3]
-        CHKERR( DAGetLocalBoundingBox(self.dm, lmin, lmax) )
+        CHKERR( DMDAGetLocalBoundingBox(self.dm, lmin, lmax) )
         return tuple([(toReal(lmin[i]), toReal(lmax[i]))
                       for i from 0 <= i < dim])
 
@@ -360,29 +360,29 @@ cdef class DA(DM):
 
     def createNaturalVec(self):
         cdef Vec vn = Vec()
-        CHKERR( DACreateNaturalVector(self.dm, &vn.vec) )
+        CHKERR( DMDACreateNaturalVector(self.dm, &vn.vec) )
         return vn
 
     def globalToNatural(self, Vec vg not None, Vec vn not None, addv=None):
         cdef PetscInsertMode im = insertmode(addv)
-        CHKERR( DAGlobalToNaturalBegin(self.dm, vg.vec, im, vn.vec) )
-        CHKERR( DAGlobalToNaturalEnd  (self.dm, vg.vec, im, vn.vec) )
+        CHKERR( DMDAGlobalToNaturalBegin(self.dm, vg.vec, im, vn.vec) )
+        CHKERR( DMDAGlobalToNaturalEnd  (self.dm, vg.vec, im, vn.vec) )
 
     def naturalToGlobal(self, Vec vn not None, Vec vg not None, addv=None):
         cdef PetscInsertMode im = insertmode(addv)
-        CHKERR( DANaturalToGlobalBegin(self.dm, vn.vec, im, vg.vec) )
-        CHKERR( DANaturalToGlobalEnd  (self.dm, vn.vec, im, vg.vec) )
+        CHKERR( DMDANaturalToGlobalBegin(self.dm, vn.vec, im, vg.vec) )
+        CHKERR( DMDANaturalToGlobalEnd  (self.dm, vn.vec, im, vg.vec) )
 
     def localToLocal(self, Vec vl not None, Vec vlg not None, addv=None):
         cdef PetscInsertMode im = insertmode(addv)
-        CHKERR( DALocalToLocalBegin(self.dm, vl.vec, im, vlg.vec) )
-        CHKERR( DALocalToLocalEnd  (self.dm, vl.vec, im, vlg.vec) )
+        CHKERR( DMDALocalToLocalBegin(self.dm, vl.vec, im, vlg.vec) )
+        CHKERR( DMDALocalToLocalEnd  (self.dm, vl.vec, im, vlg.vec) )
 
     #
 
     def getAO(self):
         cdef AO ao = AO()
-        CHKERR( DAGetAO(self.dm, &ao.ao) )
+        CHKERR( DMDAGetAO(self.dm, &ao.ao) )
         PetscINCREF(ao.obj)
         return ao
 
@@ -390,7 +390,7 @@ cdef class DA(DM):
         cdef Scatter l2g = Scatter()
         cdef Scatter g2l = Scatter()
         cdef Scatter l2l = Scatter()
-        CHKERR( DAGetScatter(self.dm, &l2g.sct, &g2l.sct, &l2l.sct) )
+        CHKERR( DMDAGetScatter(self.dm, &l2g.sct, &g2l.sct, &l2l.sct) )
         PetscINCREF(l2g.obj)
         PetscINCREF(g2l.obj)
         PetscINCREF(l2l.obj)
@@ -406,56 +406,56 @@ cdef class DA(DM):
         refine[0] = asInt(refine_x)
         refine[1] = asInt(refine_y)
         refine[2] = asInt(refine_z)
-        CHKERR( DASetRefinementFactor(self.dm,
+        CHKERR( DMDASetRefinementFactor(self.dm,
                                       refine[0],
                                       refine[1],
                                       refine[2]) )
 
     def getRefinementFactor(self):
         cdef PetscInt i, dim = 0, refine[3]
-        CHKERR( DAGetDim(self.dm, &dim) )
-        CHKERR( DAGetRefinementFactor(self.dm,
+        CHKERR( DMDAGetDim(self.dm, &dim) )
+        CHKERR( DMDAGetRefinementFactor(self.dm,
                                       &refine[0],
                                       &refine[1],
                                       &refine[2]) )
         return tuple([toInt(refine[i]) for 0 <= i < dim])
 
     def setInterpolationType(self, interp_type):
-        cdef PetscDAInterpolationType ival = dainterpolationtype(interp_type)
-        CHKERR( DASetInterpolationType(self.dm, ival) )
+        cdef PetscDMDAInterpolationType ival = dainterpolationtype(interp_type)
+        CHKERR( DMDASetInterpolationType(self.dm, ival) )
 
     def getInterpolationType(self):
-        cdef PetscDAInterpolationType ival = DA_INTERPOLATION_Q0
-        CHKERR( DAGetInterpolationType(self.dm, &ival) )
+        cdef PetscDMDAInterpolationType ival = DMDA_INTERPOLATION_Q0
+        CHKERR( DMDAGetInterpolationType(self.dm, &ival) )
         return <long>ival
 
     #
 
     def setElementType(self, elem_type):
-        cdef PetscDAElementType ival = daelementtype(elem_type)
-        CHKERR( DASetElementType(self.dm, ival) )
+        cdef PetscDMDAElementType ival = daelementtype(elem_type)
+        CHKERR( DMDASetElementType(self.dm, ival) )
 
     def getElementType(self):
-        cdef PetscDAElementType ival = DA_ELEMENT_Q1
-        CHKERR( DAGetElementType(self.dm, &ival) )
+        cdef PetscDMDAElementType ival = DMDA_ELEMENT_Q1
+        CHKERR( DMDAGetElementType(self.dm, &ival) )
         return <long>ival
 
     def getElements(self, elem_type=None):
         cdef PetscInt dim=0
-        cdef PetscDAElementType etype
+        cdef PetscDMDAElementType etype
         cdef PetscInt nel=0, nen=0
         cdef const_PetscInt *elems=NULL
         cdef object elements
-        CHKERR( DAGetDim(self.dm, &dim) )
+        CHKERR( DMDAGetDim(self.dm, &dim) )
         if elem_type is not None:
             etype = daelementtype(elem_type)
-            CHKERR( DASetElementType(self.dm, etype) )
+            CHKERR( DMDASetElementType(self.dm, etype) )
         try:
-            CHKERR( DAGetElements(self.dm, &nel, &nen, &elems) )
+            CHKERR( DMDAGetElements(self.dm, &nel, &nen, &elems) )
             elements = array_i(nel*nen, elems)
             elements.shape = (toInt(nel), toInt(nen))
         finally:
-            CHKERR( DARestoreElements(self.dm, &nel, &nen, &elems) )
+            CHKERR( DMDARestoreElements(self.dm, &nel, &nen, &elems) )
         return elements
 
     #
@@ -511,11 +511,15 @@ cdef class DA(DM):
     # backward compatibility
     createNaturalVector = createNaturalVec
 
+
+# backward compatibility alias
+DA = DMDA
+
 # --------------------------------------------------------------------
 
-del DABoundaryType
-del DAStencilType
-del DAInterpolationType
-del DAElementType
+del DMDABoundaryType
+del DMDAStencilType
+del DMDAInterpolationType
+del DMDAElementType
 
 # --------------------------------------------------------------------

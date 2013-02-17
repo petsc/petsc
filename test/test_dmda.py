@@ -9,17 +9,17 @@ class BaseTestDA(object):
     SIZES = None
     BOUNDARY = None
     DOF = 1
-    STENCIL = PETSc.DA.StencilType.STAR
+    STENCIL = PETSc.DMDA.StencilType.STAR
     SWIDTH = 1
 
     def setUp(self):
-        self.da = PETSc.DA().create(dim=len(self.SIZES),
-                                    dof=self.DOF,
-                                    sizes=self.SIZES,
-                                    boundary_type=self.BOUNDARY,
-                                    stencil_type=self.STENCIL,
-                                    stencil_width=self.SWIDTH,
-                                    comm=self.COMM)
+        self.da = PETSc.DMDA().create(dim=len(self.SIZES),
+                                      dof=self.DOF,
+                                      sizes=self.SIZES,
+                                      boundary_type=self.BOUNDARY,
+                                      stencil_type=self.STENCIL,
+                                      stencil_width=self.SWIDTH,
+                                      comm=self.COMM)
 
     def tearDown(self):
         self.da = None
@@ -152,9 +152,9 @@ class BaseTestDA(object):
         mat = da.createAggregates(rda)
 
 
-MIRROR   = PETSc.DA.BoundaryType.MIRROR
-GHOSTED  = PETSc.DA.BoundaryType.GHOSTED
-PERIODIC = PETSc.DA.BoundaryType.PERIODIC
+MIRROR   = PETSc.DMDA.BoundaryType.MIRROR
+GHOSTED  = PETSc.DMDA.BoundaryType.GHOSTED
+PERIODIC = PETSc.DMDA.BoundaryType.PERIODIC
 
 SCALE = 4
 
@@ -255,7 +255,7 @@ for dim in DIM:
                                  stencil_width=width)
                     def testCreate(self, kargs=kargs):
                         kargs = dict(kargs)
-                        da = PETSc.DA().create(**kargs)
+                        da = PETSc.DMDA().create(**kargs)
                         da.destroy()
                     setattr(TestDACreate,
                             "testCreate%04d"%counter,
@@ -285,7 +285,7 @@ for dim in DIM:
                         boundary = kargs['boundary_type']
                         stencil = kargs['stencil_type']
                         width = kargs['stencil_width']
-                        da = PETSc.DA().create([8*SCALE]*dim)
+                        da = PETSc.DMDA().create([8*SCALE]*dim)
                         newda = da.duplicate(**kargs)
                         self.assertEqual(newda.dim, da.dim)
                         self.assertEqual(newda.sizes, da.sizes)
