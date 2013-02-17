@@ -395,8 +395,14 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLayoutFindOwnerIndex(PetscLayout map,Pet
 }
 
 /*S
-  PetscSection - This is a mapping from DMMESH points to sets of values, which is
-  our presentation of a fibre bundle.
+  PetscSection - Mapping from integers in a designated range to contiguous sets of integers.
+
+  In contrast to IS, which maps from integers to single integers, the range of a PetscSection is in the space of
+  contiguous sets of integers. These ranges are frequently interpreted as domains of other array-like objects,
+  especially other PetscSections, Vecs, and ISs. The domain is set with PetscSectionSetChart() and does not need to
+  start at 0. For each point in the domain of a PetscSection, the output set is represented through an offset and a
+  count, which are set using PetscSectionSetOffset() and PetscSectionSetDof() respectively. Lookup is typically using
+  accessors or routines like VecGetValuesSection().
 
   Level: developer
 
