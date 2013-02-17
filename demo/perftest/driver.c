@@ -102,7 +102,11 @@ PetscErrorCode RunTest(int nx, int ny, int nz, int loops, double *wt)
   while (loops-- > 0) {
     ierr = FormInitial(0.0,x,app);CHKERRQ(ierr);
     ierr = PetscGetTime(&t1);CHKERRQ(ierr);
+#if !defined(PETSC_VERSION_LE) || PETSC_VERSION_LE(3,3,0)
     ierr = TSSolve(ts,x,PETSC_NULL);CHKERRQ(ierr);
+#else
+    ierr = TSSolve(ts,x);CHKERRQ(ierr);
+#endif
     ierr = PetscGetTime(&t2);CHKERRQ(ierr);
     *wt = PetscMin(*wt,t2-t1);
   }
