@@ -55,7 +55,6 @@ class MatType(object):
     SUBMATRIX       = S_(MATSUBMATRIX)
     LOCALREF        = S_(MATLOCALREF)
     NEST            = S_(MATNEST)
-    IJ              = S_(MATIJ)
 
 class MatOption(object):
     ROW_ORIENTED               = MAT_ROW_ORIENTED
