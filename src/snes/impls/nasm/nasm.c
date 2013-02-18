@@ -118,10 +118,22 @@ PetscErrorCode SNESSetUp_NASM(SNES snes)
     } else SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE,"Cannot construct local problems automatically without a DM!");
   } else SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE,"Must set subproblems manually if there is no DM!");
   /* allocate the global vectors */
-  ierr = PetscMalloc(nasm->n*sizeof(Vec),&nasm->x);CHKERRQ(ierr);
-  ierr = PetscMalloc(nasm->n*sizeof(Vec),&nasm->xl);CHKERRQ(ierr);
-  ierr = PetscMalloc(nasm->n*sizeof(Vec),&nasm->y);CHKERRQ(ierr);
-  ierr = PetscMalloc(nasm->n*sizeof(Vec),&nasm->b);CHKERRQ(ierr);
+  if (!nasm->x) {
+    ierr = PetscMalloc(nasm->n*sizeof(Vec),&nasm->x);CHKERRQ(ierr);
+    ierr = PetscMemzero(nasm->x,nasm->n*sizeof(Vec));CHKERRQ(ierr);
+  }
+  if (!nasm->xl) {
+    ierr = PetscMalloc(nasm->n*sizeof(Vec),&nasm->xl);CHKERRQ(ierr);
+    ierr = PetscMemzero(nasm->xl,nasm->n*sizeof(Vec));CHKERRQ(ierr);
+  }
+  if (!nasm->y) {
+    ierr = PetscMalloc(nasm->n*sizeof(Vec),&nasm->y);CHKERRQ(ierr);
+    ierr = PetscMemzero(nasm->y,nasm->n*sizeof(Vec));CHKERRQ(ierr);
+  }
+  if (!nasm->b) {
+    ierr = PetscMalloc(nasm->n*sizeof(Vec),&nasm->b);CHKERRQ(ierr);
+    ierr = PetscMemzero(nasm->b,nasm->n*sizeof(Vec));CHKERRQ(ierr);
+  }
 
   for (i=0; i<nasm->n; i++) {
     ierr = SNESGetFunction(nasm->subsnes[i],&F,NULL,NULL);CHKERRQ(ierr);
