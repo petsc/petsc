@@ -4594,7 +4594,7 @@ PetscErrorCode  MatCreateMPIAIJSumSeqAIJNumeric(Mat seqmat,Mat mpimat)
   PetscContainer      container;
 
   PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject)seqmat,&comm);CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject)mpimat,&comm);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(MAT_Seqstompinum,seqmat,0,0,0);CHKERRQ(ierr);
 
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
