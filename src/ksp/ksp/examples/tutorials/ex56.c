@@ -108,7 +108,7 @@ int main(int argc,char **args)
         }
       }
     }
-    if (ic != m) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"ic %D does not equal m %D",ic,m);
+    if (ic != m) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"ic %D does not equal m %D",ic,m);
 
     /* create stiffness matrix */
     ierr = MatCreate(comm,&Amat);CHKERRQ(ierr);
