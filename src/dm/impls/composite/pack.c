@@ -363,9 +363,14 @@ PetscErrorCode  DMCompositeRestoreAccessArray(DM dm,Vec pvec,PetscInt nwanted,co
 
     Level: advanced
 
+    Notes:
+    DMCompositeScatterArray() is a non-variadic alternative that is often more convenient for library callers and is
+    accessible from Fortran.
+
 .seealso DMDestroy(), DMCompositeAddDM(), DMCreateGlobalVector(),
          DMCompositeGather(), DMCompositeCreate(), DMCompositeGetISLocalToGlobalMappings(), DMCompositeGetAccess(),
          DMCompositeGetLocalVectors(), DMCompositeRestoreLocalVectors(), DMCompositeGetEntries()
+         DMCompositeScatterArray()
 
 @*/
 PetscErrorCode  DMCompositeScatter(DM dm,Vec gvec,...)
@@ -403,6 +408,61 @@ PetscErrorCode  DMCompositeScatter(DM dm,Vec gvec,...)
     }
   }
   va_end(Argp);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMCompositeScatterArray"
+/*@
+    DMCompositeScatterArray - Scatters from a global packed vector into its individual local vectors
+
+    Collective on DMComposite
+
+    Input Parameters:
++    dm - the packer object
+.    gvec - the global vector
+.    lvecs - array of local vectors, NULL for any that are not needed
+
+    Level: advanced
+
+    Note:
+    This is a non-variadic alternative to DMCompositeScatterArray()
+
+.seealso DMDestroy(), DMCompositeAddDM(), DMCreateGlobalVector()
+         DMCompositeGather(), DMCompositeCreate(), DMCompositeGetISLocalToGlobalMappings(), DMCompositeGetAccess(),
+         DMCompositeGetLocalVectors(), DMCompositeRestoreLocalVectors(), DMCompositeGetEntries()
+
+@*/
+PetscErrorCode  DMCompositeScatterArray(DM dm,Vec gvec,Vec *lvecs)
+{
+  PetscErrorCode         ierr;
+  struct DMCompositeLink *next;
+  PetscInt               i;
+  DM_Composite           *com = (DM_Composite*)dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidHeaderSpecific(gvec,VEC_CLASSID,2);
+  if (!com->setup) {
+    ierr = DMSetUp(dm);CHKERRQ(ierr);
+  }
+
+  /* loop over packed objects, handling one at at time */
+  for (i=0,next=com->next; next; next=next->next,i++) {
+    if (lvecs[i]) {
+      Vec         global;
+      PetscScalar *array;
+      PetscValidHeaderSpecific(lvecs[i],VEC_CLASSID,3);
+      ierr = DMGetGlobalVector(next->dm,&global);CHKERRQ(ierr);
+      ierr = VecGetArray(gvec,&array);CHKERRQ(ierr);
+      ierr = VecPlaceArray(global,array+next->rstart);CHKERRQ(ierr);
+      ierr = DMGlobalToLocalBegin(next->dm,global,INSERT_VALUES,lvecs[i]);CHKERRQ(ierr);
+      ierr = DMGlobalToLocalEnd(next->dm,global,INSERT_VALUES,lvecs[i]);CHKERRQ(ierr);
+      ierr = VecRestoreArray(gvec,&array);CHKERRQ(ierr);
+      ierr = VecResetArray(global);CHKERRQ(ierr);
+      ierr = DMRestoreGlobalVector(next->dm,&global);CHKERRQ(ierr);
+    }
+  }
   PetscFunctionReturn(0);
 }
 
@@ -460,6 +520,60 @@ PetscErrorCode  DMCompositeGather(DM dm,Vec gvec,InsertMode imode,...)
     }
   }
   va_end(Argp);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMCompositeGatherArray"
+/*@
+    DMCompositeGatherArray - Gathers into a global packed vector from its individual local vectors
+
+    Collective on DMComposite
+
+    Input Parameter:
++    dm - the packer object
+.    gvec - the global vector
+-    lvecs - the individual sequential vectors, NULL for any that are not needed
+
+    Level: advanced
+
+    Notes:
+    This is a non-variadic alternative to DMCompositeGather().
+
+.seealso DMDestroy(), DMCompositeAddDM(), DMCreateGlobalVector(),
+         DMCompositeScatter(), DMCompositeCreate(), DMCompositeGetISLocalToGlobalMappings(), DMCompositeGetAccess(),
+         DMCompositeGetLocalVectors(), DMCompositeRestoreLocalVectors(), DMCompositeGetEntries(),
+@*/
+PetscErrorCode  DMCompositeGatherArray(DM dm,Vec gvec,InsertMode imode,Vec *lvecs)
+{
+  PetscErrorCode         ierr;
+  struct DMCompositeLink *next;
+  DM_Composite           *com = (DM_Composite*)dm->data;
+  PetscInt               i;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidHeaderSpecific(gvec,VEC_CLASSID,2);
+  if (!com->setup) {
+    ierr = DMSetUp(dm);CHKERRQ(ierr);
+  }
+
+  /* loop over packed objects, handling one at at time */
+  for (next=com->next,i=0; next; next=next->next,i++) {
+    if (lvecs[i]) {
+      PetscScalar *array;
+      Vec         global;
+      PetscValidHeaderSpecific(lvecs[i],VEC_CLASSID,3);
+      ierr = DMGetGlobalVector(next->dm,&global);CHKERRQ(ierr);
+      ierr = VecGetArray(gvec,&array);CHKERRQ(ierr);
+      ierr = VecPlaceArray(global,array+next->rstart);CHKERRQ(ierr);
+      ierr = DMLocalToGlobalBegin(next->dm,lvecs[i],imode,global);CHKERRQ(ierr);
+      ierr = DMLocalToGlobalEnd(next->dm,lvecs[i],imode,global);CHKERRQ(ierr);
+      ierr = VecRestoreArray(gvec,&array);CHKERRQ(ierr);
+      ierr = VecResetArray(global);CHKERRQ(ierr);
+      ierr = DMRestoreGlobalVector(next->dm,&global);CHKERRQ(ierr);
+    }
+  }
   PetscFunctionReturn(0);
 }
 
