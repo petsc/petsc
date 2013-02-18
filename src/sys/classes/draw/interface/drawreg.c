@@ -233,6 +233,7 @@ PetscErrorCode  PetscDrawRegister(const char *sname,const char *path,const char 
 +   -nox - do not use X graphics (ignore graphics calls, but run program correctly)
 .   -nox_warning - when X windows support is not installed this prevents the warning message
                    from being printed
+.   -draw_pause <pause amount> -- -1 indicates wait for mouse input, -2 indicates pause when window is to be destroyed
 .   -draw_save [optional filename] - (X windows only) saves each image before it is cleared to a file
 -   -draw_save_movie - converts image files to a movie  at the end of the run. See PetscDrawSetSave()
 
@@ -253,6 +254,7 @@ PetscErrorCode  PetscDrawSetFromOptions(PetscDraw draw)
   PetscBool      flg,nox;
   char           vtype[256];
   const char     *def;
+  PetscReal      dpause;
 #if !defined(PETSC_USE_WINDOWS_GRAPHICS) && !defined(PETSC_HAVE_X)
   PetscBool      warn;
 #endif
@@ -300,6 +302,8 @@ PetscErrorCode  PetscDrawSetFromOptions(PetscDraw draw)
     }
   }
 #endif
+  ierr = PetscOptionsGetReal(NULL,"-draw_pause",&dpause,&flg);CHKERRQ(ierr);
+  if (flg) draw->pause = dpause;
 
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
   ierr = PetscObjectProcessOptionsHandlers((PetscObject)draw);CHKERRQ(ierr);
