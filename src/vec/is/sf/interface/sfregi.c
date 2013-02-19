@@ -26,7 +26,7 @@ PetscErrorCode  PetscSFRegisterAll(const char path[])
 
   PetscFunctionBegin;
   PetscSFRegisterAllCalled = PETSC_TRUE;
-#if defined(PETSC_HAVE_MPI_WIN_CREATE)
+#if defined(PETSC_HAVE_MPI_WIN_CREATE) && defined(PETSC_HAVE_MPI_TYPE_DUP)
   ierr = PetscSFRegisterDynamic(PETSCSFWINDOW,       path,"PetscSFCreate_Window",       PetscSFCreate_Window);CHKERRQ(ierr);
 #endif
   ierr = PetscSFRegisterDynamic(PETSCSFBASIC,        path,"PetscSFCreate_Basic",        PetscSFCreate_Basic);CHKERRQ(ierr);
