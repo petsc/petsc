@@ -310,6 +310,7 @@ PetscErrorCode  PetscSynchronizedPrintf(MPI_Comm comm,const char format[],...)
   PetscMPIInt    rank;
 
   PetscFunctionBegin;
+  if (comm == MPI_COMM_NULL) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Called with MPI_COMM_NULL, likely PetscObjectComm() failed");
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
   /* First processor prints immediately to stdout */
@@ -378,6 +379,7 @@ PetscErrorCode  PetscSynchronizedFPrintf(MPI_Comm comm,FILE *fp,const char forma
   PetscMPIInt    rank;
 
   PetscFunctionBegin;
+  if (comm == MPI_COMM_NULL) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Called with MPI_COMM_NULL, likely PetscObjectComm() failed");
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
   /* First processor prints immediately to fp */
@@ -520,6 +522,7 @@ PetscErrorCode  PetscFPrintf(MPI_Comm comm,FILE* fd,const char format[],...)
   PetscMPIInt    rank;
 
   PetscFunctionBegin;
+  if (comm == MPI_COMM_NULL) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Called with MPI_COMM_NULL, likely PetscObjectComm() failed");
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   if (!rank) {
     va_list Argp;
@@ -563,7 +566,7 @@ PetscErrorCode  PetscPrintf(MPI_Comm comm,const char format[],...)
   PetscMPIInt    rank;
 
   PetscFunctionBegin;
-  if (!comm) comm = PETSC_COMM_WORLD;
+  if (comm == MPI_COMM_NULL) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Called with MPI_COMM_NULL, likely PetscObjectComm() failed");
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   if (!rank) {
     va_list Argp;
@@ -605,7 +608,7 @@ PetscErrorCode  PetscHelpPrintfDefault(MPI_Comm comm,const char format[],...)
   PetscMPIInt    rank;
 
   PetscFunctionBegin;
-  if (!comm) comm = PETSC_COMM_WORLD;
+  if (comm == MPI_COMM_NULL) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Called with MPI_COMM_NULL, likely PetscObjectComm() failed");
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   if (!rank) {
     va_list Argp;
