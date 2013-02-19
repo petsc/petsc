@@ -106,31 +106,32 @@ PetscErrorCode MatSetUpMultiply_MPIAIJ(Mat mat)
   /* create two temporary Index sets for build scatter gather */
   /*  check for the special case where blocks are communicated for faster VecScatterXXX */
   useblockis = PETSC_FALSE;
-/*   if (mat->cmap->bs > 1) { */
-/*     PetscInt bs = mat->cmap->bs,ibs,ga; */
-/*     if (!(ec % bs)) { */
-/*       useblockis = PETSC_TRUE; */
-/*       for (i=0; i<ec/bs; i++) { */
-/*         if ((ga = garray[ibs = i*bs]) % bs) { */
-/*           useblockis = PETSC_FALSE; */
-/*           break; */
-/*         } */
-/*         for (j=1; j<bs; j++) { */
-/*           if (garray[ibs+j] != ga+j) { */
-/*             useblockis = PETSC_FALSE; */
-/*             break; */
-/*           } */
-/*         } */
-/*         if (!useblockis) break; */
-/*       } */
-/*     } */
-/*   } */
-/* #if defined(PETSC_USE_DEBUG) */
-/*   i    = (PetscInt)useblockis; */
-/*   ierr = MPI_Allreduce(&i,&j,1,MPIU_INT,MPI_MIN,PetscObjectComm((PetscObject)mat));CHKERRQ(ierr); */
-/*   if (j!=i) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Use of blocked not consistant (I am usning blocked)"); */
-/* #endif */
-
+#if 0
+  if (mat->cmap->bs > 1) {
+    PetscInt bs = mat->cmap->bs,ibs,ga;
+    if (!(ec % bs)) {
+      useblockis = PETSC_TRUE;
+      for (i=0; i<ec/bs; i++) {
+        if ((ga = garray[ibs = i*bs]) % bs) {
+          useblockis = PETSC_FALSE;
+          break;
+        }
+        for (j=1; j<bs; j++) {
+          if (garray[ibs+j] != ga+j) {
+            useblockis = PETSC_FALSE;
+            break;
+          }
+        }
+        if (!useblockis) break;
+      }
+    }
+  }
+#if defined(PETSC_USE_DEBUG)
+  i    = (PetscInt)useblockis;
+  ierr = MPI_Allreduce(&i,&j,1,MPIU_INT,MPI_MIN,PetscObjectComm((PetscObject)mat));CHKERRQ(ierr);
+  if (j!=i) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Use of blocked not consistant (I am usning blocked)");
+#endif
+#endif
   if (useblockis) {
     PetscInt *ga,bs = mat->cmap->bs,iec = ec/bs;
     if (ec%bs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"ec=%D bs=%D",ec,bs);
