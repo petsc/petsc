@@ -1,3 +1,4 @@
+
 static char help[] = "Time-dependent PDE in 2d for calculating joint PDF. \n";
 /*
    p_t = -x_t*p_x -y_t*p_y + f(t)*p_yy
@@ -5,7 +6,7 @@ static char help[] = "Time-dependent PDE in 2d for calculating joint PDF. \n";
 
    Boundary conditions Neumman using mirror values
 
-   Note that x_t and y_t in the above are given functions of x and y; they are not derivatives of x and y. 
+   Note that x_t and y_t in the above are given functions of x and y; they are not derivatives of x and y.
    x_t = (y - ws)  y_t = (ws/2H)*(Pm - Pmax*sin(x))
 
 */
@@ -13,7 +14,6 @@ static char help[] = "Time-dependent PDE in 2d for calculating joint PDF. \n";
 #include <petscdmda.h>
 #include <petscts.h>
 
-static const char *const BoundaryTypes[] = {"NONE","GHOSTED","MIRROR","PERIODIC","DMDABoundaryType","DMDA_BOUNDARY_",0};
 /*
    User-defined data structures and routines
 */
@@ -41,6 +41,7 @@ typedef struct {
   PetscInt    st_width; /* Stencil width */
   DMDABoundaryType bx; /* x boundary type */
   DMDABoundaryType by; /* y boundary type */
+  PetscBool        nonoiseinitial;
 } AppCtx;
 
 PetscErrorCode Parameter_settings(AppCtx*);
@@ -106,16 +107,34 @@ int main(int argc, char **argv)
 PetscErrorCode PostStep(TS ts)
 {
   PetscErrorCode ierr;
-  Vec            X;
+  Vec            X,gc;
   AppCtx         *user;
-  PetscScalar    sum;
-  PetscReal      t;
+  PetscScalar    sum = 0,asum;
+  PetscReal      t,**p;
+  DMDACoor2d     **coors;
+  DM             cda;
+  PetscInt       i,j,xs,ys,xm,ym;
+
   PetscFunctionBegin;
   ierr = TSGetApplicationContext(ts,&user);CHKERRQ(ierr);
   ierr = TSGetTime(ts,&t);CHKERRQ(ierr);
   ierr = TSGetSolution(ts,&X);CHKERRQ(ierr);
-  ierr = VecSum(X,&sum);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"sum(p)*dw*dtheta at t = %f = %f\n",(double)t,(double)(sum));CHKERRQ(ierr);
+
+  ierr = DMGetCoordinateDM(user->da,&cda);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(cda,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
+  ierr = DMGetCoordinates(user->da,&gc);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(cda,gc,&coors);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(user->da,X,&p);CHKERRQ(ierr);
+  for (i=xs; i < xs+xm; i++) {
+    for (j=ys; j < ys+ym; j++) {
+      //      printf("i %d j %d y %g %g\n",i,j,coors[j][i].y,p[j][i]);
+      if (coors[j][i].y < 5) sum += p[j][i];
+    }
+  }
+  ierr = DMDAVecRestoreArray(cda,gc,&coors);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(user->da,X,&p);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&sum,&asum,1,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)ts));CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"sum(p)*dw*dtheta at t = %f = %f\n",(double)t,(double)(asum));CHKERRQ(ierr);
   if (sum  < 1.0e-2) {
     ierr = TSSetConvergedReason(ts,TS_CONVERGED_USER);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Exiting TS as the integral of PDF is almost zero\n");CHKERRQ(ierr);
@@ -156,20 +175,29 @@ PetscErrorCode ini_bou(Vec X,AppCtx* user)
      in the y-direction. We only modify mux here
   */
   mux = user->mux = coors[0][M/2+10].x; /* For -pi < x < pi, this should be some angle between 0 and pi/2 */
-  /* Change PM_min accordingly */
-  user->PM_min = user->Pmax*sin(mux);
-  for (i=xs; i < xs+xm; i++) {
-    for (j=ys; j < ys+ym; j++) {
-      xi = coors[j][i].x; yi = coors[j][i].y;
-      p[j][i] = (0.5/(PETSC_PI*sigmax*sigmay*PetscSqrtScalar(1.0-rho*rho)))*PetscExpScalar(-0.5/(1-rho*rho)*(PetscPowScalar((xi-mux)/sigmax,2) + PetscPowScalar((yi-muy)/sigmay,2) - 2*rho*(xi-mux)*(yi-muy)/(sigmax*sigmay)));
+  if (user->nonoiseinitial) {
+    for (i=xs; i < xs+xm; i++) {
+      for (j=ys; j < ys+ym; j++) {
+        xi = coors[j][i].x; yi = coors[j][i].y;
+        if ((xi == mux) && (yi == muy)) {
+          p[j][i] = 1.0;
+        }
+      }
+    }
+  } else {
+    /* Change PM_min accordingly */
+    user->PM_min = user->Pmax*sin(mux);
+    for (i=xs; i < xs+xm; i++) {
+      for (j=ys; j < ys+ym; j++) {
+        xi = coors[j][i].x; yi = coors[j][i].y;
+        p[j][i] = (0.5/(PETSC_PI*sigmax*sigmay*PetscSqrtScalar(1.0-rho*rho)))*PetscExpScalar(-0.5/(1-rho*rho)*(PetscPowScalar((xi-mux)/sigmax,2) + PetscPowScalar((yi-muy)/sigmay,2) - 2*rho*(xi-mux)*(yi-muy)/(sigmax*sigmay)));
+      }
     }
   }
   ierr = DMDAVecRestoreArray(cda,gc,&coors);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(user->da,X,&p);CHKERRQ(ierr);
-  /*  ierr = VecSum(X,&sum);CHKERRQ(ierr); */
-  sum =  (0.5/(PETSC_PI*sigmax*sigmay*PetscSqrtScalar(1.0-rho*rho)));
-  sum = 1.0/(sum);
-  ierr = VecScale(X,sum);CHKERRQ(ierr);
+  ierr = VecSum(X,&sum);CHKERRQ(ierr);
+  ierr = VecScale(X,1.0/sum);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -365,6 +393,7 @@ PetscErrorCode Parameter_settings(AppCtx *user)
   user->xmax   =  PETSC_PI;
   user->bx     = DMDA_BOUNDARY_PERIODIC;
   user->by     = DMDA_BOUNDARY_MIRROR;
+  user->nonoiseinitial = PETSC_FALSE;
 
   /*
      ymin of -3 seems to let the unstable solution move up and leave a zero in its wake
@@ -393,8 +422,9 @@ PetscErrorCode Parameter_settings(AppCtx *user)
   ierr = PetscOptionsGetScalar(NULL,"-ymin",&user->ymin,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetScalar(NULL,"-ymax",&user->ymax,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,"-stencil_width",&user->st_width,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetEnum("","-bx",BoundaryTypes,(PetscEnum*)&user->bx,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetEnum("","-by",BoundaryTypes,(PetscEnum*)&user->by,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetEnum(NULL,"-bx",DMDABoundaryTypes,(PetscEnum*)&user->bx,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetEnum(NULL,"-by",DMDABoundaryTypes,(PetscEnum*)&user->by,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-nonoiseinitial",&user->nonoiseinitial,&flg);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

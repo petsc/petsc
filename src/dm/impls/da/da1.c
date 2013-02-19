@@ -6,7 +6,7 @@
 
 #include <petsc-private/dmdaimpl.h>     /*I  "petscdmda.h"   I*/
 
-const char *const DMDABoundaryTypes[] = {"BOUNDARY_NONE","BOUNDARY_GHOSTED","BOUNDARY_PERIODIC","DMDA_",0};
+const char *const DMDABoundaryTypes[] = {"NONE","GHOSTED","PERIODIC","DMDA_BOUNDARY_",0};
 
 #include <petscdraw.h>
 #undef __FUNCT__

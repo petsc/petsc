@@ -19,6 +19,7 @@
 -ts_monitor_draw_solution
 #-draw_bounds -.1,1.7
 -ts_monitor_draw_solution_show_time
+#-draw_contour_grid
 
 #-draw_save
 #-draw_save_movie
