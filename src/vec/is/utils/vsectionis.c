@@ -3,7 +3,6 @@
 */
 
 #include <petsc-private/isimpl.h>   /*I  "petscvec.h"   I*/
-#include <petscviewer.h>
 
 PetscClassId PETSC_SECTION_CLASSID;
 

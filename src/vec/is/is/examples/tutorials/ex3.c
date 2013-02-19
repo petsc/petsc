@@ -10,7 +10,6 @@ static char help[] = "Demonstrates creating a blocked index set.\n\n";
 T*/
 
 #include <petscis.h>
-#include <petscviewer.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

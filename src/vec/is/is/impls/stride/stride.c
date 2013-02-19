@@ -4,8 +4,6 @@
     start, stride and length.
 */
 #include <petsc-private/isimpl.h>             /*I   "petscis.h"   I*/
-#include <petscvec.h>
-#include <petscviewer.h>
 
 typedef struct {
   PetscInt N,n,first,step;

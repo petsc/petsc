@@ -3,7 +3,6 @@
    Defines the abstract operations on index sets, i.e. the public interface.
 */
 #include <petsc-private/isimpl.h>      /*I "petscis.h" I*/
-#include <petscviewer.h>
 
 /* Logging support */
 PetscClassId IS_CLASSID;
