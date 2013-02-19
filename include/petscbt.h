@@ -59,7 +59,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscBTView(PetscInt m,const PetscBT bt,Petsc
   PetscInt       i;
   PetscErrorCode ierr;
 
-  if (!viewer) viewer = PETSC_VIEWER_STDOUT_SELF;
+  ierr = PetscViewerASCIIGetStdout(PETSC_COMM_SELF,&viewer);CHKERRQ(ierr);
   ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_TRUE);CHKERRQ(ierr);
   for (i=0; i<m; i++) {
     ierr = PetscViewerASCIISynchronizedPrintf(viewer,"%D %d\n",i,PetscBTLookup(bt,i));CHKERRQ(ierr);
