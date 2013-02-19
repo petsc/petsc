@@ -124,7 +124,13 @@ cdef inline type subtype_DM(PetscDM dm):
     cdef PetscBool match = PETSC_FALSE
     # -- DMDA --
     CHKERR( PetscObjectTypeCompare(obj, b"da", &match) )
-    if match == PETSC_TRUE: klass = DMDA
+    if match == PETSC_TRUE:
+        klass = DMDA
+        return klass
+    CHKERR( PetscObjectTypeCompare(obj, b"composite", &match) )
+    if match == PETSC_TRUE:
+        klass = DMComposite
+        return klass
     # --------
     return klass
 
