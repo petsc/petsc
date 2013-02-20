@@ -69,21 +69,13 @@ PetscErrorCode  KSPSolve_MINRES(KSP ksp)
   ierr = KSP_PCApply(ksp,R,Z);CHKERRQ(ierr); /*     z  <- B*r       */
 
   ierr = VecDot(R,Z,&dp);CHKERRQ(ierr);
-  if (PetscAbsScalar(dp) < minres->haptol) {
-    ierr = PetscInfo2(ksp,"Detected happy breakdown %G tolerance %G\n",PetscAbsScalar(dp),minres->haptol);CHKERRQ(ierr);
-    dp   = PetscAbsScalar(dp); /* tiny number, can't use 0.0, cause divided by below */
-    if (dp == 0.0) {
-      ksp->reason = KSP_CONVERGED_ATOL;
-      PetscFunctionReturn(0);
-    }
-  }
-
-#if !defined(PETSC_USE_COMPLEX)
-  if (dp < 0.0) {
-    ksp->reason = KSP_DIVERGED_INDEFINITE_PC;
+  if (PetscRealPart(dp) < minres->haptol) {
+    ierr = PetscInfo2(ksp,"Detected indefinite operator %G tolerance %G\n",PetscRealPart(dp),minres->haptol);CHKERRQ(ierr);
+    ksp->reason = KSP_DIVERGED_INDEFINITE_MAT;
     PetscFunctionReturn(0);
   }
-#endif
+
+  dp   = PetscAbsScalar(dp);
   dp   = PetscSqrtScalar(dp);
   beta = dp;                                        /*  beta <- sqrt(r'*z  */
   eta  = beta;
@@ -120,17 +112,13 @@ PetscErrorCode  KSPSolve_MINRES(KSP ksp)
     betaold = beta;
 
     ierr = VecDot(R,Z,&dp);CHKERRQ(ierr);
-    if (PetscAbsScalar(dp) < minres->haptol) {
-      ierr = PetscInfo2(ksp,"Detected happy breakdown %G tolerance %G\n",PetscAbsScalar(dp),minres->haptol);CHKERRQ(ierr);
-      dp   = PetscAbsScalar(dp); /* tiny number, can we use 0.0? */
-    }
-
-#if !defined(PETSC_USE_COMPLEX)
-    if (dp < 0.0) {
-      ksp->reason = KSP_DIVERGED_INDEFINITE_PC;
+    if ( PetscRealPart(dp) < minres->haptol) {
+      ierr = PetscInfo2(ksp,"Detected indefinite operator %G tolerance %G\n",PetscRealPart(dp),minres->haptol);CHKERRQ(ierr);
+      ksp->reason = KSP_DIVERGED_INDEFINITE_MAT;
       break;
     }
-#endif
+
+    dp   = PetscAbsScalar(dp);
     beta = PetscSqrtScalar(dp);                               /*  beta <- sqrt(r'*z)   */
 
 /*    QR factorisation    */
