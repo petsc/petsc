@@ -67,7 +67,9 @@ cdef class DMDA(DM):
         if ndof==PETSC_DECIDE: ndof = 1
         # vertex distribution
         if ownership_ranges is not None:
-            ranges_mem = asOwnershipRanges(ownership_ranges, &lx, &ly, &lz)
+            oranges = asOwnershipRanges(ownership_ranges,
+                                        dim, &m, &n, &p,
+                                        &lx, &ly, &lz)
         # periodicity, stencil type & width
         if boundary_type is not None:
             asBoundary(boundary_type, &btx, &bty, &btz)
@@ -305,7 +307,8 @@ cdef class DMDA(DM):
     def getOwnershipRanges(self):
         cdef PetscInt dim=0, m, n, p
         cdef const_PetscInt *lx = NULL, *ly = NULL, *lz = NULL
-        CHKERR( DMDAGetInfo(self.dm, &dim,
+        CHKERR( DMDAGetInfo(self.dm,
+                            &dim,
                             NULL, NULL, NULL,
                             &m, &n, &p,
                             NULL, NULL,

@@ -197,22 +197,43 @@ cdef inline tuple toDims(PetscInt dim,
                          PetscInt M,
                          PetscInt N,
                          PetscInt P):
-        if   dim == 0: return ()
-        elif dim == 1: return (toInt(M),)
-        elif dim == 2: return (toInt(M), toInt(N))
-        elif dim == 3: return (toInt(M), toInt(N), toInt(P))
+    if   dim == 0: return ()
+    elif dim == 1: return (toInt(M),)
+    elif dim == 2: return (toInt(M), toInt(N))
+    elif dim == 3: return (toInt(M), toInt(N), toInt(P))
 
 cdef inline tuple asOwnershipRanges(object ownership_ranges,
-                                   PetscInt **_x,
-                                   PetscInt **_y,
-                                   PetscInt **_z):
-    # Returns tuple controlling lifetime of pointers
-    cdef PetscInt dim, nlx, nly, nlz
-    ranges = tuple(ownership_ranges)
-    dim = len(ranges)
-    return (iarray_i(ranges[0], &nlx, _x),
-            iarray_i(ranges[1], &nly, _y),
-            iarray_i(ranges[1], &nlz, _z))
+                                    PetscInt dim,
+                                    PetscInt *m, PetscInt *n, PetscInt *p,
+                                    PetscInt **_x,
+                                    PetscInt **_y,
+                                    PetscInt **_z):
+    cdef PetscInt rdim, nlx, nly, nlz
+    ranges = list(ownership_ranges)
+    rdim = <PetscInt>len(ranges)
+    if dim == PETSC_DECIDE: dim = rdim
+    elif dim != rdim: raise ValueError(
+        "number of dimensions %d and number ownership ranges %d" %
+        (toInt(dim), toInt(rdim)))
+    if dim >= 1: 
+        ranges[0] = iarray_i(ranges[0], &nlx, _x)
+        if m[0] == PETSC_DECIDE: m[0] = nlx
+        elif m[0] != nlx: raise ValueError(
+            "ownership range size %d and number or processors %d" %
+            (toInt(nlx), toInt(m[0])))
+    if dim >= 2:
+        ranges[1] = iarray_i(ranges[1], &nly, _y)
+        if n[0] == PETSC_DECIDE: n[0] = nly
+        elif n[0] != nly: raise ValueError(
+            "ownership range size %d and number or processors %d" %
+            (toInt(nly), toInt(n[0])))
+    if dim >= 3:
+        ranges[2] = iarray_i(ranges[2], &nlz, _z)
+        if p[0] == PETSC_DECIDE: p[0] = nlz
+        elif p[0] != nlz: raise ValueError(
+            "ownership range size %d and number or processors %d" %
+             (toInt(nlz), toInt(p[0])))
+    return ranges
 
 cdef inline tuple toOwnershipRanges(PetscInt dim,
                                     PetscInt m, PetscInt n, PetscInt p,
