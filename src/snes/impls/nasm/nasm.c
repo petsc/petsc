@@ -93,6 +93,9 @@ PetscErrorCode SNESSetUp_NASM(SNES snes)
   PetscInt       i;
   const char     *optionsprefix;
   Vec            F;
+  PetscMPIInt    size;
+  KSP            ksp;
+  PC             pc;
 
   PetscFunctionBegin;
   if (!nasm->subsnes) {
@@ -105,12 +108,18 @@ PetscErrorCode SNESSetUp_NASM(SNES snes)
 
       ierr = SNESGetOptionsPrefix(snes, &optionsprefix);CHKERRQ(ierr);
       ierr = PetscMalloc(nasm->n*sizeof(SNES),&nasm->subsnes);CHKERRQ(ierr);
-
       for (i=0; i<nasm->n; i++) {
         ierr = SNESCreate(PETSC_COMM_SELF,&nasm->subsnes[i]);CHKERRQ(ierr);
         ierr = SNESAppendOptionsPrefix(nasm->subsnes[i],optionsprefix);CHKERRQ(ierr);
         ierr = SNESAppendOptionsPrefix(nasm->subsnes[i],"sub_");CHKERRQ(ierr);
         ierr = SNESSetDM(nasm->subsnes[i],subdms[i]);CHKERRQ(ierr);
+        ierr = MPI_Comm_size(PetscObjectComm((PetscObject)nasm->subsnes[i]),&size);CHKERRQ(ierr);
+        if (size == 1) {
+          ierr = SNESGetKSP(nasm->subsnes[i],&ksp);CHKERRQ(ierr);
+          ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
+          ierr = KSPSetType(ksp,KSPPREONLY);CHKERRQ(ierr);
+          ierr = PCSetType(pc,PCLU);CHKERRQ(ierr);
+        }
         ierr = SNESSetFromOptions(nasm->subsnes[i]);CHKERRQ(ierr);
         ierr = DMDestroy(&subdms[i]);CHKERRQ(ierr);
       }
@@ -470,7 +479,6 @@ PetscErrorCode SNESNASMSolveLocal_Private(SNES snes,Vec B,Vec Y,Vec X)
   PetscFunctionBegin;
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
   ierr = VecSet(Y,0);CHKERRQ(ierr);
-
   if (nasm->eventrestrictinterp) {ierr = PetscLogEventBegin(nasm->eventrestrictinterp,snes,0,0,0);CHKERRQ(ierr);}
   for (i=0; i<nasm->n; i++) {
     /* scatter the solution to the local solution */
@@ -486,16 +494,6 @@ PetscErrorCode SNESNASMSolveLocal_Private(SNES snes,Vec B,Vec Y,Vec X)
   }
   if (nasm->eventrestrictinterp) {ierr = PetscLogEventEnd(nasm->eventrestrictinterp,snes,0,0,0);CHKERRQ(ierr);}
 
-  for (i=0; i<nasm->n; i++) {
-    Xlloc = nasm->xl[i];
-    gscat   = nasm->gscatter[i];
-    oscat   = nasm->oscatter[i];
-    ierr = VecScatterEnd(gscat,X,Xlloc,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    if (B) {
-      Bl   = nasm->b[i];
-      ierr = VecScatterEnd(oscat,B,Bl,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    }
-  }
 
   if (nasm->eventsubsolve) {ierr = PetscLogEventBegin(nasm->eventsubsolve,snes,0,0,0);CHKERRQ(ierr);}
   for (i=0; i<nasm->n; i++) {
@@ -507,34 +505,25 @@ PetscErrorCode SNESNASMSolveLocal_Private(SNES snes,Vec B,Vec Y,Vec X)
     iscat   = nasm->iscatter[i];
     oscat   = nasm->oscatter[i];
     gscat   = nasm->gscatter[i];
-    ierr    = DMSubDomainRestrict(dm,oscat,gscat,subdm);CHKERRQ(ierr);
+    ierr = VecScatterEnd(gscat,X,Xlloc,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     if (B) {
-      Bl = nasm->b[i];
-    } else {
-      Bl = NULL;
-    }
+      Bl   = nasm->b[i];
+      ierr = VecScatterEnd(oscat,B,Bl,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    } else Bl = NULL;
+    ierr = DMSubDomainRestrict(dm,oscat,gscat,subdm);CHKERRQ(ierr);
     ierr = DMLocalToGlobalBegin(subdm,Xlloc,INSERT_VALUES,Xl);CHKERRQ(ierr);
     ierr = DMLocalToGlobalEnd(subdm,Xlloc,INSERT_VALUES,Xl);CHKERRQ(ierr);
     ierr = VecCopy(Xl,Yl);CHKERRQ(ierr);
-    ierr = SNESSolve(subsnes,Bl,Yl);CHKERRQ(ierr);
-    ierr = VecAXPY(Yl,-1.0,Xl);CHKERRQ(ierr);
-  }
-  if (nasm->eventsubsolve) {ierr = PetscLogEventEnd(nasm->eventsubsolve,snes,0,0,0);CHKERRQ(ierr);}
-
-  ierr = MPI_Barrier(PetscObjectComm((PetscObject)snes));CHKERRQ(ierr);
-
-  if (nasm->eventrestrictinterp) {ierr = PetscLogEventBegin(nasm->eventrestrictinterp,snes,0,0,0);CHKERRQ(ierr);}
-  for (i=0; i<nasm->n; i++) {
-    Yl    = nasm->y[i];
-    iscat   = nasm->iscatter[i];
-    oscat   = nasm->oscatter[i];
+    ierr = SNESSolve(subsnes,Bl,Xl);CHKERRQ(ierr);
+    ierr = VecAYPX(Yl,-1.0,Xl);CHKERRQ(ierr);
     if (nasm->type == PC_ASM_BASIC) {
       ierr = VecScatterBegin(oscat,Yl,Y,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
     } else if (nasm->type == PC_ASM_RESTRICT) {
       ierr = VecScatterBegin(iscat,Yl,Y,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
     } else SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE,"Only basic and restrict types are supported for SNESNASM");
   }
-
+  if (nasm->eventsubsolve) {ierr = PetscLogEventEnd(nasm->eventsubsolve,snes,0,0,0);CHKERRQ(ierr);}
+  if (nasm->eventrestrictinterp) {ierr = PetscLogEventBegin(nasm->eventrestrictinterp,snes,0,0,0);CHKERRQ(ierr);}
   for (i=0; i<nasm->n; i++) {
     Yl    = nasm->y[i];
     iscat   = nasm->iscatter[i];
@@ -546,9 +535,6 @@ PetscErrorCode SNESNASMSolveLocal_Private(SNES snes,Vec B,Vec Y,Vec X)
     } else SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE,"Only basic and restrict types are supported for SNESNASM");
   }
   if (nasm->eventrestrictinterp) {ierr = PetscLogEventEnd(nasm->eventrestrictinterp,snes,0,0,0);CHKERRQ(ierr);}
-
-  ierr = MPI_Barrier(PetscObjectComm((PetscObject)snes));CHKERRQ(ierr);
-
   ierr = VecAXPY(X,1.0,Y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -580,27 +566,19 @@ PetscErrorCode SNESNASMComputeFinalJacobian_Private(SNES snes, Vec X)
   if (nasm->eventrestrictinterp) {ierr = PetscLogEventEnd(nasm->eventrestrictinterp,snes,0,0,0);CHKERRQ(ierr);}
 
   for (i=0; i<nasm->n; i++) {
-    Xlloc = nasm->xl[i];
-    gscat   = nasm->gscatter[i];
-    oscat   = nasm->oscatter[i];
-    ierr = VecScatterEnd(gscat,X,Xlloc,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  }
-
-  for (i=0; i<nasm->n; i++) {
-    Xl    = nasm->x[i];
-    Xlloc = nasm->xl[i];
+    Xl      = nasm->x[i];
+    Xlloc   = nasm->xl[i];
     subsnes = nasm->subsnes[i];
-    ierr    = SNESGetDM(subsnes,&subdm);CHKERRQ(ierr);
     oscat   = nasm->oscatter[i];
     gscat   = nasm->gscatter[i];
-    ierr    = DMSubDomainRestrict(dm,oscat,gscat,subdm);CHKERRQ(ierr);
+    ierr = VecScatterEnd(gscat,X,Xlloc,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = SNESGetDM(subsnes,&subdm);CHKERRQ(ierr);
+    ierr = DMSubDomainRestrict(dm,oscat,gscat,subdm);CHKERRQ(ierr);
     ierr = DMLocalToGlobalBegin(subdm,Xlloc,INSERT_VALUES,Xl);CHKERRQ(ierr);
     ierr = DMLocalToGlobalEnd(subdm,Xlloc,INSERT_VALUES,Xl);CHKERRQ(ierr);
     ierr = SNESComputeJacobian(subsnes,Xl,&snes->jacobian,&subsnes->jacobian_pre,&flg);CHKERRQ(ierr);
     ierr = KSPSetOperators(subsnes->ksp,subsnes->jacobian,subsnes->jacobian_pre,flg);CHKERRQ(ierr);
   }
-
-  ierr = MPI_Barrier(PetscObjectComm((PetscObject)snes));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -613,7 +591,7 @@ PetscErrorCode SNESSolve_NASM(SNES snes)
   Vec            B;
   Vec            Y;
   PetscInt       i;
-  PetscReal      fnorm;
+  PetscReal      fnorm = 0.0;
   PetscErrorCode ierr;
   SNESNormType   normtype;
   SNES_NASM      *nasm = (SNES_NASM*)snes->data;
