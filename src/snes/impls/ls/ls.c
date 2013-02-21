@@ -424,7 +424,7 @@ PetscErrorCode  SNESCreate_NEWTONLS(SNES snes)
   snes->ops->reset          = SNESReset_NEWTONLS;
 
   snes->usesksp = PETSC_TRUE;
-  snes->usespc  = PETSC_FALSE;
+  snes->usespc  = PETSC_TRUE;
   ierr          = PetscNewLog(snes,SNES_NEWTONLS,&neP);CHKERRQ(ierr);
   snes->data    = (void*)neP;
   PetscFunctionReturn(0);

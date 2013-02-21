@@ -14,13 +14,16 @@ PetscErrorCode MatMultASPIN(Mat m,Vec X,Vec Y)
   PetscBool      match;
   MPI_Comm       comm;
   KSP            ksp;
+  PC             pc;
   Vec            *x,*b;
+  Vec            W;
   SNES           npc;
 
   PetscFunctionBegin;
   ierr = MatShellGetContext(m,&ctx);CHKERRQ(ierr);
   snes = (SNES)ctx;
   ierr = SNESGetPC(snes,&npc);CHKERRQ(ierr);
+  ierr = SNESGetFunction(npc,&W,NULL,NULL);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)npc,SNESNASM,&match);CHKERRQ(ierr);
   if (!match) {
     ierr = PetscObjectGetComm((PetscObject)snes,&comm);
@@ -28,26 +31,24 @@ PetscErrorCode MatMultASPIN(Mat m,Vec X,Vec Y)
   }
   ierr = SNESNASMGetSubdomains(npc,&n,&subsnes,NULL,&oscatter,NULL);CHKERRQ(ierr);
   ierr = SNESNASMGetSubdomainVecs(npc,&n,&x,&b,NULL,NULL);CHKERRQ(ierr);
-  ierr = MatMult(npc->jacobian_pre,X,Y);CHKERRQ(ierr);
-  for (i=0;i<n;i++) {
-    ierr = VecScatterBegin(oscatter[i],Y,b[i],INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecScatterEnd(oscatter[i],Y,b[i],INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  }
-  ierr = MPI_Barrier(PetscObjectComm((PetscObject)snes));CHKERRQ(ierr);
-  for (i=0;i<n;i++) {
-    ierr = VecSet(x[i],0);CHKERRQ(ierr);
-    ierr = SNESGetKSP(subsnes[i],&ksp);CHKERRQ(ierr);
-    ierr = KSPSolve(ksp,b[i],x[i]);CHKERRQ(ierr);
-  }
+
   ierr = VecSet(Y,0);CHKERRQ(ierr);
-  ierr = MPI_Barrier(PetscObjectComm((PetscObject)snes));CHKERRQ(ierr);
+  ierr = MatMult(npc->jacobian_pre,X,W);CHKERRQ(ierr);
+
   for (i=0;i<n;i++) {
+    ierr = VecScatterBegin(oscatter[i],W,b[i],INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  }
+  for (i=0;i<n;i++) {
+    ierr = VecScatterEnd(oscatter[i],W,b[i],INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecSet(x[i],0.);CHKERRQ(ierr);
+    ierr = SNESGetKSP(subsnes[i],&ksp);CHKERRQ(ierr);
+    ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
+    ierr = PCApply(pc,b[i],x[i]);CHKERRQ(ierr);
     ierr = VecScatterBegin(oscatter[i],x[i],Y,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  }
+  for (i=0;i<n;i++) {
     ierr = VecScatterEnd(oscatter[i],x[i],Y,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   }
-
-  ierr = MPI_Barrier(PetscObjectComm((PetscObject)snes));CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -88,6 +89,7 @@ PetscErrorCode SNESCreate_ASPIN(SNES snes)
   MPI_Comm       comm;
   Vec            F;
   PetscInt       n;
+  SNESLineSearch linesearch;
 
   PetscFunctionBegin;
   /* set up the solver */
@@ -99,7 +101,9 @@ PetscErrorCode SNESCreate_ASPIN(SNES snes)
   ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
   ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
   ierr = PCSetType(pc,PCNONE);CHKERRQ(ierr);
-  ierr = PetscObjectGetComm((PetscObject)snes,&comm);
+  ierr = PetscObjectGetComm((PetscObject)snes,&comm);CHKERRQ(ierr);
+  ierr = SNESGetSNESLineSearch(snes,&linesearch);CHKERRQ(ierr);
+  ierr = SNESLineSearchSetType(linesearch,SNESLINESEARCHBT);CHKERRQ(ierr);
 
   /* set up the shell matrix */
   ierr = SNESGetFunction(snes,&F,NULL,NULL);CHKERRQ(ierr);

@@ -30,7 +30,8 @@ typedef struct {
   SNESLineSearch additive_linesearch;   /* Line search for the additive variant */
 
   /* Selection constants */
-  PetscBool candidate;          /* use candidate storage approach */
+  PetscBool candidate;         /* use candidate storage approach */
+  PetscBool approxfunc;        /* approximate the function rather than recomputing it */
   PetscBool singlereduction;   /* use a single reduction (with more local work) for tolerance selection */
   PetscReal gammaA;            /* Criterion A residual tolerance */
   PetscReal epsilonB;          /* Criterion B difference tolerance */
