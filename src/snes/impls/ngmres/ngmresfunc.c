@@ -97,7 +97,12 @@ PetscErrorCode SNESNGMRESFormCombinedSolution_Private(SNES snes,PetscInt l,Vec X
   ierr = VecCopy(XA,Y);CHKERRQ(ierr);
   ierr = VecAXPY(Y,-1.0,X);CHKERRQ(ierr);
   ierr = SNESLineSearchPostCheck(snes->linesearch,X,Y,XA,&changed_y,&changed_w);CHKERRQ(ierr);
-  ierr = SNESComputeFunction(snes,XA,FA);CHKERRQ(ierr);
+  if (!ngmres->approxfunc) {ierr = SNESComputeFunction(snes,XA,FA);CHKERRQ(ierr);}
+  else {
+    ierr = VecCopy(FM,FA);CHKERRQ(ierr);
+    ierr = VecScale(FA,1.-alph_total);CHKERRQ(ierr);
+    ierr = VecMAXPY(FA,l,beta,Fdot);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 

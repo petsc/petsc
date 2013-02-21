@@ -18,13 +18,13 @@ PetscErrorCode SNESSetFromOptions_Anderson(SNES snes)
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("SNES NGMRES options");CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-snes_anderson_m","Number of directions","SNES",ngmres->msize,&ngmres->msize,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-snes_anderson_beta","Number of directions","SNES",ngmres->andersonBeta,&ngmres->andersonBeta,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-snes_anderson_m",            "Number of directions","SNES",ngmres->msize,&ngmres->msize,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-snes_anderson_beta",        "Number of directions","SNES",ngmres->andersonBeta,&ngmres->andersonBeta,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-snes_anderson_monitor",     "Monitor actions of NGMRES","SNES",ngmres->monitor ? PETSC_TRUE : PETSC_FALSE,&debug,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-snes_anderson_restart",      "Iterations before forced restart", "SNES",ngmres->restart_periodic,&ngmres->restart_periodic,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-snes_anderson_restart_it",   "Tolerance iterations before restart","SNES",ngmres->restart_it,&ngmres->restart_it,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnum("-snes_anderson_restart_type","Restart type","SNESNGMRESSetRestartType",SNESNGMRESRestartTypes,
                           (PetscEnum)ngmres->restart_type,(PetscEnum*)&ngmres->restart_type,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-snes_anderson_monitor","Monitor actions of NGMRES","SNES",ngmres->monitor ? PETSC_TRUE : PETSC_FALSE,&debug,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-snes_anderson_restart",   "Iterations before forced restart",   "SNES",ngmres->restart_periodic,&ngmres->restart_periodic,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-snes_anderson_restart_it","Tolerance iterations before restart","SNES",ngmres->restart_it,&ngmres->restart_it,NULL);CHKERRQ(ierr);
   if (debug) {
     ngmres->monitor = PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)snes));CHKERRQ(ierr);
   }
@@ -236,7 +236,7 @@ PetscErrorCode SNESCreate_Anderson(SNES snes)
   }
 
   ngmres->additive_linesearch = NULL;
-
+  ngmres->approxfunc       = PETSC_FALSE;
   ngmres->restart_type     = SNES_NGMRES_RESTART_NONE;
   ngmres->restart_it       = 2;
   ngmres->restart_periodic = 30;
