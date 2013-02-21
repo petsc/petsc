@@ -545,7 +545,7 @@ PetscErrorCode SNESNASMComputeFinalJacobian_Private(SNES snes, Vec X)
 {
   SNES_NASM      *nasm = (SNES_NASM*)snes->data;
   SNES           subsnes;
-  PetscInt       i;
+  PetscInt       i,lag = 1;
   PetscErrorCode ierr;
   Vec            Xlloc,Xl;
   VecScatter     oscat,gscat;
@@ -557,14 +557,12 @@ PetscErrorCode SNESNASMComputeFinalJacobian_Private(SNES snes, Vec X)
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
   if (nasm->eventrestrictinterp) {ierr = PetscLogEventBegin(nasm->eventrestrictinterp,snes,0,0,0);CHKERRQ(ierr);}
   for (i=0; i<nasm->n; i++) {
-    /* scatter the solution to the local solution */
     Xlloc = nasm->xl[i];
     gscat   = nasm->gscatter[i];
     oscat   = nasm->oscatter[i];
     ierr = VecScatterBegin(gscat,X,Xlloc,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   }
   if (nasm->eventrestrictinterp) {ierr = PetscLogEventEnd(nasm->eventrestrictinterp,snes,0,0,0);CHKERRQ(ierr);}
-
   for (i=0; i<nasm->n; i++) {
     Xl      = nasm->x[i];
     Xlloc   = nasm->xl[i];
@@ -576,7 +574,11 @@ PetscErrorCode SNESNASMComputeFinalJacobian_Private(SNES snes, Vec X)
     ierr = DMSubDomainRestrict(dm,oscat,gscat,subdm);CHKERRQ(ierr);
     ierr = DMLocalToGlobalBegin(subdm,Xlloc,INSERT_VALUES,Xl);CHKERRQ(ierr);
     ierr = DMLocalToGlobalEnd(subdm,Xlloc,INSERT_VALUES,Xl);CHKERRQ(ierr);
+
+    if (subsnes->lagjacobian == -1)    subsnes->lagjacobian = -2;
+    else if (subsnes->lagjacobian > 1) lag = subsnes->lagjacobian;
     ierr = SNESComputeJacobian(subsnes,Xl,&snes->jacobian,&subsnes->jacobian_pre,&flg);CHKERRQ(ierr);
+    if (lag > 1) subsnes->lagjacobian = lag;
     ierr = KSPSetOperators(subsnes->ksp,subsnes->jacobian,subsnes->jacobian_pre,flg);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

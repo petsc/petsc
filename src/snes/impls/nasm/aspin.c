@@ -14,6 +14,7 @@ PetscErrorCode MatMultASPIN(Mat m,Vec X,Vec Y)
   PetscBool      match;
   MPI_Comm       comm;
   KSP            ksp;
+  PC             pc;
   Vec            *x,*b;
   Vec            W;
   SNES           npc;
@@ -41,7 +42,8 @@ PetscErrorCode MatMultASPIN(Mat m,Vec X,Vec Y)
     ierr = VecScatterEnd(oscatter[i],W,b[i],INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecSet(x[i],0.);CHKERRQ(ierr);
     ierr = SNESGetKSP(subsnes[i],&ksp);CHKERRQ(ierr);
-    ierr = KSPSolve(ksp,b[i],x[i]);CHKERRQ(ierr);
+    ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
+    ierr = PCApply(pc,b[i],x[i]);CHKERRQ(ierr);
     ierr = VecScatterBegin(oscatter[i],x[i],Y,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   }
   for (i=0;i<n;i++) {
