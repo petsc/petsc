@@ -511,7 +511,7 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "PetscViewerBinaryGetInfoPointer_Binary"
 PetscErrorCode  PetscViewerBinaryGetInfoPointer_Binary(PetscViewer viewer,FILE **file)
 {
-  PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;;
+  PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
   PetscErrorCode     ierr;
   MPI_Comm           comm;
 
