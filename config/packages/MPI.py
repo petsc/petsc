@@ -338,6 +338,9 @@ class Configure(config.package.Package):
     if self.framework.argDB['download-openmpi'] and self.framework.argDB['prefix']:
       raise RuntimeError('Currently --download-openmpi option does not work with --prefix install.\nSuggest installing OpenMPI separately, and then configuring PETSc with --with-mpi-dir option.')
 
+    if self.framework.argDB['download-mpich'] and self.framework.argDB['prefix']:
+      raise RuntimeError('Currently --download-mpich option does not work with --prefix install.\nSuggest installing MPICH separately, and then configuring PETSc with --with-mpi-dir option.')
+
     # Check for MPICH
     if self.framework.argDB['download-mpich']:
       if config.setCompilers.Configure.isCygwin() and not config.setCompilers.Configure.isGNU(self.setCompilers.CC):
