@@ -820,6 +820,10 @@ class Configure(config.base.Configure):
           self.logPrint('Found canonical library: '+lib, 4, 'compilers')
           flibs.append(lib)
           continue
+        # intel windows compilers can use -libpath argument
+        if arg.find('-libpath:')>=0:
+          self.logPrint('Skipping win32 ifort option: '+arg)
+          continue
         # Check for special library arguments
         m = re.match(r'^-l.*$', arg)
         if m:
