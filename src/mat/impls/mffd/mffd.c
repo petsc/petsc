@@ -25,6 +25,7 @@ PetscErrorCode  MatMFFDFinalizePackage(void)
   PetscFunctionBegin;
   MatMFFDPackageInitialized = PETSC_FALSE;
   MatMFFDRegisterAllCalled  = PETSC_FALSE;
+  MatMFFDRegisterDestroy();
   MatMFFDList               = NULL;
   PetscFunctionReturn(0);
 }
