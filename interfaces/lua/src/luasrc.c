@@ -20,7 +20,6 @@ int lua_VecSetSize(lua_State *L)
 
   vec = (Vec) lua_touserdata(L,1);
   n   = (PetscInt) lua_tointegerx(L,2,&isnum);
-   printf("%p %d\n",vec,n);
   ierr = VecSetSizes(vec,n,n);
   return 0;
 }

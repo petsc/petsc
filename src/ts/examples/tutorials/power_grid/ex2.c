@@ -138,6 +138,7 @@ int main(int argc,char **argv)
     ierr = VecGetArray(U,&u);CHKERRQ(ierr);
     u[0] = ctx.omega_s;
     u[1] = asin(ctx.Pm/ctx.Pmax);
+    ierr = PetscOptionsScalar("-xini","","",u[1],&u[1],NULL);CHKERRQ(ierr);
     ierr = VecRestoreArray(U,&u);CHKERRQ(ierr);
     ierr = PetscOptionsVec("-initial","Initial values","",U,NULL);CHKERRQ(ierr);
   }
