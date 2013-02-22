@@ -2,6 +2,8 @@
 #include <petsc-private/tsimpl.h>        /*I "petscts.h"  I*/
 #include <petscdmshell.h>
 #include <petscdmda.h>
+#include <petscviewer.h>
+#include <petscdraw.h>
 
 /* Logging support */
 PetscClassId  TS_CLASSID, DMTS_CLASSID;
@@ -45,6 +47,15 @@ static PetscErrorCode TSSetTypeFromOptions(TS ts)
   PetscFunctionReturn(0);
 }
 
+struct _n_TSMonitorDrawCtx {
+  PetscViewer viewer;
+  Vec         initialsolution;
+  PetscBool   showinitial;
+  PetscInt    howoften;  /* when > 0 uses step % howoften, when negative only final solution plotted */
+  PetscBool   showtimestepandtime;
+  int         color;
+};
+
 #undef __FUNCT__
 #define __FUNCT__ "TSSetFromOptions"
 /*@
@@ -68,7 +79,7 @@ static PetscErrorCode TSSetTypeFromOptions(TS ts)
 .  -ts_monitor_lg_ksp_iterations - Monitor number nonlinear iterations for each timestep graphically
 .  -ts_monitor_sp_eig - Monitor eigenvalues of linearized operator graphically
 .  -ts_monitor_draw_solution - Monitor solution graphically
-.  -ts_monitor_draw_solution - Monitor solution graphically
+.  -ts_monitor_draw_solution_phase - Monitor solution graphically with phase diagram
 .  -ts_monitor_draw_error - Monitor error graphically
 .  -ts_monitor_solution_binary <filename> - Save each solution to a binary file
 -  -ts_monitor_solution_vtk <filename.vts> - Save each time step to a binary file, use filename-%%03D.vts
@@ -187,6 +198,22 @@ PetscErrorCode  TSSetFromOptions(TS ts)
     ierr = PetscOptionsInt("-ts_monitor_draw_solution","Monitor solution graphically","TSMonitorDrawSolution",howoften,&howoften,NULL);CHKERRQ(ierr);
     ierr = TSMonitorDrawCtxCreate(PetscObjectComm((PetscObject)ts),0,0,PETSC_DECIDE,PETSC_DECIDE,600,400,howoften,&ctx);CHKERRQ(ierr);
     ierr = TSMonitorSet(ts,TSMonitorDrawSolution,ctx,(PetscErrorCode (*)(void**))TSMonitorDrawCtxDestroy);CHKERRQ(ierr);
+  }
+  opt  = PETSC_FALSE;
+  ierr = PetscOptionsName("-ts_monitor_draw_solution_phase","Monitor solution graphically","TSMonitorDrawSolutionPhase",&opt);CHKERRQ(ierr);
+  if (opt) {
+    TSMonitorDrawCtx ctx;
+    PetscReal        bounds[4];
+    PetscInt         n = 4;
+    PetscDraw        draw;
+
+    ierr = PetscOptionsRealArray("-ts_monitor_draw_solution_phase","Monitor solution graphically","TSMonitorDrawSolutionPhase",bounds,&n,NULL);CHKERRQ(ierr);
+    if (n != 4) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_WRONG,"Must provide bounding box of phase field");
+    ierr = TSMonitorDrawCtxCreate(PetscObjectComm((PetscObject)ts),0,0,PETSC_DECIDE,PETSC_DECIDE,600,400,1,&ctx);CHKERRQ(ierr);
+    ierr = PetscViewerDrawGetDraw(ctx->viewer,0,&draw);CHKERRQ(ierr);
+    ierr = PetscDrawClear(draw);CHKERRQ(ierr);
+    ierr = PetscDrawSetCoordinates(draw,bounds[0],bounds[1],bounds[2],bounds[3]);CHKERRQ(ierr);
+    ierr = TSMonitorSet(ts,TSMonitorDrawSolutionPhase,ctx,(PetscErrorCode (*)(void**))TSMonitorDrawCtxDestroy);CHKERRQ(ierr);
   }
   opt  = PETSC_FALSE;
   ierr = PetscOptionsName("-ts_monitor_draw_error","Monitor error graphically","TSMonitorDrawError",&opt);CHKERRQ(ierr);
@@ -2942,13 +2969,6 @@ PetscErrorCode  TSGetIJacobian(TS ts,Mat *A,Mat *B,TSIJacobian *f,void **ctx)
   PetscFunctionReturn(0);
 }
 
-struct _n_TSMonitorDrawCtx {
-  PetscViewer viewer;
-  Vec         initialsolution;
-  PetscBool   showinitial;
-  PetscInt    howoften;  /* when > 0 uses step % howoften, when negative only final solution plotted */
-  PetscBool   showtimestepandtime;
-};
 
 #undef __FUNCT__
 #define __FUNCT__ "TSMonitorDrawSolution"
@@ -3022,6 +3042,65 @@ PetscErrorCode  TSMonitorDrawSolution(TS ts,PetscInt step,PetscReal ptime,Vec u,
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "TSMonitorDrawSolutionPhase"
+/*@C
+   TSMonitorDrawSolutionPhase - Monitors progress of the TS solvers by plotting the solution as a phase diagram
+
+   Collective on TS
+
+   Input Parameters:
++  ts - the TS context
+.  step - current time-step
+.  ptime - current time
+-  dummy - either a viewer or NULL
+
+   Level: intermediate
+
+.keywords: TS,  vector, monitor, view
+
+.seealso: TSMonitorSet(), TSMonitorDefault(), VecView()
+@*/
+PetscErrorCode  TSMonitorDrawSolutionPhase(TS ts,PetscInt step,PetscReal ptime,Vec u,void *dummy)
+{
+  PetscErrorCode    ierr;
+  TSMonitorDrawCtx  ictx = (TSMonitorDrawCtx)dummy;
+  PetscDraw         draw;
+  MPI_Comm          comm;
+  PetscInt          n;
+  PetscMPIInt       size;
+  PetscReal         xl,yl,xr,yr,tw,w,h;
+  char              time[32];
+  size_t            len;
+  const PetscScalar *U;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)ts,&comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  if (size != 1) SETERRQ(comm,PETSC_ERR_SUP,"Only allowed for sequential runs");
+  ierr = VecGetSize(u,&n);CHKERRQ(ierr);
+  if (n != 2) SETERRQ(comm,PETSC_ERR_SUP,"Only for ODEs with two unknowns");
+
+  ierr = PetscViewerDrawGetDraw(ictx->viewer,0,&draw);CHKERRQ(ierr);
+
+  ierr = VecGetArrayRead(u,&U);CHKERRQ(ierr);
+  if (!step) ictx->color++;
+  ierr = PetscDrawPoint(draw,PetscRealPart(U[0]),PetscRealPart(U[1]),ictx->color);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(u,&U);CHKERRQ(ierr);
+
+  if (ictx->showtimestepandtime) {
+    ierr = PetscSNPrintf(time,32,"Timestep %d Time %f",(int)step,(double)ptime);CHKERRQ(ierr);
+    ierr = PetscDrawGetCoordinates(draw,&xl,&yl,&xr,&yr);CHKERRQ(ierr);
+    ierr = PetscStrlen(time,&len);CHKERRQ(ierr);
+    ierr = PetscDrawStringGetSize(draw,&tw,NULL);CHKERRQ(ierr);
+    w    = xl + .5*(xr - xl) - .5*len*tw;
+    h    = yl + .95*(yr - yl);
+    ierr = PetscDrawString(draw,w,h,PETSC_DRAW_BLACK,time);CHKERRQ(ierr);
+  }
+  ierr = PetscDrawFlush(draw);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 
 #undef __FUNCT__
 #define __FUNCT__ "TSMonitorDrawCtxDestroy"
@@ -3087,6 +3166,7 @@ PetscErrorCode  TSMonitorDrawCtxCreate(MPI_Comm comm,const char host[],const cha
 
   (*ctx)->showtimestepandtime = PETSC_FALSE;
   ierr = PetscOptionsGetBool(NULL,"-ts_monitor_draw_solution_show_time",&(*ctx)->showtimestepandtime,NULL);CHKERRQ(ierr);
+  (*ctx)->color = PETSC_DRAW_WHITE;
   PetscFunctionReturn(0);
 }
 

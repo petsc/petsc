@@ -98,6 +98,7 @@ int main(int argc,char **argv)
   PetscInt       n = 2;
   AppCtx         ctx;
   PetscScalar    *u;
+  PetscReal      du[2] = {0.0,0.0};
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
@@ -138,9 +139,10 @@ int main(int argc,char **argv)
     ierr = VecGetArray(U,&u);CHKERRQ(ierr);
     u[0] = ctx.omega_s;
     u[1] = asin(ctx.Pm/ctx.Pmax);
-    ierr = PetscOptionsScalar("-xini","","",u[1],&u[1],NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsRealArray("-du","Perturbation in initial solution","",du,&n,NULL);CHKERRQ(ierr);
+    u[0] += du[0];
+    u[1] += du[1];
     ierr = VecRestoreArray(U,&u);CHKERRQ(ierr);
-    ierr = PetscOptionsVec("-initial","Initial values","",U,NULL);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
@@ -168,7 +170,18 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve nonlinear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = TSSolve(ts,U);CHKERRQ(ierr);
+  for (du[0] = -2.5; du[0] < 2.5; du[0] += .1) {
+    /*  for (du[1] = 0; du[1] < 1.6; du[1] += .1) {*/
+      ierr = VecGetArray(U,&u);CHKERRQ(ierr);
+      u[0] = ctx.omega_s;
+      u[1] = asin(ctx.Pm/ctx.Pmax);
+      u[0] += du[0];
+      u[1] += du[1];
+      ierr = VecRestoreArray(U,&u);CHKERRQ(ierr);
+      ierr = TSSetInitialTimeStep(ts,0.0,.01);CHKERRQ(ierr);
+      ierr = TSSolve(ts,U);CHKERRQ(ierr);
+      /* } */
+  }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they are no longer needed.
