@@ -56,12 +56,14 @@ int main(int argc,char **args)
   ierr = PetscOptionsGetInt(NULL,"-n2",&n2,NULL);CHKERRQ(ierr);
 
   h     = 1.0/n1;
-  gamma = 4.0/h;
-  beta  = 0.01/(h*h);
+  gamma = 4.0;
+  beta  = 0.01;
 
   ierr = PetscOptionsGetReal(NULL,"-h",&h,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(NULL,"-gamma",&gamma,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(NULL,"-beta",&beta,NULL);CHKERRQ(ierr);
+  gamma = gamma/h;
+  beta  = beta/(h*h);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
          Compute the matrix and set right-hand-side vector.
