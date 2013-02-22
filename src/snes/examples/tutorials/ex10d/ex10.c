@@ -9,6 +9,7 @@
      petscksp.h   - linear solvers
 */
 #include <petscsnes.h>
+#include <petscao.h>
 
 #if !defined(PETSC_USE_COMPLEX)
 

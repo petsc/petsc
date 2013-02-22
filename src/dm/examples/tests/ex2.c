@@ -2,6 +2,7 @@
 static char help[] = "Tests various 1-dimensional DMDA routines.\n\n";
 
 #include <petscdmda.h>
+#include <petscdraw.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
