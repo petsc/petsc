@@ -171,9 +171,13 @@ PetscErrorCode  PetscDrawGetTitle(PetscDraw draw,char **title)
 
    Level: intermediate
 
-   Note:
+   Note: The title is positioned in the windowing system title bar for the window. Hence it will not be saved with -draw_save 
+   in the image.
+
    A copy of the string is made, so you may destroy the
    title string after calling this routine.
+
+   You can use PetscDrawAxisSetLabels() to indicate a title within the window 
 
 .seealso: PetscDrawGetTitle(), PetscDrawAppendTitle()
 @*/
