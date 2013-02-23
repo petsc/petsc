@@ -345,7 +345,7 @@ PetscErrorCode  PetscDrawSPDraw(PetscDrawSP sp, PetscBool clear)
 #undef __FUNCT__
 #define __FUNCT__ "PetscDrawSPSetLimits"
 /*@
-   PetscDrawSPSetLimits - Sets the axis limits for a line graph. If more
+   PetscDrawSPSetLimits - Sets the axis limits for a scatter plot If more
    points are added after this call, the limits will be adjusted to
    include those additional points.
 

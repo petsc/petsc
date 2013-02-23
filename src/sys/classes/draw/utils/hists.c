@@ -4,6 +4,7 @@
 */
 #include <petscdraw.h>         /*I "petscdraw.h" I*/
 #include <petsc-private/petscimpl.h>         /*I "petscsys.h" I*/
+#include <petscviewer.h>         /*I "petscviewer.h" I*/
 
 PetscClassId PETSC_DRAWHG_CLASSID = 0;
 
@@ -393,9 +394,9 @@ PetscErrorCode  PetscDrawHGDraw(PetscDrawHG hist)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscDrawHGPrint"
+#define __FUNCT__ "PetscDrawHGView"
 /*@
-  PetscDrawHGPrint - Prints the histogram information.
+  PetscDrawHGView - Prints the histogram information.
 
   Not collective
 
@@ -406,7 +407,7 @@ PetscErrorCode  PetscDrawHGDraw(PetscDrawHG hist)
 
 .keywords:  draw, histogram
 @*/
-PetscErrorCode  PetscDrawHGPrint(PetscDrawHG hist)
+PetscErrorCode  PetscDrawHGView(PetscDrawHG hist,PetscViewer viewer)
 {
   PetscReal      xmax,xmin,*bins,*values,binSize,binLeft,binRight,mean,var;
   PetscErrorCode ierr;
@@ -417,6 +418,9 @@ PetscErrorCode  PetscDrawHGPrint(PetscDrawHG hist)
   if ((hist->xmin > hist->xmax) || (hist->ymin >= hist->ymax)) PetscFunctionReturn(0);
   if (hist->numValues < 1) PetscFunctionReturn(0);
 
+  if (!viewer){
+    ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)hist),&viewer);CHKERRQ(ierr);
+  }
   xmax      = hist->xmax;
   xmin      = hist->xmin;
   numValues = hist->numValues;
@@ -433,7 +437,7 @@ PetscErrorCode  PetscDrawHGPrint(PetscDrawHG hist)
       var  += values[p]*values[p];
     }
     /* Draw bins */
-    PetscPrintf(PetscObjectComm((PetscObject)hist), "Bin %2d (%6.2g - %6.2g): %.0g\n", 0, xmin, xmax, bins[0]);
+    ierr = PetscViewerASCIIPrintf(viewer, "Bin %2d (%6.2g - %6.2g): %.0g\n", 0, (double)xmin, (double)xmax, (double)bins[0]);CHKERRQ(ierr);
   } else {
     numBins    = hist->numBins;
     numBinsOld = hist->numBins;
@@ -467,7 +471,7 @@ PetscErrorCode  PetscDrawHGPrint(PetscDrawHG hist)
     for (i = 0; i < numBins; i++) {
       binLeft  = xmin + binSize*i;
       binRight = xmin + binSize*(i+1);
-      PetscPrintf(PetscObjectComm((PetscObject)hist), "Bin %2d (%6.2g - %6.2g): %.0g\n", i, binLeft, binRight, bins[i]);
+      ierr = PetscViewerASCIIPrintf(viewer, "Bin %2d (%6.2g - %6.2g): %.0g\n", (int)i, (double)binLeft, (double)binRight, (double)bins[i]);CHKERRQ(ierr);
     }
     ierr = PetscDrawHGSetNumberBins(hist, numBinsOld);CHKERRQ(ierr);
   }
@@ -476,8 +480,8 @@ PetscErrorCode  PetscDrawHGPrint(PetscDrawHG hist)
     mean /= numValues;
     if (numValues > 1) var = (var - numValues*mean*mean) / (numValues-1);
     else var = 0.0;
-    PetscPrintf(PetscObjectComm((PetscObject)hist), "Mean: %G  Var: %G\n", mean, var);
-    PetscPrintf(PetscObjectComm((PetscObject)hist), "Total: %d\n", numValues);
+    ierr = PetscViewerASCIIPrintf(viewer, "Mean: %G  Var: %G\n", (double)mean, (double)var);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "Total: %D\n", numValues);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

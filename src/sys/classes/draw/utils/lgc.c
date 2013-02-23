@@ -521,9 +521,9 @@ PetscErrorCode  PetscDrawLGDraw(PetscDrawLG lg)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscDrawLGPrint"
+#define __FUNCT__ "PetscDrawLGView"
 /*@
-  PetscDrawLGPrint - Prints a line graph.
+  PetscDrawLGView - Prints a line graph.
 
   Not collective
 
@@ -532,14 +532,13 @@ PetscErrorCode  PetscDrawLGDraw(PetscDrawLG lg)
 
   Level: beginner
 
-  Contributed by Matthew Knepley
-
 .keywords:  draw, line, graph
 @*/
-PetscErrorCode  PetscDrawLGPrint(PetscDrawLG lg)
+PetscErrorCode  PetscDrawLGView(PetscDrawLG lg,PetscViewer viewer)
 {
-  PetscReal xmin=lg->xmin, xmax=lg->xmax, ymin=lg->ymin, ymax=lg->ymax;
-  int       i, j, dim = lg->dim, nopts = lg->nopts;
+  PetscReal      xmin=lg->xmin, xmax=lg->xmax, ymin=lg->ymin, ymax=lg->ymax;
+  PetscInt       i, j, dim = lg->dim, nopts = lg->nopts;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (lg && ((PetscObject)lg)->classid == PETSC_DRAW_CLASSID) PetscFunctionReturn(0);
@@ -547,10 +546,13 @@ PetscErrorCode  PetscDrawLGPrint(PetscDrawLG lg)
   if (nopts < 1)                  PetscFunctionReturn(0);
   if (xmin > xmax || ymin > ymax) PetscFunctionReturn(0);
 
+  if (!viewer){
+    ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)lg),&viewer);CHKERRQ(ierr);
+  }
   for (i = 0; i < dim; i++) {
-    PetscPrintf(PetscObjectComm((PetscObject)lg), "Line %d>\n", i);
+    ierr = PetscViewerASCIIPrintf(viewer, "Line %D>\n", i);CHKERRQ(ierr);
     for (j = 0; j < nopts; j++) {
-      PetscPrintf(PetscObjectComm((PetscObject)lg), "  X: %g Y: %g\n", (double)lg->x[j*dim+i], (double)lg->y[j*dim+i]);
+      ierr = PetscViewerASCIIPrintf(viewer, "  X: %g Y: %g\n", (double)lg->x[j*dim+i], (double)lg->y[j*dim+i]);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
