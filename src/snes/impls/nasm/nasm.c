@@ -188,7 +188,6 @@ PetscErrorCode SNESSetFromOptions_NASM(SNES snes)
 #define __FUNCT__ "SNESView_NASM"
 PetscErrorCode SNESView_NASM(SNES snes, PetscViewer viewer)
 {
-  PetscFunctionBegin;
   SNES_NASM      *nasm = (SNES_NASM*)snes->data;
   PetscErrorCode ierr;
   PetscMPIInt    rank;
