@@ -170,7 +170,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve nonlinear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  for (du[0] = -2.5; du[0] < 2.5; du[0] += .1) {
+  for (du[0] = -2.5; du[0] <= .01; du[0] += .1) {
     /*  for (du[1] = 0; du[1] < 1.6; du[1] += .1) {*/
       ierr = VecGetArray(U,&u);CHKERRQ(ierr);
       u[0] = ctx.omega_s;

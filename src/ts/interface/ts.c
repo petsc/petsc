@@ -3084,13 +3084,17 @@ PetscErrorCode  TSMonitorDrawSolutionPhase(TS ts,PetscInt step,PetscReal ptime,V
   ierr = PetscViewerDrawGetDraw(ictx->viewer,0,&draw);CHKERRQ(ierr);
 
   ierr = VecGetArrayRead(u,&U);CHKERRQ(ierr);
+  ierr = PetscDrawGetCoordinates(draw,&xl,&yl,&xr,&yr);CHKERRQ(ierr);
+  if ((U[0] < xl) || (U[1] < yl) || (U[0] > xr) || (U[1] > yr)) {
+      ierr = VecRestoreArrayRead(u,&U);CHKERRQ(ierr);
+      PetscFunctionReturn(0);
+  }
   if (!step) ictx->color++;
   ierr = PetscDrawPoint(draw,PetscRealPart(U[0]),PetscRealPart(U[1]),ictx->color);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(u,&U);CHKERRQ(ierr);
 
   if (ictx->showtimestepandtime) {
     ierr = PetscSNPrintf(time,32,"Timestep %d Time %f",(int)step,(double)ptime);CHKERRQ(ierr);
-    ierr = PetscDrawGetCoordinates(draw,&xl,&yl,&xr,&yr);CHKERRQ(ierr);
     ierr = PetscStrlen(time,&len);CHKERRQ(ierr);
     ierr = PetscDrawStringGetSize(draw,&tw,NULL);CHKERRQ(ierr);
     w    = xl + .5*(xr - xl) - .5*len*tw;

@@ -265,12 +265,14 @@ PetscErrorCode PetscDrawStringVertical_X(PetscDraw draw,PetscReal x,PetscReal y,
 #define __FUNCT__ "PetscDrawFlush_X"
 static PetscErrorCode PetscDrawFlush_X(PetscDraw draw)
 {
-  PetscDraw_X* XiWin = (PetscDraw_X*)draw->data;
+  PetscDraw_X*   XiWin = (PetscDraw_X*)draw->data;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (XiWin->drw && XiWin->win) XCopyArea(XiWin->disp,XiWin->drw,XiWin->win,XiWin->gc.set,0,0,XiWin->w,XiWin->h,0,0);
   XFlush(XiWin->disp);
   XSync(XiWin->disp,False);
+  if (draw->saveonflush) {ierr = PetscDrawSave(draw);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 

@@ -235,7 +235,8 @@ PetscErrorCode  PetscDrawRegister(const char *sname,const char *path,const char 
                    from being printed
 .   -draw_pause <pause amount> -- -1 indicates wait for mouse input, -2 indicates pause when window is to be destroyed
 .   -draw_save [optional filename] - (X windows only) saves each image before it is cleared to a file
--   -draw_save_movie - converts image files to a movie  at the end of the run. See PetscDrawSetSave()
+.   -draw_save_movie - converts image files to a movie  at the end of the run. See PetscDrawSetSave()
+-   -draw_save_on_flush - saves an image on each flush in addition to each clear
 
    Level: intermediate
 
@@ -300,6 +301,7 @@ PetscErrorCode  PetscDrawSetFromOptions(PetscDraw draw)
     if (save) {
       ierr = PetscDrawSetSave(draw,filename,movie);CHKERRQ(ierr);
     }
+    ierr = PetscOptionsBool("-draw_save_on_flush","Save graphics to file (X Windows only) on each flush","PetscDrawSetSave",draw->saveonflush,&draw->saveonflush,NULL);CHKERRQ(ierr);
   }
 #endif
   ierr = PetscOptionsGetReal(NULL,"-draw_pause",&dpause,&flg);CHKERRQ(ierr);
