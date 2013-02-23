@@ -48,12 +48,13 @@ static PetscErrorCode TSSetTypeFromOptions(TS ts)
 }
 
 struct _n_TSMonitorDrawCtx {
-  PetscViewer viewer;
-  Vec         initialsolution;
-  PetscBool   showinitial;
-  PetscInt    howoften;  /* when > 0 uses step % howoften, when negative only final solution plotted */
-  PetscBool   showtimestepandtime;
-  int         color;
+  PetscViewer   viewer;
+  PetscDrawAxis axis;
+  Vec           initialsolution;
+  PetscBool     showinitial;
+  PetscInt      howoften;  /* when > 0 uses step % howoften, when negative only final solution plotted */
+  PetscBool     showtimestepandtime;
+  int           color;
 };
 
 #undef __FUNCT__
@@ -212,7 +213,10 @@ PetscErrorCode  TSSetFromOptions(TS ts)
     ierr = TSMonitorDrawCtxCreate(PetscObjectComm((PetscObject)ts),0,0,PETSC_DECIDE,PETSC_DECIDE,600,400,1,&ctx);CHKERRQ(ierr);
     ierr = PetscViewerDrawGetDraw(ctx->viewer,0,&draw);CHKERRQ(ierr);
     ierr = PetscDrawClear(draw);CHKERRQ(ierr);
-    ierr = PetscDrawSetCoordinates(draw,bounds[0],bounds[1],bounds[2],bounds[3]);CHKERRQ(ierr);
+    ierr = PetscDrawAxisCreate(draw,&ctx->axis);CHKERRQ(ierr);
+    ierr = PetscDrawAxisSetLimits(ctx->axis,bounds[0],bounds[2],bounds[1],bounds[3]);CHKERRQ(ierr);
+    ierr = PetscDrawAxisDraw(ctx->axis);CHKERRQ(ierr);
+    //    ierr = PetscDrawSetCoordinates(draw,bounds[0],bounds[1],bounds[2],bounds[3]);CHKERRQ(ierr);
     ierr = TSMonitorSet(ts,TSMonitorDrawSolutionPhase,ctx,(PetscErrorCode (*)(void**))TSMonitorDrawCtxDestroy);CHKERRQ(ierr);
   }
   opt  = PETSC_FALSE;
@@ -3084,7 +3088,7 @@ PetscErrorCode  TSMonitorDrawSolutionPhase(TS ts,PetscInt step,PetscReal ptime,V
   ierr = PetscViewerDrawGetDraw(ictx->viewer,0,&draw);CHKERRQ(ierr);
 
   ierr = VecGetArrayRead(u,&U);CHKERRQ(ierr);
-  ierr = PetscDrawGetCoordinates(draw,&xl,&yl,&xr,&yr);CHKERRQ(ierr);
+  ierr = PetscDrawAxisGetLimits(ictx->axis,&xl,&xr,&yl,&yr);CHKERRQ(ierr);
   if ((U[0] < xl) || (U[1] < yl) || (U[0] > xr) || (U[1] > yr)) {
       ierr = VecRestoreArrayRead(u,&U);CHKERRQ(ierr);
       PetscFunctionReturn(0);
@@ -3094,6 +3098,7 @@ PetscErrorCode  TSMonitorDrawSolutionPhase(TS ts,PetscInt step,PetscReal ptime,V
   ierr = VecRestoreArrayRead(u,&U);CHKERRQ(ierr);
 
   if (ictx->showtimestepandtime) {
+    ierr = PetscDrawGetCoordinates(draw,&xl,&yl,&xr,&yr);CHKERRQ(ierr);
     ierr = PetscSNPrintf(time,32,"Timestep %d Time %f",(int)step,(double)ptime);CHKERRQ(ierr);
     ierr = PetscStrlen(time,&len);CHKERRQ(ierr);
     ierr = PetscDrawStringGetSize(draw,&tw,NULL);CHKERRQ(ierr);
@@ -3127,6 +3132,7 @@ PetscErrorCode  TSMonitorDrawCtxDestroy(TSMonitorDrawCtx *ictx)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscDrawAxisDestroy(&(*ictx)->axis);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&(*ictx)->viewer);CHKERRQ(ierr);
   ierr = VecDestroy(&(*ictx)->initialsolution);CHKERRQ(ierr);
   ierr = PetscFree(*ictx);CHKERRQ(ierr);
