@@ -277,7 +277,7 @@ PetscErrorCode  PetscDrawAxisDraw(PetscDrawAxis axis)
   if (axis->ylabel) {
     ierr = PetscStrlen(axis->ylabel,&len);CHKERRQ(ierr);
     h    = yl + .5*(yr - yl) + .5*len*th;
-    w    = xl + .5*tw;
+    w    = xl + 1.5*tw;
     ierr = PetscDrawStringVertical(draw,w,h,cc,axis->ylabel);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
