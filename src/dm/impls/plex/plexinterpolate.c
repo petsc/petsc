@@ -439,3 +439,48 @@ PetscErrorCode DMPlexInterpolate(DM dm, DM *dmInt)
   }
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexCopyCoordinates"
+PetscErrorCode DMPlexCopyCoordinates(DM dmA, DM dmB)
+{
+  Vec            coordinatesA, coordinatesB;
+  PetscSection   coordSectionA, coordSectionB;
+  PetscScalar   *coordsA, *coordsB;
+  PetscInt       spaceDim, vStartA, vStartB, vEndA, vEndB, coordSizeB, v, d;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMPlexGetDepthStratum(dmA, 0, &vStartA, &vEndA);CHKERRQ(ierr);
+  ierr = DMPlexGetDepthStratum(dmB, 0, &vStartB, &vEndB);CHKERRQ(ierr);
+  if ((vEndA-vStartA) != (vEndB-vStartB)) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "The number of vertices in first DM %d != %d in the second DM", vEndA-vStartA, vEndB-vStartB);
+  ierr = DMPlexGetCoordinateSection(dmA, &coordSectionA);CHKERRQ(ierr);
+  ierr = DMPlexGetCoordinateSection(dmB, &coordSectionB);CHKERRQ(ierr);
+  ierr = PetscSectionSetNumFields(coordSectionB, 1);CHKERRQ(ierr);
+  ierr = PetscSectionGetFieldComponents(coordSectionA, 0, &spaceDim);CHKERRQ(ierr);
+  ierr = PetscSectionSetFieldComponents(coordSectionB, 0, spaceDim);CHKERRQ(ierr);
+  ierr = PetscSectionSetChart(coordSectionB, vStartB, vEndB);CHKERRQ(ierr);
+  for (v = vStartB; v < vEndB; ++v) {
+    ierr = PetscSectionSetDof(coordSectionB, v, spaceDim);CHKERRQ(ierr);
+    ierr = PetscSectionSetFieldDof(coordSectionB, v, 0, spaceDim);CHKERRQ(ierr);
+  }
+  ierr = PetscSectionSetUp(coordSectionB);CHKERRQ(ierr);
+  ierr = PetscSectionGetStorageSize(coordSectionB, &coordSizeB);CHKERRQ(ierr);
+  ierr = DMGetCoordinatesLocal(dmA, &coordinatesA);CHKERRQ(ierr);
+  ierr = VecCreate(PetscObjectComm((PetscObject) dmB), &coordinatesB);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) coordinatesB, "coordinates");CHKERRQ(ierr);
+  ierr = VecSetSizes(coordinatesB, coordSizeB, PETSC_DETERMINE);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(coordinatesB);CHKERRQ(ierr);
+  ierr = VecGetArray(coordinatesA, &coordsA);CHKERRQ(ierr);
+  ierr = VecGetArray(coordinatesB, &coordsB);CHKERRQ(ierr);
+  for (v = 0; v < vEndB-vStartB; ++v) {
+    for (d = 0; d < spaceDim; ++d) {
+      coordsB[v*spaceDim+d] = coordsA[v*spaceDim+d];
+    }
+  }
+  ierr = VecRestoreArray(coordinatesA, &coordsA);CHKERRQ(ierr);
+  ierr = VecRestoreArray(coordinatesB, &coordsB);CHKERRQ(ierr);
+  ierr = DMSetCoordinatesLocal(dmB, coordinatesB);CHKERRQ(ierr);
+  ierr = VecDestroy(&coordinatesB);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}

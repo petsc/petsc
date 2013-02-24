@@ -4506,6 +4506,8 @@ PetscErrorCode DMPlexCreateFromDAG(DM dm, PetscInt depth, const PetscInt numPoin
   ierr = DMPlexStratify(dm);CHKERRQ(ierr);
   /* Build coordinates */
   ierr = DMPlexGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
+  ierr = PetscSectionSetNumFields(coordSection, 1);CHKERRQ(ierr);
+  ierr = PetscSectionSetFieldComponents(coordSection, 0, dim);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(coordSection, firstVertex, firstVertex+numPoints[0]);CHKERRQ(ierr);
   for (v = firstVertex; v < firstVertex+numPoints[0]; ++v) {
     ierr = PetscSectionSetDof(coordSection, v, dim);CHKERRQ(ierr);
