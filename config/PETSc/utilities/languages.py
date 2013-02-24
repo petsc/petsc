@@ -27,21 +27,6 @@ class Configure(config.base.Configure):
     config.base.Configure.setupDependencies(self, framework)
     return
 
-  def packagesHaveCxx(self):
-    packages = ['hypre','ml','openmpi', 'cuda','netcdf','elemental','clique','moab']
-    options = []
-    for package in packages:
-      options.append('download-'+package)
-      options.append('with-'+package)
-      options.append('with-'+package+'include')
-      options.append('with-'+package+'-dir')
-      options.append('with-'+package+'-lib')
-
-    for option in options:
-      if option in self.framework.argDB and self.framework.argDB[option]:
-        return 1
-    return 0
-
   def configureCLanguage(self):
     '''Choose between C and C++ bindings'''
     self.clanguage = self.framework.argDB['with-clanguage'].upper().replace('+','x').replace('X','x')
@@ -50,9 +35,6 @@ class Configure(config.base.Configure):
 
   def configureLanguageSupport(self):
     '''Check c-support c++-support and other misc tests'''
-    if self.clanguage == 'C' and not self.framework.argDB['with-c++-support'] and not self.packagesHaveCxx():
-      self.framework.argDB['with-cxx'] = '0'
-      self.framework.logPrint('Turning off C++ support')
     if self.clanguage == 'Cxx' and self.framework.argDB['with-c-support']:
       self.cSupport = 1
       self.addDefine('USE_EXTERN_CXX', '1')
