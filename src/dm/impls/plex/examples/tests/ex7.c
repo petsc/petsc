@@ -40,6 +40,18 @@ Two tets sharing a face
 
  cell   5 _______    cell
  0    / | \      \       1
+     /  |  \      \
+    /   |   \      \
+   2----|----4-----6
+    \   |   /      /
+     \  |  /     /
+      \ | /      /
+        3-------
+
+should become
+
+ cell   5 _______    cell
+ 0    / | \      \       1
     16  |  18     22
     /8 19 10\      \
    2-15-|----4--21--6
@@ -47,19 +59,6 @@ Two tets sharing a face
     14  |  17     20
       \ | /      /
         3-------
-
-should become two tetrahedrons separated by a zero-volume cell with 6 vertices
-
- cell   6 ___33___10______    cell
- 0    / | \        |\      \     1
-    21  |  23      | 29     27
-    /12 24 14\    30  \      \
-   3-20-|----5--32-|---9--26--7
-    \ 13| 11/      |18 /      /
-    19  |  22      | 28     25
-      \ | /        |/      /
-        4----31----8------
-         cell 2
 
 In parallel,
 
@@ -219,7 +218,7 @@ PetscErrorCode CreateSimplex_2D(MPI_Comm comm, DM dm)
 #define __FUNCT__ "CreateSimplex_3D"
 PetscErrorCode CreateSimplex_3D(MPI_Comm comm, DM dm)
 {
-  PetscInt       depth = 3, testNum  = 0, p;
+  PetscInt       depth = 1, testNum  = 0, p;
   PetscMPIInt    rank;
   PetscErrorCode ierr;
 
@@ -229,20 +228,16 @@ PetscErrorCode CreateSimplex_3D(MPI_Comm comm, DM dm)
     switch (testNum) {
     case 0:
     {
-      PetscInt    numPoints[4]         = {5, 7, 9, 2};
-      PetscInt    coneSize[23]         = {4, 4, 0, 0, 0, 0, 0, 3, 3, 3, 3, 3, 3, 3, 2, 2, 2, 2, 2, 2, 2, 2, 2};
-      PetscInt    cones[47]            = {7, 8, 9, 10,  11, 12, 13, 10,  15, 17, 14,  16, 18, 15,  14, 19, 16,  17, 18, 19,  17, 21, 20,  18, 22, 21,  22, 19, 20,   2, 3,  2, 4,  2, 5,  3, 4,  4, 5,  5, 3,  3, 6,  4, 6,  5, 6};
-      PetscInt    coneOrientations[47] = {0, 0, 0,  0,   0,  0,  0, -3,   0, -2, -2,   0, -2, -2,   0, -2, -2,   0,  0,  0,   0,  0, -2,   0,  0, -2,  -2,  0,  0,   0, 0,  0, 0,  0, 0,  0, 0,  0, 0,  0, 0,  0, 0,  0, 0,  0, 0};
-      PetscScalar vertexCoords[15]     = {0.0, 0.0, -0.5,  0.0, -0.5, 0.0,  1.0, 0.0, 0.0,  0.0, 0.5, 0.0,  0.0, 0.0, 0.5};
-      PetscInt    markerPoints[20]     = {2, 1, 3, 1, 4, 1, 5, 1, 14, 1, 15, 1, 16, 1, 17, 1, 18, 1, 19, 1};
-      PetscInt    faultPoints[3]      = {3, 4, 5};
+      PetscInt    numPoints[2]        = {5, 2};
+      PetscInt    coneSize[23]        = {4, 4, 0, 0, 0, 0, 0};
+      PetscInt    cones[8]            = {2, 3, 4, 5,  3, 6, 4, 5};
+      PetscInt    coneOrientations[8] = {0, 0, 0, 0,  0, 0, 0, 0};
+      PetscScalar vertexCoords[15]    = {0.0, 0.0, -0.5,  0.0, -0.5, 0.0,  1.0, 0.0, 0.0,  0.0, 0.5, 0.0,  0.0, 0.0, 0.5};
+      PetscInt    markerPoints[8]     = {2, 1, 3, 1, 4, 1, 5, 1};
 
       ierr = DMPlexCreateFromDAG(dm, depth, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
-      for (p = 0; p < 10; ++p) {
+      for (p = 0; p < 4; ++p) {
         ierr = DMPlexSetLabelValue(dm, "marker", markerPoints[p*2], markerPoints[p*2+1]);CHKERRQ(ierr);
-      }
-      for(p = 0; p < 3; ++p) {
-        ierr = DMPlexSetLabelValue(dm, "fault", faultPoints[p], 1);CHKERRQ(ierr);
       }
     }
     break;
@@ -250,7 +245,7 @@ PetscErrorCode CreateSimplex_3D(MPI_Comm comm, DM dm)
       SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %d", testNum);
     }
   } else {
-    PetscInt numPoints[4] = {0, 0, 0, 0};
+    PetscInt numPoints[2] = {0, 0};
 
     ierr = DMPlexCreateFromDAG(dm, depth, numPoints, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
     ierr = DMPlexCreateLabel(dm, "fault");CHKERRQ(ierr);
