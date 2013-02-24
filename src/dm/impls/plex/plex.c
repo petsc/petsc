@@ -4903,6 +4903,59 @@ PetscErrorCode DMPlexCreateFromCellList(MPI_Comm comm, PetscInt dim, PetscInt nu
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexCreateFromDAG"
+/*
+  This takes as input the raw Hasse Diagram data
+*/
+PetscErrorCode DMPlexCreateFromDAG(DM dm, PetscInt depth, const PetscInt numPoints[], const PetscInt coneSize[], const PetscInt cones[], const PetscInt coneOrientations[], const PetscScalar vertexCoords[])
+{
+  Vec            coordinates;
+  PetscSection   coordSection;
+  PetscScalar    *coords;
+  PetscInt       coordSize, firstVertex = numPoints[depth], pStart = 0, pEnd = 0, p, v, dim, d, off;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
+  for (d = 0; d <= depth; ++d) pEnd += numPoints[d];
+  ierr = DMPlexSetChart(dm, pStart, pEnd);CHKERRQ(ierr);
+  for (p = pStart; p < pEnd; ++p) {
+    ierr = DMPlexSetConeSize(dm, p, coneSize[p-pStart]);CHKERRQ(ierr);
+  }
+  ierr = DMSetUp(dm);CHKERRQ(ierr); /* Allocate space for cones */
+  for (p = pStart, off = 0; p < pEnd; off += coneSize[p-pStart], ++p) {
+    ierr = DMPlexSetCone(dm, p, &cones[off]);CHKERRQ(ierr);
+    ierr = DMPlexSetConeOrientation(dm, p, &coneOrientations[off]);CHKERRQ(ierr);
+  }
+  ierr = DMPlexSymmetrize(dm);CHKERRQ(ierr);
+  ierr = DMPlexStratify(dm);CHKERRQ(ierr);
+  /* Build coordinates */
+  ierr = DMPlexGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
+  ierr = PetscSectionSetChart(coordSection, firstVertex, firstVertex+numPoints[0]);CHKERRQ(ierr);
+  for (v = firstVertex; v < firstVertex+numPoints[0]; ++v) {
+    ierr = PetscSectionSetDof(coordSection, v, dim);CHKERRQ(ierr);
+  }
+  ierr = PetscSectionSetUp(coordSection);CHKERRQ(ierr);
+  ierr = PetscSectionGetStorageSize(coordSection, &coordSize);CHKERRQ(ierr);
+  ierr = VecCreate(PetscObjectComm((PetscObject)dm), &coordinates);CHKERRQ(ierr);
+  ierr = VecSetSizes(coordinates, coordSize, PETSC_DETERMINE);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(coordinates);CHKERRQ(ierr);
+  ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
+  for (v = 0; v < numPoints[0]; ++v) {
+    PetscInt off;
+
+    ierr = PetscSectionGetOffset(coordSection, v+firstVertex, &off);CHKERRQ(ierr);
+    for (d = 0; d < dim; ++d) {
+      coords[off+d] = vertexCoords[v*dim+d];
+    }
+  }
+  ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
+  ierr = DMSetCoordinatesLocal(dm, coordinates);CHKERRQ(ierr);
+  ierr = VecDestroy(&coordinates);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 #if defined(PETSC_HAVE_TRIANGLE)
 #include <triangle.h>
 
