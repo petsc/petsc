@@ -316,7 +316,7 @@ PetscErrorCode PetscSectionCheckConstraints(PetscSection s)
 
   PetscFunctionBegin;
   if (!s->bc) {
-    ierr = PetscSectionCreate(s->atlasLayout.comm, &s->bc);CHKERRQ(ierr);
+    ierr = PetscSectionCreate(PETSC_COMM_SELF, &s->bc);CHKERRQ(ierr);
     ierr = PetscSectionSetChart(s->bc, s->atlasLayout.pStart, s->atlasLayout.pEnd);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
