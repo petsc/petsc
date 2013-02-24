@@ -21,7 +21,7 @@ PetscErrorCode KSPConvergedLSQR(KSP solksp,PetscInt iter,PetscReal rnorm,KSPConv
   if (iter == 0) PetscFunctionReturn(0);
 
   if (PetscIsInfOrNanScalar(rnorm)) {
-    *reason = KSP_DIVERGED_NAN;
+    *reason = KSP_DIVERGED_NANORINF;
     PetscFunctionReturn(0);
   }
 

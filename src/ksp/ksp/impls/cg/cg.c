@@ -150,7 +150,13 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
       ierr = VecXDot(Z,S,&delta);CHKERRQ(ierr);
     }
     ierr = VecXDot(Z,R,&beta);CHKERRQ(ierr);                     /*  beta <- z'*r       */
-    if (PetscIsInfOrNanScalar(beta)) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_FP,"Infinite or not-a-number generated in dot product");
+    if (PetscIsInfOrNanScalar(beta)) {
+      if (ksp->errorifnotconverged) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"KSPSolve has not converged due to Nan or Inf inner product");
+      else {
+        ksp->reason = KSP_DIVERGED_NANORINF;
+        PetscFunctionReturn(0);
+      }
+    }
     dp = PetscSqrtReal(PetscAbsScalar(beta));                           /*    dp <- r'*z = r'*B*r = e'*A'*B*A*e */
     break;
   case KSP_NORM_NONE:
@@ -174,7 +180,13 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
       ierr = VecXDot(Z,S,&delta);CHKERRQ(ierr);
     }
     ierr = VecXDot(Z,R,&beta);CHKERRQ(ierr);         /*  beta <- z'*r       */
-    if (PetscIsInfOrNanScalar(beta)) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_FP,"Infinite or not-a-number generated in dot product");
+    if (PetscIsInfOrNanScalar(beta)) {
+      if (ksp->errorifnotconverged) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"KSPSolve has not converged due to Nan or Inf inner product");
+      else {
+        ksp->reason = KSP_DIVERGED_NANORINF;
+        PetscFunctionReturn(0);
+      }
+    }
   }
 
   i = 0;
@@ -211,7 +223,13 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
       dpi  = delta - beta*beta*dpiold/(betaold*betaold);             /*     dpi <- p'w     */
     }
     betaold = beta;
-    if (PetscIsInfOrNanScalar(dpi)) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_FP,"Infinite or not-a-number generated in dot product");
+    if (PetscIsInfOrNanScalar(dpi)) {
+      if (ksp->errorifnotconverged) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"KSPSolve has not converged due to Nan or Inf inner product");
+      else {
+        ksp->reason = KSP_DIVERGED_NANORINF;
+        PetscFunctionReturn(0);
+      }
+    }
 
     if ((dpi == 0.0) || ((i > 0) && (PetscRealPart(dpi*dpiold) <= 0.0))) {
       ksp->reason = KSP_DIVERGED_INDEFINITE_MAT;
@@ -237,14 +255,18 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
         Vec         vecs[2];
         vecs[0] = S; vecs[1] = R;
         ierr    = KSP_MatMult(ksp,Amat,Z,S);CHKERRQ(ierr);
-        /*ierr = VecXDot(Z,S,&delta);CHKERRQ(ierr);
-          ierr = VecXDot(Z,R,&beta);CHKERRQ(ierr); */    /*  beta <- r'*z       */
         ierr  = VecMDot(Z,2,vecs,tmp);CHKERRQ(ierr);
         delta = tmp[0]; beta = tmp[1];
       } else {
         ierr = VecXDot(Z,R,&beta);CHKERRQ(ierr);     /*  beta <- r'*z       */
       }
-      if (PetscIsInfOrNanScalar(beta)) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_FP,"Infinite or not-a-number generated in dot product");
+      if (PetscIsInfOrNanScalar(beta)) {
+        if (ksp->errorifnotconverged) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"KSPSolve has not converged due to Nan or Inf inner product");
+        else {
+          ksp->reason = KSP_DIVERGED_NANORINF;
+          PetscFunctionReturn(0);
+        }
+      }
       dp = PetscSqrtReal(PetscAbsScalar(beta));
     } else {
       dp = 0.0;
@@ -266,14 +288,18 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
         PetscScalar tmp[2];
         Vec         vecs[2];
         vecs[0] = S; vecs[1] = R;
-        /* ierr = VecXDot(Z,R,&beta);CHKERRQ(ierr);   */     /*  beta <- z'*r       */
-        /* ierr = VecXDot(Z,S,&delta);CHKERRQ(ierr);*/
         ierr  = VecMDot(Z,2,vecs,tmp);CHKERRQ(ierr);
         delta = tmp[0]; beta = tmp[1];
       } else {
         ierr = VecXDot(Z,R,&beta);CHKERRQ(ierr);        /*  beta <- z'*r       */
       }
-      if (PetscIsInfOrNanScalar(beta)) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_FP,"Infinite or not-a-number generated in dot product");
+      if (PetscIsInfOrNanScalar(beta)) {
+        if (ksp->errorifnotconverged) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"KSPSolve has not converged due to Nan or Inf inner product");
+        else {
+          ksp->reason = KSP_DIVERGED_NANORINF;
+          PetscFunctionReturn(0);
+        }
+      }
     }
 
     i++;

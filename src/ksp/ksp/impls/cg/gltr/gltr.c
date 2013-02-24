@@ -228,7 +228,7 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
     /* The gradient step does not work; return a zero value for the step.    */
     /*************************************************************************/
 
-    ksp->reason = KSP_DIVERGED_NAN;
+    ksp->reason = KSP_DIVERGED_NANORINF;
     ierr        = PetscInfo1(ksp, "KSPSolve_GLTR: bad right-hand side: rr=%g\n", rr);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
@@ -247,7 +247,7 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
     /* Return the gradient direction intersected with the trust region.      */
     /*************************************************************************/
 
-    ksp->reason = KSP_DIVERGED_NAN;
+    ksp->reason = KSP_DIVERGED_NANORINF;
     ierr        = PetscInfo1(ksp, "KSPSolve_GLTR: bad preconditioner: rz=%g\n", rz);CHKERRQ(ierr);
 
     if (cg->radius) {
@@ -362,7 +362,7 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
     /* only be checked once.                                                 */
     /*************************************************************************/
 
-    ksp->reason = KSP_DIVERGED_NAN;
+    ksp->reason = KSP_DIVERGED_NANORINF;
     ierr        = PetscInfo1(ksp, "KSPSolve_GLTR: bad matrix: kappa=%g\n", kappa);CHKERRQ(ierr);
 
     if (cg->radius) {
