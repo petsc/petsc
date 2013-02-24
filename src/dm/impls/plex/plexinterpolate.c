@@ -249,7 +249,7 @@ static PetscErrorCode DMPlexInterpolate_3D(DM dm, DM *dmInt)
   }
   /* Use Euler characteristic to get edges V - E + F - C = 1 */
   firstEdge = firstFace + numFaces;
-  numEdges  = numVertices + numFaces - numCells - 1;
+  numEdges  = PetscMax(0, numVertices + numFaces - numCells - 1);
   /* Create interpolated mesh */
   ierr = DMCreate(PetscObjectComm((PetscObject)dm), &idm);CHKERRQ(ierr);
   ierr = DMSetType(idm, DMPLEX);CHKERRQ(ierr);
