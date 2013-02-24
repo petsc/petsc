@@ -22,10 +22,12 @@ static PetscBool MatMFFDPackageInitialized = PETSC_FALSE;
 @*/
 PetscErrorCode  MatMFFDFinalizePackage(void)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
   MatMFFDPackageInitialized = PETSC_FALSE;
   MatMFFDRegisterAllCalled  = PETSC_FALSE;
-  MatMFFDRegisterDestroy();
+  ierr = MatMFFDRegisterDestroy();CHKERRQ(ierr);
   MatMFFDList               = NULL;
   PetscFunctionReturn(0);
 }
