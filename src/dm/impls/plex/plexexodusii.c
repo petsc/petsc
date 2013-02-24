@@ -6,9 +6,6 @@
 #include <exodusII.h>
 #endif
 
-PETSC_EXTERN PetscErrorCode DMPlexInterpolate_2D(DM, DM*);
-PETSC_EXTERN PetscErrorCode DMPlexInterpolate_3D(DM, DM*);
-
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexCreateExodus"
 /*@
@@ -108,14 +105,7 @@ PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool inter
   if (interpolate) {
     DM idm;
 
-    switch (dim) {
-    case 2:
-      ierr = DMPlexInterpolate_2D(*dm, &idm);CHKERRQ(ierr);break;
-    case 3:
-      ierr = DMPlexInterpolate_3D(*dm, &idm);CHKERRQ(ierr);break;
-    default:
-      SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "No mesh interpolation support for dimension %D", dim);
-    }
+    ierr = DMPlexInterpolate(*dm, &idm);CHKERRQ(ierr);
     /* Maintain Cell Sets label */
     {
       DMLabel label;
