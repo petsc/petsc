@@ -170,8 +170,8 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve nonlinear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  for (du[0] = -2.5; du[0] <= .01; du[0] += .1) {
-    /*  for (du[1] = 0; du[1] < 1.6; du[1] += .1) {*/
+  if (0){
+    for (du[0] = -2.5; du[0] <= .01; du[0] += .1) {
       ierr = VecGetArray(U,&u);CHKERRQ(ierr);
       u[0] = ctx.omega_s;
       u[1] = asin(ctx.Pm/ctx.Pmax);
@@ -180,9 +180,10 @@ int main(int argc,char **argv)
       ierr = VecRestoreArray(U,&u);CHKERRQ(ierr);
       ierr = TSSetInitialTimeStep(ts,0.0,.01);CHKERRQ(ierr);
       ierr = TSSolve(ts,U);CHKERRQ(ierr);
-      /* } */
+    }
+  } else {
+    ierr = TSSolve(ts,U);CHKERRQ(ierr);
   }
-
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they are no longer needed.
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
