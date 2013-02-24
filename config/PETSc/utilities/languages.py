@@ -28,7 +28,7 @@ class Configure(config.base.Configure):
     return
 
   def packagesHaveCxx(self):
-    packages = ['hypre','ml','openmpi', 'cuda','netcdf','elemental','clique']
+    packages = ['hypre','ml','openmpi', 'cuda','netcdf','elemental','clique','moab']
     options = []
     for package in packages:
       options.append('download-'+package)
