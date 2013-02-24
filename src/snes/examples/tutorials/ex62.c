@@ -520,7 +520,7 @@ PetscErrorCode CreatePressureNullSpace(DM dm, AppCtx *user, MatNullSpace *nullSp
     MatNullSpace nullSpacePres;
 
     ierr = DMGetField(dm, 1, &pressure);CHKERRQ(ierr);
-    ierr = MatNullSpaceCreate(pressure->comm, PETSC_TRUE, 0, NULL, &nullSpacePres);CHKERRQ(ierr);
+    ierr = MatNullSpaceCreate(PetscObjectComm(pressure), PETSC_TRUE, 0, NULL, &nullSpacePres);CHKERRQ(ierr);
     ierr = PetscObjectCompose(pressure, "nullspace", (PetscObject) nullSpacePres);CHKERRQ(ierr);
     ierr = MatNullSpaceDestroy(&nullSpacePres);CHKERRQ(ierr);
   }
@@ -554,9 +554,12 @@ PetscErrorCode FormJacobianAction(Mat J, Vec X,  Vec Y)
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
+#if 0
+  /* Needs petscimpl.h */
   PetscValidHeaderSpecific(J, MAT_CLASSID, 1);
   PetscValidHeaderSpecific(X, VEC_CLASSID, 2);
   PetscValidHeaderSpecific(Y, VEC_CLASSID, 3);
+#endif
   ierr = MatShellGetContext(J, &ctx);CHKERRQ(ierr);
   dm   = ctx->dm;
 
