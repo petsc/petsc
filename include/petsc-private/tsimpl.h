@@ -23,9 +23,6 @@ typedef struct _TSOps *TSOps;
 struct _TSOps {
   PetscErrorCode (*snesfunction)(SNES,Vec,Vec,TS);
   PetscErrorCode (*snesjacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,TS);
-  PetscErrorCode (*prestep)(TS);
-  PetscErrorCode (*prestage)(TS,PetscReal);
-  PetscErrorCode (*poststep)(TS);
   PetscErrorCode (*setup)(TS);
   PetscErrorCode (*step)(TS);
   PetscErrorCode (*solve)(TS);
@@ -58,6 +55,10 @@ struct _p_TS {
   PetscErrorCode (*monitordestroy[MAXTSMONITORS])(void**);
   void *monitorcontext[MAXTSMONITORS];                 /* residual calculation, allows user */
   PetscInt  numbermonitors;                                 /* to, for instance, print residual norm, etc. */
+
+  PetscErrorCode (*prestep)(TS);
+  PetscErrorCode (*prestage)(TS,PetscReal);
+  PetscErrorCode (*poststep)(TS);
 
   /* ---------------------- IMEX support ---------------------------------*/
   /* These extra slots are only used when the user provides both Implicit and RHS */

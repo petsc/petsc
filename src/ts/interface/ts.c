@@ -2064,7 +2064,7 @@ PetscErrorCode  TSSetPreStep(TS ts, PetscErrorCode (*func)(TS))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID,1);
-  ts->ops->prestep = func;
+  ts->prestep = func;
   PetscFunctionReturn(0);
 }
 
@@ -2093,10 +2093,8 @@ PetscErrorCode  TSPreStep(TS ts)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  if (ts->ops->prestep) {
-    PetscStackPush("TS PreStep function");
-    ierr = (*ts->ops->prestep)(ts);CHKERRQ(ierr);
-    PetscStackPop;
+  if (ts->prestep) {
+    PetscStackCallStandard((*ts->prestep),(ts));
   }
   PetscFunctionReturn(0);
 }
@@ -2130,7 +2128,7 @@ PetscErrorCode  TSSetPreStage(TS ts, PetscErrorCode (*func)(TS,PetscReal))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID,1);
-  ts->ops->prestage = func;
+  ts->prestage = func;
   PetscFunctionReturn(0);
 }
 
@@ -2159,10 +2157,8 @@ PetscErrorCode  TSPreStage(TS ts, PetscReal stagetime)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  if (ts->ops->prestage) {
-    PetscStackPush("TS PreStage function");
-    ierr = (*ts->ops->prestage)(ts,stagetime);CHKERRQ(ierr);
-    PetscStackPop;
+  if (ts->prestage) {
+    PetscStackCallStandard((*ts->prestage),(ts,stagetime));
   }
   PetscFunctionReturn(0);
 }
@@ -2191,7 +2187,7 @@ PetscErrorCode  TSSetPostStep(TS ts, PetscErrorCode (*func)(TS))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID,1);
-  ts->ops->poststep = func;
+  ts->poststep = func;
   PetscFunctionReturn(0);
 }
 
@@ -2219,10 +2215,8 @@ PetscErrorCode  TSPostStep(TS ts)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  if (ts->ops->poststep) {
-    PetscStackPush("TS PostStep function");
-    ierr = (*ts->ops->poststep)(ts);CHKERRQ(ierr);
-    PetscStackPop;
+  if (ts->poststep) {
+    PetscStackCallStandard((*ts->poststep),(ts));
   }
   PetscFunctionReturn(0);
 }
