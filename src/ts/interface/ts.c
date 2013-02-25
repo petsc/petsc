@@ -3090,7 +3090,7 @@ PetscErrorCode  TSMonitorDrawSolutionPhase(TS ts,PetscInt step,PetscReal ptime,V
 
   ierr = VecGetArrayRead(u,&U);CHKERRQ(ierr);
   ierr = PetscDrawAxisGetLimits(ictx->axis,&xl,&xr,&yl,&yr);CHKERRQ(ierr);
-  if ((U[0] < xl) || (U[1] < yl) || (U[0] > xr) || (U[1] > yr)) {
+  if ((PetscRealPart(U[0]) < xl) || (PetscRealPart(U[1]) < yl) || (PetscRealPart(U[0]) > xr) || (PetscRealPart(U[1]) > yr)) {
       ierr = VecRestoreArrayRead(u,&U);CHKERRQ(ierr);
       PetscFunctionReturn(0);
   }
