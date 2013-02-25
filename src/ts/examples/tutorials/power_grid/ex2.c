@@ -86,6 +86,27 @@ static PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat
   PetscFunctionReturn(0);
 }
 
+
+#undef __FUNCT__
+#define __FUNCT__ "PostStep"
+PetscErrorCode PostStep(TS ts)
+{
+  PetscErrorCode ierr;
+  Vec            X;
+  PetscReal      t;
+
+  PetscFunctionBegin;
+  ierr = TSGetTime(ts,&t);CHKERRQ(ierr);
+  if (t >= .2) {
+    ierr = TSGetSolution(ts,&X);CHKERRQ(ierr);
+    ierr = VecView(X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    exit(0);
+    /* results in initial conditions after fault of -u 1.00617,0.33287 */
+  }
+  PetscFunctionReturn(0);
+}
+
+
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
@@ -139,6 +160,7 @@ int main(int argc,char **argv)
     ierr = VecGetArray(U,&u);CHKERRQ(ierr);
     u[0] = ctx.omega_s;
     u[1] = asin(ctx.Pm/ctx.Pmax);
+    ierr = PetscOptionsRealArray("-u","Initial solution","",u,&n,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsRealArray("-du","Perturbation in initial solution","",du,&n,NULL);CHKERRQ(ierr);
     u[0] += du[0];
     u[1] += du[1];
@@ -166,6 +188,8 @@ int main(int argc,char **argv)
   ierr = TSSetDuration(ts,100000,10.0);CHKERRQ(ierr);
   ierr = TSSetInitialTimeStep(ts,0.0,.01);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
+  /*  ierr = TSSetPostStep(ts,PostStep);CHKERRQ(ierr); */
+
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve nonlinear system
