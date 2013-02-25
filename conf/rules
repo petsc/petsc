@@ -33,7 +33,8 @@ chk_makej:
              echo "provide the -j option to make  ";\
           else \
              echo "Parallel build with 'make -j' is not supported";\
-             echo "for PETSc legacy builds. ./configure PETSc with --download-cmake";\
+             echo "for PETSc legacy builds. Run without -j <np>";\
+             echo "or ./configure PETSc with --download-cmake";\
              echo "to enable parallel builds with PETSc";\
           fi;\
           echo  "******************************************************\033[0;30m" ;\
