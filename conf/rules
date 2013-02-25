@@ -27,9 +27,16 @@ chk_makej:
         makeflags_j=`echo $${makeflags} | sed "s+--jobserver-fds+DUMMY+g"`;\
         if [ "$${makeflags_j}" != "$${makeflags}" ]; then parallel=true; fi;\
         if [ "$${parallel}" = "true" ]; then \
-          echo "********************* ERROR *************************" ; \
-          echo "Parallel build with 'make -j' is not supported";\
-          echo "******************************************************" ; \
+          echo "\033[0;31m********************* ERROR *************************" ; \
+          if [ "${PETSC_BUILD_USING_CMAKE}" != "" ]; then \
+             echo "PETSc compiles are automatically parallel, do not ";\
+             echo "provide the -j option to make  ";\
+          else \
+             echo "Parallel build with 'make -j' is not supported";\
+             echo "for PETSc legacy builds. ./configure PETSc with --download-cmake";\
+             echo "to enable parallel builds with PETSc";\
+          fi;\
+          echo  "******************************************************\033[0;30m" ;\
           exit 1; fi;
 chk_loc:
 	@if [ ${LOC}foo = foo ] ; then \

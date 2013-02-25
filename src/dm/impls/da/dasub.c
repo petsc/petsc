@@ -6,6 +6,70 @@
 #include <petsc-private/dmdaimpl.h>    /*I   "petscdmda.h"   I*/
 
 #undef __FUNCT__
+#define __FUNCT__ "DMDAGetLogicalCoordinate"
+/*@C
+   DMDAGetLogicalCoordinate - Returns a the i,j,k logical coordinate for the closest mesh point to a x,y,z point in the coordinates of the DMDA
+
+   Collective on DMDA
+
+   Input Parameters:
++  da - the distributed array
+.  x,y,z - the physical coordinates
+-
+
+   Output Parameters:
++   I, J, K - the logical coordinate (-1 on processes that do not contain that point)
+-   X, Y, Z, - (optional) the coordinates of the located grid point
+
+   Level: advanced
+
+   Notes:
+   All processors that share the DMDA must call this with the same coordinate value
+
+.keywords: distributed array, get, processor subset
+@*/
+PetscErrorCode  DMDAGetLogicalCoordinate(DM da,PetscScalar x,PetscScalar y,PetscScalar z,PetscInt *I,PetscInt *J,PetscInt *K,PetscScalar *X,PetscScalar *Y,PetscScalar *Z)
+{
+  DM_DA          *dd = (DM_DA*)da->data;
+  PetscErrorCode ierr;
+  Vec            coors;
+  DM             dacoors;
+  DMDACoor2d     **c;
+  PetscInt       i,j,xs,xm,ys,ym;
+  PetscReal      d,D = PETSC_MAX_REAL;
+  PetscMPIInt    size;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)da),&size);CHKERRQ(ierr);
+  if (size > 1) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Currently not in parallel");
+  if (dd->dim == 1) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Cannot get point from 1d DMDA");
+  if (dd->dim == 3) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Cannot get point from 3d DMDA");
+
+  *I = -1;
+  if (J) *J = -1;
+  if (K) *K = -1;
+
+  ierr = DMGetCoordinateDM(da,&dacoors);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(dacoors,&xs,&ys,NULL,&xm,&ym,NULL);CHKERRQ(ierr);
+  ierr = DMGetCoordinates(da,&coors);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(dacoors,coors,&c);CHKERRQ(ierr);
+  for (j=ys; j<ys+ym; j++) {
+    for (i=xs; i<xs+xm; i++) {
+      d = PetscSqrtReal(PetscRealPart( (c[j][i].x - x)*(c[j][i].x - x) + (c[j][i].y - y)*(c[j][i].y - y) ));
+      if (d < D) {
+        D  = d;
+        *I = i;
+        *J = j;
+      }
+    }
+  }
+  if (X) *X = c[*J][*I].x;
+  if (Y) *Y = c[*J][*I].y;
+  ierr = DMDAVecRestoreArray(dacoors,coors,&c);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMDAGetRay"
 /*@C
    DMDAGetRay - Returns a vector on process zero that contains a row or column of the values in a DMDA vector
