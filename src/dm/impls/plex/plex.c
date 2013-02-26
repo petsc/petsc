@@ -544,10 +544,12 @@ PetscErrorCode DMPlexPreallocateOperator(DM dm, PetscInt bs, PetscSection sectio
     ierr = PetscSectionGetOffset(section, p, &off);CHKERRQ(ierr);
     ierr = DMPlexGetAdjacency_Private(dm, p, useClosure, tmpClosure, &numAdj, tmpAdj);CHKERRQ(ierr);
     for (q = 0; q < numAdj; ++q) {
+      const PetscInt padj = tmpAdj[q];
       PetscInt ndof, ncdof;
 
-      ierr = PetscSectionGetDof(section, tmpAdj[q], &ndof);CHKERRQ(ierr);
-      ierr = PetscSectionGetConstraintDof(section, tmpAdj[q], &ncdof);CHKERRQ(ierr);
+      if ((padj < pStart) || (padj >= pEnd)) continue;
+      ierr = PetscSectionGetDof(section, padj, &ndof);CHKERRQ(ierr);
+      ierr = PetscSectionGetConstraintDof(section, padj, &ncdof);CHKERRQ(ierr);
       for (d = off; d < off+dof; ++d) {
         ierr = PetscSectionAddDof(leafSectionAdj, d, ndof-ncdof);CHKERRQ(ierr);
       }
@@ -578,10 +580,12 @@ PetscErrorCode DMPlexPreallocateOperator(DM dm, PetscInt bs, PetscSection sectio
     if (adof <= 0) continue;
     ierr = DMPlexGetAdjacency_Private(dm, p, useClosure, tmpClosure, &numAdj, tmpAdj);CHKERRQ(ierr);
     for (q = 0; q < numAdj; ++q) {
+      const PetscInt padj = tmpAdj[q];
       PetscInt ndof, ncdof;
 
-      ierr = PetscSectionGetDof(section, tmpAdj[q], &ndof);CHKERRQ(ierr);
-      ierr = PetscSectionGetConstraintDof(section, tmpAdj[q], &ncdof);CHKERRQ(ierr);
+      if ((padj < pStart) || (padj >= pEnd)) continue;
+      ierr = PetscSectionGetDof(section, padj, &ndof);CHKERRQ(ierr);
+      ierr = PetscSectionGetConstraintDof(section, padj, &ncdof);CHKERRQ(ierr);
       for (d = off; d < off+dof; ++d) {
         ierr = PetscSectionAddDof(rootSectionAdj, d, ndof-ncdof);CHKERRQ(ierr);
       }
@@ -617,11 +621,13 @@ PetscErrorCode DMPlexPreallocateOperator(DM dm, PetscInt bs, PetscSection sectio
 
       ierr = PetscSectionGetOffset(leafSectionAdj, d, &aoff);CHKERRQ(ierr);
       for (q = 0; q < numAdj; ++q) {
+        const PetscInt padj = tmpAdj[q];
         PetscInt ndof, ncdof, ngoff, nd;
 
-        ierr = PetscSectionGetDof(section, tmpAdj[q], &ndof);CHKERRQ(ierr);
-        ierr = PetscSectionGetConstraintDof(section, tmpAdj[q], &ncdof);CHKERRQ(ierr);
-        ierr = PetscSectionGetOffset(sectionGlobal, tmpAdj[q], &ngoff);CHKERRQ(ierr);
+        if ((padj < pStart) || (padj >= pEnd)) continue;
+        ierr = PetscSectionGetDof(section, padj, &ndof);CHKERRQ(ierr);
+        ierr = PetscSectionGetConstraintDof(section, padj, &ncdof);CHKERRQ(ierr);
+        ierr = PetscSectionGetOffset(sectionGlobal, padj, &ngoff);CHKERRQ(ierr);
         for (nd = 0; nd < ndof-ncdof; ++nd) {
           adj[aoff+i] = (ngoff < 0 ? -(ngoff+1) : ngoff) + nd;
           ++i;
@@ -670,11 +676,13 @@ PetscErrorCode DMPlexPreallocateOperator(DM dm, PetscInt bs, PetscSection sectio
       ierr = PetscSectionGetOffset(rootSectionAdj, d, &aoff);CHKERRQ(ierr);
       i    = adof-1;
       for (q = 0; q < numAdj; ++q) {
+        const PetscInt padj = tmpAdj[q];
         PetscInt ndof, ncdof, ngoff, nd;
 
-        ierr = PetscSectionGetDof(section, tmpAdj[q], &ndof);CHKERRQ(ierr);
-        ierr = PetscSectionGetConstraintDof(section, tmpAdj[q], &ncdof);CHKERRQ(ierr);
-        ierr = PetscSectionGetOffset(sectionGlobal, tmpAdj[q], &ngoff);CHKERRQ(ierr);
+        if ((padj < pStart) || (padj >= pEnd)) continue;
+        ierr = PetscSectionGetDof(section, padj, &ndof);CHKERRQ(ierr);
+        ierr = PetscSectionGetConstraintDof(section, padj, &ncdof);CHKERRQ(ierr);
+        ierr = PetscSectionGetOffset(sectionGlobal, padj, &ngoff);CHKERRQ(ierr);
         for (nd = 0; nd < ndof-ncdof; ++nd) {
           rootAdj[aoff+i] = ngoff < 0 ? -(ngoff+1)+nd : ngoff+nd;
           --i;
@@ -747,13 +755,13 @@ PetscErrorCode DMPlexPreallocateOperator(DM dm, PetscInt bs, PetscSection sectio
     ierr = PetscSectionGetOffset(sectionGlobal, p, &goff);CHKERRQ(ierr);
     ierr = DMPlexGetAdjacency_Private(dm, p, useClosure, tmpClosure, &numAdj, tmpAdj);CHKERRQ(ierr);
     for (q = 0; q < numAdj; ++q) {
+      const PetscInt padj = tmpAdj[q];
       PetscInt ndof, ncdof, noff;
 
-      /* Adjacent points may not be in the section chart */
-      if ((tmpAdj[q] < pStart) || (tmpAdj[q] >= pEnd)) continue;
-      ierr = PetscSectionGetDof(section, tmpAdj[q], &ndof);CHKERRQ(ierr);
-      ierr = PetscSectionGetConstraintDof(section, tmpAdj[q], &ncdof);CHKERRQ(ierr);
-      ierr = PetscSectionGetOffset(section, tmpAdj[q], &noff);CHKERRQ(ierr);
+      if ((padj < pStart) || (padj >= pEnd)) continue;
+      ierr = PetscSectionGetDof(section, padj, &ndof);CHKERRQ(ierr);
+      ierr = PetscSectionGetConstraintDof(section, padj, &ncdof);CHKERRQ(ierr);
+      ierr = PetscSectionGetOffset(section, padj, &noff);CHKERRQ(ierr);
       for (d = goff; d < goff+dof-cdof; ++d) {
         ierr = PetscSectionAddDof(sectionAdj, d, ndof-ncdof);CHKERRQ(ierr);
       }
@@ -800,15 +808,16 @@ PetscErrorCode DMPlexPreallocateOperator(DM dm, PetscInt bs, PetscSection sectio
       ierr = PetscSectionGetDof(sectionAdj, d, &adof);CHKERRQ(ierr);
       ierr = PetscSectionGetOffset(sectionAdj, d, &aoff);CHKERRQ(ierr);
       for (q = 0; q < numAdj; ++q) {
+        const PetscInt  padj = tmpAdj[q];
         PetscInt        ndof, ncdof, ngoff, nd;
         const PetscInt *ncind;
 
         /* Adjacent points may not be in the section chart */
-        if ((tmpAdj[q] < pStart) || (tmpAdj[q] >= pEnd)) continue;
-        ierr = PetscSectionGetDof(section, tmpAdj[q], &ndof);CHKERRQ(ierr);
-        ierr = PetscSectionGetConstraintDof(section, tmpAdj[q], &ncdof);CHKERRQ(ierr);
-        ierr = PetscSectionGetConstraintIndices(section, tmpAdj[q], &ncind);CHKERRQ(ierr);
-        ierr = PetscSectionGetOffset(sectionGlobal, tmpAdj[q], &ngoff);CHKERRQ(ierr);
+        if ((padj < pStart) || (padj >= pEnd)) continue;
+        ierr = PetscSectionGetDof(section, padj, &ndof);CHKERRQ(ierr);
+        ierr = PetscSectionGetConstraintDof(section, padj, &ncdof);CHKERRQ(ierr);
+        ierr = PetscSectionGetConstraintIndices(section, padj, &ncind);CHKERRQ(ierr);
+        ierr = PetscSectionGetOffset(sectionGlobal, padj, &ngoff);CHKERRQ(ierr);
         for (nd = 0; nd < ndof-ncdof; ++nd, ++i) {
           cols[aoff+i] = ngoff < 0 ? -(ngoff+1)+nd : ngoff+nd;
         }
