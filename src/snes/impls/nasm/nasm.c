@@ -576,7 +576,7 @@ PetscErrorCode SNESNASMComputeFinalJacobian_Private(SNES snes, Vec X)
 
     if (subsnes->lagjacobian == -1)    subsnes->lagjacobian = -2;
     else if (subsnes->lagjacobian > 1) lag = subsnes->lagjacobian;
-    ierr = SNESComputeJacobian(subsnes,Xl,&snes->jacobian,&subsnes->jacobian_pre,&flg);CHKERRQ(ierr);
+    ierr = SNESComputeJacobian(subsnes,Xl,&subsnes->jacobian,&subsnes->jacobian_pre,&flg);CHKERRQ(ierr);
     if (lag > 1) subsnes->lagjacobian = lag;
     ierr = KSPSetOperators(subsnes->ksp,subsnes->jacobian,subsnes->jacobian_pre,flg);CHKERRQ(ierr);
   }
