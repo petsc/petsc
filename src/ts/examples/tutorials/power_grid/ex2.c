@@ -9,7 +9,15 @@ static char help[] = "Basic equation for generator stability analysis.\n";
 \end{eqnarray}
 
 
-   Useful options: -ts_monitor_lg_draw -ts_adapt_type none -tcl 2.27 -lg_indicate_data_points 0
+
+  Ensemble of initial conditions
+   ./ex2 -ensemble -ts_monitor_draw_solution_phase -3,-1,3,3      -ts_adapt_dt_max .01  -ts_monitor -ts_type rosw -pc_type lu -ksp_type preonly
+
+  Fault at .1 seconds
+   ./ex2           -ts_monitor_draw_solution_phase .95,.4,1.05,.6 -ts_adapt_dt_max .01  -s_monitor -ts_type rows -pc_type lu -ksp_type preonly
+
+  Initial conditions same as when fault is ended
+
 F*/
 
 /*
@@ -101,7 +109,7 @@ PetscErrorCode PostStep(TS ts)
     ierr = TSGetSolution(ts,&X);CHKERRQ(ierr);
     ierr = VecView(X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     exit(0);
-    /* results in initial conditions after fault of -u 1.00617,0.33287 */
+    /* results in initial conditions after fault of -u 1.00932,0.496792 */
   }
   PetscFunctionReturn(0);
 }
@@ -120,6 +128,7 @@ int main(int argc,char **argv)
   AppCtx         ctx;
   PetscScalar    *u;
   PetscReal      du[2] = {0.0,0.0};
+  PetscBool      ensemble = PETSC_FALSE,flg1,flg2;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
@@ -133,6 +142,7 @@ int main(int argc,char **argv)
     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = MatSetSizes(A,n,n,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
+  ierr = MatSetType(A,MATDENSE);CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
   ierr = MatSetUp(A);CHKERRQ(ierr);
 
@@ -154,17 +164,27 @@ int main(int argc,char **argv)
     ierr        = PetscOptionsScalar("-Pm","","",ctx.Pm,&ctx.Pm,NULL);CHKERRQ(ierr);
     ctx.tf      = 0.1;
     ctx.tcl     = 0.2;
-    ierr        = PetscOptionsReal("-tf","","",ctx.tf,&ctx.tf,NULL);CHKERRQ(ierr);
-    ierr        = PetscOptionsReal("-tcl","","",ctx.tcl,&ctx.tcl,NULL);CHKERRQ(ierr);
+    ierr        = PetscOptionsReal("-tf","Time to start fault","",ctx.tf,&ctx.tf,NULL);CHKERRQ(ierr);
+    ierr        = PetscOptionsReal("-tcl","Time to end fault","",ctx.tcl,&ctx.tcl,NULL);CHKERRQ(ierr);
+    ierr        = PetscOptionsBool("-ensemble","Run ensemble of different initial conditions","",ensemble,&ensemble,NULL);CHKERRQ(ierr);
+    if (ensemble) {
+      ctx.tf      = -1;
+      ctx.tcl     = -1;
+    }
 
     ierr = VecGetArray(U,&u);CHKERRQ(ierr);
     u[0] = ctx.omega_s;
     u[1] = asin(ctx.Pm/ctx.Pmax);
-    ierr = PetscOptionsRealArray("-u","Initial solution","",u,&n,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsRealArray("-du","Perturbation in initial solution","",du,&n,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsRealArray("-u","Initial solution","",u,&n,&flg1);CHKERRQ(ierr);
+    n    = 2;
+    ierr = PetscOptionsRealArray("-du","Perturbation in initial solution","",du,&n,&flg2);CHKERRQ(ierr);
     u[0] += du[0];
     u[1] += du[1];
     ierr = VecRestoreArray(U,&u);CHKERRQ(ierr);
+    if (flg1 || flg2) {
+      ctx.tf      = -1;
+      ctx.tcl     = -1;
+    }
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
@@ -185,16 +205,16 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set solver options
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = TSSetDuration(ts,100000,10.0);CHKERRQ(ierr);
+  ierr = TSSetDuration(ts,100000,35.0);CHKERRQ(ierr);
   ierr = TSSetInitialTimeStep(ts,0.0,.01);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
-  /*  ierr = TSSetPostStep(ts,PostStep);CHKERRQ(ierr); */
+  /* ierr = TSSetPostStep(ts,PostStep);CHKERRQ(ierr);  */
 
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve nonlinear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  if (0){
+  if (ensemble){
     for (du[0] = -2.5; du[0] <= .01; du[0] += .1) {
       ierr = VecGetArray(U,&u);CHKERRQ(ierr);
       u[0] = ctx.omega_s;
