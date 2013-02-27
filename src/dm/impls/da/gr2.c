@@ -127,7 +127,7 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
   DM                 da,dac,dag;
   PetscErrorCode     ierr;
   PetscMPIInt        rank;
-  PetscInt           N,s,M,w;
+  PetscInt           N,s,M,w,ncoors = 4;
   const PetscInt     *lx,*ly;
   PetscReal          coors[4],ymin,ymax,xmin,xmax;
   PetscDraw          draw,popup;
@@ -222,6 +222,8 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
   coors[0] = xmin - .05*(xmax- xmin); coors[2] = xmax + .05*(xmax - xmin);
   coors[1] = ymin - .05*(ymax- ymin); coors[3] = ymax + .05*(ymax - ymin);
   ierr     = PetscInfo4(da,"Preparing DMDA 2d contour plot coordinates %G %G %G %G\n",coors[0],coors[1],coors[2],coors[3]);CHKERRQ(ierr);
+
+  ierr = PetscOptionsGetRealArray(NULL,"-draw_coordinates",coors,&ncoors,NULL);CHKERRQ(ierr);
 
   /*
        get local ghosted version of coordinates
