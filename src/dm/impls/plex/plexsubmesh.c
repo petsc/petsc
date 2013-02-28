@@ -1,6 +1,6 @@
 #include <petsc-private/dmpleximpl.h>   /*I      "petscdmplex.h"   I*/
 
-extern PetscErrorCode DMPlexGetNumFaceVertices_Internal(DM, PetscInt, PetscInt *);
+extern PetscErrorCode DMPlexGetNumFaceVertices_Internal(DM, PetscInt, PetscInt, PetscInt *);
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexMarkSubmesh_Uninterpolated"
@@ -63,7 +63,7 @@ static PetscErrorCode DMPlexMarkSubmesh_Uninterpolated(DM dm, DMLabel vertexLabe
           if (vertexLoc >= 0) closure[faceSize++] = point;
         }
       }
-      if (!(*nFV)) {ierr = DMPlexGetNumFaceVertices_Internal(dm, numCorners, nFV);CHKERRQ(ierr);}
+      if (!(*nFV)) {ierr = DMPlexGetNumFaceVertices_Internal(dm, dim, numCorners, nFV);CHKERRQ(ierr);}
       if (faceSize > *nFV) SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Invalid submesh: Too many vertices %d of an element on the surface", faceSize);
       if (faceSize == *nFV) {
         ++(*numFaces);
