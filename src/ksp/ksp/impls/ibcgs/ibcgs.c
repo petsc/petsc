@@ -128,12 +128,17 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
 
   for (ksp->its = 1; ksp->its<ksp->max_it+1; ksp->its++) {
     rhon = phin_1 - omegan_1*sigman_2 + omegan_1*alphan_1*pin_1;
-    /*    if (rhon == 0.0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_CONV_FAILED,"rhon is zero, iteration %D",n); */
     if (ksp->its == 1) deltan = rhon;
     else deltan = rhon/taun_1;
     betan = deltan/omegan_1;
     taun  = sigman_1 + betan*taun_1  - deltan*pin_1;
-    if (taun == 0.0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_CONV_FAILED,"taun is zero, iteration %D",ksp->its);
+    if (taun == 0.0) {
+      if (ksp->errorifnotconverged) SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"KSPSolve has not converged due to taun is zero, iteration %D",ksp->its);
+      else {
+        ksp->reason = KSP_DIVERGED_NANORINF;
+        PetscFunctionReturn(0);
+      }
+    }
     alphan = rhon/taun;
     ierr   = PetscLogFlops(15.0);CHKERRQ(ierr);
 
@@ -218,8 +223,20 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
     kappan = outsums[5];
     if (ksp->lagnorm && ksp->its > 1) rnorm = PetscSqrtReal(PetscRealPart(outsums[6]));
 
-    if (kappan == 0.0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_CONV_FAILED,"kappan is zero, iteration %D",ksp->its);
-    if (thetan == 0.0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_CONV_FAILED,"thetan is zero, iteration %D",ksp->its);
+    if (kappan == 0.0) {
+      if (ksp->errorifnotconverged) SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"KSPSolve has not converged due to kappan is zero, iteration %D",ksp->its);
+      else {
+        ksp->reason = KSP_DIVERGED_NANORINF;
+        PetscFunctionReturn(0);
+      }
+    }
+    if (thetan == 0.0) {
+      if (ksp->errorifnotconverged) SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"KSPSolve has not converged due to thetan is zero, iteration %D",ksp->its);
+      else {
+        ksp->reason = KSP_DIVERGED_NANORINF;
+        PetscFunctionReturn(0);
+      }
+    }
     omegan = thetan/kappan;
     sigman = gamman - omegan*etan;
 
