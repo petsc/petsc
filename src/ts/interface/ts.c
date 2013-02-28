@@ -217,7 +217,7 @@ PetscErrorCode  TSSetFromOptions(TS ts)
     ierr = PetscDrawAxisSetLimits(ctx->axis,bounds[0],bounds[2],bounds[1],bounds[3]);CHKERRQ(ierr);
     ierr = PetscDrawAxisSetLabels(ctx->axis,"Phase Diagram","Variable 1","Variable 2");CHKERRQ(ierr);
     ierr = PetscDrawAxisDraw(ctx->axis);CHKERRQ(ierr);
-    //    ierr = PetscDrawSetCoordinates(draw,bounds[0],bounds[1],bounds[2],bounds[3]);CHKERRQ(ierr);
+    /* ierr = PetscDrawSetCoordinates(draw,bounds[0],bounds[1],bounds[2],bounds[3]);CHKERRQ(ierr); */
     ierr = TSMonitorSet(ts,TSMonitorDrawSolutionPhase,ctx,(PetscErrorCode (*)(void**))TSMonitorDrawCtxDestroy);CHKERRQ(ierr);
   }
   opt  = PETSC_FALSE;
