@@ -176,11 +176,11 @@ PetscErrorCode FormPsiAndInitialGuess(DM da,Vec U0,PetscBool feasible)
     for (i=xs; i<xs+xm; i++) {
       x = coords[j][i].x;
       y = coords[j][i].y;
-      r = sqrt(x * x + y * y);
-      if (r <= 1.0) psi[j][i] = sqrt(1.0 - r * r);
+      r = PetscSqrtReal(x * x + y * y);
+      if (r <= 1.0) psi[j][i] = PetscSqrtReal(1.0 - r * r);
       else psi[j][i] = -1.0;
       if (r <= afree) uexact[j][i] = psi[j][i];  /* on the obstacle */
-      else uexact[j][i] = - A * log(r) + B;   /* solves the laplace eqn */
+      else uexact[j][i] = - A * PetscLogReal(r) + B;   /* solves the laplace eqn */
 
       if (feasible) {
         if (i == 0 || j == 0 || i == Mx-1 || j == My-1) u0[j][i] = uexact[j][i];

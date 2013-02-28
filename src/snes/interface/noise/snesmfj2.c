@@ -120,7 +120,7 @@ PetscErrorCode SNESMatrixFreeMult2_Private(Mat mat,Vec a,Vec y)
         /* Use Jorge's method to compute noise */
         ierr = SNESDiffParameterCompute_More(snes,ctx->data,U,a,&noise,&h);CHKERRQ(ierr);
 
-        ctx->error_rel = sqrt(noise);
+        ctx->error_rel = PetscSqrtReal(noise);
 
         ierr = PetscInfo3(snes,"Using Jorge's noise: noise=%G, sqrt(noise)=%G, h_more=%G\n",noise,ctx->error_rel,h);CHKERRQ(ierr);
 

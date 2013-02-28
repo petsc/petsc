@@ -94,7 +94,7 @@ PetscErrorCode  PetscDrawSplitViewPort(PetscDraw draw)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank,size;
-  int            n;
+  PetscInt       n;
   PetscBool      isnull;
   PetscReal      xl,xr,yl,yr,h;
 
@@ -106,7 +106,7 @@ PetscErrorCode  PetscDrawSplitViewPort(PetscDraw draw)
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)draw),&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)draw),&size);CHKERRQ(ierr);
 
-  n = (int)(.1 + sqrt((double)size));
+  n = (PetscInt)(.1 + PetscSqrtReal((PetscReal)size));
   while (n*n < size) n++;
 
   h  = 1.0/n;
@@ -176,7 +176,7 @@ PetscErrorCode  PetscDrawViewPortsCreate(PetscDraw draw,PetscInt nports,PetscDra
 
   ierr = PetscObjectReference((PetscObject)draw);CHKERRQ(ierr);
 
-  n = (int)(.1 + sqrt((double)nports));
+  n = (PetscInt)(.1 + PetscSqrtReal((PetscReal)nports));
   while (n*n < nports) n++;
 
   ierr = PetscMalloc(n*n*sizeof(PetscReal),&xl);CHKERRQ(ierr);(*ports)->xl = xl;

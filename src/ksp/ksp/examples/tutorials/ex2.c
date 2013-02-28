@@ -207,8 +207,6 @@ int main(int argc,char **args)
   ierr = VecAXPY(x,-1.0,u);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
-  /* Scale the norm */
-  /*  norm *= sqrt(1.0/((m+1)*(n+1))); */
 
   /*
      Print convergence information.  PetscPrintf() produces a single

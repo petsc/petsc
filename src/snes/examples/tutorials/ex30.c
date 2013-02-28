@@ -363,7 +363,7 @@ PETSC_STATIC_INLINE PetscScalar VertVelocity(PetscInt i, PetscInt j, AppCtx *use
   PetscReal   x, z, r;
 
   x = (i - grid->jlid - 0.5)*grid->dx;  z = (j - grid->jlid)*grid->dz;
-  r = sqrt(x*x+z*z); st = z/r;  ct = x/r;  th = atan(z/x);
+  r = PetscSqrtReal(x*x+z*z); st = z/r;  ct = x/r;  th = atan(z/x);
   return st*(c*th*st+d*(st+th*ct)) - ct*(c*(st-th*ct)+d*th*st);
 }
 
@@ -379,7 +379,7 @@ PETSC_STATIC_INLINE PetscScalar Pressure(PetscInt i, PetscInt j, AppCtx *user)
   PetscScalar x, z, r, st, ct, c=param->c, d=param->d;
 
   x = (i - grid->jlid - 0.5)*grid->dx;  z = (j - grid->jlid - 0.5)*grid->dz;
-  r = sqrt(x*x+z*z);  st = z/r;  ct = x/r;
+  r = PetscSqrtReal(x*x+z*z);  st = z/r;  ct = x/r;
   return (-2.0*(c*ct-d*st)/r);
 }
 
@@ -440,7 +440,7 @@ PETSC_STATIC_INLINE PetscScalar CalcSecInv(Field **x, PetscInt i, PetscInt j, Pe
   eps11 = (uE-uW)/grid->dx;  eps22 = (wN-wS)/grid->dz;
   eps12 = 0.5*((uN-uS)/grid->dz + (wE-wW)/grid->dx);
 
-  return sqrt(0.5*(eps11*eps11 + 2.0*eps12*eps12 + eps22*eps22));
+  return PetscSqrtReal(0.5*(eps11*eps11 + 2.0*eps12*eps12 + eps22*eps22));
 }
 
 /*---------------------------------------------------------------------*/
@@ -938,7 +938,7 @@ PetscErrorCode SetParams(Parameter *param, GridInfo *grid)
                         * param->L*1000.0                       /* m */
                         / param->kappa;                         /* m^2/sec */
   param->z_scale = param->L * alpha_g_on_cp_units_inverse_km;
-  param->skt     = sqrt(param->kappa*param->slab_age*SEC_PER_YR);
+  param->skt     = PetscSqrtReal(param->kappa*param->slab_age*SEC_PER_YR);
   ierr           = PetscOptionsGetReal(NULL,"-peclet",&(param->peclet),NULL);CHKERRQ(ierr);
 
   return ierr_out;

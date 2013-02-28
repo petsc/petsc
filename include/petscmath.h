@@ -30,6 +30,7 @@ typedef float PetscReal;
 #define PetscLogReal(a)     log(a)
 #define PetscSinReal(a)     sin(a)
 #define PetscCosReal(a)     cos(a)
+#define PetscPowReal(a,b)   pow(a,b)
 #elif defined(PETSC_USE_REAL_DOUBLE)
 #define MPIU_REAL   MPI_DOUBLE
 typedef double PetscReal;
@@ -38,6 +39,7 @@ typedef double PetscReal;
 #define PetscLogReal(a)     log(a)
 #define PetscSinReal(a)     sin(a)
 #define PetscCosReal(a)     cos(a)
+#define PetscPowReal(a,b)   pow(a,b)
 #elif defined(PETSC_USE_REAL___FLOAT128)
 #if defined(__cplusplus)
 extern "C" {
@@ -54,6 +56,7 @@ typedef __float128 PetscReal;
 #define PetscLogReal(a)     logq(a)
 #define PetscSinReal(a)     sinq(a)
 #define PetscCosReal(a)     cosq(a)
+#define PetscPowReal(a,b)   powq(a,b)
 #endif /* PETSC_USE_REAL_* */
 
 /*

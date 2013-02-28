@@ -78,9 +78,9 @@ int main(int Argc,char **Args)
       ierr = PetscRandomGetValueReal(rctx, &r1);CHKERRQ(ierr);
       r1   = 1.-r1; /* to change from [0,1) to (0,1], which we need for the log */
       ierr = PetscRandomGetValueReal(rctx, &r2);CHKERRQ(ierr);
-      PetscReal R = sqrt(-2.*log(r1));
-      PetscReal c = cos(2.*PETSC_PI*r2);
-      PetscReal s = sin(2.*PETSC_PI*r2);
+      PetscReal R = PetscSqrtReal(-2.*PetscLogReal(r1));
+      PetscReal c = PetscCosReal(2.*PETSC_PI*r2);
+      PetscReal s = PetscSinReal(2.*PETSC_PI*r2);
 
       /* use those to set the field */
       uxy1 = PetscExpScalar(((PetscScalar) (R*c/beta))*PETSC_i);

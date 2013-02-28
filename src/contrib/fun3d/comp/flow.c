@@ -2367,9 +2367,7 @@ int WriteRestartFile(GRID *grid, int timeStep)
         /* Write the Mach Number */
         for (j = 0; j < nnodesLoc; j++) {
           in   = bs*j;
-          mach = sqrt((qnode[in+1]*qnode[in+1]+qnode[in+2]*qnode[in+2]+
-                       qnode[in+3]*qnode[in+3])/
-                      ((pgamma*qnode[in+4])/qnode[in]));
+          mach = PetscSqrtReal((qnode[in+1]*qnode[in+1]+qnode[in+2]*qnode[in+2]+qnode[in+3]*qnode[in+3])/((pgamma*qnode[in+4])/qnode[in]));
           fprintf(fptr,"%g\n",mach);
         }
         /* Write Velocity Vector */
@@ -2400,8 +2398,7 @@ int WriteRestartFile(GRID *grid, int timeStep)
         /* Write the Mach Number */
         for (j = 0; j < nnodesLocIpr; j++) {
           in = bs*j;
-          mach = sqrt((qnode[in+1]*qnode[in+1]+qnode[in+2]*qnode[in+2]+qnode[in+3]*qnode[in+3])/
-                      ((pgamma*qnode[in+4])/qnode[in]));
+          mach = PetscSqrtReal((qnode[in+1]*qnode[in+1]+qnode[in+2]*qnode[in+2]+qnode[in+3]*qnode[in+3])/((pgamma*qnode[in+4])/qnode[in]));
           fprintf(fptr,"%g\n",mach);
         }
         /* Write Velocity Vector */

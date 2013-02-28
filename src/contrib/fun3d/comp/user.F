@@ -1076,7 +1076,7 @@ c1030    continue
      >                   MPIU_SCALAR, MPI_SUM,
      >                   MPI_COMM_WORLD,ierr)
 !     write(*,*) 'In L2NORM - residual norm is', sqrt(sumglo)
-      rms(ntt) = sqrt(sumglo/t1)
+      rms(ntt) = PetscSqrtReal(sumglo/t1)
 c
 ! If we are ramping the cfl with SER save res0 and resc
 c

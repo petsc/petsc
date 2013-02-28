@@ -464,7 +464,7 @@ PetscErrorCode SetInitialGuess(Vec X,AppCtx *user)
       PetscInt    k;
       PetscScalar vals_cv[8],vals_ci[8],vals_eta[8],s,hhr,r;
       for (k=0; k < 8; k++) {
-        s = sqrt((x[k] - xmid)*(x[k] - xmid) + (y[k] - ymid)*(y[k] - ymid) + (z[k] - zmid)*(z[k] - zmid));
+        s = PetscSqrtScalar((x[k] - xmid)*(x[k] - xmid) + (y[k] - ymid)*(y[k] - ymid) + (z[k] - zmid)*(z[k] - zmid));
         if (s < xwidth*(5.0/64.0)) {
           vals_cv[k]  = cv_v;
           vals_ci[k]  = ci_v;

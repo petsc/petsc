@@ -59,7 +59,7 @@ PetscErrorCode SPARSEPACKfn1wd(PetscInt *root,const PetscInt *inxadj,const Petsc
   fnlvl  = (PetscReal) (*nlvl);
   *nsep  = xls[*nlvl + 1] - 1;
   width  = (PetscReal) (*nsep) / fnlvl;
-  deltp1 = sqrt((width * 3.f + 13.f) / 2.f) + 1.f;
+  deltp1 = PetscSqrtReal((width * 3. + 13.) / 2.) + 1.;
   if (*nsep >= 50 && deltp1 <= fnlvl * .5f) goto L300;
 
 /*       THE COMPONENT IS TOO SMALL, OR THE LEVEL STRUCTURE */

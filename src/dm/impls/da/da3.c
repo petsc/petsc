@@ -235,7 +235,7 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
     p = size/(m*n);
   } else if (m == PETSC_DECIDE && n == PETSC_DECIDE && p != PETSC_DECIDE) {
     /* try for squarish distribution */
-    m = (int)(0.5 + sqrt(((double)M)*((double)size)/((double)N*p)));
+    m = (int)(0.5 + PetscSqrtReal(((PetscReal)M)*((PetscReal)size)/((PetscReal)N*p)));
     if (!m) m = 1;
     while (m > 0) {
       n = size/(m*p);
@@ -246,7 +246,7 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
     if (M > N && m < n) {PetscInt _m = m; m = n; n = _m;}
   } else if (m == PETSC_DECIDE && n != PETSC_DECIDE && p == PETSC_DECIDE) {
     /* try for squarish distribution */
-    m = (int)(0.5 + sqrt(((double)M)*((double)size)/((double)P*n)));
+    m = (int)(0.5 + PetscSqrtReal(((PetscReal)M)*((PetscReal)size)/((PetscReal)P*n)));
     if (!m) m = 1;
     while (m > 0) {
       p = size/(m*n);
@@ -257,7 +257,7 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
     if (M > P && m < p) {PetscInt _m = m; m = p; p = _m;}
   } else if (m != PETSC_DECIDE && n == PETSC_DECIDE && p == PETSC_DECIDE) {
     /* try for squarish distribution */
-    n = (int)(0.5 + sqrt(((double)N)*((double)size)/((double)P*m)));
+    n = (int)(0.5 + PetscSqrtReal(((PetscReal)N)*((PetscReal)size)/((PetscReal)P*m)));
     if (!n) n = 1;
     while (n > 0) {
       p = size/(m*n);
@@ -268,7 +268,7 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
     if (N > P && n < p) {PetscInt _n = n; n = p; p = _n;}
   } else if (m == PETSC_DECIDE && n == PETSC_DECIDE && p == PETSC_DECIDE) {
     /* try for squarish distribution */
-    n = (PetscInt)(0.5 + pow(((double)N*N)*((double)size)/((double)P*M),(double)(1./3.)));
+    n = (PetscInt)(0.5 + PetscPowReal(((PetscReal)N*N)*((PetscReal)size)/((PetscReal)P*M),(PetscReal)(1./3.)));
     if (!n) n = 1;
     while (n > 0) {
       pm = size/n;
@@ -276,7 +276,7 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
       n--;
     }
     if (!n) n = 1;
-    m = (PetscInt)(0.5 + sqrt(((double)M)*((double)size)/((double)P*n)));
+    m = (PetscInt)(0.5 + PetscSqrtReal(((PetscReal)M)*((PetscReal)size)/((PetscReal)P*n)));
     if (!m) m = 1;
     while (m > 0) {
       p = size/(m*n);

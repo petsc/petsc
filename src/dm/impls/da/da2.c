@@ -135,7 +135,7 @@ PetscErrorCode  DMDASplitComm2d(MPI_Comm comm,PetscInt M,PetscInt N,PetscInt sw,
     if (csize % 4) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Cannot split communicator of size %d tried %d %D %D",size,csize,x,y);
     csize = csize/4;
 
-    m = (PetscInt)(0.5 + sqrt(((double)M)*((double)csize)/((double)N)));
+    m = (PetscInt)(0.5 + PetscSqrtReal(((PetscReal)M)*((PetscReal)csize)/((PetscReal)N)));
     if (!m) m = 1;
     while (m > 0) {
       n = csize/m;
@@ -273,7 +273,7 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
       n = size/m;
     } else {
       /* try for squarish distribution */
-      m = (PetscInt)(0.5 + sqrt(((double)M)*((double)size)/((double)N)));
+      m = (PetscInt)(0.5 + PetscSqrtReal(((PetscReal)M)*((PetscReal)size)/((PetscReal)N)));
       if (!m) m = 1;
       while (m > 0) {
         n = size/m;

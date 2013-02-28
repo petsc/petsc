@@ -94,7 +94,7 @@ PETSC_MAKE_STOP_ON_ERROR = -
 # ----------------------------------------------------------------------------------------
 #
 # Some variables used to build shared libraries
-SHLIBS   = libpetscsys libpetscvec libpetscmat libpetscdm libpetscksp libpetscsnes libpetscts libpetsccontrib
+SHLIBS   = libpetscsys libpetscmat libpetscvec libpetscdm libpetscksp libpetscsnes libpetscts libpetsccontrib
 #
 # The following include files set customized site, optimization, and version
 # options.

@@ -1543,13 +1543,6 @@ static PetscErrorCode solve_stokes_2d_coupled(PetscInt mx,PetscInt my)
     ierr = VecStrideNorm(X_analytic,2,NORM_2,&nrm2[2]);CHKERRQ(ierr);
     ierr = VecStrideNorm(X_analytic,2,NORM_INFINITY,&nrmI[2]);CHKERRQ(ierr);
 
-    /*
-    PetscPrintf(PETSC_COMM_WORLD, "%1.4e   %1.4e %1.4e %1.4e    %1.4e %1.4e %1.4e    %1.4e %1.4e %1.4e\n",
-    1.0/mx,
-    nrm1[0]/(double)N, sqrt(nrm2[0]/(double)N), nrmI[0],
-    nrm1[1]/(double)N, sqrt(nrm2[1]/(double)N), nrmI[1],
-    nrm1[2]/(double)N, sqrt(nrm2[2]/(double)N), nrmI[2]);
-    */
     ierr = DMDestroy(&da_Stokes_analytic);CHKERRQ(ierr);
     ierr = VecDestroy(&X_analytic);CHKERRQ(ierr);
   }
