@@ -363,7 +363,7 @@ runex5_5_nasm:
 
 runex5_5_aspin:
 	-@${MPIEXEC} -n 4 ./ex5 -snes_monitor_short -ksp_monitor_short -snes_converged_reason -da_refine 4 -da_overlap 3 \
-        -npc_snes_type nasm -npc_snes_nasm_type restrict -snes_npc_side left -snes_max_it 10 > ex5_5_aspin.tmp 2>&1; \
+        -snes_type aspin > ex5_5_aspin.tmp 2>&1; \
 	   if (${DIFF} output/ex5_5_aspin.out ex5_5_aspin.tmp) then true; \
 	   else  echo  ${PWD} "\nPossible problem with with ex5_5_aspin, diffs above \n========================================="; fi; \
 	   ${RM} -f ex5_5_aspin.tmp
@@ -685,8 +685,8 @@ runex19_ngmres_nasm: #test ex19 with NASM preconditioner globalized with NGMRES
            ${RM} -f ex19_ngmres_nasm.tmp
 
 runex19_aspin: #test ex19 with NASM preconditioner globalized with Newton
-	-@${MPIEXEC} -n 4 ./ex19 -da_refine 3 -da_overlap 2 -snes_monitor_short -snes_type newtonls -snes_npc_side left -snes_max_it 10 \
-        -npc_snes_type nasm -npc_snes_nasm_type restrict -grashof 4e4 -lidvelocity 100 -ksp_monitor_short > ex19_aspin.tmp 2>&1; \
+	-@${MPIEXEC} -n 4 ./ex19 -da_refine 3 -da_overlap 2 -snes_monitor_short -snes_type aspin \
+        -grashof 4e4 -lidvelocity 100 -ksp_monitor_short > ex19_aspin.tmp 2>&1; \
 	   ${DIFF} output/ex19_aspin.out ex19_aspin.tmp || echo  ${PWD} "\nPossible problem with ex19_aspin, diffs above \n========================================="; \
           ${RM} -f ex19_aspin.tmp
 
