@@ -374,15 +374,15 @@ runex2_chebyest_1:
            ${DIFF} output/ex2_chebyest_1.out ex2.tmp || echo ${PWD} "\nPossible problem with with ex2_chebyest_1, diffs above \n========================================="; \
            ${RM} -f ex2.tmp
 runex2_chebyest_2:
-	-@${MPIEXEC} -n 1 ./ex2 -m 80 -n 80 -ksp_pc_side right -pc_type ksp -ksp_ksp_type chebyshev -ksp_ksp_max_it 5 -ksp_ksp_chebyshev_estimate_eigenvalues 0.9,0,0,1.1 -ksp_est_ksp_type cg -ksp_monitor_short > ex2.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex2 -m 80 -n 80 -ksp_pc_side right -pc_type ksp -ksp_ksp_type chebyshev -ksp_ksp_max_it 5 -ksp_ksp_chebyshev_estimate_eigenvalues 0.9,0,0,1.1 -ksp_adapt_ksp_type cg -ksp_monitor_short > ex2.tmp 2>&1; \
            ${DIFF} output/ex2_chebyest_2.out ex2.tmp || echo ${PWD} "\nPossible problem with with ex2_chebyest_2, diffs above \n========================================="; \
            ${RM} -f ex2.tmp
 runex2_chebyest_3:
-	-@${MPIEXEC} -n 1 ./ex2 -ksp_type fbcgs -pc_type ksp -ksp_ksp_type chebyshev -ksp_ksp_chebyshev_estimate_eigenvalues 0.1,1.1 -ksp_ksp_max_it 1 -ksp_ksp_norm_type none -m 100 -n 100 -ksp_ksp_chebyshev_hybrid -ksp_ksp_chebyshev_hybrid_purification 0 -ksp_ksp_chebyshev_hybrid_chebysteps 10 > ex2.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex2 -ksp_type fgmres -pc_type ksp -ksp_ksp_type chebyshev -ksp_ksp_chebyshev_estimate_eigenvalues 0.1,1.1 -ksp_ksp_max_it 1 -ksp_ksp_norm_type none -m 100 -n 100 -ksp_ksp_chebyshev_hybrid -ksp_ksp_chebyshev_hybrid_purification 0 -ksp_ksp_chebyshev_hybrid_chebysteps 10 > ex2.tmp 2>&1; \
            ${DIFF} output/ex2_chebyest_3.out ex2.tmp || echo ${PWD} "\nPossible problem with with ex2_chebyest_3, diffs above \n========================================="; \
            ${RM} -f ex2.tmp
 runex2_chebyest_4:
-	-@${MPIEXEC} -n 1 ./ex2 -ksp_type fbcgs -pc_type ksp -ksp_ksp_type chebyshev -ksp_ksp_chebyshev_estimate_eigenvalues 0.1,1.1 -ksp_ksp_max_it 1 -ksp_ksp_norm_type none -m 100 -n 100 -ksp_ksp_chebyshev_hybrid -ksp_ksp_chebyshev_hybrid_purification 1 -ksp_ksp_chebyshev_hybrid_chebysteps 10 > ex2.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex2 -ksp_type fgmres -pc_type ksp -ksp_ksp_type chebyshev -ksp_ksp_chebyshev_estimate_eigenvalues 0.1,1.1 -ksp_ksp_max_it 1 -ksp_ksp_norm_type none -m 100 -n 100 -ksp_ksp_chebyshev_hybrid -ksp_ksp_chebyshev_hybrid_purification 1 -ksp_ksp_chebyshev_hybrid_chebysteps 10 > ex2.tmp 2>&1; \
            ${DIFF} output/ex2_chebyest_4.out ex2.tmp || echo ${PWD} "\nPossible problem with with ex2_chebyest_3, diffs above \n========================================="; \
            ${RM} -f ex2.tmp
 
