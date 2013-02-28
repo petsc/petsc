@@ -554,7 +554,7 @@ PetscErrorCode MatStashScatterBegin_Private(Mat mat,MatStash *stash,PetscInt *ow
   ierr = PetscInfo1(NULL,"No of messages: %d \n",nsends);CHKERRQ(ierr);
   for (i=0; i<size; i++) {
     if (nprocs[i]) {
-      ierr = PetscInfo2(NULL,"Mesg_to: %d: size: %d \n",i,nlengths[i]*bs2*sizeof(PetscScalar)+2*sizeof(PetscInt));CHKERRQ(ierr);
+      ierr = PetscInfo2(NULL,"Mesg_to: %d: size: %d bytes\n",i,nlengths[i]*(bs2*sizeof(PetscScalar)+2*sizeof(PetscInt)));CHKERRQ(ierr);
     }
   }
 #endif
