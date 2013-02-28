@@ -460,10 +460,12 @@ PetscErrorCode KSPSolve_Chebyshev(KSP ksp)
     if (hybrid && cheb->its && (cheb->its%cheb->chebysteps==0)) {
       /* Adaptive step: update eigenvalue estimate - does not seem to improve convergence */
       PetscReal max,min;
-      Vec       X = ksp->vec_sol; /* = previous p[k] */
+      Vec       X;
 
-      if (!purification) { 
-        X = p[km1]; /* a tmp vector, != ksp->vec_sol */
+      if (purification) {
+        X = p[km1]; /* will be updated by GMRES steps */
+      } else {
+        X = p[kp1]; /* temp vector */
       }
 
       ierr = VecCopy(p[k],X);CHKERRQ(ierr); /* p[k] = previous p[kp1] */
@@ -472,15 +474,9 @@ PetscErrorCode KSPSolve_Chebyshev(KSP ksp)
 
       cheb->emin = cheb->tform[0]*min + cheb->tform[1]*max;
       cheb->emax = cheb->tform[2]*min + cheb->tform[3]*max;
-
       cheb->estimate_current = PETSC_TRUE;
-      if (!purification) { 
-        X    = ksp->vec_sol;
-        ierr = VecCopy(p[k],X);CHKERRQ(ierr);
-      }
 
-      b         = ksp->vec_rhs;
-      p[km1]    = X;
+      /* update parameters that are dependent on emax and emin */
       scale     = 2.0/(cheb->emax + cheb->emin);
       alpha     = 1.0 - scale*(cheb->emin);
       mu        = 1.0/alpha;
@@ -488,11 +484,13 @@ PetscErrorCode KSPSolve_Chebyshev(KSP ksp)
 
       c[km1] = 1.0;
       c[k]   = mu;
-      ierr   = KSP_MatMult(ksp,Amat,p[km1],r);CHKERRQ(ierr);   /*  r = b - A*p[km1]    */
-      ierr   = VecAYPX(r,-1.0,b);CHKERRQ(ierr);
+      if (purification) { /* update p[k] */
+        ierr = KSP_MatMult(ksp,Amat,X,r);CHKERRQ(ierr);   /*  r = b - A*X */
+        ierr = VecAYPX(r,-1.0,b);CHKERRQ(ierr);
 
-      ierr = KSP_PCApply(ksp,r,p[k]);CHKERRQ(ierr);  /* p[k] = scale B^{-1}r + p[km1] */
-      ierr = VecAYPX(p[k],scale,p[km1]);CHKERRQ(ierr);
+        ierr = KSP_PCApply(ksp,r,p[k]);CHKERRQ(ierr);  /* p[k] = scale B^{-1}r + X */
+        ierr = VecAYPX(p[k],scale,X);CHKERRQ(ierr);
+      }
     }
 
     ksp->its++;
@@ -501,9 +499,11 @@ PetscErrorCode KSPSolve_Chebyshev(KSP ksp)
     c[kp1] = 2.0*mu*c[k] - c[km1];
     omega  = omegaprod*c[k]/c[kp1];
 
-    ierr = KSP_MatMult(ksp,Amat,p[k],r);CHKERRQ(ierr);                 /*  r = b - Ap[k]    */
+    ierr = KSP_MatMult(ksp,Amat,p[k],r);CHKERRQ(ierr);          /*  r = b - Ap[k]    */
     ierr = VecAYPX(r,-1.0,b);CHKERRQ(ierr);
     ierr = KSP_PCApply(ksp,r,p[kp1]);CHKERRQ(ierr);             /*  p[kp1] = B^{-1}r  */
+    ierr         = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
+    ksp->vec_sol = p[k];
 
     /* calculate residual norm if requested */
     if (ksp->normtype != KSP_NORM_NONE || ksp->numbermonitors) {
@@ -514,8 +514,6 @@ PetscErrorCode KSPSolve_Chebyshev(KSP ksp)
       }
       ierr         = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
       ksp->rnorm   = rnorm;
-      ierr         = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
-      ksp->vec_sol = p[k];
       KSPLogResidualHistory(ksp,rnorm);
       ierr = KSPMonitor(ksp,i,rnorm);CHKERRQ(ierr);
       ierr = (*ksp->converged)(ksp,i,rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
