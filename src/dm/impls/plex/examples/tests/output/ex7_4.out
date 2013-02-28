@@ -1,13 +1,3 @@
-Mesh in 3 dimensions:
-  0-cells: 5
-  1-cells: 7
-  2-cells: 2
-  3-cells: 0
-Mesh in 3 dimensions:
-  0-cells: 5
-  1-cells: 9
-  2-cells: 7
-  3-cells: 2
 Mesh 'Interpolated Mesh':
 Max sizes cone: 4 support: 4
 orientation is missing

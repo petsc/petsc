@@ -269,7 +269,6 @@ PetscErrorCode DMPlexInterpolate(DM dm, DM *dmInt)
     ierr = DMSetType(idm, DMPLEX);CHKERRQ(ierr);
     ierr = DMPlexSetDimension(idm, dim);CHKERRQ(ierr);
     ierr = DMPlexInterpolateFaces_Internal(odm, 1, idm);CHKERRQ(ierr);
-    if (dim == 3) {ierr = DMView(idm, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
     if (odm != dm) {ierr = DMDestroy(&odm);CHKERRQ(ierr);}
     odm  = idm;
   }
