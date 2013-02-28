@@ -546,29 +546,34 @@ PetscErrorCode SNESNASMComputeFinalJacobian_Private(SNES snes, Vec X)
   SNES           subsnes;
   PetscInt       i,lag = 1;
   PetscErrorCode ierr;
-  Vec            Xlloc,Xl;
+  Vec            Xlloc,Xl,Fl,F;
   VecScatter     oscat,gscat;
   DM             dm,subdm;
   MatStructure   flg = DIFFERENT_NONZERO_PATTERN;
-
   PetscFunctionBegin;
+  F = snes->vec_func;
+  if (snes->normtype == SNES_NORM_NONE) {ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);}
   ierr = SNESComputeJacobian(snes,X,&snes->jacobian,&snes->jacobian_pre,&flg);CHKERRQ(ierr);
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
   if (nasm->eventrestrictinterp) {ierr = PetscLogEventBegin(nasm->eventrestrictinterp,snes,0,0,0);CHKERRQ(ierr);}
   for (i=0; i<nasm->n; i++) {
     Xlloc = nasm->xl[i];
-    gscat   = nasm->gscatter[i];
-    oscat   = nasm->oscatter[i];
+    Fl    = nasm->subsnes[i]->vec_func;
+    gscat = nasm->gscatter[i];
+    oscat = nasm->oscatter[i];
     ierr = VecScatterBegin(gscat,X,Xlloc,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterBegin(oscat,F,Fl,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   }
   if (nasm->eventrestrictinterp) {ierr = PetscLogEventEnd(nasm->eventrestrictinterp,snes,0,0,0);CHKERRQ(ierr);}
   for (i=0; i<nasm->n; i++) {
+    Fl      = nasm->subsnes[i]->vec_func;
     Xl      = nasm->x[i];
     Xlloc   = nasm->xl[i];
     subsnes = nasm->subsnes[i];
     oscat   = nasm->oscatter[i];
     gscat   = nasm->gscatter[i];
     ierr = VecScatterEnd(gscat,X,Xlloc,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterEnd(oscat,F,Fl,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = SNESGetDM(subsnes,&subdm);CHKERRQ(ierr);
     ierr = DMSubDomainRestrict(dm,oscat,gscat,subdm);CHKERRQ(ierr);
     ierr = DMLocalToGlobalBegin(subdm,Xlloc,INSERT_VALUES,Xl);CHKERRQ(ierr);
@@ -670,12 +675,10 @@ PetscErrorCode SNESSolve_NASM(SNES snes)
     ierr       = SNESLogConvergenceHistory(snes,snes->norm,0);CHKERRQ(ierr);
     ierr       = SNESMonitor(snes,snes->iter,snes->norm);CHKERRQ(ierr);
     /* Test for convergence */
-    if (normtype == SNES_NORM_FUNCTION) ierr = (*snes->ops->converged)(snes,snes->iter,0.0,0.0,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
+    if (normtype == SNES_NORM_FUNCTION) {ierr = (*snes->ops->converged)(snes,snes->iter,0.0,0.0,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);}
     if (snes->reason) break;
     /* Call general purpose update function */
-    if (snes->ops->update) {
-      ierr = (*snes->ops->update)(snes, snes->iter);CHKERRQ(ierr);
-    }
+    if (snes->ops->update) {ierr = (*snes->ops->update)(snes, snes->iter);CHKERRQ(ierr);}
   }
   if (nasm->finaljacobian) {ierr = SNESNASMComputeFinalJacobian_Private(snes,X);CHKERRQ(ierr);}
   if (normtype == SNES_NORM_FUNCTION) {
