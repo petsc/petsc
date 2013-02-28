@@ -78,7 +78,7 @@ static PetscErrorCode DMPlexGetFaces_Internal(DM dm, PetscInt dim, PetscInt p, P
     case 8:
       if (faces) {
         facesTmp[0]  = cone[0]; facesTmp[1]  = cone[3]; facesTmp[2]  = cone[2]; facesTmp[3]  = cone[1];
-        facesTmp[4]  = cone[4]; facesTmp[5]  = cone[5]; facesTmp[6]  = cone[3]; facesTmp[7]  = cone[7];
+        facesTmp[4]  = cone[4]; facesTmp[5]  = cone[5]; facesTmp[6]  = cone[6]; facesTmp[7]  = cone[7];
         facesTmp[8]  = cone[0]; facesTmp[9]  = cone[1]; facesTmp[10] = cone[5]; facesTmp[11] = cone[4];
         facesTmp[12] = cone[2]; facesTmp[13] = cone[3]; facesTmp[14] = cone[7]; facesTmp[15] = cone[6];
         facesTmp[16] = cone[1]; facesTmp[17] = cone[2]; facesTmp[18] = cone[6]; facesTmp[19] = cone[5];
@@ -167,6 +167,12 @@ static PetscErrorCode DMPlexInterpolateFaces_Internal(DM dm, PetscInt cellDepth,
       for (p = pStart[d]; p < pEnd[d]; ++p) {
         /* I see no way to do this if we admit faces of different shapes */
         ierr = DMPlexSetConeSize(idm, p, faceSizeAll);CHKERRQ(ierr);
+      }
+    } else if (d == cellDepth) {
+      for (p = pStart[d]; p < pEnd[d]; ++p) {
+        /* Number of cell faces may be different from number of cell vertices*/
+        ierr = DMPlexGetFaces_Internal(dm, cellDim, p, &coneSize, NULL, NULL);CHKERRQ(ierr);
+        ierr = DMPlexSetConeSize(idm, p, coneSize);CHKERRQ(ierr);
       }
     } else {
       for (p = pStart[d]; p < pEnd[d]; ++p) {

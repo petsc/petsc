@@ -64,19 +64,6 @@ should become
       \ | /      /
         3-------
 
-In parallel,
-
- cell   5 ___25____8      4______    cell
- 0    / | \        |\     |\      \     0
-    16  |   18     | 21   | 13  6  11
-    /10 19 12\    22  \   |8 \      \
-   2-15-|----4--24-|---7  14  3--10--1
-    \ 11| 9 /      |13 /  |  /      /
-    14  |  17      | 20   | 12  5  9
-      \ | /        |/     |/      /
-        3----23----6      2------
-         cell 1
-
 Quadrilateral
 -------------
 Test 0:
@@ -95,6 +82,23 @@ should become
   11   0   9   1  13
    |       |       |
    2---8---3--12---6
+
+Test 1:
+A quad and a triangle sharing a face
+
+   5-------4
+   |       | \
+   |   0   |  \
+   |       | 1 \
+   2-------3----6
+
+should become
+
+   5--10---4
+   |       | \
+  11   0   9  13
+   |       | 1 \
+   2---8---3-12-6
 
 Hexahedron
 ----------
@@ -123,39 +127,22 @@ cell   9-----31------8-----42------13 cell
     32 |   15      30|   21      41|
     /  |          /  |          /  |
    6-----29------7-----40------12  |
-   |   |     18  |   |     24  |   |
-   |  36         |  35         |   44
-   |19 |         |17 |         |23 |
-  33   |  16    34   |   22   43   |
-   |   5-----27--|---4-----39--|---11
+   |   |     17  |   |     23  |   |
+   |  35         |  36         |   44
+   |19 |         |18 |         |24 |
+  34   |  16    33   |   22   43   |
+   |   5-----26--|---4-----37--|---11
    |  /          |  /          |  /
-   | 28   14     | 26    20    | 38
+   | 25   14     | 27    20    | 38
    |/            |/            |/
-   2-----25------3-----37------10
-
-In parallel,
-
-                         cell 2
-cell   9-----27------8-----40------13     8----20------4  cell
-0     /|            /|            /|     /|           /|     1
-    28 |   15      26|           34|   24 |  10      19|
-    /  |          /  |          /  |   /  |         /  |
-   6-----25------7-----39------12  |  7----18------3   |
-   |   |     18  |   |         |   |  |   |    13  |   |
-   |  32         |  31         |   36 |  26        |   22
-   |19 |         |17 |         |20 |  |14 |        |12 |
-  29   |  16    30   |        35   |  25  |  11   21   |
-   |   5-----23--|---4-----38--|---11 |   6----17--|---2
-   |  /          |  /          |  /   |  /         |  /
-   | 24   14     | 22          | 33   |23     9    | 16
-   |/            |/            |/     |/           |/
-   2-----21------3-----37------10     5----15------1
+   2-----28------3-----39------10
 
 */
 
 typedef struct {
   DM        dm;
   PetscInt  debug;       /* The debugging level */
+  PetscInt  testNum;     /* Indicates the mesh to create */
   PetscInt  dim;         /* The topological mesh dimension */
   PetscBool cellSimplex; /* Use simplices or hexes */
 } AppCtx;
@@ -168,11 +155,13 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 
   PetscFunctionBegin;
   options->debug       = 0;
+  options->testNum     = 0;
   options->dim         = 2;
   options->cellSimplex = PETSC_TRUE;
 
   ierr = PetscOptionsBegin(comm, "", "Meshing Problem Options", "DMPLEX");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-debug", "The debugging level", "ex7.c", options->debug, &options->debug, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-test_num", "The mesh to create", "ex7.c", options->testNum, &options->testNum, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex7.c", options->dim, &options->dim, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-cell_simplex", "Use simplices if true, otherwise hexes", "ex7.c", options->cellSimplex, &options->cellSimplex, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
@@ -257,9 +246,9 @@ PetscErrorCode CreateSimplex_3D(MPI_Comm comm, DM dm)
 
 #undef __FUNCT__
 #define __FUNCT__ "CreateQuad_2D"
-PetscErrorCode CreateQuad_2D(MPI_Comm comm, DM dm)
+PetscErrorCode CreateQuad_2D(MPI_Comm comm, PetscInt testNum, DM dm)
 {
-  PetscInt       depth = 1, testNum  = 0, p;
+  PetscInt       depth = 1, p;
   PetscMPIInt    rank;
   PetscErrorCode ierr;
 
@@ -278,6 +267,21 @@ PetscErrorCode CreateQuad_2D(MPI_Comm comm, DM dm)
 
       ierr = DMPlexCreateFromDAG(dm, depth, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
       for (p = 0; p < 6; ++p) {
+        ierr = DMPlexSetLabelValue(dm, "marker", markerPoints[p*2], markerPoints[p*2+1]);CHKERRQ(ierr);
+      }
+    }
+    break;
+    case 1:
+    {
+      PetscInt    numPoints[2]        = {5, 2};
+      PetscInt    coneSize[7]         = {4, 3, 0, 0, 0, 0, 0};
+      PetscInt    cones[7]            = {2, 3, 4, 5,  3, 6, 4};
+      PetscInt    coneOrientations[7] = {0, 0, 0, 0,  0, 0, 0};
+      PetscScalar vertexCoords[10]    = {-0.5, 0.0, 0.0, 0.0, 0.0, 1.0, -0.5, 1.0, 0.5, 0.0};
+      PetscInt    markerPoints[10]    = {2, 1, 3, 1, 4, 1, 5, 1, 6, 1};
+
+      ierr = DMPlexCreateFromDAG(dm, depth, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
+      for (p = 0; p < 5; ++p) {
         ierr = DMPlexSetLabelValue(dm, "marker", markerPoints[p*2], markerPoints[p*2+1]);CHKERRQ(ierr);
       }
     }
@@ -335,11 +339,11 @@ PetscErrorCode CreateHex_3D(MPI_Comm comm, DM dm)
 
 #undef __FUNCT__
 #define __FUNCT__ "CreateMesh"
-PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
+PetscErrorCode CreateMesh(MPI_Comm comm, PetscInt testNum, AppCtx *user, DM *dm)
 {
-  PetscInt       dim          = user->dim;
-  PetscBool      cellSimplex  = user->cellSimplex;
-  const char     *partitioner = "chaco";
+  PetscInt       dim         = user->dim;
+  PetscBool      cellSimplex = user->cellSimplex;
+  const char    *partitioner = "chaco";
   PetscMPIInt    rank;
   PetscErrorCode ierr;
 
@@ -353,7 +357,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     if (cellSimplex) {
       ierr = CreateSimplex_2D(comm, *dm);CHKERRQ(ierr);
     } else {
-      ierr = CreateQuad_2D(comm, *dm);CHKERRQ(ierr);
+      ierr = CreateQuad_2D(comm, testNum, *dm);CHKERRQ(ierr);
     }
     break;
   case 3:
@@ -399,7 +403,7 @@ int main(int argc, char **argv)
 
   ierr = PetscInitialize(&argc, &argv, NULL, help);CHKERRQ(ierr);
   ierr = ProcessOptions(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);
-  ierr = CreateMesh(PETSC_COMM_WORLD, &user, &user.dm);CHKERRQ(ierr);
+  ierr = CreateMesh(PETSC_COMM_WORLD, user.testNum, &user, &user.dm);CHKERRQ(ierr);
   ierr = DMDestroy(&user.dm);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
