@@ -94,11 +94,11 @@ A quad and a triangle sharing a face
 
 should become
 
-   5--10---4
+   5---9---4
    |       | \
-  11   0   9  13
+  10   0   8  12
    |       | 1 \
-   2---8---3-12-6
+   2---7---3-11-6
 
 Hexahedron
 ----------
@@ -161,7 +161,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 
   ierr = PetscOptionsBegin(comm, "", "Meshing Problem Options", "DMPLEX");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-debug", "The debugging level", "ex7.c", options->debug, &options->debug, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-test_num", "The mesh to create", "ex7.c", options->testNum, &options->testNum, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-testnum", "The mesh to create", "ex7.c", options->testNum, &options->testNum, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex7.c", options->dim, &options->dim, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-cell_simplex", "Use simplices if true, otherwise hexes", "ex7.c", options->cellSimplex, &options->cellSimplex, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
