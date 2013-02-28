@@ -731,10 +731,8 @@ int main(int argc, char **argv)
   }
 
   if (user.runType == RUN_FULL) {
-    PetscContainer c;
-    PetscSection   s;
-    Vec            uLocal;
-    PetscViewer    viewer;
+    PetscViewer viewer;
+    Vec         uLocal;
 
     ierr = PetscViewerCreate(PETSC_COMM_WORLD, &viewer);CHKERRQ(ierr);
     ierr = PetscViewerSetType(viewer, PETSCVIEWERVTK);CHKERRQ(ierr);
@@ -744,12 +742,6 @@ int main(int argc, char **argv)
     ierr = DMGetLocalVector(user.dm, &uLocal);CHKERRQ(ierr);
     ierr = DMGlobalToLocalBegin(user.dm, u, INSERT_VALUES, uLocal);CHKERRQ(ierr);
     ierr = DMGlobalToLocalEnd(user.dm, u, INSERT_VALUES, uLocal);CHKERRQ(ierr);
-
-    ierr = DMGetDefaultSection(user.dm, &s);CHKERRQ(ierr);
-    ierr = PetscContainerCreate(PetscObjectComm((PetscObject)uLocal), &c);CHKERRQ(ierr);
-    ierr = PetscContainerSetPointer(c, s);CHKERRQ(ierr);
-    ierr = PetscObjectCompose((PetscObject) uLocal, "section", (PetscObject) c);CHKERRQ(ierr);
-    ierr = PetscContainerDestroy(&c);CHKERRQ(ierr);
 
     ierr = PetscObjectReference((PetscObject) user.dm);CHKERRQ(ierr); /* Needed because viewer destroys the DM */
     ierr = PetscObjectReference((PetscObject) uLocal);CHKERRQ(ierr); /* Needed because viewer destroys the Vec */
