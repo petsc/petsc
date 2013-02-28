@@ -1396,12 +1396,32 @@ PetscErrorCode DMPlexInsertCone(DM dm, PetscInt p, PetscInt conePos, PetscInt co
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   ierr = PetscSectionGetChart(mesh->coneSection, &pStart, &pEnd);CHKERRQ(ierr);
-  ierr = PetscSectionGetDof(mesh->coneSection, p, &dof);CHKERRQ(ierr);
-  ierr = PetscSectionGetOffset(mesh->coneSection, p, &off);CHKERRQ(ierr);
   if ((p < pStart) || (p >= pEnd)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Mesh point %D is not in the valid range [%D, %D)", p, pStart, pEnd);
   if ((conePoint < pStart) || (conePoint >= pEnd)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Cone point %D is not in the valid range [%D, %D)", conePoint, pStart, pEnd);
-  if (conePos >= dof) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Cone position %D of point %D is not in the valid range [0, %D)", conePos, p, dof);
+  ierr = PetscSectionGetDof(mesh->coneSection, p, &dof);CHKERRQ(ierr);
+  ierr = PetscSectionGetOffset(mesh->coneSection, p, &off);CHKERRQ(ierr);
+  if ((conePos < 0) || (conePos >= dof)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Cone position %D of point %D is not in the valid range [0, %D)", conePos, p, dof);
   mesh->cones[off+conePos] = conePoint;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexInsertConeOrientation"
+PetscErrorCode DMPlexInsertConeOrientation(DM dm, PetscInt p, PetscInt conePos, PetscInt coneOrientation)
+{
+  DM_Plex       *mesh = (DM_Plex*) dm->data;
+  PetscInt       pStart, pEnd;
+  PetscInt       dof, off;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  ierr = PetscSectionGetChart(mesh->coneSection, &pStart, &pEnd);CHKERRQ(ierr);
+  if ((p < pStart) || (p >= pEnd)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Mesh point %D is not in the valid range [%D, %D)", p, pStart, pEnd);
+  ierr = PetscSectionGetDof(mesh->coneSection, p, &dof);CHKERRQ(ierr);
+  ierr = PetscSectionGetOffset(mesh->coneSection, p, &off);CHKERRQ(ierr);
+  if ((conePos < 0) || (conePos >= dof)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Cone position %D of point %D is not in the valid range [0, %D)", conePos, p, dof);
+  mesh->coneOrientations[off+conePos] = coneOrientation;
   PetscFunctionReturn(0);
 }
 
@@ -2438,16 +2458,14 @@ PetscErrorCode DMPlexGetFullMeet(DM dm, PetscInt numPoints, const PetscInt point
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexGetNumFaceVertices_Internal"
-PetscErrorCode DMPlexGetNumFaceVertices_Internal(DM dm, PetscInt numCorners, PetscInt *numFaceVertices)
+PetscErrorCode DMPlexGetNumFaceVertices_Internal(DM dm, PetscInt cellDim, PetscInt numCorners, PetscInt *numFaceVertices)
 {
   MPI_Comm       comm;
-  PetscInt       cellDim;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);
   PetscValidPointer(numFaceVertices,3);
-  ierr = DMPlexGetDimension(dm, &cellDim);CHKERRQ(ierr);
   switch (cellDim) {
   case 0:
     *numFaceVertices = 0;
@@ -2511,7 +2529,7 @@ PetscErrorCode DMPlexGetNumFaceVertices_Internal(DM dm, PetscInt numCorners, Pet
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexCreateNeighborCSR"
-PetscErrorCode DMPlexCreateNeighborCSR(DM dm, PetscInt *numVertices, PetscInt **offsets, PetscInt **adjacency)
+PetscErrorCode DMPlexCreateNeighborCSR(DM dm, PetscInt cellHeight, PetscInt *numVertices, PetscInt **offsets, PetscInt **adjacency)
 {
   const PetscInt maxFaceCases = 30;
   PetscInt       numFaceCases = 0;
@@ -2519,14 +2537,15 @@ PetscErrorCode DMPlexCreateNeighborCSR(DM dm, PetscInt *numVertices, PetscInt **
   PetscInt      *off, *adj;
   PetscInt      *neighborCells, *tmpClosure;
   PetscInt       maxConeSize, maxSupportSize, maxClosure, maxNeighbors;
-  PetscInt       dim, depth = 0, cStart, cEnd, c, numCells, cell;
+  PetscInt       dim, cellDim, depth = 0, faceDepth, cStart, cEnd, c, numCells, cell;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   /* For parallel partitioning, I think you have to communicate supports */
   ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
+  cellDim = dim - cellHeight;
   ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
-  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(dm, cellHeight, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = DMPlexGetMaxSizes(dm, &maxConeSize, &maxSupportSize);CHKERRQ(ierr);
   if (cEnd - cStart == 0) {
     if (numVertices) *numVertices = 0;
@@ -2534,9 +2553,10 @@ PetscErrorCode DMPlexCreateNeighborCSR(DM dm, PetscInt *numVertices, PetscInt **
     if (adjacency) *adjacency = NULL;
     PetscFunctionReturn(0);
   }
-  numCells = cEnd - cStart;
+  numCells  = cEnd - cStart;
+  faceDepth = depth - cellHeight;
   /* Setup face recognition */
-  if (depth == 1) {
+  if (faceDepth == 1) {
     PetscInt cornersSeen[30] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}; /* Could use PetscBT */
 
     for (c = cStart; c < cEnd; ++c) {
@@ -2549,7 +2569,7 @@ PetscErrorCode DMPlexCreateNeighborCSR(DM dm, PetscInt *numVertices, PetscInt **
         if (numFaceCases >= maxFaceCases) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Exceeded maximum number of face recognition cases");
         cornersSeen[corners] = 1;
 
-        ierr = DMPlexGetNumFaceVertices_Internal(dm, corners, &nFV);CHKERRQ(ierr);
+        ierr = DMPlexGetNumFaceVertices_Internal(dm, cellDim, corners, &nFV);CHKERRQ(ierr);
 
         numFaceVertices[numFaceCases++] = nFV;
       }
@@ -2568,7 +2588,7 @@ PetscErrorCode DMPlexCreateNeighborCSR(DM dm, PetscInt *numVertices, PetscInt **
     /* Get meet with each cell, and check with recognizer (could optimize to check each pair only once) */
     for (n = 0; n < numNeighbors; ++n) {
       PetscInt        cellPair[2];
-      PetscBool       found    = depth > 1 ? PETSC_TRUE : PETSC_FALSE;
+      PetscBool       found    = faceDepth > 1 ? PETSC_TRUE : PETSC_FALSE;
       PetscInt        meetSize = 0;
       const PetscInt *meet    = NULL;
 
@@ -2605,7 +2625,7 @@ PetscErrorCode DMPlexCreateNeighborCSR(DM dm, PetscInt *numVertices, PetscInt **
       /* Get meet with each cell, and check with recognizer (could optimize to check each pair only once) */
       for (n = 0; n < numNeighbors; ++n) {
         PetscInt        cellPair[2];
-        PetscBool       found    = depth > 1 ? PETSC_TRUE : PETSC_FALSE;
+        PetscBool       found    = faceDepth > 1 ? PETSC_TRUE : PETSC_FALSE;
         PetscInt        meetSize = 0;
         const PetscInt *meet    = NULL;
 
@@ -2882,7 +2902,7 @@ PetscErrorCode DMPlexCreatePartition(DM dm, PetscInt height, PetscBool enlarge, 
     PetscInt *start     = NULL;
     PetscInt *adjacency = NULL;
 
-    ierr = DMPlexCreateNeighborCSR(dm, &numVertices, &start, &adjacency);CHKERRQ(ierr);
+    ierr = DMPlexCreateNeighborCSR(dm, 0, &numVertices, &start, &adjacency);CHKERRQ(ierr);
     if (1) {
 #if defined(PETSC_HAVE_CHACO)
       ierr = DMPlexPartition_Chaco(dm, numVertices, start, adjacency, partSection, partition);CHKERRQ(ierr);
