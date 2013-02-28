@@ -1100,11 +1100,11 @@ static void evaluate_MS_FrankKamentski(PetscReal pos[],PetscReal v[],PetscReal *
      v[1] = sin(M_PI*y);
      v[2] = sin(M_PI*z);
      */
-    v[0] = pow(z,3)*exp(y)*sin(M_PI*x);
+    v[0] = PetscPowRealInt(z,3)*exp(y)*sin(M_PI*x);
     v[1] = z*cos(2.0*M_PI*x)*exp(-y)*sin(M_PI*y);
-    v[2] = pow(z,2)*(cos(2.0*M_PI*x)*exp(-y)*sin(M_PI*y)/2 - M_PI*cos(M_PI*y)*cos(2.0*M_PI*x)*exp(-y)/2) - M_PI*pow(z,4)*cos(M_PI*x)*exp(y)/4;
+    v[2] = PetscPowRealInt(z,2)*(cos(2.0*M_PI*x)*exp(-y)*sin(M_PI*y)/2 - M_PI*cos(M_PI*y)*cos(2.0*M_PI*x)*exp(-y)/2) - M_PI*PetscPowRealInt(z,4)*cos(M_PI*x)*exp(y)/4;
   }
-  if (p) *p = pow(x,2) + pow(y,2) + pow(z,2);
+  if (p) *p = PetscPowRealInt(x,2) + PetscPowRealInt(y,2) + PetscPowRealInt(z,2);
   if (eta) {
     /**eta = exp(-theta*(1.0 - y - 0.1*cos(MX*x)*cos(MZ*z)*sin(MY*y)));*/
     *eta = 1.0;
@@ -1125,9 +1125,9 @@ static void evaluate_MS_FrankKamentski(PetscReal pos[],PetscReal v[],PetscReal *
      Fm[1] = -2*y - 6.0*M_PI*pow(y,2)*cos(2.0*M_PI*z) + 2.0*z*cos(2.0*M_PI*x)*exp(-y)*sin(M_PI*y) - 6.0*z*pow(M_PI,2)*cos(2.0*M_PI*x)*exp(-y)*sin(M_PI*y) + M_PI*pow(z,3)*cos(M_PI*x)*exp(y) - 4.0*M_PI*z*cos(M_PI*y)*cos(2.0*M_PI*x)*exp(-y);
      Fm[2] = -2*z - 6.0*x*sin(2.0*M_PI*z) - 6.0*y*sin(2.0*M_PI*z) - cos(2.0*M_PI*x)*exp(-y)*sin(M_PI*y) + 8.0*pow(M_PI,2)*(pow(x,3) + pow(y,3))*sin(2.0*M_PI*z) + 3.0*M_PI*pow(z,2)*cos(M_PI*x)*exp(y) + M_PI*cos(M_PI*y)*cos(2.0*M_PI*x)*exp(-y) ;
      */
-    Fm[0] = -2*x + 2*z*(pow(M_PI,2)*cos(M_PI*y)*exp(-y)*sin(2.0*M_PI*x) - 1.0*M_PI*exp(-y)*sin(M_PI*y)*sin(2.0*M_PI*x)) + pow(z,3)*exp(y)*sin(M_PI*x) + 6.0*z*exp(y)*sin(M_PI*x) - 1.0*pow(M_PI,2)*pow(z,3)*exp(y)*sin(M_PI*x) + 2.0*M_PI*z*exp(-y)*sin(M_PI*y)*sin(2.0*M_PI*x) - 2.0*z*pow(M_PI,2)*cos(M_PI*y)*exp(-y)*sin(2.0*M_PI*x);
-    Fm[1] = -2*y + 2*z*(-cos(2.0*M_PI*x)*exp(-y)*sin(M_PI*y)/2 + pow(M_PI,2)*cos(2.0*M_PI*x)*exp(-y)*sin(M_PI*y)/2 + M_PI*cos(M_PI*y)*cos(2.0*M_PI*x)*exp(-y)) + 2.0*z*cos(2.0*M_PI *x)*exp(-y)*sin(M_PI*y) - 6.0*z*pow(M_PI,2)*cos(2.0*M_PI*x)*exp(-y)*sin(M_PI*y) - 4.0*M_PI*z*cos(M_PI *y)*cos(2.0*M_PI*x)*exp(-y);
-    Fm[2] = -2*z + pow(z,2)*(-2.0*pow(M_PI,2)*cos(2.0*M_PI*x)*exp(-y)*sin(M_PI*y) + 2.0*pow(M_PI,3)*cos(M_PI*y)*cos(2.0*M_PI*x)*exp(-y)) + pow(z,2)*(cos(2.0*M_PI*x)*exp(-y)*sin(M_PI*y)/2 - 3*pow(M_PI,2)*cos(2.0*M_PI*x)*exp(-y)*sin(M_PI*y)/2 + pow(M_PI,3)*cos(M_PI*y)*cos(2.0*M_PI*x)*exp(-y)/2 - 3*M_PI*cos(M_PI*y)*cos(2.0*M_PI*x)*exp(-y)/2) + 1.0*cos(2.0*M_PI*x)*exp(-y)*sin(M_PI*y) + 0.25*pow(M_PI,3)*pow(z,4)*cos(M_PI*x)*exp(y) - 0.25*M_PI*pow(z,4)*cos(M_PI*x)*exp(y) - 3.0*M_PI*pow(z,2)*cos(M_PI*x)*exp(y) - 1.0*M_PI*cos(M_PI *y)*cos(2.0*M_PI*x)*exp(-y);
+    Fm[0] = -2*x + 2*z*(PetscPowRealInt(M_PI,2)*cos(M_PI*y)*exp(-y)*sin(2.0*M_PI*x) - 1.0*M_PI*exp(-y)*sin(M_PI*y)*sin(2.0*M_PI*x)) + PetscPowRealInt(z,3)*exp(y)*sin(M_PI*x) + 6.0*z*exp(y)*sin(M_PI*x) - 1.0*PetscPowRealInt(M_PI,2)*PetscPowRealInt(z,3)*exp(y)*sin(M_PI*x) + 2.0*M_PI*z*exp(-y)*sin(M_PI*y)*sin(2.0*M_PI*x) - 2.0*z*PetscPowRealInt(M_PI,2)*cos(M_PI*y)*exp(-y)*sin(2.0*M_PI*x);
+    Fm[1] = -2*y + 2*z*(-cos(2.0*M_PI*x)*exp(-y)*sin(M_PI*y)/2 + PetscPowRealInt(M_PI,2)*cos(2.0*M_PI*x)*exp(-y)*sin(M_PI*y)/2 + M_PI*cos(M_PI*y)*cos(2.0*M_PI*x)*exp(-y)) + 2.0*z*cos(2.0*M_PI *x)*exp(-y)*sin(M_PI*y) - 6.0*z*PetscPowRealInt(M_PI,2)*cos(2.0*M_PI*x)*exp(-y)*sin(M_PI*y) - 4.0*M_PI*z*cos(M_PI *y)*cos(2.0*M_PI*x)*exp(-y);
+    Fm[2] = -2*z + PetscPowRealInt(z,2)*(-2.0*PetscPowRealInt(M_PI,2)*cos(2.0*M_PI*x)*exp(-y)*sin(M_PI*y) + 2.0*PetscPowRealInt(M_PI,3)*cos(M_PI*y)*cos(2.0*M_PI*x)*exp(-y)) + PetscPowRealInt(z,2)*(cos(2.0*M_PI*x)*exp(-y)*sin(M_PI*y)/2 - 3*PetscPowRealInt(M_PI,2)*cos(2.0*M_PI*x)*exp(-y)*sin(M_PI*y)/2 + PetscPowRealInt(M_PI,3)*cos(M_PI*y)*cos(2.0*M_PI*x)*exp(-y)/2 - 3*M_PI*cos(M_PI*y)*cos(2.0*M_PI*x)*exp(-y)/2) + 1.0*cos(2.0*M_PI*x)*exp(-y)*sin(M_PI*y) + 0.25*PetscPowRealInt(M_PI,3)*PetscPowRealInt(z,4)*cos(M_PI*x)*exp(y) - 0.25*M_PI*PetscPowRealInt(z,4)*cos(M_PI*x)*exp(y) - 3.0*M_PI*PetscPowRealInt(z,2)*cos(M_PI*x)*exp(y) - 1.0*M_PI*cos(M_PI *y)*cos(2.0*M_PI*x)*exp(-y);
   }
   if (Fc) {
     /**Fc = -2.0*M_PI*(pow(x,3) + pow(y,3))*cos(2.0*M_PI*z) - z*cos(2.0*M_PI*x)*exp(-y)*sin(M_PI*y) + M_PI*pow(z,3)*cos(M_PI*x)*exp(y) + M_PI*z*cos(M_PI*y)*cos(2.0*M_PI*x)*exp(-y) ;*/

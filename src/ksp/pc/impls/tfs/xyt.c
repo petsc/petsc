@@ -318,7 +318,7 @@ static PetscInt xyt_generate(xyt_ADT xyt_handle)
 
   /* storage for sparse x values */
   n_global   = xyt_handle->info->n_global;
-  xt_max_nnz = yt_max_nnz = (PetscInt)(2.5*pow(1.0*n_global,1.6667) + j*n/2)/PCTFS_num_nodes;
+  xt_max_nnz = yt_max_nnz = (PetscInt)(2.5*PetscPowReal(1.0*n_global,1.6667) + j*n/2)/PCTFS_num_nodes;
   x          = (PetscScalar*) malloc(xt_max_nnz*sizeof(PetscScalar));
   y          = (PetscScalar*) malloc(yt_max_nnz*sizeof(PetscScalar));
 

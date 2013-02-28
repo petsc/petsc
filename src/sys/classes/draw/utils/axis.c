@@ -131,7 +131,7 @@ PetscErrorCode PetscADefTicks(PetscReal low,PetscReal high,int num,int *ntick,Pe
 PetscErrorCode PetscExp10(PetscReal d,PetscReal *result)
 {
   PetscFunctionBegin;
-  *result = pow((PetscReal)10.0,d);
+  *result = PetscPowReal((PetscReal)10.0,d);
   PetscFunctionReturn(0);
 }
 

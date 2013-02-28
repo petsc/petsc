@@ -232,6 +232,7 @@ or
    \}
 \end{tabbing}
 \item {\em No} tabs are allowed in {\em any} of the source code.
+\item Do not use sqrt(), pow(), sin() etc directly in PETSc source code or examples, rather use PetscSqrtScalar(), PetscSqrtReal() etc depending on the context. See petscmath.h for expressions to use.
 \item The open bracket \{ should be on the same line as the {\em if ()} test, {\em for ()}, etc. never on
       its own line unless followed by an \trl{else} or \trl{else if}, for example
 \begin{tabbing}

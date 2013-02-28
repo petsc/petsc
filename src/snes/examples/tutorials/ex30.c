@@ -467,12 +467,12 @@ PETSC_STATIC_INLINE PetscScalar Viscosity(PetscScalar T, PetscScalar eps, Passiv
     result = PetscRealPart((difn.A*PetscExpScalar((difn.Estar + P*difn.Vstar)/R/(T+273.0))/param->eta0));
   } else if (iVisc==VISC_DISL) {
     /* dislocation creep rheology */
-    strain_power = pow(eps*eps_scale, (1.0-disl.n)/disl.n);
+    strain_power = PetscPowScalar(eps*eps_scale, (1.0-disl.n)/disl.n);
 
     result = PetscRealPart(disl.A*PetscExpScalar((disl.Estar + P*disl.Vstar)/disl.n/R/(T+273.0))*strain_power/param->eta0);
   } else if (iVisc==VISC_FULL) {
     /* dislocation/diffusion creep rheology */
-    strain_power = pow(eps*eps_scale, (1.0-disl.n)/disl.n);
+    strain_power = PetscPowScalar(eps*eps_scale, (1.0-disl.n)/disl.n);
 
     v1 = difn.A*PetscExpScalar((difn.Estar + P*difn.Vstar)/R/(T+273.0))/param->eta0;
     v2 = disl.A*PetscExpScalar((disl.Estar + P*disl.Vstar)/disl.n/R/(T+273.0))*strain_power/param->eta0;
@@ -485,7 +485,7 @@ PETSC_STATIC_INLINE PetscScalar Viscosity(PetscScalar T, PetscScalar eps, Passiv
   /* min viscosity is param->visc_cutoff */
   result = PetscMax(result, param->visc_cutoff);
   /* continuation method */
-  result = pow(result,param->continuation);
+  result = PetscPowReal(result,param->continuation);
   return result;
 }
 
@@ -1496,12 +1496,12 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,Field **x,Field **f,void *p
 
       } else if (i==ilim) {
         /* right side boundary */
-        mag_u = 1.0 - pow((1.0-PetscMax(PetscMin(PetscRealPart(x[j][i-1].u)/param->cb,1.0),0.0)), 5.0);
+        mag_u = 1.0 - PetscPowRealInt((1.0-PetscMax(PetscMin(PetscRealPart(x[j][i-1].u)/param->cb,1.0),0.0)), 5);
         f[j][i].T = x[j][i].T - mag_u*x[j-1][i-1].T - (1.0-mag_u)*PlateModel(j,PLATE_LID,user);
 
       } else if (j==jlim) {
         /* bottom boundary */
-        mag_w = 1.0 - pow((1.0-PetscMax(PetscMin(PetscRealPart(x[j-1][i].w)/param->sb,1.0),0.0)), 5.0);
+        mag_w = 1.0 - PetscPowRealInt((1.0-PetscMax(PetscMin(PetscRealPart(x[j-1][i].w)/param->sb,1.0),0.0)), 5);
         f[j][i].T = x[j][i].T - mag_w*x[j-1][i-1].T - (1.0-mag_w);
 
       } else {

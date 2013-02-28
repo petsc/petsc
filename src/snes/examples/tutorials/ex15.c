@@ -367,13 +367,13 @@ PETSC_STATIC_INLINE PetscReal kappa(const AppCtx *ctx,PetscReal x,PetscReal y)
 /* p-Laplacian diffusivity */
 PETSC_STATIC_INLINE PetscScalar eta(const AppCtx *ctx,PetscReal x,PetscReal y,PetscScalar ux,PetscScalar uy)
 {
-  return kappa(ctx,x,y) * pow(PetscSqr(ctx->epsilon)+0.5*(ux*ux + uy*uy),0.5*(ctx->p-2.));
+  return kappa(ctx,x,y) * PetscPowScalar(PetscSqr(ctx->epsilon)+0.5*(ux*ux + uy*uy),0.5*(ctx->p-2.));
 }
 PETSC_STATIC_INLINE PetscScalar deta(const AppCtx *ctx,PetscReal x,PetscReal y,PetscScalar ux,PetscScalar uy)
 {
   return (ctx->p == 2)
          ? 0
-         : kappa(ctx,x,y)*pow(PetscSqr(ctx->epsilon)+0.5*(ux*ux + uy*uy),0.5*(ctx->p-4)) * 0.5 * (ctx->p-2.);
+         : kappa(ctx,x,y)*PetscPowScalar(PetscSqr(ctx->epsilon)+0.5*(ux*ux + uy*uy),0.5*(ctx->p-4)) * 0.5 * (ctx->p-2.);
 }
 
 

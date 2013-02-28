@@ -555,7 +555,7 @@ int Update(SNES snes, void *ctx)
         PetscPrintf(MPI_COMM_WORLD, "In Update : cfl_ramp, cfl = %g\t%g\n", cfl_ramp, tsCtx->cfl);
         tsCtx->cfl = PetscMin(tsCtx->cfl,cfl_ramp);*/
 
-        PetscScalar cfl_ramp = pow(tsCtx->cfl,cfl_damp_power);
+        PetscScalar cfl_ramp = PetscPowScalar(tsCtx->cfl,cfl_damp_power);
         tsCtx->cfl = PetscMax(tsCtx->cfl_ini,cfl_ramp);
         /*PetscPrintf(MPI_COMM_WORLD, "In Update : cfl_ramp, cfl = %g\t%g\n",
           cfl_ramp, tsCtx->cfl);*/

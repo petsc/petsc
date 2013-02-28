@@ -646,7 +646,7 @@ PetscErrorCode  DMADDASetParameters(DM dm,PetscInt dim, PetscInt *nodes,PetscInt
         procs[i] = procsleft;
       } else {
         /* calculate best partition */
-        procs[i] = (PetscInt)(((double) nodes[i])*pow(((double) procsleft)/((double) nodesleft),1./((double)(dim-i)))+0.5);
+        procs[i] = (PetscInt)(((PetscReal) nodes[i])*PetscPowReal(((PetscReal) procsleft)/((PetscReal) nodesleft),1./((PetscReal)(dim-i)))+0.5);
         if (procs[i]<1) procs[i]=1;
         while (procs[i] > 0) {
           if (procsleft % procs[i]) procs[i]--;

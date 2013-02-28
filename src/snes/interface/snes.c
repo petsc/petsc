@@ -4351,16 +4351,16 @@ static PetscErrorCode SNESKSPEW_PreSolve(SNES snes, KSP ksp, Vec b, Vec x)
     if (kctx->version == 1) {
       rtol = (snes->norm - kctx->lresid_last)/kctx->norm_last;
       if (rtol < 0.0) rtol = -rtol;
-      stol = pow(kctx->rtol_last,kctx->alpha2);
+      stol = PetscPowReal(kctx->rtol_last,kctx->alpha2);
       if (stol > kctx->threshold) rtol = PetscMax(rtol,stol);
     } else if (kctx->version == 2) {
-      rtol = kctx->gamma * pow(snes->norm/kctx->norm_last,kctx->alpha);
-      stol = kctx->gamma * pow(kctx->rtol_last,kctx->alpha);
+      rtol = kctx->gamma * PetscPowReal(snes->norm/kctx->norm_last,kctx->alpha);
+      stol = kctx->gamma * PetscPowReal(kctx->rtol_last,kctx->alpha);
       if (stol > kctx->threshold) rtol = PetscMax(rtol,stol);
     } else if (kctx->version == 3) { /* contributed by Luis Chacon, June 2006. */
-      rtol = kctx->gamma * pow(snes->norm/kctx->norm_last,kctx->alpha);
+      rtol = kctx->gamma * PetscPowReal(snes->norm/kctx->norm_last,kctx->alpha);
       /* safeguard: avoid sharp decrease of rtol */
-      stol = kctx->gamma*pow(kctx->rtol_last,kctx->alpha);
+      stol = kctx->gamma*PetscPowReal(kctx->rtol_last,kctx->alpha);
       stol = PetscMax(rtol,stol);
       rtol = PetscMin(kctx->rtol_0,stol);
       /* safeguard: avoid oversolving */

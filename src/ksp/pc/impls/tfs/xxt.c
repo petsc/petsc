@@ -293,7 +293,7 @@ static PetscInt xxt_generate(xxt_ADT xxt_handle)
 
   /* storage for sparse x values */
   n_global    = xxt_handle->info->n_global;
-  xxt_max_nnz = (PetscInt)(2.5*pow(1.0*n_global,1.6667) + j*n/2)/PCTFS_num_nodes;
+  xxt_max_nnz = (PetscInt)(2.5*PetscPowReal(1.0*n_global,1.6667) + j*n/2)/PCTFS_num_nodes;
   x           = (PetscScalar*) malloc(xxt_max_nnz*sizeof(PetscScalar));
   xxt_nnz     = 0;
 
