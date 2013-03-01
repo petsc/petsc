@@ -819,12 +819,12 @@ runex39_2:
 	   else echo ${PWD} ; echo "Possible problem with with ex39_2, diffs above \n========================================="; fi; \
 	   ${RM} -f ex39.tmp
 runex39_cheby_hybrid:
-	-@${MPIEXEC} -n 3 ./ex39 -beta -0.6 -ksp_type chebyshev -ksp_monitor_short -gmres_ksp_monitor_short -ksp_chebyshev_hybrid -ksp_chebyshev_hybrid_gmressteps 5 -ksp_chebyshev_hybrid_chebysteps 6 -ksp_chebyshev_hybrid_purification > ex39.tmp 2>&1;\
+	-@${MPIEXEC} -n 3 ./ex39 -beta -0.6 -ksp_type chebyshev -ksp_monitor_short -adapt_ksp_monitor_short -ksp_chebyshev_hybrid -ksp_chebyshev_hybrid_adaptsteps 5 -ksp_chebyshev_hybrid_chebysteps 6 -ksp_chebyshev_hybrid_purification > ex39.tmp 2>&1;\
 	if (${DIFF} output/ex39_cheby_hybrid.out ex39.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex39_cheby_hybrid, diffs above \n========================================="; fi; \
 	   ${RM} -f ex39.tmp
 runex39_fgmres_cheby_hybrid:
-	-@${MPIEXEC} -n 3 ./ex39 -beta -0.6 -ksp_type fgmres -pc_type ksp -ksp_ksp_type chebyshev -ksp_monitor_short -ksp_ksp_max_it 3 -ksp_ksp_chebyshev_hybrid -ksp_ksp_chebyshev_hybrid_chebysteps 2 -ksp_ksp_chebyshev_hybrid_gmressteps 2 -ksp_ksp_norm_type none > ex39.tmp 2>&1;\
+	-@${MPIEXEC} -n 3 ./ex39 -beta -0.6 -ksp_type fgmres -pc_type ksp -ksp_ksp_type chebyshev -ksp_monitor_short -ksp_ksp_max_it 3 -ksp_ksp_chebyshev_hybrid -ksp_ksp_chebyshev_hybrid_chebysteps 2 -ksp_ksp_chebyshev_hybrid_adaptsteps 2 -ksp_ksp_norm_type none > ex39.tmp 2>&1;\
 	if (${DIFF} output/ex39_fgmres_cheby_hybrid.out ex39.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex39_fgmres_cheby_hybrid, diffs above \n========================================="; fi; \
 	   ${RM} -f ex39.tmp

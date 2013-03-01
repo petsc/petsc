@@ -18,7 +18,7 @@
 -
 
    Output Parameters:
-+   I, J, K - the logical coordinate (-1 on processes that do not contain that point)
++   II, JJ, KK - the logical coordinate (-1 on processes that do not contain that point)
 -   X, Y, Z, - (optional) the coordinates of the located grid point
 
    Level: advanced
@@ -28,7 +28,7 @@
 
 .keywords: distributed array, get, processor subset
 @*/
-PetscErrorCode  DMDAGetLogicalCoordinate(DM da,PetscScalar x,PetscScalar y,PetscScalar z,PetscInt *I,PetscInt *J,PetscInt *K,PetscScalar *X,PetscScalar *Y,PetscScalar *Z)
+PetscErrorCode  DMDAGetLogicalCoordinate(DM da,PetscScalar x,PetscScalar y,PetscScalar z,PetscInt *II,PetscInt *JJ,PetscInt *KK,PetscScalar *X,PetscScalar *Y,PetscScalar *Z)
 {
   DM_DA          *dd = (DM_DA*)da->data;
   PetscErrorCode ierr;
@@ -45,9 +45,9 @@ PetscErrorCode  DMDAGetLogicalCoordinate(DM da,PetscScalar x,PetscScalar y,Petsc
   if (dd->dim == 1) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Cannot get point from 1d DMDA");
   if (dd->dim == 3) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Cannot get point from 3d DMDA");
 
-  *I = -1;
-  if (J) *J = -1;
-  if (K) *K = -1;
+  *II = -1;
+  if (JJ) *JJ = -1;
+  if (KK) *KK = -1;
 
   ierr = DMGetCoordinateDM(da,&dacoors);CHKERRQ(ierr);
   ierr = DMDAGetCorners(dacoors,&xs,&ys,NULL,&xm,&ym,NULL);CHKERRQ(ierr);
@@ -57,14 +57,14 @@ PetscErrorCode  DMDAGetLogicalCoordinate(DM da,PetscScalar x,PetscScalar y,Petsc
     for (i=xs; i<xs+xm; i++) {
       d = PetscSqrtReal(PetscRealPart( (c[j][i].x - x)*(c[j][i].x - x) + (c[j][i].y - y)*(c[j][i].y - y) ));
       if (d < D) {
-        D  = d;
-        *I = i;
-        *J = j;
+        D   = d;
+        *II = i;
+        *JJ = j;
       }
     }
   }
-  if (X) *X = c[*J][*I].x;
-  if (Y) *Y = c[*J][*I].y;
+  if (X) *X = c[*JJ][*II].x;
+  if (Y) *Y = c[*JJ][*II].y;
   ierr = DMDAVecRestoreArray(dacoors,coors,&c);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

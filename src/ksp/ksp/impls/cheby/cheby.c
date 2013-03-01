@@ -30,7 +30,7 @@ PetscErrorCode KSPSetUp_Chebyshev(KSP ksp)
     ierr = KSPCreate(PetscObjectComm((PetscObject)ksp),&cheb->kspest);CHKERRQ(ierr);
     ierr = PetscObjectIncrementTabLevel((PetscObject)cheb->kspest,(PetscObject)ksp,1);CHKERRQ(ierr);
     ierr = KSPSetOptionsPrefix(cheb->kspest,((PetscObject)ksp)->prefix);CHKERRQ(ierr);
-    ierr = KSPAppendOptionsPrefix(cheb->kspest,"gmres_");CHKERRQ(ierr);
+    ierr = KSPAppendOptionsPrefix(cheb->kspest,"adapt_");CHKERRQ(ierr);
 
     ierr = KSPGetPC(cheb->kspest,&cheb->pcnone);CHKERRQ(ierr);
     ierr = PetscObjectReference((PetscObject)cheb->pcnone);CHKERRQ(ierr);
@@ -44,7 +44,7 @@ PetscErrorCode KSPSetUp_Chebyshev(KSP ksp)
     /* Estimate with a fixed number of iterations */
     ierr = KSPSetConvergenceTest(cheb->kspest,KSPSkipConverged,0,0);CHKERRQ(ierr);
     ierr = KSPSetNormType(cheb->kspest,KSP_NORM_NONE);CHKERRQ(ierr);
-    ierr = KSPSetTolerances(cheb->kspest,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,cheb->gmressteps);CHKERRQ(ierr);
+    ierr = KSPSetTolerances(cheb->kspest,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,cheb->adaptsteps);CHKERRQ(ierr);
 
     /* Enable runtime options for cheb->kspest */
     ierr = KSPSetFromOptions(cheb->kspest);CHKERRQ(ierr);
@@ -78,13 +78,13 @@ PETSC_EXTERN_C PetscErrorCode KSPChebyshevSetEstimateEigenvalues_Chebyshev(KSP k
 
   PetscFunctionBegin;
   if (a != 0.0 || b != 0.0 || c != 0.0 || d != 0.0) {
-    if (!cheb->kspest) {
+    if (!cheb->kspest) { /* should this block of code be moved to KSPSetUp_Chebyshev()? */
       PetscBool nonzero;
 
       ierr = KSPCreate(PetscObjectComm((PetscObject)ksp),&cheb->kspest);CHKERRQ(ierr);
       ierr = PetscObjectIncrementTabLevel((PetscObject)cheb->kspest,(PetscObject)ksp,1);CHKERRQ(ierr);
       ierr = KSPSetOptionsPrefix(cheb->kspest,((PetscObject)ksp)->prefix);CHKERRQ(ierr);
-      ierr = KSPAppendOptionsPrefix(cheb->kspest,"gmres_");CHKERRQ(ierr);
+      ierr = KSPAppendOptionsPrefix(cheb->kspest,"adapt_");CHKERRQ(ierr);
 
       ierr = KSPGetPC(cheb->kspest,&cheb->pcnone);CHKERRQ(ierr);
       ierr = PetscObjectReference((PetscObject)cheb->pcnone);CHKERRQ(ierr);
@@ -98,7 +98,7 @@ PETSC_EXTERN_C PetscErrorCode KSPChebyshevSetEstimateEigenvalues_Chebyshev(KSP k
       /* Estimate with a fixed number of iterations */
       ierr = KSPSetConvergenceTest(cheb->kspest,KSPSkipConverged,0,0);CHKERRQ(ierr);
       ierr = KSPSetNormType(cheb->kspest,KSP_NORM_NONE);CHKERRQ(ierr);
-      ierr = KSPSetTolerances(cheb->kspest,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,cheb->gmressteps);CHKERRQ(ierr);
+      ierr = KSPSetTolerances(cheb->kspest,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,cheb->adaptsteps);CHKERRQ(ierr);
 
       /* Enable runtime options for cheb->kspest */
       ierr = KSPSetFromOptions(cheb->kspest);CHKERRQ(ierr);
@@ -287,6 +287,17 @@ PetscErrorCode KSPSetFromOptions_Chebyshev(KSP ksp)
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("KSP Chebyshev Options");CHKERRQ(ierr);
+
+  /*
+   Use hybrid Chebyshev.
+   Ref: "A hybrid Chebyshev Krylov-subspace algorithm for solving nonsymmetric systems of linear equations",
+         Howard Elman and Y. Saad and P. E. Saylor, SIAM Journal on Scientific and Statistical Computing, 1986.
+   */
+  ierr = PetscOptionsBool("-ksp_chebyshev_hybrid","Use hybrid Chebyshev","",cheb->hybrid,&cheb->hybrid,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-ksp_chebyshev_hybrid_chebysteps","Number of Chebyshev steps in hybrid Chebyshev","",cheb->chebysteps,&cheb->chebysteps,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-ksp_chebyshev_hybrid_adaptsteps","Number of adaptive steps in hybrid Chebyshev","",cheb->adaptsteps,&cheb->adaptsteps,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-ksp_chebyshev_hybrid_purification","Use purification in hybrid Chebyshev","",cheb->purification,&cheb->purification,NULL);CHKERRQ(ierr);
+
   ierr = PetscOptionsRealArray("-ksp_chebyshev_eigenvalues","extreme eigenvalues","KSPChebyshevSetEigenvalues",&cheb->emin,&two,0);CHKERRQ(ierr);
   ierr = PetscOptionsRealArray("-ksp_chebyshev_estimate_eigenvalues","estimate eigenvalues using a Krylov method, then use this transform for Chebyshev eigenvalue bounds","KSPChebyshevSetEstimateEigenvalues",tform,&four,&flg);CHKERRQ(ierr);
   if (flg) {
@@ -303,6 +314,7 @@ PetscErrorCode KSPSetFromOptions_Chebyshev(KSP ksp)
     default: SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_INCOMP,"Must specify either 0, 2, or 4 parameters for eigenvalue estimation");
     }
   }
+
   if (cheb->kspest) {
     PetscBool estrand = PETSC_FALSE;
     ierr = PetscOptionsBool("-ksp_chebyshev_estimate_eigenvalues_random","Use Random right hand side for eigenvalue estimation","KSPChebyshevEstEigSetRandom",estrand,&estrand,NULL);CHKERRQ(ierr);
@@ -317,21 +329,11 @@ PetscErrorCode KSPSetFromOptions_Chebyshev(KSP ksp)
     }
   }
 
-  /*
-   Use hybrid Chebyshev.
-   Ref: "A hybrid Chebyshev Krylov-subspace algorithm for solving nonsymmetric systems of linear equations",
-         Howard Elman and Y. Saad and P. E. Saylor, SIAM Journal on Scientific and Statistical Computing, 1986.
-   */
-  ierr = PetscOptionsBool("-ksp_chebyshev_hybrid","Use hybrid Chebyshev","",cheb->hybrid,&cheb->hybrid,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-ksp_chebyshev_hybrid_chebysteps","Number of Chebyshev steps in hybrid Chebyshev","",cheb->chebysteps,&cheb->chebysteps,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-ksp_chebyshev_hybrid_gmressteps","Number of adaptive/GMRES steps in hybrid Chebyshev","",cheb->gmressteps,&cheb->gmressteps,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-ksp_chebyshev_hybrid_purification","Use purification in hybrid Chebyshev","",cheb->purification,&cheb->purification,NULL);CHKERRQ(ierr);
-
   if (cheb->kspest) {
     /* Mask the PC so that PCSetFromOptions does not do anything */
     ierr = KSPSetPC(cheb->kspest,cheb->pcnone);CHKERRQ(ierr);
     ierr = KSPSetOptionsPrefix(cheb->kspest,((PetscObject)ksp)->prefix);CHKERRQ(ierr);
-    ierr = KSPAppendOptionsPrefix(cheb->kspest,"gmres_");CHKERRQ(ierr);
+    ierr = KSPAppendOptionsPrefix(cheb->kspest,"adapt_");CHKERRQ(ierr);
     if (!((PetscObject)cheb->kspest)->type_name) {
       ierr = KSPSetType(cheb->kspest,KSPGMRES);CHKERRQ(ierr);
     }
@@ -463,7 +465,7 @@ PetscErrorCode KSPSolve_Chebyshev(KSP ksp)
       Vec       X;
 
       if (purification) {
-        X = p[km1]; /* will be updated by GMRES steps */
+        X = p[km1]; /* will be updated by adaptive steps */
       } else {
         X = p[kp1]; /* temp vector */
       }
@@ -578,7 +580,7 @@ PetscErrorCode KSPView_Chebyshev(KSP ksp,PetscViewer viewer)
     if (cheb->kspest) {
       ierr = PetscViewerASCIIPrintf(viewer,"  Chebyshev: estimated using:  [%G %G; %G %G]\n",cheb->tform[0],cheb->tform[1],cheb->tform[2],cheb->tform[3]);CHKERRQ(ierr);
       if (cheb->hybrid) { /* display info about hybrid options being used */
-        ierr = PetscViewerASCIIPrintf(viewer,"  Chebyshev: hybrid is used, gmressteps %D, chebysteps %D, purification %D\n",cheb->gmressteps,cheb->chebysteps,cheb->purification);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"  Chebyshev: hybrid is used, adaptsteps %D, chebysteps %D, purification %D\n",cheb->adaptsteps,cheb->chebysteps,cheb->purification);CHKERRQ(ierr);
       }
       if (cheb->random) {
         ierr = PetscViewerASCIIPrintf(viewer,"  Chebyshev: estimating eigenvalues using random right hand side\n");CHKERRQ(ierr);
@@ -661,7 +663,7 @@ PETSC_EXTERN_C PetscErrorCode KSPCreate_Chebyshev(KSP ksp)
 
   chebyshevP->hybrid       = PETSC_FALSE;
   chebyshevP->chebysteps   = 20000;
-  chebyshevP->gmressteps   = 10;
+  chebyshevP->adaptsteps   = 10;
   chebyshevP->its          = 0;
   chebyshevP->purification = PETSC_TRUE;  
 
