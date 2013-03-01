@@ -275,6 +275,52 @@ PetscErrorCode DMShellSetCreateLocalVector(DM dm,PetscErrorCode (*func)(DM,Vec*)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMShellSetGlobalToLocal"
+/*@C
+   DMShellSetGlobalToLocal - Sets the routines used to perform a global to local scatter
+
+   Logically Collective on DM
+
+   Input Arguments
++  dm - the shell DM
+.  begin - the routine that begins the global to local scatter
+-  end - the routine that ends the global to local scatter
+
+   Level: advanced
+
+.seealso: DMShellSetLocalToGlobal()
+@*/
+PetscErrorCode DMShellSetGlobalToLocal(DM dm,PetscErrorCode (*begin)(DM,Vec,InsertMode,Vec),PetscErrorCode (*end)(DM,Vec,InsertMode,Vec)) {
+  PetscFunctionBegin;
+  dm->ops->globaltolocalbegin = begin;
+  dm->ops->globaltolocalend = end;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMShellSetLocalToGlobal"
+/*@C
+   DMShellSetLocalToGlobal - Sets the routines used to perform a local to global scatter
+
+   Logically Collective on DM
+
+   Input Arguments
++  dm - the shell DM
+.  begin - the routine that begins the local to global scatter
+-  end - the routine that ends the local to global scatter
+
+   Level: advanced
+
+.seealso: DMShellSetGlobalToLocal()
+@*/
+PetscErrorCode DMShellSetLocalToGlobal(DM dm,PetscErrorCode (*begin)(DM,Vec,InsertMode,Vec),PetscErrorCode (*end)(DM,Vec,InsertMode,Vec)) {
+  PetscFunctionBegin;
+  dm->ops->localtoglobalbegin = begin;
+  dm->ops->localtoglobalend = end;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMDestroy_Shell"
 static PetscErrorCode DMDestroy_Shell(DM dm)
 {
