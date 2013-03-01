@@ -538,7 +538,10 @@ PetscErrorCode SNESSolve_Multiblock(SNES snes)
 
   if (!snes->norm_init_set) {
     ierr = VecNorm(F, NORM_2, &fnorm);CHKERRQ(ierr); /* fnorm <- ||F||  */
-    if (PetscIsInfOrNanReal(fnorm)) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_FP, "Infinite or not-a-number generated in norm");
+    if (PetscIsInfOrNanReal(fnorm)) {
+      snes->reason = SNES_DIVERGED_FNORM_NAN;
+      PetscFunctionReturn(0);
+    }
   } else {
     fnorm               = snes->norm_init;
     snes->norm_init_set = PETSC_FALSE;
@@ -587,7 +590,10 @@ PetscErrorCode SNESSolve_Multiblock(SNES snes)
     /* Compute F(X^{new}) */
     ierr = SNESComputeFunction(snes, X, F);CHKERRQ(ierr);
     ierr = VecNorm(F, NORM_2, &fnorm);CHKERRQ(ierr);
-    if (PetscIsInfOrNanReal(fnorm)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"Infinite or not-a-number generated norm");
+    if (PetscIsInfOrNanReal(fnorm)) {
+      snes->reason = SNES_DIVERGED_FNORM_NAN;
+      PetscFunctionReturn(0);
+    }
 
     if (snes->nfuncs >= snes->max_funcs) {
       snes->reason = SNES_DIVERGED_FUNCTION_COUNT;

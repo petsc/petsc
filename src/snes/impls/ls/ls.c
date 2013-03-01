@@ -170,7 +170,10 @@ PetscErrorCode SNESSolve_NEWTONLS(SNES snes)
   if (!snes->norm_init_set) {
     ierr = VecNormBegin(F,NORM_2,&fnorm);CHKERRQ(ierr);        /* fnorm <- ||F||  */
     ierr = VecNormEnd(F,NORM_2,&fnorm);CHKERRQ(ierr);
-    if (PetscIsInfOrNanReal(fnorm)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
+    if (PetscIsInfOrNanReal(fnorm)) {
+      snes->reason = SNES_DIVERGED_FNORM_NAN;
+      PetscFunctionReturn(0);
+    }
   } else {
     fnorm               = snes->norm_init;
     snes->norm_init_set = PETSC_FALSE;
