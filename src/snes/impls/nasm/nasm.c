@@ -627,7 +627,10 @@ PetscErrorCode SNESSolve_NASM(SNES snes)
     /* convergence test */
     if (!snes->norm_init_set) {
       ierr = VecNorm(F, NORM_2, &fnorm);CHKERRQ(ierr); /* fnorm <- ||F||  */
-      if (PetscIsInfOrNanReal(fnorm)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"Infinite or not-a-number generated in norm");
+      if (PetscIsInfOrNanReal(fnorm)) {
+        snes->reason = SNES_DIVERGED_FNORM_NAN;
+        PetscFunctionReturn(0);
+      }
     } else {
       fnorm               = snes->norm_init;
       snes->norm_init_set = PETSC_FALSE;
@@ -665,7 +668,10 @@ PetscErrorCode SNESSolve_NASM(SNES snes)
         break;
       }
       ierr = VecNorm(F, NORM_2, &fnorm);CHKERRQ(ierr); /* fnorm <- ||F||  */
-      if (PetscIsInfOrNanReal(fnorm)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"Infinite or not-a-number generated in norm");
+      if (PetscIsInfOrNanReal(fnorm)) {
+        snes->reason = SNES_DIVERGED_FNORM_NAN;
+        break;
+      }
     }
     /* Monitor convergence */
     ierr       = PetscObjectTakeAccess(snes);CHKERRQ(ierr);

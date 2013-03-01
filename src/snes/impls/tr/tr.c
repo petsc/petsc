@@ -120,7 +120,10 @@ static PetscErrorCode SNESSolve_NEWTONTR(SNES snes)
 
   if (!snes->norm_init_set) {
     ierr = VecNorm(F,NORM_2,&fnorm);CHKERRQ(ierr);             /* fnorm <- || F || */
-    if (PetscIsInfOrNanReal(fnorm)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
+    if (PetscIsInfOrNanReal(fnorm)) {
+      snes->reason = SNES_DIVERGED_FNORM_NAN;
+      PetscFunctionReturn(0);
+    }
   } else {
     fnorm               = snes->norm_init;
     snes->norm_init_set = PETSC_FALSE;

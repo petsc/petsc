@@ -91,7 +91,10 @@ PetscErrorCode SNESSolve_Anderson(SNES snes)
 
   if (!snes->norm_init_set) {
     ierr = VecNorm(F,NORM_2,&fnorm);CHKERRQ(ierr);
-    if (PetscIsInfOrNanReal(fnorm)) SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_FP,"Infinite or not-a-number generated in function evaluation");
+    if (PetscIsInfOrNanReal(fnorm)) {
+      snes->reason = SNES_DIVERGED_FNORM_NAN;
+      PetscFunctionReturn(0);
+    }
   } else {
     fnorm               = snes->norm_init;
     snes->norm_init_set = PETSC_FALSE;
