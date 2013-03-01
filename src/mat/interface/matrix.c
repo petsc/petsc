@@ -776,7 +776,7 @@ PetscErrorCode  MatSetUp(Mat A)
       One can use '-mat_view draw -draw_pause -1' to pause the graphical display of matrix nonzero structure.
       And then use the following mouse functions:
           left mouse: zoom in
-          middle mouse: zomm out
+          middle mouse: zoom out
           right mouse: continue with the simulation
 
    Concepts: matrices^viewing
