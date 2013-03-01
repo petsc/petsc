@@ -115,7 +115,14 @@ static PetscErrorCode KSPPGMRESCycle(PetscInt *itcount,KSP ksp)
       }
       if (ksp->reason) break;
       /* Catch error in happy breakdown and signal convergence and break from loop */
-      if (hapend) SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"You reached the happy break down, but convergence was not indicated. Residual norm = %G",res);
+      if (hapend) {
+        if (ksp->errorifnotconverged) SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"You reached the happy break down, but convergence was not indicated. Residual norm = %G",res);
+        else {
+          ksp->reason = KSP_DIVERGED_BREAKDOWN;
+          break;
+        }
+      }
+
       if (!(it < pgmres->max_k+1 && ksp->its < ksp->max_it)) break;
 
       /* The it-2 column of H was not scaled when we computed Zcur, apply correction */
