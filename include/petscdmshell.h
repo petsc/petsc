@@ -9,6 +9,8 @@ PETSC_EXTERN PetscErrorCode DMShellSetGlobalVector(DM,Vec);
 PETSC_EXTERN PetscErrorCode DMShellSetLocalVector(DM,Vec);
 PETSC_EXTERN PetscErrorCode DMShellSetCreateGlobalVector(DM,PetscErrorCode (*)(DM,Vec*));
 PETSC_EXTERN PetscErrorCode DMShellSetCreateLocalVector(DM,PetscErrorCode (*)(DM,Vec*));
+PETSC_EXTERN PetscErrorCode DMShellSetGlobalToLocal(DM,PetscErrorCode (*)(DM,Vec,InsertMode,Vec),PetscErrorCode (*)(DM,Vec,InsertMode,Vec));
+PETSC_EXTERN PetscErrorCode DMShellSetLocalToGlobal(DM,PetscErrorCode (*)(DM,Vec,InsertMode,Vec),PetscErrorCode (*)(DM,Vec,InsertMode,Vec));
 PETSC_EXTERN PetscErrorCode DMShellSetCreateMatrix(DM,PetscErrorCode (*)(DM,MatType,Mat*));
 
 #endif
