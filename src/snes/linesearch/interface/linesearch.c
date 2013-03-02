@@ -1499,7 +1499,7 @@ PetscErrorCode  SNESLineSearchGetWork(SNESLineSearch linesearch, PetscInt nwork)
 .  success - The success or failure status
 
    Notes:
-   This is typically called after SNESLineSearchApply in order to determine if the line-search failed
+   This is typically called after SNESLineSearchApply() in order to determine if the line-search failed
    (and set the SNES convergence accordingly).
 
    Level: intermediate

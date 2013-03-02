@@ -171,7 +171,11 @@ static PetscErrorCode  SNESLineSearchApply_BT(SNESLineSearch linesearch)
     g = PetscSqr(gnorm);
   }
 
-  if (PetscIsInfOrNanReal(g)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
+  if (PetscIsInfOrNanReal(g)) {
+    ierr = SNESLineSearchSetSuccess(linesearch, PETSC_FALSE);CHKERRQ(ierr);
+    ierr = PetscInfo(monitor,"Aborted due to Nan or Inf in function evaluation\n");CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
   if (!objective) {
     ierr = PetscInfo2(snes,"Initial fnorm %14.12e gnorm %14.12e\n", (double)fnorm, (double)gnorm);CHKERRQ(ierr);
   }
@@ -225,7 +229,11 @@ static PetscErrorCode  SNESLineSearchApply_BT(SNESLineSearch linesearch)
         g    = gnorm*gnorm;
       }
     }
-    if (PetscIsInfOrNanReal(g)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
+    if (PetscIsInfOrNanReal(g)) {
+      ierr = SNESLineSearchSetSuccess(linesearch, PETSC_FALSE);CHKERRQ(ierr);
+      ierr = PetscInfo(monitor,"Aborted due to Nan or Inf in function evaluation\n");CHKERRQ(ierr);
+      PetscFunctionReturn(0);
+    }
     if (monitor) {
       ierr = PetscViewerASCIIAddTab(monitor,((PetscObject)linesearch)->tablevel);CHKERRQ(ierr);
       if (!objective) {
@@ -311,7 +319,11 @@ static PetscErrorCode  SNESLineSearchApply_BT(SNESLineSearch linesearch)
             g    = gnorm*gnorm;
           }
         }
-        if (PetscIsInfOrNanReal(gnorm)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
+        if (PetscIsInfOrNanReal(gnorm)) {
+          ierr = SNESLineSearchSetSuccess(linesearch, PETSC_FALSE);CHKERRQ(ierr);
+          ierr = PetscInfo(monitor,"Aborted due to Nan or Inf in function evaluation\n");CHKERRQ(ierr);
+          PetscFunctionReturn(0);
+        }
         if (.5*g < .5*f + lambda*alpha*initslope) { /* is reduction enough? */
           if (monitor) {
             ierr = PetscViewerASCIIAddTab(monitor,((PetscObject)linesearch)->tablevel);CHKERRQ(ierr);
@@ -376,8 +388,11 @@ static PetscErrorCode  SNESLineSearchApply_BT(SNESLineSearch linesearch)
       ierr = VecNorm(G,NORM_2,&gnorm);CHKERRQ(ierr);
     }
     ierr = VecNorm(Y,NORM_2,&ynorm);CHKERRQ(ierr);
-    if (PetscIsInfOrNanReal(gnorm)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
-
+    if (PetscIsInfOrNanReal(gnorm)) {
+      ierr = SNESLineSearchSetSuccess(linesearch, PETSC_FALSE);CHKERRQ(ierr);
+      ierr = PetscInfo(monitor,"Aborted due to Nan or Inf in function evaluation\n");CHKERRQ(ierr);
+      PetscFunctionReturn(0);
+    }
   }
 
   /* copy the solution over */
