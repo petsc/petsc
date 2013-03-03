@@ -316,7 +316,7 @@ PetscErrorCode  PetscDrawSetFromOptions(PetscDraw draw)
 #undef __FUNCT__
 #define __FUNCT__ "PetscDrawSetSave"
 /*@C
-   PetscDrawSave - Saves images produced in a PetscDraw into a file as a Gif file using AfterImage
+   PetscDrawSetSave - Saves images produced in a PetscDraw into a file as a Gif file using AfterImage
 
    Collective on PetscDraw
 
@@ -341,7 +341,7 @@ PetscErrorCode  PetscDrawSetFromOptions(PetscDraw draw)
    ./configure flags --x-includes=/pathtoXincludes --x-libraries=/pathtoXlibraries   For example under Mac OS X Mountain Lion --x-includes=/opt/X11/include -x-libraries=/opt/X11/lib
 
 
-.seealso: PetscDrawSetFromOptions(), PetscDrawCreate(), PetscDrawDestroy(), PetscDrawSave()
+.seealso: PetscDrawSetFromOptions(), PetscDrawCreate(), PetscDrawDestroy()
 @*/
 PetscErrorCode  PetscDrawSetSave(PetscDraw draw,const char *filename,PetscBool movie)
 {
