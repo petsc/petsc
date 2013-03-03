@@ -47,12 +47,23 @@ PetscErrorCode MatFactorGetSolverPackage_seqaij_cusparse(Mat A,const MatSolverPa
 EXTERN_C_BEGIN
 extern PetscErrorCode MatGetFactor_seqaij_petsc(Mat,MatFactorType,Mat*);
 EXTERN_C_END
-/*
-  MATSOLVERCUSPARSE = "cusparse" - A matrix type providing triangular solvers (ILU) for seq matrices
-  on the GPU of type, seqaijcusparse, aijcusparse, or seqaijcusp, aijcusp
+/*MC
+  MATSOLVERCUSPARSE = "cusparse" - A matrix type providing triangular solvers for seq matrices on a single GPU of type,
+  seqaijcusparse, aijcusparse, or seqaijcusp, aijcusp. Currently supported algorithms are ILU(k) and LU. ICC(k) and
+  Cholesky will be supported in future versions. This class does NOT support direct solver operations.
 
-   Level: beginner
-*/
+  ./configure --download-txpetscgpu to install PETSc to use CUSPARSE
+
+  Consult CUSPARSE documentation for more information about the matrix storage formats which correspond to the options
+  database keys below.
+
+  Options Database Keys:
+.  -mat_cusparse_solve_storage_format csr - sets the storage format matrices during a call to MatSetFromOptions(). Other options include ell (ellpack) or hyb (hybrid).
+
+  Level: beginner
+
+.seealso: PCFactorSetMatSolverPackage(), MatSolverPackage, MatCreateSeqAIJCUSPARSE(), MATAIJCUSPARSE, MatCreateAIJCUSPARSE(), MatCUSPARSESetFormat(), MatCUSPARSEStorageFormat, MatCUSPARSEFormatOperation
+M*/
 
 EXTERN_C_BEGIN
 #undef __FUNCT__
