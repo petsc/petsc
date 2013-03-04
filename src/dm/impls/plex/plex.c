@@ -3739,8 +3739,8 @@ PetscErrorCode DMPlexShiftLabels_Private(DM dm, PetscInt depthShift[], DM dmNew)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMPlexConstructGhostCells_2D"
-PetscErrorCode DMPlexConstructGhostCells_2D(DM dm, const char labelName[], PetscInt *numGhostCells, DM gdm)
+#define __FUNCT__ "DMPlexConstructGhostCells_Internal"
+static PetscErrorCode DMPlexConstructGhostCells_Internal(DM dm, const char labelName[], PetscInt *numGhostCells, DM gdm)
 {
   DMLabel         label;
   IS              valueIS;
@@ -3858,13 +3858,7 @@ PetscErrorCode DMPlexConstructGhostCells(DM dm, const char labelName[], PetscInt
   ierr = DMSetType(gdm, DMPLEX);CHKERRQ(ierr);
   ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMPlexSetDimension(gdm, dim);CHKERRQ(ierr);
-  switch (dim) {
-  case 2:
-    ierr = DMPlexConstructGhostCells_2D(dm, labelName, numGhostCells, gdm);CHKERRQ(ierr);
-    break;
-  default:
-    SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Cannot construct ghost cells for dimension %d", dim);
-  }
+  ierr = DMPlexConstructGhostCells_Internal(dm, labelName, numGhostCells, gdm);CHKERRQ(ierr);
   ierr = DMSetFromOptions(gdm);CHKERRQ(ierr);
   *dmGhosted = gdm;
   PetscFunctionReturn(0);
