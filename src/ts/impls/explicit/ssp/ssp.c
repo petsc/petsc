@@ -245,10 +245,10 @@ static PetscErrorCode TSDestroy_SSP(TS ts)
   ierr = TSReset_SSP(ts);CHKERRQ(ierr);
   ierr = PetscFree(ssp->type_name);CHKERRQ(ierr);
   ierr = PetscFree(ts->data);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSSSPGetType_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSSSPSetType_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSSSPGetNumStages_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSSSPSetNumStages_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSSSPGetType_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSSSPSetType_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSSSPGetNumStages_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSSSPSetNumStages_C","",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /*------------------------------------------------------------*/
@@ -513,10 +513,10 @@ PetscErrorCode  TSCreate_SSP(TS ts)
   ierr = PetscNewLog(ts,TS_SSP,&ssp);CHKERRQ(ierr);
   ts->data = (void*)ssp;
 
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSSSPGetType_C","TSSSPGetType_SSP",TSSSPGetType_SSP);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSSSPSetType_C","TSSSPSetType_SSP",TSSSPSetType_SSP);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSSSPGetNumStages_C","TSSSPGetNumStages_SSP",TSSSPGetNumStages_SSP);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSSSPSetNumStages_C","TSSSPSetNumStages_SSP",TSSSPSetNumStages_SSP);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSSSPGetType_C","TSSSPGetType_SSP",TSSSPGetType_SSP);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSSSPSetType_C","TSSSPSetType_SSP",TSSSPSetType_SSP);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSSSPGetNumStages_C","TSSSPGetNumStages_SSP",TSSSPGetNumStages_SSP);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSSSPSetNumStages_C","TSSSPSetNumStages_SSP",TSSSPSetNumStages_SSP);CHKERRQ(ierr);
 
   ierr = TSSSPSetType(ts,TSSSPRKS2);CHKERRQ(ierr);
   ssp->nstages = 5;

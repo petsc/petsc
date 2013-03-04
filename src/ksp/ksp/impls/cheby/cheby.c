@@ -607,10 +607,10 @@ PetscErrorCode KSPDestroy_Chebyshev(KSP ksp)
   ierr = KSPDestroy(&cheb->kspest);CHKERRQ(ierr);
   ierr = PCDestroy(&cheb->pcnone);CHKERRQ(ierr);
   ierr = PetscRandomDestroy(&cheb->random);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPChebyshevSetEigenvalues_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPChebyshevSetEstimateEigenvalues_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPChebyshevEstEigSetRandom_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPChebyshevSetNewMatrix_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPChebyshevSetEigenvalues_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPChebyshevSetEstimateEigenvalues_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPChebyshevEstEigSetRandom_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPChebyshevSetNewMatrix_C","",NULL);CHKERRQ(ierr);
   ierr = KSPDefaultDestroy(ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -665,7 +665,7 @@ PETSC_EXTERN_C PetscErrorCode KSPCreate_Chebyshev(KSP ksp)
   chebyshevP->chebysteps   = 20000;
   chebyshevP->adaptsteps   = 10;
   chebyshevP->its          = 0;
-  chebyshevP->purification = PETSC_TRUE;  
+  chebyshevP->purification = PETSC_TRUE;
 
   ksp->ops->setup          = KSPSetUp_Chebyshev;
   ksp->ops->solve          = KSPSolve_Chebyshev;
@@ -676,17 +676,9 @@ PETSC_EXTERN_C PetscErrorCode KSPCreate_Chebyshev(KSP ksp)
   ksp->ops->view           = KSPView_Chebyshev;
   ksp->ops->reset          = KSPReset_Chebyshev;
 
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPChebyshevSetEigenvalues_C",
-                                           "KSPChebyshevSetEigenvalues_Chebyshev",
-                                           KSPChebyshevSetEigenvalues_Chebyshev);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPChebyshevSetEstimateEigenvalues_C",
-                                           "KSPChebyshevSetEstimateEigenvalues_Chebyshev",
-                                           KSPChebyshevSetEstimateEigenvalues_Chebyshev);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPChebyshevEstEigSetRandom_C",
-                                           "KSPChebyshevEstEigSetRandom_Chebyshev",
-                                           KSPChebyshevEstEigSetRandom_Chebyshev);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPChebyshevSetNewMatrix_C",
-                                           "KSPChebyshevSetNewMatrix_Chebyshev",
-                                           KSPChebyshevSetNewMatrix_Chebyshev);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPChebyshevSetEigenvalues_C","KSPChebyshevSetEigenvalues_Chebyshev",KSPChebyshevSetEigenvalues_Chebyshev);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPChebyshevSetEstimateEigenvalues_C","KSPChebyshevSetEstimateEigenvalues_Chebyshev",KSPChebyshevSetEstimateEigenvalues_Chebyshev);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPChebyshevEstEigSetRandom_C","KSPChebyshevEstEigSetRandom_Chebyshev",KSPChebyshevEstEigSetRandom_Chebyshev);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPChebyshevSetNewMatrix_C","KSPChebyshevSetNewMatrix_Chebyshev",KSPChebyshevSetNewMatrix_Chebyshev);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

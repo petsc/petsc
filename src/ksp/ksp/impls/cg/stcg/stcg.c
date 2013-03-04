@@ -639,9 +639,9 @@ PetscErrorCode KSPDestroy_STCG(KSP ksp)
   /***************************************************************************/
 
   PetscFunctionBegin;
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPSTCGSetRadius_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPSTCGGetNormD_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPSTCGGetObjFcn_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPSTCGSetRadius_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPSTCGGetNormD_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPSTCGGetObjFcn_C","",NULL);CHKERRQ(ierr);
 
   /***************************************************************************/
   /* Destroy KSP object.                                                     */
@@ -772,18 +772,9 @@ PetscErrorCode  KSPCreate_STCG(KSP ksp)
   ksp->ops->buildresidual  = KSPDefaultBuildResidual;
   ksp->ops->view           = 0;
 
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,
-                                           "KSPSTCGSetRadius_C",
-                                           "KSPSTCGSetRadius_STCG",
-                                           KSPSTCGSetRadius_STCG);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,
-                                           "KSPSTCGGetNormD_C",
-                                           "KSPSTCGGetNormD_STCG",
-                                           KSPSTCGGetNormD_STCG);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,
-                                           "KSPSTCGGetObjFcn_C",
-                                           "KSPSTCGGetObjFcn_STCG",
-                                           KSPSTCGGetObjFcn_STCG);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPSTCGSetRadius_C","KSPSTCGSetRadius_STCG",KSPSTCGSetRadius_STCG);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPSTCGGetNormD_C","KSPSTCGGetNormD_STCG",KSPSTCGGetNormD_STCG);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPSTCGGetObjFcn_C","KSPSTCGGetObjFcn_STCG",KSPSTCGGetObjFcn_STCG);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

@@ -22,11 +22,11 @@ PetscErrorCode ISDestroy_Block(IS is)
 
   PetscFunctionBegin;
   ierr = PetscFree(is_block->idx);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)is,"ISBlockSetIndices_C","",0);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)is,"ISBlockGetIndices_C","",0);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)is,"ISBlockRestoreIndices_C","",0);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)is,"ISBlockGetSize_C","",0);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)is,"ISBlockGetLocalSize_C","",0);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)is,"ISBlockSetIndices_C","",0);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)is,"ISBlockGetIndices_C","",0);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)is,"ISBlockRestoreIndices_C","",0);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)is,"ISBlockGetSize_C","",0);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)is,"ISBlockGetLocalSize_C","",0);CHKERRQ(ierr);
   ierr = PetscFree(is->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -577,16 +577,11 @@ PetscErrorCode  ISCreate_Block(IS is)
   PetscFunctionBegin;
   ierr = PetscNewLog(is,IS_Block,&sub);CHKERRQ(ierr);
   is->data = sub;
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)is,"ISBlockSetIndices_C","ISBlockSetIndices_Block",
-                                           ISBlockSetIndices_Block);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)is,"ISBlockGetIndices_C","ISBlockGetIndices_Block",
-                                           ISBlockGetIndices_Block);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)is,"ISBlockRestoreIndices_C","ISBlockRestoreIndices_Block",
-                                           ISBlockRestoreIndices_Block);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)is,"ISBlockGetSize_C","ISBlockGetSize_Block",
-                                           ISBlockGetSize_Block);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)is,"ISBlockGetLocalSize_C","ISBlockGetLocalSize_Block",
-                                           ISBlockGetLocalSize_Block);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)is,"ISBlockSetIndices_C","ISBlockSetIndices_Block",ISBlockSetIndices_Block);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)is,"ISBlockGetIndices_C","ISBlockGetIndices_Block",ISBlockGetIndices_Block);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)is,"ISBlockRestoreIndices_C","ISBlockRestoreIndices_Block",ISBlockRestoreIndices_Block);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)is,"ISBlockGetSize_C","ISBlockGetSize_Block",ISBlockGetSize_Block);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)is,"ISBlockGetLocalSize_C","ISBlockGetLocalSize_Block",ISBlockGetLocalSize_Block);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

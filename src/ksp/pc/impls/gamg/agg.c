@@ -1515,6 +1515,6 @@ PetscErrorCode  PCCreateGAMG_AGG(PC pc)
 
   pc_gamg->createdefaultdata = PCSetData_AGG;
 
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCSetCoordinates_C","PCSetCoordinates_AGG",PCSetCoordinates_AGG);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCSetCoordinates_C","PCSetCoordinates_AGG",PCSetCoordinates_AGG);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

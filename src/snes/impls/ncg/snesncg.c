@@ -515,7 +515,7 @@ PetscErrorCode  SNESCreate_NCG(SNES snes)
   snes->data   = (void*) neP;
   neP->monitor = NULL;
   neP->type    = SNES_NCG_PRP;
-  ierr         = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESNCGSetType_C","SNESNCGSetType_NCG", SNESNCGSetType_NCG);CHKERRQ(ierr);
+  ierr         = PetscObjectComposeFunction((PetscObject)snes,"SNESNCGSetType_C","SNESNCGSetType_NCG", SNESNCGSetType_NCG);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

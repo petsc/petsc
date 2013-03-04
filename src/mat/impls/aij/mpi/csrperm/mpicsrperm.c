@@ -143,9 +143,7 @@ PetscErrorCode  MatConvert_MPIAIJ_MPIAIJPERM(Mat A,MatType type,MatReuse reuse,M
   }
 
   ierr = PetscObjectChangeTypeName((PetscObject) B, MATMPIAIJPERM);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatMPIAIJSetPreallocation_C",
-                                           "MatMPIAIJSetPreallocation_MPIAIJPERM",
-                                           MatMPIAIJSetPreallocation_MPIAIJPERM);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMPIAIJSetPreallocation_C","MatMPIAIJSetPreallocation_MPIAIJPERM",MatMPIAIJSetPreallocation_MPIAIJPERM);CHKERRQ(ierr);
   *newmat = B;
   PetscFunctionReturn(0);
 }

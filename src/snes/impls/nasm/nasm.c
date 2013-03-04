@@ -755,14 +755,10 @@ PetscErrorCode SNESCreate_NASM(SNES snes)
     snes->max_funcs = 10000;
   }
 
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESNASMSetSubdomains_C","SNESNASMSetSubdomains_NASM",
-                                           SNESNASMSetSubdomains_NASM);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESNASMGetSubdomains_C","SNESNASMGetSubdomains_NASM",
-                                           SNESNASMGetSubdomains_NASM);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESNASMGetSubdomainVecs_C","SNESNASMGetSubdomainVecs_NASM",
-                                           SNESNASMGetSubdomainVecs_NASM);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESNASMSetComputeFinalJacobian_C","SNESNASMSetComputeFinalJacobian_NASM",
-                                           SNESNASMSetComputeFinalJacobian_NASM);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)snes,"SNESNASMSetSubdomains_C","SNESNASMSetSubdomains_NASM",SNESNASMSetSubdomains_NASM);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)snes,"SNESNASMGetSubdomains_C","SNESNASMGetSubdomains_NASM",SNESNASMGetSubdomains_NASM);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)snes,"SNESNASMGetSubdomainVecs_C","SNESNASMGetSubdomainVecs_NASM",SNESNASMGetSubdomainVecs_NASM);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)snes,"SNESNASMSetComputeFinalJacobian_C","SNESNASMSetComputeFinalJacobian_NASM",SNESNASMSetComputeFinalJacobian_NASM);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

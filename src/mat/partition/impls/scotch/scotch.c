@@ -356,10 +356,10 @@ PetscErrorCode MatPartitioningDestroy_PTScotch(MatPartitioning part)
   PetscFunctionBegin;
   ierr = PetscFree(scotch);CHKERRQ(ierr);
   /* clear composed functions */
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)part,"MatPartitioningPTScotchSetImbalance_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)part,"MatPartitioningPTScotchGetImbalance_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)part,"MatPartitioningPTScotchSetStrategy_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)part,"MatPartitioningPTScotchGetStrategy_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)part,"MatPartitioningPTScotchSetImbalance_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)part,"MatPartitioningPTScotchGetImbalance_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)part,"MatPartitioningPTScotchSetStrategy_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)part,"MatPartitioningPTScotchGetStrategy_C","",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -395,10 +395,10 @@ PetscErrorCode  MatPartitioningCreate_PTScotch(MatPartitioning part)
   part->ops->setfromoptions = MatPartitioningSetFromOptions_PTScotch;
   part->ops->destroy        = MatPartitioningDestroy_PTScotch;
 
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)part,"MatPartitioningPTScotchSetImbalance_C","MatPartitioningPTScotchSetImbalance_PTScotch",MatPartitioningPTScotchSetImbalance_PTScotch);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)part,"MatPartitioningPTScotchGetImbalance_C","MatPartitioningPTScotchGetImbalance_PTScotch",MatPartitioningPTScotchGetImbalance_PTScotch);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)part,"MatPartitioningPTScotchSetStrategy_C","MatPartitioningPTScotchSetStrategy_PTScotch",MatPartitioningPTScotchSetStrategy_PTScotch);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)part,"MatPartitioningPTScotchGetStrategy_C","MatPartitioningPTScotchGetStrategy_PTScotch",MatPartitioningPTScotchGetStrategy_PTScotch);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)part,"MatPartitioningPTScotchSetImbalance_C","MatPartitioningPTScotchSetImbalance_PTScotch",MatPartitioningPTScotchSetImbalance_PTScotch);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)part,"MatPartitioningPTScotchGetImbalance_C","MatPartitioningPTScotchGetImbalance_PTScotch",MatPartitioningPTScotchGetImbalance_PTScotch);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)part,"MatPartitioningPTScotchSetStrategy_C","MatPartitioningPTScotchSetStrategy_PTScotch",MatPartitioningPTScotchSetStrategy_PTScotch);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)part,"MatPartitioningPTScotchGetStrategy_C","MatPartitioningPTScotchGetStrategy_PTScotch",MatPartitioningPTScotchGetStrategy_PTScotch);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

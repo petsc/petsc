@@ -872,21 +872,21 @@ PetscErrorCode PCDestroy_BDDC(PC pc)
   ierr = PetscFree(pcbddc->mat_graph->where_ncmps);CHKERRQ(ierr);
   ierr = PetscFree(pcbddc->mat_graph);CHKERRQ(ierr);
   /* remove functions */
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCBDDCSetCoarseningRatio_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCBDDCSetMaxLevels_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCBDDCSetNullSpace_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCBDDCSetDirichletBoundaries_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCBDDCSetNeumannBoundaries_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCBDDCGetDirichletBoundaries_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCBDDCGetNeumannBoundaries_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCBDDCSetCoarseProblemType_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCBDDCSetDofsSplitting_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCBDDCSetLocalAdjacencyGraph_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCPreSolve_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCPostSolve_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCBDDCCreateFETIDPOperators_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCBDDCMatFETIDPGetRHS_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCBDDCMatFETIDPGetSolution_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetCoarseningRatio_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetMaxLevels_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetNullSpace_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetDirichletBoundaries_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetNeumannBoundaries_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCGetDirichletBoundaries_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCGetNeumannBoundaries_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetCoarseProblemType_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetDofsSplitting_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetLocalAdjacencyGraph_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCPreSolve_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCPostSolve_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCCreateFETIDPOperators_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCMatFETIDPGetRHS_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCMatFETIDPGetSolution_C","",NULL);CHKERRQ(ierr);
   /* Free the private data structure that was hanging off the PC */
   ierr = PetscFree(pcbddc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1223,36 +1223,21 @@ PetscErrorCode PCCreate_BDDC(PC pc)
   pc->ops->postsolve           = PCPostSolve_BDDC;
 
   /* composing function */
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCBDDCSetCoarseningRatio_C","PCBDDCSetCoarseningRatio_BDDC",
-                                           PCBDDCSetCoarseningRatio_BDDC);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCBDDCSetMaxLevels_C","PCBDDCSetMaxLevels_BDDC",
-                                           PCBDDCSetMaxLevels_BDDC);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCBDDCSetNullSpace_C","PCBDDCSetNullSpace_BDDC",
-                                           PCBDDCSetNullSpace_BDDC);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCBDDCSetDirichletBoundaries_C","PCBDDCSetDirichletBoundaries_BDDC",
-                                           PCBDDCSetDirichletBoundaries_BDDC);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCBDDCSetNeumannBoundaries_C","PCBDDCSetNeumannBoundaries_BDDC",
-                                           PCBDDCSetNeumannBoundaries_BDDC);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCBDDCGetDirichletBoundaries_C","PCBDDCGetDirichletBoundaries_BDDC",
-                                           PCBDDCGetDirichletBoundaries_BDDC);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCBDDCGetNeumannBoundaries_C","PCBDDCGetNeumannBoundaries_BDDC",
-                                           PCBDDCGetNeumannBoundaries_BDDC);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCBDDCSetCoarseProblemType_C","PCBDDCSetCoarseProblemType_BDDC",
-                                           PCBDDCSetCoarseProblemType_BDDC);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCBDDCSetDofsSplitting_C","PCBDDCSetDofsSplitting_BDDC",
-                                           PCBDDCSetDofsSplitting_BDDC);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCBDDCSetLocalAdjacencyGraph_C","PCBDDCSetLocalAdjacencyGraph_BDDC",
-                                           PCBDDCSetLocalAdjacencyGraph_BDDC);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCPreSolve_C","PCPreSolve_BDDC",
-                                           PCPreSolve_BDDC);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCPostSolve_C","PCPostSolve_BDDC",
-                                           PCPostSolve_BDDC);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCBDDCCreateFETIDPOperators_C","PCBDDCCreateFETIDPOperators_BDDC",
-                                           PCBDDCCreateFETIDPOperators_BDDC);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCBDDCMatFETIDPGetRHS_C","PCBDDCMatFETIDPGetRHS_BDDC",
-                                           PCBDDCMatFETIDPGetRHS_BDDC);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCBDDCMatFETIDPGetSolution_C","PCBDDCMatFETIDPGetSolution_BDDC",
-                                           PCBDDCMatFETIDPGetSolution_BDDC);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetCoarseningRatio_C","PCBDDCSetCoarseningRatio_BDDC",PCBDDCSetCoarseningRatio_BDDC);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetMaxLevels_C","PCBDDCSetMaxLevels_BDDC",PCBDDCSetMaxLevels_BDDC);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetNullSpace_C","PCBDDCSetNullSpace_BDDC",PCBDDCSetNullSpace_BDDC);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetDirichletBoundaries_C","PCBDDCSetDirichletBoundaries_BDDC",PCBDDCSetDirichletBoundaries_BDDC);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetNeumannBoundaries_C","PCBDDCSetNeumannBoundaries_BDDC",PCBDDCSetNeumannBoundaries_BDDC);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCGetDirichletBoundaries_C","PCBDDCGetDirichletBoundaries_BDDC",PCBDDCGetDirichletBoundaries_BDDC);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCGetNeumannBoundaries_C","PCBDDCGetNeumannBoundaries_BDDC",PCBDDCGetNeumannBoundaries_BDDC);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetCoarseProblemType_C","PCBDDCSetCoarseProblemType_BDDC",PCBDDCSetCoarseProblemType_BDDC);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetDofsSplitting_C","PCBDDCSetDofsSplitting_BDDC",PCBDDCSetDofsSplitting_BDDC);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetLocalAdjacencyGraph_C","PCBDDCSetLocalAdjacencyGraph_BDDC",PCBDDCSetLocalAdjacencyGraph_BDDC);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCPreSolve_C","PCPreSolve_BDDC",PCPreSolve_BDDC);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCPostSolve_C","PCPostSolve_BDDC",PCPostSolve_BDDC);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCCreateFETIDPOperators_C","PCBDDCCreateFETIDPOperators_BDDC",PCBDDCCreateFETIDPOperators_BDDC);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCMatFETIDPGetRHS_C","PCBDDCMatFETIDPGetRHS_BDDC",PCBDDCMatFETIDPGetRHS_BDDC);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCMatFETIDPGetSolution_C","PCBDDCMatFETIDPGetSolution_BDDC",PCBDDCMatFETIDPGetSolution_BDDC);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

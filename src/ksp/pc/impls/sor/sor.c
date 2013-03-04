@@ -329,12 +329,9 @@ PetscErrorCode  PCCreate_SOR(PC pc)
   jac->its                 = 1;
   jac->lits                = 1;
 
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCSORSetSymmetric_C","PCSORSetSymmetric_SOR",
-                                           PCSORSetSymmetric_SOR);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCSORSetOmega_C","PCSORSetOmega_SOR",
-                                           PCSORSetOmega_SOR);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCSORSetIterations_C","PCSORSetIterations_SOR",
-                                           PCSORSetIterations_SOR);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCSORSetSymmetric_C","PCSORSetSymmetric_SOR",PCSORSetSymmetric_SOR);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCSORSetOmega_C","PCSORSetOmega_SOR",PCSORSetOmega_SOR);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCSORSetIterations_C","PCSORSetIterations_SOR",PCSORSetIterations_SOR);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

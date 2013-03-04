@@ -233,9 +233,7 @@ PetscErrorCode  MatCreate_MPIAIJCUSPARSE(Mat A)
 
   PetscFunctionBegin;
   ierr = MatCreate_MPIAIJ(A);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatMPIAIJSetPreallocation_C",
-                                           "MatMPIAIJSetPreallocation_MPIAIJCUSPARSE",
-                                           MatMPIAIJSetPreallocation_MPIAIJCUSPARSE);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatMPIAIJSetPreallocation_C","MatMPIAIJSetPreallocation_MPIAIJCUSPARSE",MatMPIAIJSetPreallocation_MPIAIJCUSPARSE);CHKERRQ(ierr);
   a        = (Mat_MPIAIJ*)A->data;
   a->spptr = new Mat_MPIAIJCUSPARSE;
 
@@ -250,7 +248,7 @@ PetscErrorCode  MatCreate_MPIAIJCUSPARSE(Mat A)
   A->ops->destroy        = MatDestroy_MPIAIJCUSPARSE;
 
   ierr = PetscObjectChangeTypeName((PetscObject)A,MATMPIAIJCUSPARSE);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatCUSPARSESetFormat_C", "MatCUSPARSESetFormat_MPIAIJCUSPARSE", MatCUSPARSESetFormat_MPIAIJCUSPARSE);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatCUSPARSESetFormat_C", "MatCUSPARSESetFormat_MPIAIJCUSPARSE", MatCUSPARSESetFormat_MPIAIJCUSPARSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

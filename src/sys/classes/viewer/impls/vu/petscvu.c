@@ -160,10 +160,8 @@ PetscErrorCode  PetscViewerCreate_VU(PetscViewer viewer)
   vu->queueBase   = NULL;
   vu->queueLength = 0;
 
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject) viewer,"PetscViewerFileSetName_C", "PetscViewerFileSetName_VU",
-                                           PetscViewerFileSetName_VU);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject) viewer,"PetscViewerFileGetName_C", "PetscViewerFileGetName_VU",
-                                           PetscViewerFileGetName_VU);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject) viewer,"PetscViewerFileSetName_C", "PetscViewerFileSetName_VU",PetscViewerFileSetName_VU);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject) viewer,"PetscViewerFileGetName_C", "PetscViewerFileGetName_VU",PetscViewerFileGetName_VU);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

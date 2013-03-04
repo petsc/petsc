@@ -276,7 +276,7 @@ PetscErrorCode MatGetFactor_seqbaij_bstrm(Mat A,MatFactorType ftype,Mat *B)
 
   ierr        = PetscNewLog(*B,Mat_SeqBSTRM,&bstrm);CHKERRQ(ierr);
   (*B)->spptr = (void*) bstrm;
-  ierr        = PetscObjectComposeFunctionDynamic((PetscObject)*B,"MatFactorGetSolverPackage_C","MatFactorGetSolverPackage_bstrm",MatFactorGetSolverPackage_bstrm);CHKERRQ(ierr);
+  ierr        = PetscObjectComposeFunction((PetscObject)*B,"MatFactorGetSolverPackage_C","MatFactorGetSolverPackage_bstrm",MatFactorGetSolverPackage_bstrm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

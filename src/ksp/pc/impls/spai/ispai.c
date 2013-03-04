@@ -641,30 +641,14 @@ PetscErrorCode  PCCreate_SPAI(PC pc)
   ispai->sp = 1;
   ierr      = MPI_Comm_dup(PetscObjectComm((PetscObject)pc),&(ispai->comm_spai));CHKERRQ(ierr);
 
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCSPAISetEpsilon_C",
-                                           "PCSPAISetEpsilon_SPAI",
-                                           PCSPAISetEpsilon_SPAI);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCSPAISetNBSteps_C",
-                                           "PCSPAISetNBSteps_SPAI",
-                                           PCSPAISetNBSteps_SPAI);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCSPAISetMax_C",
-                                           "PCSPAISetMax_SPAI",
-                                           PCSPAISetMax_SPAI);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCSPAISetMaxNew_CC",
-                                           "PCSPAISetMaxNew_SPAI",
-                                           PCSPAISetMaxNew_SPAI);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCSPAISetBlockSize_C",
-                                           "PCSPAISetBlockSize_SPAI",
-                                           PCSPAISetBlockSize_SPAI);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCSPAISetCacheSize_C",
-                                           "PCSPAISetCacheSize_SPAI",
-                                           PCSPAISetCacheSize_SPAI);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCSPAISetVerbose_C",
-                                           "PCSPAISetVerbose_SPAI",
-                                           PCSPAISetVerbose_SPAI);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCSPAISetSp_C",
-                                           "PCSPAISetSp_SPAI",
-                                           PCSPAISetSp_SPAI);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCSPAISetEpsilon_C","PCSPAISetEpsilon_SPAI",PCSPAISetEpsilon_SPAI);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCSPAISetNBSteps_C","PCSPAISetNBSteps_SPAI",PCSPAISetNBSteps_SPAI);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCSPAISetMax_C","PCSPAISetMax_SPAI",PCSPAISetMax_SPAI);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCSPAISetMaxNew_C","PCSPAISetMaxNew_SPAI",PCSPAISetMaxNew_SPAI);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCSPAISetBlockSize_C","PCSPAISetBlockSize_SPAI",PCSPAISetBlockSize_SPAI);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCSPAISetCacheSize_C","PCSPAISetCacheSize_SPAI",PCSPAISetCacheSize_SPAI);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCSPAISetVerbose_C","PCSPAISetVerbose_SPAI",PCSPAISetVerbose_SPAI);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCSPAISetSp_C","PCSPAISetSp_SPAI",PCSPAISetSp_SPAI);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

@@ -1508,34 +1508,13 @@ PetscErrorCode  PCCreate_GAMG(PC pc)
   pc->ops->reset          = PCReset_GAMG;
   pc->ops->destroy        = PCDestroy_GAMG;
 
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,
-                                           "PCGAMGSetProcEqLim_C",
-                                           "PCGAMGSetProcEqLim_GAMG",
-                                           PCGAMGSetProcEqLim_GAMG);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,
-                                           "PCGAMGSetCoarseEqLim_C",
-                                           "PCGAMGSetCoarseEqLim_GAMG",
-                                           PCGAMGSetCoarseEqLim_GAMG);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,
-                                           "PCGAMGSetRepartitioning_C",
-                                           "PCGAMGSetRepartitioning_GAMG",
-                                           PCGAMGSetRepartitioning_GAMG);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,
-                                           "PCGAMGSetReuseProl_C",
-                                           "PCGAMGSetReuseProl_GAMG",
-                                           PCGAMGSetReuseProl_GAMG);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,
-                                           "PCGAMGSetUseASMAggs_C",
-                                           "PCGAMGSetUseASMAggs_GAMG",
-                                           PCGAMGSetUseASMAggs_GAMG);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,
-                                           "PCGAMGSetThreshold_C",
-                                           "PCGAMGSetThreshold_GAMG",
-                                           PCGAMGSetThreshold_GAMG);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,
-                                           "PCGAMGSetType_C",
-                                           "PCGAMGSetType_GAMG",
-                                           PCGAMGSetType_GAMG);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGAMGSetProcEqLim_C","PCGAMGSetProcEqLim_GAMG",PCGAMGSetProcEqLim_GAMG);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGAMGSetCoarseEqLim_C","PCGAMGSetCoarseEqLim_GAMG",PCGAMGSetCoarseEqLim_GAMG);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGAMGSetRepartitioning_C","PCGAMGSetRepartitioning_GAMG",PCGAMGSetRepartitioning_GAMG);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGAMGSetReuseProl_C","PCGAMGSetReuseProl_GAMG",PCGAMGSetReuseProl_GAMG);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGAMGSetUseASMAggs_C","PCGAMGSetUseASMAggs_GAMG",PCGAMGSetUseASMAggs_GAMG);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGAMGSetThreshold_C","PCGAMGSetThreshold_GAMG",PCGAMGSetThreshold_GAMG);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGAMGSetType_C","PCGAMGSetType_GAMG",PCGAMGSetType_GAMG);CHKERRQ(ierr);
   pc_gamg->repart           = PETSC_FALSE;
   pc_gamg->reuse_prol       = PETSC_TRUE;
   pc_gamg->use_aggs_in_gasm = PETSC_FALSE;

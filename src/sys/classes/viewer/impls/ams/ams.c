@@ -233,12 +233,8 @@ PetscErrorCode PetscViewerCreate_AMS(PetscViewer v)
   v->data         = (void*)vams;
   vams->ams_comm  = -1;
 
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"PetscViewerAMSSetCommName_C",
-                                           "PetscViewerAMSSetCommName_AMS",
-                                           PetscViewerAMSSetCommName_AMS);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"PetscViewerAMSGetAMSComm_C",
-                                           "PetscViewerAMSGetAMSComm_AMS",
-                                           PetscViewerAMSGetAMSComm_AMS);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerAMSSetCommName_C","PetscViewerAMSSetCommName_AMS",PetscViewerAMSSetCommName_AMS);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerAMSGetAMSComm_C","PetscViewerAMSGetAMSComm_AMS",PetscViewerAMSGetAMSComm_AMS);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

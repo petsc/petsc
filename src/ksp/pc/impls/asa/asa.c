@@ -1982,7 +1982,7 @@ PetscErrorCode  PCCreate_ASA(PC pc)
   /* Set the data to pointer to 0 */
   pc->data = (void*)0;
 
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCASASetTolerances_C","PCASASetTolerances_ASA",PCASASetTolerances_ASA);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCASASetTolerances_C","PCASASetTolerances_ASA",PCASASetTolerances_ASA);CHKERRQ(ierr);
 
   /* register events */
   if (!asa_events_registered) {

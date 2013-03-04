@@ -658,19 +658,12 @@ PetscErrorCode  PCCreate_BJacobi(PC pc)
   jac->l_lens            = 0;
   jac->psubcomm          = 0;
 
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCBJacobiSetUseTrueLocal_C",
-                                           "PCBJacobiSetUseTrueLocal_BJacobi",
-                                           PCBJacobiSetUseTrueLocal_BJacobi);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCBJacobiGetSubKSP_C","PCBJacobiGetSubKSP_BJacobi",
-                                           PCBJacobiGetSubKSP_BJacobi);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCBJacobiSetTotalBlocks_C","PCBJacobiSetTotalBlocks_BJacobi",
-                                           PCBJacobiSetTotalBlocks_BJacobi);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCBJacobiGetTotalBlocks_C","PCBJacobiGetTotalBlocks_BJacobi",
-                                           PCBJacobiGetTotalBlocks_BJacobi);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCBJacobiSetLocalBlocks_C","PCBJacobiSetLocalBlocks_BJacobi",
-                                           PCBJacobiSetLocalBlocks_BJacobi);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCBJacobiGetLocalBlocks_C","PCBJacobiGetLocalBlocks_BJacobi",
-                                           PCBJacobiGetLocalBlocks_BJacobi);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBJacobiSetUseTrueLocal_C","PCBJacobiSetUseTrueLocal_BJacobi",PCBJacobiSetUseTrueLocal_BJacobi);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBJacobiGetSubKSP_C","PCBJacobiGetSubKSP_BJacobi",PCBJacobiGetSubKSP_BJacobi);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBJacobiSetTotalBlocks_C","PCBJacobiSetTotalBlocks_BJacobi",PCBJacobiSetTotalBlocks_BJacobi);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBJacobiGetTotalBlocks_C","PCBJacobiGetTotalBlocks_BJacobi",PCBJacobiGetTotalBlocks_BJacobi);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBJacobiSetLocalBlocks_C","PCBJacobiSetLocalBlocks_BJacobi",PCBJacobiSetLocalBlocks_BJacobi);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBJacobiGetLocalBlocks_C","PCBJacobiGetLocalBlocks_BJacobi",PCBJacobiGetLocalBlocks_BJacobi);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

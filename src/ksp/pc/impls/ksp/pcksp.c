@@ -312,10 +312,8 @@ PetscErrorCode  PCCreate_KSP(PC pc)
   jac->use_true_matrix = PETSC_FALSE;
   jac->its             = 0;
 
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCKSPSetUseTrue_C","PCKSPSetUseTrue_KSP",
-                                           PCKSPSetUseTrue_KSP);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCKSPGetKSP_C","PCKSPGetKSP_KSP",
-                                           PCKSPGetKSP_KSP);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCKSPSetUseTrue_C","PCKSPSetUseTrue_KSP",PCKSPSetUseTrue_KSP);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCKSPGetKSP_C","PCKSPGetKSP_KSP",PCKSPGetKSP_KSP);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

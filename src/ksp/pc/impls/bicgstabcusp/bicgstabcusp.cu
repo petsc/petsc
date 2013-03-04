@@ -258,9 +258,9 @@ PetscErrorCode  PCCreate_BiCGStabCUSP(PC pc)
   pc->ops->applysymmetricleft  = 0;
   pc->ops->applysymmetricright = 0;
 
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCBiCGStabCUSPSetTolerance_C","PCBiCGStabCUSPSetTolerance_BiCGStabCUSP",PCBiCGStabCUSPSetTolerance_BiCGStabCUSP);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc, "PCBiCGStabCUSPSetIterations_C","PCBiCGStabCUSPSetIterations_BiCGStabCUSP", PCBiCGStabCUSPSetIterations_BiCGStabCUSP);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc, "PCBiCGStabCUSPSetUseVerboseMonitor_C", "PCBiCGStabCUSPSetUseVerboseMonitor_BiCGStabCUSP", PCBiCGStabCUSPSetUseVerboseMonitor_BiCGStabCUSP);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBiCGStabCUSPSetTolerance_C","PCBiCGStabCUSPSetTolerance_BiCGStabCUSP",PCBiCGStabCUSPSetTolerance_BiCGStabCUSP);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc, "PCBiCGStabCUSPSetIterations_C","PCBiCGStabCUSPSetIterations_BiCGStabCUSP", PCBiCGStabCUSPSetIterations_BiCGStabCUSP);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc, "PCBiCGStabCUSPSetUseVerboseMonitor_C", "PCBiCGStabCUSPSetUseVerboseMonitor_BiCGStabCUSP", PCBiCGStabCUSPSetUseVerboseMonitor_BiCGStabCUSP);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

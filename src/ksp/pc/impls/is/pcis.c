@@ -386,9 +386,9 @@ PetscErrorCode  PCISDestroy(PC pc)
   if (pcis->ISLocalToGlobalMappingGetInfoWasCalled) {
     ierr = ISLocalToGlobalMappingRestoreInfo((ISLocalToGlobalMapping)0,&(pcis->n_neigh),&(pcis->neigh),&(pcis->n_shared),&(pcis->shared));CHKERRQ(ierr);
   }
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCISSetUseStiffnessScaling_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCISSetSubdomainScalingFactor_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCISSetSubdomainDiagonalScaling_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCISSetUseStiffnessScaling_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCISSetSubdomainScalingFactor_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCISSetSubdomainDiagonalScaling_C","",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -433,12 +433,9 @@ PetscErrorCode  PCISCreate(PC pc)
 
   pcis->scaling_factor = 1.0;
   /* composing functions */
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCISSetUseStiffnessScaling_C","PCISSetUseStiffnessScaling_IS",
-                                           PCISSetUseStiffnessScaling_IS);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCISSetSubdomainScalingFactor_C","PCISSetSubdomainScalingFactor_IS",
-                                           PCISSetSubdomainScalingFactor_IS);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCISSetSubdomainDiagonalScaling_C","PCISSetSubdomainDiagonalScaling_IS",
-                                           PCISSetSubdomainDiagonalScaling_IS);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCISSetUseStiffnessScaling_C","PCISSetUseStiffnessScaling_IS",PCISSetUseStiffnessScaling_IS);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCISSetSubdomainScalingFactor_C","PCISSetSubdomainScalingFactor_IS",PCISSetSubdomainScalingFactor_IS);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCISSetSubdomainDiagonalScaling_C","PCISSetSubdomainDiagonalScaling_IS",PCISSetSubdomainDiagonalScaling_IS);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
