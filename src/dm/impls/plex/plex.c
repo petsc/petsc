@@ -3834,7 +3834,7 @@ static PetscErrorCode DMPlexConstructGhostCells_Internal(DM dm, const char label
 
   Input Parameters:
 + dm - The original DM
-- labelName - The label specifying the boundary faces (this could be auto-generated)
+- labelName - The label specifying the boundary faces, or "Face Sets" if this is NULL
 
   Output Parameters:
 + numGhostCells - The number of ghost cells added to the DM
