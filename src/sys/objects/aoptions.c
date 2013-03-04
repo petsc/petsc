@@ -590,7 +590,7 @@ PetscErrorCode PetscOptionsEnd_Private(void)
 
    Output Parameter:
 +  value - the  value to return
--  flg - PETSC_TRUE if found, else PETSC_FALSE
+-  set - PETSC_TRUE if found, else PETSC_FALSE
 
    Level: beginner
 
