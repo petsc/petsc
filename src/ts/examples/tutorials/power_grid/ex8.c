@@ -148,9 +148,7 @@ PetscErrorCode ini_bou(Vec X,AppCtx* user)
   DMDACoor2d     **coors;
   PetscScalar    **p;
   Vec            gc;
-  PetscInt       i,j;
-  PetscInt       xs,ys,xm,ym,M,N,I,J;
-  PetscScalar    xi,yi;
+  PetscInt       M,N,I,J;
   PetscMPIInt    rank;
 
   PetscFunctionBeginUser;
@@ -161,24 +159,14 @@ PetscErrorCode ini_bou(Vec X,AppCtx* user)
   ierr = DMGetCoordinates(user->da,&gc);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(cda,gc,&coors);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(user->da,X,&p);CHKERRQ(ierr);
-  ierr = DMDAGetCorners(cda,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
 
+  /* Point mass at (mux,muy) */
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Original user->mux = %f, user->muy = %f\n",user->mux,user->muy);CHKERRQ(ierr);
   ierr = DMDAGetLogicalCoordinate(user->da,user->mux,user->muy,0.0,&I,&J,NULL,&user->mux,&user->muy,NULL);CHKERRQ(ierr);
-
-  /* user->mux = coors[0][M/2+10].x;*/
   user->PM_min = user->Pmax*sin(user->mux);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Corrected user->mux = %f, user->muy = %f user->PM_min = %f,user->dx = %f\n",user->mux,user->muy,user->PM_min,user->dx);CHKERRQ(ierr);
   if (I > -1 && J > -1) {
-    /* Point mass at (mux,muy) */
-    for (i=xs; i < xs+xm; i++) {
-      for (j=ys; j < ys+ym; j++) {
-        xi = coors[j][i].x; yi = coors[j][i].y;
-        if ((PetscAbsScalar(xi - user->mux) < 1e-8) && (PetscAbsScalar(yi - user->muy) < 1e-8)) {
-          p[j][i] = 1.0;
-        }
-      }
-    }
+    p[J][I] = 1.0;
   }
 
   ierr = DMDAVecRestoreArray(cda,gc,&coors);CHKERRQ(ierr);
