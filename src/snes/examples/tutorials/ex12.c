@@ -4,6 +4,9 @@ domain, using a parallel unstructured mesh (DMPLEX) to discretize it.\n\n\n";
 
 #include <petscdmplex.h>
 #include <petscsnes.h>
+#if defined(PETSC_HAVE_EXODUSII)
+#include <exodusII.h>
+#endif
 
 /*------------------------------------------------------------------------------
   This code can be generated using 'bin/pythonscripts/PetscGenerateFEMQuadrature.py dim order dim 1 laplacian src/snes/examples/tutorials/ex12.h'
@@ -26,6 +29,7 @@ typedef struct {
   PetscBool     showInitial, showSolution;
   /* Domain and mesh definition */
   PetscInt      dim;               /* The topological mesh dimension */
+  char          filename[2048];    /* The optional ExodusII file */
   PetscBool     interpolate;       /* Generate intermediate mesh elements */
   PetscReal     refinementLimit;   /* The largest allowable cell volume */
   char          partitioner[2048]; /* The graph partitioner */
@@ -124,6 +128,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   const char    *bcTypes[2]  = {"neumann", "dirichlet"};
   const char    *runTypes[2] = {"full", "test"};
   PetscInt       bc, run;
+  PetscBool      flg;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
@@ -158,6 +163,10 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->runType = (RunType) run;
 
   ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex12.c", options->dim, &options->dim, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsString("-f", "Exodus.II filename to read", "ex12.c", options->filename, options->filename, sizeof(options->filename), &flg);CHKERRQ(ierr);
+#if !defined(PETSC_HAVE_EXODUSII)
+  if (flg) SETERRQ(comm, PETSC_ERR_ARG_WRONG, "This option requires ExodusII support. Reconfigure using --download-exodusii");
+#endif
   ierr = PetscOptionsBool("-interpolate", "Generate intermediate mesh elements", "ex12.c", options->interpolate, &options->interpolate, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-refinement_limit", "The largest allowable cell volume", "ex12.c", options->refinementLimit, &options->refinementLimit, NULL);CHKERRQ(ierr);
   ierr = PetscStrcpy(options->partitioner, "chaco");CHKERRQ(ierr);
@@ -207,14 +216,35 @@ PetscErrorCode DMVecViewLocal(DM dm, Vec v, PetscViewer viewer)
 PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
   PetscInt       dim             = user->dim;
+  const char    *filename        = user->filename;
   PetscBool      interpolate     = user->interpolate;
   PetscReal      refinementLimit = user->refinementLimit;
-  const char     *partitioner    = user->partitioner;
+  const char    *partitioner     = user->partitioner;
+  size_t         len;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   ierr = PetscLogEventBegin(user->createMeshEvent,0,0,0,0);CHKERRQ(ierr);
-  ierr = DMPlexCreateBoxMesh(comm, dim, interpolate, dm);CHKERRQ(ierr);
+  ierr = PetscStrlen(filename, &len);CHKERRQ(ierr);
+  if (!len) {
+    ierr = DMPlexCreateBoxMesh(comm, dim, interpolate, dm);CHKERRQ(ierr);
+  } else {
+#if defined(PETSC_HAVE_EXODUSII)
+    int        CPU_word_size = 0, IO_word_size = 0, exoid;
+    float       version;
+    PetscMPIInt rank;
+
+    ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+    if (!rank) {
+      exoid = ex_open(filename, EX_READ, &CPU_word_size, &IO_word_size, &version);
+      if (exoid <= 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_LIB, "ex_open(\"%s\",...) did not return a valid file ID", filename);
+    } else exoid = -1;                 /* Not used */
+    ierr = DMPlexCreateExodus(comm, exoid, interpolate, dm);CHKERRQ(ierr);
+    ierr = DMPlexSetRefinementUniform(*dm, PETSC_FALSE);CHKERRQ(ierr);
+    if (!rank) {ierr = ex_close(exoid);CHKERRQ(ierr);}
+    /* Must have boundary marker for Dirichlet conditions */
+#endif
+  }
   {
     DM refinedMesh     = NULL;
     DM distributedMesh = NULL;
