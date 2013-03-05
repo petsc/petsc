@@ -317,8 +317,10 @@ PetscErrorCode MatView_MFFD(Mat J,PetscViewer viewer)
    MatAssemblyXXX() on the matrix free matrix. This then allows the
    MatCreateMFFD_WP() to properly compute ||U|| only the first time
    in the linear solver rather than every time.
+
+   This function is referenced directly from MatAssemblyEnd_SNESMF(), which may be in a different shared library.
 */
-PetscErrorCode MatAssemblyEnd_MFFD(Mat J,MatAssemblyType mt)
+PETSC_EXTERN PetscErrorCode MatAssemblyEnd_MFFD(Mat J,MatAssemblyType mt)
 {
   PetscErrorCode ierr;
   MatMFFD        j = (MatMFFD)J->data;
@@ -540,10 +542,10 @@ PetscErrorCode MatScale_MFFD(Mat Y,PetscScalar a)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatMFFDSetBase_MFFD"
-PetscErrorCode  MatMFFDSetBase_MFFD(Mat J,Vec U,Vec F)
+/* PETSC_EXTERN_C because this function is referenced directly from MatMFFDSetBase_SNESMF(). */
+PETSC_EXTERN_C PetscErrorCode MatMFFDSetBase_MFFD(Mat J,Vec U,Vec F)
 {
   PetscErrorCode ierr;
   MatMFFD        ctx = (MatMFFD)J->data;
@@ -567,7 +569,7 @@ PetscErrorCode  MatMFFDSetBase_MFFD(Mat J,Vec U,Vec F)
   J->assembled = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
+
 typedef PetscErrorCode (*FCN3)(void*,Vec,Vec,PetscScalar*); /* force argument to next function to not be extern C*/
 EXTERN_C_BEGIN
 #undef __FUNCT__

@@ -8,7 +8,7 @@
 #define fortranmultcrl_      fortranmultcrl
 #endif
 EXTERN_C_BEGIN
-extern void fortranmultcrl_(PetscInt*,PetscInt*,PetscScalar*,PetscScalar*,PetscInt*,PetscScalar*);
+PETSC_INTERN void fortranmultcrl_(PetscInt*,PetscInt*,PetscScalar*,PetscScalar*,PetscInt*,PetscScalar*);
 EXTERN_C_END
 #endif
 #endif

@@ -20,39 +20,37 @@
 #define CUSPINTARRAYGPU cusp::array1d<PetscInt,cusp::device_memory>
 #define CUSPINTARRAYCPU cusp::array1d<PetscInt,cusp::host_memory>
 
-extern PetscErrorCode VecDotNorm2_SeqCUSP(Vec,Vec,PetscScalar*, PetscScalar*);
-extern PetscErrorCode VecPointwiseDivide_SeqCUSP(Vec,Vec,Vec);
-extern PetscErrorCode VecWAXPY_SeqCUSP(Vec,PetscScalar,Vec,Vec);
-extern PetscErrorCode VecMDot_SeqCUSP(Vec,PetscInt,const Vec[],PetscScalar*);
-extern PetscErrorCode VecSet_SeqCUSP(Vec,PetscScalar);
-extern PetscErrorCode VecMAXPY_SeqCUSP(Vec,PetscInt,const PetscScalar*,Vec*);
-extern PetscErrorCode VecAXPBYPCZ_SeqCUSP(Vec,PetscScalar,PetscScalar,PetscScalar,Vec,Vec);
-extern PetscErrorCode VecPointwiseMult_SeqCUSP(Vec,Vec,Vec);
-extern PetscErrorCode VecPlaceArray_SeqCUSP(Vec,const PetscScalar*);
-extern PetscErrorCode VecResetArray_SeqCUSP(Vec);
-extern PetscErrorCode VecReplaceArray_SeqCUSP(Vec,const PetscScalar*);
-extern PetscErrorCode VecDot_SeqCUSP(Vec,Vec,PetscScalar*);
-extern PetscErrorCode VecTDot_SeqCUSP(Vec,Vec,PetscScalar*);
-extern PetscErrorCode VecScale_SeqCUSP(Vec,PetscScalar);
-extern PetscErrorCode VecCopy_SeqCUSP(Vec,Vec);
-extern PetscErrorCode VecSwap_SeqCUSP(Vec,Vec);
-extern PetscErrorCode VecAXPY_SeqCUSP(Vec,PetscScalar,Vec);
-extern PetscErrorCode VecAXPBY_SeqCUSP(Vec,PetscScalar,PetscScalar,Vec);
-extern PetscErrorCode VecDuplicate_SeqCUSP(Vec,Vec*);
-extern PetscErrorCode VecNorm_SeqCUSP(Vec,NormType,PetscReal*);
-extern PetscErrorCode VecCUSPCopyToGPU(Vec);
-extern PetscErrorCode VecCUSPAllocateCheck(Vec);
-extern PetscErrorCode VecCUSPAllocateCheckHost(Vec);
-EXTERN_C_BEGIN
-extern PetscErrorCode VecCreate_SeqCUSP(Vec);
-EXTERN_C_END
-extern PetscErrorCode VecView_Seq(Vec,PetscViewer);
-extern PetscErrorCode VecDestroy_SeqCUSP(Vec);
-extern PetscErrorCode VecAYPX_SeqCUSP(Vec,PetscScalar,Vec);
-extern PetscErrorCode VecSetRandom_SeqCUSP(Vec,PetscRandom);
+PETSC_INTERN PetscErrorCode VecDotNorm2_SeqCUSP(Vec,Vec,PetscScalar*, PetscScalar*);
+PETSC_INTERN PetscErrorCode VecPointwiseDivide_SeqCUSP(Vec,Vec,Vec);
+PETSC_INTERN PetscErrorCode VecWAXPY_SeqCUSP(Vec,PetscScalar,Vec,Vec);
+PETSC_INTERN PetscErrorCode VecMDot_SeqCUSP(Vec,PetscInt,const Vec[],PetscScalar*);
+PETSC_INTERN PetscErrorCode VecSet_SeqCUSP(Vec,PetscScalar);
+PETSC_INTERN PetscErrorCode VecMAXPY_SeqCUSP(Vec,PetscInt,const PetscScalar*,Vec*);
+PETSC_INTERN PetscErrorCode VecAXPBYPCZ_SeqCUSP(Vec,PetscScalar,PetscScalar,PetscScalar,Vec,Vec);
+PETSC_INTERN PetscErrorCode VecPointwiseMult_SeqCUSP(Vec,Vec,Vec);
+PETSC_INTERN PetscErrorCode VecPlaceArray_SeqCUSP(Vec,const PetscScalar*);
+PETSC_INTERN PetscErrorCode VecResetArray_SeqCUSP(Vec);
+PETSC_INTERN PetscErrorCode VecReplaceArray_SeqCUSP(Vec,const PetscScalar*);
+PETSC_INTERN PetscErrorCode VecDot_SeqCUSP(Vec,Vec,PetscScalar*);
+PETSC_INTERN PetscErrorCode VecTDot_SeqCUSP(Vec,Vec,PetscScalar*);
+PETSC_INTERN PetscErrorCode VecScale_SeqCUSP(Vec,PetscScalar);
+PETSC_INTERN PetscErrorCode VecCopy_SeqCUSP(Vec,Vec);
+PETSC_INTERN PetscErrorCode VecSwap_SeqCUSP(Vec,Vec);
+PETSC_INTERN PetscErrorCode VecAXPY_SeqCUSP(Vec,PetscScalar,Vec);
+PETSC_INTERN PetscErrorCode VecAXPBY_SeqCUSP(Vec,PetscScalar,PetscScalar,Vec);
+PETSC_INTERN PetscErrorCode VecDuplicate_SeqCUSP(Vec,Vec*);
+PETSC_INTERN PetscErrorCode VecNorm_SeqCUSP(Vec,NormType,PetscReal*);
+PETSC_INTERN PetscErrorCode VecCUSPCopyToGPU(Vec);
+PETSC_INTERN PetscErrorCode VecCUSPAllocateCheck(Vec);
+PETSC_INTERN PetscErrorCode VecCUSPAllocateCheckHost(Vec);
+PETSC_EXTERN_C PetscErrorCode VecCreate_SeqCUSP(Vec);
+PETSC_INTERN PetscErrorCode VecView_Seq(Vec,PetscViewer);
+PETSC_INTERN PetscErrorCode VecDestroy_SeqCUSP(Vec);
+PETSC_INTERN PetscErrorCode VecAYPX_SeqCUSP(Vec,PetscScalar,Vec);
+PETSC_INTERN PetscErrorCode VecSetRandom_SeqCUSP(Vec,PetscRandom);
 
-extern PetscErrorCode VecCUSPCopyToGPU_Public(Vec);
-extern PetscErrorCode VecCUSPAllocateCheck_Public(Vec);
+PETSC_INTERN PetscErrorCode VecCUSPCopyToGPU_Public(Vec);
+PETSC_INTERN PetscErrorCode VecCUSPAllocateCheck_Public(Vec);
 
 #if defined(PETSC_HAVE_TXPETSCGPU)
 #include "tx_vector_interface.h"
@@ -72,8 +70,8 @@ struct  _p_PetscCUSPIndices {
 };
 
 #if defined(PETSC_HAVE_TXPETSCGPU)
-extern PetscErrorCode VecCUSPCopySomeToContiguousBufferGPU(Vec, PetscCUSPIndices);
-extern PetscErrorCode VecCUSPCopySomeFromContiguousBufferGPU(Vec, PetscCUSPIndices);
+PETSC_INTERN PetscErrorCode VecCUSPCopySomeToContiguousBufferGPU(Vec, PetscCUSPIndices);
+PETSC_INTERN PetscErrorCode VecCUSPCopySomeFromContiguousBufferGPU(Vec, PetscCUSPIndices);
 #endif
 
 #define CHKERRCUSP(err) if (((int)err) != (int)CUBLAS_STATUS_SUCCESS) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSP error %d",err)
