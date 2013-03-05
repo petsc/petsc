@@ -8,6 +8,6 @@
 # - find any line with a #define ...(, where the dots denote arbitrary characters
 
 
-grep "#define\s*[a-zA-Z_\-]*(" "$@"
+grep -H "#define\s*[a-zA-Z_\-]*(" "$@"
 
 

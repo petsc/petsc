@@ -7,5 +7,5 @@
 # - find lines with 250 chars or more
 # 
 
-grep "^.\{250\}" "$@"
+grep -H "^.\{250\}" "$@"
 

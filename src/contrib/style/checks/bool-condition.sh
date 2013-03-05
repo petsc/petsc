@@ -8,5 +8,5 @@
 # - find lines with the patterns mentioned above. 
 # 
 
-grep "rank ==\s*0)\|\s*==\s*NULL)\|==\s*PETSC_TRUE)\|==\s*PETSC_FALSE)" "$@"
+grep -H "rank ==\s*0)\|\s*==\s*NULL)\|==\s*PETSC_TRUE)\|==\s*PETSC_FALSE)" "$@"
 

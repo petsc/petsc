@@ -7,5 +7,5 @@
 # - find lines with one or more spaces between the semicolon and 'CHK'
 # 
 
-grep ";\s\s*CHK" "$@"
+grep -H ";\s\s*CHK" "$@"
 

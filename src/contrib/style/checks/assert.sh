@@ -8,5 +8,5 @@
 # - find any line with assert
 
 
-grep "assert *(" "$@"
+grep -H "assert *(" "$@"
 

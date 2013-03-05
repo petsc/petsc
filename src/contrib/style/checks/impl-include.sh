@@ -7,6 +7,6 @@
 # - find lines with 'isimpl.h>'
 # 
 
-grep "isimpl.h>" "$@"
+grep -H "isimpl.h>" "$@"
 
 

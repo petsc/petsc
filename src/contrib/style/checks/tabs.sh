@@ -6,6 +6,6 @@
 # Steps:
 # - find lines with a tab
 
-grep -P '\t' "$@"
+grep -H -P '\t' "$@"
 
 

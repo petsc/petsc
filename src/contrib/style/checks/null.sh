@@ -9,6 +9,6 @@
 # - ignore cases where PETSC_NULL is part of a longer preprocessor constant
 
 
-grep "PETSC_NULL" "$@" \
+grep -H "PETSC_NULL" "$@" \
  | grep -v "PETSC_NULL_"
 

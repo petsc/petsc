@@ -10,7 +10,7 @@
 # - find any use of '#if 0' and variations thereof
 
 
-grep "#if\s*0" "$@"
+grep -H "#if\s*0" "$@"
 
 
 

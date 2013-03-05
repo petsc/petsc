@@ -7,6 +7,6 @@
 # - Check for lines with __FUNC__
 
 
-grep "__FUNC__"  "$@"
+grep -H "__FUNC__"  "$@"
 
 

@@ -18,7 +18,7 @@
 # - exclude preprocessor definitions
 # - exclude lines containing ${PETSC_DIR}
 
-grep "}" "$@" \
+grep -H "}" "$@" \
  | grep -v ".*:\s*}\s*$" \
  | grep -v ".*:\s*}\s*/\*.*\*/" \
  | grep -v "else" \

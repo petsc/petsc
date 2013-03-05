@@ -9,7 +9,7 @@
 # 
 
 
-grep "([_a-zA-Z][_a-zA-Z]* \*)" "$@" \
+grep -H "([_a-zA-Z][_a-zA-Z]* \*)" "$@" \
  | grep -v -F "PETSC_STDCALL *)"
 
 

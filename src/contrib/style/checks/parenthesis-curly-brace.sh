@@ -7,5 +7,5 @@
 # Steps:
 # - get all lines with '){'
 
-grep "){" "$@"
+grep -H "){" "$@"
 

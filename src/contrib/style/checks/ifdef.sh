@@ -7,5 +7,5 @@
 # - find lines with '#ifdef' or '#ifndef'
 # 
 
-grep "#ifn*def" "$@"
+grep -H "#ifn*def" "$@"
 
