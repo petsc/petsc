@@ -421,11 +421,11 @@ PetscErrorCode MatPartitioningDestroy_Party(MatPartitioning part)
   PetscFunctionBegin;
   ierr = PetscFree(party);CHKERRQ(ierr);
   /* clear composed functions */
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)part,"MatPartitioningPartySetGlobal_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)part,"MatPartitioningPartySetLocal_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)part,"MatPartitioningPartySetCoarseLevel_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)part,"MatPartitioningPartySetMatchOptimization_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)part,"MatPartitioningPartySetBipart_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)part,"MatPartitioningPartySetGlobal_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)part,"MatPartitioningPartySetLocal_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)part,"MatPartitioningPartySetCoarseLevel_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)part,"MatPartitioningPartySetMatchOptimization_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)part,"MatPartitioningPartySetBipart_C","",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -468,11 +468,11 @@ PetscErrorCode  MatPartitioningCreate_Party(MatPartitioning part)
   part->ops->destroy        = MatPartitioningDestroy_Party;
   part->ops->setfromoptions = MatPartitioningSetFromOptions_Party;
 
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)part,"MatPartitioningPartySetGlobal_C","MatPartitioningPartySetGlobal_Party",MatPartitioningPartySetGlobal_Party);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)part,"MatPartitioningPartySetLocal_C","MatPartitioningPartySetLocal_Party",MatPartitioningPartySetLocal_Party);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)part,"MatPartitioningPartySetCoarseLevel_C","MatPartitioningPartySetCoarseLevel_Party",MatPartitioningPartySetCoarseLevel_Party);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)part,"MatPartitioningPartySetMatchOptimization_C","MatPartitioningPartySetMatchOptimization_Party",MatPartitioningPartySetMatchOptimization_Party);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)part,"MatPartitioningPartySetBipart_C","MatPartitioningPartySetBipart_Party",MatPartitioningPartySetBipart_Party);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)part,"MatPartitioningPartySetGlobal_C","MatPartitioningPartySetGlobal_Party",MatPartitioningPartySetGlobal_Party);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)part,"MatPartitioningPartySetLocal_C","MatPartitioningPartySetLocal_Party",MatPartitioningPartySetLocal_Party);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)part,"MatPartitioningPartySetCoarseLevel_C","MatPartitioningPartySetCoarseLevel_Party",MatPartitioningPartySetCoarseLevel_Party);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)part,"MatPartitioningPartySetMatchOptimization_C","MatPartitioningPartySetMatchOptimization_Party",MatPartitioningPartySetMatchOptimization_Party);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)part,"MatPartitioningPartySetBipart_C","MatPartitioningPartySetBipart_Party",MatPartitioningPartySetBipart_Party);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

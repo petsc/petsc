@@ -773,6 +773,12 @@ PetscErrorCode  MatSetUp(Mat A)
       See bin/matlab/PetscBinaryRead.m for a Matlab code that can read in the binary file when the binary
       viewer is used.
 
+      One can use '-mat_view draw -draw_pause -1' to pause the graphical display of matrix nonzero structure.
+      And then use the following mouse functions:
+          left mouse: zoom in
+          middle mouse: zoom out
+          right mouse: continue with the simulation
+
    Concepts: matrices^viewing
    Concepts: matrices^plotting
    Concepts: matrices^printing

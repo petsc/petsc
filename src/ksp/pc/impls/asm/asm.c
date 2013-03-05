@@ -606,10 +606,9 @@ static PetscErrorCode PCSetFromOptions_ASM(PC pc)
 
 /*------------------------------------------------------------------------------------*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCASMSetLocalSubdomains_ASM"
-PetscErrorCode  PCASMSetLocalSubdomains_ASM(PC pc,PetscInt n,IS is[],IS is_local[])
+static PetscErrorCode  PCASMSetLocalSubdomains_ASM(PC pc,PetscInt n,IS is[],IS is_local[])
 {
   PC_ASM         *osm = (PC_ASM*)pc->data;
   PetscErrorCode ierr;
@@ -656,12 +655,10 @@ PetscErrorCode  PCASMSetLocalSubdomains_ASM(PC pc,PetscInt n,IS is[],IS is_local
   }
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCASMSetTotalSubdomains_ASM"
-PetscErrorCode  PCASMSetTotalSubdomains_ASM(PC pc,PetscInt N,IS *is,IS *is_local)
+static PetscErrorCode  PCASMSetTotalSubdomains_ASM(PC pc,PetscInt N,IS *is,IS *is_local)
 {
   PC_ASM         *osm = (PC_ASM*)pc->data;
   PetscErrorCode ierr;
@@ -689,12 +686,10 @@ PetscErrorCode  PCASMSetTotalSubdomains_ASM(PC pc,PetscInt N,IS *is,IS *is_local
   }
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCASMSetOverlap_ASM"
-PetscErrorCode  PCASMSetOverlap_ASM(PC pc,PetscInt ovl)
+static PetscErrorCode  PCASMSetOverlap_ASM(PC pc,PetscInt ovl)
 {
   PC_ASM *osm = (PC_ASM*)pc->data;
 
@@ -704,12 +699,10 @@ PetscErrorCode  PCASMSetOverlap_ASM(PC pc,PetscInt ovl)
   if (!pc->setupcalled) osm->overlap = ovl;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCASMSetType_ASM"
-PetscErrorCode  PCASMSetType_ASM(PC pc,PCASMType type)
+static PetscErrorCode  PCASMSetType_ASM(PC pc,PCASMType type)
 {
   PC_ASM *osm = (PC_ASM*)pc->data;
 
@@ -718,12 +711,10 @@ PetscErrorCode  PCASMSetType_ASM(PC pc,PCASMType type)
   osm->type_set = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCASMSetSortIndices_ASM"
-PetscErrorCode  PCASMSetSortIndices_ASM(PC pc,PetscBool  doSort)
+static PetscErrorCode  PCASMSetSortIndices_ASM(PC pc,PetscBool  doSort)
 {
   PC_ASM *osm = (PC_ASM*)pc->data;
 
@@ -731,12 +722,10 @@ PetscErrorCode  PCASMSetSortIndices_ASM(PC pc,PetscBool  doSort)
   osm->sort_indices = doSort;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCASMGetSubKSP_ASM"
-PetscErrorCode  PCASMGetSubKSP_ASM(PC pc,PetscInt *n_local,PetscInt *first_local,KSP **ksp)
+static PetscErrorCode  PCASMGetSubKSP_ASM(PC pc,PetscInt *n_local,PetscInt *first_local,KSP **ksp)
 {
   PC_ASM         *osm = (PC_ASM*)pc->data;
   PetscErrorCode ierr;
@@ -757,8 +746,6 @@ PetscErrorCode  PCASMGetSubKSP_ASM(PC pc,PetscInt *n_local,PetscInt *first_local
   }
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
-
 
 #undef __FUNCT__
 #define __FUNCT__ "PCASMSetLocalSubdomains"
@@ -1100,12 +1087,12 @@ PetscErrorCode  PCCreate_ASM(PC pc)
   pc->ops->view            = PCView_ASM;
   pc->ops->applyrichardson = 0;
 
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCASMSetLocalSubdomains_C","PCASMSetLocalSubdomains_ASM",PCASMSetLocalSubdomains_ASM);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCASMSetTotalSubdomains_C","PCASMSetTotalSubdomains_ASM",PCASMSetTotalSubdomains_ASM);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCASMSetOverlap_C","PCASMSetOverlap_ASM",PCASMSetOverlap_ASM);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCASMSetType_C","PCASMSetType_ASM",PCASMSetType_ASM);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCASMSetSortIndices_C","PCASMSetSortIndices_ASM",PCASMSetSortIndices_ASM);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCASMGetSubKSP_C","PCASMGetSubKSP_ASM",PCASMGetSubKSP_ASM);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCASMSetLocalSubdomains_C","PCASMSetLocalSubdomains_ASM",PCASMSetLocalSubdomains_ASM);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCASMSetTotalSubdomains_C","PCASMSetTotalSubdomains_ASM",PCASMSetTotalSubdomains_ASM);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCASMSetOverlap_C","PCASMSetOverlap_ASM",PCASMSetOverlap_ASM);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCASMSetType_C","PCASMSetType_ASM",PCASMSetType_ASM);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCASMSetSortIndices_C","PCASMSetSortIndices_ASM",PCASMSetSortIndices_ASM);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCASMGetSubKSP_C","PCASMGetSubKSP_ASM",PCASMGetSubKSP_ASM);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

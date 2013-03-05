@@ -10,6 +10,7 @@
 #define dmplexgetlabelidis_        DMPLEXGETLABELIDIS
 #define dmplexgetstratumsize_      DMPLEXGETSTRATUMSIZE
 #define dmplexgetstratumis_        DMPLEXGETSTRATUMIS
+#define dmplexcreatefromcelllist_  DMPLEXCREATEFROMCELLLIST
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
 #define dmplexdistribute_          dmplexdistribute
 #define dmplexhaslabel_            dmplexhaslabel
@@ -19,6 +20,7 @@
 #define dmplexgetlabelidis_        dmplexlabelidis
 #define dmplexgetstratumsize_      dmplexgetstratumsize
 #define dmplexgetstratumis_        dmplexgetstratumis
+#define dmplexcreatefromcelllist_  dmplexcreatefromcelllist
 #endif
 
 /* Definitions of Fortran Wrapper routines */
@@ -94,6 +96,11 @@ void PETSC_STDCALL dmplexgetstratumis_(DM *dm, CHAR name PETSC_MIXED_LEN(lenN), 
   FIXCHAR(name, lenN, lname);
   *ierr = DMPlexGetStratumIS(*dm, lname, *value, is);
   FREECHAR(name, lname);
+}
+
+void PETSC_STDCALL dmplexcreatefromcelllist_(MPI_Comm *comm, PetscInt *dim, PetscInt *numCells, PetscInt *numVertices, PetscInt *numCorners, PetscBool *interpolate, const int cells[], PetscInt *spaceDim, const double vertexCoords[], DM *dm, int *ierr)
+{
+  *ierr = DMPlexCreateFromCellList(*comm, *dim, *numCells, *numVertices, *numCorners, *interpolate, cells, *spaceDim, vertexCoords, dm);
 }
 
 EXTERN_C_END

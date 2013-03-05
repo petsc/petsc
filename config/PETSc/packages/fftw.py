@@ -47,7 +47,8 @@ class Configure(PETSc.package.NewPackage):
       args.append('LIBS="'+self.libraries.toStringNoDupes(self.mpi.lib)+'"')
 
     # Also build the single precision library
-    args.append('--enable-single')
+    #   in order to do this, I will have to build two separate versions with different flags (thank you crap GNU buildsystem)
+    # args.append('--enable-single')
 
     args = ' '.join(args)
     fd = file(os.path.join(self.packageDir,'fftw'), 'w')

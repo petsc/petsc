@@ -211,15 +211,14 @@ PetscErrorCode KSPDestroy_Richardson(KSP ksp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPRichardsonSetScale_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPRichardsonSetScale_C","",NULL);CHKERRQ(ierr);
   ierr = KSPDefaultDestroy(ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "KSPRichardsonSetScale_Richardson"
-PetscErrorCode  KSPRichardsonSetScale_Richardson(KSP ksp,PetscReal scale)
+static PetscErrorCode  KSPRichardsonSetScale_Richardson(KSP ksp,PetscReal scale)
 {
   KSP_Richardson *richardsonP;
 
@@ -228,12 +227,10 @@ PetscErrorCode  KSPRichardsonSetScale_Richardson(KSP ksp,PetscReal scale)
   richardsonP->scale = scale;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "KSPRichardsonSetSelfScale_Richardson"
-PetscErrorCode  KSPRichardsonSetSelfScale_Richardson(KSP ksp,PetscBool selfscale)
+static PetscErrorCode  KSPRichardsonSetSelfScale_Richardson(KSP ksp,PetscBool selfscale)
 {
   KSP_Richardson *richardsonP;
 
@@ -242,7 +239,6 @@ PetscErrorCode  KSPRichardsonSetSelfScale_Richardson(KSP ksp,PetscBool selfscale
   richardsonP->selfscale = selfscale;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 /*MC
      KSPRICHARDSON - The preconditioned Richardson iterative method
@@ -303,8 +299,8 @@ PetscErrorCode  KSPCreate_Richardson(KSP ksp)
   ksp->ops->view           = KSPView_Richardson;
   ksp->ops->setfromoptions = KSPSetFromOptions_Richardson;
 
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPRichardsonSetScale_C","KSPRichardsonSetScale_Richardson",KSPRichardsonSetScale_Richardson);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPRichardsonSetSelfScale_C","KSPRichardsonSetSelfScale_Richardson",KSPRichardsonSetSelfScale_Richardson);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPRichardsonSetScale_C","KSPRichardsonSetScale_Richardson",KSPRichardsonSetScale_Richardson);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPRichardsonSetSelfScale_C","KSPRichardsonSetSelfScale_Richardson",KSPRichardsonSetSelfScale_Richardson);CHKERRQ(ierr);
 
   richardsonP->scale = 1.0;
   PetscFunctionReturn(0);

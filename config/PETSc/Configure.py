@@ -662,10 +662,10 @@ prepend-path PATH %s
   def configureDeprecated(self):
     '''Check if __attribute((deprecated)) is supported'''
     self.pushLanguage(self.languages.clanguage)
-    if self.checkCompile('__attribute((deprecated)) static int myfunc(void) { return 1;}', ''):
-      self.addDefine('DEPRECATED', '__attribute((deprecated))')
+    if self.checkCompile("""__attribute((deprecated("Why you shouldn't use myfunc"))) static int myfunc(void) { return 1;}""", ''):
+      self.addDefine('DEPRECATED(why)', '__attribute((deprecated(why)))')
     else:
-      self.addDefine('DEPRECATED', ' ')
+      self.addDefine('DEPRECATED(why)', ' ')
     self.popLanguage()
 
   def configureExpect(self):

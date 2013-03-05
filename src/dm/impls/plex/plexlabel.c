@@ -23,6 +23,16 @@ PetscErrorCode DMLabelCreate(const char name[], DMLabel *label)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMLabelGetName"
+PetscErrorCode DMLabelGetName(DMLabel label, const char **name)
+{
+  PetscFunctionBegin;
+  PetscValidCharPointer(name, 2);
+  *name = label->name;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMLabelView_Ascii"
 static PetscErrorCode DMLabelView_Ascii(DMLabel label, PetscViewer viewer)
 {

@@ -213,9 +213,7 @@ PetscErrorCode  MatCreate_MPIAIJCUSP(Mat A)
 
   PetscFunctionBegin;
   ierr = MatCreate_MPIAIJ(A);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatMPIAIJSetPreallocation_C",
-                                           "MatMPIAIJSetPreallocation_MPIAIJCUSP",
-                                           MatMPIAIJSetPreallocation_MPIAIJCUSP);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatMPIAIJSetPreallocation_C","MatMPIAIJSetPreallocation_MPIAIJCUSP",MatMPIAIJSetPreallocation_MPIAIJCUSP);CHKERRQ(ierr);
   A->ops->getvecs        = MatGetVecs_MPIAIJCUSP;
   A->ops->setvaluesbatch = MatSetValuesBatch_MPIAIJCUSP;
 
@@ -231,7 +229,7 @@ PetscErrorCode  MatCreate_MPIAIJCUSP(Mat A)
   A->ops->setfromoptions = MatSetFromOptions_MPIAIJCUSP;
   A->ops->destroy        = MatDestroy_MPIAIJCUSP;
 
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatCUSPSetFormat_C", "MatCUSPSetFormat_MPIAIJCUSP", MatCUSPSetFormat_MPIAIJCUSP);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatCUSPSetFormat_C", "MatCUSPSetFormat_MPIAIJCUSP", MatCUSPSetFormat_MPIAIJCUSP);CHKERRQ(ierr);
 #endif
   ierr = PetscObjectChangeTypeName((PetscObject)A,MATMPIAIJCUSP);CHKERRQ(ierr);
   PetscFunctionReturn(0);

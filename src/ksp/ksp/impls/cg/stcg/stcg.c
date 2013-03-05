@@ -639,9 +639,9 @@ PetscErrorCode KSPDestroy_STCG(KSP ksp)
   /***************************************************************************/
 
   PetscFunctionBegin;
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPSTCGSetRadius_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPSTCGGetNormD_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPSTCGGetObjFcn_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPSTCGSetRadius_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPSTCGGetNormD_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPSTCGGetObjFcn_C","",NULL);CHKERRQ(ierr);
 
   /***************************************************************************/
   /* Destroy KSP object.                                                     */
@@ -651,10 +651,9 @@ PetscErrorCode KSPDestroy_STCG(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "KSPSTCGSetRadius_STCG"
-PetscErrorCode  KSPSTCGSetRadius_STCG(KSP ksp, PetscReal radius)
+static PetscErrorCode  KSPSTCGSetRadius_STCG(KSP ksp, PetscReal radius)
 {
   KSP_STCG *cg = (KSP_STCG*)ksp->data;
 
@@ -665,7 +664,7 @@ PetscErrorCode  KSPSTCGSetRadius_STCG(KSP ksp, PetscReal radius)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSTCGGetNormD_STCG"
-PetscErrorCode  KSPSTCGGetNormD_STCG(KSP ksp, PetscReal *norm_d)
+static PetscErrorCode  KSPSTCGGetNormD_STCG(KSP ksp, PetscReal *norm_d)
 {
   KSP_STCG *cg = (KSP_STCG*)ksp->data;
 
@@ -676,7 +675,7 @@ PetscErrorCode  KSPSTCGGetNormD_STCG(KSP ksp, PetscReal *norm_d)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSTCGGetObjFcn_STCG"
-PetscErrorCode  KSPSTCGGetObjFcn_STCG(KSP ksp, PetscReal *o_fcn)
+static PetscErrorCode  KSPSTCGGetObjFcn_STCG(KSP ksp, PetscReal *o_fcn)
 {
   KSP_STCG *cg = (KSP_STCG*)ksp->data;
 
@@ -684,7 +683,6 @@ PetscErrorCode  KSPSTCGGetObjFcn_STCG(KSP ksp, PetscReal *o_fcn)
   *o_fcn = cg->o_fcn;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetFromOptions_STCG"
@@ -772,18 +770,9 @@ PetscErrorCode  KSPCreate_STCG(KSP ksp)
   ksp->ops->buildresidual  = KSPDefaultBuildResidual;
   ksp->ops->view           = 0;
 
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,
-                                           "KSPSTCGSetRadius_C",
-                                           "KSPSTCGSetRadius_STCG",
-                                           KSPSTCGSetRadius_STCG);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,
-                                           "KSPSTCGGetNormD_C",
-                                           "KSPSTCGGetNormD_STCG",
-                                           KSPSTCGGetNormD_STCG);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,
-                                           "KSPSTCGGetObjFcn_C",
-                                           "KSPSTCGGetObjFcn_STCG",
-                                           KSPSTCGGetObjFcn_STCG);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPSTCGSetRadius_C","KSPSTCGSetRadius_STCG",KSPSTCGSetRadius_STCG);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPSTCGGetNormD_C","KSPSTCGGetNormD_STCG",KSPSTCGGetNormD_STCG);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPSTCGGetObjFcn_C","KSPSTCGGetObjFcn_STCG",KSPSTCGGetObjFcn_STCG);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

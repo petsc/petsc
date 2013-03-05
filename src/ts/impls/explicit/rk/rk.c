@@ -418,7 +418,7 @@ static PetscErrorCode TSDestroy_RK(TS ts)
   PetscFunctionBegin;
   ierr = TSReset_RK(ts);CHKERRQ(ierr);
   ierr = PetscFree(ts->data);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSRKSetTolerance_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSRKSetTolerance_C","",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /*------------------------------------------------------------*/
@@ -487,7 +487,7 @@ PetscErrorCode  TSCreate_RK(TS ts)
   ierr = PetscNewLog(ts,TS_RK,&rk);CHKERRQ(ierr);
   ts->data = (void*)rk;
 
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSRKSetTolerance_C","TSRKSetTolerance_RK",TSRKSetTolerance_RK);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSRKSetTolerance_C","TSRKSetTolerance_RK",TSRKSetTolerance_RK);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

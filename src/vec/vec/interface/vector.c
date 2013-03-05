@@ -1373,7 +1373,7 @@ PetscErrorCode  VecSetFromOptions(Vec vec)
   /* Handle vector type options */
   ierr = VecSetTypeFromOptions_Private(vec);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&vec->viewonassembly);CHKERRQ(ierr);
-  ierr = PetscOptionsViewer("-vec_view","Display vector with the viewer on VecAssemblyEnd()","VecViewe",&vec->viewonassembly,&vec->viewformatonassembly,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsViewer("-vec_view","Display vector with the viewer on VecAssemblyEnd()","VecView",&vec->viewonassembly,&vec->viewformatonassembly,NULL);CHKERRQ(ierr);
 
   /* Handle specific vector options */
   if (vec->ops->setfromoptions) {

@@ -842,7 +842,7 @@ PetscErrorCode  PCCreate_Exotic(PC pc)
   pc->ops->destroy        = PCDestroy_Exotic;
   pc->ops->setup          = PCSetUp_Exotic;
 
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCExoticSetType_C","PCExoticSetType_Exotic",PCExoticSetType_Exotic);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCExoticSetType_C","PCExoticSetType_Exotic",PCExoticSetType_Exotic);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

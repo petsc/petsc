@@ -1191,18 +1191,12 @@ PetscErrorCode  PCCreate_GASM(PC pc)
   pc->ops->view            = PCView_GASM;
   pc->ops->applyrichardson = 0;
 
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCGASMSetSubdomains_C","PCGASMSetSubdomains_GASM",
-                                           PCGASMSetSubdomains_GASM);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCGASMSetTotalSubdomains_C","PCGASMSetTotalSubdomains_GASM",
-                                           PCGASMSetTotalSubdomains_GASM);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCGASMSetOverlap_C","PCGASMSetOverlap_GASM",
-                                           PCGASMSetOverlap_GASM);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCGASMSetType_C","PCGASMSetType_GASM",
-                                           PCGASMSetType_GASM);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCGASMSetSortIndices_C","PCGASMSetSortIndices_GASM",
-                                           PCGASMSetSortIndices_GASM);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCGASMGetSubKSP_C","PCGASMGetSubKSP_GASM",
-                                           PCGASMGetSubKSP_GASM);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGASMSetSubdomains_C","PCGASMSetSubdomains_GASM",PCGASMSetSubdomains_GASM);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGASMSetTotalSubdomains_C","PCGASMSetTotalSubdomains_GASM",PCGASMSetTotalSubdomains_GASM);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGASMSetOverlap_C","PCGASMSetOverlap_GASM",PCGASMSetOverlap_GASM);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGASMSetType_C","PCGASMSetType_GASM",PCGASMSetType_GASM);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGASMSetSortIndices_C","PCGASMSetSortIndices_GASM",PCGASMSetSortIndices_GASM);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGASMGetSubKSP_C","PCGASMGetSubKSP_GASM",PCGASMGetSubKSP_GASM);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

@@ -419,7 +419,7 @@ static PetscErrorCode SNESDestroy_MS(SNES snes)
 
   PetscFunctionBegin;
   ierr = PetscFree(snes->data);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)snes,"","",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -582,7 +582,7 @@ PetscErrorCode  SNESCreate_MS(SNES snes)
   ms->damping = 0.9;
   ms->norms   = PETSC_FALSE;
 
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESMSSetType_C","SNESMSSetType_MS",SNESMSSetType_MS);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)snes,"SNESMSSetType_C","SNESMSSetType_MS",SNESMSSetType_MS);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

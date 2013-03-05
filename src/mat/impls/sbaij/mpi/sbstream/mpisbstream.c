@@ -211,9 +211,7 @@ PetscErrorCode   MatConvert_MPISBAIJ_MPISBSTRM(Mat A,MatType type,MatReuse reuse
   }
 
   ierr = PetscObjectChangeTypeName((PetscObject) B, MATMPISBSTRM);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatMPISBAIJSetPreallocation_C",
-                                           "MatMPISBAIJSetPreallocation_MPISBSTRM",
-                                           MatMPISBAIJSetPreallocation_MPISBSTRM);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMPISBAIJSetPreallocation_C","MatMPISBAIJSetPreallocation_MPISBSTRM",MatMPISBAIJSetPreallocation_MPISBSTRM);CHKERRQ(ierr);
   *newmat = B;
   PetscFunctionReturn(0);
 }

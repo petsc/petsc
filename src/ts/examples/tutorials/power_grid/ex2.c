@@ -11,13 +11,13 @@ static char help[] = "Basic equation for generator stability analysis.\n";
 
 
   Ensemble of initial conditions
-   ./ex2 -ensemble -ts_monitor_draw_solution_phase -3,-1,3,3      -ts_adapt_dt_max .01  -ts_monitor -ts_type rosw -pc_type lu -ksp_type preonly
+   ./ex2 -ensemble -ts_monitor_draw_solution_phase -1,-3,3,3      -ts_adapt_dt_max .01  -ts_monitor -ts_type rosw -pc_type lu -ksp_type preonly
 
   Fault at .1 seconds
-   ./ex2           -ts_monitor_draw_solution_phase .95,.42,1.05,.6 -ts_adapt_dt_max .01  -ts_monitor -ts_type rows -pc_type lu -ksp_type preonly
+   ./ex2           -ts_monitor_draw_solution_phase .42,.95,.6,1.05 -ts_adapt_dt_max .01  -ts_monitor -ts_type rosw -pc_type lu -ksp_type preonly
 
   Initial conditions same as when fault is ended
-   ./ex2 -u 1.00932,0.496792 -ts_monitor_draw_solution_phase .95,.42,1.05,.6  -ts_adapt_dt_max .01  -ts_monitor -ts_type rosw -pc_type lu -ksp_type preonly 
+   ./ex2 -u 0.496792,1.00932 -ts_monitor_draw_solution_phase .42,.95,.6,1.05  -ts_adapt_dt_max .01  -ts_monitor -ts_type rosw -pc_type lu -ksp_type preonly 
 
 
 F*/
@@ -55,8 +55,8 @@ static PetscErrorCode IFunction(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,AppCtx *c
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
   if ((t > ctx->tf) && (t < ctx->tcl)) Pmax = 0.0; /* A short-circuit on the generator terminal that drives the electrical power output (Pmax*sin(delta)) to 0 */
   else Pmax = ctx->Pmax;
-  f[0] = 2.0*ctx->H*udot[0]/ctx->omega_s +  Pmax*PetscSinScalar(u[1]) + ctx->D*(u[0] - ctx->omega_s)- ctx->Pm;
-  f[1] = udot[1] - u[0] + ctx->omega_s;
+  f[0] = udot[0] - u[1] + ctx->omega_s;
+  f[1] = 2.0*ctx->H*udot[1]/ctx->omega_s +  Pmax*PetscSinScalar(u[0]) + ctx->D*(u[1] - ctx->omega_s)- ctx->Pm;
 
   ierr = VecRestoreArray(U,&u);CHKERRQ(ierr);
   ierr = VecRestoreArray(Udot,&udot);CHKERRQ(ierr);
@@ -80,8 +80,8 @@ static PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat
   ierr = VecGetArray(Udot,&udot);CHKERRQ(ierr);
   if ((t > ctx->tf) && (t < ctx->tcl)) Pmax = 0.0; /* A short-circuit on the generator terminal that drives the electrical power output (Pmax*sin(delta)) to 0 */
   else Pmax = ctx->Pmax;
-  J[0][0] = 2.0*ctx->H*a/ctx->omega_s + ctx->D;   J[0][1] = Pmax*PetscCosScalar(u[1]);
-  J[1][0] = -1.0;                                 J[1][1] = a;
+  J[1][1] = 2.0*ctx->H*a/ctx->omega_s + ctx->D;   J[1][0] = Pmax*PetscCosScalar(u[0]);
+  J[0][1] = -1.0;                                 J[0][0] = a;
   ierr    = MatSetValues(*B,2,rowcol,2,rowcol,&J[0][0],INSERT_VALUES);CHKERRQ(ierr);
   ierr    = VecRestoreArray(U,&u);CHKERRQ(ierr);
   ierr    = VecRestoreArray(Udot,&udot);CHKERRQ(ierr);
@@ -111,7 +111,7 @@ PetscErrorCode PostStep(TS ts)
     ierr = TSGetSolution(ts,&X);CHKERRQ(ierr);
     ierr = VecView(X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     exit(0);
-    /* results in initial conditions after fault of -u 1.00932,0.496792 */
+    /* results in initial conditions after fault of -u 0.496792,1.00932 */
   }
   PetscFunctionReturn(0);
 }
@@ -175,8 +175,8 @@ int main(int argc,char **argv)
     }
 
     ierr = VecGetArray(U,&u);CHKERRQ(ierr);
-    u[0] = ctx.omega_s;
-    u[1] = asin(ctx.Pm/ctx.Pmax);
+    u[0] = asin(ctx.Pm/ctx.Pmax);
+    u[1] = ctx.omega_s;
     ierr = PetscOptionsRealArray("-u","Initial solution","",u,&n,&flg1);CHKERRQ(ierr);
     n    = 2;
     ierr = PetscOptionsRealArray("-du","Perturbation in initial solution","",du,&n,&flg2);CHKERRQ(ierr);
@@ -217,10 +217,10 @@ int main(int argc,char **argv)
      Solve nonlinear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   if (ensemble){
-    for (du[0] = -2.5; du[0] <= .01; du[0] += .1) {
+    for (du[1] = -2.5; du[1] <= .01; du[1] += .1) {
       ierr = VecGetArray(U,&u);CHKERRQ(ierr);
-      u[0] = ctx.omega_s;
-      u[1] = asin(ctx.Pm/ctx.Pmax);
+      u[0] = asin(ctx.Pm/ctx.Pmax);
+      u[1] = ctx.omega_s;
       u[0] += du[0];
       u[1] += du[1];
       ierr = VecRestoreArray(U,&u);CHKERRQ(ierr);

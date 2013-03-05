@@ -123,10 +123,8 @@ PetscErrorCode  PetscViewerCreate_HDF5(PetscViewer v)
   hdf5->timestep  = -1;
   hdf5->groups    = NULL;
 
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"PetscViewerFileSetName_C","PetscViewerFileSetName_HDF5",
-                                           PetscViewerFileSetName_HDF5);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"PetscViewerFileSetMode_C","PetscViewerFileSetMode_HDF5",
-                                           PetscViewerFileSetMode_HDF5);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerFileSetName_C","PetscViewerFileSetName_HDF5",PetscViewerFileSetName_HDF5);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerFileSetMode_C","PetscViewerFileSetMode_HDF5",PetscViewerFileSetMode_HDF5);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

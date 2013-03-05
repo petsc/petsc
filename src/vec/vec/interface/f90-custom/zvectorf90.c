@@ -5,13 +5,15 @@
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define vecgetarrayf90_            VECGETARRAYF90
 #define vecrestorearrayf90_        VECRESTOREARRAYF90
-#define vecgetarrayreadf90_        VECGETARRAYFREAD90
+#define vecgetarrayreadf90_        VECGETARRAYREADF90
 #define vecrestorearrayreadf90_    VECRESTOREARRAYREADF90
 #define vecduplicatevecsf90_       VECDUPLICATEVECSF90
 #define vecdestroyvecsf90_         VECDESTROYVECSF90
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define vecgetarrayf90_            vecgetarrayf90
 #define vecrestorearrayf90_        vecrestorearrayf90
+#define vecgetarrayreadf90_        vecgetarrayreadf90
+#define vecrestorearrayreadf90_    vecrestorearrayreadf90
 #define vecduplicatevecsf90_       vecduplicatevecsf90
 #define vecdestroyvecsf90_         vecdestroyvecsf90
 #endif

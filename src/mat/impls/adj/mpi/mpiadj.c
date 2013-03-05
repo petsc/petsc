@@ -536,12 +536,8 @@ PetscErrorCode  MatCreate_MPIAdj(Mat B)
   ierr         = PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
   B->assembled = PETSC_FALSE;
 
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatMPIAdjSetPreallocation_C",
-                                           "MatMPIAdjSetPreallocation_MPIAdj",
-                                           MatMPIAdjSetPreallocation_MPIAdj);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatMPIAdjCreateNonemptySubcommMat_C",
-                                           "MatMPIAdjCreateNonemptySubcommMat_MPIAdj",
-                                           MatMPIAdjCreateNonemptySubcommMat_MPIAdj);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMPIAdjSetPreallocation_C","MatMPIAdjSetPreallocation_MPIAdj",MatMPIAdjSetPreallocation_MPIAdj);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMPIAdjCreateNonemptySubcommMat_C","MatMPIAdjCreateNonemptySubcommMat_MPIAdj",MatMPIAdjCreateNonemptySubcommMat_MPIAdj);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATMPIADJ);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

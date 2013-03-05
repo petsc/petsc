@@ -435,8 +435,8 @@ static PetscErrorCode PetscSFDestroy_Window(PetscSF sf)
   PetscFunctionBegin;
   ierr = PetscSFReset_Window(sf);CHKERRQ(ierr);
   ierr = PetscFree(sf->data);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)sf,"PetscSFWindowSetSyncType_C",0,0);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)sf,"PetscSFWindowGetSyncType_C",0,0);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)sf,"PetscSFWindowSetSyncType_C",0,0);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)sf,"PetscSFWindowGetSyncType_C",0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -612,8 +612,8 @@ PETSC_EXTERN_C PetscErrorCode PetscSFCreate_Window(PetscSF sf)
   sf->data = (void*)w;
   w->sync  = PETSCSF_WINDOW_SYNC_FENCE;
 
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)sf,"PetscSFWindowSetSyncType_C","PetscSFWindowSetSyncType_Window",PetscSFWindowSetSyncType_Window);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)sf,"PetscSFWindowGetSyncType_C","PetscSFWindowGetSyncType_Window",PetscSFWindowGetSyncType_Window);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)sf,"PetscSFWindowSetSyncType_C","PetscSFWindowSetSyncType_Window",PetscSFWindowSetSyncType_Window);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)sf,"PetscSFWindowGetSyncType_C","PetscSFWindowGetSyncType_Window",PetscSFWindowGetSyncType_Window);CHKERRQ(ierr);
 
 #if defined(OMPI_MAJOR_VERSION) && (OMPI_MAJOR_VERSION < 1 || (OMPI_MAJOR_VERSION == 1 && OMPI_MINOR_VERSION <= 6))
   {

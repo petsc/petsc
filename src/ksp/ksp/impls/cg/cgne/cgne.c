@@ -8,6 +8,17 @@
 extern PetscErrorCode KSPComputeExtremeSingularValues_CG(KSP,PetscReal*,PetscReal*);
 extern PetscErrorCode KSPComputeEigenvalues_CG(KSP,PetscInt,PetscReal*,PetscReal*,PetscInt*);
 
+#undef __FUNCT__
+#define __FUNCT__ "KSPCGSetType_CGNE"
+static PetscErrorCode  KSPCGSetType_CGNE(KSP ksp,KSPCGType type)
+{
+  KSP_CG *cg = (KSP_CG*)ksp->data;
+
+  PetscFunctionBegin;
+  cg->type = type;
+  PetscFunctionReturn(0);
+}
+
 
 /*
      KSPSetUp_CGNE - Sets up the workspace needed by the CGNE method.
@@ -268,7 +279,7 @@ PetscErrorCode  KSPCreate_CGNE(KSP ksp)
       KSPCGSetType() checks for this attached function and calls it if it finds
       it. (Sort of like a dynamic member function that can be added at run time
   */
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPCGSetType_C","KSPCGSetType_CG",KSPCGSetType_CG);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPCGSetType_C","KSPCGSetType_CGNE",KSPCGSetType_CGNE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

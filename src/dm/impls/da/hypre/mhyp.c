@@ -384,7 +384,7 @@ PetscErrorCode MatZeroEntries_HYPREStruct_3d(Mat mat)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSetupDM_HYPREStruct"
-PetscErrorCode  MatSetupDM_HYPREStruct(Mat mat,DM da)
+static PetscErrorCode  MatSetupDM_HYPREStruct(Mat mat,DM da)
 {
   PetscErrorCode   ierr;
   Mat_HYPREStruct  *ex = (Mat_HYPREStruct*) mat->data;
@@ -583,7 +583,7 @@ PetscErrorCode  MatCreate_HYPREStruct(Mat B)
   ex->needsinitialization = PETSC_TRUE;
 
   ierr = MPI_Comm_dup(PetscObjectComm((PetscObject)B),&(ex->hcomm));CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatSetupDM_C","MatSetupDM_HYPREStruct",MatSetupDM_HYPREStruct);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatSetupDM_C","MatSetupDM_HYPREStruct",MatSetupDM_HYPREStruct);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATHYPRESTRUCT);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -821,7 +821,7 @@ PetscErrorCode MatZeroEntries_HYPRESStruct_3d(Mat mat)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSetupDM_HYPRESStruct"
-PetscErrorCode  MatSetupDM_HYPRESStruct(Mat mat,DM da)
+static PetscErrorCode  MatSetupDM_HYPRESStruct(Mat mat,DM da)
 {
   PetscErrorCode   ierr;
   Mat_HYPRESStruct *ex = (Mat_HYPRESStruct*) mat->data;
@@ -1113,7 +1113,7 @@ PetscErrorCode  MatCreate_HYPRESStruct(Mat B)
   ex->needsinitialization = PETSC_TRUE;
 
   ierr = MPI_Comm_dup(PetscObjectComm((PetscObject)B),&(ex->hcomm));CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatSetupDM_C","MatSetupDM_HYPRESStruct",MatSetupDM_HYPRESStruct);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatSetupDM_C","MatSetupDM_HYPRESStruct",MatSetupDM_HYPRESStruct);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATHYPRESSTRUCT);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

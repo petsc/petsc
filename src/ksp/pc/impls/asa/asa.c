@@ -86,10 +86,9 @@ PetscErrorCode  PCASASetTolerances(PC pc, PetscReal rtol, PetscReal abstol,Petsc
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCASASetTolerances_ASA"
-PetscErrorCode  PCASASetTolerances_ASA(PC pc, PetscReal rtol, PetscReal abstol,PetscReal dtol, PetscInt maxits)
+static PetscErrorCode  PCASASetTolerances_ASA(PC pc, PetscReal rtol, PetscReal abstol,PetscReal dtol, PetscInt maxits)
 {
   PC_ASA *asa = (PC_ASA*) pc->data;
 
@@ -101,7 +100,6 @@ PetscErrorCode  PCASASetTolerances_ASA(PC pc, PetscReal rtol, PetscReal abstol,P
   if (maxits != PETSC_DEFAULT) asa->max_it = maxits;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "PCCreateLevel_ASA"
@@ -1982,7 +1980,7 @@ PetscErrorCode  PCCreate_ASA(PC pc)
   /* Set the data to pointer to 0 */
   pc->data = (void*)0;
 
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCASASetTolerances_C","PCASASetTolerances_ASA",PCASASetTolerances_ASA);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCASASetTolerances_C","PCASASetTolerances_ASA",PCASASetTolerances_ASA);CHKERRQ(ierr);
 
   /* register events */
   if (!asa_events_registered) {

@@ -498,14 +498,10 @@ PetscErrorCode  PCCreate_Redundant(PC pc)
   pc->ops->setfromoptions = PCSetFromOptions_Redundant;
   pc->ops->view           = PCView_Redundant;
 
-  ierr                    = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCRedundantSetScatter_C","PCRedundantSetScatter_Redundant",
-                                                              PCRedundantSetScatter_Redundant);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCRedundantSetNumber_C","PCRedundantSetNumber_Redundant",
-                                           PCRedundantSetNumber_Redundant);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCRedundantGetKSP_C","PCRedundantGetKSP_Redundant",
-                                           PCRedundantGetKSP_Redundant);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCRedundantGetOperators_C","PCRedundantGetOperators_Redundant",
-                                           PCRedundantGetOperators_Redundant);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCRedundantSetScatter_C","PCRedundantSetScatter_Redundant",PCRedundantSetScatter_Redundant);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCRedundantSetNumber_C","PCRedundantSetNumber_Redundant",PCRedundantSetNumber_Redundant);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCRedundantGetKSP_C","PCRedundantGetKSP_Redundant",PCRedundantGetKSP_Redundant);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCRedundantGetOperators_C","PCRedundantGetOperators_Redundant",PCRedundantGetOperators_Redundant);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

@@ -3259,41 +3259,19 @@ PetscErrorCode  MatCreate_MPIBAIJ(Mat B)
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
 #if defined(PETSC_HAVE_MUMPS)
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_mumps_C", "MatGetFactor_baij_mumps",MatGetFactor_baij_mumps);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatGetFactor_mumps_C", "MatGetFactor_baij_mumps",MatGetFactor_baij_mumps);CHKERRQ(ierr);
 #endif
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_mpibaij_mpiadj_C",
-                                           "MatConvert_MPIBAIJ_MPIAdj",
-                                           MatConvert_MPIBAIJ_MPIAdj);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_mpibaij_mpiaij_C",
-                                           "MatConvert_MPIBAIJ_MPIAIJ",
-                                           MatConvert_MPIBAIJ_MPIAIJ);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_mpibaij_mpisbaij_C",
-                                           "MatConvert_MPIBAIJ_MPISBAIJ",
-                                           MatConvert_MPIBAIJ_MPISBAIJ);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatStoreValues_C",
-                                           "MatStoreValues_MPIBAIJ",
-                                           MatStoreValues_MPIBAIJ);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatRetrieveValues_C",
-                                           "MatRetrieveValues_MPIBAIJ",
-                                           MatRetrieveValues_MPIBAIJ);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetDiagonalBlock_C",
-                                           "MatGetDiagonalBlock_MPIBAIJ",
-                                           MatGetDiagonalBlock_MPIBAIJ);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatMPIBAIJSetPreallocation_C",
-                                           "MatMPIBAIJSetPreallocation_MPIBAIJ",
-                                           MatMPIBAIJSetPreallocation_MPIBAIJ);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatMPIBAIJSetPreallocationCSR_C",
-                                           "MatMPIBAIJSetPreallocationCSR_MPIBAIJ",
-                                           MatMPIBAIJSetPreallocationCSR_MPIBAIJ);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatDiagonalScaleLocal_C",
-                                           "MatDiagonalScaleLocal_MPIBAIJ",
-                                           MatDiagonalScaleLocal_MPIBAIJ);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatSetHashTableFactor_C",
-                                           "MatSetHashTableFactor_MPIBAIJ",
-                                           MatSetHashTableFactor_MPIBAIJ);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_mpibaij_mpibstrm_C",
-                                           "MatConvert_MPIBAIJ_MPIBSTRM",
-                                           MatConvert_MPIBAIJ_MPIBSTRM);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_mpibaij_mpiadj_C","MatConvert_MPIBAIJ_MPIAdj",MatConvert_MPIBAIJ_MPIAdj);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_mpibaij_mpiaij_C","MatConvert_MPIBAIJ_MPIAIJ",MatConvert_MPIBAIJ_MPIAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_mpibaij_mpisbaij_C","MatConvert_MPIBAIJ_MPISBAIJ",MatConvert_MPIBAIJ_MPISBAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatStoreValues_C","MatStoreValues_MPIBAIJ",MatStoreValues_MPIBAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatRetrieveValues_C","MatRetrieveValues_MPIBAIJ",MatRetrieveValues_MPIBAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatGetDiagonalBlock_C","MatGetDiagonalBlock_MPIBAIJ",MatGetDiagonalBlock_MPIBAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMPIBAIJSetPreallocation_C","MatMPIBAIJSetPreallocation_MPIBAIJ",MatMPIBAIJSetPreallocation_MPIBAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMPIBAIJSetPreallocationCSR_C","MatMPIBAIJSetPreallocationCSR_MPIBAIJ",MatMPIBAIJSetPreallocationCSR_MPIBAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatDiagonalScaleLocal_C","MatDiagonalScaleLocal_MPIBAIJ",MatDiagonalScaleLocal_MPIBAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatSetHashTableFactor_C","MatSetHashTableFactor_MPIBAIJ",MatSetHashTableFactor_MPIBAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_mpibaij_mpibstrm_C","MatConvert_MPIBAIJ_MPIBSTRM",MatConvert_MPIBAIJ_MPIBSTRM);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATMPIBAIJ);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

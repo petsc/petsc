@@ -36,18 +36,15 @@ PetscErrorCode  DMDAGetLogicalCoordinate(DM da,PetscScalar x,PetscScalar y,Petsc
   DM             dacoors;
   DMDACoor2d     **c;
   PetscInt       i,j,xs,xm,ys,ym;
-  PetscReal      d,D = PETSC_MAX_REAL;
-  PetscMPIInt    size;
+  PetscReal      d,D = PETSC_MAX_REAL,Dv;
+  PetscMPIInt    rank,root;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)da),&size);CHKERRQ(ierr);
-  if (size > 1) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Currently not in parallel");
   if (dd->dim == 1) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Cannot get point from 1d DMDA");
   if (dd->dim == 3) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Cannot get point from 3d DMDA");
 
   *II = -1;
-  if (JJ) *JJ = -1;
-  if (KK) *KK = -1;
+  *JJ = -1;
 
   ierr = DMGetCoordinateDM(da,&dacoors);CHKERRQ(ierr);
   ierr = DMDAGetCorners(dacoors,&xs,&ys,NULL,&xm,&ym,NULL);CHKERRQ(ierr);
@@ -63,8 +60,21 @@ PetscErrorCode  DMDAGetLogicalCoordinate(DM da,PetscScalar x,PetscScalar y,Petsc
       }
     }
   }
-  if (X) *X = c[*JJ][*II].x;
-  if (Y) *Y = c[*JJ][*II].y;
+  ierr = MPI_Allreduce(&D,&Dv,1,MPIU_REAL,MPI_MIN,PetscObjectComm((PetscObject)da));CHKERRQ(ierr);
+  if (D != Dv) {
+    *II  = -1;
+    *JJ  = -1;
+    rank = 0;
+  } else {
+    *X = c[*JJ][*II].x;
+    *Y = c[*JJ][*II].y;
+    ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)da),&rank);CHKERRQ(ierr);
+    rank++;
+  }
+  ierr = MPI_Allreduce(&rank,&root,1,MPI_INT,MPI_SUM,PetscObjectComm((PetscObject)da));CHKERRQ(ierr);
+  root--;
+  ierr = MPI_Bcast(X,1,MPIU_REAL,root,PetscObjectComm((PetscObject)da));CHKERRQ(ierr);
+  ierr = MPI_Bcast(Y,1,MPIU_REAL,root,PetscObjectComm((PetscObject)da));CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(dacoors,coors,&c);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

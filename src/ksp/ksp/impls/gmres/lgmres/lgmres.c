@@ -728,10 +728,9 @@ PetscErrorCode KSPSetFromOptions_LGMRES(KSP ksp)
 }
 
 /*functions for extra lgmres options here*/
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "KSPLGMRESSetConstant_LGMRES"
-PetscErrorCode  KSPLGMRESSetConstant_LGMRES(KSP ksp)
+static PetscErrorCode  KSPLGMRESSetConstant_LGMRES(KSP ksp)
 {
   KSP_LGMRES *lgmres = (KSP_LGMRES*)ksp->data;
 
@@ -739,12 +738,10 @@ PetscErrorCode  KSPLGMRESSetConstant_LGMRES(KSP ksp)
   lgmres->approx_constant = 1;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "KSPLGMRESSetAugDim_LGMRES"
-PetscErrorCode  KSPLGMRESSetAugDim_LGMRES(KSP ksp,PetscInt aug_dim)
+static PetscErrorCode  KSPLGMRESSetAugDim_LGMRES(KSP ksp,PetscInt aug_dim)
 {
   KSP_LGMRES *lgmres = (KSP_LGMRES*)ksp->data;
 
@@ -754,8 +751,6 @@ PetscErrorCode  KSPLGMRESSetAugDim_LGMRES(KSP ksp,PetscInt aug_dim)
   lgmres->aug_dim = aug_dim;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
-
 
 /* end new lgmres functions */
 
@@ -826,39 +821,18 @@ PetscErrorCode  KSPCreate_LGMRES(KSP ksp)
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_RIGHT,1);CHKERRQ(ierr);
 
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGMRESSetPreAllocateVectors_C",
-                                           "KSPGMRESSetPreAllocateVectors_GMRES",
-                                           KSPGMRESSetPreAllocateVectors_GMRES);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGMRESSetOrthogonalization_C",
-                                           "KSPGMRESSetOrthogonalization_GMRES",
-                                           KSPGMRESSetOrthogonalization_GMRES);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGMRESGetOrthogonalization_C",
-                                           "KSPGMRESGetOrthogonalization_GMRES",
-                                           KSPGMRESGetOrthogonalization_GMRES);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGMRESSetRestart_C",
-                                           "KSPGMRESSetRestart_GMRES",
-                                           KSPGMRESSetRestart_GMRES);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGMRESGetRestart_C",
-                                           "KSPGMRESGetRestart_GMRES",
-                                           KSPGMRESGetRestart_GMRES);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGMRESSetHapTol_C",
-                                           "KSPGMRESSetHapTol_GMRES",
-                                           KSPGMRESSetHapTol_GMRES);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGMRESSetCGSRefinementType_C",
-                                           "KSPGMRESSetCGSRefinementType_GMRES",
-                                           KSPGMRESSetCGSRefinementType_GMRES);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGMRESGetCGSRefinementType_C",
-                                           "KSPGMRESGetCGSRefinementType_GMRES",
-                                           KSPGMRESGetCGSRefinementType_GMRES);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESSetPreAllocateVectors_C","KSPGMRESSetPreAllocateVectors_GMRES",KSPGMRESSetPreAllocateVectors_GMRES);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESSetOrthogonalization_C","KSPGMRESSetOrthogonalization_GMRES",KSPGMRESSetOrthogonalization_GMRES);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESGetOrthogonalization_C","KSPGMRESGetOrthogonalization_GMRES",KSPGMRESGetOrthogonalization_GMRES);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESSetRestart_C","KSPGMRESSetRestart_GMRES",KSPGMRESSetRestart_GMRES);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESGetRestart_C","KSPGMRESGetRestart_GMRES",KSPGMRESGetRestart_GMRES);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESSetHapTol_C","KSPGMRESSetHapTol_GMRES",KSPGMRESSetHapTol_GMRES);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESSetCGSRefinementType_C","KSPGMRESSetCGSRefinementType_GMRES",KSPGMRESSetCGSRefinementType_GMRES);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESGetCGSRefinementType_C","KSPGMRESGetCGSRefinementType_GMRES",KSPGMRESGetCGSRefinementType_GMRES);CHKERRQ(ierr);
 
   /*LGMRES_MOD add extra functions here - like the one to set num of aug vectors */
-  ierr =  PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPLGMRESSetConstant_C",
-                                            "KSPLGMRESSetConstant_LGMRES",
-                                            KSPLGMRESSetConstant_LGMRES);CHKERRQ(ierr);
-
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPLGMRESSetAugDim_C",
-                                           "KSPLGMRESSetAugDim_LGMRES",
-                                           KSPLGMRESSetAugDim_LGMRES);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPLGMRESSetConstant_C","KSPLGMRESSetConstant_LGMRES",KSPLGMRESSetConstant_LGMRES);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPLGMRESSetAugDim_C","KSPLGMRESSetAugDim_LGMRES",KSPLGMRESSetAugDim_LGMRES);CHKERRQ(ierr);
 
 
   /*defaults */

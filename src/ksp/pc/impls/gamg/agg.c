@@ -240,10 +240,10 @@ PetscErrorCode PCDestroy_AGG(PC pc)
    . a_nloc - number of vertices local
    . coords - [a_nloc][ndm] - interleaved coordinate data: {x_0, y_0, z_0, x_1, y_1, ...}
 */
-EXTERN_C_BEGIN
+
 #undef __FUNCT__
 #define __FUNCT__ "PCSetCoordinates_AGG"
-PetscErrorCode PCSetCoordinates_AGG(PC pc, PetscInt ndm, PetscInt a_nloc, PetscReal *coords)
+static PetscErrorCode PCSetCoordinates_AGG(PC pc, PetscInt ndm, PetscInt a_nloc, PetscReal *coords)
 {
   PC_MG          *mg      = (PC_MG*)pc->data;
   PC_GAMG        *pc_gamg = (PC_GAMG*)mg->innerctx;
@@ -308,7 +308,6 @@ PetscErrorCode PCSetCoordinates_AGG(PC pc, PetscInt ndm, PetscInt a_nloc, PetscR
   pc_gamg->data_sz = arrsz;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 typedef PetscInt NState;
 static const NState NOT_DONE=-2;
@@ -1515,6 +1514,6 @@ PetscErrorCode  PCCreateGAMG_AGG(PC pc)
 
   pc_gamg->createdefaultdata = PCSetData_AGG;
 
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCSetCoordinates_C","PCSetCoordinates_AGG",PCSetCoordinates_AGG);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCSetCoordinates_C","PCSetCoordinates_AGG",PCSetCoordinates_AGG);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

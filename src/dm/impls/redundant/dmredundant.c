@@ -53,8 +53,8 @@ static PetscErrorCode DMDestroy_Redundant(DM dm)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)dm,"DMRedundantSetSize_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)dm,"DMRedundantGetSize_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)dm,"DMRedundantSetSize_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)dm,"DMRedundantGetSize_C","",NULL);CHKERRQ(ierr);
   /* This was originally freed in DMDestroy(), but that prevents reference counting of backend objects */
   ierr = PetscFree(dm->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -371,10 +371,9 @@ PetscErrorCode DMRedundantGetSize(DM dm,PetscInt *rank,PetscInt *N)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "DMRedundantSetSize_Redundant"
-PetscErrorCode DMRedundantSetSize_Redundant(DM dm,PetscInt rank,PetscInt N)
+static PetscErrorCode DMRedundantSetSize_Redundant(DM dm,PetscInt rank,PetscInt N)
 {
   DM_Redundant   *red = (DM_Redundant*)dm->data;
   PetscErrorCode ierr;
@@ -390,7 +389,7 @@ PetscErrorCode DMRedundantSetSize_Redundant(DM dm,PetscInt rank,PetscInt N)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMRedundantGetSize_Redundant"
-PetscErrorCode DMRedundantGetSize_Redundant(DM dm,PetscInt *rank,PetscInt *N)
+static PetscErrorCode DMRedundantGetSize_Redundant(DM dm,PetscInt *rank,PetscInt *N)
 {
   DM_Redundant *red = (DM_Redundant*)dm->data;
 
@@ -399,7 +398,6 @@ PetscErrorCode DMRedundantGetSize_Redundant(DM dm,PetscInt *rank,PetscInt *N)
   if (N)    *N = red->N;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 /*MC
    DMREDUNDANT = "redundant" - A DM object that is used to manage data for a small set of dense globally coupled variables.
@@ -445,8 +443,8 @@ PetscErrorCode DMCreate_Redundant(DM dm)
   dm->ops->getcoloring        = DMCreateColoring_Redundant;
 
   ierr = PetscStrallocpy(VECSTANDARD,(char**)&dm->vectype);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)dm,"DMRedundantSetSize_C","DMRedundantSetSize_Redundant",DMRedundantSetSize_Redundant);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)dm,"DMRedundantGetSize_C","DMRedundantGetSize_Redundant",DMRedundantGetSize_Redundant);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)dm,"DMRedundantSetSize_C","DMRedundantSetSize_Redundant",DMRedundantSetSize_Redundant);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)dm,"DMRedundantGetSize_C","DMRedundantGetSize_Redundant",DMRedundantGetSize_Redundant);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

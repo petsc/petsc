@@ -214,10 +214,9 @@ PetscErrorCode KSPSetFromOptions_GCR(KSP ksp)
 typedef PetscErrorCode (*KSPGCRModifyPCFunction)(KSP,PetscInt,PetscReal,void*);
 typedef PetscErrorCode (*KSPGCRDestroyFunction)(void*);
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "KSPGCRSetModifyPC_GCR"
-PetscErrorCode  KSPGCRSetModifyPC_GCR(KSP ksp,KSPGCRModifyPCFunction function,void *data,KSPGCRDestroyFunction destroy)
+static PetscErrorCode  KSPGCRSetModifyPC_GCR(KSP ksp,KSPGCRModifyPCFunction function,void *data,KSPGCRDestroyFunction destroy)
 {
   KSP_GCR *ctx = (KSP_GCR*)ksp->data;
 
@@ -228,7 +227,6 @@ PetscErrorCode  KSPGCRSetModifyPC_GCR(KSP ksp,KSPGCRModifyPCFunction function,vo
   ctx->modifypc_ctx     = data;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPGCRSetModifyPC"
@@ -270,7 +268,7 @@ PetscErrorCode  KSPGCRSetModifyPC(KSP ksp,PetscErrorCode (*function)(KSP,PetscIn
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPGCRSetRestart_GCR"
-PetscErrorCode KSPGCRSetRestart_GCR(KSP ksp,PetscInt restart)
+static PetscErrorCode KSPGCRSetRestart_GCR(KSP ksp,PetscInt restart)
 {
   KSP_GCR *ctx;
 
@@ -387,10 +385,8 @@ PetscErrorCode KSPCreate_GCR(KSP ksp)
   ksp->ops->buildsolution  = KSPBuildSolution_GCR;
   ksp->ops->buildresidual  = KSPBuildResidual_GCR;
 
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp, "KSPGCRSetRestart_C",
-                                           "KSPGCRSetRestart_GCR",KSPGCRSetRestart_GCR);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGCRSetModifyPC_C",
-                                           "KSPGCRSetModifyPC_GCR",KSPGCRSetModifyPC_GCR);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp, "KSPGCRSetRestart_C","KSPGCRSetRestart_GCR",KSPGCRSetRestart_GCR);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGCRSetModifyPC_C","KSPGCRSetModifyPC_GCR",KSPGCRSetModifyPC_GCR);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

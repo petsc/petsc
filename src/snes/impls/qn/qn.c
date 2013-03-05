@@ -557,7 +557,7 @@ static PetscErrorCode SNESDestroy_QN(SNES snes)
   PetscFunctionBegin;
   ierr = SNESReset_QN(snes);CHKERRQ(ierr);
   ierr = PetscFree(snes->data);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)snes,"","",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -771,8 +771,8 @@ PetscErrorCode  SNESCreate_QN(SNES snes)
   qn->restart_type    = SNES_QN_RESTART_POWELL;
   qn->type            = SNES_QN_LBFGS;
 
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESQNSetScaleType_C","SNESQNSetScaleType_QN",SNESQNSetScaleType_QN);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESQNSetRestartType_C","SNESQNSetRestartType_QN",SNESQNSetRestartType_QN);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)snes,"SNESQNSetScaleType_C","SNESQNSetScaleType_QN",SNESQNSetScaleType_QN);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)snes,"SNESQNSetRestartType_C","SNESQNSetRestartType_QN",SNESQNSetRestartType_QN);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

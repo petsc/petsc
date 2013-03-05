@@ -26,7 +26,7 @@ PetscErrorCode PetscOptionsFindPair_Private(const char[],const char[],char*[],Pe
    Notes: If no value is provided ascii:stdout is used
 $       ascii[:[filename][:format]]   defaults to stdout - format can be one of ascii_info, ascii_info_detail, or ascii_matlab, for example ascii::ascii_info prints just the info
 $                                     about the object to standard out
-$       binary[:filename]   defaults to binaryoutput
+$       binary[:[filename][:format]]   defaults to binaryoutput
 $       draw
 $       socket[:port]    defaults to the standard output port
 

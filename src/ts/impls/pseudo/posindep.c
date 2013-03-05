@@ -208,11 +208,11 @@ static PetscErrorCode TSDestroy_Pseudo(TS ts)
   PetscFunctionBegin;
   ierr = TSReset_Pseudo(ts);CHKERRQ(ierr);
   ierr = PetscFree(ts->data);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSPseudoSetVerifyTimeStep_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSPseudoSetTimeStepIncrement_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSPseudoSetMaxTimeStep_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSPseudoIncrementDtFromInitialDt_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSPseudoSetTimeStep_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSPseudoSetVerifyTimeStep_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSPseudoSetTimeStepIncrement_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSPseudoSetMaxTimeStep_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSPseudoIncrementDtFromInitialDt_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSPseudoSetTimeStep_C","",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -705,21 +705,11 @@ PetscErrorCode  TSCreate_Pseudo(TS ts)
   pseudo->dt                           = TSPseudoDefaultTimeStep;
   pseudo->fnorm                        = -1;
 
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSPseudoSetVerifyTimeStep_C",
-                                           "TSPseudoSetVerifyTimeStep_Pseudo",
-                                           TSPseudoSetVerifyTimeStep_Pseudo);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSPseudoSetTimeStepIncrement_C",
-                                           "TSPseudoSetTimeStepIncrement_Pseudo",
-                                           TSPseudoSetTimeStepIncrement_Pseudo);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSPseudoSetMaxTimeStep_C",
-                                           "TSPseudoSetMaxTimeStep_Pseudo",
-                                           TSPseudoSetMaxTimeStep_Pseudo);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSPseudoIncrementDtFromInitialDt_C",
-                                           "TSPseudoIncrementDtFromInitialDt_Pseudo",
-                                           TSPseudoIncrementDtFromInitialDt_Pseudo);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSPseudoSetTimeStep_C",
-                                           "TSPseudoSetTimeStep_Pseudo",
-                                           TSPseudoSetTimeStep_Pseudo);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSPseudoSetVerifyTimeStep_C","TSPseudoSetVerifyTimeStep_Pseudo",TSPseudoSetVerifyTimeStep_Pseudo);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSPseudoSetTimeStepIncrement_C","TSPseudoSetTimeStepIncrement_Pseudo",TSPseudoSetTimeStepIncrement_Pseudo);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSPseudoSetMaxTimeStep_C","TSPseudoSetMaxTimeStep_Pseudo",TSPseudoSetMaxTimeStep_Pseudo);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSPseudoIncrementDtFromInitialDt_C","TSPseudoIncrementDtFromInitialDt_Pseudo",TSPseudoIncrementDtFromInitialDt_Pseudo);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSPseudoSetTimeStep_C","TSPseudoSetTimeStep_Pseudo",TSPseudoSetTimeStep_Pseudo);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

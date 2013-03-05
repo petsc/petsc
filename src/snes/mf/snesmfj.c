@@ -149,7 +149,7 @@ PetscErrorCode  MatCreateSNESMF(SNES snes,Mat *J)
 
   (*J)->ops->assemblyend = MatAssemblyEnd_SNESMF;
 
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)*J,"MatMFFDSetBase_C","MatMFFDSetBase_SNESMF",MatMFFDSetBase_SNESMF);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)*J,"MatMFFDSetBase_C","MatMFFDSetBase_SNESMF",MatMFFDSetBase_SNESMF);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

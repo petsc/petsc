@@ -47,12 +47,23 @@ PetscErrorCode MatFactorGetSolverPackage_seqaij_cusparse(Mat A,const MatSolverPa
 EXTERN_C_BEGIN
 extern PetscErrorCode MatGetFactor_seqaij_petsc(Mat,MatFactorType,Mat*);
 EXTERN_C_END
-/*
-  MATSOLVERCUSPARSE = "cusparse" - A matrix type providing triangular solvers (ILU) for seq matrices
-  on the GPU of type, seqaijcusparse, aijcusparse, or seqaijcusp, aijcusp
+/*MC
+  MATSOLVERCUSPARSE = "cusparse" - A matrix type providing triangular solvers for seq matrices on a single GPU of type,
+  seqaijcusparse, aijcusparse, or seqaijcusp, aijcusp. Currently supported algorithms are ILU(k) and LU. ICC(k) and
+  Cholesky will be supported in future versions. This class does NOT support direct solver operations.
 
-   Level: beginner
-*/
+  ./configure --download-txpetscgpu to install PETSc to use CUSPARSE
+
+  Consult CUSPARSE documentation for more information about the matrix storage formats which correspond to the options
+  database keys below.
+
+  Options Database Keys:
+.  -mat_cusparse_solve_storage_format csr - sets the storage format matrices during a call to MatSetFromOptions(). Other options include ell (ellpack) or hyb (hybrid).
+
+  Level: beginner
+
+.seealso: PCFactorSetMatSolverPackage(), MatSolverPackage, MatCreateSeqAIJCUSPARSE(), MATAIJCUSPARSE, MatCreateAIJCUSPARSE(), MatCUSPARSESetFormat(), MatCUSPARSEStorageFormat, MatCUSPARSEFormatOperation
+M*/
 
 EXTERN_C_BEGIN
 #undef __FUNCT__
@@ -66,7 +77,7 @@ PetscErrorCode MatGetFactor_seqaij_cusparse(Mat A,MatFactorType ftype,Mat *B)
   if (ftype == MAT_FACTOR_LU || ftype == MAT_FACTOR_ILU || ftype == MAT_FACTOR_ILUDT) {
     ierr = MatSetType(*B,MATSEQAIJCUSPARSE);CHKERRQ(ierr);
     ierr = MatSetFromOptions_SeqAIJCUSPARSE(*B);CHKERRQ(ierr);
-    ierr = PetscObjectComposeFunctionDynamic((PetscObject)(*B),"MatFactorGetSolverPackage_C","MatFactorGetSolverPackage_seqaij_cusparse",MatFactorGetSolverPackage_seqaij_cusparse);CHKERRQ(ierr);
+    ierr = PetscObjectComposeFunction((PetscObject)(*B),"MatFactorGetSolverPackage_C","MatFactorGetSolverPackage_seqaij_cusparse",MatFactorGetSolverPackage_seqaij_cusparse);CHKERRQ(ierr);
 
     (*B)->ops->ilufactorsymbolic = MatILUFactorSymbolic_SeqAIJCUSPARSE;
     (*B)->ops->lufactorsymbolic  = MatLUFactorSymbolic_SeqAIJCUSPARSE;
@@ -975,7 +986,7 @@ PetscErrorCode  MatCreate_SeqAIJCUSPARSE(Mat B)
   /* Here we overload MatGetFactor_petsc_C which enables -mat_type aijcusparse to use the
      default cusparse tri solve. Note the difference with the implementation in
      MatCreate_SeqAIJCUSP in ../seqcusp/aijcusp.cu */
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_petsc_C","MatGetFactor_seqaij_cusparse",MatGetFactor_seqaij_cusparse);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatGetFactor_petsc_C","MatGetFactor_seqaij_cusparse",MatGetFactor_seqaij_cusparse);CHKERRQ(ierr);
 
   B->ops->assemblyend      = MatAssemblyEnd_SeqAIJCUSPARSE;
   B->ops->destroy          = MatDestroy_SeqAIJCUSPARSE;
@@ -990,7 +1001,7 @@ PetscErrorCode  MatCreate_SeqAIJCUSPARSE(Mat B)
 
   B->valid_GPU_matrix = PETSC_CUSP_UNALLOCATED;
 
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B, "MatCUSPARSESetFormat_C", "MatCUSPARSESetFormat_SeqAIJCUSPARSE", MatCUSPARSESetFormat_SeqAIJCUSPARSE);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B, "MatCUSPARSESetFormat_C", "MatCUSPARSESetFormat_SeqAIJCUSPARSE", MatCUSPARSESetFormat_SeqAIJCUSPARSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

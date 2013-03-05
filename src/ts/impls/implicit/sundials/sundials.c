@@ -264,16 +264,16 @@ PetscErrorCode TSDestroy_Sundials(TS ts)
   ierr = TSReset_Sundials(ts);CHKERRQ(ierr);
   ierr = MPI_Comm_free(&(cvode->comm_sundials));CHKERRQ(ierr);
   ierr = PetscFree(ts->data);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSSundialsSetType_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSSundialsSetMaxl_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSSundialsSetLinearTolerance_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSSundialsSetGramSchmidtType_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSSundialsSetTolerance_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSSundialsSetMinTimeStep_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSSundialsSetMaxTimeStep_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSSundialsGetPC_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSSundialsGetIterations_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSSundialsMonitorInternalSteps_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSSundialsSetType_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSSundialsSetMaxl_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSSundialsSetLinearTolerance_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSSundialsSetGramSchmidtType_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSSundialsSetTolerance_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSSundialsSetMinTimeStep_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSSundialsSetMaxTimeStep_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSSundialsGetPC_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSSundialsGetIterations_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSSundialsMonitorInternalSteps_C","",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -994,35 +994,16 @@ PetscErrorCode  TSCreate_Sundials(TS ts)
 
   if (ts->exact_final_time != TS_EXACTFINALTIME_STEPOVER) ts->exact_final_time = TS_EXACTFINALTIME_STEPOVER;
 
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSSundialsSetType_C","TSSundialsSetType_Sundials",
-                                           TSSundialsSetType_Sundials);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSSundialsSetMaxl_C",
-                                           "TSSundialsSetMaxl_Sundials",
-                                           TSSundialsSetMaxl_Sundials);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSSundialsSetLinearTolerance_C",
-                                           "TSSundialsSetLinearTolerance_Sundials",
-                                           TSSundialsSetLinearTolerance_Sundials);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSSundialsSetGramSchmidtType_C",
-                                           "TSSundialsSetGramSchmidtType_Sundials",
-                                           TSSundialsSetGramSchmidtType_Sundials);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSSundialsSetTolerance_C",
-                                           "TSSundialsSetTolerance_Sundials",
-                                           TSSundialsSetTolerance_Sundials);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSSundialsSetMinTimeStep_C",
-                                           "TSSundialsSetMinTimeStep_Sundials",
-                                           TSSundialsSetMinTimeStep_Sundials);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSSundialsSetMaxTimeStep_C",
-                                           "TSSundialsSetMaxTimeStep_Sundials",
-                                           TSSundialsSetMaxTimeStep_Sundials);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSSundialsGetPC_C",
-                                           "TSSundialsGetPC_Sundials",
-                                           TSSundialsGetPC_Sundials);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSSundialsGetIterations_C",
-                                           "TSSundialsGetIterations_Sundials",
-                                           TSSundialsGetIterations_Sundials);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSSundialsMonitorInternalSteps_C",
-                                           "TSSundialsMonitorInternalSteps_Sundials",
-                                           TSSundialsMonitorInternalSteps_Sundials);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSSundialsSetType_C","TSSundialsSetType_Sundials",TSSundialsSetType_Sundials);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSSundialsSetMaxl_C","TSSundialsSetMaxl_Sundials",TSSundialsSetMaxl_Sundials);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSSundialsSetLinearTolerance_C","TSSundialsSetLinearTolerance_Sundials",TSSundialsSetLinearTolerance_Sundials);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSSundialsSetGramSchmidtType_C","TSSundialsSetGramSchmidtType_Sundials",TSSundialsSetGramSchmidtType_Sundials);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSSundialsSetTolerance_C","TSSundialsSetTolerance_Sundials",TSSundialsSetTolerance_Sundials);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSSundialsSetMinTimeStep_C","TSSundialsSetMinTimeStep_Sundials",TSSundialsSetMinTimeStep_Sundials);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSSundialsSetMaxTimeStep_C","TSSundialsSetMaxTimeStep_Sundials",TSSundialsSetMaxTimeStep_Sundials);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSSundialsGetPC_C","TSSundialsGetPC_Sundials",TSSundialsGetPC_Sundials);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSSundialsGetIterations_C","TSSundialsGetIterations_Sundials",TSSundialsGetIterations_Sundials);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSSundialsMonitorInternalSteps_C","TSSundialsMonitorInternalSteps_Sundials",TSSundialsMonitorInternalSteps_Sundials);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

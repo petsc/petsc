@@ -278,9 +278,10 @@ PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
     PetscInt   *sizes;
     PetscInt    locDepth, depth, dim, d;
     PetscInt    pStart, pEnd, p;
+    PetscInt    numLabels, l;
     PetscMPIInt size;
 
-    ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);  
+    ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);
     ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
     ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer, "Mesh in %D dimensions:\n", dim);CHKERRQ(ierr);
@@ -311,6 +312,31 @@ PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
       }
     }
     ierr = PetscFree(sizes);CHKERRQ(ierr);
+    ierr = DMPlexGetNumLabels(dm, &numLabels);CHKERRQ(ierr);
+    if (numLabels) {ierr = PetscViewerASCIIPrintf(viewer, "Labels:\n");CHKERRQ(ierr);}
+    for (l = 0; l < numLabels; ++l) {
+      DMLabel         label;
+      const char     *name;
+      IS              valueIS;
+      const PetscInt *values;
+      PetscInt        numValues, v;
+
+      ierr = DMPlexGetLabelName(dm, l, &name);CHKERRQ(ierr);
+      ierr = DMPlexGetLabel(dm, name, &label);CHKERRQ(ierr);
+      ierr = DMLabelGetNumValues(label, &numValues);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer, "  %s: %d strata of sizes (", name, numValues);CHKERRQ(ierr);
+      ierr = DMLabelGetValueIS(label, &valueIS);CHKERRQ(ierr);
+      ierr = ISGetIndices(valueIS, &values);CHKERRQ(ierr);
+      for (v = 0; v < numValues; ++v) {
+        PetscInt size;
+
+        ierr = DMLabelGetStratumSize(label, values[v], &size);CHKERRQ(ierr);
+        if (v > 0) {ierr = PetscViewerASCIIPrintf(viewer, ", ");CHKERRQ(ierr);}
+        ierr = PetscViewerASCIIPrintf(viewer, "%d", size);CHKERRQ(ierr);
+      }
+      ierr = PetscViewerASCIIPrintf(viewer, ")\n");CHKERRQ(ierr);
+      ierr = ISRestoreIndices(valueIS, &values);CHKERRQ(ierr);
+    }
   }
   PetscFunctionReturn(0);
 }
@@ -3739,8 +3765,8 @@ PetscErrorCode DMPlexShiftLabels_Private(DM dm, PetscInt depthShift[], DM dmNew)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMPlexConstructGhostCells_2D"
-PetscErrorCode DMPlexConstructGhostCells_2D(DM dm, const char labelName[], PetscInt *numGhostCells, DM gdm)
+#define __FUNCT__ "DMPlexConstructGhostCells_Internal"
+static PetscErrorCode DMPlexConstructGhostCells_Internal(DM dm, const char labelName[], PetscInt *numGhostCells, DM gdm)
 {
   DMLabel         label;
   IS              valueIS;
@@ -3834,7 +3860,7 @@ PetscErrorCode DMPlexConstructGhostCells_2D(DM dm, const char labelName[], Petsc
 
   Input Parameters:
 + dm - The original DM
-- labelName - The label specifying the boundary faces (this could be auto-generated)
+- labelName - The label specifying the boundary faces, or "Face Sets" if this is NULL
 
   Output Parameters:
 + numGhostCells - The number of ghost cells added to the DM
@@ -3858,13 +3884,7 @@ PetscErrorCode DMPlexConstructGhostCells(DM dm, const char labelName[], PetscInt
   ierr = DMSetType(gdm, DMPLEX);CHKERRQ(ierr);
   ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMPlexSetDimension(gdm, dim);CHKERRQ(ierr);
-  switch (dim) {
-  case 2:
-    ierr = DMPlexConstructGhostCells_2D(dm, labelName, numGhostCells, gdm);CHKERRQ(ierr);
-    break;
-  default:
-    SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Cannot construct ghost cells for dimension %d", dim);
-  }
+  ierr = DMPlexConstructGhostCells_Internal(dm, labelName, numGhostCells, gdm);CHKERRQ(ierr);
   ierr = DMSetFromOptions(gdm);CHKERRQ(ierr);
   *dmGhosted = gdm;
   PetscFunctionReturn(0);

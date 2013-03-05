@@ -788,8 +788,8 @@ PetscErrorCode  PetscObjectQuery(PetscObject obj,const char name[],PetscObject *
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscObjectComposeFunction"
-PetscErrorCode  PetscObjectComposeFunction(PetscObject obj,const char name[],const char fname[],void (*ptr)(void))
+#define __FUNCT__ "PetscObjectComposeFunction_Private"
+PetscErrorCode  PetscObjectComposeFunction_Private(PetscObject obj,const char name[],const char fname[],void (*ptr)(void))
 {
   PetscErrorCode ierr;
 

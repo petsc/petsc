@@ -9,12 +9,6 @@ static PetscFunctionList TSGLAcceptList;
 static PetscBool         TSGLPackageInitialized;
 static PetscBool         TSGLRegisterAllCalled;
 
-/* C++ does not promote int64_t to scalar or int32_t for std::pow() */
-static PetscScalar Pow(PetscScalar b,PetscInt p)
-{
-  return PetscPowScalar(b,(int)p);
-}
-
 /* This function is pure */
 static PetscScalar Factorial(PetscInt n)
 {
@@ -33,7 +27,7 @@ static PetscScalar Factorial(PetscInt n)
 /* This function is pure */
 static PetscScalar CPowF(PetscScalar c,PetscInt p)
 {
-  return Pow(c,p)/Factorial(p);
+  return PetscPowRealInt(PetscRealPart(c),p)/Factorial(p);
 }
 
 #undef __FUNCT__
@@ -465,26 +459,26 @@ static PetscErrorCode TSGLCompleteStep_RescaleAndModify(TSGLScheme sc,PetscReal 
   for (i=0; i<r; i++) {
     ierr = VecZeroEntries(X[i]);CHKERRQ(ierr);
     for (j=0; j<s; j++) {
-      brow[j] = h*(Pow(ratio,i)*sc->b[i*s+j]
-                   + (Pow(ratio,i) - Pow(ratio,p+1))*(+ sc->alpha[i]*sc->phi[0*s+j])
-                   + (Pow(ratio,i) - Pow(ratio,p+2))*(+ sc->beta [i]*sc->phi[1*s+j]
-                                                      + sc->gamma[i]*sc->phi[2*s+j]));
+      brow[j] = h*(PetscPowRealInt(ratio,i)*sc->b[i*s+j]
+                   + (PetscPowRealInt(ratio,i) - PetscPowRealInt(ratio,p+1))*(+ sc->alpha[i]*sc->phi[0*s+j])
+                   + (PetscPowRealInt(ratio,i) - PetscPowRealInt(ratio,p+2))*(+ sc->beta [i]*sc->phi[1*s+j]
+                                                                              + sc->gamma[i]*sc->phi[2*s+j]));
     }
     ierr = VecMAXPY(X[i],s,brow,Ydot);CHKERRQ(ierr);
     for (j=0; j<r; j++) {
-      vrow[j] = (Pow(ratio,i)*sc->v[i*r+j]
-                 + (Pow(ratio,i) - Pow(ratio,p+1))*(+ sc->alpha[i]*sc->psi[0*r+j])
-                 + (Pow(ratio,i) - Pow(ratio,p+2))*(+ sc->beta [i]*sc->psi[1*r+j]
-                                                    + sc->gamma[i]*sc->psi[2*r+j]));
+      vrow[j] = (PetscPowRealInt(ratio,i)*sc->v[i*r+j]
+                 + (PetscPowRealInt(ratio,i) - PetscPowRealInt(ratio,p+1))*(+ sc->alpha[i]*sc->psi[0*r+j])
+                 + (PetscPowRealInt(ratio,i) - PetscPowRealInt(ratio,p+2))*(+ sc->beta [i]*sc->psi[1*r+j]
+                                                                            + sc->gamma[i]*sc->psi[2*r+j]));
     }
     ierr = VecMAXPY(X[i],r,vrow,Xold);CHKERRQ(ierr);
   }
   if (r < next_sc->r) {
     if (r+1 != next_sc->r) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Cannot accommodate jump in r greater than 1");
     ierr = VecZeroEntries(X[r]);CHKERRQ(ierr);
-    for (j=0; j<s; j++) brow[j] = h*Pow(ratio,p+1)*sc->phi[0*s+j];
+    for (j=0; j<s; j++) brow[j] = h*PetscPowRealInt(ratio,p+1)*sc->phi[0*s+j];
     ierr = VecMAXPY(X[r],s,brow,Ydot);CHKERRQ(ierr);
-    for (j=0; j<r; j++) vrow[j] = Pow(ratio,p+1)*sc->psi[0*r+j];
+    for (j=0; j<r; j++) vrow[j] = PetscPowRealInt(ratio,p+1)*sc->psi[0*r+j];
     ierr = VecMAXPY(X[r],r,vrow,Xold);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -1032,7 +1026,7 @@ static PetscErrorCode TSSolve_GL(TS ts)
       */
       h *= 0.5;
       for (i=1; i<scheme->r; i++) {
-        ierr = VecScale(X[i],Pow(0.5,i));CHKERRQ(ierr);
+        ierr = VecScale(X[i],PetscPowRealInt(0.5,i));CHKERRQ(ierr);
       }
     }
     SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_CONV_FAILED,"Time step %D (t=%g) not accepted after %D failures\n",k,gl->stage_time,rejections);CHKERRQ(ierr);
@@ -1110,9 +1104,9 @@ static PetscErrorCode TSDestroy_GL(TS ts)
   if (gl->adapt) {ierr = TSGLAdaptDestroy(&gl->adapt);CHKERRQ(ierr);}
   if (gl->Destroy) {ierr = (*gl->Destroy)(gl);CHKERRQ(ierr);}
   ierr = PetscFree(ts->data);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSGLSetType_C",      "",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSGLSetAcceptType_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSGLGetAdapt_C",     "",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSGLSetType_C",      "",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSGLSetAcceptType_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSGLGetAdapt_C",     "",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1553,9 +1547,9 @@ PetscErrorCode  TSCreate_GL(TS ts)
   gl->wrms_atol = 1e-8;
   gl->wrms_rtol = 1e-5;
 
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSGLSetType_C",      "TSGLSetType_GL",      &TSGLSetType_GL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSGLSetAcceptType_C","TSGLSetAcceptType_GL",&TSGLSetAcceptType_GL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSGLGetAdapt_C",     "TSGLGetAdapt_GL",     &TSGLGetAdapt_GL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSGLSetType_C",      "TSGLSetType_GL",      &TSGLSetType_GL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSGLSetAcceptType_C","TSGLSetAcceptType_GL",&TSGLSetAcceptType_GL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSGLGetAdapt_C",     "TSGLGetAdapt_GL",     &TSGLGetAdapt_GL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

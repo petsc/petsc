@@ -202,10 +202,9 @@ static PetscErrorCode PCSetUp_Eisenstat(PC pc)
 
 /* --------------------------------------------------------------------*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCEisenstatSetOmega_Eisenstat"
-PetscErrorCode  PCEisenstatSetOmega_Eisenstat(PC pc,PetscReal omega)
+static PetscErrorCode  PCEisenstatSetOmega_Eisenstat(PC pc,PetscReal omega)
 {
   PC_Eisenstat *eis;
 
@@ -215,12 +214,10 @@ PetscErrorCode  PCEisenstatSetOmega_Eisenstat(PC pc,PetscReal omega)
   eis->omega = omega;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCEisenstatNoDiagonalScaling_Eisenstat"
-PetscErrorCode  PCEisenstatNoDiagonalScaling_Eisenstat(PC pc)
+static PetscErrorCode  PCEisenstatNoDiagonalScaling_Eisenstat(PC pc)
 {
   PC_Eisenstat *eis;
 
@@ -229,7 +226,6 @@ PetscErrorCode  PCEisenstatNoDiagonalScaling_Eisenstat(PC pc)
   eis->usediag = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "PCEisenstatSetOmega"
@@ -358,11 +354,8 @@ PetscErrorCode  PCCreate_Eisenstat(PC pc)
   eis->diag    = 0;
   eis->usediag = PETSC_TRUE;
 
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCEisenstatSetOmega_C","PCEisenstatSetOmega_Eisenstat",
-                                           PCEisenstatSetOmega_Eisenstat);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCEisenstatNoDiagonalScaling_C",
-                                           "PCEisenstatNoDiagonalScaling_Eisenstat",
-                                           PCEisenstatNoDiagonalScaling_Eisenstat);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCEisenstatSetOmega_C","PCEisenstatSetOmega_Eisenstat",PCEisenstatSetOmega_Eisenstat);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCEisenstatNoDiagonalScaling_C","PCEisenstatNoDiagonalScaling_Eisenstat",PCEisenstatNoDiagonalScaling_Eisenstat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
