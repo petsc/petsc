@@ -38,10 +38,9 @@ PetscErrorCode VecDuplicate_Shared(Vec win,Vec *v)
 }
 
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "VecCreate_Shared"
-PetscErrorCode  VecCreate_Shared(Vec vv)
+PETSC_EXTERN_C PetscErrorCode  VecCreate_Shared(Vec vv)
 {
   PetscErrorCode ierr;
   PetscScalar    *array;
@@ -54,8 +53,6 @@ PetscErrorCode  VecCreate_Shared(Vec vv)
   vv->ops->duplicate = VecDuplicate_Shared;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
-
 
 /* ----------------------------------------------------------------------------------------
      Code to manage shared memory allocation using standard Unix shared memory
@@ -158,14 +155,11 @@ PetscErrorCode PetscSharedMalloc(MPI_Comm comm,PetscInt llen,PetscInt len,void *
 
 #else
 
-EXTERN_C_BEGIN
-extern PetscErrorCode  VecCreate_Seq(Vec);
-EXTERN_C_END
+PETSC_EXTERN_C PetscErrorCode  VecCreate_Seq(Vec);
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "VecCreate_Shared"
-PetscErrorCode  VecCreate_Shared(Vec vv)
+PETSC_EXTERN_C PetscErrorCode  VecCreate_Shared(Vec vv)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size;
@@ -176,7 +170,6 @@ PetscErrorCode  VecCreate_Shared(Vec vv)
   ierr = VecCreate_Seq(vv);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #endif
 

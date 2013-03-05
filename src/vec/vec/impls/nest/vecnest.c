@@ -870,7 +870,6 @@ static PetscErrorCode VecNestGetSubVecs_Private(Vec x,PetscInt m,const PetscInt 
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "VecNestGetSubVec_Nest"
 PetscErrorCode  VecNestGetSubVec_Nest(Vec X,PetscInt idxm,Vec *sx)
@@ -881,7 +880,6 @@ PetscErrorCode  VecNestGetSubVec_Nest(Vec X,PetscInt idxm,Vec *sx)
   ierr = VecNestGetSubVecs_Private(X,1,&idxm,sx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "VecNestGetSubVec"
@@ -912,7 +910,6 @@ PetscErrorCode  VecNestGetSubVec(Vec X,PetscInt idxm,Vec *sx)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "VecNestGetSubVecs_Nest"
 PetscErrorCode  VecNestGetSubVecs_Nest(Vec X,PetscInt *N,Vec **sx)
@@ -924,7 +921,6 @@ PetscErrorCode  VecNestGetSubVecs_Nest(Vec X,PetscInt *N,Vec **sx)
   if (sx) *sx = b->v;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "VecNestGetSubVecs"
@@ -1030,7 +1026,6 @@ static PetscErrorCode  VecNestSetSubVec_Private(Vec X,PetscInt idxm,Vec x)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "VecNestSetSubVec_Nest"
 PetscErrorCode  VecNestSetSubVec_Nest(Vec X,PetscInt idxm,Vec sx)
@@ -1041,7 +1036,6 @@ PetscErrorCode  VecNestSetSubVec_Nest(Vec X,PetscInt idxm,Vec sx)
   ierr = VecNestSetSubVec_Private(X,idxm,sx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "VecNestSetSubVec"
@@ -1071,7 +1065,6 @@ PetscErrorCode  VecNestSetSubVec(Vec X,PetscInt idxm,Vec sx)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "VecNestSetSubVecs_Nest"
 PetscErrorCode  VecNestSetSubVecs_Nest(Vec X,PetscInt N,PetscInt *idxm,Vec *sx)
@@ -1085,7 +1078,6 @@ PetscErrorCode  VecNestSetSubVecs_Nest(Vec X,PetscInt N,PetscInt *idxm,Vec *sx)
   }
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "VecNestSetSubVecs"
@@ -1117,7 +1109,6 @@ PetscErrorCode  VecNestSetSubVecs(Vec X,PetscInt N,PetscInt *idxm,Vec *sx)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "VecNestGetSize_Nest"
 PetscErrorCode  VecNestGetSize_Nest(Vec X,PetscInt *N)
@@ -1128,7 +1119,6 @@ PetscErrorCode  VecNestGetSize_Nest(Vec X,PetscInt *N)
   *N = b->nb;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "VecNestGetSize"

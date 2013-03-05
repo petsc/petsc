@@ -21,10 +21,9 @@ extern PetscErrorCode VecCreate_Seq_Private(Vec,const float*);
 extern PetscErrorCode VecCreate_Seq_Private(Vec,const double*);
 #endif
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "VecCreate_Seq"
-PetscErrorCode  VecCreate_Seq(Vec V)
+PETSC_EXTERN_C PetscErrorCode  VecCreate_Seq(Vec V)
 {
   Vec_Seq        *s;
   PetscScalar    *array;
@@ -73,4 +72,3 @@ PetscErrorCode  VecCreate_Seq(Vec V)
 #endif
   PetscFunctionReturn(0);
 }
-EXTERN_C_END

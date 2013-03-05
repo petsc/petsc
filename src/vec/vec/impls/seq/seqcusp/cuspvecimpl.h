@@ -43,9 +43,7 @@ extern PetscErrorCode VecNorm_SeqCUSP(Vec,NormType,PetscReal*);
 extern PetscErrorCode VecCUSPCopyToGPU(Vec);
 extern PetscErrorCode VecCUSPAllocateCheck(Vec);
 extern PetscErrorCode VecCUSPAllocateCheckHost(Vec);
-EXTERN_C_BEGIN
-extern PetscErrorCode VecCreate_SeqCUSP(Vec);
-EXTERN_C_END
+PETSC_EXTERN_C PetscErrorCode VecCreate_SeqCUSP(Vec);
 extern PetscErrorCode VecView_Seq(Vec,PetscViewer);
 extern PetscErrorCode VecDestroy_SeqCUSP(Vec);
 extern PetscErrorCode VecAYPX_SeqCUSP(Vec,PetscScalar,Vec);

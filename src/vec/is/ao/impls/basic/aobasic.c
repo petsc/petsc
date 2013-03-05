@@ -188,10 +188,9 @@ static struct _AOOps AOOps_Basic = {
   AOApplicationToPetscPermuteReal_Basic
 };
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "AOCreate_Basic"
-PetscErrorCode  AOCreate_Basic(AO ao)
+PETSC_EXTERN_C PetscErrorCode  AOCreate_Basic(AO ao)
 {
   AO_Basic       *aobasic;
   PetscMPIInt    size,rank,count,*lens,*disp;
@@ -300,7 +299,6 @@ PetscErrorCode  AOCreate_Basic(AO ao)
   }
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "AOCreateBasic"

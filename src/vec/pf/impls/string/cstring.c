@@ -120,10 +120,10 @@ PetscErrorCode PFSetFromOptions_String(PF pf)
 }
 
 typedef PetscErrorCode (*FCN)(void*,PetscInt,const PetscScalar*,PetscScalar*); /* force argument to next function to not be extern C*/
-EXTERN_C_BEGIN
+
 #undef __FUNCT__
 #define __FUNCT__ "PFCreate_String"
-PetscErrorCode  PFCreate_String(PF pf,void *value)
+PETSC_EXTERN_C PetscErrorCode  PFCreate_String(PF pf,void *value)
 {
   PetscErrorCode ierr;
   FCN            f = 0;
@@ -136,7 +136,6 @@ PetscErrorCode  PFCreate_String(PF pf,void *value)
   pf->ops->setfromoptions = PFSetFromOptions_String;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 
 

@@ -354,7 +354,6 @@ PetscErrorCode  ISStrideSetStride(IS is,PetscInt n,PetscInt first,PetscInt step)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "ISStrideSetStride_Stride"
 PetscErrorCode  ISStrideSetStride_Stride(IS is,PetscInt n,PetscInt first,PetscInt step)
@@ -379,7 +378,6 @@ PetscErrorCode  ISStrideSetStride_Stride(IS is,PetscInt n,PetscInt first,PetscIn
   else is->isperm = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "ISCreateStride"
@@ -422,10 +420,9 @@ PetscErrorCode  ISCreateStride(MPI_Comm comm,PetscInt n,PetscInt first,PetscInt 
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "ISCreate_Stride"
-PetscErrorCode  ISCreate_Stride(IS is)
+PETSC_EXTERN_C PetscErrorCode  ISCreate_Stride(IS is)
 {
   PetscErrorCode ierr;
   IS_Stride      *sub;
@@ -438,7 +435,6 @@ PetscErrorCode  ISCreate_Stride(IS is)
   ierr = PetscObjectComposeFunction((PetscObject)is,"ISStrideSetStride_C","ISStrideSetStride_Stride",ISStrideSetStride_Stride);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 
 

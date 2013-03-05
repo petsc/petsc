@@ -67,10 +67,9 @@ PetscErrorCode PFSetFromOptions_Constant(PF pf)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PFCreate_Constant"
-PetscErrorCode  PFCreate_Constant(PF pf,void *value)
+PETSC_EXTERN_C PetscErrorCode  PFCreate_Constant(PF pf,void *value)
 {
   PetscErrorCode ierr;
   PetscScalar    *loc;
@@ -85,14 +84,12 @@ PetscErrorCode  PFCreate_Constant(PF pf,void *value)
   pf->ops->setfromoptions = PFSetFromOptions_Constant;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
-
 
 /*typedef PetscErrorCode (*FCN)(void*,PetscInt,const PetscScalar*,PetscScalar*);  force argument to next function to not be extern C*/
-EXTERN_C_BEGIN
+
 #undef __FUNCT__
 #define __FUNCT__ "PFCreate_Quick"
-PetscErrorCode  PFCreate_Quick(PF pf,PetscErrorCode (*function)(void*,PetscInt,const PetscScalar*,PetscScalar*))
+PETSC_EXTERN_C PetscErrorCode  PFCreate_Quick(PF pf,PetscErrorCode (*function)(void*,PetscInt,const PetscScalar*,PetscScalar*))
 {
   PetscErrorCode ierr;
 
@@ -100,7 +97,6 @@ PetscErrorCode  PFCreate_Quick(PF pf,PetscErrorCode (*function)(void*,PetscInt,c
   ierr = PFSet(pf,function,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 /* -------------------------------------------------------------------------------------------------------------------*/
 #undef __FUNCT__
@@ -150,10 +146,9 @@ PetscErrorCode PFDestroy_Identity(void *value)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PFCreate_Identity"
-PetscErrorCode  PFCreate_Identity(PF pf,void *value)
+PETSC_EXTERN_C PetscErrorCode  PFCreate_Identity(PF pf,void *value)
 {
   PetscErrorCode ierr;
   PetscInt       *loc;
@@ -165,4 +160,3 @@ PetscErrorCode  PFCreate_Identity(PF pf,void *value)
   ierr   = PFSet(pf,PFApply_Identity,PFApplyVec_Identity,PFView_Identity,PFDestroy_Identity,loc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END

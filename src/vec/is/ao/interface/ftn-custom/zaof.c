@@ -11,18 +11,14 @@
 #define aodestroy_       aodestroy
 #endif
 
-EXTERN_C_BEGIN
-
-void PETSC_STDCALL aoview_(AO *ao,PetscViewer *viewer, PetscErrorCode *ierr)
+PETSC_EXTERN_C void PETSC_STDCALL aoview_(AO *ao,PetscViewer *viewer, PetscErrorCode *ierr)
 {
   PetscViewer v;
   PetscPatchDefaultViewers_Fortran(viewer,v);
   *ierr = AOView(*ao,v);
 }
 
-void PETSC_STDCALL aodestroy_(AO *ao, int *__ierr)
+PETSC_EXTERN_C void PETSC_STDCALL aodestroy_(AO *ao, int *__ierr)
 {
   *__ierr = AODestroy(ao);
 }
-
-EXTERN_C_END

@@ -291,7 +291,6 @@ PetscErrorCode  ISBlockSetIndices(IS is,PetscInt bs,PetscInt n,const PetscInt id
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "ISBlockSetIndices_Block"
 PetscErrorCode  ISBlockSetIndices_Block(IS is,PetscInt bs,PetscInt n,const PetscInt idx[],PetscCopyMode mode)
@@ -330,7 +329,6 @@ PetscErrorCode  ISBlockSetIndices_Block(IS is,PetscInt bs,PetscInt n,const Petsc
   is->isperm  = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "ISCreateBlock"
@@ -383,7 +381,6 @@ PetscErrorCode  ISCreateBlock(MPI_Comm comm,PetscInt bs,PetscInt n,const PetscIn
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "ISBlockGetIndices_Block"
 PetscErrorCode  ISBlockGetIndices_Block(IS is,const PetscInt *idx[])
@@ -394,9 +391,7 @@ PetscErrorCode  ISBlockGetIndices_Block(IS is,const PetscInt *idx[])
   *idx = sub->idx;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "ISBlockRestoreIndices_Block"
 PetscErrorCode  ISBlockRestoreIndices_Block(IS is,const PetscInt *idx[])
@@ -404,7 +399,6 @@ PetscErrorCode  ISBlockRestoreIndices_Block(IS is,const PetscInt *idx[])
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "ISBlockGetIndices"
@@ -495,7 +489,6 @@ PetscErrorCode  ISBlockGetLocalSize(IS is,PetscInt *size)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "ISBlockGetLocalSize_Block"
 PetscErrorCode  ISBlockGetLocalSize_Block(IS is,PetscInt *size)
@@ -506,7 +499,6 @@ PetscErrorCode  ISBlockGetLocalSize_Block(IS is,PetscInt *size)
   *size = sub->n;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "ISBlockGetSize"
@@ -537,7 +529,6 @@ PetscErrorCode  ISBlockGetSize(IS is,PetscInt *size)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "ISBlockGetSize_Block"
 PetscErrorCode  ISBlockGetSize_Block(IS is,PetscInt *size)
@@ -548,7 +539,6 @@ PetscErrorCode  ISBlockGetSize_Block(IS is,PetscInt *size)
   *size = sub->N;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "ISToGeneral_Block"
@@ -566,10 +556,9 @@ PetscErrorCode  ISToGeneral_Block(IS inis)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "ISCreate_Block"
-PetscErrorCode  ISCreate_Block(IS is)
+PETSC_EXTERN_C PetscErrorCode  ISCreate_Block(IS is)
 {
   PetscErrorCode ierr;
   IS_Block       *sub;
@@ -584,4 +573,3 @@ PetscErrorCode  ISCreate_Block(IS is)
   ierr = PetscObjectComposeFunction((PetscObject)is,"ISBlockGetLocalSize_C","ISBlockGetLocalSize_Block",ISBlockGetLocalSize_Block);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END

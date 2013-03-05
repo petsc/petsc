@@ -469,7 +469,6 @@ PetscErrorCode  ISGeneralSetIndices(IS is,PetscInt n,const PetscInt idx[],PetscC
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "ISGeneralSetIndices_General"
 PetscErrorCode  ISGeneralSetIndices_General(IS is,PetscInt n,const PetscInt idx[],PetscCopyMode mode)
@@ -498,15 +497,10 @@ PetscErrorCode  ISGeneralSetIndices_General(IS is,PetscInt n,const PetscInt idx[
   ierr = ISCreateGeneral_Private(is);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-
-
-
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "ISCreate_General"
-PetscErrorCode  ISCreate_General(IS is)
+PETSC_EXTERN_C PetscErrorCode  ISCreate_General(IS is)
 {
   PetscErrorCode ierr;
   IS_General     *sub;
@@ -519,7 +513,6 @@ PetscErrorCode  ISCreate_General(IS is)
   ierr = PetscObjectComposeFunction((PetscObject)is,"ISGeneralSetIndices_C","ISGeneralSetIndices_General",ISGeneralSetIndices_General);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 
 

@@ -14,14 +14,12 @@
 #define iscompressindicesgeneral_         iscompressindicesgeneral
 #endif
 
-EXTERN_C_BEGIN
-
-void PETSC_STDCALL iscompressindicesgeneral_(PetscInt *n,PetscInt *nkeys,PetscInt *bs,PetscInt *imax,IS *is_in,IS *is_out,PetscErrorCode *ierr)
+PETSC_EXTERN_C void PETSC_STDCALL iscompressindicesgeneral_(PetscInt *n,PetscInt *nkeys,PetscInt *bs,PetscInt *imax,IS *is_in,IS *is_out,PetscErrorCode *ierr)
 {
   *ierr = ISCompressIndicesGeneral(*n,*nkeys,*bs,*imax,is_in,is_out);
 }
 
-void PETSC_STDCALL islocaltoglobalmappingview_(ISLocalToGlobalMapping *mapping,PetscViewer *viewer,PetscErrorCode *ierr)
+PETSC_EXTERN_C void PETSC_STDCALL islocaltoglobalmappingview_(ISLocalToGlobalMapping *mapping,PetscViewer *viewer,PetscErrorCode *ierr)
 {
   PetscViewer v;
   PetscPatchDefaultViewers_Fortran(viewer,v);
@@ -30,7 +28,7 @@ void PETSC_STDCALL islocaltoglobalmappingview_(ISLocalToGlobalMapping *mapping,P
 
 static PetscInt  *sprocs, *snumprocs, **sindices;
 static PetscBool called;
-void PETSC_STDCALL islocaltoglobalmpnggetinfosize_(ISLocalToGlobalMapping *mapping,PetscInt *nprocs,PetscInt *maxnumprocs,PetscErrorCode *ierr)
+PETSC_EXTERN_C void PETSC_STDCALL islocaltoglobalmpnggetinfosize_(ISLocalToGlobalMapping *mapping,PetscInt *nprocs,PetscInt *maxnumprocs,PetscErrorCode *ierr)
 {
   PetscInt i;
   if (called) {*ierr = PETSC_ERR_ARG_WRONGSTATE; return;}
@@ -40,7 +38,7 @@ void PETSC_STDCALL islocaltoglobalmpnggetinfosize_(ISLocalToGlobalMapping *mappi
   called = PETSC_TRUE;
 }
 
-void PETSC_STDCALL islocaltoglobalmappinggetinfo_(ISLocalToGlobalMapping *mapping,PetscInt *nprocs,PetscInt *procs,PetscInt *numprocs,
+PETSC_EXTERN_C void PETSC_STDCALL islocaltoglobalmappinggetinfo_(ISLocalToGlobalMapping *mapping,PetscInt *nprocs,PetscInt *procs,PetscInt *numprocs,
                                                   PetscInt *indices,PetscErrorCode *ierr)
 {
   PetscInt i,j;
@@ -53,5 +51,3 @@ void PETSC_STDCALL islocaltoglobalmappinggetinfo_(ISLocalToGlobalMapping *mappin
   *ierr  = ISLocalToGlobalMappingRestoreInfo(*mapping,nprocs,&sprocs,&snumprocs,&sindices); if (*ierr) return;
   called = PETSC_FALSE;
 }
-
-EXTERN_C_END

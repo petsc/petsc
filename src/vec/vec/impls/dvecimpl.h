@@ -52,9 +52,7 @@ extern PetscErrorCode VecPointwiseMaxAbs_Seq(Vec,Vec,Vec);
 extern PetscErrorCode VecPointwiseMin_Seq(Vec,Vec,Vec);
 extern PetscErrorCode VecPointwiseDivide_Seq(Vec,Vec,Vec);
 
-EXTERN_C_BEGIN
-extern PetscErrorCode VecCreate_Seq(Vec);
-EXTERN_C_END
+PETSC_EXTERN_C PetscErrorCode VecCreate_Seq(Vec);
 extern PetscErrorCode VecCreate_Seq_Private(Vec,const PetscScalar[]);
 
 #endif

@@ -32,9 +32,7 @@ PetscErrorCode VecTDot_MPI(Vec xin,Vec yin,PetscScalar *z)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 extern PetscErrorCode VecView_MPI_Draw(Vec,PetscViewer);
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "VecPlaceArray_MPI"
@@ -226,10 +224,9 @@ PetscErrorCode VecCreate_MPI_Private(Vec v,PetscBool alloc,PetscInt nghost,const
 .seealso: VecCreate(), VecSetType(), VecSetFromOptions(), VecCreateMpiWithArray(), VECMPI, VecType, VecCreateMPI(), VecCreateMpi()
 M*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "VecCreate_MPI"
-PetscErrorCode  VecCreate_MPI(Vec vv)
+PETSC_EXTERN_C PetscErrorCode  VecCreate_MPI(Vec vv)
 {
   PetscErrorCode ierr;
 
@@ -237,7 +234,6 @@ PetscErrorCode  VecCreate_MPI(Vec vv)
   ierr = VecCreate_MPI_Private(vv,PETSC_TRUE,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 /*MC
    VECSTANDARD = "standard" - A VECSEQ on one process and VECMPI on more than one process
@@ -250,10 +246,9 @@ EXTERN_C_END
 .seealso: VecCreateSeq(), VecCreateMPI()
 M*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "VecCreate_Standard"
-PetscErrorCode  VecCreate_Standard(Vec v)
+PETSC_EXTERN_C PetscErrorCode  VecCreate_Standard(Vec v)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size;
@@ -267,8 +262,6 @@ PetscErrorCode  VecCreate_Standard(Vec v)
   }
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
-
 
 #undef __FUNCT__
 #define __FUNCT__ "VecCreateMPIWithArray"
