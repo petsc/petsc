@@ -62,10 +62,9 @@ static struct _PetscRandomOps PetscRandomOps_Values = {
 .seealso: RandomCreate(), RandomSetType(), PETSCRAND48, PETSCSPRNG
 M*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PetscRandomCreate_Rand"
-PetscErrorCode  PetscRandomCreate_Rand(PetscRandom r)
+PETSC_EXTERN_C PetscErrorCode  PetscRandomCreate_Rand(PetscRandom r)
 {
   PetscErrorCode ierr;
 
@@ -74,4 +73,3 @@ PetscErrorCode  PetscRandomCreate_Rand(PetscRandom r)
   ierr = PetscObjectChangeTypeName((PetscObject)r,PETSCRAND);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END

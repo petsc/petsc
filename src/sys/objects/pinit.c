@@ -191,10 +191,9 @@ extern PetscBool PetscBeganMPI;
 */
 MPI_Op PetscMaxSum_Op = 0;
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PetscMaxSum_Local"
-void MPIAPI PetscMaxSum_Local(void *in,void *out,int *cnt,MPI_Datatype *datatype)
+PETSC_EXTERN_C void MPIAPI PetscMaxSum_Local(void *in,void *out,int *cnt,MPI_Datatype *datatype)
 {
   PetscInt *xin = (PetscInt*)in,*xout = (PetscInt*)out,i,count = *cnt;
 
@@ -210,7 +209,6 @@ void MPIAPI PetscMaxSum_Local(void *in,void *out,int *cnt,MPI_Datatype *datatype
   }
   PetscFunctionReturnVoid();
 }
-EXTERN_C_END
 
 /*
     Returns the max of the first entry owned by this processor and the
@@ -242,10 +240,9 @@ PetscErrorCode  PetscMaxSum(MPI_Comm comm,const PetscInt nprocs[],PetscInt *max,
 /* ----------------------------------------------------------------------------*/
 MPI_Op  PetscADMax_Op = 0;
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PetscADMax_Local"
-void MPIAPI PetscADMax_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *datatype)
+PETSC_EXTERN_C void MPIAPI PetscADMax_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *datatype)
 {
   PetscScalar *xin = (PetscScalar*)in,*xout = (PetscScalar*)out;
   PetscInt    i,count = *cnt;
@@ -264,14 +261,12 @@ void MPIAPI PetscADMax_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *d
   }
   PetscFunctionReturnVoid();
 }
-EXTERN_C_END
 
 MPI_Op PetscADMin_Op = 0;
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PetscADMin_Local"
-void MPIAPI PetscADMin_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *datatype)
+PETSC_EXTERN_C void MPIAPI PetscADMin_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *datatype)
 {
   PetscScalar *xin = (PetscScalar*)in,*xout = (PetscScalar*)out;
   PetscInt    i,count = *cnt;
@@ -290,7 +285,6 @@ void MPIAPI PetscADMin_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *d
   }
   PetscFunctionReturnVoid();
 }
-EXTERN_C_END
 /* ---------------------------------------------------------------------------------------*/
 
 #if (defined(PETSC_HAVE_COMPLEX) && !defined(PETSC_HAVE_MPI_C_DOUBLE_COMPLEX)) || defined(PETSC_USE_REAL___FLOAT128)
@@ -378,7 +372,6 @@ PETSC_EXTERN_C void PetscMin_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datat
 }
 #endif
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "Petsc_DelCounter"
 /*
@@ -389,7 +382,7 @@ EXTERN_C_BEGIN
    Note: this is declared extern "C" because it is passed to MPI_Keyval_create()
 
 */
-PetscMPIInt MPIAPI Petsc_DelCounter(MPI_Comm comm,PetscMPIInt keyval,void *count_val,void *extra_state)
+PETSC_EXTERN_C PetscMPIInt MPIAPI Petsc_DelCounter(MPI_Comm comm,PetscMPIInt keyval,void *count_val,void *extra_state)
 {
   PetscErrorCode ierr;
 
@@ -398,9 +391,7 @@ PetscMPIInt MPIAPI Petsc_DelCounter(MPI_Comm comm,PetscMPIInt keyval,void *count
   ierr = PetscFree(count_val);if (ierr) PetscFunctionReturn((PetscMPIInt)ierr);
   PetscFunctionReturn(MPI_SUCCESS);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "Petsc_DelComm"
 /*
@@ -412,7 +403,7 @@ EXTERN_C_BEGIN
   Note: this is declared extern "C" because it is passed to MPI_Keyval_create()
 
 */
-PetscMPIInt MPIAPI Petsc_DelComm(MPI_Comm comm,PetscMPIInt keyval,void *attr_val,void *extra_state)
+PETSC_EXTERN_C PetscMPIInt MPIAPI Petsc_DelComm(MPI_Comm comm,PetscMPIInt keyval,void *attr_val,void *extra_state)
 {
   PetscErrorCode ierr;
   PetscMPIInt    flg;
@@ -433,15 +424,12 @@ PetscMPIInt MPIAPI Petsc_DelComm(MPI_Comm comm,PetscMPIInt keyval,void *attr_val
   }
   PetscFunctionReturn(MPI_SUCCESS);
 }
-EXTERN_C_END
 
 #if defined(PETSC_USE_PETSC_MPI_EXTERNAL32)
 #if !defined(PETSC_WORDS_BIGENDIAN)
-EXTERN_C_BEGIN
-extern PetscMPIInt PetscDataRep_extent_fn(MPI_Datatype,MPI_Aint*,void*);
-extern PetscMPIInt PetscDataRep_read_conv_fn(void*, MPI_Datatype,PetscMPIInt,void*,MPI_Offset,void*);
-extern PetscMPIInt PetscDataRep_write_conv_fn(void*, MPI_Datatype,PetscMPIInt,void*,MPI_Offset,void*);
-EXTERN_C_END
+PETSC_EXTERN_C PetscMPIInt PetscDataRep_extent_fn(MPI_Datatype,MPI_Aint*,void*);
+PETSC_EXTERN_C PetscMPIInt PetscDataRep_read_conv_fn(void*, MPI_Datatype,PetscMPIInt,void*,MPI_Offset,void*);
+PETSC_EXTERN_C PetscMPIInt PetscDataRep_write_conv_fn(void*, MPI_Datatype,PetscMPIInt,void*,MPI_Offset,void*);
 #endif
 #endif
 
@@ -1311,25 +1299,21 @@ PetscErrorCode  PetscFinalize(void)
 }
 
 #if defined(PETSC_MISSING_LAPACK_lsame_)
-EXTERN_C_BEGIN
-int lsame_(char *a,char *b)
+PETSC_EXTERN_C int lsame_(char *a,char *b)
 {
   if (*a == *b) return 1;
   if (*a + 32 == *b) return 1;
   if (*a - 32 == *b) return 1;
   return 0;
 }
-EXTERN_C_END
 #endif
 
 #if defined(PETSC_MISSING_LAPACK_lsame)
-EXTERN_C_BEGIN
-int lsame(char *a,char *b)
+PETSC_EXTERN_C int lsame(char *a,char *b)
 {
   if (*a == *b) return 1;
   if (*a + 32 == *b) return 1;
   if (*a - 32 == *b) return 1;
   return 0;
 }
-EXTERN_C_END
 #endif

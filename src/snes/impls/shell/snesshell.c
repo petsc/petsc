@@ -168,7 +168,6 @@ PetscErrorCode SNESSolve_Shell(SNES snes)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "SNESShellSetSolve_Shell"
 PetscErrorCode  SNESShellSetSolve_Shell(SNES snes,PetscErrorCode (*solve)(SNES,Vec))
@@ -179,7 +178,6 @@ PetscErrorCode  SNESShellSetSolve_Shell(SNES snes,PetscErrorCode (*solve)(SNES,V
   shell->solve = solve;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 /*MC
   SNESSHELL - a user provided nonlinear solver
@@ -189,10 +187,9 @@ EXTERN_C_END
 .seealso: SNESCreate(), SNES, SNESSetType(), SNESType (for list of available types)
 M*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "SNESCreate_Shell"
-PetscErrorCode SNESCreate_Shell(SNES snes)
+PETSC_EXTERN_C PetscErrorCode SNESCreate_Shell(SNES snes)
 {
   SNES_Shell     *shell;
   PetscErrorCode ierr;
@@ -213,4 +210,3 @@ PetscErrorCode SNESCreate_Shell(SNES snes)
   ierr       = PetscObjectComposeFunction((PetscObject)snes,"SNESShellSetSolve_C","SNESShellSetSolve_Shell",SNESShellSetSolve_Shell);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END

@@ -162,10 +162,9 @@ PetscErrorCode PetscViewerMathematicaSetupConnection_Private(PetscViewer v)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerCreate_Mathematica"
-PetscErrorCode  PetscViewerCreate_Mathematica(PetscViewer v)
+PETSC_EXTERN_C PetscErrorCode  PetscViewerCreate_Mathematica(PetscViewer v)
 {
   PetscViewer_Mathematica *vmath;
   PetscErrorCode          ierr;
@@ -192,7 +191,6 @@ PetscErrorCode  PetscViewerCreate_Mathematica(PetscViewer v)
   ierr = PetscViewerMathematicaSetupConnection_Private(v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerMathematicaParseLinkMode_Private"

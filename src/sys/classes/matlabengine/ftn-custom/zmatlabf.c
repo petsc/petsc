@@ -17,9 +17,7 @@
 #define petscmatlabenginegetarray_    petscmatlabenginegetarray
 #endif
 
-EXTERN_C_BEGIN
-
-void PETSC_STDCALL petscmatlabenginecreate_(MPI_Comm *comm,CHAR m PETSC_MIXED_LEN(len),PetscMatlabEngine *e,
+PETSC_EXTERN_C void PETSC_STDCALL petscmatlabenginecreate_(MPI_Comm *comm,CHAR m PETSC_MIXED_LEN(len),PetscMatlabEngine *e,
                                             PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *ms;
@@ -29,7 +27,7 @@ void PETSC_STDCALL petscmatlabenginecreate_(MPI_Comm *comm,CHAR m PETSC_MIXED_LE
   FREECHAR(m,ms);
 }
 
-void PETSC_STDCALL petscmatlabengineevaluate_(PetscMatlabEngine *e,CHAR m PETSC_MIXED_LEN(len),
+PETSC_EXTERN_C void PETSC_STDCALL petscmatlabengineevaluate_(PetscMatlabEngine *e,CHAR m PETSC_MIXED_LEN(len),
                                               PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *ms;
@@ -38,7 +36,7 @@ void PETSC_STDCALL petscmatlabengineevaluate_(PetscMatlabEngine *e,CHAR m PETSC_
   FREECHAR(m,ms);
 }
 
-void PETSC_STDCALL petscmatlabengineputarray_(PetscMatlabEngine *e,PetscInt *m,PetscInt *n,PetscScalar *a,
+PETSC_EXTERN_C void PETSC_STDCALL petscmatlabengineputarray_(PetscMatlabEngine *e,PetscInt *m,PetscInt *n,PetscScalar *a,
                                               CHAR s PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *ms;
@@ -47,7 +45,7 @@ void PETSC_STDCALL petscmatlabengineputarray_(PetscMatlabEngine *e,PetscInt *m,P
   FREECHAR(s,ms);
 }
 
-void PETSC_STDCALL petscmatlabenginegetarray_(PetscMatlabEngine *e,PetscInt *m,PetscInt *n,PetscScalar *a,
+PETSC_EXTERN_C void PETSC_STDCALL petscmatlabenginegetarray_(PetscMatlabEngine *e,PetscInt *m,PetscInt *n,PetscScalar *a,
                                               CHAR s PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *ms;
@@ -56,9 +54,3 @@ void PETSC_STDCALL petscmatlabenginegetarray_(PetscMatlabEngine *e,PetscInt *m,P
   FREECHAR(s,ms);
 }
 
-/*
-extern int PetscMatlabEngineGetOutput(PetscMatlabEngine,char **);
-extern int PetscMatlabEnginePrintOutput(PetscMatlabEngine,FILE*);
-*/
-
-EXTERN_C_END

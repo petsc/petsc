@@ -8,10 +8,9 @@ PetscErrorCode PetscThreadCommGetRank_OpenMP(PetscInt *trank)
   return 0;
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PetscThreadCommCreate_OpenMP"
-PetscErrorCode PetscThreadCommCreate_OpenMP(PetscThreadComm tcomm)
+PETSC_EXTERN_C PetscErrorCode PetscThreadCommCreate_OpenMP(PetscThreadComm tcomm)
 {
   PetscErrorCode ierr;
 
@@ -34,7 +33,6 @@ PetscErrorCode PetscThreadCommCreate_OpenMP(PetscThreadComm tcomm)
   }
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscThreadCommRunKernel_OpenMP"

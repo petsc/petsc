@@ -421,7 +421,6 @@ PetscErrorCode SNESNGMRESSetSelectType(SNES snes,SNESNGMRESSelectType stype)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "SNESNGMRESSetSelectType_NGMRES"
 PetscErrorCode SNESNGMRESSetSelectType_NGMRES(SNES snes,SNESNGMRESSelectType stype)
@@ -443,7 +442,6 @@ PetscErrorCode SNESNGMRESSetRestartType_NGMRES(SNES snes,SNESNGMRESRestartType r
   ngmres->restart_type = rtype;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 /*MC
   SNESNGMRES - The Nonlinear Generalized Minimum Residual method.
@@ -477,10 +475,9 @@ EXTERN_C_END
 .seealso: SNESCreate(), SNES, SNESSetType(), SNESType (for list of available types)
 M*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "SNESCreate_NGMRES"
-PetscErrorCode SNESCreate_NGMRES(SNES snes)
+PETSC_EXTERN_C PetscErrorCode SNESCreate_NGMRES(SNES snes)
 {
   SNES_NGMRES    *ngmres;
   PetscErrorCode ierr;
@@ -523,4 +520,4 @@ PetscErrorCode SNESCreate_NGMRES(SNES snes)
   ierr = PetscObjectComposeFunction((PetscObject)snes,"SNESNGMRESSetRestartType_C","SNESNGMRESSetRestartType_NGMRES",SNESNGMRESSetRestartType_NGMRES);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
+

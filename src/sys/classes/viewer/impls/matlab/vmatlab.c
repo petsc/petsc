@@ -129,7 +129,6 @@ PetscErrorCode  PetscViewerMatlabGetArray(PetscViewer mfile,int m,int n,PetscSca
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerFileSetMode_Matlab"
 PetscErrorCode  PetscViewerFileSetMode_Matlab(PetscViewer viewer,PetscFileMode type)
@@ -140,12 +139,10 @@ PetscErrorCode  PetscViewerFileSetMode_Matlab(PetscViewer viewer,PetscFileMode t
   vmatlab->btype = type;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 /*
         Actually opens the file
 */
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerFileSetName_Matlab"
 PetscErrorCode  PetscViewerFileSetName_Matlab(PetscViewer viewer,const char name[])
@@ -165,7 +162,6 @@ PetscErrorCode  PetscViewerFileSetName_Matlab(PetscViewer viewer,const char name
   }
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerDestroy_Matlab"
@@ -180,10 +176,9 @@ PetscErrorCode PetscViewerDestroy_Matlab(PetscViewer v)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerCreate_Matlab"
-PetscErrorCode  PetscViewerCreate_Matlab(PetscViewer viewer)
+PETSC_EXTERN_C PetscErrorCode  PetscViewerCreate_Matlab(PetscViewer viewer)
 {
   PetscErrorCode     ierr;
   PetscViewer_Matlab *e;
@@ -200,7 +195,6 @@ PetscErrorCode  PetscViewerCreate_Matlab(PetscViewer viewer)
   viewer->ops->destroy = PetscViewerDestroy_Matlab;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerMatlabOpen"

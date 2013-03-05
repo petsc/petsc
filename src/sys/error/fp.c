@@ -82,10 +82,8 @@ PetscErrorCode PetscFPTrapPop(void)
 #if defined(PETSC_HAVE_SUN4_STYLE_FPTRAP)
 #include <floatingpoint.h>
 
-EXTERN_C_BEGIN
-PetscErrorCode ieee_flags(char*,char*,char*,char**);
-PetscErrorCode ieee_handler(char*,char*,sigfpe_handler_type(int,int,struct sigcontext*,char*));
-EXTERN_C_END
+PETSC_EXTERN_C PetscErrorCode ieee_flags(char*,char*,char*,char**);
+PETSC_EXTERN_C PetscErrorCode ieee_handler(char*,char*,sigfpe_handler_type(int,int,struct sigcontext*,char*));
 
 static struct { int code_no; char *name; } error_codes[] = {
   { FPE_INTDIV_TRAP    ,"integer divide" },
@@ -369,7 +367,7 @@ static const FPNode error_codes[] = {
   {FE_UNDERFLOW,"floating point underflow"},
   {0           ,"unknown error"}
 };
-EXTERN_C_BEGIN
+
 #undef __FUNCT__
 #define __FUNCT__ "PetscDefaultFPTrap"
 void PetscDefaultFPTrap(int sig)
@@ -416,7 +414,6 @@ void PetscDefaultFPTrap(int sig)
   PetscError(PETSC_COMM_SELF,0,"User provided function","Unknown file","Unknown directory",PETSC_ERR_FP,PETSC_ERROR_INITIAL,"trapped floating point error");
   MPI_Abort(PETSC_COMM_WORLD,0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSetFPTrap"
@@ -445,7 +442,7 @@ PetscErrorCode  PetscSetFPTrap(PetscFPTrap on)
 
 /* -------------------------Default -----------------------------------*/
 #else
-EXTERN_C_BEGIN
+
 #undef __FUNCT__
 #define __FUNCT__ "PetscDefaultFPTrap"
 void PetscDefaultFPTrap(int sig)
@@ -455,7 +452,7 @@ void PetscDefaultFPTrap(int sig)
   PetscError(PETSC_COMM_SELF,0,"User provided function","Unknown file","Unknown directory",PETSC_ERR_FP,PETSC_ERROR_REPEAT,"floating point error");
   MPI_Abort(PETSC_COMM_WORLD,0);
 }
-EXTERN_C_END
+
 #undef __FUNCT__
 #define __FUNCT__ "PetscSetFPTrap"
 PetscErrorCode  PetscSetFPTrap(PetscFPTrap on)

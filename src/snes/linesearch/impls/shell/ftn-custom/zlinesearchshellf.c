@@ -16,9 +16,7 @@ static PetscErrorCode oursneslinesearchshellfunction(SNESLineSearch linesearch, 
   return 0;
 }
 
-EXTERN_C_BEGIN
-
-void PETSC_STDCALL sneslinesearchshellsetuserfunc_(SNESLineSearch *linesearch,void (PETSC_STDCALL*func)(SNESLineSearch*,void*,PetscErrorCode*),void *ctx,PetscErrorCode *ierr)
+PETSC_EXTERN_C void PETSC_STDCALL sneslinesearchshellsetuserfunc_(SNESLineSearch *linesearch,void (PETSC_STDCALL*func)(SNESLineSearch*,void*,PetscErrorCode*),void *ctx,PetscErrorCode *ierr)
 {
   PetscObjectAllocateFortranPointers(*linesearch,3);
   ((PetscObject)*linesearch)->fortran_func_pointers[0] = (PetscVoidFunction)func;
@@ -26,10 +24,9 @@ void PETSC_STDCALL sneslinesearchshellsetuserfunc_(SNESLineSearch *linesearch,vo
   *ierr = SNESLineSearchShellSetUserFunc(*linesearch,oursneslinesearchshellfunction,ctx);
 }
 
-void PETSC_STDCALL sneslinesearchshellgetuserfunc_(SNESLineSearch *linesearch, void * func, void **ctx,PetscErrorCode *ierr)
+PETSC_EXTERN_C void PETSC_STDCALL sneslinesearchshellgetuserfunc_(SNESLineSearch *linesearch, void * func, void **ctx,PetscErrorCode *ierr)
 {
 
   CHKFORTRANNULLINTEGER(ctx);
   *ierr = SNESLineSearchShellGetUserFunc(*linesearch,NULL,ctx);
 }
-EXTERN_C_END

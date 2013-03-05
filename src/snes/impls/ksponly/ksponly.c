@@ -94,10 +94,9 @@ static PetscErrorCode SNESDestroy_KSPONLY(SNES snes)
 
 .seealso:  SNESCreate(), SNES, SNESSetType(), SNESNEWTONLS, SNESNEWTONTR
 M*/
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "SNESCreate_KSPONLY"
-PetscErrorCode  SNESCreate_KSPONLY(SNES snes)
+PETSC_EXTERN_C PetscErrorCode  SNESCreate_KSPONLY(SNES snes)
 {
 
   PetscFunctionBegin;
@@ -114,4 +113,3 @@ PetscErrorCode  SNESCreate_KSPONLY(SNES snes)
   snes->data = 0;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END

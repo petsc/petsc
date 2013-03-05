@@ -781,10 +781,9 @@ PetscErrorCode SNESReset_VINEWTONRSLS(SNES snes)
            SNESLineSearchSet(), SNESLineSearchNoNorms(), SNESLineSearchSetPreCheck(), SNESLineSearchSetParams(), SNESLineSearchGetParams()
 
 M*/
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "SNESCreate_VINEWTONRSLS"
-PetscErrorCode  SNESCreate_VINEWTONRSLS(SNES snes)
+PETSC_EXTERN_C PetscErrorCode  SNESCreate_VINEWTONRSLS(SNES snes)
 {
   PetscErrorCode    ierr;
   SNES_VINEWTONRSLS *vi;
@@ -809,5 +808,4 @@ PetscErrorCode  SNESCreate_VINEWTONRSLS(SNES snes)
   ierr = PetscObjectComposeFunction((PetscObject)snes,"SNESVISetComputeVariableBounds_C","SNESVISetComputeVariableBounds_VI",SNESVISetComputeVariableBounds_VI);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 

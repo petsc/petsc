@@ -167,7 +167,6 @@ PetscErrorCode  PetscViewerASCIIGetPointer(PetscViewer viewer,FILE **fd)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerFileGetMode_ASCII"
 PetscErrorCode  PetscViewerFileGetMode_ASCII(PetscViewer viewer, PetscFileMode *mode)
@@ -178,7 +177,6 @@ PetscErrorCode  PetscViewerFileGetMode_ASCII(PetscViewer viewer, PetscFileMode *
   *mode = vascii->mode;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 /*@C
     PetscViewerFileSetMode - Sets the mode in which to open the file.
@@ -198,7 +196,6 @@ EXTERN_C_END
 .seealso: PetscViewerASCIIOpen(), PetscViewerBinaryOpen()
 @*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerFileSetMode_ASCII"
 PetscErrorCode  PetscViewerFileSetMode_ASCII(PetscViewer viewer, PetscFileMode mode)
@@ -209,7 +206,6 @@ PetscErrorCode  PetscViewerFileSetMode_ASCII(PetscViewer viewer, PetscFileMode m
   vascii->mode = mode;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 /*
    If petsc_history is on, then all Petsc*Printf() results are saved
@@ -643,7 +639,6 @@ PetscErrorCode  PetscViewerFileGetName(PetscViewer viewer,const char **name)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerFileGetName_ASCII"
 PetscErrorCode  PetscViewerFileGetName_ASCII(PetscViewer viewer,const char **name)
@@ -654,10 +649,7 @@ PetscErrorCode  PetscViewerFileGetName_ASCII(PetscViewer viewer,const char **nam
   *name = vascii->filename;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerFileSetName_ASCII"
 PetscErrorCode  PetscViewerFileSetName_ASCII(PetscViewer viewer,const char name[])
@@ -732,7 +724,6 @@ PetscErrorCode  PetscViewerFileSetName_ASCII(PetscViewer viewer,const char name[
 #endif
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerGetSingleton_ASCII"
@@ -856,10 +847,9 @@ PetscErrorCode  PetscViewerView_ASCII(PetscViewer v,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerCreate_ASCII"
-PetscErrorCode  PetscViewerCreate_ASCII(PetscViewer viewer)
+PETSC_EXTERN_C PetscErrorCode  PetscViewerCreate_ASCII(PetscViewer viewer)
 {
   PetscViewer_ASCII *vascii;
   PetscErrorCode    ierr;
@@ -894,7 +884,6 @@ PetscErrorCode  PetscViewerCreate_ASCII(PetscViewer viewer)
   ierr = PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerFileSetMode_C","PetscViewerFileSetMode_ASCII",PetscViewerFileSetMode_ASCII);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 
 #undef __FUNCT__

@@ -3407,10 +3407,10 @@ PetscErrorCode  SNESSetConvergenceHistory(SNES snes,PetscReal a[],PetscInt its[]
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
 #include <engine.h>   /* MATLAB include file */
 #include <mex.h>      /* MATLAB include file */
-EXTERN_C_BEGIN
+
 #undef __FUNCT__
 #define __FUNCT__ "SNESGetConvergenceHistoryMatlab"
-mxArray *SNESGetConvergenceHistoryMatlab(SNES snes)
+PETSC_EXTERN_C mxArray *SNESGetConvergenceHistoryMatlab(SNES snes)
 {
   mxArray   *mat;
   PetscInt  i;
@@ -3422,7 +3422,6 @@ mxArray *SNESGetConvergenceHistoryMatlab(SNES snes)
   for (i=0; i<snes->conv_hist_len; i++) ar[i] = snes->conv_hist[i];
   PetscFunctionReturn(mat);
 }
-EXTERN_C_END
 #endif
 
 #undef __FUNCT__

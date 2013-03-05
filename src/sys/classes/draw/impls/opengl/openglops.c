@@ -1075,10 +1075,9 @@ static void mouse(int button, int state,int x, int y)
   }
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PetscDrawCreate_GLUT"
-PetscErrorCode  PetscDrawCreate_GLUT(PetscDraw draw)
+PETSC_EXTERN_C PetscErrorCode  PetscDrawCreate_GLUT(PetscDraw draw)
 {
   PetscDraw_OpenGL *win;
   PetscErrorCode   ierr;
@@ -1202,7 +1201,6 @@ PetscErrorCode  PetscDrawCreate_GLUT(PetscDraw draw)
   glutCheckLoop();
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDrawOpenGLUT"
@@ -1276,10 +1274,9 @@ PetscErrorCode  PetscDrawOpenGLESRegisterGLKView(GLKView *view)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PetscDrawCreate_OpenGLES"
-PetscErrorCode  PetscDrawCreate_OpenGLES(PetscDraw draw)
+PETSC_EXTERN_C PetscErrorCode  PetscDrawCreate_OpenGLES(PetscDraw draw)
 {
   PetscDraw_OpenGL *win;
   PetscErrorCode   ierr;
@@ -1316,7 +1313,7 @@ PetscErrorCode  PetscDrawCreate_OpenGLES(PetscDraw draw)
   NSLog(@"Ending PetscDrawCreate_OpenGLES()");
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
+
 #endif
 
 

@@ -107,7 +107,6 @@ static PetscErrorCode TSAdaptView_Basic(TSAdapt adapt,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TSAdaptCreate_Basic"
 /*MC
@@ -117,7 +116,7 @@ EXTERN_C_BEGIN
 
 .seealso: TS, TSAdapt, TSSetAdapt()
 M*/
-PetscErrorCode TSAdaptCreate_Basic(TSAdapt adapt)
+PETSC_EXTERN_C PetscErrorCode TSAdaptCreate_Basic(TSAdapt adapt)
 {
   PetscErrorCode ierr;
   TSAdapt_Basic  *a;
@@ -137,4 +136,3 @@ PetscErrorCode TSAdaptCreate_Basic(TSAdapt adapt)
   a->always_accept = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END

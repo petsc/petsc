@@ -86,58 +86,53 @@ extern PetscBool PetscHMPIWorker;
 #define mpi_init_             mpi_init__
 #endif
 
-EXTERN_C_BEGIN
-extern void PETSC_STDCALL mpi_init_(int*);
-extern void PETSC_STDCALL petscgetcommoncomm_(PetscMPIInt*);
+PETSC_EXTERN_C void PETSC_STDCALL mpi_init_(int*);
+PETSC_EXTERN_C void PETSC_STDCALL petscgetcommoncomm_(PetscMPIInt*);
 
 /*
      Different Fortran compilers handle command lines in different ways
 */
 #if defined(PETSC_USE_NARGS)
-extern short __stdcall NARGS();
-extern void  __stdcall GETARG(short*,char*,int,short *);
+PETSC_EXTERN_C short __stdcall NARGS();
+PETSC_EXTERN_C void  __stdcall GETARG(short*,char*,int,short *);
 
 #elif defined(PETSC_HAVE_FORTRAN_STDCALL)
-extern int  PETSC_STDCALL IARGC();
-extern void PETSC_STDCALL GETARG(int *,char *,int);
+PETSC_EXTERN_C int  PETSC_STDCALL IARGC();
+PETSC_EXTERN_C void PETSC_STDCALL GETARG(int *,char *,int);
 
 #elif defined(PETSC_HAVE_PXFGETARG_NEW)
-extern int  iargc_();
-extern void getarg_(int*,char*,int*,int*,int);
+PETSC_EXTERN_C int  iargc_();
+PETSC_EXTERN_C void getarg_(int*,char*,int*,int*,int);
 
 #else
-extern int  iargc_();
-extern void getarg_(int*,char*,int);
+PETSC_EXTERN_C int  iargc_();
+PETSC_EXTERN_C void getarg_(int*,char*,int);
 /*
       The Cray T3D/T3E use the PXFGETARG() function
 */
 #if defined(PETSC_HAVE_PXFGETARG)
-extern void PXFGETARG(int*,_fcd,int*,int*);
+PETSC_EXTERN_C void PXFGETARG(int*,_fcd,int*,int*);
 #endif
 #endif
-EXTERN_C_END
 
 #if (defined(PETSC_HAVE_COMPLEX) && !defined(PETSC_HAVE_MPI_C_DOUBLE_COMPLEX)) || defined(PETSC_USE_REAL___FLOAT128)
 extern MPI_Op MPIU_SUM;
-EXTERN_C_BEGIN
-extern void MPIAPI PetscSum_Local(void*,void*,PetscMPIInt*,MPI_Datatype*);
-EXTERN_C_END
+
+PETSC_EXTERN_C void MPIAPI PetscSum_Local(void*,void*,PetscMPIInt*,MPI_Datatype*);
+
 #endif
 #if defined(PETSC_USE_REAL___FLOAT128)
-EXTERN_C_BEGIN
-void MPIAPI PetscSum_Local(void*,void*,PetscMPIInt*,MPI_Datatype*);
-void MPIAPI PetscMax_Local(void*,void*,PetscMPIInt*,MPI_Datatype*);
-void MPIAPI PetscMin_Local(void*,void*,PetscMPIInt*,MPI_Datatype*);
-EXTERN_C_END
+
+PETSC_EXTERN_C void MPIAPI PetscSum_Local(void*,void*,PetscMPIInt*,MPI_Datatype*);
+PETSC_EXTERN_C void MPIAPI PetscMax_Local(void*,void*,PetscMPIInt*,MPI_Datatype*);
+PETSC_EXTERN_C void MPIAPI PetscMin_Local(void*,void*,PetscMPIInt*,MPI_Datatype*);
 #endif
 
 extern MPI_Op PetscMaxSum_Op;
 
-EXTERN_C_BEGIN
-extern void MPIAPI PetscMaxSum_Local(void*,void*,PetscMPIInt*,MPI_Datatype*);
-extern PetscMPIInt MPIAPI Petsc_DelCounter(MPI_Comm,PetscMPIInt,void*,void*);
-extern PetscMPIInt MPIAPI Petsc_DelComm(MPI_Comm,PetscMPIInt,void*,void*);
-EXTERN_C_END
+PETSC_EXTERN_C void MPIAPI PetscMaxSum_Local(void*,void*,PetscMPIInt*,MPI_Datatype*);
+PETSC_EXTERN_C PetscMPIInt MPIAPI Petsc_DelCounter(MPI_Comm,PetscMPIInt,void*,void*);
+PETSC_EXTERN_C PetscMPIInt MPIAPI Petsc_DelComm(MPI_Comm,PetscMPIInt,void*,void*);
 
 extern PetscErrorCode  PetscOptionsCheckInitial_Private(void);
 extern PetscErrorCode  PetscOptionsCheckInitial_Components(void);
@@ -222,13 +217,10 @@ PetscErrorCode PETScParseFortranArgs_Private(int *argc,char ***argv)
 
 extern MPI_Op PetscADMax_Op;
 extern MPI_Op PetscADMin_Op;
-EXTERN_C_BEGIN
-extern void MPIAPI PetscADMax_Local(void*,void*,PetscMPIInt*,MPI_Datatype*);
-extern void MPIAPI PetscADMin_Local(void*,void*,PetscMPIInt*,MPI_Datatype*);
-EXTERN_C_END
+PETSC_EXTERN_C void MPIAPI PetscADMax_Local(void*,void*,PetscMPIInt*,MPI_Datatype*);
+PETSC_EXTERN_C void MPIAPI PetscADMin_Local(void*,void*,PetscMPIInt*,MPI_Datatype*);
 
 
-EXTERN_C_BEGIN
 /*
     petscinitialize - Version called from Fortran.
 
@@ -236,7 +228,7 @@ EXTERN_C_BEGIN
       Since this is called from Fortran it does not return error codes
 
 */
-void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN_C void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
 #if defined (PETSC_USE_NARGS)
   short       flg,i;
@@ -463,7 +455,7 @@ void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),PetscErro
 #endif
 }
 
-void PETSC_STDCALL petscfinalize_(PetscErrorCode *ierr)
+PETSC_EXTERN_C void PETSC_STDCALL petscfinalize_(PetscErrorCode *ierr)
 {
 #if defined(PETSC_HAVE_SUNMATHPRO)
   extern void standard_arithmetic();
@@ -485,5 +477,3 @@ void PETSC_STDCALL petscend_(PetscErrorCode *ierr)
   *ierr = PetscEnd();
 }
 
-
-EXTERN_C_END

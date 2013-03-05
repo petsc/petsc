@@ -172,13 +172,9 @@ static struct _PetscDrawOps DvOps = { 0,
                                       0,
                                       PetscDrawBoxedString_TikZ};
 
-
-
-
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PetscDrawCreate_TikZ"
-PetscErrorCode  PetscDrawCreate_TikZ(PetscDraw draw)
+PETSC_EXTERN_C PetscErrorCode  PetscDrawCreate_TikZ(PetscDraw draw)
 {
   PetscDraw_TikZ *win;
   PetscErrorCode ierr;
@@ -204,7 +200,6 @@ PetscErrorCode  PetscDrawCreate_TikZ(PetscDraw draw)
   win->written = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 
 

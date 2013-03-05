@@ -2451,7 +2451,6 @@ PetscErrorCode SNESSetFromOptions_VIRSAUG(SNES snes)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "SNESLineSearchSetType_VIRSAUG"
 PetscErrorCode  SNESLineSearchSetType_VIRSAUG(SNES snes, SNESLineSearchType type)
@@ -2479,7 +2478,6 @@ PetscErrorCode  SNESLineSearchSetType_VIRSAUG(SNES snes, SNESLineSearchType type
   snes->ls_type = type;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 /* -------------------------------------------------------------------------- */
 /*MC
@@ -2498,10 +2496,9 @@ EXTERN_C_END
 
 M*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "SNESCreate_VI"
-PetscErrorCode SNESCreate_VIRSAUG(SNES snes)
+PETSC_EXTERN_C PetscErrorCode SNESCreate_VIRSAUG(SNES snes)
 {
   PetscErrorCode ierr;
   SNES_VIRSAUG   *vi;
@@ -2532,7 +2529,6 @@ PetscErrorCode SNESCreate_VIRSAUG(SNES snes)
   ierr = SNESLineSearchSetType(snes, SNES_LS_CUBIC);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESVIRSAUGGetInactiveSet"

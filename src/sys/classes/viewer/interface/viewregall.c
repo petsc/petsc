@@ -1,20 +1,18 @@
 
 #include <petsc-private/viewerimpl.h>  /*I "petscsys.h" I*/
 
-EXTERN_C_BEGIN
-extern PetscErrorCode PetscViewerCreate_Socket(PetscViewer);
-extern PetscErrorCode PetscViewerCreate_ASCII(PetscViewer);
-extern PetscErrorCode PetscViewerCreate_Binary(PetscViewer);
-extern PetscErrorCode PetscViewerCreate_String(PetscViewer);
-extern PetscErrorCode PetscViewerCreate_Draw(PetscViewer);
-extern PetscErrorCode PetscViewerCreate_VU(PetscViewer);
-extern PetscErrorCode PetscViewerCreate_Mathematica(PetscViewer);
-extern PetscErrorCode PetscViewerCreate_Netcdf(PetscViewer);
-extern PetscErrorCode PetscViewerCreate_HDF5(PetscViewer);
-extern PetscErrorCode PetscViewerCreate_Matlab(PetscViewer);
-extern PetscErrorCode PetscViewerCreate_AMS(PetscViewer);
-extern PetscErrorCode PetscViewerCreate_VTK(PetscViewer);
-EXTERN_C_END
+PETSC_EXTERN_C PetscErrorCode PetscViewerCreate_Socket(PetscViewer);
+PETSC_EXTERN_C PetscErrorCode PetscViewerCreate_ASCII(PetscViewer);
+PETSC_EXTERN_C PetscErrorCode PetscViewerCreate_Binary(PetscViewer);
+PETSC_EXTERN_C PetscErrorCode PetscViewerCreate_String(PetscViewer);
+PETSC_EXTERN_C PetscErrorCode PetscViewerCreate_Draw(PetscViewer);
+PETSC_EXTERN_C PetscErrorCode PetscViewerCreate_VU(PetscViewer);
+PETSC_EXTERN_C PetscErrorCode PetscViewerCreate_Mathematica(PetscViewer);
+PETSC_EXTERN_C PetscErrorCode PetscViewerCreate_Netcdf(PetscViewer);
+PETSC_EXTERN_C PetscErrorCode PetscViewerCreate_HDF5(PetscViewer);
+PETSC_EXTERN_C PetscErrorCode PetscViewerCreate_Matlab(PetscViewer);
+PETSC_EXTERN_C PetscErrorCode PetscViewerCreate_AMS(PetscViewer);
+PETSC_EXTERN_C PetscErrorCode PetscViewerCreate_VTK(PetscViewer);
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerRegisterAll"

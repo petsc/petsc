@@ -102,10 +102,9 @@ PetscErrorCode PetscThreadCommDestroy_PThread(PetscThreadComm tcomm)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PetscThreadCommCreate_PThread"
-PetscErrorCode PetscThreadCommCreate_PThread(PetscThreadComm tcomm)
+PETSC_EXTERN_C PetscErrorCode PetscThreadCommCreate_PThread(PetscThreadComm tcomm)
 {
   PetscThreadComm_PThread ptcomm;
   PetscErrorCode          ierr;
@@ -223,5 +222,4 @@ PetscErrorCode PetscThreadCommCreate_PThread(PetscThreadComm tcomm)
   }
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 

@@ -7,8 +7,7 @@
 #define petscdrawstringvertical_  petscdrawstringvertical
 #endif
 
-EXTERN_C_BEGIN
-void PETSC_STDCALL petscdrawstringvertical_(PetscDraw *ctx,double *xl,double *yl,int *cl,
+PETSC_EXTERN_C void PETSC_STDCALL petscdrawstringvertical_(PetscDraw *ctx,double *xl,double *yl,int *cl,
                    CHAR text PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *t;
@@ -17,4 +16,3 @@ void PETSC_STDCALL petscdrawstringvertical_(PetscDraw *ctx,double *xl,double *yl
   FREECHAR(text,t);
 }
 
-EXTERN_C_END

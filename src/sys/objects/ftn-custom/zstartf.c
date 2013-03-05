@@ -17,9 +17,7 @@
 #define petsc_null_function_  petsc_null_function__
 #endif
 
-EXTERN_C_BEGIN
-extern void PETSC_STDCALL petscsetcommonblock_(int*,int*);
-EXTERN_C_END
+PETSC_EXTERN_C void PETSC_STDCALL petscsetcommonblock_(int*,int*);
 
 /*@C
    PetscInitializeFortran - Routine that should be called soon AFTER
@@ -52,14 +50,12 @@ PetscErrorCode PetscInitializeFortran(void)
   return 0;
 }
 
-EXTERN_C_BEGIN
-
-void PETSC_STDCALL petscinitializefortran_(int *ierr)
+PETSC_EXTERN_C void PETSC_STDCALL petscinitializefortran_(int *ierr)
 {
   *ierr = PetscInitializeFortran();
 }
 
-void PETSC_STDCALL petscsetfortranbasepointers_(char *fnull_character PETSC_MIXED_LEN(len),
+PETSC_EXTERN_C void PETSC_STDCALL petscsetfortranbasepointers_(char *fnull_character PETSC_MIXED_LEN(len),
                                   void *fnull_integer,void *fnull_scalar,void * fnull_double,
                                   void *fnull_real,void *fnull_object,
                                   void* fnull_truth,void (*fnull_function)(void) PETSC_END_LEN(len))
@@ -77,10 +73,9 @@ void PETSC_STDCALL petscsetfortranbasepointers_(char *fnull_character PETSC_MIXE
 /*
   A valid address for the fortran variable PETSC_NULL_FUNCTION
 */
-void petsc_null_function_(void)
+PETSC_EXTERN_C void petsc_null_function_(void)
 {
   return;
 }
 
-EXTERN_C_END
 

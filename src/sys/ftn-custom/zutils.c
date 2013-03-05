@@ -35,6 +35,7 @@ void *PETSC_NULL_BOOL_Fortran      = 0;
 EXTERN_C_BEGIN
 void (*PETSC_NULL_FUNCTION_Fortran)(void) = 0;
 EXTERN_C_END
+
 size_t PetscIntAddressToFortran(PetscInt *base,PetscInt *addr)
 {
   size_t tmp1 = (size_t) base,tmp2 = 0;
@@ -205,17 +206,15 @@ PetscErrorCode PetscScalarAddressFromFortran(PetscObject obj,PetscScalar *base,s
 #define petscisinfornanreal_            petscisinfornanreal
 #endif
 
-EXTERN_C_BEGIN
-PetscBool PETSC_STDCALL petscisinfornanscalar_(PetscScalar *v)
+PETSC_EXTERN_C PetscBool PETSC_STDCALL petscisinfornanscalar_(PetscScalar *v)
 {
   return (PetscBool) PetscIsInfOrNanScalar(*v);
 }
 
-PetscBool PETSC_STDCALL petscisinfornanreal_(PetscReal *v)
+PETSC_EXTERN_C PetscBool PETSC_STDCALL petscisinfornanreal_(PetscReal *v)
 {
   return (PetscBool) PetscIsInfOrNanReal(*v);
 }
-EXTERN_C_END
 
 
 

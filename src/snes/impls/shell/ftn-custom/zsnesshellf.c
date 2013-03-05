@@ -17,10 +17,8 @@ static PetscErrorCode oursnesshellsolve(SNES snes,Vec x)
   return 0;
 }
 
-EXTERN_C_BEGIN
-void PETSC_STDCALL snesshellsetsolve_(SNES *snes,void (PETSC_STDCALL *func)(SNES*,Vec*,PetscErrorCode*),PetscErrorCode *ierr)
+PETSC_EXTERN_C void PETSC_STDCALL snesshellsetsolve_(SNES *snes,void (PETSC_STDCALL *func)(SNES*,Vec*,PetscErrorCode*),PetscErrorCode *ierr)
 {
   PetscObjectComposeFunction((PetscObject)*snes,"SNESShellSolve_C",NULL,(PetscVoidFunction)func);
   *ierr = SNESShellSetSolve(*snes,oursnesshellsolve);
 }
-EXTERN_C_END

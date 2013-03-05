@@ -410,10 +410,9 @@ static PetscErrorCode SNESSetFromOptions_NEWTONLS(SNES snes)
            SNESLineSearchSetPostCheck(), SNESLineSearchSetPreCheck() SNESLineSearchSetComputeNorms()
 
 M*/
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "SNESCreate_NEWTONLS"
-PetscErrorCode  SNESCreate_NEWTONLS(SNES snes)
+PETSC_EXTERN_C PetscErrorCode  SNESCreate_NEWTONLS(SNES snes)
 {
   PetscErrorCode ierr;
   SNES_NEWTONLS  *neP;
@@ -432,4 +431,3 @@ PetscErrorCode  SNESCreate_NEWTONLS(SNES snes)
   snes->data    = (void*)neP;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END

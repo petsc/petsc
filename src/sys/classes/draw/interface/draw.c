@@ -370,7 +370,6 @@ PetscErrorCode  PetscDrawSetDisplay(PetscDraw draw,const char display[])
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PetscDrawCreate_Null"
 /*
@@ -380,7 +379,7 @@ EXTERN_C_BEGIN
   Input Parameter:
 . win - the drawing context
 */
-PetscErrorCode PetscDrawCreate_Null(PetscDraw draw)
+PETSC_EXTERN_C PetscErrorCode PetscDrawCreate_Null(PetscDraw draw)
 {
   PetscErrorCode ierr;
 
@@ -397,7 +396,6 @@ PetscErrorCode PetscDrawCreate_Null(PetscDraw draw)
   draw->popup        = 0;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDrawGetSingleton"

@@ -436,10 +436,9 @@ PetscErrorCode PetscViewerSetFromOptions_Draw(PetscViewer v)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerCreate_Draw"
-PetscErrorCode  PetscViewerCreate_Draw(PetscViewer viewer)
+PETSC_EXTERN_C PetscErrorCode  PetscViewerCreate_Draw(PetscViewer viewer)
 {
   PetscInt         i;
   PetscErrorCode   ierr;
@@ -474,7 +473,6 @@ PetscErrorCode  PetscViewerCreate_Draw(PetscViewer viewer)
   vdraw->singleton_made = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerDrawClear"

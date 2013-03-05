@@ -672,7 +672,6 @@ PetscErrorCode SNESQNSetScaleType(SNES snes, SNESQNScaleType stype)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "SNESQNSetScaleType_QN"
 PetscErrorCode SNESQNSetScaleType_QN(SNES snes, SNESQNScaleType stype)
@@ -694,7 +693,6 @@ PetscErrorCode SNESQNSetRestartType_QN(SNES snes, SNESQNRestartType rtype)
   qn->restart_type = rtype;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 /* -------------------------------------------------------------------------- */
 /*MC
@@ -731,10 +729,9 @@ EXTERN_C_END
 .seealso:  SNESCreate(), SNES, SNESSetType(), SNESNEWTONLS, SNESNEWTONTR
 
 M*/
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "SNESCreate_QN"
-PetscErrorCode  SNESCreate_QN(SNES snes)
+PETSC_EXTERN_C PetscErrorCode  SNESCreate_QN(SNES snes)
 {
   PetscErrorCode ierr;
   SNES_QN        *qn;
@@ -775,5 +772,3 @@ PetscErrorCode  SNESCreate_QN(SNES snes)
   ierr = PetscObjectComposeFunction((PetscObject)snes,"SNESQNSetRestartType_C","SNESQNSetRestartType_QN",SNESQNSetRestartType_QN);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-EXTERN_C_END

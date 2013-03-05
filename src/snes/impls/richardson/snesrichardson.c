@@ -239,10 +239,9 @@ PetscErrorCode SNESSolve_NRichardson(SNES snes)
 
 .seealso:  SNESCreate(), SNES, SNESSetType(), SNESNEWTONLS, SNESNEWTONTR, SNESNGMRES, SNESQN, SNESNCG
 M*/
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "SNESCreate_NRichardson"
-PetscErrorCode  SNESCreate_NRichardson(SNES snes)
+PETSC_EXTERN_C PetscErrorCode  SNESCreate_NRichardson(SNES snes)
 {
   PetscErrorCode   ierr;
   SNES_NRichardson *neP;
@@ -268,4 +267,3 @@ PetscErrorCode  SNESCreate_NRichardson(SNES snes)
   }
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
