@@ -34,8 +34,8 @@ struct Mat_SeqAIJCUSPARSE {
   PetscBool hasTranspose; /* boolean describing whether a transpose has been built or not */
 };
 
-extern PetscErrorCode MatCUSPARSECopyToGPU(Mat);
-/* extern PetscErrorCode MatGetFactor_seqaij_cusparse(Mat,MatFactorType,Mat*); */
-/* extern PetscErrorCode MatFactorGetSolverPackage_seqaij_cusparse(Mat,const MatSolverPackage *); */
-/* extern PetscErrorCode MatCUSPARSECopyFromGPU(Mat, CUSPMATRIX *); */
+PETSC_INTERN PetscErrorCode MatCUSPARSECopyToGPU(Mat);
+/* PETSC_INTERN PetscErrorCode MatGetFactor_seqaij_cusparse(Mat,MatFactorType,Mat*); */
+/* PETSC_INTERN PetscErrorCode MatFactorGetSolverPackage_seqaij_cusparse(Mat,const MatSolverPackage *); */
+/* PETSC_INTERN PetscErrorCode MatCUSPARSECopyFromGPU(Mat, CUSPMATRIX *); */
 #endif

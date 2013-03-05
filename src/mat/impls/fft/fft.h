@@ -14,7 +14,7 @@ typedef struct {
 } Mat_FFT;
 
 EXTERN_C_BEGIN
-extern PetscErrorCode MatCreate_FFTW(Mat);
+PETSC_INTERN PetscErrorCode MatCreate_FFTW(Mat);
 EXTERN_C_END
 
 #endif

@@ -1167,7 +1167,7 @@ PetscErrorCode PetscOptionsFindPair_Private(const char pre[],const char name[],c
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscOptionsFindPairPrefix_Private"
-PetscErrorCode PetscOptionsFindPairPrefix_Private(const char pre[], const char name[], char *value[], PetscBool *flg)
+PETSC_EXTERN PetscErrorCode PetscOptionsFindPairPrefix_Private(const char pre[], const char name[], char *value[], PetscBool *flg)
 {
   PetscErrorCode ierr;
   PetscInt       i,N;

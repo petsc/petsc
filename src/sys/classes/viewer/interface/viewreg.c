@@ -3,7 +3,6 @@
 
 PetscFunctionList PetscViewerList = 0;
 
-PetscErrorCode PetscOptionsFindPair_Private(const char[],const char[],char*[],PetscBool*);
 #undef __FUNCT__
 #define __FUNCT__ "PetscOptionsGetViewer"
 /*@C

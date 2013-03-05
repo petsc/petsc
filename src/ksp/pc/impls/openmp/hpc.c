@@ -60,7 +60,7 @@ static PetscErrorCode PCView_HMPI(PC pc,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-extern PetscErrorCode MatDistribute_MPIAIJ(MPI_Comm,Mat,PetscInt,MatReuse,Mat*);
+PETSC_EXTERN PetscErrorCode MatDistribute_MPIAIJ(MPI_Comm,Mat,PetscInt,MatReuse,Mat*);
 
 #undef __FUNCT__
 #define __FUNCT__ "PCApply_HMPI_1"

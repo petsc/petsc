@@ -60,16 +60,16 @@ PetscErrorCode PCGAMGGetDataWithGhosts(const Mat a_Gmat, const PetscInt a_data_s
 /* #define PETSC_GAMG_USE_LOG */
 enum tag {SET1,SET2,GRAPH,GRAPH_MAT,GRAPH_FILTER,GRAPH_SQR,SET4,SET5,SET6,FIND_V,SET7,SET8,SET9,SET10,SET11,SET12,SET13,SET14,SET15,SET16,NUM_SET};
 #if defined PETSC_GAMG_USE_LOG
-extern PetscLogEvent petsc_gamg_setup_events[NUM_SET];
+PETSC_INTERN PetscLogEvent petsc_gamg_setup_events[NUM_SET];
 #endif
-extern PetscLogEvent PC_GAMGGgraph_AGG;
-extern PetscLogEvent PC_GAMGGgraph_GEO;
-extern PetscLogEvent PC_GAMGCoarsen_AGG;
-extern PetscLogEvent PC_GAMGCoarsen_GEO;
-extern PetscLogEvent PC_GAMGProlongator_AGG;
-extern PetscLogEvent PC_GAMGProlongator_GEO;
-extern PetscLogEvent PC_GAMGOptprol_AGG;
-extern PetscLogEvent PC_GAMGKKTProl_AGG;
+PETSC_INTERN PetscLogEvent PC_GAMGGgraph_AGG;
+PETSC_INTERN PetscLogEvent PC_GAMGGgraph_GEO;
+PETSC_INTERN PetscLogEvent PC_GAMGCoarsen_AGG;
+PETSC_INTERN PetscLogEvent PC_GAMGCoarsen_GEO;
+PETSC_INTERN PetscLogEvent PC_GAMGProlongator_AGG;
+PETSC_INTERN PetscLogEvent PC_GAMGProlongator_GEO;
+PETSC_INTERN PetscLogEvent PC_GAMGOptprol_AGG;
+PETSC_INTERN PetscLogEvent PC_GAMGKKTProl_AGG;
 #endif
 
 typedef struct _GAMGHashTable {
@@ -78,10 +78,10 @@ typedef struct _GAMGHashTable {
   PetscInt size;
 } GAMGHashTable;
 
-extern PetscErrorCode GAMGTableCreate(PetscInt a_size, GAMGHashTable *a_tab);
-extern PetscErrorCode GAMGTableDestroy(GAMGHashTable*);
-extern PetscErrorCode GAMGTableAdd(GAMGHashTable *a_tab, PetscInt a_key, PetscInt a_data);
-extern PetscErrorCode GAMGTableFind(GAMGHashTable *a_tab, PetscInt a_key, PetscInt *a_data);
+PETSC_EXTERN PetscErrorCode GAMGTableCreate(PetscInt a_size, GAMGHashTable *a_tab);
+PETSC_EXTERN PetscErrorCode GAMGTableDestroy(GAMGHashTable*);
+PETSC_EXTERN PetscErrorCode GAMGTableAdd(GAMGHashTable *a_tab, PetscInt a_key, PetscInt a_data);
+PETSC_EXTERN PetscErrorCode GAMGTableFind(GAMGHashTable *a_tab, PetscInt a_key, PetscInt *a_data);
 
 #endif
 

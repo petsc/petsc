@@ -131,17 +131,17 @@ Providence, RI 02912
 Last Modification:
 6.21.97
 ***********************************comm.h*************************************/
-extern PetscMPIInt PCTFS_my_id;
-extern PetscMPIInt PCTFS_num_nodes;
-extern PetscMPIInt PCTFS_floor_num_nodes;
-extern PetscMPIInt PCTFS_i_log2_num_nodes;
+PETSC_INTERN PetscMPIInt PCTFS_my_id;
+PETSC_INTERN PetscMPIInt PCTFS_num_nodes;
+PETSC_INTERN PetscMPIInt PCTFS_floor_num_nodes;
+PETSC_INTERN PetscMPIInt PCTFS_i_log2_num_nodes;
 
-extern PetscErrorCode PCTFS_giop(PetscInt *vals, PetscInt *work, PetscInt n, PetscInt *oprs);
-extern PetscErrorCode PCTFS_grop(PetscScalar *vals, PetscScalar *work, PetscInt n, PetscInt *oprs);
-extern PetscErrorCode PCTFS_comm_init(void);
-extern PetscErrorCode PCTFS_giop_hc(PetscInt *vals, PetscInt *work, PetscInt n, PetscInt *oprs, PetscInt dim);
-extern PetscErrorCode PCTFS_grop_hc(PetscScalar *vals, PetscScalar *work, PetscInt n, PetscInt *oprs, PetscInt dim);
-extern PetscErrorCode PCTFS_ssgl_radd(PetscScalar *vals, PetscScalar *work, PetscInt level, PetscInt *segs);
+PETSC_INTERN PetscErrorCode PCTFS_giop(PetscInt *vals, PetscInt *work, PetscInt n, PetscInt *oprs);
+PETSC_INTERN PetscErrorCode PCTFS_grop(PetscScalar *vals, PetscScalar *work, PetscInt n, PetscInt *oprs);
+PETSC_INTERN PetscErrorCode PCTFS_comm_init(void);
+PETSC_INTERN PetscErrorCode PCTFS_giop_hc(PetscInt *vals, PetscInt *work, PetscInt n, PetscInt *oprs, PetscInt dim);
+PETSC_INTERN PetscErrorCode PCTFS_grop_hc(PetscScalar *vals, PetscScalar *work, PetscInt n, PetscInt *oprs, PetscInt dim);
+PETSC_INTERN PetscErrorCode PCTFS_ssgl_radd(PetscScalar *vals, PetscScalar *work, PetscInt level, PetscInt *segs);
 
 #define MSGTAG0 101
 #define MSGTAG1 1001
@@ -166,55 +166,55 @@ extern PetscErrorCode PCTFS_ssgl_radd(PetscScalar *vals, PetscScalar *work, Pets
 #define GL_MIN_ABS      12
 #define GL_EXISTS       13
 
-extern PetscInt *PCTFS_ivec_copy(PetscInt *arg1, PetscInt *arg2, PetscInt n);
+PETSC_INTERN PetscInt *PCTFS_ivec_copy(PetscInt *arg1, PetscInt *arg2, PetscInt n);
 
-extern PetscErrorCode PCTFS_ivec_zero(PetscInt *arg1, PetscInt n);
-extern PetscErrorCode PCTFS_ivec_set(PetscInt *arg1, PetscInt arg2, PetscInt n);
+PETSC_INTERN PetscErrorCode PCTFS_ivec_zero(PetscInt *arg1, PetscInt n);
+PETSC_INTERN PetscErrorCode PCTFS_ivec_set(PetscInt *arg1, PetscInt arg2, PetscInt n);
 
-extern PetscInt PCTFS_ivec_lb(PetscInt *work, PetscInt n);
-extern PetscInt PCTFS_ivec_ub(PetscInt *work, PetscInt n);
-extern PetscInt PCTFS_ivec_sum(PetscInt *arg1, PetscInt n);
+PETSC_INTERN PetscInt PCTFS_ivec_lb(PetscInt *work, PetscInt n);
+PETSC_INTERN PetscInt PCTFS_ivec_ub(PetscInt *work, PetscInt n);
+PETSC_INTERN PetscInt PCTFS_ivec_sum(PetscInt *arg1, PetscInt n);
 
-extern vfp PCTFS_ivec_fct_addr(PetscInt type);
+PETSC_INTERN vfp PCTFS_ivec_fct_addr(PetscInt type);
 
-extern PetscErrorCode PCTFS_ivec_non_uniform(PetscInt *arg1, PetscInt *arg2, PetscInt n, PetscInt *arg3);
-extern PetscErrorCode PCTFS_ivec_max(PetscInt *arg1, PetscInt *arg2, PetscInt n);
-extern PetscErrorCode PCTFS_ivec_min(PetscInt *arg1, PetscInt *arg2, PetscInt n);
-extern PetscErrorCode PCTFS_ivec_mult(PetscInt *arg1, PetscInt *arg2, PetscInt n);
-extern PetscErrorCode PCTFS_ivec_add(PetscInt *arg1, PetscInt *arg2, PetscInt n);
-extern PetscErrorCode PCTFS_ivec_xor(PetscInt *arg1, PetscInt *arg2, PetscInt n);
-extern PetscErrorCode PCTFS_ivec_or(PetscInt *arg1, PetscInt *arg2, PetscInt len);
-extern PetscErrorCode PCTFS_ivec_and(PetscInt *arg1, PetscInt *arg2, PetscInt len);
-extern PetscErrorCode PCTFS_ivec_lxor(PetscInt *arg1, PetscInt *arg2, PetscInt n);
-extern PetscErrorCode PCTFS_ivec_lor(PetscInt *arg1, PetscInt *arg2, PetscInt len);
-extern PetscErrorCode PCTFS_ivec_land(PetscInt *arg1, PetscInt *arg2, PetscInt len);
-extern PetscErrorCode PCTFS_ivec_and3(PetscInt *arg1,  PetscInt *arg2,  PetscInt *arg3, PetscInt n);
+PETSC_INTERN PetscErrorCode PCTFS_ivec_non_uniform(PetscInt *arg1, PetscInt *arg2, PetscInt n, PetscInt *arg3);
+PETSC_INTERN PetscErrorCode PCTFS_ivec_max(PetscInt *arg1, PetscInt *arg2, PetscInt n);
+PETSC_INTERN PetscErrorCode PCTFS_ivec_min(PetscInt *arg1, PetscInt *arg2, PetscInt n);
+PETSC_INTERN PetscErrorCode PCTFS_ivec_mult(PetscInt *arg1, PetscInt *arg2, PetscInt n);
+PETSC_INTERN PetscErrorCode PCTFS_ivec_add(PetscInt *arg1, PetscInt *arg2, PetscInt n);
+PETSC_INTERN PetscErrorCode PCTFS_ivec_xor(PetscInt *arg1, PetscInt *arg2, PetscInt n);
+PETSC_INTERN PetscErrorCode PCTFS_ivec_or(PetscInt *arg1, PetscInt *arg2, PetscInt len);
+PETSC_INTERN PetscErrorCode PCTFS_ivec_and(PetscInt *arg1, PetscInt *arg2, PetscInt len);
+PETSC_INTERN PetscErrorCode PCTFS_ivec_lxor(PetscInt *arg1, PetscInt *arg2, PetscInt n);
+PETSC_INTERN PetscErrorCode PCTFS_ivec_lor(PetscInt *arg1, PetscInt *arg2, PetscInt len);
+PETSC_INTERN PetscErrorCode PCTFS_ivec_land(PetscInt *arg1, PetscInt *arg2, PetscInt len);
+PETSC_INTERN PetscErrorCode PCTFS_ivec_and3(PetscInt *arg1,  PetscInt *arg2,  PetscInt *arg3, PetscInt n);
 
-extern PetscErrorCode PCTFS_ivec_sort_companion(PetscInt *ar, PetscInt *ar2, PetscInt size);
-extern PetscErrorCode PCTFS_ivec_sort(PetscInt *ar, PetscInt size);
-extern PetscErrorCode PCTFS_SMI_sort(void *ar1, void *ar2, PetscInt size, PetscInt type);
-extern PetscInt PCTFS_ivec_binary_search(PetscInt item, PetscInt *list, PetscInt n);
-extern PetscInt PCTFS_ivec_linear_search(PetscInt item, PetscInt *list, PetscInt n);
+PETSC_INTERN PetscErrorCode PCTFS_ivec_sort_companion(PetscInt *ar, PetscInt *ar2, PetscInt size);
+PETSC_INTERN PetscErrorCode PCTFS_ivec_sort(PetscInt *ar, PetscInt size);
+PETSC_INTERN PetscErrorCode PCTFS_SMI_sort(void *ar1, void *ar2, PetscInt size, PetscInt type);
+PETSC_INTERN PetscInt PCTFS_ivec_binary_search(PetscInt item, PetscInt *list, PetscInt n);
+PETSC_INTERN PetscInt PCTFS_ivec_linear_search(PetscInt item, PetscInt *list, PetscInt n);
 
-extern PetscErrorCode PCTFS_ivec_sort_companion_hack(PetscInt *ar, PetscInt **ar2, PetscInt size);
+PETSC_INTERN PetscErrorCode PCTFS_ivec_sort_companion_hack(PetscInt *ar, PetscInt **ar2, PetscInt size);
 
 #define SORT_INTEGER 1
 #define SORT_INT_PTR 2
 
-extern PetscErrorCode PCTFS_rvec_zero(PetscScalar *arg1, PetscInt n);
-extern PetscErrorCode PCTFS_rvec_one(PetscScalar *arg1, PetscInt n);
-extern PetscErrorCode PCTFS_rvec_set(PetscScalar *arg1, PetscScalar arg2, PetscInt n);
-extern PetscErrorCode PCTFS_rvec_copy(PetscScalar *arg1, PetscScalar *arg2, PetscInt n);
-extern PetscErrorCode PCTFS_rvec_scale(PetscScalar *arg1, PetscScalar arg2, PetscInt n);
+PETSC_INTERN PetscErrorCode PCTFS_rvec_zero(PetscScalar *arg1, PetscInt n);
+PETSC_INTERN PetscErrorCode PCTFS_rvec_one(PetscScalar *arg1, PetscInt n);
+PETSC_INTERN PetscErrorCode PCTFS_rvec_set(PetscScalar *arg1, PetscScalar arg2, PetscInt n);
+PETSC_INTERN PetscErrorCode PCTFS_rvec_copy(PetscScalar *arg1, PetscScalar *arg2, PetscInt n);
+PETSC_INTERN PetscErrorCode PCTFS_rvec_scale(PetscScalar *arg1, PetscScalar arg2, PetscInt n);
 
-extern vfp PCTFS_rvec_fct_addr(PetscInt type);
-extern PetscErrorCode PCTFS_rvec_add(PetscScalar *arg1, PetscScalar *arg2, PetscInt n);
-extern PetscErrorCode PCTFS_rvec_mult(PetscScalar *arg1, PetscScalar *arg2, PetscInt n);
-extern PetscErrorCode PCTFS_rvec_max(PetscScalar *arg1, PetscScalar *arg2, PetscInt n);
-extern PetscErrorCode PCTFS_rvec_max_abs(PetscScalar *arg1, PetscScalar *arg2, PetscInt n);
-extern PetscErrorCode PCTFS_rvec_min(PetscScalar *arg1, PetscScalar *arg2, PetscInt n);
-extern PetscErrorCode PCTFS_rvec_min_abs(PetscScalar *arg1, PetscScalar *arg2, PetscInt n);
-extern PetscErrorCode PCTFS_vec_exists(PetscScalar *arg1, PetscScalar *arg2, PetscInt n);
+PETSC_INTERN vfp PCTFS_rvec_fct_addr(PetscInt type);
+PETSC_INTERN PetscErrorCode PCTFS_rvec_add(PetscScalar *arg1, PetscScalar *arg2, PetscInt n);
+PETSC_INTERN PetscErrorCode PCTFS_rvec_mult(PetscScalar *arg1, PetscScalar *arg2, PetscInt n);
+PETSC_INTERN PetscErrorCode PCTFS_rvec_max(PetscScalar *arg1, PetscScalar *arg2, PetscInt n);
+PETSC_INTERN PetscErrorCode PCTFS_rvec_max_abs(PetscScalar *arg1, PetscScalar *arg2, PetscInt n);
+PETSC_INTERN PetscErrorCode PCTFS_rvec_min(PetscScalar *arg1, PetscScalar *arg2, PetscInt n);
+PETSC_INTERN PetscErrorCode PCTFS_rvec_min_abs(PetscScalar *arg1, PetscScalar *arg2, PetscInt n);
+PETSC_INTERN PetscErrorCode PCTFS_vec_exists(PetscScalar *arg1, PetscScalar *arg2, PetscInt n);
 
 /***********************************gs.h***************************************
 
@@ -234,13 +234,13 @@ Last Modification:
 typedef struct gather_scatter_id *PCTFS_gs_ADT;
 /*typedef PetscErrorCode (*Rbfp)(PetscScalar *, PetscScalar *, PetscInt len);*/
 
-extern PCTFS_gs_ADT PCTFS_gs_init(PetscInt *elms, PetscInt nel, PetscInt level);
-extern PetscErrorCode   PCTFS_gs_gop_vec(PCTFS_gs_ADT PCTFS_gs_handle, PetscScalar *vals, const char *op, PetscInt step);
-/*extern PetscErrorCode   PCTFS_gs_gop_binary(PCTFS_gs_ADT gs, PetscScalar *vals, Rbfp fct);*/
-extern PetscErrorCode   PCTFS_gs_gop_hc(PCTFS_gs_ADT PCTFS_gs_handle, PetscScalar *vals, const char *op, PetscInt dim);
-extern PetscErrorCode   PCTFS_gs_free(PCTFS_gs_ADT PCTFS_gs_handle);
-extern PetscErrorCode   PCTFS_gs_init_msg_buf_sz(PetscInt buf_size);
-extern PetscErrorCode   PCTFS_gs_init_vec_sz(PetscInt size);
+PETSC_INTERN PCTFS_gs_ADT PCTFS_gs_init(PetscInt *elms, PetscInt nel, PetscInt level);
+PETSC_INTERN PetscErrorCode   PCTFS_gs_gop_vec(PCTFS_gs_ADT PCTFS_gs_handle, PetscScalar *vals, const char *op, PetscInt step);
+/*PETSC_INTERN PetscErrorCode   PCTFS_gs_gop_binary(PCTFS_gs_ADT gs, PetscScalar *vals, Rbfp fct);*/
+PETSC_INTERN PetscErrorCode   PCTFS_gs_gop_hc(PCTFS_gs_ADT PCTFS_gs_handle, PetscScalar *vals, const char *op, PetscInt dim);
+PETSC_INTERN PetscErrorCode   PCTFS_gs_free(PCTFS_gs_ADT PCTFS_gs_handle);
+PETSC_INTERN PetscErrorCode   PCTFS_gs_init_msg_buf_sz(PetscInt buf_size);
+PETSC_INTERN PetscErrorCode   PCTFS_gs_init_vec_sz(PetscInt size);
 
 /*************************************xxt.h************************************
 Module Name: xxt
@@ -270,7 +270,7 @@ Return: ADT ptr or NULL upon failure.
 Description: This function allocates and returns an xxt handle
 Usage: xxt_handle = xxt_new();
 **************************************xxt.h***********************************/
-extern xxt_ADT XXT_new(void);
+PETSC_INTERN xxt_ADT XXT_new(void);
 
 
 /*************************************xxt.h************************************
@@ -281,7 +281,7 @@ Input : pointer to ADT.
 Description: This function frees the storage associated with an xxt handle
 Usage: XXT_free(xxt_handle);
 **************************************xxt.h***********************************/
-extern PetscInt XXT_free(xxt_ADT xxt_handle);
+PETSC_INTERN PetscInt XXT_free(xxt_ADT xxt_handle);
 
 
 /*************************************xxt.h************************************
@@ -313,7 +313,7 @@ ML beliefs/usage: move this to to ML_XXT_factor routine
 
 Usage:
 **************************************xxt.h***********************************/
-extern PetscInt XXT_factor(xxt_ADT xxt_handle,     /* prev. allocated xxt  handle */
+PETSC_INTERN PetscInt XXT_factor(xxt_ADT xxt_handle,     /* prev. allocated xxt  handle */
                            PetscInt *local2global, /* global column mapping       */
                            PetscInt n,             /* local num rows              */
                            PetscInt m,             /* local num cols              */
@@ -333,14 +333,14 @@ XXT_solve(xxt_handle, double *x, double *b)
 XXT_solve(xxt_handle, double *x, NULL)
 assumes x has been initialized to be b
 **************************************xxt.h***********************************/
-extern PetscInt XXT_solve(xxt_ADT xxt_handle, PetscScalar *x, PetscScalar *b);
+PETSC_INTERN PetscInt XXT_solve(xxt_ADT xxt_handle, PetscScalar *x, PetscScalar *b);
 
 /*************************************xxt.h************************************
 Function: XXT_stats
 
 Input : handle
 **************************************xxt.h***********************************/
-extern PetscInt XXT_stats(xxt_ADT xxt_handle);
+PETSC_INTERN PetscInt XXT_stats(xxt_ADT xxt_handle);
 
 
 /*************************************xxt.h************************************
@@ -384,7 +384,7 @@ Return: ADT ptr or NULL upon failure.
 Description: This function allocates and returns an xyt handle
 Usage: xyt_handle = xyt_new();
 **************************************xyt.h***********************************/
-extern xyt_ADT XYT_new(void);
+PETSC_INTERN xyt_ADT XYT_new(void);
 
 
 /*************************************xyt.h************************************
@@ -394,7 +394,7 @@ Input : pointer to ADT.
 Description: This function frees the storage associated with an xyt handle
 Usage: XYT_free(xyt_handle);
 **************************************xyt.h***********************************/
-extern PetscInt XYT_free(xyt_ADT xyt_handle);
+PETSC_INTERN PetscInt XYT_free(xyt_ADT xyt_handle);
 
 
 /*************************************xyt.h************************************
@@ -427,7 +427,7 @@ ML beliefs/usage: move this to to ML_XYT_factor routine
 
 Usage:
 **************************************xyt.h***********************************/
-extern PetscInt XYT_factor(xyt_ADT xyt_handle,     /* prev. allocated xyt  handle */
+PETSC_INTERN PetscInt XYT_factor(xyt_ADT xyt_handle,     /* prev. allocated xyt  handle */
                            PetscInt *local2global, /* global column mapping       */
                            PetscInt n,             /* local num rows              */
                            PetscInt m,             /* local num cols              */
@@ -444,7 +444,7 @@ Return:
 Description: This function performs x = E^-1.b
 Usage: XYT_solve(xyt_handle, double *x, double *b)
 **************************************xyt.h***********************************/
-extern PetscInt XYT_solve(xyt_ADT xyt_handle, PetscScalar *x, PetscScalar *b);
+PETSC_INTERN PetscInt XYT_solve(xyt_ADT xyt_handle, PetscScalar *x, PetscScalar *b);
 
 
 /*************************************xyt.h************************************
@@ -452,7 +452,7 @@ Function: XYT_stats
 
 Input : handle
 **************************************xyt.h***********************************/
-extern PetscInt XYT_stats(xyt_ADT xyt_handle);
+PETSC_INTERN PetscInt XYT_stats(xyt_ADT xyt_handle);
 
 
 /********************************bit_mask.h************************************
@@ -469,12 +469,12 @@ Providence, RI 02912
 Last Modification:
 11.21.97
 *********************************bit_mask.h***********************************/
-extern PetscInt PCTFS_div_ceil(PetscInt numin, PetscInt denom);
-extern PetscErrorCode PCTFS_set_bit_mask(PetscInt *bm, PetscInt len, PetscInt val);
-extern PetscInt PCTFS_len_bit_mask(PetscInt num_items);
-extern PetscInt PCTFS_ct_bits(char *ptr, PetscInt n);
-extern PetscErrorCode PCTFS_bm_to_proc(char *ptr, PetscInt p_mask, PetscInt *msg_list);
-extern PetscInt PCTFS_len_buf(PetscInt item_size, PetscInt num_items);
+PETSC_INTERN PetscInt PCTFS_div_ceil(PetscInt numin, PetscInt denom);
+PETSC_INTERN PetscErrorCode PCTFS_set_bit_mask(PetscInt *bm, PetscInt len, PetscInt val);
+PETSC_INTERN PetscInt PCTFS_len_bit_mask(PetscInt num_items);
+PETSC_INTERN PetscInt PCTFS_ct_bits(char *ptr, PetscInt n);
+PETSC_INTERN PetscErrorCode PCTFS_bm_to_proc(char *ptr, PetscInt p_mask, PetscInt *msg_list);
+PETSC_INTERN PetscInt PCTFS_len_buf(PetscInt item_size, PetscInt num_items);
 
 #endif
 

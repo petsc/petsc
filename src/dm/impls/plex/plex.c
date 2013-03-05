@@ -6,8 +6,8 @@
 /* Logging support */
 PetscLogEvent DMPLEX_Distribute, DMPLEX_Stratify;
 
-extern PetscErrorCode VecView_Seq(Vec, PetscViewer);
-extern PetscErrorCode VecView_MPI(Vec, PetscViewer);
+PETSC_EXTERN PetscErrorCode VecView_Seq(Vec, PetscViewer);
+PETSC_EXTERN PetscErrorCode VecView_MPI(Vec, PetscViewer);
 
 #undef __FUNCT__
 #define __FUNCT__ "VecView_Plex_Local"
