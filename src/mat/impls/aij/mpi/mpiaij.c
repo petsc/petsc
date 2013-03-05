@@ -5584,7 +5584,6 @@ PetscErrorCode MatMatMult_MPIDense_MPIAIJ(Mat A,Mat B,MatReuse scall,PetscReal f
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #if defined(PETSC_HAVE_MUMPS)
 extern PetscErrorCode MatGetFactor_aij_mumps(Mat,MatFactorType,Mat*);
 #endif
@@ -5597,7 +5596,6 @@ extern PetscErrorCode MatGetFactor_mpiaij_superlu_dist(Mat,MatFactorType,Mat*);
 #if defined(PETSC_HAVE_CLIQUE)
 extern PetscErrorCode MatGetFactor_aij_clique(Mat,MatFactorType,Mat*);
 #endif
-EXTERN_C_END
 
 /*MC
    MATMPIAIJ - MATMPIAIJ = "mpiaij" - A matrix type to be used for parallel sparse matrices.

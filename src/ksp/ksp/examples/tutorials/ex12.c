@@ -37,9 +37,7 @@ T*/
 */
 #include <petscksp.h>
 
-EXTERN_C_BEGIN
-extern PetscErrorCode PCCreate_Jacobi(PC);
-EXTERN_C_END
+PETSC_EXTERN_C PetscErrorCode PCCreate_Jacobi(PC);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

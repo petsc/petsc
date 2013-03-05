@@ -146,10 +146,9 @@ static PetscErrorCode  KSPSolve_CGS(KSP ksp)
 
 .seealso: KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPBCGS, KSPSetPCSide()
 M*/
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "KSPCreate_CGS"
-PetscErrorCode  KSPCreate_CGS(KSP ksp)
+PETSC_EXTERN_C PetscErrorCode  KSPCreate_CGS(KSP ksp)
 {
   PetscErrorCode ierr;
 
@@ -170,4 +169,3 @@ PetscErrorCode  KSPCreate_CGS(KSP ksp)
   ksp->ops->view           = 0;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END

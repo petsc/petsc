@@ -191,10 +191,9 @@ PetscErrorCode  KSPSolve_MINRES(KSP ksp)
 
 .seealso: KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPCG, KSPCR
 M*/
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "KSPCreate_MINRES"
-PetscErrorCode  KSPCreate_MINRES(KSP ksp)
+PETSC_EXTERN_C PetscErrorCode  KSPCreate_MINRES(KSP ksp)
 {
   KSP_MINRES     *minres;
   PetscErrorCode ierr;
@@ -217,7 +216,6 @@ PetscErrorCode  KSPCreate_MINRES(KSP ksp)
   ksp->ops->buildresidual  = KSPDefaultBuildResidual;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 
 

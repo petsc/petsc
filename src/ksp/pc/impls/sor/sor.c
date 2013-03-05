@@ -114,10 +114,9 @@ PetscErrorCode PCView_SOR(PC pc,PetscViewer viewer)
 
 
 /* ------------------------------------------------------------------------------*/
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCSORSetSymmetric_SOR"
-PetscErrorCode  PCSORSetSymmetric_SOR(PC pc,MatSORType flag)
+static PetscErrorCode  PCSORSetSymmetric_SOR(PC pc,MatSORType flag)
 {
   PC_SOR *jac;
 
@@ -126,12 +125,10 @@ PetscErrorCode  PCSORSetSymmetric_SOR(PC pc,MatSORType flag)
   jac->sym = flag;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCSORSetOmega_SOR"
-PetscErrorCode  PCSORSetOmega_SOR(PC pc,PetscReal omega)
+static PetscErrorCode  PCSORSetOmega_SOR(PC pc,PetscReal omega)
 {
   PC_SOR *jac;
 
@@ -141,12 +138,10 @@ PetscErrorCode  PCSORSetOmega_SOR(PC pc,PetscReal omega)
   jac->omega = omega;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCSORSetIterations_SOR"
-PetscErrorCode  PCSORSetIterations_SOR(PC pc,PetscInt its,PetscInt lits)
+static PetscErrorCode  PCSORSetIterations_SOR(PC pc,PetscInt its,PetscInt lits)
 {
   PC_SOR *jac;
 
@@ -156,7 +151,6 @@ PetscErrorCode  PCSORSetIterations_SOR(PC pc,PetscInt its,PetscInt lits)
   jac->lits = lits;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 /* ------------------------------------------------------------------------------*/
 #undef __FUNCT__

@@ -460,10 +460,9 @@ PetscErrorCode  KSPLSQRDefaultConverged(KSP ksp,PetscInt n,PetscReal rnorm,KSPCo
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPLSQRDefaultConverged()
 
 M*/
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "KSPCreate_LSQR"
-PetscErrorCode  KSPCreate_LSQR(KSP ksp)
+PETSC_EXTERN_C PetscErrorCode  KSPCreate_LSQR(KSP ksp)
 {
   KSP_LSQR       *lsqr;
   PetscErrorCode ierr;
@@ -486,7 +485,6 @@ PetscErrorCode  KSPCreate_LSQR(KSP ksp)
   ksp->converged           = KSPLSQRDefaultConverged;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "VecSquare"

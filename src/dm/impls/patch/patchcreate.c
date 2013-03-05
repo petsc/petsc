@@ -60,10 +60,9 @@ PetscErrorCode DMInitialize_Patch(DM dm)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "DMCreate_Patch"
-PetscErrorCode DMCreate_Patch(DM dm)
+PETSC_EXTERN_C PetscErrorCode DMCreate_Patch(DM dm)
 {
   DM_Patch       *mesh;
   PetscErrorCode ierr;
@@ -83,7 +82,6 @@ PetscErrorCode DMCreate_Patch(DM dm)
   ierr = DMInitialize_Patch(dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPatchCreate"

@@ -872,7 +872,7 @@ PetscErrorCode  MatNestGetSize(Mat A,PetscInt *M,PetscInt *N)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatNestGetISs_Nest"
-PETSC_EXTERN_C PetscErrorCode MatNestGetISs_Nest(Mat A,IS rows[],IS cols[])
+static PetscErrorCode MatNestGetISs_Nest(Mat A,IS rows[],IS cols[])
 {
   Mat_Nest *vs = (Mat_Nest*)A->data;
   PetscInt i;
@@ -916,7 +916,7 @@ PetscErrorCode  MatNestGetISs(Mat A,IS rows[],IS cols[])
 
 #undef __FUNCT__
 #define __FUNCT__ "MatNestGetLocalISs_Nest"
-PETSC_EXTERN_C PetscErrorCode MatNestGetLocalISs_Nest(Mat A,IS rows[],IS cols[])
+static PetscErrorCode MatNestGetLocalISs_Nest(Mat A,IS rows[],IS cols[])
 {
   Mat_Nest *vs = (Mat_Nest*)A->data;
   PetscInt i;

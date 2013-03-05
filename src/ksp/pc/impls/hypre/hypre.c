@@ -724,10 +724,9 @@ static PetscErrorCode PCView_HYPRE_ParaSails(PC pc,PetscViewer viewer)
 }
 /* ---------------------------------------------------------------------------------*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCHYPREGetType_HYPRE"
-PetscErrorCode  PCHYPREGetType_HYPRE(PC pc,const char *name[])
+static PetscErrorCode  PCHYPREGetType_HYPRE(PC pc,const char *name[])
 {
   PC_HYPRE *jac = (PC_HYPRE*)pc->data;
 
@@ -735,12 +734,10 @@ PetscErrorCode  PCHYPREGetType_HYPRE(PC pc,const char *name[])
   *name = jac->hypre_type;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCHYPRESetType_HYPRE"
-PetscErrorCode  PCHYPRESetType_HYPRE(PC pc,const char name[])
+static PetscErrorCode  PCHYPRESetType_HYPRE(PC pc,const char name[])
 {
   PC_HYPRE       *jac = (PC_HYPRE*)pc->data;
   PetscErrorCode ierr;
@@ -869,7 +866,6 @@ PetscErrorCode  PCHYPRESetType_HYPRE(PC pc,const char name[])
   SETERRQ1(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown HYPRE preconditioner %s; Choices are pilut, parasails, euclid, boomeramg",name);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 /*
     It only gets here if the HYPRE type has not been set before the call to

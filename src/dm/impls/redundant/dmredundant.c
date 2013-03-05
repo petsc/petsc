@@ -413,10 +413,9 @@ static PetscErrorCode DMRedundantGetSize_Redundant(DM dm,PetscInt *rank,PetscInt
 .seealso: DMType, DMCOMPOSITE, DMCreateRedundant(), DMCreate(), DMRedundantSetSize(), DMRedundantGetSize()
 M*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "DMCreate_Redundant"
-PetscErrorCode DMCreate_Redundant(DM dm)
+PETSC_EXTERN_C PetscErrorCode DMCreate_Redundant(DM dm)
 {
   PetscErrorCode ierr;
   DM_Redundant   *red;
@@ -447,7 +446,6 @@ PetscErrorCode DMCreate_Redundant(DM dm)
   ierr = PetscObjectComposeFunction((PetscObject)dm,"DMRedundantGetSize_C","DMRedundantGetSize_Redundant",DMRedundantGetSize_Redundant);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "DMRedundantCreate"

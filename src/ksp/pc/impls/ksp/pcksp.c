@@ -163,10 +163,9 @@ static PetscErrorCode PCSetFromOptions_KSP(PC pc)
 
 /* ----------------------------------------------------------------------------------*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCKSPSetUseTrue_KSP"
-PetscErrorCode  PCKSPSetUseTrue_KSP(PC pc)
+static PetscErrorCode  PCKSPSetUseTrue_KSP(PC pc)
 {
   PC_KSP *jac;
 
@@ -175,12 +174,10 @@ PetscErrorCode  PCKSPSetUseTrue_KSP(PC pc)
   jac->use_true_matrix = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCKSPGetKSP_KSP"
-PetscErrorCode  PCKSPGetKSP_KSP(PC pc,KSP *ksp)
+static PetscErrorCode  PCKSPGetKSP_KSP(PC pc,KSP *ksp)
 {
   PC_KSP         *jac = (PC_KSP*)pc->data;
   PetscErrorCode ierr;
@@ -190,7 +187,6 @@ PetscErrorCode  PCKSPGetKSP_KSP(PC pc,KSP *ksp)
   *ksp = jac->ksp;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "PCKSPSetUseTrue"

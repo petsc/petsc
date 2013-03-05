@@ -454,7 +454,7 @@ static PetscErrorCode MatWrapML_MPIAIJ(ML_Operator *mlmat,MatReuse reuse,Mat *ne
 */
 #undef __FUNCT__
 #define __FUNCT__ "PCSetCoordinates_ML"
-PETSC_EXTERN_C PetscErrorCode PCSetCoordinates_ML(PC pc, PetscInt ndm, PetscInt a_nloc, PetscReal *coords)
+static PetscErrorCode PCSetCoordinates_ML(PC pc, PetscInt ndm, PetscInt a_nloc, PetscReal *coords)
 {
   PC_MG          *mg    = (PC_MG*)pc->data;
   PC_ML          *pc_ml = (PC_ML*)mg->innerctx;

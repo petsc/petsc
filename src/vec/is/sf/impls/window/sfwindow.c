@@ -146,7 +146,7 @@ PetscErrorCode PetscSFWindowSetSyncType(PetscSF sf,PetscSFWindowSyncType sync)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSFWindowSetSyncType_Window"
-PETSC_EXTERN_C PetscErrorCode PetscSFWindowSetSyncType_Window(PetscSF sf,PetscSFWindowSyncType sync)
+static PetscErrorCode PetscSFWindowSetSyncType_Window(PetscSF sf,PetscSFWindowSyncType sync)
 {
   PetscSF_Window *w = (PetscSF_Window*)sf->data;
 
@@ -185,7 +185,7 @@ PetscErrorCode PetscSFWindowGetSyncType(PetscSF sf,PetscSFWindowSyncType *sync)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSFWindowGetSyncType_Window"
-PETSC_EXTERN_C PetscErrorCode PetscSFWindowGetSyncType_Window(PetscSF sf,PetscSFWindowSyncType *sync)
+static PetscErrorCode PetscSFWindowGetSyncType_Window(PetscSF sf,PetscSFWindowSyncType *sync)
 {
   PetscSF_Window *w = (PetscSF_Window*)sf->data;
 

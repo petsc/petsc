@@ -238,14 +238,11 @@ extern PetscErrorCode KSPDestroy_CG(KSP);
 extern PetscErrorCode KSPReset_CG(KSP);
 extern PetscErrorCode KSPView_CG(KSP,PetscViewer);
 extern PetscErrorCode KSPSetFromOptions_CG(KSP);
-EXTERN_C_BEGIN
-extern PetscErrorCode  KSPCGSetType_CG(KSP,KSPCGType);
-EXTERN_C_END
+PETSC_EXTERN_C PetscErrorCode  KSPCGSetType_CG(KSP,KSPCGType);
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "KSPCreate_CGNE"
-PetscErrorCode  KSPCreate_CGNE(KSP ksp)
+PETSC_EXTERN_C PetscErrorCode  KSPCreate_CGNE(KSP ksp)
 {
   PetscErrorCode ierr;
   KSP_CG         *cg;
@@ -282,7 +279,6 @@ PetscErrorCode  KSPCreate_CGNE(KSP ksp)
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPCGSetType_C","KSPCGSetType_CGNE",KSPCGSetType_CGNE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 
 

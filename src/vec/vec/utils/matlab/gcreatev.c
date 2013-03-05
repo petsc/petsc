@@ -3,7 +3,7 @@
 
 #include <engine.h>   /* MATLAB include file */
 #include <mex.h>      /* MATLAB include file */
-EXTERN_C_BEGIN
+
 #undef __FUNCT__
 #define __FUNCT__ "VecMatlabEnginePut_Default"
 PetscErrorCode  VecMatlabEnginePut_Default(PetscObject obj,void *mengine)
@@ -29,9 +29,7 @@ PetscErrorCode  VecMatlabEnginePut_Default(PetscObject obj,void *mengine)
   ierr = VecRestoreArray(vec,&array);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "VecMatlabEngineGet_Default"
 PetscErrorCode  VecMatlabEngineGet_Default(PetscObject obj,void *mengine)
@@ -51,7 +49,6 @@ PetscErrorCode  VecMatlabEngineGet_Default(PetscObject obj,void *mengine)
   ierr = VecRestoreArray(vec,&array);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 
 

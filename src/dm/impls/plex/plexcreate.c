@@ -547,10 +547,9 @@ PetscErrorCode DMInitialize_Plex(DM dm)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "DMCreate_Plex"
-PetscErrorCode DMCreate_Plex(DM dm)
+PETSC_EXTERN_C PetscErrorCode DMCreate_Plex(DM dm)
 {
   DM_Plex        *mesh;
   PetscInt       unit, d;
@@ -596,7 +595,6 @@ PetscErrorCode DMCreate_Plex(DM dm)
   ierr = DMInitialize_Plex(dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexCreate"

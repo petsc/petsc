@@ -7,7 +7,6 @@
 #include <petsc-private/pcimpl.h>        /*I "petscpc.h" I*/
 #include <petsc-private/vecimpl.h>
 
-EXTERN_C_BEGIN
 typedef struct {
   void *ctx;                     /* user provided contexts for preconditioner */
 
@@ -23,7 +22,6 @@ typedef struct {
 
   char *name;
 } PC_Shell;
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "PCShellGetContext"
@@ -224,10 +222,9 @@ static PetscErrorCode PCView_Shell(PC pc,PetscViewer viewer)
 }
 
 /* ------------------------------------------------------------------------------*/
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCShellSetDestroy_Shell"
-PetscErrorCode  PCShellSetDestroy_Shell(PC pc, PetscErrorCode (*destroy)(PC))
+static PetscErrorCode  PCShellSetDestroy_Shell(PC pc, PetscErrorCode (*destroy)(PC))
 {
   PC_Shell *shell= (PC_Shell*)pc->data;
 
@@ -235,12 +232,10 @@ PetscErrorCode  PCShellSetDestroy_Shell(PC pc, PetscErrorCode (*destroy)(PC))
   shell->destroy = destroy;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCShellSetSetUp_Shell"
-PetscErrorCode  PCShellSetSetUp_Shell(PC pc, PetscErrorCode (*setup)(PC))
+static PetscErrorCode  PCShellSetSetUp_Shell(PC pc, PetscErrorCode (*setup)(PC))
 {
   PC_Shell *shell = (PC_Shell*)pc->data;;
 
@@ -250,12 +245,10 @@ PetscErrorCode  PCShellSetSetUp_Shell(PC pc, PetscErrorCode (*setup)(PC))
   else       pc->ops->setup = 0;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCShellSetApply_Shell"
-PetscErrorCode  PCShellSetApply_Shell(PC pc,PetscErrorCode (*apply)(PC,Vec,Vec))
+static PetscErrorCode  PCShellSetApply_Shell(PC pc,PetscErrorCode (*apply)(PC,Vec,Vec))
 {
   PC_Shell *shell = (PC_Shell*)pc->data;
 
@@ -263,12 +256,10 @@ PetscErrorCode  PCShellSetApply_Shell(PC pc,PetscErrorCode (*apply)(PC,Vec,Vec))
   shell->apply = apply;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCShellSetApplyBA_Shell"
-PetscErrorCode  PCShellSetApplyBA_Shell(PC pc,PetscErrorCode (*applyBA)(PC,PCSide,Vec,Vec,Vec))
+static PetscErrorCode  PCShellSetApplyBA_Shell(PC pc,PetscErrorCode (*applyBA)(PC,PCSide,Vec,Vec,Vec))
 {
   PC_Shell *shell = (PC_Shell*)pc->data;
 
@@ -278,12 +269,10 @@ PetscErrorCode  PCShellSetApplyBA_Shell(PC pc,PetscErrorCode (*applyBA)(PC,PCSid
   else         pc->ops->applyBA  = 0;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCShellSetPreSolve_Shell"
-PetscErrorCode  PCShellSetPreSolve_Shell(PC pc,PetscErrorCode (*presolve)(PC,KSP,Vec,Vec))
+static PetscErrorCode  PCShellSetPreSolve_Shell(PC pc,PetscErrorCode (*presolve)(PC,KSP,Vec,Vec))
 {
   PC_Shell *shell = (PC_Shell*)pc->data;
 
@@ -293,12 +282,10 @@ PetscErrorCode  PCShellSetPreSolve_Shell(PC pc,PetscErrorCode (*presolve)(PC,KSP
   else          pc->ops->presolve = 0;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCShellSetPostSolve_Shell"
-PetscErrorCode  PCShellSetPostSolve_Shell(PC pc,PetscErrorCode (*postsolve)(PC,KSP,Vec,Vec))
+static PetscErrorCode  PCShellSetPostSolve_Shell(PC pc,PetscErrorCode (*postsolve)(PC,KSP,Vec,Vec))
 {
   PC_Shell *shell = (PC_Shell*)pc->data;
 
@@ -308,12 +295,10 @@ PetscErrorCode  PCShellSetPostSolve_Shell(PC pc,PetscErrorCode (*postsolve)(PC,K
   else           pc->ops->postsolve = 0;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCShellSetView_Shell"
-PetscErrorCode  PCShellSetView_Shell(PC pc,PetscErrorCode (*view)(PC,PetscViewer))
+static PetscErrorCode  PCShellSetView_Shell(PC pc,PetscErrorCode (*view)(PC,PetscViewer))
 {
   PC_Shell *shell = (PC_Shell*)pc->data;
 
@@ -321,12 +306,10 @@ PetscErrorCode  PCShellSetView_Shell(PC pc,PetscErrorCode (*view)(PC,PetscViewer
   shell->view = view;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCShellSetApplyTranspose_Shell"
-PetscErrorCode  PCShellSetApplyTranspose_Shell(PC pc,PetscErrorCode (*applytranspose)(PC,Vec,Vec))
+static PetscErrorCode  PCShellSetApplyTranspose_Shell(PC pc,PetscErrorCode (*applytranspose)(PC,Vec,Vec))
 {
   PC_Shell *shell = (PC_Shell*)pc->data;
 
@@ -336,12 +319,10 @@ PetscErrorCode  PCShellSetApplyTranspose_Shell(PC pc,PetscErrorCode (*applytrans
   else                pc->ops->applytranspose = 0;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCShellSetApplyRichardson_Shell"
-PetscErrorCode  PCShellSetApplyRichardson_Shell(PC pc,PetscErrorCode (*applyrich)(PC,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,PetscInt,PetscBool ,PetscInt*,PCRichardsonConvergedReason*))
+static PetscErrorCode  PCShellSetApplyRichardson_Shell(PC pc,PetscErrorCode (*applyrich)(PC,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,PetscInt,PetscBool ,PetscInt*,PCRichardsonConvergedReason*))
 {
   PC_Shell *shell = (PC_Shell*)pc->data;
 
@@ -351,12 +332,10 @@ PetscErrorCode  PCShellSetApplyRichardson_Shell(PC pc,PetscErrorCode (*applyrich
   else           pc->ops->applyrichardson = 0;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCShellSetName_Shell"
-PetscErrorCode  PCShellSetName_Shell(PC pc,const char name[])
+static PetscErrorCode  PCShellSetName_Shell(PC pc,const char name[])
 {
   PC_Shell       *shell = (PC_Shell*)pc->data;
   PetscErrorCode ierr;
@@ -366,12 +345,10 @@ PetscErrorCode  PCShellSetName_Shell(PC pc,const char name[])
   ierr = PetscStrallocpy(name,&shell->name);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCShellGetName_Shell"
-PetscErrorCode  PCShellGetName_Shell(PC pc,const char *name[])
+static PetscErrorCode  PCShellGetName_Shell(PC pc,const char *name[])
 {
   PC_Shell *shell = (PC_Shell*)pc->data;
 
@@ -379,7 +356,6 @@ PetscErrorCode  PCShellGetName_Shell(PC pc,const char *name[])
   *name = shell->name;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 /* -------------------------------------------------------------------------------*/
 

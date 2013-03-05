@@ -11,9 +11,7 @@
 #include <sys/time.h>
 #endif
 #if defined(PETSC_NEEDS_GETTIMEOFDAY_PROTO)
-EXTERN_C_BEGIN
-extern int gettimeofday(struct timeval *,struct timezone *);
-EXTERN_C_END
+PETSC_EXTERN_C int gettimeofday(struct timeval *,struct timezone *);
 #endif
 
 /* Global counters */
@@ -136,9 +134,7 @@ PETSC_EXTERN PetscLogDouble PetscReadRealTime(void);
 */
 #elif defined (PETSC_USE_MICROSOFT_TIME)
 #include <time.h>
-EXTERN_C_BEGIN
-PETSC_EXTERN PetscLogDouble PetscMicrosoftTime(void);
-EXTERN_C_END
+PETSC_EXTERN_C PetscLogDouble PetscMicrosoftTime(void);
 #define PetscTime(v)         (v)=PetscMicrosoftTime();
 
 #define PetscTimeSubtract(v) (v)-=PetscMicrosoftTime();

@@ -722,10 +722,9 @@ $  other KSP converged/diverged reasons
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPNASHSetRadius(), KSPNASHGetNormD(), KSPNASHGetObjFcn()
 M*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "KSPCreate_NASH"
-PetscErrorCode  KSPCreate_NASH(KSP ksp)
+PETSC_EXTERN_C PetscErrorCode  KSPCreate_NASH(KSP ksp)
 {
   PetscErrorCode ierr;
   KSP_NASH       *cg;
@@ -758,4 +757,3 @@ PetscErrorCode  KSPCreate_NASH(KSP ksp)
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPNASHGetObjFcn_C","KSPNASHGetObjFcn_NASH",KSPNASHGetObjFcn_NASH);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END

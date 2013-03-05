@@ -34,9 +34,7 @@ PetscErrorCode  DMFinalizePackage(void)
 }
 
 #if defined(PETSC_HAVE_HYPRE)
-EXTERN_C_BEGIN
-extern PetscErrorCode  MatCreate_HYPREStruct(Mat);
-EXTERN_C_END
+PETSC_EXTERN_C PetscErrorCode  MatCreate_HYPREStruct(Mat);
 #endif
 
 #undef __FUNCT__
@@ -141,7 +139,6 @@ PetscErrorCode  DMInitializePackage(const char path[])
 
 
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PetscDLLibraryRegister_petscdm"
 /*
@@ -153,7 +150,7 @@ EXTERN_C_BEGIN
   Input Parameter:
   path - library path
 */
-PetscErrorCode  PetscDLLibraryRegister_petscdm(const char path[])
+PETSC_EXTERN_C PetscErrorCode  PetscDLLibraryRegister_petscdm(const char path[])
 {
   PetscErrorCode ierr;
 
@@ -162,6 +159,5 @@ PetscErrorCode  PetscDLLibraryRegister_petscdm(const char path[])
   ierr = DMInitializePackage(path);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #endif /* PETSC_USE_DYNAMIC_LIBRARIES */

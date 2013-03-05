@@ -142,10 +142,9 @@ static PetscErrorCode  KSPSolve_TFQMR(KSP ksp)
 
 .seealso: KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPTCQMR
 M*/
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "KSPCreate_TFQMR"
-PetscErrorCode  KSPCreate_TFQMR(KSP ksp)
+PETSC_EXTERN_C PetscErrorCode  KSPCreate_TFQMR(KSP ksp)
 {
   PetscErrorCode ierr;
 
@@ -163,4 +162,3 @@ PetscErrorCode  KSPCreate_TFQMR(KSP ksp)
   ksp->ops->view           = 0;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END

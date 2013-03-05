@@ -164,7 +164,6 @@ static PetscErrorCode KSPDestroy_SpecEst(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "KSPCreate_SpecEst"
 /*MC
@@ -190,7 +189,7 @@ EXTERN_C_BEGIN
 
 .seealso: KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPGMRES, KSPCG, KSPCHEBYSHEV, KSPRICHARDSON
 M*/
-PetscErrorCode  KSPCreate_SpecEst(KSP ksp)
+PETSC_EXTERN_C PetscErrorCode  KSPCreate_SpecEst(KSP ksp)
 {
   KSP_SpecEst    *spec;
   PetscErrorCode ierr;
@@ -233,4 +232,3 @@ PetscErrorCode  KSPCreate_SpecEst(KSP ksp)
   ierr = KSPSetTolerances(spec->kspcheap,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,5);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END

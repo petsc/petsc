@@ -276,10 +276,9 @@ static PetscErrorCode  KSPRichardsonSetSelfScale_Richardson(KSP ksp,PetscBool se
 
 M*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "KSPCreate_Richardson"
-PetscErrorCode  KSPCreate_Richardson(KSP ksp)
+PETSC_EXTERN_C PetscErrorCode  KSPCreate_Richardson(KSP ksp)
 {
   PetscErrorCode ierr;
   KSP_Richardson *richardsonP;
@@ -305,6 +304,5 @@ PetscErrorCode  KSPCreate_Richardson(KSP ksp)
   richardsonP->scale = 1.0;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 

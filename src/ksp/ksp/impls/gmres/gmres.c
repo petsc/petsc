@@ -891,10 +891,9 @@ PetscErrorCode  KSPGMRESSetHapTol(KSP ksp,PetscReal tol)
 
 M*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "KSPCreate_GMRES"
-PetscErrorCode  KSPCreate_GMRES(KSP ksp)
+PETSC_EXTERN_C PetscErrorCode  KSPCreate_GMRES(KSP ksp)
 {
   KSP_GMRES      *gmres;
   PetscErrorCode ierr;
@@ -937,5 +936,4 @@ PetscErrorCode  KSPCreate_GMRES(KSP ksp)
   gmres->orthogwork     = 0;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 

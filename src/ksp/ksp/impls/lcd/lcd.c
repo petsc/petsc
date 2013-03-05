@@ -232,10 +232,9 @@ PetscErrorCode KSPSetFromOptions_LCD(KSP ksp)
 
 M*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "KSPCreate_LCD"
-PetscErrorCode KSPCreate_LCD(KSP ksp)
+PETSC_EXTERN_C PetscErrorCode KSPCreate_LCD(KSP ksp)
 {
   PetscErrorCode ierr;
   KSP_LCD        *lcd;
@@ -261,7 +260,6 @@ PetscErrorCode KSPCreate_LCD(KSP ksp)
   ksp->ops->buildresidual  = KSPDefaultBuildResidual;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 
 

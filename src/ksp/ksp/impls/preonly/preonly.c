@@ -44,10 +44,9 @@ static PetscErrorCode  KSPSolve_PREONLY(KSP ksp)
 
 M*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "KSPCreate_PREONLY"
-PetscErrorCode  KSPCreate_PREONLY(KSP ksp)
+PETSC_EXTERN_C PetscErrorCode  KSPCreate_PREONLY(KSP ksp)
 {
   PetscErrorCode ierr;
 
@@ -65,4 +64,3 @@ PetscErrorCode  KSPCreate_PREONLY(KSP ksp)
   ksp->ops->view           = 0;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END

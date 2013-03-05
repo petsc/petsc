@@ -148,10 +148,9 @@ PetscErrorCode  KSPSolve_BiCG(KSP ksp)
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPBCGS, KSPCGNE
 
 M*/
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "KSPCreate_BiCG"
-PetscErrorCode  KSPCreate_BiCG(KSP ksp)
+PETSC_EXTERN_C PetscErrorCode  KSPCreate_BiCG(KSP ksp)
 {
   PetscErrorCode ierr;
 
@@ -169,7 +168,6 @@ PetscErrorCode  KSPCreate_BiCG(KSP ksp)
   ksp->ops->buildresidual  = KSPDefaultBuildResidual;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 
 

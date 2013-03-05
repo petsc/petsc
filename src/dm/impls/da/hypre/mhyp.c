@@ -559,10 +559,9 @@ PetscErrorCode MatDestroy_HYPREStruct(Mat mat)
 }
 
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_HYPREStruct"
-PetscErrorCode  MatCreate_HYPREStruct(Mat B)
+PETSC_EXTERN_C PetscErrorCode  MatCreate_HYPREStruct(Mat B)
 {
   Mat_HYPREStruct *ex;
   PetscErrorCode  ierr;
@@ -587,8 +586,6 @@ PetscErrorCode  MatCreate_HYPREStruct(Mat B)
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATHYPRESTRUCT);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
-
 
 /*MC
    MATHYPRESSTRUCT - MATHYPRESSTRUCT = "hypresstruct" - A matrix type to be used for parallel sparse matrices
@@ -1089,10 +1086,9 @@ PetscErrorCode MatDestroy_HYPRESStruct(Mat mat)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_HYPRESStruct"
-PetscErrorCode  MatCreate_HYPRESStruct(Mat B)
+PETSC_EXTERN_C PetscErrorCode  MatCreate_HYPRESStruct(Mat B)
 {
   Mat_HYPRESStruct *ex;
   PetscErrorCode   ierr;
@@ -1117,7 +1113,6 @@ PetscErrorCode  MatCreate_HYPRESStruct(Mat B)
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATHYPRESSTRUCT);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 
 

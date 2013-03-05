@@ -404,10 +404,9 @@ $  other KSP converged/diverged reasons
            KSPQCGGetTrialStepNorm(), KSPQCGGetQuadratic()
 M*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "KSPCreate_QCG"
-PetscErrorCode  KSPCreate_QCG(KSP ksp)
+PETSC_EXTERN_C PetscErrorCode  KSPCreate_QCG(KSP ksp)
 {
   PetscErrorCode ierr;
   KSP_QCG        *cgP;
@@ -432,7 +431,6 @@ PetscErrorCode  KSPCreate_QCG(KSP ksp)
   cgP->delta = PETSC_MAX_REAL; /* default trust region radius is infinite */
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 /* ---------------------------------------------------------- */
 #undef __FUNCT__
