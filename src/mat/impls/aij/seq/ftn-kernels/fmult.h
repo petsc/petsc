@@ -9,10 +9,10 @@
 #define fortranmultaij_                fortranmultaij
 #define fortranmulttransposeaddaij_    fortranmulttransposeaddaij
 #endif
-EXTERN_C_BEGIN
-extern void fortranmultaij_(PetscInt*,const PetscScalar*,const PetscInt*,const PetscInt*,const MatScalar*,PetscScalar*);
-extern void fortranmulttransposeaddaij_(PetscInt*,void*,PetscInt*,PetscInt*,void*,void*);
-EXTERN_C_END
+
+PETSC_EXTERN_C void fortranmultaij_(PetscInt*,const PetscScalar*,const PetscInt*,const PetscInt*,const MatScalar*,PetscScalar*);
+PETSC_EXTERN_C void fortranmulttransposeaddaij_(PetscInt*,void*,PetscInt*,PetscInt*,void*,void*);
+
 #endif
 #endif
 

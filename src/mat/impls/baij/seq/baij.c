@@ -1083,10 +1083,9 @@ PetscErrorCode MatSOR_SeqBAIJ_N(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pet
 #define matsetvaluesblocked4_ matsetvaluesblocked4
 #endif
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "matsetvaluesblocked4_"
-void  matsetvaluesblocked4_(Mat *AA,PetscInt *mm,const PetscInt im[],PetscInt *nn,const PetscInt in[],const PetscScalar v[])
+PETSC_EXTERN_C void  matsetvaluesblocked4_(Mat *AA,PetscInt *mm,const PetscInt im[],PetscInt *nn,const PetscInt in[],const PetscScalar v[])
 {
   Mat               A  = *AA;
   Mat_SeqBAIJ       *a = (Mat_SeqBAIJ*)A->data;
@@ -1153,7 +1152,6 @@ void  matsetvaluesblocked4_(Mat *AA,PetscInt *mm,const PetscInt im[],PetscInt *n
   }
   PetscFunctionReturnVoid();
 }
-EXTERN_C_END
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define matsetvalues4_ MATSETVALUES4
@@ -1161,10 +1159,9 @@ EXTERN_C_END
 #define matsetvalues4_ matsetvalues4
 #endif
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatSetValues4_"
-void  matsetvalues4_(Mat *AA,PetscInt *mm,PetscInt *im,PetscInt *nn,PetscInt *in,PetscScalar *v)
+PETSC_EXTERN_C void  matsetvalues4_(Mat *AA,PetscInt *mm,PetscInt *im,PetscInt *nn,PetscInt *in,PetscScalar *v)
 {
   Mat         A  = *AA;
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)A->data;
@@ -1221,7 +1218,6 @@ noinsert1:;
   }
   PetscFunctionReturnVoid();
 }
-EXTERN_C_END
 
 /*
      Checks for missing diagonals

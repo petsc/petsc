@@ -17,13 +17,12 @@ static PetscErrorCode ourresidualfunction(Mat mat,Vec b,Vec x,Vec R)
   return 0;
 }
 
-EXTERN_C_BEGIN
-void pcmgdefaultresidual_(Mat *mat,Vec *b,Vec *x,Vec *r, PetscErrorCode *ierr)
+PETSC_EXTERN_C void pcmgdefaultresidual_(Mat *mat,Vec *b,Vec *x,Vec *r, PetscErrorCode *ierr)
 {
   *ierr = PCMGDefaultResidual(*mat,*b,*x,*r);
 }
 
-void PETSC_STDCALL pcmgsetresidual_(PC *pc,PetscInt *l,PetscErrorCode (*residual)(Mat*,Vec*,Vec*,Vec*,PetscErrorCode*),Mat *mat, PetscErrorCode *ierr)
+PETSC_EXTERN_C void PETSC_STDCALL pcmgsetresidual_(PC *pc,PetscInt *l,PetscErrorCode (*residual)(Mat*,Vec*,Vec*,Vec*,PetscErrorCode*),Mat *mat, PetscErrorCode *ierr)
 {
   MVVVV rr;
   if ((PetscVoidFunction)residual == (PetscVoidFunction)pcmgdefaultresidual_) rr = PCMGDefaultResidual;
@@ -37,4 +36,3 @@ void PETSC_STDCALL pcmgsetresidual_(PC *pc,PetscInt *l,PetscErrorCode (*residual
   *ierr = PCMGSetResidual(*pc,*l,rr,*mat);
 }
 
-EXTERN_C_END

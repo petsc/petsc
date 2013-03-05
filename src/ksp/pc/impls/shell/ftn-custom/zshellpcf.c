@@ -59,14 +59,12 @@ static PetscErrorCode ourshelldestroy(PC pc)
   return 0;
 }
 
-EXTERN_C_BEGIN
-
-void PETSC_STDCALL pcshellgetcontext_(PC *pc,void **ctx,PetscErrorCode *ierr)
+PETSC_EXTERN_C void PETSC_STDCALL pcshellgetcontext_(PC *pc,void **ctx,PetscErrorCode *ierr)
 {
   *ierr = PCShellGetContext(*pc,ctx);
 }
 
-void PETSC_STDCALL pcshellsetapply_(PC *pc,void (PETSC_STDCALL *apply)(void*,Vec*,Vec*,PetscErrorCode*),PetscErrorCode *ierr)
+PETSC_EXTERN_C void PETSC_STDCALL pcshellsetapply_(PC *pc,void (PETSC_STDCALL *apply)(void*,Vec*,Vec*,PetscErrorCode*),PetscErrorCode *ierr)
 {
   PetscObjectAllocateFortranPointers(*pc,5);
   ((PetscObject)*pc)->fortran_func_pointers[0] = (PetscVoidFunction)apply;
@@ -74,14 +72,14 @@ void PETSC_STDCALL pcshellsetapply_(PC *pc,void (PETSC_STDCALL *apply)(void*,Vec
   *ierr = PCShellSetApply(*pc,ourshellapply);
 }
 
-void PETSC_STDCALL pcshellsetapplyrichardson_(PC *pc,void (PETSC_STDCALL *apply)(void*,Vec*,Vec*,Vec*,PetscReal*,PetscReal*,PetscReal*,PetscInt*,PetscBool*,PetscInt*,PCRichardsonConvergedReason*,PetscErrorCode*),PetscErrorCode *ierr)
+PETSC_EXTERN_C void PETSC_STDCALL pcshellsetapplyrichardson_(PC *pc,void (PETSC_STDCALL *apply)(void*,Vec*,Vec*,Vec*,PetscReal*,PetscReal*,PetscReal*,PetscInt*,PetscBool*,PetscInt*,PCRichardsonConvergedReason*,PetscErrorCode*),PetscErrorCode *ierr)
 {
   PetscObjectAllocateFortranPointers(*pc,5);
   ((PetscObject)*pc)->fortran_func_pointers[1] = (PetscVoidFunction)apply;
   *ierr = PCShellSetApplyRichardson(*pc,ourapplyrichardson);
 }
 
-void PETSC_STDCALL pcshellsetapplytranspose_(PC *pc,void (PETSC_STDCALL *applytranspose)(void*,Vec *,Vec *,PetscErrorCode*), PetscErrorCode *ierr)
+PETSC_EXTERN_C void PETSC_STDCALL pcshellsetapplytranspose_(PC *pc,void (PETSC_STDCALL *applytranspose)(void*,Vec *,Vec *,PetscErrorCode*), PetscErrorCode *ierr)
 {
   PetscObjectAllocateFortranPointers(*pc,5);
   ((PetscObject)*pc)->fortran_func_pointers[2] = (PetscVoidFunction)applytranspose;
@@ -89,7 +87,7 @@ void PETSC_STDCALL pcshellsetapplytranspose_(PC *pc,void (PETSC_STDCALL *applytr
   *ierr = PCShellSetApplyTranspose(*pc,ourshellapplytranspose);
 }
 
-void PETSC_STDCALL pcshellsetsetup_(PC *pc,void (PETSC_STDCALL *setup)(void*,PetscErrorCode*),PetscErrorCode *ierr)
+PETSC_EXTERN_C void PETSC_STDCALL pcshellsetsetup_(PC *pc,void (PETSC_STDCALL *setup)(void*,PetscErrorCode*),PetscErrorCode *ierr)
 {
   PetscObjectAllocateFortranPointers(*pc,5);
   ((PetscObject)*pc)->fortran_func_pointers[3] = (PetscVoidFunction)setup;
@@ -97,7 +95,7 @@ void PETSC_STDCALL pcshellsetsetup_(PC *pc,void (PETSC_STDCALL *setup)(void*,Pet
   *ierr = PCShellSetSetUp(*pc,ourshellsetup);
 }
 
-void PETSC_STDCALL pcshellsetdestroy_(PC *pc,void (PETSC_STDCALL *setup)(void*,PetscErrorCode*),PetscErrorCode *ierr)
+PETSC_EXTERN_C void PETSC_STDCALL pcshellsetdestroy_(PC *pc,void (PETSC_STDCALL *setup)(void*,PetscErrorCode*),PetscErrorCode *ierr)
 {
   PetscObjectAllocateFortranPointers(*pc,5);
   ((PetscObject)*pc)->fortran_func_pointers[4] = (PetscVoidFunction)setup;
@@ -105,7 +103,7 @@ void PETSC_STDCALL pcshellsetdestroy_(PC *pc,void (PETSC_STDCALL *setup)(void*,P
   *ierr = PCShellSetDestroy(*pc,ourshelldestroy);
 }
 
-void PETSC_STDCALL pcshellsetname_(PC *pc,CHAR name PETSC_MIXED_LEN(len), PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN_C void PETSC_STDCALL pcshellsetname_(PC *pc,CHAR name PETSC_MIXED_LEN(len), PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *c;
   FIXCHAR(name,len,c);
@@ -113,7 +111,7 @@ void PETSC_STDCALL pcshellsetname_(PC *pc,CHAR name PETSC_MIXED_LEN(len), PetscE
   FREECHAR(name,c);
 }
 
-void PETSC_STDCALL pcshellgetname_(PC *pc,CHAR name PETSC_MIXED_LEN(len), PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN_C void PETSC_STDCALL pcshellgetname_(PC *pc,CHAR name PETSC_MIXED_LEN(len), PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   const char *c;
 
@@ -123,4 +121,3 @@ void PETSC_STDCALL pcshellgetname_(PC *pc,CHAR name PETSC_MIXED_LEN(len), PetscE
 
 /* -----------------------------------------------------------------*/
 
-EXTERN_C_END

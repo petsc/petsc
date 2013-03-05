@@ -12,8 +12,7 @@
 #define pcfactorgetmatsolverpackage_ pcfactorgetmatsolverpackage
 #endif
 
-EXTERN_C_BEGIN
-void PETSC_STDCALL pcfactorsetmatorderingtype_(PC *pc,CHAR ordering PETSC_MIXED_LEN(len), PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN_C void PETSC_STDCALL pcfactorsetmatorderingtype_(PC *pc,CHAR ordering PETSC_MIXED_LEN(len), PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *t;
 
@@ -21,7 +20,7 @@ void PETSC_STDCALL pcfactorsetmatorderingtype_(PC *pc,CHAR ordering PETSC_MIXED_
   *ierr = PCFactorSetMatOrderingType(*pc,t);
   FREECHAR(ordering,t);
 }
-void PETSC_STDCALL pcfactorsetmatsolverpackage_(PC *pc,CHAR ordering PETSC_MIXED_LEN(len), PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN_C void PETSC_STDCALL pcfactorsetmatsolverpackage_(PC *pc,CHAR ordering PETSC_MIXED_LEN(len), PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *t;
 
@@ -29,7 +28,7 @@ void PETSC_STDCALL pcfactorsetmatsolverpackage_(PC *pc,CHAR ordering PETSC_MIXED
   *ierr = PCFactorSetMatSolverPackage(*pc,t);
   FREECHAR(ordering,t);
 }
-void PETSC_STDCALL pcfactorgetmatsolverpackage_(PC *mat,CHAR name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN_C void PETSC_STDCALL pcfactorgetmatsolverpackage_(PC *mat,CHAR name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   const char *tname;
 
@@ -39,4 +38,3 @@ void PETSC_STDCALL pcfactorgetmatsolverpackage_(PC *mat,CHAR name PETSC_MIXED_LE
   }
   FIXRETURNCHAR(PETSC_TRUE,name,len);
 }
-EXTERN_C_END

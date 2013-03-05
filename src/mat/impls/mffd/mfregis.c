@@ -1,10 +1,8 @@
 
 #include <../src/mat/impls/mffd/mffdimpl.h>   /*I  "petscmat.h"   I*/
 
-EXTERN_C_BEGIN
-extern PetscErrorCode  MatCreateMFFD_DS(MatMFFD);
-extern PetscErrorCode  MatCreateMFFD_WP(MatMFFD);
-EXTERN_C_END
+PETSC_EXTERN_C PetscErrorCode  MatCreateMFFD_DS(MatMFFD);
+PETSC_EXTERN_C PetscErrorCode  MatCreateMFFD_WP(MatMFFD);
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMFFDRegisterAll"

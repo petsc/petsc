@@ -4450,10 +4450,9 @@ PetscErrorCode MatSeqAIJInvalidateDiagonal(Mat A)
 #undef SETERRQ3
 #define SETERRQ3(comm,ierr,b,c,d,e) CHKERRABORT(comm,ierr)
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "matsetvaluesseqaij_"
-void PETSC_STDCALL matsetvaluesseqaij_(Mat *AA,PetscInt *mm,const PetscInt im[],PetscInt *nn,const PetscInt in[],const PetscScalar v[],InsertMode *isis, PetscErrorCode *_ierr)
+PETSC_EXTERN_C void PETSC_STDCALL matsetvaluesseqaij_(Mat *AA,PetscInt *mm,const PetscInt im[],PetscInt *nn,const PetscInt in[],const PetscScalar v[],InsertMode *isis, PetscErrorCode *_ierr)
 {
   Mat            A  = *AA;
   PetscInt       m  = *mm, n = *nn;
@@ -4532,5 +4531,5 @@ noinsert:;
   A->same_nonzero = PETSC_FALSE;
   PetscFunctionReturnVoid();
 }
-EXTERN_C_END
+
 

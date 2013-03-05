@@ -7,8 +7,7 @@
 #define pcfieldsplitgetsubksp_        pcfieldsplitgetsubksp
 #endif
 
-EXTERN_C_BEGIN
-void PETSC_STDCALL pcfieldsplitgetsubksp_(PC *pc,PetscInt *n_local,KSP *ksp,PetscErrorCode *ierr)
+PETSC_EXTERN_C void PETSC_STDCALL pcfieldsplitgetsubksp_(PC *pc,PetscInt *n_local,KSP *ksp,PetscErrorCode *ierr)
 {
   KSP      *tksp;
   PetscInt i,nloc;
@@ -21,4 +20,3 @@ void PETSC_STDCALL pcfieldsplitgetsubksp_(PC *pc,PetscInt *n_local,KSP *ksp,Pets
   }
 }
 
-EXTERN_C_END

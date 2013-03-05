@@ -16,13 +16,13 @@
 #define msgemmi_ msgemmi
 #define msgemm_  msgemm
 #endif
-EXTERN_C_BEGIN
-extern void msgemv_(PetscInt*,PetscInt*,MatScalar*,PetscScalar*,PetscScalar*);
-extern void msgemvp_(PetscInt*,PetscInt*,MatScalar*,PetscScalar*,PetscScalar*);
-extern void msgemvm_(PetscInt*,PetscInt*,MatScalar*,PetscScalar*,PetscScalar*);
-extern void msgemvt_(PetscInt*,PetscInt*,MatScalar*,PetscScalar*,PetscScalar*);
-extern void msgemmi_(PetscInt*,MatScalar*,MatScalar*,MatScalar*);
-extern void msgemm_(PetscInt*,MatScalar*,MatScalar*,MatScalar*);
-EXTERN_C_END
+
+PETSC_EXTERN_C void msgemv_(PetscInt*,PetscInt*,MatScalar*,PetscScalar*,PetscScalar*);
+PETSC_EXTERN_C void msgemvp_(PetscInt*,PetscInt*,MatScalar*,PetscScalar*,PetscScalar*);
+PETSC_EXTERN_C void msgemvm_(PetscInt*,PetscInt*,MatScalar*,PetscScalar*,PetscScalar*);
+PETSC_EXTERN_C void msgemvt_(PetscInt*,PetscInt*,MatScalar*,PetscScalar*,PetscScalar*);
+PETSC_EXTERN_C void msgemmi_(PetscInt*,MatScalar*,MatScalar*,MatScalar*);
+PETSC_EXTERN_C void msgemm_(PetscInt*,MatScalar*,MatScalar*,MatScalar*);
+
 #endif
 

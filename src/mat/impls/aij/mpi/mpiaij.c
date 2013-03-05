@@ -5769,10 +5769,9 @@ PetscErrorCode  MatCreateMPIAIJWithSplitArrays(MPI_Comm comm,PetscInt m,PetscInt
 #undef SETERRQ
 #define SETERRQ(c,ierr,b) CHKERRABORT(c,ierr)
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "matsetvaluesmpiaij_"
-void PETSC_STDCALL matsetvaluesmpiaij_(Mat *mmat,PetscInt *mm,const PetscInt im[],PetscInt *mn,const PetscInt in[],const PetscScalar v[],InsertMode *maddv,PetscErrorCode *_ierr)
+PETSC_EXTERN_C void PETSC_STDCALL matsetvaluesmpiaij_(Mat *mmat,PetscInt *mm,const PetscInt im[],PetscInt *mn,const PetscInt in[],const PetscScalar v[],InsertMode *maddv,PetscErrorCode *_ierr)
 {
   Mat            mat  = *mmat;
   PetscInt       m    = *mm, n = *mn;
@@ -5883,5 +5882,4 @@ void PETSC_STDCALL matsetvaluesmpiaij_(Mat *mmat,PetscInt *mm,const PetscInt im[
   }
   PetscFunctionReturnVoid();
 }
-EXTERN_C_END
 
