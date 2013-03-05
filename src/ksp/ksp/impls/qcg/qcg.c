@@ -306,10 +306,9 @@ PetscErrorCode KSPDestroy_QCG(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "KSPQCGSetTrustRegionRadius_QCG"
-PetscErrorCode  KSPQCGSetTrustRegionRadius_QCG(KSP ksp,PetscReal delta)
+static PetscErrorCode  KSPQCGSetTrustRegionRadius_QCG(KSP ksp,PetscReal delta)
 {
   KSP_QCG *cgP = (KSP_QCG*)ksp->data;
 
@@ -317,12 +316,10 @@ PetscErrorCode  KSPQCGSetTrustRegionRadius_QCG(KSP ksp,PetscReal delta)
   cgP->delta = delta;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "KSPQCGGetTrialStepNorm_QCG"
-PetscErrorCode  KSPQCGGetTrialStepNorm_QCG(KSP ksp,PetscReal *ltsnrm)
+static PetscErrorCode  KSPQCGGetTrialStepNorm_QCG(KSP ksp,PetscReal *ltsnrm)
 {
   KSP_QCG *cgP = (KSP_QCG*)ksp->data;
 
@@ -330,12 +327,10 @@ PetscErrorCode  KSPQCGGetTrialStepNorm_QCG(KSP ksp,PetscReal *ltsnrm)
   *ltsnrm = cgP->ltsnrm;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "KSPQCGGetQuadratic_QCG"
-PetscErrorCode  KSPQCGGetQuadratic_QCG(KSP ksp,PetscReal *quadratic)
+static PetscErrorCode  KSPQCGGetQuadratic_QCG(KSP ksp,PetscReal *quadratic)
 {
   KSP_QCG *cgP = (KSP_QCG*)ksp->data;
 
@@ -343,7 +338,6 @@ PetscErrorCode  KSPQCGGetQuadratic_QCG(KSP ksp,PetscReal *quadratic)
   *quadratic = cgP->quadratic;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetFromOptions_QCG"

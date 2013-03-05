@@ -216,10 +216,9 @@ PetscErrorCode KSPDestroy_Richardson(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "KSPRichardsonSetScale_Richardson"
-PetscErrorCode  KSPRichardsonSetScale_Richardson(KSP ksp,PetscReal scale)
+static PetscErrorCode  KSPRichardsonSetScale_Richardson(KSP ksp,PetscReal scale)
 {
   KSP_Richardson *richardsonP;
 
@@ -228,12 +227,10 @@ PetscErrorCode  KSPRichardsonSetScale_Richardson(KSP ksp,PetscReal scale)
   richardsonP->scale = scale;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "KSPRichardsonSetSelfScale_Richardson"
-PetscErrorCode  KSPRichardsonSetSelfScale_Richardson(KSP ksp,PetscBool selfscale)
+static PetscErrorCode  KSPRichardsonSetSelfScale_Richardson(KSP ksp,PetscBool selfscale)
 {
   KSP_Richardson *richardsonP;
 
@@ -242,7 +239,6 @@ PetscErrorCode  KSPRichardsonSetSelfScale_Richardson(KSP ksp,PetscBool selfscale
   richardsonP->selfscale = selfscale;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 /*MC
      KSPRICHARDSON - The preconditioned Richardson iterative method

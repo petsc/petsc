@@ -11,10 +11,9 @@
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
 #include <engine.h>   /* MATLAB include file */
 #include <mex.h>      /* MATLAB include file */
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "VecMatlabEnginePut_DA2d"
-PetscErrorCode  VecMatlabEnginePut_DA2d(PetscObject obj,void *mengine)
+static PetscErrorCode  VecMatlabEnginePut_DA2d(PetscObject obj,void *mengine)
 {
   PetscErrorCode ierr;
   PetscInt       n,m;
@@ -41,7 +40,6 @@ PetscErrorCode  VecMatlabEnginePut_DA2d(PetscObject obj,void *mengine)
   ierr = VecRestoreArray(vec,&array);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 #endif
 
 

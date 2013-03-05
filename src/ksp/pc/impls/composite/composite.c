@@ -290,10 +290,9 @@ static PetscErrorCode PCView_Composite(PC pc,PetscViewer viewer)
 
 /* ------------------------------------------------------------------------------*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCCompositeSpecialSetAlpha_Composite"
-PetscErrorCode  PCCompositeSpecialSetAlpha_Composite(PC pc,PetscScalar alpha)
+static PetscErrorCode  PCCompositeSpecialSetAlpha_Composite(PC pc,PetscScalar alpha)
 {
   PC_Composite *jac = (PC_Composite*)pc->data;
 
@@ -301,12 +300,10 @@ PetscErrorCode  PCCompositeSpecialSetAlpha_Composite(PC pc,PetscScalar alpha)
   jac->alpha = alpha;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCCompositeSetType_Composite"
-PetscErrorCode  PCCompositeSetType_Composite(PC pc,PCCompositeType type)
+static PetscErrorCode  PCCompositeSetType_Composite(PC pc,PCCompositeType type)
 {
   PC_Composite *jac = (PC_Composite*)pc->data;
 
@@ -324,12 +321,10 @@ PetscErrorCode  PCCompositeSetType_Composite(PC pc,PCCompositeType type)
   jac->type = type;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCCompositeAddPC_Composite"
-PetscErrorCode  PCCompositeAddPC_Composite(PC pc,PCType type)
+static PetscErrorCode  PCCompositeAddPC_Composite(PC pc,PCType type)
 {
   PC_Composite     *jac;
   PC_CompositeLink next,ilink;
@@ -366,12 +361,10 @@ PetscErrorCode  PCCompositeAddPC_Composite(PC pc,PCType type)
   ierr = PCSetType(ilink->pc,type);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCCompositeGetPC_Composite"
-PetscErrorCode  PCCompositeGetPC_Composite(PC pc,PetscInt n,PC *subpc)
+static PetscErrorCode  PCCompositeGetPC_Composite(PC pc,PetscInt n,PC *subpc)
 {
   PC_Composite     *jac;
   PC_CompositeLink next;
@@ -387,12 +380,10 @@ PetscErrorCode  PCCompositeGetPC_Composite(PC pc,PetscInt n,PC *subpc)
   *subpc = next->pc;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCCompositeSetUseTrue_Composite"
-PetscErrorCode  PCCompositeSetUseTrue_Composite(PC pc)
+static PetscErrorCode  PCCompositeSetUseTrue_Composite(PC pc)
 {
   PC_Composite *jac;
 
@@ -401,7 +392,6 @@ PetscErrorCode  PCCompositeSetUseTrue_Composite(PC pc)
   jac->use_true_matrix = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 /* -------------------------------------------------------------------------------- */
 #undef __FUNCT__

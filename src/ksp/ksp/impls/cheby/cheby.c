@@ -54,7 +54,7 @@ PetscErrorCode KSPSetUp_Chebyshev(KSP ksp)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPChebyshevSetEigenvalues_Chebyshev"
-PETSC_EXTERN_C PetscErrorCode KSPChebyshevSetEigenvalues_Chebyshev(KSP ksp,PetscReal emax,PetscReal emin)
+static PetscErrorCode KSPChebyshevSetEigenvalues_Chebyshev(KSP ksp,PetscReal emax,PetscReal emin)
 {
   KSP_Chebyshev  *chebyshevP = (KSP_Chebyshev*)ksp->data;
   PetscErrorCode ierr;
@@ -71,7 +71,7 @@ PETSC_EXTERN_C PetscErrorCode KSPChebyshevSetEigenvalues_Chebyshev(KSP ksp,Petsc
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPChebyshevSetEstimateEigenvalues_Chebyshev"
-PETSC_EXTERN_C PetscErrorCode KSPChebyshevSetEstimateEigenvalues_Chebyshev(KSP ksp,PetscReal a,PetscReal b,PetscReal c,PetscReal d)
+static PetscErrorCode KSPChebyshevSetEstimateEigenvalues_Chebyshev(KSP ksp,PetscReal a,PetscReal b,PetscReal c,PetscReal d)
 {
   KSP_Chebyshev  *cheb = (KSP_Chebyshev*)ksp->data;
   PetscErrorCode ierr;
@@ -117,7 +117,7 @@ PETSC_EXTERN_C PetscErrorCode KSPChebyshevSetEstimateEigenvalues_Chebyshev(KSP k
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPChebyshevEstEigSetRandom_Chebyshev"
-PETSC_EXTERN_C PetscErrorCode KSPChebyshevEstEigSetRandom_Chebyshev(KSP ksp,PetscRandom random)
+static PetscErrorCode KSPChebyshevEstEigSetRandom_Chebyshev(KSP ksp,PetscRandom random)
 {
   KSP_Chebyshev  *cheb = (KSP_Chebyshev*)ksp->data;
   PetscErrorCode ierr;
@@ -132,7 +132,7 @@ PETSC_EXTERN_C PetscErrorCode KSPChebyshevEstEigSetRandom_Chebyshev(KSP ksp,Pets
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPChebyshevSetNewMatrix_Chebyshev"
-PETSC_EXTERN_C PetscErrorCode  KSPChebyshevSetNewMatrix_Chebyshev(KSP ksp)
+static PetscErrorCode  KSPChebyshevSetNewMatrix_Chebyshev(KSP ksp)
 {
   KSP_Chebyshev *cheb = (KSP_Chebyshev*)ksp->data;
 

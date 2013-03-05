@@ -728,10 +728,9 @@ PetscErrorCode KSPSetFromOptions_LGMRES(KSP ksp)
 }
 
 /*functions for extra lgmres options here*/
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "KSPLGMRESSetConstant_LGMRES"
-PetscErrorCode  KSPLGMRESSetConstant_LGMRES(KSP ksp)
+static PetscErrorCode  KSPLGMRESSetConstant_LGMRES(KSP ksp)
 {
   KSP_LGMRES *lgmres = (KSP_LGMRES*)ksp->data;
 
@@ -739,12 +738,10 @@ PetscErrorCode  KSPLGMRESSetConstant_LGMRES(KSP ksp)
   lgmres->approx_constant = 1;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "KSPLGMRESSetAugDim_LGMRES"
-PetscErrorCode  KSPLGMRESSetAugDim_LGMRES(KSP ksp,PetscInt aug_dim)
+static PetscErrorCode  KSPLGMRESSetAugDim_LGMRES(KSP ksp,PetscInt aug_dim)
 {
   KSP_LGMRES *lgmres = (KSP_LGMRES*)ksp->data;
 
@@ -754,8 +751,6 @@ PetscErrorCode  KSPLGMRESSetAugDim_LGMRES(KSP ksp,PetscInt aug_dim)
   lgmres->aug_dim = aug_dim;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
-
 
 /* end new lgmres functions */
 

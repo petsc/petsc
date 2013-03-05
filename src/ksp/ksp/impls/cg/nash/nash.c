@@ -632,10 +632,9 @@ PetscErrorCode KSPDestroy_NASH(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "KSPNASHSetRadius_NASH"
-PetscErrorCode  KSPNASHSetRadius_NASH(KSP ksp, PetscReal radius)
+static PetscErrorCode  KSPNASHSetRadius_NASH(KSP ksp, PetscReal radius)
 {
   KSP_NASH *cg = (KSP_NASH*)ksp->data;
 
@@ -646,7 +645,7 @@ PetscErrorCode  KSPNASHSetRadius_NASH(KSP ksp, PetscReal radius)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPNASHGetNormD_NASH"
-PetscErrorCode  KSPNASHGetNormD_NASH(KSP ksp, PetscReal *norm_d)
+static PetscErrorCode  KSPNASHGetNormD_NASH(KSP ksp, PetscReal *norm_d)
 {
   KSP_NASH *cg = (KSP_NASH*)ksp->data;
 
@@ -657,7 +656,7 @@ PetscErrorCode  KSPNASHGetNormD_NASH(KSP ksp, PetscReal *norm_d)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPNASHGetObjFcn_NASH"
-PetscErrorCode  KSPNASHGetObjFcn_NASH(KSP ksp, PetscReal *o_fcn)
+static PetscErrorCode  KSPNASHGetObjFcn_NASH(KSP ksp, PetscReal *o_fcn)
 {
   KSP_NASH *cg = (KSP_NASH*)ksp->data;
 
@@ -665,7 +664,6 @@ PetscErrorCode  KSPNASHGetObjFcn_NASH(KSP ksp, PetscReal *o_fcn)
   *o_fcn = cg->o_fcn;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetFromOptions_NASH"

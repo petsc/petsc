@@ -371,10 +371,9 @@ PetscErrorCode DMRedundantGetSize(DM dm,PetscInt *rank,PetscInt *N)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "DMRedundantSetSize_Redundant"
-PetscErrorCode DMRedundantSetSize_Redundant(DM dm,PetscInt rank,PetscInt N)
+static PetscErrorCode DMRedundantSetSize_Redundant(DM dm,PetscInt rank,PetscInt N)
 {
   DM_Redundant   *red = (DM_Redundant*)dm->data;
   PetscErrorCode ierr;
@@ -390,7 +389,7 @@ PetscErrorCode DMRedundantSetSize_Redundant(DM dm,PetscInt rank,PetscInt N)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMRedundantGetSize_Redundant"
-PetscErrorCode DMRedundantGetSize_Redundant(DM dm,PetscInt *rank,PetscInt *N)
+static PetscErrorCode DMRedundantGetSize_Redundant(DM dm,PetscInt *rank,PetscInt *N)
 {
   DM_Redundant *red = (DM_Redundant*)dm->data;
 
@@ -399,7 +398,6 @@ PetscErrorCode DMRedundantGetSize_Redundant(DM dm,PetscInt *rank,PetscInt *N)
   if (N)    *N = red->N;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 /*MC
    DMREDUNDANT = "redundant" - A DM object that is used to manage data for a small set of dense globally coupled variables.

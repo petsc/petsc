@@ -1046,10 +1046,9 @@ PetscErrorCode  PCGAMGSetProcEqLim(PC pc, PetscInt n)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCGAMGSetProcEqLim_GAMG"
-PetscErrorCode PCGAMGSetProcEqLim_GAMG(PC pc, PetscInt n)
+static PetscErrorCode PCGAMGSetProcEqLim_GAMG(PC pc, PetscInt n)
 {
   PC_MG   *mg      = (PC_MG*)pc->data;
   PC_GAMG *pc_gamg = (PC_GAMG*)mg->innerctx;
@@ -1058,7 +1057,6 @@ PetscErrorCode PCGAMGSetProcEqLim_GAMG(PC pc, PetscInt n)
   if (n>0) pc_gamg->min_eq_proc = n;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "PCGAMGSetCoarseEqLim"
@@ -1090,10 +1088,9 @@ PetscErrorCode PCGAMGSetCoarseEqLim(PC pc, PetscInt n)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCGAMGSetCoarseEqLim_GAMG"
-PetscErrorCode PCGAMGSetCoarseEqLim_GAMG(PC pc, PetscInt n)
+static PetscErrorCode PCGAMGSetCoarseEqLim_GAMG(PC pc, PetscInt n)
 {
   PC_MG   *mg      = (PC_MG*)pc->data;
   PC_GAMG *pc_gamg = (PC_GAMG*)mg->innerctx;
@@ -1102,7 +1099,6 @@ PetscErrorCode PCGAMGSetCoarseEqLim_GAMG(PC pc, PetscInt n)
   if (n>0) pc_gamg->coarse_eq_limit = n;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "PCGAMGSetRepartitioning"
@@ -1134,10 +1130,9 @@ PetscErrorCode PCGAMGSetRepartitioning(PC pc, PetscBool n)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCGAMGSetRepartitioning_GAMG"
-PetscErrorCode PCGAMGSetRepartitioning_GAMG(PC pc, PetscBool n)
+static PetscErrorCode PCGAMGSetRepartitioning_GAMG(PC pc, PetscBool n)
 {
   PC_MG   *mg      = (PC_MG*)pc->data;
   PC_GAMG *pc_gamg = (PC_GAMG*)mg->innerctx;
@@ -1146,7 +1141,6 @@ PetscErrorCode PCGAMGSetRepartitioning_GAMG(PC pc, PetscBool n)
   pc_gamg->repart = n;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "PCGAMGSetReuseProl"
@@ -1178,10 +1172,9 @@ PetscErrorCode PCGAMGSetReuseProl(PC pc, PetscBool n)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCGAMGSetReuseProl_GAMG"
-PetscErrorCode PCGAMGSetReuseProl_GAMG(PC pc, PetscBool n)
+static PetscErrorCode PCGAMGSetReuseProl_GAMG(PC pc, PetscBool n)
 {
   PC_MG   *mg      = (PC_MG*)pc->data;
   PC_GAMG *pc_gamg = (PC_GAMG*)mg->innerctx;
@@ -1190,7 +1183,6 @@ PetscErrorCode PCGAMGSetReuseProl_GAMG(PC pc, PetscBool n)
   pc_gamg->reuse_prol = n;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "PCGAMGSetUseASMAggs"
@@ -1222,10 +1214,9 @@ PetscErrorCode PCGAMGSetUseASMAggs(PC pc, PetscBool n)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCGAMGSetUseASMAggs_GAMG"
-PetscErrorCode PCGAMGSetUseASMAggs_GAMG(PC pc, PetscBool n)
+static PetscErrorCode PCGAMGSetUseASMAggs_GAMG(PC pc, PetscBool n)
 {
   PC_MG   *mg      = (PC_MG*)pc->data;
   PC_GAMG *pc_gamg = (PC_GAMG*)mg->innerctx;
@@ -1234,7 +1225,6 @@ PetscErrorCode PCGAMGSetUseASMAggs_GAMG(PC pc, PetscBool n)
   pc_gamg->use_aggs_in_gasm = n;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "PCGAMGSetNlevels"
@@ -1266,10 +1256,9 @@ PetscErrorCode PCGAMGSetNlevels(PC pc, PetscInt n)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCGAMGSetNlevels_GAMG"
-PetscErrorCode PCGAMGSetNlevels_GAMG(PC pc, PetscInt n)
+static PetscErrorCode PCGAMGSetNlevels_GAMG(PC pc, PetscInt n)
 {
   PC_MG   *mg      = (PC_MG*)pc->data;
   PC_GAMG *pc_gamg = (PC_GAMG*)mg->innerctx;
@@ -1278,7 +1267,6 @@ PetscErrorCode PCGAMGSetNlevels_GAMG(PC pc, PetscInt n)
   pc_gamg->Nlevels = n;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "PCGAMGSetThreshold"
@@ -1310,10 +1298,9 @@ PetscErrorCode PCGAMGSetThreshold(PC pc, PetscReal n)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCGAMGSetThreshold_GAMG"
-PetscErrorCode PCGAMGSetThreshold_GAMG(PC pc, PetscReal n)
+static PetscErrorCode PCGAMGSetThreshold_GAMG(PC pc, PetscReal n)
 {
   PC_MG   *mg      = (PC_MG*)pc->data;
   PC_GAMG *pc_gamg = (PC_GAMG*)mg->innerctx;
@@ -1322,7 +1309,6 @@ PetscErrorCode PCGAMGSetThreshold_GAMG(PC pc, PetscReal n)
   pc_gamg->threshold = n;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "PCGAMGSetType"
@@ -1354,10 +1340,9 @@ PetscErrorCode PCGAMGSetType(PC pc, PCGAMGType type)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCGAMGSetType_GAMG"
-PetscErrorCode PCGAMGSetType_GAMG(PC pc, PCGAMGType type)
+static PetscErrorCode PCGAMGSetType_GAMG(PC pc, PCGAMGType type)
 {
   PetscErrorCode ierr,(*r)(PC);
 
@@ -1367,7 +1352,6 @@ PetscErrorCode PCGAMGSetType_GAMG(PC pc, PCGAMGType type)
   ierr = (*r)(pc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_GAMG"

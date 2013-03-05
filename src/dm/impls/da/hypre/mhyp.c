@@ -384,7 +384,7 @@ PetscErrorCode MatZeroEntries_HYPREStruct_3d(Mat mat)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSetupDM_HYPREStruct"
-PetscErrorCode  MatSetupDM_HYPREStruct(Mat mat,DM da)
+static PetscErrorCode  MatSetupDM_HYPREStruct(Mat mat,DM da)
 {
   PetscErrorCode   ierr;
   Mat_HYPREStruct  *ex = (Mat_HYPREStruct*) mat->data;
@@ -821,7 +821,7 @@ PetscErrorCode MatZeroEntries_HYPRESStruct_3d(Mat mat)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSetupDM_HYPRESStruct"
-PetscErrorCode  MatSetupDM_HYPRESStruct(Mat mat,DM da)
+static PetscErrorCode  MatSetupDM_HYPRESStruct(Mat mat,DM da)
 {
   PetscErrorCode   ierr;
   Mat_HYPRESStruct *ex = (Mat_HYPRESStruct*) mat->data;

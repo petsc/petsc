@@ -1382,10 +1382,9 @@ PetscErrorCode KSPDestroy_GLTR(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "KSPGLTRSetRadius_GLTR"
-PetscErrorCode  KSPGLTRSetRadius_GLTR(KSP ksp, PetscReal radius)
+static PetscErrorCode  KSPGLTRSetRadius_GLTR(KSP ksp, PetscReal radius)
 {
   KSP_GLTR *cg = (KSP_GLTR*)ksp->data;
 
@@ -1396,7 +1395,7 @@ PetscErrorCode  KSPGLTRSetRadius_GLTR(KSP ksp, PetscReal radius)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPGLTRGetNormD_GLTR"
-PetscErrorCode  KSPGLTRGetNormD_GLTR(KSP ksp, PetscReal *norm_d)
+static PetscErrorCode  KSPGLTRGetNormD_GLTR(KSP ksp, PetscReal *norm_d)
 {
   KSP_GLTR *cg = (KSP_GLTR*)ksp->data;
 
@@ -1407,7 +1406,7 @@ PetscErrorCode  KSPGLTRGetNormD_GLTR(KSP ksp, PetscReal *norm_d)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPGLTRGetObjFcn_GLTR"
-PetscErrorCode  KSPGLTRGetObjFcn_GLTR(KSP ksp, PetscReal *o_fcn)
+static PetscErrorCode  KSPGLTRGetObjFcn_GLTR(KSP ksp, PetscReal *o_fcn)
 {
   KSP_GLTR *cg = (KSP_GLTR*)ksp->data;
 
@@ -1418,7 +1417,7 @@ PetscErrorCode  KSPGLTRGetObjFcn_GLTR(KSP ksp, PetscReal *o_fcn)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPGLTRGetMinEig_GLTR"
-PetscErrorCode  KSPGLTRGetMinEig_GLTR(KSP ksp, PetscReal *e_min)
+static PetscErrorCode  KSPGLTRGetMinEig_GLTR(KSP ksp, PetscReal *e_min)
 {
   KSP_GLTR *cg = (KSP_GLTR*)ksp->data;
 
@@ -1429,7 +1428,7 @@ PetscErrorCode  KSPGLTRGetMinEig_GLTR(KSP ksp, PetscReal *e_min)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPGLTRGetLambda_GLTR"
-PetscErrorCode  KSPGLTRGetLambda_GLTR(KSP ksp, PetscReal *lambda)
+static PetscErrorCode  KSPGLTRGetLambda_GLTR(KSP ksp, PetscReal *lambda)
 {
   KSP_GLTR *cg = (KSP_GLTR*)ksp->data;
 
@@ -1437,7 +1436,6 @@ PetscErrorCode  KSPGLTRGetLambda_GLTR(KSP ksp, PetscReal *lambda)
   *lambda = cg->lambda;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetFromOptions_GLTR"

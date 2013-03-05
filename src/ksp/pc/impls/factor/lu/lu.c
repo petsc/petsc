@@ -7,7 +7,6 @@
 
 #include <../src/ksp/pc/impls/factor/lu/lu.h>  /*I "petscpc.h" I*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCFactorReorderForNonzeroDiagonal_LU"
 PetscErrorCode  PCFactorReorderForNonzeroDiagonal_LU(PC pc,PetscReal z)
@@ -20,9 +19,7 @@ PetscErrorCode  PCFactorReorderForNonzeroDiagonal_LU(PC pc,PetscReal z)
   else lu->nonzerosalongdiagonaltol = z;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCFactorSetReuseOrdering_LU"
 PetscErrorCode  PCFactorSetReuseOrdering_LU(PC pc,PetscBool flag)
@@ -33,9 +30,7 @@ PetscErrorCode  PCFactorSetReuseOrdering_LU(PC pc,PetscBool flag)
   lu->reuseordering = flag;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCFactorSetReuseFill_LU"
 PetscErrorCode  PCFactorSetReuseFill_LU(PC pc,PetscBool flag)
@@ -46,7 +41,6 @@ PetscErrorCode  PCFactorSetReuseFill_LU(PC pc,PetscBool flag)
   lu->reusefill = flag;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_LU"
@@ -224,7 +218,6 @@ static PetscErrorCode PCApplyTranspose_LU(PC pc,Vec x,Vec y)
 
 /* -----------------------------------------------------------------------------------*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCFactorSetUseInPlace_LU"
 PetscErrorCode  PCFactorSetUseInPlace_LU(PC pc)
@@ -235,7 +228,6 @@ PetscErrorCode  PCFactorSetUseInPlace_LU(PC pc)
   dir->inplace = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 /* ------------------------------------------------------------------------ */
 

@@ -86,10 +86,9 @@ PetscErrorCode  PCASASetTolerances(PC pc, PetscReal rtol, PetscReal abstol,Petsc
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCASASetTolerances_ASA"
-PetscErrorCode  PCASASetTolerances_ASA(PC pc, PetscReal rtol, PetscReal abstol,PetscReal dtol, PetscInt maxits)
+static PetscErrorCode  PCASASetTolerances_ASA(PC pc, PetscReal rtol, PetscReal abstol,PetscReal dtol, PetscInt maxits)
 {
   PC_ASA *asa = (PC_ASA*) pc->data;
 
@@ -101,7 +100,6 @@ PetscErrorCode  PCASASetTolerances_ASA(PC pc, PetscReal rtol, PetscReal abstol,P
   if (maxits != PETSC_DEFAULT) asa->max_it = maxits;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "PCCreateLevel_ASA"

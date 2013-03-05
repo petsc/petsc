@@ -5,7 +5,6 @@
 #include <../src/ksp/pc/impls/factor/ilu/ilu.h>     /*I "petscpc.h"  I*/
 
 /* ------------------------------------------------------------------------------------------*/
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCFactorSetReuseFill_ILU"
 PetscErrorCode  PCFactorSetReuseFill_ILU(PC pc,PetscBool flag)
@@ -16,9 +15,7 @@ PetscErrorCode  PCFactorSetReuseFill_ILU(PC pc,PetscBool flag)
   lu->reusefill = flag;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCFactorReorderForNonzeroDiagonal_ILU"
 PetscErrorCode  PCFactorReorderForNonzeroDiagonal_ILU(PC pc,PetscReal z)
@@ -31,7 +28,6 @@ PetscErrorCode  PCFactorReorderForNonzeroDiagonal_ILU(PC pc,PetscReal z)
   else ilu->nonzerosalongdiagonaltol = z;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "PCReset_ILU"
@@ -47,7 +43,6 @@ PetscErrorCode PCReset_ILU(PC pc)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCFactorSetDropTolerance_ILU"
 PetscErrorCode  PCFactorSetDropTolerance_ILU(PC pc,PetscReal dt,PetscReal dtcol,PetscInt dtcount)
@@ -64,9 +59,7 @@ PetscErrorCode  PCFactorSetDropTolerance_ILU(PC pc,PetscReal dt,PetscReal dtcol,
   ((PC_Factor*)ilu)->info.usedt   = 1.0;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCFactorSetReuseOrdering_ILU"
 PetscErrorCode  PCFactorSetReuseOrdering_ILU(PC pc,PetscBool flag)
@@ -77,9 +70,7 @@ PetscErrorCode  PCFactorSetReuseOrdering_ILU(PC pc,PetscBool flag)
   ilu->reuseordering = flag;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCFactorSetUseInPlace_ILU"
 PetscErrorCode  PCFactorSetUseInPlace_ILU(PC pc)
@@ -90,7 +81,6 @@ PetscErrorCode  PCFactorSetUseInPlace_ILU(PC pc)
   dir->inplace = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_ILU"

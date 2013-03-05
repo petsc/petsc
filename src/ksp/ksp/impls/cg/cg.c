@@ -379,13 +379,10 @@ PetscErrorCode KSPSetFromOptions_CG(KSP ksp)
     KSPCGSetType_CG - This is an option that is SPECIFIC to this particular Krylov method.
                       This routine is registered below in KSPCreate_CG() and called from the
                       routine KSPCGSetType() (see the file cgtype.c).
-
-        This must be wrapped in an EXTERN_C_BEGIN to be dynamically linkable in C++
 */
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "KSPCGSetType_CG"
-PetscErrorCode  KSPCGSetType_CG(KSP ksp,KSPCGType type)
+static PetscErrorCode  KSPCGSetType_CG(KSP ksp,KSPCGType type)
 {
   KSP_CG *cg = (KSP_CG*)ksp->data;
 
@@ -393,12 +390,10 @@ PetscErrorCode  KSPCGSetType_CG(KSP ksp,KSPCGType type)
   cg->type = type;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "KSPCGUseSingleReduction_CG"
-PetscErrorCode  KSPCGUseSingleReduction_CG(KSP ksp,PetscBool flg)
+static PetscErrorCode  KSPCGUseSingleReduction_CG(KSP ksp,PetscBool flg)
 {
   KSP_CG *cg = (KSP_CG*)ksp->data;
 
@@ -406,7 +401,6 @@ PetscErrorCode  KSPCGUseSingleReduction_CG(KSP ksp,PetscBool flg)
   cg->singlereduction = flg;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 /*
     KSPCreate_CG - Creates the data structure for the Krylov method CG and sets the

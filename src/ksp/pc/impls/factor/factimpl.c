@@ -4,7 +4,6 @@
 /* ------------------------------------------------------------------------------------------*/
 
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCFactorSetUpMatSolverPackage_Factor"
 PetscErrorCode PCFactorSetUpMatSolverPackage_Factor(PC pc)
@@ -18,9 +17,7 @@ PetscErrorCode PCFactorSetUpMatSolverPackage_Factor(PC pc)
   }
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCFactorSetZeroPivot_Factor"
 PetscErrorCode  PCFactorSetZeroPivot_Factor(PC pc,PetscReal z)
@@ -31,9 +28,7 @@ PetscErrorCode  PCFactorSetZeroPivot_Factor(PC pc,PetscReal z)
   ilu->info.zeropivot = z;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCFactorSetShiftType_Factor"
 PetscErrorCode  PCFactorSetShiftType_Factor(PC pc,MatFactorShiftType shifttype)
@@ -62,9 +57,7 @@ PetscErrorCode  PCFactorSetShiftAmount_Factor(PC pc,PetscReal shiftamount)
   else dir->info.shiftamount = shiftamount;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCFactorSetDropTolerance_Factor"
 PetscErrorCode  PCFactorSetDropTolerance_Factor(PC pc,PetscReal dt,PetscReal dtcol,PetscInt dtcount)
@@ -82,9 +75,7 @@ PetscErrorCode  PCFactorSetDropTolerance_Factor(PC pc,PetscReal dt,PetscReal dtc
   ilu->info.fill    = PETSC_DEFAULT;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCFactorSetFill_Factor"
 PetscErrorCode  PCFactorSetFill_Factor(PC pc,PetscReal fill)
@@ -95,9 +86,7 @@ PetscErrorCode  PCFactorSetFill_Factor(PC pc,PetscReal fill)
   dir->info.fill = fill;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCFactorSetMatOrderingType_Factor"
 PetscErrorCode  PCFactorSetMatOrderingType_Factor(PC pc,MatOrderingType ordering)
@@ -116,9 +105,7 @@ PetscErrorCode  PCFactorSetMatOrderingType_Factor(PC pc,MatOrderingType ordering
   }
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCFactorSetLevels_Factor"
 PetscErrorCode  PCFactorSetLevels_Factor(PC pc,PetscInt levels)
@@ -135,9 +122,7 @@ PetscErrorCode  PCFactorSetLevels_Factor(PC pc,PetscInt levels)
   } else if (ilu->info.usedt) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Cannot change levels after use with ILUdt");
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCFactorSetAllowDiagonalFill_Factor"
 PetscErrorCode  PCFactorSetAllowDiagonalFill_Factor(PC pc)
@@ -148,12 +133,9 @@ PetscErrorCode  PCFactorSetAllowDiagonalFill_Factor(PC pc)
   dir->info.diagonal_fill = 1;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
-
 
 /* ------------------------------------------------------------------------------------------*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCFactorSetPivotInBlocks_Factor"
 PetscErrorCode  PCFactorSetPivotInBlocks_Factor(PC pc,PetscBool pivot)
@@ -164,7 +146,6 @@ PetscErrorCode  PCFactorSetPivotInBlocks_Factor(PC pc,PetscBool pivot)
   dir->info.pivotinblocks = pivot ? 1.0 : 0.0;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "PCFactorGetMatrix_Factor"
@@ -178,7 +159,6 @@ PetscErrorCode  PCFactorGetMatrix_Factor(PC pc,Mat *mat)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCFactorSetMatSolverPackage_Factor"
 PetscErrorCode  PCFactorSetMatSolverPackage_Factor(PC pc,const MatSolverPackage stype)
@@ -199,9 +179,7 @@ PetscErrorCode  PCFactorSetMatSolverPackage_Factor(PC pc,const MatSolverPackage 
   }
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCFactorGetMatSolverPackage_Factor"
 PetscErrorCode  PCFactorGetMatSolverPackage_Factor(PC pc,const MatSolverPackage *stype)
@@ -212,9 +190,7 @@ PetscErrorCode  PCFactorGetMatSolverPackage_Factor(PC pc,const MatSolverPackage 
   *stype = lu->solvertype;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCFactorSetColumnPivot_Factor"
 PetscErrorCode  PCFactorSetColumnPivot_Factor(PC pc,PetscReal dtcol)
@@ -226,9 +202,7 @@ PetscErrorCode  PCFactorSetColumnPivot_Factor(PC pc,PetscReal dtcol)
   dir->info.dtcol = dtcol;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_Factor"
 PetscErrorCode  PCSetFromOptions_Factor(PC pc)
@@ -288,9 +262,7 @@ PetscErrorCode  PCSetFromOptions_Factor(PC pc)
   }
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCView_Factor"
 PetscErrorCode PCView_Factor(PC pc,PetscViewer viewer)
@@ -353,4 +325,3 @@ PetscErrorCode PCView_Factor(PC pc,PetscViewer viewer)
   }
   PetscFunctionReturn(0);
 }
-EXTERN_C_END

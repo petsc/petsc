@@ -56,7 +56,7 @@ PetscErrorCode PCSetFromOptions_BDDC(PC pc)
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
-EXTERN_C_BEGIN
+
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCSetCoarseProblemType_BDDC"
 static PetscErrorCode PCBDDCSetCoarseProblemType_BDDC(PC pc, CoarseProblemType CPT)
@@ -67,7 +67,7 @@ static PetscErrorCode PCBDDCSetCoarseProblemType_BDDC(PC pc, CoarseProblemType C
   pcbddc->coarse_problem_type = CPT;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
+
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCSetCoarseProblemType"
 /*@
@@ -96,7 +96,6 @@ PetscErrorCode PCBDDCSetCoarseProblemType(PC pc, CoarseProblemType CPT)
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCSetCoarseningRatio_BDDC"
 static PetscErrorCode PCBDDCSetCoarseningRatio_BDDC(PC pc,PetscInt k)
@@ -107,7 +106,7 @@ static PetscErrorCode PCBDDCSetCoarseningRatio_BDDC(PC pc,PetscInt k)
   pcbddc->coarsening_ratio=k;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
+
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCSetCoarseningRatio"
 /*@
@@ -137,7 +136,7 @@ PetscErrorCode PCBDDCSetCoarseningRatio(PC pc,PetscInt k)
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
-EXTERN_C_BEGIN
+
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCSetMaxLevels_BDDC"
 static PetscErrorCode PCBDDCSetMaxLevels_BDDC(PC pc,PetscInt max_levels)
@@ -148,7 +147,7 @@ static PetscErrorCode PCBDDCSetMaxLevels_BDDC(PC pc,PetscInt max_levels)
   pcbddc->max_levels=max_levels;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
+
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCSetMaxLevels"
 /*@
@@ -179,7 +178,7 @@ PetscErrorCode PCBDDCSetMaxLevels(PC pc,PetscInt max_levels)
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
-EXTERN_C_BEGIN
+
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCSetNullSpace_BDDC"
 static PetscErrorCode PCBDDCSetNullSpace_BDDC(PC pc,MatNullSpace NullSpace)
@@ -194,7 +193,7 @@ static PetscErrorCode PCBDDCSetNullSpace_BDDC(PC pc,MatNullSpace NullSpace)
   pcbddc->NullSpace = NullSpace;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
+
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCSetNullSpace"
 /*@
@@ -222,7 +221,7 @@ PetscErrorCode PCBDDCSetNullSpace(PC pc,MatNullSpace NullSpace)
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
-EXTERN_C_BEGIN
+
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCSetDirichletBoundaries_BDDC"
 static PetscErrorCode PCBDDCSetDirichletBoundaries_BDDC(PC pc,IS DirichletBoundaries)
@@ -237,7 +236,7 @@ static PetscErrorCode PCBDDCSetDirichletBoundaries_BDDC(PC pc,IS DirichletBounda
   pcbddc->DirichletBoundaries = DirichletBoundaries;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
+
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCSetDirichletBoundaries"
 /*@
@@ -266,7 +265,7 @@ PetscErrorCode PCBDDCSetDirichletBoundaries(PC pc,IS DirichletBoundaries)
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
-EXTERN_C_BEGIN
+
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCSetNeumannBoundaries_BDDC"
 static PetscErrorCode PCBDDCSetNeumannBoundaries_BDDC(PC pc,IS NeumannBoundaries)
@@ -281,7 +280,7 @@ static PetscErrorCode PCBDDCSetNeumannBoundaries_BDDC(PC pc,IS NeumannBoundaries
   pcbddc->NeumannBoundaries = NeumannBoundaries;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
+
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCSetNeumannBoundaries"
 /*@
@@ -310,7 +309,7 @@ PetscErrorCode PCBDDCSetNeumannBoundaries(PC pc,IS NeumannBoundaries)
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
-EXTERN_C_BEGIN
+
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCGetDirichletBoundaries_BDDC"
 static PetscErrorCode PCBDDCGetDirichletBoundaries_BDDC(PC pc,IS *DirichletBoundaries)
@@ -321,7 +320,7 @@ static PetscErrorCode PCBDDCGetDirichletBoundaries_BDDC(PC pc,IS *DirichletBound
   *DirichletBoundaries = pcbddc->DirichletBoundaries;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
+
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCGetDirichletBoundaries"
 /*@
@@ -352,7 +351,7 @@ PetscErrorCode PCBDDCGetDirichletBoundaries(PC pc,IS *DirichletBoundaries)
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
-EXTERN_C_BEGIN
+
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCGetNeumannBoundaries_BDDC"
 static PetscErrorCode PCBDDCGetNeumannBoundaries_BDDC(PC pc,IS *NeumannBoundaries)
@@ -363,7 +362,7 @@ static PetscErrorCode PCBDDCGetNeumannBoundaries_BDDC(PC pc,IS *NeumannBoundarie
   *NeumannBoundaries = pcbddc->NeumannBoundaries;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
+
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCGetNeumannBoundaries"
 /*@
@@ -394,7 +393,7 @@ PetscErrorCode PCBDDCGetNeumannBoundaries(PC pc,IS *NeumannBoundaries)
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
-EXTERN_C_BEGIN
+
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCSetLocalAdjacencyGraph_BDDC"
 static PetscErrorCode PCBDDCSetLocalAdjacencyGraph_BDDC(PC pc, PetscInt nvtxs,const PetscInt xadj[],const PetscInt adjncy[], PetscCopyMode copymode)
@@ -419,7 +418,7 @@ static PetscErrorCode PCBDDCSetLocalAdjacencyGraph_BDDC(PC pc, PetscInt nvtxs,co
   } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unsupported copy mode %d\n",copymode);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
+
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCSetLocalAdjacencyGraph"
 /*@
@@ -456,7 +455,7 @@ PetscErrorCode PCBDDCSetLocalAdjacencyGraph(PC pc,PetscInt nvtxs,const PetscInt 
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
-EXTERN_C_BEGIN
+
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCSetDofsSplitting_BDDC"
 static PetscErrorCode PCBDDCSetDofsSplitting_BDDC(PC pc,PetscInt n_is, IS ISForDofs[])
@@ -481,7 +480,7 @@ static PetscErrorCode PCBDDCSetDofsSplitting_BDDC(PC pc,PetscInt n_is, IS ISForD
   pcbddc->n_ISForDofs=n_is;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
+
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCSetDofsSplitting"
 /*@
@@ -892,7 +891,7 @@ PetscErrorCode PCDestroy_BDDC(PC pc)
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
-EXTERN_C_BEGIN
+
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCMatFETIDPGetRHS_BDDC"
 static PetscErrorCode PCBDDCMatFETIDPGetRHS_BDDC(Mat fetidp_mat, Vec standard_rhs, Vec fetidp_flux_rhs)
@@ -945,7 +944,7 @@ static PetscErrorCode PCBDDCMatFETIDPGetRHS_BDDC(Mat fetidp_mat, Vec standard_rh
   ierr = VecCopy(pcbddc->original_rhs,standard_rhs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
+
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCMatFETIDPGetRHS"
 /*@
@@ -977,7 +976,7 @@ PetscErrorCode PCBDDCMatFETIDPGetRHS(Mat fetidp_mat, Vec standard_rhs, Vec fetid
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
-EXTERN_C_BEGIN
+
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCMatFETIDPGetSolution_BDDC"
 static PetscErrorCode PCBDDCMatFETIDPGetSolution_BDDC(Mat fetidp_mat, Vec fetidp_flux_sol, Vec standard_sol)
@@ -1020,7 +1019,7 @@ static PetscErrorCode PCBDDCMatFETIDPGetSolution_BDDC(Mat fetidp_mat, Vec fetidp
   PetscFunctionReturn(0);
 
 }
-EXTERN_C_END
+
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCMatFETIDPGetSolution"
 /*@
@@ -1052,7 +1051,7 @@ PetscErrorCode PCBDDCMatFETIDPGetSolution(Mat fetidp_mat, Vec fetidp_flux_sol, V
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
-EXTERN_C_BEGIN
+
 extern PetscErrorCode FETIDPMatMult(Mat,Vec,Vec);
 extern PetscErrorCode PCBDDCDestroyFETIDPMat(Mat);
 extern PetscErrorCode FETIDPPCApply(PC,Vec,Vec);
@@ -1093,7 +1092,7 @@ static PetscErrorCode PCBDDCCreateFETIDPOperators_BDDC(PC pc, Mat *fetidp_mat, P
   *fetidp_pc  = newpc;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
+
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCCreateFETIDPOperators"
 /*@

@@ -580,10 +580,10 @@ PetscErrorCode KSPSetFromOptions_FGMRES(KSP ksp)
 
 typedef PetscErrorCode (*FCN1)(KSP,PetscInt,PetscInt,PetscReal,void*); /* force argument to next function to not be extern C*/
 typedef PetscErrorCode (*FCN2)(void*);
-EXTERN_C_BEGIN
+
 #undef __FUNCT__
 #define __FUNCT__ "KSPFGMRESSetModifyPC_FGMRES"
-PetscErrorCode  KSPFGMRESSetModifyPC_FGMRES(KSP ksp,FCN1 fcn,void *ctx,FCN2 d)
+static PetscErrorCode  KSPFGMRESSetModifyPC_FGMRES(KSP ksp,FCN1 fcn,void *ctx,FCN2 d)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
@@ -592,7 +592,7 @@ PetscErrorCode  KSPFGMRESSetModifyPC_FGMRES(KSP ksp,FCN1 fcn,void *ctx,FCN2 d)
   ((KSP_FGMRES*)ksp->data)->modifyctx     = ctx;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
+
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPReset_FGMRES"
@@ -615,7 +615,6 @@ PetscErrorCode KSPReset_FGMRES(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "KSPGMRESSetRestart_FGMRES"
 PetscErrorCode  KSPGMRESSetRestart_FGMRES(KSP ksp,PetscInt max_k)
@@ -635,9 +634,7 @@ PetscErrorCode  KSPGMRESSetRestart_FGMRES(KSP ksp,PetscInt max_k)
   }
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "KSPGMRESGetRestart_FGMRES"
 PetscErrorCode  KSPGMRESGetRestart_FGMRES(KSP ksp,PetscInt *max_k)
@@ -648,7 +645,6 @@ PetscErrorCode  KSPGMRESGetRestart_FGMRES(KSP ksp,PetscInt *max_k)
   *max_k = gmres->max_k;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 /*MC
      KSPFGMRES - Implements the Flexible Generalized Minimal Residual method.

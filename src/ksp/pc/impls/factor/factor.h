@@ -16,7 +16,6 @@ typedef struct {
 
 extern PetscErrorCode PCFactorGetMatrix_Factor(PC,Mat*);
 
-EXTERN_C_BEGIN
 extern PetscErrorCode PCFactorSetZeroPivot_Factor(PC,PetscReal);
 extern PetscErrorCode PCFactorSetShiftType_Factor(PC,MatFactorShiftType);
 extern PetscErrorCode PCFactorSetShiftAmount_Factor(PC,PetscReal);
@@ -32,6 +31,5 @@ extern PetscErrorCode PCFactorGetMatSolverPackage_Factor(PC,const MatSolverPacka
 extern PetscErrorCode PCFactorSetColumnPivot_Factor(PC,PetscReal);
 extern PetscErrorCode PCSetFromOptions_Factor(PC);
 extern PetscErrorCode PCView_Factor(PC,PetscViewer);
-EXTERN_C_END
 
 #endif
