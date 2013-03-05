@@ -19,7 +19,7 @@ checkers=("assert.sh" "bool-condition.sh" "chkxxx-space.sh" "closing-bracket.sh"
           "space-in-cast.sh" "tabs.sh")
 
 script_args="$@"
-echo $script_args
+#echo $script_args
 
 for check in "${checkers[@]}";
 do
