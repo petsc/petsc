@@ -503,6 +503,21 @@ runex5f90t:
 	   if (${DIFF} output/ex5f90_1.out ex5f90t_1.tmp) then true; \
 	   else  echo  ${PWD} "\nPossible problem with with ex5f90t_1, diffs above \n========================================="; fi; \
 	   ${RM} -f ex5f90t_1.tmp
+testex5f90t: ex5f90t.PETSc
+	@if [ "${PETSC_WITH_BATCH}" != "" ]; then \
+           echo "Running with batch filesystem; to test run src/snes/examples/tutorials/ex5f90t with" ; \
+           echo "your systems batch system"; \
+        elif [ "${MPIEXEC}" = "/bin/false" ]; then \
+           echo "*mpiexec not found*. Please run src/snes/examples/tutorials/ex5f90t manually"; \
+        elif [ -f ex5f90t ]; then \
+	   ${MPIEXEC} -n 1 ./ex5f90t > ex5f90t_1.tmp 2>&1; \
+	   if (${DIFF} output/ex5f90t_1.testout ex5f90t_1.tmp > /dev/null 2>&1) then \
+           echo "Fortran example src/snes/examples/tutorials/ex5f90t run successfully with 1 MPI process"; \
+	   else echo "Possible error running Fortran example src/snes/examples/tutorials/ex5f90t with 1 MPI process"; \
+           echo "See http://www.mcs.anl.gov/petsc/documentation/faq.html";\
+           cat ex5f90t_1.tmp; fi;  \
+         ${RM} -f ex5f90t_1.tmp ;\
+         ${MAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ex5f90t.rm; fi
 runex7:
 	-@${MPIEXEC} -n 1 ./ex7 -snes_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex7_1.tmp 2>&1; \
 	   if (${DIFF} output/ex7_1.out ex7_1.tmp) then true; \
