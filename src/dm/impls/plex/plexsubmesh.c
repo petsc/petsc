@@ -18,7 +18,7 @@ extern PetscErrorCode DMPlexGetNumFaceVertices_Internal(DM, PetscInt, PetscInt, 
   Level: developer
 
 .seealso: DMLabelCreate(), DMPlexCreateLabel()
-*/
+@*/
 PetscErrorCode DMPlexMarkBoundaryFaces(DM dm, DMLabel label)
 {
   PetscInt       fStart, fEnd, f;
