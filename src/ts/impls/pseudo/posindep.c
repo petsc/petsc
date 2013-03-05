@@ -559,7 +559,6 @@ PetscErrorCode  TSPseudoSetTimeStep(TS ts,PetscErrorCode (*dt)(TS,PetscReal*,voi
 /* ----------------------------------------------------------------------------- */
 
 typedef PetscErrorCode (*FCN1)(TS,Vec,void*,PetscReal*,PetscBool*);  /* force argument to next function to not be extern C*/
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TSPseudoSetVerifyTimeStep_Pseudo"
 PetscErrorCode  TSPseudoSetVerifyTimeStep_Pseudo(TS ts,FCN1 dt,void *ctx)
@@ -572,9 +571,7 @@ PetscErrorCode  TSPseudoSetVerifyTimeStep_Pseudo(TS ts,FCN1 dt,void *ctx)
   pseudo->verifyctx = ctx;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TSPseudoSetTimeStepIncrement_Pseudo"
 PetscErrorCode  TSPseudoSetTimeStepIncrement_Pseudo(TS ts,PetscReal inc)
@@ -585,9 +582,7 @@ PetscErrorCode  TSPseudoSetTimeStepIncrement_Pseudo(TS ts,PetscReal inc)
   pseudo->dt_increment = inc;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TSPseudoSetMaxTimeStep_Pseudo"
 PetscErrorCode  TSPseudoSetMaxTimeStep_Pseudo(TS ts,PetscReal maxdt)
@@ -598,9 +593,7 @@ PetscErrorCode  TSPseudoSetMaxTimeStep_Pseudo(TS ts,PetscReal maxdt)
   pseudo->dt_max = maxdt;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TSPseudoIncrementDtFromInitialDt_Pseudo"
 PetscErrorCode  TSPseudoIncrementDtFromInitialDt_Pseudo(TS ts)
@@ -611,10 +604,8 @@ PetscErrorCode  TSPseudoIncrementDtFromInitialDt_Pseudo(TS ts)
   pseudo->increment_dt_from_initial_dt = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 typedef PetscErrorCode (*FCN2)(TS,PetscReal*,void*); /* force argument to next function to not be extern C*/
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TSPseudoSetTimeStep_Pseudo"
 PetscErrorCode  TSPseudoSetTimeStep_Pseudo(TS ts,FCN2 dt,void *ctx)
@@ -626,7 +617,6 @@ PetscErrorCode  TSPseudoSetTimeStep_Pseudo(TS ts,FCN2 dt,void *ctx)
   pseudo->dtctx = ctx;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 /* ----------------------------------------------------------------------------- */
 /*MC
@@ -672,10 +662,9 @@ $  Xdot = (Xpredicted - Xold)/dt = (Xold-Xold)/dt = 0
 .seealso:  TSCreate(), TS, TSSetType()
 
 M*/
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TSCreate_Pseudo"
-PetscErrorCode  TSCreate_Pseudo(TS ts)
+PETSC_EXTERN_C PetscErrorCode  TSCreate_Pseudo(TS ts)
 {
   TS_Pseudo      *pseudo;
   PetscErrorCode ierr;
@@ -712,7 +701,6 @@ PetscErrorCode  TSCreate_Pseudo(TS ts)
   ierr = PetscObjectComposeFunction((PetscObject)ts,"TSPseudoSetTimeStep_C","TSPseudoSetTimeStep_Pseudo",TSPseudoSetTimeStep_Pseudo);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "TSPseudoDefaultTimeStep"

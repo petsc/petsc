@@ -250,8 +250,6 @@ static PetscErrorCode TSView_Alpha(TS ts,PetscViewer viewer)
 
 /*------------------------------------------------------------*/
 
-EXTERN_C_BEGIN
-
 #undef __FUNCT__
 #define __FUNCT__ "TSAlphaSetRadius_Alpha"
 PetscErrorCode  TSAlphaSetRadius_Alpha(TS ts,PetscReal radius)
@@ -304,8 +302,6 @@ PetscErrorCode  TSAlphaSetAdapt_Alpha(TS ts,TSAlphaAdaptFunction adapt,void *ctx
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_END
-
 /* ------------------------------------------------------------ */
 /*MC
       TSALPHA - DAE solver using the implicit Generalized-Alpha method
@@ -326,10 +322,9 @@ EXTERN_C_END
 .seealso:  TSCreate(), TS, TSSetType()
 
 M*/
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TSCreate_Alpha"
-PetscErrorCode  TSCreate_Alpha(TS ts)
+PETSC_EXTERN_C PetscErrorCode  TSCreate_Alpha(TS ts)
 {
   TS_Alpha       *th;
   PetscErrorCode ierr;
@@ -366,7 +361,6 @@ PetscErrorCode  TSCreate_Alpha(TS ts)
   ierr = PetscObjectComposeFunction((PetscObject)ts,"TSAlphaGetParams_C","TSAlphaGetParams_Alpha",TSAlphaGetParams_Alpha);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "TSAlphaSetAdapt"

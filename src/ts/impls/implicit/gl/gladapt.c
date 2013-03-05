@@ -18,11 +18,9 @@ struct _p_TSGLAdapt {
   void *data;
 };
 
-EXTERN_C_BEGIN
-PetscErrorCode  TSGLAdaptCreate_None(TSGLAdapt);
-PetscErrorCode  TSGLAdaptCreate_Size(TSGLAdapt);
-PetscErrorCode  TSGLAdaptCreate_Both(TSGLAdapt);
-EXTERN_C_END
+PETSC_EXTERN_C PetscErrorCode  TSGLAdaptCreate_None(TSGLAdapt);
+PETSC_EXTERN_C PetscErrorCode  TSGLAdaptCreate_Size(TSGLAdapt);
+PETSC_EXTERN_C PetscErrorCode  TSGLAdaptCreate_Both(TSGLAdapt);
 
 #undef __FUNCT__
 #define __FUNCT__ "TSGLAdaptRegister"
@@ -289,7 +287,6 @@ static PetscErrorCode TSGLAdaptChoose_None(TSGLAdapt adapt,PetscInt n,const Pets
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TSGLAdaptCreate_None"
 PetscErrorCode  TSGLAdaptCreate_None(TSGLAdapt adapt)
@@ -304,7 +301,6 @@ PetscErrorCode  TSGLAdaptCreate_None(TSGLAdapt adapt)
   adapt->ops->destroy = TSGLAdaptDestroy_JustFree;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 /* -------------------------------- Size ----------------------------------- */
 typedef struct {
@@ -338,7 +334,6 @@ static PetscErrorCode TSGLAdaptChoose_Size(TSGLAdapt adapt,PetscInt n,const Pets
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TSGLAdaptCreate_Size"
 PetscErrorCode  TSGLAdaptCreate_Size(TSGLAdapt adapt)
@@ -353,7 +348,6 @@ PetscErrorCode  TSGLAdaptCreate_Size(TSGLAdapt adapt)
   adapt->ops->destroy = TSGLAdaptDestroy_JustFree;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 /* -------------------------------- Both ----------------------------------- */
 typedef struct {
@@ -408,7 +402,6 @@ static PetscErrorCode TSGLAdaptChoose_Both(TSGLAdapt adapt,PetscInt n,const Pets
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TSGLAdaptCreate_Both"
 PetscErrorCode TSGLAdaptCreate_Both(TSGLAdapt adapt)
@@ -423,4 +416,3 @@ PetscErrorCode TSGLAdaptCreate_Both(TSGLAdapt adapt)
   adapt->ops->destroy = TSGLAdaptDestroy_JustFree;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END

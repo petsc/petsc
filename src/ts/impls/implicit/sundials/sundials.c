@@ -493,7 +493,6 @@ PetscErrorCode TSView_Sundials(TS ts,PetscViewer viewer)
 
 
 /* --------------------------------------------------------------------------*/
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TSSundialsSetType_Sundials"
 PetscErrorCode  TSSundialsSetType_Sundials(TS ts,TSSundialsLmmType type)
@@ -504,9 +503,7 @@ PetscErrorCode  TSSundialsSetType_Sundials(TS ts,TSSundialsLmmType type)
   cvode->cvode_type = type;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TSSundialsSetMaxl_Sundials"
 PetscErrorCode  TSSundialsSetMaxl_Sundials(TS ts,PetscInt maxl)
@@ -517,9 +514,7 @@ PetscErrorCode  TSSundialsSetMaxl_Sundials(TS ts,PetscInt maxl)
   cvode->maxl = maxl;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TSSundialsSetLinearTolerance_Sundials"
 PetscErrorCode  TSSundialsSetLinearTolerance_Sundials(TS ts,double tol)
@@ -530,9 +525,7 @@ PetscErrorCode  TSSundialsSetLinearTolerance_Sundials(TS ts,double tol)
   cvode->linear_tol = tol;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TSSundialsSetGramSchmidtType_Sundials"
 PetscErrorCode  TSSundialsSetGramSchmidtType_Sundials(TS ts,TSSundialsGramSchmidtType type)
@@ -543,9 +536,7 @@ PetscErrorCode  TSSundialsSetGramSchmidtType_Sundials(TS ts,TSSundialsGramSchmid
   cvode->gtype = type;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TSSundialsSetTolerance_Sundials"
 PetscErrorCode  TSSundialsSetTolerance_Sundials(TS ts,double aabs,double rel)
@@ -557,9 +548,7 @@ PetscErrorCode  TSSundialsSetTolerance_Sundials(TS ts,double aabs,double rel)
   if (rel != PETSC_DECIDE)  cvode->reltol = rel;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TSSundialsSetMinTimeStep_Sundials"
 PetscErrorCode  TSSundialsSetMinTimeStep_Sundials(TS ts,PetscReal mindt)
@@ -570,9 +559,7 @@ PetscErrorCode  TSSundialsSetMinTimeStep_Sundials(TS ts,PetscReal mindt)
   cvode->mindt = mindt;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TSSundialsSetMaxTimeStep_Sundials"
 PetscErrorCode  TSSundialsSetMaxTimeStep_Sundials(TS ts,PetscReal maxdt)
@@ -583,9 +570,6 @@ PetscErrorCode  TSSundialsSetMaxTimeStep_Sundials(TS ts,PetscReal maxdt)
   cvode->maxdt = maxdt;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
-
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TSSundialsGetPC_Sundials"
 PetscErrorCode  TSSundialsGetPC_Sundials(TS ts,PC *pc)
@@ -600,9 +584,7 @@ PetscErrorCode  TSSundialsGetPC_Sundials(TS ts,PC *pc)
   ierr = KSPGetPC(ksp,pc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TSSundialsGetIterations_Sundials"
 PetscErrorCode  TSSundialsGetIterations_Sundials(TS ts,int *nonlin,int *lin)
@@ -612,9 +594,7 @@ PetscErrorCode  TSSundialsGetIterations_Sundials(TS ts,int *nonlin,int *lin)
   if (lin)    *lin    = ts->ksp_its;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TSSundialsMonitorInternalSteps_Sundials"
 PetscErrorCode  TSSundialsMonitorInternalSteps_Sundials(TS ts,PetscBool s)
@@ -625,7 +605,6 @@ PetscErrorCode  TSSundialsMonitorInternalSteps_Sundials(TS ts,PetscBool s)
   cvode->monitorstep = s;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 /* -------------------------------------------------------------------------------------------*/
 
 #undef __FUNCT__
@@ -952,10 +931,9 @@ PetscErrorCode  TSSundialsMonitorInternalSteps(TS ts,PetscBool ft)
            TSSundialsSetGramSchmidtType(), TSSundialsSetTolerance(), TSSundialsGetPC(), TSSundialsGetIterations(), TSSetExactFinalTime()
 
 M*/
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TSCreate_Sundials"
-PetscErrorCode  TSCreate_Sundials(TS ts)
+PETSC_EXTERN_C PetscErrorCode  TSCreate_Sundials(TS ts)
 {
   TS_Sundials    *cvode;
   PetscErrorCode ierr;
@@ -1006,4 +984,3 @@ PetscErrorCode  TSCreate_Sundials(TS ts)
   ierr = PetscObjectComposeFunction((PetscObject)ts,"TSSundialsMonitorInternalSteps_C","TSSundialsMonitorInternalSteps_Sundials",TSSundialsMonitorInternalSteps_Sundials);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
