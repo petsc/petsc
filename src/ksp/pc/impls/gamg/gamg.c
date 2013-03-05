@@ -1499,6 +1499,7 @@ PETSC_EXTERN_C PetscErrorCode  PCCreate_GAMG(PC pc)
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGAMGSetUseASMAggs_C","PCGAMGSetUseASMAggs_GAMG",PCGAMGSetUseASMAggs_GAMG);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGAMGSetThreshold_C","PCGAMGSetThreshold_GAMG",PCGAMGSetThreshold_GAMG);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGAMGSetType_C","PCGAMGSetType_GAMG",PCGAMGSetType_GAMG);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGAMGSetNlevels_C","PCGAMGSetNlevels_GAMG",PCGAMGSetNlevels_GAMG);CHKERRQ(ierr);
   pc_gamg->repart           = PETSC_FALSE;
   pc_gamg->reuse_prol       = PETSC_TRUE;
   pc_gamg->use_aggs_in_gasm = PETSC_FALSE;

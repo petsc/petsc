@@ -7,7 +7,7 @@
 #
 
 # Steps:
-# - exclude src/docs/ holding the documentation only, and ftn-auto directories
+# - only look at sources where comments are stripped out (using gcc for that)
 # - get all lines with 'else' followed by a space or a curly brace
 # - remove all good uses of '} else {'
 # - remove all good uses of 'else {' preceeded by blanks only
@@ -16,7 +16,7 @@
 # - remove preprocessor stuff
 
 
-for f in `find src/ -name *.[ch] -or -name *.cu`
+for f in "$@"
 do
  output=`gcc -fpreprocessed -dD -E -w -x c++ $f | grep "else[{\s]*" | grep -v "} else {" | grep -v "^\s*else {" | grep -v "}* else if (.*)" | grep -v " else [^{]*;" | grep -v "#\s*else"`
  if [ -n "$output" ]; then echo "$f: $output"; fi

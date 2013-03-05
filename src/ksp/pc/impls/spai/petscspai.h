@@ -7,14 +7,13 @@
 #define __SPAI_PACKAGE
 #include <petscpc.h>
 
-extern int MatDumpSPAI(Mat,FILE*);
-extern int VecDumpSPAI(Vec,FILE*);
+PETSC_EXTERN PetscErrorCode MatDumpSPAI(Mat,FILE*);
+PETSC_EXTERN PetscErrorCode VecDumpSPAI(Vec,FILE*);
 
-extern int PCSPAISetEpsilon(PC,double);
-extern int PCSPAISetNBSteps(PC,int);
-extern int PCSPAISetMaxAPI(PC,int);
-extern int PCSPAISetMaxNew(PC,int);
-extern int PCSPAISetCacheSize(PC,int);
+PETSC_EXTERN PetscErrorCode PCSPAISetEpsilon(PC,double);
+PETSC_EXTERN PetscErrorCode PCSPAISetNBSteps(PC,int);
+PETSC_EXTERN PetscErrorCode PCSPAISetMaxNew(PC,int);
+PETSC_EXTERN PetscErrorCode PCSPAISetCacheSize(PC,int);
 
 #endif
 

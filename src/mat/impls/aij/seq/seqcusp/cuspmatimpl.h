@@ -37,6 +37,6 @@ struct Mat_SeqAIJCUSP {
 #endif
 
 
-extern PetscErrorCode MatCUSPCopyToGPU(Mat);
-extern PetscErrorCode MatCUSPCopyFromGPU(Mat, CUSPMATRIX*);
+PETSC_INTERN PetscErrorCode MatCUSPCopyToGPU(Mat);
+PETSC_INTERN PetscErrorCode MatCUSPCopyFromGPU(Mat, CUSPMATRIX*);
 #endif

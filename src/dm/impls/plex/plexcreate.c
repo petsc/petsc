@@ -398,6 +398,24 @@ PetscErrorCode DMPlexCreateSquareMesh(DM dm, const PetscReal lower[], const Pets
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexCreateBoxMesh"
+/*@
+  DMPlexCreateBoxMesh - Creates a mesh on the tensor product of unit intervals (box).
+
+  Collective on MPI_Comm
+
+  Input Parameters:
++ comm - The communicator for the DM object
+. dim - The spatial dimension
+- interpolate - Flag to create intermediate mesh pieces (edges, faces)
+
+  Output Parameter:
+. dm  - The DM object
+
+  Level: beginner
+
+.keywords: DM, create
+.seealso: DMSetType(), DMCreate()
+@*/
 PetscErrorCode DMPlexCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool interpolate, DM *dm)
 {
   DM             boundary;

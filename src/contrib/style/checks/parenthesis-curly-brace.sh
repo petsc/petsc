@@ -5,11 +5,7 @@
 #
 
 # Steps:
-# - exclude src/docs/ holding the documentation only, and ftn-auto directories
 # - get all lines with '){'
 
+grep -H "){" "$@"
 
-find src/ -name *.[ch] -or -name *.cu \
- | grep -v 'src/docs' \
- | grep -v 'ftn-auto' \
- | xargs grep "){"

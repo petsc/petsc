@@ -442,7 +442,7 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscOptionsFindPairPrefix_Private(const char pre[], const char name[], char *value[], PetscBool *flg);
+PETSC_EXTERN PetscErrorCode PetscOptionsFindPairPrefix_Private(const char pre[], const char name[], char *value[], PetscBool *flg);
 
 #undef __FUNCT__
 #define __FUNCT__ "PCSetUp_FieldSplit"

@@ -4,14 +4,12 @@
 # Rule: 'No space before or after a , in lists'
 
 # Steps:
-# - exclude src/docs/ holding the documentation only
-# - exclude automatic FORTRAN stuff
+# - strip off comments using GCC
 # - find lines with ' ,' or ', '
 # 
 
 
-
-for f in `find src/ -name *.[ch] -or -name *.cu`
+for f in "$@"
 do
  isvalid=`echo "$f" | grep -v "/ftn-auto/\|src/docs/";`
  if [ -n "$isvalid" ]; then

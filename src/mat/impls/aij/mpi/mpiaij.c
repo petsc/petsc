@@ -178,7 +178,7 @@ PetscErrorCode MatGetColumnNorms_MPIAIJ(Mat A,NormType type,PetscReal *norms)
 
     Only for square matrices
 */
-PetscErrorCode MatDistribute_MPIAIJ(MPI_Comm comm,Mat gmat,PetscInt m,MatReuse reuse,Mat *inmat)
+PETSC_EXTERN PetscErrorCode MatDistribute_MPIAIJ(MPI_Comm comm,Mat gmat,PetscInt m,MatReuse reuse,Mat *inmat)
 {
   PetscMPIInt    rank,size;
   PetscInt       *rowners,*dlens,*olens,i,rstart,rend,j,jj,nz,*gmataj,cnt,row,*ld,bses[2];

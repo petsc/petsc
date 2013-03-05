@@ -5,8 +5,6 @@
 # See http://www.mpi-forum.org/docs/mpi-3.0/mpi30-report.pdf for hints on fixing the issues.
 
 # Steps:
-# - exclude src/docs/ holding the documentation only
-# - exclude automatic FORTRAN stuff
 # - find lines with removed MPI routines
 # 
 
@@ -29,7 +27,7 @@ mpideprecated=("MPI_Type_hvector\s*(" \
                "MPI_COMBINER_STRUCT_INTEGER" \
               )
 
-for f in `find src/ -name *.[ch] -or -name *.cu`
+for f in "$@"
 do
  isvalid=`echo "$f" | grep -v "/ftn-auto/\|src/docs/";`
  if [ -n "$isvalid" ]; then

@@ -1,8 +1,5 @@
 #include <petsc-private/dmimpl.h>     /*I      "petscdm.h"     I*/
 
-extern PetscErrorCode VecView_Seq(Vec, PetscViewer);
-extern PetscErrorCode VecView_MPI(Vec, PetscViewer);
-
 #undef __FUNCT__
 #define __FUNCT__ "DMCreateGlobalVector_Section_Private"
 PetscErrorCode DMCreateGlobalVector_Section_Private(DM dm,Vec *vec)

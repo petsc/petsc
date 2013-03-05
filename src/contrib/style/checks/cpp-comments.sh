@@ -5,19 +5,15 @@
 
 
 # Steps:
-# - exclude src/docs/ holding the documentation only
 # - find lines with //
 # - Remove lines containing http, ftp: or file: as in http:// or https://
 # - Remove C++ comments inside C comments escaped with a Dollar-sign (used for sowing)
 # - Remove HTML doctype declaration
 # - Ignore Sieve in dm/impls/mesh/
 # - Ignore a special string inside src/snes/impls/test/snestest.c
+# - Ignore other special cases
 
-
-
-find src/ include/ -name *.[ch] \
- | grep -v 'src/docs' \
- | xargs grep -F "//" \
+grep -H -F "//" "$@" \
  | grep -v "http\|ftp:\|file:" \
  | grep -v -F ":$" \
  | grep -v -F "src/dm/impls/mesh/" \
