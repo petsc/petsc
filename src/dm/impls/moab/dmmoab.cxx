@@ -14,6 +14,80 @@ typedef struct {
 } DM_Moab;
 
 #undef __FUNCT__
+#define __FUNCT__ "DMCreateGlobalVector_Moab"
+PetscErrorCode DMCreateGlobalVector_Moab(DM dm,Vec *gvec)
+{
+  PetscErrorCode  ierr;
+  DM_Moab         *dmmoab = (DM_Moab*)dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidPointer(gvec,2);
+  PetscInt block_size = ((DM_Moab*)dm->data)->bs;
+  ierr = VecMoabCreate(dmmoab->mbint,dmmoab->pcomm,block_size,dmmoab->ltog_tag,dmmoab->range,PETSC_FALSE,PETSC_TRUE,gvec);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
+#define __FUNCT__ "DMCreateLocalVector_Moab"
+PetscErrorCode DMCreateLocalVector_Moab(DM dm,Vec *gvec)
+{
+  PetscErrorCode  ierr;
+  DM_Moab         *dmmoab = (DM_Moab*)dm->data;
+
+  PetscFunctionBegin;
+  PetscInt bs = 1;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidPointer(gvec,2);
+  ierr = VecMoabCreate(dmmoab->mbint,dmmoab->pcomm,bs,dmmoab->ltog_tag,dmmoab->range,PETSC_TRUE,PETSC_TRUE,gvec);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMDestroy_Moab"
+PetscErrorCode DMDestroy_Moab(DM dm)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+
+  // Delete the DM_Moab:
+  if(dm->data) {
+    if (((DM_Moab*)dm->data)->icreatedinstance) {
+      delete ((DM_Moab*)dm->data)->mbint;
+      ((DM_Moab*)dm->data)->mbint = NULL;
+      ((DM_Moab*)dm->data)->pcomm = NULL;
+    }
+    delete (DM_Moab*)dm->data;
+    dm->data = NULL;
+  }
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
+#define __FUNCT__ "DMInitialize_Moab"
+PetscErrorCode DMInitialize_Moab(DM dm)
+{
+  PetscFunctionBegin;
+
+  // Create the DM_Moab and set dm->data
+  DM_Moab *dmmoab = new DM_Moab;
+  dmmoab->bs       = 0;
+  dmmoab->pcomm    = NULL;
+  dmmoab->mbint    = NULL;
+  dmmoab->ltog_tag = (moab::Tag)0;
+  dmmoab->icreatedinstance = PETSC_FALSE;
+  dm->data      = dmmoab;
+
+    // initialize various functions
+  dm->ops->createglobalvector              = DMCreateGlobalVector_Moab;
+  dm->ops->createlocalvector               = DMCreateLocalVector_Moab;
+  dm->ops->destroy                         = DMDestroy_Moab;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMMoabCreate"
 /*@
   DMMoabCreate - Creates a DMMoab object, which encapsulates a moab instance
@@ -135,28 +209,6 @@ PetscErrorCode DMMoabCreateDMAndInstance(MPI_Comm comm, DM *dm)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMInitialize_Moab"
-PetscErrorCode DMInitialize_Moab(DM dm)
-{
-  PetscFunctionBegin;
-
-  // Create the DM_Moab and set dm->data
-  DM_Moab *dmmoab = new DM_Moab;
-  dmmoab->bs       = 0;
-  dmmoab->pcomm    = NULL;
-  dmmoab->mbint    = NULL;
-  dmmoab->ltog_tag = (moab::Tag)0;
-  dmmoab->icreatedinstance = PETSC_FALSE;
-  dm->data      = dmmoab;
-
-    // initialize various functions
-  dm->ops->createglobalvector              = DMCreateGlobalVector_Moab;
-  dm->ops->createlocalvector               = DMCreateLocalVector_Moab;
-  dm->ops->destroy                         = DMDestroy_Moab;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "DMMoabSetParallelComm"
 PetscErrorCode DMMoabSetParallelComm(DM dm,moab::ParallelComm *pcomm)
 {
@@ -268,37 +320,6 @@ PetscErrorCode DMMoabGetBlockSize(DM dm,PetscInt *bs)
 
 
 #undef __FUNCT__
-#define __FUNCT__ "DMCreateGlobalVector_Moab"
-PetscErrorCode DMCreateGlobalVector_Moab(DM dm,Vec *gvec)
-{
-  PetscErrorCode  ierr;
-  DM_Moab         *dmmoab = (DM_Moab*)dm->data;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscValidPointer(gvec,2);
-  PetscInt block_size = ((DM_Moab*)dm->data)->bs;
-  ierr = VecMoabCreate(dmmoab->mbint,dmmoab->pcomm,block_size,dmmoab->ltog_tag,dmmoab->range,PETSC_FALSE,PETSC_TRUE,gvec);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-
-#undef __FUNCT__
-#define __FUNCT__ "DMCreateLocalVector_Moab"
-PetscErrorCode DMCreateLocalVector_Moab(DM dm,Vec *gvec)
-{
-  PetscErrorCode  ierr;
-  DM_Moab         *dmmoab = (DM_Moab*)dm->data;
-
-  PetscFunctionBegin;
-  PetscInt bs = 1;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscValidPointer(gvec,2);
-  ierr = VecMoabCreate(dmmoab->mbint,dmmoab->pcomm,bs,dmmoab->ltog_tag,dmmoab->range,PETSC_TRUE,PETSC_TRUE,gvec);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "DMMoabCreateVectorFromTag"
 PetscErrorCode DMMoabCreateVectorFromTag(DM dm,moab::Tag tag,moab::Range range,PetscBool serial, PetscBool destroy_tag,Vec *X)
 {
@@ -338,28 +359,7 @@ PetscErrorCode DMMoabGetVecRange(Vec vec,moab::Range *range)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  ierr = VecMoabGetRange(vec,range);
-  PetscFunctionReturn(0);
-}
-
-
-#undef __FUNCT__
-#define __FUNCT__ "DMDestroy_Moab"
-PetscErrorCode DMDestroy_Moab(DM dm)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-
-  // Delete the DM_Moab:
-  if(dm->data) {
-    if (((DM_Moab*)dm->data)->icreatedinstance) {
-      delete ((DM_Moab*)dm->data)->mbint;
-      ((DM_Moab*)dm->data)->mbint = NULL;
-      ((DM_Moab*)dm->data)->pcomm = NULL;
-    }
-    delete (DM_Moab*)dm->data;
-    dm->data = NULL;
-  }
+  ierr = VecMoabGetRange(vec,range);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

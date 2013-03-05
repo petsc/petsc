@@ -30,10 +30,4 @@ PETSC_EXTERN PetscErrorCode DMMoabCreateVector(DM dm,PetscInt tag_size,moab::Ran
 PETSC_EXTERN PetscErrorCode DMMoabCreateVectorFromTag(DM dm, moab::Tag tag,moab::Range range,PetscBool serial, PetscBool destroy_tag,Vec *X);
 PETSC_EXTERN PetscErrorCode DMMoabGetVecTag(Vec vec,moab::Tag *tag);
 PETSC_EXTERN PetscErrorCode DMMoabGetVecRange(Vec vec,moab::Range *range);
-PETSC_EXTERN PetscErrorCode DMDestroy_Moab(DM dm);
-PETSC_EXTERN PetscErrorCode DMInitialize_Moab(DM dm);
-
-PETSC_EXTERN PetscErrorCode DMCreateGlobalVector_Moab(DM dm,Vec *gvec);
-PETSC_EXTERN PetscErrorCode DMCreateLocalVector_Moab(DM dm,Vec *gvec);
-PETSC_EXTERN PetscErrorCode DMCreateGlobalVectorFromTag_Moab(DM dm,moab::Tag tag,Vec *gvec);
 #endif
