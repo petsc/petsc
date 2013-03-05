@@ -4,9 +4,8 @@
 # Rule: 'Don't use private includes in the public interface. [Work in progress]'
 
 # Steps:
-# - find lines with 'isimpl.h>'
+# - Run over all files in src/ and run script
 # 
 
-grep "isimpl.h>" "$@"
-
+find ./src -name "*.[hc]" | xargs $(dirname $0)/impl-include.sh
 

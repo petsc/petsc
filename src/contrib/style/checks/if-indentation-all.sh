@@ -13,9 +13,13 @@
 #
 
 # Steps:
-# - get all lines with 'if(', 'for(', 'while (', 'switch('
+# - exclude src/docs/ holding the documentation only, and ftn-auto directories
+# - call checker script
 
 
-grep " if(\| for(\| while(\| switch(" "$@"
+find src/ -name *.[ch] -or -name *.cu \
+ | grep -v 'src/docs' \
+ | grep -v 'ftn-auto' \
+ | xargs $(dirname $0)/if-indentation.sh
 
 

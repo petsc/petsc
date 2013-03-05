@@ -4,7 +4,6 @@
 # Rule: 'In function declaration the open bracket { should be on the next line, not on the same line as the function name and arguments'
 
 # Steps:
-# - exclude src/docs/ holding the documentation only, and ftn-auto directories
 # - get all lines with '{' following a closing parenthesis.
 # - exclude all open brackets on their own line
 # - exclude all lines with 'if (', 'else {', 'for (), etc.'
@@ -12,10 +11,7 @@
 # - exclude lines with closing curly braces (e.g. simple one-liner functions)
 # - exclude if-conditions that span over multiple lines. Identified by ')) {'
 
-find src/ -name *.[ch] -or -name *.cu \
- | grep -v 'src/docs' \
- | grep -v 'ftn-auto' \
- | xargs grep ")\s*{" \
+grep ")\s*{" "$@" \
  | grep -v ".*:\s*{\s*$" \
  | grep -v " if\s\s*(" \
  | grep -v " else\s*{" \

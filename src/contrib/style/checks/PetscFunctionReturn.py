@@ -3,7 +3,7 @@
 # Checks for compliance with the rule 'Do not put a blank line immediately before PetscFunctionReturn;'
 
 # Steps:
-# - Read each file argument to a single string, then run a regular expression on it.
+# - Read each file argument to a single string, then run a simple multi-line regular expression on it.
 #
 # Note: Only file name is printed on match, no details
 #

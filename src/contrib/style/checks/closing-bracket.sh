@@ -4,7 +4,6 @@
 # Rule: 'The closing bracket } should always be on its own line' (if, for, while, etc.)
 
 # Steps:
-# - exclude src/docs/ holding the documentation only, and ftn-auto directories
 # - get all lines with '}'
 # - remove all lines having a '}' only
 # - ignore lines with a comment following '}'
@@ -19,10 +18,7 @@
 # - exclude preprocessor definitions
 # - exclude lines containing ${PETSC_DIR}
 
-find src/ -name *.[ch] -or -name *.cu \
- | grep -v 'src/docs' \
- | grep -v 'ftn-auto' \
- | xargs grep "}" \
+grep "}" "$@" \
  | grep -v ".*:\s*}\s*$" \
  | grep -v ".*:\s*}\s*/\*.*\*/" \
  | grep -v "else" \

@@ -7,10 +7,14 @@
 # Steps:
 # - exclude src/docs/ holding the documentation only
 # - ignore FORTRAN stubs
-# - find any use of '#if 0' and variations thereof
 
 
-grep "#if\s*0" "$@"
+find src/ include/ -name *.[ch] \
+ | grep -v 'src/docs' \
+ | grep -v 'ftn-auto' \
+ | grep -v 'ftn-custom' \
+ | grep -v 'f90-custom' \
+ | xargs $(dirname $0)/if0.sh
 
 
 

@@ -6,7 +6,7 @@
 
 
 # Steps:
-# - Read each file argument to a single string, then run a regular expression on it.
+# - Read each file argument to a single string, then run a simpe multi-line regular expression on it.
 #
 # Note: Only file name is printed on match, no details
 #
