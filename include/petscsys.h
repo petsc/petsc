@@ -72,7 +72,7 @@
 #else
 #define PETSC_EXTERN extern PETSC_VISIBILITY_PUBLIC
 #define PETSC_EXTERN_TYPEDEF
-#define PETSC_INTERN PETSC_VISIBILITY_INTERNAL
+#define PETSC_INTERN extern PETSC_VISIBILITY_INTERNAL
 #endif
 
 #include <petscversion.h>
