@@ -7,7 +7,7 @@ SOURCEC  =
 SOURCEF  =
 SOURCEH  = dvecimpl.h
 LIBBASE  = libpetscvec
-DIRS     = seq mpi shared hypre nest
+DIRS     = seq mpi shared hypre nest moab
 LOCDIR   = src/vec/vec/impls/
 
 include ${PETSC_DIR}/conf/variables
