@@ -1137,10 +1137,9 @@ PetscErrorCode  PCGASMGetSubKSP(PC pc,PetscInt *n_local,PetscInt *first_local,KS
 
 M*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCCreate_GASM"
-PetscErrorCode  PCCreate_GASM(PC pc)
+PETSC_EXTERN_C PetscErrorCode  PCCreate_GASM(PC pc)
 {
   PetscErrorCode ierr;
   PC_GASM        *osm;
@@ -1186,7 +1185,6 @@ PetscErrorCode  PCCreate_GASM(PC pc)
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGASMGetSubKSP_C","PCGASMGetSubKSP_GASM",PCGASMGetSubKSP_GASM);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 
 #undef __FUNCT__

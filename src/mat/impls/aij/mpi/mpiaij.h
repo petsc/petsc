@@ -77,9 +77,7 @@ typedef struct {
   void * spptr;
 } Mat_MPIAIJ;
 
-EXTERN_C_BEGIN
-extern PetscErrorCode MatCreate_MPIAIJ(Mat);
-EXTERN_C_END
+PETSC_EXTERN_C PetscErrorCode MatCreate_MPIAIJ(Mat);
 
 extern PetscErrorCode MatSetColoring_MPIAIJ(Mat,ISColoring);
 extern PetscErrorCode MatSetValuesAdifor_MPIAIJ(Mat,PetscInt,void*);
@@ -129,9 +127,7 @@ extern PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ(Mat,Mat,Mat);
 extern PetscErrorCode MatGetRedundantMatrix_MPIAIJ(Mat,PetscInt,MPI_Comm,PetscInt,MatReuse,Mat*);
 extern PetscErrorCode MatGetSeqNonzeroStructure_MPIAIJ(Mat,Mat*);
 
-EXTERN_C_BEGIN
 extern PetscErrorCode MatMPIAIJSetPreallocation_MPIAIJ(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[]);
-EXTERN_C_END
 
 #if !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_REAL_SINGLE) && !defined(PETSC_USE_REAL___FLOAT128)
 extern PetscErrorCode MatLUFactorSymbolic_MPIAIJ_TFS(Mat,IS,IS,const MatFactorInfo*,Mat*);
@@ -139,9 +135,7 @@ extern PetscErrorCode MatLUFactorSymbolic_MPIAIJ_TFS(Mat,IS,IS,const MatFactorIn
 extern PetscErrorCode MatSolve_MPIAIJ(Mat,Vec,Vec);
 extern PetscErrorCode MatILUFactor_MPIAIJ(Mat,IS,IS,const MatFactorInfo*);
 
-EXTERN_C_BEGIN
 extern PetscErrorCode MatGetDiagonalBlock_MPIAIJ(Mat,Mat*);
 extern PetscErrorCode MatDiagonalScaleLocal_MPIAIJ(Mat,Vec);
-EXTERN_C_END
 
 #endif

@@ -177,7 +177,6 @@ static PetscErrorCode MatMFFDDestroy_DS(MatMFFD ctx)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatMFFDDSSetUmin_DS"
 /*
@@ -195,7 +194,6 @@ PetscErrorCode MatMFFDDSSetUmin_DS(Mat mat,PetscReal umin)
   hctx->umin = umin;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMFFDDSSetUmin"
@@ -253,10 +251,9 @@ PetscErrorCode  MatMFFDDSSetUmin(Mat A,PetscReal umin)
 .seealso: MATMFFD, MatCreateMFFD(), MatCreateSNESMF(), MATMFFD_WP, MatMFFDDSSetUmin()
 
 M*/
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatCreateMFFD_DS"
-PetscErrorCode  MatCreateMFFD_DS(MatMFFD ctx)
+PETSC_EXTERN_C PetscErrorCode  MatCreateMFFD_DS(MatMFFD ctx)
 {
   MatMFFD_DS     *hctx;
   PetscErrorCode ierr;
@@ -277,7 +274,6 @@ PetscErrorCode  MatCreateMFFD_DS(MatMFFD ctx)
   ierr = PetscObjectComposeFunction((PetscObject)ctx->mat,"MatMFFDDSSetUmin_C","MatMFFDDSSetUmin_DS",MatMFFDDSSetUmin_DS);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 
 

@@ -537,7 +537,6 @@ PetscErrorCode MatRARtNumeric_SeqAIJ_SeqAIJ(Mat A,Mat R,Mat C)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatRARt_SeqAIJ_SeqAIJ"
 PetscErrorCode MatRARt_SeqAIJ_SeqAIJ(Mat A,Mat R,MatReuse scall,PetscReal fill,Mat *C)
@@ -551,4 +550,3 @@ PetscErrorCode MatRARt_SeqAIJ_SeqAIJ(Mat A,Mat R,MatReuse scall,PetscReal fill,M
   ierr = MatRARtNumeric_SeqAIJ_SeqAIJ(A,R,*C);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END

@@ -699,7 +699,6 @@ static PetscErrorCode MatCholeskyFactorSymbolic_Elemental(Mat F,Mat A,IS perm,co
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatFactorGetSolverPackage_elemental_elemental"
 PetscErrorCode MatFactorGetSolverPackage_elemental_elemental(Mat A,const MatSolverPackage *type)
@@ -708,9 +707,7 @@ PetscErrorCode MatFactorGetSolverPackage_elemental_elemental(Mat A,const MatSolv
   *type = MATSOLVERELEMENTAL;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatGetFactor_elemental_elemental"
 static PetscErrorCode MatGetFactor_elemental_elemental(Mat A,MatFactorType ftype,Mat *F)
@@ -729,7 +726,6 @@ static PetscErrorCode MatGetFactor_elemental_elemental(Mat A,MatFactorType ftype
   *F            = B;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "MatNorm_Elemental"
@@ -765,7 +761,6 @@ static PetscErrorCode MatZeroEntries_Elemental(Mat A)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatGetOwnershipIS_Elemental"
 static PetscErrorCode MatGetOwnershipIS_Elemental(Mat A,IS *rows,IS *cols)
@@ -801,7 +796,6 @@ static PetscErrorCode MatGetOwnershipIS_Elemental(Mat A,IS *rows,IS *cols)
   }
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_Elemental_Dense"

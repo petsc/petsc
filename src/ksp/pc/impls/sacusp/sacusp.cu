@@ -235,10 +235,9 @@ static PetscErrorCode PCSetFromOptions_SACUSP(PC pc)
 
 M*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCCreate_SACUSP"
-PetscErrorCode  PCCreate_SACUSP(PC pc)
+PETSC_EXTERN_C PetscErrorCode  PCCreate_SACUSP(PC pc)
 {
   PC_SACUSP      *sac;
   PetscErrorCode ierr;
@@ -277,4 +276,4 @@ PetscErrorCode  PCCreate_SACUSP(PC pc)
   pc->ops->applysymmetricright = 0;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
+

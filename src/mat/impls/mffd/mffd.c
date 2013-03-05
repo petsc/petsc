@@ -137,7 +137,6 @@ PetscErrorCode  MatMFFDSetType(Mat mat,MatMFFDType ftype)
 }
 
 typedef PetscErrorCode (*FCN1)(void*,Vec); /* force argument to next function to not be extern C*/
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatMFFDSetFunctioniBase_MFFD"
 PetscErrorCode  MatMFFDSetFunctioniBase_MFFD(Mat mat,FCN1 func)
@@ -148,10 +147,8 @@ PetscErrorCode  MatMFFDSetFunctioniBase_MFFD(Mat mat,FCN1 func)
   ctx->funcisetbase = func;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 typedef PetscErrorCode (*FCN2)(void*,PetscInt,Vec,PetscScalar*); /* force argument to next function to not be extern C*/
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatMFFDSetFunctioni_MFFD"
 PetscErrorCode  MatMFFDSetFunctioni_MFFD(Mat mat,FCN2 funci)
@@ -162,9 +159,7 @@ PetscErrorCode  MatMFFDSetFunctioni_MFFD(Mat mat,FCN2 funci)
   ctx->funci = funci;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatMFFDResetHHistory_MFFD"
 PetscErrorCode  MatMFFDResetHHistory_MFFD(Mat J)
@@ -175,7 +170,6 @@ PetscErrorCode  MatMFFDResetHHistory_MFFD(Mat J)
   ctx->ncurrenth = 0;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMFFDRegister"
@@ -216,7 +210,6 @@ PetscErrorCode  MatMFFDRegisterDestroy(void)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatMFFDAddNullSpace_MFFD"
 PetscErrorCode  MatMFFDAddNullSpace_MFFD(Mat J,MatNullSpace nullsp)
@@ -230,7 +223,6 @@ PetscErrorCode  MatMFFDAddNullSpace_MFFD(Mat J,MatNullSpace nullsp)
   ctx->sp = nullsp;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 /* ----------------------------------------------------------------------------------------*/
 #undef __FUNCT__
@@ -540,7 +532,6 @@ PetscErrorCode MatScale_MFFD(Mat Y,PetscScalar a)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatMFFDSetBase_MFFD"
 PetscErrorCode  MatMFFDSetBase_MFFD(Mat J,Vec U,Vec F)
@@ -567,9 +558,8 @@ PetscErrorCode  MatMFFDSetBase_MFFD(Mat J,Vec U,Vec F)
   J->assembled = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 typedef PetscErrorCode (*FCN3)(void*,Vec,Vec,PetscScalar*); /* force argument to next function to not be extern C*/
-EXTERN_C_BEGIN
+
 #undef __FUNCT__
 #define __FUNCT__ "MatMFFDSetCheckh_MFFD"
 PetscErrorCode  MatMFFDSetCheckh_MFFD(Mat J,FCN3 fun,void *ectx)
@@ -581,7 +571,6 @@ PetscErrorCode  MatMFFDSetCheckh_MFFD(Mat J,FCN3 fun,void *ectx)
   ctx->checkhctx = ectx;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMFFDSetOptionsPrefix"
@@ -651,7 +640,6 @@ PetscErrorCode  MatSetFromOptions_MFFD(Mat mat)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatMFFDSetPeriod_MFFD"
 PetscErrorCode  MatMFFDSetPeriod_MFFD(Mat mat,PetscInt period)
@@ -663,9 +651,7 @@ PetscErrorCode  MatMFFDSetPeriod_MFFD(Mat mat,PetscInt period)
   ctx->recomputeperiod = period;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatMFFDSetFunction_MFFD"
 PetscErrorCode  MatMFFDSetFunction_MFFD(Mat mat,PetscErrorCode (*func)(void*,Vec,Vec),void *funcctx)
@@ -677,9 +663,7 @@ PetscErrorCode  MatMFFDSetFunction_MFFD(Mat mat,PetscErrorCode (*func)(void*,Vec
   ctx->funcctx = funcctx;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatMFFDSetFunctionError_MFFD"
 PetscErrorCode  MatMFFDSetFunctionError_MFFD(Mat mat,PetscReal error)
@@ -691,7 +675,6 @@ PetscErrorCode  MatMFFDSetFunctionError_MFFD(Mat mat,PetscReal error)
   if (error != PETSC_DEFAULT) ctx->error_rel = error;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 /*MC
   MATMFFD - MATMFFD = "mffd" - A matrix free matrix type.
@@ -700,10 +683,9 @@ EXTERN_C_END
 
 .seealso: MatCreateMFFD(), MatCreateSNESMF(), MatMFFDSetFunction()
 M*/
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_MFFD"
-PetscErrorCode  MatCreate_MFFD(Mat A)
+PETSC_EXTERN_C PetscErrorCode  MatCreate_MFFD(Mat A)
 {
   MatMFFD        mfctx;
   PetscErrorCode ierr;
@@ -776,7 +758,6 @@ PetscErrorCode  MatCreate_MFFD(Mat A)
   ierr = PetscObjectChangeTypeName((PetscObject)A,MATMFFD);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "MatCreateMFFD"

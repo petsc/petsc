@@ -1143,10 +1143,10 @@ PetscErrorCode PCBDDCCreateFETIDPOperators(PC pc, Mat *fetidp_mat, PC *fetidp_pc
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,  MATIS
 M*/
-EXTERN_C_BEGIN
+
 #undef __FUNCT__
 #define __FUNCT__ "PCCreate_BDDC"
-PetscErrorCode PCCreate_BDDC(PC pc)
+PETSC_EXTERN_C PetscErrorCode PCCreate_BDDC(PC pc)
 {
   PetscErrorCode ierr;
   PC_BDDC        *pcbddc;
@@ -1239,7 +1239,6 @@ PetscErrorCode PCCreate_BDDC(PC pc)
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCMatFETIDPGetSolution_C","PCBDDCMatFETIDPGetSolution_BDDC",PCBDDCMatFETIDPGetSolution_BDDC);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 /* -------------------------------------------------------------------------- */
 /* All static functions from now on                                           */

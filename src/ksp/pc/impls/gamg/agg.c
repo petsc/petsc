@@ -42,7 +42,6 @@ PetscErrorCode PCGAMGSetNSmooths(PC pc, PetscInt n)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCGAMGSetNSmooths_GAMG"
 PetscErrorCode PCGAMGSetNSmooths_GAMG(PC pc, PetscInt n)
@@ -55,7 +54,6 @@ PetscErrorCode PCGAMGSetNSmooths_GAMG(PC pc, PetscInt n)
   pc_gamg_agg->nsmooths = n;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "PCGAMGSetSymGraph"
@@ -86,7 +84,6 @@ PetscErrorCode PCGAMGSetSymGraph(PC pc, PetscBool n)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCGAMGSetSymGraph_GAMG"
 PetscErrorCode PCGAMGSetSymGraph_GAMG(PC pc, PetscBool n)
@@ -99,7 +96,6 @@ PetscErrorCode PCGAMGSetSymGraph_GAMG(PC pc, PetscBool n)
   pc_gamg_agg->sym_graph = n;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "PCGAMGSetSquareGraph"
@@ -130,7 +126,6 @@ PetscErrorCode PCGAMGSetSquareGraph(PC pc, PetscBool n)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCGAMGSetSquareGraph_GAMG"
 PetscErrorCode PCGAMGSetSquareGraph_GAMG(PC pc, PetscBool n)
@@ -143,7 +138,6 @@ PetscErrorCode PCGAMGSetSquareGraph_GAMG(PC pc, PetscBool n)
   pc_gamg_agg->square_graph = n;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 /* -------------------------------------------------------------------------- */
 /*

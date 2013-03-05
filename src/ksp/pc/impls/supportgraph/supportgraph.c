@@ -220,10 +220,9 @@ static PetscErrorCode PCSetFromOptions_SupportGraph(PC pc)
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC
 M*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCCreate_SupportGraph"
-PetscErrorCode  PCCreate_SupportGraph(PC pc)
+PETSC_EXTERN_C PetscErrorCode  PCCreate_SupportGraph(PC pc)
 {
   PC_SupportGraph *sg;
   PetscErrorCode  ierr;
@@ -260,4 +259,3 @@ PetscErrorCode  PCCreate_SupportGraph(PC pc)
   pc->ops->applysymmetricright = 0;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END

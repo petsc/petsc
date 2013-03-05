@@ -2,13 +2,12 @@
 #include <petscmat.h>
 #include <../src/mat/order/order.h>
 
-EXTERN_C_BEGIN
 /*
     MatGetOrdering_QMD - Find the Quotient Minimum Degree ordering of a given matrix.
 */
 #undef __FUNCT__
 #define __FUNCT__ "MatGetOrdering_QMD"
-PetscErrorCode  MatGetOrdering_QMD(Mat mat,MatOrderingType type,IS *row,IS *col)
+PETSC_EXTERN_C PetscErrorCode  MatGetOrdering_QMD(Mat mat,MatOrderingType type,IS *row,IS *col)
 {
   PetscInt       i,  *deg,*marker,*rchset,*nbrhd,*qsize,*qlink,nofsub,*iperm,nrow,*perm;
   PetscErrorCode ierr;
@@ -33,4 +32,3 @@ PetscErrorCode  MatGetOrdering_QMD(Mat mat,MatOrderingType type,IS *row,IS *col)
   ierr = ISCreateGeneral(PETSC_COMM_SELF,nrow,perm,PETSC_OWN_POINTER,col);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END

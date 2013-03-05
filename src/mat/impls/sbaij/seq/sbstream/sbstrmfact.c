@@ -625,7 +625,6 @@ PetscErrorCode SeqSBSTRM_convertFact_sbstrm(Mat F)
 
 /*=========================================================*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatFactorGetSolverPackage_seqsbaij_sbstrm"
 PetscErrorCode MatFactorGetSolverPackage_seqsbaij_sbstrm(Mat A,const MatSolverPackage *type)
@@ -634,7 +633,6 @@ PetscErrorCode MatFactorGetSolverPackage_seqsbaij_sbstrm(Mat A,const MatSolverPa
   *type = MATSOLVERSBSTRM;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "MatCholeskyFactorNumeric_sbstrm"
@@ -686,10 +684,9 @@ PetscErrorCode MatCholeskyFactorSymbolic_sbstrm(Mat B,Mat A,IS perm,const MatFac
 }
 /*=========================================================*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatGetFactor_seqsbaij_sbstrm"
-PetscErrorCode MatGetFactor_seqsbaij_sbstrm(Mat A,MatFactorType ftype,Mat *F)
+PETSC_EXTERN_C PetscErrorCode MatGetFactor_seqsbaij_sbstrm(Mat A,MatFactorType ftype,Mat *F)
 {
   Mat            B;
   PetscInt       bs = A->rmap->bs;
@@ -721,6 +718,5 @@ PetscErrorCode MatGetFactor_seqsbaij_sbstrm(Mat A,MatFactorType ftype,Mat *F)
   *F       = B;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 

@@ -64,7 +64,6 @@ extern PetscErrorCode MatRestoreRow_SeqAIJ(Mat,PetscInt,PetscInt*,PetscInt**,Pet
 
 #include <../src/vec/is/is/impls/general/general.h>
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatReorderForNonzeroDiagonal_SeqAIJ"
 PetscErrorCode  MatReorderForNonzeroDiagonal_SeqAIJ(Mat mat,PetscReal abstol,IS ris,IS cis)
@@ -147,6 +146,6 @@ found:;
   ierr = ISDestroy(&icis);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
+
 
 

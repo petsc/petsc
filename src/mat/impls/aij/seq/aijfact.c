@@ -4,7 +4,6 @@
 #include <petscbt.h>
 #include <../src/mat/utils/freespace.h>
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatGetOrdering_Flow_SeqAIJ"
 /*
@@ -91,9 +90,7 @@ PetscErrorCode MatGetOrdering_Flow_SeqAIJ(Mat mat,MatOrderingType type,IS *irow,
   ierr  = PetscFree(order);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatGetFactorAvailable_seqaij_petsc"
 PetscErrorCode MatGetFactorAvailable_seqaij_petsc(Mat A,MatFactorType ftype,PetscBool  *flg)
@@ -102,12 +99,10 @@ PetscErrorCode MatGetFactorAvailable_seqaij_petsc(Mat A,MatFactorType ftype,Pets
   *flg = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatGetFactor_seqaij_petsc"
-PetscErrorCode MatGetFactor_seqaij_petsc(Mat A,MatFactorType ftype,Mat *B)
+PETSC_EXTERN_C PetscErrorCode MatGetFactor_seqaij_petsc(Mat A,MatFactorType ftype,Mat *B)
 {
   PetscInt       n = A->rmap->n;
   PetscErrorCode ierr;
@@ -135,7 +130,6 @@ PetscErrorCode MatGetFactor_seqaij_petsc(Mat A,MatFactorType ftype,Mat *B)
   (*B)->factortype = ftype;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "MatLUFactorSymbolic_SeqAIJ_inplace"

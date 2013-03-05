@@ -299,10 +299,9 @@ PetscErrorCode  PCSORSetIterations(PC pc,PetscInt its,PetscInt lits)
            PCSORSetIterations(), PCSORSetSymmetric(), PCSORSetOmega(), PCEISENSTAT
 M*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCCreate_SOR"
-PetscErrorCode  PCCreate_SOR(PC pc)
+PETSC_EXTERN_C PetscErrorCode  PCCreate_SOR(PC pc)
 {
   PetscErrorCode ierr;
   PC_SOR         *jac;
@@ -328,7 +327,6 @@ PetscErrorCode  PCCreate_SOR(PC pc)
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCSORSetIterations_C","PCSORSetIterations_SOR",PCSORSetIterations_SOR);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 
 

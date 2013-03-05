@@ -7,10 +7,10 @@
 #include <petscblaslapack.h>
 
 #include <../src/mat/impls/aij/seq/aij.h>
-EXTERN_C_BEGIN
+
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_SeqDense_SeqAIJ"
-PetscErrorCode  MatConvert_SeqDense_SeqAIJ(Mat A, MatType newtype,MatReuse reuse,Mat *newmat)
+PETSC_EXTERN_C PetscErrorCode  MatConvert_SeqDense_SeqAIJ(Mat A, MatType newtype,MatReuse reuse,Mat *newmat)
 {
   Mat            B;
   Mat_SeqDense   *a = (Mat_SeqDense*)A->data;
@@ -43,7 +43,6 @@ PetscErrorCode  MatConvert_SeqDense_SeqAIJ(Mat A, MatType newtype,MatReuse reuse
   }
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "MatAXPY_SeqDense"
@@ -518,10 +517,9 @@ PetscErrorCode MatLUFactorSymbolic_SeqDense(Mat fact,Mat A,IS row,IS col,const M
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatGetFactor_seqdense_petsc"
-PetscErrorCode MatGetFactor_seqdense_petsc(Mat A,MatFactorType ftype,Mat *fact)
+PETSC_EXTERN_C PetscErrorCode MatGetFactor_seqdense_petsc(Mat A,MatFactorType ftype,Mat *fact)
 {
   PetscErrorCode ierr;
 
@@ -537,7 +535,6 @@ PetscErrorCode MatGetFactor_seqdense_petsc(Mat A,MatFactorType ftype,Mat *fact)
   (*fact)->factortype = ftype;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 /* ------------------------------------------------------------------*/
 #undef __FUNCT__
@@ -2161,7 +2158,6 @@ PetscErrorCode  MatSeqDenseSetPreallocation(Mat B,PetscScalar data[])
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatSeqDenseSetPreallocation_SeqDense"
 PetscErrorCode  MatSeqDenseSetPreallocation_SeqDense(Mat B,PetscScalar *data)
@@ -2195,7 +2191,6 @@ PetscErrorCode  MatSeqDenseSetPreallocation_SeqDense(Mat B,PetscScalar *data)
   B->assembled = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSeqDenseSetLDA"
@@ -2242,10 +2237,9 @@ PetscErrorCode  MatSeqDenseSetLDA(Mat B,PetscInt lda)
 
 M*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_SeqDense"
-PetscErrorCode  MatCreate_SeqDense(Mat B)
+PETSC_EXTERN_C PetscErrorCode  MatCreate_SeqDense(Mat B)
 {
   Mat_SeqDense   *b;
   PetscErrorCode ierr;
@@ -2276,4 +2270,3 @@ PetscErrorCode  MatCreate_SeqDense(Mat B)
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQDENSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END

@@ -267,10 +267,9 @@ PetscErrorCode  PCFactorSetUseInPlace_LU(PC pc)
            PCFactorReorderForNonzeroDiagonal()
 M*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCCreate_LU"
-PetscErrorCode  PCCreate_LU(PC pc)
+PETSC_EXTERN_C PetscErrorCode  PCCreate_LU(PC pc)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size;
@@ -332,4 +331,3 @@ PetscErrorCode  PCCreate_LU(PC pc)
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorReorderForNonzeroDiagonal_C","PCFactorReorderForNonzeroDiagonal_LU",PCFactorReorderForNonzeroDiagonal_LU);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END

@@ -991,10 +991,9 @@ PetscErrorCode  PCHYPREGetType(PC pc,const char *name[])
 
 M*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCCreate_HYPRE"
-PetscErrorCode  PCCreate_HYPRE(PC pc)
+PETSC_EXTERN_C PetscErrorCode  PCCreate_HYPRE(PC pc)
 {
   PC_HYPRE       *jac;
   PetscErrorCode ierr;
@@ -1015,7 +1014,6 @@ PetscErrorCode  PCCreate_HYPRE(PC pc)
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCHYPREGetType_C","PCHYPREGetType_HYPRE",PCHYPREGetType_HYPRE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 /* ---------------------------------------------------------------------------------------------------------------------------------*/
 
@@ -1208,10 +1206,9 @@ PetscErrorCode PCSetUp_PFMG(PC pc)
 .seealso:  PCMG, MATHYPRESTRUCT
 M*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCCreate_PFMG"
-PetscErrorCode  PCCreate_PFMG(PC pc)
+PETSC_EXTERN_C PetscErrorCode  PCCreate_PFMG(PC pc)
 {
   PetscErrorCode ierr;
   PC_PFMG        *ex;
@@ -1239,7 +1236,6 @@ PetscErrorCode  PCCreate_PFMG(PC pc)
   PetscStackCallStandard(HYPRE_StructPFMGCreate,(ex->hcomm,&ex->hsolver));
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 /* ---------------------------------------------------------------------------------------------------------------------------------------------------*/
 
@@ -1458,10 +1454,9 @@ PetscErrorCode PCSetUp_SysPFMG(PC pc)
 .seealso:  PCMG, MATHYPRESSTRUCT
 M*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCCreate_SysPFMG"
-PetscErrorCode  PCCreate_SysPFMG(PC pc)
+PETSC_EXTERN_C PetscErrorCode  PCCreate_SysPFMG(PC pc)
 {
   PetscErrorCode ierr;
   PC_SysPFMG     *ex;
@@ -1487,4 +1482,3 @@ PetscErrorCode  PCCreate_SysPFMG(PC pc)
   PetscStackCallStandard(HYPRE_SStructSysPFMGCreate,(ex->hcomm,&ex->ss_solver));
   PetscFunctionReturn(0);
 }
-EXTERN_C_END

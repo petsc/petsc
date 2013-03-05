@@ -1951,10 +1951,9 @@ static PetscErrorCode PCView_ASA(PC pc,PetscViewer viewer)
 
    Application Interface Routine: PCCreate()
 */
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCCreate_ASA"
-PetscErrorCode  PCCreate_ASA(PC pc)
+PETSC_EXTERN_C PetscErrorCode  PCCreate_ASA(PC pc)
 {
   PetscErrorCode ierr;
   PC_ASA         *asa;
@@ -2046,4 +2045,3 @@ PetscErrorCode  PCCreate_ASA(PC pc)
   ierr = PetscObjectGetComm((PetscObject)pc,&asa->comm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END

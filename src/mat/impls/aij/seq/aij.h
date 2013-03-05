@@ -170,9 +170,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatSeqXAIJFreeAIJ(Mat AA,MatScalar **a,PetscI
   } \
 
 
-EXTERN_C_BEGIN
 extern PetscErrorCode MatSeqAIJSetPreallocation_SeqAIJ(Mat,PetscInt,const PetscInt*);
-EXTERN_C_END
 extern PetscErrorCode MatILUFactorSymbolic_SeqAIJ_inplace(Mat,Mat,IS,IS,const MatFactorInfo*);
 extern PetscErrorCode MatILUFactorSymbolic_SeqAIJ(Mat,Mat,IS,IS,const MatFactorInfo*);
 extern PetscErrorCode MatILUFactorSymbolic_SeqAIJ_ilu0(Mat,Mat,IS,IS,const MatFactorInfo*);
@@ -281,15 +279,13 @@ extern PetscErrorCode Mat_CheckInode_FactorLU(Mat,PetscBool);
 
 extern PetscErrorCode MatAXPYGetPreallocation_SeqAIJ(Mat,Mat,PetscInt*);
 
-EXTERN_C_BEGIN
-extern PetscErrorCode MatConvert_SeqAIJ_SeqSBAIJ(Mat,MatType,MatReuse,Mat*);
-extern PetscErrorCode MatConvert_SeqAIJ_SeqBAIJ(Mat,MatType,MatReuse,Mat*);
-extern PetscErrorCode MatConvert_SeqAIJ_SeqAIJPERM(Mat,MatType,MatReuse,Mat*);
+PETSC_EXTERN_C PetscErrorCode MatConvert_SeqAIJ_SeqSBAIJ(Mat,MatType,MatReuse,Mat*);
+PETSC_EXTERN_C PetscErrorCode MatConvert_SeqAIJ_SeqBAIJ(Mat,MatType,MatReuse,Mat*);
+PETSC_EXTERN_C PetscErrorCode MatConvert_SeqAIJ_SeqAIJPERM(Mat,MatType,MatReuse,Mat*);
 extern PetscErrorCode MatReorderForNonzeroDiagonal_SeqAIJ(Mat,PetscReal,IS,IS);
 extern PetscErrorCode MatMatMult_SeqDense_SeqAIJ(Mat,Mat,MatReuse,PetscReal,Mat*);
 extern PetscErrorCode MatRARt_SeqAIJ_SeqAIJ(Mat,Mat,MatReuse,PetscReal,Mat*);
-extern PetscErrorCode MatCreate_SeqAIJ(Mat);
-EXTERN_C_END
+PETSC_EXTERN_C PetscErrorCode MatCreate_SeqAIJ(Mat);
 extern PetscErrorCode MatAssemblyEnd_SeqAIJ(Mat,MatAssemblyType);
 extern PetscErrorCode MatDestroy_SeqAIJ(Mat);
 

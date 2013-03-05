@@ -261,10 +261,9 @@ $   PCGalerkinGetKSP(pc,&ksp); KSPSetOperators(ksp,A,....)
 
 M*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCCreate_Galerkin"
-PetscErrorCode  PCCreate_Galerkin(PC pc)
+PETSC_EXTERN_C PetscErrorCode  PCCreate_Galerkin(PC pc)
 {
   PetscErrorCode ierr;
   PC_Galerkin    *jac;
@@ -289,5 +288,4 @@ PetscErrorCode  PCCreate_Galerkin(PC pc)
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGalerkinGetKSP_C","PCGalerkinGetKSP_Galerkin",PCGalerkinGetKSP_Galerkin);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 

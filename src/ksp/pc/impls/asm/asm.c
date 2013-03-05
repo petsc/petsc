@@ -1045,10 +1045,9 @@ PetscErrorCode  PCASMGetSubKSP(PC pc,PetscInt *n_local,PetscInt *first_local,KSP
 
 M*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCCreate_ASM"
-PetscErrorCode  PCCreate_ASM(PC pc)
+PETSC_EXTERN_C PetscErrorCode  PCCreate_ASM(PC pc)
 {
   PetscErrorCode ierr;
   PC_ASM         *osm;
@@ -1095,8 +1094,6 @@ PetscErrorCode  PCCreate_ASM(PC pc)
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCASMGetSubKSP_C","PCASMGetSubKSP_ASM",PCASMGetSubKSP_ASM);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
-
 
 #undef __FUNCT__
 #define __FUNCT__ "PCASMCreateSubdomains"

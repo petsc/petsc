@@ -804,10 +804,9 @@ $             PCShellSetDestroy(pc,destroy);               (optional)
            PCShellGetName(), PCShellSetContext(), PCShellGetContext(), PCShellSetApplyBA()
 M*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCCreate_Shell"
-PetscErrorCode  PCCreate_Shell(PC pc)
+PETSC_EXTERN_C PetscErrorCode  PCCreate_Shell(PC pc)
 {
   PetscErrorCode ierr;
   PC_Shell       *shell;
@@ -849,7 +848,6 @@ PetscErrorCode  PCCreate_Shell(PC pc)
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCShellSetApplyRichardson_C","PCShellSetApplyRichardson_Shell",PCShellSetApplyRichardson_Shell);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 
 

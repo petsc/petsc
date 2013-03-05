@@ -525,10 +525,9 @@ static struct _MatOps MatOps_Values = {0,
 .seealso: MatCreateShell
 M*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_Shell"
-PetscErrorCode  MatCreate_Shell(Mat A)
+PETSC_EXTERN_C PetscErrorCode  MatCreate_Shell(Mat A)
 {
   Mat_Shell      *b;
   PetscErrorCode ierr;
@@ -554,7 +553,6 @@ PetscErrorCode  MatCreate_Shell(Mat A)
   ierr = PetscObjectChangeTypeName((PetscObject)A,MATSHELL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "MatCreateShell"

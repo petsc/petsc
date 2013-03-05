@@ -142,7 +142,6 @@ PetscErrorCode MatMultTranspose_MPIAIJCUSPARSE(Mat A,Vec xx,Vec yy)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatCUSPARSESetFormat_MPIAIJCUSPARSE"
 PetscErrorCode MatCUSPARSESetFormat_MPIAIJCUSPARSE(Mat A,MatCUSPARSEFormatOperation op,MatCUSPARSEStorageFormat format)
@@ -167,8 +166,6 @@ PetscErrorCode MatCUSPARSESetFormat_MPIAIJCUSPARSE(Mat A,MatCUSPARSEFormatOperat
   }
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
-
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSetFromOptions_MPIAIJCUSPARSE"
@@ -222,10 +219,9 @@ PetscErrorCode MatDestroy_MPIAIJCUSPARSE(Mat A)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_MPIAIJCUSPARSE"
-PetscErrorCode  MatCreate_MPIAIJCUSPARSE(Mat A)
+PETSC_EXTERN_C PetscErrorCode  MatCreate_MPIAIJCUSPARSE(Mat A)
 {
   PetscErrorCode     ierr;
   Mat_MPIAIJ         *a;
@@ -251,7 +247,6 @@ PetscErrorCode  MatCreate_MPIAIJCUSPARSE(Mat A)
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatCUSPARSESetFormat_C", "MatCUSPARSESetFormat_MPIAIJCUSPARSE", MatCUSPARSESetFormat_MPIAIJCUSPARSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 /*@
    MatCreateAIJCUSPARSE - Creates a sparse matrix in AIJ (compressed row) format

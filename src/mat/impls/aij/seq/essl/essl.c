@@ -7,10 +7,8 @@
 
 /* #include <essl.h> This doesn't work!  */
 
-EXTERN_C_BEGIN
-void dgss(int*,int*,double*,int*,int*,int*,double*,double*,int*);
-void dgsf(int*,int*,int*,double*,int*,int*,int*,int*,double*,double*,double*,int*);
-EXTERN_C_END
+PETSC_EXTERN_C void dgss(int*,int*,double*,int*,int*,int*,double*,double*,int*);
+PETSC_EXTERN_C void dgsf(int*,int*,int*,double*,int*,int*,int*,int*,double*,double*,double*,int*);
 
 typedef struct {
   int         n,nz;
@@ -128,7 +126,6 @@ PetscErrorCode MatLUFactorSymbolic_Essl(Mat B,Mat A,IS r,IS c,const MatFactorInf
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatFactorGetSolverPackage_essl"
 PetscErrorCode MatFactorGetSolverPackage_essl(Mat A,const MatSolverPackage *type)
@@ -154,7 +151,7 @@ M*/
 
 #undef __FUNCT__
 #define __FUNCT__ "MatGetFactor_seqaij_essl"
-PetscErrorCode MatGetFactor_seqaij_essl(Mat A,MatFactorType ftype,Mat *F)
+PETSC_EXTERN_C PetscErrorCode MatGetFactor_seqaij_essl(Mat A,MatFactorType ftype,Mat *F)
 {
   Mat            B;
   PetscErrorCode ierr;
@@ -178,4 +175,3 @@ PetscErrorCode MatGetFactor_seqaij_essl(Mat A,MatFactorType ftype,Mat *F)
   *F            = B;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END

@@ -253,10 +253,9 @@ PetscErrorCode MatPartitioningDestroy_Parmetis(MatPartitioning part)
 
 M*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatPartitioningCreate_Parmetis"
-PetscErrorCode  MatPartitioningCreate_Parmetis(MatPartitioning part)
+PETSC_EXTERN_C PetscErrorCode  MatPartitioningCreate_Parmetis(MatPartitioning part)
 {
   PetscErrorCode           ierr;
   MatPartitioning_Parmetis *pmetis;
@@ -277,7 +276,6 @@ PetscErrorCode  MatPartitioningCreate_Parmetis(MatPartitioning part)
   part->ops->setfromoptions = MatPartitioningSetFromOptions_Parmetis;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMeshToVertexGraph"

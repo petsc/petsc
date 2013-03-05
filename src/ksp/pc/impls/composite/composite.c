@@ -567,10 +567,9 @@ PetscErrorCode  PCCompositeSetUseTrue(PC pc)
 
 M*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCCreate_Composite"
-PetscErrorCode  PCCreate_Composite(PC pc)
+PETSC_EXTERN_C PetscErrorCode  PCCreate_Composite(PC pc)
 {
   PetscErrorCode ierr;
   PC_Composite   *jac;
@@ -600,5 +599,4 @@ PetscErrorCode  PCCreate_Composite(PC pc)
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCCompositeSpecialSetAlpha_C","PCCompositeSpecialSetAlpha_Composite",PCCompositeSpecialSetAlpha_Composite);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 

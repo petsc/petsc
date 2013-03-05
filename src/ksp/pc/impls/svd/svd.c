@@ -348,10 +348,9 @@ static PetscErrorCode PCSetFromOptions_SVD(PC pc)
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC
 M*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCCreate_SVD"
-PetscErrorCode PCCreate_SVD(PC pc)
+PETSC_EXTERN_C PetscErrorCode PCCreate_SVD(PC pc)
 {
   PC_SVD         *jac;
   PetscErrorCode ierr;
@@ -382,5 +381,4 @@ PetscErrorCode PCCreate_SVD(PC pc)
   pc->ops->applyrichardson = 0;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 

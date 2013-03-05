@@ -465,10 +465,9 @@ PetscErrorCode  PCRedundantGetOperators(PC pc,Mat *mat,Mat *pmat)
            PCRedundantGetKSP(), PCRedundantGetOperators(), PCRedundantSetNumber()
 M*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCCreate_Redundant"
-PetscErrorCode  PCCreate_Redundant(PC pc)
+PETSC_EXTERN_C PetscErrorCode  PCCreate_Redundant(PC pc)
 {
   PetscErrorCode ierr;
   PC_Redundant   *red;
@@ -496,4 +495,4 @@ PetscErrorCode  PCCreate_Redundant(PC pc)
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCRedundantGetOperators_C","PCRedundantGetOperators_Redundant",PCRedundantGetOperators_Redundant);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
+

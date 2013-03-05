@@ -45,7 +45,6 @@ static PetscErrorCode MatWrapCholmod_seqaij(Mat A,PetscBool values,cholmod_spars
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatFactorGetSolverPackage_seqaij_cholmod"
 PetscErrorCode MatFactorGetSolverPackage_seqaij_cholmod(Mat A,const MatSolverPackage *type)
@@ -54,13 +53,11 @@ PetscErrorCode MatFactorGetSolverPackage_seqaij_cholmod(Mat A,const MatSolverPac
   *type = MATSOLVERCHOLMOD;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatGetFactor_seqaij_cholmod"
 /* Almost a copy of MatGetFactor_seqsbaij_cholmod, yuck */
-PetscErrorCode MatGetFactor_seqaij_cholmod(Mat A,MatFactorType ftype,Mat *F)
+PETSC_EXTERN_C PetscErrorCode MatGetFactor_seqaij_cholmod(Mat A,MatFactorType ftype,Mat *F)
 {
   Mat            B;
   Mat_CHOLMOD    *chol;
@@ -95,4 +92,3 @@ PetscErrorCode MatGetFactor_seqaij_cholmod(Mat A,MatFactorType ftype,Mat *F)
   *F   = B;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END

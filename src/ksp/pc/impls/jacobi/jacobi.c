@@ -387,10 +387,9 @@ static PetscErrorCode PCSetFromOptions_Jacobi(PC pc)
            PCJacobiSetUseRowMax(), PCJacobiSetUseRowSum(), PCJacobiSetUseAbs()
 M*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCCreate_Jacobi"
-PetscErrorCode  PCCreate_Jacobi(PC pc)
+PETSC_EXTERN_C PetscErrorCode  PCCreate_Jacobi(PC pc)
 {
   PC_Jacobi      *jac;
   PetscErrorCode ierr;
@@ -436,8 +435,6 @@ PetscErrorCode  PCCreate_Jacobi(PC pc)
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCJacobiSetUseAbs_C","PCJacobiSetUseAbs_Jacobi",PCJacobiSetUseAbs_Jacobi);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
-
 
 #undef __FUNCT__
 #define __FUNCT__ "PCJacobiSetUseAbs"

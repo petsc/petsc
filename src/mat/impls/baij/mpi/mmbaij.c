@@ -293,7 +293,6 @@ PetscErrorCode  MatMPIBAIJDiagonalScaleLocal(Mat A,Vec scale)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatDiagonalScaleLocal_MPIBAIJ"
 PetscErrorCode  MatDiagonalScaleLocal_MPIBAIJ(Mat A,Vec scale)
@@ -330,6 +329,5 @@ PetscErrorCode  MatDiagonalScaleLocal_MPIBAIJ(Mat A,Vec scale)
   ierr = MatDiagonalScale(a->B,NULL,uglyoo);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 

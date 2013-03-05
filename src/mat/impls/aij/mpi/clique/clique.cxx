@@ -280,7 +280,7 @@ PetscErrorCode MatFactorGetSolverPackage_Clique(Mat A,const MatSolverPackage *ty
 
 #undef __FUNCT__
 #define __FUNCT__ "MatGetFactor_aij_clique"
-PetscErrorCode MatGetFactor_aij_clique(Mat A,MatFactorType ftype,Mat *F)
+PETSC_EXTERN_C PetscErrorCode MatGetFactor_aij_clique(Mat A,MatFactorType ftype,Mat *F)
 {
   Mat            B;
   Mat_Clique     *cliq;

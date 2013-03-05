@@ -108,12 +108,8 @@ PetscErrorCode  MatCreateMPIAIJPERM(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 extern PetscErrorCode MatConvert_SeqAIJ_SeqAIJPERM(Mat,MatType,MatReuse,Mat*);
-extern PetscErrorCode MatMPIAIJSetPreallocation_MPIAIJ(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[]);
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatMPIAIJSetPreallocation_MPIAIJPERM"
 PetscErrorCode  MatMPIAIJSetPreallocation_MPIAIJPERM(Mat B,PetscInt d_nz,const PetscInt d_nnz[],PetscInt o_nz,const PetscInt o_nnz[])
@@ -127,12 +123,10 @@ PetscErrorCode  MatMPIAIJSetPreallocation_MPIAIJPERM(Mat B,PetscInt d_nz,const P
   ierr = MatConvert_SeqAIJ_SeqAIJPERM(b->B, MATSEQAIJPERM, MAT_REUSE_MATRIX, &b->B);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_MPIAIJ_MPIAIJPERM"
-PetscErrorCode  MatConvert_MPIAIJ_MPIAIJPERM(Mat A,MatType type,MatReuse reuse,Mat *newmat)
+PETSC_EXTERN_C PetscErrorCode  MatConvert_MPIAIJ_MPIAIJPERM(Mat A,MatType type,MatReuse reuse,Mat *newmat)
 {
   PetscErrorCode ierr;
   Mat            B = *newmat;
@@ -147,13 +141,10 @@ PetscErrorCode  MatConvert_MPIAIJ_MPIAIJPERM(Mat A,MatType type,MatReuse reuse,M
   *newmat = B;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_MPIAIJPERM"
-PetscErrorCode  MatCreate_MPIAIJPERM(Mat A)
+PETSC_EXTERN_C PetscErrorCode  MatCreate_MPIAIJPERM(Mat A)
 {
   PetscErrorCode ierr;
 
@@ -162,7 +153,6 @@ PetscErrorCode  MatCreate_MPIAIJPERM(Mat A)
   ierr = MatConvert_MPIAIJ_MPIAIJPERM(A,MATMPIAIJPERM,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 /*MC
    MATAIJPERM - MATAIJPERM = "AIJPERM" - A matrix type to be used for sparse matrices.

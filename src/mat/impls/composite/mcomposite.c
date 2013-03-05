@@ -362,10 +362,9 @@ static struct _MatOps MatOps_Values = {0,
 .seealso: MatCreateComposite(), MatCompositeAddMat(), MatSetType(), MatCompositeMerge(), MatCompositeSetType(), MatCompositeType
 M*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_Composite"
-PetscErrorCode  MatCreate_Composite(Mat A)
+PETSC_EXTERN_C PetscErrorCode  MatCreate_Composite(Mat A)
 {
   Mat_Composite  *b;
   PetscErrorCode ierr;
@@ -385,7 +384,6 @@ PetscErrorCode  MatCreate_Composite(Mat A)
   ierr            = PetscObjectChangeTypeName((PetscObject)A,MATCOMPOSITE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "MatCreateComposite"

@@ -689,10 +689,9 @@ PetscErrorCode PCPARMSSetFill(PC pc,PetscInt lfil0,PetscInt lfil1,PetscInt lfil2
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC
 M*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCCreate_PARMS"
-PetscErrorCode PCCreate_PARMS(PC pc)
+PETSC_EXTERN_C PetscErrorCode PCCreate_PARMS(PC pc)
 {
   PC_PARMS       *parms;
   PetscErrorCode ierr;
@@ -741,4 +740,3 @@ PetscErrorCode PCCreate_PARMS(PC pc)
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCPARMSSetFill_C","PCPARMSSetFill_PARMS",PCPARMSSetFill_PARMS);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END

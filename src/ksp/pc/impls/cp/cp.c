@@ -177,10 +177,9 @@ $    This algorithm can be thought of as Gauss-Seidel on the normal equations
 
 M*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCCreate_CP"
-PetscErrorCode  PCCreate_CP(PC pc)
+PETSC_EXTERN_C PetscErrorCode  PCCreate_CP(PC pc)
 {
   PC_CP          *cp;
   PetscErrorCode ierr;
@@ -199,6 +198,5 @@ PetscErrorCode  PCCreate_CP(PC pc)
   pc->ops->applyrichardson = 0;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 

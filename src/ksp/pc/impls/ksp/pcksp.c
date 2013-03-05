@@ -282,10 +282,9 @@ PetscErrorCode  PCKSPGetKSP(PC pc,KSP *ksp)
 
 M*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCCreate_KSP"
-PetscErrorCode  PCCreate_KSP(PC pc)
+PETSC_EXTERN_C PetscErrorCode  PCCreate_KSP(PC pc)
 {
   PetscErrorCode ierr;
   PC_KSP         *jac;
@@ -312,5 +311,4 @@ PetscErrorCode  PCCreate_KSP(PC pc)
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCKSPGetKSP_C","PCKSPGetKSP_KSP",PCKSPGetKSP_KSP);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 

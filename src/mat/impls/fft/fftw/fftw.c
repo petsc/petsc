@@ -377,7 +377,6 @@ PetscErrorCode MatGetVecsFFTW(Mat A,Vec *x,Vec *y,Vec *z)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatGetVecsFFTW_FFTW"
 PetscErrorCode  MatGetVecsFFTW_FFTW(Mat A,Vec *fin,Vec *fout,Vec *bout)
@@ -593,7 +592,6 @@ PetscErrorCode  MatGetVecsFFTW_FFTW(Mat A,Vec *fin,Vec *fout,Vec *bout)
   }
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "VecScatterPetscToFFTW"
@@ -629,7 +627,6 @@ PetscErrorCode VecScatterPetscToFFTW(Mat A,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "VecScatterPetscToFFTW_FFTW"
 PetscErrorCode VecScatterPetscToFFTW_FFTW(Mat A,Vec x,Vec y)
@@ -836,7 +833,6 @@ PetscErrorCode VecScatterPetscToFFTW_FFTW(Mat A,Vec x,Vec y)
   }
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "VecScatterFFTWToPetsc"
@@ -868,7 +864,6 @@ PetscErrorCode VecScatterFFTWToPetsc(Mat A,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "VecScatterFFTWToPetsc_FFTW"
 PetscErrorCode VecScatterFFTWToPetsc_FFTW(Mat A,Vec x,Vec y)
@@ -1074,9 +1069,7 @@ PetscErrorCode VecScatterFFTWToPetsc_FFTW(Mat A,Vec x,Vec y)
   }
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_FFTW"
 /*
@@ -1088,7 +1081,7 @@ EXTERN_C_BEGIN
    Level: intermediate
 
 */
-PetscErrorCode MatCreate_FFTW(Mat A)
+PETSC_EXTERN_C PetscErrorCode MatCreate_FFTW(Mat A)
 {
   PetscErrorCode ierr;
   MPI_Comm       comm;
@@ -1241,7 +1234,6 @@ PetscErrorCode MatCreate_FFTW(Mat A)
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 
 

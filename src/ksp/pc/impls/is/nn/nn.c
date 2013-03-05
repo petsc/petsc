@@ -168,10 +168,10 @@ static PetscErrorCode PCDestroy_NN(PC pc)
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,  MATIS
 M*/
-EXTERN_C_BEGIN
+
 #undef __FUNCT__
 #define __FUNCT__ "PCCreate_NN"
-PetscErrorCode  PCCreate_NN(PC pc)
+PETSC_EXTERN_C PetscErrorCode  PCCreate_NN(PC pc)
 {
   PetscErrorCode ierr;
   PC_NN          *pcnn;
@@ -208,8 +208,6 @@ PetscErrorCode  PCCreate_NN(PC pc)
   pc->ops->applysymmetricright = 0;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
-
 
 /* -------------------------------------------------------------------------- */
 /*

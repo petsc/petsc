@@ -4,10 +4,9 @@
 #include <petsc-private/matimpl.h>
 #include <petscmat.h>
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_MPIAIJ_MPISBAIJ"
-PetscErrorCode  MatConvert_MPIAIJ_MPISBAIJ(Mat A, MatType newtype,MatReuse reuse,Mat *newmat)
+PETSC_EXTERN_C PetscErrorCode  MatConvert_MPIAIJ_MPISBAIJ(Mat A, MatType newtype,MatReuse reuse,Mat *newmat)
 {
   PetscErrorCode    ierr;
   Mat               M;
@@ -63,7 +62,7 @@ PetscErrorCode  MatConvert_MPIAIJ_MPISBAIJ(Mat A, MatType newtype,MatReuse reuse
 /* contributed by Dahai Guo <dhguo@ncsa.uiuc.edu> April 2011 */
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_MPIBAIJ_MPISBAIJ"
-PetscErrorCode MatConvert_MPIBAIJ_MPISBAIJ(Mat A, MatType newtype,MatReuse reuse,Mat *newmat)
+PETSC_EXTERN_C PetscErrorCode MatConvert_MPIBAIJ_MPISBAIJ(Mat A, MatType newtype,MatReuse reuse,Mat *newmat)
 {
   PetscErrorCode    ierr;
   Mat               M;
@@ -114,4 +113,3 @@ PetscErrorCode MatConvert_MPIBAIJ_MPISBAIJ(Mat A, MatType newtype,MatReuse reuse
   }
   PetscFunctionReturn(0);
 }
-EXTERN_C_END

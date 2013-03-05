@@ -287,10 +287,9 @@ static PetscErrorCode PCView_PBJacobi(PC pc,PetscViewer viewer)
 
 M*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCCreate_PBJacobi"
-PetscErrorCode  PCCreate_PBJacobi(PC pc)
+PETSC_EXTERN_C PetscErrorCode  PCCreate_PBJacobi(PC pc)
 {
   PC_PBJacobi    *jac;
   PetscErrorCode ierr;
@@ -327,6 +326,5 @@ PetscErrorCode  PCCreate_PBJacobi(PC pc)
   pc->ops->applysymmetricright = 0;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 

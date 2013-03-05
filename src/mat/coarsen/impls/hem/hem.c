@@ -1201,10 +1201,9 @@ PetscErrorCode MatCoarsenDestroy_HEM(MatCoarsen coarse)
 
 M*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatCoarsenCreate_HEM"
-PetscErrorCode  MatCoarsenCreate_HEM(MatCoarsen coarse)
+PETSC_EXTERN_C PetscErrorCode  MatCoarsenCreate_HEM(MatCoarsen coarse)
 {
   PetscErrorCode ierr;
   MatCoarsen_HEM *HEM;
@@ -1218,4 +1217,3 @@ PetscErrorCode  MatCoarsenCreate_HEM(MatCoarsen coarse)
   /* coarse->ops->setfromoptions = MatCoarsenSetFromOptions_HEM; */
   PetscFunctionReturn(0);
 }
-EXTERN_C_END

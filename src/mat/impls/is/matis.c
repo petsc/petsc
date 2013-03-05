@@ -303,7 +303,6 @@ PetscErrorCode MatAssemblyEnd_IS(Mat A,MatAssemblyType type)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatISGetLocalMat_IS"
 PetscErrorCode  MatISGetLocalMat_IS(Mat mat,Mat *local)
@@ -314,7 +313,6 @@ PetscErrorCode  MatISGetLocalMat_IS(Mat mat,Mat *local)
   *local = is->A;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "MatISGetLocalMat"
@@ -347,7 +345,6 @@ PetscErrorCode  MatISGetLocalMat(Mat mat,Mat *local)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatISSetLocalMat_IS"
 PetscErrorCode  MatISSetLocalMat_IS(Mat mat,Mat local)
@@ -367,7 +364,6 @@ PetscErrorCode  MatISSetLocalMat_IS(Mat mat,Mat local)
   is->A = local;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "MatISSetLocalMat"
@@ -527,10 +523,9 @@ PetscErrorCode  MatCreateIS(MPI_Comm comm,PetscInt bs,PetscInt m,PetscInt n,Pets
 
 M*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_IS"
-PetscErrorCode  MatCreate_IS(Mat A)
+PETSC_EXTERN_C PetscErrorCode  MatCreate_IS(Mat A)
 {
   PetscErrorCode ierr;
   Mat_IS         *b;
@@ -570,4 +565,3 @@ PetscErrorCode  MatCreate_IS(Mat A)
   ierr   = PetscObjectChangeTypeName((PetscObject)A,MATIS);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END

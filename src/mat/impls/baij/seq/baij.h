@@ -30,9 +30,7 @@ typedef struct {
   SEQBAIJHEADER;
 } Mat_SeqBAIJ;
 
-EXTERN_C_BEGIN
 extern PetscErrorCode MatSeqBAIJSetPreallocation_SeqBAIJ(Mat,PetscInt,PetscInt,PetscInt*);
-EXTERN_C_END
 extern PetscErrorCode MatILUFactorSymbolic_SeqBAIJ_inplace(Mat,Mat,IS,IS,const MatFactorInfo*);
 extern PetscErrorCode MatILUFactorSymbolic_SeqBAIJ(Mat,Mat,IS,IS,const MatFactorInfo*);
 extern PetscErrorCode MatICCFactorSymbolic_SeqBAIJ(Mat,Mat,IS,const MatFactorInfo*);

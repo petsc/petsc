@@ -423,7 +423,6 @@ PetscErrorCode MatLUFactorSymbolic_LUSOL(Mat F,Mat A, IS r, IS c,const MatFactor
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatFactorGetSolverPackage_seqaij_lusol"
 PetscErrorCode MatFactorGetSolverPackage_seqaij_lusol(Mat A,const MatSolverPackage *type)
@@ -432,11 +431,10 @@ PetscErrorCode MatFactorGetSolverPackage_seqaij_lusol(Mat A,const MatSolverPacka
   *type = MATSOLVERLUSOL;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "MatGetFactor_seqaij_lusol"
-PetscErrorCode MatGetFactor_seqaij_lusol(Mat A,MatFactorType ftype,Mat *F)
+PETSC_EXTERN_C PetscErrorCode MatGetFactor_seqaij_lusol(Mat A,MatFactorType ftype,Mat *F)
 {
   Mat            B;
   Mat_LUSOL      *lusol;

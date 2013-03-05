@@ -14,7 +14,6 @@
 #  define amd_AMD_order    amd_order
 #endif
 
-EXTERN_C_BEGIN
 /*
     MatGetOrdering_AMD - Find the Approximate Minimum Degree ordering
 
@@ -22,7 +21,7 @@ EXTERN_C_BEGIN
 */
 #undef __FUNCT__
 #define __FUNCT__ "MatGetOrdering_AMD"
-PetscErrorCode  MatGetOrdering_AMD(Mat mat,MatOrderingType type,IS *row,IS *col)
+PETSC_EXTERN_C PetscErrorCode  MatGetOrdering_AMD(Mat mat,MatOrderingType type,IS *row,IS *col)
 {
   PetscErrorCode ierr;
   PetscInt       nrow,*perm;
@@ -80,4 +79,4 @@ PetscErrorCode  MatGetOrdering_AMD(Mat mat,MatOrderingType type,IS *row,IS *col)
   ierr = ISCreateGeneral(PETSC_COMM_SELF,nrow,perm,PETSC_OWN_POINTER,col);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
+

@@ -15,10 +15,9 @@ typedef struct {
   PetscBool reusefill;               /* reuse fill from previous Cholesky */
 } PC_Cholesky;
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCFactorSetReuseOrdering_Cholesky"
-PetscErrorCode  PCFactorSetReuseOrdering_Cholesky(PC pc,PetscBool flag)
+static PetscErrorCode  PCFactorSetReuseOrdering_Cholesky(PC pc,PetscBool flag)
 {
   PC_Cholesky *lu;
 
@@ -27,12 +26,10 @@ PetscErrorCode  PCFactorSetReuseOrdering_Cholesky(PC pc,PetscBool flag)
   lu->reuseordering = flag;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCFactorSetReuseFill_Cholesky"
-PetscErrorCode  PCFactorSetReuseFill_Cholesky(PC pc,PetscBool flag)
+static PetscErrorCode  PCFactorSetReuseFill_Cholesky(PC pc,PetscBool flag)
 {
   PC_Cholesky *lu;
 
@@ -41,7 +38,6 @@ PetscErrorCode  PCFactorSetReuseFill_Cholesky(PC pc,PetscBool flag)
   lu->reusefill = flag;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_Cholesky"
@@ -219,10 +215,9 @@ static PetscErrorCode PCApplyTranspose_Cholesky(PC pc,Vec x,Vec y)
 
 /* -----------------------------------------------------------------------------------*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCFactorSetUseInPlace_Cholesky"
-PetscErrorCode  PCFactorSetUseInPlace_Cholesky(PC pc)
+static PetscErrorCode  PCFactorSetUseInPlace_Cholesky(PC pc)
 {
   PC_Cholesky *dir;
 
@@ -231,7 +226,6 @@ PetscErrorCode  PCFactorSetUseInPlace_Cholesky(PC pc)
   dir->inplace = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 /* -----------------------------------------------------------------------------------*/
 
@@ -297,10 +291,9 @@ PetscErrorCode  PCFactorSetReuseOrdering(PC pc,PetscBool flag)
 
 M*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCCreate_Cholesky"
-PetscErrorCode  PCCreate_Cholesky(PC pc)
+PETSC_EXTERN_C PetscErrorCode  PCCreate_Cholesky(PC pc)
 {
   PetscErrorCode ierr;
   PC_Cholesky    *dir;
@@ -353,4 +346,3 @@ PetscErrorCode  PCCreate_Cholesky(PC pc)
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetReuseFill_C","PCFactorSetReuseFill_Cholesky",PCFactorSetReuseFill_Cholesky);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END

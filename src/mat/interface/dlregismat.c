@@ -222,7 +222,6 @@ PetscErrorCode  MatInitializePackage(const char path[])
 }
 
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PetscDLLibraryRegister_petscmat"
 /*
@@ -233,7 +232,7 @@ EXTERN_C_BEGIN
   Input Parameter:
   path - library path
  */
-PetscErrorCode  PetscDLLibraryRegister_petscmat(const char path[])
+PETSC_EXTERN_C PetscErrorCode  PetscDLLibraryRegister_petscmat(const char path[])
 {
   PetscErrorCode ierr;
 
@@ -241,7 +240,6 @@ PetscErrorCode  PetscDLLibraryRegister_petscmat(const char path[])
   ierr = MatInitializePackage(path);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 
 #endif /* PETSC_USE_DYNAMIC_LIBRARIES */

@@ -1452,10 +1452,10 @@ PetscErrorCode PCSetFromOptions_GAMG(PC pc)
            PCMGSetRestriction(), PCMGGetSmoother(), PCMGGetSmootherUp(), PCMGGetSmootherDown(),
            PCMGSetCyclesOnLevel(), PCMGSetRhs(), PCMGSetX(), PCMGSetR()
 M*/
-EXTERN_C_BEGIN
+
 #undef __FUNCT__
 #define __FUNCT__ "PCCreate_GAMG"
-PetscErrorCode  PCCreate_GAMG(PC pc)
+PETSC_EXTERN_C PetscErrorCode  PCCreate_GAMG(PC pc)
 {
   PetscErrorCode ierr;
   PC_GAMG        *pc_gamg;
@@ -1572,4 +1572,3 @@ PetscErrorCode  PCCreate_GAMG(PC pc)
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END

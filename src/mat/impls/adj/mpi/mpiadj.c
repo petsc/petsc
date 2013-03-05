@@ -520,10 +520,9 @@ PetscErrorCode MatMPIAdjCreateNonemptySubcommMat(Mat A,Mat *B)
 .seealso: MatCreateMPIAdj
 M*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_MPIAdj"
-PetscErrorCode  MatCreate_MPIAdj(Mat B)
+PETSC_EXTERN_C PetscErrorCode  MatCreate_MPIAdj(Mat B)
 {
   Mat_MPIAdj     *b;
   PetscErrorCode ierr;
@@ -539,7 +538,6 @@ PetscErrorCode  MatCreate_MPIAdj(Mat B)
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATMPIADJ);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMPIAdjSetPreallocation"

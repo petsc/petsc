@@ -123,10 +123,10 @@ extern PetscErrorCode MatDuplicate_AIJCRL(Mat,MatDuplicateOption,Mat*);
  * MPIAIJCRL matrix.  This routine is called by the MatCreate_MPIAIJCRL()
  * routine, but can also be used to convert an assembled MPIAIJ matrix
  * into a MPIAIJCRL one. */
-EXTERN_C_BEGIN
+
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_MPIAIJ_MPIAIJCRL"
-PetscErrorCode  MatConvert_MPIAIJ_MPIAIJCRL(Mat A,MatType type,MatReuse reuse,Mat *newmat)
+PETSC_EXTERN_C PetscErrorCode  MatConvert_MPIAIJ_MPIAIJCRL(Mat A,MatType type,MatReuse reuse,Mat *newmat)
 {
   PetscErrorCode ierr;
   Mat            B = *newmat;
@@ -154,8 +154,6 @@ PetscErrorCode  MatConvert_MPIAIJ_MPIAIJCRL(Mat A,MatType type,MatReuse reuse,Ma
   *newmat = B;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
-
 
 #undef __FUNCT__
 #define __FUNCT__ "MatCreateMPIAIJCRL"
@@ -204,11 +202,9 @@ PetscErrorCode  MatCreateMPIAIJCRL(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt 
   PetscFunctionReturn(0);
 }
 
-
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_MPIAIJCRL"
-PetscErrorCode  MatCreate_MPIAIJCRL(Mat A)
+PETSC_EXTERN_C PetscErrorCode  MatCreate_MPIAIJCRL(Mat A)
 {
   PetscErrorCode ierr;
 
@@ -217,5 +213,4 @@ PetscErrorCode  MatCreate_MPIAIJCRL(Mat A)
   ierr = MatConvert_MPIAIJ_MPIAIJCRL(A,MATMPIAIJCRL,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 

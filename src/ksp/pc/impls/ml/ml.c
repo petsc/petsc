@@ -1174,10 +1174,9 @@ PetscErrorCode PCSetFromOptions_ML(PC pc)
            PCMGSetCyclesOnLevel(), PCMGSetRhs(), PCMGSetX(), PCMGSetR()
 M*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCCreate_ML"
-PetscErrorCode  PCCreate_ML(PC pc)
+PETSC_EXTERN_C PetscErrorCode  PCCreate_ML(PC pc)
 {
   PetscErrorCode ierr;
   PC_ML          *pc_ml;
@@ -1230,4 +1229,3 @@ PetscErrorCode  PCCreate_ML(PC pc)
   pc->ops->destroy        = PCDestroy_ML;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END

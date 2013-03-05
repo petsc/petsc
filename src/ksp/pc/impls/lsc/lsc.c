@@ -220,10 +220,9 @@ static PetscErrorCode PCView_LSC(PC pc,PetscViewer viewer)
            MatCreateSchurComplement()
 M*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCCreate_LSC"
-PetscErrorCode  PCCreate_LSC(PC pc)
+PETSC_EXTERN_C PetscErrorCode  PCCreate_LSC(PC pc)
 {
   PC_LSC         *lsc;
   PetscErrorCode ierr;
@@ -242,4 +241,3 @@ PetscErrorCode  PCCreate_LSC(PC pc)
   pc->ops->applyrichardson = 0;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END

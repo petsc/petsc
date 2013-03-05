@@ -1360,7 +1360,7 @@ static PetscErrorCode MatFactorGetSolverPackage_mumps(Mat A,const MatSolverPacka
 /* MatGetFactor for Seq and MPI AIJ matrices */
 #undef __FUNCT__
 #define __FUNCT__ "MatGetFactor_aij_mumps"
-PetscErrorCode MatGetFactor_aij_mumps(Mat A,MatFactorType ftype,Mat *F)
+PETSC_EXTERN_C PetscErrorCode MatGetFactor_aij_mumps(Mat A,MatFactorType ftype,Mat *F)
 {
   Mat            B;
   PetscErrorCode ierr;
@@ -1415,7 +1415,7 @@ PetscErrorCode MatGetFactor_aij_mumps(Mat A,MatFactorType ftype,Mat *F)
 /* MatGetFactor for Seq and MPI SBAIJ matrices */
 #undef __FUNCT__
 #define __FUNCT__ "MatGetFactor_sbaij_mumps"
-PetscErrorCode MatGetFactor_sbaij_mumps(Mat A,MatFactorType ftype,Mat *F)
+PETSC_EXTERN_C PetscErrorCode MatGetFactor_sbaij_mumps(Mat A,MatFactorType ftype,Mat *F)
 {
   Mat            B;
   PetscErrorCode ierr;
@@ -1464,7 +1464,7 @@ PetscErrorCode MatGetFactor_sbaij_mumps(Mat A,MatFactorType ftype,Mat *F)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatGetFactor_baij_mumps"
-PetscErrorCode MatGetFactor_baij_mumps(Mat A,MatFactorType ftype,Mat *F)
+PETSC_EXTERN_C PetscErrorCode MatGetFactor_baij_mumps(Mat A,MatFactorType ftype,Mat *F)
 {
   Mat            B;
   PetscErrorCode ierr;

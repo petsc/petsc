@@ -2,13 +2,12 @@
 #include <petscmat.h>
 #include <../src/mat/order/order.h>
 
-EXTERN_C_BEGIN
 /*
     MatGetOrdering_ND - Find the nested dissection ordering of a given matrix.
 */
 #undef __FUNCT__
 #define __FUNCT__ "MatGetOrdering_ND"
-PetscErrorCode  MatGetOrdering_ND(Mat mat,MatOrderingType type,IS *row,IS *col)
+PETSC_EXTERN_C PetscErrorCode  MatGetOrdering_ND(Mat mat,MatOrderingType type,IS *row,IS *col)
 {
   PetscErrorCode ierr;
   PetscInt       i, *mask,*xls,*ls,nrow,*perm;
@@ -31,6 +30,5 @@ PetscErrorCode  MatGetOrdering_ND(Mat mat,MatOrderingType type,IS *row,IS *col)
   ierr = PetscFree4(mask,perm,xls,ls);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 

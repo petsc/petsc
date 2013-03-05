@@ -595,10 +595,9 @@ static PetscErrorCode PCSetFromOptions_SPAI(PC pc)
     PCSPAISetVerbose(), PCSPAISetSp()
 M*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCCreate_SPAI"
-PetscErrorCode  PCCreate_SPAI(PC pc)
+PETSC_EXTERN_C PetscErrorCode  PCCreate_SPAI(PC pc)
 {
   PC_SPAI        *ispai;
   PetscErrorCode ierr;
@@ -635,7 +634,6 @@ PetscErrorCode  PCCreate_SPAI(PC pc)
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCSPAISetSp_C","PCSPAISetSp_SPAI",PCSPAISetSp_SPAI);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 /**********************************************************************/
 

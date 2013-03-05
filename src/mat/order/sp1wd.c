@@ -2,13 +2,12 @@
 #include <petscmat.h>
 #include <../src/mat/order/order.h>
 
-EXTERN_C_BEGIN
 /*
     MatGetOrdering_1WD - Find the 1-way dissection ordering of a given matrix.
 */
 #undef __FUNCT__
 #define __FUNCT__ "MatGetOrdering_1WD"
-PetscErrorCode  MatGetOrdering_1WD(Mat mat,MatOrderingType type,IS *row,IS *col)
+PETSC_EXTERN_C PetscErrorCode  MatGetOrdering_1WD(Mat mat,MatOrderingType type,IS *row,IS *col)
 {
   PetscErrorCode ierr;
   PetscInt       i,*mask,*xls,nblks,*xblk,*ls,nrow,*perm;
@@ -30,5 +29,4 @@ PetscErrorCode  MatGetOrdering_1WD(Mat mat,MatOrderingType type,IS *row,IS *col)
   ierr = PetscFree5(mask,xls,ls,xblk,perm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 

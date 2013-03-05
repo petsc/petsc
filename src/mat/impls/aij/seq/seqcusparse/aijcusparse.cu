@@ -44,9 +44,8 @@ PetscErrorCode MatFactorGetSolverPackage_seqaij_cusparse(Mat A,const MatSolverPa
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 extern PetscErrorCode MatGetFactor_seqaij_petsc(Mat,MatFactorType,Mat*);
-EXTERN_C_END
+
 /*MC
   MATSOLVERCUSPARSE = "cusparse" - A matrix type providing triangular solvers for seq matrices on a single GPU of type,
   seqaijcusparse, aijcusparse, or seqaijcusp, aijcusp. Currently supported algorithms are ILU(k) and LU. ICC(k) and
@@ -65,10 +64,9 @@ EXTERN_C_END
 .seealso: PCFactorSetMatSolverPackage(), MatSolverPackage, MatCreateSeqAIJCUSPARSE(), MATAIJCUSPARSE, MatCreateAIJCUSPARSE(), MatCUSPARSESetFormat(), MatCUSPARSEStorageFormat, MatCUSPARSEFormatOperation
 M*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatGetFactor_seqaij_cusparse"
-PetscErrorCode MatGetFactor_seqaij_cusparse(Mat A,MatFactorType ftype,Mat *B)
+PETSC_EXTERN_C PETSC_EXTERN_C PetscErrorCode MatGetFactor_seqaij_cusparse(Mat A,MatFactorType ftype,Mat *B)
 {
   PetscErrorCode ierr;
 
@@ -85,9 +83,7 @@ PetscErrorCode MatGetFactor_seqaij_cusparse(Mat A,MatFactorType ftype,Mat *B)
   (*B)->factortype = ftype;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatCUSPARSESetFormat_SeqAIJCUSPARSE"
 PetscErrorCode MatCUSPARSESetFormat_SeqAIJCUSPARSE(Mat A,MatCUSPARSEFormatOperation op,MatCUSPARSEStorageFormat format)
@@ -111,7 +107,6 @@ PetscErrorCode MatCUSPARSESetFormat_SeqAIJCUSPARSE(Mat A,MatCUSPARSEFormatOperat
   }
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 
 /*@
@@ -950,10 +945,9 @@ PetscErrorCode MatDestroy_SeqAIJCUSPARSE(Mat A)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_SeqAIJCUSPARSE"
-PetscErrorCode  MatCreate_SeqAIJCUSPARSE(Mat B)
+PETSC_EXTERN_C PetscErrorCode  MatCreate_SeqAIJCUSPARSE(Mat B)
 {
   PetscErrorCode ierr;
 
@@ -1004,7 +998,6 @@ PetscErrorCode  MatCreate_SeqAIJCUSPARSE(Mat B)
   ierr = PetscObjectComposeFunction((PetscObject)B, "MatCUSPARSESetFormat_C", "MatCUSPARSESetFormat_SeqAIJCUSPARSE", MatCUSPARSESetFormat_SeqAIJCUSPARSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 /*M
    MATSEQAIJCUSPARSE - MATAIJCUSPARSE = "(seq)aijcusparse" - A matrix type to be used for sparse matrices.

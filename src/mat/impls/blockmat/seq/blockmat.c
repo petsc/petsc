@@ -922,7 +922,6 @@ PetscErrorCode  MatBlockMatSetPreallocation(Mat B,PetscInt bs,PetscInt nz,const 
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatBlockMatSetPreallocation_BlockMat"
 PetscErrorCode  MatBlockMatSetPreallocation_BlockMat(Mat A,PetscInt bs,PetscInt nz,PetscInt *nnz)
@@ -985,7 +984,6 @@ PetscErrorCode  MatBlockMatSetPreallocation_BlockMat(Mat A,PetscInt bs,PetscInt 
   ierr                = MatSetOption(A,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 /*MC
    MATBLOCKMAT - A matrix that is defined by a set of Mat's that represents a sparse block matrix
@@ -997,10 +995,9 @@ EXTERN_C_END
 
 M*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_BlockMat"
-PetscErrorCode  MatCreate_BlockMat(Mat A)
+PETSC_EXTERN_C PetscErrorCode  MatCreate_BlockMat(Mat A)
 {
   Mat_BlockMat   *b;
   PetscErrorCode ierr;
@@ -1017,7 +1014,6 @@ PetscErrorCode  MatCreate_BlockMat(Mat A)
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatBlockMatSetPreallocation_C","MatBlockMatSetPreallocation_BlockMat",MatBlockMatSetPreallocation_BlockMat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "MatCreateBlockMat"
