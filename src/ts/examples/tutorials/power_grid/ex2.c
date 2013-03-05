@@ -216,7 +216,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve nonlinear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  if (ensemble){
+  if (ensemble) {
     for (du[1] = -2.5; du[1] <= .01; du[1] += .1) {
       ierr = VecGetArray(U,&u);CHKERRQ(ierr);
       u[0] = asin(ctx.Pm/ctx.Pmax);
