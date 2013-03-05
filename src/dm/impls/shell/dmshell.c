@@ -341,6 +341,7 @@ PetscErrorCode DMShellSetGlobalToLocalVecScatter(DM dm, VecScatter *gtol)
 {
   DM_Shell       *shell = (DM_Shell*)dm->data;
 
+  PetscFunctionBegin;
   shell->gtol = gtol;
   PetscFunctionReturn(0);
 }
