@@ -48,12 +48,15 @@
 #if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES) /* For Win32 shared libraries */
 #  define PETSC_DLLEXPORT __declspec(dllexport)
 #  define PETSC_DLLIMPORT __declspec(dllimport)
+#  define PETSC_VISIBILITY_INTERNAL
 #elif defined(PETSC_USE_VISIBILITY)
 #  define PETSC_DLLEXPORT __attribute__((visibility ("default")))
 #  define PETSC_DLLIMPORT __attribute__((visibility ("default")))
+#  define PETSC_VISIBILITY_INTERNAL __attribute__((visibility ("hidden")))
 #else
 #  define PETSC_DLLEXPORT
 #  define PETSC_DLLIMPORT
+#  define PETSC_VISIBILITY_INTERNAL
 #endif
 
 #if defined(petsc_EXPORTS)      /* CMake defines this when building the shared library */
@@ -65,9 +68,11 @@
 #if defined(PETSC_USE_EXTERN_CXX) && defined(__cplusplus)
 #define PETSC_EXTERN extern "C" PETSC_VISIBILITY_PUBLIC
 #define PETSC_EXTERN_TYPEDEF extern "C"
+#define PETSC_INTERN extern "C" PETSC_VISIBILITY_INTERNAL
 #else
 #define PETSC_EXTERN extern PETSC_VISIBILITY_PUBLIC
 #define PETSC_EXTERN_TYPEDEF
+#define PETSC_INTERN PETSC_VISIBILITY_INTERNAL
 #endif
 
 #include <petscversion.h>
@@ -1844,10 +1849,12 @@ M*/
 */
 #if defined(__cplusplus)
 #define PETSC_EXTERN_C extern "C" PETSC_VISIBILITY_PUBLIC
+#define PETSC_INTERN_C extern "C" PETSC_VISIBILITY_INTERNAL
 #define EXTERN_C_BEGIN extern "C" {
 #define EXTERN_C_END }
 #else
 #define PETSC_EXTERN_C PETSC_EXTERN
+#define PETSC_INTERN_C PETSC_INTERN
 #define EXTERN_C_BEGIN
 #define EXTERN_C_END
 #endif
