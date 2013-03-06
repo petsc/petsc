@@ -1085,7 +1085,7 @@ PetscErrorCode MatSOR_SeqBAIJ_N(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pet
 
 #undef __FUNCT__
 #define __FUNCT__ "matsetvaluesblocked4_"
-PETSC_EXTERN_C void  matsetvaluesblocked4_(Mat *AA,PetscInt *mm,const PetscInt im[],PetscInt *nn,const PetscInt in[],const PetscScalar v[])
+PETSC_EXTERN void matsetvaluesblocked4_(Mat *AA,PetscInt *mm,const PetscInt im[],PetscInt *nn,const PetscInt in[],const PetscScalar v[])
 {
   Mat               A  = *AA;
   Mat_SeqBAIJ       *a = (Mat_SeqBAIJ*)A->data;
@@ -1161,7 +1161,7 @@ PETSC_EXTERN_C void  matsetvaluesblocked4_(Mat *AA,PetscInt *mm,const PetscInt i
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSetValues4_"
-PETSC_EXTERN_C void  matsetvalues4_(Mat *AA,PetscInt *mm,PetscInt *im,PetscInt *nn,PetscInt *in,PetscScalar *v)
+PETSC_EXTERN void matsetvalues4_(Mat *AA,PetscInt *mm,PetscInt *im,PetscInt *nn,PetscInt *in,PetscScalar *v)
 {
   Mat         A  = *AA;
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)A->data;
@@ -3050,8 +3050,8 @@ PetscErrorCode  MatRetrieveValues_SeqBAIJ(Mat mat)
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN_C PetscErrorCode  MatConvert_SeqBAIJ_SeqAIJ(Mat, MatType,MatReuse,Mat*);
-PETSC_EXTERN_C PetscErrorCode  MatConvert_SeqBAIJ_SeqSBAIJ(Mat, MatType,MatReuse,Mat*);
+PETSC_EXTERN PetscErrorCode MatConvert_SeqBAIJ_SeqAIJ(Mat, MatType,MatReuse,Mat*);
+PETSC_EXTERN PetscErrorCode MatConvert_SeqBAIJ_SeqSBAIJ(Mat, MatType,MatReuse,Mat*);
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSeqBAIJSetPreallocation_SeqBAIJ"
@@ -3241,10 +3241,10 @@ PetscErrorCode MatSeqBAIJSetPreallocationCSR_SeqBAIJ(Mat B,PetscInt bs,const Pet
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN_C PetscErrorCode  MatGetFactor_seqbaij_petsc(Mat,MatFactorType,Mat*);
-PETSC_EXTERN_C PetscErrorCode  MatGetFactor_seqbaij_bstrm(Mat,MatFactorType,Mat*);
+PETSC_EXTERN PetscErrorCode MatGetFactor_seqbaij_petsc(Mat,MatFactorType,Mat*);
+PETSC_EXTERN PetscErrorCode MatGetFactor_seqbaij_bstrm(Mat,MatFactorType,Mat*);
 #if defined(PETSC_HAVE_MUMPS)
-PETSC_EXTERN_C PetscErrorCode  MatGetFactor_baij_mumps(Mat,MatFactorType,Mat*);
+PETSC_EXTERN PetscErrorCode MatGetFactor_baij_mumps(Mat,MatFactorType,Mat*);
 #endif
 extern PetscErrorCode  MatGetFactorAvailable_seqbaij_petsc(Mat,MatFactorType,PetscBool*);
 
@@ -3260,11 +3260,11 @@ extern PetscErrorCode  MatGetFactorAvailable_seqbaij_petsc(Mat,MatFactorType,Pet
 .seealso: MatCreateSeqBAIJ()
 M*/
 
-PETSC_EXTERN_C PetscErrorCode  MatConvert_SeqBAIJ_SeqBSTRM(Mat, MatType,MatReuse,Mat*);
+PETSC_EXTERN PetscErrorCode MatConvert_SeqBAIJ_SeqBSTRM(Mat, MatType,MatReuse,Mat*);
 
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_SeqBAIJ"
-PETSC_EXTERN_C PetscErrorCode  MatCreate_SeqBAIJ(Mat B)
+PETSC_EXTERN PetscErrorCode MatCreate_SeqBAIJ(Mat B)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size;

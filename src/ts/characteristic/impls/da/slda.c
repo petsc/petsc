@@ -74,7 +74,7 @@ PetscErrorCode CharacteristicSetUp_DA(Characteristic c)
 
 #undef __FUNCT__
 #define __FUNCT__ "CharacteristicCreate_DA"
-PETSC_EXTERN_C PetscErrorCode CharacteristicCreate_DA(Characteristic c)
+PETSC_EXTERN PetscErrorCode CharacteristicCreate_DA(Characteristic c)
 {
   Characteristic_DA *da;
   PetscErrorCode    ierr;

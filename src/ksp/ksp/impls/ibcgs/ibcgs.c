@@ -317,7 +317,7 @@ M*/
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPCreate_IBCGS"
-PETSC_EXTERN_C PetscErrorCode  KSPCreate_IBCGS(KSP ksp)
+PETSC_EXTERN PetscErrorCode KSPCreate_IBCGS(KSP ksp)
 {
   PetscErrorCode ierr;
 

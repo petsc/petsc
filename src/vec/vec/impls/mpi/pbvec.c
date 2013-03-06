@@ -226,7 +226,7 @@ M*/
 
 #undef __FUNCT__
 #define __FUNCT__ "VecCreate_MPI"
-PETSC_EXTERN_C PetscErrorCode  VecCreate_MPI(Vec vv)
+PETSC_EXTERN PetscErrorCode VecCreate_MPI(Vec vv)
 {
   PetscErrorCode ierr;
 
@@ -248,7 +248,7 @@ M*/
 
 #undef __FUNCT__
 #define __FUNCT__ "VecCreate_Standard"
-PETSC_EXTERN_C PetscErrorCode  VecCreate_Standard(Vec v)
+PETSC_EXTERN PetscErrorCode VecCreate_Standard(Vec v)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size;

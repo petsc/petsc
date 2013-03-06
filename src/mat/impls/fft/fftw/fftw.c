@@ -1081,7 +1081,7 @@ PetscErrorCode VecScatterFFTWToPetsc_FFTW(Mat A,Vec x,Vec y)
    Level: intermediate
 
 */
-PETSC_EXTERN_C PetscErrorCode MatCreate_FFTW(Mat A)
+PETSC_EXTERN PetscErrorCode MatCreate_FFTW(Mat A)
 {
   PetscErrorCode ierr;
   MPI_Comm       comm;

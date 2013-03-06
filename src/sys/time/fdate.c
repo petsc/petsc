@@ -5,7 +5,7 @@
 #endif
 #include <time.h>
 #if defined(PETSC_NEEDS_GETTIMEOFDAY_PROTO)
-PETSC_EXTERN_C int gettimeofday(struct timeval*,struct timezone*);
+PETSC_EXTERN int gettimeofday(struct timeval*,struct timezone*);
 #endif
 
 /*

@@ -1240,7 +1240,7 @@ PetscErrorCode  PetscViewerView_Binary(PetscViewer v,PetscViewer viewer)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerCreate_Binary"
-PETSC_EXTERN_C PetscErrorCode PetscViewerCreate_Binary(PetscViewer v)
+PETSC_EXTERN PetscErrorCode PetscViewerCreate_Binary(PetscViewer v)
 {
   PetscErrorCode     ierr;
   PetscViewer_Binary *vbinary;

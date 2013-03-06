@@ -589,7 +589,7 @@ static PetscErrorCode PetscSFFetchAndOpEnd_Window(PetscSF sf,MPI_Datatype unit,v
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSFCreate_Window"
-PETSC_EXTERN_C PetscErrorCode PetscSFCreate_Window(PetscSF sf)
+PETSC_EXTERN PetscErrorCode PetscSFCreate_Window(PetscSF sf)
 {
   PetscSF_Window *w = (PetscSF_Window*)sf->data;
   PetscErrorCode ierr;

@@ -298,7 +298,7 @@ PetscErrorCode  PetscPythonPrintError(void)
 
 /* ---------------------------------------------------------------- */
 
-PETSC_EXTERN_C PetscErrorCode (*PetscPythonMonitorSet_C)(PetscObject,const char[]);
+PETSC_EXTERN PetscErrorCode (*PetscPythonMonitorSet_C)(PetscObject,const char[]);
 PetscErrorCode (*PetscPythonMonitorSet_C)(PetscObject,const char[]) = NULL;
 
 #undef __FUNCT__

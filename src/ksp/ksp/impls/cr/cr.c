@@ -160,7 +160,7 @@ static PetscErrorCode  KSPSolve_CR(KSP ksp)
 M*/
 #undef __FUNCT__
 #define __FUNCT__ "KSPCreate_CR"
-PETSC_EXTERN_C PetscErrorCode  KSPCreate_CR(KSP ksp)
+PETSC_EXTERN PetscErrorCode KSPCreate_CR(KSP ksp)
 {
   PetscErrorCode ierr;
 

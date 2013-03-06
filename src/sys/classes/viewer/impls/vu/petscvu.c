@@ -131,7 +131,7 @@ PetscErrorCode  PetscViewerFileSetName_VU(PetscViewer viewer, const char name[])
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerCreate_VU"
-PETSC_EXTERN_C PetscErrorCode  PetscViewerCreate_VU(PetscViewer viewer)
+PETSC_EXTERN PetscErrorCode PetscViewerCreate_VU(PetscViewer viewer)
 {
   PetscViewer_VU *vu;
   PetscErrorCode ierr;

@@ -1938,7 +1938,7 @@ PetscErrorCode VecConjugate_SeqCUSP(Vec xin)
 
 #undef __FUNCT__
 #define __FUNCT__ "VecCreate_SeqCUSP"
-PETSC_EXTERN_C PetscErrorCode  VecCreate_SeqCUSP(Vec V)
+PETSC_EXTERN PetscErrorCode VecCreate_SeqCUSP(Vec V)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size;

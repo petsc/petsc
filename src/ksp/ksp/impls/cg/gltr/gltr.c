@@ -1503,7 +1503,7 @@ M*/
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPCreate_GLTR"
-PETSC_EXTERN_C PetscErrorCode  KSPCreate_GLTR(KSP ksp)
+PETSC_EXTERN PetscErrorCode KSPCreate_GLTR(KSP ksp)
 {
   PetscErrorCode ierr;
   KSP_GLTR       *cg;

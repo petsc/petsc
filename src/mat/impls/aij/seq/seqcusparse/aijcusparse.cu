@@ -66,7 +66,7 @@ M*/
 
 #undef __FUNCT__
 #define __FUNCT__ "MatGetFactor_seqaij_cusparse"
-PETSC_EXTERN_C PETSC_EXTERN_C PetscErrorCode MatGetFactor_seqaij_cusparse(Mat A,MatFactorType ftype,Mat *B)
+PETSC_EXTERN PETSC_EXTERN_C PetscErrorCode MatGetFactor_seqaij_cusparse(Mat A,MatFactorType ftype,Mat *B)
 {
   PetscErrorCode ierr;
 
@@ -947,7 +947,7 @@ PetscErrorCode MatDestroy_SeqAIJCUSPARSE(Mat A)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_SeqAIJCUSPARSE"
-PETSC_EXTERN_C PetscErrorCode  MatCreate_SeqAIJCUSPARSE(Mat B)
+PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJCUSPARSE(Mat B)
 {
   PetscErrorCode ierr;
 

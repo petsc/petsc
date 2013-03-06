@@ -94,7 +94,7 @@ PetscErrorCode  TSInitializePackage(const char path[])
   Input Parameter:
   path - library path
  */
-PETSC_EXTERN_C PetscErrorCode  PetscDLLibraryRegister_petscts(const char path[])
+PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscts(const char path[])
 {
   PetscErrorCode ierr;
 

@@ -525,7 +525,7 @@ M*/
 
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_IS"
-PETSC_EXTERN_C PetscErrorCode  MatCreate_IS(Mat A)
+PETSC_EXTERN PetscErrorCode MatCreate_IS(Mat A)
 {
   PetscErrorCode ierr;
   Mat_IS         *b;

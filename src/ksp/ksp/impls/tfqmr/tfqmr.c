@@ -144,7 +144,7 @@ static PetscErrorCode  KSPSolve_TFQMR(KSP ksp)
 M*/
 #undef __FUNCT__
 #define __FUNCT__ "KSPCreate_TFQMR"
-PETSC_EXTERN_C PetscErrorCode  KSPCreate_TFQMR(KSP ksp)
+PETSC_EXTERN PetscErrorCode KSPCreate_TFQMR(KSP ksp)
 {
   PetscErrorCode ierr;
 

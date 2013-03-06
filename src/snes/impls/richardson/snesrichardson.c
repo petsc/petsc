@@ -241,7 +241,7 @@ PetscErrorCode SNESSolve_NRichardson(SNES snes)
 M*/
 #undef __FUNCT__
 #define __FUNCT__ "SNESCreate_NRichardson"
-PETSC_EXTERN_C PetscErrorCode  SNESCreate_NRichardson(SNES snes)
+PETSC_EXTERN PetscErrorCode SNESCreate_NRichardson(SNES snes)
 {
   PetscErrorCode   ierr;
   SNES_NRichardson *neP;

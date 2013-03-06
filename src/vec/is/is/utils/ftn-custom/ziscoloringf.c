@@ -10,7 +10,7 @@
 #define iscoloringcreate_      iscoloringcreate
 #endif
 
-PETSC_EXTERN_C void PETSC_STDCALL iscoloringview_(ISColoring *iscoloring,PetscViewer *viewer,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL iscoloringview_(ISColoring *iscoloring,PetscViewer *viewer,PetscErrorCode *ierr)
 {
   PetscViewer v;
   PetscPatchDefaultViewers_Fortran(viewer,v);
@@ -19,7 +19,7 @@ PETSC_EXTERN_C void PETSC_STDCALL iscoloringview_(ISColoring *iscoloring,PetscVi
 
 
 
-PETSC_EXTERN_C void PETSC_STDCALL iscoloringcreate_(MPI_Comm *comm,PetscInt *n,PetscInt *ncolors,PetscInt *colors,ISColoring *iscoloring,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL iscoloringcreate_(MPI_Comm *comm,PetscInt *n,PetscInt *ncolors,PetscInt *colors,ISColoring *iscoloring,PetscErrorCode *ierr)
 {
   ISColoringValue *color;
   PetscInt        i;

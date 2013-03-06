@@ -1365,7 +1365,7 @@ PetscErrorCode MatCreateNest(MPI_Comm comm,PetscInt nr,const IS is_row[],PetscIn
 
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_Nest_AIJ"
-PETSC_EXTERN_C PetscErrorCode MatConvert_Nest_AIJ(Mat A,MatType newtype,MatReuse reuse,Mat *newmat)
+PETSC_EXTERN PetscErrorCode MatConvert_Nest_AIJ(Mat A,MatType newtype,MatReuse reuse,Mat *newmat)
 {
   PetscErrorCode ierr;
   Mat_Nest       *nest = (Mat_Nest*)A->data;
@@ -1515,7 +1515,7 @@ PETSC_EXTERN_C PetscErrorCode MatConvert_Nest_AIJ(Mat A,MatType newtype,MatReuse
 M*/
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_Nest"
-PETSC_EXTERN_C PetscErrorCode MatCreate_Nest(Mat A)
+PETSC_EXTERN PetscErrorCode MatCreate_Nest(Mat A)
 {
   Mat_Nest       *s;
   PetscErrorCode ierr;

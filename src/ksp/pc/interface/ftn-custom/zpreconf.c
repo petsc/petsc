@@ -16,14 +16,14 @@
 #define pcgetoptionsprefix_        pcgetoptionsprefix
 #endif
 
-PETSC_EXTERN_C void PETSC_STDCALL pcview_(PC *pc,PetscViewer *viewer, PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL pcview_(PC *pc,PetscViewer *viewer, PetscErrorCode *ierr)
 {
   PetscViewer v;
   PetscPatchDefaultViewers_Fortran(viewer,v);
   *ierr = PCView(*pc,v);
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL pcgetoperators_(PC *pc,Mat *mat,Mat *pmat,MatStructure *flag,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL pcgetoperators_(PC *pc,Mat *mat,Mat *pmat,MatStructure *flag,PetscErrorCode *ierr)
 {
   CHKFORTRANNULLOBJECT(mat);
   CHKFORTRANNULLOBJECT(pmat);
@@ -31,7 +31,7 @@ PETSC_EXTERN_C void PETSC_STDCALL pcgetoperators_(PC *pc,Mat *mat,Mat *pmat,MatS
   *ierr = PCGetOperators(*pc,mat,pmat,flag);
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL pcsetoptionsprefix_(PC *pc,CHAR prefix PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL pcsetoptionsprefix_(PC *pc,CHAR prefix PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *t;
 
@@ -40,7 +40,7 @@ PETSC_EXTERN_C void PETSC_STDCALL pcsetoptionsprefix_(PC *pc,CHAR prefix PETSC_M
   FREECHAR(prefix,t);
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL pcappendoptionsprefix_(PC *pc,CHAR prefix PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL pcappendoptionsprefix_(PC *pc,CHAR prefix PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *t;
 
@@ -49,7 +49,7 @@ PETSC_EXTERN_C void PETSC_STDCALL pcappendoptionsprefix_(PC *pc,CHAR prefix PETS
   FREECHAR(prefix,t);
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL pcgetoptionsprefix_(PC *pc,CHAR prefix PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL pcgetoptionsprefix_(PC *pc,CHAR prefix PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   const char *tname;
 

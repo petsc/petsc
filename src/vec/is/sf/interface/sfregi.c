@@ -1,9 +1,9 @@
 #include <petsc-private/sfimpl.h>     /*I  "petscsf.h"  I*/
 
 #if defined(PETSC_HAVE_MPI_WIN_CREATE)
-PETSC_EXTERN_C PetscErrorCode PetscSFCreate_Window(PetscSF);
+PETSC_EXTERN PetscErrorCode PetscSFCreate_Window(PetscSF);
 #endif
-PETSC_EXTERN_C PetscErrorCode PetscSFCreate_Basic(PetscSF);
+PETSC_EXTERN PetscErrorCode PetscSFCreate_Basic(PetscSF);
 
 PetscFunctionList PetscSFunctionList;
 

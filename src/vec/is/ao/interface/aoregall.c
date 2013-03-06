@@ -1,7 +1,7 @@
 
 #include <../src/vec/is/ao/aoimpl.h>      /*I "petscao.h" I*/
-PETSC_EXTERN_C PetscErrorCode AOCreate_Basic(AO ao);
-PETSC_EXTERN_C PetscErrorCode AOCreate_MemoryScalable(AO ao);
+PETSC_EXTERN PetscErrorCode AOCreate_Basic(AO ao);
+PETSC_EXTERN PetscErrorCode AOCreate_MemoryScalable(AO ao);
 
 #undef __FUNCT__
 #define __FUNCT__ "AORegisterAll"

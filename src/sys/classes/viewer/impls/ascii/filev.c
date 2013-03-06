@@ -849,7 +849,7 @@ PetscErrorCode  PetscViewerView_ASCII(PetscViewer v,PetscViewer viewer)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerCreate_ASCII"
-PETSC_EXTERN_C PetscErrorCode  PetscViewerCreate_ASCII(PetscViewer viewer)
+PETSC_EXTERN PetscErrorCode PetscViewerCreate_ASCII(PetscViewer viewer)
 {
   PetscViewer_ASCII *vascii;
   PetscErrorCode    ierr;

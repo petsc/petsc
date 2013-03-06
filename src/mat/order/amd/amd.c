@@ -21,7 +21,7 @@
 */
 #undef __FUNCT__
 #define __FUNCT__ "MatGetOrdering_AMD"
-PETSC_EXTERN_C PetscErrorCode  MatGetOrdering_AMD(Mat mat,MatOrderingType type,IS *row,IS *col)
+PETSC_EXTERN PetscErrorCode MatGetOrdering_AMD(Mat mat,MatOrderingType type,IS *row,IS *col)
 {
   PetscErrorCode ierr;
   PetscInt       nrow,*perm;

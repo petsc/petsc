@@ -10,7 +10,7 @@
 
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_SeqDense_SeqAIJ"
-PETSC_EXTERN_C PetscErrorCode  MatConvert_SeqDense_SeqAIJ(Mat A, MatType newtype,MatReuse reuse,Mat *newmat)
+PETSC_EXTERN PetscErrorCode MatConvert_SeqDense_SeqAIJ(Mat A, MatType newtype,MatReuse reuse,Mat *newmat)
 {
   Mat            B;
   Mat_SeqDense   *a = (Mat_SeqDense*)A->data;
@@ -519,7 +519,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqDense(Mat fact,Mat A,IS row,IS col,const M
 
 #undef __FUNCT__
 #define __FUNCT__ "MatGetFactor_seqdense_petsc"
-PETSC_EXTERN_C PetscErrorCode MatGetFactor_seqdense_petsc(Mat A,MatFactorType ftype,Mat *fact)
+PETSC_EXTERN PetscErrorCode MatGetFactor_seqdense_petsc(Mat A,MatFactorType ftype,Mat *fact)
 {
   PetscErrorCode ierr;
 
@@ -2239,7 +2239,7 @@ M*/
 
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_SeqDense"
-PETSC_EXTERN_C PetscErrorCode  MatCreate_SeqDense(Mat B)
+PETSC_EXTERN PetscErrorCode MatCreate_SeqDense(Mat B)
 {
   Mat_SeqDense   *b;
   PetscErrorCode ierr;

@@ -469,7 +469,7 @@ M*/
 
 #undef __FUNCT__
 #define __FUNCT__ "TSCreate_RK"
-PETSC_EXTERN_C PetscErrorCode  TSCreate_RK(TS ts)
+PETSC_EXTERN PetscErrorCode TSCreate_RK(TS ts)
 {
   TS_RK          *rk;
   PetscErrorCode ierr;

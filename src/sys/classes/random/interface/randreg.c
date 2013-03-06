@@ -130,13 +130,13 @@ PetscErrorCode  PetscRandomRegisterDestroy(void)
 }
 
 #if defined(PETSC_HAVE_RAND)
-PETSC_EXTERN_C PetscErrorCode  PetscRandomCreate_Rand(PetscRandom);
+PETSC_EXTERN PetscErrorCode PetscRandomCreate_Rand(PetscRandom);
 #endif
 #if defined(PETSC_HAVE_DRAND48)
-PETSC_EXTERN_C PetscErrorCode  PetscRandomCreate_Rand48(PetscRandom);
+PETSC_EXTERN PetscErrorCode PetscRandomCreate_Rand48(PetscRandom);
 #endif
 #if defined(PETSC_HAVE_SPRNG)
-PETSC_EXTERN_C PetscErrorCode  PetscRandomCreate_Sprng(PetscRandom);
+PETSC_EXTERN PetscErrorCode PetscRandomCreate_Sprng(PetscRandom);
 #endif
 
 #undef __FUNCT__

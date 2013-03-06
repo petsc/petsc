@@ -7,7 +7,7 @@
 #define pcbjacobigetsubksp_        pcbjacobigetsubksp
 #endif
 
-PETSC_EXTERN_C void PETSC_STDCALL pcbjacobigetsubksp_(PC *pc,PetscInt *n_local,PetscInt *first_local,KSP *ksp,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL pcbjacobigetsubksp_(PC *pc,PetscInt *n_local,PetscInt *first_local,KSP *ksp,PetscErrorCode *ierr)
 {
   KSP      *tksp;
   PetscInt i,nloc;

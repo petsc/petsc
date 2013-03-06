@@ -178,7 +178,7 @@ PetscErrorCode PetscViewerDestroy_Matlab(PetscViewer v)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerCreate_Matlab"
-PETSC_EXTERN_C PetscErrorCode  PetscViewerCreate_Matlab(PetscViewer viewer)
+PETSC_EXTERN PetscErrorCode PetscViewerCreate_Matlab(PetscViewer viewer)
 {
   PetscErrorCode     ierr;
   PetscViewer_Matlab *e;

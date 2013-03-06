@@ -731,7 +731,7 @@ PetscErrorCode SNESQNSetRestartType_QN(SNES snes, SNESQNRestartType rtype)
 M*/
 #undef __FUNCT__
 #define __FUNCT__ "SNESCreate_QN"
-PETSC_EXTERN_C PetscErrorCode  SNESCreate_QN(SNES snes)
+PETSC_EXTERN PetscErrorCode SNESCreate_QN(SNES snes)
 {
   PetscErrorCode ierr;
   SNES_QN        *qn;

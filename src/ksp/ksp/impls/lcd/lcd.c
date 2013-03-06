@@ -234,7 +234,7 @@ M*/
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPCreate_LCD"
-PETSC_EXTERN_C PetscErrorCode KSPCreate_LCD(KSP ksp)
+PETSC_EXTERN PetscErrorCode KSPCreate_LCD(KSP ksp)
 {
   PetscErrorCode ierr;
   KSP_LCD        *lcd;

@@ -1176,7 +1176,7 @@ M*/
 
 #undef __FUNCT__
 #define __FUNCT__ "PCCreate_ML"
-PETSC_EXTERN_C PetscErrorCode  PCCreate_ML(PC pc)
+PETSC_EXTERN PetscErrorCode PCCreate_ML(PC pc)
 {
   PetscErrorCode ierr;
   PC_ML          *pc_ml;

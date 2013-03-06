@@ -688,7 +688,7 @@ PetscErrorCode  MatMFFDSetFunctionError_MFFD(Mat mat,PetscReal error)
 M*/
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_MFFD"
-PETSC_EXTERN_C PetscErrorCode  MatCreate_MFFD(Mat A)
+PETSC_EXTERN PetscErrorCode MatCreate_MFFD(Mat A)
 {
   MatMFFD        mfctx;
   PetscErrorCode ierr;

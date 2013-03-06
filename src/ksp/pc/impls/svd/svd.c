@@ -350,7 +350,7 @@ M*/
 
 #undef __FUNCT__
 #define __FUNCT__ "PCCreate_SVD"
-PETSC_EXTERN_C PetscErrorCode PCCreate_SVD(PC pc)
+PETSC_EXTERN PetscErrorCode PCCreate_SVD(PC pc)
 {
   PC_SVD         *jac;
   PetscErrorCode ierr;

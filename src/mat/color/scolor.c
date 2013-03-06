@@ -2,10 +2,10 @@
 #include <petscmat.h>
 #include <../src/mat/color/color.h>
 
-PETSC_EXTERN_C PetscErrorCode  MatGetColoring_Natural(Mat,MatColoringType,ISColoring*);
-PETSC_EXTERN_C PetscErrorCode  MatGetColoring_SL_Minpack(Mat,MatColoringType,ISColoring*);
-PETSC_EXTERN_C PetscErrorCode  MatGetColoring_LF_Minpack(Mat,MatColoringType,ISColoring*);
-PETSC_EXTERN_C PetscErrorCode  MatGetColoring_ID_Minpack(Mat,MatColoringType,ISColoring*);
+PETSC_EXTERN PetscErrorCode MatGetColoring_Natural(Mat,MatColoringType,ISColoring*);
+PETSC_EXTERN PetscErrorCode MatGetColoring_SL_Minpack(Mat,MatColoringType,ISColoring*);
+PETSC_EXTERN PetscErrorCode MatGetColoring_LF_Minpack(Mat,MatColoringType,ISColoring*);
+PETSC_EXTERN PetscErrorCode MatGetColoring_ID_Minpack(Mat,MatColoringType,ISColoring*);
 
 #undef __FUNCT__
 #define __FUNCT__ "MatColoringRegisterAll"

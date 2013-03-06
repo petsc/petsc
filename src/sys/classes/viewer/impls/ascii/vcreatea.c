@@ -173,7 +173,7 @@ PetscMPIInt Petsc_Viewer_keyval = MPI_KEYVAL_INVALID;
   This is called by MPI, not by users.
 
 */
-PETSC_EXTERN_C PetscMPIInt MPIAPI Petsc_DelViewer(MPI_Comm comm,PetscMPIInt keyval,void *attr_val,void *extra_state)
+PETSC_EXTERN PetscMPIInt MPIAPI Petsc_DelViewer(MPI_Comm comm,PetscMPIInt keyval,void *attr_val,void *extra_state)
 {
   PetscErrorCode ierr;
 

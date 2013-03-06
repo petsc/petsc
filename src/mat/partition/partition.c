@@ -59,7 +59,7 @@ static PetscErrorCode MatPartitioningApply_Square(MatPartitioning part,IS *parti
 
 #undef __FUNCT__
 #define __FUNCT__ "MatPartitioningCreate_Current"
-PETSC_EXTERN_C PetscErrorCode  MatPartitioningCreate_Current(MatPartitioning part)
+PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Current(MatPartitioning part)
 {
   PetscFunctionBegin;
   part->ops->apply   = MatPartitioningApply_Current;
@@ -70,7 +70,7 @@ PETSC_EXTERN_C PetscErrorCode  MatPartitioningCreate_Current(MatPartitioning par
 
 #undef __FUNCT__
 #define __FUNCT__ "MatPartitioningCreate_Square"
-PETSC_EXTERN_C PetscErrorCode  MatPartitioningCreate_Square(MatPartitioning part)
+PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Square(MatPartitioning part)
 {
   PetscFunctionBegin;
   part->ops->apply   = MatPartitioningApply_Square;

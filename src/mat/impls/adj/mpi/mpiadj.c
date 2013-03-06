@@ -522,7 +522,7 @@ M*/
 
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_MPIAdj"
-PETSC_EXTERN_C PetscErrorCode  MatCreate_MPIAdj(Mat B)
+PETSC_EXTERN PetscErrorCode MatCreate_MPIAdj(Mat B)
 {
   Mat_MPIAdj     *b;
   PetscErrorCode ierr;

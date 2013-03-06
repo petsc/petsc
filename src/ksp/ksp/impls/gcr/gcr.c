@@ -361,7 +361,7 @@ PetscErrorCode  KSPBuildResidual_GCR(KSP ksp, Vec t, Vec v, Vec *V)
 M*/
 #undef __FUNCT__
 #define __FUNCT__ "KSPCreate_GCR"
-PETSC_EXTERN_C PetscErrorCode KSPCreate_GCR(KSP ksp)
+PETSC_EXTERN PetscErrorCode KSPCreate_GCR(KSP ksp)
 {
   PetscErrorCode ierr;
   KSP_GCR        *ctx;

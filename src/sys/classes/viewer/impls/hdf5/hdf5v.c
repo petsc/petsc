@@ -101,7 +101,7 @@ PetscErrorCode  PetscViewerFileSetName_HDF5(PetscViewer viewer, const char name[
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerCreate_HDF5"
-PETSC_EXTERN_C PetscErrorCode  PetscViewerCreate_HDF5(PetscViewer v)
+PETSC_EXTERN PetscErrorCode PetscViewerCreate_HDF5(PetscViewer v)
 {
   PetscViewer_HDF5 *hdf5;
   PetscErrorCode   ierr;

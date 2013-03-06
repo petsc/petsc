@@ -412,7 +412,7 @@ static PetscErrorCode SNESSetFromOptions_NEWTONLS(SNES snes)
 M*/
 #undef __FUNCT__
 #define __FUNCT__ "SNESCreate_NEWTONLS"
-PETSC_EXTERN_C PetscErrorCode  SNESCreate_NEWTONLS(SNES snes)
+PETSC_EXTERN PetscErrorCode SNESCreate_NEWTONLS(SNES snes)
 {
   PetscErrorCode ierr;
   SNES_NEWTONLS  *neP;

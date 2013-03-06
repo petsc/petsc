@@ -278,7 +278,7 @@ M*/
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPCreate_Richardson"
-PETSC_EXTERN_C PetscErrorCode  KSPCreate_Richardson(KSP ksp)
+PETSC_EXTERN PetscErrorCode KSPCreate_Richardson(KSP ksp)
 {
   PetscErrorCode ierr;
   KSP_Richardson *richardsonP;

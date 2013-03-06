@@ -116,7 +116,7 @@ static PetscErrorCode TSAdaptView_Basic(TSAdapt adapt,PetscViewer viewer)
 
 .seealso: TS, TSAdapt, TSSetAdapt()
 M*/
-PETSC_EXTERN_C PetscErrorCode TSAdaptCreate_Basic(TSAdapt adapt)
+PETSC_EXTERN PetscErrorCode TSAdaptCreate_Basic(TSAdapt adapt)
 {
   PetscErrorCode ierr;
   TSAdapt_Basic  *a;

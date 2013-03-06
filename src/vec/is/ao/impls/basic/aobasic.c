@@ -190,7 +190,7 @@ static struct _AOOps AOOps_Basic = {
 
 #undef __FUNCT__
 #define __FUNCT__ "AOCreate_Basic"
-PETSC_EXTERN_C PetscErrorCode  AOCreate_Basic(AO ao)
+PETSC_EXTERN PetscErrorCode AOCreate_Basic(AO ao)
 {
   AO_Basic       *aobasic;
   PetscMPIInt    size,rank,count,*lens,*disp;

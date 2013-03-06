@@ -553,7 +553,7 @@ PetscErrorCode SNESMSSetType(SNES snes,SNESMSType rostype)
 M*/
 #undef __FUNCT__
 #define __FUNCT__ "SNESCreate_MS"
-PETSC_EXTERN_C PetscErrorCode  SNESCreate_MS(SNES snes)
+PETSC_EXTERN PetscErrorCode SNESCreate_MS(SNES snes)
 {
   PetscErrorCode ierr;
   SNES_MS        *ms;

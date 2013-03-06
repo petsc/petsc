@@ -23,9 +23,9 @@
 #define fortranmaxpy3_ fortranmaxpy3
 #define fortranmaxpy2_ fortranmaxpy2
 #endif
-PETSC_EXTERN_C void fortranmaxpy4_(void*,void*,void*,void*,void*,const void*,const void*,const void*,const void*,PetscInt*);
-PETSC_EXTERN_C void fortranmaxpy3_(void*,void*,void*,void*,const void*,const void*,const void*,PetscInt*);
-PETSC_EXTERN_C void fortranmaxpy2_(void*,void*,void*,const void*,const void*,PetscInt*);
+PETSC_EXTERN void fortranmaxpy4_(void*,void*,void*,void*,void*,const void*,const void*,const void*,const void*,PetscInt*);
+PETSC_EXTERN void fortranmaxpy3_(void*,void*,void*,void*,const void*,const void*,const void*,PetscInt*);
+PETSC_EXTERN void fortranmaxpy2_(void*,void*,void*,const void*,const void*,PetscInt*);
 #endif
 #include <petscblaslapack.h>
 

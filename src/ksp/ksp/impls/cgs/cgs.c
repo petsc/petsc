@@ -148,7 +148,7 @@ static PetscErrorCode  KSPSolve_CGS(KSP ksp)
 M*/
 #undef __FUNCT__
 #define __FUNCT__ "KSPCreate_CGS"
-PETSC_EXTERN_C PetscErrorCode  KSPCreate_CGS(KSP ksp)
+PETSC_EXTERN PetscErrorCode KSPCreate_CGS(KSP ksp)
 {
   PetscErrorCode ierr;
 

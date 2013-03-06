@@ -893,7 +893,7 @@ M*/
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPCreate_GMRES"
-PETSC_EXTERN_C PetscErrorCode  KSPCreate_GMRES(KSP ksp)
+PETSC_EXTERN PetscErrorCode KSPCreate_GMRES(KSP ksp)
 {
   KSP_GMRES      *gmres;
   PetscErrorCode ierr;

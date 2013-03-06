@@ -1,64 +1,64 @@
 
 #include <petsc-private/pcimpl.h>          /*I   "petscpc.h"   I*/
 
-PETSC_EXTERN_C PetscErrorCode  PCCreate_Jacobi(PC);
-PETSC_EXTERN_C PetscErrorCode  PCCreate_BJacobi(PC);
-PETSC_EXTERN_C PetscErrorCode  PCCreate_PBJacobi(PC);
-PETSC_EXTERN_C PetscErrorCode  PCCreate_ILU(PC);
-PETSC_EXTERN_C PetscErrorCode  PCCreate_None(PC);
-PETSC_EXTERN_C PetscErrorCode  PCCreate_LU(PC);
-PETSC_EXTERN_C PetscErrorCode  PCCreate_SOR(PC);
-PETSC_EXTERN_C PetscErrorCode  PCCreate_Shell(PC);
-PETSC_EXTERN_C PetscErrorCode  PCCreate_MG(PC);
-PETSC_EXTERN_C PetscErrorCode  PCCreate_Eisenstat(PC);
-PETSC_EXTERN_C PetscErrorCode  PCCreate_ICC(PC);
-PETSC_EXTERN_C PetscErrorCode  PCCreate_ASM(PC);
-PETSC_EXTERN_C PetscErrorCode  PCCreate_GASM(PC);
-PETSC_EXTERN_C PetscErrorCode  PCCreate_KSP(PC);
-PETSC_EXTERN_C PetscErrorCode  PCCreate_Composite(PC);
-PETSC_EXTERN_C PetscErrorCode  PCCreate_Redundant(PC);
-PETSC_EXTERN_C PetscErrorCode  PCCreate_NN(PC);
-PETSC_EXTERN_C PetscErrorCode  PCCreate_Cholesky(PC);
-PETSC_EXTERN_C PetscErrorCode  PCCreate_FieldSplit(PC);
-PETSC_EXTERN_C PetscErrorCode  PCCreate_Galerkin(PC);
-PETSC_EXTERN_C PetscErrorCode  PCCreate_HMPI(PC);
-PETSC_EXTERN_C PetscErrorCode  PCCreate_Exotic(PC);
-PETSC_EXTERN_C PetscErrorCode  PCCreate_ASA(PC);
-PETSC_EXTERN_C PetscErrorCode  PCCreate_CP(PC);
-PETSC_EXTERN_C PetscErrorCode  PCCreate_LSC(PC);
-PETSC_EXTERN_C PetscErrorCode  PCCreate_Redistribute(PC);
-PETSC_EXTERN_C PetscErrorCode  PCCreate_SVD(PC);
-PETSC_EXTERN_C PetscErrorCode  PCCreate_GAMG(PC);
+PETSC_EXTERN PetscErrorCode PCCreate_Jacobi(PC);
+PETSC_EXTERN PetscErrorCode PCCreate_BJacobi(PC);
+PETSC_EXTERN PetscErrorCode PCCreate_PBJacobi(PC);
+PETSC_EXTERN PetscErrorCode PCCreate_ILU(PC);
+PETSC_EXTERN PetscErrorCode PCCreate_None(PC);
+PETSC_EXTERN PetscErrorCode PCCreate_LU(PC);
+PETSC_EXTERN PetscErrorCode PCCreate_SOR(PC);
+PETSC_EXTERN PetscErrorCode PCCreate_Shell(PC);
+PETSC_EXTERN PetscErrorCode PCCreate_MG(PC);
+PETSC_EXTERN PetscErrorCode PCCreate_Eisenstat(PC);
+PETSC_EXTERN PetscErrorCode PCCreate_ICC(PC);
+PETSC_EXTERN PetscErrorCode PCCreate_ASM(PC);
+PETSC_EXTERN PetscErrorCode PCCreate_GASM(PC);
+PETSC_EXTERN PetscErrorCode PCCreate_KSP(PC);
+PETSC_EXTERN PetscErrorCode PCCreate_Composite(PC);
+PETSC_EXTERN PetscErrorCode PCCreate_Redundant(PC);
+PETSC_EXTERN PetscErrorCode PCCreate_NN(PC);
+PETSC_EXTERN PetscErrorCode PCCreate_Cholesky(PC);
+PETSC_EXTERN PetscErrorCode PCCreate_FieldSplit(PC);
+PETSC_EXTERN PetscErrorCode PCCreate_Galerkin(PC);
+PETSC_EXTERN PetscErrorCode PCCreate_HMPI(PC);
+PETSC_EXTERN PetscErrorCode PCCreate_Exotic(PC);
+PETSC_EXTERN PetscErrorCode PCCreate_ASA(PC);
+PETSC_EXTERN PetscErrorCode PCCreate_CP(PC);
+PETSC_EXTERN PetscErrorCode PCCreate_LSC(PC);
+PETSC_EXTERN PetscErrorCode PCCreate_Redistribute(PC);
+PETSC_EXTERN PetscErrorCode PCCreate_SVD(PC);
+PETSC_EXTERN PetscErrorCode PCCreate_GAMG(PC);
 
 #if defined(PETSC_HAVE_BOOST) && defined(PETSC_CLANGUAGE_CXX)
-PETSC_EXTERN_C PetscErrorCode  PCCreate_SupportGraph(PC);
+PETSC_EXTERN PetscErrorCode PCCreate_SupportGraph(PC);
 #endif
 #if defined(PETSC_HAVE_ML)
-PETSC_EXTERN_C PetscErrorCode  PCCreate_ML(PC);
+PETSC_EXTERN PetscErrorCode PCCreate_ML(PC);
 #endif
 #if defined(PETSC_HAVE_SPAI)
-PETSC_EXTERN_C PetscErrorCode  PCCreate_SPAI(PC);
+PETSC_EXTERN PetscErrorCode PCCreate_SPAI(PC);
 #endif
-PETSC_EXTERN_C PetscErrorCode  PCCreate_Mat(PC);
+PETSC_EXTERN PetscErrorCode PCCreate_Mat(PC);
 #if defined(PETSC_HAVE_HYPRE)
-PETSC_EXTERN_C PetscErrorCode  PCCreate_HYPRE(PC);
-PETSC_EXTERN_C PetscErrorCode  PCCreate_PFMG(PC);
-PETSC_EXTERN_C PetscErrorCode  PCCreate_SysPFMG(PC);
+PETSC_EXTERN PetscErrorCode PCCreate_HYPRE(PC);
+PETSC_EXTERN PetscErrorCode PCCreate_PFMG(PC);
+PETSC_EXTERN PetscErrorCode PCCreate_SysPFMG(PC);
 #endif
 #if !defined(PETSC_USE_COMPLEX)
-PETSC_EXTERN_C PetscErrorCode  PCCreate_TFS(PC);
+PETSC_EXTERN PetscErrorCode PCCreate_TFS(PC);
 #endif
 #if defined(PETSC_HAVE_CUSP_SMOOTHED_AGGREGATION) && defined(PETSC_HAVE_CUSP)
-PETSC_EXTERN_C PetscErrorCode  PCCreate_SACUSP(PC);
-PETSC_EXTERN_C PetscErrorCode  PCCreate_SACUSPPoly(PC);
-PETSC_EXTERN_C PetscErrorCode  PCCreate_BiCGStabCUSP(PC);
-PETSC_EXTERN_C PetscErrorCode  PCCreate_AINVCUSP(PC);
+PETSC_EXTERN PetscErrorCode PCCreate_SACUSP(PC);
+PETSC_EXTERN PetscErrorCode PCCreate_SACUSPPoly(PC);
+PETSC_EXTERN PetscErrorCode PCCreate_BiCGStabCUSP(PC);
+PETSC_EXTERN PetscErrorCode PCCreate_AINVCUSP(PC);
 #endif
 #if defined(PETSC_HAVE_PARMS)
-PETSC_EXTERN_C PetscErrorCode  PCCreate_PARMS(PC);
+PETSC_EXTERN PetscErrorCode PCCreate_PARMS(PC);
 #endif
 #if defined(PETSC_HAVE_PCBDDC)
-PETSC_EXTERN_C PetscErrorCode  PCCreate_BDDC(PC);
+PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC);
 #endif
 
 #undef __FUNCT__

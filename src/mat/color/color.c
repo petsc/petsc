@@ -50,7 +50,7 @@ PetscErrorCode MatFDColoringMinimumNumberofColors_Private(PetscInt m,PetscInt *i
 */
 #undef __FUNCT__
 #define __FUNCT__ "MatGetColoring_SL_Minpack"
-PETSC_EXTERN_C PetscErrorCode  MatGetColoring_SL_Minpack(Mat mat,MatColoringType name,ISColoring *iscoloring)
+PETSC_EXTERN PetscErrorCode MatGetColoring_SL_Minpack(Mat mat,MatColoringType name,ISColoring *iscoloring)
 {
   PetscErrorCode  ierr;
   PetscInt        *list,*work,clique,*seq,*coloring,n;
@@ -136,7 +136,7 @@ PETSC_EXTERN_C PetscErrorCode  MatGetColoring_SL_Minpack(Mat mat,MatColoringType
 */
 #undef __FUNCT__
 #define __FUNCT__ "MatGetColoring_LF_Minpack"
-PETSC_EXTERN_C PetscErrorCode  MatGetColoring_LF_Minpack(Mat mat,MatColoringType name,ISColoring *iscoloring)
+PETSC_EXTERN PetscErrorCode MatGetColoring_LF_Minpack(Mat mat,MatColoringType name,ISColoring *iscoloring)
 {
   PetscErrorCode  ierr;
   PetscInt        *list,*work,*seq,*coloring,n;
@@ -221,7 +221,7 @@ PETSC_EXTERN_C PetscErrorCode  MatGetColoring_LF_Minpack(Mat mat,MatColoringType
 */
 #undef __FUNCT__
 #define __FUNCT__ "MatGetColoring_ID_Minpack"
-PETSC_EXTERN_C PetscErrorCode  MatGetColoring_ID_Minpack(Mat mat,MatColoringType name,ISColoring *iscoloring)
+PETSC_EXTERN PetscErrorCode MatGetColoring_ID_Minpack(Mat mat,MatColoringType name,ISColoring *iscoloring)
 {
   PetscErrorCode  ierr;
   PetscInt        *list,*work,clique,*seq,*coloring,n;
@@ -307,7 +307,7 @@ PETSC_EXTERN_C PetscErrorCode  MatGetColoring_ID_Minpack(Mat mat,MatColoringType
 */
 #undef __FUNCT__
 #define __FUNCT__ "MatGetColoring_Natural"
-PETSC_EXTERN_C PetscErrorCode  MatGetColoring_Natural(Mat mat,MatColoringType color, ISColoring *iscoloring)
+PETSC_EXTERN PetscErrorCode MatGetColoring_Natural(Mat mat,MatColoringType color, ISColoring *iscoloring)
 {
   PetscErrorCode  ierr;
   PetscInt        start,end,i,bs = 1,n;

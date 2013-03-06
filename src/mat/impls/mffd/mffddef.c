@@ -253,7 +253,7 @@ PetscErrorCode  MatMFFDDSSetUmin(Mat A,PetscReal umin)
 M*/
 #undef __FUNCT__
 #define __FUNCT__ "MatCreateMFFD_DS"
-PETSC_EXTERN_C PetscErrorCode  MatCreateMFFD_DS(MatMFFD ctx)
+PETSC_EXTERN PetscErrorCode MatCreateMFFD_DS(MatMFFD ctx)
 {
   MatMFFD_DS     *hctx;
   PetscErrorCode ierr;

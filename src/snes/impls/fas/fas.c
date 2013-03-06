@@ -46,7 +46,7 @@ M*/
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESCreate_FAS"
-PETSC_EXTERN_C PetscErrorCode SNESCreate_FAS(SNES snes)
+PETSC_EXTERN PetscErrorCode SNESCreate_FAS(SNES snes)
 {
   SNES_FAS       *fas;
   PetscErrorCode ierr;

@@ -933,7 +933,7 @@ PetscErrorCode  TSSundialsMonitorInternalSteps(TS ts,PetscBool ft)
 M*/
 #undef __FUNCT__
 #define __FUNCT__ "TSCreate_Sundials"
-PETSC_EXTERN_C PetscErrorCode  TSCreate_Sundials(TS ts)
+PETSC_EXTERN PetscErrorCode TSCreate_Sundials(TS ts)
 {
   TS_Sundials    *cvode;
   PetscErrorCode ierr;

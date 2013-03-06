@@ -187,7 +187,7 @@ PetscErrorCode  KSPSolve_PIPECG(KSP ksp)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPCreate_PIPECG"
-PETSC_EXTERN_C PetscErrorCode KSPCreate_PIPECG(KSP ksp)
+PETSC_EXTERN PetscErrorCode KSPCreate_PIPECG(KSP ksp)
 {
   PetscErrorCode ierr;
 

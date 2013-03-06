@@ -349,7 +349,7 @@ M*/
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESCreate_GS"
-PETSC_EXTERN_C PetscErrorCode SNESCreate_GS(SNES snes)
+PETSC_EXTERN PetscErrorCode SNESCreate_GS(SNES snes)
 {
   SNES_GS        *gs;
   PetscErrorCode ierr;

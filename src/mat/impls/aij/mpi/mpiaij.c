@@ -5502,9 +5502,9 @@ PetscErrorCode  MatGetCommunicationStructs(Mat A, Vec *lvec, PetscInt *colmap[],
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN_C PetscErrorCode  MatConvert_MPIAIJ_MPIAIJCRL(Mat,MatType,MatReuse,Mat*);
-PETSC_EXTERN_C PetscErrorCode  MatConvert_MPIAIJ_MPIAIJPERM(Mat,MatType,MatReuse,Mat*);
-PETSC_EXTERN_C PetscErrorCode  MatConvert_MPIAIJ_MPISBAIJ(Mat,MatType,MatReuse,Mat*);
+PETSC_EXTERN PetscErrorCode MatConvert_MPIAIJ_MPIAIJCRL(Mat,MatType,MatReuse,Mat*);
+PETSC_EXTERN PetscErrorCode MatConvert_MPIAIJ_MPIAIJPERM(Mat,MatType,MatReuse,Mat*);
+PETSC_EXTERN PetscErrorCode MatConvert_MPIAIJ_MPISBAIJ(Mat,MatType,MatReuse,Mat*);
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMatMultNumeric_MPIDense_MPIAIJ"
@@ -5573,16 +5573,16 @@ PetscErrorCode MatMatMult_MPIDense_MPIAIJ(Mat A,Mat B,MatReuse scall,PetscReal f
 }
 
 #if defined(PETSC_HAVE_MUMPS)
-PETSC_EXTERN_C PetscErrorCode MatGetFactor_aij_mumps(Mat,MatFactorType,Mat*);
+PETSC_EXTERN PetscErrorCode MatGetFactor_aij_mumps(Mat,MatFactorType,Mat*);
 #endif
 #if defined(PETSC_HAVE_PASTIX)
-PETSC_EXTERN_C PetscErrorCode MatGetFactor_mpiaij_pastix(Mat,MatFactorType,Mat*);
+PETSC_EXTERN PetscErrorCode MatGetFactor_mpiaij_pastix(Mat,MatFactorType,Mat*);
 #endif
 #if defined(PETSC_HAVE_SUPERLU_DIST)
-PETSC_EXTERN_C PetscErrorCode MatGetFactor_mpiaij_superlu_dist(Mat,MatFactorType,Mat*);
+PETSC_EXTERN PetscErrorCode MatGetFactor_mpiaij_superlu_dist(Mat,MatFactorType,Mat*);
 #endif
 #if defined(PETSC_HAVE_CLIQUE)
-PETSC_EXTERN_C PetscErrorCode MatGetFactor_aij_clique(Mat,MatFactorType,Mat*);
+PETSC_EXTERN PetscErrorCode MatGetFactor_aij_clique(Mat,MatFactorType,Mat*);
 #endif
 
 /*MC
@@ -5598,7 +5598,7 @@ M*/
 
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_MPIAIJ"
-PETSC_EXTERN_C PetscErrorCode  MatCreate_MPIAIJ(Mat B)
+PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJ(Mat B)
 {
   Mat_MPIAIJ     *b;
   PetscErrorCode ierr;
@@ -5771,7 +5771,7 @@ PetscErrorCode  MatCreateMPIAIJWithSplitArrays(MPI_Comm comm,PetscInt m,PetscInt
 
 #undef __FUNCT__
 #define __FUNCT__ "matsetvaluesmpiaij_"
-PETSC_EXTERN_C void PETSC_STDCALL matsetvaluesmpiaij_(Mat *mmat,PetscInt *mm,const PetscInt im[],PetscInt *mn,const PetscInt in[],const PetscScalar v[],InsertMode *maddv,PetscErrorCode *_ierr)
+PETSC_EXTERN void PETSC_STDCALL matsetvaluesmpiaij_(Mat *mmat,PetscInt *mm,const PetscInt im[],PetscInt *mn,const PetscInt in[],const PetscScalar v[],InsertMode *maddv,PetscErrorCode *_ierr)
 {
   Mat            mat  = *mmat;
   PetscInt       m    = *mm, n = *mn;

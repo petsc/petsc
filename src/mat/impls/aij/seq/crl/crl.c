@@ -165,7 +165,7 @@ PetscErrorCode MatMult_AIJCRL(Mat A,Vec xx,Vec yy)
  * into a SeqAIJCRL one. */
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_SeqAIJ_SeqAIJCRL"
-PETSC_EXTERN_C PetscErrorCode  MatConvert_SeqAIJ_SeqAIJCRL(Mat A,MatType type,MatReuse reuse,Mat *newmat)
+PETSC_EXTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJCRL(Mat A,MatType type,MatReuse reuse,Mat *newmat)
 {
   PetscErrorCode ierr;
   Mat            B = *newmat;
@@ -243,7 +243,7 @@ PetscErrorCode  MatCreateSeqAIJCRL(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt 
 
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_SeqAIJCRL"
-PETSC_EXTERN_C PetscErrorCode  MatCreate_SeqAIJCRL(Mat A)
+PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJCRL(Mat A)
 {
   PetscErrorCode ierr;
 

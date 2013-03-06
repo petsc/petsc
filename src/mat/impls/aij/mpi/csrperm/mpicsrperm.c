@@ -126,7 +126,7 @@ PetscErrorCode  MatMPIAIJSetPreallocation_MPIAIJPERM(Mat B,PetscInt d_nz,const P
 
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_MPIAIJ_MPIAIJPERM"
-PETSC_EXTERN_C PetscErrorCode  MatConvert_MPIAIJ_MPIAIJPERM(Mat A,MatType type,MatReuse reuse,Mat *newmat)
+PETSC_EXTERN PetscErrorCode MatConvert_MPIAIJ_MPIAIJPERM(Mat A,MatType type,MatReuse reuse,Mat *newmat)
 {
   PetscErrorCode ierr;
   Mat            B = *newmat;
@@ -144,7 +144,7 @@ PETSC_EXTERN_C PetscErrorCode  MatConvert_MPIAIJ_MPIAIJPERM(Mat A,MatType type,M
 
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_MPIAIJPERM"
-PETSC_EXTERN_C PetscErrorCode  MatCreate_MPIAIJPERM(Mat A)
+PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJPERM(Mat A)
 {
   PetscErrorCode ierr;
 

@@ -214,7 +214,7 @@ static PetscErrorCode PCSetFromOptions_SACUSPPoly(PC pc)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCCreate_SACUSPPoly"
-PETSC_EXTERN_C PetscErrorCode  PCCreate_SACUSPPoly(PC pc)
+PETSC_EXTERN PetscErrorCode PCCreate_SACUSPPoly(PC pc)
 {
   PC_SACUSPPoly  *sac;
   PetscErrorCode ierr;

@@ -224,7 +224,7 @@ M*/
 
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_Scatter"
-PETSC_EXTERN_C PetscErrorCode  MatCreate_Scatter(Mat A)
+PETSC_EXTERN PetscErrorCode MatCreate_Scatter(Mat A)
 {
   Mat_Scatter    *b;
   PetscErrorCode ierr;

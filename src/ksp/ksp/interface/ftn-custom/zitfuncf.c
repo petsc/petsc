@@ -47,9 +47,9 @@
 #endif
 
 /* These are defined in zdmkspf.c */
-PETSC_EXTERN_C void PETSC_STDCALL dmkspsetcomputerhs_(DM *dm,void (PETSC_STDCALL *func)(KSP*,Vec*,void*,PetscErrorCode*),void *ctx,PetscErrorCode *ierr);
-PETSC_EXTERN_C void PETSC_STDCALL dmkspsetcomputeinitialguess_(DM *dm,void (PETSC_STDCALL *func)(KSP*,Vec*,void*,PetscErrorCode*),void *ctx,PetscErrorCode *ierr);
-PETSC_EXTERN_C void PETSC_STDCALL dmkspsetcomputeoperators_(DM *dm,void (PETSC_STDCALL *func)(KSP*,Vec*,void*,PetscErrorCode*),void *ctx,PetscErrorCode *ierr);
+PETSC_EXTERN void PETSC_STDCALL dmkspsetcomputerhs_(DM *dm,void (PETSC_STDCALL *func)(KSP*,Vec*,void*,PetscErrorCode*),void *ctx,PetscErrorCode *ierr);
+PETSC_EXTERN void PETSC_STDCALL dmkspsetcomputeinitialguess_(DM *dm,void (PETSC_STDCALL *func)(KSP*,Vec*,void*,PetscErrorCode*),void *ctx,PetscErrorCode *ierr);
+PETSC_EXTERN void PETSC_STDCALL dmkspsetcomputeoperators_(DM *dm,void (PETSC_STDCALL *func)(KSP*,Vec*,void*,PetscErrorCode*),void *ctx,PetscErrorCode *ierr);
 
 /*
         These are not usually called from Fortran but allow Fortran users
@@ -147,7 +147,7 @@ static PetscErrorCode ourtestdestroy(void *ctx)
   return 0;
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL kspmonitorset_(KSP *ksp,void (PETSC_STDCALL *monitor)(KSP*,PetscInt*,PetscReal*,void*,PetscErrorCode*),
+PETSC_EXTERN void PETSC_STDCALL kspmonitorset_(KSP *ksp,void (PETSC_STDCALL *monitor)(KSP*,PetscInt*,PetscReal*,void*,PetscErrorCode*),
                                   void *mctx,void (PETSC_STDCALL *monitordestroy)(void*,PetscErrorCode*),PetscErrorCode *ierr)
 {
   CHKFORTRANNULLOBJECT(mctx);
@@ -178,7 +178,7 @@ PETSC_EXTERN_C void PETSC_STDCALL kspmonitorset_(KSP *ksp,void (PETSC_STDCALL *m
   }
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL kspsetconvergencetest_(KSP *ksp,
+PETSC_EXTERN void PETSC_STDCALL kspsetconvergencetest_(KSP *ksp,
       void (PETSC_STDCALL *converge)(KSP*,PetscInt*,PetscReal*,KSPConvergedReason*,void*,PetscErrorCode*),void **cctx,
       void (PETSC_STDCALL *destroy)(void*,PetscErrorCode*),PetscErrorCode *ierr)
 {
@@ -200,36 +200,36 @@ PETSC_EXTERN_C void PETSC_STDCALL kspsetconvergencetest_(KSP *ksp,
   }
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL kspdefaultconvergedcreate_(PetscFortranAddr *ctx,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL kspdefaultconvergedcreate_(PetscFortranAddr *ctx,PetscErrorCode *ierr)
 {
   *ierr = KSPDefaultConvergedCreate((void**)ctx);
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL kspdefaultconvergeddestroy_(PetscFortranAddr *ctx,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL kspdefaultconvergeddestroy_(PetscFortranAddr *ctx,PetscErrorCode *ierr)
 {
   *ierr = KSPDefaultConvergedDestroy(*(void**)ctx);
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL kspgetresidualhistory_(KSP *ksp,PetscInt *na,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL kspgetresidualhistory_(KSP *ksp,PetscInt *na,PetscErrorCode *ierr)
 {
   *ierr = KSPGetResidualHistory(*ksp,NULL,na);
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL kspsetcomputerhs_(KSP *ksp,void (PETSC_STDCALL *func)(KSP*,Vec*,void*,PetscErrorCode*),void *ctx,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL kspsetcomputerhs_(KSP *ksp,void (PETSC_STDCALL *func)(KSP*,Vec*,void*,PetscErrorCode*),void *ctx,PetscErrorCode *ierr)
 {
   DM dm;
   *ierr = KSPGetDM(*ksp,&dm);
   if (!*ierr) dmkspsetcomputerhs_(&dm,func,ctx,ierr);
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL kspsetcomputeinitialguess_(KSP *ksp,void (PETSC_STDCALL *func)(KSP*,Vec*,void*,PetscErrorCode*),void *ctx,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL kspsetcomputeinitialguess_(KSP *ksp,void (PETSC_STDCALL *func)(KSP*,Vec*,void*,PetscErrorCode*),void *ctx,PetscErrorCode *ierr)
 {
   DM dm;
   *ierr = KSPGetDM(*ksp,&dm);
   if (!*ierr) dmkspsetcomputeinitialguess_(&dm,func,ctx,ierr);
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL kspsetcomputeoperators_(KSP *ksp,void (PETSC_STDCALL *func)(KSP*,Vec*,void*,PetscErrorCode*),void *ctx,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL kspsetcomputeoperators_(KSP *ksp,void (PETSC_STDCALL *func)(KSP*,Vec*,void*,PetscErrorCode*),void *ctx,PetscErrorCode *ierr)
 {
   DM dm;
   *ierr = KSPGetDM(*ksp,&dm);

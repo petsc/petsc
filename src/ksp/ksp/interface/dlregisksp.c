@@ -193,7 +193,7 @@ PetscErrorCode  KSPInitializePackage(const char path[])
   Input Parameter:
   path - library path
  */
-PETSC_EXTERN_C PetscErrorCode  PetscDLLibraryRegister_petscksp(const char path[])
+PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscksp(const char path[])
 {
   PetscErrorCode ierr;
 

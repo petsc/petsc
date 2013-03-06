@@ -7,7 +7,7 @@
 #define petscdrawstring_          petscdrawstring
 #endif
 
-PETSC_EXTERN_C void PETSC_STDCALL petscdrawstring_(PetscDraw *ctx,double* xl,double* yl,int* cl,CHAR text PETSC_MIXED_LEN(len),
+PETSC_EXTERN void PETSC_STDCALL petscdrawstring_(PetscDraw *ctx,double* xl,double* yl,int* cl,CHAR text PETSC_MIXED_LEN(len),
                                     PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *t;

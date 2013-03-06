@@ -9,7 +9,7 @@
 
 /* Definitions of Fortran Wrapper routines */
 
-PETSC_EXTERN_C void PETSC_STDCALL vecsetvaluessection_(Vec *v, PetscSection *section, PetscInt *point, F90Array1d *ptr, InsertMode *mode, int *__ierr PETSC_F90_2PTR_PROTO(ptrd))
+PETSC_EXTERN void PETSC_STDCALL vecsetvaluessection_(Vec *v, PetscSection *section, PetscInt *point, F90Array1d *ptr, InsertMode *mode, int *__ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
   PetscScalar *array;
 

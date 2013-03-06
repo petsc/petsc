@@ -1,8 +1,8 @@
 
 #include <petscmat.h>
 
-PETSC_EXTERN_C PetscErrorCode  MatCoarsenCreate_MIS(MatCoarsen);
-PETSC_EXTERN_C PetscErrorCode  MatCoarsenCreate_HEM(MatCoarsen);
+PETSC_EXTERN PetscErrorCode MatCoarsenCreate_MIS(MatCoarsen);
+PETSC_EXTERN PetscErrorCode MatCoarsenCreate_HEM(MatCoarsen);
 
 #undef __FUNCT__
 #define __FUNCT__ "MatCoarsenRegisterAll"

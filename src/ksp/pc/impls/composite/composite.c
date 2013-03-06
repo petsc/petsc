@@ -569,7 +569,7 @@ M*/
 
 #undef __FUNCT__
 #define __FUNCT__ "PCCreate_Composite"
-PETSC_EXTERN_C PetscErrorCode  PCCreate_Composite(PC pc)
+PETSC_EXTERN PetscErrorCode PCCreate_Composite(PC pc)
 {
   PetscErrorCode ierr;
   PC_Composite   *jac;

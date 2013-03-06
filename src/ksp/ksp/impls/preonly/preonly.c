@@ -46,7 +46,7 @@ M*/
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPCreate_PREONLY"
-PETSC_EXTERN_C PetscErrorCode  KSPCreate_PREONLY(KSP ksp)
+PETSC_EXTERN PetscErrorCode KSPCreate_PREONLY(KSP ksp)
 {
   PetscErrorCode ierr;
 

@@ -268,7 +268,7 @@ M*/
 
 #undef __FUNCT__
 #define __FUNCT__ "DMCreate_DA"
-PETSC_EXTERN_C PetscErrorCode  DMCreate_DA(DM da)
+PETSC_EXTERN PetscErrorCode DMCreate_DA(DM da)
 {
   PetscErrorCode ierr;
   DM_DA          *dd;

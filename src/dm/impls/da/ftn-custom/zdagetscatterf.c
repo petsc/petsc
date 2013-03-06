@@ -8,7 +8,7 @@
 #define dmdagetscatter_                dmdagetscatter
 #endif
 
-PETSC_EXTERN_C void PETSC_STDCALL dmdagetscatter_(DM *da,VecScatter *ltog,VecScatter *gtol,VecScatter *ltol,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL dmdagetscatter_(DM *da,VecScatter *ltog,VecScatter *gtol,VecScatter *ltol,PetscErrorCode *ierr)
 {
   CHKFORTRANNULLOBJECT(ltog);
   CHKFORTRANNULLOBJECT(gtol);

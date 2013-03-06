@@ -24,7 +24,7 @@ static PetscErrorCode PetscFixSlashN(const char *in, char **out)
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL petscinfo_(CHAR text PETSC_MIXED_LEN(len1),PetscErrorCode *ierr PETSC_END_LEN(len1))
+PETSC_EXTERN void PETSC_STDCALL petscinfo_(CHAR text PETSC_MIXED_LEN(len1),PetscErrorCode *ierr PETSC_END_LEN(len1))
 {
   char *c1,*tmp;
 

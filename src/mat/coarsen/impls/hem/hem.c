@@ -1203,7 +1203,7 @@ M*/
 
 #undef __FUNCT__
 #define __FUNCT__ "MatCoarsenCreate_HEM"
-PETSC_EXTERN_C PetscErrorCode  MatCoarsenCreate_HEM(MatCoarsen coarse)
+PETSC_EXTERN PetscErrorCode MatCoarsenCreate_HEM(MatCoarsen coarse)
 {
   PetscErrorCode ierr;
   MatCoarsen_HEM *HEM;

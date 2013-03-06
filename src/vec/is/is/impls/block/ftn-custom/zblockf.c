@@ -9,7 +9,7 @@
 #define isblockrestoreindices_ isblockrestoreindices
 #endif
 
-PETSC_EXTERN_C void PETSC_STDCALL isblockgetindices_(IS *x,PetscInt *fa,size_t *ia,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL isblockgetindices_(IS *x,PetscInt *fa,size_t *ia,PetscErrorCode *ierr)
 {
   const PetscInt *lx;
 
@@ -17,7 +17,7 @@ PETSC_EXTERN_C void PETSC_STDCALL isblockgetindices_(IS *x,PetscInt *fa,size_t *
   *ia   = PetscIntAddressToFortran(fa,(PetscInt*)lx);
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL isblockrestoreindices_(IS *x,PetscInt *fa,size_t *ia,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL isblockrestoreindices_(IS *x,PetscInt *fa,size_t *ia,PetscErrorCode *ierr)
 {
   const PetscInt *lx = PetscIntAddressFromFortran(fa,*ia);
   *ierr = ISBlockRestoreIndices(*x,&lx);

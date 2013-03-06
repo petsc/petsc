@@ -1242,7 +1242,7 @@ PetscErrorCode  MatMPIDenseSetPreallocation_MPIDense(Mat mat,PetscScalar *data)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_MPIDense"
-PETSC_EXTERN_C PetscErrorCode  MatCreate_MPIDense(Mat mat)
+PETSC_EXTERN PetscErrorCode MatCreate_MPIDense(Mat mat)
 {
   Mat_MPIDense   *a;
   PetscErrorCode ierr;

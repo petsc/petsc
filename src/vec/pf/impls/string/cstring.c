@@ -123,7 +123,7 @@ typedef PetscErrorCode (*FCN)(void*,PetscInt,const PetscScalar*,PetscScalar*); /
 
 #undef __FUNCT__
 #define __FUNCT__ "PFCreate_String"
-PETSC_EXTERN_C PetscErrorCode  PFCreate_String(PF pf,void *value)
+PETSC_EXTERN PetscErrorCode PFCreate_String(PF pf,void *value)
 {
   PetscErrorCode ierr;
   FCN            f = 0;

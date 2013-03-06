@@ -83,9 +83,9 @@ extern MPI_Op PetscSplitReduction_Op;
 extern MPI_Op VecMax_Local_Op;
 extern MPI_Op VecMin_Local_Op;
 
-PETSC_EXTERN_C void MPIAPI VecMax_Local(void*,void*,PetscMPIInt*,MPI_Datatype*);
-PETSC_EXTERN_C void MPIAPI VecMin_Local(void*,void*,PetscMPIInt*,MPI_Datatype*);
-PETSC_EXTERN_C void MPIAPI PetscSplitReduction_Local(void*,void*,PetscMPIInt*,MPI_Datatype*);
+PETSC_EXTERN void MPIAPI VecMax_Local(void*,void*,PetscMPIInt*,MPI_Datatype*);
+PETSC_EXTERN void MPIAPI VecMin_Local(void*,void*,PetscMPIInt*,MPI_Datatype*);
+PETSC_EXTERN void MPIAPI PetscSplitReduction_Local(void*,void*,PetscMPIInt*,MPI_Datatype*);
 
 const char *const NormTypes[] = {"1","2","FROBENIUS","INFINITY","1_AND_2","NormType","NORM_",0};
 PetscInt          NormIds[7];  /* map from NormType to IDs used to cache Normvalues */
@@ -257,7 +257,7 @@ PetscErrorCode  VecFinalizePackage(void)
   Input Parameter:
   path - library path
  */
-PETSC_EXTERN_C PetscErrorCode  PetscDLLibraryRegister_petscvec(const char path[])
+PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscvec(const char path[])
 {
   PetscErrorCode ierr;
 

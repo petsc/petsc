@@ -667,7 +667,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_1_inplace(Mat C,Mat A,const MatFactorI
 
 #undef __FUNCT__
 #define __FUNCT__ "MatGetFactor_seqbaij_petsc"
-PETSC_EXTERN_C PetscErrorCode MatGetFactor_seqbaij_petsc(Mat A,MatFactorType ftype,Mat *B)
+PETSC_EXTERN PetscErrorCode MatGetFactor_seqbaij_petsc(Mat A,MatFactorType ftype,Mat *B)
 {
   PetscInt       n = A->rmap->n;
   PetscErrorCode ierr;

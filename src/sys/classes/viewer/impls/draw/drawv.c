@@ -438,7 +438,7 @@ PetscErrorCode PetscViewerSetFromOptions_Draw(PetscViewer v)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerCreate_Draw"
-PETSC_EXTERN_C PetscErrorCode  PetscViewerCreate_Draw(PetscViewer viewer)
+PETSC_EXTERN PetscErrorCode PetscViewerCreate_Draw(PetscViewer viewer)
 {
   PetscInt         i;
   PetscErrorCode   ierr;

@@ -221,7 +221,7 @@ PetscErrorCode MatDestroy_MPIAIJCUSPARSE(Mat A)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_MPIAIJCUSPARSE"
-PETSC_EXTERN_C PetscErrorCode  MatCreate_MPIAIJCUSPARSE(Mat A)
+PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJCUSPARSE(Mat A)
 {
   PetscErrorCode     ierr;
   Mat_MPIAIJ         *a;

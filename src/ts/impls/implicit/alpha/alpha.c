@@ -324,7 +324,7 @@ PetscErrorCode  TSAlphaSetAdapt_Alpha(TS ts,TSAlphaAdaptFunction adapt,void *ctx
 M*/
 #undef __FUNCT__
 #define __FUNCT__ "TSCreate_Alpha"
-PETSC_EXTERN_C PetscErrorCode  TSCreate_Alpha(TS ts)
+PETSC_EXTERN PetscErrorCode TSCreate_Alpha(TS ts)
 {
   TS_Alpha       *th;
   PetscErrorCode ierr;

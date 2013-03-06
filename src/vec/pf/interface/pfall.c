@@ -1,12 +1,12 @@
 
 #include <petscpf.h>          /*I   "petscpf.h"   I*/
 
-PETSC_EXTERN_C PetscErrorCode  PFCreate_Constant(PF,void*);
-PETSC_EXTERN_C PetscErrorCode  PFCreate_String(PF,void*);
-PETSC_EXTERN_C PetscErrorCode  PFCreate_Quick(PF,void*);
-PETSC_EXTERN_C PetscErrorCode  PFCreate_Identity(PF,void*);
+PETSC_EXTERN PetscErrorCode PFCreate_Constant(PF,void*);
+PETSC_EXTERN PetscErrorCode PFCreate_String(PF,void*);
+PETSC_EXTERN PetscErrorCode PFCreate_Quick(PF,void*);
+PETSC_EXTERN PetscErrorCode PFCreate_Identity(PF,void*);
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
-PETSC_EXTERN_C PetscErrorCode  PFCreate_Matlab(PF,void*);
+PETSC_EXTERN PetscErrorCode PFCreate_Matlab(PF,void*);
 #endif
 
 #undef __FUNCT__

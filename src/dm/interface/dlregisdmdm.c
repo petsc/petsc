@@ -34,7 +34,7 @@ PetscErrorCode  DMFinalizePackage(void)
 }
 
 #if defined(PETSC_HAVE_HYPRE)
-PETSC_EXTERN_C PetscErrorCode  MatCreate_HYPREStruct(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_HYPREStruct(Mat);
 #endif
 
 #undef __FUNCT__
@@ -150,7 +150,7 @@ PetscErrorCode  DMInitializePackage(const char path[])
   Input Parameter:
   path - library path
 */
-PETSC_EXTERN_C PetscErrorCode  PetscDLLibraryRegister_petscdm(const char path[])
+PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscdm(const char path[])
 {
   PetscErrorCode ierr;
 

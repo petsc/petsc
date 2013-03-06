@@ -215,7 +215,7 @@ PetscErrorCode KSPDestroy_BCGS(KSP ksp)
 M*/
 #undef __FUNCT__
 #define __FUNCT__ "KSPCreate_BCGS"
-PETSC_EXTERN_C PetscErrorCode  KSPCreate_BCGS(KSP ksp)
+PETSC_EXTERN PetscErrorCode KSPCreate_BCGS(KSP ksp)
 {
   PetscErrorCode ierr;
   KSP_BCGS       *bcgs;

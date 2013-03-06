@@ -78,7 +78,7 @@ PetscErrorCode MatMultASPIN(Mat m,Vec X,Vec Y)
 .seealso:  SNESCreate(), SNES, SNESSetType(), SNESNEWTONLS, SNESNASM, SNESGetPC(), SNESGetPCSide()
 
 M*/
-PETSC_EXTERN_C PetscErrorCode SNESCreate_ASPIN(SNES snes)
+PETSC_EXTERN PetscErrorCode SNESCreate_ASPIN(SNES snes)
 {
   PetscErrorCode ierr;
   SNES           npc;

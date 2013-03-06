@@ -1,56 +1,56 @@
 
 #include <petscmat.h>  /*I "petscmat.h" I*/
 
-PETSC_EXTERN_C PetscErrorCode  MatCreate_MFFD(Mat);
-PETSC_EXTERN_C PetscErrorCode  MatCreate_MAIJ(Mat);
-PETSC_EXTERN_C PetscErrorCode  MatCreate_IS(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_MFFD(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_MAIJ(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_IS(Mat);
 
-PETSC_EXTERN_C PetscErrorCode  MatCreate_SeqAIJ(Mat);
-PETSC_EXTERN_C PetscErrorCode  MatCreate_MPIAIJ(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJ(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJ(Mat);
 
-PETSC_EXTERN_C PetscErrorCode  MatCreate_SeqBAIJ(Mat);
-PETSC_EXTERN_C PetscErrorCode  MatCreate_MPIBAIJ(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_SeqBAIJ(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_MPIBAIJ(Mat);
 
-PETSC_EXTERN_C PetscErrorCode  MatCreate_SeqSBAIJ(Mat);
-PETSC_EXTERN_C PetscErrorCode  MatCreate_MPISBAIJ(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_SeqSBAIJ(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_MPISBAIJ(Mat);
 
-PETSC_EXTERN_C PetscErrorCode  MatCreate_SeqBSTRM(Mat);
-PETSC_EXTERN_C PetscErrorCode  MatCreate_MPIBSTRM(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_SeqBSTRM(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_MPIBSTRM(Mat);
 
-PETSC_EXTERN_C PetscErrorCode  MatCreate_SeqSBSTRM(Mat);
-PETSC_EXTERN_C PetscErrorCode  MatCreate_MPISBSTRM(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_SeqSBSTRM(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_MPISBSTRM(Mat);
 
-PETSC_EXTERN_C PetscErrorCode  MatCreate_SeqDense(Mat);
-PETSC_EXTERN_C PetscErrorCode  MatCreate_MPIDense(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_SeqDense(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_MPIDense(Mat);
 
-PETSC_EXTERN_C PetscErrorCode  MatCreate_MPIAdj(Mat);
-PETSC_EXTERN_C PetscErrorCode  MatCreate_Shell(Mat);
-PETSC_EXTERN_C PetscErrorCode  MatCreate_Composite(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_MPIAdj(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_Shell(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_Composite(Mat);
 
-PETSC_EXTERN_C PetscErrorCode  MatCreate_SeqAIJPERM(Mat);
-PETSC_EXTERN_C PetscErrorCode  MatCreate_MPIAIJPERM(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJPERM(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJPERM(Mat);
 
-PETSC_EXTERN_C PetscErrorCode  MatCreate_SeqAIJCRL(Mat);
-PETSC_EXTERN_C PetscErrorCode  MatCreate_MPIAIJCRL(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJCRL(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJCRL(Mat);
 
-PETSC_EXTERN_C PetscErrorCode  MatCreate_Scatter(Mat);
-PETSC_EXTERN_C PetscErrorCode  MatCreate_BlockMat(Mat);
-PETSC_EXTERN_C PetscErrorCode  MatCreate_Nest(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_Scatter(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_BlockMat(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_Nest(Mat);
 
 #if defined PETSC_HAVE_CUSP
-PETSC_EXTERN_C PetscErrorCode  MatCreate_SeqAIJCUSP(Mat);
-PETSC_EXTERN_C PetscErrorCode  MatCreate_MPIAIJCUSP(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJCUSP(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJCUSP(Mat);
 #endif
 
 #if defined PETSC_HAVE_TXPETSCGPU
-PETSC_EXTERN_C PetscErrorCode  MatCreate_SeqAIJCUSPARSE(Mat);
-PETSC_EXTERN_C PetscErrorCode  MatCreate_MPIAIJCUSPARSE(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJCUSPARSE(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJCUSPARSE(Mat);
 #endif
 
 #if defined PETSC_HAVE_FFTW
-PETSC_EXTERN_C PetscErrorCode  MatCreate_FFTW(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_FFTW(Mat);
 #endif
-PETSC_EXTERN_C PetscErrorCode  MatCreate_Elemental(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_Elemental(Mat);
 
 /*
     This is used by MatSetType() to make sure that at least one

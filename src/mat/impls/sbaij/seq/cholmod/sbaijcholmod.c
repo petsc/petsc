@@ -390,7 +390,7 @@ M*/
 
 #undef __FUNCT__
 #define __FUNCT__ "MatGetFactor_seqsbaij_cholmod"
-PETSC_EXTERN_C PetscErrorCode MatGetFactor_seqsbaij_cholmod(Mat A,MatFactorType ftype,Mat *F)
+PETSC_EXTERN PetscErrorCode MatGetFactor_seqsbaij_cholmod(Mat A,MatFactorType ftype,Mat *F)
 {
   Mat            B;
   Mat_CHOLMOD    *chol;

@@ -965,7 +965,7 @@ PetscErrorCode SNESMultiblockGetSubSNES(SNES snes, PetscInt *n, SNES *subsnes[])
 M*/
 #undef __FUNCT__
 #define __FUNCT__ "SNESCreate_Multiblock"
-PETSC_EXTERN_C PetscErrorCode  SNESCreate_Multiblock(SNES snes)
+PETSC_EXTERN PetscErrorCode SNESCreate_Multiblock(SNES snes)
 {
   SNES_Multiblock *mb;
   PetscErrorCode  ierr;

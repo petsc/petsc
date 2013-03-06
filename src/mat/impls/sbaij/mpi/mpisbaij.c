@@ -1692,10 +1692,10 @@ PetscErrorCode MatMPISBAIJSetPreallocationCSR_MPISBAIJ(Mat B,PetscInt bs,const P
 }
 
 #if defined(PETSC_HAVE_MUMPS)
-PETSC_EXTERN_C PetscErrorCode  MatGetFactor_sbaij_mumps(Mat,MatFactorType,Mat*);
+PETSC_EXTERN PetscErrorCode MatGetFactor_sbaij_mumps(Mat,MatFactorType,Mat*);
 #endif
 #if defined(PETSC_HAVE_PASTIX)
-PETSC_EXTERN_C PetscErrorCode MatGetFactor_mpisbaij_pastix(Mat,MatFactorType,Mat*);
+PETSC_EXTERN PetscErrorCode MatGetFactor_mpisbaij_pastix(Mat,MatFactorType,Mat*);
 #endif
 
 /*MC
@@ -1714,11 +1714,11 @@ PETSC_EXTERN_C PetscErrorCode MatGetFactor_mpisbaij_pastix(Mat,MatFactorType,Mat
 .seealso: MatCreateMPISBAIJ
 M*/
 
-PETSC_EXTERN_C PetscErrorCode MatConvert_MPISBAIJ_MPISBSTRM(Mat,MatType,MatReuse,Mat*);
+PETSC_EXTERN PetscErrorCode MatConvert_MPISBAIJ_MPISBSTRM(Mat,MatType,MatReuse,Mat*);
 
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_MPISBAIJ"
-PETSC_EXTERN_C PetscErrorCode  MatCreate_MPISBAIJ(Mat B)
+PETSC_EXTERN PetscErrorCode MatCreate_MPISBAIJ(Mat B)
 {
   Mat_MPISBAIJ   *b;
   PetscErrorCode ierr;

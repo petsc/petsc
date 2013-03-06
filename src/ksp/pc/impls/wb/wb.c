@@ -812,7 +812,7 @@ M*/
 
 #undef __FUNCT__
 #define __FUNCT__ "PCCreate_Exotic"
-PETSC_EXTERN_C PetscErrorCode  PCCreate_Exotic(PC pc)
+PETSC_EXTERN PetscErrorCode PCCreate_Exotic(PC pc)
 {
   PetscErrorCode ierr;
   PC_Exotic      *ex;

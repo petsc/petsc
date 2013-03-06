@@ -349,7 +349,7 @@ static PetscErrorCode SNESView_NEWTONTR(SNES snes,PetscViewer viewer)
 M*/
 #undef __FUNCT__
 #define __FUNCT__ "SNESCreate_NEWTONTR"
-PETSC_EXTERN_C PetscErrorCode  SNESCreate_NEWTONTR(SNES snes)
+PETSC_EXTERN PetscErrorCode SNESCreate_NEWTONTR(SNES snes)
 {
   SNES_NEWTONTR  *neP;
   PetscErrorCode ierr;

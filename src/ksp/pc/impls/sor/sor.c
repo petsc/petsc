@@ -301,7 +301,7 @@ M*/
 
 #undef __FUNCT__
 #define __FUNCT__ "PCCreate_SOR"
-PETSC_EXTERN_C PetscErrorCode  PCCreate_SOR(PC pc)
+PETSC_EXTERN PetscErrorCode PCCreate_SOR(PC pc)
 {
   PetscErrorCode ierr;
   PC_SOR         *jac;

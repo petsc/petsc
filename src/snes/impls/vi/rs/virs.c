@@ -783,7 +783,7 @@ PetscErrorCode SNESReset_VINEWTONRSLS(SNES snes)
 M*/
 #undef __FUNCT__
 #define __FUNCT__ "SNESCreate_VINEWTONRSLS"
-PETSC_EXTERN_C PetscErrorCode  SNESCreate_VINEWTONRSLS(SNES snes)
+PETSC_EXTERN PetscErrorCode SNESCreate_VINEWTONRSLS(SNES snes)
 {
   PetscErrorCode    ierr;
   SNES_VINEWTONRSLS *vi;

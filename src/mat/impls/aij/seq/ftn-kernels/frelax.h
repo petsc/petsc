@@ -14,10 +14,10 @@
 #define fortranrelaxaijbackwardzero_   fortranrelaxaijbackwardzero
 #endif
 
-PETSC_EXTERN_C void fortranrelaxaijforward_(PetscInt*,PetscReal*,void*,PetscInt*,PetscInt*,const PetscInt*,void*,void*);
-PETSC_EXTERN_C void fortranrelaxaijbackward_(PetscInt*,PetscReal*,void*,PetscInt*,PetscInt*,const PetscInt*,void*,void*);
-PETSC_EXTERN_C void fortranrelaxaijforwardzero_(PetscInt*,PetscReal*,void*,PetscInt*,PetscInt*,const PetscInt*,const void*,void*,void*);
-PETSC_EXTERN_C void fortranrelaxaijbackwardzero_(PetscInt*,PetscReal*,void*,PetscInt*,PetscInt*,const PetscInt*,const void*,void*,void*);
+PETSC_EXTERN void fortranrelaxaijforward_(PetscInt*,PetscReal*,void*,PetscInt*,PetscInt*,const PetscInt*,void*,void*);
+PETSC_EXTERN void fortranrelaxaijbackward_(PetscInt*,PetscReal*,void*,PetscInt*,PetscInt*,const PetscInt*,void*,void*);
+PETSC_EXTERN void fortranrelaxaijforwardzero_(PetscInt*,PetscReal*,void*,PetscInt*,PetscInt*,const PetscInt*,const void*,void*,void*);
+PETSC_EXTERN void fortranrelaxaijbackwardzero_(PetscInt*,PetscReal*,void*,PetscInt*,PetscInt*,const PetscInt*,const void*,void*,void*);
 
 #endif
 #endif

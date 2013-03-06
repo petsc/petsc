@@ -477,7 +477,7 @@ M*/
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESCreate_NGMRES"
-PETSC_EXTERN_C PetscErrorCode SNESCreate_NGMRES(SNES snes)
+PETSC_EXTERN PetscErrorCode SNESCreate_NGMRES(SNES snes)
 {
   SNES_NGMRES    *ngmres;
   PetscErrorCode ierr;

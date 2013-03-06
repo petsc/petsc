@@ -33,26 +33,26 @@ static PetscErrorCode PetscFixSlashN(const char *in, char **out)
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL  petscmallocdump_(PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL petscmallocdump_(PetscErrorCode *ierr)
 {
   *ierr = PetscMallocDump(stdout);
 }
-PETSC_EXTERN_C void PETSC_STDCALL petscmallocdumplog_(PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL petscmallocdumplog_(PetscErrorCode *ierr)
 {
   *ierr = PetscMallocDumpLog(stdout);
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL petscmallocvalidate_(PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL petscmallocvalidate_(PetscErrorCode *ierr)
 {
   *ierr = PetscMallocValidate(0,"Unknown Fortran",0,0);
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL petscmemorysetgetmaximumusage_(PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL petscmemorysetgetmaximumusage_(PetscErrorCode *ierr)
 {
   *ierr = PetscMemorySetGetMaximumUsage();
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL petscmemoryshowusage_(PetscViewer *vin, CHAR message PETSC_MIXED_LEN(len), PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL petscmemoryshowusage_(PetscViewer *vin, CHAR message PETSC_MIXED_LEN(len), PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   PetscViewer v;
   char        *msg, *tmp;

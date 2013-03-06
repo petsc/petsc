@@ -30,7 +30,7 @@
    Note: this is declared extern "C" because it is passed to MPI_Keyval_create()
 
 */
-PETSC_EXTERN_C PetscMPIInt MPIAPI Petsc_DelTmpShared(MPI_Comm comm,PetscMPIInt keyval,void *count_val,void *extra_state)
+PETSC_EXTERN PetscMPIInt MPIAPI Petsc_DelTmpShared(MPI_Comm comm,PetscMPIInt keyval,void *count_val,void *extra_state)
 {
   PetscErrorCode ierr;
 

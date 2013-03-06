@@ -2498,7 +2498,7 @@ M*/
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESCreate_VI"
-PETSC_EXTERN_C PetscErrorCode SNESCreate_VIRSAUG(SNES snes)
+PETSC_EXTERN PetscErrorCode SNESCreate_VIRSAUG(SNES snes)
 {
   PetscErrorCode ierr;
   SNES_VIRSAUG   *vi;

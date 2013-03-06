@@ -33,7 +33,7 @@ static PetscErrorCode oursneslinesearchpostcheck(SNESLineSearch linesearch, Vec 
   return 0;
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL sneslinesearchsettype_(SNESLineSearch *linesearch,CHAR type PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL sneslinesearchsettype_(SNESLineSearch *linesearch,CHAR type PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *t;
 
@@ -43,7 +43,7 @@ PETSC_EXTERN_C void PETSC_STDCALL sneslinesearchsettype_(SNESLineSearch *linesea
 }
 
 
-PETSC_EXTERN_C void PETSC_STDCALL sneslinesearchsetprecheck_(SNESLineSearch *linesearch,void (PETSC_STDCALL*func)(SNESLineSearch*,Vec*,Vec*,PetscBool*,PetscErrorCode*),void *ctx,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL sneslinesearchsetprecheck_(SNESLineSearch *linesearch,void (PETSC_STDCALL*func)(SNESLineSearch*,Vec*,Vec*,PetscBool*,PetscErrorCode*),void *ctx,PetscErrorCode *ierr)
 {
   PetscObjectAllocateFortranPointers(*linesearch,3);
   ((PetscObject)*linesearch)->fortran_func_pointers[1] = (PetscVoidFunction)func;
@@ -51,7 +51,7 @@ PETSC_EXTERN_C void PETSC_STDCALL sneslinesearchsetprecheck_(SNESLineSearch *lin
   *ierr = SNESLineSearchSetPreCheck(*linesearch,oursneslinesearchprecheck,ctx);
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL sneslinesearchsetpostcheck_(SNESLineSearch *linesearch,void (PETSC_STDCALL*func)(SNESLineSearch*,Vec*,Vec*,Vec*,PetscBool*,PetscBool*,PetscErrorCode*,void*),void *ctx,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL sneslinesearchsetpostcheck_(SNESLineSearch *linesearch,void (PETSC_STDCALL*func)(SNESLineSearch*,Vec*,Vec*,Vec*,PetscBool*,PetscBool*,PetscErrorCode*,void*),void *ctx,PetscErrorCode *ierr)
 {
   PetscObjectAllocateFortranPointers(*linesearch,3);
   ((PetscObject)*linesearch)->fortran_func_pointers[2] = (PetscVoidFunction)func;

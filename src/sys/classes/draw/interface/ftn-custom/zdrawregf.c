@@ -9,7 +9,7 @@
 #define petscdrawcreate_          petscdrawcreate
 #endif
 
-PETSC_EXTERN_C void PETSC_STDCALL petscdrawsettype_(PetscDraw *ctx,CHAR text PETSC_MIXED_LEN(len),
+PETSC_EXTERN void PETSC_STDCALL petscdrawsettype_(PetscDraw *ctx,CHAR text PETSC_MIXED_LEN(len),
                                      PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *t;
@@ -18,7 +18,7 @@ PETSC_EXTERN_C void PETSC_STDCALL petscdrawsettype_(PetscDraw *ctx,CHAR text PET
   FREECHAR(text,t);
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL petscdrawcreate_(MPI_Comm *comm,CHAR display PETSC_MIXED_LEN(len1),
+PETSC_EXTERN void PETSC_STDCALL petscdrawcreate_(MPI_Comm *comm,CHAR display PETSC_MIXED_LEN(len1),
                     CHAR title PETSC_MIXED_LEN(len2),int *x,int *y,int *w,int *h,PetscDraw* inctx,
                     PetscErrorCode *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2))
 {

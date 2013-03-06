@@ -30,25 +30,25 @@
 #define vecgetownershipranges_    vecgetownershipranges
 #endif
 
-PETSC_EXTERN_C void PETSC_STDCALL vecsetvalue_(Vec *v,PetscInt *i,PetscScalar *va,InsertMode *mode,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL vecsetvalue_(Vec *v,PetscInt *i,PetscScalar *va,InsertMode *mode,PetscErrorCode *ierr)
 {
   /* cannot use VecSetValue() here since that uses CHKERRQ() which has a return in it */
   *ierr = VecSetValues(*v,1,i,va,*mode);
 }
-PETSC_EXTERN_C void PETSC_STDCALL vecsetvaluelocal_(Vec *v,PetscInt *i,PetscScalar *va,InsertMode *mode,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL vecsetvaluelocal_(Vec *v,PetscInt *i,PetscScalar *va,InsertMode *mode,PetscErrorCode *ierr)
 {
   /* cannot use VecSetValue() here since that uses CHKERRQ() which has a return in it */
   *ierr = VecSetValuesLocal(*v,1,i,va,*mode);
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL vecload_(Vec *vec, PetscViewer *viewer,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL vecload_(Vec *vec, PetscViewer *viewer,PetscErrorCode *ierr)
 {
   PetscViewer v;
   PetscPatchDefaultViewers_Fortran(viewer,v);
   *ierr = VecLoad(*vec,v);
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL vecview_(Vec *x,PetscViewer *vin,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL vecview_(Vec *x,PetscViewer *vin,PetscErrorCode *ierr)
 {
   PetscViewer v;
 
@@ -90,12 +90,12 @@ $      type(Field)     :: a(*)
 .seealso: VecGetArray(), VecGetArrayF90()
 M*/
 static PetscBool VecGetArrayAligned = PETSC_FALSE;
-PETSC_EXTERN_C void PETSC_STDCALL vecgetarrayaligned_(PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL vecgetarrayaligned_(PetscErrorCode *ierr)
 {
   VecGetArrayAligned = PETSC_TRUE;
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL vecgetarray_(Vec *x,PetscScalar *fa,size_t *ia,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL vecgetarray_(Vec *x,PetscScalar *fa,size_t *ia,PetscErrorCode *ierr)
 {
   PetscScalar *lx;
   PetscInt    m,bs;
@@ -110,7 +110,7 @@ PETSC_EXTERN_C void PETSC_STDCALL vecgetarray_(Vec *x,PetscScalar *fa,size_t *ia
 }
 
 /* Be to keep vec/examples/ex21.F and snes/examples/ex12.F up to date */
-PETSC_EXTERN_C void PETSC_STDCALL vecrestorearray_(Vec *x,PetscScalar *fa,size_t *ia,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL vecrestorearray_(Vec *x,PetscScalar *fa,size_t *ia,PetscErrorCode *ierr)
 {
   PetscInt    m;
   PetscScalar *lx;
@@ -125,7 +125,7 @@ PETSC_EXTERN_C void PETSC_STDCALL vecrestorearray_(Vec *x,PetscScalar *fa,size_t
     Fortran provides the array to hold the vector objects,while in C that
     array is allocated by the VecDuplicateVecs()
 */
-PETSC_EXTERN_C void PETSC_STDCALL vecduplicatevecs_(Vec *v,PetscInt *m,Vec *newv,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL vecduplicatevecs_(Vec *v,PetscInt *m,Vec *newv,PetscErrorCode *ierr)
 {
   Vec      *lV;
   PetscInt i;
@@ -134,7 +134,7 @@ PETSC_EXTERN_C void PETSC_STDCALL vecduplicatevecs_(Vec *v,PetscInt *m,Vec *newv
   *ierr = PetscFree(lV);
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL vecdestroyvecs_(PetscInt *m,Vec *vecs,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL vecdestroyvecs_(PetscInt *m,Vec *vecs,PetscErrorCode *ierr)
 {
   PetscInt i;
   for (i=0; i<*m; i++) {
@@ -142,20 +142,20 @@ PETSC_EXTERN_C void PETSC_STDCALL vecdestroyvecs_(PetscInt *m,Vec *vecs,PetscErr
   }
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL vecmax_(Vec *x,PetscInt *p,PetscReal *val,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL vecmax_(Vec *x,PetscInt *p,PetscReal *val,PetscErrorCode *ierr)
 {
   CHKFORTRANNULLINTEGER(p);
   *ierr = VecMax(*x,p,val);
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL vecgetownershiprange_(Vec *x,PetscInt *low,PetscInt *high, PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL vecgetownershiprange_(Vec *x,PetscInt *low,PetscInt *high, PetscErrorCode *ierr)
 {
   CHKFORTRANNULLINTEGER(low);
   CHKFORTRANNULLINTEGER(high);
   *ierr = VecGetOwnershipRange(*x,low,high);
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL vecgetownershipranges_(Vec *x,PetscInt *range,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL vecgetownershipranges_(Vec *x,PetscInt *range,PetscErrorCode *ierr)
 {
   PetscMPIInt    size;
   const PetscInt *r;

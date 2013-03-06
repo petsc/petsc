@@ -26,7 +26,7 @@
 
 #endif
 
-PETSC_EXTERN_C void PETSC_STDCALL kspbuildsolution_(KSP *ksp,Vec *v,Vec *V, int *ierr)
+PETSC_EXTERN void PETSC_STDCALL kspbuildsolution_(KSP *ksp,Vec *v,Vec *V, int *ierr)
 {
   Vec vp = 0;
   CHKFORTRANNULLOBJECT(v);
@@ -35,7 +35,7 @@ PETSC_EXTERN_C void PETSC_STDCALL kspbuildsolution_(KSP *ksp,Vec *v,Vec *V, int 
   *ierr = KSPBuildSolution(*ksp,vp,V);
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL   kspbuildresidual_(KSP *ksp,Vec *t,Vec *v,Vec *V, int *ierr)
+PETSC_EXTERN void PETSC_STDCALL kspbuildresidual_(KSP *ksp,Vec *t,Vec *v,Vec *V, int *ierr)
 {
   Vec tp = 0,vp = 0;
   CHKFORTRANNULLOBJECT(t);
@@ -46,14 +46,14 @@ PETSC_EXTERN_C void PETSC_STDCALL   kspbuildresidual_(KSP *ksp,Vec *t,Vec *v,Vec
   *ierr = KSPBuildResidual(*ksp,tp,vp,V);
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL kspgetoptionsprefix_(KSP *ksp,CHAR prefix PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL kspgetoptionsprefix_(KSP *ksp,CHAR prefix PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   const char *tname;
 
   *ierr = KSPGetOptionsPrefix(*ksp,&tname);
   *ierr = PetscStrncpy(prefix,tname,len); if (*ierr) return;
 }
-PETSC_EXTERN_C void PETSC_STDCALL kspappendoptionsprefix_(KSP *ksp,CHAR prefix PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL kspappendoptionsprefix_(KSP *ksp,CHAR prefix PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *t;
 
@@ -62,7 +62,7 @@ PETSC_EXTERN_C void PETSC_STDCALL kspappendoptionsprefix_(KSP *ksp,CHAR prefix P
   FREECHAR(prefix,t);
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL kspsetoptionsprefix_(KSP *ksp,CHAR prefix PETSC_MIXED_LEN(len), PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL kspsetoptionsprefix_(KSP *ksp,CHAR prefix PETSC_MIXED_LEN(len), PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *t;
 
@@ -71,27 +71,27 @@ PETSC_EXTERN_C void PETSC_STDCALL kspsetoptionsprefix_(KSP *ksp,CHAR prefix PETS
   FREECHAR(prefix,t);
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL kspsetfischerguess_(KSP *ksp,KSPFischerGuess *guess, PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL kspsetfischerguess_(KSP *ksp,KSPFischerGuess *guess, PetscErrorCode *ierr)
 {
   *ierr = KSPSetFischerGuess(*ksp,*guess);
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL kspgetfischerguess_(KSP *ksp,KSPFischerGuess *guess, PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL kspgetfischerguess_(KSP *ksp,KSPFischerGuess *guess, PetscErrorCode *ierr)
 {
   *ierr = KSPGetFischerGuess(*ksp,guess);
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL kspsetusefischerguess_(KSP *ksp,PetscInt *model,PetscInt *size, PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL kspsetusefischerguess_(KSP *ksp,PetscInt *model,PetscInt *size, PetscErrorCode *ierr)
 {
   *ierr = KSPSetUseFischerGuess(*ksp,*model,*size);
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL kspfischerguesscreate_(KSP *ksp,PetscInt *model,PetscInt *size, KSPFischerGuess *guess,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL kspfischerguesscreate_(KSP *ksp,PetscInt *model,PetscInt *size, KSPFischerGuess *guess,PetscErrorCode *ierr)
 {
   *ierr = KSPFischerGuessCreate(*ksp,*model,*size,guess);
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL kspfischerguessdestroy_(KSPFischerGuess *guess,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL kspfischerguessdestroy_(KSPFischerGuess *guess,PetscErrorCode *ierr)
 {
   *ierr = KSPFischerGuessDestroy(guess);
 }

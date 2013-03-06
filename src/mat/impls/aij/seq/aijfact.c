@@ -102,7 +102,7 @@ PetscErrorCode MatGetFactorAvailable_seqaij_petsc(Mat A,MatFactorType ftype,Pets
 
 #undef __FUNCT__
 #define __FUNCT__ "MatGetFactor_seqaij_petsc"
-PETSC_EXTERN_C PetscErrorCode MatGetFactor_seqaij_petsc(Mat A,MatFactorType ftype,Mat *B)
+PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_petsc(Mat A,MatFactorType ftype,Mat *B)
 {
   PetscInt       n = A->rmap->n;
   PetscErrorCode ierr;

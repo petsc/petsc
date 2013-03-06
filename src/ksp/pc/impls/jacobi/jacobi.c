@@ -389,7 +389,7 @@ M*/
 
 #undef __FUNCT__
 #define __FUNCT__ "PCCreate_Jacobi"
-PETSC_EXTERN_C PetscErrorCode  PCCreate_Jacobi(PC pc)
+PETSC_EXTERN PetscErrorCode PCCreate_Jacobi(PC pc)
 {
   PC_Jacobi      *jac;
   PetscErrorCode ierr;

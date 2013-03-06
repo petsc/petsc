@@ -41,7 +41,7 @@ PetscErrorCode SNESDestroy_NCG(SNES snes)
    Application Interface Routine: SNESSetUp()
  */
 
-PETSC_EXTERN_C PetscErrorCode SNESLineSearchCreate_NCGLinear(SNESLineSearch);
+PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_NCGLinear(SNESLineSearch);
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESSetUp_NCG"
@@ -159,7 +159,7 @@ PetscErrorCode SNESLineSearchApply_NCGLinear(SNESLineSearch linesearch)
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESLineSearchCreate_NCGLinear"
-PETSC_EXTERN_C PetscErrorCode SNESLineSearchCreate_NCGLinear(SNESLineSearch linesearch)
+PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_NCGLinear(SNESLineSearch linesearch)
 {
   PetscFunctionBegin;
   linesearch->ops->apply          = SNESLineSearchApply_NCGLinear;
@@ -480,7 +480,7 @@ chooses the initial search direction as F(x) for the initial guess x.
 M*/
 #undef __FUNCT__
 #define __FUNCT__ "SNESCreate_NCG"
-PETSC_EXTERN_C PetscErrorCode  SNESCreate_NCG(SNES snes)
+PETSC_EXTERN PetscErrorCode SNESCreate_NCG(SNES snes)
 {
   PetscErrorCode ierr;
   SNES_NCG       * neP;

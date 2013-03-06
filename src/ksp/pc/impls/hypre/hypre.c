@@ -993,7 +993,7 @@ M*/
 
 #undef __FUNCT__
 #define __FUNCT__ "PCCreate_HYPRE"
-PETSC_EXTERN_C PetscErrorCode  PCCreate_HYPRE(PC pc)
+PETSC_EXTERN PetscErrorCode PCCreate_HYPRE(PC pc)
 {
   PC_HYPRE       *jac;
   PetscErrorCode ierr;
@@ -1208,7 +1208,7 @@ M*/
 
 #undef __FUNCT__
 #define __FUNCT__ "PCCreate_PFMG"
-PETSC_EXTERN_C PetscErrorCode  PCCreate_PFMG(PC pc)
+PETSC_EXTERN PetscErrorCode PCCreate_PFMG(PC pc)
 {
   PetscErrorCode ierr;
   PC_PFMG        *ex;
@@ -1456,7 +1456,7 @@ M*/
 
 #undef __FUNCT__
 #define __FUNCT__ "PCCreate_SysPFMG"
-PETSC_EXTERN_C PetscErrorCode  PCCreate_SysPFMG(PC pc)
+PETSC_EXTERN PetscErrorCode PCCreate_SysPFMG(PC pc)
 {
   PetscErrorCode ierr;
   PC_SysPFMG     *ex;

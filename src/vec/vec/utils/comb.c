@@ -107,7 +107,7 @@ MPI_Op PetscSplitReduction_Op = 0;
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSplitReduction_Local"
-PETSC_EXTERN_C void MPIAPI PetscSplitReduction_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *datatype)
+PETSC_EXTERN void MPIAPI PetscSplitReduction_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *datatype)
 {
   PetscScalar *xin = (PetscScalar*)in,*xout = (PetscScalar*)out;
   PetscInt    i,count = (PetscInt)*cnt;
@@ -329,7 +329,7 @@ static PetscMPIInt Petsc_Reduction_keyval = MPI_KEYVAL_INVALID;
   The binding for the first argument changed from MPI 1.0 to 1.1; in 1.0
   it was MPI_Comm *comm.
 */
-PETSC_EXTERN_C int MPIAPI Petsc_DelReduction(MPI_Comm comm,int keyval,void* attr_val,void* extra_state)
+PETSC_EXTERN int MPIAPI Petsc_DelReduction(MPI_Comm comm,int keyval,void* attr_val,void* extra_state)
 {
   PetscErrorCode ierr;
 

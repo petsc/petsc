@@ -26,7 +26,7 @@ typedef struct {
   PetscBool        free_jshort;
 } Mat_SeqSBAIJ;
 
-PETSC_EXTERN_C PetscErrorCode MatSeqSBAIJSetPreallocation_SeqSBAIJ(Mat,PetscInt,PetscInt,PetscInt*);
+PETSC_EXTERN PetscErrorCode MatSeqSBAIJSetPreallocation_SeqSBAIJ(Mat,PetscInt,PetscInt,PetscInt*);
 PETSC_INTERN PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ(Mat,Mat,IS,const MatFactorInfo*);
 PETSC_INTERN PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ_inplace(Mat,Mat,IS,const MatFactorInfo*);
 PETSC_INTERN PetscErrorCode MatCholeskyFactor_SeqSBAIJ(Mat,IS,const MatFactorInfo*);

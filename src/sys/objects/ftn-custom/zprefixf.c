@@ -6,7 +6,7 @@
 #define petscobjectsetoptionsprefix_    petscobjectsetoptionsprefix
 #endif
 
-PETSC_EXTERN_C void PETSC_STDCALL petscobjectsetoptionsprefix_(PetscObject *obj,CHAR prefix PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL petscobjectsetoptionsprefix_(PetscObject *obj,CHAR prefix PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *t;
 

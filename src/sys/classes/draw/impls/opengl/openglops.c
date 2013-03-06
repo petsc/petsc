@@ -1077,7 +1077,7 @@ static void mouse(int button, int state,int x, int y)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDrawCreate_GLUT"
-PETSC_EXTERN_C PetscErrorCode  PetscDrawCreate_GLUT(PetscDraw draw)
+PETSC_EXTERN PetscErrorCode PetscDrawCreate_GLUT(PetscDraw draw)
 {
   PetscDraw_OpenGL *win;
   PetscErrorCode   ierr;
@@ -1276,7 +1276,7 @@ PetscErrorCode  PetscDrawOpenGLESRegisterGLKView(GLKView *view)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDrawCreate_OpenGLES"
-PETSC_EXTERN_C PetscErrorCode  PetscDrawCreate_OpenGLES(PetscDraw draw)
+PETSC_EXTERN PetscErrorCode PetscDrawCreate_OpenGLES(PetscDraw draw)
 {
   PetscDraw_OpenGL *win;
   PetscErrorCode   ierr;

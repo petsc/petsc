@@ -711,7 +711,7 @@ PetscErrorCode  PetscBinarySynchronizedSeek(MPI_Comm comm,int fd,off_t off,Petsc
     The next three routines are not used because MPICH does not support their use
 
 */
-PETSC_EXTERN_C PetscMPIInt PetscDataRep_extent_fn(MPI_Datatype datatype,MPI_Aint *file_extent,void *extra_state)
+PETSC_EXTERN PetscMPIInt PetscDataRep_extent_fn(MPI_Datatype datatype,MPI_Aint *file_extent,void *extra_state)
 {
   MPI_Aint    ub;
   PetscMPIInt ierr;
@@ -720,7 +720,7 @@ PETSC_EXTERN_C PetscMPIInt PetscDataRep_extent_fn(MPI_Datatype datatype,MPI_Aint
   return ierr;
 }
 
-PETSC_EXTERN_C PetscMPIInt PetscDataRep_read_conv_fn(void *userbuf, MPI_Datatype datatype,PetscMPIInt count,void *filebuf, MPI_Offset position,void *extra_state)
+PETSC_EXTERN PetscMPIInt PetscDataRep_read_conv_fn(void *userbuf, MPI_Datatype datatype,PetscMPIInt count,void *filebuf, MPI_Offset position,void *extra_state)
 {
   PetscDataType pdtype;
   PetscMPIInt   ierr;

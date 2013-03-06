@@ -17,7 +17,7 @@
 #define petscmatlabenginegetarray_    petscmatlabenginegetarray
 #endif
 
-PETSC_EXTERN_C void PETSC_STDCALL petscmatlabenginecreate_(MPI_Comm *comm,CHAR m PETSC_MIXED_LEN(len),PetscMatlabEngine *e,
+PETSC_EXTERN void PETSC_STDCALL petscmatlabenginecreate_(MPI_Comm *comm,CHAR m PETSC_MIXED_LEN(len),PetscMatlabEngine *e,
                                             PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *ms;
@@ -27,7 +27,7 @@ PETSC_EXTERN_C void PETSC_STDCALL petscmatlabenginecreate_(MPI_Comm *comm,CHAR m
   FREECHAR(m,ms);
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL petscmatlabengineevaluate_(PetscMatlabEngine *e,CHAR m PETSC_MIXED_LEN(len),
+PETSC_EXTERN void PETSC_STDCALL petscmatlabengineevaluate_(PetscMatlabEngine *e,CHAR m PETSC_MIXED_LEN(len),
                                               PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *ms;
@@ -36,7 +36,7 @@ PETSC_EXTERN_C void PETSC_STDCALL petscmatlabengineevaluate_(PetscMatlabEngine *
   FREECHAR(m,ms);
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL petscmatlabengineputarray_(PetscMatlabEngine *e,PetscInt *m,PetscInt *n,PetscScalar *a,
+PETSC_EXTERN void PETSC_STDCALL petscmatlabengineputarray_(PetscMatlabEngine *e,PetscInt *m,PetscInt *n,PetscScalar *a,
                                               CHAR s PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *ms;
@@ -45,7 +45,7 @@ PETSC_EXTERN_C void PETSC_STDCALL petscmatlabengineputarray_(PetscMatlabEngine *
   FREECHAR(s,ms);
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL petscmatlabenginegetarray_(PetscMatlabEngine *e,PetscInt *m,PetscInt *n,PetscScalar *a,
+PETSC_EXTERN void PETSC_STDCALL petscmatlabenginegetarray_(PetscMatlabEngine *e,PetscInt *m,PetscInt *n,PetscScalar *a,
                                               CHAR s PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *ms;

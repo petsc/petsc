@@ -174,7 +174,7 @@ static struct _PetscDrawOps DvOps = { 0,
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDrawCreate_TikZ"
-PETSC_EXTERN_C PetscErrorCode  PetscDrawCreate_TikZ(PetscDraw draw)
+PETSC_EXTERN PetscErrorCode PetscDrawCreate_TikZ(PetscDraw draw)
 {
   PetscDraw_TikZ *win;
   PetscErrorCode ierr;

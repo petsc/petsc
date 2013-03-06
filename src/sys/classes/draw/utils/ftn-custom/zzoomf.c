@@ -17,7 +17,7 @@ static PetscErrorCode ourdrawzoom(PetscDraw draw,void *ctx)
   return 0;
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL petscdrawzoom_(PetscDraw *draw,FCN f,void *ctx,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL petscdrawzoom_(PetscDraw *draw,FCN f,void *ctx,PetscErrorCode *ierr)
 {
   PetscObjectAllocateFortranPointers(*draw,1);
   ((PetscObject)*draw)->fortran_func_pointers[0] = (PetscVoidFunction)f;

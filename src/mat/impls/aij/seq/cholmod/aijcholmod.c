@@ -57,7 +57,7 @@ PetscErrorCode MatFactorGetSolverPackage_seqaij_cholmod(Mat A,const MatSolverPac
 #undef __FUNCT__
 #define __FUNCT__ "MatGetFactor_seqaij_cholmod"
 /* Almost a copy of MatGetFactor_seqsbaij_cholmod, yuck */
-PETSC_EXTERN_C PetscErrorCode MatGetFactor_seqaij_cholmod(Mat A,MatFactorType ftype,Mat *F)
+PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_cholmod(Mat A,MatFactorType ftype,Mat *F)
 {
   Mat            B;
   Mat_CHOLMOD    *chol;

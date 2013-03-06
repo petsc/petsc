@@ -3790,40 +3790,40 @@ M*/
 M*/
 
 #if defined(PETSC_HAVE_PASTIX)
-PETSC_EXTERN_C PetscErrorCode MatGetFactor_seqaij_pastix(Mat,MatFactorType,Mat*);
+PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_pastix(Mat,MatFactorType,Mat*);
 #endif
 #if defined(PETSC_HAVE_ESSL) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_REAL_SINGLE) && !defined(PETSC_USE_REAL___FLOAT128)
-PETSC_EXTERN_C PetscErrorCode MatGetFactor_seqaij_essl(Mat,MatFactorType,Mat*);
+PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_essl(Mat,MatFactorType,Mat*);
 #endif
-PETSC_EXTERN_C PetscErrorCode  MatConvert_SeqAIJ_SeqAIJCRL(Mat,MatType,MatReuse,Mat*);
-PETSC_EXTERN_C PetscErrorCode  MatGetFactor_seqaij_petsc(Mat,MatFactorType,Mat*);
-PETSC_EXTERN_C PetscErrorCode  MatGetFactor_seqaij_bas(Mat,MatFactorType,Mat*);
+PETSC_EXTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJCRL(Mat,MatType,MatReuse,Mat*);
+PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_petsc(Mat,MatFactorType,Mat*);
+PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_bas(Mat,MatFactorType,Mat*);
 extern PetscErrorCode  MatGetFactorAvailable_seqaij_petsc(Mat,MatFactorType,PetscBool*);
 #if defined(PETSC_HAVE_MUMPS)
-PETSC_EXTERN_C PetscErrorCode  MatGetFactor_aij_mumps(Mat,MatFactorType,Mat*);
+PETSC_EXTERN PetscErrorCode MatGetFactor_aij_mumps(Mat,MatFactorType,Mat*);
 #endif
 #if defined(PETSC_HAVE_SUPERLU)
-PETSC_EXTERN_C PetscErrorCode  MatGetFactor_seqaij_superlu(Mat,MatFactorType,Mat*);
+PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_superlu(Mat,MatFactorType,Mat*);
 #endif
 #if defined(PETSC_HAVE_SUPERLU_DIST)
-PETSC_EXTERN_C PetscErrorCode MatGetFactor_seqaij_superlu_dist(Mat,MatFactorType,Mat*);
+PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_superlu_dist(Mat,MatFactorType,Mat*);
 #endif
 #if defined(PETSC_HAVE_UMFPACK)
-PETSC_EXTERN_C PetscErrorCode  MatGetFactor_seqaij_umfpack(Mat,MatFactorType,Mat*);
+PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_umfpack(Mat,MatFactorType,Mat*);
 #endif
 #if defined(PETSC_HAVE_CHOLMOD)
-PETSC_EXTERN_C PetscErrorCode  MatGetFactor_seqaij_cholmod(Mat,MatFactorType,Mat*);
+PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_cholmod(Mat,MatFactorType,Mat*);
 #endif
 #if defined(PETSC_HAVE_LUSOL)
-PETSC_EXTERN_C PetscErrorCode  MatGetFactor_seqaij_lusol(Mat,MatFactorType,Mat*);
+PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_lusol(Mat,MatFactorType,Mat*);
 #endif
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
-PETSC_EXTERN_C PetscErrorCode  MatGetFactor_seqaij_matlab(Mat,MatFactorType,Mat*);
+PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_matlab(Mat,MatFactorType,Mat*);
 extern PetscErrorCode  MatlabEnginePut_SeqAIJ(PetscObject,void*);
 extern PetscErrorCode  MatlabEngineGet_SeqAIJ(PetscObject,void*);
 #endif
 #if defined(PETSC_HAVE_CLIQUE)
-PETSC_EXTERN_C PetscErrorCode MatGetFactor_aij_clique(Mat,MatFactorType,Mat*);
+PETSC_EXTERN PetscErrorCode MatGetFactor_aij_clique(Mat,MatFactorType,Mat*);
 #endif
 
 
@@ -3879,7 +3879,7 @@ PetscErrorCode  MatSeqAIJRestoreArray(Mat A,PetscScalar **array)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_SeqAIJ"
-PETSC_EXTERN_C PetscErrorCode  MatCreate_SeqAIJ(Mat B)
+PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJ(Mat B)
 {
   Mat_SeqAIJ     *b;
   PetscErrorCode ierr;
@@ -4452,7 +4452,7 @@ PetscErrorCode MatSeqAIJInvalidateDiagonal(Mat A)
 
 #undef __FUNCT__
 #define __FUNCT__ "matsetvaluesseqaij_"
-PETSC_EXTERN_C void PETSC_STDCALL matsetvaluesseqaij_(Mat *AA,PetscInt *mm,const PetscInt im[],PetscInt *nn,const PetscInt in[],const PetscScalar v[],InsertMode *isis, PetscErrorCode *_ierr)
+PETSC_EXTERN void PETSC_STDCALL matsetvaluesseqaij_(Mat *AA,PetscInt *mm,const PetscInt im[],PetscInt *nn,const PetscInt in[],const PetscScalar v[],InsertMode *isis, PetscErrorCode *_ierr)
 {
   Mat            A  = *AA;
   PetscInt       m  = *mm, n = *nn;

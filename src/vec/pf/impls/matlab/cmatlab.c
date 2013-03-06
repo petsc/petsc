@@ -77,7 +77,7 @@ PetscErrorCode PFSetFromOptions_Matlab(PF pf)
 
 #undef __FUNCT__
 #define __FUNCT__ "PFCreate_Matlab"
-PETSC_EXTERN_C PetscErrorCode  PFCreate_Matlab(PF pf,void *value)
+PETSC_EXTERN PetscErrorCode PFCreate_Matlab(PF pf,void *value)
 {
   PetscErrorCode ierr;
   PF_Matlab      *matlab;

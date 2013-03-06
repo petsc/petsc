@@ -1,23 +1,23 @@
 
 #include <petsc-private/snesimpl.h>     /*I  "petscsnes.h"  I*/
 
-PETSC_EXTERN_C PetscErrorCode  SNESCreate_NEWTONLS(SNES);
-PETSC_EXTERN_C PetscErrorCode  SNESCreate_NEWTONTR(SNES);
-PETSC_EXTERN_C PetscErrorCode  SNESCreate_Test(SNES);
-PETSC_EXTERN_C PetscErrorCode  SNESCreate_NRichardson(SNES);
-PETSC_EXTERN_C PetscErrorCode  SNESCreate_KSPONLY(SNES);
-PETSC_EXTERN_C PetscErrorCode  SNESCreate_VINEWTONRSLS(SNES);
-PETSC_EXTERN_C PetscErrorCode  SNESCreate_VINEWTONSSLS(SNES);
-PETSC_EXTERN_C PetscErrorCode  SNESCreate_NGMRES(SNES);
-PETSC_EXTERN_C PetscErrorCode  SNESCreate_QN(SNES);
-PETSC_EXTERN_C PetscErrorCode  SNESCreate_Shell(SNES);
-PETSC_EXTERN_C PetscErrorCode  SNESCreate_GS(SNES);
-PETSC_EXTERN_C PetscErrorCode  SNESCreate_NCG(SNES);
-PETSC_EXTERN_C PetscErrorCode  SNESCreate_FAS(SNES);
-PETSC_EXTERN_C PetscErrorCode  SNESCreate_MS(SNES);
-PETSC_EXTERN_C PetscErrorCode  SNESCreate_NASM(SNES);
-PETSC_EXTERN_C PetscErrorCode  SNESCreate_Anderson(SNES);
-PETSC_EXTERN_C PetscErrorCode  SNESCreate_ASPIN(SNES);
+PETSC_EXTERN PetscErrorCode SNESCreate_NEWTONLS(SNES);
+PETSC_EXTERN PetscErrorCode SNESCreate_NEWTONTR(SNES);
+PETSC_EXTERN PetscErrorCode SNESCreate_Test(SNES);
+PETSC_EXTERN PetscErrorCode SNESCreate_NRichardson(SNES);
+PETSC_EXTERN PetscErrorCode SNESCreate_KSPONLY(SNES);
+PETSC_EXTERN PetscErrorCode SNESCreate_VINEWTONRSLS(SNES);
+PETSC_EXTERN PetscErrorCode SNESCreate_VINEWTONSSLS(SNES);
+PETSC_EXTERN PetscErrorCode SNESCreate_NGMRES(SNES);
+PETSC_EXTERN PetscErrorCode SNESCreate_QN(SNES);
+PETSC_EXTERN PetscErrorCode SNESCreate_Shell(SNES);
+PETSC_EXTERN PetscErrorCode SNESCreate_GS(SNES);
+PETSC_EXTERN PetscErrorCode SNESCreate_NCG(SNES);
+PETSC_EXTERN PetscErrorCode SNESCreate_FAS(SNES);
+PETSC_EXTERN PetscErrorCode SNESCreate_MS(SNES);
+PETSC_EXTERN PetscErrorCode SNESCreate_NASM(SNES);
+PETSC_EXTERN PetscErrorCode SNESCreate_Anderson(SNES);
+PETSC_EXTERN PetscErrorCode SNESCreate_ASPIN(SNES);
 
 const char *SNESConvergedReasons_Shifted[] = {" "," ","DIVERGED_LOCAL_MIN","DIVERGED_INNER","DIVERGED_LINE_SEARCH","DIVERGED_MAX_IT",
                                               "DIVERGED_FNORM_NAN","DIVERGED_LINEAR_SOLVE","DIVERGED_FUNCTION_COUNT","DIVERGED_FUNCTION_DOMAIN",

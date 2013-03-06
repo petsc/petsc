@@ -379,7 +379,7 @@ PetscErrorCode  PetscDrawSetDisplay(PetscDraw draw,const char display[])
   Input Parameter:
 . win - the drawing context
 */
-PETSC_EXTERN_C PetscErrorCode PetscDrawCreate_Null(PetscDraw draw)
+PETSC_EXTERN PetscErrorCode PetscDrawCreate_Null(PetscDraw draw)
 {
   PetscErrorCode ierr;
 

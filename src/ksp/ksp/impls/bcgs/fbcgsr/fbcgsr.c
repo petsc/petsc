@@ -208,7 +208,7 @@ PetscErrorCode  KSPSolve_FBCGSR(KSP ksp)
 M*/
 #undef __FUNCT__
 #define __FUNCT__ "KSPCreate_FBCGSR"
-PETSC_EXTERN_C PetscErrorCode  KSPCreate_FBCGSR(KSP ksp)
+PETSC_EXTERN PetscErrorCode KSPCreate_FBCGSR(KSP ksp)
 {
   PetscErrorCode ierr;
   KSP_BCGS       *bcgs;

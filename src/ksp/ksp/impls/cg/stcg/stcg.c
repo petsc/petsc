@@ -740,7 +740,7 @@ M*/
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPCreate_STCG"
-PETSC_EXTERN_C PetscErrorCode  KSPCreate_STCG(KSP ksp)
+PETSC_EXTERN PetscErrorCode KSPCreate_STCG(KSP ksp)
 {
   PetscErrorCode ierr;
   KSP_STCG       *cg;

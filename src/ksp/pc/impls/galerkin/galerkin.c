@@ -263,7 +263,7 @@ M*/
 
 #undef __FUNCT__
 #define __FUNCT__ "PCCreate_Galerkin"
-PETSC_EXTERN_C PetscErrorCode  PCCreate_Galerkin(PC pc)
+PETSC_EXTERN PetscErrorCode PCCreate_Galerkin(PC pc)
 {
   PetscErrorCode ierr;
   PC_Galerkin    *jac;

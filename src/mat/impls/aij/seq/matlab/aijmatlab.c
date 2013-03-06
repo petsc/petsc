@@ -10,7 +10,7 @@
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSeqAIJToMatlab"
-PETSC_EXTERN_C mxArray *MatSeqAIJToMatlab(Mat B)
+PETSC_EXTERN mxArray *MatSeqAIJToMatlab(Mat B)
 {
   PetscErrorCode ierr;
   Mat_SeqAIJ     *aij = (Mat_SeqAIJ*)B->data;
@@ -31,7 +31,7 @@ PETSC_EXTERN_C mxArray *MatSeqAIJToMatlab(Mat B)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatlabEnginePut_SeqAIJ"
-PETSC_EXTERN_C PetscErrorCode  MatlabEnginePut_SeqAIJ(PetscObject obj,void *mengine)
+PETSC_EXTERN PetscErrorCode MatlabEnginePut_SeqAIJ(PetscObject obj,void *mengine)
 {
   PetscErrorCode ierr;
   mxArray        *mat;
@@ -57,7 +57,7 @@ PETSC_EXTERN_C PetscErrorCode  MatlabEnginePut_SeqAIJ(PetscObject obj,void *meng
   Level: intermediate
 
 @*/
-PETSC_EXTERN_C PetscErrorCode  MatSeqAIJFromMatlab(mxArray *mmat,Mat mat)
+PETSC_EXTERN PetscErrorCode MatSeqAIJFromMatlab(mxArray *mmat,Mat mat)
 {
   PetscErrorCode ierr;
   PetscInt       nz,n,m,*i,*j,k;
@@ -206,7 +206,7 @@ PetscErrorCode MatFactorGetSolverPackage_seqaij_matlab(Mat A,const MatSolverPack
 
 #undef __FUNCT__
 #define __FUNCT__ "MatGetFactor_seqaij_matlab"
-PETSC_EXTERN_C PetscErrorCode MatGetFactor_seqaij_matlab(Mat A,MatFactorType ftype,Mat *F)
+PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_matlab(Mat A,MatFactorType ftype,Mat *F)
 {
   PetscErrorCode ierr;
 
