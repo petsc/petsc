@@ -11,7 +11,7 @@ EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "VecHYPRE_IJVectorCreate"
-PetscErrorCode VecHYPRE_IJVectorCreate(Vec v,HYPRE_IJVector *ij)
+PETSC_EXTERN PetscErrorCode VecHYPRE_IJVectorCreate(Vec v,HYPRE_IJVector *ij)
 {
   PetscErrorCode ierr;
 
