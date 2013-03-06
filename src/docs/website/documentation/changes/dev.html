@@ -107,7 +107,8 @@
           The configure options <tt>--with-c-support</tt> and <tt>--with-c++-support</tt> have been removed. A PETSc
           library built using C or C++ can be called from either C or C++. The primary functional reason to
           use <tt>--with-clanguage=C++</tt> is to use <tt>std::complex</tt> data types. Other users will likely
-          prefer <tt>--with-clanguage=C</tt> (the default) because it compiles somewhat faster.
+          prefer <tt>--with-clanguage=C</tt> (the default) because it compiles somewhat faster. The --with-c-support option is no longer needed 
+          because it is now the default behavior when using --with-clanguage=c++.
         </li>
       </ul>
       <h4>Logging:</h4>
