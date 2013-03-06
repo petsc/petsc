@@ -1,6 +1,6 @@
 
 #include <petscsys.h>
-#include <../src/sys/viewer/impls/socket/socket.h>
+#include <../src/sys/classes/viewer/impls/socket/socket.h>
 
 
 /*
