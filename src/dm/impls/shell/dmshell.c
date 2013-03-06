@@ -461,7 +461,11 @@ PetscErrorCode DMShellDefaultGlobalToLocalBegin(DM dm,Vec g,InsertMode mode,Vec 
   DM_Shell       *shell = (DM_Shell*)dm->data;
 
   PetscFunctionBegin;
-  ierr = VecScatterBegin(*(shell->gtol),g,l,mode,SCATTER_FORWARD);CHKERRQ(ierr);
+  if(shell->gtol) {
+    ierr = VecScatterBegin(*(shell->gtol),g,l,mode,SCATTER_FORWARD);CHKERRQ(ierr);
+  } else {
+    SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_ARG_WRONGSTATE, "DMShellDefaultGlobalToLocalBegin() cannot be used without first setting the scatter context via DMShellSetGlobalToLocalVecScatter()");
+  }
   PetscFunctionReturn(0);
 }
 
@@ -487,6 +491,10 @@ PetscErrorCode DMShellDefaultGlobalToLocalEnd(DM dm,Vec g,InsertMode mode,Vec l)
   DM_Shell       *shell = (DM_Shell*)dm->data;
 
   PetscFunctionBegin;
-  ierr = VecScatterEnd(*(shell->gtol),g,l,mode,SCATTER_FORWARD);CHKERRQ(ierr);
+  if(shell->gtol) {
+    ierr = VecScatterEnd(*(shell->gtol),g,l,mode,SCATTER_FORWARD);CHKERRQ(ierr);
+  } else {
+    SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_ARG_WRONGSTATE, "DMShellDefaultGlobalToLocalEnd() cannot be used without first setting the scatter context via DMShellSetGlobalToLocalVecScatter()");
+  }
   PetscFunctionReturn(0);
 }
