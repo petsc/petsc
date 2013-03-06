@@ -819,9 +819,9 @@ PetscErrorCode  SectionRealGetFibration(SectionReal section, const PetscInt fiel
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "SectionRealToVec"
+#define __FUNCT__ "SectionRealToVecDM"
 /*@C
-  SectionRealToVec - Maps the given section to a Vec
+  SectionRealToVecDM - Maps the given section to a Vec
 
   Collective on Section
 
@@ -836,7 +836,7 @@ PetscErrorCode  SectionRealGetFibration(SectionReal section, const PetscInt fiel
 
 .seealso VecCreate(), SectionRealCreate()
 @*/
-PetscErrorCode  SectionRealToVec(SectionReal section, DM dm, ScatterMode mode, Vec vec)
+PetscErrorCode  SectionRealToVecDM(SectionReal section, DM dm, ScatterMode mode, Vec vec)
 {
   Vec            localVec;
   VecScatter     scatter;
@@ -981,7 +981,7 @@ PetscErrorCode  SectionRealNorm(SectionReal section, DM dm, NormType type, Petsc
   ierr = VecCreate(m->comm(), &v);CHKERRQ(ierr);
   ierr = VecSetSizes(v, order->getLocalSize(), order->getGlobalSize());CHKERRQ(ierr);
   ierr = VecSetFromOptions(v);CHKERRQ(ierr);
-  ierr = SectionRealToVec(section, dm, SCATTER_FORWARD, v);CHKERRQ(ierr);
+  ierr = SectionRealToVecDM(section, dm, SCATTER_FORWARD, v);CHKERRQ(ierr);
   ierr = VecNorm(v, type, val);CHKERRQ(ierr);
   ierr = VecDestroy(&v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1024,10 +1024,10 @@ PetscErrorCode  SectionRealAXPY(SectionReal section, DM dm, PetscScalar alpha, S
   ierr = VecSetSizes(v, order->getLocalSize(), order->getGlobalSize());CHKERRQ(ierr);
   ierr = VecSetFromOptions(v);CHKERRQ(ierr);
   ierr = VecDuplicate(v, &x);CHKERRQ(ierr);
-  ierr = SectionRealToVec(section, dm, SCATTER_FORWARD, v);CHKERRQ(ierr);
-  ierr = SectionRealToVec(X,       dm, SCATTER_FORWARD, x);CHKERRQ(ierr);
+  ierr = SectionRealToVecDM(section, dm, SCATTER_FORWARD, v);CHKERRQ(ierr);
+  ierr = SectionRealToVecDM(X,       dm, SCATTER_FORWARD, x);CHKERRQ(ierr);
   ierr = VecAXPY(v, alpha, x);CHKERRQ(ierr);
-  ierr = SectionRealToVec(section, dm, SCATTER_REVERSE, v);CHKERRQ(ierr);
+  ierr = SectionRealToVecDM(section, dm, SCATTER_REVERSE, v);CHKERRQ(ierr);
   ierr = VecDestroy(&v);CHKERRQ(ierr);
   ierr = VecDestroy(&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);

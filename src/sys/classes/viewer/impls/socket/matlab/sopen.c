@@ -57,7 +57,7 @@ typedef unsigned long   u_long;
 #if defined(PETSC_HAVE_WS2TCPIP_H)
 #include <Ws2tcpip.h>
 #endif
-#include <../src/sys/viewer/impls/socket/socket.h>
+#include <../src/sys/classes/viewer/impls/socket/socket.h>
 #include <mex.h>
 
 #define PETSC_MEX_ERROR(a) {mexErrMsgTxt(a); return;}

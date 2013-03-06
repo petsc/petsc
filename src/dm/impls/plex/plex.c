@@ -1256,8 +1256,11 @@ PetscErrorCode DMPlexSetConeSize(DM dm, PetscInt p, PetscInt size)
 
   Level: beginner
 
-  Note:
-  This routine is not available in Fortran.
+  Fortran Notes:
+  Since it returns an array, this routine is only available in Fortran 90, and you must
+  include petsc.h90 in your code.
+
+  You must also call DMPlexRestoreCone() after you finish using the returned array.
 
 .seealso: DMPlexCreate(), DMPlexSetCone(), DMPlexSetChart()
 @*/
@@ -1336,8 +1339,11 @@ PetscErrorCode DMPlexSetCone(DM dm, PetscInt p, const PetscInt cone[])
 
   Level: beginner
 
-  Note:
-  This routine is not available in Fortran.
+  Fortran Notes:
+  Since it returns an array, this routine is only available in Fortran 90, and you must
+  include petsc.h90 in your code.
+
+  You must also call DMPlexRestoreConeOrientation() after you finish using the returned array.
 
 .seealso: DMPlexCreate(), DMPlexGetCone(), DMPlexSetCone(), DMPlexSetChart()
 @*/
@@ -1531,6 +1537,12 @@ PetscErrorCode DMPlexSetSupportSize(DM dm, PetscInt p, PetscInt size)
 
   Level: beginner
 
+  Fortran Notes:
+  Since it returns an array, this routine is only available in Fortran 90, and you must
+  include petsc.h90 in your code.
+
+  You must also call DMPlexRestoreSupport() after you finish using the returned array.
+
 .seealso: DMPlexCreate(), DMPlexSetCone(), DMPlexSetChart(), DMPlexGetCone()
 @*/
 PetscErrorCode DMPlexGetSupport(DM dm, PetscInt p, const PetscInt *support[])
@@ -1629,6 +1641,12 @@ PetscErrorCode DMPlexInsertSupport(DM dm, PetscInt p, PetscInt supportPos, Petsc
 
   Note:
   If using internal storage (points is NULL on input), each call overwrites the last output.
+
+  Fortran Notes:
+  Since it returns an array, this routine is only available in Fortran 90, and you must
+  include petsc.h90 in your code.
+
+  The numPoints argument is not present in the Fortran 90 binding since it is internal to the array.
 
   Level: beginner
 
@@ -1735,6 +1753,12 @@ PetscErrorCode DMPlexGetTransitiveClosure(DM dm, PetscInt p, PetscBool useCone, 
 
   Note:
   If not using internal storage (points is not NULL on input), this call is unnecessary
+
+  Fortran Notes:
+  Since it returns an array, this routine is only available in Fortran 90, and you must
+  include petsc.h90 in your code.
+
+  The numPoints argument is not present in the Fortran 90 binding since it is internal to the array.
 
   Level: beginner
 
@@ -2095,6 +2119,12 @@ PetscErrorCode DMPlexStratify(DM dm)
 
   Note: Currently, this is restricted to a single level join
 
+  Fortran Notes:
+  Since it returns an array, this routine is only available in Fortran 90, and you must
+  include petsc.h90 in your code.
+
+  The numCoveredPoints argument is not present in the Fortran 90 binding since it is internal to the array.
+
 .keywords: mesh
 .seealso: DMPlexRestoreJoin(), DMPlexGetMeet()
 @*/
@@ -2160,6 +2190,12 @@ PetscErrorCode DMPlexGetJoin(DM dm, PetscInt numPoints, const PetscInt points[],
 + numCoveredPoints - The number of points in the join
 - coveredPoints - The points in the join
 
+  Fortran Notes:
+  Since it returns an array, this routine is only available in Fortran 90, and you must
+  include petsc.h90 in your code.
+
+  The numCoveredPoints argument is not present in the Fortran 90 binding since it is internal to the array.
+
   Level: intermediate
 
 .keywords: mesh
@@ -2191,6 +2227,12 @@ PetscErrorCode DMPlexRestoreJoin(DM dm, PetscInt numPoints, const PetscInt point
   Output Parameters:
 + numCoveredPoints - The number of points in the join
 - coveredPoints - The points in the join
+
+  Fortran Notes:
+  Since it returns an array, this routine is only available in Fortran 90, and you must
+  include petsc.h90 in your code.
+
+  The numCoveredPoints argument is not present in the Fortran 90 binding since it is internal to the array.
 
   Level: intermediate
 
@@ -2299,6 +2341,12 @@ PetscErrorCode DMPlexGetFullJoin(DM dm, PetscInt numPoints, const PetscInt point
 
   Note: Currently, this is restricted to a single level meet
 
+  Fortran Notes:
+  Since it returns an array, this routine is only available in Fortran 90, and you must
+  include petsc.h90 in your code.
+
+  The numCoveredPoints argument is not present in the Fortran 90 binding since it is internal to the array.
+
 .keywords: mesh
 .seealso: DMPlexRestoreMeet(), DMPlexGetJoin()
 @*/
@@ -2366,6 +2414,12 @@ PetscErrorCode DMPlexGetMeet(DM dm, PetscInt numPoints, const PetscInt points[],
 
   Level: intermediate
 
+  Fortran Notes:
+  Since it returns an array, this routine is only available in Fortran 90, and you must
+  include petsc.h90 in your code.
+
+  The numCoveredPoints argument is not present in the Fortran 90 binding since it is internal to the array.
+
 .keywords: mesh
 .seealso: DMPlexGetMeet(), DMPlexGetFullMeet(), DMPlexGetJoin()
 @*/
@@ -2397,6 +2451,12 @@ PetscErrorCode DMPlexRestoreMeet(DM dm, PetscInt numPoints, const PetscInt point
 - coveredPoints - The points in the meet
 
   Level: intermediate
+
+  Fortran Notes:
+  Since it returns an array, this routine is only available in Fortran 90, and you must
+  include petsc.h90 in your code.
+
+  The numCoveredPoints argument is not present in the Fortran 90 binding since it is internal to the array.
 
 .keywords: mesh
 .seealso: DMPlexGetMeet(), DMPlexRestoreMeet(), DMPlexGetJoin()
@@ -6584,6 +6644,9 @@ PetscErrorCode DMPlexCreateSectionBCIndices(DM dm, PetscSection section)
 
   Level: developer
 
+  Fortran Notes:
+  A Fortran 90 version is available as DMPlexCreateSectionF90()
+
 .keywords: mesh, elements
 .seealso: DMPlexCreate(), PetscSectionCreate()
 @*/
@@ -6936,6 +6999,12 @@ PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, IS *cellIS)
 + csize - The number of values in the closure, or NULL
 - values - The array of values, which is a borrowed array and should not be freed
 
+  Fortran Notes:
+  Since it returns an array, this routine is only available in Fortran 90, and you must
+  include petsc.h90 in your code.
+
+  The csize argument is not present in the Fortran 90 binding since it is internal to the array.
+
   Level: intermediate
 
 .seealso DMPlexVecRestoreClosure(), DMPlexVecSetClosure(), DMPlexMatSetClosure()
@@ -7042,6 +7111,12 @@ PetscErrorCode DMPlexVecGetClosure(DM dm, PetscSection section, Vec v, PetscInt 
 . point - The sieve point in the DM
 . csize - The number of values in the closure, or NULL
 - values - The array of values, which is a borrowed array and should not be freed
+
+  Fortran Notes:
+  Since it returns an array, this routine is only available in Fortran 90, and you must
+  include petsc.h90 in your code.
+
+  The csize argument is not present in the Fortran 90 binding since it is internal to the array.
 
   Level: intermediate
 
@@ -7170,6 +7245,10 @@ PetscErrorCode updatePointFields_private(PetscSection section, PetscInt point, P
 . point - The sieve point in the DM
 . values - The array of values, which is a borrowed array and should not be freed
 - mode - The insert mode, where INSERT_ALL_VALUES and ADD_ALL_VALUES also overwrite boundary conditions
+
+  Fortran Notes:
+  Since it returns an array, this routine is only available in Fortran 90, and you must
+  include petsc.h90 in your code.
 
   Level: intermediate
 
@@ -7705,6 +7784,10 @@ PetscErrorCode DMPlexComputeHexahedronGeometry_private(DM dm, PetscInt e, PetscR
 - detJ - the Jacobian determinant
 
   Level: advanced
+
+  Fortran Notes:
+  Since it returns arrays, this routine is only available in Fortran 90, and you must
+  include petsc.h90 in your code.
 
 .seealso: DMPlexGetCoordinateSection(), DMPlexGetCoordinateVec()
 @*/

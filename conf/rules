@@ -1,20 +1,18 @@
 # -*- mode: makefile -*-
 #
-# Checks that PETSC_DIR variable is set and creates library directory
-# if it does not exist
-chkpetsc_dir:
+chk_petscdir:
 	@mypwd=`pwd`; cd ${PETSC_DIR} 2>&1 > /dev/null; true_PETSC_DIR=`pwd`; cd $${mypwd} 2>&1 >/dev/null; \
         newpwd=`echo $${mypwd} | sed "s+$${true_PETSC_DIR}+DUMMY+g"`;\
         haspetsc=`echo $${mypwd} | sed "s+petsc-+DUMMY+g"`;\
         if [ $${mypwd} = $${newpwd} -a $${haspetsc} != $${mypwd} ]; then \
-          echo "*********************W-a-r-n-i-n-g*************************" ; \
+          echo ${PETSC_TEXT_RED}"*********************W-a-r-n-i-n-g*************************" ; \
           echo "Your PETSC_DIR may not match the directory you are in";\
           echo "PETSC_DIR " $${true_PETSC_DIR} "Current directory" $${mypwd};\
-          echo "Ignore this if you are running make test";\
-          echo "******************************************************" ; \
+          echo "Ignore this if you are running make test             ";\
+          echo "******************************************************"${PETSC_TEXT_BLACK} ; \
         fi
 
-petscnagupgrade:
+chk_upgrade:
 	-@PETSC_DIR=${PETSC_DIR} ${PYTHON} ${PETSC_DIR}/bin/petscnagupgrade.py
 
 chk_makej:
@@ -27,30 +25,31 @@ chk_makej:
         makeflags_j=`echo $${makeflags} | sed "s+--jobserver-fds+DUMMY+g"`;\
         if [ "$${makeflags_j}" != "$${makeflags}" ]; then parallel=true; fi;\
         if [ "$${parallel}" = "true" ]; then \
-          echo "\033[0;31m********************* ERROR *************************" ; \
+          echo ${PETSC_TEXT_RED}"********************* ERROR **********************" ; \
           if [ "${PETSC_BUILD_USING_CMAKE}" != "" ]; then \
              echo "PETSc compiles are automatically parallel, do not ";\
-             echo "provide the -j option to make  ";\
+             echo "provide the -j option to make                     ";\
           else \
-             echo "Parallel build with 'make -j' is not supported";\
-             echo "for PETSc legacy builds. Run without -j <np>";\
-             echo "or ./configure PETSc with --download-cmake";\
-             echo "to enable parallel builds with PETSc";\
+             echo "Parallel build with 'make -j' is not supported    ";\
+             echo "for PETSc legacy builds. Run without -j <np>      ";\
+             echo "or ./configure PETSc with --download-cmake        ";\
+             echo "to enable parallel builds with PETSc              ";\
           fi;\
-          echo  "******************************************************\033[0;30m" ;\
+          echo  "**************************************************"${PETSC_TEXT_BLACK} ;\
           exit 1; fi;
+
 chk_loc:
 	@if [ ${LOC}foo = foo ] ; then \
-	  echo "*********************** ERROR ************************" ; \
-	  echo " Please specify LOC variable for eg: make allmanualpages LOC=/sandbox/petsc"; \
-	  echo "******************************************************";  false; fi
+	  echo ${PETSC_TEXT_RED}"*********************** ERROR **********************************************" ; \
+	  echo " Please specify LOC variable for eg: make allmanualpages LOC=/sandbox/petsc "; \
+	  echo "****************************************************************************"${PETSC_TEXT_BLACK} ;  false; fi
 	@${MKDIR} ${LOC}/docs/manualpages
 
 chk_c2html:
 	@if [ ${C2HTML}foo = foo ] ; then \
-          echo "*********************** ERROR ************************" ; \
+          echo ${PETSC_TEXT_RED}"*********************** ERROR ************************" ; \
           echo "Require c2html for html docs. Please reconfigure with --download-c2html=1"; \
-          echo "******************************************************";false; fi
+          echo "******************************************************"${PETSC_TEXT_BLACK} ;false; fi
 
 lssrc:
 	@if [ "${SOURCEC}"foo != "foo" -o "${SOURCEH}foo" != "foo" ]; then \
@@ -63,7 +62,7 @@ chklib_dir: chk_makej
 
 
 # 3. Check if the shared libs are out of date
-chkopts: petscnagupgrade
+chkopts: chk_upgrade
 	@for LIBNAME in ${SHLIBS}; do \
 	  library=${INSTALL_LIB_DIR}/$$LIBNAME.a; \
 	sharedlibrary=${INSTALL_LIB_DIR}/$$LIBNAME.${SL_LINKER_SUFFIX}; \
@@ -78,11 +77,11 @@ chkopts: petscnagupgrade
 	  if [ -w ${INSTALL_LIB_DIR} ]; then \
 	    ${OMAKE}  PETSC_ARCH=${PETSC_ARCH} shared; \
 	  else \
-	    echo "*********************** ERROR ************************"; \
+	    echo ${PETSC_TEXT_RED}"*********************** ERROR ************************"; \
 	    echo "Unable to rebuild shared libraries; you do not have write permission."; \
 	    user=`ls -l ${INSTALL_LIB_DIR}/$$LIBNAME.${SL_LINKER_SUFFIX}  | tr -s ' ' | cut -d ' ' -f 3`; \
 	    echo "Libraries were built by user $$user; please contact him/her to have them rebuilt."; \
-	    echo "******************************************************"; \
+	    echo "******************************************************"${PETSC_TEXT_BLACK} ; \
 	    false; \
 	  fi; \
 	fi; \
@@ -107,7 +106,7 @@ foo:
 
 # Builds library
 lib:  ${SOURCE}
-	@${OMAKE}  PETSC_ARCH=${PETSC_ARCH} chkpetsc_dir
+	@${OMAKE}  PETSC_ARCH=${PETSC_ARCH} chk_petscdir
 	@-if [ "${SPECIALLIB}" = "yes" ] ; then \
 	   ${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  speciallib;  \
 	  else \
@@ -390,7 +389,7 @@ getautoconfargs:
         fi
 	-@mypwd=`pwd`; newpwd=`echo $${mypwd} | sed "s+/examples/tutorials+DUMMY+g"`;\
         if [ $${mypwd} != $${newpwd} ]; then \
-	  ${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  chkpetsc_dir;\
+	  ${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  chk_petscdir;\
         fi
 	${PETSC_COMPILE_SINGLE} $<
 	@if [ "${PETSCPORTABLE}" != "" ]; then \
@@ -454,10 +453,10 @@ getautoconfargs:
           grep -v "may result in errors or" | \
 	  egrep -i '(Error|warning|Can|Unresolved)' >> /dev/null;\
 	  if [ "$$?" != 1 ]; then \
-          echo "--------------Error detected during compile or link!-----------------------";\
+          echo ${PETSC_TEXT_RED}"*******************Error detected during compile or link!*******************";\
           echo "See http://www.mcs.anl.gov/petsc/documentation/faq.html";\
           echo ${PWD} $* ;\
-          echo "---------------------------------------------------------------------------";\
+          echo "*********************************************************************************"${PETSC_TEXT_BLACK} ;\
 	  cat trashz ; fi; ${RM} trashz
 
 .F.PETSc .F90.PETSc:
@@ -497,10 +496,10 @@ getautoconfargs:
           grep -v "warning multiple definitions of symbol _matdensegetarray_" | \
 	  egrep -i '(Error|warning|Can|Unresolved)'  >> /dev/null ; \
 	  if [ "$$?" != 1 ]; then \
-          echo "--------------Error detected during compile or link!-----------------------";\
+          echo ${PETSC_TEXT_RED}"*******************Error detected during compile or link!*******************";\
           echo "See http://www.mcs.anl.gov/petsc/documentation/faq.html";\
           echo ${PWD} $* ;\
-          echo "---------------------------------------------------------------------------";\
+          echo "*********************************************************"${PETSC_TEXT_BLACK} ;\
 	  cat trashz ; fi; ${RM} trashz;
 
 #--------------------------------------------------------------------------------------
@@ -892,8 +891,6 @@ shared_darwin:
         if [ "${LIBNAME}" = "libpetscksp" ]; then OTHERLIBS="${HYPRE_LIB} ${PETSC_CHARACTERISTIC_LIB_BASIC}"  ; fi;\
         if [ "${LIBNAME}" = "libpetscsnes" ]; then OTHERLIBS="${PETSC_KSP_LIB_BASIC}"  ; fi;\
         if [ "${LIBNAME}" = "libpetscts" ]; then OTHERLIBS="${SUNDIALS_LIB} ${PETSC_SNES_LIB_BASIC}"  ; fi;\
-        if [ "${LIBNAME}" = "libpetscfortran" ]; then OTHERLIBS="${PETSC_TS_LIB_BASIC}"  ; fi;\
-        if [ "${LIBNAME}" = "libpetsccontrib" ]; then OTHERLIBS="${PETSC_TS_LIB_BASIC}"  ; fi;\
         if [ "${LIBNAME}" = "libslepc" ]; then OTHERLIBS="${PETSC_KSP_LIB_BASIC} ${SLEPC_EXTERNAL_LIB}"  ; fi;\
         if [ "${LIBNAME}" = "libtao" ]; then OTHERLIBS="${PETSC_LIB_BASIC}"  ; fi;\
         if [ "${LIBNAME}" = "libtaopetsc" ]; then OTHERLIBS="-L${TAO_LIB_DIR} -ltao ${PETSC_TS_LIB_BASIC}"  ; fi;\

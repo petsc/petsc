@@ -1,5 +1,6 @@
 
 #include <petscvec.h>    /*I "petscvec.h" I*/
+#include <petsc-private/petscimpl.h>
 
 #include <engine.h>   /* MATLAB include file */
 #include <mex.h>      /* MATLAB include file */
