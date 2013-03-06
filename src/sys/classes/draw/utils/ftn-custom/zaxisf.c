@@ -7,8 +7,7 @@
 #define petscdrawaxissetlabels_   petscdrawaxissetlabels
 #endif
 
-EXTERN_C_BEGIN
-void PETSC_STDCALL petscdrawaxissetlabels_(PetscDrawAxis *axis,CHAR top PETSC_MIXED_LEN(len1),
+PETSC_EXTERN void PETSC_STDCALL petscdrawaxissetlabels_(PetscDrawAxis *axis,CHAR top PETSC_MIXED_LEN(len1),
                     CHAR xlabel PETSC_MIXED_LEN(len2),CHAR ylabel PETSC_MIXED_LEN(len3),
                     PetscErrorCode *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2) PETSC_END_LEN(len3))
 {
@@ -23,4 +22,3 @@ void PETSC_STDCALL petscdrawaxissetlabels_(PetscDrawAxis *axis,CHAR top PETSC_MI
   FREECHAR(ylabel,t3);
 }
 
-EXTERN_C_END

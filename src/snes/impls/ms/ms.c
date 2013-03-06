@@ -470,7 +470,6 @@ static PetscErrorCode SNESSetFromOptions_MS(SNES snes)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "SNESMSSetType_MS"
 PetscErrorCode  SNESMSSetType_MS(SNES snes,SNESMSType mstype)
@@ -496,8 +495,6 @@ PetscErrorCode  SNESMSSetType_MS(SNES snes,SNESMSType mstype)
   SETERRQ1(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_UNKNOWN_TYPE,"Could not find '%s'",mstype);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
-
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESMSSetType"
@@ -554,10 +551,9 @@ PetscErrorCode SNESMSSetType(SNES snes,SNESMSType rostype)
 .seealso:  SNESCreate(), SNES, SNESSetType(), SNESMS, SNESFAS, KSPCHEBYSHEV
 
 M*/
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "SNESCreate_MS"
-PetscErrorCode  SNESCreate_MS(SNES snes)
+PETSC_EXTERN PetscErrorCode SNESCreate_MS(SNES snes)
 {
   PetscErrorCode ierr;
   SNES_MS        *ms;
@@ -585,4 +581,4 @@ PetscErrorCode  SNESCreate_MS(SNES snes)
   ierr = PetscObjectComposeFunction((PetscObject)snes,"SNESMSSetType_C","SNESMSSetType_MS",SNESMSSetType_MS);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
+

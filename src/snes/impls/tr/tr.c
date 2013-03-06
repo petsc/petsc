@@ -347,10 +347,9 @@ static PetscErrorCode SNESView_NEWTONTR(SNES snes,PetscViewer viewer)
 .seealso:  SNESCreate(), SNES, SNESSetType(), SNESNEWTONLS, SNESSetTrustRegionTolerance()
 
 M*/
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "SNESCreate_NEWTONTR"
-PetscErrorCode  SNESCreate_NEWTONTR(SNES snes)
+PETSC_EXTERN PetscErrorCode SNESCreate_NEWTONTR(SNES snes)
 {
   SNES_NEWTONTR  *neP;
   PetscErrorCode ierr;
@@ -381,5 +380,4 @@ PetscErrorCode  SNESCreate_NEWTONTR(SNES snes)
   neP->ttol   = 0.0;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 

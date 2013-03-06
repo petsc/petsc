@@ -52,7 +52,6 @@ PetscErrorCode MatMultASPIN(Mat m,Vec X,Vec Y)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "SNESCreate_ASPIN"
 /* -------------------------------------------------------------------------- */
@@ -79,7 +78,7 @@ EXTERN_C_BEGIN
 .seealso:  SNESCreate(), SNES, SNESSetType(), SNESNEWTONLS, SNESNASM, SNESGetPC(), SNESGetPCSide()
 
 M*/
-PetscErrorCode SNESCreate_ASPIN(SNES snes)
+PETSC_EXTERN PetscErrorCode SNESCreate_ASPIN(SNES snes)
 {
   PetscErrorCode ierr;
   SNES           npc;
@@ -117,4 +116,3 @@ PetscErrorCode SNESCreate_ASPIN(SNES snes)
 
   PetscFunctionReturn(0);
 }
-EXTERN_C_END

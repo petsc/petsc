@@ -334,7 +334,6 @@ static PetscErrorCode MatView_UMFPACK(Mat A,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatFactorGetSolverPackage_seqaij_umfpack"
 PetscErrorCode MatFactorGetSolverPackage_seqaij_umfpack(Mat A,const MatSolverPackage *type)
@@ -343,7 +342,6 @@ PetscErrorCode MatFactorGetSolverPackage_seqaij_umfpack(Mat A,const MatSolverPac
   *type = MATSOLVERUMFPACK;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 
 /*MC
@@ -376,10 +374,10 @@ EXTERN_C_END
 
 .seealso: PCLU, MATSOLVERSUPERLU, MATSOLVERMUMPS, PCFactorSetMatSolverPackage(), MatSolverPackage
 M*/
-EXTERN_C_BEGIN
+
 #undef __FUNCT__
 #define __FUNCT__ "MatGetFactor_seqaij_umfpack"
-PetscErrorCode MatGetFactor_seqaij_umfpack(Mat A,MatFactorType ftype,Mat *F)
+PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_umfpack(Mat A,MatFactorType ftype,Mat *F)
 {
   Mat            B;
   Mat_UMFPACK    *lu;
@@ -462,5 +460,5 @@ PetscErrorCode MatGetFactor_seqaij_umfpack(Mat A,MatFactorType ftype,Mat *F)
   *F = B;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
+
 

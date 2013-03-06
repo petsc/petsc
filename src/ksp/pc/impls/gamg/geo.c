@@ -30,7 +30,6 @@ int petsc_geo_mg_compare(const void *a, const void *b)
    Input Parameter:
    .  pc - the preconditioner context
 */
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCSetCoordinates_GEO"
 PetscErrorCode PCSetCoordinates_GEO(PC pc, PetscInt ndm, PetscInt a_nloc, PetscReal *coords)
@@ -74,7 +73,6 @@ PetscErrorCode PCSetCoordinates_GEO(PC pc, PetscInt ndm, PetscInt a_nloc, PetscR
   pc_gamg->data_sz = arrsz;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 /* -------------------------------------------------------------------------- */
 /*

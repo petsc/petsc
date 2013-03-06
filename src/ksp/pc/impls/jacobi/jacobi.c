@@ -63,10 +63,9 @@ typedef struct {
   PetscBool useabs;              /* use the absolute values of the diagonal entries */
 } PC_Jacobi;
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCJacobiSetUseRowMax_Jacobi"
-PetscErrorCode  PCJacobiSetUseRowMax_Jacobi(PC pc)
+static PetscErrorCode  PCJacobiSetUseRowMax_Jacobi(PC pc)
 {
   PC_Jacobi *j;
 
@@ -75,12 +74,10 @@ PetscErrorCode  PCJacobiSetUseRowMax_Jacobi(PC pc)
   j->userowmax = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCJacobiSetUseRowSum_Jacobi"
-PetscErrorCode  PCJacobiSetUseRowSum_Jacobi(PC pc)
+static PetscErrorCode  PCJacobiSetUseRowSum_Jacobi(PC pc)
 {
   PC_Jacobi *j;
 
@@ -89,12 +86,10 @@ PetscErrorCode  PCJacobiSetUseRowSum_Jacobi(PC pc)
   j->userowsum = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCJacobiSetUseAbs_Jacobi"
-PetscErrorCode  PCJacobiSetUseAbs_Jacobi(PC pc)
+static PetscErrorCode  PCJacobiSetUseAbs_Jacobi(PC pc)
 {
   PC_Jacobi *j;
 
@@ -103,7 +98,6 @@ PetscErrorCode  PCJacobiSetUseAbs_Jacobi(PC pc)
   j->useabs = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 /* -------------------------------------------------------------------------- */
 /*
@@ -393,10 +387,9 @@ static PetscErrorCode PCSetFromOptions_Jacobi(PC pc)
            PCJacobiSetUseRowMax(), PCJacobiSetUseRowSum(), PCJacobiSetUseAbs()
 M*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCCreate_Jacobi"
-PetscErrorCode  PCCreate_Jacobi(PC pc)
+PETSC_EXTERN PetscErrorCode PCCreate_Jacobi(PC pc)
 {
   PC_Jacobi      *jac;
   PetscErrorCode ierr;
@@ -442,8 +435,6 @@ PetscErrorCode  PCCreate_Jacobi(PC pc)
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCJacobiSetUseAbs_C","PCJacobiSetUseAbs_Jacobi",PCJacobiSetUseAbs_Jacobi);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
-
 
 #undef __FUNCT__
 #define __FUNCT__ "PCJacobiSetUseAbs"

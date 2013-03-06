@@ -71,7 +71,6 @@ static PetscErrorCode TSAdaptSetFromOptions_CFL(TSAdapt adapt)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TSAdaptCreate_CFL"
 /*MC
@@ -81,7 +80,7 @@ EXTERN_C_BEGIN
 
 .seealso: TS, TSAdapt, TSSetAdapt()
 M*/
-PetscErrorCode TSAdaptCreate_CFL(TSAdapt adapt)
+PETSC_EXTERN PetscErrorCode TSAdaptCreate_CFL(TSAdapt adapt)
 {
   PetscErrorCode ierr;
   TSAdapt_CFL    *a;
@@ -97,4 +96,3 @@ PetscErrorCode TSAdaptCreate_CFL(TSAdapt adapt)
   a->always_accept = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END

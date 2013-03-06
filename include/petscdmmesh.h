@@ -148,7 +148,7 @@ PETSC_EXTERN PetscErrorCode SectionRealZero(SectionReal);
 PETSC_EXTERN PetscErrorCode SectionRealCreateLocalVector(SectionReal, Vec*);
 PETSC_EXTERN PetscErrorCode SectionRealAddSpace(SectionReal);
 PETSC_EXTERN PetscErrorCode SectionRealGetFibration(SectionReal, const PetscInt, SectionReal *);
-PETSC_EXTERN PetscErrorCode SectionRealToVec(SectionReal, DM, ScatterMode, Vec);
+PETSC_EXTERN PetscErrorCode SectionRealToVecDM(SectionReal, DM, ScatterMode, Vec);
 PETSC_EXTERN PetscErrorCode SectionRealToVec(SectionReal, VecScatter, ScatterMode, Vec);
 PETSC_EXTERN PetscErrorCode SectionRealNorm(SectionReal, DM, NormType, PetscReal *);
 PETSC_EXTERN PetscErrorCode SectionRealAXPY(SectionReal, DM, PetscScalar, SectionReal);

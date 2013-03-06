@@ -442,7 +442,7 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscOptionsFindPairPrefix_Private(const char pre[], const char name[], char *value[], PetscBool *flg);
+PETSC_EXTERN PetscErrorCode PetscOptionsFindPairPrefix_Private(const char pre[], const char name[], char *value[], PetscBool *flg);
 
 #undef __FUNCT__
 #define __FUNCT__ "PCSetUp_FieldSplit"
@@ -1829,10 +1829,9 @@ $              (  0   S  )
            PCFieldSplitGetSubKSP(), PCFieldSplitSetFields(), PCFieldSplitSetType(), PCFieldSplitSetIS(), PCFieldSplitSchurPrecondition()
 M*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCCreate_FieldSplit"
-PetscErrorCode  PCCreate_FieldSplit(PC pc)
+PETSC_EXTERN PetscErrorCode PCCreate_FieldSplit(PC pc)
 {
   PetscErrorCode ierr;
   PC_FieldSplit  *jac;
@@ -1865,7 +1864,6 @@ PetscErrorCode  PCCreate_FieldSplit(PC pc)
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFieldSplitSetBlockSize_C","PCFieldSplitSetBlockSize_FieldSplit",PCFieldSplitSetBlockSize_FieldSplit);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 
 

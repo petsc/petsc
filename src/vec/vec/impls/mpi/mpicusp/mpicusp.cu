@@ -181,10 +181,9 @@ PetscErrorCode VecDotNorm2_MPICUSP(Vec s,Vec t,PetscScalar *dp,PetscScalar *nm)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "VecCreate_MPICUSP"
-PetscErrorCode  VecCreate_MPICUSP(Vec vv)
+PETSC_EXTERN PetscErrorCode VecCreate_MPICUSP(Vec vv)
 {
   PetscErrorCode ierr;
 
@@ -226,12 +225,10 @@ PetscErrorCode  VecCreate_MPICUSP(Vec vv)
   ierr = VecSet(vv,0.0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "VecCreate_CUSP"
-PetscErrorCode  VecCreate_CUSP(Vec v)
+PETSC_EXTERN PetscErrorCode VecCreate_CUSP(Vec v)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size;
@@ -245,7 +242,6 @@ PetscErrorCode  VecCreate_CUSP(Vec v)
   }
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 
 

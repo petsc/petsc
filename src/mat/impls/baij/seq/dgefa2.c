@@ -14,7 +14,7 @@
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscKernel_A_gets_inverse_A_2"
-PetscErrorCode PetscKernel_A_gets_inverse_A_2(MatScalar *a,PetscReal shift)
+PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_2(MatScalar *a,PetscReal shift)
 {
   PetscInt  i__2,i__3,kp1,j,k,l,ll,i,ipvt[2],k3;
   PetscInt  k4,j3;
@@ -145,7 +145,7 @@ PetscErrorCode PetscKernel_A_gets_inverse_A_2(MatScalar *a,PetscReal shift)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscKernel_A_gets_inverse_A_9"
-PetscErrorCode PetscKernel_A_gets_inverse_A_9(MatScalar *a,PetscReal shift)
+PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_9(MatScalar *a,PetscReal shift)
 {
   PetscInt  i__2,i__3,kp1,j,k,l,ll,i,ipvt[9],kb,k3;
   PetscInt  k4,j3;
@@ -293,7 +293,7 @@ PetscErrorCode PetscKernel_A_gets_inverse_A_9(MatScalar *a,PetscReal shift)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscKernel_A_gets_inverse_A_15"
-PetscErrorCode PetscKernel_A_gets_inverse_A_15(MatScalar *a,PetscInt *ipvt,MatScalar *work,PetscReal shift)
+PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_15(MatScalar *a,PetscInt *ipvt,MatScalar *work,PetscReal shift)
 {
   PetscInt  i__2,i__3,kp1,j,k,l,ll,i,kb,k3;
   PetscInt  k4,j3;

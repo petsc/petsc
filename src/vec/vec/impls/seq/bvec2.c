@@ -958,7 +958,6 @@ PetscErrorCode VecView_Seq_Binary(Vec xin,PetscViewer viewer)
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
 #include <petscmatlab.h>
 #include <mat.h>   /* MATLAB include file */
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "VecView_Seq_Matlab"
 PetscErrorCode VecView_Seq_Matlab(Vec vec,PetscViewer viewer)
@@ -975,7 +974,6 @@ PetscErrorCode VecView_Seq_Matlab(Vec vec,PetscViewer viewer)
   ierr = VecRestoreArrayRead(vec,&array);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 #endif
 
 #undef __FUNCT__

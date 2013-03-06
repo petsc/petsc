@@ -22,10 +22,9 @@ PetscErrorCode MatGetOrdering_Flow(Mat mat,MatOrderingType type,IS *irow,IS *ico
 #endif
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatGetOrdering_Natural"
-PetscErrorCode  MatGetOrdering_Natural(Mat mat,MatOrderingType type,IS *irow,IS *icol)
+PETSC_EXTERN PetscErrorCode MatGetOrdering_Natural(Mat mat,MatOrderingType type,IS *irow,IS *icol)
 {
   PetscErrorCode ierr;
   PetscInt       n,i,*ii;
@@ -58,9 +57,7 @@ PetscErrorCode  MatGetOrdering_Natural(Mat mat,MatOrderingType type,IS *irow,IS 
   ierr = ISSetIdentity(*icol);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 /*
      Orders the rows (and columns) by the lengths of the rows.
    This produces a symmetric Ordering but does not require a
@@ -68,7 +65,7 @@ EXTERN_C_BEGIN
 */
 #undef __FUNCT__
 #define __FUNCT__ "MatGetOrdering_RowLength"
-PetscErrorCode  MatGetOrdering_RowLength(Mat mat,MatOrderingType type,IS *irow,IS *icol)
+PETSC_EXTERN PetscErrorCode MatGetOrdering_RowLength(Mat mat,MatOrderingType type,IS *irow,IS *icol)
 {
   PetscErrorCode ierr;
   PetscInt       n,*permr,*lens,i;
@@ -93,7 +90,6 @@ PetscErrorCode  MatGetOrdering_RowLength(Mat mat,MatOrderingType type,IS *irow,I
   ierr = PetscFree2(lens,permr);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "MatOrderingRegister"

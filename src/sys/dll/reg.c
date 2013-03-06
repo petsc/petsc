@@ -108,8 +108,6 @@ PetscErrorCode  PetscInitialize_DynamicLibraries(void)
   if (!found) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to locate PETSc Mat dynamic library \n You cannot move the dynamic libraries!");
   ierr = PetscLoadDynamicLibrary("dm",&found);CHKERRQ(ierr);
   if (!found) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to locate PETSc DM dynamic library \n You cannot move the dynamic libraries!");
-  ierr = PetscLoadDynamicLibrary("characteristic",&found);CHKERRQ(ierr);
-  if (!found) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to locate PETSc Characteristic dynamic library \n You cannot move the dynamic libraries!");
   ierr = PetscLoadDynamicLibrary("ksp",&found);CHKERRQ(ierr);
   if (!found) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to locate PETSc KSP dynamic library \n You cannot move the dynamic libraries!");
   ierr = PetscLoadDynamicLibrary("snes",&found);CHKERRQ(ierr);
@@ -117,9 +115,6 @@ PetscErrorCode  PetscInitialize_DynamicLibraries(void)
   ierr = PetscLoadDynamicLibrary("ts",&found);CHKERRQ(ierr);
   if (!found) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to locate PETSc TS dynamic library \n You cannot move the dynamic libraries!");
 #endif
-
-  ierr = PetscLoadDynamicLibrary("mesh",&found);CHKERRQ(ierr);
-  ierr = PetscLoadDynamicLibrary("contrib",&found);CHKERRQ(ierr);
 #endif
 
   nmax = 32;

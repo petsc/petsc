@@ -950,7 +950,7 @@ static PetscErrorCode  KSPDGMRESApplyDeflation_DGMRES(KSP ksp, Vec x, Vec y)
   PetscInt       max_neig = dgmres->max_neig;
   PetscBLASInt   br,bmax;
   PetscInt       lambda = dgmres->lambdaN;
-#if !defined(PETSC_MISSING_LAPACK_GETRS)
+#if !defined(PETSC_MISSING_LAPACK_GERFS)
   PetscReal    berr, ferr;
   PetscBLASInt info;
 #endif
@@ -1220,10 +1220,9 @@ static PetscErrorCode  KSPDGMRESImproveEig_DGMRES(KSP ksp, PetscInt neig)
 
  M*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "KSPCreate_DGMRES"
-PetscErrorCode  KSPCreate_DGMRES(KSP ksp)
+PETSC_EXTERN PetscErrorCode KSPCreate_DGMRES(KSP ksp)
 {
   KSP_DGMRES     *dgmres;
   PetscErrorCode ierr;
@@ -1286,5 +1285,4 @@ PetscErrorCode  KSPCreate_DGMRES(KSP ksp)
   dgmres->HasSchur    = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 

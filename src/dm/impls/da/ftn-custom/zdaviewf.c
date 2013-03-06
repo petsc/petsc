@@ -8,8 +8,7 @@
 #define dmdagetinfo_                   dmdagetinfo
 #endif
 
-EXTERN_C_BEGIN
-void PETSC_STDCALL dmdagetinfo_(DM *da,PetscInt *dim,PetscInt *M,PetscInt *N,PetscInt *P,PetscInt *m,PetscInt *n,PetscInt *p,PetscInt *w,PetscInt *s,
+PETSC_EXTERN void PETSC_STDCALL dmdagetinfo_(DM *da,PetscInt *dim,PetscInt *M,PetscInt *N,PetscInt *P,PetscInt *m,PetscInt *n,PetscInt *p,PetscInt *w,PetscInt *s,
                                 DMDABoundaryType *wrapx, DMDABoundaryType *wrapy, DMDABoundaryType *wrapz, DMDAStencilType *st,PetscErrorCode *ierr)
 {
   CHKFORTRANNULLINTEGER(dim);
@@ -27,4 +26,3 @@ void PETSC_STDCALL dmdagetinfo_(DM *da,PetscInt *dim,PetscInt *M,PetscInt *N,Pet
   CHKFORTRANNULLINTEGER(st);
   *ierr = DMDAGetInfo(*da,dim,M,N,P,m,n,p,w,s,wrapx,wrapy,wrapz,st);
 }
-EXTERN_C_END

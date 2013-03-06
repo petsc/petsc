@@ -110,10 +110,9 @@ PetscErrorCode TSComputeLinearStability_Euler(TS ts,PetscReal xr,PetscReal xi,Pe
 .seealso:  TSCreate(), TS, TSSetType(), TSBEULER
 
 M*/
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TSCreate_Euler"
-PetscErrorCode  TSCreate_Euler(TS ts)
+PETSC_EXTERN PetscErrorCode TSCreate_Euler(TS ts)
 {
   TS_Euler       *euler;
   PetscErrorCode ierr;
@@ -132,4 +131,3 @@ PetscErrorCode  TSCreate_Euler(TS ts)
   ts->data = (void*)euler;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END

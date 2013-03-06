@@ -5,17 +5,10 @@
 
 
 # Steps:
-# - exclude src/docs/ holding the documentation only
-# - ignore FORTRAN stubs
 # - find any malloc() and free() calls
 
 
-find src/ include/ -name *.[ch] \
- | grep -v 'src/docs' \
- | grep -v 'ftn-auto' \
- | grep -v 'ftn-custom' \
- | grep -v 'f90-custom' \
- | xargs grep "[ =)]malloc(\|[ =)]free(" \
+grep -H "[ =)]malloc(\|[ =)]free(" "$@"
 
 
 

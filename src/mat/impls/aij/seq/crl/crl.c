@@ -163,10 +163,9 @@ PetscErrorCode MatMult_AIJCRL(Mat A,Vec xx,Vec yy)
  * SeqAIJCRL matrix.  This routine is called by the MatCreate_SeqAIJCRL()
  * routine, but can also be used to convert an assembled SeqAIJ matrix
  * into a SeqAIJCRL one. */
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_SeqAIJ_SeqAIJCRL"
-PetscErrorCode  MatConvert_SeqAIJ_SeqAIJCRL(Mat A,MatType type,MatReuse reuse,Mat *newmat)
+PETSC_EXTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJCRL(Mat A,MatType type,MatReuse reuse,Mat *newmat)
 {
   PetscErrorCode ierr;
   Mat            B = *newmat;
@@ -194,8 +193,6 @@ PetscErrorCode  MatConvert_SeqAIJ_SeqAIJCRL(Mat A,MatType type,MatReuse reuse,Ma
   *newmat = B;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
-
 
 #undef __FUNCT__
 #define __FUNCT__ "MatCreateSeqAIJCRL"
@@ -244,11 +241,9 @@ PetscErrorCode  MatCreateSeqAIJCRL(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt 
   PetscFunctionReturn(0);
 }
 
-
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_SeqAIJCRL"
-PetscErrorCode  MatCreate_SeqAIJCRL(Mat A)
+PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJCRL(Mat A)
 {
   PetscErrorCode ierr;
 
@@ -257,5 +252,5 @@ PetscErrorCode  MatCreate_SeqAIJCRL(Mat A)
   ierr = MatConvert_SeqAIJ_SeqAIJCRL(A,MATSEQAIJCRL,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
+
 

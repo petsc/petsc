@@ -332,10 +332,9 @@ PetscErrorCode  PCRedistributeGetKSP(PC pc,KSP *innerksp)
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PCRedistributeGetKSP()
 M*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCCreate_Redistribute"
-PetscErrorCode  PCCreate_Redistribute(PC pc)
+PETSC_EXTERN PetscErrorCode PCCreate_Redistribute(PC pc)
 {
   PetscErrorCode  ierr;
   PC_Redistribute *red;
@@ -360,4 +359,3 @@ PetscErrorCode  PCCreate_Redistribute(PC pc)
   ierr = KSPAppendOptionsPrefix(red->ksp,"redistribute_");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END

@@ -62,7 +62,6 @@ PetscErrorCode MatRestoreRow_MPIDense(Mat mat,PetscInt row,PetscInt *nz,PetscInt
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatGetDiagonalBlock_MPIDense"
 PetscErrorCode  MatGetDiagonalBlock_MPIDense(Mat A,Mat *a)
@@ -94,7 +93,6 @@ PetscErrorCode  MatGetDiagonalBlock_MPIDense(Mat A,Mat *a)
   } else *a = B;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSetValues_MPIDense"
@@ -1217,7 +1215,6 @@ static struct _MatOps MatOps_Values = { MatSetValues_MPIDense,
                                         MatGetColumnNorms_MPIDense
 };
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatMPIDenseSetPreallocation_MPIDense"
 PetscErrorCode  MatMPIDenseSetPreallocation_MPIDense(Mat mat,PetscScalar *data)
@@ -1242,12 +1239,10 @@ PetscErrorCode  MatMPIDenseSetPreallocation_MPIDense(Mat mat,PetscScalar *data)
   ierr = PetscLogObjectParent(mat,a->A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_MPIDense"
-PetscErrorCode  MatCreate_MPIDense(Mat mat)
+PETSC_EXTERN PetscErrorCode MatCreate_MPIDense(Mat mat)
 {
   Mat_MPIDense   *a;
   PetscErrorCode ierr;
@@ -1282,7 +1277,6 @@ PetscErrorCode  MatCreate_MPIDense(Mat mat)
   ierr = PetscObjectChangeTypeName((PetscObject)mat,MATMPIDENSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 /*MC
    MATDENSE - MATDENSE = "dense" - A matrix type to be used for dense matrices.

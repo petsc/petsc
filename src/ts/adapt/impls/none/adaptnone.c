@@ -13,7 +13,6 @@ static PetscErrorCode TSAdaptChoose_None(TSAdapt adapt,TS ts,PetscReal h,PetscIn
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TSAdaptCreate_None"
 /*MC
@@ -23,11 +22,10 @@ EXTERN_C_BEGIN
 
 .seealso: TS, TSAdapt, TSSetAdapt()
 M*/
-PetscErrorCode TSAdaptCreate_None(TSAdapt adapt)
+PETSC_EXTERN PetscErrorCode TSAdaptCreate_None(TSAdapt adapt)
 {
 
   PetscFunctionBegin;
   adapt->ops->choose = TSAdaptChoose_None;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END

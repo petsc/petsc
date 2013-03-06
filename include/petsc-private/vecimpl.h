@@ -321,10 +321,8 @@ PETSC_EXTERN PetscErrorCode VecStrideScatter_Default(Vec,PetscInt,Vec,InsertMode
 PETSC_EXTERN PetscErrorCode VecReciprocal_Default(Vec);
 
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
-EXTERN_C_BEGIN
 PETSC_EXTERN PetscErrorCode VecMatlabEnginePut_Default(PetscObject,void*);
 PETSC_EXTERN PetscErrorCode VecMatlabEngineGet_Default(PetscObject,void*);
-EXTERN_C_END
 #endif
 
 

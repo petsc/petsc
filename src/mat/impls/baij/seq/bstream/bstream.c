@@ -98,10 +98,9 @@ PetscErrorCode MatAssemblyEnd_SeqBSTRM(Mat A, MatAssemblyType mode)
   PetscFunctionReturn(0);
 }
 /*=========================================================*/
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_SeqBAIJ_SeqBSTRM"
-PetscErrorCode  MatConvert_SeqBAIJ_SeqBSTRM(Mat A,MatType type,MatReuse reuse,Mat *newmat)
+PETSC_EXTERN PetscErrorCode MatConvert_SeqBAIJ_SeqBSTRM(Mat A,MatType type,MatReuse reuse,Mat *newmat)
 {
   PetscErrorCode ierr;
   Mat            B = *newmat;
@@ -129,7 +128,6 @@ PetscErrorCode  MatConvert_SeqBAIJ_SeqBSTRM(Mat A,MatType type,MatReuse reuse,Ma
   *newmat = B;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 /*=========================================================*/
 #undef __FUNCT__
@@ -147,10 +145,10 @@ PetscErrorCode MatCreateSeqBSTRM(MPI_Comm comm,PetscInt bs,PetscInt m,PetscInt n
   PetscFunctionReturn(0);
 }
 /*=========================================================*/
-EXTERN_C_BEGIN
+
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_SeqBSTRM"
-PetscErrorCode MatCreate_SeqBSTRM(Mat A)
+PETSC_EXTERN PetscErrorCode MatCreate_SeqBSTRM(Mat A)
 {
   PetscErrorCode ierr;
 
@@ -161,7 +159,7 @@ PetscErrorCode MatCreate_SeqBSTRM(Mat A)
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_seqbaij_seqbstrm_C","MatConvert_SeqBAIJ_SeqBSTRM",MatConvert_SeqBAIJ_SeqBSTRM);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
+
 /*=========================================================*/
 
 /*=========================================================*/
@@ -897,7 +895,7 @@ PetscErrorCode MatSeqBSTRM_create_bstrm(Mat A)
 }
 /*=========================================================*/
 /*=========================================================*/
-EXTERN_C_BEGIN
+
 #undef __FUNCT__
 #define __FUNCT__ "MatSeqBSTRMTransform"
 PetscErrorCode MatSeqBSTRMTransform(Mat A)
@@ -906,5 +904,4 @@ PetscErrorCode MatSeqBSTRMTransform(Mat A)
   MatSeqBSTRM_convert_bstrm(A);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 

@@ -156,7 +156,6 @@ static PetscErrorCode PCView_TFS(PC pc,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCCreate_TFS"
 /*MC
@@ -173,7 +172,7 @@ EXTERN_C_BEGIN
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC
 M*/
-PetscErrorCode  PCCreate_TFS(PC pc)
+PETSC_EXTERN PetscErrorCode PCCreate_TFS(PC pc)
 {
   PetscErrorCode ierr;
   PC_TFS         *tfs;
@@ -203,5 +202,4 @@ PetscErrorCode  PCCreate_TFS(PC pc)
   pc->data                     = (void*)tfs;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 

@@ -133,10 +133,9 @@ PetscErrorCode PetscViewerRestoreSingleton_String(PetscViewer viewer,PetscViewer
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerCreate_String"
-PetscErrorCode  PetscViewerCreate_String(PetscViewer v)
+PETSC_EXTERN PetscErrorCode PetscViewerCreate_String(PetscViewer v)
 {
   PetscViewer_String *vstr;
   PetscErrorCode     ierr;
@@ -152,7 +151,6 @@ PetscErrorCode  PetscViewerCreate_String(PetscViewer v)
   vstr->string             = 0;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerStringSetString"

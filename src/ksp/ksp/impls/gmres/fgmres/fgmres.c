@@ -682,10 +682,9 @@ PetscErrorCode  KSPGMRESGetRestart_FGMRES(KSP ksp,PetscInt *max_k)
 
 M*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "KSPCreate_FGMRES"
-PetscErrorCode  KSPCreate_FGMRES(KSP ksp)
+PETSC_EXTERN PetscErrorCode KSPCreate_FGMRES(KSP ksp)
 {
   KSP_FGMRES     *fgmres;
   PetscErrorCode ierr;
@@ -732,4 +731,3 @@ PetscErrorCode  KSPCreate_FGMRES(KSP ksp)
   fgmres->cgstype        = KSP_GMRES_CGS_REFINE_NEVER;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END

@@ -49,10 +49,8 @@ PetscErrorCode  MatMFFDComputeJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStruct
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatAssemblyEnd_MFFD(Mat,MatAssemblyType);
-EXTERN_C_BEGIN
-PetscErrorCode MatMFFDSetBase_MFFD(Mat,Vec,Vec);
-EXTERN_C_END
+PETSC_EXTERN PetscErrorCode MatAssemblyEnd_MFFD(Mat,MatAssemblyType);
+PETSC_EXTERN PetscErrorCode MatMFFDSetBase_MFFD(Mat,Vec,Vec);
 
 #undef __FUNCT__
 #define __FUNCT__ "MatAssemblyEnd_SNESMF"
@@ -77,7 +75,6 @@ PetscErrorCode MatAssemblyEnd_SNESMF(Mat J,MatAssemblyType mt)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 /*
     This routine resets the MatAssemblyEnd() for the MatMFFD created from MatCreateSNESMF() so that it NO longer
   uses the solution in the SNES object to update the base. See the warning in MatCreateSNESMF().
@@ -94,7 +91,6 @@ PetscErrorCode  MatMFFDSetBase_SNESMF(Mat J,Vec U,Vec F)
   J->ops->assemblyend = MatAssemblyEnd_MFFD;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "MatCreateSNESMF"

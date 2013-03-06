@@ -210,10 +210,9 @@ PetscErrorCode SNESSolve_Anderson(SNES snes)
 .seealso: SNESCreate(), SNES, SNESSetType(), SNESType (for list of available types)
 M*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "SNESCreate_Anderson"
-PetscErrorCode SNESCreate_Anderson(SNES snes)
+PETSC_EXTERN PetscErrorCode SNESCreate_Anderson(SNES snes)
 {
   SNES_NGMRES    *ngmres;
   PetscErrorCode ierr;
@@ -251,4 +250,4 @@ PetscErrorCode SNESCreate_Anderson(SNES snes)
   ngmres->andersonBeta = 1.0;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
+

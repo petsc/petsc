@@ -616,10 +616,9 @@ PetscErrorCode KSPDestroy_BCGSL(KSP ksp)
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPFGMRES, KSPBCGS, KSPSetPCSide(), KSPBCGSLSetEll(), KSPBCGSLSetXRes()
 
 M*/
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "KSPCreate_BCGSL"
-PetscErrorCode  KSPCreate_BCGSL(KSP ksp)
+PETSC_EXTERN PetscErrorCode KSPCreate_BCGSL(KSP ksp)
 {
   PetscErrorCode ierr;
   KSP_BCGSL      *bcgsl;
@@ -653,5 +652,4 @@ PetscErrorCode  KSPCreate_BCGSL(KSP ksp)
   bcgsl->delta = 0.0;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 

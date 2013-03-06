@@ -1,19 +1,17 @@
 
 #include <petsc-private/tsimpl.h>     /*I  "petscts.h"  I*/
-EXTERN_C_BEGIN
-extern PetscErrorCode  TSCreate_Euler(TS);
-extern PetscErrorCode  TSCreate_BEuler(TS);
-extern PetscErrorCode  TSCreate_Pseudo(TS);
-extern PetscErrorCode  TSCreate_Sundials(TS);
-extern PetscErrorCode  TSCreate_CN(TS);
-extern PetscErrorCode  TSCreate_Theta(TS);
-extern PetscErrorCode  TSCreate_Alpha(TS);
-extern PetscErrorCode  TSCreate_GL(TS);
-extern PetscErrorCode  TSCreate_SSP(TS);
-extern PetscErrorCode  TSCreate_RK(TS);
-extern PetscErrorCode  TSCreate_ARKIMEX(TS);
-extern PetscErrorCode  TSCreate_RosW(TS);
-EXTERN_C_END
+PETSC_EXTERN PetscErrorCode TSCreate_Euler(TS);
+PETSC_EXTERN PetscErrorCode TSCreate_BEuler(TS);
+PETSC_EXTERN PetscErrorCode TSCreate_Pseudo(TS);
+PETSC_EXTERN PetscErrorCode TSCreate_Sundials(TS);
+PETSC_EXTERN PetscErrorCode TSCreate_CN(TS);
+PETSC_EXTERN PetscErrorCode TSCreate_Theta(TS);
+PETSC_EXTERN PetscErrorCode TSCreate_Alpha(TS);
+PETSC_EXTERN PetscErrorCode TSCreate_GL(TS);
+PETSC_EXTERN PetscErrorCode TSCreate_SSP(TS);
+PETSC_EXTERN PetscErrorCode TSCreate_RK(TS);
+PETSC_EXTERN PetscErrorCode TSCreate_ARKIMEX(TS);
+PETSC_EXTERN PetscErrorCode TSCreate_RosW(TS);
 
 #undef __FUNCT__
 #define __FUNCT__ "TSRegisterAll"

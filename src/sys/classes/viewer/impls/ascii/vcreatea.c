@@ -164,7 +164,6 @@ PetscViewer  PETSC_VIEWER_STDERR_(MPI_Comm comm)
 
 
 PetscMPIInt Petsc_Viewer_keyval = MPI_KEYVAL_INVALID;
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "Petsc_DelViewer"
 /*
@@ -174,7 +173,7 @@ EXTERN_C_BEGIN
   This is called by MPI, not by users.
 
 */
-PetscMPIInt MPIAPI Petsc_DelViewer(MPI_Comm comm,PetscMPIInt keyval,void *attr_val,void *extra_state)
+PETSC_EXTERN PetscMPIInt MPIAPI Petsc_DelViewer(MPI_Comm comm,PetscMPIInt keyval,void *attr_val,void *extra_state)
 {
   PetscErrorCode ierr;
 
@@ -182,7 +181,6 @@ PetscMPIInt MPIAPI Petsc_DelViewer(MPI_Comm comm,PetscMPIInt keyval,void *attr_v
   ierr = PetscInfo1(0,"Removing viewer data attribute in an MPI_Comm %ld\n",(long)comm);if (ierr) PetscFunctionReturn((PetscMPIInt)ierr);
   PetscFunctionReturn(MPI_SUCCESS);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerASCIIOpen"

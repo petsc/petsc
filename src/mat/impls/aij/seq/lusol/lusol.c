@@ -19,36 +19,34 @@
 #define M6RDEL   m6rdel
 #endif
 
-EXTERN_C_BEGIN
 /*
     Dummy symbols that the MINOS files mi25bfac.f and mi15blas.f may require
 */
-void PETSC_STDCALL M1PAGE()
+PETSC_EXTERN void PETSC_STDCALL M1PAGE()
 {
   ;
 }
-void PETSC_STDCALL M5SETX()
-{
-  ;
-}
-
-void PETSC_STDCALL M6RDEL()
+PETSC_EXTERN void PETSC_STDCALL M5SETX()
 {
   ;
 }
 
-extern void PETSC_STDCALL LU1FAC(int *m, int *n, int *nnz, int *size, int *luparm,
+PETSC_EXTERN void PETSC_STDCALL M6RDEL()
+{
+  ;
+}
+
+PETSC_EXTERN void PETSC_STDCALL LU1FAC(int *m, int *n, int *nnz, int *size, int *luparm,
                                  double *parmlu, double *data, int *indc, int *indr,
                                  int *rowperm, int *colperm, int *collen, int *rowlen,
                                  int *colstart, int *rowstart, int *rploc, int *cploc,
                                  int *rpinv, int *cpinv, double *w, int *inform);
 
-extern void PETSC_STDCALL LU6SOL(int *mode, int *m, int *n, double *rhs, double *x,
+PETSC_EXTERN void PETSC_STDCALL LU6SOL(int *mode, int *m, int *n, double *rhs, double *x,
                                  int *size, int *luparm, double *parmlu, double *data,
                                  int *indc, int *indr, int *rowperm, int *colperm,
                                  int *collen, int *rowlen, int *colstart, int *rowstart,
                                  int *inform);
-EXTERN_C_END
 
 extern PetscErrorCode MatDuplicate_LUSOL(Mat,MatDuplicateOption,Mat*);
 
@@ -423,7 +421,6 @@ PetscErrorCode MatLUFactorSymbolic_LUSOL(Mat F,Mat A, IS r, IS c,const MatFactor
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatFactorGetSolverPackage_seqaij_lusol"
 PetscErrorCode MatFactorGetSolverPackage_seqaij_lusol(Mat A,const MatSolverPackage *type)
@@ -432,11 +429,10 @@ PetscErrorCode MatFactorGetSolverPackage_seqaij_lusol(Mat A,const MatSolverPacka
   *type = MATSOLVERLUSOL;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "MatGetFactor_seqaij_lusol"
-PetscErrorCode MatGetFactor_seqaij_lusol(Mat A,MatFactorType ftype,Mat *F)
+PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_lusol(Mat A,MatFactorType ftype,Mat *F)
 {
   Mat            B;
   Mat_LUSOL      *lusol;

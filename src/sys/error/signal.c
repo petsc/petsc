@@ -17,9 +17,6 @@ struct SH {
 static struct SH *sh       = 0;
 static PetscBool SignalSet = PETSC_FALSE;
 
-
-
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PetscSignalHandler_Private"
 /*
@@ -53,7 +50,6 @@ static void PetscSignalHandler_Private(int sig)
   }
   if (ierr) MPI_Abort(PETSC_COMM_WORLD,0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDefaultSignalHandler"

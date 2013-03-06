@@ -60,7 +60,7 @@ static PetscErrorCode PCView_HMPI(PC pc,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-extern PetscErrorCode MatDistribute_MPIAIJ(MPI_Comm,Mat,PetscInt,MatReuse,Mat*);
+PETSC_EXTERN PetscErrorCode MatDistribute_MPIAIJ(MPI_Comm,Mat,PetscInt,MatReuse,Mat*);
 
 #undef __FUNCT__
 #define __FUNCT__ "PCApply_HMPI_1"
@@ -269,10 +269,9 @@ $     -hmpi_pc_type hypre -hmpi_pc_hypre_type boomeramg
 
 M*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCCreate_HMPI"
-PetscErrorCode  PCCreate_HMPI(PC pc)
+PETSC_EXTERN PetscErrorCode PCCreate_HMPI(PC pc)
 {
   PetscErrorCode ierr;
   PC_HMPI        *red;
@@ -295,4 +294,3 @@ PetscErrorCode  PCCreate_HMPI(PC pc)
   pc->ops->view           = PCView_HMPI;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END

@@ -1,20 +1,10 @@
 #include <petsc-private/linesearchimpl.h>     /*I  "petscsnes.h"  I*/
 
-EXTERN_C_BEGIN
-extern PetscErrorCode  SNESLineSearchCreate_Basic(SNESLineSearch);
-extern PetscErrorCode  SNESLineSearchCreate_L2(SNESLineSearch);
-extern PetscErrorCode  SNESLineSearchCreate_CP(SNESLineSearch);
-extern PetscErrorCode  SNESLineSearchCreate_BT(SNESLineSearch);
-extern PetscErrorCode  SNESLineSearchCreate_Shell(SNESLineSearch);
-EXTERN_C_END
-
-/*
-extern PetscErrorCode  SNESLineSearchCreate_Cubic(SNESLineSearch);
-extern PetscErrorCode  SNESLineSearchCreate_Quadratic(SNESLineSearch);
-extern PetscErrorCode  SNESLineSearchCreate_BasicNoNorms(SNESLineSearch);
-extern PetscErrorCode  SNESLineSearchCreate_QuadraticSecant(SNESLineSearch);
-extern PetscErrorCode  SNESLineSearchCreate_CriticalSecant(SNESLineSearch);
- */
+PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_Basic(SNESLineSearch);
+PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_L2(SNESLineSearch);
+PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_CP(SNESLineSearch);
+PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_BT(SNESLineSearch);
+PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_Shell(SNESLineSearch);
 
 
 #undef __FUNCT__
@@ -36,13 +26,6 @@ PetscErrorCode SNESLineSearchRegisterAll(const char path[])
 
   PetscFunctionBegin;
   SNESLineSearchRegisterAllCalled = PETSC_TRUE;
-  /*
-  ierr = SNESLineSearchRegisterDynamic(LINESEARCHCUBIC,             path,"SNESLineSearchCreate_Cubic",             SNESLineSearchCreate_Cubic);CHKERRQ(ierr);
-
-  ierr = SNESLineSearchRegisterDynamic(LINESEARCHQUADRATIC,         path,"SNESLineSearchCreate_Quadratic",         SNESLineSearchCreate_Quadratic);CHKERRQ(ierr);
-  ierr = SNESLineSearchRegisterDynamic(LINESEARCHCRITICALSECANT,    path,"SNESLineSearchCreate_CriticalSecant",    SNESLineSearchCreate_CriticalSecant);CHKERRQ(ierr);
-
-   */
   ierr = SNESLineSearchRegisterDynamic(SNESLINESEARCHSHELL,             path,"SNESLineSearchCreate_Shell",             SNESLineSearchCreate_Shell);CHKERRQ(ierr);
   ierr = SNESLineSearchRegisterDynamic(SNESLINESEARCHBASIC,             path,"SNESLineSearchCreate_Basic",             SNESLineSearchCreate_Basic);CHKERRQ(ierr);
   ierr = SNESLineSearchRegisterDynamic(SNESLINESEARCHL2,                path,"SNESLineSearchCreate_L2",                SNESLineSearchCreate_L2);CHKERRQ(ierr);

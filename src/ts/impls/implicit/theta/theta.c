@@ -380,7 +380,6 @@ static PetscErrorCode TSView_Theta(TS ts,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TSThetaGetTheta_Theta"
 PetscErrorCode  TSThetaGetTheta_Theta(TS ts,PetscReal *theta)
@@ -425,7 +424,6 @@ PetscErrorCode  TSThetaSetEndpoint_Theta(TS ts,PetscBool flg)
   th->endpoint = flg;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #if defined(PETSC_HAVE_COMPLEX)
 #undef __FUNCT__
@@ -495,10 +493,9 @@ $  Y_i = X + h sum_j a_ij Y'_j
 .seealso:  TSCreate(), TS, TSSetType(), TSCN, TSBEULER, TSThetaSetTheta(), TSThetaSetEndpoint()
 
 M*/
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TSCreate_Theta"
-PetscErrorCode  TSCreate_Theta(TS ts)
+PETSC_EXTERN PetscErrorCode TSCreate_Theta(TS ts)
 {
   TS_Theta       *th;
   PetscErrorCode ierr;
@@ -531,7 +528,6 @@ PetscErrorCode  TSCreate_Theta(TS ts)
   ierr = PetscObjectComposeFunction((PetscObject)ts,"TSThetaSetEndpoint_C","TSThetaSetEndpoint_Theta",TSThetaSetEndpoint_Theta);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "TSThetaGetTheta"
@@ -677,10 +673,9 @@ $  -ts_type theta -ts_theta_theta 1.
 .seealso:  TSCreate(), TS, TSSetType(), TSEULER, TSCN, TSTHETA
 
 M*/
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TSCreate_BEuler"
-PetscErrorCode  TSCreate_BEuler(TS ts)
+PETSC_EXTERN PetscErrorCode TSCreate_BEuler(TS ts)
 {
   PetscErrorCode ierr;
 
@@ -690,7 +685,6 @@ PetscErrorCode  TSCreate_BEuler(TS ts)
   ts->ops->view = TSView_BEuler;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "TSView_CN"
@@ -716,10 +710,9 @@ $  -ts_type theta -ts_theta_theta 0.5 -ts_theta_endpoint
 .seealso:  TSCreate(), TS, TSSetType(), TSBEULER, TSTHETA
 
 M*/
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TSCreate_CN"
-PetscErrorCode  TSCreate_CN(TS ts)
+PETSC_EXTERN PetscErrorCode TSCreate_CN(TS ts)
 {
   PetscErrorCode ierr;
 
@@ -730,4 +723,3 @@ PetscErrorCode  TSCreate_CN(TS ts)
   ts->ops->view = TSView_CN;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END

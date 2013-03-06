@@ -5,7 +5,7 @@
 */
 
 #include <petscsys.h>
-#include <../src/sys/viewer/impls/socket/socket.h>
+#include <../src/sys/classes/viewer/impls/socket/socket.h>
 
 #include <errno.h>
 #include <ctype.h>
@@ -34,11 +34,9 @@
 #include <io.h>
 #endif
 
-EXTERN_C_BEGIN
 #if defined(PETSC_NEED_CLOSE_PROTO)
-extern int close(int);
+PETSC_EXTERN int close(int);
 #endif
-EXTERN_C_END
 
 #include <mex.h>
 #define PETSC_MEX_ERROR(a) {mexErrMsgTxt(a); return;}

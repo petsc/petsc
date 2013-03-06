@@ -1133,10 +1133,9 @@ PetscErrorCode  PCMGSetNumberSmoothUp(PC pc,PetscInt n)
            PCMGSetCycleTypeOnLevel(), PCMGSetRhs(), PCMGSetX(), PCMGSetR()
 M*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCCreate_MG"
-PetscErrorCode  PCCreate_MG(PC pc)
+PETSC_EXTERN PetscErrorCode PCCreate_MG(PC pc)
 {
   PC_MG          *mg;
   PetscErrorCode ierr;
@@ -1154,4 +1153,3 @@ PetscErrorCode  PCCreate_MG(PC pc)
   pc->ops->view           = PCView_MG;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END

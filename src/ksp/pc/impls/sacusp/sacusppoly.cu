@@ -212,12 +212,9 @@ static PetscErrorCode PCSetFromOptions_SACUSPPoly(PC pc)
 
 /* -------------------------------------------------------------------------- */
 
-
-
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCCreate_SACUSPPoly"
-PetscErrorCode  PCCreate_SACUSPPoly(PC pc)
+PETSC_EXTERN PetscErrorCode PCCreate_SACUSPPoly(PC pc)
 {
   PC_SACUSPPoly  *sac;
   PetscErrorCode ierr;
@@ -256,4 +253,3 @@ PetscErrorCode  PCCreate_SACUSPPoly(PC pc)
   pc->ops->applysymmetricright = 0;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END

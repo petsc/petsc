@@ -175,10 +175,9 @@ static PetscErrorCode KSPSetUp_TCQMR(KSP ksp)
 
 M*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "KSPCreate_TCQMR"
-PetscErrorCode  KSPCreate_TCQMR(KSP ksp)
+PETSC_EXTERN PetscErrorCode KSPCreate_TCQMR(KSP ksp)
 {
   PetscErrorCode ierr;
 
@@ -196,4 +195,3 @@ PetscErrorCode  KSPCreate_TCQMR(KSP ksp)
   ksp->ops->view           = 0;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END

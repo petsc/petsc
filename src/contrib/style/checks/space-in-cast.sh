@@ -4,16 +4,12 @@
 # Rule: 'No space between the type and the * in a cast'
 
 # Steps:
-# - exclude src/docs/ holding the documentation only
-# - exclude automatic FORTRAN stuff
 # - find lines with ' *)' preceeded by letters and an opening parenthesis
+# - ignore uses of PETSC_STDCALL (seems to be legit, but not sure)
 # 
 
 
-
-find src/ -name *.[ch] -or -name *.cu \
- | grep -v 'src/docs' \
- | grep -v 'ftn-auto' \
- | xargs grep "([_a-zA-Z][_a-zA-Z]* \*)" \
+grep -H "([_a-zA-Z][_a-zA-Z]* \*)" "$@" \
  | grep -v -F "PETSC_STDCALL *)"
+
 

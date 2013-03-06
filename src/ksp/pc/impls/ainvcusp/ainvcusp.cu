@@ -330,10 +330,9 @@ static PetscErrorCode PCSetFromOptions_AINVCUSP(PC pc)
 
 M*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCCreate_AINVCUSP"
-PetscErrorCode  PCCreate_AINVCUSP(PC pc)
+PETSC_EXTERN PetscErrorCode PCCreate_AINVCUSP(PC pc)
 {
   PC_AINVCUSP    *ainv;
   PetscErrorCode ierr;
@@ -375,5 +374,4 @@ PetscErrorCode  PCCreate_AINVCUSP(PC pc)
   ierr = PetscObjectComposeFunction((PetscObject)pc, "PCAINVCUSPSetNonzeros_C", "PCAINVCUSPSetNonzeros_AINVCUSP", PCAINVCUSPSetNonzeros_AINVCUSP);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 

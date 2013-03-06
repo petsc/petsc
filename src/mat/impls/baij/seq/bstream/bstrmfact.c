@@ -175,7 +175,6 @@ PetscErrorCode MatSolve_SeqBSTRM_5(Mat A,Vec bb,Vec xx)
 }
 
 /*=========================================================*/
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatFactorGetSolverPackage_bstrm"
 PetscErrorCode MatFactorGetSolverPackage_bstrm(Mat A,const MatSolverPackage *type)
@@ -184,10 +183,8 @@ PetscErrorCode MatFactorGetSolverPackage_bstrm(Mat A,const MatSolverPackage *typ
   *type = MATSOLVERBSTRM;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 /*=========================================================*/
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatLUFactorNumeric_bstrm"
 PetscErrorCode MatLUFactorNumeric_bstrm(Mat F,Mat A,const MatFactorInfo *info)
@@ -219,9 +216,7 @@ PetscErrorCode MatLUFactorNumeric_bstrm(Mat F,Mat A,const MatFactorInfo *info)
   .........................................................*/
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 /*=========================================================*/
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatILUFactorSymbolic_bstrm"
 PetscErrorCode MatILUFactorSymbolic_bstrm(Mat B,Mat A,IS r,IS c,const MatFactorInfo *info)
@@ -233,9 +228,7 @@ PetscErrorCode MatILUFactorSymbolic_bstrm(Mat B,Mat A,IS r,IS c,const MatFactorI
   B->ops->lufactornumeric = MatLUFactorNumeric_bstrm;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 /*=========================================================*/
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatLUFactorSymbolic_bstrm"
 PetscErrorCode MatLUFactorSymbolic_bstrm(Mat B,Mat A,IS r,IS c,const MatFactorInfo *info)
@@ -248,12 +241,10 @@ PetscErrorCode MatLUFactorSymbolic_bstrm(Mat B,Mat A,IS r,IS c,const MatFactorIn
   B->ops->lufactornumeric = MatLUFactorNumeric_bstrm;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 /*=========================================================*/
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatGetFactor_seqbaij_bstrm"
-PetscErrorCode MatGetFactor_seqbaij_bstrm(Mat A,MatFactorType ftype,Mat *B)
+PETSC_EXTERN PetscErrorCode MatGetFactor_seqbaij_bstrm(Mat A,MatFactorType ftype,Mat *B)
 {
   PetscInt       n = A->rmap->n;
   Mat_SeqBSTRM   *bstrm;
@@ -279,4 +270,3 @@ PetscErrorCode MatGetFactor_seqbaij_bstrm(Mat A,MatFactorType ftype,Mat *B)
   ierr        = PetscObjectComposeFunction((PetscObject)*B,"MatFactorGetSolverPackage_C","MatFactorGetSolverPackage_bstrm",MatFactorGetSolverPackage_bstrm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END

@@ -1267,7 +1267,6 @@ PetscErrorCode TSARKIMEXSetFullyImplicit(TS ts,PetscBool flg)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TSARKIMEXGetType_ARKIMEX"
 PetscErrorCode  TSARKIMEXGetType_ARKIMEX(TS ts,TSARKIMEXType *arktype)
@@ -1317,7 +1316,6 @@ PetscErrorCode  TSARKIMEXSetFullyImplicit_ARKIMEX(TS ts,PetscBool flg)
   ark->imex = (PetscBool)!flg;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 /* ------------------------------------------------------------ */
 /*MC
@@ -1338,10 +1336,9 @@ EXTERN_C_END
            TSARKIMEX4, TSARKIMEX5, TSARKIMEXPRSSP2, TSARKIMEXBPR3, TSARKIMEXType, TSARKIMEXRegister()
 
 M*/
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TSCreate_ARKIMEX"
-PetscErrorCode  TSCreate_ARKIMEX(TS ts)
+PETSC_EXTERN PetscErrorCode TSCreate_ARKIMEX(TS ts)
 {
   TS_ARKIMEX     *th;
   PetscErrorCode ierr;
@@ -1372,4 +1369,3 @@ PetscErrorCode  TSCreate_ARKIMEX(TS ts)
   ierr = PetscObjectComposeFunction((PetscObject)ts,"TSARKIMEXSetFullyImplicit_C","TSARKIMEXSetFullyImplicit_ARKIMEX",TSARKIMEXSetFullyImplicit_ARKIMEX);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END

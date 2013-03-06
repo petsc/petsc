@@ -1558,7 +1558,6 @@ PetscErrorCode TSRosWSetRecomputeJacobian(TS ts,PetscBool flg)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TSRosWGetType_RosW"
 PetscErrorCode  TSRosWGetType_RosW(TS ts,TSRosWType *rostype)
@@ -1608,7 +1607,6 @@ PetscErrorCode  TSRosWSetRecomputeJacobian_RosW(TS ts,PetscBool flg)
   ros->recompute_jacobian = flg;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 
 /* ------------------------------------------------------------ */
@@ -1671,10 +1669,9 @@ $  g(u_0 + sum_j a_ij y_j + y_i, ydot_i) = 0
 .seealso:  TSCreate(), TS, TSSetType(), TSRosWSetType(), TSRosWRegister(), TSROSW2M, TSROSW2P, TSROSWRA3PW, TSROSWRA34PW2, TSROSWRODAS3,
            TSROSWSANDU3, TSROSWASSP3P3S1C, TSROSWLASSP3P4S2C, TSROSWLLSSP3P4S2C, TSROSWGRK4T, TSROSWSHAMP4, TSROSWVELDD4, TSROSW4L
 M*/
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TSCreate_RosW"
-PetscErrorCode  TSCreate_RosW(TS ts)
+PETSC_EXTERN PetscErrorCode TSCreate_RosW(TS ts)
 {
   TS_RosW        *ros;
   PetscErrorCode ierr;
@@ -1703,4 +1700,3 @@ PetscErrorCode  TSCreate_RosW(TS ts)
   ierr = PetscObjectComposeFunction((PetscObject)ts,"TSRosWSetRecomputeJacobian_C","TSRosWSetRecomputeJacobian_RosW",TSRosWSetRecomputeJacobian_RosW);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END

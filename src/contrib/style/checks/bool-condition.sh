@@ -5,15 +5,8 @@
 # Note: Comparison with PetscScalar should still be (val == 0) in order to be compatible with complex.
 
 # Steps:
-# - exclude src/docs/ holding the documentation only
-# - exclude automatic FORTRAN stuff
-# - find lines with the patterns in rule. 
+# - find lines with the patterns mentioned above. 
 # 
 
-
-
-find src/ -name *.[ch] -or -name *.cu \
- | grep -v 'src/docs' \
- | grep -v 'ftn-auto' \
- | xargs grep "rank ==\s*0)\|\s*==\s*NULL)\|==\s*PETSC_TRUE)\|==\s*PETSC_FALSE)"
+grep -H "rank ==\s*0)\|\s*==\s*NULL)\|==\s*PETSC_TRUE)\|==\s*PETSC_FALSE)" "$@"
 

@@ -28,10 +28,9 @@ PetscErrorCode PCApply_None(PC pc,Vec x,Vec y)
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC
 M*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCCreate_None"
-PetscErrorCode  PCCreate_None(PC pc)
+PETSC_EXTERN PetscErrorCode PCCreate_None(PC pc)
 {
   PetscFunctionBegin;
   pc->ops->apply               = PCApply_None;
@@ -45,4 +44,3 @@ PetscErrorCode  PCCreate_None(PC pc)
   pc->data = 0;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END

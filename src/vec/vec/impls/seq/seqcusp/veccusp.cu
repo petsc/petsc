@@ -1936,10 +1936,9 @@ PetscErrorCode VecConjugate_SeqCUSP(Vec xin)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "VecCreate_SeqCUSP"
-PetscErrorCode  VecCreate_SeqCUSP(Vec V)
+PETSC_EXTERN PetscErrorCode VecCreate_SeqCUSP(Vec V)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size;
@@ -1978,10 +1977,9 @@ PetscErrorCode  VecCreate_SeqCUSP(Vec V)
   V->ops->destroy         = VecDestroy_SeqCUSP;
   V->ops->duplicate       = VecDuplicate_SeqCUSP;
   V->ops->conjugate       = VecConjugate_SeqCUSP;
-  
+
   ierr = VecCUSPAllocateCheck(V);CHKERRQ(ierr);
   V->valid_GPU_array      = PETSC_CUSP_GPU;
   ierr = VecSet(V,0.0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END

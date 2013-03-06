@@ -158,10 +158,9 @@ static PetscErrorCode  KSPSolve_CR(KSP ksp)
 
 .seealso: KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPCG
 M*/
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "KSPCreate_CR"
-PetscErrorCode  KSPCreate_CR(KSP ksp)
+PETSC_EXTERN PetscErrorCode KSPCreate_CR(KSP ksp)
 {
   PetscErrorCode ierr;
 
@@ -179,4 +178,3 @@ PetscErrorCode  KSPCreate_CR(KSP ksp)
   ksp->ops->view           = 0;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END

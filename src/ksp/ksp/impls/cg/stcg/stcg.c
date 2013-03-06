@@ -738,10 +738,9 @@ $  other KSP converged/diverged reasons
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPSTCGSetRadius(), KSPSTCGGetNormD(), KSPSTCGGetObjFcn()
 M*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "KSPCreate_STCG"
-PetscErrorCode  KSPCreate_STCG(KSP ksp)
+PETSC_EXTERN PetscErrorCode KSPCreate_STCG(KSP ksp)
 {
   PetscErrorCode ierr;
   KSP_STCG       *cg;
@@ -775,4 +774,3 @@ PetscErrorCode  KSPCreate_STCG(KSP ksp)
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPSTCGGetObjFcn_C","KSPSTCGGetObjFcn_STCG",KSPSTCGGetObjFcn_STCG);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END

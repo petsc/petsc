@@ -1452,10 +1452,10 @@ PetscErrorCode PCSetFromOptions_GAMG(PC pc)
            PCMGSetRestriction(), PCMGGetSmoother(), PCMGGetSmootherUp(), PCMGGetSmootherDown(),
            PCMGSetCyclesOnLevel(), PCMGSetRhs(), PCMGSetX(), PCMGSetR()
 M*/
-EXTERN_C_BEGIN
+
 #undef __FUNCT__
 #define __FUNCT__ "PCCreate_GAMG"
-PetscErrorCode  PCCreate_GAMG(PC pc)
+PETSC_EXTERN PetscErrorCode PCCreate_GAMG(PC pc)
 {
   PetscErrorCode ierr;
   PC_GAMG        *pc_gamg;
@@ -1499,6 +1499,7 @@ PetscErrorCode  PCCreate_GAMG(PC pc)
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGAMGSetUseASMAggs_C","PCGAMGSetUseASMAggs_GAMG",PCGAMGSetUseASMAggs_GAMG);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGAMGSetThreshold_C","PCGAMGSetThreshold_GAMG",PCGAMGSetThreshold_GAMG);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGAMGSetType_C","PCGAMGSetType_GAMG",PCGAMGSetType_GAMG);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGAMGSetNlevels_C","PCGAMGSetNlevels_GAMG",PCGAMGSetNlevels_GAMG);CHKERRQ(ierr);
   pc_gamg->repart           = PETSC_FALSE;
   pc_gamg->reuse_prol       = PETSC_TRUE;
   pc_gamg->use_aggs_in_gasm = PETSC_FALSE;
@@ -1572,4 +1573,3 @@ PetscErrorCode  PCCreate_GAMG(PC pc)
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END

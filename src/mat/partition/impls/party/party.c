@@ -201,7 +201,6 @@ PetscErrorCode MatPartitioningPartySetGlobal(MatPartitioning part,const char *gl
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatPartitioningPartySetGlobal_Party"
 PetscErrorCode MatPartitioningPartySetGlobal_Party(MatPartitioning part,const char *global)
@@ -213,7 +212,6 @@ PetscErrorCode MatPartitioningPartySetGlobal_Party(MatPartitioning part,const ch
   ierr = PetscStrncpy(party->global,global,15);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "MatPartitioningPartySetLocal"
@@ -247,7 +245,6 @@ PetscErrorCode MatPartitioningPartySetLocal(MatPartitioning part,const char *loc
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatPartitioningPartySetLocal_Party"
 PetscErrorCode MatPartitioningPartySetLocal_Party(MatPartitioning part,const char *local)
@@ -260,7 +257,6 @@ PetscErrorCode MatPartitioningPartySetLocal_Party(MatPartitioning part,const cha
   ierr = PetscStrncpy(party->local,local,15);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "MatPartitioningPartySetCoarseLevel"
@@ -290,7 +286,6 @@ PetscErrorCode MatPartitioningPartySetCoarseLevel(MatPartitioning part,PetscReal
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatPartitioningPartySetCoarseLevel_Party"
 PetscErrorCode MatPartitioningPartySetCoarseLevel_Party(MatPartitioning part,PetscReal level)
@@ -303,7 +298,6 @@ PetscErrorCode MatPartitioningPartySetCoarseLevel_Party(MatPartitioning part,Pet
   if (party->nbvtxcoarsed < 20) party->nbvtxcoarsed = 20;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "MatPartitioningPartySetMatchOptimization"
@@ -333,7 +327,6 @@ PetscErrorCode MatPartitioningPartySetMatchOptimization(MatPartitioning part,Pet
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatPartitioningPartySetMatchOptimization_Party"
 PetscErrorCode MatPartitioningPartySetMatchOptimization_Party(MatPartitioning part,PetscBool opt)
@@ -344,7 +337,6 @@ PetscErrorCode MatPartitioningPartySetMatchOptimization_Party(MatPartitioning pa
   party->redo = opt;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "MatPartitioningPartySetBipart"
@@ -373,7 +365,6 @@ PetscErrorCode MatPartitioningPartySetBipart(MatPartitioning part,PetscBool bp)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatPartitioningPartySetBipart_Party"
 PetscErrorCode MatPartitioningPartySetBipart_Party(MatPartitioning part,PetscBool bp)
@@ -384,7 +375,6 @@ PetscErrorCode MatPartitioningPartySetBipart_Party(MatPartitioning part,PetscBoo
   party->recursive = bp;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "MatPartitioningSetFromOptions_Party"
@@ -442,10 +432,9 @@ PetscErrorCode MatPartitioningDestroy_Party(MatPartitioning part)
 
 M*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatPartitioningCreate_Party"
-PetscErrorCode  MatPartitioningCreate_Party(MatPartitioning part)
+PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Party(MatPartitioning part)
 {
   PetscErrorCode        ierr;
   MatPartitioning_Party *party;
@@ -475,4 +464,3 @@ PetscErrorCode  MatPartitioningCreate_Party(MatPartitioning part)
   ierr = PetscObjectComposeFunction((PetscObject)part,"MatPartitioningPartySetBipart_C","MatPartitioningPartySetBipart_Party",MatPartitioningPartySetBipart_Party);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END

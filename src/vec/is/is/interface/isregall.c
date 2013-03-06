@@ -1,10 +1,8 @@
 
 #include <petsc-private/isimpl.h>     /*I  "petscis.h"  I*/
-EXTERN_C_BEGIN
-extern PetscErrorCode  ISCreate_General(IS);
-extern PetscErrorCode  ISCreate_Stride(IS);
-extern PetscErrorCode  ISCreate_Block(IS);
-EXTERN_C_END
+PETSC_EXTERN PetscErrorCode ISCreate_General(IS);
+PETSC_EXTERN PetscErrorCode ISCreate_Stride(IS);
+PETSC_EXTERN PetscErrorCode ISCreate_Block(IS);
 
 #undef __FUNCT__
 #define __FUNCT__ "ISRegisterAll"

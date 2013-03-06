@@ -805,7 +805,7 @@ static PetscErrorCode PetscSFFetchAndOpEnd_Basic(PetscSF sf,MPI_Datatype unit,vo
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSFCreate_Basic"
-PETSC_EXTERN_C PetscErrorCode PetscSFCreate_Basic(PetscSF sf)
+PETSC_EXTERN PetscErrorCode PetscSFCreate_Basic(PetscSF sf)
 {
   PetscSF_Basic  *bas = (PetscSF_Basic*)sf->data;
   PetscErrorCode ierr;

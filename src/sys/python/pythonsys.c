@@ -298,10 +298,8 @@ PetscErrorCode  PetscPythonPrintError(void)
 
 /* ---------------------------------------------------------------- */
 
-EXTERN_C_BEGIN
-extern PetscErrorCode (*PetscPythonMonitorSet_C)(PetscObject,const char[]);
-PetscErrorCode        (*PetscPythonMonitorSet_C)(PetscObject,const char[]) = NULL;
-EXTERN_C_END
+PETSC_EXTERN PetscErrorCode (*PetscPythonMonitorSet_C)(PetscObject,const char[]);
+PetscErrorCode (*PetscPythonMonitorSet_C)(PetscObject,const char[]) = NULL;
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscPythonMonitorSet"

@@ -83,11 +83,9 @@ extern MPI_Op PetscSplitReduction_Op;
 extern MPI_Op VecMax_Local_Op;
 extern MPI_Op VecMin_Local_Op;
 
-EXTERN_C_BEGIN
-extern void MPIAPI VecMax_Local(void*,void*,PetscMPIInt*,MPI_Datatype*);
-extern void MPIAPI VecMin_Local(void*,void*,PetscMPIInt*,MPI_Datatype*);
-extern void MPIAPI PetscSplitReduction_Local(void*,void*,PetscMPIInt*,MPI_Datatype*);
-EXTERN_C_END
+PETSC_EXTERN void MPIAPI VecMax_Local(void*,void*,PetscMPIInt*,MPI_Datatype*);
+PETSC_EXTERN void MPIAPI VecMin_Local(void*,void*,PetscMPIInt*,MPI_Datatype*);
+PETSC_EXTERN void MPIAPI PetscSplitReduction_Local(void*,void*,PetscMPIInt*,MPI_Datatype*);
 
 const char *const NormTypes[] = {"1","2","FROBENIUS","INFINITY","1_AND_2","NormType","NORM_",0};
 PetscInt          NormIds[7];  /* map from NormType to IDs used to cache Normvalues */
@@ -249,7 +247,6 @@ PetscErrorCode  VecFinalizePackage(void)
 }
 
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PetscDLLibraryRegister_petscvec"
 /*
@@ -260,7 +257,7 @@ EXTERN_C_BEGIN
   Input Parameter:
   path - library path
  */
-PetscErrorCode  PetscDLLibraryRegister_petscvec(const char path[])
+PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscvec(const char path[])
 {
   PetscErrorCode ierr;
 
@@ -272,6 +269,5 @@ PetscErrorCode  PetscDLLibraryRegister_petscvec(const char path[])
   ierr = PFInitializePackage(path);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #endif /* PETSC_USE_DYNAMIC_LIBRARIES */

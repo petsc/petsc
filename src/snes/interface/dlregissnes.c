@@ -87,7 +87,6 @@ PetscErrorCode  SNESInitializePackage(const char path[])
 }
 
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PetscDLLibraryRegister_petscsnes"
 /*
@@ -99,7 +98,7 @@ EXTERN_C_BEGIN
   path - library path
 
  */
-PetscErrorCode  PetscDLLibraryRegister_petscsnes(const char path[])
+PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscsnes(const char path[])
 {
   PetscErrorCode ierr;
 
@@ -107,6 +106,5 @@ PetscErrorCode  PetscDLLibraryRegister_petscsnes(const char path[])
   ierr = SNESInitializePackage(path);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #endif /* PETSC_USE_DYNAMIC_LIBRARIES */

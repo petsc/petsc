@@ -178,10 +178,9 @@ PetscErrorCode SNESSetUp_Test(SNES snes)
 .seealso:  SNESCreate(), SNES, SNESSetType(), SNESNEWTONLS, SNESNEWTONTR
 
 M*/
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "SNESCreate_Test"
-PetscErrorCode  SNESCreate_Test(SNES snes)
+PETSC_EXTERN PetscErrorCode SNESCreate_Test(SNES snes)
 {
   SNES_Test      *neP;
   PetscErrorCode ierr;
@@ -201,7 +200,6 @@ PetscErrorCode  SNESCreate_Test(SNES snes)
   neP->complete_print = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESUpdateCheckJacobian"

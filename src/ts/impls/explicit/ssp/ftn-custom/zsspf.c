@@ -9,8 +9,7 @@
 #define tssspgettype_                   tssspgettype
 #endif
 
-EXTERN_C_BEGIN
-void PETSC_STDCALL tssspsettype_(TS *ts,CHAR type PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL tssspsettype_(TS *ts,CHAR type PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *t;
 
@@ -19,7 +18,7 @@ void PETSC_STDCALL tssspsettype_(TS *ts,CHAR type PETSC_MIXED_LEN(len),PetscErro
   FREECHAR(type,t);
 }
 
-void PETSC_STDCALL tssspgettype_(TS *ts,CHAR name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL tssspgettype_(TS *ts,CHAR name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   const char *tname;
 
@@ -27,5 +26,3 @@ void PETSC_STDCALL tssspgettype_(TS *ts,CHAR name PETSC_MIXED_LEN(len),PetscErro
   *ierr = PetscStrncpy(name,tname,len);
   FIXRETURNCHAR(PETSC_TRUE,name,len);
 }
-
-EXTERN_C_END

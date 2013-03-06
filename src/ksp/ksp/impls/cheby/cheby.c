@@ -641,7 +641,7 @@ M*/
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPCreate_Chebyshev"
-PETSC_EXTERN_C PetscErrorCode KSPCreate_Chebyshev(KSP ksp)
+PETSC_EXTERN PetscErrorCode KSPCreate_Chebyshev(KSP ksp)
 {
   PetscErrorCode ierr;
   KSP_Chebyshev  *chebyshevP;

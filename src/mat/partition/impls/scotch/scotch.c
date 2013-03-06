@@ -43,7 +43,6 @@ PetscErrorCode MatPartitioningPTScotchSetImbalance(MatPartitioning part,PetscRea
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatPartitioningPTScotchSetImbalance_PTScotch"
 PetscErrorCode MatPartitioningPTScotchSetImbalance_PTScotch(MatPartitioning part,PetscReal imb)
@@ -58,7 +57,6 @@ PetscErrorCode MatPartitioningPTScotchSetImbalance_PTScotch(MatPartitioning part
   }
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "MatPartitioningPTScotchGetImbalance"
@@ -89,7 +87,6 @@ PetscErrorCode MatPartitioningPTScotchGetImbalance(MatPartitioning part,PetscRea
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatPartitioningPTScotchGetImbalance_PTScotch"
 PetscErrorCode MatPartitioningPTScotchGetImbalance_PTScotch(MatPartitioning part,PetscReal *imb)
@@ -100,7 +97,6 @@ PetscErrorCode MatPartitioningPTScotchGetImbalance_PTScotch(MatPartitioning part
   *imb = scotch->imbalance;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "MatPartitioningPTScotchSetStrategy"
@@ -141,7 +137,6 @@ PetscErrorCode MatPartitioningPTScotchSetStrategy(MatPartitioning part,MPPTScotc
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatPartitioningPTScotchSetStrategy_PTScotch"
 PetscErrorCode MatPartitioningPTScotchSetStrategy_PTScotch(MatPartitioning part,MPPTScotchStrategyType strategy)
@@ -158,7 +153,6 @@ PetscErrorCode MatPartitioningPTScotchSetStrategy_PTScotch(MatPartitioning part,
   }
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "MatPartitioningPTScotchGetStrategy"
@@ -188,7 +182,6 @@ PetscErrorCode MatPartitioningPTScotchGetStrategy(MatPartitioning part,MPPTScotc
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatPartitioningPTScotchGetStrategy_PTScotch"
 PetscErrorCode MatPartitioningPTScotchGetStrategy_PTScotch(MatPartitioning part,MPPTScotchStrategyType *strategy)
@@ -205,7 +198,6 @@ PetscErrorCode MatPartitioningPTScotchGetStrategy_PTScotch(MatPartitioning part,
   }
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "MatPartitioningView_PTScotch"
@@ -375,10 +367,9 @@ PetscErrorCode MatPartitioningDestroy_PTScotch(MatPartitioning part)
 .seealso: MatPartitioningSetType(), MatPartitioningType
 M*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatPartitioningCreate_PTScotch"
-PetscErrorCode  MatPartitioningCreate_PTScotch(MatPartitioning part)
+PETSC_EXTERN PetscErrorCode MatPartitioningCreate_PTScotch(MatPartitioning part)
 {
   PetscErrorCode           ierr;
   MatPartitioning_PTScotch *scotch;
@@ -401,4 +392,3 @@ PetscErrorCode  MatPartitioningCreate_PTScotch(MatPartitioning part)
   ierr = PetscObjectComposeFunction((PetscObject)part,"MatPartitioningPTScotchGetStrategy_C","MatPartitioningPTScotchGetStrategy_PTScotch",MatPartitioningPTScotchGetStrategy_PTScotch);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END

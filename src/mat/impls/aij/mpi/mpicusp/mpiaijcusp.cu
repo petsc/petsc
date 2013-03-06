@@ -116,7 +116,6 @@ PetscErrorCode MatSetValuesBatch_MPIAIJCUSP(Mat J, PetscInt Ne, PetscInt Nl, Pet
 
 #if defined(PETSC_HAVE_TXPETSCGPU)
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatCUSPSetFormat_MPIAIJCUSP"
 PetscErrorCode MatCUSPSetFormat_MPIAIJCUSP(Mat A,MatCUSPFormatOperation op,MatCUSPStorageFormat format)
@@ -141,8 +140,6 @@ PetscErrorCode MatCUSPSetFormat_MPIAIJCUSP(Mat A,MatCUSPFormatOperation op,MatCU
   }
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
-
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSetFromOptions_MPIAIJCUSP"
@@ -200,10 +197,9 @@ PetscErrorCode MatDestroy_MPIAIJCUSP(Mat A)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_MPIAIJCUSP"
-PetscErrorCode  MatCreate_MPIAIJCUSP(Mat A)
+PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJCUSP(Mat A)
 {
   PetscErrorCode ierr;
 #if defined(PETSC_HAVE_TXPETSCGPU)
@@ -234,7 +230,6 @@ PetscErrorCode  MatCreate_MPIAIJCUSP(Mat A)
   ierr = PetscObjectChangeTypeName((PetscObject)A,MATMPIAIJCUSP);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 
 /*@

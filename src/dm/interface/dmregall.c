@@ -1,19 +1,17 @@
 
 #include <petscdm.h>     /*I  "petscdm.h"  I*/
-EXTERN_C_BEGIN
-extern PetscErrorCode  DMCreate_DA(DM);
-extern PetscErrorCode  DMCreate_Composite(DM);
-extern PetscErrorCode  DMCreate_Sliced(DM);
-extern PetscErrorCode  DMCreate_Shell(DM);
-extern PetscErrorCode  DMCreate_ADDA(DM);
-extern PetscErrorCode  DMCreate_Redundant(DM);
-extern PetscErrorCode  DMCreate_Plex(DM);
-extern PetscErrorCode  DMCreate_Patch(DM);
+PETSC_EXTERN PetscErrorCode DMCreate_DA(DM);
+PETSC_EXTERN PetscErrorCode DMCreate_Composite(DM);
+PETSC_EXTERN PetscErrorCode DMCreate_Sliced(DM);
+PETSC_EXTERN PetscErrorCode DMCreate_Shell(DM);
+PETSC_EXTERN PetscErrorCode DMCreate_ADDA(DM);
+PETSC_EXTERN PetscErrorCode DMCreate_Redundant(DM);
+PETSC_EXTERN PetscErrorCode DMCreate_Plex(DM);
+PETSC_EXTERN PetscErrorCode DMCreate_Patch(DM);
 #if defined(PETSC_HAVE_SIEVE)
-extern PetscErrorCode  DMCreate_Mesh(DM);
-extern PetscErrorCode  DMCreate_Cartesian(DM);
+PETSC_EXTERN PetscErrorCode DMCreate_Mesh(DM);
+PETSC_EXTERN PetscErrorCode DMCreate_Cartesian(DM);
 #endif
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "DMRegisterAll"

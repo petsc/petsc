@@ -41,9 +41,7 @@ PetscErrorCode SNESDestroy_NCG(SNES snes)
    Application Interface Routine: SNESSetUp()
  */
 
-EXTERN_C_BEGIN
-extern PetscErrorCode SNESLineSearchCreate_NCGLinear(SNESLineSearch);
-EXTERN_C_END
+PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_NCGLinear(SNESLineSearch);
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESSetUp_NCG"
@@ -159,11 +157,9 @@ PetscErrorCode SNESLineSearchApply_NCGLinear(SNESLineSearch linesearch)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "SNESLineSearchCreate_NCGLinear"
-
-PetscErrorCode SNESLineSearchCreate_NCGLinear(SNESLineSearch linesearch)
+PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_NCGLinear(SNESLineSearch linesearch)
 {
   PetscFunctionBegin;
   linesearch->ops->apply          = SNESLineSearchApply_NCGLinear;
@@ -174,7 +170,6 @@ PetscErrorCode SNESLineSearchCreate_NCGLinear(SNESLineSearch linesearch)
   linesearch->ops->setup          = NULL;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESNCGComputeYtJtF_Private"
@@ -238,8 +233,6 @@ PetscErrorCode SNESNCGSetType(SNES snes, SNESNCGType btype)
   PetscFunctionReturn(0);
 }
 
-
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "SNESNCGSetType_NCG"
 PetscErrorCode SNESNCGSetType_NCG(SNES snes, SNESNCGType btype)
@@ -250,7 +243,6 @@ PetscErrorCode SNESNCGSetType_NCG(SNES snes, SNESNCGType btype)
   ncg->type = btype;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 /*
   SNESSolve_NCG - Solves a nonlinear system with the Nonlinear Conjugate Gradient method.
@@ -486,10 +478,9 @@ chooses the initial search direction as F(x) for the initial guess x.
 
 .seealso:  SNESCreate(), SNES, SNESSetType(), SNESNEWTONLS, SNESNEWTONTR, SNESNGMRES, SNESNQN
 M*/
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "SNESCreate_NCG"
-PetscErrorCode  SNESCreate_NCG(SNES snes)
+PETSC_EXTERN PetscErrorCode SNESCreate_NCG(SNES snes)
 {
   PetscErrorCode ierr;
   SNES_NCG       * neP;
@@ -518,4 +509,3 @@ PetscErrorCode  SNESCreate_NCG(SNES snes)
   ierr         = PetscObjectComposeFunction((PetscObject)snes,"SNESNCGSetType_C","SNESNCGSetType_NCG", SNESNCGSetType_NCG);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END

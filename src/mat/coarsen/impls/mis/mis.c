@@ -403,10 +403,9 @@ PetscErrorCode MatCoarsenDestroy_MIS(MatCoarsen coarse)
 
 M*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatCoarsenCreate_MIS"
-PetscErrorCode  MatCoarsenCreate_MIS(MatCoarsen coarse)
+PETSC_EXTERN PetscErrorCode MatCoarsenCreate_MIS(MatCoarsen coarse)
 {
   PetscErrorCode ierr;
   MatCoarsen_MIS *MIS;
@@ -421,5 +420,4 @@ PetscErrorCode  MatCoarsenCreate_MIS(MatCoarsen coarse)
   /* coarse->ops->setfromoptions = MatCoarsenSetFromOptions_MIS; */
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 

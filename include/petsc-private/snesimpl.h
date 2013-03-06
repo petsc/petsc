@@ -228,10 +228,8 @@ PETSC_EXTERN PetscErrorCode SNESView_VI(SNES,PetscViewer);
 PETSC_EXTERN PetscErrorCode SNESSetFromOptions_VI(SNES);
 PETSC_EXTERN PetscErrorCode SNESSetUp_VI(SNES);
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*SNESVIComputeVariableBoundsFunction)(SNES,Vec,Vec);
-EXTERN_C_BEGIN
 PETSC_EXTERN PetscErrorCode SNESVISetComputeVariableBounds_VI(SNES,SNESVIComputeVariableBoundsFunction);
 PETSC_EXTERN PetscErrorCode SNESVISetVariableBounds_VI(SNES,Vec,Vec);
-EXTERN_C_END
 PETSC_EXTERN PetscErrorCode SNESDefaultConverged_VI(SNES,PetscInt,PetscReal,PetscReal,PetscReal,SNESConvergedReason*,void*);
 
 PetscErrorCode SNES_KSPSolve(SNES,KSP,Vec,Vec);

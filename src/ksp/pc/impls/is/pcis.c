@@ -1,7 +1,6 @@
 
 #include "../src/ksp/pc/impls/is/pcis.h" /*I "petscpc.h" I*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCISSetUseStiffnessScaling_IS"
 static PetscErrorCode PCISSetUseStiffnessScaling_IS(PC pc, PetscBool use)
@@ -12,7 +11,6 @@ static PetscErrorCode PCISSetUseStiffnessScaling_IS(PC pc, PetscBool use)
   pcis->use_stiffness_scaling = use;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "PCISSetUseStiffnessScaling"
@@ -42,7 +40,6 @@ PetscErrorCode PCISSetUseStiffnessScaling(PC pc, PetscBool use)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCISSetSubdomainDiagonalScaling_IS"
 static PetscErrorCode PCISSetSubdomainDiagonalScaling_IS(PC pc, Vec scaling_factors)
@@ -56,7 +53,6 @@ static PetscErrorCode PCISSetSubdomainDiagonalScaling_IS(PC pc, Vec scaling_fact
   pcis->D = scaling_factors;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "PCISSetSubdomainDiagonalScaling"
@@ -86,7 +82,6 @@ PetscErrorCode PCISSetSubdomainDiagonalScaling(PC pc, Vec scaling_factors)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCISSetSubdomainScalingFactor_IS"
 static PetscErrorCode PCISSetSubdomainScalingFactor_IS(PC pc, PetscScalar scal)
@@ -97,7 +92,6 @@ static PetscErrorCode PCISSetSubdomainScalingFactor_IS(PC pc, PetscScalar scal)
   pcis->scaling_factor = scal;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "PCISSetSubdomainScalingFactor"

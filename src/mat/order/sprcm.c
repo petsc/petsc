@@ -2,13 +2,12 @@
 #include <petscmat.h>
 #include <../src/mat/order/order.h>
 
-EXTERN_C_BEGIN
 /*
     MatGetOrdering_RCM - Find the Reverse Cuthill-McKee ordering of a given matrix.
 */
 #undef __FUNCT__
 #define __FUNCT__ "MatGetOrdering_RCM"
-PetscErrorCode  MatGetOrdering_RCM(Mat mat,MatOrderingType type,IS *row,IS *col)
+PETSC_EXTERN PetscErrorCode MatGetOrdering_RCM(Mat mat,MatOrderingType type,IS *row,IS *col)
 {
   PetscErrorCode ierr;
   PetscInt       i,*mask,*xls,nrow,*perm;
@@ -30,4 +29,3 @@ PetscErrorCode  MatGetOrdering_RCM(Mat mat,MatOrderingType type,IS *row,IS *col)
   ierr = PetscFree3(mask,perm,xls);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END

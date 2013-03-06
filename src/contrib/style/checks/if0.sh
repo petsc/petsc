@@ -7,15 +7,10 @@
 # Steps:
 # - exclude src/docs/ holding the documentation only
 # - ignore FORTRAN stubs
-# - find any malloc() and free() calls
+# - find any use of '#if 0' and variations thereof
 
 
-find src/ include/ -name *.[ch] \
- | grep -v 'src/docs' \
- | grep -v 'ftn-auto' \
- | grep -v 'ftn-custom' \
- | grep -v 'f90-custom' \
- | xargs grep "#if\s0" \
+grep -H "#if\s*0" "$@"
 
 
 

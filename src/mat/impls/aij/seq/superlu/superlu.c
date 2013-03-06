@@ -480,10 +480,9 @@ PetscErrorCode MatLUFactorSymbolic_SuperLU(Mat F,Mat A,IS r,IS c,const MatFactor
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatSuperluSetILUDropTol_SuperLU"
-PetscErrorCode MatSuperluSetILUDropTol_SuperLU(Mat F,PetscReal dtol)
+static PetscErrorCode MatSuperluSetILUDropTol_SuperLU(Mat F,PetscReal dtol)
 {
   Mat_SuperLU *lu= (Mat_SuperLU*)F->spptr;
 
@@ -491,7 +490,6 @@ PetscErrorCode MatSuperluSetILUDropTol_SuperLU(Mat F,PetscReal dtol)
   lu->options.ILU_DropTol = dtol;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSuperluSetILUDropTol"
@@ -523,7 +521,6 @@ PetscErrorCode MatSuperluSetILUDropTol(Mat F,PetscReal dtol)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatFactorGetSolverPackage_seqaij_superlu"
 PetscErrorCode MatFactorGetSolverPackage_seqaij_superlu(Mat A,const MatSolverPackage *type)
@@ -532,7 +529,6 @@ PetscErrorCode MatFactorGetSolverPackage_seqaij_superlu(Mat A,const MatSolverPac
   *type = MATSOLVERSUPERLU;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 
 /*MC
@@ -567,10 +563,9 @@ EXTERN_C_END
 .seealso: PCLU, PCILU, MATSOLVERSUPERLU_DIST, MATSOLVERMUMPS, PCFactorSetMatSolverPackage(), MatSolverPackage
 M*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatGetFactor_seqaij_superlu"
-PetscErrorCode MatGetFactor_seqaij_superlu(Mat A,MatFactorType ftype,Mat *F)
+PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_superlu(Mat A,MatFactorType ftype,Mat *F)
 {
   Mat            B;
   Mat_SuperLU    *lu;
@@ -701,5 +696,4 @@ PetscErrorCode MatGetFactor_seqaij_superlu(Mat A,MatFactorType ftype,Mat *F)
   *F       = B;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 

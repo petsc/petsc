@@ -389,7 +389,7 @@ static PetscErrorCode DMLoad_Shell(DM dm,PetscViewer v)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMCreate_Shell"
-PETSC_EXTERN_C PetscErrorCode  DMCreate_Shell(DM dm)
+PETSC_EXTERN PetscErrorCode DMCreate_Shell(DM dm)
 {
   PetscErrorCode ierr;
   DM_Shell       *shell;

@@ -7,9 +7,9 @@
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define fortranmultaddaij_ fortranmultaddaij
 #endif
-EXTERN_C_BEGIN
-extern void fortranmultaddaij_(PetscInt*,const void*,PetscInt*,PetscInt*,const MatScalar*,void*,void*);
-EXTERN_C_END
+
+PETSC_EXTERN void fortranmultaddaij_(PetscInt*,const void*,PetscInt*,PetscInt*,const MatScalar*,void*,void*);
+
 #endif
 #endif
 

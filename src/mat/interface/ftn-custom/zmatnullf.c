@@ -8,11 +8,10 @@
 #define matnullspaceview_                matnullspaceview
 #endif
 
-EXTERN_C_BEGIN
-void PETSC_STDCALL matnullspaceview_(MatNullSpace *sp,PetscViewer *vin,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL matnullspaceview_(MatNullSpace *sp,PetscViewer *vin,PetscErrorCode *ierr)
 {
   PetscViewer v;
   PetscPatchDefaultViewers_Fortran(vin,v);
   *ierr = MatNullSpaceView(*sp,v);
 }
-EXTERN_C_END
+

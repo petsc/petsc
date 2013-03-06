@@ -454,7 +454,7 @@ static PetscErrorCode MatWrapML_MPIAIJ(ML_Operator *mlmat,MatReuse reuse,Mat *ne
 */
 #undef __FUNCT__
 #define __FUNCT__ "PCSetCoordinates_ML"
-PETSC_EXTERN_C PetscErrorCode PCSetCoordinates_ML(PC pc, PetscInt ndm, PetscInt a_nloc, PetscReal *coords)
+static PetscErrorCode PCSetCoordinates_ML(PC pc, PetscInt ndm, PetscInt a_nloc, PetscReal *coords)
 {
   PC_MG          *mg    = (PC_MG*)pc->data;
   PC_ML          *pc_ml = (PC_ML*)mg->innerctx;
@@ -1174,10 +1174,9 @@ PetscErrorCode PCSetFromOptions_ML(PC pc)
            PCMGSetCyclesOnLevel(), PCMGSetRhs(), PCMGSetX(), PCMGSetR()
 M*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCCreate_ML"
-PetscErrorCode  PCCreate_ML(PC pc)
+PETSC_EXTERN PetscErrorCode PCCreate_ML(PC pc)
 {
   PetscErrorCode ierr;
   PC_ML          *pc_ml;
@@ -1230,4 +1229,3 @@ PetscErrorCode  PCCreate_ML(PC pc)
   pc->ops->destroy        = PCDestroy_ML;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END

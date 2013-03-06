@@ -13,8 +13,6 @@ typedef struct {
   PetscErrorCode (*matdestroy)(Mat);
 } Mat_FFT;
 
-EXTERN_C_BEGIN
-extern PetscErrorCode MatCreate_FFTW(Mat);
-EXTERN_C_END
+PETSC_EXTERN PetscErrorCode MatCreate_FFTW(Mat);
 
 #endif

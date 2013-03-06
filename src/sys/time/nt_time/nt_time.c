@@ -3,11 +3,9 @@
 #include <Windows.h>
 #define FACTOR   4294967296.0 /* pow(2,32) */
 
-EXTERN_C_BEGIN
-
 #undef __FUNCT__
 #define __FUNCT__ "PetscMicrosoftTime"
-PetscLogDouble  PetscMicrosoftTime(void)
+PETSC_EXTERN PetscLogDouble PetscMicrosoftTime(void)
 {
   static PetscBool flag = PETSC_TRUE;
   PetscErrorCode   ierr;
@@ -56,5 +54,4 @@ PetscLogDouble  PetscMicrosoftTime(void)
   PetscFunctionReturn(ptime);
 }
 
-EXTERN_C_END
 

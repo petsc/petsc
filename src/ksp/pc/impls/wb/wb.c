@@ -645,7 +645,7 @@ PetscErrorCode  PCExoticSetType(PC pc,PCExoticType type)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCExoticSetType_Exotic"
-PetscErrorCode  PCExoticSetType_Exotic(PC pc,PCExoticType type)
+static PetscErrorCode  PCExoticSetType_Exotic(PC pc,PCExoticType type)
 {
   PC_MG     *mg  = (PC_MG*)pc->data;
   PC_Exotic *ctx = (PC_Exotic*) mg->innerctx;
@@ -810,10 +810,9 @@ PetscErrorCode PCSetFromOptions_Exotic(PC pc)
 .seealso:  PCMG, PCSetDM(), PCExoticType, PCExoticSetType()
 M*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCCreate_Exotic"
-PetscErrorCode  PCCreate_Exotic(PC pc)
+PETSC_EXTERN PetscErrorCode PCCreate_Exotic(PC pc)
 {
   PetscErrorCode ierr;
   PC_Exotic      *ex;
@@ -845,4 +844,3 @@ PetscErrorCode  PCCreate_Exotic(PC pc)
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCExoticSetType_C","PCExoticSetType_Exotic",PCExoticSetType_Exotic);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END

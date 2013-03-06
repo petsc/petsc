@@ -32,13 +32,8 @@
 
 /* ========================================================================== */
 /*
-   This facilitates using the C version of PETSc from C++ and the
-   C++ version from C. Use --with-c-support --with-clanguage=c++ with ./configure for the latter)
+   This facilitates using the C version of PETSc from C++ and the C++ version from C.
 */
-#if defined(PETSC_CLANGUAGE_CXX) && !defined(PETSC_USE_EXTERN_CXX) && !defined(__cplusplus)
-#error "PETSc configured with --with-clanguage=c++ and NOT --with-c-support - it can be used only with a C++ compiler"
-#endif
-
 #if defined(__cplusplus)
 #  define PETSC_FUNCTION_NAME PETSC_FUNCTION_NAME_CXX
 #else
@@ -48,12 +43,15 @@
 #if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES) /* For Win32 shared libraries */
 #  define PETSC_DLLEXPORT __declspec(dllexport)
 #  define PETSC_DLLIMPORT __declspec(dllimport)
+#  define PETSC_VISIBILITY_INTERNAL
 #elif defined(PETSC_USE_VISIBILITY)
 #  define PETSC_DLLEXPORT __attribute__((visibility ("default")))
 #  define PETSC_DLLIMPORT __attribute__((visibility ("default")))
+#  define PETSC_VISIBILITY_INTERNAL __attribute__((visibility ("hidden")))
 #else
 #  define PETSC_DLLEXPORT
 #  define PETSC_DLLIMPORT
+#  define PETSC_VISIBILITY_INTERNAL
 #endif
 
 #if defined(petsc_EXPORTS)      /* CMake defines this when building the shared library */
@@ -62,12 +60,14 @@
 #  define PETSC_VISIBILITY_PUBLIC PETSC_DLLIMPORT
 #endif
 
-#if defined(PETSC_USE_EXTERN_CXX) && defined(__cplusplus)
+#if defined(__cplusplus)
 #define PETSC_EXTERN extern "C" PETSC_VISIBILITY_PUBLIC
 #define PETSC_EXTERN_TYPEDEF extern "C"
+#define PETSC_INTERN extern "C" PETSC_VISIBILITY_INTERNAL
 #else
 #define PETSC_EXTERN extern PETSC_VISIBILITY_PUBLIC
 #define PETSC_EXTERN_TYPEDEF
+#define PETSC_INTERN extern PETSC_VISIBILITY_INTERNAL
 #endif
 
 #include <petscversion.h>
@@ -160,7 +160,7 @@ typedef int PetscMPIInt;
 .seealso: PetscOptionsGetEnum(), PetscOptionsEnum(), PetscBagRegisterEnum()
 M*/
 typedef enum { ENUM_DUMMY } PetscEnum;
-extern MPI_Datatype MPIU_ENUM PetscAttrMPITypeTag(PetscEnum);
+PETSC_EXTERN MPI_Datatype MPIU_ENUM PetscAttrMPITypeTag(PetscEnum);
 
 /*MC
     PetscInt - PETSc type that represents integer - used primarily to
@@ -329,7 +329,7 @@ M*/
 E*/
 typedef enum { PETSC_FALSE,PETSC_TRUE } PetscBool;
 PETSC_EXTERN const char *const PetscBools[];
-extern MPI_Datatype MPIU_BOOL PetscAttrMPITypeTag(PetscBool);
+PETSC_EXTERN MPI_Datatype MPIU_BOOL PetscAttrMPITypeTag(PetscBool);
 
 /*E
     PetscCopyMode  - Determines how an array passed to certain functions is copied or retained
@@ -1843,11 +1843,9 @@ M*/
    ugly extern "C" {} wrappers.
 */
 #if defined(__cplusplus)
-#define PETSC_EXTERN_C extern "C" PETSC_VISIBILITY_PUBLIC
 #define EXTERN_C_BEGIN extern "C" {
 #define EXTERN_C_END }
 #else
-#define PETSC_EXTERN_C PETSC_EXTERN
 #define EXTERN_C_BEGIN
 #define EXTERN_C_END
 #endif
@@ -2009,7 +2007,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscMPIIntCast(PetscInt a,PetscMPIInt *b)
 #endif
 
 /* Special support for C++ */
-#if defined(PETSC_CLANGUAGE_CXX) && !defined(PETSC_USE_EXTERN_CXX)
+#if defined(PETSC_CLANGUAGE_CXX) && defined(__cplusplus)
 #include <petscsys.hh>
 #endif
 

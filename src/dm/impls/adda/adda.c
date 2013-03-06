@@ -759,10 +759,9 @@ PetscErrorCode  DMSetUp_ADDA(DM dm)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "DMCreate_ADDA"
-PetscErrorCode  DMCreate_ADDA(DM dm)
+PETSC_EXTERN PetscErrorCode DMCreate_ADDA(DM dm)
 {
   PetscErrorCode ierr;
   DM_ADDA        *dd;
@@ -784,7 +783,6 @@ PetscErrorCode  DMCreate_ADDA(DM dm)
   dm->ops->destroy             = DMDestroy_ADDA;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 
 #undef __FUNCT__

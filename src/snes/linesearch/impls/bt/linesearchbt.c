@@ -484,7 +484,7 @@ static PetscErrorCode SNESLineSearchSetFromOptions_BT(SNESLineSearch linesearch)
 
 .seealso: SNESLineSearchCreate(), SNESLineSearchSetType()
 M*/
-PETSC_EXTERN_C PetscErrorCode SNESLineSearchCreate_BT(SNESLineSearch linesearch)
+PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_BT(SNESLineSearch linesearch)
 {
 
   SNESLineSearch_BT *bt;

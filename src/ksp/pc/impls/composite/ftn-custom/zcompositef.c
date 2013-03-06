@@ -7,8 +7,7 @@
 #define pccompositeaddpc_          pccompositeaddpc
 #endif
 
-EXTERN_C_BEGIN
-void PETSC_STDCALL pccompositeaddpc_(PC *pc,CHAR type PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL pccompositeaddpc_(PC *pc,CHAR type PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *t;
 
@@ -17,4 +16,3 @@ void PETSC_STDCALL pccompositeaddpc_(PC *pc,CHAR type PETSC_MIXED_LEN(len),Petsc
   FREECHAR(type,t);
 }
 
-EXTERN_C_END

@@ -92,10 +92,9 @@ PetscErrorCode VecNorm_MPI(Vec xin,NormType type,PetscReal *z)
 MPI_Op VecMax_Local_Op = 0;
 MPI_Op VecMin_Local_Op = 0;
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "VecMax_Local"
-void MPIAPI VecMax_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *datatype)
+PETSC_EXTERN void MPIAPI VecMax_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *datatype)
 {
   PetscReal *xin = (PetscReal*)in,*xout = (PetscReal*)out;
 
@@ -112,12 +111,10 @@ void MPIAPI VecMax_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *datat
   }
   PetscFunctionReturnVoid(); /* cannot return a value */
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "VecMin_Local"
-void MPIAPI VecMin_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *datatype)
+PETSC_EXTERN void MPIAPI VecMin_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *datatype)
 {
   PetscReal *xin = (PetscReal*)in,*xout = (PetscReal*)out;
 
@@ -134,7 +131,6 @@ void MPIAPI VecMin_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *datat
   }
   PetscFunctionReturnVoid();
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "VecMax_MPI"

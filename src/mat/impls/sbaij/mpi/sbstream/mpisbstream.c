@@ -158,12 +158,9 @@ PetscErrorCode MatCreateMPISBSTRM(MPI_Comm comm,PetscInt bs,PetscInt m,PetscInt 
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
-extern PetscErrorCode MatConvert_SeqSBAIJ_SeqSBSTRM(Mat,MatType,MatReuse,Mat*);
+PETSC_EXTERN PetscErrorCode MatConvert_SeqSBAIJ_SeqSBSTRM(Mat,MatType,MatReuse,Mat*);
 extern PetscErrorCode MatMPISBAIJSetPreallocation_MPISBAIJ(Mat,PetscInt,PetscInt,const PetscInt[],PetscInt,const PetscInt[]);
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatMPISBAIJSetPreallocation_MPISBSTRM"
 PetscErrorCode   MatMPISBAIJSetPreallocation_MPISBSTRM(Mat B,PetscInt bs,PetscInt d_nz,const PetscInt d_nnz[],PetscInt o_nz,const PetscInt o_nnz[])
@@ -172,18 +169,12 @@ PetscErrorCode   MatMPISBAIJSetPreallocation_MPISBSTRM(Mat B,PetscInt bs,PetscIn
 
   PetscFunctionBegin;
   ierr = MatMPISBAIJSetPreallocation_MPISBAIJ(B,bs,d_nz,d_nnz,o_nz,o_nnz);CHKERRQ(ierr);
-/*
-  ierr = MatConvert_SeqSBAIJ_SeqSBSTRM(b->A, MATSEQSBSTRM, MAT_REUSE_MATRIX, &b->A);CHKERRQ(ierr);
-  ierr = MatConvert_SeqSBAIJ_SeqSBSTRM(b->B, MATSEQSBSTRM, MAT_REUSE_MATRIX, &b->B);CHKERRQ(ierr);
-*/
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_MPISBAIJ_MPISBSTRM"
-PetscErrorCode   MatConvert_MPISBAIJ_MPISBSTRM(Mat A,MatType type,MatReuse reuse,Mat *newmat)
+PETSC_EXTERN PetscErrorCode MatConvert_MPISBAIJ_MPISBSTRM(Mat A,MatType type,MatReuse reuse,Mat *newmat)
 {
   PetscErrorCode ierr;
   Mat            B = *newmat;
@@ -215,12 +206,10 @@ PetscErrorCode   MatConvert_MPISBAIJ_MPISBSTRM(Mat A,MatType type,MatReuse reuse
   *newmat = B;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_MPISBSTRM"
-PetscErrorCode   MatCreate_MPISBSTRM(Mat A)
+PETSC_EXTERN PetscErrorCode MatCreate_MPISBSTRM(Mat A)
 {
   PetscErrorCode ierr;
 
@@ -229,13 +218,10 @@ PetscErrorCode   MatCreate_MPISBSTRM(Mat A)
   ierr = MatConvert_MPISBAIJ_MPISBSTRM(A,MATMPISBSTRM,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_SBSTRM"
-PetscErrorCode   MatCreate_SBSTRM(Mat A)
+PETSC_EXTERN PetscErrorCode MatCreate_SBSTRM(Mat A)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size;
@@ -249,5 +235,4 @@ PetscErrorCode   MatCreate_SBSTRM(Mat A)
   }
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 

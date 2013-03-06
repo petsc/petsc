@@ -7,8 +7,7 @@
 #define petscviewersocketopen_     petscviewersocketopen
 #endif
 
-EXTERN_C_BEGIN
-void PETSC_STDCALL petscviewersocketopen_(MPI_Comm *comm,CHAR name PETSC_MIXED_LEN(len),int *port,PetscViewer *lab,PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL petscviewersocketopen_(MPI_Comm *comm,CHAR name PETSC_MIXED_LEN(len),int *port,PetscViewer *lab,PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *c1;
   FIXCHAR(name,len,c1);
@@ -16,4 +15,3 @@ void PETSC_STDCALL petscviewersocketopen_(MPI_Comm *comm,CHAR name PETSC_MIXED_L
   FREECHAR(name,c1);
 }
 
-EXTERN_C_END

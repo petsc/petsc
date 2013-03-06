@@ -326,10 +326,9 @@ PetscErrorCode  PCEisenstatNoDiagonalScaling(PC pc)
            PCEisenstatNoDiagonalScaling(), PCEisenstatSetOmega(), PCSOR
 M*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCCreate_Eisenstat"
-PetscErrorCode  PCCreate_Eisenstat(PC pc)
+PETSC_EXTERN PetscErrorCode PCCreate_Eisenstat(PC pc)
 {
   PetscErrorCode ierr;
   PC_Eisenstat   *eis;
@@ -358,4 +357,3 @@ PetscErrorCode  PCCreate_Eisenstat(PC pc)
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCEisenstatNoDiagonalScaling_C","PCEisenstatNoDiagonalScaling_Eisenstat",PCEisenstatNoDiagonalScaling_Eisenstat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END

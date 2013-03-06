@@ -287,10 +287,9 @@ static PetscErrorCode  DMGlobalToLocalEnd_Sliced(DM da,Vec g,InsertMode mode,Vec
 .seealso: DMType, DMCOMPOSITE, DMCreateSliced(), DMCreate()
 M*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "DMCreate_Sliced"
-PetscErrorCode  DMCreate_Sliced(DM p)
+PETSC_EXTERN PetscErrorCode DMCreate_Sliced(DM p)
 {
   PetscErrorCode ierr;
   DM_Sliced      *slice;
@@ -308,7 +307,6 @@ PetscErrorCode  DMCreate_Sliced(DM p)
   p->ops->destroy            = DMDestroy_Sliced;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "DMSlicedCreate"

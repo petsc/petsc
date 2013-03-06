@@ -11,6 +11,7 @@
 #define dmplexgetstratumsize_      DMPLEXGETSTRATUMSIZE
 #define dmplexgetstratumis_        DMPLEXGETSTRATUMIS
 #define dmplexcreatefromcelllist_  DMPLEXCREATEFROMCELLLIST
+#define dmplexcreatesection_       DMPLEXCREATESECTION
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
 #define dmplexdistribute_          dmplexdistribute
 #define dmplexhaslabel_            dmplexhaslabel
@@ -21,12 +22,12 @@
 #define dmplexgetstratumsize_      dmplexgetstratumsize
 #define dmplexgetstratumis_        dmplexgetstratumis
 #define dmplexcreatefromcelllist_  dmplexcreatefromcelllist
+#define dmplexcreatesection_       dmplexcreatesection
 #endif
 
 /* Definitions of Fortran Wrapper routines */
-EXTERN_C_BEGIN
 
-void PETSC_STDCALL dmplexdistribute_(DM *dm, CHAR name PETSC_MIXED_LEN(lenN), PetscInt *overlap, DM *dmParallel, int *ierr PETSC_END_LEN(lenN))
+PETSC_EXTERN void PETSC_STDCALL dmplexdistribute_(DM *dm, CHAR name PETSC_MIXED_LEN(lenN), PetscInt *overlap, DM *dmParallel, int *ierr PETSC_END_LEN(lenN))
 {
   char *partitioner;
 
@@ -35,7 +36,7 @@ void PETSC_STDCALL dmplexdistribute_(DM *dm, CHAR name PETSC_MIXED_LEN(lenN), Pe
   FREECHAR(name, partitioner);
 }
 
-void PETSC_STDCALL dmplexhaslabel_(DM *dm, CHAR name PETSC_MIXED_LEN(lenN), PetscBool *hasLabel, int *ierr PETSC_END_LEN(lenN))
+PETSC_EXTERN void PETSC_STDCALL dmplexhaslabel_(DM *dm, CHAR name PETSC_MIXED_LEN(lenN), PetscBool *hasLabel, int *ierr PETSC_END_LEN(lenN))
 {
   char *lname;
 
@@ -44,7 +45,7 @@ void PETSC_STDCALL dmplexhaslabel_(DM *dm, CHAR name PETSC_MIXED_LEN(lenN), Pets
   FREECHAR(name, lname);
 }
 
-void PETSC_STDCALL dmplexgetlabelvalue_(DM *dm, CHAR name PETSC_MIXED_LEN(lenN), PetscInt *point, PetscInt *value, int *ierr PETSC_END_LEN(lenN))
+PETSC_EXTERN void PETSC_STDCALL dmplexgetlabelvalue_(DM *dm, CHAR name PETSC_MIXED_LEN(lenN), PetscInt *point, PetscInt *value, int *ierr PETSC_END_LEN(lenN))
 {
   char *lname;
 
@@ -53,7 +54,7 @@ void PETSC_STDCALL dmplexgetlabelvalue_(DM *dm, CHAR name PETSC_MIXED_LEN(lenN),
   FREECHAR(name, lname);
 }
 
-void PETSC_STDCALL dmplexsetlabelvalue_(DM *dm, CHAR name PETSC_MIXED_LEN(lenN), PetscInt *point, PetscInt *value, int *ierr PETSC_END_LEN(lenN))
+PETSC_EXTERN void PETSC_STDCALL dmplexsetlabelvalue_(DM *dm, CHAR name PETSC_MIXED_LEN(lenN), PetscInt *point, PetscInt *value, int *ierr PETSC_END_LEN(lenN))
 {
   char *lname;
 
@@ -62,7 +63,7 @@ void PETSC_STDCALL dmplexsetlabelvalue_(DM *dm, CHAR name PETSC_MIXED_LEN(lenN),
   FREECHAR(name, lname);
 }
 
-void PETSC_STDCALL dmplexgetlabelsize_(DM *dm, CHAR name PETSC_MIXED_LEN(lenN), PetscInt *size, int *ierr PETSC_END_LEN(lenN))
+PETSC_EXTERN void PETSC_STDCALL dmplexgetlabelsize_(DM *dm, CHAR name PETSC_MIXED_LEN(lenN), PetscInt *size, int *ierr PETSC_END_LEN(lenN))
 {
   char *lname;
 
@@ -71,7 +72,7 @@ void PETSC_STDCALL dmplexgetlabelsize_(DM *dm, CHAR name PETSC_MIXED_LEN(lenN), 
   FREECHAR(name, lname);
 }
 
-void PETSC_STDCALL dmplexgetlabelidis_(DM *dm, CHAR name PETSC_MIXED_LEN(lenN), IS *ids, int *ierr PETSC_END_LEN(lenN))
+PETSC_EXTERN void PETSC_STDCALL dmplexgetlabelidis_(DM *dm, CHAR name PETSC_MIXED_LEN(lenN), IS *ids, int *ierr PETSC_END_LEN(lenN))
 {
   char *lname;
 
@@ -80,7 +81,7 @@ void PETSC_STDCALL dmplexgetlabelidis_(DM *dm, CHAR name PETSC_MIXED_LEN(lenN), 
   FREECHAR(name, lname);
 }
 
-void PETSC_STDCALL dmplexgetstratumsize_(DM *dm, CHAR name PETSC_MIXED_LEN(lenN), PetscInt *value, PetscInt *size, int *ierr PETSC_END_LEN(lenN))
+PETSC_EXTERN void PETSC_STDCALL dmplexgetstratumsize_(DM *dm, CHAR name PETSC_MIXED_LEN(lenN), PetscInt *value, PetscInt *size, int *ierr PETSC_END_LEN(lenN))
 {
   char *lname;
 
@@ -89,7 +90,7 @@ void PETSC_STDCALL dmplexgetstratumsize_(DM *dm, CHAR name PETSC_MIXED_LEN(lenN)
   FREECHAR(name, lname);
 }
 
-void PETSC_STDCALL dmplexgetstratumis_(DM *dm, CHAR name PETSC_MIXED_LEN(lenN), PetscInt *value, IS *is, int *ierr PETSC_END_LEN(lenN))
+PETSC_EXTERN void PETSC_STDCALL dmplexgetstratumis_(DM *dm, CHAR name PETSC_MIXED_LEN(lenN), PetscInt *value, IS *is, int *ierr PETSC_END_LEN(lenN))
 {
   char *lname;
 
@@ -98,9 +99,13 @@ void PETSC_STDCALL dmplexgetstratumis_(DM *dm, CHAR name PETSC_MIXED_LEN(lenN), 
   FREECHAR(name, lname);
 }
 
-void PETSC_STDCALL dmplexcreatefromcelllist_(MPI_Comm *comm, PetscInt *dim, PetscInt *numCells, PetscInt *numVertices, PetscInt *numCorners, PetscBool *interpolate, const int cells[], PetscInt *spaceDim, const double vertexCoords[], DM *dm, int *ierr)
+PETSC_EXTERN void PETSC_STDCALL dmplexcreatefromcelllist_(MPI_Comm *comm, PetscInt *dim, PetscInt *numCells, PetscInt *numVertices, PetscInt *numCorners, PetscBool *interpolate, const int cells[], PetscInt *spaceDim, const double vertexCoords[], DM *dm, int *ierr)
 {
   *ierr = DMPlexCreateFromCellList(*comm, *dim, *numCells, *numVertices, *numCorners, *interpolate, cells, *spaceDim, vertexCoords, dm);
 }
 
-EXTERN_C_END
+PETSC_EXTERN void PETSC_STDCALL dmplexcreatesection_(DM *dm, PetscInt *dim, PetscInt *numFields, PetscInt *numComp, PetscInt *numDof, PetscInt *numBC, PetscInt *bcField, IS *bcPoints, PetscSection *section, int *ierr)
+{
+  *ierr = DMPlexCreateSection(*dm, *dim, *numFields, numComp, numDof, *numBC, bcField, bcPoints, section);
+}
+

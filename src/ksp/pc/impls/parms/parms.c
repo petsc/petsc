@@ -339,10 +339,9 @@ static PetscErrorCode PCApply_PARMS(PC pc,Vec b,Vec x)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCPARMSSetGlobal_PARMS"
-PetscErrorCode PCPARMSSetGlobal_PARMS(PC pc,PCPARMSGlobalType type)
+static PetscErrorCode PCPARMSSetGlobal_PARMS(PC pc,PCPARMSGlobalType type)
 {
   PC_PARMS *parms = (PC_PARMS*)pc->data;
 
@@ -353,7 +352,6 @@ PetscErrorCode PCPARMSSetGlobal_PARMS(PC pc,PCPARMSGlobalType type)
   }
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "PCPARMSSetGlobal"
@@ -392,10 +390,9 @@ PetscErrorCode PCPARMSSetGlobal(PC pc,PCPARMSGlobalType type)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCPARMSSetLocal_PARMS"
-PetscErrorCode PCPARMSSetLocal_PARMS(PC pc,PCPARMSLocalType type)
+static PetscErrorCode PCPARMSSetLocal_PARMS(PC pc,PCPARMSLocalType type)
 {
   PC_PARMS *parms = (PC_PARMS*)pc->data;
 
@@ -406,7 +403,6 @@ PetscErrorCode PCPARMSSetLocal_PARMS(PC pc,PCPARMSLocalType type)
   }
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "PCPARMSSetLocal"
@@ -450,10 +446,9 @@ PetscErrorCode PCPARMSSetLocal(PC pc,PCPARMSLocalType type)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCPARMSSetSolveTolerances_PARMS"
-PetscErrorCode PCPARMSSetSolveTolerances_PARMS(PC pc,PetscReal tol,PetscInt maxits)
+static PetscErrorCode PCPARMSSetSolveTolerances_PARMS(PC pc,PetscReal tol,PetscInt maxits)
 {
   PC_PARMS *parms = (PC_PARMS*)pc->data;
 
@@ -468,7 +463,6 @@ PetscErrorCode PCPARMSSetSolveTolerances_PARMS(PC pc,PetscReal tol,PetscInt maxi
   }
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "PCPARMSSetSolveTolerances"
@@ -504,10 +498,9 @@ PetscErrorCode PCPARMSSetSolveTolerances(PC pc,PetscReal tol,PetscInt maxits)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCPARMSSetSolveRestart_PARMS"
-PetscErrorCode PCPARMSSetSolveRestart_PARMS(PC pc,PetscInt restart)
+static PetscErrorCode PCPARMSSetSolveRestart_PARMS(PC pc,PetscInt restart)
 {
   PC_PARMS *parms = (PC_PARMS*)pc->data;
 
@@ -518,7 +511,6 @@ PetscErrorCode PCPARMSSetSolveRestart_PARMS(PC pc,PetscInt restart)
   }
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "PCPARMSSetSolveRestart"
@@ -552,10 +544,9 @@ PetscErrorCode PCPARMSSetSolveRestart(PC pc,PetscInt restart)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCPARMSSetNonsymPerm_PARMS"
-PetscErrorCode PCPARMSSetNonsymPerm_PARMS(PC pc,PetscBool nonsym)
+static PetscErrorCode PCPARMSSetNonsymPerm_PARMS(PC pc,PetscBool nonsym)
 {
   PC_PARMS *parms = (PC_PARMS*)pc->data;
 
@@ -566,7 +557,6 @@ PetscErrorCode PCPARMSSetNonsymPerm_PARMS(PC pc,PetscBool nonsym)
   }
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "PCPARMSSetNonsymPerm"
@@ -601,10 +591,9 @@ PetscErrorCode PCPARMSSetNonsymPerm(PC pc,PetscBool nonsym)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCPARMSSetFill_PARMS"
-PetscErrorCode PCPARMSSetFill_PARMS(PC pc,PetscInt lfil0,PetscInt lfil1,PetscInt lfil2)
+static PetscErrorCode PCPARMSSetFill_PARMS(PC pc,PetscInt lfil0,PetscInt lfil1,PetscInt lfil2)
 {
   PC_PARMS *parms = (PC_PARMS*)pc->data;
 
@@ -623,7 +612,6 @@ PetscErrorCode PCPARMSSetFill_PARMS(PC pc,PetscInt lfil0,PetscInt lfil1,PetscInt
   }
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "PCPARMSSetFill"
@@ -701,10 +689,9 @@ PetscErrorCode PCPARMSSetFill(PC pc,PetscInt lfil0,PetscInt lfil1,PetscInt lfil2
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC
 M*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCCreate_PARMS"
-PetscErrorCode PCCreate_PARMS(PC pc)
+PETSC_EXTERN PetscErrorCode PCCreate_PARMS(PC pc)
 {
   PC_PARMS       *parms;
   PetscErrorCode ierr;
@@ -753,4 +740,3 @@ PetscErrorCode PCCreate_PARMS(PC pc)
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCPARMSSetFill_C","PCPARMSSetFill_PARMS",PCPARMSSetFill_PARMS);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END

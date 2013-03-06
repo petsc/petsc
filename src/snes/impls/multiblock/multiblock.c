@@ -621,7 +621,6 @@ PetscErrorCode SNESSolve_Multiblock(SNES snes)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "SNESMultiblockSetFields_Default"
 PetscErrorCode SNESMultiblockSetFields_Default(SNES snes, const char name[], PetscInt n, const PetscInt fields[])
@@ -677,9 +676,7 @@ PetscErrorCode SNESMultiblockSetFields_Default(SNES snes, const char name[], Pet
   mb->numBlocks++;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "SNESMultiblockSetIS_Default"
 PetscErrorCode SNESMultiblockSetIS_Default(SNES snes, const char name[], IS is)
@@ -729,9 +726,7 @@ PetscErrorCode SNESMultiblockSetIS_Default(SNES snes, const char name[], IS is)
   mb->numBlocks++;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "SNESMultiblockSetBlockSize_Default"
 PetscErrorCode  SNESMultiblockSetBlockSize_Default(SNES snes, PetscInt bs)
@@ -744,9 +739,7 @@ PetscErrorCode  SNESMultiblockSetBlockSize_Default(SNES snes, PetscInt bs)
   mb->bs = bs;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "SNESMultiblockGetSubSNES_Default"
 PetscErrorCode SNESMultiblockGetSubSNES_Default(SNES snes, PetscInt *n, SNES **subsnes)
@@ -767,9 +760,7 @@ PetscErrorCode SNESMultiblockGetSubSNES_Default(SNES snes, PetscInt *n, SNES **s
   if (n) *n = mb->numBlocks;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "SNESMultiblockSetType_Default"
 PetscErrorCode  SNESMultiblockSetType_Default(SNES snes, PCCompositeType type)
@@ -798,7 +789,6 @@ PetscErrorCode  SNESMultiblockSetType_Default(SNES snes, PCCompositeType type)
   }
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESMultiblockSetFields"
@@ -973,10 +963,9 @@ PetscErrorCode SNESMultiblockGetSubSNES(SNES snes, PetscInt *n, SNES *subsnes[])
 
 .seealso:  SNESCreate(), SNES, SNESSetType(), SNESNEWTONLS, SNESNEWTONTR, SNESNRICHARDSON
 M*/
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "SNESCreate_Multiblock"
-PetscErrorCode  SNESCreate_Multiblock(SNES snes)
+PETSC_EXTERN PetscErrorCode SNESCreate_Multiblock(SNES snes)
 {
   SNES_Multiblock *mb;
   PetscErrorCode  ierr;
@@ -1006,4 +995,3 @@ PetscErrorCode  SNESCreate_Multiblock(SNES snes)
   ierr = PetscObjectComposeFunction((PetscObject) snes, "SNESMultiblockGetSubSNES_C",   "SNESMultiblockGetSubSNES_Default",   SNESMultiblockGetSubSNES_Default);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END

@@ -49,25 +49,25 @@ typedef struct {
   KSPGMRESHEADER
 } KSP_GMRES;
 
-extern PetscErrorCode KSPView_GMRES(KSP,PetscViewer);
-extern PetscErrorCode KSPSetUp_GMRES(KSP);
-extern PetscErrorCode KSPSetFromOptions_GMRES(KSP);
-extern PetscErrorCode KSPComputeExtremeSingularValues_GMRES(KSP,PetscReal*,PetscReal*);
-extern PetscErrorCode KSPComputeEigenvalues_GMRES(KSP,PetscInt,PetscReal*,PetscReal*,PetscInt*);
-extern PetscErrorCode KSPReset_GMRES(KSP);
-extern PetscErrorCode KSPDestroy_GMRES(KSP);
-extern PetscErrorCode KSPGMRESGetNewVectors(KSP,PetscInt);
+PETSC_INTERN PetscErrorCode KSPView_GMRES(KSP,PetscViewer);
+PETSC_INTERN PetscErrorCode KSPSetUp_GMRES(KSP);
+PETSC_INTERN PetscErrorCode KSPSetFromOptions_GMRES(KSP);
+PETSC_INTERN PetscErrorCode KSPComputeExtremeSingularValues_GMRES(KSP,PetscReal*,PetscReal*);
+PETSC_INTERN PetscErrorCode KSPComputeEigenvalues_GMRES(KSP,PetscInt,PetscReal*,PetscReal*,PetscInt*);
+PETSC_INTERN PetscErrorCode KSPReset_GMRES(KSP);
+PETSC_INTERN PetscErrorCode KSPDestroy_GMRES(KSP);
+PETSC_INTERN PetscErrorCode KSPGMRESGetNewVectors(KSP,PetscInt);
 
 typedef PetscErrorCode (*FCN)(KSP,PetscInt); /* force argument to next function to not be extern C*/
 
-PetscErrorCode KSPGMRESSetHapTol_GMRES(KSP,PetscReal);
-PetscErrorCode KSPGMRESSetPreAllocateVectors_GMRES(KSP);
-PetscErrorCode KSPGMRESSetRestart_GMRES(KSP,PetscInt);
-PetscErrorCode KSPGMRESGetRestart_GMRES(KSP,PetscInt*);
-PetscErrorCode KSPGMRESSetOrthogonalization_GMRES(KSP,FCN);
-PetscErrorCode KSPGMRESGetOrthogonalization_GMRES(KSP,FCN*);
-PetscErrorCode KSPGMRESSetCGSRefinementType_GMRES(KSP,KSPGMRESCGSRefinementType);
-PetscErrorCode KSPGMRESGetCGSRefinementType_GMRES(KSP,KSPGMRESCGSRefinementType*);
+PETSC_INTERN PetscErrorCode KSPGMRESSetHapTol_GMRES(KSP,PetscReal);
+PETSC_INTERN PetscErrorCode KSPGMRESSetPreAllocateVectors_GMRES(KSP);
+PETSC_INTERN PetscErrorCode KSPGMRESSetRestart_GMRES(KSP,PetscInt);
+PETSC_INTERN PetscErrorCode KSPGMRESGetRestart_GMRES(KSP,PetscInt*);
+PETSC_INTERN PetscErrorCode KSPGMRESSetOrthogonalization_GMRES(KSP,FCN);
+PETSC_INTERN PetscErrorCode KSPGMRESGetOrthogonalization_GMRES(KSP,FCN*);
+PETSC_INTERN PetscErrorCode KSPGMRESSetCGSRefinementType_GMRES(KSP,KSPGMRESCGSRefinementType);
+PETSC_INTERN PetscErrorCode KSPGMRESGetCGSRefinementType_GMRES(KSP,KSPGMRESCGSRefinementType*);
 
 /* These macros are guarded because they are redefined by derived implementations */
 #if !defined(KSPGMRES_NO_MACROS)
