@@ -406,6 +406,8 @@ PETSC_EXTERN_C PetscErrorCode  DMCreate_Shell(DM dm)
   dm->ops->creatematrix       = DMCreateMatrix_Shell;
   dm->ops->view               = DMView_Shell;
   dm->ops->load               = DMLoad_Shell;
+  dm->ops->globaltolocalbegin = DMShellDefaultGlobalToLocalBegin;
+  dm->ops->globaltolocalend   = DMShellDefaultGlobalToLocalEnd;
   PetscFunctionReturn(0);
 }
 
