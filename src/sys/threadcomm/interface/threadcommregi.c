@@ -1,15 +1,13 @@
 
 #include <petsc-private/threadcommimpl.h>     /*I    "petscthreadcomm.h"  I*/
 
-EXTERN_C_BEGIN
-extern PetscErrorCode PetscThreadCommCreate_NoThread(PetscThreadComm);
+PETSC_EXTERN PetscErrorCode PetscThreadCommCreate_NoThread(PetscThreadComm);
 #if defined(PETSC_HAVE_PTHREADCLASSES)
-extern PetscErrorCode PetscThreadCommCreate_PThread(PetscThreadComm);
+PETSC_EXTERN PetscErrorCode PetscThreadCommCreate_PThread(PetscThreadComm);
 #endif
 #if defined(PETSC_HAVE_OPENMP)
-extern PetscErrorCode PetscThreadCommCreate_OpenMP(PetscThreadComm);
+PETSC_EXTERN PetscErrorCode PetscThreadCommCreate_OpenMP(PetscThreadComm);
 #endif
-EXTERN_C_END
 
 extern PetscBool PetscThreadCommRegisterAllCalled;
 

@@ -3,13 +3,6 @@
 #include "../src/mat/impls/sbaij/seq/sbaij.h"
 #include "../src/mat/impls/sbaij/seq/sbstream/sbstream.h"
 
-#if 0
-extern PetscErrorCode MatFactorGetSolverPackage_seqsbaij_sbstrm(Mat, const MatSolverPackage*);
-extern PetscErrorCode MatICCFactorSymbolic_sbstrm(Mat,Mat, IS, const MatFactorInfo*);
-extern PetscErrorCode MatCholeskyFactorSymbolic_sbstrm(Mat, Mat, IS, const MatFactorInfo*);
-extern PetscErrorCode MatCholeskyFactorNumeric_sbstrm(Mat, Mat, const MatFactorInfo*);
-#endif
-
 extern PetscErrorCode  MatAssemblyEnd_SeqSBAIJ(Mat,MatAssemblyType);
 
 
@@ -105,10 +98,9 @@ PetscErrorCode MatAssemblyEnd_SeqSBSTRM(Mat A, MatAssemblyType mode)
   PetscFunctionReturn(0);
 }
 /*=========================================================*/
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_SeqSBAIJ_SeqSBSTRM"
-PetscErrorCode MatConvert_SeqSBAIJ_SeqSBSTRM(Mat A,MatType type,MatReuse reuse,Mat *newmat)
+PETSC_EXTERN PetscErrorCode MatConvert_SeqSBAIJ_SeqSBSTRM(Mat A,MatType type,MatReuse reuse,Mat *newmat)
 {
   PetscErrorCode ierr;
 
@@ -140,7 +132,6 @@ PetscErrorCode MatConvert_SeqSBAIJ_SeqSBSTRM(Mat A,MatType type,MatReuse reuse,M
   *newmat = B;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 /*=========================================================*/
 #undef __FUNCT__
@@ -158,10 +149,10 @@ PetscErrorCode MatCreateSeqSBSTRM(MPI_Comm comm,PetscInt bs,PetscInt m,PetscInt 
   PetscFunctionReturn(0);
 }
 /*=========================================================*/
-EXTERN_C_BEGIN
+
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_SeqSBSTRM"
-PetscErrorCode  MatCreate_SeqSBSTRM(Mat A)
+PETSC_EXTERN PetscErrorCode MatCreate_SeqSBSTRM(Mat A)
 {
   PetscErrorCode ierr;
 
@@ -172,7 +163,7 @@ PetscErrorCode  MatCreate_SeqSBSTRM(Mat A)
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_seqisbaij_seqsbstrm_C","MatConvert_SeqSBAIJ_SeqSBSTRM",MatConvert_SeqSBAIJ_SeqSBSTRM);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
+
 /*=========================================================*/
 /*=========================================================*/
 #undef __FUNCT__
@@ -558,7 +549,7 @@ PetscErrorCode SeqSBSTRM_create_sbstrm(Mat A)
   PetscFunctionReturn(0);
 }
 /*=========================================================*/
-EXTERN_C_BEGIN
+
 #undef __FUNCT__
 #define __FUNCT__ "MatSeqSBSTRMTransform"
 PetscErrorCode MatSeqSBSTRMTransform(Mat A)
@@ -567,5 +558,4 @@ PetscErrorCode MatSeqSBSTRMTransform(Mat A)
   SeqSBSTRM_convert_sbstrm(A);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 

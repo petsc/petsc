@@ -21,9 +21,7 @@ PETSC_EXTERN void    *PETSC_NULL_DOUBLE_Fortran;
 PETSC_EXTERN void    *PETSC_NULL_REAL_Fortran;
 PETSC_EXTERN void    *PETSC_NULL_OBJECT_Fortran;
 PETSC_EXTERN void    *PETSC_NULL_BOOL_Fortran;
-EXTERN_C_BEGIN
-PETSC_EXTERN void    (*PETSC_NULL_FUNCTION_Fortran)(void);
-EXTERN_C_END
+PETSC_EXTERN void (*PETSC_NULL_FUNCTION_Fortran)(void);
 /*  ----------------------------------------------------------------------*/
 /*
    PETSc object C pointers are stored directly as

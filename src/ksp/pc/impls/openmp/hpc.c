@@ -269,10 +269,9 @@ $     -hmpi_pc_type hypre -hmpi_pc_hypre_type boomeramg
 
 M*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCCreate_HMPI"
-PetscErrorCode  PCCreate_HMPI(PC pc)
+PETSC_EXTERN PetscErrorCode PCCreate_HMPI(PC pc)
 {
   PetscErrorCode ierr;
   PC_HMPI        *red;
@@ -295,4 +294,3 @@ PetscErrorCode  PCCreate_HMPI(PC pc)
   pc->ops->view           = PCView_HMPI;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END

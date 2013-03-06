@@ -23,7 +23,6 @@ typedef struct {
   PetscInt    p,s;          /* variables to tell the size of the runge-kutta solver */
 } TS_RK;
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TSRKSetTolerance_RK"
 PetscErrorCode  TSRKSetTolerance_RK(TS ts,PetscReal aabs)
@@ -34,7 +33,6 @@ PetscErrorCode  TSRKSetTolerance_RK(TS ts,PetscReal aabs)
   rk->tolerance = aabs;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "TSRKSetTolerance"
@@ -469,10 +467,9 @@ static PetscErrorCode TSView_RK(TS ts,PetscViewer viewer)
 
 M*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TSCreate_RK"
-PetscErrorCode  TSCreate_RK(TS ts)
+PETSC_EXTERN PetscErrorCode TSCreate_RK(TS ts)
 {
   TS_RK          *rk;
   PetscErrorCode ierr;
@@ -490,4 +487,3 @@ PetscErrorCode  TSCreate_RK(TS ts)
   ierr = PetscObjectComposeFunction((PetscObject)ts,"TSRKSetTolerance_C","TSRKSetTolerance_RK",TSRKSetTolerance_RK);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END

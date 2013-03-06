@@ -38,7 +38,7 @@ PetscErrorCode PetscThreadCommFinalizePackage(void)
 
   Note: this is declared extern "C" because it is passed to MPI_Keyval_create()
 */
-PETSC_EXTERN_C PetscMPIInt MPIAPI Petsc_CopyThreadComm(MPI_Comm comm,PetscMPIInt keyval,void *extra_state,void *attr_in,void *attr_out,int *flag)
+PETSC_EXTERN PetscMPIInt MPIAPI Petsc_CopyThreadComm(MPI_Comm comm,PetscMPIInt keyval,void *extra_state,void *attr_in,void *attr_out,int *flag)
 {
   PetscErrorCode  ierr;
   PetscThreadComm tcomm = (PetscThreadComm)attr_in;
@@ -53,7 +53,6 @@ PETSC_EXTERN_C PetscMPIInt MPIAPI Petsc_CopyThreadComm(MPI_Comm comm,PetscMPIInt
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "Petsc_DelThreadComm"
 /*
@@ -63,7 +62,7 @@ EXTERN_C_BEGIN
 
   Note: this is declared extern "C" because it is passed to MPI_Keyval_create()
 */
-PetscMPIInt MPIAPI Petsc_DelThreadComm(MPI_Comm comm,PetscMPIInt keyval,void *attr,void *extra_state)
+PETSC_EXTERN PetscMPIInt MPIAPI Petsc_DelThreadComm(MPI_Comm comm,PetscMPIInt keyval,void *attr,void *extra_state)
 {
   PetscErrorCode ierr;
 
@@ -72,7 +71,6 @@ PetscMPIInt MPIAPI Petsc_DelThreadComm(MPI_Comm comm,PetscMPIInt keyval,void *at
   ierr = PetscInfo1(0,"Deleting thread communicator data in an MPI_Comm %ld\n",(long)comm);if (ierr) PetscFunctionReturn((PetscMPIInt)ierr);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscThreadCommInitializePackage"

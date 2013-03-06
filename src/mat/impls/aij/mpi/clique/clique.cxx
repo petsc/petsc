@@ -269,7 +269,6 @@ PetscErrorCode MatCholeskyFactorSymbolic_Clique(Mat F,Mat A,IS r,const MatFactor
 
 M*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatFactorGetSolverPackage_Clique"
 PetscErrorCode MatFactorGetSolverPackage_Clique(Mat A,const MatSolverPackage *type)
@@ -278,12 +277,10 @@ PetscErrorCode MatFactorGetSolverPackage_Clique(Mat A,const MatSolverPackage *ty
   *type = MATSOLVERCLIQUE;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatGetFactor_aij_clique"
-PetscErrorCode MatGetFactor_aij_clique(Mat A,MatFactorType ftype,Mat *F)
+PETSC_EXTERN PetscErrorCode MatGetFactor_aij_clique(Mat A,MatFactorType ftype,Mat *F)
 {
   Mat            B;
   Mat_Clique     *cliq;
@@ -330,4 +327,3 @@ PetscErrorCode MatGetFactor_aij_clique(Mat A,MatFactorType ftype,Mat *F)
   *F = B;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END

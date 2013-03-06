@@ -72,10 +72,9 @@ PetscErrorCode CharacteristicSetUp_DA(Characteristic c)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "CharacteristicCreate_DA"
-PetscErrorCode CharacteristicCreate_DA(Characteristic c)
+PETSC_EXTERN PetscErrorCode CharacteristicCreate_DA(Characteristic c)
 {
   Characteristic_DA *da;
   PetscErrorCode    ierr;
@@ -93,7 +92,6 @@ PetscErrorCode CharacteristicCreate_DA(Characteristic c)
   da->dummy = 0;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "DMDAMapCoordsToPeriodicDomain"

@@ -684,10 +684,9 @@ static PetscErrorCode PCSetFromOptions_GASM(PC pc)
 
 /*------------------------------------------------------------------------------------*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCGASMSetSubdomains_GASM"
-PetscErrorCode  PCGASMSetSubdomains_GASM(PC pc,PetscInt n,IS iis[],IS ois[])
+static PetscErrorCode  PCGASMSetSubdomains_GASM(PC pc,PetscInt n,IS iis[],IS ois[])
 {
   PC_GASM        *osm = (PC_GASM*)pc->data;
   PetscErrorCode ierr;
@@ -741,12 +740,10 @@ PetscErrorCode  PCGASMSetSubdomains_GASM(PC pc,PetscInt n,IS iis[],IS ois[])
   }
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCGASMSetTotalSubdomains_GASM"
-PetscErrorCode  PCGASMSetTotalSubdomains_GASM(PC pc,PetscInt N, PetscBool create_local)
+static PetscErrorCode  PCGASMSetTotalSubdomains_GASM(PC pc,PetscInt N, PetscBool create_local)
 {
   PC_GASM        *osm = (PC_GASM*)pc->data;
   PetscErrorCode ierr;
@@ -780,12 +777,10 @@ PetscErrorCode  PCGASMSetTotalSubdomains_GASM(PC pc,PetscInt N, PetscBool create
   }
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCGASMSetOverlap_GASM"
-PetscErrorCode  PCGASMSetOverlap_GASM(PC pc,PetscInt ovl)
+static PetscErrorCode  PCGASMSetOverlap_GASM(PC pc,PetscInt ovl)
 {
   PC_GASM *osm = (PC_GASM*)pc->data;
 
@@ -795,12 +790,10 @@ PetscErrorCode  PCGASMSetOverlap_GASM(PC pc,PetscInt ovl)
   if (!pc->setupcalled) osm->overlap = ovl;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCGASMSetType_GASM"
-PetscErrorCode  PCGASMSetType_GASM(PC pc,PCGASMType type)
+static PetscErrorCode  PCGASMSetType_GASM(PC pc,PCGASMType type)
 {
   PC_GASM *osm = (PC_GASM*)pc->data;
 
@@ -809,12 +802,10 @@ PetscErrorCode  PCGASMSetType_GASM(PC pc,PCGASMType type)
   osm->type_set = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCGASMSetSortIndices_GASM"
-PetscErrorCode  PCGASMSetSortIndices_GASM(PC pc,PetscBool doSort)
+static PetscErrorCode  PCGASMSetSortIndices_GASM(PC pc,PetscBool doSort)
 {
   PC_GASM *osm = (PC_GASM*)pc->data;
 
@@ -822,16 +813,14 @@ PetscErrorCode  PCGASMSetSortIndices_GASM(PC pc,PetscBool doSort)
   osm->sort_indices = doSort;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCGASMGetSubKSP_GASM"
 /*
    FIX: This routine might need to be modified once multiple ranks per subdomain are allowed.
         In particular, it would upset the global subdomain number calculation.
 */
-PetscErrorCode  PCGASMGetSubKSP_GASM(PC pc,PetscInt *n,PetscInt *first,KSP **ksp)
+static PetscErrorCode  PCGASMGetSubKSP_GASM(PC pc,PetscInt *n,PetscInt *first,KSP **ksp)
 {
   PC_GASM        *osm = (PC_GASM*)pc->data;
   PetscErrorCode ierr;
@@ -852,8 +841,6 @@ PetscErrorCode  PCGASMGetSubKSP_GASM(PC pc,PetscInt *n,PetscInt *first,KSP **ksp
   }
   PetscFunctionReturn(0);
 } /* PCGASMGetSubKSP_GASM() */
-EXTERN_C_END
-
 
 #undef __FUNCT__
 #define __FUNCT__ "PCGASMSetSubdomains"
@@ -1150,10 +1137,9 @@ PetscErrorCode  PCGASMGetSubKSP(PC pc,PetscInt *n_local,PetscInt *first_local,KS
 
 M*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCCreate_GASM"
-PetscErrorCode  PCCreate_GASM(PC pc)
+PETSC_EXTERN PetscErrorCode PCCreate_GASM(PC pc)
 {
   PetscErrorCode ierr;
   PC_GASM        *osm;
@@ -1199,7 +1185,6 @@ PetscErrorCode  PCCreate_GASM(PC pc)
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGASMGetSubKSP_C","PCGASMGetSubKSP_GASM",PCGASMGetSubKSP_GASM);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 
 #undef __FUNCT__

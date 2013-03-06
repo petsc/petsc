@@ -436,10 +436,9 @@ static PetscErrorCode  KSPCGUseSingleReduction_CG(KSP ksp,PetscBool flg)
            KSPCGSetType(), KSPCGUseSingleReduction()
 
 M*/
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "KSPCreate_CG"
-PetscErrorCode  KSPCreate_CG(KSP ksp)
+PETSC_EXTERN PetscErrorCode KSPCreate_CG(KSP ksp)
 {
   PetscErrorCode ierr;
   KSP_CG         *cg;
@@ -479,7 +478,6 @@ PetscErrorCode  KSPCreate_CG(KSP ksp)
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPCGUseSingleReduction_C","KSPCGUseSingleReduction_CG", KSPCGUseSingleReduction_CG);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 
 

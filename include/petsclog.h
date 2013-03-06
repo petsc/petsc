@@ -485,7 +485,7 @@ PETSC_EXTERN PetscErrorCode PetscIntStackTop(PetscIntStack, int *);
 PETSC_EXTERN PetscErrorCode PetscIntStackEmpty(PetscIntStack, PetscBool  *);
 
 /* Special support for C++ */
-#if defined(PETSC_CLANGUAGE_CXX) && !defined(PETSC_USE_EXTERN_CXX)
+#if defined(PETSC_CLANGUAGE_CXX) && defined(__cplusplus)
 #include <petsclog.hh>
 #endif
 

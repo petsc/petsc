@@ -678,7 +678,6 @@ static PetscErrorCode MatDuplicate_Nest(Mat A,MatDuplicateOption op,Mat *B)
 }
 
 /* nest api */
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatNestGetSubMat_Nest"
 PetscErrorCode MatNestGetSubMat_Nest(Mat A,PetscInt idxm,PetscInt jdxm,Mat *mat)
@@ -691,7 +690,6 @@ PetscErrorCode MatNestGetSubMat_Nest(Mat A,PetscInt idxm,PetscInt jdxm,Mat *mat)
   *mat = bA->m[idxm][jdxm];
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "MatNestGetSubMat"
@@ -721,7 +719,6 @@ PetscErrorCode  MatNestGetSubMat(Mat A,PetscInt idxm,PetscInt jdxm,Mat *sub)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatNestSetSubMat_Nest"
 PetscErrorCode MatNestSetSubMat_Nest(Mat A,PetscInt idxm,PetscInt jdxm,Mat mat)
@@ -747,7 +744,6 @@ PetscErrorCode MatNestSetSubMat_Nest(Mat A,PetscInt idxm,PetscInt jdxm,Mat mat)
   bA->m[idxm][jdxm] = mat;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "MatNestSetSubMat"
@@ -780,7 +776,6 @@ PetscErrorCode  MatNestSetSubMat(Mat A,PetscInt idxm,PetscInt jdxm,Mat sub)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatNestGetSubMats_Nest"
 PetscErrorCode MatNestGetSubMats_Nest(Mat A,PetscInt *M,PetscInt *N,Mat ***mat)
@@ -793,7 +788,6 @@ PetscErrorCode MatNestGetSubMats_Nest(Mat A,PetscInt *M,PetscInt *N,Mat ***mat)
   if (mat) *mat = bA->m;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "MatNestGetSubMats"
@@ -827,7 +821,6 @@ PetscErrorCode  MatNestGetSubMats(Mat A,PetscInt *M,PetscInt *N,Mat ***mat)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatNestGetSize_Nest"
 PetscErrorCode  MatNestGetSize_Nest(Mat A,PetscInt *M,PetscInt *N)
@@ -839,7 +832,6 @@ PetscErrorCode  MatNestGetSize_Nest(Mat A,PetscInt *M,PetscInt *N)
   if (N) *N = bA->nc;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "MatNestGetSize"
@@ -872,7 +864,7 @@ PetscErrorCode  MatNestGetSize(Mat A,PetscInt *M,PetscInt *N)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatNestGetISs_Nest"
-PETSC_EXTERN_C PetscErrorCode MatNestGetISs_Nest(Mat A,IS rows[],IS cols[])
+static PetscErrorCode MatNestGetISs_Nest(Mat A,IS rows[],IS cols[])
 {
   Mat_Nest *vs = (Mat_Nest*)A->data;
   PetscInt i;
@@ -916,7 +908,7 @@ PetscErrorCode  MatNestGetISs(Mat A,IS rows[],IS cols[])
 
 #undef __FUNCT__
 #define __FUNCT__ "MatNestGetLocalISs_Nest"
-PETSC_EXTERN_C PetscErrorCode MatNestGetLocalISs_Nest(Mat A,IS rows[],IS cols[])
+static PetscErrorCode MatNestGetLocalISs_Nest(Mat A,IS rows[],IS cols[])
 {
   Mat_Nest *vs = (Mat_Nest*)A->data;
   PetscInt i;
@@ -958,7 +950,6 @@ PetscErrorCode  MatNestGetLocalISs(Mat A,IS rows[],IS cols[])
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatNestSetVecType_Nest"
 PetscErrorCode  MatNestSetVecType_Nest(Mat A,VecType vtype)
@@ -973,7 +964,6 @@ PetscErrorCode  MatNestSetVecType_Nest(Mat A,VecType vtype)
   else A->ops->getvecs = (PetscErrorCode (*)(Mat,Vec*,Vec*)) 0;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "MatNestSetVecType"
@@ -1001,7 +991,6 @@ PetscErrorCode  MatNestSetVecType(Mat A,VecType vtype)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatNestSetSubMats_Nest"
 PetscErrorCode MatNestSetSubMats_Nest(Mat A,PetscInt nr,const IS is_row[],PetscInt nc,const IS is_col[],const Mat a[])
@@ -1050,7 +1039,6 @@ PetscErrorCode MatNestSetSubMats_Nest(Mat A,PetscInt nr,const IS is_row[],PetscI
   ierr = PetscMemzero(s->right,nc*sizeof(Vec));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "MatNestSetSubMats"
@@ -1375,10 +1363,9 @@ PetscErrorCode MatCreateNest(MPI_Comm comm,PetscInt nr,const IS is_row[],PetscIn
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_Nest_AIJ"
-PetscErrorCode MatConvert_Nest_AIJ(Mat A,MatType newtype,MatReuse reuse,Mat *newmat)
+PETSC_EXTERN PetscErrorCode MatConvert_Nest_AIJ(Mat A,MatType newtype,MatReuse reuse,Mat *newmat)
 {
   PetscErrorCode ierr;
   Mat_Nest       *nest = (Mat_Nest*)A->data;
@@ -1513,7 +1500,6 @@ PetscErrorCode MatConvert_Nest_AIJ(Mat A,MatType newtype,MatReuse reuse,Mat *new
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 /*MC
   MATNEST - MATNEST = "nest" - Matrix type consisting of nested submatrices, each stored separately.
@@ -1527,10 +1513,9 @@ EXTERN_C_END
 
 .seealso: MatCreate(), MatType, MatCreateNest()
 M*/
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_Nest"
-PetscErrorCode MatCreate_Nest(Mat A)
+PETSC_EXTERN PetscErrorCode MatCreate_Nest(Mat A)
 {
   Mat_Nest       *s;
   PetscErrorCode ierr;
@@ -1582,4 +1567,3 @@ PetscErrorCode MatCreate_Nest(Mat A)
   ierr = PetscObjectChangeTypeName((PetscObject)A,MATNEST);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END

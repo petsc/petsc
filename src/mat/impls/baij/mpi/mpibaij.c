@@ -49,7 +49,6 @@ PetscErrorCode MatGetRowMaxAbs_MPIBAIJ(Mat A,Vec v,PetscInt idx[])
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatStoreValues_MPIBAIJ"
 PetscErrorCode  MatStoreValues_MPIBAIJ(Mat mat)
@@ -62,9 +61,7 @@ PetscErrorCode  MatStoreValues_MPIBAIJ(Mat mat)
   ierr = MatStoreValues(aij->B);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatRetrieveValues_MPIBAIJ"
 PetscErrorCode  MatRetrieveValues_MPIBAIJ(Mat mat)
@@ -77,7 +74,6 @@ PetscErrorCode  MatRetrieveValues_MPIBAIJ(Mat mat)
   ierr = MatRetrieveValues(aij->B);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 /*
      Local utility routine that creates a mapping from the global column
@@ -2884,7 +2880,6 @@ static struct _MatOps MatOps_Values = {
        MatInvertBlockDiagonal_MPIBAIJ
 };
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatGetDiagonalBlock_MPIBAIJ"
 PetscErrorCode  MatGetDiagonalBlock_MPIBAIJ(Mat A,Mat *a)
@@ -2893,13 +2888,9 @@ PetscErrorCode  MatGetDiagonalBlock_MPIBAIJ(Mat A,Mat *a)
   *a = ((Mat_MPIBAIJ*)A->data)->A;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
-extern PetscErrorCode  MatConvert_MPIBAIJ_MPISBAIJ(Mat, MatType,MatReuse,Mat*);
-EXTERN_C_END
+PETSC_EXTERN PetscErrorCode MatConvert_MPIBAIJ_MPISBAIJ(Mat, MatType,MatReuse,Mat*);
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatMPIBAIJSetPreallocationCSR_MPIBAIJ"
 PetscErrorCode MatMPIBAIJSetPreallocationCSR_MPIBAIJ(Mat B,PetscInt bs,const PetscInt ii[],const PetscInt jj[],const PetscScalar V[])
@@ -2962,7 +2953,6 @@ PetscErrorCode MatMPIBAIJSetPreallocationCSR_MPIBAIJ(Mat B,PetscInt bs,const Pet
   ierr = MatSetOption(B,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMPIBAIJSetPreallocationCSR"
@@ -2997,10 +2987,9 @@ PetscErrorCode  MatMPIBAIJSetPreallocationCSR(Mat B,PetscInt bs,const PetscInt i
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatMPIBAIJSetPreallocation_MPIBAIJ"
-PetscErrorCode  MatMPIBAIJSetPreallocation_MPIBAIJ(Mat B,PetscInt bs,PetscInt d_nz,PetscInt *d_nnz,PetscInt o_nz,PetscInt *o_nnz)
+PetscErrorCode  MatMPIBAIJSetPreallocation_MPIBAIJ(Mat B,PetscInt bs,PetscInt d_nz,const PetscInt *d_nnz,PetscInt o_nz,const PetscInt *o_nnz)
 {
   Mat_MPIBAIJ    *b;
   PetscErrorCode ierr;
@@ -3068,18 +3057,13 @@ PetscErrorCode  MatMPIBAIJSetPreallocation_MPIBAIJ(Mat B,PetscInt bs,PetscInt d_
   B->preallocated = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 extern PetscErrorCode  MatDiagonalScaleLocal_MPIBAIJ(Mat,Vec);
 extern PetscErrorCode  MatSetHashTableFactor_MPIBAIJ(Mat,PetscReal);
-EXTERN_C_END
 
-
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_MPIBAIJ_MPIAdj"
-PetscErrorCode  MatConvert_MPIBAIJ_MPIAdj(Mat B, MatType newtype,MatReuse reuse,Mat *adj)
+PETSC_EXTERN PetscErrorCode MatConvert_MPIBAIJ_MPIAdj(Mat B, MatType newtype,MatReuse reuse,Mat *adj)
 {
   Mat_MPIBAIJ    *b = (Mat_MPIBAIJ*)B->data;
   PetscErrorCode ierr;
@@ -3123,17 +3107,14 @@ PetscErrorCode  MatConvert_MPIBAIJ_MPIAdj(Mat B, MatType newtype,MatReuse reuse,
   ierr = MatCreateMPIAdj(PetscObjectComm((PetscObject)B),M,B->cmap->N/B->rmap->bs,ii,jj,NULL,adj);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
-EXTERN_C_BEGIN
-PetscErrorCode  MatConvert_SeqBAIJ_SeqAIJ(Mat,MatType,MatReuse,Mat*);
-EXTERN_C_END
 
-EXTERN_C_BEGIN
+PETSC_EXTERN PetscErrorCode MatConvert_SeqBAIJ_SeqAIJ(Mat,MatType,MatReuse,Mat*);
+
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_MPIBAIJ_MPIAIJ"
-PetscErrorCode  MatConvert_MPIBAIJ_MPIAIJ(Mat A,MatType newtype,MatReuse reuse,Mat *newmat)
+PETSC_EXTERN PetscErrorCode MatConvert_MPIBAIJ_MPIAIJ(Mat A,MatType newtype,MatReuse reuse,Mat *newmat)
 {
   PetscErrorCode ierr;
   Mat_MPIBAIJ    *a = (Mat_MPIBAIJ*)A->data;
@@ -3166,13 +3147,10 @@ PetscErrorCode  MatConvert_MPIBAIJ_MPIAIJ(Mat A,MatType newtype,MatReuse reuse,M
   }
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #if defined(PETSC_HAVE_MUMPS)
-extern PetscErrorCode MatGetFactor_baij_mumps(Mat,MatFactorType,Mat*);
+PETSC_EXTERN PetscErrorCode MatGetFactor_baij_mumps(Mat,MatFactorType,Mat*);
 #endif
-EXTERN_C_END
 
 /*MC
    MATMPIBAIJ - MATMPIBAIJ = "mpibaij" - A matrix type to be used for distributed block sparse matrices.
@@ -3187,14 +3165,11 @@ EXTERN_C_END
 .seealso: MatCreateMPIBAIJ
 M*/
 
-EXTERN_C_BEGIN
-extern PetscErrorCode MatConvert_MPIBAIJ_MPIBSTRM(Mat,MatType,MatReuse,Mat*);
-EXTERN_C_END
+PETSC_EXTERN PetscErrorCode MatConvert_MPIBAIJ_MPIBSTRM(Mat,MatType,MatReuse,Mat*);
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_MPIBAIJ"
-PetscErrorCode  MatCreate_MPIBAIJ(Mat B)
+PETSC_EXTERN PetscErrorCode MatCreate_MPIBAIJ(Mat B)
 {
   Mat_MPIBAIJ    *b;
   PetscErrorCode ierr;
@@ -3275,7 +3250,6 @@ PetscErrorCode  MatCreate_MPIBAIJ(Mat B)
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATMPIBAIJ);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 /*MC
    MATBAIJ - MATBAIJ = "baij" - A matrix type to be used for block sparse matrices.
@@ -3883,7 +3857,6 @@ PetscErrorCode  MatMPIBAIJSetHashTableFactor(Mat mat,PetscReal fact)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatSetHashTableFactor_MPIBAIJ"
 PetscErrorCode  MatSetHashTableFactor_MPIBAIJ(Mat mat,PetscReal fact)
@@ -3895,7 +3868,6 @@ PetscErrorCode  MatSetHashTableFactor_MPIBAIJ(Mat mat,PetscReal fact)
   baij->ht_fact = fact;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMPIBAIJGetSeqBAIJ"

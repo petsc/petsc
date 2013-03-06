@@ -1,21 +1,19 @@
 
 #include <petscvec.h>
-EXTERN_C_BEGIN
-extern PetscErrorCode  VecCreate_Seq(Vec);
-extern PetscErrorCode  VecCreate_MPI(Vec);
-extern PetscErrorCode  VecCreate_Standard(Vec);
-extern PetscErrorCode  VecCreate_Shared(Vec);
+PETSC_EXTERN PetscErrorCode VecCreate_Seq(Vec);
+PETSC_EXTERN PetscErrorCode VecCreate_MPI(Vec);
+PETSC_EXTERN PetscErrorCode VecCreate_Standard(Vec);
+PETSC_EXTERN PetscErrorCode VecCreate_Shared(Vec);
 #if defined(PETSC_HAVE_CUSP)
-extern PetscErrorCode  VecCreate_SeqCUSP(Vec);
-extern PetscErrorCode  VecCreate_MPICUSP(Vec);
-extern PetscErrorCode  VecCreate_CUSP(Vec);
+PETSC_EXTERN PetscErrorCode VecCreate_SeqCUSP(Vec);
+PETSC_EXTERN PetscErrorCode VecCreate_MPICUSP(Vec);
+PETSC_EXTERN PetscErrorCode VecCreate_CUSP(Vec);
 #endif
 #if 0
 #if defined(PETSC_HAVE_SIEVE)
-extern PetscErrorCode  VecCreate_Sieve(Vec);
+PETSC_EXTERN PetscErrorCode VecCreate_Sieve(Vec);
 #endif
 #endif
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "VecRegisterAll"

@@ -219,11 +219,9 @@ static PetscErrorCode PCSetFromOptions_BiCGStabCUSP(PC pc)
 
 /* -------------------------------------------------------------------------- */
 
-
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCCreate_BiCGStabCUSP"
-PetscErrorCode  PCCreate_BiCGStabCUSP(PC pc)
+PETSC_EXTERN PetscErrorCode PCCreate_BiCGStabCUSP(PC pc)
 {
   PC_BiCGStabCUSP *bicg;
   PetscErrorCode  ierr;
@@ -263,5 +261,4 @@ PetscErrorCode  PCCreate_BiCGStabCUSP(PC pc)
   ierr = PetscObjectComposeFunction((PetscObject)pc, "PCBiCGStabCUSPSetUseVerboseMonitor_C", "PCBiCGStabCUSPSetUseVerboseMonitor_BiCGStabCUSP", PCBiCGStabCUSPSetUseVerboseMonitor_BiCGStabCUSP);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 

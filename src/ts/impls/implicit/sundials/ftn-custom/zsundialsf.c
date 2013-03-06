@@ -7,13 +7,10 @@
 #define tssundialsgetiterations_             tssundialsgetiterations
 #endif
 
-EXTERN_C_BEGIN
-
-void PETSC_STDCALL tssundialsgetiterations_(TS *ts,PetscInt *nonlin,PetscInt *lin,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL tssundialsgetiterations_(TS *ts,PetscInt *nonlin,PetscInt *lin,PetscErrorCode *ierr)
 {
   CHKFORTRANNULLINTEGER(nonlin);
   CHKFORTRANNULLINTEGER(lin);
   *ierr = TSSundialsGetIterations(*ts,nonlin,lin);
 }
 
-EXTERN_C_END

@@ -8,10 +8,9 @@
 #include <engine.h>   /* MATLAB include file */
 #include <mex.h>      /* MATLAB include file */
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatSeqAIJToMatlab"
-mxArray *MatSeqAIJToMatlab(Mat B)
+PETSC_EXTERN mxArray *MatSeqAIJToMatlab(Mat B)
 {
   PetscErrorCode ierr;
   Mat_SeqAIJ     *aij = (Mat_SeqAIJ*)B->data;
@@ -29,13 +28,10 @@ mxArray *MatSeqAIJToMatlab(Mat B)
   for (i=0; i<B->rmap->n+1; i++) ii[i] = aij->i[i];
   PetscFunctionReturn(mat);
 }
-EXTERN_C_END
 
-
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatlabEnginePut_SeqAIJ"
-PetscErrorCode  MatlabEnginePut_SeqAIJ(PetscObject obj,void *mengine)
+PETSC_EXTERN PetscErrorCode MatlabEnginePut_SeqAIJ(PetscObject obj,void *mengine)
 {
   PetscErrorCode ierr;
   mxArray        *mat;
@@ -46,9 +42,7 @@ PetscErrorCode  MatlabEnginePut_SeqAIJ(PetscObject obj,void *mengine)
   engPutVariable((Engine*)mengine,obj->name,mat);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatSeqAIJFromMatlab"
 /*@C
@@ -63,7 +57,7 @@ EXTERN_C_BEGIN
   Level: intermediate
 
 @*/
-PetscErrorCode  MatSeqAIJFromMatlab(mxArray *mmat,Mat mat)
+PETSC_EXTERN PetscErrorCode MatSeqAIJFromMatlab(mxArray *mmat,Mat mat)
 {
   PetscErrorCode ierr;
   PetscInt       nz,n,m,*i,*j,k;
@@ -110,10 +104,7 @@ PetscErrorCode  MatSeqAIJFromMatlab(mxArray *mmat,Mat mat)
   ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatlabEngineGet_SeqAIJ"
 PetscErrorCode  MatlabEngineGet_SeqAIJ(PetscObject obj,void *mengine)
@@ -127,7 +118,6 @@ PetscErrorCode  MatlabEngineGet_SeqAIJ(PetscObject obj,void *mengine)
   ierr = MatSeqAIJFromMatlab(mmat,mat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSolve_Matlab"
@@ -205,7 +195,6 @@ PetscErrorCode MatLUFactorSymbolic_Matlab(Mat F,Mat A,IS r,IS c,const MatFactorI
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatFactorGetSolverPackage_seqaij_matlab"
 PetscErrorCode MatFactorGetSolverPackage_seqaij_matlab(Mat A,const MatSolverPackage *type)
@@ -214,12 +203,10 @@ PetscErrorCode MatFactorGetSolverPackage_seqaij_matlab(Mat A,const MatSolverPack
   *type = MATSOLVERMATLAB;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatGetFactor_seqaij_matlab"
-PetscErrorCode MatGetFactor_seqaij_matlab(Mat A,MatFactorType ftype,Mat *F)
+PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_matlab(Mat A,MatFactorType ftype,Mat *F)
 {
   PetscErrorCode ierr;
 
@@ -237,7 +224,6 @@ PetscErrorCode MatGetFactor_seqaij_matlab(Mat A,MatFactorType ftype,Mat *F)
   (*F)->factortype = ftype;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 /* --------------------------------------------------------------------------------*/
 

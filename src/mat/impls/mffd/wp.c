@@ -159,7 +159,6 @@ static PetscErrorCode MatMFFDDestroy_WP(MatMFFD ctx)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatMFFDWPSetComputeNormU_P"
 PetscErrorCode  MatMFFDWPSetComputeNormU_P(Mat mat,PetscBool flag)
@@ -171,7 +170,6 @@ PetscErrorCode  MatMFFDWPSetComputeNormU_P(Mat mat,PetscBool flag)
   hctx->computenormU = flag;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMFFDWPSetComputeNormU"
@@ -207,7 +205,6 @@ PetscErrorCode  MatMFFDWPSetComputeNormU(Mat A,PetscBool flag)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatCreateMFFD_WP"
 /*
@@ -218,7 +215,7 @@ EXTERN_C_BEGIN
 .  ctx - the matrix free context created by MatCreateMFFD()
 
 */
-PetscErrorCode  MatCreateMFFD_WP(MatMFFD ctx)
+PETSC_EXTERN PetscErrorCode MatCreateMFFD_WP(MatMFFD ctx)
 {
   PetscErrorCode ierr;
   MatMFFD_WP     *hctx;
@@ -238,7 +235,6 @@ PetscErrorCode  MatCreateMFFD_WP(MatMFFD ctx)
   ierr = PetscObjectComposeFunction((PetscObject)ctx->mat,"MatMFFDWPSetComputeNormU_C","MatMFFDWPSetComputeNormU_P",MatMFFDWPSetComputeNormU_P);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 
 

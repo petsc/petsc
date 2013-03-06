@@ -222,10 +222,9 @@ static struct _MatOps MatOps_Values = {0,
 
 M*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_Scatter"
-PetscErrorCode  MatCreate_Scatter(Mat A)
+PETSC_EXTERN PetscErrorCode MatCreate_Scatter(Mat A)
 {
   Mat_Scatter    *b;
   PetscErrorCode ierr;
@@ -245,7 +244,6 @@ PetscErrorCode  MatCreate_Scatter(Mat A)
   ierr = PetscObjectChangeTypeName((PetscObject)A,MATSCATTER);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "MatCreateScatter"

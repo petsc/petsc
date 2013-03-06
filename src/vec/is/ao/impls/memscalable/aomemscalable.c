@@ -405,10 +405,9 @@ PetscErrorCode  AOCreateMemoryScalable_private(MPI_Comm comm,PetscInt napp,const
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "AOCreate_MemoryScalable"
-PetscErrorCode AOCreate_MemoryScalable(AO ao)
+PETSC_EXTERN PetscErrorCode AOCreate_MemoryScalable(AO ao)
 {
   PetscErrorCode    ierr;
   IS                isapp=ao->isapp,ispetsc=ao->ispetsc;
@@ -484,7 +483,6 @@ PetscErrorCode AOCreate_MemoryScalable(AO ao)
   ierr = PetscFree2(lens,disp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "AOCreateMemoryScalable"

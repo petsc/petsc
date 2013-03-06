@@ -172,10 +172,9 @@ extern PetscErrorCode  PCFactorSetDropTolerance_ILU(PC,PetscReal,PetscReal,Petsc
 
 M*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCCreate_ICC"
-PetscErrorCode  PCCreate_ICC(PC pc)
+PETSC_EXTERN PetscErrorCode PCCreate_ICC(PC pc)
 {
   PetscErrorCode ierr;
   PC_ICC         *icc;
@@ -223,6 +222,5 @@ PetscErrorCode  PCCreate_ICC(PC pc)
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetDropTolerance_C","PCFactorSetDropTolerance_ILU",PCFactorSetDropTolerance_ILU);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 

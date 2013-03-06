@@ -6,11 +6,9 @@ static PetscBool         TSAdaptPackageInitialized;
 static PetscBool         TSAdaptRegisterAllCalled;
 static PetscClassId      TSADAPT_CLASSID;
 
-EXTERN_C_BEGIN
-PetscErrorCode  TSAdaptCreate_Basic(TSAdapt);
-PetscErrorCode  TSAdaptCreate_None(TSAdapt);
-PetscErrorCode  TSAdaptCreate_CFL(TSAdapt);
-EXTERN_C_END
+PETSC_EXTERN PetscErrorCode TSAdaptCreate_Basic(TSAdapt);
+PETSC_EXTERN PetscErrorCode TSAdaptCreate_None(TSAdapt);
+PETSC_EXTERN PetscErrorCode TSAdaptCreate_CFL(TSAdapt);
 
 #undef __FUNCT__
 #define __FUNCT__ "TSAdaptRegister"

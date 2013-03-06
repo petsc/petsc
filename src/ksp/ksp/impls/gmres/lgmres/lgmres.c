@@ -796,10 +796,9 @@ static PetscErrorCode  KSPLGMRESSetAugDim_LGMRES(KSP ksp,PetscInt aug_dim)
 
 M*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "KSPCreate_LGMRES"
-PetscErrorCode  KSPCreate_LGMRES(KSP ksp)
+PETSC_EXTERN PetscErrorCode KSPCreate_LGMRES(KSP ksp)
 {
   KSP_LGMRES     *lgmres;
   PetscErrorCode ierr;
@@ -854,4 +853,3 @@ PetscErrorCode  KSPCreate_LGMRES(KSP ksp)
   lgmres->matvecs         = 0;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END

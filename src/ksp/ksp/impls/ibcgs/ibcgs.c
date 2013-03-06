@@ -314,10 +314,10 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
 
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPBICG, KSPBCGSL, KSPIBCGS, KSPSetLagNorm()
 M*/
-EXTERN_C_BEGIN
+
 #undef __FUNCT__
 #define __FUNCT__ "KSPCreate_IBCGS"
-PetscErrorCode  KSPCreate_IBCGS(KSP ksp)
+PETSC_EXTERN PetscErrorCode KSPCreate_IBCGS(KSP ksp)
 {
   PetscErrorCode ierr;
 
@@ -339,4 +339,3 @@ PetscErrorCode  KSPCreate_IBCGS(KSP ksp)
 #endif
   PetscFunctionReturn(0);
 }
-EXTERN_C_END

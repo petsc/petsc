@@ -49,10 +49,9 @@ typedef struct {
 
 extern PetscErrorCode MatAssemblyEnd_SeqAIJ(Mat,MatAssemblyType);
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_SeqAIJPERM_SeqAIJ"
-PetscErrorCode  MatConvert_SeqAIJPERM_SeqAIJ(Mat A,MatType type,MatReuse reuse,Mat *newmat)
+PETSC_EXTERN PetscErrorCode MatConvert_SeqAIJPERM_SeqAIJ(Mat A,MatType type,MatReuse reuse,Mat *newmat)
 {
   /* This routine is only called to convert a MATAIJPERM to its base PETSc type, */
   /* so we will ignore 'MatType type'. */
@@ -85,7 +84,6 @@ PetscErrorCode  MatConvert_SeqAIJPERM_SeqAIJ(Mat A,MatType type,MatReuse reuse,M
   *newmat = B;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "MatDestroy_SeqAIJPERM"
@@ -587,10 +585,9 @@ PetscErrorCode MatMultAdd_SeqAIJPERM(Mat A,Vec xx,Vec ww,Vec yy)
  * SeqAIJPERM matrix.  This routine is called by the MatCreate_SeqAIJPERM()
  * routine, but can also be used to convert an assembled SeqAIJ matrix
  * into a SeqAIJPERM one. */
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_SeqAIJ_SeqAIJPERM"
-PetscErrorCode  MatConvert_SeqAIJ_SeqAIJPERM(Mat A,MatType type,MatReuse reuse,Mat *newmat)
+PETSC_EXTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJPERM(Mat A,MatType type,MatReuse reuse,Mat *newmat)
 {
   PetscErrorCode ierr;
   Mat            B = *newmat;
@@ -622,8 +619,6 @@ PetscErrorCode  MatConvert_SeqAIJ_SeqAIJPERM(Mat A,MatType type,MatReuse reuse,M
   *newmat = B;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
-
 
 #undef __FUNCT__
 #define __FUNCT__ "MatCreateSeqAIJPERM"
@@ -672,10 +667,9 @@ PetscErrorCode  MatCreateSeqAIJPERM(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_SeqAIJPERM"
-PetscErrorCode  MatCreate_SeqAIJPERM(Mat A)
+PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJPERM(Mat A)
 {
   PetscErrorCode ierr;
 
@@ -684,5 +678,4 @@ PetscErrorCode  MatCreate_SeqAIJPERM(Mat A)
   ierr = MatConvert_SeqAIJ_SeqAIJPERM(A,MATSEQAIJPERM,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 

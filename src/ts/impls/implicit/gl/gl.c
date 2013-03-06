@@ -484,10 +484,9 @@ static PetscErrorCode TSGLCompleteStep_RescaleAndModify(TSGLScheme sc,PetscReal 
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TSGLCreate_IRKS"
-PetscErrorCode  TSGLCreate_IRKS(TS ts)
+PETSC_EXTERN PetscErrorCode TSGLCreate_IRKS(TS ts)
 {
   TS_GL          *gl = (TS_GL*)ts->data;
   PetscErrorCode ierr;
@@ -621,7 +620,6 @@ PetscErrorCode  TSGLCreate_IRKS(TS ts)
   }
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "TSGLSetType"
@@ -731,7 +729,6 @@ PetscErrorCode  TSGLGetAdapt(TS ts,TSGLAdapt *adapt)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TSGLAccept_Always"
 PetscErrorCode  TSGLAccept_Always(TS ts,PetscReal tleft,PetscReal h,const PetscReal enorms[],PetscBool  *accept)
@@ -740,7 +737,6 @@ PetscErrorCode  TSGLAccept_Always(TS ts,PetscReal tleft,PetscReal h,const PetscR
   *accept = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "TSGLUpdateWRMS"
@@ -784,7 +780,6 @@ static PetscErrorCode TSGLVecNormWRMS(TS ts,Vec X,PetscReal *nrm)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TSGLSetType_GL"
 PetscErrorCode  TSGLSetType_GL(TS ts,TSGLType type)
@@ -839,7 +834,6 @@ PetscErrorCode  TSGLGetAdapt_GL(TS ts,TSGLAdapt *adapt)
   *adapt = gl->adapt;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "TSGLChooseNextScheme"
@@ -1512,10 +1506,9 @@ PetscErrorCode  TSGLFinalizePackage(void)
 .seealso:  TSCreate(), TS, TSSetType()
 
 M*/
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TSCreate_GL"
-PetscErrorCode  TSCreate_GL(TS ts)
+PETSC_EXTERN PetscErrorCode TSCreate_GL(TS ts)
 {
   TS_GL          *gl;
   PetscErrorCode ierr;
@@ -1552,4 +1545,3 @@ PetscErrorCode  TSCreate_GL(TS ts)
   ierr = PetscObjectComposeFunction((PetscObject)ts,"TSGLGetAdapt_C",     "TSGLGetAdapt_GL",     &TSGLGetAdapt_GL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END

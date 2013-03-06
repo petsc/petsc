@@ -550,7 +550,6 @@ static PetscErrorCode DMDAArrayMPIIO(DM da,PetscViewer viewer,Vec xin,PetscBool 
 }
 #endif
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "VecView_MPI_DA"
 PetscErrorCode  VecView_MPI_DA(Vec xin,PetscViewer viewer)
@@ -661,7 +660,6 @@ PetscErrorCode  VecView_MPI_DA(Vec xin,PetscViewer viewer)
   }
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #if defined(PETSC_HAVE_HDF5)
 #undef __FUNCT__
@@ -790,7 +788,6 @@ PetscErrorCode VecLoad_Binary_DA(Vec xin, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "VecLoad_Default_DA"
 PetscErrorCode  VecLoad_Default_DA(Vec xin, PetscViewer viewer)
@@ -820,4 +817,3 @@ PetscErrorCode  VecLoad_Default_DA(Vec xin, PetscViewer viewer)
   } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported for vector loading", ((PetscObject)viewer)->type_name);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END

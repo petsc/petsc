@@ -57,10 +57,9 @@ static PetscErrorCode MatPartitioningApply_Square(MatPartitioning part,IS *parti
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatPartitioningCreate_Current"
-PetscErrorCode  MatPartitioningCreate_Current(MatPartitioning part)
+PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Current(MatPartitioning part)
 {
   PetscFunctionBegin;
   part->ops->apply   = MatPartitioningApply_Current;
@@ -68,12 +67,10 @@ PetscErrorCode  MatPartitioningCreate_Current(MatPartitioning part)
   part->ops->destroy = 0;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatPartitioningCreate_Square"
-PetscErrorCode  MatPartitioningCreate_Square(MatPartitioning part)
+PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Square(MatPartitioning part)
 {
   PetscFunctionBegin;
   part->ops->apply   = MatPartitioningApply_Square;
@@ -81,7 +78,7 @@ PetscErrorCode  MatPartitioningCreate_Square(MatPartitioning part)
   part->ops->destroy = 0;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
+
 
 /* ===========================================================================================*/
 

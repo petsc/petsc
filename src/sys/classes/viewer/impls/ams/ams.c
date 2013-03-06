@@ -8,7 +8,6 @@ typedef struct {
   AMS_Comm ams_comm;
 } PetscViewer_AMS;
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerAMSSetCommName_AMS"
 PetscErrorCode PetscViewerAMSSetCommName_AMS(PetscViewer v,const char name[])
@@ -54,9 +53,7 @@ PetscErrorCode PetscViewerAMSSetCommName_AMS(PetscViewer v,const char name[])
   }
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerAMSGetAMSComm_AMS"
 PetscErrorCode PetscViewerAMSGetAMSComm_AMS(PetscViewer lab,AMS_Comm *ams_comm)
@@ -68,7 +65,6 @@ PetscErrorCode PetscViewerAMSGetAMSComm_AMS(PetscViewer lab,AMS_Comm *ams_comm)
   *ams_comm = vams->ams_comm;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerAMSSetCommName"
@@ -219,10 +215,9 @@ static PetscErrorCode PetscViewerDestroy_AMS(PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerCreate_AMS"
-PetscErrorCode PetscViewerCreate_AMS(PetscViewer v)
+PETSC_EXTERN PetscErrorCode PetscViewerCreate_AMS(PetscViewer v)
 {
   PetscViewer_AMS *vams;
   PetscErrorCode  ierr;
@@ -237,6 +232,6 @@ PetscErrorCode PetscViewerCreate_AMS(PetscViewer v)
   ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerAMSGetAMSComm_C","PetscViewerAMSGetAMSComm_AMS",PetscViewerAMSGetAMSComm_AMS);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
+
 
 

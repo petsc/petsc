@@ -48,7 +48,6 @@ PetscErrorCode PetscViewerDestroy_HDF5(PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerFileSetMode_HDF5"
 PetscErrorCode  PetscViewerFileSetMode_HDF5(PetscViewer viewer, PetscFileMode type)
@@ -60,9 +59,7 @@ PetscErrorCode  PetscViewerFileSetMode_HDF5(PetscViewer viewer, PetscFileMode ty
   hdf5->btype = type;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerFileSetName_HDF5"
 PetscErrorCode  PetscViewerFileSetName_HDF5(PetscViewer viewer, const char name[])
@@ -101,12 +98,10 @@ PetscErrorCode  PetscViewerFileSetName_HDF5(PetscViewer viewer, const char name[
   H5Pclose(plist_id);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerCreate_HDF5"
-PetscErrorCode  PetscViewerCreate_HDF5(PetscViewer v)
+PETSC_EXTERN PetscErrorCode PetscViewerCreate_HDF5(PetscViewer v)
 {
   PetscViewer_HDF5 *hdf5;
   PetscErrorCode   ierr;
@@ -127,7 +122,6 @@ PetscErrorCode  PetscViewerCreate_HDF5(PetscViewer v)
   ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerFileSetMode_C","PetscViewerFileSetMode_HDF5",PetscViewerFileSetMode_HDF5);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerHDF5Open"

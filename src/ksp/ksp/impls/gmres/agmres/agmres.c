@@ -781,10 +781,9 @@ Mathematics, 62(9), pp. 1171-1186, 2012
  KSPGMRESCGSRefinementType, KSPGMRESSetCGSRefinementType(), KSPGMRESGetCGSRefinementType(), KSPGMRESMonitorKrylov(), KSPSetPCSide()
  M*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "KSPCreate_AGMRES"
-PetscErrorCode  KSPCreate_AGMRES(KSP ksp)
+PETSC_EXTERN PetscErrorCode KSPCreate_AGMRES(KSP ksp)
 {
   KSP_AGMRES     *agmres;
   PetscErrorCode ierr;
@@ -852,4 +851,3 @@ PetscErrorCode  KSPCreate_AGMRES(KSP ksp)
   agmres->DeflPrecond = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END

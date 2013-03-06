@@ -528,7 +528,6 @@ PetscErrorCode MatSetupDM(Mat mat,DM da)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatView_MPI_DA"
 PetscErrorCode  MatView_MPI_DA(Mat A,PetscViewer viewer)
@@ -569,9 +568,7 @@ PetscErrorCode  MatView_MPI_DA(Mat A,PetscViewer viewer)
   ierr = MatDestroy(&Anatural);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatLoad_MPI_DA"
 PetscErrorCode  MatLoad_MPI_DA(Mat A,PetscViewer viewer)
@@ -610,7 +607,6 @@ PetscErrorCode  MatLoad_MPI_DA(Mat A,PetscViewer viewer)
   ierr = MatDestroy(&Anatural);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "DMCreateMatrix_DA"

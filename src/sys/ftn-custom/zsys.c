@@ -14,14 +14,11 @@
 #define petscobjectstatedecrease_  petscobjectstatedecrease
 #endif
 
-
-EXTERN_C_BEGIN
-
-void PETSC_STDCALL  petscobjectstateincrease_(PetscObject *obj, PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL petscobjectstateincrease_(PetscObject *obj, PetscErrorCode *ierr)
 {
   *ierr = PetscObjectStateIncrease(*obj);
 }
-void PETSC_STDCALL  petscobjectstatedecrease_(PetscObject *obj, PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL petscobjectstatedecrease_(PetscObject *obj, PetscErrorCode *ierr)
 {
   *ierr = PetscObjectStateDecrease(*obj);
 }
@@ -34,7 +31,7 @@ void flush__(int unit)
 #endif
 
 
-void PETSC_STDCALL petscoffsetfortran_(PetscScalar *x,PetscScalar *y,size_t *shift,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL petscoffsetfortran_(PetscScalar *x,PetscScalar *y,size_t *shift,PetscErrorCode *ierr)
 {
   *ierr  = 0;
   *shift = y - x;
@@ -62,7 +59,7 @@ static char FIXCHARSTRING[1024];
   } \
 }
 
-void PETSC_STDCALL chkmemfortran_(int *line,CHAR file PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL chkmemfortran_(int *line,CHAR file PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *c1;
 
@@ -70,7 +67,5 @@ void PETSC_STDCALL chkmemfortran_(int *line,CHAR file PETSC_MIXED_LEN(len),Petsc
   *ierr = PetscMallocValidate(*line,"Userfunction",c1," ");
 }
 
-
-EXTERN_C_END
 
 

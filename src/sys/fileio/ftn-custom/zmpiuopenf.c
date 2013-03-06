@@ -6,8 +6,7 @@
 #define petscfopen_                   petscfopen
 #endif
 
-EXTERN_C_BEGIN
-void PETSC_STDCALL petscfopen_(MPI_Comm *comm,CHAR fname PETSC_MIXED_LEN(len1),CHAR fmode PETSC_MIXED_LEN(len2),
+PETSC_EXTERN void PETSC_STDCALL petscfopen_(MPI_Comm *comm,CHAR fname PETSC_MIXED_LEN(len1),CHAR fmode PETSC_MIXED_LEN(len2),
                                FILE **file,PetscErrorCode *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2))
 {
   char *c1,*c2;
@@ -19,4 +18,3 @@ void PETSC_STDCALL petscfopen_(MPI_Comm *comm,CHAR fname PETSC_MIXED_LEN(len1),C
   FREECHAR(fmode,c2);
 }
 
-EXTERN_C_END

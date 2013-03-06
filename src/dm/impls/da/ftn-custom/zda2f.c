@@ -7,9 +7,7 @@
 #define dmdacreate2d_                  dmdacreate2d
 #endif
 
-EXTERN_C_BEGIN
-
-void PETSC_STDCALL dmdacreate2d_(MPI_Comm *comm,DMDABoundaryType *bx,DMDABoundaryType *by,DMDAStencilType
+PETSC_EXTERN void PETSC_STDCALL dmdacreate2d_(MPI_Comm *comm,DMDABoundaryType *bx,DMDABoundaryType *by,DMDAStencilType
                   *stencil_type,PetscInt *M,PetscInt *N,PetscInt *m,PetscInt *n,PetscInt *w,
                   PetscInt *s,PetscInt *lx,PetscInt *ly,DM *inra,PetscErrorCode *ierr)
 {
@@ -18,4 +16,3 @@ void PETSC_STDCALL dmdacreate2d_(MPI_Comm *comm,DMDABoundaryType *bx,DMDABoundar
   *ierr = DMDACreate2d(MPI_Comm_f2c(*(MPI_Fint*)&*comm),*bx,*by,*stencil_type,*M,*N,*m,*n,*w,*s,lx,ly,inra);
 }
 
-EXTERN_C_END

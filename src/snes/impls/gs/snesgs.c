@@ -347,10 +347,9 @@ PetscErrorCode SNESSolve_GS(SNES snes)
 .seealso: SNESCreate(), SNES, SNESSetType(), SNESSetGS(), SNESType (for list of available types)
 M*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "SNESCreate_GS"
-PetscErrorCode SNESCreate_GS(SNES snes)
+PETSC_EXTERN PetscErrorCode SNESCreate_GS(SNES snes)
 {
   SNES_GS        *gs;
   PetscErrorCode ierr;
@@ -382,4 +381,3 @@ PetscErrorCode SNESCreate_GS(SNES snes)
   snes->data = (void*) gs;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END

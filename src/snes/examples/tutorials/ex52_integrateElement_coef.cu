@@ -272,7 +272,6 @@ PetscErrorCode calculateGridCoef(const int N, const int blockSize, unsigned int&
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "IntegrateElementCoefBatchGPU"
 /*
@@ -293,7 +292,7 @@ EXTERN_C_BEGIN
   Output Parameter:
 . elemVec - An array of the element vectors for each cell
 */
-PetscErrorCode IntegrateElementCoefBatchGPU(PetscInt Ne, PetscInt Ncb, PetscInt Nbc, PetscInt Nbl, const PetscScalar coefficients[], const PetscScalar physCoefficients[],
+PETSC_EXTERN PetscErrorCode IntegrateElementCoefBatchGPU(PetscInt Ne, PetscInt Ncb, PetscInt Nbc, PetscInt Nbl, const PetscScalar coefficients[], const PetscScalar physCoefficients[],
                                             const PetscReal jacobianInverses[], const PetscReal jacobianDeterminants[], PetscScalar elemVec[],
                                             PetscLogEvent event, PetscInt debug)
 {
@@ -409,4 +408,4 @@ PetscErrorCode IntegrateElementCoefBatchGPU(PetscInt Ne, PetscInt Ncb, PetscInt 
   }
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
+

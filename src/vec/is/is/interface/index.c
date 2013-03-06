@@ -1013,7 +1013,6 @@ PetscErrorCode  ISGetBlockSize(IS is,PetscInt *size)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "ISGetIndicesCopy"
 PetscErrorCode ISGetIndicesCopy(IS is, PetscInt idx[])
@@ -1029,7 +1028,6 @@ PetscErrorCode ISGetIndicesCopy(IS is, PetscInt idx[])
   ierr = ISRestoreIndices(is,&ptr);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 /*MC
     ISGetIndicesF90 - Accesses the elements of an index set from Fortran90.

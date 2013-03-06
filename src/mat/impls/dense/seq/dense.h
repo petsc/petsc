@@ -19,21 +19,19 @@ typedef struct {
   PetscBool    user_alloc;        /* true if the user provided the dense data */
 } Mat_SeqDense;
 
-PETSC_INTERN PetscErrorCode MatMult_SeqDense(Mat A,Vec,Vec);
-PETSC_INTERN PetscErrorCode MatMultAdd_SeqDense(Mat A,Vec,Vec,Vec);
-PETSC_INTERN PetscErrorCode MatMultTranspose_SeqDense(Mat A,Vec,Vec);
-PETSC_INTERN PetscErrorCode MatMultTransposeAdd_SeqDense(Mat A,Vec,Vec,Vec);
-PETSC_INTERN PetscErrorCode MatMatMultSymbolic_SeqDense_SeqDense(Mat,Mat,PetscReal,Mat*);
-PETSC_INTERN PetscErrorCode MatMatMultNumeric_SeqDense_SeqDense(Mat,Mat,Mat);
-PETSC_INTERN PetscErrorCode MatTransposeMatMult_SeqDense_SeqDense(Mat,Mat,MatReuse,PetscReal,Mat*);
-PETSC_INTERN PetscErrorCode MatTransposeMatMultSymbolic_SeqDense_SeqDense(Mat,Mat,PetscReal,Mat*);
-PETSC_INTERN PetscErrorCode MatTransposeMatMultNumeric_SeqDense_SeqDense(Mat,Mat,Mat);
-PETSC_INTERN PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqDense(Mat,Mat,PetscReal,Mat*);
-PETSC_INTERN PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqDense(Mat,Mat,Mat);
+extern PetscErrorCode MatMult_SeqDense(Mat A,Vec,Vec);
+extern PetscErrorCode MatMultAdd_SeqDense(Mat A,Vec,Vec,Vec);
+extern PetscErrorCode MatMultTranspose_SeqDense(Mat A,Vec,Vec);
+extern PetscErrorCode MatMultTransposeAdd_SeqDense(Mat A,Vec,Vec,Vec);
+extern PetscErrorCode MatMatMultSymbolic_SeqDense_SeqDense(Mat,Mat,PetscReal,Mat*);
+extern PetscErrorCode MatMatMultNumeric_SeqDense_SeqDense(Mat,Mat,Mat);
+extern PetscErrorCode MatTransposeMatMult_SeqDense_SeqDense(Mat,Mat,MatReuse,PetscReal,Mat*);
+extern PetscErrorCode MatTransposeMatMultSymbolic_SeqDense_SeqDense(Mat,Mat,PetscReal,Mat*);
+extern PetscErrorCode MatTransposeMatMultNumeric_SeqDense_SeqDense(Mat,Mat,Mat);
+extern PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqDense(Mat,Mat,PetscReal,Mat*);
+extern PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqDense(Mat,Mat,Mat);
 
-EXTERN_C_BEGIN
-PETSC_INTERN PetscErrorCode MatMatMult_SeqAIJ_SeqDense(Mat,Mat,MatReuse,PetscReal,Mat*);
-PETSC_INTERN PetscErrorCode MatMatMult_SeqDense_SeqDense(Mat,Mat,MatReuse,PetscReal,Mat*);
-EXTERN_C_END
+PETSC_EXTERN PetscErrorCode MatMatMult_SeqAIJ_SeqDense(Mat,Mat,MatReuse,PetscReal,Mat*);
+PETSC_EXTERN PetscErrorCode MatMatMult_SeqDense_SeqDense(Mat,Mat,MatReuse,PetscReal,Mat*);
 
 #endif

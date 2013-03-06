@@ -1,9 +1,8 @@
 #include <../src/sys/threadcomm/impls/nothread/nothreadimpl.h>
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PetscThreadCommCreate_NoThread"
-PetscErrorCode PetscThreadCommCreate_NoThread(PetscThreadComm tcomm)
+PETSC_EXTERN PetscErrorCode PetscThreadCommCreate_NoThread(PetscThreadComm tcomm)
 {
   PetscErrorCode ierr;
 
@@ -12,4 +11,3 @@ PetscErrorCode PetscThreadCommCreate_NoThread(PetscThreadComm tcomm)
   ierr = PetscStrcpy(tcomm->type,NOTHREAD);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END

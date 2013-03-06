@@ -1,7 +1,7 @@
 #if !defined(__PETSCLOG_HH)
 #define __PETSCLOG_HH
 
-#if defined(PETSC_CLANGUAGE_CXX) && !defined(PETSC_USE_EXTERN_CXX)
+#if defined(PETSC_CLANGUAGE_CXX) && defined(__cplusplus)
 #include <map>
 #include <string>
 

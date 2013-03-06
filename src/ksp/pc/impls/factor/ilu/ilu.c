@@ -352,10 +352,9 @@ static PetscErrorCode PCApplySymmetricRight_ILU(PC pc,Vec x,Vec y)
 
 M*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCCreate_ILU"
-PetscErrorCode  PCCreate_ILU(PC pc)
+PETSC_EXTERN PetscErrorCode PCCreate_ILU(PC pc)
 {
   PetscErrorCode ierr;
   PC_ILU         *ilu;
@@ -415,4 +414,3 @@ PetscErrorCode  PCCreate_ILU(PC pc)
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorReorderForNonzeroDiagonal_C","PCFactorReorderForNonzeroDiagonal_ILU",PCFactorReorderForNonzeroDiagonal_ILU);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END

@@ -266,10 +266,9 @@ PetscErrorCode DMCreateFieldDecomposition_DA(DM dm, PetscInt *len,char ***nameli
 M*/
 
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "DMCreate_DA"
-PetscErrorCode  DMCreate_DA(DM da)
+PETSC_EXTERN PetscErrorCode DMCreate_DA(DM da)
 {
   PetscErrorCode ierr;
   DM_DA          *dd;
@@ -359,7 +358,6 @@ PetscErrorCode  DMCreate_DA(DM da)
   da->ops->createddscatters            = DMCreateDomainDecompositionScatters_DA;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "DMDACreate"

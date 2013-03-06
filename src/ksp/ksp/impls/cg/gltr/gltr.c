@@ -1501,10 +1501,9 @@ $  other KSP converged/diverged reasons
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPGLTRSetRadius(), KSPGLTRGetNormD(), KSPGLTRGetObjFcn(), KSPGLTRGetMinEig(), KSPGLTRGetLambda()
 M*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "KSPCreate_GLTR"
-PetscErrorCode  KSPCreate_GLTR(KSP ksp)
+PETSC_EXTERN PetscErrorCode KSPCreate_GLTR(KSP ksp)
 {
   PetscErrorCode ierr;
   KSP_GLTR       *cg;
@@ -1549,4 +1548,3 @@ PetscErrorCode  KSPCreate_GLTR(KSP ksp)
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGLTRGetLambda_C","KSPGLTRGetLambda_GLTR",KSPGLTRGetLambda_GLTR);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END

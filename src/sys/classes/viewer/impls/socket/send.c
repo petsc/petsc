@@ -43,20 +43,18 @@ typedef unsigned long   u_long;
 #include <sys/stat.h>
 #include <../src/sys/classes/viewer/impls/socket/socket.h>
 
-EXTERN_C_BEGIN
 #if defined(PETSC_NEED_CLOSE_PROTO)
-extern int close(int);
+PETSC_EXTERN int close(int);
 #endif
 #if defined(PETSC_NEED_SOCKET_PROTO)
-extern int socket(int,int,int);
+PETSC_EXTERN int socket(int,int,int);
 #endif
 #if defined(PETSC_NEED_SLEEP_PROTO)
-extern int sleep(unsigned);
+PETSC_EXTERN int sleep(unsigned);
 #endif
 #if defined(PETSC_NEED_CONNECT_PROTO)
-extern int connect(int,struct sockaddr*,int);
+PETSC_EXTERN int connect(int,struct sockaddr*,int);
 #endif
-EXTERN_C_END
 
 /*--------------------------------------------------------------*/
 #undef __FUNCT__
@@ -320,10 +318,9 @@ PetscErrorCode PetscViewerSetFromOptions_Socket(PetscViewer v)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerCreate_Socket"
-PetscErrorCode  PetscViewerCreate_Socket(PetscViewer v)
+PETSC_EXTERN PetscErrorCode PetscViewerCreate_Socket(PetscViewer v)
 {
   PetscViewer_Socket *vmatlab;
   PetscErrorCode     ierr;
@@ -340,7 +337,6 @@ PetscErrorCode  PetscViewerCreate_Socket(PetscViewer v)
   ierr                   = PetscObjectChangeTypeName((PetscObject)v,PETSCVIEWERBINARY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerSocketSetConnection"
@@ -726,7 +722,6 @@ PetscErrorCode PetscAMSDisplayTree(FILE *fd)
 
 #if defined(PETSC_HAVE_YAML)
 
-EXTERN_C_BEGIN
 /*
     Toy function that returns all the arguments it is passed
 */
@@ -748,9 +743,7 @@ PetscErrorCode YAML_echo(PetscInt argc,char **args,PetscInt *argco,char ***argso
   }
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "YAML_AMS_Connect"
 /*
@@ -784,9 +777,7 @@ PetscErrorCode YAML_AMS_Connect(PetscInt argc,char **args,PetscInt *argco,char *
   }
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "YAML_AMS_Comm_attach"
 /*
@@ -813,9 +804,7 @@ PetscErrorCode YAML_AMS_Comm_attach(PetscInt argc,char **args,PetscInt *argco,ch
   sprintf(argso[0][0],"%d",(int)comm);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "YAML_AMS_Comm_get_memory_list"
 /*
@@ -852,9 +841,7 @@ PetscErrorCode YAML_AMS_Comm_get_memory_list(PetscInt argc,char **args,PetscInt 
   *argco = iargco;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "YAML_AMS_Memory_attach"
 /*
@@ -888,9 +875,7 @@ PetscErrorCode YAML_AMS_Memory_attach(PetscInt argc,char **args,PetscInt *argco,
   sprintf(argso[0][1],"%d",(int)step);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "YAML_AMS_Memory_get_field_list"
 /*
@@ -927,14 +912,12 @@ PetscErrorCode YAML_AMS_Memory_get_field_list(PetscInt argc,char **args,PetscInt
   *argco = iargco;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 const char *AMS_Data_types[] = {"AMS_DATA_UNDEF","AMS_BOOLEAN","AMS_INT","AMS_FLOAT","AMS_DOUBLE","AMS_STRING","AMS_Data_type","AMS_",0};
 const char *AMS_Memory_types[] = {"AMS_MEMORY_UNDEF","AMS_READ","AMS_WRITE","AMS_Memory_type","AMS_",0};
 const char *AMS_Shared_types[] = {"AMS_SHARED_UNDEF","AMS_COMMON","AMS_REDUCED","AMS_DISTRIBUTED","AMS_Shared_type","AMS_",0};
 const char *AMS_Reduction_types[] = {"AMS_REDUCTION_WHY_NOT_UNDEF?","AMS_SUM","AMS_MAX","AMS_MIN","AMS_REDUCTION_UNDEF","AMS_Reduction_type","AMS_",0};
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "YAML_AMS_Memory_get_field_info"
 /*
@@ -990,7 +973,6 @@ PetscErrorCode YAML_AMS_Memory_get_field_info(PetscInt argc,char **args,PetscInt
   }
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #include "yaml.h"
 #undef __FUNCT__

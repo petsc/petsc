@@ -12,17 +12,14 @@
 #define isrestoreindices_      isrestoreindices
 #endif
 
-
-EXTERN_C_BEGIN
-
-void PETSC_STDCALL isview_(IS *is,PetscViewer *vin,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL isview_(IS *is,PetscViewer *vin,PetscErrorCode *ierr)
 {
   PetscViewer v;
   PetscPatchDefaultViewers_Fortran(vin,v);
   *ierr = ISView(*is,v);
 }
 
-void PETSC_STDCALL isgetindices_(IS *x,PetscInt *fa,size_t *ia,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL isgetindices_(IS *x,PetscInt *fa,size_t *ia,PetscErrorCode *ierr)
 {
   const PetscInt *lx;
 
@@ -30,11 +27,9 @@ void PETSC_STDCALL isgetindices_(IS *x,PetscInt *fa,size_t *ia,PetscErrorCode *i
   *ia   = PetscIntAddressToFortran(fa,(PetscInt*)lx);
 }
 
-void PETSC_STDCALL isrestoreindices_(IS *x,PetscInt *fa,size_t *ia,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL isrestoreindices_(IS *x,PetscInt *fa,size_t *ia,PetscErrorCode *ierr)
 {
   const PetscInt *lx = PetscIntAddressFromFortran(fa,*ia);
   *ierr = ISRestoreIndices(*x,&lx);
 }
 
-
-EXTERN_C_END

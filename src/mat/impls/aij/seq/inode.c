@@ -4202,7 +4202,6 @@ PetscErrorCode  MatInodeAdjustForInodes(Mat A,IS *rperm,IS *cperm)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatInodeAdjustForInodes_SeqAIJ_Inode"
 PetscErrorCode  MatInodeAdjustForInodes_SeqAIJ_Inode(Mat A,IS *rperm,IS *cperm)
@@ -4263,7 +4262,6 @@ PetscErrorCode  MatInodeAdjustForInodes_SeqAIJ_Inode(Mat A,IS *rperm,IS *cperm)
   ierr = PetscFree(tns);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "MatInodeGetInodeSizes"
@@ -4305,7 +4303,6 @@ PetscErrorCode  MatInodeGetInodeSizes(Mat A,PetscInt *node_count,PetscInt *sizes
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatInodeGetInodeSizes_SeqAIJ_Inode"
 PetscErrorCode  MatInodeGetInodeSizes_SeqAIJ_Inode(Mat A,PetscInt *node_count,PetscInt *sizes[],PetscInt *limit)
@@ -4318,4 +4315,3 @@ PetscErrorCode  MatInodeGetInodeSizes_SeqAIJ_Inode(Mat A,PetscInt *node_count,Pe
   if (limit)      *limit      = a->inode.limit;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END

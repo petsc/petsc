@@ -7,7 +7,7 @@
 #define matcreatenest_                   matcreatenest
 #endif
 
-PETSC_EXTERN_C void PETSC_STDCALL matcreatenest_(MPI_Fint *comm,PetscInt *nr,IS is_row[],PetscInt *nc,IS is_col[],Mat a[],Mat *B,int *ierr)
+PETSC_EXTERN void PETSC_STDCALL matcreatenest_(MPI_Fint *comm,PetscInt *nr,IS is_row[],PetscInt *nc,IS is_col[],Mat a[],Mat *B,int *ierr)
 {
   CHKFORTRANNULLOBJECT(is_row);
   CHKFORTRANNULLOBJECT(is_col);

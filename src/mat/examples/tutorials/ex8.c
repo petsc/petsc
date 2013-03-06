@@ -7,7 +7,7 @@ static char help[] = "Shows how to add a new MatOperation to AIJ MatType\n\n";
 /* This routine implments MatScaleUserImpl() functionality for MatType
    SeqAIJ. MatScale_SeqAIJ() code duplicated here */
 #include <../src/mat/impls/aij/seq/aij.h>
-PetscErrorCode MatScaleUserImpl_SeqAIJ(Mat inA,PetscScalar alpha)
+static PetscErrorCode MatScaleUserImpl_SeqAIJ(Mat inA,PetscScalar alpha)
 {
   Mat_SeqAIJ     *a     = (Mat_SeqAIJ*)inA->data;
   PetscScalar    oalpha = alpha;
@@ -24,7 +24,7 @@ PetscErrorCode MatScaleUserImpl_SeqAIJ(Mat inA,PetscScalar alpha)
    SeqAIJ. MatScale_MPIAIJ() code duplicated here */
 extern PetscErrorCode MatScaleUserImpl(Mat,PetscScalar);
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
-PetscErrorCode MatScaleUserImpl_MPIAIJ(Mat A,PetscScalar aa)
+static PetscErrorCode MatScaleUserImpl_MPIAIJ(Mat A,PetscScalar aa)
 {
   Mat_MPIAIJ     *a = (Mat_MPIAIJ*)A->data;
   PetscErrorCode ierr;

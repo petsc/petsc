@@ -2,10 +2,8 @@
 #include <../src/mat/impls/aij/seq/aij.h>
 
 extern PetscErrorCode Mat_CheckInode(Mat,PetscBool);
-EXTERN_C_BEGIN
 extern PetscErrorCode  MatInodeAdjustForInodes_SeqAIJ_Inode(Mat,IS*,IS*);
 extern PetscErrorCode  MatInodeGetInodeSizes_SeqAIJ_Inode(Mat,PetscInt*,PetscInt*[],PetscInt*);
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "MatView_SeqAIJ_Inode"

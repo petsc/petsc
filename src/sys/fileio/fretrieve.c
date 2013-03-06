@@ -20,7 +20,6 @@
 #include <sys/systeminfo.h>
 #endif
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "Petsc_DelTmpShared"
 /*
@@ -31,7 +30,7 @@ EXTERN_C_BEGIN
    Note: this is declared extern "C" because it is passed to MPI_Keyval_create()
 
 */
-PetscMPIInt MPIAPI Petsc_DelTmpShared(MPI_Comm comm,PetscMPIInt keyval,void *count_val,void *extra_state)
+PETSC_EXTERN PetscMPIInt MPIAPI Petsc_DelTmpShared(MPI_Comm comm,PetscMPIInt keyval,void *count_val,void *extra_state)
 {
   PetscErrorCode ierr;
 
@@ -40,7 +39,6 @@ PetscMPIInt MPIAPI Petsc_DelTmpShared(MPI_Comm comm,PetscMPIInt keyval,void *cou
   ierr = PetscFree(count_val);if (ierr) PetscFunctionReturn((PetscMPIInt)ierr);
   PetscFunctionReturn(MPI_SUCCESS);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscGetTmp"

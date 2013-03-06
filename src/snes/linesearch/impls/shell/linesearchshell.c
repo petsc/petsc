@@ -143,7 +143,7 @@ template in the documentation for SNESLineSearchShellSetUserFunc().
 Level: advanced
 
 M*/
-PETSC_EXTERN_C PetscErrorCode SNESLineSearchCreate_Shell(SNESLineSearch linesearch)
+PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_Shell(SNESLineSearch linesearch)
 {
 
   SNESLineSearch_Shell *shell;

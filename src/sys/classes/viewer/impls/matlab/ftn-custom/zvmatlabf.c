@@ -7,9 +7,8 @@
 #define petscviewermatlabopen_     petscviewermatlabopen
 #endif
 
-EXTERN_C_BEGIN
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
-void PETSC_STDCALL petscviewermatlabopen_(MPI_Comm *comm,CHAR name PETSC_MIXED_LEN(len),PetscFileMode *type,
+PETSC_EXTERN void PETSC_STDCALL petscviewermatlabopen_(MPI_Comm *comm,CHAR name PETSC_MIXED_LEN(len),PetscFileMode *type,
                            PetscViewer *binv,PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *c1;
@@ -19,4 +18,3 @@ void PETSC_STDCALL petscviewermatlabopen_(MPI_Comm *comm,CHAR name PETSC_MIXED_L
 }
 #endif
 
-EXTERN_C_END

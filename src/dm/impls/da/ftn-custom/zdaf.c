@@ -9,8 +9,7 @@
 #define dmdagetneighbors_              dmdagetneighbors
 #endif
 
-EXTERN_C_BEGIN
-void PETSC_STDCALL dmdagetneighbors_(DM *da,PetscMPIInt *ranks,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL dmdagetneighbors_(DM *da,PetscMPIInt *ranks,PetscErrorCode *ierr)
 {
   const PetscMPIInt *r;
   PetscInt          n;
@@ -22,7 +21,7 @@ void PETSC_STDCALL dmdagetneighbors_(DM *da,PetscMPIInt *ranks,PetscErrorCode *i
   *ierr = PetscMemcpy(ranks,r,n*sizeof(PetscMPIInt));
 }
 
-void PETSC_STDCALL dmdagetownershipranges_(DM *da,PetscInt lx[],PetscInt ly[],PetscInt lz[],PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL dmdagetownershipranges_(DM *da,PetscInt lx[],PetscInt ly[],PetscInt lz[],PetscErrorCode *ierr)
 {
   const PetscInt *gx,*gy,*gz;
   PetscInt       M,N,P,i;
@@ -43,4 +42,3 @@ void PETSC_STDCALL dmdagetownershipranges_(DM *da,PetscInt lx[],PetscInt ly[],Pe
   }
 }
 
-EXTERN_C_END

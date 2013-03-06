@@ -206,10 +206,9 @@ PetscErrorCode  KSPSolve_FBCGSR(KSP ksp)
 
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPBICG, KSPFBCGSL, KSPSetPCSide()
 M*/
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "KSPCreate_FBCGSR"
-PetscErrorCode  KSPCreate_FBCGSR(KSP ksp)
+PETSC_EXTERN PetscErrorCode KSPCreate_FBCGSR(KSP ksp)
 {
   PetscErrorCode ierr;
   KSP_BCGS       *bcgs;
@@ -231,4 +230,3 @@ PetscErrorCode  KSPCreate_FBCGSR(KSP ksp)
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_RIGHT,1);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END

@@ -206,7 +206,7 @@ static PetscErrorCode  SNESLineSearchApply_L2(SNESLineSearch linesearch)
 
 .seealso: SNESLineSearchBT, SNESLineSearchCP, SNESLineSearch
 M*/
-PETSC_EXTERN_C PetscErrorCode SNESLineSearchCreate_L2(SNESLineSearch linesearch)
+PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_L2(SNESLineSearch linesearch)
 {
   PetscFunctionBegin;
   linesearch->ops->apply          = SNESLineSearchApply_L2;

@@ -614,10 +614,9 @@ PetscErrorCode  PCBJacobiGetLocalBlocks(PC pc, PetscInt *blocks, const PetscInt 
            PCBJacobiSetLocalBlocks(), PCSetModifySubmatrices()
 M*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCCreate_BJacobi"
-PetscErrorCode  PCCreate_BJacobi(PC pc)
+PETSC_EXTERN PetscErrorCode PCCreate_BJacobi(PC pc)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;
@@ -654,7 +653,6 @@ PetscErrorCode  PCCreate_BJacobi(PC pc)
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBJacobiGetLocalBlocks_C","PCBJacobiGetLocalBlocks_BJacobi",PCBJacobiGetLocalBlocks_BJacobi);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 /* --------------------------------------------------------------------------------------------*/
 /*

@@ -34,11 +34,9 @@
 #include <io.h>
 #endif
 
-EXTERN_C_BEGIN
 #if defined(PETSC_NEED_CLOSE_PROTO)
-extern int close(int);
+PETSC_EXTERN int close(int);
 #endif
-EXTERN_C_END
 
 #include <mex.h>
 #define PETSC_MEX_ERROR(a) {mexErrMsgTxt(a); return;}

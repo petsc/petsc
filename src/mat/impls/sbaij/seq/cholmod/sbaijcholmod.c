@@ -350,7 +350,6 @@ PetscErrorCode  MatCholeskyFactorSymbolic_CHOLMOD(Mat F,Mat A,IS perm,const MatF
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatFactorGetSolverPackage_seqsbaij_cholmod"
 PetscErrorCode MatFactorGetSolverPackage_seqsbaij_cholmod(Mat A,const MatSolverPackage *type)
@@ -359,7 +358,6 @@ PetscErrorCode MatFactorGetSolverPackage_seqsbaij_cholmod(Mat A,const MatSolverP
   *type = MATSOLVERCHOLMOD;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 /*MC
   MATSOLVERCHOLMOD = "cholmod" - A matrix type providing direct solvers (Cholesky) for sequential matrices
@@ -389,10 +387,10 @@ EXTERN_C_END
 
 .seealso: PCCHOLESKY, PCFactorSetMatSolverPackage(), MatSolverPackage
 M*/
-EXTERN_C_BEGIN
+
 #undef __FUNCT__
 #define __FUNCT__ "MatGetFactor_seqsbaij_cholmod"
-PetscErrorCode MatGetFactor_seqsbaij_cholmod(Mat A,MatFactorType ftype,Mat *F)
+PETSC_EXTERN PetscErrorCode MatGetFactor_seqsbaij_cholmod(Mat A,MatFactorType ftype,Mat *F)
 {
   Mat            B;
   Mat_CHOLMOD    *chol;
@@ -427,4 +425,3 @@ PetscErrorCode MatGetFactor_seqsbaij_cholmod(Mat A,MatFactorType ftype,Mat *F)
   *F   = B;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END

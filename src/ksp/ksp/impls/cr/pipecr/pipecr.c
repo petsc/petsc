@@ -159,7 +159,7 @@ PetscErrorCode  KSPSolve_PIPECR(KSP ksp)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPCreate_PIPECR"
-PETSC_EXTERN_C PetscErrorCode KSPCreate_PIPECR(KSP ksp)
+PETSC_EXTERN PetscErrorCode KSPCreate_PIPECR(KSP ksp)
 {
   PetscErrorCode ierr;
 

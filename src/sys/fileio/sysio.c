@@ -702,7 +702,6 @@ PetscErrorCode  PetscBinarySynchronizedSeek(MPI_Comm comm,int fd,off_t off,Petsc
 #if !defined(PETSC_WORDS_BIGENDIAN)
 
 #if defined(PETSC_USE_PETSC_MPI_EXTERNAL32)
-EXTERN_C_BEGIN
 /*
       MPICH does not provide the external32 representation for MPI_File_set_view() so we need to provide the functions.
     These are set into MPI in PetscInitialize() via MPI_Register_datarep()
@@ -712,7 +711,7 @@ EXTERN_C_BEGIN
     The next three routines are not used because MPICH does not support their use
 
 */
-PetscMPIInt PetscDataRep_extent_fn(MPI_Datatype datatype,MPI_Aint *file_extent,void *extra_state)
+PETSC_EXTERN PetscMPIInt PetscDataRep_extent_fn(MPI_Datatype datatype,MPI_Aint *file_extent,void *extra_state)
 {
   MPI_Aint    ub;
   PetscMPIInt ierr;
@@ -721,7 +720,7 @@ PetscMPIInt PetscDataRep_extent_fn(MPI_Datatype datatype,MPI_Aint *file_extent,v
   return ierr;
 }
 
-PetscMPIInt PetscDataRep_read_conv_fn(void *userbuf, MPI_Datatype datatype,PetscMPIInt count,void *filebuf, MPI_Offset position,void *extra_state)
+PETSC_EXTERN PetscMPIInt PetscDataRep_read_conv_fn(void *userbuf, MPI_Datatype datatype,PetscMPIInt count,void *filebuf, MPI_Offset position,void *extra_state)
 {
   PetscDataType pdtype;
   PetscMPIInt   ierr;
@@ -754,7 +753,6 @@ PetscMPIInt PetscDataRep_write_conv_fn(void *userbuf, MPI_Datatype datatype,Pets
   ierr = PetscByteSwap(filebuf,pdtype,count);CHKERRQ(ierr);
   return ierr;
 }
-EXTERN_C_END
 #endif
 
 #undef __FUNCT__

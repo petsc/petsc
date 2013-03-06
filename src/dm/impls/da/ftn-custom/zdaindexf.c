@@ -8,12 +8,10 @@
 #define dmdagetglobalindices_          dmdagetglobalindices
 #endif
 
-EXTERN_C_BEGIN
-void PETSC_STDCALL dmdagetglobalindices_(DM *da,PetscInt *n,PetscInt *indices,size_t *ia,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL dmdagetglobalindices_(DM *da,PetscInt *n,PetscInt *indices,size_t *ia,PetscErrorCode *ierr)
 {
   PetscInt *idx;
   *ierr = DMDAGetGlobalIndices(*da,n,&idx);
   *ia   = PetscIntAddressToFortran(indices,idx);
 }
 
-EXTERN_C_END

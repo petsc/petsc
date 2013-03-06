@@ -32,8 +32,6 @@ cudaStream_t theCUSPBodyStream=0;
 #include <thrust/sort.h>
 #include <thrust/fill.h>
 
-
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatCUSPSetFormat_SeqAIJCUSP"
 PetscErrorCode MatCUSPSetFormat_SeqAIJCUSP(Mat A,MatCUSPFormatOperation op,MatCUSPStorageFormat format)
@@ -57,7 +55,6 @@ PetscErrorCode MatCUSPSetFormat_SeqAIJCUSP(Mat A,MatCUSPFormatOperation op,MatCU
 #endif
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 /*@
    MatCUSPSetFormat - Sets the storage format of CUSP matrices for a particular
@@ -607,18 +604,15 @@ PetscErrorCode MatCreateSeqAIJCUSPFromTriple(MPI_Comm comm, PetscInt m, PetscInt
 extern PetscErrorCode MatSetValuesBatch_SeqAIJCUSP(Mat, PetscInt, PetscInt, PetscInt*,const PetscScalar*);
 
 #if defined(PETSC_HAVE_TXPETSCGPU)
-EXTERN_C_BEGIN
 extern PetscErrorCode MatGetFactor_seqaij_cusparse(Mat,MatFactorType,Mat*);
 extern PetscErrorCode MatFactorGetSolverPackage_seqaij_cusparse(Mat,const MatSolverPackage*);
-EXTERN_C_END
 #endif
 
 #if defined(PETSC_HAVE_TXPETSCGPU)
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_SeqAIJCUSP"
-PetscErrorCode  MatCreate_SeqAIJCUSP(Mat B)
+PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJCUSP(Mat B)
 {
   PetscErrorCode       ierr;
   MatCUSPStorageFormat format = MAT_CUSP_CSR;
@@ -651,14 +645,12 @@ PetscErrorCode  MatCreate_SeqAIJCUSP(Mat B)
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatCUSPSetFormat_C", "MatCUSPSetFormat_SeqAIJCUSP", MatCUSPSetFormat_SeqAIJCUSP);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #else
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_SeqAIJCUSP"
-PetscErrorCode  MatCreate_SeqAIJCUSP(Mat B)
+PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJCUSP(Mat B)
 {
   PetscErrorCode ierr;
   Mat_SeqAIJ     *aij;
@@ -686,7 +678,6 @@ PetscErrorCode  MatCreate_SeqAIJCUSP(Mat B)
   B->valid_GPU_matrix = PETSC_CUSP_UNALLOCATED;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #endif
 

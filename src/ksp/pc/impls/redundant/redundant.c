@@ -253,10 +253,9 @@ static PetscErrorCode PCSetFromOptions_Redundant(PC pc)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCRedundantSetNumber_Redundant"
-PetscErrorCode  PCRedundantSetNumber_Redundant(PC pc,PetscInt nreds)
+static PetscErrorCode  PCRedundantSetNumber_Redundant(PC pc,PetscInt nreds)
 {
   PC_Redundant *red = (PC_Redundant*)pc->data;
 
@@ -264,7 +263,6 @@ PetscErrorCode  PCRedundantSetNumber_Redundant(PC pc,PetscInt nreds)
   red->nsubcomm = nreds;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "PCRedundantSetNumber"
@@ -293,10 +291,9 @@ PetscErrorCode  PCRedundantSetNumber(PC pc,PetscInt nredundant)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCRedundantSetScatter_Redundant"
-PetscErrorCode  PCRedundantSetScatter_Redundant(PC pc,VecScatter in,VecScatter out)
+static PetscErrorCode  PCRedundantSetScatter_Redundant(PC pc,VecScatter in,VecScatter out)
 {
   PC_Redundant   *red = (PC_Redundant*)pc->data;
   PetscErrorCode ierr;
@@ -312,7 +309,6 @@ PetscErrorCode  PCRedundantSetScatter_Redundant(PC pc,VecScatter in,VecScatter o
   red->scatterout = out;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "PCRedundantSetScatter"
@@ -344,10 +340,9 @@ PetscErrorCode  PCRedundantSetScatter(PC pc,VecScatter in,VecScatter out)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCRedundantGetKSP_Redundant"
-PetscErrorCode  PCRedundantGetKSP_Redundant(PC pc,KSP *innerksp)
+static PetscErrorCode  PCRedundantGetKSP_Redundant(PC pc,KSP *innerksp)
 {
   PetscErrorCode ierr;
   PC_Redundant   *red = (PC_Redundant*)pc->data;
@@ -379,7 +374,6 @@ PetscErrorCode  PCRedundantGetKSP_Redundant(PC pc,KSP *innerksp)
   *innerksp = red->ksp;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "PCRedundantGetKSP"
@@ -409,10 +403,9 @@ PetscErrorCode  PCRedundantGetKSP(PC pc,KSP *innerksp)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCRedundantGetOperators_Redundant"
-PetscErrorCode  PCRedundantGetOperators_Redundant(PC pc,Mat *mat,Mat *pmat)
+static PetscErrorCode  PCRedundantGetOperators_Redundant(PC pc,Mat *mat,Mat *pmat)
 {
   PC_Redundant *red = (PC_Redundant*)pc->data;
 
@@ -421,7 +414,6 @@ PetscErrorCode  PCRedundantGetOperators_Redundant(PC pc,Mat *mat,Mat *pmat)
   if (pmat) *pmat = red->pmats;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "PCRedundantGetOperators"
@@ -473,10 +465,9 @@ PetscErrorCode  PCRedundantGetOperators(PC pc,Mat *mat,Mat *pmat)
            PCRedundantGetKSP(), PCRedundantGetOperators(), PCRedundantSetNumber()
 M*/
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCCreate_Redundant"
-PetscErrorCode  PCCreate_Redundant(PC pc)
+PETSC_EXTERN PetscErrorCode PCCreate_Redundant(PC pc)
 {
   PetscErrorCode ierr;
   PC_Redundant   *red;
@@ -504,4 +495,4 @@ PetscErrorCode  PCCreate_Redundant(PC pc)
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCRedundantGetOperators_C","PCRedundantGetOperators_Redundant",PCRedundantGetOperators_Redundant);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
+
