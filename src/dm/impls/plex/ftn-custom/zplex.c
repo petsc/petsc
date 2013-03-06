@@ -104,9 +104,8 @@ PETSC_EXTERN_C void PETSC_STDCALL dmplexcreatefromcelllist_(MPI_Comm *comm, Pets
   *ierr = DMPlexCreateFromCellList(*comm, *dim, *numCells, *numVertices, *numCorners, *interpolate, cells, *spaceDim, vertexCoords, dm);
 }
 
-ETSC_EXTERN_C void PETSC_STDCALL dmplexcreatesection_(DM *dm, PetscInt *dim, PetscInt *numFields, PetscInt *numComp, PetscInt *numDof, PetscInt *numBC, PetscInt *bcField, IS *bcPoints, PetscSection *section, int *ierr)
+PETSC_EXTERN_C void PETSC_STDCALL dmplexcreatesection_(DM *dm, PetscInt *dim, PetscInt *numFields, PetscInt *numComp, PetscInt *numDof, PetscInt *numBC, PetscInt *bcField, IS *bcPoints, PetscSection *section, int *ierr)
 {
   *ierr = DMPlexCreateSection(*dm, *dim, *numFields, numComp, numDof, *numBC, bcField, bcPoints, section);
 }
 
-EXTERN_C_END

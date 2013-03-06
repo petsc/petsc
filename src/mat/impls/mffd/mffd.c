@@ -536,8 +536,7 @@ PetscErrorCode MatScale_MFFD(Mat Y,PetscScalar a)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMFFDSetBase_MFFD"
-/* PETSC_EXTERN_C because this function is referenced directly from MatMFFDSetBase_SNESMF(). */
-PETSC_EXTERN_C PetscErrorCode MatMFFDSetBase_MFFD(Mat J,Vec U,Vec F)
+PETSC_EXTERN PetscErrorCode MatMFFDSetBase_MFFD(Mat J,Vec U,Vec F)
 {
   PetscErrorCode ierr;
   MatMFFD        ctx = (MatMFFD)J->data;
