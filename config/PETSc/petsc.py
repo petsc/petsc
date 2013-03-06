@@ -234,13 +234,13 @@ class Configure(config.base.Configure):
     if not isinstance(libraries, list): libraries = [libraries]
     oldLibs = self.compilers.LIBS
     self.libraries.pushLanguage(self.languages.clanguage)
-    found   = (self.libraries.check(libraries, 'PetscInitializeNoArguments', otherLibs = self.otherLibs, prototype = 'int PetscInitializeNoArguments(void);', cxxMangle = not self.languages.cSupport) and
-               self.libraries.check(libraries, 'VecDestroy', otherLibs = self.otherLibs, prototype = 'typedef struct _p_Vec *Vec;int VecDestroy(Vec*);', call = 'VecDestroy((Vec*) 0)', cxxMangle = not self.languages.cSupport) and
-               self.libraries.check(libraries, 'MatDestroy', otherLibs = self.otherLibs, prototype = 'typedef struct _p_Mat *Mat;int MatDestroy(Mat*);', call = 'MatDestroy((Mat*) 0)', cxxMangle = not self.languages.cSupport) and
-               self.libraries.check(libraries, 'DMDestroy', otherLibs = self.otherLibs, prototype = 'typedef struct _p_DM *DA;int DMDestroy(DA*);', call = 'DMDestroy((DA*) 0)', cxxMangle = not self.languages.cSupport) and
-               self.libraries.check(libraries, 'KSPDestroy', otherLibs = self.otherLibs, prototype = 'typedef struct _p_KSP *KSP;int KSPDestroy(KSP*);', call = 'KSPDestroy((KSP*) 0)', cxxMangle = not self.languages.cSupport) and
-               self.libraries.check(libraries, 'SNESDestroy', otherLibs = self.otherLibs, prototype = 'typedef struct _p_SNES *SNES;int SNESDestroy(SNES*);', call = 'SNESDestroy((SNES*) 0)', cxxMangle = not self.languages.cSupport) and
-               self.libraries.check(libraries, 'TSDestroy', otherLibs = self.otherLibs, prototype = 'typedef struct _p_TS *TS;int TSDestroy(TS*);', call = 'TSDestroy((TS*) 0)', cxxMangle = not self.languages.cSupport))
+    found   = (self.libraries.check(libraries, 'PetscInitializeNoArguments', otherLibs = self.otherLibs, prototype = 'int PetscInitializeNoArguments(void);') and
+               self.libraries.check(libraries, 'VecDestroy', otherLibs = self.otherLibs, prototype = 'typedef struct _p_Vec *Vec;int VecDestroy(Vec*);', call = 'VecDestroy((Vec*) 0)') and
+               self.libraries.check(libraries, 'MatDestroy', otherLibs = self.otherLibs, prototype = 'typedef struct _p_Mat *Mat;int MatDestroy(Mat*);', call = 'MatDestroy((Mat*) 0)') and
+               self.libraries.check(libraries, 'DMDestroy', otherLibs = self.otherLibs, prototype = 'typedef struct _p_DM *DA;int DMDestroy(DA*);', call = 'DMDestroy((DA*) 0)') and
+               self.libraries.check(libraries, 'KSPDestroy', otherLibs = self.otherLibs, prototype = 'typedef struct _p_KSP *KSP;int KSPDestroy(KSP*);', call = 'KSPDestroy((KSP*) 0)') and
+               self.libraries.check(libraries, 'SNESDestroy', otherLibs = self.otherLibs, prototype = 'typedef struct _p_SNES *SNES;int SNESDestroy(SNES*);', call = 'SNESDestroy((SNES*) 0)') and
+               self.libraries.check(libraries, 'TSDestroy', otherLibs = self.otherLibs, prototype = 'typedef struct _p_TS *TS;int TSDestroy(TS*);', call = 'TSDestroy((TS*) 0)'))
     self.libraries.popLanguage()
     self.compilers.LIBS = oldLibs
     return found
@@ -284,7 +284,7 @@ class Configure(config.base.Configure):
     if hasattr(self.compilers, 'CXX') and self.languages.clanguage == 'C':
       self.pushLanguage('C++')
       self.sourceExtension = '.C'
-      if not self.checkPETScLink('#define PETSC_USE_EXTERN_CXX\n#include <petscsys.h>\n', 'PetscLogDouble time;\nPetscErrorCode ierr;\n\nierr = PetscGetTime(&time);CHKERRQ(ierr);\n'):
+      if not self.checkPETScLink('#include <petscsys.h>\n', 'PetscLogDouble time;\nPetscErrorCode ierr;\n\nierr = PetscGetTime(&time);CHKERRQ(ierr);\n'):
         self.logPrint('PETSc cannot link C++ but can link C, which indicates a problem with the PETSc installation')
         self.popLanguage()
         return 0
@@ -379,8 +379,7 @@ class Configure(config.base.Configure):
     return
 
   def configureLibrary(self):
-    '''Find a working PETSc
-       - Right now, C++ builds are required to use PETSC_USE_EXTERN_CXX'''
+    '''Find a working PETSc'''
     for location, name in self.trial.items():
       self.framework.logPrintDivider()
       self.framework.logPrint('Checking for a functional PETSc in '+name+', location/origin '+str(location))
