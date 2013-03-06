@@ -819,9 +819,9 @@ PetscErrorCode  SectionRealGetFibration(SectionReal section, const PetscInt fiel
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "SectionRealToVec"
+#define __FUNCT__ "SectionRealToVecDM"
 /*@C
-  SectionRealToVec - Maps the given section to a Vec
+  SectionRealToVecDM - Maps the given section to a Vec
 
   Collective on Section
 
@@ -836,7 +836,7 @@ PetscErrorCode  SectionRealGetFibration(SectionReal section, const PetscInt fiel
 
 .seealso VecCreate(), SectionRealCreate()
 @*/
-PetscErrorCode  SectionRealToVec(SectionReal section, DM dm, ScatterMode mode, Vec vec)
+PetscErrorCode  SectionRealToVecDM(SectionReal section, DM dm, ScatterMode mode, Vec vec)
 {
   Vec            localVec;
   VecScatter     scatter;
