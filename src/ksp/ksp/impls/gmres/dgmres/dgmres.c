@@ -1222,7 +1222,7 @@ static PetscErrorCode  KSPDGMRESImproveEig_DGMRES(KSP ksp, PetscInt neig)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPCreate_DGMRES"
-PETSC_EXTERN_C PetscErrorCode  KSPCreate_DGMRES(KSP ksp)
+PETSC_EXTERN PetscErrorCode KSPCreate_DGMRES(KSP ksp)
 {
   KSP_DGMRES     *dgmres;
   PetscErrorCode ierr;

@@ -783,7 +783,7 @@ Mathematics, 62(9), pp. 1171-1186, 2012
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPCreate_AGMRES"
-PETSC_EXTERN_C PetscErrorCode  KSPCreate_AGMRES(KSP ksp)
+PETSC_EXTERN PetscErrorCode KSPCreate_AGMRES(KSP ksp)
 {
   KSP_AGMRES     *agmres;
   PetscErrorCode ierr;

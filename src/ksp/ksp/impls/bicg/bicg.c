@@ -150,7 +150,7 @@ PetscErrorCode  KSPSolve_BiCG(KSP ksp)
 M*/
 #undef __FUNCT__
 #define __FUNCT__ "KSPCreate_BiCG"
-PETSC_EXTERN_C PetscErrorCode  KSPCreate_BiCG(KSP ksp)
+PETSC_EXTERN PetscErrorCode KSPCreate_BiCG(KSP ksp)
 {
   PetscErrorCode ierr;
 

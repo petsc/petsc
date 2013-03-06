@@ -1079,7 +1079,7 @@ M*/
 
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_Elemental"
-PETSC_EXTERN_C PetscErrorCode MatCreate_Elemental(Mat A)
+PETSC_EXTERN PetscErrorCode MatCreate_Elemental(Mat A)
 {
   Mat_Elemental      *a;
   PetscErrorCode     ierr;

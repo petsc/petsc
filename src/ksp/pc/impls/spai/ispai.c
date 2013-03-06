@@ -597,7 +597,7 @@ M*/
 
 #undef __FUNCT__
 #define __FUNCT__ "PCCreate_SPAI"
-PETSC_EXTERN_C PetscErrorCode  PCCreate_SPAI(PC pc)
+PETSC_EXTERN PetscErrorCode PCCreate_SPAI(PC pc)
 {
   PC_SPAI        *ispai;
   PetscErrorCode ierr;

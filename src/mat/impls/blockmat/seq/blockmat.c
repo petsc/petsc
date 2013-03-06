@@ -997,7 +997,7 @@ M*/
 
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_BlockMat"
-PETSC_EXTERN_C PetscErrorCode  MatCreate_BlockMat(Mat A)
+PETSC_EXTERN PetscErrorCode MatCreate_BlockMat(Mat A)
 {
   Mat_BlockMat   *b;
   PetscErrorCode ierr;

@@ -691,7 +691,7 @@ M*/
 
 #undef __FUNCT__
 #define __FUNCT__ "PCCreate_PARMS"
-PETSC_EXTERN_C PetscErrorCode PCCreate_PARMS(PC pc)
+PETSC_EXTERN PetscErrorCode PCCreate_PARMS(PC pc)
 {
   PC_PARMS       *parms;
   PetscErrorCode ierr;

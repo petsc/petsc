@@ -6,7 +6,7 @@
 #endif
 
 /* Chaco does not have an include file */
-PETSC_EXTERN_C int interface(int nvtxs, int *start, int *adjacency, int *vwgts,
+PETSC_EXTERN int interface(int nvtxs, int *start, int *adjacency, int *vwgts,
                      float *ewgts, float *x, float *y, float *z, char *outassignname,
                      char *outfilename, short *assignment, int architecture, int ndims_tot,
                      int mesh_dims[3], double *goal, int global_method, int local_method,
@@ -754,7 +754,7 @@ M*/
 
 #undef __FUNCT__
 #define __FUNCT__ "MatPartitioningCreate_Chaco"
-PETSC_EXTERN_C PetscErrorCode MatPartitioningCreate_Chaco(MatPartitioning part)
+PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Chaco(MatPartitioning part)
 {
   PetscErrorCode        ierr;
   MatPartitioning_Chaco *chaco;

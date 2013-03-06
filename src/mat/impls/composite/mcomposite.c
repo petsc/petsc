@@ -364,7 +364,7 @@ M*/
 
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_Composite"
-PETSC_EXTERN_C PetscErrorCode  MatCreate_Composite(Mat A)
+PETSC_EXTERN PetscErrorCode MatCreate_Composite(Mat A)
 {
   Mat_Composite  *b;
   PetscErrorCode ierr;

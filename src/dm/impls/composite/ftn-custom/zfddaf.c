@@ -40,76 +40,76 @@
 #define dmcompositerestoreaccessarray_   dmcompositerestoreaccessarray
 #endif
 
-PETSC_EXTERN_C void PETSC_STDCALL dmcompositegetentries1_(DM *dm,DM *da1,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL dmcompositegetentries1_(DM *dm,DM *da1,PetscErrorCode *ierr)
 {
   *ierr = DMCompositeGetEntries(*dm,da1);
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL dmcompositegetentries2_(DM *dm,DM *da1,DM *da2,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL dmcompositegetentries2_(DM *dm,DM *da1,DM *da2,PetscErrorCode *ierr)
 {
   *ierr = DMCompositeGetEntries(*dm,da1,da2);
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL dmcompositegetentries3_(DM *dm,DM *da1,DM *da2,DM *da3,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL dmcompositegetentries3_(DM *dm,DM *da1,DM *da2,DM *da3,PetscErrorCode *ierr)
 {
   *ierr = DMCompositeGetEntries(*dm,da1,da2,da3);
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL dmcompositegetentries4_(DM *dm,DM *da1,DM *da2,DM *da3,DM *da4,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL dmcompositegetentries4_(DM *dm,DM *da1,DM *da2,DM *da3,DM *da4,PetscErrorCode *ierr)
 {
   *ierr = DMCompositeGetEntries(*dm,da1,da2,da3,da4);
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL dmcompositegetentries5_(DM *dm,DM *da1,DM *da2,DM *da3,DM *da4,DM *da5,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL dmcompositegetentries5_(DM *dm,DM *da1,DM *da2,DM *da3,DM *da4,DM *da5,PetscErrorCode *ierr)
 {
   *ierr = DMCompositeGetEntries(*dm,da1,da2,da3,da4,da5);
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL  dmcompositecreate_(MPI_Fint * comm,DM *A, int *ierr)
+PETSC_EXTERN void PETSC_STDCALL dmcompositecreate_(MPI_Fint * comm,DM *A, int *ierr)
 {
   *ierr = DMCompositeCreate(MPI_Comm_f2c(*(comm)),A);
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL dmcompositeadddm_(DM *dm,DM *da,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL dmcompositeadddm_(DM *dm,DM *da,PetscErrorCode *ierr)
 {
   *ierr = DMCompositeAddDM(*dm,*da);
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL dmcompositedestroy_(DM *dm,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL dmcompositedestroy_(DM *dm,PetscErrorCode *ierr)
 {
   *ierr = DMDestroy(dm);
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL dmcompositegetaccess4_(DM *dm,Vec *v,void **v1,void **p1,void **v2,void **p2,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL dmcompositegetaccess4_(DM *dm,Vec *v,void **v1,void **p1,void **v2,void **p2,PetscErrorCode *ierr)
 {
   Vec *vv1 = (Vec*)v1,*vv2 = (Vec*)v2;
   *ierr = DMCompositeGetAccess(*dm,*v,vv1,(PetscScalar*)p1,vv2,(PetscScalar*)p2);
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL dmcompositescatter4_(DM *dm,Vec *v,void *v1,void *p1,void *v2,void *p2,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL dmcompositescatter4_(DM *dm,Vec *v,void *v1,void *p1,void *v2,void *p2,PetscErrorCode *ierr)
 {
   Vec *vv1 = (Vec*)v1,*vv2 = (Vec*)v2;
   *ierr = DMCompositeScatter(*dm,*v,*vv1,(PetscScalar*)p1,*vv2,(PetscScalar*)p2);
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL dmcompositerestoreaccess4_(DM *dm,Vec *v,void **v1,void **p1,void **v2,void **p2,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL dmcompositerestoreaccess4_(DM *dm,Vec *v,void **v1,void **p1,void **v2,void **p2,PetscErrorCode *ierr)
 {
   *ierr = DMCompositeRestoreAccess(*dm,*v,(Vec*)v1,0,(Vec*)v2,0);
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL dmcompositegetlocalvectors4_(DM *dm,void **v1,void **p1,void **v2,void **p2,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL dmcompositegetlocalvectors4_(DM *dm,void **v1,void **p1,void **v2,void **p2,PetscErrorCode *ierr)
 {
   Vec *vv1 = (Vec*)v1,*vv2 = (Vec*)v2;
   *ierr = DMCompositeGetLocalVectors(*dm,vv1,(PetscScalar*)p1,vv2,(PetscScalar*)p2);
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL dmcompositerestorelocalvectors4_(DM *dm,void **v1,void **p1,void **v2,void **p2,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL dmcompositerestorelocalvectors4_(DM *dm,void **v1,void **p1,void **v2,void **p2,PetscErrorCode *ierr)
 {
   Vec *vv1 = (Vec*)v1,*vv2 = (Vec*)v2;
   *ierr = DMCompositeRestoreLocalVectors(*dm,vv1,(PetscScalar*)p1,vv2,(PetscScalar*)p2);
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL dmcompositegetglobaliss_(DM *dm,IS *iss,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL dmcompositegetglobaliss_(DM *dm,IS *iss,PetscErrorCode *ierr)
 {
   IS      *ais;
   PetscInt i,ndm;
@@ -119,7 +119,7 @@ PETSC_EXTERN_C void PETSC_STDCALL dmcompositegetglobaliss_(DM *dm,IS *iss,PetscE
   *ierr = PetscFree(ais);
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL dmcompositegetlocaliss_(DM *dm,IS *iss,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL dmcompositegetlocaliss_(DM *dm,IS *iss,PetscErrorCode *ierr)
 {
   IS      *ais;
   PetscInt i,ndm;
@@ -129,13 +129,13 @@ PETSC_EXTERN_C void PETSC_STDCALL dmcompositegetlocaliss_(DM *dm,IS *iss,PetscEr
   *ierr = PetscFree(ais);
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL dmcompositegetaccessarray_(DM *dm,Vec *gvec,PetscInt *n,const PetscInt *wanted,Vec *vecs,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL dmcompositegetaccessarray_(DM *dm,Vec *gvec,PetscInt *n,const PetscInt *wanted,Vec *vecs,PetscErrorCode *ierr)
 {
   CHKFORTRANNULLINTEGER(wanted);
   *ierr = DMCompositeGetAccessArray(*dm,*gvec,*n,wanted,vecs);
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL dmcompositerestoreaccessarray_(DM *dm,Vec *gvec,PetscInt *n,const PetscInt *wanted,Vec *vecs,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL dmcompositerestoreaccessarray_(DM *dm,Vec *gvec,PetscInt *n,const PetscInt *wanted,Vec *vecs,PetscErrorCode *ierr)
 {
   CHKFORTRANNULLINTEGER(wanted);
   *ierr = DMCompositeRestoreAccessArray(*dm,*gvec,*n,wanted,vecs);

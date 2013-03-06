@@ -761,7 +761,7 @@ PetscErrorCode  DMSetUp_ADDA(DM dm)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMCreate_ADDA"
-PETSC_EXTERN_C PetscErrorCode  DMCreate_ADDA(DM dm)
+PETSC_EXTERN PetscErrorCode DMCreate_ADDA(DM dm)
 {
   PetscErrorCode ierr;
   DM_ADDA        *dd;

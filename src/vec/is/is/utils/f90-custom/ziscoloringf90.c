@@ -10,7 +10,7 @@
 #define iscoloringrestoreisf90_    iscoloringrestoreisf90
 #endif
 
-PETSC_EXTERN_C void PETSC_STDCALL iscoloringgetisf90_(ISColoring *iscoloring,PetscInt *n,F90Array1d *ptr,int *__ierr PETSC_F90_2PTR_PROTO(ptrd))
+PETSC_EXTERN void PETSC_STDCALL iscoloringgetisf90_(ISColoring *iscoloring,PetscInt *n,F90Array1d *ptr,int *__ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
   IS               *lis;
   PetscFortranAddr *newisint;
@@ -22,7 +22,7 @@ PETSC_EXTERN_C void PETSC_STDCALL iscoloringgetisf90_(ISColoring *iscoloring,Pet
   *__ierr = F90Array1dCreate(newisint,PETSC_FORTRANADDR,1,*n,ptr PETSC_F90_2PTR_PARAM(ptrd));
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL iscoloringrestoreisf90_(ISColoring *iscoloring,F90Array1d *ptr,int *__ierr PETSC_F90_2PTR_PROTO(ptrd))
+PETSC_EXTERN void PETSC_STDCALL iscoloringrestoreisf90_(ISColoring *iscoloring,F90Array1d *ptr,int *__ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
   PetscFortranAddr *is;
 

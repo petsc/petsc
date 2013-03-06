@@ -193,7 +193,7 @@ PetscErrorCode  KSPSolve_MINRES(KSP ksp)
 M*/
 #undef __FUNCT__
 #define __FUNCT__ "KSPCreate_MINRES"
-PETSC_EXTERN_C PetscErrorCode  KSPCreate_MINRES(KSP ksp)
+PETSC_EXTERN PetscErrorCode KSPCreate_MINRES(KSP ksp)
 {
   KSP_MINRES     *minres;
   PetscErrorCode ierr;

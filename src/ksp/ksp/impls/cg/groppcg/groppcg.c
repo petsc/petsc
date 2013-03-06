@@ -161,7 +161,7 @@ PetscErrorCode  KSPSolve_GROPPCG(KSP ksp)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPCreate_GROPPCG"
-PETSC_EXTERN_C PetscErrorCode KSPCreate_GROPPCG(KSP ksp)
+PETSC_EXTERN PetscErrorCode KSPCreate_GROPPCG(KSP ksp)
 {
   PetscErrorCode ierr;
 

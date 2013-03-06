@@ -40,7 +40,7 @@ PetscErrorCode VecDuplicate_Shared(Vec win,Vec *v)
 
 #undef __FUNCT__
 #define __FUNCT__ "VecCreate_Shared"
-PETSC_EXTERN_C PetscErrorCode  VecCreate_Shared(Vec vv)
+PETSC_EXTERN PetscErrorCode VecCreate_Shared(Vec vv)
 {
   PetscErrorCode ierr;
   PetscScalar    *array;
@@ -155,11 +155,11 @@ PetscErrorCode PetscSharedMalloc(MPI_Comm comm,PetscInt llen,PetscInt len,void *
 
 #else
 
-PETSC_EXTERN_C PetscErrorCode  VecCreate_Seq(Vec);
+PETSC_EXTERN PetscErrorCode VecCreate_Seq(Vec);
 
 #undef __FUNCT__
 #define __FUNCT__ "VecCreate_Shared"
-PETSC_EXTERN_C PetscErrorCode  VecCreate_Shared(Vec vv)
+PETSC_EXTERN PetscErrorCode VecCreate_Shared(Vec vv)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size;

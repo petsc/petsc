@@ -35,7 +35,7 @@
 #endif
 
 #if defined(PETSC_NEED_CLOSE_PROTO)
-PETSC_EXTERN_C int close(int);
+PETSC_EXTERN int close(int);
 #endif
 
 #include <mex.h>

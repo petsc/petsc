@@ -189,7 +189,7 @@ M*/
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESCreate_Shell"
-PETSC_EXTERN_C PetscErrorCode SNESCreate_Shell(SNES snes)
+PETSC_EXTERN PetscErrorCode SNESCreate_Shell(SNES snes)
 {
   SNES_Shell     *shell;
   PetscErrorCode ierr;

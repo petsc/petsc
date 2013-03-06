@@ -7,7 +7,7 @@
 #define petscviewerhdf5open_     petscviewerhdf5open
 #endif
 
-PETSC_EXTERN_C void PETSC_STDCALL petscviewerhdf5open_(MPI_Comm *comm,CHAR name PETSC_MIXED_LEN(len),PetscFileMode *type,
+PETSC_EXTERN void PETSC_STDCALL petscviewerhdf5open_(MPI_Comm *comm,CHAR name PETSC_MIXED_LEN(len),PetscFileMode *type,
                            PetscViewer *binv,PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *c1;

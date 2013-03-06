@@ -44,16 +44,16 @@ typedef unsigned long   u_long;
 #include <../src/sys/classes/viewer/impls/socket/socket.h>
 
 #if defined(PETSC_NEED_CLOSE_PROTO)
-PETSC_EXTERN_C int close(int);
+PETSC_EXTERN int close(int);
 #endif
 #if defined(PETSC_NEED_SOCKET_PROTO)
-PETSC_EXTERN_C int socket(int,int,int);
+PETSC_EXTERN int socket(int,int,int);
 #endif
 #if defined(PETSC_NEED_SLEEP_PROTO)
-PETSC_EXTERN_C int sleep(unsigned);
+PETSC_EXTERN int sleep(unsigned);
 #endif
 #if defined(PETSC_NEED_CONNECT_PROTO)
-PETSC_EXTERN_C int connect(int,struct sockaddr*,int);
+PETSC_EXTERN int connect(int,struct sockaddr*,int);
 #endif
 
 /*--------------------------------------------------------------*/
@@ -320,7 +320,7 @@ PetscErrorCode PetscViewerSetFromOptions_Socket(PetscViewer v)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerCreate_Socket"
-PETSC_EXTERN_C PetscErrorCode  PetscViewerCreate_Socket(PetscViewer v)
+PETSC_EXTERN PetscErrorCode PetscViewerCreate_Socket(PetscViewer v)
 {
   PetscViewer_Socket *vmatlab;
   PetscErrorCode     ierr;

@@ -94,7 +94,7 @@ MPI_Op VecMin_Local_Op = 0;
 
 #undef __FUNCT__
 #define __FUNCT__ "VecMax_Local"
-PETSC_EXTERN_C void MPIAPI VecMax_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *datatype)
+PETSC_EXTERN void MPIAPI VecMax_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *datatype)
 {
   PetscReal *xin = (PetscReal*)in,*xout = (PetscReal*)out;
 
@@ -114,7 +114,7 @@ PETSC_EXTERN_C void MPIAPI VecMax_Local(void *in,void *out,PetscMPIInt *cnt,MPI_
 
 #undef __FUNCT__
 #define __FUNCT__ "VecMin_Local"
-PETSC_EXTERN_C void MPIAPI VecMin_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *datatype)
+PETSC_EXTERN void MPIAPI VecMin_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *datatype)
 {
   PetscReal *xin = (PetscReal*)in,*xout = (PetscReal*)out;
 

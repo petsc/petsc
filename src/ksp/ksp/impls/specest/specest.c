@@ -189,7 +189,7 @@ static PetscErrorCode KSPDestroy_SpecEst(KSP ksp)
 
 .seealso: KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPGMRES, KSPCG, KSPCHEBYSHEV, KSPRICHARDSON
 M*/
-PETSC_EXTERN_C PetscErrorCode  KSPCreate_SpecEst(KSP ksp)
+PETSC_EXTERN PetscErrorCode KSPCreate_SpecEst(KSP ksp)
 {
   KSP_SpecEst    *spec;
   PetscErrorCode ierr;

@@ -615,7 +615,7 @@ PetscErrorCode MatFactorGetSolverPackage_pastix(Mat A,const MatSolverPackage *ty
 */
 #undef __FUNCT__
 #define __FUNCT__ "MatGetFactor_seqaij_pastix"
-PETSC_EXTERN_C PetscErrorCode MatGetFactor_seqaij_pastix(Mat A,MatFactorType ftype,Mat *F)
+PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_pastix(Mat A,MatFactorType ftype,Mat *F)
 {
   Mat            B;
   PetscErrorCode ierr;
@@ -653,7 +653,7 @@ PETSC_EXTERN_C PetscErrorCode MatGetFactor_seqaij_pastix(Mat A,MatFactorType fty
 
 #undef __FUNCT__
 #define __FUNCT__ "MatGetFactor_mpiaij_pastix"
-PETSC_EXTERN_C PetscErrorCode MatGetFactor_mpiaij_pastix(Mat A,MatFactorType ftype,Mat *F)
+PETSC_EXTERN PetscErrorCode MatGetFactor_mpiaij_pastix(Mat A,MatFactorType ftype,Mat *F)
 {
   Mat            B;
   PetscErrorCode ierr;
@@ -691,7 +691,7 @@ PETSC_EXTERN_C PetscErrorCode MatGetFactor_mpiaij_pastix(Mat A,MatFactorType fty
 
 #undef __FUNCT__
 #define __FUNCT__ "MatGetFactor_seqsbaij_pastix"
-PETSC_EXTERN_C PetscErrorCode MatGetFactor_seqsbaij_pastix(Mat A,MatFactorType ftype,Mat *F)
+PETSC_EXTERN PetscErrorCode MatGetFactor_seqsbaij_pastix(Mat A,MatFactorType ftype,Mat *F)
 {
   Mat            B;
   PetscErrorCode ierr;
@@ -729,7 +729,7 @@ PETSC_EXTERN_C PetscErrorCode MatGetFactor_seqsbaij_pastix(Mat A,MatFactorType f
 
 #undef __FUNCT__
 #define __FUNCT__ "MatGetFactor_mpisbaij_pastix"
-PETSC_EXTERN_C PetscErrorCode MatGetFactor_mpisbaij_pastix(Mat A,MatFactorType ftype,Mat *F)
+PETSC_EXTERN PetscErrorCode MatGetFactor_mpisbaij_pastix(Mat A,MatFactorType ftype,Mat *F)
 {
   Mat            B;
   PetscErrorCode ierr;

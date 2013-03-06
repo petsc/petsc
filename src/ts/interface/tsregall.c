@@ -1,17 +1,17 @@
 
 #include <petsc-private/tsimpl.h>     /*I  "petscts.h"  I*/
-PETSC_EXTERN_C PetscErrorCode  TSCreate_Euler(TS);
-PETSC_EXTERN_C PetscErrorCode  TSCreate_BEuler(TS);
-PETSC_EXTERN_C PetscErrorCode  TSCreate_Pseudo(TS);
-PETSC_EXTERN_C PetscErrorCode  TSCreate_Sundials(TS);
-PETSC_EXTERN_C PetscErrorCode  TSCreate_CN(TS);
-PETSC_EXTERN_C PetscErrorCode  TSCreate_Theta(TS);
-PETSC_EXTERN_C PetscErrorCode  TSCreate_Alpha(TS);
-PETSC_EXTERN_C PetscErrorCode  TSCreate_GL(TS);
-PETSC_EXTERN_C PetscErrorCode  TSCreate_SSP(TS);
-PETSC_EXTERN_C PetscErrorCode  TSCreate_RK(TS);
-PETSC_EXTERN_C PetscErrorCode  TSCreate_ARKIMEX(TS);
-PETSC_EXTERN_C PetscErrorCode  TSCreate_RosW(TS);
+PETSC_EXTERN PetscErrorCode TSCreate_Euler(TS);
+PETSC_EXTERN PetscErrorCode TSCreate_BEuler(TS);
+PETSC_EXTERN PetscErrorCode TSCreate_Pseudo(TS);
+PETSC_EXTERN PetscErrorCode TSCreate_Sundials(TS);
+PETSC_EXTERN PetscErrorCode TSCreate_CN(TS);
+PETSC_EXTERN PetscErrorCode TSCreate_Theta(TS);
+PETSC_EXTERN PetscErrorCode TSCreate_Alpha(TS);
+PETSC_EXTERN PetscErrorCode TSCreate_GL(TS);
+PETSC_EXTERN PetscErrorCode TSCreate_SSP(TS);
+PETSC_EXTERN PetscErrorCode TSCreate_RK(TS);
+PETSC_EXTERN PetscErrorCode TSCreate_ARKIMEX(TS);
+PETSC_EXTERN PetscErrorCode TSCreate_RosW(TS);
 
 #undef __FUNCT__
 #define __FUNCT__ "TSRegisterAll"

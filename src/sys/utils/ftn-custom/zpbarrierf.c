@@ -6,7 +6,7 @@
 #define petscbarrier_ petscbarrier
 #endif
 
-PETSC_EXTERN_C void PETSC_STDCALL   petscbarrier_(PetscObject *obj, int *ierr)
+PETSC_EXTERN void PETSC_STDCALL petscbarrier_(PetscObject *obj, int *ierr)
 {
   CHKFORTRANNULLOBJECT(obj);
   *ierr = PetscBarrier(*obj);

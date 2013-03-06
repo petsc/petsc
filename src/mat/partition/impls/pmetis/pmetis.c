@@ -255,7 +255,7 @@ M*/
 
 #undef __FUNCT__
 #define __FUNCT__ "MatPartitioningCreate_Parmetis"
-PETSC_EXTERN_C PetscErrorCode  MatPartitioningCreate_Parmetis(MatPartitioning part)
+PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Parmetis(MatPartitioning part)
 {
   PetscErrorCode           ierr;
   MatPartitioning_Parmetis *pmetis;

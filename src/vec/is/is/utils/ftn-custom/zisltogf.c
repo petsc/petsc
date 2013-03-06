@@ -14,12 +14,12 @@
 #define iscompressindicesgeneral_         iscompressindicesgeneral
 #endif
 
-PETSC_EXTERN_C void PETSC_STDCALL iscompressindicesgeneral_(PetscInt *n,PetscInt *nkeys,PetscInt *bs,PetscInt *imax,IS *is_in,IS *is_out,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL iscompressindicesgeneral_(PetscInt *n,PetscInt *nkeys,PetscInt *bs,PetscInt *imax,IS *is_in,IS *is_out,PetscErrorCode *ierr)
 {
   *ierr = ISCompressIndicesGeneral(*n,*nkeys,*bs,*imax,is_in,is_out);
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL islocaltoglobalmappingview_(ISLocalToGlobalMapping *mapping,PetscViewer *viewer,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL islocaltoglobalmappingview_(ISLocalToGlobalMapping *mapping,PetscViewer *viewer,PetscErrorCode *ierr)
 {
   PetscViewer v;
   PetscPatchDefaultViewers_Fortran(viewer,v);
@@ -28,7 +28,7 @@ PETSC_EXTERN_C void PETSC_STDCALL islocaltoglobalmappingview_(ISLocalToGlobalMap
 
 static PetscInt  *sprocs, *snumprocs, **sindices;
 static PetscBool called;
-PETSC_EXTERN_C void PETSC_STDCALL islocaltoglobalmpnggetinfosize_(ISLocalToGlobalMapping *mapping,PetscInt *nprocs,PetscInt *maxnumprocs,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL islocaltoglobalmpnggetinfosize_(ISLocalToGlobalMapping *mapping,PetscInt *nprocs,PetscInt *maxnumprocs,PetscErrorCode *ierr)
 {
   PetscInt i;
   if (called) {*ierr = PETSC_ERR_ARG_WRONGSTATE; return;}
@@ -38,7 +38,7 @@ PETSC_EXTERN_C void PETSC_STDCALL islocaltoglobalmpnggetinfosize_(ISLocalToGloba
   called = PETSC_TRUE;
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL islocaltoglobalmappinggetinfo_(ISLocalToGlobalMapping *mapping,PetscInt *nprocs,PetscInt *procs,PetscInt *numprocs,
+PETSC_EXTERN void PETSC_STDCALL islocaltoglobalmappinggetinfo_(ISLocalToGlobalMapping *mapping,PetscInt *nprocs,PetscInt *procs,PetscInt *numprocs,
                                                   PetscInt *indices,PetscErrorCode *ierr)
 {
   PetscInt i,j;

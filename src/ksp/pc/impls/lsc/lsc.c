@@ -222,7 +222,7 @@ M*/
 
 #undef __FUNCT__
 #define __FUNCT__ "PCCreate_LSC"
-PETSC_EXTERN_C PetscErrorCode  PCCreate_LSC(PC pc)
+PETSC_EXTERN PetscErrorCode PCCreate_LSC(PC pc)
 {
   PC_LSC         *lsc;
   PetscErrorCode ierr;

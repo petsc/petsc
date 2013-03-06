@@ -618,7 +618,7 @@ PetscErrorCode KSPDestroy_BCGSL(KSP ksp)
 M*/
 #undef __FUNCT__
 #define __FUNCT__ "KSPCreate_BCGSL"
-PETSC_EXTERN_C PetscErrorCode  KSPCreate_BCGSL(KSP ksp)
+PETSC_EXTERN PetscErrorCode KSPCreate_BCGSL(KSP ksp)
 {
   PetscErrorCode ierr;
   KSP_BCGSL      *bcgsl;

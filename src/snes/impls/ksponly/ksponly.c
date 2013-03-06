@@ -96,7 +96,7 @@ static PetscErrorCode SNESDestroy_KSPONLY(SNES snes)
 M*/
 #undef __FUNCT__
 #define __FUNCT__ "SNESCreate_KSPONLY"
-PETSC_EXTERN_C PetscErrorCode  SNESCreate_KSPONLY(SNES snes)
+PETSC_EXTERN PetscErrorCode SNESCreate_KSPONLY(SNES snes)
 {
 
   PetscFunctionBegin;

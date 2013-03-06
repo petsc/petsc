@@ -1382,7 +1382,7 @@ M*/
 
 #undef __FUNCT__
 #define __FUNCT__ "DMCreate_Composite"
-PETSC_EXTERN_C PetscErrorCode  DMCreate_Composite(DM p)
+PETSC_EXTERN PetscErrorCode DMCreate_Composite(DM p)
 {
   PetscErrorCode ierr;
   DM_Composite   *com;

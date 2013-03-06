@@ -2690,7 +2690,7 @@ PetscErrorCode DMPlexCreateNeighborCSR(DM dm, PetscInt cellHeight, PetscInt *num
 #include <unistd.h>
 #endif
 /* Chaco does not have an include file */
-PETSC_EXTERN_C int interface(int nvtxs, int *start, int *adjacency, int *vwgts,
+PETSC_EXTERN int interface(int nvtxs, int *start, int *adjacency, int *vwgts,
                        float *ewgts, float *x, float *y, float *z, char *outassignname,
                        char *outfilename, short *assignment, int architecture, int ndims_tot,
                        int mesh_dims[3], double *goal, int global_method, int local_method,

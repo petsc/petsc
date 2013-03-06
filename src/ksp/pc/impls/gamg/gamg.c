@@ -1455,7 +1455,7 @@ M*/
 
 #undef __FUNCT__
 #define __FUNCT__ "PCCreate_GAMG"
-PETSC_EXTERN_C PetscErrorCode  PCCreate_GAMG(PC pc)
+PETSC_EXTERN PetscErrorCode PCCreate_GAMG(PC pc)
 {
   PetscErrorCode ierr;
   PC_GAMG        *pc_gamg;

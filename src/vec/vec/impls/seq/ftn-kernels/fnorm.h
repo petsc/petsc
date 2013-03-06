@@ -7,7 +7,7 @@
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define fortrannormsqr_    fortrannormsqr
 #endif
-PETSC_EXTERN_C void fortrannormsqr_(void*,PetscInt*,void*);
+PETSC_EXTERN void fortrannormsqr_(void*,PetscInt*,void*);
 #endif
 #endif
 

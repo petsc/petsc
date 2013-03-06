@@ -97,7 +97,7 @@ static PetscErrorCode ournullfunction(MatNullSpace sp,Vec x,void *ctx)
   return 0;
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL  matnullspacesetfunction_(MatNullSpace *sp, PetscErrorCode (*rem)(MatNullSpace,Vec,void*),void *ctx,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL matnullspacesetfunction_(MatNullSpace *sp, PetscErrorCode (*rem)(MatNullSpace,Vec,void*),void *ctx,PetscErrorCode *ierr)
 {
   PetscObjectAllocateFortranPointers(*sp,1);
   ((PetscObject)*sp)->fortran_func_pointers[0] = (PetscVoidFunction)rem;
@@ -105,14 +105,14 @@ PETSC_EXTERN_C void PETSC_STDCALL  matnullspacesetfunction_(MatNullSpace *sp, Pe
   *ierr = MatNullSpaceSetFunction(*sp,ournullfunction,ctx);
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL   matgetvecs_(Mat *mat,Vec *right,Vec *left, int *ierr)
+PETSC_EXTERN void PETSC_STDCALL matgetvecs_(Mat *mat,Vec *right,Vec *left, int *ierr)
 {
   CHKFORTRANNULLOBJECT(right);
   CHKFORTRANNULLOBJECT(left);
   *ierr = MatGetVecs(*mat,right,left);
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL matgetrowij_(Mat *B,PetscInt *shift,PetscBool  *sym,PetscBool  *blockcompressed,PetscInt *n,PetscInt *ia,size_t *iia,
+PETSC_EXTERN void PETSC_STDCALL matgetrowij_(Mat *B,PetscInt *shift,PetscBool *sym,PetscBool *blockcompressed,PetscInt *n,PetscInt *ia,size_t *iia,
                                 PetscInt *ja,size_t *jja,PetscBool  *done,PetscErrorCode *ierr)
 {
   const PetscInt *IA,*JA;
@@ -121,7 +121,7 @@ PETSC_EXTERN_C void PETSC_STDCALL matgetrowij_(Mat *B,PetscInt *shift,PetscBool 
   *jja  = PetscIntAddressToFortran(ja,(PetscInt*)JA);
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL matrestorerowij_(Mat *B,PetscInt *shift,PetscBool  *sym,PetscBool  *blockcompressed, PetscInt *n,PetscInt *ia,size_t *iia,
+PETSC_EXTERN void PETSC_STDCALL matrestorerowij_(Mat *B,PetscInt *shift,PetscBool *sym,PetscBool *blockcompressed, PetscInt *n,PetscInt *ia,size_t *iia,
                                     PetscInt *ja,size_t *jja,PetscBool  *done,PetscErrorCode *ierr)
 {
   const PetscInt *IA = PetscIntAddressFromFortran(ia,*iia),*JA = PetscIntAddressFromFortran(ja,*jja);
@@ -139,7 +139,7 @@ static PetscErrorCode    matgetrowactive = 0;
 static const PetscInt    *my_ocols       = 0;
 static const PetscScalar *my_ovals       = 0;
 
-PETSC_EXTERN_C void PETSC_STDCALL matgetrow_(Mat *mat,PetscInt *row,PetscInt *ncols,PetscInt *cols,PetscScalar *vals,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL matgetrow_(Mat *mat,PetscInt *row,PetscInt *ncols,PetscInt *cols,PetscScalar *vals,PetscErrorCode *ierr)
 {
   const PetscInt    **oocols = &my_ocols;
   const PetscScalar **oovals = &my_ovals;
@@ -163,7 +163,7 @@ PETSC_EXTERN_C void PETSC_STDCALL matgetrow_(Mat *mat,PetscInt *row,PetscInt *nc
   matgetrowactive = 1;
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL matrestorerow_(Mat *mat,PetscInt *row,PetscInt *ncols,PetscInt *cols,PetscScalar *vals,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL matrestorerow_(Mat *mat,PetscInt *row,PetscInt *ncols,PetscInt *cols,PetscScalar *vals,PetscErrorCode *ierr)
 {
   const PetscInt    **oocols = &my_ocols;
   const PetscScalar **oovals = &my_ovals;
@@ -180,21 +180,21 @@ PETSC_EXTERN_C void PETSC_STDCALL matrestorerow_(Mat *mat,PetscInt *row,PetscInt
   matgetrowactive = 0;
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL matview_(Mat *mat,PetscViewer *vin,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL matview_(Mat *mat,PetscViewer *vin,PetscErrorCode *ierr)
 {
   PetscViewer v;
   PetscPatchDefaultViewers_Fortran(vin,v);
   *ierr = MatView(*mat,v);
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL matload_(Mat *mat,PetscViewer *vin,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL matload_(Mat *mat,PetscViewer *vin,PetscErrorCode *ierr)
 {
   PetscViewer v;
   PetscPatchDefaultViewers_Fortran(vin,v);
   *ierr = MatLoad(*mat,v);
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL matseqaijgetarray_(Mat *mat,PetscScalar *fa,size_t *ia,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL matseqaijgetarray_(Mat *mat,PetscScalar *fa,size_t *ia,PetscErrorCode *ierr)
 {
   PetscScalar *mm;
   PetscInt    m,n;
@@ -204,7 +204,7 @@ PETSC_EXTERN_C void PETSC_STDCALL matseqaijgetarray_(Mat *mat,PetscScalar *fa,si
   *ierr = PetscScalarAddressToFortran((PetscObject)*mat,1,fa,mm,m*n,ia); if (*ierr) return;
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL matseqaijrestorearray_(Mat *mat,PetscScalar *fa,size_t *ia,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL matseqaijrestorearray_(Mat *mat,PetscScalar *fa,size_t *ia,PetscErrorCode *ierr)
 {
   PetscScalar *lx;
   PetscInt    m,n;
@@ -214,7 +214,7 @@ PETSC_EXTERN_C void PETSC_STDCALL matseqaijrestorearray_(Mat *mat,PetscScalar *f
   *ierr = MatSeqAIJRestoreArray(*mat,&lx);if (*ierr) return;
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL matdensegetarray_(Mat *mat,PetscScalar *fa,size_t *ia,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL matdensegetarray_(Mat *mat,PetscScalar *fa,size_t *ia,PetscErrorCode *ierr)
 {
   PetscScalar *mm;
   PetscInt    m,n;
@@ -224,7 +224,7 @@ PETSC_EXTERN_C void PETSC_STDCALL matdensegetarray_(Mat *mat,PetscScalar *fa,siz
   *ierr = PetscScalarAddressToFortran((PetscObject)*mat,1,fa,mm,m*n,ia); if (*ierr) return;
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL matdenserestorearray_(Mat *mat,PetscScalar *fa,size_t *ia,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL matdenserestorearray_(Mat *mat,PetscScalar *fa,size_t *ia,PetscErrorCode *ierr)
 {
   PetscScalar *lx;
   PetscInt    m,n;
@@ -234,7 +234,7 @@ PETSC_EXTERN_C void PETSC_STDCALL matdenserestorearray_(Mat *mat,PetscScalar *fa
   *ierr = MatDenseRestoreArray(*mat,&lx);if (*ierr) return;
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL matfactorgetsolverpackage_(Mat *mat,CHAR name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL matfactorgetsolverpackage_(Mat *mat,CHAR name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   const char *tname;
 
@@ -245,7 +245,7 @@ PETSC_EXTERN_C void PETSC_STDCALL matfactorgetsolverpackage_(Mat *mat,CHAR name 
   FIXRETURNCHAR(PETSC_TRUE,name,len);
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL matgetfactor_(Mat *mat,CHAR outtype PETSC_MIXED_LEN(len),MatFactorType *ftype,Mat *M,PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL matgetfactor_(Mat *mat,CHAR outtype PETSC_MIXED_LEN(len),MatFactorType *ftype,Mat *M,PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *t;
   FIXCHAR(outtype,len,t);
@@ -253,7 +253,7 @@ PETSC_EXTERN_C void PETSC_STDCALL matgetfactor_(Mat *mat,CHAR outtype PETSC_MIXE
   FREECHAR(outtype,t);
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL matconvert_(Mat *mat,CHAR outtype PETSC_MIXED_LEN(len),MatReuse *reuse,Mat *M,PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL matconvert_(Mat *mat,CHAR outtype PETSC_MIXED_LEN(len),MatReuse *reuse,Mat *M,PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *t;
   FIXCHAR(outtype,len,t);
@@ -266,7 +266,7 @@ PETSC_EXTERN_C void PETSC_STDCALL matconvert_(Mat *mat,CHAR outtype PETSC_MIXED_
     Fortran provides the array to hold the submatrix objects,while in C that
     array is allocated by the MatGetSubmatrices()
 */
-PETSC_EXTERN_C void PETSC_STDCALL matgetsubmatrices_(Mat *mat,PetscInt *n,IS *isrow,IS *iscol,MatReuse *scall,Mat *smat,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL matgetsubmatrices_(Mat *mat,PetscInt *n,IS *isrow,IS *iscol,MatReuse *scall,Mat *smat,PetscErrorCode *ierr)
 {
   Mat      *lsmat;
   PetscInt i;
@@ -287,7 +287,7 @@ PETSC_EXTERN_C void PETSC_STDCALL matgetsubmatrices_(Mat *mat,PetscInt *n,IS *is
     Fortran provides the array to hold the submatrix objects,while in C that
     array is allocated by the MatGetSubmatrices()
 */
-PETSC_EXTERN_C void PETSC_STDCALL matdestroymatrices_(Mat *mat,PetscInt *n,Mat *smat,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL matdestroymatrices_(Mat *mat,PetscInt *n,Mat *smat,PetscErrorCode *ierr)
 {
   PetscInt i;
 
@@ -296,77 +296,77 @@ PETSC_EXTERN_C void PETSC_STDCALL matdestroymatrices_(Mat *mat,PetscInt *n,Mat *
   }
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL matzerorowscolumns_(Mat *mat,PetscInt *numRows,PetscInt *rows,PetscScalar *diag,Vec *x,Vec *b,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL matzerorowscolumns_(Mat *mat,PetscInt *numRows,PetscInt *rows,PetscScalar *diag,Vec *x,Vec *b,PetscErrorCode *ierr)
 {
   CHKFORTRANNULLOBJECTDEREFERENCE(x);
   CHKFORTRANNULLOBJECTDEREFERENCE(b);
   *ierr = MatZeroRowsColumns(*mat,*numRows,rows,*diag,*x,*b);
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL matzerorowscolumnsis_(Mat *mat,IS *is,PetscScalar *diag,Vec *x,Vec *b,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL matzerorowscolumnsis_(Mat *mat,IS *is,PetscScalar *diag,Vec *x,Vec *b,PetscErrorCode *ierr)
 {
   CHKFORTRANNULLOBJECTDEREFERENCE(x);
   CHKFORTRANNULLOBJECTDEREFERENCE(b);
   *ierr = MatZeroRowsColumnsIS(*mat,*is,*diag,*x,*b);
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL matzerorowsstencil_(Mat *mat,PetscInt *numRows,MatStencil *rows,PetscScalar *diag,Vec *x,Vec *b,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL matzerorowsstencil_(Mat *mat,PetscInt *numRows,MatStencil *rows,PetscScalar *diag,Vec *x,Vec *b,PetscErrorCode *ierr)
 {
   CHKFORTRANNULLOBJECTDEREFERENCE(x);
   CHKFORTRANNULLOBJECTDEREFERENCE(b);
   *ierr = MatZeroRowsStencil(*mat,*numRows,rows,*diag,*x,*b);
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL matzerorowscolumnsstencil_(Mat *mat,PetscInt *numRows,MatStencil *rows,PetscScalar *diag,Vec *x,Vec *b,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL matzerorowscolumnsstencil_(Mat *mat,PetscInt *numRows,MatStencil *rows,PetscScalar *diag,Vec *x,Vec *b,PetscErrorCode *ierr)
 {
   CHKFORTRANNULLOBJECTDEREFERENCE(x);
   CHKFORTRANNULLOBJECTDEREFERENCE(b);
   *ierr = MatZeroRowsColumnsStencil(*mat,*numRows,rows,*diag,*x,*b);
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL matzerorows_(Mat *mat,PetscInt *numRows,PetscInt *rows,PetscScalar *diag,Vec *x,Vec *b,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL matzerorows_(Mat *mat,PetscInt *numRows,PetscInt *rows,PetscScalar *diag,Vec *x,Vec *b,PetscErrorCode *ierr)
 {
   CHKFORTRANNULLOBJECTDEREFERENCE(x);
   CHKFORTRANNULLOBJECTDEREFERENCE(b);
   *ierr = MatZeroRows(*mat,*numRows,rows,*diag,*x,*b);
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL matzerorowsis_(Mat *mat,IS *is,PetscScalar *diag,Vec *x,Vec *b,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL matzerorowsis_(Mat *mat,IS *is,PetscScalar *diag,Vec *x,Vec *b,PetscErrorCode *ierr)
 {
   CHKFORTRANNULLOBJECTDEREFERENCE(x);
   CHKFORTRANNULLOBJECTDEREFERENCE(b);
   *ierr = MatZeroRowsIS(*mat,*is,*diag,*x,*b);
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL matzerorowslocal_(Mat *mat,PetscInt *numRows,PetscInt *rows,PetscScalar *diag,Vec *x,Vec *b,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL matzerorowslocal_(Mat *mat,PetscInt *numRows,PetscInt *rows,PetscScalar *diag,Vec *x,Vec *b,PetscErrorCode *ierr)
 {
   CHKFORTRANNULLOBJECTDEREFERENCE(x);
   CHKFORTRANNULLOBJECTDEREFERENCE(b);
   *ierr = MatZeroRowsLocal(*mat,*numRows,rows,*diag,*x,*b);
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL matzerorowslocalis_(Mat *mat,IS *is,PetscScalar *diag,Vec *x,Vec *b,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL matzerorowslocalis_(Mat *mat,IS *is,PetscScalar *diag,Vec *x,Vec *b,PetscErrorCode *ierr)
 {
   CHKFORTRANNULLOBJECTDEREFERENCE(x);
   CHKFORTRANNULLOBJECTDEREFERENCE(b);
   *ierr = MatZeroRowsLocalIS(*mat,*is,*diag,*x,*b);
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL matzerorowscolumnslocal_(Mat *mat,PetscInt *numRows,PetscInt *rows,PetscScalar *diag,Vec *x,Vec *b,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL matzerorowscolumnslocal_(Mat *mat,PetscInt *numRows,PetscInt *rows,PetscScalar *diag,Vec *x,Vec *b,PetscErrorCode *ierr)
 {
   CHKFORTRANNULLOBJECTDEREFERENCE(x);
   CHKFORTRANNULLOBJECTDEREFERENCE(b);
   *ierr = MatZeroRowsColumnsLocal(*mat,*numRows,rows,*diag,*x,*b);
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL matzerorowscolumnslocalis_(Mat *mat,IS *is,PetscScalar *diag,Vec *x,Vec *b,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL matzerorowscolumnslocalis_(Mat *mat,IS *is,PetscScalar *diag,Vec *x,Vec *b,PetscErrorCode *ierr)
 {
   CHKFORTRANNULLOBJECTDEREFERENCE(x);
   CHKFORTRANNULLOBJECTDEREFERENCE(b);
   *ierr = MatZeroRowsColumnsLocalIS(*mat,*is,*diag,*x,*b);
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL matsetoptionsprefix_(Mat *mat,CHAR prefix PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL matsetoptionsprefix_(Mat *mat,CHAR prefix PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *t;
 
@@ -375,68 +375,68 @@ PETSC_EXTERN_C void PETSC_STDCALL matsetoptionsprefix_(Mat *mat,CHAR prefix PETS
   FREECHAR(prefix,t);
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL matnullspaceremove_(MatNullSpace *sp,Vec *vec,Vec *out,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL matnullspaceremove_(MatNullSpace *sp,Vec *vec,Vec *out,PetscErrorCode *ierr)
 {
   CHKFORTRANNULLOBJECT(out);
   *ierr = MatNullSpaceRemove(*sp,*vec,out);
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL   matgetinfo_(Mat *mat,MatInfoType *flag,MatInfo *info, int *__ierr)
+PETSC_EXTERN void PETSC_STDCALL matgetinfo_(Mat *mat,MatInfoType *flag,MatInfo *info, int *__ierr)
 {
   *__ierr = MatGetInfo(*mat,*flag,info);
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL   matlufactor_(Mat *mat,IS *row,IS *col, MatFactorInfo *info, int *__ierr)
+PETSC_EXTERN void PETSC_STDCALL matlufactor_(Mat *mat,IS *row,IS *col, MatFactorInfo *info, int *__ierr)
 {
   *__ierr = MatLUFactor(*mat,*row,*col,info);
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL   matilufactor_(Mat *mat,IS *row,IS *col, MatFactorInfo *info, int *__ierr)
+PETSC_EXTERN void PETSC_STDCALL matilufactor_(Mat *mat,IS *row,IS *col, MatFactorInfo *info, int *__ierr)
 {
   *__ierr = MatILUFactor(*mat,*row,*col,info);
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL   matlufactorsymbolic_(Mat *fact,Mat *mat,IS *row,IS *col, MatFactorInfo *info, int *__ierr)
+PETSC_EXTERN void PETSC_STDCALL matlufactorsymbolic_(Mat *fact,Mat *mat,IS *row,IS *col, MatFactorInfo *info, int *__ierr)
 {
   *__ierr = MatLUFactorSymbolic(*fact,*mat,*row,*col,info);
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL   matlufactornumeric_(Mat *fact,Mat *mat, MatFactorInfo *info, int *__ierr)
+PETSC_EXTERN void PETSC_STDCALL matlufactornumeric_(Mat *fact,Mat *mat, MatFactorInfo *info, int *__ierr)
 {
   *__ierr = MatLUFactorNumeric(*fact,*mat,info);
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL   matcholeskyfactor_(Mat *mat,IS *perm, MatFactorInfo *info, int *__ierr)
+PETSC_EXTERN void PETSC_STDCALL matcholeskyfactor_(Mat *mat,IS *perm, MatFactorInfo *info, int *__ierr)
 {
   *__ierr = MatCholeskyFactor(*mat,*perm,info);
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL   matcholeskyfactorsymbolic_(Mat *fact,Mat *mat,IS *perm, MatFactorInfo *info, int *__ierr)
+PETSC_EXTERN void PETSC_STDCALL matcholeskyfactorsymbolic_(Mat *fact,Mat *mat,IS *perm, MatFactorInfo *info, int *__ierr)
 {
   *__ierr = MatCholeskyFactorSymbolic(*fact,*mat,*perm,info);
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL   matcholeskyfactornumeric_(Mat *fact,Mat *mat, MatFactorInfo *info, int *__ierr)
+PETSC_EXTERN void PETSC_STDCALL matcholeskyfactornumeric_(Mat *fact,Mat *mat, MatFactorInfo *info, int *__ierr)
 {
   *__ierr = MatCholeskyFactorNumeric(*fact,*mat,info);
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL   matilufactorsymbolic_(Mat *fact,Mat *mat,IS *row,IS *col, MatFactorInfo *info, int *__ierr)
+PETSC_EXTERN void PETSC_STDCALL matilufactorsymbolic_(Mat *fact,Mat *mat,IS *row,IS *col, MatFactorInfo *info, int *__ierr)
 {
   *__ierr = MatILUFactorSymbolic(*fact,*mat,*row,*col,info);
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL   maticcfactorsymbolic_(Mat *fact,Mat *mat,IS *perm, MatFactorInfo *info, int *__ierr)
+PETSC_EXTERN void PETSC_STDCALL maticcfactorsymbolic_(Mat *fact,Mat *mat,IS *perm, MatFactorInfo *info, int *__ierr)
 {
   *__ierr = MatICCFactorSymbolic(*fact,*mat,*perm,info);
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL   maticcfactor_(Mat *mat,IS *row, MatFactorInfo *info, int *__ierr)
+PETSC_EXTERN void PETSC_STDCALL maticcfactor_(Mat *mat,IS *row, MatFactorInfo *info, int *__ierr)
 {
   *__ierr = MatICCFactor(*mat,*row,info);
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL   matfactorinfoinitialize_(MatFactorInfo *info, int *__ierr)
+PETSC_EXTERN void PETSC_STDCALL matfactorinfoinitialize_(MatFactorInfo *info, int *__ierr)
 {
   *__ierr = MatFactorInfoInitialize(info);
 }

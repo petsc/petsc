@@ -34,7 +34,7 @@ In the latter case, in order to avoid runtime errors during factorization, pleas
 #  define LAPACKsterf_ zsterf_
 # endif
 #endif
-PETSC_EXTERN_C void  LAPACKsterf_(PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*);
+PETSC_EXTERN void LAPACKsterf_(PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*);
 
 /* structure holding domain data */
 typedef struct {

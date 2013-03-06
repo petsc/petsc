@@ -705,7 +705,7 @@ M*/
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESCreate_NASM"
-PETSC_EXTERN_C PetscErrorCode SNESCreate_NASM(SNES snes)
+PETSC_EXTERN PetscErrorCode SNESCreate_NASM(SNES snes)
 {
   SNES_NASM      *nasm;
   PetscErrorCode ierr;

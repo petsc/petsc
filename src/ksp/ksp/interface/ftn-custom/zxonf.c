@@ -10,7 +10,7 @@
 /*
    Possible bleeds memory but cannot be helped.
 */
-PETSC_EXTERN_C void PETSC_STDCALL kspmonitorlgresidualnormcreate_(CHAR host PETSC_MIXED_LEN(len1),
+PETSC_EXTERN void PETSC_STDCALL kspmonitorlgresidualnormcreate_(CHAR host PETSC_MIXED_LEN(len1),
                     CHAR label PETSC_MIXED_LEN(len2),int *x,int *y,int *m,int *n,PetscDrawLG *ctx,
                     PetscErrorCode *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2))
 {

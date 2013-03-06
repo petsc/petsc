@@ -462,7 +462,7 @@ PetscErrorCode  KSPLSQRDefaultConverged(KSP ksp,PetscInt n,PetscReal rnorm,KSPCo
 M*/
 #undef __FUNCT__
 #define __FUNCT__ "KSPCreate_LSQR"
-PETSC_EXTERN_C PetscErrorCode  KSPCreate_LSQR(KSP ksp)
+PETSC_EXTERN PetscErrorCode KSPCreate_LSQR(KSP ksp)
 {
   KSP_LSQR       *lsqr;
   PetscErrorCode ierr;

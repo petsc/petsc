@@ -284,7 +284,7 @@ M*/
 
 #undef __FUNCT__
 #define __FUNCT__ "PCCreate_KSP"
-PETSC_EXTERN_C PetscErrorCode  PCCreate_KSP(PC pc)
+PETSC_EXTERN PetscErrorCode PCCreate_KSP(PC pc)
 {
   PetscErrorCode ierr;
   PC_KSP         *jac;

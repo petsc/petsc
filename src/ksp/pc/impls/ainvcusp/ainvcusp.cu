@@ -332,7 +332,7 @@ M*/
 
 #undef __FUNCT__
 #define __FUNCT__ "PCCreate_AINVCUSP"
-PETSC_EXTERN_C PetscErrorCode  PCCreate_AINVCUSP(PC pc)
+PETSC_EXTERN PetscErrorCode PCCreate_AINVCUSP(PC pc)
 {
   PC_AINVCUSP    *ainv;
   PetscErrorCode ierr;

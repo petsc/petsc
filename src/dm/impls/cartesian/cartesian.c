@@ -250,7 +250,7 @@ PetscErrorCode  DMSetFromOptions_Cartesian(DM dm)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMCreate_Cartesian"
-PETSC_EXTERN_C PetscErrorCode DMCreate_Cartesian(DM dm)
+PETSC_EXTERN PetscErrorCode DMCreate_Cartesian(DM dm)
 {
   DM_Cartesian   *mesh;
   PetscErrorCode ierr;

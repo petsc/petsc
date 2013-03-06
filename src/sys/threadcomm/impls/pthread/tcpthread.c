@@ -104,7 +104,7 @@ PetscErrorCode PetscThreadCommDestroy_PThread(PetscThreadComm tcomm)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscThreadCommCreate_PThread"
-PETSC_EXTERN_C PetscErrorCode PetscThreadCommCreate_PThread(PetscThreadComm tcomm)
+PETSC_EXTERN PetscErrorCode PetscThreadCommCreate_PThread(PetscThreadComm tcomm)
 {
   PetscThreadComm_PThread ptcomm;
   PetscErrorCode          ierr;

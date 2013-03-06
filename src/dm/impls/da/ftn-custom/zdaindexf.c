@@ -8,7 +8,7 @@
 #define dmdagetglobalindices_          dmdagetglobalindices
 #endif
 
-PETSC_EXTERN_C void PETSC_STDCALL dmdagetglobalindices_(DM *da,PetscInt *n,PetscInt *indices,size_t *ia,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL dmdagetglobalindices_(DM *da,PetscInt *n,PetscInt *indices,size_t *ia,PetscErrorCode *ierr)
 {
   PetscInt *idx;
   *ierr = DMDAGetGlobalIndices(*da,n,&idx);

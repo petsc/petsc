@@ -724,7 +724,7 @@ M*/
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPCreate_NASH"
-PETSC_EXTERN_C PetscErrorCode  KSPCreate_NASH(KSP ksp)
+PETSC_EXTERN PetscErrorCode KSPCreate_NASH(KSP ksp)
 {
   PetscErrorCode ierr;
   KSP_NASH       *cg;

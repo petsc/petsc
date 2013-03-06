@@ -30,7 +30,7 @@ M*/
 
 #undef __FUNCT__
 #define __FUNCT__ "PCCreate_None"
-PETSC_EXTERN_C PetscErrorCode  PCCreate_None(PC pc)
+PETSC_EXTERN PetscErrorCode PCCreate_None(PC pc)
 {
   PetscFunctionBegin;
   pc->ops->apply               = PCApply_None;

@@ -7,8 +7,8 @@
 
 /* #include <essl.h> This doesn't work!  */
 
-PETSC_EXTERN_C void dgss(int*,int*,double*,int*,int*,int*,double*,double*,int*);
-PETSC_EXTERN_C void dgsf(int*,int*,int*,double*,int*,int*,int*,int*,double*,double*,double*,int*);
+PETSC_EXTERN void dgss(int*,int*,double*,int*,int*,int*,double*,double*,int*);
+PETSC_EXTERN void dgsf(int*,int*,int*,double*,int*,int*,int*,int*,double*,double*,double*,int*);
 
 typedef struct {
   int         n,nz;
@@ -151,7 +151,7 @@ M*/
 
 #undef __FUNCT__
 #define __FUNCT__ "MatGetFactor_seqaij_essl"
-PETSC_EXTERN_C PetscErrorCode MatGetFactor_seqaij_essl(Mat A,MatFactorType ftype,Mat *F)
+PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_essl(Mat A,MatFactorType ftype,Mat *F)
 {
   Mat            B;
   PetscErrorCode ierr;

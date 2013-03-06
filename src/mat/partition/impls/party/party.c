@@ -434,7 +434,7 @@ M*/
 
 #undef __FUNCT__
 #define __FUNCT__ "MatPartitioningCreate_Party"
-PETSC_EXTERN_C PetscErrorCode  MatPartitioningCreate_Party(MatPartitioning part)
+PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Party(MatPartitioning part)
 {
   PetscErrorCode        ierr;
   MatPartitioning_Party *party;

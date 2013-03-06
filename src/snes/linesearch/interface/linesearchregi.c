@@ -1,10 +1,10 @@
 #include <petsc-private/linesearchimpl.h>     /*I  "petscsnes.h"  I*/
 
-PETSC_EXTERN_C PetscErrorCode  SNESLineSearchCreate_Basic(SNESLineSearch);
-PETSC_EXTERN_C PetscErrorCode  SNESLineSearchCreate_L2(SNESLineSearch);
-PETSC_EXTERN_C PetscErrorCode  SNESLineSearchCreate_CP(SNESLineSearch);
-PETSC_EXTERN_C PetscErrorCode  SNESLineSearchCreate_BT(SNESLineSearch);
-PETSC_EXTERN_C PetscErrorCode  SNESLineSearchCreate_Shell(SNESLineSearch);
+PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_Basic(SNESLineSearch);
+PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_L2(SNESLineSearch);
+PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_CP(SNESLineSearch);
+PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_BT(SNESLineSearch);
+PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_Shell(SNESLineSearch);
 
 
 #undef __FUNCT__

@@ -154,7 +154,7 @@ PetscErrorCode  PetscViewerVTKAddField_VTK(PetscViewer viewer,PetscObject dm,Pet
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerCreate_VTK"
-PETSC_EXTERN_C PetscErrorCode  PetscViewerCreate_VTK(PetscViewer v)
+PETSC_EXTERN PetscErrorCode PetscViewerCreate_VTK(PetscViewer v)
 {
   PetscViewer_VTK *vtk;
   PetscErrorCode  ierr;

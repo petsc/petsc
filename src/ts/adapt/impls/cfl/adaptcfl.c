@@ -80,7 +80,7 @@ static PetscErrorCode TSAdaptSetFromOptions_CFL(TSAdapt adapt)
 
 .seealso: TS, TSAdapt, TSSetAdapt()
 M*/
-PETSC_EXTERN_C PetscErrorCode TSAdaptCreate_CFL(TSAdapt adapt)
+PETSC_EXTERN PetscErrorCode TSAdaptCreate_CFL(TSAdapt adapt)
 {
   PetscErrorCode ierr;
   TSAdapt_CFL    *a;

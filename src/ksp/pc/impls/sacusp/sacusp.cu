@@ -237,7 +237,7 @@ M*/
 
 #undef __FUNCT__
 #define __FUNCT__ "PCCreate_SACUSP"
-PETSC_EXTERN_C PetscErrorCode  PCCreate_SACUSP(PC pc)
+PETSC_EXTERN PetscErrorCode PCCreate_SACUSP(PC pc)
 {
   PC_SACUSP      *sac;
   PetscErrorCode ierr;

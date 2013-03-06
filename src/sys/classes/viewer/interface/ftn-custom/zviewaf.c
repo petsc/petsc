@@ -13,7 +13,7 @@
 #define petscviewerpopformat_      petscviewerpopformat
 #endif
 
-PETSC_EXTERN_C void PETSC_STDCALL petscviewersettype_(PetscViewer *x,CHAR type_name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL petscviewersettype_(PetscViewer *x,CHAR type_name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *t;
 
@@ -22,21 +22,21 @@ PETSC_EXTERN_C void PETSC_STDCALL petscviewersettype_(PetscViewer *x,CHAR type_n
   FREECHAR(type_name,t);
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL petscviewersetformat_(PetscViewer *vin,PetscViewerFormat *format,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL petscviewersetformat_(PetscViewer *vin,PetscViewerFormat *format,PetscErrorCode *ierr)
 {
   PetscViewer v;
   PetscPatchDefaultViewers_Fortran(vin,v);
   *ierr = PetscViewerSetFormat(v,*format);
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL petscviewerpushformat_(PetscViewer *vin,PetscViewerFormat *format,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL petscviewerpushformat_(PetscViewer *vin,PetscViewerFormat *format,PetscErrorCode *ierr)
 {
   PetscViewer v;
   PetscPatchDefaultViewers_Fortran(vin,v);
   *ierr = PetscViewerPushFormat(v,*format);
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL petscviewerpopformat_(PetscViewer *vin,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL petscviewerpopformat_(PetscViewer *vin,PetscErrorCode *ierr)
 {
   PetscViewer v;
   PetscPatchDefaultViewers_Fortran(vin,v);

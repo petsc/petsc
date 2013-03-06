@@ -77,7 +77,7 @@ void petscignoreerrorhandler_(MPI_Comm *comm,int *line,const char *fun,const cha
   *ierr = PetscIgnoreErrorHandler(*comm,*line,fun,file,dir,*n,*p,mess,ctx);
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL petscpusherrorhandler_(void (PETSC_STDCALL *handler)(MPI_Comm *comm,int*,const CHAR PETSC_MIXED_LEN(len1),const CHAR PETSC_MIXED_LEN(len2),const CHAR PETSC_MIXED_LEN(len3),PetscErrorCode*,PetscErrorType*,const CHAR PETSC_MIXED_LEN(len4),void*,PetscErrorCode* PETSC_END_LEN(len1) PETSC_END_LEN(len2) PETSC_END_LEN(len3) PETSC_END_LEN(len4)),void *ctx,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL petscpusherrorhandler_(void (PETSC_STDCALL *handler)(MPI_Comm *comm,int*,const CHAR PETSC_MIXED_LEN(len1),const CHAR PETSC_MIXED_LEN(len2),const CHAR PETSC_MIXED_LEN(len3),PetscErrorCode*,PetscErrorType*,const CHAR PETSC_MIXED_LEN(len4),void*,PetscErrorCode* PETSC_END_LEN(len1) PETSC_END_LEN(len2) PETSC_END_LEN(len3) PETSC_END_LEN(len4)),void *ctx,PetscErrorCode *ierr)
 {
   if ((void(*)(void))handler == (void(*)(void))petsctracebackerrorhandler_) *ierr = PetscPushErrorHandler(PetscTraceBackErrorHandler,0);
   else {
@@ -86,7 +86,7 @@ PETSC_EXTERN_C void PETSC_STDCALL petscpusherrorhandler_(void (PETSC_STDCALL *ha
   }
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL petscerror_(MPI_Comm *comm,PetscErrorCode *number,int *line,PetscErrorType *p,CHAR message PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL petscerror_(MPI_Comm *comm,PetscErrorCode *number,int *line,PetscErrorType *p,CHAR message PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *t1;
   FIXCHAR(message,len,t1);
@@ -94,14 +94,14 @@ PETSC_EXTERN_C void PETSC_STDCALL petscerror_(MPI_Comm *comm,PetscErrorCode *num
   FREECHAR(message,t1);
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL petscrealview_(PetscInt *n,PetscReal *d,PetscViewer *viwer,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL petscrealview_(PetscInt *n,PetscReal *d,PetscViewer *viwer,PetscErrorCode *ierr)
 {
   PetscViewer v;
   PetscPatchDefaultViewers_Fortran(viwer,v);
   *ierr = PetscRealView(*n,d,v);
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL petscintview_(PetscInt *n,PetscInt *d,PetscViewer *viwer,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL petscintview_(PetscInt *n,PetscInt *d,PetscViewer *viwer,PetscErrorCode *ierr)
 {
   PetscViewer v;
   PetscPatchDefaultViewers_Fortran(viwer,v);
@@ -114,7 +114,7 @@ PETSC_EXTERN_C void PETSC_STDCALL petscintview_(PetscInt *n,PetscInt *d,PetscVie
 #define petscscalarview_             petscscalarview
 #endif
 
-PETSC_EXTERN_C void PETSC_STDCALL petscscalarview_(PetscInt *n,PetscScalar *d,PetscViewer *viwer,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL petscscalarview_(PetscInt *n,PetscScalar *d,PetscViewer *viwer,PetscErrorCode *ierr)
 {
   PetscViewer v;
   PetscPatchDefaultViewers_Fortran(viwer,v);

@@ -77,12 +77,12 @@ PetscErrorCode  PetscSysInitializePackage(const char path[])
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
 
 #if defined(PETSC_USE_SINGLE_LIBRARY)
-PETSC_EXTERN_C PetscErrorCode PetscDLLibraryRegister_petscvec(const char[]);
-PETSC_EXTERN_C PetscErrorCode PetscDLLibraryRegister_petscmat(const char[]);
-PETSC_EXTERN_C PetscErrorCode PetscDLLibraryRegister_petscdm(const char[]);
-PETSC_EXTERN_C PetscErrorCode PetscDLLibraryRegister_petscksp(const char[]);
-PETSC_EXTERN_C PetscErrorCode PetscDLLibraryRegister_petscsnes(const char[]);
-PETSC_EXTERN_C PetscErrorCode PetscDLLibraryRegister_petscts(const char[]);
+PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscvec(const char[]);
+PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscmat(const char[]);
+PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscdm(const char[]);
+PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscksp(const char[]);
+PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscsnes(const char[]);
+PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscts(const char[]);
 #endif
 
 #undef __FUNCT__
@@ -100,9 +100,9 @@ PETSC_EXTERN_C PetscErrorCode PetscDLLibraryRegister_petscts(const char[]);
   path - library path
  */
 #if defined(PETSC_USE_SINGLE_LIBRARY)
-PETSC_EXTERN_C PetscErrorCode  PetscDLLibraryRegister_petsc(const char path[])
+PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petsc(const char path[])
 #else
-PETSC_EXTERN_C PetscErrorCode  PetscDLLibraryRegister_petscsys(const char path[])
+PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscsys(const char path[])
 #endif
 {
   PetscErrorCode ierr;

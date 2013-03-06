@@ -407,7 +407,7 @@ PetscErrorCode  AOCreateMemoryScalable_private(MPI_Comm comm,PetscInt napp,const
 
 #undef __FUNCT__
 #define __FUNCT__ "AOCreate_MemoryScalable"
-PETSC_EXTERN_C PetscErrorCode AOCreate_MemoryScalable(AO ao)
+PETSC_EXTERN PetscErrorCode AOCreate_MemoryScalable(AO ao)
 {
   PetscErrorCode    ierr;
   IS                isapp=ao->isapp,ispetsc=ao->ispetsc;

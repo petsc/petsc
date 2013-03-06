@@ -422,7 +422,7 @@ PetscErrorCode  ISCreateStride(MPI_Comm comm,PetscInt n,PetscInt first,PetscInt 
 
 #undef __FUNCT__
 #define __FUNCT__ "ISCreate_Stride"
-PETSC_EXTERN_C PetscErrorCode  ISCreate_Stride(IS is)
+PETSC_EXTERN PetscErrorCode ISCreate_Stride(IS is)
 {
   PetscErrorCode ierr;
   IS_Stride      *sub;

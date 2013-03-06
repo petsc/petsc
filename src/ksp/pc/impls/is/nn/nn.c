@@ -171,7 +171,7 @@ M*/
 
 #undef __FUNCT__
 #define __FUNCT__ "PCCreate_NN"
-PETSC_EXTERN_C PetscErrorCode  PCCreate_NN(PC pc)
+PETSC_EXTERN PetscErrorCode PCCreate_NN(PC pc)
 {
   PetscErrorCode ierr;
   PC_NN          *pcnn;

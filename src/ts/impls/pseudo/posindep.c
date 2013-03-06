@@ -664,7 +664,7 @@ $  Xdot = (Xpredicted - Xold)/dt = (Xold-Xold)/dt = 0
 M*/
 #undef __FUNCT__
 #define __FUNCT__ "TSCreate_Pseudo"
-PETSC_EXTERN_C PetscErrorCode  TSCreate_Pseudo(TS ts)
+PETSC_EXTERN PetscErrorCode TSCreate_Pseudo(TS ts)
 {
   TS_Pseudo      *pseudo;
   PetscErrorCode ierr;

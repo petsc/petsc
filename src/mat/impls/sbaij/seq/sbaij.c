@@ -1764,12 +1764,12 @@ PetscErrorCode MatSeqSBAIJSetNumericFactorization_inplace(Mat B,PetscBool natura
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN_C PetscErrorCode  MatConvert_SeqSBAIJ_SeqAIJ(Mat, MatType,MatReuse,Mat*);
-PETSC_EXTERN_C PetscErrorCode  MatConvert_SeqSBAIJ_SeqBAIJ(Mat, MatType,MatReuse,Mat*);
+PETSC_EXTERN PetscErrorCode MatConvert_SeqSBAIJ_SeqAIJ(Mat, MatType,MatReuse,Mat*);
+PETSC_EXTERN PetscErrorCode MatConvert_SeqSBAIJ_SeqBAIJ(Mat, MatType,MatReuse,Mat*);
 
 #undef __FUNCT__
 #define __FUNCT__ "MatGetFactor_seqsbaij_petsc"
-PETSC_EXTERN_C PetscErrorCode MatGetFactor_seqsbaij_petsc(Mat A,MatFactorType ftype,Mat *B)
+PETSC_EXTERN PetscErrorCode MatGetFactor_seqsbaij_petsc(Mat A,MatFactorType ftype,Mat *B)
 {
   PetscInt       n = A->rmap->n;
   PetscErrorCode ierr;
@@ -1805,15 +1805,15 @@ PetscErrorCode MatGetFactorAvailable_seqsbaij_petsc(Mat A,MatFactorType ftype,Pe
 }
 
 #if defined(PETSC_HAVE_MUMPS)
-PETSC_EXTERN_C PetscErrorCode MatGetFactor_sbaij_mumps(Mat,MatFactorType,Mat*);
+PETSC_EXTERN PetscErrorCode MatGetFactor_sbaij_mumps(Mat,MatFactorType,Mat*);
 #endif
 #if defined(PETSC_HAVE_PASTIX)
-PETSC_EXTERN_C PetscErrorCode MatGetFactor_seqsbaij_pastix(Mat,MatFactorType,Mat*);
+PETSC_EXTERN PetscErrorCode MatGetFactor_seqsbaij_pastix(Mat,MatFactorType,Mat*);
 #endif
 #if defined(PETSC_HAVE_CHOLMOD)
-PETSC_EXTERN_C PetscErrorCode MatGetFactor_seqsbaij_cholmod(Mat,MatFactorType,Mat*);
+PETSC_EXTERN PetscErrorCode MatGetFactor_seqsbaij_cholmod(Mat,MatFactorType,Mat*);
 #endif
-PETSC_EXTERN_C PetscErrorCode MatGetFactor_seqsbaij_sbstrm(Mat,MatFactorType,Mat*);
+PETSC_EXTERN PetscErrorCode MatGetFactor_seqsbaij_sbstrm(Mat,MatFactorType,Mat*);
 
 /*MC
   MATSEQSBAIJ - MATSEQSBAIJ = "seqsbaij" - A matrix type to be used for sequential symmetric block sparse matrices,
@@ -1835,11 +1835,11 @@ PETSC_EXTERN_C PetscErrorCode MatGetFactor_seqsbaij_sbstrm(Mat,MatFactorType,Mat
   .seealso: MatCreateSeqSBAIJ
 M*/
 
-PETSC_EXTERN_C PetscErrorCode  MatConvert_SeqSBAIJ_SeqSBSTRM(Mat, MatType,MatReuse,Mat*);
+PETSC_EXTERN PetscErrorCode MatConvert_SeqSBAIJ_SeqSBSTRM(Mat, MatType,MatReuse,Mat*);
 
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_SeqSBAIJ"
-PETSC_EXTERN_C PetscErrorCode  MatCreate_SeqSBAIJ(Mat B)
+PETSC_EXTERN PetscErrorCode MatCreate_SeqSBAIJ(Mat B)
 {
   Mat_SeqSBAIJ   *b;
   PetscErrorCode ierr;

@@ -75,7 +75,7 @@ extern pthread_key_t PetscPThreadRankkey;
 #define PetscCPURelax() do { } while (0)
 #endif
 
-PETSC_EXTERN_C PetscErrorCode PetscThreadCommCreate_PThread(PetscThreadComm);
+PETSC_EXTERN PetscErrorCode PetscThreadCommCreate_PThread(PetscThreadComm);
 
 extern PetscErrorCode PetscPThreadCommInitialize_LockFree(PetscThreadComm);
 extern PetscErrorCode PetscPThreadCommFinalize_LockFree(PetscThreadComm);

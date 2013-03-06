@@ -199,7 +199,7 @@ PetscErrorCode MatDestroy_MPIAIJCUSP(Mat A)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_MPIAIJCUSP"
-PETSC_EXTERN_C PetscErrorCode  MatCreate_MPIAIJCUSP(Mat A)
+PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJCUSP(Mat A)
 {
   PetscErrorCode ierr;
 #if defined(PETSC_HAVE_TXPETSCGPU)

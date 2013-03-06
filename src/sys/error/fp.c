@@ -82,8 +82,8 @@ PetscErrorCode PetscFPTrapPop(void)
 #if defined(PETSC_HAVE_SUN4_STYLE_FPTRAP)
 #include <floatingpoint.h>
 
-PETSC_EXTERN_C PetscErrorCode ieee_flags(char*,char*,char*,char**);
-PETSC_EXTERN_C PetscErrorCode ieee_handler(char*,char*,sigfpe_handler_type(int,int,struct sigcontext*,char*));
+PETSC_EXTERN PetscErrorCode ieee_flags(char*,char*,char*,char**);
+PETSC_EXTERN PetscErrorCode ieee_handler(char*,char*,sigfpe_handler_type(int,int,struct sigcontext*,char*));
 
 static struct { int code_no; char *name; } error_codes[] = {
   { FPE_INTDIV_TRAP    ,"integer divide" },

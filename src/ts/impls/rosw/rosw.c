@@ -1671,7 +1671,7 @@ $  g(u_0 + sum_j a_ij y_j + y_i, ydot_i) = 0
 M*/
 #undef __FUNCT__
 #define __FUNCT__ "TSCreate_RosW"
-PETSC_EXTERN_C PetscErrorCode  TSCreate_RosW(TS ts)
+PETSC_EXTERN PetscErrorCode TSCreate_RosW(TS ts)
 {
   TS_RosW        *ros;
   PetscErrorCode ierr;

@@ -10,7 +10,7 @@ PetscErrorCode PetscThreadCommGetRank_OpenMP(PetscInt *trank)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscThreadCommCreate_OpenMP"
-PETSC_EXTERN_C PetscErrorCode PetscThreadCommCreate_OpenMP(PetscThreadComm tcomm)
+PETSC_EXTERN PetscErrorCode PetscThreadCommCreate_OpenMP(PetscThreadComm tcomm)
 {
   PetscErrorCode ierr;
 

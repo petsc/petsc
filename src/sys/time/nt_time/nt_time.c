@@ -5,7 +5,7 @@
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscMicrosoftTime"
-PETSC_EXTERN_C PetscLogDouble  PetscMicrosoftTime(void)
+PETSC_EXTERN PetscLogDouble PetscMicrosoftTime(void)
 {
   static PetscBool flag = PETSC_TRUE;
   PetscErrorCode   ierr;

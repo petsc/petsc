@@ -558,7 +558,7 @@ PetscErrorCode  ISToGeneral_Block(IS inis)
 
 #undef __FUNCT__
 #define __FUNCT__ "ISCreate_Block"
-PETSC_EXTERN_C PetscErrorCode  ISCreate_Block(IS is)
+PETSC_EXTERN PetscErrorCode ISCreate_Block(IS is)
 {
   PetscErrorCode ierr;
   IS_Block       *sub;

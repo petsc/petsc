@@ -561,7 +561,7 @@ PetscErrorCode MatDestroy_HYPREStruct(Mat mat)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_HYPREStruct"
-PETSC_EXTERN_C PetscErrorCode  MatCreate_HYPREStruct(Mat B)
+PETSC_EXTERN PetscErrorCode MatCreate_HYPREStruct(Mat B)
 {
   Mat_HYPREStruct *ex;
   PetscErrorCode  ierr;
@@ -1088,7 +1088,7 @@ PetscErrorCode MatDestroy_HYPRESStruct(Mat mat)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_HYPRESStruct"
-PETSC_EXTERN_C PetscErrorCode  MatCreate_HYPRESStruct(Mat B)
+PETSC_EXTERN PetscErrorCode MatCreate_HYPRESStruct(Mat B)
 {
   Mat_HYPRESStruct *ex;
   PetscErrorCode   ierr;

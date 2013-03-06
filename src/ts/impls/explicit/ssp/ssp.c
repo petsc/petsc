@@ -367,7 +367,7 @@ PetscErrorCode TSSSPGetNumStages(TS ts,PetscInt *nstages)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSSSPSetType_SSP"
-PETSC_EXTERN_C PetscErrorCode TSSSPSetType_SSP(TS ts,TSSSPType type)
+PETSC_EXTERN PetscErrorCode TSSSPSetType_SSP(TS ts,TSSSPType type)
 {
   PetscErrorCode ierr,(*r)(TS,PetscReal,PetscReal,Vec);
   TS_SSP         *ssp = (TS_SSP*)ts->data;
@@ -488,7 +488,7 @@ static PetscErrorCode TSView_SSP(TS ts,PetscViewer viewer)
 M*/
 #undef __FUNCT__
 #define __FUNCT__ "TSCreate_SSP"
-PETSC_EXTERN_C PetscErrorCode  TSCreate_SSP(TS ts)
+PETSC_EXTERN PetscErrorCode TSCreate_SSP(TS ts)
 {
   TS_SSP         *ssp;
   PetscErrorCode ierr;

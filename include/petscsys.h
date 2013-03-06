@@ -1843,13 +1843,9 @@ M*/
    ugly extern "C" {} wrappers.
 */
 #if defined(__cplusplus)
-#define PETSC_EXTERN_C extern "C" PETSC_VISIBILITY_PUBLIC
-#define PETSC_INTERN_C extern "C" PETSC_VISIBILITY_INTERNAL
 #define EXTERN_C_BEGIN extern "C" {
 #define EXTERN_C_END }
 #else
-#define PETSC_EXTERN_C PETSC_EXTERN
-#define PETSC_INTERN_C PETSC_INTERN
 #define EXTERN_C_BEGIN
 #define EXTERN_C_END
 #endif

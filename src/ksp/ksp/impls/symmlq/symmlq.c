@@ -198,7 +198,7 @@ PetscErrorCode  KSPSolve_SYMMLQ(KSP ksp)
 M*/
 #undef __FUNCT__
 #define __FUNCT__ "KSPCreate_SYMMLQ"
-PETSC_EXTERN_C PetscErrorCode  KSPCreate_SYMMLQ(KSP ksp)
+PETSC_EXTERN PetscErrorCode KSPCreate_SYMMLQ(KSP ksp)
 {
   KSP_SYMMLQ     *symmlq;
   PetscErrorCode ierr;

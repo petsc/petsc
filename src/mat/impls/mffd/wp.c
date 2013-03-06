@@ -215,7 +215,7 @@ PetscErrorCode  MatMFFDWPSetComputeNormU(Mat A,PetscBool flag)
 .  ctx - the matrix free context created by MatCreateMFFD()
 
 */
-PETSC_EXTERN_C PetscErrorCode  MatCreateMFFD_WP(MatMFFD ctx)
+PETSC_EXTERN PetscErrorCode MatCreateMFFD_WP(MatMFFD ctx)
 {
   PetscErrorCode ierr;
   MatMFFD_WP     *hctx;

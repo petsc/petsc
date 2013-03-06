@@ -806,7 +806,7 @@ M*/
 
 #undef __FUNCT__
 #define __FUNCT__ "PCCreate_Shell"
-PETSC_EXTERN_C PetscErrorCode  PCCreate_Shell(PC pc)
+PETSC_EXTERN PetscErrorCode PCCreate_Shell(PC pc)
 {
   PetscErrorCode ierr;
   PC_Shell       *shell;

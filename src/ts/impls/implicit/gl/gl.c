@@ -486,7 +486,7 @@ static PetscErrorCode TSGLCompleteStep_RescaleAndModify(TSGLScheme sc,PetscReal 
 
 #undef __FUNCT__
 #define __FUNCT__ "TSGLCreate_IRKS"
-PETSC_EXTERN_C PetscErrorCode  TSGLCreate_IRKS(TS ts)
+PETSC_EXTERN PetscErrorCode TSGLCreate_IRKS(TS ts)
 {
   TS_GL          *gl = (TS_GL*)ts->data;
   PetscErrorCode ierr;
@@ -1508,7 +1508,7 @@ PetscErrorCode  TSGLFinalizePackage(void)
 M*/
 #undef __FUNCT__
 #define __FUNCT__ "TSCreate_GL"
-PETSC_EXTERN_C PetscErrorCode  TSCreate_GL(TS ts)
+PETSC_EXTERN PetscErrorCode TSCreate_GL(TS ts)
 {
   TS_GL          *gl;
   PetscErrorCode ierr;

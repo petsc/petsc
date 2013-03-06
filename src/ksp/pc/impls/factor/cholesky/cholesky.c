@@ -293,7 +293,7 @@ M*/
 
 #undef __FUNCT__
 #define __FUNCT__ "PCCreate_Cholesky"
-PETSC_EXTERN_C PetscErrorCode  PCCreate_Cholesky(PC pc)
+PETSC_EXTERN PetscErrorCode PCCreate_Cholesky(PC pc)
 {
   PetscErrorCode ierr;
   PC_Cholesky    *dir;

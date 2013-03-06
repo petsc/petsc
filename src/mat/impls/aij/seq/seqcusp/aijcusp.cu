@@ -612,7 +612,7 @@ extern PetscErrorCode MatFactorGetSolverPackage_seqaij_cusparse(Mat,const MatSol
 
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_SeqAIJCUSP"
-PETSC_EXTERN_C PetscErrorCode  MatCreate_SeqAIJCUSP(Mat B)
+PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJCUSP(Mat B)
 {
   PetscErrorCode       ierr;
   MatCUSPStorageFormat format = MAT_CUSP_CSR;
@@ -650,7 +650,7 @@ PETSC_EXTERN_C PetscErrorCode  MatCreate_SeqAIJCUSP(Mat B)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_SeqAIJCUSP"
-PETSC_EXTERN_C PetscErrorCode  MatCreate_SeqAIJCUSP(Mat B)
+PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJCUSP(Mat B)
 {
   PetscErrorCode ierr;
   Mat_SeqAIJ     *aij;

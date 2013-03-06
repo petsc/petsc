@@ -405,7 +405,7 @@ M*/
 
 #undef __FUNCT__
 #define __FUNCT__ "MatCoarsenCreate_MIS"
-PETSC_EXTERN_C PetscErrorCode  MatCoarsenCreate_MIS(MatCoarsen coarse)
+PETSC_EXTERN PetscErrorCode MatCoarsenCreate_MIS(MatCoarsen coarse)
 {
   PetscErrorCode ierr;
   MatCoarsen_MIS *MIS;

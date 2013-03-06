@@ -467,7 +467,7 @@ M*/
 
 #undef __FUNCT__
 #define __FUNCT__ "PCCreate_Redundant"
-PETSC_EXTERN_C PetscErrorCode  PCCreate_Redundant(PC pc)
+PETSC_EXTERN PetscErrorCode PCCreate_Redundant(PC pc)
 {
   PetscErrorCode ierr;
   PC_Redundant   *red;

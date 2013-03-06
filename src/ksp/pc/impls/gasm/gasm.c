@@ -1139,7 +1139,7 @@ M*/
 
 #undef __FUNCT__
 #define __FUNCT__ "PCCreate_GASM"
-PETSC_EXTERN_C PetscErrorCode  PCCreate_GASM(PC pc)
+PETSC_EXTERN PetscErrorCode PCCreate_GASM(PC pc)
 {
   PetscErrorCode ierr;
   PC_GASM        *osm;

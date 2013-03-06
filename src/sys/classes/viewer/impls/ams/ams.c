@@ -217,7 +217,7 @@ static PetscErrorCode PetscViewerDestroy_AMS(PetscViewer viewer)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerCreate_AMS"
-PETSC_EXTERN_C PetscErrorCode PetscViewerCreate_AMS(PetscViewer v)
+PETSC_EXTERN PetscErrorCode PetscViewerCreate_AMS(PetscViewer v)
 {
   PetscViewer_AMS *vams;
   PetscErrorCode  ierr;

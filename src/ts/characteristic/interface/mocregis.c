@@ -1,6 +1,6 @@
 #include <petsc-private/characteristicimpl.h>  /*I "petsccharacteristic.h" I*/
 
-PETSC_EXTERN_C PetscErrorCode CharacteristicCreate_DA(Characteristic);
+PETSC_EXTERN PetscErrorCode CharacteristicCreate_DA(Characteristic);
 
 /*
     This is used by CharacteristicSetType() to make sure that at least one

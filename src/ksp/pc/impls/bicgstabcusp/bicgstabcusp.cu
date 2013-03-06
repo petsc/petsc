@@ -221,7 +221,7 @@ static PetscErrorCode PCSetFromOptions_BiCGStabCUSP(PC pc)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCCreate_BiCGStabCUSP"
-PETSC_EXTERN_C PetscErrorCode  PCCreate_BiCGStabCUSP(PC pc)
+PETSC_EXTERN PetscErrorCode PCCreate_BiCGStabCUSP(PC pc)
 {
   PC_BiCGStabCUSP *bicg;
   PetscErrorCode  ierr;

@@ -2,7 +2,7 @@
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscThreadCommCreate_NoThread"
-PETSC_EXTERN_C PetscErrorCode PetscThreadCommCreate_NoThread(PetscThreadComm tcomm)
+PETSC_EXTERN PetscErrorCode PetscThreadCommCreate_NoThread(PetscThreadComm tcomm)
 {
   PetscErrorCode ierr;
 

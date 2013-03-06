@@ -92,7 +92,7 @@ PetscErrorCode CharacteristicInitializePackage(const char path[])
   Input Parameter:
   path - library path
  */
-PETSC_EXTERN_C PetscErrorCode PetscDLLibraryRegister_petsccharacteristic(const char path[])
+PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petsccharacteristic(const char path[])
 {
   PetscErrorCode ierr;
 

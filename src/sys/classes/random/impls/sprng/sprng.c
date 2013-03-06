@@ -78,7 +78,7 @@ M*/
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscRandomCreate_Sprng"
-PETSC_EXTERN_C PetscErrorCode  PetscRandomCreate_Sprng(PetscRandom r)
+PETSC_EXTERN PetscErrorCode PetscRandomCreate_Sprng(PetscRandom r)
 {
   PetscErrorCode ierr;
 

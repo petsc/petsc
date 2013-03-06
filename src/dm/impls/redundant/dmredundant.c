@@ -415,7 +415,7 @@ M*/
 
 #undef __FUNCT__
 #define __FUNCT__ "DMCreate_Redundant"
-PETSC_EXTERN_C PetscErrorCode DMCreate_Redundant(DM dm)
+PETSC_EXTERN PetscErrorCode DMCreate_Redundant(DM dm)
 {
   PetscErrorCode ierr;
   DM_Redundant   *red;

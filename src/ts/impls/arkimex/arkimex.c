@@ -1338,7 +1338,7 @@ PetscErrorCode  TSARKIMEXSetFullyImplicit_ARKIMEX(TS ts,PetscBool flg)
 M*/
 #undef __FUNCT__
 #define __FUNCT__ "TSCreate_ARKIMEX"
-PETSC_EXTERN_C PetscErrorCode  TSCreate_ARKIMEX(TS ts)
+PETSC_EXTERN PetscErrorCode TSCreate_ARKIMEX(TS ts)
 {
   TS_ARKIMEX     *th;
   PetscErrorCode ierr;

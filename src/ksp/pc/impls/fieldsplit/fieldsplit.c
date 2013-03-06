@@ -1831,7 +1831,7 @@ M*/
 
 #undef __FUNCT__
 #define __FUNCT__ "PCCreate_FieldSplit"
-PETSC_EXTERN_C PetscErrorCode  PCCreate_FieldSplit(PC pc)
+PETSC_EXTERN PetscErrorCode PCCreate_FieldSplit(PC pc)
 {
   PetscErrorCode ierr;
   PC_FieldSplit  *jac;

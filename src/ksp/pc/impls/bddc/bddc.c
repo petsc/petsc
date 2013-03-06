@@ -1146,7 +1146,7 @@ M*/
 
 #undef __FUNCT__
 #define __FUNCT__ "PCCreate_BDDC"
-PETSC_EXTERN_C PetscErrorCode PCCreate_BDDC(PC pc)
+PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC pc)
 {
   PetscErrorCode ierr;
   PC_BDDC        *pcbddc;

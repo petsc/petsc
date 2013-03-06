@@ -184,7 +184,7 @@ static PetscErrorCode  KSPSolve_FBCGS(KSP ksp)
 M*/
 #undef __FUNCT__
 #define __FUNCT__ "KSPCreate_FBCGS"
-PETSC_EXTERN_C PetscErrorCode  KSPCreate_FBCGS(KSP ksp)
+PETSC_EXTERN PetscErrorCode KSPCreate_FBCGS(KSP ksp)
 {
   PetscErrorCode ierr;
   KSP_BCGS       *bcgs;

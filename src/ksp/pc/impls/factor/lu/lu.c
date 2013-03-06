@@ -269,7 +269,7 @@ M*/
 
 #undef __FUNCT__
 #define __FUNCT__ "PCCreate_LU"
-PETSC_EXTERN_C PetscErrorCode  PCCreate_LU(PC pc)
+PETSC_EXTERN PetscErrorCode PCCreate_LU(PC pc)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size;

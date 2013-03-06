@@ -527,7 +527,7 @@ M*/
 
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_Shell"
-PETSC_EXTERN_C PetscErrorCode  MatCreate_Shell(Mat A)
+PETSC_EXTERN PetscErrorCode MatCreate_Shell(Mat A)
 {
   Mat_Shell      *b;
   PetscErrorCode ierr;

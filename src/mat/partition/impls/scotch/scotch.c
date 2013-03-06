@@ -369,7 +369,7 @@ M*/
 
 #undef __FUNCT__
 #define __FUNCT__ "MatPartitioningCreate_PTScotch"
-PETSC_EXTERN_C PetscErrorCode  MatPartitioningCreate_PTScotch(MatPartitioning part)
+PETSC_EXTERN PetscErrorCode MatPartitioningCreate_PTScotch(MatPartitioning part)
 {
   PetscErrorCode           ierr;
   MatPartitioning_PTScotch *scotch;

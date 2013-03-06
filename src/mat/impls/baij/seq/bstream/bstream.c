@@ -100,7 +100,7 @@ PetscErrorCode MatAssemblyEnd_SeqBSTRM(Mat A, MatAssemblyType mode)
 /*=========================================================*/
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_SeqBAIJ_SeqBSTRM"
-PETSC_EXTERN_C PetscErrorCode  MatConvert_SeqBAIJ_SeqBSTRM(Mat A,MatType type,MatReuse reuse,Mat *newmat)
+PETSC_EXTERN PetscErrorCode MatConvert_SeqBAIJ_SeqBSTRM(Mat A,MatType type,MatReuse reuse,Mat *newmat)
 {
   PetscErrorCode ierr;
   Mat            B = *newmat;
@@ -148,7 +148,7 @@ PetscErrorCode MatCreateSeqBSTRM(MPI_Comm comm,PetscInt bs,PetscInt m,PetscInt n
 
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_SeqBSTRM"
-PETSC_EXTERN_C PetscErrorCode MatCreate_SeqBSTRM(Mat A)
+PETSC_EXTERN PetscErrorCode MatCreate_SeqBSTRM(Mat A)
 {
   PetscErrorCode ierr;
 

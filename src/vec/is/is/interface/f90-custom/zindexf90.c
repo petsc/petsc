@@ -10,7 +10,7 @@
 #define isrestoreindicesf90_       isrestoreindicesf90
 #endif
 
-PETSC_EXTERN_C void PETSC_STDCALL isgetindicesf90_(IS *x,F90Array1d *ptr,int *__ierr PETSC_F90_2PTR_PROTO(ptrd))
+PETSC_EXTERN void PETSC_STDCALL isgetindicesf90_(IS *x,F90Array1d *ptr,int *__ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
   const PetscInt *fa;
   PetscInt       len;
@@ -19,7 +19,7 @@ PETSC_EXTERN_C void PETSC_STDCALL isgetindicesf90_(IS *x,F90Array1d *ptr,int *__
   *__ierr = ISGetLocalSize(*x,&len);   if (*__ierr) return;
   *__ierr = F90Array1dCreate((void*)fa,PETSC_INT,1,len,ptr PETSC_F90_2PTR_PARAM(ptrd));
 }
-PETSC_EXTERN_C void PETSC_STDCALL isrestoreindicesf90_(IS *x,F90Array1d *ptr,int *__ierr PETSC_F90_2PTR_PROTO(ptrd))
+PETSC_EXTERN void PETSC_STDCALL isrestoreindicesf90_(IS *x,F90Array1d *ptr,int *__ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
   const PetscInt *fa;
 

@@ -179,7 +179,7 @@ M*/
 
 #undef __FUNCT__
 #define __FUNCT__ "PCCreate_CP"
-PETSC_EXTERN_C PetscErrorCode  PCCreate_CP(PC pc)
+PETSC_EXTERN PetscErrorCode PCCreate_CP(PC pc)
 {
   PC_CP          *cp;
   PetscErrorCode ierr;

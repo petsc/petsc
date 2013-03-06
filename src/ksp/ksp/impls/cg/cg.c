@@ -438,7 +438,7 @@ static PetscErrorCode  KSPCGUseSingleReduction_CG(KSP ksp,PetscBool flg)
 M*/
 #undef __FUNCT__
 #define __FUNCT__ "KSPCreate_CG"
-PETSC_EXTERN_C PetscErrorCode  KSPCreate_CG(KSP ksp)
+PETSC_EXTERN PetscErrorCode KSPCreate_CG(KSP ksp)
 {
   PetscErrorCode ierr;
   KSP_CG         *cg;

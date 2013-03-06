@@ -1,12 +1,12 @@
 
 #include <petscmat.h>
 
-PETSC_EXTERN_C PetscErrorCode  MatPartitioningCreate_Current(MatPartitioning);
-PETSC_EXTERN_C PetscErrorCode  MatPartitioningCreate_Square(MatPartitioning);
-PETSC_EXTERN_C PetscErrorCode  MatPartitioningCreate_Parmetis(MatPartitioning);
-PETSC_EXTERN_C PetscErrorCode  MatPartitioningCreate_Chaco(MatPartitioning);
-PETSC_EXTERN_C PetscErrorCode  MatPartitioningCreate_Party(MatPartitioning);
-PETSC_EXTERN_C PetscErrorCode  MatPartitioningCreate_PTScotch(MatPartitioning);
+PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Current(MatPartitioning);
+PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Square(MatPartitioning);
+PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Parmetis(MatPartitioning);
+PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Chaco(MatPartitioning);
+PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Party(MatPartitioning);
+PETSC_EXTERN PetscErrorCode MatPartitioningCreate_PTScotch(MatPartitioning);
 
 #undef __FUNCT__
 #define __FUNCT__ "MatPartitioningRegisterAll"

@@ -1047,7 +1047,7 @@ M*/
 
 #undef __FUNCT__
 #define __FUNCT__ "PCCreate_ASM"
-PETSC_EXTERN_C PetscErrorCode  PCCreate_ASM(PC pc)
+PETSC_EXTERN PetscErrorCode PCCreate_ASM(PC pc)
 {
   PetscErrorCode ierr;
   PC_ASM         *osm;

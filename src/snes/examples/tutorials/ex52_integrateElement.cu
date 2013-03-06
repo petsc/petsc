@@ -289,7 +289,7 @@ PetscErrorCode calculateGrid(const int N, const int blockSize, unsigned int& x, 
   Output Parameter:
 . elemVec - An array of the element vectors for each cell
 */
-PETSC_EXTERN_C PetscErrorCode IntegrateElementBatchGPU(PetscInt Ne, PetscInt Ncb, PetscInt Nbc, PetscInt Nbl, const PetscScalar coefficients[],
+PETSC_EXTERN PetscErrorCode IntegrateElementBatchGPU(PetscInt Ne, PetscInt Ncb, PetscInt Nbc, PetscInt Nbl, const PetscScalar coefficients[],
                                         const PetscReal jacobianInverses[], const PetscReal jacobianDeterminants[], PetscScalar elemVec[],
                                         PetscLogEvent event, PetscInt debug)
 {

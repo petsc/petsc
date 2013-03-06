@@ -38,7 +38,7 @@ PetscErrorCode PetscThreadCommFinalizePackage(void)
 
   Note: this is declared extern "C" because it is passed to MPI_Keyval_create()
 */
-PETSC_EXTERN_C PetscMPIInt MPIAPI Petsc_CopyThreadComm(MPI_Comm comm,PetscMPIInt keyval,void *extra_state,void *attr_in,void *attr_out,int *flag)
+PETSC_EXTERN PetscMPIInt MPIAPI Petsc_CopyThreadComm(MPI_Comm comm,PetscMPIInt keyval,void *extra_state,void *attr_in,void *attr_out,int *flag)
 {
   PetscErrorCode  ierr;
   PetscThreadComm tcomm = (PetscThreadComm)attr_in;
@@ -62,7 +62,7 @@ PETSC_EXTERN_C PetscMPIInt MPIAPI Petsc_CopyThreadComm(MPI_Comm comm,PetscMPIInt
 
   Note: this is declared extern "C" because it is passed to MPI_Keyval_create()
 */
-PETSC_EXTERN_C PetscMPIInt MPIAPI Petsc_DelThreadComm(MPI_Comm comm,PetscMPIInt keyval,void *attr,void *extra_state)
+PETSC_EXTERN PetscMPIInt MPIAPI Petsc_DelThreadComm(MPI_Comm comm,PetscMPIInt keyval,void *attr,void *extra_state)
 {
   PetscErrorCode ierr;
 

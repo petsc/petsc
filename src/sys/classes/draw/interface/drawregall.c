@@ -4,19 +4,19 @@
 */
 #include <petsc-private/drawimpl.h>  /*I "petscdraw.h" I*/
 
-PETSC_EXTERN_C PetscErrorCode PetscDrawCreate_TikZ(PetscDraw);
+PETSC_EXTERN PetscErrorCode PetscDrawCreate_TikZ(PetscDraw);
 #if defined(PETSC_HAVE_X)
-PETSC_EXTERN_C PetscErrorCode PetscDrawCreate_X(PetscDraw);
+PETSC_EXTERN PetscErrorCode PetscDrawCreate_X(PetscDraw);
 #endif
 #if defined(PETSC_HAVE_GLUT)
-PETSC_EXTERN_C PetscErrorCode PetscDrawCreate_GLUT(PetscDraw);
+PETSC_EXTERN PetscErrorCode PetscDrawCreate_GLUT(PetscDraw);
 #endif
 #if defined(PETSC_HAVE_OPENGLES)
-PETSC_EXTERN_C PetscErrorCode PetscDrawCreate_OpenGLES(PetscDraw);
+PETSC_EXTERN PetscErrorCode PetscDrawCreate_OpenGLES(PetscDraw);
 #endif
-PETSC_EXTERN_C PetscErrorCode PetscDrawCreate_Null(PetscDraw);
+PETSC_EXTERN PetscErrorCode PetscDrawCreate_Null(PetscDraw);
 #if defined(PETSC_USE_WINDOWS_GRAPHICS)
-PETSC_EXTERN_C PetscErrorCode PetscDrawCreate_Win32(PetscDraw);
+PETSC_EXTERN PetscErrorCode PetscDrawCreate_Win32(PetscDraw);
 #endif
 
 #undef __FUNCT__

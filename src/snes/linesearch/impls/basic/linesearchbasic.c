@@ -90,7 +90,7 @@ static PetscErrorCode  SNESLineSearchApply_Basic(SNESLineSearch linesearch)
 
 .seealso: SNESLineSearchCreate(), SNESLineSearchSetType()
 M*/
-PETSC_EXTERN_C PetscErrorCode SNESLineSearchCreate_Basic(SNESLineSearch linesearch)
+PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_Basic(SNESLineSearch linesearch)
 {
   PetscFunctionBegin;
   linesearch->ops->apply          = SNESLineSearchApply_Basic;

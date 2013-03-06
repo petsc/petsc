@@ -12,7 +12,7 @@
 #define matpartitioningsettype_          matpartitioningsettype
 #endif
 
-PETSC_EXTERN_C void PETSC_STDCALL matpartitioningsetvertexweights_(MatPartitioning *part,const PetscInt weights[],PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL matpartitioningsetvertexweights_(MatPartitioning *part,const PetscInt weights[],PetscErrorCode *ierr)
 {
   PetscInt len;
   PetscInt *array;
@@ -21,14 +21,14 @@ PETSC_EXTERN_C void PETSC_STDCALL matpartitioningsetvertexweights_(MatPartitioni
   *ierr = PetscMemcpy(array,weights,len*sizeof(PetscInt));if (*ierr) return;
   *ierr = MatPartitioningSetVertexWeights(*part,array);
 }
-PETSC_EXTERN_C void PETSC_STDCALL matpartitioningview_(MatPartitioning  *part,PetscViewer *viewer, PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL matpartitioningview_(MatPartitioning *part,PetscViewer *viewer, PetscErrorCode *ierr)
 {
   PetscViewer v;
   PetscPatchDefaultViewers_Fortran(viewer,v);
   *ierr = MatPartitioningView(*part,v);
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL matpartitioningsettype_(MatPartitioning *part,CHAR type PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL matpartitioningsettype_(MatPartitioning *part,CHAR type PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *t;
   FIXCHAR(type,len,t);

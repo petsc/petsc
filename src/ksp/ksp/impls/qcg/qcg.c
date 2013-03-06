@@ -406,7 +406,7 @@ M*/
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPCreate_QCG"
-PETSC_EXTERN_C PetscErrorCode  KSPCreate_QCG(KSP ksp)
+PETSC_EXTERN PetscErrorCode KSPCreate_QCG(KSP ksp)
 {
   PetscErrorCode ierr;
   KSP_QCG        *cgP;

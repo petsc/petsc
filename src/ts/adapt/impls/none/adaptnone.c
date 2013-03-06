@@ -22,7 +22,7 @@ static PetscErrorCode TSAdaptChoose_None(TSAdapt adapt,TS ts,PetscReal h,PetscIn
 
 .seealso: TS, TSAdapt, TSSetAdapt()
 M*/
-PETSC_EXTERN_C PetscErrorCode TSAdaptCreate_None(TSAdapt adapt)
+PETSC_EXTERN PetscErrorCode TSAdaptCreate_None(TSAdapt adapt)
 {
 
   PetscFunctionBegin;

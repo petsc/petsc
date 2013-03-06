@@ -500,7 +500,7 @@ PetscErrorCode  ISGeneralSetIndices_General(IS is,PetscInt n,const PetscInt idx[
 
 #undef __FUNCT__
 #define __FUNCT__ "ISCreate_General"
-PETSC_EXTERN_C PetscErrorCode  ISCreate_General(IS is)
+PETSC_EXTERN PetscErrorCode ISCreate_General(IS is)
 {
   PetscErrorCode ierr;
   IS_General     *sub;

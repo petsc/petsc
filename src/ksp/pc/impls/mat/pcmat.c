@@ -47,7 +47,7 @@ M*/
 
 #undef __FUNCT__
 #define __FUNCT__ "PCCreate_Mat"
-PETSC_EXTERN_C PetscErrorCode  PCCreate_Mat(PC pc)
+PETSC_EXTERN PetscErrorCode PCCreate_Mat(PC pc)
 {
   PetscFunctionBegin;
   pc->ops->apply               = PCApply_Mat;

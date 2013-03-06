@@ -492,7 +492,7 @@ static PetscErrorCode SNESSetFromOptions_VINEWTONSSLS(SNES snes)
 M*/
 #undef __FUNCT__
 #define __FUNCT__ "SNESCreate_VINEWTONSSLS"
-PETSC_EXTERN_C PetscErrorCode  SNESCreate_VINEWTONSSLS(SNES snes)
+PETSC_EXTERN PetscErrorCode SNESCreate_VINEWTONSSLS(SNES snes)
 {
   PetscErrorCode    ierr;
   SNES_VINEWTONSSLS *vi;

@@ -98,7 +98,7 @@ PetscErrorCode  SNESInitializePackage(const char path[])
   path - library path
 
  */
-PETSC_EXTERN_C PetscErrorCode  PetscDLLibraryRegister_petscsnes(const char path[])
+PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscsnes(const char path[])
 {
   PetscErrorCode ierr;
 

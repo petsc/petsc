@@ -69,7 +69,7 @@ PetscErrorCode PFSetFromOptions_Constant(PF pf)
 
 #undef __FUNCT__
 #define __FUNCT__ "PFCreate_Constant"
-PETSC_EXTERN_C PetscErrorCode  PFCreate_Constant(PF pf,void *value)
+PETSC_EXTERN PetscErrorCode PFCreate_Constant(PF pf,void *value)
 {
   PetscErrorCode ierr;
   PetscScalar    *loc;
@@ -89,7 +89,7 @@ PETSC_EXTERN_C PetscErrorCode  PFCreate_Constant(PF pf,void *value)
 
 #undef __FUNCT__
 #define __FUNCT__ "PFCreate_Quick"
-PETSC_EXTERN_C PetscErrorCode  PFCreate_Quick(PF pf,PetscErrorCode (*function)(void*,PetscInt,const PetscScalar*,PetscScalar*))
+PETSC_EXTERN PetscErrorCode PFCreate_Quick(PF pf,PetscErrorCode (*function)(void*,PetscInt,const PetscScalar*,PetscScalar*))
 {
   PetscErrorCode ierr;
 
@@ -148,7 +148,7 @@ PetscErrorCode PFDestroy_Identity(void *value)
 
 #undef __FUNCT__
 #define __FUNCT__ "PFCreate_Identity"
-PETSC_EXTERN_C PetscErrorCode  PFCreate_Identity(PF pf,void *value)
+PETSC_EXTERN PetscErrorCode PFCreate_Identity(PF pf,void *value)
 {
   PetscErrorCode ierr;
   PetscInt       *loc;

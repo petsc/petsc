@@ -289,7 +289,7 @@ M*/
 
 #undef __FUNCT__
 #define __FUNCT__ "DMCreate_Sliced"
-PETSC_EXTERN_C PetscErrorCode  DMCreate_Sliced(DM p)
+PETSC_EXTERN PetscErrorCode DMCreate_Sliced(DM p)
 {
   PetscErrorCode ierr;
   DM_Sliced      *slice;

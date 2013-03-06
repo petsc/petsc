@@ -1953,7 +1953,7 @@ static PetscErrorCode PCView_ASA(PC pc,PetscViewer viewer)
 */
 #undef __FUNCT__
 #define __FUNCT__ "PCCreate_ASA"
-PETSC_EXTERN_C PetscErrorCode  PCCreate_ASA(PC pc)
+PETSC_EXTERN PetscErrorCode PCCreate_ASA(PC pc)
 {
   PetscErrorCode ierr;
   PC_ASA         *asa;

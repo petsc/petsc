@@ -271,7 +271,7 @@ M*/
 
 #undef __FUNCT__
 #define __FUNCT__ "PCCreate_HMPI"
-PETSC_EXTERN_C PetscErrorCode  PCCreate_HMPI(PC pc)
+PETSC_EXTERN PetscErrorCode PCCreate_HMPI(PC pc)
 {
   PetscErrorCode ierr;
   PC_HMPI        *red;

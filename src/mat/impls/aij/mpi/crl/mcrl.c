@@ -126,7 +126,7 @@ extern PetscErrorCode MatDuplicate_AIJCRL(Mat,MatDuplicateOption,Mat*);
 
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_MPIAIJ_MPIAIJCRL"
-PETSC_EXTERN_C PetscErrorCode  MatConvert_MPIAIJ_MPIAIJCRL(Mat A,MatType type,MatReuse reuse,Mat *newmat)
+PETSC_EXTERN PetscErrorCode MatConvert_MPIAIJ_MPIAIJCRL(Mat A,MatType type,MatReuse reuse,Mat *newmat)
 {
   PetscErrorCode ierr;
   Mat            B = *newmat;
@@ -204,7 +204,7 @@ PetscErrorCode  MatCreateMPIAIJCRL(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt 
 
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_MPIAIJCRL"
-PETSC_EXTERN_C PetscErrorCode  MatCreate_MPIAIJCRL(Mat A)
+PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJCRL(Mat A)
 {
   PetscErrorCode ierr;
 

@@ -164,7 +164,7 @@ PetscErrorCode PetscViewerMathematicaSetupConnection_Private(PetscViewer v)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerCreate_Mathematica"
-PETSC_EXTERN_C PetscErrorCode  PetscViewerCreate_Mathematica(PetscViewer v)
+PETSC_EXTERN PetscErrorCode PetscViewerCreate_Mathematica(PetscViewer v)
 {
   PetscViewer_Mathematica *vmath;
   PetscErrorCode          ierr;

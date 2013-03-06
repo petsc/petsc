@@ -180,7 +180,7 @@ PetscErrorCode SNESSetUp_Test(SNES snes)
 M*/
 #undef __FUNCT__
 #define __FUNCT__ "SNESCreate_Test"
-PETSC_EXTERN_C PetscErrorCode  SNESCreate_Test(SNES snes)
+PETSC_EXTERN PetscErrorCode SNESCreate_Test(SNES snes)
 {
   SNES_Test      *neP;
   PetscErrorCode ierr;

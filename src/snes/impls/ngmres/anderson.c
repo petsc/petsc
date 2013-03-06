@@ -212,7 +212,7 @@ M*/
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESCreate_Anderson"
-PETSC_EXTERN_C PetscErrorCode SNESCreate_Anderson(SNES snes)
+PETSC_EXTERN PetscErrorCode SNESCreate_Anderson(SNES snes)
 {
   SNES_NGMRES    *ngmres;
   PetscErrorCode ierr;

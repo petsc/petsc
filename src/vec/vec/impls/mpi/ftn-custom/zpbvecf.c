@@ -10,13 +10,13 @@
 #define veccreateghostwitharray_      veccreateghostwitharray
 #endif
 
-PETSC_EXTERN_C void PETSC_STDCALL veccreatempiwitharray_(MPI_Comm *comm,PetscInt *bs,PetscInt *n,PetscInt *N,PetscScalar *s,Vec *V,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL veccreatempiwitharray_(MPI_Comm *comm,PetscInt *bs,PetscInt *n,PetscInt *N,PetscScalar *s,Vec *V,PetscErrorCode *ierr)
 {
   CHKFORTRANNULLSCALAR(s);
   *ierr = VecCreateMPIWithArray(MPI_Comm_f2c(*(MPI_Fint*)&*comm),*bs,*n,*N,s,V);
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL veccreateghostblockwitharray_(MPI_Comm *comm,PetscInt *bs,PetscInt *n,PetscInt *N,PetscInt *nghost,PetscInt *ghosts,
+PETSC_EXTERN void PETSC_STDCALL veccreateghostblockwitharray_(MPI_Comm *comm,PetscInt *bs,PetscInt *n,PetscInt *N,PetscInt *nghost,PetscInt *ghosts,
                               PetscScalar *array,Vec *vv,PetscErrorCode *ierr)
 {
   CHKFORTRANNULLSCALAR(array);
@@ -24,7 +24,7 @@ PETSC_EXTERN_C void PETSC_STDCALL veccreateghostblockwitharray_(MPI_Comm *comm,P
                                        ghosts,array,vv);
 }
 
-PETSC_EXTERN_C void PETSC_STDCALL veccreateghostwitharray_(MPI_Comm *comm,PetscInt *n,PetscInt *N,PetscInt *nghost,PetscInt *ghosts,PetscScalar *array,
+PETSC_EXTERN void PETSC_STDCALL veccreateghostwitharray_(MPI_Comm *comm,PetscInt *n,PetscInt *N,PetscInt *nghost,PetscInt *ghosts,PetscScalar *array,
                               Vec *vv,PetscErrorCode *ierr)
 {
   CHKFORTRANNULLSCALAR(array);

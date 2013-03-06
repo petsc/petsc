@@ -495,7 +495,7 @@ $  Y_i = X + h sum_j a_ij Y'_j
 M*/
 #undef __FUNCT__
 #define __FUNCT__ "TSCreate_Theta"
-PETSC_EXTERN_C PetscErrorCode  TSCreate_Theta(TS ts)
+PETSC_EXTERN PetscErrorCode TSCreate_Theta(TS ts)
 {
   TS_Theta       *th;
   PetscErrorCode ierr;
@@ -675,7 +675,7 @@ $  -ts_type theta -ts_theta_theta 1.
 M*/
 #undef __FUNCT__
 #define __FUNCT__ "TSCreate_BEuler"
-PETSC_EXTERN_C PetscErrorCode  TSCreate_BEuler(TS ts)
+PETSC_EXTERN PetscErrorCode TSCreate_BEuler(TS ts)
 {
   PetscErrorCode ierr;
 
@@ -712,7 +712,7 @@ $  -ts_type theta -ts_theta_theta 0.5 -ts_theta_endpoint
 M*/
 #undef __FUNCT__
 #define __FUNCT__ "TSCreate_CN"
-PETSC_EXTERN_C PetscErrorCode  TSCreate_CN(TS ts)
+PETSC_EXTERN PetscErrorCode TSCreate_CN(TS ts)
 {
   PetscErrorCode ierr;
 

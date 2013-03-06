@@ -595,7 +595,7 @@ PetscErrorCode  MatGetSchurComplement(Mat mat,IS isrow0,IS iscol0,IS isrow1,IS i
 
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_SchurComplement"
-PETSC_EXTERN_C PetscErrorCode  MatCreate_SchurComplement(Mat N)
+PETSC_EXTERN PetscErrorCode MatCreate_SchurComplement(Mat N)
 {
   PetscErrorCode      ierr;
   Mat_SchurComplement *Na;

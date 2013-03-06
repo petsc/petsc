@@ -172,7 +172,7 @@ static PetscErrorCode PCView_TFS(PC pc,PetscViewer viewer)
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC
 M*/
-PETSC_EXTERN_C PetscErrorCode  PCCreate_TFS(PC pc)
+PETSC_EXTERN PetscErrorCode PCCreate_TFS(PC pc)
 {
   PetscErrorCode ierr;
   PC_TFS         *tfs;

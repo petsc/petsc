@@ -616,7 +616,7 @@ M*/
 
 #undef __FUNCT__
 #define __FUNCT__ "PCCreate_BJacobi"
-PETSC_EXTERN_C PetscErrorCode  PCCreate_BJacobi(PC pc)
+PETSC_EXTERN PetscErrorCode PCCreate_BJacobi(PC pc)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;

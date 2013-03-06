@@ -328,7 +328,7 @@ M*/
 
 #undef __FUNCT__
 #define __FUNCT__ "PCCreate_Eisenstat"
-PETSC_EXTERN_C PetscErrorCode  PCCreate_Eisenstat(PC pc)
+PETSC_EXTERN PetscErrorCode PCCreate_Eisenstat(PC pc)
 {
   PetscErrorCode ierr;
   PC_Eisenstat   *eis;

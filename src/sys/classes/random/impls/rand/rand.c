@@ -64,7 +64,7 @@ M*/
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscRandomCreate_Rand"
-PETSC_EXTERN_C PetscErrorCode  PetscRandomCreate_Rand(PetscRandom r)
+PETSC_EXTERN PetscErrorCode PetscRandomCreate_Rand(PetscRandom r)
 {
   PetscErrorCode ierr;
 
