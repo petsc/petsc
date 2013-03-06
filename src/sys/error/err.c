@@ -292,6 +292,27 @@ PetscErrorCode  PetscErrorMessage(int errnum,const char *text[],char **specific)
   PetscFunctionReturn(0);
 }
 
+#if defined(PETSC_CLANGUAGE_CXX)
+/* C++ exceptions are formally not allowed to propagate through extern "C" code. In practice, far too much software
+ * would be broken if implementations did not handle it it some common cases. However, keep in mind
+ *
+ *   Rule 62. Don't allow exceptions to propagate across module boundaries
+ *
+ * in "C++ Coding Standards" by Sutter and Alexandrescu. (This accounts for part of the ongoing C++ binary interface
+ * instability.) Having PETSc raise errors as C++ exceptions was probably misguided and should eventually be removed.
+ */
+static void PetscCxxErrorThrow() {
+  const char *str;
+  if (eh && eh->ctx) {
+    std::ostringstream *msg;
+    msg = (std::ostringstream*) eh->ctx;
+    str = msg->str().c_str();
+  } else str = "Error detected in C PETSc";
+
+  throw PETSc::Exception(str);
+}
+#endif
+
 #undef __FUNCT__
 #define __FUNCT__ "PetscError"
 /*@C
@@ -366,16 +387,9 @@ PetscErrorCode  PetscError(MPI_Comm comm,int line,const char *func,const char *f
   PetscStrncmp(func,"unknown",7,&isunknown);
   if (ismain || isunknown) MPI_Abort(PETSC_COMM_WORLD,(int)ierr);
 
-#if defined(PETSC_CLANGUAGE_CXX) && !defined(PETSC_USE_EXTERN_CXX)
+#if defined(PETSC_CLANGUAGE_CXX)
   if (p == PETSC_ERROR_IN_CXX) {
-    const char *str;
-    if (eh && eh->ctx) {
-      std::ostringstream *msg;
-      msg = (std::ostringstream*) eh->ctx;
-      str = msg->str().c_str();
-    } else str = "Error detected in C PETSc";
-
-    throw PETSc::Exception(str);
+    PetscCxxErrorThrow();
   }
 #endif
   PetscFunctionReturn(ierr);
