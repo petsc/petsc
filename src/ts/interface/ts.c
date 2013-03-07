@@ -920,8 +920,8 @@ PetscErrorCode  TSSetForcingFunction(TS ts,PetscErrorCode (*f)(TS,PetscReal,Vec,
 
    Input Parameters:
 +  ts  - the TS context obtained from TSCreate()
-.  A   - Jacobian matrix
-.  B   - preconditioner matrix (usually same as A)
+.  Amat - (approximate) Jacobian matrix
+.  Pmat - matrix from which preconditioner is to be constructed (usually the same as Amat)
 .  f   - the Jacobian evaluation routine
 -  ctx - [optional] user-defined context for private data for the
          Jacobian evaluation routine (may be NULL)
@@ -931,8 +931,8 @@ $     func (TS ts,PetscReal t,Vec u,Mat *A,Mat *B,MatStructure *flag,void *ctx);
 
 +  t - current timestep
 .  u - input vector
-.  A - matrix A, where U_t = A(t)u
-.  B - preconditioner matrix, usually the same as A
+.  Amat - (approximate) Jacobian matrix
+.  Pmat - matrix from which preconditioner is to be constructed (usually the same as Amat)
 .  flag - flag indicating information about the preconditioner matrix
           structure (same as flag in KSPSetOperators())
 -  ctx - [optional] user-defined context for matrix evaluation routine
@@ -954,7 +954,7 @@ $     func (TS ts,PetscReal t,Vec u,Mat *A,Mat *B,MatStructure *flag,void *ctx);
 .seealso: SNESComputeJacobianDefaultColor(), TSSetRHSFunction()
 
 @*/
-PetscErrorCode  TSSetRHSJacobian(TS ts,Mat A,Mat B,TSRHSJacobian f,void *ctx)
+PetscErrorCode  TSSetRHSJacobian(TS ts,Mat Amat,Mat Pmat,TSRHSJacobian f,void *ctx)
 {
   PetscErrorCode ierr;
   SNES           snes;
@@ -963,10 +963,10 @@ PetscErrorCode  TSSetRHSJacobian(TS ts,Mat A,Mat B,TSRHSJacobian f,void *ctx)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  if (A) PetscValidHeaderSpecific(A,MAT_CLASSID,2);
-  if (B) PetscValidHeaderSpecific(B,MAT_CLASSID,3);
-  if (A) PetscCheckSameComm(ts,1,A,2);
-  if (B) PetscCheckSameComm(ts,1,B,3);
+  if (Amat) PetscValidHeaderSpecific(Amat,MAT_CLASSID,2);
+  if (Pmat) PetscValidHeaderSpecific(Pmat,MAT_CLASSID,3);
+  if (Amat) PetscCheckSameComm(ts,1,Amat,2);
+  if (Pmat) PetscCheckSameComm(ts,1,Pmat,3);
 
   ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
   ierr = DMTSSetRHSJacobian(dm,f,ctx);CHKERRQ(ierr);
@@ -974,19 +974,19 @@ PetscErrorCode  TSSetRHSJacobian(TS ts,Mat A,Mat B,TSRHSJacobian f,void *ctx)
 
   ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
   if (!ijacobian) {
-    ierr = SNESSetJacobian(snes,A,B,SNESTSFormJacobian,ts);CHKERRQ(ierr);
+    ierr = SNESSetJacobian(snes,Amat,Pmat,SNESTSFormJacobian,ts);CHKERRQ(ierr);
   }
-  if (A) {
-    ierr = PetscObjectReference((PetscObject)A);CHKERRQ(ierr);
+  if (Amat) {
+    ierr = PetscObjectReference((PetscObject)Amat);CHKERRQ(ierr);
     ierr = MatDestroy(&ts->Arhs);CHKERRQ(ierr);
 
-    ts->Arhs = A;
+    ts->Arhs = Amat;
   }
-  if (B) {
-    ierr = PetscObjectReference((PetscObject)B);CHKERRQ(ierr);
+  if (Pmat) {
+    ierr = PetscObjectReference((PetscObject)Pmat);CHKERRQ(ierr);
     ierr = MatDestroy(&ts->Brhs);CHKERRQ(ierr);
 
-    ts->Brhs = B;
+    ts->Brhs = Pmat;
   }
   PetscFunctionReturn(0);
 }
@@ -1129,26 +1129,26 @@ PetscErrorCode TSGetRHSFunction(TS ts,Vec *r,TSRHSFunction *func,void **ctx)
 
    Input Parameters:
 +  ts  - the TS context obtained from TSCreate()
-.  A   - Jacobian matrix
-.  B   - preconditioning matrix for A (may be same as A)
+.  Amat - (approximate) Jacobian matrix
+.  Pmat - matrix used to compute preconditioner (usually the same as Amat)
 .  f   - the Jacobian evaluation routine
 -  ctx - user-defined context for private data for the Jacobian evaluation routine (may be NULL)
 
    Calling sequence of f:
-$  f(TS ts,PetscReal t,Vec U,Vec U_t,PetscReal a,Mat *A,Mat *B,MatStructure *flag,void *ctx);
+$  f(TS ts,PetscReal t,Vec U,Vec U_t,PetscReal a,Mat *Amat,Mat *Pmat,MatStructure *flag,void *ctx);
 
 +  t    - time at step/stage being solved
 .  U    - state vector
 .  U_t  - time derivative of state vector
 .  a    - shift
-.  A    - Jacobian of F(t,U,W+a*U), equivalent to dF/dU + a*dF/dU_t
-.  B    - preconditioning matrix for A, may be same as A
+.  Amat - (approximate) Jacobian of F(t,U,W+a*U), equivalent to dF/dU + a*dF/dU_t
+.  Pmat - matrix used for constructing preconditioner, usually the same as Amat
 .  flag - flag indicating information about the preconditioner matrix
           structure (same as flag in KSPSetOperators())
 -  ctx  - [optional] user-defined context for matrix evaluation routine
 
    Notes:
-   The matrices A and B are exactly the matrices that are used by SNES for the nonlinear solve.
+   The matrices Amat and Pmat are exactly the matrices that are used by SNES for the nonlinear solve.
 
    The matrix dF/dU + a*dF/dU_t you provide turns out to be
    the Jacobian of F(t,U,W+a*U) where F(t,U,U_t) = 0 is the DAE to be solved.
@@ -1164,7 +1164,7 @@ $  f(TS ts,PetscReal t,Vec U,Vec U_t,PetscReal a,Mat *A,Mat *B,MatStructure *fla
 .seealso: TSSetIFunction(), TSSetRHSJacobian(), SNESComputeJacobianDefaultColor(), SNESComputeJacobianDefault()
 
 @*/
-PetscErrorCode  TSSetIJacobian(TS ts,Mat A,Mat B,TSIJacobian f,void *ctx)
+PetscErrorCode  TSSetIJacobian(TS ts,Mat Amat,Mat Pmat,TSIJacobian f,void *ctx)
 {
   PetscErrorCode ierr;
   SNES           snes;
@@ -1172,16 +1172,16 @@ PetscErrorCode  TSSetIJacobian(TS ts,Mat A,Mat B,TSIJacobian f,void *ctx)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  if (A) PetscValidHeaderSpecific(A,MAT_CLASSID,2);
-  if (B) PetscValidHeaderSpecific(B,MAT_CLASSID,3);
-  if (A) PetscCheckSameComm(ts,1,A,2);
-  if (B) PetscCheckSameComm(ts,1,B,3);
+  if (Amat) PetscValidHeaderSpecific(Amat,MAT_CLASSID,2);
+  if (Pmat) PetscValidHeaderSpecific(Pmat,MAT_CLASSID,3);
+  if (Amat) PetscCheckSameComm(ts,1,Amat,2);
+  if (Pmat) PetscCheckSameComm(ts,1,Pmat,3);
 
   ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
   ierr = DMTSSetIJacobian(dm,f,ctx);CHKERRQ(ierr);
 
   ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
-  ierr = SNESSetJacobian(snes,A,B,SNESTSFormJacobian,ts);CHKERRQ(ierr);
+  ierr = SNESSetJacobian(snes,Amat,Pmat,SNESTSFormJacobian,ts);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -986,9 +986,8 @@ PetscErrorCode  PCModifySubMatrices(PC pc,PetscInt nsub,const IS row[],const IS 
 
    Input Parameters:
 +  pc - the preconditioner context
-.  Amat - the matrix associated with the linear system
-.  Pmat - the matrix to be used in constructing the preconditioner, usually
-          the same as Amat.
+.  Amat - the matrix that defines the linear system
+.  Pmat - the matrix to be used in constructing the preconditioner, usually the same as Amat.
 -  flag - flag indicating information about the preconditioner matrix structure
    during successive linear solves.  This flag is ignored the first time a
    linear system is solved, and thus is irrelevant when solving just one linear
@@ -1086,9 +1085,8 @@ PetscErrorCode  PCSetOperators(PC pc,Mat Amat,Mat Pmat,MatStructure flag)
 .  pc - the preconditioner context
 
    Output Parameters:
-+  mat - the matrix associated with the linear system
-.  pmat - matrix associated with the preconditioner, usually the same
-          as mat.
++  Amat - the matrix defining the linear system
+.  Pmat - the matrix from which the preconditioner is constructed, usually the same as Amat.
 -  flag - flag indicating information about the preconditioner
           matrix structure.  See PCSetOperators() for details.
 
@@ -1104,25 +1102,25 @@ PetscErrorCode  PCSetOperators(PC pc,Mat Amat,Mat Pmat,MatStructure flag)
       The user must set the sizes of the returned matrices and their type etc just
       as if the user created them with MatCreate(). For example,
 
-$         KSP/PCGetOperators(ksp/pc,&mat,NULL,NULL); is equivalent to
-$           set size, type, etc of mat
+$         KSP/PCGetOperators(ksp/pc,&Amat,NULL,NULL); is equivalent to
+$           set size, type, etc of Amat
 
 $         MatCreate(comm,&mat);
-$         KSP/PCSetOperators(ksp/pc,mat,mat,SAME_NONZERO_PATTERN);
+$         KSP/PCSetOperators(ksp/pc,Amat,Amat,SAME_NONZERO_PATTERN);
 $         PetscObjectDereference((PetscObject)mat);
-$           set size, type, etc of mat
+$           set size, type, etc of Amat
 
      and
 
-$         KSP/PCGetOperators(ksp/pc,&mat,&pmat,NULL); is equivalent to
-$           set size, type, etc of mat and pmat
+$         KSP/PCGetOperators(ksp/pc,&Amat,&Pmat,NULL); is equivalent to
+$           set size, type, etc of Amat and Pmat
 
-$         MatCreate(comm,&mat);
-$         MatCreate(comm,&pmat);
-$         KSP/PCSetOperators(ksp/pc,mat,pmat,SAME_NONZERO_PATTERN);
-$         PetscObjectDereference((PetscObject)mat);
-$         PetscObjectDereference((PetscObject)pmat);
-$           set size, type, etc of mat and pmat
+$         MatCreate(comm,&Amat);
+$         MatCreate(comm,&Pmat);
+$         KSP/PCSetOperators(ksp/pc,Amat,Pmat,SAME_NONZERO_PATTERN);
+$         PetscObjectDereference((PetscObject)Amat);
+$         PetscObjectDereference((PetscObject)Pmat);
+$           set size, type, etc of Amat and Pmat
 
     The rational for this support is so that when creating a TS, SNES, or KSP the hierarchy
     of underlying objects (i.e. SNES, KSP, PC, Mat) and their livespans can be completely
@@ -1138,41 +1136,41 @@ $           set size, type, etc of mat and pmat
 
 .seealso: PCSetOperators(), KSPGetOperators(), KSPSetOperators(), PCGetOperatorsSet()
 @*/
-PetscErrorCode  PCGetOperators(PC pc,Mat *mat,Mat *pmat,MatStructure *flag)
+PetscErrorCode  PCGetOperators(PC pc,Mat *Amat,Mat *Pmat,MatStructure *flag)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  if (mat) {
+  if (Amat) {
     if (!pc->mat) {
-      if (pc->pmat && !pmat) {  /* pmat has been set, but user did not request it, so use for mat */
+      if (pc->pmat && !Pmat) {  /* Apmat has been set, but user did not request it, so use for Amat */
         pc->mat = pc->pmat;
         ierr    = PetscObjectReference((PetscObject)pc->mat);CHKERRQ(ierr);
-      } else {                  /* both mat and pmat are empty */
+      } else {                  /* both Amat and Pmat are empty */
         ierr = MatCreate(PetscObjectComm((PetscObject)pc),&pc->mat);CHKERRQ(ierr);
-        if (!pmat) { /* user did NOT request pmat, so make same as mat */
+        if (!Pmat) { /* user did NOT request Pmat, so make same as Amat */
           pc->pmat = pc->mat;
           ierr     = PetscObjectReference((PetscObject)pc->pmat);CHKERRQ(ierr);
         }
       }
     }
-    *mat = pc->mat;
+    *Amat = pc->mat;
   }
-  if (pmat) {
+  if (Pmat) {
     if (!pc->pmat) {
-      if (pc->mat && !mat) {    /* mat has been set but was not requested, so use for pmat */
+      if (pc->mat && !Amat) {    /* Amat has been set but was not requested, so use for pmat */
         pc->pmat = pc->mat;
         ierr     = PetscObjectReference((PetscObject)pc->pmat);CHKERRQ(ierr);
       } else {
         ierr = MatCreate(PetscObjectComm((PetscObject)pc),&pc->pmat);CHKERRQ(ierr);
-        if (!mat) { /* user did NOT request mat, so make same as pmat */
+        if (!Amat) { /* user did NOT request Amat, so make same as Pmat */
           pc->mat = pc->pmat;
           ierr    = PetscObjectReference((PetscObject)pc->mat);CHKERRQ(ierr);
         }
       }
     }
-    *pmat = pc->pmat;
+    *Pmat = pc->pmat;
   }
   if (flag) *flag = pc->flag;
   PetscFunctionReturn(0);

@@ -446,9 +446,8 @@ static PetscErrorCode KSPPublish_Petsc(PetscObject obj)
 
    Input Parameters:
 +  ksp - the KSP context
-.  Amat - the matrix associated with the linear system
-.  Pmat - the matrix to be used in constructing the preconditioner, usually the
-          same as Amat.
+.  Amat - the matrix that defines the linear system
+.  Pmat - the matrix to be used in constructing the preconditioner, usually the same as Amat.
 -  flag - flag indicating information about the preconditioner matrix structure
    during successive linear solves.  This flag is ignored the first time a
    linear system is solved, and thus is irrelevant when solving just one linear

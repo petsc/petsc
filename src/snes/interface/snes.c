@@ -1792,8 +1792,8 @@ PetscErrorCode  SNESPicardComputeJacobian(SNES snes,Vec x1,Mat *J,Mat *B,MatStru
 +  snes - the SNES context
 .  r - vector to store function value
 .  SNESFunction - function evaluation routine
-.  jmat - normally the same as mat but you can pass another matrix for which you compute A(x) x - b(x) (see jmat below)
-.  mat - matrix to store A
+.  Amat - matrix with which A(x) x - b(x) is to be computed
+.  Pmat - matrix from which preconditioner is computed (usually the same as Amat)
 .  SNESJacobianFunction  - function to compute matrix value
 -  ctx - [optional] user-defined context for private data for the
          function evaluation routine (may be NULL)
@@ -1822,7 +1822,7 @@ $     Note that when an exact solver is used this corresponds to the "classic" P
 
 .seealso: SNESGetFunction(), SNESSetFunction(), SNESComputeFunction(), SNESSetJacobian(), SNESGetPicard(), SNESLineSearchPreCheckPicard()
 @*/
-PetscErrorCode  SNESSetPicard(SNES snes,Vec r,PetscErrorCode (*SNESFunction)(SNES,Vec,Vec,void*),Mat jmat, Mat mat, PetscErrorCode (*SNESJacobianFunction)(SNES,Vec,Mat*,Mat*,MatStructure*,void*),void *ctx)
+PetscErrorCode  SNESSetPicard(SNES snes,Vec r,PetscErrorCode (*SNESFunction)(SNES,Vec,Vec,void*),Mat Amat, Mat Pmat, PetscErrorCode (*SNESJacobianFunction)(SNES,Vec,Mat*,Mat*,MatStructure*,void*),void *ctx)
 {
   PetscErrorCode ierr;
   DM             dm;
@@ -1832,7 +1832,7 @@ PetscErrorCode  SNESSetPicard(SNES snes,Vec r,PetscErrorCode (*SNESFunction)(SNE
   ierr = SNESGetDM(snes, &dm);CHKERRQ(ierr);
   ierr = DMSNESSetPicard(dm,SNESFunction,SNESJacobianFunction,ctx);CHKERRQ(ierr);
   ierr = SNESSetFunction(snes,r,SNESPicardComputeFunction,ctx);CHKERRQ(ierr);
-  ierr = SNESSetJacobian(snes,jmat,mat,SNESPicardComputeJacobian,ctx);CHKERRQ(ierr);
+  ierr = SNESSetJacobian(snes,Amat,Pmat,SNESPicardComputeJacobian,ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2335,11 +2335,11 @@ PetscErrorCode  SNESComputeJacobian(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *
 
      Synopsis:
      #include "petscsnes.h"
-$     SNESJacobianFunction(SNES snes,Vec x,Mat *A,Mat *B,int *flag,void *ctx);
+$     SNESJacobianFunction(SNES snes,Vec x,Mat *Amat,Mat *Pmat,int *flag,void *ctx);
 
 +  x - input vector
-.  A - Jacobian matrix
-.  B - preconditioner matrix, usually the same as A
+.  Amat - the matrix that defines the (approximate) Jacobian
+.  Pmat - the matrix to be used in constructing the preconditioner, usually the same as Amat.
 .  flag - flag indicating information about the preconditioner matrix
    structure (same as flag in KSPSetOperators()), one of SAME_NONZERO_PATTERN,DIFFERENT_NONZERO_PATTERN,SAME_PRECONDITIONER
 -  ctx - [optional] user-defined Jacobian context
@@ -2357,8 +2357,8 @@ M*/
 
    Input Parameters:
 +  snes - the SNES context
-.  A - Jacobian matrix
-.  B - preconditioner matrix (usually same as the Jacobian)
+.  Amat - the matrix that defines the (approximate) Jacobian
+.  Pmat - the matrix to be used in constructing the preconditioner, usually the same as Amat.
 .  SNESJacobianFunction - Jacobian evaluation routine (if NULL then SNES retains any previously set value)
 -  ctx - [optional] user-defined context for private data for the
          Jacobian evaluation routine (may be NULL) (if NULL then SNES retains any previously set value)
@@ -2373,7 +2373,7 @@ M*/
    when appropriate, for instance, if the nonzero structure is changing
    throughout the global iterations.
 
-   If the A matrix and B matrix are different you must call MatAssemblyBegin/End() on
+   If the Amat matrix and Pmat matrix are different you must call MatAssemblyBegin/End() on
    each matrix.
 
    If using SNESComputeJacobianDefaultColor() to assemble a Jacobian, the ctx argument
@@ -2386,32 +2386,32 @@ M*/
 
 .keywords: SNES, nonlinear, set, Jacobian, matrix
 
-.seealso: KSPSetOperators(), SNESSetFunction(), MatMFFDComputeJacobian(), SNESComputeJacobianDefaultColor(), MatStructure, SNESJacobianFunction
+.seealso: KSPSetOperators(), SNESSetFunction(), MatMFFDComputeJacobian(), SNESComputeJacobianDefaultColor(), MatStructure, SNESJacobianFunction, SNESSetPicard()
 @*/
-PetscErrorCode  SNESSetJacobian(SNES snes,Mat A,Mat B,PetscErrorCode (*SNESJacobianFunction)(SNES,Vec,Mat*,Mat*,MatStructure*,void*),void *ctx)
+PetscErrorCode  SNESSetJacobian(SNES snes,Mat Amat,Mat Pmat,PetscErrorCode (*SNESJacobianFunction)(SNES,Vec,Mat*,Mat*,MatStructure*,void*),void *ctx)
 {
   PetscErrorCode ierr;
   DM             dm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
-  if (A) PetscValidHeaderSpecific(A,MAT_CLASSID,2);
-  if (B) PetscValidHeaderSpecific(B,MAT_CLASSID,3);
-  if (A) PetscCheckSameComm(snes,1,A,2);
-  if (B) PetscCheckSameComm(snes,1,B,3);
+  if (Amat) PetscValidHeaderSpecific(Amat,MAT_CLASSID,2);
+  if (Pmat) PetscValidHeaderSpecific(Pmat,MAT_CLASSID,3);
+  if (Amat) PetscCheckSameComm(snes,1,Amat,2);
+  if (Pmat) PetscCheckSameComm(snes,1,Pmat,3);
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
   ierr = DMSNESSetJacobian(dm,SNESJacobianFunction,ctx);CHKERRQ(ierr);
-  if (A) {
-    ierr = PetscObjectReference((PetscObject)A);CHKERRQ(ierr);
+  if (Amat) {
+    ierr = PetscObjectReference((PetscObject)Amat);CHKERRQ(ierr);
     ierr = MatDestroy(&snes->jacobian);CHKERRQ(ierr);
 
-    snes->jacobian = A;
+    snes->jacobian = Amat;
   }
-  if (B) {
-    ierr = PetscObjectReference((PetscObject)B);CHKERRQ(ierr);
+  if (Pmat) {
+    ierr = PetscObjectReference((PetscObject)Pmat);CHKERRQ(ierr);
     ierr = MatDestroy(&snes->jacobian_pre);CHKERRQ(ierr);
 
-    snes->jacobian_pre = B;
+    snes->jacobian_pre = Pmat;
   }
   PetscFunctionReturn(0);
 }
@@ -2428,8 +2428,8 @@ PetscErrorCode  SNESSetJacobian(SNES snes,Mat A,Mat B,PetscErrorCode (*SNESJacob
 .  snes - the nonlinear solver context
 
    Output Parameters:
-+  A - location to stash Jacobian matrix (or NULL)
-.  B - location to stash preconditioner matrix (or NULL)
++  Amat - location to stash (approximate) Jacobian matrix (or NULL)
+.  Pmat - location to stash matrix used to compute the preconditioner (or NULL)
 .  SNESJacobianFunction - location to put Jacobian function (or NULL)
 -  ctx - location to stash Jacobian ctx (or NULL)
 
@@ -2437,7 +2437,7 @@ PetscErrorCode  SNESSetJacobian(SNES snes,Mat A,Mat B,PetscErrorCode (*SNESJacob
 
 .seealso: SNESSetJacobian(), SNESComputeJacobian()
 @*/
-PetscErrorCode SNESGetJacobian(SNES snes,Mat *A,Mat *B,PetscErrorCode (**SNESJacobianFunction)(SNES,Vec,Mat*,Mat*,MatStructure*,void*),void **ctx)
+PetscErrorCode SNESGetJacobian(SNES snes,Mat *Amat,Mat *Pmat,PetscErrorCode (**SNESJacobianFunction)(SNES,Vec,Mat*,Mat*,MatStructure*,void*),void **ctx)
 {
   PetscErrorCode ierr;
   DM             dm;
@@ -2445,8 +2445,8 @@ PetscErrorCode SNESGetJacobian(SNES snes,Mat *A,Mat *B,PetscErrorCode (**SNESJac
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
-  if (A) *A = snes->jacobian;
-  if (B) *B = snes->jacobian_pre;
+  if (Amat) *Amat = snes->jacobian;
+  if (Pmat) *Pmat = snes->jacobian_pre;
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
   ierr = DMGetDMSNES(dm,&sdm);CHKERRQ(ierr);
   if (SNESJacobianFunction) *SNESJacobianFunction = sdm->ops->computejacobian;
