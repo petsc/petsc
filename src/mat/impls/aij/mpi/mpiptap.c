@@ -135,6 +135,8 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
 
   /* create struct Mat_PtAPMPI and attached it to C later */
   ierr        = PetscNew(Mat_PtAPMPI,&ptap);CHKERRQ(ierr);
+  ierr        = PetscNew(Mat_Merge_SeqsToMPI,&merge);CHKERRQ(ierr);
+  ptap->merge = merge;
   ptap->reuse = MAT_INITIAL_MATRIX;
 
   /* get P_oth by taking rows of P (= non-zero cols of local A) from other processors */
@@ -264,9 +266,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   /* send j-array (coj) of Co to other processors */
   /*----------------------------------------------*/
   /* determine row ownership */
-  ierr = PetscNew(Mat_Merge_SeqsToMPI,&merge);CHKERRQ(ierr);
   ierr = PetscLayoutCreate(comm,&merge->rowmap);CHKERRQ(ierr);
-
   merge->rowmap->n  = pn;
   merge->rowmap->bs = 1;
 
@@ -469,7 +469,6 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   c->ptap     = ptap;
   ptap->api   = api;
   ptap->apj   = apj;
-  ptap->merge = merge;
   ptap->rmax  = ap_rmax;
   *C          = Cmpi;
 
@@ -509,12 +508,12 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
 PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
 {
   PetscErrorCode      ierr;
-  Mat_Merge_SeqsToMPI *merge;
   Mat_MPIAIJ          *a =(Mat_MPIAIJ*)A->data,*p=(Mat_MPIAIJ*)P->data,*c=(Mat_MPIAIJ*)C->data;
   Mat_SeqAIJ          *ad=(Mat_SeqAIJ*)(a->A)->data,*ao=(Mat_SeqAIJ*)(a->B)->data;
   Mat_SeqAIJ          *pd=(Mat_SeqAIJ*)(p->A)->data,*po=(Mat_SeqAIJ*)(p->B)->data;
   Mat_SeqAIJ          *p_loc,*p_oth;
   Mat_PtAPMPI         *ptap;
+  Mat_Merge_SeqsToMPI *merge;
   PetscInt            *adi=ad->i,*aoi=ao->i,*adj,*aoj,*apJ,nextp;
   PetscInt            *pi_loc,*pj_loc,*pi_oth,*pj_oth,*pJ,*pj;
   PetscInt            i,j,k,anz,pnz,apnz,nextap,row,*cj;
@@ -552,6 +551,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
   /* 1) get P_oth = ptap->P_oth  and P_loc = ptap->P_loc */
   /*--------------------------------------------------*/
   if (ptap->reuse == MAT_INITIAL_MATRIX) {
+    /* P_oth and P_loc are obtained in MatPtASymbolic(), skip calling MatGetBrowsOfAoCols() and MatMPIAIJGetLocalMat() */
     ptap->reuse = MAT_REUSE_MATRIX;
   } else { /* update numerical values of P_oth and P_loc */
     ierr = MatGetBrowsOfAoCols_MPIAIJ(A,P,MAT_REUSE_MATRIX,&ptap->startsj_s,&ptap->startsj_r,&ptap->bufa,&ptap->P_oth);CHKERRQ(ierr);
