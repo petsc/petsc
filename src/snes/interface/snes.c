@@ -1849,8 +1849,8 @@ PetscErrorCode  SNESSetPicard(SNES snes,Vec r,PetscErrorCode (*SNESFunction)(SNE
    Output Parameter:
 +  r - the function (or NULL)
 .  SNESFunction - the function (or NULL)
-.  jmat - the picard matrix (or NULL)
-.  mat  - the picard preconditioner matrix (or NULL)
+.  Amat - the matrix used to defined the operation A(x) x - b(x) (or NULL)
+.  Pmat  - the matrix from which the preconditioner will be constructed (or NULL)
 .  SNESJacobianFunction - the function for matrix evaluation (or NULL)
 -  ctx - the function context (or NULL)
 
@@ -1858,9 +1858,9 @@ PetscErrorCode  SNESSetPicard(SNES snes,Vec r,PetscErrorCode (*SNESFunction)(SNE
 
 .keywords: SNES, nonlinear, get, function
 
-.seealso: SNESSetPicard, SNESGetFunction, SNESGetJacobian, SNESGetDM, SNESFunction, SNESJacobianFunction
+.seealso: SNESSetPicard(), SNESGetFunction(), SNESGetJacobian(), SNESGetDM(), SNESFunction, SNESJacobianFunction
 @*/
-PetscErrorCode  SNESGetPicard(SNES snes,Vec *r,PetscErrorCode (**SNESFunction)(SNES,Vec,Vec,void*),Mat *jmat, Mat *mat, PetscErrorCode (**SNESJacobianFunction)(SNES,Vec,Mat*,Mat*,MatStructure*,void*),void **ctx)
+PetscErrorCode  SNESGetPicard(SNES snes,Vec *r,PetscErrorCode (**SNESFunction)(SNES,Vec,Vec,void*),Mat *Amat, Mat *Pmat, PetscErrorCode (**SNESJacobianFunction)(SNES,Vec,Mat*,Mat*,MatStructure*,void*),void **ctx)
 {
   PetscErrorCode ierr;
   DM             dm;
@@ -1868,7 +1868,7 @@ PetscErrorCode  SNESGetPicard(SNES snes,Vec *r,PetscErrorCode (**SNESFunction)(S
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   ierr = SNESGetFunction(snes,r,NULL,NULL);CHKERRQ(ierr);
-  ierr = SNESGetJacobian(snes,jmat,mat,NULL,NULL);CHKERRQ(ierr);
+  ierr = SNESGetJacobian(snes,Amat,Pmat,NULL,NULL);CHKERRQ(ierr);
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
   ierr = DMSNESGetPicard(dm,SNESFunction,SNESJacobianFunction,ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);

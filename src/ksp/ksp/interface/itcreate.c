@@ -569,7 +569,7 @@ PetscErrorCode  KSPSetOperators(KSP ksp,Mat Amat,Mat Pmat,MatStructure flag)
 .  ksp - the KSP context
 
    Output Parameters:
-+  Amat - the matrix associated with the linear system
++  Amat - the matrix that defines the linear system
 .  Pmat - the matrix to be used in constructing the preconditioner, usually the same as Amat.
 -  flag - flag indicating information about the preconditioner matrix structure
    during successive linear solves.  This flag is ignored the first time a

@@ -2902,10 +2902,10 @@ PetscErrorCode  TSGetOptionsPrefix(TS ts,const char *prefix[])
 .  ts  - The TS context obtained from TSCreate()
 
    Output Parameters:
-+  J   - The Jacobian J of F, where U_t = G(U,t)
-.  M   - The preconditioner matrix, usually the same as J
-.  func - Function to compute the Jacobian of the RHS
--  ctx - User-defined context for Jacobian evaluation routine
++  Amat - The (approximate) Jacobian J of G, where U_t = G(U,t)  (or NULL)
+.  Pmat - The matrix from which the preconditioner is constructed, usually the same as Amat  (or NULL)
+.  func - Function to compute the Jacobian of the RHS  (or NULL)
+-  ctx - User-defined context for Jacobian evaluation routine  (or NULL)
 
    Notes: You can pass in NULL for any return argument you do not need.
 
@@ -2915,7 +2915,7 @@ PetscErrorCode  TSGetOptionsPrefix(TS ts,const char *prefix[])
 
 .keywords: TS, timestep, get, matrix, Jacobian
 @*/
-PetscErrorCode  TSGetRHSJacobian(TS ts,Mat *J,Mat *M,TSRHSJacobian *func,void **ctx)
+PetscErrorCode  TSGetRHSJacobian(TS ts,Mat *Amat,Mat *Pmat,TSRHSJacobian *func,void **ctx)
 {
   PetscErrorCode ierr;
   SNES           snes;
@@ -2923,7 +2923,7 @@ PetscErrorCode  TSGetRHSJacobian(TS ts,Mat *J,Mat *M,TSRHSJacobian *func,void **
 
   PetscFunctionBegin;
   ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
-  ierr = SNESGetJacobian(snes,J,M,NULL,NULL);CHKERRQ(ierr);
+  ierr = SNESGetJacobian(snes,Amat,Pmat,NULL,NULL);CHKERRQ(ierr);
   ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
   ierr = DMTSGetRHSJacobian(dm,func,ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -2940,8 +2940,8 @@ PetscErrorCode  TSGetRHSJacobian(TS ts,Mat *J,Mat *M,TSRHSJacobian *func,void **
 .  ts  - The TS context obtained from TSCreate()
 
    Output Parameters:
-+  A   - The Jacobian of F(t,U,U_t)
-.  B   - The preconditioner matrix, often the same as A
++  Amat  - The (approximate) Jacobian of F(t,U,U_t)
+.  Pmat - The matrix from which the preconditioner is constructed, often the same as Amat
 .  f   - The function to compute the matrices
 - ctx - User-defined context for Jacobian evaluation routine
 
@@ -2953,7 +2953,7 @@ PetscErrorCode  TSGetRHSJacobian(TS ts,Mat *J,Mat *M,TSRHSJacobian *func,void **
 
 .keywords: TS, timestep, get, matrix, Jacobian
 @*/
-PetscErrorCode  TSGetIJacobian(TS ts,Mat *A,Mat *B,TSIJacobian *f,void **ctx)
+PetscErrorCode  TSGetIJacobian(TS ts,Mat *Amat,Mat *Pmat,TSIJacobian *f,void **ctx)
 {
   PetscErrorCode ierr;
   SNES           snes;
@@ -2962,7 +2962,7 @@ PetscErrorCode  TSGetIJacobian(TS ts,Mat *A,Mat *B,TSIJacobian *f,void **ctx)
   PetscFunctionBegin;
   ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
   ierr = SNESSetUpMatrices(snes);CHKERRQ(ierr);
-  ierr = SNESGetJacobian(snes,A,B,NULL,NULL);CHKERRQ(ierr);
+  ierr = SNESGetJacobian(snes,Amat,Pmat,NULL,NULL);CHKERRQ(ierr);
   ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
   ierr = DMTSGetIJacobian(dm,f,ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
