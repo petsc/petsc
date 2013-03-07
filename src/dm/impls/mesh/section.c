@@ -452,9 +452,9 @@ PetscErrorCode SectionRealRestrictClosure(SectionReal section, DM dm, PetscInt p
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "SectionRealRestrictClosure"
+#define __FUNCT__ "SectionRealRestrictClosureWithArray"
 /*@C
-  SectionRealRestrictClosure - Returns an array with the values in a given closure
+  SectionRealRestrictClosureWithArray - Returns an array with the values in a given closure
 
   Not Collective
 
@@ -473,7 +473,7 @@ PetscErrorCode SectionRealRestrictClosure(SectionReal section, DM dm, PetscInt p
 .keywords: mesh, elements
 .seealso: DMMeshCreate()
 @*/
-PetscErrorCode SectionRealRestrictClosure(SectionReal section, DM dm, PetscInt point, PetscInt n, PetscScalar values[])
+PetscErrorCode SectionRealRestrictClosureWithArray(SectionReal section, DM dm, PetscInt point, PetscInt n, PetscScalar values[])
 {
   ALE::Obj<PETSC_MESH_TYPE>                    m;
   ALE::Obj<PETSC_MESH_TYPE::real_section_type> s;
@@ -1551,9 +1551,9 @@ PetscErrorCode  SectionIntUpdate(SectionInt section, PetscInt point, const Petsc
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "SectionIntRestrictClosure"
+#define __FUNCT__ "SectionIntRestrictClosureWithArray"
 /*@C
-  SectionIntRestrictClosure - Returns an array with the values in a given closure
+  SectionIntRestrictClosureWithArray - Returns an array with the values in a given closure
 
   Not Collective
 
@@ -1572,7 +1572,7 @@ PetscErrorCode  SectionIntUpdate(SectionInt section, PetscInt point, const Petsc
 .keywords: mesh, elements
 .seealso: DMMeshCreate()
 @*/
-PetscErrorCode SectionIntRestrictClosure(SectionInt section, DM dm, PetscInt point, PetscInt n, PetscInt values[])
+PetscErrorCode SectionIntRestrictClosureWithArray(SectionInt section, DM dm, PetscInt point, PetscInt n, PetscInt values[])
 {
   ALE::Obj<PETSC_MESH_TYPE>                   m;
   ALE::Obj<PETSC_MESH_TYPE::int_section_type> s;

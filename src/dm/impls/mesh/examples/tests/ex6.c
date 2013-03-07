@@ -54,7 +54,7 @@ int main(int argc,char ** argv)
     for (cell = 0; cell < my_num_cells; cell++) {
       ierr = DMMeshGetConeSize(dmBody,cell,&conesize);CHKERRQ(ierr);
       ierr = PetscMalloc(conesize*dof*sizeof(PetscReal),&sr_array);CHKERRQ(ierr);
-      ierr = SectionRealRestrictClosure(sec1,dmBody,cell,conesize*dof,sr_array);CHKERRQ(ierr);
+      ierr = SectionRealRestrictClosureWithArray(sec1,dmBody,cell,conesize*dof,sr_array);CHKERRQ(ierr);
       for (k = 0,i = 0; i < conesize; i++) {
         for (c = 0; c < dof; c++,k++) {
           sr_array[k] = 1. + 100*c;
@@ -71,7 +71,7 @@ int main(int argc,char ** argv)
     for (face = 0; face < my_num_faces; face++) {
       ierr = DMMeshGetConeSize(dmFS,face,&conesize);CHKERRQ(ierr);
       ierr = PetscMalloc(conesize*dof*sizeof(PetscReal),&sr_array);CHKERRQ(ierr);
-      ierr = SectionRealRestrictClosure(sec1,dmFS,face,conesize*dof,sr_array);CHKERRQ(ierr);
+      ierr = SectionRealRestrictClosureWithArray(sec1,dmFS,face,conesize*dof,sr_array);CHKERRQ(ierr);
       for (k = 0,i = 0; i < conesize; i++) {
         for (c = 0; c < dof; c++,k++) {
           sr_array[k] = 1. + 100*c;

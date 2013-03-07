@@ -2116,12 +2116,12 @@ PetscErrorCode DMMeshAssembleVector(Vec b, PetscInt e, PetscScalar v[], InsertMo
   PetscFunctionBegin;
   ierr = VecGetDM(b, &dm);CHKERRQ(ierr);
   ierr = DMMeshGetSectionReal(dm, "x", &section);CHKERRQ(ierr);
-  ierr = DMMeshAssembleVector(b, dm, section, e, v, mode);CHKERRQ(ierr);
+  ierr = DMMeshAssembleVectorDM(b, dm, section, e, v, mode);CHKERRQ(ierr);
   ierr = SectionRealDestroy(&section);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMMeshAssembleVector(Vec b, DM dm, SectionReal section, PetscInt e, PetscScalar v[], InsertMode mode)
+PetscErrorCode DMMeshAssembleVectorDM(Vec b, DM dm, SectionReal section, PetscInt e, PetscScalar v[], InsertMode mode)
 {
   ALE::Obj<PETSC_MESH_TYPE>                    m;
   ALE::Obj<PETSC_MESH_TYPE::real_section_type> s;
@@ -2260,7 +2260,7 @@ PetscErrorCode DMMeshUpdateOperatorGeneral(Mat A, const ALE::Obj<PETSC_MESH_TYPE
 
    Level: developer
 
-.seealso: DMMeshUpdateOperator(), DMMeshAssembleMatrix()
+.seealso: DMMeshUpdateOperator(), DMMeshAssembleMatrixDM()
 @*/
 PetscErrorCode DMMeshSetMaxDof(DM dm, PetscInt maxDof)
 {
@@ -2274,9 +2274,9 @@ PetscErrorCode DMMeshSetMaxDof(DM dm, PetscInt maxDof)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMMeshAssembleMatrix"
+#define __FUNCT__ "DMMeshAssembleMatrixDM"
 /*@
-  DMMeshAssembleMatrix - Insert values into a matrix
+  DMMeshAssembleMatrixDM - Insert values into a matrix
 
   Collective on A
 
@@ -2294,7 +2294,7 @@ PetscErrorCode DMMeshSetMaxDof(DM dm, PetscInt maxDof)
 
 .seealso: MatSetOption()
 @*/
-PetscErrorCode DMMeshAssembleMatrix(Mat A, DM dm, SectionReal section, PetscInt e, PetscScalar v[], InsertMode mode)
+PetscErrorCode DMMeshAssembleMatrixDM(Mat A, DM dm, SectionReal section, PetscInt e, PetscScalar v[], InsertMode mode)
 {
   PetscErrorCode ierr;
 
