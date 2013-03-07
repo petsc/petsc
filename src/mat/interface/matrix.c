@@ -2154,14 +2154,14 @@ PetscErrorCode  MatMult(Mat mat,Vec x,Vec y)
   if (mat->rmap->N != y->map->N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Mat mat,Vec y: global dim %D %D",mat->rmap->N,y->map->N);
   if (mat->rmap->n != y->map->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Mat mat,Vec y: local dim %D %D",mat->rmap->n,y->map->n);
 #endif
-  VecValidValues(x,2,PETSC_TRUE);
+  ierr = VecValidValues(x,2,PETSC_TRUE);CHKERRQ(ierr);
   MatCheckPreallocated(mat,1);
 
   if (!mat->ops->mult) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"This matrix type does not have a multiply defined");
   ierr = PetscLogEventBegin(MAT_Mult,mat,x,y,0);CHKERRQ(ierr);
   ierr = (*mat->ops->mult)(mat,x,y);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_Mult,mat,x,y,0);CHKERRQ(ierr);
-  VecValidValues(y,3,PETSC_FALSE);
+  ierr = VecValidValues(y,3,PETSC_FALSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2209,7 +2209,7 @@ PetscErrorCode  MatMultTranspose(Mat mat,Vec x,Vec y)
   if (mat->rmap->N != x->map->N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Mat mat,Vec x: global dim %D %D",mat->rmap->N,x->map->N);
   if (mat->cmap->N != y->map->N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Mat mat,Vec y: global dim %D %D",mat->cmap->N,y->map->N);
 #endif
-  VecValidValues(x,2,PETSC_TRUE);
+  ierr = VecValidValues(x,2,PETSC_TRUE);CHKERRQ(ierr);
   MatCheckPreallocated(mat,1);
 
   if (!mat->ops->multtranspose) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"This matrix type does not have a multiply tranpose defined");
@@ -2217,7 +2217,7 @@ PetscErrorCode  MatMultTranspose(Mat mat,Vec x,Vec y)
   ierr = (*mat->ops->multtranspose)(mat,x,y);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_MultTranspose,mat,x,y,0);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)y);CHKERRQ(ierr);
-  VecValidValues(y,3,PETSC_FALSE);
+  ierr = VecValidValues(y,3,PETSC_FALSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

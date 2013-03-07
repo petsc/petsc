@@ -11,9 +11,10 @@ static PetscInt VecGetSubVectorSavedStateId = -1;
   if ((x)->map->n != (y)->map->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths %d != %d", (x)->map->n, (y)->map->n);
 
 #undef __FUNCT__
-#define __FUNCT__ "VecValidValues_Private"
-PetscErrorCode VecValidValues_Private(Vec vec,PetscInt argnum,PetscBool begin)
+#define __FUNCT__ "VecValidValues"
+PETSC_EXTERN PetscErrorCode VecValidValues(Vec vec,PetscInt argnum,PetscBool begin)
 {
+#if defined(PETSC_USE_DEBUG)
   PetscErrorCode    ierr;
   PetscInt          n,i;
   const PetscScalar *x;
@@ -32,6 +33,9 @@ PetscErrorCode VecValidValues_Private(Vec vec,PetscInt argnum,PetscBool begin)
     ierr = VecRestoreArrayRead(vec,&x);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
+#else
+  return 0;
+#endif
 }
 
 #undef __FUNCT__
