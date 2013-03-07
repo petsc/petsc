@@ -181,7 +181,7 @@ int main(int argc, char **argv)
   ierr = KSPSetFromOptions(user.ksp_fine);CHKERRQ(ierr);
   ierr = KSPSetOperators(user.ksp_fine,user.fine.J,user.fine.J,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = PCMGSetR(pc,FINE_LEVEL,user.fine.r);CHKERRQ(ierr);
-  ierr = PCMGSetResidual(pc,FINE_LEVEL,PCMGDefaultResidual,user.fine.J);CHKERRQ(ierr);
+  ierr = PCMGSetResidual(pc,FINE_LEVEL,NULL,user.fine.J);CHKERRQ(ierr);
 
   /* Create interpolation between the levels */
   ierr = FormInterpolation(&user);CHKERRQ(ierr);

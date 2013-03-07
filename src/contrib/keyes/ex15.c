@@ -161,7 +161,7 @@ int main(int argc, char **argv)
     ierr = PCMGSetX(pc,i,user.grid[i].x);CHKERRA(ierr);
     ierr = PCMGSetRhs(pc,i,user.grid[i].b);CHKERRA(ierr);
     ierr = PCMGSetR(pc,i,user.grid[i].r);CHKERRA(ierr);
-    ierr = PCMGSetResidual(pc,i,PCMGDefaultResidual,user.grid[i].J);CHKERRA(ierr);
+    ierr = PCMGSetResidual(pc,i,NULL,user.grid[i].J);CHKERRA(ierr);
   }
 
   /* Create interpolation between the levels */

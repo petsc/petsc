@@ -3088,8 +3088,7 @@ compute the residual.  The following command suffices:
 \begin{tabbing}
    PCMGSetResidual(PC pc,int level,PetscErrorCode (*residual)(Mat,Vec,Vec,Vec),Mat mat);
 \end{tabbing}
-The residual() function can be set to be PCMGDefaultResidual()
-if
+The residual() function normally does not need to be set if
 one's operator is stored in a Mat format.  In certain circumstances,
 where it is much cheaper to calculate the residual directly, rather
 than through the usual formula $b - Ax$,  the user may wish to provide

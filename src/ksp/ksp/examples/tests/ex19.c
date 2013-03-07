@@ -128,7 +128,6 @@ int main(int argc,char **argv)
   ierr = KSPSetFromOptions(ksp_fine);CHKERRQ(ierr);
   ierr = KSPSetOperators(ksp_fine,user.fine.J,user.fine.J,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = PCMGSetR(pc,FINE_LEVEL,user.fine.r);CHKERRQ(ierr);
-  ierr = PCMGSetResidual(pc,FINE_LEVEL,PCMGDefaultResidual,user.fine.J);CHKERRQ(ierr);
 
   /* Create interpolation between the levels */
   ierr = DMCreateInterpolation(user.coarse.da,user.fine.da,&user.Ii,NULL);CHKERRQ(ierr);
