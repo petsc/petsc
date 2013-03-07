@@ -550,7 +550,7 @@ PetscErrorCode KSPSetUp_BCGSL(KSP ksp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = KSPDefaultGetWork(ksp, 6+2*ell);CHKERRQ(ierr);
+  ierr = KSPSetWorkVecs_Private(ksp, 6+2*ell);CHKERRQ(ierr);
   ierr = PetscMalloc5(ldMZ,PetscScalar,&AY0c,ldMZ,PetscScalar,&AYlc,ldMZ,PetscScalar,&AYtc,ldMZ*ldMZ,PetscScalar,&MZa,ldMZ*ldMZ,PetscScalar,&MZb);CHKERRQ(ierr);
   ierr = PetscBLASIntCast(5*ell,&bcgsl->lwork);CHKERRQ(ierr);
   ierr = PetscMalloc5(bcgsl->lwork,PetscScalar,&bcgsl->work,ell,PetscReal,&bcgsl->s,ell*ell,PetscScalar,&bcgsl->u,ell*ell,PetscScalar,&bcgsl->v,5*ell,PetscReal,&bcgsl->realwork);CHKERRQ(ierr);
@@ -579,7 +579,7 @@ PetscErrorCode KSPDestroy_BCGSL(KSP ksp)
 
   PetscFunctionBegin;
   ierr = KSPReset_BCGSL(ksp);CHKERRQ(ierr);
-  ierr = KSPDefaultDestroy(ksp);CHKERRQ(ierr);
+  ierr = KSPDestroy_Default(ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

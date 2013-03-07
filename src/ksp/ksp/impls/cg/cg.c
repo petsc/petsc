@@ -62,7 +62,7 @@ PetscErrorCode KSPSetUp_CG(KSP ksp)
   PetscFunctionBegin;
   /* get work vectors needed by CG */
   if (cgP->singlereduction) nwork += 2;
-  ierr = KSPDefaultGetWork(ksp,nwork);CHKERRQ(ierr);
+  ierr = KSPSetWorkVecs_Private(ksp,nwork);CHKERRQ(ierr);
 
   /*
      If user requested computations of eigenvalues then allocate work
@@ -320,7 +320,7 @@ PetscErrorCode KSPDestroy_CG(KSP ksp)
   if (ksp->calc_sings) {
     ierr = PetscFree4(cg->e,cg->d,cg->ee,cg->dd);CHKERRQ(ierr);
   }
-  ierr = KSPDefaultDestroy(ksp);CHKERRQ(ierr);
+  ierr = KSPDestroy_Default(ksp);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPCGSetType_C","",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPCGUseSingleReduction_C","",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);

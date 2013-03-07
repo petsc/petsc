@@ -605,7 +605,7 @@ PetscErrorCode KSPSetUp_NASH(KSP ksp)
   /* Set work vectors needed by conjugate gradient method and allocate       */
   /***************************************************************************/
 
-  ierr = KSPDefaultGetWork(ksp, 3);CHKERRQ(ierr);
+  ierr = KSPSetWorkVecs_Private(ksp, 3);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -628,7 +628,7 @@ PetscErrorCode KSPDestroy_NASH(KSP ksp)
   /* Destroy KSP object.                                                     */
   /***************************************************************************/
 
-  ierr = KSPDefaultDestroy(ksp);CHKERRQ(ierr);
+  ierr = KSPDestroy_Default(ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

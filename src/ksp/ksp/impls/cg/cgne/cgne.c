@@ -35,7 +35,7 @@ PetscErrorCode KSPSetUp_CGNE(KSP ksp)
 
   PetscFunctionBegin;
   /* get work vectors needed by CGNE */
-  ierr = KSPDefaultGetWork(ksp,4);CHKERRQ(ierr);
+  ierr = KSPSetWorkVecs_Private(ksp,4);CHKERRQ(ierr);
 
   /*
      If user requested computations of eigenvalues then allocate work

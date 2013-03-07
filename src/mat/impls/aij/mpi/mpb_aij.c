@@ -2,7 +2,10 @@
 
 #undef __FUNCT__
 #define __FUNCT__ "MatGetMultiProcBlock_MPIAIJ"
-PetscErrorCode  MatGetMultiProcBlock_MPIAIJ(Mat mat, MPI_Comm subComm, MatReuse scall,Mat *subMat)
+/*
+    Developers Note: This is used directly by some preconditioners, hence is PETSC_EXTERN
+*/
+PETSC_EXTERN PetscErrorCode  MatGetMultiProcBlock_MPIAIJ(Mat mat, MPI_Comm subComm, MatReuse scall,Mat *subMat)
 {
   PetscErrorCode ierr;
   Mat_MPIAIJ     *aij  = (Mat_MPIAIJ*)mat->data;

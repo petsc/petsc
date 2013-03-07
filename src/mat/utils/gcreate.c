@@ -342,13 +342,15 @@ PetscErrorCode MatHeaderMerge(Mat A,Mat C)
         This is essentially code moved from MatDestroy()
 
         This is somewhat different from MatHeaderMerge() it would be nice to merge the code
+
+        Used in DM hence is declared PETSC_EXTERN
 */
 #undef __FUNCT__
 #define __FUNCT__ "MatHeaderReplace"
-PetscErrorCode MatHeaderReplace(Mat A,Mat C)
+PETSC_EXTERN PetscErrorCode MatHeaderReplace(Mat A,Mat C)
 {
   PetscErrorCode ierr;
-  PetscInt refct;
+  PetscInt       refct;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);

@@ -1336,7 +1336,7 @@ PetscErrorCode KSPSetUp_GLTR(KSP ksp)
   /* workspace for Lanczos matrix.                                           */
   /***************************************************************************/
 
-  ierr = KSPDefaultGetWork(ksp, 3);CHKERRQ(ierr);
+  ierr = KSPSetWorkVecs_Private(ksp, 3);CHKERRQ(ierr);
 
   ierr = PetscMalloc5(max_its,PetscReal,&cg->diag,max_its,PetscReal,&cg->offd,max_its,PetscReal,&cg->alpha,max_its,PetscReal,&cg->beta,max_its,PetscReal,&cg->norm_r);CHKERRQ(ierr);
   ierr = PetscMemzero(cg->diag, max_its*sizeof(PetscReal));CHKERRQ(ierr);
@@ -1378,7 +1378,7 @@ PetscErrorCode KSPDestroy_GLTR(KSP ksp)
   /***************************************************************************/
   /* Destroy KSP object.                                                     */
   /***************************************************************************/
-  ierr = KSPDefaultDestroy(ksp);CHKERRQ(ierr);
+  ierr = KSPDestroy_Default(ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

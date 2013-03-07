@@ -22,7 +22,7 @@ PetscErrorCode KSPSetUp_Chebyshev(KSP ksp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = KSPDefaultGetWork(ksp,3);CHKERRQ(ierr);
+  ierr = KSPSetWorkVecs_Private(ksp,3);CHKERRQ(ierr);
   if (cheb->emin == 0. || cheb->emax == 0.) { /* We need to estimate eigenvalues */
     ierr = KSPChebyshevSetEstimateEigenvalues(ksp,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
   } else if (cheb->hybrid && !cheb->kspest) { /* We need to create cheb->kspest */
@@ -611,7 +611,7 @@ PetscErrorCode KSPDestroy_Chebyshev(KSP ksp)
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPChebyshevSetEstimateEigenvalues_C","",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPChebyshevEstEigSetRandom_C","",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPChebyshevSetNewMatrix_C","",NULL);CHKERRQ(ierr);
-  ierr = KSPDefaultDestroy(ksp);CHKERRQ(ierr);
+  ierr = KSPDestroy_Default(ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

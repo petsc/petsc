@@ -57,7 +57,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_PREONLY(KSP ksp)
   ksp->data                = (void*)0;
   ksp->ops->setup          = KSPSetUp_PREONLY;
   ksp->ops->solve          = KSPSolve_PREONLY;
-  ksp->ops->destroy        = KSPDefaultDestroy;
+  ksp->ops->destroy        = KSPDestroy_Default;
   ksp->ops->buildsolution  = KSPDefaultBuildSolution;
   ksp->ops->buildresidual  = KSPDefaultBuildResidual;
   ksp->ops->setfromoptions = 0;
