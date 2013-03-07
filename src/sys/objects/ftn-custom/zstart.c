@@ -19,8 +19,6 @@
 #endif
 #include <petscthreadcomm.h>
 
-extern PetscBool PetscBeganMPI;
-
 extern PetscBool PetscHMPIWorker;
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
