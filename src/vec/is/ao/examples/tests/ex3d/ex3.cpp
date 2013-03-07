@@ -53,8 +53,8 @@ int main(int argc, char** argv)
   
   if (myrank==0) cout << "AO has been set up." << endl;
                               
-  ierr = AODestroy(ao);CHKERRQ(ierr);     
-  ierr = ISDestroy(isapp);CHKERRQ(ierr);
+  ierr = AODestroy(&ao);CHKERRQ(ierr);     
+  ierr = ISDestroy(&isapp);CHKERRQ(ierr);
 
   if (myrank==0) cout << "AO is done." << endl;
   
