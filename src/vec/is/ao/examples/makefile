@@ -1,7 +1,7 @@
 
 ALL:
 
-LOCDIR   = src/vec/is/aoexamples/
+LOCDIR   = src/vec/is/ao/examples/
 DIRS     = tests tutorials
 MANSEC   = AO
 

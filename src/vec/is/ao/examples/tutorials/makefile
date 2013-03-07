@@ -2,8 +2,8 @@
 CFLAGS	        =
 FFLAGS	        =
 CPPFLAGS        =
-FPPFLAGS        =	
-LOCDIR          = src/vec/is/aoexamples/tutorials/
+FPPFLAGS        =
+LOCDIR          = src/vec/is/ao/examples/tutorials/
 EXAMPLESC       = ex2.c
 EXAMPLESF       =
 MANSEC          = AO

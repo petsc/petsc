@@ -1,4 +1,4 @@
- 
+
 static char help[] = "AO test contributed by Sebastian Steiger <steiger@purdue.edu>, March 2011\n\n";
 
 /*
@@ -21,16 +21,21 @@ int main(int argc, char** argv)
   PetscErrorCode ierr;
   AO ao;
   IS isapp;
+  char infile[PETSC_MAX_PATH_LEN],datafiles[PETSC_MAX_PATH_LEN];
+  PetscBool flg;
 
   PetscInitialize(&argc, &argv, (char*)0, help);
   int size=-1;   MPI_Comm_size(PETSC_COMM_WORLD, &size);
   int myrank=-1; MPI_Comm_rank(PETSC_COMM_WORLD, &myrank);
 
+  ierr = PetscOptionsGetString(PETSC_NULL,"-datafiles",datafiles,sizeof(datafiles),&flg);CHKERRQ(ierr);
+  if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Must specify -datafiles ${DATAFILESPATH}/ao");
+
   // read in application indices
-  char infile[1000]; sprintf(infile,"./AO%dCPUs/ao_p%d_appindices.txt",size,myrank);
+  ierr = PetscSNPrintf(infile,sizeof(infile),"%s/AO%dCPUs/ao_p%d_appindices.txt",datafiles,size,myrank);CHKERRQ(ierr);
   //cout << infile << endl;
   ifstream fin(infile);
-  assert(fin);
+  if (!fin) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"File not found: %s",infile);
   vector<int>  myapp;
   int tmp=-1;
   while (!fin.eof()) {
@@ -47,17 +52,17 @@ int main(int argc, char** argv)
   //ierr = ISView(isapp,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   ierr = AOCreate(PETSC_COMM_WORLD, &ao);CHKERRQ(ierr);
-  ierr = AOSetIS(ao, isapp, NULL);CHKERRQ(ierr); 
+  ierr = AOSetIS(ao, isapp, NULL);CHKERRQ(ierr);
   ierr = AOSetType(ao, AOMEMORYSCALABLE);CHKERRQ(ierr);
   ierr = AOSetFromOptions(ao);CHKERRQ(ierr);
-  
+
   if (myrank==0) cout << "AO has been set up." << endl;
-                              
-  ierr = AODestroy(&ao);CHKERRQ(ierr);     
+
+  ierr = AODestroy(&ao);CHKERRQ(ierr);
   ierr = ISDestroy(&isapp);CHKERRQ(ierr);
 
   if (myrank==0) cout << "AO is done." << endl;
-  
+
   PetscFinalize();
   return 0;
 }
