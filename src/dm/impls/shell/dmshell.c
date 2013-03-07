@@ -32,6 +32,7 @@ static PetscErrorCode DMGlobalToLocalBegin_Shell_Default(DM dm,Vec g,InsertMode 
   DM_Shell       *shell = (DM_Shell*)dm->data;
 
   PetscFunctionBegin;
+  if (!shell->gtol) SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_ARG_WRONGSTATE, "Default cannot be used without first setting the scatter context via DMShellSetGlobalToLocalVecScatter()");
   ierr = VecScatterBegin(*(shell->gtol),g,l,mode,SCATTER_FORWARD);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -58,7 +59,7 @@ static PetscErrorCode DMGlobalToLocalEnd_Shell_Default(DM dm,Vec g,InsertMode mo
   DM_Shell       *shell = (DM_Shell*)dm->data;
 
   PetscFunctionBegin;
-  ierr = VecScatterEnd(*(shell->gtol),g,l,mode,SCATTER_FORWARD);CHKERRQ(ierr);
+   if (!shell->gtol) SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_ARG_WRONGSTATE, "Default cannot be used without first setting the scatter context via DMShellSetGlobalToLocalVecScatter()"); ierr = VecScatterEnd(*(shell->gtol),g,l,mode,SCATTER_FORWARD);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -458,8 +459,8 @@ PETSC_EXTERN PetscErrorCode DMCreate_Shell(DM dm)
   dm->ops->creatematrix       = DMCreateMatrix_Shell;
   dm->ops->view               = DMView_Shell;
   dm->ops->load               = DMLoad_Shell;
-  dm->ops->globaltolocalbegin = DMShellDefaultGlobalToLocalBegin;
-  dm->ops->globaltolocalend   = DMShellDefaultGlobalToLocalEnd;
+  dm->ops->globaltolocalbegin = DMGlobalToLocalBegin_Shell_Default;
+  dm->ops->globaltolocalend   = DMGlobalToLocalEnd_Shell_Default;
   PetscFunctionReturn(0);
 }
 
