@@ -267,7 +267,11 @@ PetscErrorCode IFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ctx)
   ierr = DMDAVecGetArray(user->da,localXdot,&pdot);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(user->da,F,&f);CHKERRQ(ierr);
 
-  user->disper_coe = PetscPowScalar((user->lambda*user->ws)/(2*user->H),2)*user->q*(1.0-PetscExpScalar(-t/user->lambda));
+  PetscScalar diffuse1,gamma;
+  gamma = user->D*user->ws/(2*user->H);
+  diffuse1 = user->lambda*user->lambda*user->q/(user->lambda*gamma+1)*(1.0 - PetscExpScalar(-t*(gamma+1.0)/user->lambda));
+  user->disper_coe = user->ws*user->ws/(4*user->H*user->H)*diffuse1;
+
   for (i=xs; i < xs+xm; i++) {
     for (j=ys; j < ys+ym; j++) {
       ierr = adv1(p,coors[j][i].y,i,j,M,&p_adv1,user);CHKERRQ(ierr);
