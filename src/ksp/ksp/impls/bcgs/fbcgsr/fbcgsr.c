@@ -16,7 +16,7 @@ PetscErrorCode KSPSetUp_FBCGSR(KSP ksp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = KSPDefaultGetWork(ksp,8);CHKERRQ(ierr);
+  ierr = KSPSetWorkVecs_Private(ksp,8);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -1,12 +1,13 @@
 #include <petsc-private/fortranimpl.h>
 #include <petscpc.h>
+#include <../src/ksp/pc/impls/mg/mgimpl.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define pcmgsetresidual_           PCMGSETRESIDUAL
-#define pcmgdefaultresidual_       PCMGDEFAULTRESIDUAL
+#define pcmgresidual_default_       PCMGRESIDUAL_DEFAULT
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define pcmgsetresidual_           pcmgsetresidual
-#define pcmgdefaultresidual_       pcmgdefaultresidual
+#define pcmgresidual_default_       pcmgresidual_default
 #endif
 
 typedef PetscErrorCode (*MVVVV)(Mat,Vec,Vec,Vec);
@@ -17,15 +18,15 @@ static PetscErrorCode ourresidualfunction(Mat mat,Vec b,Vec x,Vec R)
   return 0;
 }
 
-PETSC_EXTERN void pcmgdefaultresidual_(Mat *mat,Vec *b,Vec *x,Vec *r, PetscErrorCode *ierr)
+PETSC_EXTERN void pcmgresidual_default_(Mat *mat,Vec *b,Vec *x,Vec *r, PetscErrorCode *ierr)
 {
-  *ierr = PCMGDefaultResidual(*mat,*b,*x,*r);
+  *ierr = PCMGResidual_Default(*mat,*b,*x,*r);
 }
 
 PETSC_EXTERN void PETSC_STDCALL pcmgsetresidual_(PC *pc,PetscInt *l,PetscErrorCode (*residual)(Mat*,Vec*,Vec*,Vec*,PetscErrorCode*),Mat *mat, PetscErrorCode *ierr)
 {
   MVVVV rr;
-  if ((PetscVoidFunction)residual == (PetscVoidFunction)pcmgdefaultresidual_) rr = PCMGDefaultResidual;
+  if ((PetscVoidFunction)residual == (PetscVoidFunction)pcmgresidual_default_) rr = PCMGResidual_Default;
   else {
     PetscObjectAllocateFortranPointers(*mat,1);
     /*  Attach the residual computer to the Mat, this is not ideal but the only object/context passed in the residual computer */

@@ -459,16 +459,8 @@ PETSC_EXTERN PetscErrorCode VecGetArray(Vec,PetscScalar**);
 PETSC_EXTERN PetscErrorCode VecGetArrayRead(Vec,const PetscScalar**);
 PETSC_EXTERN PetscErrorCode VecRestoreArray(Vec,PetscScalar**);
 PETSC_EXTERN PetscErrorCode VecRestoreArrayRead(Vec,const PetscScalar**);
-PETSC_EXTERN PetscErrorCode VecValidValues_Private(Vec,PetscInt,PetscBool);
 
-#if defined(PETSC_USE_DEBUG)
-#  define VecValidValues(x,argnum,begin) do {                           \
-    PetscErrorCode _vecvalidvalues_ierr;                                \
-    _vecvalidvalues_ierr = VecValidValues_Private((x),(argnum),(begin));CHKERRQ(_vecvalidvalues_ierr); \
-  } while (0)
-#else
-#  define VecValidValues(x,argnum,begin) do { } while (0)
-#endif
+PETSC_EXTERN PetscErrorCode VecValidValues(Vec,PetscInt,PetscBool);
 
 PETSC_EXTERN PetscErrorCode VecContourScale(Vec,PetscReal,PetscReal);
 

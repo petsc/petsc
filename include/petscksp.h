@@ -386,7 +386,9 @@ PETSC_EXTERN PetscErrorCode KSPSetNormType(KSP,KSPNormType);
 PETSC_EXTERN PetscErrorCode KSPGetNormType(KSP,KSPNormType*);
 PETSC_EXTERN PetscErrorCode KSPSetSupportedNorm(KSP ksp,KSPNormType,PCSide,PetscInt);
 PETSC_EXTERN PetscErrorCode KSPSetCheckNormIteration(KSP,PetscInt);
-PETSC_EXTERN PetscErrorCode KSPSetLagNorm(KSP,PetscBool );
+PETSC_EXTERN PetscErrorCode KSPSetLagNorm(KSP,PetscBool);
+
+PETSC_EXTERN PetscErrorCode KSPGetVecs(KSP,PetscInt,Vec**,PetscInt,Vec**);
 
 /*E
     KSPConvergedReason - reason a Krylov method was said to
@@ -628,8 +630,6 @@ PETSC_EXTERN PetscErrorCode MatSchurComplementSet(Mat,Mat,Mat,Mat,Mat,Mat);
 PETSC_EXTERN PetscErrorCode MatSchurComplementUpdate(Mat,Mat,Mat,Mat,Mat,Mat,MatStructure);
 PETSC_EXTERN PetscErrorCode MatSchurComplementGetSubmatrices(Mat,Mat*,Mat*,Mat*,Mat*,Mat*);
 PETSC_EXTERN PetscErrorCode MatGetSchurComplement(Mat,IS,IS,IS,IS,MatReuse,Mat *,MatReuse,Mat *);
-
-PETSC_EXTERN PetscErrorCode MatGetSchurComplement_Basic(Mat mat,IS isrow0,IS iscol0,IS isrow1,IS iscol1,MatReuse mreuse,Mat *newmat,MatReuse preuse,Mat *newpmat);
 
 PETSC_EXTERN PetscErrorCode KSPSetDM(KSP,DM);
 PETSC_EXTERN PetscErrorCode KSPSetDMActive(KSP,PetscBool );

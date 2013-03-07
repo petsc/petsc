@@ -177,6 +177,8 @@ PetscErrorCode MatGetColumnNorms_MPIAIJ(Mat A,NormType type,PetscReal *norms)
     MatLoad_MPIAIJ(). Horrible lack of reuse. Should be a routine for each matrix type.
 
     Only for square matrices
+
+    Used by a preconditioner, hence PETSC_EXTERN
 */
 PETSC_EXTERN PetscErrorCode MatDistribute_MPIAIJ(MPI_Comm comm,Mat gmat,PetscInt m,MatReuse reuse,Mat *inmat)
 {

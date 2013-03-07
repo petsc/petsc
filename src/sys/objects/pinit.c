@@ -81,8 +81,6 @@ PetscErrorCode  PetscOptionsCheckInitial_Components(void)
   PetscFunctionReturn(0);
 }
 
-extern PetscBool PetscBeganMPI;
-
 #undef __FUNCT__
 #define __FUNCT__ "PetscInitializeNoPointers"
 /*
@@ -182,8 +180,7 @@ PetscErrorCode  PetscFinalized(PetscBool  *isFinalized)
   PetscFunctionReturn(0);
 }
 
-extern PetscErrorCode        PetscOptionsCheckInitial_Private(void);
-extern PetscBool PetscBeganMPI;
+extern PetscErrorCode PetscOptionsCheckInitial_Private(void);
 
 /*
        This function is the MPI reduction operation used to compute the sum of the

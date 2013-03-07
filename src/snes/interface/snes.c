@@ -1975,7 +1975,7 @@ PetscErrorCode  SNESComputeFunction(SNES snes,Vec x,Vec y)
   PetscValidHeaderSpecific(y,VEC_CLASSID,3);
   PetscCheckSameComm(snes,1,x,2);
   PetscCheckSameComm(snes,1,y,3);
-  VecValidValues(x,2,PETSC_TRUE);
+  ierr = VecValidValues(x,2,PETSC_TRUE);CHKERRQ(ierr);
 
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
   ierr = DMGetDMSNES(dm,&sdm);CHKERRQ(ierr);
@@ -1998,7 +1998,7 @@ PetscErrorCode  SNESComputeFunction(SNES snes,Vec x,Vec y)
     ierr = VecAXPY(y,-1.0,snes->vec_rhs);CHKERRQ(ierr);
   }
   snes->nfuncs++;
-  VecValidValues(y,3,PETSC_FALSE);
+  ierr = VecValidValues(y,3,PETSC_FALSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2040,7 +2040,7 @@ PetscErrorCode  SNESComputeGS(SNES snes,Vec b,Vec x)
   if (b) PetscValidHeaderSpecific(b,VEC_CLASSID,3);
   PetscCheckSameComm(snes,1,x,2);
   if (b) PetscCheckSameComm(snes,1,b,3);
-  if (b) VecValidValues(b,2,PETSC_TRUE);
+  if (b) {ierr = VecValidValues(b,2,PETSC_TRUE);CHKERRQ(ierr);}
   ierr = PetscLogEventBegin(SNES_GSEval,snes,x,b,0);CHKERRQ(ierr);
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
   ierr = DMGetDMSNES(dm,&sdm);CHKERRQ(ierr);
@@ -2050,7 +2050,7 @@ PetscErrorCode  SNESComputeGS(SNES snes,Vec b,Vec x)
     PetscStackPop;
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Must call SNESSetGS() before SNESComputeGS(), likely called from SNESSolve().");
   ierr = PetscLogEventEnd(SNES_GSEval,snes,x,b,0);CHKERRQ(ierr);
-  VecValidValues(x,3,PETSC_FALSE);
+  ierr = VecValidValues(x,3,PETSC_FALSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2111,7 +2111,7 @@ PetscErrorCode  SNESComputeJacobian(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *
   PetscValidHeaderSpecific(X,VEC_CLASSID,2);
   PetscValidPointer(flg,5);
   PetscCheckSameComm(snes,1,X,2);
-  VecValidValues(X,2,PETSC_TRUE);
+  ierr = VecValidValues(X,2,PETSC_TRUE);CHKERRQ(ierr);
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
   ierr = DMGetDMSNES(dm,&sdm);CHKERRQ(ierr);
 

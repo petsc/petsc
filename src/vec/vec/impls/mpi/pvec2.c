@@ -86,8 +86,8 @@ PetscErrorCode VecNorm_MPI(Vec xin,NormType type,PetscReal *z)
 
 /*
        These two functions are the MPI reduction operation used for max and min with index
-   The call below to MPI_Op_create() converts the function Vec[Max,Min]_Local() to the
-   MPI operator Vec[Max,Min]_Local_Op.
+   A call to MPI_Op_create() converts the function Vec[Max,Min]_Local() to the MPI operator Vec[Max,Min]_Local_Op.
+   These are marked PETSC_EXTERN since the function pointers are passed to MPI.
 */
 MPI_Op VecMax_Local_Op = 0;
 MPI_Op VecMin_Local_Op = 0;

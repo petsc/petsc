@@ -227,8 +227,6 @@ PETSC_EXTERN PetscErrorCode PCSORSetIterations(PC,PetscInt,PetscInt);
 PETSC_EXTERN PetscErrorCode PCEisenstatSetOmega(PC,PetscReal);
 PETSC_EXTERN PetscErrorCode PCEisenstatNoDiagonalScaling(PC);
 
-#define USE_PRECONDITIONER_MATRIX 0
-#define USE_TRUE_MATRIX           1
 PETSC_EXTERN PetscErrorCode PCBJacobiSetUseTrueLocal(PC);
 PETSC_EXTERN PetscErrorCode PCBJacobiSetTotalBlocks(PC,PetscInt,const PetscInt[]);
 PETSC_EXTERN PetscErrorCode PCBJacobiSetLocalBlocks(PC,PetscInt,const PetscInt[]);
@@ -581,7 +579,6 @@ PETSC_EXTERN PetscErrorCode PCMGGetInterpolation(PC,PetscInt,Mat*);
 PETSC_EXTERN PetscErrorCode PCMGSetRScale(PC,PetscInt,Vec);
 PETSC_EXTERN PetscErrorCode PCMGGetRScale(PC,PetscInt,Vec*);
 PETSC_EXTERN PetscErrorCode PCMGSetResidual(PC,PetscInt,PetscErrorCode (*)(Mat,Vec,Vec,Vec),Mat);
-PETSC_EXTERN PetscErrorCode PCMGDefaultResidual(Mat,Vec,Vec,Vec);
 
 /*E
     PCExoticType - Face based or wirebasket based coarse grid space

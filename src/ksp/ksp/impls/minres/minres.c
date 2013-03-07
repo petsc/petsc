@@ -14,7 +14,7 @@ PetscErrorCode KSPSetUp_MINRES(KSP ksp)
   PetscFunctionBegin;
   if (ksp->pc_side == PC_RIGHT) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"No right preconditioning for KSPMINRES");
   else if (ksp->pc_side == PC_SYMMETRIC) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"No symmetric preconditioning for KSPMINRES");
-  ierr = KSPDefaultGetWork(ksp,9);CHKERRQ(ierr);
+  ierr = KSPSetWorkVecs_Private(ksp,9);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -210,7 +210,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_MINRES(KSP ksp)
   */
   ksp->ops->setup          = KSPSetUp_MINRES;
   ksp->ops->solve          = KSPSolve_MINRES;
-  ksp->ops->destroy        = KSPDefaultDestroy;
+  ksp->ops->destroy        = KSPDestroy_Default;
   ksp->ops->setfromoptions = 0;
   ksp->ops->buildsolution  = KSPDefaultBuildSolution;
   ksp->ops->buildresidual  = KSPDefaultBuildResidual;

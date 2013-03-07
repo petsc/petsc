@@ -463,6 +463,7 @@ PETSC_EXTERN MPI_Comm PETSC_COMM_WORLD;
 M*/
 #define PETSC_COMM_SELF MPI_COMM_SELF
 
+PETSC_EXTERN PetscBool PetscBeganMPI;
 PETSC_EXTERN PetscBool PetscInitializeCalled;
 PETSC_EXTERN PetscBool PetscFinalizeCalled;
 PETSC_EXTERN PetscBool PetscCUSPSynchronize;

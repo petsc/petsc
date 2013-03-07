@@ -73,8 +73,8 @@ PetscErrorCode  DMDAGetLogicalCoordinate(DM da,PetscScalar x,PetscScalar y,Petsc
   }
   ierr = MPI_Allreduce(&rank,&root,1,MPI_INT,MPI_SUM,PetscObjectComm((PetscObject)da));CHKERRQ(ierr);
   root--;
-  ierr = MPI_Bcast(X,1,MPIU_REAL,root,PetscObjectComm((PetscObject)da));CHKERRQ(ierr);
-  ierr = MPI_Bcast(Y,1,MPIU_REAL,root,PetscObjectComm((PetscObject)da));CHKERRQ(ierr);
+  ierr = MPI_Bcast(X,1,MPIU_SCALAR,root,PetscObjectComm((PetscObject)da));CHKERRQ(ierr);
+  ierr = MPI_Bcast(Y,1,MPIU_SCALAR,root,PetscObjectComm((PetscObject)da));CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(dacoors,coors,&c);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

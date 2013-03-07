@@ -24,7 +24,7 @@ PetscErrorCode KSPSetUp_GROPPCG(KSP ksp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = KSPDefaultGetWork(ksp,6);CHKERRQ(ierr);
+  ierr = KSPSetWorkVecs_Private(ksp,6);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -173,7 +173,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_GROPPCG(KSP ksp)
 
   ksp->ops->setup          = KSPSetUp_GROPPCG;
   ksp->ops->solve          = KSPSolve_GROPPCG;
-  ksp->ops->destroy        = KSPDefaultDestroy;
+  ksp->ops->destroy        = KSPDestroy_Default;
   ksp->ops->view           = 0;
   ksp->ops->setfromoptions = 0;
   ksp->ops->buildsolution  = KSPDefaultBuildSolution;

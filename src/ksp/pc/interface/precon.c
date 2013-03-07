@@ -381,7 +381,7 @@ PetscErrorCode  PCApply(PC pc,Vec x,Vec y)
   PetscValidHeaderSpecific(x,VEC_CLASSID,2);
   PetscValidHeaderSpecific(y,VEC_CLASSID,3);
   if (x == y) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_IDN,"x and y must be different vectors");
-  VecValidValues(x,2,PETSC_TRUE);
+  ierr = VecValidValues(x,2,PETSC_TRUE);CHKERRQ(ierr);
   if (pc->setupcalled < 2) {
     ierr = PCSetUp(pc);CHKERRQ(ierr);
   }
@@ -389,7 +389,7 @@ PetscErrorCode  PCApply(PC pc,Vec x,Vec y)
   ierr = PetscLogEventBegin(PC_Apply,pc,x,y,0);CHKERRQ(ierr);
   ierr = (*pc->ops->apply)(pc,x,y);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(PC_Apply,pc,x,y,0);CHKERRQ(ierr);
-  VecValidValues(y,3,PETSC_FALSE);
+  ierr = VecValidValues(y,3,PETSC_FALSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -425,7 +425,7 @@ PetscErrorCode  PCApplySymmetricLeft(PC pc,Vec x,Vec y)
   PetscValidHeaderSpecific(x,VEC_CLASSID,2);
   PetscValidHeaderSpecific(y,VEC_CLASSID,3);
   if (x == y) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_IDN,"x and y must be different vectors");
-  VecValidValues(x,2,PETSC_TRUE);
+  ierr = VecValidValues(x,2,PETSC_TRUE);CHKERRQ(ierr);
   if (pc->setupcalled < 2) {
     ierr = PCSetUp(pc);CHKERRQ(ierr);
   }
@@ -433,7 +433,7 @@ PetscErrorCode  PCApplySymmetricLeft(PC pc,Vec x,Vec y)
   ierr = PetscLogEventBegin(PC_ApplySymmetricLeft,pc,x,y,0);CHKERRQ(ierr);
   ierr = (*pc->ops->applysymmetricleft)(pc,x,y);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(PC_ApplySymmetricLeft,pc,x,y,0);CHKERRQ(ierr);
-  VecValidValues(y,3,PETSC_FALSE);
+  ierr = VecValidValues(y,3,PETSC_FALSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -469,7 +469,7 @@ PetscErrorCode  PCApplySymmetricRight(PC pc,Vec x,Vec y)
   PetscValidHeaderSpecific(x,VEC_CLASSID,2);
   PetscValidHeaderSpecific(y,VEC_CLASSID,3);
   if (x == y) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_IDN,"x and y must be different vectors");
-  VecValidValues(x,2,PETSC_TRUE);
+  ierr = VecValidValues(x,2,PETSC_TRUE);CHKERRQ(ierr);
   if (pc->setupcalled < 2) {
     ierr = PCSetUp(pc);CHKERRQ(ierr);
   }
@@ -477,7 +477,7 @@ PetscErrorCode  PCApplySymmetricRight(PC pc,Vec x,Vec y)
   ierr = PetscLogEventBegin(PC_ApplySymmetricRight,pc,x,y,0);CHKERRQ(ierr);
   ierr = (*pc->ops->applysymmetricright)(pc,x,y);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(PC_ApplySymmetricRight,pc,x,y,0);CHKERRQ(ierr);
-  VecValidValues(y,3,PETSC_FALSE);
+  ierr = VecValidValues(y,3,PETSC_FALSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -514,7 +514,7 @@ PetscErrorCode  PCApplyTranspose(PC pc,Vec x,Vec y)
   PetscValidHeaderSpecific(x,VEC_CLASSID,2);
   PetscValidHeaderSpecific(y,VEC_CLASSID,3);
   if (x == y) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_IDN,"x and y must be different vectors");
-  VecValidValues(x,2,PETSC_TRUE);
+  ierr = VecValidValues(x,2,PETSC_TRUE);CHKERRQ(ierr);
   if (pc->setupcalled < 2) {
     ierr = PCSetUp(pc);CHKERRQ(ierr);
   }
@@ -522,7 +522,7 @@ PetscErrorCode  PCApplyTranspose(PC pc,Vec x,Vec y)
   ierr = PetscLogEventBegin(PC_Apply,pc,x,y,0);CHKERRQ(ierr);
   ierr = (*pc->ops->applytranspose)(pc,x,y);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(PC_Apply,pc,x,y,0);CHKERRQ(ierr);
-  VecValidValues(y,3,PETSC_FALSE);
+  ierr = VecValidValues(y,3,PETSC_FALSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -590,7 +590,7 @@ PetscErrorCode  PCApplyBAorAB(PC pc,PCSide side,Vec x,Vec y,Vec work)
   PetscValidHeaderSpecific(y,VEC_CLASSID,4);
   PetscValidHeaderSpecific(work,VEC_CLASSID,5);
   if (x == y) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_IDN,"x and y must be different vectors");
-  VecValidValues(x,3,PETSC_TRUE);
+  ierr = VecValidValues(x,3,PETSC_TRUE);CHKERRQ(ierr);
   if (side != PC_LEFT && side != PC_SYMMETRIC && side != PC_RIGHT) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"Side must be right, left, or symmetric");
   if (pc->diagonalscale && side == PC_SYMMETRIC) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Cannot include diagonal scaling with symmetric preconditioner application");
 
@@ -634,7 +634,7 @@ PetscErrorCode  PCApplyBAorAB(PC pc,PCSide side,Vec x,Vec y,Vec work)
       ierr = PCApplySymmetricLeft(pc,work,y);CHKERRQ(ierr);
     }
   }
-  VecValidValues(y,4,PETSC_FALSE);
+  ierr = VecValidValues(y,4,PETSC_FALSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -676,10 +676,10 @@ PetscErrorCode  PCApplyBAorABTranspose(PC pc,PCSide side,Vec x,Vec y,Vec work)
   PetscValidHeaderSpecific(y,VEC_CLASSID,4);
   PetscValidHeaderSpecific(work,VEC_CLASSID,5);
   if (x == y) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_IDN,"x and y must be different vectors");
-  VecValidValues(x,3,PETSC_TRUE);
+  ierr = VecValidValues(x,3,PETSC_TRUE);CHKERRQ(ierr);
   if (pc->ops->applyBAtranspose) {
     ierr = (*pc->ops->applyBAtranspose)(pc,side,x,y,work);CHKERRQ(ierr);
-    VecValidValues(y,4,PETSC_FALSE);
+    ierr = VecValidValues(y,4,PETSC_FALSE);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
   if (side != PC_LEFT && side != PC_RIGHT) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"Side must be right or left");
@@ -696,7 +696,7 @@ PetscErrorCode  PCApplyBAorABTranspose(PC pc,PCSide side,Vec x,Vec y,Vec work)
     ierr = PCApplyTranspose(pc,work,y);CHKERRQ(ierr);
   }
   /* add support for PC_SYMMETRIC */
-  VecValidValues(y,4,PETSC_FALSE);
+  ierr = VecValidValues(y,4,PETSC_FALSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

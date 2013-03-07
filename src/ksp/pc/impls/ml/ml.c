@@ -644,11 +644,11 @@ PetscErrorCode PCSetUp_ML(PC pc)
 
       for (level=0; level<fine_level; level++) {
         if (level > 0) {
-          ierr = PCMGSetResidual(pc,level,PCMGDefaultResidual,gridctx[level].A);CHKERRQ(ierr);
+          ierr = PCMGSetResidual(pc,level,PCMGResidual_Default,gridctx[level].A);CHKERRQ(ierr);
         }
         ierr = KSPSetOperators(gridctx[level].ksp,gridctx[level].A,gridctx[level].A,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
       }
-      ierr = PCMGSetResidual(pc,fine_level,PCMGDefaultResidual,gridctx[fine_level].A);CHKERRQ(ierr);
+      ierr = PCMGSetResidual(pc,fine_level,PCMGResidual_Default,gridctx[fine_level].A);CHKERRQ(ierr);
       ierr = KSPSetOperators(gridctx[fine_level].ksp,gridctx[level].A,gridctx[fine_level].A,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
 
       ierr = PCSetUp_MG(pc);CHKERRQ(ierr);
@@ -942,11 +942,11 @@ PetscErrorCode PCSetUp_ML(PC pc)
     ierr   = PCMGSetInterpolation(pc,level1,gridctx[level].P);CHKERRQ(ierr);
     ierr   = PCMGSetRestriction(pc,level1,gridctx[level].R);CHKERRQ(ierr);
     if (level > 0) {
-      ierr = PCMGSetResidual(pc,level,PCMGDefaultResidual,gridctx[level].A);CHKERRQ(ierr);
+      ierr = PCMGSetResidual(pc,level,PCMGResidual_Default,gridctx[level].A);CHKERRQ(ierr);
     }
     ierr = KSPSetOperators(gridctx[level].ksp,gridctx[level].A,gridctx[level].A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
   }
-  ierr = PCMGSetResidual(pc,fine_level,PCMGDefaultResidual,gridctx[fine_level].A);CHKERRQ(ierr);
+  ierr = PCMGSetResidual(pc,fine_level,PCMGResidual_Default,gridctx[fine_level].A);CHKERRQ(ierr);
   ierr = KSPSetOperators(gridctx[fine_level].ksp,gridctx[level].A,gridctx[fine_level].A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
 
   /* put coordinate info in levels */

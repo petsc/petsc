@@ -14,9 +14,9 @@ PetscErrorCode KSPSetUp_Richardson(KSP ksp)
 
   PetscFunctionBegin;
   if (richardsonP->selfscale) {
-    ierr = KSPDefaultGetWork(ksp,4);CHKERRQ(ierr);
+    ierr = KSPSetWorkVecs_Private(ksp,4);CHKERRQ(ierr);
   } else {
-    ierr = KSPDefaultGetWork(ksp,2);CHKERRQ(ierr);
+    ierr = KSPSetWorkVecs_Private(ksp,2);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -49,9 +49,9 @@ PetscErrorCode  KSPSolve_Richardson(KSP ksp)
   ierr = VecGetSize(ksp->work[0],&ws);CHKERRQ(ierr);
   if (xs != ws) {
     if (richardsonP->selfscale) {
-      ierr = KSPDefaultGetWork(ksp,4);CHKERRQ(ierr);
+      ierr = KSPSetWorkVecs_Private(ksp,4);CHKERRQ(ierr);
     } else {
-      ierr = KSPDefaultGetWork(ksp,2);CHKERRQ(ierr);
+      ierr = KSPSetWorkVecs_Private(ksp,2);CHKERRQ(ierr);
     }
   }
   r = ksp->work[0];
@@ -212,7 +212,7 @@ PetscErrorCode KSPDestroy_Richardson(KSP ksp)
 
   PetscFunctionBegin;
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPRichardsonSetScale_C","",NULL);CHKERRQ(ierr);
-  ierr = KSPDefaultDestroy(ksp);CHKERRQ(ierr);
+  ierr = KSPDestroy_Default(ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

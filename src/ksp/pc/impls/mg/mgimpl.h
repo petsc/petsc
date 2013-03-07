@@ -52,10 +52,11 @@ typedef struct {
   PetscLogStage stageApply;
 } PC_MG;
 
-PETSC_EXTERN PetscErrorCode PCSetUp_MG(PC);
-PETSC_EXTERN PetscErrorCode PCDestroy_MG(PC);
-PETSC_EXTERN PetscErrorCode PCSetFromOptions_MG(PC);
-PETSC_EXTERN PetscErrorCode PCView_MG(PC,PetscViewer);
+PETSC_INTERN PetscErrorCode PCSetUp_MG(PC);
+PETSC_INTERN PetscErrorCode PCDestroy_MG(PC);
+PETSC_INTERN PetscErrorCode PCSetFromOptions_MG(PC);
+PETSC_INTERN PetscErrorCode PCView_MG(PC,PetscViewer);
+PETSC_INTERN PetscErrorCode PCMGResidual_Default(Mat,Vec,Vec,Vec);
 
 #endif
 

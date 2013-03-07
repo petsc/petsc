@@ -138,7 +138,6 @@
       call KSPGetPC(ksp,pc,ierr)
       call PCSetType(pc,PCMG,ierr)
       call PCMGSetLevels(pc,one,PETSC_NULL_OBJECT,ierr)
-      call PCMGSetResidual(pc,zero,PCMGDefaultResidual,A,ierr)
 
       call PCMGSetResidual(pc,zero,MyResidual,A,ierr)
 

@@ -776,7 +776,7 @@ PetscErrorCode VecLoad_Binary_DA(Vec xin, PetscViewer viewer)
   ierr = DMDACreateNaturalVector(da,&natural);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)natural,((PetscObject)xin)->name);CHKERRQ(ierr);
   ierr = PetscObjectSetOptionsPrefix((PetscObject)natural,prefix);CHKERRQ(ierr);
-  ierr = VecLoad_Binary(natural,viewer);CHKERRQ(ierr);
+  ierr = VecLoad(natural,viewer);CHKERRQ(ierr);
   ierr = DMDANaturalToGlobalBegin(da,natural,INSERT_VALUES,xin);CHKERRQ(ierr);
   ierr = DMDANaturalToGlobalEnd(da,natural,INSERT_VALUES,xin);CHKERRQ(ierr);
   ierr = VecDestroy(&natural);CHKERRQ(ierr);

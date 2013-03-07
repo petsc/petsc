@@ -138,11 +138,10 @@ PETSC_STATIC_INLINE PetscErrorCode KSPLogResidualHistory(KSP ksp,PetscReal norm)
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN PetscErrorCode KSPDefaultDestroy(KSP);
-PETSC_EXTERN PetscErrorCode KSPGetVecs(KSP,PetscInt,Vec**,PetscInt,Vec**);
-PETSC_EXTERN PetscErrorCode KSPDefaultGetWork(KSP,PetscInt);
-PETSC_EXTERN PetscErrorCode KSPSetUpNorms_Private(KSP,KSPNormType*,PCSide*);
-PETSC_EXTERN PetscErrorCode KSPPlotEigenContours_Private(KSP,PetscInt,const PetscReal*,const PetscReal*);
+PETSC_INTERN PetscErrorCode KSPDestroy_Default(KSP);
+PETSC_INTERN PetscErrorCode KSPSetWorkVecs_Private(KSP,PetscInt);
+PETSC_INTERN PetscErrorCode KSPSetUpNorms_Private(KSP,KSPNormType*,PCSide*);
+PETSC_INTERN PetscErrorCode KSPPlotEigenContours_Private(KSP,PetscInt,const PetscReal*,const PetscReal*);
 
 typedef struct _p_DMKSP *DMKSP;
 typedef struct _DMKSPOps *DMKSPOps;
@@ -272,5 +271,7 @@ PETSC_STATIC_INLINE PetscErrorCode KSP_PCApplyBAorABTranspose(KSP ksp,Vec x,Vec 
 }
 
 PETSC_EXTERN PetscLogEvent KSP_GMRESOrthogonalization, KSP_SetUp, KSP_Solve;
+
+PETSC_INTERN PetscErrorCode MatGetSchurComplement_Basic(Mat,IS,IS,IS,IS,MatReuse,Mat*,MatReuse,Mat*);
 
 #endif

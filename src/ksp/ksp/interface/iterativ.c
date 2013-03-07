@@ -981,18 +981,16 @@ PetscErrorCode KSPGetVecs(KSP ksp,PetscInt rightn, Vec **right,PetscInt leftn,Ve
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "KSPDefaultGetWork"
+#define __FUNCT__ "KSPSetWorkVecs_Private"
 /*
-  KSPDefaultGetWork - Gets a number of work vectors.
+  KSPSetWorkVecs_Private - Sets a number of work vectors into a KSP object
 
   Input Parameters:
 . ksp  - iterative context
 . nw   - number of work vectors to allocate
 
-  Notes:
-  Call this only if no work vectors have been allocated
  */
-PetscErrorCode KSPDefaultGetWork(KSP ksp,PetscInt nw)
+PetscErrorCode KSPSetWorkVecs_Private(KSP ksp,PetscInt nw)
 {
   PetscErrorCode ierr;
 
@@ -1005,15 +1003,15 @@ PetscErrorCode KSPDefaultGetWork(KSP ksp,PetscInt nw)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "KSPDefaultDestroy"
+#define __FUNCT__ "KSPDestroy_Default"
 /*
-  KSPDefaultDestroy - Destroys a iterative context variable for methods with
+  KSPDestroy_Default - Destroys a iterative context variable for methods with
   no separate context.  Preferred calling sequence KSPDestroy().
 
   Input Parameter:
 . ksp - the iterative context
 */
-PetscErrorCode KSPDefaultDestroy(KSP ksp)
+PetscErrorCode KSPDestroy_Default(KSP ksp)
 {
   PetscErrorCode ierr;
 
