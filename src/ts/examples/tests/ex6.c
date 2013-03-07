@@ -71,7 +71,7 @@ int main(int argc,char **argv)
   ierr = SNESCreate(PETSC_COMM_WORLD,&ctx.snes);CHKERRQ(ierr);
   ierr = SNESSetFromOptions(ctx.snes);CHKERRQ(ierr);
   ierr = SNESSetFunction(ctx.snes,NULL,SNESFunction,&ctx);CHKERRQ(ierr);
-  ierr = SNESSetJacobian(ctx.snes,NULL,NULL,SNESDefaultComputeJacobian,&ctx);CHKERRQ(ierr);
+  ierr = SNESSetJacobian(ctx.snes,NULL,NULL,SNESComputeJacobianDefault,&ctx);CHKERRQ(ierr);
   ctx.F = F;
   ierr = VecCreateMPI(PETSC_COMM_WORLD,PETSC_DECIDE,1,&ctx.V);CHKERRQ(ierr);
 

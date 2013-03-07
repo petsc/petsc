@@ -186,8 +186,8 @@ PETSC_EXTERN PetscErrorCode KSPCreate_TCQMR(KSP ksp)
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_RIGHT,1);CHKERRQ(ierr);
 
   ksp->data                = (void*)0;
-  ksp->ops->buildsolution  = KSPDefaultBuildSolution;
-  ksp->ops->buildresidual  = KSPDefaultBuildResidual;
+  ksp->ops->buildsolution  = KSPBuildSolution_Default;
+  ksp->ops->buildresidual  = KSPBuildResidual_Default;
   ksp->ops->setup          = KSPSetUp_TCQMR;
   ksp->ops->solve          = KSPSolve_TCQMR;
   ksp->ops->destroy        = KSPDestroy_Default;

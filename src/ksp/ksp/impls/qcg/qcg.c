@@ -420,8 +420,8 @@ PETSC_EXTERN PetscErrorCode KSPCreate_QCG(KSP ksp)
   ksp->ops->setfromoptions = KSPSetFromOptions_QCG;
   ksp->ops->solve          = KSPSolve_QCG;
   ksp->ops->destroy        = KSPDestroy_QCG;
-  ksp->ops->buildsolution  = KSPDefaultBuildSolution;
-  ksp->ops->buildresidual  = KSPDefaultBuildResidual;
+  ksp->ops->buildsolution  = KSPBuildSolution_Default;
+  ksp->ops->buildresidual  = KSPBuildResidual_Default;
   ksp->ops->setfromoptions = 0;
   ksp->ops->view           = 0;
 

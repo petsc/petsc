@@ -2,9 +2,9 @@
 #include <petsc-private/snesimpl.h>    /*I  "petscsnes.h"  I*/
 
 #undef __FUNCT__
-#define __FUNCT__ "SNESDefaultComputeJacobian"
+#define __FUNCT__ "SNESComputeJacobianDefault"
 /*@C
-   SNESDefaultComputeJacobian - Computes the Jacobian using finite differences.
+   SNESComputeJacobianDefault - Computes the Jacobian using finite differences.
 
    Collective on SNES
 
@@ -18,7 +18,7 @@
 -  flag - flag indicating whether the matrix sparsity structure has changed
 
    Options Database Key:
-+  -snes_fd - Activates SNESDefaultComputeJacobian()
++  -snes_fd - Activates SNESComputeJacobianDefault()
 .  -snes_test_err - Square root of function error tolerance, default square root of machine
                     epsilon (1.e-8 in double, 3.e-4 in single)
 -  -mat_fd_type - Either wp or ds (see MATMFFD_WP or MATMFFD_DS)
@@ -26,20 +26,20 @@
    Notes:
    This routine is slow and expensive, and is not currently optimized
    to take advantage of sparsity in the problem.  Although
-   SNESDefaultComputeJacobian() is not recommended for general use
+   SNESComputeJacobianDefault() is not recommended for general use
    in large-scale applications, It can be useful in checking the
    correctness of a user-provided Jacobian.
 
    An alternative routine that uses coloring to exploit matrix sparsity is
-   SNESDefaultComputeJacobianColor().
+   SNESComputeJacobianDefaultColor().
 
    Level: intermediate
 
 .keywords: SNES, finite differences, Jacobian
 
-.seealso: SNESSetJacobian(), SNESDefaultComputeJacobianColor(), MatCreateSNESMF()
+.seealso: SNESSetJacobian(), SNESComputeJacobianDefaultColor(), MatCreateSNESMF()
 @*/
-PetscErrorCode  SNESDefaultComputeJacobian(SNES snes,Vec x1,Mat *J,Mat *B,MatStructure *flag,void *ctx)
+PetscErrorCode  SNESComputeJacobianDefault(SNES snes,Vec x1,Mat *J,Mat *B,MatStructure *flag,void *ctx)
 {
   Vec            j1a,j2a,x2;
   PetscErrorCode ierr;
@@ -76,7 +76,7 @@ PetscErrorCode  SNESDefaultComputeJacobian(SNES snes,Vec x1,Mat *J,Mat *B,MatStr
   ierr = VecGetOwnershipRange(x1,&start,&end);CHKERRQ(ierr);
   ierr = (*eval_fct)(snes,x1,j1a);CHKERRQ(ierr);
 
-  ierr = PetscOptionsEList("-mat_fd_type","Algorithm to compute difference parameter","SNESDefaultComputeJacobian",list,2,"wp",&value,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsEList("-mat_fd_type","Algorithm to compute difference parameter","SNESComputeJacobianDefault",list,2,"wp",&value,&flg);CHKERRQ(ierr);
   if (flg && !value) use_wp = PETSC_FALSE;
 
   if (use_wp) {

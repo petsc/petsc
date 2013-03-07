@@ -765,8 +765,8 @@ PETSC_EXTERN PetscErrorCode KSPCreate_STCG(KSP ksp)
   ksp->ops->solve          = KSPSolve_STCG;
   ksp->ops->destroy        = KSPDestroy_STCG;
   ksp->ops->setfromoptions = KSPSetFromOptions_STCG;
-  ksp->ops->buildsolution  = KSPDefaultBuildSolution;
-  ksp->ops->buildresidual  = KSPDefaultBuildResidual;
+  ksp->ops->buildsolution  = KSPBuildSolution_Default;
+  ksp->ops->buildresidual  = KSPBuildResidual_Default;
   ksp->ops->view           = 0;
 
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPSTCGSetRadius_C","KSPSTCGSetRadius_STCG",KSPSTCGSetRadius_STCG);CHKERRQ(ierr);

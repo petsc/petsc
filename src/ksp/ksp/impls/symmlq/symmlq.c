@@ -218,8 +218,8 @@ PETSC_EXTERN PetscErrorCode KSPCreate_SYMMLQ(KSP ksp)
   ksp->ops->solve          = KSPSolve_SYMMLQ;
   ksp->ops->destroy        = KSPDestroy_Default;
   ksp->ops->setfromoptions = 0;
-  ksp->ops->buildsolution  = KSPDefaultBuildSolution;
-  ksp->ops->buildresidual  = KSPDefaultBuildResidual;
+  ksp->ops->buildsolution  = KSPBuildSolution_Default;
+  ksp->ops->buildresidual  = KSPBuildResidual_Default;
   PetscFunctionReturn(0);
 }
 

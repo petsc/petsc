@@ -687,8 +687,8 @@ PetscErrorCode  KSPCreate(MPI_Comm comm,KSP *inksp)
 
   ierr                    = KSPDefaultConvergedCreate(&ctx);CHKERRQ(ierr);
   ierr                    = KSPSetConvergenceTest(ksp,KSPDefaultConverged,ctx,KSPDefaultConvergedDestroy);CHKERRQ(ierr);
-  ksp->ops->buildsolution = KSPDefaultBuildSolution;
-  ksp->ops->buildresidual = KSPDefaultBuildResidual;
+  ksp->ops->buildsolution = KSPBuildSolution_Default;
+  ksp->ops->buildresidual = KSPBuildResidual_Default;
 #if defined(PETSC_HAVE_AMS)
   ((PetscObject)ksp)->bops->publish = KSPPublish_Petsc;
 #endif
@@ -767,8 +767,8 @@ PetscErrorCode  KSPSetType(KSP ksp, KSPType type)
   }
   /* Reinitialize function pointers in KSPOps structure */
   ierr                    = PetscMemzero(ksp->ops,sizeof(struct _KSPOps));CHKERRQ(ierr);
-  ksp->ops->buildsolution = KSPDefaultBuildSolution;
-  ksp->ops->buildresidual = KSPDefaultBuildResidual;
+  ksp->ops->buildsolution = KSPBuildSolution_Default;
+  ksp->ops->buildresidual = KSPBuildResidual_Default;
   ierr                    = KSPNormSupportTableReset_Private(ksp);CHKERRQ(ierr);
   /* Call the KSPCreate_XXX routine for this particular Krylov solver */
   ksp->setupstage = KSP_SETUP_NEW;

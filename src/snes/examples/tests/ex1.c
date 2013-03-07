@@ -157,17 +157,17 @@ int main(int argc,char **argv)
     */
     ierr = MatGetColoring(J,MATCOLORINGNATURAL,&iscoloring);CHKERRQ(ierr);
     /*
-       Create the data structure that SNESDefaultComputeJacobianColor() uses
+       Create the data structure that SNESComputeJacobianDefaultColor() uses
        to compute the actual Jacobians via finite differences.
     */
     ierr = MatFDColoringCreate(J,iscoloring,&fdcoloring);CHKERRQ(ierr);
     ierr = MatFDColoringSetFunction(fdcoloring,(PetscErrorCode (*)(void))FormFunction,&user);CHKERRQ(ierr);
     ierr = MatFDColoringSetFromOptions(fdcoloring);CHKERRQ(ierr);
     /*
-        Tell SNES to use the routine SNESDefaultComputeJacobianColor()
+        Tell SNES to use the routine SNESComputeJacobianDefaultColor()
       to compute Jacobians.
     */
-    ierr = SNESSetJacobian(snes,J,J,SNESDefaultComputeJacobianColor,fdcoloring);CHKERRQ(ierr);
+    ierr = SNESSetJacobian(snes,J,J,SNESComputeJacobianDefaultColor,fdcoloring);CHKERRQ(ierr);
     ierr = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);
   }
   /*

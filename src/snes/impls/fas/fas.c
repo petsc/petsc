@@ -176,9 +176,9 @@ PetscErrorCode SNESSetUp_FAS(SNES snes)
   if (!isFine) snes->gridsequence = 0; /* no grid sequencing inside the multigrid hierarchy! */
 
   if (fas->fastype == SNES_FAS_MULTIPLICATIVE) {
-    ierr = SNESDefaultGetWork(snes, 2);CHKERRQ(ierr); /* work vectors used for intergrid transfers */
+    ierr = SNESSetWorkVecs_Private(snes, 2);CHKERRQ(ierr); /* work vectors used for intergrid transfers */
   } else {
-    ierr = SNESDefaultGetWork(snes, 2);CHKERRQ(ierr); /* work vectors used for intergrid transfers */
+    ierr = SNESSetWorkVecs_Private(snes, 2);CHKERRQ(ierr); /* work vectors used for intergrid transfers */
   }
 
   /* set up the smoothers if they haven't already been set up */

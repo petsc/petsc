@@ -112,11 +112,11 @@ int main(int argc,char **argv)
   if (jacType == JACOBIAN_FD_COLORING) {
     SNES snes;
     ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
-    ierr = SNESSetJacobian(snes,J,J,SNESDefaultComputeJacobianColor,0);CHKERRQ(ierr);
+    ierr = SNESSetJacobian(snes,J,J,SNESComputeJacobianDefaultColor,0);CHKERRQ(ierr);
   } else if (jacType == JACOBIAN_FD_FULL) {
     SNES snes;
     ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
-    ierr = SNESSetJacobian(snes,J,J,SNESDefaultComputeJacobian,&user);CHKERRQ(ierr);
+    ierr = SNESSetJacobian(snes,J,J,SNESComputeJacobianDefault,&user);CHKERRQ(ierr);
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

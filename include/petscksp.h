@@ -296,8 +296,6 @@ PETSC_EXTERN PetscErrorCode KSPMonitorAMSDestroy(void**);
 PETSC_EXTERN PetscErrorCode KSPGMRESMonitorKrylov(KSP,PetscInt,PetscReal,void *);
 
 PETSC_EXTERN PetscErrorCode KSPUnwindPreconditioner(KSP,Vec,Vec);
-PETSC_EXTERN PetscErrorCode KSPDefaultBuildSolution(KSP,Vec,Vec*);
-PETSC_EXTERN PetscErrorCode KSPDefaultBuildResidual(KSP,Vec,Vec,Vec *);
 PETSC_EXTERN PetscErrorCode KSPInitialResidual(KSP,Vec,Vec,Vec,Vec,Vec);
 
 PETSC_EXTERN PetscErrorCode KSPSetOperators(KSP,Mat,Mat,MatStructure);

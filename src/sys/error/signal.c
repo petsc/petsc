@@ -43,7 +43,7 @@ static void PetscSignalHandler_Private(int sig)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!sh || !sh->handler) ierr = PetscDefaultSignalHandler(sig,(void*)0);
+  if (!sh || !sh->handler) ierr = PetscSignalHandlerDefault(sig,(void*)0);
   else {
     if (sh->classid != SIGNAL_CLASSID) SETERRABORT(PETSC_COMM_WORLD,PETSC_ERR_COR,"Signal object has been corrupted");
     ierr = (*sh->handler)(sig,sh->ctx);
@@ -52,9 +52,9 @@ static void PetscSignalHandler_Private(int sig)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscDefaultSignalHandler"
+#define __FUNCT__ "PetscSignalHandlerDefault"
 /*@
-   PetscDefaultSignalHandler - Default signal handler.
+   PetscSignalHandlerDefault - Default signal handler.
 
    Not Collective
 
@@ -67,7 +67,7 @@ static void PetscSignalHandler_Private(int sig)
    Concepts: signal handler^default
 
 @*/
-PetscErrorCode  PetscDefaultSignalHandler(int sig,void *ptr)
+PetscErrorCode  PetscSignalHandlerDefault(int sig,void *ptr)
 {
   PetscErrorCode ierr;
   const char     *SIGNAME[64];
@@ -182,7 +182,7 @@ PetscErrorCode  PetscDefaultSignalHandler(int sig,void *ptr)
 
    Concepts: signal handler^setting
 
-.seealso: PetscPopSignalHandler(), PetscDefaultSignalHandler(), PetscPushErrorHandler()
+.seealso: PetscPopSignalHandler(), PetscSignalHandlerDefault(), PetscPushErrorHandler()
 
 @*/
 PetscErrorCode  PetscPushSignalHandler(PetscErrorCode (*routine)(int,void*),void *ctx)

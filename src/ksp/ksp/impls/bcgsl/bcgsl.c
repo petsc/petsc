@@ -635,8 +635,8 @@ PETSC_EXTERN PetscErrorCode KSPCreate_BCGSL(KSP ksp)
   ksp->ops->solve          = KSPSolve_BCGSL;
   ksp->ops->reset          = KSPReset_BCGSL;
   ksp->ops->destroy        = KSPDestroy_BCGSL;
-  ksp->ops->buildsolution  = KSPDefaultBuildSolution;
-  ksp->ops->buildresidual  = KSPDefaultBuildResidual;
+  ksp->ops->buildsolution  = KSPBuildSolution_Default;
+  ksp->ops->buildresidual  = KSPBuildResidual_Default;
   ksp->ops->setfromoptions = KSPSetFromOptions_BCGSL;
   ksp->ops->view           = KSPView_BCGSL;
 

@@ -193,7 +193,7 @@
         call MatGetColoring(J,MATCOLORINGNATURAL,iscoloring,ierr)
 
 !
-!       Create the data structure that SNESDefaultComputeJacobianColor() uses
+!       Create the data structure that SNESComputeJacobianDefaultColor() uses
 !       to compute the actual Jacobians via finite differences.
 !
         call MatFDColoringCreate(J,iscoloring,fdcoloring,ierr)
@@ -201,10 +201,10 @@
      &                                PETSC_NULL_OBJECT,ierr)
         call MatFDColoringSetFromOptions(fdcoloring,ierr)
 !
-!        Tell SNES to use the routine SNESDefaultComputeJacobianColor()
+!        Tell SNES to use the routine SNESComputeJacobianDefaultColor()
 !      to compute Jacobians.
 !
-        call SNESSetJacobian(snes,J,J,SNESDefaultComputeJacobianColor,    &
+        call SNESSetJacobian(snes,J,J,SNESComputeJacobianDefaultColor,    &
      &                     fdcoloring,ierr)
         call ISColoringDestroy(iscoloring,ierr)
 

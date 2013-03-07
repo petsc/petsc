@@ -5,8 +5,8 @@
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define matmffdcomputejacobian_          MATMFFDCOMPUTEJACOBIAN
 #define snessolve_                       SNESSOLVE
-#define snesdefaultcomputejacobian_      SNESDEFAULTCOMPUTEJACOBIAN
-#define snesdefaultcomputejacobiancolor_ SNESDEFAULTCOMPUTEJACOBIANCOLOR
+#define snescomputejacobiandefault_      SNESCOMPUTEJACOBIANDEFAULT
+#define snescomputejacobiandefaultcolor_ SNESCOMPUTEJACOBIANDEFAULTCOLOR
 #define snessetjacobian_                 SNESSETJACOBIAN
 #define snesgetoptionsprefix_            SNESGETOPTIONSPREFIX
 #define snesgettype_                     SNESGETTYPE
@@ -15,7 +15,7 @@
 #define snesgetfunction_                 SNESGETFUNCTION
 #define snesgetgs_                       SNESGETGS
 #define snessetconvergencetest_          SNESSETCONVERGENCETEST
-#define snesdefaultconverged_            SNESDEFAULTCONVERGED
+#define snesconvergeddefault_            SNESCONVERGEDDEFAULT
 #define snesskipconverged_               SNESSKIPCONVERGED
 #define snesview_                        SNESVIEW
 #define snesgetconvergencehistory_       SNESGETCONVERGENCEHISTORY
@@ -32,8 +32,8 @@
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define matmffdcomputejacobian_          matmffdcomputejacobian
 #define snessolve_                       snessolve
-#define snesdefaultcomputejacobian_      snesdefaultcomputejacobian
-#define snesdefaultcomputejacobiancolor_ snesdefaultcomputejacobiancolor
+#define snescomputejacobiandefault_      snescomputejacobiandefault
+#define snescomputejacobiandefaultcolor_ snescomputejacobiandefaultcolor
 #define snessetjacobian_                 snessetjacobian
 #define snesgetoptionsprefix_            snesgetoptionsprefix
 #define snesgettype_                     snesgettype
@@ -42,7 +42,7 @@
 #define snesgetfunction_                 snesgetfunction
 #define snesgetgs_                       snesgetgs
 #define snessetconvergencetest_          snessetconvergencetest
-#define snesdefaultconverged_            snesdefaultconverged
+#define snesconvergeddefault_            snesconvergeddefault
 #define snesskipconverged_               snesskipconverged
 #define snesview_                        snesview
 #define snesgetjacobian_                 snesgetjacobian
@@ -125,7 +125,7 @@ static PetscErrorCode ourmondestroy(void **ctx)
 
 /* ---------------------------------------------------------*/
 /*
-     snesdefaultcomputejacobian() and snesdefaultcomputejacobiancolor()
+     snescomputejacobiandefault() and snescomputejacobiandefaultcolor()
   These can be used directly from Fortran but are mostly so that
   Fortran SNESSetJacobian() will properly handle the defaults being passed in.
 
@@ -135,13 +135,13 @@ void matmffdcomputejacobian_(SNES *snes,Vec *x,Mat *m,Mat *p,MatStructure *type,
 {
   *ierr = MatMFFDComputeJacobian(*snes,*x,m,p,type,ctx);
 }
-void snesdefaultcomputejacobian_(SNES *snes,Vec *x,Mat *m,Mat *p,MatStructure *type,void *ctx,PetscErrorCode *ierr)
+void snescomputejacobiandefault_(SNES *snes,Vec *x,Mat *m,Mat *p,MatStructure *type,void *ctx,PetscErrorCode *ierr)
 {
-  *ierr = SNESDefaultComputeJacobian(*snes,*x,m,p,type,ctx);
+  *ierr = SNESComputeJacobianDefault(*snes,*x,m,p,type,ctx);
 }
-void  snesdefaultcomputejacobiancolor_(SNES *snes,Vec *x,Mat *m,Mat *p,MatStructure *type,void *ctx,PetscErrorCode *ierr)
+void  snescomputejacobiandefaultcolor_(SNES *snes,Vec *x,Mat *m,Mat *p,MatStructure *type,void *ctx,PetscErrorCode *ierr)
 {
-  *ierr = SNESDefaultComputeJacobianColor(*snes,*x,m,p,type,*(MatFDColoring*)ctx);
+  *ierr = SNESComputeJacobianDefaultColor(*snes,*x,m,p,type,*(MatFDColoring*)ctx);
 }
 
 PETSC_EXTERN void PETSC_STDCALL snessetjacobian_(SNES *snes,Mat *A,Mat *B,
@@ -150,10 +150,10 @@ PETSC_EXTERN void PETSC_STDCALL snessetjacobian_(SNES *snes,Mat *A,Mat *B,
 {
   CHKFORTRANNULLOBJECT(ctx);
   CHKFORTRANNULLFUNCTION(func);
-  if ((PetscVoidFunction)func == (PetscVoidFunction)snesdefaultcomputejacobian_) {
-    *ierr = SNESSetJacobian(*snes,*A,*B,SNESDefaultComputeJacobian,ctx);
-  } else if ((PetscVoidFunction)func == (PetscVoidFunction)snesdefaultcomputejacobiancolor_) {
-    *ierr = SNESSetJacobian(*snes,*A,*B,SNESDefaultComputeJacobianColor,*(MatFDColoring*)ctx);
+  if ((PetscVoidFunction)func == (PetscVoidFunction)snescomputejacobiandefault_) {
+    *ierr = SNESSetJacobian(*snes,*A,*B,SNESComputeJacobianDefault,ctx);
+  } else if ((PetscVoidFunction)func == (PetscVoidFunction)snescomputejacobiandefaultcolor_) {
+    *ierr = SNESSetJacobian(*snes,*A,*B,SNESComputeJacobianDefaultColor,*(MatFDColoring*)ctx);
   } else if ((PetscVoidFunction)func == (PetscVoidFunction)matmffdcomputejacobian_) {
     *ierr = SNESSetJacobian(*snes,*A,*B,MatMFFDComputeJacobian,ctx);
   } else if (!func) {
@@ -232,9 +232,9 @@ PETSC_EXTERN void PETSC_STDCALL snesgetgs_(SNES *snes,void *func,void **ctx,Pets
 
 /*----------------------------------------------------------------------*/
 
-void snesdefaultconverged_(SNES *snes,PetscInt *it,PetscReal *a,PetscReal *b,PetscReal *c,SNESConvergedReason *r, void *ct,PetscErrorCode *ierr)
+void snesconvergeddefault_(SNES *snes,PetscInt *it,PetscReal *a,PetscReal *b,PetscReal *c,SNESConvergedReason *r, void *ct,PetscErrorCode *ierr)
 {
-  *ierr = SNESDefaultConverged(*snes,*it,*a,*b,*c,r,ct);
+  *ierr = SNESConvergedDefault(*snes,*it,*a,*b,*c,r,ct);
 }
 
 void snesskipconverged_(SNES *snes,PetscInt *it,PetscReal *a,PetscReal *b,PetscReal *c,SNESConvergedReason *r,void *ct,PetscErrorCode *ierr)
@@ -247,8 +247,8 @@ PETSC_EXTERN void PETSC_STDCALL snessetconvergencetest_(SNES *snes,void (PETSC_S
   CHKFORTRANNULLOBJECT(cctx);
   CHKFORTRANNULLFUNCTION(destroy);
 
-  if ((PetscVoidFunction)func == (PetscVoidFunction)snesdefaultconverged_) {
-    *ierr = SNESSetConvergenceTest(*snes,SNESDefaultConverged,0,0);
+  if ((PetscVoidFunction)func == (PetscVoidFunction)snesconvergeddefault_) {
+    *ierr = SNESSetConvergenceTest(*snes,SNESConvergedDefault,0,0);
   } else if ((PetscVoidFunction)func == (PetscVoidFunction)snesskipconverged_) {
     *ierr = SNESSetConvergenceTest(*snes,SNESSkipConverged,0,0);
   } else {

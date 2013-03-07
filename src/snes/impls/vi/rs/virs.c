@@ -795,7 +795,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_VINEWTONRSLS(SNES snes)
   snes->ops->destroy        = SNESDestroy_VI;
   snes->ops->setfromoptions = SNESSetFromOptions_VI;
   snes->ops->view           = NULL;
-  snes->ops->converged      = SNESDefaultConverged_VI;
+  snes->ops->converged      = SNESConvergedDefault_VI;
 
   snes->usesksp = PETSC_TRUE;
   snes->usespc  = PETSC_FALSE;

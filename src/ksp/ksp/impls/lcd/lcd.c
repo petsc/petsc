@@ -256,8 +256,8 @@ PETSC_EXTERN PetscErrorCode KSPCreate_LCD(KSP ksp)
   ksp->ops->destroy        = KSPDestroy_LCD;
   ksp->ops->view           = KSPView_LCD;
   ksp->ops->setfromoptions = KSPSetFromOptions_LCD;
-  ksp->ops->buildsolution  = KSPDefaultBuildSolution;
-  ksp->ops->buildresidual  = KSPDefaultBuildResidual;
+  ksp->ops->buildsolution  = KSPBuildSolution_Default;
+  ksp->ops->buildresidual  = KSPBuildResidual_Default;
   PetscFunctionReturn(0);
 }
 

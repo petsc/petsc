@@ -432,7 +432,7 @@ PetscErrorCode SNESVICheckResidual_Private(SNES snes,Mat A,Vec F,Vec X,Vec W1,Ve
 #endif
 
 /*
-  SNESDefaultConverged_VIRSAUG - Checks the convergence of the semismooth newton algorithm.
+  SNESConvergedDefault_VIRSAUG - Checks the convergence of the semismooth newton algorithm.
 
   Notes:
   The convergence criterion currently implemented is
@@ -440,8 +440,8 @@ PetscErrorCode SNESVICheckResidual_Private(SNES snes,Mat A,Vec F,Vec X,Vec W1,Ve
   merit < rtol*merit_initial
 */
 #undef __FUNCT__
-#define __FUNCT__ "SNESDefaultConverged_VIRSAUG"
-PetscErrorCode SNESDefaultConverged_VIRSAUG(SNES snes,PetscInt it,PetscReal xnorm,PetscReal gradnorm,PetscReal fnorm,SNESConvergedReason *reason,void *dummy)
+#define __FUNCT__ "SNESConvergedDefault_VIRSAUG"
+PetscErrorCode SNESConvergedDefault_VIRSAUG(SNES snes,PetscInt it,PetscReal xnorm,PetscReal gradnorm,PetscReal fnorm,SNESConvergedReason *reason,void *dummy)
 {
   PetscErrorCode ierr;
 
@@ -1793,7 +1793,7 @@ PetscErrorCode SNESSetUp_VIRSAUG(SNES snes)
   PetscInt       i_start[3],i_end[3];
 
   PetscFunctionBegin;
-  ierr = SNESDefaultGetWork(snes,3);CHKERRQ(ierr);
+  ierr = SNESSetWorkVecs_Private(snes,3);CHKERRQ(ierr);
 
   if (vi->computevariablebounds) {
     if (!vi->xl) {ierr = VecDuplicate(snes->vec_sol,&vi->xl);CHKERRQ(ierr);}
@@ -2510,7 +2510,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_VIRSAUG(SNES snes)
   snes->ops->destroy        = SNESDestroy_VIRSAUG;
   snes->ops->setfromoptions = SNESSetFromOptions_VIRSAUG;
   snes->ops->view           = SNESView_VIRSAUG;
-  snes->ops->converged      = SNESDefaultConverged_VIRSAUG;
+  snes->ops->converged      = SNESConvergedDefault_VIRSAUG;
 
   snes->usesksp = PETSC_TRUE;
   snes->usespc  = PETSC_FALSE;

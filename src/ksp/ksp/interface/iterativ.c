@@ -818,9 +818,9 @@ PetscErrorCode  KSPDefaultConvergedDestroy(void *ctx)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "KSPDefaultBuildSolution"
+#define __FUNCT__ "KSPBuildSolution_Default"
 /*
-   KSPDefaultBuildSolution - Default code to create/move the solution.
+   KSPBuildSolution_Default - Default code to create/move the solution.
 
    Input Parameters:
 +  ksp - iterative context
@@ -833,9 +833,9 @@ PetscErrorCode  KSPDefaultConvergedDestroy(void *ctx)
 
 .keywords:  KSP, build, solution, default
 
-.seealso: KSPGetSolution(), KSPDefaultBuildResidual()
+.seealso: KSPGetSolution(), KSPBuildResidual_Default()
 */
-PetscErrorCode KSPDefaultBuildSolution(KSP ksp,Vec v,Vec *V)
+PetscErrorCode KSPBuildSolution_Default(KSP ksp,Vec v,Vec *V)
 {
   PetscErrorCode ierr;
 
@@ -871,9 +871,9 @@ PetscErrorCode KSPDefaultBuildSolution(KSP ksp,Vec v,Vec *V)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "KSPDefaultBuildResidual"
+#define __FUNCT__ "KSPBuildResidual_Default"
 /*
-   KSPDefaultBuildResidual - Default code to compute the residual.
+   KSPBuildResidual_Default - Default code to compute the residual.
 
    Input Parameters:
 .  ksp - iterative context
@@ -887,9 +887,9 @@ PetscErrorCode KSPDefaultBuildSolution(KSP ksp,Vec v,Vec *V)
 
 .keywords:  KSP, build, residual, default
 
-.seealso: KSPDefaultBuildSolution()
+.seealso: KSPBuildSolution_Default()
 */
-PetscErrorCode KSPDefaultBuildResidual(KSP ksp,Vec t,Vec v,Vec *V)
+PetscErrorCode KSPBuildResidual_Default(KSP ksp,Vec t,Vec v,Vec *V)
 {
   PetscErrorCode ierr;
   MatStructure   pflag;

@@ -1,5 +1,5 @@
 
-#include <petsc-private/snesimpl.h>       /*I   "petscsnes.h"   I*/
+#include <petsc-private/snesimpl.h>       /*I   "petsc-private/snesimpl.h"   I*/
 #include <petscblaslapack.h>
 
 #undef __FUNCT__
@@ -410,9 +410,9 @@ PetscErrorCode  SNESMonitorDefaultShort(SNES snes,PetscInt its,PetscReal fgnorm,
 }
 /* ---------------------------------------------------------------- */
 #undef __FUNCT__
-#define __FUNCT__ "SNESDefaultConverged"
+#define __FUNCT__ "SNESConvergedDefault"
 /*@C
-   SNESDefaultConverged - Convergence test of the solvers for
+   SNESConvergedDefault - Convergence test of the solvers for
    systems of nonlinear equations (default).
 
    Collective on SNES
@@ -448,7 +448,7 @@ $  SNES_CONVERGED_ITERATING       - (otherwise),
 
 .seealso: SNESSetConvergenceTest()
 @*/
-PetscErrorCode  SNESDefaultConverged(SNES snes,PetscInt it,PetscReal xnorm,PetscReal snorm,PetscReal fnorm,SNESConvergedReason *reason,void *dummy)
+PetscErrorCode  SNESConvergedDefault(SNES snes,PetscInt it,PetscReal xnorm,PetscReal snorm,PetscReal fnorm,SNESConvergedReason *reason,void *dummy)
 {
   PetscErrorCode ierr;
 
@@ -533,9 +533,9 @@ PetscErrorCode  SNESSkipConverged(SNES snes,PetscInt it,PetscReal xnorm,PetscRea
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "SNESDefaultGetWork"
-/*@
-  SNESDefaultGetWork - Gets a number of work vectors.
+#define __FUNCT__ "SNESSetWorkVecs_Private"
+/*@C
+  SNESSetWorkVecs_Private - Gets a number of work vectors.
 
   Input Parameters:
 . snes  - the SNES context
@@ -546,7 +546,7 @@ PetscErrorCode  SNESSkipConverged(SNES snes,PetscInt it,PetscReal xnorm,PetscRea
   Notes:
   Call this only if no work vectors have been allocated
 @*/
-PetscErrorCode SNESDefaultGetWork(SNES snes,PetscInt nw)
+PetscErrorCode SNESSetWorkVecs_Private(SNES snes,PetscInt nw)
 {
   PetscErrorCode ierr;
 

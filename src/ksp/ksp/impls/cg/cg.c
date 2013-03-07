@@ -466,8 +466,8 @@ PETSC_EXTERN PetscErrorCode KSPCreate_CG(KSP ksp)
   ksp->ops->destroy        = KSPDestroy_CG;
   ksp->ops->view           = KSPView_CG;
   ksp->ops->setfromoptions = KSPSetFromOptions_CG;
-  ksp->ops->buildsolution  = KSPDefaultBuildSolution;
-  ksp->ops->buildresidual  = KSPDefaultBuildResidual;
+  ksp->ops->buildsolution  = KSPBuildSolution_Default;
+  ksp->ops->buildresidual  = KSPBuildResidual_Default;
 
   /*
       Attach the function KSPCGSetType_CG() to this object. The routine

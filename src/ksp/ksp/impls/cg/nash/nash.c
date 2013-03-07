@@ -748,8 +748,8 @@ PETSC_EXTERN PetscErrorCode KSPCreate_NASH(KSP ksp)
   ksp->ops->solve          = KSPSolve_NASH;
   ksp->ops->destroy        = KSPDestroy_NASH;
   ksp->ops->setfromoptions = KSPSetFromOptions_NASH;
-  ksp->ops->buildsolution  = KSPDefaultBuildSolution;
-  ksp->ops->buildresidual  = KSPDefaultBuildResidual;
+  ksp->ops->buildsolution  = KSPBuildSolution_Default;
+  ksp->ops->buildresidual  = KSPBuildResidual_Default;
   ksp->ops->view           = 0;
 
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPNASHSetRadius_C","KSPNASHSetRadius_NASH",KSPNASHSetRadius_NASH);CHKERRQ(ierr);

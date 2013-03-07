@@ -136,6 +136,8 @@ We use several conventions:
            \trl{StashValues_Private}) or
         \item have an appended \trl{_Subtype} (for example,
            \trl{MatMult_SeqAIJ}).
+        \item have an appended \trl{_Default} (for example,
+           \trl{KSPBuildSolution_Default}) if used by several classes.
       \end{itemize}
 
       In addition, functions that are not intended for use outside
@@ -146,6 +148,7 @@ We use several conventions:
       \trl{multtranspose()}.
 \item Each application usable function begins with the name of the class object, followed by any subclass name,
       for example, ISInvertPermutation(), MatMult() or KSPGMRESSetRestart().
+\item Functions that PETSc provides as defaults for user provideable functions end with \trl{Default} (for example, \trl{KSPMonitorDefault()} or \trl{PetscSignalHandlerDefault()})
 \item Options database keys are lower case, have an underscore between words and match the function name associated with the option without the word set. For example, \trl{-ksp_gmres_restart}.
 \end{itemize}
 

@@ -3,9 +3,9 @@
 #include <petscdm.h>                   /*I  "petscdm.h"    I*/
 
 #undef __FUNCT__
-#define __FUNCT__ "SNESDefaultComputeJacobianColor"
+#define __FUNCT__ "SNESComputeJacobianDefaultColor"
 /*@C
-    SNESDefaultComputeJacobianColor - Computes the Jacobian using
+    SNESComputeJacobianDefaultColor - Computes the Jacobian using
     finite differences and coloring to exploit matrix sparsity.
 
     Collective on SNES
@@ -29,12 +29,12 @@
 
 .keywords: SNES, finite differences, Jacobian, coloring, sparse
 
-.seealso: SNESSetJacobian(), SNESTestJacobian(), SNESDefaultComputeJacobian()
+.seealso: SNESSetJacobian(), SNESTestJacobian(), SNESComputeJacobianDefault()
           MatFDColoringCreate(), MatFDColoringSetFunction()
 
 @*/
 
-PetscErrorCode  SNESDefaultComputeJacobianColor(SNES snes,Vec x1,Mat *J,Mat *B,MatStructure *flag,void *ctx)
+PetscErrorCode  SNESComputeJacobianDefaultColor(SNES snes,Vec x1,Mat *J,Mat *B,MatStructure *flag,void *ctx)
 {
   MatFDColoring  color = NULL;
   PetscErrorCode ierr;

@@ -41,7 +41,7 @@ PetscErrorCode SNESSolve_Test(SNES snes)
       ierr = VecSet(x,1.0);CHKERRQ(ierr);
     }
 
-    /* evaluate the function at this point because SNESDefaultComputeJacobianColor() assumes that the function has been evaluated and put into snes->vec_func */
+    /* evaluate the function at this point because SNESComputeJacobianDefaultColor() assumes that the function has been evaluated and put into snes->vec_func */
     ierr = SNESComputeFunction(snes,x,f);CHKERRQ(ierr);
     if (snes->domainerror) {
       ierr              = PetscPrintf(PetscObjectComm((PetscObject)snes),"Domain error at %s\n",loc[i]);CHKERRQ(ierr);
@@ -61,7 +61,7 @@ PetscErrorCode SNESSolve_Test(SNES snes)
       ierr = MatSetUp(B);CHKERRQ(ierr);
     }
     ierr = SNESGetFunction(snes,NULL,NULL,&functx);CHKERRQ(ierr);
-    ierr = SNESDefaultComputeJacobian(snes,x,&B,&B,&flg,functx);CHKERRQ(ierr);
+    ierr = SNESComputeJacobianDefault(snes,x,&B,&B,&flg,functx);CHKERRQ(ierr);
     if (neP->complete_print) {
       MPI_Comm    comm;
       PetscViewer viewer;
@@ -97,7 +97,7 @@ PetscErrorCode SNESSolve_Test(SNES snes)
         ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)snes),&viewer);CHKERRQ(ierr);
         ierr = VecView(f,viewer);CHKERRQ(ierr);
       }
-      ierr = SNESDefaultObjectiveComputeFunctionFD(snes,x,f1,NULL);CHKERRQ(ierr);
+      ierr = SNESObjectiveComputeFunctionDefaultFD(snes,x,f1,NULL);CHKERRQ(ierr);
       ierr = VecNorm(f1,NORM_2,&f1norm);CHKERRQ(ierr);
       if (neP->complete_print) {
         PetscViewer viewer;
@@ -250,7 +250,7 @@ PetscErrorCode SNESUpdateCheckJacobian(SNES snes,PetscInt it)
   ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
   ierr = MatSetUp(B);CHKERRQ(ierr);
   ierr = SNESGetFunction(snes,NULL,NULL,&functx);CHKERRQ(ierr);
-  ierr = SNESDefaultComputeJacobian(snes,x,&B,&B,&flg,functx);CHKERRQ(ierr);
+  ierr = SNESComputeJacobianDefault(snes,x,&B,&B,&flg,functx);CHKERRQ(ierr);
 
   if (complete_print) {
     ierr = PetscViewerASCIIPrintf(viewer,"    Finite difference Jacobian\n");CHKERRQ(ierr);
@@ -277,7 +277,7 @@ PetscErrorCode SNESUpdateCheckJacobian(SNES snes,PetscInt it)
       ierr = PetscViewerASCIIPrintf(viewer,"    Hand-coded Objective Function \n");CHKERRQ(ierr);
       ierr = VecView(f,viewer);CHKERRQ(ierr);
     }
-    ierr = SNESDefaultObjectiveComputeFunctionFD(snes,x,f1,NULL);CHKERRQ(ierr);
+    ierr = SNESObjectiveComputeFunctionDefaultFD(snes,x,f1,NULL);CHKERRQ(ierr);
     ierr = VecNorm(f1,NORM_2,&f1norm);CHKERRQ(ierr);
     if (complete_print) {
       ierr = PetscViewerASCIIPrintf(viewer,"    Finite-Difference Objective Function\n");CHKERRQ(ierr);

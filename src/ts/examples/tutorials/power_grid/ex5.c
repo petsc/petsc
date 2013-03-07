@@ -279,7 +279,7 @@ int main(int argc,char **argv)
   ierr = TSSetIFunction(ts,NULL,(TSIFunction) IFunction,&user);CHKERRQ(ierr);
   SNES snes;
   ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
-  ierr = SNESSetJacobian(snes,A,A,SNESDefaultComputeJacobian,NULL);CHKERRQ(ierr);
+  ierr = SNESSetJacobian(snes,A,A,SNESComputeJacobianDefault,NULL);CHKERRQ(ierr);
   /*  ierr = TSSetIJacobian(ts,A,A,(TSIJacobian)IJacobian,&user);CHKERRQ(ierr); */
   ierr = TSSetApplicationContext(ts,&user);CHKERRQ(ierr);
 

@@ -127,7 +127,7 @@ int main(int argc,char **argv)
   if (!matrix_free) {
     ierr = DMCreateMatrix(user.da,MATAIJ,&J);CHKERRQ(ierr);
     if (coloring) {
-      ierr = SNESSetJacobian(snes,J,J,SNESDefaultComputeJacobianColor,0);CHKERRQ(ierr);
+      ierr = SNESSetJacobian(snes,J,J,SNESComputeJacobianDefaultColor,0);CHKERRQ(ierr);
     } else {
       ierr = SNESSetJacobian(snes,J,J,FormJacobian,&user);CHKERRQ(ierr);
     }

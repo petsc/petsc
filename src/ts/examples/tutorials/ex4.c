@@ -211,7 +211,7 @@ int main(int argc,char **argv)
     SNES snes;
     ierr = TSSetRHSFunction(ts,NULL,RHSFunctionHeat,&appctx);CHKERRQ(ierr);
     ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
-    ierr = SNESSetJacobian(snes,NULL,NULL,SNESDefaultComputeJacobian,NULL);CHKERRQ(ierr);
+    ierr = SNESSetJacobian(snes,NULL,NULL,SNESComputeJacobianDefault,NULL);CHKERRQ(ierr);
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

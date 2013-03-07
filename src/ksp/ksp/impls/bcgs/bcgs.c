@@ -229,7 +229,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_BCGS(KSP ksp)
   ksp->ops->destroy        = KSPDestroy_BCGS;
   ksp->ops->reset          = KSPReset_BCGS;
   ksp->ops->buildsolution  = KSPBuildSolution_BCGS;
-  ksp->ops->buildresidual  = KSPDefaultBuildResidual;
+  ksp->ops->buildresidual  = KSPBuildResidual_Default;
   ksp->ops->setfromoptions = KSPSetFromOptions_BCGS;
 
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);

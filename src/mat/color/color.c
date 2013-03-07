@@ -467,7 +467,7 @@ $         Sources and Development of Mathematical Software, Wayne R. Cowell edit
 .keywords: matrix, get, coloring
 
 .seealso:  MatGetColoringTypeFromOptions(), MatColoringRegisterDynamic(), MatFDColoringCreate(),
-           SNESDefaultComputeJacobianColor()
+           SNESComputeJacobianDefaultColor()
 @*/
 PetscErrorCode  MatGetColoring(Mat mat,MatColoringType type,ISColoring *iscoloring)
 {

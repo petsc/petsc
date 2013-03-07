@@ -213,7 +213,7 @@ PetscErrorCode TSDAESimpleSetUp_Reduced(TSDAESimple tsdae)
   ierr = SNESCreate(tsdae->comm,&red->snes);CHKERRQ(ierr);
   ierr = SNESSetOptionsPrefix(red->snes,"tsdaesimple_");CHKERRQ(ierr);
   ierr = SNESSetFunction(red->snes,NULL,TSDAESimple_Reduced_SNESFunction,tsdae);CHKERRQ(ierr);
-  ierr = SNESSetJacobian(red->snes,NULL,NULL,SNESDefaultComputeJacobian,tsdae);CHKERRQ(ierr);
+  ierr = SNESSetJacobian(red->snes,NULL,NULL,SNESComputeJacobianDefault,tsdae);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

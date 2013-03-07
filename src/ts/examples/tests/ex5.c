@@ -275,9 +275,9 @@ int main(int argc,char **argv)
     ierr = MatFDColoringSetFromOptions(matfdcoloring);CHKERRQ(ierr);
     ierr = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);
     ierr = MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode (*)(void))SNESTSFormFunction,ts);CHKERRQ(ierr);
-    ierr = SNESSetJacobian(snes,J,J,SNESDefaultComputeJacobianColor,matfdcoloring);CHKERRQ(ierr);
+    ierr = SNESSetJacobian(snes,J,J,SNESComputeJacobianDefaultColor,matfdcoloring);CHKERRQ(ierr);
   } else {
-    ierr = SNESSetJacobian(snes,J,J,SNESDefaultComputeJacobian,NULL);CHKERRQ(ierr);
+    ierr = SNESSetJacobian(snes,J,J,SNESComputeJacobianDefault,NULL);CHKERRQ(ierr);
   }
 
   /* Define what to print for ts_monitor option */

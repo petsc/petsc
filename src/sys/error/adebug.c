@@ -63,13 +63,13 @@ PetscErrorCode  PetscSetDebugTerminal(const char terminal[])
 
    Input Parameters:
 +  debugger - name of debugger, which should be in your path,
-              usually "dbx", "gdb", "idb", "xxgdb", "kdgb" or "ddd". Also, HP-UX
+              usually "lldb", "dbx", "gdb", "idb", "xxgdb", "kdgb" or "ddd". Also, HP-UX
               supports "xdb", and IBM rs6000 supports "xldb".
 
--  xterm - flag to indicate debugger window, set to either 1 (to indicate
-            debugger should be started in a new xterm) or 0 (to start debugger
-            in initial window (the option 0 makes no sense when using more
-            than one processor.)
+-  xterm - flag to indicate debugger window, set to either PETSC_TRUE (to indicate
+            debugger should be started in a new xterm) or PETSC_FALSE (to start debugger
+            in initial window (the option PETSC_FALSE makes no sense when using more
+            than one MPI process.)
 
    Level: developer
 
@@ -94,12 +94,12 @@ PetscErrorCode  PetscSetDebugger(const char debugger[],PetscBool xterm)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSetDefaultDebugger"
-/*@
+/*@C
     PetscSetDefaultDebugger - Causes PETSc to use its default  debugger.
 
    Not collective
 
-    Level: advanced
+    Level: developer
 
 .seealso: PetscSetDebugger(), PetscSetDebuggerFromString()
 @*/
@@ -108,7 +108,9 @@ PetscErrorCode  PetscSetDefaultDebugger(void)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-#if defined(PETSC_USE_DBX_DEBUGGER)
+#if defined(PETSC_USE_LLDB_DEBUGGER)
+  ierr = PetscSetDebugger("lldb",PETSC_TRUE);CHKERRQ(ierr);
+#elif defined(PETSC_USE_DBX_DEBUGGER)
   ierr = PetscSetDebugger("dbx",PETSC_TRUE);CHKERRQ(ierr);
 #elif defined(PETSC_USE_XDB_DEBUGGER)
   ierr = PetscSetDebugger("xdb",PETSC_TRUE);CHKERRQ(ierr);
@@ -332,40 +334,28 @@ PetscErrorCode  PetscAttachDebugger(void)
         args[j++] = pid;
         args[j++] = 0;
       }
-#if defined(PETSC_USE_P_FOR_DEBUGGER)
       if (isdbx) {
         j = jj;
+#if defined(PETSC_USE_P_FOR_DEBUGGER)
         args[j++] = "-p";
         args[j++] = pid;
         args[j++] = program;
-        args[j++] = 0;
-      }
 #elif defined(PETSC_USE_LARGEP_FOR_DEBUGGER)
-      if (isxdb) {
-        j = jj;
         args[j++] = "-l";
         args[j++] = "ALL";
         args[j++] = "-P";
         args[j++] = pid;
         args[j++] = program;
-        args[j++] = 0;
-      }
 #elif defined(PETSC_USE_A_FOR_DEBUGGER)
-      if (isdbx) {
-        j = jj;
         args[j++] = "-a";
         args[j++] = pid;
-        args[j++] = 0;
-      }
 #elif defined(PETSC_USE_PID_FOR_DEBUGGER)
-      if (isdbx) {
-        j = jj;
         args[j++] = "-pid";
         args[j++] = pid;
         args[j++] = program;
+#endif
         args[j++] = 0;
       }
-#endif
       if (Xterm) {
         if (display[0]) (*PetscErrorPrintf)("PETSC: Attaching %s to %s of pid %s on display %s on machine %s\n",Debugger,program,pid,display,hostname);
         else            (*PetscErrorPrintf)("PETSC: Attaching %s to %s on pid %s on %s\n",Debugger,program,pid,hostname);
@@ -438,7 +428,7 @@ PetscErrorCode  PetscAttachDebugger(void)
    Level: developer
 
    Notes:
-   By default the GNU debugger, gdb, is used.  Alternatives are dbx and
+   By default the GNU debugger, gdb, is used.  Alternatives are lldb, dbx and
    xxgdb,xldb (on IBM rs6000), xdb (on HP-UX).
 
    Most users need not directly employ this routine and the other error
@@ -485,9 +475,11 @@ PetscErrorCode  PetscAttachDebuggerErrorHandler(MPI_Comm comm,int line,const cha
 
    Not Collective
 
-   Level: advanced
+   Level: developer
 
-   Developer Notes: Since this can be called by the error handler should it be calling SETERRQ() and CHKERRQ()?
+   Notes: This is likely never needed since PetscAttachDebugger() is easier to use and seems to always work.
+
+   Developer Notes: Since this can be called by the error handler, should it be calling SETERRQ() and CHKERRQ()?
 
    Concepts: debugger^waiting for attachment
 
@@ -501,7 +493,7 @@ PetscErrorCode  PetscStopForDebugger(void)
   int            ppid;
   PetscMPIInt    rank;
   char           program[PETSC_MAX_PATH_LEN],hostname[256];
-  PetscBool      isdbx,isxldb,isxxgdb,isddd,iskdbg,isups,isxdb;
+  PetscBool      isdbx,isxldb,isxxgdb,isddd,iskdbg,isups,isxdb,islldb;
 #endif
 
   PetscFunctionBegin;
@@ -535,23 +527,24 @@ PetscErrorCode  PetscStopForDebugger(void)
   ierr = PetscStrcmp(Debugger,"xldb",&isxldb);CHKERRQ(ierr);
   ierr = PetscStrcmp(Debugger,"xdb",&isxdb);CHKERRQ(ierr);
   ierr = PetscStrcmp(Debugger,"dbx",&isdbx);CHKERRQ(ierr);
+  ierr = PetscStrcmp(Debugger,"lldb",&islldb);CHKERRQ(ierr);
 
   if (isxxgdb || isups || isddd || iskdbg) (*PetscErrorPrintf)("[%d]%s>>%s %s %d\n",rank,hostname,Debugger,program,ppid);
-
-#if defined(PETSC_USE_A_FOR_DEBUGGER)
-  else if (isxldb) (*PetscErrorPrintf)("{%d]%s>>%s -a %d %s\n",rank,hostname,Debugger,ppid,program);
-#endif
+  else if (isxldb) (*PetscErrorPrintf)("[%d]%s>>%s -a %d %s\n",rank,hostname,Debugger,ppid,program);
+  else if (islldb) (*PetscErrorPrintf)("[%d]%s>>%s -p %d\n",rank,hostname,Debugger,ppid);
+  else if (isdbx) {
 #if defined(PETSC_USE_P_FOR_DEBUGGER)
-  else if (isdbx) (*PetscErrorPrintf)("[%d]%s>>%s -p %d %s\n",rank,hostname,Debugger,ppid,program);
+     (*PetscErrorPrintf)("[%d]%s>>%s -p %d %s\n",rank,hostname,Debugger,ppid,program);
 #elif defined(PETSC_USE_LARGEP_FOR_DEBUGGER)
-  else if (isxdb) (*PetscErrorPrintf)("[%d]%s>>%s -l ALL -P %d %s\n",rank,hostname,Debugger,ppid,program);
+     (*PetscErrorPrintf)("[%d]%s>>%s -l ALL -P %d %s\n",rank,hostname,Debugger,ppid,program);
 #elif defined(PETSC_USE_A_FOR_DEBUGGER)
-  else if (isdbx) (*PetscErrorPrintf)("[%d]%s>>%s -a %d\n",rank,hostname,Debugger,ppid);
+     (*PetscErrorPrintf)("[%d]%s>>%s -a %d\n",rank,hostname,Debugger,ppid);
 #elif defined(PETSC_USE_PID_FOR_DEBUGGER)
-  else if (isdbx) (*PetscErrorPrintf)("[%d]%s>>%s -pid %d %s\n",rank,hostname,Debugger,ppid,program);
+     (*PetscErrorPrintf)("[%d]%s>>%s -pid %d %s\n",rank,hostname,Debugger,ppid,program);
 #else
-  else (*PetscErrorPrintf)("[%d]%s>>%s %s %d\n",rank,hostname,Debugger,program,ppid);
+     (*PetscErrorPrintf)("[%d]%s>>%s %s %d\n",rank,hostname,Debugger,program,ppid);
 #endif
+  }
 #endif /* PETSC_CANNOT_START_DEBUGGER */
 
   fflush(stdout); /* ignore error because may already be in error handler */

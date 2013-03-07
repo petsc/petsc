@@ -486,14 +486,14 @@ static PetscErrorCode KSPComputeOperators_SNES(KSP ksp,Mat A,Mat B,MatStructure 
     X    = Xnamed;
     ierr = SNESGetJacobian(snes,NULL,NULL,&jac,&ctxsave);CHKERRQ(ierr);
     /* If the DM's don't match up, the MatFDColoring context needed for the jacobian won't match up either -- fixit. */
-    if (jac == SNESDefaultComputeJacobianColor) {
-      ierr = SNESSetJacobian(snes,NULL,NULL,SNESDefaultComputeJacobianColor,0);CHKERRQ(ierr);
+    if (jac == SNESComputeJacobianDefaultColor) {
+      ierr = SNESSetJacobian(snes,NULL,NULL,SNESComputeJacobianDefaultColor,0);CHKERRQ(ierr);
     }
   }
   /* put the previous context back */
 
   ierr = SNESComputeJacobian(snes,X,&A,&B,mstruct);CHKERRQ(ierr);
-  if (snes->dm != dmsave && jac == SNESDefaultComputeJacobianColor) {
+  if (snes->dm != dmsave && jac == SNESComputeJacobianDefaultColor) {
     ierr = SNESSetJacobian(snes,NULL,NULL,jac,ctxsave);CHKERRQ(ierr);
   }
 
@@ -678,7 +678,7 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
   ierr = PetscOptionsEList("-snes_convergence_test","Convergence test","SNESSetConvergenceTest",convtests,2,"default",&indx,&flg);CHKERRQ(ierr);
   if (flg) {
     switch (indx) {
-    case 0: ierr = SNESSetConvergenceTest(snes,SNESDefaultConverged,NULL,NULL);CHKERRQ(ierr); break;
+    case 0: ierr = SNESSetConvergenceTest(snes,SNESConvergedDefault,NULL,NULL);CHKERRQ(ierr); break;
     case 1: ierr = SNESSetConvergenceTest(snes,SNESSkipConverged,NULL,NULL);CHKERRQ(ierr);    break;
     }
   }
@@ -767,26 +767,26 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
   if (flg) {ierr = SNESMonitorSet(snes,SNESMonitorJacUpdateSpectrum,0,0);CHKERRQ(ierr);}
 
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsBool("-snes_fd","Use finite differences (slow) to compute Jacobian","SNESDefaultComputeJacobian",flg,&flg,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-snes_fd","Use finite differences (slow) to compute Jacobian","SNESComputeJacobianDefault",flg,&flg,NULL);CHKERRQ(ierr);
   if (flg) {
     void *functx;
     ierr = SNESGetFunction(snes,NULL,NULL,&functx);CHKERRQ(ierr);
-    ierr = SNESSetJacobian(snes,snes->jacobian,snes->jacobian_pre,SNESDefaultComputeJacobian,functx);CHKERRQ(ierr);
+    ierr = SNESSetJacobian(snes,snes->jacobian,snes->jacobian_pre,SNESComputeJacobianDefault,functx);CHKERRQ(ierr);
     ierr = PetscInfo(snes,"Setting default finite difference Jacobian matrix\n");CHKERRQ(ierr);
   }
 
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsBool("-snes_fd_function","Use finite differences (slow) to compute function from user objective","SNESDefaultObjectiveComputeFunctionFD",flg,&flg,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-snes_fd_function","Use finite differences (slow) to compute function from user objective","SNESObjectiveComputeFunctionDefaultFD",flg,&flg,NULL);CHKERRQ(ierr);
   if (flg) {
-    ierr = SNESSetFunction(snes,NULL,SNESDefaultObjectiveComputeFunctionFD,NULL);CHKERRQ(ierr);
+    ierr = SNESSetFunction(snes,NULL,SNESObjectiveComputeFunctionDefaultFD,NULL);CHKERRQ(ierr);
   }
 
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsBool("-snes_fd_color","Use finite differences with coloring to compute Jacobian","SNESDefaultComputeJacobianColor",flg,&flg,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-snes_fd_color","Use finite differences with coloring to compute Jacobian","SNESComputeJacobianDefaultColor",flg,&flg,NULL);CHKERRQ(ierr);
   if (flg) {
     void *functx;
     ierr = SNESGetFunction(snes,NULL,NULL,&functx);CHKERRQ(ierr);
-    ierr = SNESSetJacobian(snes,snes->jacobian,snes->jacobian_pre,SNESDefaultComputeJacobianColor,0);CHKERRQ(ierr);
+    ierr = SNESSetJacobian(snes,snes->jacobian,snes->jacobian_pre,SNESComputeJacobianDefaultColor,0);CHKERRQ(ierr);
     ierr = PetscInfo(snes,"Setting default finite difference coloring Jacobian matrix\n");CHKERRQ(ierr);
   }
 
@@ -1433,7 +1433,7 @@ PetscErrorCode  SNESCreate(MPI_Comm comm,SNES *outsnes)
 
   ierr = PetscHeaderCreate(snes,_p_SNES,struct _SNESOps,SNES_CLASSID,"SNES","Nonlinear solver","SNES",comm,SNESDestroy,SNESView);CHKERRQ(ierr);
 
-  snes->ops->converged    = SNESDefaultConverged;
+  snes->ops->converged    = SNESConvergedDefault;
   snes->usesksp           = PETSC_TRUE;
   snes->tolerancesset     = PETSC_FALSE;
   snes->max_its           = 50;
@@ -2197,7 +2197,7 @@ PetscErrorCode  SNESComputeJacobian(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *
         }
       }
       ierr = MatConvert(Bexp,MATSAME,MAT_INITIAL_MATRIX,&FDexp);CHKERRQ(ierr);
-      ierr = SNESDefaultComputeJacobian(snes,X,&FDexp,&FDexp,&mstruct,NULL);CHKERRQ(ierr);
+      ierr = SNESComputeJacobianDefault(snes,X,&FDexp,&FDexp,&mstruct,NULL);CHKERRQ(ierr);
       ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)snes),&vstdout);CHKERRQ(ierr);
       if (flag_draw || flag_contour) {
         ierr = PetscViewerDrawOpen(PetscObjectComm((PetscObject)snes),0,"Explicit Jacobians",PETSC_DECIDE,PETSC_DECIDE,300,300,&vdraw);CHKERRQ(ierr);
@@ -2376,7 +2376,7 @@ M*/
    If the A matrix and B matrix are different you must call MatAssemblyBegin/End() on
    each matrix.
 
-   If using SNESDefaultComputeJacobianColor() to assemble a Jacobian, the ctx argument
+   If using SNESComputeJacobianDefaultColor() to assemble a Jacobian, the ctx argument
    must be a MatFDColoring.
 
    Other defect-correction schemes can be used by computing a different matrix in place of the Jacobian.  One common
@@ -2386,7 +2386,7 @@ M*/
 
 .keywords: SNES, nonlinear, set, Jacobian, matrix
 
-.seealso: KSPSetOperators(), SNESSetFunction(), MatMFFDComputeJacobian(), SNESDefaultComputeJacobianColor(), MatStructure, SNESJacobianFunction
+.seealso: KSPSetOperators(), SNESSetFunction(), MatMFFDComputeJacobian(), SNESComputeJacobianDefaultColor(), MatStructure, SNESJacobianFunction
 @*/
 PetscErrorCode  SNESSetJacobian(SNES snes,Mat A,Mat B,PetscErrorCode (*SNESJacobianFunction)(SNES,Vec,Mat*,Mat*,MatStructure*,void*),void *ctx)
 {
@@ -2516,7 +2516,7 @@ PetscErrorCode  SNESSetUp(SNES snes)
   ierr = DMGetDMSNES(dm,&sdm);CHKERRQ(ierr);
   if (!sdm->ops->computefunction) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Function never provided to SNES object");
   if (!sdm->ops->computejacobian) {
-    ierr = DMSNESSetJacobian(dm,SNESDefaultComputeJacobianColor,NULL);CHKERRQ(ierr);
+    ierr = DMSNESSetJacobian(dm,SNESComputeJacobianDefaultColor,NULL);CHKERRQ(ierr);
   }
   if (!snes->vec_func) {
     ierr = DMCreateGlobalVector(dm,&snes->vec_func);CHKERRQ(ierr);
@@ -3302,7 +3302,7 @@ M*/
 
 .keywords: SNES, nonlinear, set, convergence, test
 
-.seealso: SNESDefaultConverged(), SNESSkipConverged(), SNESConvergenceTestFunction
+.seealso: SNESConvergedDefault(), SNESSkipConverged(), SNESConvergenceTestFunction
 @*/
 PetscErrorCode  SNESSetConvergenceTest(SNES snes,PetscErrorCode (*SNESConvergenceTestFunction)(SNES,PetscInt,PetscReal,PetscReal,PetscReal,SNESConvergedReason*,void*),void *cctx,PetscErrorCode (*destroy)(void*))
 {
@@ -3490,35 +3490,13 @@ PetscErrorCode  SNESGetConvergenceHistory(SNES snes,PetscReal *a[],PetscInt *its
 
 .keywords: SNES, update
 
-.seealso SNESDefaultUpdate(), SNESSetJacobian(), SNESSolve()
+.seealso SNESSetJacobian(), SNESSolve()
 @*/
 PetscErrorCode  SNESSetUpdate(SNES snes, PetscErrorCode (*func)(SNES, PetscInt))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID,1);
   snes->ops->update = func;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "SNESDefaultUpdate"
-/*@
-  SNESDefaultUpdate - The default update function which does nothing.
-
-  Not collective
-
-  Input Parameters:
-. snes - The nonlinear solver context
-. step - The current step of the iteration
-
-  Level: intermediate
-
-.keywords: SNES, update
-.seealso SNESSetUpdate(), SNESDefaultRhsBC(), SNESDefaultShortolutionBC()
-@*/
-PetscErrorCode  SNESDefaultUpdate(SNES snes, PetscInt step)
-{
-  PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 

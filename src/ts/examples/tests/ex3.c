@@ -138,7 +138,7 @@ int main(int argc,char **argv)
 
   /* use petsc to compute the jacobian by finite differences */
   ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
-  ierr = SNESSetJacobian(snes,Jmat,Jmat,SNESDefaultComputeJacobian,NULL);CHKERRQ(ierr);
+  ierr = SNESSetJacobian(snes,Jmat,Jmat,SNESComputeJacobianDefault,NULL);CHKERRQ(ierr);
 
   /* get the command line options if there are any and set them */
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);

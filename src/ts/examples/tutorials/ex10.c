@@ -1091,10 +1091,10 @@ int main(int argc, char *argv[])
   case JACOBIAN_MATRIXFREE:
     break;
   case JACOBIAN_FD_COLORING: {
-    ierr = SNESSetJacobian(snes,A,B,SNESDefaultComputeJacobianColor,0);CHKERRQ(ierr);
+    ierr = SNESSetJacobian(snes,A,B,SNESComputeJacobianDefaultColor,0);CHKERRQ(ierr);
   } break;
   case JACOBIAN_FD_FULL:
-    ierr = SNESSetJacobian(snes,A,B,SNESDefaultComputeJacobian,ts);CHKERRQ(ierr);
+    ierr = SNESSetJacobian(snes,A,B,SNESComputeJacobianDefault,ts);CHKERRQ(ierr);
     break;
   }
 

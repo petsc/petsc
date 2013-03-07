@@ -216,7 +216,6 @@ PetscErrorCode SNESSetUp_Multiblock(SNES snes)
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  /* ierr = SNESDefaultGetWork(snes, 1);CHKERRQ(ierr); */
   ierr      = SNESMultiblockSetDefaults(snes);CHKERRQ(ierr);
   numBlocks = mb->numBlocks;
   blocks    = mb->blocks;

@@ -384,7 +384,7 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
   }
   flg1 = PETSC_FALSE;
   ierr = PetscOptionsGetBool(NULL,"-no_signal_handler",&flg1,NULL);CHKERRQ(ierr);
-  if (!flg1) {ierr = PetscPushSignalHandler(PetscDefaultSignalHandler,(void*)0);CHKERRQ(ierr);}
+  if (!flg1) {ierr = PetscPushSignalHandler(PetscSignalHandlerDefault,(void*)0);CHKERRQ(ierr);}
   flg1 = PETSC_FALSE;
   ierr = PetscOptionsGetBool(NULL,"-fp_trap",&flg1,NULL);CHKERRQ(ierr);
   if (flg1) {ierr = PetscSetFPTrap(PETSC_FP_TRAP_ON);CHKERRQ(ierr);}

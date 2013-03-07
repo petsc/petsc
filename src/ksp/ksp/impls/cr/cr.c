@@ -172,8 +172,8 @@ PETSC_EXTERN PetscErrorCode KSPCreate_CR(KSP ksp)
   ksp->ops->setup          = KSPSetUp_CR;
   ksp->ops->solve          = KSPSolve_CR;
   ksp->ops->destroy        = KSPDestroy_Default;
-  ksp->ops->buildsolution  = KSPDefaultBuildSolution;
-  ksp->ops->buildresidual  = KSPDefaultBuildResidual;
+  ksp->ops->buildsolution  = KSPBuildSolution_Default;
+  ksp->ops->buildresidual  = KSPBuildResidual_Default;
   ksp->ops->setfromoptions = 0;
   ksp->ops->view           = 0;
   PetscFunctionReturn(0);

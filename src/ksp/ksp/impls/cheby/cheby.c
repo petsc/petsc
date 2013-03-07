@@ -670,8 +670,8 @@ PETSC_EXTERN PetscErrorCode KSPCreate_Chebyshev(KSP ksp)
   ksp->ops->setup          = KSPSetUp_Chebyshev;
   ksp->ops->solve          = KSPSolve_Chebyshev;
   ksp->ops->destroy        = KSPDestroy_Chebyshev;
-  ksp->ops->buildsolution  = KSPDefaultBuildSolution;
-  ksp->ops->buildresidual  = KSPDefaultBuildResidual;
+  ksp->ops->buildsolution  = KSPBuildSolution_Default;
+  ksp->ops->buildresidual  = KSPBuildResidual_Default;
   ksp->ops->setfromoptions = KSPSetFromOptions_Chebyshev;
   ksp->ops->view           = KSPView_Chebyshev;
   ksp->ops->reset          = KSPReset_Chebyshev;

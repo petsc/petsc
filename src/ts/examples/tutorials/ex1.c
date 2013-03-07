@@ -145,7 +145,7 @@ int main(int argc,char **argv)
   /*
       Use the default strategy for increasing the timestep
   */
-  ierr = TSPseudoSetTimeStep(ts,TSPseudoDefaultTimeStep,0);CHKERRQ(ierr);
+  ierr = TSPseudoSetTimeStep(ts,TSPseudoTimeStepDefault,0);CHKERRQ(ierr);
 
   /*
       Set any additional options from the options database. This

@@ -125,10 +125,10 @@ int main(int argc,char **argv)
         ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
         ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
       } else {
-        /* Fill the structure using the expensive SNESDefaultComputeJacobian. Temporarily set up the TS so we can call this function */
+        /* Fill the structure using the expensive SNESComputeJacobianDefault. Temporarily set up the TS so we can call this function */
         ierr = TSSetType(ts,TSBEULER);CHKERRQ(ierr);
         ierr = TSSetUp(ts);CHKERRQ(ierr);
-        ierr = SNESDefaultComputeJacobian(snes,x,&J,&J,&J_structure,ts);CHKERRQ(ierr);
+        ierr = SNESComputeJacobianDefault(snes,x,&J,&J,&J_structure,ts);CHKERRQ(ierr);
       }
 
       /* create coloring context */
@@ -136,10 +136,10 @@ int main(int argc,char **argv)
       ierr = MatFDColoringCreate(J,iscoloring,&matfdcoloring);CHKERRQ(ierr);
       ierr = MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode (*)(void))SNESTSFormFunction,ts);CHKERRQ(ierr);
       ierr = MatFDColoringSetFromOptions(matfdcoloring);CHKERRQ(ierr);
-      ierr = SNESSetJacobian(snes,J,J,SNESDefaultComputeJacobianColor,matfdcoloring);CHKERRQ(ierr);
+      ierr = SNESSetJacobian(snes,J,J,SNESComputeJacobianDefaultColor,matfdcoloring);CHKERRQ(ierr);
       ierr = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);
     } else { /* Use finite differences (slow) */
-      ierr = SNESSetJacobian(snes,J,J,SNESDefaultComputeJacobian,NULL);CHKERRQ(ierr);
+      ierr = SNESSetJacobian(snes,J,J,SNESComputeJacobianDefault,NULL);CHKERRQ(ierr);
     }
   }
 

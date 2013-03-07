@@ -118,9 +118,9 @@ int main(int argc,char **argv)
     ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
     ierr = MatCreateSNESMF(snes,&Jmf);CHKERRQ(ierr);
     if (Jtype == 1) { /* slow finite difference J; */
-      ierr = SNESSetJacobian(snes,Jmf,J,SNESDefaultComputeJacobian,NULL);CHKERRQ(ierr);
+      ierr = SNESSetJacobian(snes,Jmf,J,SNESComputeJacobianDefault,NULL);CHKERRQ(ierr);
     } else if (Jtype == 2) { /* Use coloring to compute  finite difference J efficiently */
-      ierr = SNESSetJacobian(snes,Jmf,J,SNESDefaultComputeJacobianColor,0);CHKERRQ(ierr);
+      ierr = SNESSetJacobian(snes,Jmf,J,SNESComputeJacobianDefaultColor,0);CHKERRQ(ierr);
     } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Jtype is not supported");
   }
 

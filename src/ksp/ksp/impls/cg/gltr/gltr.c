@@ -1537,8 +1537,8 @@ PETSC_EXTERN PetscErrorCode KSPCreate_GLTR(KSP ksp)
   ksp->ops->solve          = KSPSolve_GLTR;
   ksp->ops->destroy        = KSPDestroy_GLTR;
   ksp->ops->setfromoptions = KSPSetFromOptions_GLTR;
-  ksp->ops->buildsolution  = KSPDefaultBuildSolution;
-  ksp->ops->buildresidual  = KSPDefaultBuildResidual;
+  ksp->ops->buildsolution  = KSPBuildSolution_Default;
+  ksp->ops->buildresidual  = KSPBuildResidual_Default;
   ksp->ops->view           = 0;
 
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGLTRSetRadius_C","KSPGLTRSetRadius_GLTR",KSPGLTRSetRadius_GLTR);CHKERRQ(ierr);

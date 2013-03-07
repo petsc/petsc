@@ -951,7 +951,7 @@ $     func (TS ts,PetscReal t,Vec u,Mat *A,Mat *B,MatStructure *flag,void *ctx);
 
 .keywords: TS, timestep, set, right-hand-side, Jacobian
 
-.seealso: SNESDefaultComputeJacobianColor(), TSSetRHSFunction()
+.seealso: SNESComputeJacobianDefaultColor(), TSSetRHSFunction()
 
 @*/
 PetscErrorCode  TSSetRHSJacobian(TS ts,Mat A,Mat B,TSRHSJacobian f,void *ctx)
@@ -1161,7 +1161,7 @@ $  f(TS ts,PetscReal t,Vec U,Vec U_t,PetscReal a,Mat *A,Mat *B,MatStructure *fla
 
 .keywords: TS, timestep, DAE, Jacobian
 
-.seealso: TSSetIFunction(), TSSetRHSJacobian(), SNESDefaultComputeJacobianColor(), SNESDefaultComputeJacobian()
+.seealso: TSSetIFunction(), TSSetRHSJacobian(), SNESComputeJacobianDefaultColor(), SNESComputeJacobianDefault()
 
 @*/
 PetscErrorCode  TSSetIJacobian(TS ts,Mat A,Mat B,TSIJacobian f,void *ctx)

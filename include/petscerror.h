@@ -361,7 +361,7 @@ PETSC_EXTERN PetscErrorCode PetscReturnErrorHandler(MPI_Comm,int,const char*,con
 PETSC_EXTERN PetscErrorCode PetscError(MPI_Comm,int,const char*,const char*,const char*,PetscErrorCode,PetscErrorType,const char*,...);
 PETSC_EXTERN PetscErrorCode PetscPushErrorHandler(PetscErrorCode (*handler)(MPI_Comm,int,const char*,const char*,const char*,PetscErrorCode,PetscErrorType,const char*,void*),void*);
 PETSC_EXTERN PetscErrorCode PetscPopErrorHandler(void);
-PETSC_EXTERN PetscErrorCode PetscDefaultSignalHandler(int,void*);
+PETSC_EXTERN PetscErrorCode PetscSignalHandlerDefault(int,void*);
 PETSC_EXTERN PetscErrorCode PetscPushSignalHandler(PetscErrorCode (*)(int,void *),void*);
 PETSC_EXTERN PetscErrorCode PetscPopSignalHandler(void);
 

@@ -207,7 +207,7 @@ PetscErrorCode SNESVICheckResidual_Private(SNES snes,Mat A,Vec F,Vec X,Vec W1,Ve
 }
 
 /*
-  SNESDefaultConverged_VI - Checks the convergence of the semismooth newton algorithm.
+  SNESConvergedDefault_VI - Checks the convergence of the semismooth newton algorithm.
 
   Notes:
   The convergence criterion currently implemented is
@@ -215,8 +215,8 @@ PetscErrorCode SNESVICheckResidual_Private(SNES snes,Mat A,Vec F,Vec X,Vec W1,Ve
   merit < rtol*merit_initial
 */
 #undef __FUNCT__
-#define __FUNCT__ "SNESDefaultConverged_VI"
-PetscErrorCode SNESDefaultConverged_VI(SNES snes,PetscInt it,PetscReal xnorm,PetscReal gradnorm,PetscReal fnorm,SNESConvergedReason *reason,void *dummy)
+#define __FUNCT__ "SNESConvergedDefault_VI"
+PetscErrorCode SNESConvergedDefault_VI(SNES snes,PetscInt it,PetscReal xnorm,PetscReal gradnorm,PetscReal fnorm,SNESConvergedReason *reason,void *dummy)
 {
   PetscErrorCode ierr;
 
@@ -416,7 +416,7 @@ PetscErrorCode SNESSetUp_VI(SNES snes)
   PetscInt       i_start[3],i_end[3];
 
   PetscFunctionBegin;
-  ierr = SNESDefaultGetWork(snes,1);CHKERRQ(ierr);
+  ierr = SNESSetWorkVecs_Private(snes,1);CHKERRQ(ierr);
   ierr = SNESSetUpMatrices(snes);CHKERRQ(ierr);
 
   if (!snes->ops->computevariablebounds && snes->dm) {

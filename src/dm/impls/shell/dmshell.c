@@ -3,12 +3,64 @@
 #include <petsc-private/dmimpl.h>
 
 typedef struct  {
-  Vec Xglobal;
-  Vec Xlocal;
-  Mat A;
+  Vec        Xglobal;
+  Vec        Xlocal;
+  Mat        A;
   VecScatter *gtol;
   VecScatter *ltog;
 } DM_Shell;
+
+#undef __FUNCT__
+#define __FUNCT__ "DMGlobalToLocalBegin_Shell_Default"
+/*@C
+   DMGlobalToLocalBegin_Shell_Default - Uses the GlobalToLocal VecScatter context set by the user to begin a global to local scatter
+   Collective
+
+   Input Arguments:
++  dm - shell DM
+.  g - global vector
+.  mode - InsertMode
+-  l - local vector
+
+   Level: developer
+
+.seealso: DMGlobalToLocalEnd_Shell_Default()
+@*/
+static PetscErrorCode DMGlobalToLocalBegin_Shell_Default(DM dm,Vec g,InsertMode mode,Vec l)
+{
+  PetscErrorCode ierr;
+  DM_Shell       *shell = (DM_Shell*)dm->data;
+
+  PetscFunctionBegin;
+  ierr = VecScatterBegin(*(shell->gtol),g,l,mode,SCATTER_FORWARD);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMGlobalToLocalEnd_Shell_Default"
+/*@C
+   DMGlobalToLocalEnd_Shell_Default - Uses the GlobalToLocal VecScatter context set by the user to end a global to local scatter
+   Collective
+
+   Input Arguments:
++  dm - shell DM
+.  g - global vector
+.  mode - InsertMode
+-  l - local vector
+
+   Level: developer
+
+.seealso: DMGlobalToLocalBegin_Shell_Default()
+@*/
+static PetscErrorCode DMGlobalToLocalEnd_Shell_Default(DM dm,Vec g,InsertMode mode,Vec l)
+{
+  PetscErrorCode ierr;
+  DM_Shell       *shell = (DM_Shell*)dm->data;
+
+  PetscFunctionBegin;
+  ierr = VecScatterEnd(*(shell->gtol),g,l,mode,SCATTER_FORWARD);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "DMCreateMatrix_Shell"
@@ -437,54 +489,3 @@ PetscErrorCode  DMShellCreate(MPI_Comm comm,DM *dm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMShellDefaultGlobalToLocalBegin"
-/*@
-   DMShellDefaultGlobalToLocalBegin - Uses the GlobalToLocal VecScatter context set by the user to begin a global to local scatter
-   Collective
-
-   Input Arguments:
-+  dm - shell DM
-.  g - global vector
-.  mode - InsertMode
--  l - local vector
-
-   Level: advanced
-
-.seealso: DMShellDefaultGlobalToLocalEnd()
-@*/
-PetscErrorCode DMShellDefaultGlobalToLocalBegin(DM dm,Vec g,InsertMode mode,Vec l)
-{
-  PetscErrorCode ierr;
-  DM_Shell       *shell = (DM_Shell*)dm->data;
-
-  PetscFunctionBegin;
-  ierr = VecScatterBegin(*(shell->gtol),g,l,mode,SCATTER_FORWARD);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "DMShellDefaultGlobalToLocalEnd"
-/*@
-   DMShellDefaultGlobalToLocalEnd - Uses the GlobalToLocal VecScatter context set by the user to end a global to local scatter
-   Collective
-
-   Input Arguments:
-+  dm - shell DM
-.  g - global vector
-.  mode - InsertMode
--  l - local vector
-
-   Level: advanced
-
-.seealso: DMShellDefaultGlobalToLocalBegin()
-@*/
-PetscErrorCode DMShellDefaultGlobalToLocalEnd(DM dm,Vec g,InsertMode mode,Vec l)
-{
-  PetscErrorCode ierr;
-  DM_Shell       *shell = (DM_Shell*)dm->data;
-
-  PetscFunctionBegin;
-  ierr = VecScatterEnd(*(shell->gtol),g,l,mode,SCATTER_FORWARD);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}

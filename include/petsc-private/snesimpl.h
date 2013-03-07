@@ -191,6 +191,9 @@ PETSC_EXTERN PetscErrorCode DMSNESLoad(DMSNES,PetscViewer);
 PETSC_EXTERN PetscErrorCode DMGetDMSNESWrite(DM,DMSNES*);
 PETSC_EXTERN PetscErrorCode DMCopyDMSNES(DM,DM);
 
+PETSC_INTERN PetscErrorCode SNESSetWorkVecs_Private(SNES,PetscInt);
+PETSC_INTERN PetscErrorCode SNESLineSearchSetWorkVecs_Private(SNESLineSearch, PetscInt);
+
 /* Context for Eisenstat-Walker convergence criteria for KSP solvers */
 typedef struct {
   PetscInt  version;             /* flag indicating version 1 or 2 of test */
@@ -218,8 +221,6 @@ PETSC_STATIC_INLINE PetscErrorCode SNESLogConvergenceHistory(SNES snes,PetscReal
   PetscFunctionReturn(0);
 }
 
-PETSC_INTERN PetscErrorCode SNESDefaultGetWork(SNES,PetscInt);
-
 PETSC_EXTERN PetscErrorCode SNESVIProjectOntoBounds(SNES,Vec);
 PETSC_INTERN PetscErrorCode SNESVICheckLocalMin_Private(SNES,Mat,Vec,Vec,PetscReal,PetscBool*);
 PETSC_INTERN PetscErrorCode SNESReset_VI(SNES);
@@ -230,7 +231,7 @@ PETSC_INTERN PetscErrorCode SNESSetUp_VI(SNES);
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*SNESVIComputeVariableBoundsFunction)(SNES,Vec,Vec);
 PETSC_INTERN PetscErrorCode SNESVISetComputeVariableBounds_VI(SNES,SNESVIComputeVariableBoundsFunction);
 PETSC_INTERN PetscErrorCode SNESVISetVariableBounds_VI(SNES,Vec,Vec);
-PETSC_INTERN PetscErrorCode SNESDefaultConverged_VI(SNES,PetscInt,PetscReal,PetscReal,PetscReal,SNESConvergedReason*,void*);
+PETSC_INTERN PetscErrorCode SNESConvergedDefault_VI(SNES,PetscInt,PetscReal,PetscReal,PetscReal,SNESConvergedReason*,void*);
 
 PetscErrorCode SNES_KSPSolve(SNES,KSP,Vec,Vec);
 PetscErrorCode SNESScaleStep_Private(SNES,Vec,PetscReal*,PetscReal*,PetscReal*,PetscReal*);

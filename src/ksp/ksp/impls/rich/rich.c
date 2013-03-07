@@ -293,8 +293,8 @@ PETSC_EXTERN PetscErrorCode KSPCreate_Richardson(KSP ksp)
   ksp->ops->setup          = KSPSetUp_Richardson;
   ksp->ops->solve          = KSPSolve_Richardson;
   ksp->ops->destroy        = KSPDestroy_Richardson;
-  ksp->ops->buildsolution  = KSPDefaultBuildSolution;
-  ksp->ops->buildresidual  = KSPDefaultBuildResidual;
+  ksp->ops->buildsolution  = KSPBuildSolution_Default;
+  ksp->ops->buildresidual  = KSPBuildResidual_Default;
   ksp->ops->view           = KSPView_Richardson;
   ksp->ops->setfromoptions = KSPSetFromOptions_Richardson;
 

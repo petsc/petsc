@@ -28,7 +28,7 @@ typedef struct {
 
 #undef __FUNCT__
 #define __FUNCT__ "TSPseudoComputeTimeStep"
-/*@
+/*@C
     TSPseudoComputeTimeStep - Computes the next timestep for a currently running
     pseudo-timestepping process.
 
@@ -40,7 +40,7 @@ typedef struct {
     Output Parameter:
 .   dt - newly computed timestep
 
-    Level: advanced
+    Level: developer
 
     Notes:
     The routine to be called here to compute the timestep should be
@@ -48,7 +48,7 @@ typedef struct {
 
 .keywords: timestep, pseudo, compute
 
-.seealso: TSPseudoDefaultTimeStep(), TSPseudoSetTimeStep()
+.seealso: TSPseudoTimeStepDefault(), TSPseudoSetTimeStep()
 @*/
 PetscErrorCode  TSPseudoComputeTimeStep(TS ts,PetscReal *dt)
 {
@@ -65,9 +65,9 @@ PetscErrorCode  TSPseudoComputeTimeStep(TS ts,PetscReal *dt)
 
 /* ------------------------------------------------------------------------------*/
 #undef __FUNCT__
-#define __FUNCT__ "TSPseudoDefaultVerifyTimeStep"
+#define __FUNCT__ "TSPseudoVerifyTimeStepDefault"
 /*@C
-   TSPseudoDefaultVerifyTimeStep - Default code to verify the quality of the last timestep.
+   TSPseudoVerifyTimeStepDefault - Default code to verify the quality of the last timestep.
 
    Collective on TS
 
@@ -90,7 +90,7 @@ PetscErrorCode  TSPseudoComputeTimeStep(TS ts,PetscReal *dt)
 
 .seealso: TSPseudoSetVerifyTimeStep(), TSPseudoVerifyTimeStep()
 @*/
-PetscErrorCode  TSPseudoDefaultVerifyTimeStep(TS ts,Vec update,void *dtctx,PetscReal *newdt,PetscBool  *flag)
+PetscErrorCode  TSPseudoVerifyTimeStepDefault(TS ts,Vec update,void *dtctx,PetscReal *newdt,PetscBool  *flag)
 {
   PetscFunctionBegin;
   *flag = PETSC_TRUE;
@@ -121,7 +121,7 @@ PetscErrorCode  TSPseudoDefaultVerifyTimeStep(TS ts,Vec update,void *dtctx,Petsc
 
 .keywords: timestep, pseudo, verify
 
-.seealso: TSPseudoSetVerifyTimeStep(), TSPseudoDefaultVerifyTimeStep()
+.seealso: TSPseudoSetVerifyTimeStep(), TSPseudoVerifyTimeStepDefault()
 @*/
 PetscErrorCode  TSPseudoVerifyTimeStep(TS ts,Vec update,PetscReal *dt,PetscBool  *flag)
 {
@@ -406,7 +406,7 @@ static PetscErrorCode TSView_Pseudo(TS ts,PetscViewer viewer)
 
 .keywords: timestep, pseudo, set, verify
 
-.seealso: TSPseudoDefaultVerifyTimeStep(), TSPseudoVerifyTimeStep()
+.seealso: TSPseudoVerifyTimeStepDefault(), TSPseudoVerifyTimeStep()
 @*/
 PetscErrorCode  TSPseudoSetVerifyTimeStep(TS ts,PetscErrorCode (*dt)(TS,Vec,void*,PetscReal*,PetscBool*),void *ctx)
 {
@@ -422,7 +422,7 @@ PetscErrorCode  TSPseudoSetVerifyTimeStep(TS ts,PetscErrorCode (*dt)(TS,Vec,void
 #define __FUNCT__ "TSPseudoSetTimeStepIncrement"
 /*@
     TSPseudoSetTimeStepIncrement - Sets the scaling increment applied to
-    dt when using the TSPseudoDefaultTimeStep() routine.
+    dt when using the TSPseudoTimeStepDefault() routine.
 
    Logically Collective on TS
 
@@ -437,7 +437,7 @@ $    -ts_pseudo_increment <increment>
 
 .keywords: timestep, pseudo, set, increment
 
-.seealso: TSPseudoSetTimeStep(), TSPseudoDefaultTimeStep()
+.seealso: TSPseudoSetTimeStep(), TSPseudoTimeStepDefault()
 @*/
 PetscErrorCode  TSPseudoSetTimeStepIncrement(TS ts,PetscReal inc)
 {
@@ -454,7 +454,7 @@ PetscErrorCode  TSPseudoSetTimeStepIncrement(TS ts,PetscReal inc)
 #define __FUNCT__ "TSPseudoSetMaxTimeStep"
 /*@
     TSPseudoSetMaxTimeStep - Sets the maximum time step
-    when using the TSPseudoDefaultTimeStep() routine.
+    when using the TSPseudoTimeStepDefault() routine.
 
    Logically Collective on TS
 
@@ -469,7 +469,7 @@ $    -ts_pseudo_max_dt <increment>
 
 .keywords: timestep, pseudo, set
 
-.seealso: TSPseudoSetTimeStep(), TSPseudoDefaultTimeStep()
+.seealso: TSPseudoSetTimeStep(), TSPseudoTimeStepDefault()
 @*/
 PetscErrorCode  TSPseudoSetMaxTimeStep(TS ts,PetscReal maxdt)
 {
@@ -503,7 +503,7 @@ $    -ts_pseudo_increment_dt_from_initial_dt
 
 .keywords: timestep, pseudo, set, increment
 
-.seealso: TSPseudoSetTimeStep(), TSPseudoDefaultTimeStep()
+.seealso: TSPseudoSetTimeStep(), TSPseudoTimeStepDefault()
 @*/
 PetscErrorCode  TSPseudoIncrementDtFromInitialDt(TS ts)
 {
@@ -541,10 +541,11 @@ PetscErrorCode  TSPseudoIncrementDtFromInitialDt(TS ts)
    Notes:
    The routine set here will be called by TSPseudoComputeTimeStep()
    during the timestepping process.
+   If not set then TSPseudoTimeStepDefault() is automatically used
 
 .keywords: timestep, pseudo, set
 
-.seealso: TSPseudoDefaultTimeStep(), TSPseudoComputeTimeStep()
+.seealso: TSPseudoTimeStepDefault(), TSPseudoComputeTimeStep()
 @*/
 PetscErrorCode  TSPseudoSetTimeStep(TS ts,PetscErrorCode (*dt)(TS,PetscReal*,void*),void *ctx)
 {
@@ -691,7 +692,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_Pseudo(TS ts)
 
   pseudo->dt_increment                 = 1.1;
   pseudo->increment_dt_from_initial_dt = PETSC_FALSE;
-  pseudo->dt                           = TSPseudoDefaultTimeStep;
+  pseudo->dt                           = TSPseudoTimeStepDefault;
   pseudo->fnorm                        = -1;
 
   ierr = PetscObjectComposeFunction((PetscObject)ts,"TSPseudoSetVerifyTimeStep_C","TSPseudoSetVerifyTimeStep_Pseudo",TSPseudoSetVerifyTimeStep_Pseudo);CHKERRQ(ierr);
@@ -703,9 +704,9 @@ PETSC_EXTERN PetscErrorCode TSCreate_Pseudo(TS ts)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TSPseudoDefaultTimeStep"
+#define __FUNCT__ "TSPseudoTimeStepDefault"
 /*@C
-   TSPseudoDefaultTimeStep - Default code to compute pseudo-timestepping.
+   TSPseudoTimeStepDefault - Default code to compute pseudo-timestepping.
    Use with TSPseudoSetTimeStep().
 
    Collective on TS
@@ -723,7 +724,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_Pseudo(TS ts)
 
 .seealso: TSPseudoSetTimeStep(), TSPseudoComputeTimeStep()
 @*/
-PetscErrorCode  TSPseudoDefaultTimeStep(TS ts,PetscReal *newdt,void *dtctx)
+PetscErrorCode  TSPseudoTimeStepDefault(TS ts,PetscReal *newdt,void *dtctx)
 {
   TS_Pseudo      *pseudo = (TS_Pseudo*)ts->data;
   PetscReal      inc     = pseudo->dt_increment,fnorm_previous = pseudo->fnorm_previous;

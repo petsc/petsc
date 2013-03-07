@@ -478,8 +478,8 @@ PETSC_EXTERN PetscErrorCode KSPCreate_LSQR(KSP ksp)
   ksp->ops->setup          = KSPSetUp_LSQR;
   ksp->ops->solve          = KSPSolve_LSQR;
   ksp->ops->destroy        = KSPDestroy_LSQR;
-  ksp->ops->buildsolution  = KSPDefaultBuildSolution;
-  ksp->ops->buildresidual  = KSPDefaultBuildResidual;
+  ksp->ops->buildsolution  = KSPBuildSolution_Default;
+  ksp->ops->buildresidual  = KSPBuildResidual_Default;
   ksp->ops->setfromoptions = KSPSetFromOptions_LSQR;
   ksp->ops->view           = KSPView_LSQR;
   ksp->converged           = KSPLSQRDefaultConverged;

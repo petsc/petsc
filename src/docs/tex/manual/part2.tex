@@ -4157,7 +4157,7 @@ The approximation requires several steps:\sindex{coloring with SNES}
 \item Next, one creates a MatFDColoring data structure that will be used later in
       actually computing the Jacobian.
 \item Finally, one tells the nonlinear solvers of SNES to use the
-      SNESDefaultComputeJacobianColor()
+      SNESComputeJacobianDefaultColor()
       routine to compute the Jacobians.
 \end{itemize}
 A code fragment that demonstrates this process is given below.
@@ -4180,7 +4180,7 @@ A code fragment that demonstrates this process is given below.
    MatGetColoring(J,MATCOLORINGSL,\&iscoloring);\\
 
    \trl{/*}\\
-       Create the data structure that SNESDefaultComputeJacobianColor() uses\\
+       Create the data structure that SNESComputeJacobianDefaultColor() uses\\
        to compute the actual Jacobians via finite differences.\\
    \trl{*/}\\
    MatFDColoringCreate(J,iscoloring,\&fdcoloring);\\
@@ -4188,10 +4188,10 @@ A code fragment that demonstrates this process is given below.
    MatFDColoringSetFromOptions(fdcoloring);\\
 
    \trl{/*}\\
-      Tell SNES to use the routine SNESDefaultComputeJacobianColor()\\
+      Tell SNES to use the routine SNESComputeJacobianDefaultColor()\\
       to compute Jacobians.\\
    \trl{*/}\\
-   SNESSetJacobian(snes,J,J,SNESDefaultComputeJacobianColor,fdcoloring);\\
+   SNESSetJacobian(snes,J,J,SNESComputeJacobianDefaultColor,fdcoloring);\\
 
 \end{tabbing}
 
@@ -4705,7 +4705,7 @@ with location.
 \end{tabbing}
 The function \trl{dt} is a user-provided function that computes the next
 pseudo-timestep. As a default one can use
-TSPseudoDefaultTimeStep(TS,double*,void*) for \trl{dt}. This routine
+TSPseudoTimeStepDefault(TS,double*,void*) for \trl{dt}. This routine
 updates the pseudo-timestep with one of two strategies: the default
 \[
    dt^{n} = dt_{\mathrm{increment}}*dt^{n-1}*\frac{|| F(u^{n-1}) ||}{|| F(u^{n})||}
@@ -6509,7 +6509,7 @@ command
 \begin{tabbing}
   PetscPushSignalHandler( PetscErrorCode (*Handler)(int,void *),void *ctx);
 \end{tabbing}
-The default handler PetscDefaultSignalHandler()
+The default handler PetscSignalHandlerDefault()
 calls
 PetscError() and then terminates. In general, a signal in PETSc
 indicates a catastrophic failure.  Any error hander that the user provides

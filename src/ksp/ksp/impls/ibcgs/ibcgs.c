@@ -330,8 +330,8 @@ PETSC_EXTERN PetscErrorCode KSPCreate_IBCGS(KSP ksp)
   ksp->ops->setup          = KSPSetUp_IBCGS;
   ksp->ops->solve          = KSPSolve_IBCGS;
   ksp->ops->destroy        = KSPDestroy_Default;
-  ksp->ops->buildsolution  = KSPDefaultBuildSolution;
-  ksp->ops->buildresidual  = KSPDefaultBuildResidual;
+  ksp->ops->buildsolution  = KSPBuildSolution_Default;
+  ksp->ops->buildresidual  = KSPBuildResidual_Default;
   ksp->ops->setfromoptions = 0;
   ksp->ops->view           = 0;
 #if defined(PETSC_USE_COMPLEX)

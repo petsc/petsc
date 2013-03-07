@@ -73,7 +73,7 @@ int main(int argc,char **argv)
   if (coloring) {
     SNES snes;
     ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
-    ierr = SNESSetJacobian(snes,NULL,NULL,SNESDefaultComputeJacobianColor,NULL);CHKERRQ(ierr);
+    ierr = SNESSetJacobian(snes,NULL,NULL,SNESComputeJacobianDefaultColor,NULL);CHKERRQ(ierr);
   }
 
   ftime = 1.0;

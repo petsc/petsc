@@ -1458,9 +1458,9 @@ PetscErrorCode  SNESLineSearchGetOptionsPrefix(SNESLineSearch linesearch,const c
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "SNESLineSearchGetWork"
-/*@
-   SNESLineSearchGetWork - Gets work vectors for the line search.
+#define __FUNCT__ "SNESLineSearchSetWorkVecs_Private"
+/*@C
+   SNESLineSearchSetWorkVecs_Private - Gets work vectors for the line search.
 
    Input Parameter:
 +  linesearch - the SNESLineSearch context
@@ -1473,17 +1473,16 @@ PetscErrorCode  SNESLineSearchGetOptionsPrefix(SNESLineSearch linesearch,const c
 
 .keywords: SNESLineSearch, work, vector
 
-.seealso: SNESDefaultGetWork()
+.seealso: SNESSetWorkVecs_Private()
 @*/
-PetscErrorCode  SNESLineSearchGetWork(SNESLineSearch linesearch, PetscInt nwork)
+PetscErrorCode  SNESLineSearchSetWorkVecs_Private(SNESLineSearch linesearch, PetscInt nwork)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (linesearch->vec_sol) {
     ierr = VecDuplicateVecs(linesearch->vec_sol, nwork, &linesearch->work);CHKERRQ(ierr);
-  }
-  SETERRQ(PetscObjectComm((PetscObject)linesearch), PETSC_ERR_USER, "Cannot get linesearch work-vectors without setting a solution vec!");
+  } else SETERRQ(PetscObjectComm((PetscObject)linesearch), PETSC_ERR_USER, "Cannot get linesearch work-vectors without setting a solution vec!");
   PetscFunctionReturn(0);
 }
 
