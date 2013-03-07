@@ -6,7 +6,7 @@
 
 #undef __FUNCT__
 #define __FUNCT__ "VecDot_MPI"
-PetscErrorCode VecDot_MPI(Vec xin,Vec yin,PetscScalar *z)
+static PetscErrorCode VecDot_MPI(Vec xin,Vec yin,PetscScalar *z)
 {
   PetscScalar    sum,work;
   PetscErrorCode ierr;
@@ -20,7 +20,7 @@ PetscErrorCode VecDot_MPI(Vec xin,Vec yin,PetscScalar *z)
 
 #undef __FUNCT__
 #define __FUNCT__ "VecTDot_MPI"
-PetscErrorCode VecTDot_MPI(Vec xin,Vec yin,PetscScalar *z)
+static PetscErrorCode VecTDot_MPI(Vec xin,Vec yin,PetscScalar *z)
 {
   PetscScalar    sum,work;
   PetscErrorCode ierr;
@@ -36,7 +36,7 @@ extern PetscErrorCode VecView_MPI_Draw(Vec,PetscViewer);
 
 #undef __FUNCT__
 #define __FUNCT__ "VecPlaceArray_MPI"
-PetscErrorCode VecPlaceArray_MPI(Vec vin,const PetscScalar *a)
+static PetscErrorCode VecPlaceArray_MPI(Vec vin,const PetscScalar *a)
 {
   PetscErrorCode ierr;
   Vec_MPI        *v = (Vec_MPI*)vin->data;
@@ -51,7 +51,8 @@ PetscErrorCode VecPlaceArray_MPI(Vec vin,const PetscScalar *a)
   PetscFunctionReturn(0);
 }
 
-extern PetscErrorCode VecGetValues_MPI(Vec,PetscInt,const PetscInt [],PetscScalar []);
+extern PetscErrorCode VecGetValues_MPI(Vec,PetscInt,const PetscInt[],PetscScalar[]);
+static PetscErrorCode VecCreate_MPI_Private(Vec,PetscBool,PetscInt,const PetscScalar[]);
 
 #undef __FUNCT__
 #define __FUNCT__ "VecDuplicate_MPI"
@@ -170,7 +171,7 @@ static struct _VecOps DvOps = { VecDuplicate_MPI, /* 1 */
     If alloc is true and array is NULL then this routine allocates the space, otherwise
     no space is allocated.
 */
-PetscErrorCode VecCreate_MPI_Private(Vec v,PetscBool alloc,PetscInt nghost,const PetscScalar array[])
+static PetscErrorCode VecCreate_MPI_Private(Vec v,PetscBool alloc,PetscInt nghost,const PetscScalar array[])
 {
   Vec_MPI        *s;
   PetscErrorCode ierr;

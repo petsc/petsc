@@ -16,7 +16,6 @@ typedef struct {
 } Vec_MPI;
 
 PETSC_INTERN PetscErrorCode VecMDot_MPI(Vec,PetscInt,const Vec[],PetscScalar*);
-PETSC_INTERN PetscErrorCode VecTDot_MPI(Vec,Vec,PetscScalar*);
 PETSC_INTERN PetscErrorCode VecMTDot_MPI(Vec,PetscInt,const Vec[],PetscScalar*);
 PETSC_INTERN PetscErrorCode VecNorm_MPI(Vec,NormType,PetscReal*);
 PETSC_INTERN PetscErrorCode VecMax_MPI(Vec,PetscInt*,PetscReal*);
@@ -29,14 +28,12 @@ PETSC_INTERN PetscErrorCode VecView_MPI_Socket(Vec,PetscViewer);
 PETSC_INTERN PetscErrorCode VecView_MPI_HDF5(Vec,PetscViewer);
 PETSC_EXTERN PetscErrorCode VecView_MPI(Vec,PetscViewer);
 PETSC_INTERN PetscErrorCode VecGetSize_MPI(Vec,PetscInt*);
-PETSC_INTERN PetscErrorCode VecPlaceArray_MPI(Vec,const PetscScalar []);
 PETSC_INTERN PetscErrorCode VecGetValues_MPI(Vec,PetscInt,const PetscInt [], PetscScalar []);
 PETSC_INTERN PetscErrorCode VecSetValues_MPI(Vec,PetscInt,const PetscInt [],const PetscScalar[],InsertMode);
 PETSC_INTERN PetscErrorCode VecSetValuesBlocked_MPI(Vec,PetscInt,const PetscInt [],const PetscScalar[],InsertMode);
 PETSC_INTERN PetscErrorCode VecAssemblyBegin_MPI(Vec);
 PETSC_INTERN PetscErrorCode VecAssemblyEnd_MPI(Vec);
 
-PETSC_INTERN PetscErrorCode VecCreate_MPI_Private(Vec,PetscBool,PetscInt,const PetscScalar[]);
 
 #endif
 
