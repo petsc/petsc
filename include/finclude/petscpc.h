@@ -11,10 +11,6 @@
       PetscEnum PC_SYMMETRIC
       parameter (PC_LEFT=0,PC_RIGHT=1,PC_SYMMETRIC=2)
 
-      PetscEnum USE_PRECONDITIONER_MATRIX
-      PetscEnum USE_TRUE_MATRIX
-      parameter (USE_PRECONDITIONER_MATRIX=0,USE_TRUE_MATRIX=1)
-
 !
 ! PCASMType
 !

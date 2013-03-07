@@ -227,8 +227,6 @@ PETSC_EXTERN PetscErrorCode PCSORSetIterations(PC,PetscInt,PetscInt);
 PETSC_EXTERN PetscErrorCode PCEisenstatSetOmega(PC,PetscReal);
 PETSC_EXTERN PetscErrorCode PCEisenstatNoDiagonalScaling(PC);
 
-#define USE_PRECONDITIONER_MATRIX 0
-#define USE_TRUE_MATRIX           1
 PETSC_EXTERN PetscErrorCode PCBJacobiSetUseTrueLocal(PC);
 PETSC_EXTERN PetscErrorCode PCBJacobiSetTotalBlocks(PC,PetscInt,const PetscInt[]);
 PETSC_EXTERN PetscErrorCode PCBJacobiSetLocalBlocks(PC,PetscInt,const PetscInt[]);
