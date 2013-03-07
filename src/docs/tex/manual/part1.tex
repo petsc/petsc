@@ -419,14 +419,14 @@ After creating the matrix and vectors that define a linear system,
 with the following sequence of commands:
 \begin{tabbing}
   KSPCreate(MPI\_Comm comm,KSP *ksp); \\
-  KSPSetOperators(KSP ksp,Mat A,Mat PrecA,MatStructure flag);\\
+  KSPSetOperators(KSP ksp,Mat Amat,Mat Pmat,MatStructure flag);\\
   KSPSetFromOptions(KSP ksp);\\
   KSPSolve(KSP ksp,Vec b,Vec x);\\
   KSPDestroy(KSP ksp);
 \end{tabbing}
 The user first creates the KSP context and sets the operators
-associated with the system (linear system matrix and optionally different
-preconditioning matrix).  The user then sets various options for
+associated with the system (matrix that defines the linear system, \trl{Amat} and matrix from which the 
+preconditioner is constructed, \trl{Pmat}).  The user then sets various options for
 customized solution, solves the linear system, and finally destroys
 the KSP context.  We emphasize the command KSPSetFromOptions(),
 which enables the user to customize the linear solution

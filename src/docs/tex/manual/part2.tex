@@ -2055,8 +2055,8 @@ In particular, KSP {\em does} support matrix-free methods.
 The routine MatCreateShell()
 in Section~\ref{sec_matrixfree} provides further information regarding
 matrix-free methods.
-Typically the {\em preconditioning matrix} (i.e., the matrix from which the
-preconditioner is to be constructed), \trl{Pmat}, is the same as
+Typically the the matrix from which the
+preconditioner is to be constructed, \trl{Pmat}, is the same as
 the matrix that defines the linear system, \trl{Amat}; however,
 occasionally these matrices differ (for instance, \sindex{preconditioning}
 when a preconditioning matrix is obtained from a lower order method than
@@ -3652,13 +3652,13 @@ The user must also specify a routine to form some approximation of the
 Jacobian matrix, \trl{A}, at the current iterate, \trl{x},
 as is typically done with
 \begin{tabbing}
-  SNESSetJacobian(SNES snes,Mat A,Mat B,PetscErrorCode (*FormJacobian)(SNES snes,\\
+  SNESSetJacobian(SNES snes,Mat Amat,Mat Pmat,PetscErrorCode (*FormJacobian)(SNES snes,\\
           Vec x,Mat *A,Mat *B,MatStructure *flag,void *ctx),void *ctx);
 \end{tabbing}
 The arguments of the routine \trl{
-FormJacobian()} are the current iterate, \trl{x}; the Jacobian matrix,
-\trl{A}; the preconditioner matrix, \trl{B} (which is usually the same
-as \trl{A}); a \trl{flag} indicating information about the
+FormJacobian()} are the current iterate, \trl{x}; the (approximate) Jacobian matrix,
+\trl{Amat}; the matrix from which the preconditioner is constructed, \trl{Pmat} (which is usually the same
+as \trl{Amat}); a \trl{flag} indicating information about the
 preconditioner matrix structure; and an optional user-defined Jacobian
 context, \trl{ctx}, for application-specific data.  The options for
 \trl{flag} are identical to those for the flag of KSPSetOperators(), discussed in Section~\ref{sec_usingsles}.
@@ -4682,13 +4682,13 @@ variable \trl{fP}.
 \item Provide the (approximate) Jacobian matrix of \trl{G(u)} and a
 function to compute it at each Newton iteration. This is done with the command
 \begin{tabbing}
- TSSetRHSJacobian(\=TS ts,Mat A, Mat B,PetscErrorCode (*f)(TS,double,Vec,Mat*,Mat*,\\
+ TSSetRHSJacobian(\=TS ts,Mat Amat, Mat Pmat,PetscErrorCode (*f)(TS,double,Vec,Mat*,Mat*,\\
                   \>        MatStructure*,void*),void *fP);
 \end{tabbing}
 The  arguments for the function \trl{f()} are
 the timestep context, the current time, the location where the
-Jacobian is to be computed, the Jacobian matrix, an alternative
-approximate Jacobian matrix used as a preconditioner, and the optional
+Jacobian is to be computed, the (approximate) Jacobian matrix, an alternative
+approximate Jacobian matrix used to construct the preconditioner, and the optional
 user-provided context, passed in as \trl{fP}. The user must provide the
 Jacobian as a matrix; thus, if using a matrix-free approach, one
 must create a MATSHELL matrix.
@@ -7555,7 +7555,7 @@ Before using the Krylov context, one must set the matrix-vector multiplication r
 the preconditioner with the
 commands
 \begin{tabbing}
-  PCSetOperators(PC pc,Mat mat,Mat pmat,MatStructure flag);\\
+  PCSetOperators(PC pc,Mat Amat,Mat Pmat,MatStructure flag);\\
   KSPSetPC(KSP ksp,PC pc);
 \end{tabbing}
 In addition, the KSP solver must be initialized with
@@ -7614,13 +7614,13 @@ The routine
 sets the preconditioner method to be used.
 The routine
 \begin{tabbing}
-  PCSetOperators(PC pc,Mat mat,Mat pmat,MatStructure flag);\\
+  PCSetOperators(PC pc,Mat Amat,Mat Pmat,MatStructure flag);\\
 \end{tabbing}
 set the matrices that are to be used with
 the preconditioner.
 The routine
 \begin{tabbing}
-  PCGetOperators(PC pc,Mat *mat,Mat *pmat,MatStructure *flag);
+  PCGetOperators(PC pc,Mat *Amat,Mat *Pmat,MatStructure *flag);
 \end{tabbing}
 returns the values set with PCSetOperators().
 
@@ -7632,7 +7632,7 @@ and are given, respectively, by
   PCApplyTranspose(PC pc,Vec x,Vec y);
 \end{tabbing}
 In particular, for a preconditioner matrix, \trl{B}, that has
-been set via PCSetOperators(pc,A,B,flag),
+been set via PCSetOperators(pc,Amat,Pmat,flag),
 the routine PCApply(pc,x,y) computes $y = B^{-1} x$
 by solving the linear system $By = x$ with the specified preconditioner
 method.
