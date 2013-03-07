@@ -23,9 +23,12 @@
 
    Developer Note: The reason this takes the compressedrow, ai and mbs arguments is because it is called by both the SeqAIJ and SEQBAIJ matrices and
                    the values are not therefore obtained by directly taking the values from the matrix object.
+                   This is not a general public routine and hence is not listed in petscmat.h (it exposes a private data structure) but it is used
+                   by some preconditioners and hence is labeled as PETSC_EXTERN 
+
    Level: developer
 @*/
-PetscErrorCode MatCheckCompressedRow(Mat A,Mat_CompressedRow *compressedrow,PetscInt *ai,PetscInt mbs,PetscReal ratio)
+PETSC_EXTERN PetscErrorCode MatCheckCompressedRow(Mat A,Mat_CompressedRow *compressedrow,PetscInt *ai,PetscInt mbs,PetscReal ratio)
 {
   PetscErrorCode ierr;
   PetscInt       nrows,*cpi=NULL,*ridx=NULL,nz,i,row;

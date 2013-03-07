@@ -159,10 +159,10 @@ PETSC_EXTERN PetscErrorCode VecCUSPCopyFromGPU(Vec v);
   PetscScalar *unplacedarray;                           /* if one called VecPlaceArray(), this is where it stashed the original */
 
 /* Default obtain and release vectors; can be used by any implementation */
-PETSC_EXTERN PetscErrorCode VecDuplicateVecs_Default(Vec,PetscInt,Vec *[]);
-PETSC_EXTERN PetscErrorCode VecDestroyVecs_Default(PetscInt,Vec []);
-PETSC_EXTERN PetscErrorCode VecLoad_Binary(Vec, PetscViewer);
-PETSC_EXTERN PetscErrorCode VecLoad_Default(Vec, PetscViewer);
+PETSC_INTERN PetscErrorCode VecDuplicateVecs_Default(Vec,PetscInt,Vec *[]);
+PETSC_INTERN PetscErrorCode VecDestroyVecs_Default(PetscInt,Vec []);
+PETSC_INTERN PetscErrorCode VecLoad_Binary(Vec, PetscViewer);
+PETSC_INTERN PetscErrorCode VecLoad_Default(Vec, PetscViewer);
 
 PETSC_EXTERN PetscInt  NormIds[7];  /* map from NormType to IDs used to cache/retreive values of norms */
 
@@ -263,14 +263,14 @@ struct _p_VecScatter {
   void           *spptr;
 };
 
-PETSC_EXTERN PetscErrorCode VecStashCreate_Private(MPI_Comm,PetscInt,VecStash*);
-PETSC_EXTERN PetscErrorCode VecStashDestroy_Private(VecStash*);
-PETSC_EXTERN PetscErrorCode VecStashExpand_Private(VecStash*,PetscInt);
-PETSC_EXTERN PetscErrorCode VecStashScatterEnd_Private(VecStash*);
-PETSC_EXTERN PetscErrorCode VecStashSetInitialSize_Private(VecStash*,PetscInt);
-PETSC_EXTERN PetscErrorCode VecStashGetInfo_Private(VecStash*,PetscInt*,PetscInt*);
-PETSC_EXTERN PetscErrorCode VecStashScatterBegin_Private(VecStash*,PetscInt*);
-PETSC_EXTERN PetscErrorCode VecStashScatterGetMesg_Private(VecStash*,PetscMPIInt*,PetscInt**,PetscScalar**,PetscInt*);
+PETSC_INTERN PetscErrorCode VecStashCreate_Private(MPI_Comm,PetscInt,VecStash*);
+PETSC_INTERN PetscErrorCode VecStashDestroy_Private(VecStash*);
+PETSC_INTERN PetscErrorCode VecStashExpand_Private(VecStash*,PetscInt);
+PETSC_INTERN PetscErrorCode VecStashScatterEnd_Private(VecStash*);
+PETSC_INTERN PetscErrorCode VecStashSetInitialSize_Private(VecStash*,PetscInt);
+PETSC_INTERN PetscErrorCode VecStashGetInfo_Private(VecStash*,PetscInt*,PetscInt*);
+PETSC_INTERN PetscErrorCode VecStashScatterBegin_Private(VecStash*,PetscInt*);
+PETSC_INTERN PetscErrorCode VecStashScatterGetMesg_Private(VecStash*,PetscMPIInt*,PetscInt**,PetscScalar**,PetscInt*);
 
 /*
   VecStashValue_Private - inserts a single value into the stash.
@@ -316,9 +316,9 @@ PETSC_STATIC_INLINE PetscErrorCode VecStashValuesBlocked_Private(VecStash *stash
   return 0;
 }
 
-PETSC_EXTERN PetscErrorCode VecStrideGather_Default(Vec,PetscInt,Vec,InsertMode);
-PETSC_EXTERN PetscErrorCode VecStrideScatter_Default(Vec,PetscInt,Vec,InsertMode);
-PETSC_EXTERN PetscErrorCode VecReciprocal_Default(Vec);
+PETSC_INTERN PetscErrorCode VecStrideGather_Default(Vec,PetscInt,Vec,InsertMode);
+PETSC_INTERN PetscErrorCode VecStrideScatter_Default(Vec,PetscInt,Vec,InsertMode);
+PETSC_INTERN PetscErrorCode VecReciprocal_Default(Vec);
 
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
 PETSC_EXTERN PetscErrorCode VecMatlabEnginePut_Default(PetscObject,void*);

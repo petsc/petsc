@@ -218,19 +218,19 @@ PETSC_STATIC_INLINE PetscErrorCode SNESLogConvergenceHistory(SNES snes,PetscReal
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN PetscErrorCode SNESDefaultGetWork(SNES,PetscInt);
+PETSC_INTERN PetscErrorCode SNESDefaultGetWork(SNES,PetscInt);
 
 PETSC_EXTERN PetscErrorCode SNESVIProjectOntoBounds(SNES,Vec);
-PETSC_EXTERN PetscErrorCode SNESVICheckLocalMin_Private(SNES,Mat,Vec,Vec,PetscReal,PetscBool*);
-PETSC_EXTERN PetscErrorCode SNESReset_VI(SNES);
-PETSC_EXTERN PetscErrorCode SNESDestroy_VI(SNES);
-PETSC_EXTERN PetscErrorCode SNESView_VI(SNES,PetscViewer);
-PETSC_EXTERN PetscErrorCode SNESSetFromOptions_VI(SNES);
-PETSC_EXTERN PetscErrorCode SNESSetUp_VI(SNES);
+PETSC_INTERN PetscErrorCode SNESVICheckLocalMin_Private(SNES,Mat,Vec,Vec,PetscReal,PetscBool*);
+PETSC_INTERN PetscErrorCode SNESReset_VI(SNES);
+PETSC_INTERN PetscErrorCode SNESDestroy_VI(SNES);
+PETSC_INTERN PetscErrorCode SNESView_VI(SNES,PetscViewer);
+PETSC_INTERN PetscErrorCode SNESSetFromOptions_VI(SNES);
+PETSC_INTERN PetscErrorCode SNESSetUp_VI(SNES);
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*SNESVIComputeVariableBoundsFunction)(SNES,Vec,Vec);
-PETSC_EXTERN PetscErrorCode SNESVISetComputeVariableBounds_VI(SNES,SNESVIComputeVariableBoundsFunction);
-PETSC_EXTERN PetscErrorCode SNESVISetVariableBounds_VI(SNES,Vec,Vec);
-PETSC_EXTERN PetscErrorCode SNESDefaultConverged_VI(SNES,PetscInt,PetscReal,PetscReal,PetscReal,SNESConvergedReason*,void*);
+PETSC_INTERN PetscErrorCode SNESVISetComputeVariableBounds_VI(SNES,SNESVIComputeVariableBoundsFunction);
+PETSC_INTERN PetscErrorCode SNESVISetVariableBounds_VI(SNES,Vec,Vec);
+PETSC_INTERN PetscErrorCode SNESDefaultConverged_VI(SNES,PetscInt,PetscReal,PetscReal,PetscReal,SNESConvergedReason*,void*);
 
 PetscErrorCode SNES_KSPSolve(SNES,KSP,Vec,Vec);
 PetscErrorCode SNESScaleStep_Private(SNES,Vec,PetscReal*,PetscReal*,PetscReal*,PetscReal*);
