@@ -998,32 +998,6 @@
       <div id="threads">
         <h3><a name="threads">Installing PETSc to use Threads</a></h3>
 	<p>
-	  <b>petsc-3.3</b>
-	</p>
-        <ul>
-          <li>
-            Configure and build PETSc with the additional configure options (note
-            this currently only works on Linux)
-            <ul>
-              <li> --with-pthreadclasses</li>
-            </ul>
-          </li>
-
-          <li>
-            Run a sample example with:
-            <ul>
-              <li>cd src/snes/examples/tutorials</li>
-              <li>make ex19</li>
-              <li>
-                ./ex19 -dm_vec_type pthread -dm_mat_type aijpthread -pc_type none
-                 -da_grid_x 100 -da_grid_y 100 -log_summary
-                -mat_no_inode -preload off -vec_threads 2
-              </li>
-            </ul>
-          </li>
-        </ul>
-
-	<p>
 	  <b>petsc-dev</b>
 	</p>
         <ul>

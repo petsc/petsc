@@ -76,31 +76,6 @@
 	    </li>
 	  </ul>
 	</li>
-
-        <li>
-          Quick summary of usage in petsc-3.3:
-          <ul>
-            <li>The VecType VECSEQPTHREAD or VECPTHREAD maybe used
-              with VecSetType() or -vec_type seqpthread or pthread
-              when
-              VecSetFromOptions() is used.<br>
-            </li>
-            <li>The MatType MATSEQAIJPTHREAD, MATPTHREAD
-              maybe used with MatSetType or -mat_type
-              seqaijpthread or
-              aijpthread when MatSetOptions() is used.<br>
-            </li>
-            <li>If you are creating the vectors and matrices with a
-              DM,
-              you can use -dm_vec_type pthread and -dm_mat_type
-              pthread</li>
-            <li>It is useful to develop your code with the default
-              vectors and matrices and then run production runs with
-              the command line options to
-              use the pthread classes.</li>
-          </ul>
-	</li>
-
         <li>We could use your help in further developing PETSc with threads; see <a href="../developers/index.html">petsc-dev</a></li>
       </ul>
 
