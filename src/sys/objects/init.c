@@ -22,9 +22,9 @@
      Indicates if PETSc started up MPI, or it was
    already started before PETSc was initialized.
 */
-PETSC_EXTERN PetscBool   PetscBeganMPI         = PETSC_FALSE;
-PETSC_EXTERN PetscBool   PetscInitializeCalled = PETSC_FALSE;
-PETSC_EXTERN PetscBool   PetscFinalizeCalled   = PETSC_FALSE;
+PetscBool   PetscBeganMPI         = PETSC_FALSE;
+PetscBool   PetscInitializeCalled = PETSC_FALSE;
+PetscBool   PetscFinalizeCalled   = PETSC_FALSE;
 
 PetscMPIInt PetscGlobalRank       = -1;
 PetscMPIInt PetscGlobalSize       = -1;
