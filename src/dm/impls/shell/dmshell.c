@@ -11,9 +11,9 @@ typedef struct  {
 } DM_Shell;
 
 #undef __FUNCT__
-#define __FUNCT__ "DMGlobalToLocalBegin_Shell_Default"
-/*@C
-   DMGlobalToLocalBegin_Shell_Default - Uses the GlobalToLocal VecScatter context set by the user to begin a global to local scatter
+#define __FUNCT__ "DMGlobalToLocalBeginDefaultShell"
+/*@
+   DMGlobalToLocalBeginDefaultShell - Uses the GlobalToLocal VecScatter context set by the user to begin a global to local scatter
    Collective
 
    Input Arguments:
@@ -22,25 +22,27 @@ typedef struct  {
 .  mode - InsertMode
 -  l - local vector
 
-   Level: developer
+   Level: advanced
 
-.seealso: DMGlobalToLocalEnd_Shell_Default()
+   Note:  This is not normally called directly by user code, generally user code calls DMGlobalToLocalBegin() and DMGlobalToLocalEnd(). If the user provides their own custom routines to DMShellSetLocalToGlobal() then those routines might have reason to call this function. 
+
+.seealso: DMGlobalToLocalEndDefaultShell()
 @*/
-static PetscErrorCode DMGlobalToLocalBegin_Shell_Default(DM dm,Vec g,InsertMode mode,Vec l)
+PetscErrorCode DMGlobalToLocalBeginDefaultShell(DM dm,Vec g,InsertMode mode,Vec l)
 {
   PetscErrorCode ierr;
   DM_Shell       *shell = (DM_Shell*)dm->data;
 
   PetscFunctionBegin;
-  if (!shell->gtol) SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_ARG_WRONGSTATE, "Default cannot be used without first setting the scatter context via DMShellSetGlobalToLocalVecScatter()");
+  if (!shell->gtol) SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_ARG_WRONGSTATE, "Cannot be used without first setting the scatter context via DMShellSetGlobalToLocalVecScatter()");
   ierr = VecScatterBegin(*(shell->gtol),g,l,mode,SCATTER_FORWARD);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMGlobalToLocalEnd_Shell_Default"
-/*@C
-   DMGlobalToLocalEnd_Shell_Default - Uses the GlobalToLocal VecScatter context set by the user to end a global to local scatter
+#define __FUNCT__ "DMGlobalToLocalEndDefaultShell"
+/*@
+   DMGlobalToLocalEndDefaultShell - Uses the GlobalToLocal VecScatter context set by the user to end a global to local scatter
    Collective
 
    Input Arguments:
@@ -49,17 +51,18 @@ static PetscErrorCode DMGlobalToLocalBegin_Shell_Default(DM dm,Vec g,InsertMode 
 .  mode - InsertMode
 -  l - local vector
 
-   Level: developer
+   Level: advanced
 
-.seealso: DMGlobalToLocalBegin_Shell_Default()
+.seealso: DMGlobalToLocalBeginDefaultShell()
 @*/
-static PetscErrorCode DMGlobalToLocalEnd_Shell_Default(DM dm,Vec g,InsertMode mode,Vec l)
+PetscErrorCode DMGlobalToLocalEndDefaultShell(DM dm,Vec g,InsertMode mode,Vec l)
 {
   PetscErrorCode ierr;
   DM_Shell       *shell = (DM_Shell*)dm->data;
 
   PetscFunctionBegin;
-   if (!shell->gtol) SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_ARG_WRONGSTATE, "Default cannot be used without first setting the scatter context via DMShellSetGlobalToLocalVecScatter()"); ierr = VecScatterEnd(*(shell->gtol),g,l,mode,SCATTER_FORWARD);CHKERRQ(ierr);
+   if (!shell->gtol) SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_ARG_WRONGSTATE, "Cannot be used without first setting the scatter context via DMShellSetGlobalToLocalVecScatter()");
+  ierr = VecScatterEnd(*(shell->gtol),g,l,mode,SCATTER_FORWARD);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -341,9 +344,12 @@ PetscErrorCode DMShellSetCreateLocalVector(DM dm,PetscErrorCode (*func)(DM,Vec*)
 .  begin - the routine that begins the global to local scatter
 -  end - the routine that ends the global to local scatter
 
+   Notes: If these functions are not provided but DMShellSetGlobalToLocalVecScatter() is called then
+   DMGlobalToLocalBeginDefaultShell() are used to to perform the transfers DMGlobalToLocalEndDefaultShell()
+
    Level: advanced
 
-.seealso: DMShellSetLocalToGlobal()
+.seealso: DMShellSetLocalToGlobal(), DMGlobalToLocalBeginDefaultShell(), DMGlobalToLocalEndDefaultShell()
 @*/
 PetscErrorCode DMShellSetGlobalToLocal(DM dm,PetscErrorCode (*begin)(DM,Vec,InsertMode,Vec),PetscErrorCode (*end)(DM,Vec,InsertMode,Vec)) {
   PetscFunctionBegin;
@@ -459,8 +465,8 @@ PETSC_EXTERN PetscErrorCode DMCreate_Shell(DM dm)
   dm->ops->creatematrix       = DMCreateMatrix_Shell;
   dm->ops->view               = DMView_Shell;
   dm->ops->load               = DMLoad_Shell;
-  dm->ops->globaltolocalbegin = DMGlobalToLocalBegin_Shell_Default;
-  dm->ops->globaltolocalend   = DMGlobalToLocalEnd_Shell_Default;
+  dm->ops->globaltolocalbegin = DMGlobalToLocalBeginDefaultShell;
+  dm->ops->globaltolocalend   = DMGlobalToLocalEndDefaultShell;
   PetscFunctionReturn(0);
 }
 
