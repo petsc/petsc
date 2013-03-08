@@ -340,7 +340,28 @@ PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_15(MatScalar*,PetscInt*
    code is used.
 */
 
-#include <../src/mat/ftn-kernels/sgemv.h>
+#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#define msgemv_  MSGEMV
+#define msgemvp_ MSGEMVP
+#define msgemvm_ MSGEMVM
+#define msgemvt_ MSGEMVT
+#define msgemmi_ MSGEMMI
+#define msgemm_  MSGEMM
+#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#define msgemv_  msgemv
+#define msgemvp_ msgemvp
+#define msgemvm_ msgemvm
+#define msgemvt_ msgemvt
+#define msgemmi_ msgemmi
+#define msgemm_  msgemm
+#endif
+
+PETSC_EXTERN void msgemv_(PetscInt*,PetscInt*,MatScalar*,PetscScalar*,PetscScalar*);
+PETSC_EXTERN void msgemvp_(PetscInt*,PetscInt*,MatScalar*,PetscScalar*,PetscScalar*);
+PETSC_EXTERN void msgemvm_(PetscInt*,PetscInt*,MatScalar*,PetscScalar*,PetscScalar*);
+PETSC_EXTERN void msgemvt_(PetscInt*,PetscInt*,MatScalar*,PetscScalar*,PetscScalar*);
+PETSC_EXTERN void msgemmi_(PetscInt*,MatScalar*,MatScalar*,MatScalar*);
+PETSC_EXTERN void msgemm_(PetscInt*,MatScalar*,MatScalar*,MatScalar*);
 
 /*
       A = A * B   A_gets_A_times_B

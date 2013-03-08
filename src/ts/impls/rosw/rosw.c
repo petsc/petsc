@@ -13,7 +13,7 @@
 #include <petsc-private/tsimpl.h>                /*I   "petscts.h"   I*/
 #include <petscdm.h>
 
-#include <../src/mat/blockinvert.h>
+#include <petsc-private/kernels/blockinvert.h>
 
 static TSRosWType TSRosWDefault = TSROSWRA34PW2;
 static PetscBool  TSRosWRegisterAllCalled;

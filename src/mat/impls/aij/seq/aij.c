@@ -8,7 +8,7 @@
 #include <../src/mat/impls/aij/seq/aij.h>          /*I "petscmat.h" I*/
 #include <petscblaslapack.h>
 #include <petscbt.h>
-#include <../src/mat/blocktranspose.h>
+#include <petsc-private/kernels/blocktranspose.h>
 #if defined(PETSC_THREADCOMM_ACTIVE)
 #include <petscthreadcomm.h>
 #endif
@@ -2907,7 +2907,7 @@ PetscErrorCode MatGetRowMin_SeqAIJ(Mat A,Vec v,PetscInt idx[])
 }
 
 #include <petscblaslapack.h>
-#include <../src/mat/blockinvert.h>
+#include <petsc-private/kernels/blockinvert.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "MatInvertBlockDiagonal_SeqAIJ"
@@ -3654,7 +3654,7 @@ PetscErrorCode  MatSeqAIJSetPreallocationCSR_SeqAIJ(Mat B,const PetscInt Ii[],co
 }
 
 #include <../src/mat/impls/dense/seq/dense.h>
-#include <petsc-private/petscaxpy.h>
+#include <petsc-private/kernels/petscaxpy.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMatMultNumeric_SeqDense_SeqAIJ"

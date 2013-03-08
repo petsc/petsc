@@ -158,6 +158,8 @@ Within the PETSc source code, we adhere to the following guidelines
 so that the code is uniform and easily maintainable:
 
 \begin{itemize}
+\item Public PETSc includes, \trl{petsc*.h}, cannot include private PETSc \trl{petsc-private/*impl.h} includes.
+\item Public and private PETSc includes, cannot include include files in the PETSc source tree.
 \item All PETSc function bodies are indented two characters.
 \item Each additional level of loops, if statements, etc. is indented
       two more characters.
