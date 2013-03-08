@@ -300,7 +300,7 @@ PetscErrorCode  PetscLogBegin(void)
 .ve
 
   Notes:
-  A related routine is PetscLogBegin (with the options key -log), which is
+  A related routine is PetscLogBegin() (with the options key -log), which is
   intended for production runs since it logs only flop rates and object
   creation (and shouldn't significantly slow the programs).
 
@@ -708,12 +708,12 @@ PetscErrorCode  PetscLogStageGetId(const char name[], PetscLogStage *stage)
   intended for logging user events to supplement this PETSc
   information.
 
-  PETSc can gather data for use with the utilities Upshot/Nupshot
+  PETSc can gather data for use with the utilities Jumpshot
   (part of the MPICH distribution).  If PETSc has been compiled
   with flag -DPETSC_HAVE_MPE (MPE is an additional utility within
   MPICH), the user can employ another command line option, -log_mpe,
   to create a logfile, "mpe.log", which can be visualized
-  Upshot/Nupshot.
+  Jumpshot.
 
   The classid is associated with each event so that classes of events
   can be disabled simultaneously, such as all matrix events. The user
@@ -2564,8 +2564,10 @@ PetscErrorCode  PetscClassIdRegister(const char name[],PetscClassId *oclass)
 #if defined(PETSC_USE_LOG) && defined(PETSC_HAVE_MPE)
 #include <mpe.h>
 
-PetscBool UseMPE        = PETSC_FALSE;
 PetscBool PetscBeganMPE = PETSC_FALSE;
+
+PETSC_INTERN PetscErrorCode PetscLogEventBeginMPE(PetscLogEvent,int,PetscObject,PetscObject,PetscObject,PetscObject);
+PETSC_INTERN PetscErrorCode PetscLogEventEndMPE(PetscLogEvent,int,PetscObject,PetscObject,PetscObject,PetscObject);
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscLogMPEBegin"
@@ -2576,11 +2578,10 @@ PetscBool PetscBeganMPE = PETSC_FALSE;
    Collective over PETSC_COMM_WORLD
 
    Options Database Keys:
-. -log_mpe - Prints extensive log information (for code compiled
-             with PETSC_USE_LOG)
+. -log_mpe - Prints extensive log information (for code compiled with PETSC_USE_LOG)
 
    Notes:
-   A related routine is PetscLogBegin (with the options key -log), which is
+   A related routine is PetscLogBegin() (with the options key -log_summary), which is
    intended for production runs since it logs only flop rates and object
    creation (and should not significantly slow the programs).
 
@@ -2595,7 +2596,6 @@ PetscBool PetscBeganMPE = PETSC_FALSE;
 PetscErrorCode  PetscLogMPEBegin(void)
 {
   PetscErrorCode ierr;
-  PetscMPIInt    rank;
 
   PetscFunctionBegin;
   /* Do MPE initialization */
@@ -2607,15 +2607,14 @@ PetscErrorCode  PetscLogMPEBegin(void)
   } else {
     ierr = PetscInfo(0,"MPE already initialized. Not attempting to reinitialize.\n");CHKERRQ(ierr);
   }
-  ierr   = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
-  UseMPE = PETSC_TRUE;
+  ierr = PetscLogSet(PetscLogEventBeginMPE, PetscLogEventEndMPE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscLogMPEDump"
 /*@C
-   PetscLogMPEDump - Dumps the MPE logging info to file for later use with Upshot.
+   PetscLogMPEDump - Dumps the MPE logging info to file for later use with Jumpshot.
 
    Collective over PETSC_COMM_WORLD
 

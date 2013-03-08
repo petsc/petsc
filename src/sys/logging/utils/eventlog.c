@@ -222,7 +222,29 @@ PetscErrorCode EventPerfLogEnsureSize(PetscEventPerfLog eventLog, int size)
 }
 
 #if defined(PETSC_HAVE_MPE)
+#include "mpe.h"
 PETSC_INTERN PetscErrorCode PetscLogMPEGetRGBColor(const char*[]);
+#undef __FUNCT__
+#define __FUNCT__ "PetscLogEventBeginMPE"
+PetscErrorCode PetscLogEventBeginMPE(PetscLogEvent event, int t, PetscObject o1, PetscObject o2, PetscObject o3, PetscObject o4)
+{
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  ierr = MPE_Log_event(petsc_stageLog->eventLog->eventInfo[event].mpe_id_begin,0,NULL);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscLogEventEndMPE"
+PetscErrorCode PetscLogEventEndMPE(PetscLogEvent event, int t, PetscObject o1, PetscObject o2, PetscObject o3, PetscObject o4)
+{
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  ierr = MPE_Log_event(petsc_stageLog->eventLog->eventInfo[event].mpe_id_end,0,NULL);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 #endif
 
 /*--------------------------------------------- Registration Functions ----------------------------------------------*/
@@ -259,12 +281,12 @@ PETSC_INTERN PetscErrorCode PetscLogMPEGetRGBColor(const char*[]);
   intended for logging user events to supplement this PETSc
   information.
 
-  PETSc can gather data for use with the utilities Upshot/Nupshot
+  PETSc can gather data for use with the utilities Jumpshot
   (part of the MPICH distribution).  If PETSc has been compiled
   with flag -DPETSC_HAVE_MPE (MPE is an additional utility within
   MPICH), the user can employ another command line option, -log_mpe,
   to create a logfile, "mpe.log", which can be visualized
-  Upshot/Nupshot.
+  Jumpshot.
 
   Level: developer
 
@@ -297,7 +319,7 @@ PetscErrorCode EventRegLogRegister(PetscEventRegLog eventLog, const char ename[]
   eventLog->eventInfo[e].name    = str;
   eventLog->eventInfo[e].classid = classid;
 #if defined(PETSC_HAVE_MPE)
-  if (UseMPE) {
+  if (PetscLogPLB == PetscLogEventBeginMPE) {
     const char  *color;
     PetscMPIInt rank;
     int         beginID, endID;
@@ -587,7 +609,6 @@ PetscErrorCode PetscLogEventZeroFlops(PetscLogEvent event)
 extern int PAPIEventSet;
 #endif
 
-/*------------------------------------------------ Action Functions -------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "PetscLogEventBeginDefault"
 PetscErrorCode PetscLogEventBeginDefault(PetscLogEvent event, int t, PetscObject o1, PetscObject o2, PetscObject o3, PetscObject o4)

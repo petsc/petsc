@@ -587,11 +587,19 @@ PetscErrorCode  PetscFreeArguments(char **args)
 
    Options Database Keys for Profiling:
    See the <a href="../../docs/manual.pdf#nameddest=ch_profiling">profiling chapter of the users manual</a> for details.
-+  -log_trace [filename] - Print traces of all PETSc calls
-        to the screen (useful to determine where a program
++  -info <optional filename> - Prints verbose information to the screen
+.  -info_exclude <null,vec,mat,pc,ksp,snes,ts> - Excludes some of the verbose messages
+.  -log_sync - Log the synchronization in scatters, inner products and norms
+.  -log_trace [filename] - Print traces of all PETSc calls to the screen (useful to determine where a program
         hangs without running in the debugger).  See PetscLogTraceBegin().
-.  -info <optional filename> - Prints verbose information to the screen
--  -info_exclude <null,vec,mat,pc,ksp,snes,ts> - Excludes some of the verbose messages
+.  -log_summary [filename] - Prints summary of flop and timing information to screen. If the filename is specified the
+        summary is written to the file.  See PetscLogView().
+.  -log_summary_python [filename] - Prints data on of flop and timing usage to a file or screen. See PetscLogPrintSViewPython().
+.  -log_all [filename] - Logs extensive profiling information  See PetscLogDump().
+.  -log [filename] - Logs basic profiline information  See PetscLogDump().
+-  -log_mpe [filename] - Creates a logfile viewable by the utility Jumpshot (in MPICH distribution)
+
+    Only one of -log_trace, -log_summary, -log_all, -log, or -log_mpe may be used at a time
 
    Environmental Variables:
 +   PETSC_TMP - alternative tmp directory
@@ -873,21 +881,6 @@ extern PetscInt    PetscObjectsCounts, PetscObjectsMaxCounts;
 .  -malloc_dump - Calls PetscMallocDump()
 .  -malloc_info - Prints total memory usage
 -  -malloc_log - Prints summary of memory usage
-
-   Options Database Keys for Profiling:
-   See the <a href="../../docs/manual.pdf#nameddest=ch_profiling">profiling chapter of the users manual</a> for details.
-+  -log_summary [filename] - Prints summary of flop and timing
-        information to screen. If the filename is specified the
-        summary is written to the file.  See PetscLogView().
-.  -log_summary_python [filename] - Prints data on of flop and timing usage to a file or screen.
-        See PetscLogPrintSViewPython().
-.  -log_all [filename] - Logs extensive profiling information
-        See PetscLogDump().
-.  -log [filename] - Logs basic profiline information  See PetscLogDump().
-.  -log_sync - Log the synchronization in scatters, inner products
-        and norms
--  -log_mpe [filename] - Creates a logfile viewable by the
-      utility Upshot/Nupshot (in MPICH distribution)
 
    Level: beginner
 

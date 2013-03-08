@@ -208,21 +208,8 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLogFlops(PetscLogDouble n)
 }
 
 #if defined (PETSC_HAVE_MPE)
-#include "mpe.h"
 PETSC_EXTERN PetscErrorCode PetscLogMPEBegin(void);
 PETSC_EXTERN PetscErrorCode PetscLogMPEDump(const char[]);
-PETSC_EXTERN PetscBool UseMPE;
-#define PETSC_LOG_EVENT_MPE_BEGIN(e) \
-  ((UseMPE && petsc_stageLog->stageInfo[petsc_stageLog->curStage].eventLog->eventInfo[e].active) ? \
-   MPE_Log_event(petsc_stageLog->eventLog->eventInfo[e].mpe_id_begin,0,NULL) : 0)
-
-#define PETSC_LOG_EVENT_MPE_END(e) \
-  ((UseMPE && petsc_stageLog->stageInfo[petsc_stageLog->curStage].eventLog->eventInfo[e].active) ? \
-   MPE_Log_event(petsc_stageLog->eventLog->eventInfo[e].mpe_id_end,0,NULL) : 0)
-
-#else
-#define PETSC_LOG_EVENT_MPE_BEGIN(e) 0
-#define PETSC_LOG_EVENT_MPE_END(e)   0
 #endif
 
 PETSC_EXTERN PetscErrorCode (*PetscLogPLB)(PetscLogEvent,int,PetscObject,PetscObject,PetscObject,PetscObject);
@@ -297,15 +284,13 @@ PETSC_EXTERN PetscLogDouble petsc_sum_of_waits_ct;
 
 #define PetscLogEventBegin(e,o1,o2,o3,o4) \
   (((PetscLogPLB && petsc_stageLog->stageInfo[petsc_stageLog->curStage].perfInfo.active && petsc_stageLog->stageInfo[petsc_stageLog->curStage].eventLog->eventInfo[e].active) ? \
-    (*PetscLogPLB)((e),0,(PetscObject)(o1),(PetscObject)(o2),(PetscObject)(o3),(PetscObject)(o4)) : 0 ) || \
-  PETSC_LOG_EVENT_MPE_BEGIN(e))
+    (*PetscLogPLB)((e),0,(PetscObject)(o1),(PetscObject)(o2),(PetscObject)(o3),(PetscObject)(o4)) : 0 ))
 
 #define PetscLogEventBarrierEnd(e,o1,o2,o3,o4,cm) PetscLogEventEnd(e+1,o1,o2,o3,o4)
 
 #define PetscLogEventEnd(e,o1,o2,o3,o4) \
   (((PetscLogPLE && petsc_stageLog->stageInfo[petsc_stageLog->curStage].perfInfo.active && petsc_stageLog->stageInfo[petsc_stageLog->curStage].eventLog->eventInfo[e].active) ? \
-    (*PetscLogPLE)((e),0,(PetscObject)(o1),(PetscObject)(o2),(PetscObject)(o3),(PetscObject)(o4)) : 0 ) || \
-  PETSC_LOG_EVENT_MPE_END(e))
+    (*PetscLogPLE)((e),0,(PetscObject)(o1),(PetscObject)(o2),(PetscObject)(o3),(PetscObject)(o4)) : 0 ))
 
 PETSC_EXTERN PetscErrorCode PetscLogEventGetFlops(PetscLogEvent, PetscLogDouble*);
 PETSC_EXTERN PetscErrorCode PetscLogEventZeroFlops(PetscLogEvent);
@@ -418,12 +403,6 @@ PETSC_STATIC_INLINE PetscErrorCode PetscMPITypeSizeComm(MPI_Comm comm, PetscLogD
 #else  /* ---Logging is turned off --------------------------------------------*/
 
 #define PetscLogFlops(n) 0
-
-/*
-     With logging turned off, then MPE has to be turned off
-*/
-#define PetscLogMPEBegin()         0
-#define PetscLogMPEDump(a)         0
 
 #define PetscLogEventActivate(a)   0
 #define PetscLogEventDeactivate(a) 0

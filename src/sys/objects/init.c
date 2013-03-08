@@ -493,7 +493,7 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
 #if defined(PETSC_HAVE_MPE)
   flg1 = PETSC_FALSE;
   ierr = PetscOptionsHasName(NULL,"-log_mpe",&flg1);CHKERRQ(ierr);
-  if (flg1) PetscLogMPEBegin();
+  if (flg1) {ierr = PetscLogMPEBegin();CHKERRQ(ierr);}
 #endif
   flg1 = PETSC_FALSE;
   flg2 = PETSC_FALSE;
@@ -600,7 +600,7 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
     ierr = (*PetscHelpPrintf)(comm," -log[_summary _summary_python]: logging objects and events\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm," -log_trace [filename]: prints trace of all PETSc calls\n");CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MPE)
-    ierr = (*PetscHelpPrintf)(comm," -log_mpe: Also create logfile viewable through upshot\n");CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(comm," -log_mpe: Also create logfile viewable through Jumpshot\n");CHKERRQ(ierr);
 #endif
     ierr = (*PetscHelpPrintf)(comm," -info <optional filename>: print informative messages about the calculations\n");CHKERRQ(ierr);
 #endif

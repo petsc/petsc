@@ -5601,18 +5601,18 @@ These statistics can aid in optimizing performance, since they indicate the sect
 could benefit from various kinds of tuning.  Chapter~\ref{ch_performance} gives
 suggestions about achieving good performance with PETSc codes.
 
-\subsection{Using {\tt -log\_mpe} with Upshot/Jumpshot}
+\subsection{Using {\tt -log\_mpe} with Jumpshot}
 \label{sec_mpelogs}
 
-It is also possible to use the {\em Upshot} (or {\em Jumpshot}) package
-\cite{upshot} \sindex{Upshot} \sindex{Nupshot}  to visualize PETSc events.
+It is also possible to use the {\em Jumpshot}) package
+\cite{upshot} \sindex{Jumppshot} to visualize PETSc events.
 This package comes with the MPE software, which is part of the MPICH
 \cite{mpich-web-page} implementation of MPI.
 The option \findex{-log_mpe}
 \begin{tabbing}
    -log\_mpe [logfile]
 \end{tabbing}
-creates a logfile of events appropriate for viewing with {\em Upshot}.
+creates a logfile of events appropriate for viewing with {\em Jumpshot}.
 The user can either use the default logging file, \trl{mpe.log}, or
 specify an optional name via \trl{logfile}.
 
@@ -5672,7 +5672,7 @@ event for profiling purposes:
   PetscLogEventRegister(const char string[],PetscLogEvent *e);
 \end{tabbing}
 Here \trl{string} is a user-defined event name, and \trl{color} is an
-optional user-defined event color (for use with {\em Upshot/Nupshot} logging);
+optional user-defined event color (for use with {\em Jumpshot} logging);
 one should see the manual page for details.  The argument returned in \trl{e} should then
 be passed to the PetscLogEventBegin() and PetscLogEventEnd()
 routines.
@@ -5944,7 +5944,7 @@ are specified.  We briefly highlight usage of these features below.
    summary for various phases of the code. \findex{-log_summary}
 
 \item Run the code with the option \trl{-log_mpe} \trl{[logfilename]}, which creates a
-   logfile of events suitable for viewing with Upshot or Nupshot (part of
+   logfile of events suitable for viewing with Jumpshot (part of
    MPICH). \findex{-log_mpe}
 
 \end{itemize}
