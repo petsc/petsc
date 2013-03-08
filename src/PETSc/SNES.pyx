@@ -219,7 +219,7 @@ cdef class SNES(Object):
             self.set_attr('__converged__', (converged, args, kargs))
         else:
             CHKERR( SNESSetConvergenceTest(
-                    self.snes, SNESDefaultConverged, NULL, NULL) )
+                    self.snes, SNESConvergedDefault, NULL, NULL) )
             self.set_attr('__converged__', None)
 
     def getConvergenceTest(self):

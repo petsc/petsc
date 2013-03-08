@@ -57,7 +57,7 @@ cdef extern from * nogil:
         KSP_DIVERGED_BREAKDOWN_BICG
         KSP_DIVERGED_NONSYMMETRIC
         KSP_DIVERGED_INDEFINITE_PC
-        KSP_DIVERGED_NAN
+        KSP_DIVERGED_NANORINF
         KSP_DIVERGED_INDEFINITE_MAT
 
     ctypedef int (*PetscKSPCtxDel)(void*)

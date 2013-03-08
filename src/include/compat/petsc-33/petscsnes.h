@@ -5,6 +5,8 @@
 #define SNESVINEWTONRSLS SNESVIRS
 #define SNESVINEWTONSSLS SNESVISS
 
+#define SNESConvergedDefault SNESDefaultConverged
+
 #undef __FUNCT__
 #define __FUNCT__ "SNESLogConvergenceHistory"
 static PetscErrorCode

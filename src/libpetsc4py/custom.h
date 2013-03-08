@@ -22,6 +22,11 @@ EXTERN_C_BEGIN
 extern PetscErrorCode (*PetscPythonMonitorSet_C)(PetscObject,const char*);
 EXTERN_C_END
 
+#if PETSC_VERSION_(3,3,0) || PETSC_VERSION_(3,2,0)
+#define KSPBuildSolution_Default KSPDefaultBuildSolution
+#defien KSPBuildResidual_Default KSPDefaultBuildResidual
+#endif
+
 #if PETSC_VERSION_(3,2,0)
 #define _MatOps_setup   setuppreallocation
 #define _TSOps_snes_its nonlinear_its
