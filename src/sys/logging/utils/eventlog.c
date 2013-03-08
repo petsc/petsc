@@ -221,6 +221,10 @@ PetscErrorCode EventPerfLogEnsureSize(PetscEventPerfLog eventLog, int size)
   PetscFunctionReturn(0);
 }
 
+#if defined(PETSC_HAVE_MPE)
+PETSC_INTERN PetscErrorCode PetscLogMPEGetRGBColor(const char*[]);
+#endif
+
 /*--------------------------------------------- Registration Functions ----------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "EventRegLogRegister"
@@ -306,7 +310,7 @@ PetscErrorCode EventRegLogRegister(PetscEventRegLog eventLog, const char ename[]
 
     ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRQ(ierr);
     if (!rank) {
-      ierr = PetscLogGetRGBColor(&color);CHKERRQ(ierr);
+      ierr = PetscLogMPEGetRGBColor(&color);CHKERRQ(ierr);
       MPE_Describe_state(beginID, endID, str, (char*)color);
     }
   }

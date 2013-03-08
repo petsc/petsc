@@ -244,7 +244,6 @@ PETSC_EXTERN PetscErrorCode PetscLogTraceBegin(FILE *);
 PETSC_EXTERN PetscErrorCode PetscLogActions(PetscBool);
 PETSC_EXTERN PetscErrorCode PetscLogObjects(PetscBool);
 /* General functions */
-PETSC_EXTERN PetscErrorCode PetscLogGetRGBColor(const char*[]);
 PETSC_EXTERN PetscErrorCode PetscLogDestroy(void);
 PETSC_EXTERN PetscErrorCode PetscLogSet(PetscErrorCode (*)(int, int, PetscObject, PetscObject, PetscObject, PetscObject),
                                    PetscErrorCode (*)(int, int, PetscObject, PetscObject, PetscObject, PetscObject));
