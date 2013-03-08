@@ -57,9 +57,9 @@
 !
 !  Some PETSc fortran functions that the user might pass as arguments
 !
-      external SNESDEFAULTCOMPUTEJACOBIAN
+      external SNESCOMPUTEJACOBIANDEFAULT
       external MATMFFDCOMPUTEJACOBIAN
-      external SNESDEFAULTCOMPUTEJACOBIANCOLOR
+      external SNESCOMPUTEJACOBIANDEFAULTCOLOR
       external SNESMONITORDEFAULT
       external SNESMONITORLGRESIDUALNORM
       external SNESMONITORSOLUTION
