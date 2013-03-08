@@ -66,7 +66,7 @@ M*/
 
 #undef __FUNCT__
 #define __FUNCT__ "MatGetFactor_seqaij_cusparse"
-PETSC_EXTERN PETSC_EXTERN_C PetscErrorCode MatGetFactor_seqaij_cusparse(Mat A,MatFactorType ftype,Mat *B)
+PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_cusparse(Mat A,MatFactorType ftype,Mat *B)
 {
   PetscErrorCode ierr;
 
