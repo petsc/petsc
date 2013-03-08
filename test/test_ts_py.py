@@ -56,12 +56,6 @@ class MyTS:
     def reset(self, ts, *args):
         self._log('reset', ts, *args)
 
-    def preStep(self, ts, *args):
-        self._log('preStep', ts, *args)
-
-    def postStep(self, ts, *args):
-        self._log('postStep', ts, *args)
-
     def solveStep(self, ts, t, u, *args):
         self._log('solveStep', ts, t, u, *args)
         ts.snes.solve(None, u)
@@ -122,8 +116,6 @@ class TestTSPython(unittest.TestCase):
         
         ctx = self.ts.getPythonContext()
         ncalls = self.nsolve * ts.step_number
-        self.assertTrue(ctx.log['preStep']   == ncalls)
-        self.assertTrue(ctx.log['postStep']  == ncalls)
         self.assertTrue(ctx.log['solveStep'] == ncalls)
         self.assertTrue(ctx.log['adaptStep'] == ncalls)
         del ctx

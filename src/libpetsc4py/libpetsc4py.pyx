@@ -2032,6 +2032,7 @@ cdef extern from * nogil:
     PetscErrorCode TSGetKSP(PetscTS,PetscKSP*)
     PetscErrorCode TSGetSNES(PetscTS,PetscSNES*)
     PetscErrorCode TSPreStep(PetscTS)
+    PetscErrorCode TSPreStage(PetscTS,PetscReal)
     PetscErrorCode TSPostStep(PetscTS)
     PetscErrorCode TSMonitor(PetscTS,PetscInt,PetscReal,PetscVec)
     PetscErrorCode TSComputeIFunction(PetscTS,PetscReal,PetscVec,PetscVec,PetscVec,PetscBool)
@@ -2080,8 +2081,6 @@ cdef PetscErrorCode TSCreate_Python(
     ops.setup          = TSSetUp_Python
     ops.setfromoptions = TSSetFromOptions_Python
     ops.view           = TSView_Python
-    ops.prestep        = TSPreStep_Python
-    ops.poststep       = TSPostStep_Python
     ops.step           = TSStep_Python
     ops.snesfunction   = SNESTSFormFunction_Python
     ops.snesjacobian   = SNESTSFormJacobian_Python
@@ -2198,26 +2197,6 @@ cdef PetscErrorCode TSView_Python(
     cdef view = PyTS(ts).view
     if view is not None:
         view(TS_(ts), Viewer_(vwr))
-    return FunctionEnd()
-
-cdef PetscErrorCode TSPreStep_Python(
-    PetscTS ts,
-    ) \
-    except IERR with gil:
-    FunctionBegin(b"TSPreStep_Python")
-    cdef preStep = PyTS(ts).preStep
-    if preStep is not None:
-        preStep(TS_(ts), <double>ts.ptime, Vec_(ts.vec_sol))
-    return FunctionEnd()
-
-cdef PetscErrorCode TSPostStep_Python(
-    PetscTS ts,
-    ) \
-    except IERR with gil:
-    FunctionBegin(b"TSPostStep_Python")
-    cdef postStep = PyTS(ts).postStep
-    if postStep is not None:
-        postStep(TS_(ts), <double>ts.ptime, Vec_(ts.vec_sol))
     return FunctionEnd()
 
 cdef PetscErrorCode TSStep_Python(
@@ -2371,7 +2350,8 @@ cdef PetscErrorCode TSStep_Python_default(
         ts.time_step = dt
         tt = ts.ptime + ts.time_step
         CHKERR( VecCopy(ts.vec_sol,vec_update) )
-        TSPreStep_Python(ts)
+        TSPreStep(ts)
+        TSPreStage(ts,tt)
         TSSolveStep_Python(ts,tt,vec_update)
         TSAdaptStep_Python(ts,tt,vec_update,&dt,&ok)
         if ok:  break
