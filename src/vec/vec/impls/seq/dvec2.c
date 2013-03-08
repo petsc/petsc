@@ -765,7 +765,7 @@ PetscErrorCode VecMAXPY_kernel(PetscInt thread_id,Vec xin,PetscInt *nv_p,const P
     alpha2 = alpha[2];
     alpha += 3;
     y0 = yy0 + start; y1 = yy1+start; y2 = yy2+start;
-    PetscAXPY3(x,alpha0,alpha1,alpha2,y0,y1,y2,n);
+    PetscKernelAXPY3(x,alpha0,alpha1,alpha2,y0,y1,y2,n);
     ierr = VecRestoreArrayRead(y[0],&yy0);CHKERRQ(ierr);
     ierr = VecRestoreArrayRead(y[1],&yy1);CHKERRQ(ierr);
     ierr = VecRestoreArrayRead(y[2],&yy2);CHKERRQ(ierr);
@@ -778,7 +778,7 @@ PetscErrorCode VecMAXPY_kernel(PetscInt thread_id,Vec xin,PetscInt *nv_p,const P
     alpha1 = alpha[1];
     alpha +=2;
     y0 = yy0+start; y1=yy1+start;
-    PetscAXPY2(x,alpha0,alpha1,y0,y1,n);
+    PetscKernelAXPY2(x,alpha0,alpha1,y0,y1,n);
     ierr = VecRestoreArrayRead(y[0],&yy0);CHKERRQ(ierr);
     ierr = VecRestoreArrayRead(y[1],&yy1);CHKERRQ(ierr);
     y   +=2;
@@ -787,7 +787,7 @@ PetscErrorCode VecMAXPY_kernel(PetscInt thread_id,Vec xin,PetscInt *nv_p,const P
     ierr   = VecGetArrayRead(y[0],&yy0);CHKERRQ(ierr);
     alpha0 = *alpha++;
     y0     = yy0 + start;
-    PetscAXPY(x,alpha0,y0,n);
+    PetscKernelAXPY(x,alpha0,y0,n);
     ierr = VecRestoreArrayRead(y[0],&yy0);CHKERRQ(ierr);
     y   +=1;
     break;
@@ -804,7 +804,7 @@ PetscErrorCode VecMAXPY_kernel(PetscInt thread_id,Vec xin,PetscInt *nv_p,const P
     alpha += 4;
 
     y0 = yy0+start; y1=yy1+start; y2=yy2+start; y3=yy3+start;
-    PetscAXPY4(x,alpha0,alpha1,alpha2,alpha3,y0,y1,y2,y3,n);
+    PetscKernelAXPY4(x,alpha0,alpha1,alpha2,alpha3,y0,y1,y2,y3,n);
     ierr = VecRestoreArrayRead(y[0],&yy0);CHKERRQ(ierr);
     ierr = VecRestoreArrayRead(y[1],&yy1);CHKERRQ(ierr);
     ierr = VecRestoreArrayRead(y[2],&yy2);CHKERRQ(ierr);
@@ -855,7 +855,7 @@ PetscErrorCode VecMAXPY_Seq(Vec xin, PetscInt nv,const PetscScalar *alpha,Vec *y
     alpha1 = alpha[1];
     alpha2 = alpha[2];
     alpha += 3;
-    PetscAXPY3(xx,alpha0,alpha1,alpha2,yy0,yy1,yy2,n);
+    PetscKernelAXPY3(xx,alpha0,alpha1,alpha2,yy0,yy1,yy2,n);
     ierr = VecRestoreArrayRead(y[0],&yy0);CHKERRQ(ierr);
     ierr = VecRestoreArrayRead(y[1],&yy1);CHKERRQ(ierr);
     ierr = VecRestoreArrayRead(y[2],&yy2);CHKERRQ(ierr);
@@ -867,7 +867,7 @@ PetscErrorCode VecMAXPY_Seq(Vec xin, PetscInt nv,const PetscScalar *alpha,Vec *y
     alpha0 = alpha[0];
     alpha1 = alpha[1];
     alpha +=2;
-    PetscAXPY2(xx,alpha0,alpha1,yy0,yy1,n);
+    PetscKernelAXPY2(xx,alpha0,alpha1,yy0,yy1,n);
     ierr = VecRestoreArrayRead(y[0],&yy0);CHKERRQ(ierr);
     ierr = VecRestoreArrayRead(y[1],&yy1);CHKERRQ(ierr);
     y   +=2;
@@ -875,7 +875,7 @@ PetscErrorCode VecMAXPY_Seq(Vec xin, PetscInt nv,const PetscScalar *alpha,Vec *y
   case 1:
     ierr   = VecGetArrayRead(y[0],&yy0);CHKERRQ(ierr);
     alpha0 = *alpha++;
-    PetscAXPY(xx,alpha0,yy0,n);
+    PetscKernelAXPY(xx,alpha0,yy0,n);
     ierr = VecRestoreArrayRead(y[0],&yy0);CHKERRQ(ierr);
     y   +=1;
     break;
@@ -891,7 +891,7 @@ PetscErrorCode VecMAXPY_Seq(Vec xin, PetscInt nv,const PetscScalar *alpha,Vec *y
     alpha3 = alpha[3];
     alpha += 4;
 
-    PetscAXPY4(xx,alpha0,alpha1,alpha2,alpha3,yy0,yy1,yy2,yy3,n);
+    PetscKernelAXPY4(xx,alpha0,alpha1,alpha2,alpha3,yy0,yy1,yy2,yy3,n);
     ierr = VecRestoreArrayRead(y[0],&yy0);CHKERRQ(ierr);
     ierr = VecRestoreArrayRead(y[1],&yy1);CHKERRQ(ierr);
     ierr = VecRestoreArrayRead(y[2],&yy2);CHKERRQ(ierr);

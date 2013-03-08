@@ -3694,7 +3694,7 @@ PetscErrorCode MatMatMultNumeric_SeqDense_SeqAIJ(Mat A,Mat B,Mat C)
     while (q-->0) {
       c_q = c + m*(*idx);
       a_q = a + m*i;
-      PetscAXPY(c_q,*b,a_q,m);
+      PetscKernelAXPY(c_q,*b,a_q,m);
       idx++;
       b++;
     }
