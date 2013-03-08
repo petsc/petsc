@@ -52,7 +52,6 @@ static PetscErrorCode VecPlaceArray_MPI(Vec vin,const PetscScalar *a)
 }
 
 extern PetscErrorCode VecGetValues_MPI(Vec,PetscInt,const PetscInt[],PetscScalar[]);
-static PetscErrorCode VecCreate_MPI_Private(Vec,PetscBool,PetscInt,const PetscScalar[]);
 
 #undef __FUNCT__
 #define __FUNCT__ "VecDuplicate_MPI"
@@ -171,7 +170,7 @@ static struct _VecOps DvOps = { VecDuplicate_MPI, /* 1 */
     If alloc is true and array is NULL then this routine allocates the space, otherwise
     no space is allocated.
 */
-static PetscErrorCode VecCreate_MPI_Private(Vec v,PetscBool alloc,PetscInt nghost,const PetscScalar array[])
+PetscErrorCode VecCreate_MPI_Private(Vec v,PetscBool alloc,PetscInt nghost,const PetscScalar array[])
 {
   Vec_MPI        *s;
   PetscErrorCode ierr;

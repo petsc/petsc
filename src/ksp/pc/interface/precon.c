@@ -296,6 +296,69 @@ static PetscErrorCode PCPublish_Petsc(PetscObject obj)
 #endif
 
 #undef __FUNCT__
+#define __FUNCT__ "PCSetUseAmat"
+/*@
+   PCSetUseAmat - Sets a flag to indicate that when the preconditioner needs to apply (part of) the
+   operator during the preconditioning process it applies the Amat provided to TSSetRHSJacobian(), 
+   TSSetIJacobian(), SNESSetJacobian(), KSPSetOperator() or PCSetOperator() not the Pmat.
+
+   Logically Collective on PC
+
+   Input Parameters:
++  pc - the preconditioner context
+-  flg - PETSC_TRUE to use the Amat, PETSC_FALSE to use the Pmat (default is false)
+
+   Options Database Key:
+.  -pc_use_amat <true,false>
+
+   Notes:
+   For the common case in which the linear system matrix and the matrix used to construct the
+   preconditioner are identical, this routine is does nothing.
+
+   Level: intermediate
+
+.seealso: PCGetUseAmat(), PCBJACOBI, PGMG, PCFIELDSPLIT, PCCOMPOSITE
+@*/
+PetscErrorCode  PCSetUseAmat(PC pc,PetscBool flg)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  pc->useAmat = flg;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PCGetUseAmat"
+/*@
+   PCGetUseAmat - Gets a flag to indicate that when the preconditioner needs to apply (part of) the
+   operator during the preconditioning process it applies the Amat provided to TSSetRHSJacobian(),
+   TSSetIJacobian(), SNESSetJacobian(), KSPSetOperator() or PCSetOperator() not the Pmat.
+
+   Logically Collective on PC
+
+   Input Parameter:
+.  pc - the preconditioner context
+
+   Output Parameter:
+.  flg - PETSC_TRUE to use the Amat, PETSC_FALSE to use the Pmat (default is false)
+
+   Notes:
+   For the common case in which the linear system matrix and the matrix used to construct the
+   preconditioner are identical, this routine is does nothing.
+
+   Level: intermediate
+
+.seealso: PCSetUseAmat(), PCBJACOBI, PGMG, PCFIELDSPLIT, PCCOMPOSITE
+@*/
+PetscErrorCode  PCGetUseAmat(PC pc,PetscBool *flg)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  *flg = pc->useAmat;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PCCreate"
 /*@
    PCCreate - Creates a preconditioner context.
