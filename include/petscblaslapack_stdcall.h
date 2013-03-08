@@ -8,7 +8,11 @@
 */
 #if !defined(_BLASLAPACK_STDCALL_H)
 #define _BLASLAPACK_STDCALL_H
-#include <petsc-private/fortranimpl.h>
+
+/* PETSC_STDCALL is defined on some Microsoft Windows systems and is used for functions compiled by the Fortran compiler */
+#if !defined(PETSC_STDCALL)
+#define PETSC_STDCALL
+#endif
 
 #if !defined(PETSC_USE_COMPLEX)
 # if defined(PETSC_USES_FORTRAN_SINGLE) || defined(PETSC_USE_REAL_SINGLE)
