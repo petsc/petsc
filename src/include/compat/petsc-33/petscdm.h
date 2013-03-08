@@ -1,5 +1,5 @@
 #undef  __FUNC__
-#define __FUNC__ ""
+#define __FUNC__ "DMGetCoordinateDM"
 PetscErrorCode DMGetCoordinateDM(DM dm,DM *cdm)
 {
   PetscBool match;
@@ -7,14 +7,14 @@ PetscErrorCode DMGetCoordinateDM(DM dm,DM *cdm)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidPointer(cdm,2);
-  ierr = PetscObjectTypeCompare((PetscObject)dm, DMDA, &match);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)dm,DMDA,&match);CHKERRQ(ierr);
   if (!match) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,__FUNCT__"() not supported in this PETSc version");
   ierr = DMDAGetCoordinateDA(dm,cdm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef  __FUNC__
-#define __FUNC__ ""
+#define __FUNC__ "DMSetCoordinates"
 PetscErrorCode DMSetCoordinates(DM dm,Vec c)
 {
   PetscBool match;
@@ -22,14 +22,14 @@ PetscErrorCode DMSetCoordinates(DM dm,Vec c)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidHeaderSpecific(c,VEC_CLASSID,2);
-  ierr = PetscObjectTypeCompare((PetscObject)dm, DMDA, &match);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)dm,DMDA,&match);CHKERRQ(ierr);
   if (!match) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,__FUNCT__"() not supported in this PETSc version");
   ierr = DMDASetCoordinates(dm,c);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef  __FUNC__
-#define __FUNC__ ""
+#define __FUNC__ "DMGetCoordinates"
 PetscErrorCode DMGetCoordinates(DM dm,Vec *c)
 {
   PetscBool match;
@@ -37,14 +37,14 @@ PetscErrorCode DMGetCoordinates(DM dm,Vec *c)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidPointer(c,2);
-  ierr = PetscObjectTypeCompare((PetscObject)dm, DMDA, &match);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)dm,DMDA,&match);CHKERRQ(ierr);
   if (!match) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,__FUNCT__"() not supported in this PETSc version");
   ierr = DMDAGetCoordinates(dm,c);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef  __FUNC__
-#define __FUNC__ ""
+#define __FUNC__ "DMSetCoordinatesLocal"
 PetscErrorCode DMSetCoordinatesLocal(DM dm,Vec c)
 {
   PetscBool match;
@@ -52,14 +52,14 @@ PetscErrorCode DMSetCoordinatesLocal(DM dm,Vec c)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidHeaderSpecific(c,VEC_CLASSID,2);
-  ierr = PetscObjectTypeCompare((PetscObject)dm, DMDA, &match);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)dm,DMDA,&match);CHKERRQ(ierr);
   if (!match) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,__FUNCT__"() not supported in this PETSc version");
   ierr = DMDASetGhostedCoordinates(dm,c);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef  __FUNC__
-#define __FUNC__ ""
+#define __FUNC__ "DMGetCoordinatesLocal"
 PetscErrorCode DMGetCoordinatesLocal(DM dm,Vec *c)
 {
   PetscBool match;
@@ -67,7 +67,7 @@ PetscErrorCode DMGetCoordinatesLocal(DM dm,Vec *c)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidPointer(c,2);
-  ierr = PetscObjectTypeCompare((PetscObject)dm, DMDA, &match);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)dm,DMDA,&match);CHKERRQ(ierr);
   if (!match) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,__FUNCT__"() not supported in this PETSc version");
   ierr = DMDAGetGhostedCoordinates(dm,c);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -106,6 +106,7 @@ PetscErrorCode DMCompositeGetAccessArray(DM dm,Vec g,PetscInt n,const PetscInt *
   PetscFunctionReturn(0);
 }
 
+#undef  __FUNCT__
 #define __FUNCT__ "DMCompositeRestoreAccessArray"
 PetscErrorCode DMCompositeRestoreAccessArray(DM dm,Vec g,PetscInt n,const PetscInt *locs,Vec *vecs)
 {
