@@ -3,7 +3,6 @@
 #include <petscksp.h>            /*I "petscksp.h" I*/
 
 typedef struct {
-  PetscBool use_true_matrix;        /* use mat rather than pmat in inner linear solve */
   KSP       ksp;
   PetscInt  its;                    /* total number of iterations KSP uses */
 } PC_KSP;
@@ -69,8 +68,8 @@ static PetscErrorCode PCSetUp_KSP(PC pc)
   PetscFunctionBegin;
   if (!jac->ksp) {ierr = PCKSPCreateKSP_KSP(pc);CHKERRQ(ierr);}
   ierr = KSPSetFromOptions(jac->ksp);CHKERRQ(ierr);
-  if (jac->use_true_matrix) mat = pc->mat;
-  else                      mat = pc->pmat;
+  if (pc->useAmat) mat = pc->mat;
+  else             mat = pc->pmat;
 
   ierr = KSPGetOperatorsSet(jac->ksp,&A,NULL);CHKERRQ(ierr);
   if (!A) {
@@ -129,8 +128,8 @@ static PetscErrorCode PCView_KSP(PC pc,PetscViewer viewer)
   if (!jac->ksp) {ierr = PCKSPCreateKSP_KSP(pc);CHKERRQ(ierr);}
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
-    if (jac->use_true_matrix) {
-      ierr = PetscViewerASCIIPrintf(viewer,"Using true matrix (not preconditioner matrix) on inner solve\n");CHKERRQ(ierr);
+    if (pc->useAmat) {
+      ierr = PetscViewerASCIIPrintf(viewer,"Using Amat (not Pmat) as operator on inner solve\n");CHKERRQ(ierr);
     }
     ierr = PetscViewerASCIIPrintf(viewer,"KSP and PC on KSP preconditioner follow\n");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"---------------------------------\n");CHKERRQ(ierr);
@@ -145,37 +144,6 @@ static PetscErrorCode PCView_KSP(PC pc,PetscViewer viewer)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PCSetFromOptions_KSP"
-static PetscErrorCode PCSetFromOptions_KSP(PC pc)
-{
-  PetscErrorCode ierr;
-  PetscBool      flg = PETSC_FALSE;
-
-  PetscFunctionBegin;
-  ierr = PetscOptionsHead("KSP preconditioner options");CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-pc_ksp_true","Use true matrix to define inner linear system, not preconditioner matrix","PCKSPSetUseTrue",flg,&flg,NULL);CHKERRQ(ierr);
-  if (flg) {
-    ierr = PCKSPSetUseTrue(pc);CHKERRQ(ierr);
-  }
-  ierr = PetscOptionsTail();CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-/* ----------------------------------------------------------------------------------*/
-
-#undef __FUNCT__
-#define __FUNCT__ "PCKSPSetUseTrue_KSP"
-static PetscErrorCode  PCKSPSetUseTrue_KSP(PC pc)
-{
-  PC_KSP *jac;
-
-  PetscFunctionBegin;
-  jac                  = (PC_KSP*)pc->data;
-  jac->use_true_matrix = PETSC_TRUE;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "PCKSPGetKSP_KSP"
 static PetscErrorCode  PCKSPGetKSP_KSP(PC pc,KSP *ksp)
 {
@@ -185,41 +153,6 @@ static PetscErrorCode  PCKSPGetKSP_KSP(PC pc,KSP *ksp)
   PetscFunctionBegin;
   if (!jac->ksp) {ierr = PCKSPCreateKSP_KSP(pc);CHKERRQ(ierr);}
   *ksp = jac->ksp;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "PCKSPSetUseTrue"
-/*@
-   PCKSPSetUseTrue - Sets a flag to indicate that the true matrix (rather than
-   the matrix used to define the preconditioner) is used to compute the
-   residual inside the inner solve.
-
-   Logically Collective on PC
-
-   Input Parameters:
-.  pc - the preconditioner context
-
-   Options Database Key:
-.  -pc_ksp_true - Activates PCKSPSetUseTrue()
-
-   Note:
-   For the common case in which the preconditioning and linear
-   system matrices are identical, this routine is unnecessary.
-
-   Level: advanced
-
-.keywords:  PC, KSP, set, true, local, flag
-
-.seealso: PCSetOperators(), PCBJacobiSetUseTrueLocal()
-@*/
-PetscErrorCode  PCKSPSetUseTrue(PC pc)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  ierr = PetscTryMethod(pc,"PCKSPSetUseTrue_C",(PC),(pc));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -262,9 +195,9 @@ PetscErrorCode  PCKSPGetKSP(PC pc,KSP *ksp)
                  This allows, for example, embedding a Krylov method inside a preconditioner.
 
    Options Database Key:
-.     -pc_ksp_true - use the matrix that defines the linear system as the matrix for the
+.     -pc_use_amat - use the matrix that defines the linear system, Amat as the matrix for the
                     inner solver, otherwise by default it uses the matrix used to construct
-                    the preconditioner (see PCSetOperators())
+                    the preconditioner, Pmat (see PCSetOperators())
 
    Level: intermediate
 
@@ -278,7 +211,7 @@ PetscErrorCode  PCKSPGetKSP(PC pc,KSP *ksp)
      the inner KSP just like the outer KSP.
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
-           PCSHELL, PCCOMPOSITE, PCKSPUseTrue(), PCKSPGetKSP()
+           PCSHELL, PCCOMPOSITE, PCSetUseAmat(), PCKSPGetKSP()
 
 M*/
 
@@ -297,17 +230,14 @@ PETSC_EXTERN PetscErrorCode PCCreate_KSP(PC pc)
   pc->ops->setup           = PCSetUp_KSP;
   pc->ops->reset           = PCReset_KSP;
   pc->ops->destroy         = PCDestroy_KSP;
-  pc->ops->setfromoptions  = PCSetFromOptions_KSP;
+  pc->ops->setfromoptions  = 0;
   pc->ops->view            = PCView_KSP;
   pc->ops->applyrichardson = 0;
 
   pc->data = (void*)jac;
 
 
-  jac->use_true_matrix = PETSC_FALSE;
   jac->its             = 0;
-
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCKSPSetUseTrue_C","PCKSPSetUseTrue_KSP",PCKSPSetUseTrue_KSP);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCKSPGetKSP_C","PCKSPGetKSP_KSP",PCKSPGetKSP_KSP);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

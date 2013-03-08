@@ -18,7 +18,6 @@ typedef struct {
   Vec              work1;
   Vec              work2;
   PetscScalar      alpha;
-  PetscBool        use_true_matrix;
 } PC_Composite;
 
 #undef __FUNCT__
@@ -35,7 +34,7 @@ static PetscErrorCode PCApply_Composite_Multiplicative(PC pc,Vec x,Vec y)
   if (next->next && !jac->work2) { /* allocate second work vector */
     ierr = VecDuplicate(jac->work1,&jac->work2);CHKERRQ(ierr);
   }
-  if (jac->use_true_matrix) mat = pc->mat;
+  if (pc->useAmat) mat = pc->mat;
   ierr = PCApply(next->pc,x,y);CHKERRQ(ierr);
   while (next->next) {
     next = next->next;
@@ -72,7 +71,7 @@ static PetscErrorCode PCApplyTranspose_Composite_Multiplicative(PC pc,Vec x,Vec 
   if (next->next && !jac->work2) { /* allocate second work vector */
     ierr = VecDuplicate(jac->work1,&jac->work2);CHKERRQ(ierr);
   }
-  if (jac->use_true_matrix) mat = pc->mat;
+  if (pc->useAmat) mat = pc->mat;
   /* locate last PC */
   while (next->next) {
     next = next->next;
@@ -236,11 +235,6 @@ static PetscErrorCode PCSetFromOptions_Composite(PC pc)
   if (flg) {
     ierr = PCCompositeSetType(pc,jac->type);CHKERRQ(ierr);
   }
-  flg  = PETSC_FALSE;
-  ierr = PetscOptionsBool("-pc_composite_true","Use true matrix for inner solves","PCCompositeSetUseTrue",flg,&flg,NULL);CHKERRQ(ierr);
-  if (flg) {
-    ierr = PCCompositeSetUseTrue(pc);CHKERRQ(ierr);
-  }
   ierr = PetscOptionsStringArray("-pc_composite_pcs","List of composite solvers","PCCompositeAddPC",pcs,&nmax,&flg);CHKERRQ(ierr);
   if (flg) {
     for (i=0; i<nmax; i++) {
@@ -381,18 +375,6 @@ static PetscErrorCode  PCCompositeGetPC_Composite(PC pc,PetscInt n,PC *subpc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCCompositeSetUseTrue_Composite"
-static PetscErrorCode  PCCompositeSetUseTrue_Composite(PC pc)
-{
-  PC_Composite *jac;
-
-  PetscFunctionBegin;
-  jac                  = (PC_Composite*)pc->data;
-  jac->use_true_matrix = PETSC_TRUE;
-  PetscFunctionReturn(0);
-}
-
 /* -------------------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "PCCompositeSetType"
@@ -506,41 +488,6 @@ PetscErrorCode  PCCompositeGetPC(PC pc,PetscInt n,PC *subpc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCCompositeSetUseTrue"
-/*@
-   PCCompositeSetUseTrue - Sets a flag to indicate that the true matrix (rather than
-                      the matrix used to define the preconditioner) is used to compute
-                      the residual when the multiplicative scheme is used.
-
-   Logically Collective on PC
-
-   Input Parameters:
-.  pc - the preconditioner context
-
-   Options Database Key:
-.  -pc_composite_true - Activates PCCompositeSetUseTrue()
-
-   Note:
-   For the common case in which the preconditioning and linear
-   system matrices are identical, this routine is unnecessary.
-
-   Level: Developer
-
-.keywords: PC, composite preconditioner, set, true, flag
-
-.seealso: PCSetOperators(), PCBJacobiSetUseTrueLocal(), PCKSPSetUseTrue()
-@*/
-PetscErrorCode  PCCompositeSetUseTrue(PC pc)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  ierr = PetscTryMethod(pc,"PCCompositeSetUseTrue_C",(PC),(pc));CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
 /* -------------------------------------------------------------------------------------------*/
 
 /*MC
@@ -548,7 +495,7 @@ PetscErrorCode  PCCompositeSetUseTrue(PC pc)
 
    Options Database Keys:
 +  -pc_composite_type <type: one of multiplicative, additive, symmetric_multiplicative, special> - Sets composite preconditioner type
-.  -pc_composite_true - Activates PCCompositeSetUseTrue()
+.  -pc_use_amat - Activates PCSetUseAmat()
 -  -pc_composite_pcs - <pc0,pc1,...> list of PCs to compose
 
    Level: intermediate
@@ -563,7 +510,7 @@ PetscErrorCode  PCCompositeSetUseTrue(PC pc)
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
            PCSHELL, PCKSP, PCCompositeSetType(), PCCompositeSpecialSetAlpha(), PCCompositeAddPC(),
-           PCCompositeGetPC(), PCCompositeSetUseTrue()
+           PCCompositeGetPC(), PCSetUseAmat()
 
 M*/
 
@@ -595,7 +542,6 @@ PETSC_EXTERN PetscErrorCode PCCreate_Composite(PC pc)
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCCompositeSetType_C","PCCompositeSetType_Composite",PCCompositeSetType_Composite);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCCompositeAddPC_C","PCCompositeAddPC_Composite",PCCompositeAddPC_Composite);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCCompositeGetPC_C","PCCompositeGetPC_Composite",PCCompositeGetPC_Composite);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCCompositeSetUseTrue_C","PCCompositeSetUseTrue_Composite",PCCompositeSetUseTrue_Composite);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCCompositeSpecialSetAlpha_C","PCCompositeSpecialSetAlpha_Composite",PCCompositeSpecialSetAlpha_Composite);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

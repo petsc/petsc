@@ -115,14 +115,14 @@ end_1:
     mat  = pc->mat;
     pmat = pc->pmat;
   } else {
-    if (jac->use_true_local) {
-      /* use block from true matrix, not preconditioner matrix for local MatMult() */
+    if (pc->useAmat) {
+      /* use block from Amat matrix, not Pmat for local MatMult() */
       ierr = MatGetDiagonalBlock(pc->mat,&mat);CHKERRQ(ierr);
       /* make submatrix have same prefix as entire matrix */
       ierr = PetscObjectGetOptionsPrefix((PetscObject)pc->mat,&mprefix);CHKERRQ(ierr);
       ierr = PetscObjectSetOptionsPrefix((PetscObject)mat,mprefix);CHKERRQ(ierr);
     }
-    if (pc->pmat != pc->mat || !jac->use_true_local) {
+    if (pc->pmat != pc->mat || !pc->useAmat) {
       ierr = MatGetDiagonalBlock(pc->pmat,&pmat);CHKERRQ(ierr);
       /* make submatrix have same prefix as entire matrix */
       ierr = PetscObjectGetOptionsPrefix((PetscObject)pc->pmat,&pprefix);CHKERRQ(ierr);
@@ -172,11 +172,6 @@ static PetscErrorCode PCSetFromOptions_BJacobi(PC pc)
   if (flg) {
     ierr = PCBJacobiSetTotalBlocks(pc,blocks,NULL);CHKERRQ(ierr);
   }
-  flg  = PETSC_FALSE;
-  ierr = PetscOptionsBool("-pc_bjacobi_truelocal","Use the true matrix, not preconditioner matrix to define matrix vector product in sub-problems","PCBJacobiSetUseTrueLocal",flg,&flg,NULL);CHKERRQ(ierr);
-  if (flg) {
-    ierr = PCBJacobiSetUseTrueLocal(pc);CHKERRQ(ierr);
-  }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -199,8 +194,8 @@ static PetscErrorCode PCView_BJacobi(PC pc,PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw);CHKERRQ(ierr);
   if (iascii) {
-    if (jac->use_true_local) {
-      ierr = PetscViewerASCIIPrintf(viewer,"  block Jacobi: using true local matrix, number of blocks = %D\n",jac->n);CHKERRQ(ierr);
+    if (pc->useAmat) {
+      ierr = PetscViewerASCIIPrintf(viewer,"  block Jacobi: using Amat local matrix, number of blocks = %D\n",jac->n);CHKERRQ(ierr);
     }
     ierr = PetscViewerASCIIPrintf(viewer,"  block Jacobi: number of blocks = %D\n",jac->n);CHKERRQ(ierr);
     ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)pc),&rank);CHKERRQ(ierr);
@@ -265,18 +260,6 @@ static PetscErrorCode PCView_BJacobi(PC pc,PetscViewer viewer)
 }
 
 /* -------------------------------------------------------------------------------------*/
-
-#undef __FUNCT__
-#define __FUNCT__ "PCBJacobiSetUseTrueLocal_BJacobi"
-static PetscErrorCode  PCBJacobiSetUseTrueLocal_BJacobi(PC pc)
-{
-  PC_BJacobi *jac;
-
-  PetscFunctionBegin;
-  jac                 = (PC_BJacobi*)pc->data;
-  jac->use_true_local = PETSC_TRUE;
-  PetscFunctionReturn(0);
-}
 
 #undef __FUNCT__
 #define __FUNCT__ "PCBJacobiGetSubKSP_BJacobi"
@@ -362,44 +345,6 @@ static PetscErrorCode  PCBJacobiGetLocalBlocks_BJacobi(PC pc, PetscInt *blocks, 
 /* -------------------------------------------------------------------------------------*/
 
 #undef __FUNCT__
-#define __FUNCT__ "PCBJacobiSetUseTrueLocal"
-/*@
-   PCBJacobiSetUseTrueLocal - Sets a flag to indicate that the block
-   problem is associated with the linear system matrix instead of the
-   default (where it is associated with the preconditioning matrix).
-   That is, if the local system is solved iteratively then it iterates
-   on the block from the matrix using the block from the preconditioner
-   as the preconditioner for the local block.
-
-   Logically Collective on PC
-
-   Input Parameters:
-.  pc - the preconditioner context
-
-   Options Database Key:
-.  -pc_bjacobi_truelocal - Activates PCBJacobiSetUseTrueLocal()
-
-   Notes:
-   For the common case in which the preconditioning and linear
-   system matrices are identical, this routine is unnecessary.
-
-   Level: intermediate
-
-.keywords:  block, Jacobi, set, true, local, flag
-
-.seealso: PCSetOperators(), PCBJacobiSetLocalBlocks()
-@*/
-PetscErrorCode  PCBJacobiSetUseTrueLocal(PC pc)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  ierr = PetscTryMethod(pc,"PCBJacobiSetUseTrueLocal_C",(PC),(pc));CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "PCBJacobiGetSubKSP"
 /*@C
    PCBJacobiGetSubKSP - Gets the local KSP contexts for all blocks on
@@ -467,7 +412,7 @@ PetscErrorCode  PCBJacobiGetSubKSP(PC pc,PetscInt *n_local,PetscInt *first_local
 
 .keywords:  set, number, Jacobi, global, total, blocks
 
-.seealso: PCBJacobiSetUseTrueLocal(), PCBJacobiSetLocalBlocks()
+.seealso: PCSetUseAmat(), PCBJacobiSetLocalBlocks()
 @*/
 PetscErrorCode  PCBJacobiSetTotalBlocks(PC pc,PetscInt blocks,const PetscInt lens[])
 {
@@ -499,7 +444,7 @@ PetscErrorCode  PCBJacobiSetTotalBlocks(PC pc,PetscInt blocks,const PetscInt len
 
 .keywords:  get, number, Jacobi, global, total, blocks
 
-.seealso: PCBJacobiSetUseTrueLocal(), PCBJacobiGetLocalBlocks()
+.seealso: PCSetUseAmat(), PCBJacobiGetLocalBlocks()
 @*/
 PetscErrorCode  PCBJacobiGetTotalBlocks(PC pc, PetscInt *blocks, const PetscInt *lens[])
 {
@@ -532,7 +477,7 @@ PetscErrorCode  PCBJacobiGetTotalBlocks(PC pc, PetscInt *blocks, const PetscInt 
 
 .keywords: PC, set, number, Jacobi, local, blocks
 
-.seealso: PCBJacobiSetUseTrueLocal(), PCBJacobiSetTotalBlocks()
+.seealso: PCSetUseAmat(), PCBJacobiSetTotalBlocks()
 @*/
 PetscErrorCode  PCBJacobiSetLocalBlocks(PC pc,PetscInt blocks,const PetscInt lens[])
 {
@@ -565,7 +510,7 @@ PetscErrorCode  PCBJacobiSetLocalBlocks(PC pc,PetscInt blocks,const PetscInt len
 
 .keywords: PC, get, number, Jacobi, local, blocks
 
-.seealso: PCBJacobiSetUseTrueLocal(), PCBJacobiGetTotalBlocks()
+.seealso: PCSetUseAmat(), PCBJacobiGetTotalBlocks()
 @*/
 PetscErrorCode  PCBJacobiGetLocalBlocks(PC pc, PetscInt *blocks, const PetscInt *lens[])
 {
@@ -585,7 +530,7 @@ PetscErrorCode  PCBJacobiGetLocalBlocks(PC pc, PetscInt *blocks, const PetscInt 
            its own KSP object.
 
    Options Database Keys:
-.  -pc_bjacobi_truelocal - Activates PCBJacobiSetUseTrueLocal()
+.  -pc_use_amat - use Amat to apply block of operator in inner Krylov method
 
    Notes: Each processor can have one or more blocks, but a block cannot be shared by more
      than one processor. Defaults to one block per processor.
@@ -610,7 +555,7 @@ PetscErrorCode  PCBJacobiGetLocalBlocks(PC pc, PetscInt *blocks, const PetscInt 
 
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
-           PCASM, PCBJacobiSetUseTrueLocal(), PCBJacobiGetSubKSP(), PCBJacobiSetTotalBlocks(),
+           PCASM, PCSetUseAmat(), PCGetUseAmat(), PCBJacobiGetSubKSP(), PCBJacobiSetTotalBlocks(),
            PCBJacobiSetLocalBlocks(), PCSetModifySubmatrices()
 M*/
 
@@ -639,13 +584,11 @@ PETSC_EXTERN PetscErrorCode PCCreate_BJacobi(PC pc)
   jac->n_local           = -1;
   jac->first_local       = rank;
   jac->ksp               = 0;
-  jac->use_true_local    = PETSC_FALSE;
   jac->same_local_solves = PETSC_TRUE;
   jac->g_lens            = 0;
   jac->l_lens            = 0;
   jac->psubcomm          = 0;
 
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBJacobiSetUseTrueLocal_C","PCBJacobiSetUseTrueLocal_BJacobi",PCBJacobiSetUseTrueLocal_BJacobi);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBJacobiGetSubKSP_C","PCBJacobiGetSubKSP_BJacobi",PCBJacobiGetSubKSP_BJacobi);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBJacobiSetTotalBlocks_C","PCBJacobiSetTotalBlocks_BJacobi",PCBJacobiSetTotalBlocks_BJacobi);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBJacobiGetTotalBlocks_C","PCBJacobiGetTotalBlocks_BJacobi",PCBJacobiGetTotalBlocks_BJacobi);CHKERRQ(ierr);
@@ -885,7 +828,7 @@ static PetscErrorCode PCSetUp_BJacobi_Singleblock(PC pc,Mat mat,Mat pmat)
     ksp  = jac->ksp[0];
     bjac = (PC_BJacobi_Singleblock*)jac->data;
   }
-  if (jac->use_true_local) {
+  if (pc->useAmat) {
     ierr = KSPSetOperators(ksp,mat,pmat,pc->flag);CHKERRQ(ierr);
   } else {
     ierr = KSPSetOperators(ksp,pmat,pmat,pc->flag);CHKERRQ(ierr);
@@ -909,7 +852,7 @@ PetscErrorCode PCReset_BJacobi_Multiblock(PC pc)
   PetscFunctionBegin;
   if (bjac && bjac->pmat) {
     ierr = MatDestroyMatrices(jac->n_local,&bjac->pmat);CHKERRQ(ierr);
-    if (jac->use_true_local) {
+    if (pc->useAmat) {
       ierr = MatDestroyMatrices(jac->n_local,&bjac->mat);CHKERRQ(ierr);
     }
   }
@@ -1061,7 +1004,7 @@ static PetscErrorCode PCSetUp_BJacobi_Multiblock(PC pc,Mat mat,Mat pmat)
 
   n_local = jac->n_local;
 
-  if (jac->use_true_local) {
+  if (pc->useAmat) {
     PetscBool same;
     ierr = PetscObjectTypeCompare((PetscObject)mat,((PetscObject)pmat)->type_name,&same);CHKERRQ(ierr);
     if (!same) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_INCOMP,"Matrices not of same type");
@@ -1137,7 +1080,7 @@ static PetscErrorCode PCSetUp_BJacobi_Multiblock(PC pc,Mat mat,Mat pmat)
     */
     if (pc->flag == DIFFERENT_NONZERO_PATTERN) {
       ierr = MatDestroyMatrices(n_local,&bjac->pmat);CHKERRQ(ierr);
-      if (jac->use_true_local) {
+      if (pc->useAmat) {
         ierr = MatDestroyMatrices(n_local,&bjac->mat);CHKERRQ(ierr);
       }
       scall = MAT_INITIAL_MATRIX;
@@ -1145,7 +1088,7 @@ static PetscErrorCode PCSetUp_BJacobi_Multiblock(PC pc,Mat mat,Mat pmat)
   }
 
   ierr = MatGetSubMatrices(pmat,n_local,bjac->is,bjac->is,scall,&bjac->pmat);CHKERRQ(ierr);
-  if (jac->use_true_local) {
+  if (pc->useAmat) {
     ierr = PetscObjectGetOptionsPrefix((PetscObject)mat,&mprefix);CHKERRQ(ierr);
     ierr = MatGetSubMatrices(mat,n_local,bjac->is,bjac->is,scall,&bjac->mat);CHKERRQ(ierr);
   }
@@ -1157,7 +1100,7 @@ static PetscErrorCode PCSetUp_BJacobi_Multiblock(PC pc,Mat mat,Mat pmat)
   for (i=0; i<n_local; i++) {
     ierr = PetscLogObjectParent(pc,bjac->pmat[i]);CHKERRQ(ierr);
     ierr = PetscObjectSetOptionsPrefix((PetscObject)bjac->pmat[i],pprefix);CHKERRQ(ierr);
-    if (jac->use_true_local) {
+    if (pc->useAmat) {
       ierr = PetscLogObjectParent(pc,bjac->mat[i]);CHKERRQ(ierr);
       ierr = PetscObjectSetOptionsPrefix((PetscObject)bjac->mat[i],mprefix);CHKERRQ(ierr);
       ierr = KSPSetOperators(jac->ksp[i],bjac->mat[i],bjac->pmat[i],pc->flag);CHKERRQ(ierr);

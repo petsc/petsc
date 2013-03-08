@@ -129,6 +129,8 @@ typedef enum {
 PETSC_EXTERN PetscErrorCode PCApplyRichardson(PC,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,PetscInt,PetscBool ,PetscInt*,PCRichardsonConvergedReason*);
 PETSC_EXTERN PetscErrorCode PCApplyRichardsonExists(PC,PetscBool *);
 PETSC_EXTERN PetscErrorCode PCSetInitialGuessNonzero(PC,PetscBool );
+PETSC_EXTERN PetscErrorCode PCSetUseAmat(PC,PetscBool);
+PETSC_EXTERN PetscErrorCode PCGetUseAmat(PC,PetscBool*);
 
 PETSC_EXTERN PetscErrorCode PCRegisterDestroy(void);
 PETSC_EXTERN PetscErrorCode PCRegisterAll(const char[]);
@@ -227,11 +229,8 @@ PETSC_EXTERN PetscErrorCode PCSORSetIterations(PC,PetscInt,PetscInt);
 PETSC_EXTERN PetscErrorCode PCEisenstatSetOmega(PC,PetscReal);
 PETSC_EXTERN PetscErrorCode PCEisenstatNoDiagonalScaling(PC);
 
-PETSC_EXTERN PetscErrorCode PCBJacobiSetUseTrueLocal(PC);
 PETSC_EXTERN PetscErrorCode PCBJacobiSetTotalBlocks(PC,PetscInt,const PetscInt[]);
 PETSC_EXTERN PetscErrorCode PCBJacobiSetLocalBlocks(PC,PetscInt,const PetscInt[]);
-
-PETSC_EXTERN PetscErrorCode PCKSPSetUseTrue(PC);
 
 PETSC_EXTERN PetscErrorCode PCShellSetApply(PC,PetscErrorCode (*)(PC,Vec,Vec));
 PETSC_EXTERN PetscErrorCode PCShellSetApplyBA(PC,PetscErrorCode (*)(PC,PCSide,Vec,Vec,Vec));
@@ -368,7 +367,6 @@ E*/
 typedef enum {PC_COMPOSITE_ADDITIVE,PC_COMPOSITE_MULTIPLICATIVE,PC_COMPOSITE_SYMMETRIC_MULTIPLICATIVE,PC_COMPOSITE_SPECIAL,PC_COMPOSITE_SCHUR} PCCompositeType;
 PETSC_EXTERN const char *const PCCompositeTypes[];
 
-PETSC_EXTERN PetscErrorCode PCCompositeSetUseTrue(PC);
 PETSC_EXTERN PetscErrorCode PCCompositeSetType(PC,PCCompositeType);
 PETSC_EXTERN PetscErrorCode PCCompositeAddPC(PC,PCType);
 PETSC_EXTERN PetscErrorCode PCCompositeGetPC(PC,PetscInt,PC *);

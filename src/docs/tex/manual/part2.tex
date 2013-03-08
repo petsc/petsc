@@ -2931,10 +2931,10 @@ the application of $ A $ inside the preconditioner.
 In the multiplicative version, the calculation of the residual inside the
 preconditioner can be done in two ways: using the original linear system matrix
 or using the matrix used to build the preconditioners \trl{B1}, \trl{B2}, etc.
-By default it uses the ``preconditioner matrix'', to use the true matrix use the
+By default it uses the ``preconditioner matrix'', to use the \trl{Amat} matrix use the
 option
 \begin{tabbing}
-  PCCompositeSetUseTrue(PC pc);
+  PCSetUseAmat(PC pc);
 \end{tabbing}
 
 The individual
@@ -2954,9 +2954,9 @@ These various options can also be set via the options database. For example,
 \findex{-pc_composite_pcs} causes the composite preconditioner to be used with
 two preconditioners: Jacobi and ILU. The option \trl{-pc_composite_type} \trl{multiplicative}
 \findex{-pc_composite_type} initiates the multiplicative version of the algorithm,
-while \trl{-pc_composite_type} \trl{additive} the additive version. Using the true
-preconditioner is obtained with the option \trl{-pc_composite_true}.
-\findex{-pc_composite_true} One sets options for the subpreconditioners with the
+while \trl{-pc_composite_type} \trl{additive} the additive version. Using the \trl{Amat}
+matrix is obtained with the option \trl{-pc_use_amat}.
+\findex{-pc_use_amat} One sets options for the subpreconditioners with the
 extra prefix \trl{-sub_N_} where \trl{N} is the number of the subpreconditioner.
 For example, \trl{-sub_0_pc_ifactor_fill} \trl{0}.
 
@@ -2972,13 +2972,13 @@ From the command line one can use 5 iterations of
 bi-CG-stab with ILU(0) preconditioning as the preconditioner with
 \trl{-pc_type ksp -ksp_pc_type ilu -ksp_ksp_max_it 5 -ksp_ksp_type bcgs}.
 
-By default the inner KSP preconditioner uses the outer preconditioner matrix
-as the matrix to be solved in the linear system; to use the true matrix use the
+By default the inner KSP preconditioner uses the outer preconditioner matrix, \trl{Pmat},
+as the matrix to be solved in the linear system; to use the matrix that defines the linear system, \trl{Amat} use the
 option
 \begin{tabbing}
-  PCKSPSetUseTrue(PC pc);
+  PCSetUseAmat(PC pc);
 \end{tabbing}
-or at the command line with \trl{-pc_ksp_true}. \findex{-pc_ksp_true}
+or at the command line with \trl{-pc_use_amat}. \findex{-pc_use_amat}
 
 Naturally one can use a KSP preconditioner inside a composite preconditioner. For example,
 \trl{-pc_type composite -pc_composite_pcs ilu,ksp -sub_1_pc_type jacobi -sub_1_ksp_max_it 10}

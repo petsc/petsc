@@ -1008,8 +1008,7 @@ PetscErrorCode  PCASMGetSubKSP(PC pc,PetscInt *n_local,PetscInt *first_local,KSP
            its own KSP object.
 
    Options Database Keys:
-+  -pc_asm_truelocal - Activates PCASMSetUseTrueLocal()
-.  -pc_asm_blocks <blks> - Sets total blocks
++  -pc_asm_blocks <blks> - Sets total blocks
 .  -pc_asm_overlap <ovl> - Sets overlap
 -  -pc_asm_type [basic,restrict,interpolate,none] - Sets ASM type
 
@@ -1040,7 +1039,7 @@ PetscErrorCode  PCASMGetSubKSP(PC pc,PetscInt *n_local,PetscInt *first_local,KSP
     Barry Smith, Petter Bjorstad, and William Gropp, Cambridge University Press, ISBN 0-521-49589-X.
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
-           PCBJACOBI, PCASMSetUseTrueLocal(), PCASMGetSubKSP(), PCASMSetLocalSubdomains(),
+           PCBJACOBI, PCASMGetSubKSP(), PCASMSetLocalSubdomains(),
            PCASMSetTotalSubdomains(), PCSetModifySubmatrices(), PCASMSetOverlap(), PCASMSetType()
 
 M*/
