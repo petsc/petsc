@@ -58,49 +58,49 @@ PETSC_EXTERN void PETSC_STDCALL dmkspsetcomputeoperators_(DM *dm,void (PETSC_STD
    functions, hence no STDCALL
 */
 
-void kspdefaultconverged_(KSP *ksp,PetscInt *n,PetscReal *rnorm,KSPConvergedReason *flag,void *dummy,PetscErrorCode *ierr)
+PETSC_EXTERN void kspdefaultconverged_(KSP *ksp,PetscInt *n,PetscReal *rnorm,KSPConvergedReason *flag,void *dummy,PetscErrorCode *ierr)
 {
   CHKFORTRANNULLOBJECT(dummy);
   *ierr = KSPDefaultConverged(*ksp,*n,*rnorm,flag,dummy);
 }
 
-void kspskipconverged_(KSP *ksp,PetscInt *n,PetscReal *rnorm,KSPConvergedReason *flag,void *dummy,PetscErrorCode *ierr)
+PETSC_EXTERN void kspskipconverged_(KSP *ksp,PetscInt *n,PetscReal *rnorm,KSPConvergedReason *flag,void *dummy,PetscErrorCode *ierr)
 {
   CHKFORTRANNULLOBJECT(dummy);
   *ierr = KSPSkipConverged(*ksp,*n,*rnorm,flag,dummy);
 }
 
-void kspgmresmonitorkrylov_(KSP *ksp,PetscInt *it,PetscReal *norm,void *ctx,PetscErrorCode *ierr)
+PETSC_EXTERN void kspgmresmonitorkrylov_(KSP *ksp,PetscInt *it,PetscReal *norm,void *ctx,PetscErrorCode *ierr)
 {
   *ierr = KSPGMRESMonitorKrylov(*ksp,*it,*norm,ctx);
 }
 
-void  kspmonitordefault_(KSP *ksp,PetscInt *it,PetscReal *norm,void *ctx,PetscErrorCode *ierr)
+PETSC_EXTERN void  kspmonitordefault_(KSP *ksp,PetscInt *it,PetscReal *norm,void *ctx,PetscErrorCode *ierr)
 {
   *ierr = KSPMonitorDefault(*ksp,*it,*norm,ctx);
 }
 
-void  kspmonitorsingularvalue_(KSP *ksp,PetscInt *it,PetscReal *norm,void *ctx,PetscErrorCode *ierr)
+PETSC_EXTERN void  kspmonitorsingularvalue_(KSP *ksp,PetscInt *it,PetscReal *norm,void *ctx,PetscErrorCode *ierr)
 {
   *ierr = KSPMonitorSingularValue(*ksp,*it,*norm,ctx);
 }
 
-void  kspmonitorlgresidualnorm_(KSP *ksp,PetscInt *it,PetscReal *norm,void *ctx,PetscErrorCode *ierr)
+PETSC_EXTERN void  kspmonitorlgresidualnorm_(KSP *ksp,PetscInt *it,PetscReal *norm,void *ctx,PetscErrorCode *ierr)
 {
   *ierr = KSPMonitorLGResidualNorm(*ksp,*it,*norm,ctx);
 }
 
-void  kspmonitorlgtrueresidualnorm_(KSP *ksp,PetscInt *it,PetscReal *norm,void *ctx,PetscErrorCode *ierr)
+PETSC_EXTERN void  kspmonitorlgtrueresidualnorm_(KSP *ksp,PetscInt *it,PetscReal *norm,void *ctx,PetscErrorCode *ierr)
 {
   *ierr = KSPMonitorLGTrueResidualNorm(*ksp,*it,*norm,ctx);
 }
 
-void  kspmonitortrueresidualnorm_(KSP *ksp,PetscInt *it,PetscReal *norm,void *ctx,PetscErrorCode *ierr)
+PETSC_EXTERN void  kspmonitortrueresidualnorm_(KSP *ksp,PetscInt *it,PetscReal *norm,void *ctx,PetscErrorCode *ierr)
 {
   *ierr = KSPMonitorTrueResidualNorm(*ksp,*it,*norm,ctx);
 }
 
-void  kspmonitorsolution_(KSP *ksp,PetscInt *it,PetscReal *norm,void *ctx,PetscErrorCode *ierr)
+PETSC_EXTERN void  kspmonitorsolution_(KSP *ksp,PetscInt *it,PetscReal *norm,void *ctx,PetscErrorCode *ierr)
 {
   *ierr = KSPMonitorSolution(*ksp,*it,*norm,ctx);
 }

@@ -131,15 +131,15 @@ static PetscErrorCode ourmondestroy(void **ctx)
 
   functions, hence no STDCALL
 */
-void matmffdcomputejacobian_(SNES *snes,Vec *x,Mat *m,Mat *p,MatStructure *type,void *ctx,PetscErrorCode *ierr)
+PETSC_EXTERN void matmffdcomputejacobian_(SNES *snes,Vec *x,Mat *m,Mat *p,MatStructure *type,void *ctx,PetscErrorCode *ierr)
 {
   *ierr = MatMFFDComputeJacobian(*snes,*x,m,p,type,ctx);
 }
-void snescomputejacobiandefault_(SNES *snes,Vec *x,Mat *m,Mat *p,MatStructure *type,void *ctx,PetscErrorCode *ierr)
+PETSC_EXTERN void snescomputejacobiandefault_(SNES *snes,Vec *x,Mat *m,Mat *p,MatStructure *type,void *ctx,PetscErrorCode *ierr)
 {
   *ierr = SNESComputeJacobianDefault(*snes,*x,m,p,type,ctx);
 }
-void  snescomputejacobiandefaultcolor_(SNES *snes,Vec *x,Mat *m,Mat *p,MatStructure *type,void *ctx,PetscErrorCode *ierr)
+PETSC_EXTERN void  snescomputejacobiandefaultcolor_(SNES *snes,Vec *x,Mat *m,Mat *p,MatStructure *type,void *ctx,PetscErrorCode *ierr)
 {
   *ierr = SNESComputeJacobianDefaultColor(*snes,*x,m,p,type,*(MatFDColoring*)ctx);
 }
@@ -232,12 +232,12 @@ PETSC_EXTERN void PETSC_STDCALL snesgetgs_(SNES *snes,void *func,void **ctx,Pets
 
 /*----------------------------------------------------------------------*/
 
-void snesconvergeddefault_(SNES *snes,PetscInt *it,PetscReal *a,PetscReal *b,PetscReal *c,SNESConvergedReason *r, void *ct,PetscErrorCode *ierr)
+PETSC_EXTERN void snesconvergeddefault_(SNES *snes,PetscInt *it,PetscReal *a,PetscReal *b,PetscReal *c,SNESConvergedReason *r, void *ct,PetscErrorCode *ierr)
 {
   *ierr = SNESConvergedDefault(*snes,*it,*a,*b,*c,r,ct);
 }
 
-void snesskipconverged_(SNES *snes,PetscInt *it,PetscReal *a,PetscReal *b,PetscReal *c,SNESConvergedReason *r,void *ct,PetscErrorCode *ierr)
+PETSC_EXTERN void snesskipconverged_(SNES *snes,PetscInt *it,PetscReal *a,PetscReal *b,PetscReal *c,SNESConvergedReason *r,void *ct,PetscErrorCode *ierr)
 {
   *ierr = SNESSkipConverged(*snes,*it,*a,*b,*c,r,ct);
 }
@@ -317,22 +317,22 @@ PETSC_EXTERN void PETSC_STDCALL snessetoptionsprefix_(SNES *snes,CHAR prefix PET
 /*----------------------------------------------------------------------*/
 /* functions, hence no STDCALL */
 
-void snesmonitorlgresidualnorm_(SNES *snes,PetscInt *its,PetscReal *fgnorm,void *dummy,PetscErrorCode *ierr)
+PETSC_EXTERN void snesmonitorlgresidualnorm_(SNES *snes,PetscInt *its,PetscReal *fgnorm,void *dummy,PetscErrorCode *ierr)
 {
   *ierr = SNESMonitorLGResidualNorm(*snes,*its,*fgnorm,dummy);
 }
 
-void snesmonitordefault_(SNES *snes,PetscInt *its,PetscReal *fgnorm,void *dummy,PetscErrorCode *ierr)
+PETSC_EXTERN void snesmonitordefault_(SNES *snes,PetscInt *its,PetscReal *fgnorm,void *dummy,PetscErrorCode *ierr)
 {
   *ierr = SNESMonitorDefault(*snes,*its,*fgnorm,dummy);
 }
 
-void snesmonitorsolution_(SNES *snes,PetscInt *its,PetscReal *fgnorm,void *dummy,PetscErrorCode *ierr)
+PETSC_EXTERN void snesmonitorsolution_(SNES *snes,PetscInt *its,PetscReal *fgnorm,void *dummy,PetscErrorCode *ierr)
 {
   *ierr = SNESMonitorSolution(*snes,*its,*fgnorm,dummy);
 }
 
-void snesmonitorsolutionupdate_(SNES *snes,PetscInt *its,PetscReal *fgnorm,void *dummy,PetscErrorCode *ierr)
+PETSC_EXTERN void snesmonitorsolutionupdate_(SNES *snes,PetscInt *its,PetscReal *fgnorm,void *dummy,PetscErrorCode *ierr)
 {
   *ierr = SNESMonitorSolutionUpdate(*snes,*its,*fgnorm,dummy);
 }
