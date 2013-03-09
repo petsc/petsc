@@ -1,0 +1,8 @@
+#! /bin/csh
+#
+set MACH=bb-proxy
+set USR=balay
+set LOC=/home/balay/petsc-dev-3
+set CONF=arch-c-exodus-dbg-builder
+set PURL=http://petsc.cs.iit.edu/petsc/petsc-dev
+set BURL=http://petsc.cs.iit.edu/petsc/BuildSystem
