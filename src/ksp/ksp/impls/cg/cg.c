@@ -62,7 +62,7 @@ PetscErrorCode KSPSetUp_CG(KSP ksp)
   PetscFunctionBegin;
   /* get work vectors needed by CG */
   if (cgP->singlereduction) nwork += 2;
-  ierr = KSPSetWorkVecs_Private(ksp,nwork);CHKERRQ(ierr);
+  ierr = KSPSetWorkVecs(ksp,nwork);CHKERRQ(ierr);
 
   /*
      If user requested computations of eigenvalues then allocate work
@@ -320,7 +320,7 @@ PetscErrorCode KSPDestroy_CG(KSP ksp)
   if (ksp->calc_sings) {
     ierr = PetscFree4(cg->e,cg->d,cg->ee,cg->dd);CHKERRQ(ierr);
   }
-  ierr = KSPDestroy_Default(ksp);CHKERRQ(ierr);
+  ierr = KSPDestroyDefault(ksp);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPCGSetType_C","",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPCGUseSingleReduction_C","",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -466,8 +466,8 @@ PETSC_EXTERN PetscErrorCode KSPCreate_CG(KSP ksp)
   ksp->ops->destroy        = KSPDestroy_CG;
   ksp->ops->view           = KSPView_CG;
   ksp->ops->setfromoptions = KSPSetFromOptions_CG;
-  ksp->ops->buildsolution  = KSPBuildSolution_Default;
-  ksp->ops->buildresidual  = KSPBuildResidual_Default;
+  ksp->ops->buildsolution  = KSPBuildSolutionDefault;
+  ksp->ops->buildresidual  = KSPBuildResidualDefault;
 
   /*
       Attach the function KSPCGSetType_CG() to this object. The routine

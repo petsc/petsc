@@ -50,7 +50,7 @@ PetscErrorCode SNESSetUp_NCG(SNES snes)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = SNESSetWorkVecs_Private(snes,2);CHKERRQ(ierr);
+  ierr = SNESSetWorkVecs(snes,2);CHKERRQ(ierr);
   ierr = SNESSetUpMatrices(snes);CHKERRQ(ierr);
   ierr = SNESLineSearchRegisterDynamic(SNESLINESEARCHNCGLINEAR, NULL,"SNESLineSearchCreate_NCGLinear", SNESLineSearchCreate_NCGLinear);CHKERRQ(ierr);
   PetscFunctionReturn(0);

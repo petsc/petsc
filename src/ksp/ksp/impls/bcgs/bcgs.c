@@ -20,7 +20,7 @@ PetscErrorCode KSPSetUp_BCGS(KSP ksp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = KSPSetWorkVecs_Private(ksp,6);CHKERRQ(ierr);
+  ierr = KSPSetWorkVecs(ksp,6);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -194,7 +194,7 @@ PetscErrorCode KSPDestroy_BCGS(KSP ksp)
 
   PetscFunctionBegin;
   ierr = KSPReset_BCGS(ksp);CHKERRQ(ierr);
-  ierr = KSPDestroy_Default(ksp);CHKERRQ(ierr);
+  ierr = KSPDestroyDefault(ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -229,7 +229,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_BCGS(KSP ksp)
   ksp->ops->destroy        = KSPDestroy_BCGS;
   ksp->ops->reset          = KSPReset_BCGS;
   ksp->ops->buildsolution  = KSPBuildSolution_BCGS;
-  ksp->ops->buildresidual  = KSPBuildResidual_Default;
+  ksp->ops->buildresidual  = KSPBuildResidualDefault;
   ksp->ops->setfromoptions = KSPSetFromOptions_BCGS;
 
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);

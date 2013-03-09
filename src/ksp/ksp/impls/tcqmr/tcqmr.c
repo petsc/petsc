@@ -148,7 +148,7 @@ static PetscErrorCode KSPSetUp_TCQMR(KSP ksp)
 
   PetscFunctionBegin;
   if (ksp->pc_side == PC_SYMMETRIC) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"no symmetric preconditioning for KSPTCQMR");
-  ierr = KSPSetWorkVecs_Private(ksp,TCQMR_VECS);CHKERRQ(ierr);
+  ierr = KSPSetWorkVecs(ksp,TCQMR_VECS);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -186,11 +186,11 @@ PETSC_EXTERN PetscErrorCode KSPCreate_TCQMR(KSP ksp)
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_RIGHT,1);CHKERRQ(ierr);
 
   ksp->data                = (void*)0;
-  ksp->ops->buildsolution  = KSPBuildSolution_Default;
-  ksp->ops->buildresidual  = KSPBuildResidual_Default;
+  ksp->ops->buildsolution  = KSPBuildSolutionDefault;
+  ksp->ops->buildresidual  = KSPBuildResidualDefault;
   ksp->ops->setup          = KSPSetUp_TCQMR;
   ksp->ops->solve          = KSPSolve_TCQMR;
-  ksp->ops->destroy        = KSPDestroy_Default;
+  ksp->ops->destroy        = KSPDestroyDefault;
   ksp->ops->setfromoptions = 0;
   ksp->ops->view           = 0;
   PetscFunctionReturn(0);

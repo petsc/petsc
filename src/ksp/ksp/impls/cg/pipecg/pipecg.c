@@ -30,7 +30,7 @@ PetscErrorCode KSPSetUp_PIPECG(KSP ksp)
 
   PetscFunctionBegin;
   /* get work vectors needed by PIPECG */
-  ierr = KSPSetWorkVecs_Private(ksp,9);CHKERRQ(ierr);
+  ierr = KSPSetWorkVecs(ksp,9);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -199,10 +199,10 @@ PETSC_EXTERN PetscErrorCode KSPCreate_PIPECG(KSP ksp)
 
   ksp->ops->setup          = KSPSetUp_PIPECG;
   ksp->ops->solve          = KSPSolve_PIPECG;
-  ksp->ops->destroy        = KSPDestroy_Default;
+  ksp->ops->destroy        = KSPDestroyDefault;
   ksp->ops->view           = 0;
   ksp->ops->setfromoptions = 0;
-  ksp->ops->buildsolution  = KSPBuildSolution_Default;
-  ksp->ops->buildresidual  = KSPBuildResidual_Default;
+  ksp->ops->buildsolution  = KSPBuildSolutionDefault;
+  ksp->ops->buildresidual  = KSPBuildResidualDefault;
   PetscFunctionReturn(0);
 }

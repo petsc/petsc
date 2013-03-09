@@ -605,7 +605,7 @@ PetscErrorCode KSPSetUp_NASH(KSP ksp)
   /* Set work vectors needed by conjugate gradient method and allocate       */
   /***************************************************************************/
 
-  ierr = KSPSetWorkVecs_Private(ksp, 3);CHKERRQ(ierr);
+  ierr = KSPSetWorkVecs(ksp, 3);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -628,7 +628,7 @@ PetscErrorCode KSPDestroy_NASH(KSP ksp)
   /* Destroy KSP object.                                                     */
   /***************************************************************************/
 
-  ierr = KSPDestroy_Default(ksp);CHKERRQ(ierr);
+  ierr = KSPDestroyDefault(ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -748,8 +748,8 @@ PETSC_EXTERN PetscErrorCode KSPCreate_NASH(KSP ksp)
   ksp->ops->solve          = KSPSolve_NASH;
   ksp->ops->destroy        = KSPDestroy_NASH;
   ksp->ops->setfromoptions = KSPSetFromOptions_NASH;
-  ksp->ops->buildsolution  = KSPBuildSolution_Default;
-  ksp->ops->buildresidual  = KSPBuildResidual_Default;
+  ksp->ops->buildsolution  = KSPBuildSolutionDefault;
+  ksp->ops->buildresidual  = KSPBuildResidualDefault;
   ksp->ops->view           = 0;
 
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPNASHSetRadius_C","KSPNASHSetRadius_NASH",KSPNASHSetRadius_NASH);CHKERRQ(ierr);

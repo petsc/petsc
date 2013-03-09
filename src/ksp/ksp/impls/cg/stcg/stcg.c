@@ -624,7 +624,7 @@ PetscErrorCode KSPSetUp_STCG(KSP ksp)
   /***************************************************************************/
 
   PetscFunctionBegin;
-  ierr = KSPSetWorkVecs_Private(ksp, 3);CHKERRQ(ierr);
+  ierr = KSPSetWorkVecs(ksp, 3);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -647,7 +647,7 @@ PetscErrorCode KSPDestroy_STCG(KSP ksp)
   /* Destroy KSP object.                                                     */
   /***************************************************************************/
 
-  ierr = KSPDestroy_Default(ksp);CHKERRQ(ierr);
+  ierr = KSPDestroyDefault(ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -765,8 +765,8 @@ PETSC_EXTERN PetscErrorCode KSPCreate_STCG(KSP ksp)
   ksp->ops->solve          = KSPSolve_STCG;
   ksp->ops->destroy        = KSPDestroy_STCG;
   ksp->ops->setfromoptions = KSPSetFromOptions_STCG;
-  ksp->ops->buildsolution  = KSPBuildSolution_Default;
-  ksp->ops->buildresidual  = KSPBuildResidual_Default;
+  ksp->ops->buildsolution  = KSPBuildSolutionDefault;
+  ksp->ops->buildresidual  = KSPBuildResidualDefault;
   ksp->ops->view           = 0;
 
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPSTCGSetRadius_C","KSPSTCGSetRadius_STCG",KSPSTCGSetRadius_STCG);CHKERRQ(ierr);

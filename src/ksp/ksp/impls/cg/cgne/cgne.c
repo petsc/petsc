@@ -35,7 +35,7 @@ PetscErrorCode KSPSetUp_CGNE(KSP ksp)
 
   PetscFunctionBegin;
   /* get work vectors needed by CGNE */
-  ierr = KSPSetWorkVecs_Private(ksp,4);CHKERRQ(ierr);
+  ierr = KSPSetWorkVecs(ksp,4);CHKERRQ(ierr);
 
   /*
      If user requested computations of eigenvalues then allocate work
@@ -268,8 +268,8 @@ PETSC_EXTERN PetscErrorCode KSPCreate_CGNE(KSP ksp)
   ksp->ops->destroy        = KSPDestroy_CG;
   ksp->ops->view           = KSPView_CG;
   ksp->ops->setfromoptions = KSPSetFromOptions_CG;
-  ksp->ops->buildsolution  = KSPBuildSolution_Default;
-  ksp->ops->buildresidual  = KSPBuildResidual_Default;
+  ksp->ops->buildsolution  = KSPBuildSolutionDefault;
+  ksp->ops->buildresidual  = KSPBuildResidualDefault;
 
   /*
       Attach the function KSPCGSetType_CGNE() to this object. The routine

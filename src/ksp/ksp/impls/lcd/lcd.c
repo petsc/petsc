@@ -11,7 +11,7 @@ PetscErrorCode KSPSetUp_LCD(KSP ksp)
 
   PetscFunctionBegin;
   /* get work vectors needed by LCD */
-  ierr = KSPSetWorkVecs_Private(ksp,2);CHKERRQ(ierr);
+  ierr = KSPSetWorkVecs(ksp,2);CHKERRQ(ierr);
 
   ierr = VecDuplicateVecs(ksp->work[0],restart+1,&lcd->P);CHKERRQ(ierr);
   ierr = VecDuplicateVecs(ksp->work[0], restart + 1, &lcd->Q);CHKERRQ(ierr);
@@ -256,8 +256,8 @@ PETSC_EXTERN PetscErrorCode KSPCreate_LCD(KSP ksp)
   ksp->ops->destroy        = KSPDestroy_LCD;
   ksp->ops->view           = KSPView_LCD;
   ksp->ops->setfromoptions = KSPSetFromOptions_LCD;
-  ksp->ops->buildsolution  = KSPBuildSolution_Default;
-  ksp->ops->buildresidual  = KSPBuildResidual_Default;
+  ksp->ops->buildsolution  = KSPBuildSolutionDefault;
+  ksp->ops->buildresidual  = KSPBuildResidualDefault;
   PetscFunctionReturn(0);
 }
 

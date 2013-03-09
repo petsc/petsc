@@ -206,8 +206,8 @@ PETSC_EXTERN PetscErrorCode KSPCreate_SpecEst(KSP ksp)
   ksp->ops->setup          = KSPSetUp_SpecEst;
   ksp->ops->solve          = KSPSolve_SpecEst;
   ksp->ops->destroy        = KSPDestroy_SpecEst;
-  ksp->ops->buildsolution  = KSPBuildSolution_Default;
-  ksp->ops->buildresidual  = KSPBuildResidual_Default;
+  ksp->ops->buildsolution  = KSPBuildSolutionDefault;
+  ksp->ops->buildresidual  = KSPBuildResidualDefault;
   ksp->ops->setfromoptions = KSPSetFromOptions_SpecEst;
   ksp->ops->view           = KSPView_SpecEst;
 

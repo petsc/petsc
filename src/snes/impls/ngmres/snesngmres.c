@@ -48,7 +48,7 @@ PetscErrorCode SNESSetUp_NGMRES(SNES snes)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = SNESSetWorkVecs_Private(snes,5);CHKERRQ(ierr);
+  ierr = SNESSetWorkVecs(snes,5);CHKERRQ(ierr);
   if (!ngmres->Xdot) {ierr = VecDuplicateVecs(snes->vec_sol,ngmres->msize,&ngmres->Xdot);CHKERRQ(ierr);}
   if (!ngmres->Fdot) {ierr = VecDuplicateVecs(snes->vec_sol,ngmres->msize,&ngmres->Fdot);CHKERRQ(ierr);}
   if (!ngmres->setup_called) {

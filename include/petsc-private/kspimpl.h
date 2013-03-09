@@ -138,11 +138,8 @@ PETSC_STATIC_INLINE PetscErrorCode KSPLogResidualHistory(KSP ksp,PetscReal norm)
   PetscFunctionReturn(0);
 }
 
-PETSC_INTERN PetscErrorCode KSPBuildSolution_Default(KSP,Vec,Vec*);
-PETSC_INTERN PetscErrorCode KSPBuildResidual_Default(KSP,Vec,Vec,Vec *);
-PETSC_INTERN PetscErrorCode KSPDestroy_Default(KSP);
-PETSC_INTERN PetscErrorCode KSPSetWorkVecs_Private(KSP,PetscInt);
 PETSC_INTERN PetscErrorCode KSPSetUpNorms_Private(KSP,KSPNormType*,PCSide*);
+
 PETSC_INTERN PetscErrorCode KSPPlotEigenContours_Private(KSP,PetscInt,const PetscReal*,const PetscReal*);
 
 typedef struct _p_DMKSP *DMKSP;

@@ -10,7 +10,7 @@ static PetscErrorCode KSPSetUp_CR(KSP ksp)
   PetscFunctionBegin;
   if (ksp->pc_side == PC_RIGHT) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"no right preconditioning for KSPCR");
   else if (ksp->pc_side == PC_SYMMETRIC) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"no symmetric preconditioning for KSPCR");
-  ierr = KSPSetWorkVecs_Private(ksp,6);CHKERRQ(ierr);
+  ierr = KSPSetWorkVecs(ksp,6);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -171,9 +171,9 @@ PETSC_EXTERN PetscErrorCode KSPCreate_CR(KSP ksp)
 
   ksp->ops->setup          = KSPSetUp_CR;
   ksp->ops->solve          = KSPSolve_CR;
-  ksp->ops->destroy        = KSPDestroy_Default;
-  ksp->ops->buildsolution  = KSPBuildSolution_Default;
-  ksp->ops->buildresidual  = KSPBuildResidual_Default;
+  ksp->ops->destroy        = KSPDestroyDefault;
+  ksp->ops->buildsolution  = KSPBuildSolutionDefault;
+  ksp->ops->buildresidual  = KSPBuildResidualDefault;
   ksp->ops->setfromoptions = 0;
   ksp->ops->view           = 0;
   PetscFunctionReturn(0);

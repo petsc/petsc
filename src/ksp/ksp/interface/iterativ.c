@@ -818,9 +818,9 @@ PetscErrorCode  KSPDefaultConvergedDestroy(void *ctx)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "KSPBuildSolution_Default"
+#define __FUNCT__ "KSPBuildSolutionDefault"
 /*
-   KSPBuildSolution_Default - Default code to create/move the solution.
+   KSPBuildSolutionDefault - Default code to create/move the solution.
 
    Input Parameters:
 +  ksp - iterative context
@@ -831,11 +831,13 @@ PetscErrorCode  KSPDefaultConvergedDestroy(void *ctx)
 
    Level: advanced
 
+   Developers Note: This is PETSC_EXTERN because it may be used by user written plugin KSP implementations
+
 .keywords:  KSP, build, solution, default
 
-.seealso: KSPGetSolution(), KSPBuildResidual_Default()
+.seealso: KSPGetSolution(), KSPBuildResidualDefault()
 */
-PetscErrorCode KSPBuildSolution_Default(KSP ksp,Vec v,Vec *V)
+PetscErrorCode KSPBuildSolutionDefault(KSP ksp,Vec v,Vec *V)
 {
   PetscErrorCode ierr;
 
@@ -871,9 +873,9 @@ PetscErrorCode KSPBuildSolution_Default(KSP ksp,Vec v,Vec *V)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "KSPBuildResidual_Default"
+#define __FUNCT__ "KSPBuildResidualDefault"
 /*
-   KSPBuildResidual_Default - Default code to compute the residual.
+   KSPBuildResidualDefault - Default code to compute the residual.
 
    Input Parameters:
 .  ksp - iterative context
@@ -885,11 +887,13 @@ PetscErrorCode KSPBuildSolution_Default(KSP ksp,Vec v,Vec *V)
 
    Level: advanced
 
+   Developers Note: This is PETSC_EXTERN because it may be used by user written plugin KSP implementations
+
 .keywords:  KSP, build, residual, default
 
-.seealso: KSPBuildSolution_Default()
+.seealso: KSPBuildSolutionDefault()
 */
-PetscErrorCode KSPBuildResidual_Default(KSP ksp,Vec t,Vec v,Vec *V)
+PetscErrorCode KSPBuildResidualDefault(KSP ksp,Vec t,Vec v,Vec *V)
 {
   PetscErrorCode ierr;
   MatStructure   pflag;
@@ -981,16 +985,18 @@ PetscErrorCode KSPGetVecs(KSP ksp,PetscInt rightn, Vec **right,PetscInt leftn,Ve
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "KSPSetWorkVecs_Private"
+#define __FUNCT__ "KSPSetWorkVecs"
 /*
-  KSPSetWorkVecs_Private - Sets a number of work vectors into a KSP object
+  KSPSetWorkVecs - Sets a number of work vectors into a KSP object
 
   Input Parameters:
 . ksp  - iterative context
 . nw   - number of work vectors to allocate
 
+   Developers Note: This is PETSC_EXTERN because it may be used by user written plugin KSP implementations
+
  */
-PetscErrorCode KSPSetWorkVecs_Private(KSP ksp,PetscInt nw)
+PetscErrorCode KSPSetWorkVecs(KSP ksp,PetscInt nw)
 {
   PetscErrorCode ierr;
 
@@ -1003,15 +1009,18 @@ PetscErrorCode KSPSetWorkVecs_Private(KSP ksp,PetscInt nw)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "KSPDestroy_Default"
+#define __FUNCT__ "KSPDestroyDefault"
 /*
-  KSPDestroy_Default - Destroys a iterative context variable for methods with
+  KSPDestroyDefault - Destroys a iterative context variable for methods with
   no separate context.  Preferred calling sequence KSPDestroy().
 
   Input Parameter:
 . ksp - the iterative context
+
+   Developers Note: This is PETSC_EXTERN because it may be used by user written plugin KSP implementations
+
 */
-PetscErrorCode KSPDestroy_Default(KSP ksp)
+PetscErrorCode KSPDestroyDefault(KSP ksp)
 {
   PetscErrorCode ierr;
 

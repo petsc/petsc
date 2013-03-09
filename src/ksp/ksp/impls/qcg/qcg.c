@@ -288,7 +288,7 @@ PetscErrorCode KSPSetUp_QCG(KSP ksp)
 
   PetscFunctionBegin;
   /* Get work vectors from user code */
-  ierr = KSPSetWorkVecs_Private(ksp,7);CHKERRQ(ierr);
+  ierr = KSPSetWorkVecs(ksp,7);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -302,7 +302,7 @@ PetscErrorCode KSPDestroy_QCG(KSP ksp)
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPQCGGetQuadratic_C","",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPQCGGetTrialStepNorm_C","",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPQCGSetTrustRegionRadius_C","",NULL);CHKERRQ(ierr);
-  ierr = KSPDestroy_Default(ksp);CHKERRQ(ierr);
+  ierr = KSPDestroyDefault(ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -420,8 +420,8 @@ PETSC_EXTERN PetscErrorCode KSPCreate_QCG(KSP ksp)
   ksp->ops->setfromoptions = KSPSetFromOptions_QCG;
   ksp->ops->solve          = KSPSolve_QCG;
   ksp->ops->destroy        = KSPDestroy_QCG;
-  ksp->ops->buildsolution  = KSPBuildSolution_Default;
-  ksp->ops->buildresidual  = KSPBuildResidual_Default;
+  ksp->ops->buildsolution  = KSPBuildSolutionDefault;
+  ksp->ops->buildresidual  = KSPBuildResidualDefault;
   ksp->ops->setfromoptions = 0;
   ksp->ops->view           = 0;
 

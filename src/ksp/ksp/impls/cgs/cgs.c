@@ -14,7 +14,7 @@ static PetscErrorCode KSPSetUp_CGS(KSP ksp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = KSPSetWorkVecs_Private(ksp,7);CHKERRQ(ierr);
+  ierr = KSPSetWorkVecs(ksp,7);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -162,9 +162,9 @@ PETSC_EXTERN PetscErrorCode KSPCreate_CGS(KSP ksp)
 
   ksp->ops->setup          = KSPSetUp_CGS;
   ksp->ops->solve          = KSPSolve_CGS;
-  ksp->ops->destroy        = KSPDestroy_Default;
-  ksp->ops->buildsolution  = KSPBuildSolution_Default;
-  ksp->ops->buildresidual  = KSPBuildResidual_Default;
+  ksp->ops->destroy        = KSPDestroyDefault;
+  ksp->ops->buildsolution  = KSPBuildSolutionDefault;
+  ksp->ops->buildresidual  = KSPBuildResidualDefault;
   ksp->ops->setfromoptions = 0;
   ksp->ops->view           = 0;
   PetscFunctionReturn(0);

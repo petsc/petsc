@@ -16,7 +16,7 @@ PetscErrorCode KSPSetUp_FBCGSR(KSP ksp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = KSPSetWorkVecs_Private(ksp,8);CHKERRQ(ierr);
+  ierr = KSPSetWorkVecs(ksp,8);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -222,7 +222,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_FBCGSR(KSP ksp)
   ksp->ops->destroy        = KSPDestroy_BCGS;
   ksp->ops->reset          = KSPReset_BCGS;
   ksp->ops->buildsolution  = KSPBuildSolution_BCGS;
-  ksp->ops->buildresidual  = KSPBuildResidual_Default;
+  ksp->ops->buildresidual  = KSPBuildResidualDefault;
   ksp->ops->setfromoptions = KSPSetFromOptions_BCGS;
   ksp->pc_side             = PC_RIGHT; /* set default PC side */
 

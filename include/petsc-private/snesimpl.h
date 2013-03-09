@@ -191,8 +191,6 @@ PETSC_EXTERN PetscErrorCode DMSNESLoad(DMSNES,PetscViewer);
 PETSC_EXTERN PetscErrorCode DMGetDMSNESWrite(DM,DMSNES*);
 PETSC_EXTERN PetscErrorCode DMCopyDMSNES(DM,DM);
 
-PETSC_INTERN PetscErrorCode SNESSetWorkVecs_Private(SNES,PetscInt);
-PETSC_INTERN PetscErrorCode SNESLineSearchSetWorkVecs_Private(SNESLineSearch, PetscInt);
 
 /* Context for Eisenstat-Walker convergence criteria for KSP solvers */
 typedef struct {

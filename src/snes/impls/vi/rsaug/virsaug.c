@@ -1793,7 +1793,7 @@ PetscErrorCode SNESSetUp_VIRSAUG(SNES snes)
   PetscInt       i_start[3],i_end[3];
 
   PetscFunctionBegin;
-  ierr = SNESSetWorkVecs_Private(snes,3);CHKERRQ(ierr);
+  ierr = SNESSetWorkVecs(snes,3);CHKERRQ(ierr);
 
   if (vi->computevariablebounds) {
     if (!vi->xl) {ierr = VecDuplicate(snes->vec_sol,&vi->xl);CHKERRQ(ierr);}

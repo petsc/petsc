@@ -256,7 +256,7 @@ static PetscErrorCode SNESSetUp_NEWTONTR(SNES snes)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = SNESSetWorkVecs_Private(snes,3);CHKERRQ(ierr);
+  ierr = SNESSetWorkVecs(snes,3);CHKERRQ(ierr);
   ierr = SNESSetUpMatrices(snes);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

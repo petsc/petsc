@@ -12,7 +12,7 @@ static PetscErrorCode KSPSetUp_IBCGS(KSP ksp)
   PetscFunctionBegin;
   ierr = PCGetDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
   if (diagonalscale) SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
-  ierr = KSPSetWorkVecs_Private(ksp,9);CHKERRQ(ierr);
+  ierr = KSPSetWorkVecs(ksp,9);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -329,9 +329,9 @@ PETSC_EXTERN PetscErrorCode KSPCreate_IBCGS(KSP ksp)
 
   ksp->ops->setup          = KSPSetUp_IBCGS;
   ksp->ops->solve          = KSPSolve_IBCGS;
-  ksp->ops->destroy        = KSPDestroy_Default;
-  ksp->ops->buildsolution  = KSPBuildSolution_Default;
-  ksp->ops->buildresidual  = KSPBuildResidual_Default;
+  ksp->ops->destroy        = KSPDestroyDefault;
+  ksp->ops->buildsolution  = KSPBuildSolutionDefault;
+  ksp->ops->buildresidual  = KSPBuildResidualDefault;
   ksp->ops->setfromoptions = 0;
   ksp->ops->view           = 0;
 #if defined(PETSC_USE_COMPLEX)

@@ -533,9 +533,9 @@ PetscErrorCode  SNESSkipConverged(SNES snes,PetscInt it,PetscReal xnorm,PetscRea
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "SNESSetWorkVecs_Private"
+#define __FUNCT__ "SNESSetWorkVecs"
 /*@C
-  SNESSetWorkVecs_Private - Gets a number of work vectors.
+  SNESSetWorkVecs - Gets a number of work vectors.
 
   Input Parameters:
 . snes  - the SNES context
@@ -543,10 +543,10 @@ PetscErrorCode  SNESSkipConverged(SNES snes,PetscInt it,PetscReal xnorm,PetscRea
 
    Level: developer
 
-  Notes:
-  Call this only if no work vectors have been allocated
+   Developers Note: This is PETSC_EXTERN because it may be used by user written plugin SNES implementations
+
 @*/
-PetscErrorCode SNESSetWorkVecs_Private(SNES snes,PetscInt nw)
+PetscErrorCode SNESSetWorkVecs(SNES snes,PetscInt nw)
 {
   PetscErrorCode ierr;
 

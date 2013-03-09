@@ -416,7 +416,7 @@ PetscErrorCode SNESSetUp_VI(SNES snes)
   PetscInt       i_start[3],i_end[3];
 
   PetscFunctionBegin;
-  ierr = SNESSetWorkVecs_Private(snes,1);CHKERRQ(ierr);
+  ierr = SNESSetWorkVecs(snes,1);CHKERRQ(ierr);
   ierr = SNESSetUpMatrices(snes);CHKERRQ(ierr);
 
   if (!snes->ops->computevariablebounds && snes->dm) {

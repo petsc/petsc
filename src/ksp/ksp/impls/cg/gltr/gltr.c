@@ -1336,7 +1336,7 @@ PetscErrorCode KSPSetUp_GLTR(KSP ksp)
   /* workspace for Lanczos matrix.                                           */
   /***************************************************************************/
 
-  ierr = KSPSetWorkVecs_Private(ksp, 3);CHKERRQ(ierr);
+  ierr = KSPSetWorkVecs(ksp, 3);CHKERRQ(ierr);
 
   ierr = PetscMalloc5(max_its,PetscReal,&cg->diag,max_its,PetscReal,&cg->offd,max_its,PetscReal,&cg->alpha,max_its,PetscReal,&cg->beta,max_its,PetscReal,&cg->norm_r);CHKERRQ(ierr);
   ierr = PetscMemzero(cg->diag, max_its*sizeof(PetscReal));CHKERRQ(ierr);
@@ -1378,7 +1378,7 @@ PetscErrorCode KSPDestroy_GLTR(KSP ksp)
   /***************************************************************************/
   /* Destroy KSP object.                                                     */
   /***************************************************************************/
-  ierr = KSPDestroy_Default(ksp);CHKERRQ(ierr);
+  ierr = KSPDestroyDefault(ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1537,8 +1537,8 @@ PETSC_EXTERN PetscErrorCode KSPCreate_GLTR(KSP ksp)
   ksp->ops->solve          = KSPSolve_GLTR;
   ksp->ops->destroy        = KSPDestroy_GLTR;
   ksp->ops->setfromoptions = KSPSetFromOptions_GLTR;
-  ksp->ops->buildsolution  = KSPBuildSolution_Default;
-  ksp->ops->buildresidual  = KSPBuildResidual_Default;
+  ksp->ops->buildsolution  = KSPBuildSolutionDefault;
+  ksp->ops->buildresidual  = KSPBuildResidualDefault;
   ksp->ops->view           = 0;
 
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGLTRSetRadius_C","KSPGLTRSetRadius_GLTR",KSPGLTRSetRadius_GLTR);CHKERRQ(ierr);

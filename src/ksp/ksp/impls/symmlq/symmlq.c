@@ -12,7 +12,7 @@ PetscErrorCode KSPSetUp_SYMMLQ(KSP ksp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = KSPSetWorkVecs_Private(ksp,9);CHKERRQ(ierr);
+  ierr = KSPSetWorkVecs(ksp,9);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -216,10 +216,10 @@ PETSC_EXTERN PetscErrorCode KSPCreate_SYMMLQ(KSP ksp)
   */
   ksp->ops->setup          = KSPSetUp_SYMMLQ;
   ksp->ops->solve          = KSPSolve_SYMMLQ;
-  ksp->ops->destroy        = KSPDestroy_Default;
+  ksp->ops->destroy        = KSPDestroyDefault;
   ksp->ops->setfromoptions = 0;
-  ksp->ops->buildsolution  = KSPBuildSolution_Default;
-  ksp->ops->buildresidual  = KSPBuildResidual_Default;
+  ksp->ops->buildsolution  = KSPBuildSolutionDefault;
+  ksp->ops->buildresidual  = KSPBuildResidualDefault;
   PetscFunctionReturn(0);
 }
 

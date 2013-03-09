@@ -166,7 +166,11 @@ PETSC_EXTERN PetscErrorCode KSPGetMonitorContext(KSP,void **);
 PETSC_EXTERN PetscErrorCode KSPGetResidualHistory(KSP,PetscReal*[],PetscInt *);
 PETSC_EXTERN PetscErrorCode KSPSetResidualHistory(KSP,PetscReal[],PetscInt,PetscBool );
 
-/* not sure where to put this */
+PETSC_EXTERN PetscErrorCode KSPBuildSolutionDefault(KSP,Vec,Vec*);
+PETSC_EXTERN PetscErrorCode KSPBuildResidualDefault(KSP,Vec,Vec,Vec *);
+PETSC_EXTERN PetscErrorCode KSPDestroyDefault(KSP);
+PETSC_EXTERN PetscErrorCode KSPSetWorkVecs(KSP,PetscInt);
+
 PETSC_EXTERN PetscErrorCode PCKSPGetKSP(PC,KSP*);
 PETSC_EXTERN PetscErrorCode PCBJacobiGetSubKSP(PC,PetscInt*,PetscInt*,KSP*[]);
 PETSC_EXTERN PetscErrorCode PCASMGetSubKSP(PC,PetscInt*,PetscInt*,KSP*[]);

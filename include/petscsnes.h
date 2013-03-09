@@ -67,6 +67,7 @@ PETSC_EXTERN PetscErrorCode SNESSolve(SNES,Vec,Vec);
 PETSC_EXTERN PetscErrorCode SNESSetErrorIfNotConverged(SNES,PetscBool );
 PETSC_EXTERN PetscErrorCode SNESGetErrorIfNotConverged(SNES,PetscBool  *);
 
+PETSC_EXTERN PetscErrorCode SNESSetWorkVecs(SNES,PetscInt);
 
 PETSC_EXTERN PetscErrorCode SNESAddOptionsChecker(PetscErrorCode (*)(SNES));
 
@@ -544,6 +545,7 @@ PETSC_EXTERN PetscErrorCode SNESLineSearchSetUp(SNESLineSearch);
 PETSC_EXTERN PetscErrorCode SNESLineSearchApply(SNESLineSearch, Vec, Vec, PetscReal *, Vec);
 PETSC_EXTERN PetscErrorCode SNESLineSearchPreCheck(SNESLineSearch,Vec,Vec,PetscBool *);
 PETSC_EXTERN PetscErrorCode SNESLineSearchPostCheck(SNESLineSearch,Vec,Vec,Vec,PetscBool *,PetscBool *);
+PETSC_EXTERN PetscErrorCode SNESLineSearchSetWorkVecs(SNESLineSearch, PetscInt);
 
 /* set the functions for precheck and postcheck */
 

@@ -1458,9 +1458,9 @@ PetscErrorCode  SNESLineSearchGetOptionsPrefix(SNESLineSearch linesearch,const c
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "SNESLineSearchSetWorkVecs_Private"
+#define __FUNCT__ "SNESLineSearchSetWorkVecs"
 /*@C
-   SNESLineSearchSetWorkVecs_Private - Gets work vectors for the line search.
+   SNESLineSearchSetWorkVecs - Gets work vectors for the line search.
 
    Input Parameter:
 +  linesearch - the SNESLineSearch context
@@ -1468,14 +1468,13 @@ PetscErrorCode  SNESLineSearchGetOptionsPrefix(SNESLineSearch linesearch,const c
 
    Level: developer
 
-   Notes:
-   This is typically called at the beginning of a SNESLineSearch or SNESLineSearchShell implementation.
+   Developers Note: This is PETSC_EXTERN because it may be used by user written plugin SNES implementations
 
 .keywords: SNESLineSearch, work, vector
 
-.seealso: SNESSetWorkVecs_Private()
+.seealso: SNESSetWorkVecs()
 @*/
-PetscErrorCode  SNESLineSearchSetWorkVecs_Private(SNESLineSearch linesearch, PetscInt nwork)
+PetscErrorCode  SNESLineSearchSetWorkVecs(SNESLineSearch linesearch, PetscInt nwork)
 {
   PetscErrorCode ierr;
 

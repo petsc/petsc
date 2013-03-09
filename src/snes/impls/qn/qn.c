@@ -515,7 +515,7 @@ static PetscErrorCode SNESSetUp_QN(SNES snes)
                         qn->m, PetscScalar, &qn->dFtdX,
                         qn->m, PetscScalar, &qn->YtdX);CHKERRQ(ierr);
   }
-  ierr = SNESSetWorkVecs_Private(snes,4);CHKERRQ(ierr);
+  ierr = SNESSetWorkVecs(snes,4);CHKERRQ(ierr);
 
   /* set up the line search */
   if (qn->scale_type == SNES_QN_SCALE_JACOBIAN) {
