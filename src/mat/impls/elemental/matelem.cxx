@@ -417,12 +417,13 @@ static PetscErrorCode MatDiagonalScale_Elemental(Mat X,Vec L,Vec R)
   PetscErrorCode        ierr;
 
   PetscFunctionBegin;
-  if (L == NULL) {
+  if (R) {
     ierr = VecGetArrayRead(R,(const PetscScalar **)&d);CHKERRQ(ierr);
     elem::DistMatrix<PetscElemScalar,elem::VC,elem::STAR> de(X->cmap->N,1,0,d,X->cmap->n,*x->grid);
     elem::DiagonalScale(elem::RIGHT,elem::NORMAL,de,*x->emat);
     ierr = VecRestoreArrayRead(R,(const PetscScalar **)&d);CHKERRQ(ierr);
-  } else {
+  }
+  if (L) {
     ierr = VecGetArrayRead(L,(const PetscScalar **)&d);CHKERRQ(ierr);
     elem::DistMatrix<PetscElemScalar,elem::VC,elem::STAR> de(X->rmap->N,1,0,d,X->rmap->n,*x->grid);
     elem::DiagonalScale(elem::LEFT,elem::NORMAL,de,*x->emat);
