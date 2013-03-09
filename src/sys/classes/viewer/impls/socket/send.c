@@ -290,7 +290,7 @@ PetscErrorCode  PetscViewerSocketOpen(MPI_Comm comm,const char machine[],int por
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerSetFromOptions_Socket"
-PetscErrorCode PetscViewerSetFromOptions_Socket(PetscViewer v)
+static PetscErrorCode PetscViewerSetFromOptions_Socket(PetscViewer v)
 {
   PetscErrorCode ierr;
   PetscInt       def = -1;
@@ -475,6 +475,7 @@ PetscViewer  PETSC_VIEWER_SOCKET_(MPI_Comm comm)
   PetscFunctionReturn(viewer);
 }
 
+/* ---------------------------------------------------------------------*/
 #if defined(PETSC_USE_SERVER)
 
 #include <pthread.h>
@@ -529,8 +530,13 @@ PetscErrorCode PetscWebSendError(FILE *f, int status, const char *title, const c
 
 #if defined(PETSC_HAVE_AMS)
 #undef __FUNCT__
-#define __FUNCT__ "PetscAMSDisplayList"
-PetscErrorCode PetscAMSDisplayList(FILE *fd)
+#define __FUNCT__ "PetscAMSObjectsDisplayList"
+/*
+    Displays all the PETSc objects published with AMS in a simple HTML list
+
+    Does NOT use Javascript or JSON-RPC
+*/
+static PetscErrorCode PetscAMSObjectsDisplayList(FILE *fd)
 {
   PetscErrorCode     ierr;
   char               host[256],**comm_list,**mem_list,**fld_list;
@@ -583,8 +589,13 @@ PetscErrorCode PetscAMSDisplayList(FILE *fd)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscAMSDisplayTree"
-PetscErrorCode PetscAMSDisplayTree(FILE *fd)
+#define __FUNCT__ "PetscAMSObjectsDisplayTree"
+/*
+    Displays all the PETSc objects published with AMS in very crude HTML 5 graphics
+
+    Does NOT use Javascript or JSON-RPC
+*/
+static PetscErrorCode PetscAMSObjectsDisplayTree(FILE *fd)
 {
   PetscErrorCode     ierr;
   char               host[256],**comm_list,**mem_list,**fld_list;
@@ -720,14 +731,111 @@ PetscErrorCode PetscAMSDisplayTree(FILE *fd)
 }
 #endif
 
+#undef __FUNCT__
+#define __FUNCT__ "PetscWebServeRequestGet"
+/*@C
+      PetscWebServeRequestGet - serves a single web Get request
+
+    Not collective
+
+  Input Parameters:
++   port - the network file to read and write from
+-   path - the command from the server
+
+    Level: developer
+
+.seealso: PetscWebServe()
+@*/
+static PetscErrorCode  PetscWebServeRequestGet(FILE *fd,const char path[])
+{
+  PetscErrorCode ierr;
+  FILE           *fdo;
+  char           fullpath[PETSC_MAX_PATH_LEN],truefullpath[PETSC_MAX_PATH_LEN];
+  const char     *type;
+  PetscBool      flg;
+
+  PetscFunctionBegin;
+  fseek(fd, 0, SEEK_CUR); /* Force change of stream direction */
+
+  ierr = PetscStrcmp(path,"/favicon.ico",&flg);CHKERRQ(ierr);
+  if (flg) {
+    /* should have cool PETSc icon */;
+    PetscFunctionReturn(0);
+  }
+  ierr = PetscStrcmp(path,"/",&flg);CHKERRQ(ierr);
+  if (flg) {
+    char        program[128];
+    PetscMPIInt size;
+    PetscViewer viewer;
+
+    ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
+    ierr = PetscGetProgramName(program,128);CHKERRQ(ierr);
+    ierr = PetscWebSendHeader(fd, 200, "OK", NULL, "text/html", -1);CHKERRQ(ierr);
+    fprintf(fd, "<HTML><HEAD><TITLE>Petsc Application Server</TITLE></HEAD>\r\n<BODY>");
+    fprintf(fd, "<H4>Serving PETSc application code %s </H4>\r\n\n",program);
+    fprintf(fd, "Number of processes %d\r\n\n",size);
+    fprintf(fd, "<HR>\r\n");
+    ierr = PetscViewerASCIIOpenWithFILE(PETSC_COMM_WORLD,fd,&viewer);CHKERRQ(ierr);
+    ierr = PetscOptionsView(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+    fprintf(fd, "<HR>\r\n");
+#if defined(PETSC_HAVE_AMS)
+    if (PetscAMSPublishAll) {
+      fprintf(fd, "<a href=\"./ams-tree\">Connect to Memory Snooper--Tree Display</a></p>\r\n\r\n");
+      fprintf(fd, "<a href=\"./ams-list\">Connect to Memory Snooper--List Display</a></p>\r\n\r\n");
+    }
+#endif
+    fprintf(fd, "<a href=\"./AMSJavascript.html\">Connect to Memory Snooper--Interactive Javascript</a></p>\r\n\r\n");
+    ierr = PetscWebSendFooter(fd);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
+
+#if defined(PETSC_HAVE_AMS)
+  ierr = PetscStrcmp(path,"/ams-list",&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = PetscAMSObjectsDisplayList(fd);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
+  ierr = PetscStrcmp(path,"/ams-tree",&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = PetscAMSObjectsDisplayTree(fd);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
+#endif
+  ierr = PetscStrcpy(fullpath,"${PETSC_DIR}/include/web");CHKERRQ(ierr);
+  ierr = PetscStrcat(fullpath,path);CHKERRQ(ierr);
+  ierr = PetscInfo1(NULL,"Checking for file %s\n",fullpath);CHKERRQ(ierr);
+  ierr = PetscStrreplace(PETSC_COMM_SELF,fullpath,truefullpath,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
+  fdo  = fopen(truefullpath,"r");
+  if (fdo) {
+    PetscInt    length,index;
+    char        data[4096];
+    struct stat statbuf;
+    int         n;
+    const char  *suffixes[] = {".html",".js",".gif",0}, *mimes[] = {"text/html","text/javascript","image/gif","text/unknown"};
+
+    ierr = PetscStrendswithwhich(fullpath,suffixes,&index);CHKERRQ(ierr);
+    type = mimes[index];
+    if (!stat(truefullpath, &statbuf)) length = -1;
+    else length = S_ISREG(statbuf.st_mode) ? statbuf.st_size : -1;
+    ierr = PetscWebSendHeader(fd, 200, "OK", NULL, type, length);CHKERRQ(ierr);
+    while ((n = fread(data, 1, sizeof(data), fdo)) > 0) fwrite(data, 1, n, fd);
+    fclose(fdo);
+    ierr = PetscInfo2(NULL,"Sent file %s to browser using format %s\n",fullpath,type);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
+  ierr = PetscWebSendError(fd, 501, "Not supported", NULL, "Unknown request.");CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 #if defined(PETSC_HAVE_YAML)
 
 /*
-    Toy function that returns all the arguments it is passed
+    Toy YAML/JSON-RPC function that returns all the arguments it is passed
 */
 #undef __FUNCT__
 #define __FUNCT__ "YAML_echo"
-PetscErrorCode YAML_echo(PetscInt argc,char **args,PetscInt *argco,char ***argso)
+PETSC_UNUSED static PetscErrorCode YAML_echo(PetscInt argc,char **args,PetscInt *argco,char ***argso)
 {
   PetscErrorCode ierr;
   PetscInt       i;
@@ -744,6 +852,14 @@ PetscErrorCode YAML_echo(PetscInt argc,char **args,PetscInt *argco,char ***argso
   PetscFunctionReturn(0);
 }
 
+/* -------------------------------------------------------------------------------------------
+     The following set of functions are wrapper functions for AMS functions that
+
+    1)  convert from string arguments to appropriate AMS arguments (int, double, char*, etc)
+    2)  call the AMS function
+    3)  convert from the AMS result arguments to string arguments
+*/
+
 #undef __FUNCT__
 #define __FUNCT__ "YAML_AMS_Connect"
 /*
@@ -756,7 +872,7 @@ PetscErrorCode YAML_echo(PetscInt argc,char **args,PetscInt *argco,char ***argso
 .     oarg1 - the string name of the first communicator
 
 */
-PetscErrorCode YAML_AMS_Connect(PetscInt argc,char **args,PetscInt *argco,char ***argso)
+PETSC_EXTERN PetscErrorCode YAML_AMS_Connect(PetscInt argc,char **args,PetscInt *argco,char ***argso)
 {
   PetscErrorCode ierr;
   char           **list = 0;
@@ -790,7 +906,7 @@ PetscErrorCode YAML_AMS_Connect(PetscInt argc,char **args,PetscInt *argco,char *
 .     oarg1 - the integer name of the communicator
 
 */
-PetscErrorCode YAML_AMS_Comm_attach(PetscInt argc,char **args,PetscInt *argco,char ***argso)
+PETSC_EXTERN PetscErrorCode YAML_AMS_Comm_attach(PetscInt argc,char **args,PetscInt *argco,char ***argso)
 {
   PetscErrorCode ierr;
   AMS_Comm       comm = -1;
@@ -817,7 +933,7 @@ PetscErrorCode YAML_AMS_Comm_attach(PetscInt argc,char **args,PetscInt *argco,ch
 .     oarg1 - the list of names
 
 */
-PetscErrorCode YAML_AMS_Comm_get_memory_list(PetscInt argc,char **args,PetscInt *argco,char ***argso)
+PETSC_EXTERN PetscErrorCode YAML_AMS_Comm_get_memory_list(PetscInt argc,char **args,PetscInt *argco,char ***argso)
 {
   PetscErrorCode ierr;
   char           **mem_list;
@@ -856,7 +972,7 @@ PetscErrorCode YAML_AMS_Comm_get_memory_list(PetscInt argc,char **args,PetscInt 
 .     oarg2 - the integer step of the memory
 
 */
-PetscErrorCode YAML_AMS_Memory_attach(PetscInt argc,char **args,PetscInt *argco,char ***argso)
+PETSC_EXTERN PetscErrorCode YAML_AMS_Memory_attach(PetscInt argc,char **args,PetscInt *argco,char ***argso)
 {
   PetscErrorCode ierr;
   AMS_Comm       comm;
@@ -888,7 +1004,7 @@ PetscErrorCode YAML_AMS_Memory_attach(PetscInt argc,char **args,PetscInt *argco,
 .     oarg1 - the list of names
 
 */
-PetscErrorCode YAML_AMS_Memory_get_field_list(PetscInt argc,char **args,PetscInt *argco,char ***argso)
+PETSC_EXTERN PetscErrorCode YAML_AMS_Memory_get_field_list(PetscInt argc,char **args,PetscInt *argco,char ***argso)
 {
   PetscErrorCode ierr;
   char           **field_list;
@@ -930,7 +1046,7 @@ const char *AMS_Reduction_types[] = {"AMS_REDUCTION_WHY_NOT_UNDEF?","AMS_SUM","A
    Output Parameter:
 
 */
-PetscErrorCode YAML_AMS_Memory_get_field_info(PetscInt argc,char **args,PetscInt *argco,char ***argso)
+PETSC_EXTERN PetscErrorCode YAML_AMS_Memory_get_field_info(PetscInt argc,char **args,PetscInt *argco,char ***argso)
 {
   PetscErrorCode     ierr;
   AMS_Memory         mem;
@@ -977,7 +1093,13 @@ PetscErrorCode YAML_AMS_Memory_get_field_info(PetscInt argc,char **args,PetscInt
 #include "yaml.h"
 #undef __FUNCT__
 #define __FUNCT__ "PetscProcessYAMLRPC"
-PetscErrorCode PetscProcessYAMLRPC(const char *request,char **result)
+/*
+     1) Parses a YAML/JSON-RPC function call generating a function name for an AMS wrapper function and the arguments to the function
+     2) loads the function with dlsym(),
+     3) calls the wrapper function with the arguments
+     4) converts the result arguments back to YAML/JSON.
+*/
+static PetscErrorCode PetscProcessYAMLRPC(const char *request,char **result)
 {
   yaml_parser_t  parser;
   yaml_event_t   event;
@@ -1086,7 +1208,7 @@ PetscErrorCode PetscProcessYAMLRPC(const char *request,char **result)
   ierr = PetscFree(args);CHKERRQ(ierr);
   ierr = PetscFree(methodname);CHKERRQ(ierr);
 
-  /* convert the result back to YAML; should use YAML encoder, does not handle zero return arguments */
+  /* convert the result back to YAML/JSON; should use YAML/JSON encoder, does not handle zero return arguments */
   ierr = PetscMalloc(1024,result);CHKERRQ(ierr);
   ierr = PetscStrcpy(*result,"{\"error\": null, \"id\": \"");CHKERRQ(ierr);
   ierr = PetscStrcat(*result,idname);CHKERRQ(ierr);
@@ -1100,7 +1222,7 @@ PetscErrorCode PetscProcessYAMLRPC(const char *request,char **result)
   }
   if (argco > 1) {ierr = PetscStrcat(*result,"]");CHKERRQ(ierr);}
   ierr = PetscStrcat(*result,"}");CHKERRQ(ierr);
-  ierr = PetscInfo1(NULL,"YAML result of function %s\n",*result);CHKERRQ(ierr);
+  ierr = PetscInfo1(NULL,"YAML/JSON result of function %s\n",*result);CHKERRQ(ierr);
 
   /* free work space */
   ierr = PetscFree(idname);CHKERRQ(ierr);
@@ -1108,6 +1230,83 @@ PetscErrorCode PetscProcessYAMLRPC(const char *request,char **result)
     ierr = PetscFree(argso[i]);CHKERRQ(ierr);
   }
   ierr = PetscFree(argso);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscWebServeRequestPostAMSJSONRPC"
+/*@C
+      PetscWebServeRequestPostAMSJSONRPC - serves a single web POST request based on JSON-RPC
+
+       This function allows a Javascript program (running in the browser) to make an AMS function 
+       call via JSON-RPC
+
+       The currently available Javascript programs are in ${PETSC_DIR}/include/web
+
+    Not collective
+
+  Input Parameters:
+.   fd - the network file to read and write from
+-   path - the command from the server
+
+    Level: developer
+
+.seealso: PetscWebServe()
+@*/
+static PetscErrorCode  PetscWebServeRequestPostAMSJSONRPC(FILE *fd,const char path[])
+{
+  PetscErrorCode ierr;
+  char           buf[4096];
+  char           *result;
+  PetscInt       cnt = 8;
+  int            len;
+  size_t         elen;
+  char           *fnd;
+
+  PetscFunctionBegin;
+  while (cnt--) {
+
+    if (!fgets(buf, sizeof(buf), fd)) {
+      ierr = PetscInfo(NULL,"Cannot read POST data, giving up\n");CHKERRQ(ierr);
+      PetscFunctionReturn(0);
+    }
+    ierr = PetscInfo1(NULL,"POSTED data %s",buf);CHKERRQ(ierr);
+    ierr = PetscStrstr(buf,"Content-Type:",&fnd);CHKERRQ(ierr);
+    if (fnd) {
+      ierr = PetscStrstr(buf,"application/json-rpc",&fnd);CHKERRQ(ierr);
+      if (!fnd) {
+        ierr = PetscInfo(NULL,"POST content is not json-rpc, skipping post\n");CHKERRQ(ierr);
+        PetscFunctionReturn(0);
+      }
+    }
+  }
+  if (!fgets(buf, sizeof(buf), fd)) {
+    ierr = PetscInfo(NULL,"Cannot read POST length data, giving up\n");CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
+  ierr = PetscInfo1(NULL,"POSTED length data %s",buf);CHKERRQ(ierr);
+  sscanf(buf,"Content-Length: %d\n",&len);
+  ierr = PetscInfo1(NULL,"Length of POSTED data %d\n",len);CHKERRQ(ierr);
+  if (!fgets(buf, sizeof(buf), fd)) {
+    ierr = PetscInfo(NULL,"Cannot read POST data, giving up\n");CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
+  ierr = PetscInfo1(NULL,"POSTED data %s",buf);CHKERRQ(ierr);
+  if (!fgets(buf, sizeof(buf), fd)) {
+    ierr = PetscInfo(NULL,"Cannot read POST data, giving up\n");CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
+  ierr = PetscInfo1(NULL,"POSTED data %s",buf);CHKERRQ(ierr);
+  if (!fgets(buf, len+1, fd)) { /* why is this len + 1? */
+    ierr = PetscInfo(NULL,"Cannot read POST data, giving up\n");CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
+  ierr = PetscInfo1(NULL,"POSTED data %s\n",buf);CHKERRQ(ierr);
+  fseek(fd, 0, SEEK_CUR); /* Force change of stream direction */
+  ierr = PetscProcessYAMLRPC(buf,&result);CHKERRQ(ierr);
+  ierr = PetscStrlen(result,&elen);CHKERRQ(ierr);
+  ierr = PetscWebSendHeader(fd, 200, "OK", NULL, "application/json-rpc",(int)elen);CHKERRQ(ierr);
+  fprintf(fd, "%s",result);
   PetscFunctionReturn(0);
 }
 #endif
@@ -1126,16 +1325,14 @@ PetscErrorCode PetscProcessYAMLRPC(const char *request,char **result)
 
 .seealso: PetscWebServe()
 @*/
-PetscErrorCode  PetscWebServeRequest(int port)
+static PetscErrorCode  PetscWebServeRequest(int port)
 {
   PetscErrorCode ierr;
-  FILE           *fd,*fdo;
-  char           buf[4096],fullpath[PETSC_MAX_PATH_LEN],truefullpath[PETSC_MAX_PATH_LEN];
-  char           *method, *path, *protocol,*result;
-  const char     *type;
+  FILE           *fd;
+  char           buf[4096];
+  char           *method, *path, *protocol;
   PetscBool      flg;
   PetscToken     tok;
-  PetscInt       cnt = 8;
 
   PetscFunctionBegin;
   fd = fdopen(port, "r+");
@@ -1151,6 +1348,7 @@ PetscErrorCode  PetscWebServeRequest(int port)
   ierr = PetscTokenFind(tok,&method);CHKERRQ(ierr);
   ierr = PetscTokenFind(tok,&path);CHKERRQ(ierr);
   ierr = PetscTokenFind(tok,&protocol);CHKERRQ(ierr);
+  ierr = PetscInfo3(NULL,"Browser method %s path %s protocol %s\n",method,path,protocol);
 
   if (!method || !path || !protocol) {
     ierr = PetscInfo(NULL,"Web request not well formatted, giving up\n");CHKERRQ(ierr);
@@ -1158,144 +1356,25 @@ PetscErrorCode  PetscWebServeRequest(int port)
   }
 
   ierr = PetscStrcmp(method,"GET",&flg);
-  if (!flg) {
+  if (flg) {
+      ierr = PetscWebServeRequestGet(fd,path);CHKERRQ(ierr);
+  } else {
 #if defined(PETSC_HAVE_YAML)
     ierr = PetscStrcmp(method,"POST",&flg);
-    /*
-          Start to handle support for POSTs based on json-rpc
-    */
     if (flg) {
-      int    len;
-      size_t elen;
-      char   *fnd;
-      while (cnt--) {
-
-        if (!fgets(buf, sizeof(buf), fd)) {
-          ierr = PetscInfo(NULL,"Cannot read POST data, giving up\n");CHKERRQ(ierr);
-          goto theend;
-        }
-        ierr = PetscInfo1(NULL,"POSTED data %s",buf);CHKERRQ(ierr);
-        ierr = PetscStrstr(buf,"Content-Type:",&fnd);CHKERRQ(ierr);
-        if (fnd) {
-          ierr = PetscStrstr(buf,"application/json-rpc",&fnd);CHKERRQ(ierr);
-          if (!fnd) {
-            ierr = PetscInfo(NULL,"POST content is not json-rpc, skipping post\n");CHKERRQ(ierr);
-            goto theend;
-          }
-        }
-      }
-      if (!fgets(buf, sizeof(buf), fd)) {
-        ierr = PetscInfo(NULL,"Cannot read POST length data, giving up\n");CHKERRQ(ierr);
-        goto theend;
-      }
-      ierr = PetscInfo1(NULL,"POSTED length data %s",buf);CHKERRQ(ierr);
-      sscanf(buf,"Content-Length: %d\n",&len);
-      ierr = PetscInfo1(NULL,"Length of POSTED data %d\n",len);CHKERRQ(ierr);
-      if (!fgets(buf, sizeof(buf), fd)) {
-        ierr = PetscInfo(NULL,"Cannot read POST data, giving up\n");CHKERRQ(ierr);
-        goto theend;
-      }
-      ierr = PetscInfo1(NULL,"POSTED data %s",buf);CHKERRQ(ierr);
-      if (!fgets(buf, sizeof(buf), fd)) {
-        ierr = PetscInfo(NULL,"Cannot read POST data, giving up\n");CHKERRQ(ierr);
-        goto theend;
-      }
-      ierr = PetscInfo1(NULL,"POSTED data %s",buf);CHKERRQ(ierr);
-      if (!fgets(buf, len+1, fd)) { /* why is this len + 1? */
-        ierr = PetscInfo(NULL,"Cannot read POST data, giving up\n");CHKERRQ(ierr);
-        goto theend;
-      }
-      ierr = PetscInfo1(NULL,"POSTED data %s\n",buf);CHKERRQ(ierr);
-      fseek(fd, 0, SEEK_CUR); /* Force change of stream direction */
-      ierr = PetscProcessYAMLRPC(buf,&result);CHKERRQ(ierr);
-      ierr = PetscStrlen(result,&elen);CHKERRQ(ierr);
-      ierr = PetscWebSendHeader(fd, 200, "OK", NULL, "application/json-rpc",(int)elen);CHKERRQ(ierr);
-      fprintf(fd, "%s",result);
-      goto theend;
+      ierr = PetscWebServeRequestPostAMSJSONRPC(fd,path);CHKERRQ(ierr);
     } else {
+#else
+    {
 #endif
       ierr = PetscWebSendError(fd, 501, "Not supported", NULL, "Method is not supported.");CHKERRQ(ierr);
       ierr = PetscInfo(NULL,"Web request not a GET or POST, giving up\n");CHKERRQ(ierr);
-#if defined(PETSC_HAVE_YAML)
     }
-#endif
-  } else {
-    fseek(fd, 0, SEEK_CUR); /* Force change of stream direction */
-
-    ierr = PetscStrcmp(path,"/favicon.ico",&flg);CHKERRQ(ierr);
-    if (flg) {
-      /* should have cool PETSc icon */;
-      goto theend;
-    }
-    ierr = PetscStrcmp(path,"/",&flg);CHKERRQ(ierr);
-    if (flg) {
-      char        program[128];
-      PetscMPIInt size;
-      PetscViewer viewer;
-
-      ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-      ierr = PetscGetProgramName(program,128);CHKERRQ(ierr);
-      ierr = PetscWebSendHeader(fd, 200, "OK", NULL, "text/html", -1);CHKERRQ(ierr);
-      fprintf(fd, "<HTML><HEAD><TITLE>Petsc Application Server</TITLE></HEAD>\r\n<BODY>");
-      fprintf(fd, "<H4>Serving PETSc application code %s </H4>\r\n\n",program);
-      fprintf(fd, "Number of processes %d\r\n\n",size);
-      fprintf(fd, "<HR>\r\n");
-      ierr = PetscViewerASCIIOpenWithFILE(PETSC_COMM_WORLD,fd,&viewer);CHKERRQ(ierr);
-      ierr = PetscOptionsView(viewer);CHKERRQ(ierr);
-      ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-      fprintf(fd, "<HR>\r\n");
-#if defined(PETSC_HAVE_AMS)
-      if (PetscAMSPublishAll) {
-        fprintf(fd, "<a href=\"./ams-tree\">Connect to Memory Snooper--Tree Display</a></p>\r\n\r\n");
-        fprintf(fd, "<a href=\"./ams-list\">Connect to Memory Snooper--List Display</a></p>\r\n\r\n");
-      }
-#endif
-      fprintf(fd, "<a href=\"./AMSJavascript.html\">Connect to Memory Snooper--Interactive Javascript</a></p>\r\n\r\n");
-      ierr = PetscWebSendFooter(fd);CHKERRQ(ierr);
-      goto theend;
-    }
-
-#if defined(PETSC_HAVE_AMS)
-    ierr = PetscStrcmp(path,"/ams-list",&flg);CHKERRQ(ierr);
-    if (flg) {
-      ierr = PetscAMSDisplayList(fd);CHKERRQ(ierr);
-      goto theend;
-    }
-    ierr = PetscInfo1(NULL,"Browser path %s\n",path);
-    ierr = PetscStrcmp(path,"/ams-tree",&flg);CHKERRQ(ierr);
-    if (flg) {
-      ierr = PetscAMSDisplayTree(fd);CHKERRQ(ierr);
-      goto theend;
-    }
-#endif
-    ierr = PetscStrcpy(fullpath,"${PETSC_DIR}/include/web");CHKERRQ(ierr);
-    ierr = PetscStrcat(fullpath,path);CHKERRQ(ierr);
-    ierr = PetscInfo1(NULL,"Checking for file %s\n",fullpath);CHKERRQ(ierr);
-    ierr = PetscStrreplace(PETSC_COMM_SELF,fullpath,truefullpath,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
-    fdo  = fopen(truefullpath,"r");
-    if (fdo) {
-      PetscInt    length,index;
-      char        data[4096];
-      struct stat statbuf;
-      int         n;
-      const char  *suffixes[] = {".html",".js",".gif",0}, *mimes[] = {"text/html","text/javascript","image/gif","text/unknown"};
-
-      ierr = PetscStrendswithwhich(fullpath,suffixes,&index);CHKERRQ(ierr);
-      type = mimes[index];
-      if (!stat(truefullpath, &statbuf)) length = -1;
-      else length = S_ISREG(statbuf.st_mode) ? statbuf.st_size : -1;
-      ierr = PetscWebSendHeader(fd, 200, "OK", NULL, type, length);CHKERRQ(ierr);
-      while ((n = fread(data, 1, sizeof(data), fdo)) > 0) fwrite(data, 1, n, fd);
-      fclose(fdo);
-      ierr = PetscInfo2(NULL,"Sent file %s to browser using format %s\n",fullpath,type);CHKERRQ(ierr);
-      goto theend;
-    }
-    ierr = PetscWebSendError(fd, 501, "Not supported", NULL, "Unknown request.");CHKERRQ(ierr);
   }
 theend:
   ierr = PetscTokenDestroy(&tok);CHKERRQ(ierr);
   fclose(fd);
-  ierr = PetscInfo(NULL,"Finished processing request\n");CHKERRQ(ierr);
+  ierr = PetscInfo1(NULL,"Finished processing request %s\n",method);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1332,7 +1411,7 @@ void *PetscWebServeWait(int *port)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscWebServe"
-/*@C
+/*@
       PetscWebServe - start up the PETSc web server and respond to requests
 
     Not collective - only does something on process zero of the communicator
@@ -1353,7 +1432,7 @@ void *PetscWebServeWait(int *port)
 
       Read the top of $PETSC_DIR/include/web/AMSJavascript.py before running.
 
-    Level: developer
+    Level: intermediate
 
 .seealso: PetscViewerSocketOpen()
 @*/
