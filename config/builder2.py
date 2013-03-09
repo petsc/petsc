@@ -67,6 +67,7 @@ def buildExample(args):
 def checkSingleRun(maker, ex, replace, extraArgs = '', isRegression = False):
   import shutil
 
+  packageNames = set([p.name for p in maker.framework.packages])
   if isinstance(ex, list):
     exampleName = os.path.splitext(os.path.basename(ex[0]))[0]
     exampleDir  = os.path.dirname(ex[0])
@@ -222,6 +223,7 @@ def stubs(args):
   return 0
 
 def showSingleRun(maker, ex, extraArgs = ''):
+  packageNames = set([p.name for p in maker.framework.packages])
   if isinstance(ex, list):
     exampleName = os.path.splitext(os.path.basename(ex[0]))[0]
     exampleDir  = os.path.dirname(ex[0])
