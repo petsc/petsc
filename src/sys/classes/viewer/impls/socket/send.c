@@ -1256,21 +1256,20 @@ static PetscErrorCode PetscProcessYAMLRPC(const char *request,char **result)
 static PetscErrorCode  PetscWebServeRequestPostAMSJSONRPC(FILE *fd,const char path[])
 {
   PetscErrorCode ierr;
-  char           buf[4096];
+  char           buf[16000];
   char           *result;
-  PetscInt       cnt = 8;
-  int            len;
+  int            len = -1;
   size_t         elen;
   char           *fnd;
 
   PetscFunctionBegin;
-  while (cnt--) {
+  while (PETSC_TRUE) {
 
     if (!fgets(buf, sizeof(buf), fd)) {
       ierr = PetscInfo(NULL,"Cannot read POST data, giving up\n");CHKERRQ(ierr);
       PetscFunctionReturn(0);
     }
-    ierr = PetscInfo1(NULL,"POSTED data %s",buf);CHKERRQ(ierr);
+    ierr = PetscInfo1(NULL,"POSTED header: %s",buf);CHKERRQ(ierr);
     ierr = PetscStrstr(buf,"Content-Type:",&fnd);CHKERRQ(ierr);
     if (fnd) {
       ierr = PetscStrstr(buf,"application/json-rpc",&fnd);CHKERRQ(ierr);
@@ -1279,34 +1278,29 @@ static PetscErrorCode  PetscWebServeRequestPostAMSJSONRPC(FILE *fd,const char pa
         PetscFunctionReturn(0);
       }
     }
+    ierr = PetscStrstr(buf,"Content-Length:",&fnd);CHKERRQ(ierr);
+    if (fnd) {
+      sscanf(buf,"Content-Length: %d\n",&len);
+      ierr = PetscInfo1(NULL,"POSTED Content-Length: %d\n",len);CHKERRQ(ierr);
+    }
+    if (buf[0] == '\r') break;
   }
-  if (!fgets(buf, sizeof(buf), fd)) {
-    ierr = PetscInfo(NULL,"Cannot read POST length data, giving up\n");CHKERRQ(ierr);
-    PetscFunctionReturn(0);
+  if (len == -1) {
+    ierr = PetscInfo(NULL,"Did not find Content-Length, giving up\n");CHKERRQ(ierr);
   }
-  ierr = PetscInfo1(NULL,"POSTED length data %s",buf);CHKERRQ(ierr);
-  sscanf(buf,"Content-Length: %d\n",&len);
-  ierr = PetscInfo1(NULL,"Length of POSTED data %d\n",len);CHKERRQ(ierr);
-  if (!fgets(buf, sizeof(buf), fd)) {
-    ierr = PetscInfo(NULL,"Cannot read POST data, giving up\n");CHKERRQ(ierr);
-    PetscFunctionReturn(0);
-  }
-  ierr = PetscInfo1(NULL,"POSTED data %s",buf);CHKERRQ(ierr);
-  if (!fgets(buf, sizeof(buf), fd)) {
-    ierr = PetscInfo(NULL,"Cannot read POST data, giving up\n");CHKERRQ(ierr);
-    PetscFunctionReturn(0);
-  }
-  ierr = PetscInfo1(NULL,"POSTED data %s",buf);CHKERRQ(ierr);
+
   if (!fgets(buf, len+1, fd)) { /* why is this len + 1? */
     ierr = PetscInfo(NULL,"Cannot read POST data, giving up\n");CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
-  ierr = PetscInfo1(NULL,"POSTED data %s\n",buf);CHKERRQ(ierr);
+  ierr = PetscInfo1(NULL,"POSTED JSON/RPC request: %s\n",buf);CHKERRQ(ierr);
+  printf("%s",buf);
   fseek(fd, 0, SEEK_CUR); /* Force change of stream direction */
   ierr = PetscProcessYAMLRPC(buf,&result);CHKERRQ(ierr);
   ierr = PetscStrlen(result,&elen);CHKERRQ(ierr);
   ierr = PetscWebSendHeader(fd, 200, "OK", NULL, "application/json-rpc",(int)elen);CHKERRQ(ierr);
   fprintf(fd, "%s",result);
+  ierr = PetscInfo(NULL,"Completed AMS JSON-RPC function call\n");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 #endif
@@ -1348,7 +1342,6 @@ static PetscErrorCode  PetscWebServeRequest(int port)
   ierr = PetscTokenFind(tok,&method);CHKERRQ(ierr);
   ierr = PetscTokenFind(tok,&path);CHKERRQ(ierr);
   ierr = PetscTokenFind(tok,&protocol);CHKERRQ(ierr);
-  ierr = PetscInfo3(NULL,"Browser method %s path %s protocol %s\n",method,path,protocol);
 
   if (!method || !path || !protocol) {
     ierr = PetscInfo(NULL,"Web request not well formatted, giving up\n");CHKERRQ(ierr);
