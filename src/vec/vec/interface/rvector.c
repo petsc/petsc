@@ -1404,7 +1404,7 @@ PetscErrorCode  VecRestoreSubVector(Vec X,IS is,Vec *Y)
    array and return a pointer to that. You MUST call VecRestoreArray()
    when you no longer need access to the array.
 
-   Collective on Vec
+   Logically Collective on Vec
 
    Input Parameter:
 .  x - the vector
@@ -1509,7 +1509,7 @@ PetscErrorCode VecGetArrayRead(Vec x,const PetscScalar **a)
    that were created by a call to VecDuplicateVecs().  You MUST call
    VecRestoreArrays() when you no longer need access to the array.
 
-   Collective on Vec
+   Logically Collective on Vec
 
    Input Parameter:
 +  x - the vectors
@@ -1550,7 +1550,7 @@ PetscErrorCode  VecGetArrays(const Vec x[],PetscInt n,PetscScalar **a[])
    VecRestoreArrays - Restores a group of vectors after VecGetArrays()
    has been called.
 
-   Collective on Vec
+   Logically Collective on Vec
 
    Input Parameters:
 +  x - the vector
@@ -1593,7 +1593,7 @@ PetscErrorCode  VecRestoreArrays(const Vec x[],PetscInt n,PetscScalar **a[])
 /*@C
    VecRestoreArray - Restores a vector after VecGetArray() has been called.
 
-   Collective on Vec
+   Logically Collective on Vec
 
    Input Parameters:
 +  x - the vector
@@ -1807,7 +1807,7 @@ M*/
     Synopsis:
     VecRestoreArrayF90(Vec x,{Scalar, pointer :: xx_v(:)},integer ierr)
 
-    Collective on Vec
+    Logically Collective on Vec
 
     Input Parameters:
 +   x - vector
@@ -1864,7 +1864,7 @@ M*/
     Synopsis:
     VecGetArrayF90(Vec x,{Scalar, pointer :: xx_v(:)},integer ierr)
 
-    Collective on Vec
+    Logically Collective on Vec
 
     Input Parameter:
 .   x - vector
@@ -1896,7 +1896,7 @@ M*/
    processor's portion of the vector data.  You MUST call VecRestoreArray2d()
    when you no longer need access to the array.
 
-   Not Collective
+   Logically Collective
 
    Input Parameter:
 +  x - the vector
@@ -1949,7 +1949,7 @@ PetscErrorCode  VecGetArray2d(Vec x,PetscInt m,PetscInt n,PetscInt mstart,PetscI
 /*@C
    VecRestoreArray2d - Restores a vector after VecGetArray2d() has been called.
 
-   Not Collective
+   Logically Collective
 
    Input Parameters:
 +  x - the vector
@@ -1995,7 +1995,7 @@ PetscErrorCode  VecRestoreArray2d(Vec x,PetscInt m,PetscInt n,PetscInt mstart,Pe
    processor's portion of the vector data.  You MUST call VecRestoreArray1d()
    when you no longer need access to the array.
 
-   Not Collective
+   Logically Collective
 
    Input Parameter:
 +  x - the vector
@@ -2039,7 +2039,7 @@ PetscErrorCode  VecGetArray1d(Vec x,PetscInt m,PetscInt mstart,PetscScalar *a[])
 /*@C
    VecRestoreArray1d - Restores a vector after VecGetArray1d() has been called.
 
-   Not Collective
+   Logically Collective
 
    Input Parameters:
 +  x - the vector
@@ -2082,7 +2082,7 @@ PetscErrorCode  VecRestoreArray1d(Vec x,PetscInt m,PetscInt mstart,PetscScalar *
    processor's portion of the vector data.  You MUST call VecRestoreArray3d()
    when you no longer need access to the array.
 
-   Not Collective
+   Logically Collective
 
    Input Parameter:
 +  x - the vector
@@ -2142,7 +2142,7 @@ PetscErrorCode  VecGetArray3d(Vec x,PetscInt m,PetscInt n,PetscInt p,PetscInt ms
 /*@C
    VecRestoreArray3d - Restores a vector after VecGetArray3d() has been called.
 
-   Not Collective
+   Logically Collective
 
    Input Parameters:
 +  x - the vector
@@ -2190,7 +2190,7 @@ PetscErrorCode  VecRestoreArray3d(Vec x,PetscInt m,PetscInt n,PetscInt p,PetscIn
    processor's portion of the vector data.  You MUST call VecRestoreArray4d()
    when you no longer need access to the array.
 
-   Not Collective
+   Logically Collective
 
    Input Parameter:
 +  x - the vector
@@ -2256,7 +2256,7 @@ PetscErrorCode  VecGetArray4d(Vec x,PetscInt m,PetscInt n,PetscInt p,PetscInt q,
 /*@C
    VecRestoreArray4d - Restores a vector after VecGetArray3d() has been called.
 
-   Not Collective
+   Logically Collective
 
    Input Parameters:
 +  x - the vector

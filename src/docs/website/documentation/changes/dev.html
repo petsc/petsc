@@ -143,6 +143,12 @@
           The private header <tt>petsc-private/vecimpl.h</tt> is no longer included by <tt>petscvec.h</tt>.
           Users requiring direct access to internal members of Vec may need to include the private header, but may want to explain their use case to <tt>petsc-maint@mcs.anl.gov</tt> so that we can provide a stable API.
         </li>
+        <li>
+          VecGetArray()/VecRestoreArray() and VecGhostGetLocalForm()/VecGhostRestoreLocalForm() are logically collective operations because their use invalidates norms, which must be known collectively.
+          This is not a change in behavior, but prior documentation did not mark them as collective.
+          Users should not rely on use such as lazy access occurring inside loops that could have length zero on some processors because it could lead to deadlock in a subsequent norm computation.
+          VecGetArrayRead() and VecRestoreArrayRead() are not collective.
+        </li>
       </ul>
       <h4>VecScatter:</h4>
       <h4>Mat:</h4>

@@ -38,7 +38,7 @@ static PetscErrorCode VecGhostStateSync_Private(Vec g,Vec l)
     a parallel vector (obtained with VecCreateGhost(), VecCreateGhostWithArray()
     or VecCreateSeq()). Returns NULL if the Vec is not ghosted.
 
-    Not Collective
+    Logically Collective
 
     Input Parameter:
 .   g - the global vector
@@ -147,7 +147,7 @@ PetscErrorCode VecGhostIsLocalForm(Vec g,Vec l,PetscBool *flg)
     VecGhostRestoreLocalForm - Restores the local ghosted representation of
     a parallel vector obtained with VecGhostGetLocalForm().
 
-    Not Collective
+    Logically Collective
 
     Input Parameter:
 +   g - the global vector
