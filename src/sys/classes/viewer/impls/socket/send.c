@@ -1035,6 +1035,89 @@ const char *AMS_Shared_types[] = {"AMS_SHARED_UNDEF","AMS_COMMON","AMS_REDUCED",
 const char *AMS_Reduction_types[] = {"AMS_REDUCTION_WHY_NOT_UNDEF?","AMS_SUM","AMS_MAX","AMS_MIN","AMS_REDUCTION_UNDEF","AMS_Reduction_type","AMS_",0};
 
 #undef __FUNCT__
+#define __FUNCT__ "YAML_AMS_Utility_ArrayToString"
+static PetscErrorCode YAML_AMS_Utility_ArrayToString(PetscInt n,void *addr,AMS_Data_type dtype,char **result)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (n == 1) {
+    if (dtype == AMS_STRING) {
+      ierr = PetscStrallocpy(*(const char**)addr,result);CHKERRQ(ierr);
+    } else if (dtype == AMS_DOUBLE) {
+      ierr = PetscMalloc(20*sizeof(char),result);CHKERRQ(ierr);
+      sprintf(*result,"%18.16e",*(double*)addr);
+    } else if (dtype == AMS_INT) {
+      ierr = PetscMalloc(10*sizeof(char),result);CHKERRQ(ierr);
+      sprintf(*result,"%d",*(int*)addr);
+    } else if (dtype == AMS_BOOLEAN) {
+      if (*(PetscBool*)addr) {
+        ierr = PetscStrallocpy("true",result);CHKERRQ(ierr);
+      } else {
+        ierr = PetscStrallocpy("false",result);CHKERRQ(ierr);
+      }
+    } else {
+      ierr = PetscStrallocpy("Not yet done",result);CHKERRQ(ierr);
+    }
+  } else {
+    PetscInt i;
+    size_t   len = 0,lent;
+    char     buff[25],**array = (char**)addr;
+
+    if (dtype == AMS_STRING) {
+      for (i=0; i<n; i++) {
+        ierr = PetscStrlen(array[i],&lent);CHKERRQ(ierr);
+        len += lent + 3;
+      }
+      ierr = PetscMalloc(len*sizeof(char),result);CHKERRQ(ierr);
+      ierr = PetscStrcpy(*result,"[\"");CHKERRQ(ierr);
+      for (i=0; i<n-1; i++) {
+        ierr = PetscStrcat(*result,array[i]);CHKERRQ(ierr);
+        ierr = PetscStrcat(*result,"\",\"");CHKERRQ(ierr);
+      }
+      ierr = PetscStrcat(*result,array[n-1]);CHKERRQ(ierr);
+      ierr = PetscStrcat(*result,"\"]");CHKERRQ(ierr);
+    } else if (dtype == AMS_DOUBLE) {
+      ierr = PetscMalloc(30*n*sizeof(char),result);CHKERRQ(ierr);
+      ierr = PetscStrcpy(*result,"[\"");CHKERRQ(ierr);
+      for (i=0; i<n-1; i++) {
+        sprintf(buff,"%18.16e",*(double*)addr);
+        ierr = PetscStrcat(*result,buff);CHKERRQ(ierr);
+        ierr = PetscStrcat(*result,"\",\"");CHKERRQ(ierr);
+        addr = (void *) ((char *)addr + sizeof(PetscReal));
+      }
+      sprintf(buff,"%18.16e",*(double*)addr);
+      ierr = PetscStrcat(*result,buff);CHKERRQ(ierr);
+      ierr = PetscStrcat(*result,"\"]");CHKERRQ(ierr);
+    } else if (dtype == AMS_INT) {
+      ierr = PetscMalloc(13*n*sizeof(char),result);CHKERRQ(ierr);
+      ierr = PetscStrcpy(*result,"[\"");CHKERRQ(ierr);
+      for (i=0; i<n-1; i++) {
+        sprintf(buff,"%d",*(int*)addr);
+        ierr = PetscStrcat(*result,buff);CHKERRQ(ierr);
+        ierr = PetscStrcat(*result,"\",\"");CHKERRQ(ierr);
+        addr = (void *) ((char *)addr + sizeof(PetscInt));
+      }
+      sprintf(buff,"%d",*(int*)addr);
+      ierr = PetscStrcat(*result,buff);CHKERRQ(ierr);
+      ierr = PetscStrcat(*result,"\"]");CHKERRQ(ierr);
+    } else if (dtype == AMS_BOOLEAN) {
+      ierr = PetscMalloc(7*n*sizeof(char),result);CHKERRQ(ierr);
+      ierr = PetscStrcpy(*result,"[\"");CHKERRQ(ierr);
+      for (i=0; i<n-1; i++) {
+      ierr = PetscStrcat(*result,*(PetscBool*)addr ? "true" : "false");CHKERRQ(ierr);
+        addr = (void *) ((char *)addr + sizeof(int));
+      }
+      ierr = PetscStrcat(*result,*(PetscBool*)addr ? "true" : "false");CHKERRQ(ierr);
+      ierr = PetscStrcat(*result,"\"]");CHKERRQ(ierr);
+    } else {
+      ierr = PetscStrallocpy("Not yet done",result);CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "YAML_AMS_Memory_get_field_info"
 /*
       Gets information about a field
@@ -1056,41 +1139,18 @@ PETSC_EXTERN PetscErrorCode YAML_AMS_Memory_get_field_info(PetscInt argc,char **
   AMS_Memory_type    mtype;
   AMS_Shared_type    stype;
   AMS_Reduction_type rtype;
-  PetscInt           i;
 
   PetscFunctionBegin;
   sscanf(args[0],"%d",&mem);
   ierr = AMS_Memory_get_field_info(mem,args[1],(void*)&addr,&len,&dtype,&mtype,&stype,&rtype);
   if (ierr) {ierr = PetscInfo1(NULL,"AMS_Memory_get_field_info() error %d\n",ierr);CHKERRQ(ierr);}
-  *argco = 4 + len;
+  *argco = 5;
   ierr   = PetscMalloc((*argco)*sizeof(char*),argso);CHKERRQ(ierr);
   ierr   = PetscStrallocpy(AMS_Data_types[dtype],&argso[0][0]);CHKERRQ(ierr);
   ierr   = PetscStrallocpy(AMS_Memory_types[mtype],&argso[0][1]);CHKERRQ(ierr);
   ierr   = PetscStrallocpy(AMS_Shared_types[stype],&argso[0][2]);CHKERRQ(ierr);
   ierr   = PetscStrallocpy(AMS_Reduction_types[rtype],&argso[0][3]);CHKERRQ(ierr);
-  for (i=0; i<len; i++) {
-    if (dtype == AMS_STRING) {
-      ierr = PetscStrallocpy(*(const char**)addr,&argso[0][4+i]);CHKERRQ(ierr);
-      addr += sizeof(char*);
-    } else if (dtype == AMS_DOUBLE) {
-      ierr = PetscMalloc(20*sizeof(char),&argso[0][4+i]);CHKERRQ(ierr);
-      sprintf(argso[0][4+i],"%18.16e",*(double*)addr);
-      addr += sizeof(PetscReal*);
-    } else if (dtype == AMS_INT) {
-      ierr = PetscMalloc(10*sizeof(char),&argso[0][4+i]);CHKERRQ(ierr);
-      sprintf(argso[0][4+i],"%d",*(int*)addr);
-      addr += sizeof(PetscInt);
-    } else if (dtype == AMS_BOOLEAN) {
-      if (*(int*)addr) {
-        ierr = PetscStrallocpy("true",&argso[0][4+i]);CHKERRQ(ierr);
-      } else {
-        ierr = PetscStrallocpy("false",&argso[0][4+i]);CHKERRQ(ierr);
-      }
-      addr += sizeof(PetscBool);
-    } else {
-      ierr = PetscStrallocpy("Not yet done",&argso[0][4+i]);CHKERRQ(ierr);
-    }
-  }
+  ierr = YAML_AMS_Utility_ArrayToString(len,addr,dtype,&argso[0][4]);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1213,15 +1273,19 @@ static PetscErrorCode PetscProcessYAMLRPC(const char *request,char **result)
   ierr = PetscFree(methodname);CHKERRQ(ierr);
 
   /* convert the result back to YAML/JSON; should use YAML/JSON encoder, does not handle zero return arguments */
-  ierr = PetscMalloc(1024,result);CHKERRQ(ierr);
+  ierr = PetscMalloc(16000,result);CHKERRQ(ierr);
   ierr = PetscStrcpy(*result,"{\"error\": null, \"id\": \"");CHKERRQ(ierr);
   ierr = PetscStrcat(*result,idname);CHKERRQ(ierr);
   ierr = PetscStrcat(*result,"\", \"result\" : ");CHKERRQ(ierr);
   if (argco > 1) {ierr = PetscStrcat(*result,"[");CHKERRQ(ierr);}
   for (i=0; i<argco; i++) {
-    ierr = PetscStrcat(*result,"\"");CHKERRQ(ierr);
+    if (argso[i][0] != '[') {
+      ierr = PetscStrcat(*result,"\"");CHKERRQ(ierr);
+    }
     ierr = PetscStrcat(*result,argso[i]);CHKERRQ(ierr);
-    ierr = PetscStrcat(*result,"\"");CHKERRQ(ierr);
+    if (argso[i][0] != '[') {
+      ierr = PetscStrcat(*result,"\"");CHKERRQ(ierr);
+    }
     if (i < argco-1) {ierr = PetscStrcat(*result,",");CHKERRQ(ierr);}
   }
   if (argco > 1) {ierr = PetscStrcat(*result,"]");CHKERRQ(ierr);}
@@ -1297,7 +1361,6 @@ static PetscErrorCode  PetscWebServeRequestPostAMSJSONRPC(FILE *fd,const char pa
     PetscFunctionReturn(0);
   }
   ierr = PetscInfo1(NULL,"POSTED JSON/RPC request: %s\n",buf);CHKERRQ(ierr);
-  printf("%s",buf);
   fseek(fd, 0, SEEK_CUR); /* Force change of stream direction */
   ierr = PetscProcessYAMLRPC(buf,&result);CHKERRQ(ierr);
   ierr = PetscStrlen(result,&elen);CHKERRQ(ierr);
