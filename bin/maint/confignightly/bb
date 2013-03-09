@@ -4,5 +4,5 @@ set MACH=bb-proxy
 set USR=balay
 set LOC=/home/balay/petsc-dev
 set CONF=arch-cuda-double
-set PURL=http://petsc.cs.iit.edu/petsc/petsc-dev
-set BURL=http://petsc.cs.iit.edu/petsc/BuildSystem
+set PURL=https://bitbucket.org/petsc/petsc-dev
+set BURL=https://bitbucket.org/petsc/buildsystem
