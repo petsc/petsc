@@ -858,6 +858,11 @@ PETSC_UNUSED static PetscErrorCode YAML_echo(PetscInt argc,char **args,PetscInt 
     1)  convert from string arguments to appropriate AMS arguments (int, double, char*, etc)
     2)  call the AMS function
     3)  convert from the AMS result arguments to string arguments
+
+    Developers Note: Rather than having PetscProcessYAMLRPC() convert the YAML/JSON representation of the params to an array of strings
+       it may be better to simple pass those YAML/JSON strings to these routines and have them pull out the values from the YAML/JSON
+       Similarly these routines could put their result directly back into YAML/JSON rather than putting them into an array of strings
+       returning that and having PetscProcessYAMLRPC() put them into the YAML/JSON.
 */
 
 #undef __FUNCT__
@@ -1150,7 +1155,7 @@ PETSC_EXTERN PetscErrorCode YAML_AMS_Memory_get_field_info(PetscInt argc,char **
   ierr   = PetscStrallocpy(AMS_Memory_types[mtype],&argso[0][1]);CHKERRQ(ierr);
   ierr   = PetscStrallocpy(AMS_Shared_types[stype],&argso[0][2]);CHKERRQ(ierr);
   ierr   = PetscStrallocpy(AMS_Reduction_types[rtype],&argso[0][3]);CHKERRQ(ierr);
-  ierr = YAML_AMS_Utility_ArrayToString(len,addr,dtype,&argso[0][4]);CHKERRQ(ierr);
+  ierr   = YAML_AMS_Utility_ArrayToString(len,addr,dtype,&argso[0][4]);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
