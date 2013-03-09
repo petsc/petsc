@@ -1050,7 +1050,7 @@ PETSC_EXTERN PetscErrorCode YAML_AMS_Memory_get_field_info(PetscInt argc,char **
 {
   PetscErrorCode     ierr;
   AMS_Memory         mem;
-  void               *addr;
+  char               *addr;
   int                len;
   AMS_Data_type      dtype;
   AMS_Memory_type    mtype;
@@ -1060,7 +1060,7 @@ PETSC_EXTERN PetscErrorCode YAML_AMS_Memory_get_field_info(PetscInt argc,char **
 
   PetscFunctionBegin;
   sscanf(args[0],"%d",&mem);
-  ierr = AMS_Memory_get_field_info(mem,args[1],&addr,&len,&dtype,&mtype,&stype,&rtype);
+  ierr = AMS_Memory_get_field_info(mem,args[1],(void*)&addr,&len,&dtype,&mtype,&stype,&rtype);
   if (ierr) {ierr = PetscInfo1(NULL,"AMS_Memory_get_field_info() error %d\n",ierr);CHKERRQ(ierr);}
   *argco = 4 + len;
   ierr   = PetscMalloc((*argco)*sizeof(char*),argso);CHKERRQ(ierr);
@@ -1071,18 +1071,22 @@ PETSC_EXTERN PetscErrorCode YAML_AMS_Memory_get_field_info(PetscInt argc,char **
   for (i=0; i<len; i++) {
     if (dtype == AMS_STRING) {
       ierr = PetscStrallocpy(*(const char**)addr,&argso[0][4+i]);CHKERRQ(ierr);
+      addr += sizeof(char*);
     } else if (dtype == AMS_DOUBLE) {
       ierr = PetscMalloc(20*sizeof(char),&argso[0][4+i]);CHKERRQ(ierr);
       sprintf(argso[0][4+i],"%18.16e",*(double*)addr);
+      addr += sizeof(PetscReal*);
     } else if (dtype == AMS_INT) {
       ierr = PetscMalloc(10*sizeof(char),&argso[0][4+i]);CHKERRQ(ierr);
       sprintf(argso[0][4+i],"%d",*(int*)addr);
+      addr += sizeof(PetscInt);
     } else if (dtype == AMS_BOOLEAN) {
       if (*(int*)addr) {
         ierr = PetscStrallocpy("true",&argso[0][4+i]);CHKERRQ(ierr);
       } else {
         ierr = PetscStrallocpy("false",&argso[0][4+i]);CHKERRQ(ierr);
       }
+      addr += sizeof(PetscBool);
     } else {
       ierr = PetscStrallocpy("Not yet done",&argso[0][4+i]);CHKERRQ(ierr);
     }
@@ -1264,7 +1268,6 @@ static PetscErrorCode  PetscWebServeRequestPostAMSJSONRPC(FILE *fd,const char pa
 
   PetscFunctionBegin;
   while (PETSC_TRUE) {
-
     if (!fgets(buf, sizeof(buf), fd)) {
       ierr = PetscInfo(NULL,"Cannot read POST data, giving up\n");CHKERRQ(ierr);
       PetscFunctionReturn(0);
@@ -1274,7 +1277,7 @@ static PetscErrorCode  PetscWebServeRequestPostAMSJSONRPC(FILE *fd,const char pa
     if (fnd) {
       ierr = PetscStrstr(buf,"application/json-rpc",&fnd);CHKERRQ(ierr);
       if (!fnd) {
-        ierr = PetscInfo(NULL,"POST content is not json-rpc, skipping post\n");CHKERRQ(ierr);
+        ierr = PetscInfo(NULL,"POSTED content is not json-rpc, skipping post\n");CHKERRQ(ierr);
         PetscFunctionReturn(0);
       }
     }
@@ -1286,7 +1289,7 @@ static PetscErrorCode  PetscWebServeRequestPostAMSJSONRPC(FILE *fd,const char pa
     if (buf[0] == '\r') break;
   }
   if (len == -1) {
-    ierr = PetscInfo(NULL,"Did not find Content-Length, giving up\n");CHKERRQ(ierr);
+    ierr = PetscInfo(NULL,"Did not find POST Content-Length in header, giving up\n");CHKERRQ(ierr);
   }
 
   if (!fgets(buf, len+1, fd)) { /* why is this len + 1? */
@@ -1404,7 +1407,7 @@ void *PetscWebServeWait(int *port)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscWebServe"
-/*@
+/*@C
       PetscWebServe - start up the PETSc web server and respond to requests
 
     Not collective - only does something on process zero of the communicator

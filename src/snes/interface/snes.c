@@ -3624,8 +3624,6 @@ PetscErrorCode  SNESSolve(SNES snes,Vec b,Vec x)
 
     ierr = PetscLogEventBegin(SNES_Solve,snes,0,0,0);CHKERRQ(ierr);
     ierr = (*snes->ops->solve)(snes);CHKERRQ(ierr);
-
-    while (1) ;
     ierr = PetscLogEventEnd(SNES_Solve,snes,0,0,0);CHKERRQ(ierr);
     if (snes->domainerror) {
       snes->reason      = SNES_DIVERGED_FUNCTION_DOMAIN;
