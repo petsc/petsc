@@ -32,10 +32,10 @@ all: chk_makej
 	 fi
 	@egrep -i "( error | error: |no such file or directory)" ${PETSC_ARCH}/conf/make.log | tee ${PETSC_ARCH}/conf/error.log > /dev/null
 	@if test -s ${PETSC_ARCH}/conf/error.log; then \
-           printf ${PETSC_TEXT_RED}"**************************ERROR************************************\n" 2>&1 | tee -a ${PETSC_ARCH}/conf/make.log; \
+           printf ${PETSC_TEXT_HILIGHT}"**************************ERROR************************************\n" 2>&1 | tee -a ${PETSC_ARCH}/conf/make.log; \
            echo "  Error during compile, check ${PETSC_ARCH}/conf/make.log" 2>&1 | tee -a ${PETSC_ARCH}/conf/make.log; \
            echo "  Send it and ${PETSC_ARCH}/conf/configure.log to petsc-maint@mcs.anl.gov" 2>&1 | tee -a ${PETSC_ARCH}/conf/make.log;\
-           printf "********************************************************************"${PETSC_TEXT_BLACK}"\n" 2>&1 | tee -a ${PETSC_ARCH}/conf/make.log;\
+           printf "********************************************************************"${PETSC_TEXT_NORMAL}"\n" 2>&1 | tee -a ${PETSC_ARCH}/conf/make.log;\
 	 else \
 	  ${OMAKE} shared_install PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} 2>&1 | tee -a ${PETSC_ARCH}/conf/make.log ;\
         fi #solaris make likes to print the whole command that gave error. So split this up into the smallest chunk below
@@ -44,7 +44,7 @@ all: chk_makej
 all-cmake:
 	@if [ "${PETSC_BUILD_USING_CMAKE}" != "" ]; then \
           ${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} all;\
-        else printf ${PETSC_TEXT_RED}"Build not configured for CMAKE. Quiting"${PETSC_TEXT_BLACK}"\n"; exit 1; fi
+        else printf ${PETSC_TEXT_HILIGHT}"Build not configured for CMAKE. Quiting"${PETSC_TEXT_NORMAL}"\n"; exit 1; fi
 
 all-legacy:
 	@${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} PETSC_BUILD_USING_CMAKE="" all
