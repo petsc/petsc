@@ -1,6 +1,6 @@
 #! /bin/csh
 #
-set MACH=bb30-proxy
+set MACH=bb-proxy
 set USR=balay
 set LOC=/home/balay/petsc33
 set CONF=arch-cuda-double
