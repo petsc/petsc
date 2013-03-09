@@ -1,4 +1,5 @@
 #requiresscalar real
+#requirespackage AGMRES_CURRENTLY_DISABLED
 
 ALL: lib
 
