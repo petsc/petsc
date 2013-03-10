@@ -171,6 +171,7 @@ class PetscConfig:
         # C compiler
         PCC = self['PCC']
         PCC_FLAGS = get_flags(cc) + ' ' + self['PCC_FLAGS']
+        PCC_FLAGS = PCC_FLAGS.replace('-fvisibility=hidden', '')
         if sys.version_info[:2] < (2, 5):
             PCC_FLAGS = PCC_FLAGS.replace('-Wwrite-strings', '')
         PCC = getenv('PCC', PCC) + ' ' +  getenv('PCCFLAGS', PCC_FLAGS)
@@ -188,6 +189,7 @@ class PetscConfig:
         # linker
         PLD = self['PCC_LINKER']
         PLD_FLAGS = get_flags(ld) + ' ' + self['PCC_LINKER_FLAGS']
+        PLD_FLAGS = PLD_FLAGS.replace('-fvisibility=hidden', '')
         PLD = getenv('PLD', PLD) + ' ' + getenv('PLDFLAGS', PLD_FLAGS)
         ldshared = getenv('LDSHARED', ldshared)
         ldflags  = getenv('LDFLAGS',  cflags + ' ' + ldflags)
