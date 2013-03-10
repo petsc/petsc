@@ -1373,8 +1373,6 @@ PETSC_EXTERN PetscErrorCode PetscObjectSetOptionsPrefix(PetscObject,const char[]
 PETSC_EXTERN PetscErrorCode PetscObjectAppendOptionsPrefix(PetscObject,const char[]);
 PETSC_EXTERN PetscErrorCode PetscObjectPrependOptionsPrefix(PetscObject,const char[]);
 PETSC_EXTERN PetscErrorCode PetscObjectGetOptionsPrefix(PetscObject,const char*[]);
-PETSC_EXTERN PetscErrorCode PetscObjectAMSPublish(PetscObject);
-PETSC_EXTERN PetscErrorCode PetscObjectUnPublish(PetscObject);
 PETSC_EXTERN PetscErrorCode PetscObjectChangeTypeName(PetscObject,const char[]);
 PETSC_EXTERN PetscErrorCode PetscObjectRegisterDestroy(PetscObject);
 PETSC_EXTERN PetscErrorCode PetscObjectRegisterDestroyAll(void);
@@ -1383,6 +1381,11 @@ PETSC_EXTERN PetscErrorCode PetscObjectTypeCompare(PetscObject,const char[],Pets
 PETSC_EXTERN PetscErrorCode PetscObjectTypeCompareAny(PetscObject,PetscBool*,const char[],...);
 PETSC_EXTERN PetscErrorCode PetscRegisterFinalize(PetscErrorCode (*)(void));
 PETSC_EXTERN PetscErrorCode PetscRegisterFinalizeAll(void);
+
+PETSC_EXTERN PetscErrorCode PetscObjectAMSPublish(PetscObject);
+PETSC_EXTERN PetscErrorCode PetscObjectAMSUnPublish(PetscObject);
+PETSC_EXTERN PetscErrorCode PetscObjectAMSSetBlock(PetscObject,PetscBool);
+PETSC_EXTERN PetscErrorCode PetscObjectAMSBlock(PetscObject);
 
 typedef void* PetscDLHandle;
 typedef enum {PETSC_DL_DECIDE=0,PETSC_DL_NOW=1,PETSC_DL_LOCAL=2} PetscDLMode;
@@ -1510,16 +1513,18 @@ PETSC_EXTERN PetscErrorCode (*PetscHelpPrintf)(MPI_Comm,const char[],...);
 
 /*
           For locking, unlocking and destroying AMS memories associated with  PETSc objects. ams.h is included in petscviewer.h
+
+          Developers note: These should all be made functions and ams.h removed from public petscviewer.h
 */
 #if defined(PETSC_HAVE_AMS)
 PETSC_EXTERN PetscBool PetscAMSPublishAll;
-#define PetscObjectTakeAccess(obj)  ((((PetscObject)(obj))->amem == -1) ? 0 : AMS_Memory_take_access(((PetscObject)(obj))->amem))
-#define PetscObjectGrantAccess(obj) ((((PetscObject)(obj))->amem == -1) ? 0 : AMS_Memory_grant_access(((PetscObject)(obj))->amem))
-#define PetscObjectDepublish(obj)   ((((PetscObject)(obj))->amem == -1) ? 0 : AMS_Memory_destroy(((PetscObject)(obj))->amem));((PetscObject)(obj))->amem = -1;
+#define PetscObjectTakeAccess(obj)  ((((PetscObject)(obj))->amsmem == -1) ? 0 : AMS_Memory_take_access(((PetscObject)(obj))->amsmem))
+#define PetscObjectGrantAccess(obj) ((((PetscObject)(obj))->amsmem == -1) ? 0 : AMS_Memory_grant_access(((PetscObject)(obj))->amsmem))
+#define PetscObjectDepublish(obj)   ((((PetscObject)(obj))->amsmem == -1) ? 0 : AMS_Memory_destroy(((PetscObject)(obj))->amsmem));((PetscObject)(obj))->amsmem = -1;
 #else
 #define PetscObjectTakeAccess(obj)   0
 #define PetscObjectGrantAccess(obj)  0
-#define PetscObjectDepublish(obj)      0
+#define PetscObjectDepublish(obj)    0
 #endif
 
 /*

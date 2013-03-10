@@ -36,7 +36,9 @@ PetscErrorCode  PetscHeaderCreate_Private(PetscObject h,PetscClassId classid,con
   h->mansec                = (char*)mansec;
   h->prefix                = 0;
   h->refct                 = 1;
-  h->amem                  = -1;
+#if defined(PETSC_HAVE_AMS)
+  h->amsmem                = -1;
+#endif
   h->id                    = idcnt++;
   h->parentid              = 0;
   h->qlist                 = 0;
@@ -94,7 +96,7 @@ PetscErrorCode  PetscHeaderDestroy_Private(PetscObject h)
   ierr = PetscComposedQuantitiesDestroy(h);
 #if defined(PETSC_HAVE_AMS)
   if (PetscAMSPublishAll) {
-    ierr = PetscObjectUnPublish((PetscObject)h);CHKERRQ(ierr);
+    ierr = PetscObjectAMSUnPublish((PetscObject)h);CHKERRQ(ierr);
   }
 #endif
   if (PetscMemoryCollectMaximumUsage) {

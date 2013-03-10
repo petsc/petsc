@@ -478,6 +478,12 @@ PetscViewer  PETSC_VIEWER_SOCKET_(MPI_Comm comm)
 /* ---------------------------------------------------------------------*/
 #if defined(PETSC_USE_SERVER)
 
+/*
+      Implements a crude webserver allowing the snooping on running application codes.
+
+     Developer Notes: Most of this code, including the webserver, perhaps, belongs properly in the AMS with perhaps a few hooks
+      for application/libraries like PETSc to interact with it.
+*/
 #include <pthread.h>
 #include <time.h>
 #define PROTOCOL   "HTTP/1.1"
@@ -750,7 +756,7 @@ static PetscErrorCode  PetscWebServeRequestGet(FILE *fd,const char path[])
 {
   PetscErrorCode ierr;
   FILE           *fdo;
-  char           fullpath[PETSC_MAX_PATH_LEN],truefullpath[PETSC_MAX_PATH_LEN];
+  char           fullpath[PETSC_MAX_PATH_LEN],truefullpath[PETSC_MAX_PATH_LEN],*qmark;
   const char     *type;
   PetscBool      flg;
 
@@ -805,6 +811,8 @@ static PetscErrorCode  PetscWebServeRequestGet(FILE *fd,const char path[])
   ierr = PetscStrcpy(fullpath,"${PETSC_DIR}/include/web");CHKERRQ(ierr);
   ierr = PetscStrcat(fullpath,path);CHKERRQ(ierr);
   ierr = PetscInfo1(NULL,"Checking for file %s\n",fullpath);CHKERRQ(ierr);
+  ierr = PetscStrstr(fullpath,"?",&qmark);CHKERRQ(ierr);
+  if (qmark) *qmark = 0;
   ierr = PetscStrreplace(PETSC_COMM_SELF,fullpath,truefullpath,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
   fdo  = fopen(truefullpath,"r");
   if (fdo) {

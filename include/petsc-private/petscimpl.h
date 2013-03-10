@@ -85,7 +85,6 @@ typedef struct _p_PetscObject {
   char                 *prefix;
   PetscInt             tablevel;
   void                 *cpp;
-  PetscInt             amem;
   PetscInt             state;
   PetscInt             int_idmax,        intstar_idmax;
   PetscInt             *intcomposedstate,*intstarcomposedstate;
@@ -109,6 +108,10 @@ typedef struct _p_PetscObject {
   void                 *optionctx[PETSC_MAX_OPTIONS_HANDLER];
   PetscPrecision       precision;
   PetscBool            optionsprinted;
+#if defined(PETSC_HAVE_AMS)
+  PetscInt             amsmem;
+  PetscBool            amspublishblock; /* if PETSC_TRUE and publishing objects then will block at PetscObjectAMSBlock() */
+#endif
 } _p_PetscObject;
 
 #define PETSCHEADER(ObjectOps) \

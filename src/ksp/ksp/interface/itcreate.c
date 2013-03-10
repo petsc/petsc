@@ -431,12 +431,12 @@ static PetscErrorCode KSPPublish_Petsc(PetscObject obj)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = AMS_Memory_add_field(obj->amem,"its",&ksp->its,1,AMS_INT,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
+  ierr = AMS_Memory_add_field(obj->amsmem,"its",&ksp->its,1,AMS_INT,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
 
   if (!ksp->res_hist) {
     ierr = KSPSetResidualHistory((KSP)obj,NULL,PETSC_DECIDE,PETSC_FALSE);CHKERRQ(ierr);
   }
-  ierr = AMS_Memory_add_field(obj->amem,"res_hist",ksp->res_hist,10,AMS_DOUBLE,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
+  ierr = AMS_Memory_add_field(obj->amsmem,"res_hist",ksp->res_hist,10,AMS_DOUBLE,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 #endif
