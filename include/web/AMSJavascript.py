@@ -1,5 +1,10 @@
 #
-#   Run python pyjsbuild --frame=AMSJavascript.html --enable-debug --enable-wrap-calls --output . AMSJavascript.py to generate the needed HTML and Javascript
+#   Run
+#
+#     python pyjsbuild --frame=AMSJavascript.html --enable-debug --enable-wrap-calls --output . AMSJavascript.py
+#     hg revert AMSJavascript.html
+#
+#   to generate the needed HTML and Javascript
 #
 
 import pyjd
