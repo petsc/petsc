@@ -1223,10 +1223,10 @@ PetscErrorCode ConstructGeometry(DM dm, Vec *facegeom, Vec *cellgeom, User user)
   ierr = DMCreateLocalVector(dmCell, cellgeom);CHKERRQ(ierr);
   ierr = VecGetArray(*cellgeom, &cgeom);CHKERRQ(ierr);
   for (c = cStart; c < user->cEndInterior; ++c) {
-    const PetscScalar *coords = NULL;
-    PetscInt          coordSize, numCorners, p;
-    PetscScalar       sx = 0, sy = 0;
-    CellGeom          *cg;
+    PetscScalar *coords = NULL;
+    PetscInt     coordSize, numCorners, p;
+    PetscScalar  sx = 0, sy = 0;
+    CellGeom    *cg;
 
     ierr = DMPlexVecGetClosure(dm, coordSection, coordinates, c, &coordSize, &coords);CHKERRQ(ierr);
     ierr = DMPlexPointLocalRef(dmCell, c, cgeom, &cg);CHKERRQ(ierr);
@@ -1260,12 +1260,12 @@ PetscErrorCode ConstructGeometry(DM dm, Vec *facegeom, Vec *cellgeom, User user)
   ierr = VecGetArray(*facegeom, &fgeom);CHKERRQ(ierr);
   minradius = PETSC_MAX_REAL;
   for (f = fStart; f < fEnd; ++f) {
-    const PetscScalar *coords = NULL;
-    const PetscInt    *cells;
-    PetscInt          ghost,i,coordSize;
-    PetscScalar       v[2];
-    FaceGeom          *fg;
-    CellGeom          *cL,*cR;
+    PetscScalar    *coords = NULL;
+    const PetscInt *cells;
+    PetscInt        ghost,i,coordSize;
+    PetscScalar     v[2];
+    FaceGeom       *fg;
+    CellGeom       *cL,*cR;
 
     ierr = DMPlexGetLabelValue(dm, "ghost", f, &ghost);CHKERRQ(ierr);
     if (ghost >= 0) continue;

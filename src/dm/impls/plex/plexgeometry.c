@@ -26,13 +26,13 @@ static PetscErrorCode DMPlexLocatePoint_Simplex_2D_Internal(DM dm, const PetscSc
 static PetscErrorCode DMPlexLocatePoint_General_2D_Internal(DM dm, const PetscScalar point[], PetscInt c, PetscInt *cell)
 {
   PetscSection       coordSection;
-  Vec                coordsLocal;
-  const PetscScalar *coords;
-  const PetscInt     faces[8]  = {0, 1, 1, 2, 2, 3, 3, 0};
-  PetscReal          x         = PetscRealPart(point[0]);
-  PetscReal          y         = PetscRealPart(point[1]);
-  PetscInt           crossings = 0, f;
-  PetscErrorCode     ierr;
+  Vec             coordsLocal;
+  PetscScalar    *coords;
+  const PetscInt  faces[8]  = {0, 1, 1, 2, 2, 3, 3, 0};
+  PetscReal       x         = PetscRealPart(point[0]);
+  PetscReal       y         = PetscRealPart(point[1]);
+  PetscInt        crossings = 0, f;
+  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   ierr = DMGetCoordinatesLocal(dm, &coordsLocal);CHKERRQ(ierr);
@@ -83,13 +83,13 @@ static PetscErrorCode DMPlexLocatePoint_Simplex_3D_Internal(DM dm, const PetscSc
 static PetscErrorCode DMPlexLocatePoint_General_3D_Internal(DM dm, const PetscScalar point[], PetscInt c, PetscInt *cell)
 {
   PetscSection       coordSection;
-  Vec                coordsLocal;
-  const PetscScalar *coords;
-  const PetscInt     faces[24] = {0, 1, 2, 3,  5, 4, 7, 6,  1, 0, 4, 5,
-                                  3, 2, 6, 7,  1, 5, 6, 2,  0, 3, 7, 4};
-  PetscBool          found = PETSC_TRUE;
-  PetscInt           f;
-  PetscErrorCode     ierr;
+  Vec            coordsLocal;
+  PetscScalar   *coords;
+  const PetscInt faces[24] = {0, 1, 2, 3,  5, 4, 7, 6,  1, 0, 4, 5,
+                              3, 2, 6, 7,  1, 5, 6, 2,  0, 3, 7, 4};
+  PetscBool      found = PETSC_TRUE;
+  PetscInt       f;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = DMGetCoordinatesLocal(dm, &coordsLocal);CHKERRQ(ierr);
@@ -265,12 +265,12 @@ static PetscErrorCode DMPlexComputeProjection3Dto2D_Internal(PetscScalar coords[
 #define __FUNCT__ "DMPlexComputeTriangleGeometry_Internal"
 static PetscErrorCode DMPlexComputeTriangleGeometry_Internal(DM dm, PetscInt e, PetscReal v0[], PetscReal J[], PetscReal invJ[], PetscReal *detJ)
 {
-  PetscSection       coordSection;
-  Vec                coordinates;
-  const PetscScalar *coords;
-  const PetscInt     dim = 2;
-  PetscInt           numCoords, d, f;
-  PetscErrorCode     ierr;
+  PetscSection   coordSection;
+  Vec            coordinates;
+  PetscScalar   *coords;
+  const PetscInt dim = 2;
+  PetscInt       numCoords, d, f;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
@@ -325,12 +325,12 @@ static PetscErrorCode DMPlexComputeTriangleGeometry_Internal(DM dm, PetscInt e, 
 #define __FUNCT__ "DMPlexComputeRectangleGeometry_Internal"
 static PetscErrorCode DMPlexComputeRectangleGeometry_Internal(DM dm, PetscInt e, PetscReal v0[], PetscReal J[], PetscReal invJ[], PetscReal *detJ)
 {
-  PetscSection       coordSection;
-  Vec                coordinates;
-  const PetscScalar *coords;
-  const PetscInt     dim = 2;
-  PetscInt           d, f;
-  PetscErrorCode     ierr;
+  PetscSection   coordSection;
+  Vec            coordinates;
+  PetscScalar   *coords;
+  const PetscInt dim = 2;
+  PetscInt       d, f;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
@@ -365,12 +365,12 @@ static PetscErrorCode DMPlexComputeRectangleGeometry_Internal(DM dm, PetscInt e,
 #define __FUNCT__ "DMPlexComputeTetrahedronGeometry_Internal"
 static PetscErrorCode DMPlexComputeTetrahedronGeometry_Internal(DM dm, PetscInt e, PetscReal v0[], PetscReal J[], PetscReal invJ[], PetscReal *detJ)
 {
-  PetscSection       coordSection;
-  Vec                coordinates;
-  const PetscScalar *coords;
-  const PetscInt     dim = 3;
-  PetscInt           d, f;
-  PetscErrorCode     ierr;
+  PetscSection   coordSection;
+  Vec            coordinates;
+  PetscScalar   *coords;
+  const PetscInt dim = 3;
+  PetscInt       d, f;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
@@ -413,12 +413,12 @@ static PetscErrorCode DMPlexComputeTetrahedronGeometry_Internal(DM dm, PetscInt 
 #define __FUNCT__ "DMPlexComputeHexahedronGeometry_Internal"
 static PetscErrorCode DMPlexComputeHexahedronGeometry_Internal(DM dm, PetscInt e, PetscReal v0[], PetscReal J[], PetscReal invJ[], PetscReal *detJ)
 {
-  PetscSection       coordSection;
-  Vec                coordinates;
-  const PetscScalar *coords;
-  const PetscInt     dim = 3;
-  PetscInt           d;
-  PetscErrorCode     ierr;
+  PetscSection   coordSection;
+  Vec            coordinates;
+  PetscScalar   *coords;
+  const PetscInt dim = 3;
+  PetscInt       d;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);

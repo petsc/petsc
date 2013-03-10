@@ -236,10 +236,10 @@ PETSC_STATIC_INLINE PetscErrorCode DMInterpolate_Simplex_Private(DMInterpolation
   ierr = VecGetArray(ctx->coords, &coords);CHKERRQ(ierr);
   ierr = VecGetArray(v, &a);CHKERRQ(ierr);
   for (p = 0; p < ctx->n; ++p) {
-    PetscInt          c = ctx->cells[p];
-    const PetscScalar *x;
-    PetscReal         xi[4];
-    PetscInt          d, f, comp;
+    PetscInt     c = ctx->cells[p];
+    PetscScalar *x;
+    PetscReal    xi[4];
+    PetscInt     d, f, comp;
 
     ierr = DMPlexComputeCellGeometry(dm, c, v0, J, invJ, &detJ);CHKERRQ(ierr);
     if (detJ <= 0.0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJ, c);
@@ -372,10 +372,10 @@ PETSC_STATIC_INLINE PetscErrorCode DMInterpolate_Quad_Private(DMInterpolationInf
   ierr = VecGetArray(ctx->coords, &coords);CHKERRQ(ierr);
   ierr = VecGetArray(v, &a);CHKERRQ(ierr);
   for (p = 0; p < ctx->n; ++p) {
-    const PetscScalar *x, *vertices;
-    PetscScalar       *xi;
-    PetscReal         xir[2];
-    PetscInt          c = ctx->cells[p], comp, coordSize, xSize;
+    PetscScalar *x, *vertices;
+    PetscScalar *xi;
+    PetscReal    xir[2];
+    PetscInt     c = ctx->cells[p], comp, coordSize, xSize;
 
     /* Can make this do all points at once */
     ierr = DMPlexVecGetClosure(dmCoord, NULL, coordsLocal, c, &coordSize, &vertices);CHKERRQ(ierr);
@@ -590,10 +590,10 @@ PETSC_STATIC_INLINE PetscErrorCode DMInterpolate_Hex_Private(DMInterpolationInfo
   ierr = VecGetArray(ctx->coords, &coords);CHKERRQ(ierr);
   ierr = VecGetArray(v, &a);CHKERRQ(ierr);
   for (p = 0; p < ctx->n; ++p) {
-    const PetscScalar *x, *vertices;
-    PetscScalar       *xi;
-    PetscReal         xir[3];
-    PetscInt          c = ctx->cells[p], comp, coordSize, xSize;
+    PetscScalar *x, *vertices;
+    PetscScalar *xi;
+    PetscReal    xir[3];
+    PetscInt     c = ctx->cells[p], comp, coordSize, xSize;
 
     /* Can make this do all points at once */
     ierr = DMPlexVecGetClosure(dmCoord, NULL, coordsLocal, c, &coordSize, &vertices);CHKERRQ(ierr);

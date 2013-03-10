@@ -111,8 +111,8 @@ PETSC_EXTERN void PETSC_STDCALL dmplexrestoretransitiveclosure_(DM *dm, PetscInt
 
 PETSC_EXTERN void PETSC_STDCALL dmplexvecgetclosure_(DM *dm, PetscSection *section, Vec *x, PetscInt *point, F90Array1d *ptr, int *__ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
-  const PetscScalar *v;
-  PetscInt          n;
+  PetscScalar *v;
+  PetscInt     n;
 
   *__ierr = DMPlexVecGetClosure(*dm, *section, *x, *point, &n, &v);if (*__ierr) return;
   *__ierr = F90Array1dCreate((void*) v, PETSC_SCALAR, 1, n, ptr PETSC_F90_2PTR_PARAM(ptrd));
@@ -123,7 +123,7 @@ PETSC_EXTERN void PETSC_STDCALL dmplexvecrestoreclosure_(DM *dm, PetscSection *s
   PetscScalar *array;
 
   *__ierr = F90Array1dAccess(ptr, PETSC_SCALAR, (void **) &array PETSC_F90_2PTR_PARAM(ptrd));if (*__ierr) return;
-  *__ierr = DMPlexVecRestoreClosure(*dm, *section, *v, *point, NULL, (const PetscScalar**)&array);if (*__ierr) return;
+  *__ierr = DMPlexVecRestoreClosure(*dm, *section, *v, *point, NULL, &array);if (*__ierr) return;
   *__ierr = F90Array1dDestroy(ptr, PETSC_SCALAR PETSC_F90_2PTR_PARAM(ptrd));if (*__ierr) return;
 }
 
