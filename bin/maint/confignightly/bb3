@@ -2,7 +2,5 @@
 #
 set MACH=bb-proxy
 set USR=balay
-set LOC=/home/balay/petsc-dev-3
+set LOC=/home/balay/${RNAME}-3
 set CONF=arch-c-exodus-dbg-builder
-set PURL=https://bitbucket.org/petsc/petsc-dev
-set BURL=https://bitbucket.org/petsc/buildsystem

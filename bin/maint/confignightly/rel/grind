@@ -1,8 +1,0 @@
-#! /bin/csh
-
-set MACH=grind
-set USR=petsc
-set LOC=/sandbox/petsc/petsc33
-set CONF=arch-linux-pkgs-valgrind
-set PURL=https://bitbucket.org/petsc/petsc-3.3
-set BURL=https://bitbucket.org/petsc/buildsystem-3.3

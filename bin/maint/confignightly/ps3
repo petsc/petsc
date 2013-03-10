@@ -2,7 +2,5 @@
 #
 set MACH=ps3
 set USR=sbalay
-set LOC=/home/sbalay/petsc-dev
+set LOC=/home/sbalay/${RNAME}
 set CONF=arch-mswin
-set PURL=https://bitbucket.org/petsc/petsc-dev
-set BURL=https://bitbucket.org/petsc/buildsystem

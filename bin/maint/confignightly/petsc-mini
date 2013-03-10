@@ -2,7 +2,5 @@
 
 set MACH=petsc-mini.mcs.anl.gov
 set USR=petsc
-set LOC=/Users/petsc/petsc-dev
+set LOC=/Users/petsc/${RNAME}
 set CONF=arch-osx-10.6
-set PURL=https://bitbucket.org/petsc/petsc-dev
-set BURL=https://bitbucket.org/petsc/buildsystem

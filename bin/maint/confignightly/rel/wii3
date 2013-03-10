@@ -1,8 +1,0 @@
-#! /bin/csh
-#
-set MACH=wii
-set USR=balay
-set LOC=/home/balay/petsc33-3
-set CONF=arch-freebsd-cxx-cmplx-pkgs-dbg
-set PURL=https://bitbucket.org/petsc/petsc-3.3
-set BURL=https://bitbucket.org/petsc/buildsystem-3.3

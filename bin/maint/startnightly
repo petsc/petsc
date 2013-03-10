@@ -1,21 +1,32 @@
 #! /bin/csh
-
-# usage startnightly test1 test2 ...
-
-
+#
+# usage startnightly test1 test2 rel/test3 rel/test4 ...
+#
 set dir=`dirname $0`
 set bdir=`dirname $dir`
 set pdir=`dirname $bdir`
 set day=`date | cut -f1 -d" "`
 
-foreach CONF ($*)
+foreach TEST ($*)
   set SSH=ssh
   set SCP=scp
   set DASHN=-n
   set MERCURIAL=yes
-  source $dir/confignightly/${CONF}
+  echo $TEST | grep ^rel/ > /dev/null
+  if ("$?" == "0") then
+    set TNAME=`echo ${TEST} | sed 's^rel/^^'`
+    set PURL=https://bitbucket.org/petsc/petsc-3.3
+    set BURL=https://bitbucket.org/petsc/buildsystem-3.3
+    set RNAME=petsc33
+  else
+    set TNAME=${TEST}
+    set PURL=https://bitbucket.org/petsc/petsc-dev
+    set BURL=https://bitbucket.org/petsc/buildsystem
+    set RNAME=petsc-dev
+  endif
+  source $dir/confignightly/${TNAME}
 
-  echo "Starting $CONF build at `date`"
+  echo "Starting $TEST : $CONF build at `date`"
   if ("${MERCURIAL}" == "yes") then
     $SSH $USR@$MACH $DASHN test "\( -d  $LOC \)"
     if ("$?" != "0") then

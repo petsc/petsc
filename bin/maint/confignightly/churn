@@ -2,7 +2,5 @@
 #
 set MACH=churn
 set USR=petsc
-set LOC=/sandbox/petsc/petsc-dev
+set LOC=/sandbox/petsc/${RNAME}
 set CONF=arch-linux-gcc-absoft
-set PURL=https://bitbucket.org/petsc/petsc-dev
-set BURL=https://bitbucket.org/petsc/buildsystem

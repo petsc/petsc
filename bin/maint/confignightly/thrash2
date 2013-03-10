@@ -2,7 +2,5 @@
 
 set MACH=thrash
 set USR=petsc
-set LOC=/sandbox/petsc/petsc-dev-2
+set LOC=/sandbox/petsc/${RNAME}-2
 set CONF=arch-linux-c89
-set PURL=https://bitbucket.org/petsc/petsc-dev
-set BURL=https://bitbucket.org/petsc/buildsystem
