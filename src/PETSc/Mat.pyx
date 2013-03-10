@@ -440,7 +440,7 @@ cdef class Mat(Object):
         cdef PetscInt M = 0, N = 0
         CHKERR( MatGetLocalSize(self.mat, &m, &n) )
         CHKERR( MatGetSize(self.mat, &M, &N) )
-        return ((toInt(m), toInt(n)), (toInt(M), toInt(N)))
+        return ((toInt(m), toInt(M)), (toInt(n), toInt(N)))
 
     def getBlockSize(self):
         cdef PetscInt bs = 0
