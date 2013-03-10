@@ -604,7 +604,7 @@ PetscErrorCode MatCreateSeqAIJCUSPFromTriple(MPI_Comm comm, PetscInt m, PetscInt
 extern PetscErrorCode MatSetValuesBatch_SeqAIJCUSP(Mat, PetscInt, PetscInt, PetscInt*,const PetscScalar*);
 
 #if defined(PETSC_HAVE_TXPETSCGPU)
-extern PetscErrorCode MatGetFactor_seqaij_cusparse(Mat,MatFactorType,Mat*);
+PETSC_EXERN PetscErrorCode MatGetFactor_seqaij_cusparse(Mat,MatFactorType,Mat*);
 extern PetscErrorCode MatFactorGetSolverPackage_seqaij_cusparse(Mat,const MatSolverPackage*);
 #endif
 

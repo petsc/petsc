@@ -44,7 +44,7 @@ PetscErrorCode MatFactorGetSolverPackage_seqaij_cusparse(Mat A,const MatSolverPa
   PetscFunctionReturn(0);
 }
 
-extern PetscErrorCode MatGetFactor_seqaij_petsc(Mat,MatFactorType,Mat*);
+PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_petsc(Mat,MatFactorType,Mat*);
 
 /*MC
   MATSOLVERCUSPARSE = "cusparse" - A matrix type providing triangular solvers for seq matrices on a single GPU of type,
