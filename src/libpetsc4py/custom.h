@@ -23,8 +23,8 @@ extern PetscErrorCode (*PetscPythonMonitorSet_C)(PetscObject,const char*);
 EXTERN_C_END
 
 #if PETSC_VERSION_(3,3,0) || PETSC_VERSION_(3,2,0)
-#define KSPBuildSolution_Default KSPDefaultBuildSolution
-#defien KSPBuildResidual_Default KSPDefaultBuildResidual
+#define KSPBuildSolutionDefault KSPDefaultBuildSolution
+#define KSPBuildResidualDefault KSPDefaultBuildResidual
 #endif
 
 #if PETSC_VERSION_(3,2,0)

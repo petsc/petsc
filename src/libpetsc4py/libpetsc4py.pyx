@@ -1352,8 +1352,8 @@ cdef extern from * nogil:
 cdef extern from * nogil:
     PetscErrorCode KSPGetRhs(PetscKSP,PetscVec*)
     PetscErrorCode KSPGetSolution(PetscKSP,PetscVec*)
-    PetscErrorCode KSPBuildSolution_Default(PetscKSP,PetscVec,PetscVec*)
-    PetscErrorCode KSPBuildResidual_Default(PetscKSP,PetscVec,PetscVec,PetscVec*)
+    PetscErrorCode KSPBuildSolutionDefault(PetscKSP,PetscVec,PetscVec*)
+    PetscErrorCode KSPBuildResidualDefault(PetscKSP,PetscVec,PetscVec,PetscVec*)
     PetscErrorCode KSPGetIterationNumber(PetscKSP,PetscInt*)
     PetscErrorCode KSPBuildSolution(PetscKSP,PetscVec,PetscVec*)
     PetscErrorCode KSPBuildResidual(PetscKSP,PetscVec,PetscVec,PetscVec*)
@@ -1533,7 +1533,7 @@ cdef PetscErrorCode KSPBuildSolution_Python(
         buildSolution(KSP_(ksp), Vec_(x))
         if V != NULL: V[0] = x
     else:
-        CHKERR( KSPBuildSolution_Default(ksp, v, V) )
+        CHKERR( KSPBuildSolutionDefault(ksp, v, V) )
     return FunctionEnd()
 
 cdef PetscErrorCode KSPBuildResidual_Python(
@@ -1549,7 +1549,7 @@ cdef PetscErrorCode KSPBuildResidual_Python(
         buildResidual(KSP_(ksp), Vec_(t), Vec_(v))
         if V != NULL: V[0] = v
     else:
-        CHKERR( KSPBuildResidual_Default(ksp, t, v, V) )
+        CHKERR( KSPBuildResidualDefault(ksp, t, v, V) )
     return FunctionEnd()
 
 cdef PetscErrorCode KSPSolve_Python(
