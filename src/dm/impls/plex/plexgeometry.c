@@ -209,6 +209,8 @@ PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, IS *cellIS)
 static PetscErrorCode DMPlexComputeProjection3Dto2D_Internal(PetscScalar coords[])
 {
   PetscScalar    x1[3], x2[3], n[3], norm;
+  PetscScalar    R[9], x1p[3], x2p[3];
+  PetscScalar    sqrtz, alpha;
   const PetscInt dim = 3;
   PetscInt       d, e;
 
@@ -235,9 +237,8 @@ static PetscErrorCode DMPlexComputeProjection3Dto2D_Internal(PetscScalar coords[
 
     will rotate the normal vector to \hat z
   */
-  PetscScalar R[9], x1p[3], x2p[3];
-  PetscScalar sqrtz = sqrt(1.0 - n[2]*n[2]), alpha = 1.0/sqrtz;
-
+  sqrtz = sqrt(1.0 - n[2]*n[2]);
+  alpha = 1.0/sqrtz;
   R[0] =  alpha*n[0]*n[2]; R[1] = alpha*n[1]*n[2]; R[2] = -sqrtz;
   R[3] = -alpha*n[1];      R[4] = alpha*n[0];      R[5] = 0.0;
   R[6] =  n[0];            R[7] = n[1];            R[8] = n[2];
@@ -249,8 +250,8 @@ static PetscErrorCode DMPlexComputeProjection3Dto2D_Internal(PetscScalar coords[
       x2p[d] += R[d*dim+e]*x2[e];
     }
   }
-  if (fabs(x1p[2]) > 1.0e-9) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid rotation calculated");
-  if (fabs(x2p[2]) > 1.0e-9) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid rotation calculated");
+  if (PetscScalarAbs(x1p[2]) > 1.0e-9) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid rotation calculated");
+  if (PetscScalarAbs(x2p[2]) > 1.0e-9) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid rotation calculated");
   /* 2) Project to (x, y) */
   coords[0] = 0.0;
   coords[1] = 0.0;
