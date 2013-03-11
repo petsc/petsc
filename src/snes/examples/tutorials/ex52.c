@@ -149,7 +149,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       *dm  = refinedMesh;
     }
     /* Distribute mesh over processes */
-    ierr = DMPlexDistribute(*dm, partitioner, &distributedMesh);CHKERRQ(ierr);
+    ierr = DMPlexDistribute(*dm, partitioner, 0, &distributedMesh);CHKERRQ(ierr);
     if (distributedMesh) {
       ierr = DMDestroy(dm);CHKERRQ(ierr);
       *dm  = distributedMesh;
@@ -198,7 +198,7 @@ PetscErrorCode SetupSection(DM dm, AppCtx *user)
   PetscFunctionBeginUser;
   if (dim != SPATIAL_DIM_0) SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_SIZ, "Spatial dimension %d should be %d", dim, SPATIAL_DIM_0);
   ierr = DMPlexCreateSection(dm, dim, 1, numComp, numDof_0, numBC, NULL, NULL, &section);CHKERRQ(ierr);
-  ierr = DMPlexSetDefaultSection(dm, section);CHKERRQ(ierr);
+  ierr = DMSetDefaultSection(dm, section);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -224,9 +224,9 @@ PetscErrorCode FormInitialGuess(Vec X, void (*guessFunc)(const PetscReal [], Pet
   PetscFunctionBeginUser;
   ierr = DMGetLocalVector(user->dm, &localX);CHKERRQ(ierr);
   ierr = DMPlexGetDepthStratum(user->dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetDefaultSection(user->dm, &section);CHKERRQ(ierr);
+  ierr = DMGetDefaultSection(user->dm, &section);CHKERRQ(ierr);
   ierr = DMPlexGetCoordinateSection(user->dm, &cSection);CHKERRQ(ierr);
-  ierr = DMPlexGetCoordinateVec(user->dm, &coordinates);CHKERRQ(ierr);
+  ierr = DMGetCoordinatesLocal(user->dm, &coordinates);CHKERRQ(ierr);
   for (v = vStart; v < vEnd; ++v) {
     PetscScalar values[3];
     PetscScalar *coords;
@@ -319,6 +319,7 @@ PetscErrorCode FormFunctionLocalLaplacian(DM dm, Vec X, Vec F, AppCtx *user)
         elemVec[f] -= basis[q*numBasisFuncs+f]*0.0*PetscExpScalar(fieldVal)*quadWeights[q]*detJ;
       }
     }
+    ierr = DMPlexVecRestoreClosure(dm, NULL, X, c, NULL, &x);CHKERRQ(ierr);
     if (debug) {ierr = DMPrintCellVector(c, "Residual", numBasisFuncs, elemVec);CHKERRQ(ierr);}
     ierr = DMPlexVecSetClosure(dm, NULL, F, c, elemVec, ADD_VALUES);CHKERRQ(ierr);
   }
@@ -427,6 +428,7 @@ PetscErrorCode FormFunctionLocalElasticity(DM dm, Vec X, Vec F, AppCtx *user)
         }
       }
     }
+    ierr = DMPlexVecRestoreClosure(dm, NULL, X, c, NULL, &x);CHKERRQ(ierr);
     if (debug) {ierr = DMPrintCellVector(c, "Residual", numBasisFuncs*numBasisComps, elemVec);CHKERRQ(ierr);}
     ierr = DMPlexVecSetClosure(dm, NULL, F, c, elemVec, ADD_VALUES);CHKERRQ(ierr);
   }
@@ -665,6 +667,7 @@ PetscErrorCode FormFunctionLocalBatch(DM dm, Vec X, Vec F, AppCtx *user)
     for (f = 0; f < numBasisFuncs*numBasisComps; ++f) {
       u[c*numBasisFuncs*numBasisComps+f] = x[f];
     }
+    ierr = DMPlexVecRestoreClosure(dm, NULL, X, c, NULL, &x);CHKERRQ(ierr);
   }
   /* Conforming batches */
   PetscInt blockSize  = numBasisFuncs*numQuadPoints;
@@ -725,7 +728,7 @@ PetscErrorCode FormFunctionLocalBatch(DM dm, Vec X, Vec F, AppCtx *user)
   X   - The local input vector
   Jac - The output matrix
 */
-PetscErrorCode FormJacobianLocalLaplacian(DM dm, Vec X, Mat Jac, Mat JacPre, AppCtx *user)
+PetscErrorCode FormJacobianLocalLaplacian(DM dm, Vec X, Mat Jac, Mat JacPre, MatStructure *flag, AppCtx *user)
 {
   const PetscInt  debug         = user->debug;
   const PetscInt  dim           = user->dim;
@@ -782,6 +785,7 @@ PetscErrorCode FormJacobianLocalLaplacian(DM dm, Vec X, Mat Jac, Mat JacPre, App
         }
       }
     }
+    ierr = DMPlexVecRestoreClosure(dm, NULL, X, c, NULL, &x);CHKERRQ(ierr);
     if (debug) {ierr = DMPrintCellMatrix(c, "Jacobian", numBasisFuncs, numBasisFuncs, elemMat);CHKERRQ(ierr);}
     ierr = DMPlexMatSetClosure(dm, NULL, NULL, Jac, c, elemMat, ADD_VALUES);CHKERRQ(ierr);
   }
@@ -807,7 +811,7 @@ PetscErrorCode FormJacobianLocalLaplacian(DM dm, Vec X, Mat Jac, Mat JacPre, App
   X   - The local input vector
   Jac - The output matrix
 */
-PetscErrorCode FormJacobianLocalElasticity(DM dm, Vec X, Mat Jac, Mat JacPre, AppCtx *user)
+PetscErrorCode FormJacobianLocalElasticity(DM dm, Vec X, Mat Jac, Mat JacPre, MatStructure *flag, AppCtx *user)
 {
   const PetscInt  debug         = user->debug;
   const PetscInt  dim           = user->dim;
@@ -865,6 +869,7 @@ PetscErrorCode FormJacobianLocalElasticity(DM dm, Vec X, Mat Jac, Mat JacPre, Ap
         }
       }
     }
+    ierr = DMPlexVecRestoreClosure(dm, NULL, X, c, NULL, &x);CHKERRQ(ierr);
     if (debug) {ierr = DMPrintCellMatrix(c, "Jacobian", numBasisFuncs, numBasisFuncs, elemMat);CHKERRQ(ierr);}
     ierr = DMPlexMatSetClosure(dm, NULL, NULL, Jac, c, elemMat, ADD_VALUES);CHKERRQ(ierr);
   }
@@ -890,7 +895,7 @@ PetscErrorCode FormJacobianLocalElasticity(DM dm, Vec X, Mat Jac, Mat JacPre, Ap
   X   - The local input vector
   Jac - The output matrix
 */
-PetscErrorCode FormJacobianLocalBatch(DM dm, Vec X, Mat Jac, Mat JacPre, AppCtx *user)
+PetscErrorCode FormJacobianLocalBatch(DM dm, Vec X, Mat Jac, Mat JacPre, MatStructure *flag, AppCtx *user)
 {
   const PetscInt  debug         = user->debug;
   const PetscInt  dim           = user->dim;
@@ -948,6 +953,7 @@ PetscErrorCode FormJacobianLocalBatch(DM dm, Vec X, Mat Jac, Mat JacPre, AppCtx 
         }
       }
     }
+    ierr = DMPlexVecRestoreClosure(dm, NULL, X, c, NULL, &x);CHKERRQ(ierr);
     if (debug) {ierr = DMPrintCellMatrix(c, "Jacobian", numBasisFuncs, numBasisFuncs, elemMat);CHKERRQ(ierr);}
     ierr = DMPlexMatSetClosure(dm, NULL, NULL, Jac, c, elemMat, ADD_VALUES);CHKERRQ(ierr);
   }
@@ -985,6 +991,7 @@ int main(int argc, char **argv)
   ierr = SetupSection(dm, &user);CHKERRQ(ierr);
 
   ierr = SNESCreate(PETSC_COMM_WORLD, &snes);CHKERRQ(ierr);
+  ierr = SNESSetDM(snes, dm);CHKERRQ(ierr);
   if (user.computeFunction) {
     Vec X, F;
 
@@ -999,20 +1006,20 @@ int main(int argc, char **argv)
       default:
         SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid PDE operator %d", user.op);
       }
-      ierr = DMPlexSetLocalFunction(dm, (PetscErrorCode (*)(DM, Vec, Vec, void*))FormFunctionLocalBatch);CHKERRQ(ierr);
+      ierr = DMSNESSetFunctionLocal(dm, (PetscErrorCode (*)(DM, Vec, Vec, void*))FormFunctionLocalBatch, &user);CHKERRQ(ierr);
     } else {
       switch (user.op) {
       case LAPLACIAN:
         ierr = FormInitialGuess(X, quadratic_2d, INSERT_VALUES, &user);CHKERRQ(ierr);
-        ierr = DMPlexSetLocalFunction(dm, (PetscErrorCode (*)(DM, Vec, Vec, void*))FormFunctionLocalLaplacian);CHKERRQ(ierr);break;
+        ierr = DMSNESSetFunctionLocal(dm, (PetscErrorCode (*)(DM, Vec, Vec, void*))FormFunctionLocalLaplacian, &user);CHKERRQ(ierr);break;
       case ELASTICITY:
         ierr = FormInitialGuess(X, quadratic_2d_elas, INSERT_VALUES, &user);CHKERRQ(ierr);
-        ierr = DMPlexSetLocalFunction(dm, (PetscErrorCode (*)(DM, Vec, Vec, void*))FormFunctionLocalElasticity);CHKERRQ(ierr);break;
+        ierr = DMSNESSetFunctionLocal(dm, (PetscErrorCode (*)(DM, Vec, Vec, void*))FormFunctionLocalElasticity, &user);CHKERRQ(ierr);break;
       default:
         SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid PDE operator %d", user.op);
       }
     }
-    ierr = SNESDMPlexComputeFunction(snes, X, F, &user);CHKERRQ(ierr);
+    ierr = SNESComputeFunction(snes, X, F);CHKERRQ(ierr);
     ierr = DMRestoreGlobalVector(dm, &X);CHKERRQ(ierr);
     ierr = DMRestoreGlobalVector(dm, &F);CHKERRQ(ierr);
   }
@@ -1024,18 +1031,18 @@ int main(int argc, char **argv)
     ierr = DMGetGlobalVector(dm, &X);CHKERRQ(ierr);
     ierr = DMCreateMatrix(dm, MATAIJ, &J);CHKERRQ(ierr);
     if (user.batch) {
-      ierr = DMPlexSetLocalJacobian(dm, (PetscErrorCode (*)(DM, Vec, Mat, Mat, void*))FormJacobianLocalBatch);CHKERRQ(ierr);
+      ierr = DMSNESSetJacobianLocal(dm, (PetscErrorCode (*)(DM, Vec, Mat, Mat, MatStructure*, void*))FormJacobianLocalBatch, &user);CHKERRQ(ierr);
     } else {
       switch (user.op) {
       case LAPLACIAN:
-        ierr = DMPlexSetLocalJacobian(dm, (PetscErrorCode (*)(DM, Vec, Mat, Mat, void*))FormJacobianLocalLaplacian);CHKERRQ(ierr);break;
+        ierr = DMSNESSetJacobianLocal(dm, (PetscErrorCode (*)(DM, Vec, Mat, Mat, MatStructure*, void*))FormJacobianLocalLaplacian, &user);CHKERRQ(ierr);break;
       case ELASTICITY:
-        ierr = DMPlexSetLocalJacobian(dm, (PetscErrorCode (*)(DM, Vec, Mat, Mat, void*))FormJacobianLocalElasticity);CHKERRQ(ierr);break;
+        ierr = DMSNESSetJacobianLocal(dm, (PetscErrorCode (*)(DM, Vec, Mat, Mat, MatStructure*, void*))FormJacobianLocalElasticity, &user);CHKERRQ(ierr);break;
       default:
         SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid PDE operator %d", user.op);
       }
     }
-    ierr = SNESDMPlexComputeJacobian(snes, X, &J, &J, &flag, &user);CHKERRQ(ierr);
+    ierr = SNESComputeJacobian(snes, X, &J, &J, &flag);CHKERRQ(ierr);
     ierr = MatDestroy(&J);CHKERRQ(ierr);
     ierr = DMRestoreGlobalVector(dm, &X);CHKERRQ(ierr);
   }
