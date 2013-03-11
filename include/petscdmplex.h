@@ -125,8 +125,9 @@ PETSC_EXTERN PetscErrorCode DMPlexGetDepthStratum(DM, PetscInt, PetscInt *, Pets
 PETSC_EXTERN PetscErrorCode DMPlexGetHeightStratum(DM, PetscInt, PetscInt *, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMPlexCreateSection(DM, PetscInt, PetscInt,const PetscInt [],const PetscInt [], PetscInt,const PetscInt [],const IS [], PetscSection *);
 PETSC_EXTERN PetscErrorCode DMPlexCreateConeSection(DM, PetscSection *);
-PETSC_EXTERN PetscErrorCode DMLabelCohesiveComplete(DM, DMLabel);
-PETSC_EXTERN PetscErrorCode DMPlexMarkBoundaryFaces(DM,DMLabel);
+PETSC_EXTERN PetscErrorCode DMPlexLabelCohesiveComplete(DM, DMLabel);
+PETSC_EXTERN PetscErrorCode DMPlexMarkBoundaryFaces(DM, DMLabel);
+PETSC_EXTERN PetscErrorCode DMPlexLabelComplete(DM, DMLabel);
 
 /* FEM Support */
 PETSC_EXTERN PetscErrorCode DMPlexComputeCellGeometry(DM, PetscInt, PetscReal *, PetscReal *, PetscReal *, PetscReal *);
