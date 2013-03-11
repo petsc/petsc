@@ -114,6 +114,10 @@ struct _p_KSP {
   MatNullSpace nullsp;      /* Null space of the operator, removed from Krylov space */
 
   PetscViewer  eigviewer;   /* Viewer where computed eigenvalues are displayed */
+
+  PetscErrorCode (*presolve)(KSP,Vec,Vec,void*);
+  PetscErrorCode (*postsolve)(KSP,Vec,Vec,void*);
+  void           *prectx,*postctx;
 };
 
 typedef struct { /* dummy data structure used in KSPMonitorDynamicTolerance() */

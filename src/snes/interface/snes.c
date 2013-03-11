@@ -1311,46 +1311,6 @@ PetscErrorCode  SNESGetLinearSolveIterations(SNES snes,PetscInt *lits)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESGetKSP"
-/*@
-   SNESGetKSP - Returns the KSP context for a SNES solver.
-
-   Not Collective, but if SNES object is parallel, then KSP object is parallel
-
-   Input Parameter:
-.  snes - the SNES context
-
-   Output Parameter:
-.  ksp - the KSP context
-
-   Notes:
-   The user can then directly manipulate the KSP context to set various
-   options, etc.  Likewise, the user can then extract and manipulate the
-   PC contexts as well.
-
-   Level: beginner
-
-.keywords: SNES, nonlinear, get, KSP, context
-
-.seealso: KSPGetPC(), SNESCreate(), KSPCreate(), SNESSetKSP()
-@*/
-PetscErrorCode  SNESGetKSP(SNES snes,KSP *ksp)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
-  PetscValidPointer(ksp,2);
-
-  if (!snes->ksp) {
-    ierr = KSPCreate(PetscObjectComm((PetscObject)snes),&snes->ksp);CHKERRQ(ierr);
-    ierr = PetscObjectIncrementTabLevel((PetscObject)snes->ksp,(PetscObject)snes,1);CHKERRQ(ierr);
-    ierr = PetscLogObjectParent(snes,snes->ksp);CHKERRQ(ierr);
-  }
-  *ksp = snes->ksp;
-  PetscFunctionReturn(0);
-}
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESSetKSP"
@@ -4333,14 +4293,14 @@ PetscErrorCode  SNESKSPGetParametersEW(SNES snes,PetscInt *version,PetscReal *rt
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESKSPEW_PreSolve"
-static PetscErrorCode SNESKSPEW_PreSolve(SNES snes, KSP ksp, Vec b, Vec x)
+ PetscErrorCode SNESKSPEW_PreSolve(KSP ksp, Vec b, Vec x, SNES snes)
 {
   PetscErrorCode ierr;
   SNESKSPEW      *kctx = (SNESKSPEW*)snes->kspconvctx;
   PetscReal      rtol  = PETSC_DEFAULT,stol;
 
   PetscFunctionBegin;
-  if (!kctx) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"No Eisenstat-Walker context exists");
+  if (!snes->ksp_ewconv) PetscFunctionReturn(0);
   if (!snes->iter) rtol = kctx->rtol_0; /* first time in, so use the original user rtol */
   else {
     if (kctx->version == 1) {
@@ -4373,7 +4333,7 @@ static PetscErrorCode SNESKSPEW_PreSolve(SNES snes, KSP ksp, Vec b, Vec x)
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESKSPEW_PostSolve"
-static PetscErrorCode SNESKSPEW_PostSolve(SNES snes, KSP ksp, Vec b, Vec x)
+PetscErrorCode SNESKSPEW_PostSolve(KSP ksp, Vec b, Vec x, SNES snes)
 {
   PetscErrorCode ierr;
   SNESKSPEW      *kctx = (SNESKSPEW*)snes->kspconvctx;
@@ -4381,7 +4341,7 @@ static PetscErrorCode SNESKSPEW_PostSolve(SNES snes, KSP ksp, Vec b, Vec x)
   Vec            lres;
 
   PetscFunctionBegin;
-  if (!kctx) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"No Eisenstat-Walker context exists");
+  if (!snes->ksp_ewconv) PetscFunctionReturn(0);
   ierr = KSPGetTolerances(ksp,&kctx->rtol_last,0,0,0);CHKERRQ(ierr);
   ierr = SNESGetFunctionNorm(snes,&kctx->norm_last);CHKERRQ(ierr);
   if (kctx->version == 1) {
@@ -4403,17 +4363,49 @@ static PetscErrorCode SNESKSPEW_PostSolve(SNES snes, KSP ksp, Vec b, Vec x)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "SNES_KSPSolve"
-PetscErrorCode SNES_KSPSolve(SNES snes, KSP ksp, Vec b, Vec x)
+#define __FUNCT__ "SNESGetKSP"
+/*@
+   SNESGetKSP - Returns the KSP context for a SNES solver.
+
+   Not Collective, but if SNES object is parallel, then KSP object is parallel
+
+   Input Parameter:
+.  snes - the SNES context
+
+   Output Parameter:
+.  ksp - the KSP context
+
+   Notes:
+   The user can then directly manipulate the KSP context to set various
+   options, etc.  Likewise, the user can then extract and manipulate the
+   PC contexts as well.
+
+   Level: beginner
+
+.keywords: SNES, nonlinear, get, KSP, context
+
+.seealso: KSPGetPC(), SNESCreate(), KSPCreate(), SNESSetKSP()
+@*/
+PetscErrorCode  SNESGetKSP(SNES snes,KSP *ksp)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (snes->ksp_ewconv) { ierr = SNESKSPEW_PreSolve(snes,ksp,b,x);CHKERRQ(ierr);  }
-  ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
-  if (snes->ksp_ewconv) { ierr = SNESKSPEW_PostSolve(snes,ksp,b,x);CHKERRQ(ierr); }
+  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
+  PetscValidPointer(ksp,2);
+
+  if (!snes->ksp) {
+    ierr = KSPCreate(PetscObjectComm((PetscObject)snes),&snes->ksp);CHKERRQ(ierr);
+    ierr = PetscObjectIncrementTabLevel((PetscObject)snes->ksp,(PetscObject)snes,1);CHKERRQ(ierr);
+    ierr = PetscLogObjectParent(snes,snes->ksp);CHKERRQ(ierr);
+
+    ierr = KSPSetPreSolve(snes->ksp,(PetscErrorCode (*)(KSP,Vec,Vec,void*))SNESKSPEW_PreSolve,snes);CHKERRQ(ierr);
+    ierr = KSPSetPostSolve(snes->ksp,(PetscErrorCode (*)(KSP,Vec,Vec,void*))SNESKSPEW_PostSolve,snes);CHKERRQ(ierr);
+  }
+  *ksp = snes->ksp;
   PetscFunctionReturn(0);
 }
+
 
 #include <petsc-private/dmimpl.h>
 #undef __FUNCT__

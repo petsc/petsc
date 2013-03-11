@@ -856,7 +856,7 @@ PetscErrorCode SNESSolveVI_SS(SNES snes)
     /* Compute the merit function gradient */
     ierr = SNESVIRSAUGComputeMeritFunctionGradient(snes->jacobian,vi->phi,vi->dpsi);CHKERRQ(ierr);
     ierr = KSPSetOperators(snes->ksp,snes->jacobian,snes->jacobian_pre,flg);CHKERRQ(ierr);
-    ierr = SNES_KSPSolve(snes,snes->ksp,vi->phi,Y);CHKERRQ(ierr);
+    ierr = KSPSolve(snes->ksp,vi->phi,Y);CHKERRQ(ierr);
     ierr = KSPGetConvergedReason(snes->ksp,&kspreason);CHKERRQ(ierr);
 
     if (kspreason < 0) {
@@ -1292,7 +1292,7 @@ PetscErrorCode SNESSolveVI_RS(SNES snes)
       }
     }
 
-    ierr = SNES_KSPSolve(snes,snes->ksp,F_inact,Y_inact);CHKERRQ(ierr);
+    ierr = KSPSolve(snes->ksp,F_inact,Y_inact);CHKERRQ(ierr);
     ierr = KSPGetConvergedReason(snes->ksp,&kspreason);CHKERRQ(ierr);
     if (kspreason < 0) {
       if (++snes->numLinearSolveFailures >= snes->maxLinearSolveFailures) {
@@ -1675,7 +1675,7 @@ PetscErrorCode SNESSolveVI_RSAUG(SNES snes)
       }
     }
     */
-    ierr = SNES_KSPSolve(snes,snes->ksp,F_aug,Y_aug);CHKERRQ(ierr);
+    ierr = KSPSolve(snes->ksp,F_aug,Y_aug);CHKERRQ(ierr);
     ierr = KSPGetConvergedReason(snes->ksp,&kspreason);CHKERRQ(ierr);
     if (kspreason < 0) {
       if (++snes->numLinearSolveFailures >= snes->maxLinearSolveFailures) {

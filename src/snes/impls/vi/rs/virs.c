@@ -537,7 +537,7 @@ PetscErrorCode SNESSolve_VINEWTONRSLS(SNES snes)
       }
     }
 
-    ierr = SNES_KSPSolve(snes,snes->ksp,F_inact,Y_inact);CHKERRQ(ierr);
+    ierr = KSPSolve(snes->ksp,F_inact,Y_inact);CHKERRQ(ierr);
     ierr = KSPGetConvergedReason(snes->ksp,&kspreason);CHKERRQ(ierr);
     if (kspreason < 0) {
       if (++snes->numLinearSolveFailures >= snes->maxLinearSolveFailures) {

@@ -46,7 +46,7 @@ PetscErrorCode SNESQNApply_Broyden(SNES snes,PetscInt it,Vec Y,Vec X,Vec Xold, V
   PetscFunctionBegin;
   if (it < m) l = it;
   if (qn->scale_type == SNES_QN_SCALE_JACOBIAN) {
-    ierr = SNES_KSPSolve(snes,snes->ksp,D,W);CHKERRQ(ierr);
+    ierr = KSPSolve(snes->ksp,D,W);CHKERRQ(ierr);
     ierr = KSPGetConvergedReason(snes->ksp,&kspreason);CHKERRQ(ierr);
     if (kspreason < 0) {
       if (++snes->numLinearSolveFailures >= snes->maxLinearSolveFailures) {
@@ -151,7 +151,7 @@ PetscErrorCode SNESQNApply_BadBroyden(SNES snes,PetscInt it,Vec Y,Vec X,Vec Xold
   }
 
   if (qn->scale_type == SNES_QN_SCALE_JACOBIAN) {
-    ierr = SNES_KSPSolve(snes,snes->ksp,Y,W);CHKERRQ(ierr);
+    ierr = KSPSolve(snes->ksp,Y,W);CHKERRQ(ierr);
     ierr = KSPGetConvergedReason(snes->ksp,&kspreason);CHKERRQ(ierr);
     if (kspreason < 0) {
       if (++snes->numLinearSolveFailures >= snes->maxLinearSolveFailures) {
@@ -249,7 +249,7 @@ PetscErrorCode SNESQNApply_LBFGS(SNES snes,PetscInt it,Vec Y,Vec X,Vec Xold,Vec 
   }
 
   if (qn->scale_type == SNES_QN_SCALE_JACOBIAN) {
-    ierr = SNES_KSPSolve(snes,snes->ksp,Y,W);CHKERRQ(ierr);
+    ierr = KSPSolve(snes->ksp,Y,W);CHKERRQ(ierr);
     ierr = KSPGetConvergedReason(snes->ksp,&kspreason);CHKERRQ(ierr);
     if (kspreason < 0) {
       if (++snes->numLinearSolveFailures >= snes->maxLinearSolveFailures) {

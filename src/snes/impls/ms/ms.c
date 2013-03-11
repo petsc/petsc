@@ -283,7 +283,7 @@ static PetscErrorCode SNESMSStep_3Sstar(SNES snes,Vec X,Vec F)
         PetscFunctionReturn(0);
       }
     }
-    ierr = SNES_KSPSolve(snes,snes->ksp,F,Y);CHKERRQ(ierr);
+    ierr = KSPSolve(snes->ksp,F,Y);CHKERRQ(ierr);
     ierr = VecMAXPY(S1,4,scoeff,Ss);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

@@ -231,7 +231,6 @@ PETSC_INTERN PetscErrorCode SNESVISetComputeVariableBounds_VI(SNES,SNESVICompute
 PETSC_INTERN PetscErrorCode SNESVISetVariableBounds_VI(SNES,Vec,Vec);
 PETSC_INTERN PetscErrorCode SNESConvergedDefault_VI(SNES,PetscInt,PetscReal,PetscReal,PetscReal,SNESConvergedReason*,void*);
 
-PETSC_EXTERN PetscErrorCode SNES_KSPSolve(SNES,KSP,Vec,Vec);
 PetscErrorCode SNESScaleStep_Private(SNES,Vec,PetscReal*,PetscReal*,PetscReal*,PetscReal*);
 
 PETSC_EXTERN PetscLogEvent SNES_Solve, SNES_LineSearch, SNES_FunctionEval, SNES_JacobianEval, SNES_GSEval, SNES_NPCSolve;

@@ -633,6 +633,60 @@ PetscErrorCode  KSPGetOperatorsSet(KSP ksp,PetscBool  *mat,PetscBool  *pmat)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "KSPSetPreSolve"
+/*@C
+   KSPSetPreSolve - Sets a function that is called before every KSPSolve() is started
+
+   Logically Collective on KSP
+
+   Input Parameters:
++   ksp - the solver object
+.   presolve - the function to call before the solve
+-   prectx - any context needed by the function
+
+   Level: developer
+
+.keywords: KSP, create, context
+
+.seealso: KSPSetUp(), KSPSolve(), KSPDestroy(), KSP, KSPSetPostSolve()
+@*/
+PetscErrorCode  KSPSetPreSolve(KSP ksp,PetscErrorCode (*presolve)(KSP,Vec,Vec,void*),void *prectx)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
+  ksp->presolve = presolve;
+  ksp->prectx   = prectx;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "KSPSetPostSolve"
+/*@C
+   KSPSetPostSolve - Sets a function that is called before every KSPSolve() is started
+
+   Logically Collective on KSP
+
+   Input Parameters:
++   ksp - the solver object
+.   postsolve - the function to call before the solve
+-   postctx - any context needed by the function
+
+   Level: developer
+
+.keywords: KSP, create, context
+
+.seealso: KSPSetUp(), KSPSolve(), KSPDestroy(), KSP, KSPSetPreSolve()
+@*/
+PetscErrorCode  KSPSetPostSolve(KSP ksp,PetscErrorCode (*postsolve)(KSP,Vec,Vec,void*),void *postctx)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
+  ksp->postsolve = postsolve;
+  ksp->postctx   = postctx;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "KSPCreate"
 /*@
    KSPCreate - Creates the default KSP context.

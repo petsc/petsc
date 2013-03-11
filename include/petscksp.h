@@ -156,6 +156,9 @@ PETSC_EXTERN PetscErrorCode KSPSetNullSpace(KSP,MatNullSpace);
 PETSC_EXTERN PetscErrorCode KSPGetNullSpace(KSP,MatNullSpace*);
 PETSC_EXTERN PetscErrorCode KSPGetVecs(KSP,PetscInt,Vec**,PetscInt,Vec**);
 
+PETSC_EXTERN PetscErrorCode KSPSetPreSolve(KSP,PetscErrorCode (*)(KSP,Vec,Vec,void*),void*);
+PETSC_EXTERN PetscErrorCode KSPSetPostSolve(KSP,PetscErrorCode (*)(KSP,Vec,Vec,void*),void*);
+
 PETSC_EXTERN PetscErrorCode KSPSetPC(KSP,PC);
 PETSC_EXTERN PetscErrorCode KSPGetPC(KSP,PC*);
 
