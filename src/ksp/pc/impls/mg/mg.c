@@ -567,10 +567,17 @@ PetscErrorCode PCSetUp_MG(PC pc)
     ierr = KSPGetOperators(mglevels[n-1]->smoothd,NULL,&mmat,NULL);CHKERRQ(ierr);
     if (mmat == pc->pmat) opsset = PETSC_FALSE;
   }
-  ierr = PCGetUseAmat(pc,&use_amat);CHKERRQ(ierr);
-  if (!opsset && use_amat) {
-    ierr = PetscInfo(pc,"Using outer operators to define finest grid operator \n  because PCMGGetSmoother(pc,nlevels-1,&ksp);KSPSetOperators(ksp,...); was not called.\n");CHKERRQ(ierr);
-    ierr = KSPSetOperators(mglevels[n-1]->smoothd,pc->mat,pc->pmat,pc->flag);CHKERRQ(ierr);
+
+  if (!opsset) {
+    ierr = PCGetUseAmat(pc,&use_amat);CHKERRQ(ierr);
+    if(use_amat){
+      ierr = PetscInfo(pc,"Using outer operators to define finest grid operator \n  because PCMGGetSmoother(pc,nlevels-1,&ksp);KSPSetOperators(ksp,...); was not called.\n");CHKERRQ(ierr);
+      ierr = KSPSetOperators(mglevels[n-1]->smoothd,pc->mat,pc->pmat,pc->flag);CHKERRQ(ierr);
+    }
+    else {
+      ierr = PetscInfo(pc,"Using matrix (pmat) operators to define finest grid operator \n  because PCMGGetSmoother(pc,nlevels-1,&ksp);KSPSetOperators(ksp,...); was not called.\n");CHKERRQ(ierr);
+      ierr = KSPSetOperators(mglevels[n-1]->smoothd,pc->pmat,pc->pmat,pc->flag);CHKERRQ(ierr);
+    }
   }
 
   /* Skipping this for galerkin==2 (externally managed hierarchy such as ML and GAMG). Cleaner logic here would be great. Wrap ML/GAMG as DMs? */
