@@ -127,7 +127,6 @@ PetscErrorCode  VecDot(Vec x,Vec y,PetscScalar *val)
   ierr = PetscLogEventBarrierBegin(VEC_DotBarrier,x,y,0,0,PetscObjectComm((PetscObject)x));CHKERRQ(ierr);
   ierr = (*x->ops->dot)(x,y,val);CHKERRQ(ierr);
   ierr = PetscLogEventBarrierEnd(VEC_DotBarrier,x,y,0,0,PetscObjectComm((PetscObject)x));CHKERRQ(ierr);
-  if (PetscIsInfOrNanScalar(*val)) SETERRQ(PetscObjectComm((PetscObject)x),PETSC_ERR_FP,"Infinite or not-a-number generated in dot product");
   PetscFunctionReturn(0);
 }
 
@@ -238,7 +237,6 @@ PetscErrorCode  VecNorm(Vec x,NormType type,PetscReal *val)
   ierr = PetscLogEventBarrierBegin(VEC_NormBarrier,x,0,0,0,PetscObjectComm((PetscObject)x));CHKERRQ(ierr);
   ierr = (*x->ops->norm)(x,type,val);CHKERRQ(ierr);
   ierr = PetscLogEventBarrierEnd(VEC_NormBarrier,x,0,0,0,PetscObjectComm((PetscObject)x));CHKERRQ(ierr);
-  if (PetscIsInfOrNanScalar(*val)) SETERRQ(PetscObjectComm((PetscObject)x),PETSC_ERR_FP,"Infinite or not-a-number generated in norm");
 
   if (type!=NORM_1_AND_2) {
     ierr = PetscObjectComposedDataSetReal((PetscObject)x,NormIds[type],*val);CHKERRQ(ierr);
@@ -1200,7 +1198,6 @@ $     val = (x,y) = y^T x,
 PetscErrorCode  VecMDot(Vec x,PetscInt nv,const Vec y[],PetscScalar val[])
 {
   PetscErrorCode ierr;
-  PetscInt       i;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
@@ -1217,9 +1214,6 @@ PetscErrorCode  VecMDot(Vec x,PetscInt nv,const Vec y[],PetscScalar val[])
   ierr = PetscLogEventBarrierBegin(VEC_MDotBarrier,x,*y,0,0,PetscObjectComm((PetscObject)x));CHKERRQ(ierr);
   ierr = (*x->ops->mdot)(x,nv,y,val);CHKERRQ(ierr);
   ierr = PetscLogEventBarrierEnd(VEC_MDotBarrier,x,*y,0,0,PetscObjectComm((PetscObject)x));CHKERRQ(ierr);
-  for (i=0; i<nv; i++) {
-    if (PetscIsInfOrNanScalar(val[i])) SETERRQ1(PetscObjectComm((PetscObject)x),PETSC_ERR_FP,"Infinite or not-a-number generated in mdot, entry %D",i);
-  }
   PetscFunctionReturn(0);
 }
 
