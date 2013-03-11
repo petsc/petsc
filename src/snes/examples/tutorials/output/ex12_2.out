@@ -1,6 +1,9 @@
 Mesh in 3 dimensions:
   0-cells: 27
   3-cells: 48
+Labels:
+  marker: 1 strata of sizes (26)
+  depth: 2 strata of sizes (27, 48)
 Local function
 Vector Object: 1 MPI processes
   type: seq
