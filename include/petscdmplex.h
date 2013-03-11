@@ -7,15 +7,6 @@
 #include <petscsf.h>
 #include <petscdm.h>
 
-/*S
-  DMPLEX - DM object that encapsulates an unstructured mesh, or CW Complex, which can be expressed using a Hasse Diagram.
-
-  Level: intermediate
-
-  Concepts: grids, grid refinement
-
-.seealso:  DM, DMPlexCreate()
-S*/
 PETSC_EXTERN PetscErrorCode DMPlexCreate(MPI_Comm, DM*);
 PETSC_EXTERN PetscErrorCode DMPlexCreateSubmesh(DM, const char[], DM*);
 PETSC_EXTERN PetscErrorCode DMPlexCreateFromCellList(MPI_Comm, PetscInt, PetscInt, PetscInt, PetscInt, PetscBool, const int[], PetscInt, const double[], DM*);

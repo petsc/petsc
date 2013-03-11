@@ -565,6 +565,17 @@ PetscErrorCode DMInitialize_Plex(DM dm)
   PetscFunctionReturn(0);
 }
 
+/*MC
+  DMPLEX = "plex" - A DM object that encapsulates an unstructured mesh, or CW Complex, which can be expressed using a Hasse Diagram.
+                    In the local representation, Vecs contain all unknowns in the interior and shared boundary. This is
+                    specified by a PetscSection object. Ownership in the global representation is determined by
+                    ownership of the underlying DMPlex points. This is specified by another PetscSection object.
+
+  Level: intermediate
+
+.seealso: DMType, DMPlexCreate(), DMCreate(), DMSetType()
+M*/
+
 #undef __FUNCT__
 #define __FUNCT__ "DMCreate_Plex"
 PETSC_EXTERN PetscErrorCode DMCreate_Plex(DM dm)
