@@ -901,6 +901,26 @@ runex46:
 	   else echo ${PWD} ; echo "Possible problem with with ex46, diffs above \n========================================="; fi; \
 	   ${RM} -f ex46.tmp
 
+runex46_ew_1:
+	-@${MPIEXEC} -n 1 ./ex46 -snes_monitor_short -ksp_converged_reason -da_grid_x 20 -da_grid_y 20 -snes_ksp_ew -snes_ksp_ew_version 1   > ex46.tmp 2>&1; \
+	   if (${DIFF} output/ex46_ew_1.out ex46.tmp) then true; \
+	   else echo ${PWD} ; echo "Possible problem with with ex46_ew_1, diffs above \n========================================="; fi; \
+	   ${RM} -f ex46.tmp
+
+
+runex46_ew_2:
+	-@${MPIEXEC} -n 1 ./ex46 -snes_monitor_short -ksp_converged_reason -da_grid_x 20 -da_grid_y 20 -snes_ksp_ew -snes_ksp_ew_version 2   > ex46.tmp 2>&1; \
+	   if (${DIFF} output/ex46_ew_2.out ex46.tmp) then true; \
+	   else echo ${PWD} ; echo "Possible problem with with ex46_ew_2, diffs above \n========================================="; fi; \
+	   ${RM} -f ex46.tmp
+
+
+runex46_ew_3:
+	-@${MPIEXEC} -n 1 ./ex46 -snes_monitor_short -ksp_converged_reason -da_grid_x 20 -da_grid_y 20 -snes_ksp_ew -snes_ksp_ew_version 3   > ex46.tmp 2>&1; \
+	   if (${DIFF} output/ex46_ew_3.out ex46.tmp) then true; \
+	   else echo ${PWD} ; echo "Possible problem with with ex46_ew_3, diffs above \n========================================="; fi; \
+	   ${RM} -f ex46.tmp
+
 runex47cu:
 	-@${MPIEXEC} -n 1 ./ex47cu -snes_monitor_short -dm_vec_type cusp  > ex47cu_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex47cu_1.out ex47cu_1.tmp) then true; \
@@ -959,7 +979,7 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2  runex2_3 ex2.
                                  ex28.PETSc runex28_0 runex28_1 runex28_2 runex28_3 ex28.rm \
                                  ex35.PETSc runex35 runex35_2 runex35_3 runex35_4 runex35_5 runex35_6 runex35_7 runex35_8 ex35.rm \
                                  ex42.PETSc runex42 ex42.rm \
-                                 ex46.PETSc runex46 ex46.rm \
+                                 ex46.PETSc runex46 runex46_ew_1 runex46_ew_2 runex46_ew_3 ex46.rm \
                                  ex48.PETSc runex48 runex48_2 runex48_3 runex48_4 runex48_5 ex48.rm \
                                  ex58.PETSc runex58 runex58_2 ex58.rm
 TESTEXAMPLES_C_X	       = ex1.PETSc runex1_X ex1.rm ex19.PETSc runex19_draw ex19.rm
