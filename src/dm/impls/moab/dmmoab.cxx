@@ -1,4 +1,5 @@
 #include <petsc-private/dmimpl.h> /*I  "petscdm.h"   I*/
+#include <petsc-private/vecimpl.h> /*I  "petscdm.h"   I*/
 
 #include <petscdmmoab.h>
 #include "MBTagConventions.hpp"
@@ -57,6 +58,23 @@ PetscErrorCode DMCreateLocalVector_Moab(DM dm,Vec *gvec)
   PetscFunctionReturn(0);
 }
 
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "DMCreate_Moab"
+PetscErrorCode DMCreate_Moab(DM dm)
+{
+  DM_Moab        *moab;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  ierr     = PetscNewLog(dm, DM_Moab, &moab);CHKERRQ(ierr);
+  dm->data = moab;
+
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
 #undef __FUNCT__
 #define __FUNCT__ "DMDestroy_Moab"
 PetscErrorCode DMDestroy_Moab(DM dm)
@@ -106,23 +124,8 @@ PetscErrorCode DMMoabCreate(MPI_Comm comm, DM *moab)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
-#define __FUNCT__ "DMCreate_Moab"
-PetscErrorCode DMCreate_Moab(DM dm)
-{
-  DM_Moab        *moab;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  ierr     = PetscNewLog(dm, DM_Moab, &moab);CHKERRQ(ierr);
-  dm->data = moab;
-
-  PetscFunctionReturn(0);
-}
-EXTERN_C_END
-
+#define __FUNCT__ "DMMoabCreateMoab"
 /*@
   DMMoabCreate - Creates a DMMoab object, optionally from an instance and other data
 
@@ -143,8 +146,6 @@ EXTERN_C_END
 
 .keywords: DMMoab, create
 @*/
-#undef __FUNCT__
-#define __FUNCT__ "DMMoabCreateMoab"
 PetscErrorCode DMMoabCreateMoab(MPI_Comm comm, moab::Interface *mbiface, moab::ParallelComm *pcomm, moab::Tag ltog_tag, moab::Range *range, DM *moab)
 {
   PetscErrorCode ierr;
@@ -195,6 +196,19 @@ PetscErrorCode DMMoabCreateMoab(MPI_Comm comm, moab::Interface *mbiface, moab::P
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMoabSetParallelComm"
+/*@
+  DMMoabSetParallelComm - Set the ParallelComm used with this DMMoab
+
+  Collective on MPI_Comm
+
+  Input Parameter:
+. dm    - The DMMoab object being set
+. pcomm - The ParallelComm being set on the DMMoab
+
+  Level: beginner
+
+.keywords: DMMoab, create
+@*/
 PetscErrorCode DMMoabSetParallelComm(DM dm,moab::ParallelComm *pcomm)
 {
   PetscFunctionBegin;
@@ -207,6 +221,21 @@ PetscErrorCode DMMoabSetParallelComm(DM dm,moab::ParallelComm *pcomm)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMoabGetParallelComm"
+/*@
+  DMMoabGetParallelComm - Get the ParallelComm used with this DMMoab
+
+  Collective on MPI_Comm
+
+  Input Parameter:
+. dm    - The DMMoab object being set
+
+  Output Parameter:
+. pcomm - The ParallelComm for the DMMoab
+
+  Level: beginner
+
+.keywords: DMMoab, create
+@*/
 PetscErrorCode DMMoabGetParallelComm(DM dm,moab::ParallelComm **pcomm)
 {
   PetscFunctionBegin;
@@ -218,6 +247,19 @@ PetscErrorCode DMMoabGetParallelComm(DM dm,moab::ParallelComm **pcomm)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMoabSetInterface"
+/*@
+  DMMoabSetInterface - Set the MOAB instance used with this DMMoab
+
+  Collective on MPI_Comm
+
+  Input Parameter:
+. dm      - The DMMoab object being set
+. mbiface - The MOAB instance being set on this DMMoab
+
+  Level: beginner
+
+.keywords: DMMoab, create
+@*/
 PetscErrorCode DMMoabSetInterface(DM dm,moab::Interface *mbiface)
 {
   PetscFunctionBegin;
@@ -230,6 +272,21 @@ PetscErrorCode DMMoabSetInterface(DM dm,moab::Interface *mbiface)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMoabGetInterface"
+/*@
+  DMMoabGetInterface - Get the MOAB instance used with this DMMoab
+
+  Collective on MPI_Comm
+
+  Input Parameter:
+. dm      - The DMMoab object being set
+
+  Output Parameter:
+. mbiface - The MOAB instance set on this DMMoab
+
+  Level: beginner
+
+.keywords: DMMoab, create
+@*/
 PetscErrorCode DMMoabGetInterface(DM dm,moab::Interface **mbiface)
 {
   PetscFunctionBegin;
@@ -241,6 +298,19 @@ PetscErrorCode DMMoabGetInterface(DM dm,moab::Interface **mbiface)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMoabSetRange"
+/*@
+  DMMoabSetRange - Set the entities having DOFs on this DMMoab
+
+  Collective on MPI_Comm
+
+  Input Parameter:
+. dm    - The DMMoab object being set
+. range - The entities treated by this DMMoab
+
+  Level: beginner
+
+.keywords: DMMoab, create
+@*/
 PetscErrorCode DMMoabSetRange(DM dm,moab::Range range)
 {
   PetscFunctionBegin;
@@ -252,6 +322,21 @@ PetscErrorCode DMMoabSetRange(DM dm,moab::Range range)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMoabGetRange"
+/*@
+  DMMoabGetRange - Get the entities having DOFs on this DMMoab
+
+  Collective on MPI_Comm
+
+  Input Parameter:
+. dm    - The DMMoab object being set
+
+  Output Parameter:
+. range - The entities treated by this DMMoab
+
+  Level: beginner
+
+.keywords: DMMoab, create
+@*/
 PetscErrorCode DMMoabGetRange(DM dm,moab::Range *range)
 {
   PetscFunctionBegin;
@@ -262,6 +347,19 @@ PetscErrorCode DMMoabGetRange(DM dm,moab::Range *range)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMoabSetLocalToGlobalTag"
+/*@
+  DMMoabSetLocalToGlobalTag - Set the tag used for local to global numbering
+
+  Collective on MPI_Comm
+
+  Input Parameter:
+. dm      - The DMMoab object being set
+. ltogtag - The MOAB tag used for local to global ids
+
+  Level: beginner
+
+.keywords: DMMoab, create
+@*/
 PetscErrorCode DMMoabSetLocalToGlobalTag(DM dm,moab::Tag ltogtag)
 {
   PetscFunctionBegin;
@@ -273,6 +371,21 @@ PetscErrorCode DMMoabSetLocalToGlobalTag(DM dm,moab::Tag ltogtag)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMoabGetLocalToGlobalTag"
+/*@
+  DMMoabGetLocalToGlobalTag - Get the tag used for local to global numbering
+
+  Collective on MPI_Comm
+
+  Input Parameter:
+. dm      - The DMMoab object being set
+
+  Output Parameter:
+. ltogtag - The MOAB tag used for local to global ids
+
+  Level: beginner
+
+.keywords: DMMoab, create
+@*/
 PetscErrorCode DMMoabGetLocalToGlobalTag(DM dm,moab::Tag *ltog_tag)
 {
   PetscFunctionBegin;
@@ -284,6 +397,19 @@ PetscErrorCode DMMoabGetLocalToGlobalTag(DM dm,moab::Tag *ltog_tag)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMoabSetBlockSize"
+/*@
+  DMMoabSetBlockSize - Set the block size used with this DMMoab
+
+  Collective on MPI_Comm
+
+  Input Parameter:
+. dm - The DMMoab object being set
+. bs - The block size used with this DMMoab
+
+  Level: beginner
+
+.keywords: DMMoab, create
+@*/
 PetscErrorCode DMMoabSetBlockSize(DM dm,PetscInt bs)
 {
   PetscFunctionBegin;
@@ -295,6 +421,21 @@ PetscErrorCode DMMoabSetBlockSize(DM dm,PetscInt bs)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMoabGetBlockSize"
+/*@
+  DMMoabGetBlockSize - Get the block size used with this DMMoab
+
+  Collective on MPI_Comm
+
+  Input Parameter:
+. dm - The DMMoab object being set
+
+  Output Parameter:
+. bs - The block size used with this DMMoab
+
+  Level: beginner
+
+.keywords: DMMoab, create
+@*/
 PetscErrorCode DMMoabGetBlockSize(DM dm,PetscInt *bs)
 {
   PetscFunctionBegin;
@@ -312,6 +453,26 @@ PetscErrorCode DMMoab_CreateVector(moab::Interface *iface,moab::ParallelComm *pc
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMoabCreateVector"
+/*@
+  DMMoabCreateVector - Create a Vec from either an existing tag, or a specified tag size, and a range of entities
+
+  Collective on MPI_Comm
+
+  Input Parameter:
+. dm          - The DMMoab object being set
+. tag         - If non-zero, block size will be taken from the tag size
+. tag_size    - If tag was zero, this parameter specifies the block size; unique tag name will be generated automatically
+. range       - If non-empty, Vec corresponds to these entities, otherwise to the entities set on the DMMoab
+. serial      - If true, this is a serial Vec, otherwise a parallel one
+. destroy_tag - If true, MOAB tag is destroyed with Vec, otherwise it is left on MOAB
+
+  Output Parameter:
+. vec         - The created vector
+
+  Level: beginner
+
+.keywords: DMMoab, create
+@*/
 PetscErrorCode DMMoabCreateVector(DM dm,moab::Tag tag,PetscInt tag_size,moab::Range range,PetscBool serial, PetscBool destroy_tag,Vec *vec)
 {
   PetscErrorCode     ierr;
@@ -428,6 +589,21 @@ PetscErrorCode DMMoab_CreateVector(moab::Interface *mbiface,moab::ParallelComm *
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMoabGetVecTag"
+/*@
+  DMMoabGetVecTag - Get the MOAB tag associated with this Vec
+
+  Collective on MPI_Comm
+
+  Input Parameter:
+. vec - Vec being queried
+
+  Output Parameter:
+. tag - Tag associated with this Vec
+
+  Level: beginner
+
+.keywords: DMMoab, create
+@*/
 PetscErrorCode DMMoabGetVecTag(Vec vec,moab::Tag *tag)
 {
   PetscContainer  moabdata;
@@ -448,6 +624,21 @@ PetscErrorCode DMMoabGetVecTag(Vec vec,moab::Tag *tag)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMoabGetVecRange"
+/*@
+  DMMoabGetVecRange - Get the MOAB entities associated with this Vec
+
+  Collective on MPI_Comm
+
+  Input Parameter:
+. vec   - Vec being queried
+
+  Output Parameter:
+. range - Entities associated with this Vec
+
+  Level: beginner
+
+.keywords: DMMoab, create
+@*/
 PetscErrorCode DMMoabGetVecRange(Vec vec,moab::Range *range)
 {
   PetscContainer  moabdata;
