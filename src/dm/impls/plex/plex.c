@@ -336,6 +336,7 @@ PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
       }
       ierr = PetscViewerASCIIPrintf(viewer, ")\n");CHKERRQ(ierr);
       ierr = ISRestoreIndices(valueIS, &values);CHKERRQ(ierr);
+      ierr = ISDestroy(&valueIS);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
