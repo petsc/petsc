@@ -9,8 +9,8 @@ import sys
 def getSIDLDLLPath():
   if 'SIDL_DLL_PATH' in os.environ:
     SIDL_DLL_PATH = filter(lambda p: len(p), os.environ['SIDL_DLL_PATH'].split(';'))
-  else:  
-    SIDL_DLL_PATH = [] 
+  else:
+    SIDL_DLL_PATH = []
   argDB    = RDict.RDict(parentDirectory = os.path.abspath(os.path.dirname(sys.modules['RDict'].__file__)))
   projects = argDB['installedprojects']
   for p in projects:

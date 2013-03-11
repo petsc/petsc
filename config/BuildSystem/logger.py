@@ -227,7 +227,7 @@ class Logger(args.ArgumentProcessor):
     global backupRemoveDirectory
     backupRemoveDirectory = RemoveDirectory
     RemoveDirectory = ''
-          
+
   def logResetRemoveDirectory(self):
     global RemoveDirectory
     global backupRemoveDirectory

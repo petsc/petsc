@@ -11,9 +11,10 @@ from stat import *
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.download_openmpi   = ['http://www.open-mpi.org/software/ompi/v1.4/downloads/openmpi-1.4.5.tar.gz']
-    self.download_mpich     = ['http://www.mpich.org/static/tarballs/1.4.1p1/mpich2-1.4.1p1.tar.gz',
-                               'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/mpich2-1.4.1p1.tar.gz']
+    self.download_openmpi   = ['http://www.open-mpi.org/software/ompi/v1.6/downloads/openmpi-1.6.3.tar.gz']
+    self.download_mpich     = ['http://www.mpich.org/static/tarballs/3.0.2/mpich-3.0.2.tar.gz',
+                               'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/mpich-3.0.2.tar.gz']
+    self.download_mpich_sol = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/mpich2-1.5.tar.gz']
     self.download           = ['redefine']
     self.functions          = ['MPI_Init', 'MPI_Comm_create']
     self.includes           = ['mpi.h']
@@ -66,7 +67,7 @@ class Configure(config.package.Package):
     help.addArgument('MPI', '-download-mpich-pm=<hydra, gforker or mpd>',        nargs.Arg(None, 'hydra', 'Launcher for MPI processes'))
     help.addArgument('MPI', '-download-mpich-device=<ch3:nemesis or see mpich2 docs>', nargs.Arg(None, 'ch3:sock', 'Communicator for MPI processes'))
     help.addArgument('MPI', '-download-mpich-mpe=<bool>',                        nargs.ArgBool(None, 0, 'Install MPE with MPICH'))
-    help.addArgument('MPI', '-download-mpich-shared=<bool>',                     nargs.ArgBool(None, 0, 'Install MPICH with shared libraries'))
+    help.addArgument('MPI', '-download-mpich-shared=<bool>',                     nargs.ArgBool(None, 1, 'Install MPICH with shared libraries'))
     help.addArgument('MPI', '-with-mpiuni-fortran-binding=<bool>',               nargs.ArgBool(None, 1, 'Build the MPIUni Fortran bindings'))
     return
 
@@ -191,6 +192,22 @@ class Configure(config.package.Package):
     if self.checkLink('#include <mpi.h>\n', 'if (MPI_Allreduce(MPI_IN_PLACE,0, 1, MPI_INT, MPI_SUM, MPI_COMM_SELF));\n'):
       self.haveInPlace = 1
       self.addDefine('HAVE_MPI_IN_PLACE', 1)
+    if self.checkLink('#include <mpi.h>\n', 'int count=2; int blocklens[2]={0,1}; MPI_Aint indices[2]={0,1}; MPI_Datatype old_types[2]={0,1}; MPI_Datatype *newtype = 0;\n \
+                                             if (MPI_Type_create_struct(count, blocklens, indices, old_types, newtype));\n'):
+      self.haveTypeCreateStruct = 1
+    else:
+      self.haveTypeCreateStruct = 0
+      self.framework.addDefine('MPI_Type_create_struct(count,lens,displs,types,newtype)', 'MPI_Type_struct((count),(lens),(displs),(types),(newtype))')
+    if self.checkLink('#include <mpi.h>\n', 'MPI_Comm_errhandler_fn * p_err_fun = 0; MPI_Errhandler * p_errhandler = 0; if (MPI_Comm_create_errhandler(p_err_fun,p_errhandler));\n'):
+      self.haveCommCreateErrhandler = 1
+    else:
+      self.haveCommCreateErrhandler = 0
+      self.framework.addDefine('MPI_Comm_create_errhandler(p_err_fun,p_errhandler)', 'MPI_Errhandler_create((p_err_fun),(p_errhandler))')
+    if self.checkLink('#include <mpi.h>\n', 'if (MPI_Comm_set_errhandler(MPI_COMM_WORLD,MPI_ERRORS_RETURN));\n'):
+      self.haveCommSetErrhandler = 1
+    else:
+      self.haveCommSetErrhandler = 0
+      self.framework.addDefine('MPI_Comm_set_errhandler(comm,p_errhandler)', 'MPI_Errhandler_set((comm),(p_errhandler))')
     self.compilers.CPPFLAGS = oldFlags
     self.compilers.LIBS = oldLibs
     return
@@ -203,7 +220,7 @@ class Configure(config.package.Package):
     oldLibs  = self.compilers.LIBS
     self.compilers.CPPFLAGS += ' '+self.headers.toString(self.include)
     self.compilers.LIBS = self.libraries.toString(self.lib)+' '+self.compilers.LIBS
-    if self.checkLink('#include <mpi.h>\n', 'if (MPI_Comm_f2c(MPI_COMM_WORLD));\n'):
+    if self.checkLink('#include <mpi.h>\n', 'if (MPI_Comm_f2c((MPI_Fint)0));\n'):
       self.commf2c = 1
       self.addDefine('HAVE_MPI_COMM_F2C', 1)
     if self.checkLink('#include <mpi.h>\n', 'if (MPI_Comm_c2f(MPI_COMM_WORLD));\n'):
@@ -285,6 +302,9 @@ class Configure(config.package.Package):
     self.addDefine('HAVE_MPI_COMM_C2F', 1)
     self.addDefine('HAVE_MPI_FINT', 1)
     self.addDefine('HAVE_MPI_IN_PLACE', 1)
+    self.framework.addDefine('MPI_Type_create_struct(count,lens,displs,types,newtype)', 'MPI_Type_struct((count),(lens),(displs),(types),(newtype))')
+    self.framework.addDefine('MPI_Comm_create_errhandler(p_err_fun,p_errhandler)', 'MPI_Errhandler_create((p_err_fun),(p_errhandler))')
+    self.framework.addDefine('MPI_Comm_set_errhandler(comm,p_errhandler)', 'MPI_Errhandler_set((comm),(p_errhandler))')
     if not self.argDB['with-mpiuni-fortran-binding']:
       self.framework.addDefine('MPIUNI_AVOID_MPI_NAMESPACE', 1)
       self.usingMPIUniFortranBinding = 0
@@ -318,12 +338,18 @@ class Configure(config.package.Package):
     if self.framework.argDB['download-openmpi'] and self.framework.argDB['prefix']:
       raise RuntimeError('Currently --download-openmpi option does not work with --prefix install.\nSuggest installing OpenMPI separately, and then configuring PETSc with --with-mpi-dir option.')
 
+    if self.framework.argDB['download-mpich'] and self.framework.argDB['prefix']:
+      raise RuntimeError('Currently --download-mpich option does not work with --prefix install.\nSuggest installing MPICH separately, and then configuring PETSc with --with-mpi-dir option.')
+
     # Check for MPICH
     if self.framework.argDB['download-mpich']:
       if config.setCompilers.Configure.isCygwin() and not config.setCompilers.Configure.isGNU(self.setCompilers.CC):
         raise RuntimeError('Sorry, cannot download-install MPICH on Windows. Sugest installing windows version of MPICH manually')
       self.liblist      = [[]]
-      self.download         = self.download_mpich
+      if config.setCompilers.Configure.isSolaris():
+        self.download         = self.download_mpich_sol
+      else:
+        self.download         = self.download_mpich
       self.downloadname     = 'mpich'
       self.downloadfilename = 'mpich'
       return config.package.Package.checkDownload(self, requireDownload)
@@ -400,6 +426,8 @@ class Configure(config.package.Package):
     if not self.framework.argDB['with-shared-libraries']:
       args.append('--enable-shared=no')
       args.append('--enable-static=yes')
+    # openmpi install breaks with papi-5?
+    args.append('--disable-vt')
     args = ' '.join(args)
 
     f = file(os.path.join(self.packageDir, 'args.petsc'), 'w')
@@ -413,8 +441,10 @@ class Configure(config.package.Package):
         raise RuntimeError('Error running configure on OPENMPI/MPI: '+str(e))
       try:
         self.logPrintBox('Compiling OPENMPI/MPI; this may take several minutes')
-        output,err,ret  = config.base.Configure.executeShellCommand('cd '+openmpiDir+' && make install', timeout=6000, log = self.framework.log)
-        output,err,ret  = config.base.Configure.executeShellCommand('cd '+openmpiDir+' && make clean', timeout=200, log = self.framework.log)
+        output,err,ret  = config.base.Configure.executeShellCommand('cd '+openmpiDir+' && '+self.programs.make+' clean', timeout=200, log = self.framework.log)
+        output,err,ret  = config.base.Configure.executeShellCommand('cd '+openmpiDir+' && '+self.programs.make+' -j ' + str(self.programs.make_np)+' all', timeout=6000, log = self.framework.log)
+        output,err,ret  = config.base.Configure.executeShellCommand('cd '+openmpiDir+' && '+self.programs.make+' install', timeout=6000, log = self.framework.log)
+        output,err,ret  = config.base.Configure.executeShellCommand('cd '+openmpiDir+' && '+self.programs.make+' clean', timeout=200, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running make on OPENMPI/MPI: '+str(e))
       if not os.path.isdir(os.path.join(installDir,'lib')):
@@ -484,7 +514,7 @@ class Configure(config.package.Package):
     else:
       args.append('--disable-f77')
       args.append('--disable-fc')
-    if self.framework.argDB['with-shared-libraries'] or self.framework.argDB['download-mpich-shared']:
+    if self.framework.argDB['download-mpich-shared']:
       args.append('--enable-shared') # --enable-sharedlibs can now be removed?
       if self.compilers.isGCC or config.setCompilers.Configure.isIntel(compiler):
         if config.setCompilers.Configure.isDarwin():
@@ -529,8 +559,11 @@ class Configure(config.package.Package):
         raise RuntimeError('Error running configure on MPICH: '+str(e))
       try:
         self.logPrintBox('Running make on MPICH; this may take several minutes')
-        output,err,ret  = config.base.Configure.executeShellCommand('cd '+mpichDir+' && make && make install', timeout=6000, log = self.framework.log)
-        output,err,ret  = config.base.Configure.executeShellCommand('cd '+mpichDir+' && make clean', timeout=200, log = self.framework.log)
+        output,err,ret  = config.base.Configure.executeShellCommand('cd '+mpichDir+' && '+self.programs.make+' clean', timeout=200, log = self.framework.log)
+        makej_cmd = self.programs.make+' -j ' + str(self.programs.make_np)
+        output,err,ret  = config.base.Configure.executeShellCommand('cd '+mpichDir+' && '+makej_cmd+' all', timeout=6000, log = self.framework.log)
+        output,err,ret  = config.base.Configure.executeShellCommand('cd '+mpichDir+' && '+self.programs.make+' install', timeout=6000, log = self.framework.log)
+        output,err,ret  = config.base.Configure.executeShellCommand('cd '+mpichDir+' && '+self.programs.make+' clean', timeout=200, log = self.framework.log)
       except RuntimeError, e:
         import sys
         if sys.platform.startswith('cygwin'):
@@ -573,14 +606,7 @@ class Configure(config.package.Package):
     # Both MPICH and MVAPICH now depend on LD_LIBRARY_PATH for sharedlibraries.
     # So using LD_LIBRARY_PATH in configure - and -Wl,-rpath in makefiles
     if self.framework.argDB['with-shared-libraries']:
-      if 'LD_LIBRARY_PATH' in os.environ:
-        ldPath=os.environ['LD_LIBRARY_PATH']
-      else:
-        ldPath=''
-      if ldPath == '': ldPath = os.path.join(installDir,'lib')
-      else: ldPath += ':' + os.path.join(installDir,'lib')
-      os.environ['LD_LIBRARY_PATH'] = ldPath
-
+      config.setCompilers.Configure.addLdPath(os.path.join(installDir,'lib'))
     # Initialize to empty
     mpicc=''
     mpicxx=''
@@ -651,7 +677,7 @@ class Configure(config.package.Package):
     # check if mpi.mod exists
     if self.compilers.fortranIsF90:
       self.framework.log.write('Checking for mpi.mod\n')
-      if self.libraries.check(self.lib,'', call = '       use mpi\n       integer ierr\n       call mpi_init(ierr)'):
+      if self.libraries.check(self.lib,'', call = '       use mpi\n       integer ierr,rank\n       call mpi_init(ierr)\n       call mpi_comm_rank(MPI_COMM_WORLD,rank,ierr)\n'):
         self.havef90module = 1
         self.addDefine('HAVE_MPI_F90MODULE', 1)
     self.compilers.CPPFLAGS = oldFlags
@@ -736,19 +762,19 @@ class Configure(config.package.Package):
     self.executeTest(self.findMPIInc)
     if self.libraries.check(self.dlib, "MPI_Alltoallw") and self.libraries.check(self.dlib, "MPI_Type_create_indexed_block"):
       self.addDefine('HAVE_MPI_ALLTOALLW',1)
-    if self.libraries.check(self.dlib, "MPI_Comm_spawn"):
-      self.addDefine('HAVE_MPI_COMM_SPAWN',1)
     if self.libraries.check(self.dlib, "MPI_Win_create"):
       self.addDefine('HAVE_MPI_WIN_CREATE',1)
       self.addDefine('HAVE_MPI_REPLACE',1) # MPI_REPLACE is strictly for use with the one-sided function MPI_Accumulate
-    if self.libraries.check(self.dlib, 'MPI_Init_thread'):
-        self.addDefine('HAVE_MPI_INIT_THREAD',1)
-    if self.libraries.check(self.dlib, "MPIX_Iallreduce"):
-      self.addDefine('HAVE_MPIX_IALLREDUCE',1)
-    if self.libraries.check(self.dlib, "MPI_Finalized"):
-      self.addDefine('HAVE_MPI_FINALIZED',1)
-    if self.libraries.check(self.dlib, "MPI_Exscan"):
-      self.addDefine('HAVE_MPI_EXSCAN',1)
+    funcs = '''MPI_Comm_spawn MPI_Type_get_envelope MPI_Type_get_extent MPI_Type_dup MPI_Init_thread
+      MPIX_Iallreduce MPI_Iallreduce MPI_Ibarrier MPI_Finalized MPI_Exscan'''.split()
+    for f in funcs:
+      if self.libraries.check(self.dlib, f):
+        self.addDefine('HAVE_' + f.upper(),1)
+    if self.libraries.check(self.dlib, "MPIDI_CH3I_sock_set"):
+      self.addDefine('HAVE_MPICH_CH3_SOCK', 1)
+    if self.libraries.check(self.dlib, "MPIDI_CH3I_sock_fixed_nbc_progress"):
+      # Indicates that this bug was fixed: http://trac.mpich.org/projects/mpich/ticket/1785
+      self.addDefine('HAVE_MPICH_CH3_SOCK_FIXED_NBC_PROGRESS', 1)
 
 if __name__ == '__main__':
   import config.framework

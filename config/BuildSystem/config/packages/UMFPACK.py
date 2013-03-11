@@ -11,7 +11,8 @@ class Configure(config.package.Package):
     self.liblist   = [['libumfpack.a','libamd.a'],
                       ['libumfpack.a','libcholmod.a','libcamd.a','libccolamd.a','libcolamd.a','libamd.a'],
                       ['libumfpack.a','libcholmod.a','libcamd.a','libccolamd.a','libcolamd.a','libamd.a','libsuitesparseconfig.a'],
-                      ['libumfpack.a','libcholmod.a','libcamd.a','libccolamd.a','libcolamd.a','libamd.a','libsuitesparseconfig.a','libmetis.a']]
+                      ['libumfpack.a','libcholmod.a','libcamd.a','libccolamd.a','libcolamd.a','libamd.a','libsuitesparseconfig.a','libmetis.a'],
+                      ['libumfpack.a','libcholmod.a','libcamd.a','libccolamd.a','libcolamd.a','libamd.a','libsuitesparseconfig.a','libmetis.a','librt.a']]
     self.functions = ['umfpack_di_report_info','umfpack_dl_symbolic','umfpack_dl_numeric','umfpack_dl_wsolve']
     self.includes  = ['umfpack.h']
     self.complex   = 1
@@ -22,7 +23,7 @@ class Configure(config.package.Package):
     self.blasLapack = framework.require('config.packages.BlasLapack',self)
     self.deps       = [self.blasLapack]
     return
-          
+
   def Install(self):
     self.framework.log.write('umfpackDir = '+self.packageDir+' installDir '+self.installDir+'\n')
 
@@ -53,7 +54,7 @@ class Configure(config.package.Package):
     g.write('INSTALL_LIB       = ' + self.libDir + '\n')
     g.write('INSTALL_INCLUDE   = ' + self.includeDir + '\n')
     g.close()
-    
+
     # Build UMFPACK
     if self.installNeeded(mkfile):
       try:

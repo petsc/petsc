@@ -73,7 +73,7 @@ class SourceDB (dict, logger.Logger):
       SourceDB.isLoading = 1
       self.load()
       SourceDB.isLoading = 0
-    return 
+    return
 
   def getRelativePath(self, path):
     '''Returns a relative source file path using the root'''

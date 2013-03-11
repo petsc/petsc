@@ -560,7 +560,7 @@ class Framework(base.Base):
           for d in dirs:
             if not d in directories: directories.append(d)
     return directories
-    
+
   def t_updateBootstrap(self):
     '''Create a bootstrap tarball and copy it to the FTP site'''
     import install.installerclass
@@ -572,7 +572,7 @@ class Framework(base.Base):
     raise RuntimeError('Need to fix the path')
     return
 
-    
+
   def t_updateWebsite(self):
     '''Print all the SIDL dependencies as HTML and move to the website'''
     for f in self.executeTarget('printSIDLHTML'):

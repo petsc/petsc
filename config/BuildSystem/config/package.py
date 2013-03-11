@@ -84,8 +84,7 @@ class Package(config.base.Configure):
     import nargs
     help.addArgument(self.PACKAGE,'-with-'+self.package+'=<bool>',nargs.ArgBool(None,self.required+self.lookforbydefault,'Indicate if you wish to test for '+self.name))
     help.addArgument(self.PACKAGE,'-with-'+self.package+'-dir=<dir>',nargs.ArgDir(None,None,'Indicate the root directory of the '+self.name+' installation'))
-    if hasattr(self, 'usePkgConfig'):
-      help.addArgument(self.PACKAGE, '-with-'+self.package+'-pkg-config=<dir>', nargs.ArgDir(None, None, 'Indicate the root directory of the '+self.name+' installation'))
+    help.addArgument(self.PACKAGE, '-with-'+self.package+'-pkg-config=<dir>', nargs.Arg(None, None, 'Look for '+self.name+' using pkg-config utility optional directory to look in'))
     help.addArgument(self.PACKAGE,'-with-'+self.package+'-include=<dirs>',nargs.ArgDirList(None,None,'Indicate the directory of the '+self.name+' include files'))
     help.addArgument(self.PACKAGE,'-with-'+self.package+'-lib=<libraries: e.g. [/Users/..../lib'+self.package+'.a,...]>',nargs.ArgLibrary(None,None,'Indicate the '+self.name+' libraries'))
     if self.download and not self.download[0] == 'redefine':
@@ -108,6 +107,7 @@ class Package(config.base.Configure):
     self.PACKAGE          = self.name.upper()
     self.package          = self.name.lower()
     self.downloadname     = self.name
+    self.pkgname          = self.name
     self.downloadfilename = self.downloadname;
     return
 
@@ -172,6 +172,7 @@ class Package(config.base.Configure):
     return []
 
   def getInstallDir(self):
+    if not self.arch:  raise RuntimeError('Why the hell is self.arch not defined for this package -- '+self.package+'\n')
     self.installDir = os.path.join(self.defaultInstallDir, self.arch)
     self.confDir    = os.path.join(self.installDir, 'conf')
     self.includeDir = os.path.join(self.installDir, 'include')
@@ -233,6 +234,24 @@ class Package(config.base.Configure):
       for l in self.generateLibList(os.path.join(d, self.altlibdir)):
         yield('Download '+self.PACKAGE, d, l, self.getIncludeDirs(d, self.includedir))
       raise RuntimeError('Downloaded '+self.package+' could not be used. Please check install in '+d+'\n')
+
+    if 'with-'+self.package+'-pkg-config' in self.framework.argDB:
+      if self.framework.argDB['with-'+self.package+'-pkg-config']:
+        #  user provided path to look for pkg info
+        if 'PKG_CONFIG_PATH' in os.environ: path = os.environ['PKG_CONFIG_PATH']
+        else: path = None
+        os.environ['PKG_CONFIG_PATH'] = self.framework.argDB['with-'+self.package+'-pkg-config']
+
+      l,err,ret  = config.base.Configure.executeShellCommand('pkg-config '+self.pkgname+' --libs', timeout=5, log = self.framework.log)
+      l = l.strip()
+      i,err,ret  = config.base.Configure.executeShellCommand('pkg-config '+self.pkgname+' --variable=includedir', timeout=5, log = self.framework.log)
+      i = i.strip()
+      if self.framework.argDB['with-'+self.package+'-pkg-config']:
+        if path: os.environ['PKG_CONFIG_PATH'] = path
+        else: os.environ['PKG_CONFIG_PATH'] = ''
+      yield('pkg-config located libraries and includes '+self.PACKAGE, None, l, i)
+      raise RuntimeError('pkg-config could not locate correct includes and libraries for '+self.package)
+
 
     if 'with-'+self.package+'-dir' in self.framework.argDB:
       d = self.framework.argDB['with-'+self.package+'-dir']
@@ -515,9 +534,8 @@ class Package(config.base.Configure):
       self.framework.argDB['with-'+self.package] = 1
     if 'with-'+self.package+'-dir' in self.framework.argDB or 'with-'+self.package+'-include' in self.framework.argDB or 'with-'+self.package+'-lib' in self.framework.argDB:
       self.framework.argDB['with-'+self.package] = 1
-    if hasattr(self, 'usePkgConfig') and 'with-'+self.package+'-pkg-config' in self.framework.argDB:
+    if 'with-'+self.package+'-pkg-config' in self.framework.argDB:
       self.framework.argDB['with-'+self.package] = 1
-      self.usePkgConfig()
 
     self.consistencyChecks()
     if self.framework.argDB['with-'+self.package]:
@@ -583,7 +601,7 @@ Brief overview of how BuildSystem\'s configuration of packages works.
     self.includes         - names of header files to locate               [list of strings]
     self.liblist          - names of library files to locate              [list of lists of strings]
     self.functions        - names of functions to locate in libraries     [list of strings]
-    self.cxx              - whether C++ is required for this package      [bool]
+    self.cxx              - whether C++ compiler, (this does not require that PETSc be built with C++, should it?) is required for this package      [bool]
     self.functionsFortran - whether to mangle self.functions symbols      [bool]
   Most of these instance variables determine the behavior of the location/installation and the testing stages.
   Ideally, a package subclass would extend only the __init__ method and parameterize the remainder of
@@ -888,6 +906,11 @@ class GNUPackage(Package):
     self.setupDownload()
     return Package.checkDownload(self,requireDownload)
 
+  def formGNUConfigureExtraArgs(self):
+    '''Intended to be overridden by subclasses'''
+    args = []
+    return args
+
   def formGNUConfigureDepArgs(self):
     '''Add args corresponding to --with-<deppackage>=<deppackage-dir>.'''
     args = []
@@ -954,6 +977,7 @@ class GNUPackage(Package):
     else:
         args.append('--disable-shared')
     args.extend(self.formGNUConfigureDepArgs())
+    args.extend(self.formGNUConfigureExtraArgs())
     return args
 
   def Install(self):

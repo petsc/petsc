@@ -16,7 +16,7 @@ def checkDLLLibs():
           print 'Loading '+os.path.join(dir, f)
           SIDL.Loader.loadLibrary(os.path.join(dir, f))
 
-    
+
 if __name__ ==  '__main__':
   if len(sys.argv) > 1: sys.exit('Usage: checkdlllibs.py')
   checkDLLLibs()

@@ -49,7 +49,7 @@ class BootstrapInstall (object):
       os.putenv('BK_HOST',hostname+'org')
     elif hostname.find('.') == -1:
       os.putenv('BK_HOST',hostname+'.org')
-                
+
     # If self.bkPath is set, check it
     if self.bkPath:
       if os.path.isdir(self.bkPath):
@@ -178,7 +178,7 @@ class ScrollingWindow:
 
   def tab(self,size):
     self.tabsize = size
-    
+
   def write(self,mess):
     import re
     nmess = mess.split('\n')
@@ -193,9 +193,9 @@ class ScrollingWindow:
         self.stdscr.addstr(self.y+i,self.x,amess[0:self.w])
       curses.textpad.rectangle(self.stdscr,self.y-1,self.x-1,self.y+self.h+1,self.x+self.w+1)
       self.stdscr.refresh()
-       
+
 #-----------------------------------------------------------------------------------------------------------------------
-    
+
 class CursesInstall (BootstrapInstall):
   def __init__(self):
     self.bkPath      = None
@@ -268,7 +268,7 @@ class CursesInstall (BootstrapInstall):
     ch = choices.index(ch)
     return ch
   SelectFromSubList = staticmethod(SelectFromSubList)
-    
+
   def SelectFromList(stdscr,list,my = 1,text = 'Select desired value'):
     charactors = []
     for i in range(0,10):
@@ -322,7 +322,7 @@ class CursesInstall (BootstrapInstall):
       self.OpenURL = self.OpenURL_Netscape
     elif not self.browser.find("galeon") == -1:
       self.OpenURL = self.OpenURL_Galeon
-                  
+
     if self.OpenURL('http://www.mcs.anl.gov/petsc'):
       stdscr.clear()
       CursesInstall.CenterAddStr(stdscr,1,'Unable to open browser '+self.browser)
@@ -383,7 +383,7 @@ class CursesInstall (BootstrapInstall):
         else:
           if BootstrapInstall.installBitkeeper(self): return 1
           CursesInstall.CenterAddStr(stdscr, 8, 'Directory does not contain the bk command', curses.A_BLINK)
-          self.bkPath = CursesInstall.CenterGetStr(stdscr, 5, text = self.bkPath)    
+          self.bkPath = CursesInstall.CenterGetStr(stdscr, 5, text = self.bkPath)
     return 1
 
   def installBitkeeper(self):
@@ -391,7 +391,7 @@ class CursesInstall (BootstrapInstall):
     if not BootstrapInstall.installBitkeeper(self):
       return curses.wrapper(self.cursesIndicateBKMissing)
     return 1
-        
+
   def cursesInstallDirectory(self, stdscr):
     '''The installation directory defaults to the current directory, unless we are in HOME, in which case we create "petsc-3.0"
        - Return True if creation succeeds
@@ -438,18 +438,18 @@ class CursesInstall (BootstrapInstall):
     CursesInstall.CenterAddStr(stdscr, 3, 'Removing any previous ASE demons')
     stdscr.refresh()
     BootstrapInstall.cleanup(self)
-    
+
   def cleanup(self):
     '''Display nice message while running cleanup'''
     return curses.wrapper(installer.cursesCleanup)
-                          
+
   def cursesAlreadyInstalled(self, stdscr):
     stdscr.clear()
     CursesInstall.CenterAddStr(stdscr, 1, 'Looks like BuildSystem is already installed at')
     CursesInstall.CenterAddStr(stdscr, 2, self.installPath+'/sidl/BuildSystem')
     CursesInstall.CenterAddStr(stdscr, 4, 'Use '+self.installPath+'/sidl/BuildSystem/install/gui.py')
     CursesInstall.CenterAddStr(stdscr, 5, 'to install additional projects after bootstrap finishes')
-    CursesInstall.CenterAddStr(stdscr, 7, 'OR')    
+    CursesInstall.CenterAddStr(stdscr, 7, 'OR')
     CursesInstall.CenterAddStr(stdscr, 9, 'Remove all directories in '+self.installPath)
     CursesInstall.CenterAddStr(stdscr, 10, 'and rerun this installer for a complete reinstall')
     CursesInstall.CenterAddStr(stdscr, 11, '(hit return to continue)')
@@ -473,7 +473,7 @@ class CursesInstall (BootstrapInstall):
     if not os.path.exists(os.path.join(os.getenv('HOME'),'.bk','accepted')):
       os.putenv('BK_LICENSE','ACCEPTED')
     return BootstrapInstall.installBuildSystem(self)
-      
+
   def installBuildSystem(self):
     '''Check for BuildSystem and install it if it is not present.
        - Return True if installation succeeds'''
@@ -481,7 +481,7 @@ class CursesInstall (BootstrapInstall):
       return curses.wrapper(self.cursesAlreadyInstalled)
     if not curses.wrapper(self.cursesInstallBuildSystem):
       return curses.wrapper(self.cursesCannotClone, self.errorString)
-    return 1      
+    return 1
 
   def OpenURL_Netscape(self, url):
     (status, output) = commands.getstatusoutput(self.browser+" -remote 'openURL("+url+")'")
