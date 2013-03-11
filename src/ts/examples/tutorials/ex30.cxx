@@ -421,7 +421,7 @@ PetscErrorCode initialize_moab_mesh(moab::ParallelComm* pcomm,int npts,int nghos
   // initialize them. We will create a single tag whose type is an
   // array of two doubles and whose name is "unknowns"
   Field default_value = {0.0,0.0};
-  unknowns_tag_size = sizeof(Field);
+  unknowns_tag_size = sizeof(Field)/sizeof(PetscScalar);
   merr = mbint->tag_get_handle("unknowns",unknowns_tag_size,moab::MB_TYPE_DOUBLE,unknowns_tag,
                               moab::MB_TAG_DENSE | moab::MB_TAG_CREAT,&default_value);MBERRNM(merr);
 

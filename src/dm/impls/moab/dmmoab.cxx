@@ -154,11 +154,16 @@ PetscErrorCode DMMoabCreateMoab(MPI_Comm comm, moab::Interface *mbiface, moab::P
   PetscValidPointer(moab,2);
   ierr = DMCreate(comm, moab);CHKERRQ(ierr);
   ierr = DMSetType(*moab, DMMOAB);CHKERRQ(ierr);
+  DM_Moab *dmmoab = new DM_Moab;
+  (*moab)->data      = dmmoab;
 
   if (!mbiface) {
     mbiface = new moab::Core();
-    ((DM_Moab*)(*moab)->data)->icreatedinstance = PETSC_TRUE;
+    dmmoab->icreatedinstance = PETSC_TRUE;
   }
+  else
+    dmmoab->icreatedinstance = PETSC_FALSE;
+
   if (!pcomm) {
     PetscInt rank, nprocs;
     MPI_Comm_rank(comm, &rank);
@@ -167,8 +172,6 @@ PetscErrorCode DMMoabCreateMoab(MPI_Comm comm, moab::Interface *mbiface, moab::P
   }
 
     // do the initialization of the DM
-  DM_Moab *dmmoab = new DM_Moab;
-  (*moab)->data      = dmmoab;
   dmmoab->bs       = 0;
   dmmoab->pcomm    = pcomm;
   dmmoab->mbiface    = mbiface;
@@ -487,7 +490,7 @@ PetscErrorCode DMMoabCreateVector(DM dm,moab::Tag tag,PetscInt tag_size,moab::Ra
   if (!tag && !tag_size) {
     PetscFunctionReturn(PETSC_ERR_ARG_WRONG);
   }
-  else if (!tag && tag_size) {
+  else {
     ierr = DMMoab_CreateVector(mbiface,pcomm,tag,tag_size,ltog_tag,range,serial,destroy_tag,vec);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -672,7 +675,7 @@ PetscErrorCode DMMoab_VecDuplicate(Vec x,Vec *y)
   ierr = PetscObjectQuery((PetscObject)x,"MOABData", (PetscObject*) &moabdata);CHKERRQ(ierr);
   ierr = PetscContainerGetPointer(moabdata, (void**)&vmoab);CHKERRQ(ierr);
 
-  ierr = DMMoab_CreateVector(vmoab->mbiface,vmoab->pcomm,vmoab->tag, vmoab->tag_size,vmoab->ltog_tag,vmoab->tag_range,vmoab->serial,PETSC_TRUE,y);CHKERRQ(ierr);
+  ierr = DMMoab_CreateVector(vmoab->mbiface,vmoab->pcomm,0,vmoab->tag_size,vmoab->ltog_tag,vmoab->tag_range,vmoab->serial,PETSC_TRUE,y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
