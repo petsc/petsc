@@ -42,6 +42,7 @@ class Package(config.base.Configure):
     self.cxx              = 0    # 1 means requires C++
     self.fc               = 0    # 1 means requires fortran
     self.needsMath        = 0    # 1 means requires the system math library
+    self.needsCompression = 0    # 1 means requires the system compression library
     self.noMPIUni         = 0    # 1 means requires a real MPI
     self.libdir           = 'lib'     # location of libraries in the package directory tree
     self.altlibdir        = 'lib64'   # alternate location of libraries in the package directory tree
@@ -204,8 +205,11 @@ class Package(config.base.Configure):
     for libSet in self.liblist:
       libs = []
       # add full path only to the first library in the list
-      if not self.libdir == directory and len(libSet) > 0:
-        libs.append(os.path.join(directory, libSet[0]))
+      if len(libSet) > 0:
+        if not self.libdir == directory:
+          libs.append(os.path.join(directory, libSet[0]))
+        else:
+          libs.append(libSet[0])
       for library in libSet[1:]:
         # if the library name doesn't start with lib - then add the fullpath
         if library.startswith('lib') or self.libdir == directory:
@@ -232,6 +236,12 @@ class Package(config.base.Configure):
 
     if 'with-'+self.package+'-dir' in self.framework.argDB:
       d = self.framework.argDB['with-'+self.package+'-dir']
+      # error if package-dir is in externalpackages
+      if os.path.realpath(d).find(os.path.realpath(self.externalPackagesDir)) >=0:
+        fakeExternalPackagesDir = d.replace(os.path.realpath(d).replace(os.path.realpath(self.externalPackagesDir),''),'')
+        raise RuntimeError('Bad option: '+'--with-'+self.package+'-dir='+self.framework.argDB['with-'+self.package+'-dir']+'\n'+
+                           fakeExternalPackagesDir+' is reserved for --download-package scratch space. \n'+
+                           'Do not install software in this location nor use software in this directory.')
       for l in self.generateLibList(os.path.join(d, self.libdir)):
         yield('User specified root directory '+self.PACKAGE, d, l, self.getIncludeDirs(d, self.includedir))
       for l in self.generateLibList(os.path.join(d, self.altlibdir)):
@@ -367,14 +377,23 @@ class Package(config.base.Configure):
     retriever = retrieval.Retriever(self.sourceControl, argDB = self.framework.argDB)
     retriever.setup()
     self.framework.logPrint('Downloading '+self.name)
+    # check if its http://ftp.mcs - and add ftp://ftp.mcs as fallback
+    download_urls = []
     for url in self.download:
+      download_urls.append(url)
+      if url.find('http://ftp.mcs.anl.gov') >=0:
+        download_urls.append(url.replace('http://','ftp://'))
+    # now attempt to download each url until any one succeeds.
+    err =''
+    for url in download_urls:
       try:
-        retriever.genericRetrieve(url, self.externalPackagesDir, self.downloadfilename)
+        retriever.genericRetrieve(url, self.externalPackagesDir, self.downloadname)
         self.framework.actions.addArgument(self.PACKAGE, 'Download', 'Downloaded '+self.name+' into '+self.getDir(0))
         return
       except RuntimeError, e:
         self.logPrint('ERROR: '+str(e))
-    raise RuntimeError(e)
+        err += str(e)
+    raise RuntimeError(err)
 
   def Install(self):
     raise RuntimeError('No custom installation implemented for package '+self.package+'\n')
@@ -424,8 +443,12 @@ class Package(config.base.Configure):
     self.checkDependencies(libs, incls)
     if self.needsMath:
       if self.libraries.math is None:
-        raise RuntimeError('Math library not found')
+        raise RuntimeError('Math library [libm.a or equivalent] is not found')
       libs += self.libraries.math
+    if self.needsCompression:
+      if self.libraries.compression is None:
+        raise RuntimeError('Compression library [libz.a or equivalent] not found')
+      libs += self.libraries.compression
 
     for location, directory, lib, incl in self.generateGuesses():
       if directory and not os.path.isdir(directory):
@@ -788,7 +811,7 @@ Brief overview of how BuildSystem\'s configuration of packages works.
     setupDownload
   which is called only when the package is downloaded (as opposed to being used from a tar file).
   By default this method constructs self.download from the other instance variables as follows:
-    self.download = [self.downloadpath+self.downloadversion+self.downloadext]
+    self.download = [self.downloadpath+self.downloadname+self.downloadversion+self.downloadext]
   Variables self.downloadpath, self.downloadext and self.downloadversion can be set in __init__ or
   using the following hook, which is called at the beginning of setupDownload:
     setupVersion
@@ -989,8 +1012,12 @@ class GNUPackage(Package):
     self.checkDependencies(libs, incls)
     if self.needsMath:
       if self.libraries.math is None:
-        raise RuntimeError('Math library not found')
+        raise RuntimeError('Math library [libm.a or equivalent] is not found')
       libs += self.libraries.math
+    if self.needsCompression:
+      if self.libraries.compression is None:
+        raise RuntimeError('Compression [libz.a or equivalent] library not found')
+      libs += self.libraries.compression
 
     for location, directory, lib, incl in self.generateGuesses():
       if directory and not os.path.isdir(directory):

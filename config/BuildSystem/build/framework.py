@@ -10,7 +10,7 @@ import sys
 import nargs
 
 if not hasattr(sys, 'version_info'):
-  raise RuntimeError('You must have Python version 2.2 or higher to run the build system')
+  raise RuntimeError('You must have Python version 2.4 or higher to run the build system')
 
 class Framework(base.Base):
   '''This is the base class for all user make modules'''

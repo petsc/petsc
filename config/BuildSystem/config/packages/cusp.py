@@ -5,7 +5,7 @@ class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
     self.includes        = ['cusp/version.h']
-    self.includedir      = ''
+    self.includedir      = ['','include']
     self.forceLanguage   = 'CUDA'
     self.cxx             = 0
     self.archIndependent = 1

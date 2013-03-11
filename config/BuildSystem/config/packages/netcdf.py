@@ -40,6 +40,7 @@ class Configure(config.package.GNUPackage):
     g.write('PREFIX         = '+self.installDir+'\n')
     configOpts.append('--prefix='+self.installDir)
     configOpts.append('--libdir='+os.path.join(self.installDir,self.libdir))
+    configOpts.append('--disable-dap')
 
     self.setCompilers.pushLanguage('C')
     cflags = self.setCompilers.getCompilerFlags().replace('-Wall','').replace('-Wshadow','')

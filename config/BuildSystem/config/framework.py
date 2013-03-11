@@ -221,8 +221,8 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       if hasattr(child, 'setupHelp'): child.setupHelp(self.help)
     return argDB
 
-  def cleanup(self):
-    '''Performs cleanup actions
+  def dumpConfFiles(self):
+    '''Performs:
        - Subtitute files
        - Output configure header
        - Log actions'''
@@ -248,6 +248,9 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       self.outputCHeader(self.log)
       self.actions.addArgument('Framework', 'File creation', 'Created C specific configure header '+self.cHeader)
     self.log.write('\n')
+    return
+
+  def cleanup(self):
     self.actions.output(self.log)
     self.tmpDir = None
     return
@@ -431,6 +434,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       # Cray XT3
       lines = filter(lambda s: s.find('INFO: catamount target') < 0, lines)
       lines = filter(lambda s: s.find('INFO: linux target') < 0, lines)
+      lines = filter(lambda s: s.find('Successful compile:') < 0, lines)
       # Lahey/Fujitsu
       lines = filter(lambda s: s.find('Encountered 0 errors') < 0, lines)
       output = reduce(lambda s, t: s+t, lines, '')
@@ -440,8 +444,9 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     if self.argDB['ignoreLinkOutput']:
       output = ''
     elif output:
+      hasIbmCrap = output.find('in statically linked applications requires at runtime the shared libraries from the glibc version used for linking') >= 0
       lines = output.splitlines()
-      if self.argDB['ignoreWarnings']:
+      if self.argDB['ignoreWarnings'] and not hasIbmCrap:
         lines = filter(lambda s: not self.warningRE.search(s), lines)
       # PGI: Ignore warning about temporary license
       lines = filter(lambda s: s.find('license.dat') < 0, lines)
@@ -638,6 +643,11 @@ class Framework(config.base.Configure, script.LanguageProcessor):
         self.outputMakeMacro(f, pair[0], pair[1])
     return
 
+  def getFullDefineName(self, child, name, prefix = None):
+    if prefix is None: prefix = self.getHeaderPrefix(child)
+    if prefix:         prefix = prefix+'_'
+    return prefix+name
+
   def outputDefines(self, f, child, prefix = None):
     '''If the child contains a dictionary named "defines", the entries are output as defines in the config header.
     The prefix to each define is calculated as follows:
@@ -652,14 +662,12 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       help = child.help
     else:
       help = {}
-    if prefix is None: prefix = self.getHeaderPrefix(child)
-    if prefix:         prefix = prefix+'_'
     for pair in child.defines.items():
       if not pair[1]: continue
       if help.has_key(pair[0]):
-        self.outputDefine(f, prefix+pair[0], pair[1], help[pair[0]])
+        self.outputDefine(f, self.getFullDefineName(child, pair[0], prefix), pair[1], help[pair[0]])
       else:
-        self.outputDefine(f, prefix+pair[0], pair[1])
+        self.outputDefine(f, self.getFullDefineName(child, pair[0], prefix), pair[1])
     return
 
   def outputTypedefs(self, f, child):
@@ -928,5 +936,6 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       child._configured = 1
     if self.argDB['with-batch']:
       self.configureBatch()
+    self.dumpConfFiles()
     self.cleanup()
     return 1

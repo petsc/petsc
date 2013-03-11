@@ -18,10 +18,17 @@ class CompilerOptions(config.base.Configure):
     if config.setCompilers.Configure.isGNU(compiler) or config.setCompilers.Configure.isClang(compiler):
       if bopt == '':
         flags.extend(['-Wall', '-Wwrite-strings', '-Wno-strict-aliasing','-Wno-unknown-pragmas'])
+        if self.framework.argDB['with-visibility']:
+          flags.extend(['-fvisibility=hidden'])
       elif bopt == 'g':
         if self.framework.argDB['with-gcov']:
           flags.extend(['-fprofile-arcs', '-ftest-coverage'])
-        flags.append('-g3')
+        if self.framework.argDB['with-cuda']:
+          flags.append('-g') #cuda 4.1 with sm_20 is buggy with -g3
+        else:
+          flags.append('-g3')
+        flags.append('-fno-inline')
+        flags.append('-O0')
       elif bopt == 'O':
         flags.append('-O')
     else:
@@ -29,7 +36,8 @@ class CompilerOptions(config.base.Configure):
       if config.setCompilers.Configure.isIntel(compiler) and not compiler.find('win32fe') >=0:
         if bopt == '':
           flags.append('-wd1572')
-          flags.append('-Qoption,cpp,--extended_float_type')
+          # next one fails in OpenMP build and we don't use it anyway so remove
+          # flags.append('-Qoption,cpp,--extended_float_type')
         elif bopt == 'g':
           flags.append('-g')
         elif bopt == 'O':
@@ -77,6 +85,10 @@ class CompilerOptions(config.base.Configure):
     if config.setCompilers.Configure.isGNU(compiler) or config.setCompilers.Configure.isClang(compiler):
       if bopt == '':
         flags.extend(['-Wall', '-Wwrite-strings', '-Wno-strict-aliasing','-Wno-unknown-pragmas'])
+        # The option below would prevent warnings about compiling C as C++ being deprecated, but it causes Clang to SEGV, http://llvm.org/bugs/show_bug.cgi?id=12924
+        # flags.extend([('-x','c++')])
+        if self.framework.argDB['with-visibility']:
+          flags.extend(['-fvisibility=hidden'])
       elif bopt in ['g']:
         if self.framework.argDB['with-gcov']:
           flags.extend(['-fprofile-arcs', '-ftest-coverage'])

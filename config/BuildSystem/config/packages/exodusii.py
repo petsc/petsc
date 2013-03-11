@@ -1,6 +1,4 @@
 #!/usr/bin/env python
-from __future__ import generators
-import user
 import config.base
 import config.package
 import os
@@ -8,7 +6,7 @@ import os
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.download   = ['http://downloads.sourceforge.net/exodusii/exodusii-4.75.tar.gz']
+    self.download   = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/exodusii-5.14-petsc.tgz']
     self.liblist    = [['libexoIIv2for.a', 'libexodus.a'], ['libexoIIv2for.a', 'libexoIIv2c.a']]
     self.functions  = ['ex_close']
     self.includes   = ['exodusII.h']
@@ -25,37 +23,29 @@ class Configure(config.package.Package):
   def Install(self):
     self.framework.log.write('exodusIIDir = '+self.packageDir+' installDir '+self.installDir+'\n')
 
-    mkfile = 'UFconfig/UFconfig.mk'
+    mkfile = 'make.inc'
     g = open(os.path.join(self.packageDir, mkfile), 'w')
+    self.framework.log.write(repr(dir(self.setCompilers)))
     self.setCompilers.pushLanguage('C')
-    g.write('CC           = '+self.setCompilers.getCompiler()+'\n')
-    if self.checkCompile('#ifdef PETSC_HAVE_LIMITS_H\n  #include <limits.h>\n#endif\n', 'long long i=ULONG_MAX;\n\nif (i);\n'):
-      ulong_max = 'ULONG_MAX'
-    else:
-      ulong_max = '9223372036854775807LL'
-    g.write('CFLAGS       = '+self.setCompilers.getCompilerFlags()+''' -DUF_long="long long" -DUF_long_max=''' + ulong_max + ''' -DUF_long_id='"%lld"' \n''')
+    g.write('CC = '+self.setCompilers.getCompiler()+'\n')
+    g.write('CC_FLAGS = '+self.setCompilers.getCompilerFlags()+'\n')
     self.setCompilers.popLanguage()
-    g.write('RANLIB       = '+self.setCompilers.RANLIB+'\n')
-    g.write('AR = ar cr\n')
-    g.write('RM = rm -f\n')
-    g.write('MV = mv -f\n')
-    g.write('BLAS      = '+self.libraries.toString(self.blasLapack.dlib)+'\n')
-    if self.blasLapack.mangling == 'underscore':
-      flg = ''
-    elif self.blasLapack.mangling == 'caps':
-      flg = '-DBLAS_CAPS_DOES_NOT_WORK'
-    else:
-      flg = '-DBLAS_NO_UNDERSCORE'
-    g.write('UMFPACK_CONFIG   = '+flg+'\n')
-    g.write('CLEAN = *.o *.obj *.ln *.bb *.bbg *.da *.tcov *.gcov gmon.out *.bak *.d\n')
+
+    self.setCompilers.pushLanguage('FC')
+    g.write('FC = '+self.setCompilers.getCompiler()+'\n')
+    g.write('FC_FLAGS = '+self.setCompilers.getCompilerFlags()+'\n')
+    self.setCompilers.popLanguage()
+    g.write('RANLIB      = '+self.setCompilers.RANLIB+'\n')
+    g.write('AR      = '+self.setCompilers.AR+'\n')
+    g.write('AR_FLAGS      = '+self.setCompilers.AR_FLAGS+'\n')
+
     g.close()
 
-    # Build UMFPACK
     if self.installNeeded(mkfile):
       try:
-        self.logPrintBox('Compiling UMFPACK; this may take several minutes')
-        output,err,ret = config.base.Configure.executeShellCommand('cd '+self.packageDir+'/UMFPACK && UMFPACK_INSTALL_DIR='+self.installDir+'''/lib && export UMFPACK_INSTALL_DIR && make && make clean && mv Lib/*.a '''+self.libDir+' && cp Include/*.h '+self.includeDir+' && cd .. && cp UFconfig/*.h '+self.includeDir+' && cd AMD && mv Lib/*.a '+self.libDir+' && cp Include/*.h '+self.includeDir, timeout=2500, log = self.framework.log)
+        self.logPrintBox('Compiling ExodusII; this may take several minutes')
+        output,err,ret = config.base.Configure.executeShellCommand('cd '+self.packageDir+' && make -f Makefile.petsc clean && make -f Makefile.petsc && make -f Makefile.petsc install', timeout=2500, log = self.framework.log)
       except RuntimeError, e:
-        raise RuntimeError('Error running make on UMFPACK: '+str(e))
-      self.checkInstall(output+err, mkfile)
+        raise RuntimeError('Error running make on exodusII: '+str(e))
+      self.postInstall(output+err, mkfile)
     return self.installDir

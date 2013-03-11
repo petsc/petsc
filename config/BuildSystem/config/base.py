@@ -131,6 +131,9 @@ class Configure(script.Script):
     self.makeMacros[name] = value
     return
 
+  def getMakeMacro(self, name):
+    return self.makeMacros.get(name)
+
   def delMakeMacro(self, name):
     '''Designate that "name" should be deleted (never put in) configuration header'''
     self.framework.logPrint('Deleting "'+name+'"')
@@ -568,7 +571,7 @@ class Configure(script.Script):
   def outputRun(self, includes, body, cleanup = 1, defaultOutputArg = '', executor = None):
     if not self.checkLink(includes, body, cleanup = 0): return ('', 1)
     if not os.path.isfile(self.linkerObj) or not os.access(self.linkerObj, os.X_OK):
-      self.framework.log.write('ERROR while running executable: '+self.linkerObj+' is not executable')
+      self.framework.log.write('ERROR while running executable: '+self.linkerObj+' is not executable\n')
       return ('', 1)
     if self.framework.argDB['with-batch']:
       if defaultOutputArg:

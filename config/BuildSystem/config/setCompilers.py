@@ -58,23 +58,23 @@ class Configure(config.base.Configure):
 
     help.addArgument('Compilers', '-with-cpp=<prog>', nargs.Arg(None, None, 'Specify the C preprocessor'))
     help.addArgument('Compilers', '-CPP=<prog>',            nargs.Arg(None, None, 'Specify the C preprocessor'))
-    help.addArgument('Compilers', '-CPPFLAGS=<string>',     nargs.Arg(None, '',   'Specify the C preprocessor options'))
+    help.addArgument('Compilers', '-CPPFLAGS=<string>',     nargs.Arg(None, None, 'Specify the C preprocessor options'))
     help.addArgument('Compilers', '-with-cc=<prog>',  nargs.Arg(None, None, 'Specify the C compiler'))
     help.addArgument('Compilers', '-CC=<prog>',             nargs.Arg(None, None, 'Specify the C compiler'))
-    help.addArgument('Compilers', '-CFLAGS=<string>',       nargs.Arg(None, '',   'Specify the C compiler options'))
+    help.addArgument('Compilers', '-CFLAGS=<string>',       nargs.Arg(None, None, 'Specify the C compiler options'))
     help.addArgument('Compilers', '-CC_LINKER_FLAGS=<string>',        nargs.Arg(None, [], 'Specify the C linker flags'))
 
     help.addArgument('Compilers', '-CXXPP=<prog>',          nargs.Arg(None, None, 'Specify the C++ preprocessor'))
-    help.addArgument('Compilers', '-CXXCPPFLAGS=<string>',  nargs.Arg(None, '',   'Specify the C++ preprocessor options'))
+    help.addArgument('Compilers', '-CXXCPPFLAGS=<string>',  nargs.Arg(None, None, 'Specify the C++ preprocessor options'))
     help.addArgument('Compilers', '-with-cxx=<prog>', nargs.Arg(None, None, 'Specify the C++ compiler'))
     help.addArgument('Compilers', '-CXX=<prog>',            nargs.Arg(None, None, 'Specify the C++ compiler'))
-    help.addArgument('Compilers', '-CXXFLAGS=<string>',     nargs.Arg(None, '',   'Specify the C++ compiler options'))
+    help.addArgument('Compilers', '-CXXFLAGS=<string>',     nargs.Arg(None, None, 'Specify the C++ compiler options'))
     help.addArgument('Compilers', '-CXX_CXXFLAGS=<string>', nargs.Arg(None, '',   'Specify the C++ compiler-only options'))
     help.addArgument('Compilers', '-CXX_LINKER_FLAGS=<string>',       nargs.Arg(None, [], 'Specify the C++ linker flags'))
 
     help.addArgument('Compilers', '-with-fc=<prog>',  nargs.Arg(None, None, 'Specify the Fortran compiler'))
     help.addArgument('Compilers', '-FC=<prog>',             nargs.Arg(None, None, 'Specify the Fortran compiler'))
-    help.addArgument('Compilers', '-FFLAGS=<string>',       nargs.Arg(None, '',   'Specify the Fortran compiler options'))
+    help.addArgument('Compilers', '-FFLAGS=<string>',       nargs.Arg(None, None, 'Specify the Fortran compiler options'))
     help.addArgument('Compilers', '-FC_LINKER_FLAGS=<string>',        nargs.Arg(None, [], 'Specify the FC linker flags'))
 
     help.addArgument('Compilers', '-with-gnu-compilers=<bool>',      nargs.ArgBool(None, 1, 'Try to use GNU compilers'))
@@ -83,9 +83,9 @@ class Configure(config.base.Configure):
     help.addArgument('Compilers', '-with-large-file-io=<bool>', nargs.ArgBool(None, 0, 'Allow IO with files greater then 2 GB'))
 
     help.addArgument('Compilers', '-CUDAPP=<prog>',        nargs.Arg(None, None, 'Specify the CUDA preprocessor'))
-    help.addArgument('Compilers', '-CUDAPPFLAGS=<string>', nargs.Arg(None, '',   'Specify the CUDA preprocessor options'))
+    help.addArgument('Compilers', '-CUDAPPFLAGS=<string>', nargs.Arg(None, None, 'Specify the CUDA preprocessor options'))
     help.addArgument('Compilers', '-CUDAC=<prog>',         nargs.Arg(None, None, 'Specify the CUDA compiler'))
-    help.addArgument('Compilers', '-CUDAFLAGS=<string>',    nargs.Arg(None, '',   'Specify the CUDA compiler options'))
+    help.addArgument('Compilers', '-CUDAFLAGS=<string>',   nargs.Arg(None, None, 'Specify the CUDA compiler options'))
     help.addArgument('Compilers', '-CUDAC_LINKER_FLAGS=<string>',        nargs.Arg(None, [], 'Specify the CUDA linker flags'))
     
 ##    help.addArgument('Compilers', '-LD=<prog>',              nargs.Arg(None, None, 'Specify the executable linker'))
@@ -129,13 +129,15 @@ class Configure(config.base.Configure):
       (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --help')
       output = output + error
       return (any([s in output for s in ['www.gnu.org',
-                                         'developer.apple.com',
                                          'bugzilla.redhat.com',
                                          'gcc.gnu.org',
                                          'gcc version',
+                                         '-print-libgcc-file-name',
                                          'passed on to the various sub-processes invoked by gcc',
+                                         'passed on to the various sub-processes invoked by cc',
                                          'passed on to the various sub-processes invoked by gfortran',
                                          'passed on to the various sub-processes invoked by g++',
+                                         'passed on to the various sub-processes invoked by c++',
                                          ]])
               and not any([s in output for s in ['Intel(R)',
                                                  'Unrecognised option --help passed to ld', # NAG f95 compiler
@@ -389,11 +391,13 @@ class Configure(config.base.Configure):
     for language in ['C', 'CUDA', 'Cxx', 'FC']:
       self.pushLanguage(language)
       for flagsArg in [self.getCompilerFlagsName(language), self.getCompilerFlagsName(language, 1), self.getLinkerFlagsName(language)]:
-        setattr(self, flagsArg, self.argDB[flagsArg])
+        if flagsArg in self.argDB: setattr(self, flagsArg, self.argDB[flagsArg])
+        else: setattr(self, flagsArg, '')
         self.framework.logPrint('Initialized '+flagsArg+' to '+str(getattr(self, flagsArg)))
       self.popLanguage()
     for flagsArg in ['CPPFLAGS', 'CUDAPPFLAGS', 'CXXCPPFLAGS', 'CC_LINKER_FLAGS', 'CXX_LINKER_FLAGS', 'FC_LINKER_FLAGS', 'CUDAC_LINKER_FLAGS','sharedLibraryFlags', 'dynamicLibraryFlags']:
-      setattr(self, flagsArg, self.argDB[flagsArg])
+      if flagsArg in self.argDB: setattr(self, flagsArg, self.argDB[flagsArg])
+      else: setattr(self, flagsArg, '')
       self.framework.logPrint('Initialized '+flagsArg+' to '+str(getattr(self, flagsArg)))
     if 'LIBS' in self.argDB:
       self.LIBS = self.argDB['LIBS']
@@ -419,7 +423,7 @@ class Configure(config.base.Configure):
       if not self.checkRun():
         msg = 'Cannot run executables created with '+language+'. If this machine uses a batch system \nto submit jobs you will need to configure using ./configure with the additional option  --with-batch.\n Otherwise there is problem with the compilers. Can you compile and run code with your C/C++ (and maybe Fortran) compilers?\n'
         if self.isIntel(self.getCompiler()):
-          msg = msg + 'See http://www.mcs.anl.gov/petsc/petsc-as/documentation/faq.html#libimf'
+          msg = msg + 'See http://www.mcs.anl.gov/petsc/documentation/faq.html#libimf'
         self.popLanguage()
         raise OSError(msg)
     self.popLanguage()
@@ -449,7 +453,7 @@ class Configure(config.base.Configure):
       yield os.path.join(self.framework.argDB['with-mpi-dir'], 'bin', 'hcc')
       yield os.path.join(self.framework.argDB['with-mpi-dir'], 'bin', 'mpcc_r')
       self.usedMPICompilers = 0
-      raise RuntimeError('MPI compiler wrappers in '+self.framework.argDB['with-mpi-dir']+'/bin do not work. See http://www.mcs.anl.gov/petsc/petsc-as/documentation/faq.html#mpi-compilers')
+      raise RuntimeError('MPI compiler wrappers in '+self.framework.argDB['with-mpi-dir']+'/bin do not work. See http://www.mcs.anl.gov/petsc/documentation/faq.html#mpi-compilers')
     else:
       if self.useMPICompilers():
         self.usedMPICompilers = 1
@@ -1164,8 +1168,10 @@ class Configure(config.base.Configure):
     if hasattr(self, 'CXX') and self.mainLanguage == 'Cxx':
       # C++ compiler default
       yield (self.CXX, ['-shared'], 'so')
+      yield (self.CXX, ['-dynamic'], 'so')
     # C compiler default
     yield (self.CC, ['-shared'], 'so')
+    yield (self.CC, ['-dynamic'], 'so')
     yield (self.CC, ['-qmkshrobj'], 'so')
     # Solaris default
     if Configure.isSolaris():
@@ -1269,6 +1275,8 @@ class Configure(config.base.Configure):
       languages.append('Cxx')
     if hasattr(self, 'FC'):
       languages.append('FC')
+    if hasattr(self, 'CUDAC'):
+      languages.append('CUDA')
     for language in languages:
       flag = '-L'
       self.pushLanguage(language)
@@ -1327,9 +1335,9 @@ class Configure(config.base.Configure):
       #yield ('libtool', ['-noprebind','-dynamic','-single_module','-flat_namespace -undefined warning','-multiply_defined suppress'], 'dylib')
       if hasattr(self, 'CXX') and self.mainLanguage == 'Cxx':
 #        yield ("g++", ['-dynamiclib -single_module', '-undefined dynamic_lookup', '-multiply_defined suppress'], 'dylib')
-        yield (self.CXX, ['-dynamiclib -single_module', '-undefined dynamic_lookup', '-multiply_defined suppress'], 'dylib')        
+        yield (self.CXX, ['-dynamiclib -single_module', '-undefined dynamic_lookup', '-multiply_defined suppress'], 'dylib')
 #      yield ("gcc", ['-dynamiclib -single_module', '-undefined dynamic_lookup', '-multiply_defined suppress'], 'dylib')
-      yield (self.CC, ['-dynamiclib -single_module', '-undefined dynamic_lookup', '-multiply_defined suppress'], 'dylib')      
+      yield (self.CC, ['-dynamiclib -single_module', '-undefined dynamic_lookup', '-multiply_defined suppress'], 'dylib')
     # Shared default
     if hasattr(self, 'sharedLinker'):
       yield (self.sharedLinker, self.sharedLibraryFlags, 'so')
@@ -1382,7 +1390,6 @@ if (dlclose(handle)) {
             self.dynamicLibraries = 1
             self.logPrint('Using dynamic linker '+self.dynamicLinker+' with flags '+str(self.dynamicLibraryFlags)+' and library extension '+self.dynamicLibraryExt)
             break
-          os.remove(oldLib)
         if os.path.isfile(self.linkerObj): os.remove(self.linkerObj)
         del self.dynamicLinker
     return
@@ -1446,30 +1453,29 @@ if (dlclose(handle)) {
   def checkMPICompilerOverride(self):
     '''Check if --with-mpi-dir is used along with CC CXX or FC compiler options.
     This usually prevents mpi compilers from being used - so issue a warning'''
-    
-    opts = ['with-cc','with-fc','with-cxx','CC','FC','CXX']
-    optsMatch = []
-    if 'with-mpi-dir' in self.argDB:
-      for opt in opts:
-        if (opt in self.argDB  and self.argDB[opt] != '0'):
-          optsMatch.append(opt)
-    if optsMatch:
-      mesg = '''\
-Warning: [with-mpi-dir] option is used along with options: ''' + str(optsMatch) + '''
-This prevents configure from picking up MPI compilers from specified mpi-dir.
 
-Suggest using *only* [with-mpi-dir] option - and no other compiler option.
-This way - mpi compilers from '''+self.argDB['with-mpi-dir']+ ''' are used.'''
-      self.logPrintBox(mesg)
+    if 'with-mpi-dir' in self.argDB:
+      optcplrs = [(['with-cc','CC'],['mpicc','mpcc','hcc','mpcc_r']),
+              (['with-fc','FC'],['mpif90','mpif77','mpxlf95_r','mpxlf90_r','mpxlf_r','mpf90','mpf77']),
+              (['with-cxx','CXX'],['mpicxx','hcp','mpic++','mpiCC','mpCC_r'])]
+      for opts,cplrs in optcplrs:
+        for opt in opts:
+          if (opt in self.argDB  and self.argDB[opt] != '0'):
+            # check if corresponding mpi wrapper exists
+            for cplr in cplrs:
+              mpicplr = os.path.join(self.framework.argDB['with-mpi-dir'], 'bin', cplr)
+              if os.path.exists(mpicplr):
+                msg = '--'+opt+'='+self.argDB[opt]+' is specified with --with-mpi-dir='+self.framework.argDB['with-mpi-dir']+'. However '+mpicplr+' exists and should be the prefered compiler! Suggest not specifying --'+opt+' option so that configure can use '+ mpicplr +' instead.'
+                raise RuntimeError(msg)
     return
 
   def resetEnvCompilers(self):
     ignoreEnv = ['CC','CFLAGS','CXX','CXXFLAGS','FC','FCFLAGS','F77','FFLAGS',
                  'F90','F90FLAGS','CPP','CPPFLAGS','CXXCPP','CXXCPPFLAGS',
-                 'LDFLAGS','LIBS','MPI_DIR']
+                 'LDFLAGS','LIBS','MPI_DIR','RM']
     for envVal in ignoreEnv:
       if envVal in os.environ:
-        self.logPrintBox('***** WARNING: '+envVal+' found in enviornment variables - ignoring ******')
+        self.logPrintBox('***** WARNING: '+envVal+' found in environment variables - ignoring ******')
         del os.environ[envVal]
     return
 

@@ -4,12 +4,12 @@ import os
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.download     = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/hdf5-1.8.6.tar.gz']
+    self.download     = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/hdf5-1.8.8-p1.tar.gz']
     self.functions = ['H5T_init']
     self.includes  = ['hdf5.h']
-    self.liblist   = [['libhdf5.a']]
+    self.liblist   = [['libhdf5.a','libhdf5_hl.a']]
     self.needsMath = 1
-    self.extraLib  = ['libz.a']
+    self.needsCompression = 1
     self.complex   = 1
     self.worksonWindows = 1
     return
@@ -58,8 +58,9 @@ class Configure(config.package.Package):
     return self.installDir
 
   def configureLibrary(self):
+    self.extraLib = self.libraries.compression
     if hasattr(self.compilers, 'FC'):
-      self.liblist   = [['libhdf5_fortran.a', 'libhdf5.a']]
+      self.liblist   = [['libhdf5_fortran.a', 'libhdf5.a', 'libhdf5hl_fortran.la', 'libhdf5_hl.la']]
     config.package.Package.configureLibrary(self)
     if self.libraries.check(self.dlib, 'H5Pset_fapl_mpio'):
       self.addDefine('HAVE_H5PSET_FAPL_MPIO', 1)

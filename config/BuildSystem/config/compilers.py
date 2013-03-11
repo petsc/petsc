@@ -290,10 +290,11 @@ class Configure(config.base.Configure):
 
     self.logPrint('Libraries needed to link C code with another linker: '+str(self.clibs), 3, 'compilers')
 
-    if hasattr(self.setCompilers, 'FC'):
+    if hasattr(self.setCompilers, 'FC') or hasattr(self.setCompilers, 'CXX'):
       self.logPrint('Check that C libraries can be used from Fortran', 4, 'compilers')
       oldLibs = self.setCompilers.LIBS
       self.setCompilers.LIBS = ' '.join([self.libraries.getLibArgument(lib) for lib in self.clibs])+' '+self.setCompilers.LIBS
+    if hasattr(self.setCompilers, 'FC'):
       try:
         self.setCompilers.checkCompiler('FC')
       except RuntimeError, e:
@@ -464,10 +465,7 @@ class Configure(config.base.Configure):
           if not arg in lflags:
             lflags.append(arg)
             self.logPrint('Found library directory: '+arg, 4, 'compilers')
-            if arg in self.clibs:
-              self.logPrint('Library directory already in C list so skipping in C++')
-            else:
-              cxxlibs.append(arg)
+            cxxlibs.append(arg)
           continue
         # Check for '-rpath /sharedlibpath/ or -R /sharedlibpath/'
         if arg == '-rpath' or arg == '-R':
@@ -605,7 +603,7 @@ class Configure(config.base.Configure):
         break
     else:
       if self.setCompilers.isDarwin():
-        mess = '  See http://www.mcs.anl.gov/petsc/petsc-as/documentation/faq.html#gfortran'
+        mess = '  See http://www.mcs.anl.gov/petsc/documentation/faq.html#gfortran'
       else:
         mess = ''
       raise RuntimeError('Unknown Fortran name mangling: Are you sure the C and Fortran compilers are compatible?\n  Perhaps one is 64 bit and one is 32 bit?\n'+mess)
@@ -843,7 +841,12 @@ class Configure(config.base.Configure):
             else:
               lflags.append(arg)
             self.logPrint('Found library: '+arg, 4, 'compilers')
-            flibs.append(arg)
+            if arg in self.clibs:
+              self.logPrint('Library already in C list so skipping in Fortran')
+            elif arg in self.cxxlibs:
+              self.logPrint('Library already in Cxx list so skipping in Fortran')
+            else:
+              flibs.append(arg)
           else:
             self.logPrint('Already in lflags: '+arg, 4, 'compilers')
           continue
@@ -983,17 +986,6 @@ class Configure(config.base.Configure):
           self.logPrint(str(e), 4, 'compilers')
           raise RuntimeError('Fortran libraries cannot be used with C compiler')
 
-    # check if Intel library exists (that is not linked by default but has iargc_ in it :-(
-    self.logPrint('Check for Intel PEPCF90 library', 4, 'compilers')
-    self.setCompilers.LIBS = oldLibs+' -lPEPCF90 '+' '.join([self.libraries.getLibArgument(lib) for lib in self.flibs])
-    try:
-      self.setCompilers.checkCompiler('C')
-      self.flibs = [' -lPEPCF90']+self.flibs
-      self.logPrint('Intel PEPCF90 library exists', 4, 'compilers')
-    except RuntimeError, e:
-      self.logPrint('Intel PEPCF90 library does not exist', 4, 'compilers')
-      self.setCompilers.LIBS = oldLibs+' '+' '.join([self.libraries.getLibArgument(lib) for lib in self.flibs])
-
     # check these monster libraries work from C++
     if hasattr(self.setCompilers, 'CXX'):
       self.logPrint('Check that Fortran libraries can be used from C++', 4, 'compilers')
@@ -1062,6 +1054,26 @@ class Configure(config.base.Configure):
     else:
       self.fortranIsF90 = 0
       self.logPrint('Fortran compiler does not support F90')
+    self.popLanguage()
+    return
+
+  def checkFortran2003(self):
+    '''Determine whether the Fortran compiler handles F2003'''
+    self.pushLanguage('FC')
+    if self.checkLink(body = '''
+      use,intrinsic :: iso_c_binding
+      Type(C_Ptr),Dimension(:),Pointer :: CArray
+      character(kind=c_char),pointer   :: nullc => null()
+      character(kind=c_char,len=5),dimension(:),pointer::list1
+
+      allocate(list1(5))
+      CArray = (/(c_loc(list1(i)),i=1,5),c_loc(nullc)/)'''):
+      self.addDefine('USING_F2003', 1)
+      self.fortranIsF2003 = 1
+      self.logPrint('Fortran compiler supports F2003')
+    else:
+      self.fortranIsF2003 = 0
+      self.logPrint('Fortran compiler does not support F2003')
     self.popLanguage()
     return
 
@@ -1179,13 +1191,17 @@ class Configure(config.base.Configure):
     if not os.path.isdir(testdir):
       os.mkdir(testdir)
     os.rename(self.compilerObj, modobj)
-    if os.path.isfile('configtest.mod'):
-      modname = 'configtest.mod'
-    elif os.path.isfile('CONFIGTEST.mod'):
-      modname = 'CONFIGTEST.mod'
-    else:
-      raise RuntimeError('Fortran module was not created during the compile. configtest.mod/CONFIGTEST.mod not found')
-    shutil.move(modname, os.path.join(testdir, modname))
+    foundModule = 0
+    for f in [os.path.abspath('configtest.mod'), os.path.abspath('CONFIGTEST.mod'), os.path.join(os.path.dirname(self.compilerObj),'configtest.mod'), os.path.join(os.path.dirname(self.compilerObj),'CONFIGTEST.mod')]:
+      if os.path.isfile(f):
+        modname     = f
+        foundModule = 1
+        break
+    if not foundModule:
+      d = os.path.dirname(os.path.abspath('configtest.mod'))
+      self.logPrint('Directory '+d+' contents:\n'+str(os.listdir(d)))
+      raise RuntimeError('Fortran module was not created during the compile. %s/CONFIGTEST.mod not found' % os.path.abspath('configtest.mod'))
+    shutil.move(modname, os.path.join(testdir, os.path.basename(modname)))
     fcode = '''\
       use configtest
 
@@ -1199,7 +1215,7 @@ class Configure(config.base.Configure):
       if not self.checkLink(None, fcode):
         self.logPrint('Fortran module include flag '+flag+' failed', 3, 'compilers')
       else:
-        self.logPrint('Fortran module include flag '+flag+' found', 3, 'compilers')        
+        self.logPrint('Fortran module include flag '+flag+' found', 3, 'compilers')
         self.setCompilers.fortranModuleIncludeFlag = flag
         found = 1
       self.setCompilers.LIBS   = oldLIBS
@@ -1208,7 +1224,7 @@ class Configure(config.base.Configure):
     self.popLanguage()
     if os.path.isfile(modobj):
       os.remove(modobj)
-    os.remove(os.path.join(testdir, modname))
+    os.remove(os.path.join(testdir, os.path.basename(modname)))
     os.rmdir(testdir)
     if not found:
       raise RuntimeError('Cannot determine Fortran module include flag')
@@ -1235,7 +1251,7 @@ class Configure(config.base.Configure):
     self.pushLanguage('FC')
     oldFLAGS = self.setCompilers.FFLAGS
     oldLIBS  = self.setCompilers.LIBS
-    for flag in ['-module ', '-module:', '-fmod=', '-J', '-M', '-p', '-moddir=']:
+    for flag in ['-module ', '-module:', '-fmod=', '-J', '-M', '-p', '-qmoddir=', '-moddir=']:
       self.setCompilers.FFLAGS = flag+testdir+' '+self.setCompilers.FFLAGS
       self.setCompilers.LIBS   = modobj+' '+self.setCompilers.LIBS
       if not self.checkCompile(modcode, None, cleanup = 0):
@@ -1334,6 +1350,7 @@ class Configure(config.base.Configure):
       if hasattr(self.setCompilers, 'CXX'):
         self.executeTest(self.checkFortranLinkingCxx)
       self.executeTest(self.checkFortran90)
+      self.executeTest(self.checkFortran2003)
       self.executeTest(self.checkFortran90Array)
       self.executeTest(self.checkFortranModuleInclude)
       self.executeTest(self.checkFortranModuleOutput)

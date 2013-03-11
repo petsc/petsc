@@ -38,6 +38,7 @@ class Configure(config.package.Package):
     help.addArgument('BLAS/LAPACK', '-with-blas-lib=<libraries: e.g. [/Users/..../libblas.a,...]>',    nargs.ArgLibrary(None, None, 'Indicate the library(s) containing BLAS'))
     help.addArgument('BLAS/LAPACK', '-with-lapack-lib=<libraries: e.g. [/Users/..../liblapack.a,...]>',nargs.ArgLibrary(None, None, 'Indicate the library(s) containing LAPACK'))
     help.addArgument('BLAS/LAPACK', '-download-f-blas-lapack=<no,yes,filename>',                       nargs.ArgDownload(None, 0, 'Automatically install a Fortran version of BLAS/LAPACK'))
+    help.addArgument('BLAS/LAPACK', '-known-64-bit-blas-indices=<bool>', nargs.ArgBool(None, 0, 'Indicate if using 64 bit integer BLAS'))
     return
 
   def getDefaultPrecision(self):
@@ -155,7 +156,10 @@ class Configure(config.package.Package):
     if self.f2cblaslapack.found:
       self.f2c = 1
       libDir = self.f2cblaslapack.libDir
-      yield ('f2cblaslapack',os.path.join(libDir,'libf2cblas.a') , os.path.join(libDir,'libf2clapack.a'), 0)
+      f2cLibs = [os.path.join(libDir,'libf2cblas.a')]
+      if self.libraries.math:
+        f2cLibs = f2cLibs+self.libraries.math
+      yield ('f2cblaslapack', f2cLibs, os.path.join(libDir,'libf2clapack.a'), 0)
       raise RuntimeError('--download-f2cblaslapack libraries cannot be used')
     if 'with-blas-lib' in self.framework.argDB and not 'with-lapack-lib' in self.framework.argDB:
       raise RuntimeError('If you use the --with-blas-lib=<lib> you must also use --with-lapack-lib=<lib> option')
@@ -168,7 +172,7 @@ class Configure(config.package.Package):
 
     if self.framework.argDB['download-f-blas-lapack']:
       self.download= ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/fblaslapack-3.1.1.tar.gz']
-      self.downloadname     = 'fblaslapack'
+      self.downloadname     = 'f-blas-lapack'
       self.downloadfilename = 'fblaslapack'
 
     if self.framework.argDB['download-f-blas-lapack'] == 1  or isinstance(self.framework.argDB['download-f-blas-lapack'], str):
@@ -192,6 +196,12 @@ class Configure(config.package.Package):
     # Try specified installation root
     if 'with-blas-lapack-dir' in self.framework.argDB:
       dir = self.framework.argDB['with-blas-lapack-dir']
+      # error if package-dir is in externalpackages
+      if os.path.realpath(dir).find(os.path.realpath(self.externalPackagesDir)) >=0:
+        fakeExternalPackagesDir = dir.replace(os.path.realpath(dir).replace(os.path.realpath(self.externalPackagesDir),''),'')
+        raise RuntimeError('Bad option: '+'--with-blas-lapack-dir='+self.framework.argDB['with-blas-lapack-dir']+'\n'+
+                           fakeExternalPackagesDir+' is reserved for --download-package scratch space. \n'+
+                           'Do not install software in this location nor use software in this directory.')
       if not (len(dir) > 2 and dir[1] == ':') :
         dir = os.path.abspath(dir)
       self.framework.log.write('Looking for BLAS/LAPACK in user specified directory: '+dir+'\n')
@@ -207,6 +217,8 @@ class Configure(config.package.Package):
       yield ('User specified AMD ACML lib dir', None, [os.path.join(dir,'lib','libacml.a'), os.path.join(dir,'lib','libacml_mv.a')], 1)
       yield ('User specified AMD ACML lib dir', None, os.path.join(dir,'lib','libacml_mp.a'), 1)
       yield ('User specified AMD ACML lib dir', None, [os.path.join(dir,'lib','libacml_mp.a'), os.path.join(dir,'lib','libacml_mv.a')], 1)      
+      # Check MATLAB [ILP64] MKL
+      yield ('User specified MATLAB [ILP64] MKL Linux lib dir', None, [os.path.join(dir,'bin','glnxa64','mkl.so'), os.path.join(dir,'sys','os','glnxa64','libiomp5.so'), 'pthread'], 1)
       # Check Linux MKL variations
       yield ('User specified MKL Linux lib dir', None, [os.path.join(dir, 'libmkl_lapack.a'), 'mkl', 'guide', 'pthread'], 1)
       for libdir in ['32','64','em64t']:
@@ -214,8 +226,10 @@ class Configure(config.package.Package):
       # Some new MKL 11/12 variations
       for libdir in ['',os.path.join('lib','32'),os.path.join('lib','ia32')]:
         yield ('User specified MKL11/12 Linux32', None, [os.path.join(dir,libdir,'libmkl_intel.a'),'mkl_intel_thread','mkl_core','iomp5','pthread'],1)
+        yield ('User specified MKL11/12 Linux32', None, [os.path.join(dir,libdir,'libmkl_intel.a'),'mkl_gnu_thread','mkl_core','gomp','pthread'],1) #gnu
       for libdir in ['',os.path.join('lib','em64t'),os.path.join('lib','intel64')]:
         yield ('User specified MKL11/12 Linux64', None, [os.path.join(dir,libdir,'libmkl_intel_lp64.a'),'mkl_intel_thread','mkl_core','iomp5','pthread'],1)
+        yield ('User specified MKL11/12 Linux64', None, [os.path.join(dir,libdir,'libmkl_intel_lp64.a'),'mkl_gnu_thread','mkl_core','gomp','pthread'],1) #gnu
       # Older Linux MKL checks
       yield ('User specified MKL Linux-x86 lib dir', None, [os.path.join(dir, 'libmkl_lapack.a'), 'libmkl_def.a', 'guide', 'pthread'], 1)
       yield ('User specified MKL Linux-x86 lib dir', None, [os.path.join(dir, 'libmkl_lapack.a'), 'libmkl_def.a', 'guide', 'vml','pthread'], 1)
@@ -263,6 +277,7 @@ class Configure(config.package.Package):
     yield ('Compaq/Alpha Mathematics library', None, 'libcxml.a', 1)
     # IBM ESSL locations
     yield ('IBM ESSL Mathematics library', None, 'libessl.a', 1)
+    yield ('IBM ESSL Mathematics library for Blue Gene', None, 'libesslbg.a', 2)
     # Portland group compiler blas and lapack
     if 'PGI' in os.environ and config.setCompilers.Configure.isPGI(self.setCompilers.CC):
       dir = os.path.join(os.environ['PGI'],'linux86','5.1','lib')
@@ -324,7 +339,7 @@ class Configure(config.package.Package):
     return ''
 
   def getWindowsNonOptFlags(self,cflags):
-    for flag in ['-MT','-MTd','-MD','-threads']:
+    for flag in ['-MT','-MTd','-MD','-MDd','-threads']:
       if cflags.find(flag) >=0: return flag
     return ''
 
@@ -504,7 +519,7 @@ class Configure(config.package.Package):
     '''Check for missing LAPACK routines'''
     if self.foundLapack:
       mangleFunc = hasattr(self.compilers, 'FC') and not self.f2c
-      for baseName in ['trsen','gerfs','gges','tgsen','gesvd','getrf','getrs','geev','gelss','syev','syevx','sygv','sygvx','potrf','potrs','stebz','pttrf','pttrs','stein','orgqr','geqrf','gesv','hseqr']:
+      for baseName in ['trsen','gerfs','gges','tgsen','gesvd','getrf','getrs','geev','gelss','syev','syevx','sygv','sygvx','potrf','potrs','stebz','pttrf','pttrs','stein','orgqr','geqrf','gesv','hseqr','geqrf']:
         prefix = self.getPrefix()
         if self.f2c:
           if self.mangling == 'underscore':
@@ -520,6 +535,17 @@ class Configure(config.package.Package):
         self.compilers.LIBS = oldLibs
     return
 
+  def checklsame(self):
+    ''' Do the BLAS/LAPACK libraries have a valid lsame() function with correction binding. Lion and xcode 4.2 do not'''
+    routine = 'lsame';
+    if self.f2c:
+      if self.mangling == 'underscore':
+        routine = routine + '_'
+    else:
+      routine = self.compilers.mangleFortranFunction(routine)
+    if not self.libraries.check(self.dlib,routine,fortranMangle = 0):
+      self.addDefine('MISSING_LAPACK_'+routine, 1)
+
   def checkForRoutine(self,routine):
     ''' used by other packages to see if a BLAS routine is available
         This is not really correct because other packages do not (usually) know about f2cblasLapack'''
@@ -531,11 +557,20 @@ class Configure(config.package.Package):
     else:
       return self.libraries.check(self.dlib,routine,fortranMangle = hasattr(self.compilers, 'FC'))
 
+  def check64BitBLASIndices(self):
+    '''Check for and use 64bit integer blas'''
+    if 'known-64-bit-blas-indices' in self.argDB:
+      if int(self.argDB['known-64-bit-blas-indices']):
+        self.addDefine('HAVE_64BIT_BLAS_INDICES', 1)
+    return
+
   def configure(self):
     self.executeTest(self.configureLibrary)
+    self.executeTest(self.check64BitBLASIndices)
     self.executeTest(self.checkESSL)
     self.executeTest(self.checkPESSL)
     self.executeTest(self.checkMissing)
+    self.executeTest(self.checklsame)
     return
 
 if __name__ == '__main__':

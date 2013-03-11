@@ -3,14 +3,17 @@ import config.package
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.downloadpath  = 'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/'
-    self.downloadversion = '3.99-10-18-2010'
-    self.downloadext     = 'tar.gz'
-    self.functions = ['iMesh_newMesh']
-    self.functionsFortran = 1
-    self.includes  = ['iMesh.h']
-    self.liblist   = [['libiMesh.a', 'libMOAB.a']]
-    self.cxx       = 1
+    self.downloadpath      = 'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/'
+    self.downloadname      = 'moab'
+    self.downloadfilename  = 'moab'
+    self.downloadversion   = '3.99-10-18-2010'
+    self.downloadext       = 'tar.gz'
+
+    self.functions         = ['iMesh_newMesh']
+    self.functionsFortran  = 1
+    self.includes          = ['iMesh.h']
+    self.liblist           = [['libiMesh.a', 'libMOAB.a']]
+    self.cxx               = 1
     return
 
   def setupDependencies(self, framework):

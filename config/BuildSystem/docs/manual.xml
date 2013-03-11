@@ -469,7 +469,7 @@ there commands can run in the special batch mode described in section ???.</para
 enable communication with <command>make</command>. Individual configure modules use the
 <methodname>addDefine</methodname> method to add C <methodname>#define</methodname> statements to a configuration header
 and the <methodname>addSubstitution</methodname> to setup substitution rules for specified files. For instance, to
-activate the ParMetis package, we might provide
+activate the parmetis package, we might provide
 <programlisting>
   self.addDefine('HAVE_PARMETIS', 1)
 </programlisting>
@@ -493,7 +493,7 @@ becomes troublesome, and in some cases impossible to maintain. To help with this
 <emphasis>prefixes</emphasis> for the defines and substitutions. The are strings, unique to each module, which are
 prepended with an underscore to each identifier defined or substituted. These are set on a per object basis using the
 <varname>headerPrefix</varname> and <varname>substPrefix</varname> members. For instance, in our
-ParMetis example, if we instead used the code
+parmetis example, if we instead used the code
 <programlisting>
   self.headerPrefix = 'MATT'
   self.addDefine('HAVE_PARMETIS', 1)
@@ -516,7 +516,7 @@ header file, which is controlled by the <varname>cHeader</varname> member variab
 <para>Extending in a different direction, we allow makefile structures to be specified directly rather than through
 substitutions. Using <methodname>addMakeMacro</methodname>, we can add variable definitions to the configuration
 makefile, whereas <methodname>addMakeRule</methodname> allows the user to specify a make target, complete with
-dependencies and action. As an example, we will replace our ParMetis example from above with the following code
+dependencies and action. As an example, we will replace our parmetis example from above with the following code
 <programlisting>
   self.addMakeMacro('PARMETIS_INCLUDE', ' '.join([self.libraries.getIncludeArgument(i)
                                                   for i in self.include]))
@@ -527,8 +527,8 @@ dependencies and action. As an example, we will replace our ParMetis example fro
 </programlisting>
 which will produce
 <programlisting>
-  PARMETIS_INCLUDE = -I/home/knepley/petsc-dev/externalpackages/ParMetis/include
-  PARMETIS_LIB = -L/home/knepley/petsc-dev/externalpackages/ParMetis/lib/linux-gnu -lparmetis -lmetis
+  PARMETIS_INCLUDE = -I/home/knepley/petsc-dev/externalpackages/parmetis/build/Darwin-x86_64/include
+  PARMETIS_LIB = -L/home/knepley/petsc-dev/externalpackages/parmetis/build/Darwin-x86_64/lib -lparmetis -lmetis
 </programlisting>
 in the file specified by the <varname>makeMacroHeader</varname> member variable, and
 <programlisting>

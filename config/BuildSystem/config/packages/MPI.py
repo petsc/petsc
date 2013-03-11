@@ -11,8 +11,9 @@ from stat import *
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.download_openmpi   = ['http://www.open-mpi.org/software/ompi/v1.4/downloads/openmpi-1.4.3.tar.gz']
-    self.download_mpich     = ['http://www.mcs.anl.gov/research/projects/mpich2/downloads/tarballs/1.4.1p1/mpich2-1.4.1p1.tar.gz']
+    self.download_openmpi   = ['http://www.open-mpi.org/software/ompi/v1.4/downloads/openmpi-1.4.5.tar.gz']
+    self.download_mpich     = ['http://www.mpich.org/static/tarballs/1.4.1p1/mpich2-1.4.1p1.tar.gz',
+                               'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/mpich2-1.4.1p1.tar.gz']
     self.download           = ['redefine']
     self.functions          = ['MPI_Init', 'MPI_Comm_create']
     self.includes           = ['mpi.h']
@@ -61,11 +62,12 @@ class Configure(config.package.Package):
     help.addArgument('MPI', '-download-openmpi=<no,yes,filename>',               nargs.ArgDownload(None, 0, 'Download and install OpenMPI'))
     help.addArgument('MPI', '-with-mpiexec=<prog>',                              nargs.Arg(None, None, 'The utility used to launch MPI jobs'))
     help.addArgument('MPI', '-with-mpi-compilers=<bool>',                        nargs.ArgBool(None, 1, 'Try to use the MPI compilers, e.g. mpicc'))
-    help.addArgument('MPI', '-known-mpi-shared-libraries=<bool>',                          nargs.ArgBool(None, None, 'Indicates the MPI libraries are shared (the usual test will be skipped)'))
-    help.addArgument('MPI', '-download-mpich-pm=<hydra, gforker or mpd>',          nargs.Arg(None, 'hydra', 'Launcher for MPI processes'))
+    help.addArgument('MPI', '-known-mpi-shared-libraries=<bool>',                nargs.ArgBool(None, None, 'Indicates the MPI libraries are shared (the usual test will be skipped)'))
+    help.addArgument('MPI', '-download-mpich-pm=<hydra, gforker or mpd>',        nargs.Arg(None, 'hydra', 'Launcher for MPI processes'))
     help.addArgument('MPI', '-download-mpich-device=<ch3:nemesis or see mpich2 docs>', nargs.Arg(None, 'ch3:sock', 'Communicator for MPI processes'))
-    help.addArgument('MPI', '-download-mpich-mpe=<bool>',                               nargs.ArgBool(None, 0, 'Install MPE with MPICH'))
-    help.addArgument('MPI', '-download-mpich-shared=<bool>',                            nargs.ArgBool(None, 0, 'Install MPICH with shared libraries'))
+    help.addArgument('MPI', '-download-mpich-mpe=<bool>',                        nargs.ArgBool(None, 0, 'Install MPE with MPICH'))
+    help.addArgument('MPI', '-download-mpich-shared=<bool>',                     nargs.ArgBool(None, 0, 'Install MPICH with shared libraries'))
+    help.addArgument('MPI', '-with-mpiuni-fortran-binding=<bool>',               nargs.ArgBool(None, 1, 'Build the MPIUni Fortran bindings'))
     return
 
   def setupDependencies(self, framework):
@@ -118,14 +120,13 @@ class Configure(config.package.Package):
           dir = os.path.join(homedir,dir)
           if os.path.isdir(dir):
             yield (dir)
-    # Try MPICH install locations under Windows
-    yield(os.path.join('/cygdrive','c','Program Files','Microsoft HPC Pack 2008 SDK'))
-    yield(os.path.join('/cygdrive','c','Program Files','Microsoft Compute Cluster Pack'))
-    yield(os.path.join('/cygdrive','c','Program Files','MPICH2'))
-    yield(os.path.join('/cygdrive','c','Program Files (x86)','MPICH2'))
-    yield(os.path.join('/cygdrive','c','Program Files','MPICH'))
-    yield(os.path.join('/cygdrive','c','Program Files','MPICH','SDK.gcc'))
-    yield(os.path.join('/cygdrive','c','Program Files','MPICH','SDK'))
+    # Try MSMPI/MPICH install locations under Windows
+    # ex: /cygdrive/c/Program Files/Microsoft HPC Pack 2008 SDK
+    for root in ['/',os.path.join('/','cygdrive')]:
+      for drive in ['c']:
+        for programFiles in ['Program Files','Program Files (x86)']:
+          for packageDir in ['Microsoft HPC Pack 2008 SDK','Microsoft Compute Cluster Pack','MPICH2','MPICH',os.path.join('MPICH','SDK.gcc'),os.path.join('MPICH','SDK')]:
+            yield(os.path.join(root,drive,programFiles,packageDir))
     return
 
   def checkSharedLibrary(self):
@@ -152,7 +153,7 @@ class Configure(config.package.Package):
       self.mpiexec = os.path.abspath(os.path.join('bin', 'mpiexec.poe'))
       return
     if self.framework.argDB['with-batch']:
-      self.mpiexec = 'Not_appropriate_for_batch_systems'
+      self.mpiexec = 'Not_appropriate_for_batch_systems_You_must_use_your_batch_system_to_submit_MPI_jobs_speak_with_your_local_sys_admin'
       self.addMakeMacro('MPIEXEC',self.mpiexec)
       return
     mpiexecs = ['mpiexec -n 1', 'mpirun -n 1', 'mprun -n 1', 'mpiexec', 'mpirun', 'mprun']
@@ -283,6 +284,12 @@ class Configure(config.package.Package):
     self.addDefine('HAVE_MPI_COMM_F2C', 1)
     self.addDefine('HAVE_MPI_COMM_C2F', 1)
     self.addDefine('HAVE_MPI_FINT', 1)
+    self.addDefine('HAVE_MPI_IN_PLACE', 1)
+    if not self.argDB['with-mpiuni-fortran-binding']:
+      self.framework.addDefine('MPIUNI_AVOID_MPI_NAMESPACE', 1)
+      self.usingMPIUniFortranBinding = 0
+    else:
+      self.usingMPIUniFortranBinding = 1
     if self.getDefaultLanguage == 'C': self.addDefine('HAVE_MPI_C_DOUBLE_COMPLEX', 1)
     self.commf2c = 1
     self.commc2f = 1
@@ -418,7 +425,7 @@ class Configure(config.package.Package):
         raise RuntimeError('Error running make on OPENMPI, libraries not installed')
       try:
         # OpenMPI puts Fortran 90 modules into lib instead of include like we want
-        output,err,ret  = config.base.Configure.executeShellCommand('cp '+os.path.join(installDir,'lib','*.mod ')+os.path.join(installDir,'include'), timeout=30, log = self.framework.log)
+        output,err,ret  = config.base.Configure.executeShellCommand('cp '+os.path.join(installDir,'lib*','*.mod ')+os.path.join(installDir,'include'), timeout=30, log = self.framework.log)
       except RuntimeError, e:
         pass
 
@@ -428,12 +435,6 @@ class Configure(config.package.Package):
         fd.close()
       except:
         self.framework.logPrint('Unable to output configure arguments into '+os.path.join(self.confDir, self.name))
-      #need to run ranlib on the libraries using the full path
-      try:
-        if not self.framework.argDB['with-shared-libraries']:
-          output,err,ret  = config.base.Configure.executeShellCommand(self.setCompilers.RANLIB+' '+os.path.join(installDir,'lib')+'/lib*.a', timeout=2500, log = self.framework.log)
-      except RuntimeError, e:
-        raise RuntimeError('Error running ranlib on OPENMPI/MPI libraries: '+str(e))
       self.framework.actions.addArgument(self.PACKAGE, 'Install', 'Installed OPENMPI/MPI into '+installDir)
 
     self.updateCompilers(installDir,'mpicc','mpic++','mpif77','mpif90')
@@ -739,6 +740,11 @@ class Configure(config.package.Package):
       self.addDefine('HAVE_MPI_COMM_SPAWN',1)
     if self.libraries.check(self.dlib, "MPI_Win_create"):
       self.addDefine('HAVE_MPI_WIN_CREATE',1)
+      self.addDefine('HAVE_MPI_REPLACE',1) # MPI_REPLACE is strictly for use with the one-sided function MPI_Accumulate
+    if self.libraries.check(self.dlib, 'MPI_Init_thread'):
+        self.addDefine('HAVE_MPI_INIT_THREAD',1)
+    if self.libraries.check(self.dlib, "MPIX_Iallreduce"):
+      self.addDefine('HAVE_MPIX_IALLREDUCE',1)
     if self.libraries.check(self.dlib, "MPI_Finalized"):
       self.addDefine('HAVE_MPI_FINALIZED',1)
     if self.libraries.check(self.dlib, "MPI_Exscan"):
