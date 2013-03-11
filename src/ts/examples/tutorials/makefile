@@ -396,6 +396,10 @@ runex29:
 	   ${DIFF} output/ex29.out ex29.tmp || echo  ${PWD} "\nPossible problem with ex29, diffs above \n=========================================";  \
 	   ${RM} -f ex29.tmp
 
+runex30:
+	-@${MPIEXEC} -n 1 ./ex30 > ex30_1.tmp 2>&1;	  \
+	   ${DIFF} output/ex30_1.out ex30_1.tmp || echo  ${PWD} "\nPossible problem with ex30_1, diffs above \n========================================="; \
+	   ${RM} -f ex30_1.tmp
 
 TESTEXAMPLES_C		  = ex1.PETSc runex1 runex1_2 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 runex3_2 ex3.rm \
                             ex4.PETSc runex4 runex4_2 runex4_3 runex4_4 ex4.rm ex5.PETSc ex5.rm \

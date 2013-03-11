@@ -15,12 +15,14 @@ public:
   char filename[PETSC_MAX_PATH_LEN];
   char tagname[PETSC_MAX_PATH_LEN];
   moab::Interface *iface;
+  moab::ParallelComm *pcomm;
   moab::Tag tag;
+  moab::Tag ltog_tag;
   moab::Range range;
   PetscInt tagsize;
 
   AppCtx()
-          : dm(NULL), dim(-1), iface(NULL), tag(0), tagsize(0)
+          : dm(NULL), dim(-1), iface(NULL), pcomm(NULL), tag(0), ltog_tag(0), tagsize(0)
       {strcpy(filename, ""); strcpy(tagname, "");}
 
 };
@@ -54,7 +56,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(user->createMeshEvent,0,0,0,0);CHKERRQ(ierr);
-  ierr = DMMoabCreateDMAndInstance(comm, dm);CHKERRQ(ierr);
+  ierr = DMMoabCreateMoab(comm, user->iface, user->pcomm, user->ltog_tag, &user->range, dm);CHKERRQ(ierr);
   std::cout << "Created DMMoab using DMMoabCreateDMAndInstance." << std::endl;
   ierr = DMMoabGetInterface(*dm, &user->iface);CHKERRQ(ierr);
 
@@ -127,7 +129,7 @@ int main(int argc, char **argv)
   ierr = ProcessOptions(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);
 
   ierr = CreateMesh(PETSC_COMM_WORLD, &user, &user.dm);CHKERRQ(ierr); /* create the MOAB dm and the mesh */
-  ierr = DMMoabCreateVectorFromTag(user.dm, user.tag, user.range, PETSC_TRUE, PETSC_FALSE,
+  ierr = DMMoabCreateVector(user.dm, user.tag, 1, user.range, PETSC_TRUE, PETSC_FALSE,
                               &vec);CHKERRQ(ierr); /* create a vec from user-input tag */
   std::cout << "Created VecMoab from existing tag." << std::endl;
   ierr = VecDestroy(&vec);CHKERRQ(ierr);

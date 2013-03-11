@@ -14,14 +14,19 @@ static const char help[] = "Time-dependent Brusselator reaction-diffusion PDE in
    v(0,t) = v(1,t) = 3
 */
 
-// MOAB includes:
-#include <moab/Core.hpp>
-#include <moab/ReadUtilIface.hpp>
-#include <MBTagConventions.hpp>
-
 // PETSc includes:
 #include <petscts.h>
 #include <petscdmmoab.h>
+
+// MOAB includes:
+#if defined (PETSC_HAVE_MOAB)
+#  include <moab/Core.hpp>
+#  include <moab/ReadUtilIface.hpp>
+#  include <MBTagConventions.hpp>
+#else
+#error You must have MOAB for this example. Reconfigure using --download-moab
+#endif
+
 typedef struct {
   PetscScalar u,v;
 } Field;
@@ -41,6 +46,7 @@ struct _User {
   moab::Range *all_vertexes;
   moab::Range *shared_vertexes;
   moab::Tag    unknowns_tag;
+  PetscInt     unknowns_tag_size;
   moab::Tag    id_tag;
 };
 
@@ -78,10 +84,10 @@ int main(int argc,char **argv)
   ierr = create_app_data(user);CHKERRQ(ierr);
 
     // Create the DM to manage the mesh
-  ierr = DMMoabCreateFromInstance(user.pcomm->comm(),user.mbint,user.pcomm,user.id_tag,user.owned_vertexes,&dm);CHKERRQ(ierr);
+  ierr = DMMoabCreateMoab(user.pcomm->comm(),user.mbint,user.pcomm,user.id_tag,user.owned_vertexes,&dm);CHKERRQ(ierr);
 
   // Create the solution vector:
-  ierr = DMMoabCreateVectorFromTag(dm,user.unknowns_tag,*user.owned_vertexes,PETSC_FALSE,PETSC_FALSE,&X);CHKERRXX(ierr);
+  ierr = DMMoabCreateVector(dm,user.unknowns_tag,user.unknowns_tag_size,*user.owned_vertexes,PETSC_FALSE,PETSC_FALSE,&X);CHKERRXX(ierr);
     // Create the matrix
   ierr = create_matrix(user, dm, &J);CHKERRQ(ierr);
 
@@ -345,7 +351,7 @@ PetscErrorCode FormIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat *J
 
 #undef __FUNCT__
 #define __FUNCT__ "initialize_moab_mesh"
-PetscErrorCode initialize_moab_mesh(moab::ParallelComm* pcomm,int npts,int nghost,moab::Tag &unknowns_tag,moab::Tag &id_tag)
+PetscErrorCode initialize_moab_mesh(moab::ParallelComm* pcomm,int npts,int nghost,moab::Tag &unknowns_tag,PetscInt &unknowns_tag_size,moab::Tag &id_tag)
 {
   moab::ErrorCode merr;
   PetscInt num_procs;
@@ -415,7 +421,8 @@ PetscErrorCode initialize_moab_mesh(moab::ParallelComm* pcomm,int npts,int nghos
   // initialize them. We will create a single tag whose type is an
   // array of two doubles and whose name is "unknowns"
   Field default_value = {0.0,0.0};
-  merr = mbint->tag_get_handle("unknowns",2,moab::MB_TYPE_DOUBLE,unknowns_tag,
+  unknowns_tag_size = sizeof(Field);
+  merr = mbint->tag_get_handle("unknowns",unknowns_tag_size,moab::MB_TYPE_DOUBLE,unknowns_tag,
                               moab::MB_TAG_DENSE | moab::MB_TAG_CREAT,&default_value);MBERRNM(merr);
 
   // Apply the "unknowns" tag to the vertexes with some initial value...
@@ -486,7 +493,7 @@ PetscErrorCode create_app_data(_User& user)
   user.mbint = new moab::Core;
   user.pcomm = new moab::ParallelComm(user.mbint,PETSC_COMM_WORLD);
 
-  ierr = initialize_moab_mesh(user.pcomm,user.npts,1,user.unknowns_tag,user.id_tag); CHKERRQ(ierr); // creates moab mesh and field of unknowns on vertices
+  ierr = initialize_moab_mesh(user.pcomm,user.npts,1,user.unknowns_tag,user.unknowns_tag_size,user.id_tag); CHKERRQ(ierr); // creates moab mesh and field of unknowns on vertices
 
   // Set the edge/vertex range once so we don't have to do it
   // again. To do this we get all of the edges/vertexes then filter so

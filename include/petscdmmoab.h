@@ -15,6 +15,7 @@
 #define MBERRNM(rval) do{if(rval != moab::MB_SUCCESS) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"MOAB ERROR (%i)",rval);} while(0)
 
 PETSC_EXTERN PetscErrorCode DMMoabCreate(MPI_Comm comm, DM *moab);
+PETSC_EXTERN PetscErrorCode DMMoabCreateMoab(MPI_Comm comm, moab::Interface *mbiface, moab::ParallelComm *pcomm, moab::Tag ltog_tag, moab::Range *range, DM *moab);
 PETSC_EXTERN PetscErrorCode DMMoabSetParallelComm(DM dm,moab::ParallelComm *pcomm);
 PETSC_EXTERN PetscErrorCode DMMoabGetParallelComm(DM dm,moab::ParallelComm **pcomm);
 PETSC_EXTERN PetscErrorCode DMMoabSetInterface(DM dm,moab::Interface *iface);
@@ -24,10 +25,7 @@ PETSC_EXTERN PetscErrorCode DMMoabGetRange(DM dm,moab::Range *range);
 PETSC_EXTERN PetscErrorCode DMMoabSetLocalToGlobalTag(DM dm,moab::Tag ltogtag);
 PETSC_EXTERN PetscErrorCode DMMoabGetLocalToGlobalTag(DM dm,moab::Tag *ltog_tag);
 
-PETSC_EXTERN PetscErrorCode DMMoabCreateFromInstance(MPI_Comm comm,moab::Interface *iface,moab::ParallelComm *pcomm,moab::Tag ltog_tag,moab::Range *range,DM *moab);
-PETSC_EXTERN PetscErrorCode DMMoabCreateDMAndInstance(MPI_Comm comm,DM *moab);
-PETSC_EXTERN PetscErrorCode DMMoabCreateVector(DM dm,PetscInt tag_size,moab::Range range,PetscBool serial,PetscBool destroy_tag,Vec *vec);
-PETSC_EXTERN PetscErrorCode DMMoabCreateVectorFromTag(DM dm, moab::Tag tag,moab::Range range,PetscBool serial, PetscBool destroy_tag,Vec *X);
+PETSC_EXTERN PetscErrorCode DMMoabCreateVector(DM dm, moab::Tag tag,PetscInt tag_size,moab::Range range,PetscBool serial, PetscBool destroy_tag,Vec *X);
 PETSC_EXTERN PetscErrorCode DMMoabGetVecTag(Vec vec,moab::Tag *tag);
 PETSC_EXTERN PetscErrorCode DMMoabGetVecRange(Vec vec,moab::Range *range);
 #endif
