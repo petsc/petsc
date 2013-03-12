@@ -158,7 +158,6 @@ typedef struct _PetscStageInfo {
 } PetscStageInfo;
 
 typedef struct _n_PetscStageLog *PetscStageLog;
-PETSC_EXTERN PetscStageLog petsc_stageLog;
 struct _n_PetscStageLog {
   int              numStages;   /* The number of registered stages */
   int              maxStages;   /* The maximum number of stages */
@@ -170,8 +169,9 @@ struct _n_PetscStageLog {
 };
 
 #if defined(PETSC_USE_LOG)  /* --- Logging is turned on --------------------------------*/
+PETSC_EXTERN PetscStageLog petsc_stageLog;
 
-/* 
+/*
    Flop counting:  We count each arithmetic operation (e.g., addition, multiplication) separately.
 
    For the complex numbers version, note that
@@ -497,11 +497,13 @@ PETSC_STATIC_INLINE PetscErrorCode  PetscLogGetStageLog(PetscStageLog *stageLog)
 {
   PetscFunctionBegin;
   PetscValidPointer(stageLog,1);
+#if defined(PETSC_USE_LOG)
   if (!petsc_stageLog) {
     fprintf(stderr, "PETSC ERROR: Logging has not been enabled.\nYou might have forgotten to call PetscInitialize().\n");
     MPI_Abort(MPI_COMM_WORLD, PETSC_ERR_SUP);
   }
   *stageLog = petsc_stageLog;
+#endif
   PetscFunctionReturn(0);
 }
 
