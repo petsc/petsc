@@ -19,7 +19,7 @@ typedef struct {
 
    Input Arguments:
 +  ksp - KSP to monitor
--  amscommname - name of AMS communicator to use
+-  amscommname - name of AMS communicator to use, if NULL uses default "PETSc" communicator
 
    Output Arguments:
 .  ctx - context for monitor
@@ -34,8 +34,13 @@ PetscErrorCode KSPMonitorAMSCreate(KSP ksp,const char *amscommname,void **ctx)
   KSPMonitor_AMS *mon;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(ksp,KSPMonitor_AMS,&mon);CHKERRQ(ierr);
-  ierr      = PetscViewerAMSOpen(PetscObjectComm((PetscObject)ksp),amscommname,&mon->viewer);CHKERRQ(ierr);
+  ierr      = PetscNewLog(ksp,KSPMonitor_AMS,&mon);CHKERRQ(ierr);
+  if (!amscommname) {
+    mon->viewer = PETSC_VIEWER_AMS_(PetscObjectComm((PetscObject)ksp));
+    if (!mon->viewer) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"Cannot create AMS default communicator");CHKERRQ(ierr);
+  } else {
+    ierr = PetscViewerAMSOpen(PetscObjectComm((PetscObject)ksp),amscommname,&mon->viewer);CHKERRQ(ierr);
+  }
   mon->amem = -1;
   *ctx = (void*)mon;
   PetscFunctionReturn(0);

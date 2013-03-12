@@ -171,7 +171,8 @@ class AMS_Comm(JSONProxy):
         rid    = request_info.id
         if method == "YAML_AMS_Connect":
             if isinstance(response,list):
-              self.commname = str(response[1])
+#             Currently always connects to the zeroth communicator published, no way to connect to others.
+              self.commname = str(response[0])
             else:
               self.commname = str(response)
             if self.commname == 'No AMS publisher running':
