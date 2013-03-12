@@ -170,7 +170,10 @@ class AMS_Comm(JSONProxy):
         method = str(request_info.method)
         rid    = request_info.id
         if method == "YAML_AMS_Connect":
-            self.commname = str(response)
+            if isinstance(response,list):
+              self.commname = str(response[1])
+            else:
+              self.commname = str(response)
             if self.commname == 'No AMS publisher running':
                  pass
             else:

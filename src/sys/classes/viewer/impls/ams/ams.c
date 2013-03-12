@@ -1,8 +1,8 @@
 
 #include <petsc-private/viewerimpl.h>
+#include <petscviewerams.h>
 #include <petscsys.h>
 
-#include <ams.h>
 typedef struct {
   char     *ams_name;
   AMS_Comm ams_comm;
@@ -100,7 +100,7 @@ PetscErrorCode PetscViewerAMSSetCommName(PetscViewer v,const char name[])
   Concepts: AMS^getting communicator
   Concepts: communicator^accessing AMS communicator
 
-.seealso: PetscViewerDestroy(), PetscViewerAMSOpen(), PetscViewer_AMS_, PetscViewer_AMS_WORLD, PetscViewer_AMS_SELF
+.seealso: PetscViewerDestroy(), PetscViewerAMSOpen(), PETSC_VIEWER_AMS_, PETSC_VIEWER_AMS_WORLD, PETSC_VIEWER_AMS_SELF
 
 @*/
 PetscErrorCode PetscViewerAMSGetAMSComm(PetscViewer v,AMS_Comm *ams_comm)
@@ -137,7 +137,7 @@ static PetscMPIInt Petsc_Viewer_Ams_keyval = MPI_KEYVAL_INVALID;
      an error code.  The window PetscViewer is usually used in the form
 $       XXXView(XXX object,PETSC_VIEWER_AMS_(comm));
 
-.seealso: PetscViewer_AMS_WORLD, PetscViewer_AMS_SELF, PetscViewerAMSOpen(),
+.seealso: PETSC_VIEWER_AMS_WORLD, PETSC_VIEWER_AMS_SELF
 @*/
 PetscViewer PETSC_VIEWER_AMS_(MPI_Comm comm)
 {

@@ -875,6 +875,89 @@ PETSC_UNUSED static PetscErrorCode YAML_echo(PetscInt argc,char **args,PetscInt 
 */
 
 #undef __FUNCT__
+#define __FUNCT__ "YAML_AMS_Utility_ArrayToString"
+static PetscErrorCode YAML_AMS_Utility_ArrayToString(PetscInt n,void *addr,AMS_Data_type dtype,char **result)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (n == 1) {
+    if (dtype == AMS_STRING) {
+      ierr = PetscStrallocpy(*(const char**)addr,result);CHKERRQ(ierr);
+    } else if (dtype == AMS_DOUBLE) {
+      ierr = PetscMalloc(20*sizeof(char),result);CHKERRQ(ierr);
+      sprintf(*result,"%18.16e",*(double*)addr);
+    } else if (dtype == AMS_INT) {
+      ierr = PetscMalloc(10*sizeof(char),result);CHKERRQ(ierr);
+      sprintf(*result,"%d",*(int*)addr);
+    } else if (dtype == AMS_BOOLEAN) {
+      if (*(PetscBool*)addr) {
+        ierr = PetscStrallocpy("true",result);CHKERRQ(ierr);
+      } else {
+        ierr = PetscStrallocpy("false",result);CHKERRQ(ierr);
+      }
+    } else {
+      ierr = PetscStrallocpy("Not yet done",result);CHKERRQ(ierr);
+    }
+  } else {
+    PetscInt i;
+    size_t   len = 0,lent;
+    char     buff[25],**array = (char**)addr;
+
+    if (dtype == AMS_STRING) {
+      for (i=0; i<n; i++) {
+        ierr = PetscStrlen(array[i],&lent);CHKERRQ(ierr);
+        len += lent + 3;
+      }
+      ierr = PetscMalloc(len*sizeof(char),result);CHKERRQ(ierr);
+      ierr = PetscStrcpy(*result,"[\"");CHKERRQ(ierr);
+      for (i=0; i<n-1; i++) {
+        ierr = PetscStrcat(*result,array[i]);CHKERRQ(ierr);
+        ierr = PetscStrcat(*result,"\",\"");CHKERRQ(ierr);
+      }
+      ierr = PetscStrcat(*result,array[n-1]);CHKERRQ(ierr);
+      ierr = PetscStrcat(*result,"\"]");CHKERRQ(ierr);
+    } else if (dtype == AMS_DOUBLE) {
+      ierr = PetscMalloc(30*n*sizeof(char),result);CHKERRQ(ierr);
+      ierr = PetscStrcpy(*result,"[\"");CHKERRQ(ierr);
+      for (i=0; i<n-1; i++) {
+        sprintf(buff,"%18.16e",*(double*)addr);
+        ierr = PetscStrcat(*result,buff);CHKERRQ(ierr);
+        ierr = PetscStrcat(*result,"\",\"");CHKERRQ(ierr);
+        addr = (void *) ((char *)addr + sizeof(PetscReal));
+      }
+      sprintf(buff,"%18.16e",*(double*)addr);
+      ierr = PetscStrcat(*result,buff);CHKERRQ(ierr);
+      ierr = PetscStrcat(*result,"\"]");CHKERRQ(ierr);
+    } else if (dtype == AMS_INT) {
+      ierr = PetscMalloc(13*n*sizeof(char),result);CHKERRQ(ierr);
+      ierr = PetscStrcpy(*result,"[\"");CHKERRQ(ierr);
+      for (i=0; i<n-1; i++) {
+        sprintf(buff,"%d",*(int*)addr);
+        ierr = PetscStrcat(*result,buff);CHKERRQ(ierr);
+        ierr = PetscStrcat(*result,"\",\"");CHKERRQ(ierr);
+        addr = (void *) ((char *)addr + sizeof(PetscInt));
+      }
+      sprintf(buff,"%d",*(int*)addr);
+      ierr = PetscStrcat(*result,buff);CHKERRQ(ierr);
+      ierr = PetscStrcat(*result,"\"]");CHKERRQ(ierr);
+    } else if (dtype == AMS_BOOLEAN) {
+      ierr = PetscMalloc(7*n*sizeof(char),result);CHKERRQ(ierr);
+      ierr = PetscStrcpy(*result,"[\"");CHKERRQ(ierr);
+      for (i=0; i<n-1; i++) {
+      ierr = PetscStrcat(*result,*(PetscBool*)addr ? "true" : "false");CHKERRQ(ierr);
+        addr = (void *) ((char *)addr + sizeof(int));
+      }
+      ierr = PetscStrcat(*result,*(PetscBool*)addr ? "true" : "false");CHKERRQ(ierr);
+      ierr = PetscStrcat(*result,"\"]");CHKERRQ(ierr);
+    } else {
+      ierr = PetscStrallocpy("Not yet done",result);CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "YAML_AMS_Connect"
 /*
       Connects to the local AMS and gets only the first communication name
@@ -890,6 +973,7 @@ PETSC_EXTERN PetscErrorCode YAML_AMS_Connect(PetscInt argc,char **args,PetscInt 
 {
   PetscErrorCode ierr;
   char           **list = 0;
+  PetscInt       n = 0;
 
   PetscFunctionBegin;
   ierr = AMS_Connect(0,-1,&list);
@@ -901,7 +985,8 @@ PETSC_EXTERN PetscErrorCode YAML_AMS_Connect(PetscInt argc,char **args,PetscInt 
   *argco = 1;
   ierr   = PetscMalloc(sizeof(char*),argso);CHKERRQ(ierr);
   if (list) {
-    ierr = PetscStrallocpy(list[0],&(*argso)[0]);CHKERRQ(ierr);
+    while (list[n]) n++;
+    ierr = YAML_AMS_Utility_ArrayToString(n,list,AMS_STRING,&(*argso)[0]);CHKERRQ(ierr);
   } else {
     ierr = PetscStrallocpy("No AMS publisher running",&(*argso)[0]);CHKERRQ(ierr);
   }
@@ -1048,88 +1133,6 @@ const char *AMS_Memory_types[] = {"AMS_MEMORY_UNDEF","AMS_READ","AMS_WRITE","AMS
 const char *AMS_Shared_types[] = {"AMS_SHARED_UNDEF","AMS_COMMON","AMS_REDUCED","AMS_DISTRIBUTED","AMS_Shared_type","AMS_",0};
 const char *AMS_Reduction_types[] = {"AMS_REDUCTION_WHY_NOT_UNDEF?","AMS_SUM","AMS_MAX","AMS_MIN","AMS_REDUCTION_UNDEF","AMS_Reduction_type","AMS_",0};
 
-#undef __FUNCT__
-#define __FUNCT__ "YAML_AMS_Utility_ArrayToString"
-static PetscErrorCode YAML_AMS_Utility_ArrayToString(PetscInt n,void *addr,AMS_Data_type dtype,char **result)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  if (n == 1) {
-    if (dtype == AMS_STRING) {
-      ierr = PetscStrallocpy(*(const char**)addr,result);CHKERRQ(ierr);
-    } else if (dtype == AMS_DOUBLE) {
-      ierr = PetscMalloc(20*sizeof(char),result);CHKERRQ(ierr);
-      sprintf(*result,"%18.16e",*(double*)addr);
-    } else if (dtype == AMS_INT) {
-      ierr = PetscMalloc(10*sizeof(char),result);CHKERRQ(ierr);
-      sprintf(*result,"%d",*(int*)addr);
-    } else if (dtype == AMS_BOOLEAN) {
-      if (*(PetscBool*)addr) {
-        ierr = PetscStrallocpy("true",result);CHKERRQ(ierr);
-      } else {
-        ierr = PetscStrallocpy("false",result);CHKERRQ(ierr);
-      }
-    } else {
-      ierr = PetscStrallocpy("Not yet done",result);CHKERRQ(ierr);
-    }
-  } else {
-    PetscInt i;
-    size_t   len = 0,lent;
-    char     buff[25],**array = (char**)addr;
-
-    if (dtype == AMS_STRING) {
-      for (i=0; i<n; i++) {
-        ierr = PetscStrlen(array[i],&lent);CHKERRQ(ierr);
-        len += lent + 3;
-      }
-      ierr = PetscMalloc(len*sizeof(char),result);CHKERRQ(ierr);
-      ierr = PetscStrcpy(*result,"[\"");CHKERRQ(ierr);
-      for (i=0; i<n-1; i++) {
-        ierr = PetscStrcat(*result,array[i]);CHKERRQ(ierr);
-        ierr = PetscStrcat(*result,"\",\"");CHKERRQ(ierr);
-      }
-      ierr = PetscStrcat(*result,array[n-1]);CHKERRQ(ierr);
-      ierr = PetscStrcat(*result,"\"]");CHKERRQ(ierr);
-    } else if (dtype == AMS_DOUBLE) {
-      ierr = PetscMalloc(30*n*sizeof(char),result);CHKERRQ(ierr);
-      ierr = PetscStrcpy(*result,"[\"");CHKERRQ(ierr);
-      for (i=0; i<n-1; i++) {
-        sprintf(buff,"%18.16e",*(double*)addr);
-        ierr = PetscStrcat(*result,buff);CHKERRQ(ierr);
-        ierr = PetscStrcat(*result,"\",\"");CHKERRQ(ierr);
-        addr = (void *) ((char *)addr + sizeof(PetscReal));
-      }
-      sprintf(buff,"%18.16e",*(double*)addr);
-      ierr = PetscStrcat(*result,buff);CHKERRQ(ierr);
-      ierr = PetscStrcat(*result,"\"]");CHKERRQ(ierr);
-    } else if (dtype == AMS_INT) {
-      ierr = PetscMalloc(13*n*sizeof(char),result);CHKERRQ(ierr);
-      ierr = PetscStrcpy(*result,"[\"");CHKERRQ(ierr);
-      for (i=0; i<n-1; i++) {
-        sprintf(buff,"%d",*(int*)addr);
-        ierr = PetscStrcat(*result,buff);CHKERRQ(ierr);
-        ierr = PetscStrcat(*result,"\",\"");CHKERRQ(ierr);
-        addr = (void *) ((char *)addr + sizeof(PetscInt));
-      }
-      sprintf(buff,"%d",*(int*)addr);
-      ierr = PetscStrcat(*result,buff);CHKERRQ(ierr);
-      ierr = PetscStrcat(*result,"\"]");CHKERRQ(ierr);
-    } else if (dtype == AMS_BOOLEAN) {
-      ierr = PetscMalloc(7*n*sizeof(char),result);CHKERRQ(ierr);
-      ierr = PetscStrcpy(*result,"[\"");CHKERRQ(ierr);
-      for (i=0; i<n-1; i++) {
-      ierr = PetscStrcat(*result,*(PetscBool*)addr ? "true" : "false");CHKERRQ(ierr);
-        addr = (void *) ((char *)addr + sizeof(int));
-      }
-      ierr = PetscStrcat(*result,*(PetscBool*)addr ? "true" : "false");CHKERRQ(ierr);
-      ierr = PetscStrcat(*result,"\"]");CHKERRQ(ierr);
-    } else {
-      ierr = PetscStrallocpy("Not yet done",result);CHKERRQ(ierr);
-    }
-  }
-  PetscFunctionReturn(0);
-}
 
 #undef __FUNCT__
 #define __FUNCT__ "YAML_AMS_Memory_get_field_info"

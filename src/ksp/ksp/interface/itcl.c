@@ -571,6 +571,7 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
     ierr = KSPMonitorSet(ksp,KSPMonitorLGRange,ctx,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
   }
 
+#if defined(PETSC_HAVE_AMS)
   /*
     Publishes convergence information using AMS
   */
@@ -584,6 +585,7 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
     ierr = KSPMonitorSet(ksp,KSPMonitorAMS,ctx,KSPMonitorAMSDestroy);CHKERRQ(ierr);
     ierr = KSPSetComputeSingularValues(ksp,PETSC_TRUE);CHKERRQ(ierr);
   }
+#endif
 
   /* -----------------------------------------------------------------------*/
   ierr = KSPSetUpNorms_Private(ksp,&normtype,&pcside);CHKERRQ(ierr);

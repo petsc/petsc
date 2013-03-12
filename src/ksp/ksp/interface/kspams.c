@@ -35,10 +35,8 @@ PetscErrorCode KSPMonitorAMSCreate(KSP ksp,const char *amscommname,void **ctx)
 
   PetscFunctionBegin;
   ierr = PetscNewLog(ksp,KSPMonitor_AMS,&mon);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_AMS)
   ierr      = PetscViewerAMSOpen(PetscObjectComm((PetscObject)ksp),amscommname,&mon->viewer);CHKERRQ(ierr);
   mon->amem = -1;
-#endif
   *ctx = (void*)mon;
   PetscFunctionReturn(0);
 }
@@ -63,12 +61,10 @@ PetscErrorCode KSPMonitorAMSDestroy(void **ctx)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-#if defined(PETSC_HAVE_AMS)
   if (mon->amem != -1) {
     ierr      = AMS_Memory_destroy(mon->amem);CHKERRQ(ierr);
     mon->amem = -1;
   }
-#endif
   ierr      = PetscViewerDestroy(&mon->viewer);CHKERRQ(ierr);
   ierr      = PetscFree(mon->eigr);CHKERRQ(ierr);
   mon->eigi = NULL;
@@ -97,7 +93,6 @@ PetscErrorCode KSPMonitorAMSDestroy(void **ctx)
 @*/
 PetscErrorCode KSPMonitorAMS(KSP ksp,PetscInt n,PetscReal rnorm,void *ctx)
 {
-#if defined(PETSC_HAVE_AMS)
   PetscErrorCode ierr;
   KSPMonitor_AMS *mon   = (KSPMonitor_AMS*)ctx;
   PetscViewer    viewer = mon->viewer;
@@ -133,10 +128,5 @@ PetscErrorCode KSPMonitorAMS(KSP ksp,PetscInt n,PetscReal rnorm,void *ctx)
 
   ierr = PetscInfo2(ksp,"KSP extreme singular values min=%G max=%G\n",emin,emax);CHKERRQ(ierr);
   PetscFunctionReturn(0);
-#else
-  PetscFunctionBegin;
-  SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Missing package AMS");
-  PetscFunctionReturn(0);
-#endif
 }
 #endif

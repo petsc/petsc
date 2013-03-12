@@ -1,5 +1,6 @@
 
 #include <petsc-private/viewerimpl.h>   /*I  "petscsys.h"  */
+#include <petscviewerams.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerAMSOpen"
@@ -32,13 +33,17 @@
     Notes:
     This PetscViewer can be destroyed with PetscViewerDestroy().
 
+    This viewer is currently different than other viewers in that you cannot pass this viewer to XXXView() to view the XXX object.
+    PETSC_VIEWER_AMS_() is used by PetscObjectAMSPublish() to connect to that particular AMS communicator.
+
     Information about the AMS is available via http://www.mcs.anl.gov/ams.
 
    Concepts: AMS
    Concepts: ALICE Memory Snooper
    Concepts: Asynchronous Memory Snooper
 
-.seealso: PetscObjectAMSPublish(), PetscViewerDestroy(), PetscViewerStringSPrintf()
+.seealso: PetscObjectAMSPublish(), PetscViewerDestroy(), PetscViewerStringSPrintf(), PETSC_VIEWER_AMS_(),
+          PetscObjectAMSPublish(), PetscObjectAMSUnPublish(), PetscObjectAMSTakeAccess(), PetscObjectAMSGrantAccess()
 
 @*/
 PetscErrorCode PetscViewerAMSOpen(MPI_Comm comm,const char name[],PetscViewer *lab)
