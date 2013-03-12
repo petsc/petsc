@@ -423,9 +423,11 @@ PetscErrorCode  KSPGetNormType(KSP ksp, KSPNormType *normtype)
 }
 
 #if defined(PETSC_HAVE_AMS)
+#include <petscviewerams.h>
+
 #undef __FUNCT__
-#define __FUNCT__ "KSPPublish_Petsc"
-static PetscErrorCode KSPPublish_Petsc(PetscObject obj)
+#define __FUNCT__ "PetscObjectAMSPublish_KSP"
+static PetscErrorCode PetscObjectAMSPublish_KSP(PetscObject obj)
 {
   KSP            ksp = (KSP) obj;
   PetscErrorCode ierr;
@@ -748,7 +750,7 @@ PetscErrorCode  KSPCreate(MPI_Comm comm,KSP *inksp)
   ksp->ops->buildsolution = KSPBuildSolutionDefault;
   ksp->ops->buildresidual = KSPBuildResidualDefault;
 #if defined(PETSC_HAVE_AMS)
-  ((PetscObject)ksp)->bops->publish = KSPPublish_Petsc;
+  ((PetscObject)ksp)->bops->publish = PetscObjectAMSPublish_KSP;
 #endif
 
   ksp->vec_sol    = 0;
@@ -832,11 +834,9 @@ PetscErrorCode  KSPSetType(KSP ksp, KSPType type)
   ksp->setupstage = KSP_SETUP_NEW;
   ierr            = PetscObjectChangeTypeName((PetscObject)ksp,type);CHKERRQ(ierr);
   ierr            = (*r)(ksp);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_AMS)
   if (PetscAMSPublishAll) {
     ierr = PetscObjectAMSPublish((PetscObject)ksp);CHKERRQ(ierr);
   }
-#endif
   PetscFunctionReturn(0);
 }
 

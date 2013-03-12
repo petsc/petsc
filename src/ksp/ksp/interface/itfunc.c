@@ -763,6 +763,7 @@ PetscErrorCode  KSPDestroy(KSP *ksp)
   PetscValidHeaderSpecific((*ksp),KSP_CLASSID,1);
   if (--((PetscObject)(*ksp))->refct > 0) {*ksp = 0; PetscFunctionReturn(0);}
 
+  ierr = PetscObjectAMSUnPublish((PetscObject)*ksp);CHKERRQ(ierr);
   /*
    Avoid a cascading call to PCReset(ksp->pc) from the following call:
    PCReset() shouldn't be called from KSPDestroy() as it is unprotected by pc's
@@ -772,8 +773,7 @@ PetscErrorCode  KSPDestroy(KSP *ksp)
   (*ksp)->pc = NULL;
   ierr       = KSPReset((*ksp));CHKERRQ(ierr);
   (*ksp)->pc = pc;
-  ierr       = PetscObjectDepublish((*ksp));CHKERRQ(ierr);
-  if ((*ksp)->ops->destroy) {ierr = (*(*ksp)->ops->destroy)(*ksp);CHKERRQ(ierr);}
+    if ((*ksp)->ops->destroy) {ierr = (*(*ksp)->ops->destroy)(*ksp);CHKERRQ(ierr);}
 
   ierr = DMDestroy(&(*ksp)->dm);CHKERRQ(ierr);
   ierr = PCDestroy(&(*ksp)->pc);CHKERRQ(ierr);

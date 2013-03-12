@@ -1001,9 +1001,9 @@ PetscErrorCode  SNESSetIterationNumber(SNES snes,PetscInt iter)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
-  ierr       = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
+  ierr       = PetscObjectAMSTakeAccess(snes);CHKERRQ(ierr);
   snes->iter = iter;
-  ierr       = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
+  ierr       = PetscObjectAMSGrantAccess(snes);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1061,9 +1061,9 @@ PetscErrorCode  SNESSetFunctionNorm(SNES snes,PetscReal fnorm)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
-  ierr       = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
+  ierr       = PetscObjectAMSTakeAccess(snes);CHKERRQ(ierr);
   snes->norm = fnorm;
-  ierr       = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
+  ierr       = PetscObjectAMSGrantAccess(snes);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1352,8 +1352,8 @@ PetscErrorCode  SNESSetKSP(SNES snes,KSP ksp)
 
 #if defined(PETSC_HAVE_AMS)
 #undef __FUNCT__
-#define __FUNCT__ "SNESPublish_Petsc"
-static PetscErrorCode SNESPublish_Petsc(PetscObject obj)
+#define __FUNCT__ "PetscObjectAMSPublish_SNES"
+static PetscErrorCode PetscObjectAMSPublish_SNES(PetscObject obj)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
@@ -1442,7 +1442,7 @@ PetscErrorCode  SNESCreate(MPI_Comm comm,SNES *outsnes)
   snes->pcside            = PC_RIGHT;
 
 #if defined(PETSC_HAVE_AMS)
-  ((PetscObject)snes)->bops->publish = SNESPublish_Petsc;
+  ((PetscObject)snes)->bops->publish = PetscObjectAMSPublish_SNES;
 #endif
 
   snes->mf          = PETSC_FALSE;
@@ -2649,7 +2649,7 @@ PetscErrorCode  SNESDestroy(SNES *snes)
   ierr = SNESDestroy(&(*snes)->pc);CHKERRQ(ierr);
 
   /* if memory was published with AMS then destroy it */
-  ierr = PetscObjectDepublish((*snes));CHKERRQ(ierr);
+  ierr = PetscObjectAMSUnPublish((PetscObject)*snes);CHKERRQ(ierr);
   if ((*snes)->ops->destroy) {ierr = (*((*snes))->ops->destroy)((*snes));CHKERRQ(ierr);}
 
   ierr = DMDestroy(&(*snes)->dm);CHKERRQ(ierr);
@@ -3651,9 +3651,7 @@ PetscErrorCode  SNESSolve(SNES snes,Vec b,Vec x)
   ierr = VecViewFromOptions(snes->vec_sol,"-snes_view_solution");CHKERRQ(ierr);
 
   ierr = VecDestroy(&xcreated);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_AMS)
   ierr = PetscObjectAMSBlock((PetscObject)snes);CHKERRQ(ierr);
-#endif
   PetscFunctionReturn(0);
 }
 
@@ -3729,11 +3727,9 @@ PetscErrorCode  SNESSetType(SNES snes,SNESType type)
 
   ierr = PetscObjectChangeTypeName((PetscObject)snes,type);CHKERRQ(ierr);
   ierr = (*r)(snes);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_AMS)
   if (PetscAMSPublishAll) {
     ierr = PetscObjectAMSPublish((PetscObject)snes);CHKERRQ(ierr);
   }
-#endif
   PetscFunctionReturn(0);
 }
 

@@ -83,11 +83,9 @@ PetscErrorCode  PCSetType(PC pc,PCType type)
 
   ierr = PetscObjectChangeTypeName((PetscObject)pc,type);CHKERRQ(ierr);
   ierr = (*r)(pc);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_AMS)
   if (PetscAMSPublishAll) {
     ierr = PetscObjectAMSPublish((PetscObject)pc);CHKERRQ(ierr);
   }
-#endif
   PetscFunctionReturn(0);
 }
 

@@ -535,6 +535,7 @@ PetscErrorCode PetscWebSendError(FILE *f, int status, const char *title, const c
 }
 
 #if defined(PETSC_HAVE_AMS)
+#include <petscviewerams.h>
 #undef __FUNCT__
 #define __FUNCT__ "PetscAMSObjectsDisplayList"
 /*
@@ -790,8 +791,8 @@ static PetscErrorCode  PetscWebServeRequestGet(FILE *fd,const char path[])
       fprintf(fd, "<a href=\"./ams-tree\">Connect to Memory Snooper--Tree Display</a></p>\r\n\r\n");
       fprintf(fd, "<a href=\"./ams-list\">Connect to Memory Snooper--List Display</a></p>\r\n\r\n");
     }
-#endif
     fprintf(fd, "<a href=\"./AMSJavascript.html\">Connect to Memory Snooper--Interactive Javascript</a></p>\r\n\r\n");
+#endif
     ierr = PetscWebSendFooter(fd);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }

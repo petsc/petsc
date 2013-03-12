@@ -210,10 +210,10 @@ PetscErrorCode KSPFGMRESCycle(PetscInt *itcount,KSP ksp)
     loc_it++;
     fgmres->it = (loc_it-1);   /* Add this here in case it has converged */
 
-    ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
+    ierr = PetscObjectAMSTakeAccess(ksp);CHKERRQ(ierr);
     ksp->its++;
     ksp->rnorm = res_norm;
-    ierr       = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
+    ierr       = PetscObjectAMSGrantAccess(ksp);CHKERRQ(ierr);
 
     ierr = (*ksp->converged)(ksp,ksp->its,res_norm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
 
@@ -278,9 +278,9 @@ PetscErrorCode KSPSolve_FGMRES(KSP ksp)
   ierr = PCGetDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
   if (diagonalscale) SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
 
-  ierr     = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
+  ierr     = PetscObjectAMSTakeAccess(ksp);CHKERRQ(ierr);
   ksp->its = 0;
-  ierr     = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
+  ierr     = PetscObjectAMSGrantAccess(ksp);CHKERRQ(ierr);
 
   /* Compute the initial (NOT preconditioned) residual */
   if (!ksp->guess_zero) {

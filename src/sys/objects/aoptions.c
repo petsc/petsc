@@ -322,6 +322,7 @@ PetscErrorCode PetscOptionsGetFromTextInput()
 }
 
 #if defined(PETSC_HAVE_AMS)
+#include <petscviewerams.h>
 #define CHKERRAMS(err)  if (err) {char *msg; AMS_Explain_error((err), &(msg)); SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"AMS Error: %s",msg);}
 #define CHKERRAMSFieldName(err,fn)  if (err) {char *msg; AMS_Explain_error((err), &(msg)); SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB,"Fieldname %s, AMS Error: %s",fn,msg);}
 

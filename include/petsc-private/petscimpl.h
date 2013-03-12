@@ -44,6 +44,7 @@ typedef struct {
    PetscErrorCode (*composefunction)(PetscObject,const char[],const char[],void (*)(void));
    PetscErrorCode (*queryfunction)(PetscObject,const char[],void (**)(void));
    PetscErrorCode (*publish)(PetscObject);
+   PetscErrorCode (*unpublish)(PetscObject);
 } PetscOps;
 
 typedef enum {PETSC_FORTRAN_CALLBACK_CLASS,PETSC_FORTRAN_CALLBACK_SUBTYPE,PETSC_FORTRAN_CALLBACK_MAXTYPE} PetscFortranCallbackType;

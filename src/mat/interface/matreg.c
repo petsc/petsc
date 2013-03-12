@@ -72,11 +72,9 @@ PetscErrorCode  MatSetType(Mat mat, MatType matype)
 
   /* create the new data structure */
   ierr = (*r)(mat);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_AMS)
   if (PetscAMSPublishAll) {
-    /*    ierr = PetscObjectAMSPublish((PetscObject)mat);CHKERRQ(ierr); */
+    ierr = PetscObjectAMSPublish((PetscObject)mat);CHKERRQ(ierr);
   }
-#endif
   PetscFunctionReturn(0);
 }
 

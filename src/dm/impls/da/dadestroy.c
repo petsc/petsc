@@ -69,9 +69,6 @@ PetscErrorCode  DMDestroy_DA(DM da)
     ierr = PetscFree(dd->startin[i]);CHKERRQ(ierr);
   }
 
-  /* if memory was published with AMS then destroy it */
-  ierr = PetscObjectDepublish(da);CHKERRQ(ierr);
-
   ierr = VecScatterDestroy(&dd->ltog);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&dd->gtol);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&dd->ltol);CHKERRQ(ierr);

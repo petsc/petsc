@@ -1791,7 +1791,7 @@ PetscErrorCode  TSDestroy(TS *ts)
   ierr = TSReset((*ts));CHKERRQ(ierr);
 
   /* if memory was published with AMS then destroy it */
-  ierr = PetscObjectDepublish((*ts));CHKERRQ(ierr);
+  ierr = PetscObjectAMSUnPublish((PetscObject)*ts);CHKERRQ(ierr);
   if ((*ts)->ops->destroy) {ierr = (*(*ts)->ops->destroy)((*ts));CHKERRQ(ierr);}
 
   ierr = TSAdaptDestroy(&(*ts)->adapt);CHKERRQ(ierr);

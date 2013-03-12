@@ -117,7 +117,7 @@ PetscErrorCode  PCDestroy(PC *pc)
   ierr = PCReset(*pc);CHKERRQ(ierr);
 
   /* if memory was published with AMS then destroy it */
-  ierr = PetscObjectDepublish((*pc));CHKERRQ(ierr);
+  ierr = PetscObjectAMSUnPublish((PetscObject)*pc);CHKERRQ(ierr);
   if ((*pc)->ops->destroy) {ierr = (*(*pc)->ops->destroy)((*pc));CHKERRQ(ierr);}
   ierr = DMDestroy(&(*pc)->dm);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(pc);CHKERRQ(ierr);

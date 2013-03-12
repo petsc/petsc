@@ -1,13 +1,13 @@
 #include <petsc-private/kspimpl.h>  /*I "petscksp.h" I*/
+#if defined(PETSC_HAVE_AMS)
+#include <petscviewerams.h>
 
 typedef struct {
   PetscViewer viewer;
   PetscInt    neigs;
   PetscReal   *eigi;
   PetscReal   *eigr;
-#if defined(PETSC_HAVE_AMS)
   AMS_Memory amem;
-#endif
 } KSPMonitor_AMS;
 
 #undef __FUNCT__
@@ -139,3 +139,4 @@ PetscErrorCode KSPMonitorAMS(KSP ksp,PetscInt n,PetscReal rnorm,void *ctx)
   PetscFunctionReturn(0);
 #endif
 }
+#endif

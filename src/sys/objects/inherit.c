@@ -94,11 +94,6 @@ PetscErrorCode  PetscHeaderDestroy_Private(PetscObject h)
   PetscValidHeader(h,1);
   ierr = PetscLogObjectDestroy(h);CHKERRQ(ierr);
   ierr = PetscComposedQuantitiesDestroy(h);
-#if defined(PETSC_HAVE_AMS)
-  if (PetscAMSPublishAll) {
-    ierr = PetscObjectAMSUnPublish((PetscObject)h);CHKERRQ(ierr);
-  }
-#endif
   if (PetscMemoryCollectMaximumUsage) {
     PetscLogDouble usage;
     ierr = PetscMemoryGetCurrentUsage(&usage);CHKERRQ(ierr);

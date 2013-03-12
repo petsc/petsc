@@ -294,9 +294,10 @@ PetscErrorCode  PetscRandomViewFromOptions(PetscRandom rnd, const char optionnam
 }
 
 #if defined(PETSC_HAVE_AMS)
+#include <petscviewerams.h>
 #undef __FUNCT__
-#define __FUNCT__ "PetscRandomPublish_Petsc"
-static PetscErrorCode PetscRandomPublish_Petsc(PetscObject obj)
+#define __FUNCT__ "PetscObjectAMSPublish_Random"
+static PetscErrorCode PetscObjectAMSPublish_Random(PetscObject obj)
 {
   PetscRandom    rand = (PetscRandom) obj;
   PetscErrorCode ierr;
@@ -375,7 +376,7 @@ PetscErrorCode  PetscRandomCreate(MPI_Comm comm,PetscRandom *r)
   rr->iset  = PETSC_FALSE;
   rr->seed  = 0x12345678 + 76543*rank;
 #if defined(PETSC_HAVE_AMS)
-  ((PetscObject)rr)->bops->publish = PetscRandomPublish_Petsc;
+  ((PetscObject)rr)->bops->publish = PetscObjectAMSPublish_Random;
 #endif
   *r = rr;
   PetscFunctionReturn(0);

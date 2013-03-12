@@ -20,6 +20,7 @@ from pyjamas.ui.ListBox import ListBox
 from pyjamas.JSONService import JSONProxy
 from pyjamas.ui.Tree import Tree
 from pyjamas.ui.TreeItem import TreeItem
+from pyjamas.ui.TextBox import TextBox
 
 
 comm   = -1  # Currently attached AMS communicator; only one is supported at a time
@@ -70,7 +71,13 @@ class AMSJavascriptExample:
                   fields = memory.get_field_list()
                   for j in fields:
                      field = memory.get_field_info(j)
-                     subtree.addItem(j+' = '+str(field[4]))
+                     if str(field[1]) == 'AMS_READ':
+                       subtree.addItem(j+' = '+str(field[4]))
+                     else:
+                       PN = HorizontalPanel()
+                       PN.add(Label(Text=j+' ='))
+                       PN.add(TextBox(Text=str(field[4])))
+                       subtree.addItem(PN)
                   self.tree.addItem(subtree)
                   self.panel.add(self.tree)
 

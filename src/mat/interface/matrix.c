@@ -985,7 +985,7 @@ PetscErrorCode  MatDestroy(Mat *A)
 
   ierr = PetscViewerDestroy(&(*A)->viewonassembly);CHKERRQ(ierr);
   /* if memory was published with AMS then destroy it */
-  ierr = PetscObjectDepublish(*A);CHKERRQ(ierr);
+  ierr = PetscObjectAMSUnPublish((PetscObject)*A);CHKERRQ(ierr);
   if ((*A)->ops->destroy) {
     ierr = (*(*A)->ops->destroy)(*A);CHKERRQ(ierr);
   }
