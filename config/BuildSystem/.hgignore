@@ -1,0 +1,9 @@
+syntax: glob
+*.pyc
+*~
+*.orig
+RDict.db
+RDict.loc
+RDict.log
+
+
