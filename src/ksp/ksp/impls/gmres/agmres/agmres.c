@@ -579,9 +579,9 @@ PetscErrorCode KSPSolve_AGMRES(KSP ksp)
   PetscInt       test;
 
   PetscFunctionBegin;
-  ierr     = PetscObjectAMSTakeAccess(ksp);CHKERRQ(ierr);
+  ierr     = PetscObjectAMSTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
   ksp->its = 0;
-  ierr     = PetscObjectAMSGrantAccess(ksp);CHKERRQ(ierr);
+  ierr     = PetscObjectAMSGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
 
   ksp->reason = KSP_CONVERGED_ITERATING;
   if (!agmres->HasShifts) { /* Compute Shifts for the Newton basis */

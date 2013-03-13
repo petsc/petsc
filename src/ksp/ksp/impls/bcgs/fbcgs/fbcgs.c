@@ -68,10 +68,10 @@ static PetscErrorCode  KSPSolve_FBCGS(KSP ksp)
   if (ksp->normtype != KSP_NORM_NONE) {
     ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);
   }
-  ierr       = PetscObjectAMSTakeAccess(ksp);CHKERRQ(ierr);
+  ierr       = PetscObjectAMSTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
   ksp->its   = 0;
   ksp->rnorm = dp;
-  ierr       = PetscObjectAMSGrantAccess(ksp);CHKERRQ(ierr);
+  ierr       = PetscObjectAMSGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
   KSPLogResidualHistory(ksp,dp);
   ierr = KSPMonitor(ksp,0,dp);CHKERRQ(ierr);
   ierr = (*ksp->converged)(ksp,0,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
@@ -112,11 +112,11 @@ static PetscErrorCode  KSPSolve_FBCGS(KSP ksp)
         break;
       }
       ierr = VecAXPY(X,alpha,P2);CHKERRQ(ierr);   /* x <- x + alpha p2 */
-      ierr = PetscObjectAMSTakeAccess(ksp);CHKERRQ(ierr);
+      ierr = PetscObjectAMSTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
       ksp->its++;
       ksp->rnorm  = 0.0;
       ksp->reason = KSP_CONVERGED_RTOL;
-      ierr        = PetscObjectAMSGrantAccess(ksp);CHKERRQ(ierr);
+      ierr        = PetscObjectAMSGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
       KSPLogResidualHistory(ksp,dp);
       ierr = KSPMonitor(ksp,i+1,0.0);CHKERRQ(ierr);
       break;
@@ -132,10 +132,10 @@ static PetscErrorCode  KSPSolve_FBCGS(KSP ksp)
     rhoold   = rho;
     omegaold = omega;
 
-    ierr = PetscObjectAMSTakeAccess(ksp);CHKERRQ(ierr);
+    ierr = PetscObjectAMSTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
     ksp->its++;
     ksp->rnorm = dp;
-    ierr       = PetscObjectAMSGrantAccess(ksp);CHKERRQ(ierr);
+    ierr       = PetscObjectAMSGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
     KSPLogResidualHistory(ksp,dp);
     ierr = KSPMonitor(ksp,i+1,dp);CHKERRQ(ierr);
     ierr = (*ksp->converged)(ksp,i+1,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);

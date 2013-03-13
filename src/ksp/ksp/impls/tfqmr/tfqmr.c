@@ -42,10 +42,10 @@ static PetscErrorCode  KSPSolve_TFQMR(KSP ksp)
 
   /* Test for nothing to do */
   ierr       = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);
-  ierr       = PetscObjectAMSTakeAccess(ksp);CHKERRQ(ierr);
+  ierr       = PetscObjectAMSTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
   ksp->rnorm = dp;
   ksp->its   = 0;
-  ierr       = PetscObjectAMSGrantAccess(ksp);CHKERRQ(ierr);
+  ierr       = PetscObjectAMSGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
   ierr       = KSPMonitor(ksp,0,dp);CHKERRQ(ierr);
   ierr       = (*ksp->converged)(ksp,0,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
   if (ksp->reason) PetscFunctionReturn(0);
@@ -67,9 +67,9 @@ static PetscErrorCode  KSPSolve_TFQMR(KSP ksp)
 
   i=0;
   do {
-    ierr = PetscObjectAMSTakeAccess(ksp);CHKERRQ(ierr);
+    ierr = PetscObjectAMSTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
     ksp->its++;
-    ierr = PetscObjectAMSGrantAccess(ksp);CHKERRQ(ierr);
+    ierr = PetscObjectAMSGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
     ierr = VecDot(V,RP,&s);CHKERRQ(ierr);          /* s <- (v,rp)          */
     a    = rhoold / s;                              /* a <- rho / s         */
     ierr = VecWAXPY(Q,-a,V,U);CHKERRQ(ierr);  /* q <- u - a v         */
@@ -93,9 +93,9 @@ static PetscErrorCode  KSPSolve_TFQMR(KSP ksp)
       ierr = VecAXPY(X,eta,D);CHKERRQ(ierr);
 
       dpest      = PetscSqrtReal(m + 1.0) * tau;
-      ierr       = PetscObjectAMSTakeAccess(ksp);CHKERRQ(ierr);
+      ierr       = PetscObjectAMSTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
       ksp->rnorm = dpest;
-      ierr       = PetscObjectAMSGrantAccess(ksp);CHKERRQ(ierr);
+      ierr       = PetscObjectAMSGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
       KSPLogResidualHistory(ksp,dpest);
       ierr = KSPMonitor(ksp,i+1,dpest);CHKERRQ(ierr);
       ierr = (*ksp->converged)(ksp,i+1,dpest,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);

@@ -1001,9 +1001,9 @@ PetscErrorCode  SNESSetIterationNumber(SNES snes,PetscInt iter)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
-  ierr       = PetscObjectAMSTakeAccess(snes);CHKERRQ(ierr);
+  ierr       = PetscObjectAMSTakeAccess((PetscObject)snes);CHKERRQ(ierr);
   snes->iter = iter;
-  ierr       = PetscObjectAMSGrantAccess(snes);CHKERRQ(ierr);
+  ierr       = PetscObjectAMSGrantAccess((PetscObject)snes);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1061,9 +1061,9 @@ PetscErrorCode  SNESSetFunctionNorm(SNES snes,PetscReal fnorm)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
-  ierr       = PetscObjectAMSTakeAccess(snes);CHKERRQ(ierr);
+  ierr       = PetscObjectAMSTakeAccess((PetscObject)snes);CHKERRQ(ierr);
   snes->norm = fnorm;
-  ierr       = PetscObjectAMSGrantAccess(snes);CHKERRQ(ierr);
+  ierr       = PetscObjectAMSGrantAccess((PetscObject)snes);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
