@@ -3362,9 +3362,9 @@ PetscErrorCode  SNESSetConvergenceHistory(SNES snes,PetscReal a[],PetscInt its[]
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
-  if (na) PetscValidScalarPointer(a,2);
+  if (a) PetscValidScalarPointer(a,2);
   if (its) PetscValidIntPointer(its,3);
-  if (na == PETSC_DECIDE || na == PETSC_DEFAULT || !a) {
+  if (!a) {
     if (na == PETSC_DECIDE || na == PETSC_DEFAULT) na = 1000;
     ierr = PetscMalloc(na*sizeof(PetscReal),&a);CHKERRQ(ierr);
     ierr = PetscMalloc(na*sizeof(PetscInt),&its);CHKERRQ(ierr);
