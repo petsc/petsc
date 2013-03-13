@@ -647,7 +647,7 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
   hid_t             scalartype; /* scalar type (H5T_NATIVE_FLOAT or H5T_NATIVE_DOUBLE) */
   herr_t            status;
   PetscInt          bs = xin->map->bs > 0 ? xin->map->bs : 1;
-  hsize_t           i,dim;
+  hsize_t           dim;
   hsize_t           maxDims[4], dims[4], chunkDims[4], count[4],offset[4];
   PetscInt          timestep;
   PetscInt          low;
