@@ -279,7 +279,7 @@ PetscErrorCode VecView_MPI_HDF5_DA(Vec xin,PetscViewer viewer)
   hid_t          group;
   hid_t          scalartype; /* scalar type (H5T_NATIVE_FLOAT or H5T_NATIVE_DOUBLE) */
   herr_t         status;
-  hsize_t        i, dim;
+  hsize_t        dim;
   hsize_t        maxDims[6], dims[6], chunkDims[6], count[6], offset[6];
   PetscInt       timestep;
   PetscScalar    *x;
