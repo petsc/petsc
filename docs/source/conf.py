@@ -45,7 +45,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'PETSc for Python'
-copyright = u'2012, Lisandro Dalcin'
+copyright = u'2013, Lisandro Dalcin'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
