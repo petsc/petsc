@@ -463,9 +463,6 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
     PetscInt port = PETSC_DECIDE;
     ierr = PetscOptionsGetInt(NULL,"-server",&port,NULL);CHKERRQ(ierr);
     ierr = PetscWebServe(PETSC_COMM_WORLD,(int)port);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_AMS)
-    PetscAMSPublishAll = PETSC_TRUE;
-#endif
   }
 #endif
 

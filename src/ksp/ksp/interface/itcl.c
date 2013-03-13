@@ -600,6 +600,16 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
   ierr = PetscOptionsBool("-ksp_plot_eigenvalues","Scatter plot extreme eigenvalues","KSPSetComputeSingularValues",flg,&flg,NULL);CHKERRQ(ierr);
   if (flg) { ierr = KSPSetComputeSingularValues(ksp,PETSC_TRUE);CHKERRQ(ierr); }
 
+#if defined(PETSC_HAVE_AMS)
+  {
+  PetscBool set;
+  flg  = PETSC_FALSE;
+  ierr = PetscOptionsBool("-ksp_ams_block","Block for AMS memory snooper at end of KSPSolve","PetscObjectAMSBlock",((PetscObject)ksp)->amspublishblock,&flg,&set);CHKERRQ(ierr);
+  if (set) {
+    ierr = PetscObjectAMSSetBlock((PetscObject)ksp,flg);CHKERRQ(ierr);
+  }
+  }
+#endif
 
   if (ksp->ops->setfromoptions) {
     ierr = (*ksp->ops->setfromoptions)(ksp);CHKERRQ(ierr);

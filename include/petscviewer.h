@@ -407,6 +407,10 @@ PETSC_EXTERN PetscErrorCode PetscViewerMatlabPutArray(PetscViewer,int,int,const 
 PETSC_EXTERN PetscErrorCode PetscViewerMatlabGetArray(PetscViewer,int,int,PetscScalar*,const char*);
 PETSC_EXTERN PetscErrorCode PetscViewerMatlabPutVariable(PetscViewer,const char*,void*);
 
+#if defined(PETSC_HAVE_AMS)
+PETSC_EXTERN PetscErrorCode PetscObjectViewAMS(PetscObject,PetscViewer);
+#endif
+
 /*S
      PetscViewers - Abstract collection of PetscViewers. It is just an expandable array of viewers.
 

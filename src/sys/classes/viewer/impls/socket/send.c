@@ -1159,7 +1159,7 @@ PETSC_EXTERN PetscErrorCode YAML_AMS_Memory_get_field_info(PetscInt argc,char **
 
   PetscFunctionBegin;
   sscanf(args[0],"%d",&mem);
-  ierr = AMS_Memory_get_field_info(mem,args[1],(void*)&addr,&len,&dtype,&mtype,&stype,&rtype);
+  ierr = AMS_Memory_get_field_info(mem,args[1],(void**)&addr,&len,&dtype,&mtype,&stype,&rtype);
   if (ierr) {ierr = PetscInfo1(NULL,"AMS_Memory_get_field_info() error %d\n",ierr);CHKERRQ(ierr);}
   *argco = 5;
   ierr   = PetscMalloc((*argco)*sizeof(char*),argso);CHKERRQ(ierr);

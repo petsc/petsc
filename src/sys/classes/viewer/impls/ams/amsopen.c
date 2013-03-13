@@ -56,3 +56,51 @@ PetscErrorCode PetscViewerAMSOpen(MPI_Comm comm,const char name[],PetscViewer *l
   ierr = PetscViewerAMSSetCommName(*lab,name);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscObjectViewAMS"
+/*@C
+   PetscObjectViewAMS - View the base portion of any object with an AMS viewer
+
+   Collective on PetscObject
+
+   Input Parameters:
++  obj - the Petsc variable
+         Thus must be cast with a (PetscObject), for example,
+         PetscObjectSetName((PetscObject)mat,name);
+-  viewer - the AMS viewer
+
+   Level: advanced
+
+   Concepts: publishing object
+
+.seealso: PetscObjectSetName(), PetscObjectAMSUnPublish()
+
+@*/
+PetscErrorCode  PetscObjectViewAMS(PetscObject obj,PetscViewer viewer)
+{
+  PetscErrorCode ierr;
+  AMS_Memory     amem;
+  AMS_Comm       acomm;
+
+  PetscFunctionBegin;
+  PetscValidHeader(obj,1);
+  if (obj->classid == PETSC_VIEWER_CLASSID) PetscFunctionReturn(0);
+  if (obj->amsmem != -1) PetscFunctionReturn(0);
+  ierr = PetscObjectName(obj);CHKERRQ(ierr);
+
+  ierr = PetscViewerAMSGetAMSComm(viewer,&acomm);CHKERRQ(ierr);
+  ierr        = AMS_Memory_create(acomm,obj->name,&amem);CHKERRQ(ierr);
+  obj->amsmem = (int)amem;
+
+  ierr = AMS_Memory_take_access(amem);CHKERRQ(ierr);
+  ierr = AMS_Memory_add_field(amem,"Class",&obj->class_name,1,AMS_STRING,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
+  ierr = AMS_Memory_add_field(amem,"Type",&obj->type_name,1,AMS_STRING,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
+  ierr = AMS_Memory_add_field(amem,"Id",&obj->id,1,AMS_INT,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
+  ierr = AMS_Memory_add_field(amem,"ParentId",&obj->parentid,1,AMS_INT,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
+  ierr = AMS_Memory_add_field(amem,"Name",&obj->name,1,AMS_STRING,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
+  ierr = AMS_Memory_add_field(amem,"Block",&obj->amspublishblock,1,AMS_BOOLEAN,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
+  ierr = AMS_Memory_publish(amem);CHKERRQ(ierr);
+  ierr = AMS_Memory_grant_access(amem);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}

@@ -1,5 +1,8 @@
 
 #include <petsc-private/viewerimpl.h>  /*I "petscviewer.h" I*/
+#if defined(PETSC_HAVE_AMS)
+#include <petscviewerams.h>
+#endif
 
 PetscFunctionList PetscViewerList = 0;
 
@@ -27,7 +30,8 @@ $       ascii[:[filename][:format]]   defaults to stdout - format can be one of 
 $                                     about the object to standard out
 $       binary[:[filename][:format]]   defaults to binaryoutput
 $       draw
-$       socket[:port]    defaults to the standard output port
+$       socket[:port]                  defaults to the standard output port
+$       ams[:communicatorname]         publishes object to the AMS (Argonne Memory Snooper) 
 
    Use PetscViewerDestroy() after using the viewer, otherwise a memory leak will occur
 
@@ -59,7 +63,7 @@ PetscErrorCode  PetscOptionsGetViewer(MPI_Comm comm,const char pre[],const char 
     } else {
       char       *cvalue,*loc,*loc2 = NULL;
       PetscInt   cnt;
-      const char *viewers[] = {PETSCVIEWERASCII,PETSCVIEWERBINARY,PETSCVIEWERDRAW,PETSCVIEWERSOCKET,PETSCVIEWERMATLAB,PETSCVIEWERVTK,0};
+      const char *viewers[] = {PETSCVIEWERASCII,PETSCVIEWERBINARY,PETSCVIEWERDRAW,PETSCVIEWERSOCKET,PETSCVIEWERMATLAB,PETSCVIEWERAMS,PETSCVIEWERVTK,0};
 
       ierr = PetscStrallocpy(value,&cvalue);CHKERRQ(ierr);
       ierr = PetscStrchr(cvalue,':',&loc);CHKERRQ(ierr);
@@ -87,6 +91,11 @@ PetscErrorCode  PetscOptionsGetViewer(MPI_Comm comm,const char pre[],const char 
           *viewer = PETSC_VIEWER_MATLAB_(comm);CHKERRQ(ierr);
           break;
 #endif
+#if defined(PETSC_HAVE_AMS)
+        case 5:
+          *viewer = PETSC_VIEWER_AMS_(comm);CHKERRQ(ierr);
+          break;
+#endif
         default: SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unsupported viewer %s",cvalue);CHKERRQ(ierr);
           break;
         }
@@ -100,6 +109,9 @@ PetscErrorCode  PetscOptionsGetViewer(MPI_Comm comm,const char pre[],const char 
         } else {
           ierr = PetscViewerCreate(comm,viewer);CHKERRQ(ierr);
           ierr = PetscViewerSetType(*viewer,*cvalue ? cvalue : "ascii");CHKERRQ(ierr);
+#if defined(PETSC_HAVE_AMS)
+          ierr = PetscViewerAMSSetCommName(*viewer,loc);CHKERRQ(ierr);
+#endif
           ierr = PetscViewerFileSetMode(*viewer,FILE_MODE_WRITE);CHKERRQ(ierr);
           ierr = PetscViewerFileSetName(*viewer,loc);CHKERRQ(ierr);
         }
