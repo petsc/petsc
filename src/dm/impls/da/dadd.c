@@ -170,9 +170,11 @@ PetscErrorCode DMDASubDomainDA_Private(DM dm, DM *dddm)
   ierr = DMDAGetLocalBoundingBox(dm,lmin,lmax);CHKERRQ(ierr);
   ierr = DMDASetUniformCoordinates(da,lmin[0],lmax[0],lmin[1],lmax[1],lmin[2],lmax[2]);CHKERRQ(ierr);
 
+  /* nonoverlapping region */
+  ierr = DMDASetNonOverlappingRegion(da,info.xs,info.ys,info.zs,info.xm,info.ym,info.zm);CHKERRQ(ierr);
+
   /* this alters the behavior of DMDAGetInfo, DMDAGetLocalInfo, DMDAGetCorners, and DMDAGetGhostedCorners and should be used with care */
   ierr = DMDASetOffset(da,xo,yo,zo,info.mx,info.my,info.mz);CHKERRQ(ierr);
-
   *dddm = da;
   PetscFunctionReturn(0);
 }
@@ -193,6 +195,7 @@ PetscErrorCode DMCreateDomainDecompositionScatters_DA(DM dm,PetscInt nsubdms,DM 
   MatStencil     upper,lower;
   IS             idis,isis,odis,osis,gdis;
   Vec            svec,dvec,slvec;
+  PetscInt       xm,ym,zm,xs,ys,zs;
 
   PetscFunctionBegin;
   if (nsubdms != 1) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Cannot have more than one subdomain per processor (yet)");
@@ -208,12 +211,13 @@ PetscErrorCode DMCreateDomainDecompositionScatters_DA(DM dm,PetscInt nsubdms,DM 
 
   /* create the global and subdomain index sets for the inner domain */
   /* TODO - make this actually support multiple subdomains -- subdomain needs to provide where it's nonoverlapping portion belongs */
-  lower.i = info.xs;
-  lower.j = info.ys;
-  lower.k = info.zs;
-  upper.i = info.xs+info.xm;
-  upper.j = info.ys+info.ym;
-  upper.k = info.zs+info.zm;
+  ierr = DMDAGetNonOverlappingRegion(subdm,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
+  lower.i = xs;
+  lower.j = ys;
+  lower.k = zs;
+  upper.i = xs+xm;
+  upper.j = ys+ym;
+  upper.k = zs+zm;
   ierr    = DMDACreatePatchIS(dm,&lower,&upper,&idis);CHKERRQ(ierr);
   ierr    = DMDACreatePatchIS(subdm,&lower,&upper,&isis);CHKERRQ(ierr);
 

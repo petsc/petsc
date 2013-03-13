@@ -30,6 +30,8 @@ typedef struct {
   PetscInt              xo,yo,zo;              /* offsets for the indices in x y and z */
   PetscInt              Mo,No,Po;              /* the size of the problem the offset is in to */
   PetscInt              Nsub;                  /* number of local subdomains to decompose into */
+  PetscInt              nonxs,nonys,nonzs;     /* the nonoverlapping starts in the case of a subdomain da */
+  PetscInt              nonxm,nonym,nonzm;     /* the nonoverlapping sizes in the case of a subdomain da */
 
   AO                    ao;                    /* application ordering context */
 

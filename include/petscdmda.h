@@ -91,6 +91,8 @@ PETSC_EXTERN PetscErrorCode DMDASetNumLocalSubDomains(DM,PetscInt);
 PETSC_EXTERN PetscErrorCode DMDAGetNumLocalSubDomains(DM,PetscInt*);
 PETSC_EXTERN PetscErrorCode DMDAGetOffset(DM,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*);
 PETSC_EXTERN PetscErrorCode DMDASetOffset(DM,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt);
+PETSC_EXTERN PetscErrorCode DMDAGetNonOverlappingRegion(DM,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*);
+PETSC_EXTERN PetscErrorCode DMDASetNonOverlappingRegion(DM,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt);
 PETSC_EXTERN PetscErrorCode DMDASetStencilWidth(DM, PetscInt);
 PETSC_EXTERN PetscErrorCode DMDASetOwnershipRanges(DM,const PetscInt[],const PetscInt[],const PetscInt[]);
 PETSC_EXTERN PetscErrorCode DMDAGetOwnershipRanges(DM,const PetscInt**,const PetscInt**,const PetscInt**);
