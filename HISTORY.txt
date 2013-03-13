@@ -9,6 +9,16 @@ HISTORY: PETSc for Python
 :Address:      CCT CONICET, 3000 Santa Fe, Argentina
 
 
+Release 3.3.1
+=============
+
+- Fix ``Options.getAll()`` mishandling values with negative numbers.
+
+- Minor backward compatibility fix for PETSc 3.2 .
+
+- Minor bugfix for TSPYTHON subtype.
+
+
 Release 3.3
 ===========
 
