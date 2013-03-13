@@ -158,7 +158,6 @@ typedef struct _PetscStageInfo {
 } PetscStageInfo;
 
 typedef struct _n_PetscStageLog *PetscStageLog;
-PETSC_EXTERN PetscStageLog petsc_stageLog;
 struct _n_PetscStageLog {
   int              numStages;   /* The number of registered stages */
   int              maxStages;   /* The maximum number of stages */
@@ -175,6 +174,7 @@ PETSC_EXTERN PetscErrorCode PetscStageLogGetEventPerfLog(PetscStageLog,int,Petsc
 
 
 #if defined(PETSC_USE_LOG)  /* --- Logging is turned on --------------------------------*/
+PETSC_EXTERN PetscStageLog petsc_stageLog;
 
 /*
    Flop counting:  We count each arithmetic operation (e.g., addition, multiplication) separately.
