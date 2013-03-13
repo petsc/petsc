@@ -34,7 +34,7 @@ F*/
 #include <petscts.h>
 
 typedef struct {
-  PetscScalar H,D,omega_s,Pmax,Pm;
+  PetscScalar H,D,omega_s,Pmax,Pm,E,V,X;
   PetscReal   tf,tcl;
 } AppCtx;
 
@@ -54,9 +54,10 @@ static PetscErrorCode IFunction(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,AppCtx *c
   ierr = VecGetArray(Udot,&udot);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
   if ((t > ctx->tf) && (t < ctx->tcl)) Pmax = 0.0; /* A short-circuit on the generator terminal that drives the electrical power output (Pmax*sin(delta)) to 0 */
+  else if (t >= ctx->tcl) Pmax = ctx->E/0.745;
   else Pmax = ctx->Pmax;
-  f[0] = udot[0] - u[1] + ctx->omega_s;
-  f[1] = 2.0*ctx->H*udot[1]/ctx->omega_s +  Pmax*PetscSinScalar(u[0]) + ctx->D*(u[1] - ctx->omega_s)- ctx->Pm;
+  f[0] = udot[0] - ctx->omega_s*(u[1] - 1.0);
+  f[1] = 2.0*ctx->H*udot[1] +  Pmax*PetscSinScalar(u[0]) + ctx->D*(u[1] - 1.0)- ctx->Pm;
 
   ierr = VecRestoreArray(U,&u);CHKERRQ(ierr);
   ierr = VecRestoreArray(Udot,&udot);CHKERRQ(ierr);
@@ -79,9 +80,12 @@ static PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat
   ierr = VecGetArray(U,&u);CHKERRQ(ierr);
   ierr = VecGetArray(Udot,&udot);CHKERRQ(ierr);
   if ((t > ctx->tf) && (t < ctx->tcl)) Pmax = 0.0; /* A short-circuit on the generator terminal that drives the electrical power output (Pmax*sin(delta)) to 0 */
+  else if (t >= ctx->tcl) Pmax = ctx->E/0.745;
   else Pmax = ctx->Pmax;
-  J[1][1] = 2.0*ctx->H*a/ctx->omega_s + ctx->D;   J[1][0] = Pmax*PetscCosScalar(u[0]);
-  J[0][1] = -1.0;                                 J[0][0] = a;
+
+  J[0][0] = a;                       J[0][1] = -ctx->omega_s;
+  J[1][1] = 2.0*ctx->H*a + ctx->D;   J[1][0] = Pmax*PetscCosScalar(u[0]);
+
   ierr    = MatSetValues(*B,2,rowcol,2,rowcol,&J[0][0],INSERT_VALUES);CHKERRQ(ierr);
   ierr    = VecRestoreArray(U,&u);CHKERRQ(ierr);
   ierr    = VecRestoreArray(Udot,&udot);CHKERRQ(ierr);
@@ -155,17 +159,20 @@ int main(int argc,char **argv)
     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Swing equation options","");CHKERRQ(ierr);
   {
-    ctx.omega_s = 1.0;
+    ctx.omega_s = 2.0*PETSC_PI*60.0;
     ctx.H       = 5.0;
     ierr        = PetscOptionsScalar("-Inertia","","",ctx.H,&ctx.H,NULL);CHKERRQ(ierr);
-    ctx.D       = 0.0;
+    ctx.D       = 5.0;
     ierr        = PetscOptionsScalar("-D","","",ctx.D,&ctx.D,NULL);CHKERRQ(ierr);
-    ctx.Pmax    = 2.1;
+    ctx.E       = 1.1378;
+    ctx.V       = 1.0;
+    ctx.X       = 0.545;
+    ctx.Pmax    = ctx.E*ctx.V/ctx.X;;
     ierr        = PetscOptionsScalar("-Pmax","","",ctx.Pmax,&ctx.Pmax,NULL);CHKERRQ(ierr);
-    ctx.Pm      = 1.0;
+    ctx.Pm      = 0.9;
     ierr        = PetscOptionsScalar("-Pm","","",ctx.Pm,&ctx.Pm,NULL);CHKERRQ(ierr);
-    ctx.tf      = 0.1;
-    ctx.tcl     = 0.2;
+    ctx.tf      = 1.0;
+    ctx.tcl     = 1.05;
     ierr        = PetscOptionsReal("-tf","Time to start fault","",ctx.tf,&ctx.tf,NULL);CHKERRQ(ierr);
     ierr        = PetscOptionsReal("-tcl","Time to end fault","",ctx.tcl,&ctx.tcl,NULL);CHKERRQ(ierr);
     ierr        = PetscOptionsBool("-ensemble","Run ensemble of different initial conditions","",ensemble,&ensemble,NULL);CHKERRQ(ierr);
@@ -176,7 +183,7 @@ int main(int argc,char **argv)
 
     ierr = VecGetArray(U,&u);CHKERRQ(ierr);
     u[0] = asin(ctx.Pm/ctx.Pmax);
-    u[1] = ctx.omega_s;
+    u[1] = 1.0;
     ierr = PetscOptionsRealArray("-u","Initial solution","",u,&n,&flg1);CHKERRQ(ierr);
     n    = 2;
     ierr = PetscOptionsRealArray("-du","Perturbation in initial solution","",du,&n,&flg2);CHKERRQ(ierr);
