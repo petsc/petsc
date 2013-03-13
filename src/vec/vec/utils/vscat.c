@@ -1723,7 +1723,7 @@ PetscErrorCode  VecScatterDestroy(VecScatter *ctx)
   if (--((PetscObject)(*ctx))->refct > 0) {*ctx = 0; PetscFunctionReturn(0);}
 
   /* if memory was published with AMS then destroy it */
-  ierr = PetscObjectAMSUnPublish((PetscObject)(*ctx));CHKERRQ(ierr);
+  ierr = PetscObjectAMSViewOff((PetscObject)(*ctx));CHKERRQ(ierr);
   ierr = (*(*ctx)->destroy)(*ctx);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);

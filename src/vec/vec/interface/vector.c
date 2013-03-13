@@ -527,7 +527,7 @@ PetscErrorCode  VecDestroy(Vec *v)
   PetscValidHeaderSpecific((*v),VEC_CLASSID,1);
   if (--((PetscObject)(*v))->refct > 0) {*v = 0; PetscFunctionReturn(0);}
 
-  ierr = PetscObjectAMSUnPublish((PetscObject)*v);CHKERRQ(ierr);
+  ierr = PetscObjectAMSViewOff((PetscObject)*v);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&(*v)->viewonassembly);CHKERRQ(ierr);
   /* destroy the internal part */
   if ((*v)->ops->destroy) {

@@ -74,7 +74,7 @@ PetscErrorCode  PFDestroy(PF *pf)
   }
 
   /* if memory was published with AMS then destroy it */
-  ierr = PetscObjectAMSUnPublish((PetscObject)*pf);CHKERRQ(ierr);
+  ierr = PetscObjectAMSViewOff((PetscObject)*pf);CHKERRQ(ierr);
 
   if ((*pf)->ops->destroy) {ierr =  (*(*pf)->ops->destroy)((*pf)->data);CHKERRQ(ierr);}
   ierr = PetscHeaderDestroy(pf);CHKERRQ(ierr);

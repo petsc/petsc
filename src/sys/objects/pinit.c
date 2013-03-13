@@ -829,11 +829,6 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   }
 #endif
 
-#if defined(PETSC_HAVE_AMS)
-  ierr = PetscOptionsHasName(NULL,"-ams_publish_objects",&flg);CHKERRQ(ierr);
-  if (flg) PetscAMSPublishAll = PETSC_TRUE;
-#endif
-
   ierr = PetscOptionsHasName(NULL,"-python",&flg);CHKERRQ(ierr);
   if (flg) {
     PetscInitializeCalled = PETSC_TRUE;

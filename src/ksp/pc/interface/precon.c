@@ -117,7 +117,7 @@ PetscErrorCode  PCDestroy(PC *pc)
   ierr = PCReset(*pc);CHKERRQ(ierr);
 
   /* if memory was published with AMS then destroy it */
-  ierr = PetscObjectAMSUnPublish((PetscObject)*pc);CHKERRQ(ierr);
+  ierr = PetscObjectAMSViewOff((PetscObject)*pc);CHKERRQ(ierr);
   if ((*pc)->ops->destroy) {ierr = (*(*pc)->ops->destroy)((*pc));CHKERRQ(ierr);}
   ierr = DMDestroy(&(*pc)->dm);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(pc);CHKERRQ(ierr);
@@ -284,16 +284,6 @@ PetscErrorCode  PCDiagonalScaleRight(PC pc,Vec in,Vec out)
   }
   PetscFunctionReturn(0);
 }
-
-#if 0
-#undef __FUNCT__
-#define __FUNCT__ "PCPublish_Petsc"
-static PetscErrorCode PCPublish_Petsc(PetscObject obj)
-{
-  PetscFunctionBegin;
-  PetscFunctionReturn(0);
-}
-#endif
 
 #undef __FUNCT__
 #define __FUNCT__ "PCSetUseAmat"

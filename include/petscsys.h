@@ -1383,17 +1383,13 @@ PETSC_EXTERN PetscErrorCode PetscRegisterFinalize(PetscErrorCode (*)(void));
 PETSC_EXTERN PetscErrorCode PetscRegisterFinalizeAll(void);
 
 #if defined(PETSC_HAVE_AMS)
-extern       PetscBool      PetscAMSPublishAll;
-PETSC_EXTERN PetscErrorCode PetscObjectAMSPublish(PetscObject);
-PETSC_EXTERN PetscErrorCode PetscObjectAMSUnPublish(PetscObject);
+PETSC_EXTERN PetscErrorCode PetscObjectAMSViewOff(PetscObject);
 PETSC_EXTERN PetscErrorCode PetscObjectAMSSetBlock(PetscObject,PetscBool);
 PETSC_EXTERN PetscErrorCode PetscObjectAMSBlock(PetscObject);
 PETSC_EXTERN PetscErrorCode PetscObjectAMSGrantAccess(PetscObject);
 PETSC_EXTERN PetscErrorCode PetscObjectAMSTakeAccess(PetscObject);
 #else
-#define PetscAMSPublishAll                     0
-#define PetscObjectAMSPublish(obj)             0
-#define PetscObjectAMSUnPublish(obj)           0
+#define PetscObjectAMSViewOff(obj)           0
 #define PetscObjectAMSSetBlock(obj,flg)        0
 #define PetscObjectAMSBlock(obj)               0
 #define PetscObjectAMSGrantAccess(obj)         0

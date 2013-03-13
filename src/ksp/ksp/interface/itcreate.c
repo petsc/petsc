@@ -186,17 +186,20 @@ PetscErrorCode  KSPView(KSP ksp,PetscViewer viewer)
     ierr = PetscDrawPushCurrentPoint(draw,x,bottom);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_AMS)
   } else if (isams) {
-    ierr = PetscObjectViewAMS((PetscObject)ksp,viewer);CHKERRQ(ierr);
-    ierr = AMS_Memory_take_access(((PetscObject)ksp)->amsmem);CHKERRQ(ierr);
-    ierr = AMS_Memory_add_field(((PetscObject)ksp)->amsmem,"its",&ksp->its,1,AMS_INT,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
-    if (!ksp->res_hist) {
-      ierr = KSPSetResidualHistory(ksp,NULL,PETSC_DECIDE,PETSC_FALSE);CHKERRQ(ierr);
+    if (((PetscObject)ksp)->amsmem == -1) {
+      ierr = PetscObjectViewAMS((PetscObject)ksp,viewer);CHKERRQ(ierr);
+      PetscStackCallAMS(AMS_Memory_take_access,(((PetscObject)ksp)->amsmem));
+      PetscStackCallAMS(AMS_Memory_add_field,(((PetscObject)ksp)->amsmem,"its",&ksp->its,1,AMS_INT,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF));
+      if (!ksp->res_hist) {
+        ierr = KSPSetResidualHistory(ksp,NULL,PETSC_DECIDE,PETSC_FALSE);CHKERRQ(ierr);
+      }
+      PetscStackCallAMS(AMS_Memory_add_field,(((PetscObject)ksp)->amsmem,"res_hist",ksp->res_hist,10,AMS_DOUBLE,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF));
+      PetscStackCallAMS(AMS_Memory_grant_access,(((PetscObject)ksp)->amsmem));
     }
-    ierr = AMS_Memory_add_field(((PetscObject)ksp)->amsmem,"res_hist",ksp->res_hist,10,AMS_DOUBLE,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
-    ierr = AMS_Memory_grant_access(((PetscObject)ksp)->amsmem);CHKERRQ(ierr);
 #endif
-  } else if (ksp->ops->view) {
-      ierr = (*ksp->ops->view)(ksp,viewer);CHKERRQ(ierr);
+  }
+  if (ksp->ops->view) {
+    ierr = (*ksp->ops->view)(ksp,viewer);CHKERRQ(ierr);
   }
   if (!ksp->pc) {ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr);}
   ierr = PCView(ksp->pc,viewer);CHKERRQ(ierr);
@@ -444,23 +447,6 @@ PetscErrorCode  KSPGetNormType(KSP ksp, KSPNormType *normtype)
 
 #if defined(PETSC_HAVE_AMS)
 #include <petscviewerams.h>
-
-#undef __FUNCT__
-#define __FUNCT__ "PetscObjectAMSPublish_KSP"
-static PetscErrorCode PetscObjectAMSPublish_KSP(PetscObject obj)
-{
-  KSP            ksp = (KSP) obj;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = AMS_Memory_add_field(obj->amsmem,"its",&ksp->its,1,AMS_INT,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
-
-  if (!ksp->res_hist) {
-    ierr = KSPSetResidualHistory((KSP)obj,NULL,PETSC_DECIDE,PETSC_FALSE);CHKERRQ(ierr);
-  }
-  ierr = AMS_Memory_add_field(obj->amsmem,"res_hist",ksp->res_hist,10,AMS_DOUBLE,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
 #endif
 
 #undef __FUNCT__
@@ -769,9 +755,6 @@ PetscErrorCode  KSPCreate(MPI_Comm comm,KSP *inksp)
   ierr                    = KSPSetConvergenceTest(ksp,KSPDefaultConverged,ctx,KSPDefaultConvergedDestroy);CHKERRQ(ierr);
   ksp->ops->buildsolution = KSPBuildSolutionDefault;
   ksp->ops->buildresidual = KSPBuildResidualDefault;
-#if defined(PETSC_HAVE_AMS)
-  ((PetscObject)ksp)->bops->publish = PetscObjectAMSPublish_KSP;
-#endif
 
   ksp->vec_sol    = 0;
   ksp->vec_rhs    = 0;
@@ -854,9 +837,6 @@ PetscErrorCode  KSPSetType(KSP ksp, KSPType type)
   ksp->setupstage = KSP_SETUP_NEW;
   ierr            = PetscObjectChangeTypeName((PetscObject)ksp,type);CHKERRQ(ierr);
   ierr            = (*r)(ksp);CHKERRQ(ierr);
-  if (PetscAMSPublishAll) {
-    ierr = PetscObjectAMSPublish((PetscObject)ksp);CHKERRQ(ierr);
-  }
   PetscFunctionReturn(0);
 }
 

@@ -51,9 +51,6 @@ PetscErrorCode  PetscRandomSetType(PetscRandom rnd, PetscRandomType type)
   ierr = PetscRandomSeed(rnd);CHKERRQ(ierr);
 
   ierr = PetscObjectChangeTypeName((PetscObject)rnd, type);CHKERRQ(ierr);
-  if (PetscAMSPublishAll) {
-    ierr = PetscObjectAMSPublish((PetscObject)rnd);CHKERRQ(ierr);
-  }
   PetscFunctionReturn(0);
 }
 

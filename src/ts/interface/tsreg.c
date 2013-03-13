@@ -65,9 +65,6 @@ PetscErrorCode  TSSetType(TS ts,TSType type)
 
   ierr = PetscObjectChangeTypeName((PetscObject)ts, type);CHKERRQ(ierr);
   ierr = (*r)(ts);CHKERRQ(ierr);
-  if (PetscAMSPublishAll) {
-    ierr = PetscObjectAMSPublish((PetscObject)ts);CHKERRQ(ierr);
-  }
   PetscFunctionReturn(0);
 }
 

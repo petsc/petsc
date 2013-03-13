@@ -10,16 +10,6 @@ const char *const TSConvergedReasons_Shifted[] = {
   "TSConvergedReason","TS_",0};
 const char *const*TSConvergedReasons = TSConvergedReasons_Shifted + 2;
 
-#if 0
-#undef __FUNCT__
-#define __FUNCT__ "TSPublish_Petsc"
-static PetscErrorCode TSPublish_Petsc(PetscObject obj)
-{
-  PetscFunctionBegin;
-  PetscFunctionReturn(0);
-}
-#endif
-
 #undef  __FUNCT__
 #define __FUNCT__ "TSCreate"
 /*@C

@@ -21,12 +21,12 @@ PetscErrorCode PetscViewerAMSSetCommName_AMS(PetscViewer v,const char name[])
   PetscFunctionBegin;
   ierr = PetscOptionsGetInt(NULL,"-ams_port",&port,NULL);CHKERRQ(ierr);
   ierr = PetscInfo1(v,"Publishing with the AMS on port %d\n",port);CHKERRQ(ierr);
-  ierr = AMS_Comm_publish((char*)name,&vams->ams_comm,MPI_TYPE,PetscObjectComm((PetscObject)v),&port);CHKERRQ(ierr);
+  PetscStackCallAMS(AMS_Comm_publish,((char*)name,&vams->ams_comm,MPI_TYPE,PetscObjectComm((PetscObject)v),&port));
 
   ierr = PetscOptionsHasName(NULL,"-ams_printf",&flg);CHKERRQ(ierr);
   if (!flg) {
 #if !defined(PETSC_MISSING_DEV_NULL)
-    ierr = AMS_Set_output_file("/dev/null");CHKERRQ(ierr);
+    PetscStackCallAMS(AMS_Set_output_file,("/dev/null"));
 #endif
   }
 
@@ -133,7 +133,7 @@ static PetscMPIInt Petsc_Viewer_Ams_keyval = MPI_KEYVAL_INVALID;
      Level: developer
 
      Notes:
-     Unlike almost all other PETSc routines, PetscViewer_AMS_ does not return
+     Unlike almost all other PETSc routines, PETSC_VIEWER_AMS_() does not return
      an error code.  The window PetscViewer is usually used in the form
 $       XXXView(XXX object,PETSC_VIEWER_AMS_(comm));
 
@@ -205,12 +205,7 @@ static PetscErrorCode PetscViewerDestroy_AMS(PetscViewer viewer)
     ierr = PetscStackDepublish();CHKERRQ(ierr);
   }
 
-  ierr = AMS_Comm_destroy(vams->ams_comm);
-  if (ierr) {
-    char *err;
-    AMS_Explain_error(ierr,&err);
-    SETERRQ(PetscObjectComm((PetscObject)viewer),ierr,err);
-  }
+  PetscStackCallAMS(AMS_Comm_destroy,(vams->ams_comm));
   ierr = PetscFree(vams);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

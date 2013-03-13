@@ -573,7 +573,7 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
 
 #if defined(PETSC_HAVE_AMS)
   /*
-    Publishes convergence information using AMS
+    Publish convergence information using AMS
   */
   flg  = PETSC_FALSE;
   ierr = PetscOptionsBool("-ksp_monitor_ams","Publish KSP progress using AMS","KSPMonitorSet",flg,&flg,NULL);CHKERRQ(ierr);

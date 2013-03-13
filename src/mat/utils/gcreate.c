@@ -1,16 +1,6 @@
 
 #include <petsc-private/matimpl.h>       /*I "petscmat.h"  I*/
 
-#if 0
-#undef __FUNCT__
-#define __FUNCT__ "MatPublish_Base"
-static PetscErrorCode MatPublish_Base(PetscObject obj)
-{
-  PetscFunctionBegin;
-  PetscFunctionReturn(0);
-}
-#endif
-
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate"
 /*@

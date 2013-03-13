@@ -11,15 +11,16 @@
 
     Input Parameters:
 +   comm - the MPI communicator
--   name - name of AMS communicator being created
+-   name - name of AMS communicator being created if NULL is passed defaults to PETSc
 
     Output Parameter:
 .   lab - the PetscViewer
 
     Options Database Keys:
 +   -ams_port <port number> - port number where you are running AMS client
-.   -ams_publish_objects - publish all PETSc objects to be visible to the AMS memory snooper,
-                           use PetscObjectAMSPublish() to publish individual objects
+.   -xxx_view ams - publish the object xxx
+.   -xxx_ams_block - blocks the program at the end of a critical point (for KSP and SNES it is the end of a solve) until
+                    the user unblocks the the problem with an external tool that access the object with the AMS
 -   -ams_java - open JAVA AMS client
 
     Level: advanced
@@ -31,19 +32,18 @@
     tools that can monitor PETSc objects that have been published.
 
     Notes:
-    This PetscViewer can be destroyed with PetscViewerDestroy().
-
-    This viewer is currently different than other viewers in that you cannot pass this viewer to XXXView() to view the XXX object.
-    PETSC_VIEWER_AMS_() is used by PetscObjectAMSPublish() to connect to that particular AMS communicator.
+    Unlike other viewers that only access the object being viewed on the call to XXXView(object,viewer) the AMS viewer allows
+    one to view the object asynchronously as the program continues to run. One can remove AMS access to the object with a call to
+    PetscObjectAMSViewOff().
 
     Information about the AMS is available via http://www.mcs.anl.gov/ams.
 
    Concepts: AMS
-   Concepts: ALICE Memory Snooper
+   Concepts: Argonne Memory Snooper
    Concepts: Asynchronous Memory Snooper
 
-.seealso: PetscObjectAMSPublish(), PetscViewerDestroy(), PetscViewerStringSPrintf(), PETSC_VIEWER_AMS_(),
-          PetscObjectAMSPublish(), PetscObjectAMSUnPublish(), PetscObjectAMSTakeAccess(), PetscObjectAMSGrantAccess()
+.seealso: PetscViewerDestroy(), PetscViewerStringSPrintf(), PETSC_VIEWER_AMS_(), PetscObjectAMSBlock(),
+          PetscObjectAMSViewOff(), PetscObjectAMSTakeAccess(), PetscObjectAMSGrantAccess()
 
 @*/
 PetscErrorCode PetscViewerAMSOpen(MPI_Comm comm,const char name[],PetscViewer *lab)
@@ -74,7 +74,7 @@ PetscErrorCode PetscViewerAMSOpen(MPI_Comm comm,const char name[],PetscViewer *l
 
    Concepts: publishing object
 
-.seealso: PetscObjectSetName(), PetscObjectAMSUnPublish()
+.seealso: PetscObjectSetName(), PetscObjectAMSViewOff()
 
 @*/
 PetscErrorCode  PetscObjectViewAMS(PetscObject obj,PetscViewer viewer)
@@ -90,17 +90,17 @@ PetscErrorCode  PetscObjectViewAMS(PetscObject obj,PetscViewer viewer)
   ierr = PetscObjectName(obj);CHKERRQ(ierr);
 
   ierr = PetscViewerAMSGetAMSComm(viewer,&acomm);CHKERRQ(ierr);
-  ierr        = AMS_Memory_create(acomm,obj->name,&amem);CHKERRQ(ierr);
+  PetscStackCallAMS(AMS_Memory_create,(acomm,obj->name,&amem));
   obj->amsmem = (int)amem;
 
-  ierr = AMS_Memory_take_access(amem);CHKERRQ(ierr);
-  ierr = AMS_Memory_add_field(amem,"Class",&obj->class_name,1,AMS_STRING,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
-  ierr = AMS_Memory_add_field(amem,"Type",&obj->type_name,1,AMS_STRING,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
-  ierr = AMS_Memory_add_field(amem,"Id",&obj->id,1,AMS_INT,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
-  ierr = AMS_Memory_add_field(amem,"ParentId",&obj->parentid,1,AMS_INT,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
-  ierr = AMS_Memory_add_field(amem,"Name",&obj->name,1,AMS_STRING,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
-  ierr = AMS_Memory_add_field(amem,"Block",&obj->amspublishblock,1,AMS_BOOLEAN,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
-  ierr = AMS_Memory_publish(amem);CHKERRQ(ierr);
-  ierr = AMS_Memory_grant_access(amem);CHKERRQ(ierr);
+  PetscStackCallAMS(AMS_Memory_take_access,(amem));
+  PetscStackCallAMS(AMS_Memory_add_field,(amem,"Class",&obj->class_name,1,AMS_STRING,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF));
+  PetscStackCallAMS(AMS_Memory_add_field,(amem,"Type",&obj->type_name,1,AMS_STRING,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF));
+  PetscStackCallAMS(AMS_Memory_add_field,(amem,"Id",&obj->id,1,AMS_INT,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF));
+  PetscStackCallAMS(AMS_Memory_add_field,(amem,"ParentId",&obj->parentid,1,AMS_INT,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF));
+  PetscStackCallAMS(AMS_Memory_add_field,(amem,"Name",&obj->name,1,AMS_STRING,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF));
+  PetscStackCallAMS(AMS_Memory_add_field,(amem,"Block",&obj->amspublishblock,1,AMS_BOOLEAN,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF));
+  PetscStackCallAMS(AMS_Memory_publish,(amem));
+  PetscStackCallAMS(AMS_Memory_grant_access,(amem));
   PetscFunctionReturn(0);
 }

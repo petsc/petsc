@@ -76,7 +76,7 @@ PetscErrorCode  AODestroy(AO *ao)
   PetscValidHeaderSpecific((*ao),AO_CLASSID,1);
   if (--((PetscObject)(*ao))->refct > 0) {*ao = 0; PetscFunctionReturn(0);}
   /* if memory was published with AMS then destroy it */
-  ierr = PetscObjectAMSUnPublish((PetscObject)*ao);CHKERRQ(ierr);
+  ierr = PetscObjectAMSViewOff((PetscObject)*ao);CHKERRQ(ierr);
   /* destroy the internal part */
   if ((*ao)->ops->destroy) {
     ierr = (*(*ao)->ops->destroy)(*ao);CHKERRQ(ierr);

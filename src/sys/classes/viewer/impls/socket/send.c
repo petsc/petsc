@@ -558,25 +558,25 @@ static PetscErrorCode PetscAMSObjectsDisplayList(FILE *fd)
   void               *addr;
 
   ierr = PetscGetHostName(host,256);CHKERRQ(ierr);
-  ierr = AMS_Connect(host, -1, &comm_list);CHKERRQ(ierr);
+  PetscStackCallAMS(AMS_Connect,(host, -1, &comm_list));
   ierr = PetscWebSendHeader(fd, 200, "OK", NULL, "text/html", -1);CHKERRQ(ierr);
   if (!comm_list || !comm_list[0]) fprintf(fd, "AMS Communicator not running</p>\r\n");
   else {
-    ierr = AMS_Comm_attach(comm_list[0],&ams);CHKERRQ(ierr);
-    ierr = AMS_Comm_get_memory_list(ams,&mem_list);CHKERRQ(ierr);
+    PetscStackCallAMS(AMS_Comm_attach,(comm_list[0],&ams));
+    PetscStackCallAMS(AMS_Comm_get_memory_list,(ams,&mem_list));
     if (!mem_list[0]) fprintf(fd, "AMS Communicator %s has no published memories</p>\r\n",comm_list[0]);
     else {
       fprintf(fd, "<HTML><HEAD><TITLE>Petsc Application Server</TITLE></HEAD>\r\n<BODY>");
       fprintf(fd,"<ul>\r\n");
       while (mem_list[i]) {
         fprintf(fd,"<li> %s</li>\r\n",mem_list[i]);
-        ierr = AMS_Memory_attach(ams,mem_list[i],&memory,NULL);CHKERRQ(ierr);
-        ierr = AMS_Memory_get_field_list(memory, &fld_list);CHKERRQ(ierr);
+        PetscStackCallAMS(AMS_Memory_attach,(ams,mem_list[i],&memory,NULL));
+        PetscStackCallAMS(AMS_Memory_get_field_list,(memory, &fld_list));
         j    = 0;
         fprintf(fd,"<ul>\r\n");
         while (fld_list[j]) {
           fprintf(fd,"<li> %s",fld_list[j]);
-          ierr = AMS_Memory_get_field_info(memory, fld_list[j], &addr, &len, &dtype, &mtype, &stype, &rtype);CHKERRQ(ierr);
+          PetscStackCallAMS(AMS_Memory_get_field_info,(memory, fld_list[j], &addr, &len, &dtype, &mtype, &stype, &rtype));
           if (len == 1) {
             if (dtype == AMS_INT)         fprintf(fd," %d",*(int*)addr);
             else if (dtype == AMS_STRING) fprintf(fd," %s",*(char**)addr);
@@ -591,7 +591,7 @@ static PetscErrorCode PetscAMSObjectsDisplayList(FILE *fd)
     }
   }
   ierr = PetscWebSendFooter(fd);CHKERRQ(ierr);
-  ierr = AMS_Disconnect();CHKERRQ(ierr);
+  PetscStackCallAMS(AMS_Disconnect,());
   PetscFunctionReturn(0);
 }
 
@@ -617,12 +617,12 @@ static PetscErrorCode PetscAMSObjectsDisplayTree(FILE *fd)
   void               *addr2,*addr3,*addr,*addr4;
 
   ierr = PetscGetHostName(host,256);CHKERRQ(ierr);
-  ierr = AMS_Connect(host, -1, &comm_list);CHKERRQ(ierr);
+  PetscStackCallAMS(AMS_Connect,(host, -1, &comm_list));
   ierr = PetscWebSendHeader(fd, 200, "OK", NULL, "text/html", -1);CHKERRQ(ierr);
   if (!comm_list || !comm_list[0]) fprintf(fd, "AMS Communicator not running</p>\r\n");
   else {
-    ierr = AMS_Comm_attach(comm_list[0],&ams);CHKERRQ(ierr);
-    ierr = AMS_Comm_get_memory_list(ams,&mem_list);CHKERRQ(ierr);
+    PetscStackCallAMS(AMS_Comm_attach,(comm_list[0],&ams));
+    PetscStackCallAMS(AMS_Comm_get_memory_list,(ams,&mem_list));
     if (!mem_list[0]) fprintf(fd, "AMS Communicator %s has no published memories</p>\r\n",comm_list[0]);
     else {
       PetscInt  Nlevels,*Level,*Levelcnt,*Idbylevel,*Column,*parentid,*Id,maxId = 0,maxCol = 0,*parentId,id,cnt,Nlevelcnt = 0;
@@ -631,9 +631,9 @@ static PetscErrorCode PetscAMSObjectsDisplayTree(FILE *fd)
 
       /* get maximum number of objects */
       while (mem_list[i]) {
-        ierr  = AMS_Memory_attach(ams,mem_list[i],&memory,NULL);CHKERRQ(ierr);
-        ierr  = AMS_Memory_get_field_list(memory, &fld_list);CHKERRQ(ierr);
-        ierr  = AMS_Memory_get_field_info(memory, "Id", &addr2, &len, &dtype, &mtype, &stype, &rtype);CHKERRQ(ierr);
+        PetscStackCallAMS(AMS_Memory_attach,(ams,mem_list[i],&memory,NULL));
+        PetscStackCallAMS(AMS_Memory_get_field_list,(memory, &fld_list));
+        PetscStackCallAMS(AMS_Memory_get_field_info,(memory, "Id", &addr2, &len, &dtype, &mtype, &stype, &rtype));
         Id    = (int*) addr2;
         maxId = PetscMax(maxId,*Id);
         i++;
@@ -647,15 +647,15 @@ static PetscErrorCode PetscAMSObjectsDisplayTree(FILE *fd)
       for (i=0; i<maxId; i++) mask[i] = PETSC_TRUE;
       i = 0;
       while (mem_list[i]) {
-        ierr          = AMS_Memory_attach(ams,mem_list[i],&memory,NULL);CHKERRQ(ierr);
-        ierr          = AMS_Memory_get_field_list(memory, &fld_list);CHKERRQ(ierr);
-        ierr          = AMS_Memory_get_field_info(memory, "Id", &addr2, &len, &dtype, &mtype, &stype, &rtype);CHKERRQ(ierr);
+        PetscStackCallAMS(AMS_Memory_attach,(ams,mem_list[i],&memory,NULL));
+        PetscStackCallAMS(AMS_Memory_get_field_list,(memory, &fld_list));
+        PetscStackCallAMS(AMS_Memory_get_field_info,(memory, "Id", &addr2, &len, &dtype, &mtype, &stype, &rtype));
         Id            = (int*) addr2;
-        ierr          = AMS_Memory_get_field_info(memory, "ParentId", &addr3, &len, &dtype, &mtype, &stype, &rtype);CHKERRQ(ierr);
+        PetscStackCallAMS(AMS_Memory_get_field_info,(memory, "ParentId", &addr3, &len, &dtype, &mtype, &stype, &rtype));
         parentId      = (int*) addr3;
-        ierr          = AMS_Memory_get_field_info(memory, "Class", &addr, &len, &dtype, &mtype, &stype, &rtype);CHKERRQ(ierr);
+        PetscStackCallAMS(AMS_Memory_get_field_info,(memory, "Class", &addr, &len, &dtype, &mtype, &stype, &rtype));
         clas          = *(char**)addr;
-        ierr          = AMS_Memory_get_field_info(memory, "Type", &addr4, &len, &dtype, &mtype, &stype, &rtype);CHKERRQ(ierr);
+        PetscStackCallAMS(AMS_Memory_get_field_info,(memory, "Type", &addr4, &len, &dtype, &mtype, &stype, &rtype));
         sclas         = *(char**)addr4;
         parentid[*Id] = *parentId;
         mask[*Id]     = PETSC_FALSE;
@@ -726,7 +726,7 @@ static PetscErrorCode PetscAMSObjectsDisplayTree(FILE *fd)
       }
       ierr = PetscFree4(mask,parentid,classes,subclasses);CHKERRQ(ierr);
 
-      ierr = AMS_Disconnect();CHKERRQ(ierr);
+      PetscStackCallAMS(AMS_Disconnect,());
       fprintf(fd, "}\r\n");
       fprintf(fd, "</script>\r\n");
       fprintf(fd, "<body onload=\"draw();\">\r\n");
@@ -787,10 +787,8 @@ static PetscErrorCode  PetscWebServeRequestGet(FILE *fd,const char path[])
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
     fprintf(fd, "<HR>\r\n");
 #if defined(PETSC_HAVE_AMS)
-    if (PetscAMSPublishAll) {
-      fprintf(fd, "<a href=\"./ams-tree\">Connect to Memory Snooper--Tree Display</a></p>\r\n\r\n");
-      fprintf(fd, "<a href=\"./ams-list\">Connect to Memory Snooper--List Display</a></p>\r\n\r\n");
-    }
+    fprintf(fd, "<a href=\"./ams-tree\">Connect to Memory Snooper--Tree Display</a></p>\r\n\r\n");
+    fprintf(fd, "<a href=\"./ams-list\">Connect to Memory Snooper--List Display</a></p>\r\n\r\n");
     fprintf(fd, "<a href=\"./AMSJavascript.html\">Connect to Memory Snooper--Interactive Javascript</a></p>\r\n\r\n");
 #endif
     ierr = PetscWebSendFooter(fd);CHKERRQ(ierr);
@@ -1012,7 +1010,9 @@ PETSC_EXTERN PetscErrorCode YAML_AMS_Comm_attach(PetscInt argc,char **args,Petsc
 
   PetscFunctionBegin;
   ierr = AMS_Comm_attach(args[0],&comm);
-  if (ierr) {ierr = PetscInfo1(NULL,"AMS_Comm_attach() error %d\n",ierr);CHKERRQ(ierr);}
+  if (ierr) {
+    ierr = PetscInfo1(NULL,"AMS_Comm_attach() error %d\n",ierr);CHKERRQ(ierr);
+  }
   *argco = 1;
   ierr   = PetscMalloc(sizeof(char*),argso);CHKERRQ(ierr);
   ierr   = PetscMalloc(3*sizeof(char*),&argso[0][0]);CHKERRQ(ierr);
@@ -1498,7 +1498,7 @@ void *PetscWebServeWait(int *port)
 
   Options Database Key:
 +  -server <port> - start PETSc webserver (default port is 8080)
--  -ams_publish_objects
+-  -xxx_view ams - publish object xxx to be accessible in the server
 
 
    Notes: Point your browser to http://hostname:8080   to access the PETSc web server, where hostname is the name of your machine.

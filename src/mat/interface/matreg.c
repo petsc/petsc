@@ -72,9 +72,6 @@ PetscErrorCode  MatSetType(Mat mat, MatType matype)
 
   /* create the new data structure */
   ierr = (*r)(mat);CHKERRQ(ierr);
-  if (PetscAMSPublishAll) {
-    ierr = PetscObjectAMSPublish((PetscObject)mat);CHKERRQ(ierr);
-  }
   PetscFunctionReturn(0);
 }
 

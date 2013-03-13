@@ -323,8 +323,6 @@ PetscErrorCode PetscOptionsGetFromTextInput()
 
 #if defined(PETSC_HAVE_AMS)
 #include <petscviewerams.h>
-#define CHKERRAMS(err)  if (err) {char *msg; AMS_Explain_error((err), &(msg)); SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"AMS Error: %s",msg);}
-#define CHKERRAMSFieldName(err,fn)  if (err) {char *msg; AMS_Explain_error((err), &(msg)); SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB,"Fieldname %s, AMS Error: %s",fn,msg);}
 
 static int count = 0;
 
@@ -341,17 +339,17 @@ PetscErrorCode PetscOptionsAMSDestroy(void)
   /* the next line is a bug, this will only work if all processors are here, the comm passed in is ignored!!! */
   ierr = PetscViewerAMSGetAMSComm(PETSC_VIEWER_AMS_(PETSC_COMM_WORLD),&acomm);CHKERRQ(ierr);
   sprintf(options,"Options_%d",count++);
-  ierr = AMS_Memory_create(acomm,options,&amem);CHKERRAMS(ierr);
-  ierr = AMS_Memory_add_field(amem,"Exit",&string,1,AMS_STRING,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRAMSFieldName(ierr,"Exit");
+  PetscStackCallAMS(AMS_Memory_create,(acomm,options,&amem));
+  PetscStackCallAMS(AMS_Memory_add_field,(amem,"Exit",&string,1,AMS_STRING,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF));
 
-  ierr = AMS_Memory_take_access(amem);CHKERRAMS(ierr);
-  ierr = AMS_Memory_publish(amem);CHKERRAMS(ierr);
-  ierr = AMS_Memory_grant_access(amem);CHKERRAMS(ierr);
+  PetscStackCallAMS(AMS_Memory_take_access,(amem));
+  PetscStackCallAMS(AMS_Memory_publish,(amem));
+  PetscStackCallAMS(AMS_Memory_grant_access,(amem));
   /* wait until accessor has unlocked the memory */
-  ierr = AMS_Memory_lock(amem,0);CHKERRAMS(ierr);
-  ierr = AMS_Memory_take_access(amem);CHKERRAMS(ierr);
-  ierr = AMS_Memory_grant_access(amem);CHKERRAMS(ierr);
-  ierr = AMS_Memory_destroy(amem);CHKERRAMS(ierr);
+  PetscStackCallAMS(AMS_Memory_lock,(amem,0));
+  PetscStackCallAMS(AMS_Memory_take_access,(amem));
+  PetscStackCallAMS(AMS_Memory_grant_access,(amem));
+  PetscStackCallAMS(AMS_Memory_destroy,(amem));
   PetscFunctionReturn(0);
 }
 
@@ -381,68 +379,68 @@ PetscErrorCode PetscOptionsAMSInput()
   /* the next line is a bug, this will only work if all processors are here, the comm passed in is ignored!!! */
   ierr = PetscViewerAMSGetAMSComm(PETSC_VIEWER_AMS_(PETSC_COMM_WORLD),&acomm);CHKERRQ(ierr);
   sprintf(options,"Options_%d",count++);
-  ierr = AMS_Memory_create(acomm,options,&amem);CHKERRAMS(ierr);
-  ierr = AMS_Memory_take_access(amem);CHKERRAMS(ierr);
+  PetscStackCallAMS(AMS_Memory_create,(acomm,options,&amem));
+  PetscStackCallAMS(AMS_Memory_take_access,(amem));
 
   PetscOptionsObject.pprefix = PetscOptionsObject.prefix; /* AMS will change this, so cannot pass prefix directly */
 
-  ierr = AMS_Memory_add_field(amem,PetscOptionsObject.title,&PetscOptionsObject.pprefix,1,AMS_STRING,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRAMSFieldName(ierr,PetscOptionsObject.title);
-  /* ierr = AMS_Memory_add_field(amem,"mansec",&PetscOptionsObject.pprefix,1,AMS_STRING,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRAMS(ierr); */
-  ierr = AMS_Memory_add_field(amem,"ChangedMethod",&changedmethod,1,AMS_BOOLEAN,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRAMSFieldName(ierr,"ChangedMethod");
+  PetscStackCallAMS(AMS_Memory_add_field,(amem,PetscOptionsObject.title,&PetscOptionsObject.pprefix,1,AMS_STRING,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF));
+  /* PetscStackCallAMS(AMS_Memory_add_field(amem,"mansec",&PetscOptionsObject.pprefix,1,AMS_STRING,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF)); */
+  PetscStackCallAMS(AMS_Memory_add_field,(amem,"ChangedMethod",&changedmethod,1,AMS_BOOLEAN,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF));
 
   while (next) {
-    ierr = AMS_Memory_add_field(amem,next->option,&next->set,1,AMS_INT,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRAMSFieldName(ierr,next->option);
+    PetscStackCallAMS(AMS_Memory_add_field,(amem,next->option,&next->set,1,AMS_INT,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF));
     ierr =  PetscMalloc(sizeof(char*),&next->pman);CHKERRQ(ierr);
 
     *(char**)next->pman = next->man;
     sprintf(manname,"man_%d",mancount++);
-    ierr = AMS_Memory_add_field(amem,manname,next->pman,1,AMS_STRING,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRAMSFieldName(ierr,manname);
+    PetscStackCallAMS(AMS_Memory_add_field,(amem,manname,next->pman,1,AMS_STRING,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF));
 
     switch (next->type) {
     case OPTION_HEAD:
       break;
     case OPTION_INT_ARRAY:
-      ierr = AMS_Memory_add_field(amem,next->text,next->data,next->arraylength,AMS_INT,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRAMSFieldName(ierr,next->text);
+      PetscStackCallAMS(AMS_Memory_add_field,(amem,next->text,next->data,next->arraylength,AMS_INT,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF));
       break;
     case OPTION_REAL_ARRAY:
-      ierr = AMS_Memory_add_field(amem,next->text,next->data,next->arraylength,AMS_DOUBLE,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRAMSFieldName(ierr,next->text);
+      PetscStackCallAMS(AMS_Memory_add_field,(amem,next->text,next->data,next->arraylength,AMS_DOUBLE,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF));
       break;
     case OPTION_INT:
-      ierr = AMS_Memory_add_field(amem,next->text,next->data,1,AMS_INT,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRAMSFieldName(ierr,next->text);
+      PetscStackCallAMS(AMS_Memory_add_field,(amem,next->text,next->data,1,AMS_INT,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF));
       break;
     case OPTION_REAL:
-      ierr = AMS_Memory_add_field(amem,next->text,next->data,1,AMS_DOUBLE,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRAMSFieldName(ierr,next->text);
+      PetscStackCallAMS(AMS_Memory_add_field,(amem,next->text,next->data,1,AMS_DOUBLE,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF));
       break;
     case OPTION_LOGICAL:
-      ierr = AMS_Memory_add_field(amem,next->text,next->data,1,AMS_BOOLEAN,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRAMSFieldName(ierr,next->text);
+      PetscStackCallAMS(AMS_Memory_add_field,(amem,next->text,next->data,1,AMS_BOOLEAN,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF));
       break;
     case OPTION_LOGICAL_ARRAY:
-      ierr = AMS_Memory_add_field(amem,next->text,next->data,next->arraylength,AMS_BOOLEAN,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRAMSFieldName(ierr,next->text);
+      PetscStackCallAMS(AMS_Memory_add_field,(amem,next->text,next->data,next->arraylength,AMS_BOOLEAN,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF));
       break;
     case OPTION_STRING:
-      ierr = AMS_Memory_add_field(amem,next->text,next->data,1,AMS_STRING,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRAMSFieldName(ierr,next->text);
+      PetscStackCallAMS(AMS_Memory_add_field,(amem,next->text,next->data,1,AMS_STRING,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF));
       break;
     case OPTION_STRING_ARRAY:
-      ierr = AMS_Memory_add_field(amem,next->text,next->data,next->arraylength,AMS_STRING,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRAMSFieldName(ierr,next->text);
+      PetscStackCallAMS(AMS_Memory_add_field,(amem,next->text,next->data,next->arraylength,AMS_STRING,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF));
       break;
     case OPTION_LIST:
       {PetscInt ntext;
       char      ldefault[128];
       ierr = PetscStrcpy(ldefault,"DEFAULT:");CHKERRQ(ierr);
       ierr = PetscStrcat(ldefault,next->text);CHKERRQ(ierr);
-      ierr = AMS_Memory_add_field(amem,ldefault,next->data,1,AMS_STRING,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRAMSFieldName(ierr,ldefault);
+      PetscStackCallAMS(AMS_Memory_add_field,(amem,ldefault,next->data,1,AMS_STRING,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF));
       ierr = PetscFunctionListGet(next->flist,(const char***)&next->edata,&ntext);CHKERRQ(ierr);
-      ierr = AMS_Memory_add_field(amem,next->text,next->edata,ntext-1,AMS_STRING,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRAMSFieldName(ierr,next->text);
+      PetscStackCallAMS(AMS_Memory_add_field,(amem,next->text,next->edata,ntext-1,AMS_STRING,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF));
       break;}
     case OPTION_ELIST:
       {PetscInt ntext = next->nlist;
       char      ldefault[128];
       ierr = PetscStrcpy(ldefault,"DEFAULT:");CHKERRQ(ierr);
       ierr = PetscStrcat(ldefault,next->text);CHKERRQ(ierr);
-      ierr = AMS_Memory_add_field(amem,ldefault,next->data,1,AMS_STRING,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRAMSFieldName(ierr,ldefault);
+      PetscStackCallAMS(AMS_Memory_add_field,(amem,ldefault,next->data,1,AMS_STRING,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF));
       ierr = PetscMalloc((ntext+1)*sizeof(char**),&next->edata);CHKERRQ(ierr);
       ierr = PetscMemcpy(next->edata,next->list,ntext*sizeof(char*));CHKERRQ(ierr);
-      ierr = AMS_Memory_add_field(amem,next->text,next->edata,ntext,AMS_STRING,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRAMSFieldName(ierr,next->text);
+      PetscStackCallAMS(AMS_Memory_add_field,(amem,next->text,next->edata,ntext,AMS_STRING,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF));
       break;}
     default:
       break;
@@ -450,17 +448,17 @@ PetscErrorCode PetscOptionsAMSInput()
     next = next->next;
   }
 
-  ierr = AMS_Memory_publish(amem);CHKERRAMS(ierr);
-  ierr = AMS_Memory_grant_access(amem);CHKERRAMS(ierr);
+  PetscStackCallAMS(AMS_Memory_publish,(amem));
+  PetscStackCallAMS(AMS_Memory_grant_access,(amem));
   /* wait until accessor has unlocked the memory */
-  ierr = AMS_Memory_lock(amem,0);CHKERRAMS(ierr);
-  ierr = AMS_Memory_take_access(amem);CHKERRAMS(ierr);
+  PetscStackCallAMS(AMS_Memory_lock,(amem,0));
+  PetscStackCallAMS(AMS_Memory_take_access,(amem));
 
   /* reset counter to -2; this updates the screen with the new options for the selected method */
   if (changedmethod) PetscOptionsPublishCount = -2;
 
-  ierr = AMS_Memory_grant_access(amem);CHKERRAMS(ierr);
-  ierr = AMS_Memory_destroy(amem);CHKERRAMS(ierr);
+  PetscStackCallAMS(AMS_Memory_grant_access,(amem));
+  PetscStackCallAMS(AMS_Memory_destroy,(amem));
   PetscFunctionReturn(0);
 }
 #endif
