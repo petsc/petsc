@@ -14,6 +14,7 @@ typedef struct {
   PCASMType  type;                /* ASM type */
   PetscBool  usesdm;              /* use the DM for setting up the subproblems */
   PetscBool  finaljacobian;       /* compute the jacobian of the converged solution */
+  PetscReal  damping;             /* damping parameter for updates from the blocks */
 
   /* logging events */
   PetscLogEvent eventrestrictinterp;
@@ -188,6 +189,8 @@ PetscErrorCode SNESSetFromOptions_NASM(SNES snes)
   if (flg) nasm->type = asmtype;
   flg    = PETSC_FALSE;
   monflg = PETSC_TRUE;
+  ierr   = PetscOptionsReal("-snes_nasm_damping","Log times for subSNES solves and restriction","SNESNASMSetDamping",nasm->damping,&nasm->damping,&flg);CHKERRQ(ierr);
+  if (flg) {ierr = SNESNASMSetDamping(snes,nasm->damping);CHKERRQ(ierr);}
   ierr   = PetscOptionsBool("-snes_nasm_log","Log times for subSNES solves and restriction","",monflg,&monflg,&flg);CHKERRQ(ierr);
   ierr   = PetscOptionsBool("-snes_nasm_finaljacobian","Compute the global jacobian of the final iterate (for ASPIN)","",nasm->finaljacobian,&nasm->finaljacobian,NULL);CHKERRQ(ierr);
   ierr   = PetscOptionsEList("-snes_nasm_finaljacobian_type","The type of the final jacobian computed.","",SNESNASMFJTypes,3,SNESNASMFJTypes[0],&nasm->fjtype,NULL);CHKERRQ(ierr);
@@ -471,12 +474,92 @@ PetscErrorCode SNESNASMSetComputeFinalJacobian_NASM(SNES snes,PetscBool flg)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "SNESNASMSetDamping"
+/*@
+   SNESNASMSetDamping - Sets the update damping for NASM
+
+   Logically collective on SNES
+
+   Input Parameters:
++  SNES - the SNES context
+-  dmp - damping
+
+   Level: intermediate
+
+.keywords: SNES, NASM, damping
+
+.seealso: SNESNASM, SNESNASMGetDamping()
+@*/
+PetscErrorCode SNESNASMSetDamping(SNES snes,PetscReal dmp)
+{
+  PetscErrorCode (*f)(SNES,PetscReal);
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectQueryFunction((PetscObject)snes,"SNESNASMSetDamping_C",(void (**)(void))&f);CHKERRQ(ierr);
+  ierr = (f)(snes,dmp);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "SNESNASMSetDamping_NASM"
+PetscErrorCode SNESNASMSetDamping_NASM(SNES snes,PetscReal dmp)
+{
+  SNES_NASM      *nasm = (SNES_NASM*)snes->data;
+
+  PetscFunctionBegin;
+  nasm->damping = dmp;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "SNESNASMGetDamping"
+/*@
+   SNESNASMGetDamping - Gets the update damping for NASM
+
+   Not Collective
+
+   Input Parameters:
++  SNES - the SNES context
+-  dmp - damping
+
+   Level: intermediate
+
+.keywords: SNES, NASM, damping
+
+.seealso: SNESNASM, SNESNASMSetDamping()
+@*/
+PetscErrorCode SNESNASMGetDamping(SNES snes,PetscReal *dmp)
+{
+  PetscErrorCode (*f)(SNES,PetscReal*);
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectQueryFunction((PetscObject)snes,"SNESNASMGetDamping_C",(void (**)(void))&f);CHKERRQ(ierr);
+  ierr = (f)(snes,dmp);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "SNESNASMGetDamping_NASM"
+PetscErrorCode SNESNASMGetDamping_NASM(SNES snes,PetscReal *dmp)
+{
+  SNES_NASM      *nasm = (SNES_NASM*)snes->data;
+
+  PetscFunctionBegin;
+  *dmp = nasm->damping;
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
 #define __FUNCT__ "SNESNASMSolveLocal_Private"
 PetscErrorCode SNESNASMSolveLocal_Private(SNES snes,Vec B,Vec Y,Vec X)
 {
   SNES_NASM      *nasm = (SNES_NASM*)snes->data;
   SNES           subsnes;
   PetscInt       i;
+  PetscReal      dmp;
   PetscErrorCode ierr;
   Vec            Xlloc,Xl,Bl,Yl;
   VecScatter     iscat,oscat,gscat;
@@ -484,6 +567,7 @@ PetscErrorCode SNESNASMSolveLocal_Private(SNES snes,Vec B,Vec Y,Vec X)
 
   PetscFunctionBegin;
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
+  ierr = SNESNASMGetDamping(snes,&dmp);CHKERRQ(ierr);
   ierr = VecSet(Y,0);CHKERRQ(ierr);
   if (nasm->eventrestrictinterp) {ierr = PetscLogEventBegin(nasm->eventrestrictinterp,snes,0,0,0);CHKERRQ(ierr);}
   for (i=0; i<nasm->n; i++) {
@@ -541,7 +625,7 @@ PetscErrorCode SNESNASMSolveLocal_Private(SNES snes,Vec B,Vec Y,Vec X)
     } else SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE,"Only basic and restrict types are supported for SNESNASM");
   }
   if (nasm->eventrestrictinterp) {ierr = PetscLogEventEnd(nasm->eventrestrictinterp,snes,0,0,0);CHKERRQ(ierr);}
-  ierr = VecAXPY(X,1.0,Y);CHKERRQ(ierr);
+  ierr = VecAXPY(X,dmp,Y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -745,6 +829,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_NASM(SNES snes)
   nasm->oscatter = 0;
   nasm->iscatter = 0;
   nasm->gscatter = 0;
+  nasm->damping  = 1.;
 
   nasm->type = PC_ASM_BASIC;
   nasm->finaljacobian = PETSC_FALSE;
@@ -771,6 +856,8 @@ PETSC_EXTERN PetscErrorCode SNESCreate_NASM(SNES snes)
 
   ierr = PetscObjectComposeFunction((PetscObject)snes,"SNESNASMSetSubdomains_C","SNESNASMSetSubdomains_NASM",SNESNASMSetSubdomains_NASM);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)snes,"SNESNASMGetSubdomains_C","SNESNASMGetSubdomains_NASM",SNESNASMGetSubdomains_NASM);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)snes,"SNESNASMSetDamping_C","SNESNASMSetDamping_NASM",SNESNASMSetDamping_NASM);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)snes,"SNESNASMGetDamping_C","SNESNASMGetDamping_NASM",SNESNASMGetDamping_NASM);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)snes,"SNESNASMGetSubdomainVecs_C","SNESNASMGetSubdomainVecs_NASM",SNESNASMGetSubdomainVecs_NASM);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)snes,"SNESNASMSetComputeFinalJacobian_C","SNESNASMSetComputeFinalJacobian_NASM",SNESNASMSetComputeFinalJacobian_NASM);CHKERRQ(ierr);
   PetscFunctionReturn(0);

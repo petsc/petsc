@@ -740,6 +740,8 @@ PETSC_EXTERN PetscErrorCode SNESQNSetRestartType(SNES, SNESQNRestartType);
 
 PETSC_EXTERN PetscErrorCode SNESNASMGetSubdomains(SNES,PetscInt*,SNES**,VecScatter**,VecScatter**,VecScatter**);
 PETSC_EXTERN PetscErrorCode SNESNASMSetSubdomains(SNES,PetscInt,SNES*,VecScatter*,VecScatter*,VecScatter*);
+PETSC_EXTERN PetscErrorCode SNESNASMSetDamping(SNES,PetscReal);
+PETSC_EXTERN PetscErrorCode SNESNASMGetDamping(SNES,PetscReal*);
 PETSC_EXTERN PetscErrorCode SNESNASMGetSubdomainVecs(SNES,PetscInt*,Vec**,Vec**,Vec**,Vec**);
 PETSC_EXTERN PetscErrorCode SNESNASMSetComputeFinalJacobian(SNES,PetscBool);
 
