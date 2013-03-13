@@ -87,6 +87,8 @@ PETSC_EXTERN PetscErrorCode DMDASetBoundaryType(DM,DMDABoundaryType,DMDABoundary
 PETSC_EXTERN PetscErrorCode DMDASetDof(DM, PetscInt);
 PETSC_EXTERN PetscErrorCode DMDASetOverlap(DM,PetscInt,PetscInt,PetscInt);
 PETSC_EXTERN PetscErrorCode DMDAGetOverlap(DM,PetscInt*,PetscInt*,PetscInt*);
+PETSC_EXTERN PetscErrorCode DMDASetNumLocalSubDomains(DM,PetscInt);
+PETSC_EXTERN PetscErrorCode DMDAGetNumLocalSubDomains(DM,PetscInt*);
 PETSC_EXTERN PetscErrorCode DMDAGetOffset(DM,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*);
 PETSC_EXTERN PetscErrorCode DMDASetOffset(DM,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt);
 PETSC_EXTERN PetscErrorCode DMDASetStencilWidth(DM, PetscInt);
