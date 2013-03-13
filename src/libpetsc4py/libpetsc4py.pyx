@@ -1709,7 +1709,6 @@ cdef extern from * nogil:
     PetscErrorCode SNESGetIterationNumber(PetscSNES,PetscInt*)
     PetscErrorCode SNESGetLinearSolveIterations(PetscSNES,PetscInt*)
     PetscErrorCode SNESGetConvergedReason(PetscSNES,SNESConvergedReason*)
-    PetscErrorCode SNES_KSPSolve(PetscSNES,PetscKSP,PetscVec,PetscVec,)
     PetscErrorCode SNESConverged(PetscSNES,PetscInt,PetscReal,PetscReal,PetscReal,SNESConvergedReason*)
     PetscErrorCode SNESLogHistory(PetscSNES,PetscReal,PetscInt)
     PetscErrorCode SNESMonitor(PetscSNES,PetscInt,PetscReal)
@@ -1968,11 +1967,11 @@ cdef PetscErrorCode SNESStep_Python_default(
     cdef PetscMat J = NULL, P = NULL
     cdef MatStructure mstr = DIFFERENT_NONZERO_PATTERN
     cdef PetscInt lits = 0
-    CHKERR( SNESGetJacobian(snes,&J,&P,NULL,NULL) )
-    CHKERR( SNESComputeJacobian(snes,X,&J,&P,&mstr)    )
-    CHKERR( KSPSetOperators(snes.ksp,J,P,mstr)        )
-    CHKERR( SNES_KSPSolve(snes,snes.ksp,F,Y)          )
-    CHKERR( KSPGetIterationNumber(snes.ksp,&lits)     )
+    CHKERR( SNESGetJacobian(snes,&J,&P,NULL,NULL)   )
+    CHKERR( SNESComputeJacobian(snes,X,&J,&P,&mstr) )
+    CHKERR( KSPSetOperators(snes.ksp,J,P,mstr)      )
+    CHKERR( KSPSolve(snes.ksp,F,Y)                  )
+    CHKERR( KSPGetIterationNumber(snes.ksp,&lits)   )
     snes.linear_its += lits
     return FunctionEnd()
 
