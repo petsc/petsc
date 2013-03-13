@@ -634,7 +634,7 @@ PetscErrorCode  PetscOptionsInsert(int *argc,char ***args,const char file[])
   char      yaml_file[PETSC_MAX_PATH_LEN];
   PetscBool yaml_flg = PETSC_FALSE;
   ierr = PetscOptionsGetString(NULL,"-options_file_yaml",yaml_file,PETSC_MAX_PATH_LEN,&yaml_flg);CHKERRQ(ierr);
-  if (yaml_flg) ierr = PetscOptionsInsertFile_YAML(PETSC_COMM_WORLD,yaml_file,PETSC_TRUE);CHKERRQ(ierr);
+  if (yaml_flg) ierr = PetscOptionsInsertFileYAML(PETSC_COMM_WORLD,yaml_file,PETSC_TRUE);CHKERRQ(ierr);
 #endif
 
   /* insert command line options again because they take precedence over arguments in petscrc/environment */
