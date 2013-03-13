@@ -51,7 +51,7 @@ def currentversion(petscdir):
 #
 #
 if __name__ ==  '__main__':
-  if os.environ.has_key('PETSC_DIR'):
+  if 'PETSC_DIR' in os.environ:
     petscdir = os.environ['PETSC_DIR']
   elif os.path.exists(os.path.join('.', 'include', 'petscversion.h')):
     petscdir  = '.'
