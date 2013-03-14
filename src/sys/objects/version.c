@@ -30,7 +30,7 @@ PetscErrorCode PetscGetVersion(char version[], size_t len)
 #if (PETSC_VERSION_RELEASE == 1)
   ierr = PetscSNPrintf(version,len,"Petsc Release Version %d.%d.%d, Patch %d, %s ",PETSC_VERSION_MAJOR,PETSC_VERSION_MINOR, PETSC_VERSION_SUBMINOR,PETSC_VERSION_PATCH,PETSC_VERSION_PATCH_DATE);CHKERRQ(ierr);
 #else
-  ierr = PetscSNPrintf(version,len,"Petsc Development HG revision: %s  HG Date: %s",PETSC_VERSION_HG, PETSC_VERSION_DATE_HG);CHKERRQ(ierr);
+  ierr = PetscSNPrintf(version,len,"Petsc Development GIT revision: %s  GIT Date: %s",PETSC_VERSION_GIT, PETSC_VERSION_DATE_GIT);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
 }
