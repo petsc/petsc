@@ -581,9 +581,8 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
         for (level=pc_gamg->Nlevels-2; level>=0; level--) {
           /* the first time through the matrix structure has changed from repartitioning */
           if (pc_gamg->setup_count==2 && (pc_gamg->repart || level==0)) {
-            
             if (!rart) {
-            ierr = MatPtAP(dB,mglevels[level+1]->interpolate,MAT_INITIAL_MATRIX,1.0,&B);CHKERRQ(ierr);
+              ierr = MatPtAP(dB,mglevels[level+1]->interpolate,MAT_INITIAL_MATRIX,1.0,&B);CHKERRQ(ierr);
             } else { /* Use RARt */
               Mat R;
               ierr = MatTranspose(mglevels[level+1]->interpolate,MAT_INITIAL_MATRIX,&R);CHKERRQ(ierr);
@@ -595,7 +594,14 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
             mglevels[level]->A = B;
           } else {
             ierr = KSPGetOperators(mglevels[level]->smoothd,NULL,&B,NULL);CHKERRQ(ierr);
-            ierr = MatPtAP(dB,mglevels[level+1]->interpolate,MAT_REUSE_MATRIX,1.0,&B);CHKERRQ(ierr);
+            if (!rart) {
+              ierr = MatPtAP(dB,mglevels[level+1]->interpolate,MAT_REUSE_MATRIX,1.0,&B);CHKERRQ(ierr);
+             } else { /* Use RARt */
+              Mat R;
+              ierr = MatTranspose(mglevels[level+1]->interpolate,MAT_INITIAL_MATRIX,&R);CHKERRQ(ierr);
+              ierr = MatRARt(dB, R, MAT_REUSE_MATRIX, 1.0, &B);CHKERRQ(ierr);
+              ierr = MatDestroy(&R);CHKERRQ(ierr);
+            } 
           }
           ierr = KSPSetOperators(mglevels[level]->smoothd,B,B,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
           dB   = B;

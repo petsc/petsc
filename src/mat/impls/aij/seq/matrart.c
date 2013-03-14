@@ -333,6 +333,7 @@ PetscErrorCode MatRARtSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat R,PetscReal fill,Mat *C)
   ierr   = PetscTime(&tf);CHKERRQ(ierr);
   etime += tf - t0;
 
+  /* ------ Use coloring ---------- */
   /* Create MatTransposeColoring from symbolic C=R*A*R^T */
   c       = (Mat_SeqAIJ*)(*C)->data;
   ierr    = PetscTime(&t0);CHKERRQ(ierr);
@@ -507,7 +508,7 @@ PetscErrorCode MatRARtNumeric_SeqAIJ_SeqAIJ(Mat A,Mat R,Mat C)
   ierr = PetscObjectQuery((PetscObject)C,"Mat_RARt",(PetscObject*)&container);CHKERRQ(ierr);
   if (!container) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Container does not exit");
   ierr = PetscContainerGetPointer(container,(void**)&rart);CHKERRQ(ierr);
-
+  
   /* Get dense Rt by Apply MatTransposeColoring to R */
   matcoloring = rart->matcoloring;
   Rt          = rart->Rt;
@@ -543,8 +544,20 @@ PetscErrorCode MatRARtNumeric_SeqAIJ_SeqAIJ(Mat A,Mat R,Mat C)
 PetscErrorCode MatRARt_SeqAIJ_SeqAIJ(Mat A,Mat R,MatReuse scall,PetscReal fill,Mat *C)
 {
   PetscErrorCode ierr;
+  PetscBool      usecoloring = PETSC_TRUE;
 
   PetscFunctionBegin;
+  ierr = PetscOptionsGetBool(NULL,"-matrart_color",&usecoloring,NULL);CHKERRQ(ierr);
+
+  if (!usecoloring) {
+    Mat Rt;
+    ierr = MatTranspose(R,MAT_INITIAL_MATRIX,&Rt);CHKERRQ(ierr); /* replace MAT_INITIAL_MATRIX with scall if !usecoloring is better */
+    ierr = MatMatMatMult(R,A,Rt,scall,fill,C);CHKERRQ(ierr);
+    ierr = MatDestroy(&Rt);CHKERRQ(ierr); 
+    PetscFunctionReturn(0);
+  }
+
+  /* use coloring */
   if (scall == MAT_INITIAL_MATRIX) {
     ierr = MatRARtSymbolic_SeqAIJ_SeqAIJ(A,R,fill,C);CHKERRQ(ierr);
   }
