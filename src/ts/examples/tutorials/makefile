@@ -413,6 +413,7 @@ TESTEXAMPLES_FORTRAN	  = ex1f.PETSc runex1f ex1f.rm ex2f.PETSc runex2f ex2f.rm e
 TESTEXAMPLES_C_X_MPIUNI =
 TESTEXAMPLES_13		  = ex2.PETSc ex2.rm ex3.PETSc ex3.rm ex4.PETSc ex4.rm \
                             ex5.PETSc ex5.rm
-TESTEXAMPLES_EXODUSII = ex11.PETSc runex11 ex11.rm
+TESTEXAMPLES_EXODUSII     = ex11.PETSc runex11 ex11.rm
+TESTEXAMPLES_MOAB         = ex30.PETSc runex30 ex30.rm
 
 include ${PETSC_DIR}/conf/test
