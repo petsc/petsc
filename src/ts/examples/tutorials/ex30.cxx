@@ -87,7 +87,7 @@ int main(int argc,char **argv)
   ierr = DMMoabCreateMoab(user.pcomm->comm(),user.mbint,user.pcomm,user.id_tag,user.owned_vertexes,&dm);CHKERRQ(ierr);
 
   // Create the solution vector:
-  ierr = DMMoabCreateVector(dm,user.unknowns_tag,user.unknowns_tag_size,*user.owned_vertexes,PETSC_FALSE,PETSC_FALSE,&X);CHKERRXX(ierr);
+  ierr = DMMoabCreateVector(dm,user.unknowns_tag,user.unknowns_tag_size,*user.owned_vertexes,PETSC_FALSE,PETSC_FALSE,&X);CHKERRQ(ierr);
     // Create the matrix
   ierr = create_matrix(user, dm, &J);CHKERRQ(ierr);
 

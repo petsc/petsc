@@ -552,7 +552,7 @@ PetscErrorCode DMMoab_CreateVector(moab::Interface *mbiface,moab::ParallelComm *
   if(!serial) {
       // This is an MPI Vector:
     ierr = VecCreateMPIWithArray(vmoab->pcomm->comm(),vmoab->tag_size,vmoab->tag_size*range.size(),
-                                 PETSC_DECIDE,data_ptr,vec);CHKERRXX(ierr);
+                                 PETSC_DECIDE,data_ptr,vec);CHKERRQ(ierr);
 
       // Vector created, manually set local to global mapping:
     ISLocalToGlobalMapping ltog;
@@ -575,7 +575,7 @@ PetscErrorCode DMMoab_CreateVector(moab::Interface *mbiface,moab::ParallelComm *
     delete [] gindices;
   } else {
       // This is a serial vector:
-    ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,vmoab->tag_size,vmoab->tag_size*range.size(),data_ptr,vec);CHKERRXX(ierr);
+    ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,vmoab->tag_size,vmoab->tag_size*range.size(),data_ptr,vec);CHKERRQ(ierr);
   }
 
 
