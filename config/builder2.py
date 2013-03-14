@@ -90,17 +90,24 @@ def checkSingleRun(maker, ex, replace, extraArgs = '', isRegression = False):
     return
   if not isinstance(params, list):
     params = [params]
-  # NOTE: testnum will be wrong for single tests, just push fixes to PETSc
+  # Process testnum
+  if args.testnum is not None:
+    if args.testnum[0] == '[':
+      testnum = args.testnum[1:-1].split(',')
+    else:
+      testnum = [args.testnum]
+    numtests = len(testnum)
+  else:
+    numtests = len(params)
   rebuildTest = True
-  numtests = 1 if args.testnum is not None else len(params)
   maker.logPrint('Running %d tests\n' % (numtests,), debugSection='screen', forceScroll=True)
   for testnum, param in enumerate(params):
     testnum = str(testnum)
     if 'num' in param: testnum = param['num']
-    if not args.testnum is None and testnum != str(args.testnum): continue
+    if not args.testnum is None and not testnum in str(args.testnum): continue
     if 'setup' in param:
       print(param['setup'])
-      os.system('python '+param['setup'])
+      os.system(sys.executable+' '+param['setup'])
       rebuildTest = True
     if 'source' in param:
       if not isinstance(ex, list):
@@ -239,7 +246,7 @@ def showSingleRun(maker, ex, extraArgs = ''):
   params = builder.regressionParameters.get(paramKey, {})
   if not params:
     params = builder.getRegressionParameters(maker, exampleDir).get(paramKey, {})
-    maker.logPrint('Makefile params '+strparams)
+    maker.logPrint('Makefile params '+str(params))
   if not isinstance(params, list):
     params = [params]
   for testnum, param in enumerate(params):
@@ -291,7 +298,7 @@ if __name__ == '__main__':
   parser_check.add_argument('files', nargs='*', help='Extra examples to test')
   parser_check.add_argument('--args', action='append', default=[], help='Extra execution arguments for test')
   parser_check.add_argument('--retain', action='store_true', default=False, help='Retain the executable after testing')
-  parser_check.add_argument('--testnum', type=int, help='The test number to execute')
+  parser_check.add_argument('--testnum', help='The test to execute')
   parser_check.add_argument('--replace', action='store_true', default=False, help='Replace stored output with test output')
   parser_check.set_defaults(func=check)
   parser_regression = subparsers.add_parser('regression', help='Execute regression tests')

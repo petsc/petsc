@@ -13,9 +13,9 @@ typedef struct {
   PetscBool estimate_current;
   PetscBool hybrid;       /* flag for using Hybrid Chebyshev */
   PetscInt  chebysteps;   /* number of Chebyshev steps in Hybrid Chebyshev */
-  PetscInt  adaptsteps;   /* number of adaptive steps in Hybrid Chebyshev */
+  PetscInt  eststeps;     /* number of adaptive/est steps in Hybrid Chebyshev */
   PetscInt  its;          /* total hybrid iterations, used to determine when toGMRES step in hybrid impl */
-  PetscBool purification; /* Hybrid method uses the GMRES adaptive steps to imporve the approximate solution */
+  PetscBool purification; /* Hybrid method uses the GMRES/adaptive/est steps to imporve the approximate solution */
   PetscRandom random;
 } KSP_Chebyshev;
 

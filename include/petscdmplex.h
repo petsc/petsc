@@ -38,6 +38,7 @@ PETSC_EXTERN PetscErrorCode DMPlexStratify(DM);
 PETSC_EXTERN PetscErrorCode DMPlexGetCoordinateSection(DM, PetscSection *);
 PETSC_EXTERN PetscErrorCode DMPlexSetCoordinateSection(DM, PetscSection);
 PETSC_EXTERN PetscErrorCode DMPlexSetPreallocationCenterDimension(DM,PetscInt);
+PETSC_EXTERN PetscErrorCode DMPlexPreallocateOperator(DM, PetscInt, PetscSection, PetscSection, PetscInt[], PetscInt[], PetscInt[], PetscInt[], Mat, PetscBool);
 PETSC_EXTERN PetscErrorCode DMPlexGetPointLocal(DM,PetscInt,PetscInt*,PetscInt*);
 PETSC_EXTERN PetscErrorCode DMPlexPointLocalRef(DM,PetscInt,PetscScalar*,void*);
 PETSC_EXTERN PetscErrorCode DMPlexPointLocalRead(DM,PetscInt,const PetscScalar*,const void*);
@@ -125,8 +126,9 @@ PETSC_EXTERN PetscErrorCode DMPlexGetDepthStratum(DM, PetscInt, PetscInt *, Pets
 PETSC_EXTERN PetscErrorCode DMPlexGetHeightStratum(DM, PetscInt, PetscInt *, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMPlexCreateSection(DM, PetscInt, PetscInt,const PetscInt [],const PetscInt [], PetscInt,const PetscInt [],const IS [], PetscSection *);
 PETSC_EXTERN PetscErrorCode DMPlexCreateConeSection(DM, PetscSection *);
-PETSC_EXTERN PetscErrorCode DMLabelCohesiveComplete(DM, DMLabel);
-PETSC_EXTERN PetscErrorCode DMPlexMarkBoundaryFaces(DM,DMLabel);
+PETSC_EXTERN PetscErrorCode DMPlexLabelCohesiveComplete(DM, DMLabel);
+PETSC_EXTERN PetscErrorCode DMPlexMarkBoundaryFaces(DM, DMLabel);
+PETSC_EXTERN PetscErrorCode DMPlexLabelComplete(DM, DMLabel);
 
 /* FEM Support */
 PETSC_EXTERN PetscErrorCode DMPlexComputeCellGeometry(DM, PetscInt, PetscReal *, PetscReal *, PetscReal *, PetscReal *);

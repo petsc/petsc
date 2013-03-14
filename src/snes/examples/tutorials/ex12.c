@@ -1,4 +1,4 @@
-static char help[] = "Poisson Problem in 2d and 3d with simplicial and hexahedral finite elements.\n\
+static char help[] = "Poisson Problem in 2d and 3d with simplicial finite elements.\n\
 We solve the Poisson problem in a rectangular\n\
 domain, using a parallel unstructured mesh (DMPLEX) to discretize it.\n\n\n";
 
@@ -10,7 +10,6 @@ domain, using a parallel unstructured mesh (DMPLEX) to discretize it.\n\n\n";
 
 /*------------------------------------------------------------------------------
   This code can be generated using 'bin/pythonscripts/PetscGenerateFEMQuadrature.py dim order dim 1 laplacian src/snes/examples/tutorials/ex12.h'
-                                   'bin/pythonscripts/PetscGenerateFEMQuadratureTensorProduct.py dim order dim 1 laplacian src/snes/examples/tutorials/ex12.h'
  -----------------------------------------------------------------------------*/
 #include "ex12.h"
 
@@ -55,7 +54,7 @@ PetscScalar zero(const PetscReal coords[])
 }
 
 /*
-  In 2D we use exact solution:
+  In 2D for Dirichlet conditions, we use exact solution:
 
     u = x^2 + y^2
     f = 4
@@ -63,6 +62,13 @@ PetscScalar zero(const PetscReal coords[])
   so that
 
     -\Delta u + f = -4 + 4 = 0
+
+  For Neumann conditions, we have
+
+    \nabla u \cdot -\hat y |_{y=0} = -(2y)|_{y=0} = 0 (bottom)
+    \nabla u \cdot  \hat y |_{y=1} =  (2y)|_{y=1} = 2 (top)
+    \nabla u \cdot -\hat x |_{x=0} = -(2x)|_{x=0} = 0 (left)
+    \nabla u \cdot  \hat x |_{x=1} =  (2x)|_{x=1} = 2 (right)
 */
 PetscScalar quadratic_u_2d(const PetscReal x[])
 {
@@ -301,6 +307,7 @@ PetscErrorCode SetupSection(DM dm, AppCtx *user)
   IS             bcPoints[1]         = {NULL};
   PetscInt       numDof[NUM_FIELDS*(SPATIAL_DIM_0+1)];
   PetscInt       f, d;
+  PetscBool      has;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
@@ -311,6 +318,17 @@ PetscErrorCode SetupSection(DM dm, AppCtx *user)
   for (f = 0; f < numFields; ++f) {
     for (d = 1; d < dim; ++d) {
       if ((numDof[f*(dim+1)+d] > 0) && !user->interpolate) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Mesh must be interpolated when unknowns are specified on edges or faces.");
+    }
+  }
+  ierr = DMPlexHasLabel(dm, "marker", &has);CHKERRQ(ierr);
+  if (!has) {
+    DMLabel label;
+
+    ierr = DMPlexCreateLabel(dm, "marker");CHKERRQ(ierr);
+    ierr = DMPlexGetLabel(dm, "marker", &label);CHKERRQ(ierr);
+    ierr = DMPlexMarkBoundaryFaces(dm, label);CHKERRQ(ierr);
+    if (user->bcType == DIRICHLET) {
+      ierr  = DMPlexLabelComplete(dm, label);CHKERRQ(ierr);
     }
   }
   if (user->bcType == DIRICHLET) {
@@ -441,7 +459,7 @@ int main(int argc, char **argv)
   SNES           snes;                 /* nonlinear solver */
   Vec            u,r;                  /* solution, residual vectors */
   Mat            A,J;                  /* Jacobian matrix */
-  MatNullSpace   nullSpace;            /* May be necessary for pressure */
+  MatNullSpace   nullSpace;            /* May be necessary for Neumann conditions */
   AppCtx         user;                 /* user-defined work context */
   JacActionCtx   userJ;                /* context for Jacobian MF action */
   PetscInt       its;                  /* iterations for convergence */
@@ -484,6 +502,15 @@ int main(int argc, char **argv)
   } else {
     A = J;
   }
+#if 0
+  if (user.bcType == NEUMANN) {
+    ierr = MatNullSpaceCreate(PetscObjectComm((PetscObject) user.dm), PETSC_TRUE, 0, NULL, &nullSpace);CHKERRQ(ierr);
+    ierr = MatSetNullSpace(J, nullSpace);CHKERRQ(ierr);
+    if (A != J) {
+      ierr = MatSetNullSpace(A, nullSpace);CHKERRQ(ierr);
+    }
+  }
+#endif
 
   ierr = DMSNESSetFunctionLocal(user.dm,  (PetscErrorCode (*)(DM,Vec,Vec,void*))DMPlexComputeResidualFEM,&user);CHKERRQ(ierr);
   ierr = DMSNESSetJacobianLocal(user.dm,  (PetscErrorCode (*)(DM,Vec,Mat,Mat,MatStructure*,void*))DMPlexComputeJacobianFEM,&user);CHKERRQ(ierr);

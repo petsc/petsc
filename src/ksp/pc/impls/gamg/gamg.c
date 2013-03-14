@@ -550,7 +550,7 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
   if (pc_gamg->setup_count++ > 0) {
     if (redo_mesh_setup) {
       /* reset everything */
-      ierr            = PCReset_MG(pc);CHKERRQ(ierr);
+      ierr = PCReset_MG(pc);CHKERRQ(ierr);
       pc->setupcalled = 0;
     } else {
       PC_MG_Levels **mglevels = mg->levels;
@@ -564,9 +564,9 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
         /* (re)set to get dirty flag */
         ierr = KSPSetOperators(mglevels[pc_gamg->Nlevels-1]->smoothd,dA,dB,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
 
-        for (level=pc_gamg->Nlevels-2; level>-1; level--) {
+        for (level=pc_gamg->Nlevels-2; level>=0; level--) {
           /* the first time through the matrix structure has changed from repartitioning */
-          if (pc_gamg->setup_count==2 /*&& (pc_gamg->repart || level==0)*/) {
+          if (pc_gamg->setup_count==2 && (pc_gamg->repart || level==0)) {
             ierr = MatPtAP(dB,mglevels[level+1]->interpolate,MAT_INITIAL_MATRIX,1.0,&B);CHKERRQ(ierr);
             ierr = MatDestroy(&mglevels[level]->A);CHKERRQ(ierr);
 
@@ -853,6 +853,7 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
       ierr = KSPGetPC(k2[0],&pc2);CHKERRQ(ierr);
       ierr = PCSetType(pc2, PCLU);CHKERRQ(ierr);
       ierr = PCFactorSetShiftType(pc2,MAT_SHIFT_INBLOCKS);CHKERRQ(ierr);
+      ierr = KSPSetTolerances(k2[0],PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,1);CHKERRQ(ierr);
     }
 
     /* should be called in PCSetFromOptions_GAMG(), but cannot be called prior to PCMGSetLevels() */

@@ -39,6 +39,59 @@ PetscErrorCode DMPlexMarkBoundaryFaces(DM dm, DMLabel label)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMPlexLabelComplete"
+/*@
+  DMPlexLabelComplete - Starting with a label marking points on a surface, we add the transitive closure to the surface
+
+  Input Parameters:
++ dm - The DM
+- label - A DMLabel marking the surface points
+
+  Output Parameter:
+. label - A DMLabel marking all surface points in the transitive closure
+
+  Level: developer
+
+.seealso: DMPlexLabelCohesiveComplete()
+@*/
+PetscErrorCode DMPlexLabelComplete(DM dm, DMLabel label)
+{
+  IS              valueIS;
+  const PetscInt *values;
+  PetscInt        numValues, v;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  ierr = DMLabelGetNumValues(label, &numValues);CHKERRQ(ierr);
+  ierr = DMLabelGetValueIS(label, &valueIS);CHKERRQ(ierr);
+  ierr = ISGetIndices(valueIS, &values);CHKERRQ(ierr);
+  for (v = 0; v < numValues; ++v) {
+    IS              pointIS;
+    const PetscInt *points;
+    PetscInt        numPoints, p;
+
+    ierr = DMLabelGetStratumSize(label, values[v], &numPoints);CHKERRQ(ierr);
+    ierr = DMLabelGetStratumIS(label, values[v], &pointIS);CHKERRQ(ierr);
+    ierr = ISGetIndices(pointIS, &points);CHKERRQ(ierr);
+    for (p = 0; p < numPoints; ++p) {
+      PetscInt *closure = NULL;
+      PetscInt  closureSize, c;
+
+      ierr = DMPlexGetTransitiveClosure(dm, points[p], PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+      for (c = 0; c < closureSize*2; c += 2) {
+        ierr = DMLabelSetValue(label, closure[c], values[v]);CHKERRQ(ierr);
+      }
+      ierr = DMPlexRestoreTransitiveClosure(dm, points[p], PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+    }
+    ierr = ISRestoreIndices(pointIS, &points);CHKERRQ(ierr);
+    ierr = ISDestroy(&pointIS);CHKERRQ(ierr);
+  }
+  ierr = ISRestoreIndices(valueIS, &values);CHKERRQ(ierr);
+  ierr = ISDestroy(&valueIS);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMPlexShiftPoint_Internal"
 PETSC_STATIC_INLINE PetscInt DMPlexShiftPoint_Internal(PetscInt p, PetscInt depth, PetscInt depthEnd[], PetscInt depthShift[])
 {
@@ -845,7 +898,7 @@ static PetscErrorCode DMPlexConstructCohesiveCells_Internal(DM dm, DMLabel label
 
   Level: developer
 
-.seealso: DMCreate(), DMLabelCohesiveComplete()
+.seealso: DMCreate(), DMPlexLabelCohesiveComplete()
 @*/
 PetscErrorCode DMPlexConstructCohesiveCells(DM dm, DMLabel label, DM *dmSplit)
 {
@@ -873,9 +926,9 @@ PetscErrorCode DMPlexConstructCohesiveCells(DM dm, DMLabel label, DM *dmSplit)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMLabelCohesiveComplete"
+#define __FUNCT__ "DMPlexLabelCohesiveComplete"
 /*@
-  DMLabelCohesiveComplete - Starting with a label marking vertices on an internal surface, we add all other mesh pieces
+  DMPlexLabelCohesiveComplete - Starting with a label marking vertices on an internal surface, we add all other mesh pieces
   to complete the surface
 
   Input Parameters:
@@ -887,9 +940,9 @@ PetscErrorCode DMPlexConstructCohesiveCells(DM dm, DMLabel label, DM *dmSplit)
 
   Level: developer
 
-.seealso: DMPlexConstructCohesiveCells()
+.seealso: DMPlexConstructCohesiveCells(), DMPlexLabelComplete()
 @*/
-PetscErrorCode DMLabelCohesiveComplete(DM dm, DMLabel label)
+PetscErrorCode DMPlexLabelCohesiveComplete(DM dm, DMLabel label)
 {
   IS              dimIS;
   const PetscInt *points;

@@ -760,6 +760,7 @@ PetscErrorCode IJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat *A,Mat
 {
   PetscErrorCode ierr;
   SNES           snes;
+  PetscScalar    atmp = (PetscScalar) a;
   PetscInt       i,row;
 
   PetscFunctionBegin;
@@ -769,19 +770,19 @@ PetscErrorCode IJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat *A,Mat
   ierr = ResidualJacobian(snes,X,A,B,flag,user);CHKERRQ(ierr);
   for (i=0;i < ngen;i++) {
     row = 9*i;
-    ierr = MatSetValues(*A,1,&row,1,&row,&a,ADD_VALUES);CHKERRQ(ierr);
+    ierr = MatSetValues(*A,1,&row,1,&row,&atmp,ADD_VALUES);CHKERRQ(ierr);
     row  = 9*i+1;
-    ierr = MatSetValues(*A,1,&row,1,&row,&a,ADD_VALUES);CHKERRQ(ierr);
+    ierr = MatSetValues(*A,1,&row,1,&row,&atmp,ADD_VALUES);CHKERRQ(ierr);
     row  = 9*i+2;
-    ierr = MatSetValues(*A,1,&row,1,&row,&a,ADD_VALUES);CHKERRQ(ierr);
+    ierr = MatSetValues(*A,1,&row,1,&row,&atmp,ADD_VALUES);CHKERRQ(ierr);
     row  = 9*i+3;
-    ierr = MatSetValues(*A,1,&row,1,&row,&a,ADD_VALUES);CHKERRQ(ierr);
+    ierr = MatSetValues(*A,1,&row,1,&row,&atmp,ADD_VALUES);CHKERRQ(ierr);
     row  = 9*i+6;
-    ierr = MatSetValues(*A,1,&row,1,&row,&a,ADD_VALUES);CHKERRQ(ierr);
+    ierr = MatSetValues(*A,1,&row,1,&row,&atmp,ADD_VALUES);CHKERRQ(ierr);
     row  = 9*i+7;
-    ierr = MatSetValues(*A,1,&row,1,&row,&a,ADD_VALUES);CHKERRQ(ierr);
+    ierr = MatSetValues(*A,1,&row,1,&row,&atmp,ADD_VALUES);CHKERRQ(ierr);
     row  = 9*i+8;
-    ierr = MatSetValues(*A,1,&row,1,&row,&a,ADD_VALUES);CHKERRQ(ierr);
+    ierr = MatSetValues(*A,1,&row,1,&row,&atmp,ADD_VALUES);CHKERRQ(ierr);
   }
   ierr = MatAssemblyBegin(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
