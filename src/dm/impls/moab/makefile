@@ -1,7 +1,6 @@
 #requirespackage  'PETSC_HAVE_MOAB'
 #requiresprecision double
 #requiresscalar    real
-#requireslanguage  CXXONLY
 
 ALL: lib
 
