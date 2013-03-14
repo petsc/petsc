@@ -59,43 +59,39 @@ PetscErrorCode DMCreateLocalVector_Moab(DM dm,Vec *gvec)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "DMDestroy_Moab"
+PetscErrorCode DMDestroy_Moab(DM dm)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  if (((DM_Moab*)dm->data)->icreatedinstance) {
+    delete ((DM_Moab*)dm->data)->mbiface;
+    ((DM_Moab*)dm->data)->mbiface = NULL;
+    ((DM_Moab*)dm->data)->pcomm = NULL;
+    ((DM_Moab*)dm->data)->range.~Range();
+  }
+  ierr = PetscFree(dm->data);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__
 #define __FUNCT__ "DMCreate_Moab"
-PetscErrorCode DMCreate_Moab(DM dm)
+PETSC_EXTERN PetscErrorCode DMCreate_Moab(DM dm)
 {
   DM_Moab        *moab;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  ierr     = PetscNewLog(dm, DM_Moab, &moab);CHKERRQ(ierr);
-  dm->data = moab;
-
-  PetscFunctionReturn(0);
-}
-EXTERN_C_END
-
-#undef __FUNCT__
-#define __FUNCT__ "DMDestroy_Moab"
-PetscErrorCode DMDestroy_Moab(DM dm)
-{
-  PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  ierr = PetscNewLog(dm,DM_Moab,&moab);CHKERRQ(ierr);
+  dm->data = moab;
+  new (moab) DM_Moab();
 
-  // Delete the DM_Moab:
-  if(dm->data) {
-    if (((DM_Moab*)dm->data)->icreatedinstance) {
-      delete ((DM_Moab*)dm->data)->mbiface;
-      ((DM_Moab*)dm->data)->mbiface = NULL;
-      ((DM_Moab*)dm->data)->pcomm = NULL;
-    }
-    delete (DM_Moab*)dm->data;
-    dm->data = NULL;
-  }
   PetscFunctionReturn(0);
 }
-
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMoabCreate"
@@ -150,13 +146,12 @@ PetscErrorCode DMMoabCreate(MPI_Comm comm, DM *moab)
 PetscErrorCode DMMoabCreateMoab(MPI_Comm comm, moab::Interface *mbiface, moab::ParallelComm *pcomm, moab::Tag ltog_tag, moab::Range *range, DM *moab)
 {
   PetscErrorCode ierr;
+  DM_Moab        *dmmoab;
 
   PetscFunctionBegin;
   PetscValidPointer(moab,2);
-  ierr = DMCreate(comm, moab);CHKERRQ(ierr);
-  ierr = DMSetType(*moab, DMMOAB);CHKERRQ(ierr);
-  DM_Moab *dmmoab = new DM_Moab;
-  (*moab)->data      = dmmoab;
+  ierr = DMMoabCreate(comm, moab);CHKERRQ(ierr);
+  dmmoab = (DM_Moab*)(*moab)->data;
 
   if (!mbiface) {
     mbiface = new moab::Core();
@@ -740,7 +735,8 @@ PetscErrorCode DMMoab_VecUserDestroy(void *user)
 
   PetscFunctionBegin;
   vmoab = (Vec_MOAB*)user;
-  if(vmoab->new_tag == PETSC_TRUE) {
+  vmoab->tag_range.~Range();
+  if(vmoab->new_tag) {
     // Tag created via a call to VecDuplicate, delete the underlying tag in MOAB...
     merr = vmoab->mbiface->tag_delete(vmoab->tag);MBERRNM(merr);
   }
