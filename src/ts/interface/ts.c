@@ -1370,6 +1370,9 @@ PetscErrorCode  TSView(TS ts,PetscViewer viewer)
       PetscStackCallAMS(AMS_Memory_add_field,(((PetscObject)ts)->amsmem,"time",&ts->ptime,1,AMS_DOUBLE,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF));
       PetscStackCallAMS(AMS_Memory_grant_access,(((PetscObject)ts)->amsmem));
     }
+    if (ts->ops->view) {
+      ierr = (*ts->ops->view)(ts,viewer);CHKERRQ(ierr);
+    }
 #endif
   }
 

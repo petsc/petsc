@@ -1541,6 +1541,9 @@ PetscErrorCode  PCLoad(PC newdm, PetscViewer viewer)
 }
 
 #include <petscdraw.h>
+#if defined(PETSC_HAVE_AMS)
+#include <petscviewerams.h>
+#endif
 #undef __FUNCT__
 #define __FUNCT__ "PCView"
 /*@C
@@ -1575,6 +1578,9 @@ PetscErrorCode  PCView(PC pc,PetscViewer viewer)
   PetscErrorCode    ierr;
   PetscBool         iascii,isstring,isbinary,isdraw;
   PetscViewerFormat format;
+#if defined(PETSC_HAVE_AMS)
+  PetscBool         isams;
+#endif
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
@@ -1588,6 +1594,9 @@ PetscErrorCode  PCView(PC pc,PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_AMS)
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERAMS,&isams);CHKERRQ(ierr);
+#endif
 
   if (iascii) {
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
@@ -1658,6 +1667,14 @@ PetscErrorCode  PCView(PC pc,PetscViewer viewer)
       ierr = (*pc->ops->view)(pc,viewer);CHKERRQ(ierr);
     }
     ierr = PetscDrawPopCurrentPoint(draw);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_AMS)
+  } else if (isams) {
+    if (((PetscObject)pc)->amsmem == -1) {
+      ierr = PetscObjectViewAMS((PetscObject)pc,viewer);CHKERRQ(ierr);
+    }
+    if (pc->mat) {ierr = MatView(pc->mat,viewer);CHKERRQ(ierr);}
+    if (pc->pmat && pc->pmat != pc->mat) {ierr = MatView(pc->pmat,viewer);CHKERRQ(ierr);}
+#endif
   }
   PetscFunctionReturn(0);
 }

@@ -1518,9 +1518,13 @@ PetscErrorCode  PetscWebServe(MPI_Comm comm,int port)
   PetscMPIInt    rank;
   pthread_t      thread;
   int            *trueport;
+  PetscBool      flg;
 
   PetscFunctionBegin;
   if (port < 1 && port != PETSC_DEFAULT && port != PETSC_DECIDE) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Cannot use negative port number %d",port);
+  ierr = PetscMallocGetDebug(&flg);CHKERRQ(ierr);
+  if (flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Cannot use PetscWebServe() (-server) with any malloc debugging, run with -malloc off -malloc_test off -malloc_debug off");
+
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   if (rank) PetscFunctionReturn(0);
 

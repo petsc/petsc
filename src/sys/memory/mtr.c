@@ -708,3 +708,28 @@ PetscErrorCode  PetscMallocDebug(PetscBool level)
   TRdebugLevel = level;
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscMallocGetDebug"
+/*@C
+    PetscMallocGetDebug - Indicates if any PETSc is doing ANY memory debugging.
+
+    Not Collective
+
+    Output Parameter:
+.    flg - PETSC_TRUE if any debugger
+
+   Level: intermediate
+
+    Note that by default, the debug version always does some debugging unless you run with -malloc no
+
+
+.seealso: CHKMEMQ(), PetscMallocValidate()
+@*/
+PetscErrorCode  PetscMallocGetDebug(PetscBool *flg)
+{
+  PetscFunctionBegin;
+  if (PetscTrMalloc == PetscTrMallocDefault) *flg = PETSC_TRUE;
+  else *flg = PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
