@@ -15,9 +15,21 @@ class Configure(config.base.Configure):
   def setupHelp(self, help):
     import nargs
 
+    help.addArgument('SourceControl', '-with-git=<prog>', nargs.Arg(None, 'git','Specify the Git executable'))
     help.addArgument('SourceControl', '-with-hg=<prog>',  nargs.Arg(None, 'hg', 'Specify the Mercurial executable'))
     help.addArgument('SourceControl', '-with-cvs=<prog>', nargs.Arg(None, 'cvs', 'Specify the CVS executable'))
     help.addArgument('SourceControl', '-with-svn=<prog>', nargs.Arg(None, 'svn', 'Specify the Subversion executable'))
+    return
+
+  def configureGit(self):
+    '''Find the Git executable'''
+    if 'with-git' in self.framework.argDB and self.framework.argDB['with-git'] == '0':
+      return
+    self.getExecutable(self.framework.argDB['with-git'], resultName = 'git')
+    if hasattr(self,'git'):
+      try:
+        self.gitversion = self.executeShellCommand(self.git + ' --version')
+      except: pass
     return
 
   def configureMercurial(self):
@@ -50,6 +62,7 @@ class Configure(config.base.Configure):
     return
 
   def configure(self):
+    self.executeTest(self.configureGit)
     self.executeTest(self.configureMercurial)
     self.executeTest(self.configureCVS)
     self.executeTest(self.configureSubversion)

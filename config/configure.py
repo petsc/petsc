@@ -94,8 +94,12 @@ def chkwinf90():
 
 def chkdosfiles():
   if not os.path.exists('/usr/bin/cygcheck.exe'): return
-  (status,output) = commands.getstatusoutput('hg showconfig paths.default')
-  if not status and output: return
+  if os.path.exists('.hg'):
+    (status,output) = commands.getstatusoutput('hg showconfig paths.default')
+    if not status and output: return
+  if os.path.exists('.git'):
+    (status,output) = commands.getstatusoutput('git rev-parse')
+    if not status: return
   # cygwin - but not a hg clone - so check files in bin dir
   (status,output) = commands.getstatusoutput('file bin/*')
   if status:
