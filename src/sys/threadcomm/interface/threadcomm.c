@@ -158,7 +158,7 @@ PetscErrorCode PetscThreadCommCreate(PetscThreadComm *tcomm)
 PetscErrorCode PetscThreadCommStackCreate_kernel(PetscInt trank)
 {
   PetscStack *petscstack_in;
-  if (trank && PetscStackActive()) return 0;
+  if (!trank && PetscStackActive()) return 0;
 
   petscstack_in              = (PetscStack*)malloc(sizeof(PetscStack));
   petscstack_in->currentsize = 0;
