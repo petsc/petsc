@@ -2,7 +2,8 @@
 #include <petsc-private/vecimpl.h> /*I  "petscdm.h"   I*/
 
 #include <petscdmmoab.h>
-#include "MBTagConventions.hpp"
+#include <MBTagConventions.hpp>
+#include <sstream>
 
 typedef struct {
   PetscInt bs; /* Number of degrees of freedom on each entity, aka tag size in moab */
@@ -722,7 +723,7 @@ PetscErrorCode DMMoab_CreateTagName(const moab::ParallelComm *pcomm,std::string&
   ierr = MPI_Allreduce(&n,&global_n,1,MPI_INT,MPI_MAX,comm);CHKERRQ(ierr);
 
   // Set the answer and return:
-  std::stringstream ss;
+  std::ostringstream ss;
   ss << PVEC_PREFIX << global_n;
   tag_name = ss.str();
   PetscFunctionReturn(0);
