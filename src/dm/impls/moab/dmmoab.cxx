@@ -90,6 +90,9 @@ PETSC_EXTERN PetscErrorCode DMCreate_Moab(DM dm)
   dm->data = moab;
   new (moab) DM_Moab();
 
+  dm->ops->createglobalvector              = DMCreateGlobalVector_Moab;
+  dm->ops->createlocalvector               = DMCreateLocalVector_Moab;
+  dm->ops->destroy                         = DMDestroy_Moab;
   PetscFunctionReturn(0);
 }
 
@@ -172,11 +175,6 @@ PetscErrorCode DMMoabCreateMoab(MPI_Comm comm, moab::Interface *mbiface, moab::P
   dmmoab->pcomm    = pcomm;
   dmmoab->mbiface    = mbiface;
   dmmoab->ltog_tag = ltog_tag;
-
-    // initialize various functions
-  (*moab)->ops->createglobalvector              = DMCreateGlobalVector_Moab;
-  (*moab)->ops->createlocalvector               = DMCreateLocalVector_Moab;
-  (*moab)->ops->destroy                         = DMDestroy_Moab;
 
   ierr = DMMoabSetInterface(*moab, mbiface);CHKERRQ(ierr);
   if (!pcomm) pcomm = new moab::ParallelComm(mbiface, comm);
