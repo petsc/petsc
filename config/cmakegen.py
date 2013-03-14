@@ -75,7 +75,7 @@ def pkgsources(pkg):
                           'symmetric diff',sorted(smdirs.symmetric_difference(sdirs))))
   def compareSourceLists(msources, files):
     smsources = set(msources)
-    ssources  = set(f for f in files if os.path.splitext(f)[1] in ['.c', '.cxx', '.cc', '.cpp', '.F'])
+    ssources  = set(f for f in files if os.path.splitext(f)[1] in ['.c', '.cxx', '.cc', '.cu', '.cpp', '.F'])
     if not smsources.issubset(ssources):
       MISTAKES.append('Makefile contains file not on filesystem: %s: %r' % (root, sorted(smsources - ssources)))
     if not VERBOSE: return
@@ -104,10 +104,11 @@ def pkgsources(pkg):
       conditions.update(set(tuple(stripsplit(line)) for line in lines if line.startswith('#requires')))
     def relpath(filename):
       return os.path.join(root,filename)
+    sourcecu = makevars.get('SOURCECU','').split()
     sourcec = makevars.get('SOURCEC','').split()
     sourcef = makevars.get('SOURCEF','').split()
-    compareSourceLists(sourcec+sourcef, files) # Diagnostic output about unused source files
-    sources[repr(sorted(conditions))].extend(relpath(f) for f in sourcec + sourcef)
+    compareSourceLists(sourcec+sourcef+sourcecu, files) # Diagnostic output about unused source files
+    sources[repr(sorted(conditions))].extend(relpath(f) for f in sourcec + sourcef + sourcecu)
     allconditions[root] = conditions
   return sources
 
@@ -128,6 +129,11 @@ if (APPLE)
   SET(CMAKE_C_ARCHIVE_FINISH "<CMAKE_RANLIB> -c <TARGET> ")
   SET(CMAKE_CXX_ARCHIVE_FINISH "<CMAKE_RANLIB> -c <TARGET> ")
   SET(CMAKE_Fortran_ARCHIVE_FINISH "<CMAKE_RANLIB> -c <TARGET> ")
+endif ()
+
+if (PETSC_HAVE_CUDA)
+  find_package (CUDA REQUIRED)
+  set (CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} -arch=sm_13)
 endif ()
 
 include_directories ("${PETSc_SOURCE_DIR}/include" "${PETSc_BINARY_DIR}/include")
@@ -157,7 +163,11 @@ def writePackage(f,pkg,pkgdeps):
       f.write(body(0))
   f.write('''
 if (NOT PETSC_USE_SINGLE_LIBRARY)
-  add_library (petsc%(pkg)s ${PETSC%(PKG)s_SRCS})
+  if (PETSC_HAVE_CUDA)
+    cuda_add_library (petsc%(pkg)s ${PETSC%(PKG)s_SRCS})
+  else ()
+    add_library (petsc%(pkg)s ${PETSC%(PKG)s_SRCS})
+  endif ()
   target_link_libraries (petsc%(pkg)s %(pkgdeps)s ${PETSC_PACKAGE_LIBS})
   if (PETSC_WIN32FE)
     set_target_properties (petsc%(pkg)s PROPERTIES RULE_LAUNCH_COMPILE "${PETSC_WIN32FE}")
@@ -185,7 +195,11 @@ def main(petscdir, log=StdoutLogger()):
         writePackage(f,pkg,deps.split())
       f.write ('''
 if (PETSC_USE_SINGLE_LIBRARY)
-  add_library (petsc %s)
+  if (PETSC_HAVE_CUDA)
+    cuda_add_library (petsc %s)
+  else ()
+    add_library (petsc %s)
+  endif ()
   target_link_libraries (petsc ${PETSC_PACKAGE_LIBS})
   if (PETSC_WIN32FE)
     set_target_properties (petsc PROPERTIES RULE_LAUNCH_COMPILE "${PETSC_WIN32FE}")
@@ -193,7 +207,7 @@ if (PETSC_USE_SINGLE_LIBRARY)
   endif ()
 
 endif ()
-''' % (' '.join([r'${PETSC' + pkg.upper() + r'_SRCS}' for pkg,deps in pkglist]),))
+''' % (' '.join([r'${PETSC' + pkg.upper() + r'_SRCS}' for pkg,deps in pkglist]),' '.join([r'${PETSC' + pkg.upper() + r'_SRCS}' for pkg,deps in pkglist])))
       f.write('''
 if (PETSC_CLANGUAGE_Cxx)
   foreach (file IN LISTS %s)
