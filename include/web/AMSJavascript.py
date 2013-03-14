@@ -27,6 +27,7 @@ comm   = -1  # Currently attached AMS communicator; only one is supported at a t
 args   = {}  # Arguments to each remote call
 sent   = 0   # Number of calls sent to server
 recv   = 0   # Number of calls received from server
+boxes  = {}  # The memory and field name for each writable text box created
 
 class AMSJavascriptExample:
     def onModuleLoad(self):
@@ -49,8 +50,13 @@ class AMSJavascriptExample:
         self.commobj = AMS_Comm()
         self.tree = None
 
+    def textboxlistener(self,arg):
+      global boxes
+      self.status.setText('User changed value in text box to ' + str(arg.getText())+ str(boxes[arg]))
+      # the user has changed this value we should send it back to the AMS program
+
     def onClick(self, sender):
-        global sent,recv
+        global sent,recv,boxes
         self.status.setText('Button pressed')
         if sender == self.buttonupdate:
             self.commobj = AMS_Comm()
@@ -76,10 +82,14 @@ class AMSJavascriptExample:
                      else:
                        PN = HorizontalPanel()
                        PN.add(Label(Text=j+' ='))
-                       PN.add(TextBox(Text=str(field[4])))
+                       tb = TextBox(Text=str(field[4]))
+                       boxes[tb] = [i,j]
+                       tb.addChangeListener(self.textboxlistener)
+                       PN.add(tb)
                        subtree.addItem(PN)
                   self.tree.addItem(subtree)
                   self.panel.add(self.tree)
+
 
 class ServicePython(JSONProxy):
     def __init__(self):
