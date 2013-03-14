@@ -53,7 +53,7 @@ if [ ! -d $tmpdir ]; then
 fi
 
 # Clean and Update the git repository
-cd $PETSC_DIR; git reset --hard; git clean; git pull -q
+cd $PETSC_DIR; git reset --hard; git clean -f; git pull -q
 
 # check petscversion.h and set the version string
 version_release=`grep '^#define PETSC_VERSION_RELEASE ' include/petscversion.h |tr -s ' ' | cut -d ' ' -f 3`
