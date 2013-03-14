@@ -28,26 +28,6 @@ def downloadPackage(url, filename, targetDirname):
   untar(tar, targetDirname, leading = filename.split('.')[0])
   return
 
-def getBuildSystem(configDir,bsDir):
-  print '==============================================================================='
-  print '''++ Could not locate BuildSystem in %s.''' % configDir
-  (status,output) = commands.getstatusoutput('hg showconfig paths.default')
-  if status or not output:
-    print '++ Mercurial clone not found. Assuming petsc-dev and downloading from https://bitbucket.org/petsc/buildsystem/get/tip.tar.gz'
-    downloadPackage('https://bitbucket.org/petsc/buildsystem/get/tip.tar.gz', 'BuildSystem.tar.gz', configDir)
-  else:
-    print '++ Mercurial clone found. URL : ' + output
-    bsurl = output.replace('petsc-dev','buildsystem').replace('petsc-','buildsystem-')
-    print '++ Using: hg clone '+ bsurl +' '+ bsDir
-    (status,output) = commands.getstatusoutput('hg clone '+ bsurl +' '+ bsDir)
-    if status:
-      print '++ Unable to clone BuildSystem. Please clone manually'
-      print '==============================================================================='
-      sys.exit(3)
-  print '==============================================================================='
-  return
-
-
 # Use en_US as language so that BuildSystem parses compiler messages in english
 if 'LC_LOCAL' in os.environ and os.environ['LC_LOCAL'] != '' and os.environ['LC_LOCAL'] != 'en_US' and os.environ['LC_LOCAL']!= 'en_US.UTF-8': os.environ['LC_LOCAL'] = 'en_US.UTF-8'
 if 'LANG' in os.environ and os.environ['LANG'] != '' and os.environ['LANG'] != 'en_US' and os.environ['LANG'] != 'en_US.UTF-8': os.environ['LANG'] = 'en_US.UTF-8'
@@ -295,7 +275,6 @@ def petsc_configure(configure_options):
   bsDir     = os.path.join(configDir, 'BuildSystem')
   if not os.path.isdir(configDir):
     raise RuntimeError('Run configure from $PETSC_DIR, not '+os.path.abspath('.'))
-  if not os.path.isdir(bsDir): getBuildSystem(configDir,bsDir)
   sys.path.insert(0, bsDir)
   sys.path.insert(0, configDir)
   import config.base
