@@ -416,10 +416,10 @@ getautoconfargs:
 #
 #  These rules are for compiling the test examples.
 #
-.cpp.rm .cc.rm .C.rm .F.rm .F90.rm .f.rm .c.rm .cu.rm:
+.cpp.rm .cxx.rm .cc.rm .C.rm .F.rm .F90.rm .f.rm .c.rm .cu.rm:
 	-@${RM} $* *.o $*.mon.* gmon.out mon.out
 	-@${RM} *.exe *.ilk *.pdb *.tds
-.cu.PETSc .c.PETSc:
+.cu.PETSc .c.PETSc .cxx.PETSc:
 	-@${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  $* > trashz 2>&1
 	-@grep -v clog trashz | grep -v "information sections" | \
           grep -v "WARNING: TOC" | \
