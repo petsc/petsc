@@ -13,7 +13,7 @@ PETSC_DIR=/home/balay/hg-repo/petsc-release-${RELEASE}
 # /home/balay/spetsc/bin/maint/createpatch
 
 #create the tarfile
-${PETSC_DIR}/bin/maint/builddist ${PETSC_DIR}
+${PETSC_DIR}/bin/maint/builddist ${PETSC_DIR} maint
 
 #Now copy the generated tarfiles over to the website
 PATCH_VERSION=`grep '^#define PETSC_VERSION_PATCH ' ${PETSC_DIR}/include/petscversion.h |tr -s ' ' | cut -d ' ' -f 3`

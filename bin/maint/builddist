@@ -2,7 +2,7 @@
 #
 # This script builds the PETSc tar file distribution
 #
-# Usage: builddist petscrepo
+# Usage: builddist petscrepo branch
 # example usage: builddist /sandbox/petsc/petsc.git
 # Notes: version info is automatically obtained from include/petscversion.h
 #
@@ -19,8 +19,12 @@
 # If version specified on the commandline, set the version
 echo "Starting date: `date`"
 
-if [ $# = 1 ]; then
+if [ $# = 2 ]; then
   petscrepo=$1
+  branch=$2
+elif [ $# = 1 ]; then
+  petscrepo=$1
+  branch='master'
 else
   echo 'Error: petscrepo not specified. Usge: builddist petscrepo'
   exit
@@ -32,9 +36,24 @@ if [ ! -d $petscrepo ]; then
   exit
 fi
 
+if [ ! -d $petscrepo/.git ]; then
+  echo 'Error: dir $petscrepo is not a git repo'
+  exit
+fi
+
 # Initialize vars
 PETSC_ARCH=arch-build; export PETSC_ARCH
 PETSC_DIR=`cd $petscrepo;pwd -P`; export PETSC_DIR
+
+# Clean and Update the git repository and check for branch
+cd $PETSC_DIR; git reset --hard; git clean -q -f -d
+git checkout $branch;
+if [ "$?" != "0" ]; then
+  echo 'Error: branch: $branch does not exist in $PETSC_DIR'
+  exit
+fi
+git pull -q
+
 pdir=`basename $PETSC_DIR`
 
 # Create a tmp dir
@@ -52,9 +71,6 @@ if [ ! -d $tmpdir ]; then
   exit
 fi
 
-# Clean and Update the git repository
-cd $PETSC_DIR; git reset --hard; git clean -f; git pull -q
-
 # check petscversion.h and set the version string
 version_release=`grep '^#define PETSC_VERSION_RELEASE ' include/petscversion.h |tr -s ' ' | cut -d ' ' -f 3`
 version_major=`grep '^#define PETSC_VERSION_MAJOR ' include/petscversion.h |tr -s ' ' | cut -d ' ' -f 3`
@@ -66,7 +82,11 @@ version_patch_date=`date`
 version_git=`git log -1 --pretty=format:%H`
 version_date_git=`git log -1 --pretty=format:%aD`
 if  [ ${version_release} = 0 ]; then
-  version=-dev
+  if [ "$branch" = "master" ]; then
+    version=-dev
+  else
+    version=-$branch
+  fi
 elif [ ${version_release} = 1 ]; then
   version=-${version_major}.${version_minor}-p${version_patch}
 else

@@ -350,7 +350,7 @@ chk_concepts_dir: chk_loc
 
 # Creates ${HOME}/petsc.tar.gz [and petsc-lite.tar.gz]
 dist:
-	${PETSC_DIR}/bin/maint/builddist ${PETSC_DIR}
+	${PETSC_DIR}/bin/maint/builddist ${PETSC_DIR} master
 
 # This target works only if you can do 'ssh petsc@login.mcs.anl.gov'
 # also copy the file over to ftp site.
