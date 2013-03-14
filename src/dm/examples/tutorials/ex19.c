@@ -21,7 +21,7 @@ int main(int argc,char **argv)
   ierr = DMDASetBoundaryType(da, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE);CHKERRQ(ierr);
   ierr = DMDASetDof(da, 1);CHKERRQ(ierr);
   ierr = DMDASetStencilWidth(da, 1);CHKERRQ(ierr);
-  ierr = DMDASetOverlap(da,1);CHKERRQ(ierr);
+  ierr = DMDASetOverlap(da,1,1,1);CHKERRQ(ierr);
   ierr = DMSetFromOptions(da);CHKERRQ(ierr);
   ierr = DMSetOptionsPrefix(da,"n1d_");CHKERRQ(ierr);
   ierr = DMSetFromOptions(da);CHKERRQ(ierr);
@@ -37,7 +37,7 @@ int main(int argc,char **argv)
   ierr = DMDASetBoundaryType(da, DMDA_BOUNDARY_GHOSTED, DMDA_BOUNDARY_GHOSTED, DMDA_BOUNDARY_GHOSTED);CHKERRQ(ierr);
   ierr = DMDASetDof(da, 2);CHKERRQ(ierr);
   ierr = DMDASetStencilWidth(da, 1);CHKERRQ(ierr);
-  ierr = DMDASetOverlap(da,1);CHKERRQ(ierr);
+  ierr = DMDASetOverlap(da,1,1,1);CHKERRQ(ierr);
   ierr = DMSetFromOptions(da);CHKERRQ(ierr);
   ierr = DMSetOptionsPrefix(da,"g1d_");CHKERRQ(ierr);
   ierr = DMSetFromOptions(da);CHKERRQ(ierr);
@@ -53,7 +53,7 @@ int main(int argc,char **argv)
   ierr = DMDASetBoundaryType(da, DMDA_BOUNDARY_PERIODIC, DMDA_BOUNDARY_PERIODIC, DMDA_BOUNDARY_PERIODIC);CHKERRQ(ierr);
   ierr = DMDASetDof(da, 2);CHKERRQ(ierr);
   ierr = DMDASetStencilWidth(da, 1);CHKERRQ(ierr);
-  ierr = DMDASetOverlap(da,1);CHKERRQ(ierr);
+  ierr = DMDASetOverlap(da,1,1,1);CHKERRQ(ierr);
   ierr = DMSetFromOptions(da);CHKERRQ(ierr);
   ierr = DMSetOptionsPrefix(da,"p1d_");CHKERRQ(ierr);
   ierr = DMSetFromOptions(da);CHKERRQ(ierr);
@@ -69,7 +69,7 @@ int main(int argc,char **argv)
   ierr = DMDASetBoundaryType(da, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE);CHKERRQ(ierr);
   ierr = DMDASetDof(da, 2);CHKERRQ(ierr);
   ierr = DMDASetStencilWidth(da, 1);CHKERRQ(ierr);
-  ierr = DMDASetOverlap(da,1);CHKERRQ(ierr);
+  ierr = DMDASetOverlap(da,1,1,1);CHKERRQ(ierr);
   ierr = DMSetFromOptions(da);CHKERRQ(ierr);
   ierr = DMSetOptionsPrefix(da,"n2d_");CHKERRQ(ierr);
   ierr = DMSetFromOptions(da);CHKERRQ(ierr);
@@ -85,7 +85,7 @@ int main(int argc,char **argv)
   ierr = DMDASetBoundaryType(da, DMDA_BOUNDARY_GHOSTED, DMDA_BOUNDARY_GHOSTED, DMDA_BOUNDARY_GHOSTED);CHKERRQ(ierr);
   ierr = DMDASetDof(da, 2);CHKERRQ(ierr);
   ierr = DMDASetStencilWidth(da, 1);CHKERRQ(ierr);
-  ierr = DMDASetOverlap(da,1);CHKERRQ(ierr);
+  ierr = DMDASetOverlap(da,1,1,1);CHKERRQ(ierr);
   ierr = DMSetFromOptions(da);CHKERRQ(ierr);
   ierr = DMSetOptionsPrefix(da,"g2d_");CHKERRQ(ierr);
   ierr = DMSetFromOptions(da);CHKERRQ(ierr);
@@ -102,7 +102,7 @@ int main(int argc,char **argv)
   ierr = DMDASetBoundaryType(da, DMDA_BOUNDARY_PERIODIC, DMDA_BOUNDARY_PERIODIC, DMDA_BOUNDARY_PERIODIC);CHKERRQ(ierr);
   ierr = DMDASetDof(da, 2);CHKERRQ(ierr);
   ierr = DMDASetStencilWidth(da, 1);CHKERRQ(ierr);
-  ierr = DMDASetOverlap(da,1);CHKERRQ(ierr);
+  ierr = DMDASetOverlap(da,1,1,1);CHKERRQ(ierr);
   ierr = DMSetFromOptions(da);CHKERRQ(ierr);
   ierr = DMSetOptionsPrefix(da,"p2d_");CHKERRQ(ierr);
   ierr = DMSetFromOptions(da);CHKERRQ(ierr);
@@ -118,7 +118,7 @@ int main(int argc,char **argv)
   ierr = DMDASetBoundaryType(da, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE);CHKERRQ(ierr);
   ierr = DMDASetDof(da, 2);CHKERRQ(ierr);
   ierr = DMDASetStencilWidth(da, 1);CHKERRQ(ierr);
-  ierr = DMDASetOverlap(da,1);CHKERRQ(ierr);
+  ierr = DMDASetOverlap(da,1,1,1);CHKERRQ(ierr);
   ierr = DMSetFromOptions(da);CHKERRQ(ierr);
   ierr = DMSetOptionsPrefix(da,"n3d_");CHKERRQ(ierr);
   ierr = DMSetFromOptions(da);CHKERRQ(ierr);
@@ -134,7 +134,7 @@ int main(int argc,char **argv)
   ierr = DMDASetBoundaryType(da, DMDA_BOUNDARY_GHOSTED, DMDA_BOUNDARY_GHOSTED, DMDA_BOUNDARY_GHOSTED);CHKERRQ(ierr);
   ierr = DMDASetDof(da, 2);CHKERRQ(ierr);
   ierr = DMDASetStencilWidth(da, 1);CHKERRQ(ierr);
-  ierr = DMDASetOverlap(da,1);CHKERRQ(ierr);
+  ierr = DMDASetOverlap(da,1,1,1);CHKERRQ(ierr);
   ierr = DMSetFromOptions(da);CHKERRQ(ierr);
   ierr = DMSetOptionsPrefix(da,"g3d_");CHKERRQ(ierr);
   ierr = DMSetFromOptions(da);CHKERRQ(ierr);
@@ -151,7 +151,7 @@ int main(int argc,char **argv)
   ierr = DMDASetBoundaryType(da, DMDA_BOUNDARY_PERIODIC, DMDA_BOUNDARY_PERIODIC, DMDA_BOUNDARY_PERIODIC);CHKERRQ(ierr);
   ierr = DMDASetDof(da, 2);CHKERRQ(ierr);
   ierr = DMDASetStencilWidth(da, 1);CHKERRQ(ierr);
-  ierr = DMDASetOverlap(da,1);CHKERRQ(ierr);
+  ierr = DMDASetOverlap(da,1,1,1);CHKERRQ(ierr);
   ierr = DMSetFromOptions(da);CHKERRQ(ierr);
   ierr = DMSetOptionsPrefix(da,"p3d_");CHKERRQ(ierr);
   ierr = DMSetFromOptions(da);CHKERRQ(ierr);

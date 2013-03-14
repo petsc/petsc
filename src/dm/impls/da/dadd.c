@@ -2,112 +2,127 @@
 
 #undef __FUNCT__
 #define __FUNCT__ "DMDACreatePatchIS"
+/*@
+  DMDACreatePatchIS - Creates an index set corresponding to a patch of the DA.
 
+  Not Collective
+
+  Input Parameters:
++  da - the DMDA
+.  lower - a matstencil with i, j and k corresponding to the lower corner of the patch
+-  upper - a matstencil with i, j and k corresponding to the upper corner of the patch
+
+  Output Parameters:
+.  is - the IS corresponding to the patch
+
+  Level: developer
+
+.seealso: DMDACreateDomainDecomposition(), DMDACreateDomainDecompositionScatters()
+@*/
 PetscErrorCode DMDACreatePatchIS(DM da,MatStencil *lower,MatStencil *upper,IS *is)
 {
-  PetscErrorCode ierr;
-  PetscInt       i,j,k,idx;
+  PetscInt       ms=0,ns=0,ps=0;
+  PetscInt       me=1,ne=1,pe=1;
+  PetscInt       mr=0,nr=0,pr=0;
   PetscInt       ii,jj,kk;
-  Vec            v;
-  PetscInt       n,pn,bs;
-  PetscMPIInt    rank;
-  PetscSF        sf,psf;
-  PetscLayout    map;
-  MPI_Comm       comm;
-  PetscInt       *natidx,*globidx,*leafidx;
-  PetscInt       *pnatidx,*pleafidx;
+  PetscInt       si,sj,sk;
+  PetscInt       i,j,k,l,idx;
   PetscInt       base;
+  PetscInt       xm=1,ym=1,zm=1;
+  const PetscInt *lx,*ly,*lz;
   PetscInt       ox,oy,oz;
-  DM_DA          *dd;
+  PetscInt       m,n,p,M,N,P,dof;
+  PetscInt       nindices;
+  PetscInt       *indices;
+  DM_DA          *dd = (DM_DA*)da->data;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-  dd   = (DM_DA*)da->data;
-
-  /* construct the natural mapping */
-  ierr = DMGetGlobalVector(da,&v);CHKERRQ(ierr);
-  ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
-  ierr = VecGetOwnershipRange(v,&base,NULL);CHKERRQ(ierr);
-  ierr = VecGetBlockSize(v,&bs);CHKERRQ(ierr);
-  ierr = DMRestoreGlobalVector(da,&v);CHKERRQ(ierr);
-
-  /* construct the layout */
-  ierr = PetscLayoutCreate(comm,&map);CHKERRQ(ierr);
-  ierr = PetscLayoutSetBlockSize(map,1);CHKERRQ(ierr);
-  ierr = PetscLayoutSetLocalSize(map,n);CHKERRQ(ierr);
-  ierr = PetscLayoutSetUp(map);CHKERRQ(ierr);
-
-  /* construct the list of natural indices on this process when PETSc ordering is considered */
+  /* need to get the sizes of the actual DM rather than the "global" space of a subdomain DM */
+  M = dd->M;N = dd->N;P=dd->P;
+  m = dd->m;n = dd->n;p=dd->p;
+  dof = dd->w;
   ierr = DMDAGetOffset(da,&ox,&oy,&oz,NULL,NULL,NULL);CHKERRQ(ierr);
-  ierr = PetscMalloc(sizeof(PetscInt)*n,&natidx);CHKERRQ(ierr);
-  ierr = PetscMalloc(sizeof(PetscInt)*n,&globidx);CHKERRQ(ierr);
-  ierr = PetscMalloc(sizeof(PetscInt)*n,&leafidx);CHKERRQ(ierr);
-  idx  = 0;
-  for (k=dd->zs; k<dd->ze; k++) {
-    for (j=dd->ys; j<dd->ye; j++) {
-      for (i=dd->xs; i<dd->xe; i++) {
-        natidx[idx]  = i + dd->w*(j*dd->M + k*dd->M*dd->N);
-        globidx[idx] = base + idx;
-        leafidx[idx] = 0;
-        idx++;
+  ierr = DMDAGetOwnershipRanges(da,&lx,&ly,&lz);CHKERRQ(ierr);
+  nindices = (upper->i - lower->i)*(upper->j - lower->j)*(upper->k - lower->k)*dof;
+  ierr = PetscMalloc(sizeof(PetscInt)*nindices,&indices);CHKERRQ(ierr);
+  /* start at index 0 on processor 0 */
+  mr = 0;
+  nr = 0;
+  pr = 0;
+  ms = 0;
+  ns = 0;
+  ps = 0;
+  if (lx) me = lx[0];
+  if (ly) ne = ly[0];
+  if (lz) pe = lz[0];
+  idx = 0;
+  for (k=lower->k-oz;k<upper->k-oz;k++) {
+    for (j=lower->j-oy;j < upper->j-oy;j++) {
+      for (i=lower->i-ox;i < upper->i-ox;i++) {
+        /* "actual" indices rather than ones outside of the domain */
+        ii = i;
+        jj = j;
+        kk = k;
+        if (ii < 0) ii = M + ii;
+        if (jj < 0) jj = N + jj;
+        if (kk < 0) kk = P + kk;
+        if (ii > M-1) ii = ii - M;
+        if (jj > N-1) jj = jj - N;
+        if (kk > P-1) kk = kk - P;
+        /* gone out of processor range on x axis */
+        while(ii > me-1 || ii < ms) {
+          if (mr == m-1) {
+            ms = 0;
+            me = lx[0];
+            mr = 0;
+          } else {
+            mr++;
+            ms = me;
+            me += lx[mr];
+          }
+        }
+        /* gone out of processor range on y axis */
+        while(jj > ne-1 || jj < ns) {
+          if (nr == n-1) {
+            ns = 0;
+            ne = ly[0];
+            nr = 0;
+          } else {
+            nr++;
+            ns = ne;
+            ne += ly[nr];
+          }
+        }
+        /* gone out of processor range on z axis */
+        while(kk > pe-1 || kk < ps) {
+          if (pr == p-1) {
+            ps = 0;
+            pe = lz[0];
+            pr = 0;
+          } else {
+            pr++;
+            ps = pe;
+            pe += lz[pr];
+          }
+        }
+        /* compute the vector base on owning processor */
+        xm = me - ms;
+        ym = ne - ns;
+        zm = pe - ps;
+        base = ms*ym*zm + ns*M + ps*M*N;
+        /* compute the local coordinates on owning processor */
+        si = ii - ms;
+        sj = jj - ns;
+        sk = kk - ps;
+        for (l=0;l<dof;l++) {
+          indices[idx] = l + dof*(base + si + xm*sj + xm*ym*sk);
+          idx++;
+        }
       }
     }
   }
-
-  if (idx != n) SETERRQ(comm,PETSC_ERR_ARG_WRONGSTATE, "for some reason the count is wrong.");
-
-  /* construct the SF going from the natural indices to the local set of PETSc indices */
-  ierr = PetscSFCreate(comm,&sf);CHKERRQ(ierr);
-  ierr = PetscSFSetFromOptions(sf);CHKERRQ(ierr);
-  ierr = PetscSFSetGraphLayout(sf,map,n,NULL,PETSC_OWN_POINTER,natidx);CHKERRQ(ierr);
-
-  /* broadcast the global indices over to the corresponding natural indices */
-  ierr = PetscSFGatherBegin(sf,MPIU_INT,globidx,leafidx);CHKERRQ(ierr);
-  ierr = PetscSFGatherEnd(sf,MPIU_INT,globidx,leafidx);CHKERRQ(ierr);
-  ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
-
-
-  pn   = dd->w*(upper->k - lower->k)*(upper->j - lower->j)*(upper->i - lower->i);
-  ierr = PetscMalloc(sizeof(PetscInt)*pn,&pnatidx);CHKERRQ(ierr);
-  ierr = PetscMalloc(sizeof(PetscInt)*pn,&pleafidx);CHKERRQ(ierr);
-  idx  = 0;
-  for (k=lower->k-oz; k<upper->k-oz; k++) {
-    for (j=lower->j-oy; j<upper->j-oy; j++) {
-      for (i=dd->w*(lower->i-ox); i<dd->w*(upper->i-ox); i++) {
-        ii = i % (dd->w*dd->M);
-        jj = j % dd->N;
-        kk = k % dd->P;
-        if (ii < 0) ii = dd->w*dd->M + ii;
-        if (jj < 0) jj = dd->N + jj;
-        if (kk < 0) kk = dd->P + kk;
-        pnatidx[idx] = ii + dd->w*(jj*dd->M + kk*dd->M*dd->N);
-        idx++;
-      }
-    }
-  }
-
-  if (idx != pn) SETERRQ(comm,PETSC_ERR_ARG_WRONGSTATE, "for some reason the count is wrong");
-
-  ierr = PetscSFCreate(comm,&psf);CHKERRQ(ierr);
-  ierr = PetscSFSetFromOptions(psf);CHKERRQ(ierr);
-  ierr = PetscSFSetGraphLayout(psf,map,pn,NULL,PETSC_OWN_POINTER,pnatidx);CHKERRQ(ierr);
-
-  /* broadcast the global indices through to the patch */
-  ierr = PetscSFBcastBegin(psf,MPIU_INT,leafidx,pleafidx);CHKERRQ(ierr);
-  ierr = PetscSFBcastEnd(psf,MPIU_INT,leafidx,pleafidx);CHKERRQ(ierr);
-
-  /* create the IS */
-  ierr = ISCreateGeneral(comm,pn,pleafidx,PETSC_OWN_POINTER,is);CHKERRQ(ierr);
-
-  ierr = PetscSFDestroy(&psf);CHKERRQ(ierr);
-
-  ierr = PetscLayoutDestroy(&map);CHKERRQ(ierr);
-
-  ierr = PetscFree(globidx);CHKERRQ(ierr);
-  ierr = PetscFree(leafidx);CHKERRQ(ierr);
-  ierr = PetscFree(natidx);CHKERRQ(ierr);
-  ierr = PetscFree(pnatidx);CHKERRQ(ierr);
+  ISCreateGeneral(PETSC_COMM_SELF,idx,indices,PETSC_OWN_POINTER,is);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
