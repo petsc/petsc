@@ -134,7 +134,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Write out the final mesh
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  merr = user.mbint->write_file("ex29-final.h5m");MBERRNM(merr);
+  merr = user.mbint->write_file("ex30-final.h5m");MBERRNM(merr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.
