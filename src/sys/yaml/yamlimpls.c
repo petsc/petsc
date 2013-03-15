@@ -1,4 +1,4 @@
-#include "yamlimpls.h"
+#include <petsc-private/petscimpl.h>        /*I  "petscsys.h"   I*/
 #if defined(PETSC_HAVE_STRING_H)
 #include <string.h>
 #endif
@@ -23,16 +23,16 @@ PetscErrorCode PetscParseLayerYAML(yaml_parser_t *parser,int *lvl)
     /*  or as a leaf value (one of them, in case it's a sequence) */
     if (event.type == YAML_SCALAR_EVENT) {
       if (storage) {
-        ierr = PetscSNPrintf(option,PETSC_MAX_PATH_LEN,"-%s %s",key,(char *)event.data.scalar.value);CHKERRQ(ierr);
+        ierr = PetscSNPrintf(option,PETSC_MAX_PATH_LEN,"-%s %s",key,(char*)event.data.scalar.value);CHKERRQ(ierr);
         ierr = PetscOptionsInsertString(option);CHKERRQ(ierr);
       } else {
-        ierr = PetscStrncpy(key,(char *)event.data.scalar.value,event.data.scalar.length+1);CHKERRQ(ierr);
+        ierr = PetscStrncpy(key,(char*)event.data.scalar.value,event.data.scalar.length+1);CHKERRQ(ierr);
       }
       storage ^= VAL;           /* Flip VAR/VAL switch for the next event */
     } else if (event.type == YAML_SEQUENCE_START_EVENT) {
       /* Sequence - all the following scalars will be appended to the last_leaf */
       storage = SEQ;
-      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP ,"Sequences not supported");
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP ,"Unable to open YAML option file: sequences not supported");
     } else if (event.type == YAML_SEQUENCE_END_EVENT) {
       storage = VAR;
     } else if (event.type == YAML_MAPPING_START_EVENT) {
