@@ -557,6 +557,8 @@ PetscErrorCode  MatCompositeMerge(Mat mat)
   Mat_CompositeLink next   = shell->head, prev = shell->tail;
   PetscErrorCode    ierr;
   Mat               tmat,newmat;
+  Vec               left,right;
+  PetscScalar       scale;
 
   PetscFunctionBegin;
   if (!next) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must provide at least one matrix with MatCompositeAddMat()");
@@ -575,8 +577,16 @@ PetscErrorCode  MatCompositeMerge(Mat mat)
       tmat = newmat;
     }
   }
+
+  scale = shell->scale;
+  if ((left = shell->left)) {ierr = PetscObjectReference((PetscObject)left);CHKERRQ(ierr);}
+  if ((right = shell->right)) {ierr = PetscObjectReference((PetscObject)right);CHKERRQ(ierr);}
+
   ierr = MatHeaderReplace(mat,tmat);CHKERRQ(ierr);
-  ierr = MatDiagonalScale(mat,shell->left,shell->right);CHKERRQ(ierr);
-  ierr = MatScale(mat,shell->scale);CHKERRQ(ierr);
+
+  ierr = MatDiagonalScale(mat,left,right);CHKERRQ(ierr);
+  ierr = MatScale(mat,scale);CHKERRQ(ierr);
+  ierr = VecDestroy(&left);CHKERRQ(ierr);
+  ierr = VecDestroy(&right);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
