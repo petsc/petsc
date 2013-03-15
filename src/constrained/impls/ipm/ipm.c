@@ -54,7 +54,6 @@ static PetscErrorCode TaoSolve_IPM(TaoSolver tao)
 
   while (reason == TAO_CONTINUE_ITERATING) {
     ierr = IPMUpdateK(tao); CHKERRQ(ierr);
-
     /* % compute affine scaling step 
        rhs.lami = -iter.yi.*iter.lami;
        rhs.x = -kkt.rd; 
@@ -207,15 +206,11 @@ static PetscErrorCode TaoSolve_IPM(TaoSolver tao)
 static PetscErrorCode TaoSetup_IPM(TaoSolver tao)
 {
   TAO_IPM *ipmP = (TAO_IPM*)tao->data;
-  PetscInt localmi, localme,i,lo,hi,bigsize;
-  PetscScalar one = 1.0, mone = -1.0;
-  MPI_Comm comm;
-  PetscInt *indices;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ipmP->mi = ipmP->me = 0;
-  comm = ((PetscObject)(tao->solution))->comm;
+  ipmP->K=0;
   ierr = VecGetSize(tao->solution,&ipmP->n); CHKERRQ(ierr);
   if (!tao->gradient) {
     ierr = VecDuplicate(tao->solution, &tao->gradient); CHKERRQ(ierr);
@@ -254,39 +249,10 @@ static PetscErrorCode TaoSetup_IPM(TaoSolver tao)
     ierr = VecDuplicate(tao->constraints_equality,&ipmP->rhs_lamdae); CHKERRQ(ierr);
     ierr = VecDuplicate(tao->constraints_equality,&ipmP->rpe); CHKERRQ(ierr);
   }
-  ierr = VecGetLocalSize(ipmP->yi,&localmi); CHKERRQ(ierr);
-  ierr = VecGetLocalSize(ipmP->lamdae,&localme); CHKERRQ(ierr);
-  bigsize = ipmP->n+2*ipmP->mi+ipmP->me;
-    
-  ierr = PetscMalloc(bigsize*sizeof(PetscInt),&indices);CHKERRQ(ierr);
-  for (i=0;i<ipmP->n;i++) {
-    indices[i] = ipmP->n+ipmP->me+ipmP->mi;
-  }
-  for (i=ipmP->n;i<ipmP->n+ipmP->me;i++) {
-    indices[i] = ipmP->n;
-  }
-  for (i=ipmP->n+ipmP->me;i<ipmP->n+ipmP->mi+ipmP->me;i++) {
-    indices[i] = ipmP->n+1;
-  }
-  for (i=ipmP->n+ipmP->mi+ipmP->me;i<ipmP->n+ipmP->mi+ipmP->me+ipmP->mi;i++) {
-    indices[i] = 2;
-  }
-  ierr = MatCreate(comm,&ipmP->K); CHKERRQ(ierr);
-  ierr = MatSetSizes(ipmP->K,PETSC_DECIDE,PETSC_DECIDE,bigsize,bigsize);CHKERRQ(ierr);
-  ierr = MatSetType(ipmP->K,MATSEQAIJ); CHKERRQ(ierr);
-  ierr = MatSetFromOptions(ipmP->K); CHKERRQ(ierr);
-
-  ierr = MatSeqAIJSetPreallocation(ipmP->K,PETSC_NULL,indices); CHKERRQ(ierr);
-
-  ierr = VecCreate(comm,&ipmP->bigrhs); CHKERRQ(ierr);
-  ierr = VecSetSizes(ipmP->bigrhs,PETSC_DECIDE,bigsize); CHKERRQ(ierr);
-  ierr = VecSetType(ipmP->bigrhs,VECSEQ); CHKERRQ(ierr);
-  ierr = VecDuplicate(ipmP->bigrhs,&ipmP->bigstep); CHKERRQ(ierr);
-  ierr = PetscFree(indices);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
-  
 }
+
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoDestroy_IPM"
@@ -383,9 +349,9 @@ static PetscErrorCode IPMObjective(TaoLineSearch ls, Vec X, PetscReal *f, void *
    f = d'x + 0.5 * x' * H * x
    rd = H*x + d + Ae'*lame - Ai'*lami
    rpe = Ae*x - be
-   rpi = Ai*x - yi - bi
+   rpi = Ai*x - s;
+   com = s.*lami
    mu = yi' * lami/mi;
-   com = yi.*lami
 
    phi = ||rd|| + ||rpe|| + ||rpi|| + ||com||
 */
@@ -419,11 +385,12 @@ static PetscErrorCode IPMComputeKKT(TaoSolver tao)
     ierr = TaoComputeInequalityConstraints(tao,tao->solution,tao->constraints_inequality);
     ierr = TaoComputeJacobianInequality(tao,tao->solution,&tao->jacobian_inequality,&tao->jacobian_inequality_pre,&ipmP->Aeflag); CHKERRQ(ierr);
 
-    /* rd = rd + Ai'*lamdai */
+    /* rd = rd - Ai'*lamdai */
     ierr = MatMultTranspose(tao->jacobian_inequality,ipmP->lamdai,ipmP->work); CHKERRQ(ierr);
     ierr = VecAXPY(ipmP->rd, -1.0, ipmP->work); CHKERRQ(ierr);
 
     /* rpi = Ai*x - yi - bi */
+    ierr = VecCopy(tao->CI,ipmP->rpi); CHKERRQ(ierr);
     ierr = MatMult(tao->jacobian_inequality,tao->solution,ipmP->rpi); CHKERRQ(ierr);
     ierr = VecAXPY(ipmP->rpi, -1.0, tao->constraints_inequality); CHKERRQ(ierr);
     ierr = VecAXPY(ipmP->rpi, -1.0, ipmP->yi); CHKERRQ(ierr);
@@ -515,6 +482,7 @@ PetscErrorCode IPMPushInitialPoint(TaoSolver tao)
 PetscErrorCode IPMUpdateK(TaoSolver tao)
 {
   TAO_IPM *ipmP = (TAO_IPM *)tao->data;
+  MPI_Comm comm;
   PetscErrorCode ierr;
   PetscInt i,j;
   PetscInt ncols,row,newcol,newcols[2];
@@ -523,12 +491,50 @@ PetscErrorCode IPMUpdateK(TaoSolver tao)
   PetscReal *l,*y;
   PetscReal *newvals;
   PetscReal minus1=-1.0;
-  PetscInt *indices;
   PetscInt subsize;
+  PetscInt *indices,bigsize;
   PetscFunctionBegin;
   subsize = PetscMax(ipmP->n,ipmP->mi);
   subsize = PetscMax(ipmP->me,subsize);
   subsize = PetscMax(2,subsize);
+
+
+  if (!ipmP->K) {
+    comm = ((PetscObject)(tao->solution))->comm;
+    bigsize = ipmP->n+2*ipmP->mi+ipmP->me;
+    
+    ierr = PetscMalloc(bigsize*sizeof(PetscInt),&indices);CHKERRQ(ierr);
+    for (i=0;i<ipmP->n;i++) {
+      ierr = MatGetRow(tao->hessian,i,&indices[i],PETSC_NULL,PETSC_NULL); CHKERRQ(ierr);
+      //    ierr = MatRestoreRow(tao->hessian,i,&indices[i],PETSC_NULL,PETSC_NULL); CHKERRQ(ierr);
+      indices[i] += ipmP->me+ipmP->mi;
+    
+    }
+    for (i=ipmP->n;i<ipmP->n+ipmP->me;i++) {
+      indices[i] = ipmP->n;
+    }
+    for (i=ipmP->n+ipmP->me;i<ipmP->n+ipmP->mi+ipmP->me;i++) {
+      indices[i] = ipmP->n+1;
+    }
+    for (i=ipmP->n+ipmP->mi+ipmP->me;i<ipmP->n+ipmP->mi+ipmP->me+ipmP->mi;i++) {
+      indices[i] = 2;
+    }
+    //    for (i=0;i<ipmP->n+ipmP->mi+ipmP->me+ipmP->mi;i++) printf("nz[%d] = %d\n",i,indices[i]);
+
+    ierr = MatCreate(comm,&ipmP->K); CHKERRQ(ierr);
+    ierr = MatSetSizes(ipmP->K,PETSC_DECIDE,PETSC_DECIDE,bigsize,bigsize);CHKERRQ(ierr);
+    ierr = MatSetType(ipmP->K,MATSEQAIJ); CHKERRQ(ierr);
+    ierr = MatSetFromOptions(ipmP->K); CHKERRQ(ierr);
+
+    ierr = MatSeqAIJSetPreallocation(ipmP->K,PETSC_NULL,indices); CHKERRQ(ierr);
+
+    ierr = VecCreate(comm,&ipmP->bigrhs); CHKERRQ(ierr);
+    ierr = VecSetSizes(ipmP->bigrhs,PETSC_DECIDE,bigsize); CHKERRQ(ierr);
+    ierr = VecSetType(ipmP->bigrhs,VECSEQ); CHKERRQ(ierr);
+    ierr = VecDuplicate(ipmP->bigrhs,&ipmP->bigstep); CHKERRQ(ierr);
+    ierr = PetscFree(indices);CHKERRQ(ierr);
+  }
+
 
   ierr = MatZeroEntries(ipmP->K); CHKERRQ(ierr);
   ierr = PetscMalloc(sizeof(PetscInt)*subsize,&indices); CHKERRQ(ierr);

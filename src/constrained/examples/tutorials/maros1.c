@@ -309,11 +309,7 @@ PetscErrorCode FormInequalityConstraints(TaoSolver tao, Vec x, Vec ci, void *ctx
   AppCtx *user = (AppCtx*)ctx;
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  /* 
   ierr = MatMult(user->Ain,x,ci);CHKERRQ(ierr);
-  ierr = VecAXPY(ci,-1.0,user->bin);CHKERRQ(ierr);*/
-
-  ierr = VecCopy(user->bin,ci);CHKERRQ(ierr);
   PetscFunctionReturn(0);
   
 }
@@ -326,11 +322,8 @@ PetscErrorCode FormEqualityConstraints(TaoSolver tao, Vec x, Vec ce,void *ctx)
   PetscErrorCode ierr;
   PetscFunctionBegin;
 
-  /*
   ierr = MatMult(user->Aeq,x,ce);CHKERRQ(ierr);
   ierr = VecAXPY(ce,-1.0,user->beq);CHKERRQ(ierr);
-  */
-  ierr = VecCopy(user->beq,ce); CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 
