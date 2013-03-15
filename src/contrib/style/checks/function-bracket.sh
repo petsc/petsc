@@ -11,7 +11,7 @@
 # - exclude lines with closing curly braces (e.g. simple one-liner functions)
 # - exclude if-conditions that span over multiple lines. Identified by ')) {'
 
-grep -H ")\s*{" "$@" \
+grep -n -H ")\s*{" "$@" \
  | grep -v ".*:\s*{\s*$" \
  | grep -v " if\s\s*(" \
  | grep -v " else\s*{" \
