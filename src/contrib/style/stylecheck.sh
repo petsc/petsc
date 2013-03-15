@@ -64,7 +64,7 @@ do
   ruledesc=`grep "Rule" $(dirname $0)/checks/${check}`
 
   # Status message
-  echo -e "\\E[32m -- Checking $ruledesc\\E[m "
+  printf "\033[32m -- Checking $ruledesc\033[m \n"
 
   # Find all files below the provided location
   find $script_args -name "*.[ch]" $exclude ! -path '*ftn-auto*' | xargs $(dirname $0)/checks/${check}
