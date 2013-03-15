@@ -433,4 +433,8 @@ PETSC_EXTERN PetscErrorCode PETSC_VIEWER_AMS_Destroy(MPI_Comm);
 #define PETSC_VIEWER_AMS_WORLD PETSC_VIEWER_AMS_(PETSC_COMM_WORLD)
 #endif
 
+/* Reset __FUNCT__ in case the user does not define it themselves */
+#undef __FUNCT__
+#define __FUNCT__ "User provided function"
+
 #endif
