@@ -52,7 +52,7 @@ if [ "$?" != "0" ]; then
   echo 'Error: branch: $branch does not exist in $PETSC_DIR'
   exit
 fi
-git clean -q -f -d
+git clean -q -f -d -x
 git pull -q
 
 pdir=`basename $PETSC_DIR`
