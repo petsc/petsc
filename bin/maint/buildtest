@@ -45,14 +45,13 @@ cd $nPETSC_DIR
 rm -f build.log
 echo "Build on $MACH $ARCH $nPETSC_DIR `date` " > build.log
 
-# Note use 'hg clean --all' intead of manually deleting seleted old files.
+# Note use 'git clean' intead of manually deleting seleted old files.
 # This also requires 'clean' extension enabled on all nightly build machines.
 
-echo "Cleaning throughly and updating mercurial clone at $nPETSC_DIR" >>& build.log
-(hg -q revert -a; hg -q clean --all -X build.log; hg -q pull -u) >>& build.log
-(cd config/BuildSystem; hg -q revert -a; hg -q clean --all; hg -q pull -u; cd $nPETSC_DIR) >>& build.log
+echo "Cleaning throughly and updating git clone at $nPETSC_DIR" >>& build.log
+(git reset --hard; git clean -q -d -f -e build.log;git pull -q) >>& build.log
 
-# if externalpackage tarball also packs a hg repo - one has to explicitly remove it
+# if externalpackage tarball also packs a git repo - one has to explicitly remove it
 rm -rf ./externalpackages
 
 setenv PETSC_DIR $nPETSC_DIR
