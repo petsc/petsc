@@ -49,7 +49,7 @@ echo "Build on $MACH $ARCH $nPETSC_DIR `date` " > build.log
 # This also requires 'clean' extension enabled on all nightly build machines.
 
 echo "Cleaning throughly and updating git clone at $nPETSC_DIR" >>& build.log
-(git reset --hard; git clean -q -d -f -e build.log;git pull -q) >>& build.log
+(git reset --hard; git clean -q -f -d -x -e build.log;git pull -q) >>& build.log
 
 # if externalpackage tarball also packs a git repo - one has to explicitly remove it
 rm -rf ./externalpackages

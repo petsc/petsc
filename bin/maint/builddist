@@ -80,7 +80,7 @@ version_patch=`grep '^#define PETSC_VERSION_PATCH ' include/petscversion.h |tr -
 
 #generated a couple of more values
 version_patch_date=`date`
-version_git=`git rev-parse HEAD`
+version_git=`git log -1 --pretty=format:%H`
 version_date_git=`git log -1 --pretty=format:%ci`
 if  [ ${version_release} = 0 ]; then
   if [ "$branch" = "master" ]; then
