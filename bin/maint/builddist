@@ -3,7 +3,7 @@
 # This script builds the PETSc tar file distribution
 #
 # Usage: builddist petscrepo branch
-# example usage: builddist /sandbox/petsc/petsc.git
+# example usage: builddist /sandbox/petsc/petsc.clone
 # Notes: version info is automatically obtained from include/petscversion.h
 #
 #echo "------- Have you done ALL of the following?? -----------------------------"
@@ -46,12 +46,13 @@ PETSC_ARCH=arch-build; export PETSC_ARCH
 PETSC_DIR=`cd $petscrepo;pwd -P`; export PETSC_DIR
 
 # Clean and Update the git repository and check for branch
-cd $PETSC_DIR; git reset --hard; git clean -q -f -d
-git checkout $branch;
+cd $PETSC_DIR
+git checkout -f $branch
 if [ "$?" != "0" ]; then
   echo 'Error: branch: $branch does not exist in $PETSC_DIR'
   exit
 fi
+git clean -q -f -d
 git pull -q
 
 pdir=`basename $PETSC_DIR`
@@ -79,8 +80,8 @@ version_patch=`grep '^#define PETSC_VERSION_PATCH ' include/petscversion.h |tr -
 
 #generated a couple of more values
 version_patch_date=`date`
-version_git=`git log -1 --pretty=format:%H`
-version_date_git=`git log -1 --pretty=format:%aD`
+version_git=`git rev-parse HEAD`
+version_date_git=`git log -1 --pretty=format:%ci`
 if  [ ${version_release} = 0 ]; then
   if [ "$branch" = "master" ]; then
     version=-dev
