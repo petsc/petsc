@@ -59,8 +59,6 @@ PetscErrorCode VecViennaCLAllocateCheck(Vec v)
     try {
       v->spptr                            = new Vec_ViennaCL;
       ((Vec_ViennaCL*)v->spptr)->GPUarray = new ViennaCLVector((PetscBLASInt)v->map->n);
-      if ((PetscBLASInt)v->map->n > 0)
-        ((Vec_ViennaCL*)v->spptr)->GPUarray->resize((PetscBLASInt)v->map->n);
 
     } catch(char *ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex);
@@ -1097,20 +1095,3 @@ PETSC_EXTERN PetscErrorCode VecCreate_SeqViennaCL(Vec V)
   PetscFunctionReturn(0);
 }
 
-
-#undef __FUNCT__
-#define __FUNCT__ "VecCreate_ViennaCL"
-PETSC_EXTERN PetscErrorCode VecCreate_ViennaCL(Vec v)
-{
-  PetscErrorCode ierr;
-  PetscMPIInt    size;
-
-  PetscFunctionBegin;
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)v),&size);CHKERRQ(ierr);
-  if (size == 1) {
-    ierr = VecSetType(v,VECSEQVIENNACL);CHKERRQ(ierr);
-  } else {
-    ierr = VecSetType(v,VECMPIVIENNACL);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
