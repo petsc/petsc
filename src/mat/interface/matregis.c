@@ -47,6 +47,11 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJCUSPARSE(Mat);
 PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJCUSPARSE(Mat);
 #endif
 
+#if defined PETSC_HAVE_VIENNACL
+PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJViennaCL(Mat);
+//PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJViennaCL(Mat);
+#endif
+
 #if defined PETSC_HAVE_FFTW
 PETSC_EXTERN PetscErrorCode MatCreate_FFTW(Mat);
 #endif

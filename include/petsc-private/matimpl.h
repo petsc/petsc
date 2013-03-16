@@ -321,6 +321,9 @@ struct _p_Mat {
 #if defined(PETSC_HAVE_CUSP)
   PetscCUSPFlag          valid_GPU_matrix; /* flag pointing to the matrix on the gpu*/
 #endif
+#if defined(PETSC_HAVE_VIENNACL)
+  PetscViennaCLFlag          valid_GPU_matrix; /* flag pointing to the matrix on the gpu*/
+#endif
   void                   *spptr;          /* pointer for special library like SuperLU */
   MatSolverPackage       solvertype;
   PetscViewer            viewonassembly;         /* the following are set in MatSetFromOptions() and used in MatAssemblyEnd() */
@@ -1500,6 +1503,7 @@ PETSC_EXTERN PetscLogEvent MAT_Getsymtranspose, MAT_Transpose_SeqAIJ, MAT_Getsym
 PETSC_EXTERN PetscLogEvent MATMFFD_Mult;
 PETSC_EXTERN PetscLogEvent MAT_GetMultiProcBlock;
 PETSC_EXTERN PetscLogEvent MAT_CUSPCopyToGPU, MAT_CUSPARSECopyToGPU, MAT_SetValuesBatch, MAT_SetValuesBatchI, MAT_SetValuesBatchII, MAT_SetValuesBatchIII, MAT_SetValuesBatchIV;
+PETSC_EXTERN PetscLogEvent MAT_ViennaCLCopyToGPU;
 PETSC_EXTERN PetscLogEvent MAT_Merge;
 
 #endif
