@@ -109,6 +109,7 @@ typedef struct _p_PetscObject {
 #if defined(PETSC_HAVE_AMS)
   PetscInt             amsmem;
   PetscBool            amspublishblock; /* if PETSC_TRUE and publishing objects then will block at PetscObjectAMSBlock() */
+  PetscBool            amsblock;
 #endif
 } _p_PetscObject;
 

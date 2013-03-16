@@ -405,6 +405,33 @@ PETSC_UNUSED static PetscErrorCode YAML_echo(PetscInt argc,char **args,PetscInt 
 */
 
 #undef __FUNCT__
+#define __FUNCT__ "YAML_AMS_Utility_StringToArray"
+static PetscErrorCode YAML_AMS_Utility_StringToArray(const char *string,AMS_Data_type dtype,PetscInt *n,void **addr)
+{
+  PetscErrorCode ierr;
+  char           *bracket;
+
+  PetscFunctionBegin;
+  CHKMEMQ;
+  ierr = PetscStrchr(string,'[',&bracket);CHKERRQ(ierr);
+  if (!bracket) {
+    *n = 1;
+    if (dtype == AMS_STRING) {
+      ierr = PetscStrallocpy(string,(char**)addr);CHKERRQ(ierr);
+    } else if (dtype == AMS_BOOLEAN) {
+      PetscBool *value;
+  CHKMEMQ;
+      ierr = PetscMalloc(sizeof(int),&value);CHKERRQ(ierr);
+  CHKMEMQ;
+      ierr = PetscOptionsStringToBool(string,value);CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+
+
+#undef __FUNCT__
 #define __FUNCT__ "YAML_AMS_Utility_ArrayToString"
 static PetscErrorCode YAML_AMS_Utility_ArrayToString(PetscInt n,void *addr,AMS_Data_type dtype,char **result)
 {
@@ -704,6 +731,74 @@ PETSC_EXTERN PetscErrorCode YAML_AMS_Memory_get_field_info(PetscInt argc,char **
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "YAML_AMS_Memory_set_field_info"
+/*
+      Gets information about a field
+
+   Input Parameter:
+.     arg1 - memory
+.     arg2 - string name of the field
+
+   Output Parameter:
+
+*/
+PETSC_EXTERN PetscErrorCode YAML_AMS_Memory_set_field_info(PetscInt argc,char **args,PetscInt *argco,char ***argso)
+{
+  PetscErrorCode     ierr;
+  AMS_Memory         mem;
+  void               **addr;
+  int                len;
+  AMS_Data_type      dtype;
+  AMS_Memory_type    mtype;
+  AMS_Shared_type    stype;
+  AMS_Reduction_type rtype;
+
+  PetscFunctionBegin;
+  CHKMEMQ;
+  sscanf(args[0],"%d",&mem);
+  ierr = AMS_Memory_get_field_info(mem,args[1],(void**)&addr,&len,&dtype,&mtype,&stype,&rtype);
+  if (ierr) {
+    ierr = PetscInfo1(NULL,"AMS_Memory_get_field_info() error %d\n",ierr);CHKERRQ(ierr);
+    *argco = 1;
+    ierr   = PetscMalloc(sizeof(char*),argso);CHKERRQ(ierr);
+    ierr   = PetscStrallocpy("Memory field can not be located",*argso);
+    PetscFunctionReturn(0);
+  }
+  CHKMEMQ;
+  ierr = YAML_AMS_Utility_StringToArray(args[2],dtype,&len,addr);CHKERRQ(ierr);
+  ierr = AMS_Memory_set_field_info(mem,args[1],addr,len);CHKERRQ(ierr);
+  if (ierr) {
+    ierr = PetscInfo1(NULL,"AMS_Memory_set_field_info() error %d\n",ierr);CHKERRQ(ierr);
+    *argco = 1;
+    ierr   = PetscMalloc(sizeof(char*),argso);CHKERRQ(ierr);
+    ierr   = PetscStrallocpy("Memory field can not be located",*argso);
+    PetscFunctionReturn(0);
+  }
+  *argco = 1;
+  ierr   = PetscMalloc(sizeof(char*),argso);CHKERRQ(ierr);
+  ierr   = PetscStrallocpy("Memory field value set",*argso);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "YAML_AMS_Memory_update_send_begin"
+PETSC_EXTERN PetscErrorCode YAML_AMS_Memory_update_send_begin(PetscInt argc,char **args,PetscInt *argco,char ***argso)
+{
+  PetscErrorCode     ierr;
+  AMS_Memory         mem;
+
+  PetscFunctionBegin;
+  CHKMEMQ;
+  sscanf(args[0],"%d",&mem);
+  ierr = AMS_Memory_update_send_begin(mem);
+  if (ierr) {
+    ierr = PetscInfo1(NULL,"AMS_Memory_update_send_begin() error %d\n",ierr);CHKERRQ(ierr);
+  }
+  *argco = 0;
+  PetscFunctionReturn(0);
+}
+
 #include "yaml.h"
 #undef __FUNCT__
 #define __FUNCT__ "PetscProcessYAMLRPC"
@@ -727,7 +822,7 @@ static PetscErrorCode PetscProcessYAMLRPC(const char *request,char **result)
   PetscErrorCode (*fun)(PetscInt,char**,PetscInt*,char***);
 
   PetscFunctionBegin;
-  ierr = PetscMalloc(sizeof(char*),&args);CHKERRQ(ierr);
+  ierr = PetscMalloc(20*sizeof(char*),&args);CHKERRQ(ierr);
   yaml_parser_initialize(&parser);
   PetscStrlen(request,&len);
   yaml_parser_set_input_string(&parser, (unsigned char*)request, len);

@@ -54,6 +54,9 @@ class AMSJavascriptExample:
       global boxes
       self.status.setText('User changed value in text box to ' + str(arg.getText())+ str(boxes[arg]))
       # the user has changed this value we should send it back to the AMS program
+      boxes[arg][2].set_field_info(boxes[arg][1],arg.getText())
+      boxes[arg][2].update_send_begin()
+      self.status.setText("Value updated on server")
 
     def onClick(self, sender):
         global sent,recv,boxes
@@ -83,7 +86,7 @@ class AMSJavascriptExample:
                        PN = HorizontalPanel()
                        PN.add(Label(Text=j+' ='))
                        tb = TextBox(Text=str(field[4]))
-                       boxes[tb] = [i,j]
+                       boxes[tb] = [i,j,memory]
                        tb.addChangeListener(self.textboxlistener)
                        PN.add(tb)
                        subtree.addItem(PN)
@@ -93,7 +96,7 @@ class AMSJavascriptExample:
 
 class ServicePython(JSONProxy):
     def __init__(self):
-        JSONProxy.__init__(self, "No service name", ["YAML_echo", "YAML_AMS_Connect", "YAML_AMS_Comm_attach", "YAML_AMS_Comm_get_memory_list","YAML_AMS_Memory_attach","YAML_AMS_Memory_get_field_list","YAML_AMS_Memory_get_field_info"])
+        JSONProxy.__init__(self, "No service name", ["YAML_echo", "YAML_AMS_Connect", "YAML_AMS_Comm_attach", "YAML_AMS_Comm_get_memory_list","YAML_AMS_Memory_attach","YAML_AMS_Memory_get_field_list","YAML_AMS_Memory_get_field_info","YAML_AMS_Memory_set_field_info","YAML_AMS_Memory_update_send_begin"])
 
 # ---------------------------------------------------------
 class AMS_Memory(JSONProxy):
@@ -119,6 +122,18 @@ class AMS_Memory(JSONProxy):
         if not self.fields.has_key(field):
             return 'Memory does not have field named '+field
         return self.fields[field]
+
+    def set_field_info(self,field,value,funct = null):
+        '''Pass in string name of AMS field and value to be set back on publisher
+           If called with func (not yet done) then first updates remove and then calls func with any error information'''
+        if not self.fields.has_key(field):
+            return 'Memory does not have field named '+field+' thus value not set'
+        id = self.remote.YAML_AMS_Memory_set_field_info(self.memory,field,value,self)
+
+    def update_send_begin(self,funct = null):
+        '''Tells the accessor to update the values in the memory on the publisher
+           If called with func (not yet done) then first updates remove and then calls func with any error information'''
+        id = self.remote.YAML_AMS_Memory_update_send_begin(self.memory,self)
 
     def onRemoteResponse(self, response, request_info):
         global args,sent,recv
