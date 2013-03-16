@@ -3,11 +3,10 @@ import PETSc.package
 class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
     PETSc.package.NewPackage.__init__(self, framework)
-    self.download   = ['http://crd-legacy.lbl.gov/~xiaoye/SuperLU/superlu_dist_3.2.tar.gz',
-                       'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/superlu_dist_3.2.tar.gz']
+    self.download   = ['http://crd-legacy.lbl.gov/~xiaoye/TEMP/superlu_dist_3.3.tar.gz']
     self.functions  = ['set_default_options_dist']
     self.includes   = ['superlu_ddefs.h']
-    self.liblist    = [['libsuperlu_dist_3.2.a']]
+    self.liblist    = [['libsuperlu_dist_3.3.a']]
     self.requires32bitint = 0
     self.complex          = 1
     # SuperLU_Dist does not work with --download-f-blas-lapack with Compaqf90 compiler on windows.
@@ -28,7 +27,7 @@ class Configure(PETSc.package.NewPackage):
 
     g = open(os.path.join(self.packageDir,'make.inc'),'w')
     g.write('DSuperLUroot = '+self.packageDir+'\n')
-    g.write('DSUPERLULIB  = $(DSuperLUroot)/libsuperlu_dist_3.2.'+self.setCompilers.AR_LIB_SUFFIX+'\n')
+    g.write('DSUPERLULIB  = $(DSuperLUroot)/libsuperlu_dist_3.3.'+self.setCompilers.AR_LIB_SUFFIX+'\n')
     g.write('BLASDEF      = -DUSE_VENDOR_BLAS\n')
     g.write('BLASLIB      = '+self.libraries.toString(self.blasLapack.dlib)+'\n')
     g.write('IMPI         = '+self.headers.toString(self.mpi.include)+'\n')
