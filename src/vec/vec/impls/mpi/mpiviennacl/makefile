@@ -1,15 +1,15 @@
-
+#requirespackage 'PETSC_HAVE_VIENNACL'
+#requireslanguage CXXONLY
 ALL: lib
 
 CFLAGS   = ${PNETCDF_INCLUDE}
 FFLAGS   =
-SOURCEC  = pbvec.c pdvec.c pvec2.c vmpicr.c commonmpvec.c
+SOURCEC  = mpiviennacl.cpp
 SOURCEF  =
-SOURCEH  = pvecimpl.h
+SOURCEH  =
 LIBBASE  = libpetscvec
 MANSEC   = Vec
-DIRS     = mpicusp mpiviennacl
-LOCDIR   = src/vec/vec/impls/mpi/
+LOCDIR   = src/vec/vec/impls/mpi/mpiviennacl
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules
