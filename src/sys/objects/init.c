@@ -457,15 +457,6 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
   ierr = PetscOptionsGetString(NULL,"-on_error_emacs",emacsmachinename,128,&flg1);CHKERRQ(ierr);
   if (flg1 && !rank) {ierr = PetscPushErrorHandler(PetscEmacsClientErrorHandler,emacsmachinename);CHKERRQ(ierr);}
 
-#if defined(PETSC_USE_SERVER)
-  ierr = PetscOptionsHasName(NULL,"-server", &flgz);CHKERRQ(ierr);
-  if (flgz) {
-    PetscInt port = PETSC_DECIDE;
-    ierr = PetscOptionsGetInt(NULL,"-server",&port,NULL);CHKERRQ(ierr);
-    ierr = PetscWebServe(PETSC_COMM_WORLD,(int)port);CHKERRQ(ierr);
-  }
-#endif
-
   /*
         Setup profiling and logging
   */

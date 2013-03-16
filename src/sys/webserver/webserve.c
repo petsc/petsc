@@ -502,11 +502,12 @@ static PetscErrorCode YAML_AMS_Utility_ArrayToString(PetscInt n,void *addr,AMS_D
 PETSC_EXTERN PetscErrorCode YAML_AMS_Connect(PetscInt argc,char **args,PetscInt *argco,char ***argso)
 {
   PetscErrorCode ierr;
-  char           **list = 0;
+  char           host[256],**list = 0;
   PetscInt       n = 0;
 
   PetscFunctionBegin;
-  ierr = AMS_Connect(0,-1,&list);
+  ierr = PetscGetHostName(host,256);CHKERRQ(ierr);
+  ierr = AMS_Connect(host,-1,&list);
   if (ierr) {
     ierr = PetscInfo1(NULL,"AMS_Connect() error %d\n",ierr);CHKERRQ(ierr);
   } else if (!list) {
@@ -1000,21 +1001,21 @@ theend:
 
 .seealso: PetscViewerSocketOpen(), PetscWebServe()
 @*/
-void *PetscWebServeWait(int *port)
+PetscErrorCode PetscWebServeWait(int *port)
 {
   PetscErrorCode ierr;
   int            iport,listenport,tport = *port;
 
-  ierr = PetscInfo1(NULL,"Starting webserver at port %d\n",tport);if (ierr) return 0;
-  ierr = PetscFree(port);if (ierr) return 0;
-  ierr = PetscSocketEstablish(tport,&listenport);if (ierr) return 0;
+  PetscFunctionBegin;
+  ierr = PetscInfo1(NULL,"Starting webserver at port %d\n",tport);CHKERRQ(ierr);
+  ierr = PetscSocketEstablish(tport,&listenport);CHKERRQ(ierr);
   while (1) {
-    ierr = PetscSocketListen(listenport,&iport);if (ierr) return 0;
-    ierr = PetscWebServeRequest(iport);if (ierr) return 0;
+    ierr = PetscSocketListen(listenport,&iport);CHKERRQ(ierr);
+    ierr = PetscWebServeRequest(iport);CHKERRQ(ierr);
     close(iport);
   }
   close(listenport);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
@@ -1048,22 +1049,14 @@ PetscErrorCode  PetscWebServe(MPI_Comm comm,int port)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;
-  pthread_t      thread;
-  int            *trueport;
-  PetscBool      flg;
 
   PetscFunctionBegin;
   if (port < 1 && port != PETSC_DEFAULT && port != PETSC_DECIDE) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Cannot use negative port number %d",port);
-  ierr = PetscMallocGetDebug(&flg);CHKERRQ(ierr);
-  if (flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Cannot use PetscWebServe() (-server) with any malloc debugging, run with -malloc off -malloc_test off -malloc_debug off");
-
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   if (rank) PetscFunctionReturn(0);
 
   if (port == PETSC_DECIDE || port == PETSC_DEFAULT) port = 8080;
-  ierr = PetscMalloc(1*sizeof(int),&trueport);CHKERRQ(ierr); /* malloc this so it still exists in thread */
-  *trueport = port;
-  ierr = pthread_create(&thread, NULL, (void *(*)(void*))PetscWebServeWait, trueport);CHKERRQ(ierr);
+  ierr = PetscWebServeWait(&port);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -1,10 +1,11 @@
+#requirespackage  'PETSC_HAVE_SERVER'
 
 ALL: lib
 
 CFLAGS    =
 FFLAGS    =
 CPPFLAGS  =
-SOURCEC	  = webserve.c
+SOURCEC	  =
 SOURCEF	  =
 SOURCEH	  =
 MANSEC	  = Sys
@@ -15,4 +16,9 @@ LOCDIR	  = src/sys/objects/webserver
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules
 include ${PETSC_DIR}/conf/test
+
+petscwebserver: petscwebserver.o webserve.o  chkopts
+	@-lib=`echo  ${AMS_LIB} | sed "s?amspub?amsacc?g"`; \
+        ${CLINKER} -o petscwebserver petscwebserver.o webserve.o $$lib ${PETSC_SYS_LIB}
+	${RM} -f petscwebserver.o webserve.o
 

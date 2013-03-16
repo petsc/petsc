@@ -200,7 +200,7 @@ class AMS_Comm(JSONProxy):
             if not isinstance(response,list):response = [response]
             self.memlist = response
             for i in self.memlist:
-                self.memories[i] = AMS_Memory(comm,i)
+                self.memories[i] = AMS_Memory(self.comm,i)
             if self.memory_list_func:
                 self.memory_list_func(response)
                 self.memory_list_func = null
