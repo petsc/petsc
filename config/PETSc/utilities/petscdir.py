@@ -83,7 +83,7 @@ The environmental variable PETSC_DIR is set incorrectly. Please use the followin
 
   def configureInstallationMethod(self):
     if os.path.exists(os.path.join(self.dir,'bin','maint')):
-      self.logPrint('bin/maint exits. This apppears to be a repository clone')
+      self.logPrint('bin/maint exists. This appears to be a repository clone')
       self.isClone = 1
       if os.path.exists(os.path.join(self.dir, '.git')):
         if hasattr(self.sourceControl,'git'):
