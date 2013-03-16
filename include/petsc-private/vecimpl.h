@@ -132,6 +132,10 @@ struct _p_Vec {
   PetscCUSPFlag          valid_GPU_array;    /* indicates where the most recently modified vector data is (GPU or CPU) */
   void                   *spptr; /* if we're using CUSP, then this is the special pointer to the array on the GPU */
 #endif
+#if defined(PETSC_HAVE_VIENNACL)
+  PetscViennaCLFlag      valid_GPU_array;    /* indicates where the most recently modified vector data is (GPU or CPU) */
+  void                   *spptr; /* if we're using ViennaCL, then this is the special pointer to the array on the GPU */
+#endif
 };
 
 PETSC_EXTERN PetscLogEvent VEC_View, VEC_Max, VEC_Min, VEC_DotBarrier, VEC_Dot, VEC_MDotBarrier, VEC_MDot, VEC_TDot, VEC_MTDot;
@@ -142,10 +146,17 @@ PETSC_EXTERN PetscLogEvent VEC_ReduceBegin,VEC_ReduceEnd;
 PETSC_EXTERN PetscLogEvent VEC_Swap, VEC_AssemblyBegin, VEC_NormBarrier, VEC_DotNormBarrier, VEC_DotNorm, VEC_AXPBYPCZ, VEC_Ops;
 PETSC_EXTERN PetscLogEvent VEC_CUSPCopyToGPU, VEC_CUSPCopyFromGPU;
 PETSC_EXTERN PetscLogEvent VEC_CUSPCopyToGPUSome, VEC_CUSPCopyFromGPUSome;
+PETSC_EXTERN PetscLogEvent VEC_ViennaCLCopyToGPU,     VEC_ViennaCLCopyFromGPU;
+/*PETSC_EXTERN PetscLogEvent VEC_ViennaCLCopyToGPUSome, VEC_ViennaCLCopyFromGPUSome;*/
 
 #if defined(PETSC_HAVE_CUSP)
 PETSC_EXTERN PetscErrorCode VecCUSPAllocateCheckHost(Vec v);
 PETSC_EXTERN PetscErrorCode VecCUSPCopyFromGPU(Vec v);
+#endif
+
+#if defined(PETSC_HAVE_VIENNACL)
+PETSC_EXTERN PetscErrorCode VecViennaCLAllocateCheckHost(Vec v);
+PETSC_EXTERN PetscErrorCode VecViennaCLCopyFromGPU(Vec v);
 #endif
 
 
