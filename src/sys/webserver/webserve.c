@@ -406,24 +406,21 @@ PETSC_UNUSED static PetscErrorCode YAML_echo(PetscInt argc,char **args,PetscInt 
 
 #undef __FUNCT__
 #define __FUNCT__ "YAML_AMS_Utility_StringToArray"
-static PetscErrorCode YAML_AMS_Utility_StringToArray(const char *string,AMS_Data_type dtype,PetscInt *n,void **addr)
+static PetscErrorCode YAML_AMS_Utility_StringToArray(const char *string,AMS_Data_type dtype,PetscInt *n,PetscBool **addr)
 {
   PetscErrorCode ierr;
   char           *bracket;
 
   PetscFunctionBegin;
-  CHKMEMQ;
   ierr = PetscStrchr(string,'[',&bracket);CHKERRQ(ierr);
   if (!bracket) {
     *n = 1;
     if (dtype == AMS_STRING) {
       ierr = PetscStrallocpy(string,(char**)addr);CHKERRQ(ierr);
     } else if (dtype == AMS_BOOLEAN) {
-      PetscBool *value;
-  CHKMEMQ;
-      ierr = PetscMalloc(sizeof(int),&value);CHKERRQ(ierr);
-  CHKMEMQ;
-      ierr = PetscOptionsStringToBool(string,value);CHKERRQ(ierr);
+      ierr = PetscMalloc(sizeof(PetscBool),addr);CHKERRQ(ierr);
+      ierr = PetscOptionsStringToBool(string,*addr);CHKERRQ(ierr);
+      ierr = PetscInfo2(NULL,"String value %s, computed value %d\n",string,(int)**addr);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -747,7 +744,7 @@ PETSC_EXTERN PetscErrorCode YAML_AMS_Memory_set_field_info(PetscInt argc,char **
 {
   PetscErrorCode     ierr;
   AMS_Memory         mem;
-  void               **addr;
+  void               *addr;
   int                len;
   AMS_Data_type      dtype;
   AMS_Memory_type    mtype;
@@ -755,7 +752,6 @@ PETSC_EXTERN PetscErrorCode YAML_AMS_Memory_set_field_info(PetscInt argc,char **
   AMS_Reduction_type rtype;
 
   PetscFunctionBegin;
-  CHKMEMQ;
   sscanf(args[0],"%d",&mem);
   ierr = AMS_Memory_get_field_info(mem,args[1],(void**)&addr,&len,&dtype,&mtype,&stype,&rtype);
   if (ierr) {
@@ -765,8 +761,7 @@ PETSC_EXTERN PetscErrorCode YAML_AMS_Memory_set_field_info(PetscInt argc,char **
     ierr   = PetscStrallocpy("Memory field can not be located",*argso);
     PetscFunctionReturn(0);
   }
-  CHKMEMQ;
-  ierr = YAML_AMS_Utility_StringToArray(args[2],dtype,&len,addr);CHKERRQ(ierr);
+  ierr = YAML_AMS_Utility_StringToArray(args[2],dtype,&len,(PetscBool**)&addr);CHKERRQ(ierr);
   ierr = AMS_Memory_set_field_info(mem,args[1],addr,len);CHKERRQ(ierr);
   if (ierr) {
     ierr = PetscInfo1(NULL,"AMS_Memory_set_field_info() error %d\n",ierr);CHKERRQ(ierr);
@@ -789,7 +784,6 @@ PETSC_EXTERN PetscErrorCode YAML_AMS_Memory_update_send_begin(PetscInt argc,char
   AMS_Memory         mem;
 
   PetscFunctionBegin;
-  CHKMEMQ;
   sscanf(args[0],"%d",&mem);
   ierr = AMS_Memory_update_send_begin(mem);
   if (ierr) {

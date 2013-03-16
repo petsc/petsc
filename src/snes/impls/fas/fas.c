@@ -830,12 +830,12 @@ PetscErrorCode SNESSolve_FAS(SNES snes)
       snes->reason = SNES_DIVERGED_FNORM_NAN;
       PetscFunctionReturn(0);
     }
-    ierr = PetscObjectAMSTakeAccess((PetscObject)snes);CHKERRQ(ierr);
   } else {
     fnorm               = snes->norm_init;
     snes->norm_init_set = PETSC_FALSE;
   }
 
+  ierr       = PetscObjectAMSTakeAccess((PetscObject)snes);CHKERRQ(ierr);
   snes->norm = fnorm;
   ierr       = PetscObjectAMSGrantAccess((PetscObject)snes);CHKERRQ(ierr);
   ierr       = SNESLogConvergenceHistory(snes,fnorm,0);CHKERRQ(ierr);

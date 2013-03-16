@@ -99,7 +99,7 @@ PetscErrorCode  PetscObjectViewAMS(PetscObject obj,PetscViewer viewer)
   PetscStackCallAMS(AMS_Memory_add_field,(amem,"Id",&obj->id,1,AMS_INT,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF));
   PetscStackCallAMS(AMS_Memory_add_field,(amem,"ParentId",&obj->parentid,1,AMS_INT,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF));
   PetscStackCallAMS(AMS_Memory_add_field,(amem,"Name",&obj->name,1,AMS_STRING,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF));
-  PetscStackCallAMS(AMS_Memory_add_field,(amem,"Block",&obj->amspublishblock,1,AMS_BOOLEAN,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF));
+  PetscStackCallAMS(AMS_Memory_add_field,(amem,"Block",&obj->amsblock,1,AMS_BOOLEAN,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF));
   PetscStackCallAMS(AMS_Memory_publish,(amem));
   PetscStackCallAMS(AMS_Memory_grant_access,(amem));
   PetscFunctionReturn(0);

@@ -637,7 +637,7 @@ PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
     ierr = VecCopy(x,b);CHKERRQ(ierr);
     ierr = VecDestroy(&x);CHKERRQ(ierr);
   }
-  ierr = PetscObjectAMSBlock((PetscObject)ksp);CHKERRQ(ierr);
+  ierr = PetscObjectAMSBlock((PetscObject)ksp->pc);CHKERRQ(ierr);
   if (ksp->errorifnotconverged && ksp->reason < 0) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"KSPSolve has not converged");
   PetscFunctionReturn(0);
 }

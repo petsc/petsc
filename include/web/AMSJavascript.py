@@ -55,8 +55,6 @@ class AMSJavascriptExample:
       self.status.setText('User changed value in text box to ' + str(arg.getText())+ str(boxes[arg]))
       # the user has changed this value we should send it back to the AMS program
       boxes[arg][2].set_field_info(boxes[arg][1],arg.getText())
-      boxes[arg][2].update_send_begin()
-      self.status.setText("Value updated on server")
 
     def onClick(self, sender):
         global sent,recv,boxes
@@ -129,6 +127,7 @@ class AMS_Memory(JSONProxy):
         if not self.fields.has_key(field):
             return 'Memory does not have field named '+field+' thus value not set'
         id = self.remote.YAML_AMS_Memory_set_field_info(self.memory,field,value,self)
+        args[id] = ['YAML_AMS_Memory_set_field_info',comm,memory,field]
 
     def update_send_begin(self,funct = null):
         '''Tells the accessor to update the values in the memory on the publisher
@@ -153,6 +152,9 @@ class AMS_Memory(JSONProxy):
                 sent += 1
         elif method == "YAML_AMS_Memory_get_field_info":
             self.fields[args[rid][2]] = response
+        elif method == "YAML_AMS_Memory_set_field_info":
+          self.update_send_begin()
+          self.status.setText("Value updated on server")
 
 
     def onRemoteError(self, code, errobj, request_info):
