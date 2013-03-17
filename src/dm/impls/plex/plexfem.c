@@ -453,6 +453,8 @@ PetscErrorCode DMPlexComputeL2Diff(DM dm, PetscQuadrature quad[], PetscScalar (*
   We form the residual one batch of elements at a time. This allows us to offload work onto an accelerator,
   like a GPU, or vectorize on a multicore machine.
 
+  Level: developer
+
 .seealso: DMPlexComputeJacobianActionFEM()
 @*/
 PetscErrorCode DMPlexComputeResidualFEM(DM dm, Vec X, Vec F, void *user)
@@ -561,6 +563,8 @@ PetscErrorCode DMPlexComputeResidualFEM(DM dm, Vec X, Vec F, void *user)
   We form the residual one batch of elements at a time. This allows us to offload work onto an accelerator,
   like a GPU, or vectorize on a multicore machine.
 
+  Level: developer
+
 .seealso: DMPlexComputeResidualFEM()
 @*/
 PetscErrorCode DMPlexComputeJacobianActionFEM(DM dm, Mat Jac, Vec X, Vec F, void *user)
@@ -658,6 +662,8 @@ PetscErrorCode DMPlexComputeJacobianActionFEM(DM dm, Mat Jac, Vec X, Vec F, void
 
   We form the residual one batch of elements at a time. This allows us to offload work onto an accelerator,
   like a GPU, or vectorize on a multicore machine.
+
+  Level: developer
 
 .seealso: FormFunctionLocal()
 @*/
