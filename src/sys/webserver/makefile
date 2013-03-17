@@ -21,4 +21,4 @@ petscwebserver: petscwebserver.o webserve.o  chkopts
 	@-lib=`echo  ${AMS_LIB} | sed "s?amspub?amsacc?g"`; \
         ${CLINKER} -o petscwebserver petscwebserver.o webserve.o $$lib ${PETSC_SYS_LIB}
 	${RM} -f petscwebserver.o webserve.o
-
+	${MV} -f petscwebserver ${PETSC_DIR}/${PETSC_ARCH}/bin
