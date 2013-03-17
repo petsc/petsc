@@ -515,7 +515,7 @@ class Configure(script.Script):
   def filterLinkOutput(self, output):
     return self.framework.filterLinkOutput(output)
 
-  def outputLink(self, includes, body, cleanup = 1, codeBegin = None, codeEnd = None, shared = 0):
+  def outputLink(self, includes, body, cleanup = 1, codeBegin = None, codeEnd = None, shared = 0, linkLanguage=None):
     import sys
 
     (out, err, ret) = self.outputCompile(includes, body, cleanup = 0, codeBegin = codeBegin, codeEnd = codeEnd)
@@ -526,12 +526,18 @@ class Configure(script.Script):
       return (out, ret)
 
     cleanup = cleanup and self.framework.doCleanup
+
+    if linkLanguage is not None and linkLanguage != self.language[-1]:
+      self.pushLanguage(linkLanguage)
     if shared == 'dynamic':
       cmd = self.getDynamicLinkerCmd()
     elif shared:
       cmd = self.getSharedLinkerCmd()
     else:
       cmd = self.getLinkerCmd()
+    if linkLanguage is not None and linkLanguage != self.language[-1]:
+      self.popLanguage()
+
     linkerObj = self.linkerObj
     def report(command, status, output, error):
       if error or status:
@@ -551,8 +557,8 @@ class Configure(script.Script):
       if os.path.isfile(pdbfile): os.remove(pdbfile)
     return (out+err, ret)
 
-  def checkLink(self, includes = '', body = '', cleanup = 1, codeBegin = None, codeEnd = None, shared = 0):
-    (output, returnCode) = self.outputLink(includes, body, cleanup, codeBegin, codeEnd, shared)
+  def checkLink(self, includes = '', body = '', cleanup = 1, codeBegin = None, codeEnd = None, shared = 0, linkLanguage=None):
+    (output, returnCode) = self.outputLink(includes, body, cleanup, codeBegin, codeEnd, shared, linkLanguage)
     output = self.filterLinkOutput(output)
     return not (returnCode or len(output))
 
