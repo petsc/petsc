@@ -3,10 +3,9 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-CPPFLAGS = 
+CPPFLAGS =
 SOURCEC  = hem.c
-SOURCEH  = 
-OBJSC    = hem.o
+SOURCEH  =
 LIBBASE  = libpetscmat
 LOCDIR   = src/mat/coarsen/impls/hem/
 MANSEC   = MatOrderings

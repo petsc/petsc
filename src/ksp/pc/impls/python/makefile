@@ -1,13 +1,11 @@
 
 ALL: lib
 
-CFLAGS   = 
+CFLAGS   =
 FFLAGS   =
-SOURCEC  = pythonP.c
+SOURCEC  = pythonpc.c
 SOURCEF  =
-SOURCEH  = 
-OBJSC    = pythonP.o
-OBJSF    =
+SOURCEH  =
 LIBBASE  = libpetscksp
 DIRS     =
 LOCDIR   = src/ksp/pc/impls/python/

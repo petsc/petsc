@@ -95,7 +95,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
   options->debug = 0;
 
   ierr = PetscOptionsBegin(comm, "", "Options for overlap stress test", "Sieve");CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-debug", "The debugging level", "overlap1.c", options->debug, &options->debug, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-debug", "The debugging level", "overlap1.c", options->debug, &options->debug, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
   PetscFunctionReturn(0);
 }

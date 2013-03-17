@@ -1,5 +1,4 @@
 !
-!   Program usage:  mpiexec ex1f [-help] [all PETSc options] 
 !
 !/*T
 !   Concepts: vectors^basic routines
@@ -48,7 +47,7 @@
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                 Beginning of program
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       one   = 1.0
@@ -73,7 +72,7 @@
 !                         (available only on the SGI); otherwise,
 !                         is the same as VecCreateMPI()
 !
-!     VecCreate(), VecSetSizes() and VecSetFromOptions() allows one 
+!     VecCreate(), VecSetSizes() and VecSetFromOptions() allows one
 !                 to determine at runtime which version to use
 !                 with the options -vec_type mpi or -vec_type shared
 !
@@ -191,7 +190,7 @@
       if (rank .eq. 0) write(6,210) v
  210  format ('VecPointwiseDivide ',1pe8.2)
 
-      
+
       dots(1) = one
       dots(2) = three
       dots(3) = two
@@ -219,4 +218,4 @@
       call PetscFinalize(ierr)
 
       end
- 
+

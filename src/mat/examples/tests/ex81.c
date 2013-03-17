@@ -20,14 +20,14 @@ int main(int argc,char **args)
   PetscMPIInt    size;
   Mat            A;
   Vec            x;
-  char           bfile[PETSC_MAX_PATH_LEN],hbfile[PETSC_MAX_PATH_LEN]; 
+  char           bfile[PETSC_MAX_PATH_LEN],hbfile[PETSC_MAX_PATH_LEN];
   PetscViewer    fd;
   Mat_SeqAIJ     *a;
   PetscScalar    *aa,*xx;
   FILE           *file;
   char           head[81];
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
 
 #if defined(PETSC_USE_COMPLEX)
   SETERRQ(PETSC_COMM_WORLD,1,"This example does not work with complex numbers");
@@ -35,8 +35,8 @@ int main(int argc,char **args)
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size > 1) SETERRQ(PETSC_COMM_WORLD,1,"Only runs on one processor");
 
-  ierr = PetscOptionsGetString(PETSC_NULL,"-fin",bfile,PETSC_MAX_PATH_LEN,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetString(PETSC_NULL,"-fout",hbfile,PETSC_MAX_PATH_LEN,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,"-fin",bfile,PETSC_MAX_PATH_LEN,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,"-fout",hbfile,PETSC_MAX_PATH_LEN,NULL);CHKERRQ(ierr);
 
   /* Read matrix and RHS */
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,bfile,FILE_MODE_READ,&fd);CHKERRQ(ierr);

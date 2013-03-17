@@ -1,6 +1,5 @@
-/* 
-   Test VecGetArray4d()
-*/
+
+static char help[] = "Test VecGetArray4d()\n";
 
 #include <petscvec.h>
 
@@ -13,23 +12,20 @@ int main(int argc,char **argv)
   Vec            x;
   PetscScalar    ****xx;
 
-  PetscInitialize(&argc,&argv,(char *)0,0);
+  PetscInitialize(&argc,&argv,(char*)0,help);
   ierr = VecCreateSeq(PETSC_COMM_WORLD,m*n*p*q,&x);CHKERRQ(ierr);
   ierr = VecGetArray4d(x,m,n,p,q,0,0,0,0,&xx);CHKERRQ(ierr);
   cnt  = 0;
-  for (i=0; i<m; i++) {
-    for (j=0; j<n; j++) {
-      for (k=0; k<p; k++) {
-        for (l=0; l<q; l++) {
+  for (i=0; i<m; i++)
+    for (j=0; j<n; j++)
+      for (k=0; k<p; k++)
+        for (l=0; l<q; l++)
           xx[i][j][k][l] = cnt++;
-	}
-      }
-    }
-  }
+
   ierr = VecRestoreArray4d(x,m,n,p,q,0,0,0,0,&xx);CHKERRQ(ierr);
   ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }
- 
+

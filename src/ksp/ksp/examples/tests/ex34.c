@@ -16,13 +16,13 @@ typedef struct {
 #undef __FUNCT__
 #define __FUNCT__ "MyMult"
 /*
-    This is called on ALL processess, master and worker 
+    This is called on ALL processess, master and worker
 */
 PetscErrorCode MyMult(MPI_Comm comm,MyMultCtx *ctx,void *dummy)
 {
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = PetscSynchronizedPrintf(ctx->comm,"Doing multiply\n");
   ierr = PetscSynchronizedFlush(ctx->comm);CHKERRQ(ierr);
   /* moves data that lives only on master processes to all processes */
@@ -45,13 +45,13 @@ PetscErrorCode MySubsolver(MyMultCtx *ctx)
   PetscErrorCode ierr;
   void           *subctx;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"MySubsolver\n");
   ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRQ(ierr);
   /* allocates memory on each process, both masters and workers */
   ierr = PetscHMPIMalloc(PETSC_COMM_LOCAL_WORLD,sizeof(int),&subctx);CHKERRQ(ierr);
   /* runs MyMult() function on each process, both masters and workers */
-  ierr = PetscHMPIRunCtx(PETSC_COMM_LOCAL_WORLD,(PetscErrorCode (*)(MPI_Comm,void*,void *))MyMult,subctx);CHKERRQ(ierr);
+  ierr = PetscHMPIRunCtx(PETSC_COMM_LOCAL_WORLD,(PetscErrorCode (*)(MPI_Comm,void*,void*))MyMult,subctx);CHKERRQ(ierr);
   ierr = PetscHMPIFree(PETSC_COMM_LOCAL_WORLD,subctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -61,23 +61,23 @@ PetscErrorCode MySubsolver(MyMultCtx *ctx)
 int main(int argc,char **args)
 {
   PetscErrorCode ierr;
-  char           file[PETSC_MAX_PATH_LEN]; 
+  char           file[PETSC_MAX_PATH_LEN];
   PetscViewer    fd;
   PetscMPIInt    rank,size,nodesize = 1;
   MyMultCtx      ctx;
   const PetscInt *ns; /* length of vector ctx.x on all process */
   PetscInt       i,rstart,n = 0;   /* length of vector ctx.xr on this process */
-  IS             is; 
+  IS             is;
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
   ctx.comm = PETSC_COMM_WORLD;
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-nodesize",&nodesize,PETSC_NULL);CHKERRQ(ierr);
+  ierr     = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+  ierr     = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
+  ierr     = PetscOptionsGetInt(NULL,"-nodesize",&nodesize,NULL);CHKERRQ(ierr);
   if (size % nodesize) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"MPI_COMM_WORLD size must be divisible by nodesize");
 
   /* Read matrix */
-  ierr = PetscOptionsGetString(PETSC_NULL,"-f",file,PETSC_MAX_PATH_LEN,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,"-f",file,PETSC_MAX_PATH_LEN,NULL);CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,&ctx.A);CHKERRQ(ierr);
   ierr = MatSetType(ctx.A,MATMPIAIJ);CHKERRQ(ierr);
@@ -93,12 +93,12 @@ int main(int argc,char **args)
   ierr = VecCreateMPI(MPI_COMM_WORLD,n,PETSC_DETERMINE,&ctx.xr);CHKERRQ(ierr);
   ierr = VecDuplicate(ctx.xr,&ctx.yr);CHKERRQ(ierr);
   /* create scatter from ctx.xr to ctx.x vector */
-  ierr = VecGetOwnershipRange(ctx.x,&rstart,PETSC_NULL);CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(ctx.x,&rstart,NULL);CHKERRQ(ierr);
   ierr = ISCreateStride(PETSC_COMM_WORLD,ns[rank],rstart,1,&is);CHKERRQ(ierr);
   ierr = VecScatterCreate(ctx.xr,is,ctx.x,is,&ctx.sct);CHKERRQ(ierr);
   ierr = ISDestroy(&is);CHKERRQ(ierr);
 
-  /* 
+  /*
      The master nodes call the function MySubsolver() while the worker nodes wait for requests to call functions
      These requests are triggered by the calls from the masters on PetscHMPIRunCtx()
   */

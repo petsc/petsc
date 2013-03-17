@@ -5,13 +5,9 @@
 #include <pwd.h>
 #endif
 #include <ctype.h>
-#include <sys/types.h>
 #include <sys/stat.h>
 #if defined(PETSC_HAVE_UNISTD_H)
 #include <unistd.h>
-#endif
-#if defined(PETSC_HAVE_STDLIB_H)
-#include <stdlib.h>
 #endif
 #if defined(PETSC_HAVE_SYS_UTSNAME_H)
 #include <sys/utsname.h>
@@ -23,11 +19,11 @@
 #include <sys/systeminfo.h>
 #endif
 
-#if defined (PETSC_HAVE__ACCESS) || defined(PETSC_HAVE_ACCESS)
+#if defined(PETSC_HAVE__ACCESS) || defined(PETSC_HAVE_ACCESS)
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscTestOwnership"
-static PetscErrorCode PetscTestOwnership(const char fname[], char mode, uid_t fuid, gid_t fgid, int fmode, PetscBool  *flg) 
+static PetscErrorCode PetscTestOwnership(const char fname[], char mode, uid_t fuid, gid_t fgid, int fmode, PetscBool  *flg)
 {
   int            m = R_OK;
   PetscErrorCode ierr;
@@ -38,28 +34,28 @@ static PetscErrorCode PetscTestOwnership(const char fname[], char mode, uid_t fu
   else if (mode == 'x') m = X_OK;
   else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG, "Mode must be one of r, w, or x");
 #if defined(PETSC_HAVE_ACCESS)
-  if (!access(fname, m)) { 
-    ierr = PetscInfo1(PETSC_NULL,"System call access() succeeded on file %s\n",fname);CHKERRQ(ierr);
+  if (!access(fname, m)) {
+    ierr = PetscInfo1(NULL,"System call access() succeeded on file %s\n",fname);CHKERRQ(ierr);
     *flg = PETSC_TRUE;
   } else {
-    ierr = PetscInfo1(PETSC_NULL,"System call access() failed on file %s\n",fname);CHKERRQ(ierr);
+    ierr = PetscInfo1(NULL,"System call access() failed on file %s\n",fname);CHKERRQ(ierr);
     *flg = PETSC_FALSE;
   }
 #else
   if (m == X_OK) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP, "Unable to check execute permission for file %s", fname);
-  if(!_access(fname, m)) *flg = PETSC_TRUE;
+  if (!_access(fname, m)) *flg = PETSC_TRUE;
 #endif
   PetscFunctionReturn(0);
 }
 
 #else  /* PETSC_HAVE_ACCESS or PETSC_HAVE__ACCESS */
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscTestOwnership"
-static PetscErrorCode PetscTestOwnership(const char fname[], char mode, uid_t fuid, gid_t fgid, int fmode, PetscBool  *flg) 
+static PetscErrorCode PetscTestOwnership(const char fname[], char mode, uid_t fuid, gid_t fgid, int fmode, PetscBool  *flg)
 {
   uid_t          uid;
-  gid_t          *gid = PETSC_NULL;
+  gid_t          *gid = NULL;
   int            numGroups;
   int            rbit = S_IROTH;
   int            wbit = S_IWOTH;
@@ -92,7 +88,7 @@ static PetscErrorCode PetscTestOwnership(const char fname[], char mode, uid_t fu
   } else {
     int g;
 
-    for(g = 0; g <= numGroups; g++) {
+    for (g = 0; g <= numGroups; g++) {
       if (fgid == gid[g]) {
         rbit = S_IRGRP;
         wbit = S_IWGRP;
@@ -115,7 +111,7 @@ static PetscErrorCode PetscTestOwnership(const char fname[], char mode, uid_t fu
 
 #endif /* PETSC_HAVE_ACCESS */
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscGetFileStat"
 static PetscErrorCode PetscGetFileStat(const char fname[], uid_t *fileUid, gid_t *fileGid, int *fileMode,PetscBool  *exists)
 {
@@ -132,11 +128,11 @@ static PetscErrorCode PetscGetFileStat(const char fname[], uid_t *fileUid, gid_t
 #if defined(EOVERFLOW)
     if (errno == EOVERFLOW) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"EOVERFLOW in stat(), configure PETSc --with-large-file-io=1 to support files larger than 2GiB");
 #endif
-    ierr = PetscInfo1(PETSC_NULL,"System call stat() failed on file %s\n",fname);CHKERRQ(ierr);
+    ierr    = PetscInfo1(NULL,"System call stat() failed on file %s\n",fname);CHKERRQ(ierr);
     *exists = PETSC_FALSE;
   } else {
-     ierr = PetscInfo1(PETSC_NULL,"System call stat() succeeded on file %s\n",fname);CHKERRQ(ierr);
-    *exists = PETSC_TRUE;
+    ierr      = PetscInfo1(NULL,"System call stat() succeeded on file %s\n",fname);CHKERRQ(ierr);
+    *exists   = PETSC_TRUE;
     *fileUid  = statbuf.st_uid;
     *fileGid  = statbuf.st_gid;
     *fileMode = statbuf.st_mode;
@@ -144,7 +140,7 @@ static PetscErrorCode PetscGetFileStat(const char fname[], uid_t *fileUid, gid_t
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscTestFile"
 PetscErrorCode  PetscTestFile(const char fname[], char mode, PetscBool  *flg)
 {
@@ -167,7 +163,7 @@ PetscErrorCode  PetscTestFile(const char fname[], char mode, PetscBool  *flg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscTestDirectory"
 PetscErrorCode  PetscTestDirectory(const char fname[],char mode,PetscBool  *flg)
 {
@@ -191,7 +187,7 @@ PetscErrorCode  PetscTestDirectory(const char fname[],char mode,PetscBool  *flg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscLs"
 PetscErrorCode  PetscLs(MPI_Comm comm,const char libname[],char found[],size_t tlen,PetscBool  *flg)
 {
@@ -201,22 +197,23 @@ PetscErrorCode  PetscLs(MPI_Comm comm,const char libname[],char found[],size_t t
   FILE           *fp;
 
   PetscFunctionBegin;
-  ierr   = PetscStrcpy(program,"ls ");CHKERRQ(ierr);
-  ierr   = PetscStrcat(program,libname);CHKERRQ(ierr); 
+  ierr = PetscStrcpy(program,"ls ");CHKERRQ(ierr);
+  ierr = PetscStrcat(program,libname);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_POPEN)
-  ierr   = PetscPOpen(comm,PETSC_NULL,program,"r",&fp);CHKERRQ(ierr);
+  ierr = PetscPOpen(comm,NULL,program,"r",&fp);CHKERRQ(ierr);
 #else
   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Cannot run external programs on this machine");
 #endif
-  f      = fgets(found,tlen,fp);
-  if (f) *flg = PETSC_TRUE; else *flg = PETSC_FALSE;
+  f = fgets(found,tlen,fp);
+  if (f) *flg = PETSC_TRUE;
+  else *flg = PETSC_FALSE;
   while (f) {
-    ierr  = PetscStrlen(found,&len);CHKERRQ(ierr);
-    f     = fgets(found+len,tlen-len,fp);
+    ierr = PetscStrlen(found,&len);CHKERRQ(ierr);
+    f    = fgets(found+len,tlen-len,fp);
   }
   if (*flg) {ierr = PetscInfo2(0,"ls on %s gives \n%s\n",libname,found);CHKERRQ(ierr);}
 #if defined(PETSC_HAVE_POPEN)
-  ierr   = PetscPClose(comm,fp,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscPClose(comm,fp,NULL);CHKERRQ(ierr);
 #else
   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Cannot run external programs on this machine");
 #endif

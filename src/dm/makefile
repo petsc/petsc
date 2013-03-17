@@ -1,7 +1,7 @@
 
 ALL: lib
 
-DIRS     = ao impls f90-mod interface examples
+DIRS     = impls f90-mod interface examples dt
 LOCDIR   = src/dm/
 MANSEC   = DM
 

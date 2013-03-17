@@ -9,13 +9,11 @@ SPECIALLIB     = yes
 SPECIALFASTLIB = yes
 
 
-CFLAGS	   = 
-FFLAGS	   = 
-SOURCEC	   = 
+CFLAGS	   =
+FFLAGS	   =
+SOURCEC	   =
 SOURCEF	   = petscvecmod.F
-SOURCEH	   = 
-OBJSC	   = 
-OBJSF	   = petscvecmod.o
+SOURCEH	   =
 LIBBASE	   = libpetscvec
 MANSEC	   = Vec
 LOCDIR	   = src/vec/f90-mod/

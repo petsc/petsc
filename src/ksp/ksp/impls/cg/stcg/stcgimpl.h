@@ -11,14 +11,14 @@
 /*     pages 626-637, 1983.                                                  */
 /*****************************************************************************/
 
-#ifndef __STCG
+#if !defined(__STCG)
 #define __STCG
 
 typedef struct {
   PetscReal radius;
   PetscReal norm_d;
   PetscReal o_fcn;
-  PetscInt dtype;
+  PetscInt  dtype;
 } KSP_STCG;
 
 #endif

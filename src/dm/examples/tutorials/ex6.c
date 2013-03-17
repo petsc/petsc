@@ -2,6 +2,7 @@
 static char help[] = "Demonstrates using 3 DMDA's to manage a slightly non-trivial grid";
 
 #include <petscdmda.h>
+#include <petscdraw.h>
 
 struct _p_FA {
   MPI_Comm   comm[3];
@@ -10,7 +11,7 @@ struct _p_FA {
   PetscInt   offl[3],offg[3];            /* offset in local and global vector of region 1, 2 and 3 portions */
   Vec        g,l;
   VecScatter vscat;
-  PetscInt   p1,p2,r1,r2,r1g,r2g,sw;     
+  PetscInt   p1,p2,r1,r2,r1g,r2g,sw;
 };
 typedef struct _p_FA *FA;
 
@@ -21,7 +22,7 @@ typedef struct {
 
 PetscErrorCode FAGetLocalCorners(FA fa,PetscInt j,PetscInt *x,PetscInt *y,PetscInt *m,PetscInt *n)
 {
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   if (fa->comm[j]) {
     *x = fa->xl[j];
     *y = fa->yl[j];
@@ -35,7 +36,7 @@ PetscErrorCode FAGetLocalCorners(FA fa,PetscInt j,PetscInt *x,PetscInt *y,PetscI
 
 PetscErrorCode FAGetGlobalCorners(FA fa,PetscInt j,PetscInt *x,PetscInt *y,PetscInt *m,PetscInt *n)
 {
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   if (fa->comm[j]) {
     *x = fa->xg[j];
     *y = fa->yg[j];
@@ -54,13 +55,13 @@ PetscErrorCode FAGetLocalArray(FA fa,Vec v,PetscInt j,Field ***f)
   PetscInt       i;
   Field          **a;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   if (fa->comm[j]) {
     ierr = VecGetArray(v,&va);CHKERRQ(ierr);
     ierr = PetscMalloc(fa->nl[j]*sizeof(Field*),&a);CHKERRQ(ierr);
     for (i=0; i<fa->nl[j]; i++) (a)[i] = (Field*) (va + 2*fa->offl[j] + i*2*fa->ml[j] - 2*fa->xl[j]);
-    *f = a - fa->yl[j];
-    ierr = VecRestoreArray(v,&va);CHKERRQ(ierr);    
+    *f   = a - fa->yl[j];
+    ierr = VecRestoreArray(v,&va);CHKERRQ(ierr);
   } else {
     *f = 0;
   }
@@ -72,7 +73,7 @@ PetscErrorCode FARestoreLocalArray(FA fa,Vec v,PetscInt j,Field ***f)
   PetscErrorCode ierr;
   void           *dummy;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   if (fa->comm[j]) {
     dummy = *f + fa->yl[j];
     ierr  = PetscFree(dummy);CHKERRQ(ierr);
@@ -87,13 +88,13 @@ PetscErrorCode FAGetGlobalArray(FA fa,Vec v,PetscInt j,Field ***f)
   PetscInt       i;
   Field          **a;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   if (fa->comm[j]) {
     ierr = VecGetArray(v,&va);CHKERRQ(ierr);
     ierr = PetscMalloc(fa->ng[j]*sizeof(Field*),&a);CHKERRQ(ierr);
     for (i=0; i<fa->ng[j]; i++) (a)[i] = (Field*) (va + 2*fa->offg[j] + i*2*fa->mg[j] - 2*fa->xg[j]);
-    *f = a - fa->yg[j];
-    ierr = VecRestoreArray(v,&va);CHKERRQ(ierr);    
+    *f   = a - fa->yg[j];
+    ierr = VecRestoreArray(v,&va);CHKERRQ(ierr);
   } else {
     *f = 0;
   }
@@ -105,7 +106,7 @@ PetscErrorCode FARestoreGlobalArray(FA fa,Vec v,PetscInt j,Field ***f)
   PetscErrorCode ierr;
   void           *dummy;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   if (fa->comm[j]) {
     dummy = *f + fa->yg[j];
     ierr  = PetscFree(dummy);CHKERRQ(ierr);
@@ -116,7 +117,8 @@ PetscErrorCode FARestoreGlobalArray(FA fa,Vec v,PetscInt j,Field ***f)
 PetscErrorCode FAGetGlobalVector(FA fa,Vec *v)
 {
   PetscErrorCode ierr;
-  PetscFunctionBegin;
+
+  PetscFunctionBeginUser;
   ierr = VecDuplicate(fa->g,v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -124,7 +126,8 @@ PetscErrorCode FAGetGlobalVector(FA fa,Vec *v)
 PetscErrorCode FAGetLocalVector(FA fa,Vec *v)
 {
   PetscErrorCode ierr;
-  PetscFunctionBegin;
+
+  PetscFunctionBeginUser;
   ierr = VecDuplicate(fa->l,v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -132,7 +135,8 @@ PetscErrorCode FAGetLocalVector(FA fa,Vec *v)
 PetscErrorCode FAGlobalToLocal(FA fa,Vec g,Vec l)
 {
   PetscErrorCode ierr;
-  PetscFunctionBegin;
+
+  PetscFunctionBeginUser;
   ierr = VecScatterBegin(fa->vscat,g,l,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(fa->vscat,g,l,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -142,7 +146,7 @@ PetscErrorCode FADestroy(FA *fa)
 {
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = VecDestroy(&(*fa)->g);CHKERRQ(ierr);
   ierr = VecDestroy(&(*fa)->l);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&(*fa)->vscat);CHKERRQ(ierr);
@@ -162,43 +166,43 @@ PetscErrorCode FACreate(FA *infa)
      Each DMDA can belong on any subset (overlapping between DMDA's or not) of processors
      For processes that a particular DMDA does not exist on, the corresponding comm should be set to zero
   */
-  DM             da1 = 0,da2 = 0,da3 = 0;
-  /* 
+  DM da1 = 0,da2 = 0,da3 = 0;
+  /*
       v1, v2, v3 represent the local vector for a single DMDA
   */
-  Vec            vl1 = 0,vl2 = 0,vl3 = 0, vg1 = 0, vg2 = 0,vg3 = 0;
+  Vec vl1 = 0,vl2 = 0,vl3 = 0, vg1 = 0, vg2 = 0,vg3 = 0;
 
   /*
-     globalvec and friends represent the global vectors that are used for the PETSc solvers 
+     globalvec and friends represent the global vectors that are used for the PETSc solvers
      localvec represents the concatenation of the (up to) 3 local vectors; vl1, vl2, vl3
 
-     tovec and friends represent intermediate vectors that are ONLY used for setting up the 
+     tovec and friends represent intermediate vectors that are ONLY used for setting up the
      final communication patterns. Once this setup routine is complete they are destroyed.
      The tovec  is like the globalvec EXCEPT it has redundant locations for the ghost points
      between regions 2+3 and 1.
   */
-  AO             toao,globalao;
-  IS             tois,globalis,is;
-  Vec            tovec,globalvec,localvec;
-  VecScatter     vscat;
-  PetscScalar    *globalarray,*localarray,*toarray;
+  AO          toao,globalao;
+  IS          tois,globalis,is;
+  Vec         tovec,globalvec,localvec;
+  VecScatter  vscat;
+  PetscScalar *globalarray,*localarray,*toarray;
 
   ierr = PetscNew(struct _p_FA,&fa);CHKERRQ(ierr);
   /*
-      fa->sw is the stencil width  
+      fa->sw is the stencil width
 
       fa->p1 is the width of region 1, fa->p2 the width of region 2 (must be the same)
-      fa->r1 height of region 1 
+      fa->r1 height of region 1
       fa->r2 height of region 2
- 
+
       fa->r2 is also the height of region 3-4
       (fa->p1 - fa->p2)/2 is the width of both region 3 and region 4
   */
-  fa->p1 = 24;
-  fa->p2 = 15;
-  fa->r1 = 6; 
-  fa->r2 = 6;
-  fa->sw = 1;
+  fa->p1  = 24;
+  fa->p2  = 15;
+  fa->r1  = 6;
+  fa->r2  = 6;
+  fa->sw  = 1;
   fa->r1g = fa->r1 + fa->sw;
   fa->r2g = fa->r2 + fa->sw;
 
@@ -210,59 +214,59 @@ PetscErrorCode FACreate(FA *infa)
   /* Test case with different communicators */
   /* Normally one would use MPI_Comm routines to build MPI communicators on which you wish to partition the DMDAs*/
   /*
-  if (rank == 0) {
+  if (!rank) {
     fa->comm[0] = PETSC_COMM_SELF;
     fa->comm[1] = 0;
     fa->comm[2] = 0;
   } else if (rank == 1) {
-    fa->comm[0] = 0;  
+    fa->comm[0] = 0;
     fa->comm[1] = PETSC_COMM_SELF;
-    fa->comm[2] = 0;  
+    fa->comm[2] = 0;
   } else {
-    fa->comm[0] = 0;  
+    fa->comm[0] = 0;
     fa->comm[1] = 0;
     fa->comm[2] = PETSC_COMM_SELF;
   } */
 
-  if (fa->p2 > fa->p1 - 3)   SETERRQ(PETSC_COMM_SELF,1,"Width of region fa->p2 must be at least 3 less then width of region 1");
+  if (fa->p2 > fa->p1 - 3) SETERRQ(PETSC_COMM_SELF,1,"Width of region fa->p2 must be at least 3 less then width of region 1");
   if (!((fa->p2 - fa->p1) % 2)) SETERRQ(PETSC_COMM_SELF,1,"width of region 3 must NOT be divisible by 2");
 
   if (fa->comm[1]) {
-    ierr = DMDACreate2d(fa->comm[1],DMDA_BOUNDARY_PERIODIC,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,fa->p2,fa->r2g,PETSC_DECIDE,PETSC_DECIDE,1,fa->sw,PETSC_NULL,PETSC_NULL,&da2);CHKERRQ(ierr);
+    ierr = DMDACreate2d(fa->comm[1],DMDA_BOUNDARY_PERIODIC,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,fa->p2,fa->r2g,PETSC_DECIDE,PETSC_DECIDE,1,fa->sw,NULL,NULL,&da2);CHKERRQ(ierr);
     ierr = DMGetLocalVector(da2,&vl2);CHKERRQ(ierr);
     ierr = DMGetGlobalVector(da2,&vg2);CHKERRQ(ierr);
   }
   if (fa->comm[2]) {
-    ierr = DMDACreate2d(fa->comm[2],DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,fa->p1-fa->p2,fa->r2g,PETSC_DECIDE,PETSC_DECIDE,1,fa->sw,PETSC_NULL,PETSC_NULL,&da3);CHKERRQ(ierr);
+    ierr = DMDACreate2d(fa->comm[2],DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,fa->p1-fa->p2,fa->r2g,PETSC_DECIDE,PETSC_DECIDE,1,fa->sw,NULL,NULL,&da3);CHKERRQ(ierr);
     ierr = DMGetLocalVector(da3,&vl3);CHKERRQ(ierr);
     ierr = DMGetGlobalVector(da3,&vg3);CHKERRQ(ierr);
   }
   if (fa->comm[0]) {
-    ierr = DMDACreate2d(fa->comm[0],DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,fa->p1,fa->r1g,PETSC_DECIDE,PETSC_DECIDE,1,fa->sw,PETSC_NULL,PETSC_NULL,&da1);CHKERRQ(ierr);
+    ierr = DMDACreate2d(fa->comm[0],DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,fa->p1,fa->r1g,PETSC_DECIDE,PETSC_DECIDE,1,fa->sw,NULL,NULL,&da1);CHKERRQ(ierr);
     ierr = DMGetLocalVector(da1,&vl1);CHKERRQ(ierr);
     ierr = DMGetGlobalVector(da1,&vg1);CHKERRQ(ierr);
   }
 
-  /* count the number of unknowns owned on each processor and determine the starting point of each processors ownership 
+  /* count the number of unknowns owned on each processor and determine the starting point of each processors ownership
      for global vector with redundancy */
   tonglobal = 0;
   if (fa->comm[1]) {
-    ierr = DMDAGetCorners(da2,&x,&y,0,&nx,&ny,0);CHKERRQ(ierr);
+    ierr       = DMDAGetCorners(da2,&x,&y,0,&nx,&ny,0);CHKERRQ(ierr);
     tonglobal += nx*ny;
   }
   if (fa->comm[2]) {
-    ierr = DMDAGetCorners(da3,&x,&y,0,&nx,&ny,0);CHKERRQ(ierr);
+    ierr       = DMDAGetCorners(da3,&x,&y,0,&nx,&ny,0);CHKERRQ(ierr);
     tonglobal += nx*ny;
   }
   if (fa->comm[0]) {
-    ierr = DMDAGetCorners(da1,&x,&y,0,&nx,&ny,0);CHKERRQ(ierr);
+    ierr       = DMDAGetCorners(da1,&x,&y,0,&nx,&ny,0);CHKERRQ(ierr);
     tonglobal += nx*ny;
   }
   ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] Number of unknowns owned %d\n",rank,tonglobal);CHKERRQ(ierr);
   ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRQ(ierr);
-  
+
   /* Get tonatural number for each node */
-  ierr = PetscMalloc((tonglobal+1)*sizeof(PetscInt),&tonatural);CHKERRQ(ierr);
+  ierr      = PetscMalloc((tonglobal+1)*sizeof(PetscInt),&tonatural);CHKERRQ(ierr);
   tonglobal = 0;
   if (fa->comm[1]) {
     ierr = DMDAGetCorners(da2,&x,&y,0,&nx,&ny,0);CHKERRQ(ierr);
@@ -293,49 +297,49 @@ PetscErrorCode FACreate(FA *infa)
   ierr = AOCreateBasic(PETSC_COMM_WORLD,tonglobal,tonatural,0,&toao);CHKERRQ(ierr);
   ierr = PetscFree(tonatural);CHKERRQ(ierr);
 
-  /* count the number of unknowns owned on each processor and determine the starting point of each processors ownership 
+  /* count the number of unknowns owned on each processor and determine the starting point of each processors ownership
      for global vector without redundancy */
   fromnglobal = 0;
   fa->offg[1] = 0;
   offt[1]     = 0;
   if (fa->comm[1]) {
-    ierr = DMDAGetCorners(da2,&x,&y,0,&nx,&ny,0);CHKERRQ(ierr);
+    ierr    = DMDAGetCorners(da2,&x,&y,0,&nx,&ny,0);CHKERRQ(ierr);
     offt[2] = nx*ny;
-    if (y+ny == fa->r2g) {ny--;}  /* includes the ghost points on the upper side */
+    if (y+ny == fa->r2g) ny--;    /* includes the ghost points on the upper side */
     fromnglobal += nx*ny;
-    fa->offg[2] = fromnglobal;
+    fa->offg[2]  = fromnglobal;
   } else {
-    offt[2] = 0;
+    offt[2]     = 0;
     fa->offg[2] = 0;
   }
   if (fa->comm[2]) {
-    ierr = DMDAGetCorners(da3,&x,&y,0,&nx,&ny,0);CHKERRQ(ierr);
+    ierr    = DMDAGetCorners(da3,&x,&y,0,&nx,&ny,0);CHKERRQ(ierr);
     offt[0] = offt[2] + nx*ny;
-    if (y+ny == fa->r2g) {ny--;}  /* includes the ghost points on the upper side */
+    if (y+ny == fa->r2g) ny--;    /* includes the ghost points on the upper side */
     fromnglobal += nx*ny;
-    fa->offg[0] = fromnglobal;
+    fa->offg[0]  = fromnglobal;
   } else {
     offt[0]     = offt[2];
     fa->offg[0] = fromnglobal;
   }
   if (fa->comm[0]) {
     ierr = DMDAGetCorners(da1,&x,&y,0,&nx,&ny,0);CHKERRQ(ierr);
-    if (y == 0) {ny--;}  /* includes the ghost points on the lower side */
+    if (y == 0) ny--;    /* includes the ghost points on the lower side */
     fromnglobal += nx*ny;
   }
-  ierr        = MPI_Scan(&fromnglobal,&globalrstart,1,MPIU_INT,MPI_SUM,PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr          = MPI_Scan(&fromnglobal,&globalrstart,1,MPIU_INT,MPI_SUM,PETSC_COMM_WORLD);CHKERRQ(ierr);
   globalrstart -= fromnglobal;
-  ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] Number of unknowns owned %d\n",rank,fromnglobal);CHKERRQ(ierr);
-  ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr          = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] Number of unknowns owned %d\n",rank,fromnglobal);CHKERRQ(ierr);
+  ierr          = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRQ(ierr);
 
   /* Get fromnatural number for each node */
-  ierr = PetscMalloc((fromnglobal+1)*sizeof(PetscInt),&fromnatural);CHKERRQ(ierr);
+  ierr        = PetscMalloc((fromnglobal+1)*sizeof(PetscInt),&fromnatural);CHKERRQ(ierr);
   fromnglobal = 0;
   if (fa->comm[1]) {
     ierr = DMDAGetCorners(da2,&x,&y,0,&nx,&ny,0);CHKERRQ(ierr);
-    if (y+ny == fa->r2g) {ny--;}  /* includes the ghost points on the upper side */
+    if (y+ny == fa->r2g) ny--;    /* includes the ghost points on the upper side */
     fa->xg[1] = x; fa->yg[1] = y; fa->mg[1] = nx; fa->ng[1] = ny;
-    ierr = DMDAGetGhostCorners(da2,&fa->xl[1],&fa->yl[1],0,&fa->ml[1],&fa->nl[1],0);CHKERRQ(ierr);
+    ierr      = DMDAGetGhostCorners(da2,&fa->xl[1],&fa->yl[1],0,&fa->ml[1],&fa->nl[1],0);CHKERRQ(ierr);
     for (j=0; j<ny; j++) {
       for (i=0; i<nx; i++) {
         fromnatural[fromnglobal++] = (fa->p1 - fa->p2)/2 + x + i + fa->p1*(y + j);
@@ -344,9 +348,9 @@ PetscErrorCode FACreate(FA *infa)
   }
   if (fa->comm[2]) {
     ierr = DMDAGetCorners(da3,&x,&y,0,&nx,&ny,0);CHKERRQ(ierr);
-    if (y+ny == fa->r2g) {ny--;}  /* includes the ghost points on the upper side */
+    if (y+ny == fa->r2g) ny--;    /* includes the ghost points on the upper side */
     fa->xg[2] = x; fa->yg[2] = y; fa->mg[2] = nx; fa->ng[2] = ny;
-    ierr = DMDAGetGhostCorners(da3,&fa->xl[2],&fa->yl[2],0,&fa->ml[2],&fa->nl[2],0);CHKERRQ(ierr);
+    ierr      = DMDAGetGhostCorners(da3,&fa->xl[2],&fa->yl[2],0,&fa->ml[2],&fa->nl[2],0);CHKERRQ(ierr);
     for (j=0; j<ny; j++) {
       for (i=0; i<nx; i++) {
         if (x + i < (fa->p1 - fa->p2)/2) fromnatural[fromnglobal++] = x + i + fa->p1*(y + j);
@@ -356,10 +360,10 @@ PetscErrorCode FACreate(FA *infa)
   }
   if (fa->comm[0]) {
     ierr = DMDAGetCorners(da1,&x,&y,0,&nx,&ny,0);CHKERRQ(ierr);
-    if (y == 0) {ny--;}  /* includes the ghost points on the lower side */
+    if (y == 0) ny--;    /* includes the ghost points on the lower side */
     else y--;
     fa->xg[0] = x; fa->yg[0] = y; fa->mg[0] = nx; fa->ng[0] = ny;
-    ierr = DMDAGetGhostCorners(da1,&fa->xl[0],&fa->yl[0],0,&fa->ml[0],&fa->nl[0],0);CHKERRQ(ierr);
+    ierr      = DMDAGetGhostCorners(da1,&fa->xl[0],&fa->yl[0],0,&fa->ml[0],&fa->nl[0],0);CHKERRQ(ierr);
     for (j=0; j<ny; j++) {
       for (i=0; i<nx; i++) {
         fromnatural[fromnglobal++] = fa->p1*fa->r2 + x + i + fa->p1*(y + j);
@@ -373,8 +377,8 @@ PetscErrorCode FACreate(FA *infa)
   /* ---------------------------------------------------*/
   /* Create the scatter that updates 1 from 2 and 3 and 3 and 2 from 1 */
   /* currently handles stencil width of 1 ONLY */
-  ierr = PetscMalloc(tonglobal*sizeof(PetscInt),&to);CHKERRQ(ierr);
-  ierr = PetscMalloc(tonglobal*sizeof(PetscInt),&from);CHKERRQ(ierr);
+  ierr  = PetscMalloc(tonglobal*sizeof(PetscInt),&to);CHKERRQ(ierr);
+  ierr  = PetscMalloc(tonglobal*sizeof(PetscInt),&from);CHKERRQ(ierr);
   nscat = 0;
   if (fa->comm[1]) {
     ierr = DMDAGetCorners(da2,&x,&y,0,&nx,&ny,0);CHKERRQ(ierr);
@@ -389,9 +393,9 @@ PetscErrorCode FACreate(FA *infa)
     for (j=0; j<ny; j++) {
       for (i=0; i<nx; i++) {
         if (x + i < (fa->p1 - fa->p2)/2) {
-          to[nscat]   = from[nscat] = x + i + fa->p1*(y + j);nscat++;
+          to[nscat] = from[nscat] = x + i + fa->p1*(y + j);nscat++;
         } else {
-          to[nscat]   = from[nscat] = fa->p2 + x + i + fa->p1*(y + j);nscat++;
+          to[nscat] = from[nscat] = fa->p2 + x + i + fa->p1*(y + j);nscat++;
         }
       }
     }
@@ -425,31 +429,31 @@ PetscErrorCode FACreate(FA *infa)
     globalarray[i] = globalrstart + i;
   }
   ierr = VecRestoreArray(globalvec,&globalarray);CHKERRQ(ierr);
-  
+
   /* scatter PETSc global indices to redundant valueed array */
   ierr = VecScatterBegin(vscat,globalvec,tovec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(vscat,globalvec,tovec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  
+
   /* Create local vector that is the concatenation of the local vectors */
   nlocal = 0;
   cntl1  = cntl2 = cntl3 = 0;
   if (fa->comm[1]) {
-    ierr = VecGetSize(vl2,&cntl2);CHKERRQ(ierr);
+    ierr    = VecGetSize(vl2,&cntl2);CHKERRQ(ierr);
     nlocal += cntl2;
-  }  
+  }
   if (fa->comm[2]) {
-    ierr = VecGetSize(vl3,&cntl3);CHKERRQ(ierr);
+    ierr    = VecGetSize(vl3,&cntl3);CHKERRQ(ierr);
     nlocal += cntl3;
-  }  
+  }
   if (fa->comm[0]) {
-    ierr = VecGetSize(vl1,&cntl1);CHKERRQ(ierr);
+    ierr    = VecGetSize(vl1,&cntl1);CHKERRQ(ierr);
     nlocal += cntl1;
   }
   fa->offl[0] = cntl2 + cntl3;
   fa->offl[1] = 0;
   fa->offl[2] = cntl2;
-  ierr = VecCreateSeq(PETSC_COMM_SELF,nlocal,&localvec);CHKERRQ(ierr);
-  
+  ierr        = VecCreateSeq(PETSC_COMM_SELF,nlocal,&localvec);CHKERRQ(ierr);
+
   /* cheat so that  vl1, vl2, vl3 shared array memory with localvec */
   ierr = VecGetArray(localvec,&localarray);CHKERRQ(ierr);
   ierr = VecGetArray(tovec,&toarray);CHKERRQ(ierr);
@@ -459,21 +463,21 @@ PetscErrorCode FACreate(FA *infa)
     ierr = DMGlobalToLocalBegin(da2,vg2,INSERT_VALUES,vl2);CHKERRQ(ierr);
     ierr = DMGlobalToLocalEnd(da2,vg2,INSERT_VALUES,vl2);CHKERRQ(ierr);
     ierr = DMRestoreGlobalVector(da2,&vg2);CHKERRQ(ierr);
-  }  
+  }
   if (fa->comm[2]) {
     ierr = VecPlaceArray(vl3,localarray+fa->offl[2]);CHKERRQ(ierr);
     ierr = VecPlaceArray(vg3,toarray+offt[2]);CHKERRQ(ierr);
     ierr = DMGlobalToLocalBegin(da3,vg3,INSERT_VALUES,vl3);CHKERRQ(ierr);
     ierr = DMGlobalToLocalEnd(da3,vg3,INSERT_VALUES,vl3);CHKERRQ(ierr);
     ierr = DMRestoreGlobalVector(da3,&vg3);CHKERRQ(ierr);
-  }  
+  }
   if (fa->comm[0]) {
     ierr = VecPlaceArray(vl1,localarray+fa->offl[0]);CHKERRQ(ierr);
     ierr = VecPlaceArray(vg1,toarray+offt[0]);CHKERRQ(ierr);
     ierr = DMGlobalToLocalBegin(da1,vg1,INSERT_VALUES,vl1);CHKERRQ(ierr);
     ierr = DMGlobalToLocalEnd(da1,vg1,INSERT_VALUES,vl1);CHKERRQ(ierr);
     ierr = DMRestoreGlobalVector(da1,&vg1);CHKERRQ(ierr);
-  }  
+  }
   ierr = VecRestoreArray(localvec,&localarray);CHKERRQ(ierr);
   ierr = VecRestoreArray(tovec,&toarray);CHKERRQ(ierr);
 
@@ -495,7 +499,7 @@ PetscErrorCode FACreate(FA *infa)
   ierr = VecCreateSeq(PETSC_COMM_SELF,2*nlocal,&fa->l);CHKERRQ(ierr);
   ierr = VecCreateMPI(PETSC_COMM_WORLD,2*fromnglobal,PETSC_DETERMINE,&fa->g);CHKERRQ(ierr);
 
-  ierr = VecScatterCreate(fa->g,is,fa->l,PETSC_NULL,&fa->vscat);CHKERRQ(ierr);
+  ierr = VecScatterCreate(fa->g,is,fa->l,NULL,&fa->vscat);CHKERRQ(ierr);
   ierr = ISDestroy(&is);CHKERRQ(ierr);
 
   ierr = VecDestroy(&globalvec);CHKERRQ(ierr);
@@ -520,8 +524,8 @@ PetscErrorCode FACreate(FA *infa)
 #include <petscdraw.h>
 
 typedef struct {
-  PetscInt     m[3],n[3];
-  PetscScalar  *xy[3];
+  PetscInt    m[3],n[3];
+  PetscScalar *xy[3];
 } ZoomCtx;
 
 PetscErrorCode DrawPatch(PetscDraw draw,void *ctx)
@@ -532,22 +536,22 @@ PetscErrorCode DrawPatch(PetscDraw draw,void *ctx)
   PetscReal      x1,x2,x3,x4,y_1,y2,y3,y4;
   PetscScalar    *xy;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   for (k=0; k<3; k++) {
-    m    = zctx->m[k];
-    n    = zctx->n[k];
-    xy   = zctx->xy[k];
+    m  = zctx->m[k];
+    n  = zctx->n[k];
+    xy = zctx->xy[k];
 
     for (j=0; j<n-1; j++) {
       for (i=0; i<m-1; i++) {
-	id = i+j*m;    x1 = xy[2*id];y_1 = xy[2*id+1];
-	id = i+j*m+1;  x2 = xy[2*id];y2  = xy[2*id+1];
-	id = i+j*m+1+m;x3 = xy[2*id];y3  = xy[2*id+1];
-	id = i+j*m+m;  x4 = xy[2*id];y4  = xy[2*id+1];
-	ierr = PetscDrawLine(draw,x1,y_1,x2,y2,PETSC_DRAW_BLACK);CHKERRQ(ierr);
-	ierr = PetscDrawLine(draw,x2,y2,x3,y3,PETSC_DRAW_BLACK);CHKERRQ(ierr);
-	ierr = PetscDrawLine(draw,x3,y3,x4,y4,PETSC_DRAW_BLACK);CHKERRQ(ierr);
-	ierr = PetscDrawLine(draw,x4,y4,x1,y_1,PETSC_DRAW_BLACK);CHKERRQ(ierr);
+        id   = i+j*m;    x1 = xy[2*id];y_1 = xy[2*id+1];
+        id   = i+j*m+1;  x2 = xy[2*id];y2  = xy[2*id+1];
+        id   = i+j*m+1+m;x3 = xy[2*id];y3  = xy[2*id+1];
+        id   = i+j*m+m;  x4 = xy[2*id];y4  = xy[2*id+1];
+        ierr = PetscDrawLine(draw,x1,y_1,x2,y2,PETSC_DRAW_BLACK);CHKERRQ(ierr);
+        ierr = PetscDrawLine(draw,x2,y2,x3,y3,PETSC_DRAW_BLACK);CHKERRQ(ierr);
+        ierr = PetscDrawLine(draw,x3,y3,x4,y4,PETSC_DRAW_BLACK);CHKERRQ(ierr);
+        ierr = PetscDrawLine(draw,x4,y4,x1,y_1,PETSC_DRAW_BLACK);CHKERRQ(ierr);
       }
     }
   }
@@ -565,7 +569,7 @@ PetscErrorCode DrawFA(FA fa,Vec v)
   PetscReal      xmin,xmax,ymin,ymax;
   PetscInt       i,vn,ln,j;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = VecGetArray(v,&va);CHKERRQ(ierr);
   ierr = VecGetSize(v,&vn);CHKERRQ(ierr);
   ierr = VecGetSize(fa->l,&ln);CHKERRQ(ierr);
@@ -584,7 +588,7 @@ PetscErrorCode DrawFA(FA fa,Vec v)
       if (zctx.xy[j][2*i] < xmin) xmin = zctx.xy[j][2*i];
       if (zctx.xy[j][2*i+1] > ymax) ymax = zctx.xy[j][2*i+1];
       if (zctx.xy[j][2*i+1] < ymin) ymin = zctx.xy[j][2*i+1];
-    }   
+    }
   }
   ierr = MPI_Allreduce(&xmin,&xmint,1,MPI_DOUBLE,MPI_MIN,PETSC_COMM_WORLD);CHKERRQ(ierr);
   ierr = MPI_Allreduce(&xmax,&xmaxt,1,MPI_DOUBLE,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
@@ -594,8 +598,9 @@ PetscErrorCode DrawFA(FA fa,Vec v)
   xmax = xmaxt + .2*(xmaxt - xmint);
   ymin = ymint - .2*(ymaxt - ymint);
   ymax = ymaxt + .2*(ymaxt - ymint);
-#if defined(PETSC_HAVE_X)
-  ierr = PetscDrawOpenX(PETSC_COMM_WORLD,0,"meshes",PETSC_DECIDE,PETSC_DECIDE,700,700,&draw);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_X) || defined(PETSC_HAVE_OPENGL)
+  ierr = PetscDrawCreate(PETSC_COMM_WORLD,0,"meshes",PETSC_DECIDE,PETSC_DECIDE,700,700,&draw);CHKERRQ(ierr);
+  ierr = PetscDrawSetFromOptions(draw);CHKERRQ(ierr);
   ierr = PetscDrawSetCoordinates(draw,xmin,ymin,xmax,ymax);CHKERRQ(ierr);
   ierr = PetscDrawZoom(draw,DrawPatch,&zctx);CHKERRQ(ierr);
   ierr = VecRestoreArray(v,&va);CHKERRQ(ierr);
@@ -613,7 +618,7 @@ PetscErrorCode FAMapRegion3(FA fa,Vec g)
   PetscInt       i,k,x,y,m,n;
   Field          **ga;
 
-  PetscFunctionBegin; 
+  PetscFunctionBeginUser;
   Rscale = R/(fa->r2-1);
   Ascale = 2.0*PETSC_PI/(3.0*(fa->p1 - fa->p2 - 1));
 
@@ -636,7 +641,7 @@ PetscErrorCode FAMapRegion2(FA fa,Vec g)
   PetscInt       i,k,x,y,m,n;
   Field          **ga;
 
-  PetscFunctionBegin; 
+  PetscFunctionBeginUser;
   Rscale = R/(fa->r2-1);
   Ascale = 2.0*PETSC_PI/fa->p2;
 
@@ -659,7 +664,7 @@ PetscErrorCode FAMapRegion1(FA fa,Vec g)
   PetscInt       i,k,x,y,m,n;
   Field          **ga;
 
-  PetscFunctionBegin; 
+  PetscFunctionBeginUser;
   Rscale  = R/(fa->r1-1);
   Ascale1 = 2.0*PETSC_PI/fa->p2;
   Ascale3 = 2.0*PETSC_PI/(3.0*(fa->p1 - fa->p2 - 1));
@@ -672,11 +677,11 @@ PetscErrorCode FAMapRegion1(FA fa,Vec g)
   for (k=y; k<y+n; k++) {
     for (i=x; i<x+m; i++) {
       if (i < (fa->p1-fa->p2)/2) {
-	ga[k][i].X = (2.0*R + k*Rscale)*PetscCosScalar(i*Ascale3);
-	ga[k][i].Y = (2.0*R + k*Rscale)*PetscSinScalar(i*Ascale3) - 4.*R;
+        ga[k][i].X = (2.0*R + k*Rscale)*PetscCosScalar(i*Ascale3);
+        ga[k][i].Y = (2.0*R + k*Rscale)*PetscSinScalar(i*Ascale3) - 4.*R;
       } else if (i > fa->p2 + (fa->p1 - fa->p2)/2) {
-	ga[k][i].X = (2.0*R + k*Rscale)*PetscCosScalar(PETSC_PI+i*Ascale3);
-	ga[k][i].Y = (2.0*R + k*Rscale)*PetscSinScalar(PETSC_PI+i*Ascale3) - 4.*R;
+        ga[k][i].X = (2.0*R + k*Rscale)*PetscCosScalar(PETSC_PI+i*Ascale3);
+        ga[k][i].Y = (2.0*R + k*Rscale)*PetscSinScalar(PETSC_PI+i*Ascale3) - 4.*R;
       } else {
         ga[k][i].X = (2.*R + k*Rscale)*PetscCosScalar((i-(fa->p1-fa->p2)/2)*Ascale1 - PETSC_PI/2.0);
         ga[k][i].Y = (2.*R + k*Rscale)*PetscSinScalar((i-(fa->p1-fa->p2)/2)*Ascale1 - PETSC_PI/2.0);
@@ -696,7 +701,7 @@ PetscErrorCode FATest(FA fa)
   PetscInt       x,y,m,n,j,i,k,p;
   PetscMPIInt    rank;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
   ierr = FAGetGlobalVector(fa,&g);CHKERRQ(ierr);

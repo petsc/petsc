@@ -1,30 +1,30 @@
 
 #include <petsc-private/matimpl.h>
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatConvert_Basic"
-/* 
+/*
   MatConvert_Basic - Converts from any input format to another format. For
   parallel formats, the new matrix distribution is determined by PETSc.
 
   Does not do preallocation so in general will be slow
  */
-PetscErrorCode MatConvert_Basic(Mat mat, const MatType newtype,MatReuse reuse,Mat *newmat)
+PetscErrorCode MatConvert_Basic(Mat mat, MatType newtype,MatReuse reuse,Mat *newmat)
 {
-  Mat                M;
-  const PetscScalar  *vwork;
-  PetscErrorCode     ierr;
-  PetscInt           i,nz,m,n,rstart,rend,lm,ln;
-  const PetscInt     *cwork;
-  PetscBool          isseqsbaij,ismpisbaij;
+  Mat               M;
+  const PetscScalar *vwork;
+  PetscErrorCode    ierr;
+  PetscInt          i,nz,m,n,rstart,rend,lm,ln;
+  const PetscInt    *cwork;
+  PetscBool         isseqsbaij,ismpisbaij;
 
   PetscFunctionBegin;
   ierr = MatGetSize(mat,&m,&n);CHKERRQ(ierr);
   ierr = MatGetLocalSize(mat,&lm,&ln);CHKERRQ(ierr);
 
   if (ln == n) ln = PETSC_DECIDE; /* try to preserve column ownership */
-  
-  ierr = MatCreate(((PetscObject)mat)->comm,&M);CHKERRQ(ierr);
+
+  ierr = MatCreate(PetscObjectComm((PetscObject)mat),&M);CHKERRQ(ierr);
   ierr = MatSetSizes(M,lm,ln,m,n);CHKERRQ(ierr);
   ierr = MatSetBlockSize(M,mat->rmap->bs);CHKERRQ(ierr);
   ierr = MatSetType(M,newtype);CHKERRQ(ierr);

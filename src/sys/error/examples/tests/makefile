@@ -1,11 +1,11 @@
 
-CFLAGS	         = 
-FFLAGS	         = 
+CFLAGS	         =
+FFLAGS	         =
 CPPFLAGS         =
 FPPFLAGS         =
 LOCDIR           = src/sys/error/examples/tests/
 EXAMPLESC        = ex1.c
-EXAMPLESF        = 
+EXAMPLESF        =
 MANSEC           = Sys
 
 include ${PETSC_DIR}/conf/variables

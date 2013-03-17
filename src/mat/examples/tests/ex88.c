@@ -12,7 +12,7 @@ struct _n_User {
 #define __FUNCT__ "MatMult_User"
 static PetscErrorCode MatMult_User(Mat A,Vec X,Vec Y)
 {
-  User user;
+  User           user;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -25,7 +25,7 @@ static PetscErrorCode MatMult_User(Mat A,Vec X,Vec Y)
 #define __FUNCT__ "MatMultTranspose_User"
 static PetscErrorCode MatMultTranspose_User(Mat A,Vec X,Vec Y)
 {
-  User user;
+  User           user;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -38,7 +38,7 @@ static PetscErrorCode MatMultTranspose_User(Mat A,Vec X,Vec Y)
 #define __FUNCT__ "MatGetDiagonal_User"
 static PetscErrorCode MatGetDiagonal_User(Mat A,Vec X)
 {
-  User user;
+  User           user;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -86,16 +86,16 @@ static PetscErrorCode TestMatrix(Mat A,Vec X,Vec Y,Vec Z)
 int main(int argc,char **args)
 {
   const PetscScalar xvals[] = {11,13},yvals[] = {17,19},zvals[] = {23,29};
-  const PetscInt inds[] = {0,1};
-  PetscScalar avals[] = {2,3,5,7};
-  Mat            A,S,D[4],N;
-  Vec            X,Y,Z;
-  User           user;
-  PetscInt       i;
-  PetscErrorCode ierr;
+  const PetscInt    inds[]  = {0,1};
+  PetscScalar       avals[] = {2,3,5,7};
+  Mat               A,S,D[4],N;
+  Vec               X,Y,Z;
+  User              user;
+  PetscInt          i;
+  PetscErrorCode    ierr;
 
-  PetscInitialize(&argc,&args,(char *)0,help);
-  ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD,2,2,2,PETSC_NULL,&A);CHKERRQ(ierr);
+  PetscInitialize(&argc,&args,(char*)0,help);
+  ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD,2,2,2,NULL,&A);CHKERRQ(ierr);
   ierr = MatSetUp(A);CHKERRQ(ierr);
   ierr = MatSetValues(A,2,inds,2,inds,avals,INSERT_VALUES);CHKERRQ(ierr);
   ierr = VecCreateSeq(PETSC_COMM_WORLD,2,&X);CHKERRQ(ierr);
@@ -113,19 +113,19 @@ int main(int argc,char **args)
   ierr = VecAssemblyEnd(Y);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(Z);CHKERRQ(ierr);
 
-  ierr = PetscNew(struct _n_User,&user);CHKERRQ(ierr);
+  ierr    = PetscNew(struct _n_User,&user);CHKERRQ(ierr);
   user->B = A;
 
   ierr = MatCreateShell(PETSC_COMM_WORLD,2,2,2,2,user,&S);CHKERRQ(ierr);
   ierr = MatSetUp(S);CHKERRQ(ierr);
-  ierr = MatShellSetOperation(S,MATOP_MULT,(void(*)(void))MatMult_User);CHKERRQ(ierr);
-  ierr = MatShellSetOperation(S,MATOP_MULT_TRANSPOSE,(void(*)(void))MatMultTranspose_User);CHKERRQ(ierr);
-  ierr = MatShellSetOperation(S,MATOP_GET_DIAGONAL,(void(*)(void))MatGetDiagonal_User);CHKERRQ(ierr);
+  ierr = MatShellSetOperation(S,MATOP_MULT,(void (*)(void))MatMult_User);CHKERRQ(ierr);
+  ierr = MatShellSetOperation(S,MATOP_MULT_TRANSPOSE,(void (*)(void))MatMultTranspose_User);CHKERRQ(ierr);
+  ierr = MatShellSetOperation(S,MATOP_GET_DIAGONAL,(void (*)(void))MatGetDiagonal_User);CHKERRQ(ierr);
 
   for (i=0; i<4; i++) {
     ierr = MatCreateSeqDense(PETSC_COMM_WORLD,1,1,&avals[i],&D[i]);CHKERRQ(ierr);
   }
-  ierr = MatCreateNest(PETSC_COMM_WORLD,2,PETSC_NULL,2,PETSC_NULL,D,&N);CHKERRQ(ierr);
+  ierr = MatCreateNest(PETSC_COMM_WORLD,2,NULL,2,NULL,D,&N);CHKERRQ(ierr);
   ierr = MatSetUp(N);CHKERRQ(ierr);
 
   ierr = TestMatrix(S,X,Y,Z);CHKERRQ(ierr);

@@ -14,7 +14,7 @@ int main(int argc,char **argv)
   IS             isrow,iscol;
   PetscViewer    viewer;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
 
 
   /* ------- Assemble matrix, --------- */
@@ -25,17 +25,17 @@ int main(int argc,char **argv)
   ierr = MatSetUp(mat);CHKERRQ(ierr);
 
   /* set anti-diagonal of matrix */
-  v = 1.0;
-  i = 0; j = 3;
+  v    = 1.0;
+  i    = 0; j = 3;
   ierr = MatSetValues(mat,1,&i,1,&j,&v,INSERT_VALUES);CHKERRQ(ierr);
-  v = 2.0;
-  i = 1; j = 2;
+  v    = 2.0;
+  i    = 1; j = 2;
   ierr = MatSetValues(mat,1,&i,1,&j,&v,INSERT_VALUES);CHKERRQ(ierr);
-  v = 3.0;
-  i = 2; j = 1;
+  v    = 3.0;
+  i    = 2; j = 1;
   ierr = MatSetValues(mat,1,&i,1,&j,&v,INSERT_VALUES);CHKERRQ(ierr);
-  v = 4.0;
-  i = 3; j = 0;
+  v    = 4.0;
+  i    = 3; j = 0;
   ierr = MatSetValues(mat,1,&i,1,&j,&v,INSERT_VALUES);CHKERRQ(ierr);
 
   ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -109,7 +109,7 @@ int main(int argc,char **argv)
   ierr = PetscViewerASCIIPrintf(viewer,"RCM + NonzeroDiagonal() column permutation\n");CHKERRQ(ierr);
   ierr = ISView(iscol,viewer);CHKERRQ(ierr);
 
-  ierr = MatLUFactor(mat,isrow,iscol,PETSC_NULL);CHKERRQ(ierr); 
+  ierr = MatLUFactor(mat,isrow,iscol,NULL);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"Factored matrix permuted by RCM + NonzeroDiagonal()\n");CHKERRQ(ierr);
   ierr = MatView(mat,viewer);CHKERRQ(ierr);
 
@@ -121,4 +121,4 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return 0;
 }
- 
+

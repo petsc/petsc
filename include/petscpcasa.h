@@ -3,8 +3,8 @@
 */
 #ifndef __PETSCPCASA_H
 #define __PETSCPCASA_H
-#include "petscksp.h"
-#include "petscdm.h"
+#include <petscksp.h>
+#include <petscdm.h>
 
 
 PETSC_EXTERN PetscErrorCode PCASASetTolerances(PC, PetscReal,PetscReal, PetscReal, PetscInt);

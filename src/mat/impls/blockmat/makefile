@@ -3,11 +3,9 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = 
+SOURCEC  =
 SOURCEF  =
-SOURCEH  = 
-OBJSC    = 
-OBJSF    =
+SOURCEH  =
 LIBBASE  = libpetscmat
 MANSEC   = Mat
 LOCDIR   = src/mat/impls/blockmat/

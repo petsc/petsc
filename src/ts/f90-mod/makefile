@@ -9,13 +9,11 @@ SPECIALLIB     = yes
 SPECIALFASTLIB = yes
 
 
-CFLAGS	   = 
-FFLAGS	   = 
-SOURCEC	   = 
+CFLAGS	   =
+FFLAGS	   =
+SOURCEC	   =
 SOURCEF	   = petsctsmod.F
-SOURCEH	   = 
-OBJSC	   = 
-OBJSF	   = petsctsmod.o
+SOURCEH	   =
 LIBBASE	   = libpetscts
 MANSEC	   = TS
 LOCDIR	   = src/ts/f90-mod/

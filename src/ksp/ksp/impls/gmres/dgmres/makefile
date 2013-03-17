@@ -2,13 +2,11 @@
 
 ALL: lib
 
-CFLAGS   = 
+CFLAGS   =
 FFLAGS   =
 SOURCEC  = dgmres.c
-SOURCEF  = 
+SOURCEF  =
 SOURCEH  = dgmresimpl.h
-OBJSC    = dgmres.o
-OBJSF    =
 LIBBASE  = libpetscksp
 MANSEC   = KSP
 LOCDIR   = src/ksp/ksp/impls/gmres/dgmres/

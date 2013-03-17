@@ -3,13 +3,13 @@
   Code for manipulating distributed regular arrays in parallel.
 */
 
-#include <petsc-private/daimpl.h>    /*I   "petscdmda.h"   I*/
+#include <petsc-private/dmdaimpl.h>    /*I   "petscdmda.h"   I*/
 
 /* Logging support */
 PetscClassId  ADDA_CLASSID;
 PetscLogEvent DMDA_LocalADFunction;
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMDestroy_Private"
 /*
    DMDestroy_Private - handles the work vectors created by DMGetGlobalVector() and DMGetLocalVector()
@@ -25,15 +25,15 @@ PetscErrorCode  DMDestroy_Private(DM dm,PetscBool  *done)
   *done = PETSC_FALSE;
 
   for (i=0; i<DM_MAX_WORK_VECTORS; i++) {
-    if (dm->localin[i])  {cnt++;}
-    if (dm->globalin[i]) {cnt++;}
+    if (dm->localin[i])  cnt++;
+    if (dm->globalin[i]) cnt++;
   }
 
   if (--((PetscObject)dm)->refct - cnt > 0) PetscFunctionReturn(0);
 
   /*
-         Need this test because the dm references the vectors that 
-     reference the dm, so destroying the dm calls destroy on the 
+         Need this test because the dm references the vectors that
+     reference the dm, so destroying the dm calls destroy on the
      vectors that cause another destroy on the dm
   */
   if (((PetscObject)dm)->refct < 0) PetscFunctionReturn(0);
@@ -52,7 +52,7 @@ PetscErrorCode  DMDestroy_Private(DM dm,PetscBool  *done)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMDestroy_DA"
 PetscErrorCode  DMDestroy_DA(DM da)
 {
@@ -62,18 +62,6 @@ PetscErrorCode  DMDestroy_DA(DM da)
 
   PetscFunctionBegin;
   /* destroy the external/common part */
-  for (i=0; i<DMDA_MAX_AD_ARRAYS; i++) {
-    ierr = PetscFree(dd->adstartghostedout[i]);CHKERRQ(ierr);
-    ierr = PetscFree(dd->adstartghostedin[i]);CHKERRQ(ierr);
-    ierr = PetscFree(dd->adstartout[i]);CHKERRQ(ierr);
-    ierr = PetscFree(dd->adstartin[i]);CHKERRQ(ierr);
-  }
-  for (i=0; i<DMDA_MAX_AD_ARRAYS; i++) {
-    ierr = PetscFree(dd->admfstartghostedout[i]);CHKERRQ(ierr);
-    ierr = PetscFree(dd->admfstartghostedin[i]);CHKERRQ(ierr);
-    ierr = PetscFree(dd->admfstartout[i]);CHKERRQ(ierr);
-    ierr = PetscFree(dd->admfstartin[i]);CHKERRQ(ierr);
-  }
   for (i=0; i<DMDA_MAX_WORK_ARRAYS; i++) {
     ierr = PetscFree(dd->startghostedout[i]);CHKERRQ(ierr);
     ierr = PetscFree(dd->startghostedin[i]);CHKERRQ(ierr);
@@ -102,16 +90,19 @@ PetscErrorCode  DMDestroy_DA(DM da)
     }
     ierr = PetscFree(dd->fieldname);CHKERRQ(ierr);
   }
+  if (dd->coordinatename) {
+    for (i=0; i<dd->dim; i++) {
+      ierr = PetscFree(dd->coordinatename[i]);CHKERRQ(ierr);
+    }
+    ierr = PetscFree(dd->coordinatename);CHKERRQ(ierr);
+  }
   ierr = ISColoringDestroy(&dd->localcoloring);CHKERRQ(ierr);
   ierr = ISColoringDestroy(&dd->ghostedcoloring);CHKERRQ(ierr);
-
-  ierr = VecDestroy(&dd->coordinates);CHKERRQ(ierr);
-  ierr = VecDestroy(&dd->ghosted_coordinates);CHKERRQ(ierr);
-  ierr = DMDestroy(&dd->da_coordinates);CHKERRQ(ierr);
 
   ierr = PetscFree(dd->neighbors);CHKERRQ(ierr);
   ierr = PetscFree(dd->dfill);CHKERRQ(ierr);
   ierr = PetscFree(dd->ofill);CHKERRQ(ierr);
+  ierr = PetscFree(dd->ofillcols);CHKERRQ(ierr);
   ierr = PetscFree(dd->e);CHKERRQ(ierr);
 
   /* ierr = PetscSectionDestroy(&dd->defaultGlobalSection);CHKERRQ(ierr); */

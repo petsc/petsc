@@ -5,12 +5,10 @@ CFLAGS   =
 FFLAGS   =
 SOURCEC  = snesmfj.c
 SOURCEF  =
-SOURCEH  = 
-OBJSC    = snesmfj.o
-OBJSF    =
+SOURCEH  =
 LIBBASE  = libpetscsnes
 MANSEC   = SNES
-DIRS     = 
+DIRS     =
 LOCDIR   = src/snes/mf/
 
 include ${PETSC_DIR}/conf/variables

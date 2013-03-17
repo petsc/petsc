@@ -5,10 +5,8 @@ ALL: lib
 CFLAGS   =
 FFLAGS   =
 SOURCEC  = zdaindexf90.c zda1f90.c
-SOURCEF  = 
-SOURCEH  = 
-OBJSC    = ${SOURCEC:.c=.o}
-OBJSF    = 
+SOURCEF  =
+SOURCEH  =
 LIBBASE  = libpetscdm
 LOCDIR   = src/dm/da/src/f90-custom/
 

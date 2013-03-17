@@ -5,7 +5,6 @@
 #define __FUNCT__ "SNESReset_NRichardson"
 PetscErrorCode SNESReset_NRichardson(SNES snes)
 {
-
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
@@ -22,7 +21,7 @@ PetscErrorCode SNESReset_NRichardson(SNES snes)
 #define __FUNCT__ "SNESDestroy_NRichardson"
 PetscErrorCode SNESDestroy_NRichardson(SNES snes)
 {
-  PetscErrorCode   ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = SNESReset_NRichardson(snes);CHKERRQ(ierr);
@@ -49,7 +48,7 @@ PetscErrorCode SNESSetUp_NRichardson(SNES snes)
 }
 
 /*
-  SNESSetFromOptions_NRichardson - Sets various parameters for the SNESLS method.
+  SNESSetFromOptions_NRichardson - Sets various parameters for the SNESNEWTONLS method.
 
   Input Parameter:
 . snes - the SNES context
@@ -62,6 +61,7 @@ static PetscErrorCode SNESSetFromOptions_NRichardson(SNES snes)
 {
   PetscErrorCode ierr;
   SNESLineSearch linesearch;
+
   PetscFunctionBegin;
   ierr = PetscOptionsHead("SNES Richardson options");CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
@@ -85,8 +85,8 @@ static PetscErrorCode SNESSetFromOptions_NRichardson(SNES snes)
 #define __FUNCT__ "SNESView_NRichardson"
 static PetscErrorCode SNESView_NRichardson(SNES snes, PetscViewer viewer)
 {
-  PetscBool        iascii;
-  PetscErrorCode   ierr;
+  PetscBool      iascii;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
@@ -125,32 +125,34 @@ PetscErrorCode SNESSolve_NRichardson(SNES snes)
   Y      = snes->vec_sol_update; /* \tilde X */
   F      = snes->vec_func;       /* residual vector */
 
-  ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
+  ierr       = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
   snes->iter = 0;
   snes->norm = 0.;
-  ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
+  ierr       = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
   if (!snes->vec_func_init_set) {
     ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
     if (snes->domainerror) {
       snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;
       PetscFunctionReturn(0);
     }
-  } else {
-    snes->vec_func_init_set = PETSC_FALSE;
-  }
+  } else snes->vec_func_init_set = PETSC_FALSE;
+
   if (!snes->norm_init_set) {
     ierr = VecNorm(F,NORM_2,&fnorm);CHKERRQ(ierr); /* fnorm <- ||F||  */
-    if (PetscIsInfOrNanReal(fnorm)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"Infinite or not-a-number generated in norm");
+    if (PetscIsInfOrNanReal(fnorm)) {
+      snes->reason = SNES_DIVERGED_FNORM_NAN;
+      PetscFunctionReturn(0);
+    }
   } else {
-    fnorm = snes->norm_init;
+    fnorm               = snes->norm_init;
     snes->norm_init_set = PETSC_FALSE;
   }
 
-  ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
+  ierr       = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
   snes->norm = fnorm;
-  ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
-  SNESLogConvHistory(snes,fnorm,0);
-  ierr = SNESMonitor(snes,0,fnorm);CHKERRQ(ierr);
+  ierr       = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
+  ierr       = SNESLogConvergenceHistory(snes,fnorm,0);CHKERRQ(ierr);
+  ierr       = SNESMonitor(snes,0,fnorm);CHKERRQ(ierr);
 
   /* set parameter for default relative tolerance convergence test */
   snes->ttol = fnorm*snes->rtol;
@@ -158,17 +160,19 @@ PetscErrorCode SNESSolve_NRichardson(SNES snes)
   ierr = (*snes->ops->converged)(snes,0,0.0,0.0,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
   if (snes->reason) PetscFunctionReturn(0);
 
-  for(i = 0; i < maxits; i++) {
+  for (i = 0; i < maxits; i++) {
     lsSuccess = PETSC_TRUE;
     /* Call general purpose update function */
     if (snes->ops->update) {
       ierr = (*snes->ops->update)(snes, snes->iter);CHKERRQ(ierr);
     }
-    else if (snes->pc) {
+    if (snes->pc && snes->pcside == PC_RIGHT) {
       ierr = VecCopy(X,Y);CHKERRQ(ierr);
       ierr = SNESSetInitialFunction(snes->pc, F);CHKERRQ(ierr);
       ierr = SNESSetInitialFunctionNorm(snes->pc, fnorm);CHKERRQ(ierr);
+      ierr = PetscLogEventBegin(SNES_NPCSolve,snes->pc,Y,snes->vec_rhs,0);CHKERRQ(ierr);
       ierr = SNESSolve(snes->pc, snes->vec_rhs, Y);CHKERRQ(ierr);
+      ierr = PetscLogEventEnd(SNES_NPCSolve,snes->pc,Y,snes->vec_rhs,0);CHKERRQ(ierr);
       ierr = SNESGetConvergedReason(snes->pc,&reason);CHKERRQ(ierr);
       if (reason < 0  && reason != SNES_DIVERGED_MAX_IT) {
         snes->reason = SNES_DIVERGED_INNER;
@@ -196,12 +200,12 @@ PetscErrorCode SNESSolve_NRichardson(SNES snes)
       PetscFunctionReturn(0);
     }
     /* Monitor convergence */
-    ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
+    ierr       = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
     snes->iter = i+1;
     snes->norm = fnorm;
-    ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
-    SNESLogConvHistory(snes,snes->norm,0);
-    ierr = SNESMonitor(snes,snes->iter,snes->norm);CHKERRQ(ierr);
+    ierr       = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
+    ierr       = SNESLogConvergenceHistory(snes,snes->norm,0);CHKERRQ(ierr);
+    ierr       = SNESMonitor(snes,snes->iter,snes->norm);CHKERRQ(ierr);
     /* Test for convergence */
     ierr = (*snes->ops->converged)(snes,snes->iter,xnorm,ynorm,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
     if (snes->reason) break;
@@ -233,27 +237,27 @@ PetscErrorCode SNESSolve_NRichardson(SNES snes)
 
      This uses no derivative information thus will be much slower then Newton's method obtained with -snes_type ls
 
-.seealso:  SNESCreate(), SNES, SNESSetType(), SNESLS, SNESTR, SNESNGMRES, SNESQN, SNESNCG
+.seealso:  SNESCreate(), SNES, SNESSetType(), SNESNEWTONLS, SNESNEWTONTR, SNESNGMRES, SNESQN, SNESNCG
 M*/
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "SNESCreate_NRichardson"
-PetscErrorCode  SNESCreate_NRichardson(SNES snes)
+PETSC_EXTERN PetscErrorCode SNESCreate_NRichardson(SNES snes)
 {
-  PetscErrorCode          ierr;
-  SNES_NRichardson        *neP;
+  PetscErrorCode   ierr;
+  SNES_NRichardson *neP;
+
   PetscFunctionBegin;
-  snes->ops->destroy         = SNESDestroy_NRichardson;
-  snes->ops->setup           = SNESSetUp_NRichardson;
-  snes->ops->setfromoptions  = SNESSetFromOptions_NRichardson;
-  snes->ops->view            = SNESView_NRichardson;
-  snes->ops->solve           = SNESSolve_NRichardson;
-  snes->ops->reset           = SNESReset_NRichardson;
+  snes->ops->destroy        = SNESDestroy_NRichardson;
+  snes->ops->setup          = SNESSetUp_NRichardson;
+  snes->ops->setfromoptions = SNESSetFromOptions_NRichardson;
+  snes->ops->view           = SNESView_NRichardson;
+  snes->ops->solve          = SNESSolve_NRichardson;
+  snes->ops->reset          = SNESReset_NRichardson;
 
-  snes->usesksp              = PETSC_FALSE;
-  snes->usespc               = PETSC_TRUE;
+  snes->usesksp = PETSC_FALSE;
+  snes->usespc  = PETSC_TRUE;
 
-  ierr = PetscNewLog(snes, SNES_NRichardson, &neP);CHKERRQ(ierr);
+  ierr       = PetscNewLog(snes, SNES_NRichardson, &neP);CHKERRQ(ierr);
   snes->data = (void*) neP;
 
   if (!snes->tolerancesset) {
@@ -261,7 +265,5 @@ PetscErrorCode  SNESCreate_NRichardson(SNES snes)
     snes->max_its   = 10000;
     snes->stol      = 1e-20;
   }
-
   PetscFunctionReturn(0);
 }
-EXTERN_C_END

@@ -1,6 +1,4 @@
 
-/* Program usage:  mpiexec ex1 [-help] [all PETSc options] */
-
 static char help[] = "Demonstrates VecStrideNorm().\n\n";
 
 /*T
@@ -8,7 +6,7 @@ static char help[] = "Demonstrates VecStrideNorm().\n\n";
    Processors: n
 T*/
 
-/* 
+/*
   Include "petscvec.h" so that we can use vectors.  Note that this file
   automatically includes:
      petscsys.h       - base PETSc routines   petscis.h     - index sets
@@ -27,12 +25,12 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
   PetscScalar    one = 1.0;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
+  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscOptionsGetInt(NULL,"-n",&n,NULL);CHKERRQ(ierr);
 
-  /* 
+  /*
      Create a vector, specifying only its global dimension.
-     When using VecCreate(), VecSetSizes() and VecSetFromOptions(), 
+     When using VecCreate(), VecSetSizes() and VecSetFromOptions(),
      the vector format (currently parallel,
      shared, or sequential) is determined at runtime.  Also, the parallel
      partitioning of the vector is determined by PETSc at runtime.
@@ -45,8 +43,8 @@ int main(int argc,char **argv)
                             (available only on the SGI); otherwise,
                             is the same as VecCreateMPI()
 
-     With VecCreate(), VecSetSizes() and VecSetFromOptions() the option 
-     -vec_type mpi or -vec_type shared causes the 
+     With VecCreate(), VecSetSizes() and VecSetFromOptions() the option
+     -vec_type mpi or -vec_type shared causes the
      particular type of vector to be formed.
 
   */
@@ -75,7 +73,7 @@ int main(int argc,char **argv)
   ierr = VecStrideNorm(x,1,NORM_INFINITY,&norm);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of sub-vector %G\n",norm);CHKERRQ(ierr);
 
-  /* 
+  /*
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
   */
@@ -83,4 +81,4 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return 0;
 }
- 
+

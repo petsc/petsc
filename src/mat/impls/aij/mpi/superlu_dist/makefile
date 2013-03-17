@@ -8,11 +8,9 @@ CFLAGS   = ${SUPERLU_DIST_INCLUDE}
 FFLAGS   =
 SOURCEC	 = superlu_dist.c
 SOURCEF	 =
-SOURCEH	 = 
-OBJSC	 = superlu_dist.o 
-OBJSF	 =
+SOURCEH	 =
 LIBBASE	 = libpetscmat
-DIRS	 = 
+DIRS	 =
 MANSEC	 = Mat
 LOCDIR	 = src/mat/impls/aij/mpi/superlu_dist/
 

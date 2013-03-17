@@ -27,18 +27,18 @@
   PetscInt  max_k;                                        /* number of vectors in Krylov space, restart size */ \
   PetscInt  nextra_vecs;                                  /* number of extra vecs needed, e.g. for a pipeline */ \
                                                                         \
-  PetscErrorCode            (*orthog)(KSP,PetscInt);                    \
+  PetscErrorCode (*orthog)(KSP,PetscInt);                    \
   KSPGMRESCGSRefinementType cgstype;                                    \
                                                                         \
-  Vec         *vecs;                                     /* the work vectors */ \
-  PetscInt    q_preallocate; /* 0=don't preallocate space for work vectors */ \
-  PetscInt    delta_allocate; /* number of vectors to preallocaate in each block if not preallocated */ \
-  PetscInt    vv_allocated;   /* number of allocated gmres direction vectors */ \
-  PetscInt    vecs_allocated;                           /*   total number of vecs available */ \
+  Vec      *vecs;                                        /* the work vectors */ \
+  PetscInt q_preallocate;    /* 0=don't preallocate space for work vectors */ \
+  PetscInt delta_allocate;    /* number of vectors to preallocaate in each block if not preallocated */ \
+  PetscInt vv_allocated;      /* number of allocated gmres direction vectors */ \
+  PetscInt vecs_allocated;                              /*   total number of vecs available */ \
   /* Since we may call the user "obtain_work_vectors" several times, we have to keep track of the pointers that it has returned */ \
-  Vec         **user_work;                                              \
-  PetscInt    *mwork_alloc;    /* Number of work vectors allocated as part of  a work-vector chunck */ \
-  PetscInt    nwork_alloc;     /* Number of work vector chunks allocated */ \
+  Vec      **user_work;                                              \
+  PetscInt *mwork_alloc;       /* Number of work vectors allocated as part of  a work-vector chunck */ \
+  PetscInt nwork_alloc;        /* Number of work vector chunks allocated */ \
                                                                         \
   /* Information for building solution */                               \
   PetscInt    it;              /* Current iteration: inside restart */  \
@@ -49,25 +49,25 @@ typedef struct {
   KSPGMRESHEADER
 } KSP_GMRES;
 
-extern PetscErrorCode KSPView_GMRES(KSP,PetscViewer);
-extern PetscErrorCode KSPSetUp_GMRES(KSP);
-extern PetscErrorCode KSPSetFromOptions_GMRES(KSP);
-extern PetscErrorCode KSPComputeExtremeSingularValues_GMRES(KSP,PetscReal *,PetscReal *);
-extern PetscErrorCode KSPComputeEigenvalues_GMRES(KSP,PetscInt,PetscReal *,PetscReal *,PetscInt *);
-extern PetscErrorCode KSPReset_GMRES(KSP);
-extern PetscErrorCode KSPDestroy_GMRES(KSP);
-extern PetscErrorCode KSPGMRESGetNewVectors(KSP,PetscInt);
+PETSC_INTERN PetscErrorCode KSPView_GMRES(KSP,PetscViewer);
+PETSC_INTERN PetscErrorCode KSPSetUp_GMRES(KSP);
+PETSC_INTERN PetscErrorCode KSPSetFromOptions_GMRES(KSP);
+PETSC_INTERN PetscErrorCode KSPComputeExtremeSingularValues_GMRES(KSP,PetscReal*,PetscReal*);
+PETSC_INTERN PetscErrorCode KSPComputeEigenvalues_GMRES(KSP,PetscInt,PetscReal*,PetscReal*,PetscInt*);
+PETSC_INTERN PetscErrorCode KSPReset_GMRES(KSP);
+PETSC_INTERN PetscErrorCode KSPDestroy_GMRES(KSP);
+PETSC_INTERN PetscErrorCode KSPGMRESGetNewVectors(KSP,PetscInt);
 
 typedef PetscErrorCode (*FCN)(KSP,PetscInt); /* force argument to next function to not be extern C*/
 
-PETSC_EXTERN_C PetscErrorCode KSPGMRESSetHapTol_GMRES(KSP,PetscReal);
-PETSC_EXTERN_C PetscErrorCode KSPGMRESSetPreAllocateVectors_GMRES(KSP);
-PETSC_EXTERN_C PetscErrorCode KSPGMRESSetRestart_GMRES(KSP,PetscInt);
-PETSC_EXTERN_C PetscErrorCode KSPGMRESGetRestart_GMRES(KSP,PetscInt*);
-PETSC_EXTERN_C PetscErrorCode KSPGMRESSetOrthogonalization_GMRES(KSP,FCN);
-PETSC_EXTERN_C PetscErrorCode KSPGMRESGetOrthogonalization_GMRES(KSP,FCN*);
-PETSC_EXTERN_C PetscErrorCode KSPGMRESSetCGSRefinementType_GMRES(KSP,KSPGMRESCGSRefinementType);
-PETSC_EXTERN_C PetscErrorCode KSPGMRESGetCGSRefinementType_GMRES(KSP,KSPGMRESCGSRefinementType*);
+PETSC_INTERN PetscErrorCode KSPGMRESSetHapTol_GMRES(KSP,PetscReal);
+PETSC_INTERN PetscErrorCode KSPGMRESSetPreAllocateVectors_GMRES(KSP);
+PETSC_INTERN PetscErrorCode KSPGMRESSetRestart_GMRES(KSP,PetscInt);
+PETSC_INTERN PetscErrorCode KSPGMRESGetRestart_GMRES(KSP,PetscInt*);
+PETSC_INTERN PetscErrorCode KSPGMRESSetOrthogonalization_GMRES(KSP,FCN);
+PETSC_INTERN PetscErrorCode KSPGMRESGetOrthogonalization_GMRES(KSP,FCN*);
+PETSC_INTERN PetscErrorCode KSPGMRESSetCGSRefinementType_GMRES(KSP,KSPGMRESCGSRefinementType);
+PETSC_INTERN PetscErrorCode KSPGMRESGetCGSRefinementType_GMRES(KSP,KSPGMRESCGSRefinementType*);
 
 /* These macros are guarded because they are redefined by derived implementations */
 #if !defined(KSPGMRES_NO_MACROS)

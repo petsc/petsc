@@ -12,7 +12,7 @@ class Configure(PETSc.package.NewPackage):
 
   def setupDependencies(self, framework):
     PETSc.package.NewPackage.setupDependencies(self, framework)
-    self.matlab = framework.require('PETSc.packages.Matlab',self)    
+    self.matlab = framework.require('PETSc.packages.Matlab',self)
     self.deps       = [self.matlab]
     return
 

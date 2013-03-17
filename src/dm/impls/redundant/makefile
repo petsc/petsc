@@ -4,10 +4,8 @@ ALL: lib
 CFLAGS   =
 FFLAGS   =
 SOURCEC  = dmredundant.c
-SOURCEF  = 
+SOURCEF  =
 SOURCEH  = ../../../../include/petscdmredundant.h
-OBJSC    = $(SOURCEC:.c=.o)
-OBJSF    =
 LIBBASE  = libpetscdm
 MANSEC   = DM
 SUBMANSEC= DMREDUNDANT

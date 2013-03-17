@@ -3,11 +3,9 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = dm.c dmregall.c dmget.c
-SOURCEF  = 
-SOURCEH  = 
-OBJSC    = dm.o dmregall.o dmget.o
-OBJSF    =
+SOURCEC  = dm.c dmregall.c dmget.c dmi.c dlregisdmdm.c
+SOURCEF  =
+SOURCEH  =
 LIBBASE  = libpetscdm
 MANSEC   = DM
 LOCDIR   = src/dm/interface/

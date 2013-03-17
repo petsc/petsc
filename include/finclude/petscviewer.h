@@ -3,7 +3,7 @@
 !
 #include "finclude/petscviewerdef.h"
 
-#if !defined(PETSC_USE_FORTRAN_DATATYPES) 
+#if !defined(PETSC_USE_FORTRAN_DATATYPES)
       PetscViewer PETSC_VIEWER_STDOUT_
       external PETSC_VIEWER_STDOUT_
 #endif
@@ -48,6 +48,8 @@
       PetscEnum PETSC_VIEWER_DRAW_CONTOUR
       PetscEnum PETSC_VIEWER_DRAW_PORTS
       PetscEnum PETSC_VIEWER_VTK_VTS
+      PetscEnum PETSC_VIEWER_VTK_VTU
+      PetscEnum PETSC_VIEWER_BINARY_MATLAB
       PetscEnum PETSC_VIEWER_NATIVE
       PetscEnum PETSC_VIEWER_NOFORMAT
 
@@ -74,8 +76,10 @@
       parameter (PETSC_VIEWER_DRAW_CONTOUR = 20)
       parameter (PETSC_VIEWER_DRAW_PORTS = 21)
       parameter (PETSC_VIEWER_VTK_VTS = 22)
-      parameter (PETSC_VIEWER_NATIVE = 23)
-      parameter (PETSC_VIEWER_NOFORMAT = 24)
+      parameter (PETSC_VIEWER_VTK_VTU = 23)
+      parameter (PETSC_VIEWER_BINARY_MATLAB = 24)
+      parameter (PETSC_VIEWER_NATIVE = 25)
+      parameter (PETSC_VIEWER_NOFORMAT = 26)
 !
 !  End of Fortran include file for the PetscViewer package in PETSc
 

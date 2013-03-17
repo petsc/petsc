@@ -2,9 +2,9 @@
 CFLAGS	        =
 FFLAGS	        =
 CPPFLAGS        =
-FPPFLAGS        = 
+FPPFLAGS        =
 LOCDIR          = src/dm/examples/tutorials/
-EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c ex10.c ex12.c
+EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c ex10.c ex12.c ex51.c ex65dm.c
 EXAMPLESF       = ex6f90.F ex11f90.F
 MANSEC          = DM
 SUBMANSEC       = DMDA
@@ -63,6 +63,23 @@ ex11f90: ex11f90.o   chkopts
 ex12: ex12.o   chkopts
 	-${CLINKER} -o ex12 ex12.o  ${PETSC_DM_LIB}
 	${RM} -f ex12.o
+
+ex14: ex14.o   chkopts
+	-${CLINKER} -o ex14 ex14.o  ${PETSC_DM_LIB}
+	${RM} -f ex14.o
+
+ex19: ex19.o   chkopts
+	-${CLINKER} -o ex19 ex19.o  ${PETSC_DM_LIB}
+	${RM} -f ex19.o
+
+ex51: ex51.o  chkopts
+	-${CLINKER} -o ex51 ex51.o ${PETSC_SNES_LIB}
+	${RM} ex51.o
+
+ex65dm: ex65dm.o  chkopts
+	-${CLINKER} -o ex65dm ex65dm.o ${PETSC_SNES_LIB}
+	${RM} ex65dm.o
+
 #-----------------------------------------------------------------
 runex1:
 	-@${MPIEXEC} -n 2 ./ex1 -nox
@@ -92,14 +109,14 @@ runex11f90:
 	   else echo ${PWD} ; echo "Possible problem with with ex11f90, diffs above \n========================================="; fi; \
 	   ${RM} -f ex11f90.tmp
 
-TESTEXAMPLES_C		  = ex3.PETSc runex3 runex3_2 runex3_3 ex3.rm ex4.PETSc ex4.rm ex12.PETSc ex12.rm
-TESTEXAMPLES_C_X	  = ex1.PETSc runex1 ex1.rm ex5.PETSc ex5.rm  
-TESTEXAMPLES_FORTRAN	  = 
+TESTEXAMPLES_C		  = ex3.PETSc runex3 runex3_2 runex3_3 ex3.rm ex4.PETSc ex4.rm ex12.PETSc ex12.rm ex51.PETSc ex51.rm 
+TESTEXAMPLES_C_X	  = ex1.PETSc runex1 ex1.rm ex5.PETSc ex5.rm
+TESTEXAMPLES_FORTRAN	  =
 TESTEXAMPLES_F90_NOCOMPLEX= ex6f90.PETSc ex6f90.rm ex11f90.PETSc ex11f90.rm
-TESTEXAMPLES_C_X_MPIUNI = 
-TESTEXAMPLES_C_COMPLEX	  = 
-TESTEXAMPLES_C_NOCOMPLEX  = ex2.PETSc runex2 ex2.rm ex6.PETSc ex6.rm
-TESTEXAMPLES_13		  = 
+TESTEXAMPLES_C_X_MPIUNI =
+TESTEXAMPLES_C_COMPLEX	  =
+TESTEXAMPLES_C_NOCOMPLEX  = ex2.PETSc runex2 ex2.rm ex6.PETSc ex6.rm ex65dm.PETSc ex65dm.rm
+TESTEXAMPLES_13		  =
 TESTEXAMPLES_HDF5         = ex10.PETSc runex10 ex10.rm
 
 include ${PETSC_DIR}/conf/test

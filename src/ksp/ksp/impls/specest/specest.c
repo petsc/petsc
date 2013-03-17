@@ -2,9 +2,9 @@
 #include <petsc-private/kspimpl.h>
 
 typedef struct {
-  KSP kspest;                   /* KSP capable of estimating eigenvalues */
-  KSP kspcheap;                 /* Cheap smoother (should have few dot products) */
-  PC  pcnone;                   /* Dummy PC to drop in so PCSetFromOptions doesn't get called extra times */
+  KSP       kspest;             /* KSP capable of estimating eigenvalues */
+  KSP       kspcheap;           /* Cheap smoother (should have few dot products) */
+  PC        pcnone;             /* Dummy PC to drop in so PCSetFromOptions doesn't get called extra times */
   PetscReal min,max;            /* Singular value estimates */
   PetscReal radius;             /* Spectral radius of 1-B where B is the preconditioned operator */
   PetscBool current;            /* Eigenvalue estimates are current */
@@ -12,7 +12,7 @@ typedef struct {
   PetscReal richfactor;
 } KSP_SpecEst;
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPSetUp_SpecEst"
 static PetscErrorCode KSPSetUp_SpecEst(KSP ksp)
 {
@@ -28,11 +28,12 @@ static PetscErrorCode KSPSetUp_SpecEst(KSP ksp)
   ierr = KSPSetInitialGuessNonzero(spec->kspcheap,nonzero);CHKERRQ(ierr);
   ierr = KSPSetComputeSingularValues(spec->kspest,PETSC_TRUE);CHKERRQ(ierr);
   ierr = KSPSetUp(spec->kspest);CHKERRQ(ierr);
-  spec->current    = PETSC_FALSE;
+
+  spec->current = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPSpecEstPropagateUp"
 static PetscErrorCode KSPSpecEstPropagateUp(KSP ksp,KSP subksp)
 {
@@ -44,7 +45,7 @@ static PetscErrorCode KSPSpecEstPropagateUp(KSP ksp,KSP subksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPSolve_SpecEst"
 static PetscErrorCode  KSPSolve_SpecEst(KSP ksp)
 {
@@ -71,21 +72,23 @@ static PetscErrorCode  KSPSolve_SpecEst(KSP ksp)
       rad = PetscMax(rad,PetscRealPart(PetscSqrtScalar((PetscScalar)(PetscSqr(real[i]-1.) + PetscSqr(imag[i])))));
     }
     ierr = PetscFree2(real,imag);CHKERRQ(ierr);
+
     spec->radius = rad;
 
     ierr = KSPChebyshevSetEigenvalues(spec->kspcheap,spec->max*spec->maxfactor,spec->min*spec->minfactor);CHKERRQ(ierr);
-    ierr = KSPRichardsonSetScale(spec->kspcheap,spec->richfactor/spec->radius);
+    ierr = KSPRichardsonSetScale(spec->kspcheap,spec->richfactor/spec->radius);CHKERRQ(ierr);
     ierr = PetscInfo3(ksp,"Estimated singular value min=%G max=%G, spectral radius=%G",spec->min,spec->max,spec->radius);CHKERRQ(ierr);
+
     spec->current = PETSC_TRUE;
   }
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPView_SpecEst"
 static PetscErrorCode KSPView_SpecEst(KSP ksp,PetscViewer viewer)
 {
-  KSP_SpecEst *spec = (KSP_SpecEst*)ksp->data;
+  KSP_SpecEst    *spec = (KSP_SpecEst*)ksp->data;
   PetscErrorCode ierr;
   PetscBool      iascii;
 
@@ -102,13 +105,11 @@ static PetscErrorCode KSPView_SpecEst(KSP ksp,PetscViewer viewer)
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
     ierr = KSPView(spec->kspcheap,viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
-  } else {
-    SETERRQ1(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"Viewer type %s not supported for KSP cg",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPSetFromOptions_SpecEst"
 static PetscErrorCode KSPSetFromOptions_SpecEst(KSP ksp)
 {
@@ -118,18 +119,18 @@ static PetscErrorCode KSPSetFromOptions_SpecEst(KSP ksp)
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("KSP SpecEst Options");CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-ksp_specest_minfactor","Multiplier on the minimum eigen/singular value","None",spec->minfactor,&spec->minfactor,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-ksp_specest_maxfactor","Multiplier on the maximum eigen/singular value","None",spec->maxfactor,&spec->maxfactor,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-ksp_specest_richfactor","Multiplier on the richimum eigen/singular value","None",spec->richfactor,&spec->richfactor,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-ksp_specest_minfactor","Multiplier on the minimum eigen/singular value","None",spec->minfactor,&spec->minfactor,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-ksp_specest_maxfactor","Multiplier on the maximum eigen/singular value","None",spec->maxfactor,&spec->maxfactor,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-ksp_specest_richfactor","Multiplier on the richimum eigen/singular value","None",spec->richfactor,&spec->richfactor,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
 
   /* Mask the PC so that PCSetFromOptions does not do anything */
   ierr = KSPSetPC(spec->kspest,spec->pcnone);CHKERRQ(ierr);
   ierr = KSPSetPC(spec->kspcheap,spec->pcnone);CHKERRQ(ierr);
 
-  ierr = PetscSNPrintf(prefix,sizeof prefix,"%sspecest_",((PetscObject)ksp)->prefix?((PetscObject)ksp)->prefix:"");CHKERRQ(ierr);
+  ierr = PetscSNPrintf(prefix,sizeof(prefix),"%sspecest_",((PetscObject)ksp)->prefix ? ((PetscObject)ksp)->prefix : "");CHKERRQ(ierr);
   ierr = KSPSetOptionsPrefix(spec->kspest,prefix);CHKERRQ(ierr);
-  ierr = PetscSNPrintf(prefix,sizeof prefix,"%sspeccheap_",((PetscObject)ksp)->prefix?((PetscObject)ksp)->prefix:"");CHKERRQ(ierr);
+  ierr = PetscSNPrintf(prefix,sizeof(prefix),"%sspeccheap_",((PetscObject)ksp)->prefix ? ((PetscObject)ksp)->prefix : "");CHKERRQ(ierr);
   ierr = KSPSetOptionsPrefix(spec->kspcheap,prefix);CHKERRQ(ierr);
 
   if (!((PetscObject)spec->kspest)->type_name) {
@@ -148,7 +149,7 @@ static PetscErrorCode KSPSetFromOptions_SpecEst(KSP ksp)
 }
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPDestroy_SpecEst"
 static PetscErrorCode KSPDestroy_SpecEst(KSP ksp)
 {
@@ -163,8 +164,7 @@ static PetscErrorCode KSPDestroy_SpecEst(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPCreate_SpecEst"
 /*MC
      KSPSPECEST - Estimate the spectrum on the first KSPSolve, then use cheaper smoother for subsequent solves.
@@ -189,7 +189,7 @@ EXTERN_C_BEGIN
 
 .seealso: KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPGMRES, KSPCG, KSPCHEBYSHEV, KSPRICHARDSON
 M*/
-PetscErrorCode  KSPCreate_SpecEst(KSP ksp)
+PETSC_EXTERN PetscErrorCode KSPCreate_SpecEst(KSP ksp)
 {
   KSP_SpecEst    *spec;
   PetscErrorCode ierr;
@@ -202,21 +202,21 @@ PetscErrorCode  KSPCreate_SpecEst(KSP ksp)
 
   ierr = PetscNewLog(ksp,KSP_SpecEst,&spec);CHKERRQ(ierr);
 
-  ksp->data                      = (void*)spec;
-  ksp->ops->setup                = KSPSetUp_SpecEst;
-  ksp->ops->solve                = KSPSolve_SpecEst;
-  ksp->ops->destroy              = KSPDestroy_SpecEst;
-  ksp->ops->buildsolution        = KSPDefaultBuildSolution;
-  ksp->ops->buildresidual        = KSPDefaultBuildResidual;
-  ksp->ops->setfromoptions       = KSPSetFromOptions_SpecEst;
-  ksp->ops->view                 = KSPView_SpecEst;
+  ksp->data                = (void*)spec;
+  ksp->ops->setup          = KSPSetUp_SpecEst;
+  ksp->ops->solve          = KSPSolve_SpecEst;
+  ksp->ops->destroy        = KSPDestroy_SpecEst;
+  ksp->ops->buildsolution  = KSPBuildSolutionDefault;
+  ksp->ops->buildresidual  = KSPBuildResidualDefault;
+  ksp->ops->setfromoptions = KSPSetFromOptions_SpecEst;
+  ksp->ops->view           = KSPView_SpecEst;
 
-  spec->minfactor = 0.9;
-  spec->maxfactor = 1.1;
+  spec->minfactor  = 0.9;
+  spec->maxfactor  = 1.1;
   spec->richfactor = 1.0;
 
-  ierr = KSPCreate(((PetscObject)ksp)->comm,&spec->kspest);CHKERRQ(ierr);
-  ierr = KSPCreate(((PetscObject)ksp)->comm,&spec->kspcheap);CHKERRQ(ierr);
+  ierr = KSPCreate(PetscObjectComm((PetscObject)ksp),&spec->kspest);CHKERRQ(ierr);
+  ierr = KSPCreate(PetscObjectComm((PetscObject)ksp),&spec->kspcheap);CHKERRQ(ierr);
 
   /* Hold an empty PC */
   ierr = KSPGetPC(spec->kspest,&spec->pcnone);CHKERRQ(ierr);
@@ -232,4 +232,3 @@ PetscErrorCode  KSPCreate_SpecEst(KSP ksp)
   ierr = KSPSetTolerances(spec->kspcheap,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,5);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END

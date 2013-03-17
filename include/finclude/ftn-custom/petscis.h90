@@ -2,12 +2,12 @@
 !  These are Fortran interfaces that are custom hand coded because
 !  they cannot currently be generated automatically
 !
-#if !defined(PETSC_USE_FORTRAN_MODULES) 
+#if !defined(PETSC_USE_FORTRAN_MODULES)
 #include "finclude/ftn-custom/petscisdef.h90"
 #endif
 #include "finclude/ftn-custom/petscishide.h90"
 
-      Interface 
+      Interface
         Subroutine ISGetIndicesF90(i,array,ierr)
           USE_IS_HIDE
           PetscInt, pointer :: array(:)
@@ -17,7 +17,7 @@
       End Interface
 
 
-      Interface 
+      Interface
         Subroutine ISRestoreIndicesF90(i,array,ierr)
           USE_IS_HIDE
           PetscInt, pointer :: array(:)
@@ -28,7 +28,7 @@
 
 ! ------------------------------------------------------
 
-      Interface 
+      Interface
         Subroutine ISBlockGetIndicesF90(i,array,ierr)
           USE_IS_HIDE
           PetscInt, pointer :: array(:)
@@ -38,7 +38,7 @@
       End Interface
 
 
-      Interface 
+      Interface
         Subroutine ISBlockRestoreIndicesF90(i,array,ierr)
           USE_IS_HIDE
           PetscInt, pointer :: array(:)
@@ -48,7 +48,7 @@
       End Interface
 
 ! ------------------------------------------------------
-      Interface 
+      Interface
         Subroutine ISColoringGetISF90(ic,n,isa,ierr)
           USE_IS_HIDE
           IS_HIDE, pointer :: isa(:)
@@ -58,7 +58,7 @@
         End Subroutine
       End Interface
 
-      Interface 
+      Interface
         Subroutine ISColoringRestoreISF90(ic,isa,ierr)
           USE_IS_HIDE
           IS_HIDE, pointer :: isa(:)

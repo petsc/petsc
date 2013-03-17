@@ -1,0 +1,12 @@
+setup done: square       side length = 4.000
+            grid               Mx,My = 21,21
+            spacing            dx,dy = 0.200,0.200
+  0 SNES Function norm 90.9259 
+  1 SNES Function norm 17.3878 
+  2 SNES Function norm 5.60528 
+  3 SNES Function norm 2.13024 
+  4 SNES Function norm 9.29874e-06 
+  5 SNES Function norm 6.906e-11 
+number of Newton iterations = 5; result = CONVERGED_FNORM_RELATIVE
+errors:    av |u-uexact|  = 1.287e-03
+           |u-uexact|_inf = 7.882e-03

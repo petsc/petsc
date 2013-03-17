@@ -5,10 +5,8 @@ ALL: lib
 CFLAGS   =
 FFLAGS   =
 SOURCEC  = zmatrixf90.c
-SOURCEF  = 
-SOURCEH  = 
-OBJSC    = ${SOURCEC:.c=.o}
-OBJSF    = 
+SOURCEF  =
+SOURCEH  =
 LIBBASE  = libpetscmat
 LOCDIR   = src/mat/interface/f90-custom/
 

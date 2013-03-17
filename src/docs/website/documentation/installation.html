@@ -26,7 +26,7 @@
           <a href="../documentation/index.html">Documentation</a>
           <ul>
             <li><a href="index.html">Manual pages and Users Manual</a></li>
-            <li><a href="referencing.html">Referencing PETSc</a></li>
+            <li><a href="referencing.html">Citing PETSc</a></li>
             <li><a href="tutorials/index.html">Tutorials</a></li>
             <li><span class="current">Installation</span></li>
             <li><a href="ams.html">AMS</a></li>
@@ -99,10 +99,12 @@
 
       <ul>
         <li>Please <a href="../download/index.html">download</a> the <b>latest</b> patched tarball
-        <li>Please install PETSc as a <b>regular/non-root user</b>, perhaps in <b>/home/username/soft</b></li>
+        <li>For most users we recommend installing PETSc as a <b>regular/non-root user</b>, perhaps in <b>/home/username/soft</b></li>
         <li>To extract the sources use: <code>gunzip -c petsc-3.3-p0.tar.gz | tar -xof -</code></li>
         <li>Please check: <code>./configure --help</code></li>
         <li>Please check <a href="#exampleusage">example usages</a></li>
+        <li>To install in <a href="#root">system directories</a> and for <a href="#packagemanagers">package managers.</a></li> 
+        <li><a href="#pkgconfig">Pkgconfig</a> and <a href="#pkgconfig">module files.</a></li> 
       </ul>
 
     </div>
@@ -360,7 +362,7 @@
             package and install it. Then configure PETSc to use this package.
             <ul>
               <li>--download-f-blas-lapack --download-mpich</li>
-              <li>--download-blacs --download-scalapack --download-mumps</li>
+              <li>--download-scalapack --download-mumps</li>
             </ul>
           </li>
 
@@ -444,7 +446,7 @@
 
           <li>
             It's best to install some external packages like SuperLU_DIST, MUMPS,
-            Hypre with the option <code>--download-PACKAGENAME</code>.  [the
+            Hypre, METIS, and ParMETIS with the option <code>--download-PACKAGENAME</code>.  [the
             correct options for these packages are <code>--download-superlu_dist
               --download-mumps --download-hypre</code>]
 
@@ -457,8 +459,14 @@
               </li>
 
               <li>
+                Some packages have bug fixes, portability patches, and upgrades
+                for dependent packages that have not yet been included in an
+                upstream release.
+              </li>
+
+              <li>
                 All packages will be installed with the same set of compilers
-                - this avoids problems [for ex: weird link time errors] with
+                - this avoids problems [for example weird link time errors] with
                 mixing code compiled with multiple compilers [for example mixing
                 gfortran and ifort compiled code].
               </li>
@@ -514,7 +522,7 @@
             <ul>
               <li>--with-blas-lapack-lib=libsunperf.a</li>
               <li>--with-blas-lib=libblas.a --with-lapack-lib=liblapack.a</li>
-              <li>--with-blas-lapack-dir=opt/intel/mkl72</li>
+              <li>--with-blas-lapack-dir=/soft/com/packages/intel/13/079/mkl</li>
             </ul>
           </li>
         </ul>
@@ -522,7 +530,16 @@
         <b>Notes:</b>
 
         <ul>
-          <li>
+          <li> <h4> Intel MKL</h4>
+            Intel provides blas/lapack via  <a href="http://software.intel.com/en-us/intel-mkl">MKL</a> library.
+            It usually works from GNU/Intel compilers on linux and MS/Intel compilers on Windows.
+            One can specify it to PETSc configure with for eg: <code>--with-blas-lapack-dir=/soft/com/packages/intel/13/079/mkl</code>
+            <br>
+            If the above option does not work - one could determine the correct library list for your compilers using
+            <a href="http://software.intel.com/sites/products/mkl/">Intel MKL Link Line Advisor</a>
+               and specify with the configure option <code>--with-blas-lapack-lib</code>
+          </li>
+          <li> <h4>IBM ESSL</h4>
             Sadly, IBM's ESSL does not have all the routines of BLAS and LAPACK
             that some packages, such as SuperLU expect; in particular slamch,
             dlamch and xerbla. In this case instead of using ESSL we suggest
@@ -810,7 +827,7 @@
       <hr>
 
       <div>
-        <h3><a name="root">Installing PETSc in /usr/local or /opt where sudo or root previledges are required:</a></h3>
+        <h3><a name="root">Installing PETSc in /usr/local or /opt where sudo or root privileges are required:</a></h3>
 
         <p>
           If one wants to install PETSc [with sources] in a common system
@@ -829,21 +846,65 @@
           <li>make</li>
         </ul>
 
-        <p>One can also use the gnu prefix-install mode.</p>
+        <h4>Installing with --prefix:</h4>
+        <p>One can also use the GNU <b>--prefix</b> install mode.</p>
 
         <ul class="code">
-          <li>[untar PETSc in a non-root regular location - say /home/username]</li>
           <li>./configure --prefix=/opt/petsc/petsc-3.3-p0  [other configure options]</li>
           <li>make</li>
-          <li>sudo make install</li>
+          <li>[sudo] make install</li>
+          <li>[user can now use this PETSc install with:] make PETSC_DIR=/opt/petsc/petsc-3.3-p0 ex1</li>
         </ul>
 
         <p>
-          After the install is done, one has to switch to using
-          <code>PETSC_DIR=/opt/petsc/petsc-3.3-p0</code>.  If you've installed
-          PETSc with the --prefix option then you <b>DO NOT</b> use a PETSC_ARCH
-          variable. You should install different configurations using different
-          --prefix names.
+          Note: one has to switch to using <code>PETSC_DIR=/opt/petsc/petsc-3.3-p0</code> after
+          install is done - and <b>NOT</b> use PETSC_ARCH anymore.
+        </p>
+
+        <h4><a name="packagemanagers">Using DESTDIR with prefix install:</h4>
+
+        <p>
+          One can also use the GNU <b>DESTDIR</b> with a prefix install. This mode is generally
+          used by binary packagers. For example
+        </p>
+
+        <ul class="code">
+          <li>./configure --prefix=/opt/petsc/petsc-3.3-p0</li>
+          <li>make</li>
+          <li>make install DESTDIR=/tmp/petsc-pkg</li>
+          <li>[package up /tmp/petsc-pkg The package should then be installed at /opt/petsc/petsc-3.3-p0]</li>
+          <li>[user can now use this PETSc install with:] make PETSC_DIR=/opt/petsc/petsc-3.3-p0 ex1</li>
+        </ul>
+
+        <h4>Multiple installs using --prefix and DESTDIR:</h4>
+
+        Sepcify a different --prefix location/option for each build - at configure time. For eg:
+
+        <ul class="code">
+          <li>untar petsc tar ball</li>
+          <li>./configure --prefix=/opt/petsc/petsc-3.3-p0-mpich --with-mpi-dir=/opt/mpich</li>
+          <li>make</li>
+          <li>make install DESTDIR=/tmp/petsc-pkg</li>
+          <li>untar petsc tar ball</li>
+          <li>./configure --prefix=/opt/petsc/petsc-3.3-p0-openmpi --with-mpi-dir=/opt/openmpi</li>
+          <li>make</li>
+          <li>make install DESTDIR=/tmp/petsc-pkg</li>
+        </ul>
+
+        </p>
+
+        <a href="#" target="_top">Return to Installation Instructions</a>
+      </div> <!-- #root -->
+
+      <hr>
+
+      <div>
+        <h3><a name="pkgconfig">PETSc ./configure automatically generates Pkgconfig and module files for each install</a></h3>
+
+       These can be found in ${PETSC_DIR}/${PETSC_ARCH}/lib/pkgconfig/PETSc.pc and ${PETSC_DIR}/${PETSC_ARCH}/lib/modules/${PETSC_VERSION}-${PETSC_ARCH}.
+        The module file may need to be edited for your particular system. Note that if --prefix is used then $PETSC_ARCH is not included in the above directories
+        nor is -${PETSC_ARCH} included in the module file name.
+
         </p>
 
         <a href="#" target="_top">Return to Installation Instructions</a>
@@ -934,15 +995,16 @@
 
       <hr>
 
-      <div id="pthreads">
-        <h3><a name="threads">Installing PETSc to use PThreads</a></h3>
-
+      <div id="threads">
+        <h3><a name="threads">Installing PETSc to use Threads</a></h3>
+	<p>
+	  <b>petsc-dev</b>
+	</p>
         <ul>
           <li>
-            Configure and build PETSc with the additional configure options (note
-            this currently only works on Linux)
+            Configure and build PETSc with the additional configure options
             <ul>
-              <li> --with-pthreadclasses</li>
+              <li> --with-threadcomm --with-pthreadclasses and/or --with-openmp </li>
             </ul>
           </li>
 
@@ -952,17 +1014,17 @@
               <li>cd src/snes/examples/tutorials</li>
               <li>make ex19</li>
               <li>
-                ./ex19 -dm_vec_type pthread -dm_mat_type aijpthread -pc_type none
+                ./ex19 -threadcomm_type pthread -threadcomm_nthreads 2 -pc_type none
                  -da_grid_x 100 -da_grid_y 100 -log_summary
-                -mat_no_inode -preload off -vec_threads 2
+                -mat_no_inode -preload off
               </li>
             </ul>
           </li>
         </ul>
 
-        <a href="#" target="_top">Return to Installation Instructions</a>
-      </div> <!-- #pthreads -->
+      </div> <!-- #threads -->
 
+      <a href="#" target="_top">Return to Installation Instructions</a>
     </div>
 
     <!--end-->

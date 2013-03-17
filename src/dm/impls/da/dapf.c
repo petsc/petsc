@@ -1,8 +1,8 @@
- 
-#include <petsc-private/daimpl.h>    /*I   "petscdmda.h"   I*/
+
+#include <petsc-private/dmdaimpl.h>    /*I   "petscdmda.h"   I*/
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMDACreatePF"
 /*@C
    DMDACreatePF - Creates an appropriately dimensioned PF mathematical function object
@@ -31,8 +31,8 @@ PetscErrorCode  DMDACreatePF(DM da,PF *pf)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   PetscValidPointer(pf,2);
-  ierr = PFCreate(((PetscObject)da)->comm,dd->dim,dd->w,pf);CHKERRQ(ierr);
+  ierr = PFCreate(PetscObjectComm((PetscObject)da),dd->dim,dd->w,pf);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
- 
+
 

@@ -67,9 +67,9 @@
 
       external FormFunction, FormJacobian, MyLineSearch
 
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                   Macro definitions
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !
 !  Macros to make clearer the process of setting values in vectors and
 !  getting values from vectors.  These vectors are used in the routines
@@ -81,7 +81,7 @@
 !
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                 Beginning of program
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr)
@@ -95,9 +95,9 @@
 
       i2  = 2
       i20 = 20
-! - - - - - - - - - -- - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - -- - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Create nonlinear solver context
-! - - - - - - - - - -- - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - -- - - - - - - - - - - - - - - - - - - - - - - - - -
 
       call SNESCreate(PETSC_COMM_WORLD,snes,ierr)
 
@@ -216,7 +216,7 @@
 !  Declarations for use with local arrays
 
       PetscScalar  lx_v(1),lf_v(1)
-      PetscOffset  lx_i,lf_i 
+      PetscOffset  lx_i,lf_i
 
 !  Get pointers to vector data.
 !    - For default PETSc vectors, VecGetArray() returns a pointer to
@@ -343,5 +343,5 @@
       call SNESLineSearchSetNorms(linesearch, xnorm, gnorm, ynorm,      &
      & ierr)
       flag = PETSC_FALSE
-      return 
+      return
       end

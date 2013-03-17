@@ -3,8 +3,7 @@
 ALL: lib
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = zarchf.c zstrf.c zpbarrierf.c
-OBJSC    = ${SOURCEC:.c=.o}
+SOURCEC  = zarchf.c zstrf.c zpbarrierf.c zfhostf.c
 SOURCEF  =
 SOURCEH  =
 DIRS     =

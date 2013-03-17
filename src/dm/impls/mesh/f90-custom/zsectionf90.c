@@ -2,13 +2,13 @@
 #include <petscdmmesh.h>
 #include <../src/sys/f90-src/f90impl.h>
 
-#ifdef PETSC_HAVE_FORTRAN_CAPS
+#if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define sectionrealrestrict_        SECTIONREALRESTRICT
 #define sectionintrestrict_         SECTIONINTRESTRICT
 #define sectionrealrestore_         SECTIONREALRESTORE
 #define sectionintrestore_          SECTIONINTRESTORE
-#define sectionrealrestrictclosure_ SECTIONREALRESTRICTCLOSURE
-#define sectionintrestrictclosure_  SECTIONINTRESTRICTCLOSURE
+#define sectionrealrestrictclosurewitharray_ SECTIONREALRESTRICTCLOSUREWITHARRAY
+#define sectionintrestrictclosurewitharray_  SECTIONINTRESTRICTCLOSUREWITHARRAY
 #define sectionrealupdate_          SECTIONREALUPDATE
 #define sectionintupdate_           SECTIONINTUPDATE
 #define sectionrealupdateclosure_   SECTIONREALUPDATECLOSURE
@@ -20,8 +20,8 @@
 #define sectionintrestrict_         sectionintrestrict
 #define sectionrealrestore_         sectionrealrestore
 #define sectionintrestore_          sectionintrestore
-#define sectionrealrestrictclosure_ sectionrealrestrictclosure
-#define sectionintrestrictclosure_  sectionintrestrictclosure
+#define sectionrealrestrictclosurewitharray_ sectionrealrestrictclosurewitharray
+#define sectionintrestrictclosurewitharray_  sectionintrestrictclosurewitharray
 #define sectionrealupdate_          sectionrealupdate
 #define sectionintupdate_           sectionintupdate
 #define sectionrealupdateclosure_   sectionrealupdateclosure
@@ -35,7 +35,7 @@ EXTERN_C_BEGIN
 void PETSC_STDCALL sectionrealrestrict_(SectionReal *section, int *point,F90Array1d *ptr,int *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
   PetscScalar *c;
-  PetscInt     len;
+  PetscInt    len;
 
   *ierr = SectionRealRestrict(*section, *point,&c); if (*ierr) return;
   *ierr = SectionRealGetFiberDimension(*section, *point,&len); if (*ierr) return;
@@ -44,7 +44,7 @@ void PETSC_STDCALL sectionrealrestrict_(SectionReal *section, int *point,F90Arra
 void PETSC_STDCALL sectionintrestrict_(SectionInt *section, int *point,F90Array1d *ptr,int *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
   PetscInt *c;
-  PetscInt  len;
+  PetscInt len;
 
   *ierr = SectionIntRestrict(*section, *point,&c); if (*ierr) return;
   *ierr = SectionIntGetFiberDimension(*section, *point,&len); if (*ierr) return;
@@ -64,24 +64,24 @@ void PETSC_STDCALL sectionintrestore_(SectionInt *section, int *point,F90Array1d
   *ierr = F90Array1dAccess(ptr,PETSC_SCALAR,(void**)&c PETSC_F90_2PTR_PARAM(ptrd));if (*ierr) return;
   *ierr = F90Array1dDestroy(ptr,PETSC_INT PETSC_F90_2PTR_PARAM(ptrd));if (*ierr) return;
 }
-void PETSC_STDCALL sectionrealrestrictclosure_(SectionReal *section, DM *dm, int *point,int *size,F90Array1d *ptr,int *ierr PETSC_F90_2PTR_PROTO(ptrd))
+void PETSC_STDCALL sectionrealrestrictclosurewitharray_(SectionReal *section, DM *dm, int *point,int *size,F90Array1d *ptr,int *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
   PetscScalar *c;
 
   /* Should be able to get array size */
   *ierr = F90Array1dAccess(ptr, PETSC_SCALAR, (void**) &c PETSC_F90_2PTR_PARAM(ptrd));if (*ierr) return;
-  *ierr = SectionRealRestrictClosure(*section, *dm, *point,*size,c); if (*ierr) return;
+  *ierr = SectionRealRestrictClosureWithArray(*section, *dm, *point,*size,c); if (*ierr) return;
 #if 0
   *ierr = F90Array1dCreate(const_cast<PetscScalar *>(c),PETSC_SCALAR,1,n,ptr PETSC_F90_2PTR_PARAM(ptrd));
 #endif
 }
-void PETSC_STDCALL sectionintrestrictclosure_(SectionInt *section, DM *dm, int *point,int *size,F90Array1d *ptr,int *ierr PETSC_F90_2PTR_PROTO(ptrd))
+void PETSC_STDCALL sectionintrestrictclosurewitharray_(SectionInt *section, DM *dm, int *point,int *size,F90Array1d *ptr,int *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
   PetscInt *c;
 
   /* Should be able to get array size */
   *ierr = F90Array1dAccess(ptr, PETSC_INT, (void**) &c PETSC_F90_2PTR_PARAM(ptrd));if (*ierr) return;
-  *ierr = SectionIntRestrictClosure(*section, *dm, *point,*size,c); if (*ierr) return;
+  *ierr = SectionIntRestrictClosureWithArray(*section, *dm, *point,*size,c); if (*ierr) return;
 #if 0
   *ierr = F90Array1dCreate(const_cast<PetscScalar *>(c),PETSC_SCALAR,1,n,ptr PETSC_F90_2PTR_PARAM(ptrd));
 #endif
@@ -127,7 +127,7 @@ void PETSC_STDCALL sectiongetarrayf90_(DM *dm,CHAR name PETSC_MIXED_LEN(len),F90
 void PETSC_STDCALL sectiongetarray1df90_(DM *dm,CHAR name PETSC_MIXED_LEN(len),F90Array1d *ptr,int *ierr PETSC_END_LEN(len) PETSC_F90_2PTR_PROTO(ptrd))
 {
   PetscScalar *a;
-  PetscInt     n, d;
+  PetscInt    n, d;
   char        *nF;
   FIXCHAR(name,len,nF);
   *ierr = SectionGetArray(*dm,nF,&n,&d,&a); if (*ierr) return;

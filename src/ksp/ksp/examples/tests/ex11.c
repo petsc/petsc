@@ -15,7 +15,7 @@ PetscErrorCode LSCLoadTestOperators(Mat *A11,Mat *A12,Mat *A21,Mat *A22,Vec *b1,
   char           filename[PETSC_MAX_PATH_LEN];
   PetscBool      flg;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = MatCreate(PETSC_COMM_WORLD,A11);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,A12);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,A21);CHKERRQ(ierr);
@@ -27,7 +27,7 @@ PetscErrorCode LSCLoadTestOperators(Mat *A11,Mat *A12,Mat *A21,Mat *A22,Vec *b1,
   ierr = VecCreate(PETSC_COMM_WORLD,b1);CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_WORLD,b2);CHKERRQ(ierr);
   /* Load matrices from a Q1-P0 discretisation of variable viscosity Stokes. The matrix blocks are packed into one file. */
-  ierr = PetscOptionsGetString(PETSC_NULL,"-f",filename,sizeof filename,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,"-f",filename,sizeof(filename),&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Must provide a matrix file with -f");
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
   ierr = MatLoad(*A11,viewer);CHKERRQ(ierr);
@@ -52,8 +52,7 @@ PetscErrorCode LoadTestMatrices(Mat *_A,Vec *_x,Vec *_b,IS *_isu,IS *_isp)
   PetscMPIInt    rank;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
-
+  PetscFunctionBeginUser;
   /* fetch test matrices and vectors */
   ierr = LSCLoadTestOperators(&Auu,&Aup,&Apu,&App,&f,&h);CHKERRQ(ierr);
 
@@ -68,11 +67,11 @@ PetscErrorCode LoadTestMatrices(Mat *_A,Vec *_x,Vec *_b,IS *_isu,IS *_isp)
   ierr = VecGetOwnershipRange(h,&start_p,&end_p);CHKERRQ(ierr);
 
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
-  ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] lnu = %D | lnp = %D \n", rank, lnu, lnp );CHKERRQ(ierr);
-  ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] s_u = %D | e_u = %D \n", rank, start_u, end_u );CHKERRQ(ierr);
-  ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] s_p = %D | e_p = %D \n", rank, start_p, end_p );CHKERRQ(ierr);
-  ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] is_u (offset) = %D \n", rank, start_u+start_p );CHKERRQ(ierr);
-  ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] is_p (offset) = %D \n", rank, start_u+start_p+lnu );CHKERRQ(ierr);
+  ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] lnu = %D | lnp = %D \n", rank, lnu, lnp);CHKERRQ(ierr);
+  ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] s_u = %D | e_u = %D \n", rank, start_u, end_u);CHKERRQ(ierr);
+  ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] s_p = %D | e_p = %D \n", rank, start_p, end_p);CHKERRQ(ierr);
+  ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] is_u (offset) = %D \n", rank, start_u+start_p);CHKERRQ(ierr);
+  ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] is_p (offset) = %D \n", rank, start_u+start_p+lnu);CHKERRQ(ierr);
   ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRQ(ierr);
 
   ierr = ISCreateStride(PETSC_COMM_WORLD,lnu,start_u+start_p,1,&is_u);CHKERRQ(ierr);
@@ -81,16 +80,16 @@ PetscErrorCode LoadTestMatrices(Mat *_A,Vec *_x,Vec *_b,IS *_isu,IS *_isp)
   bis[0]   = is_u; bis[1]   = is_p;
   bA[0][0] = Auu;  bA[0][1] = Aup;
   bA[1][0] = Apu;  bA[1][1] = App;
-  ierr = MatCreateNest(PETSC_COMM_WORLD,2,bis,2,bis,&bA[0][0],&A);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr     = MatCreateNest(PETSC_COMM_WORLD,2,bis,2,bis,&bA[0][0],&A);CHKERRQ(ierr);
+  ierr     = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr     = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   /* Pull f,h into b */
-  ierr = MatGetVecs(A,&b,&x);CHKERRQ(ierr);
+  ierr  = MatGetVecs(A,&b,&x);CHKERRQ(ierr);
   bX[0] = f;  bX[1] = h;
-  ierr = PetscMalloc(sizeof(VecScatter)*2,&vscat);CHKERRQ(ierr);
+  ierr  = PetscMalloc(sizeof(VecScatter)*2,&vscat);CHKERRQ(ierr);
   for (i=0; i<2; i++) {
-    ierr = VecScatterCreate(b,bis[i],bX[i],PETSC_NULL,&vscat[i]);CHKERRQ(ierr);
+    ierr = VecScatterCreate(b,bis[i],bX[i],NULL,&vscat[i]);CHKERRQ(ierr);
     ierr = VecScatterBegin(vscat[i],bX[i],b,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   }
   for (i=0; i<2; i++) {
@@ -111,9 +110,9 @@ PetscErrorCode LoadTestMatrices(Mat *_A,Vec *_x,Vec *_b,IS *_isu,IS *_isp)
 
   *_isu = is_u;
   *_isp = is_p;
-  *_A = A;
-  *_x = x;
-  *_b = b;
+  *_A   = A;
+  *_x   = x;
+  *_b   = b;
   PetscFunctionReturn(0);
 }
 
@@ -129,7 +128,7 @@ PetscErrorCode port_lsd_bfbt(void)
   IS             isu,isp;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = LoadTestMatrices(&A,&x,&b,&isu,&isp);CHKERRQ(ierr);
 
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp_A);CHKERRQ(ierr);
@@ -145,7 +144,7 @@ PetscErrorCode port_lsd_bfbt(void)
   ierr = KSPSetFromOptions(ksp_A);CHKERRQ(ierr);
   ierr = KSPSolve(ksp_A,b,x);CHKERRQ(ierr);
 
-    /* Pull u,p out of x */
+  /* Pull u,p out of x */
   {
     PetscInt    loc;
     PetscReal   max,norm;
@@ -158,15 +157,15 @@ PetscErrorCode port_lsd_bfbt(void)
     ierr = MatGetSubMatrix(A,isu,isu,MAT_INITIAL_MATRIX,&A11);CHKERRQ(ierr);
     ierr = MatGetSubMatrix(A,isp,isp,MAT_INITIAL_MATRIX,&A22);CHKERRQ(ierr);
 
-    ierr = MatGetVecs(A11,&uvec,PETSC_NULL);CHKERRQ(ierr);
-    ierr = MatGetVecs(A22,&pvec,PETSC_NULL);CHKERRQ(ierr);
+    ierr = MatGetVecs(A11,&uvec,NULL);CHKERRQ(ierr);
+    ierr = MatGetVecs(A22,&pvec,NULL);CHKERRQ(ierr);
 
     /* perform the scatter from x -> (u,p) */
-    ierr = VecScatterCreate(x,isu,uvec,PETSC_NULL,&uscat);CHKERRQ(ierr);
+    ierr = VecScatterCreate(x,isu,uvec,NULL,&uscat);CHKERRQ(ierr);
     ierr = VecScatterBegin(uscat,x,uvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterEnd(uscat,x,uvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
 
-    ierr = VecScatterCreate(x,isp,pvec,PETSC_NULL,&pscat);CHKERRQ(ierr);
+    ierr = VecScatterCreate(x,isp,pvec,NULL,&pscat);CHKERRQ(ierr);
     ierr = VecScatterBegin(pscat,x,pvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterEnd(pscat,x,pvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
 
@@ -224,7 +223,7 @@ int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc,&argv,0,PETSC_NULL);
+  ierr = PetscInitialize(&argc,&argv,0,help);
   ierr = port_lsd_bfbt();CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;

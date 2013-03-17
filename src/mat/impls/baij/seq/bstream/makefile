@@ -1,14 +1,12 @@
 ALL: lib
 
-CFLAGS   = 
+CFLAGS   =
 FFLAGS   =
 SOURCEC  = bstream.c bstrmfact.c
-SOURCEF  = 
-SOURCEH  = 
-OBJSC    = bstream.o bstrmfact.o
-OBJSF    = 
+SOURCEF  =
+SOURCEH  =
 LIBBASE  = libpetscmat
-DIRS     = 
+DIRS     =
 MANSEC   = Mat
 LOCDIR   = src/mat/impls/baij/seq/bstream/
 

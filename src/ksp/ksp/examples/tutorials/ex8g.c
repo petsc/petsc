@@ -16,20 +16,20 @@ General useful options:\n\
 \n";
 
 /*
-   Note:  This example focuses on setting the subdomains for the GASM 
+   Note:  This example focuses on setting the subdomains for the GASM
    preconditioner for a problem on a 2D rectangular grid.  See ex1.c
    and ex2.c for more detailed comments on the basic usage of KSP
    (including working with matrices and vectors).
 
    The GASM preconditioner is fully parallel.  The user-space routine
-   CreateSubdomains2D that computes the domain decomposition is also parallel 
-   and attempts to generate both subdomains straddling processors and multiple 
+   CreateSubdomains2D that computes the domain decomposition is also parallel
+   and attempts to generate both subdomains straddling processors and multiple
    domains per processor.
 
 
    This matrix in this linear system arises from the discretized Laplacian,
    and thus is not very interesting in terms of experimenting with variants
-   of the GASM preconditioner.  
+   of the GASM preconditioner.
 */
 
 /*T
@@ -37,7 +37,7 @@ General useful options:\n\
    Processors: n
 T*/
 
-/* 
+/*
   Include "petscksp.h" so that we can use KSP solvers.  Note that this file
   automatically includes:
      petscsys.h       - base PETSc routines   petscvec.h - vectors
@@ -66,34 +66,34 @@ int main(int argc,char **args)
   PetscErrorCode ierr;
   PetscMPIInt    size;
   PetscBool      flg;
-  PetscBool      user_set_subdomains = PETSC_FALSE;     
+  PetscBool      user_set_subdomains = PETSC_FALSE;
   PetscScalar    v, one = 1.0;
   PetscReal      e;
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-M",&m,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-N",&n,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-user_set_subdomains",&user_set_subdomains,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-Mdomains",&M,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-Ndomains",&N,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-overlap",&overlap,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-M",&m,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-N",&n,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-user_set_subdomains",&user_set_subdomains,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-Mdomains",&M,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-Ndomains",&N,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-overlap",&overlap,NULL);CHKERRQ(ierr);
 
   /* -------------------------------------------------------------------
          Compute the matrix and right-hand-side vector that define
          the linear system, Ax = b.
      ------------------------------------------------------------------- */
 
-  /* 
-     Assemble the matrix for the five point stencil, YET AGAIN 
+  /*
+     Assemble the matrix for the five point stencil, YET AGAIN
   */
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n);CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
   ierr = MatSetUp(A);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(A,&Istart,&Iend);CHKERRQ(ierr);
-  for (Ii=Istart; Ii<Iend; Ii++) { 
-    v = -1.0; i = Ii/n; j = Ii - i*n;  
+  for (Ii=Istart; Ii<Iend; Ii++) {
+    v = -1.0; i = Ii/n; j = Ii - i*n;
     if (i>0)   {J = Ii - n; ierr = MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
     if (i<m-1) {J = Ii + n; ierr = MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
     if (j>0)   {J = Ii - 1; ierr = MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
@@ -103,8 +103,8 @@ int main(int argc,char **args)
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  /* 
-     Create and set vectors 
+  /*
+     Create and set vectors
   */
   ierr = VecCreate(PETSC_COMM_WORLD,&b);CHKERRQ(ierr);
   ierr = VecSetSizes(b,PETSC_DECIDE,m*n);CHKERRQ(ierr);
@@ -114,18 +114,18 @@ int main(int argc,char **args)
   ierr = VecSet(u,one);CHKERRQ(ierr);
   ierr = MatMult(A,u,b);CHKERRQ(ierr);
 
-  /* 
-     Create linear solver context 
+  /*
+     Create linear solver context
   */
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
 
-  /* 
+  /*
      Set operators. Here the matrix that defines the linear system
      also serves as the preconditioning matrix.
   */
   ierr = KSPSetOperators(ksp,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
 
-  /* 
+  /*
      Set the default preconditioner for this program to be GASM
   */
   ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
@@ -135,13 +135,13 @@ int main(int argc,char **args)
                   Define the problem decomposition
      ------------------------------------------------------------------- */
 
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
        Basic method, should be sufficient for the needs of many users.
-     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
      Set the overlap, using the default PETSc decomposition via
          PCGASMSetOverlap(pc,overlap);
-     Could instead use the option -pc_gasm_overlap <ovl> 
+     Could instead use the option -pc_gasm_overlap <ovl>
 
      Set the total number of blocks via -pc_gasm_blocks <blks>
      Note:  The GASM default is to use 1 block per processor.  To
@@ -149,14 +149,14 @@ int main(int argc,char **args)
      must specify use of multiple blocks!
   */
 
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
        More advanced method, setting user-defined subdomains
-     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
      Firstly, create index sets that define the subdomains.  The utility
      routine PCGASMCreateSubdomains2D() is a simple example, which partitions
-     the 2D grid into MxN subdomains with an optional overlap.  
-     More generally, the user should write a custom routine for a particular 
+     the 2D grid into MxN subdomains with an optional overlap.
+     More generally, the user should write a custom routine for a particular
      problem geometry.
 
      Then call PCGASMSetLocalSubdomains() with resulting index sets
@@ -168,20 +168,20 @@ int main(int argc,char **args)
   } else { /* advanced version */
     ierr = PCGASMCreateSubdomains2D(pc, m,n,M,N,1,overlap,&Nsub,&inneris,&outeris);CHKERRQ(ierr);
     ierr = PCGASMSetSubdomains(pc,Nsub,inneris,outeris);CHKERRQ(ierr);
-    flg = PETSC_FALSE;
-    ierr = PetscOptionsGetBool(PETSC_NULL,"-subdomain_view",&flg,PETSC_NULL);CHKERRQ(ierr);
-    if (flg){
+    flg  = PETSC_FALSE;
+    ierr = PetscOptionsGetBool(NULL,"-subdomain_view",&flg,NULL);CHKERRQ(ierr);
+    if (flg) {
       printf("Nmesh points: %d x %d; subdomain partition: %d x %d; overlap: %d; Nsub: %d\n",m,n,M,N,overlap,Nsub);
       printf("Outer IS:\n");
-      for (i=0; i<Nsub; i++){
+      for (i=0; i<Nsub; i++) {
         printf("  outer IS[%d]\n",i);
         ierr = ISView(outeris[i],PETSC_VIEWER_STDOUT_SELF);
       }
       printf("Inner IS:\n");
-      for (i=0; i<Nsub; i++){
+      for (i=0; i<Nsub; i++) {
         printf("  inner IS[%d]\n",i);
         ierr = ISView(inneris[i],PETSC_VIEWER_STDOUT_SELF);
-      }  
+      }
     }
   }
 
@@ -189,18 +189,18 @@ int main(int argc,char **args)
                 Set the linear solvers for the subblocks
      ------------------------------------------------------------------- */
 
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
        Basic method, should be sufficient for the needs of most users.
-     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
      By default, the GASM preconditioner uses the same solver on each
      block of the problem.  To set the same solver options on all blocks,
      use the prefix -sub before the usual PC and KSP options, e.g.,
           -sub_pc_type <pc> -sub_ksp_type <ksp> -sub_ksp_rtol 1.e-4
 
-     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         Advanced method, setting different solvers for various blocks.
-     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
      Note that each block's KSP context is completely independent of
      the others, and the full range of uniprocessor KSP options is
@@ -214,27 +214,27 @@ int main(int argc,char **args)
   */
 
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-user_set_subdomain_solvers",&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-user_set_subdomain_solvers",&flg,NULL);CHKERRQ(ierr);
   if (flg) {
-    KSP        *subksp;       /* array of KSP contexts for local subblocks */
-    PetscInt   nlocal,first;  /* number of local subblocks, first local subblock */
-    PC         subpc;          /* PC context for subblock */
-    PetscBool  isasm;
+    KSP       *subksp;        /* array of KSP contexts for local subblocks */
+    PetscInt  nlocal,first;   /* number of local subblocks, first local subblock */
+    PC        subpc;          /* PC context for subblock */
+    PetscBool isasm;
 
     ierr = PetscPrintf(PETSC_COMM_WORLD,"User explicitly sets subdomain solvers.\n");CHKERRQ(ierr);
 
-    /* 
+    /*
        Set runtime options
     */
     ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
 
-    /* 
+    /*
        Flag an error if PCTYPE is changed from the runtime options
      */
     ierr = PetscObjectTypeCompare((PetscObject)pc,PCGASM,&isasm);CHKERRQ(ierr);
     if (!isasm) SETERRQ(PETSC_COMM_WORLD,1,"Cannot Change the PCTYPE when manually changing the subdomain solver settings");
 
-    /* 
+    /*
        Call KSPSetUp() to set the block Jacobi data structures (including
        creation of an internal KSP context for each block).
 
@@ -249,7 +249,7 @@ int main(int argc,char **args)
 
     /*
        Loop over the local blocks, setting various KSP options
-       for each block.  
+       for each block.
     */
     for (i=0; i<nlocal; i++) {
       ierr = KSPGetPC(subksp[i],&subpc);CHKERRQ(ierr);
@@ -258,7 +258,7 @@ int main(int argc,char **args)
       ierr = KSPSetTolerances(subksp[i],1.e-7,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
     }
   } else {
-    /* 
+    /*
        Set runtime options
     */
     ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
@@ -273,22 +273,22 @@ int main(int argc,char **args)
   /* -------------------------------------------------------------------
                       Compare result to the exact solution
      ------------------------------------------------------------------- */
-  ierr = VecAXPY(x,-1.0,u); CHKERRQ(ierr);
-  ierr = VecNorm(x,NORM_INFINITY, &e); CHKERRQ(ierr);
+  ierr = VecAXPY(x,-1.0,u);CHKERRQ(ierr);
+  ierr = VecNorm(x,NORM_INFINITY, &e);CHKERRQ(ierr);
 
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-print_error",&flg,PETSC_NULL);CHKERRQ(ierr);
-  if(flg) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD, "Infinity norm of the error: %G\n", e); CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-print_error",&flg,NULL);CHKERRQ(ierr);
+  if (flg) {
+    ierr = PetscPrintf(PETSC_COMM_WORLD, "Infinity norm of the error: %G\n", e);CHKERRQ(ierr);
   }
 
-  /* 
+  /*
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
   */
 
   if (user_set_subdomains) {
-    ierr = PCGASMDestroySubdomains(Nsub, inneris, outeris); CHKERRQ(ierr);
+    ierr = PCGASMDestroySubdomains(Nsub, inneris, outeris);CHKERRQ(ierr);
   }
   ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
   ierr = VecDestroy(&u);CHKERRQ(ierr);

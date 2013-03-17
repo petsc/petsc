@@ -47,14 +47,14 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
   options->components  = 3;
 
   ierr = PetscOptionsBegin(comm, "", "Options for the Sieve package tests", "Sieve");CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-debug", "Debugging flag", "distTests", options->debug, &options->debug, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-section", "Run Section tests", "distTests", options->section, &options->section, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-isection", "Run ISection tests", "distTests", options->isection, &options->isection, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-partition", "Run Partition tests", "distTests", options->partition, &options->partition, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-num", "Number of each class to create", "distTests", options->number, &options->number, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-numCells", "Number of mesh cells", "distTests", options->numCells, &options->numCells, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-interpolate", "Interpolate the flag", "distTests", options->interpolate, &options->interpolate, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-components", "Number of section components", "distTests", options->components, &options->components, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-debug", "Debugging flag", "distTests", options->debug, &options->debug, NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-section", "Run Section tests", "distTests", options->section, &options->section, NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-isection", "Run ISection tests", "distTests", options->isection, &options->isection, NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-partition", "Run Partition tests", "distTests", options->partition, &options->partition, NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-num", "Number of each class to create", "distTests", options->number, &options->number, NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-numCells", "Number of mesh cells", "distTests", options->numCells, &options->numCells, NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-interpolate", "Interpolate the flag", "distTests", options->interpolate, &options->interpolate, NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-components", "Number of section components", "distTests", options->components, &options->components, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
 
   options->comm = comm;
@@ -215,7 +215,7 @@ PetscErrorCode SectionTest(const Options *options)
   Obj<section>           serialSection   = new section(options->comm, options->debug);
   Obj<section>           parallelSection = new section(options->comm, options->debug);
   section::value_type   *value;
-  
+
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

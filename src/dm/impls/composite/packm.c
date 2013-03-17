@@ -1,9 +1,9 @@
 
 #include <../src/dm/impls/composite/packimpl.h>       /*I  "petscdmcomposite.h"  I*/
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMCreateMatrix_Composite_Nest"
-static PetscErrorCode DMCreateMatrix_Composite_Nest(DM dm,const MatType mtype,Mat *J)
+static PetscErrorCode DMCreateMatrix_Composite_Nest(DM dm,MatType mtype,Mat *J)
 {
   const DM_Composite           *com = (DM_Composite*)dm->data;
   const struct DMCompositeLink *rlink,*clink;
@@ -23,15 +23,15 @@ static PetscErrorCode DMCreateMatrix_Composite_Nest(DM dm,const MatType mtype,Ma
   ierr = PetscMalloc(n*n*sizeof(Mat),&submats);CHKERRQ(ierr);
   for (i=0,rlink=com->next; rlink; i++,rlink=rlink->next) {
     for (j=0,clink=com->next; clink; j++,clink=clink->next) {
-      Mat sub = PETSC_NULL;
+      Mat sub = NULL;
       if (i == j) {
-        ierr = DMCreateMatrix(rlink->dm,PETSC_NULL,&sub);CHKERRQ(ierr);
-      } else if (com->FormCoupleLocations) SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_SUP,"Cannot manage off-diagonal parts yet");
+        ierr = DMCreateMatrix(rlink->dm,NULL,&sub);CHKERRQ(ierr);
+      } else if (com->FormCoupleLocations) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Cannot manage off-diagonal parts yet");
       submats[i*n+j] = sub;
     }
   }
 
-  ierr = MatCreateNest(((PetscObject)dm)->comm,n,isg,n,isg,submats,J);CHKERRQ(ierr);
+  ierr = MatCreateNest(PetscObjectComm((PetscObject)dm),n,isg,n,isg,submats,J);CHKERRQ(ierr);
 
   /* Disown references */
   for (i=0; i<n; i++) {ierr = ISDestroy(&isg[i]);CHKERRQ(ierr);}
@@ -44,37 +44,37 @@ static PetscErrorCode DMCreateMatrix_Composite_Nest(DM dm,const MatType mtype,Ma
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMCreateMatrix_Composite_AIJ"
-static PetscErrorCode DMCreateMatrix_Composite_AIJ(DM dm,const MatType mtype,Mat *J)
+static PetscErrorCode DMCreateMatrix_Composite_AIJ(DM dm,MatType mtype,Mat *J)
 {
   PetscErrorCode         ierr;
   DM_Composite           *com = (DM_Composite*)dm->data;
-  struct DMCompositeLink *next = com->next;
+  struct DMCompositeLink *next;
   PetscInt               m,*dnz,*onz,i,j,mA;
   Mat                    Atmp;
   PetscMPIInt            rank;
-  PetscBool              dense = PETSC_FALSE; 
+  PetscBool              dense = PETSC_FALSE;
 
   PetscFunctionBegin;
   /* use global vector to determine layout needed for matrix */
   m = com->n;
 
-  ierr = MatCreate(((PetscObject)dm)->comm,J);CHKERRQ(ierr);
+  ierr = MatCreate(PetscObjectComm((PetscObject)dm),J);CHKERRQ(ierr);
   ierr = MatSetSizes(*J,m,m,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = MatSetType(*J,mtype);CHKERRQ(ierr);
 
   /*
      Extremely inefficient but will compute entire Jacobian for testing
   */
-  ierr = PetscOptionsGetBool(((PetscObject)dm)->prefix,"-dmcomposite_dense_jacobian",&dense,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(((PetscObject)dm)->prefix,"-dmcomposite_dense_jacobian",&dense,NULL);CHKERRQ(ierr);
   if (dense) {
     PetscInt    rstart,rend,*indices;
     PetscScalar *values;
 
-    mA    = com->N;
-    ierr = MatMPIAIJSetPreallocation(*J,mA,PETSC_NULL,mA-m,PETSC_NULL);CHKERRQ(ierr);
-    ierr = MatSeqAIJSetPreallocation(*J,mA,PETSC_NULL);CHKERRQ(ierr);
+    mA   = com->N;
+    ierr = MatMPIAIJSetPreallocation(*J,mA,NULL,mA-m,NULL);CHKERRQ(ierr);
+    ierr = MatSeqAIJSetPreallocation(*J,mA,NULL);CHKERRQ(ierr);
 
     ierr = MatGetOwnershipRange(*J,&rstart,&rend);CHKERRQ(ierr);
     ierr = PetscMalloc2(mA,PetscScalar,&values,mA,PetscInt,&indices);CHKERRQ(ierr);
@@ -89,8 +89,8 @@ static PetscErrorCode DMCreateMatrix_Composite_AIJ(DM dm,const MatType mtype,Mat
     PetscFunctionReturn(0);
   }
 
-  ierr = MPI_Comm_rank(((PetscObject)dm)->comm,&rank);CHKERRQ(ierr);
-  ierr = MatPreallocateInitialize(((PetscObject)dm)->comm,m,m,dnz,onz);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm),&rank);CHKERRQ(ierr);
+  ierr = MatPreallocateInitialize(PetscObjectComm((PetscObject)dm),m,m,dnz,onz);CHKERRQ(ierr);
   /* loop over packed objects, handling one at at time */
   next = com->next;
   while (next) {
@@ -99,19 +99,19 @@ static PetscErrorCode DMCreateMatrix_Composite_AIJ(DM dm,const MatType mtype,Mat
     PetscMPIInt    proc;
 
     ierr = DMCreateMatrix(next->dm,mtype,&Atmp);CHKERRQ(ierr);
-    ierr = MatGetOwnershipRange(Atmp,&rstart,PETSC_NULL);CHKERRQ(ierr);
+    ierr = MatGetOwnershipRange(Atmp,&rstart,NULL);CHKERRQ(ierr);
     ierr = MatGetOwnershipRanges(Atmp,&rstarts);CHKERRQ(ierr);
-    ierr = MatGetLocalSize(Atmp,&mA,PETSC_NULL);CHKERRQ(ierr);
+    ierr = MatGetLocalSize(Atmp,&mA,NULL);CHKERRQ(ierr);
 
     maxnc = 0;
     for (i=0; i<mA; i++) {
-      ierr  = MatGetRow(Atmp,rstart+i,&nc,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-      ierr  = MatRestoreRow(Atmp,rstart+i,&nc,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+      ierr  = MatGetRow(Atmp,rstart+i,&nc,NULL,NULL);CHKERRQ(ierr);
+      ierr  = MatRestoreRow(Atmp,rstart+i,&nc,NULL,NULL);CHKERRQ(ierr);
       maxnc = PetscMax(nc,maxnc);
     }
     ierr = PetscMalloc(maxnc*sizeof(PetscInt),&ccols);CHKERRQ(ierr);
     for (i=0; i<mA; i++) {
-      ierr = MatGetRow(Atmp,rstart+i,&nc,&cols,PETSC_NULL);CHKERRQ(ierr);
+      ierr = MatGetRow(Atmp,rstart+i,&nc,&cols,NULL);CHKERRQ(ierr);
       /* remap the columns taking into how much they are shifted on each process */
       for (j=0; j<nc; j++) {
         proc = 0;
@@ -119,14 +119,14 @@ static PetscErrorCode DMCreateMatrix_Composite_AIJ(DM dm,const MatType mtype,Mat
         ccols[j] = cols[j] + next->grstarts[proc] - rstarts[proc];
       }
       ierr = MatPreallocateSet(com->rstart+next->rstart+i,nc,ccols,dnz,onz);CHKERRQ(ierr);
-      ierr = MatRestoreRow(Atmp,rstart+i,&nc,&cols,PETSC_NULL);CHKERRQ(ierr);
+      ierr = MatRestoreRow(Atmp,rstart+i,&nc,&cols,NULL);CHKERRQ(ierr);
     }
     ierr = PetscFree(ccols);CHKERRQ(ierr);
     ierr = MatDestroy(&Atmp);CHKERRQ(ierr);
     next = next->next;
   }
   if (com->FormCoupleLocations) {
-    ierr = (*com->FormCoupleLocations)(dm,PETSC_NULL,dnz,onz,__rstart,__nrows,__start,__end);CHKERRQ(ierr);
+    ierr = (*com->FormCoupleLocations)(dm,NULL,dnz,onz,__rstart,__nrows,__start,__end);CHKERRQ(ierr);
   }
   ierr = MatMPIAIJSetPreallocation(*J,0,dnz,0,onz);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(*J,0,dnz);CHKERRQ(ierr);
@@ -141,19 +141,19 @@ static PetscErrorCode DMCreateMatrix_Composite_AIJ(DM dm,const MatType mtype,Mat
     const PetscScalar *values;
     PetscMPIInt       proc;
 
-    ierr = DMCreateMatrix(next->dm,mtype,&Atmp);CHKERRQ(ierr);
-    ierr = MatGetOwnershipRange(Atmp,&rstart,PETSC_NULL);CHKERRQ(ierr);
-    ierr = MatGetOwnershipRanges(Atmp,&rstarts);CHKERRQ(ierr);
-    ierr = MatGetLocalSize(Atmp,&mA,PETSC_NULL);CHKERRQ(ierr);
+    ierr  = DMCreateMatrix(next->dm,mtype,&Atmp);CHKERRQ(ierr);
+    ierr  = MatGetOwnershipRange(Atmp,&rstart,NULL);CHKERRQ(ierr);
+    ierr  = MatGetOwnershipRanges(Atmp,&rstarts);CHKERRQ(ierr);
+    ierr  = MatGetLocalSize(Atmp,&mA,NULL);CHKERRQ(ierr);
     maxnc = 0;
     for (i=0; i<mA; i++) {
-      ierr  = MatGetRow(Atmp,rstart+i,&nc,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-      ierr  = MatRestoreRow(Atmp,rstart+i,&nc,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+      ierr  = MatGetRow(Atmp,rstart+i,&nc,NULL,NULL);CHKERRQ(ierr);
+      ierr  = MatRestoreRow(Atmp,rstart+i,&nc,NULL,NULL);CHKERRQ(ierr);
       maxnc = PetscMax(nc,maxnc);
     }
     ierr = PetscMalloc(maxnc*sizeof(PetscInt),&ccols);CHKERRQ(ierr);
     for (i=0; i<mA; i++) {
-      ierr = MatGetRow(Atmp,rstart+i,&nc,(const PetscInt **)&cols,&values);CHKERRQ(ierr);
+      ierr = MatGetRow(Atmp,rstart+i,&nc,(const PetscInt**)&cols,&values);CHKERRQ(ierr);
       for (j=0; j<nc; j++) {
         proc = 0;
         while (cols[j] >= rstarts[proc+1]) proc++;
@@ -161,7 +161,7 @@ static PetscErrorCode DMCreateMatrix_Composite_AIJ(DM dm,const MatType mtype,Mat
       }
       row  = com->rstart+next->rstart+i;
       ierr = MatSetValues(*J,1,&row,nc,ccols,values,INSERT_VALUES);CHKERRQ(ierr);
-      ierr = MatRestoreRow(Atmp,rstart+i,&nc,(const PetscInt **)&cols,&values);CHKERRQ(ierr);
+      ierr = MatRestoreRow(Atmp,rstart+i,&nc,(const PetscInt**)&cols,&values);CHKERRQ(ierr);
     }
     ierr = PetscFree(ccols);CHKERRQ(ierr);
     ierr = MatDestroy(&Atmp);CHKERRQ(ierr);
@@ -169,17 +169,17 @@ static PetscErrorCode DMCreateMatrix_Composite_AIJ(DM dm,const MatType mtype,Mat
   }
   if (com->FormCoupleLocations) {
     PetscInt __rstart;
-    ierr = MatGetOwnershipRange(*J,&__rstart,PETSC_NULL);CHKERRQ(ierr);
-    ierr = (*com->FormCoupleLocations)(dm,*J,PETSC_NULL,PETSC_NULL,__rstart,0,0,0);CHKERRQ(ierr);
+    ierr = MatGetOwnershipRange(*J,&__rstart,NULL);CHKERRQ(ierr);
+    ierr = (*com->FormCoupleLocations)(dm,*J,NULL,NULL,__rstart,0,0,0);CHKERRQ(ierr);
   }
   ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMCreateMatrix_Composite"
-PetscErrorCode DMCreateMatrix_Composite(DM dm,const MatType mtype,Mat *J)
+PetscErrorCode DMCreateMatrix_Composite(DM dm,MatType mtype,Mat *J)
 {
   PetscErrorCode         ierr;
   PetscBool              usenest;
@@ -191,7 +191,7 @@ PetscErrorCode DMCreateMatrix_Composite(DM dm,const MatType mtype,Mat *J)
   if (usenest) {
     ierr = DMCreateMatrix_Composite_Nest(dm,mtype,J);CHKERRQ(ierr);
   } else {
-    ierr = DMCreateMatrix_Composite_AIJ(dm,mtype?mtype:MATAIJ,J);CHKERRQ(ierr);
+    ierr = DMCreateMatrix_Composite_AIJ(dm,mtype ? mtype : MATAIJ,J);CHKERRQ(ierr);
   }
 
   ierr = DMGetLocalToGlobalMapping(dm,&ltogmap);CHKERRQ(ierr);

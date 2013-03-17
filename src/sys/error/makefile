@@ -1,14 +1,12 @@
 
-ALL: lib 
+ALL: lib
 
 CFLAGS    =
 FFLAGS    =
-CPPFLAGS  = 
+CPPFLAGS  =
 SOURCEC	  = adebug.c err.c errtrace.c errabort.c errstop.c fp.c signal.c pstack.c
 SOURCEF	  =
-SOURCEH	  = ../../../include/petscerror.h 
-OBJSC	  = ${SOURCEC:.c=.o}
-OBJSF	  =
+SOURCEH	  = ../../../include/petscerror.h
 MANSEC	  = Sys
 LIBBASE	  = libpetscsys
 DIRS	  = examples

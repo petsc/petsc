@@ -1,13 +1,11 @@
 #requirespackage 'PETSC_HAVE_TXPETSCGPU'
 ALL: lib
 
-CFLAGS   = 
+CFLAGS   =
 FFLAGS   =
 SOURCECU = mpiaijcusparse.cu
 SOURCEF	 =
 SOURCEH	 = mpicusparsematimpl.h
-OBJSCU	 = mpiaijcusparse.o
-OBJSF	 =
 LIBBASE	 = libpetscmat
 DIRS	 =
 MANSEC	 = Mat

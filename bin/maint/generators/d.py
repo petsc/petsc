@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #!/bin/env python
-# $Id: adprocess.py,v 1.12 2001/08/24 18:26:15 bsmith Exp $ 
+# $Id: adprocess.py,v 1.12 2001/08/24 18:26:15 bsmith Exp $
 #
 # change python to whatever is needed on your system to invoke python
 #
@@ -8,7 +8,7 @@
 #
 #  Crude as all hack!
 #
-#  Calling sequence: 
+#  Calling sequence:
 #      d.py
 ##
 import os
@@ -23,8 +23,8 @@ def main(args):
   file = open('classes.data')
   enums   = pickle.load(file)
   senums  = pickle.load(file)
-  structs = pickle.load(file)    
-  aliases = pickle.load(file)  
+  structs = pickle.load(file)
+  aliases = pickle.load(file)
   classes = pickle.load(file)
   outfile = open('petsc.d','w')
 
@@ -36,7 +36,7 @@ def main(args):
     outfile.write("alias char* "+i+"; \n")
 #    for j in senums[i]:
 #      outfile.write("alias "+senums[i][j]+" "+j+"; \n")
-  
+
   for i in enums:
     outfile.write("enum "+i+"\n")
     outfile.write("{\n")
@@ -46,7 +46,7 @@ def main(args):
       cnt = cnt + 1
       if not cnt == len(enums[i]): outfile.write(",")
       outfile.write("\n")
-    outfile.write("};\n")      
+    outfile.write("};\n")
   outfile.write("\n")
 
   for i in structs:
@@ -54,7 +54,7 @@ def main(args):
     outfile.write("{\n")
     for j in structs[i]:
       outfile.write("    "+j+";\n")
-    outfile.write("};\n")      
+    outfile.write("};\n")
   outfile.write("\n")
 
   for i in classes:
@@ -69,12 +69,12 @@ def main(args):
           if cnt < len(classes[i][j])-1: outfile.write(",")
         cnt = cnt + 1
       outfile.write("){return 0;};\n")
-    outfile.write("}\n")        
-  
-    
+    outfile.write("}\n")
+
+
 #
 # The classes in this file can also be used in other python-programs by using 'import'
 #
-if __name__ ==  '__main__': 
+if __name__ ==  '__main__':
   main(sys.argv[1:])
 

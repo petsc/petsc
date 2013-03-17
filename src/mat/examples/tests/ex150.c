@@ -8,20 +8,20 @@ extern PetscErrorCode InputTransformFFT(Mat,Vec,Vec);
 extern PetscErrorCode OutputTransformFFT(Mat,Vec,Vec);
 PetscInt main(PetscInt argc,char **args)
 {
-  PetscErrorCode  ierr;
-  PetscMPIInt     rank,size;
-  PetscInt        N0=3,N1=3,N2=3,N3=3,N4=3,N=N0*N1*N2*N3;
-  PetscRandom     rdm;
-  PetscReal       enorm;
-  Vec             x,y,z,input,output;
-  Mat             A;
-  PetscInt        DIM, dim[5],vsize;
-  PetscReal       fac;
-  PetscScalar     one=1;
+  PetscErrorCode ierr;
+  PetscMPIInt    rank,size;
+  PetscInt       N0=3,N1=3,N2=3,N3=3,N4=3,N=N0*N1*N2*N3;
+  PetscRandom    rdm;
+  PetscReal      enorm;
+  Vec            x,y,z,input,output;
+  Mat            A;
+  PetscInt       DIM, dim[5],vsize;
+  PetscReal      fac;
+  PetscScalar    one=1;
 
-  ierr = PetscInitialize(&argc,&args,(char *)0,help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);CHKERRQ(ierr);
 #if defined(PETSC_USE_COMPLEX)
- SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP, "This example requires real numbers");
+  SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP, "This example requires real numbers");
 #endif
 
   ierr = MPI_Comm_size(PETSC_COMM_WORLD, &size);CHKERRQ(ierr);
@@ -35,15 +35,15 @@ PetscInt main(PetscInt argc,char **args)
   ierr = VecSetRandom(input,rdm);CHKERRQ(ierr);
   ierr = VecAssemblyBegin(input);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(input);CHKERRQ(ierr);
-//  ierr = VecView(input,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+/*  ierr = VecView(input,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
   ierr = VecDuplicate(input,&output);
 
-  DIM = 4;
+  DIM    = 4;
   dim[0] = N0; dim[1] = N1; dim[2] = N2; dim[3] = N3; dim[4] = N4;
 
   ierr = MatCreateFFT(PETSC_COMM_WORLD,DIM,dim,MATFFTW,&A);CHKERRQ(ierr);
   ierr = MatGetVecs(A,&x,&y);CHKERRQ(ierr);
-  ierr = MatGetVecs(A,&z,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatGetVecs(A,&z,NULL);CHKERRQ(ierr);
   ierr = VecGetSize(x,&vsize);CHKERRQ(ierr);
   printf("The vector size from the main routine is %d\n",vsize);
 
@@ -59,7 +59,7 @@ PetscInt main(PetscInt argc,char **args)
 
   ierr = OutputTransformFFT(A,z,output);CHKERRQ(ierr);
 
-  fac = 1.0/(PetscReal)N;
+  fac  = 1.0/(PetscReal)N;
   ierr = VecScale(output,fac);CHKERRQ(ierr);
 
   ierr = VecAssemblyBegin(input);CHKERRQ(ierr);
@@ -72,19 +72,20 @@ PetscInt main(PetscInt argc,char **args)
 
   ierr = VecAXPY(output,-1.0,input);CHKERRQ(ierr);
   ierr = VecNorm(output,NORM_1,&enorm);CHKERRQ(ierr);
-//  if (enorm > 1.e-14){
-    if (!rank)
-      ierr = PetscPrintf(PETSC_COMM_SELF,"  Error norm of |x - z| %e\n",enorm);CHKERRQ(ierr);
-//      }
+/*  if (enorm > 1.e-14) { */
+  if (!rank) {
+    ierr = PetscPrintf(PETSC_COMM_SELF,"  Error norm of |x - z| %e\n",enorm);CHKERRQ(ierr);
+  } 
+/*      } */
 
 
-    
- 
-// ierr = MatGetVecs(A,&z,PETSC_NULL);CHKERRQ(ierr);
-//  printf("Vector size from ex148 %d\n",vsize);
-//  ierr = PetscObjectSetName((PetscObject) x, "Real space vector");CHKERRQ(ierr);
-//      ierr = PetscObjectSetName((PetscObject) y, "Frequency space vector");CHKERRQ(ierr);
-//      ierr = PetscObjectSetName((PetscObject) z, "Reconstructed vector");CHKERRQ(ierr);
+
+
+/* ierr = MatGetVecs(A,&z,NULL);CHKERRQ(ierr); */
+/*  printf("Vector size from ex148 %d\n",vsize); */
+/*  ierr = PetscObjectSetName((PetscObject) x, "Real space vector");CHKERRQ(ierr); */
+/*      ierr = PetscObjectSetName((PetscObject) y, "Frequency space vector");CHKERRQ(ierr); */
+/*      ierr = PetscObjectSetName((PetscObject) z, "Reconstructed vector");CHKERRQ(ierr); */
 
   ierr = VecDestroy(&output);CHKERRQ(ierr);
   ierr = VecDestroy(&input);CHKERRQ(ierr);

@@ -14,7 +14,7 @@ typedef struct {
   PetscBool  generate;
 } Options;
 
-#undef  __FUNCT__ 
+#undef  __FUNCT__
 #define __FUNCT__ "ProcessOptions"
 
 PetscErrorCode ProcessOptions(MPI_Comm comm, Options * options) {
@@ -27,13 +27,13 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options * options) {
   options->useZeroBase = PETSC_FALSE;
   options->flips = 100000000;
   ierr = PetscStrcpy(options->baseFilename, "data/flip_test");CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-generate", "generates a basic mesh for testing.", "mesh_surgery.cxx", options->generate, &options->generate, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-generate", "generates a basic mesh for testing.", "mesh_surgery.cxx", options->generate, &options->generate, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBegin(comm, "", "Options:", "mesh_surgery.cxx");CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-dim", "The Mesh Dimension", "mesh_surgery.cxx", options->dim, &options->dim, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-use_zero_base", "Use zero-base feature indexing", "mesh_surgery.cxx", options->useZeroBase, &options->useZeroBase, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-flips", "the number of flips to perform", "mesh_surgery.cxx", options->flips, &options->flips, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-dolfin", "The mesh is a dolfin mesh", "mesh_surgery.cxx", options->dolfin, &options->dolfin, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsString("-base_filename", "the base filename of the mesh used", "mesh_surgery.cxx", options->baseFilename, options->baseFilename, 2048, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-dim", "The Mesh Dimension", "mesh_surgery.cxx", options->dim, &options->dim, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-use_zero_base", "Use zero-base feature indexing", "mesh_surgery.cxx", options->useZeroBase, &options->useZeroBase, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-flips", "the number of flips to perform", "mesh_surgery.cxx", options->flips, &options->flips, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-dolfin", "The mesh is a dolfin mesh", "mesh_surgery.cxx", options->dolfin, &options->dolfin, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsString("-base_filename", "the base filename of the mesh used", "mesh_surgery.cxx", options->baseFilename, options->baseFilename, 2048, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -68,9 +68,9 @@ int main (int argc, char * argv[]) {
         refinementLimit = 0.01;
         bound_m = ALE::MeshBuilder::createCubeBoundary(PETSC_COMM_WORLD, upper_coords, lower_coords, faces);
       }
-      
+
       m = ALE::Generator::refineMesh(ALE::Generator::generateMesh(bound_m, PETSC_FALSE), refinementLimit, PETSC_FALSE);
-      
+
     }
 
     MeshCreate(comm, &mesh);CHKERRQ(ierr);
@@ -80,7 +80,7 @@ int main (int argc, char * argv[]) {
     ALE::Obj<ALE::Mesh::label_sequence> vertices = m->depthStratum(0);
     ALE::Obj<ALE::Mesh::label_type> boundary = m->getLabel("marker");
     ALE::Mesh::label_sequence::iterator v_iter = vertices->begin();
-    ALE::Mesh::label_sequence::iterator v_iter_end = vertices->end(); 
+    ALE::Mesh::label_sequence::iterator v_iter_end = vertices->end();
     ALE::Mesh::sieve_type::supportSet int_vertices = ALE::Mesh::sieve_type::supportSet();
     //calculate maxIndex
     ALE::Mesh::point_type maxIndex = -1;
@@ -97,7 +97,7 @@ int main (int argc, char * argv[]) {
       }
       v_iter++;
     }
- 
+
     ALE::Mesh::sieve_type::supportSet::iterator iv_iter = int_vertices.begin();
     ALE::Mesh::sieve_type::supportSet::iterator iv_iter_end = int_vertices.end();
     PetscPrintf(m->comm(), "Size of the mesh: %d vertices, %d faces\n", m->depthStratum(0)->size(), m->heightStratum(0)->size());

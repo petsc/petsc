@@ -19,7 +19,7 @@
        two   = 2.0
        three = 3.0
 
-       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)                  
+       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
        call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-n',n,flg,ierr)
 
 ! Create a vector, then duplicate it
@@ -58,4 +58,4 @@
        call PetscFinalize(ierr)
        end
 
- 
+

@@ -7,8 +7,8 @@ static PetscErrorCode FormIFunction(TS,PetscReal,Vec,Vec,Vec,void*);
 static PetscErrorCode MonitorObjective(TS,PetscInt,PetscReal,Vec,void*);
 
 typedef struct {
-  PetscInt   n;
-  PetscBool  monitor_short;
+  PetscInt  n;
+  PetscBool monitor_short;
 } Ctx;
 
 #undef __FUNCT__
@@ -25,14 +25,16 @@ int main(int argc,char **argv)
   PetscBool      view_final;
   Ctx            ctx;
 
-  PetscInitialize(&argc,&argv,(char *)0,help);
+  PetscInitialize(&argc,&argv,(char*)0,help);
   ctx.n = 3;
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&ctx.n,PETSC_NULL);CHKERRQ(ierr);
+  ierr  = PetscOptionsGetInt(NULL,"-n",&ctx.n,NULL);CHKERRQ(ierr);
   if (ctx.n < 2) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"The dimension specified with -n must be at least 2");
+
   view_final = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-view_final",&view_final,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-view_final",&view_final,NULL);CHKERRQ(ierr);
+
   ctx.monitor_short = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-monitor_short",&ctx.monitor_short,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-monitor_short",&ctx.monitor_short,NULL);CHKERRQ(ierr);
 
   /*
      Create Jacobian matrix data structure and state vector
@@ -40,16 +42,17 @@ int main(int argc,char **argv)
   ierr = MatCreate(PETSC_COMM_WORLD,&J);CHKERRQ(ierr);
   ierr = MatSetSizes(J,PETSC_DECIDE,PETSC_DECIDE,ctx.n,ctx.n);CHKERRQ(ierr);
   ierr = MatSetFromOptions(J);CHKERRQ(ierr);
-  ierr = MatGetVecs(J,&X,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatSetUp(J);CHKERRQ(ierr);
+  ierr = MatGetVecs(J,&X,NULL);CHKERRQ(ierr);
 
   /* Create time integration context */
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
   ierr = TSSetType(ts,TSPSEUDO);CHKERRQ(ierr);
-  ierr = TSSetIFunction(ts,PETSC_NULL,FormIFunction,&ctx);CHKERRQ(ierr);
+  ierr = TSSetIFunction(ts,NULL,FormIFunction,&ctx);CHKERRQ(ierr);
   ierr = TSSetIJacobian(ts,J,J,FormIJacobian,&ctx);CHKERRQ(ierr);
   ierr = TSSetDuration(ts,1000,1e14);CHKERRQ(ierr);
   ierr = TSSetInitialTimeStep(ts,0.0,1e-3);CHKERRQ(ierr);
-  ierr = TSMonitorSet(ts,MonitorObjective,&ctx,PETSC_NULL);CHKERRQ(ierr);
+  ierr = TSMonitorSet(ts,MonitorObjective,&ctx,NULL);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Customize time integrator; set runtime options
@@ -72,7 +75,8 @@ int main(int argc,char **argv)
 #endif
   ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
 
-  ierr = TSSolve(ts,X,&ftime);CHKERRQ(ierr);
+  ierr = TSSolve(ts,X);CHKERRQ(ierr);
+  ierr = TSGetSolveTime(ts,&ftime);CHKERRQ(ierr);
   ierr = TSGetTimeStepNumber(ts,&steps);CHKERRQ(ierr);
   ierr = TSGetSNESIterations(ts,&nits);CHKERRQ(ierr);
   ierr = TSGetKSPIterations(ts,&lits);CHKERRQ(ierr);
@@ -93,7 +97,7 @@ int main(int argc,char **argv)
   return 0;
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MonitorObjective"
 static PetscErrorCode MonitorObjective(TS ts,PetscInt step,PetscReal t,Vec X,void *ictx)
 {
@@ -106,13 +110,11 @@ static PetscErrorCode MonitorObjective(TS ts,PetscInt step,PetscReal t,Vec X,voi
   SNES              snes;
   Vec               Xdot,F;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   /* Compute objective functional */
   ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
-  f = 0;
-  for (i=0; i<ctx->n-1; i++) {
-    f += PetscSqr(1. - x[i]) + 100. * PetscSqr(x[i+1] - PetscSqr(x[i]));
-  }
+  f    = 0;
+  for (i=0; i<ctx->n-1; i++) f += PetscSqr(1. - x[i]) + 100. * PetscSqr(x[i+1] - PetscSqr(x[i]));
   ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
 
   /* Compute norm of gradient */
@@ -155,13 +157,13 @@ static PetscErrorCode MonitorObjective(TS ts,PetscInt step,PetscReal t,Vec X,voi
  */
 static PetscErrorCode FormIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ictx)
 {
-  PetscErrorCode ierr;
+  PetscErrorCode    ierr;
   const PetscScalar *x;
-  PetscScalar *f;
-  PetscInt       i;
-  Ctx            *ctx = (Ctx*)ictx;
+  PetscScalar       *f;
+  PetscInt          i;
+  Ctx               *ctx = (Ctx*)ictx;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   /*
     Get pointers to vector data.
     - For default PETSc vectors, VecGetArray() returns a pointer to
@@ -176,9 +178,9 @@ static PetscErrorCode FormIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void 
   /* Compute gradient of objective */
   for (i=0; i<ctx->n-1; i++) {
     PetscScalar a,a0,a1;
-    a  = x[i+1] - PetscSqr(x[i]);
-    a0 = -2.*x[i];
-    a1 = 1.;
+    a       = x[i+1] - PetscSqr(x[i]);
+    a0      = -2.*x[i];
+    a1      = 1.;
     f[i]   += -2.*(1. - x[i]) + 200.*a*a0;
     f[i+1] += 200.*a*a1;
   }
@@ -210,11 +212,11 @@ static PetscErrorCode FormIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void 
 static PetscErrorCode FormIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal shift,Mat *J,Mat *B,MatStructure *flag,void *ictx)
 {
   const PetscScalar *x;
-  PetscErrorCode ierr;
-  PetscInt       i;
-  Ctx            *ctx = (Ctx*)ictx;
+  PetscErrorCode    ierr;
+  PetscInt          i;
+  Ctx               *ctx = (Ctx*)ictx;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = MatZeroEntries(*B);CHKERRQ(ierr);
   /*
      Get pointer to vector data
@@ -225,22 +227,22 @@ static PetscErrorCode FormIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal s
      Compute Jacobian entries and insert into matrix.
   */
   for (i=0; i<ctx->n-1; i++) {
-    PetscInt rowcol[2];
+    PetscInt    rowcol[2];
     PetscScalar v[2][2],a,a0,a1,a00,a01,a10,a11;
     rowcol[0] = i;
     rowcol[1] = i+1;
-    a  = x[i+1] - PetscSqr(x[i]);
-    a0 = -2.*x[i];
-    a00 = -2.;
-    a01 = 0.;
-    a1 = 1.;
-    a10 = 0.;
-    a11 = 0.;
-    v[0][0] = 2. + 200.*(a*a00 + a0*a0);
-    v[0][1] = 200.*(a*a01 + a1*a0);
-    v[1][0] = 200.*(a*a10 + a0*a1);
-    v[1][1] = 200.*(a*a11 + a1*a1);
-    ierr = MatSetValues(*B,2,rowcol,2,rowcol,&v[0][0],ADD_VALUES);CHKERRQ(ierr);
+    a         = x[i+1] - PetscSqr(x[i]);
+    a0        = -2.*x[i];
+    a00       = -2.;
+    a01       = 0.;
+    a1        = 1.;
+    a10       = 0.;
+    a11       = 0.;
+    v[0][0]   = 2. + 200.*(a*a00 + a0*a0);
+    v[0][1]   = 200.*(a*a01 + a1*a0);
+    v[1][0]   = 200.*(a*a10 + a0*a1);
+    v[1][1]   = 200.*(a*a11 + a1*a1);
+    ierr      = MatSetValues(*B,2,rowcol,2,rowcol,&v[0][0],ADD_VALUES);CHKERRQ(ierr);
   }
   for (i=0; i<ctx->n; i++) {
     ierr = MatSetValue(*B,i,i,(PetscScalar)shift,ADD_VALUES);CHKERRQ(ierr);
@@ -253,7 +255,7 @@ static PetscErrorCode FormIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal s
   */
   ierr = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  if (*J != *B){
+  if (*J != *B) {
     ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }

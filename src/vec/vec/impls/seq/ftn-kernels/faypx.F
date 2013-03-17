@@ -16,5 +16,5 @@
         y(i) = x(i) + a*y(i)
  10   continue
 
-      return 
+      return
       end

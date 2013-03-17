@@ -1,5 +1,6 @@
 
-#include "finclude/petscdef.h"
+#include "finclude/petscsysdef.h"
+
       Subroutine PetscOptionsGetEnum(pre,name,FArray,opt,set,ierr)
       use,intrinsic :: iso_c_binding
       implicit none
@@ -34,5 +35,5 @@
       call PetscOptionsGetEnumPrivate(pre,name,CArray,opt,set,ierr)
       DeAllocate(CArray)
       DeAllocate(list1)
-      End Subroutine 
+      End Subroutine
 

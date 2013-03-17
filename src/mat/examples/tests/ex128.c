@@ -26,12 +26,12 @@ int main(int argc,char **args)
   PetscRandom    rdm;
   PetscMPIInt    size;
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size != 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"This is a uniprocessor example only!");
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-lf",&lf,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-m",&m,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-n",&n,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-lf",&lf,NULL);CHKERRQ(ierr);
 
   ierr = MatCreate(PETSC_COMM_SELF,&C);CHKERRQ(ierr);
   ierr = MatSetSizes(C,m*n,m*n,m*n,m*n);CHKERRQ(ierr);
@@ -69,50 +69,53 @@ int main(int argc,char **args)
 
   /* Compute CHOLESKY or ICC factor sA */
   ierr = MatFactorInfoInitialize(&info);CHKERRQ(ierr);
+
   info.fill          = 1.0;
   info.diagonal_fill = 0;
   info.zeropivot     = 0.0;
-  ierr = PetscOptionsHasName(PETSC_NULL,"-cholesky",&CHOLESKY);CHKERRQ(ierr);
-  if (CHOLESKY){ 
+
+  ierr = PetscOptionsHasName(NULL,"-cholesky",&CHOLESKY);CHKERRQ(ierr);
+  if (CHOLESKY) {
     printf("Test CHOLESKY...\n");
     ierr = MatGetFactor(sC,MATSOLVERPETSC,MAT_FACTOR_CHOLESKY,&sA);CHKERRQ(ierr);
     ierr = MatCholeskyFactorSymbolic(sA,sC,row,&info);CHKERRQ(ierr);
   } else {
     printf("Test ICC...\n");
     info.levels = lf;
+
     ierr = MatGetFactor(sC,MATSOLVERPETSC,MAT_FACTOR_ICC,&sA);CHKERRQ(ierr);
     ierr = MatICCFactorSymbolic(sA,sC,row,&info);CHKERRQ(ierr);
   }
   ierr = MatCholeskyFactorNumeric(sA,sC,&info);CHKERRQ(ierr);
 
   /* test MatForwardSolve() and MatBackwardSolve() with matrix reordering on aij matrix C */
-  if (CHOLESKY){
-    ierr = PetscOptionsHasName(PETSC_NULL,"-triangular_solve",&TRIANGULAR);CHKERRQ(ierr);
-    if (TRIANGULAR){
+  if (CHOLESKY) {
+    ierr = PetscOptionsHasName(NULL,"-triangular_solve",&TRIANGULAR);CHKERRQ(ierr);
+    if (TRIANGULAR) {
       printf("Test MatForwardSolve...\n");
       ierr = MatForwardSolve(sA,b,ytmp);CHKERRQ(ierr);
       printf("Test MatBackwardSolve...\n");
-      ierr = MatBackwardSolve(sA,ytmp,y);CHKERRQ(ierr);      
+      ierr = MatBackwardSolve(sA,ytmp,y);CHKERRQ(ierr);
       ierr = VecAXPY(y,-1.0,x);CHKERRQ(ierr);
       ierr = VecNorm(y,NORM_2,&norm2);CHKERRQ(ierr);
-      if (norm2 > 1.e-14){
-        ierr = PetscPrintf(PETSC_COMM_SELF,"MatForwardSolve and BackwardSolve: Norm of error=%G\n",norm2);CHKERRQ(ierr); 
+      if (norm2 > 1.e-14) {
+        ierr = PetscPrintf(PETSC_COMM_SELF,"MatForwardSolve and BackwardSolve: Norm of error=%G\n",norm2);CHKERRQ(ierr);
       }
     }
-  } 
+  }
 
   ierr = MatSolve(sA,b,y);CHKERRQ(ierr);
   ierr = MatDestroy(&sC);CHKERRQ(ierr);
   ierr = MatDestroy(&sA);CHKERRQ(ierr);
   ierr = VecAXPY(y,-1.0,x);CHKERRQ(ierr);
   ierr = VecNorm(y,NORM_2,&norm2);CHKERRQ(ierr);
-  if (lf == -1 && norm2 > 1.e-14){
+  if (lf == -1 && norm2 > 1.e-14) {
     PetscPrintf(PETSC_COMM_SELF, " reordered SEQAIJ:   Cholesky/ICC levels %d, residual %g\n",lf,norm2);CHKERRQ(ierr);
   }
- 
+
   /* Free data structures */
   ierr = MatDestroy(&C);CHKERRQ(ierr);
- ierr = ISDestroy(&row);CHKERRQ(ierr);
+  ierr = ISDestroy(&row);CHKERRQ(ierr);
   ierr = ISDestroy(&col);CHKERRQ(ierr);
   ierr = PetscRandomDestroy(&rdm);CHKERRQ(ierr);
   ierr = VecDestroy(&x);CHKERRQ(ierr);

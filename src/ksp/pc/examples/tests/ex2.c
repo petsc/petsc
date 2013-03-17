@@ -3,7 +3,6 @@ static char help[] = "Tests PC and KSP on a tridiagonal matrix.  Note that most\
 users should employ the KSP interface instead of using PC directly.\n\n";
 
 #include <petscksp.h>
-#include <stdio.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -16,11 +15,11 @@ int main(int argc,char **args)
   PetscErrorCode ierr;
   PetscInt       n = 10,i,its,col[3];
   PetscScalar    value[3];
-  const PCType   pcname;
-  const KSPType  kspname;
+  PCType         pcname;
+  KSPType        kspname;
   PetscReal      norm,tol=1.e-14;
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
 
   /* Create and initialize vectors */
   ierr = VecCreateSeq(PETSC_COMM_SELF,n,&b);CHKERRQ(ierr);
@@ -30,15 +29,15 @@ int main(int argc,char **args)
   ierr = VecSet(u,0.0);CHKERRQ(ierr);
 
   /* Create and assemble matrix */
-  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,n,n,3,PETSC_NULL,&mat);CHKERRQ(ierr);
+  ierr     = MatCreateSeqAIJ(PETSC_COMM_SELF,n,n,3,NULL,&mat);CHKERRQ(ierr);
   value[0] = -1.0; value[1] = 2.0; value[2] = -1.0;
   for (i=1; i<n-1; i++) {
     col[0] = i-1; col[1] = i; col[2] = i+1;
-    ierr = MatSetValues(mat,1,&i,3,col,value,INSERT_VALUES);CHKERRQ(ierr);
+    ierr   = MatSetValues(mat,1,&i,3,col,value,INSERT_VALUES);CHKERRQ(ierr);
   }
-  i = n - 1; col[0] = n - 2; col[1] = n - 1;
+  i    = n - 1; col[0] = n - 2; col[1] = n - 1;
   ierr = MatSetValues(mat,1,&i,2,col,value,INSERT_VALUES);CHKERRQ(ierr);
-  i = 0; col[0] = 0; col[1] = 1; value[0] = 2.0; value[1] = -1.0;
+  i    = 0; col[0] = 0; col[1] = 1; value[0] = 2.0; value[1] = -1.0;
   ierr = MatSetValues(mat,1,&i,2,col,value,INSERT_VALUES);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -69,8 +68,8 @@ int main(int argc,char **args)
   ierr = VecAXPY(u,-1.0,ustar);CHKERRQ(ierr);
   ierr = VecNorm(u,NORM_2,&norm);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
-  if (norm > tol){
-    ierr = PetscPrintf(PETSC_COMM_SELF,"2 norm of error %G Number of iterations %D\n",norm,its);
+  if (norm > tol) {
+    ierr = PetscPrintf(PETSC_COMM_SELF,"2 norm of error %G Number of iterations %D\n",norm,its);CHKERRQ(ierr);
   }
 
   /* Free data structures */
@@ -84,6 +83,6 @@ int main(int argc,char **args)
   ierr = PetscFinalize();
   return 0;
 }
-    
+
 
 

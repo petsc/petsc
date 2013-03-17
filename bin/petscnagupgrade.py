@@ -21,7 +21,7 @@ def currentversion(petscdir):
     minorversion = int(re.compile(' PETSC_VERSION_MINOR[ ]*([0-9]*)').search(pv).group(1))
     patchversion = int(re.compile(' PETSC_VERSION_PATCH[ ]*([0-9]*)').search(pv).group(1))
   except:
-    return 
+    return
   version=str(majorversion)+'.'+str(minorversion)+'.'+str(patchversion)
   try:
     import urllib
@@ -32,7 +32,7 @@ def currentversion(petscdir):
     aminorversion = int(re.compile(' PETSC_VERSION_MINOR[ ]*([0-9]*)').search(pv).group(1))
     apatchversion = int(re.compile(' PETSC_VERSION_PATCH[ ]*([0-9]*)').search(pv).group(1))
   except:
-    return 
+    return
   aversion = str(amajorversion)+'.'+str(aminorversion)+'.'+str(apatchversion)
   if (amajorversion > majorversion) or ((amajorversion ==  majorversion) and (aminorversion > minorversion)) or \
   ((amajorversion ==  majorversion) and (aminorversion == minorversion) and (apatchversion > patchversion)):
@@ -50,8 +50,13 @@ def currentversion(petscdir):
   return 0
 #
 #
-if __name__ ==  '__main__': 
-  petscdir = os.environ['PETSC_DIR']
+if __name__ ==  '__main__':
+  if 'PETSC_DIR' in os.environ:
+    petscdir = os.environ['PETSC_DIR']
+  elif os.path.exists(os.path.join('.', 'include', 'petscversion.h')):
+    petscdir  = '.'
+  else:
+    sys.exit(0)
   file     = os.path.join(petscdir,'.nagged')
   if not naggedtoday(file):
     currentversion(petscdir)

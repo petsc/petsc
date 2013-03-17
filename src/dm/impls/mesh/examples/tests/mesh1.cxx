@@ -33,11 +33,11 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
   options->refinementLimit = 0.0;
 
   ierr = PetscOptionsBegin(comm, "", "Options for Mesh test", "Mesh");CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-debug", "The debugging level", "mesh1.cxx", options->debug, &options->debug, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-test", "The testing level", "mesh1.cxx", options->test, &options->test, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-dim",   "The topological mesh dimension", "mesh1.cxx", options->dim, &options->dim, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-interpolate", "Construct missing elements of the mesh", "mesh1.cxx", options->interpolate, &options->interpolate, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-refinement_limit", "The largest allowable cell volume", "mesh1.cxx", options->refinementLimit, &options->refinementLimit, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-debug", "The debugging level", "mesh1.cxx", options->debug, &options->debug, NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-test", "The testing level", "mesh1.cxx", options->test, &options->test, NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-dim",   "The topological mesh dimension", "mesh1.cxx", options->dim, &options->dim, NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-interpolate", "Construct missing elements of the mesh", "mesh1.cxx", options->interpolate, &options->interpolate, NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-refinement_limit", "The largest allowable cell volume", "mesh1.cxx", options->refinementLimit, &options->refinementLimit, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
   PetscFunctionReturn(0);
 }

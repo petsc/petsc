@@ -2,11 +2,11 @@
 CFLAGS	        =
 FFLAGS	        =
 CPPFLAGS        =
-FPPFLAGS        =	 
+FPPFLAGS        =
 LOCDIR          = src/snes/examples/tests/
-EXAMPLESC       = ex1.c ex4.c ex5.c ex7.c ex8.c ex9.c ex10.c ex11.c ex13.c ex15.c ex16.c ex17.c
+EXAMPLESC       = ex1.c ex5.c ex7.c ex8.c ex10.c ex11.c ex15.c ex16.c ex17.c ex68.c
 EXAMPLESF       = ex1f.F ex12f.F ex14f.F
-DIRS	        = 
+DIRS	        =
 MANSEC          = SNES
 
 include ${PETSC_DIR}/conf/variables
@@ -84,6 +84,10 @@ ex17: ex17.o chkopts
 	-${CLINKER} -o ex17 ex17.o ${PETSC_SNES_LIB}
 	${RM} ex17.o
 
+ex68: ex68.o chkopts
+	-${CLINKER} -o ex68 ex68.o ${PETSC_SNES_LIB}
+	${RM} ex68.o
+
 #--------------------------------------------------------------------------
 runex1:
 	-@${MPIEXEC} -n 1 ./ex1 -ksp_gmres_cgs_refinement_type refine_always > ex1_1.tmp 2>&1;	 \
@@ -91,18 +95,17 @@ runex1:
 	   else echo ${PWD} ; echo "Possible problem with with ex1_1, diffs above \n========================================="; fi; \
 	   ${RM} -f ex1_1.tmp
 runex1_2:
-	-@${MPIEXEC} -n 1 ./ex1 -snes_monitor_short -snes_type tr -ksp_gmres_cgs_refinement_type refine_always > ex1_2.tmp 2>&1;\
+	-@${MPIEXEC} -n 1 ./ex1 -snes_monitor_short -snes_type newtontr -ksp_gmres_cgs_refinement_type refine_always > ex1_2.tmp 2>&1;\
 	   if (${DIFF} output/ex1_2.out ex1_2.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex1_2, diffs above \n========================================="; fi; \
 	   ${RM} -f ex1_2.tmp
 runex1_3:
-	-@${MPIEXEC} -n 1 ./ex1 -snes_monitor_short -mat_coloring_type sl  -snes_fd_coloring -mx 8 -my 11 \
-                -ksp_gmres_cgs_refinement_type refine_always > ex1_3.tmp 2>&1;\
+	-@${MPIEXEC} -n 1 ./ex1 -snes_monitor_short -mat_coloring_type sl  -snes_fd_coloring -mx 8 -my 11 -ksp_gmres_cgs_refinement_type refine_always > ex1_3.tmp 2>&1;\
 	   if (${DIFF} output/ex1_3.out ex1_3.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex1_3, diffs above \n========================================="; fi; \
 	   ${RM} -f ex1_3.tmp
 runex1f:
-	-@${MPIEXEC} -n 1 ./ex1f -snes_monitor_short -nox -snes_type tr -ksp_gmres_cgs_refinement_type refine_always > ex1f_1.tmp 2>&1;\
+	-@${MPIEXEC} -n 1 ./ex1f -snes_monitor_short -nox -snes_type newtontr -ksp_gmres_cgs_refinement_type refine_always > ex1f_1.tmp 2>&1;\
 	   if (${DIFF} output/ex1f_1.out ex1f_1.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex1f_1, diffs above \n========================================="; fi; \
 	   ${RM} -f ex1f_1.tmp
@@ -128,21 +131,11 @@ runex3:
 	   else echo ${PWD} ; echo "Possible problem with with ex3_1, diffs above \n========================================="; fi; \
 	   ${RM} -f ex3_1.tmp
 runex3_2:
-	-@${MPIEXEC} -n 1 ./ex3 -ksp_gmres_cgs_refinement_type refine_always -nox -snes_monitor_short -snes_type tr -snes_view \
+	-@${MPIEXEC} -n 1 ./ex3 -ksp_gmres_cgs_refinement_type refine_always -nox -snes_monitor_short -snes_type newtontr -snes_view \
 		-pc_type jacobi > ex3_2.tmp 2>&1; \
 	   if (${DIFF} output/ex3_2.out ex3_2.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex3_2, diffs above \n========================================="; fi; \
 	   ${RM} -f ex3_2.tmp
-runex4:
-	-@${MPIEXEC} -n 1 ./ex4 -ksp_gmres_cgs_refinement_type refine_always -nox > ex4_1.tmp 2>&1;	 \
-	   if (${DIFF} output/ex4_1.out ex4_1.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex4_1, diffs above \n========================================="; fi; \
-	   ${RM} -f ex4_1.tmp
-runex4_2:
-	-@${MPIEXEC} -n 1 ./ex4 -ksp_gmres_cgs_refinement_type refine_always -snes_monitor_short -nox -snes_type tr > ex4_2.tmp 2>&1;\
-	   if (${DIFF} output/ex4_2.out ex4_2.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex4_2, diffs above \n========================================="; fi; \
-	   ${RM} -f ex4_2.tmp
 runex5:
 	-@${MPIEXEC} -n 1 ./ex5 -ksp_gmres_cgs_refinement_type refine_always -snes_monitor_short > ex5_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex5_1.out ex5_1.tmp) then true; \
@@ -212,22 +205,6 @@ runex8_2:
 	   else echo ${PWD} ; echo "Possible problem with with ex8_2, diffs above \n========================================="; fi; \
 	   ${RM} -f ex8_2.tmp
 
-runex9:
-	-@${MPIEXEC} -n 2 ./ex9 -ksp_gmres_cgs_refinement_type refine_always -snes_monitor_short  > ex9_1.tmp 2>&1;	  \
-	   if (${DIFF} output/ex9_1.out ex9_1.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex9_1, diffs above \n========================================="; fi; \
-	   ${RM} -f ex9_1.tmp
-
-runex9_2:
-	-@${MPIEXEC} -n 8 ./ex9 -ksp_gmres_cgs_refinement_type refine_always -snes_monitor_short  > ex9_2.tmp 2>&1;	  \
-	   if (${DIFF} output/ex9_1.out ex9_2.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex9_1, diffs above \n========================================="; fi; \
-	   ${RM} -f ex9_2.tmp
-runex9_3:
-	-@${MPIEXEC} -n 8 ./ex9 -ksp_gmres_cgs_refinement_type refine_always -star -snes_monitor_short  > ex9_3.tmp 2>&1;	\
-	   if (${DIFF} output/ex9_1.out ex9_3.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex9_1, diffs above \n========================================="; fi; \
-	   ${RM} -f ex9_3.tmp
 runex12f:
 	-@${MPIEXEC} -n 2 ./ex12f -ksp_gmres_cgs_refinement_type refine_always -n 10 -snes_monitor_short  > ex12_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex12_1.out ex12_1.tmp) then true; \
@@ -245,14 +222,12 @@ runex17:
 	   ${RM} -f ex17_1.tmp
 
 #
-#  runex9_2 and runex9_3 are not included in RUNEXAMPLES_2 because 
-# they require too many processors
-#
-TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex11.PETSc ex11.rm ex17.PETSc runex17 ex17.rm
-TESTEXAMPLES_C_X	       = ex7.PETSc runex7 runex7_2 ex7.rm ex9.PETSc runex9 ex9.rm ex13.PETSc ex13.rm
+
+TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex11.PETSc ex11.rm ex17.PETSc runex17 ex17.rm ex68.PETSc ex68.rm
+TESTEXAMPLES_C_X	       = ex7.PETSc runex7 runex7_2 ex7.rm
 TESTEXAMPLES_FORTRAN	       = ex12f.PETSc runex12f ex12f.rm  ex1f.PETSc runex1f_2 runex1f_3 ex1f.rm
-TESTEXAMPLES_C_X_MPIUNI      = ex7.PETSc ex7.rm ex9.PETSc ex9.rm ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm 
-TESTEXAMPLES_FORTRAN_NOCOMPLEX = 
+TESTEXAMPLES_C_X_MPIUNI        = ex7.PETSc ex7.rm ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm
+TESTEXAMPLES_FORTRAN_NOCOMPLEX =
 TESTEXAMPLES_FORTRAN_MPIUNI    = ex1f.PETSc runex1f ex1f.rm
 
 

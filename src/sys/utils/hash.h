@@ -1,10 +1,10 @@
-#ifndef _HASH_H
+#if !defined(_HASH_H)
 #define _HASH_H
 
-/* 
- This code is adapted from the khash library, version 0.2.4. 
+/*
+ This code is adapted from the khash library, version 0.2.4.
  It has been modified to fit into PETSc.
- Original copyright notice follows. 
+ Original copyright notice follows.
 */
 
 /* The MIT License
@@ -37,21 +37,22 @@
 
 #include "khash.h"
 KHASH_MAP_INIT_INT(32, char)
-int main() {
-	int ret, is_missing;
-	khiter_t k;
-	khash_t(32) *h = kh_init(32);
-	k = kh_put(32, h, 5, &ret);
-	if (!ret) kh_del(32, h, k);
-	kh_value(h, k) = 10;
-	k = kh_get(32, h, 10);
-	is_missing = (k == kh_end(h));
-	k = kh_get(32, h, 5);
-	kh_del(32, h, k);
-	for (k = kh_begin(h); k != kh_end(h); ++k)
-		if (kh_exist(h, k)) kh_value(h, k) = 1;
-	kh_destroy(32, h);
-	return 0;
+int main()
+{
+        int ret, is_missing;
+        khiter_t k;
+        khash_t(32) *h = kh_init(32);
+        k = kh_put(32, h, 5, &ret);
+        if (!ret) kh_del(32, h, k);
+        kh_value(h, k) = 10;
+        k = kh_get(32, h, 10);
+        is_missing = (k == kh_end(h));
+        k = kh_get(32, h, 5);
+        kh_del(32, h, k);
+        for (k = kh_begin(h); k != kh_end(h); ++k)
+                if (kh_exist(h, k)) kh_value(h, k) = 1;
+        kh_destroy(32, h);
+        return 0;
 }
 */
 
@@ -62,29 +63,29 @@ int main() {
 
   2008-09-19 (0.2.3):
 
-	* Corrected the example
-	* Improved interfaces
+        * Corrected the example
+        * Improved interfaces
 
   2008-09-11 (0.2.2):
 
-	* Improved speed a little in kh_put()
+        * Improved speed a little in kh_put()
 
   2008-09-10 (0.2.1):
 
-	* Added kh_clear()
-	* Fixed a compiling error
+        * Added kh_clear()
+        * Fixed a compiling error
 
   2008-09-02 (0.2.0):
 
-	* Changed to token concatenation which increases flexibility.
+        * Changed to token concatenation which increases flexibility.
 
   2008-08-31 (0.1.2):
 
-	* Fixed a bug in kh_get(), which has not been tested previously.
+        * Fixed a bug in kh_get(), which has not been tested previously.
 
   2008-08-31 (0.1.1):
 
-	* Added destructor
+        * Added destructor
 */
 
 
@@ -97,11 +98,7 @@ int main() {
  */
 
 
-#include <stdlib.h>
-#include <string.h>
-#include <limits.h>
-
-#include <petscsys.h>
+#include <petsc-private/petscimpl.h>
 
 /* compiler-specific configuration */
 #if UINT_MAX == 0xffffffffu
@@ -145,150 +142,150 @@ static const khint_t __ac_prime_list[__ac_HASH_PRIME_SIZE] =
 
 static const double __ac_HASH_UPPER = 0.77;
 
-#define KHASH_INIT(name, khkey_t, khval_t, kh_is_map, __hash_func, __hash_equal) \
-	typedef struct {													\
-		khint_t n_buckets, size, n_occupied, upper_bound;				\
-		khint32_t *flags;												\
-		khkey_t *keys;													\
-		khval_t *vals;													\
-	} kh_##name##_t;													\
-	PETSC_STATIC_INLINE kh_##name##_t *kh_init_##name() {						\
-		return (kh_##name##_t*)calloc(1, sizeof(kh_##name##_t));		\
-	}																	\
-	PETSC_STATIC_INLINE void kh_destroy_##name(kh_##name##_t *h)				\
-	{																	\
-		if (h) {														\
-			free(h->keys); free(h->flags);								\
-			free(h->vals);												\
-			free(h);													\
-		}																\
-	}																	\
-	PETSC_STATIC_INLINE void kh_clear_##name(kh_##name##_t *h)				\
-	{																	\
-		if (h && h->flags) {											\
-			memset(h->flags, 0xaa, ((h->n_buckets>>4) + 1) * sizeof(khint32_t)); \
-			h->size = h->n_occupied = 0;								\
-		}																\
-	}																	\
-	PETSC_STATIC_INLINE khint_t kh_get_##name(const kh_##name##_t *h, khkey_t key) \
-	{																	\
-		if (h->n_buckets) {												\
-			khint_t inc, k, i, last;									\
-			k = __hash_func(key); i = k % h->n_buckets;					\
-			inc = 1 + k % (h->n_buckets - 1); last = i;					\
-			while (!__ac_isempty(h->flags, i) && (__ac_isdel(h->flags, i) || !__hash_equal(h->keys[i], key))) { \
-				if (i + inc >= h->n_buckets) i = i + inc - h->n_buckets; \
-				else i += inc;											\
-				if (i == last) return h->n_buckets;						\
-			}															\
-			return __ac_iseither(h->flags, i)? h->n_buckets : i;		\
-		} else return 0;												\
-	}																	\
-	PETSC_STATIC_INLINE void kh_resize_##name(kh_##name##_t *h, khint_t new_n_buckets) \
-	{																	\
-		khint32_t *new_flags = 0;										\
-		khint_t j = 1;													\
-		{																\
-			khint_t t = __ac_HASH_PRIME_SIZE - 1;						\
-			while (__ac_prime_list[t] > new_n_buckets) --t;				\
-			new_n_buckets = __ac_prime_list[t+1];						\
-			if (h->size >= (khint_t)(new_n_buckets * __ac_HASH_UPPER + 0.5)) j = 0;	\
-			else {														\
-				new_flags = (khint32_t*)malloc(((new_n_buckets>>4) + 1) * sizeof(khint32_t));	\
-				memset(new_flags, 0xaa, ((new_n_buckets>>4) + 1) * sizeof(khint32_t)); \
-				if (h->n_buckets < new_n_buckets) {						\
-					h->keys = (khkey_t*)realloc(h->keys, new_n_buckets * sizeof(khkey_t)); \
-					if (kh_is_map)										\
-						h->vals = (khval_t*)realloc(h->vals, new_n_buckets * sizeof(khval_t)); \
-				}														\
-			}															\
-		}																\
-		if (j) {														\
-			for (j = 0; j != h->n_buckets; ++j) {						\
-				if (__ac_iseither(h->flags, j) == 0) {					\
-					khkey_t key = h->keys[j];							\
-					khval_t val;										\
-					if (kh_is_map) val = h->vals[j];					\
-					__ac_set_isdel_true(h->flags, j);					\
-					while (1) {											\
-						khint_t inc, k, i;								\
-						k = __hash_func(key);							\
-						i = k % new_n_buckets;							\
-						inc = 1 + k % (new_n_buckets - 1);				\
-						while (!__ac_isempty(new_flags, i)) {			\
-							if (i + inc >= new_n_buckets) i = i + inc - new_n_buckets; \
-							else i += inc;								\
-						}												\
-						__ac_set_isempty_false(new_flags, i);			\
-						if (i < h->n_buckets && __ac_iseither(h->flags, i) == 0) { \
-							{ khkey_t tmp = h->keys[i]; h->keys[i] = key; key = tmp; } \
-							if (kh_is_map) { khval_t tmp = h->vals[i]; h->vals[i] = val; val = tmp; } \
-							__ac_set_isdel_true(h->flags, i);			\
-						} else {										\
-							h->keys[i] = key;							\
-							if (kh_is_map) h->vals[i] = val;			\
-							break;										\
-						}												\
-					}													\
-				}														\
-			}															\
-			if (h->n_buckets > new_n_buckets) {							\
-				h->keys = (khkey_t*)realloc(h->keys, new_n_buckets * sizeof(khkey_t)); \
-				if (kh_is_map)											\
-					h->vals = (khval_t*)realloc(h->vals, new_n_buckets * sizeof(khval_t)); \
-			}															\
-			free(h->flags);												\
-			h->flags = new_flags;										\
-			h->n_buckets = new_n_buckets;								\
-			h->n_occupied = h->size;									\
-			h->upper_bound = (khint_t)(h->n_buckets * __ac_HASH_UPPER + 0.5); \
-		}																\
-	}																	\
-	PETSC_STATIC_INLINE khint_t kh_put_##name(kh_##name##_t *h, khkey_t key, khint_t *ret) \
-	{																	\
-		khint_t x;														\
-		if (h->n_occupied >= h->upper_bound) {							\
-			if (h->n_buckets > (h->size<<1)) kh_resize_##name(h, h->n_buckets - 1); \
-			else kh_resize_##name(h, h->n_buckets + 1);					\
-		}																\
-		{																\
-			khint_t inc, k, i, site, last;								\
-			x = site = h->n_buckets; k = __hash_func(key); i = k % h->n_buckets; \
-			if (__ac_isempty(h->flags, i)) x = i;						\
-			else {														\
-				inc = 1 + k % (h->n_buckets - 1); last = i;				\
-				while (!__ac_isempty(h->flags, i) && (__ac_isdel(h->flags, i) || !__hash_equal(h->keys[i], key))) { \
-					if (__ac_isdel(h->flags, i)) site = i;				\
-					if (i + inc >= h->n_buckets) i = i + inc - h->n_buckets; \
-					else i += inc;										\
-					if (i == last) { x = site; break; }					\
-				}														\
-				if (x == h->n_buckets) {								\
-					if (__ac_isempty(h->flags, i) && site != h->n_buckets) x = site; \
-					else x = i;											\
-				}														\
-			}															\
-		}																\
-		if (__ac_isempty(h->flags, x)) {								\
-			h->keys[x] = key;											\
-			__ac_set_isboth_false(h->flags, x);							\
-			++h->size; ++h->n_occupied;									\
-			*ret = 1;													\
-		} else if (__ac_isdel(h->flags, x)) {							\
-			h->keys[x] = key;											\
-			__ac_set_isboth_false(h->flags, x);							\
-			++h->size;													\
-			*ret = 2;													\
-		} else *ret = 0;												\
-		return x;														\
-	}																	\
-	PETSC_STATIC_INLINE void kh_del_##name(kh_##name##_t *h, khint_t x)		\
-	{																	\
-		if (x != h->n_buckets && !__ac_iseither(h->flags, x)) {			\
-			__ac_set_isdel_true(h->flags, x);							\
-			--h->size;													\
-		}																\
-	}
+#define KHASH_INIT(name, khkey_t, khval_t, kh_is_map, __hash_func, __hash_equal)             \
+        typedef struct {                                                                     \
+                khint_t n_buckets, size, n_occupied, upper_bound;                            \
+                khint32_t *flags;                                                            \
+                khkey_t *keys;                                                               \
+                khval_t *vals;                                                               \
+        } kh_##name##_t;                                                                     \
+        PETSC_STATIC_INLINE kh_##name##_t *kh_init_##name() {                                \
+                return (kh_##name##_t*)calloc(1, sizeof(kh_##name##_t));                     \
+        }                                                                                    \
+        PETSC_STATIC_INLINE void kh_destroy_##name(kh_##name##_t *h)                         \
+        {                                                                                    \
+                if (h) {                                                                     \
+                        free(h->keys); free(h->flags);                                       \
+                        free(h->vals);                                                       \
+                        free(h);                                                             \
+                }                                                                            \
+        }                                                                                    \
+        PETSC_STATIC_INLINE void kh_clear_##name(kh_##name##_t *h)                           \
+        {                                                                                    \
+                if (h && h->flags) {                                                         \
+                        memset(h->flags, 0xaa, ((h->n_buckets>>4) + 1) * sizeof(khint32_t)); \
+                        h->size = h->n_occupied = 0;                                         \
+                }                                                                            \
+        }                                                                                    \
+        PETSC_STATIC_INLINE khint_t kh_get_##name(const kh_##name##_t *h, khkey_t key)       \
+        {                                                                                    \
+                if (h->n_buckets) {                                                          \
+                        khint_t inc, k, i, last;                                             \
+                        k = __hash_func(key); i = k % h->n_buckets;                          \
+                        inc = 1 + k % (h->n_buckets - 1); last = i;                          \
+                        while (!__ac_isempty(h->flags, i) && (__ac_isdel(h->flags, i) || !__hash_equal(h->keys[i], key))) { \
+                                if (i + inc >= h->n_buckets) i = i + inc - h->n_buckets;     \
+                                else i += inc;                                               \
+                                if (i == last) return h->n_buckets;                          \
+                        }                                                                    \
+                        return __ac_iseither(h->flags, i)? h->n_buckets : i;                 \
+                } else return 0;                                                             \
+        }                                                                                    \
+        PETSC_STATIC_INLINE void kh_resize_##name(kh_##name##_t *h, khint_t new_n_buckets)   \
+        {                                                                                    \
+                khint32_t *new_flags = 0;                                                    \
+                khint_t j = 1;                                                               \
+                {                                                                            \
+                        khint_t t = __ac_HASH_PRIME_SIZE - 1;                                \
+                        while (__ac_prime_list[t] > new_n_buckets) --t;                      \
+                        new_n_buckets = __ac_prime_list[t+1];                                \
+                        if (h->size >= (khint_t)(new_n_buckets * __ac_HASH_UPPER + 0.5)) j = 0;   \
+                        else {                                                               \
+                                new_flags = (khint32_t*)malloc(((new_n_buckets>>4) + 1) * sizeof(khint32_t));          \
+                                memset(new_flags, 0xaa, ((new_n_buckets>>4) + 1) * sizeof(khint32_t));                 \
+                                if (h->n_buckets < new_n_buckets) {                                                    \
+                                        h->keys = (khkey_t*)realloc(h->keys, new_n_buckets * sizeof(khkey_t));         \
+                                        if (kh_is_map)                                                                 \
+                                                h->vals = (khval_t*)realloc(h->vals, new_n_buckets * sizeof(khval_t)); \
+                                }                                                            \
+                        }                                                                    \
+                }                                                                            \
+                if (j) {                                                                     \
+                        for (j = 0; j != h->n_buckets; ++j) {                                \
+                                if (__ac_iseither(h->flags, j) == 0) {                       \
+                                        khkey_t key = h->keys[j];                            \
+                                        khval_t val;                                         \
+                                        if (kh_is_map) val = h->vals[j];                     \
+                                        __ac_set_isdel_true(h->flags, j);                    \
+                                        while (1) {                                          \
+                                                khint_t inc, k, i;                           \
+                                                k = __hash_func(key);                        \
+                                                i = k % new_n_buckets;                       \
+                                                inc = 1 + k % (new_n_buckets - 1);           \
+                                                while (!__ac_isempty(new_flags, i)) {        \
+                                                        if (i + inc >= new_n_buckets) i = i + inc - new_n_buckets; \
+                                                        else i += inc;                       \
+                                                }                                            \
+                                                __ac_set_isempty_false(new_flags, i);        \
+                                                if (i < h->n_buckets && __ac_iseither(h->flags, i) == 0) { \
+                                                        { khkey_t tmp = h->keys[i]; h->keys[i] = key; key = tmp; } \
+                                                        if (kh_is_map) { khval_t tmp = h->vals[i]; h->vals[i] = val; val = tmp; } \
+                                                        __ac_set_isdel_true(h->flags, i);    \
+                                                } else {                                     \
+                                                        h->keys[i] = key;                    \
+                                                        if (kh_is_map) h->vals[i] = val;     \
+                                                        break;                               \
+                                                }                                            \
+                                        }                                                    \
+                                }                                                            \
+                        }                                                                    \
+                        if (h->n_buckets > new_n_buckets) {                                  \
+                                h->keys = (khkey_t*)realloc(h->keys, new_n_buckets * sizeof(khkey_t)); \
+                                if (kh_is_map)                                               \
+                                        h->vals = (khval_t*)realloc(h->vals, new_n_buckets * sizeof(khval_t)); \
+                        }                                                                    \
+                        free(h->flags);                                                      \
+                        h->flags = new_flags;                                                \
+                        h->n_buckets = new_n_buckets;                                        \
+                        h->n_occupied = h->size;                                             \
+                        h->upper_bound = (khint_t)(h->n_buckets * __ac_HASH_UPPER + 0.5);    \
+                }                                                                            \
+        }                                                                                    \
+        PETSC_STATIC_INLINE khint_t kh_put_##name(kh_##name##_t *h, khkey_t key, khint_t *ret) \
+        {                                                                                    \
+                khint_t x;                                                                   \
+                if (h->n_occupied >= h->upper_bound) {                                       \
+                        if (h->n_buckets > (h->size<<1)) kh_resize_##name(h, h->n_buckets - 1); \
+                        else kh_resize_##name(h, h->n_buckets + 1);                          \
+                }                                                                            \
+                {                                                                            \
+                        khint_t inc, k, i, site, last;                                       \
+                        x = site = h->n_buckets; k = __hash_func(key); i = k % h->n_buckets; \
+                        if (__ac_isempty(h->flags, i)) x = i;                                \
+                        else {                                                               \
+                                inc = 1 + k % (h->n_buckets - 1); last = i;                  \
+                                while (!__ac_isempty(h->flags, i) && (__ac_isdel(h->flags, i) || !__hash_equal(h->keys[i], key))) { \
+                                        if (__ac_isdel(h->flags, i)) site = i;               \
+                                        if (i + inc >= h->n_buckets) i = i + inc - h->n_buckets; \
+                                        else i += inc;                                       \
+                                        if (i == last) { x = site; break; }                  \
+                                }                                                            \
+                                if (x == h->n_buckets) {                                     \
+                                        if (__ac_isempty(h->flags, i) && site != h->n_buckets) x = site; \
+                                        else x = i;                                          \
+                                }                                                            \
+                        }                                                                    \
+                }                                                                            \
+                if (__ac_isempty(h->flags, x)) {                                             \
+                        h->keys[x] = key;                                                    \
+                        __ac_set_isboth_false(h->flags, x);                                  \
+                        ++h->size; ++h->n_occupied;                                          \
+                        *ret = 1;                                                            \
+                } else if (__ac_isdel(h->flags, x)) {                                        \
+                        h->keys[x] = key;                                                    \
+                        __ac_set_isboth_false(h->flags, x);                                  \
+                        ++h->size;                                                           \
+                        *ret = 2;                                                            \
+                } else *ret = 0;                                                             \
+                return x;                                                                    \
+        }                                                                                    \
+        PETSC_STATIC_INLINE void kh_del_##name(kh_##name##_t *h, khint_t x)                  \
+        {                                                                                    \
+                if (x != h->n_buckets && !__ac_iseither(h->flags, x)) {                      \
+                        __ac_set_isdel_true(h->flags, x);                                    \
+                        --h->size;                                                           \
+                }                                                                            \
+        }
 
 /* --- BEGIN OF HASH FUNCTIONS --- */
 
@@ -319,9 +316,9 @@ static const double __ac_HASH_UPPER = 0.77;
  */
 PETSC_STATIC_INLINE khint_t __ac_X31_hash_string(const char *s)
 {
-	khint_t h = *s;
-	if (h) for (++s ; *s; ++s) h = (h << 5) - h + *s;
-	return h;
+  khint_t h = *s;
+  if (h) for (++s; *s; ++s) h = (h << 5) - h + *s;
+  return h;
 }
 /*! @function
   @abstract     Another interface to const char* hash function
@@ -332,6 +329,9 @@ PETSC_STATIC_INLINE khint_t __ac_X31_hash_string(const char *s)
 /*! @function
   @abstract     Const char* comparison function
  */
+#if defined(PETSC_HAVE_STRING_H)
+#include <string.h>
+#endif
 #define kh_str_hash_equal(a, b) (strcmp(a, b) == 0)
 
 /* --- END OF HASH FUNCTIONS --- */
@@ -380,7 +380,7 @@ PETSC_STATIC_INLINE khint_t __ac_X31_hash_string(const char *s)
   @param  k     Key [type of keys]
   @param  r     Extra return code: 0 if the key is present in the hash table;
                 1 if the bucket is empty (never used); 2 if the element in
-				the bucket has been deleted [int*]
+                the bucket has been deleted [int*]
   @return       Iterator to the inserted element [khint_t]
  */
 #define kh_put(name, h, k, r) kh_put_##name(h, k, r)
@@ -466,42 +466,42 @@ PETSC_STATIC_INLINE khint_t __ac_X31_hash_string(const char *s)
   @abstract     Instantiate a hash set containing integer keys
   @param  name  Name of the hash table [symbol]
  */
-#define KHASH_SET_INIT_INT(name)										\
-	KHASH_INIT(name, khint32_t, char, 0, kh_int_hash_func, kh_int_hash_equal)
+#define KHASH_SET_INIT_INT(name)          \
+        KHASH_INIT(name, khint32_t, char, 0, kh_int_hash_func, kh_int_hash_equal)
 
 /*! @function
   @abstract     Instantiate a hash map containing integer keys
   @param  name  Name of the hash table [symbol]
   @param  khval_t  Type of values [type]
  */
-#define KHASH_MAP_INIT_INT(name, khval_t)								\
-	KHASH_INIT(name, khint32_t, khval_t, 1, kh_int_hash_func, kh_int_hash_equal)
+#define KHASH_MAP_INIT_INT(name, khval_t) \
+        KHASH_INIT(name, khint32_t, khval_t, 1, kh_int_hash_func, kh_int_hash_equal)
 
 /*! @function
   @abstract     Instantiate a hash map containing 64-bit integer keys
   @param  name  Name of the hash table [symbol]
  */
-#define KHASH_SET_INIT_INT64(name)										\
-	KHASH_INIT(name, khint64_t, char, 0, kh_int64_hash_func, kh_int64_hash_equal)
+#define KHASH_SET_INIT_INT64(name)        \
+        KHASH_INIT(name, khint64_t, char, 0, kh_int64_hash_func, kh_int64_hash_equal)
 
 /*! @function
   @abstract     Instantiate a hash map containing 64-bit integer keys
   @param  name  Name of the hash table [symbol]
   @param  khval_t  Type of values [type]
  */
-#define KHASH_MAP_INIT_INT64(name, khval_t)								\
-	KHASH_INIT(name, khint64_t, khval_t, 1, kh_int64_hash_func, kh_int64_hash_equal)
+#define KHASH_MAP_INIT_INT64(name, khval_t)     \
+        KHASH_INIT(name, khint64_t, khval_t, 1, kh_int64_hash_func, kh_int64_hash_equal)
 
-#define KHASH_SET_INIT_STR(name)										\
-	KHASH_INIT(name, kh_cstr_t, char, 0, kh_str_hash_func, kh_str_hash_equal)
+#define KHASH_SET_INIT_STR(name)     \
+        KHASH_INIT(name, kh_cstr_t, char, 0, kh_str_hash_func, kh_str_hash_equal)
 
 /*! @function
   @abstract     Instantiate a hash map containing const char* keys
   @param  name  Name of the hash table [symbol]
   @param  khval_t  Type of values [type]
  */
-#define KHASH_MAP_INIT_STR(name, khval_t)								\
-	KHASH_INIT(name, kh_cstr_t, khval_t, 1, kh_str_hash_func, kh_str_hash_equal)
+#define KHASH_MAP_INIT_STR(name, khval_t)      \
+        KHASH_INIT(name, kh_cstr_t, khval_t, 1, kh_str_hash_func, kh_str_hash_equal)
 
 /* HASHI */
 #if PETSC_SIZEOF_INT == 8
@@ -514,28 +514,28 @@ KHASH_MAP_INIT_INT(HASHI,PetscInt)
 
 typedef khash_t(HASHI) *PetscHashI;
 
-typedef khiter_t   PetscHashIIter;
+typedef khiter_t PetscHashIIter;
 
 #define PetscHashICreate(ht) ((ht) = kh_init(HASHI))
 
 #define PetscHashIClear(ht)    (kh_clear(HASHI,(ht)))
 
-#define PetscHashIDestroy(ht) if((ht)){kh_destroy(HASHI,(ht));(ht)=0;}
+#define PetscHashIDestroy(ht) if ((ht)) {kh_destroy(HASHI,(ht));(ht)=0;}
 
 #define PetscHashIResize(ht,n) (kh_resize(HASHI,(ht),(n)))
 
 #define PetscHashISize(ht,n)     ((n)=kh_size((ht)))
 
-#define PetscHashIIterNext(ht,hi)  do{++(hi);} while(!kh_exist((ht),(hi)) && (hi) != kh_end((ht)))
+#define PetscHashIIterNext(ht,hi)  do {++(hi);} while (!kh_exist((ht),(hi)) && (hi) != kh_end((ht)))
 
-#define PetscHashIIterBegin(ht,hi) {(hi) = kh_begin((ht));if(!kh_exist((ht),(hi))){PetscHashIIterNext((ht),(hi));}}
+#define PetscHashIIterBegin(ht,hi) {(hi) = kh_begin((ht));if (!kh_exist((ht),(hi))) {PetscHashIIterNext((ht),(hi));}}
 
 
 #define PetscHashIIterAtEnd(ht,hi) ((hi) == kh_end((ht)))
 
-#define PetscHashIIterGetKeyVal(ht,hi,i,ii) if(kh_exist((ht),(hi)))((i) = kh_key((ht),(hi)),(ii) = kh_val((ht),(hi))); else ((i) = -1, (ii) = -1);
-#define PetscHashIIterGetKey(ht,hi,i) if(kh_exist((ht),(hi)))((i) = kh_key((ht),(hi))); else ((i) = -1);
-#define PetscHashIIterGetVal(ht,hi,ii) if(kh_exist((ht),(hi)))((ii) = kh_val((ht),(hi))); else ((ii) = -1);
+#define PetscHashIIterGetKeyVal(ht,hi,i,ii) if (kh_exist((ht),(hi)))((i) = kh_key((ht),(hi)),(ii) = kh_val((ht),(hi))); else ((i) = -1, (ii) = -1);
+#define PetscHashIIterGetKey(ht,hi,i) if (kh_exist((ht),(hi)))((i) = kh_key((ht),(hi))); else ((i) = -1);
+#define PetscHashIIterGetVal(ht,hi,ii) if (kh_exist((ht),(hi)))((ii) = kh_val((ht),(hi))); else ((ii) = -1);
 
 #define PetscHashIAdd(ht,i,ii)                                          \
 {                                                                       \
@@ -553,22 +553,22 @@ typedef khiter_t   PetscHashIIter;
   PetscHashIIter _12_hi;                                                \
   PetscInt _12_i;                                                       \
   PetscHashIIterBegin((ht),_12_hi);                                     \
-  while(!PetscHashIIterAtEnd((ht),_12_hi)) {                            \
+  while (!PetscHashIIterAtEnd((ht),_12_hi)) {                            \
     PetscHashIIterGetKey((ht),_12_hi,_12_i);                            \
     (arr)[(n)++] = _12_i;                                               \
     PetscHashIIterNext((ht),_12_hi);                                    \
   }                                                                     \
 }
 
-#define PetscHashIGetVals(ht,n,arr)                                    \
+#define PetscHashIGetVals(ht,n,arr)                                     \
 {                                                                       \
   PetscHashIIter _12_hi;                                                \
   PetscInt _12_ii;                                                      \
   PetscHashIBegin((ht),_12_hi);                                         \
-  while(!PetscHashIIterAtEnd((ht),_12_hi)){                                 \
+  while (!PetscHashIIterAtEnd((ht),_12_hi)) {                            \
     PetscHashIIterGetVal((ht),_12_hi,_12_ii);                           \
     (arr)[(n)++] = _12_ii;                                              \
-    PetscHashIIterNext((ht),_12_hi);                                        \
+    PetscHashIIterNext((ht),_12_hi);                                    \
   }                                                                     \
 }
 
@@ -578,7 +578,7 @@ typedef khiter_t   PetscHashIIter;
   PetscInt   _14_i, _14_ii;                                             \
   PetscHashICreate((hd));                                               \
   PetscHashIIterBegin((ht),_14_hi);                                     \
-  while(!PetscHashIIterAtEnd((ht),_14_hi)){                             \
+  while (!PetscHashIIterAtEnd((ht),_14_hi)) {                            \
     PetscHashIIterGetKeyVal((ht),_14_hi,_14_i,_14_ii);                  \
     PetscHashIAdd((hd), _14_i,_14_ii);                                  \
     PetscHashIIterNext((ht),_14_hi);                                    \
@@ -586,25 +586,24 @@ typedef khiter_t   PetscHashIIter;
 }
 
 /*
- Locate index i in the hash table ht. If i is found in table, ii is its index, 
- between 0 and kh_size(ht)-1 (inclusive); otherwise, ii == -1. 
+ Locate index i in the hash table ht. If i is found in table, ii is its index,
+ between 0 and kh_size(ht)-1 (inclusive); otherwise, ii == -1.
  */
-#define PetscHashIMap(ht,i,ii)  \
+#define PetscHashIMap(ht,i,ii)             \
 {                                          \
   khiter_t _9_hi;                          \
-  _9_hi = kh_get(HASHI,(ht),(i));              \
-  if(_9_hi != kh_end((ht)))                \
+  _9_hi = kh_get(HASHI,(ht),(i));          \
+  if (_9_hi != kh_end((ht))) {             \
     (ii) = kh_val((ht),_9_hi);             \
-  else                                     \
-    (ii) = -1;                             \
+  } else (ii) = -1;                        \
 }                                          \
 
-/* 
+/*
  Locate all integers from array iarr of length len in hash table ht.
- Their images -- their local numbering -- are stored in iiarr of length len.  
+ Their images -- their local numbering -- are stored in iiarr of length len.
  If drop == PETSC_TRUE:
-  - if an integer is not found in table, it is omitted and upon completion 
-    iilen has the number of located indices; iilen <= ilen in this case. 
+  - if an integer is not found in table, it is omitted and upon completion
+    iilen has the number of located indices; iilen <= ilen in this case.
  If drop == PETSC_FALSE:
   - if an integer is not found in table, it is replaced by -1; iilen == ilen
     upon completion.
@@ -613,16 +612,16 @@ typedef khiter_t   PetscHashIIter;
   do {                                                                 \
     PetscInt _10_i;                                                    \
     (iilen) = 0;                                                       \
-    for(_10_i = 0, (iilen) = 0; _10_i < (ilen); ++_10_i) {             \
+    for (_10_i = 0, (iilen) = 0; _10_i < (ilen); ++_10_i) {            \
       PetscHashIMap(ht,(iarr)[_10_i],(iiarr)[(iilen)]);                \
-      if((iiarr)[(iilen)] != -1) ++(iilen);                            \
+      if ((iiarr)[(iilen)] != -1) ++(iilen);                           \
     }                                                                  \
-} while(0)
+} while (0)
 
 /* HASHIJ */
 /* Linked list of values in a bucket. */
 struct _IJNode {
-  PetscInt k;
+  PetscInt       k;
   struct _IJNode *next;
 };
 typedef struct _IJNode IJNode;
@@ -630,7 +629,7 @@ typedef struct _IJNode IJNode;
 /* Value (holds a linked list of nodes) in the bucket. */
 struct _IJVal {
   PetscInt n;
-  IJNode *head, *tail;
+  IJNode   *head, *tail;
 };
 typedef struct _IJVal IJVal;
 
@@ -640,20 +639,20 @@ struct _PetscHashIJKey {
 };
 typedef struct _PetscHashIJKey PetscHashIJKey;
 
-/* Hash function: mix two integers into one. 
+/* Hash function: mix two integers into one.
    Shift by half the number of bits in PetscInt to the left and then XOR.  If the indices fit into the lowest half part of PetscInt, this is a bijection.
    We should shift by (8/2)*sizeof(PetscInt): sizeof(PetscInt) is the number of bytes in PetscInt, with 8 bits per byte.
  */
 #define IJKeyHash(key) ((((key).i) << (4*sizeof(PetscInt)))^((key).j))
 
 /* Compare two keys (integer pairs). */
-#define IJKeyEqual(k1,k2) (((k1).i==(k2).i)?((k1).j==(k2).j):0)
+#define IJKeyEqual(k1,k2) (((k1).i==(k2).i) ? ((k1).j==(k2).j) : 0)
 
 KHASH_INIT(HASHIJ,PetscHashIJKey,IJVal,1,IJKeyHash,IJKeyEqual)
 
 struct _PetscHashIJ {
   PetscBool multivalued;
-  PetscInt size;
+  PetscInt  size;
   khash_t(HASHIJ) *ht;
 };
 
@@ -666,19 +665,22 @@ typedef IJNode              *PetscHashIJValIter;
 
 #undef  __FUNCT__
 #define __FUNCT__ "PetscHashIJCreate"
-PETSC_STATIC_INLINE PetscErrorCode PetscHashIJCreate(PetscHashIJ *h){
+PETSC_STATIC_INLINE PetscErrorCode PetscHashIJCreate(PetscHashIJ *h)
+{
   PetscErrorCode _15_ierr;
+
   PetscFunctionBegin;
   PetscValidPointer(h,1);
-  _15_ierr = PetscNew(struct _PetscHashIJ, (h)); CHKERRQ(_15_ierr);
-  (*h)->ht = kh_init(HASHIJ);
+  _15_ierr          = PetscNew(struct _PetscHashIJ, (h));CHKERRQ(_15_ierr);
+  (*h)->ht          = kh_init(HASHIJ);
   (*h)->multivalued = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
 #undef  __FUNCT__
 #define __FUNCT__ "PetscHashIJGetMultivalued"
-PETSC_STATIC_INLINE PetscErrorCode PetscHashIJGetMultivalued(PetscHashIJ h, PetscBool *m) {
+PETSC_STATIC_INLINE PetscErrorCode PetscHashIJGetMultivalued(PetscHashIJ h, PetscBool *m)
+{
   PetscFunctionBegin;
   *m = (h)->multivalued;
   PetscFunctionReturn(0);
@@ -686,17 +688,17 @@ PETSC_STATIC_INLINE PetscErrorCode PetscHashIJGetMultivalued(PetscHashIJ h, Pets
 
 #undef  __FUNCT__
 #define __FUNCT__ "PetscHashIJSetMultivalued"
-PETSC_STATIC_INLINE PetscErrorCode PetscHashIJSetMultivalued(PetscHashIJ h, PetscBool m) {
+PETSC_STATIC_INLINE PetscErrorCode PetscHashIJSetMultivalued(PetscHashIJ h, PetscBool m)
+{
   PetscFunctionBegin;
   (h)->multivalued = m;
   PetscFunctionReturn(0);
 }
 
-
-
 #undef  __FUNCT__
 #define __FUNCT__ "PetscHashIJResize"
-PETSC_STATIC_INLINE PetscErrorCode PetscHashIJResize(PetscHashIJ h, PetscInt n){
+PETSC_STATIC_INLINE PetscErrorCode PetscHashIJResize(PetscHashIJ h, PetscInt n)
+{
   PetscFunctionBegin;
   (kh_resize(HASHIJ,(h)->ht,(n)));
   PetscFunctionReturn(0);
@@ -704,7 +706,8 @@ PETSC_STATIC_INLINE PetscErrorCode PetscHashIJResize(PetscHashIJ h, PetscInt n){
 
 #undef  __FUNCT__
 #define __FUNCT__ "PetscHashIJKeySize"
-PETSC_STATIC_INLINE PetscErrorCode PetscHashIJKeySize(PetscHashIJ h, PetscInt *n){
+PETSC_STATIC_INLINE PetscErrorCode PetscHashIJKeySize(PetscHashIJ h, PetscInt *n)
+{
   PetscFunctionBegin;
   ((*n)=kh_size((h)->ht));
   PetscFunctionReturn(0);
@@ -712,27 +715,47 @@ PETSC_STATIC_INLINE PetscErrorCode PetscHashIJKeySize(PetscHashIJ h, PetscInt *n
 
 #undef  __FUNCT__
 #define __FUNCT__ "PetscHashIJSize"
-PETSC_STATIC_INLINE PetscErrorCode PetscHashIJSize(PetscHashIJ h, PetscInt *m){
+PETSC_STATIC_INLINE PetscErrorCode PetscHashIJSize(PetscHashIJ h, PetscInt *m)
+{
   PetscFunctionBegin;
   (*m)=h->size;
   PetscFunctionReturn(0);
 }
 
 #undef  __FUNCT__
+#define __FUNCT__ "PetscHashIJGet"
+/*
+ Locate key i in the hash table h. If i is found in table, ii is its first value; otherwise, ii == -1.
+*/
+PETSC_STATIC_INLINE PetscErrorCode PetscHashIJGet(PetscHashIJ h, PetscHashIJKey i, PetscInt *ii)
+{
+  khiter_t _9_hi;
+
+  PetscFunctionBegin;
+  _9_hi = kh_get(HASHIJ, (h)->ht, (i));
+  if (_9_hi != kh_end((h)->ht)) *ii = kh_val((h)->ht, _9_hi).head->k;
+  else *ii = -1;
+  PetscFunctionReturn(0);
+}
+
+#undef  __FUNCT__
 #define __FUNCT__ "PetscHashIJIterNext"
-PETSC_STATIC_INLINE PetscErrorCode PetscHashIJIterNext(PetscHashIJ h, PetscHashIJIter hi, PetscHashIJIter *hn)  {
+PETSC_STATIC_INLINE PetscErrorCode PetscHashIJIterNext(PetscHashIJ h, PetscHashIJIter hi, PetscHashIJIter *hn)
+{
   PetscFunctionBegin;
   *hn = hi;
-  do{++(*hn);} while(!kh_exist((h)->ht,(*hn)) && (*hn) != kh_end((h)->ht));
+  do { ++(*hn); } while (!kh_exist((h)->ht,(*hn)) && (*hn) != kh_end((h)->ht));
   PetscFunctionReturn(0);
 }
 
 #undef  __FUNCT__
 #define __FUNCT__ "PetscHashIJIterBegin"
-PETSC_STATIC_INLINE PetscErrorCode PetscHashIJIterBegin(PetscHashIJ h, PetscHashIJIter *hi) {
+PETSC_STATIC_INLINE PetscErrorCode PetscHashIJIterBegin(PetscHashIJ h, PetscHashIJIter *hi)
+{
   PetscErrorCode ierr;
+
   PetscFunctionBegin;
-  (*hi) = kh_begin((h)->ht);if(*hi != kh_end((h)->ht) && !kh_exist((h)->ht,(*hi))){ierr = PetscHashIJIterNext((h),(*hi),(hi)); CHKERRQ(ierr);}
+  (*hi) = kh_begin((h)->ht);if (*hi != kh_end((h)->ht) && !kh_exist((h)->ht,(*hi))) {ierr = PetscHashIJIterNext((h),(*hi),(hi));CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -740,17 +763,20 @@ PETSC_STATIC_INLINE PetscErrorCode PetscHashIJIterBegin(PetscHashIJ h, PetscHash
 
 #undef  __FUNCT__
 #define __FUNCT__ "PetscHashIJGetKey"
-PETSC_STATIC_INLINE PetscErrorCode PetscHashIJIterGetKey(PetscHashIJ h, PetscHashIJIter hi, PetscHashIJKey *key) {
+PETSC_STATIC_INLINE PetscErrorCode PetscHashIJIterGetKey(PetscHashIJ h, PetscHashIJIter hi, PetscHashIJKey *key)
+{
   PetscFunctionBegin;
   (*key) = kh_key((h)->ht,(hi));
   PetscFunctionReturn(0);
 }
 
 #undef  __FUNCT__
-#define __FUNCT__ "PetscHashIJGetValIter"
-PETSC_STATIC_INLINE PetscErrorCode PetscHashIJIterGetValIter(PetscHashIJ h, PetscHashIJIter hi, PetscHashIJValIter *vi) {
+#define __FUNCT__ "PetscHashIJIterGetValIter"
+PETSC_STATIC_INLINE PetscErrorCode PetscHashIJIterGetValIter(PetscHashIJ h, PetscHashIJIter hi, PetscHashIJValIter *vi)
+{
   PetscFunctionBegin;
-  if(hi != kh_end(h->ht) && kh_exist((h)->ht,(hi)))((*vi) = kh_val((h)->ht,(hi)).head); else ((*vi) = 0);
+  if (hi != kh_end(h->ht) && kh_exist((h)->ht,(hi)))((*vi) = kh_val((h)->ht,(hi)).head);
+  else ((*vi) = 0);
   PetscFunctionReturn(0);
 }
 
@@ -758,7 +784,8 @@ PETSC_STATIC_INLINE PetscErrorCode PetscHashIJIterGetValIter(PetscHashIJ h, Pets
 
 #undef  __FUNCT__
 #define __FUNCT__ "PetscHashIJValIterNext"
-PETSC_STATIC_INLINE PetscErrorCode PetscHashIJValIterNext(PetscHashIJ h, PetscHashIJValIter vi, PetscHashIJValIter *vn) {
+PETSC_STATIC_INLINE PetscErrorCode PetscHashIJValIterNext(PetscHashIJ h, PetscHashIJValIter vi, PetscHashIJValIter *vn)
+{
   PetscFunctionBegin;
   ((*vn) = (vi)->next);
   PetscFunctionReturn(0);
@@ -766,7 +793,8 @@ PETSC_STATIC_INLINE PetscErrorCode PetscHashIJValIterNext(PetscHashIJ h, PetscHa
 
 #undef  __FUNCT__
 #define __FUNCT__ "PetscHashIJValIterGetVal"
-PETSC_STATIC_INLINE PetscErrorCode PetscHashIJValIterGetVal(PetscHashIJ h, PetscHashIJValIter vi, PetscInt *v) {
+PETSC_STATIC_INLINE PetscErrorCode PetscHashIJValIterGetVal(PetscHashIJ h, PetscHashIJValIter vi, PetscInt *v)
+{
   PetscFunctionBegin;
   ((*v) = (vi)->k);
   PetscFunctionReturn(0);
@@ -775,33 +803,32 @@ PETSC_STATIC_INLINE PetscErrorCode PetscHashIJValIterGetVal(PetscHashIJ h, Petsc
 
 #undef  __FUNCT__
 #define __FUNCT__ "PetscHashIJAdd"
-PETSC_STATIC_INLINE PetscErrorCode PetscHashIJAdd(PetscHashIJ h,PetscHashIJKey i, PetscInt ii){
-  khiter_t _11_hi;
-  khint_t  _11_r;
-  IJNode   *_11_ijnode;
-  IJVal    *_11_ijval;
+PETSC_STATIC_INLINE PetscErrorCode PetscHashIJAdd(PetscHashIJ h,PetscHashIJKey i, PetscInt ii)
+{
+  khiter_t       _11_hi;
+  khint_t        _11_r;
+  IJNode         *_11_ijnode;
+  IJVal          *_11_ijval;
   PetscErrorCode ierr;
+
   PetscFunctionBegin;
-  _11_hi = kh_put(HASHIJ,(h)->ht,(i),&_11_r);
+  _11_hi    = kh_put(HASHIJ,(h)->ht,(i),&_11_r);
   _11_ijval = &(kh_val((h)->ht,_11_hi));
-  if(_11_r) {
+  if (_11_r) {
     _11_ijval->head = _11_ijval->tail = 0;
-    _11_ijval->n = 0;
+    _11_ijval->n    = 0;
   }
-  if(!_11_r && !(h)->multivalued) {
-    _11_ijval->head->k = (ii);
-  }
+  if (!_11_r && !(h)->multivalued) _11_ijval->head->k = (ii);
   else {
-    ierr = PetscNew(IJNode, &_11_ijnode); CHKERRQ(ierr);
+    ierr          = PetscNew(IJNode, &_11_ijnode);CHKERRQ(ierr);
     _11_ijnode->k = (ii);
-    _11_ijval = &(kh_val((h)->ht,_11_hi));
-    if(!_11_ijval->tail) {
+    _11_ijval     = &(kh_val((h)->ht,_11_hi));
+    if (!_11_ijval->tail) {
       _11_ijval->tail = _11_ijnode;
       _11_ijval->head = _11_ijnode;
-    }
-    else {
+    } else {
       _11_ijval->tail->next = _11_ijnode;
-      _11_ijval->tail = _11_ijnode;
+      _11_ijval->tail       = _11_ijnode;
     }
     ++(_11_ijval->n);
     ++((h)->size);
@@ -814,18 +841,20 @@ PETSC_STATIC_INLINE PetscErrorCode PetscHashIJAdd(PetscHashIJ h,PetscHashIJKey i
  */
 #undef  __FUNCT__
 #define __FUNCT__ "PetscHashIJGetKeys"
-PETSC_STATIC_INLINE PetscErrorCode PetscHashIJGetKeys(PetscHashIJ h,PetscHashIJKey *arr) {
+PETSC_STATIC_INLINE PetscErrorCode PetscHashIJGetKeys(PetscHashIJ h,PetscHashIJKey *arr)
+{
   PetscHashIJIter _12_hi;
-  PetscHashIJKey _12_key;
-  PetscInt n;
-  PetscErrorCode ierr;
+  PetscHashIJKey  _12_key;
+  PetscInt        n;
+  PetscErrorCode  ierr;
+
   PetscFunctionBegin;
-  n = 0;
-  ierr = PetscHashIJIterBegin((h),&_12_hi); CHKERRQ(ierr);
-  while(!PetscHashIJIterAtEnd((h),_12_hi)) {
-    ierr = PetscHashIJIterGetKey((h),_12_hi,&_12_key); CHKERRQ(ierr);
+  n    = 0;
+  ierr = PetscHashIJIterBegin((h),&_12_hi);CHKERRQ(ierr);
+  while (!PetscHashIJIterAtEnd((h),_12_hi)) {
+    ierr         = PetscHashIJIterGetKey((h),_12_hi,&_12_key);CHKERRQ(ierr);
     (arr)[(n)++] = _12_key;
-    ierr = PetscHashIJIterNext((h),_12_hi, &_12_hi); CHKERRQ(ierr);
+    ierr         = PetscHashIJIterNext((h),_12_hi, &_12_hi);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -835,73 +864,79 @@ PETSC_STATIC_INLINE PetscErrorCode PetscHashIJGetKeys(PetscHashIJ h,PetscHashIJK
  */
 #undef  __FUNCT__
 #define __FUNCT__ "PetscHashIJGetIndices"
-PETSC_STATIC_INLINE PetscErrorCode PetscHashIJGetIndices(PetscHashIJ h, PetscInt *iarr, PetscInt *jarr, PetscInt *karr){
-  PetscErrorCode ierr;
-  PetscHashIJIter _12_hi;
+PETSC_STATIC_INLINE PetscErrorCode PetscHashIJGetIndices(PetscHashIJ h, PetscInt *iarr, PetscInt *jarr, PetscInt *karr)
+{
+  PetscErrorCode     ierr;
+  PetscHashIJIter    _12_hi;
   PetscHashIJValIter _12_vi;
-  PetscHashIJKey _12_key;
-  PetscInt n = 0;
+  PetscHashIJKey     _12_key;
+  PetscInt           n = 0;
+
   PetscFunctionBegin;
-  ierr = PetscHashIJIterBegin((h),&_12_hi); CHKERRQ(ierr);
-  while(!PetscHashIJIterAtEnd((h),_12_hi)) {
-    ierr = PetscHashIJIterGetKey((h),_12_hi,&_12_key);    CHKERRQ(ierr);
-    ierr = PetscHashIJIterGetValIter((h),_12_hi,&_12_vi); CHKERRQ(ierr);
-    while(!PetscHashIJValIterAtEnd((h),_12_vi)) {
+  ierr = PetscHashIJIterBegin((h),&_12_hi);CHKERRQ(ierr);
+  while (!PetscHashIJIterAtEnd((h),_12_hi)) {
+    ierr = PetscHashIJIterGetKey((h),_12_hi,&_12_key);CHKERRQ(ierr);
+    ierr = PetscHashIJIterGetValIter((h),_12_hi,&_12_vi);CHKERRQ(ierr);
+    while (!PetscHashIJValIterAtEnd((h),_12_vi)) {
       (iarr)[(n)] = _12_key.i;
       (jarr)[(n)] = _12_key.j;
-      ierr = PetscHashIJValIterGetVal((h),_12_vi,&(karr)[(n)]); CHKERRQ(ierr);
+      ierr        = PetscHashIJValIterGetVal((h),_12_vi,&(karr)[(n)]);CHKERRQ(ierr);
       ++(n);
-      ierr = PetscHashIJValIterNext((h),_12_vi, &_12_vi); CHKERRQ(ierr);
+      ierr = PetscHashIJValIterNext((h),_12_vi, &_12_vi);CHKERRQ(ierr);
     }
-    ierr = PetscHashIJIterNext((h),_12_hi, &_12_hi); CHKERRQ(ierr);
+    ierr = PetscHashIJIterNext((h),_12_hi, &_12_hi);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
 
 #undef  __FUNCT__
 #define __FUNCT__ "PetscHashIJDuplicate"
-PETSC_STATIC_INLINE PetscErrorCode PetscHashIJDuplicate(PetscHashIJ h, PetscHashIJ *hd) {
-  PetscHashIJIter  _14_hi;
+PETSC_STATIC_INLINE PetscErrorCode PetscHashIJDuplicate(PetscHashIJ h, PetscHashIJ *hd)
+{
+  PetscHashIJIter    _14_hi;
   PetscHashIJValIter _14_vi;
-  PetscHashIJKey   _14_key;
-  PetscInt         _14_val;
-  PetscErrorCode   ierr;
+  PetscHashIJKey     _14_key;
+  PetscInt           _14_val;
+  PetscErrorCode     ierr;
+
   PetscFunctionBegin;
-  ierr = PetscHashIJCreate((hd)); CHKERRQ(ierr);
-  ierr = PetscHashIJIterBegin((h),&_14_hi); CHKERRQ(ierr);
-  while(!PetscHashIJIterAtEnd((h),_14_hi)){
-    ierr = PetscHashIJIterGetKey((h),_14_hi,&_14_key); CHKERRQ(ierr);
-    ierr = PetscHashIJIterGetValIter((h),_14_hi,&_14_vi); CHKERRQ(ierr);
-    while(!PetscHashIJValIterAtEnd((h),_14_vi)) {
-      ierr = PetscHashIJValIterNext((h),_14_vi,&_14_vi); CHKERRQ(ierr);
-      ierr = PetscHashIJValIterGetVal((h),_14_vi,&_14_val); CHKERRQ(ierr);
-      ierr = PetscHashIJAdd((*hd), _14_key,_14_val); CHKERRQ(ierr);
-      ierr = PetscHashIJValIterNext((h),_14_vi,&_14_vi); CHKERRQ(ierr);
+  ierr = PetscHashIJCreate((hd));CHKERRQ(ierr);
+  ierr = PetscHashIJIterBegin((h),&_14_hi);CHKERRQ(ierr);
+  while (!PetscHashIJIterAtEnd((h),_14_hi)) {
+    ierr = PetscHashIJIterGetKey((h),_14_hi,&_14_key);CHKERRQ(ierr);
+    ierr = PetscHashIJIterGetValIter((h),_14_hi,&_14_vi);CHKERRQ(ierr);
+    while (!PetscHashIJValIterAtEnd((h),_14_vi)) {
+      ierr = PetscHashIJValIterNext((h),_14_vi,&_14_vi);CHKERRQ(ierr);
+      ierr = PetscHashIJValIterGetVal((h),_14_vi,&_14_val);CHKERRQ(ierr);
+      ierr = PetscHashIJAdd((*hd), _14_key,_14_val);CHKERRQ(ierr);
+      ierr = PetscHashIJValIterNext((h),_14_vi,&_14_vi);CHKERRQ(ierr);
     }
-    ierr = PetscHashIJIterNext((h),_14_hi, &_14_hi); CHKERRQ(ierr);
+    ierr = PetscHashIJIterNext((h),_14_hi, &_14_hi);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
 
 #undef  __FUNCT__
 #define __FUNCT__ "PetscHashIJClearValues"
-PETSC_STATIC_INLINE PetscErrorCode PetscHashIJClearValues(PetscHashIJ h) {
+PETSC_STATIC_INLINE PetscErrorCode PetscHashIJClearValues(PetscHashIJ h)
+{
   PetscErrorCode ierr;
+
   PetscFunctionBegin;
-  if((h) && (h)->ht) {
-    PetscHashIJIter _15_hi;
-    PetscHashIJValIter  _15_vi, _15_vid;
-    PetscErrorCode _15_ierr;
-    ierr = PetscHashIJIterBegin((h),&_15_hi); CHKERRQ(ierr);
-    while(!PetscHashIJIterAtEnd((h),_15_hi)) {
-      ierr = PetscHashIJIterGetValIter((h),_15_hi,&_15_vi); CHKERRQ(ierr);
-      while(!PetscHashIJValIterAtEnd((h),_15_vi)){ 
-        _15_vid = _15_vi;
-        ierr = PetscHashIJValIterNext((h),_15_vi,&_15_vi); CHKERRQ(ierr);
+  if ((h) && (h)->ht) {
+    PetscHashIJIter    _15_hi;
+    PetscHashIJValIter _15_vi, _15_vid;
+    PetscErrorCode     _15_ierr;
+    ierr = PetscHashIJIterBegin((h),&_15_hi);CHKERRQ(ierr);
+    while (!PetscHashIJIterAtEnd((h),_15_hi)) {
+      ierr = PetscHashIJIterGetValIter((h),_15_hi,&_15_vi);CHKERRQ(ierr);
+      while (!PetscHashIJValIterAtEnd((h),_15_vi)) {
+        _15_vid       = _15_vi;
+        ierr          = PetscHashIJValIterNext((h),_15_vi,&_15_vi);CHKERRQ(ierr);
         _15_vid->next = 0;
-        _15_ierr = PetscFree(_15_vid); CHKERRQ(_15_ierr);
+        _15_ierr      = PetscFree(_15_vid);CHKERRQ(_15_ierr);
       }
-      ierr = PetscHashIJIterNext((h),_15_hi,&_15_hi); CHKERRQ(ierr);
+      ierr = PetscHashIJIterNext((h),_15_hi,&_15_hi);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -909,34 +944,308 @@ PETSC_STATIC_INLINE PetscErrorCode PetscHashIJClearValues(PetscHashIJ h) {
 
 #undef  __FUNCT__
 #define __FUNCT__ "PetscHashIJClear"
-PETSC_STATIC_INLINE PetscErrorCode PetscHashIJClear(PetscHashIJ h) {
+PETSC_STATIC_INLINE PetscErrorCode PetscHashIJClear(PetscHashIJ h)
+{
   PetscErrorCode ierr;
+
   PetscFunctionBegin;
-  ierr = PetscHashIJClearValues((h)); CHKERRQ(ierr);
-  kh_clear(HASHIJ,(h)->ht);   
+  ierr = PetscHashIJClearValues((h));CHKERRQ(ierr);
+  kh_clear(HASHIJ,(h)->ht);
   (h)->size = 0;
   PetscFunctionReturn(0);
 }
 
-#undef  __FUNCT__ 
+#undef  __FUNCT__
 #define __FUNCT__ "PetscHashIJDestroy"
-PETSC_STATIC_INLINE PetscErrorCode PetscHashIJDestroy(PetscHashIJ *h){
+PETSC_STATIC_INLINE PetscErrorCode PetscHashIJDestroy(PetscHashIJ *h)
+{
   PetscFunctionBegin;
   PetscValidPointer(h,1);
-  if((*h)) {
+  if ((*h)) {
     PetscErrorCode _16_ierr;
     PetscHashIJClearValues((*h));
-    if((*h)->ht) {
+    if ((*h)->ht) {
       kh_destroy(HASHIJ,(*h)->ht);
       (*h)->ht=0;
     }
-    _16_ierr = PetscFree((*h)); CHKERRQ(_16_ierr);  
+    _16_ierr = PetscFree((*h));CHKERRQ(_16_ierr);
   }
   PetscFunctionReturn(0);
 }
 
 
+/* HASHIJKL */
+/* Linked list of values in a bucket. */
+struct _IJKLNode {
+  PetscInt       k;
+  struct _IJKLNode *next;
+};
+typedef struct _IJKLNode IJKLNode;
 
+/* Value (holds a linked list of nodes) in the bucket. */
+struct _IJKLVal {
+  PetscInt n;
+  IJKLNode   *head, *tail;
+};
+typedef struct _IJKLVal IJKLVal;
+
+/* Key (a quartet of integers). */
+struct _PetscHashIJKLKey {
+  PetscInt i, j, k, l;
+};
+typedef struct _PetscHashIJKLKey PetscHashIJKLKey;
+
+/* Hash function: mix two integers into one.
+   Shift by a quarter the number of bits in PetscInt to the left and then XOR.  If the indices fit into the lowest quarter part of PetscInt, this is a bijection.
+   We should shift by (8/4)*sizeof(PetscInt): sizeof(PetscInt) is the number of bytes in PetscInt, with 8 bits per byte.
+ */
+#define IJKLKeyHash(key) ( (((key).i) << (4*sizeof(PetscInt)))^((key).j)^(((key).k) << (2*sizeof(PetscInt)))^(((key).l) << (6*sizeof(PetscInt))) )
+
+/* Compare two keys (integer pairs). */
+#define IJKLKeyEqual(k1,k2) (((k1).i==(k2).i) ? ((k1).j==(k2).j) ? ((k1).k==(k2).k) ? ((k1).l==(k2).l) : 0 : 0 : 0)
+
+KHASH_INIT(HASHIJKL,PetscHashIJKLKey,IJKLVal,1,IJKLKeyHash,IJKLKeyEqual)
+
+struct _PetscHashIJKL {
+  PetscBool multivalued;
+  PetscInt  size;
+  khash_t(HASHIJKL) *ht;
+};
+
+typedef struct _PetscHashIJKL *PetscHashIJKL;
+
+typedef khiter_t               PetscHashIJKLIter;
+
+typedef IJKLNode              *PetscHashIJKLValIter;
+
+#undef  __FUNCT__
+#define __FUNCT__ "PetscHashIJKLCreate"
+PETSC_STATIC_INLINE PetscErrorCode PetscHashIJKLCreate(PetscHashIJKL *h)
+{
+  PetscErrorCode _15_ierr;
+
+  PetscFunctionBegin;
+  PetscValidPointer(h,1);
+  _15_ierr          = PetscNew(struct _PetscHashIJKL, (h));CHKERRQ(_15_ierr);
+  (*h)->ht          = kh_init(HASHIJKL);
+  (*h)->multivalued = PETSC_TRUE;
+  PetscFunctionReturn(0);
+}
+
+#undef  __FUNCT__
+#define __FUNCT__ "PetscHashIJKLGetMultivalued"
+PETSC_STATIC_INLINE PetscErrorCode PetscHashIJKLGetMultivalued(PetscHashIJKL h, PetscBool *m)
+{
+  PetscFunctionBegin;
+  *m = (h)->multivalued;
+  PetscFunctionReturn(0);
+}
+
+#undef  __FUNCT__
+#define __FUNCT__ "PetscHashIJKLSetMultivalued"
+PETSC_STATIC_INLINE PetscErrorCode PetscHashIJKLSetMultivalued(PetscHashIJKL h, PetscBool m)
+{
+  PetscFunctionBegin;
+  (h)->multivalued = m;
+  PetscFunctionReturn(0);
+}
+
+#undef  __FUNCT__
+#define __FUNCT__ "PetscHashIJKLResize"
+PETSC_STATIC_INLINE PetscErrorCode PetscHashIJKLResize(PetscHashIJKL h, PetscInt n)
+{
+  PetscFunctionBegin;
+  (kh_resize(HASHIJKL,(h)->ht,(n)));
+  PetscFunctionReturn(0);
+}
+
+#undef  __FUNCT__
+#define __FUNCT__ "PetscHashIJKLKeySize"
+PETSC_STATIC_INLINE PetscErrorCode PetscHashIJKLKeySize(PetscHashIJKL h, PetscInt *n)
+{
+  PetscFunctionBegin;
+  ((*n)=kh_size((h)->ht));
+  PetscFunctionReturn(0);
+}
+
+#undef  __FUNCT__
+#define __FUNCT__ "PetscHashIJKLSize"
+PETSC_STATIC_INLINE PetscErrorCode PetscHashIJKLSize(PetscHashIJKL h, PetscInt *m)
+{
+  PetscFunctionBegin;
+  (*m)=h->size;
+  PetscFunctionReturn(0);
+}
+
+#undef  __FUNCT__
+#define __FUNCT__ "PetscHashIJKLGet"
+/*
+ Locate key i in the hash table h. If i is found in table, ii is its first value; otherwise, ii == -1.
+*/
+PETSC_STATIC_INLINE PetscErrorCode PetscHashIJKLGet(PetscHashIJKL h, PetscHashIJKLKey i, PetscInt *ii)
+{
+  khiter_t _9_hi;
+
+  PetscFunctionBegin;
+  _9_hi = kh_get(HASHIJKL, (h)->ht, (i));
+  if (_9_hi != kh_end((h)->ht)) *ii = kh_val((h)->ht, _9_hi).head->k;
+  else *ii = -1;
+  PetscFunctionReturn(0);
+}
+
+#undef  __FUNCT__
+#define __FUNCT__ "PetscHashIJKLIterNext"
+PETSC_STATIC_INLINE PetscErrorCode PetscHashIJKLIterNext(PetscHashIJKL h, PetscHashIJKLIter hi, PetscHashIJKLIter *hn)
+{
+  PetscFunctionBegin;
+  *hn = hi;
+  do { ++(*hn); } while (!kh_exist((h)->ht,(*hn)) && (*hn) != kh_end((h)->ht));
+  PetscFunctionReturn(0);
+}
+
+#undef  __FUNCT__
+#define __FUNCT__ "PetscHashIJKLIterBegin"
+PETSC_STATIC_INLINE PetscErrorCode PetscHashIJKLIterBegin(PetscHashIJKL h, PetscHashIJKLIter *hi)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  (*hi) = kh_begin((h)->ht);if (*hi != kh_end((h)->ht) && !kh_exist((h)->ht,(*hi))) {ierr = PetscHashIJKLIterNext((h),(*hi),(hi));CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+#define PetscHashIJKLIterAtEnd(h,hi) ((hi) == kh_end((h)->ht))
+
+#undef  __FUNCT__
+#define __FUNCT__ "PetscHashIJKLGetKey"
+PETSC_STATIC_INLINE PetscErrorCode PetscHashIJKLIterGetKey(PetscHashIJKL h, PetscHashIJKLIter hi, PetscHashIJKLKey *key)
+{
+  PetscFunctionBegin;
+  (*key) = kh_key((h)->ht,(hi));
+  PetscFunctionReturn(0);
+}
+
+#undef  __FUNCT__
+#define __FUNCT__ "PetscHashIJKLIterGetValIter"
+PETSC_STATIC_INLINE PetscErrorCode PetscHashIJKLIterGetValIter(PetscHashIJKL h, PetscHashIJKLIter hi, PetscHashIJKLValIter *vi)
+{
+  PetscFunctionBegin;
+  if (hi != kh_end(h->ht) && kh_exist((h)->ht,(hi)))((*vi) = kh_val((h)->ht,(hi)).head);
+  else ((*vi) = 0);
+  PetscFunctionReturn(0);
+}
+
+#define PetscHashIJKLValIterAtEnd(h, vi) ((vi) == 0)
+
+#undef  __FUNCT__
+#define __FUNCT__ "PetscHashIJKLValIterNext"
+PETSC_STATIC_INLINE PetscErrorCode PetscHashIJKLValIterNext(PetscHashIJKL h, PetscHashIJKLValIter vi, PetscHashIJKLValIter *vn)
+{
+  PetscFunctionBegin;
+  ((*vn) = (vi)->next);
+  PetscFunctionReturn(0);
+}
+
+#undef  __FUNCT__
+#define __FUNCT__ "PetscHashIJKLValIterGetVal"
+PETSC_STATIC_INLINE PetscErrorCode PetscHashIJKLValIterGetVal(PetscHashIJKL h, PetscHashIJKLValIter vi, PetscInt *v)
+{
+  PetscFunctionBegin;
+  ((*v) = (vi)->k);
+  PetscFunctionReturn(0);
+}
+
+#undef  __FUNCT__
+#define __FUNCT__ "PetscHashIJKLAdd"
+PETSC_STATIC_INLINE PetscErrorCode PetscHashIJKLAdd(PetscHashIJKL h,PetscHashIJKLKey i, PetscInt ii)
+{
+  khiter_t       _11_hi;
+  khint_t        _11_r;
+  IJKLNode         *_11_ijnode;
+  IJKLVal          *_11_ijval;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  _11_hi    = kh_put(HASHIJKL,(h)->ht,(i),&_11_r);
+  _11_ijval = &(kh_val((h)->ht,_11_hi));
+  if (_11_r) {
+    _11_ijval->head = _11_ijval->tail = 0;
+    _11_ijval->n    = 0;
+  }
+  if (!_11_r && !(h)->multivalued) _11_ijval->head->k = (ii);
+  else {
+    ierr          = PetscNew(IJKLNode, &_11_ijnode);CHKERRQ(ierr);
+    _11_ijnode->k = (ii);
+    _11_ijval     = &(kh_val((h)->ht,_11_hi));
+    if (!_11_ijval->tail) {
+      _11_ijval->tail = _11_ijnode;
+      _11_ijval->head = _11_ijnode;
+    } else {
+      _11_ijval->tail->next = _11_ijnode;
+      _11_ijval->tail       = _11_ijnode;
+    }
+    ++(_11_ijval->n);
+    ++((h)->size);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef  __FUNCT__
+#define __FUNCT__ "PetscHashIJKLClearValues"
+PETSC_STATIC_INLINE PetscErrorCode PetscHashIJKLClearValues(PetscHashIJKL h)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if ((h) && (h)->ht) {
+    PetscHashIJKLIter    _15_hi;
+    PetscHashIJKLValIter _15_vi, _15_vid;
+    PetscErrorCode     _15_ierr;
+    ierr = PetscHashIJKLIterBegin((h),&_15_hi);CHKERRQ(ierr);
+    while (!PetscHashIJKLIterAtEnd((h),_15_hi)) {
+      ierr = PetscHashIJKLIterGetValIter((h),_15_hi,&_15_vi);CHKERRQ(ierr);
+      while (!PetscHashIJKLValIterAtEnd((h),_15_vi)) {
+        _15_vid       = _15_vi;
+        ierr          = PetscHashIJKLValIterNext((h),_15_vi,&_15_vi);CHKERRQ(ierr);
+        _15_vid->next = 0;
+        _15_ierr      = PetscFree(_15_vid);CHKERRQ(_15_ierr);
+      }
+      ierr = PetscHashIJKLIterNext((h),_15_hi,&_15_hi);CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef  __FUNCT__
+#define __FUNCT__ "PetscHashIJKLClear"
+PETSC_STATIC_INLINE PetscErrorCode PetscHashIJKLClear(PetscHashIJKL h)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscHashIJKLClearValues((h));CHKERRQ(ierr);
+  kh_clear(HASHIJKL,(h)->ht);
+  (h)->size = 0;
+  PetscFunctionReturn(0);
+}
+
+#undef  __FUNCT__
+#define __FUNCT__ "PetscHashIJKLDestroy"
+PETSC_STATIC_INLINE PetscErrorCode PetscHashIJKLDestroy(PetscHashIJKL *h)
+{
+  PetscFunctionBegin;
+  PetscValidPointer(h,1);
+  if ((*h)) {
+    PetscErrorCode _16_ierr;
+    PetscHashIJKLClearValues((*h));
+    if ((*h)->ht) {
+      kh_destroy(HASHIJKL,(*h)->ht);
+      (*h)->ht=0;
+    }
+    _16_ierr = PetscFree((*h));CHKERRQ(_16_ierr);
+  }
+  PetscFunctionReturn(0);
+}
 
 
 #endif /* _KHASH_H */

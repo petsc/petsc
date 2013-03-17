@@ -1,13 +1,13 @@
 
 static char help[] = "Time-dependent PDE in 2d. Modified from ex13.c for illustrating how to solve DAEs. \n";
-/* 
+/*
    u_t = uxx + uyy
-   0 < x < 1, 0 < y < 1; 
+   0 < x < 1, 0 < y < 1;
    At t=0: u(x,y) = exp(c*r*r*r), if r=PetscSqrtReal((x-.5)*(x-.5) + (y-.5)*(y-.5)) < .125
            u(x,y) = 0.0           if r >= .125
 
 
-   Boundary conditions:   
+   Boundary conditions:
    Drichlet BC:
    At x=0, x=1, y=0, y=1: u = 0.0
 
@@ -15,38 +15,31 @@ static char help[] = "Time-dependent PDE in 2d. Modified from ex13.c for illustr
    At x=0, x=1: du(x,y,t)/dx = 0
    At y=0, y=1: du(x,y,t)/dy = 0
 
-Program usage:  
-   mpiexec -n <procs> ./ex15 [-help] [all PETSc options] 
-   e.g., mpiexec -n 2 ./ex15 -da_grid_x 40 -da_grid_y 40 -ts_max_steps 2 -snes_monitor -ksp_monitor 
-         ./ex15 -da_grid_x 40 -da_grid_y 40 -drawcontours -draw_pause .1 -boundary 1 
-         ./ex15 -da_grid_x 40 -da_grid_y 40 -drawcontours -draw_pause .1 -boundary 1 -Jtype 2 -nstencilpts 9
-        
+   mpiexec -n 2 ./ex15 -da_grid_x 40 -da_grid_y 40 -ts_max_steps 2 -snes_monitor -ksp_monitor
+         ./ex15 -da_grid_x 40 -da_grid_y 40  -draw_pause .1 -boundary 1 -ts_monitor_draw_solution
+         ./ex15 -da_grid_x 40 -da_grid_y 40  -draw_pause .1 -boundary 1 -Jtype 2 -nstencilpts 9
+
 */
 
 #include <petscdmda.h>
 #include <petscts.h>
 
-/* 
+/*
    User-defined data structures and routines
 */
-/* MonitorCtx: used by MyTSMonitor() */
-typedef struct {
-   PetscBool drawcontours;   
-} MonitorCtx;
 
 /* AppCtx: used by FormIFunction() and FormIJacobian() */
 typedef struct {
-  DM             da;
-  PetscInt       nstencilpts;    /* number of stencil points: 5 or 9 */
-  PetscReal      c;   
-  PetscInt       boundary;       /* Type of boundary condition */
-  PetscBool      viewJacobian;
+  DM        da;
+  PetscInt  nstencilpts;         /* number of stencil points: 5 or 9 */
+  PetscReal c;
+  PetscInt  boundary;            /* Type of boundary condition */
+  PetscBool viewJacobian;
 } AppCtx;
 
-extern PetscErrorCode FormIFunction(TS,PetscReal,Vec,Vec,Vec,void*);  
+extern PetscErrorCode FormIFunction(TS,PetscReal,Vec,Vec,Vec,void*);
 extern PetscErrorCode FormIJacobian(TS,PetscReal,Vec,Vec,PetscReal,Mat*,Mat*,MatStructure*,void*);
 extern PetscErrorCode FormInitialSolution(Vec,void*);
-extern PetscErrorCode MyTSMonitor(TS,PetscInt,PetscReal,Vec,void*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -54,47 +47,42 @@ int main(int argc,char **argv)
 {
   TS             ts;                   /* nonlinear solver */
   Vec            u,r;                  /* solution, residual vectors */
-  Mat            J,Jmf = PETSC_NULL;   /* Jacobian matrices */
+  Mat            J,Jmf = NULL;   /* Jacobian matrices */
   PetscInt       maxsteps = 1000;      /* iterations for convergence */
   PetscErrorCode ierr;
   DM             da;
-  PetscReal      dt,ftime;
-  MonitorCtx     usermonitor;       /* user-defined monitor context */
+  PetscReal      dt;
   AppCtx         user;              /* user-defined work context */
   SNES           snes;
   PetscInt       Jtype; /* Jacobian type
-                            0: user provide Jacobian; 
+                            0: user provide Jacobian;
                             1: slow finite difference;
                             2: fd with coloring; */
 
-  PetscInitialize(&argc,&argv,(char *)0,help);
+  PetscInitialize(&argc,&argv,(char*)0,help);
   /* Initialize user application context */
-  user.da            = PETSC_NULL;
-  user.nstencilpts   = 5;
-  user.c             = -30.0;
-  user.boundary      = 0; /* 0: Drichlet BC; 1: Neumann BC */
-  user.viewJacobian  = PETSC_FALSE;
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-nstencilpts",&user.nstencilpts,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-boundary",&user.boundary,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL,"-viewJacobian",&user.viewJacobian);CHKERRQ(ierr);
+  user.da           = NULL;
+  user.nstencilpts  = 5;
+  user.c            = -30.0;
+  user.boundary     = 0;  /* 0: Drichlet BC; 1: Neumann BC */
+  user.viewJacobian = PETSC_FALSE;
 
-  usermonitor.drawcontours = PETSC_FALSE;
-  ierr = PetscOptionsHasName(PETSC_NULL,"-drawcontours",&usermonitor.drawcontours);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-nstencilpts",&user.nstencilpts,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-boundary",&user.boundary,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,"-viewJacobian",&user.viewJacobian);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  if (user.nstencilpts == 5){
-    ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,-11,-11,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
-  } else if (user.nstencilpts == 9){
-    ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,-11,-11,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
-  } else {
-    SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"nstencilpts %d is not supported",user.nstencilpts);
-  }
+  if (user.nstencilpts == 5) {
+    ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,-11,-11,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da);CHKERRQ(ierr);
+  } else if (user.nstencilpts == 9) {
+    ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,-11,-11,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da);CHKERRQ(ierr);
+  } else SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"nstencilpts %d is not supported",user.nstencilpts);
   user.da = da;
 
   /*  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Extract global vectors from DMDA; 
+     Extract global vectors from DMDA;
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = DMCreateGlobalVector(da,&u);CHKERRQ(ierr);
   ierr = VecDuplicate(u,&r);CHKERRQ(ierr);
@@ -108,7 +96,6 @@ int main(int argc,char **argv)
   ierr = TSSetDM(ts,da);CHKERRQ(ierr);
   ierr = TSSetIFunction(ts,r,FormIFunction,&user);CHKERRQ(ierr);
   ierr = TSSetDuration(ts,maxsteps,1.0);CHKERRQ(ierr);
-  ierr = TSMonitorSet(ts,MyTSMonitor,&usermonitor,PETSC_NULL);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions
@@ -119,33 +106,33 @@ int main(int argc,char **argv)
   ierr = TSSetInitialTimeStep(ts,0.0,dt);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-   Set Jacobian evaluation routine 
+   Set Jacobian evaluation routine
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMCreateMatrix(da,MATAIJ,&J);CHKERRQ(ierr);
+  ierr  = DMCreateMatrix(da,MATAIJ,&J);CHKERRQ(ierr);
   Jtype = 0;
-  ierr = PetscOptionsGetInt(PETSC_NULL, "-Jtype",&Jtype,PETSC_NULL);CHKERRQ(ierr);
-  if (Jtype == 0){ /* use user provided Jacobian evaluation routine */
+  ierr  = PetscOptionsGetInt(NULL, "-Jtype",&Jtype,NULL);CHKERRQ(ierr);
+  if (Jtype == 0) { /* use user provided Jacobian evaluation routine */
     if (user.nstencilpts != 5) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"user Jacobian routine FormIJacobian() does not support nstencilpts=%D",user.nstencilpts);
     ierr = TSSetIJacobian(ts,J,J,FormIJacobian,&user);CHKERRQ(ierr);
   } else { /* use finite difference Jacobian J as preconditioner and '-snes_mf_operator' for Mat*vec */
     ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
-    ierr = MatCreateSNESMF(snes,&Jmf);CHKERRQ(ierr); 
-    if (Jtype == 1){ /* slow finite difference J; */
-      ierr = SNESSetJacobian(snes,Jmf,J,SNESDefaultComputeJacobian,PETSC_NULL);CHKERRQ(ierr);
-    } else if (Jtype == 2){ /* Use coloring to compute  finite difference J efficiently */
-      ierr = SNESSetJacobian(snes,Jmf,J,SNESDefaultComputeJacobianColor,0);CHKERRQ(ierr);
+    ierr = MatCreateSNESMF(snes,&Jmf);CHKERRQ(ierr);
+    if (Jtype == 1) { /* slow finite difference J; */
+      ierr = SNESSetJacobian(snes,Jmf,J,SNESComputeJacobianDefault,NULL);CHKERRQ(ierr);
+    } else if (Jtype == 2) { /* Use coloring to compute  finite difference J efficiently */
+      ierr = SNESSetJacobian(snes,Jmf,J,SNESComputeJacobianDefaultColor,0);CHKERRQ(ierr);
     } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Jtype is not supported");
   }
 
   /*  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-   Sets various TS parameters from user options 
+   Sets various TS parameters from user options
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = TSSetFromOptions(ts);CHKERRQ(ierr); 
+  ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve nonlinear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = TSSolve(ts,u,&ftime);CHKERRQ(ierr);
+  ierr = TSSolve(ts,u);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.
@@ -171,20 +158,20 @@ PetscErrorCode FormIFunction(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,void *ctx)
 {
   PetscErrorCode ierr;
   AppCtx         *user=(AppCtx*)ctx;
-  DM             da = (DM)user->da;
+  DM             da   = (DM)user->da;
   PetscInt       i,j,Mx,My,xs,ys,xm,ym;
   PetscReal      hx,hy,sx,sy;
   PetscScalar    u,uxx,uyy,**uarray,**f,**udot;
   Vec            localU;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = DMGetLocalVector(da,&localU);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
-                   PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
+                     PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
 
-  hx     = 1.0/(PetscReal)(Mx-1); sx = 1.0/(hx*hx);
-  hy     = 1.0/(PetscReal)(My-1); sy = 1.0/(hy*hy);
-  if (user->nstencilpts == 9 && hx != hy)SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"hx must equal hy when nstencilpts = 9 for this example");
+  hx = 1.0/(PetscReal)(Mx-1); sx = 1.0/(hx*hx);
+  hy = 1.0/(PetscReal)(My-1); sy = 1.0/(hy*hy);
+  if (user->nstencilpts == 9 && hx != hy) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"hx must equal hy when nstencilpts = 9 for this example");
 
   /*
      Scatter ghost points to local vector,using the 2-step process
@@ -201,45 +188,45 @@ PetscErrorCode FormIFunction(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,void *ctx)
   ierr = DMDAVecGetArray(da,Udot,&udot);CHKERRQ(ierr);
 
   /* Get local grid boundaries */
-  ierr = DMDAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,&ys,NULL,&xm,&ym,NULL);CHKERRQ(ierr);
 
   /* Compute function over the locally owned part of the grid */
   for (j=ys; j<ys+ym; j++) {
     for (i=xs; i<xs+xm; i++) {
       /* Boundary conditions */
       if (i == 0 || j == 0 || i == Mx-1 || j == My-1) {
-        if (user->boundary == 0){ /* Drichlet BC */
+        if (user->boundary == 0) { /* Drichlet BC */
           f[j][i] = uarray[j][i]; /* F = U */
         } else {                  /* Neumann BC */
-          if (i == 0 && j == 0){              /* SW corner */
+          if (i == 0 && j == 0) {              /* SW corner */
             f[j][i] = uarray[j][i] - uarray[j+1][i+1];
-          } else if (i == Mx-1 && j == 0){    /* SE corner */
+          } else if (i == Mx-1 && j == 0) {    /* SE corner */
             f[j][i] = uarray[j][i] - uarray[j+1][i-1];
-          } else if (i == 0 && j == My-1){    /* NW corner */
+          } else if (i == 0 && j == My-1) {    /* NW corner */
             f[j][i] = uarray[j][i] - uarray[j-1][i+1];
-          } else if (i == Mx-1 && j == My-1){ /* NE corner */
-            f[j][i] = uarray[j][i] - uarray[j-1][i-1]; 
-          } else if (i == 0){                  /* Left */
+          } else if (i == Mx-1 && j == My-1) { /* NE corner */
+            f[j][i] = uarray[j][i] - uarray[j-1][i-1];
+          } else if (i == 0) {                  /* Left */
             f[j][i] = uarray[j][i] - uarray[j][i+1];
-          } else if (i == Mx-1){               /* Right */
+          } else if (i == Mx-1) {               /* Right */
             f[j][i] = uarray[j][i] - uarray[j][i-1];
           } else if (j == 0) {                 /* Bottom */
             f[j][i] = uarray[j][i] - uarray[j+1][i];
-          } else if (j == My-1){               /* Top */
+          } else if (j == My-1) {               /* Top */
             f[j][i] = uarray[j][i] - uarray[j-1][i];
           }
         }
       } else { /* Interior */
-        u       = uarray[j][i];
+        u = uarray[j][i];
         /* 5-point stencil */
-        uxx     = (-2.0*u + uarray[j][i-1] + uarray[j][i+1]);
-        uyy     = (-2.0*u + uarray[j-1][i] + uarray[j+1][i]);
-        if (user->nstencilpts == 9){
-        /* 9-point stencil: assume hx=hy */
+        uxx = (-2.0*u + uarray[j][i-1] + uarray[j][i+1]);
+        uyy = (-2.0*u + uarray[j-1][i] + uarray[j+1][i]);
+        if (user->nstencilpts == 9) {
+          /* 9-point stencil: assume hx=hy */
           uxx = 2.0*uxx/3.0 + (0.5*(uarray[j-1][i-1]+uarray[j-1][i+1]+uarray[j+1][i-1]+uarray[j+1][i+1]) - 2.0*u)/6.0;
           uyy = 2.0*uyy/3.0 + (0.5*(uarray[j-1][i-1]+uarray[j-1][i+1]+uarray[j+1][i-1]+uarray[j+1][i+1]) - 2.0*u)/6.0;
         }
-        f[j][i] = udot[j][i] - (uxx*sx + uyy*sy);  
+        f[j][i] = udot[j][i] - (uxx*sx + uyy*sy);
       }
     }
   }
@@ -255,7 +242,7 @@ PetscErrorCode FormIFunction(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,void *ctx)
 
 /* --------------------------------------------------------------------- */
 /*
-  FormIJacobian() - Compute IJacobian = dF/dU + a dF/dUdot 
+  FormIJacobian() - Compute IJacobian = dF/dU + a dF/dUdot
   This routine is not used with option '-use_coloring'
 */
 #undef __FUNCT__
@@ -265,19 +252,19 @@ PetscErrorCode FormIJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat *J
   PetscErrorCode ierr;
   PetscInt       i,j,Mx,My,xs,ys,xm,ym,nc;
   AppCtx         *user = (AppCtx*)ctx;
-  DM             da = (DM)user->da;
+  DM             da    = (DM)user->da;
   MatStencil     col[5],row;
   PetscScalar    vals[5],hx,hy,sx,sy;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
-  ierr = DMDAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,&ys,NULL,&xm,&ym,NULL);CHKERRQ(ierr);
 
   hx = 1.0/(PetscReal)(Mx-1); sx = 1.0/(hx*hx);
   hy = 1.0/(PetscReal)(My-1); sy = 1.0/(hy*hy);
- 
-  for (j=ys; j<ys+ym; j++){
-    for (i=xs; i<xs+xm; i++){
+
+  for (j=ys; j<ys+ym; j++) {
+    for (i=xs; i<xs+xm; i++) {
       nc    = 0;
       row.j = j; row.i = i;
       if (user->boundary == 0 && (i == 0 || i == Mx-1 || j == 0 || j == My-1)) {
@@ -286,13 +273,13 @@ PetscErrorCode FormIJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat *J
       } else if (user->boundary > 0 && i == 0) {  /* Left Neumann */
         col[nc].j = j; col[nc].i = i;   vals[nc++] = 1.0;
         col[nc].j = j; col[nc].i = i+1; vals[nc++] = -1.0;
-      } else if (user->boundary > 0 && i == Mx-1){/* Right Neumann */
+      } else if (user->boundary > 0 && i == Mx-1) { /* Right Neumann */
         col[nc].j = j; col[nc].i = i;   vals[nc++] = 1.0;
         col[nc].j = j; col[nc].i = i-1; vals[nc++] = -1.0;
       } else if (user->boundary > 0 && j == 0) {  /* Bottom Neumann */
         col[nc].j = j;   col[nc].i = i; vals[nc++] = 1.0;
         col[nc].j = j+1; col[nc].i = i; vals[nc++] = -1.0;
-      } else if (user->boundary > 0 && j == My-1){/* Top Neumann */
+      } else if (user->boundary > 0 && j == My-1) { /* Top Neumann */
         col[nc].j = j;   col[nc].i = i;  vals[nc++] = 1.0;
         col[nc].j = j-1; col[nc].i = i;  vals[nc++] = -1.0;
       } else {   /* Interior */
@@ -312,8 +299,8 @@ PetscErrorCode FormIJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat *J
     ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
 
-  if (user->viewJacobian){
-    ierr = PetscPrintf(((PetscObject)*Jpre)->comm,"Jpre:\n");CHKERRQ(ierr);
+  if (user->viewJacobian) {
+    ierr = PetscPrintf(PetscObjectComm((PetscObject)*Jpre),"Jpre:\n");CHKERRQ(ierr);
     ierr = MatView(*Jpre,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -322,28 +309,28 @@ PetscErrorCode FormIJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat *J
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "FormInitialSolution"
-PetscErrorCode FormInitialSolution(Vec U,void* ptr)
+PetscErrorCode FormInitialSolution(Vec U,void *ptr)
 {
   AppCtx         *user=(AppCtx*)ptr;
-  DM             da=user->da;
-  PetscReal      c=user->c;
+  DM             da   =user->da;
+  PetscReal      c    =user->c;
   PetscErrorCode ierr;
   PetscInt       i,j,xs,ys,xm,ym,Mx,My;
   PetscScalar    **u;
   PetscReal      hx,hy,x,y,r;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
-                   PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
+                     PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
 
-  hx     = 1.0/(PetscReal)(Mx-1);
-  hy     = 1.0/(PetscReal)(My-1);
+  hx = 1.0/(PetscReal)(Mx-1);
+  hy = 1.0/(PetscReal)(My-1);
 
   /* Get pointers to vector data */
   ierr = DMDAVecGetArray(da,U,&u);CHKERRQ(ierr);
 
   /* Get local grid boundaries */
-  ierr = DMDAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,&ys,NULL,&xm,&ym,NULL);CHKERRQ(ierr);
 
   /* Compute function over the locally owned part of the grid */
   for (j=ys; j<ys+ym; j++) {
@@ -351,37 +338,14 @@ PetscErrorCode FormInitialSolution(Vec U,void* ptr)
     for (i=xs; i<xs+xm; i++) {
       x = i*hx;
       r = PetscSqrtScalar((x-.5)*(x-.5) + (y-.5)*(y-.5));
-      if (r < .125) {
-        u[j][i] = PetscExpScalar(c*r*r*r);
-      } else {
-        u[j][i] = 0.0;
-      }
+      if (r < .125) u[j][i] = PetscExpScalar(c*r*r*r);
+      else u[j][i] = 0.0;
     }
   }
 
   /* Restore vectors */
   ierr = DMDAVecRestoreArray(da,U,&u);CHKERRQ(ierr);
-  PetscFunctionReturn(0); 
-} 
-
-#undef __FUNCT__  
-#define __FUNCT__ "MyTSMonitor"
-PetscErrorCode MyTSMonitor(TS ts,PetscInt step,PetscReal ptime,Vec v,void *ptr)
-{
-  PetscErrorCode ierr;
-  PetscReal      norm,vmax,vmin;
-  MPI_Comm       comm;
-  MonitorCtx     *user = (MonitorCtx*)ptr;
-
-  PetscFunctionBegin;
-  ierr = VecNorm(v,NORM_1,&norm);CHKERRQ(ierr);
-  ierr = VecMax(v,PETSC_NULL,&vmax);CHKERRQ(ierr);
-  ierr = VecMin(v,PETSC_NULL,&vmin);CHKERRQ(ierr);
-  ierr = PetscObjectGetComm((PetscObject)ts,&comm);CHKERRQ(ierr);
-  ierr = PetscPrintf(comm,"timestep %D: time %G, solution norm %G, max %G, min %G\n",step,ptime,norm,vmax,vmin);CHKERRQ(ierr);
-  if (user->drawcontours){
-    ierr = VecView(v,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
-  }
   PetscFunctionReturn(0);
 }
+
 

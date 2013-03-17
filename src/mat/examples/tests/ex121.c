@@ -11,41 +11,41 @@ static char help[] = "Test sequential FFTW convolution\n\n";
 PetscInt main(PetscInt argc,char **args)
 {
   typedef enum {RANDOM, CONSTANT, TANH, NUM_FUNCS} FuncType;
-  const char    *funcNames[NUM_FUNCS] = {"random", "constant", "tanh"};
-  Mat            A;    
+  const char     *funcNames[NUM_FUNCS] = {"random", "constant", "tanh"};
+  Mat            A;
   PetscMPIInt    size;
   PetscInt       n = 10,N,ndim=4,dim[4],DIM,i,j;
   Vec            w,x,y1,y2,z1,z2;
-  PetscScalar   *a, *a2, *a3;
-  PetscScalar    s;  
+  PetscScalar    *a, *a2, *a3;
+  PetscScalar    s;
   PetscRandom    rdm;
   PetscReal      enorm;
-  PetscInt       func=0;
+  PetscInt       func     = 0;
   FuncType       function = RANDOM;
-  PetscBool      view = PETSC_FALSE;
+  PetscBool      view     = PETSC_FALSE;
   PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc,&args,(char *)0,help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&args,(char*)0,help);CHKERRQ(ierr);
 #if !defined(PETSC_USE_COMPLEX)
   SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP, "This example requires complex numbers");
 #endif
   ierr = MPI_Comm_size(PETSC_COMM_WORLD, &size);CHKERRQ(ierr);
   if (size != 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP, "This is a uniprocessor example only!");
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD, PETSC_NULL, "FFTW Options", "ex112");CHKERRQ(ierr);
-    ierr = PetscOptionsEList("-function", "Function type", "ex121", funcNames, NUM_FUNCS, funcNames[function], &func, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-vec_view_draw", "View the functions", "ex112", view, &view, PETSC_NULL);CHKERRQ(ierr);
-    function = (FuncType) func;
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  ierr     = PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "FFTW Options", "ex112");CHKERRQ(ierr);
+  ierr     = PetscOptionsEList("-function", "Function type", "ex121", funcNames, NUM_FUNCS, funcNames[function], &func, NULL);CHKERRQ(ierr);
+  ierr     = PetscOptionsBool("-vec_view draw", "View the functions", "ex112", view, &view, NULL);CHKERRQ(ierr);
+  function = (FuncType) func;
+  ierr     = PetscOptionsEnd();CHKERRQ(ierr);
 
-  for(DIM = 0; DIM < ndim; DIM++){
+  for (DIM = 0; DIM < ndim; DIM++) {
     dim[DIM] = n;  /* size of transformation in DIM-dimension */
   }
   ierr = PetscRandomCreate(PETSC_COMM_SELF, &rdm);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rdm);CHKERRQ(ierr);
 
-  for(DIM = 1; DIM < 5; DIM++){
+  for (DIM = 1; DIM < 5; DIM++) {
     /* create vectors of length N=n^DIM */
-    for(i = 0, N = 1; i < DIM; i++) N *= dim[i];
+    for (i = 0, N = 1; i < DIM; i++) N *= dim[i];
     ierr = PetscPrintf(PETSC_COMM_SELF, "\n %d-D: FFTW on vector of size %d \n",DIM,N);CHKERRQ(ierr);
     ierr = VecCreateSeq(PETSC_COMM_SELF,N,&x);CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject) x, "Real space vector");CHKERRQ(ierr);
@@ -59,14 +59,14 @@ PetscInt main(PetscInt argc,char **args)
     ierr = PetscObjectSetName((PetscObject) z1, "Reconstructed convolution");CHKERRQ(ierr);
     ierr = VecDuplicate(x,&z2);CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject) z2, "Real space convolution");CHKERRQ(ierr);
-    
+
     if (function == RANDOM) {
       ierr = VecSetRandom(x, rdm);CHKERRQ(ierr);
     } else if (function == CONSTANT) {
       ierr = VecSet(x, 1.0);CHKERRQ(ierr);
     } else if (function == TANH) {
       ierr = VecGetArray(x, &a);CHKERRQ(ierr);
-      for(i = 0; i < N; ++i) {
+      for (i = 0; i < N; ++i) {
         a[i] = tanh((i - N/2.0)*(10.0/N));
       }
       ierr = VecRestoreArray(x, &a);CHKERRQ(ierr);
@@ -75,11 +75,11 @@ PetscInt main(PetscInt argc,char **args)
 
     /* Create window function */
     ierr = VecGetArray(w, &a);CHKERRQ(ierr);
-    for(i = 0; i < N; ++i) {
-      // Step Function
-      a[i] = (i > N/4 && i < 3*N/4)? 1.0: 0.0;
-      // Delta Function
-      //a[i] = (i == N/2)? 1.0: 0.0;
+    for (i = 0; i < N; ++i) {
+      /* Step Function */
+      a[i] = (i > N/4 && i < 3*N/4) ? 1.0 : 0.0;
+      /* Delta Function */
+      /*a[i] = (i == N/2)? 1.0: 0.0; */
     }
     ierr = VecRestoreArray(w, &a);CHKERRQ(ierr);
     if (view) {ierr = VecView(w, PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);}
@@ -90,7 +90,7 @@ PetscInt main(PetscInt argc,char **args)
     /* Convolve x with w*/
     ierr = MatMult(A,x,y1);CHKERRQ(ierr);
     ierr = MatMult(A,w,y2);CHKERRQ(ierr);
-    ierr = VecPointwiseMult(y1, y1, y2);CHKERRQ(ierr); 
+    ierr = VecPointwiseMult(y1, y1, y2);CHKERRQ(ierr);
     if (view && i == 0) {ierr = VecView(y1, PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);}
     ierr = MatMultTranspose(A,y1,z1);CHKERRQ(ierr);
 
@@ -98,31 +98,31 @@ PetscInt main(PetscInt argc,char **args)
     ierr = VecGetArray(x, &a);CHKERRQ(ierr);
     ierr = VecGetArray(w, &a2);CHKERRQ(ierr);
     ierr = VecGetArray(z2, &a3);CHKERRQ(ierr);
-    for(i = 0; i < N; ++i) {
+    for (i = 0; i < N; ++i) {
       /* PetscInt checkInd = (i > N/2-1)? i-N/2: i+N/2;*/
 
-      //if (!(i%100)) PetscPrintf(PETSC_COMM_WORLD, "Finished convolution row %d\n", i);
+      /*if (!(i%100)) PetscPrintf(PETSC_COMM_WORLD, "Finished convolution row %d\n", i);*/
       a3[i] = 0.0;
-      for(j = -N/2+1; j < N/2; ++j) {
-        PetscInt xpInd   = (j < 0)? N+j: j;
-        PetscInt diffInd = (i-j < 0)? N-(j-i): (i-j > N-1)? i-j-N: i-j;
+      for (j = -N/2+1; j < N/2; ++j) {
+        PetscInt xpInd   = (j < 0) ? N+j : j;
+        PetscInt diffInd = (i-j < 0) ? N-(j-i) : (i-j > N-1) ? i-j-N : i-j;
 
         a3[i] += a[xpInd]*a2[diffInd];
       }
-      //if (PetscAbsScalar(a3[i]) > PetscAbsScalar(a[checkInd])+0.1) PetscPrintf(PETSC_COMM_WORLD, "Invalid convolution at row %d\n", i);
+      /*if (PetscAbsScalar(a3[i]) > PetscAbsScalar(a[checkInd])+0.1) PetscPrintf(PETSC_COMM_WORLD, "Invalid convolution at row %d\n", i);*/
     }
     ierr = VecRestoreArray(x, &a);CHKERRQ(ierr);
     ierr = VecRestoreArray(w, &a2);CHKERRQ(ierr);
     ierr = VecRestoreArray(z2, &a3);CHKERRQ(ierr);
 
     /* compare z1 and z2. FFTW computes an unnormalized DFT, thus z1 = N*z2 */
-    s = 1.0/(PetscReal)N;
+    s    = 1.0/(PetscReal)N;
     ierr = VecScale(z1,s);CHKERRQ(ierr);
     if (view) {ierr = VecView(z1, PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);}
     if (view) {ierr = VecView(z2, PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);}
     ierr = VecAXPY(z1,-1.0,z2);CHKERRQ(ierr);
     ierr = VecNorm(z1,NORM_1,&enorm);CHKERRQ(ierr);
-    if (enorm > 1.e-11){
+    if (enorm > 1.e-11) {
       ierr = PetscPrintf(PETSC_COMM_SELF,"  Error norm of |z1 - z2| %G\n",enorm);CHKERRQ(ierr);
     }
 

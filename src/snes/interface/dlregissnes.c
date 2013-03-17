@@ -2,9 +2,9 @@
 #include <petsc-private/snesimpl.h>
 #include <petsc-private/linesearchimpl.h>
 
-static PetscBool  SNESPackageInitialized = PETSC_FALSE;
+static PetscBool SNESPackageInitialized = PETSC_FALSE;
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SNESFinalizePackage"
 /*@C
   SNESFinalizePackage - This function destroys everything in the Petsc interface to the SNES package. It is
@@ -20,12 +20,12 @@ PetscErrorCode  SNESFinalizePackage(void)
   PetscFunctionBegin;
   SNESPackageInitialized = PETSC_FALSE;
   SNESRegisterAllCalled  = PETSC_FALSE;
-  SNESList               = PETSC_NULL;
-  SNESLineSearchList     = PETSC_NULL;
+  SNESList               = NULL;
+  SNESLineSearchList     = NULL;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SNESInitializePackage"
 /*@C
   SNESInitializePackage - This function initializes everything in the SNES package. It is called
@@ -33,19 +33,19 @@ PetscErrorCode  SNESFinalizePackage(void)
   when using static libraries.
 
   Input Parameter:
-  path - The dynamic library path, or PETSC_NULL
+  path - The dynamic library path, or NULL
 
   Level: developer
 
 .keywords: SNES, initialize, package
 .seealso: PetscInitialize()
 @*/
-PetscErrorCode  SNESInitializePackage(const char path[]) 
+PetscErrorCode  SNESInitializePackage(const char path[])
 {
-  char              logList[256];
-  char              *className;
-  PetscBool         opt;
-  PetscErrorCode    ierr;
+  char           logList[256];
+  char           *className;
+  PetscBool      opt;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (SNESPackageInitialized) PetscFunctionReturn(0);
@@ -55,6 +55,7 @@ PetscErrorCode  SNESInitializePackage(const char path[])
   /* Register Classes */
   ierr = PetscClassIdRegister("SNES",&SNES_CLASSID);CHKERRQ(ierr);
   ierr = PetscClassIdRegister("SNESLineSearch",&SNESLINESEARCH_CLASSID);CHKERRQ(ierr);
+  ierr = PetscClassIdRegister("DMSNES",&DMSNES_CLASSID);CHKERRQ(ierr);
   /* Register Constructors */
   ierr = SNESRegisterAll(path);CHKERRQ(ierr);
   ierr = SNESLineSearchRegisterAll(path);CHKERRQ(ierr);
@@ -64,8 +65,9 @@ PetscErrorCode  SNESInitializePackage(const char path[])
   ierr = PetscLogEventRegister("SNESGSEval",           SNES_CLASSID,&SNES_GSEval);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("SNESJacobianEval",     SNES_CLASSID,&SNES_JacobianEval);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("SNESLineSearch",       SNESLINESEARCH_CLASSID,&SNESLineSearch_Apply);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("SNESNPCSolve",         SNES_CLASSID,&SNES_NPCSolve);CHKERRQ(ierr);
   /* Process info exclusions */
-  ierr = PetscOptionsGetString(PETSC_NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt) {
     ierr = PetscStrstr(logList, "snes", &className);CHKERRQ(ierr);
     if (className) {
@@ -73,7 +75,7 @@ PetscErrorCode  SNESInitializePackage(const char path[])
     }
   }
   /* Process summary exclusions */
-  ierr = PetscOptionsGetString(PETSC_NULL, "-log_summary_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL, "-log_summary_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt) {
     ierr = PetscStrstr(logList, "snes", &className);CHKERRQ(ierr);
     if (className) {
@@ -84,9 +86,8 @@ PetscErrorCode  SNESInitializePackage(const char path[])
   PetscFunctionReturn(0);
 }
 
-#ifdef PETSC_USE_DYNAMIC_LIBRARIES
-EXTERN_C_BEGIN
-#undef __FUNCT__  
+#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
+#undef __FUNCT__
 #define __FUNCT__ "PetscDLLibraryRegister_petscsnes"
 /*
   PetscDLLibraryRegister - This function is called when the dynamic library it is in is opened.
@@ -97,7 +98,7 @@ EXTERN_C_BEGIN
   path - library path
 
  */
-PetscErrorCode  PetscDLLibraryRegister_petscsnes(const char path[])
+PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscsnes(const char path[])
 {
   PetscErrorCode ierr;
 
@@ -105,6 +106,5 @@ PetscErrorCode  PetscDLLibraryRegister_petscsnes(const char path[])
   ierr = SNESInitializePackage(path);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #endif /* PETSC_USE_DYNAMIC_LIBRARIES */

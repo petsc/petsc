@@ -4,10 +4,8 @@ FFLAGS   =
 SOURCEC  =
 SOURCEF  =
 SOURCEH  = petscimpl.h
-OBJSC    =
-OBJSF    =
 LIBBASE  = libpetscvec
-DIRS     = 
+DIRS     =
 LOCDIR   = include/petsc-private/
 MANSEC   = Sys
 

@@ -1,5 +1,5 @@
 
-static char help[] = "Tests ContainerCreate and ContainerDestroy.\n\n";
+static char help[] = "Tests PetscContainerCreate() and PetscContainerDestroy().\n\n";
 
 #include <petscsys.h>
 
@@ -10,9 +10,9 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
   PetscContainer container;
 
-  PetscInitialize(&argc,&argv,(char *)0,help);
+  PetscInitialize(&argc,&argv,(char*)0,help);
   ierr = PetscContainerCreate(PETSC_COMM_SELF,&container);CHKERRQ(ierr);
-  ierr = PetscContainerDestroy(container);CHKERRQ(ierr); 
+  ierr = PetscContainerDestroy(container);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

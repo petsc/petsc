@@ -2,19 +2,51 @@
 /*
      Provides utility routines for manulating any type of PETSc object.
 */
-#include <petscsys.h>  /*I   "petscsys.h"    I*/
+#include <petsc-private/petscimpl.h>  /*I   "petscsys.h"    I*/
 
-#undef __FUNCT__  
+#undef __FUNCT__
+#define __FUNCT__ "PetscObjectComm"
+/*@C
+   PetscObjectComm - Gets the MPI communicator for any PetscObject   regardless of the type.
+
+   Not Collective
+
+   Input Parameter:
+.  obj - any PETSc object, for example a Vec, Mat or KSP. Thus must be
+         cast with a (PetscObject), for example,
+         SETERRQ(PetscObjectComm((PetscObject)mat,...);
+
+   Output Parameter:
+.  comm - the MPI communicator or MPI_COMM_NULL if object is not valid
+
+   Level: advanced
+
+   Notes: Never use this in the form
+$       comm = PetscObjectComm((PetscObject)obj); 
+        instead use PetscObjectGetComm()
+
+   Concepts: communicator^getting from object
+   Concepts: MPI communicator^getting from object
+
+.seealso: PetscObjectGetComm()
+@*/
+MPI_Comm  PetscObjectComm(PetscObject obj)
+{
+  if (!obj) return MPI_COMM_NULL;
+  return obj->comm;
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscObjectGetComm"
 /*@C
-   PetscObjectGetComm - Gets the MPI communicator for any PetscObject, 
+   PetscObjectGetComm - Gets the MPI communicator for any PetscObject,
    regardless of the type.
 
    Not Collective
 
    Input Parameter:
 .  obj - any PETSc object, for example a Vec, Mat or KSP. Thus must be
-         cast with a (PetscObject), for example, 
+         cast with a (PetscObject), for example,
          PetscObjectGetComm((PetscObject)mat,&comm);
 
    Output Parameter:
@@ -25,6 +57,7 @@
    Concepts: communicator^getting from object
    Concepts: MPI communicator^getting from object
 
+.seealso: PetscObjectComm()
 @*/
 PetscErrorCode  PetscObjectGetComm(PetscObject obj,MPI_Comm *comm)
 {
@@ -35,13 +68,11 @@ PetscErrorCode  PetscObjectGetComm(PetscObject obj,MPI_Comm *comm)
   PetscValidPointer(comm,2);
   if (obj->bops->getcomm) {
     ierr = obj->bops->getcomm(obj,comm);CHKERRQ(ierr);
-  } else {
-    *comm = obj->comm;
-  }
+  } else *comm = obj->comm;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscObjectGetTabLevel"
 /*@
    PetscObjectGetTabLevel - Gets the number of tabs that ASCII output for that object use
@@ -50,7 +81,7 @@ PetscErrorCode  PetscObjectGetComm(PetscObject obj,MPI_Comm *comm)
 
    Input Parameter:
 .  obj - any PETSc object, for example a Vec, Mat or KSP. Thus must be
-         cast with a (PetscObject), for example, 
+         cast with a (PetscObject), for example,
          PetscObjectGetComm((PetscObject)mat,&comm);
 
    Output Parameter:
@@ -82,7 +113,7 @@ PetscErrorCode  PetscObjectGetTabLevel(PetscObject obj,PetscInt *tab)
 
    Input Parameters:
 +  obj - any PETSc object, for example a Vec, Mat or KSP. Thus must be
-         cast with a (PetscObject), for example, 
+         cast with a (PetscObject), for example,
          PetscObjectGetComm((PetscObject)mat,&comm);
 -   tab - the number of tabs
 
@@ -102,7 +133,7 @@ PetscErrorCode  PetscObjectSetTabLevel(PetscObject obj,PetscInt tab)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscObjectIncrementTabLevel"
 /*@
    PetscObjectIncrementTabLevel - Sets the number of tabs that ASCII output for that object use based on
@@ -130,10 +161,7 @@ PetscErrorCode  PetscObjectIncrementTabLevel(PetscObject obj,PetscObject oldobj,
 
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
-  if (oldobj) {
-    obj->tablevel = oldobj->tablevel + tab;
-  } else {
-    obj->tablevel = tab;
-  }
+  if (oldobj) obj->tablevel = oldobj->tablevel + tab;
+  else obj->tablevel = tab;
   PetscFunctionReturn(0);
 }

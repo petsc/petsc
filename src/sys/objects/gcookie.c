@@ -2,18 +2,18 @@
 /*
      Provides utility routines for manulating any type of PETSc object.
 */
-#include <petscsys.h>  /*I   "petscsys.h"    I*/
+#include <petsc-private/petscimpl.h>  /*I   "petscsys.h"    I*/
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscObjectGetClassId"
 /*@C
    PetscObjectGetClassId - Gets the classid for any PetscObject
 
    Not Collective
-   
+
    Input Parameter:
 .  obj - any PETSc object, for example a Vec, Mat or KSP.
-         Thus must be cast with a (PetscObject), for example, 
+         Thus must be cast with a (PetscObject), for example,
          PetscObjectGetClassId((PetscObject)mat,&classid);
 
    Output Parameter:

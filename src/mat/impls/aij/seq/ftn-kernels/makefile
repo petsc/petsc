@@ -10,15 +10,13 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = 
+SOURCEC  =
 SOURCEF  = fmult.F fmultadd.F fsolve.F frelax.F
-SOURCEH  = 
-OBJSC    = 
-OBJSF    = fmult.o fmultadd.o fsolve.o frelax.o
+SOURCEH  =
 LIBBASE  = libpetscmat
 MANSEC   = Sys
 LOCDIR   = src/mat/impls/aij/seq/ftn-kernels/
-DIRS     = 
+DIRS     =
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

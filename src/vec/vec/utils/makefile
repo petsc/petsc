@@ -3,13 +3,9 @@ ALL: lib
 
 CFLAGS   = ${PNETCDF_INCLUDE}
 FFLAGS   =
-SOURCEC  = vinv.c vscat.c vpscat.c cmesh.c vecio.c \
-           comb.c vecstash.c vecmpitoseq.c
+SOURCEC  = vinv.c vscat.c vpscat.c cmesh.c vecio.c comb.c vecstash.c vecmpitoseq.c vecs.c vsection.c
 SOURCEF  =
 SOURCEH  = vpscat.h
-OBJSC    = vinv.o vscat.o vpscat.o cmesh.o vecio.o \
-           comb.o vecstash.o vecmpitoseq.o
-OBJSF    =
 DIRS     = matlab veccusp
 LIBBASE  = libpetscvec
 MANSEC   = Vec

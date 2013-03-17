@@ -5,17 +5,17 @@
 */
 #include <petscsys.h>
 
-struct _n_PetscOList {
-    char        name[256];
-    PetscBool   skipdereference;   /* when the OList is destroyed do not call PetscObjectDereference() on this object */
-    PetscObject obj;
-    PetscOList  next;
+struct _n_PetscObjectList {
+  char            name[256];
+  PetscBool       skipdereference;      /* when the PetscObjectList is destroyed do not call PetscObjectDereference() on this object */
+  PetscObject     obj;
+  PetscObjectList next;
 };
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscOListRemoveReference"
+#undef __FUNCT__
+#define __FUNCT__ "PetscObjectListRemoveReference"
 /*@C
-     PetscOListRemoveReference - Calls PetscObjectDereference() on an object in the list immediately but keeps a pointer to the object in the list.
+     PetscObjectListRemoveReference - Calls PetscObjectDereference() on an object in the list immediately but keeps a pointer to the object in the list.
 
     Input Parameters:
 +     fl - the object list
@@ -23,27 +23,27 @@ struct _n_PetscOList {
 
     Level: developer
 
-       Notes: Use PetscOListAdd(PetscOList,const char name[],PETSC_NULL) to truly remove the object from the list
- 
+       Notes: Use PetscObjectListAdd(PetscObjectList,const char name[],NULL) to truly remove the object from the list
+
               Use this routine ONLY if you know that the object referenced will remain in existence until the pointing object is destroyed
 
       Developer Note: this is to handle some cases that otherwise would result in having circular references so reference counts never got to zero
 
-.seealso: PetscOListDestroy(), PetscOListFind(), PetscOListDuplicate(), PetscOListReverseFind(), PetscOListDuplicate(), PetscOListAdd()
+.seealso: PetscObjectListDestroy(), PetscObjectListFind(), PetscObjectListDuplicate(), PetscObjectListReverseFind(), PetscObjectListDuplicate(), PetscObjectListAdd()
 
 @*/
-PetscErrorCode  PetscOListRemoveReference(PetscOList *fl,const char name[])
+PetscErrorCode  PetscObjectListRemoveReference(PetscObjectList *fl,const char name[])
 {
-  PetscOList     nlist;
-  PetscErrorCode ierr;
-  PetscBool      match;
+  PetscObjectList nlist;
+  PetscErrorCode  ierr;
+  PetscBool       match;
 
   PetscFunctionBegin;
   nlist = *fl;
   while (nlist) {
     ierr = PetscStrcmp(name,nlist->name,&match);CHKERRQ(ierr);
     if (match) { /* found it in the list */
-      if (!nlist->skipdereference) { 
+      if (!nlist->skipdereference) {
         ierr = PetscObjectDereference(nlist->obj);CHKERRQ(ierr);
       }
       nlist->skipdereference = PETSC_TRUE;
@@ -51,13 +51,13 @@ PetscErrorCode  PetscOListRemoveReference(PetscOList *fl,const char name[])
     }
     nlist = nlist->next;
   }
-  PetscFunctionReturn(0); 
+  PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscOListAdd"
+#undef __FUNCT__
+#define __FUNCT__ "PetscObjectListAdd"
 /*@C
-     PetscOListAdd - Adds a new object to an PetscOList
+     PetscObjectListAdd - Adds a new object to an PetscObjectList
 
     Input Parameters:
 +     fl - the object list
@@ -66,35 +66,31 @@ PetscErrorCode  PetscOListRemoveReference(PetscOList *fl,const char name[])
 
     Level: developer
 
-       Notes: Replaces item if it is already in list. Removes item if you pass in a PETSC_NULL object.    
- 
-        Use PetscOListFind() or PetscOListReverseFind() to get the object back
+       Notes: Replaces item if it is already in list. Removes item if you pass in a NULL object.
 
-.seealso: PetscOListDestroy(), PetscOListFind(), PetscOListDuplicate(), PetscOListReverseFind(), PetscOListDuplicate()
+        Use PetscObjectListFind() or PetscObjectListReverseFind() to get the object back
+
+.seealso: PetscObjectListDestroy(), PetscObjectListFind(), PetscObjectListDuplicate(), PetscObjectListReverseFind(), PetscObjectListDuplicate()
 
 @*/
-PetscErrorCode  PetscOListAdd(PetscOList *fl,const char name[],PetscObject obj)
+PetscErrorCode  PetscObjectListAdd(PetscObjectList *fl,const char name[],PetscObject obj)
 {
-  PetscOList     olist,nlist,prev;
-  PetscErrorCode ierr;
-  PetscBool      match;
+  PetscObjectList olist,nlist,prev;
+  PetscErrorCode  ierr;
+  PetscBool       match;
 
   PetscFunctionBegin;
-
   if (!obj) { /* this means remove from list if it is there */
     nlist = *fl; prev = 0;
     while (nlist) {
       ierr = PetscStrcmp(name,nlist->name,&match);CHKERRQ(ierr);
       if (match) {  /* found it already in the list */
-        if (!nlist->skipdereference) { 
+        if (!nlist->skipdereference) {
           ierr = PetscObjectDereference(nlist->obj);CHKERRQ(ierr);
         }
         if (prev) prev->next = nlist->next;
-        else if (nlist->next) {
-          *fl = nlist->next;
-        } else {
-          *fl = 0;
-        }
+        else if (nlist->next) *fl = nlist->next;
+        else *fl = 0;
         ierr = PetscFree(nlist);CHKERRQ(ierr);
         PetscFunctionReturn(0);
       }
@@ -109,7 +105,7 @@ PetscErrorCode  PetscOListAdd(PetscOList *fl,const char name[],PetscObject obj)
     ierr = PetscStrcmp(name,nlist->name,&match);CHKERRQ(ierr);
     if (match) {  /* found it in the list */
       ierr = PetscObjectReference(obj);CHKERRQ(ierr);
-      if (!nlist->skipdereference) { 
+      if (!nlist->skipdereference) {
         ierr = PetscObjectDereference(nlist->obj);CHKERRQ(ierr);
       }
       nlist->skipdereference = PETSC_FALSE;
@@ -120,15 +116,15 @@ PetscErrorCode  PetscOListAdd(PetscOList *fl,const char name[],PetscObject obj)
   }
 
   /* add it to list, because it was not already there */
-  ierr        = PetscNew(struct _n_PetscOList,&olist);CHKERRQ(ierr);
+  ierr        = PetscNew(struct _n_PetscObjectList,&olist);CHKERRQ(ierr);
   olist->next = 0;
   olist->obj  = obj;
+
   ierr = PetscObjectReference(obj);CHKERRQ(ierr);
   ierr = PetscStrcpy(olist->name,name);CHKERRQ(ierr);
 
-  if (!*fl) {
-    *fl = olist;
-  } else { /* go to end of list */
+  if (!*fl) *fl = olist;
+  else { /* go to end of list */
     nlist = *fl;
     while (nlist->next) {
       nlist = nlist->next;
@@ -138,42 +134,42 @@ PetscErrorCode  PetscOListAdd(PetscOList *fl,const char name[],PetscObject obj)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscOListDestroy"
+#undef __FUNCT__
+#define __FUNCT__ "PetscObjectListDestroy"
 /*@C
-    PetscOListDestroy - Destroy a list of objects
+    PetscObjectListDestroy - Destroy a list of objects
 
     Input Parameter:
 .   ifl   - pointer to list
 
     Level: developer
 
-.seealso: PetscOListAdd(), PetscOListFind(), PetscOListDuplicate(), PetscOListReverseFind(), PetscOListDuplicate()
+.seealso: PetscObjectListAdd(), PetscObjectListFind(), PetscObjectListDuplicate(), PetscObjectListReverseFind(), PetscObjectListDuplicate()
 
 @*/
-PetscErrorCode  PetscOListDestroy(PetscOList *ifl)
+PetscErrorCode  PetscObjectListDestroy(PetscObjectList *ifl)
 {
-  PetscOList     tmp,fl = *ifl;
-  PetscErrorCode ierr;
+  PetscObjectList tmp,fl = *ifl;
+  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   while (fl) {
-    tmp   = fl->next;
+    tmp = fl->next;
     if (!fl->skipdereference) {
-      ierr  = PetscObjectDereference(fl->obj);CHKERRQ(ierr);
+      ierr = PetscObjectDereference(fl->obj);CHKERRQ(ierr);
     }
-    ierr  = PetscFree(fl);CHKERRQ(ierr);
-    fl    = tmp;
+    ierr = PetscFree(fl);CHKERRQ(ierr);
+    fl   = tmp;
   }
-  *ifl = PETSC_NULL;
+  *ifl = NULL;
   PetscFunctionReturn(0);
 }
 
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscOListFind"
+#undef __FUNCT__
+#define __FUNCT__ "PetscObjectListFind"
 /*@C
-    PetscOListFind - givn a name, find the matching object
+    PetscObjectListFind - givn a name, find the matching object
 
     Input Parameters:
 +   fl   - pointer to list
@@ -185,14 +181,14 @@ PetscErrorCode  PetscOListDestroy(PetscOList *ifl)
     Level: developer
 
     Notes:
-    The name must have been registered with the PetscOListAdd() before calling this routine.
+    The name must have been registered with the PetscObjectListAdd() before calling this routine.
 
     The reference count of the object is not increased
 
-.seealso: PetscOListDestroy(), PetscOListAdd(), PetscOListDuplicate(), PetscOListReverseFind(), PetscOListDuplicate()
+.seealso: PetscObjectListDestroy(), PetscObjectListAdd(), PetscObjectListDuplicate(), PetscObjectListReverseFind(), PetscObjectListDuplicate()
 
 @*/
-PetscErrorCode  PetscOListFind(PetscOList fl,const char name[],PetscObject *obj)
+PetscErrorCode  PetscObjectListFind(PetscObjectList fl,const char name[],PetscObject *obj)
 {
   PetscErrorCode ierr;
   PetscBool      match;
@@ -210,10 +206,10 @@ PetscErrorCode  PetscOListFind(PetscOList fl,const char name[],PetscObject *obj)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscOListReverseFind"
+#undef __FUNCT__
+#define __FUNCT__ "PetscObjectListReverseFind"
 /*@C
-    PetscOListReverseFind - given a object, find the matching name if it exists
+    PetscObjectListReverseFind - given a object, find the matching name if it exists
 
     Input Parameters:
 +   fl   - pointer to list
@@ -226,14 +222,14 @@ PetscErrorCode  PetscOListFind(PetscOList fl,const char name[],PetscObject *obj)
     Level: developer
 
     Notes:
-    The name must have been registered with the PetscOListAdd() before calling this routine.
+    The name must have been registered with the PetscObjectListAdd() before calling this routine.
 
     The reference count of the object is not increased
 
-.seealso: PetscOListDestroy(), PetscOListAdd(), PetscOListDuplicate(), PetscOListFind(), PetscOListDuplicate()
+.seealso: PetscObjectListDestroy(), PetscObjectListAdd(), PetscObjectListDuplicate(), PetscObjectListFind(), PetscObjectListDuplicate()
 
 @*/
-PetscErrorCode  PetscOListReverseFind(PetscOList fl,PetscObject obj,char **name,PetscBool *skipdereference)
+PetscErrorCode  PetscObjectListReverseFind(PetscObjectList fl,PetscObject obj,char **name,PetscBool *skipdereference)
 {
   PetscFunctionBegin;
   *name = 0;
@@ -248,10 +244,10 @@ PetscErrorCode  PetscOListReverseFind(PetscOList fl,PetscObject obj,char **name,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscOListDuplicate"
+#undef __FUNCT__
+#define __FUNCT__ "PetscObjectListDuplicate"
 /*@C
-    PetscOListDuplicate - Creates a new list from a give object list.
+    PetscObjectListDuplicate - Creates a new list from a give object list.
 
     Input Parameters:
 .   fl   - pointer to list
@@ -261,17 +257,17 @@ PetscErrorCode  PetscOListReverseFind(PetscOList fl,PetscObject obj,char **name,
 
     Level: developer
 
-.seealso: PetscOListDestroy(), PetscOListAdd(), PetscOListReverseFind(), PetscOListFind(), PetscOListDuplicate()
+.seealso: PetscObjectListDestroy(), PetscObjectListAdd(), PetscObjectListReverseFind(), PetscObjectListFind(), PetscObjectListDuplicate()
 
 @*/
-PetscErrorCode  PetscOListDuplicate(PetscOList fl,PetscOList *nl)
+PetscErrorCode  PetscObjectListDuplicate(PetscObjectList fl,PetscObjectList *nl)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   while (fl) {
-    ierr = PetscOListAdd(nl,fl->name,fl->obj);CHKERRQ(ierr);
-    fl = fl->next;
+    ierr = PetscObjectListAdd(nl,fl->name,fl->obj);CHKERRQ(ierr);
+    fl   = fl->next;
   }
   PetscFunctionReturn(0);
 }

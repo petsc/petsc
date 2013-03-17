@@ -1,0 +1,56 @@
+User-provided points
+degree 1 at            0: B=           0  D=           1  D2=           0
+degree 2 at            0: B=        -0.5  D=           0  D2=           3
+degree 3 at            0: B=          -0  D=        -1.5  D2=           0
+degree 4 at            0: B=       0.375  D=           0  D2=        -7.5
+degree 5 at            0: B=           0  D=       1.875  D2=           0
+degree 1 at          0.2: B=         0.2  D=           1  D2=           0
+degree 2 at          0.2: B=       -0.44  D=         0.6  D2=           3
+degree 3 at          0.2: B=       -0.28  D=        -1.2  D2=           3
+degree 4 at          0.2: B=       0.232  D=       -1.36  D2=        -5.4
+degree 5 at          0.2: B=      0.3075  D=       0.888  D2=       -9.24
+degree 1 at          0.8: B=         0.8  D=           1  D2=           0
+degree 2 at          0.8: B=        0.46  D=         2.4  D2=           3
+degree 3 at          0.8: B=        0.08  D=         3.3  D2=          12
+degree 4 at          0.8: B=      -0.233  D=        2.96  D2=        26.1
+degree 5 at          0.8: B=     -0.3995  D=       1.203  D2=       38.64
+degree 1 at          0.9: B=         0.9  D=           1  D2=           0
+degree 2 at          0.9: B=       0.715  D=         2.7  D2=           3
+degree 3 at          0.9: B=      0.4725  D=       4.575  D2=        13.5
+degree 4 at          0.9: B=      0.2079  D=       6.008  D2=       35.02
+degree 5 at          0.9: B=    -0.04114  D=       6.446  D2=       67.57
+degree 1 at            1: B=           1  D=           1  D2=           0
+degree 2 at            1: B=           1  D=           3  D2=           3
+degree 3 at            1: B=           1  D=           6  D2=          15
+degree 4 at            1: B=           1  D=          10  D2=          45
+degree 5 at            1: B=           1  D=          15  D2=         105
+ 0:   5.7735e-01   5.1640e-01   5.0709e-01   5.0395e-01
+Quadrature weights
+ 0:   1.7770e-01   3.5897e-01   4.2667e-01   3.5897e-01   1.7770e-01
+Moment error: zeroth=3.33067e-16, first=1.38778e-16, second=-5.55112e-17
+Gauss points
+degree 1 at      -0.4296: B=     -0.4296  D=           1  D2=           0
+degree 2 at      -0.4296: B=     -0.2231  D=      -1.289  D2=           3
+degree 3 at      -0.4296: B=      0.4462  D=     -0.1156  D2=      -6.445
+degree 4 at      -0.4296: B=     -0.1681  D=       1.834  D2=       2.191
+degree 5 at      -0.4296: B=     -0.2269  D=      -1.629  D2=       10.07
+degree 1 at      -0.1539: B=     -0.1539  D=           1  D2=           0
+degree 2 at      -0.1539: B=     -0.4645  D=     -0.4616  D2=           3
+degree 3 at      -0.1539: B=      0.2217  D=      -1.322  D2=      -2.308
+degree 4 at      -0.1539: B=      0.2887  D=        1.09  D2=      -6.257
+degree 5 at      -0.1539: B=     -0.2573  D=       1.276  D2=       7.504
+degree 1 at         0.25: B=        0.25  D=           1  D2=           0
+degree 2 at         0.25: B=     -0.4062  D=        0.75  D2=           3
+degree 3 at         0.25: B=     -0.3359  D=      -1.031  D2=        3.75
+degree 4 at         0.25: B=      0.1577  D=      -1.602  D2=      -4.219
+degree 5 at         0.25: B=      0.3397  D=      0.3882  D2=      -10.66
+degree 1 at       0.6539: B=      0.6539  D=           1  D2=           0
+degree 2 at       0.6539: B=      0.1413  D=       1.962  D2=           3
+degree 3 at       0.6539: B=     -0.2819  D=       1.706  D2=       9.808
+degree 4 at       0.6539: B=     -0.4286  D=      -0.012  D2=       14.94
+degree 5 at       0.6539: B=     -0.2788  D=      -2.151  D2=         9.7
+degree 1 at       0.9296: B=      0.9296  D=           1  D2=           0
+degree 2 at       0.9296: B=      0.7963  D=       2.789  D2=           3
+degree 3 at       0.9296: B=      0.6141  D=       4.982  D2=       13.94
+degree 4 at       0.9296: B=      0.4018  D=       7.087  D2=       37.87
+degree 5 at       0.9296: B=       0.181  D=       8.598  D2=       77.73

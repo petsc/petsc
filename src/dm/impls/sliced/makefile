@@ -4,10 +4,8 @@ ALL: lib
 CFLAGS   =
 FFLAGS   =
 SOURCEC  = sliced.c
-SOURCEF  = 
+SOURCEF  =
 SOURCEH  = ../../../../include/petscdmsliced.h
-OBJSC    = sliced.o
-OBJSF    =
 LIBBASE  = libpetscdm
 MANSEC   = DM
 SUBMANSEC= DMSLICED

@@ -3,8 +3,9 @@
      Code for some of the parallel vector primatives.
 */
 #include <../src/vec/vec/impls/mpi/pvecimpl.h>   /*I  "petscvec.h"   I*/
+#include <petscviewerhdf5.h>
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecDestroy_MPI"
 PetscErrorCode VecDestroy_MPI(Vec v)
 {
@@ -30,7 +31,7 @@ PetscErrorCode VecDestroy_MPI(Vec v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecView_MPI_ASCII"
 PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
 {
@@ -46,9 +47,9 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
   PetscFunctionBegin;
   ierr = VecGetArrayRead(xin,&xarray);CHKERRQ(ierr);
   /* determine maximum message to arrive */
-  ierr = MPI_Comm_rank(((PetscObject)xin)->comm,&rank);CHKERRQ(ierr);
-  ierr = MPI_Reduce(&work,&len,1,MPIU_INT,MPI_MAX,0,((PetscObject)xin)->comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(((PetscObject)xin)->comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)xin),&rank);CHKERRQ(ierr);
+  ierr = MPI_Reduce(&work,&len,1,MPIU_INT,MPI_MAX,0,PetscObjectComm((PetscObject)xin));CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)xin),&size);CHKERRQ(ierr);
 
   if (!rank) {
     ierr = PetscMalloc(len*sizeof(PetscScalar),&values);CHKERRQ(ierr);
@@ -70,12 +71,12 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
           ierr = PetscViewerASCIIPrintf(viewer,"%18.16e\n",PetscRealPart(xarray[i]));CHKERRQ(ierr);
         }
 #else
-        ierr = PetscViewerASCIIPrintf(viewer,"%18.16e\n",xarray[i]);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"%18.16e\n",(double)xarray[i]);CHKERRQ(ierr);
 #endif
       }
       /* receive and print messages */
       for (j=1; j<size; j++) {
-        ierr = MPI_Recv(values,(PetscMPIInt)len,MPIU_SCALAR,j,tag,((PetscObject)xin)->comm,&status);CHKERRQ(ierr);
+        ierr = MPI_Recv(values,(PetscMPIInt)len,MPIU_SCALAR,j,tag,PetscObjectComm((PetscObject)xin),&status);CHKERRQ(ierr);
         ierr = MPI_Get_count(&status,MPIU_SCALAR,&n);CHKERRQ(ierr);
         for (i=0; i<n; i++) {
 #if defined(PETSC_USE_COMPLEX)
@@ -103,7 +104,7 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
       }
       /* receive and print messages */
       for (j=1; j<size; j++) {
-        ierr = MPI_Recv(values,(PetscMPIInt)len,MPIU_SCALAR,j,tag,((PetscObject)xin)->comm,&status);CHKERRQ(ierr);
+        ierr = MPI_Recv(values,(PetscMPIInt)len,MPIU_SCALAR,j,tag,PetscObjectComm((PetscObject)xin),&status);CHKERRQ(ierr);
         ierr = MPI_Get_count(&status,MPIU_SCALAR,&n);CHKERRQ(ierr);
         for (i=0; i<n; i++) {
 #if defined(PETSC_USE_COMPLEX)
@@ -121,54 +122,47 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
         state 3: Output both, POINT_DATA last
         state 4: Output both, CELL_DATA last
       */
-      static PetscInt stateId = -1;
-      int outputState = 0;
-      PetscBool  hasState;
-      int doOutput = 0;
-      PetscInt bs, b;
+      static PetscInt stateId     = -1;
+      int             outputState = 0;
+      int             doOutput    = 0;
+      PetscBool       hasState;
+      PetscInt        bs, b;
 
       if (stateId < 0) {
         ierr = PetscObjectComposedDataRegister(&stateId);CHKERRQ(ierr);
       }
       ierr = PetscObjectComposedDataGetInt((PetscObject) viewer, stateId, outputState, hasState);CHKERRQ(ierr);
-      if (!hasState) {
-        outputState = 0;
-      }
+      if (!hasState) outputState = 0;
+
       ierr = PetscObjectGetName((PetscObject) xin, &name);CHKERRQ(ierr);
       ierr = VecGetLocalSize(xin, &nLen);CHKERRQ(ierr);
-      n    = PetscMPIIntCast(nLen);
+      ierr = PetscMPIIntCast(nLen,&n);CHKERRQ(ierr);
       ierr = VecGetBlockSize(xin, &bs);CHKERRQ(ierr);
       if (format == PETSC_VIEWER_ASCII_VTK) {
         if (outputState == 0) {
           outputState = 1;
-          doOutput = 1;
-        } else if (outputState == 1) {
-          doOutput = 0;
-        } else if (outputState == 2) {
+          doOutput    = 1;
+        } else if (outputState == 1) doOutput = 0;
+        else if (outputState == 2) {
           outputState = 3;
-          doOutput = 1;
-        } else if (outputState == 3) {
-          doOutput = 0;
-        } else if (outputState == 4) {
-          SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Tried to output POINT_DATA again after intervening CELL_DATA");
-        }
+          doOutput    = 1;
+        } else if (outputState == 3) doOutput = 0;
+        else if (outputState == 4) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Tried to output POINT_DATA again after intervening CELL_DATA");
+
         if (doOutput) {
           ierr = PetscViewerASCIIPrintf(viewer, "POINT_DATA %d\n", xin->map->N/bs);CHKERRQ(ierr);
         }
       } else {
         if (outputState == 0) {
           outputState = 2;
-          doOutput = 1;
+          doOutput    = 1;
         } else if (outputState == 1) {
           outputState = 4;
-          doOutput = 1;
-        } else if (outputState == 2) {
-          doOutput = 0;
-        } else if (outputState == 3) {
-          SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Tried to output CELL_DATA again after intervening POINT_DATA");
-        } else if (outputState == 4) {
-          doOutput = 0;
-        }
+          doOutput    = 1;
+        } else if (outputState == 2) doOutput = 0;
+        else if (outputState == 3) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Tried to output CELL_DATA again after intervening POINT_DATA");
+        else if (outputState == 4) doOutput = 0;
+
         if (doOutput) {
           ierr = PetscViewerASCIIPrintf(viewer, "CELL_DATA %d\n", xin->map->N/bs);CHKERRQ(ierr);
         }
@@ -191,19 +185,19 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
           if (b > 0) {
             ierr = PetscViewerASCIIPrintf(viewer," ");CHKERRQ(ierr);
           }
-          ierr = PetscViewerASCIIPrintf(viewer,"%G",PetscRealPart(xarray[i*bs+b]));CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(viewer,"%g",PetscRealPart(xarray[i*bs+b]));CHKERRQ(ierr);
         }
         ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
       }
       for (j=1; j<size; j++) {
-        ierr = MPI_Recv(values,(PetscMPIInt)len,MPIU_SCALAR,j,tag,((PetscObject)xin)->comm,&status);CHKERRQ(ierr);
+        ierr = MPI_Recv(values,(PetscMPIInt)len,MPIU_SCALAR,j,tag,PetscObjectComm((PetscObject)xin),&status);CHKERRQ(ierr);
         ierr = MPI_Get_count(&status,MPIU_SCALAR,&n);CHKERRQ(ierr);
         for (i=0; i<n/bs; i++) {
           for (b=0; b<bs; b++) {
             if (b > 0) {
               ierr = PetscViewerASCIIPrintf(viewer," ");CHKERRQ(ierr);
             }
-            ierr = PetscViewerASCIIPrintf(viewer,"%G",PetscRealPart(values[i*bs+b]));CHKERRQ(ierr);
+            ierr = PetscViewerASCIIPrintf(viewer,"%g",PetscRealPart(values[i*bs+b]));CHKERRQ(ierr);
           }
           ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
         }
@@ -212,17 +206,16 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
       PetscInt bs, b;
 
       ierr = VecGetLocalSize(xin, &nLen);CHKERRQ(ierr);
-      n    = PetscMPIIntCast(nLen);
+      ierr = PetscMPIIntCast(nLen,&n);CHKERRQ(ierr);
       ierr = VecGetBlockSize(xin, &bs);CHKERRQ(ierr);
-      if ((bs < 1) || (bs > 3)) {
-        SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "VTK can only handle 3D objects, but vector dimension is %d", bs);
-      }
+      if ((bs < 1) || (bs > 3)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "VTK can only handle 3D objects, but vector dimension is %d", bs);
+
       for (i=0; i<n/bs; i++) {
         for (b=0; b<bs; b++) {
           if (b > 0) {
             ierr = PetscViewerASCIIPrintf(viewer," ");CHKERRQ(ierr);
           }
-          ierr = PetscViewerASCIIPrintf(viewer,"%G",PetscRealPart(xarray[i*bs+b]));CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(viewer,"%g",PetscRealPart(xarray[i*bs+b]));CHKERRQ(ierr);
         }
         for (b=bs; b<3; b++) {
           ierr = PetscViewerASCIIPrintf(viewer," 0.0");CHKERRQ(ierr);
@@ -230,14 +223,14 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
         ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
       }
       for (j=1; j<size; j++) {
-        ierr = MPI_Recv(values,(PetscMPIInt)len,MPIU_SCALAR,j,tag,((PetscObject)xin)->comm,&status);CHKERRQ(ierr);
+        ierr = MPI_Recv(values,(PetscMPIInt)len,MPIU_SCALAR,j,tag,PetscObjectComm((PetscObject)xin),&status);CHKERRQ(ierr);
         ierr = MPI_Get_count(&status,MPIU_SCALAR,&n);CHKERRQ(ierr);
         for (i=0; i<n/bs; i++) {
           for (b=0; b<bs; b++) {
             if (b > 0) {
               ierr = PetscViewerASCIIPrintf(viewer," ");CHKERRQ(ierr);
             }
-            ierr = PetscViewerASCIIPrintf(viewer,"%G",PetscRealPart(values[i*bs+b]));CHKERRQ(ierr);
+            ierr = PetscViewerASCIIPrintf(viewer,"%g",PetscRealPart(values[i*bs+b]));CHKERRQ(ierr);
           }
           for (b=bs; b<3; b++) {
             ierr = PetscViewerASCIIPrintf(viewer," 0.0");CHKERRQ(ierr);
@@ -249,11 +242,10 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
       PetscInt bs, b, vertexCount = 1;
 
       ierr = VecGetLocalSize(xin, &nLen);CHKERRQ(ierr);
-      n    = PetscMPIIntCast(nLen);
+      ierr = PetscMPIIntCast(nLen,&n);CHKERRQ(ierr);
       ierr = VecGetBlockSize(xin, &bs);CHKERRQ(ierr);
-      if ((bs < 1) || (bs > 3)) {
-        SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "PCICE can only handle up to 3D objects, but vector dimension is %d", bs);
-      }
+      if ((bs < 1) || (bs > 3)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "PCICE can only handle up to 3D objects, but vector dimension is %d", bs);
+
       ierr = PetscViewerASCIIPrintf(viewer,"%D\n", xin->map->N/bs);CHKERRQ(ierr);
       for (i=0; i<n/bs; i++) {
         ierr = PetscViewerASCIIPrintf(viewer,"%7D   ", vertexCount++);CHKERRQ(ierr);
@@ -268,7 +260,7 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
         ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
       }
       for (j=1; j<size; j++) {
-        ierr = MPI_Recv(values,(PetscMPIInt)len,MPIU_SCALAR,j,tag,((PetscObject)xin)->comm,&status);CHKERRQ(ierr);
+        ierr = MPI_Recv(values,(PetscMPIInt)len,MPIU_SCALAR,j,tag,PetscObjectComm((PetscObject)xin),&status);CHKERRQ(ierr);
         ierr = MPI_Get_count(&status,MPIU_SCALAR,&n);CHKERRQ(ierr);
         for (i=0; i<n/bs; i++) {
           ierr = PetscViewerASCIIPrintf(viewer,"%7D   ", vertexCount++);CHKERRQ(ierr);
@@ -293,19 +285,19 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
         }
 #if defined(PETSC_USE_COMPLEX)
         if (PetscImaginaryPart(xarray[i]) > 0.0) {
-          ierr = PetscViewerASCIIPrintf(viewer,"%G + %G i\n",PetscRealPart(xarray[i]),PetscImaginaryPart(xarray[i]));CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(viewer,"%g + %g i\n",PetscRealPart(xarray[i]),PetscImaginaryPart(xarray[i]));CHKERRQ(ierr);
         } else if (PetscImaginaryPart(xarray[i]) < 0.0) {
-          ierr = PetscViewerASCIIPrintf(viewer,"%G - %G i\n",PetscRealPart(xarray[i]),-PetscImaginaryPart(xarray[i]));CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(viewer,"%g - %g i\n",PetscRealPart(xarray[i]),-PetscImaginaryPart(xarray[i]));CHKERRQ(ierr);
         } else {
-          ierr = PetscViewerASCIIPrintf(viewer,"%G\n",PetscRealPart(xarray[i]));CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(viewer,"%g\n",PetscRealPart(xarray[i]));CHKERRQ(ierr);
         }
 #else
-        ierr = PetscViewerASCIIPrintf(viewer,"%G\n",xarray[i]);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"%g\n",(double)xarray[i]);CHKERRQ(ierr);
 #endif
       }
       /* receive and print messages */
       for (j=1; j<size; j++) {
-        ierr = MPI_Recv(values,(PetscMPIInt)len,MPIU_SCALAR,j,tag,((PetscObject)xin)->comm,&status);CHKERRQ(ierr);
+        ierr = MPI_Recv(values,(PetscMPIInt)len,MPIU_SCALAR,j,tag,PetscObjectComm((PetscObject)xin),&status);CHKERRQ(ierr);
         ierr = MPI_Get_count(&status,MPIU_SCALAR,&n);CHKERRQ(ierr);
         if (format != PETSC_VIEWER_ASCII_COMMON) {
           ierr = PetscViewerASCIIPrintf(viewer,"Process [%d]\n",j);CHKERRQ(ierr);
@@ -316,14 +308,14 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
           }
 #if defined(PETSC_USE_COMPLEX)
           if (PetscImaginaryPart(values[i]) > 0.0) {
-            ierr = PetscViewerASCIIPrintf(viewer,"%G + %G i\n",PetscRealPart(values[i]),PetscImaginaryPart(values[i]));CHKERRQ(ierr);
+            ierr = PetscViewerASCIIPrintf(viewer,"%g + %g i\n",PetscRealPart(values[i]),PetscImaginaryPart(values[i]));CHKERRQ(ierr);
           } else if (PetscImaginaryPart(values[i]) < 0.0) {
-            ierr = PetscViewerASCIIPrintf(viewer,"%G - %G i\n",PetscRealPart(values[i]),-PetscImaginaryPart(values[i]));CHKERRQ(ierr);
+            ierr = PetscViewerASCIIPrintf(viewer,"%g - %g i\n",PetscRealPart(values[i]),-PetscImaginaryPart(values[i]));CHKERRQ(ierr);
           } else {
-            ierr = PetscViewerASCIIPrintf(viewer,"%G\n",PetscRealPart(values[i]));CHKERRQ(ierr);
+            ierr = PetscViewerASCIIPrintf(viewer,"%g\n",PetscRealPart(values[i]));CHKERRQ(ierr);
           }
 #else
-          ierr = PetscViewerASCIIPrintf(viewer,"%G\n",values[i]);CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(viewer,"%g\n",(double)values[i]);CHKERRQ(ierr);
 #endif
         }
       }
@@ -336,14 +328,14 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
       ierr = PetscObjectGetName((PetscObject)xin,&name);CHKERRQ(ierr);
     }
     /* send values */
-    ierr = MPI_Send((void*)xarray,xin->map->n,MPIU_SCALAR,0,tag,((PetscObject)xin)->comm);CHKERRQ(ierr);
+    ierr = MPI_Send((void*)xarray,xin->map->n,MPIU_SCALAR,0,tag,PetscObjectComm((PetscObject)xin));CHKERRQ(ierr);
   }
   ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(xin,&xarray);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecView_MPI_Binary"
 PetscErrorCode VecView_MPI_Binary(Vec xin,PetscViewer viewer)
 {
@@ -360,6 +352,7 @@ PetscErrorCode VecView_MPI_Binary(Vec xin,PetscViewer viewer)
 #endif
   PetscBool         skipHeader;
   PetscInt          message_count,flowcontrolcount;
+  PetscViewerFormat format;
 
   PetscFunctionBegin;
   ierr = VecGetArrayRead(xin,&xarray);CHKERRQ(ierr);
@@ -367,13 +360,13 @@ PetscErrorCode VecView_MPI_Binary(Vec xin,PetscViewer viewer)
   ierr = PetscViewerBinaryGetSkipHeader(viewer,&skipHeader);CHKERRQ(ierr);
 
   /* determine maximum message to arrive */
-  ierr = MPI_Comm_rank(((PetscObject)xin)->comm,&rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(((PetscObject)xin)->comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)xin),&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)xin),&size);CHKERRQ(ierr);
 
   if (!skipHeader) {
     tr[0] = VEC_FILE_CLASSID;
     tr[1] = xin->map->N;
-    ierr = PetscViewerBinaryWrite(viewer,tr,2,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
+    ierr  = PetscViewerBinaryWrite(viewer,tr,2,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
   }
 
 #if defined(PETSC_HAVE_MPIIO)
@@ -387,22 +380,35 @@ PetscErrorCode VecView_MPI_Binary(Vec xin,PetscViewer viewer)
       len = 0;
       for (j=1; j<size; j++) len = PetscMax(len,xin->map->range[j+1]-xin->map->range[j]);
       ierr = PetscMalloc(len*sizeof(PetscScalar),&values);CHKERRQ(ierr);
-      mesgsize = PetscMPIIntCast(len);
+      ierr = PetscMPIIntCast(len,&mesgsize);CHKERRQ(ierr);
       /* receive and save messages */
       for (j=1; j<size; j++) {
-	ierr = PetscViewerFlowControlStepMaster(viewer,j,message_count,flowcontrolcount);CHKERRQ(ierr);
-	ierr = MPI_Recv(values,mesgsize,MPIU_SCALAR,j,tag,((PetscObject)xin)->comm,&status);CHKERRQ(ierr);
-	ierr = MPI_Get_count(&status,MPIU_SCALAR,&mesglen);CHKERRQ(ierr);
-        n = (PetscInt)mesglen;
-	ierr = PetscBinaryWrite(fdes,values,n,PETSC_SCALAR,PETSC_TRUE);CHKERRQ(ierr);
+        ierr = PetscViewerFlowControlStepMaster(viewer,j,&message_count,flowcontrolcount);CHKERRQ(ierr);
+        ierr = MPI_Recv(values,mesgsize,MPIU_SCALAR,j,tag,PetscObjectComm((PetscObject)xin),&status);CHKERRQ(ierr);
+        ierr = MPI_Get_count(&status,MPIU_SCALAR,&mesglen);CHKERRQ(ierr);
+        n    = (PetscInt)mesglen;
+        ierr = PetscBinaryWrite(fdes,values,n,PETSC_SCALAR,PETSC_TRUE);CHKERRQ(ierr);
       }
-      ierr = PetscViewerFlowControlEndMaster(viewer,message_count);CHKERRQ(ierr);
+      ierr = PetscViewerFlowControlEndMaster(viewer,&message_count);CHKERRQ(ierr);
       ierr = PetscFree(values);CHKERRQ(ierr);
     } else {
-      ierr = PetscViewerFlowControlStepWorker(viewer,rank,message_count);CHKERRQ(ierr);
-      mesgsize = PetscMPIIntCast(xin->map->n);
-      ierr = MPI_Send((void*)xarray,mesgsize,MPIU_SCALAR,0,tag,((PetscObject)xin)->comm);CHKERRQ(ierr);
-      ierr = PetscViewerFlowControlEndWorker(viewer,message_count);CHKERRQ(ierr);
+      ierr = PetscViewerFlowControlStepWorker(viewer,rank,&message_count);CHKERRQ(ierr);
+      ierr = PetscMPIIntCast(xin->map->n,&mesgsize);CHKERRQ(ierr);
+      ierr = MPI_Send((void*)xarray,mesgsize,MPIU_SCALAR,0,tag,PetscObjectComm((PetscObject)xin));CHKERRQ(ierr);
+      ierr = PetscViewerFlowControlEndWorker(viewer,&message_count);CHKERRQ(ierr);
+    }
+    ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
+    if (format == PETSC_VIEWER_BINARY_MATLAB) {
+      MPI_Comm   comm;
+      FILE       *info;
+      const char *name;
+
+      ierr = PetscObjectGetName((PetscObject)xin,&name);CHKERRQ(ierr);
+      ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
+      ierr = PetscViewerBinaryGetInfoPointer(viewer,&info);CHKERRQ(ierr);
+      ierr = PetscFPrintf(comm,info,"%%--- begin code written by PetscViewerBinary for MATLAB format ---%\n");CHKERRQ(ierr);
+      ierr = PetscFPrintf(comm,info,"%%$$ Set.%s = PetscBinaryRead(fd);\n",name);CHKERRQ(ierr);
+      ierr = PetscFPrintf(comm,info,"%%--- end code written by PetscViewerBinary for MATLAB format ---%\n\n");CHKERRQ(ierr);
     }
 #if defined(PETSC_HAVE_MPIIO)
   } else {
@@ -411,9 +417,9 @@ PetscErrorCode VecView_MPI_Binary(Vec xin,PetscViewer viewer)
     PetscMPIInt  gsizes[1],lsizes[1],lstarts[1];
     MPI_Datatype view;
 
-    gsizes[0]  = PetscMPIIntCast(xin->map->N);
-    lsizes[0]  = PetscMPIIntCast(n);
-    lstarts[0] = PetscMPIIntCast(xin->map->rstart);
+    ierr = PetscMPIIntCast(xin->map->N,gsizes);CHKERRQ(ierr);
+    ierr = PetscMPIIntCast(n,lsizes);CHKERRQ(ierr);
+    ierr = PetscMPIIntCast(xin->map->rstart,lstarts);CHKERRQ(ierr);
     ierr = MPI_Type_create_subarray(1,gsizes,lsizes,lstarts,MPI_ORDER_FORTRAN,MPIU_SCALAR,&view);CHKERRQ(ierr);
     ierr = MPI_Type_commit(&view);CHKERRQ(ierr);
 
@@ -430,22 +436,23 @@ PetscErrorCode VecView_MPI_Binary(Vec xin,PetscViewer viewer)
     ierr = PetscViewerBinaryGetInfoPointer(viewer,&file);CHKERRQ(ierr);
     if (file) {
       if (((PetscObject)xin)->prefix) {
-	ierr = PetscFPrintf(PETSC_COMM_SELF,file,"-%svecload_block_size %D\n",((PetscObject)xin)->prefix,xin->map->bs);CHKERRQ(ierr);
+        ierr = PetscFPrintf(PETSC_COMM_SELF,file,"-%svecload_block_size %D\n",((PetscObject)xin)->prefix,xin->map->bs);CHKERRQ(ierr);
       } else {
-	ierr = PetscFPrintf(PETSC_COMM_SELF,file,"-vecload_block_size %D\n",xin->map->bs);CHKERRQ(ierr);
+        ierr = PetscFPrintf(PETSC_COMM_SELF,file,"-vecload_block_size %D\n",xin->map->bs);CHKERRQ(ierr);
       }
     }
   }
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#include <petscdraw.h>
+#undef __FUNCT__
 #define __FUNCT__ "VecView_MPI_Draw_LG"
 PetscErrorCode VecView_MPI_Draw_LG(Vec xin,PetscViewer viewer)
 {
-  PetscDraw         draw;
-  PetscBool         isnull;
-  PetscErrorCode    ierr;
+  PetscDraw      draw;
+  PetscBool      isnull;
+  PetscErrorCode ierr;
 
 #if defined(PETSC_USE_64BIT_INDICES)
   PetscFunctionBegin;
@@ -468,27 +475,25 @@ PetscErrorCode VecView_MPI_Draw_LG(Vec xin,PetscViewer viewer)
   ierr = VecGetArrayRead(xin,&xarray);CHKERRQ(ierr);
   ierr = PetscViewerDrawGetDrawLG(viewer,0,&lg);CHKERRQ(ierr);
   ierr = PetscDrawCheckResizedWindow(draw);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(((PetscObject)xin)->comm,&rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(((PetscObject)xin)->comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)xin),&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)xin),&size);CHKERRQ(ierr);
   if (!rank) {
     ierr = PetscDrawLGReset(lg);CHKERRQ(ierr);
     ierr = PetscMalloc(2*(N+1)*sizeof(PetscReal),&xx);CHKERRQ(ierr);
-    for (i=0; i<N; i++) {xx[i] = (PetscReal) i;}
+    for (i=0; i<N; i++) xx[i] = (PetscReal) i;
     yy   = xx + N;
     ierr = PetscMalloc(size*sizeof(PetscInt),&lens);CHKERRQ(ierr);
-    for (i=0; i<size; i++) {
-      lens[i] = xin->map->range[i+1] - xin->map->range[i];
-    }
+    for (i=0; i<size; i++) lens[i] = xin->map->range[i+1] - xin->map->range[i];
+    
 #if !defined(PETSC_USE_COMPLEX)
-    ierr = MPI_Gatherv((void*)xarray,xin->map->n,MPIU_REAL,yy,lens,xin->map->range,MPIU_REAL,0,((PetscObject)xin)->comm);CHKERRQ(ierr);
+    ierr = MPI_Gatherv((void*)xarray,xin->map->n,MPIU_REAL,yy,lens,xin->map->range,MPIU_REAL,0,PetscObjectComm((PetscObject)xin));CHKERRQ(ierr);
 #else
     {
       PetscReal *xr;
       ierr = PetscMalloc((xin->map->n+1)*sizeof(PetscReal),&xr);CHKERRQ(ierr);
-      for (i=0; i<xin->map->n; i++) {
-        xr[i] = PetscRealPart(xarray[i]);
-      }
-      ierr = MPI_Gatherv(xr,xin->map->n,MPIU_REAL,yy,lens,xin->map->range,MPIU_REAL,0,((PetscObject)xin)->comm);CHKERRQ(ierr);
+      for (i=0; i<xin->map->n; i++) xr[i] = PetscRealPart(xarray[i]);
+
+      ierr = MPI_Gatherv(xr,xin->map->n,MPIU_REAL,yy,lens,xin->map->range,MPIU_REAL,0,PetscObjectComm((PetscObject)xin));CHKERRQ(ierr);
       ierr = PetscFree(xr);CHKERRQ(ierr);
     }
 #endif
@@ -497,15 +502,14 @@ PetscErrorCode VecView_MPI_Draw_LG(Vec xin,PetscViewer viewer)
     ierr = PetscFree(xx);CHKERRQ(ierr);
   } else {
 #if !defined(PETSC_USE_COMPLEX)
-    ierr = MPI_Gatherv((void*)xarray,xin->map->n,MPIU_REAL,0,0,0,MPIU_REAL,0,((PetscObject)xin)->comm);CHKERRQ(ierr);
+    ierr = MPI_Gatherv((void*)xarray,xin->map->n,MPIU_REAL,0,0,0,MPIU_REAL,0,PetscObjectComm((PetscObject)xin));CHKERRQ(ierr);
 #else
     {
       PetscReal *xr;
       ierr = PetscMalloc((xin->map->n+1)*sizeof(PetscReal),&xr);CHKERRQ(ierr);
-      for (i=0; i<xin->map->n; i++) {
-        xr[i] = PetscRealPart(xarray[i]);
-      }
-      ierr = MPI_Gatherv(xr,xin->map->n,MPIU_REAL,0,0,0,MPIU_REAL,0,((PetscObject)xin)->comm);CHKERRQ(ierr);
+      for (i=0; i<xin->map->n; i++) xr[i] = PetscRealPart(xarray[i]);
+
+      ierr = MPI_Gatherv(xr,xin->map->n,MPIU_REAL,0,0,0,MPIU_REAL,0,PetscObjectComm((PetscObject)xin));CHKERRQ(ierr);
       ierr = PetscFree(xr);CHKERRQ(ierr);
     }
 #endif
@@ -517,7 +521,7 @@ PetscErrorCode VecView_MPI_Draw_LG(Vec xin,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecView_MPI_Draw"
 PetscErrorCode  VecView_MPI_Draw(Vec xin,PetscViewer viewer)
 {
@@ -551,10 +555,10 @@ PetscErrorCode  VecView_MPI_Draw(Vec xin,PetscViewer viewer)
     xmin -= 1.e-5;
     xmax += 1.e-5;
   }
-  ierr = MPI_Reduce(&xmin,&ymin,1,MPIU_REAL,MPIU_MIN,0,((PetscObject)xin)->comm);CHKERRQ(ierr);
-  ierr = MPI_Reduce(&xmax,&ymax,1,MPIU_REAL,MPIU_MAX,0,((PetscObject)xin)->comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(((PetscObject)xin)->comm,&size);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(((PetscObject)xin)->comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Reduce(&xmin,&ymin,1,MPIU_REAL,MPIU_MIN,0,PetscObjectComm((PetscObject)xin));CHKERRQ(ierr);
+  ierr = MPI_Reduce(&xmax,&ymax,1,MPIU_REAL,MPIU_MAX,0,PetscObjectComm((PetscObject)xin));CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)xin),&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)xin),&rank);CHKERRQ(ierr);
   ierr = PetscDrawAxisCreate(draw,&axis);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(draw,axis);CHKERRQ(ierr);
   if (!rank) {
@@ -565,24 +569,22 @@ PetscErrorCode  VecView_MPI_Draw(Vec xin,PetscViewer viewer)
     ierr = PetscDrawGetCoordinates(draw,coors,coors+1,coors+2,coors+3);CHKERRQ(ierr);
   }
   ierr = PetscDrawAxisDestroy(&axis);CHKERRQ(ierr);
-  ierr = MPI_Bcast(coors,4,MPIU_REAL,0,((PetscObject)xin)->comm);CHKERRQ(ierr);
+  ierr = MPI_Bcast(coors,4,MPIU_REAL,0,PetscObjectComm((PetscObject)xin));CHKERRQ(ierr);
   if (rank) {ierr = PetscDrawSetCoordinates(draw,coors[0],coors[1],coors[2],coors[3]);CHKERRQ(ierr);}
   /* draw local part of vector */
   ierr = VecGetOwnershipRange(xin,&start,&end);CHKERRQ(ierr);
   if (rank < size-1) { /*send value to right */
-    ierr = MPI_Send((void*)&xarray[xin->map->n-1],1,MPIU_REAL,rank+1,tag,((PetscObject)xin)->comm);CHKERRQ(ierr);
+    ierr = MPI_Send((void*)&xarray[xin->map->n-1],1,MPIU_REAL,rank+1,tag,PetscObjectComm((PetscObject)xin));CHKERRQ(ierr);
   }
   for (i=1; i<xin->map->n; i++) {
 #if !defined(PETSC_USE_COMPLEX)
-    ierr = PetscDrawLine(draw,(PetscReal)(i-1+start),xarray[i-1],(PetscReal)(i+start),
-                   xarray[i],PETSC_DRAW_RED);CHKERRQ(ierr);
+    ierr = PetscDrawLine(draw,(PetscReal)(i-1+start),xarray[i-1],(PetscReal)(i+start),xarray[i],PETSC_DRAW_RED);CHKERRQ(ierr);
 #else
-    ierr = PetscDrawLine(draw,(PetscReal)(i-1+start),PetscRealPart(xarray[i-1]),(PetscReal)(i+start),
-                   PetscRealPart(xarray[i]),PETSC_DRAW_RED);CHKERRQ(ierr);
+    ierr = PetscDrawLine(draw,(PetscReal)(i-1+start),PetscRealPart(xarray[i-1]),(PetscReal)(i+start),PetscRealPart(xarray[i]),PETSC_DRAW_RED);CHKERRQ(ierr);
 #endif
   }
   if (rank) { /* receive value from right */
-    ierr = MPI_Recv(&tmp,1,MPIU_REAL,rank-1,tag,((PetscObject)xin)->comm,&status);CHKERRQ(ierr);
+    ierr = MPI_Recv(&tmp,1,MPIU_REAL,rank-1,tag,PetscObjectComm((PetscObject)xin),&status);CHKERRQ(ierr);
 #if !defined(PETSC_USE_COMPLEX)
     ierr = PetscDrawLine(draw,(PetscReal)start-1,tmp,(PetscReal)start,xarray[0],PETSC_DRAW_RED);CHKERRQ(ierr);
 #else
@@ -596,7 +598,7 @@ PetscErrorCode  VecView_MPI_Draw(Vec xin,PetscViewer viewer)
 }
 
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecView_MPI_Matlab"
 PetscErrorCode VecView_MPI_Matlab(Vec xin,PetscViewer viewer)
 {
@@ -608,15 +610,14 @@ PetscErrorCode VecView_MPI_Matlab(Vec xin,PetscViewer viewer)
 
   PetscFunctionBegin;
   ierr = VecGetArrayRead(xin,&xarray);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(((PetscObject)xin)->comm,&rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(((PetscObject)xin)->comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)xin),&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)xin),&size);CHKERRQ(ierr);
   if (!rank) {
     ierr = PetscMalloc(N*sizeof(PetscScalar),&xx);CHKERRQ(ierr);
     ierr = PetscMalloc(size*sizeof(PetscMPIInt),&lens);CHKERRQ(ierr);
-    for (i=0; i<size; i++) {
-      lens[i] = xin->map->range[i+1] - xin->map->range[i];
-    }
-    ierr = MPI_Gatherv((void*)xarray,xin->map->n,MPIU_SCALAR,xx,lens,xin->map->range,MPIU_SCALAR,0,((PetscObject)xin)->comm);CHKERRQ(ierr);
+    for (i=0; i<size; i++) lens[i] = xin->map->range[i+1] - xin->map->range[i];
+
+    ierr = MPI_Gatherv((void*)xarray,xin->map->n,MPIU_SCALAR,xx,lens,xin->map->range,MPIU_SCALAR,0,PetscObjectComm((PetscObject)xin));CHKERRQ(ierr);
     ierr = PetscFree(lens);CHKERRQ(ierr);
 
     ierr = PetscObjectName((PetscObject)xin);CHKERRQ(ierr);
@@ -624,7 +625,7 @@ PetscErrorCode VecView_MPI_Matlab(Vec xin,PetscViewer viewer)
 
     ierr = PetscFree(xx);CHKERRQ(ierr);
   } else {
-    ierr = MPI_Gatherv((void*)xarray,xin->map->n,MPIU_SCALAR,0,0,0,MPIU_SCALAR,0,((PetscObject)xin)->comm);CHKERRQ(ierr);
+    ierr = MPI_Gatherv((void*)xarray,xin->map->n,MPIU_SCALAR,0,0,0,MPIU_SCALAR,0,PetscObjectComm((PetscObject)xin));CHKERRQ(ierr);
   }
   ierr = VecRestoreArrayRead(xin,&xarray);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -632,14 +633,14 @@ PetscErrorCode VecView_MPI_Matlab(Vec xin,PetscViewer viewer)
 #endif
 
 #if defined(PETSC_HAVE_HDF5)
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecView_MPI_HDF5"
 PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
 {
   /* TODO: It looks like we can remove the H5Sclose(filespace) and H5Dget_space(dset_id). Why do we do this? */
   hid_t             filespace; /* file dataspace identifier */
   hid_t             chunkspace; /* chunk dataset property identifier */
-  hid_t	            plist_id;  /* property list identifier */
+  hid_t             plist_id;  /* property list identifier */
   hid_t             dset_id;   /* dataset identifier */
   hid_t             memspace;  /* memory dataspace identifier */
   hid_t             file_id;
@@ -647,7 +648,7 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
   hid_t             scalartype; /* scalar type (H5T_NATIVE_FLOAT or H5T_NATIVE_DOUBLE) */
   herr_t            status;
   PetscInt          bs = xin->map->bs > 0 ? xin->map->bs : 1;
-  hsize_t           i,dim;
+  hsize_t           dim;
   hsize_t           maxDims[4], dims[4], chunkDims[4], count[4],offset[4];
   PetscInt          timestep;
   PetscInt          low;
@@ -670,30 +671,30 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
    * chunkDims - holds the size of a single time step (required to
    * permit extending dataset).
    */
-  dim  = 0;
+  dim = 0;
   if (timestep >= 0) {
-    dims[dim]    = timestep+1;
-    maxDims[dim] = H5S_UNLIMITED;
+    dims[dim]      = timestep+1;
+    maxDims[dim]   = H5S_UNLIMITED;
     chunkDims[dim] = 1;
     ++dim;
   }
-  dims[dim]    = PetscHDF5IntCast(xin->map->N)/bs;
-  maxDims[dim] = dims[dim];
+  ierr = PetscHDF5IntCast(xin->map->N/bs,dims + dim);CHKERRQ(ierr);
+
+  maxDims[dim]   = dims[dim];
   chunkDims[dim] = dims[dim];
   ++dim;
   if (bs >= 1) {
-    dims[dim]    = bs;
-    maxDims[dim] = dims[dim];
+    dims[dim]      = bs;
+    maxDims[dim]   = dims[dim];
     chunkDims[dim] = dims[dim];
     ++dim;
   }
 #if defined(PETSC_USE_COMPLEX)
-  dims[dim]    = 2;
-  maxDims[dim] = dims[dim];
+  dims[dim]      = 2;
+  maxDims[dim]   = dims[dim];
   chunkDims[dim] = dims[dim];
   ++dim;
 #endif
-  for (i=0; i < dim; ++i)
   filespace = H5Screate_simple(dim, dims, maxDims);
   if (filespace == -1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot H5Screate_simple()");
 
@@ -711,7 +712,7 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
     /* Create chunk */
     chunkspace = H5Pcreate(H5P_DATASET_CREATE);
     if (chunkspace == -1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot H5Pcreate()");
-    status = H5Pset_chunk(chunkspace, dim, chunkDims); CHKERRQ(status);
+    status = H5Pset_chunk(chunkspace, dim, chunkDims);CHKERRQ(status);
 
 #if (H5_VERS_MAJOR * 10000 + H5_VERS_MINOR * 100 + H5_VERS_RELEASE >= 10800)
     dset_id = H5Dcreate2(group, vecname, scalartype, filespace, H5P_DEFAULT, chunkspace, H5P_DEFAULT);
@@ -722,7 +723,7 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
     status = H5Pclose(chunkspace);CHKERRQ(status);
   } else {
     dset_id = H5Dopen2(group, vecname, H5P_DEFAULT);
-    status = H5Dset_extent(dset_id, dims);CHKERRQ(status);
+    status  = H5Dset_extent(dset_id, dims);CHKERRQ(status);
   }
   status = H5Sclose(filespace);CHKERRQ(status);
 
@@ -732,7 +733,7 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
     count[dim] = 1;
     ++dim;
   }
-  count[dim] = PetscHDF5IntCast(xin->map->n)/bs;
+  ierr = PetscHDF5IntCast(xin->map->n/bs,count + dim);CHKERRQ(ierr);
   ++dim;
   if (bs >= 1) {
     count[dim] = bs;
@@ -752,13 +753,13 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
   }
 
   /* Select hyperslab in the file */
-  ierr = VecGetOwnershipRange(xin, &low, PETSC_NULL);CHKERRQ(ierr);
-  dim = 0;
+  ierr = VecGetOwnershipRange(xin, &low, NULL);CHKERRQ(ierr);
+  dim  = 0;
   if (timestep >= 0) {
     offset[dim] = timestep;
     ++dim;
   }
-  offset[dim] = PetscHDF5IntCast(low/bs);
+  ierr = PetscHDF5IntCast(low/bs,offset + dim);CHKERRQ(ierr);
   ++dim;
   if (bs >= 1) {
     offset[dim] = 0;
@@ -786,10 +787,10 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
 #endif
   /* To write dataset independently use H5Pset_dxpl_mpio(plist_id, H5FD_MPIO_INDEPENDENT) */
 
-  ierr = VecGetArrayRead(xin, &x);CHKERRQ(ierr);
+  ierr   = VecGetArrayRead(xin, &x);CHKERRQ(ierr);
   status = H5Dwrite(dset_id, scalartype, memspace, filespace, plist_id, x);CHKERRQ(status);
   status = H5Fflush(file_id, H5F_SCOPE_GLOBAL);CHKERRQ(status);
-  ierr = VecRestoreArrayRead(xin, &x);CHKERRQ(ierr);
+  ierr   = VecRestoreArrayRead(xin, &x);CHKERRQ(ierr);
 
   /* Close/release resources */
   if (group != file_id) {
@@ -799,12 +800,12 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
   status = H5Sclose(filespace);CHKERRQ(status);
   status = H5Sclose(memspace);CHKERRQ(status);
   status = H5Dclose(dset_id);CHKERRQ(status);
-  ierr = PetscInfo1(xin,"Wrote Vec object with name %s\n",vecname);CHKERRQ(ierr);
+  ierr   = PetscInfo1(xin,"Wrote Vec object with name %s\n",vecname);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 #endif
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecView_MPI"
 PetscErrorCode VecView_MPI(Vec xin,PetscViewer viewer)
 {
@@ -833,7 +834,7 @@ PetscErrorCode VecView_MPI(Vec xin,PetscViewer viewer)
 #if defined(PETSC_HAVE_MATLAB_ENGINE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_REAL_SINGLE) && !defined(PETSC_USE_REAL___FLOAT128)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERMATLAB,&ismatlab);CHKERRQ(ierr);
 #endif
-  if (iascii){
+  if (iascii) {
     ierr = VecView_MPI_ASCII(xin,viewer);CHKERRQ(ierr);
   } else if (isbinary) {
     ierr = VecView_MPI_Binary(xin,viewer);CHKERRQ(ierr);
@@ -858,11 +859,11 @@ PetscErrorCode VecView_MPI(Vec xin,PetscViewer viewer)
   } else if (ismatlab) {
     ierr = VecView_MPI_Matlab(xin,viewer);CHKERRQ(ierr);
 #endif
-  } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported for this object",((PetscObject)viewer)->type_name);
+  }
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecGetSize_MPI"
 PetscErrorCode VecGetSize_MPI(Vec xin,PetscInt *N)
 {
@@ -871,7 +872,7 @@ PetscErrorCode VecGetSize_MPI(Vec xin,PetscInt *N)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecGetValues_MPI"
 PetscErrorCode VecGetValues_MPI(Vec xin,PetscInt ni,const PetscInt ix[],PetscScalar y[])
 {
@@ -893,14 +894,14 @@ PetscErrorCode VecGetValues_MPI(Vec xin,PetscInt ni,const PetscInt ix[],PetscSca
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecSetValues_MPI"
 PetscErrorCode VecSetValues_MPI(Vec xin,PetscInt ni,const PetscInt ix[],const PetscScalar y[],InsertMode addv)
 {
   PetscErrorCode ierr;
-  PetscMPIInt    rank = xin->stash.rank;
+  PetscMPIInt    rank    = xin->stash.rank;
   PetscInt       *owners = xin->map->range,start = owners[rank];
-  PetscInt       end = owners[rank+1],i,row;
+  PetscInt       end     = owners[rank+1],i,row;
   PetscScalar    *xx;
 
   PetscFunctionBegin;
@@ -915,9 +916,7 @@ PetscErrorCode VecSetValues_MPI(Vec xin,PetscInt ni,const PetscInt ix[],const Pe
     for (i=0; i<ni; i++) {
       if (xin->stash.ignorenegidx && ix[i] < 0) continue;
 #if defined(PETSC_USE_DEBUG)
-      if (ix[i] < 0) {
-        SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %D cannot be negative",ix[i]);
-      }
+      if (ix[i] < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %D cannot be negative",ix[i]);
 #endif
       if ((row = ix[i]) >= start && row < end) {
         xx[row-start] = y[i];
@@ -932,9 +931,7 @@ PetscErrorCode VecSetValues_MPI(Vec xin,PetscInt ni,const PetscInt ix[],const Pe
     for (i=0; i<ni; i++) {
       if (xin->stash.ignorenegidx && ix[i] < 0) continue;
 #if defined(PETSC_USE_DEBUG)
-      if (ix[i] < 0) {
-        SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %D cannot be negative",ix[i]);
-      }
+      if (ix[i] < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %D cannot be negative",ix[i]);
 #endif
       if ((row = ix[i]) >= start && row < end) {
         xx[row-start] += y[i];
@@ -950,11 +947,11 @@ PetscErrorCode VecSetValues_MPI(Vec xin,PetscInt ni,const PetscInt ix[],const Pe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecSetValuesBlocked_MPI"
 PetscErrorCode VecSetValuesBlocked_MPI(Vec xin,PetscInt ni,const PetscInt ix[],const PetscScalar yin[],InsertMode addv)
 {
-  PetscMPIInt    rank = xin->stash.rank;
+  PetscMPIInt    rank    = xin->stash.rank;
   PetscInt       *owners = xin->map->range,start = owners[rank];
   PetscErrorCode ierr;
   PetscInt       end = owners[rank+1],i,row,bs = xin->map->bs,j;
@@ -971,9 +968,7 @@ PetscErrorCode VecSetValuesBlocked_MPI(Vec xin,PetscInt ni,const PetscInt ix[],c
   if (addv == INSERT_VALUES) {
     for (i=0; i<ni; i++) {
       if ((row = bs*ix[i]) >= start && row < end) {
-        for (j=0; j<bs; j++) {
-          xx[row-start+j] = y[j];
-        }
+        for (j=0; j<bs; j++) xx[row-start+j] = y[j];
       } else if (!xin->stash.donotstash) {
         if (ix[i] < 0) continue;
 #if defined(PETSC_USE_DEBUG)
@@ -986,9 +981,7 @@ PetscErrorCode VecSetValuesBlocked_MPI(Vec xin,PetscInt ni,const PetscInt ix[],c
   } else {
     for (i=0; i<ni; i++) {
       if ((row = bs*ix[i]) >= start && row < end) {
-        for (j=0; j<bs; j++) {
-          xx[row-start+j] += y[j];
-        }
+        for (j=0; j<bs; j++) xx[row-start+j] += y[j];
       } else if (!xin->stash.donotstash) {
         if (ix[i] < 0) continue;
 #if defined(PETSC_USE_DEBUG)
@@ -1007,7 +1000,7 @@ PetscErrorCode VecSetValuesBlocked_MPI(Vec xin,PetscInt ni,const PetscInt ix[],c
    Since nsends or nreceives may be zero we add 1 in certain mallocs
 to make sure we never malloc an empty one.
 */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecAssemblyBegin_MPI"
 PetscErrorCode VecAssemblyBegin_MPI(Vec xin)
 {
@@ -1015,37 +1008,34 @@ PetscErrorCode VecAssemblyBegin_MPI(Vec xin)
   PetscInt       *owners = xin->map->range,*bowners,i,bs,nstash,reallocs;
   PetscMPIInt    size;
   InsertMode     addv;
-  MPI_Comm       comm = ((PetscObject)xin)->comm;
+  MPI_Comm       comm;
 
   PetscFunctionBegin;
-  if (xin->stash.donotstash) {
-    PetscFunctionReturn(0);
-  }
+  ierr = PetscObjectGetComm((PetscObject)xin,&comm);CHKERRQ(ierr);
+  if (xin->stash.donotstash) PetscFunctionReturn(0);
 
-  ierr = MPI_Allreduce(&xin->stash.insertmode,&addv,1,MPI_INT,MPI_BOR,comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce((PetscEnum*)&xin->stash.insertmode,(PetscEnum*)&addv,1,MPIU_ENUM,MPI_BOR,comm);CHKERRQ(ierr);
   if (addv == (ADD_VALUES|INSERT_VALUES)) SETERRQ(comm,PETSC_ERR_ARG_NOTSAMETYPE,"Some processors inserted values while others added");
   xin->stash.insertmode = addv; /* in case this processor had no cache */
 
-  bs = xin->map->bs;
-  ierr = MPI_Comm_size(((PetscObject)xin)->comm,&size);CHKERRQ(ierr);
+  bs   = xin->map->bs;
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)xin),&size);CHKERRQ(ierr);
   if (!xin->bstash.bowners && xin->map->bs != -1) {
     ierr = PetscMalloc((size+1)*sizeof(PetscInt),&bowners);CHKERRQ(ierr);
-    for (i=0; i<size+1; i++){ bowners[i] = owners[i]/bs;}
+    for (i=0; i<size+1; i++) bowners[i] = owners[i]/bs;
     xin->bstash.bowners = bowners;
-  } else {
-    bowners = xin->bstash.bowners;
-  }
+  } else bowners = xin->bstash.bowners;
+
   ierr = VecStashScatterBegin_Private(&xin->stash,owners);CHKERRQ(ierr);
   ierr = VecStashScatterBegin_Private(&xin->bstash,bowners);CHKERRQ(ierr);
   ierr = VecStashGetInfo_Private(&xin->stash,&nstash,&reallocs);CHKERRQ(ierr);
   ierr = PetscInfo2(xin,"Stash has %D entries, uses %D mallocs.\n",nstash,reallocs);CHKERRQ(ierr);
   ierr = VecStashGetInfo_Private(&xin->bstash,&nstash,&reallocs);CHKERRQ(ierr);
   ierr = PetscInfo2(xin,"Block-Stash has %D entries, uses %D mallocs.\n",nstash,reallocs);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecAssemblyEnd_MPI"
 PetscErrorCode VecAssemblyEnd_MPI(Vec vec)
 {
@@ -1065,9 +1055,9 @@ PetscErrorCode VecAssemblyEnd_MPI(Vec vec)
       ierr = VecStashScatterGetMesg_Private(&vec->stash,&n,&row,&val,&flg);CHKERRQ(ierr);
       if (!flg) break;
       if (vec->stash.insertmode == ADD_VALUES) {
-        for (i=0; i<n; i++) { xarray[row[i] - base] += val[i]; }
+        for (i=0; i<n; i++) xarray[row[i] - base] += val[i];
       } else if (vec->stash.insertmode == INSERT_VALUES) {
-        for (i=0; i<n; i++) { xarray[row[i] - base] = val[i]; }
+        for (i=0; i<n; i++) xarray[row[i] - base] = val[i];
       } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"Insert mode is not set correctly; corrupted vector");
     }
     ierr = VecStashScatterEnd_Private(&vec->stash);CHKERRQ(ierr);
@@ -1080,9 +1070,9 @@ PetscErrorCode VecAssemblyEnd_MPI(Vec vec)
         array = xarray+row[i]*bs-base;
         vv    = val+i*bs;
         if (vec->stash.insertmode == ADD_VALUES) {
-          for (j=0; j<bs; j++) { array[j] += vv[j];}
+          for (j=0; j<bs; j++) array[j] += vv[j];
         } else if (vec->stash.insertmode == INSERT_VALUES) {
-          for (j=0; j<bs; j++) { array[j] = vv[j]; }
+          for (j=0; j<bs; j++) array[j] = vv[j];
         } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"Insert mode is not set correctly; corrupted vector");
       }
     }

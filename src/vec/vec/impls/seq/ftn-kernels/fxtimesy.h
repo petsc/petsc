@@ -7,9 +7,7 @@
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define fortranxtimesy_ fortranxtimesy
 #endif
-EXTERN_C_BEGIN
-extern void fortranxtimesy_(const void*,const void*,void*,const PetscInt *);
-EXTERN_C_END
+PETSC_EXTERN void fortranxtimesy_(const void*,const void*,void*,const PetscInt*);
 #endif
 #endif
 

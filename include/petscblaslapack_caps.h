@@ -38,10 +38,15 @@
 #  define LAPACKsygv_  SSYGV
 #  define LAPACKsygvx_ SSYGVX
 #  define BLASgemm_    SGEMM
+#  define BLAStrsm_    STRSM
 #  define LAPACKstebz_ SSTEBZ
+#  define LAPACKsteqr_ SSTEQR  /* eigenvalues of symm tridiagonal matrix */
 #  define LAPACKhseqr_ SHSEQR
 #  define LAPACKgges_  SGGES
 #  define LAPACKtrsen_ STRSEN
+#  define LAPACKormqr_ SORMQR
+#  define LAPACKhgeqz_ SHGEQZ
+#  define LAPACKtrtrs_ STRTRS
 # else
 /* Real double precision with no character string arguments */
 #  define LAPACKgeqrf_ DGEQRF
@@ -56,7 +61,7 @@
 #  define BLASaxpy_    DAXPY
 #  define BLASasum_    DASUM
 #  define LAPACKpttrf_ DPTTRF
-#  define LAPACKpttrs_ DPTTRS 
+#  define LAPACKpttrs_ DPTTRS
 #  define LAPACKstein_ DSTEIN
 #  define LAPACKgesv_  DGESV
 #  define LAPACKgelss_ DGELSS
@@ -75,10 +80,15 @@
 #  define LAPACKsygv_  DSYGV
 #  define LAPACKsygvx_ DSYGVX
 #  define BLASgemm_    DGEMM
+#  define BLAStrsm_    DTRSM
 #  define LAPACKstebz_ DSTEBZ
+#  define LAPACKsteqr_ DSTEQR
 #  define LAPACKhseqr_ DHSEQR
 #  define LAPACKgges_  DGGES
 #  define LAPACKtrsen_ DTRSEN
+#  define LAPACKormqr_ DORMQR
+#  define LAPACKhgeqz_ DHGEQZ
+#  define LAPACKtrtrs_ DTRTRS
 # endif
 
 #else
@@ -107,18 +117,23 @@
 #  define BLASgemv_    CGEMV
 #  define LAPACKgetrs_ CGETRS
 #  define BLAStrmv_    CTRMV
-#  define BLASgemm_    SGEMM
+#  define BLASgemm_    CGEMM
+#  define BLAStrsm_    CTRSM
 #  define LAPACKgesvd_ CGESVD
 #  define LAPACKgeev_  CGEEV
 #  define LAPACKsyev_  CSYEV
 #  define LAPACKsyevx_ CSYEVX
 #  define LAPACKsygv_  CHEGV
 #  define LAPACKsygvx_ CHEGVX
-#  define LAPACKpttrs_ CPTTRS 
+#  define LAPACKpttrs_ CPTTRS
 /* LAPACKstebz_ does not exist for complex. */
+#  define LAPACKsteqr_ CSTEQR
 #  define LAPACKhseqr_ CHSEQR
 #  define LAPACKgges_  CGGES
 #  define LAPACKtrsen_ CTRSEN
+#  define LAPACKormqr_ CORMQR
+#  define LAPACKhgeqz_ CHGEQZ
+#  define LAPACKtrtrs_ CTRTRS
 # else
 /* Complex double precision with no character string arguments */
 #  define LAPACKgeqrf_ ZGEQRF
@@ -145,17 +160,22 @@
 #  define LAPACKgetrs_ ZGETRS
 #  define BLAStrmv_    ZTRMV
 #  define BLASgemm_    ZGEMM
+#  define BLAStrsm_    ZTRSM
 #  define LAPACKgesvd_ ZGESVD
 #  define LAPACKgeev_  ZGEEV
-#  define LAPACKsyev_  ZHEEV  
-#  define LAPACKsyevx_ ZHEEVX 
+#  define LAPACKsyev_  ZHEEV
+#  define LAPACKsyevx_ ZHEEVX
 #  define LAPACKsygv_  ZHEGV
 #  define LAPACKsygvx_ ZHEGVX
-#  define LAPACKpttrs_ ZPTTRS 
+#  define LAPACKpttrs_ ZPTTRS
 /* LAPACKstebz_ does not exist for complex. */
+#  define LAPACKsteqr_ ZSTEQR
 #  define LAPACKhseqr_ ZHSEQR
 #  define LAPACKgges_  ZGGES
 #  define LAPACKtrsen_ ZTRSEN
+#  define LAPACKormqr_ ZORMQR
+#  define LAPACKhgeqz_ ZHGEQZ
+#  define LAPACKtrtrs_ ZTRTRS
 # endif
 #endif
 

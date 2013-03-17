@@ -22,6 +22,7 @@ int main(int argc,char **argv)
   /* create two vectors */
   n = 2;
   N = 2*size;
+
   ierr = VecCreateMPI(PETSC_COMM_WORLD,n,N,&x);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&y);CHKERRQ(ierr);
 

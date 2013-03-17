@@ -3,7 +3,8 @@ import PETSc.package
 class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
     PETSc.package.NewPackage.__init__(self, framework)
-    self.download   = ['http://ftp.mcs.anl.gov/pub/petsc/tmp/elemental-dev-072512.tar.gz']
+    self.download   = ['https://elemental.googlecode.com/files/elemental-0.78.tgz',
+                       'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/elemental-0.78.tgz']
     self.liblist    = [['libelemental.a','libplcg.a','libpmrrr.a']]
     self.includes   = ['elemental.hpp']
     self.cxx              = 1
@@ -17,12 +18,14 @@ class Configure(PETSc.package.NewPackage):
     PETSc.package.NewPackage.setupDependencies(self, framework)
     self.compilerFlags   = framework.require('config.compilerFlags', self)
     self.cmake           = framework.require('PETSc.packages.cmake',self)
-    self.blasLapack = framework.require('config.packages.BlasLapack',self)
-    self.deps       = [self.mpi,self.blasLapack]
+    self.blasLapack      = framework.require('config.packages.BlasLapack',self)
+    self.deps            = [self.mpi,self.cmake,self.blasLapack]
     return
 
   def Install(self):
     import os
+    import shlex
+
     if not self.cmake.found:
       raise RuntimeError('CMake 2.8.5 or above is needed to build Elemental')
     args = ['-DCMAKE_INSTALL_PREFIX='+self.installDir]
@@ -31,12 +34,20 @@ class Configure(PETSc.package.NewPackage):
 
     self.framework.pushLanguage('C')
     args.append('-DMPI_C_COMPILER="'+self.framework.getCompiler()+'"')
+    args.append('-DCMAKE_C_COMPILER="'+self.framework.getCompiler()+'"')
+    args.append('-DCMAKE_AR='+self.setCompilers.AR)
+    ranlib = shlex.split(self.setCompilers.RANLIB)[0]
+    args.append('-DCMAKE_RANLIB='+ranlib)
     cflags = self.setCompilers.getCompilerFlags()
     args.append('-DCMAKE_C_FLAGS:STRING="'+cflags+'"')
     self.framework.popLanguage()
 
     self.framework.pushLanguage('Cxx')
+    import config.setCompilers
+    if config.setCompilers.Configure.isSun(self.framework.getCompiler()):
+      raise RuntimeError('Sorry, Elemental does not compile with Oracle/Solaris/Sun compilers')
     args.append('-DMPI_CXX_COMPILER="'+self.framework.getCompiler()+'"')
+    args.append('-DCMAKE_CXX_COMPILER="'+self.framework.getCompiler()+'"')
     cxxflags = self.setCompilers.getCompilerFlags()
     args.append('-DCMAKE_CXX_FLAGS:STRING="'+cxxflags+'"')
     self.framework.popLanguage()

@@ -1,0 +1,100 @@
+<html>
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>PETSc-CS</title>
+</head>
+<body>
+<h1 align="center">ANL SIDL Environment (ASE)</h1>
+
+<h2 align="center">Alpha Release</h2>
+
+<h2 align="center">The ASE is implemented using the Scientific Interface Definition Language
+(<a href="http://www.llnl.gov/CASC/components">SIDL</a>)</h2>
+
+<p>The ASE requires that you first install the following:</p>
+<ul>
+  <li><a href="http://www.python.org/">Python 2.3</a> or later (it is likely
+    Python is already installed on your system).</li>
+  <li>The <a href="http://www.bitkeeper.com/Products.BK_Pro.Downloads.html">BitKeeper</a>
+    free client. We are in the process of implementing this in Python to obviate the need to install.</li>
+</ul>
+
+<H3>New Installation</H3>
+
+<p>I will soon have the install script running again after improvements. However, until then you can install ASE by hand
+    using the following:</p>
+<ol>
+      <li>Create a toplevel directory, e.g. /top</li>
+      <li>cd /top</li>
+      <li>Get the Python build system
+        <ul>
+          <li>mkdir sidl</li>
+          <li>cd sidl</li>
+          <li>bk clone bk://sidl.bkbits.net/BuildSystem</li>
+        </ul></li>
+      <li>Put BuildSystem in the front of your PYTHONPATH
+        <ul>
+          <li>Add these lines to ~/.pythonrc.py<br>
+            <p align="center">import sys<br>sys.path.insert(0,'/top/sidl/BuildSystem')</p>
+          </li>
+        </ul></li>
+      <li>Install ASE
+        <ul>
+          <li>cd /top</li>
+          <li>./sidl/BuildSystem/install/aseBootstrap.py</li>
+        </ul></li>
+</ol>
+
+<H3>Old Installation</H3>
+<p align="left">To install the ASE save <a href="bootstrap.sh">bootstrap.sh</a>
+and run it in a shell (Cygwin bash for Windows) with the command: </p>
+
+<b><font color="#FF0000">python bootstrap.sh</font></b> 
+
+<p align="left">For unattended installation use</p>
+<b><font color="#FF0000">python bootstrap.sh -batch</font></b> 
+
+<p align="left">If you have any problems please send mail to <a href="mailto:petsc-maint@mcs.anl.gov">petsc-maint@mcs.anl.gov</a>
+and include all output</p>
+
+<H3>Documentation</H3>
+
+<H3>Obsolete Documentation</H3>
+
+<p><a href="faq.html">The ASE FAQ</a></p>
+
+<p><a href="projects.html">Projects you can do to develop SIDL and the ASE</a></p>
+
+<p>The <a href="SIDL.html">SIDL runtime</a> interface definitions (in SIDL, of course) </p>
+
+<p>The <a href="SIDLLanguage.html">SIDL compiler</a> interface definitions (in SIDL, of course) </p>
+
+<p>The <a href="ANL.html">ANL SIDL compiler</a> classes (in SIDL, of course) </p>
+
+<p><a href="GettingStartedwithSIDL.ppt">Getting started</a> with the ANL SIDL
+Environment </p>
+<p><a href="DevelopingApplicationsWithSIDL.ppt">Developing Applications</a> with the ANL SIDL
+Environment </p>
+
+<p><a href="UsingSIDLwithMatlab.ppt">Getting started</a> with the ANL Matlab SIDL Compiler </p>
+
+<p><a href="SIDLForMathematica.ppt">Getting started</a> with the ANL Mathematica SIDL Compiler </p>
+
+<p><a href="SIDLForFortran90.ppt">Getting started</a> with the ANL Fortran90 SIDL Compiler </p>
+
+<hr>
+<p align="left">The ASE source code is maintained using the <a href="http://www.bitkeeper.com">BitKeeper</a>
+revision control system and hosted at <a href="http://sidl.bkbits.net">sidl.bkbits.net</a></p>
+<p align="left">The source for this page is at bk://sidl.bkbits.net/BuildSystem/docs/website/index.html.
+The source for bootstrap.sh is located at bk://sidl.bkbits.net/BuildSystem/install/bootstrap.py.
+These files are updated on the website using the following command
+in the&nbsp; bk://sidl.bkbits.net/BuildSystem/ repository:</p>
+
+<font color="#FF0000">make.py updateWebsite</font> <p align="left">&nbsp;</p>
+
+<p>&nbsp;</p>
+
+</body>
+
+</html>

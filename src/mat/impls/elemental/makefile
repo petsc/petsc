@@ -6,8 +6,6 @@ FFLAGS   =
 SOURCEC  = matelem.cxx
 SOURCEF  =
 SOURCEH  = matelemimpl.h
-OBJSC    = $(SOURCEC:.cxx=.o)
-OBJSF    =
 LIBBASE  = libpetscmat
 DIRS     =
 MANSEC   = Mat

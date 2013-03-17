@@ -1,6 +1,6 @@
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !             Include file for program ex5f.F
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !
 !  This program uses CPP for preprocessing, as indicated by the use of
 !  PETSc include files in the directory petsc/include/finclude.  This
@@ -10,7 +10,7 @@
 !  Use of the conventional Fortran include statements is also supported
 !  In this case, the PETsc include files are located in the directory
 !  petsc/include/foldinclude.
-!         
+!
 !  Since one must be very careful to include each file no more than once
 !  in a Fortran routine, application programmers must explicitly list
 !  each file needed for the various PETSc components within their
@@ -39,12 +39,12 @@
 #include <finclude/petscsnes.h>
 
 !  Common blocks:
-!  In this example we use common blocks to store data needed by the 
+!  In this example we use common blocks to store data needed by the
 !  application-provided call-back routines, FormJacobian() and
 !  FormFunction().  Note that we can store (pointers to)
-!  PETSc objects within these common blocks. 
+!  PETSc objects within these common blocks.
 !
-!  common /params/ - contains parameters for the global application 
+!  common /params/ - contains parameters for the global application
 !     mx, my   - global discretization in x- and y-directions
 !     lambda   - nonlinearity parameter
 !
@@ -69,4 +69,4 @@
       common /pdata/  ys,ye,ym,gys,gye,gym
       common /pdata/  da,rank,size
 
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

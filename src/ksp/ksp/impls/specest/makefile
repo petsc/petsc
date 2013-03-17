@@ -1,12 +1,10 @@
 
-ALL: lib 
+ALL: lib
 
 CFLAGS   =
 FFLAGS   =
 SOURCEC  = specest.c
 SOURCEF  =
-OBJSC    = specest.o
-OBJSF    = 
 LIBBASE  = libpetscksp
 LOCDIR   = src/ksp/ksp/impls/specest/
 MANSEC   = KSP

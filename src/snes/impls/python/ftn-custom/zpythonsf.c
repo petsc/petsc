@@ -7,10 +7,7 @@
 #define snespythonsettype_            snespythonsettype
 #endif
 
-
-EXTERN_C_BEGIN
-
-void PETSC_STDCALL  snespythonsettype_(SNES *snes, CHAR name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len) )
+PETSC_EXTERN void PETSC_STDCALL snespythonsettype_(SNES *snes, CHAR name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *t;
   FIXCHAR(name,len,t);
@@ -18,5 +15,3 @@ void PETSC_STDCALL  snespythonsettype_(SNES *snes, CHAR name PETSC_MIXED_LEN(len
   FREECHAR(name,t);
 }
 
-
-EXTERN_C_END

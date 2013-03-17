@@ -1,10 +1,9 @@
 
 #requirespackage 'PETSC_HAVE_AMS'
 
-ALL: lib 
-SOURCEH   = 
+ALL: lib
+SOURCEH   =
 SOURCEC   = pams.c
-OBJSC     = pams.o
 DIRS      = java
 LOCDIR    = src/sys/ams/
 MANSEC    = Sys

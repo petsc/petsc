@@ -7,8 +7,6 @@
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define fortranwaxpy_ fortranwaxpy
 #endif
-EXTERN_C_BEGIN
-extern void fortranwaxpy_(PetscInt*,const PetscScalar*,const PetscScalar*,const PetscScalar*,PetscScalar*); 
-EXTERN_C_END
+PETSC_EXTERN void fortranwaxpy_(PetscInt*,const PetscScalar*,const PetscScalar*,const PetscScalar*,PetscScalar*);
 #endif
 #endif

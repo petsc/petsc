@@ -47,9 +47,9 @@ public:
 
     PetscFunctionBegin;
     ierr = PetscOptionsBegin(PETSC_COMM_WORLD, "", "Options for interval section stress test", "ISection");CHKERRQ(ierr);
-      ierr = PetscOptionsInt("-debug", "The debugging level", "isection.c", this->_debug, &this->_debug, PETSC_NULL);CHKERRQ(ierr);
-      ierr = PetscOptionsInt("-iterations", "The number of test repetitions", "isection.c", this->_iters, &this->_iters, PETSC_NULL);CHKERRQ(ierr);
-      ierr = PetscOptionsInt("-size", "The interval size", "isection.c", this->_size, &this->_size, PETSC_NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsInt("-debug", "The debugging level", "isection.c", this->_debug, &this->_debug, NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsInt("-iterations", "The number of test repetitions", "isection.c", this->_iters, &this->_iters, NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsInt("-size", "The interval size", "isection.c", this->_size, &this->_size, NULL);CHKERRQ(ierr);
     ierr = PetscOptionsEnd();CHKERRQ(ierr);
     PetscFunctionReturn(0);
   };
@@ -91,7 +91,7 @@ public:
 
   void readMesh(const char filename[], const int dim, const bool interpolate) {
     int           spaceDim    = 0;
-    double       *coordinates = PETSC_NULL;
+    double       *coordinates = NULL;
     std::ifstream f;
 
     ALE::Obj<ALE::Mesh>             m = new ALE::Mesh(PETSC_COMM_WORLD, dim);
@@ -477,7 +477,7 @@ public:
     if (this->_debug) {
       parallelMesh->view("Parallel Mesh");
       for(mesh_type::renumbering_type::const_iterator r_iter = this->_renumbering.begin(); r_iter != this->_renumbering.end(); ++r_iter) {
-	std::cout << "renumbering["<<r_iter->first<<"]: " << r_iter->second << std::endl;
+        std::cout << "renumbering["<<r_iter->first<<"]: " << r_iter->second << std::endl;
       }
     }
     ALE::SetFromMap<std::map<point_type,point_type> > globalPoints(this->_renumbering);
@@ -515,7 +515,7 @@ public:
     if (this->_debug) {
       newLabel->view("Parallel Label");
       for(mesh_type::renumbering_type::const_iterator r_iter = this->_renumbering.begin(); r_iter != this->_renumbering.end(); ++r_iter) {
-	std::cout << "renumbering["<<r_iter->first<<"]: " << r_iter->second << std::endl;
+        std::cout << "renumbering["<<r_iter->first<<"]: " << r_iter->second << std::endl;
       }
     }
     this->checkLabel(newLabel, "2DUninterpolated");

@@ -12,14 +12,14 @@ T*/
 PetscErrorCode kernel_func1(PetscInt myrank,PetscInt *ranks,PetscScalar *values)
 {
   values[myrank] *= 1;
-  printf("First Kernel:My rank is %d, x = %f\n",ranks[myrank],values[myrank]); 
+  printf("First Kernel:My rank is %d, x = %f\n",ranks[myrank],PetscRealPart(values[myrank]));
   return(0);
 }
 
 PetscErrorCode kernel_func2(PetscInt myrank,PetscInt *ranks,PetscScalar *values)
 {
   values[myrank] *= 2;
-  printf("Second Kernel:My rank is %d, x = %f\n",ranks[myrank],values[myrank]); 
+  printf("Second Kernel:My rank is %d, x = %f\n",ranks[myrank],PetscRealPart(values[myrank]));
   return(0);
 
 }
@@ -33,7 +33,7 @@ int main(int argc,char **argv)
   PetscInt       *ranks;
   PetscScalar    *values;
 
-  PetscInitialize(&argc,&argv,(char *)0,help);
+  PetscInitialize(&argc,&argv,(char*)0,help);
 
   ierr = PetscThreadCommView(PETSC_COMM_WORLD,0);CHKERRQ(ierr);
   ierr = PetscThreadCommGetNThreads(PETSC_COMM_WORLD,&nthreads);CHKERRQ(ierr);
@@ -41,7 +41,7 @@ int main(int argc,char **argv)
   ierr = PetscMalloc(nthreads*sizeof(PetscInt),&ranks);CHKERRQ(ierr);
   ierr = PetscMalloc(nthreads*sizeof(PetscScalar),&values);CHKERRQ(ierr);
 
-  for(i=0;i < nthreads;i++) {
+  for (i=0; i < nthreads; i++) {
     ranks[i] = i; values[i] = i;
   }
 

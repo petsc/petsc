@@ -4,7 +4,7 @@
 */
 #if !defined(__PETSCTS_H)
 #define __PETSCTS_H
-#include "petscsnes.h"
+#include <petscsnes.h>
 
 /*S
      TS - Abstract PETSc object that manages all time-steppers (ODE integrators)
@@ -26,7 +26,7 @@ typedef struct _p_TS* TS;
 
 .seealso: TSSetType(), TS
 J*/
-#define TSType char*
+typedef const char* TSType;
 #define TSEULER           "euler"
 #define TSBEULER          "beuler"
 #define TSPSEUDO          "pseudo"
@@ -51,6 +51,37 @@ E*/
 typedef enum {TS_LINEAR,TS_NONLINEAR} TSProblemType;
 
 /*E
+   TSEquationType - type of TS problem that is solved
+
+   Level: beginner
+
+   Developer Notes: this must match finclude/petscts.h
+
+   Supported types are:
+     TS_EQ_UNSPECIFIED (default)
+     TS_EQ_EXPLICIT {ODE and DAE index 1, 2, 3, HI}: F(t,U,U_t) := M(t) U_t - G(U,t) = 0
+     TS_EQ_IMPLICIT {ODE and DAE index 1, 2, 3, HI}: F(t,U,U_t) = 0
+
+.seealso: TSGetEquationType(), TSSetEquationType()
+E*/
+typedef enum {
+  TS_EQ_UNSPECIFIED               = -1,
+  TS_EQ_EXPLICIT                  = 0,
+  TS_EQ_ODE_EXPLICIT              = 1,
+  TS_EQ_DAE_SEMI_EXPLICIT_INDEX1  = 100,
+  TS_EQ_DAE_SEMI_EXPLICIT_INDEX2  = 200,
+  TS_EQ_DAE_SEMI_EXPLICIT_INDEX3  = 300,
+  TS_EQ_DAE_SEMI_EXPLICIT_INDEXHI = 500,
+  TS_EQ_IMPLICIT                  = 1000,
+  TS_EQ_ODE_IMPLICIT              = 1001,
+  TS_EQ_DAE_IMPLICIT_INDEX1       = 1100,
+  TS_EQ_DAE_IMPLICIT_INDEX2       = 1200,
+  TS_EQ_DAE_IMPLICIT_INDEX3       = 1300,
+  TS_EQ_DAE_IMPLICIT_INDEXHI      = 1500
+} TSEquationType;
+PETSC_EXTERN const char *const*TSEquationTypes;
+
+/*E
    TSConvergedReason - reason a TS method has converged or not
 
    Level: beginner
@@ -65,17 +96,17 @@ typedef enum {
   TS_CONVERGED_ITERATING      = 0,
   TS_CONVERGED_TIME           = 1,
   TS_CONVERGED_ITS            = 2,
+  TS_CONVERGED_USER           = 3,
   TS_DIVERGED_NONLINEAR_SOLVE = -1,
   TS_DIVERGED_STEP_REJECTED   = -2
 } TSConvergedReason;
 PETSC_EXTERN const char *const*TSConvergedReasons;
-
 /*MC
    TS_CONVERGED_ITERATING - this only occurs if TSGetConvergedReason() is called during the TSSolve()
 
    Level: beginner
 
-.seealso: TSSolve(), TSConvergedReason(), TSGetAdapt()
+.seealso: TSSolve(), TSGetConvergedReason(), TSGetTSAdapt()
 M*/
 
 /*MC
@@ -83,7 +114,7 @@ M*/
 
    Level: beginner
 
-.seealso: TSSolve(), TSConvergedReason(), TSGetAdapt(), TSSetDuration()
+.seealso: TSSolve(), TSGetConvergedReason(), TSGetTSAdapt(), TSSetDuration(), TSGetSolveTime()
 M*/
 
 /*MC
@@ -91,7 +122,14 @@ M*/
 
    Level: beginner
 
-.seealso: TSSolve(), TSConvergedReason(), TSGetAdapt(), TSSetDuration()
+.seealso: TSSolve(), TSGetConvergedReason(), TSGetTSAdapt(), TSSetDuration()
+M*/
+/*MC
+   TS_CONVERGED_USER - user requested termination
+
+   Level: beginner
+
+.seealso: TSSolve(), TSGetConvergedReason(), TSSetConvergedReason(), TSSetDuration()
 M*/
 
 /*MC
@@ -99,7 +137,7 @@ M*/
 
    Level: beginner
 
-.seealso: TSSolve(), TSConvergedReason(), TSGetAdapt(), TSGetSNES(), SNESGetConvergedReason()
+.seealso: TSSolve(), TSGetConvergedReason(), TSGetTSAdapt(), TSGetSNES(), SNESGetConvergedReason()
 M*/
 
 /*MC
@@ -107,11 +145,29 @@ M*/
 
    Level: beginner
 
-.seealso: TSSolve(), TSConvergedReason(), TSGetAdapt()
+.seealso: TSSolve(), TSGetConvergedReason(), TSGetTSAdapt()
 M*/
+
+/*E
+   TSExactFinalTimeOption - option for handling of final time step
+
+   Level: beginner
+
+   Developer Notes: this must match finclude/petscts.h
+
+$  TS_EXACTFINALTIME_STEPOVER    - Don't do anything if final time is exceeded
+$  TS_EXACTFINALTIME_INTERPOLATE - Interpolate back to final time
+$  TS_EXACTFINALTIME_MATCHSTEP - Adapt final time step to match the final time
+.seealso: TSGetConvergedReason(), TSSetExactFinalTime()
+
+E*/
+typedef enum {TS_EXACTFINALTIME_STEPOVER=0,TS_EXACTFINALTIME_INTERPOLATE=1,TS_EXACTFINALTIME_MATCHSTEP=2} TSExactFinalTimeOption;
+PETSC_EXTERN const char *const TSExactFinalTimeOptions[];
+
 
 /* Logging support */
 PETSC_EXTERN PetscClassId TS_CLASSID;
+PETSC_EXTERN PetscClassId DMTS_CLASSID;
 
 PETSC_EXTERN PetscErrorCode TSInitializePackage(const char[]);
 
@@ -136,20 +192,29 @@ PETSC_EXTERN PetscErrorCode TSGetSolution(TS,Vec*);
 
 PETSC_EXTERN PetscErrorCode TSSetDuration(TS,PetscInt,PetscReal);
 PETSC_EXTERN PetscErrorCode TSGetDuration(TS,PetscInt*,PetscReal*);
-PETSC_EXTERN PetscErrorCode TSSetExactFinalTime(TS,PetscBool);
+PETSC_EXTERN PetscErrorCode TSSetExactFinalTime(TS,TSExactFinalTimeOption);
 
 PETSC_EXTERN PetscErrorCode TSMonitorDefault(TS,PetscInt,PetscReal,Vec,void*);
-PETSC_EXTERN PetscErrorCode TSMonitorSolution(TS,PetscInt,PetscReal,Vec,void*);
-PETSC_EXTERN PetscErrorCode TSMonitorSolutionCreate(TS,PetscViewer,void**);
-PETSC_EXTERN PetscErrorCode TSMonitorSolutionDestroy(void**);
+
+typedef struct _n_TSMonitorDrawCtx*  TSMonitorDrawCtx;
+PETSC_EXTERN PetscErrorCode TSMonitorDrawCtxCreate(MPI_Comm,const char[],const char[],int,int,int,int,PetscInt,TSMonitorDrawCtx *);
+PETSC_EXTERN PetscErrorCode TSMonitorDrawCtxDestroy(TSMonitorDrawCtx*);
+PETSC_EXTERN PetscErrorCode TSMonitorDrawSolution(TS,PetscInt,PetscReal,Vec,void*);
+PETSC_EXTERN PetscErrorCode TSMonitorDrawSolutionPhase(TS,PetscInt,PetscReal,Vec,void*);
+PETSC_EXTERN PetscErrorCode TSMonitorDrawError(TS,PetscInt,PetscReal,Vec,void*);
+
 PETSC_EXTERN PetscErrorCode TSMonitorSolutionBinary(TS,PetscInt,PetscReal,Vec,void*);
 PETSC_EXTERN PetscErrorCode TSMonitorSolutionVTK(TS,PetscInt,PetscReal,Vec,void*);
 PETSC_EXTERN PetscErrorCode TSMonitorSolutionVTKDestroy(void*);
 
 PETSC_EXTERN PetscErrorCode TSStep(TS);
 PETSC_EXTERN PetscErrorCode TSEvaluateStep(TS,PetscInt,Vec,PetscBool*);
-PETSC_EXTERN PetscErrorCode TSSolve(TS,Vec,PetscReal*);
+PETSC_EXTERN PetscErrorCode TSSolve(TS,Vec);
+PETSC_EXTERN PetscErrorCode TSGetEquationType(TS,TSEquationType*);
+PETSC_EXTERN PetscErrorCode TSSetEquationType(TS,TSEquationType);
 PETSC_EXTERN PetscErrorCode TSGetConvergedReason(TS,TSConvergedReason*);
+PETSC_EXTERN PetscErrorCode TSSetConvergedReason(TS,TSConvergedReason);
+PETSC_EXTERN PetscErrorCode TSGetSolveTime(TS,PetscReal*);
 PETSC_EXTERN PetscErrorCode TSGetSNESIterations(TS,PetscInt*);
 PETSC_EXTERN PetscErrorCode TSGetKSPIterations(TS,PetscInt*);
 PETSC_EXTERN PetscErrorCode TSGetStepRejections(TS,PetscInt*);
@@ -172,6 +237,10 @@ PETSC_EXTERN PetscErrorCode TSGetRHSFunction(TS,Vec*,TSRHSFunction*,void**);
 PETSC_EXTERN PetscErrorCode TSSetRHSJacobian(TS,Mat,Mat,TSRHSJacobian,void*);
 PETSC_EXTERN PetscErrorCode TSGetRHSJacobian(TS,Mat*,Mat*,TSRHSJacobian*,void**);
 
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*TSSolutionFunction)(TS,PetscReal,Vec,void*);
+PETSC_EXTERN PetscErrorCode TSSetSolutionFunction(TS,TSSolutionFunction,void*);
+PETSC_EXTERN PetscErrorCode TSSetForcingFunction(TS,PetscErrorCode (*TSForcingFunction)(TS,PetscReal,Vec,void*),void*);
+
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*TSIFunction)(TS,PetscReal,Vec,Vec,Vec,void*);
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*TSIJacobian)(TS,PetscReal,Vec,Vec,PetscReal,Mat*,Mat*,MatStructure*,void*);
 PETSC_EXTERN PetscErrorCode TSSetIFunction(TS,Vec,TSIFunction,void*);
@@ -183,10 +252,14 @@ PETSC_EXTERN PetscErrorCode TSComputeRHSFunctionLinear(TS,PetscReal,Vec,Vec,void
 PETSC_EXTERN PetscErrorCode TSComputeRHSJacobianConstant(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*,void*);
 PETSC_EXTERN PetscErrorCode TSComputeIFunctionLinear(TS,PetscReal,Vec,Vec,Vec,void*);
 PETSC_EXTERN PetscErrorCode TSComputeIJacobianConstant(TS,PetscReal,Vec,Vec,PetscReal,Mat*,Mat*,MatStructure*,void*);
+PETSC_EXTERN PetscErrorCode TSComputeSolutionFunction(TS,PetscReal,Vec);
+PETSC_EXTERN PetscErrorCode TSComputeForcingFunction(TS,PetscReal,Vec);
 
 PETSC_EXTERN PetscErrorCode TSSetPreStep(TS, PetscErrorCode (*)(TS));
+PETSC_EXTERN PetscErrorCode TSSetPreStage(TS, PetscErrorCode (*)(TS,PetscReal));
 PETSC_EXTERN PetscErrorCode TSSetPostStep(TS, PetscErrorCode (*)(TS));
 PETSC_EXTERN PetscErrorCode TSPreStep(TS);
+PETSC_EXTERN PetscErrorCode TSPreStage(TS,PetscReal);
 PETSC_EXTERN PetscErrorCode TSPostStep(TS);
 PETSC_EXTERN PetscErrorCode TSSetRetainStages(TS,PetscBool);
 PETSC_EXTERN PetscErrorCode TSInterpolate(TS,PetscReal,Vec);
@@ -197,12 +270,12 @@ PETSC_EXTERN PetscErrorCode TSSetCFLTimeLocal(TS,PetscReal);
 PETSC_EXTERN PetscErrorCode TSGetCFLTime(TS,PetscReal*);
 
 PETSC_EXTERN PetscErrorCode TSPseudoSetTimeStep(TS,PetscErrorCode(*)(TS,PetscReal*,void*),void*);
-PETSC_EXTERN PetscErrorCode TSPseudoDefaultTimeStep(TS,PetscReal*,void*);
+PETSC_EXTERN PetscErrorCode TSPseudoTimeStepDefault(TS,PetscReal*,void*);
 PETSC_EXTERN PetscErrorCode TSPseudoComputeTimeStep(TS,PetscReal *);
 PETSC_EXTERN PetscErrorCode TSPseudoSetMaxTimeStep(TS,PetscReal);
 
 PETSC_EXTERN PetscErrorCode TSPseudoSetVerifyTimeStep(TS,PetscErrorCode(*)(TS,Vec,void*,PetscReal*,PetscBool *),void*);
-PETSC_EXTERN PetscErrorCode TSPseudoDefaultVerifyTimeStep(TS,Vec,void*,PetscReal*,PetscBool *);
+PETSC_EXTERN PetscErrorCode TSPseudoVerifyTimeStepDefault(TS,Vec,void*,PetscReal*,PetscBool *);
 PETSC_EXTERN PetscErrorCode TSPseudoVerifyTimeStep(TS,Vec,PetscReal*,PetscBool *);
 PETSC_EXTERN PetscErrorCode TSPseudoSetTimeStepIncrement(TS,PetscReal);
 PETSC_EXTERN PetscErrorCode TSPseudoIncrementDtFromInitialDt(TS);
@@ -213,14 +286,50 @@ PETSC_EXTERN PetscErrorCode TSComputeRHSFunction(TS,PetscReal,Vec,Vec);
 PETSC_EXTERN PetscErrorCode TSComputeRHSJacobian(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*);
 PETSC_EXTERN PetscErrorCode TSComputeIFunction(TS,PetscReal,Vec,Vec,Vec,PetscBool);
 PETSC_EXTERN PetscErrorCode TSComputeIJacobian(TS,PetscReal,Vec,Vec,PetscReal,Mat*,Mat*,MatStructure*,PetscBool);
+PETSC_EXTERN PetscErrorCode TSComputeLinearStability(TS,PetscReal,PetscReal,PetscReal*,PetscReal*);
 
 PETSC_EXTERN PetscErrorCode TSVISetVariableBounds(TS,Vec,Vec);
 
+PETSC_EXTERN PetscErrorCode DMTSSetRHSFunction(DM,TSRHSFunction,void*);
+PETSC_EXTERN PetscErrorCode DMTSGetRHSFunction(DM,TSRHSFunction*,void**);
+PETSC_EXTERN PetscErrorCode DMTSSetRHSJacobian(DM,TSRHSJacobian,void*);
+PETSC_EXTERN PetscErrorCode DMTSGetRHSJacobian(DM,TSRHSJacobian*,void**);
+PETSC_EXTERN PetscErrorCode DMTSSetIFunction(DM,TSIFunction,void*);
+PETSC_EXTERN PetscErrorCode DMTSGetIFunction(DM,TSIFunction*,void**);
+PETSC_EXTERN PetscErrorCode DMTSSetIJacobian(DM,TSIJacobian,void*);
+PETSC_EXTERN PetscErrorCode DMTSGetIJacobian(DM,TSIJacobian*,void**);
+PETSC_EXTERN PetscErrorCode DMTSSetSolutionFunction(DM,TSSolutionFunction,void*);
+PETSC_EXTERN PetscErrorCode DMTSGetSolutionFunction(DM,TSSolutionFunction*,void**);
+PETSC_EXTERN PetscErrorCode DMTSSetForcingFunction(DM,PetscErrorCode (*TSForcingFunction)(TS,PetscReal,Vec,void*),void*);
+PETSC_EXTERN PetscErrorCode DMTSGetForcingFunction(DM,PetscErrorCode (**TSForcingFunction)(TS,PetscReal,Vec,void*),void**);
+
+PETSC_EXTERN PetscErrorCode DMTSSetIFunctionSerialize(DM,PetscErrorCode (*)(void*,PetscViewer),PetscErrorCode (*)(void**,PetscViewer));
+PETSC_EXTERN PetscErrorCode DMTSSetIJacobianSerialize(DM,PetscErrorCode (*)(void*,PetscViewer),PetscErrorCode (*)(void**,PetscViewer));
+
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*DMDATSRHSFunctionLocal)(DMDALocalInfo*,PetscReal,void*,void*,void*);
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*DMDATSRHSJacobianLocal)(DMDALocalInfo*,PetscReal,void*,Mat,Mat,MatStructure*,void*);
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*DMDATSIFunctionLocal)(DMDALocalInfo*,PetscReal,void*,void*,void*,void*);
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*DMDATSIJacobianLocal)(DMDALocalInfo*,PetscReal,void*,void*,PetscReal,Mat,Mat,MatStructure*,void*);
+
+PETSC_EXTERN PetscErrorCode DMDATSSetRHSFunctionLocal(DM,InsertMode,PetscErrorCode (*)(DMDALocalInfo*,PetscReal,void*,void*,void*),void *);
+PETSC_EXTERN PetscErrorCode DMDATSSetRHSJacobianLocal(DM,PetscErrorCode (*)(DMDALocalInfo*,PetscReal,void*,Mat,Mat,MatStructure*,void*),void *);
+PETSC_EXTERN PetscErrorCode DMDATSSetIFunctionLocal(DM,InsertMode,PetscErrorCode (*)(DMDALocalInfo*,PetscReal,void*,void*,void*,void*),void *);
+PETSC_EXTERN PetscErrorCode DMDATSSetIJacobianLocal(DM,PetscErrorCode (*)(DMDALocalInfo*,PetscReal,void*,void*,PetscReal,Mat,Mat,MatStructure*,void*),void *);
+
+typedef struct {
+  Vec         ray;
+  VecScatter  scatter;
+  PetscViewer viewer;
+} TSMonitorDMDARayCtx;
+PETSC_EXTERN PetscErrorCode TSMonitorDMDARayDestroy(void**);
+PETSC_EXTERN PetscErrorCode TSMonitorDMDARay(TS,PetscInt,PetscReal,Vec,void*);
+
+
 /* Dynamic creation and loading functions */
-PETSC_EXTERN PetscFList TSList;
-PETSC_EXTERN PetscBool TSRegisterAllCalled;
-PETSC_EXTERN PetscErrorCode TSGetType(TS,const TSType*);
-PETSC_EXTERN PetscErrorCode TSSetType(TS,const TSType);
+PETSC_EXTERN PetscFunctionList TSList;
+PETSC_EXTERN PetscBool         TSRegisterAllCalled;
+PETSC_EXTERN PetscErrorCode TSGetType(TS,TSType*);
+PETSC_EXTERN PetscErrorCode TSSetType(TS,TSType);
 PETSC_EXTERN PetscErrorCode TSRegister(const char[], const char[], const char[], PetscErrorCode (*)(TS));
 PETSC_EXTERN PetscErrorCode TSRegisterAll(const char[]);
 PETSC_EXTERN PetscErrorCode TSRegisterDestroy(void);
@@ -229,6 +338,7 @@ PETSC_EXTERN PetscErrorCode TSRegisterDestroy(void);
   TSRegisterDynamic - Adds a creation method to the TS package.
 
   Synopsis:
+  #include "petscts.h"
   PetscErrorCode TSRegisterDynamic(const char *name, const char *path, const char *func_name, PetscErrorCode (*create_func)(TS))
 
   Not Collective
@@ -275,16 +385,30 @@ M*/
 #endif
 
 PETSC_EXTERN PetscErrorCode TSGetSNES(TS,SNES*);
+PETSC_EXTERN PetscErrorCode TSSetSNES(TS,SNES);
 PETSC_EXTERN PetscErrorCode TSGetKSP(TS,KSP*);
 
 PETSC_EXTERN PetscErrorCode TSView(TS,PetscViewer);
+PETSC_EXTERN PetscErrorCode TSLoad(TS,PetscViewer);
+
+#define TS_FILE_CLASSID 1211225
 
 PETSC_EXTERN PetscErrorCode TSSetApplicationContext(TS,void *);
 PETSC_EXTERN PetscErrorCode TSGetApplicationContext(TS,void *);
 
-PETSC_EXTERN PetscErrorCode TSMonitorLGCreate(const char[],const char[],int,int,int,int,PetscDrawLG *);
-PETSC_EXTERN PetscErrorCode TSMonitorLG(TS,PetscInt,PetscReal,Vec,void *);
-PETSC_EXTERN PetscErrorCode TSMonitorLGDestroy(PetscDrawLG*);
+typedef struct _n_TSMonitorLGCtx*  TSMonitorLGCtx;
+PETSC_EXTERN PetscErrorCode TSMonitorLGCtxCreate(MPI_Comm,const char[],const char[],int,int,int,int,PetscInt,TSMonitorLGCtx *);
+PETSC_EXTERN PetscErrorCode TSMonitorLGCtxDestroy(TSMonitorLGCtx*);
+PETSC_EXTERN PetscErrorCode TSMonitorLGTimeStep(TS,PetscInt,PetscReal,Vec,void *);
+PETSC_EXTERN PetscErrorCode TSMonitorLGSolution(TS,PetscInt,PetscReal,Vec,void *);
+PETSC_EXTERN PetscErrorCode TSMonitorLGError(TS,PetscInt,PetscReal,Vec,void *);
+PETSC_EXTERN PetscErrorCode TSMonitorLGSNESIterations(TS,PetscInt,PetscReal,Vec,void *);
+PETSC_EXTERN PetscErrorCode TSMonitorLGKSPIterations(TS,PetscInt,PetscReal,Vec,void *);
+
+typedef struct _n_TSMonitorSPEigCtx*  TSMonitorSPEigCtx;
+PETSC_EXTERN PetscErrorCode TSMonitorSPEigCtxCreate(MPI_Comm,const char[],const char[],int,int,int,int,PetscInt,TSMonitorSPEigCtx *);
+PETSC_EXTERN PetscErrorCode TSMonitorSPEigCtxDestroy(TSMonitorSPEigCtx*);
+PETSC_EXTERN PetscErrorCode TSMonitorSPEig(TS,PetscInt,PetscReal,Vec,void *);
 
 /*J
    TSSSPType - string with the name of TSSSP scheme.
@@ -293,13 +417,13 @@ PETSC_EXTERN PetscErrorCode TSMonitorLGDestroy(PetscDrawLG*);
 
 .seealso: TSSSPSetType(), TS
 J*/
-#define TSSSPType char*
+typedef const char* TSSSPType;
 #define TSSSPRKS2  "rks2"
 #define TSSSPRKS3  "rks3"
 #define TSSSPRK104 "rk104"
 
-PETSC_EXTERN PetscErrorCode TSSSPSetType(TS,const TSSSPType);
-PETSC_EXTERN PetscErrorCode TSSSPGetType(TS,const TSSSPType*);
+PETSC_EXTERN PetscErrorCode TSSSPSetType(TS,TSSSPType);
+PETSC_EXTERN PetscErrorCode TSSSPGetType(TS,TSSSPType*);
 PETSC_EXTERN PetscErrorCode TSSSPSetNumStages(TS,PetscInt);
 PETSC_EXTERN PetscErrorCode TSSSPGetNumStages(TS,PetscInt*);
 
@@ -321,7 +445,7 @@ typedef struct _p_TSAdapt *TSAdapt;
 
 .seealso: TSAdaptSetType(), TS
 E*/
-#define TSAdaptType  char*
+typedef const char *TSAdaptType;
 #define TSADAPTBASIC "basic"
 #define TSADAPTNONE  "none"
 #define TSADAPTCFL   "cfl"
@@ -330,6 +454,7 @@ E*/
    TSAdaptRegisterDynamic - adds a TSAdapt implementation
 
    Synopsis:
+   #include "petscts.h"
    PetscErrorCode TSAdaptRegisterDynamic(const char *name_scheme,const char *path,const char *name_create,PetscErrorCode (*routine_create)(TS))
 
    Not Collective
@@ -360,7 +485,7 @@ $     -ts_adapt_type my_scheme
    Level: advanced
 
    Notes: Environmental variables such as ${PETSC_ARCH}, ${PETSC_DIR}, ${PETSC_LIB_DIR},
-          and others of the form ${any_environmental_variable} occuring in pathname will be 
+          and others of the form ${any_environmental_variable} occuring in pathname will be
           replaced with appropriate values.
 
 .keywords: TSAdapt, register
@@ -373,14 +498,14 @@ M*/
 #  define TSAdaptRegisterDynamic(a,b,c,d)  TSAdaptRegister(a,b,c,d)
 #endif
 
-PETSC_EXTERN PetscErrorCode TSGetAdapt(TS,TSAdapt*);
+PETSC_EXTERN PetscErrorCode TSGetTSAdapt(TS,TSAdapt*);
 PETSC_EXTERN PetscErrorCode TSAdaptRegister(const char[],const char[],const char[],PetscErrorCode (*)(TSAdapt));
 PETSC_EXTERN PetscErrorCode TSAdaptRegisterAll(const char[]);
 PETSC_EXTERN PetscErrorCode TSAdaptRegisterDestroy(void);
 PETSC_EXTERN PetscErrorCode TSAdaptInitializePackage(const char[]);
 PETSC_EXTERN PetscErrorCode TSAdaptFinalizePackage(void);
 PETSC_EXTERN PetscErrorCode TSAdaptCreate(MPI_Comm,TSAdapt*);
-PETSC_EXTERN PetscErrorCode TSAdaptSetType(TSAdapt,const TSAdaptType);
+PETSC_EXTERN PetscErrorCode TSAdaptSetType(TSAdapt,TSAdaptType);
 PETSC_EXTERN PetscErrorCode TSAdaptSetOptionsPrefix(TSAdapt,const char[]);
 PETSC_EXTERN PetscErrorCode TSAdaptCandidatesClear(TSAdapt);
 PETSC_EXTERN PetscErrorCode TSAdaptCandidateAdd(TSAdapt,const char[],PetscInt,PetscInt,PetscReal,PetscReal,PetscBool);
@@ -388,10 +513,12 @@ PETSC_EXTERN PetscErrorCode TSAdaptCandidatesGet(TSAdapt,PetscInt*,const PetscIn
 PETSC_EXTERN PetscErrorCode TSAdaptChoose(TSAdapt,TS,PetscReal,PetscInt*,PetscReal*,PetscBool*);
 PETSC_EXTERN PetscErrorCode TSAdaptCheckStage(TSAdapt,TS,PetscBool*);
 PETSC_EXTERN PetscErrorCode TSAdaptView(TSAdapt,PetscViewer);
+PETSC_EXTERN PetscErrorCode TSAdaptLoad(TSAdapt,PetscViewer);
 PETSC_EXTERN PetscErrorCode TSAdaptSetFromOptions(TSAdapt);
 PETSC_EXTERN PetscErrorCode TSAdaptDestroy(TSAdapt*);
 PETSC_EXTERN PetscErrorCode TSAdaptSetMonitor(TSAdapt,PetscBool);
 PETSC_EXTERN PetscErrorCode TSAdaptSetStepLimits(TSAdapt,PetscReal,PetscReal);
+PETSC_EXTERN PetscErrorCode TSAdaptSetCheckStage(TSAdapt,PetscErrorCode(*)(TSAdapt,TS,PetscBool*));
 
 /*S
    TSGLAdapt - Abstract object that manages time-step adaptivity
@@ -414,7 +541,7 @@ typedef struct _p_TSGLAdapt *TSGLAdapt;
 
 .seealso: TSGLAdaptSetType(), TS
 J*/
-#define TSGLAdaptType  char*
+typedef const char *TSGLAdaptType;
 #define TSGLADAPT_NONE "none"
 #define TSGLADAPT_SIZE "size"
 #define TSGLADAPT_BOTH "both"
@@ -423,6 +550,7 @@ J*/
    TSGLAdaptRegisterDynamic - adds a TSGLAdapt implementation
 
    Synopsis:
+   #include "petscts.h"
    PetscErrorCode TSGLAdaptRegisterDynamic(const char *name_scheme,const char *path,const char *name_create,PetscErrorCode (*routine_create)(TS))
 
    Not Collective
@@ -453,7 +581,7 @@ $     -ts_adapt_type my_scheme
    Level: advanced
 
    Notes: Environmental variables such as ${PETSC_ARCH}, ${PETSC_DIR}, ${PETSC_LIB_DIR},
-          and others of the form ${any_environmental_variable} occuring in pathname will be 
+          and others of the form ${any_environmental_variable} occuring in pathname will be
           replaced with appropriate values.
 
 .keywords: TSGLAdapt, register
@@ -472,7 +600,7 @@ PETSC_EXTERN PetscErrorCode TSGLAdaptRegisterDestroy(void);
 PETSC_EXTERN PetscErrorCode TSGLAdaptInitializePackage(const char[]);
 PETSC_EXTERN PetscErrorCode TSGLAdaptFinalizePackage(void);
 PETSC_EXTERN PetscErrorCode TSGLAdaptCreate(MPI_Comm,TSGLAdapt*);
-PETSC_EXTERN PetscErrorCode TSGLAdaptSetType(TSGLAdapt,const TSGLAdaptType);
+PETSC_EXTERN PetscErrorCode TSGLAdaptSetType(TSGLAdapt,TSGLAdaptType);
 PETSC_EXTERN PetscErrorCode TSGLAdaptSetOptionsPrefix(TSGLAdapt,const char[]);
 PETSC_EXTERN PetscErrorCode TSGLAdaptChoose(TSGLAdapt,PetscInt,const PetscInt[],const PetscReal[],const PetscReal[],PetscInt,PetscReal,PetscReal,PetscInt*,PetscReal*,PetscBool *);
 PETSC_EXTERN PetscErrorCode TSGLAdaptView(TSGLAdapt,PetscViewer);
@@ -488,7 +616,7 @@ PETSC_EXTERN PetscErrorCode TSGLAdaptDestroy(TSGLAdapt*);
 
 .seealso: TSGLSetAcceptType(), TS
 J*/
-#define TSGLAcceptType  char*
+typedef const char *TSGLAcceptType;
 #define TSGLACCEPT_ALWAYS "always"
 
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*TSGLAcceptFunction)(TS,PetscReal,PetscReal,const PetscReal[],PetscBool *);
@@ -498,6 +626,7 @@ PETSC_EXTERN PetscErrorCode TSGLAcceptRegister(const char[],const char[],const c
    TSGLAcceptRegisterDynamic - adds a TSGL acceptance scheme
 
    Synopsis:
+   #include "petscts.h"
    PetscErrorCode TSGLAcceptRegisterDynamic(const char *name_scheme,const char *path,const char *name_create,PetscErrorCode (*routine_create)(TS))
 
    Not Collective
@@ -528,7 +657,7 @@ $     -ts_gl_accept_type my_scheme
    Level: advanced
 
    Notes: Environmental variables such as ${PETSC_ARCH}, ${PETSC_DIR}, ${PETSC_LIB_DIR},
-          and others of the form ${any_environmental_variable} occuring in pathname will be 
+          and others of the form ${any_environmental_variable} occuring in pathname will be
           replaced with appropriate values.
 
 .keywords: TSGL, TSGLAcceptType, register
@@ -548,13 +677,14 @@ M*/
 
 .seealso: TSGLSetType(), TSGLRegister()
 J*/
-#define TSGLType char*
+typedef const char* TSGLType;
 #define TSGL_IRKS   "irks"
 
 /*MC
    TSGLRegisterDynamic - adds a TSGL implementation
 
    Synopsis:
+   #include "petscts.h"
    PetscErrorCode TSGLRegisterDynamic(const char *name_scheme,const char *path,const char *name_create,PetscErrorCode (*routine_create)(TS))
 
    Not Collective
@@ -585,7 +715,7 @@ $     -ts_gl_type my_scheme
    Level: advanced
 
    Notes: Environmental variables such as ${PETSC_ARCH}, ${PETSC_DIR}, ${PETSC_LIB_DIR},
-          and others of the form ${any_environmental_variable} occuring in pathname will be 
+          and others of the form ${any_environmental_variable} occuring in pathname will be
           replaced with appropriate values.
 
 .keywords: TSGL, register
@@ -603,9 +733,9 @@ PETSC_EXTERN PetscErrorCode TSGLRegisterAll(const char[]);
 PETSC_EXTERN PetscErrorCode TSGLRegisterDestroy(void);
 PETSC_EXTERN PetscErrorCode TSGLInitializePackage(const char[]);
 PETSC_EXTERN PetscErrorCode TSGLFinalizePackage(void);
-PETSC_EXTERN PetscErrorCode TSGLSetType(TS,const TSGLType);
+PETSC_EXTERN PetscErrorCode TSGLSetType(TS,TSGLType);
 PETSC_EXTERN PetscErrorCode TSGLGetAdapt(TS,TSGLAdapt*);
-PETSC_EXTERN PetscErrorCode TSGLSetAcceptType(TS,const TSGLAcceptType);
+PETSC_EXTERN PetscErrorCode TSGLSetAcceptType(TS,TSGLAcceptType);
 
 /*J
     TSEIMEXType - String with the name of an Extrapolated IMEX method.
@@ -627,7 +757,8 @@ PETSC_EXTERN PetscErrorCode TSEIMEXSetOrdAdapt(TS,PetscBool);
 
 .seealso: TSARKIMEXSetType(), TS, TSARKIMEX, TSARKIMEXRegister()
 J*/
-#define TSARKIMEXType char*
+typedef const char* TSARKIMEXType;
+#define TSARKIMEX1BEE   "1bee"
 #define TSARKIMEXA2     "a2"
 #define TSARKIMEXL2     "l2"
 #define TSARKIMEXARS122 "ars122"
@@ -640,10 +771,10 @@ J*/
 #define TSARKIMEXARS443 "ars443"
 #define TSARKIMEX4      "4"
 #define TSARKIMEX5      "5"
-PETSC_EXTERN PetscErrorCode TSARKIMEXGetType(TS ts,const TSARKIMEXType*);
-PETSC_EXTERN PetscErrorCode TSARKIMEXSetType(TS ts,const TSARKIMEXType);
+PETSC_EXTERN PetscErrorCode TSARKIMEXGetType(TS ts,TSARKIMEXType*);
+PETSC_EXTERN PetscErrorCode TSARKIMEXSetType(TS ts,TSARKIMEXType);
 PETSC_EXTERN PetscErrorCode TSARKIMEXSetFullyImplicit(TS,PetscBool);
-PETSC_EXTERN PetscErrorCode TSARKIMEXRegister(const TSARKIMEXType,PetscInt,PetscInt,const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[],PetscInt,const PetscReal[],const PetscReal[]);
+PETSC_EXTERN PetscErrorCode TSARKIMEXRegister(TSARKIMEXType,PetscInt,PetscInt,const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[],PetscInt,const PetscReal[],const PetscReal[]);
 PETSC_EXTERN PetscErrorCode TSARKIMEXFinalizePackage(void);
 PETSC_EXTERN PetscErrorCode TSARKIMEXInitializePackage(const char path[]);
 PETSC_EXTERN PetscErrorCode TSARKIMEXRegisterDestroy(void);
@@ -656,7 +787,7 @@ PETSC_EXTERN PetscErrorCode TSARKIMEXRegisterAll(void);
 
 .seealso: TSRosWSetType(), TS, TSROSW, TSRosWRegister()
 J*/
-#define TSRosWType char*
+typedef const char* TSRosWType;
 #define TSROSW2M          "2m"
 #define TSROSW2P          "2p"
 #define TSROSWRA3PW       "ra3pw"
@@ -674,11 +805,11 @@ J*/
 #define TSROSWVELDD4      "veldd4"
 #define TSROSW4L          "4l"
 
-PETSC_EXTERN PetscErrorCode TSRosWGetType(TS ts,const TSRosWType*);
-PETSC_EXTERN PetscErrorCode TSRosWSetType(TS ts,const TSRosWType);
+PETSC_EXTERN PetscErrorCode TSRosWGetType(TS ts,TSRosWType*);
+PETSC_EXTERN PetscErrorCode TSRosWSetType(TS ts,TSRosWType);
 PETSC_EXTERN PetscErrorCode TSRosWSetRecomputeJacobian(TS,PetscBool);
-PETSC_EXTERN PetscErrorCode TSRosWRegister(const TSRosWType,PetscInt,PetscInt,const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[],PetscInt,const PetscReal[]);
-PETSC_EXTERN PetscErrorCode TSRosWRegisterRos4(const TSRosWType,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal);
+PETSC_EXTERN PetscErrorCode TSRosWRegister(TSRosWType,PetscInt,PetscInt,const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[],PetscInt,const PetscReal[]);
+PETSC_EXTERN PetscErrorCode TSRosWRegisterRos4(TSRosWType,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal);
 PETSC_EXTERN PetscErrorCode TSRosWFinalizePackage(void);
 PETSC_EXTERN PetscErrorCode TSRosWInitializePackage(const char path[]);
 PETSC_EXTERN PetscErrorCode TSRosWRegisterDestroy(void);

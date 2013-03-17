@@ -3,18 +3,18 @@
 #include <petscsys.h>        /*I  "petscsys.h"   I*/
 
 static MPI_Comm saved_PETSC_COMM_WORLD = 0;
-MPI_Comm PETSC_COMM_LOCAL_WORLD        = 0;           /* comm for a single node (local set of processes) */
-PetscBool  PetscHMPIWorker           = PETSC_FALSE;  /* this is a regular process, nonworker process */
-void* PetscHMPICtx                   = 0;
+MPI_Comm        PETSC_COMM_LOCAL_WORLD = 0;           /* comm for a single node (local set of processes) */
+PetscBool       PetscHMPIWorker        = PETSC_FALSE; /* this is a regular process, nonworker process */
+void            * PetscHMPICtx         = 0;
 
 extern PetscErrorCode  PetscHMPIHandle(MPI_Comm);
 
 #if defined(PETSC_HAVE_MPI_COMM_SPAWN)
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscHMPISpawn"
 /*@C
-   PetscHMPISpawn - Initialize additional processes to be used as "worker" processes. This is not generally 
-     called by users. One should use -hmpi_spawn_size <n> to indicate that you wish to have n-1 new MPI 
+   PetscHMPISpawn - Initialize additional processes to be used as "worker" processes. This is not generally
+     called by users. One should use -hmpi_spawn_size <n> to indicate that you wish to have n-1 new MPI
      processes spawned for each current process.
 
    Not Collective (could make collective on MPI_COMM_WORLD, generate one huge comm and then split it up)
@@ -43,8 +43,8 @@ $       This is what would use if each of the computers hardware nodes had 3 CPU
 $
 $      These are intended to be used in conjunction with USER HMPI code. The user will have 1 process per
 $   computer (hardware) node (where the computer node has p cpus), the user's code will use threads to fully
-$   utilize all the CPUs on the node. The PETSc code will have p processes to fully use the compute node for 
-$   PETSc calculations. The user THREADS and PETSc PROCESSES will NEVER run at the same time so the p CPUs 
+$   utilize all the CPUs on the node. The PETSc code will have p processes to fully use the compute node for
+$   PETSc calculations. The user THREADS and PETSc PROCESSES will NEVER run at the same time so the p CPUs
 $   are always working on p task, never more than p.
 $
 $    See PCHMPI for a PETSc preconditioner that can use this functionality
@@ -58,7 +58,7 @@ $
    Level: developer
 
    Concepts: HMPI
-   
+
 .seealso: PetscFinalize(), PetscInitializeFortran(), PetscGetArgs(), PetscHMPIFinalize(), PetscInitialize(), PetscHMPIMerge(), PetscHMPIRun()
 
 @*/
@@ -67,7 +67,7 @@ PetscErrorCode  PetscHMPISpawn(PetscMPIInt nodesize)
   PetscErrorCode ierr;
   PetscMPIInt    size;
   MPI_Comm       parent,children;
-							   
+
   PetscFunctionBegin;
   ierr = MPI_Comm_get_parent(&parent);CHKERRQ(ierr);
   if (parent == MPI_COMM_NULL) {  /* the original processes started by user */
@@ -78,22 +78,23 @@ PetscErrorCode  PetscHMPISpawn(PetscMPIInt nodesize)
     ierr = PetscGetArguments(&argv);CHKERRQ(ierr);
     ierr = MPI_Comm_spawn(programname,argv,nodesize-1,MPI_INFO_NULL,0,PETSC_COMM_SELF,&children,MPI_ERRCODES_IGNORE);CHKERRQ(ierr);
     ierr = PetscFreeArguments(argv);CHKERRQ(ierr);
-    ierr = MPI_Intercomm_merge(children,0,&PETSC_COMM_LOCAL_WORLD);CHKERRQ(ierr); 
+    ierr = MPI_Intercomm_merge(children,0,&PETSC_COMM_LOCAL_WORLD);CHKERRQ(ierr);
 
     ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
     ierr = PetscInfo2(0,"PETSc HMPI successfully spawned: number of nodes = %d node size = %d\n",size,nodesize);CHKERRQ(ierr);
+
     saved_PETSC_COMM_WORLD = PETSC_COMM_WORLD;
   } else { /* worker nodes that get spawned */
-    ierr              = MPI_Intercomm_merge(parent,1,&PETSC_COMM_LOCAL_WORLD);CHKERRQ(ierr); 
-    ierr              = PetscHMPIHandle(PETSC_COMM_LOCAL_WORLD);CHKERRQ(ierr);
+    ierr            = MPI_Intercomm_merge(parent,1,&PETSC_COMM_LOCAL_WORLD);CHKERRQ(ierr);
+    ierr            = PetscHMPIHandle(PETSC_COMM_LOCAL_WORLD);CHKERRQ(ierr);
     PetscHMPIWorker = PETSC_TRUE; /* so that PetscHMPIFinalize() will not attempt a broadcast from this process */
-    ierr              = PetscEnd();  /* cannot continue into user code */
+    PetscEnd();  /* cannot continue into user code */
   }
   PetscFunctionReturn(0);
 }
 #endif
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscHMPIMerge"
 /*@C
    PetscHMPIMerge - Initializes the PETSc and MPI to work with HMPI. This is not usually called
@@ -128,8 +129,8 @@ $       This is what would use if each of the computers hardware nodes had 3 CPU
 $
 $      These are intended to be used in conjunction with USER HMPI code. The user will have 1 process per
 $   computer (hardware) node (where the computer node has p cpus), the user's code will use threads to fully
-$   utilize all the CPUs on the node. The PETSc code will have p processes to fully use the compute node for 
-$   PETSc calculations. The user THREADS and PETSc PROCESSES will NEVER run at the same time so the p CPUs 
+$   utilize all the CPUs on the node. The PETSc code will have p processes to fully use the compute node for
+$   PETSc calculations. The user THREADS and PETSc PROCESSES will NEVER run at the same time so the p CPUs
 $   are always working on p task, never more than p.
 $
 $    See PCHMPI for a PETSc preconditioner that can use this functionality
@@ -141,7 +142,7 @@ $
    In both cases the user's code is running ONLY on PETSC_COMM_WORLD (that was newly generated by running this command).
 
    Concepts: HMPI
-   
+
 .seealso: PetscFinalize(), PetscInitializeFortran(), PetscGetArgs(), PetscHMPIFinalize(), PetscInitialize(), PetscHMPISpawn(), PetscHMPIRun()
 
 @*/
@@ -159,7 +160,7 @@ PetscErrorCode  PetscHMPIMerge(PetscMPIInt nodesize,PetscErrorCode (*func)(void*
   ierr = MPI_Comm_rank(saved_PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
 
-  /* create two communicators 
+  /* create two communicators
       *) one that contains the first process from each node: 0,nodesize,2*nodesize,...
       *) one that contains all processes in a node:  (0,1,2...,nodesize-1), (nodesize,nodesize+1,...2*nodesize-), ...
   */
@@ -179,23 +180,21 @@ PetscErrorCode  PetscHMPIMerge(PetscMPIInt nodesize,PetscErrorCode (*func)(void*
   ierr = PetscInfo1(0,"PETSc HMPI process %sactive\n",(rank % nodesize) ? "in" : "");CHKERRQ(ierr);
 
   PetscHMPICtx = ctx;
-  /* 
+  /*
      All process not involved in user application code wait here
   */
   if (!PETSC_COMM_WORLD) {
-    ierr              = PetscHMPIHandle(PETSC_COMM_LOCAL_WORLD);CHKERRQ(ierr);
-    PETSC_COMM_WORLD  = saved_PETSC_COMM_WORLD;
-    PetscHMPIWorker = PETSC_TRUE; /* so that PetscHMPIFinalize() will not attempt a broadcast from this process */
-    ierr = PetscInfo(0,"PETSc HMPI inactive process becoming active");CHKERRQ(ierr);
-  } else {
-    if (func) {
-      ierr = (*func)(ctx);CHKERRQ(ierr);
-    }
+    ierr             = PetscHMPIHandle(PETSC_COMM_LOCAL_WORLD);CHKERRQ(ierr);
+    PETSC_COMM_WORLD = saved_PETSC_COMM_WORLD;
+    PetscHMPIWorker  = PETSC_TRUE; /* so that PetscHMPIFinalize() will not attempt a broadcast from this process */
+    ierr             = PetscInfo(0,"PETSc HMPI inactive process becoming active");CHKERRQ(ierr);
+  } else if (func) {
+    ierr = (*func)(ctx);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscHMPIFinalize"
 /*@C
    PetscHMPIFinalize - Finalizes the PETSc and MPI to work with HMPI. Called by PetscFinalize() cannot
@@ -204,19 +203,21 @@ PetscErrorCode  PetscHMPIMerge(PetscMPIInt nodesize,PetscErrorCode (*func)(void*
    Collective on the entire system
 
    Level: developer
-           
+
 .seealso: PetscFinalize(), PetscGetArgs(), PetscHMPIMerge(), PCHMPIRun()
 
 @*/
 PetscErrorCode  PetscHMPIFinalize(void)
 {
-  PetscErrorCode ierr = 0;
+  PetscErrorCode ierr    = 0;
   PetscInt       command = 3;
 
   PetscFunctionBegin;
   if (!PetscHMPIWorker && PETSC_COMM_LOCAL_WORLD) {
     ierr = MPI_Bcast(&command,1,MPIU_INT,0,PETSC_COMM_LOCAL_WORLD);CHKERRQ(ierr); /* broadcast to my worker group to end program */
+
     PETSC_COMM_WORLD = saved_PETSC_COMM_WORLD;
+
     ierr = PetscInfo(0,"PETSc HMPI active process ending PetscHMPIMerge()");CHKERRQ(ierr);
   }
   PetscFunctionReturn(ierr);
@@ -225,7 +226,7 @@ PetscErrorCode  PetscHMPIFinalize(void)
 static PetscInt numberobjects = 0;
 static void     *objects[100];
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscHMPIHandle"
 /*@C
    PetscHMPIHandle - Receives commands from the master node and processes them
@@ -240,14 +241,14 @@ static void     *objects[100];
    Notes: this is usually handled automatically, likely you do not need to use this directly
 
    Developer Notes: Since comm must be PETSC_COMM_LOCAL_WORLD, why have this argument?
-           
+
 .seealso: PetscHMPIMerge(), PCHMPIRun(), PCHMPINew()
 
 @*/
 PetscErrorCode  PetscHMPIHandle(MPI_Comm comm)
 {
   PetscErrorCode ierr;
-  PetscInt       command = 0; /* dummy value so MPI-Uni doesn't think it is not set*/
+  PetscInt       command       = 0; /* dummy value so MPI-Uni doesn't think it is not set*/
   PetscBool      exitwhileloop = PETSC_FALSE;
 
   PetscFunctionBegin;
@@ -255,12 +256,13 @@ PetscErrorCode  PetscHMPIHandle(MPI_Comm comm)
     ierr = MPI_Bcast(&command,1,MPIU_INT,0,comm);CHKERRQ(ierr);
     switch (command) {
     case 0: { /* allocate some memory on this worker process */
-      size_t   n = 0; /* dummy value so MPI-Uni doesn't think it is not set*/
-      void     *ptr;
+      size_t n = 0;   /* dummy value so MPI-Uni doesn't think it is not set*/
+      void   *ptr;
       ierr = MPI_Bcast(&n,1,MPIU_SIZE_T,0,comm);CHKERRQ(ierr);
       /* cannot use PetscNew() cause it requires struct argument */
       ierr = PetscMalloc(n,&ptr);CHKERRQ(ierr);
       ierr = PetscMemzero(ptr,n);CHKERRQ(ierr);
+
       objects[numberobjects++] = ptr;
       break;
     }
@@ -274,7 +276,7 @@ PetscErrorCode  PetscHMPIHandle(MPI_Comm comm)
       PetscInt       i;
       PetscErrorCode (*f)(MPI_Comm,void*);
       ierr = MPI_Bcast(&i,1,MPIU_INT,0,comm);CHKERRQ(ierr);
-      ierr = MPI_Bcast(&f,1,MPIU_SIZE_T,0,comm);CHKERRQ(ierr);
+      ierr = MPI_Bcast((PETSC_UINTPTR_T*)&f,1,MPIU_SIZE_T,0,comm);CHKERRQ(ierr);
       ierr = (*f)(comm,objects[i]);CHKERRQ(ierr);
       break;
     }
@@ -282,7 +284,7 @@ PetscErrorCode  PetscHMPIHandle(MPI_Comm comm)
       PetscInt       i;
       PetscErrorCode (*f)(MPI_Comm,void*,void*);
       ierr = MPI_Bcast(&i,1,MPIU_INT,0,comm);CHKERRQ(ierr);
-      ierr = MPI_Bcast(&f,1,MPIU_SIZE_T,0,comm);CHKERRQ(ierr);
+      ierr = MPI_Bcast((PETSC_UINTPTR_T*)&f,1,MPIU_SIZE_T,0,comm);CHKERRQ(ierr);
       ierr = (*f)(comm,PetscHMPICtx,objects[i]);CHKERRQ(ierr);
       break;
     }
@@ -297,7 +299,7 @@ PetscErrorCode  PetscHMPIHandle(MPI_Comm comm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscHMPIMalloc"
 /*@C
    PetscHMPIMalloc - Creates a "c struct" on all nodes of an HMPI communicator
@@ -324,15 +326,17 @@ PetscErrorCode  PetscHMPIMalloc(MPI_Comm comm,size_t n,void **ptr)
   if (PetscHMPIWorker) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not using HMPI feature of PETSc");
 
   ierr = MPI_Bcast(&command,1,MPIU_INT,0,comm);CHKERRQ(ierr);
-  ierr = MPI_Bcast(&n,1,MPIU_SIZE_T,0,comm);CHKERRQ(ierr); 
+  ierr = MPI_Bcast(&n,1,MPIU_SIZE_T,0,comm);CHKERRQ(ierr);
+
   /* cannot use PetscNew() cause it requires struct argument */
   ierr = PetscMalloc(n,ptr);CHKERRQ(ierr);
   ierr = PetscMemzero(*ptr,n);CHKERRQ(ierr);
+
   objects[numberobjects++] = *ptr;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscHMPIFree"
 /*@C
    PetscHMPIFree - Frees a "c struct" on all nodes of an HMPI communicator
@@ -344,7 +348,7 @@ PetscErrorCode  PetscHMPIMalloc(MPI_Comm comm,size_t n,void **ptr)
 -   ptr - pointer to data to be freed, must have been obtained with PetscHMPIMalloc()
 
    Level: developer
-           
+
   Developer Notes: Since comm must be PETSC_COMM_LOCAL_WORLD, why have this argument?
 
 .seealso: PetscHMPIMerge(), PetscHMPIMalloc()
@@ -370,7 +374,7 @@ PetscErrorCode  PetscHMPIFree(MPI_Comm comm,void *ptr)
   PetscFunctionReturn(ierr);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscHMPIRun"
 /*@C
    PetscHMPIRun - runs a function on all the processes of a node
@@ -383,13 +387,13 @@ PetscErrorCode  PetscHMPIFree(MPI_Comm comm,void *ptr)
 -   ptr - pointer to data to pass to function; must be obtained with PetscHMPIMalloc()
 
    Level: developer
-           
+
    Developer Notes: Since comm must be PETSC_COMM_LOCAL_WORLD, why have this argument?
 
 .seealso: PetscHMPIMerge(), PetscHMPIMalloc(), PetscHMPIFree(), PetscHMPIRunCtx()
 
 @*/
-PetscErrorCode  PetscHMPIRun(MPI_Comm comm,PetscErrorCode (*f)(MPI_Comm,void *),void *ptr)
+PetscErrorCode  PetscHMPIRun(MPI_Comm comm,PetscErrorCode (*f)(MPI_Comm,void*),void *ptr)
 {
   PetscErrorCode ierr;
   PetscInt       command = 2,i;
@@ -401,7 +405,7 @@ PetscErrorCode  PetscHMPIRun(MPI_Comm comm,PetscErrorCode (*f)(MPI_Comm,void *),
   for (i=0; i<numberobjects; i++) {
     if (objects[i] == ptr) {
       ierr = MPI_Bcast(&i,1,MPIU_INT,0,comm);CHKERRQ(ierr);
-      ierr = MPI_Bcast(&f,1,MPIU_SIZE_T,0,comm);CHKERRQ(ierr);
+      ierr = MPI_Bcast((PETSC_UINTPTR_T*)&f,1,MPIU_SIZE_T,0,comm);CHKERRQ(ierr);
       ierr = (*f)(comm,ptr);CHKERRQ(ierr);
       PetscFunctionReturn(0);
     }
@@ -410,7 +414,7 @@ PetscErrorCode  PetscHMPIRun(MPI_Comm comm,PetscErrorCode (*f)(MPI_Comm,void *),
   PetscFunctionReturn(ierr);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscHMPIRunCtx"
 /*@C
    PetscHMPIRunCtx - runs a function on all the processes of a node
@@ -424,13 +428,13 @@ PetscErrorCode  PetscHMPIRun(MPI_Comm comm,PetscErrorCode (*f)(MPI_Comm,void *),
 
    Notes: This is like PetscHMPIRun() except it also passes the context passed in PetscHMPIMerge()
    Level: developer
-           
+
    Developer Notes: Since comm must be PETSC_COMM_LOCAL_WORLD, why have this argument?
 
 .seealso: PetscHMPIMerge(), PetscHMPIMalloc(), PetscHMPIFree(), PetscHMPIRun()
 
 @*/
-PetscErrorCode  PetscHMPIRunCtx(MPI_Comm comm,PetscErrorCode (*f)(MPI_Comm,void*,void *),void *ptr)
+PetscErrorCode  PetscHMPIRunCtx(MPI_Comm comm,PetscErrorCode (*f)(MPI_Comm,void*,void*),void *ptr)
 {
   PetscErrorCode ierr;
   PetscInt       command = 4,i;
@@ -442,7 +446,7 @@ PetscErrorCode  PetscHMPIRunCtx(MPI_Comm comm,PetscErrorCode (*f)(MPI_Comm,void*
   for (i=0; i<numberobjects; i++) {
     if (objects[i] == ptr) {
       ierr = MPI_Bcast(&i,1,MPIU_INT,0,comm);CHKERRQ(ierr);
-      ierr = MPI_Bcast(&f,1,MPIU_SIZE_T,0,comm);CHKERRQ(ierr);
+      ierr = MPI_Bcast((PETSC_UINTPTR_T*)&f,1,MPIU_SIZE_T,0,comm);CHKERRQ(ierr);
       ierr = (*f)(comm,PetscHMPICtx,ptr);CHKERRQ(ierr);
       PetscFunctionReturn(0);
     }

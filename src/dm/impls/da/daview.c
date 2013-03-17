@@ -3,12 +3,12 @@
   Code for manipulating distributed regular arrays in parallel.
 */
 
-#include <petsc-private/daimpl.h>    /*I   "petscdmda.h"   I*/
+#include <petsc-private/dmdaimpl.h>    /*I   "petscdmda.h"   I*/
 
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
 #include <mat.h>   /* MATLAB include file */
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMView_DA_Matlab"
 PetscErrorCode DMView_DA_Matlab(DM da,PetscViewer viewer)
 {
@@ -21,10 +21,10 @@ PetscErrorCode DMView_DA_Matlab(DM da,PetscViewer viewer)
   const char       *fnames[] = {"dimension","m","n","p","dof","stencil_width","bx","by","bz","stencil_type"};
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(((PetscObject)da)->comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)da),&rank);CHKERRQ(ierr);
   if (!rank) {
     ierr = DMDAGetInfo(da,&dim,&m,&n,&p,0,0,0,&dof,&swidth,&bx,&by,&bz,&stencil);CHKERRQ(ierr);
-    mx = mxCreateStructMatrix(1,1,8,(const char **)fnames);
+    mx   = mxCreateStructMatrix(1,1,8,(const char**)fnames);
     if (!mx) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Unable to generate MATLAB struct array to hold DMDA informations");
     mxSetFieldByNumber(mx,0,0,mxCreateDoubleScalar((double)dim));
     mxSetFieldByNumber(mx,0,1,mxCreateDoubleScalar((double)m));
@@ -43,7 +43,7 @@ PetscErrorCode DMView_DA_Matlab(DM da,PetscViewer viewer)
 }
 #endif
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMView_DA_Binary"
 PetscErrorCode DMView_DA_Binary(DM da,PetscViewer viewer)
 {
@@ -53,8 +53,6 @@ PetscErrorCode DMView_DA_Binary(DM da,PetscViewer viewer)
   DMDAStencilType  stencil;
   DMDABoundaryType bx,by,bz;
   MPI_Comm         comm;
-  DM_DA            *dd = (DM_DA*)da->data;
-  PetscInt         classid = DM_FILE_CLASSID,subclassid = DMDA_FILE_CLASSID ;
   PetscBool        coors = PETSC_FALSE;
 
   PetscFunctionBegin;
@@ -63,9 +61,6 @@ PetscErrorCode DMView_DA_Binary(DM da,PetscViewer viewer)
   ierr = DMDAGetInfo(da,&dim,&m,&n,&p,&M,&N,&P,&dof,&swidth,&bx,&by,&bz,&stencil);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   if (!rank) {
-
-    ierr = PetscViewerBinaryWrite(viewer,&classid,1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
-    ierr = PetscViewerBinaryWrite(viewer,&subclassid,1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
     ierr = PetscViewerBinaryWrite(viewer,&dim,1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
     ierr = PetscViewerBinaryWrite(viewer,&m,1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
     ierr = PetscViewerBinaryWrite(viewer,&n,1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
@@ -76,29 +71,27 @@ PetscErrorCode DMView_DA_Binary(DM da,PetscViewer viewer)
     ierr = PetscViewerBinaryWrite(viewer,&by,1,PETSC_ENUM,PETSC_FALSE);CHKERRQ(ierr);
     ierr = PetscViewerBinaryWrite(viewer,&bz,1,PETSC_ENUM,PETSC_FALSE);CHKERRQ(ierr);
     ierr = PetscViewerBinaryWrite(viewer,&stencil,1,PETSC_ENUM,PETSC_FALSE);CHKERRQ(ierr);
-    if (dd->coordinates) coors = PETSC_TRUE;
+    if (da->coordinates) coors = PETSC_TRUE;
     ierr = PetscViewerBinaryWrite(viewer,&coors,1,PETSC_BOOL,PETSC_FALSE);CHKERRQ(ierr);
-  } 
+  }
 
   /* save the coordinates if they exist to disk (in the natural ordering) */
-  if (dd->coordinates) {
-    ierr = VecView(dd->coordinates,viewer);CHKERRQ(ierr);
+  if (da->coordinates) {
+    ierr = VecView(da->coordinates,viewer);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMView_DA_VTK"
 PetscErrorCode DMView_DA_VTK(DM da, PetscViewer viewer)
 {
   PetscInt       dim, dof, M = 0, N = 0, P = 0;
   PetscErrorCode ierr;
-  DM_DA          *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
-  ierr = DMDAGetInfo(da, &dim, &M, &N, &P, PETSC_NULL, PETSC_NULL, PETSC_NULL, &dof, PETSC_NULL, PETSC_NULL, PETSC_NULL, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
-  /* if (dim != 3) {SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "VTK output only works for three dimensional DMDAs.");} */
-  if (!dd->coordinates) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_SUP, "VTK output requires DMDA coordinates.");
+  ierr = DMDAGetInfo(da, &dim, &M, &N, &P, NULL, NULL, NULL, &dof, NULL, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
+  if (!da->coordinates) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP, "VTK output requires DMDA coordinates.");
   /* Write Header */
   ierr = PetscViewerASCIIPrintf(viewer,"# vtk DataFile Version 2.0\n");CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"Structured Mesh Example\n");CHKERRQ(ierr);
@@ -106,15 +99,15 @@ PetscErrorCode DMView_DA_VTK(DM da, PetscViewer viewer)
   ierr = PetscViewerASCIIPrintf(viewer,"DATASET STRUCTURED_GRID\n");CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"DIMENSIONS %d %d %d\n", M, N, P);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"POINTS %d double\n", M*N*P);CHKERRQ(ierr);
-  if (dd->coordinates) {
+  if (da->coordinates) {
     DM  dac;
     Vec natural;
 
-    ierr = DMDAGetCoordinateDA(da, &dac);CHKERRQ(ierr);
+    ierr = DMGetCoordinateDM(da, &dac);CHKERRQ(ierr);
     ierr = DMDACreateNaturalVector(dac, &natural);CHKERRQ(ierr);
     ierr = PetscObjectSetOptionsPrefix((PetscObject) natural, "coor_");CHKERRQ(ierr);
-    ierr = DMDAGlobalToNaturalBegin(dac, dd->coordinates, INSERT_VALUES, natural);CHKERRQ(ierr);
-    ierr = DMDAGlobalToNaturalEnd(dac, dd->coordinates, INSERT_VALUES, natural);CHKERRQ(ierr);
+    ierr = DMDAGlobalToNaturalBegin(dac, da->coordinates, INSERT_VALUES, natural);CHKERRQ(ierr);
+    ierr = DMDAGlobalToNaturalEnd(dac, da->coordinates, INSERT_VALUES, natural);CHKERRQ(ierr);
     ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_VTK_COORDS);CHKERRQ(ierr);
     ierr = VecView(natural, viewer);CHKERRQ(ierr);
     ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
@@ -123,7 +116,7 @@ PetscErrorCode DMView_DA_VTK(DM da, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMDAGetInfo"
 /*@C
    DMDAGetInfo - Gets information about a given distributed array.
@@ -139,14 +132,14 @@ PetscErrorCode DMView_DA_VTK(DM da, PetscViewer viewer)
 .  m, n, p  - corresponding number of procs in each dimension
 .  dof      - number of degrees of freedom per node
 .  s        - stencil width
-.  bx,by,bz - type of ghost nodes at boundary, one of DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_GHOSTED, 
+.  bx,by,bz - type of ghost nodes at boundary, one of DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_GHOSTED,
               DMDA_BOUNDARY_MIRROR, DMDA_BOUNDARY_PERIODIC
 -  st       - stencil type, either DMDA_STENCIL_STAR or DMDA_STENCIL_BOX
 
    Level: beginner
-  
+
    Note:
-   Use PETSC_NULL (PETSC_NULL_INTEGER in Fortran) in place of any output parameter that is not of interest.
+   Use NULL (NULL_INTEGER in Fortran) in place of any output parameter that is not of interest.
 
 .keywords: distributed array, get, information
 
@@ -158,23 +151,32 @@ PetscErrorCode  DMDAGetInfo(DM da,PetscInt *dim,PetscInt *M,PetscInt *N,PetscInt
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
-  if (dim)  *dim  = dd->dim;
-  if (M)    *M    = dd->M;
-  if (N)    *N    = dd->N;
-  if (P)    *P    = dd->P;
-  if (m)    *m    = dd->m;
-  if (n)    *n    = dd->n;
-  if (p)    *p    = dd->p;
-  if (dof)  *dof  = dd->w;
-  if (s)    *s    = dd->s;
+  if (dim) *dim = dd->dim;
+  if (M) {
+    if (dd->Mo < 0) *M = dd->M;
+    else *M = dd->Mo;
+  }
+  if (N) {
+    if (dd->No < 0) *N = dd->N;
+    else *N = dd->No;
+  }
+  if (P) {
+    if (dd->Po < 0) *P = dd->P;
+    else *P = dd->Po;
+  }
+  if (m) *m = dd->m;
+  if (n) *n = dd->n;
+  if (p) *p = dd->p;
+  if (dof) *dof = dd->w;
+  if (s) *s = dd->s;
   if (bx) *bx = dd->bx;
   if (by) *by = dd->by;
   if (bz) *bz = dd->bz;
-  if (st)   *st   = dd->stencil_type;
+  if (st) *st = dd->stencil_type;
   PetscFunctionReturn(0);
-}  
+}
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMDAGetLocalInfo"
 /*@C
    DMDAGetLocalInfo - Gets information about a given distributed array and this processors location in it
@@ -188,7 +190,7 @@ PetscErrorCode  DMDAGetInfo(DM da,PetscInt *dim,PetscInt *M,PetscInt *N,PetscInt
 .  dainfo - structure containing the information
 
    Level: beginner
-  
+
 .keywords: distributed array, get, information
 
 .seealso: DMDAGetInfo(), DMDAGetCorners()
@@ -201,36 +203,38 @@ PetscErrorCode  DMDAGetLocalInfo(DM da,DMDALocalInfo *info)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   PetscValidPointer(info,2);
-  info->da   = da;
-  info->dim  = dd->dim;
-  info->mx   = dd->M;
-  info->my   = dd->N;
-  info->mz   = dd->P;
-  info->dof  = dd->w;
-  info->sw   = dd->s;
-  info->bx   = dd->bx;
-  info->by   = dd->by;
-  info->bz   = dd->bz;
-  info->st   = dd->stencil_type;
+  info->da  = da;
+  info->dim = dd->dim;
+  if (dd->Mo < 0) info->mx = dd->M;
+  else info->mx = dd->Mo;
+  if (dd->No < 0) info->my = dd->N;
+  else info->my = dd->No;
+  if (dd->Po < 0) info->mz = dd->P;
+  else info->mz = dd->Po;
+  info->dof = dd->w;
+  info->sw  = dd->s;
+  info->bx  = dd->bx;
+  info->by  = dd->by;
+  info->bz  = dd->bz;
+  info->st  = dd->stencil_type;
 
-  /* since the xs, xe ... have all been multiplied by the number of degrees 
+  /* since the xs, xe ... have all been multiplied by the number of degrees
      of freedom per cell, w = dd->w, we divide that out before returning.*/
-  w = dd->w;  
-  info->xs = dd->xs/w; 
+  w        = dd->w;
+  info->xs = dd->xs/w + dd->xo;
   info->xm = (dd->xe - dd->xs)/w;
   /* the y and z have NOT been multiplied by w */
-  info->ys = dd->ys;
+  info->ys = dd->ys + dd->yo;
   info->ym = (dd->ye - dd->ys);
-  info->zs = dd->zs;
-  info->zm = (dd->ze - dd->zs); 
+  info->zs = dd->zs + dd->zo;
+  info->zm = (dd->ze - dd->zs);
 
-  info->gxs = dd->Xs/w; 
+  info->gxs = dd->Xs/w + dd->xo;
   info->gxm = (dd->Xe - dd->Xs)/w;
   /* the y and z have NOT been multiplied by w */
-  info->gys = dd->Ys;
+  info->gys = dd->Ys + dd->yo;
   info->gym = (dd->Ye - dd->Ys);
-  info->gzs = dd->Zs;
-  info->gzm = (dd->Ze - dd->Zs); 
+  info->gzs = dd->Zs + dd->zo;
+  info->gzm = (dd->Ze - dd->Zs);
   PetscFunctionReturn(0);
-}  
-
+}

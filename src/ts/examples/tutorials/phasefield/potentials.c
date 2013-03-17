@@ -4,7 +4,7 @@ static char help[] = "Plots the various potentials used in the examples.\n";
 
 #include <petscdmda.h>
 #include <petscts.h>
-
+#include <petscdraw.h>
 
 
 #undef __FUNCT__
@@ -23,7 +23,7 @@ int main(int argc,char **argv)
 
   PetscFunctionBegin;
   PetscInitialize(&argc,&argv,0,help);
-  ierr = PetscViewerDrawResize(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),1200,800);CHKERRQ(ierr); 
+  ierr = PetscViewerDrawResize(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),1200,800);CHKERRQ(ierr);
   ierr = PetscViewerDrawGetDrawLG(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),0,&lg);CHKERRQ(ierr);
   ierr = PetscDrawLGGetDraw(lg,&draw);CHKERRQ(ierr);
   ierr = PetscDrawCheckResizedWindow(draw);CHKERRQ(ierr);
@@ -33,19 +33,19 @@ int main(int argc,char **argv)
   ierr = PetscDrawLGGetAxis(lg,&axis);CHKERRQ(ierr);
   ierr = PetscDrawLGReset(lg);CHKERRQ(ierr);
 
-  /* 
-      Plot the  energies 
+  /*
+      Plot the  energies
   */
   ierr = PetscDrawLGSetDimension(lg,3);CHKERRQ(ierr);
   ierr = PetscDrawViewPortsSet(ports,1);CHKERRQ(ierr);
-  x   = .9;
+  x    = .9;
   for (i=0; i<Mx; i++) {
     xx[0] = xx[1] = xx[2] = x;
     yy[0] = (1.-x*x)*(1. - x*x);
     yy[1] = (1. - x*x);
     yy[2] = -(1.-x)*PetscLogScalar(1.-x);
-    ierr = PetscDrawLGAddPoint(lg,xx,yy);CHKERRQ(ierr);
-    x   += hx;
+    ierr  = PetscDrawLGAddPoint(lg,xx,yy);CHKERRQ(ierr);
+    x    += hx;
   }
   ierr = PetscDrawGetPause(draw,&pause);CHKERRQ(ierr);
   ierr = PetscDrawSetPause(draw,0.0);CHKERRQ(ierr);
@@ -53,22 +53,22 @@ int main(int argc,char **argv)
   ierr = PetscDrawLGSetLegend(lg,legend);CHKERRQ(ierr);
   ierr = PetscDrawLGDraw(lg);CHKERRQ(ierr);
 
-  /* 
+  /*
       Plot the  forces
   */
   ierr = PetscDrawViewPortsSet(ports,0);CHKERRQ(ierr);
   ierr = PetscDrawLGReset(lg);CHKERRQ(ierr);
-  x   = .9;
+  x    = .9;
   for (i=0; i<Mx; i++) {
     xx[0] = xx[1] = xx[2] = x;
     yy[0] = x*x*x - x;
     yy[1] = -x;
     yy[2] = 1.0 + PetscLogScalar(1. - x);
-    ierr = PetscDrawLGAddPoint(lg,xx,yy);CHKERRQ(ierr);
-    x   += hx;
+    ierr  = PetscDrawLGAddPoint(lg,xx,yy);CHKERRQ(ierr);
+    x    += hx;
   }
   ierr = PetscDrawAxisSetLabels(axis,"Derivative","","");CHKERRQ(ierr);
-  ierr = PetscDrawLGSetLegend(lg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscDrawLGSetLegend(lg,NULL);CHKERRQ(ierr);
   ierr = PetscDrawLGDraw(lg);CHKERRQ(ierr);
 
   ierr = PetscDrawSetPause(draw,pause);CHKERRQ(ierr);

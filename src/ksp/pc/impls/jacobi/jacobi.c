@@ -1,8 +1,8 @@
 
-/*  -------------------------------------------------------------------- 
+/*  --------------------------------------------------------------------
 
      This file implements a Jacobi preconditioner in PETSc as part of PC.
-     You can use this as a starting point for implementing your own 
+     You can use this as a starting point for implementing your own
      preconditioner that is not provided with PETSc. (You might also consider
      just using PCSHELL)
 
@@ -14,9 +14,9 @@
      where the suffix "_XXX" denotes a particular implementation, in
      this case we use _Jacobi (e.g., PCCreate_Jacobi, PCApply_Jacobi).
      These routines are actually called via the common user interface
-     routines PCCreate(), PCSetFromOptions(), PCApply(), and PCDestroy(), 
-     so the application code interface remains identical for all 
-     preconditioners.  
+     routines PCCreate(), PCSetFromOptions(), PCApply(), and PCDestroy(),
+     so the application code interface remains identical for all
+     preconditioners.
 
      Another key routine is:
           PCSetUp_XXX()           - Prepares for the use of a preconditioner
@@ -33,41 +33,39 @@
      The various types of solvers (preconditioners, Krylov subspace methods,
      nonlinear solvers, timesteppers) are all organized similarly, so the
      above description applies to these categories also.  One exception is
-     that the analogues of PCApply() for these components are KSPSolve(), 
+     that the analogues of PCApply() for these components are KSPSolve(),
      SNESSolve(), and TSSolve().
 
      Additional optional functionality unique to preconditioners is left and
-     right symmetric preconditioner application via PCApplySymmetricLeft() 
-     and PCApplySymmetricRight().  The Jacobi implementation is 
+     right symmetric preconditioner application via PCApplySymmetricLeft()
+     and PCApplySymmetricRight().  The Jacobi implementation is
      PCApplySymmetricLeftOrRight_Jacobi().
 
     -------------------------------------------------------------------- */
 
-/* 
+/*
    Include files needed for the Jacobi preconditioner:
-     pcimpl.h - private include file intended for use by all preconditioners 
+     pcimpl.h - private include file intended for use by all preconditioners
 */
 
 #include <petsc-private/pcimpl.h>   /*I "petscpc.h" I*/
 
-/* 
-   Private context (data structure) for the Jacobi preconditioner.  
+/*
+   Private context (data structure) for the Jacobi preconditioner.
 */
 typedef struct {
-  Vec        diag;               /* vector containing the reciprocals of the diagonal elements
-                                    of the preconditioner matrix */
-  Vec        diagsqrt;           /* vector containing the reciprocals of the square roots of
-                                    the diagonal elements of the preconditioner matrix (used 
+  Vec diag;                      /* vector containing the reciprocals of the diagonal elements of the preconditioner matrix */
+  Vec diagsqrt;                  /* vector containing the reciprocals of the square roots of
+                                    the diagonal elements of the preconditioner matrix (used
                                     only for symmetric preconditioner application) */
-  PetscBool  userowmax;
-  PetscBool  userowsum;
-  PetscBool  useabs;             /* use the absolute values of the diagonal entries */
+  PetscBool userowmax;
+  PetscBool userowsum;
+  PetscBool useabs;              /* use the absolute values of the diagonal entries */
 } PC_Jacobi;
 
-EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCJacobiSetUseRowMax_Jacobi"
-PetscErrorCode  PCJacobiSetUseRowMax_Jacobi(PC pc)
+static PetscErrorCode  PCJacobiSetUseRowMax_Jacobi(PC pc)
 {
   PC_Jacobi *j;
 
@@ -76,12 +74,10 @@ PetscErrorCode  PCJacobiSetUseRowMax_Jacobi(PC pc)
   j->userowmax = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCJacobiSetUseRowSum_Jacobi"
-PetscErrorCode  PCJacobiSetUseRowSum_Jacobi(PC pc)
+static PetscErrorCode  PCJacobiSetUseRowSum_Jacobi(PC pc)
 {
   PC_Jacobi *j;
 
@@ -90,12 +86,10 @@ PetscErrorCode  PCJacobiSetUseRowSum_Jacobi(PC pc)
   j->userowsum = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCJacobiSetUseAbs_Jacobi"
-PetscErrorCode  PCJacobiSetUseAbs_Jacobi(PC pc)
+static PetscErrorCode  PCJacobiSetUseAbs_Jacobi(PC pc)
 {
   PC_Jacobi *j;
 
@@ -104,12 +98,11 @@ PetscErrorCode  PCJacobiSetUseAbs_Jacobi(PC pc)
   j->useabs = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 /* -------------------------------------------------------------------------- */
 /*
    PCSetUp_Jacobi - Prepares for the use of the Jacobi preconditioner
-                    by setting data structures and options.   
+                    by setting data structures and options.
 
    Input Parameter:
 .  pc - the preconditioner context
@@ -120,7 +113,7 @@ EXTERN_C_END
    The interface routine PCSetUp() is not usually called directly by
    the user, but instead is called by PCApply() if necessary.
 */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCSetUp_Jacobi"
 static PetscErrorCode PCSetUp_Jacobi(PC pc)
 {
@@ -158,7 +151,7 @@ static PetscErrorCode PCSetUp_Jacobi(PC pc)
 
   if (diag) {
     if (jac->userowmax) {
-      ierr = MatGetRowMaxAbs(pc->pmat,diag,PETSC_NULL);CHKERRQ(ierr);
+      ierr = MatGetRowMaxAbs(pc->pmat,diag,NULL);CHKERRQ(ierr);
     } else if (jac->userowsum) {
       ierr = MatGetRowSum(pc->pmat,diag);CHKERRQ(ierr);
     } else {
@@ -168,9 +161,7 @@ static PetscErrorCode PCSetUp_Jacobi(PC pc)
     ierr = VecGetLocalSize(diag,&n);CHKERRQ(ierr);
     ierr = VecGetArray(diag,&x);CHKERRQ(ierr);
     if (jac->useabs) {
-      for (i=0; i<n; i++) {
-        x[i]     = PetscAbsScalar(x[i]);
-      }
+      for (i=0; i<n; i++) x[i] = PetscAbsScalar(x[i]);
     }
     for (i=0; i<n; i++) {
       if (x[i] == 0.0) {
@@ -182,7 +173,7 @@ static PetscErrorCode PCSetUp_Jacobi(PC pc)
   }
   if (diagsqrt) {
     if (jac->userowmax) {
-      ierr = MatGetRowMaxAbs(pc->pmat,diagsqrt,PETSC_NULL);CHKERRQ(ierr);
+      ierr = MatGetRowMaxAbs(pc->pmat,diagsqrt,NULL);CHKERRQ(ierr);
     } else if (jac->userowsum) {
       ierr = MatGetRowSum(pc->pmat,diagsqrt);CHKERRQ(ierr);
     } else {
@@ -213,7 +204,7 @@ static PetscErrorCode PCSetUp_Jacobi(PC pc)
    Input Parameter:
 .  pc - the preconditioner context
 */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCSetUp_Jacobi_Symmetric"
 static PetscErrorCode PCSetUp_Jacobi_Symmetric(PC pc)
 {
@@ -235,7 +226,7 @@ static PetscErrorCode PCSetUp_Jacobi_Symmetric(PC pc)
    Input Parameter:
 .  pc - the preconditioner context
 */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCSetUp_Jacobi_NonSymmetric"
 static PetscErrorCode PCSetUp_Jacobi_NonSymmetric(PC pc)
 {
@@ -261,7 +252,7 @@ static PetscErrorCode PCSetUp_Jacobi_NonSymmetric(PC pc)
 
    Application Interface Routine: PCApply()
  */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCApply_Jacobi"
 static PetscErrorCode PCApply_Jacobi(PC pc,Vec x,Vec y)
 {
@@ -289,7 +280,7 @@ static PetscErrorCode PCApply_Jacobi(PC pc,Vec x,Vec y)
 
    Application Interface Routines: PCApplySymmetricLeft(), PCApplySymmetricRight()
 */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCApplySymmetricLeftOrRight_Jacobi"
 static PetscErrorCode PCApplySymmetricLeftOrRight_Jacobi(PC pc,Vec x,Vec y)
 {
@@ -304,7 +295,7 @@ static PetscErrorCode PCApplySymmetricLeftOrRight_Jacobi(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCReset_Jacobi"
 static PetscErrorCode PCReset_Jacobi(PC pc)
 {
@@ -326,7 +317,7 @@ static PetscErrorCode PCReset_Jacobi(PC pc)
 
    Application Interface Routine: PCDestroy()
 */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCDestroy_Jacobi"
 static PetscErrorCode PCDestroy_Jacobi(PC pc)
 {
@@ -342,7 +333,7 @@ static PetscErrorCode PCDestroy_Jacobi(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_Jacobi"
 static PetscErrorCode PCSetFromOptions_Jacobi(PC pc)
 {
@@ -351,20 +342,20 @@ static PetscErrorCode PCSetFromOptions_Jacobi(PC pc)
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("Jacobi options");CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-pc_jacobi_rowmax","Use row maximums for diagonal","PCJacobiSetUseRowMax",jac->userowmax,
-                          &jac->userowmax,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-pc_jacobi_rowsum","Use row sums for diagonal","PCJacobiSetUseRowSum",jac->userowsum,
-                          &jac->userowsum,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-pc_jacobi_abs","Use absolute values of diagaonal entries","PCJacobiSetUseAbs",jac->useabs,
-                          &jac->useabs,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-pc_jacobi_rowmax","Use row maximums for diagonal","PCJacobiSetUseRowMax",jac->userowmax,
+                          &jac->userowmax,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-pc_jacobi_rowsum","Use row sums for diagonal","PCJacobiSetUseRowSum",jac->userowsum,
+                          &jac->userowsum,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-pc_jacobi_abs","Use absolute values of diagaonal entries","PCJacobiSetUseAbs",jac->useabs,
+                          &jac->useabs,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 /* -------------------------------------------------------------------------- */
 /*
-   PCCreate_Jacobi - Creates a Jacobi preconditioner context, PC_Jacobi, 
-   and sets this as the private data within the generic preconditioning 
+   PCCreate_Jacobi - Creates a Jacobi preconditioner context, PC_Jacobi,
+   and sets this as the private data within the generic preconditioning
    context, PC, that was created within PCCreate().
 
    Input Parameter:
@@ -387,7 +378,7 @@ static PetscErrorCode PCSetFromOptions_Jacobi(PC pc)
 
   Concepts: Jacobi, diagonal scaling, preconditioners
 
-  Notes: By using KSPSetPCSide(ksp,PC_SYMMETRIC) or -ksp_pc_side symmetric 
+  Notes: By using KSPSetPCSide(ksp,PC_SYMMETRIC) or -ksp_pc_side symmetric
          can scale each side of the matrix by the squareroot of the diagonal entries.
 
          Zero entries along the diagonal are replaced with the value 1.0
@@ -396,10 +387,9 @@ static PetscErrorCode PCSetFromOptions_Jacobi(PC pc)
            PCJacobiSetUseRowMax(), PCJacobiSetUseRowSum(), PCJacobiSetUseAbs()
 M*/
 
-EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCCreate_Jacobi"
-PetscErrorCode  PCCreate_Jacobi(PC pc)
+PETSC_EXTERN PetscErrorCode PCCreate_Jacobi(PC pc)
 {
   PC_Jacobi      *jac;
   PetscErrorCode ierr;
@@ -409,18 +399,18 @@ PetscErrorCode  PCCreate_Jacobi(PC pc)
      Creates the private data structure for this preconditioner and
      attach it to the PC object.
   */
-  ierr      = PetscNewLog(pc,PC_Jacobi,&jac);CHKERRQ(ierr);
-  pc->data  = (void*)jac;
+  ierr     = PetscNewLog(pc,PC_Jacobi,&jac);CHKERRQ(ierr);
+  pc->data = (void*)jac;
 
   /*
      Initialize the pointers to vectors to ZERO; these will be used to store
      diagonal entries of the matrix for fast preconditioner application.
   */
-  jac->diag          = 0;
-  jac->diagsqrt      = 0;
-  jac->userowmax     = PETSC_FALSE;
-  jac->userowsum     = PETSC_FALSE;
-  jac->useabs        = PETSC_FALSE;
+  jac->diag      = 0;
+  jac->diagsqrt  = 0;
+  jac->userowmax = PETSC_FALSE;
+  jac->userowsum = PETSC_FALSE;
+  jac->useabs    = PETSC_FALSE;
 
   /*
       Set the pointers for the functions that are provided above.
@@ -439,18 +429,17 @@ PetscErrorCode  PCCreate_Jacobi(PC pc)
   pc->ops->applyrichardson     = 0;
   pc->ops->applysymmetricleft  = PCApplySymmetricLeftOrRight_Jacobi;
   pc->ops->applysymmetricright = PCApplySymmetricLeftOrRight_Jacobi;
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCJacobiSetUseRowMax_C","PCJacobiSetUseRowMax_Jacobi",PCJacobiSetUseRowMax_Jacobi);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCJacobiSetUseRowSum_C","PCJacobiSetUseRowSum_Jacobi",PCJacobiSetUseRowSum_Jacobi);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCJacobiSetUseAbs_C","PCJacobiSetUseAbs_Jacobi",PCJacobiSetUseAbs_Jacobi);CHKERRQ(ierr);
+
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCJacobiSetUseRowMax_C","PCJacobiSetUseRowMax_Jacobi",PCJacobiSetUseRowMax_Jacobi);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCJacobiSetUseRowSum_C","PCJacobiSetUseRowSum_Jacobi",PCJacobiSetUseRowSum_Jacobi);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCJacobiSetUseAbs_C","PCJacobiSetUseAbs_Jacobi",PCJacobiSetUseAbs_Jacobi);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCJacobiSetUseAbs"
 /*@
-   PCJacobiSetUseAbs - Causes the Jacobi preconditioner to use the 
+   PCJacobiSetUseAbs - Causes the Jacobi preconditioner to use the
       absolute value of the diagonal to for the preconditioner
 
    Logically Collective on PC
@@ -479,10 +468,10 @@ PetscErrorCode  PCJacobiSetUseAbs(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCJacobiSetUseRowMax"
 /*@
-   PCJacobiSetUseRowMax - Causes the Jacobi preconditioner to use the 
+   PCJacobiSetUseRowMax - Causes the Jacobi preconditioner to use the
       maximum entry in each row as the diagonal preconditioner, instead of
       the diagonal entry
 
@@ -493,7 +482,7 @@ PetscErrorCode  PCJacobiSetUseAbs(PC pc)
 
 
    Options Database Key:
-.  -pc_jacobi_rowmax 
+.  -pc_jacobi_rowmax
 
    Level: intermediate
 
@@ -511,10 +500,10 @@ PetscErrorCode  PCJacobiSetUseRowMax(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCJacobiSetUseRowSum"
 /*@
-   PCJacobiSetUseRowSum - Causes the Jacobi preconditioner to use the 
+   PCJacobiSetUseRowSum - Causes the Jacobi preconditioner to use the
       sum of each row as the diagonal preconditioner, instead of
       the diagonal entry
 

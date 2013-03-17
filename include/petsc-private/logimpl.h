@@ -1,4 +1,4 @@
-#include <petscsys.h>
+#include <petsc-private/petscimpl.h>
 #include <petsctime.h>
 
 /* A simple stack */

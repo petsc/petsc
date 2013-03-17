@@ -35,22 +35,22 @@ Explanation of file contents:
 Cells - group containing all cell-based data sets
  Natural IDs - zero-based natural id of each cell
 (** see attached pdf for layout of vertices in HEX)
- Vertex IDs 0 - first vertex in standard hex 
+ Vertex IDs 0 - first vertex in standard hex
                 element/cell layout
- Vertex IDs 1 - second vertex in standard hex 
+ Vertex IDs 1 - second vertex in standard hex
                 element/cell layout
- ... 
- Vertex IDs 7 - last vertex in standard hex 
+ ...
+ Vertex IDs 7 - last vertex in standard hex
                 element/cell layout
  Volumes - volumes of grid cells
  X-Coordinates - cell x-coords
  Y-Coordinates - cell y-coords
  Z-Coordinates - cell z-coords
 
-Connections - group containing all connection-based 
+Connections - group containing all connection-based
              data sets
  Area - connection interfacial areas
- Upwind Cell IDs - zero-based ids of upwind cells 
+ Upwind Cell IDs - zero-based ids of upwind cells
                    for each connection
  Upwind Distance X - x-compoonent of distance vector
                      between upwidn cell center and
@@ -89,8 +89,8 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
   options->dim   = 2;
 
   ierr = PetscOptionsBegin(comm, "", "Bratu Problem Options", "Options");CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-debug", "The debugging level", "fvTest.cxx", options->debug, &options->debug, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "fvTest.cxx", options->dim, &options->dim, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-debug", "The debugging level", "fvTest.cxx", options->debug, &options->debug, NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "fvTest.cxx", options->dim, &options->dim, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
 
   PetscFunctionReturn(0);
@@ -228,7 +228,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, Options *options)
                                              6,  7,  7,  8,  1,  4,  4,  6,  2,  9,  2, 10,  2, 11,
                                              9, 12, 10, 13, 11, 14, 12, 15, 13, 16, 14, 17, 15,  7,
                                           16,  7, 17,  7,  3,  5,  5,  8};
-  PetscReal                  cellCenters[34] = {0.5,   0.5,   1.5,   0.5, 2.5, 0.5, 0.5,   1.5,   2.5,   1.5,  
+  PetscReal                  cellCenters[34] = {0.5,   0.5,   1.5,   0.5, 2.5, 0.5, 0.5,   1.5,   2.5,   1.5,
                                                 0.5,   2.5,   1.5,   2.5, 2.5, 2.5, 1.167, 1.167, 1.5,   1.167,
                                                 1.833, 1.167, 1.167, 1.5, 1.5, 1.5, 1.833, 1.5,   1.167, 1.833,
                                                 1.5,   1.833, 1.833, 1.833};
@@ -237,7 +237,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, Options *options)
   PetscReal                  faceCenters[64] = {1.0,     0.5,   2.0,    0.5,   1.0,    1.167, 1.0,   1.5,
                                                 1.0,     1.833, 1.333,  1.167, 1.333,  1.5,   1.333, 1.833,
                                                 1.667,   1.167, 1.667,  1.5,   1.667,  1.833, 2.0,   1.167,
-                                                2.0,     1.5,   2.0,    1.833, 1.0,    2.5,   2.0,   2.5,  
+                                                2.0,     1.5,   2.0,    1.833, 1.0,    2.5,   2.0,   2.5,
                                                 0.5,     1.0,   0.5,    2.0,   1.167,  1.0,   1.5,   1.0,
                                                 1.833,   1.0,   1.167,  1.333, 1.5,    1.333, 1.833, 1.333,
                                                 1.167,   1.667, 1.5,    1.667, 1.833,  1.667, 1.167, 2.0,
@@ -313,17 +313,17 @@ PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, Options *options)
     Mesh parallelMesh;
 
     // TODO: Need different partitioning
-    ierr = MeshDistribute(mesh, PETSC_NULL, &parallelMesh);CHKERRQ(ierr);
+    ierr = MeshDistribute(mesh, NULL, &parallelMesh);CHKERRQ(ierr);
     ierr = MeshDestroy(&mesh);CHKERRQ(ierr);
     mesh = parallelMesh;
   }
-  ierr = PetscOptionsHasName(PETSC_NULL, "-mesh_view", &view);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL, "-mesh_view", &view);CHKERRQ(ierr);
   if (view) {
     Obj<ALE::Mesh> m;
     ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
     m->view("Mesh");
   }
-  ierr = PetscOptionsHasName(PETSC_NULL, "-mesh_view_simple", &view);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL, "-mesh_view_simple", &view);CHKERRQ(ierr);
   if (view) {ierr = MeshView(mesh, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
   *dm = (DM) mesh;
   PetscFunctionReturn(0);

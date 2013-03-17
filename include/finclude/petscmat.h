@@ -14,7 +14,7 @@
 !
 !
 !
-      PetscEnum MAT_FACTOR_NONE 
+      PetscEnum MAT_FACTOR_NONE
       PetscEnum MAT_FACTOR_LU
       PetscEnum MAT_FACTOR_CHOLESKY
       PetscEnum MAT_FACTOR_ILU
@@ -28,10 +28,11 @@
       PetscEnum MAT_DO_NOT_GET_VALUES
       PetscEnum MAT_GET_VALUES
       parameter(MAT_DO_NOT_GET_VALUES=0,MAT_GET_VALUES=1)
- 
+
 !
 !  Matrix options; must match those in include/petscmat.h
 !
+      PetscEnum MAT_OPTION_MIN
       PetscEnum MAT_ROW_ORIENTED
       PetscEnum MAT_NEW_NONZERO_LOCATIONS
       PetscEnum MAT_SYMMETRIC
@@ -59,38 +60,39 @@
       PetscEnum MAT_CSR
       PetscEnum MAT_DIAGBLOCK_DIA
       PetscEnum MAT_OFFDIAGBLOCK_DIA
-      PetscEnum MAT_DIA 
+      PetscEnum MAT_DIA
       PetscEnum MAT_DIAGBLOCK_ELL
       PetscEnum MAT_OFFDIAGBLOCK_ELL
       PetscEnum MAT_ELL
       PetscEnum MAT_DIAGBLOCK_HYB
-      PetscEnum MAT_OFFDIAGBLOCK_HYB 
+      PetscEnum MAT_OFFDIAGBLOCK_HYB
       PetscEnum MAT_HYB
-      PetscEnum NUM_MAT_OPTIONS
+      PetscEnum MAT_OPTION_MAX
 
-      parameter (MAT_ROW_ORIENTED=0)
-      parameter (MAT_NEW_NONZERO_LOCATIONS=1)
-      parameter (MAT_SYMMETRIC=2)
-      parameter (MAT_STRUCTURALLY_SYMMETRIC=3)
-      parameter (MAT_NEW_DIAGONALS=4)
-      parameter (MAT_IGNORE_OFF_PROC_ENTRIES=5)
-      parameter (MAT_NEW_NONZERO_LOCATION_ERR=6)
-      parameter (MAT_NEW_NONZERO_ALLOCATION_ERR=7)
-      parameter (MAT_USE_HASH_TABLE=8)
-      parameter (MAT_KEEP_NONZERO_PATTERN=9)
-      parameter (MAT_IGNORE_ZERO_ENTRIES=10)
-      parameter (MAT_USE_INODES=11)
-      parameter (MAT_HERMITIAN=12)
-      parameter (MAT_SYMMETRY_ETERNAL=13)
-      parameter (MAT_CHECK_COMPRESSED_ROW=14)
-      parameter (MAT_IGNORE_LOWER_TRIANGULAR=15)
-      parameter (MAT_ERROR_LOWER_TRIANGULAR=16)
-      parameter (MAT_GETROW_UPPERTRIANGULAR=17)
-      parameter (MAT_UNUSED_NONZERO_LOCATION_ERR=18)
-      parameter (MAT_SPD=19)
-      parameter (MAT_NO_OFF_PROC_ENTRIES=20)
-      parameter (MAT_NO_OFF_PROC_ZERO_ROWS=21)
-      parameter (NUM_MAT_OPTIONS=22)
+      parameter (MAT_OPTION_MIN=-7)
+      parameter (MAT_ROW_ORIENTED=-2)
+      parameter (MAT_NEW_NONZERO_LOCATIONS=-1)
+      parameter (MAT_SYMMETRIC=1)
+      parameter (MAT_STRUCTURALLY_SYMMETRIC=2)
+      parameter (MAT_NEW_DIAGONALS=3)
+      parameter (MAT_IGNORE_OFF_PROC_ENTRIES=4)
+      parameter (MAT_NEW_NONZERO_LOCATION_ERR=-7)
+      parameter (MAT_NEW_NONZERO_ALLOCATION_ERR=-3)
+      parameter (MAT_USE_HASH_TABLE=5)
+      parameter (MAT_KEEP_NONZERO_PATTERN=6)
+      parameter (MAT_IGNORE_ZERO_ENTRIES=7)
+      parameter (MAT_USE_INODES=8)
+      parameter (MAT_HERMITIAN=9)
+      parameter (MAT_SYMMETRY_ETERNAL=10)
+      parameter (MAT_CHECK_COMPRESSED_ROW=11)
+      parameter (MAT_IGNORE_LOWER_TRIANGULAR=12)
+      parameter (MAT_ERROR_LOWER_TRIANGULAR=13)
+      parameter (MAT_GETROW_UPPERTRIANGULAR=14)
+      parameter (MAT_UNUSED_NONZERO_LOCATION_ERR=-4)
+      parameter (MAT_SPD=15)
+      parameter (MAT_NO_OFF_PROC_ENTRIES=-5)
+      parameter (MAT_NO_OFF_PROC_ZERO_ROWS=-6)
+      parameter (MAT_OPTION_MAX=16)
 !
 !  MatFactorShiftType
 !
@@ -283,6 +285,9 @@
       PetscEnum MATOP_DESTROY
       PetscEnum MATOP_VIEW
       PetscEnum MATOP_CONVERT_FROM
+      PetscEnum MATOP_MATMAT_MULT
+      PetscEnum MATOP_MATMAT_MULT_SYMBOLIC
+      PetscEnum MATOP_MATMAT_MULT_NUMERIC
       PetscEnum MATOP_SET_LOCAL_TO_GLOBAL_MAP
       PetscEnum MATOP_SET_VALUES_LOCAL
       PetscEnum MATOP_ZERO_ROWS_LOCAL
@@ -290,7 +295,7 @@
       PetscEnum MATOP_GET_ROW_MIN_ABS
       PetscEnum MATOP_CONVERT
       PetscEnum MATOP_SET_COLORING
-      PetscEnum MATOP_SET_VALUES_ADIC
+      PetscEnum MATOP_PLACEHOLDER
       PetscEnum MATOP_SET_VALUES_ADIFOR
       PetscEnum MATOP_FD_COLORING_APPLY
       PetscEnum MATOP_SET_FROM_OPTIONS
@@ -321,7 +326,7 @@
       PetscEnum MATOP_PTAP_NUMERIC_MPIAIJ
       PetscEnum MATOP_CONJUGATE
       PetscEnum MATOP_SET_SIZES
-      PetscEnum MATOP_SET_VALUES_ROW 
+      PetscEnum MATOP_SET_VALUES_ROW
       PetscEnum MATOP_REAL_PART
       PetscEnum MATOP_IMAGINARY_PART
       PetscEnum MATOP_GET_ROW_UPPER_TRIANGULAR
@@ -410,6 +415,9 @@
       parameter(MATOP_DESTROY=60)
       parameter(MATOP_VIEW=61)
       parameter(MATOP_CONVERT_FROM=62)
+      parameter(MATOP_MATMAT_MULT=63)
+      parameter(MATOP_MATMAT_MULT_SYMBOLIC=64)
+      parameter(MATOP_MATMAT_MULT_NUMERIC=65)
       parameter(MATOP_SET_LOCAL_TO_GLOBAL_MAP=66)
       parameter(MATOP_SET_VALUES_LOCAL=67)
       parameter(MATOP_ZERO_ROWS_LOCAL=68)
@@ -417,7 +425,7 @@
       parameter(MATOP_GET_ROW_MIN_ABS=70)
       parameter(MATOP_CONVERT=71)
       parameter(MATOP_SET_COLORING=72)
-      parameter(MATOP_SET_VALUES_ADIC=73)
+      parameter(MATOP_PLACEHOLDER=73)
       parameter(MATOP_SET_VALUES_ADIFOR=74)
       parameter(MATOP_FD_COLORING_APPLY=75)
       parameter(MATOP_SET_FROM_OPTIONS=76)
@@ -538,7 +546,7 @@
       parameter(MAT_CUSP_MULT=2)
       parameter(MAT_CUSP_SOLVE=3)
       parameter(MAT_CUSP_ALL=4)
-#endif      
+#endif
 
 
 !
@@ -560,8 +568,7 @@
       parameter(MAT_CUSPARSE_MULT=2)
       parameter(MAT_CUSPARSE_SOLVE=3)
       parameter(MAT_CUSPARSE_ALL=4)
-#endif      
-		     
+#endif
 !
 !  End of Fortran include file for the Mat package in PETSc
 !

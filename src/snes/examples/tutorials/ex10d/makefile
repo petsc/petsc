@@ -1,6 +1,6 @@
 
-CFLAGS		 = 
-FFLAGS		 = 
+CFLAGS		 =
+FFLAGS		 =
 CPPFLAGS         =
 FPPFLAGS         =
 LOCDIR		 = src/snes/examples/tutorials/ex10d/

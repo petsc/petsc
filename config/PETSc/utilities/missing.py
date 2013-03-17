@@ -12,7 +12,7 @@ class Configure(config.base.Configure):
 
   def __str__(self):
     return ''
-    
+
   def setupHelp(self, help):
     import nargs
     return
@@ -57,7 +57,7 @@ class Configure(config.base.Configure):
         if self.functions.check('socket',['-lsocket','-lnsl']):
           self.addDefine('HAVE_SOCKET', 1)
           self.compilers.LIBS += ' -lsocket -lnsl'
-        
+
       # Windows requires Ws2_32.lib for socket(), uses stdcall, and declspec prototype decoration
       if self.libraries.add('Ws2_32.lib','socket',prototype='#include <Winsock2.h>',call='socket(0,0,0);'):
         self.addDefine('HAVE_WINSOCK2_H',1)
@@ -83,7 +83,7 @@ class Configure(config.base.Configure):
       if not self.checkCompile('#include <errno.h>','int i='+errnoval+';\n\nif (i);\n'):
         self.addDefine('MISSING_ERRNO_'+errnoval, 1)
     return
-  
+
 
   def configureMissingGetdomainnamePrototype(self):
     head ='''
@@ -104,7 +104,7 @@ int err = getdomainname(test,10);
       self.pushLanguage('C++')
       if not self.checkLink(head,code):
         self.addPrototype('int getdomainname(char *, int);', 'extern C')
-      self.popLanguage()  
+      self.popLanguage()
     return
 
   def configureMissingSrandPrototype(self):
@@ -128,7 +128,7 @@ a=drand48();
       if not self.checkLink(head,code):
         self.addPrototype('double drand48();', 'extern C')
         self.addPrototype('void   srand48(long);', 'extern C')
-      self.popLanguage()  
+      self.popLanguage()
     return
 
   def configureMissingIntelFastPrototypes(self):

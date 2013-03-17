@@ -85,7 +85,7 @@ def main():
   if os.system("bk changes -r+ > /dev/null 2>&1"):
     print 'Error! specified path is not a bk repository: ' + bk_repo
     sys.exit()
-    
+
   os.chdir(hg_repo)
   if os.system("hg tip > /dev/null 2>&1"):
     print 'Error! specified path is not a hg repository: ' + hg_repo
@@ -117,7 +117,7 @@ def main():
     if bk_cset_min == '':
       print 'Error! bk changeset tag not found at the tip of hg repo!'
       sys.exit()
-          
+
   if bk_cset_min == bk_cset_max:
     print 'No new changesets Quitting! Last commit:', bk_cset_min
     sys.exit()
@@ -153,7 +153,7 @@ def main():
     fd.close()
 
     print 'Processing changeset: '+revn
-    sys.stdout.flush()    
+    sys.stdout.flush()
     # get username
     fd=os.popen('bk changes -and:USER:@:HOST: -r'+revq)
     auth_email=fd.read().splitlines()[0].strip()
@@ -163,7 +163,7 @@ def main():
     fd=os.popen('bk changes -and:TIME_T: -r'+revq)
     gtime = fd.read().splitlines()[0].strip()
     timestr = '"' + str(gtime) + ' ' +str(time.timezone) + '"'
-    
+
     #get comment string
     fd=os.popen('bk changes -v -r'+revq)
     buf=fd.read()
@@ -192,7 +192,7 @@ def main():
         pstr = tmpstr
       prev,crev = pstr.split('..')
       print mrev,prev,crev,revn
-      sys.stdout.flush()      
+      sys.stdout.flush()
       # crev should be same as revn
       if crev != revn:
         print 'Error! crev and revn do not match!', crev, revn
@@ -233,7 +233,7 @@ def main():
       else:
         print 'Error tip does not match either prev or mrev!'
         sys.exit()
-          
+
       if os.system('hg tag -l -r'+str(hg_rev[tagrev]) +' '+ str(tagrev)):
         print 'Error during hg tag prev'
         sys.exit()
@@ -264,7 +264,7 @@ def main():
     if os.system('hg commit --addremove --user ' + auth_email + ' --date ' + timestr + ' --logfile '+log_file + ' --exclude '+log_file):
       print 'Exiting due to the previous error!'
       sys.exit()
-    os.unlink(log_file)      
+    os.unlink(log_file)
     # now extract the changeset id - and store
     hg_rev[revn] = hg_get_tip_key(hg_repo_child)
     if os.system('hg push -f ' +hg_repo):

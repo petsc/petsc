@@ -1,6 +1,4 @@
 
-/* Program usage:  ./ex16 [-help] [all PETSc options] */
-
 static char help[] = "Solves the van der Pol DAE.\n\
 Input parameters include:\n";
 
@@ -33,7 +31,7 @@ Input parameters include:\n";
    [ (u_2^3/3 - u_2) - u_1 ]   [ 0 ]
 
    which is now in the desired form of u_t = f(u,t). As this is a DAE, and
-   there is no u_2', there is no need for a split, 
+   there is no u_2', there is no need for a split,
 
    so
 
@@ -81,9 +79,9 @@ struct _n_User {
 static PetscErrorCode IFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ctx)
 {
   PetscErrorCode ierr;
-  PetscScalar *x,*xdot,*f;
+  PetscScalar    *x,*xdot,*f;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
   ierr = VecGetArray(Xdot,&xdot);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
@@ -100,15 +98,15 @@ static PetscErrorCode IFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ctx
 static PetscErrorCode IJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat *A,Mat *B,MatStructure *flag,void *ctx)
 {
   PetscErrorCode ierr;
-  PetscInt rowcol[] = {0,1};
-  PetscScalar *x,J[2][2];
+  PetscInt       rowcol[] = {0,1};
+  PetscScalar    *x,J[2][2];
 
-  PetscFunctionBegin;
-  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
+  PetscFunctionBeginUser;
+  ierr    = VecGetArray(X,&x);CHKERRQ(ierr);
   J[0][0] = a;    J[0][1] = -1.;
   J[1][0] = 1.;   J[1][1] = -1. + x[1]*x[1];
-  ierr = MatSetValues(*B,2,rowcol,2,rowcol,&J[0][0],INSERT_VALUES);CHKERRQ(ierr);
-  ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
+  ierr    = MatSetValues(*B,2,rowcol,2,rowcol,&J[0][0],INSERT_VALUES);CHKERRQ(ierr);
+  ierr    = VecRestoreArray(X,&x);CHKERRQ(ierr);
 
   ierr = MatAssemblyBegin(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -126,7 +124,7 @@ static PetscErrorCode RegisterMyARK2(void)
 {
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   {
     const PetscReal
       A[3][3] = {{0,0,0},
@@ -134,26 +132,27 @@ static PetscErrorCode RegisterMyARK2(void)
                  {0.75,0.25,0}},
       At[3][3] = {{0,0,0},
                   {0.12132034355964257320,0.29289321881345247560,0},
-                  {0.20710678118654752440,0.50000000000000000000,0.29289321881345247560}};
-      ierr = TSARKIMEXRegister("myark2",2,3,&At[0][0],PETSC_NULL,PETSC_NULL,&A[0][0],PETSC_NULL,PETSC_NULL,0,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+                  {0.20710678118654752440,0.50000000000000000000,0.29289321881345247560}},
+    *bembedt = NULL,*bembed = NULL;
+    ierr = TSARKIMEXRegister("myark2",2,3,&At[0][0],NULL,NULL,&A[0][0],NULL,NULL,bembedt,bembed,0,NULL,NULL);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "Monitor"
 /* Monitor timesteps and use interpolation to output at integer multiples of 0.1 */
 static PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal t,Vec X,void *ctx)
 {
-  PetscErrorCode ierr;
+  PetscErrorCode    ierr;
   const PetscScalar *x;
-  PetscReal tfinal, dt;
-  User user = (User)ctx;
-  Vec interpolatedX;
+  PetscReal         tfinal, dt;
+  User              user = (User)ctx;
+  Vec               interpolatedX;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = TSGetTimeStep(ts,&dt);CHKERRQ(ierr);
-  ierr = TSGetDuration(ts,PETSC_NULL,&tfinal);CHKERRQ(ierr);
+  ierr = TSGetDuration(ts,NULL,&tfinal);CHKERRQ(ierr);
 
   while (user->next_output <= t && user->next_output <= tfinal) {
     ierr = VecDuplicate(X,&interpolatedX);CHKERRQ(ierr);
@@ -171,21 +170,21 @@ static PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal t,Vec X,void *ctx)
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  TS              ts;           /* nonlinear solver */
-  Vec             x;            /* solution, residual vectors */
-  Mat             A;            /* Jacobian matrix */
-  PetscInt        steps;
-  PetscReal       ftime=0.5;
-  PetscBool       monitor = PETSC_FALSE;
-  PetscScalar     *x_ptr;
-  PetscMPIInt     size;
-  struct _n_User  user;
-  PetscErrorCode  ierr;
+  TS             ts;            /* nonlinear solver */
+  Vec            x;             /* solution, residual vectors */
+  Mat            A;             /* Jacobian matrix */
+  PetscInt       steps;
+  PetscReal      ftime   = 0.5;
+  PetscBool      monitor = PETSC_FALSE;
+  PetscScalar    *x_ptr;
+  PetscMPIInt    size;
+  struct _n_User user;
+  PetscErrorCode ierr;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  PetscInitialize(&argc,&argv,PETSC_NULL,help);
+  PetscInitialize(&argc,&argv,NULL,help);
 
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size != 1) SETERRQ(PETSC_COMM_SELF,1,"This is a uniprocessor example only!");
@@ -197,7 +196,7 @@ int main(int argc,char **argv)
     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   user.next_output = 0.0;
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-monitor",&monitor,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-monitor",&monitor,NULL);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Create necessary matrix and vectors, solve same ODE on every process
@@ -205,19 +204,19 @@ int main(int argc,char **argv)
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,2,2);CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
-
-  ierr = MatGetVecs(A,&x,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatSetUp(A);CHKERRQ(ierr);
+  ierr = MatGetVecs(A,&x,NULL);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create timestepping solver context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
   ierr = TSSetType(ts,TSBEULER);CHKERRQ(ierr);
-  ierr = TSSetIFunction(ts,PETSC_NULL,IFunction,&user);CHKERRQ(ierr);
+  ierr = TSSetIFunction(ts,NULL,IFunction,&user);CHKERRQ(ierr);
   ierr = TSSetIJacobian(ts,A,A,IJacobian,&user);CHKERRQ(ierr);
   ierr = TSSetDuration(ts,PETSC_DEFAULT,ftime);CHKERRQ(ierr);
   if (monitor) {
-    ierr = TSMonitorSet(ts,Monitor,&user,PETSC_NULL);CHKERRQ(ierr);
+    ierr = TSMonitorSet(ts,Monitor,&user,NULL);CHKERRQ(ierr);
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -236,7 +235,8 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve nonlinear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = TSSolve(ts,x,&ftime);CHKERRQ(ierr);
+  ierr = TSSolve(ts,x);CHKERRQ(ierr);
+  ierr = TSGetSolveTime(ts,&ftime);CHKERRQ(ierr);
   ierr = TSGetTimeStepNumber(ts,&steps);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"steps %D, ftime %G\n",steps,ftime);CHKERRQ(ierr);
   ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);

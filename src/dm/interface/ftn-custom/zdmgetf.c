@@ -9,8 +9,7 @@
 #define dmrestorenamedglobalvector_       dmrestorenamedglobalvector
 #endif
 
-EXTERN_C_BEGIN
-void PETSC_STDCALL  dmgetnamedglobalvector_(DM *dm,CHAR name PETSC_MIXED_LEN(len),Vec *X,PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL dmgetnamedglobalvector_(DM *dm,CHAR name PETSC_MIXED_LEN(len),Vec *X,PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *t;
 
@@ -19,7 +18,7 @@ void PETSC_STDCALL  dmgetnamedglobalvector_(DM *dm,CHAR name PETSC_MIXED_LEN(len
   FREECHAR(name,t);
 }
 
-void PETSC_STDCALL  dmrestorenamedglobalvector_(DM *dm,CHAR name PETSC_MIXED_LEN(len),Vec *X,PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL dmrestorenamedglobalvector_(DM *dm,CHAR name PETSC_MIXED_LEN(len),Vec *X,PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *t;
 
@@ -27,4 +26,3 @@ void PETSC_STDCALL  dmrestorenamedglobalvector_(DM *dm,CHAR name PETSC_MIXED_LEN
   *ierr = DMRestoreNamedGlobalVector(*dm,t,X);
   FREECHAR(name,t);
 }
-EXTERN_C_END

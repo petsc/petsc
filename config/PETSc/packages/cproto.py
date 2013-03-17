@@ -1,5 +1,5 @@
 import PETSc.package
-    
+
 class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
     PETSc.package.NewPackage.__init__(self, framework)
@@ -7,7 +7,7 @@ class Configure(PETSc.package.NewPackage):
     self.complex          = 1
     self.double           = 0
     self.requires32bitint = 0
-    
+
   def Install(self):
     import os
     args = ['--prefix='+self.installDir]
@@ -36,13 +36,13 @@ class Configure(PETSc.package.NewPackage):
 
   def alternateConfigureLibrary(self):
     self.checkDownload(1)
-    
+
   def configure(self):
     '''Determine whether the cproto exist or not'''
     if self.framework.argDB.get('download-cproto'):
 
       self.getExecutable('cproto', getFullPath = 1)
-      
+
       if hasattr(self, 'cproto'):
         self.addMakeMacro('CPROTO ', self.cproto)
         self.framework.logPrint('Found cproto, will not install cproto')

@@ -29,6 +29,7 @@
 #  define LAPACKgetrs_ sgetrs_
 #  define BLAStrmv_    strmv_
 #  define BLASgemm_    sgemm_
+#  define BLAStrsm_    strsm_
 #  define LAPACKgesvd_ sgesvd_
 #  define LAPACKgeev_  sgeev_
 #  define LAPACKsyev_  ssyev_
@@ -36,6 +37,7 @@
 #  define LAPACKsygv_  ssygv_
 #  define LAPACKsygvx_ ssygvx_
 #  define LAPACKstebz_ sstebz_
+#  define LAPACKsteqr_ ssteqr_
 #else
 /* Complex with no character string arguments */
 #  define LAPACKgeqrf_ cgeqrf_
@@ -58,13 +60,14 @@
 #  define LAPACKgetrs_ cgetrs_
 #  define BLAStrmv_    ctrmv_
 #  define BLASgemm_    cgemm_
+#  define BLAStrsm_    ctrsm_
 #  define LAPACKgesvd_ cgesvd_
 #  define LAPACKgeev_  cgeev_
 #  define LAPACKsyev_  cheev_
 #  define LAPACKsyevx_ cheevx_
 #  define LAPACKsygv_  chegv_
 #  define LAPACKsygvx_ chegvx_
-#  define LAPACKpttrs_ cpttrs_ 
+#  define LAPACKpttrs_ cpttrs_
 #endif
 
 #endif

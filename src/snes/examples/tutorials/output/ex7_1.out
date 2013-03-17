@@ -1,0 +1,3 @@
+  0 SNES Function norm < 1.e-11
+Number of SNES iterations = 0, CONVERGED_FNORM_ABS
+L_2 error in the solution: 3.53587e-33

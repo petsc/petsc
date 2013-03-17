@@ -4,6 +4,7 @@
 
 #include <petscksp.h>
 #include <petscpc.h>
+#include <petsc-private/petscimpl.h>
 
 typedef struct _PCOps *PCOps;
 struct _PCOps {
@@ -15,7 +16,7 @@ struct _PCOps {
   PetscErrorCode (*applyBAtranspose)(PC,PetscInt,Vec,Vec,Vec);
   PetscErrorCode (*setfromoptions)(PC);
   PetscErrorCode (*presolve)(PC,KSP,Vec,Vec);
-  PetscErrorCode (*postsolve)(PC,KSP,Vec,Vec);  
+  PetscErrorCode (*postsolve)(PC,KSP,Vec,Vec);
   PetscErrorCode (*getfactoredmatrix)(PC,Mat*);
   PetscErrorCode (*applysymmetricleft)(PC,Vec,Vec);
   PetscErrorCode (*applysymmetricright)(PC,Vec,Vec);
@@ -23,6 +24,7 @@ struct _PCOps {
   PetscErrorCode (*destroy)(PC);
   PetscErrorCode (*view)(PC,PetscViewer);
   PetscErrorCode (*reset)(PC);
+  PetscErrorCode (*load)(PC,PetscViewer);
 };
 
 /*
@@ -38,6 +40,7 @@ struct _p_PC {
   Vec            diagonalscaleright,diagonalscaleleft; /* used for time integration scaling */
   PetscBool      diagonalscale;
   PetscBool      nonzero_guess; /* used by PCKSP, PCREDUNDANT and PCHMPI */
+  PetscBool      useAmat; /* used by several PC that including applying the operator inside the preconditioner */
   PetscErrorCode (*modifysubmatrices)(PC,PetscInt,const IS[],const IS[],Mat[],void*); /* user provided routine */
   void           *modifysubmatricesP; /* context for user routine */
   void           *data;

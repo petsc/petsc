@@ -3,11 +3,9 @@ ALL: lib
 
 CFLAGS    =
 FFLAGS    =
-SOURCECU  = aijcusparse.cu 
+SOURCECU  = aijcusparse.cu
 SOURCEF   =
 SOURCEH   = cusparsematimpl.h
-OBJSCU    = aijcusparse.o
-OBJSF     =
 LIBBASE   = libpetscmat
 DIRS      =
 MANSEC    = Mat

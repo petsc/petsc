@@ -2,7 +2,6 @@
 !   Solves a linear system in parallel with KSP.  Also indicates
 !   use of a user-provided preconditioner.  Input parameters include:
 !
-!  Program usage: mpiexec ex21f [-help] [all PETSc options]
 !
 !/*T
 !   Concepts: KSP^basic parallel example
@@ -10,7 +9,7 @@
 !   Processors: n
 !T*/
 !
-!  ------------------------------------------------------------------------- 
+!  -------------------------------------------------------------------------
 
       program main
       implicit none
@@ -43,9 +42,9 @@
 !     norm     - norm of solution error
 
       Vec              x,b,u
-      Mat              A      
-      PC               pc     
-      KSP              ksp   
+      Mat              A
+      PC               pc
+      KSP              ksp
       PetscScalar      v,one,neg_one
       double precision norm,tol
       PetscInt i,j,II,JJ,Istart
@@ -58,14 +57,14 @@
 
       external SampleShellPCSetUp,SampleShellPCApply
 
-!  Common block to store data for user-provided preconditioner 
+!  Common block to store data for user-provided preconditioner
       common /mypcs/ jacobi,sor,work
       PC jacobi,sor
       Vec work
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                 Beginning of program
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       one     = 1.0
@@ -77,10 +76,10 @@
       call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-n',n,flg,ierr)
       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
 
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !      Compute the matrix and right-hand-side vector that define
 !      the linear system, Ax = b.
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 !  Create parallel matrix, specifying only its global dimensions.
 !  When using MatCreate(), the matrix format can be specified at
@@ -94,14 +93,14 @@
 
 !  Currently, all PETSc parallel matrix formats are partitioned by
 !  contiguous chunks of rows across the processors.  Determine which
-!  rows of the matrix are locally owned. 
+!  rows of the matrix are locally owned.
 
       call MatGetOwnershipRange(A,Istart,Iend,ierr)
 
 !  Set matrix elements for the 2-D, five-point stencil in parallel.
 !   - Each processor needs to insert only elements that it owns
 !     locally (but any non-local elements will be sent to the
-!     appropriate processor during matrix assembly). 
+!     appropriate processor during matrix assembly).
 !   - Always specify global row and columns of matrix entries.
 !   - Note that MatSetValues() uses 0-based row and column numbers
 !     in Fortran as well as in C.
@@ -109,7 +108,7 @@
       do 10, II=Istart,Iend-1
         v = -1.0
         i = II/n
-        j = II - i*n  
+        j = II - i*n
         if (i.gt.0) then
           JJ = II - n
           call MatSetValues(A,ione,II,ione,JJ,v,ADD_VALUES,ierr)
@@ -145,7 +144,7 @@
 !   - When solving a linear system, the vectors and matrices MUST
 !     be partitioned accordingly.  PETSc automatically generates
 !     appropriately partitioned matrices and vectors when MatCreate()
-!     and VecCreate() are used with the same communicator. 
+!     and VecCreate() are used with the same communicator.
 !   - Note: We form 1 vector from scratch and then duplicate as needed.
 
       call VecCreateMPI(PETSC_COMM_WORLD,PETSC_DECIDE,m*n,u,ierr)
@@ -157,9 +156,9 @@
       call VecSet(u,one,ierr)
       call MatMult(A,u,b,ierr)
 
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !         Create the linear solver and set various options
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 !  Create linear solver context
 
@@ -184,7 +183,7 @@
 !  Set a user-defined shell preconditioner
 !
 
-!  (Required) Indicate to PETSc that we are using a shell preconditioner 
+!  (Required) Indicate to PETSc that we are using a shell preconditioner
       call PCSetType(pc,PCSHELL,ierr)
 
 !  (Required) Set the user-defined routine for applying the preconditioner
@@ -203,15 +202,15 @@
 
       call KSPSetFromOptions(ksp,ierr)
 
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                      Solve the linear system
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
       call KSPSolve(ksp,b,x,ierr)
 
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                     Check solution and clean up
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 !  Check the error
 
@@ -245,7 +244,7 @@
       call VecDestroy(work,ierr)
 
 
-!  Always call PetscFinalize() before exiting a program. 
+!  Always call PetscFinalize() before exiting a program.
 
       call PetscFinalize(ierr)
       end
@@ -256,7 +255,7 @@
 
 !
 !   SampleShellPCSetUp - This routine sets up a user-defined
-!   preconditioner context.  
+!   preconditioner context.
 !
 !   Input Parameters:
 !   pc    - preconditioner object
@@ -284,7 +283,7 @@
       Mat     pmat
       PetscErrorCode ierr
 
-!  Common block to store data for user-provided preconditioner 
+!  Common block to store data for user-provided preconditioner
       common /mypcs/ jacobi,sor,work
       PC jacobi,sor
       Vec work
@@ -308,7 +307,7 @@
 
       end
 
-! ------------------------------------------------------------------- 
+! -------------------------------------------------------------------
 !
 !   SampleShellPCApply - This routine demonstrates the use of a
 !   user-provided preconditioner.
@@ -322,7 +321,7 @@
 !   ierr  - error code (nonzero if error has been detected)
 !
 !   Notes:
-!   This code implements the Jacobi preconditioner plus the 
+!   This code implements the Jacobi preconditioner plus the
 !   SOR preconditioner
 !
 ! YOU CAN GET THE EXACT SAME EFFECT WITH THE PCCOMPOSITE preconditioner using
@@ -340,8 +339,8 @@
       Vec     x,y
       PetscErrorCode ierr
       PetscScalar  one
-      
-!  Common block to store data for user-provided preconditioner 
+
+!  Common block to store data for user-provided preconditioner
       common /mypcs/ jacobi,sor,work
       PC  jacobi,sor
       Vec work

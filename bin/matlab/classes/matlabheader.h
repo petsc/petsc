@@ -1,7 +1,7 @@
 
 /*
-    This is used by bin/matlab/classes/PetscInitialize() to define to Matlab all the functions available in the 
-   PETSc shared library. We cannot simply use the regular PETSc include files because they are too complicated for 
+    This is used by bin/matlab/classes/PetscInitialize() to define to Matlab all the functions available in the
+   PETSc shared library. We cannot simply use the regular PETSc include files because they are too complicated for
    Matlab to parse.
 
 */
@@ -104,8 +104,6 @@ int DMSetVecType(DM,const char*);
 int DMSetFromOptions(DM);
 int DMDestroy(DM*);
 int DMView(DM,PetscViewer);
-int DMSetFunctionMatlab(DM,const char*);
-int DMSetJacobianMatlab(DM,const char*);
 int DMDASetBoundaryType(DM, DMDABoundaryType,DMDABoundaryType,DMDABoundaryType);
 int DMDASetDof(DM, int);
 int DMSetUp(DM);
@@ -164,7 +162,7 @@ int TSSetType(TS,const char*);
 int TSSetProblemType(TS,int);
 int TSSetDM(TS,DM);
 int TSSetFromOptions(TS);
-int TSSolve(TS,Vec,double*);
+int TSSolve(TS,Vec);
 int TSSetUp(TS);
 int TSView(TS,PetscViewer);
 int TSDestroy(TS*);

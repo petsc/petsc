@@ -1,15 +1,16 @@
-# $Id: makefile,v 1.45 2001/08/22 18:00:07 balay Exp $ 
+# $Id: makefile,v 1.45 2001/08/22 18:00:07 balay Exp $
 #
 All:dvr
-CFLAGS		 = 
-FFLAGS		 = 
+CFLAGS		 =
+FFLAGS		 =
 CPPFLAGS         =
 FPPFLAGS         =
-MANSEC           = 
+MANSEC           =
 LOCDIR		 = src/contrib/dvr/
-EXAMPLESC	 = 
+EXAMPLESC	 =
 EXAMPLESF	 = dvr.F mxm44f2g.F basic.F
-DVR_OBJSF        = dvr.o mxm44f2g.o basic.o
+DVR_OBJSF        = $(EXAMPLESF:.F=.o)
+
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

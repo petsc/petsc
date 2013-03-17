@@ -12,25 +12,25 @@ int main(int argc,char **args)
   char           file[PETSC_MAX_PATH_LEN];
   PetscBool      aij,sbaij,flg;
   PetscViewer    fd;
-  const MatType  type = MATBAIJ;
-  PetscInt       n1 = 7, idx1[] = {1,5,6,8,9,12,15};
-  PetscInt       n2 = 5, idx2[] = {7,22,30,13,19};
+  MatType        type = MATBAIJ;
+  PetscInt       n1   = 7, idx1[] = {1,5,6,8,9,12,15};
+  PetscInt       n2   = 5, idx2[] = {7,22,30,13,19};
   Vec            b,x;
   IS             is;
   PetscInt       i;
   PetscMPIInt    rank;
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL,"-aij",&aij);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,"-aij",&aij);CHKERRQ(ierr);
   if (aij) type = MATAIJ;
-  ierr = PetscOptionsHasName(PETSC_NULL,"-sbaij",&sbaij);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,"-sbaij",&sbaij);CHKERRQ(ierr);
   if (sbaij) type = MATSBAIJ;
 
-  ierr = PetscOptionsGetString(PETSC_NULL,"-f",file,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,"-f",file,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(PETSC_COMM_WORLD,1,"Must indicate binary file with the -f option");
 
-  /* 
+  /*
      Open binary file.  Note that we use FILE_MODE_READ to indicate
      reading from this file.
   */

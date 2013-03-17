@@ -1,5 +1,5 @@
 
-static char help[] = "Builds a parallel vector with 1 component on the firstprocessor, 2 on the second, etc.\n\
+static char help[] = "Builds a parallel vector with 1 component on the first processor, 2 on the second, etc.\n\
   Then each processor adds one to all elements except the last rank.\n\n";
 
 /*T
@@ -7,7 +7,7 @@ static char help[] = "Builds a parallel vector with 1 component on the firstproc
    Processors: n
 T*/
 
-/* 
+/*
   Include "petscvec.h" so that we can use vectors.  Note that this file
   automatically includes:
      petscsys.h       - base PETSc routines   petscis.h     - index sets
@@ -25,15 +25,15 @@ int main(int argc,char **argv)
   PetscScalar    one = 1.0;
   Vec            x;
 
-  PetscInitialize(&argc,&argv,(char *)0,help);
+  PetscInitialize(&argc,&argv,(char*)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
   /*
      Create a parallel vector.
       - In this case, we specify the size of each processor's local
         portion, and PETSc computes the global size.  Alternatively,
-        if we pass the global size and use PETSC_DECIDE for the 
-        local size PETSc will choose a reasonable partition trying 
+        if we pass the global size and use PETSC_DECIDE for the
+        local size PETSc will choose a reasonable partition trying
         to put nearly an equal number of elements on each processor.
   */
   ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
@@ -53,10 +53,10 @@ int main(int argc,char **argv)
         contributions will be added together.
   */
   for (i=0; i<N-rank; i++) {
-    ierr = VecSetValues(x,1,&i,&one,ADD_VALUES);CHKERRQ(ierr);  
+    ierr = VecSetValues(x,1,&i,&one,ADD_VALUES);CHKERRQ(ierr);
   }
 
-  /* 
+  /*
      Assemble vector, using the 2-step process:
        VecAssemblyBegin(), VecAssemblyEnd()
      Computations can be done while messages are in transition
@@ -74,4 +74,4 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return 0;
 }
- 
+

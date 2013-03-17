@@ -150,7 +150,7 @@ class IS(np.ndarray):
 class PetscBinaryIO(object):
     """Reader/Writer class for PETSc binary files.
 
-    Note that by default, precisions for both scalars and indices, as well as 
+    Note that by default, precisions for both scalars and indices, as well as
     complex scalars, are picked up from the PETSC_DIR/PETSC_ARCH configuration
     as set by environmental variables.
 
@@ -318,12 +318,14 @@ class PetscBinaryIO(object):
     @decorate_with_conf
     def writeMatSciPy(self, fh, mat):
         from scipy.sparse import csr_matrix
+        if hasattr(mat, 'tocsr'):
+            mat = mat.tocsr()
         assert isinstance(mat, csr_matrix)
         V = mat.data
         M,N = mat.shape
         J = mat.indices
         I = mat.indptr
-        return writeMatSparse(fh, (mat.shape, (mat.indptr,mat.indices,mat.data)))
+        return self.writeMatSparse(fh, (mat.shape, (mat.indptr,mat.indices,mat.data)))
 
     @decorate_with_conf
     def readMat(self, fh, mattype='sparse'):

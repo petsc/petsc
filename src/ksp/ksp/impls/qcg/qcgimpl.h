@@ -1,8 +1,8 @@
 /*
-    Context for using preconditioned CG to minimize a quadratic function 
+    Context for using preconditioned CG to minimize a quadratic function
  */
 
-#ifndef __QCG
+#if !defined(__QCG)
 #define __QCG
 
 typedef struct {

@@ -24,10 +24,10 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
   options->refinementLimit = 0.0;
 
   ierr = PetscOptionsBegin(comm, "", "Options for mesh test", "Mesh");CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-debug", "The debugging level",            "mesh2.cxx", options->debug, &options->debug, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-dim",   "The topological mesh dimension", "mesh2.cxx", options->dim, &options->dim,   PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-interpolate", "Construct missing elements of the mesh", "mesh2.cxx", options->interpolate, &options->interpolate, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-refinement_limit", "The largest allowable cell volume", "mesh2.cxx", options->refinementLimit, &options->refinementLimit, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-debug", "The debugging level",            "mesh2.cxx", options->debug, &options->debug, NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-dim",   "The topological mesh dimension", "mesh2.cxx", options->dim, &options->dim,   NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-interpolate", "Construct missing elements of the mesh", "mesh2.cxx", options->interpolate, &options->interpolate, NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-refinement_limit", "The largest allowable cell volume", "mesh2.cxx", options->refinementLimit, &options->refinementLimit, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
@@ -82,7 +82,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, Obj<ALE::Mesh>& m, Options *options)
 
   PetscFunctionBegin;
 
-  ierr = PetscOptionsHasName(PETSC_NULL, "-mesh_view", &view);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL, "-mesh_view", &view);CHKERRQ(ierr);
   if (options->dim == 2) {
     double lower[2] = {0.0, 0.0};
     double upper[2] = {1.0, 1.0};
@@ -110,7 +110,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, Obj<ALE::Mesh>& m, Options *options)
     if (view) {newMesh->view("Parallel Mesh");}
     m = newMesh;
   }
-  ierr = PetscOptionsHasName(PETSC_NULL, "-mesh_view_vtk", &view);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL, "-mesh_view_vtk", &view);CHKERRQ(ierr);
   if (view) {ierr = ViewMesh(m, "mesh.vtk");CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }

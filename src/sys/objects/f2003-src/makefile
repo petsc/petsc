@@ -3,11 +3,9 @@
 ALL: lib
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = 
+SOURCEC  =
 SOURCEF  =
-SOURCEH  = 
-OBJSC    = 
-OBJSF	 =
+SOURCEH  =
 DIRS     = fsrc
 LIBBASE  = libpetscsys
 MANSEC   = Sys

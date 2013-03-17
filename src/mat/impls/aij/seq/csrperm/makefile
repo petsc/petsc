@@ -1,14 +1,12 @@
 ALL: lib
 
-CFLAGS   = 
+CFLAGS   =
 FFLAGS   =
 SOURCEC  = csrperm.c
-SOURCEF  = 
-SOURCEH  = 
-OBJSC    = csrperm.o
-OBJSF    = 
+SOURCEF  =
+SOURCEH  =
 LIBBASE  = libpetscmat
-DIRS     = 
+DIRS     =
 MANSEC   = Mat
 LOCDIR   = src/mat/impls/aij/seq/csrperm/
 

@@ -5,34 +5,11 @@
 #if !defined(__PETSCVIEWER_H)
 #define __PETSCVIEWER_H
 
-#if defined(PETSC_USE_EXTERN_CXX) && defined(__cplusplus)
-extern "C" {
-#endif
-
-/*S
-     PetscViewer - Abstract PETSc object that helps view (in ASCII, binary, graphically etc)
-         other PETSc objects
-
-   Level: beginner
-
-  Concepts: viewing
-
-.seealso:  PetscViewerCreate(), PetscViewerSetType(), PetscViewerType
-S*/
-typedef struct _p_PetscViewer* PetscViewer;
-
-#if defined(PETSC_USE_EXTERN_CXX) && defined(__cplusplus)
-}
-#endif
-
-#include "petscsys.h"
+#include <petscsys.h>
+#include <petscviewertypes.h>
 
 PETSC_EXTERN PetscClassId PETSC_VIEWER_CLASSID;
 
-/*
-    petscsys.h must be included AFTER the definition of PetscViewer for ADIC to 
-   process correctly.
-*/
 /*J
     PetscViewerType - String with the name of a PETSc PETScViewer
 
@@ -40,7 +17,7 @@ PETSC_EXTERN PetscClassId PETSC_VIEWER_CLASSID;
 
 .seealso: PetscViewerSetType(), PetscViewer
 J*/
-#define PetscViewerType char*
+typedef const char* PetscViewerType;
 #define PETSCVIEWERSOCKET       "socket"
 #define PETSCVIEWERASCII        "ascii"
 #define PETSCVIEWERBINARY       "binary"
@@ -54,7 +31,7 @@ J*/
 #define PETSCVIEWERMATLAB       "matlab"
 #define PETSCVIEWERAMS          "ams"
 
-PETSC_EXTERN PetscFList PetscViewerList;
+PETSC_EXTERN PetscFunctionList PetscViewerList;
 PETSC_EXTERN PetscErrorCode PetscViewerRegisterAll(const char *);
 PETSC_EXTERN PetscErrorCode PetscViewerRegisterDestroy(void);
 PETSC_EXTERN PetscErrorCode PetscViewerInitializePackage(const char[]);
@@ -64,7 +41,8 @@ PETSC_EXTERN PetscErrorCode PetscViewerRegister(const char*,const char*,const ch
 /*MC
    PetscViewerRegisterDynamic - Adds a viewer
 
-   Synopsis:
+   Synopsis
+   #include "petscviewer.h"
    PetscErrorCode PetscViewerRegisterDynamic(const char *name_solver,const char *path,const char *name_create,PetscErrorCode (*routine_create)(PetscViewer))
 
    Not Collective
@@ -128,8 +106,8 @@ PETSC_EXTERN PetscErrorCode PetscViewerMathematicaOpen(MPI_Comm, int, const char
 PETSC_EXTERN PetscErrorCode PetscViewerSiloOpen(MPI_Comm, const char[], PetscViewer *);
 PETSC_EXTERN PetscErrorCode PetscViewerMatlabOpen(MPI_Comm,const char[],PetscFileMode,PetscViewer*);
 
-PETSC_EXTERN PetscErrorCode PetscViewerGetType(PetscViewer,const PetscViewerType*);
-PETSC_EXTERN PetscErrorCode PetscViewerSetType(PetscViewer,const PetscViewerType);
+PETSC_EXTERN PetscErrorCode PetscViewerGetType(PetscViewer,PetscViewerType*);
+PETSC_EXTERN PetscErrorCode PetscViewerSetType(PetscViewer,PetscViewerType);
 PETSC_EXTERN PetscErrorCode PetscViewerDestroy(PetscViewer*);
 PETSC_EXTERN PetscErrorCode PetscViewerGetSingleton(PetscViewer,PetscViewer*);
 PETSC_EXTERN PetscErrorCode PetscViewerRestoreSingleton(PetscViewer,PetscViewer*);
@@ -177,6 +155,8 @@ typedef enum {
   PETSC_VIEWER_DRAW_CONTOUR,
   PETSC_VIEWER_DRAW_PORTS,
   PETSC_VIEWER_VTK_VTS,
+  PETSC_VIEWER_VTK_VTU,
+  PETSC_VIEWER_BINARY_MATLAB,
   PETSC_VIEWER_NATIVE,
   PETSC_VIEWER_NOFORMAT
   } PetscViewerFormat;
@@ -187,6 +167,9 @@ PETSC_EXTERN PetscErrorCode PetscViewerPushFormat(PetscViewer,PetscViewerFormat)
 PETSC_EXTERN PetscErrorCode PetscViewerPopFormat(PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscViewerGetFormat(PetscViewer,PetscViewerFormat*);
 PETSC_EXTERN PetscErrorCode PetscViewerFlush(PetscViewer);
+
+PETSC_EXTERN PetscErrorCode PetscOptionsGetViewer(MPI_Comm,const char[],const char[],PetscViewer*,PetscViewerFormat*,PetscBool*);
+PETSC_EXTERN PetscErrorCode PetscOptionsViewer(const char[],const char[],const char[],PetscViewer*,PetscViewerFormat *,PetscBool *);
 
 /*
    Operations explicit to a particular class of viewers
@@ -232,9 +215,6 @@ PETSC_EXTERN PetscErrorCode PetscViewerBinaryWriteStringArray(PetscViewer,char**
 PETSC_EXTERN PetscErrorCode PetscViewerFileSetName(PetscViewer,const char[]);
 PETSC_EXTERN PetscErrorCode PetscViewerFileGetName(PetscViewer,const char**);
 
-PETSC_EXTERN PetscErrorCode PetscPLAPACKInitializePackage(MPI_Comm com);
-PETSC_EXTERN PetscErrorCode PetscPLAPACKFinalizePackage(void);
-
 PETSC_EXTERN PetscErrorCode PetscViewerVUGetPointer(PetscViewer, FILE**);
 PETSC_EXTERN PetscErrorCode PetscViewerVUSetVecSeen(PetscViewer, PetscBool );
 PETSC_EXTERN PetscErrorCode PetscViewerVUGetVecSeen(PetscViewer, PetscBool  *);
@@ -258,29 +238,12 @@ PETSC_EXTERN PetscErrorCode PetscViewerSiloClearMeshName(PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscViewerNetcdfOpen(MPI_Comm,const char[],PetscFileMode,PetscViewer*);
 PETSC_EXTERN PetscErrorCode PetscViewerNetcdfGetID(PetscViewer, int *);
 
-PETSC_EXTERN PetscErrorCode PetscViewerHDF5WriteSDS(PetscViewer,float *,int,int *,int);
-
-PETSC_EXTERN PetscErrorCode PetscViewerHDF5Open(MPI_Comm,const char[],PetscFileMode,PetscViewer*);
-PETSC_EXTERN PetscErrorCode PetscViewerHDF5PushGroup(PetscViewer,const char *);
-PETSC_EXTERN PetscErrorCode PetscViewerHDF5PopGroup(PetscViewer);
-PETSC_EXTERN PetscErrorCode PetscViewerHDF5GetGroup(PetscViewer, const char **);
-PETSC_EXTERN PetscErrorCode PetscViewerHDF5IncrementTimestep(PetscViewer);
-PETSC_EXTERN PetscErrorCode PetscViewerHDF5SetTimestep(PetscViewer,PetscInt);
-PETSC_EXTERN PetscErrorCode PetscViewerHDF5GetTimestep(PetscViewer,PetscInt*);
-#ifdef PETSC_HAVE_HDF5
-#include <hdf5.h>
-PETSC_EXTERN PetscErrorCode PetscViewerHDF5GetFileId(PetscViewer,hid_t*);
-PETSC_EXTERN PetscErrorCode PetscViewerHDF5OpenGroup(PetscViewer, hid_t *, hid_t *);
-#endif
-
 typedef enum {PETSC_VTK_POINT_FIELD, PETSC_VTK_POINT_VECTOR_FIELD, PETSC_VTK_CELL_FIELD, PETSC_VTK_CELL_VECTOR_FIELD} PetscViewerVTKFieldType;
-PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*PetscViewerVTKWriteFunction)(PetscObject,PetscViewer);
-PETSC_EXTERN PetscErrorCode PetscViewerVTKAddField(PetscViewer,PetscObject,PetscViewerVTKWriteFunction,PetscViewerVTKFieldType,PetscObject);
+PETSC_EXTERN PetscErrorCode PetscViewerVTKAddField(PetscViewer,PetscObject,PetscErrorCode (*PetscViewerVTKWriteFunction)(PetscObject,PetscViewer),PetscViewerVTKFieldType,PetscObject);
 PETSC_EXTERN PetscErrorCode PetscViewerVTKOpen(MPI_Comm,const char[],PetscFileMode,PetscViewer*);
 
 /*
-     These are all the default viewers that do not have 
-   to be explicitly opened
+     These are all the default viewers that do not have to be explicitly opened
 */
 PETSC_EXTERN PetscViewer    PETSC_VIEWER_STDOUT_(MPI_Comm);
 PETSC_EXTERN PetscErrorCode PetscViewerASCIIGetStdout(MPI_Comm,PetscViewer*);
@@ -365,19 +328,77 @@ M*/
 M*/
 #define PETSC_VIEWER_MATLAB_SELF  PETSC_VIEWER_MATLAB_(PETSC_COMM_SELF)
 
-#define PETSC_VIEWER_MATHEMATICA_WORLD (PetscViewerInitializeMathematicaWorld_Private(),PETSC_VIEWER_MATHEMATICA_WORLD_PRIVATE) 
+#define PETSC_VIEWER_MATHEMATICA_WORLD (PetscViewerInitializeMathematicaWorld_Private(),PETSC_VIEWER_MATHEMATICA_WORLD_PRIVATE)
 
-#define PetscViewerFlowControlStart(viewer,mcnt,cnt)  (PetscViewerBinaryGetFlowControl(viewer,mcnt) || PetscViewerBinaryGetFlowControl(viewer,cnt))
-#define PetscViewerFlowControlStepMaster(viewer,i,mcnt,cnt) ((i >= mcnt) ?  (mcnt += cnt,MPI_Bcast(&mcnt,1,MPIU_INT,0,((PetscObject)viewer)->comm)) : 0)
-#define PetscViewerFlowControlEndMaster(viewer,mcnt) (mcnt = 0,MPI_Bcast(&mcnt,1,MPIU_INT,0,((PetscObject)viewer)->comm))
-#define PetscViewerFlowControlStepWorker(viewer,rank,mcnt) 0; while (1) { PetscErrorCode _ierr; \
-    if (rank < mcnt) break;				\
-  _ierr = MPI_Bcast(&mcnt,1,MPIU_INT,0,((PetscObject)viewer)->comm);CHKERRQ(_ierr);\
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerFlowControlStart"
+PETSC_STATIC_INLINE PetscErrorCode PetscViewerFlowControlStart(PetscViewer viewer,PetscInt *mcnt,PetscInt *cnt)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  ierr = PetscViewerBinaryGetFlowControl(viewer,mcnt);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryGetFlowControl(viewer,cnt);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerFlowControlStepMaster"
+PETSC_STATIC_INLINE PetscErrorCode PetscViewerFlowControlStepMaster(PetscViewer viewer,PetscInt i,PetscInt *mcnt,PetscInt cnt)
+{
+  PetscErrorCode ierr;
+  MPI_Comm       comm;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
+  if (i >= *mcnt) {
+    *mcnt += cnt;
+    ierr = MPI_Bcast(mcnt,1,MPIU_INT,0,comm);CHKERRQ(ierr);
   }
-#define PetscViewerFlowControlEndWorker(viewer,mcnt) 0; while (1) { PetscErrorCode _ierr; \
-  _ierr = MPI_Bcast(&mcnt,1,MPIU_INT,0,((PetscObject)viewer)->comm);CHKERRQ(_ierr);\
-    if (mcnt == 0) break;				\
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerFlowControlEndMaster"
+PETSC_STATIC_INLINE PetscErrorCode PetscViewerFlowControlEndMaster(PetscViewer viewer,PetscInt *mcnt)
+{
+  PetscErrorCode ierr;
+  MPI_Comm       comm;
+  PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
+  *mcnt = 0;
+  ierr = MPI_Bcast(mcnt,1,MPIU_INT,0,comm);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerFlowControlStepWorker"
+PETSC_STATIC_INLINE PetscErrorCode PetscViewerFlowControlStepWorker(PetscViewer viewer,PetscMPIInt rank,PetscInt *mcnt)
+{
+  PetscErrorCode ierr;
+  MPI_Comm       comm;
+  PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
+  while (PETSC_TRUE) { 
+    if (rank < *mcnt) break;
+    ierr = MPI_Bcast(mcnt,1,MPIU_INT,0,comm);CHKERRQ(ierr);
   }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscViewerFlowControlEndWorker"
+PETSC_STATIC_INLINE PetscErrorCode PetscViewerFlowControlEndWorker(PetscViewer viewer,PetscInt *mcnt)
+{
+  PetscErrorCode ierr;
+  MPI_Comm       comm;
+  PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
+  while (PETSC_TRUE) {
+    ierr = MPI_Bcast(mcnt,1,MPIU_INT,0,comm);CHKERRQ(ierr);
+    if (!*mcnt) break;
+  }
+  PetscFunctionReturn(0);
+}
 
 /*
    PetscViewer writes to MATLAB .mat file
@@ -387,7 +408,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerMatlabGetArray(PetscViewer,int,int,PetscS
 PETSC_EXTERN PetscErrorCode PetscViewerMatlabPutVariable(PetscViewer,const char*,void*);
 
 /*S
-     PetscViewers - Abstract collection of PetscViewers. It is just an expandable array of viewers. 
+     PetscViewers - Abstract collection of PetscViewers. It is just an expandable array of viewers.
 
    Level: intermediate
 
@@ -411,5 +432,9 @@ PETSC_EXTERN PetscViewer    PETSC_VIEWER_AMS_(MPI_Comm);
 PETSC_EXTERN PetscErrorCode PETSC_VIEWER_AMS_Destroy(MPI_Comm);
 #define PETSC_VIEWER_AMS_WORLD PETSC_VIEWER_AMS_(PETSC_COMM_WORLD)
 #endif
+
+/* Reset __FUNCT__ in case the user does not define it themselves */
+#undef __FUNCT__
+#define __FUNCT__ "User provided function"
 
 #endif

@@ -6,8 +6,8 @@
 #define __FUNCT__ "main"
       program main
       implicit none
-#include <finclude/petscsys.h>      
-#include <finclude/petsclog.h>      
+#include <finclude/petscsys.h>
+#include <finclude/petsclog.h>
       double precision A(n,n,dim),B(n,n,dim),v(n,n,n),w(n,n,n),sum
       double precision starttime,endtime
       integer          ierr,i,j,k
@@ -31,8 +31,8 @@
             enddo
          enddo
       enddo
-      print *, 'n is ',n 
-      call product3D(A,B,v,w)      
+      print *, 'n is ',n
+      call product3D(A,B,v,w)
       sum = 0.0d0
       do i = 1,n
          do j = 1,n
@@ -44,7 +44,7 @@
       enddo
       print *, 'Norm of w is ',dsqrt(sum)
 !      call PetscGetTime(starttime,ierr)
-      call product3DNEW(A,B,v,w)      
+      call product3DNEW(A,B,v,w)
 !      call PetscGetTime(endtime,ierr)
 
 !      print*,'Total Flop rate ',3*2.0d-6*n**(dim+1)/(endtime-starttime)
@@ -70,10 +70,10 @@
       double precision st1,st2,st3,et1,et2,et3,elap1,elap2,elap3
       double precision flops,flops1,flops2,flops3
       integer i,j,k,p,q,r,ierr,itest
-      
 
-! First do I x I x A  
-      elap1 = 0.0d0    
+
+! First do I x I x A
+      elap1 = 0.0d0
       do itest = 1,ntest
          call PetscGetTime(st1,ierr)
          do p=1,n
@@ -92,7 +92,7 @@
       enddo
       elap1 = elap1/ntest
 ! Next do I x A x I
-      elap2 = 0.0d0    
+      elap2 = 0.0d0
       do itest = 1,ntest
          call PetscGetTime(st2,ierr)
          do p=1,n
@@ -151,10 +151,10 @@
       double precision st1,st2,st3,et1,et2,et3,elap1,elap2,elap3
       double precision flops,flops1,flops2,flops3
       integer i,k,p,q,r,ierr,itest
-      
 
-! First do I x I x A      
-      elap1 = 0.0d0    
+
+! First do I x I x A
+      elap1 = 0.0d0
       do itest = 1,ntest
          call PetscGetTime(st1,ierr)
          call mxm(A(1,1,1),n,v,n,w,n*n)
@@ -211,10 +211,10 @@
       double precision st1,st2,st3,et1,et2,et3,elap1,elap2,elap3
       double precision flops,flops1,flops2,flops3
       integer i,k,p,q,r,ierr,itest
-      
 
-! First do I x I x A      
-      elap1 = 0.0d0    
+
+! First do I x I x A
+      elap1 = 0.0d0
       do itest = 1,ntest
          call PetscGetTime(st1,ierr)
          call productIA(n,n*n,A(1,1,1),v,w)

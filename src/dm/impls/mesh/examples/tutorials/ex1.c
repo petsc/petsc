@@ -38,22 +38,22 @@ static char help[] = "Reads, partitions, and outputs an unstructured mesh.\n\n";
 typedef enum {PCICE} FileType;
 
 typedef struct {
-  int            debug;              // The debugging level
-  PetscInt       dim;                // The topological mesh dimension
-  PetscBool      useZeroBase;        // Use zero-based indexing
-  FileType       inputFileType;      // The input file type, e.g. PCICE
-  FileType       outputFileType;     // The output file type, e.g. PCICE
-  char           baseFilename[2048]; // The base filename for mesh files
-  PetscBool      output;             // Output the mesh
-  PetscBool      outputLocal;        // Output the local form of the mesh
-  PetscBool      outputVTK;          // Output the mesh in VTK
-  PetscBool      distribute;         // Distribute the mesh among processes
-  char           partitioner[2048];  // The partitioner name
-  PetscBool      interpolate;        // Construct missing elements of the mesh
-  PetscBool      doPartition;        // Construct field over cells indicating process number
-  SectionInt     partition;          // Section with partition number in each cell
-  PetscBool      doOdd;              // Construct field over odd cells indicating process number
-  SectionInt     odd;                // Section with cell number in each odd cell
+  int        debug;                  // The debugging level
+  PetscInt   dim;                    // The topological mesh dimension
+  PetscBool  useZeroBase;            // Use zero-based indexing
+  FileType   inputFileType;          // The input file type, e.g. PCICE
+  FileType   outputFileType;         // The output file type, e.g. PCICE
+  char       baseFilename[2048];     // The base filename for mesh files
+  PetscBool  output;                 // Output the mesh
+  PetscBool  outputLocal;            // Output the local form of the mesh
+  PetscBool  outputVTK;              // Output the mesh in VTK
+  PetscBool  distribute;             // Distribute the mesh among processes
+  char       partitioner[2048];      // The partitioner name
+  PetscBool  interpolate;            // Construct missing elements of the mesh
+  PetscBool  doPartition;            // Construct field over cells indicating process number
+  SectionInt partition;              // Section with partition number in each cell
+  PetscBool  doOdd;                  // Construct field over odd cells indicating process number
+  SectionInt odd;                    // Section with cell number in each odd cell
 } Options;
 
 #undef __FUNCT__
@@ -136,7 +136,7 @@ PetscErrorCode CreatePartition(DM mesh, SectionInt *partition)
   ierr = PetscLogEventBegin(event,0,0,0,0);CHKERRQ(ierr);
   ierr = DMMeshGetCellSectionInt(mesh, "partition", 1, partition);CHKERRQ(ierr);
   ierr = DMMeshGetHeightStratum(mesh, 0, &cStart, &cEnd);CHKERRQ(ierr);
-  for(PetscInt c = cStart; c < cEnd; ++c) {
+  for (PetscInt c = cStart; c < cEnd; ++c) {
     ierr = SectionIntUpdate(*partition, c, &rank, INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = PetscLogEventEnd(event,0,0,0,0);CHKERRQ(ierr);
@@ -156,12 +156,12 @@ PetscErrorCode DistributeMesh(Options *options, DM *mesh)
     PetscLogStage stage;
     DM            parallelMesh;
 
-    ierr = PetscLogStageRegister("MeshDistribution", &stage);CHKERRQ(ierr);
-    ierr = PetscLogStagePush(stage);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD, "Distributing mesh\n");CHKERRQ(ierr);
-    ierr = DMMeshDistribute(*mesh, options->partitioner, &parallelMesh);CHKERRQ(ierr);
-    ierr = PetscLogStagePop();CHKERRQ(ierr);
-    ierr = DMDestroy(mesh);CHKERRQ(ierr);
+    ierr  = PetscLogStageRegister("MeshDistribution", &stage);CHKERRQ(ierr);
+    ierr  = PetscLogStagePush(stage);CHKERRQ(ierr);
+    ierr  = PetscPrintf(PETSC_COMM_WORLD, "Distributing mesh\n");CHKERRQ(ierr);
+    ierr  = DMMeshDistribute(*mesh, options->partitioner, &parallelMesh);CHKERRQ(ierr);
+    ierr  = PetscLogStagePop();CHKERRQ(ierr);
+    ierr  = DMDestroy(mesh);CHKERRQ(ierr);
     *mesh = parallelMesh;
   }
   if (options->doPartition) {
@@ -186,17 +186,17 @@ PetscErrorCode CreateOdd(DM mesh, Options *options, SectionInt *odd)
   const Obj<PETSC_MESH_TYPE::int_section_type>& section = new PETSC_MESH_TYPE::int_section_type(((PetscObject) mesh)->comm, options->debug);
 
   ierr = DMMeshGetHeightStratum(mesh, 0, &cStart, &cEnd);CHKERRQ(ierr);
-  for(PetscInt c = cStart; c < cEnd; ++c) {
+  for (PetscInt c = cStart; c < cEnd; ++c) {
     if (c%2) {
       section->setFiberDimension(c, c%3+1);
     }
   }
   section->allocatePoint();
-  for(PetscInt c = cStart; c < cEnd; ++c) {
+  for (PetscInt c = cStart; c < cEnd; ++c) {
     int val[3];
 
     if (c%2) {
-      for(int n = 0; n <= c%3; n++) val[n] = c+n;
+      for (int n = 0; n <= c%3; n++) val[n] = c+n;
       section->updatePoint(c, val);
     }
   }
@@ -225,10 +225,8 @@ PetscErrorCode CreateMesh(MPI_Comm comm, Options *options, DM *mesh)
     ierr = PetscStrcat(coordFile, ".nodes");CHKERRQ(ierr);
     ierr = PetscStrcpy(adjFile,   options->baseFilename);CHKERRQ(ierr);
     ierr = PetscStrcat(adjFile,   ".lcon");CHKERRQ(ierr);
-    ierr = DMMeshCreatePCICE(comm, options->dim, coordFile, adjFile, options->interpolate, PETSC_NULL, mesh);CHKERRQ(ierr);
-  } else {
-    SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid mesh input type: %d", options->inputFileType);
-  }
+    ierr = DMMeshCreatePCICE(comm, options->dim, coordFile, adjFile, options->interpolate, NULL, mesh);CHKERRQ(ierr);
+  } else SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid mesh input type: %d", options->inputFileType);
   ierr = PetscLogStagePop();CHKERRQ(ierr);
   ierr = DMView(*mesh, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   if (options->debug) {
@@ -248,35 +246,34 @@ PetscErrorCode CreateMeshBoundary(DM mesh, Options *options)
 {
   typedef ALE::ISieveVisitor::PointRetriever<PETSC_MESH_TYPE::sieve_type> Retriever;
   ALE::Obj<PETSC_MESH_TYPE> m;
-  MPI_Comm       comm   = ((PetscObject) mesh)->comm;
-  PetscInt       dim    = options->dim;
-  PetscInt       debug  = options->debug;
-  PetscInt       numCells, numBC, bc;
-  char           bndfilename[2048];
-  FILE          *fp;
-  PetscErrorCode ierr;
+  MPI_Comm                  comm  = ((PetscObject) mesh)->comm;
+  PetscInt                  dim   = options->dim;
+  PetscInt                  debug = options->debug;
+  PetscInt                  numCells, numBC, bc;
+  char                      bndfilename[2048];
+  FILE                      *fp;
+  PetscErrorCode            ierr;
 
   PetscFunctionBegin;
-  if (dim != 3) {PetscFunctionReturn(0);};
+  if (dim != 3) PetscFunctionReturn(0);
   ierr = DMMeshGetMesh(mesh, m);CHKERRQ(ierr);
-  ierr = DMMeshGetHeightStratum(mesh, 0, PETSC_NULL, &numCells);CHKERRQ(ierr);
+  ierr = DMMeshGetHeightStratum(mesh, 0, NULL, &numCells);CHKERRQ(ierr);
   ierr = PetscStrcpy(bndfilename, options->baseFilename);CHKERRQ(ierr);
   ierr = PetscStrcat(bndfilename, ".bnd");CHKERRQ(ierr);
   ierr = PetscFOpen(comm, bndfilename, "r", &fp);
-  if (ierr == PETSC_ERR_FILE_OPEN) {
-    PetscFunctionReturn(0);
-  } else {CHKERRQ(ierr);}
+  if (ierr == PETSC_ERR_FILE_OPEN) PetscFunctionReturn(0);
+  else CHKERRQ(ierr);
   ierr = PetscPrintf(comm, "Creating mesh boundary on CPU 0\n");CHKERRQ(ierr);
   const Obj<PETSC_MESH_TYPE::real_section_type>& coordinates = m->getRealSection("coordinates");
 
   if (!m->commRank()) {ierr = fscanf(fp, "%d\n", &numBC);CHKERRQ(!ierr);}
   ierr = MPI_Bcast(&numBC, 1, MPIU_INT, 0, comm);CHKERRQ(ierr);
-  for(bc = 0; bc < numBC; ++bc) {
+  for (bc = 0; bc < numBC; ++bc) {
     Obj<PETSC_MESH_TYPE::label_type> label;
-    char     bdName[2048];
-    size_t   len      = 0;
-    PetscInt bcType   = 0;
-    PetscInt numFaces = 0, f;
+    char                             bdName[2048];
+    size_t                           len      = 0;
+    PetscInt                         bcType   = 0;
+    PetscInt                         numFaces = 0, f;
 
     if (!m->commRank()) {
       ierr = fscanf(fp, "\n%s\n", bdName);CHKERRQ(!ierr);
@@ -284,34 +281,31 @@ PetscErrorCode CreateMeshBoundary(DM mesh, Options *options)
     }
     ierr = MPI_Bcast(&len, 1, MPIU_INT, 0, comm);CHKERRQ(ierr);
     ierr = MPI_Bcast(bdName, len+1, MPI_CHAR, 0, comm);CHKERRQ(ierr);
-    if (m->hasLabel(bdName)) {
-      label = m->getLabel(bdName);
-    } else {
-      label = m->createLabel(bdName);
-    }
+    if (m->hasLabel(bdName)) label = m->getLabel(bdName);
+    else                     label = m->createLabel(bdName);
 
     if (!m->commRank()) {ierr = fscanf(fp, "%d %d\n", &bcType, &numFaces);CHKERRQ(!ierr);}
 
-    for(f = 0; f < numFaces; ++f) {
+    for (f = 0; f < numFaces; ++f) {
       Retriever visitor(1);
-      PetscInt  numCorners, c;
+      PetscInt numCorners, c;
 
       ierr = fscanf(fp, "%d", &numCorners);CHKERRQ(!ierr);
       PetscInt face[numCorners];
 
       if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "    Face %d with %d corners\n", f, numCorners);CHKERRQ(ierr);}
-      for(c = 0; c < numCorners; ++c) {
+      for (c = 0; c < numCorners; ++c) {
         ierr = fscanf(fp, " %d", &face[c]);CHKERRQ(!ierr);
 
         // Must transform from vertex numbering to sieve point numbering
         face[c] += numCells;
         // Output vertex coordinates
-        const double *coords   = coordinates->restrictPoint(face[c]);
-        const int     fiberDim = coordinates->getFiberDimension(face[c]);
+        const double *coords  = coordinates->restrictPoint(face[c]);
+        const int    fiberDim = coordinates->getFiberDimension(face[c]);
 
         if (debug) {
           ierr = PetscPrintf(PETSC_COMM_SELF, "      (");CHKERRQ(ierr);
-          for(PetscInt d = 0; d < fiberDim; ++d) {
+          for (PetscInt d = 0; d < fiberDim; ++d) {
             ierr = PetscPrintf(PETSC_COMM_SELF, "%g ", coords[d]);CHKERRQ(ierr);
           }
           ierr = PetscPrintf(PETSC_COMM_SELF, ") %d\n", face[c]);CHKERRQ(ierr);
@@ -319,13 +313,11 @@ PetscErrorCode CreateMeshBoundary(DM mesh, Options *options)
       }
       m->getSieve()->nJoin(&face[0], &face[numCorners], dim-1, visitor);
       if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "      found %d faces %d using join\n", visitor.getSize(), visitor.getPoints()[0]);CHKERRQ(ierr);}
-      if (visitor.getSize() != 1) {
-        SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Mesh did not have a unique face for vertices, had %d faces", visitor.getSize());
-      }
+      if (visitor.getSize() != 1) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Mesh did not have a unique face for vertices, had %d faces", visitor.getSize());
       m->setValue(label, visitor.getPoints()[0], bcType);
       visitor.clear();
     }
-    label->view((const char *) bdName);
+    label->view((const char*) bdName);
   }
   ierr = PetscFClose(comm, fp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -335,7 +327,7 @@ PetscErrorCode CreateMeshBoundary(DM mesh, Options *options)
 #define __FUNCT__ "ProcessOptions"
 PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
 {
-  const char    *fileTypes[2] = {"pcice", "pylith"};
+  const char     *fileTypes[2] = {"pcice", "pylith"};
   PetscInt       inputFt, outputFt;
   PetscBool      setOutputType;
   PetscErrorCode ierr;
@@ -346,36 +338,40 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
   options->useZeroBase    = PETSC_TRUE;
   options->inputFileType  = PCICE;
   options->outputFileType = PCICE;
+
   ierr = PetscStrcpy(options->baseFilename, "src/dm/impls/mesh/examples/tutorials/data/ex1_2d");CHKERRQ(ierr);
+
   options->output         = PETSC_FALSE;
   options->outputLocal    = PETSC_FALSE;
   options->outputVTK      = PETSC_TRUE;
   options->distribute     = PETSC_TRUE;
+
   ierr = PetscStrcpy(options->partitioner, "chaco");CHKERRQ(ierr);
+
   options->interpolate    = PETSC_TRUE;
   options->doPartition    = PETSC_TRUE;
-  options->partition      = PETSC_NULL;
+  options->partition      = NULL;
   options->doOdd          = PETSC_FALSE;
-  options->odd            = PETSC_NULL;
+  options->odd            = NULL;
 
   inputFt  = (PetscInt) options->inputFileType;
   outputFt = (PetscInt) options->outputFileType;
 
   ierr = PetscOptionsBegin(comm, "", "Options for mesh loading", "Options");CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-debug", "The debugging level", "ex1.c", options->debug, &options->debug, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex1.c", options->dim, &options->dim, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-use_zero_base", "Use zero-based indexing", "ex1.c", options->useZeroBase, &options->useZeroBase, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsEList("-file_type", "Type of input files", "ex1.c", fileTypes, 2, fileTypes[0], &inputFt, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsEList("-output_file_type", "Type of output files", "ex1.c", fileTypes, 2, fileTypes[0], &outputFt, &setOutputType);CHKERRQ(ierr);
-    ierr = PetscOptionsString("-base_file", "The base filename for mesh files", "ex1.c", options->baseFilename, options->baseFilename, 2048, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-output", "Output the mesh", "ex1.c", options->output, &options->output, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-output_local", "Output the local form of the mesh", "ex1.c", options->outputLocal, &options->outputLocal, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-output_vtk", "Output the mesh in VTK", "ex1.c", options->outputVTK, &options->outputVTK, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-distribute", "Distribute the mesh among processes", "ex1.c", options->distribute, &options->distribute, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsString("-partitioner", "The partitioner name", "ex1.c", options->partitioner, options->partitioner, 2048, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-interpolate", "Construct missing elements of the mesh", "ex1.c", options->interpolate, &options->interpolate, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-partition", "Create the partition field", "ex1.c", options->doPartition, &options->doPartition, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-odd", "Create the odd field", "ex1.c", options->doOdd, &options->doOdd, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-debug", "The debugging level", "ex1.c", options->debug, &options->debug, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex1.c", options->dim, &options->dim, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-use_zero_base", "Use zero-based indexing", "ex1.c", options->useZeroBase, &options->useZeroBase, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEList("-file_type", "Type of input files", "ex1.c", fileTypes, 2, fileTypes[0], &inputFt, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEList("-output_file_type", "Type of output files", "ex1.c", fileTypes, 2, fileTypes[0], &outputFt, &setOutputType);CHKERRQ(ierr);
+  ierr = PetscOptionsString("-base_file", "The base filename for mesh files", "ex1.c", options->baseFilename, options->baseFilename, 2048, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-output", "Output the mesh", "ex1.c", options->output, &options->output, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-output_local", "Output the local form of the mesh", "ex1.c", options->outputLocal, &options->outputLocal, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-output_vtk", "Output the mesh in VTK", "ex1.c", options->outputVTK, &options->outputVTK, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-distribute", "Distribute the mesh among processes", "ex1.c", options->distribute, &options->distribute, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsString("-partitioner", "The partitioner name", "ex1.c", options->partitioner, options->partitioner, 2048, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-interpolate", "Construct missing elements of the mesh", "ex1.c", options->interpolate, &options->interpolate, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-partition", "Create the partition field", "ex1.c", options->doPartition, &options->doPartition, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-odd", "Create the odd field", "ex1.c", options->doOdd, &options->doOdd, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
 
   options->inputFileType = (FileType) inputFt;
@@ -397,7 +393,7 @@ int main(int argc, char *argv[])
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscInitialize(&argc, &argv, (char *) 0, help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc, &argv, (char*) 0, help);CHKERRQ(ierr);
   comm = PETSC_COMM_WORLD;
   ierr = ProcessOptions(comm, &options);CHKERRQ(ierr);
   ierr = CreateMesh(comm, &options, &mesh);CHKERRQ(ierr);

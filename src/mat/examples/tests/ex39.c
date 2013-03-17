@@ -1,5 +1,5 @@
 
-static char help[] = "Tests Elemental interface.\n\n"; 
+static char help[] = "Tests Elemental interface.\n\n";
 
 #include <petscmat.h>
 
@@ -18,13 +18,13 @@ int main(int argc,char **args)
   PetscReal      Cnorm;
   PetscBool      flg,mats_view=PETSC_FALSE;
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
-  n = m;
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL,"-mats_view",&mats_view);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-m",&m,NULL);CHKERRQ(ierr);
+  n    = m;
+  ierr = PetscOptionsGetInt(NULL,"-n",&n,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,"-mats_view",&mats_view);CHKERRQ(ierr);
 
   ierr = MatCreate(PETSC_COMM_WORLD,&C);CHKERRQ(ierr);
   ierr = MatSetSizes(C,m,n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
@@ -36,15 +36,15 @@ int main(int argc,char **args)
   ierr = ISGetIndices(isrows,&rows);CHKERRQ(ierr);
   ierr = ISGetLocalSize(iscols,&ncols);CHKERRQ(ierr);
   ierr = ISGetIndices(iscols,&cols);CHKERRQ(ierr);
-  ierr = PetscMalloc(nrows*ncols*sizeof *v,&v);CHKERRQ(ierr);
-#if defined (PETSC_USE_COMPLEX)
+  ierr = PetscMalloc(nrows*ncols*sizeof(*v),&v);CHKERRQ(ierr);
+#if defined(PETSC_USE_COMPLEX)
   PetscRandom rand;
   PetscScalar rval;
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rand);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rand);CHKERRQ(ierr);
   for (i=0; i<nrows; i++) {
     for (j=0; j<ncols; j++) {
-      ierr = PetscRandomGetValue(rand,&rval);CHKERRQ(ierr);
+      ierr         = PetscRandomGetValue(rand,&rval);CHKERRQ(ierr);
       v[i*ncols+j] = rval;
     }
   }
@@ -87,13 +87,17 @@ int main(int argc,char **args)
   }
   ierr = MatZeroEntries(Ct);CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_WORLD,&d);CHKERRQ(ierr);
-  ierr = VecSetSizes(d,m>n?n:m,PETSC_DECIDE);CHKERRQ(ierr);
+  ierr = VecSetSizes(d,m>n ? n : m,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = VecSetFromOptions(d);CHKERRQ(ierr);
   ierr = MatGetDiagonal(C,d);CHKERRQ(ierr);
+  if (mats_view) {
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Diagonal of C:\n");CHKERRQ(ierr);
+    ierr = VecView(d,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  }
   if (m>n) {
-    ierr = MatDiagonalScale(C,PETSC_NULL,d);CHKERRQ(ierr);
+    ierr = MatDiagonalScale(C,NULL,d);CHKERRQ(ierr);
   } else {
-    ierr = MatDiagonalScale(C,d,PETSC_NULL);CHKERRQ(ierr);
+    ierr = MatDiagonalScale(C,d,NULL);CHKERRQ(ierr);
   }
   if (mats_view) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Diagonal Scaled C:\n");CHKERRQ(ierr);
@@ -132,7 +136,7 @@ int main(int argc,char **args)
   ierr = ISDestroy(&isrows);CHKERRQ(ierr);
   ierr = ISDestroy(&iscols);CHKERRQ(ierr);
   ierr = MatDestroy(&B);CHKERRQ(ierr);
-  
+
   /* Test MatMatTransposeMult(): B = C*C^T */
   ierr = MatMatTransposeMult(C,C,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&B);CHKERRQ(ierr);
   if (mats_view) {
@@ -150,4 +154,4 @@ int main(int argc,char **args)
   return 0;
 }
 
- 
+

@@ -4,7 +4,6 @@
 ALL: lib
 SOURCEH   = yamlimpls.h
 SOURCEC   = yamlimpls.c
-OBJSC     = yamlimpls.o
 DIRS      =
 LOCDIR    = src/sys/yaml/
 MANSEC    = Sys

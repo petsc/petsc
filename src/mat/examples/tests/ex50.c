@@ -17,21 +17,19 @@ int main(int argc,char **args)
   PetscErrorCode ierr;
   PetscBool      flg;
   PetscScalar    val,*array;
-  FILE*          file;
+  FILE           *file;
   PetscViewer    view;
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
 
   /* Read in matrix and RHS */
-  ierr = PetscOptionsGetString(PETSC_NULL,"-fin",filein,256,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,"-fin",filein,256,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(PETSC_COMM_WORLD,1,"Must indicate file for reading");
-  ierr = PetscOptionsGetString(PETSC_NULL,"-fout",fileout,256,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,"-fout",fileout,256,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(PETSC_COMM_WORLD,1,"Must indicate file for writing");
 
   ierr = PetscFixFilename(filein,finname);CHKERRQ(ierr);
-  if (!(file = fopen(finname,"r"))) {
-    SETERRQ(PETSC_COMM_SELF,1,"cannot open input file\n");
-  }
+  if (!(file = fopen(finname,"r"))) SETERRQ(PETSC_COMM_SELF,1,"cannot open input file\n");
   fscanf(file,"%d\n",&n);
 
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
@@ -46,7 +44,7 @@ int main(int argc,char **args)
     if (rowin != row) SETERRQ(PETSC_COMM_SELF,1,"Bad file");
     while (fscanf(file," %d %le",&col,(double*)&val)) {
       ierr = MatSetValues(A,1,&row,1,&col,&val,INSERT_VALUES);CHKERRQ(ierr);
-    }  
+    }
   }
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

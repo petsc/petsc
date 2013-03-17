@@ -2,20 +2,21 @@
 #define __LINESEARCHIMPL_H
 
 #include <petscsnes.h>
+#include <petsc-private/petscimpl.h>
 
 typedef struct _LineSearchOps *LineSearchOps;
 
 struct _LineSearchOps {
-  PetscErrorCode (*view)          (SNESLineSearch, PetscViewer);
+  PetscErrorCode (*view)(SNESLineSearch, PetscViewer);
   SNESLineSearchApplyFunc        apply;
-  SNESLineSearchPreCheckFunc     precheckstep;
+  PetscErrorCode (*precheck)(SNESLineSearch,Vec,Vec,PetscBool*,void*);
   SNESLineSearchVIProjectFunc    viproject;
   SNESLineSearchVINormFunc       vinorm;
-  SNESLineSearchPostCheckFunc    postcheckstep;
+  PetscErrorCode (*postcheck)(SNESLineSearch,Vec,Vec,Vec,PetscBool *,PetscBool *,void*);
   PetscErrorCode (*setfromoptions)(SNESLineSearch);
-  PetscErrorCode (*reset)         (SNESLineSearch);
-  PetscErrorCode (*destroy)       (SNESLineSearch);
-  PetscErrorCode (*setup)         (SNESLineSearch);
+  PetscErrorCode (*reset)(SNESLineSearch);
+  PetscErrorCode (*destroy)(SNESLineSearch);
+  PetscErrorCode (*setup)(SNESLineSearch);
 };
 
 struct _p_LineSearch {

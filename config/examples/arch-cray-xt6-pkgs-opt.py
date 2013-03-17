@@ -29,9 +29,9 @@ if __name__ == '__main__':
     '--with-shared-libraries=0',
     '--with-x=0',
 
-    '--download-blacs',
     '--download-hypre',
     '--download-mumps',
+    '--download-elemental=1',
     '--download-cmake=1',
     '--download-metis=1',
     '--download-parmetis',

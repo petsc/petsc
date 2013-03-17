@@ -3,6 +3,7 @@
 #define __CHARACTERISTICIMPL_H
 
 #include <petsccharacteristic.h>
+#include <petsc-private/petscimpl.h>
 
 /* Logging support */
 PETSC_EXTERN PetscClassId CHARACTERISTIC_CLASSID;
@@ -79,8 +80,5 @@ PETSC_EXTERN PetscErrorCode CharacteristicSendCoordinatesBegin(Characteristic);
 PETSC_EXTERN PetscErrorCode CharacteristicSendCoordinatesEnd(Characteristic);
 PETSC_EXTERN PetscErrorCode CharacteristicGetValuesBegin(Characteristic);
 PETSC_EXTERN PetscErrorCode CharacteristicGetValuesEnd(Characteristic);
-
-PETSC_EXTERN PetscBool CharacteristicRegisterAllCalled;
-PETSC_EXTERN PetscFList CharacteristicList;
 
 #endif /*__CHARACTERISTICIMPL_H*/

@@ -7,8 +7,6 @@ FFLAGS   =
 SOURCEC  = bddc.c
 SOURCEF  =
 SOURCEH  = bddc.h
-OBJSC    = $(SOURCEC:.c=.o)
-OBJSF    =
 LIBBASE  = libpetscksp
 DIRS     =
 MANSEC   = PC

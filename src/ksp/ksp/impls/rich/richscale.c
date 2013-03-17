@@ -3,10 +3,10 @@
 #include <../src/ksp/ksp/impls/rich/richardsonimpl.h>
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPRichardsonSetScale"
 /*@
-    KSPRichardsonSetScale - Set the damping factor; if this routine is not called, the factor 
+    KSPRichardsonSetScale - Set the damping factor; if this routine is not called, the factor
     defaults to 1.0.
 
     Logically Collective on KSP
@@ -30,10 +30,10 @@ PetscErrorCode  KSPRichardsonSetScale(KSP ksp,PetscReal scale)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPRichardsonSetSelfScale"
 /*@
-    KSPRichardsonSetSelfScale - Sets Richardson to automatically determine optimal scaling at each iteration to minimize the 2-norm of the 
+    KSPRichardsonSetSelfScale - Sets Richardson to automatically determine optimal scaling at each iteration to minimize the 2-norm of the
        preconditioned residual
 
     Logically Collective on KSP
@@ -44,14 +44,14 @@ PetscErrorCode  KSPRichardsonSetScale(KSP ksp,PetscReal scale)
 
     Level: intermediate
 
-    Notes: Requires two extra work vectors. Uses an extra axpy() and VecDotNorm2() per iteration.
+    Notes: Requires two extra work vectors. Uses an extra VecAXPY() and VecDotNorm2() per iteration.
 
     Developer Notes: Could also minimize the 2-norm of the true residual with one less work vector
 
 
 .keywords: KSP, Richardson, set, scale
 @*/
-PetscErrorCode  KSPRichardsonSetSelfScale(KSP ksp,PetscBool  scale)
+PetscErrorCode  KSPRichardsonSetSelfScale(KSP ksp,PetscBool scale)
 {
   PetscErrorCode ierr;
 

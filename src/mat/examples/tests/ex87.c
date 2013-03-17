@@ -16,8 +16,8 @@ int main(int argc,char **args)
   PetscMPIInt    rank;
   IS             is,iss[2];
 
-  PetscInitialize(&argc,&args,(char *)0,help);
-  ierr = PetscOptionsGetString(PETSC_NULL,"-f",file,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+  PetscInitialize(&argc,&args,(char*)0,help);
+  ierr = PetscOptionsGetString(NULL,"-f",file,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,&BAIJ);CHKERRQ(ierr);
   ierr = MatSetType(BAIJ,MATMPIBAIJ);CHKERRQ(ierr);
@@ -29,12 +29,12 @@ int main(int argc,char **args)
   ierr = MatLoad(SBAIJ,viewer);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
 
-  ierr = MatGetSize(BAIJ,&issize,0);CHKERRQ(ierr);
+  ierr   = MatGetSize(BAIJ,&issize,0);CHKERRQ(ierr);
   issize = 9;
-  ierr = ISCreateStride(PETSC_COMM_SELF,issize,0,1,&is);CHKERRQ(ierr);
+  ierr   = ISCreateStride(PETSC_COMM_SELF,issize,0,1,&is);CHKERRQ(ierr);
   iss[0] = is;iss[1] = is;
-  ierr = MatGetSubMatrices(BAIJ,n,iss,iss,MAT_INITIAL_MATRIX,&subBAIJ);CHKERRQ(ierr);
-  ierr = MatGetSubMatrices(SBAIJ,n,iss,iss,MAT_INITIAL_MATRIX,&subSBAIJ);CHKERRQ(ierr);
+  ierr   = MatGetSubMatrices(BAIJ,n,iss,iss,MAT_INITIAL_MATRIX,&subBAIJ);CHKERRQ(ierr);
+  ierr   = MatGetSubMatrices(SBAIJ,n,iss,iss,MAT_INITIAL_MATRIX,&subSBAIJ);CHKERRQ(ierr);
 
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 #if defined(PETSC_USE_SOCKET_VIEWER)

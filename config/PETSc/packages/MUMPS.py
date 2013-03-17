@@ -11,6 +11,7 @@ class Configure(PETSc.package.NewPackage):
     self.includes  = ['dmumps_c.h']
     #
     # Mumps does NOT work with 64 bit integers without a huge number of hacks we ain't making
+    self.double    = 0
     self.complex   = 1
     self.worksonWindows   = 1
     self.downloadonWindows= 1
@@ -29,9 +30,8 @@ class Configure(PETSc.package.NewPackage):
     if self.framework.argDB['with-mumps-serial']:
       self.deps       = [self.blasLapack]
     else:
-      self.blacs      = framework.require('PETSc.packages.blacs',self)
-      self.scalapack  = framework.require('PETSc.packages.SCALAPACK',self)
-      self.deps       = [self.scalapack,self.blacs,self.mpi,self.blasLapack]
+      self.scalapack  = framework.require('PETSc.packages.scalapack',self)
+      self.deps       = [self.scalapack,self.mpi,self.blasLapack]
       self.parmetis   = framework.require('PETSc.packages.parmetis',self)
       self.ptscotch   = framework.require('PETSc.packages.PTScotch',self)
     return
@@ -48,6 +48,8 @@ class Configure(PETSc.package.NewPackage):
   def Install(self):
     import os
 
+    if not hasattr(self.compilers, 'FC'):
+      raise RuntimeError('Cannot install '+self.name+' without Fortran, make sure you do NOT have --with-fc=0')
     if not self.compilers.FortranDefineCompilerOption:
       raise RuntimeError('Fortran compiler cannot handle preprocessing directives from command line.')
     if self.framework.argDB['with-mumps-serial']:
@@ -57,7 +59,7 @@ class Configure(PETSc.package.NewPackage):
     g.write('IPORD      = -I$(topdir)/PORD/include/\n')
     g.write('LPORD      = -L$(LPORDDIR) -lpord\n')
     orderingsc = '-Dpord'
-    orderingsf = self.compilers.FortranDefineCompilerOption+'prod'
+    orderingsf = self.compilers.FortranDefineCompilerOption+'pord'
     # Disable threads on BGL
     if self.libraryOptions.isBGL():
       orderingsc += ' -DWITHOUT_PTHREAD'
@@ -66,7 +68,7 @@ class Configure(PETSc.package.NewPackage):
       g.write('LMETIS = '+self.libraries.toString(self.parmetis.lib)+'\n')
       orderingsc += ' -Dmetis -Dparmetis'
       orderingsf += ' '+self.compilers.FortranDefineCompilerOption+'metis '+self.compilers.FortranDefineCompilerOption+'parmetis'
-    elif self.ptscotch.found:
+    if self.ptscotch.found:
       g.write('ISCOTCH = '+self.headers.toString(self.ptscotch.include)+'\n')
       g.write('LSCOTCH = '+self.libraries.toString(self.ptscotch.lib)+'\n')
       orderingsc += ' -Dscotch  -Dptscotch'
@@ -85,8 +87,8 @@ class Configure(PETSc.package.NewPackage):
     g.write('OUTC = -o \n')
     self.setCompilers.popLanguage()
     if not self.compilers.fortranIsF90:
-      raise RuntimeError('Installing MUMPS requires a F90 compiler') 
-    self.setCompilers.pushLanguage('FC') 
+      raise RuntimeError('Installing MUMPS requires a F90 compiler')
+    self.setCompilers.pushLanguage('FC')
     g.write('FC = '+self.setCompilers.getCompiler()+'\n')
     g.write('FL = '+self.setCompilers.getCompiler()+'\n')
     g.write('OPTF    = ' + self.setCompilers.getCompilerFlags().replace('-Wall','').replace('-Wshadow','').replace('-Mfree','') +'\n')
@@ -94,7 +96,7 @@ class Configure(PETSc.package.NewPackage):
     self.setCompilers.popLanguage()
 
     # set fortran name mangling
-    # this mangling information is for both BLAS and the Fortran compiler so cannot use the BlasLapack mangling flag    
+    # this mangling information is for both BLAS and the Fortran compiler so cannot use the BlasLapack mangling flag
     if self.compilers.fortranManglingDoubleUnderscore:
       g.write('CDEFS   = -DAdd__\n')
     elif self.compilers.fortranMangling == 'underscore':
@@ -104,8 +106,8 @@ class Configure(PETSc.package.NewPackage):
 
     g.write('AR      = '+self.setCompilers.AR+' '+self.setCompilers.AR_FLAGS+' \n')
     g.write('LIBEXT  = .'+self.setCompilers.AR_LIB_SUFFIX+'\n')
-    g.write('RANLIB  = '+self.setCompilers.RANLIB+'\n') 
-    g.write('SCALAP  = '+self.libraries.toString(self.scalapack.lib)+' '+self.libraries.toString(self.blacs.lib)+'\n')
+    g.write('RANLIB  = '+self.setCompilers.RANLIB+'\n')
+    g.write('SCALAP  = '+self.libraries.toString(self.scalapack.lib)+'\n')
     g.write('INCPAR  = '+self.headers.toString(self.mpi.include)+'\n')
     g.write('LIBPAR  = $(SCALAP) '+self.libraries.toString(self.mpi.lib)+'\n') #PARALLE LIBRARIES USED by MUMPS
     g.write('INCSEQ  = -I$(topdir)/libseq\n')
@@ -133,10 +135,11 @@ class Configure(PETSc.package.NewPackage):
     return self.installDir
 
   def configureLibrary(self):
-    if self.parmetis.found:
-      self.deps.append(self.parmetis)
-    elif self.ptscotch.found:
-      self.deps.append(self.ptscotch)
+    if not self.framework.argDB['with-mumps-serial']:
+      if self.parmetis.found:
+        self.deps.append(self.parmetis)
+      if self.ptscotch.found:
+        self.deps.append(self.ptscotch)
     PETSc.package.NewPackage.configureLibrary(self)
      # [parallem mumps] make sure either ptscotch or parmetis is enabled
     if not self.framework.argDB['with-mumps-serial'] and not self.ptscotch.found and not self.parmetis.found:

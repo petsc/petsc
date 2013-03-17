@@ -12,7 +12,7 @@ class Configure(PETSc.package.NewPackage):
   def setupHelp(self, help):
     import nargs
     help.addArgument('Matlab', '-with-matlab=<bool>',         nargs.ArgBool(None, 0, 'Activate Matlab'))
-    help.addArgument('Matlab', '-with-matlab-engine=<bool>',  nargs.ArgBool(None, 0, 'Activate Matlab Engine (need --with-matlab also) '))    
+    help.addArgument('Matlab', '-with-matlab-engine=<bool>',  nargs.ArgBool(None, 0, 'Activate Matlab Engine (need --with-matlab also) '))
     help.addArgument('Matlab', '-with-matlab-dir=<root dir>', nargs.ArgDir(None, None, 'Specify the root directory of the Matlab installation'))
     help.addArgument('Matlab', '-with-matlab-arch=<string>',  nargs.ArgString(None, None, 'Use Matlab Architecture (default use first-found)'))
     return
@@ -40,14 +40,14 @@ class Configure(PETSc.package.NewPackage):
   def configureLibrary(self):
     '''Find a Matlab installation and check if it can work with PETSc'''
     import re
-          
+
     versionPattern = re.compile('Version ([0-9]*.[0-9]*)')
     for matlab in self.generateGuesses():
       self.framework.log.write('Testing Matlab at '+matlab+'\n')
       interpreter = os.path.join(matlab,'bin','matlab')
       if 'with-matlab-arch' in self.framework.argDB:
         interpreter = interpreter+' -'+self.framework.argDB['with-matlab-arch']
-        
+
       output      = ''
       try:
         output,err,ret = PETSc.package.NewPackage.executeShellCommand(interpreter+' -nojvm -nodisplay -r "display([\'Version \' version]); exit"', log = self.framework.log)
@@ -84,8 +84,8 @@ class Configure(PETSc.package.NewPackage):
           self.include = [os.path.join(matlab,'extern','include')]
           self.framework.packages.append(self)
           self.addMakeMacro('MATLAB_MEX',self.mex)
-          self.addMakeMacro('MATLAB_COMMAND',self.command)        
-          self.addDefine('MATLAB_COMMAND','"'+self.command+'"')        
+          self.addMakeMacro('MATLAB_COMMAND',self.command)
+          self.addDefine('MATLAB_COMMAND','"'+self.command+'"')
           self.found = 1
           return
         else:

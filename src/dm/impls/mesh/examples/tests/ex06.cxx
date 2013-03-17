@@ -4,7 +4,7 @@
 T*/
 
 /*
-  Tests ParDelta::Flip  -- a class that wraps a BiGraph, implements a subset of the BiGraph interface  and redirects 
+  Tests ParDelta::Flip  -- a class that wraps a BiGraph, implements a subset of the BiGraph interface  and redirects
   select methods to the underlying BiGraph while reversing the input arrows.
 */
 
@@ -31,7 +31,7 @@ int main(int argc, char *argv[])
   PetscFunctionBegin;
   ierr = PetscInitialize(&argc, &argv, (char *) 0, help);CHKERRQ(ierr);
   verbosity = 1;
-  ierr = PetscOptionsGetInt(PETSC_NULL, "-verbosity", &verbosity, &flag);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL, "-verbosity", &verbosity, &flag);CHKERRQ(ierr);
   comm = PETSC_COMM_WORLD;
 
   ierr = testHatFlip();CHKERRQ(ierr);
@@ -51,7 +51,7 @@ PetscErrorCode testHatFlip() {
   PetscFunctionBegin;
 
   debug = 0;
-  ierr = PetscOptionsGetInt(PETSC_NULL, "-debug", &debug, &flag);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL, "-debug", &debug, &flag);CHKERRQ(ierr);
   ierr = PetscPrintf(comm, "%s: using debug value of %d\n", __FUNCT__, debug);CHKERRQ(ierr);
 
   // Construct an empty hat bigraph
@@ -80,14 +80,14 @@ PetscErrorCode testHatFlip() {
 #undef  __FUNCT__
 #define __FUNCT__ "viewFlip"
 void viewFlip(const ALE::Obj<PointFlip>& flip, const char* name) {
-  
+
   // View the cones for all base points
   std::cout << name << " cones:" << std::endl;
   PointFlip::traits::baseSequence base = flip->base();
   for(PointFlip::traits::baseSequence::traits::iterator i = base.begin(); i != base.end(); i++) {
     PointFlip::traits::coneSequence cone = flip->cone(*i);
     std::cout << *i << ": ";
-    cone.view(std::cout, true); 
+    cone.view(std::cout, true);
   }
 
   // View the supports for all cap points
@@ -96,7 +96,7 @@ void viewFlip(const ALE::Obj<PointFlip>& flip, const char* name) {
   for(PointFlip::traits::capSequence::traits::iterator i = cap.begin(); i != cap.end(); i++) {
     PointFlip::traits::supportSequence supp = flip->support(*i);
     std::cout << *i << ": ";
-    supp.view(std::cout, true); 
+    supp.view(std::cout, true);
   }
 }/* viewConesAndSupports() */
 

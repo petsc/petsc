@@ -41,7 +41,7 @@ SED=sed
 TAR=tar
 
 # Some vars
-FBLASLAPACK=f2cblaslapack-3.1.1.q
+FBLASLAPACK=f2cblaslapack-3.4.1.q
 BIN=${TMP}/bin
 PAC=${TMP}/${FBLASLAPACK}
 BLASDIR=${PAC}/blas
@@ -256,8 +256,8 @@ for p in blas qblas lapack qlapack; do
 		echo 'slamch' > ${TMP}/SINGLE.list
 		echo 'dlamch' > ${TMP}/DOUBLE.list
 		if [[ ${TESTING} != "0" ]]; then
-			echo 'second' > ${TMP}/SINGLE.list
-			echo 'dsecnd' > ${TMP}/DOUBLE.list
+			echo 'second' >> ${TMP}/SINGLE.list
+			echo 'dsecnd' >> ${TMP}/DOUBLE.list
 		fi
 		rm ${TMP}/QUAD.list
 		cd $SRC
@@ -305,12 +305,12 @@ for p in blas qblas lapack qlapack; do
 			s/CHARACTER\\(1\\)/CHARACTER/g;
 			s/EXIT/CALL MYEXIT/g;
 			s/MAXLOC/MYMAXLOC/g;
-			s/(SUBROUTINE[^(]+\\([^)]+\\))/\\1\\n      EXTERNAL MYEXIT, MYMAXLOC\\n       INTEGER MYMAXLOC\\n/g;
+			s/(^ *SUBROUTINE[^(]+\\([^)]+\\))/\\1\\n      EXTERNAL MYEXIT, MYMAXLOC\\n       INTEGER MYMAXLOC\\n/g;
 			s/(INTRINSIC [^\\n]*)MYMAXLOC/\\1 MAX/g;
 			s/MAXLOC\\(([^:]+):/MAXLOC(\\1,/g;
 			s/MAXLOC\\(([^(]+)\\((.+)\\),/MAXLOC( \\1, \\2,/g;
 		" ${base}.f |
-		$F2C -A | ${BIN}/lenscrub |
+		$F2C -a -A -R | ${BIN}/lenscrub |
 		$SED -r -e "
 			/\\/\\*  *\\.\\. .*\\*\\//d;
 			s/extern integer mymaxloc_\\([^)]*\\);//g;
@@ -453,7 +453,7 @@ EOF
 static integer c__1 = 1;
 static real c_b32 = 0.f;
 
-doublereal slamch_(char *cmach)
+real slamch_(char *cmach)
 {
     /* Initialized data */
 
@@ -613,7 +613,7 @@ doublereal slamch_(char *cmach)
     static integer lbeta;
     static real savec;
     static logical lieee1;
-    extern doublereal slamc3_(real *, real *);
+    extern real slamc3_(real *, real *);
 
 
 /*  -- LAPACK auxiliary routine (version 3.3.0) -- */
@@ -838,7 +838,7 @@ L30:
     static logical lieee1;
     extern /* Subroutine */ int slamc1_(integer *, integer *, logical *, 
 	    logical *);
-    extern doublereal slamc3_(real *, real *);
+    extern real slamc3_(real *, real *);
     extern /* Subroutine */ int slamc4_(integer *, real *, integer *), 
 	    slamc5_(integer *, integer *, integer *, logical *, integer *, 
 	    real *);
@@ -1115,7 +1115,7 @@ ngs
 
 /* *********************************************************************** */
 
-doublereal slamc3_(real *a, real *b)
+real slamc3_(real *a, real *b)
 {
     /* System generated locals */
     real ret_val;
@@ -1167,7 +1167,7 @@ doublereal slamc3_(real *a, real *b)
     static real a;
     static integer i__;
     static real b1, b2, c1, c2, d1, d2, one, zero, rbase;
-    extern doublereal slamc3_(real *, real *);
+    extern real slamc3_(real *, real *);
 
 
 /*  -- LAPACK auxiliary routine (version 3.3.0) -- */
@@ -1267,7 +1267,7 @@ L10:
     static integer try__, lexp;
     static real oldy;
     static integer uexp, nbits;
-    extern doublereal slamc3_(real *, real *);
+    extern real slamc3_(real *, real *);
     static real recbas;
     static integer exbits, expsum;
 
@@ -4160,7 +4160,7 @@ rm -r $TMP
 #		s/(INTRINSIC [^\\n]*)LEN_TRIM/\\1 MAX/g;
 #		s/(INTRINSIC [^\\n]*)CEILING/\\1 MIN/g;
 #	" < $f | \
-#	f2c | \
+#	f2c -a -A -R | \
 #	sed -e "
 #		1 i\
 #		#define len_trim__(cad,len) ({ \
@@ -4356,19 +4356,20 @@ rm -r $TMP
 # cat << EOF > cfortran
 ##!/bin/bash
 #
+#FUN=""
 #for i in sqrt sin cos log exp; do
-#	echo "s/([^a-zA-Z_]+)$i([^a-zA-Z_]+)/\\1${i}q\\2/g;"
-#done > /tmp/fun.sed
-#echo "s/([^a-zA-Z_]+)double([^a-zA-Z_]+)/\\1__float128\\2/g;" >> /tmp/fun.sed
+#	FUN="$FUN s/([^a-zA-Z_]+)$i([^a-zA-Z_]+)/\\1${i}q\\2/g;"
+#done
+#FUN="$FUN s/([^a-zA-Z_]+)double([^a-zA-Z_]+)/\\1__float128\\2/g;"
 #
 #RM=""
 #for f in `echo $@ | tr ' ' '\n' | sed -n -r -e '/[^ ]+\.f/ {p}'`; do
 #	sed -r -e "
-#		s/(SUBROUTINE[^(]+\\([^)]+\\))/\\1\\n      EXTERNAL LEN_TRIM, CEILING\\n       INTEGER LEN_TRIM, CEILING\\n/g;
+#		s/(^ *SUBROUTINE[^(]+\\([^)]+\\))/\\1\\n      EXTERNAL LEN_TRIM, CEILING\\n       INTEGER LEN_TRIM, CEILING\\n/g;
 #		s/(INTRINSIC [^\\n]*)LEN_TRIM/\\1 MAX/g;
 #		s/(INTRINSIC [^\\n]*)CEILING/\\1 MIN/g;
 #	" < $f | \
-#	f2c | \
+#	f2c -a -A -R | \
 #	sed -e "
 #		1 i\
 #		#define len_trim__(cad,len) ({ \
@@ -4382,14 +4383,16 @@ rm -r $TMP
 #		#define myceil(a) (sizeof(a) == sizeof(float) ? ceilf(a) : ceil(a))
 #		1 i\
 #		#include <math.h>
+#		1 i\
+#		#define __LAPACK_PRECISION_QUAD
 #		s/extern integer len_trim__([^)]*);//g
 #		s/extern [^ ]* ceiling_([^)]*);//g" |
-#	sed -r -f $HOME/bin/ql.sed |
-#	sed -r -f /tmp/fun.sed > ${f/.f/.c}
+#	sed -r -f $HOME/local/bin/ql.sed |
+#	sed -r -e "$FUN" > ${f/.f/.c}
 #	RM="$RM ${f/.f/.c}"
 #done
 #
-#gcc -I$HOME/include `echo $@ | sed -r -e 's/([^ ]+)\.f/\1.c/g'` -I$HOME/include -L$HOME/lib -lf2c -lm
+#gcc -I$HOME/local/include `echo $@ | sed -r -e 's/([^ ]+)\.f/\1.c/g'` -I$HOME/local/include -L$HOME/local/lib -lf2c -lm
 #if [ -z $DDD ]; then rm $RM; fi
 #EOF
 #

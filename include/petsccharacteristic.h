@@ -4,8 +4,8 @@
 #ifndef __PETSCCHARACTERISTICS_H
 #define __PETSCCHARACTERISTICS_H
 
-#include "petscvec.h"
-#include "petscdmda.h"
+#include <petscvec.h>
+#include <petscdmdatypes.h>
 
 PETSC_EXTERN PetscErrorCode CharacteristicInitializePackage(const char[]);
 
@@ -30,10 +30,10 @@ typedef struct _p_Characteristic *Characteristic;
 .seealso: CharacteristicSetType(), Characteristic
 J*/
 #define CHARACTERISTICDA "da"
-#define CharacteristicType char*
+typedef const char* CharacteristicType;
 
 PETSC_EXTERN PetscErrorCode CharacteristicCreate(MPI_Comm, Characteristic *);
-PETSC_EXTERN PetscErrorCode CharacteristicSetType(Characteristic, const CharacteristicType);
+PETSC_EXTERN PetscErrorCode CharacteristicSetType(Characteristic, CharacteristicType);
 PETSC_EXTERN PetscErrorCode CharacteristicSetUp(Characteristic);
 PETSC_EXTERN PetscErrorCode CharacteristicSetVelocityInterpolation(Characteristic, DM, Vec, Vec, PetscInt, PetscInt[], PetscErrorCode (*)(Vec, PetscReal[], PetscInt, PetscInt[], PetscScalar[], void *), void *);
 PETSC_EXTERN PetscErrorCode CharacteristicSetVelocityInterpolationLocal(Characteristic, DM, Vec, Vec, PetscInt, PetscInt[], PetscErrorCode (*)(void *, PetscReal[], PetscInt, PetscInt[], PetscScalar[], void *), void *);
@@ -42,7 +42,8 @@ PETSC_EXTERN PetscErrorCode CharacteristicSetFieldInterpolationLocal(Characteris
 PETSC_EXTERN PetscErrorCode CharacteristicSolve(Characteristic, PetscReal, Vec);
 PETSC_EXTERN PetscErrorCode CharacteristicDestroy(Characteristic*);
 
-PETSC_EXTERN PetscFList CharacteristicList;
+PETSC_EXTERN PetscBool         CharacteristicRegisterAllCalled;
+PETSC_EXTERN PetscFunctionList CharacteristicList;
 PETSC_EXTERN PetscErrorCode CharacteristicRegisterAll(const char[]);
 PETSC_EXTERN PetscErrorCode CharacteristicRegisterDestroy(void);
 
@@ -52,6 +53,7 @@ PETSC_EXTERN PetscErrorCode CharacteristicRegister(const char[],const char[],con
    CharacteristicRegisterDynamic - Adds a solver to the method of characteristics package.
 
    Synopsis:
+   #include "petsccharacteristic.h"
    PetscErrorCode CharacteristicRegisterDynamic(const char *name_solver,const char *path,const char *name_create,PetscErrorCode (*routine_create)(Characteristic))
 
    Not Collective
@@ -82,7 +84,7 @@ $     -characteristic_type my_solver
    Level: advanced
 
    Notes: Environmental variables such as ${PETSC_ARCH}, ${PETSC_DIR}, ${PETSC_LIB_DIR},
-          and others of the form ${any_environmental_variable} occuring in pathname will be 
+          and others of the form ${any_environmental_variable} occuring in pathname will be
           replaced with appropriate values.
          If your function is not being put into a shared library then use CharacteristicRegister() instead
 

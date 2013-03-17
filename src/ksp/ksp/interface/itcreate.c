@@ -6,17 +6,73 @@
 
 /* Logging support */
 PetscClassId  KSP_CLASSID;
-PetscLogEvent  KSP_GMRESOrthogonalization, KSP_SetUp, KSP_Solve;
+PetscClassId  DMKSP_CLASSID;
+PetscLogEvent KSP_GMRESOrthogonalization, KSP_SetUp, KSP_Solve;
 
 /*
    Contains the list of registered KSP routines
 */
-PetscFList KSPList = 0;
-PetscBool  KSPRegisterAllCalled = PETSC_FALSE;
+PetscFunctionList KSPList              = 0;
+PetscBool         KSPRegisterAllCalled = PETSC_FALSE;
 
-#undef __FUNCT__  
+#undef __FUNCT__
+#define __FUNCT__ "KSPLoad"
+/*@C
+  KSPLoad - Loads a KSP that has been stored in binary  with KSPView().
+
+  Collective on PetscViewer
+
+  Input Parameters:
++ newdm - the newly loaded KSP, this needs to have been created with KSPCreate() or
+           some related function before a call to KSPLoad().
+- viewer - binary file viewer, obtained from PetscViewerBinaryOpen()
+
+   Level: intermediate
+
+  Notes:
+   The type is determined by the data in the file, any type set into the KSP before this call is ignored.
+
+  Notes for advanced users:
+  Most users should not need to know the details of the binary storage
+  format, since KSPLoad() and KSPView() completely hide these details.
+  But for anyone who's interested, the standard binary matrix storage
+  format is
+.vb
+     has not yet been determined
+.ve
+
+.seealso: PetscViewerBinaryOpen(), KSPView(), MatLoad(), VecLoad()
+@*/
+PetscErrorCode  KSPLoad(KSP newdm, PetscViewer viewer)
+{
+  PetscErrorCode ierr;
+  PetscBool      isbinary;
+  PetscInt       classid;
+  char           type[256];
+  PC             pc;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(newdm,KSP_CLASSID,1);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
+  if (!isbinary) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid viewer; open viewer with PetscViewerBinaryOpen()");
+
+  ierr = PetscViewerBinaryRead(viewer,&classid,1,PETSC_INT);CHKERRQ(ierr);
+  if (classid != KSP_FILE_CLASSID) SETERRQ(PetscObjectComm((PetscObject)newdm),PETSC_ERR_ARG_WRONG,"Not KSP next in file");
+  ierr = PetscViewerBinaryRead(viewer,type,256,PETSC_CHAR);CHKERRQ(ierr);
+  ierr = KSPSetType(newdm, type);CHKERRQ(ierr);
+  if (newdm->ops->load) {
+    ierr = (*newdm->ops->load)(newdm,viewer);CHKERRQ(ierr);
+  }
+  ierr = KSPGetPC(newdm,&pc);CHKERRQ(ierr);
+  ierr = PCLoad(pc,viewer);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#include <petscdraw.h>
+#undef __FUNCT__
 #define __FUNCT__ "KSPView"
-/*@C 
+/*@C
    KSPView - Prints the KSP data structure.
 
    Collective on KSP
@@ -33,8 +89,8 @@ PetscBool  KSPRegisterAllCalled = PETSC_FALSE;
 +     PETSC_VIEWER_STDOUT_SELF - standard output (default)
 -     PETSC_VIEWER_STDOUT_WORLD - synchronized standard
          output where only the first processor opens
-         the file.  All other processors send their 
-         data to the first processor to print. 
+         the file.  All other processors send their
+         data to the first processor to print.
 
    The user can open an alternative visualization context with
    PetscViewerASCIIOpen() - output to a specified file.
@@ -48,15 +104,17 @@ PetscBool  KSPRegisterAllCalled = PETSC_FALSE;
 PetscErrorCode  KSPView(KSP ksp,PetscViewer viewer)
 {
   PetscErrorCode ierr;
-  PetscBool      iascii;
+  PetscBool      iascii,isbinary,isdraw;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  if (!viewer) viewer = PETSC_VIEWER_STDOUT_(((PetscObject)ksp)->comm);
+  if (!viewer) viewer = PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)ksp));
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
   PetscCheckSameComm(ksp,1,viewer,2);
 
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw);CHKERRQ(ierr);
   if (iascii) {
     ierr = PetscObjectPrintClassNamePrefixType((PetscObject)ksp,viewer,"KSP Object");CHKERRQ(ierr);
     if (ksp->ops->view) {
@@ -64,30 +122,74 @@ PetscErrorCode  KSPView(KSP ksp,PetscViewer viewer)
       ierr = (*ksp->ops->view)(ksp,viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
     }
-    if (ksp->guess_zero) {ierr = PetscViewerASCIIPrintf(viewer,"  maximum iterations=%D, initial guess is zero\n",ksp->max_it);CHKERRQ(ierr);}
-    else                 {ierr = PetscViewerASCIIPrintf(viewer,"  maximum iterations=%D\n", ksp->max_it);CHKERRQ(ierr);}
+    if (ksp->guess_zero) {
+      ierr = PetscViewerASCIIPrintf(viewer,"  maximum iterations=%D, initial guess is zero\n",ksp->max_it);CHKERRQ(ierr);
+    } else {
+      ierr = PetscViewerASCIIPrintf(viewer,"  maximum iterations=%D\n", ksp->max_it);CHKERRQ(ierr);
+    }
     if (ksp->guess_knoll) {ierr = PetscViewerASCIIPrintf(viewer,"  using preconditioner applied to right hand side for initial guess\n");CHKERRQ(ierr);}
     ierr = PetscViewerASCIIPrintf(viewer,"  tolerances:  relative=%G, absolute=%G, divergence=%G\n",ksp->rtol,ksp->abstol,ksp->divtol);CHKERRQ(ierr);
-    if (ksp->pc_side == PC_RIGHT)          {ierr = PetscViewerASCIIPrintf(viewer,"  right preconditioning\n");CHKERRQ(ierr);}
-    else if (ksp->pc_side == PC_SYMMETRIC) {ierr = PetscViewerASCIIPrintf(viewer,"  symmetric preconditioning\n");CHKERRQ(ierr);}
-    else                                   {ierr = PetscViewerASCIIPrintf(viewer,"  left preconditioning\n");CHKERRQ(ierr);}
+    if (ksp->pc_side == PC_RIGHT) {
+      ierr = PetscViewerASCIIPrintf(viewer,"  right preconditioning\n");CHKERRQ(ierr);
+    } else if (ksp->pc_side == PC_SYMMETRIC) {
+      ierr = PetscViewerASCIIPrintf(viewer,"  symmetric preconditioning\n");CHKERRQ(ierr);
+    } else {
+      ierr = PetscViewerASCIIPrintf(viewer,"  left preconditioning\n");CHKERRQ(ierr);
+    }
     if (ksp->guess) {ierr = PetscViewerASCIIPrintf(viewer,"  using Fischers initial guess method %D with size %D\n",ksp->guess->method,ksp->guess->maxl);CHKERRQ(ierr);}
     if (ksp->dscale) {ierr = PetscViewerASCIIPrintf(viewer,"  diagonally scaled system\n");CHKERRQ(ierr);}
     if (ksp->nullsp) {ierr = PetscViewerASCIIPrintf(viewer,"  has attached null space\n");CHKERRQ(ierr);}
     if (!ksp->guess_zero) {ierr = PetscViewerASCIIPrintf(viewer,"  using nonzero initial guess\n");CHKERRQ(ierr);}
     ierr = PetscViewerASCIIPrintf(viewer,"  using %s norm type for convergence test\n",KSPNormTypes[ksp->normtype]);CHKERRQ(ierr);
-  } else {
+  } else if (isbinary) {
+    PetscInt    classid = KSP_FILE_CLASSID;
+    MPI_Comm    comm;
+    PetscMPIInt rank;
+    char        type[256];
+
+    ierr = PetscObjectGetComm((PetscObject)ksp,&comm);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+    if (!rank) {
+      ierr = PetscViewerBinaryWrite(viewer,&classid,1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
+      ierr = PetscStrncpy(type,((PetscObject)ksp)->type_name,256);CHKERRQ(ierr);
+      ierr = PetscViewerBinaryWrite(viewer,type,256,PETSC_CHAR,PETSC_FALSE);CHKERRQ(ierr);
+    }
     if (ksp->ops->view) {
       ierr = (*ksp->ops->view)(ksp,viewer);CHKERRQ(ierr);
     }
+  } else if (isdraw) {
+    PetscDraw draw;
+    char      str[36];
+    PetscReal x,y,bottom,h;
+    PetscBool flg;
+
+    ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
+    ierr = PetscDrawGetCurrentPoint(draw,&x,&y);CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompare((PetscObject)ksp,KSPPREONLY,&flg);CHKERRQ(ierr);
+    if (!flg) {
+      ierr   = PetscStrcpy(str,"KSP: ");CHKERRQ(ierr);
+      ierr   = PetscStrcat(str,((PetscObject)ksp)->type_name);CHKERRQ(ierr);
+      ierr   = PetscDrawBoxedString(draw,x,y,PETSC_DRAW_RED,PETSC_DRAW_BLACK,str,NULL,&h);CHKERRQ(ierr);
+      bottom = y - h;
+    } else {
+      bottom = y;
+    }
+    ierr = PetscDrawPushCurrentPoint(draw,x,bottom);CHKERRQ(ierr);
+  } else if (ksp->ops->view) {
+      ierr = (*ksp->ops->view)(ksp,viewer);CHKERRQ(ierr);
   }
   if (!ksp->pc) {ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr);}
   ierr = PCView(ksp->pc,viewer);CHKERRQ(ierr);
+  if (isdraw) {
+    PetscDraw draw;
+    ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
+    ierr = PetscDrawPopCurrentPoint(draw);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPSetNormType"
 /*@
    KSPSetNormType - Sets the norm that is used for convergence testing.
@@ -96,7 +198,7 @@ PetscErrorCode  KSPView(KSP ksp,PetscViewer viewer)
 
    Input Parameter:
 +  ksp - Krylov solver context
--  normtype - one of 
+-  normtype - one of
 $   KSP_NORM_NONE - skips computing the norm, this should only be used if you are using
 $                 the Krylov method as a smoother with a fixed small number of iterations.
 $                 Implicitly sets KSPSkipConverged as KSP convergence test.
@@ -104,7 +206,7 @@ $                 Supported only by CG, Richardson, Bi-CG-stab, CR, and CGS meth
 $   KSP_NORM_PRECONDITIONED - the default for left preconditioned solves, uses the l2 norm
 $                 of the preconditioned residual
 $   KSP_NORM_UNPRECONDITIONED - uses the l2 norm of the true b - Ax residual, supported only by
-$                 CG, CHEBYSHEV, and RICHARDSON, automatically true for right (see KSPSetPCSide()) 
+$                 CG, CHEBYSHEV, and RICHARDSON, automatically true for right (see KSPSetPCSide())
 $                 preconditioning..
 $   KSP_NORM_NATURAL - supported  by KSPCG, KSPCR, KSPCGNE, KSPCGS
 
@@ -112,7 +214,7 @@ $   KSP_NORM_NATURAL - supported  by KSPCG, KSPCR, KSPCGNE, KSPCGS
    Options Database Key:
 .   -ksp_norm_type <none,preconditioned,unpreconditioned,natural>
 
-   Notes: 
+   Notes:
    Currently only works with the CG, Richardson, Bi-CG-stab, CR, and CGS methods.
 
    Level: advanced
@@ -137,11 +239,11 @@ PetscErrorCode  KSPSetNormType(KSP ksp,KSPNormType normtype)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPSetCheckNormIteration"
 /*@
-   KSPSetCheckNormIteration - Sets the first iteration at which the norm of the residual will be 
-     computed and used in the convergence test. 
+   KSPSetCheckNormIteration - Sets the first iteration at which the norm of the residual will be
+     computed and used in the convergence test.
 
    Logically Collective on KSP
 
@@ -149,7 +251,7 @@ PetscErrorCode  KSPSetNormType(KSP ksp,KSPNormType normtype)
 +  ksp - Krylov solver context
 -  it  - use -1 to check at all iterations
 
-   Notes: 
+   Notes:
    Currently only works with KSPCG, KSPBCGS and KSPIBCGS
 
    Use KSPSetNormType(ksp,KSP_NORM_NONE) to never check the norm
@@ -160,7 +262,7 @@ PetscErrorCode  KSPSetNormType(KSP ksp,KSPNormType normtype)
 
 .keywords: KSP, create, context, norms
 
-.seealso: KSPSetUp(), KSPSolve(), KSPDestroy(), KSPSkipConverged(), KSPSetNormType()                               
+.seealso: KSPSetUp(), KSPSolve(), KSPDestroy(), KSPSkipConverged(), KSPSetNormType()
 @*/
 PetscErrorCode  KSPSetCheckNormIteration(KSP ksp,PetscInt it)
 {
@@ -171,11 +273,11 @@ PetscErrorCode  KSPSetCheckNormIteration(KSP ksp,PetscInt it)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPSetLagNorm"
 /*@
-   KSPSetLagNorm - Lags the residual norm calculation so that it is computed as part of the MPI_Allreduce() for 
-   computing the inner products for the next iteration.  This can reduce communication costs at the expense of doing 
+   KSPSetLagNorm - Lags the residual norm calculation so that it is computed as part of the MPI_Allreduce() for
+   computing the inner products for the next iteration.  This can reduce communication costs at the expense of doing
    one additional iteration.
 
 
@@ -188,7 +290,7 @@ PetscErrorCode  KSPSetCheckNormIteration(KSP ksp,PetscInt it)
    Options Database Keys:
 .  -ksp_lag_norm - lag the calculated residual norm
 
-   Notes: 
+   Notes:
    Currently only works with KSPIBCGS.
 
    Use KSPSetNormType(ksp,KSP_NORM_NONE) to never check the norm
@@ -200,7 +302,7 @@ PetscErrorCode  KSPSetCheckNormIteration(KSP ksp,PetscInt it)
 
 .seealso: KSPSetUp(), KSPSolve(), KSPDestroy(), KSPSkipConverged(), KSPSetNormType(), KSPSetCheckNormIteration()
 @*/
-PetscErrorCode  KSPSetLagNorm(KSP ksp,PetscBool  flg)
+PetscErrorCode  KSPSetLagNorm(KSP ksp,PetscBool flg)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
@@ -209,7 +311,7 @@ PetscErrorCode  KSPSetLagNorm(KSP ksp,PetscBool  flg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPSetSupportedNorm"
 /*@
    KSPSetSupportedNorm - Sets a norm and preconditioner side supported by a KSP
@@ -243,20 +345,20 @@ PetscErrorCode KSPSetSupportedNorm(KSP ksp,KSPNormType normtype,PCSide pcside,Pe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPNormSupportTableReset_Private"
 PetscErrorCode KSPNormSupportTableReset_Private(KSP ksp)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscMemzero(ksp->normsupporttable,sizeof ksp->normsupporttable);CHKERRQ(ierr);
+  ierr = PetscMemzero(ksp->normsupporttable,sizeof(ksp->normsupporttable));CHKERRQ(ierr);
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_LEFT,1);CHKERRQ(ierr);
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_RIGHT,1);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPSetUpNorms_Private"
 PetscErrorCode KSPSetUpNorms_Private(KSP ksp,KSPNormType *normtype,PCSide *pcside)
 {
@@ -269,26 +371,27 @@ PetscErrorCode KSPSetUpNorms_Private(KSP ksp,KSPNormType *normtype,PCSide *pcsid
       if ((ksp->normtype == KSP_NORM_DEFAULT || ksp->normtype == i)
           && (ksp->pc_side == PC_SIDE_DEFAULT || ksp->pc_side == j)
           && (ksp->normsupporttable[i][j] > best)) {
-        if (ksp->normtype == KSP_NORM_DEFAULT && i == KSP_NORM_NONE && ksp->normsupporttable[i][j] <= 1)
+        if (ksp->normtype == KSP_NORM_DEFAULT && i == KSP_NORM_NONE && ksp->normsupporttable[i][j] <= 1) {
           continue; /* Skip because we don't want to default to no norms unless set by the KSP (preonly). */
-        best = ksp->normsupporttable[i][j];
+        }
+        best  = ksp->normsupporttable[i][j];
         ibest = i;
         jbest = j;
       }
     }
   }
   if (best < 1) {
-    if (ksp->normtype == KSP_NORM_DEFAULT && ksp->pc_side == PC_SIDE_DEFAULT) SETERRQ1(((PetscObject)ksp)->comm,PETSC_ERR_PLIB,"The %s KSP implementation did not call KSPSetSupportedNorm()",((PetscObject)ksp)->type_name);
-    if (ksp->normtype == KSP_NORM_DEFAULT) SETERRQ2(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"KSP %s does not support %s",((PetscObject)ksp)->type_name,PCSides[ksp->pc_side]);
-    if (ksp->pc_side == PC_SIDE_DEFAULT) SETERRQ2(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"KSP %s does not support %s",((PetscObject)ksp)->type_name,KSPNormTypes[ksp->normtype]);
-    SETERRQ3(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"KSP %s does not support %s with %s",((PetscObject)ksp)->type_name,KSPNormTypes[ksp->normtype],PCSides[ksp->pc_side]);
+    if (ksp->normtype == KSP_NORM_DEFAULT && ksp->pc_side == PC_SIDE_DEFAULT) SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"The %s KSP implementation did not call KSPSetSupportedNorm()",((PetscObject)ksp)->type_name);
+    if (ksp->normtype == KSP_NORM_DEFAULT) SETERRQ2(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"KSP %s does not support %s",((PetscObject)ksp)->type_name,PCSides[ksp->pc_side]);
+    if (ksp->pc_side == PC_SIDE_DEFAULT) SETERRQ2(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"KSP %s does not support %s",((PetscObject)ksp)->type_name,KSPNormTypes[ksp->normtype]);
+    SETERRQ3(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"KSP %s does not support %s with %s",((PetscObject)ksp)->type_name,KSPNormTypes[ksp->normtype],PCSides[ksp->pc_side]);
   }
   *normtype = (KSPNormType)ibest;
-  *pcside = (PCSide)jbest;
+  *pcside   = (PCSide)jbest;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPGetNormType"
 /*@
    KSPGetNormType - Gets the norm that is used for convergence testing.
@@ -314,13 +417,13 @@ PetscErrorCode  KSPGetNormType(KSP ksp, KSPNormType *normtype)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   PetscValidPointer(normtype,2);
-  ierr = KSPSetUpNorms_Private(ksp,&ksp->normtype,&ksp->pc_side);CHKERRQ(ierr);
+  ierr      = KSPSetUpNorms_Private(ksp,&ksp->normtype,&ksp->pc_side);CHKERRQ(ierr);
   *normtype = ksp->normtype;
   PetscFunctionReturn(0);
 }
 
 #if defined(PETSC_HAVE_AMS)
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPPublish_Petsc"
 static PetscErrorCode KSPPublish_Petsc(PetscObject obj)
 {
@@ -328,31 +431,35 @@ static PetscErrorCode KSPPublish_Petsc(PetscObject obj)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = AMS_Memory_add_field(obj->amem,"its",&ksp->its,1,AMS_INT,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
+  ierr = AMS_Memory_add_field(obj->amsmem,"its",&ksp->its,1,AMS_INT,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
+
+  if (!ksp->res_hist) {
+    ierr = KSPSetResidualHistory((KSP)obj,NULL,PETSC_DECIDE,PETSC_FALSE);CHKERRQ(ierr);
+  }
+  ierr = AMS_Memory_add_field(obj->amsmem,"res_hist",ksp->res_hist,10,AMS_DOUBLE,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 #endif
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPSetOperators"
 /*@
    KSPSetOperators - Sets the matrix associated with the linear system
-   and a (possibly) different one associated with the preconditioner. 
+   and a (possibly) different one associated with the preconditioner.
 
    Collective on KSP and Mat
 
    Input Parameters:
 +  ksp - the KSP context
-.  Amat - the matrix associated with the linear system
-.  Pmat - the matrix to be used in constructing the preconditioner, usually the
-          same as Amat. 
+.  Amat - the matrix that defines the linear system
+.  Pmat - the matrix to be used in constructing the preconditioner, usually the same as Amat.
 -  flag - flag indicating information about the preconditioner matrix structure
    during successive linear solves.  This flag is ignored the first time a
    linear system is solved, and thus is irrelevant when solving just one linear
    system.
 
-   Notes: 
-   The flag can be used to eliminate unnecessary work in the preconditioner 
+   Notes:
+   The flag can be used to eliminate unnecessary work in the preconditioner
    during the repeated solution of linear systems of the same size.  The
    available options are
 $    SAME_PRECONDITIONER -
@@ -364,13 +471,13 @@ $      saves work by not recomputing incomplete factorization
 $      for ILU/ICC preconditioners.
 $    SAME_NONZERO_PATTERN -
 $      Pmat has the same nonzero structure during
-$      successive linear solves. 
+$      successive linear solves.
 $    DIFFERENT_NONZERO_PATTERN -
 $      Pmat does not have the same nonzero structure.
 
     All future calls to KSPSetOperators() must use the same size matrices!
 
-    Passing a PETSC_NULL for Amat or Pmat removes the matrix that is currently used.
+    Passing a NULL for Amat or Pmat removes the matrix that is currently used.
 
     If you wish to replace either Amat or Pmat but leave the other one untouched then
     first call KSPGetOperators() to get the one you wish to keep, call PetscObjectReference()
@@ -396,7 +503,7 @@ $      Pmat does not have the same nonzero structure.
       The user must set the sizes of the returned matrices and their type etc just
       as if the user created them with MatCreate(). For example,
 
-$         KSP/PCGetOperators(ksp/pc,&mat,PETSC_NULL,PETSC_NULL); is equivalent to
+$         KSP/PCGetOperators(ksp/pc,&mat,NULL,NULL); is equivalent to
 $           set size, type, etc of mat
 
 $         MatCreate(comm,&mat);
@@ -406,7 +513,7 @@ $           set size, type, etc of mat
 
      and
 
-$         KSP/PCGetOperators(ksp/pc,&mat,&pmat,PETSC_NULL); is equivalent to
+$         KSP/PCGetOperators(ksp/pc,&mat,&pmat,NULL); is equivalent to
 $           set size, type, etc of mat and pmat
 
 $         MatCreate(comm,&mat);
@@ -417,9 +524,9 @@ $         PetscObjectDereference((PetscObject)pmat);
 $           set size, type, etc of mat and pmat
 
     The rational for this support is so that when creating a TS, SNES, or KSP the hierarchy
-    of underlying objects (i.e. SNES, KSP, PC, Mat) and their livespans can be completely 
+    of underlying objects (i.e. SNES, KSP, PC, Mat) and their livespans can be completely
     managed by the top most level object (i.e. the TS, SNES, or KSP). Another way to look
-    at this is when you create a SNES you do not NEED to create a KSP and attach it to 
+    at this is when you create a SNES you do not NEED to create a KSP and attach it to
     the SNES object (the SNES object manages it for you). Similarly when you create a KSP
     you do not need to attach a PC to it (the KSP object manages the PC object for you).
     Thus, why should YOU have to create the Mat and attach it to the SNES/KSP/PC, when
@@ -455,11 +562,11 @@ PetscErrorCode  KSPSetOperators(KSP ksp,Mat Amat,Mat Pmat,MatStructure flag)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPGetOperators"
 /*@
    KSPGetOperators - Gets the matrix associated with the linear system
-   and a (possibly) different one associated with the preconditioner. 
+   and a (possibly) different one associated with the preconditioner.
 
    Collective on KSP and Mat
 
@@ -467,8 +574,8 @@ PetscErrorCode  KSPSetOperators(KSP ksp,Mat Amat,Mat Pmat,MatStructure flag)
 .  ksp - the KSP context
 
    Output Parameters:
-+  Amat - the matrix associated with the linear system
-.  Pmat - the matrix to be used in constructing the preconditioner, usually the same as Amat. 
++  Amat - the matrix that defines the linear system
+.  Pmat - the matrix to be used in constructing the preconditioner, usually the same as Amat.
 -  flag - flag indicating information about the preconditioner matrix structure
    during successive linear solves.  This flag is ignored the first time a
    linear system is solved, and thus is irrelevant when solving just one linear
@@ -493,7 +600,7 @@ PetscErrorCode  KSPGetOperators(KSP ksp,Mat *Amat,Mat *Pmat,MatStructure *flag)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPGetOperatorsSet"
 /*@C
    KSPGetOperatorsSet - Determines if the matrix associated with the linear system and
@@ -525,7 +632,61 @@ PetscErrorCode  KSPGetOperatorsSet(KSP ksp,PetscBool  *mat,PetscBool  *pmat)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
+#define __FUNCT__ "KSPSetPreSolve"
+/*@C
+   KSPSetPreSolve - Sets a function that is called before every KSPSolve() is started
+
+   Logically Collective on KSP
+
+   Input Parameters:
++   ksp - the solver object
+.   presolve - the function to call before the solve
+-   prectx - any context needed by the function
+
+   Level: developer
+
+.keywords: KSP, create, context
+
+.seealso: KSPSetUp(), KSPSolve(), KSPDestroy(), KSP, KSPSetPostSolve()
+@*/
+PetscErrorCode  KSPSetPreSolve(KSP ksp,PetscErrorCode (*presolve)(KSP,Vec,Vec,void*),void *prectx)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
+  ksp->presolve = presolve;
+  ksp->prectx   = prectx;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "KSPSetPostSolve"
+/*@C
+   KSPSetPostSolve - Sets a function that is called before every KSPSolve() is started
+
+   Logically Collective on KSP
+
+   Input Parameters:
++   ksp - the solver object
+.   postsolve - the function to call before the solve
+-   postctx - any context needed by the function
+
+   Level: developer
+
+.keywords: KSP, create, context
+
+.seealso: KSPSetUp(), KSPSolve(), KSPDestroy(), KSP, KSPSetPreSolve()
+@*/
+PetscErrorCode  KSPSetPostSolve(KSP ksp,PetscErrorCode (*postsolve)(KSP,Vec,Vec,void*),void *postctx)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
+  ksp->postsolve = postsolve;
+  ksp->postctx   = postctx;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "KSPCreate"
 /*@
    KSPCreate - Creates the default KSP context.
@@ -557,58 +718,58 @@ PetscErrorCode  KSPCreate(MPI_Comm comm,KSP *inksp)
   PetscFunctionBegin;
   PetscValidPointer(inksp,2);
   *inksp = 0;
-#ifndef PETSC_USE_DYNAMIC_LIBRARIES
-  ierr = KSPInitializePackage(PETSC_NULL);CHKERRQ(ierr);
+#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
+  ierr = KSPInitializePackage(NULL);CHKERRQ(ierr);
 #endif
 
-  ierr = PetscHeaderCreate(ksp,_p_KSP,struct _KSPOps,KSP_CLASSID,-1,"KSP","Krylov Method","KSP",comm,KSPDestroy,KSPView);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(ksp,_p_KSP,struct _KSPOps,KSP_CLASSID,"KSP","Krylov Method","KSP",comm,KSPDestroy,KSPView);CHKERRQ(ierr);
 
-  ksp->max_it        = 10000;
-  ksp->pc_side       = PC_SIDE_DEFAULT;
-  ksp->rtol          = 1.e-5;
-  ksp->abstol        = 1.e-50;
-  ksp->divtol        = 1.e4;
+  ksp->max_it  = 10000;
+  ksp->pc_side = PC_SIDE_DEFAULT;
+  ksp->rtol    = 1.e-5;
+  ksp->abstol  = 1.e-50;
+  ksp->divtol  = 1.e4;
 
-  ksp->chknorm             = -1;
-  ksp->normtype            = KSP_NORM_DEFAULT;
-  ksp->rnorm               = 0.0;
-  ksp->its                 = 0;
-  ksp->guess_zero          = PETSC_TRUE;
-  ksp->calc_sings          = PETSC_FALSE;
-  ksp->res_hist            = PETSC_NULL;
-  ksp->res_hist_alloc      = PETSC_NULL;
-  ksp->res_hist_len        = 0;
-  ksp->res_hist_max        = 0;
-  ksp->res_hist_reset      = PETSC_TRUE;
-  ksp->numbermonitors      = 0;
+  ksp->chknorm        = -1;
+  ksp->normtype       = KSP_NORM_DEFAULT;
+  ksp->rnorm          = 0.0;
+  ksp->its            = 0;
+  ksp->guess_zero     = PETSC_TRUE;
+  ksp->calc_sings     = PETSC_FALSE;
+  ksp->res_hist       = NULL;
+  ksp->res_hist_alloc = NULL;
+  ksp->res_hist_len   = 0;
+  ksp->res_hist_max   = 0;
+  ksp->res_hist_reset = PETSC_TRUE;
+  ksp->numbermonitors = 0;
 
-  ierr = KSPDefaultConvergedCreate(&ctx);CHKERRQ(ierr);
-  ierr = KSPSetConvergenceTest(ksp,KSPDefaultConverged,ctx,KSPDefaultConvergedDestroy);CHKERRQ(ierr);
-  ksp->ops->buildsolution  = KSPDefaultBuildSolution;
-  ksp->ops->buildresidual  = KSPDefaultBuildResidual;
+  ierr                    = KSPDefaultConvergedCreate(&ctx);CHKERRQ(ierr);
+  ierr                    = KSPSetConvergenceTest(ksp,KSPDefaultConverged,ctx,KSPDefaultConvergedDestroy);CHKERRQ(ierr);
+  ksp->ops->buildsolution = KSPBuildSolutionDefault;
+  ksp->ops->buildresidual = KSPBuildResidualDefault;
 #if defined(PETSC_HAVE_AMS)
-  ((PetscObject)ksp)->bops->publish       = KSPPublish_Petsc;
+  ((PetscObject)ksp)->bops->publish = KSPPublish_Petsc;
 #endif
 
-  ksp->vec_sol         = 0;
-  ksp->vec_rhs         = 0;
-  ksp->pc              = 0;
-  ksp->data            = 0;
-  ksp->nwork           = 0;
-  ksp->work            = 0;
-  ksp->reason          = KSP_CONVERGED_ITERATING;
-  ksp->setupstage      = KSP_SETUP_NEW;
+  ksp->vec_sol    = 0;
+  ksp->vec_rhs    = 0;
+  ksp->pc         = 0;
+  ksp->data       = 0;
+  ksp->nwork      = 0;
+  ksp->work       = 0;
+  ksp->reason     = KSP_CONVERGED_ITERATING;
+  ksp->setupstage = KSP_SETUP_NEW;
 
   ierr = KSPNormSupportTableReset_Private(ksp);CHKERRQ(ierr);
 
   *inksp = ksp;
   PetscFunctionReturn(0);
 }
- 
-#undef __FUNCT__  
+
+#undef __FUNCT__
 #define __FUNCT__ "KSPSetType"
 /*@C
-   KSPSetType - Builds KSP for a particular solver. 
+   KSPSetType - Builds KSP for a particular solver.
 
    Logically Collective on KSP
 
@@ -617,10 +778,10 @@ PetscErrorCode  KSPCreate(MPI_Comm comm,KSP *inksp)
 -  type - a known method
 
    Options Database Key:
-.  -ksp_type  <method> - Sets the method; use -help for a list 
+.  -ksp_type  <method> - Sets the method; use -help for a list
     of available methods (for instance, cg or gmres)
 
-   Notes:  
+   Notes:
    See "petsc/include/petscksp.h" for available methods (for instance,
    KSPCG or KSPGMRES).
 
@@ -643,7 +804,7 @@ PetscErrorCode  KSPCreate(MPI_Comm comm,KSP *inksp)
 .seealso: PCSetType(), KSPType
 
 @*/
-PetscErrorCode  KSPSetType(KSP ksp, const KSPType type)
+PetscErrorCode  KSPSetType(KSP ksp, KSPType type)
 {
   PetscErrorCode ierr,(*r)(KSP);
   PetscBool      match;
@@ -655,22 +816,22 @@ PetscErrorCode  KSPSetType(KSP ksp, const KSPType type)
   ierr = PetscObjectTypeCompare((PetscObject)ksp,type,&match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
 
-  ierr =  PetscFListFind(KSPList,((PetscObject)ksp)->comm,type,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
-  if (!r) SETERRQ1(((PetscObject)ksp)->comm,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested KSP type %s",type);
+  ierr =  PetscFunctionListFind(PetscObjectComm((PetscObject)ksp),KSPList,type,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
+  if (!r) SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested KSP type %s",type);
   /* Destroy the previous private KSP context */
   if (ksp->ops->destroy) {
-    ierr = (*ksp->ops->destroy)(ksp);CHKERRQ(ierr);
-    ksp->ops->destroy = PETSC_NULL;
+    ierr              = (*ksp->ops->destroy)(ksp);CHKERRQ(ierr);
+    ksp->ops->destroy = NULL;
   }
   /* Reinitialize function pointers in KSPOps structure */
-  ierr = PetscMemzero(ksp->ops,sizeof(struct _KSPOps));CHKERRQ(ierr);
-  ksp->ops->buildsolution = KSPDefaultBuildSolution;
-  ksp->ops->buildresidual = KSPDefaultBuildResidual;
-  ierr = KSPNormSupportTableReset_Private(ksp);CHKERRQ(ierr);
+  ierr                    = PetscMemzero(ksp->ops,sizeof(struct _KSPOps));CHKERRQ(ierr);
+  ksp->ops->buildsolution = KSPBuildSolutionDefault;
+  ksp->ops->buildresidual = KSPBuildResidualDefault;
+  ierr                    = KSPNormSupportTableReset_Private(ksp);CHKERRQ(ierr);
   /* Call the KSPCreate_XXX routine for this particular Krylov solver */
   ksp->setupstage = KSP_SETUP_NEW;
-  ierr = PetscObjectChangeTypeName((PetscObject)ksp,type);CHKERRQ(ierr);
-  ierr = (*r)(ksp);CHKERRQ(ierr);
+  ierr            = PetscObjectChangeTypeName((PetscObject)ksp,type);CHKERRQ(ierr);
+  ierr            = (*r)(ksp);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_AMS)
   if (PetscAMSPublishAll) {
     ierr = PetscObjectAMSPublish((PetscObject)ksp);CHKERRQ(ierr);
@@ -679,7 +840,7 @@ PetscErrorCode  KSPSetType(KSP ksp, const KSPType type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPRegisterDestroy"
 /*@
    KSPRegisterDestroy - Frees the list of KSP methods that were
@@ -698,12 +859,12 @@ PetscErrorCode  KSPRegisterDestroy(void)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFListDestroy(&KSPList);CHKERRQ(ierr);
+  ierr                 = PetscFunctionListDestroy(&KSPList);CHKERRQ(ierr);
   KSPRegisterAllCalled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPGetType"
 /*@C
    KSPGetType - Gets the KSP type as a string from the KSP object.
@@ -711,10 +872,10 @@ PetscErrorCode  KSPRegisterDestroy(void)
    Not Collective
 
    Input Parameter:
-.  ksp - Krylov context 
+.  ksp - Krylov context
 
    Output Parameter:
-.  name - name of KSP method 
+.  name - name of KSP method
 
    Level: intermediate
 
@@ -722,7 +883,7 @@ PetscErrorCode  KSPRegisterDestroy(void)
 
 .seealso: KSPSetType()
 @*/
-PetscErrorCode  KSPGetType(KSP ksp,const KSPType *type)
+PetscErrorCode  KSPGetType(KSP ksp,KSPType *type)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
@@ -731,7 +892,7 @@ PetscErrorCode  KSPGetType(KSP ksp,const KSPType *type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPRegister"
 /*@C
   KSPRegister - See KSPRegisterDynamic()
@@ -744,12 +905,12 @@ PetscErrorCode  KSPRegister(const char sname[],const char path[],const char name
   char           fullname[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
-  ierr = PetscFListConcat(path,name,fullname);CHKERRQ(ierr);
-  ierr = PetscFListAdd(&KSPList,sname,fullname,(void (*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFunctionListConcat(path,name,fullname);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&KSPList,sname,fullname,(void (*)(void))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPSetNullSpace"
 /*@
   KSPSetNullSpace - Sets the null space of the operator
@@ -777,7 +938,7 @@ PetscErrorCode  KSPSetNullSpace(KSP ksp,MatNullSpace nullsp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPGetNullSpace"
 /*@
   KSPGetNullSpace - Gets the null space of the operator

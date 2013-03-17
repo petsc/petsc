@@ -51,4 +51,4 @@ class MemoryTests(script.Script):
 
 if __name__ == '__main__':
   MemoryTests().run()
-  
+

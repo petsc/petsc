@@ -11,7 +11,7 @@ int main(int argc,char **argv)
   int            ierr,n = 10000;
 
   PetscInitialize(&argc,&argv,0,0);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-n",&n,NULL);CHKERRQ(ierr);
 
   ierr = VecCreate(PETSC_COMM_SELF,&x);CHKERRQ(ierr);
   ierr = VecSetSizes(x,n,n);CHKERRQ(ierr);

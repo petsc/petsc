@@ -1,0 +1,23 @@
+# Options for ex30
+# ----------------
+-ts_type beuler
+-ts_exact_final_time MATCHSTEP
+
+-ws 1.0
+-Inertia 5.0
+-Pmax 2.1
+-PM_min 1.0
+-lambda 0.1
+-q 1.0
+-sigmax 0.1
+-sigmay 0.1
+-rho 0.0
+-t0 0.0
+-tmax 4.0
+-xmin -1
+-xmax 10
+-ymin -1
+-ymax 10
+-da_grid_x 111
+-da_grid_y 111
+

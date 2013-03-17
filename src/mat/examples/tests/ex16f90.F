@@ -1,6 +1,6 @@
 !
 !
-!  Tests MatGetArray() on a dense matrix
+!  Tests MatDenseGetArray()
 !
 
       program main
@@ -38,7 +38,7 @@
       n = 2
       one = 1
 !
-!      Create a parallel dense matrix shared by all processors 
+!      Create a parallel dense matrix shared by all processors
 !
       call MatCreateDense(PETSC_COMM_WORLD,PETSC_DECIDE,                   &
      &                       PETSC_DECIDE,m,n,PETSC_NULL_SCALAR,A,ierr)
@@ -55,19 +55,19 @@
  20     continue
  10   continue
 
-      call MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY,ierr) 
-      call MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY,ierr) 
+      call MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY,ierr)
+      call MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY,ierr)
 
 !
-!       Print the matrix to the screen 
+!       Print the matrix to the screen
 !
-      call MatView(A,PETSC_VIEWER_STDOUT_WORLD,ierr) 
+      call MatView(A,PETSC_VIEWER_STDOUT_WORLD,ierr)
 
 
 !
 !      Print the local portion of the matrix to the screen
 !
-      call MatGetArrayF90(A,array,ierr) 
+      call MatDenseGetArrayF90(A,array,ierr)
       call MatGetOwnershipRange(A,rstart,rend,ierr)
       call PetscSequentialPhaseBegin(PETSC_COMM_WORLD,1,ierr)
 !
@@ -80,11 +80,11 @@
 
       call PetscSequentialPhaseEnd(PETSC_COMM_WORLD,1,ierr)
 
-      call MatRestoreArrayF90(A,array,ierr)   
+      call MatDenseRestoreArrayF90(A,array,ierr)
 !
 !      Free the space used by the matrix
 !
-      call MatDestroy(A,ierr) 
+      call MatDestroy(A,ierr)
       call PetscFinalize(ierr)
       end
 

@@ -10,15 +10,15 @@
     MatFDColoringDegreeSequence_Minpack - Calls the MINPACK routine seqr() that
       computes the degree sequence required by MINPACK coloring routines.
 */
-#undef __FUNCT__  
-#define __FUNCT__ "MatFDColoringDegreeSequence_Minpack" 
-PetscErrorCode MatFDColoringDegreeSequence_Minpack(PetscInt m,PetscInt *cja, PetscInt *cia, PetscInt *rja, PetscInt *ria, PetscInt **seq)
+#undef __FUNCT__
+#define __FUNCT__ "MatFDColoringDegreeSequence_Minpack"
+PetscErrorCode MatFDColoringDegreeSequence_Minpack(PetscInt m,const PetscInt *cja,const PetscInt *cia,const PetscInt *rja,const PetscInt *ria,PetscInt **seq)
 {
   PetscInt       *work;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc(m*sizeof(PetscInt),&work);CHKERRQ(ierr);  
+  ierr = PetscMalloc(m*sizeof(PetscInt),&work);CHKERRQ(ierr);
   ierr = PetscMalloc(m*sizeof(PetscInt),seq);CHKERRQ(ierr);
 
   MINPACKdegr(&m,cja,cia,rja,ria,*seq,work);
@@ -28,35 +28,33 @@ PetscErrorCode MatFDColoringDegreeSequence_Minpack(PetscInt m,PetscInt *cja, Pet
 }
 
 /*
-    MatFDColoringMinimumNumberofColors_Private - For a given sparse 
+    MatFDColoringMinimumNumberofColors_Private - For a given sparse
         matrix computes the minimum number of colors needed.
 
 */
-#undef __FUNCT__  
-#define __FUNCT__ "MatFDColoringMinimumNumberofColors_Private" 
+#undef __FUNCT__
+#define __FUNCT__ "MatFDColoringMinimumNumberofColors_Private"
 PetscErrorCode MatFDColoringMinimumNumberofColors_Private(PetscInt m,PetscInt *ia,PetscInt *minc)
 {
   PetscInt i,c = 0;
 
   PetscFunctionBegin;
-  for (i=0; i<m; i++) {
-    c = PetscMax(c,ia[i+1]-ia[i]);
-  }
+  for (i=0; i<m; i++) c = PetscMax(c,ia[i+1]-ia[i]);
   *minc = c;
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 /* ----------------------------------------------------------------------------*/
 /*
     MatGetColoring_SL_Minpack - Uses the smallest-last (SL) coloring of minpack
 */
-#undef __FUNCT__  
-#define __FUNCT__ "MatGetColoring_SL_Minpack" 
-PetscErrorCode  MatGetColoring_SL_Minpack(Mat mat,MatColoringType name,ISColoring *iscoloring)
+#undef __FUNCT__
+#define __FUNCT__ "MatGetColoring_SL_Minpack"
+PETSC_EXTERN PetscErrorCode MatGetColoring_SL_Minpack(Mat mat,MatColoringType name,ISColoring *iscoloring)
 {
   PetscErrorCode  ierr;
-  PetscInt        *list,*work,clique,*ria,*rja,*cia,*cja,*seq,*coloring,n;
+  PetscInt        *list,*work,clique,*seq,*coloring,n;
+  const PetscInt  *ria,*rja,*cia,*cja;
   PetscInt        ncolors,i;
   PetscBool       done;
   Mat             mat_seq = mat;
@@ -77,7 +75,7 @@ PetscErrorCode  MatGetColoring_SL_Minpack(Mat mat,MatColoringType name,ISColorin
 
   ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  if (size > 1){
+  if (size > 1) {
     /* create a sequential iscoloring on all processors */
     ierr = MatGetSeqNonzeroStructure(mat,&mat_seq);CHKERRQ(ierr);
   }
@@ -102,7 +100,7 @@ PetscErrorCode  MatGetColoring_SL_Minpack(Mat mat,MatColoringType name,ISColorin
 
   /* shift coloring numbers to start at zero and shorten */
   if (ncolors > IS_COLORING_MAX-1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Maximum color size exceeded");
-  { 
+  {
     ISColoringValue *s = (ISColoringValue*) coloring;
     for (i=0; i<n; i++) {
       s[i] = (ISColoringValue) (coloring[i]-1);
@@ -113,37 +111,36 @@ PetscErrorCode  MatGetColoring_SL_Minpack(Mat mat,MatColoringType name,ISColorin
   if (size > 1) {
     ierr = MatDestroySeqNonzeroStructure(&mat_seq);CHKERRQ(ierr);
 
-    /* convert iscoloring_seq to a parallel iscoloring */  
+    /* convert iscoloring_seq to a parallel iscoloring */
     iscoloring_seq = *iscoloring;
-    rstart = mat->rmap->rstart/bs;
-    rend   = mat->rmap->rend/bs;
-    N_loc  = rend - rstart; /* number of local nodes */
+    rstart         = mat->rmap->rstart/bs;
+    rend           = mat->rmap->rend/bs;
+    N_loc          = rend - rstart; /* number of local nodes */
 
     /* get local colors for each local node */
     ierr = PetscMalloc((N_loc+1)*sizeof(ISColoringValue),&colors_loc);CHKERRQ(ierr);
-    for (i=rstart; i<rend; i++){
+    for (i=rstart; i<rend; i++) {
       colors_loc[i-rstart] = iscoloring_seq->colors[i];
     }
-    /* create a parallel iscoloring */ 
-    nc=iscoloring_seq->n;
-    ierr = ISColoringCreate(comm,nc,N_loc,colors_loc,iscoloring);CHKERRQ(ierr); 
+    /* create a parallel iscoloring */
+    nc   = iscoloring_seq->n;
+    ierr = ISColoringCreate(comm,nc,N_loc,colors_loc,iscoloring);CHKERRQ(ierr);
     ierr = ISColoringDestroy(&iscoloring_seq);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 /* ----------------------------------------------------------------------------*/
 /*
-    MatGetColoring_LF_Minpack - 
+    MatGetColoring_LF_Minpack -
 */
-#undef __FUNCT__  
-#define __FUNCT__ "MatGetColoring_LF_Minpack" 
-PetscErrorCode  MatGetColoring_LF_Minpack(Mat mat,MatColoringType name,ISColoring *iscoloring)
+#undef __FUNCT__
+#define __FUNCT__ "MatGetColoring_LF_Minpack"
+PETSC_EXTERN PetscErrorCode MatGetColoring_LF_Minpack(Mat mat,MatColoringType name,ISColoring *iscoloring)
 {
   PetscErrorCode  ierr;
-  PetscInt        *list,*work,*ria,*rja,*cia,*cja,*seq,*coloring,n;
+  PetscInt        *list,*work,*seq,*coloring,n;
+  const PetscInt  *ria,*rja,*cia,*cja;
   PetscInt        n1, none,ncolors,i;
   PetscBool       done;
   Mat             mat_seq = mat;
@@ -164,7 +161,7 @@ PetscErrorCode  MatGetColoring_LF_Minpack(Mat mat,MatColoringType name,ISColorin
 
   ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  if (size > 1){
+  if (size > 1) {
     /* create a sequential iscoloring on all processors */
     ierr = MatGetSeqNonzeroStructure(mat,&mat_seq);CHKERRQ(ierr);
   }
@@ -191,48 +188,44 @@ PetscErrorCode  MatGetColoring_LF_Minpack(Mat mat,MatColoringType name,ISColorin
 
   /* shift coloring numbers to start at zero and shorten */
   if (ncolors > IS_COLORING_MAX-1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Maximum color size exceeded");
-  { 
+  {
     ISColoringValue *s = (ISColoringValue*) coloring;
-    for (i=0; i<n; i++) {
-      s[i] = (ISColoringValue) (coloring[i]-1);
-    }
+    for (i=0; i<n; i++) s[i] = (ISColoringValue) (coloring[i]-1);
     ierr = MatColoringPatch(mat_seq,ncolors,n,s,iscoloring);CHKERRQ(ierr);
   }
 
   if (size > 1) {
     ierr = MatDestroySeqNonzeroStructure(&mat_seq);CHKERRQ(ierr);
 
-    /* convert iscoloring_seq to a parallel iscoloring */  
+    /* convert iscoloring_seq to a parallel iscoloring */
     iscoloring_seq = *iscoloring;
-    rstart = mat->rmap->rstart/bs;
-    rend   = mat->rmap->rend/bs;
-    N_loc  = rend - rstart; /* number of local nodes */
+    rstart         = mat->rmap->rstart/bs;
+    rend           = mat->rmap->rend/bs;
+    N_loc          = rend - rstart; /* number of local nodes */
 
     /* get local colors for each local node */
     ierr = PetscMalloc((N_loc+1)*sizeof(ISColoringValue),&colors_loc);CHKERRQ(ierr);
-    for (i=rstart; i<rend; i++){
-      colors_loc[i-rstart] = iscoloring_seq->colors[i];
-    }
-    /* create a parallel iscoloring */ 
-    nc=iscoloring_seq->n;
-    ierr = ISColoringCreate(comm,nc,N_loc,colors_loc,iscoloring);CHKERRQ(ierr); 
+    for (i=rstart; i<rend; i++) colors_loc[i-rstart] = iscoloring_seq->colors[i];
+
+    /* create a parallel iscoloring */
+    nc   = iscoloring_seq->n;
+    ierr = ISColoringCreate(comm,nc,N_loc,colors_loc,iscoloring);CHKERRQ(ierr);
     ierr = ISColoringDestroy(&iscoloring_seq);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 /* ----------------------------------------------------------------------------*/
 /*
-    MatGetColoring_ID_Minpack - 
+    MatGetColoring_ID_Minpack -
 */
-#undef __FUNCT__  
-#define __FUNCT__ "MatGetColoring_ID_Minpack" 
-PetscErrorCode  MatGetColoring_ID_Minpack(Mat mat,MatColoringType name,ISColoring *iscoloring)
+#undef __FUNCT__
+#define __FUNCT__ "MatGetColoring_ID_Minpack"
+PETSC_EXTERN PetscErrorCode MatGetColoring_ID_Minpack(Mat mat,MatColoringType name,ISColoring *iscoloring)
 {
   PetscErrorCode  ierr;
-  PetscInt        *list,*work,clique,*ria,*rja,*cia,*cja,*seq,*coloring,n;
+  PetscInt        *list,*work,clique,*seq,*coloring,n;
+  const PetscInt  *ria,*rja,*cia,*cja;
   PetscInt        ncolors,i;
   PetscBool       done;
   Mat             mat_seq = mat;
@@ -253,7 +246,7 @@ PetscErrorCode  MatGetColoring_ID_Minpack(Mat mat,MatColoringType name,ISColorin
 
   ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  if (size > 1){
+  if (size > 1) {
     /* create a sequential iscoloring on all processors */
     ierr = MatGetSeqNonzeroStructure(mat,&mat_seq);CHKERRQ(ierr);
   }
@@ -279,7 +272,7 @@ PetscErrorCode  MatGetColoring_ID_Minpack(Mat mat,MatColoringType name,ISColorin
 
   /* shift coloring numbers to start at zero and shorten */
   if (ncolors > IS_COLORING_MAX-1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Maximum color size exceeded");
-  { 
+  {
     ISColoringValue *s = (ISColoringValue*) coloring;
     for (i=0; i<n; i++) {
       s[i] = (ISColoringValue) (coloring[i]-1);
@@ -290,33 +283,31 @@ PetscErrorCode  MatGetColoring_ID_Minpack(Mat mat,MatColoringType name,ISColorin
   if (size > 1) {
     ierr = MatDestroySeqNonzeroStructure(&mat_seq);CHKERRQ(ierr);
 
-    /* convert iscoloring_seq to a parallel iscoloring */  
+    /* convert iscoloring_seq to a parallel iscoloring */
     iscoloring_seq = *iscoloring;
-    rstart = mat->rmap->rstart/bs;
-    rend   = mat->rmap->rend/bs;
-    N_loc  = rend - rstart; /* number of local nodes */
+    rstart         = mat->rmap->rstart/bs;
+    rend           = mat->rmap->rend/bs;
+    N_loc          = rend - rstart; /* number of local nodes */
 
     /* get local colors for each local node */
     ierr = PetscMalloc((N_loc+1)*sizeof(ISColoringValue),&colors_loc);CHKERRQ(ierr);
-    for (i=rstart; i<rend; i++){
+    for (i=rstart; i<rend; i++) {
       colors_loc[i-rstart] = iscoloring_seq->colors[i];
     }
-    /* create a parallel iscoloring */ 
-    nc=iscoloring_seq->n;
-    ierr = ISColoringCreate(comm,nc,N_loc,colors_loc,iscoloring);CHKERRQ(ierr); 
+    /* create a parallel iscoloring */
+    nc   = iscoloring_seq->n;
+    ierr = ISColoringCreate(comm,nc,N_loc,colors_loc,iscoloring);CHKERRQ(ierr);
     ierr = ISColoringDestroy(&iscoloring_seq);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 /*
    Simplest coloring, each column of the matrix gets its own unique color.
 */
-#undef __FUNCT__  
-#define __FUNCT__ "MatGetColoring_Natural" 
-PetscErrorCode  MatGetColoring_Natural(Mat mat,MatColoringType color, ISColoring *iscoloring)
+#undef __FUNCT__
+#define __FUNCT__ "MatGetColoring_Natural"
+PETSC_EXTERN PetscErrorCode MatGetColoring_Natural(Mat mat,MatColoringType color, ISColoring *iscoloring)
 {
   PetscErrorCode  ierr;
   PetscInt        start,end,i,bs = 1,n;
@@ -339,14 +330,14 @@ PetscErrorCode  MatGetColoring_Natural(Mat mat,MatColoringType color, ISColoring
 
   ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  if (size > 1){
+  if (size > 1) {
     /* create a sequential iscoloring on all processors */
     ierr = MatGetSeqNonzeroStructure(mat,&mat_seq);CHKERRQ(ierr);
   }
 
-  ierr  = MatGetSize(mat_seq,PETSC_NULL,&n);CHKERRQ(ierr);
-  ierr  = MatGetOwnershipRange(mat_seq,&start,&end);CHKERRQ(ierr);
-  n     = n/bs;
+  ierr = MatGetSize(mat_seq,NULL,&n);CHKERRQ(ierr);
+  ierr = MatGetOwnershipRange(mat_seq,&start,&end);CHKERRQ(ierr);
+  n    = n/bs;
   if (n > IS_COLORING_MAX-1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Maximum color size exceeded");
 
   start = start/bs;
@@ -360,46 +351,45 @@ PetscErrorCode  MatGetColoring_Natural(Mat mat,MatColoringType color, ISColoring
   if (size > 1) {
     ierr = MatDestroySeqNonzeroStructure(&mat_seq);CHKERRQ(ierr);
 
-    /* convert iscoloring_seq to a parallel iscoloring */  
+    /* convert iscoloring_seq to a parallel iscoloring */
     iscoloring_seq = *iscoloring;
-    rstart = mat->rmap->rstart/bs;
-    rend   = mat->rmap->rend/bs;
-    N_loc  = rend - rstart; /* number of local nodes */
+    rstart         = mat->rmap->rstart/bs;
+    rend           = mat->rmap->rend/bs;
+    N_loc          = rend - rstart; /* number of local nodes */
 
     /* get local colors for each local node */
     ierr = PetscMalloc((N_loc+1)*sizeof(ISColoringValue),&colors_loc);CHKERRQ(ierr);
-    for (i=rstart; i<rend; i++){
+    for (i=rstart; i<rend; i++) {
       colors_loc[i-rstart] = iscoloring_seq->colors[i];
     }
-    /* create a parallel iscoloring */ 
-    nc=iscoloring_seq->n;
-    ierr = ISColoringCreate(comm,nc,N_loc,colors_loc,iscoloring);CHKERRQ(ierr); 
+    /* create a parallel iscoloring */
+    nc   = iscoloring_seq->n;
+    ierr = ISColoringCreate(comm,nc,N_loc,colors_loc,iscoloring);CHKERRQ(ierr);
     ierr = ISColoringDestroy(&iscoloring_seq);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
-  
+
 /* ===========================================================================================*/
 
-PetscFList MatColoringList = 0;
-PetscBool  MatColoringRegisterAllCalled = PETSC_FALSE;
+PetscFunctionList MatColoringList              = 0;
+PetscBool         MatColoringRegisterAllCalled = PETSC_FALSE;
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatColoringRegister" 
+#undef __FUNCT__
+#define __FUNCT__ "MatColoringRegister"
 PetscErrorCode  MatColoringRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(Mat,MatColoringType,ISColoring*))
 {
   PetscErrorCode ierr;
   char           fullname[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
-  ierr = PetscFListConcat(path,name,fullname);CHKERRQ(ierr);
-  ierr = PetscFListAdd(&MatColoringList,sname,fullname,(void (*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFunctionListConcat(path,name,fullname);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&MatColoringList,sname,fullname,(void (*)(void))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatColoringRegisterDestroy" 
+#undef __FUNCT__
+#define __FUNCT__ "MatColoringRegisterDestroy"
 /*@C
    MatColoringRegisterDestroy - Frees the list of coloringing routines.
 
@@ -416,13 +406,14 @@ PetscErrorCode  MatColoringRegisterDestroy(void)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFListDestroy(&MatColoringList);CHKERRQ(ierr);
+  ierr = PetscFunctionListDestroy(&MatColoringList);CHKERRQ(ierr);
+
   MatColoringRegisterAllCalled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatGetColoring" 
+#undef __FUNCT__
+#define __FUNCT__ "MatGetColoring"
 /*@C
    MatGetColoring - Gets a coloring for a matrix, from its sparsity structure,
       to reduce the number of function evaluations needed to compute a sparse Jacobian via differencing.
@@ -442,7 +433,7 @@ $      MATCOLORINGID - incidence-degree
 
    Options Database Keys:
    To specify the coloring through the options database, use one of
-   the following 
+   the following
 $    -mat_coloring_type natural, -mat_coloring_type sl, -mat_coloring_type lf,
 $    -mat_coloring_type id
    To see the coloring use
@@ -453,7 +444,7 @@ $    -mat_coloring_view
    Notes:
 $    A graph coloring C(A)  is a division of vertices  so that two vertices of the same color do not share any common edges.
 $    A suitable coloring for a  smoother  is simply C(A).
-$    A suitable coloring for efficient Jacobian computation is a division of the columns so that two columns of the same color do not share any common rows. 
+$    A suitable coloring for efficient Jacobian computation is a division of the columns so that two columns of the same color do not share any common rows.
 $         This corresponds to C(A^{T} A).  This is what MatGetColoring() computes.
 
    The user can define additional colorings; see MatColoringRegisterDynamic().
@@ -476,29 +467,29 @@ $         Sources and Development of Mathematical Software, Wayne R. Cowell edit
 .keywords: matrix, get, coloring
 
 .seealso:  MatGetColoringTypeFromOptions(), MatColoringRegisterDynamic(), MatFDColoringCreate(),
-           SNESDefaultComputeJacobianColor()
+           SNESComputeJacobianDefaultColor()
 @*/
-PetscErrorCode  MatGetColoring(Mat mat,const MatColoringType type,ISColoring *iscoloring)
+PetscErrorCode  MatGetColoring(Mat mat,MatColoringType type,ISColoring *iscoloring)
 {
   PetscBool      flag;
-  PetscErrorCode ierr,(*r)(Mat,const MatColoringType,ISColoring *);
+  PetscErrorCode ierr,(*r)(Mat,MatColoringType,ISColoring*);
   char           tname[PETSC_MAX_PATH_LEN];
   MPI_Comm       comm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidPointer(iscoloring,3);
-  if (!mat->assembled) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
-  if (mat->factortype) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
+  if (!mat->assembled) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  if (mat->factortype) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
 
   /* look for type on command line */
-  if (!MatColoringRegisterAllCalled) {ierr = MatColoringRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
+  if (!MatColoringRegisterAllCalled) {ierr = MatColoringRegisterAll(NULL);CHKERRQ(ierr);}
   ierr = PetscOptionsGetString(((PetscObject)mat)->prefix,"-mat_coloring_type",tname,256,&flag);CHKERRQ(ierr);
-  if (flag) { type = tname; }
+  if (flag) type = tname;
 
-  ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr); 
-  ierr = PetscFListFind(MatColoringList,comm, type,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
-  if (!r) SETERRQ1(((PetscObject)mat)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Unknown or unregistered type: %s",type);
+  ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
+  ierr = PetscFunctionListFind(comm,MatColoringList,type,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
+  if (!r) SETERRQ1(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_OUTOFRANGE,"Unknown or unregistered type: %s",type);
 
   ierr = PetscLogEventBegin(MAT_GetColoring,mat,0,0,0);CHKERRQ(ierr);
   ierr = (*r)(mat,type,iscoloring);CHKERRQ(ierr);
@@ -506,7 +497,7 @@ PetscErrorCode  MatGetColoring(Mat mat,const MatColoringType type,ISColoring *is
 
   ierr = PetscInfo1(mat,"Number of colors %d\n",(*iscoloring)->n);CHKERRQ(ierr);
   flag = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-mat_coloring_view",&flag,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-mat_coloring_view",&flag,NULL);CHKERRQ(ierr);
   if (flag) {
     PetscViewer viewer;
     ierr = PetscViewerASCIIGetStdout((*iscoloring)->comm,&viewer);CHKERRQ(ierr);
@@ -514,4 +505,4 @@ PetscErrorCode  MatGetColoring(Mat mat,const MatColoringType type,ISColoring *is
   }
   PetscFunctionReturn(0);
 }
- 
+

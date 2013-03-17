@@ -4,12 +4,13 @@ FFLAGS	        =
 CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR          = src/ts/examples/tutorials/
-EXAMPLESC       = ex1.c ex2.c util2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c \
+EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c \
                 ex9.c ex10.c ex12.c ex13.c ex14.c ex15.c ex16.c ex17.c \
-                ex18.c ex19.c ex20.c ex21.c ex22.c ex23.c ex24.c ex25.c ex26.c
+                ex19.c ex20.c ex21.c ex22.c ex23.c ex24.c ex25.c ex26.c ex28.c
 EXAMPLESF       = ex1f.F ex2f.F ex22f.F # ex22f_mf.F90
 EXAMPLESFH      = ex2f.h
 MANSEC          = TS
+DIRS            = phasefield advection-diffusion-reaction
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules
@@ -22,13 +23,13 @@ ex1f: ex1f.o  chkopts
 	-${FLINKER} -o ex1f ex1f.o  ${PETSC_TS_LIB}
 	${RM} ex1f.o
 
-ex2: ex2.o util2.o chkopts
-	-${CLINKER} -o ex2 ex2.o util2.o ${PETSC_TS_LIB}
-	${RM} ex2.o util2.o
+ex2: ex2.o chkopts
+	-${CLINKER} -o ex2 ex2.o ${PETSC_TS_LIB}
+	${RM} ex2.o
 
-ex2f: ex2f.o util2.o chkopts
-	-${FLINKER} -o ex2f ex2f.o util2.o  ${PETSC_TS_LIB}
-	${RM} ex2f.o util2.o
+ex2f: ex2f.o chkopts
+	-${FLINKER} -o ex2f ex2f.o ${PETSC_TS_LIB}
+	${RM} ex2f.o
 
 ex3: ex3.o  chkopts
 	-${CLINKER} -o ex3 ex3.o  ${PETSC_TS_LIB}
@@ -89,9 +90,6 @@ ex16: ex16.o  chkopts
 ex17: ex17.o  chkopts
 	-${CLINKER} -o ex17 ex17.o  ${PETSC_TS_LIB}
 	${RM} ex17.o
-ex18: ex18.o  chkopts
-	-${CLINKER} -o ex18 ex18.o  ${PETSC_TS_LIB}
-	${RM} ex18.o
 
 ex19: ex19.o  chkopts
 	-${CLINKER} -o ex19 ex19.o  ${PETSC_TS_LIB}
@@ -105,19 +103,19 @@ ex20: ex20.o  chkopts
 	-${CLINKER} -o ex20 ex20.o  ${PETSC_TS_LIB}
 	${RM} ex20.o
 
-ex21: ex21.o util2.o chkopts
-	-${CLINKER} -o ex21 ex21.o util2.o ${PETSC_TS_LIB}
-	${RM} ex21.o util2.o
+ex21: ex21.o  chkopts
+	-${CLINKER} -o ex21 ex21.o  ${PETSC_TS_LIB}
+	${RM} ex21.o
 
 ex22: ex22.o chkopts
 	-${CLINKER} -o ex22 ex22.o ${PETSC_TS_LIB}
 	${RM} ex22.o
 
-ex22f: ex22f.o util2.o chkopts
+ex22f: ex22f.o  chkopts
 	-${FLINKER} -o ex22f ex22f.o ${PETSC_TS_LIB}
 	${RM} ex22f.o
 
-ex22f_mf: ex22f_mf.o util2.o chkopts
+ex22f_mf: ex22f_mf.o  chkopts
 	-${FLINKER} -o ex22f_mf ex22f_mf.o ${PETSC_TS_LIB}
 	${RM} ex22f_mf.o
 
@@ -141,9 +139,17 @@ ex27: ex27.o chkopts
 	-${CLINKER} -o ex27 ex27.o ${PETSC_TS_LIB}
 	${RM} ex27.o
 
+ex28: ex28.o chkopts
+	-${CLINKER} -o ex28 ex28.o ${PETSC_TS_LIB}
+	${RM} ex28.o
+
+ex29: ex29.o chkopts
+	-${CLINKER} -o ex29 ex29.o ${PETSC_TS_LIB}
+	${RM} ex29.o
+
 #---------------------------------------------------------------------------------
 runex1:
-	-@${MPIEXEC} -n 1 ./ex1 -ksp_gmres_cgs_refinement_type refine_always -snes_type ls -ts_monitor_pseudo > ex1_1.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 1 ./ex1 -ksp_gmres_cgs_refinement_type refine_always -snes_type newtonls -ts_monitor_pseudo > ex1_1.tmp 2>&1;	  \
 	   ${DIFF} output/ex1_1.out ex1_1.tmp || echo  ${PWD} "\nPossible problem with ex1_1, diffs above \n========================================="; \
 	   ${RM} -f ex1_1.tmp
 runex1_2:
@@ -152,7 +158,7 @@ runex1_2:
 	   ${RM} -f ex1_2.tmp
 
 runex1f:
-	-@${MPIEXEC} -n 1 ./ex1f -ksp_gmres_cgs_refinement_type refine_always -snes_type ls -ts_monitor_pseudo > ex1f_1.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 1 ./ex1f -ksp_gmres_cgs_refinement_type refine_always -snes_type newtonls -ts_monitor_pseudo > ex1f_1.tmp 2>&1;	  \
 	   ${DIFF} output/ex1f_1.out ex1f_1.tmp || echo  ${PWD} "\nPossible problem with ex1f_1, diffs above \n========================================="; \
 	   ${RM} -f ex1f_1.tmp
 
@@ -202,25 +208,25 @@ runex4_sundials:
 	   ${RM} -f ex4.tmp
 
 runex6:
-	-@${MPIEXEC} -n 1 ./ex6 -nox -time_steps_max 4   > ex6_1.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 1 ./ex6 -nox -ts_max_steps 4   > ex6_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex6_1.out ex6_1.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex6_1, diffs above \n========================================="; fi; \
 	   ${RM} -f ex6_1.tmp
 
 runex7:
-	-@${MPIEXEC} -n 1 ./ex7 -max_steps 5   > ex7_1.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 1 ./ex7 -ts_max_steps 5   > ex7_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex7_1.out ex7_1.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex7_1, diffs above \n========================================="; fi; \
 	   ${RM} -f ex7_1.tmp
 
 runex7_2:
-	-@${MPIEXEC} -n 1 ./ex7 -max_steps 5  -snes_mf_operator > ex7_2.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 1 ./ex7 -ts_max_steps 5  -snes_mf_operator > ex7_2.tmp 2>&1;	  \
 	   if (${DIFF} output/ex7_2.out ex7_2.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex7_2, diffs above \n========================================="; fi; \
 	   ${RM} -f ex7_2.tmp
 
 runex7_3:
-	-@${MPIEXEC} -n 1 ./ex7 -max_steps 5  -snes_mf > ex7_3.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 1 ./ex7 -ts_max_steps 5  -snes_mf > ex7_3.tmp 2>&1;	  \
 	   if (${DIFF} output/ex7_3.out ex7_3.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex7_3, diffs above \n========================================="; fi; \
 	   ${RM} -f ex7_3.tmp
@@ -266,6 +272,11 @@ runex10_4:
 	   -ts_monitor -snes_monitor_short -ksp_monitor_short > ex10_4.tmp 2>&1; \
 	   ${DIFF} output/ex10_4.out ex10_4.tmp || echo  ${PWD} "\nPossible problem with ex10_4, diffs above \n========================================="; \
 	   ${RM} -f ex10_4.tmp
+
+runex11:
+	-@${MPIEXEC} -n 1 ./ex11 -ufv_vtk_interval 0 -f ${PETSC_DIR}/share/petsc/datafiles/meshes/sevenside-quad-15.exo > ex11_1.tmp 2>&1; \
+	   ${DIFF} output/ex11_1.out ex11_1.tmp || echo  ${PWD} "\nPossible problem with ex11_1, diffs above \n========================================="; \
+	   ${RM} -f ex11_1.tmp
 
 runex12:
 	-@${MPIEXEC} -n 1 ./ex12 -da_grid_x 20 -ts_final_time 3 -ts_dt 1e-1 -ts_theta_extrapolate 0 \
@@ -313,7 +324,7 @@ runex16:
 	   ${RM} -f ex16_1.tmp
 
 runex17:
-	-@${MPIEXEC} -n 1 ./ex17 -da_grid_x 40 -ts_max_steps 2 -snes_monitor_short -ksp_monitor_short > ex17_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex17 -da_grid_x 40 -ts_max_steps 2 -snes_monitor_short -ksp_monitor_short -ts_monitor > ex17_1.tmp 2>&1; \
 	   ${DIFF} output/ex17_1.out ex17_1.tmp || echo  ${PWD} "\nPossible problem with ex17_1, diffs above \n========================================="; \
 	   ${RM} -f ex17_1.tmp
 
@@ -323,24 +334,24 @@ runex17_2:
 	   ${RM} -f ex17_2.tmp
 
 runex22:
-	-@${MPIEXEC} -n 1 ./ex22 -da_grid_x 200 -ts_monitor_solution -ts_arkimex_type 4 -ts_adapt_type none > ex22_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex22 -da_grid_x 200 -ts_monitor_draw_solution -ts_arkimex_type 4 -ts_adapt_type none > ex22_1.tmp 2>&1; \
 	   ${DIFF} output/ex22_1.out ex22_1.tmp || echo  ${PWD} "\nPossible problem with ex22_1, diffs above \n=========================================";  \
 	   ${RM} -f ex22_1.tmp
 runex22_2:
-	-@${MPIEXEC} -n 2 ./ex22 -da_grid_x 200 -ts_monitor_solution -ts_type rosw -ts_dt 1e-3 -ts_adapt_type none > ex22_2.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ./ex22 -da_grid_x 200 -ts_monitor_draw_solution -ts_type rosw -ts_dt 1e-3 -ts_adapt_type none > ex22_2.tmp 2>&1; \
 	   ${DIFF} output/ex22_2.out ex22_2.tmp || echo  ${PWD} "\nPossible problem with ex22_2, diffs above \n=========================================";  \
 	   ${RM} -f ex22_2.tmp
 runex22_3:
-	-@${MPIEXEC} -n 2 ./ex22 -da_grid_x 200 -ts_monitor_solution -ts_type rosw -ts_rosw_type ra34pw2 -ts_dt 5e-3 -ts_adapt_type none > ex22_3.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ./ex22 -da_grid_x 200 -ts_monitor_draw_solution -ts_type rosw -ts_rosw_type ra34pw2 -ts_dt 5e-3 -ts_adapt_type none > ex22_3.tmp 2>&1; \
 	   ${DIFF} output/ex22_3.out ex22_3.tmp || echo  ${PWD} "\nPossible problem with ex22_3, diffs above \n=========================================";  \
 	   ${RM} -f ex22_3.tmp
 runex22f:
-	-@${MPIEXEC} -n 1 ./ex22f -da_grid_x 200 -ts_monitor_solution -ts_arkimex_type 4 > ex22f_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex22f -da_grid_x 200 -ts_monitor_draw_solution -ts_arkimex_type 4 > ex22f_1.tmp 2>&1; \
 	   ${DIFF} output/ex22f_1.out ex22f_1.tmp || echo  ${PWD} "\nPossible problem with ex22f_1, diffs above \n=========================================";  \
 	   ${RM} -f ex22f_1.tmp
 
 runex22f_mf:
-	-@${MPIEXEC} -n 1 ./ex22f_mf -da_grid_x 200 -ts_monitor_solution -ts_arkimex_type 4 > ex22f_mf_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex22f_mf -da_grid_x 200 -ts_monitor_draw_solution -ts_arkimex_type 4 > ex22f_mf_1.tmp 2>&1; \
 	   ${DIFF} output/ex22f_mf_1.out ex22f_mf_1.tmp || echo  ${PWD} "\nPossible problem with ex22f_mf_1, diffs above \n=========================================";  \
 	   ${RM} -f ex22f_mf_1.tmp
 
@@ -350,7 +361,7 @@ runex24:                        # This is not in the nightlies because the conve
 	   ${RM} -f ex24_1.tmp
 
 runex25:
-	-@${MPIEXEC} -n 1 ./ex25 -da_grid_x 20 -ts_monitor_solution -ts_type rosw -ts_rosw_type 2p -ts_dt 5e-2 -ts_adapt_type none > ex25_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex25 -da_grid_x 20 -ts_monitor_draw_solution -ts_type rosw -ts_rosw_type 2p -ts_dt 5e-2 -ts_adapt_type none > ex25_1.tmp 2>&1; \
 	   ${DIFF} output/ex25_1.out ex25_1.tmp || echo  ${PWD} "\nPossible problem with ex25_1, diffs above \n=========================================";  \
 	   ${RM} -f ex25_1.tmp
 
@@ -358,6 +369,25 @@ runex26:
 	-@${MPIEXEC} -n 1 ./ex26 -da_grid_x 20 -da_grid_y 20 -lidvelocity 100 -grashof 1e3 -ts_max_steps 100 -ts_rtol 1e-3 -ts_atol 1e-3 -ts_type rosw -ts_rosw_type ra3pw -ts_monitor -ts_monitor_solution_vtk 'foo-%03D.vts' > ex26_1.tmp 2>&1; \
 	   ${DIFF} output/ex26_1.out ex26_1.tmp || echo  ${PWD} "\nPossible problem with ex26_1, diffs above \n=========================================";  \
 	   ${RM} -f ex26_1.tmp
+
+runex26_2:
+	-@${MPIEXEC} -n 4 ./ex26 -da_refine 2 -lidvelocity 100 -grashof 1e3 -ts_max_steps 10 -ts_rtol 1e-3 -ts_atol 1e-3 -pc_type lu \
+        -ts_type beuler -ts_monitor -snes_monitor -snes_type ngmres -npc_snes_type nasm -npc_snes_nasm_type restrict -da_overlap 4  > ex26_2.tmp 2>&1; \
+	   ${DIFF} output/ex26_2.out ex26_2.tmp || echo  ${PWD} "\nPossible problem with ex26_2, diffs above \n=========================================";  \
+	   ${RM} -f ex26_2.tmp
+
+runex26_3:
+	-@${MPIEXEC} -n 4 ./ex26 -da_refine 2 -lidvelocity 100 -grashof 1e3 -ts_max_steps 10 -ts_rtol 1e-3 -ts_atol 1e-3 -pc_type lu \
+        -ts_type beuler -ts_monitor -snes_monitor -snes_type aspin -da_overlap 4  > ex26_3.tmp 2>&1; \
+	   ${DIFF} output/ex26_3.out ex26_3.tmp || echo  ${PWD} "\nPossible problem with ex26_3, diffs above \n=========================================";  \
+	   ${RM} -f ex26_3.tmp
+
+runex29:
+	-@${MPIEXEC} -n 16 ./ex29 -da_refine 4 -ts_max_steps 10 -ts_rtol 1e-3 -ts_atol 1e-3 \
+        -ts_type arkimex -ts_monitor -snes_monitor -snes_type ngmres \
+        -npc_snes_type nasm -npc_snes_nasm_type restrict -da_overlap 4  > ex29.tmp 2>&1; \
+	   ${DIFF} output/ex29.out ex29.tmp || echo  ${PWD} "\nPossible problem with ex29, diffs above \n=========================================";  \
+	   ${RM} -f ex29.tmp
 
 
 TESTEXAMPLES_C		  = ex1.PETSc runex1 runex1_2 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 runex3_2 ex3.rm \
@@ -367,10 +397,11 @@ TESTEXAMPLES_C		  = ex1.PETSc runex1 runex1_2 ex1.rm ex2.PETSc runex2 ex2.rm ex3
                             ex12.PETSc ex12.rm ex13.PETSc runex13 runex13_2 runex13_3 ex13.rm\
                             ex15.PETSc runex15 runex15_2 runex15_3 runex15_4 runex15_5 ex15.rm \
                             ex17.PETSc runex17 runex17_2 ex17.rm ex22.PETSc ex22.rm
-TESTEXAMPLES_C_X	  = 
+TESTEXAMPLES_C_X	  =
 TESTEXAMPLES_FORTRAN	  = ex1f.PETSc runex1f ex1f.rm ex2f.PETSc runex2f ex2f.rm ex22f.PETSc ex22f.rm # ex22f_mf.PETSc ex22f_mf.rm
-TESTEXAMPLES_C_X_MPIUNI = 
+TESTEXAMPLES_C_X_MPIUNI =
 TESTEXAMPLES_13		  = ex2.PETSc ex2.rm ex3.PETSc ex3.rm ex4.PETSc ex4.rm \
                             ex5.PETSc ex5.rm
+TESTEXAMPLES_EXODUSII = ex11.PETSc runex11 ex11.rm
 
 include ${PETSC_DIR}/conf/test

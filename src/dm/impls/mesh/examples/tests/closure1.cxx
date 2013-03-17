@@ -23,9 +23,9 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
   options->interpolate = PETSC_TRUE;
 
   ierr = PetscOptionsBegin(comm, "", "PFLOTRAN Options", "SNES");CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-debug", "The debugging level", "pflotran.cxx", options->debug, &options->debug, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex11.cxx", options->dim, &options->dim, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-interpolate", "Generate intermediate mesh elements", "bratu.cxx", options->interpolate, &options->interpolate, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-debug", "The debugging level", "pflotran.cxx", options->debug, &options->debug, NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex11.cxx", options->dim, &options->dim, NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-interpolate", "Generate intermediate mesh elements", "bratu.cxx", options->interpolate, &options->interpolate, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
@@ -63,11 +63,11 @@ PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, Options *options)
   if (size > 1) {
     Mesh parallelMesh;
 
-    ierr = MeshDistribute(mesh, PETSC_NULL, &parallelMesh);CHKERRQ(ierr);
+    ierr = MeshDistribute(mesh, NULL, &parallelMesh);CHKERRQ(ierr);
     ierr = MeshDestroy(mesh);CHKERRQ(ierr);
     mesh = parallelMesh;
   }
-  ierr = PetscOptionsHasName(PETSC_NULL, "-mesh_view", &view);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL, "-mesh_view", &view);CHKERRQ(ierr);
   if (view) {
     ALE::Obj<ALE::Mesh> m;
     ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
@@ -97,12 +97,12 @@ PetscErrorCode TraverseCells(DM dm, Options *options)
   PetscFunctionBegin;
   Mesh mesh = (Mesh) dm;
   ALE::Obj<ALE::Mesh> m;
-  
+
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
   const int                                     rank        = m->commRank();
   const ALE::Obj<ALE::Mesh::real_section_type>& coordinates = m->getRealSection("coordinates");
   const ALE::Obj<ALE::Mesh::sieve_type>&        sieve       = m->getSieve();
-    
+
   // Loop over cells
   ierr = PetscPrintf(PETSC_COMM_WORLD, "Each cell (including ghosts), on each process\n");CHKERRQ(ierr);
   const ALE::Obj<ALE::Mesh::label_sequence>& cells = m->heightStratum(0);
@@ -112,15 +112,15 @@ PetscErrorCode TraverseCells(DM dm, Options *options)
     const ALE::Obj<ALE::Mesh::sieve_type::traits::coneSequence>& faces = sieve->cone(*c_iter);
     const ALE::Mesh::sieve_type::traits::coneSequence::iterator  end  = faces->end();
 
-    // Loop over faces owned by this process on the given cell    
+    // Loop over faces owned by this process on the given cell
     for(ALE::Mesh::sieve_type::traits::coneSequence::iterator f_iter = faces->begin(); f_iter != end; ++f_iter) {
       ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, "      Face %d, with coordinates ", *f_iter);CHKERRQ(ierr);
       const ALE::Obj<ALE::Mesh::sieve_type::coneArray>& vertices = sieve->nCone(*f_iter, m->depth(*f_iter));
-      
+
       // Loop over vertices of the given face
       for(ALE::Mesh::sieve_type::coneArray::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
         const ALE::Mesh::real_section_type::value_type *array = coordinates->restrictPoint(*v_iter);
-	
+
         ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, " %d (", *v_iter);CHKERRQ(ierr);
         for(int d = 0; d < m->getDimension(); ++d) {
           if (d > 0) {ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, ", ");CHKERRQ(ierr);}

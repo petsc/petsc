@@ -54,19 +54,19 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
   options->components  = 3;
 
   ierr = PetscOptionsBegin(comm, "", "Options for the Sieve package tests", "Sieve");CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-debug", "Debugging flag", "memTests", options->debug, &options->debug, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-sifter", "Run Sifter tests", "memTests", options->sifter, &options->sifter, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-label", "Run Label tests", "memTests", options->label, &options->label, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-sieve", "Run Sieve tests", "memTests", options->sieve, &options->sieve, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-mesh", "Run Mesh tests", "memTests", options->mesh, &options->mesh, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-section", "Run Section tests", "memTests", options->section, &options->section, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-isection", "Run ISection tests", "memTests", options->isection, &options->isection, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-sectionDist", "Run Section distribution tests", "memTests", options->sectionDist, &options->sectionDist, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-num", "Number of each class to create", "memTests", options->number, &options->number, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-numCells", "Number of mesh cells", "memTests", options->numCells, &options->numCells, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-interpolate", "Interpolate the mesh", "memTests", options->interpolate, &options->interpolate, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-refine", "The refinement limit", "memTests", options->refine, &options->refine, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-components", "Number of section components", "memTests", options->components, &options->components, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-debug", "Debugging flag", "memTests", options->debug, &options->debug, NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-sifter", "Run Sifter tests", "memTests", options->sifter, &options->sifter, NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-label", "Run Label tests", "memTests", options->label, &options->label, NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-sieve", "Run Sieve tests", "memTests", options->sieve, &options->sieve, NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-mesh", "Run Mesh tests", "memTests", options->mesh, &options->mesh, NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-section", "Run Section tests", "memTests", options->section, &options->section, NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-isection", "Run ISection tests", "memTests", options->isection, &options->isection, NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-sectionDist", "Run Section distribution tests", "memTests", options->sectionDist, &options->sectionDist, NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-num", "Number of each class to create", "memTests", options->number, &options->number, NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-numCells", "Number of mesh cells", "memTests", options->numCells, &options->numCells, NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-interpolate", "Interpolate the mesh", "memTests", options->interpolate, &options->interpolate, NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-refine", "The refinement limit", "memTests", options->refine, &options->refine, NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-components", "Number of section components", "memTests", options->components, &options->components, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
 
   ierr = MPI_Comm_rank(comm, &options->rank);CHKERRQ(ierr);
@@ -253,7 +253,7 @@ PetscErrorCode SectionDistributionTest(const Options *options)
   const PetscInt     locCells = end - start;
   const PetscInt     remCells = numCells - locCells;
   const PetscInt     remRanks = options->size-1;
-  const PetscInt     rotRanks = 1; 
+  const PetscInt     rotRanks = 1;
  // Allocs:
   //   Atlas (UniformSection) + Obj
   //     Atlas (ConstantSection) + Obj
@@ -557,7 +557,7 @@ PetscErrorCode ISectionDistributionTest(const Options *options)
   const PetscInt     locCells = end - start;
   const PetscInt     remCells = numCells - locCells;
   const PetscInt     remRanks = options->size-1;
-  const PetscInt     rotRanks = 1; 
+  const PetscInt     rotRanks = 1;
   PetscInt           numAlloc;
   PetscInt           numBytes;
   double            *values;

@@ -1,12 +1,10 @@
 ALL: lib
 
-CFLAGS   = 
+CFLAGS   =
 FFLAGS   =
 SOURCEC  = crl.c
-SOURCEF  = 
-SOURCEH  = 
-OBJSC    = crl.o
-OBJSF    = 
+SOURCEF  =
+SOURCEH  =
 LIBBASE  = libpetscmat
 DIRS     = ftn-kernels
 MANSEC   = Mat

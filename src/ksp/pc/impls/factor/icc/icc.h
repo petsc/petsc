@@ -7,9 +7,9 @@
 /* Incomplete Cholesky factorization context */
 
 typedef struct {
-  PC_Factor       hdr;
-  PetscReal       actualfill;
-  void            *implctx;
+  PC_Factor hdr;
+  PetscReal actualfill;
+  void      *implctx;
 } PC_ICC;
 
 #endif

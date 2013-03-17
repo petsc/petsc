@@ -35,49 +35,48 @@ PETSC_CUDA_EXTERN_C_END
 template <typename Iterator>
 class repeated_range
 {
-    public:
+public:
 
-    typedef typename thrust::iterator_difference<Iterator>::type difference_type;
+  typedef typename thrust::iterator_difference<Iterator>::type difference_type;
 
-    struct repeat_functor : public thrust::unary_function<difference_type,difference_type>
-    {
-        difference_type repeats;
-
-        repeat_functor(difference_type repeats)
-            : repeats(repeats) {}
-
-        __host__ __device__
-        difference_type operator()(const difference_type& i) const
-        {
-            return i / repeats;
-        }
-    };
-
-    typedef typename thrust::counting_iterator<difference_type>                   CountingIterator;
-    typedef typename thrust::transform_iterator<repeat_functor, CountingIterator> TransformIterator;
-    typedef typename thrust::permutation_iterator<Iterator,TransformIterator>     PermutationIterator;
-
-    // type of the repeated_range iterator
-    typedef PermutationIterator iterator;
-
-    // construct repeated_range for the range [first,last)
-    repeated_range(Iterator first, Iterator last, difference_type repeats)
-        : first(first), last(last), repeats(repeats) {}
-
-    iterator begin(void) const
-    {
-        return PermutationIterator(first, TransformIterator(CountingIterator(0), repeat_functor(repeats)));
-    }
-
-    iterator end(void) const
-    {
-        return begin() + repeats * (last - first);
-    }
-
-    protected:
+  struct repeat_functor : public thrust::unary_function<difference_type,difference_type>
+  {
     difference_type repeats;
-    Iterator first;
-    Iterator last;
+
+    repeat_functor(difference_type repeats) : repeats(repeats) {}
+
+    __host__ __device__
+    difference_type operator()(const difference_type &i) const
+    {
+      return i / repeats;
+    }
+  };
+
+  typedef typename thrust::counting_iterator<difference_type>                   CountingIterator;
+  typedef typename thrust::transform_iterator<repeat_functor, CountingIterator> TransformIterator;
+  typedef typename thrust::permutation_iterator<Iterator,TransformIterator>     PermutationIterator;
+
+  // type of the repeated_range iterator
+  typedef PermutationIterator iterator;
+
+  // construct repeated_range for the range [first,last)
+  repeated_range(Iterator first, Iterator last, difference_type repeats)
+    : first(first), last(last), repeats(repeats) {}
+
+  iterator begin(void) const
+  {
+    return PermutationIterator(first, TransformIterator(CountingIterator(0), repeat_functor(repeats)));
+  }
+
+  iterator end(void) const
+  {
+    return begin() + repeats * (last - first);
+  }
+
+protected:
+  difference_type repeats;
+  Iterator        first;
+  Iterator        last;
 
 };
 
@@ -92,61 +91,61 @@ class repeated_range
 template <typename Iterator>
 class tiled_range
 {
-    public:
+public:
 
-    typedef typename thrust::iterator_difference<Iterator>::type difference_type;
+  typedef typename thrust::iterator_difference<Iterator>::type difference_type;
 
-    struct tile_functor : public thrust::unary_function<difference_type,difference_type>
-    {
-        difference_type repeats;
-        difference_type tile_size;
-
-        tile_functor(difference_type repeats, difference_type tile_size)
-            : tile_size(tile_size), repeats(repeats) {}
-
-        __host__ __device__
-        difference_type operator()(const difference_type& i) const
-        {
-            return tile_size * (i / (tile_size * repeats)) + i % tile_size;
-        }
-    };
-
-    typedef typename thrust::counting_iterator<difference_type>                   CountingIterator;
-    typedef typename thrust::transform_iterator<tile_functor, CountingIterator>   TransformIterator;
-    typedef typename thrust::permutation_iterator<Iterator,TransformIterator>     PermutationIterator;
-
-    // type of the tiled_range iterator
-    typedef PermutationIterator iterator;
-
-    // construct repeated_range for the range [first,last)
-    tiled_range(Iterator first, Iterator last, difference_type repeats)
-        : first(first), last(last), repeats(repeats), tile_size(last - first) {}
-
-    tiled_range(Iterator first, Iterator last, difference_type repeats, difference_type tile_size)
-        : first(first), last(last), repeats(repeats), tile_size(tile_size)
-    {
-      // ASSERT((last - first) % tile_size == 0)
-    }
-
-    iterator begin(void) const
-    {
-        return PermutationIterator(first, TransformIterator(CountingIterator(0), tile_functor(repeats, tile_size)));
-    }
-
-    iterator end(void) const
-    {
-        return begin() + repeats * (last - first);
-    }
-
-    protected:
+  struct tile_functor : public thrust::unary_function<difference_type,difference_type>
+  {
     difference_type repeats;
     difference_type tile_size;
-    Iterator first;
-    Iterator last;
+
+    tile_functor(difference_type repeats, difference_type tile_size)
+      : tile_size(tile_size), repeats(repeats) {}
+
+    __host__ __device__
+    difference_type operator() (const difference_type &i) const
+    {
+      return tile_size * (i / (tile_size * repeats)) + i % tile_size;
+    }
+  };
+
+  typedef typename thrust::counting_iterator<difference_type>                   CountingIterator;
+  typedef typename thrust::transform_iterator<tile_functor, CountingIterator>   TransformIterator;
+  typedef typename thrust::permutation_iterator<Iterator,TransformIterator>     PermutationIterator;
+
+  // type of the tiled_range iterator
+  typedef PermutationIterator iterator;
+
+  // construct repeated_range for the range [first,last)
+  tiled_range(Iterator first, Iterator last, difference_type repeats)
+    : first(first), last(last), repeats(repeats), tile_size(last - first) {}
+
+  tiled_range(Iterator first, Iterator last, difference_type repeats, difference_type tile_size)
+    : first(first), last(last), repeats(repeats), tile_size(tile_size)
+  {
+    // ASSERT((last - first) % tile_size == 0)
+  }
+
+  iterator begin(void) const
+  {
+    return PermutationIterator(first, TransformIterator(CountingIterator(0), tile_functor(repeats, tile_size)));
+  }
+
+  iterator end(void) const
+  {
+    return begin() + repeats * (last - first);
+  }
+
+protected:
+  difference_type repeats;
+  difference_type tile_size;
+  Iterator        first;
+  Iterator        last;
 };
 
 typedef cusp::device_memory memSpace;
-typedef int   IndexType;
+typedef int IndexType;
 typedef PetscScalar ValueType;
 typedef cusp::array1d<IndexType, memSpace> IndexArray;
 typedef cusp::array1d<ValueType, memSpace> ValueArray;
@@ -158,14 +157,15 @@ struct is_diag
 {
   IndexType first, last;
 
-  is_diag(IndexType first, IndexType last) : first(first), last(last) {};
+  is_diag(IndexType first, IndexType last) : first(first), last(last) {}
 
   template <typename Tuple>
   __host__ __device__
-  bool operator()(Tuple t) {
+  bool operator()(Tuple t)
+  {
     // Check column
-    const IndexType row = thrust::get<0>(t);
-    const IndexType col = thrust::get<1>(t);
+    IndexType row = thrust::get<0>(t);
+    IndexType col = thrust::get<1>(t);
     return (row >= first) && (row < last) && (col >= first) && (col < last);
   }
 };
@@ -174,13 +174,14 @@ struct is_nonlocal
 {
   IndexType first, last;
 
-  is_nonlocal(IndexType first, IndexType last) : first(first), last(last) {};
+  is_nonlocal(IndexType first, IndexType last) : first(first), last(last) {}
 
   template <typename Tuple>
   __host__ __device__
-  bool operator()(Tuple t) {
+  bool operator() (Tuple t)
+  {
     // Check column
-    const IndexType row = thrust::get<0>(t);
+    IndexType row = thrust::get<0>(t);
     return (row < first) || (row >= last);
   }
 };
@@ -222,32 +223,33 @@ PetscErrorCode MatSetValuesBatch_MPIAIJCUSP(Mat J, PetscInt Ne, PetscInt Nl, Pet
   //  nondiagonal: (i,j) such that i not in [firstRow, lastRow), or j not in [firstRow, lastRow)
   //   on-process: entries provided by elemMats
   //  off-process: entries received from other processes
-  MPI_Comm        comm = ((PetscObject) J)->comm;
-  Mat_MPIAIJ     *j    = (Mat_MPIAIJ *) J->data;
-  size_t          N    = Ne * Nl;    // Length of elemRows (dimension of unassembled space)
-  size_t          No   = Ne * Nl*Nl; // Length of elemMats (total number of values)
-  PetscInt        Nr;                // Size of J          (dimension of assembled space)
-  PetscInt        firstRow, lastRow, firstCol;
+  MPI_Comm       comm;
+  Mat_MPIAIJ     *j   = (Mat_MPIAIJ*) J->data;
+  size_t         N    = Ne * Nl;     // Length of elemRows (dimension of unassembled space)
+  size_t         No   = Ne * Nl*Nl;  // Length of elemMats (total number of values)
+  PetscInt       Nr;                 // Size of J          (dimension of assembled space)
+  PetscInt       firstRow, lastRow, firstCol;
   const PetscInt *rowRanges;
-  PetscInt        numNonlocalRows;   // Number of rows in elemRows not owned by this process
-  PetscInt        numSendEntries;    // Number of (i,j,v) entries sent to other processes
-  PetscInt        numRecvEntries;    // Number of (i,j,v) entries received from other processes
-  PetscInt        Nc;
-  PetscMPIInt     numProcs, rank;
-  PetscErrorCode  ierr;
+  PetscInt       numNonlocalRows;    // Number of rows in elemRows not owned by this process
+  PetscInt       numSendEntries;     // Number of (i,j,v) entries sent to other processes
+  PetscInt       numRecvEntries;     // Number of (i,j,v) entries received from other processes
+  PetscInt       Nc;
+  PetscMPIInt    numProcs, rank;
+  PetscErrorCode ierr;
 
   // copy elemRows and elemMat to device
   IndexArray d_elemRows(elemRows, elemRows + N);
   ValueArray d_elemMats(elemMats, elemMats + No);
 
   PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)J,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm, &numProcs);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   // get matrix information
-  ierr = MatGetLocalSize(J, &Nr, PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatGetLocalSize(J, &Nr, NULL);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(J, &firstRow, &lastRow);CHKERRQ(ierr);
   ierr = MatGetOwnershipRanges(J, &rowRanges);CHKERRQ(ierr);
-  ierr = MatGetOwnershipRangeColumn(J, &firstCol, PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatGetOwnershipRangeColumn(J, &firstCol, NULL);CHKERRQ(ierr);
   ierr = PetscInfo3(J, "Assembling matrix of size %d (rows %d -- %d)\n", Nr, firstRow, lastRow);CHKERRQ(ierr);
 
   // repeat elemRows entries Nl times
@@ -262,16 +264,18 @@ PetscErrorCode MatSetValuesBatch_MPIAIJCUSP(Mat J, PetscInt Ne, PetscInt Nl, Pet
   // TODO: Ask Nathan how to do this on GPU
   ierr = PetscLogEventBegin(MAT_SetValuesBatchI,0,0,0,0);CHKERRQ(ierr);
   PetscMPIInt *procSendSizes, *procRecvSizes;
+
   ierr = PetscMalloc2(numProcs, PetscMPIInt, &procSendSizes, numProcs, PetscMPIInt, &procRecvSizes);CHKERRQ(ierr);
   ierr = PetscMemzero(procSendSizes, numProcs * sizeof(PetscInt));CHKERRQ(ierr);
   ierr = PetscMemzero(procRecvSizes, numProcs * sizeof(PetscInt));CHKERRQ(ierr);
+
   numNonlocalRows = 0;
-  for(size_t i = 0; i < N; ++i) {
+  for (size_t i = 0; i < N; ++i) {
     const PetscInt row = elemRows[i];
 
     if ((row < firstRow) || (row >= lastRow)) {
       numNonlocalRows++;
-      for(IndexType p = 0; p < numProcs; ++p) {
+      for (IndexType p = 0; p < numProcs; ++p) {
         if ((row >= rowRanges[p]) && (row < rowRanges[p+1])) {
           procSendSizes[p] += Nl;
           break;
@@ -280,12 +284,12 @@ PetscErrorCode MatSetValuesBatch_MPIAIJCUSP(Mat J, PetscInt Ne, PetscInt Nl, Pet
     }
   }
   numSendEntries = numNonlocalRows*Nl;
+
   ierr = PetscInfo2(J, "Nonlocal rows %d total entries %d\n", numNonlocalRows, No);CHKERRQ(ierr);
   ierr = MPI_Alltoall(procSendSizes, 1, MPIU_INT, procRecvSizes, 1, MPIU_INT, comm);CHKERRQ(ierr);
+
   numRecvEntries = 0;
-  for(PetscInt p = 0; p < numProcs; ++p) {
-    numRecvEntries += procRecvSizes[p];
-  }
+  for (PetscInt p = 0; p < numProcs; ++p) numRecvEntries += procRecvSizes[p];
   ierr = PetscInfo2(j->A, "Send entries %d Recv Entries %d\n", numSendEntries, numRecvEntries);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_SetValuesBatchI,0,0,0,0);CHKERRQ(ierr);
   // Allocate storage for "fat" COO representation of matrix
@@ -329,11 +333,13 @@ PetscErrorCode MatSetValuesBatch_MPIAIJCUSP(Mat J, PetscInt Ne, PetscInt Nl, Pet
   PetscInt    *sendRows, *recvRows;
   PetscInt    *sendCols, *recvCols;
   PetscScalar *sendVals, *recvVals;
+
   ierr = PetscMalloc2(numProcs, PetscMPIInt, &procSendDispls, numProcs, PetscMPIInt, &procRecvDispls);CHKERRQ(ierr);
   ierr = PetscMalloc3(numSendEntries, PetscInt, &sendRows, numSendEntries, PetscInt, &sendCols, numSendEntries, PetscScalar, &sendVals);CHKERRQ(ierr);
   ierr = PetscMalloc3(numRecvEntries, PetscInt, &recvRows, numRecvEntries, PetscInt, &recvCols, numRecvEntries, PetscScalar, &recvVals);CHKERRQ(ierr);
+
   procSendDispls[0] = procRecvDispls[0] = 0;
-  for(PetscInt p = 1; p < numProcs; ++p) {
+  for (PetscInt p = 1; p < numProcs; ++p) {
     procSendDispls[p] = procSendDispls[p-1] + procSendSizes[p-1];
     procRecvDispls[p] = procRecvDispls[p-1] + procRecvSizes[p-1];
   }
@@ -378,7 +384,9 @@ PetscErrorCode MatSetValuesBatch_MPIAIJCUSP(Mat J, PetscInt Ne, PetscInt Nl, Pet
                          thrust::make_zip_iterator(thrust::make_tuple(diagCOO.row_indices.begin()+diagonalSize, diagCOO.column_indices.begin()+diagonalSize, diagCOO.values.begin()+diagonalSize)),
                          thrust::make_zip_iterator(thrust::make_tuple(offdiagCOO.row_indices.begin()+offdiagonalSize, offdiagCOO.column_indices.begin()+offdiagonalSize, offdiagCOO.values.begin()+offdiagonalSize)),
                          is_diag(firstRow, lastRow));
+
   ierr = PetscFree3(recvRows, recvCols, recvVals);CHKERRQ(ierr);
+
   diagonalSize    = (diagCOO.row_indices.end()    - diagCOO.row_indices.begin())    - thrust::count(diagCOO.row_indices.begin(),    diagCOO.row_indices.end(),    -1);
   offdiagonalSize = (offdiagCOO.row_indices.end() - offdiagCOO.row_indices.begin()) - thrust::count(offdiagCOO.row_indices.begin(), offdiagCOO.row_indices.end(), -1);
 
@@ -407,19 +415,19 @@ PetscErrorCode MatSetValuesBatch_MPIAIJCUSP(Mat J, PetscInt Ne, PetscInt Nl, Pet
   //   this counts the number of changes as we move along the (i,j) list
   ierr = PetscInfo(J, "Computing number of unique entries\n");CHKERRQ(ierr);
   size_t num_diag_entries = thrust::inner_product
-    (thrust::make_zip_iterator(thrust::make_tuple(diagCOO.row_indices.begin(), diagCOO.column_indices.begin())) + diagonalOffset,
-     thrust::make_zip_iterator(thrust::make_tuple(diagCOO.row_indices.end(),   diagCOO.column_indices.end())) - 1,
-     thrust::make_zip_iterator(thrust::make_tuple(diagCOO.row_indices.begin(), diagCOO.column_indices.begin())) + diagonalOffset + 1,
-     size_t(1),
-     thrust::plus<size_t>(),
-     thrust::not_equal_to< thrust::tuple<IndexType,IndexType> >());
+                              (thrust::make_zip_iterator(thrust::make_tuple(diagCOO.row_indices.begin(), diagCOO.column_indices.begin())) + diagonalOffset,
+                              thrust::make_zip_iterator(thrust::make_tuple(diagCOO.row_indices.end(),   diagCOO.column_indices.end())) - 1,
+                              thrust::make_zip_iterator(thrust::make_tuple(diagCOO.row_indices.begin(), diagCOO.column_indices.begin())) + diagonalOffset + 1,
+                              size_t(1),
+                              thrust::plus<size_t>(),
+                              thrust::not_equal_to< thrust::tuple<IndexType,IndexType> >());
   size_t num_offdiag_entries = thrust::inner_product
-    (thrust::make_zip_iterator(thrust::make_tuple(offdiagCOO.row_indices.begin(), offdiagCOO.column_indices.begin())) + offdiagonalOffset,
-     thrust::make_zip_iterator(thrust::make_tuple(offdiagCOO.row_indices.end(),   offdiagCOO.column_indices.end())) - 1,
-     thrust::make_zip_iterator(thrust::make_tuple(offdiagCOO.row_indices.begin(), offdiagCOO.column_indices.begin())) + offdiagonalOffset + 1,
-     size_t(1),
-     thrust::plus<size_t>(),
-     thrust::not_equal_to< thrust::tuple<IndexType,IndexType> >());
+                                 (thrust::make_zip_iterator(thrust::make_tuple(offdiagCOO.row_indices.begin(), offdiagCOO.column_indices.begin())) + offdiagonalOffset,
+                                 thrust::make_zip_iterator(thrust::make_tuple(offdiagCOO.row_indices.end(),   offdiagCOO.column_indices.end())) - 1,
+                                 thrust::make_zip_iterator(thrust::make_tuple(offdiagCOO.row_indices.begin(), offdiagCOO.column_indices.begin())) + offdiagonalOffset + 1,
+                                 size_t(1),
+                                 thrust::plus<size_t>(),
+                                 thrust::not_equal_to< thrust::tuple<IndexType,IndexType> >());
 
   // allocate COO storage for final matrix
   ierr = PetscInfo(J, "Allocating compressed matrices\n");CHKERRQ(ierr);
@@ -432,20 +440,20 @@ PetscErrorCode MatSetValuesBatch_MPIAIJCUSP(Mat J, PetscInt Ne, PetscInt Nl, Pet
   // This could possibly be done in-place
   ierr = PetscInfo(J, "Compressing matrices\n");CHKERRQ(ierr);
   thrust::reduce_by_key(thrust::make_zip_iterator(thrust::make_tuple(diagCOO.row_indices.begin(), diagCOO.column_indices.begin())) + diagonalOffset,
-     thrust::make_zip_iterator(thrust::make_tuple(diagCOO.row_indices.end(),   diagCOO.column_indices.end())),
-     diagCOO.values.begin() + diagonalOffset,
-     thrust::make_zip_iterator(thrust::make_tuple(A.row_indices.begin(), A.column_indices.begin())),
-     A.values.begin(),
-     thrust::equal_to< thrust::tuple<IndexType,IndexType> >(),
-     thrust::plus<ValueType>());
+                        thrust::make_zip_iterator(thrust::make_tuple(diagCOO.row_indices.end(),   diagCOO.column_indices.end())),
+                        diagCOO.values.begin() + diagonalOffset,
+                        thrust::make_zip_iterator(thrust::make_tuple(A.row_indices.begin(), A.column_indices.begin())),
+                        A.values.begin(),
+                        thrust::equal_to< thrust::tuple<IndexType,IndexType> >(),
+                        thrust::plus<ValueType>());
 
   thrust::reduce_by_key(thrust::make_zip_iterator(thrust::make_tuple(offdiagCOO.row_indices.begin(), offdiagCOO.column_indices.begin())) + offdiagonalOffset,
-     thrust::make_zip_iterator(thrust::make_tuple(offdiagCOO.row_indices.end(),   offdiagCOO.column_indices.end())),
-     offdiagCOO.values.begin() + offdiagonalOffset,
-     thrust::make_zip_iterator(thrust::make_tuple(B.row_indices.begin(), B.column_indices.begin())),
-     B.values.begin(),
-     thrust::equal_to< thrust::tuple<IndexType,IndexType> >(),
-     thrust::plus<ValueType>());
+                        thrust::make_zip_iterator(thrust::make_tuple(offdiagCOO.row_indices.end(),   offdiagCOO.column_indices.end())),
+                        offdiagCOO.values.begin() + offdiagonalOffset,
+                        thrust::make_zip_iterator(thrust::make_tuple(B.row_indices.begin(), B.column_indices.begin())),
+                        B.values.begin(),
+                        thrust::equal_to< thrust::tuple<IndexType,IndexType> >(),
+                        thrust::plus<ValueType>());
 
   // Convert row and column numbers
   if (firstRow) {
@@ -460,8 +468,8 @@ PetscErrorCode MatSetValuesBatch_MPIAIJCUSP(Mat J, PetscInt Ne, PetscInt Nl, Pet
   IndexArray d_colmap(Nc);
   thrust::unique_copy(B.column_indices.begin(), B.column_indices.end(), d_colmap.begin());
   IndexHostArray colmap(d_colmap.begin(), d_colmap.end());
-  IndexType      newCol = 0;
-  for(IndexHostArray::iterator c_iter = colmap.begin(); c_iter != colmap.end(); ++c_iter, ++newCol) {
+  IndexType newCol = 0;
+  for (IndexHostArray::iterator c_iter = colmap.begin(); c_iter != colmap.end(); ++c_iter, ++newCol) {
     thrust::replace(B.column_indices.begin(), B.column_indices.end(), *c_iter, newCol);
   }
 #endif
@@ -491,11 +499,12 @@ PetscErrorCode MatSetValuesBatch_MPIAIJCUSP(Mat J, PetscInt Ne, PetscInt Nl, Pet
     ierr = MatCUSPCopyFromGPU(j->A, Agpu);CHKERRQ(ierr);
     ierr = MatCUSPCopyFromGPU(j->B, Bgpu);CHKERRQ(ierr);
 #if 0 // This is done by MatSetUpMultiply_MPIAIJ()
+
     // Create the column map
     ierr = PetscFree(j->garray);CHKERRQ(ierr);
     ierr = PetscMalloc(Nc * sizeof(PetscInt), &j->garray);CHKERRQ(ierr);
     PetscInt c = 0;
-    for(IndexHostArray::iterator c_iter = colmap.begin(); c_iter != colmap.end(); ++c_iter, ++c) {
+    for (IndexHostArray::iterator c_iter = colmap.begin(); c_iter != colmap.end(); ++c_iter, ++c) {
       j->garray[c] = *c_iter;
     }
 #endif

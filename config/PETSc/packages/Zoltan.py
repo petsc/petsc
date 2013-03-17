@@ -5,8 +5,8 @@ class Configure(PETSc.package.NewPackage):
     PETSc.package.NewPackage.__init__(self, framework)
     self.download  = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/zoltan_distrib.tar.gz']
     self.functions = ['Zoltan_LB_Partition']
-    self.includes  = ['zoltan.h'] 
-    self.liblist   = [['libzoltan.a']] 
+    self.includes  = ['zoltan.h']
+    self.liblist   = [['libzoltan.a']]
     self.license   = 'http://www.cs.sandia.gov/Zoltan/Zoltan.html'
     return
 
@@ -16,7 +16,7 @@ class Configure(PETSc.package.NewPackage):
     self.parmetis = framework.require('PETSc.packages.parmetis',self)
     self.deps = [self.x, self.mpi, self.parmetis]
     return
-          
+
   def Install(self):
     import os
     self.framework.pushLanguage('C')
@@ -57,8 +57,8 @@ class Configure(PETSc.package.NewPackage):
 ##############################################################################
 # The location of the VTK libraries, built with OpenGL
 #   We do not do these correctly
-VTK_LIBPATH = 
-VTK_INCPATH = 
+VTK_LIBPATH =
+VTK_INCPATH =
 # The location of the GL or Mesa libraries, and the libraries
 #   We do not do these correctly
 GL_LIBPATH = -L/usr/lib

@@ -1,10 +1,10 @@
 
 /*
-    Defines the basic matrix operations for the ADJ adjacency list matrix data-structure. 
+    Defines the basic matrix operations for the ADJ adjacency list matrix data-structure.
 */
 #include <../src/mat/impls/adj/mpi/mpiadj.h>    /*I "petscmat.h" I*/
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatView_MPIAdj_ASCII"
 PetscErrorCode MatView_MPIAdj_ASCII(Mat A,PetscViewer viewer)
 {
@@ -20,7 +20,7 @@ PetscErrorCode MatView_MPIAdj_ASCII(Mat A,PetscViewer viewer)
   if (format == PETSC_VIEWER_ASCII_INFO) {
     PetscFunctionReturn(0);
   } else if (format == PETSC_VIEWER_ASCII_MATLAB) {
-    SETERRQ(((PetscObject)A)->comm,PETSC_ERR_SUP,"MATLAB format not supported");
+    SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"MATLAB format not supported");
   } else {
     ierr = PetscViewerASCIIUseTabs(viewer,PETSC_FALSE);CHKERRQ(ierr);
     ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_TRUE);CHKERRQ(ierr);
@@ -34,11 +34,11 @@ PetscErrorCode MatView_MPIAdj_ASCII(Mat A,PetscViewer viewer)
     ierr = PetscViewerASCIIUseTabs(viewer,PETSC_TRUE);CHKERRQ(ierr);
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_FALSE);CHKERRQ(ierr);
-  } 
+  }
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatView_MPIAdj"
 PetscErrorCode MatView_MPIAdj(Mat A,PetscViewer viewer)
 {
@@ -49,8 +49,6 @@ PetscErrorCode MatView_MPIAdj(Mat A,PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     ierr = MatView_MPIAdj_ASCII(A,viewer);CHKERRQ(ierr);
-  } else {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported by MPIAdj",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -79,14 +77,14 @@ PetscErrorCode MatDestroy_MPIAdj(Mat mat)
   }
   ierr = PetscFree(mat->data);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)mat,0);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMPIAdjSetPreallocation_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMPIAdjCreateNonemptySubcommMat_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMPIAdjSetPreallocation_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMPIAdjCreateNonemptySubcommMat_C","",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatSetOption_MPIAdj"
-PetscErrorCode MatSetOption_MPIAdj(Mat A,MatOption op,PetscBool  flg)
+PetscErrorCode MatSetOption_MPIAdj(Mat A,MatOption op,PetscBool flg)
 {
   Mat_MPIAdj     *a = (Mat_MPIAdj*)A->data;
   PetscErrorCode ierr;
@@ -112,11 +110,11 @@ PetscErrorCode MatSetOption_MPIAdj(Mat A,MatOption op,PetscBool  flg)
      Adds diagonal pointers to sparse matrix structure.
 */
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatMarkDiagonal_MPIAdj"
 PetscErrorCode MatMarkDiagonal_MPIAdj(Mat A)
 {
-  Mat_MPIAdj     *a = (Mat_MPIAdj*)A->data; 
+  Mat_MPIAdj     *a = (Mat_MPIAdj*)A->data;
   PetscErrorCode ierr;
   PetscInt       i,j,m = A->rmap->n;
 
@@ -134,7 +132,7 @@ PetscErrorCode MatMarkDiagonal_MPIAdj(Mat A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatGetRow_MPIAdj"
 PetscErrorCode MatGetRow_MPIAdj(Mat A,PetscInt row,PetscInt *nz,PetscInt **idx,PetscScalar **v)
 {
@@ -147,7 +145,7 @@ PetscErrorCode MatGetRow_MPIAdj(Mat A,PetscInt row,PetscInt *nz,PetscInt **idx,P
   if (row < 0 || row >= A->rmap->n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Row out of range");
 
   *nz = a->i[row+1] - a->i[row];
-  if (v) *v = PETSC_NULL;
+  if (v) *v = NULL;
   if (idx) {
     itmp = a->j + a->i[row];
     if (*nz) {
@@ -158,7 +156,7 @@ PetscErrorCode MatGetRow_MPIAdj(Mat A,PetscInt row,PetscInt *nz,PetscInt **idx,P
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatRestoreRow_MPIAdj"
 PetscErrorCode MatRestoreRow_MPIAdj(Mat A,PetscInt row,PetscInt *nz,PetscInt **idx,PetscScalar **v)
 {
@@ -166,11 +164,11 @@ PetscErrorCode MatRestoreRow_MPIAdj(Mat A,PetscInt row,PetscInt *nz,PetscInt **i
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatEqual_MPIAdj"
 PetscErrorCode MatEqual_MPIAdj(Mat A,Mat B,PetscBool * flg)
 {
-  Mat_MPIAdj     *a = (Mat_MPIAdj *)A->data,*b = (Mat_MPIAdj *)B->data;
+  Mat_MPIAdj     *a = (Mat_MPIAdj*)A->data,*b = (Mat_MPIAdj*)B->data;
   PetscErrorCode ierr;
   PetscBool      flag;
 
@@ -179,23 +177,24 @@ PetscErrorCode MatEqual_MPIAdj(Mat A,Mat B,PetscBool * flg)
   if ((A->rmap->n != B->rmap->n) ||(a->nz != b->nz)) {
     flag = PETSC_FALSE;
   }
-  
+
   /* if the a->i are the same */
   ierr = PetscMemcmp(a->i,b->i,(A->rmap->n+1)*sizeof(PetscInt),&flag);CHKERRQ(ierr);
-  
+
   /* if a->j are the same */
   ierr = PetscMemcmp(a->j,b->j,(a->nz)*sizeof(PetscInt),&flag);CHKERRQ(ierr);
 
-  ierr = MPI_Allreduce(&flag,flg,1,MPI_INT,MPI_LAND,((PetscObject)A)->comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&flag,flg,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)A));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatGetRowIJ_MPIAdj"
-PetscErrorCode MatGetRowIJ_MPIAdj(Mat A,PetscInt oshift,PetscBool  symmetric,PetscBool  blockcompressed,PetscInt *m,PetscInt *ia[],PetscInt *ja[],PetscBool  *done)
+PetscErrorCode MatGetRowIJ_MPIAdj(Mat A,PetscInt oshift,PetscBool symmetric,PetscBool blockcompressed,PetscInt *m,const PetscInt *inia[],const PetscInt *inja[],PetscBool  *done)
 {
-  PetscInt       i;
-  Mat_MPIAdj     *a = (Mat_MPIAdj *)A->data;
+  PetscInt   i;
+  Mat_MPIAdj *a   = (Mat_MPIAdj*)A->data;
+  PetscInt   **ia = (PetscInt**)inia,**ja = (PetscInt**)inja;
 
   PetscFunctionBegin;
   *m    = A->rmap->n;
@@ -211,12 +210,13 @@ PetscErrorCode MatGetRowIJ_MPIAdj(Mat A,PetscInt oshift,PetscBool  symmetric,Pet
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatRestoreRowIJ_MPIAdj"
-PetscErrorCode MatRestoreRowIJ_MPIAdj(Mat A,PetscInt oshift,PetscBool  symmetric,PetscBool  blockcompressed,PetscInt *m,PetscInt *ia[],PetscInt *ja[],PetscBool  *done)
+PetscErrorCode MatRestoreRowIJ_MPIAdj(Mat A,PetscInt oshift,PetscBool symmetric,PetscBool blockcompressed,PetscInt *m,const PetscInt *inia[],const PetscInt *inja[],PetscBool  *done)
 {
   PetscInt   i;
-  Mat_MPIAdj *a = (Mat_MPIAdj *)A->data;
+  Mat_MPIAdj *a   = (Mat_MPIAdj*)A->data;
+  PetscInt   **ia = (PetscInt**)inia,**ja = (PetscInt**)inja;
 
   PetscFunctionBegin;
   if (ia && a->i != *ia) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"ia passed back is not one obtained with MatGetRowIJ()");
@@ -230,9 +230,9 @@ PetscErrorCode MatRestoreRowIJ_MPIAdj(Mat A,PetscInt oshift,PetscBool  symmetric
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatConvertFrom_MPIAdj"
-PetscErrorCode  MatConvertFrom_MPIAdj(Mat A,const MatType type,MatReuse reuse,Mat *newmat)
+PetscErrorCode  MatConvertFrom_MPIAdj(Mat A,MatType type,MatReuse reuse,Mat *newmat)
 {
   Mat               B;
   PetscErrorCode    ierr;
@@ -242,17 +242,17 @@ PetscErrorCode  MatConvertFrom_MPIAdj(Mat A,const MatType type,MatReuse reuse,Ma
   MPI_Comm          comm;
 
   PetscFunctionBegin;
-  ierr = MatGetSize(A,PETSC_NULL,&N);CHKERRQ(ierr);
-  ierr = MatGetLocalSize(A,&m,PETSC_NULL);CHKERRQ(ierr);
-  ierr = MatGetOwnershipRange(A,&rstart,PETSC_NULL);CHKERRQ(ierr);
-  
+  ierr = MatGetSize(A,NULL,&N);CHKERRQ(ierr);
+  ierr = MatGetLocalSize(A,&m,NULL);CHKERRQ(ierr);
+  ierr = MatGetOwnershipRange(A,&rstart,NULL);CHKERRQ(ierr);
+
   /* count the number of nonzeros per row */
   for (i=0; i<m; i++) {
-    ierr   = MatGetRow(A,i+rstart,&len,&rj,PETSC_NULL);CHKERRQ(ierr);
+    ierr = MatGetRow(A,i+rstart,&len,&rj,NULL);CHKERRQ(ierr);
     for (j=0; j<len; j++) {
       if (rj[j] == i+rstart) {len--; break;}    /* don't count diagonal */
     }
-    ierr   = MatRestoreRow(A,i+rstart,&len,&rj,PETSC_NULL);CHKERRQ(ierr);
+    ierr    = MatRestoreRow(A,i+rstart,&len,&rj,NULL);CHKERRQ(ierr);
     nzeros += len;
   }
 
@@ -264,17 +264,17 @@ PetscErrorCode  MatConvertFrom_MPIAdj(Mat A,const MatType type,MatReuse reuse,Ma
   nzeros = 0;
   ia[0]  = 0;
   for (i=0; i<m; i++) {
-    ierr    = MatGetRow(A,i+rstart,&len,&rj,&ra);CHKERRQ(ierr);
-    cnt     = 0;
+    ierr = MatGetRow(A,i+rstart,&len,&rj,&ra);CHKERRQ(ierr);
+    cnt  = 0;
     for (j=0; j<len; j++) {
       if (rj[j] != i+rstart) { /* if not diagonal */
         a[nzeros+cnt]    = (PetscInt) PetscAbsScalar(ra[j]);
         ja[nzeros+cnt++] = rj[j];
-      } 
+      }
     }
     ierr    = MatRestoreRow(A,i+rstart,&len,&rj,&ra);CHKERRQ(ierr);
     nzeros += cnt;
-    ia[i+1] = nzeros; 
+    ia[i+1] = nzeros;
   }
 
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
@@ -391,15 +391,14 @@ static struct _MatOps MatOps_Values = {0,
        0,
        0};
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatMPIAdjSetPreallocation_MPIAdj"
-PetscErrorCode  MatMPIAdjSetPreallocation_MPIAdj(Mat B,PetscInt *i,PetscInt *j,PetscInt *values)
+static PetscErrorCode  MatMPIAdjSetPreallocation_MPIAdj(Mat B,PetscInt *i,PetscInt *j,PetscInt *values)
 {
-  Mat_MPIAdj     *b = (Mat_MPIAdj *)B->data;
+  Mat_MPIAdj     *b = (Mat_MPIAdj*)B->data;
   PetscErrorCode ierr;
 #if defined(PETSC_USE_DEBUG)
-  PetscInt       ii;
+  PetscInt ii;
 #endif
 
   PetscFunctionBegin;
@@ -413,7 +412,7 @@ PetscErrorCode  MatMPIAdjSetPreallocation_MPIAdj(Mat B,PetscInt *i,PetscInt *j,P
   }
   for (ii=0; ii<i[B->rmap->n]; ii++) {
     if (j[ii] < 0 || j[ii] >= B->cmap->N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Column index %D out of range %D\n",ii,j[ii]);
-  } 
+  }
 #endif
   B->preallocated = PETSC_TRUE;
 
@@ -421,20 +420,19 @@ PetscErrorCode  MatMPIAdjSetPreallocation_MPIAdj(Mat B,PetscInt *i,PetscInt *j,P
   b->i      = i;
   b->values = values;
 
-  b->nz               = i[B->rmap->n];
-  b->diag             = 0;
-  b->symmetric        = PETSC_FALSE;
-  b->freeaij          = PETSC_TRUE;
+  b->nz        = i[B->rmap->n];
+  b->diag      = 0;
+  b->symmetric = PETSC_FALSE;
+  b->freeaij   = PETSC_TRUE;
 
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMPIAdjCreateNonemptySubcommMat_MPIAdj"
-PETSC_EXTERN_C PetscErrorCode MatMPIAdjCreateNonemptySubcommMat_MPIAdj(Mat A,Mat *B)
+static PetscErrorCode MatMPIAdjCreateNonemptySubcommMat_MPIAdj(Mat A,Mat *B)
 {
   Mat_MPIAdj     *a = (Mat_MPIAdj*)A->data;
   PetscErrorCode ierr;
@@ -444,17 +442,17 @@ PETSC_EXTERN_C PetscErrorCode MatMPIAdjCreateNonemptySubcommMat_MPIAdj(Mat A,Mat
   PetscMPIInt    i,rank,size,nranks,*ranks;
 
   PetscFunctionBegin;
-  *B = PETSC_NULL;
-  acomm = ((PetscObject)A)->comm;
-  ierr = MPI_Comm_size(acomm,&size);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(acomm,&rank);CHKERRQ(ierr);
-  ierr = MatGetOwnershipRanges(A,&ranges);CHKERRQ(ierr);
+  *B    = NULL;
+  ierr  = PetscObjectGetComm((PetscObject)A,&acomm);CHKERRQ(ierr);
+  ierr  = MPI_Comm_size(acomm,&size);CHKERRQ(ierr);
+  ierr  = MPI_Comm_size(acomm,&rank);CHKERRQ(ierr);
+  ierr  = MatGetOwnershipRanges(A,&ranges);CHKERRQ(ierr);
   for (i=0,nranks=0; i<size; i++) {
     if (ranges[i+1] - ranges[i] > 0) nranks++;
   }
   if (nranks == size) {         /* All ranks have a positive number of rows, so we do not need to create a subcomm; */
     ierr = PetscObjectReference((PetscObject)A);CHKERRQ(ierr);
-    *B = A;
+    *B   = A;
     PetscFunctionReturn(0);
   }
 
@@ -471,12 +469,12 @@ PETSC_EXTERN_C PetscErrorCode MatMPIAdjCreateNonemptySubcommMat_MPIAdj(Mat A,Mat
   if (bcomm != MPI_COMM_NULL) {
     PetscInt   m,N;
     Mat_MPIAdj *b;
-    ierr = MatGetLocalSize(A,&m,PETSC_NULL);CHKERRQ(ierr);
-    ierr = MatGetSize(A,PETSC_NULL,&N);CHKERRQ(ierr);
-    ierr = MatCreateMPIAdj(bcomm,m,N,a->i,a->j,a->values,B);CHKERRQ(ierr);
-    b = (Mat_MPIAdj*)(*B)->data;
+    ierr       = MatGetLocalSize(A,&m,NULL);CHKERRQ(ierr);
+    ierr       = MatGetSize(A,NULL,&N);CHKERRQ(ierr);
+    ierr       = MatCreateMPIAdj(bcomm,m,N,a->i,a->j,a->values,B);CHKERRQ(ierr);
+    b          = (Mat_MPIAdj*)(*B)->data;
     b->freeaij = PETSC_FALSE;
-    ierr = MPI_Comm_free(&bcomm);CHKERRQ(ierr);
+    ierr       = MPI_Comm_free(&bcomm);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -492,7 +490,7 @@ PETSC_EXTERN_C PetscErrorCode MatMPIAdjCreateNonemptySubcommMat_MPIAdj(Mat A,Mat
 .  A - original MPIAdj matrix
 
    Output Arguments:
-.  B - matrix on subcommunicator, PETSC_NULL on ranks that owned zero rows of A
+.  B - matrix on subcommunicator, NULL on ranks that owned zero rows of A
 
    Level: developer
 
@@ -522,32 +520,26 @@ PetscErrorCode MatMPIAdjCreateNonemptySubcommMat(Mat A,Mat *B)
 .seealso: MatCreateMPIAdj
 M*/
 
-EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatCreate_MPIAdj"
-PetscErrorCode  MatCreate_MPIAdj(Mat B)
+PETSC_EXTERN PetscErrorCode MatCreate_MPIAdj(Mat B)
 {
   Mat_MPIAdj     *b;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr                = PetscNewLog(B,Mat_MPIAdj,&b);CHKERRQ(ierr);
-  B->data             = (void*)b;
-  ierr                = PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
-  B->assembled        = PETSC_FALSE;
-  
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatMPIAdjSetPreallocation_C",
-                                    "MatMPIAdjSetPreallocation_MPIAdj",
-                                     MatMPIAdjSetPreallocation_MPIAdj);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatMPIAdjCreateNonemptySubcommMat_C",
-                                    "MatMPIAdjCreateNonemptySubcommMat_MPIAdj",
-                                     MatMPIAdjCreateNonemptySubcommMat_MPIAdj);CHKERRQ(ierr);
+  ierr         = PetscNewLog(B,Mat_MPIAdj,&b);CHKERRQ(ierr);
+  B->data      = (void*)b;
+  ierr         = PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
+  B->assembled = PETSC_FALSE;
+
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMPIAdjSetPreallocation_C","MatMPIAdjSetPreallocation_MPIAdj",MatMPIAdjSetPreallocation_MPIAdj);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMPIAdjCreateNonemptySubcommMat_C","MatMPIAdjCreateNonemptySubcommMat_MPIAdj",MatMPIAdjCreateNonemptySubcommMat_MPIAdj);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATMPIADJ);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatMPIAdjSetPreallocation"
 /*@C
    MatMPIAdjSetPreallocation - Sets the array used for storing the matrix elements
@@ -574,7 +566,7 @@ PetscErrorCode  MatMPIAdjSetPreallocation(Mat B,PetscInt *i,PetscInt *j,PetscInt
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatCreateMPIAdj"
 /*@C
    MatCreateMPIAdj - Creates a sparse matrix representing an adjacency list.
@@ -593,14 +585,14 @@ PetscErrorCode  MatMPIAdjSetPreallocation(Mat B,PetscInt *i,PetscInt *j,PetscInt
 -  values -[optional] edge weights
 
    Output Parameter:
-.  A - the matrix 
+.  A - the matrix
 
    Level: intermediate
 
    Notes: This matrix object does not support most matrix operations, include
    MatSetValues().
    You must NOT free the ii, values and jj arrays yourself. PETSc will free them
-   when the matrix is destroyed; you must allocate them with PetscMalloc(). If you 
+   when the matrix is destroyed; you must allocate them with PetscMalloc(). If you
     call from Fortran you need not create the arrays with PetscMalloc().
    Should not include the matrix diagonals.
 

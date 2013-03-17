@@ -131,7 +131,8 @@ int main(int argc, char **argv)
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
        Solve nonlinear system
        - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-    ierr = TSSolve(ts,x,&ftime);CHKERRQ(ierr);
+    ierr = TSSolve(ts,x);CHKERRQ(ierr);
+    ierr = TSGetTime(ts,&ftime);CHKERRQ(ierr);
     ierr = TSGetTimeStepNumber(ts,&steps);CHKERRQ(ierr);
 //    ierr = PetscPrintf(PETSC_COMM_WORLD,"mu %G, steps %D, ftime %G\n",user.mu,steps,ftime);CHKERRQ(ierr);
 //    ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
@@ -152,6 +153,7 @@ int main(int argc, char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
     ierr = MatDestroy(&A);CHKERRQ(ierr);
     ierr = VecDestroy(&x);CHKERRQ(ierr);
+    ierr = VecDestroy(&ref);CHKERRQ(ierr);
     ierr = TSDestroy(&ts);CHKERRQ(ierr);
     ierr = PetscFinalize();
     PetscFunctionReturn(0);

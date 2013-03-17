@@ -37,6 +37,7 @@ PETSC_EXTERN PetscLogEvent DMMesh_View, DMMesh_GetGlobalScatter, DMMesh_restrict
 
 PETSC_EXTERN PetscErrorCode DMMeshCreate(MPI_Comm, DM*);
 PETSC_EXTERN PetscErrorCode DMMeshCreateMeshFromAdjacency(MPI_Comm, PetscInt, PetscInt, PetscInt, PetscInt [], PetscInt, PetscInt, const PetscReal [], PetscBool, DM*);
+PETSC_EXTERN PetscErrorCode DMMeshClone(DM, DM *);
 PETSC_EXTERN PetscErrorCode DMMeshGetMesh(DM, ALE::Obj<PETSC_MESH_TYPE>&);
 PETSC_EXTERN PetscErrorCode DMMeshSetMesh(DM, const ALE::Obj<PETSC_MESH_TYPE>&);
 PETSC_EXTERN PetscErrorCode DMMeshGetGlobalScatter(DM, VecScatter *);
@@ -106,6 +107,7 @@ PETSC_EXTERN PetscErrorCode DMMeshGetCoordinateVec(DM, Vec *);
 PETSC_EXTERN PetscErrorCode DMMeshComputeCellGeometry(DM, PetscInt, PetscReal *, PetscReal *, PetscReal *, PetscReal *);
 PETSC_EXTERN PetscErrorCode DMMeshVecSetClosure(DM, Vec, PetscInt, const PetscScalar [], InsertMode);
 PETSC_EXTERN PetscErrorCode DMMeshVecGetClosure(DM, Vec, PetscInt, const PetscScalar **);
+PETSC_EXTERN PetscErrorCode DMMeshVecRestoreClosure(DM, Vec, PetscInt, const PetscScalar **);
 PETSC_EXTERN PetscErrorCode DMMeshMatSetClosure(DM, Mat, PetscInt, PetscScalar [], InsertMode);
 
 PETSC_EXTERN PetscErrorCode MatSetValuesTopology(Mat, DM, PetscInt, const PetscInt [], DM, PetscInt, const PetscInt [], const PetscScalar [], InsertMode);
@@ -146,7 +148,7 @@ PETSC_EXTERN PetscErrorCode SectionRealZero(SectionReal);
 PETSC_EXTERN PetscErrorCode SectionRealCreateLocalVector(SectionReal, Vec*);
 PETSC_EXTERN PetscErrorCode SectionRealAddSpace(SectionReal);
 PETSC_EXTERN PetscErrorCode SectionRealGetFibration(SectionReal, const PetscInt, SectionReal *);
-PETSC_EXTERN PetscErrorCode SectionRealToVec(SectionReal, DM, ScatterMode, Vec);
+PETSC_EXTERN PetscErrorCode SectionRealToVecDM(SectionReal, DM, ScatterMode, Vec);
 PETSC_EXTERN PetscErrorCode SectionRealToVec(SectionReal, VecScatter, ScatterMode, Vec);
 PETSC_EXTERN PetscErrorCode SectionRealNorm(SectionReal, DM, NormType, PetscReal *);
 PETSC_EXTERN PetscErrorCode SectionRealAXPY(SectionReal, DM, PetscScalar, SectionReal);
@@ -159,7 +161,7 @@ PETSC_EXTERN PetscErrorCode SectionRealGetSize(SectionReal, PetscInt *);
 PETSC_EXTERN PetscErrorCode SectionRealAllocate(SectionReal);
 PETSC_EXTERN PetscErrorCode SectionRealClear(SectionReal);
 
-PETSC_EXTERN PetscErrorCode SectionRealRestrictClosure(SectionReal, DM, PetscInt, PetscInt, PetscScalar []);
+PETSC_EXTERN PetscErrorCode SectionRealRestrictClosureWithArray(SectionReal, DM, PetscInt, PetscInt, PetscScalar []);
 PETSC_EXTERN PetscErrorCode SectionRealRestrictClosure(SectionReal, DM, PetscInt, const PetscScalar *[]);
 PETSC_EXTERN PetscErrorCode SectionRealUpdateClosure(SectionReal, DM, PetscInt, PetscScalar [], InsertMode);
 
@@ -167,10 +169,10 @@ PETSC_EXTERN PetscErrorCode DMMeshHasSectionReal(DM, const char [], PetscBool  *
 PETSC_EXTERN PetscErrorCode DMMeshGetSectionReal(DM, const char [], SectionReal *);
 PETSC_EXTERN PetscErrorCode DMMeshSetSectionReal(DM, const char [], SectionReal);
 PETSC_EXTERN PetscErrorCode DMMeshCreateVector(DM, SectionReal, Vec *);
-PETSC_EXTERN PetscErrorCode DMMeshCreateMatrix(DM, SectionReal, const MatType, Mat *);
+PETSC_EXTERN PetscErrorCode DMMeshCreateMatrix(DM, SectionReal, MatType, Mat *);
 PETSC_EXTERN PetscErrorCode DMMeshCreateGlobalScatter(DM, SectionReal, VecScatter *);
-PETSC_EXTERN PetscErrorCode DMMeshAssembleVector(Vec, DM, SectionReal, PetscInt, PetscScalar [], InsertMode);
-PETSC_EXTERN PetscErrorCode DMMeshAssembleMatrix(Mat, DM, SectionReal, PetscInt, PetscScalar [], InsertMode);
+PETSC_EXTERN PetscErrorCode DMMeshAssembleVectorDM(Vec, DM, SectionReal, PetscInt, PetscScalar [], InsertMode);
+PETSC_EXTERN PetscErrorCode DMMeshAssembleMatrixDM(Mat, DM, SectionReal, PetscInt, PetscScalar [], InsertMode);
 PETSC_EXTERN PetscErrorCode DMMeshSetupSection(DM, SectionReal);
 
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*DMMeshLocalFunction1)(DM, Vec, Vec, void*);
@@ -223,7 +225,7 @@ PETSC_EXTERN PetscErrorCode SectionIntAddSpace(SectionInt);
 PETSC_EXTERN PetscErrorCode SectionIntGetFibration(SectionInt, const PetscInt, SectionInt *);
 PETSC_EXTERN PetscErrorCode SectionIntSet(SectionInt, PetscInt);
 
-PETSC_EXTERN PetscErrorCode SectionIntRestrictClosure(SectionInt, DM, PetscInt, PetscInt, PetscInt []);
+PETSC_EXTERN PetscErrorCode SectionIntRestrictClosureWithArray(SectionInt, DM, PetscInt, PetscInt, PetscInt []);
 PETSC_EXTERN PetscErrorCode SectionIntUpdateClosure(SectionInt, DM, PetscInt, PetscInt [], InsertMode);
 
 PETSC_EXTERN PetscErrorCode DMMeshHasSectionInt(DM, const char [], PetscBool  *);

@@ -3,13 +3,11 @@
 */
 #include <../src/vec/pf/pfimpl.h>            /*I "petscpf.h" I*/
 
-/* Logging support */
-PetscClassId PF_CLASSID = 0;
+PetscClassId      PF_CLASSID          = 0;
+PetscFunctionList PFunctionList       = NULL;   /* list of all registered PD functions */
+PetscBool         PFRegisterAllCalled = PETSC_FALSE;
 
-PetscFList PFList         = PETSC_NULL; /* list of all registered PD functions */
-PetscBool  PFRegisterAllCalled = PETSC_FALSE;
-
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PFSet"
 /*@C
    PFSet - Sets the C/C++/Fortran functions to be used by the PF function
@@ -34,17 +32,15 @@ PetscErrorCode  PFSet(PF pf,PetscErrorCode (*apply)(void*,PetscInt,const PetscSc
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pf,PF_CLASSID,1);
-  pf->data             = ctx;
-
-  pf->ops->destroy     = destroy;
-  pf->ops->apply       = apply;
-  pf->ops->applyvec    = applyvec;
-  pf->ops->view        = view;
-
+  pf->data          = ctx;
+  pf->ops->destroy  = destroy;
+  pf->ops->apply    = apply;
+  pf->ops->applyvec = applyvec;
+  pf->ops->view     = view;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PFDestroy"
 /*@C
    PFDestroy - Destroys PF context that was created with PFCreate().
@@ -70,7 +66,7 @@ PetscErrorCode  PFDestroy(PF *pf)
   PetscValidHeaderSpecific((*pf),PF_CLASSID,1);
   if (--((PetscObject)(*pf))->refct > 0) PetscFunctionReturn(0);
 
-  ierr = PetscOptionsGetBool(((PetscObject)(*pf))->prefix,"-pf_view",&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(((PetscObject)(*pf))->prefix,"-pf_view",&flg,NULL);CHKERRQ(ierr);
   if (flg) {
     PetscViewer viewer;
     ierr = PetscViewerASCIIGetStdout(((PetscObject)(*pf))->comm,&viewer);CHKERRQ(ierr);
@@ -85,7 +81,7 @@ PetscErrorCode  PFDestroy(PF *pf)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PFCreate"
 /*@C
    PFCreate - Creates a mathematical function context.
@@ -93,7 +89,7 @@ PetscErrorCode  PFDestroy(PF *pf)
    Collective on MPI_Comm
 
    Input Parameter:
-+  comm - MPI communicator 
++  comm - MPI communicator
 .  dimin - dimension of the space you are mapping from
 -  dimout - dimension of the space you are mapping to
 
@@ -113,29 +109,28 @@ PetscErrorCode  PFCreate(MPI_Comm comm,PetscInt dimin,PetscInt dimout,PF *pf)
 
   PetscFunctionBegin;
   PetscValidPointer(pf,1);
-  *pf = PETSC_NULL;
-#ifndef PETSC_USE_DYNAMIC_LIBRARIES
-  ierr = PFInitializePackage(PETSC_NULL);CHKERRQ(ierr);   
+  *pf = NULL;
+#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
+  ierr = PFInitializePackage(NULL);CHKERRQ(ierr);
 #endif
 
-  ierr = PetscHeaderCreate(newpf,_p_PF,struct _PFOps,PF_CLASSID,-1,"PF","Mathematical functions","Vec",comm,PFDestroy,PFView);CHKERRQ(ierr);
-  newpf->data             = 0;
+  ierr = PetscHeaderCreate(newpf,_p_PF,struct _PFOps,PF_CLASSID,"PF","Mathematical functions","Vec",comm,PFDestroy,PFView);CHKERRQ(ierr);
+  newpf->data          = 0;
+  newpf->ops->destroy  = 0;
+  newpf->ops->apply    = 0;
+  newpf->ops->applyvec = 0;
+  newpf->ops->view     = 0;
+  newpf->dimin         = dimin;
+  newpf->dimout        = dimout;
 
-  newpf->ops->destroy     = 0;
-  newpf->ops->apply       = 0;
-  newpf->ops->applyvec    = 0;
-  newpf->ops->view        = 0;
-  newpf->dimin            = dimin;
-  newpf->dimout           = dimout;
-
-  *pf                     = newpf;
+  *pf                  = newpf;
   PetscFunctionReturn(0);
 
 }
 
 /* -------------------------------------------------------------------------------*/
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PFApplyVec"
 /*@
    PFApplyVec - Applies the mathematical function to a vector
@@ -144,7 +139,7 @@ PetscErrorCode  PFCreate(MPI_Comm comm,PetscInt dimin,PetscInt dimout,PF *pf)
 
    Input Parameters:
 +  pf - the function context
--  x - input vector (or PETSC_NULL for the vector (0,1, .... N-1)
+-  x - input vector (or NULL for the vector (0,1, .... N-1)
 
    Output Parameter:
 .  y - output vector
@@ -171,15 +166,13 @@ PetscErrorCode  PFApplyVec(PF pf,Vec x,Vec y)
     PetscScalar *xx;
     PetscInt    lsize;
 
-    ierr = VecGetLocalSize(y,&lsize);CHKERRQ(ierr);
+    ierr  = VecGetLocalSize(y,&lsize);CHKERRQ(ierr);
     lsize = pf->dimin*lsize/pf->dimout;
-    ierr = VecCreateMPI(((PetscObject)y)->comm,lsize,PETSC_DETERMINE,&x);CHKERRQ(ierr);
-    nox  = PETSC_TRUE;
-    ierr = VecGetOwnershipRange(x,&rstart,&rend);CHKERRQ(ierr);
-    ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
-    for (i=rstart; i<rend; i++) {
-      xx[i-rstart] = (PetscScalar)i;
-    }
+    ierr  = VecCreateMPI(PetscObjectComm((PetscObject)y),lsize,PETSC_DETERMINE,&x);CHKERRQ(ierr);
+    nox   = PETSC_TRUE;
+    ierr  = VecGetOwnershipRange(x,&rstart,&rend);CHKERRQ(ierr);
+    ierr  = VecGetArray(x,&xx);CHKERRQ(ierr);
+    for (i=rstart; i<rend; i++) xx[i-rstart] = (PetscScalar)i;
     ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
   }
 
@@ -205,11 +198,11 @@ PetscErrorCode  PFApplyVec(PF pf,Vec x,Vec y)
   }
   if (nox) {
     ierr = VecDestroy(&x);CHKERRQ(ierr);
-  } 
+  }
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PFApply"
 /*@
    PFApply - Applies the mathematical function to an array of values.
@@ -228,13 +221,13 @@ PetscErrorCode  PFApplyVec(PF pf,Vec x,Vec y)
 
    Level: beginner
 
-   Notes: 
+   Notes:
 
 .keywords: PF, apply
 
 .seealso: PFApplyVec(), PFCreate(), PFDestroy(), PFSetType(), PFSet()
 @*/
-PetscErrorCode  PFApply(PF pf,PetscInt n,const PetscScalar* x,PetscScalar* y)
+PetscErrorCode  PFApply(PF pf,PetscInt n,const PetscScalar *x,PetscScalar *y)
 {
   PetscErrorCode ierr;
 
@@ -249,12 +242,12 @@ PetscErrorCode  PFApply(PF pf,PetscInt n,const PetscScalar* x,PetscScalar* y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PFView"
-/*@ 
+/*@
    PFView - Prints information about a mathematical function
 
-   Collective on PF unless PetscViewer is PETSC_VIEWER_STDOUT_SELF  
+   Collective on PF unless PetscViewer is PETSC_VIEWER_STDOUT_SELF
 
    Input Parameters:
 +  PF - the PF context
@@ -265,8 +258,8 @@ PetscErrorCode  PFApply(PF pf,PetscInt n,const PetscScalar* x,PetscScalar* y)
 +     PETSC_VIEWER_STDOUT_SELF - standard output (default)
 -     PETSC_VIEWER_STDOUT_WORLD - synchronized standard
          output where only the first processor opens
-         the file.  All other processors send their 
-         data to the first processor to print. 
+         the file.  All other processors send their
+         data to the first processor to print.
 
    The user can open an alternative visualization contexts with
    PetscViewerASCIIOpen() (output to a specified file).
@@ -286,9 +279,9 @@ PetscErrorCode  PFView(PF pf,PetscViewer viewer)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pf,PF_CLASSID,1);
   if (!viewer) {
-    ierr = PetscViewerASCIIGetStdout(((PetscObject)pf)->comm,&viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)pf),&viewer);CHKERRQ(ierr);
   }
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2); 
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
   PetscCheckSameComm(pf,1,viewer,2);
 
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
@@ -300,8 +293,6 @@ PetscErrorCode  PFView(PF pf,PetscViewer viewer)
       ierr = (*pf->ops->view)(pf->data,viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
     }
-  } else {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported by PF",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -310,6 +301,7 @@ PetscErrorCode  PFView(PF pf,PetscViewer viewer)
    PFRegisterDynamic - Adds a method to the mathematical function package.
 
    Synopsis:
+   #include "petscpf.h"
    PetscErrorCode PFRegisterDynamic(char *name_solver,char *path,char *name_create,PetscErrorCode (*routine_create)(PF))
 
    Not collective
@@ -347,7 +339,7 @@ $     -pf_type my_function
 .seealso: PFRegisterAll(), PFRegisterDestroy(), PFRegister()
 M*/
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PFRegister"
 PetscErrorCode  PFRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(PF,void*))
 {
@@ -355,12 +347,12 @@ PetscErrorCode  PFRegister(const char sname[],const char path[],const char name[
   char           fullname[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
-  ierr = PetscFListConcat(path,name,fullname);CHKERRQ(ierr);
-  ierr = PetscFListAdd(&PFList,sname,fullname,(void (*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFunctionListConcat(path,name,fullname);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&PFunctionList,sname,fullname,(void (*)(void))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PFGetType"
 /*@C
    PFGetType - Gets the PF method type and name (as a string) from the PF
@@ -372,7 +364,7 @@ PetscErrorCode  PFRegister(const char sname[],const char path[],const char name[
 .  pf - the function context
 
    Output Parameter:
-.  type - name of function 
+.  type - name of function
 
    Level: intermediate
 
@@ -381,7 +373,7 @@ PetscErrorCode  PFRegister(const char sname[],const char path[],const char name[
 .seealso: PFSetType()
 
 @*/
-PetscErrorCode  PFGetType(PF pf,const PFType *type)
+PetscErrorCode  PFGetType(PF pf,PFType *type)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pf,PF_CLASSID,1);
@@ -391,7 +383,7 @@ PetscErrorCode  PFGetType(PF pf,const PFType *type)
 }
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PFSetType"
 /*@C
    PFSetType - Builds PF for a particular function
@@ -418,7 +410,7 @@ PetscErrorCode  PFGetType(PF pf,const PFType *type)
 .seealso: PFSet(), PFRegisterDynamic(), PFCreate(), DMDACreatePF()
 
 @*/
-PetscErrorCode  PFSetType(PF pf,const PFType type,void *ctx)
+PetscErrorCode  PFSetType(PF pf,PFType type,void *ctx)
 {
   PetscErrorCode ierr,(*r)(PF,void*);
   PetscBool      match;
@@ -431,15 +423,15 @@ PetscErrorCode  PFSetType(PF pf,const PFType type,void *ctx)
   if (match) PetscFunctionReturn(0);
 
   if (pf->ops->destroy) {ierr =  (*pf->ops->destroy)(pf);CHKERRQ(ierr);}
-  pf->data        = 0;
+  pf->data = 0;
 
   /* Determine the PFCreateXXX routine for a particular function */
-  ierr =  PetscFListFind(PFList,((PetscObject)pf)->comm,type,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
+  ierr = PetscFunctionListFind(PetscObjectComm((PetscObject)pf),PFunctionList,type,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested PF type %s",type);
-  pf->ops->destroy             = 0;
-  pf->ops->view                = 0;
-  pf->ops->apply               = 0;
-  pf->ops->applyvec            = 0;
+  pf->ops->destroy  = 0;
+  pf->ops->view     = 0;
+  pf->ops->apply    = 0;
+  pf->ops->applyvec = 0;
 
   /* Call the PFCreateXXX routine for this particular function */
   ierr = (*r)(pf,ctx);CHKERRQ(ierr);
@@ -448,7 +440,7 @@ PetscErrorCode  PFSetType(PF pf,const PFType type,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PFSetFromOptions"
 /*@
    PFSetFromOptions - Sets PF options from the options database.
@@ -460,7 +452,7 @@ PetscErrorCode  PFSetType(PF pf,const PFType type,void *ctx)
 
    Options Database Keys:
 
-   Notes:  
+   Notes:
    To see all options, run your program with the -help option
    or consult the users manual.
 
@@ -480,23 +472,22 @@ PetscErrorCode  PFSetFromOptions(PF pf)
   PetscValidHeaderSpecific(pf,PF_CLASSID,1);
 
   ierr = PetscObjectOptionsBegin((PetscObject)pf);CHKERRQ(ierr);
-    ierr = PetscOptionsList("-pf_type","Type of function","PFSetType",PFList,0,type,256,&flg);CHKERRQ(ierr);
-    if (flg) {
-      ierr = PFSetType(pf,type,PETSC_NULL);CHKERRQ(ierr);
-    }
-    if (pf->ops->setfromoptions) {
-      ierr = (*pf->ops->setfromoptions)(pf);CHKERRQ(ierr);
-    }
+  ierr = PetscOptionsList("-pf_type","Type of function","PFSetType",PFunctionList,0,type,256,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = PFSetType(pf,type,NULL);CHKERRQ(ierr);
+  }
+  if (pf->ops->setfromoptions) {
+    ierr = (*pf->ops->setfromoptions)(pf);CHKERRQ(ierr);
+  }
 
-    /* process any options handlers added with PetscObjectAddOptionsHandler() */
-    ierr = PetscObjectProcessOptionsHandlers((PetscObject)pf);CHKERRQ(ierr);
+  /* process any options handlers added with PetscObjectAddOptionsHandler() */
+  ierr = PetscObjectProcessOptionsHandlers((PetscObject)pf);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
-static PetscBool  PFPackageInitialized = PETSC_FALSE;
-#undef __FUNCT__  
+static PetscBool PFPackageInitialized = PETSC_FALSE;
+#undef __FUNCT__
 #define __FUNCT__ "PFFinalizePackage"
 /*@C
   PFFinalizePackage - This function destroys everything in the Petsc interface to Mathematica. It is
@@ -511,12 +502,12 @@ PetscErrorCode  PFFinalizePackage(void)
 {
   PetscFunctionBegin;
   PFPackageInitialized = PETSC_FALSE;
-  PFList               = PETSC_NULL;
+  PFunctionList        = NULL;
   PFRegisterAllCalled  = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PFInitializePackage"
 /*@C
   PFInitializePackage - This function initializes everything in the PF package. It is called
@@ -524,19 +515,19 @@ PetscErrorCode  PFFinalizePackage(void)
   when using static libraries.
 
   Input Parameter:
-. path - The dynamic library path, or PETSC_NULL
+. path - The dynamic library path, or NULL
 
   Level: developer
 
 .keywords: Vec, initialize, package
 .seealso: PetscInitialize()
 @*/
-PetscErrorCode  PFInitializePackage(const char path[]) 
+PetscErrorCode  PFInitializePackage(const char path[])
 {
-  char              logList[256];
-  char              *className;
-  PetscBool         opt;
-  PetscErrorCode    ierr;
+  char           logList[256];
+  char           *className;
+  PetscBool      opt;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (PFPackageInitialized) PetscFunctionReturn(0);
@@ -546,7 +537,7 @@ PetscErrorCode  PFInitializePackage(const char path[])
   /* Register Constructors */
   ierr = PFRegisterAll(path);CHKERRQ(ierr);
   /* Process info exclusions */
-  ierr = PetscOptionsGetString(PETSC_NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt) {
     ierr = PetscStrstr(logList, "pf", &className);CHKERRQ(ierr);
     if (className) {
@@ -554,7 +545,7 @@ PetscErrorCode  PFInitializePackage(const char path[])
     }
   }
   /* Process summary exclusions */
-  ierr = PetscOptionsGetString(PETSC_NULL, "-log_summary_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL, "-log_summary_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt) {
     ierr = PetscStrstr(logList, "pf", &className);CHKERRQ(ierr);
     if (className) {

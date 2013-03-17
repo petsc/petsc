@@ -1,13 +1,11 @@
 
 ALL: lib
 
-CFLAGS   = 
+CFLAGS   =
 FFLAGS   =
 SOURCEC  = pythonmat.c
 SOURCEF  =
-SOURCEH  = 
-OBJSC    = pythonmat.o
-OBJSF    =
+SOURCEH  =
 LIBBASE  = libpetscmat
 DIRS     =
 LOCDIR   = src/mat/impls/python/

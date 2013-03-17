@@ -1,62 +1,68 @@
 
 /*
-      Defines a preconditioner defined by R^T S R 
+      Defines a preconditioner defined by R^T S R
 */
-#include <petsc-private/pcimpl.h>   /*I "petscpc.h" I*/
+#include <petsc-private/pcimpl.h>
 #include <petscksp.h>         /*I "petscksp.h" I*/
 
 typedef struct {
-  KSP  ksp;
-  Mat  R,P;
-  Vec  b,x;
+  KSP ksp;
+  Mat R,P;
+  Vec b,x;
 } PC_Galerkin;
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCApply_Galerkin"
 static PetscErrorCode PCApply_Galerkin(PC pc,Vec x,Vec y)
 {
-  PetscErrorCode   ierr;
-  PC_Galerkin     *jac = (PC_Galerkin*)pc->data;
+  PetscErrorCode ierr;
+  PC_Galerkin    *jac = (PC_Galerkin*)pc->data;
 
   PetscFunctionBegin;
-  if (jac->R) {ierr = MatRestrict(jac->R,x,jac->b);CHKERRQ(ierr);}
-  else {ierr = MatRestrict(jac->P,x,jac->b);CHKERRQ(ierr);}
+  if (jac->R) {
+    ierr = MatRestrict(jac->R,x,jac->b);CHKERRQ(ierr);
+  } else {
+    ierr = MatRestrict(jac->P,x,jac->b);CHKERRQ(ierr);
+  }
   ierr = KSPSolve(jac->ksp,jac->b,jac->x);CHKERRQ(ierr);
-  if (jac->P) {ierr = MatInterpolate(jac->P,jac->x,y);CHKERRQ(ierr);}
-  else {ierr = MatInterpolate(jac->R,jac->x,y);CHKERRQ(ierr);}
+  if (jac->P) {
+    ierr = MatInterpolate(jac->P,jac->x,y);CHKERRQ(ierr);
+  } else {
+    ierr = MatInterpolate(jac->R,jac->x,y);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCSetUp_Galerkin"
 static PetscErrorCode PCSetUp_Galerkin(PC pc)
 {
-  PetscErrorCode  ierr;
-  PC_Galerkin     *jac = (PC_Galerkin*)pc->data;
-  PetscBool       a;
-  Vec             *xx,*yy;
+  PetscErrorCode ierr;
+  PC_Galerkin    *jac = (PC_Galerkin*)pc->data;
+  PetscBool      a;
+  Vec            *xx,*yy;
 
   PetscFunctionBegin;
   if (!jac->x) {
-    ierr = KSPGetOperatorsSet(jac->ksp,&a,PETSC_NULL);CHKERRQ(ierr);
-    if (!a) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONGSTATE,"Must set operator of PCGALERKIN KSP with PCGalerkinGetKSP()/KSPSetOperators()");
-    ierr   = KSPGetVecs(jac->ksp,1,&xx,1,&yy);CHKERRQ(ierr);    
+    ierr = KSPGetOperatorsSet(jac->ksp,&a,NULL);CHKERRQ(ierr);
+    if (!a) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must set operator of PCGALERKIN KSP with PCGalerkinGetKSP()/KSPSetOperators()");
+    ierr   = KSPGetVecs(jac->ksp,1,&xx,1,&yy);CHKERRQ(ierr);
     jac->x = *xx;
     jac->b = *yy;
     ierr   = PetscFree(xx);CHKERRQ(ierr);
     ierr   = PetscFree(yy);CHKERRQ(ierr);
   }
-  if (!jac->R && !jac->P) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONGSTATE,"Must set restriction or interpolation of PCGALERKIN with PCGalerkinSetRestriction/Interpolation()");
+  if (!jac->R && !jac->P) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must set restriction or interpolation of PCGALERKIN with PCGalerkinSetRestriction/Interpolation()");
   /* should check here that sizes of R/P match size of a */
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCReset_Galerkin"
 static PetscErrorCode PCReset_Galerkin(PC pc)
 {
-  PC_Galerkin     *jac = (PC_Galerkin*)pc->data;
-  PetscErrorCode   ierr;
+  PC_Galerkin    *jac = (PC_Galerkin*)pc->data;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MatDestroy(&jac->R);CHKERRQ(ierr);
@@ -67,12 +73,12 @@ static PetscErrorCode PCReset_Galerkin(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCDestroy_Galerkin"
 static PetscErrorCode PCDestroy_Galerkin(PC pc)
 {
-  PC_Galerkin     *jac = (PC_Galerkin*)pc->data;
-  PetscErrorCode   ierr;
+  PC_Galerkin    *jac = (PC_Galerkin*)pc->data;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PCReset_Galerkin(pc);CHKERRQ(ierr);
@@ -81,13 +87,13 @@ static PetscErrorCode PCDestroy_Galerkin(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCView_Galerkin"
 static PetscErrorCode PCView_Galerkin(PC pc,PetscViewer viewer)
 {
-  PC_Galerkin     *jac = (PC_Galerkin*)pc->data;
-  PetscErrorCode   ierr;
-  PetscBool        iascii;
+  PC_Galerkin    *jac = (PC_Galerkin*)pc->data;
+  PetscErrorCode ierr;
+  PetscBool      iascii;
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
@@ -95,64 +101,56 @@ static PetscErrorCode PCView_Galerkin(PC pc,PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer,"Galerkin PC\n");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"KSP on Galerkin follow\n");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"---------------------------------\n");CHKERRQ(ierr);
-  } else {
-    SETERRQ1(((PetscObject)pc)->comm,PETSC_ERR_SUP,"Viewer type %s not supported for PCGalerkin",((PetscObject)viewer)->type_name);
   }
   ierr = KSPView(jac->ksp,viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCGalerkinGetKSP_Galerkin"
-PetscErrorCode  PCGalerkinGetKSP_Galerkin(PC pc,KSP *ksp)
+static PetscErrorCode  PCGalerkinGetKSP_Galerkin(PC pc,KSP *ksp)
 {
-  PC_Galerkin     *jac = (PC_Galerkin*)pc->data;
+  PC_Galerkin *jac = (PC_Galerkin*)pc->data;
 
   PetscFunctionBegin;
   *ksp = jac->ksp;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCGalerkinSetRestriction_Galerkin"
-PetscErrorCode  PCGalerkinSetRestriction_Galerkin(PC pc,Mat R)
+static PetscErrorCode  PCGalerkinSetRestriction_Galerkin(PC pc,Mat R)
 {
-  PC_Galerkin     *jac = (PC_Galerkin*)pc->data;
-  PetscErrorCode   ierr;
+  PC_Galerkin    *jac = (PC_Galerkin*)pc->data;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectReference((PetscObject)R);CHKERRQ(ierr);
-  ierr = MatDestroy(&jac->R);CHKERRQ(ierr);
+  ierr   = PetscObjectReference((PetscObject)R);CHKERRQ(ierr);
+  ierr   = MatDestroy(&jac->R);CHKERRQ(ierr);
   jac->R = R;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCGalerkinSetInterpolation_Galerkin"
-PetscErrorCode  PCGalerkinSetInterpolation_Galerkin(PC pc,Mat P)
+static PetscErrorCode  PCGalerkinSetInterpolation_Galerkin(PC pc,Mat P)
 {
-  PC_Galerkin     *jac = (PC_Galerkin*)pc->data;
-  PetscErrorCode   ierr;
+  PC_Galerkin    *jac = (PC_Galerkin*)pc->data;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectReference((PetscObject)P);CHKERRQ(ierr);
-  ierr = MatDestroy(&jac->P);CHKERRQ(ierr);
+  ierr   = PetscObjectReference((PetscObject)P);CHKERRQ(ierr);
+  ierr   = MatDestroy(&jac->P);CHKERRQ(ierr);
   jac->P = P;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 /* -------------------------------------------------------------------------------- */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCGalerkinSetRestriction"
 /*@
    PCGalerkinSetRestriction - Sets the restriction operator for the "Galerkin-type" preconditioner
-   
+
    Logically Collective on PC
 
    Input Parameter:
@@ -179,11 +177,11 @@ PetscErrorCode  PCGalerkinSetRestriction(PC pc,Mat R)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCGalerkinSetInterpolation"
 /*@
    PCGalerkinSetInterpolation - Sets the interpolation operator for the "Galerkin-type" preconditioner
-   
+
    Logically Collective on PC
 
    Input Parameter:
@@ -210,11 +208,11 @@ PetscErrorCode  PCGalerkinSetInterpolation(PC pc,Mat P)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCGalerkinGetKSP"
 /*@
    PCGalerkinGetKSP - Gets the KSP object in the Galerkin PC.
-   
+
    Not Collective
 
    Input Parameter:
@@ -238,7 +236,7 @@ PetscErrorCode  PCGalerkinGetKSP(PC pc,KSP *ksp)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidPointer(ksp,2);
-  ierr = PetscUseMethod(pc,"PCGalerkinGetKSP_C",(PC,KSP *),(pc,ksp));CHKERRQ(ierr);
+  ierr = PetscUseMethod(pc,"PCGalerkinGetKSP_C",(PC,KSP*),(pc,ksp));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -248,7 +246,7 @@ PetscErrorCode  PCGalerkinGetKSP(PC pc,KSP *ksp)
 /*MC
      PCGALERKIN - Build (part of) a preconditioner by P S R (where P is often R^T)
 
-$   Use PCGalerkinSetRestriction(pc,R) and/or PCGalerkinSetInterpolation(pc,P) followed by 
+$   Use PCGalerkinSetRestriction(pc,R) and/or PCGalerkinSetInterpolation(pc,P) followed by
 $   PCGalerkinGetKSP(pc,&ksp); KSPSetOperators(ksp,A,....)
 
    Level: intermediate
@@ -263,35 +261,31 @@ $   PCGalerkinGetKSP(pc,&ksp); KSPSetOperators(ksp,A,....)
 
 M*/
 
-EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCCreate_Galerkin"
-PetscErrorCode  PCCreate_Galerkin(PC pc)
+PETSC_EXTERN PetscErrorCode PCCreate_Galerkin(PC pc)
 {
   PetscErrorCode ierr;
   PC_Galerkin    *jac;
 
   PetscFunctionBegin;
   ierr = PetscNewLog(pc,PC_Galerkin,&jac);CHKERRQ(ierr);
-  pc->ops->apply              = PCApply_Galerkin;
-  pc->ops->setup              = PCSetUp_Galerkin;
-  pc->ops->reset              = PCReset_Galerkin;
-  pc->ops->destroy            = PCDestroy_Galerkin;
-  pc->ops->view               = PCView_Galerkin;
-  pc->ops->applyrichardson    = 0;
 
-  ierr = KSPCreate(((PetscObject)pc)->comm,&jac->ksp);CHKERRQ(ierr);
+  pc->ops->apply           = PCApply_Galerkin;
+  pc->ops->setup           = PCSetUp_Galerkin;
+  pc->ops->reset           = PCReset_Galerkin;
+  pc->ops->destroy         = PCDestroy_Galerkin;
+  pc->ops->view            = PCView_Galerkin;
+  pc->ops->applyrichardson = 0;
+
+  ierr = KSPCreate(PetscObjectComm((PetscObject)pc),&jac->ksp);CHKERRQ(ierr);
   ierr = PetscObjectIncrementTabLevel((PetscObject)jac->ksp,(PetscObject)pc,1);CHKERRQ(ierr);
 
-  pc->data               = (void*)jac;
+  pc->data = (void*)jac;
 
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCGalerkinSetRestriction_C","PCGalerkinSetRestriction_Galerkin",
-                    PCGalerkinSetRestriction_Galerkin);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCGalerkinSetInterpolation_C","PCGalerkinSetInterpolation_Galerkin",
-                    PCGalerkinSetInterpolation_Galerkin);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCGalerkinGetKSP_C","PCGalerkinGetKSP_Galerkin",
-                    PCGalerkinGetKSP_Galerkin);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGalerkinSetRestriction_C","PCGalerkinSetRestriction_Galerkin",PCGalerkinSetRestriction_Galerkin);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGalerkinSetInterpolation_C","PCGalerkinSetInterpolation_Galerkin",PCGalerkinSetInterpolation_Galerkin);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGalerkinGetKSP_C","PCGalerkinGetKSP_Galerkin",PCGalerkinGetKSP_Galerkin);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 

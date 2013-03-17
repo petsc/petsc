@@ -11,7 +11,7 @@
 !
 !  Output Parameters:
 !  f - global array containing output values
-!  ierr - error code 
+!  ierr - error code
 !
 !  Notes:
 !  This routine uses standard Fortran-style computations over a 2-dim array.
@@ -48,7 +48,7 @@
      &             .or. i .eq. mx .or. j .eq. my) then
                f(i,j) = x(i,j)
             else
-               u = x(i,j) 
+               u = x(i,j)
                uxx = hydhx * (two*u                                     &
      &                - x(i-1,j) - x(i+1,j))
                uyy = hxdhy * (two*u - x(i,j-1) - x(i,j+1))

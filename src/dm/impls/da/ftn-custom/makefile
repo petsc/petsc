@@ -4,11 +4,9 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = zda.c  zda1f.c zda2f.c zda3f.c zdacornf.c zdagetscatterf.c zdaindexf.c zdaviewf.c
-SOURCEF  = 
-SOURCEH  = 
-OBJSC    = zda.o  zda1f.o zda2f.o zda3f.o zdacornf.o zdagetscatterf.o zdaindexf.o zdaviewf.o
-OBJSF    = 
+SOURCEC  = zdaf.c zda1f.c zda2f.c zda3f.c zdacornf.c zdagetscatterf.c zdaindexf.c zdaviewf.c
+SOURCEF  =
+SOURCEH  =
 LIBBASE  = libpetscdm
 MANSEC   = DM
 SUBMANSEC= DMDA

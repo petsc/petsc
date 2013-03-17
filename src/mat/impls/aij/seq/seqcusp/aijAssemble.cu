@@ -32,49 +32,46 @@ PETSC_CUDA_EXTERN_C_END
 template <typename Iterator>
 class repeated_range
 {
-    public:
+public:
 
-    typedef typename thrust::iterator_difference<Iterator>::type difference_type;
+  typedef typename thrust::iterator_difference<Iterator>::type difference_type;
 
-    struct repeat_functor : public thrust::unary_function<difference_type,difference_type>
-    {
-        difference_type repeats;
-
-        repeat_functor(difference_type repeats)
-            : repeats(repeats) {}
-
-        __host__ __device__
-        difference_type operator()(const difference_type& i) const
-        {
-            return i / repeats;
-        }
-    };
-
-    typedef typename thrust::counting_iterator<difference_type>                   CountingIterator;
-    typedef typename thrust::transform_iterator<repeat_functor, CountingIterator> TransformIterator;
-    typedef typename thrust::permutation_iterator<Iterator,TransformIterator>     PermutationIterator;
-
-    // type of the repeated_range iterator
-    typedef PermutationIterator iterator;
-
-    // construct repeated_range for the range [first,last)
-    repeated_range(Iterator first, Iterator last, difference_type repeats)
-        : first(first), last(last), repeats(repeats) {}
-
-    iterator begin(void) const
-    {
-        return PermutationIterator(first, TransformIterator(CountingIterator(0), repeat_functor(repeats)));
-    }
-
-    iterator end(void) const
-    {
-        return begin() + repeats * (last - first);
-    }
-
-    protected:
+  struct repeat_functor : public thrust::unary_function<difference_type,difference_type>
+  {
     difference_type repeats;
-    Iterator first;
-    Iterator last;
+
+    repeat_functor(difference_type repeats) : repeats(repeats) {}
+
+    __host__ __device__
+    difference_type operator()(const difference_type &i) const {
+      return i / repeats;
+    }
+  };
+
+  typedef typename thrust::counting_iterator<difference_type>                   CountingIterator;
+  typedef typename thrust::transform_iterator<repeat_functor, CountingIterator> TransformIterator;
+  typedef typename thrust::permutation_iterator<Iterator,TransformIterator>     PermutationIterator;
+
+  // type of the repeated_range iterator
+  typedef PermutationIterator iterator;
+
+  // construct repeated_range for the range [first,last)
+  repeated_range(Iterator first, Iterator last, difference_type repeats) : first(first), last(last), repeats(repeats) {}
+
+  iterator begin(void) const
+  {
+    return PermutationIterator(first, TransformIterator(CountingIterator(0), repeat_functor(repeats)));
+  }
+
+  iterator end(void) const
+  {
+    return begin() + repeats * (last - first);
+  }
+
+protected:
+  difference_type repeats;
+  Iterator        first;
+  Iterator        last;
 
 };
 
@@ -89,61 +86,59 @@ class repeated_range
 template <typename Iterator>
 class tiled_range
 {
-    public:
+public:
 
-    typedef typename thrust::iterator_difference<Iterator>::type difference_type;
+  typedef typename thrust::iterator_difference<Iterator>::type difference_type;
 
-    struct tile_functor : public thrust::unary_function<difference_type,difference_type>
-    {
-        difference_type repeats;
-        difference_type tile_size;
-
-        tile_functor(difference_type repeats, difference_type tile_size)
-            : tile_size(tile_size), repeats(repeats) {}
-
-        __host__ __device__
-        difference_type operator()(const difference_type& i) const
-        {
-            return tile_size * (i / (tile_size * repeats)) + i % tile_size;
-        }
-    };
-
-    typedef typename thrust::counting_iterator<difference_type>                   CountingIterator;
-    typedef typename thrust::transform_iterator<tile_functor, CountingIterator>   TransformIterator;
-    typedef typename thrust::permutation_iterator<Iterator,TransformIterator>     PermutationIterator;
-
-    // type of the tiled_range iterator
-    typedef PermutationIterator iterator;
-
-    // construct repeated_range for the range [first,last)
-    tiled_range(Iterator first, Iterator last, difference_type repeats)
-        : first(first), last(last), repeats(repeats), tile_size(last - first) {}
-
-    tiled_range(Iterator first, Iterator last, difference_type repeats, difference_type tile_size)
-        : first(first), last(last), repeats(repeats), tile_size(tile_size)
-    {
-      // ASSERT((last - first) % tile_size == 0)
-    }
-
-    iterator begin(void) const
-    {
-        return PermutationIterator(first, TransformIterator(CountingIterator(0), tile_functor(repeats, tile_size)));
-    }
-
-    iterator end(void) const
-    {
-        return begin() + repeats * (last - first);
-    }
-
-    protected:
+  struct tile_functor : public thrust::unary_function<difference_type,difference_type>
+  {
     difference_type repeats;
     difference_type tile_size;
-    Iterator first;
-    Iterator last;
+
+    tile_functor(difference_type repeats, difference_type tile_size) : tile_size(tile_size), repeats(repeats) {}
+
+    __host__ __device__
+    difference_type operator()(const difference_type &i) const {
+      return tile_size * (i / (tile_size * repeats)) + i % tile_size;
+    }
+  };
+
+  typedef typename thrust::counting_iterator<difference_type>                   CountingIterator;
+  typedef typename thrust::transform_iterator<tile_functor, CountingIterator>   TransformIterator;
+  typedef typename thrust::permutation_iterator<Iterator,TransformIterator>     PermutationIterator;
+
+  // type of the tiled_range iterator
+  typedef PermutationIterator iterator;
+
+  // construct repeated_range for the range [first,last)
+  tiled_range(Iterator first, Iterator last, difference_type repeats)
+    : first(first), last(last), repeats(repeats), tile_size(last - first) {}
+
+  tiled_range(Iterator first, Iterator last, difference_type repeats, difference_type tile_size)
+    : first(first), last(last), repeats(repeats), tile_size(tile_size)
+  {
+    // ASSERT((last - first) % tile_size == 0)
+  }
+
+  iterator begin(void) const
+  {
+    return PermutationIterator(first, TransformIterator(CountingIterator(0), tile_functor(repeats, tile_size)));
+  }
+
+  iterator end(void) const
+  {
+    return begin() + repeats * (last - first);
+  }
+
+protected:
+  difference_type repeats;
+  difference_type tile_size;
+  Iterator        first;
+  Iterator        last;
 };
 
 typedef cusp::device_memory memSpace;
-typedef int   IndexType;
+typedef int IndexType;
 typedef PetscScalar ValueType;
 typedef cusp::array1d<IndexType, memSpace> IndexArray;
 typedef cusp::array1d<ValueType, memSpace> ValueArray;
@@ -156,9 +151,9 @@ typedef ValueArray::iterator ValueArrayIterator;
 #define __FUNCT__ "MatSetValuesBatch_SeqAIJCUSP"
 PetscErrorCode MatSetValuesBatch_SeqAIJCUSP(Mat J, PetscInt Ne, PetscInt Nl, PetscInt *elemRows, const PetscScalar *elemMats)
 {
-  size_t   N  = Ne * Nl;
-  size_t   No = Ne * Nl*Nl;
-  PetscInt Nr; // Number of rows
+  size_t         N  = Ne * Nl;
+  size_t         No = Ne * Nl*Nl;
+  PetscInt       Nr; // Number of rows
   PetscErrorCode ierr;
 
   // copy elemRows and elemMat to device
@@ -166,7 +161,7 @@ PetscErrorCode MatSetValuesBatch_SeqAIJCUSP(Mat J, PetscInt Ne, PetscInt Nl, Pet
   ValueArray d_elemMats(elemMats, elemMats + No);
 
   PetscFunctionBegin;
-  ierr = MatGetSize(J, &Nr, PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatGetSize(J, &Nr, NULL);CHKERRQ(ierr);
   // allocate storage for "fat" COO representation of matrix
   ierr = PetscInfo1(J, "Making COO matrix of size %d\n", Nr);CHKERRQ(ierr);
   cusp::coo_matrix<IndexType,ValueType, memSpace> COO(Nr, Nr, No);
@@ -189,7 +184,7 @@ PetscErrorCode MatSetValuesBatch_SeqAIJCUSP(Mat J, PetscInt Ne, PetscInt Nl, Pet
 
   // print the "fat" COO representation
 #if !defined(PETSC_USE_COMPLEX)
-  if (PetscLogPrintInfo) {cusp::print(COO);}
+  if (PetscLogPrintInfo) cusp::print(COO);
 #endif
   // sort COO format by (i,j), this is the most costly step
   ierr = PetscInfo(J, "Sorting rows and columns\n");CHKERRQ(ierr);
@@ -203,54 +198,54 @@ PetscErrorCode MatSetValuesBatch_SeqAIJCUSP(Mat J, PetscInt Ne, PetscInt Nl, Pet
 
     // compute permutation and sort by (I,J)
     {
-        ierr = PetscInfo(J, "  Sorting columns\n");CHKERRQ(ierr);
-        IndexArray temp(No);
-        thrust::copy(COO.column_indices.begin(), COO.column_indices.end(), temp.begin());
-        thrust::stable_sort_by_key(temp.begin(), temp.end(), permutation.begin());
-        ierr = PetscInfo(J, "    Sorted columns\n");CHKERRQ(ierr);
-        if (PetscLogPrintInfo) {
-          for(IndexArrayIterator t_iter = temp.begin(), p_iter = permutation.begin(); t_iter != temp.end(); ++t_iter, ++p_iter) {
-            ierr = PetscInfo2(J, "%d(%d)\n", *t_iter, *p_iter);CHKERRQ(ierr);
-          }
+      ierr = PetscInfo(J, "  Sorting columns\n");CHKERRQ(ierr);
+      IndexArray temp(No);
+      thrust::copy(COO.column_indices.begin(), COO.column_indices.end(), temp.begin());
+      thrust::stable_sort_by_key(temp.begin(), temp.end(), permutation.begin());
+      ierr = PetscInfo(J, "    Sorted columns\n");CHKERRQ(ierr);
+      if (PetscLogPrintInfo) {
+        for (IndexArrayIterator t_iter = temp.begin(), p_iter = permutation.begin(); t_iter != temp.end(); ++t_iter, ++p_iter) {
+          ierr = PetscInfo2(J, "%d(%d)\n", *t_iter, *p_iter);CHKERRQ(ierr);
         }
+      }
 
-        ierr = PetscInfo(J, "  Copying rows\n");CHKERRQ(ierr);
-        //cusp::copy(COO.row_indices, temp);
-        thrust::copy(COO.row_indices.begin(), COO.row_indices.end(), temp.begin());
-        ierr = PetscInfo(J, "  Gathering rows\n");CHKERRQ(ierr);
-        thrust::gather(permutation.begin(), permutation.end(), temp.begin(), COO.row_indices.begin());
-        ierr = PetscInfo(J, "  Sorting rows\n");CHKERRQ(ierr);
-        thrust::stable_sort_by_key(COO.row_indices.begin(), COO.row_indices.end(), permutation.begin());
+      ierr = PetscInfo(J, "  Copying rows\n");CHKERRQ(ierr);
+      //cusp::copy(COO.row_indices, temp);
+      thrust::copy(COO.row_indices.begin(), COO.row_indices.end(), temp.begin());
+      ierr = PetscInfo(J, "  Gathering rows\n");CHKERRQ(ierr);
+      thrust::gather(permutation.begin(), permutation.end(), temp.begin(), COO.row_indices.begin());
+      ierr = PetscInfo(J, "  Sorting rows\n");CHKERRQ(ierr);
+      thrust::stable_sort_by_key(COO.row_indices.begin(), COO.row_indices.end(), permutation.begin());
 
-        ierr = PetscInfo(J, "  Gathering columns\n");CHKERRQ(ierr);
-        cusp::copy(COO.column_indices, temp);
-        thrust::gather(permutation.begin(), permutation.end(), temp.begin(), COO.column_indices.begin());
+      ierr = PetscInfo(J, "  Gathering columns\n");CHKERRQ(ierr);
+      cusp::copy(COO.column_indices, temp);
+      thrust::gather(permutation.begin(), permutation.end(), temp.begin(), COO.column_indices.begin());
     }
 
     // use permutation to reorder the values
     {
-        ierr = PetscInfo(J, "  Sorting values\n");CHKERRQ(ierr);
-        ValueArray temp(COO.values);
-        cusp::copy(COO.values, temp);
-        thrust::gather(permutation.begin(), permutation.end(), temp.begin(), COO.values.begin());
+      ierr = PetscInfo(J, "  Sorting values\n");CHKERRQ(ierr);
+      ValueArray temp(COO.values);
+      cusp::copy(COO.values, temp);
+      thrust::gather(permutation.begin(), permutation.end(), temp.begin(), COO.values.begin());
     }
   }
 #endif
 
   // print the "fat" COO representation
 #if !defined(PETSC_USE_COMPLEX)
-  if (PetscLogPrintInfo) {cusp::print(COO);}
+  if (PetscLogPrintInfo) cusp::print(COO);
 #endif
   // compute number of unique (i,j) entries
   //   this counts the number of changes as we move along the (i,j) list
   ierr = PetscInfo(J, "Computing number of unique entries\n");CHKERRQ(ierr);
   size_t num_entries = thrust::inner_product
-    (thrust::make_zip_iterator(thrust::make_tuple(COO.row_indices.begin(), COO.column_indices.begin())),
-     thrust::make_zip_iterator(thrust::make_tuple(COO.row_indices.end (),  COO.column_indices.end()))   - 1,
-     thrust::make_zip_iterator(thrust::make_tuple(COO.row_indices.begin(), COO.column_indices.begin())) + 1,
-     size_t(1),
-     thrust::plus<size_t>(),
-     thrust::not_equal_to< thrust::tuple<IndexType,IndexType> >());
+                         (thrust::make_zip_iterator(thrust::make_tuple(COO.row_indices.begin(), COO.column_indices.begin())),
+                         thrust::make_zip_iterator(thrust::make_tuple(COO.row_indices.end (),  COO.column_indices.end()))   - 1,
+                         thrust::make_zip_iterator(thrust::make_tuple(COO.row_indices.begin(), COO.column_indices.begin())) + 1,
+                         size_t(1),
+                         thrust::plus<size_t>(),
+                         thrust::not_equal_to< thrust::tuple<IndexType,IndexType> >());
 
   // allocate COO storage for final matrix
   ierr = PetscInfo(J, "Allocating compressed matrix\n");CHKERRQ(ierr);
@@ -262,16 +257,16 @@ PetscErrorCode MatSetValuesBatch_SeqAIJCUSP(Mat J, PetscInt Ne, PetscInt Nl, Pet
   // This could possibly be done in-place
   ierr = PetscInfo(J, "Compressing matrix\n");CHKERRQ(ierr);
   thrust::reduce_by_key(thrust::make_zip_iterator(thrust::make_tuple(COO.row_indices.begin(), COO.column_indices.begin())),
-     thrust::make_zip_iterator(thrust::make_tuple(COO.row_indices.end(),   COO.column_indices.end())),
-     COO.values.begin(),
-     thrust::make_zip_iterator(thrust::make_tuple(A.row_indices.begin(), A.column_indices.begin())),
-     A.values.begin(),
-     thrust::equal_to< thrust::tuple<IndexType,IndexType> >(),
-     thrust::plus<ValueType>());
+                        thrust::make_zip_iterator(thrust::make_tuple(COO.row_indices.end(),   COO.column_indices.end())),
+                        COO.values.begin(),
+                        thrust::make_zip_iterator(thrust::make_tuple(A.row_indices.begin(), A.column_indices.begin())),
+                        A.values.begin(),
+                        thrust::equal_to< thrust::tuple<IndexType,IndexType> >(),
+                        thrust::plus<ValueType>());
 
   // print the final matrix
 #if !defined(PETSC_USE_COMPLEX)
-  if (PetscLogPrintInfo) {cusp::print(A);}
+  if (PetscLogPrintInfo) cusp::print(A);
 #endif
   //std::cout << "Writing matrix" << std::endl;
   //cusp::io::write_matrix_market_file(A, "A.mtx");
@@ -282,7 +277,7 @@ PetscErrorCode MatSetValuesBatch_SeqAIJCUSP(Mat J, PetscInt Ne, PetscInt Nl, Pet
   CUSPMATRIX *Jgpu = new CUSPMATRIX;
   cusp::convert(A, *Jgpu);
 #if !defined(PETSC_USE_COMPLEX)
-  if (PetscLogPrintInfo) {cusp::print(*Jgpu);}
+  if (PetscLogPrintInfo) cusp::print(*Jgpu);
 #endif
   ierr = PetscInfo(J, "Copying to CPU matrix\n");CHKERRQ(ierr);
   ierr = MatCUSPCopyFromGPU(J, Jgpu);CHKERRQ(ierr);

@@ -26,8 +26,8 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
   options->iters = 10000;
 
   ierr = PetscOptionsBegin(comm, "", "Options for sifter stress test", "Sieve");CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-debug", "The debugging level", "sifter1.c", options->debug, &options->debug, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-iterations", "The number of test repetitions", "sifter1.c", options->iters, &options->iters, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-debug", "The debugging level", "sifter1.c", options->debug, &options->debug, NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-iterations", "The number of test repetitions", "sifter1.c", options->iters, &options->iters, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
   PetscFunctionReturn(0);
 }

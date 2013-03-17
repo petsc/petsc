@@ -1,13 +1,11 @@
 
 ALL: lib
 
-CFLAGS   = 
+CFLAGS   =
 FFLAGS   =
 SOURCEC	 = mpibaij.c mmbaij.c baijov.c
 SOURCEF	 =
 SOURCEH	 = mpibaij.h
-OBJSC	 = mpibaij.o mmbaij.o baijov.o
-OBJSF	 =
 LIBBASE	 = libpetscmat
 DIRS	 = bstream
 MANSEC	 = Mat

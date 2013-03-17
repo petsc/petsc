@@ -2,26 +2,25 @@
 /*
      Some useful vector utility functions.
 */
-#include <petsc-private/vecimpl.h>          /*I "petscvec.h" I*/
-#include <../src/vec/vec/impls/mpi/pvecimpl.h>
+#include <../src/vec/vec/impls/mpi/pvecimpl.h>          /*I "petscvec.h" I*/
 extern MPI_Op VecMax_Local_Op;
 extern MPI_Op VecMin_Local_Op;
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecStrideSet"
 /*@
-   VecStrideSet - Sets a subvector of a vector defined 
+   VecStrideSet - Sets a subvector of a vector defined
    by a starting point and a stride with a given value
 
    Logically Collective on Vec
 
    Input Parameter:
-+  v - the vector 
++  v - the vector
 .  start - starting point of the subvector (defined by a stride)
 -  s - value to multiply each subvector entry by
 
    Notes:
-   One must call VecSetBlockSize() before this routine to set the stride 
+   One must call VecSetBlockSize() before this routine to set the stride
    information, or use a vector created from a multicomponent DMDA.
 
    This will only work if the desire subvector is a stride subvector
@@ -41,8 +40,8 @@ PetscErrorCode  VecStrideSet(Vec v,PetscInt start,PetscScalar s)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
-  PetscValidLogicalCollectiveInt(v,start,2);  
-  PetscValidLogicalCollectiveScalar(v,s,3);  
+  PetscValidLogicalCollectiveInt(v,start,2);
+  PetscValidLogicalCollectiveScalar(v,s,3);
 
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
@@ -51,30 +50,28 @@ PetscErrorCode  VecStrideSet(Vec v,PetscInt start,PetscScalar s)
   else if (start >= bs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Start of stride subvector (%D) is too large for stride\n  Have you set the vector blocksize (%D) correctly with VecSetBlockSize()?",start,bs);
   x += start;
 
-  for (i=0; i<n; i+=bs) {
-    x[i] = s;
-  }
+  for (i=0; i<n; i+=bs) x[i] = s;
   x -= start;
 
   ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecStrideScale"
 /*@
-   VecStrideScale - Scales a subvector of a vector defined 
+   VecStrideScale - Scales a subvector of a vector defined
    by a starting point and a stride.
 
    Logically Collective on Vec
 
    Input Parameter:
-+  v - the vector 
++  v - the vector
 .  start - starting point of the subvector (defined by a stride)
 -  scale - value to multiply each subvector entry by
 
    Notes:
-   One must call VecSetBlockSize() before this routine to set the stride 
+   One must call VecSetBlockSize() before this routine to set the stride
    information, or use a vector created from a multicomponent DMDA.
 
    This will only work if the desire subvector is a stride subvector
@@ -94,8 +91,8 @@ PetscErrorCode  VecStrideScale(Vec v,PetscInt start,PetscScalar scale)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
-  PetscValidLogicalCollectiveInt(v,start,2);  
-  PetscValidLogicalCollectiveScalar(v,scale,3);  
+  PetscValidLogicalCollectiveInt(v,start,2);
+  PetscValidLogicalCollectiveScalar(v,scale,3);
 
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
@@ -104,25 +101,23 @@ PetscErrorCode  VecStrideScale(Vec v,PetscInt start,PetscScalar scale)
   else if (start >= bs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Start of stride subvector (%D) is too large for stride\n  Have you set the vector blocksize (%D) correctly with VecSetBlockSize()?",start,bs);
   x += start;
 
-  for (i=0; i<n; i+=bs) {
-    x[i] *= scale;
-  }
+  for (i=0; i<n; i+=bs) x[i] *= scale;
   x -= start;
 
   ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecStrideNorm"
 /*@
-   VecStrideNorm - Computes the norm of subvector of a vector defined 
+   VecStrideNorm - Computes the norm of subvector of a vector defined
    by a starting point and a stride.
 
    Collective on Vec
 
    Input Parameter:
-+  v - the vector 
++  v - the vector
 .  start - starting point of the subvector (defined by a stride)
 -  ntype - type of norm, one of NORM_1, NORM_2, NORM_INFINITY
 
@@ -130,10 +125,10 @@ PetscErrorCode  VecStrideScale(Vec v,PetscInt start,PetscScalar scale)
 .  norm - the norm
 
    Notes:
-   One must call VecSetBlockSize() before this routine to set the stride 
+   One must call VecSetBlockSize() before this routine to set the stride
    information, or use a vector created from a multicomponent DMDA.
 
-   If x is the array representing the vector x then this computes the norm 
+   If x is the array representing the vector x then this computes the norm
    of the array (x[start],x[start+stride],x[start+2*stride], ....)
 
    This is useful for computing, say the norm of the pressure variable when
@@ -163,25 +158,21 @@ PetscErrorCode  VecStrideNorm(Vec v,PetscInt start,NormType ntype,PetscReal *nrm
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)v,&comm);CHKERRQ(ierr);
 
-  bs   = v->map->bs;
+  bs = v->map->bs;
   if (start < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative start %D",start);
   else if (start >= bs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Start of stride subvector (%D) is too large for stride\n Have you set the vector blocksize (%D) correctly with VecSetBlockSize()?",start,bs);
   x += start;
 
   if (ntype == NORM_2) {
     PetscScalar sum = 0.0;
-    for (i=0; i<n; i+=bs) {
-      sum += x[i]*(PetscConj(x[i]));
-    }
-    tnorm  = PetscRealPart(sum);
-    ierr   = MPI_Allreduce(&tnorm,nrm,1,MPIU_REAL,MPIU_SUM,comm);CHKERRQ(ierr);
-    *nrm = PetscSqrtReal(*nrm);
+    for (i=0; i<n; i+=bs) sum += x[i]*(PetscConj(x[i]));
+    tnorm = PetscRealPart(sum);
+    ierr  = MPI_Allreduce(&tnorm,nrm,1,MPIU_REAL,MPIU_SUM,comm);CHKERRQ(ierr);
+    *nrm  = PetscSqrtReal(*nrm);
   } else if (ntype == NORM_1) {
     tnorm = 0.0;
-    for (i=0; i<n; i+=bs) {
-      tnorm += PetscAbsScalar(x[i]);
-    }
-    ierr   = MPI_Allreduce(&tnorm,nrm,1,MPIU_REAL,MPIU_SUM,comm);CHKERRQ(ierr);
+    for (i=0; i<n; i+=bs) tnorm += PetscAbsScalar(x[i]);
+    ierr = MPI_Allreduce(&tnorm,nrm,1,MPIU_REAL,MPIU_SUM,comm);CHKERRQ(ierr);
   } else if (ntype == NORM_INFINITY) {
     PetscReal tmp;
     tnorm = 0.0;
@@ -190,31 +181,31 @@ PetscErrorCode  VecStrideNorm(Vec v,PetscInt start,NormType ntype,PetscReal *nrm
       if ((tmp = PetscAbsScalar(x[i])) > tnorm) tnorm = tmp;
       /* check special case of tmp == NaN */
       if (tmp != tmp) {tnorm = tmp; break;}
-    } 
-    ierr   = MPI_Allreduce(&tnorm,nrm,1,MPIU_REAL,MPIU_MAX,comm);CHKERRQ(ierr);
+    }
+    ierr = MPI_Allreduce(&tnorm,nrm,1,MPIU_REAL,MPIU_MAX,comm);CHKERRQ(ierr);
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown norm type");
   ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecStrideMax"
 /*@
-   VecStrideMax - Computes the maximum of subvector of a vector defined 
+   VecStrideMax - Computes the maximum of subvector of a vector defined
    by a starting point and a stride and optionally its location.
 
    Collective on Vec
 
    Input Parameter:
-+  v - the vector 
++  v - the vector
 -  start - starting point of the subvector (defined by a stride)
 
    Output Parameter:
-+  index - the location where the maximum occurred  (pass PETSC_NULL if not required)
++  index - the location where the maximum occurred  (pass NULL if not required)
 -  nrm - the max
 
    Notes:
-   One must call VecSetBlockSize() before this routine to set the stride 
+   One must call VecSetBlockSize() before this routine to set the stride
    information, or use a vector created from a multicomponent DMDA.
 
    If xa is the array representing the vector x, then this computes the max
@@ -247,68 +238,58 @@ PetscErrorCode  VecStrideMax(Vec v,PetscInt start,PetscInt *idex,PetscReal *nrm)
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)v,&comm);CHKERRQ(ierr);
 
-  bs   = v->map->bs;
+  bs = v->map->bs;
   if (start < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative start %D",start);
   else if (start >= bs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Start of stride subvector (%D) is too large for stride\n Have you set the vector blocksize (%D) correctly with VecSetBlockSize()?",start,bs);
   x += start;
 
   id = -1;
-  if (!n) {
-    max = PETSC_MIN_REAL;
-  } else {
+  if (!n) max = PETSC_MIN_REAL;
+  else {
     id  = 0;
-#if defined(PETSC_USE_COMPLEX)
     max = PetscRealPart(x[0]);
-#else
-    max = x[0];
-#endif
     for (i=bs; i<n; i+=bs) {
-#if defined(PETSC_USE_COMPLEX)
       if ((tmp = PetscRealPart(x[i])) > max) { max = tmp; id = i;}
-#else
-      if ((tmp = x[i]) > max) { max = tmp; id = i;} 
-#endif
     }
   }
   ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
 
   if (!idex) {
-    ierr   = MPI_Allreduce(&max,nrm,1,MPIU_REAL,MPIU_MAX,comm);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(&max,nrm,1,MPIU_REAL,MPIU_MAX,comm);CHKERRQ(ierr);
   } else {
     PetscReal in[2],out[2];
     PetscInt  rstart;
 
-    ierr  = VecGetOwnershipRange(v,&rstart,PETSC_NULL);CHKERRQ(ierr);
+    ierr  = VecGetOwnershipRange(v,&rstart,NULL);CHKERRQ(ierr);
     in[0] = max;
     in[1] = rstart+id+start;
-    ierr  = MPI_Allreduce(in,out,2,MPIU_REAL,VecMax_Local_Op,((PetscObject)v)->comm);CHKERRQ(ierr);
+    ierr  = MPI_Allreduce(in,out,2,MPIU_REAL,VecMax_Local_Op,PetscObjectComm((PetscObject)v));CHKERRQ(ierr);
     *nrm  = out[0];
     *idex = (PetscInt)out[1];
   }
-
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecStrideMin"
 /*@
-   VecStrideMin - Computes the minimum of subvector of a vector defined 
+   VecStrideMin - Computes the minimum of subvector of a vector defined
    by a starting point and a stride and optionally its location.
 
    Collective on Vec
 
    Input Parameter:
-+  v - the vector 
++  v - the vector
 -  start - starting point of the subvector (defined by a stride)
 
    Output Parameter:
-+  idex - the location where the minimum occurred. (pass PETSC_NULL if not required)
++  idex - the location where the minimum occurred. (pass NULL if not required)
 -  nrm - the min
 
    Level: advanced
 
    Notes:
-   One must call VecSetBlockSize() before this routine to set the stride 
+   One must call VecSetBlockSize() before this routine to set the stride
    information, or use a vector created from a multicomponent DMDA.
 
    If xa is the array representing the vector x, then this computes the min
@@ -339,62 +320,52 @@ PetscErrorCode  VecStrideMin(Vec v,PetscInt start,PetscInt *idex,PetscReal *nrm)
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)v,&comm);CHKERRQ(ierr);
 
-  bs   = v->map->bs;
-  if (start < 0)  SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative start %D",start);
+  bs = v->map->bs;
+  if (start < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative start %D",start);
   else if (start >= bs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Start of stride subvector (%D) is too large for stride\nHave you set the vector blocksize (%D) correctly with VecSetBlockSize()?",start,bs);
   x += start;
 
   id = -1;
-  if (!n) {
-    min = PETSC_MAX_REAL;
-  } else {
+  if (!n) min = PETSC_MAX_REAL;
+  else {
     id = 0;
-#if defined(PETSC_USE_COMPLEX)
     min = PetscRealPart(x[0]);
-#else
-    min = x[0];
-#endif
     for (i=bs; i<n; i+=bs) {
-#if defined(PETSC_USE_COMPLEX)
       if ((tmp = PetscRealPart(x[i])) < min) { min = tmp; id = i;}
-#else
-      if ((tmp = x[i]) < min) { min = tmp; id = i;} 
-#endif
     }
   }
   ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
 
   if (!idex) {
-    ierr   = MPI_Allreduce(&min,nrm,1,MPIU_REAL,MPIU_MIN,comm);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(&min,nrm,1,MPIU_REAL,MPIU_MIN,comm);CHKERRQ(ierr);
   } else {
     PetscReal in[2],out[2];
     PetscInt  rstart;
 
-    ierr  = VecGetOwnershipRange(v,&rstart,PETSC_NULL);CHKERRQ(ierr);
+    ierr  = VecGetOwnershipRange(v,&rstart,NULL);CHKERRQ(ierr);
     in[0] = min;
     in[1] = rstart+id;
-    ierr  = MPI_Allreduce(in,out,2,MPIU_REAL,VecMin_Local_Op,((PetscObject)v)->comm);CHKERRQ(ierr);
+    ierr  = MPI_Allreduce(in,out,2,MPIU_REAL,VecMin_Local_Op,PetscObjectComm((PetscObject)v));CHKERRQ(ierr);
     *nrm  = out[0];
     *idex = (PetscInt)out[1];
   }
-
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecStrideScaleAll"
 /*@
-   VecStrideScaleAll - Scales the subvectors of a vector defined 
+   VecStrideScaleAll - Scales the subvectors of a vector defined
    by a starting point and a stride.
 
    Logically Collective on Vec
 
    Input Parameter:
-+  v - the vector 
++  v - the vector
 -  scales - values to multiply each subvector entry by
 
    Notes:
-   One must call VecSetBlockSize() before this routine to set the stride 
+   One must call VecSetBlockSize() before this routine to set the stride
    information, or use a vector created from a multicomponent DMDA.
 
 
@@ -417,38 +388,36 @@ PetscErrorCode  VecStrideScaleAll(Vec v,const PetscScalar *scales)
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
 
-  bs   = v->map->bs;
+  bs = v->map->bs;
 
   /* need to provide optimized code for each bs */
   for (i=0; i<n; i+=bs) {
-    for (j=0; j<bs; j++) {
-      x[i+j] *= scales[j];
-    }
+    for (j=0; j<bs; j++) x[i+j] *= scales[j];
   }
   ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecStrideNormAll"
 /*@
-   VecStrideNormAll - Computes the norms  subvectors of a vector defined 
+   VecStrideNormAll - Computes the norms  subvectors of a vector defined
    by a starting point and a stride.
 
    Collective on Vec
 
    Input Parameter:
-+  v - the vector 
++  v - the vector
 -  ntype - type of norm, one of NORM_1, NORM_2, NORM_INFINITY
 
    Output Parameter:
 .  nrm - the norms
 
    Notes:
-   One must call VecSetBlockSize() before this routine to set the stride 
+   One must call VecSetBlockSize() before this routine to set the stride
    information, or use a vector created from a multicomponent DMDA.
 
-   If x is the array representing the vector x then this computes the norm 
+   If x is the array representing the vector x then this computes the norm
    of the array (x[start],x[start+stride],x[start+2*stride], ....)
 
    This is useful for computing, say the norm of the pressure variable when
@@ -478,71 +447,62 @@ PetscErrorCode  VecStrideNormAll(Vec v,NormType ntype,PetscReal nrm[])
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)v,&comm);CHKERRQ(ierr);
 
-  bs   = v->map->bs;
+  bs = v->map->bs;
   if (bs > 128) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Currently supports only blocksize up to 128");
 
   if (ntype == NORM_2) {
     PetscScalar sum[128];
     for (j=0; j<bs; j++) sum[j] = 0.0;
     for (i=0; i<n; i+=bs) {
-      for (j=0; j<bs; j++) {
-	sum[j] += x[i+j]*(PetscConj(x[i+j]));
-      }
+      for (j=0; j<bs; j++) sum[j] += x[i+j]*(PetscConj(x[i+j]));
     }
-    for (j=0; j<bs; j++) {
-      tnorm[j]  = PetscRealPart(sum[j]);
-    }
-    ierr   = MPI_Allreduce(tnorm,nrm,bs,MPIU_REAL,MPIU_SUM,comm);CHKERRQ(ierr);
-    for (j=0; j<bs; j++) {
-      nrm[j] = PetscSqrtReal(nrm[j]);
-    }
+    for (j=0; j<bs; j++) tnorm[j]  = PetscRealPart(sum[j]);
+
+    ierr = MPI_Allreduce(tnorm,nrm,bs,MPIU_REAL,MPIU_SUM,comm);CHKERRQ(ierr);
+    for (j=0; j<bs; j++) nrm[j] = PetscSqrtReal(nrm[j]);
   } else if (ntype == NORM_1) {
-    for (j=0; j<bs; j++) {
-      tnorm[j] = 0.0;
-    }
+    for (j=0; j<bs; j++) tnorm[j] = 0.0;
+
     for (i=0; i<n; i+=bs) {
-      for (j=0; j<bs; j++) {
-	tnorm[j] += PetscAbsScalar(x[i+j]);
-      }
+      for (j=0; j<bs; j++) tnorm[j] += PetscAbsScalar(x[i+j]);
     }
-    ierr   = MPI_Allreduce(tnorm,nrm,bs,MPIU_REAL,MPIU_SUM,comm);CHKERRQ(ierr);
+
+    ierr = MPI_Allreduce(tnorm,nrm,bs,MPIU_REAL,MPIU_SUM,comm);CHKERRQ(ierr);
   } else if (ntype == NORM_INFINITY) {
     PetscReal tmp;
-    for (j=0; j<bs; j++) {
-      tnorm[j] = 0.0;
-    }
+    for (j=0; j<bs; j++) tnorm[j] = 0.0;
 
     for (i=0; i<n; i+=bs) {
       for (j=0; j<bs; j++) {
-	if ((tmp = PetscAbsScalar(x[i+j])) > tnorm[j]) tnorm[j] = tmp;
-	/* check special case of tmp == NaN */
-	if (tmp != tmp) {tnorm[j] = tmp; break;}
+        if ((tmp = PetscAbsScalar(x[i+j])) > tnorm[j]) tnorm[j] = tmp;
+        /* check special case of tmp == NaN */
+        if (tmp != tmp) {tnorm[j] = tmp; break;}
       }
-    } 
-    ierr   = MPI_Allreduce(tnorm,nrm,bs,MPIU_REAL,MPIU_MAX,comm);CHKERRQ(ierr);
+    }
+    ierr = MPI_Allreduce(tnorm,nrm,bs,MPIU_REAL,MPIU_MAX,comm);CHKERRQ(ierr);
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown norm type");
   ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecStrideMaxAll"
 /*@
-   VecStrideMaxAll - Computes the maximums of subvectors of a vector defined 
+   VecStrideMaxAll - Computes the maximums of subvectors of a vector defined
    by a starting point and a stride and optionally its location.
 
    Collective on Vec
 
    Input Parameter:
-.  v - the vector 
+.  v - the vector
 
    Output Parameter:
-+  index - the location where the maximum occurred (not supported, pass PETSC_NULL,
++  index - the location where the maximum occurred (not supported, pass NULL,
            if you need this, send mail to petsc-maint@mcs.anl.gov to request it)
 -  nrm - the maximums
 
    Notes:
-   One must call VecSetBlockSize() before this routine to set the stride 
+   One must call VecSetBlockSize() before this routine to set the stride
    information, or use a vector created from a multicomponent DMDA.
 
    This is useful for computing, say the maximum of the pressure variable when
@@ -572,57 +532,46 @@ PetscErrorCode  VecStrideMaxAll(Vec v,PetscInt idex[],PetscReal nrm[])
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)v,&comm);CHKERRQ(ierr);
 
-  bs   = v->map->bs;
+  bs = v->map->bs;
   if (bs > 128) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Currently supports only blocksize up to 128");
 
   if (!n) {
-    for (j=0; j<bs; j++) {
-      max[j] = PETSC_MIN_REAL;
-    }
+    for (j=0; j<bs; j++) max[j] = PETSC_MIN_REAL;
   } else {
-    for (j=0; j<bs; j++) {
-#if defined(PETSC_USE_COMPLEX)
-      max[j] = PetscRealPart(x[j]);
-#else
-      max[j] = x[j];
-#endif
-    }
+    for (j=0; j<bs; j++) max[j] = PetscRealPart(x[j]);
+
     for (i=bs; i<n; i+=bs) {
       for (j=0; j<bs; j++) {
-#if defined(PETSC_USE_COMPLEX)
-	if ((tmp = PetscRealPart(x[i+j])) > max[j]) { max[j] = tmp;}
-#else
-	if ((tmp = x[i+j]) > max[j]) { max[j] = tmp; } 
-#endif
+        if ((tmp = PetscRealPart(x[i+j])) > max[j]) max[j] = tmp;
       }
     }
   }
-  ierr   = MPI_Allreduce(max,nrm,bs,MPIU_REAL,MPIU_MAX,comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(max,nrm,bs,MPIU_REAL,MPIU_MAX,comm);CHKERRQ(ierr);
 
   ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecStrideMinAll"
 /*@
-   VecStrideMinAll - Computes the minimum of subvector of a vector defined 
+   VecStrideMinAll - Computes the minimum of subvector of a vector defined
    by a starting point and a stride and optionally its location.
 
    Collective on Vec
 
    Input Parameter:
-.  v - the vector 
+.  v - the vector
 
    Output Parameter:
-+  idex - the location where the minimum occurred (not supported, pass PETSC_NULL,
++  idex - the location where the minimum occurred (not supported, pass NULL,
            if you need this, send mail to petsc-maint@mcs.anl.gov to request it)
 -  nrm - the minimums
 
    Level: advanced
 
    Notes:
-   One must call VecSetBlockSize() before this routine to set the stride 
+   One must call VecSetBlockSize() before this routine to set the stride
    information, or use a vector created from a multicomponent DMDA.
 
    This is useful for computing, say the minimum of the pressure variable when
@@ -650,28 +599,17 @@ PetscErrorCode  VecStrideMinAll(Vec v,PetscInt idex[],PetscReal nrm[])
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)v,&comm);CHKERRQ(ierr);
 
-  bs   = v->map->bs;
+  bs = v->map->bs;
   if (bs > 128) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Currently supports only blocksize up to 128");
 
   if (!n) {
-    for (j=0; j<bs; j++) {
-      min[j] = PETSC_MAX_REAL;
-    }
+    for (j=0; j<bs; j++) min[j] = PETSC_MAX_REAL;
   } else {
-    for (j=0; j<bs; j++) {
-#if defined(PETSC_USE_COMPLEX)
-      min[j] = PetscRealPart(x[j]);
-#else
-      min[j] = x[j];
-#endif
-    }
+    for (j=0; j<bs; j++) min[j] = PetscRealPart(x[j]);
+
     for (i=bs; i<n; i+=bs) {
       for (j=0; j<bs; j++) {
-#if defined(PETSC_USE_COMPLEX)
-	if ((tmp = PetscRealPart(x[i+j])) < min[j]) { min[j] = tmp;}
-#else
-	if ((tmp = x[i+j]) < min[j]) { min[j] = tmp; } 
-#endif
+        if ((tmp = PetscRealPart(x[i+j])) < min[j]) min[j] = tmp;
       }
     }
   }
@@ -682,7 +620,7 @@ PetscErrorCode  VecStrideMinAll(Vec v,PetscInt idex[],PetscReal nrm[])
 }
 
 /*----------------------------------------------------------------------------------------------*/
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecStrideGatherAll"
 /*@
    VecStrideGatherAll - Gathers all the single components from a multi-component vector into
@@ -691,14 +629,14 @@ PetscErrorCode  VecStrideMinAll(Vec v,PetscInt idex[],PetscReal nrm[])
    Collective on Vec
 
    Input Parameter:
-+  v - the vector 
++  v - the vector
 -  addv - one of ADD_VALUES,INSERT_VALUES,MAX_VALUES
 
    Output Parameter:
 .  s - the location where the subvectors are stored
 
    Notes:
-   One must call VecSetBlockSize() before this routine to set the stride 
+   One must call VecSetBlockSize() before this routine to set the stride
    information, or use a vector created from a multicomponent DMDA.
 
    If x is the array representing the vector x then this gathers
@@ -706,7 +644,7 @@ PetscErrorCode  VecStrideMinAll(Vec v,PetscInt idex[],PetscReal nrm[])
    for start=0,1,2,...bs-1
 
    The parallel layout of the vector and the subvector must be the same;
-   i.e., nlocal of v = stride*(nlocal of s) 
+   i.e., nlocal of v = stride*(nlocal of s)
 
    Not optimized; could be easily
 
@@ -720,7 +658,7 @@ PetscErrorCode  VecStrideMinAll(Vec v,PetscInt idex[],PetscReal nrm[])
 PetscErrorCode  VecStrideGatherAll(Vec v,Vec s[],InsertMode addv)
 {
   PetscErrorCode ierr;
-  PetscInt       i,n,n2,bs,j,k,*bss = PETSC_NULL,nv,jj,nvc;
+  PetscInt       i,n,n2,bs,j,k,*bss = NULL,nv,jj,nvc;
   PetscScalar    *x,**y;
 
   PetscFunctionBegin;
@@ -740,7 +678,7 @@ PetscErrorCode  VecStrideGatherAll(Vec v,Vec s[],InsertMode addv)
     ierr = VecGetBlockSize(s[i],&bss[i]);CHKERRQ(ierr);
     if (bss[i] < 1) bss[i] = 1; /* if user never set it then assume 1  Re: [PETSC #8241] VecStrideGatherAll */
     ierr = VecGetArray(s[i],&y[i]);CHKERRQ(ierr);
-    nvc  += bss[i];
+    nvc += bss[i];
     nv++;
     if (nvc > bs)  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of subvectors in subvectors > number of vectors in main vector");
     if (nvc == bs) break;
@@ -752,18 +690,14 @@ PetscErrorCode  VecStrideGatherAll(Vec v,Vec s[],InsertMode addv)
   if (addv == INSERT_VALUES) {
     for (j=0; j<nv; j++) {
       for (k=0; k<bss[j]; k++) {
-	for (i=0; i<n; i++) {
-	  y[j][i*bss[j] + k] = x[bs*i+jj+k];
-        }
+        for (i=0; i<n; i++) y[j][i*bss[j] + k] = x[bs*i+jj+k];
       }
       jj += bss[j];
     }
   } else if (addv == ADD_VALUES) {
     for (j=0; j<nv; j++) {
       for (k=0; k<bss[j]; k++) {
-	for (i=0; i<n; i++) {
-	  y[j][i*bss[j] + k] += x[bs*i+jj+k];
-        }
+        for (i=0; i<n; i++) y[j][i*bss[j] + k] += x[bs*i+jj+k];
       }
       jj += bss[j];
     }
@@ -771,9 +705,7 @@ PetscErrorCode  VecStrideGatherAll(Vec v,Vec s[],InsertMode addv)
   } else if (addv == MAX_VALUES) {
     for (j=0; j<nv; j++) {
       for (k=0; k<bss[j]; k++) {
-	for (i=0; i<n; i++) {
-	  y[j][i*bss[j] + k] = PetscMax(y[j][i*bss[j] + k],x[bs*i+jj+k]);
-        }
+        for (i=0; i<n; i++) y[j][i*bss[j] + k] = PetscMax(y[j][i*bss[j] + k],x[bs*i+jj+k]);
       }
       jj += bss[j];
     }
@@ -789,10 +721,10 @@ PetscErrorCode  VecStrideGatherAll(Vec v,Vec s[],InsertMode addv)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecStrideScatterAll"
 /*@
-   VecStrideScatterAll - Scatters all the single components from separate vectors into 
+   VecStrideScatterAll - Scatters all the single components from separate vectors into
      a multi-component vector.
 
    Collective on Vec
@@ -802,14 +734,14 @@ PetscErrorCode  VecStrideGatherAll(Vec v,Vec s[],InsertMode addv)
 -  addv - one of ADD_VALUES,INSERT_VALUES,MAX_VALUES
 
    Output Parameter:
-.  v - the multicomponent vector 
+.  v - the multicomponent vector
 
    Notes:
-   One must call VecSetBlockSize() before this routine to set the stride 
+   One must call VecSetBlockSize() before this routine to set the stride
    information, or use a vector created from a multicomponent DMDA.
 
    The parallel layout of the vector and the subvector must be the same;
-   i.e., nlocal of v = stride*(nlocal of s) 
+   i.e., nlocal of v = stride*(nlocal of s)
 
    Not optimized; could be easily
 
@@ -823,8 +755,8 @@ PetscErrorCode  VecStrideGatherAll(Vec v,Vec s[],InsertMode addv)
 PetscErrorCode  VecStrideScatterAll(Vec s[],Vec v,InsertMode addv)
 {
   PetscErrorCode ierr;
-  PetscInt        i,n,n2,bs,j,jj,k,*bss = PETSC_NULL,nv,nvc;
-  PetscScalar     *x,**y;
+  PetscInt       i,n,n2,bs,j,jj,k,*bss = NULL,nv,nvc;
+  PetscScalar    *x,**y;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
@@ -837,15 +769,15 @@ PetscErrorCode  VecStrideScatterAll(Vec s[],Vec v,InsertMode addv)
   if (bs < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Input vector does not have a valid blocksize set");
 
   ierr = PetscMalloc2(bs,PetscScalar**,&y,bs,PetscInt,&bss);CHKERRQ(ierr);
-  nv  = 0;
-  nvc = 0;
+  nv   = 0;
+  nvc  = 0;
   for (i=0; i<bs; i++) {
     ierr = VecGetBlockSize(s[i],&bss[i]);CHKERRQ(ierr);
     if (bss[i] < 1) bss[i] = 1; /* if user never set it then assume 1  Re: [PETSC #8241] VecStrideGatherAll */
     ierr = VecGetArray(s[i],&y[i]);CHKERRQ(ierr);
-    nvc  += bss[i];
+    nvc += bss[i];
     nv++;
-    if (nvc > bs)  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of subvectors in subvectors > number of vectors in main vector");
+    if (nvc > bs) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of subvectors in subvectors > number of vectors in main vector");
     if (nvc == bs) break;
   }
 
@@ -855,18 +787,14 @@ PetscErrorCode  VecStrideScatterAll(Vec s[],Vec v,InsertMode addv)
   if (addv == INSERT_VALUES) {
     for (j=0; j<nv; j++) {
       for (k=0; k<bss[j]; k++) {
-	for (i=0; i<n; i++) {
-	  x[bs*i+jj+k] = y[j][i*bss[j] + k];
-        }
+        for (i=0; i<n; i++) x[bs*i+jj+k] = y[j][i*bss[j] + k];
       }
       jj += bss[j];
     }
   } else if (addv == ADD_VALUES) {
     for (j=0; j<nv; j++) {
       for (k=0; k<bss[j]; k++) {
-	for (i=0; i<n; i++) {
-	  x[bs*i+jj+k] += y[j][i*bss[j] + k];
-        }
+        for (i=0; i<n; i++) x[bs*i+jj+k] += y[j][i*bss[j] + k];
       }
       jj += bss[j];
     }
@@ -874,9 +802,7 @@ PetscErrorCode  VecStrideScatterAll(Vec s[],Vec v,InsertMode addv)
   } else if (addv == MAX_VALUES) {
     for (j=0; j<nv; j++) {
       for (k=0; k<bss[j]; k++) {
-	for (i=0; i<n; i++) {
-	  x[bs*i+jj+k] = PetscMax(x[bs*i+jj+k],y[j][i*bss[j] + k]);
-        }
+        for (i=0; i<n; i++) x[bs*i+jj+k] = PetscMax(x[bs*i+jj+k],y[j][i*bss[j] + k]);
       }
       jj += bss[j];
     }
@@ -891,7 +817,7 @@ PetscErrorCode  VecStrideScatterAll(Vec s[],Vec v,InsertMode addv)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecStrideGather"
 /*@
    VecStrideGather - Gathers a single component from a multi-component vector into
@@ -900,7 +826,7 @@ PetscErrorCode  VecStrideScatterAll(Vec s[],Vec v,InsertMode addv)
    Collective on Vec
 
    Input Parameter:
-+  v - the vector 
++  v - the vector
 .  start - starting point of the subvector (defined by a stride)
 -  addv - one of ADD_VALUES,INSERT_VALUES,MAX_VALUES
 
@@ -908,14 +834,14 @@ PetscErrorCode  VecStrideScatterAll(Vec s[],Vec v,InsertMode addv)
 .  s - the location where the subvector is stored
 
    Notes:
-   One must call VecSetBlockSize() before this routine to set the stride 
+   One must call VecSetBlockSize() before this routine to set the stride
    information, or use a vector created from a multicomponent DMDA.
 
    If x is the array representing the vector x then this gathers
    the array (x[start],x[start+stride],x[start+2*stride], ....)
 
    The parallel layout of the vector and the subvector must be the same;
-   i.e., nlocal of v = stride*(nlocal of s) 
+   i.e., nlocal of v = stride*(nlocal of s)
 
    Not optimized; could be easily
 
@@ -935,12 +861,12 @@ PetscErrorCode  VecStrideGather(Vec v,PetscInt start,Vec s,InsertMode addv)
   PetscValidHeaderSpecific(s,VEC_CLASSID,3);
   if (start < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative start %D",start);
   if (start >= v->map->bs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Start of stride subvector (%D) is too large for stride\n Have you set the vector blocksize (%D) correctly with VecSetBlockSize()?",start,v->map->bs);
-  if (!v->ops->stridegather) SETERRQ(((PetscObject)s)->comm,PETSC_ERR_SUP,"Not implemented for this Vec class");
+  if (!v->ops->stridegather) SETERRQ(PetscObjectComm((PetscObject)s),PETSC_ERR_SUP,"Not implemented for this Vec class");
   ierr = (*v->ops->stridegather)(v,start,s,addv);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecStrideScatter"
 /*@
    VecStrideScatter - Scatters a single component from a vector into a multi-component vector.
@@ -948,7 +874,7 @@ PetscErrorCode  VecStrideGather(Vec v,PetscInt start,Vec s,InsertMode addv)
    Collective on Vec
 
    Input Parameter:
-+  s - the single-component vector 
++  s - the single-component vector
 .  start - starting point of the subvector (defined by a stride)
 -  addv - one of ADD_VALUES,INSERT_VALUES,MAX_VALUES
 
@@ -960,7 +886,7 @@ PetscErrorCode  VecStrideGather(Vec v,PetscInt start,Vec s,InsertMode addv)
    routine to set the stride  information, or use a vector created from a multicomponent DMDA.
 
    The parallel layout of the vector and the subvector must be the same;
-   i.e., nlocal of v = stride*(nlocal of s) 
+   i.e., nlocal of v = stride*(nlocal of s)
 
    Not optimized; could be easily
 
@@ -980,12 +906,12 @@ PetscErrorCode  VecStrideScatter(Vec s,PetscInt start,Vec v,InsertMode addv)
   PetscValidHeaderSpecific(v,VEC_CLASSID,3);
   if (start < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative start %D",start);
   if (start >= v->map->bs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Start of stride subvector (%D) is too large for stride\n Have you set the vector blocksize (%D) correctly with VecSetBlockSize()?",start,v->map->bs);
-  if (!v->ops->stridescatter) SETERRQ(((PetscObject)s)->comm,PETSC_ERR_SUP,"Not implemented for this Vec class");
+  if (!v->ops->stridescatter) SETERRQ(PetscObjectComm((PetscObject)s),PETSC_ERR_SUP,"Not implemented for this Vec class");
   ierr = (*v->ops->stridescatter)(s,start,v,addv);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecStrideGather_Default"
 PetscErrorCode  VecStrideGather_Default(Vec v,PetscInt start,Vec s,InsertMode addv)
 {
@@ -999,24 +925,18 @@ PetscErrorCode  VecStrideGather_Default(Vec v,PetscInt start,Vec s,InsertMode ad
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
   ierr = VecGetArray(s,&y);CHKERRQ(ierr);
 
-  bs   = v->map->bs;
+  bs = v->map->bs;
   if (n != ns*bs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Subvector length * blocksize %D not correct for gather from original vector %D",ns*bs,n);
   x += start;
-  n =  n/bs;
+  n  =  n/bs;
 
   if (addv == INSERT_VALUES) {
-    for (i=0; i<n; i++) {
-      y[i] = x[bs*i];
-    }
+    for (i=0; i<n; i++) y[i] = x[bs*i];
   } else if (addv == ADD_VALUES) {
-    for (i=0; i<n; i++) {
-      y[i] += x[bs*i];
-    }
+    for (i=0; i<n; i++) y[i] += x[bs*i];
 #if !defined(PETSC_USE_COMPLEX)
   } else if (addv == MAX_VALUES) {
-    for (i=0; i<n; i++) {
-      y[i] = PetscMax(y[i],x[bs*i]);
-    }
+    for (i=0; i<n; i++) y[i] = PetscMax(y[i],x[bs*i]);
 #endif
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown insert type");
 
@@ -1025,7 +945,7 @@ PetscErrorCode  VecStrideGather_Default(Vec v,PetscInt start,Vec s,InsertMode ad
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecStrideScatter_Default"
 PetscErrorCode  VecStrideScatter_Default(Vec s,PetscInt start,Vec v,InsertMode addv)
 {
@@ -1039,24 +959,18 @@ PetscErrorCode  VecStrideScatter_Default(Vec s,PetscInt start,Vec v,InsertMode a
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
   ierr = VecGetArray(s,&y);CHKERRQ(ierr);
 
-  bs   = v->map->bs;
+  bs = v->map->bs;
   if (n != ns*bs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Subvector length * blocksize %D not correct for scatter to multicomponent vector %D",ns*bs,n);
   x += start;
-  n =  n/bs;
+  n  =  n/bs;
 
   if (addv == INSERT_VALUES) {
-    for (i=0; i<n; i++) {
-      x[bs*i] = y[i];
-    }
+    for (i=0; i<n; i++) x[bs*i] = y[i];
   } else if (addv == ADD_VALUES) {
-    for (i=0; i<n; i++) {
-      x[bs*i] += y[i];
-    }
+    for (i=0; i<n; i++) x[bs*i] += y[i];
 #if !defined(PETSC_USE_COMPLEX)
   } else if (addv == MAX_VALUES) {
-    for (i=0; i<n; i++) {
-      x[bs*i] = PetscMax(y[i],x[bs*i]);
-    }
+    for (i=0; i<n; i++) x[bs*i] = PetscMax(y[i],x[bs*i]);
 #endif
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown insert type");
 
@@ -1065,7 +979,7 @@ PetscErrorCode  VecStrideScatter_Default(Vec s,PetscInt start,Vec v,InsertMode a
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecReciprocal_Default"
 PetscErrorCode VecReciprocal_Default(Vec v)
 {
@@ -1115,9 +1029,7 @@ PetscErrorCode  VecExp(Vec v)
   } else {
     ierr = VecGetLocalSize(v, &n);CHKERRQ(ierr);
     ierr = VecGetArray(v, &x);CHKERRQ(ierr);
-    for(i = 0; i < n; i++) {
-      x[i] = PetscExpScalar(x[i]);
-    }
+    for (i = 0; i < n; i++) x[i] = PetscExpScalar(x[i]);
     ierr = VecRestoreArray(v, &x);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -1155,9 +1067,7 @@ PetscErrorCode  VecLog(Vec v)
   } else {
     ierr = VecGetLocalSize(v, &n);CHKERRQ(ierr);
     ierr = VecGetArray(v, &x);CHKERRQ(ierr);
-    for(i = 0; i < n; i++) {
-      x[i] = PetscLogScalar(x[i]);
-    }
+    for (i = 0; i < n; i++) x[i] = PetscLogScalar(x[i]);
     ierr = VecRestoreArray(v, &x);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -1197,9 +1107,7 @@ PetscErrorCode  VecSqrtAbs(Vec v)
   } else {
     ierr = VecGetLocalSize(v, &n);CHKERRQ(ierr);
     ierr = VecGetArray(v, &x);CHKERRQ(ierr);
-    for(i = 0; i < n; i++) {
-      x[i] = PetscSqrtReal(PetscAbsScalar(x[i]));
-    }
+    for (i = 0; i < n; i++) x[i] = PetscSqrtReal(PetscAbsScalar(x[i]));
     ierr = VecRestoreArray(v, &x);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -1217,18 +1125,19 @@ PetscErrorCode  VecSqrtAbs(Vec v)
 - t - second vector
 
   Output Parameter:
-+ dp - s't
-- nm - t't
++ dp - s'conj(t)
+- nm - t'conj(t)
 
   Level: advanced
 
-  Developer Notes: Even though the second return argument is a norm and hence could be a PetscReal value it is returned as PetscScalar
+  Notes: conj(x) is the complex conjugate of x when x is complex
+
 
 .seealso:   VecDot(), VecNorm(), VecDotBegin(), VecNormBegin(), VecDotEnd(), VecNormEnd()
 
 .keywords: vector, sqrt, square root
 @*/
-PetscErrorCode  VecDotNorm2(Vec s,Vec t,PetscScalar *dp, PetscScalar *nm)
+PetscErrorCode  VecDotNorm2(Vec s,Vec t,PetscScalar *dp, PetscReal *nm)
 {
   PetscScalar    *sx, *tx, dpx = 0.0, nmx = 0.0,work[2],sum[2];
   PetscInt       i, n;
@@ -1245,17 +1154,14 @@ PetscErrorCode  VecDotNorm2(Vec s,Vec t,PetscScalar *dp, PetscScalar *nm)
   if (s->map->N != t->map->N) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Incompatible vector global lengths");
   if (s->map->n != t->map->n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths");
 
-  ierr = PetscLogEventBarrierBegin(VEC_DotNormBarrier,s,t,0,0,((PetscObject)s)->comm);CHKERRQ(ierr);
+  ierr = PetscLogEventBarrierBegin(VEC_DotNormBarrier,s,t,0,0,PetscObjectComm((PetscObject)s));CHKERRQ(ierr);
   if (s->ops->dotnorm2) {
-    ierr = (*s->ops->dotnorm2)(s,t,dp,nm);CHKERRQ(ierr);
+    ierr = (*s->ops->dotnorm2)(s,t,dp,&dpx);CHKERRQ(ierr);
+    *nm  = PetscRealPart(dpx);CHKERRQ(ierr);
   } else {
-    PetscReal tmp = 0.0;
     ierr = VecGetLocalSize(s, &n);CHKERRQ(ierr);
     ierr = VecGetArray(s, &sx);CHKERRQ(ierr);
     ierr = VecGetArray(t, &tx);CHKERRQ(ierr);
-
-    ierr = VecNorm_MPI(s,NORM_2, &tmp);
-    ierr = VecNorm_MPI(t,NORM_2, &tmp);
 
     for (i = 0; i<n; i++) {
       dpx += sx[i]*PetscConj(tx[i]);
@@ -1263,19 +1169,20 @@ PetscErrorCode  VecDotNorm2(Vec s,Vec t,PetscScalar *dp, PetscScalar *nm)
     }
     work[0] = dpx;
     work[1] = nmx;
-    ierr = MPI_Allreduce(&work,&sum,2,MPIU_SCALAR,MPIU_SUM,((PetscObject)s)->comm);CHKERRQ(ierr);
+
+    ierr = MPI_Allreduce(work,sum,2,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)s));CHKERRQ(ierr);
     *dp  = sum[0];
-    *nm  = sum[1];
+    *nm  = PetscRealPart(sum[1]);
 
     ierr = VecRestoreArray(t, &tx);CHKERRQ(ierr);
     ierr = VecRestoreArray(s, &sx);CHKERRQ(ierr);
     ierr = PetscLogFlops(4.0*n);CHKERRQ(ierr);
   }
-  ierr = PetscLogEventBarrierEnd(VEC_DotNormBarrier,s,t,0,0,((PetscObject)s)->comm);CHKERRQ(ierr);
+  ierr = PetscLogEventBarrierEnd(VEC_DotNormBarrier,s,t,0,0,PetscObjectComm((PetscObject)s));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecSum"
 /*@
    VecSum - Computes the sum of all the components of a vector.
@@ -1283,7 +1190,7 @@ PetscErrorCode  VecDotNorm2(Vec s,Vec t,PetscScalar *dp, PetscScalar *nm)
    Collective on Vec
 
    Input Parameter:
-.  v - the vector 
+.  v - the vector
 
    Output Parameter:
 .  sum - the result
@@ -1305,15 +1212,13 @@ PetscErrorCode  VecSum(Vec v,PetscScalar *sum)
   PetscValidScalarPointer(sum,2);
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
-  for (i=0; i<n; i++) {
-    lsum += x[i];
-  }
-  ierr = MPI_Allreduce(&lsum,sum,1,MPIU_SCALAR,MPIU_SUM,((PetscObject)v)->comm);CHKERRQ(ierr);
+  for (i=0; i<n; i++) lsum += x[i];
+  ierr = MPI_Allreduce(&lsum,sum,1,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)v));CHKERRQ(ierr);
   ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecShift"
 /*@
    VecShift - Shifts all of the components of a vector by computing
@@ -1322,11 +1227,11 @@ PetscErrorCode  VecSum(Vec v,PetscScalar *sum)
    Logically Collective on Vec
 
    Input Parameters:
-+  v - the vector 
++  v - the vector
 -  shift - the shift
 
    Output Parameter:
-.  v - the shifted vector 
+.  v - the shifted vector
 
    Level: intermediate
 
@@ -1341,21 +1246,19 @@ PetscErrorCode  VecShift(Vec v,PetscScalar shift)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
-  PetscValidLogicalCollectiveScalar(v,shift,2);  
+  PetscValidLogicalCollectiveScalar(v,shift,2);
   if (v->ops->shift) {
     ierr = (*v->ops->shift)(v);CHKERRQ(ierr);
   } else {
-    ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr); 
+    ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
     ierr = VecGetArray(v,&x);CHKERRQ(ierr);
-    for (i=0; i<n; i++) {
-      x[i] += shift;
-    }
+    for (i=0; i<n; i++) x[i] += shift;
     ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecAbs"
 /*@
    VecAbs - Replaces every element in a vector with its absolute value.
@@ -1363,7 +1266,7 @@ PetscErrorCode  VecShift(Vec v,PetscScalar shift)
    Logically Collective on Vec
 
    Input Parameters:
-.  v - the vector 
+.  v - the vector
 
    Level: intermediate
 
@@ -1383,9 +1286,7 @@ PetscErrorCode  VecAbs(Vec v)
   } else {
     ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
     ierr = VecGetArray(v,&x);CHKERRQ(ierr);
-    for (i=0; i<n; i++) {
-      x[i] = PetscAbsScalar(x[i]);
-    }
+    for (i=0; i<n; i++) x[i] = PetscAbsScalar(x[i]);
     ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -1403,33 +1304,32 @@ PetscErrorCode  VecAbs(Vec v)
 
   Level: beginner
 
-  Note: This function does not yet support parallel Index Sets
+  Note: This function does not yet support parallel Index Sets with non-local permutations
 
 .seealso: MatPermute()
 .keywords: vec, permute
 @*/
-PetscErrorCode  VecPermute(Vec x, IS row, PetscBool  inv)
+PetscErrorCode  VecPermute(Vec x, IS row, PetscBool inv)
 {
   PetscScalar    *array, *newArray;
   const PetscInt *idx;
-  PetscInt       i;
+  PetscInt       i,rstart,rend;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = VecGetOwnershipRange(x,&rstart,&rend);CHKERRQ(ierr);
   ierr = ISGetIndices(row, &idx);CHKERRQ(ierr);
   ierr = VecGetArray(x, &array);CHKERRQ(ierr);
   ierr = PetscMalloc(x->map->n*sizeof(PetscScalar), &newArray);CHKERRQ(ierr);
-#ifdef PETSC_USE_DEBUG
-  for(i = 0; i < x->map->n; i++) {
-    if ((idx[i] < 0) || (idx[i] >= x->map->n)) {
-      SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT, "Permutation index %D is out of bounds: %D", i, idx[i]);
-    }
+#if defined(PETSC_USE_DEBUG)
+  for (i = 0; i < x->map->n; i++) {
+    if ((idx[i] < rstart) || (idx[i] >= rend)) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT, "Permutation index %D is out of bounds: %D", i, idx[i]);
   }
 #endif
   if (!inv) {
-    for(i = 0; i < x->map->n; i++) newArray[i]      = array[idx[i]];
+    for (i = 0; i < x->map->n; i++) newArray[i] = array[idx[i]-rstart];
   } else {
-    for(i = 0; i < x->map->n; i++) newArray[idx[i]] = array[i];
+    for (i = 0; i < x->map->n; i++) newArray[idx[i]-rstart] = array[i];
   }
   ierr = VecRestoreArray(x, &array);CHKERRQ(ierr);
   ierr = ISRestoreIndices(row, &idx);CHKERRQ(ierr);
@@ -1437,7 +1337,7 @@ PetscErrorCode  VecPermute(Vec x, IS row, PetscBool  inv)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecEqual"
 /*@
    VecEqual - Compares two vectors.
@@ -1459,57 +1359,54 @@ PetscErrorCode  VecPermute(Vec x, IS row, PetscBool  inv)
 @*/
 PetscErrorCode  VecEqual(Vec vec1,Vec vec2,PetscBool  *flg)
 {
-  PetscScalar    *v1,*v2; 
-  PetscErrorCode ierr; 
-  PetscInt       n1,n2,N1,N2; 
-  PetscInt       state1,state2; 
-  PetscBool      flg1; 
- 
-  PetscFunctionBegin; 
-  PetscValidHeaderSpecific(vec1,VEC_CLASSID,1); 
-  PetscValidHeaderSpecific(vec2,VEC_CLASSID,2); 
-  PetscValidPointer(flg,3); 
-  if (vec1 == vec2) { 
-    *flg = PETSC_TRUE; 
-  } else { 
-    ierr = VecGetSize(vec1,&N1);CHKERRQ(ierr); 
-    ierr = VecGetSize(vec2,&N2);CHKERRQ(ierr); 
-    if (N1 != N2) { 
-      flg1 = PETSC_FALSE; 
-    } else { 
-      ierr = VecGetLocalSize(vec1,&n1);CHKERRQ(ierr); 
-      ierr = VecGetLocalSize(vec2,&n2);CHKERRQ(ierr); 
-      if (n1 != n2) { 
-        flg1 = PETSC_FALSE; 
-      } else { 
-        ierr = PetscObjectStateQuery((PetscObject) vec1,&state1);CHKERRQ(ierr); 
-        ierr = PetscObjectStateQuery((PetscObject) vec2,&state2);CHKERRQ(ierr); 
-        ierr = VecGetArray(vec1,&v1);CHKERRQ(ierr); 
+  PetscScalar    *v1,*v2;
+  PetscErrorCode ierr;
+  PetscInt       n1,n2,N1,N2;
+  PetscInt       state1,state2;
+  PetscBool      flg1;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(vec1,VEC_CLASSID,1);
+  PetscValidHeaderSpecific(vec2,VEC_CLASSID,2);
+  PetscValidPointer(flg,3);
+  if (vec1 == vec2) *flg = PETSC_TRUE;
+  else {
+    ierr = VecGetSize(vec1,&N1);CHKERRQ(ierr);
+    ierr = VecGetSize(vec2,&N2);CHKERRQ(ierr);
+    if (N1 != N2) flg1 = PETSC_FALSE;
+    else {
+      ierr = VecGetLocalSize(vec1,&n1);CHKERRQ(ierr);
+      ierr = VecGetLocalSize(vec2,&n2);CHKERRQ(ierr);
+      if (n1 != n2) flg1 = PETSC_FALSE;
+      else {
+        ierr = PetscObjectStateQuery((PetscObject) vec1,&state1);CHKERRQ(ierr);
+        ierr = PetscObjectStateQuery((PetscObject) vec2,&state2);CHKERRQ(ierr);
+        ierr = VecGetArray(vec1,&v1);CHKERRQ(ierr);
         ierr = VecGetArray(vec2,&v2);CHKERRQ(ierr);
 #if defined(PETSC_USE_COMPLEX)
         {
           PetscInt k;
           flg1 = PETSC_TRUE;
-          for (k=0; k<n1; k++){
-            if (PetscRealPart(v1[k]) != PetscRealPart(v2[k]) || PetscImaginaryPart(v1[k]) != PetscImaginaryPart(v2[k])){
+          for (k=0; k<n1; k++) {
+            if (PetscRealPart(v1[k]) != PetscRealPart(v2[k]) || PetscImaginaryPart(v1[k]) != PetscImaginaryPart(v2[k])) {
               flg1 = PETSC_FALSE;
               break;
             }
           }
         }
-#else 
-        ierr = PetscMemcmp(v1,v2,n1*sizeof(PetscScalar),&flg1);CHKERRQ(ierr); 
+#else
+        ierr = PetscMemcmp(v1,v2,n1*sizeof(PetscScalar),&flg1);CHKERRQ(ierr);
 #endif
-        ierr = VecRestoreArray(vec1,&v1);CHKERRQ(ierr); 
-        ierr = VecRestoreArray(vec2,&v2);CHKERRQ(ierr); 
-        ierr = PetscObjectSetState((PetscObject) vec1,state1);CHKERRQ(ierr); 
-        ierr = PetscObjectSetState((PetscObject) vec2,state2);CHKERRQ(ierr); 
-      } 
-    } 
-    /* combine results from all processors */ 
-    ierr = MPI_Allreduce(&flg1,flg,1,MPI_INT,MPI_MIN,((PetscObject)vec1)->comm);CHKERRQ(ierr); 
-  } 
-  PetscFunctionReturn(0); 
+        ierr = VecRestoreArray(vec1,&v1);CHKERRQ(ierr);
+        ierr = VecRestoreArray(vec2,&v2);CHKERRQ(ierr);
+        ierr = PetscObjectSetState((PetscObject) vec1,state1);CHKERRQ(ierr);
+        ierr = PetscObjectSetState((PetscObject) vec2,state2);CHKERRQ(ierr);
+      }
+    }
+    /* combine results from all processors */
+    ierr = MPI_Allreduce(&flg1,flg,1,MPIU_BOOL,MPI_MIN,PetscObjectComm((PetscObject)vec1));CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
 }
 
 

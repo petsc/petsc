@@ -3,10 +3,9 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-CPPFLAGS = 
+CPPFLAGS =
 SOURCEC  = partition.c spartition.c
-SOURCEH  = 
-OBJSC    = partition.o spartition.o
+SOURCEH  =
 LIBBASE  = libpetscmat
 LOCDIR   = src/mat/partition/
 MANSEC   = MatOrderings

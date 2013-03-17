@@ -51,7 +51,7 @@
       PetscSizeT sizeofscalar,sizeoftruth
       PetscSizeT sizeofchar,sizeofreal
       Character(len=99) list(6)
-      
+
       Call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       list(1) = 'a123'
       list(2) = 'b456'
@@ -75,7 +75,7 @@
 !     types, this length will be wrong because of padding
 !     this is a situation where the transfer function is very helpful...
       sizeofbag = size(transfer(dummydata,dummychar))*sizeofchar
-      
+
 
 ! create the bag
       call PetscBagCreate(PETSC_COMM_WORLD,sizeofbag,bag,ierr)
@@ -119,7 +119,7 @@
       call PetscBagLoad(viewer,bag,ierr)
       call PetscViewerDestroy(viewer,ierr)
       call PetscBagView(bag,PETSC_VIEWER_STDOUT_WORLD,ierr)
-      
+
       call PetscBagSetFromOptions(bag,ierr)
       call PetscBagView(bag,PETSC_VIEWER_STDOUT_WORLD,ierr)
       call PetscBagDestroy(bag,ierr)

@@ -26,6 +26,5 @@
         use petscdmadda
         use petscdmcomposite
         use petscdmmesh
-        use petscpcmg
         use petscts
         end module

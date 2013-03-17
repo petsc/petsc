@@ -12,10 +12,12 @@ typedef struct {
 static PetscErrorCode TSStep_Euler(TS ts)
 {
   TS_Euler       *euler = (TS_Euler*)ts->data;
-  Vec            sol = ts->vec_sol,update = euler->update;
+  Vec            sol    = ts->vec_sol,update = euler->update;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = TSPreStep(ts);CHKERRQ(ierr);
+  ierr = TSPreStage(ts,ts->ptime);CHKERRQ(ierr);
   ierr = TSComputeRHSFunction(ts,ts->ptime,sol,update);CHKERRQ(ierr);
   ierr = VecAXPY(sol,ts->time_step,update);CHKERRQ(ierr);
   ts->ptime += ts->time_step;
@@ -89,6 +91,15 @@ static PetscErrorCode TSInterpolate_Euler(TS ts,PetscReal t,Vec X)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "TSComputeLinearStability_Euler"
+PetscErrorCode TSComputeLinearStability_Euler(TS ts,PetscReal xr,PetscReal xi,PetscReal *yr,PetscReal *yi)
+{
+  PetscFunctionBegin;
+  *yr = 1.0 + xr;
+  *yi = xi;
+  PetscFunctionReturn(0);
+}
 /* ------------------------------------------------------------ */
 
 /*MC
@@ -99,10 +110,9 @@ static PetscErrorCode TSInterpolate_Euler(TS ts,PetscReal t,Vec X)
 .seealso:  TSCreate(), TS, TSSetType(), TSBEULER
 
 M*/
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TSCreate_Euler"
-PetscErrorCode  TSCreate_Euler(TS ts)
+PETSC_EXTERN PetscErrorCode TSCreate_Euler(TS ts)
 {
   TS_Euler       *euler;
   PetscErrorCode ierr;
@@ -115,10 +125,9 @@ PetscErrorCode  TSCreate_Euler(TS ts)
   ts->ops->setfromoptions  = TSSetFromOptions_Euler;
   ts->ops->view            = TSView_Euler;
   ts->ops->interpolate     = TSInterpolate_Euler;
+  ts->ops->linearstability = TSComputeLinearStability_Euler;
 
   ierr = PetscNewLog(ts,TS_Euler,&euler);CHKERRQ(ierr);
   ts->data = (void*)euler;
-
   PetscFunctionReturn(0);
 }
-EXTERN_C_END

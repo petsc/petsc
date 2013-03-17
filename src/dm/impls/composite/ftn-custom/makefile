@@ -3,8 +3,7 @@
 ALL: lib
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = zfddaf.c 
-OBJSC    = ${SOURCEC:.c=.o}
+SOURCEC  = zfddaf.c
 SOURCEF  =
 SOURCEH  =
 DIRS     =

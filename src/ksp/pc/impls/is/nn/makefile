@@ -6,10 +6,8 @@ FFLAGS   =
 SOURCEC  = nn.c
 SOURCEF  =
 SOURCEH  = nn.h
-OBJSC    = nn.o
-OBJSF    =
 LIBBASE  = libpetscksp
-DIRS     = 
+DIRS     =
 MANSEC   = PC
 LOCDIR   = src/ksp/pc/impls/is/nn/
 

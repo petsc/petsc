@@ -1,47 +1,520 @@
-Residual:
+Mesh in 3 dimensions:
+  0-cells: 27
+  3-cells: 48
+Labels:
+  marker: 1 strata of sizes (26)
+  depth: 2 strata of sizes (27, 48)
+Local function
 Vector Object: 1 MPI processes
   type: seq
-0
--2
-0
-0
-0
-0
-Vector Object: 1 MPI processes
-  type: seq
-0
-0
-0
-0
--4.99961e-13
-0
-  0 SNES Function norm 2.000000000001e+00 
-    0 KSP Residual norm 5.000000000003e-01 
-    1 KSP Residual norm -0.000000000000e+00 
-Residual:
-Vector Object: 1 MPI processes
-  type: seq
-0
--1
-0
-0
-0
-0
-Vector Object: 1 MPI processes
-  type: seq
-0
-0
-0
 0
 1
-0
-  1 SNES Function norm 0.000000000000e+00 
-Nonlinear solve converged due to CONVERGED_FNORM_ABS
-Number of SNES iterations = 1
-L_2 Error: 0.111111
-Solution
-Vector Object: 2 MPI processes
-  type: mpi
-Process [0]
+1
+2
+1
+2
+2
+3
+1.25
+1.25
+2.25
+2.25
+0.25
+0.25
+1.25
+1.25
+0.25
+1.25
+1.25
+2.25
 0.5
-Process [1]
+1.5
+1.5
+0.5
+0.5
+1.5
+0.75
+Initial guess
+Vector Object: 1 MPI processes
+  type: seq
+0.75
+L_2 Error: 0.15625
+Residual:
+Vector Object: 1 MPI processes
+  type: seq
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+Initial Residual
+Vector Object: 1 MPI processes
+  type: seq
+0
+L_2 Residual: 0
+Jacobian:
+Matrix Object: 1 MPI processes
+  type: seqaij
+row 0: (0, 4) 
+Residual:
+Vector Object: 1 MPI processes
+  type: seq
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+-3
+Au - b = Au + F(0)
+Vector Object: 1 MPI processes
+  type: seq
+0
+Linear L_2 Residual: 0
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1269: __FUNCT__="VecValidValues" does not agree with __func__="tssbond1"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1269: __FUNCT__="VecValidValues" does not agree with __func__="tssbond1"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1269: __FUNCT__="VecValidValues" does not agree with __func__="tssbond1"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1269: __FUNCT__="VecValidValues" does not agree with __func__="tssbond1"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1269: __FUNCT__="VecValidValues" does not agree with __func__="tssbond1"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1269: __FUNCT__="VecValidValues" does not agree with __func__="tssbond1"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1269: __FUNCT__="VecValidValues" does not agree with __func__="tssbond1"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1269: __FUNCT__="VecValidValues" does not agree with __func__="tssbond1"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1269: __FUNCT__="VecValidValues" does not agree with __func__="tssbond1"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1269: __FUNCT__="VecValidValues" does not agree with __func__="tssbond1"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1269: __FUNCT__="VecValidValues" does not agree with __func__="tssbond1"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1269: __FUNCT__="VecValidValues" does not agree with __func__="tssbond1"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1269: __FUNCT__="VecValidValues" does not agree with __func__="tssbond1"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1269: __FUNCT__="VecValidValues" does not agree with __func__="tssbond1"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1269: __FUNCT__="VecValidValues" does not agree with __func__="tssbond1"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1269: __FUNCT__="VecValidValues" does not agree with __func__="tssbond1"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1269: __FUNCT__="VecValidValues" does not agree with __func__="tssbond1"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1269: __FUNCT__="VecValidValues" does not agree with __func__="tssbond1"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"
+[0]PETSC ERROR: "unknowndirectory/"ctetgen.c:1204: __FUNCT__="VecValidValues" does not agree with __func__="tsbond"

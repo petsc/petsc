@@ -21,7 +21,7 @@
 */
 #undef __FUNCT__
 #define __FUNCT__ "SNESVIComputeMeritFunction"
-static PetscErrorCode SNESVIComputeMeritFunction(Vec phi, PetscReal* merit,PetscReal* phinorm)
+static PetscErrorCode SNESVIComputeMeritFunction(Vec phi, PetscReal *merit,PetscReal *phinorm)
 {
   PetscErrorCode ierr;
 
@@ -40,14 +40,14 @@ PETSC_STATIC_INLINE PetscScalar Phi(PetscScalar a,PetscScalar b)
 
 PETSC_STATIC_INLINE PetscScalar DPhi(PetscScalar a,PetscScalar b)
 {
-  if ((PetscAbsScalar(a) >= 1.e-6) || (PetscAbsScalar(b) >= 1.e-6)) return  1.0 - a/ PetscSqrtScalar(a*a + b*b);
+  if ((PetscAbsScalar(a) >= 1.e-6) || (PetscAbsScalar(b) >= 1.e-6)) return 1.0 - a/ PetscSqrtScalar(a*a + b*b);
   else return .5;
 }
 
-/* 
-   SNESVIComputeFunction - Reformulates a system of nonlinear equations in mixed complementarity form to a system of nonlinear equations in semismooth form. 
+/*
+   SNESVIComputeFunction - Reformulates a system of nonlinear equations in mixed complementarity form to a system of nonlinear equations in semismooth form.
 
-   Input Parameters:  
+   Input Parameters:
 .  snes - the SNES context
 .  x - current iterate
 .  functx - user defined function context
@@ -58,13 +58,13 @@ PETSC_STATIC_INLINE PetscScalar DPhi(PetscScalar a,PetscScalar b)
 */
 #undef __FUNCT__
 #define __FUNCT__ "SNESVIComputeFunction"
-static PetscErrorCode SNESVIComputeFunction(SNES snes,Vec X,Vec phi,void* functx)
+static PetscErrorCode SNESVIComputeFunction(SNES snes,Vec X,Vec phi,void *functx)
 {
-  PetscErrorCode  ierr;
-  SNES_VISS       *vi = (SNES_VISS*)snes->data;
-  Vec             Xl = snes->xl,Xu = snes->xu,F = snes->vec_func;
-  PetscScalar     *phi_arr,*x_arr,*f_arr,*l,*u;
-  PetscInt        i,nlocal;
+  PetscErrorCode    ierr;
+  SNES_VINEWTONSSLS *vi = (SNES_VINEWTONSSLS*)snes->data;
+  Vec               Xl  = snes->xl,Xu = snes->xu,F = snes->vec_func;
+  PetscScalar       *phi_arr,*x_arr,*f_arr,*l,*u;
+  PetscInt          i,nlocal;
 
   PetscFunctionBegin;
   ierr = (*vi->computeuserfunction)(snes,X,F,functx);CHKERRQ(ierr);
@@ -75,7 +75,7 @@ static PetscErrorCode SNESVIComputeFunction(SNES snes,Vec X,Vec phi,void* functx
   ierr = VecGetArray(Xu,&u);CHKERRQ(ierr);
   ierr = VecGetArray(phi,&phi_arr);CHKERRQ(ierr);
 
-  for (i=0;i < nlocal;i++) {
+  for (i=0; i < nlocal; i++) {
     if ((PetscRealPart(l[i]) <= SNES_VI_NINF) && (PetscRealPart(u[i]) >= SNES_VI_INF)) { /* no constraints on variable */
       phi_arr[i] = f_arr[i];
     } else if (PetscRealPart(l[i]) <= SNES_VI_NINF) {                      /* upper bound on variable only */
@@ -88,7 +88,7 @@ static PetscErrorCode SNESVIComputeFunction(SNES snes,Vec X,Vec phi,void* functx
       phi_arr[i] = Phi(x_arr[i] - l[i],-Phi(u[i] - x_arr[i],-f_arr[i]));
     }
   }
-  
+
   ierr = VecRestoreArray(X,&x_arr);CHKERRQ(ierr);
   ierr = VecRestoreArray(F,&f_arr);CHKERRQ(ierr);
   ierr = VecRestoreArray(Xl,&l);CHKERRQ(ierr);
@@ -97,7 +97,7 @@ static PetscErrorCode SNESVIComputeFunction(SNES snes,Vec X,Vec phi,void* functx
   PetscFunctionReturn(0);
 }
 
-/* 
+/*
    SNESVIComputeBsubdifferentialVectors - Computes the diagonal shift (Da) and row scaling (Db) vectors needed for the
                                           the semismooth jacobian.
 */
@@ -110,7 +110,6 @@ PetscErrorCode SNESVIComputeBsubdifferentialVectors(SNES snes,Vec X,Vec F,Mat ja
   PetscInt       i,nlocal;
 
   PetscFunctionBegin;
-
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
   ierr = VecGetArray(snes->xl,&l);CHKERRQ(ierr);
@@ -118,10 +117,10 @@ PetscErrorCode SNESVIComputeBsubdifferentialVectors(SNES snes,Vec X,Vec F,Mat ja
   ierr = VecGetArray(Da,&da);CHKERRQ(ierr);
   ierr = VecGetArray(Db,&db);CHKERRQ(ierr);
   ierr = VecGetLocalSize(X,&nlocal);CHKERRQ(ierr);
-  
-  for (i=0;i< nlocal;i++) {
-    if ((PetscRealPart(l[i]) <= SNES_VI_NINF) && (PetscRealPart(u[i]) >= SNES_VI_INF)) {/* no constraints on variable */
-      da[i] = 0; 
+
+  for (i=0; i< nlocal; i++) {
+    if ((PetscRealPart(l[i]) <= SNES_VI_NINF) && (PetscRealPart(u[i]) >= SNES_VI_INF)) { /* no constraints on variable */
+      da[i] = 0;
       db[i] = 1;
     } else if (PetscRealPart(l[i]) <= SNES_VI_NINF) {                     /* upper bound on variable only */
       da[i] = DPhi(u[i] - x[i], -f[i]);
@@ -133,10 +132,10 @@ PetscErrorCode SNESVIComputeBsubdifferentialVectors(SNES snes,Vec X,Vec F,Mat ja
       da[i] = 1;
       db[i] = 0;
     } else {                                                /* upper and lower bounds on variable */
-      da1 = DPhi(x[i] - l[i], -Phi(u[i] - x[i], -f[i]));
-      db1 = DPhi(-Phi(u[i] - x[i], -f[i]),x[i] - l[i]);
-      da2 = DPhi(u[i] - x[i], -f[i]);
-      db2 = DPhi(-f[i],u[i] - x[i]);
+      da1   = DPhi(x[i] - l[i], -Phi(u[i] - x[i], -f[i]));
+      db1   = DPhi(-Phi(u[i] - x[i], -f[i]),x[i] - l[i]);
+      da2   = DPhi(u[i] - x[i], -f[i]);
+      db2   = DPhi(-f[i],u[i] - x[i]);
       da[i] = da1 + db1*da2;
       db[i] = db1*db2;
     }
@@ -156,7 +155,7 @@ PetscErrorCode SNESVIComputeBsubdifferentialVectors(SNES snes,Vec X,Vec F,Mat ja
 
    Input Parameters:
 .  Da       - Diagonal shift vector for the semismooth jacobian.
-.  Db       - Row scaling vector for the semismooth jacobian. 
+.  Db       - Row scaling vector for the semismooth jacobian.
 
    Output Parameters:
 .  jac      - semismooth jacobian
@@ -167,19 +166,19 @@ PetscErrorCode SNESVIComputeBsubdifferentialVectors(SNES snes,Vec X,Vec F,Mat ja
    jac = Da + Db*jacfun
    where Db is the row scaling matrix stored as a vector,
          Da is the diagonal perturbation matrix stored as a vector
-   and   jacfun is the jacobian of the original nonlinear function.	 
+   and   jacfun is the jacobian of the original nonlinear function.
 */
 #undef __FUNCT__
 #define __FUNCT__ "SNESVIComputeJacobian"
 PetscErrorCode SNESVIComputeJacobian(Mat jac, Mat jac_pre,Vec Da, Vec Db)
 {
   PetscErrorCode ierr;
-  
+
   /* Do row scaling  and add diagonal perturbation */
-  ierr = MatDiagonalScale(jac,Db,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatDiagonalScale(jac,Db,NULL);CHKERRQ(ierr);
   ierr = MatDiagonalSet(jac,Da,ADD_VALUES);CHKERRQ(ierr);
   if (jac != jac_pre) { /* If jac and jac_pre are different */
-    ierr = MatDiagonalScale(jac_pre,Db,PETSC_NULL);
+    ierr = MatDiagonalScale(jac_pre,Db,NULL);CHKERRQ(ierr);
     ierr = MatDiagonalSet(jac_pre,Da,ADD_VALUES);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -191,7 +190,7 @@ PetscErrorCode SNESVIComputeJacobian(Mat jac, Mat jac_pre,Vec Da, Vec Db)
    Input Parameters:
    phi - semismooth function.
    H   - semismooth jacobian
-   
+
    Output Parameters:
    dpsi - merit function gradient
 
@@ -204,7 +203,7 @@ PetscErrorCode SNESVIComputeJacobian(Mat jac, Mat jac_pre,Vec Da, Vec Db)
 PetscErrorCode SNESVIComputeMeritFunctionGradient(Mat H, Vec phi, Vec dpsi)
 {
   PetscErrorCode ierr;
-    
+
   PetscFunctionBegin;
   ierr = MatMultTranspose(H,phi,dpsi);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -213,7 +212,7 @@ PetscErrorCode SNESVIComputeMeritFunctionGradient(Mat H, Vec phi, Vec dpsi)
 
 
 /*
-   SNESSolve_VISS - Solves the complementarity problem with a semismooth Newton
+   SNESSolve_VINEWTONSSLS - Solves the complementarity problem with a semismooth Newton
    method using a line search.
 
    Input Parameters:
@@ -229,14 +228,14 @@ PetscErrorCode SNESVIComputeMeritFunctionGradient(Mat H, Vec phi, Vec dpsi)
    line search. The default line search does not do any line seach
    but rather takes a full newton step.
 
-   Developer Note: the code in this file should be slightly modified so that this routine need not exist and the SNESSolve_LS() routine is called directly with the appropriate wrapped function and Jacobian evaluations
+   Developer Note: the code in this file should be slightly modified so that this routine need not exist and the SNESSolve_NEWTONLS() routine is called directly with the appropriate wrapped function and Jacobian evaluations
 
 */
-#undef __FUNCT__  
-#define __FUNCT__ "SNESSolve_VISS"
-PetscErrorCode SNESSolve_VISS(SNES snes)
-{ 
-  SNES_VISS          *vi = (SNES_VISS*)snes->data;
+#undef __FUNCT__
+#define __FUNCT__ "SNESSolve_VINEWTONSSLS"
+PetscErrorCode SNESSolve_VINEWTONSSLS(SNES snes)
+{
+  SNES_VINEWTONSSLS  *vi = (SNES_VINEWTONSSLS*)snes->data;
   PetscErrorCode     ierr;
   PetscInt           maxits,i,lits;
   PetscBool          lssucceed;
@@ -245,54 +244,55 @@ PetscErrorCode SNESSolve_VISS(SNES snes)
   Vec                Y,X,F;
   KSPConvergedReason kspreason;
   DM                 dm;
-  SNESDM             sdm;
+  DMSNES             sdm;
 
   PetscFunctionBegin;
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
-  ierr = DMSNESGetContext(dm,&sdm);CHKERRQ(ierr);
-  vi->computeuserfunction    = sdm->computefunction;
-  sdm->computefunction = SNESVIComputeFunction;
+  ierr = DMGetDMSNES(dm,&sdm);CHKERRQ(ierr);
+
+  vi->computeuserfunction   = sdm->ops->computefunction;
+  sdm->ops->computefunction = SNESVIComputeFunction;
 
   snes->numFailures            = 0;
   snes->numLinearSolveFailures = 0;
   snes->reason                 = SNES_CONVERGED_ITERATING;
 
-  maxits	= snes->max_its;	/* maximum number of iterations */
-  X		= snes->vec_sol;	/* solution vector */
-  F		= snes->vec_func;	/* residual vector */
-  Y		= snes->work[0];	/* work vectors */
+  maxits = snes->max_its;               /* maximum number of iterations */
+  X      = snes->vec_sol;               /* solution vector */
+  F      = snes->vec_func;              /* residual vector */
+  Y      = snes->work[0];               /* work vectors */
 
-  ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
+  ierr       = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
   snes->iter = 0;
   snes->norm = 0.0;
-  ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
+  ierr       = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
 
   ierr = SNESVIProjectOntoBounds(snes,X);CHKERRQ(ierr);
   ierr = SNESComputeFunction(snes,X,vi->phi);CHKERRQ(ierr);
   if (snes->domainerror) {
-    snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;
-    sdm->computefunction = vi->computeuserfunction;
+    snes->reason              = SNES_DIVERGED_FUNCTION_DOMAIN;
+    sdm->ops->computefunction = vi->computeuserfunction;
     PetscFunctionReturn(0);
   }
-   /* Compute Merit function */
+  /* Compute Merit function */
   ierr = SNESVIComputeMeritFunction(vi->phi,&vi->merit,&vi->phinorm);CHKERRQ(ierr);
 
-  ierr = VecNormBegin(X,NORM_2,&xnorm);CHKERRQ(ierr);	/* xnorm <- ||x||  */
+  ierr = VecNormBegin(X,NORM_2,&xnorm);CHKERRQ(ierr);        /* xnorm <- ||x||  */
   ierr = VecNormEnd(X,NORM_2,&xnorm);CHKERRQ(ierr);
   if (PetscIsInfOrNanReal(vi->merit)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
 
-  ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
+  ierr       = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
   snes->norm = vi->phinorm;
-  ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
-  SNESLogConvHistory(snes,vi->phinorm,0);
-  ierr = SNESMonitor(snes,0,vi->phinorm);CHKERRQ(ierr);
+  ierr       = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
+  ierr       = SNESLogConvergenceHistory(snes,vi->phinorm,0);CHKERRQ(ierr);
+  ierr       = SNESMonitor(snes,0,vi->phinorm);CHKERRQ(ierr);
 
   /* set parameter for default relative tolerance convergence test */
   snes->ttol = vi->phinorm*snes->rtol;
   /* test convergence */
   ierr = (*snes->ops->converged)(snes,0,0.0,0.0,vi->phinorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
   if (snes->reason) {
-    sdm->computefunction = vi->computeuserfunction;
+    sdm->ops->computefunction = vi->computeuserfunction;
     PetscFunctionReturn(0);
   }
 
@@ -302,10 +302,14 @@ PetscErrorCode SNESSolve_VISS(SNES snes)
     if (snes->ops->update) {
       ierr = (*snes->ops->update)(snes, snes->iter);CHKERRQ(ierr);
     }
- 
+
     /* Solve J Y = Phi, where J is the semismooth jacobian */
-    /* Get the nonlinear function jacobian */
-    ierr = SNESComputeJacobian(snes,X,&snes->jacobian,&snes->jacobian_pre,&flg);CHKERRQ(ierr);
+
+    /* Get the jacobian -- note that the function must be the original function for snes_fd and snes_fd_color to work for this*/
+    sdm->ops->computefunction = vi->computeuserfunction;
+    ierr                      = SNESComputeJacobian(snes,X,&snes->jacobian,&snes->jacobian_pre,&flg);CHKERRQ(ierr);
+    sdm->ops->computefunction = SNESVIComputeFunction;
+
     /* Get the diagonal shift and row scaling vectors */
     ierr = SNESVIComputeBsubdifferentialVectors(snes,X,F,snes->jacobian,vi->Da,vi->Db);CHKERRQ(ierr);
     /* Compute the semismooth jacobian */
@@ -313,34 +317,34 @@ PetscErrorCode SNESSolve_VISS(SNES snes)
     /* Compute the merit function gradient */
     ierr = SNESVIComputeMeritFunctionGradient(snes->jacobian,vi->phi,vi->dpsi);CHKERRQ(ierr);
     ierr = KSPSetOperators(snes->ksp,snes->jacobian,snes->jacobian_pre,flg);CHKERRQ(ierr);
-    ierr = SNES_KSPSolve(snes,snes->ksp,vi->phi,Y);CHKERRQ(ierr);
+    ierr = KSPSolve(snes->ksp,vi->phi,Y);CHKERRQ(ierr);
     ierr = KSPGetConvergedReason(snes->ksp,&kspreason);CHKERRQ(ierr);
 
     if (kspreason < 0) {
       if (++snes->numLinearSolveFailures >= snes->maxLinearSolveFailures) {
-        ierr = PetscInfo2(snes,"iter=%D, number linear solve failures %D greater than current SNES allowed, stopping solve\n",snes->iter,snes->numLinearSolveFailures);CHKERRQ(ierr);
+        ierr         = PetscInfo2(snes,"iter=%D, number linear solve failures %D greater than current SNES allowed, stopping solve\n",snes->iter,snes->numLinearSolveFailures);CHKERRQ(ierr);
         snes->reason = SNES_DIVERGED_LINEAR_SOLVE;
         break;
       }
     }
-    ierr = KSPGetIterationNumber(snes->ksp,&lits);CHKERRQ(ierr);
+    ierr              = KSPGetIterationNumber(snes->ksp,&lits);CHKERRQ(ierr);
     snes->linear_its += lits;
-    ierr = PetscInfo2(snes,"iter=%D, linear solve iterations=%D\n",snes->iter,lits);CHKERRQ(ierr);
+    ierr              = PetscInfo2(snes,"iter=%D, linear solve iterations=%D\n",snes->iter,lits);CHKERRQ(ierr);
     /*
-    if (snes->ops->precheckstep) {
+    if (snes->ops->precheck) {
       PetscBool changed_y = PETSC_FALSE;
-      ierr = (*snes->ops->precheckstep)(snes,X,Y,snes->precheck,&changed_y);CHKERRQ(ierr);
+      ierr = (*snes->ops->precheck)(snes,X,Y,snes->precheck,&changed_y);CHKERRQ(ierr);
     }
 
-    if (PetscLogPrintInfo){
+    if (PetscLogPrintInfo) {
       ierr = SNESVICheckResidual_Private(snes,snes->jacobian,F,Y,G,W);CHKERRQ(ierr);
     }
     */
-    /* Compute a (scaled) negative update in the line search routine: 
-         Y <- X - lambda*Y 
-       and evaluate G = function(Y) (depends on the line search). 
+    /* Compute a (scaled) negative update in the line search routine:
+         Y <- X - lambda*Y
+       and evaluate G = function(Y) (depends on the line search).
     */
-    ierr = VecCopy(Y,snes->vec_sol_update);CHKERRQ(ierr);
+    ierr  = VecCopy(Y,snes->vec_sol_update);CHKERRQ(ierr);
     ynorm = 1; gnorm = vi->phinorm;
     /* ierr = (*snes->ops->linesearch)(snes,snes->lsP,X,vi->phi,Y,vi->phinorm,xnorm,G,W,&ynorm,&gnorm,&lssucceed);CHKERRQ(ierr); */
     ierr = SNESLineSearchApply(snes->linesearch, X, vi->phi, &gnorm, Y);CHKERRQ(ierr);
@@ -348,30 +352,30 @@ PetscErrorCode SNESSolve_VISS(SNES snes)
     ierr = PetscInfo4(snes,"fnorm=%18.16e, gnorm=%18.16e, ynorm=%18.16e, lssucceed=%d\n",(double)vi->phinorm,(double)gnorm,(double)ynorm,(int)lssucceed);CHKERRQ(ierr);
     if (snes->reason == SNES_DIVERGED_FUNCTION_COUNT) break;
     if (snes->domainerror) {
-      snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;
-      sdm->computefunction = vi->computeuserfunction;
+      snes->reason              = SNES_DIVERGED_FUNCTION_DOMAIN;
+      sdm->ops->computefunction = vi->computeuserfunction;
       PetscFunctionReturn(0);
     }
     ierr = SNESLineSearchGetSuccess(snes->linesearch, &lssucceed);CHKERRQ(ierr);
     if (!lssucceed) {
       if (++snes->numFailures >= snes->maxFailures) {
-	PetscBool ismin;
+        PetscBool ismin;
         snes->reason = SNES_DIVERGED_LINE_SEARCH;
-        ierr = SNESVICheckLocalMin_Private(snes,snes->jacobian,vi->phi,X,gnorm,&ismin);CHKERRQ(ierr);
+        ierr         = SNESVICheckLocalMin_Private(snes,snes->jacobian,vi->phi,X,gnorm,&ismin);CHKERRQ(ierr);
         if (ismin) snes->reason = SNES_DIVERGED_LOCAL_MIN;
         break;
       }
     }
     /* Update function and solution vectors */
     vi->phinorm = gnorm;
-    vi->merit = 0.5*vi->phinorm*vi->phinorm;
+    vi->merit   = 0.5*vi->phinorm*vi->phinorm;
     /* Monitor convergence */
-    ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
+    ierr       = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
     snes->iter = i+1;
     snes->norm = vi->phinorm;
-    ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
-    SNESLogConvHistory(snes,snes->norm,lits);
-    ierr = SNESMonitor(snes,snes->iter,snes->norm);CHKERRQ(ierr);
+    ierr       = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
+    ierr       = SNESLogConvergenceHistory(snes,snes->norm,lits);CHKERRQ(ierr);
+    ierr       = SNESMonitor(snes,snes->iter,snes->norm);CHKERRQ(ierr);
     /* Test for convergence, xnorm = || X || */
     if (snes->ops->converged != SNESSkipConverged) { ierr = VecNorm(X,NORM_2,&xnorm);CHKERRQ(ierr); }
     ierr = (*snes->ops->converged)(snes,snes->iter,xnorm,ynorm,vi->phinorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
@@ -379,15 +383,15 @@ PetscErrorCode SNESSolve_VISS(SNES snes)
   }
   if (i == maxits) {
     ierr = PetscInfo1(snes,"Maximum number of iterations has been reached: %D\n",maxits);CHKERRQ(ierr);
-    if(!snes->reason) snes->reason = SNES_DIVERGED_MAX_IT;
+    if (!snes->reason) snes->reason = SNES_DIVERGED_MAX_IT;
   }
-  sdm->computefunction = vi->computeuserfunction;
+  sdm->ops->computefunction = vi->computeuserfunction;
   PetscFunctionReturn(0);
 }
 
 /* -------------------------------------------------------------------------- */
 /*
-   SNESSetUp_VISS - Sets up the internal data structures for the later use
+   SNESSetUp_VINEWTONSSLS - Sets up the internal data structures for the later use
    of the SNES nonlinear solver.
 
    Input Parameter:
@@ -401,12 +405,12 @@ PetscErrorCode SNESSolve_VISS(SNES snes)
    SNESSetUp(), since these actions will automatically occur during
    the call to SNESSolve().
  */
-#undef __FUNCT__  
-#define __FUNCT__ "SNESSetUp_VISS"
-PetscErrorCode SNESSetUp_VISS(SNES snes)
+#undef __FUNCT__
+#define __FUNCT__ "SNESSetUp_VINEWTONSSLS"
+PetscErrorCode SNESSetUp_VINEWTONSSLS(SNES snes)
 {
-  PetscErrorCode ierr;
-  SNES_VISS      *vi = (SNES_VISS*) snes->data;
+  PetscErrorCode    ierr;
+  SNES_VINEWTONSSLS *vi = (SNES_VINEWTONSSLS*) snes->data;
 
   PetscFunctionBegin;
   ierr = SNESSetUp_VI(snes);CHKERRQ(ierr);
@@ -419,12 +423,12 @@ PetscErrorCode SNESSetUp_VISS(SNES snes)
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
-#undef __FUNCT__  
-#define __FUNCT__ "SNESReset_VISS"
-PetscErrorCode SNESReset_VISS(SNES snes)
+#undef __FUNCT__
+#define __FUNCT__ "SNESReset_VINEWTONSSLS"
+PetscErrorCode SNESReset_VINEWTONSSLS(SNES snes)
 {
-  SNES_VISS      *vi = (SNES_VISS*) snes->data;
-  PetscErrorCode ierr;
+  SNES_VINEWTONSSLS *vi = (SNES_VINEWTONSSLS*) snes->data;
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   ierr = SNESReset_VI(snes);CHKERRQ(ierr);
@@ -439,19 +443,19 @@ PetscErrorCode SNESReset_VISS(SNES snes)
 
 /* -------------------------------------------------------------------------- */
 /*
-   SNESSetFromOptions_VISS - Sets various parameters for the SNESVI method.
+   SNESSetFromOptions_VINEWTONSSLS - Sets various parameters for the SNESVI method.
 
    Input Parameter:
 .  snes - the SNES context
 
    Application Interface Routine: SNESSetFromOptions()
 */
-#undef __FUNCT__  
-#define __FUNCT__ "SNESSetFromOptions_VISS"
-static PetscErrorCode SNESSetFromOptions_VISS(SNES snes)
+#undef __FUNCT__
+#define __FUNCT__ "SNESSetFromOptions_VINEWTONSSLS"
+static PetscErrorCode SNESSetFromOptions_VINEWTONSSLS(SNES snes)
 {
-  PetscErrorCode     ierr;
-  SNESLineSearch    linesearch;
+  PetscErrorCode ierr;
+  SNESLineSearch linesearch;
 
   PetscFunctionBegin;
   ierr = SNESSetFromOptions_VI(snes);CHKERRQ(ierr);
@@ -463,14 +467,13 @@ static PetscErrorCode SNESSetFromOptions_VISS(SNES snes)
     ierr = SNESLineSearchSetType(linesearch, SNESLINESEARCHBT);CHKERRQ(ierr);
     ierr = SNESLineSearchBTSetAlpha(linesearch, 0.0);CHKERRQ(ierr);
   }
-
   PetscFunctionReturn(0);
 }
 
 
 /* -------------------------------------------------------------------------- */
 /*MC
-      SNESVISS - Semi-smooth solver for variational inequalities based on Newton's method
+      SNESVINEWTONSSLS - Semi-smooth solver for variational inequalities based on Newton's method
 
    Options Database:
 +   -snes_vi_type <ss,rs,rsaug> a semi-smooth solver, a reduced space active set method, and a reduced space active set method that does not eliminate the active constraints from the Jacobian instead augments the Jacobian with additional variables that enforce the constraints
@@ -482,36 +485,34 @@ static PetscErrorCode SNESSetFromOptions_VISS(SNES snes)
    - T. S. Munson, F. Facchinei, M. C. Ferris, A. Fischer, and C. Kanzow. The semismooth
      algorithm for large scale complementarity problems. INFORMS Journal on Computing, 13 (2001).
 
-.seealso:  SNESVISetVariableBounds(), SNESVISetComputeVariableBounds(), SNESCreate(), SNES, SNESSetType(), SNESVIRS, SNESVISS, SNESTR, SNESLineSearchSet(),
-           SNESLineSearchSetPostCheck(), SNESLineSearchNo(), SNESLineSearchCubic(), SNESLineSearchQuadratic(), 
+.seealso:  SNESVISetVariableBounds(), SNESVISetComputeVariableBounds(), SNESCreate(), SNES, SNESSetType(), SNESVINEWTONRSLS, SNESVINEWTONSSLS, SNESNEWTONTR, SNESLineSearchSet(),
+           SNESLineSearchSetPostCheck(), SNESLineSearchNo(), SNESLineSearchCubic(), SNESLineSearchQuadratic(),
            SNESLineSearchSet(), SNESLineSearchNoNorms(), SNESLineSearchSetPreCheck(), SNESLineSearchSetParams(), SNESLineSearchGetParams()
 
 M*/
-EXTERN_C_BEGIN
-#undef __FUNCT__  
-#define __FUNCT__ "SNESCreate_VISS"
-PetscErrorCode  SNESCreate_VISS(SNES snes)
+#undef __FUNCT__
+#define __FUNCT__ "SNESCreate_VINEWTONSSLS"
+PETSC_EXTERN PetscErrorCode SNESCreate_VINEWTONSSLS(SNES snes)
 {
-  PetscErrorCode ierr;
-  SNES_VISS      *vi;
+  PetscErrorCode    ierr;
+  SNES_VINEWTONSSLS *vi;
 
   PetscFunctionBegin;
-  snes->ops->reset           = SNESReset_VISS;
-  snes->ops->setup           = SNESSetUp_VISS;
-  snes->ops->solve           = SNESSolve_VISS;
-  snes->ops->destroy         = SNESDestroy_VI;
-  snes->ops->setfromoptions  = SNESSetFromOptions_VISS;
-  snes->ops->view            = PETSC_NULL;
+  snes->ops->reset          = SNESReset_VINEWTONSSLS;
+  snes->ops->setup          = SNESSetUp_VINEWTONSSLS;
+  snes->ops->solve          = SNESSolve_VINEWTONSSLS;
+  snes->ops->destroy        = SNESDestroy_VI;
+  snes->ops->setfromoptions = SNESSetFromOptions_VINEWTONSSLS;
+  snes->ops->view           = NULL;
 
-  snes->usesksp             = PETSC_TRUE;
-  snes->usespc              = PETSC_FALSE;
+  snes->usesksp = PETSC_TRUE;
+  snes->usespc  = PETSC_FALSE;
 
-  ierr                       = PetscNewLog(snes,SNES_VISS,&vi);CHKERRQ(ierr);
-  snes->data                 = (void*)vi;
+  ierr       = PetscNewLog(snes,SNES_VINEWTONSSLS,&vi);CHKERRQ(ierr);
+  snes->data = (void*)vi;
 
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESVISetVariableBounds_C","SNESVISetVariableBounds_VI",SNESVISetVariableBounds_VI);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESVISetComputeVariableBounds_C","SNESVISetComputeVariableBounds_VI",SNESVISetComputeVariableBounds_VI);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)snes,"SNESVISetVariableBounds_C","SNESVISetVariableBounds_VI",SNESVISetVariableBounds_VI);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)snes,"SNESVISetComputeVariableBounds_C","SNESVISetComputeVariableBounds_VI",SNESVISetComputeVariableBounds_VI);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 

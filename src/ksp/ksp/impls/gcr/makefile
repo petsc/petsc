@@ -4,12 +4,10 @@ ALL: lib
 CFLAGS   =
 FFLAGS   =
 SOURCEC  = gcr.c
-SOURCEH  = 
-SOURCEF  = 
-OBJSC    = gcr.o
-OBJSF    = 
+SOURCEH  =
+SOURCEF  =
 LIBBASE  = libpetscksp
-DIRS     = 
+DIRS     =
 MANSEC   = KSP
 LOCDIR   = src/ksp/ksp/impls/gcr/
 

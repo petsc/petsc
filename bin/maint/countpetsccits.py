@@ -13,7 +13,7 @@ def main():
   tcount = 0
   f     = open(os.path.join('src','docs','tex','petscapp.bib'))
   line  = f.readline()
-  while (line):  
+  while (line):
     if '@' in line:
       tcount = tcount + 1
     line  = f.readline()
@@ -39,7 +39,7 @@ def main():
       name  = nam.findall(line)
       if name:
         name = name[0][9:-2]
-     
+
     elif '@' in line:
       count = count + 1
     line = f.readline()
@@ -50,6 +50,6 @@ def main():
 #
 # The classes in this file can also be used in other python-programs by using 'import'
 #
-if __name__ ==  '__main__': 
+if __name__ ==  '__main__':
     main()
 

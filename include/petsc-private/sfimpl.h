@@ -2,28 +2,22 @@
 #define _PETSCSFIMPL_H
 
 #include <petscsf.h>
-
-typedef struct _n_PetscSFDataLink *PetscSFDataLink;
-typedef struct _n_PetscSFWinLink  *PetscSFWinLink;
-
-struct _n_PetscSFDataLink {
-  MPI_Datatype unit;
-  MPI_Datatype *mine;
-  MPI_Datatype *remote;
-  PetscSFDataLink next;
-};
-
-struct _n_PetscSFWinLink {
-  PetscBool      inuse;
-  size_t         bytes;
-  void           *addr;
-  MPI_Win        win;
-  PetscBool      epoch;
-  PetscSFWinLink next;
-};
+#include <petsc-private/petscimpl.h>
+#include <petscviewer.h>
 
 struct _PetscSFOps {
-  int dummy;
+  PetscErrorCode (*Reset)(PetscSF);
+  PetscErrorCode (*Destroy)(PetscSF);
+  PetscErrorCode (*SetUp)(PetscSF);
+  PetscErrorCode (*SetFromOptions)(PetscSF);
+  PetscErrorCode (*View)(PetscSF,PetscViewer);
+  PetscErrorCode (*Duplicate)(PetscSF,PetscSFDuplicateOption,PetscSF);
+  PetscErrorCode (*BcastBegin)(PetscSF,MPI_Datatype,const void*,void*);
+  PetscErrorCode (*BcastEnd)(PetscSF,MPI_Datatype,const void*,void*);
+  PetscErrorCode (*ReduceBegin)(PetscSF,MPI_Datatype,const void*,void*,MPI_Op);
+  PetscErrorCode (*ReduceEnd)(PetscSF,MPI_Datatype,const void*,void*,MPI_Op);
+  PetscErrorCode (*FetchAndOpBegin)(PetscSF,MPI_Datatype,void*,const void*,void*,MPI_Op);
+  PetscErrorCode (*FetchAndOpEnd)(PetscSF,MPI_Datatype,void*,const void *,void *,MPI_Op);
 };
 
 struct _p_PetscSF {
@@ -32,24 +26,30 @@ struct _p_PetscSF {
   PetscInt        nleaves;      /* Number of leaf vertices on current process (this process specifies a root for each leaf) */
   PetscInt        *mine;        /* Location of leaves in leafdata arrays provided to the communication routines */
   PetscInt        *mine_alloc;
+  PetscInt        minleaf,maxleaf;
   PetscSFNode     *remote;      /* Remote references to roots for each local leaf */
   PetscSFNode     *remote_alloc;
   PetscInt        nranks;       /* Number of ranks owning roots connected to my leaves */
   PetscMPIInt     *ranks;       /* List of ranks referenced by "remote" */
   PetscInt        *roffset;     /* Array of length nranks+1, offset in rmine/rremote for each rank */
-  PetscMPIInt     *rmine;       /* Concatenated array holding local indices referencing each remote rank */
-  PetscMPIInt     *rremote;     /* Concatenated array holding remote indices referenced for each remote rank */
-  PetscSFDataLink link;         /* List of MPI data types and windows, lazily constructed for each data type */
-  PetscSFWinLink  wins;         /* List of active windows */
+  PetscInt        *rmine;       /* Concatenated array holding local indices referencing each remote rank */
+  PetscInt        *rremote;     /* Concatenated array holding remote indices referenced for each remote rank */
   PetscBool       degreeknown;  /* The degree is currently known, do not have to recompute */
   PetscInt        *degree;      /* Degree of each of my root vertices */
   PetscInt        *degreetmp;   /* Temporary local array for computing degree */
-  PetscSFSynchronizationType sync; /* FENCE, LOCK, or ACTIVE synchronization */
   PetscBool       rankorder;    /* Sort ranks for gather and scatter operations */
   MPI_Group       ingroup;      /* Group of processes connected to my roots */
   MPI_Group       outgroup;     /* Group of processes connected to my leaves */
   PetscSF         multi;        /* Internal graph used to implement gather and scatter operations */
   PetscBool       graphset;     /* Flag indicating that the graph has been set, required before calling communication routines */
+  PetscBool       setupcalled;  /* Type and communication structures have been set up */
+
+  void *data;                   /* Pointer to implementation */
 };
+
+PETSC_EXTERN PetscBool PetscSFRegisterAllCalled;
+
+PETSC_EXTERN PetscErrorCode MPIPetsc_Type_unwrap(MPI_Datatype,MPI_Datatype*);
+PETSC_EXTERN PetscErrorCode MPIPetsc_Type_compare(MPI_Datatype,MPI_Datatype,PetscBool*);
 
 #endif

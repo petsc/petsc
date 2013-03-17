@@ -1,74 +1,43 @@
       0 SNES Function norm 0.207564 
-        0 KSP Residual norm 0.118086 
-        1 KSP Residual norm 0.00627467 
-        2 KSP Residual norm < 1.e-11
       Linear solve converged due to CONVERGED_RTOL iterations 2
       1 SNES Function norm 0.0148968 
-        0 KSP Residual norm 0.00854464 
-        1 KSP Residual norm 0.000539766 
-        2 KSP Residual norm < 1.e-11
       Linear solve converged due to CONVERGED_RTOL iterations 2
       2 SNES Function norm 0.000113967 
-        0 KSP Residual norm 7.23812e-05 
-        1 KSP Residual norm 4.50548e-06 
-        2 KSP Residual norm < 1.e-11
       Linear solve converged due to CONVERGED_RTOL iterations 2
       3 SNES Function norm 6.92417e-09 
-        0 KSP Residual norm 4.40671e-09 
-        1 KSP Residual norm 2.741e-10 
-        2 KSP Residual norm < 1.e-11
       Linear solve converged due to CONVERGED_RTOL iterations 2
       4 SNES Function norm < 1.e-11
-    Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 4
+    Nonlinear solve converged due to CONVERGED_FNORM_ABS iterations 4
     0 SNES Function norm 0.937398 
-      0 KSP Residual norm 0.422873 
-      1 KSP Residual norm 0.00815939 
-      2 KSP Residual norm 0.000291602 
-      3 KSP Residual norm 9.61686e-06 
-      4 KSP Residual norm 2.89216e-07 
     Linear solve converged due to CONVERGED_RTOL iterations 4
-    1 SNES Function norm 0.00645553 
-      0 KSP Residual norm 0.0204134 
-      1 KSP Residual norm 0.000109075 
-      2 KSP Residual norm 2.91594e-06 
-      3 KSP Residual norm 1.21266e-07 
+    1 SNES Function norm 0.00645541 
     Linear solve converged due to CONVERGED_RTOL iterations 3
-    2 SNES Function norm 1.84327e-05 
-      0 KSP Residual norm 7.25513e-05 
-      1 KSP Residual norm 3.30254e-07 
-      2 KSP Residual norm 9.74836e-09 
-      3 KSP Residual norm 3.225e-10 
+    2 SNES Function norm 1.84294e-05 
     Linear solve converged due to CONVERGED_RTOL iterations 3
-    3 SNES Function norm 1.28767e-09 
+    3 SNES Function norm 1.616e-09 
   Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 3
   0 SNES Function norm 0.517003 
-    0 KSP Residual norm 0.238111 
-    1 KSP Residual norm 0.0048574 
-    2 KSP Residual norm 0.000724042 
-    3 KSP Residual norm 8.98044e-06 
-    4 KSP Residual norm 2.08071e-07 
   Linear solve converged due to CONVERGED_RTOL iterations 4
   1 SNES Function norm 0.000279815 
-    0 KSP Residual norm 0.00334403 
-    1 KSP Residual norm 1.2075e-05 
-    2 KSP Residual norm 4.37272e-07 
-    3 KSP Residual norm 1.89695e-08 
   Linear solve converged due to CONVERGED_RTOL iterations 3
-  2 SNES Function norm 9.05271e-08 
-    0 KSP Residual norm 9.5408e-07 
-    1 KSP Residual norm 3.39027e-09 
-    2 KSP Residual norm 1.057e-10 
-    3 KSP Residual norm < 1.e-11
-  Linear solve converged due to CONVERGED_RTOL iterations 3
-  3 SNES Function norm 1.767e-11 
+  2 SNES Function norm 1.15407e-07 
+  Linear solve converged due to CONVERGED_RTOL iterations 4
+  3 SNES Function norm < 1.e-11
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 3
 SNES Object: 2 MPI processes
-  type: ls
+  type: newtonls
   maximum iterations=50, maximum function evaluations=10000
   tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
-  total number of linear solver iterations=10
+  total number of linear solver iterations=11
   total number of function evaluations=4
   total number of grid sequence refinements=2
+  SNESLineSearch Object:   2 MPI processes
+    type: bt
+      interpolation: cubic
+      alpha=1.000000e-04
+    maxstep=1.000000e+08, minlambda=1.000000e-12
+    tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
+    maximum iterations=40
   KSP Object:   2 MPI processes
     type: gmres
       GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
@@ -102,6 +71,7 @@ SNES Object: 2 MPI processes
           type: lu
             LU: out-of-place factorization
             tolerance for zero pivot 2.22045e-14
+            using diagonal shift on blocks to prevent zero pivot
             matrix ordering: nd
             factor fill ratio given 5, needed 1.875
               Factored matrix follows:
@@ -128,9 +98,9 @@ SNES Object: 2 MPI processes
     Down solver (pre-smoother) on level 1 -------------------------------
       KSP Object:      (mg_levels_1_)       2 MPI processes
         type: chebyshev
-          Chebyshev: eigenvalue estimates:  min = 0.131186, max = 1.44304
+          Chebyshev: eigenvalue estimates:  min = 0.129662, max = 1.42628
           Chebyshev: estimated using:  [0 0.1; 0 1.1]
-          KSP Object:           2 MPI processes
+          KSP Object:          (mg_levels_1_est_)           2 MPI processes
             type: gmres
               GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
               GMRES: happy breakdown tolerance 1e-30
@@ -166,9 +136,9 @@ SNES Object: 2 MPI processes
     Down solver (pre-smoother) on level 2 -------------------------------
       KSP Object:      (mg_levels_2_)       2 MPI processes
         type: chebyshev
-          Chebyshev: eigenvalue estimates:  min = 0.128678, max = 1.41546
+          Chebyshev: eigenvalue estimates:  min = 0.127654, max = 1.4042
           Chebyshev: estimated using:  [0 0.1; 0 1.1]
-          KSP Object:           2 MPI processes
+          KSP Object:          (mg_levels_2_est_)           2 MPI processes
             type: gmres
               GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
               GMRES: happy breakdown tolerance 1e-30
@@ -207,10 +177,3 @@ SNES Object: 2 MPI processes
       rows=169, cols=169
       total: nonzeros=793, allocated nonzeros=793
       total number of mallocs used during MatSetValues calls =0
-  SNESLineSearch Object:   2 MPI processes
-    type: bt
-      interpolation: cubic
-      alpha=1.000000e-04
-    maxstep=1.000000e+08, minlambda=1.000000e-12
-    tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
-    maximum iterations=40

@@ -1,10 +1,10 @@
+static char help[] = "testing SeqDense matrices with an LDA (leading dimension of the user-allocated arrray) larger than M.\n";
 /*
  * Example code testing SeqDense matrices with an LDA (leading dimension
  * of the user-allocated arrray) larger than M.
- * This example tests the functionality of MatInsertValues, MatMult,
- * and MatMultTranspose.
+ * This example tests the functionality of MatInsertValues(), MatMult(),
+ * and MatMultTranspose().
  */
-#include <stdlib.h>
 #include <petscmat.h>
 
 #undef __FUNCT__
@@ -18,7 +18,7 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
   PetscInt       size=8,size1=6,size2=2, i,j;
 
-  PetscInitialize(&argc,&argv,0,0);
+  PetscInitialize(&argc,&argv,0,help);
 
   /*
    * Create matrix and three vectors: these are all normal
@@ -116,13 +116,13 @@ int main(int argc,char **argv)
   /*
    * Next test: change both matrices
    */
-  v = rand(); i=1; j=size-2;
+  v    = rand(); i=1; j=size-2;
   ierr = MatSetValues(A,1,&i,1,&j,&v,INSERT_VALUES);CHKERRQ(ierr);
-  j -= size1;
+  j   -= size1;
   ierr = MatSetValues(A12,1,&i,1,&j,&v,INSERT_VALUES);CHKERRQ(ierr);
-  v = rand(); i=j=size1+1;
+  v    = rand(); i=j=size1+1;
   ierr = MatSetValues(A,1,&i,1,&j,&v,INSERT_VALUES);CHKERRQ(ierr);
-  i=j=1;
+  i    =j=1;
   ierr = MatSetValues(A22,1,&i,1,&j,&v,INSERT_VALUES);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

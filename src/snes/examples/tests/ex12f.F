@@ -1,7 +1,7 @@
 !
 !
 !  This example demonstrates basic use of the SNES Fortran interface.
-!  
+!
 !  Note:  The program ex10.f is the same as this example, except that it
 !         uses the Fortran .f suffix rather than the .F suffix.
 !
@@ -126,7 +126,7 @@
       end
 
 
-! --------------------  Evaluate Function F(x) --------------------- 
+! --------------------  Evaluate Function F(x) ---------------------
 
       subroutine FormFunction(snes,x,f,ctx,ierr)
       implicit none
@@ -152,7 +152,7 @@
       call DMGlobalToLocalEnd(ctx(1),x,INSERT_VALUES,ctx(3),ierr)
 
       call VecGetLocalSize(ctx(3),n,ierr)
-      if (n .gt. 1000) then 
+      if (n .gt. 1000) then
         print*, 'Local work array not big enough'
         call MPI_Abort(PETSC_COMM_WORLD,0,ierr)
       endif
@@ -168,22 +168,22 @@
       d = h*h
 
 !
-!  Note that the array vxx() was obtained from a ghosted local vector 
-!  ctx(3) while the array vff() was obtained from the non-ghosted parallel 
+!  Note that the array vxx() was obtained from a ghosted local vector
+!  ctx(3) while the array vff() was obtained from the non-ghosted parallel
 !  vector F. This is why there is a need for shift variable s. Since vff()
-!  does not have locations for the ghost variables we need to index in it 
-!  slightly different then indexing into vxx(). For example on processor 
-!  1 (the second processor) 
+!  does not have locations for the ghost variables we need to index in it
+!  slightly different then indexing into vxx(). For example on processor
+!  1 (the second processor)
 !
 !        xx(1)        xx(2)             xx(3)             .....
 !      ^^^^^^^        ^^^^^             ^^^^^
-!      ghost value   1st local value   2nd local value 
+!      ghost value   1st local value   2nd local value
 !
 !                      ff(1)             ff(2)
 !                     ^^^^^^^           ^^^^^^^
 !                    1st local value   2nd local value
 !
-       if (rank .eq. 0) then 
+       if (rank .eq. 0) then
         s = 0
         ff(1) = xx(1)
       else
@@ -206,7 +206,7 @@
       return
       end
 
-! --------------------  Form initial approximation ----------------- 
+! --------------------  Form initial approximation -----------------
 
       subroutine FormInitialGuess(snes,x,ierr)
       implicit none
@@ -216,14 +216,14 @@
       PetscErrorCode   ierr
       Vec              x
       SNES             snes
-      PetscScalar      five 
+      PetscScalar      five
 
       five = 5.d-1
       call VecSet(x,five,ierr)
       return
       end
 
-! --------------------  Evaluate Jacobian -------------------- 
+! --------------------  Evaluate Jacobian --------------------
 
       subroutine FormJacobian(snes,x,jac,B,flag,ctx,ierr)
       implicit none
@@ -255,15 +255,15 @@
       n = end - start
 
       if (rank .eq. 0) then
-        A = 1.0 
+        A = 1.0
         call MatSetValues(jac,i1,start,i1,start,A,INSERT_VALUES,ierr)
         istart = 1
-      else 
+      else
         istart = 0
       endif
       if (rank .eq. size-1) then
         i = INT(ctx(6)-1)
-        A = 1.0 
+        A = 1.0
         call MatSetValues(jac,i1,i,i1,i,A,INSERT_VALUES,ierr)
         iend = n-1
       else
@@ -271,9 +271,9 @@
       endif
       do 10 i=istart,iend-1
         ii = i + start
-        j = start + i - 1 
+        j = start + i - 1
         call MatSetValues(jac,i1,ii,i1,j,d,INSERT_VALUES,ierr)
-        j = start + i + 1 
+        j = start + i + 1
         call MatSetValues(jac,i1,ii,i1,j,d,INSERT_VALUES,ierr)
         A = -2.0*d + 2.0*xx(i+1)
         call MatSetValues(jac,i1,ii,i1,ii,A,INSERT_VALUES,ierr)

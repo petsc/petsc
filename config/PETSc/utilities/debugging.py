@@ -14,7 +14,7 @@ class Configure(config.base.Configure):
 
   def setupHelp(self, help):
     import nargs
-    help.addArgument('PETSc', '-with-errorchecking=<bool>', nargs.ArgBool(None, 1, 'Specify error checking/exceptions in libraries'))    
+    help.addArgument('PETSc', '-with-errorchecking=<bool>', nargs.ArgBool(None, 1, 'Specify error checking/exceptions in libraries'))
     return
 
   def setupDependencies(self, framework):
@@ -30,7 +30,7 @@ class Configure(config.base.Configure):
       self.logPrintBox('     WARNING! Compiling PETSc with NO error checking/exception handling, \n \
                     this should only be done for timing and production runs where you DO NOT \n \
                     use PETSc exceptions. All development should be done when configured using \n \
-                    --with-errorchecking=1')          
+                    --with-errorchecking=1')
 
     self.debugging = self.compilerFlags.debugging
     if not self.debugging:

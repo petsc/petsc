@@ -5,9 +5,9 @@
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  PetscLogDouble  x,y,z;
-  int             i,ierr;
-  PetscScalar     *A,*B;
+  PetscLogDouble x,y,z;
+  int            i,ierr;
+  PetscScalar    *A,*B;
 
   PetscInitialize(&argc,&argv,0,0);
 
@@ -35,11 +35,8 @@ int main(int argc,char **argv)
   PetscMemcpy(A,B,sizeof(PetscScalar)*8000000);
   PetscMemcpy(A,B,sizeof(PetscScalar)*8000000); */
   { int j;
-  for (j = 0; j<10; j++) {
-    for (i=0; i<8000000; i++) {
-      B[i] = A[i];
-    }
-  }}
+    for (j = 0; j<10; j++)
+      for (i=0; i<8000000; i++) B[i] = A[i];}
 
   ierr = PetscGetTime(&y);CHKERRQ(ierr);
   ierr = PetscMemcpy(A,B,sizeof(PetscScalar)*0);CHKERRQ(ierr);

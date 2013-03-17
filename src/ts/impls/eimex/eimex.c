@@ -31,6 +31,7 @@ Computing, 31 (2010), pp. 4452–4477.
 
 */
 #include <petsc-private/tsimpl.h>                /*I   "petscts.h"   I*/
+#include <petscdm.h>
 
 static const PetscInt TSEIMEXDefault = 3;
 
@@ -47,7 +48,6 @@ typedef struct {
   Vec          YdotI;           /* xdot-g(x) Work vector holding YdotI = G(t,x,xdot) when xdot =0 */
   Vec          Ydot;            /* f(x)+g(x) Work vector*/
   Vec          VecSolPrev;      /* Work vector holding the solution from the previous step (used for interpolation)*/
-//  PetscScalar  *work;            /* Scalar work space of length number of stages, used to prepare VecMAXPY() */
   PetscReal    shift;
   PetscReal    ctime;
   PetscBool    recompute_jacobian; /* Recompute the Jacobian at each stage, default is to freeze the Jacobian at the start of each step */
@@ -102,7 +102,7 @@ static PetscErrorCode TSStage_EIMEX(TS ts,PetscInt istage)
     ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
     ierr = SNESGetLinearSolveIterations(snes,&lits);CHKERRQ(ierr);
     ts->snes_its += its; ts->ksp_its += lits;
-    ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
+    ierr = TSGetTSAdapt(ts,&adapt);CHKERRQ(ierr);
     ierr = TSAdaptCheckStage(adapt,ts,&accept);CHKERRQ(ierr);
   }
 
@@ -206,10 +206,9 @@ static PetscErrorCode TSInterpolate_EIMEX(TS ts,PetscReal itime,Vec X)
 		         Ydot=ext->Ydot,YdotI=ext->YdotI;
   const PetscReal h = ts->time_step_prev;
   PetscErrorCode ierr;
-  PetscScalar *x;
   PetscFunctionBegin;
   t = (itime -ts->ptime + h)/h;
-  /*YdotI = -f(x)-g(x)*/
+  /* YdotI = -f(x)-g(x) */
 
   ierr = VecZeroEntries(Ydot);CHKERRQ(ierr);
   ierr = TSComputeIFunction(ts,ts->ptime-h,Y0,Ydot,YdotI,PETSC_FALSE);CHKERRQ(ierr);
@@ -476,8 +475,6 @@ static PetscErrorCode TSSetFromOptions_EIMEX(TS ts)
     }
     ierr = PetscOptionsBool("-ts_eimex_order_adapt","Solve the problem with adaptive order","TSEIMEXSetOrdAdapt",ext->ord_adapt,&ext->ord_adapt,PETSC_NULL);CHKERRQ(ierr);
     ierr = SNESSetFromOptions(ts->snes);CHKERRQ(ierr);
-
-    /*prevent users from changing SNESType*/
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -576,10 +573,9 @@ PetscErrorCode TSEIMEXSetOrdAdapt(TS ts, PetscBool flg)
 }
 
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TSEIMEXSetMaxRows_EIMEX"
-PetscErrorCode  TSEIMEXSetMaxRows_EIMEX(TS ts,PetscInt nrows)
+static PetscErrorCode TSEIMEXSetMaxRows_EIMEX(TS ts,PetscInt nrows)
 {
   TS_EIMEX *ext = (TS_EIMEX*)ts->data;
   PetscErrorCode ierr;
@@ -598,7 +594,7 @@ PetscErrorCode  TSEIMEXSetMaxRows_EIMEX(TS ts,PetscInt nrows)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSEIMEXSetRowCol_EIMEX"
-PetscErrorCode  TSEIMEXSetRowCol_EIMEX(TS ts,PetscInt row,PetscInt col)
+static PetscErrorCode TSEIMEXSetRowCol_EIMEX(TS ts,PetscInt row,PetscInt col)
 {
   TS_EIMEX *ext = (TS_EIMEX*)ts->data;
 
@@ -614,14 +610,13 @@ PetscErrorCode  TSEIMEXSetRowCol_EIMEX(TS ts,PetscInt row,PetscInt col)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSEIMEXSetOrdAdapt_EIMEX"
-PetscErrorCode  TSEIMEXSetOrdAdapt_EIMEX(TS ts,PetscBool flg)
+static PetscErrorCode TSEIMEXSetOrdAdapt_EIMEX(TS ts,PetscBool flg)
 {
   TS_EIMEX *ext = (TS_EIMEX*)ts->data;
   PetscFunctionBegin;
   ext->ord_adapt = flg;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 /* ------------------------------------------------------------ */
 /*MC
@@ -637,10 +632,9 @@ EXTERN_C_END
 
 .seealso:  TSCreate(), TS
 M*/
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TSCreate_EIMEX"
-PetscErrorCode  TSCreate_EIMEX(TS ts)
+PETSC_EXTERN PetscErrorCode TSCreate_EIMEX(TS ts)
 {
   TS_EIMEX       *ext;
   PetscErrorCode ierr;
@@ -661,15 +655,14 @@ PetscErrorCode  TSCreate_EIMEX(TS ts)
   ierr = PetscNewLog(ts,TS_EIMEX,&ext);CHKERRQ(ierr);
   ts->data = (void*)ext;
 
-  ext->ord_adapt = PETSC_FALSE; /*By default, no order adapativity*/
+  ext->ord_adapt = PETSC_FALSE; /* By default, no order adapativity */
   ext->row_ind   = -1;
   ext->col_ind   = -1;
   ext->max_rows  = TSEIMEXDefault;
   ext->nstages   = TSEIMEXDefault;
 
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSEIMEXSetMaxRows_C","TSEIMEXSetMaxRows_EIMEX",TSEIMEXSetMaxRows_EIMEX);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSEIMEXSetRowCol_C","TSEIMEXSetRowCol_EIMEX",TSEIMEXSetRowCol_EIMEX);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSEIMEXSetOrdAdapt_C","TSEIMEXSetOrdAdapt_EIMEX",TSEIMEXSetOrdAdapt_EIMEX);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSEIMEXSetMaxRows_C","TSEIMEXSetMaxRows_EIMEX",TSEIMEXSetMaxRows_EIMEX);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSEIMEXSetRowCol_C","TSEIMEXSetRowCol_EIMEX",TSEIMEXSetRowCol_EIMEX);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSEIMEXSetOrdAdapt_C","TSEIMEXSetOrdAdapt_EIMEX",TSEIMEXSetOrdAdapt_EIMEX);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END

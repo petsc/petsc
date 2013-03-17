@@ -7,14 +7,14 @@ static char help[] = "Tests the use of MatZeroRows() for uniprocessor matrices.\
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat            C; 
+  Mat            C;
   PetscInt       i,j,m = 5,n = 5,Ii,J;
   PetscErrorCode ierr;
   PetscScalar    v,five = 5.0;
   IS             isrow;
   PetscBool      keepnonzeropattern;
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
 
   /* create the matrix for the five point stencil, YET AGAIN*/
   ierr = MatCreate(PETSC_COMM_SELF,&C);CHKERRQ(ierr);
@@ -36,7 +36,7 @@ int main(int argc,char **args)
 
   ierr = ISCreateStride(PETSC_COMM_SELF,(m*n)/2,0,2,&isrow);CHKERRQ(ierr);
 
-  ierr = PetscOptionsHasName(PETSC_NULL,"-keep_nonzero_pattern",&keepnonzeropattern);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,"-keep_nonzero_pattern",&keepnonzeropattern);CHKERRQ(ierr);
   if (keepnonzeropattern) {
     ierr = MatSetOption(C,MAT_KEEP_NONZERO_PATTERN,PETSC_TRUE);CHKERRQ(ierr);
   }

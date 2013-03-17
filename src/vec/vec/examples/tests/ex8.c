@@ -8,13 +8,13 @@ static char help[] = "Demonstrates scattering with strided index sets.\n\n";
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
-  PetscInt       n = 6,loc[6] = {0,1,2,3,4,5};
+  PetscInt       n   = 6,loc[6] = {0,1,2,3,4,5};
   PetscScalar    two = 2.0,vals[6] = {10,11,12,13,14,15};
   Vec            x,y;
   IS             is1,is2;
   VecScatter     ctx = 0;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
+  PetscInitialize(&argc,&argv,(char*)0,help);
 
   /* create two vectors */
   ierr = VecCreateSeq(PETSC_COMM_SELF,n,&x);CHKERRQ(ierr);
@@ -32,7 +32,7 @@ int main(int argc,char **argv)
   ierr = VecScatterBegin(ctx,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(ctx,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&ctx);CHKERRQ(ierr);
-  
+
   ierr = VecView(y,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
 
   ierr = ISDestroy(&is1);CHKERRQ(ierr);
@@ -43,4 +43,4 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return 0;
 }
- 
+

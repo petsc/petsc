@@ -13,7 +13,7 @@ class Configure(config.base.Configure):
 
   def __str__(self):
     return ''
-    
+
   def setupHelp(self, help):
     import nargs
     help.addArgument('PETSc', '-with-etags=<bool>',            nargs.ArgBool(None, 1, 'Build etags if they do not exist'))
@@ -45,6 +45,6 @@ class Configure(config.base.Configure):
     return
 
   def configure(self):
-    if self.framework.argDB['with-etags']:                                    
+    if self.framework.argDB['with-etags']:
       self.executeTest(self.configureETags)
     return

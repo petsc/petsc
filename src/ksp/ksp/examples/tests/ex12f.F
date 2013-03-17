@@ -20,7 +20,7 @@
       PetscScalar      norm,none
       Vec              x,b,u
       Mat              A
-      character*(128)  f 
+      character*(128)  f
       PetscViewer      fd
       MatInfo          info(MAT_INFO_SIZE)
       KSP              ksp

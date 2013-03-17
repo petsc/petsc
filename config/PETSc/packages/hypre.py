@@ -3,7 +3,8 @@ import PETSc.package
 class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
     PETSc.package.NewPackage.__init__(self, framework)
-    self.download     = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/hypre-2.8.0b.tar.gz']
+    self.download     = ['https://computation.llnl.gov/casc/hypre/download/hypre-2.9.1a.tar.gz',
+                         'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/hypre-2.9.1a.tar.gz']
     self.functions = ['HYPRE_IJMatrixCreate']
     self.includes  = ['HYPRE.h']
     self.liblist   = [['libHYPRE.a']]
@@ -18,7 +19,7 @@ class Configure(PETSc.package.NewPackage):
   def setupDependencies(self, framework):
     PETSc.package.NewPackage.setupDependencies(self, framework)
     self.blasLapack = framework.require('config.packages.BlasLapack',self)
-    self.deps       = [self.mpi,self.blasLapack]  
+    self.deps       = [self.mpi,self.blasLapack]
     return
 
   def generateLibList(self,dir):
@@ -28,7 +29,7 @@ class Configure(PETSc.package.NewPackage):
     if self.languages.clanguage == 'C':
       alllibs[0].extend(self.compilers.cxxlibs)
     return alllibs
-        
+
   def Install(self):
     import os
 

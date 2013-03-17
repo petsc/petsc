@@ -11,9 +11,9 @@ int main(int argc,char **argv)
   PetscMPIInt    size,rank;
   PetscInt       i,n = 8,bs = 2,indices[2];
   PetscScalar    values[4];
-  Vec             x;
+  Vec            x;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
@@ -27,13 +27,14 @@ int main(int argc,char **argv)
 
   if (!rank) {
     for (i=0; i<4; i++) values[i] = i+1;
-    indices[0] = 0; indices[1] = 2;
-    ierr = VecSetValuesBlocked(x,2,indices,values,INSERT_VALUES);CHKERRQ(ierr);
+    indices[0] = 0;
+    indices[1] = 2;
+    ierr       = VecSetValuesBlocked(x,2,indices,values,INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = VecAssemblyBegin(x);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(x);CHKERRQ(ierr);
 
-  /* 
+  /*
       Resulting vector should be 1 2 0 0 3 4 0 0
   */
   ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
@@ -43,4 +44,4 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return 0;
 }
- 
+

@@ -55,16 +55,16 @@ protected:
 public:
   Overlap(MPI_Comm comm, const int debug = 0) : ALE::ParallelObject(comm, debug) {
     this->numRanks          = 0;
-    this->ranks             = PETSC_NULL;
-    this->pointsOffset      = PETSC_NULL;
-    this->points            = PETSC_NULL;
-    this->remotePoints      = PETSC_NULL;
+    this->ranks             = NULL;
+    this->pointsOffset      = NULL;
+    this->points            = NULL;
+    this->remotePoints      = NULL;
     this->numPointRanks     = 0;
-    this->pointRanks        = PETSC_NULL;
-    this->pointRemotePoints = PETSC_NULL;
+    this->pointRanks        = NULL;
+    this->pointRemotePoints = NULL;
 
-    this->insertOffset      = PETSC_NULL;
-    this->cachedRanks       = PETSC_NULL;
+    this->insertOffset      = NULL;
+    this->cachedRanks       = NULL;
     this->cachedRanksValid  = false;
   };
   ~Overlap() {
@@ -82,7 +82,7 @@ public:
   };
   /* setNumRanks - Set the number of partner processes
 
-     This allocates storage for the ranks and must only be called once. 
+     This allocates storage for the ranks and must only be called once.
   */
   void setNumRanks(index_type R) {
     PetscErrorCode ierr;

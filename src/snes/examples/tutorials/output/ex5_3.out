@@ -2,12 +2,19 @@
   Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 3
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 3
 SNES Object: 2 MPI processes
-  type: ls
+  type: newtonls
   maximum iterations=50, maximum function evaluations=10000
   tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
-  total number of linear solver iterations=10
-  total number of function evaluations=112
+  total number of linear solver iterations=11
+  total number of function evaluations=120
   total number of grid sequence refinements=2
+  SNESLineSearch Object:   2 MPI processes
+    type: bt
+      interpolation: cubic
+      alpha=1.000000e-04
+    maxstep=1.000000e+08, minlambda=1.000000e-12
+    tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
+    maximum iterations=40
   KSP Object:   2 MPI processes
     type: gmres
       GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
@@ -41,6 +48,7 @@ SNES Object: 2 MPI processes
           type: lu
             LU: out-of-place factorization
             tolerance for zero pivot 2.22045e-14
+            using diagonal shift on blocks to prevent zero pivot
             matrix ordering: nd
             factor fill ratio given 5, needed 1.875
               Factored matrix follows:
@@ -67,9 +75,9 @@ SNES Object: 2 MPI processes
     Down solver (pre-smoother) on level 1 -------------------------------
       KSP Object:      (mg_levels_1_)       2 MPI processes
         type: chebyshev
-          Chebyshev: eigenvalue estimates:  min = 0.131185, max = 1.44304
+          Chebyshev: eigenvalue estimates:  min = 0.129662, max = 1.42628
           Chebyshev: estimated using:  [0 0.1; 0 1.1]
-          KSP Object:           2 MPI processes
+          KSP Object:          (mg_levels_1_est_)           2 MPI processes
             type: gmres
               GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
               GMRES: happy breakdown tolerance 1e-30
@@ -105,9 +113,9 @@ SNES Object: 2 MPI processes
     Down solver (pre-smoother) on level 2 -------------------------------
       KSP Object:      (mg_levels_2_)       2 MPI processes
         type: chebyshev
-          Chebyshev: eigenvalue estimates:  min = 0.128679, max = 1.41547
+          Chebyshev: eigenvalue estimates:  min = 0.127654, max = 1.4042
           Chebyshev: estimated using:  [0 0.1; 0 1.1]
-          KSP Object:           2 MPI processes
+          KSP Object:          (mg_levels_2_est_)           2 MPI processes
             type: gmres
               GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
               GMRES: happy breakdown tolerance 1e-30
@@ -167,10 +175,3 @@ SNES Object: 2 MPI processes
       rows=169, cols=169
       total: nonzeros=793, allocated nonzeros=793
       total number of mallocs used during MatSetValues calls =0
-  SNESLineSearch Object:   2 MPI processes
-    type: bt
-      interpolation: cubic
-      alpha=1.000000e-04
-    maxstep=1.000000e+08, minlambda=1.000000e-12
-    tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
-    maximum iterations=40

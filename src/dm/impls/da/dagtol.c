@@ -3,9 +3,9 @@
   Code for manipulating distributed regular arrays in parallel.
 */
 
-#include <petsc-private/daimpl.h>    /*I   "petscdmda.h"   I*/
+#include <petsc-private/dmdaimpl.h>    /*I   "petscdmda.h"   I*/
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMGlobalToLocalBegin_DA"
 PetscErrorCode  DMGlobalToLocalBegin_DA(DM da,Vec g,InsertMode mode,Vec l)
 {
@@ -21,7 +21,7 @@ PetscErrorCode  DMGlobalToLocalBegin_DA(DM da,Vec g,InsertMode mode,Vec l)
 }
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMGlobalToLocalEnd_DA"
 PetscErrorCode  DMGlobalToLocalEnd_DA(DM da,Vec g,InsertMode mode,Vec l)
 {
@@ -36,7 +36,7 @@ PetscErrorCode  DMGlobalToLocalEnd_DA(DM da,Vec g,InsertMode mode,Vec l)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMLocalToGlobalBegin_DA"
 PetscErrorCode  DMLocalToGlobalBegin_DA(DM da,Vec l,InsertMode mode,Vec g)
 {
@@ -51,11 +51,11 @@ PetscErrorCode  DMLocalToGlobalBegin_DA(DM da,Vec l,InsertMode mode,Vec g)
     ierr = VecScatterBegin(dd->gtol,l,g,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   } else if (mode == INSERT_VALUES) {
     ierr = VecScatterBegin(dd->ltog,l,g,mode,SCATTER_FORWARD);CHKERRQ(ierr);
-  } else SETERRQ(((PetscObject)da)->comm,PETSC_ERR_SUP,"Not yet implemented");
+  } else SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Not yet implemented");
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMLocalToGlobalEnd_DA"
 PetscErrorCode  DMLocalToGlobalEnd_DA(DM da,Vec l,InsertMode mode,Vec g)
 {
@@ -70,12 +70,12 @@ PetscErrorCode  DMLocalToGlobalEnd_DA(DM da,Vec l,InsertMode mode,Vec g)
     ierr = VecScatterEnd(dd->gtol,l,g,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   } else if (mode == INSERT_VALUES) {
     ierr = VecScatterEnd(dd->ltog,l,g,mode,SCATTER_FORWARD);CHKERRQ(ierr);
-  } else SETERRQ(((PetscObject)da)->comm,PETSC_ERR_SUP,"Not yet implemented");
+  } else SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Not yet implemented");
   PetscFunctionReturn(0);
 }
 
 extern PetscErrorCode DMDAGetNatural_Private(DM,PetscInt*,IS*);
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMDAGlobalToNatural_Create"
 /*
    DMDAGlobalToNatural_Create - Create the global to natural scatter object
@@ -87,12 +87,12 @@ extern PetscErrorCode DMDAGetNatural_Private(DM,PetscInt*,IS*);
 
    Level: developer
 
-   Notes: This is an internal routine called by DMDAGlobalToNatural() to 
+   Notes: This is an internal routine called by DMDAGlobalToNatural() to
      create the scatter context.
 
 .keywords: distributed array, global to local, begin
 
-.seealso: DMDAGlobalToNaturalBegin(), DMDAGlobalToNaturalEnd(), DMLocalToGlobalBegin(), DMDACreate2d(), 
+.seealso: DMDAGlobalToNaturalBegin(), DMDAGlobalToNaturalEnd(), DMLocalToGlobalBegin(), DMDACreate2d(),
           DMGlobalToLocalBegin(), DMGlobalToLocalEnd(), DMDACreateNaturalVector()
 */
 PetscErrorCode DMDAGlobalToNatural_Create(DM da)
@@ -105,16 +105,16 @@ PetscErrorCode DMDAGlobalToNatural_Create(DM da)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
-  if (!dd->natural) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_ORDER,"Natural layout vector not yet created; cannot scatter into it");
+  if (!dd->natural) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_ORDER,"Natural layout vector not yet created; cannot scatter into it");
 
   /* create the scatter context */
   ierr = VecGetLocalSize(dd->natural,&m);CHKERRQ(ierr);
-  ierr = VecGetOwnershipRange(dd->natural,&start,PETSC_NULL);CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(dd->natural,&start,NULL);CHKERRQ(ierr);
 
   ierr = DMDAGetNatural_Private(da,&Nlocal,&to);CHKERRQ(ierr);
   if (Nlocal != m) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Internal error: Nlocal %D local vector size %D",Nlocal,m);
-  ierr = ISCreateStride(((PetscObject)da)->comm,m,start,1,&from);CHKERRQ(ierr);
-  ierr = VecCreateMPIWithArray(((PetscObject)da)->comm,dd->w,dd->Nlocal,PETSC_DETERMINE,0,&global);
+  ierr = ISCreateStride(PetscObjectComm((PetscObject)da),m,start,1,&from);CHKERRQ(ierr);
+  ierr = VecCreateMPIWithArray(PetscObjectComm((PetscObject)da),dd->w,dd->Nlocal,PETSC_DETERMINE,0,&global);CHKERRQ(ierr);
   ierr = VecScatterCreate(global,from,dd->natural,to,&dd->gton);CHKERRQ(ierr);
   ierr = VecDestroy(&global);CHKERRQ(ierr);
   ierr = ISDestroy(&from);CHKERRQ(ierr);
@@ -122,11 +122,11 @@ PetscErrorCode DMDAGlobalToNatural_Create(DM da)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMDAGlobalToNaturalBegin"
 /*@
    DMDAGlobalToNaturalBegin - Maps values from the global vector to a global vector
-   in the "natural" grid ordering. Must be followed by 
+   in the "natural" grid ordering. Must be followed by
    DMDAGlobalToNaturalEnd() to complete the exchange.
 
    Neighbor-wise Collective on DMDA
@@ -144,14 +144,14 @@ PetscErrorCode DMDAGlobalToNatural_Create(DM da)
    Notes:
    The global and natrual vectors used here need not be the same as those
    obtained from DMCreateGlobalVector() and DMDACreateNaturalVector(), BUT they
-   must have the same parallel data layout; they could, for example, be 
+   must have the same parallel data layout; they could, for example, be
    obtained with VecDuplicate() from the DMDA originating vectors.
 
    You must call DMDACreateNaturalVector() before using this routine
 
 .keywords: distributed array, global to local, begin
 
-.seealso: DMDAGlobalToNaturalEnd(), DMLocalToGlobalBegin(), DMDACreate2d(), 
+.seealso: DMDAGlobalToNaturalEnd(), DMLocalToGlobalBegin(), DMDACreate2d(),
           DMGlobalToLocalBegin(), DMGlobalToLocalEnd(), DMDACreateNaturalVector()
 
 @*/
@@ -172,7 +172,7 @@ PetscErrorCode  DMDAGlobalToNaturalBegin(DM da,Vec g,InsertMode mode,Vec l)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMDAGlobalToNaturalEnd"
 /*@
    DMDAGlobalToNaturalEnd - Maps values from the global vector to a global vector
@@ -193,7 +193,7 @@ PetscErrorCode  DMDAGlobalToNaturalBegin(DM da,Vec g,InsertMode mode,Vec l)
    Notes:
    The global and local vectors used here need not be the same as those
    obtained from DMCreateGlobalVector() and DMDACreateNaturalVector(), BUT they
-   must have the same parallel data layout; they could, for example, be 
+   must have the same parallel data layout; they could, for example, be
    obtained with VecDuplicate() from the DMDA originating vectors.
 
 .keywords: distributed array, global to local, end
@@ -215,11 +215,11 @@ PetscErrorCode  DMDAGlobalToNaturalEnd(DM da,Vec g,InsertMode mode,Vec l)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMDANaturalToGlobalBegin"
 /*@
-   DMDANaturalToGlobalBegin - Maps values from a global vector in the "natural" ordering 
-   to a global vector in the PETSc DMDA grid ordering. Must be followed by 
+   DMDANaturalToGlobalBegin - Maps values from a global vector in the "natural" ordering
+   to a global vector in the PETSc DMDA grid ordering. Must be followed by
    DMDANaturalToGlobalEnd() to complete the exchange.
 
    Neighbor-wise Collective on DMDA
@@ -237,12 +237,12 @@ PetscErrorCode  DMDAGlobalToNaturalEnd(DM da,Vec g,InsertMode mode,Vec l)
    Notes:
    The global and natural vectors used here need not be the same as those
    obtained from DMCreateGlobalVector() and DMDACreateNaturalVector(), BUT they
-   must have the same parallel data layout; they could, for example, be 
+   must have the same parallel data layout; they could, for example, be
    obtained with VecDuplicate() from the DMDA originating vectors.
 
 .keywords: distributed array, global to local, begin
 
-.seealso: DMDAGlobalToNaturalEnd(), DMDAGlobalToNaturalBegin(), DMLocalToGlobalBegin(), DMDACreate2d(), 
+.seealso: DMDAGlobalToNaturalEnd(), DMDAGlobalToNaturalBegin(), DMLocalToGlobalBegin(), DMDACreate2d(),
           DMGlobalToLocalBegin(), DMGlobalToLocalEnd(), DMDACreateNaturalVector()
 
 @*/
@@ -263,10 +263,10 @@ PetscErrorCode  DMDANaturalToGlobalBegin(DM da,Vec g,InsertMode mode,Vec l)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMDANaturalToGlobalEnd"
 /*@
-   DMDANaturalToGlobalEnd - Maps values from the natural ordering global vector 
+   DMDANaturalToGlobalEnd - Maps values from the natural ordering global vector
    to a global vector in the PETSc DMDA ordering. Must be preceeded by DMDANaturalToGlobalBegin().
 
    Neighbor-wise Collective on DMDA
@@ -284,7 +284,7 @@ PetscErrorCode  DMDANaturalToGlobalBegin(DM da,Vec g,InsertMode mode,Vec l)
    Notes:
    The global and local vectors used here need not be the same as those
    obtained from DMCreateGlobalVector() and DMDACreateNaturalVector(), BUT they
-   must have the same parallel data layout; they could, for example, be 
+   must have the same parallel data layout; they could, for example, be
    obtained with VecDuplicate() from the DMDA originating vectors.
 
 .keywords: distributed array, global to local, end

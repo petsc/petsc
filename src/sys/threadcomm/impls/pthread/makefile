@@ -6,8 +6,6 @@ FFLAGS   =
 SOURCEC  = tcpthread.c tclockfree.c
 SOURCEF  =
 SOURCEH  = tcpthreadimpl.h
-OBJSC    = $(SOURCEC:.c=.o)
-OBJSF    =
 LIBBASE  = libpetscsys
 MANSEC   = PetscThreadComm
 LOCDIR   = src/sys/threadcomm/impls/pthread/

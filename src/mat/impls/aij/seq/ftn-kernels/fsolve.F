@@ -14,7 +14,7 @@
 
       PetscInt i,j,jstart,jend
       PetscScalar sum
-!     
+!
 !     Forward Solve
 !
       x(0) = b(0)
@@ -27,7 +27,7 @@
  30      continue
          x(i) = sum
  20   continue
-      
+
 !
 !     Backward solve the upper triangular
 !
@@ -36,10 +36,10 @@
          jend    = ai(i+1) - 1
          sum     = x(i)
          do 50 j=jstart,jend
-            sum = sum - aa(j)* x(aj(j)) 
+            sum = sum - aa(j)* x(aj(j))
  50      continue
          x(i)    = sum * aa(adiag(i))
  40   continue
       return
       end
-      
+

@@ -6,8 +6,6 @@ FFLAGS   =
 SOURCEC  = mhyp.c
 SOURCEF  =
 SOURCEH  = mhyp.h
-OBJSC    = $(SOURCEC:.c=.o)
-OBJSF    =
 LIBBASE  = libpetscdm
 MANSEC   = DM
 SUBMANSEC= DMDA

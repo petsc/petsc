@@ -16,14 +16,14 @@ int main(int argc,char **argv)
   PetscViewer    viewer;
   PetscMPIInt    rank;
   PetscInt       i, nlocal, n = 6;
-  PetscScalar   *array;
+  PetscScalar    *array;
   PetscBool      equal;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscInitialize(&argc, &argv, (char *) 0, help);CHKERRQ(ierr); 
+  PetscInitialize(&argc, &argv, (char*) 0, help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL, "-n", &n, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL, "-n", &n, NULL);CHKERRQ(ierr);
 
   ierr = VecCreate(PETSC_COMM_WORLD, &x1);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) x1, "TestVec");CHKERRQ(ierr);
@@ -32,9 +32,7 @@ int main(int argc,char **argv)
 
   ierr = VecGetLocalSize(x1, &nlocal);CHKERRQ(ierr);
   ierr = VecGetArray(x1, &array);CHKERRQ(ierr);
-  for(i = 0; i < nlocal; i++) {
-    array[i] = rank + 1;
-  }
+  for (i = 0; i < nlocal; i++) array[i] = rank + 1;
   ierr = VecRestoreArray(x1, &array);CHKERRQ(ierr);
   ierr = VecAssemblyBegin(x1);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(x1);CHKERRQ(ierr);
@@ -81,7 +79,7 @@ int main(int argc,char **argv)
   ierr = PetscViewerHDF5Open(PETSC_COMM_WORLD, "ex19.h5", FILE_MODE_READ, &viewer);CHKERRQ(ierr);
   ierr = PetscViewerHDF5PushGroup(viewer, "/");CHKERRQ(ierr);
   ierr = VecLoad(y1, viewer);CHKERRQ(ierr);
-  
+
   ierr = PetscViewerHDF5PushGroup(viewer, "/testBlockSize");CHKERRQ(ierr);
   ierr = VecLoad(y2, viewer);CHKERRQ(ierr);
   ierr = PetscViewerHDF5PushGroup(viewer, "/testTimestep");CHKERRQ(ierr);
@@ -116,4 +114,4 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   PetscFunctionReturn(0);
 }
- 
+

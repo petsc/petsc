@@ -2,13 +2,13 @@ static const char help[] = "Tests PetscOptionsPrefix{Push,Pop}\n\n";
 
 #include <petscsys.h>
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc, char *argv[])
 {
   PetscErrorCode ierr;
-  PetscInt opts[6] = {0};
-  PetscBool  hascl = PETSC_FALSE,hasstr = PETSC_FALSE;
+  PetscInt       opts[6] = {0};
+  PetscBool      hascl   = PETSC_FALSE,hasstr = PETSC_FALSE;
 
   ierr = PetscInitialize(&argc,&argv,0,help);CHKERRQ(ierr);
   ierr = PetscOptionsSetValue("-zero","0");CHKERRQ(ierr);
@@ -36,7 +36,7 @@ int main(int argc, char *argv[])
 
   ierr = PetscOptionsGetBool(0,"-cl",&hascl,0);CHKERRQ(ierr);
   if (hascl) {
-    ierr = PetscMemzero(opts,sizeof opts);CHKERRQ(ierr);
+    ierr = PetscMemzero(opts,sizeof(opts));CHKERRQ(ierr);
     ierr = PetscOptionsGetInt(0,"-cl_zero",&opts[0],0);CHKERRQ(ierr);
     ierr = PetscOptionsGetInt(0,"-cl_a_one",&opts[1],0);CHKERRQ(ierr);
     ierr = PetscOptionsGetInt(0,"-cl_a_bb_two",&opts[2],0);CHKERRQ(ierr);
@@ -49,7 +49,7 @@ int main(int argc, char *argv[])
   ierr = PetscOptionsGetBool(0,"-str",&hasstr,0);CHKERRQ(ierr);
   if (hasstr) {
     ierr = PetscOptionsInsertString("-prefix_push str_ -zero 100 -prefix_push a_ -one 101 -prefix_push bb_ -two 102 -prefix_pop -three 103 -prefix_push cc_ -prefix_push ddd_ -four 104 -prefix_pop -prefix_pop -prefix_pop -five 105 -prefix_pop");CHKERRQ(ierr);
-    ierr = PetscMemzero(opts,sizeof opts);CHKERRQ(ierr);
+    ierr = PetscMemzero(opts,sizeof(opts));CHKERRQ(ierr);
     ierr = PetscOptionsGetInt(0,"-str_zero",&opts[0],0);CHKERRQ(ierr);
     ierr = PetscOptionsGetInt(0,"-str_a_one",&opts[1],0);CHKERRQ(ierr);
     ierr = PetscOptionsGetInt(0,"-str_a_bb_two",&opts[2],0);CHKERRQ(ierr);

@@ -1,6 +1,4 @@
 
-#if !defined(PETSC_USE_COMPLEX)
-
 static char help[] = "Reads a PETSc matrix and vector from a file and solves a linear system.\n\
 Input arguments are:\n\
   -f <input_file> : file to load.  For example see $PETSC_DIR/share/petsc/datafiles/matrices\n\n";
@@ -19,14 +17,14 @@ int main(int argc,char **args)
   Vec            x,b,u;
   Mat            A;
   KSP            ksp;
-  char           file[PETSC_MAX_PATH_LEN]; 
+  char           file[PETSC_MAX_PATH_LEN];
   PetscViewer    fd;
   PetscLogStage  stage1;
-  
-  PetscInitialize(&argc,&args,(char *)0,help);
+
+  PetscInitialize(&argc,&args,(char*)0,help);
 
   /* Read matrix and RHS */
-  ierr = PetscOptionsGetString(PETSC_NULL,"-f",file,PETSC_MAX_PATH_LEN,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,"-f",file,PETSC_MAX_PATH_LEN,NULL);CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = MatSetType(A,MATSEQAIJ);CHKERRQ(ierr);
@@ -35,14 +33,14 @@ int main(int argc,char **args)
   ierr = VecLoad(b,fd);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
 
-  /* 
-     If the load matrix is larger then the vector, due to being padded 
+  /*
+     If the load matrix is larger then the vector, due to being padded
      to match the blocksize then create a new padded vector
   */
   ierr = MatGetSize(A,&m,&n);CHKERRQ(ierr);
   ierr = VecGetSize(b,&mvec);CHKERRQ(ierr);
   if (m > mvec) {
-    Vec    tmp;
+    Vec         tmp;
     PetscScalar *bold,*bnew;
     /* create a new vector b by padding the old one */
     ierr = VecCreate(PETSC_COMM_WORLD,&tmp);CHKERRQ(ierr);
@@ -52,7 +50,7 @@ int main(int argc,char **args)
     ierr = VecGetArray(b,&bold);CHKERRQ(ierr);
     ierr = PetscMemcpy(bnew,bold,mvec*sizeof(PetscScalar));CHKERRQ(ierr);
     ierr = VecDestroy(&b);CHKERRQ(ierr);
-    b = tmp;
+    b    = tmp;
   }
 
   /* Set up solution */
@@ -92,11 +90,3 @@ int main(int argc,char **args)
   return 0;
 }
 
-#else
-#include <stdio.h>
-int main(int argc,char **args)
-{
-  fprintf(stdout,"This example does not work for complex numbers.\n");
-  return 0;
-}
-#endif

@@ -12,7 +12,7 @@
       PetscErrorCode ierr
       PetscInt i,cols(500),ncols,row,M,N
       PetscScalar   values(500)
-      PetscViewer   v    
+      PetscViewer   v
       Vec           rowmax
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)

@@ -7,9 +7,9 @@ set dir=`dirname $0`
 set day=`date | cut -f1 -d" "`
 set LOGDIR=/mcs/ftp/pub/petsc/nightlylogs
 
-foreach CONF ($*)
-  set SCP=scp
-  source $dir/confignightly/${CONF}
+foreach TEST ($*)
+  source $dir/confignightly/default
+  source $dir/confignightly/${TNAME}
 
   $SCP $USR@${MACH}:${LOC}/build.log ${LOGDIR}/build_${CONF}_${MACH}.log ;/bin/chmod a+r ${LOGDIR}/build_${CONF}_${MACH}.log &
   $SCP $USR@${MACH}:${LOC}/configure.log ${LOGDIR}/configure_${CONF}_${MACH}.log ;/bin/chmod a+r ${LOGDIR}/configure_${CONF}_${MACH}.log &

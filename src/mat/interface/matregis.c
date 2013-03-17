@@ -1,68 +1,65 @@
 
 #include <petscmat.h>  /*I "petscmat.h" I*/
 
-EXTERN_C_BEGIN
-extern PetscErrorCode  MatCreate_MFFD(Mat);
-extern PetscErrorCode  MatCreate_MAIJ(Mat);
-extern PetscErrorCode  MatCreate_IS(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_MFFD(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_MAIJ(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_IS(Mat);
 
-extern PetscErrorCode  MatCreate_SeqAIJ(Mat);
-extern PetscErrorCode  MatCreate_MPIAIJ(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJ(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJ(Mat);
 
-extern PetscErrorCode  MatCreate_SeqBAIJ(Mat);
-extern PetscErrorCode  MatCreate_MPIBAIJ(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_SeqBAIJ(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_MPIBAIJ(Mat);
 
-extern PetscErrorCode  MatCreate_SeqSBAIJ(Mat);
-extern PetscErrorCode  MatCreate_MPISBAIJ(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_SeqSBAIJ(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_MPISBAIJ(Mat);
 
-extern PetscErrorCode  MatCreate_SeqBSTRM(Mat);
-extern PetscErrorCode  MatCreate_MPIBSTRM(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_SeqBSTRM(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_MPIBSTRM(Mat);
 
-extern PetscErrorCode  MatCreate_SeqSBSTRM(Mat);
-extern PetscErrorCode  MatCreate_MPISBSTRM(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_SeqSBSTRM(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_MPISBSTRM(Mat);
 
-extern PetscErrorCode  MatCreate_SeqDense(Mat);
-extern PetscErrorCode  MatCreate_MPIDense(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_SeqDense(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_MPIDense(Mat);
 
-extern PetscErrorCode  MatCreate_MPIAdj(Mat);
-extern PetscErrorCode  MatCreate_Shell(Mat);
-extern PetscErrorCode  MatCreate_Composite(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_MPIAdj(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_Shell(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_Composite(Mat);
 
-extern PetscErrorCode  MatCreate_SeqAIJPERM(Mat);
-extern PetscErrorCode  MatCreate_MPIAIJPERM(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJPERM(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJPERM(Mat);
 
-extern PetscErrorCode  MatCreate_SeqAIJCRL(Mat);
-extern PetscErrorCode  MatCreate_MPIAIJCRL(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJCRL(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJCRL(Mat);
 
-extern PetscErrorCode  MatCreate_Scatter(Mat);
-extern PetscErrorCode  MatCreate_BlockMat(Mat);
-extern PetscErrorCode  MatCreate_Nest(Mat);
-extern PetscErrorCode  MatCreate_IJ(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_Scatter(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_BlockMat(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_Nest(Mat);
 
 #if defined PETSC_HAVE_CUSP
-extern PetscErrorCode  MatCreate_SeqAIJCUSP(Mat);
-extern PetscErrorCode  MatCreate_MPIAIJCUSP(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJCUSP(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJCUSP(Mat);
 #endif
 
 #if defined PETSC_HAVE_TXPETSCGPU
-extern PetscErrorCode  MatCreate_SeqAIJCUSPARSE(Mat);
-extern PetscErrorCode  MatCreate_MPIAIJCUSPARSE(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJCUSPARSE(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJCUSPARSE(Mat);
 #endif
 
 #if defined PETSC_HAVE_FFTW
-extern PetscErrorCode  MatCreate_FFTW(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_FFTW(Mat);
 #endif
-extern PetscErrorCode  MatCreate_Elemental(Mat);
-EXTERN_C_END
-  
+PETSC_EXTERN PetscErrorCode MatCreate_Elemental(Mat);
+
 /*
-    This is used by MatSetType() to make sure that at least one 
+    This is used by MatSetType() to make sure that at least one
     MatRegisterAll() is called. In general, if there is more than one
     DLL, then MatRegisterAll() may be called several times.
 */
-extern PetscBool  MatRegisterAllCalled;
+extern PetscBool MatRegisterAllCalled;
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatRegisterAll"
 /*@C
   MatRegisterAll - Registers all of the matrix types in PETSc
@@ -129,7 +126,6 @@ PetscErrorCode  MatRegisterAll(const char path[])
   ierr = MatRegisterDynamic(MATBLOCKMAT,       path,"MatCreate_BlockMat",  MatCreate_BlockMat);CHKERRQ(ierr);
   ierr = MatRegisterDynamic(MATNEST,           path,"MatCreate_Nest",      MatCreate_Nest);CHKERRQ(ierr);
 
-  ierr = MatRegisterDynamic(MATIJ,             path,"MatCreate_IJ",   MatCreate_IJ);CHKERRQ(ierr);
 
 #if defined PETSC_HAVE_CUSP
   ierr = MatRegisterBaseName(MATAIJCUSP,MATSEQAIJCUSP,MATMPIAIJCUSP);CHKERRQ(ierr);

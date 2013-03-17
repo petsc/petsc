@@ -1,6 +1,6 @@
 
 /*
-  Used for testing AIJ matrix with all zeros. 
+  Used for testing AIJ matrix with all zeros.
 */
 
 static char help[] = "Used for Solving a linear system where the matrix has all zeros.\n\n";
@@ -10,7 +10,6 @@ static char help[] = "Used for Solving a linear system where the matrix has all 
 
 #include <petscdmda.h>
 #include <petscksp.h>
-#include <petscpcmg.h>
 
 extern PetscErrorCode ComputeMatrix(DM,Mat);
 extern PetscErrorCode ComputeRHS(DM,Vec);
@@ -29,8 +28,8 @@ int main(int argc,char **argv)
   PetscBool      flg;
   PetscScalar    zero=0.0;
 
-  PetscInitialize(&argc,&argv,(char *)0,help);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-dof",&dof,PETSC_NULL);CHKERRQ(ierr);
+  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscOptionsGetInt(NULL,"-dof",&dof,NULL);CHKERRQ(ierr);
 
   ierr = DMDACreate(PETSC_COMM_WORLD,&da);CHKERRQ(ierr);
   ierr = DMDASetDim(da,3);CHKERRQ(ierr);
@@ -40,7 +39,7 @@ int main(int argc,char **argv)
   ierr = DMDASetNumProcs(da,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = DMDASetDof(da,dof);CHKERRQ(ierr);
   ierr = DMDASetStencilWidth(da,1);CHKERRQ(ierr);
-  ierr = DMDASetOwnershipRanges(da,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDASetOwnershipRanges(da,NULL,NULL,NULL);CHKERRQ(ierr);
   ierr = DMSetFromOptions(da);CHKERRQ(ierr);
   ierr = DMSetUp(da);CHKERRQ(ierr);
 
@@ -50,14 +49,14 @@ int main(int argc,char **argv)
   ierr = VecSet(b,zero);CHKERRQ(ierr);
 
   /* Test sbaij matrix */
-  flg = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-test_sbaij",&flg,PETSC_NULL);CHKERRQ(ierr);
+  flg  = PETSC_FALSE;
+  ierr = PetscOptionsGetBool(NULL,"-test_sbaij",&flg,NULL);CHKERRQ(ierr);
   if (flg) {
     Mat sA;
     ierr = MatSetOption(A,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
     ierr = MatConvert(A,MATSBAIJ,MAT_INITIAL_MATRIX,&sA);CHKERRQ(ierr);
     ierr = MatDestroy(&A);CHKERRQ(ierr);
-    A = sA;
+    A    = sA;
   }
 
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
@@ -65,15 +64,15 @@ int main(int argc,char **argv)
   ierr = KSPSetOperators(ksp,A,A,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
   ierr = PCSetDM(pc,(DM)da);CHKERRQ(ierr);
- 
+
   ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
 
   /* check final residual */
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(PETSC_NULL, "-check_final_residual", &flg,PETSC_NULL);CHKERRQ(ierr);
-  if (flg){
-    Vec            b1;
-    PetscReal      norm;
+  ierr = PetscOptionsGetBool(NULL, "-check_final_residual", &flg,NULL);CHKERRQ(ierr);
+  if (flg) {
+    Vec       b1;
+    PetscReal norm;
     ierr = KSPGetSolution(ksp,&x);CHKERRQ(ierr);
     ierr = VecDuplicate(b,&b1);CHKERRQ(ierr);
     ierr = MatMult(A,x,b1);CHKERRQ(ierr);
@@ -82,7 +81,7 @@ int main(int argc,char **argv)
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Final residual %g\n",norm);CHKERRQ(ierr);
     ierr = VecDestroy(&b1);CHKERRQ(ierr);
   }
-   
+
   ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
   ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = VecDestroy(&b);CHKERRQ(ierr);

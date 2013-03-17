@@ -7,12 +7,10 @@ ALL: lib
 CFLAGS   = ${UMFPACK_INCLUDE}
 FFLAGS   =
 SOURCEC  = umfpack.c
-SOURCEF  = 
-SOURCEH  = 
-OBJSC    = umfpack.o
-OBJSF    = 
+SOURCEF  =
+SOURCEH  =
 LIBBASE  = libpetscmat
-DIRS     = 
+DIRS     =
 MANSEC   = Mat
 LOCDIR   = src/mat/impls/aij/seq/umfpack/
 

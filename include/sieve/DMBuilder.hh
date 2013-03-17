@@ -67,9 +67,9 @@ namespace ALE {
         const PetscInt pd  = PETSC_DECIDE;
 
         if (dim == 2) {
-          ierr = DMDACreate2d(comm, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE, DMDA_STENCIL_BOX, -3, -3, pd, pd, dof, 1, PETSC_NULL, PETSC_NULL, &da);CHKERRQ(ierr);
+          ierr = DMDACreate2d(comm, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE, DMDA_STENCIL_BOX, -3, -3, pd, pd, dof, 1, NULL, NULL, &da);CHKERRQ(ierr);
         } else if (dim == 3) {
-          ierr = DMDACreate3d(comm, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE, DMDA_STENCIL_BOX, -3, -3, -3, pd, pd, pd, dof, 1, PETSC_NULL, PETSC_NULL, PETSC_NULL, &da);CHKERRQ(ierr);
+          ierr = DMDACreate3d(comm, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE, DMDA_STENCIL_BOX, -3, -3, -3, pd, pd, pd, dof, 1, NULL, NULL, NULL, &da);CHKERRQ(ierr);
         } else {
           SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP, "Dimension not supported: %d", dim);
         }
@@ -332,7 +332,7 @@ namespace ALE {
             for (int j = 0; j < dim; j++) {
               if (j != i) cornerdist += (centerCoords[j] - singularity[j])*(centerCoords[j] - singularity[j]);
             }
-            if (cornerdist < dist || dist == 0.) dist = cornerdist; 
+            if (cornerdist < dist || dist == 0.) dist = cornerdist;
           }
         }
         //patch up AROUND the corner by minimizing between the distance from the relevant axis and the singular vertex

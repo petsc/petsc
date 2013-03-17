@@ -10,16 +10,16 @@ static char help[] = "Reads a matrix and vector from a file and writes to anothe
 int main(int argc,char **args)
 {
   PetscErrorCode ierr;
-  PetscBool   flg;
-  Vec         x;
-  Mat         A;
-  char        file[256];
-  PetscViewer fd;
+  PetscBool      flg;
+  Vec            x;
+  Mat            A;
+  char           file[256];
+  PetscViewer    fd;
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
 
   /* Read matrix and RHS */
-  ierr = PetscOptionsGetString(PETSC_NULL,"-fin",file,256,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,"-fin",file,256,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(PETSC_COMM_WORLD,1,help);
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
@@ -30,7 +30,7 @@ int main(int argc,char **args)
   ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
 
   /* Write matrix and vector */
-  ierr = PetscOptionsGetString(PETSC_NULL,"-fout",file,256,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,"-fout",file,256,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(PETSC_COMM_WORLD,1,help);
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_WRITE,&fd);CHKERRQ(ierr);
   ierr = MatView(A,fd);CHKERRQ(ierr);

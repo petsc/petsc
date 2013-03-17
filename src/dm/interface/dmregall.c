@@ -1,19 +1,17 @@
 
 #include <petscdm.h>     /*I  "petscdm.h"  I*/
-EXTERN_C_BEGIN
-extern PetscErrorCode  DMCreate_DA(DM);
-extern PetscErrorCode  DMCreate_Composite(DM);
-extern PetscErrorCode  DMCreate_Sliced(DM);
-extern PetscErrorCode  DMCreate_Shell(DM);
-extern PetscErrorCode  DMCreate_ADDA(DM);
-extern PetscErrorCode  DMCreate_IGA(DM);
-extern PetscErrorCode  DMCreate_Redundant(DM);
-extern PetscErrorCode  DMCreate_Complex(DM);
-#ifdef PETSC_HAVE_SIEVE
-extern PetscErrorCode  DMCreate_Mesh(DM);
-extern PetscErrorCode  DMCreate_Cartesian(DM);
+PETSC_EXTERN PetscErrorCode DMCreate_DA(DM);
+PETSC_EXTERN PetscErrorCode DMCreate_Composite(DM);
+PETSC_EXTERN PetscErrorCode DMCreate_Sliced(DM);
+PETSC_EXTERN PetscErrorCode DMCreate_Shell(DM);
+PETSC_EXTERN PetscErrorCode DMCreate_ADDA(DM);
+PETSC_EXTERN PetscErrorCode DMCreate_Redundant(DM);
+PETSC_EXTERN PetscErrorCode DMCreate_Plex(DM);
+PETSC_EXTERN PetscErrorCode DMCreate_Patch(DM);
+#if defined(PETSC_HAVE_SIEVE)
+PETSC_EXTERN PetscErrorCode DMCreate_Mesh(DM);
+PETSC_EXTERN PetscErrorCode DMCreate_Cartesian(DM);
 #endif
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "DMRegisterAll"
@@ -36,15 +34,16 @@ PetscErrorCode  DMRegisterAll(const char path[])
 
   PetscFunctionBegin;
   DMRegisterAllCalled = PETSC_TRUE;
+
   ierr = DMRegisterDynamic(DMDA,        path, "DMCreate_DA",        DMCreate_DA);CHKERRQ(ierr);
   ierr = DMRegisterDynamic(DMCOMPOSITE, path, "DMCreate_Composite", DMCreate_Composite);CHKERRQ(ierr);
   ierr = DMRegisterDynamic(DMSLICED,    path, "DMCreate_Sliced",    DMCreate_Sliced);CHKERRQ(ierr);
   ierr = DMRegisterDynamic(DMSHELL,     path, "DMCreate_Shell",     DMCreate_Shell);CHKERRQ(ierr);
   ierr = DMRegisterDynamic(DMADDA,      path, "DMCreate_ADDA",      DMCreate_ADDA);CHKERRQ(ierr);
-  ierr = DMRegisterDynamic(DMIGA,       path, "DMCreate_IGA",       DMCreate_IGA);CHKERRQ(ierr);
   ierr = DMRegisterDynamic(DMREDUNDANT, path, "DMCreate_Redundant", DMCreate_Redundant);CHKERRQ(ierr);
-  ierr = DMRegisterDynamic(DMCOMPLEX,   path, "DMCreate_Complex",   DMCreate_Complex);CHKERRQ(ierr);
-#ifdef PETSC_HAVE_SIEVE
+  ierr = DMRegisterDynamic(DMPLEX,      path, "DMCreate_Plex",      DMCreate_Plex);CHKERRQ(ierr);
+  ierr = DMRegisterDynamic(DMPATCH,     path, "DMCreate_Patch",     DMCreate_Patch);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_SIEVE)
   ierr = DMRegisterDynamic(DMMESH,      path, "DMCreate_Mesh",      DMCreate_Mesh);CHKERRQ(ierr);
   ierr = DMRegisterDynamic(DMCARTESIAN, path, "DMCreate_Cartesian", DMCreate_Cartesian);CHKERRQ(ierr);
 #endif

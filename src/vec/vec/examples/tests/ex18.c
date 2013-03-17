@@ -1,6 +1,4 @@
 
-/* np = 1 */
-
 static char help[] = "Compares BLAS dots on different machines. Input\n\
 arguments are\n\
   -n <length> : local vector length\n\n";
@@ -16,8 +14,8 @@ int main(int argc,char **argv)
   PetscScalar    v;
   Vec            x,y;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-n",&n,NULL);CHKERRQ(ierr);
   if (n < 5) n = 5;
 
 
@@ -26,9 +24,9 @@ int main(int argc,char **argv)
   ierr = VecCreateSeq(PETSC_COMM_SELF,n,&y);CHKERRQ(ierr);
 
   for (i=0; i<n; i++) {
-    v = ((PetscReal)i) + 1.0/(((PetscReal)i) + .35);
+    v    = ((PetscReal)i) + 1.0/(((PetscReal)i) + .35);
     ierr = VecSetValues(x,1,&i,&v,INSERT_VALUES);CHKERRQ(ierr);
-    v += 1.375547826473644376;
+    v   += 1.375547826473644376;
     ierr = VecSetValues(y,1,&i,&v,INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = VecAssemblyBegin(y);CHKERRQ(ierr);
@@ -43,4 +41,4 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return 0;
 }
- 
+

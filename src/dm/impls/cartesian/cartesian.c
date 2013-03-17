@@ -20,7 +20,7 @@
 @*/
 PetscErrorCode DMCartesianGetMesh(DM dm, ALE::Obj<ALE::CartesianMesh>& m)
 {
-  DM_Cartesian *c = (DM_Cartesian *) dm->data;
+  DM_Cartesian *c = (DM_Cartesian*) dm->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
@@ -45,7 +45,7 @@ PetscErrorCode DMCartesianGetMesh(DM dm, ALE::Obj<ALE::CartesianMesh>& m)
 @*/
 PetscErrorCode DMCartesianSetMesh(DM dm, const ALE::Obj<ALE::CartesianMesh>& m)
 {
-  DM_Cartesian *c = (DM_Cartesian *) dm->data;
+  DM_Cartesian *c = (DM_Cartesian*) dm->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
@@ -57,10 +57,10 @@ PetscErrorCode DMCartesianSetMesh(DM dm, const ALE::Obj<ALE::CartesianMesh>& m)
 #define __FUNCT__ "DMDestroy_Cartesian"
 PetscErrorCode  DMDestroy_Cartesian(DM dm)
 {
-  DM_Cartesian *c = (DM_Cartesian *) dm->data;
+  DM_Cartesian *c = (DM_Cartesian*) dm->data;
 
   PetscFunctionBegin;
-  c->m = PETSC_NULL;
+  c->m = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -94,6 +94,7 @@ PetscErrorCode DMView_Cartesian_Ascii(const ALE::Obj<ALE::CartesianMesh>& mesh, 
 PetscErrorCode DMView_Cartesian(DM dm, PetscViewer viewer)
 {
   ALE::Obj<ALE::CartesianMesh> m;
+
   PetscBool      iascii, isbinary, isdraw;
   PetscErrorCode ierr;
 
@@ -103,11 +104,9 @@ PetscErrorCode DMView_Cartesian(DM dm, PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERDRAW, &isdraw);CHKERRQ(ierr);
 
   ierr = DMCartesianGetMesh(dm, m);CHKERRQ(ierr);
-  if (iascii){
+  if (iascii) {
     ierr = DMView_Cartesian_Ascii(m, viewer);CHKERRQ(ierr);
-  } else if (isbinary) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "Binary viewer not implemented for Cartesian Mesh");
-  else if (isdraw) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "Draw viewer not implemented for Cartesian Mesh");
-  else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported by this mesh object", ((PetscObject)viewer)->type_name);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -129,10 +128,10 @@ PetscErrorCode DMCreateInterpolation_Cartesian(DM fineMesh, DM coarseMesh, Mat *
   const ALE::Obj<ALE::Mesh::label_sequence>&    vertices          = fine->depthStratum(0);
   const ALE::Obj<ALE::Mesh::real_section_type>& sCoarse           = coarse->getRealSection("default");
   const ALE::Obj<ALE::Mesh::real_section_type>& sFine             = fine->getRealSection("default");
-  const ALE::Obj<ALE::Mesh::order_type>&        coarseOrder = coarse->getFactory()->getGlobalOrder(coarse, "default", sCoarse);
-  const ALE::Obj<ALE::Mesh::order_type>&        fineOrder   = fine->getFactory()->getGlobalOrder(fine, "default", sFine);
-  const int dim = coarse->getDimension();
-  double *v0, *J, *invJ, detJ, *refCoords, *values;
+  const ALE::Obj<ALE::Mesh::order_type>&        coarseOrder       = coarse->getFactory()->getGlobalOrder(coarse, "default", sCoarse);
+  const ALE::Obj<ALE::Mesh::order_type>&        fineOrder         = fine->getFactory()->getGlobalOrder(fine, "default", sFine);
+  const int                                     dim               = coarse->getDimension();
+  double                                        *v0, *J, *invJ, detJ, *refCoords, *values;
 #endif
 
   ierr = MatCreate(fine->comm(), &P);CHKERRQ(ierr);
@@ -140,14 +139,14 @@ PetscErrorCode DMCreateInterpolation_Cartesian(DM fineMesh, DM coarseMesh, Mat *
   ierr = MatSetSizes(P, sFine->size(), sCoarse->size(), PETSC_DETERMINE, PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = MatSetFromOptions(P);CHKERRQ(ierr);
   ierr = PetscMalloc5(dim,double,&v0,dim*dim,double,&J,dim*dim,double,&invJ,dim,double,&refCoords,dim+1,double,&values);CHKERRQ(ierr);
-  for(ALE::Mesh::label_sequence::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
-    const ALE::Mesh::real_section_type::value_type *coords     = fineCoordinates->restrictPoint(*v_iter);
-    const ALE::Mesh::point_type                     coarseCell = coarse->locatePoint(coords);
+  for (ALE::Mesh::label_sequence::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
+    const ALE::Mesh::real_section_type::value_type *coords    = fineCoordinates->restrictPoint(*v_iter);
+    const ALE::Mesh::point_type                    coarseCell = coarse->locatePoint(coords);
 
     coarse->computeElementGeometry(coarseCoordinates, coarseCell, v0, J, invJ, detJ);
-    for(int d = 0; d < dim; ++d) {
+    for (int d = 0; d < dim; ++d) {
       refCoords[d] = 0.0;
-      for(int e = 0; e < dim; ++e) {
+      for (int e = 0; e < dim; ++e) {
         refCoords[d] += invJ[d*dim+e]*(coords[e] - v0[e]);
       }
       refCoords[d] -= 1.0;
@@ -155,12 +154,12 @@ PetscErrorCode DMCreateInterpolation_Cartesian(DM fineMesh, DM coarseMesh, Mat *
     values[0] = 1.0/3.0 - (refCoords[0] + refCoords[1])/3.0;
     values[1] = 0.5*(refCoords[0] + 1.0);
     values[2] = 0.5*(refCoords[1] + 1.0);
-    ierr = updateOperatorGeneral(P, fine, sFine, fineOrder, *v_iter, sCoarse, coarseOrder, coarseCell, values, INSERT_VALUES);CHKERRQ(ierr);
+    ierr      = updateOperatorGeneral(P, fine, sFine, fineOrder, *v_iter, sCoarse, coarseOrder, coarseCell, values, INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = PetscFree5(v0,J,invJ,refCoords,values);CHKERRQ(ierr);
 #endif
-  ierr = MatAssemblyBegin(P, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(P, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr           = MatAssemblyBegin(P, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr           = MatAssemblyEnd(P, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   *interpolation = P;
   PetscFunctionReturn(0);
 }
@@ -197,7 +196,9 @@ PetscErrorCode DMCoarsen_Cartesian(DM mesh, MPI_Comm comm, DM *coarseMesh)
   PetscErrorCode               ierr;
 
   PetscFunctionBegin;
-  if (comm == MPI_COMM_NULL) comm = ((PetscObject)mesh)->comm;
+  if (comm == MPI_COMM_NULL) {
+    ierr = PetscObjectGetComm((PetscObject)mesh,&comm);CHKERRQ(ierr);
+  }
   ierr = DMCartesianGetMesh(mesh, oldMesh);CHKERRQ(ierr);
   ierr = DMCartesianCreate(comm, coarseMesh);CHKERRQ(ierr);
 #if 0
@@ -219,7 +220,7 @@ PetscErrorCode DMCoarsen_Cartesian(DM mesh, MPI_Comm comm, DM *coarseMesh)
 PetscErrorCode DMCartesianGetSectionReal(DM dm, const char name[], SectionReal *section)
 {
   ALE::Obj<ALE::CartesianMesh> m;
-  PetscErrorCode      ierr;
+  PetscErrorCode               ierr;
 
   PetscFunctionBegin;
   ierr = DMCartesianGetMesh(dm, m);CHKERRQ(ierr);
@@ -241,50 +242,49 @@ PetscErrorCode  DMSetFromOptions_Cartesian(DM dm)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   ierr = PetscOptionsHead("DMCartesian Options");CHKERRQ(ierr);
-    /* Handle DMCartesian refinement */
-    /* Handle associated vectors */
+  /* Handle DMCartesian refinement */
+  /* Handle associated vectors */
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "DMCreate_Cartesian"
-PetscErrorCode DMCreate_Cartesian(DM dm)
+PETSC_EXTERN PetscErrorCode DMCreate_Cartesian(DM dm)
 {
-  DM_Cartesian  *mesh;
+  DM_Cartesian   *mesh;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  ierr = PetscNewLog(dm, DM_Cartesian, &mesh);CHKERRQ(ierr);
+  ierr     = PetscNewLog(dm, DM_Cartesian, &mesh);CHKERRQ(ierr);
   dm->data = mesh;
 
-  new(&mesh->m) ALE::Obj<ALE::CartesianMesh>(PETSC_NULL);
+  new(&mesh->m) ALE::Obj<ALE::CartesianMesh>(NULL);
 
-  ierr = PetscStrallocpy(VECSTANDARD, &dm->vectype);CHKERRQ(ierr);
+  ierr = DMSetVecType(dm,VECSTANDARD);CHKERRQ(ierr);
+
   dm->ops->globaltolocalbegin = 0;
-  dm->ops->globaltolocalend   = 0;
-  dm->ops->localtoglobalbegin = 0;
-  dm->ops->localtoglobalend   = 0;
-  dm->ops->createglobalvector = 0; /* DMCreateGlobalVector_Cartesian; */
-  dm->ops->createlocalvector  = 0; /* DMCreateLocalVector_Cartesian; */
-  dm->ops->createinterpolation   = DMCreateInterpolation_Cartesian;
-  dm->ops->getcoloring        = 0;
-  dm->ops->creatematrix          = 0; /* DMCreateMatrix_Cartesian; */
-  dm->ops->refine             = DMRefine_Cartesian;
-  dm->ops->coarsen            = DMCoarsen_Cartesian;
-  dm->ops->refinehierarchy    = 0;
-  dm->ops->coarsenhierarchy   = 0;
-  dm->ops->getinjection       = 0;
-  dm->ops->getaggregates      = 0;
-  dm->ops->destroy            = DMDestroy_Cartesian;
-  dm->ops->view               = DMView_Cartesian;
-  dm->ops->setfromoptions     = DMSetFromOptions_Cartesian;
-  dm->ops->setup              = 0;
+  dm->ops->globaltolocalend    = 0;
+  dm->ops->localtoglobalbegin  = 0;
+  dm->ops->localtoglobalend    = 0;
+  dm->ops->createglobalvector  = 0; /* DMCreateGlobalVector_Cartesian; */
+  dm->ops->createlocalvector   = 0; /* DMCreateLocalVector_Cartesian; */
+  dm->ops->createinterpolation = DMCreateInterpolation_Cartesian;
+  dm->ops->getcoloring         = 0;
+  dm->ops->creatematrix        = 0;   /* DMCreateMatrix_Cartesian; */
+  dm->ops->refine              = DMRefine_Cartesian;
+  dm->ops->coarsen             = DMCoarsen_Cartesian;
+  dm->ops->refinehierarchy     = 0;
+  dm->ops->coarsenhierarchy    = 0;
+  dm->ops->getinjection        = 0;
+  dm->ops->getaggregates       = 0;
+  dm->ops->destroy             = DMDestroy_Cartesian;
+  dm->ops->view                = DMView_Cartesian;
+  dm->ops->setfromoptions      = DMSetFromOptions_Cartesian;
+  dm->ops->setup               = 0;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "DMCartesianCreate"

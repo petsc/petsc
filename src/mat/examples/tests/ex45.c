@@ -9,19 +9,19 @@
 
 /*
   Demonstrates dumping matrix/vector from heritage code for PETSc.
-   Note does not do bit swapping, so will not generate proper 
+   Note does not do bit swapping, so will not generate proper
 PETSc files on Paragon/Dec Alpha.
 */
 
-void Store2DArray(int,int,double*,const char*,int *);
-void Store1DArray(int,double*,const char*,int *);
+void Store2DArray(int,int,double*,const char*,int*);
+void Store1DArray(int,double*,const char*,int*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   double a[100],v[10];
-  int       i,j,fd = 0;
+  int    i,j,fd = 0;
 
   for (i=0; i<100; i++) {
     a[i] = i + 1;
@@ -39,13 +39,13 @@ int main(int argc,char **args)
 #define __FUNCT__ "Store2DArray"
 void Store2DArray(int m,int n,double *a,const char *filename,int *fdd)
 {
-  int        fd = *fdd;
-  int        i,j;
-  int        nz = -1,classid = 1211216;
+  int    fd = *fdd;
+  int    i,j;
+  int    nz = -1,classid = 1211216;
   double *vals;
 
   if (!fd) {
-    fd = creat(filename,0666); 
+    fd = creat(filename,0666);
     if (fd == -1) {
       fprintf(stdout,"Unable to open binary file\n");
       exit(0);
@@ -79,11 +79,11 @@ void Store2DArray(int m,int n,double *a,const char *filename,int *fdd)
 #define __FUNCT__ "Store1DArray"
 void Store1DArray(int m,double *a,const char *filename,int *fdd)
 {
-  int  fd = *fdd;
-  int  classid = 1211214; /* classid for vectors */
+  int fd      = *fdd;
+  int classid = 1211214;  /* classid for vectors */
 
   if (fd == -1) {
-    fd = creat(filename,0666); 
+    fd = creat(filename,0666);
     if (fd == -1) {
       fprintf(stdout,"Unable to open binary file\n");
       exit(0);

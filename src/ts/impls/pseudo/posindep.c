@@ -4,31 +4,31 @@
 #include <petsc-private/tsimpl.h>                /*I   "petscts.h"   I*/
 
 typedef struct {
-  Vec  update;      /* work vector where new solution is formed */
-  Vec  func;        /* work vector where F(t[i],u[i]) is stored */
-  Vec  xdot;        /* work vector for time derivative of state */
+  Vec update;       /* work vector where new solution is formed */
+  Vec func;         /* work vector where F(t[i],u[i]) is stored */
+  Vec xdot;         /* work vector for time derivative of state */
 
   /* information used for Pseudo-timestepping */
 
   PetscErrorCode (*dt)(TS,PetscReal*,void*);              /* compute next timestep, and related context */
-  void           *dtctx;
-  PetscErrorCode (*verify)(TS,Vec,void*,PetscReal*,PetscBool *); /* verify previous timestep and related context */
-  void           *verifyctx;
+  void *dtctx;
+  PetscErrorCode (*verify)(TS,Vec,void*,PetscReal*,PetscBool*);  /* verify previous timestep and related context */
+  void *verifyctx;
 
-  PetscReal  fnorm_initial,fnorm;                  /* original and current norm of F(u) */
-  PetscReal  fnorm_previous;
+  PetscReal fnorm_initial,fnorm;                   /* original and current norm of F(u) */
+  PetscReal fnorm_previous;
 
-  PetscReal  dt_initial;                    /* initial time-step */
-  PetscReal  dt_increment;                  /* scaling that dt is incremented each time-step */
-  PetscReal  dt_max;                        /* maximum time step */
-  PetscBool  increment_dt_from_initial_dt;
+  PetscReal dt_initial;                     /* initial time-step */
+  PetscReal dt_increment;                   /* scaling that dt is incremented each time-step */
+  PetscReal dt_max;                         /* maximum time step */
+  PetscBool increment_dt_from_initial_dt;
 } TS_Pseudo;
 
 /* ------------------------------------------------------------------------------*/
 
 #undef __FUNCT__
 #define __FUNCT__ "TSPseudoComputeTimeStep"
-/*@
+/*@C
     TSPseudoComputeTimeStep - Computes the next timestep for a currently running
     pseudo-timestepping process.
 
@@ -40,7 +40,7 @@ typedef struct {
     Output Parameter:
 .   dt - newly computed timestep
 
-    Level: advanced
+    Level: developer
 
     Notes:
     The routine to be called here to compute the timestep should be
@@ -48,7 +48,7 @@ typedef struct {
 
 .keywords: timestep, pseudo, compute
 
-.seealso: TSPseudoDefaultTimeStep(), TSPseudoSetTimeStep()
+.seealso: TSPseudoTimeStepDefault(), TSPseudoSetTimeStep()
 @*/
 PetscErrorCode  TSPseudoComputeTimeStep(TS ts,PetscReal *dt)
 {
@@ -65,9 +65,9 @@ PetscErrorCode  TSPseudoComputeTimeStep(TS ts,PetscReal *dt)
 
 /* ------------------------------------------------------------------------------*/
 #undef __FUNCT__
-#define __FUNCT__ "TSPseudoDefaultVerifyTimeStep"
+#define __FUNCT__ "TSPseudoVerifyTimeStepDefault"
 /*@C
-   TSPseudoDefaultVerifyTimeStep - Default code to verify the quality of the last timestep.
+   TSPseudoVerifyTimeStepDefault - Default code to verify the quality of the last timestep.
 
    Collective on TS
 
@@ -90,7 +90,7 @@ PetscErrorCode  TSPseudoComputeTimeStep(TS ts,PetscReal *dt)
 
 .seealso: TSPseudoSetVerifyTimeStep(), TSPseudoVerifyTimeStep()
 @*/
-PetscErrorCode  TSPseudoDefaultVerifyTimeStep(TS ts,Vec update,void *dtctx,PetscReal *newdt,PetscBool  *flag)
+PetscErrorCode  TSPseudoVerifyTimeStepDefault(TS ts,Vec update,void *dtctx,PetscReal *newdt,PetscBool  *flag)
 {
   PetscFunctionBegin;
   *flag = PETSC_TRUE;
@@ -121,7 +121,7 @@ PetscErrorCode  TSPseudoDefaultVerifyTimeStep(TS ts,Vec update,void *dtctx,Petsc
 
 .keywords: timestep, pseudo, verify
 
-.seealso: TSPseudoSetVerifyTimeStep(), TSPseudoDefaultVerifyTimeStep()
+.seealso: TSPseudoSetVerifyTimeStep(), TSPseudoVerifyTimeStepDefault()
 @*/
 PetscErrorCode  TSPseudoVerifyTimeStep(TS ts,Vec update,PetscReal *dt,PetscBool  *flag)
 {
@@ -132,7 +132,6 @@ PetscErrorCode  TSPseudoVerifyTimeStep(TS ts,Vec update,PetscReal *dt,PetscBool 
   if (!pseudo->verify) {*flag = PETSC_TRUE; PetscFunctionReturn(0);}
 
   ierr = (*pseudo->verify)(ts,update,pseudo->verifyctx,dt,flag);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -142,23 +141,23 @@ PetscErrorCode  TSPseudoVerifyTimeStep(TS ts,Vec update,PetscReal *dt,PetscBool 
 #define __FUNCT__ "TSStep_Pseudo"
 static PetscErrorCode TSStep_Pseudo(TS ts)
 {
-  TS_Pseudo      *pseudo = (TS_Pseudo*)ts->data;
-  PetscInt       its,lits,reject;
-  PetscBool      stepok;
-  PetscReal      next_time_step;
+  TS_Pseudo           *pseudo = (TS_Pseudo*)ts->data;
+  PetscInt            its,lits,reject;
+  PetscBool           stepok;
+  PetscReal           next_time_step;
   SNESConvergedReason snesreason = SNES_CONVERGED_ITERATING;
-  PetscErrorCode ierr;
+  PetscErrorCode      ierr;
 
   PetscFunctionBegin;
-  if (ts->steps == 0) {
-    pseudo->dt_initial = ts->time_step;
-  }
+  if (ts->steps == 0) pseudo->dt_initial = ts->time_step;
   ierr = VecCopy(ts->vec_sol,pseudo->update);CHKERRQ(ierr);
   next_time_step = ts->time_step;
   ierr = TSPseudoComputeTimeStep(ts,&next_time_step);CHKERRQ(ierr);
   for (reject=0; reject<ts->max_reject; reject++,ts->reject++) {
     ts->time_step = next_time_step;
-    ierr = SNESSolve(ts->snes,PETSC_NULL,pseudo->update);CHKERRQ(ierr);
+    ierr = TSPreStep(ts);CHKERRQ(ierr);
+    ierr = TSPreStage(ts,ts->ptime+ts->time_step);CHKERRQ(ierr);
+    ierr = SNESSolve(ts->snes,NULL,pseudo->update);CHKERRQ(ierr);
     ierr = SNESGetConvergedReason(ts->snes,&snesreason);CHKERRQ(ierr);
     ierr = SNESGetLinearSolveIterations(ts->snes,&lits);CHKERRQ(ierr);
     ierr = SNESGetIterationNumber(ts->snes,&its);CHKERRQ(ierr);
@@ -209,11 +208,11 @@ static PetscErrorCode TSDestroy_Pseudo(TS ts)
   PetscFunctionBegin;
   ierr = TSReset_Pseudo(ts);CHKERRQ(ierr);
   ierr = PetscFree(ts->data);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSPseudoSetVerifyTimeStep_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSPseudoSetTimeStepIncrement_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSPseudoSetMaxTimeStep_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSPseudoIncrementDtFromInitialDt_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSPseudoSetTimeStep_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSPseudoSetVerifyTimeStep_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSPseudoSetTimeStepIncrement_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSPseudoSetMaxTimeStep_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSPseudoIncrementDtFromInitialDt_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSPseudoSetTimeStep_C","",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -226,20 +225,18 @@ static PetscErrorCode TSDestroy_Pseudo(TS ts)
 */
 static PetscErrorCode TSPseudoGetXdot(TS ts,Vec X,Vec *Xdot)
 {
-  TS_Pseudo      *pseudo = (TS_Pseudo*)ts->data;
-  const PetscScalar mdt = 1.0/ts->time_step,*xnp1,*xn;
-  PetscScalar    *xdot;
-  PetscErrorCode ierr;
-  PetscInt       i,n;
+  TS_Pseudo         *pseudo = (TS_Pseudo*)ts->data;
+  const PetscScalar mdt     = 1.0/ts->time_step,*xnp1,*xn;
+  PetscScalar       *xdot;
+  PetscErrorCode    ierr;
+  PetscInt          i,n;
 
   PetscFunctionBegin;
   ierr = VecGetArrayRead(ts->vec_sol,&xn);CHKERRQ(ierr);
   ierr = VecGetArrayRead(X,&xnp1);CHKERRQ(ierr);
   ierr = VecGetArray(pseudo->xdot,&xdot);CHKERRQ(ierr);
   ierr = VecGetLocalSize(X,&n);CHKERRQ(ierr);
-  for (i=0; i<n; i++) {
-    xdot[i] = mdt*(xnp1[i] - xn[i]);
-  }
+  for (i=0; i<n; i++) xdot[i] = mdt*(xnp1[i] - xn[i]);
   ierr = VecRestoreArrayRead(ts->vec_sol,&xn);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(X,&xnp1);CHKERRQ(ierr);
   ierr = VecRestoreArray(pseudo->xdot,&xdot);CHKERRQ(ierr);
@@ -319,11 +316,14 @@ static PetscErrorCode TSSetUp_Pseudo(TS ts)
 #define __FUNCT__ "TSPseudoMonitorDefault"
 PetscErrorCode TSPseudoMonitorDefault(TS ts,PetscInt step,PetscReal ptime,Vec v,void *dummy)
 {
-  TS_Pseudo        *pseudo = (TS_Pseudo*)ts->data;
-  PetscErrorCode   ierr;
-  PetscViewer      viewer = dummy ? (PetscViewer) dummy : PETSC_VIEWER_STDOUT_(((PetscObject)ts)->comm);
+  TS_Pseudo      *pseudo = (TS_Pseudo*)ts->data;
+  PetscErrorCode ierr;
+  PetscViewer    viewer = (PetscViewer) dummy;
 
   PetscFunctionBegin;
+  if (!viewer) {
+    ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)ts),&viewer);CHKERRQ(ierr);
+  }
   if (pseudo->fnorm < 0) {      /* The last computed norm is stale, recompute */
     ierr = VecZeroEntries(pseudo->xdot);CHKERRQ(ierr);
     ierr = TSComputeIFunction(ts,ts->ptime,ts->vec_sol,pseudo->xdot,pseudo->func,PETSC_FALSE);CHKERRQ(ierr);
@@ -339,27 +339,27 @@ PetscErrorCode TSPseudoMonitorDefault(TS ts,PetscInt step,PetscReal ptime,Vec v,
 #define __FUNCT__ "TSSetFromOptions_Pseudo"
 static PetscErrorCode TSSetFromOptions_Pseudo(TS ts)
 {
-  TS_Pseudo       *pseudo = (TS_Pseudo*)ts->data;
-  PetscErrorCode  ierr;
-  PetscBool       flg = PETSC_FALSE;
-  PetscViewer     viewer;
+  TS_Pseudo      *pseudo = (TS_Pseudo*)ts->data;
+  PetscErrorCode ierr;
+  PetscBool      flg = PETSC_FALSE;
+  PetscViewer    viewer;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("Pseudo-timestepping options");CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-ts_monitor_pseudo","Monitor convergence","TSPseudoMonitorDefault",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
-    if (flg) {
-      ierr = PetscViewerASCIIOpen(((PetscObject)ts)->comm,"stdout",&viewer);CHKERRQ(ierr);
-      ierr = TSMonitorSet(ts,TSPseudoMonitorDefault,viewer,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
-    }
-    flg  = PETSC_FALSE;
-    ierr = PetscOptionsBool("-ts_pseudo_increment_dt_from_initial_dt","Increase dt as a ratio from original dt","TSPseudoIncrementDtFromInitialDt",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
-    if (flg) {
-      ierr = TSPseudoIncrementDtFromInitialDt(ts);CHKERRQ(ierr);
-    }
-    ierr = PetscOptionsReal("-ts_pseudo_increment","Ratio to increase dt","TSPseudoSetTimeStepIncrement",pseudo->dt_increment,&pseudo->dt_increment,0);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-ts_pseudo_max_dt","Maximum value for dt","TSPseudoSetMaxTimeStep",pseudo->dt_max,&pseudo->dt_max,0);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-ts_monitor_pseudo","Monitor convergence","TSPseudoMonitorDefault",flg,&flg,NULL);CHKERRQ(ierr);
+  if (flg) {
+    ierr = PetscViewerASCIIOpen(PetscObjectComm((PetscObject)ts),"stdout",&viewer);CHKERRQ(ierr);
+    ierr = TSMonitorSet(ts,TSPseudoMonitorDefault,viewer,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
+  }
+  flg  = PETSC_FALSE;
+  ierr = PetscOptionsBool("-ts_pseudo_increment_dt_from_initial_dt","Increase dt as a ratio from original dt","TSPseudoIncrementDtFromInitialDt",flg,&flg,NULL);CHKERRQ(ierr);
+  if (flg) {
+    ierr = TSPseudoIncrementDtFromInitialDt(ts);CHKERRQ(ierr);
+  }
+  ierr = PetscOptionsReal("-ts_pseudo_increment","Ratio to increase dt","TSPseudoSetTimeStepIncrement",pseudo->dt_increment,&pseudo->dt_increment,0);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-ts_pseudo_max_dt","Maximum value for dt","TSPseudoSetMaxTimeStep",pseudo->dt_max,&pseudo->dt_max,0);CHKERRQ(ierr);
 
-    ierr = SNESSetFromOptions(ts->snes);CHKERRQ(ierr);
+  ierr = SNESSetFromOptions(ts->snes);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -388,7 +388,7 @@ static PetscErrorCode TSView_Pseudo(TS ts,PetscViewer viewer)
 +  ts - timestep context
 .  dt - user-defined function to verify timestep
 -  ctx - [optional] user-defined context for private data
-         for the timestep verification routine (may be PETSC_NULL)
+         for the timestep verification routine (may be NULL)
 
    Level: advanced
 
@@ -406,15 +406,15 @@ static PetscErrorCode TSView_Pseudo(TS ts,PetscViewer viewer)
 
 .keywords: timestep, pseudo, set, verify
 
-.seealso: TSPseudoDefaultVerifyTimeStep(), TSPseudoVerifyTimeStep()
+.seealso: TSPseudoVerifyTimeStepDefault(), TSPseudoVerifyTimeStep()
 @*/
-PetscErrorCode  TSPseudoSetVerifyTimeStep(TS ts,PetscErrorCode (*dt)(TS,Vec,void*,PetscReal*,PetscBool *),void* ctx)
+PetscErrorCode  TSPseudoSetVerifyTimeStep(TS ts,PetscErrorCode (*dt)(TS,Vec,void*,PetscReal*,PetscBool*),void *ctx)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  ierr = PetscTryMethod(ts,"TSPseudoSetVerifyTimeStep_C",(TS,PetscErrorCode (*)(TS,Vec,void*,PetscReal *,PetscBool  *),void *),(ts,dt,ctx));CHKERRQ(ierr);
+  ierr = PetscTryMethod(ts,"TSPseudoSetVerifyTimeStep_C",(TS,PetscErrorCode (*)(TS,Vec,void*,PetscReal*,PetscBool*),void*),(ts,dt,ctx));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -422,7 +422,7 @@ PetscErrorCode  TSPseudoSetVerifyTimeStep(TS ts,PetscErrorCode (*dt)(TS,Vec,void
 #define __FUNCT__ "TSPseudoSetTimeStepIncrement"
 /*@
     TSPseudoSetTimeStepIncrement - Sets the scaling increment applied to
-    dt when using the TSPseudoDefaultTimeStep() routine.
+    dt when using the TSPseudoTimeStepDefault() routine.
 
    Logically Collective on TS
 
@@ -437,7 +437,7 @@ $    -ts_pseudo_increment <increment>
 
 .keywords: timestep, pseudo, set, increment
 
-.seealso: TSPseudoSetTimeStep(), TSPseudoDefaultTimeStep()
+.seealso: TSPseudoSetTimeStep(), TSPseudoTimeStepDefault()
 @*/
 PetscErrorCode  TSPseudoSetTimeStepIncrement(TS ts,PetscReal inc)
 {
@@ -454,7 +454,7 @@ PetscErrorCode  TSPseudoSetTimeStepIncrement(TS ts,PetscReal inc)
 #define __FUNCT__ "TSPseudoSetMaxTimeStep"
 /*@
     TSPseudoSetMaxTimeStep - Sets the maximum time step
-    when using the TSPseudoDefaultTimeStep() routine.
+    when using the TSPseudoTimeStepDefault() routine.
 
    Logically Collective on TS
 
@@ -469,7 +469,7 @@ $    -ts_pseudo_max_dt <increment>
 
 .keywords: timestep, pseudo, set
 
-.seealso: TSPseudoSetTimeStep(), TSPseudoDefaultTimeStep()
+.seealso: TSPseudoSetTimeStep(), TSPseudoTimeStepDefault()
 @*/
 PetscErrorCode  TSPseudoSetMaxTimeStep(TS ts,PetscReal maxdt)
 {
@@ -503,7 +503,7 @@ $    -ts_pseudo_increment_dt_from_initial_dt
 
 .keywords: timestep, pseudo, set, increment
 
-.seealso: TSPseudoSetTimeStep(), TSPseudoDefaultTimeStep()
+.seealso: TSPseudoSetTimeStep(), TSPseudoTimeStepDefault()
 @*/
 PetscErrorCode  TSPseudoIncrementDtFromInitialDt(TS ts)
 {
@@ -528,7 +528,7 @@ PetscErrorCode  TSPseudoIncrementDtFromInitialDt(TS ts)
 +  ts - timestep context
 .  dt - function to compute timestep
 -  ctx - [optional] user-defined context for private data
-         required by the function (may be PETSC_NULL)
+         required by the function (may be NULL)
 
    Level: intermediate
 
@@ -541,40 +541,38 @@ PetscErrorCode  TSPseudoIncrementDtFromInitialDt(TS ts)
    Notes:
    The routine set here will be called by TSPseudoComputeTimeStep()
    during the timestepping process.
+   If not set then TSPseudoTimeStepDefault() is automatically used
 
 .keywords: timestep, pseudo, set
 
-.seealso: TSPseudoDefaultTimeStep(), TSPseudoComputeTimeStep()
+.seealso: TSPseudoTimeStepDefault(), TSPseudoComputeTimeStep()
 @*/
-PetscErrorCode  TSPseudoSetTimeStep(TS ts,PetscErrorCode (*dt)(TS,PetscReal*,void*),void* ctx)
+PetscErrorCode  TSPseudoSetTimeStep(TS ts,PetscErrorCode (*dt)(TS,PetscReal*,void*),void *ctx)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  ierr = PetscTryMethod(ts,"TSPseudoSetTimeStep_C",(TS,PetscErrorCode (*)(TS,PetscReal *,void *),void *),(ts,dt,ctx));CHKERRQ(ierr);
+  ierr = PetscTryMethod(ts,"TSPseudoSetTimeStep_C",(TS,PetscErrorCode (*)(TS,PetscReal*,void*),void*),(ts,dt,ctx));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 /* ----------------------------------------------------------------------------- */
 
-typedef PetscErrorCode (*FCN1)(TS,Vec,void*,PetscReal*,PetscBool *); /* force argument to next function to not be extern C*/
-EXTERN_C_BEGIN
+typedef PetscErrorCode (*FCN1)(TS,Vec,void*,PetscReal*,PetscBool*);  /* force argument to next function to not be extern C*/
 #undef __FUNCT__
 #define __FUNCT__ "TSPseudoSetVerifyTimeStep_Pseudo"
-PetscErrorCode  TSPseudoSetVerifyTimeStep_Pseudo(TS ts,FCN1 dt,void* ctx)
+PetscErrorCode  TSPseudoSetVerifyTimeStep_Pseudo(TS ts,FCN1 dt,void *ctx)
 {
   TS_Pseudo *pseudo;
 
   PetscFunctionBegin;
-  pseudo              = (TS_Pseudo*)ts->data;
-  pseudo->verify      = dt;
-  pseudo->verifyctx   = ctx;
+  pseudo            = (TS_Pseudo*)ts->data;
+  pseudo->verify    = dt;
+  pseudo->verifyctx = ctx;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TSPseudoSetTimeStepIncrement_Pseudo"
 PetscErrorCode  TSPseudoSetTimeStepIncrement_Pseudo(TS ts,PetscReal inc)
@@ -585,9 +583,7 @@ PetscErrorCode  TSPseudoSetTimeStepIncrement_Pseudo(TS ts,PetscReal inc)
   pseudo->dt_increment = inc;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TSPseudoSetMaxTimeStep_Pseudo"
 PetscErrorCode  TSPseudoSetMaxTimeStep_Pseudo(TS ts,PetscReal maxdt)
@@ -598,9 +594,7 @@ PetscErrorCode  TSPseudoSetMaxTimeStep_Pseudo(TS ts,PetscReal maxdt)
   pseudo->dt_max = maxdt;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TSPseudoIncrementDtFromInitialDt_Pseudo"
 PetscErrorCode  TSPseudoIncrementDtFromInitialDt_Pseudo(TS ts)
@@ -611,22 +605,19 @@ PetscErrorCode  TSPseudoIncrementDtFromInitialDt_Pseudo(TS ts)
   pseudo->increment_dt_from_initial_dt = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 typedef PetscErrorCode (*FCN2)(TS,PetscReal*,void*); /* force argument to next function to not be extern C*/
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TSPseudoSetTimeStep_Pseudo"
-PetscErrorCode  TSPseudoSetTimeStep_Pseudo(TS ts,FCN2 dt,void* ctx)
+PetscErrorCode  TSPseudoSetTimeStep_Pseudo(TS ts,FCN2 dt,void *ctx)
 {
   TS_Pseudo *pseudo = (TS_Pseudo*)ts->data;
 
   PetscFunctionBegin;
-  pseudo->dt      = dt;
-  pseudo->dtctx   = ctx;
+  pseudo->dt    = dt;
+  pseudo->dtctx = ctx;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 /* ----------------------------------------------------------------------------- */
 /*MC
@@ -672,26 +663,25 @@ $  Xdot = (Xpredicted - Xold)/dt = (Xold-Xold)/dt = 0
 .seealso:  TSCreate(), TS, TSSetType()
 
 M*/
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TSCreate_Pseudo"
-PetscErrorCode  TSCreate_Pseudo(TS ts)
+PETSC_EXTERN PetscErrorCode TSCreate_Pseudo(TS ts)
 {
   TS_Pseudo      *pseudo;
   PetscErrorCode ierr;
   SNES           snes;
-  const SNESType stype;
+  SNESType       stype;
 
   PetscFunctionBegin;
-  ts->ops->reset           = TSReset_Pseudo;
-  ts->ops->destroy         = TSDestroy_Pseudo;
-  ts->ops->view            = TSView_Pseudo;
+  ts->ops->reset   = TSReset_Pseudo;
+  ts->ops->destroy = TSDestroy_Pseudo;
+  ts->ops->view    = TSView_Pseudo;
 
-  ts->ops->setup           = TSSetUp_Pseudo;
-  ts->ops->step            = TSStep_Pseudo;
-  ts->ops->setfromoptions  = TSSetFromOptions_Pseudo;
-  ts->ops->snesfunction    = SNESTSFormFunction_Pseudo;
-  ts->ops->snesjacobian    = SNESTSFormJacobian_Pseudo;
+  ts->ops->setup          = TSSetUp_Pseudo;
+  ts->ops->step           = TSStep_Pseudo;
+  ts->ops->setfromoptions = TSSetFromOptions_Pseudo;
+  ts->ops->snesfunction   = SNESTSFormFunction_Pseudo;
+  ts->ops->snesjacobian   = SNESTSFormJacobian_Pseudo;
 
   ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
   ierr = SNESGetType(snes,&stype);CHKERRQ(ierr);
@@ -702,32 +692,21 @@ PetscErrorCode  TSCreate_Pseudo(TS ts)
 
   pseudo->dt_increment                 = 1.1;
   pseudo->increment_dt_from_initial_dt = PETSC_FALSE;
-  pseudo->dt                           = TSPseudoDefaultTimeStep;
+  pseudo->dt                           = TSPseudoTimeStepDefault;
   pseudo->fnorm                        = -1;
 
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSPseudoSetVerifyTimeStep_C",
-                    "TSPseudoSetVerifyTimeStep_Pseudo",
-                     TSPseudoSetVerifyTimeStep_Pseudo);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSPseudoSetTimeStepIncrement_C",
-                    "TSPseudoSetTimeStepIncrement_Pseudo",
-                     TSPseudoSetTimeStepIncrement_Pseudo);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSPseudoSetMaxTimeStep_C",
-                    "TSPseudoSetMaxTimeStep_Pseudo",
-                     TSPseudoSetMaxTimeStep_Pseudo);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSPseudoIncrementDtFromInitialDt_C",
-                    "TSPseudoIncrementDtFromInitialDt_Pseudo",
-                     TSPseudoIncrementDtFromInitialDt_Pseudo);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSPseudoSetTimeStep_C",
-                    "TSPseudoSetTimeStep_Pseudo",
-                     TSPseudoSetTimeStep_Pseudo);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSPseudoSetVerifyTimeStep_C","TSPseudoSetVerifyTimeStep_Pseudo",TSPseudoSetVerifyTimeStep_Pseudo);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSPseudoSetTimeStepIncrement_C","TSPseudoSetTimeStepIncrement_Pseudo",TSPseudoSetTimeStepIncrement_Pseudo);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSPseudoSetMaxTimeStep_C","TSPseudoSetMaxTimeStep_Pseudo",TSPseudoSetMaxTimeStep_Pseudo);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSPseudoIncrementDtFromInitialDt_C","TSPseudoIncrementDtFromInitialDt_Pseudo",TSPseudoIncrementDtFromInitialDt_Pseudo);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSPseudoSetTimeStep_C","TSPseudoSetTimeStep_Pseudo",TSPseudoSetTimeStep_Pseudo);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
-#define __FUNCT__ "TSPseudoDefaultTimeStep"
+#define __FUNCT__ "TSPseudoTimeStepDefault"
 /*@C
-   TSPseudoDefaultTimeStep - Default code to compute pseudo-timestepping.
+   TSPseudoTimeStepDefault - Default code to compute pseudo-timestepping.
    Use with TSPseudoSetTimeStep().
 
    Collective on TS
@@ -745,10 +724,10 @@ EXTERN_C_END
 
 .seealso: TSPseudoSetTimeStep(), TSPseudoComputeTimeStep()
 @*/
-PetscErrorCode  TSPseudoDefaultTimeStep(TS ts,PetscReal* newdt,void* dtctx)
+PetscErrorCode  TSPseudoTimeStepDefault(TS ts,PetscReal *newdt,void *dtctx)
 {
   TS_Pseudo      *pseudo = (TS_Pseudo*)ts->data;
-  PetscReal      inc = pseudo->dt_increment,fnorm_previous = pseudo->fnorm_previous;
+  PetscReal      inc     = pseudo->dt_increment,fnorm_previous = pseudo->fnorm_previous;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -760,13 +739,9 @@ PetscErrorCode  TSPseudoDefaultTimeStep(TS ts,PetscReal* newdt,void* dtctx)
     pseudo->fnorm_initial = pseudo->fnorm;
     fnorm_previous        = pseudo->fnorm;
   }
-  if (pseudo->fnorm == 0.0) {
-    *newdt = 1.e12*inc*ts->time_step;
-  } else if (pseudo->increment_dt_from_initial_dt) {
-    *newdt = inc*pseudo->dt_initial*pseudo->fnorm_initial/pseudo->fnorm;
-  } else {
-    *newdt = inc*ts->time_step*fnorm_previous/pseudo->fnorm;
-  }
+  if (pseudo->fnorm == 0.0)                      *newdt = 1.e12*inc*ts->time_step;
+  else if (pseudo->increment_dt_from_initial_dt) *newdt = inc*pseudo->dt_initial*pseudo->fnorm_initial/pseudo->fnorm;
+  else                                           *newdt = inc*ts->time_step*fnorm_previous/pseudo->fnorm;
   if (pseudo->dt_max > 0) *newdt = PetscMin(*newdt,pseudo->dt_max);
   pseudo->fnorm_previous = pseudo->fnorm;
   PetscFunctionReturn(0);

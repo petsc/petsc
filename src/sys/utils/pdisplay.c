@@ -1,11 +1,7 @@
 
-#include <petscsys.h>        
-#include <stdarg.h>
-#if defined(PETSC_HAVE_STDLIB_H)
-#include <stdlib.h>
-#endif
+#include <petscsys.h>
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscOptionsGetenv"
 /*@C
      PetscOptionsGetenv - Gets an environmental variable, broadcasts to all
@@ -19,15 +15,15 @@
 -    len - amount of space allocated to hold variable
 
    Output Parameters:
-+    flag - if not PETSC_NULL tells if variable found or not
++    flag - if not NULL tells if variable found or not
 -    env - value of variable
 
   Level: advanced
 
    Notes:
     You can also "set" the environmental variable by setting the options database value
-    -name "stringvalue" (with name in lower case). If name begins with PETSC_ this is 
-    discarded before checking the database. For example, PETSC_VIEWER_SOCKET_PORT would 
+    -name "stringvalue" (with name in lower case). If name begins with PETSC_ this is
+    discarded before checking the database. For example, PETSC_VIEWER_SOCKET_PORT would
     be given as -viewer_socket_port 9000
 
     If comm does not contain the 0th process in the MPIEXEC it is likely on
@@ -41,12 +37,11 @@ PetscErrorCode  PetscOptionsGetenv(MPI_Comm comm,const char name[],char env[],si
   PetscMPIInt    rank;
   char           *str,work[256];
   PetscBool      flg = PETSC_FALSE,spetsc;
-   
-  PetscFunctionBegin;
 
+  PetscFunctionBegin;
   /* first check options database */
   ierr = PetscStrncmp(name,"PETSC_",6,&spetsc);CHKERRQ(ierr);
-  
+
   ierr = PetscStrcpy(work,"-");CHKERRQ(ierr);
   if (spetsc) {
     ierr = PetscStrcat(work,name+6);CHKERRQ(ierr);
@@ -55,7 +50,7 @@ PetscErrorCode  PetscOptionsGetenv(MPI_Comm comm,const char name[],char env[],si
   }
   ierr = PetscStrtolower(work);CHKERRQ(ierr);
   if (env) {
-    ierr = PetscOptionsGetString(PETSC_NULL,work,env,len,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsGetString(NULL,work,env,len,&flg);CHKERRQ(ierr);
     if (flg) {
       if (flag) *flag = PETSC_TRUE;
     } else { /* now check environment */
@@ -63,16 +58,16 @@ PetscErrorCode  PetscOptionsGetenv(MPI_Comm comm,const char name[],char env[],si
 
       ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
       if (!rank) {
-	str = getenv(name);
-	if (str) flg = PETSC_TRUE;
-	if (str && env) {ierr = PetscStrncpy(env,str,len);CHKERRQ(ierr);}
+        str = getenv(name);
+        if (str) flg = PETSC_TRUE;
+        if (str && env) {ierr = PetscStrncpy(env,str,len);CHKERRQ(ierr);}
       }
-      ierr = MPI_Bcast(&flg,1,MPI_INT,0,comm);CHKERRQ(ierr);
+      ierr = MPI_Bcast(&flg,1,MPIU_BOOL,0,comm);CHKERRQ(ierr);
       ierr = MPI_Bcast(env,len,MPI_CHAR,0,comm);CHKERRQ(ierr);
       if (flag) *flag = flg;
-    } 
+    }
   } else {
-    ierr = PetscOptionsHasName(PETSC_NULL,work,flag);CHKERRQ(ierr);
+    ierr = PetscOptionsHasName(NULL,work,flag);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -82,9 +77,9 @@ PetscErrorCode  PetscOptionsGetenv(MPI_Comm comm,const char name[],char env[],si
                        The variable PetscDisplay contains the X windows display variable.
 
 */
-static char PetscDisplay[256]; 
+static char PetscDisplay[256];
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscWorldIsSingleHost"
 static PetscErrorCode PetscWorldIsSingleHost(PetscBool  *onehost)
 {
@@ -98,25 +93,28 @@ static PetscErrorCode PetscWorldIsSingleHost(PetscBool  *onehost)
   ierr = PetscMemcpy(roothostname,hostname,256);CHKERRQ(ierr);
   ierr = MPI_Bcast(roothostname,256,MPI_CHAR,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
   ierr = PetscStrcmp(hostname,roothostname,&flag);CHKERRQ(ierr);
+
   localmatch = (PetscMPIInt)flag;
+
   ierr = MPI_Allreduce(&localmatch,&allmatch,1,MPI_INT,MPI_LAND,PETSC_COMM_WORLD);CHKERRQ(ierr);
+
   *onehost = (PetscBool)allmatch;
   PetscFunctionReturn(0);
 }
 
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscSetDisplay" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscSetDisplay"
 PetscErrorCode  PetscSetDisplay(void)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size,rank;
   PetscBool      flag,singlehost=PETSC_FALSE;
-  char           display[sizeof PetscDisplay];
+  char           display[sizeof(PetscDisplay)];
   const char     *str;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsGetString(PETSC_NULL,"-display",PetscDisplay,sizeof PetscDisplay,&flag);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,"-display",PetscDisplay,sizeof(PetscDisplay),&flag);CHKERRQ(ierr);
   if (flag) PetscFunctionReturn(0);
 
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
@@ -127,23 +125,22 @@ PetscErrorCode  PetscSetDisplay(void)
   str = getenv("DISPLAY");
   if (!str) str = ":0.0";
   if (str[0] != ':' || singlehost) {
-    ierr = PetscStrncpy(display,str,sizeof display);CHKERRQ(ierr);
-  } else {
-    if (!rank) {
-      size_t len;
-      ierr = PetscGetHostName(display,sizeof display);CHKERRQ(ierr);
-      ierr = PetscStrlen(display,&len);CHKERRQ(ierr);
-      ierr = PetscStrncat(display,str,sizeof display-len-1);CHKERRQ(ierr);
-    }
+    ierr = PetscStrncpy(display,str,sizeof(display));CHKERRQ(ierr);
+  } else if (!rank) {
+    size_t len;
+    ierr = PetscGetHostName(display,sizeof(display));CHKERRQ(ierr);
+    ierr = PetscStrlen(display,&len);CHKERRQ(ierr);
+    ierr = PetscStrncat(display,str,sizeof(display)-len-1);CHKERRQ(ierr);
   }
-  ierr = MPI_Bcast(display,sizeof display,MPI_CHAR,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
-  ierr = PetscMemcpy(PetscDisplay,display,sizeof PetscDisplay);CHKERRQ(ierr);
-  PetscDisplay[sizeof PetscDisplay-1] = 0;
+  ierr = MPI_Bcast(display,sizeof(display),MPI_CHAR,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = PetscMemcpy(PetscDisplay,display,sizeof(PetscDisplay));CHKERRQ(ierr);
+
+  PetscDisplay[sizeof(PetscDisplay)-1] = 0;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscGetDisplay" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscGetDisplay"
 /*
      PetscGetDisplay - Gets the display variable for all processors.
 
@@ -160,5 +157,5 @@ PetscErrorCode  PetscGetDisplay(char display[],size_t n)
 
   PetscFunctionBegin;
   ierr = PetscStrncpy(display,PetscDisplay,n);CHKERRQ(ierr);
-  PetscFunctionReturn(0);  
+  PetscFunctionReturn(0);
 }

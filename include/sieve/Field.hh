@@ -220,7 +220,7 @@ namespace ALE {
     };
   public: // Sizes
     void clear() {
-      this->_chart.clear(); 
+      this->_chart.clear();
     };
     int getFiberDimension(const point_type& p) const {
       if (this->hasPoint(p)) return 1;
@@ -390,7 +390,7 @@ namespace ALE {
   public: // Sizes
     void clear() {
       this->_array.clear();
-      this->_atlas->clear(); 
+      this->_atlas->clear();
     }
     int getFiberDimension(const point_type& p) const {
       return this->_atlas->restrictPoint(p)[0];
@@ -778,7 +778,7 @@ namespace ALE {
   public: // Sizes
     void clear() {
       this->_array.clear();
-      this->_atlas->clear(); 
+      this->_atlas->clear();
     };
     int getFiberDimension(const point_type& p) const {
       return fiberDim;
@@ -1038,7 +1038,7 @@ namespace ALE {
       this->_allocator.deallocate(this->_array, totalSize);
       ///delete [] this->_array;
       this->_array = NULL;
-      this->_atlas->clear(); 
+      this->_atlas->clear();
     };
     // Return the total number of dofs on the point (free and constrained)
     int getFiberDimension(const point_type& p) const {
@@ -1532,8 +1532,8 @@ namespace ALE {
         ///delete [] this->_array;
       }
       this->_array = NULL;
-      this->_atlas->clear(); 
-      this->_bc->clear(); 
+      this->_atlas->clear();
+      this->_bc->clear();
     };
     // Return the total number of dofs on the point (free and constrained)
     int getFiberDimension(const point_type& p) const {
@@ -2551,9 +2551,9 @@ namespace ALE {
         this->_allocator.deallocate(this->_array, totalSize);
       }
       this->_array = NULL;
-      this->_atlas->clear(); 
-      this->_bc_atlas->clear(); 
-      this->_bc->clear(); 
+      this->_atlas->clear();
+      this->_bc_atlas->clear();
+      this->_bc->clear();
     };
     // Return the total number of dofs on the point (free and constrained)
     int getFiberDimension(const point_type& p) const {
@@ -3389,7 +3389,7 @@ namespace ALE {
         const patch_type         rank    = p_iter->first;
         const Obj<section_type>& section = this->getSection(rank);
         const chart_type&        chart   = section->getChart();
-    
+
         for(typename chart_type::const_iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
           section->setFiberDimension(*c_iter, *(sizer->getSection(rank)->restrictPoint(*c_iter)));
         }

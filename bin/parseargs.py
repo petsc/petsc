@@ -1,11 +1,11 @@
 #!/usr/bin/env python1.5
 #!/bin/env python1.5
-# $Id: parseargs.py,v 1.1 1999/11/12 22:30:17 balay Exp $ 
+# $Id: parseargs.py,v 1.1 1999/11/12 22:30:17 balay Exp $
 #
 #  Parses the argument list, and searches for the specified argument.
 #  It returns the argument list minus the parsed argument.
-# 
-#  Calling sequence: 
+#
+#  Calling sequence:
 #      ret_flag,ret_val = parseargs(search_arg,nvals,arg_list)
 #  Input:
 #     search_arg - argument to search for
@@ -28,11 +28,11 @@ def parseargs(search_arg,return_nargs,arg_list):
     except:
         # Argument not found in list, hence return flag = 0,return val = None
         return 0,None
-    
+
     if return_nargs == 0:
         arg_list.remove(search_arg)
         return 1,None
-    
+
     if index+1 == len(arg_list):
         print 'Error! Option has no value!'
         print 'Expecting value with option: ' + search_arg

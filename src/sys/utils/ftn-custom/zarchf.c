@@ -6,17 +6,14 @@
 #define petscgetarchtype_                  petscgetarchtype
 #endif
 
-EXTERN_C_BEGIN
-void PETSC_STDCALL petscgetarchtype_(CHAR str PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL petscgetarchtype_(CHAR str PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
-  char *tstr;
+  char   *tstr;
   size_t tlen;
-  tstr = str;
-  tlen = len; /* int to size_t */
+  tstr  = str;
+  tlen  = len; /* int to size_t */
   *ierr = PetscGetArchType(tstr,tlen);
   FIXRETURNCHAR(PETSC_TRUE,str,len);
 
 }
 
-
-EXTERN_C_END

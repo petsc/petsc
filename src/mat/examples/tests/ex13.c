@@ -13,9 +13,9 @@ int main(int argc,char **args)
   PetscScalar    v;
   IS             perm,iperm;
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
 
-  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,m*n,m*n,5,PETSC_NULL,&C);CHKERRQ(ierr);
+  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,m*n,m*n,5,NULL,&C);CHKERRQ(ierr);
 
   /* create the matrix for the five point stencil, YET AGAIN*/
   for (i=0; i<m; i++) {

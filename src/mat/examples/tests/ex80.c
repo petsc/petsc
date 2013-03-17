@@ -6,13 +6,13 @@ static char help[] = "Partition tiny grid.\n\n";
    Processors: 4
 T*/
 
-/* 
+/*
   Include "petscmat.h" so that we can use matrices.  Note that this file
   automatically includes:
      petscsys.h       - base PETSc routines   petscvec.h - vectors
      petscmat.h - matrices
-     petscis.h     - index sets            
-     petscviewer.h - viewers               
+     petscis.h     - index sets
+     petscviewer.h - viewers
 */
 #include <petscksp.h>
 
@@ -27,7 +27,7 @@ int main(int argc,char **args)
   MatPartitioning part;
   IS              is,isn;
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size != 4) SETERRQ(PETSC_COMM_WORLD,1,"Must run with 4 processors");
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
@@ -52,11 +52,11 @@ int main(int argc,char **args)
     ia[0] = 0; ia[1] = 2; ia[2] = 5; ia[3] = 8; ia[4] = 10;
   }
 
-  ierr = MatCreateMPIAdj(PETSC_COMM_WORLD,4,16,ia,ja,PETSC_NULL,&A);CHKERRQ(ierr);
+  ierr = MatCreateMPIAdj(PETSC_COMM_WORLD,4,16,ia,ja,NULL,&A);CHKERRQ(ierr);
   ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   /*
-       Partition the graph of the matrix 
+       Partition the graph of the matrix
   */
   ierr = MatPartitioningCreate(PETSC_COMM_WORLD,&part);CHKERRQ(ierr);
   ierr = MatPartitioningSetAdjacency(part,A);CHKERRQ(ierr);
@@ -75,7 +75,7 @@ int main(int argc,char **args)
        Free work space.  All PETSc objects should be destroyed when they
        are no longer needed.
   */
-  ierr = MatDestroy(&A);CHKERRQ(ierr); 
+  ierr = MatDestroy(&A);CHKERRQ(ierr);
 
 
   ierr = PetscFinalize();

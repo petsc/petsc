@@ -1,7 +1,7 @@
 !
 !   Description: Solve Ax=b.  A comes from an anisotropic 2D thermal problem with Q1 FEM on domain (-1,1)^2.
 !       Material conductivity given by tensor:
-!           
+!
 !       D = | 1 0       |
 !           | 0 epsilon |
 !
@@ -27,7 +27,7 @@
 #include <finclude/petscviewer.h>
 #include <finclude/petscviewer.h90>
       Vec              xvec,bvec,uvec
-      Mat              Amat 
+      Mat              Amat
       KSP              ksp
       PC               pc
       PetscErrorCode   ierr
@@ -43,17 +43,17 @@
       PetscReal, external :: ex54_psi
       PetscReal::norm,tol,theta,eps,h,x,y,xsj
       PetscReal::coord(2,4),dd(2,2),ev(3),blb(2)
-      
-      common /ex54_theta/ theta 
+
+      common /ex54_theta/ theta
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                 Beginning of program
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       call MPI_Comm_size(PETSC_COMM_WORLD,npe,ierr)
       call MPI_Comm_rank(PETSC_COMM_WORLD,mype,ierr)
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                 set parameters
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       ne = 9
       call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-ne',ne,flg,ierr)
       h = 2.d0/ne
@@ -63,33 +63,34 @@
       call PetscOptionsGetReal(PETSC_NULL_CHARACTER,'-theta',theta,flg,
      $     ierr)
       theta = theta / 57.2957795
-      eps = 1.d0      
+      eps = 1.d0
       call PetscOptionsGetReal(PETSC_NULL_CHARACTER,'-epsilon',eps,flg,
      $     ierr)
       ki = 2
       call PetscOptionsGetRealArray(PETSC_NULL_CHARACTER,'-blob_center',
      $     blb,ki,flg,ierr)
-      if( .not. flg ) then
+      if ( .not. flg ) then
          blb(1) = 0.d0
          blb(2) = 0.d0
-      else if( ki .ne. 2 ) then
+      else if ( ki .ne. 2 ) then
          print *, 'error: ', ki,
      $        ' arguments read for -blob_center.  Needs to be two.'
       endif
       call PetscOptionsGetBool(PETSC_NULL_CHARACTER,'-out_matlab',
      $     out_matlab,flg,ierr)
+      if (.not.flg) out_matlab = PETSC_FALSE;
 
       ev(1) = 1.d0
       ev(2) = eps*ev(1)
-!     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+!     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !     Compute the matrix and right-hand-side vector that define
 !     the linear system, Ax = b.
-!     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+!     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Create matrix.  When using MatCreate(), the matrix format can
 !  be specified at runtime.
       call MatCreate(PETSC_COMM_WORLD,Amat,ierr)
       call MatSetSizes( Amat,PETSC_DECIDE, PETSC_DECIDE, M, M, ierr )
-      if( npe == 1 ) then
+      if ( npe == 1 ) then
          call MatSetType( Amat, MATAIJ, ierr )
       else
          call MatSetType( Amat, MATMPIAIJ, ierr )
@@ -101,7 +102,7 @@
       call MatGetOwnershipRange( Amat, Istart, Iend, ierr )
 !  Create vectors.  Note that we form 1 vector from scratch and
 !  then duplicate as needed.
-      call MatGetVecs( Amat, PETSC_NULL_OBJECT, xvec, ierr ) 
+      call MatGetVecs( Amat, PETSC_NULL_OBJECT, xvec, ierr )
       call VecSetFromOptions( xvec, ierr )
       call VecDuplicate( xvec, bvec, ierr )
       call VecDuplicate( xvec, uvec, ierr )
@@ -116,10 +117,10 @@
       do geq=Istart,Iend-1,1
          qj = geq/(ne+1); qi = mod(geq,(ne+1))
          x = h*qi - 1.d0; y = h*qj - 1.d0 ! lower left corner (-1,-1)
-         if( qi < ne .and. qj < ne ) then
-            coord(1,1) = x;   coord(2,1) = y 
-            coord(1,2) = x+h; coord(2,2) = y 
-            coord(1,3) = x+h; coord(2,3) = y+h 
+         if ( qi < ne .and. qj < ne ) then
+            coord(1,1) = x;   coord(2,1) = y
+            coord(1,2) = x+h; coord(2,2) = y
+            coord(1,3) = x+h; coord(2,3) = y+h
             coord(1,4) = x;   coord(2,4) = y+h
 ! form stiff
             ss = 0.d0
@@ -131,7 +132,7 @@
                do kj = 1,nel
                   a1 = (dd(1,1)*shp(1,kj) + dd(1,2)*shp(2,kj))*xsj
                   a2 = (dd(2,1)*shp(1,kj) + dd(2,2)*shp(2,kj))*xsj
-c     Compute residual                 
+c     Compute residual
 c                  p(j1) = p(j1) - a1*gradt(1) - a2*gradt(2)
 c     Compute tangent
                   i1 = 1
@@ -145,13 +146,13 @@ c     Compute tangent
 
             idx(1) = geq; idx(2) = geq+1; idx(3) = geq+(ne+1)+1
             idx(4) = geq+(ne+1)
-            if( qj > 0 ) then
+            if ( qj > 0 ) then
                call MatSetValues(Amat,4,idx,4,idx,ss,ADD_VALUES,ierr)
-            else                !     a BC 
+            else                !     a BC
                do ki=1,4,1
                   do kj=1,4,1
-                     if(ki<3 .or. kj<3 ) then
-                        if( ki==kj ) then
+                     if (ki<3 .or. kj<3 ) then
+                        if ( ki==kj ) then
                            ss(ki,kj) = .1d0*ss(ki,kj)
                         else
                            ss(ki,kj) = 0.d0
@@ -162,7 +163,7 @@ c     Compute tangent
                call MatSetValues(Amat,4,idx,4,idx,ss,ADD_VALUES,ierr)
             endif               ! BC
          endif                  ! add element
-         if( qj > 0 ) then      ! set rhs
+         if ( qj > 0 ) then      ! set rhs
 
             val = h*h*exp(-1.d2*((x+h/2)-blb(1))**2)*
      $           exp(-1.d2*((y+h/2)-blb(2))**2)
@@ -174,9 +175,9 @@ c     Compute tangent
       call VecAssemblyBegin(bvec,ierr)
       call VecAssemblyEnd(bvec,ierr)
 
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !          Create the linear solver and set various options
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 !  Create linear solver context
 
@@ -195,17 +196,17 @@ c     Compute tangent
 
       call KSPSetFromOptions(ksp,ierr)
 
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                      Solve the linear system
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
       call KSPSolve(ksp,bvec,xvec,ierr)
 
 
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                      output
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-      if( out_matlab ) then
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      if ( out_matlab ) then
          call PetscViewerBinaryOpen(PETSC_COMM_WORLD,'Amat',
      $        FILE_MODE_WRITE,viewer,ierr)
          call MatView(Amat,viewer,ierr)
@@ -229,7 +230,7 @@ c     Compute tangent
          call VecView(uvec,viewer,ierr)
          call PetscViewerDestroy(viewer,ierr)
 
-         if( mype == 0 ) then
+         if ( mype == 0 ) then
             open(1,file="ex54f.m", FORM="formatted")
             write (1,*) "A = PetscBinaryRead('Amat');"
             write (1,*) "[m n] = size(A);"
@@ -264,14 +265,14 @@ c            write (1,*) "title('RHS'),"
 
       end
 
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !     thfx2d - compute material tensor
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
       subroutine thfx2d(ev,xl,shp,dd,ndm,ndf,nel,dir)
-      
+
 c     Compute thermal gradient and flux
-      
+
       implicit  none
 
       integer   ndm,ndf,nel,i
@@ -308,9 +309,9 @@ c      flux(2) = -dd(2,1)*gradt(1) - dd(2,2)*gradt(2)
 
       end
 
-!     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+!     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !     shp2dquad - shape functions - compute derivatives w/r natural coords.
-!     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+!     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
        subroutine shp2dquad(s,t,xl,shp,xsj,ndm)
 c-----[--.----+----.----+----.-----------------------------------------]
 c      Purpose: Shape function routine for 4-node isoparametric quads
@@ -361,21 +362,21 @@ c     Compute jacobian (times 16)
 c     Divide jacobian by 16 (multiply by .0625)
 
       xsj = 0.0625d0*xsj1
-      if(xsj1.eq.0.0d0) then
+      if (xsj1.eq.0.0d0) then
          xsj1 = 1.0d0
       else
          xsj1 = 1.0d0/xsj1
       endif
-      
+
 c     Divide functions by jacobian
-      
+
       xs  = (xs+xs)*xsj1
       xt  = (xt+xt)*xsj1
       ys  = (ys+ys)*xsj1
       yt  = (yt+yt)*xsj1
-      
+
 c     Multiply by interpolations
-      
+
       ytm =  yt*tm
       ysm =  ys*sm
       ytp =  yt*tp
@@ -384,9 +385,9 @@ c     Multiply by interpolations
       xsm =  xs*sm
       xtp =  xt*tp
       xsp =  xs*sp
-      
+
 c     Compute shape functions
-      
+
       shp(1,1) = - ytm+ysm
       shp(1,2) =   ytm+ysp
       shp(1,3) =   ytp-ysp
@@ -395,19 +396,19 @@ c     Compute shape functions
       shp(2,2) = - xtm-xsp
       shp(2,3) = - xtp+xsp
       shp(2,4) =   xtp+xsm
-            
+
       end
 
-!     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-!     int2d 
-!     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+!     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+!     int2d
+!     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       subroutine int2d(l,lint,sg)
 c-----[--.----+----.----+----.-----------------------------------------]
 c     Purpose: Form Gauss points and weights for two dimensions
-      
+
 c     Inputs:
 c     l       - Number of points/direction
-      
+
 c     Outputs:
 c     lint    - Total number of points
 c     sg(3,*) - Array of points and weights
@@ -417,11 +418,11 @@ c-----[--.----+----.----+----.-----------------------------------------]
       real*8    g,third,sg(3,*)
       data      lr/-1,1,1,-1,0,1,0,-1,0/,lz/-1,-1,1,1,-1,0,1,0,0/
       data      third / 0.3333333333333333d0 /
-      
+
 c     Set number of total points
-      
+
       lint = l*l
-      
+
 c     2x2 integration
       g = sqrt(third)
       do i = 1,4
@@ -432,16 +433,16 @@ c     2x2 integration
 
       end
 
-!     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+!     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !     ex54_psi - anusotropic material direction
-!     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+!     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       PetscReal function ex54_psi(x,y)
       implicit  none
       PetscReal x,y,theta
-      common /ex54_theta/ theta 
+      common /ex54_theta/ theta
       ex54_psi = theta
-      if( theta < 0. ) then     ! circular
-         if(y==0) then
+      if ( theta < 0. ) then     ! circular
+         if (y==0) then
             ex54_psi = 2.d0*atan(1.d0)
          else
             ex54_psi = atan(-x/y)

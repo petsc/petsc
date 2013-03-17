@@ -1,6 +1,5 @@
 
-static char help[] = "Solves a nonlinear system in parallel with SNES.\n\
-We solve the modified Bratu problem in a 2D rectangular domain,\n\
+static char help[] = "Solves the modified Bratu problem in a 2D rectangular domain,\n\
 using distributed arrays (DMDAs) to partition the parallel grid.\n\
 The command line options include:\n\
   -lambda <parameter>, where <parameter> indicates the problem's nonlinearity\n\
@@ -26,18 +25,18 @@ T*/
     where
 
          0 < x,y < 1,
-  
+
     with boundary conditions
-   
+
              u = 0  for  x = 0, x = 1, y = 0, y = 1.
-  
+
     A finite difference approximation with the usual 5-point stencil
-    is used to discretize the boundary value problem to obtain a nonlinear 
+    is used to discretize the boundary value problem to obtain a nonlinear
     system of equations.
 
   ------------------------------------------------------------------------- */
 
-/* 
+/*
    Include "petscdmda.h" so that we can use distributed arrays (DMDAs).
    Include "petscsnes.h" so that we can use SNES solvers.  Note that this
    file automatically includes:
@@ -50,21 +49,21 @@ T*/
 #include <petscdmda.h>
 #include <petscsnes.h>
 
-/* 
-   User-defined application context - contains data needed by the 
+/*
+   User-defined application context - contains data needed by the
    application-provided call-back routines, FormJacobian() and
    FormFunction().
 */
 typedef struct {
-   PetscReal   param;          /* test problem parameter */
-   PetscReal   param2;         /* test problem parameter */
-   PetscInt    mx,my;          /* discretization in x, y directions */
-   Vec         localX,localF; /* ghosted local vector */
-   DM          da;             /* distributed array data structure */
-   PetscMPIInt rank;           /* processor rank */
+  PetscReal   param;           /* test problem parameter */
+  PetscReal   param2;          /* test problem parameter */
+  PetscInt    mx,my;           /* discretization in x, y directions */
+  Vec         localX,localF;   /* ghosted local vector */
+  DM          da;              /* distributed array data structure */
+  PetscMPIInt rank;            /* processor rank */
 } AppCtx;
 
-/* 
+/*
    User-defined routines
 */
 extern PetscErrorCode FormFunction(SNES,Vec,Vec,void*),FormInitialGuess(AppCtx*,Vec);
@@ -75,30 +74,30 @@ extern PetscErrorCode FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 int main(int argc,char **argv)
 {
   SNES           snes;                /* nonlinear solver */
-  Vec            x,r;                /* solution, residual vectors */
+  Vec            x,r;                 /* solution, residual vectors */
   Mat            J;                   /* Jacobian matrix */
   AppCtx         user;                /* user-defined work context */
   PetscInt       its;                 /* iterations for convergence */
-  PetscInt       Nx,Ny;              /* number of preocessors in x- and y- directions */
+  PetscInt       Nx,Ny;               /* number of preocessors in x- and y- directions */
   PetscBool      matrix_free = PETSC_FALSE;         /* flag - 1 indicates matrix-free version */
   PetscMPIInt    size;                /* number of processors */
   PetscInt       m,N;
   PetscErrorCode ierr;
   PetscReal      bratu_lambda_max = 6.81,bratu_lambda_min = 0.;
-  PetscReal      bratu_kappa_max = 10000,bratu_kappa_min = 0.;
+  PetscReal      bratu_kappa_max  = 10000,bratu_kappa_min = 0.;
 
-  PetscInitialize(&argc,&argv,(char *)0,help);
+  PetscInitialize(&argc,&argv,(char*)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&user.rank);CHKERRQ(ierr);
 
   /*
      Initialize problem parameters
   */
   user.mx = 4; user.my = 4; user.param = 6.0; user.param2 = 0.0;
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-mx",&user.mx,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-my",&user.my,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-lambda",&user.param,PETSC_NULL);CHKERRQ(ierr);
+  ierr    = PetscOptionsGetInt(NULL,"-mx",&user.mx,NULL);CHKERRQ(ierr);
+  ierr    = PetscOptionsGetInt(NULL,"-my",&user.my,NULL);CHKERRQ(ierr);
+  ierr    = PetscOptionsGetReal(NULL,"-lambda",&user.param,NULL);CHKERRQ(ierr);
   if (user.param >= bratu_lambda_max || user.param <= bratu_lambda_min) SETERRQ(PETSC_COMM_SELF,1,"Lambda is out of range");
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-kappa",&user.param2,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,"-kappa",&user.param2,NULL);CHKERRQ(ierr);
   if (user.param2 >= bratu_kappa_max || user.param2 < bratu_kappa_min) SETERRQ(PETSC_COMM_SELF,1,"Kappa is out of range");
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Solving the Bratu problem with lambda=%G, kappa=%G\n",user.param,user.param2);CHKERRQ(ierr);
 
@@ -118,11 +117,11 @@ int main(int argc,char **argv)
      Create distributed array (DMDA) to manage parallel grid and vectors
   */
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  Nx = PETSC_DECIDE; Ny = PETSC_DECIDE;
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-Nx",&Nx,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-Ny",&Ny,PETSC_NULL);CHKERRQ(ierr);
+  Nx   = PETSC_DECIDE; Ny = PETSC_DECIDE;
+  ierr = PetscOptionsGetInt(NULL,"-Nx",&Nx,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-Ny",&Ny,NULL);CHKERRQ(ierr);
   if (Nx*Ny != size && (Nx != PETSC_DECIDE || Ny != PETSC_DECIDE)) SETERRQ(PETSC_COMM_SELF,1,"Incompatible number of processors:  Nx * Ny != size");
-  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,user.mx,user.my,Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,&user.da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,user.mx,user.my,Nx,Ny,1,1,NULL,NULL,&user.da);CHKERRQ(ierr);
   ierr = SNESSetDM(snes,user.da);CHKERRQ(ierr);
   /*
      Visualize the distribution of the array across the processors
@@ -139,7 +138,7 @@ int main(int argc,char **argv)
   ierr = VecDuplicate(x,&r);CHKERRQ(ierr);
   ierr = VecDuplicate(user.localX,&user.localF);CHKERRQ(ierr);
 
-  /* 
+  /*
      Set function evaluation routine and vector
   */
   ierr = SNESSetFunction(snes,r,FormFunction,(void*)&user);CHKERRQ(ierr);
@@ -148,12 +147,12 @@ int main(int argc,char **argv)
      Create matrix data structure; set Jacobian evaluation routine
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  /* 
+  /*
      Set Jacobian matrix data structure and default Jacobian evaluation
      routine. User can override with:
      -snes_fd : default finite differencing approximation of Jacobian
      -snes_mf : matrix-free Newton-Krylov method with no preconditioning
-                (unless user explicitly sets preconditioner) 
+                (unless user explicitly sets preconditioner)
      -snes_mf_operator : form preconditioning matrix as set by the user,
                          but use matrix-free approx for Jacobian-vector
                          products within Newton-Krylov method
@@ -169,18 +168,18 @@ int main(int argc,char **argv)
      Jacobian.  See the users manual for a discussion of better techniques
      for preallocating matrix memory.
   */
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-snes_mf",&matrix_free,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-snes_mf",&matrix_free,NULL);CHKERRQ(ierr);
   if (!matrix_free) {
-    PetscBool  matrix_free_operator = PETSC_FALSE;
-    ierr = PetscOptionsGetBool(PETSC_NULL,"-snes_mf_operator",&matrix_free_operator,PETSC_NULL);CHKERRQ(ierr);
+    PetscBool matrix_free_operator = PETSC_FALSE;
+    ierr = PetscOptionsGetBool(NULL,"-snes_mf_operator",&matrix_free_operator,NULL);CHKERRQ(ierr);
     if (matrix_free_operator) matrix_free = PETSC_FALSE;
   }
   if (!matrix_free) {
     if (size == 1) {
-      ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD,N,N,5,PETSC_NULL,&J);CHKERRQ(ierr);
+      ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD,N,N,5,NULL,&J);CHKERRQ(ierr);
     } else {
       ierr = VecGetLocalSize(x,&m);CHKERRQ(ierr);
-      ierr = MatCreateAIJ(PETSC_COMM_WORLD,m,m,N,N,5,PETSC_NULL,3,PETSC_NULL,&J);CHKERRQ(ierr);
+      ierr = MatCreateAIJ(PETSC_COMM_WORLD,m,m,N,N,5,NULL,3,NULL,&J);CHKERRQ(ierr);
     }
     ierr = SNESSetJacobian(snes,J,J,FormJacobian,&user);CHKERRQ(ierr);
   }
@@ -204,7 +203,7 @@ int main(int argc,char **argv)
      this vector to zero by calling VecSet().
   */
   ierr = FormInitialGuess(&user,x);CHKERRQ(ierr);
-  ierr = SNESSolve(snes,PETSC_NULL,x);CHKERRQ(ierr); 
+  ierr = SNESSolve(snes,NULL,x);CHKERRQ(ierr);
   ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of SNES iterations = %D\n",its);CHKERRQ(ierr);
 
@@ -217,7 +216,7 @@ int main(int argc,char **argv)
     ierr = MatDestroy(&J);CHKERRQ(ierr);
   }
   ierr = VecDestroy(&user.localX);CHKERRQ(ierr); ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = VecDestroy(&user.localF);CHKERRQ(ierr); ierr = VecDestroy(&r);CHKERRQ(ierr);      
+  ierr = VecDestroy(&user.localF);CHKERRQ(ierr); ierr = VecDestroy(&r);CHKERRQ(ierr);
   ierr = SNESDestroy(&snes);CHKERRQ(ierr);  ierr = DMDestroy(&user.da);CHKERRQ(ierr);
   ierr = PetscFinalize();
 
@@ -226,7 +225,7 @@ int main(int argc,char **argv)
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "FormInitialGuess"
-/* 
+/*
    FormInitialGuess - Forms initial approximation.
 
    Input Parameters:
@@ -244,9 +243,9 @@ PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
   PetscScalar    *x;
   Vec            localX = user->localX;
 
-  mx = user->mx;            my = user->my;            lambda = user->param;
-  hx = one/(PetscReal)(mx-1);  hy = one/(PetscReal)(my-1);
-  sc = hx*hy*lambda;        hxdhy = hx/hy;            hydhx = hy/hx;
+  mx    = user->mx;              my = user->my;            lambda = user->param;
+  hx    = one/(PetscReal)(mx-1); hy = one/(PetscReal)(my-1);
+  sc    = hx*hy*lambda;       hxdhy = hx/hy;                hydhx = hy/hx;
   temp1 = lambda/(lambda + one);
 
   /*
@@ -265,8 +264,8 @@ PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
        gxs, gys - starting grid indices (including ghost points)
        gxm, gym - widths of local grid (including ghost points)
   */
-  ierr = DMDAGetCorners(user->da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
-  ierr = DMDAGetGhostCorners(user->da,&gxs,&gys,PETSC_NULL,&gxm,&gym,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(user->da,&xs,&ys,NULL,&xm,&ym,NULL);CHKERRQ(ierr);
+  ierr = DMDAGetGhostCorners(user->da,&gxs,&gys,NULL,&gxm,&gym,NULL);CHKERRQ(ierr);
 
   /*
      Compute initial guess over the locally owned part of the grid
@@ -274,12 +273,12 @@ PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
   for (j=ys; j<ys+ym; j++) {
     temp = (PetscReal)(PetscMin(j,my-j-1))*hy;
     for (i=xs; i<xs+xm; i++) {
-      row = i - gxs + (j - gys)*gxm; 
+      row = i - gxs + (j - gys)*gxm;
       if (i == 0 || j == 0 || i == mx-1 || j == my-1) {
-        x[row] = 0.0; 
+        x[row] = 0.0;
         continue;
       }
-      x[row] = temp1*PetscSqrtReal(PetscMin((PetscReal)(PetscMin(i,mx-i-1))*hx,temp)); 
+      x[row] = temp1*PetscSqrtReal(PetscMin((PetscReal)(PetscMin(i,mx-i-1))*hx,temp));
     }
   }
 
@@ -294,11 +293,11 @@ PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
   ierr = DMLocalToGlobalBegin(user->da,localX,INSERT_VALUES,X);CHKERRQ(ierr);
   ierr = DMLocalToGlobalEnd(user->da,localX,INSERT_VALUES,X);CHKERRQ(ierr);
   return 0;
-} 
+}
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "FormFunction"
-/* 
+/*
    FormFunction - Evaluates nonlinear function, F(x).
 
    Input Parameters:
@@ -317,11 +316,11 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ptr)
   PetscReal      two = 2.0,one = 1.0,half = 0.5;
   PetscReal      lambda,hx,hy,hxdhy,hydhx,sc;
   PetscScalar    u,ux,uxx,uyy,*x,*f,kappa;
-  Vec            localX = user->localX,localF = user->localF; 
+  Vec            localX = user->localX,localF = user->localF;
 
-  mx = user->mx;            my = user->my;            lambda = user->param;
-  hx = one/(PetscReal)(mx-1);  hy = one/(PetscReal)(my-1);
-  sc = hx*hy*lambda;        hxdhy = hx/hy;            hydhx = hy/hx;
+  mx    = user->mx;               my = user->my;        lambda = user->param;
+  hx    = one/(PetscReal)(mx-1);  hy = one/(PetscReal)(my-1);
+  sc    = hx*hy*lambda;        hxdhy = hx/hy;            hydhx = hy/hx;
   kappa = user->param2;
 
   /*
@@ -342,24 +341,24 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ptr)
   /*
      Get local grid boundaries
   */
-  ierr = DMDAGetCorners(user->da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
-  ierr = DMDAGetGhostCorners(user->da,&gxs,&gys,PETSC_NULL,&gxm,&gym,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(user->da,&xs,&ys,NULL,&xm,&ym,NULL);CHKERRQ(ierr);
+  ierr = DMDAGetGhostCorners(user->da,&gxs,&gys,NULL,&gxm,&gym,NULL);CHKERRQ(ierr);
 
   /*
      Compute function over the locally owned part of the grid
   */
   for (j=ys; j<ys+ym; j++) {
-    row = (j - gys)*gxm + xs - gxs - 1; 
+    row = (j - gys)*gxm + xs - gxs - 1;
     for (i=xs; i<xs+xm; i++) {
       row++;
       if (i == 0 || j == 0 || i == mx-1 || j == my-1) {
         f[row] = x[row];
         continue;
       }
-      u = x[row];
-      ux  = (x[row+1] - x[row-1])*half*hy;
-      uxx = (two*u - x[row-1] - x[row+1])*hydhx;
-      uyy = (two*u - x[row-gxm] - x[row+gxm])*hxdhy;
+      u      = x[row];
+      ux     = (x[row+1] - x[row-1])*half*hy;
+      uxx    = (two*u - x[row-1] - x[row+1])*hydhx;
+      uyy    = (two*u - x[row-gxm] - x[row+gxm])*hxdhy;
       f[row] = uxx + uyy - kappa*ux - sc*exp(u);
     }
   }
@@ -376,8 +375,8 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ptr)
   ierr = DMLocalToGlobalBegin(user->da,localF,INSERT_VALUES,F);CHKERRQ(ierr);
   ierr = DMLocalToGlobalEnd(user->da,localF,INSERT_VALUES,F);CHKERRQ(ierr);
   ierr = PetscLogFlops(11.0*ym*xm);CHKERRQ(ierr);
-  return 0; 
-} 
+  return 0;
+}
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "FormJacobian"
@@ -403,8 +402,8 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ptr)
 */
 PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
 {
-  AppCtx         *user = (AppCtx*)ptr;  /* user-defined application context */
-  Mat            jac = *B;                /* Jacobian matrix */
+  AppCtx         *user  = (AppCtx*)ptr;   /* user-defined application context */
+  Mat            jac    = *B;             /* Jacobian matrix */
   Vec            localX = user->localX;   /* local vector */
   PetscErrorCode ierr;
   PetscInt       *ltog;                   /* local-to-global mapping */
@@ -433,28 +432,28 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,voi
   /*
      Get local grid boundaries
   */
-  ierr = DMDAGetCorners(user->da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
-  ierr = DMDAGetGhostCorners(user->da,&gxs,&gys,PETSC_NULL,&gxm,&gym,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(user->da,&xs,&ys,NULL,&xm,&ym,NULL);CHKERRQ(ierr);
+  ierr = DMDAGetGhostCorners(user->da,&gxs,&gys,NULL,&gxm,&gym,NULL);CHKERRQ(ierr);
 
   /*
      Get the global node numbers for all local nodes, including ghost points
   */
   ierr = DMDAGetGlobalIndices(user->da,&nloc,&ltog);CHKERRQ(ierr);
 
-  /* 
+  /*
      Compute entries for the locally owned part of the Jacobian.
       - Currently, all PETSc parallel matrix formats are partitioned by
         contiguous chunks of rows across the processors. The "grow"
-        parameter computed below specifies the global row number 
+        parameter computed below specifies the global row number
         corresponding to each local grid point.
       - Each processor needs to insert only elements that it owns
         locally (but any non-local elements will be sent to the
-        appropriate processor during matrix assembly). 
+        appropriate processor during matrix assembly).
       - Always specify global row and columns of matrix entries.
       - Here, we set all entries for a particular row at once.
   */
   for (j=ys; j<ys+ym; j++) {
-    row = (j - gys)*gxm + xs - gxs - 1; 
+    row = (j - gys)*gxm + xs - gxs - 1;
     for (i=xs; i<xs+xm; i++) {
       row++;
       grow = ltog[row];
@@ -473,7 +472,7 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,voi
     }
   }
 
-  /* 
+  /*
      Assemble matrix, using the 2-step process:
        MatAssemblyBegin(), MatAssemblyEnd().
      By placing code between these two statements, computations can be

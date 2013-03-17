@@ -1,6 +1,4 @@
 
-/* Program usage:  mpiexec -n <procs> ex46 [-help] [all PETSc options] */
-
 static char help[] = "Solves a linear system in parallel with KSP and DM.\n\
 Compare this to ex2 which solves the same problem without a DM.\n\n";
 
@@ -38,7 +36,7 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
   PetscBool      flg = PETSC_FALSE;
   PetscLogStage  stage;
-  DMDALocalInfo    info;
+  DMDALocalInfo  info;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
 
@@ -47,7 +45,7 @@ int main(int argc,char **argv)
      The problem size will default to 8 by 7, but this can be
      changed using -da_grid_x M -da_grid_y N
   */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,-8,-7,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,-8,-7,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
          Compute the matrix and right-hand-side vector that define
@@ -72,11 +70,11 @@ int main(int argc,char **argv)
   ierr = DMDAGetLocalInfo(da,&info);CHKERRQ(ierr);
   for (j=info.ys; j<info.ys+info.ym; j++) {
     for (i=info.xs; i<info.xs+info.xm; i++) {
-      PetscReal hx   = 1./info.mx,hy = 1./info.my;
-      MatStencil row = {0},col[5] = {{0}};
+      PetscReal   hx  = 1./info.mx,hy = 1./info.my;
+      MatStencil  row = {0},col[5] = {{0}};
       PetscScalar v[5];
-      PetscInt ncols = 0;
-      row.j = j; row.i = i;
+      PetscInt    ncols = 0;
+      row.j        = j; row.i = i;
       col[ncols].j = j; col[ncols].i = i; v[ncols++] = 2*(hx/hy + hy/hx);
       /* boundaries */
       if (i>0)         {col[ncols].j = j;   col[ncols].i = i-1; v[ncols++] = -hy/hx;}
@@ -110,7 +108,7 @@ int main(int argc,char **argv)
      elements of 1.0;  Alternatively, using the runtime option
      -random_sol forms a solution vector with random components.
   */
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-random_exact_sol",&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-random_exact_sol",&flg,NULL);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rctx);CHKERRQ(ierr);
     ierr = PetscRandomSetFromOptions(rctx);CHKERRQ(ierr);
@@ -125,7 +123,7 @@ int main(int argc,char **argv)
      View the exact solution vector if desired
   */
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-view_exact_sol",&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-view_exact_sol",&flg,NULL);CHKERRQ(ierr);
   if (flg) {ierr = VecView(u,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -1,0 +1,226 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		D8027C9C15CB04C300F715AC /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = D8027C9B15CB04C300F715AC /* main.c */; };
+		D8027C9E15CB04C300F715AC /* PETSc_command_line_example.1 in CopyFiles */ = {isa = PBXBuildFile; fileRef = D8027C9D15CB04C300F715AC /* PETSc_command_line_example.1 */; };
+		D8B3CA0E15CB09A000C70625 /* PETSc.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D8B3CA0D15CB09A000C70625 /* PETSc.framework */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		D8027C9515CB04C300F715AC /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = usr/share/man/man1;
+			dstSubfolderSpec = 0;
+			files = (
+				D8027C9E15CB04C300F715AC /* PETSc_command_line_example.1 in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 1;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		D8027C9715CB04C300F715AC /* PETSc command line example */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "PETSc command line example"; sourceTree = BUILT_PRODUCTS_DIR; };
+		D8027C9B15CB04C300F715AC /* main.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
+		D8027C9D15CB04C300F715AC /* PETSc_command_line_example.1 */ = {isa = PBXFileReference; lastKnownFileType = text.man; path = PETSc_command_line_example.1; sourceTree = "<group>"; };
+		D8027CA415CB052700F715AC /* PETSc.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = PETSc.framework; path = "../../../../../../arch-osx/PETSc.framework"; sourceTree = "<group>"; };
+		D8B3CA0D15CB09A000C70625 /* PETSc.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = PETSc.framework; path = "../../../../../arch-osx/PETSc.framework"; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		D8027C9415CB04C300F715AC /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D8B3CA0E15CB09A000C70625 /* PETSc.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		D8027C8C15CB04C300F715AC = {
+			isa = PBXGroup;
+			children = (
+				D8B3CA0D15CB09A000C70625 /* PETSc.framework */,
+				D8027CA415CB052700F715AC /* PETSc.framework */,
+				D8027C9A15CB04C300F715AC /* PETSc command line example */,
+				D8027C9815CB04C300F715AC /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		D8027C9815CB04C300F715AC /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				D8027C9715CB04C300F715AC /* PETSc command line example */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		D8027C9A15CB04C300F715AC /* PETSc command line example */ = {
+			isa = PBXGroup;
+			children = (
+				D8027C9B15CB04C300F715AC /* main.c */,
+				D8027C9D15CB04C300F715AC /* PETSc_command_line_example.1 */,
+			);
+			path = "PETSc command line example";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		D8027C9615CB04C300F715AC /* PETSc command line example */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D8027CA115CB04C300F715AC /* Build configuration list for PBXNativeTarget "PETSc command line example" */;
+			buildPhases = (
+				D8027C9315CB04C300F715AC /* Sources */,
+				D8027C9415CB04C300F715AC /* Frameworks */,
+				D8027C9515CB04C300F715AC /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "PETSc command line example";
+			productName = "PETSc command line example";
+			productReference = D8027C9715CB04C300F715AC /* PETSc command line example */;
+			productType = "com.apple.product-type.tool";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		D8027C8E15CB04C300F715AC /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0440;
+				ORGANIZATIONNAME = "Barry Smith";
+			};
+			buildConfigurationList = D8027C9115CB04C300F715AC /* Build configuration list for PBXProject "PETSc command line example" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = D8027C8C15CB04C300F715AC;
+			productRefGroup = D8027C9815CB04C300F715AC /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				D8027C9615CB04C300F715AC /* PETSc command line example */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		D8027C9315CB04C300F715AC /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D8027C9C15CB04C300F715AC /* main.c in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		D8027C9F15CB04C300F715AC /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.8;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		D8027CA015CB04C300F715AC /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.8;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		D8027CA215CB04C300F715AC /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)/../../../../../arch-osx\"",
+				);
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		D8027CA315CB04C300F715AC /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)/../../../../../arch-osx\"",
+				);
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		D8027C9115CB04C300F715AC /* Build configuration list for PBXProject "PETSc command line example" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D8027C9F15CB04C300F715AC /* Debug */,
+				D8027CA015CB04C300F715AC /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		D8027CA115CB04C300F715AC /* Build configuration list for PBXNativeTarget "PETSc command line example" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D8027CA215CB04C300F715AC /* Debug */,
+				D8027CA315CB04C300F715AC /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = D8027C8E15CB04C300F715AC /* Project object */;
+}

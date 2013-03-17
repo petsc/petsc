@@ -1,0 +1,1014 @@
+Patch DM Patch Mesh
+  Coarse DM
+  Processor [0] M 8 N 8 m 4 n 4 w 1 s 1
+  X range of indices: 0 2, Y range of indices: 0 2
+  Processor [1] M 8 N 8 m 4 n 4 w 1 s 1
+  X range of indices: 2 4, Y range of indices: 0 2
+  Processor [2] M 8 N 8 m 4 n 4 w 1 s 1
+  X range of indices: 4 6, Y range of indices: 0 2
+  Processor [3] M 8 N 8 m 4 n 4 w 1 s 1
+  X range of indices: 6 8, Y range of indices: 0 2
+  Processor [4] M 8 N 8 m 4 n 4 w 1 s 1
+  X range of indices: 0 2, Y range of indices: 2 4
+  Processor [5] M 8 N 8 m 4 n 4 w 1 s 1
+  X range of indices: 2 4, Y range of indices: 2 4
+  Processor [6] M 8 N 8 m 4 n 4 w 1 s 1
+  X range of indices: 4 6, Y range of indices: 2 4
+  Processor [7] M 8 N 8 m 4 n 4 w 1 s 1
+  X range of indices: 6 8, Y range of indices: 2 4
+  Processor [8] M 8 N 8 m 4 n 4 w 1 s 1
+  X range of indices: 0 2, Y range of indices: 4 6
+  Processor [9] M 8 N 8 m 4 n 4 w 1 s 1
+  X range of indices: 2 4, Y range of indices: 4 6
+  Processor [10] M 8 N 8 m 4 n 4 w 1 s 1
+  X range of indices: 4 6, Y range of indices: 4 6
+  Processor [11] M 8 N 8 m 4 n 4 w 1 s 1
+  X range of indices: 6 8, Y range of indices: 4 6
+  Processor [12] M 8 N 8 m 4 n 4 w 1 s 1
+  X range of indices: 0 2, Y range of indices: 6 8
+  Processor [13] M 8 N 8 m 4 n 4 w 1 s 1
+  X range of indices: 2 4, Y range of indices: 6 8
+  Processor [14] M 8 N 8 m 4 n 4 w 1 s 1
+  X range of indices: 4 6, Y range of indices: 6 8
+  Processor [15] M 8 N 8 m 4 n 4 w 1 s 1
+  X range of indices: 6 8, Y range of indices: 6 8
+Patch 0: (0, 0, 0)--(2, 2, 1)
+Processor [0] M 3 N 3 m 2 n 2 w 1 s 0
+X range of indices: 0 2, Y range of indices: 0 2
+Processor [1] M 3 N 3 m 2 n 2 w 1 s 0
+X range of indices: 2 3, Y range of indices: 0 2
+Processor [2] M 3 N 3 m 2 n 2 w 1 s 0
+X range of indices: 0 2, Y range of indices: 2 3
+Processor [3] M 3 N 3 m 2 n 2 w 1 s 0
+X range of indices: 2 3, Y range of indices: 2 3
+Star Forest Object:Buffered Map 16 MPI processes
+  type not yet set
+  [0] Number of roots=64, leaves=4, remote ranks=1
+  [0] 0 <- (0,0)
+  [0] 1 <- (0,1)
+  [0] 2 <- (0,2)
+  [0] 3 <- (0,3)
+  [1] Number of roots=64, leaves=2, remote ranks=1
+  [1] 0 <- (1,0)
+  [1] 1 <- (1,2)
+  [2] Number of roots=64, leaves=0, remote ranks=0
+  [3] Number of roots=64, leaves=0, remote ranks=0
+  [4] Number of roots=64, leaves=2, remote ranks=1
+  [4] 0 <- (4,0)
+  [4] 1 <- (4,1)
+  [5] Number of roots=64, leaves=1, remote ranks=1
+  [5] 0 <- (5,0)
+  [6] Number of roots=64, leaves=0, remote ranks=0
+  [7] Number of roots=64, leaves=0, remote ranks=0
+  [8] Number of roots=64, leaves=0, remote ranks=0
+  [9] Number of roots=64, leaves=0, remote ranks=0
+  [10] Number of roots=64, leaves=0, remote ranks=0
+  [11] Number of roots=64, leaves=0, remote ranks=0
+  [12] Number of roots=64, leaves=0, remote ranks=0
+  [13] Number of roots=64, leaves=0, remote ranks=0
+  [14] Number of roots=64, leaves=0, remote ranks=0
+  [15] Number of roots=64, leaves=0, remote ranks=0
+Star Forest Object:Restricted Map 16 MPI processes
+  type not yet set
+  [0] Number of roots=64, leaves=4, remote ranks=1
+  [0] 0 <- (0,0)
+  [0] 1 <- (0,1)
+  [0] 3 <- (0,2)
+  [0] 4 <- (0,3)
+  [1] Number of roots=64, leaves=0, remote ranks=0
+  [2] Number of roots=64, leaves=0, remote ranks=0
+  [3] Number of roots=64, leaves=0, remote ranks=0
+  [4] Number of roots=64, leaves=0, remote ranks=0
+  [5] Number of roots=64, leaves=0, remote ranks=0
+  [6] Number of roots=64, leaves=0, remote ranks=0
+  [7] Number of roots=64, leaves=0, remote ranks=0
+  [8] Number of roots=64, leaves=0, remote ranks=0
+  [9] Number of roots=64, leaves=0, remote ranks=0
+  [10] Number of roots=64, leaves=0, remote ranks=0
+  [11] Number of roots=64, leaves=0, remote ranks=0
+  [12] Number of roots=64, leaves=0, remote ranks=0
+  [13] Number of roots=64, leaves=0, remote ranks=0
+  [14] Number of roots=64, leaves=0, remote ranks=0
+  [15] Number of roots=64, leaves=0, remote ranks=0
+Patch 1: (2, 0, 0)--(4, 2, 1)
+Processor [0] M 4 N 3 m 2 n 2 w 1 s 0
+X range of indices: 0 2, Y range of indices: 0 2
+Processor [1] M 4 N 3 m 2 n 2 w 1 s 0
+X range of indices: 2 4, Y range of indices: 0 2
+Processor [2] M 4 N 3 m 2 n 2 w 1 s 0
+X range of indices: 0 2, Y range of indices: 2 3
+Processor [3] M 4 N 3 m 2 n 2 w 1 s 0
+X range of indices: 2 4, Y range of indices: 2 3
+Star Forest Object:Buffered Map 16 MPI processes
+  type not yet set
+  [0] Number of roots=64, leaves=4, remote ranks=2
+  [0] 0 <- (0,1)
+  [0] 1 <- (1,0)
+  [0] 2 <- (0,3)
+  [0] 3 <- (1,2)
+  [1] Number of roots=64, leaves=4, remote ranks=2
+  [1] 0 <- (1,1)
+  [1] 1 <- (2,0)
+  [1] 2 <- (1,3)
+  [1] 3 <- (2,2)
+  [2] Number of roots=64, leaves=0, remote ranks=0
+  [3] Number of roots=64, leaves=0, remote ranks=0
+  [4] Number of roots=64, leaves=2, remote ranks=2
+  [4] 0 <- (4,1)
+  [4] 1 <- (5,0)
+  [5] Number of roots=64, leaves=2, remote ranks=2
+  [5] 0 <- (5,1)
+  [5] 1 <- (6,0)
+  [6] Number of roots=64, leaves=0, remote ranks=0
+  [7] Number of roots=64, leaves=0, remote ranks=0
+  [8] Number of roots=64, leaves=0, remote ranks=0
+  [9] Number of roots=64, leaves=0, remote ranks=0
+  [10] Number of roots=64, leaves=0, remote ranks=0
+  [11] Number of roots=64, leaves=0, remote ranks=0
+  [12] Number of roots=64, leaves=0, remote ranks=0
+  [13] Number of roots=64, leaves=0, remote ranks=0
+  [14] Number of roots=64, leaves=0, remote ranks=0
+  [15] Number of roots=64, leaves=0, remote ranks=0
+Star Forest Object:Restricted Map 16 MPI processes
+  type not yet set
+  [0] Number of roots=64, leaves=2, remote ranks=1
+  [0] 1 <- (1,0)
+  [0] 5 <- (1,2)
+  [1] Number of roots=64, leaves=2, remote ranks=1
+  [1] 0 <- (1,1)
+  [1] 4 <- (1,3)
+  [2] Number of roots=64, leaves=0, remote ranks=0
+  [3] Number of roots=64, leaves=0, remote ranks=0
+  [4] Number of roots=64, leaves=0, remote ranks=0
+  [5] Number of roots=64, leaves=0, remote ranks=0
+  [6] Number of roots=64, leaves=0, remote ranks=0
+  [7] Number of roots=64, leaves=0, remote ranks=0
+  [8] Number of roots=64, leaves=0, remote ranks=0
+  [9] Number of roots=64, leaves=0, remote ranks=0
+  [10] Number of roots=64, leaves=0, remote ranks=0
+  [11] Number of roots=64, leaves=0, remote ranks=0
+  [12] Number of roots=64, leaves=0, remote ranks=0
+  [13] Number of roots=64, leaves=0, remote ranks=0
+  [14] Number of roots=64, leaves=0, remote ranks=0
+  [15] Number of roots=64, leaves=0, remote ranks=0
+Patch 2: (4, 0, 0)--(6, 2, 1)
+Processor [0] M 4 N 3 m 2 n 2 w 1 s 0
+X range of indices: 0 2, Y range of indices: 0 2
+Processor [1] M 4 N 3 m 2 n 2 w 1 s 0
+X range of indices: 2 4, Y range of indices: 0 2
+Processor [2] M 4 N 3 m 2 n 2 w 1 s 0
+X range of indices: 0 2, Y range of indices: 2 3
+Processor [3] M 4 N 3 m 2 n 2 w 1 s 0
+X range of indices: 2 4, Y range of indices: 2 3
+Star Forest Object:Buffered Map 16 MPI processes
+  type not yet set
+  [0] Number of roots=64, leaves=0, remote ranks=0
+  [1] Number of roots=64, leaves=0, remote ranks=0
+  [2] Number of roots=64, leaves=4, remote ranks=2
+  [2] 0 <- (1,1)
+  [2] 1 <- (2,0)
+  [2] 2 <- (1,3)
+  [2] 3 <- (2,2)
+  [3] Number of roots=64, leaves=4, remote ranks=2
+  [3] 0 <- (2,1)
+  [3] 1 <- (3,0)
+  [3] 2 <- (2,3)
+  [3] 3 <- (3,2)
+  [4] Number of roots=64, leaves=0, remote ranks=0
+  [5] Number of roots=64, leaves=0, remote ranks=0
+  [6] Number of roots=64, leaves=2, remote ranks=2
+  [6] 0 <- (5,1)
+  [6] 1 <- (6,0)
+  [7] Number of roots=64, leaves=2, remote ranks=2
+  [7] 0 <- (6,1)
+  [7] 1 <- (7,0)
+  [8] Number of roots=64, leaves=0, remote ranks=0
+  [9] Number of roots=64, leaves=0, remote ranks=0
+  [10] Number of roots=64, leaves=0, remote ranks=0
+  [11] Number of roots=64, leaves=0, remote ranks=0
+  [12] Number of roots=64, leaves=0, remote ranks=0
+  [13] Number of roots=64, leaves=0, remote ranks=0
+  [14] Number of roots=64, leaves=0, remote ranks=0
+  [15] Number of roots=64, leaves=0, remote ranks=0
+Star Forest Object:Restricted Map 16 MPI processes
+  type not yet set
+  [0] Number of roots=64, leaves=0, remote ranks=0
+  [1] Number of roots=64, leaves=0, remote ranks=0
+  [2] Number of roots=64, leaves=2, remote ranks=1
+  [2] 1 <- (2,0)
+  [2] 5 <- (2,2)
+  [3] Number of roots=64, leaves=2, remote ranks=1
+  [3] 0 <- (2,1)
+  [3] 4 <- (2,3)
+  [4] Number of roots=64, leaves=0, remote ranks=0
+  [5] Number of roots=64, leaves=0, remote ranks=0
+  [6] Number of roots=64, leaves=0, remote ranks=0
+  [7] Number of roots=64, leaves=0, remote ranks=0
+  [8] Number of roots=64, leaves=0, remote ranks=0
+  [9] Number of roots=64, leaves=0, remote ranks=0
+  [10] Number of roots=64, leaves=0, remote ranks=0
+  [11] Number of roots=64, leaves=0, remote ranks=0
+  [12] Number of roots=64, leaves=0, remote ranks=0
+  [13] Number of roots=64, leaves=0, remote ranks=0
+  [14] Number of roots=64, leaves=0, remote ranks=0
+  [15] Number of roots=64, leaves=0, remote ranks=0
+Patch 3: (6, 0, 0)--(8, 2, 1)
+Processor [0] M 3 N 3 m 2 n 2 w 1 s 0
+X range of indices: 0 2, Y range of indices: 0 2
+Processor [1] M 3 N 3 m 2 n 2 w 1 s 0
+X range of indices: 2 3, Y range of indices: 0 2
+Processor [2] M 3 N 3 m 2 n 2 w 1 s 0
+X range of indices: 0 2, Y range of indices: 2 3
+Processor [3] M 3 N 3 m 2 n 2 w 1 s 0
+X range of indices: 2 3, Y range of indices: 2 3
+Star Forest Object:Buffered Map 16 MPI processes
+  type not yet set
+  [0] Number of roots=64, leaves=0, remote ranks=0
+  [1] Number of roots=64, leaves=0, remote ranks=0
+  [2] Number of roots=64, leaves=4, remote ranks=2
+  [2] 0 <- (2,1)
+  [2] 1 <- (3,0)
+  [2] 2 <- (2,3)
+  [2] 3 <- (3,2)
+  [3] Number of roots=64, leaves=2, remote ranks=1
+  [3] 0 <- (3,1)
+  [3] 1 <- (3,3)
+  [4] Number of roots=64, leaves=0, remote ranks=0
+  [5] Number of roots=64, leaves=0, remote ranks=0
+  [6] Number of roots=64, leaves=2, remote ranks=2
+  [6] 0 <- (6,1)
+  [6] 1 <- (7,0)
+  [7] Number of roots=64, leaves=1, remote ranks=1
+  [7] 0 <- (7,1)
+  [8] Number of roots=64, leaves=0, remote ranks=0
+  [9] Number of roots=64, leaves=0, remote ranks=0
+  [10] Number of roots=64, leaves=0, remote ranks=0
+  [11] Number of roots=64, leaves=0, remote ranks=0
+  [12] Number of roots=64, leaves=0, remote ranks=0
+  [13] Number of roots=64, leaves=0, remote ranks=0
+  [14] Number of roots=64, leaves=0, remote ranks=0
+  [15] Number of roots=64, leaves=0, remote ranks=0
+Star Forest Object:Restricted Map 16 MPI processes
+  type not yet set
+  [0] Number of roots=64, leaves=0, remote ranks=0
+  [1] Number of roots=64, leaves=0, remote ranks=0
+  [2] Number of roots=64, leaves=2, remote ranks=1
+  [2] 1 <- (3,0)
+  [2] 4 <- (3,2)
+  [3] Number of roots=64, leaves=2, remote ranks=1
+  [3] 0 <- (3,1)
+  [3] 3 <- (3,3)
+  [4] Number of roots=64, leaves=0, remote ranks=0
+  [5] Number of roots=64, leaves=0, remote ranks=0
+  [6] Number of roots=64, leaves=0, remote ranks=0
+  [7] Number of roots=64, leaves=0, remote ranks=0
+  [8] Number of roots=64, leaves=0, remote ranks=0
+  [9] Number of roots=64, leaves=0, remote ranks=0
+  [10] Number of roots=64, leaves=0, remote ranks=0
+  [11] Number of roots=64, leaves=0, remote ranks=0
+  [12] Number of roots=64, leaves=0, remote ranks=0
+  [13] Number of roots=64, leaves=0, remote ranks=0
+  [14] Number of roots=64, leaves=0, remote ranks=0
+  [15] Number of roots=64, leaves=0, remote ranks=0
+Patch 4: (0, 2, 0)--(2, 4, 1)
+Processor [0] M 3 N 4 m 2 n 2 w 1 s 0
+X range of indices: 0 2, Y range of indices: 0 2
+Processor [1] M 3 N 4 m 2 n 2 w 1 s 0
+X range of indices: 2 3, Y range of indices: 0 2
+Processor [2] M 3 N 4 m 2 n 2 w 1 s 0
+X range of indices: 0 2, Y range of indices: 2 4
+Processor [3] M 3 N 4 m 2 n 2 w 1 s 0
+X range of indices: 2 3, Y range of indices: 2 4
+Star Forest Object:Buffered Map 16 MPI processes
+  type not yet set
+  [0] Number of roots=64, leaves=0, remote ranks=0
+  [1] Number of roots=64, leaves=0, remote ranks=0
+  [2] Number of roots=64, leaves=0, remote ranks=0
+  [3] Number of roots=64, leaves=0, remote ranks=0
+  [4] Number of roots=64, leaves=0, remote ranks=0
+  [5] Number of roots=64, leaves=0, remote ranks=0
+  [6] Number of roots=64, leaves=0, remote ranks=0
+  [7] Number of roots=64, leaves=0, remote ranks=0
+  [8] Number of roots=64, leaves=4, remote ranks=2
+  [8] 0 <- (0,2)
+  [8] 1 <- (0,3)
+  [8] 2 <- (4,0)
+  [8] 3 <- (4,1)
+  [9] Number of roots=64, leaves=2, remote ranks=2
+  [9] 0 <- (1,2)
+  [9] 1 <- (5,0)
+  [10] Number of roots=64, leaves=0, remote ranks=0
+  [11] Number of roots=64, leaves=0, remote ranks=0
+  [12] Number of roots=64, leaves=4, remote ranks=2
+  [12] 0 <- (4,2)
+  [12] 1 <- (4,3)
+  [12] 2 <- (8,0)
+  [12] 3 <- (8,1)
+  [13] Number of roots=64, leaves=2, remote ranks=2
+  [13] 0 <- (5,2)
+  [13] 1 <- (9,0)
+  [14] Number of roots=64, leaves=0, remote ranks=0
+  [15] Number of roots=64, leaves=0, remote ranks=0
+Star Forest Object:Restricted Map 16 MPI processes
+  type not yet set
+  [0] Number of roots=64, leaves=0, remote ranks=0
+  [1] Number of roots=64, leaves=0, remote ranks=0
+  [2] Number of roots=64, leaves=0, remote ranks=0
+  [3] Number of roots=64, leaves=0, remote ranks=0
+  [4] Number of roots=64, leaves=0, remote ranks=0
+  [5] Number of roots=64, leaves=0, remote ranks=0
+  [6] Number of roots=64, leaves=0, remote ranks=0
+  [7] Number of roots=64, leaves=0, remote ranks=0
+  [8] Number of roots=64, leaves=2, remote ranks=1
+  [8] 3 <- (4,0)
+  [8] 4 <- (4,1)
+  [9] Number of roots=64, leaves=0, remote ranks=0
+  [10] Number of roots=64, leaves=0, remote ranks=0
+  [11] Number of roots=64, leaves=0, remote ranks=0
+  [12] Number of roots=64, leaves=2, remote ranks=1
+  [12] 0 <- (4,2)
+  [12] 1 <- (4,3)
+  [13] Number of roots=64, leaves=0, remote ranks=0
+  [14] Number of roots=64, leaves=0, remote ranks=0
+  [15] Number of roots=64, leaves=0, remote ranks=0
+Patch 5: (2, 2, 0)--(4, 4, 1)
+Processor [0] M 4 N 4 m 2 n 2 w 1 s 0
+X range of indices: 0 2, Y range of indices: 0 2
+Processor [1] M 4 N 4 m 2 n 2 w 1 s 0
+X range of indices: 2 4, Y range of indices: 0 2
+Processor [2] M 4 N 4 m 2 n 2 w 1 s 0
+X range of indices: 0 2, Y range of indices: 2 4
+Processor [3] M 4 N 4 m 2 n 2 w 1 s 0
+X range of indices: 2 4, Y range of indices: 2 4
+Star Forest Object:Buffered Map 16 MPI processes
+  type not yet set
+  [0] Number of roots=64, leaves=0, remote ranks=0
+  [1] Number of roots=64, leaves=0, remote ranks=0
+  [2] Number of roots=64, leaves=0, remote ranks=0
+  [3] Number of roots=64, leaves=0, remote ranks=0
+  [4] Number of roots=64, leaves=0, remote ranks=0
+  [5] Number of roots=64, leaves=0, remote ranks=0
+  [6] Number of roots=64, leaves=0, remote ranks=0
+  [7] Number of roots=64, leaves=0, remote ranks=0
+  [8] Number of roots=64, leaves=4, remote ranks=4
+  [8] 0 <- (0,3)
+  [8] 1 <- (1,2)
+  [8] 2 <- (4,1)
+  [8] 3 <- (5,0)
+  [9] Number of roots=64, leaves=4, remote ranks=4
+  [9] 0 <- (1,3)
+  [9] 1 <- (2,2)
+  [9] 2 <- (5,1)
+  [9] 3 <- (6,0)
+  [10] Number of roots=64, leaves=0, remote ranks=0
+  [11] Number of roots=64, leaves=0, remote ranks=0
+  [12] Number of roots=64, leaves=4, remote ranks=4
+  [12] 0 <- (4,3)
+  [12] 1 <- (5,2)
+  [12] 2 <- (8,1)
+  [12] 3 <- (9,0)
+  [13] Number of roots=64, leaves=4, remote ranks=4
+  [13] 0 <- (5,3)
+  [13] 1 <- (6,2)
+  [13] 2 <- (9,1)
+  [13] 3 <- (10,0)
+  [14] Number of roots=64, leaves=0, remote ranks=0
+  [15] Number of roots=64, leaves=0, remote ranks=0
+Star Forest Object:Restricted Map 16 MPI processes
+  type not yet set
+  [0] Number of roots=64, leaves=0, remote ranks=0
+  [1] Number of roots=64, leaves=0, remote ranks=0
+  [2] Number of roots=64, leaves=0, remote ranks=0
+  [3] Number of roots=64, leaves=0, remote ranks=0
+  [4] Number of roots=64, leaves=0, remote ranks=0
+  [5] Number of roots=64, leaves=0, remote ranks=0
+  [6] Number of roots=64, leaves=0, remote ranks=0
+  [7] Number of roots=64, leaves=0, remote ranks=0
+  [8] Number of roots=64, leaves=1, remote ranks=1
+  [8] 5 <- (5,0)
+  [9] Number of roots=64, leaves=1, remote ranks=1
+  [9] 4 <- (5,1)
+  [10] Number of roots=64, leaves=0, remote ranks=0
+  [11] Number of roots=64, leaves=0, remote ranks=0
+  [12] Number of roots=64, leaves=1, remote ranks=1
+  [12] 1 <- (5,2)
+  [13] Number of roots=64, leaves=1, remote ranks=1
+  [13] 0 <- (5,3)
+  [14] Number of roots=64, leaves=0, remote ranks=0
+  [15] Number of roots=64, leaves=0, remote ranks=0
+Patch 6: (4, 2, 0)--(6, 4, 1)
+Processor [0] M 4 N 4 m 2 n 2 w 1 s 0
+X range of indices: 0 2, Y range of indices: 0 2
+Processor [1] M 4 N 4 m 2 n 2 w 1 s 0
+X range of indices: 2 4, Y range of indices: 0 2
+Processor [2] M 4 N 4 m 2 n 2 w 1 s 0
+X range of indices: 0 2, Y range of indices: 2 4
+Processor [3] M 4 N 4 m 2 n 2 w 1 s 0
+X range of indices: 2 4, Y range of indices: 2 4
+Star Forest Object:Buffered Map 16 MPI processes
+  type not yet set
+  [0] Number of roots=64, leaves=0, remote ranks=0
+  [1] Number of roots=64, leaves=0, remote ranks=0
+  [2] Number of roots=64, leaves=0, remote ranks=0
+  [3] Number of roots=64, leaves=0, remote ranks=0
+  [4] Number of roots=64, leaves=0, remote ranks=0
+  [5] Number of roots=64, leaves=0, remote ranks=0
+  [6] Number of roots=64, leaves=0, remote ranks=0
+  [7] Number of roots=64, leaves=0, remote ranks=0
+  [8] Number of roots=64, leaves=0, remote ranks=0
+  [9] Number of roots=64, leaves=0, remote ranks=0
+  [10] Number of roots=64, leaves=4, remote ranks=4
+  [10] 0 <- (1,3)
+  [10] 1 <- (2,2)
+  [10] 2 <- (5,1)
+  [10] 3 <- (6,0)
+  [11] Number of roots=64, leaves=4, remote ranks=4
+  [11] 0 <- (2,3)
+  [11] 1 <- (3,2)
+  [11] 2 <- (6,1)
+  [11] 3 <- (7,0)
+  [12] Number of roots=64, leaves=0, remote ranks=0
+  [13] Number of roots=64, leaves=0, remote ranks=0
+  [14] Number of roots=64, leaves=4, remote ranks=4
+  [14] 0 <- (5,3)
+  [14] 1 <- (6,2)
+  [14] 2 <- (9,1)
+  [14] 3 <- (10,0)
+  [15] Number of roots=64, leaves=4, remote ranks=4
+  [15] 0 <- (6,3)
+  [15] 1 <- (7,2)
+  [15] 2 <- (10,1)
+  [15] 3 <- (11,0)
+Star Forest Object:Restricted Map 16 MPI processes
+  type not yet set
+  [0] Number of roots=64, leaves=0, remote ranks=0
+  [1] Number of roots=64, leaves=0, remote ranks=0
+  [2] Number of roots=64, leaves=0, remote ranks=0
+  [3] Number of roots=64, leaves=0, remote ranks=0
+  [4] Number of roots=64, leaves=0, remote ranks=0
+  [5] Number of roots=64, leaves=0, remote ranks=0
+  [6] Number of roots=64, leaves=0, remote ranks=0
+  [7] Number of roots=64, leaves=0, remote ranks=0
+  [8] Number of roots=64, leaves=0, remote ranks=0
+  [9] Number of roots=64, leaves=0, remote ranks=0
+  [10] Number of roots=64, leaves=1, remote ranks=1
+  [10] 5 <- (6,0)
+  [11] Number of roots=64, leaves=1, remote ranks=1
+  [11] 4 <- (6,1)
+  [12] Number of roots=64, leaves=0, remote ranks=0
+  [13] Number of roots=64, leaves=0, remote ranks=0
+  [14] Number of roots=64, leaves=1, remote ranks=1
+  [14] 1 <- (6,2)
+  [15] Number of roots=64, leaves=1, remote ranks=1
+  [15] 0 <- (6,3)
+Patch 7: (6, 2, 0)--(8, 4, 1)
+Processor [0] M 3 N 4 m 2 n 2 w 1 s 0
+X range of indices: 0 2, Y range of indices: 0 2
+Processor [1] M 3 N 4 m 2 n 2 w 1 s 0
+X range of indices: 2 3, Y range of indices: 0 2
+Processor [2] M 3 N 4 m 2 n 2 w 1 s 0
+X range of indices: 0 2, Y range of indices: 2 4
+Processor [3] M 3 N 4 m 2 n 2 w 1 s 0
+X range of indices: 2 3, Y range of indices: 2 4
+Star Forest Object:Buffered Map 16 MPI processes
+  type not yet set
+  [0] Number of roots=64, leaves=0, remote ranks=0
+  [1] Number of roots=64, leaves=0, remote ranks=0
+  [2] Number of roots=64, leaves=0, remote ranks=0
+  [3] Number of roots=64, leaves=0, remote ranks=0
+  [4] Number of roots=64, leaves=0, remote ranks=0
+  [5] Number of roots=64, leaves=0, remote ranks=0
+  [6] Number of roots=64, leaves=0, remote ranks=0
+  [7] Number of roots=64, leaves=0, remote ranks=0
+  [8] Number of roots=64, leaves=0, remote ranks=0
+  [9] Number of roots=64, leaves=0, remote ranks=0
+  [10] Number of roots=64, leaves=4, remote ranks=4
+  [10] 0 <- (2,3)
+  [10] 1 <- (3,2)
+  [10] 2 <- (6,1)
+  [10] 3 <- (7,0)
+  [11] Number of roots=64, leaves=2, remote ranks=2
+  [11] 0 <- (3,3)
+  [11] 1 <- (7,1)
+  [12] Number of roots=64, leaves=0, remote ranks=0
+  [13] Number of roots=64, leaves=0, remote ranks=0
+  [14] Number of roots=64, leaves=4, remote ranks=4
+  [14] 0 <- (6,3)
+  [14] 1 <- (7,2)
+  [14] 2 <- (10,1)
+  [14] 3 <- (11,0)
+  [15] Number of roots=64, leaves=2, remote ranks=2
+  [15] 0 <- (7,3)
+  [15] 1 <- (11,1)
+Star Forest Object:Restricted Map 16 MPI processes
+  type not yet set
+  [0] Number of roots=64, leaves=0, remote ranks=0
+  [1] Number of roots=64, leaves=0, remote ranks=0
+  [2] Number of roots=64, leaves=0, remote ranks=0
+  [3] Number of roots=64, leaves=0, remote ranks=0
+  [4] Number of roots=64, leaves=0, remote ranks=0
+  [5] Number of roots=64, leaves=0, remote ranks=0
+  [6] Number of roots=64, leaves=0, remote ranks=0
+  [7] Number of roots=64, leaves=0, remote ranks=0
+  [8] Number of roots=64, leaves=0, remote ranks=0
+  [9] Number of roots=64, leaves=0, remote ranks=0
+  [10] Number of roots=64, leaves=1, remote ranks=1
+  [10] 4 <- (7,0)
+  [11] Number of roots=64, leaves=1, remote ranks=1
+  [11] 3 <- (7,1)
+  [12] Number of roots=64, leaves=0, remote ranks=0
+  [13] Number of roots=64, leaves=0, remote ranks=0
+  [14] Number of roots=64, leaves=1, remote ranks=1
+  [14] 1 <- (7,2)
+  [15] Number of roots=64, leaves=1, remote ranks=1
+  [15] 0 <- (7,3)
+Patch 8: (0, 4, 0)--(2, 6, 1)
+Processor [0] M 3 N 4 m 2 n 2 w 1 s 0
+X range of indices: 0 2, Y range of indices: 0 2
+Processor [1] M 3 N 4 m 2 n 2 w 1 s 0
+X range of indices: 2 3, Y range of indices: 0 2
+Processor [2] M 3 N 4 m 2 n 2 w 1 s 0
+X range of indices: 0 2, Y range of indices: 2 4
+Processor [3] M 3 N 4 m 2 n 2 w 1 s 0
+X range of indices: 2 3, Y range of indices: 2 4
+Star Forest Object:Buffered Map 16 MPI processes
+  type not yet set
+  [0] Number of roots=64, leaves=4, remote ranks=2
+  [0] 0 <- (4,2)
+  [0] 1 <- (4,3)
+  [0] 2 <- (8,0)
+  [0] 3 <- (8,1)
+  [1] Number of roots=64, leaves=2, remote ranks=2
+  [1] 0 <- (5,2)
+  [1] 1 <- (9,0)
+  [2] Number of roots=64, leaves=0, remote ranks=0
+  [3] Number of roots=64, leaves=0, remote ranks=0
+  [4] Number of roots=64, leaves=4, remote ranks=2
+  [4] 0 <- (8,2)
+  [4] 1 <- (8,3)
+  [4] 2 <- (12,0)
+  [4] 3 <- (12,1)
+  [5] Number of roots=64, leaves=2, remote ranks=2
+  [5] 0 <- (9,2)
+  [5] 1 <- (13,0)
+  [6] Number of roots=64, leaves=0, remote ranks=0
+  [7] Number of roots=64, leaves=0, remote ranks=0
+  [8] Number of roots=64, leaves=0, remote ranks=0
+  [9] Number of roots=64, leaves=0, remote ranks=0
+  [10] Number of roots=64, leaves=0, remote ranks=0
+  [11] Number of roots=64, leaves=0, remote ranks=0
+  [12] Number of roots=64, leaves=0, remote ranks=0
+  [13] Number of roots=64, leaves=0, remote ranks=0
+  [14] Number of roots=64, leaves=0, remote ranks=0
+  [15] Number of roots=64, leaves=0, remote ranks=0
+Star Forest Object:Restricted Map 16 MPI processes
+  type not yet set
+  [0] Number of roots=64, leaves=2, remote ranks=1
+  [0] 3 <- (8,0)
+  [0] 4 <- (8,1)
+  [1] Number of roots=64, leaves=0, remote ranks=0
+  [2] Number of roots=64, leaves=0, remote ranks=0
+  [3] Number of roots=64, leaves=0, remote ranks=0
+  [4] Number of roots=64, leaves=2, remote ranks=1
+  [4] 0 <- (8,2)
+  [4] 1 <- (8,3)
+  [5] Number of roots=64, leaves=0, remote ranks=0
+  [6] Number of roots=64, leaves=0, remote ranks=0
+  [7] Number of roots=64, leaves=0, remote ranks=0
+  [8] Number of roots=64, leaves=0, remote ranks=0
+  [9] Number of roots=64, leaves=0, remote ranks=0
+  [10] Number of roots=64, leaves=0, remote ranks=0
+  [11] Number of roots=64, leaves=0, remote ranks=0
+  [12] Number of roots=64, leaves=0, remote ranks=0
+  [13] Number of roots=64, leaves=0, remote ranks=0
+  [14] Number of roots=64, leaves=0, remote ranks=0
+  [15] Number of roots=64, leaves=0, remote ranks=0
+Patch 9: (2, 4, 0)--(4, 6, 1)
+Processor [0] M 4 N 4 m 2 n 2 w 1 s 0
+X range of indices: 0 2, Y range of indices: 0 2
+Processor [1] M 4 N 4 m 2 n 2 w 1 s 0
+X range of indices: 2 4, Y range of indices: 0 2
+Processor [2] M 4 N 4 m 2 n 2 w 1 s 0
+X range of indices: 0 2, Y range of indices: 2 4
+Processor [3] M 4 N 4 m 2 n 2 w 1 s 0
+X range of indices: 2 4, Y range of indices: 2 4
+Star Forest Object:Buffered Map 16 MPI processes
+  type not yet set
+  [0] Number of roots=64, leaves=4, remote ranks=4
+  [0] 0 <- (4,3)
+  [0] 1 <- (5,2)
+  [0] 2 <- (8,1)
+  [0] 3 <- (9,0)
+  [1] Number of roots=64, leaves=4, remote ranks=4
+  [1] 0 <- (5,3)
+  [1] 1 <- (6,2)
+  [1] 2 <- (9,1)
+  [1] 3 <- (10,0)
+  [2] Number of roots=64, leaves=0, remote ranks=0
+  [3] Number of roots=64, leaves=0, remote ranks=0
+  [4] Number of roots=64, leaves=4, remote ranks=4
+  [4] 0 <- (8,3)
+  [4] 1 <- (9,2)
+  [4] 2 <- (12,1)
+  [4] 3 <- (13,0)
+  [5] Number of roots=64, leaves=4, remote ranks=4
+  [5] 0 <- (9,3)
+  [5] 1 <- (10,2)
+  [5] 2 <- (13,1)
+  [5] 3 <- (14,0)
+  [6] Number of roots=64, leaves=0, remote ranks=0
+  [7] Number of roots=64, leaves=0, remote ranks=0
+  [8] Number of roots=64, leaves=0, remote ranks=0
+  [9] Number of roots=64, leaves=0, remote ranks=0
+  [10] Number of roots=64, leaves=0, remote ranks=0
+  [11] Number of roots=64, leaves=0, remote ranks=0
+  [12] Number of roots=64, leaves=0, remote ranks=0
+  [13] Number of roots=64, leaves=0, remote ranks=0
+  [14] Number of roots=64, leaves=0, remote ranks=0
+  [15] Number of roots=64, leaves=0, remote ranks=0
+Star Forest Object:Restricted Map 16 MPI processes
+  type not yet set
+  [0] Number of roots=64, leaves=1, remote ranks=1
+  [0] 5 <- (9,0)
+  [1] Number of roots=64, leaves=1, remote ranks=1
+  [1] 4 <- (9,1)
+  [2] Number of roots=64, leaves=0, remote ranks=0
+  [3] Number of roots=64, leaves=0, remote ranks=0
+  [4] Number of roots=64, leaves=1, remote ranks=1
+  [4] 1 <- (9,2)
+  [5] Number of roots=64, leaves=1, remote ranks=1
+  [5] 0 <- (9,3)
+  [6] Number of roots=64, leaves=0, remote ranks=0
+  [7] Number of roots=64, leaves=0, remote ranks=0
+  [8] Number of roots=64, leaves=0, remote ranks=0
+  [9] Number of roots=64, leaves=0, remote ranks=0
+  [10] Number of roots=64, leaves=0, remote ranks=0
+  [11] Number of roots=64, leaves=0, remote ranks=0
+  [12] Number of roots=64, leaves=0, remote ranks=0
+  [13] Number of roots=64, leaves=0, remote ranks=0
+  [14] Number of roots=64, leaves=0, remote ranks=0
+  [15] Number of roots=64, leaves=0, remote ranks=0
+Patch 10: (4, 4, 0)--(6, 6, 1)
+Processor [0] M 4 N 4 m 2 n 2 w 1 s 0
+X range of indices: 0 2, Y range of indices: 0 2
+Processor [1] M 4 N 4 m 2 n 2 w 1 s 0
+X range of indices: 2 4, Y range of indices: 0 2
+Processor [2] M 4 N 4 m 2 n 2 w 1 s 0
+X range of indices: 0 2, Y range of indices: 2 4
+Processor [3] M 4 N 4 m 2 n 2 w 1 s 0
+X range of indices: 2 4, Y range of indices: 2 4
+Star Forest Object:Buffered Map 16 MPI processes
+  type not yet set
+  [0] Number of roots=64, leaves=0, remote ranks=0
+  [1] Number of roots=64, leaves=0, remote ranks=0
+  [2] Number of roots=64, leaves=4, remote ranks=4
+  [2] 0 <- (5,3)
+  [2] 1 <- (6,2)
+  [2] 2 <- (9,1)
+  [2] 3 <- (10,0)
+  [3] Number of roots=64, leaves=4, remote ranks=4
+  [3] 0 <- (6,3)
+  [3] 1 <- (7,2)
+  [3] 2 <- (10,1)
+  [3] 3 <- (11,0)
+  [4] Number of roots=64, leaves=0, remote ranks=0
+  [5] Number of roots=64, leaves=0, remote ranks=0
+  [6] Number of roots=64, leaves=4, remote ranks=4
+  [6] 0 <- (9,3)
+  [6] 1 <- (10,2)
+  [6] 2 <- (13,1)
+  [6] 3 <- (14,0)
+  [7] Number of roots=64, leaves=4, remote ranks=4
+  [7] 0 <- (10,3)
+  [7] 1 <- (11,2)
+  [7] 2 <- (14,1)
+  [7] 3 <- (15,0)
+  [8] Number of roots=64, leaves=0, remote ranks=0
+  [9] Number of roots=64, leaves=0, remote ranks=0
+  [10] Number of roots=64, leaves=0, remote ranks=0
+  [11] Number of roots=64, leaves=0, remote ranks=0
+  [12] Number of roots=64, leaves=0, remote ranks=0
+  [13] Number of roots=64, leaves=0, remote ranks=0
+  [14] Number of roots=64, leaves=0, remote ranks=0
+  [15] Number of roots=64, leaves=0, remote ranks=0
+Star Forest Object:Restricted Map 16 MPI processes
+  type not yet set
+  [0] Number of roots=64, leaves=0, remote ranks=0
+  [1] Number of roots=64, leaves=0, remote ranks=0
+  [2] Number of roots=64, leaves=1, remote ranks=1
+  [2] 5 <- (10,0)
+  [3] Number of roots=64, leaves=1, remote ranks=1
+  [3] 4 <- (10,1)
+  [4] Number of roots=64, leaves=0, remote ranks=0
+  [5] Number of roots=64, leaves=0, remote ranks=0
+  [6] Number of roots=64, leaves=1, remote ranks=1
+  [6] 1 <- (10,2)
+  [7] Number of roots=64, leaves=1, remote ranks=1
+  [7] 0 <- (10,3)
+  [8] Number of roots=64, leaves=0, remote ranks=0
+  [9] Number of roots=64, leaves=0, remote ranks=0
+  [10] Number of roots=64, leaves=0, remote ranks=0
+  [11] Number of roots=64, leaves=0, remote ranks=0
+  [12] Number of roots=64, leaves=0, remote ranks=0
+  [13] Number of roots=64, leaves=0, remote ranks=0
+  [14] Number of roots=64, leaves=0, remote ranks=0
+  [15] Number of roots=64, leaves=0, remote ranks=0
+Patch 11: (6, 4, 0)--(8, 6, 1)
+Processor [0] M 3 N 4 m 2 n 2 w 1 s 0
+X range of indices: 0 2, Y range of indices: 0 2
+Processor [1] M 3 N 4 m 2 n 2 w 1 s 0
+X range of indices: 2 3, Y range of indices: 0 2
+Processor [2] M 3 N 4 m 2 n 2 w 1 s 0
+X range of indices: 0 2, Y range of indices: 2 4
+Processor [3] M 3 N 4 m 2 n 2 w 1 s 0
+X range of indices: 2 3, Y range of indices: 2 4
+Star Forest Object:Buffered Map 16 MPI processes
+  type not yet set
+  [0] Number of roots=64, leaves=0, remote ranks=0
+  [1] Number of roots=64, leaves=0, remote ranks=0
+  [2] Number of roots=64, leaves=4, remote ranks=4
+  [2] 0 <- (6,3)
+  [2] 1 <- (7,2)
+  [2] 2 <- (10,1)
+  [2] 3 <- (11,0)
+  [3] Number of roots=64, leaves=2, remote ranks=2
+  [3] 0 <- (7,3)
+  [3] 1 <- (11,1)
+  [4] Number of roots=64, leaves=0, remote ranks=0
+  [5] Number of roots=64, leaves=0, remote ranks=0
+  [6] Number of roots=64, leaves=4, remote ranks=4
+  [6] 0 <- (10,3)
+  [6] 1 <- (11,2)
+  [6] 2 <- (14,1)
+  [6] 3 <- (15,0)
+  [7] Number of roots=64, leaves=2, remote ranks=2
+  [7] 0 <- (11,3)
+  [7] 1 <- (15,1)
+  [8] Number of roots=64, leaves=0, remote ranks=0
+  [9] Number of roots=64, leaves=0, remote ranks=0
+  [10] Number of roots=64, leaves=0, remote ranks=0
+  [11] Number of roots=64, leaves=0, remote ranks=0
+  [12] Number of roots=64, leaves=0, remote ranks=0
+  [13] Number of roots=64, leaves=0, remote ranks=0
+  [14] Number of roots=64, leaves=0, remote ranks=0
+  [15] Number of roots=64, leaves=0, remote ranks=0
+Star Forest Object:Restricted Map 16 MPI processes
+  type not yet set
+  [0] Number of roots=64, leaves=0, remote ranks=0
+  [1] Number of roots=64, leaves=0, remote ranks=0
+  [2] Number of roots=64, leaves=1, remote ranks=1
+  [2] 4 <- (11,0)
+  [3] Number of roots=64, leaves=1, remote ranks=1
+  [3] 3 <- (11,1)
+  [4] Number of roots=64, leaves=0, remote ranks=0
+  [5] Number of roots=64, leaves=0, remote ranks=0
+  [6] Number of roots=64, leaves=1, remote ranks=1
+  [6] 1 <- (11,2)
+  [7] Number of roots=64, leaves=1, remote ranks=1
+  [7] 0 <- (11,3)
+  [8] Number of roots=64, leaves=0, remote ranks=0
+  [9] Number of roots=64, leaves=0, remote ranks=0
+  [10] Number of roots=64, leaves=0, remote ranks=0
+  [11] Number of roots=64, leaves=0, remote ranks=0
+  [12] Number of roots=64, leaves=0, remote ranks=0
+  [13] Number of roots=64, leaves=0, remote ranks=0
+  [14] Number of roots=64, leaves=0, remote ranks=0
+  [15] Number of roots=64, leaves=0, remote ranks=0
+Patch 12: (0, 6, 0)--(2, 8, 1)
+Processor [0] M 3 N 3 m 2 n 2 w 1 s 0
+X range of indices: 0 2, Y range of indices: 0 2
+Processor [1] M 3 N 3 m 2 n 2 w 1 s 0
+X range of indices: 2 3, Y range of indices: 0 2
+Processor [2] M 3 N 3 m 2 n 2 w 1 s 0
+X range of indices: 0 2, Y range of indices: 2 3
+Processor [3] M 3 N 3 m 2 n 2 w 1 s 0
+X range of indices: 2 3, Y range of indices: 2 3
+Star Forest Object:Buffered Map 16 MPI processes
+  type not yet set
+  [0] Number of roots=64, leaves=0, remote ranks=0
+  [1] Number of roots=64, leaves=0, remote ranks=0
+  [2] Number of roots=64, leaves=0, remote ranks=0
+  [3] Number of roots=64, leaves=0, remote ranks=0
+  [4] Number of roots=64, leaves=0, remote ranks=0
+  [5] Number of roots=64, leaves=0, remote ranks=0
+  [6] Number of roots=64, leaves=0, remote ranks=0
+  [7] Number of roots=64, leaves=0, remote ranks=0
+  [8] Number of roots=64, leaves=4, remote ranks=2
+  [8] 0 <- (8,2)
+  [8] 1 <- (8,3)
+  [8] 2 <- (12,0)
+  [8] 3 <- (12,1)
+  [9] Number of roots=64, leaves=2, remote ranks=2
+  [9] 0 <- (9,2)
+  [9] 1 <- (13,0)
+  [10] Number of roots=64, leaves=0, remote ranks=0
+  [11] Number of roots=64, leaves=0, remote ranks=0
+  [12] Number of roots=64, leaves=2, remote ranks=1
+  [12] 0 <- (12,2)
+  [12] 1 <- (12,3)
+  [13] Number of roots=64, leaves=1, remote ranks=1
+  [13] 0 <- (13,2)
+  [14] Number of roots=64, leaves=0, remote ranks=0
+  [15] Number of roots=64, leaves=0, remote ranks=0
+Star Forest Object:Restricted Map 16 MPI processes
+  type not yet set
+  [0] Number of roots=64, leaves=0, remote ranks=0
+  [1] Number of roots=64, leaves=0, remote ranks=0
+  [2] Number of roots=64, leaves=0, remote ranks=0
+  [3] Number of roots=64, leaves=0, remote ranks=0
+  [4] Number of roots=64, leaves=0, remote ranks=0
+  [5] Number of roots=64, leaves=0, remote ranks=0
+  [6] Number of roots=64, leaves=0, remote ranks=0
+  [7] Number of roots=64, leaves=0, remote ranks=0
+  [8] Number of roots=64, leaves=2, remote ranks=1
+  [8] 3 <- (12,0)
+  [8] 4 <- (12,1)
+  [9] Number of roots=64, leaves=0, remote ranks=0
+  [10] Number of roots=64, leaves=0, remote ranks=0
+  [11] Number of roots=64, leaves=0, remote ranks=0
+  [12] Number of roots=64, leaves=2, remote ranks=1
+  [12] 0 <- (12,2)
+  [12] 1 <- (12,3)
+  [13] Number of roots=64, leaves=0, remote ranks=0
+  [14] Number of roots=64, leaves=0, remote ranks=0
+  [15] Number of roots=64, leaves=0, remote ranks=0
+Patch 13: (2, 6, 0)--(4, 8, 1)
+Processor [0] M 4 N 3 m 2 n 2 w 1 s 0
+X range of indices: 0 2, Y range of indices: 0 2
+Processor [1] M 4 N 3 m 2 n 2 w 1 s 0
+X range of indices: 2 4, Y range of indices: 0 2
+Processor [2] M 4 N 3 m 2 n 2 w 1 s 0
+X range of indices: 0 2, Y range of indices: 2 3
+Processor [3] M 4 N 3 m 2 n 2 w 1 s 0
+X range of indices: 2 4, Y range of indices: 2 3
+Star Forest Object:Buffered Map 16 MPI processes
+  type not yet set
+  [0] Number of roots=64, leaves=0, remote ranks=0
+  [1] Number of roots=64, leaves=0, remote ranks=0
+  [2] Number of roots=64, leaves=0, remote ranks=0
+  [3] Number of roots=64, leaves=0, remote ranks=0
+  [4] Number of roots=64, leaves=0, remote ranks=0
+  [5] Number of roots=64, leaves=0, remote ranks=0
+  [6] Number of roots=64, leaves=0, remote ranks=0
+  [7] Number of roots=64, leaves=0, remote ranks=0
+  [8] Number of roots=64, leaves=4, remote ranks=4
+  [8] 0 <- (8,3)
+  [8] 1 <- (9,2)
+  [8] 2 <- (12,1)
+  [8] 3 <- (13,0)
+  [9] Number of roots=64, leaves=4, remote ranks=4
+  [9] 0 <- (9,3)
+  [9] 1 <- (10,2)
+  [9] 2 <- (13,1)
+  [9] 3 <- (14,0)
+  [10] Number of roots=64, leaves=0, remote ranks=0
+  [11] Number of roots=64, leaves=0, remote ranks=0
+  [12] Number of roots=64, leaves=2, remote ranks=2
+  [12] 0 <- (12,3)
+  [12] 1 <- (13,2)
+  [13] Number of roots=64, leaves=2, remote ranks=2
+  [13] 0 <- (13,3)
+  [13] 1 <- (14,2)
+  [14] Number of roots=64, leaves=0, remote ranks=0
+  [15] Number of roots=64, leaves=0, remote ranks=0
+Star Forest Object:Restricted Map 16 MPI processes
+  type not yet set
+  [0] Number of roots=64, leaves=0, remote ranks=0
+  [1] Number of roots=64, leaves=0, remote ranks=0
+  [2] Number of roots=64, leaves=0, remote ranks=0
+  [3] Number of roots=64, leaves=0, remote ranks=0
+  [4] Number of roots=64, leaves=0, remote ranks=0
+  [5] Number of roots=64, leaves=0, remote ranks=0
+  [6] Number of roots=64, leaves=0, remote ranks=0
+  [7] Number of roots=64, leaves=0, remote ranks=0
+  [8] Number of roots=64, leaves=1, remote ranks=1
+  [8] 5 <- (13,0)
+  [9] Number of roots=64, leaves=1, remote ranks=1
+  [9] 4 <- (13,1)
+  [10] Number of roots=64, leaves=0, remote ranks=0
+  [11] Number of roots=64, leaves=0, remote ranks=0
+  [12] Number of roots=64, leaves=1, remote ranks=1
+  [12] 1 <- (13,2)
+  [13] Number of roots=64, leaves=1, remote ranks=1
+  [13] 0 <- (13,3)
+  [14] Number of roots=64, leaves=0, remote ranks=0
+  [15] Number of roots=64, leaves=0, remote ranks=0
+Patch 14: (4, 6, 0)--(6, 8, 1)
+Processor [0] M 4 N 3 m 2 n 2 w 1 s 0
+X range of indices: 0 2, Y range of indices: 0 2
+Processor [1] M 4 N 3 m 2 n 2 w 1 s 0
+X range of indices: 2 4, Y range of indices: 0 2
+Processor [2] M 4 N 3 m 2 n 2 w 1 s 0
+X range of indices: 0 2, Y range of indices: 2 3
+Processor [3] M 4 N 3 m 2 n 2 w 1 s 0
+X range of indices: 2 4, Y range of indices: 2 3
+Star Forest Object:Buffered Map 16 MPI processes
+  type not yet set
+  [0] Number of roots=64, leaves=0, remote ranks=0
+  [1] Number of roots=64, leaves=0, remote ranks=0
+  [2] Number of roots=64, leaves=0, remote ranks=0
+  [3] Number of roots=64, leaves=0, remote ranks=0
+  [4] Number of roots=64, leaves=0, remote ranks=0
+  [5] Number of roots=64, leaves=0, remote ranks=0
+  [6] Number of roots=64, leaves=0, remote ranks=0
+  [7] Number of roots=64, leaves=0, remote ranks=0
+  [8] Number of roots=64, leaves=0, remote ranks=0
+  [9] Number of roots=64, leaves=0, remote ranks=0
+  [10] Number of roots=64, leaves=4, remote ranks=4
+  [10] 0 <- (9,3)
+  [10] 1 <- (10,2)
+  [10] 2 <- (13,1)
+  [10] 3 <- (14,0)
+  [11] Number of roots=64, leaves=4, remote ranks=4
+  [11] 0 <- (10,3)
+  [11] 1 <- (11,2)
+  [11] 2 <- (14,1)
+  [11] 3 <- (15,0)
+  [12] Number of roots=64, leaves=0, remote ranks=0
+  [13] Number of roots=64, leaves=0, remote ranks=0
+  [14] Number of roots=64, leaves=2, remote ranks=2
+  [14] 0 <- (13,3)
+  [14] 1 <- (14,2)
+  [15] Number of roots=64, leaves=2, remote ranks=2
+  [15] 0 <- (14,3)
+  [15] 1 <- (15,2)
+Star Forest Object:Restricted Map 16 MPI processes
+  type not yet set
+  [0] Number of roots=64, leaves=0, remote ranks=0
+  [1] Number of roots=64, leaves=0, remote ranks=0
+  [2] Number of roots=64, leaves=0, remote ranks=0
+  [3] Number of roots=64, leaves=0, remote ranks=0
+  [4] Number of roots=64, leaves=0, remote ranks=0
+  [5] Number of roots=64, leaves=0, remote ranks=0
+  [6] Number of roots=64, leaves=0, remote ranks=0
+  [7] Number of roots=64, leaves=0, remote ranks=0
+  [8] Number of roots=64, leaves=0, remote ranks=0
+  [9] Number of roots=64, leaves=0, remote ranks=0
+  [10] Number of roots=64, leaves=1, remote ranks=1
+  [10] 5 <- (14,0)
+  [11] Number of roots=64, leaves=1, remote ranks=1
+  [11] 4 <- (14,1)
+  [12] Number of roots=64, leaves=0, remote ranks=0
+  [13] Number of roots=64, leaves=0, remote ranks=0
+  [14] Number of roots=64, leaves=1, remote ranks=1
+  [14] 1 <- (14,2)
+  [15] Number of roots=64, leaves=1, remote ranks=1
+  [15] 0 <- (14,3)
+Patch 15: (6, 6, 0)--(8, 8, 1)
+Processor [0] M 3 N 3 m 2 n 2 w 1 s 0
+X range of indices: 0 2, Y range of indices: 0 2
+Processor [1] M 3 N 3 m 2 n 2 w 1 s 0
+X range of indices: 2 3, Y range of indices: 0 2
+Processor [2] M 3 N 3 m 2 n 2 w 1 s 0
+X range of indices: 0 2, Y range of indices: 2 3
+Processor [3] M 3 N 3 m 2 n 2 w 1 s 0
+X range of indices: 2 3, Y range of indices: 2 3
+Star Forest Object:Buffered Map 16 MPI processes
+  type not yet set
+  [0] Number of roots=64, leaves=0, remote ranks=0
+  [1] Number of roots=64, leaves=0, remote ranks=0
+  [2] Number of roots=64, leaves=0, remote ranks=0
+  [3] Number of roots=64, leaves=0, remote ranks=0
+  [4] Number of roots=64, leaves=0, remote ranks=0
+  [5] Number of roots=64, leaves=0, remote ranks=0
+  [6] Number of roots=64, leaves=0, remote ranks=0
+  [7] Number of roots=64, leaves=0, remote ranks=0
+  [8] Number of roots=64, leaves=0, remote ranks=0
+  [9] Number of roots=64, leaves=0, remote ranks=0
+  [10] Number of roots=64, leaves=4, remote ranks=4
+  [10] 0 <- (10,3)
+  [10] 1 <- (11,2)
+  [10] 2 <- (14,1)
+  [10] 3 <- (15,0)
+  [11] Number of roots=64, leaves=2, remote ranks=2
+  [11] 0 <- (11,3)
+  [11] 1 <- (15,1)
+  [12] Number of roots=64, leaves=0, remote ranks=0
+  [13] Number of roots=64, leaves=0, remote ranks=0
+  [14] Number of roots=64, leaves=2, remote ranks=2
+  [14] 0 <- (14,3)
+  [14] 1 <- (15,2)
+  [15] Number of roots=64, leaves=1, remote ranks=1
+  [15] 0 <- (15,3)
+Star Forest Object:Restricted Map 16 MPI processes
+  type not yet set
+  [0] Number of roots=64, leaves=0, remote ranks=0
+  [1] Number of roots=64, leaves=0, remote ranks=0
+  [2] Number of roots=64, leaves=0, remote ranks=0
+  [3] Number of roots=64, leaves=0, remote ranks=0
+  [4] Number of roots=64, leaves=0, remote ranks=0
+  [5] Number of roots=64, leaves=0, remote ranks=0
+  [6] Number of roots=64, leaves=0, remote ranks=0
+  [7] Number of roots=64, leaves=0, remote ranks=0
+  [8] Number of roots=64, leaves=0, remote ranks=0
+  [9] Number of roots=64, leaves=0, remote ranks=0
+  [10] Number of roots=64, leaves=1, remote ranks=1
+  [10] 4 <- (15,0)
+  [11] Number of roots=64, leaves=1, remote ranks=1
+  [11] 3 <- (15,1)
+  [12] Number of roots=64, leaves=0, remote ranks=0
+  [13] Number of roots=64, leaves=0, remote ranks=0
+  [14] Number of roots=64, leaves=1, remote ranks=1
+  [14] 1 <- (15,2)
+  [15] Number of roots=64, leaves=1, remote ranks=1
+  [15] 0 <- (15,3)

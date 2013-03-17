@@ -3,9 +3,9 @@
   Code for manipulating distributed regular arrays in parallel.
 */
 
-#include <petsc-private/daimpl.h>    /*I   "petscdmda.h"   I*/
+#include <petsc-private/dmdaimpl.h>    /*I   "petscdmda.h"   I*/
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMDAGetGlobalIndices"
 /*@C
    DMDAGetGlobalIndices - Returns the global node number of all local nodes,
@@ -17,14 +17,14 @@
 .  da - the distributed array
 
    Output Parameters:
-+  n - the number of local elements, including ghost nodes (or PETSC_NULL)
++  n - the number of local elements, including ghost nodes (or NULL)
 -  idx - the global indices
 
    Level: intermediate
 
-   Note: 
+   Note:
    For DMDA_STENCIL_STAR stencils the inactive corner ghost nodes are also included
-   in the list of local indices (even though those nodes are not updated 
+   in the list of local indices (even though those nodes are not updated
    during calls to DMDAXXXToXXX().
 
    Essentially the same data is returned in the form of a local-to-global mapping
@@ -53,16 +53,16 @@
 @*/
 PetscErrorCode  DMDAGetGlobalIndices(DM da,PetscInt *n,PetscInt **idx)
 {
-  DM_DA          *dd = (DM_DA*)da->data;
+  DM_DA *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
-  if (n)   *n   = dd->Nl;
+  if (n) *n = dd->Nl;
   if (idx) *idx = dd->idx;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMDAGetNatural_Private"
 /*
    Gets the natural number for each global number on the process.
@@ -77,15 +77,11 @@ PetscErrorCode DMDAGetNatural_Private(DM da,PetscInt *outNlocal,IS *isnatural)
 
   PetscFunctionBegin;
   Nlocal = (dd->xe-dd->xs);
-  if (dd->dim > 1) {
-    Nlocal *= (dd->ye-dd->ys);
-  } 
-  if (dd->dim > 2) {
-    Nlocal *= (dd->ze-dd->zs);
-  }
-  
+  if (dd->dim > 1) Nlocal *= (dd->ye-dd->ys);
+  if (dd->dim > 2) Nlocal *= (dd->ze-dd->zs);
+
   ierr = PetscMalloc(Nlocal*sizeof(PetscInt),&lidx);CHKERRQ(ierr);
-  
+
   if (dd->dim == 1) {
     for (i=dd->xs; i<dd->xe; i++) {
       /*  global number in natural ordering */
@@ -94,25 +90,25 @@ PetscErrorCode DMDAGetNatural_Private(DM da,PetscInt *outNlocal,IS *isnatural)
   } else if (dd->dim == 2) {
     for (j=dd->ys; j<dd->ye; j++) {
       for (i=dd->xs; i<dd->xe; i++) {
-	/*  global number in natural ordering */
-	lidx[lict++] = i + j*dd->M*dd->w;
+        /*  global number in natural ordering */
+        lidx[lict++] = i + j*dd->M*dd->w;
       }
     }
   } else if (dd->dim == 3) {
     for (k=dd->zs; k<dd->ze; k++) {
       for (j=dd->ys; j<dd->ye; j++) {
-	for (i=dd->xs; i<dd->xe; i++) {
-	  lidx[lict++] = i + j*dd->M*dd->w + k*dd->M*dd->N*dd->w;
-	}
+        for (i=dd->xs; i<dd->xe; i++) {
+          lidx[lict++] = i + j*dd->M*dd->w + k*dd->M*dd->N*dd->w;
+        }
       }
     }
   }
   *outNlocal = Nlocal;
-  ierr = ISCreateGeneral(((PetscObject)da)->comm,Nlocal,lidx,PETSC_OWN_POINTER,isnatural);CHKERRQ(ierr);
+  ierr       = ISCreateGeneral(PetscObjectComm((PetscObject)da),Nlocal,lidx,PETSC_OWN_POINTER,isnatural);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMDAGetAO"
 /*@
    DMDAGetAO - Gets the application ordering context for a distributed array.
@@ -148,7 +144,7 @@ PetscErrorCode  DMDAGetAO(DM da,AO *ao)
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   PetscValidPointer(ao,2);
 
-  /* 
+  /*
      Build the natural ordering to PETSc ordering mappings.
   */
   if (!dd->ao) {
@@ -157,7 +153,7 @@ PetscErrorCode  DMDAGetAO(DM da,AO *ao)
     PetscInt       Nlocal;
 
     ierr = DMDAGetNatural_Private(da,&Nlocal,&isnatural);CHKERRQ(ierr);
-    ierr = ISCreateStride(((PetscObject)da)->comm,Nlocal,dd->base,1,&ispetsc);CHKERRQ(ierr);
+    ierr = ISCreateStride(PetscObjectComm((PetscObject)da),Nlocal,dd->base,1,&ispetsc);CHKERRQ(ierr);
     ierr = AOCreateBasicIS(isnatural,ispetsc,&dd->ao);CHKERRQ(ierr);
     ierr = PetscLogObjectParent(da,dd->ao);CHKERRQ(ierr);
     ierr = ISDestroy(&ispetsc);CHKERRQ(ierr);
@@ -168,7 +164,7 @@ PetscErrorCode  DMDAGetAO(DM da,AO *ao)
 }
 
 /*MC
-    DMDAGetGlobalIndicesF90 - Returns a Fortran90 pointer to the list of 
+    DMDAGetGlobalIndicesF90 - Returns a Fortran90 pointer to the list of
     global indices (global node number of all local nodes, including
     ghost nodes).
 
@@ -181,7 +177,7 @@ PetscErrorCode  DMDAGetAO(DM da,AO *ao)
 .   da - the distributed array
 
     Output Parameters:
-+   n - the number of local elements, including ghost nodes (or PETSC_NULL)
++   n - the number of local elements, including ghost nodes (or NULL)
 .   idx - the Fortran90 pointer to the global indices
 -   ierr - error code
 

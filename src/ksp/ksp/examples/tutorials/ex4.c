@@ -46,18 +46,19 @@ TO ADD:
 
 #undef __FUNCT__
 #define __FUNCT__ "IntegrateCells"
-PetscErrorCode IntegrateCells(DM dm, PetscInt *Ne, PetscInt *Nl, PetscInt **elemRows, PetscScalar **elemMats) {
+PetscErrorCode IntegrateCells(DM dm, PetscInt *Ne, PetscInt *Nl, PetscInt **elemRows, PetscScalar **elemMats)
+{
   DMDALocalInfo  info;
-  PetscInt      *er;
-  PetscScalar   *em;
+  PetscInt       *er;
+  PetscScalar    *em;
   PetscInt       X, Y, dof;
   PetscInt       nl, nxe, nye, ne;
-  PetscInt       k  = 0, m  = 0;
+  PetscInt       k = 0, m  = 0;
   PetscInt       i, j;
   PetscLogEvent  integrationEvent;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   ierr = PetscLogEventRegister("ElemIntegration", DM_CLASSID, &integrationEvent);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(integrationEvent,0,0,0,0);CHKERRQ(ierr);
   ierr = DMDAGetInfo(dm, 0, &X, &Y,0,0,0,0, &dof,0,0,0,0,0);CHKERRQ(ierr);
@@ -71,16 +72,16 @@ PetscErrorCode IntegrateCells(DM dm, PetscInt *Ne, PetscInt *Nl, PetscInt **elem
   ierr = PetscMalloc2(ne*nl, PetscInt, elemRows, ne*nl*nl, PetscScalar, elemMats);CHKERRQ(ierr);
   er   = *elemRows;
   em   = *elemMats;
-  // Proc 0        Proc 1
-  // xs: 0  xm: 3  xs: 0 xm: 3
-  // ys: 0  ym: 2  ys: 2 ym: 1
-  // 8 elements x 3 vertices = 24 element matrix rows and 72 entries
-  //   6 offproc rows containing 18 element matrix entries
-  //  18  onproc rows containing 54 element matrix entries
-  //   3 offproc columns in 8 element matrix entries
-  //   so we should have 46 diagonal matrix entries
-  for(j = info.ys; j < info.ys+nye; ++j) {
-    for(i = info.xs; i < info.xs+nxe; ++i) {
+  /* Proc 0        Proc 1                                               */
+  /* xs: 0  xm: 3  xs: 0 xm: 3                                          */
+  /* ys: 0  ym: 2  ys: 2 ym: 1                                          */
+  /* 8 elements x 3 vertices = 24 element matrix rows and 72 entries    */
+  /*   6 offproc rows containing 18 element matrix entries              */
+  /*  18  onproc rows containing 54 element matrix entries              */
+  /*   3 offproc columns in 8 element matrix entries                    */
+  /*   so we should have 46 diagonal matrix entries                     */
+  for (j = info.ys; j < info.ys+nye; ++j) {
+    for (i = info.xs; i < info.xs+nxe; ++i) {
       PetscInt rowA = j*X     + i, rowB = j*X     + i+1;
       PetscInt rowC = (j+1)*X + i, rowD = (j+1)*X + i+1;
 
@@ -88,12 +89,12 @@ PetscErrorCode IntegrateCells(DM dm, PetscInt *Ne, PetscInt *Nl, PetscInt **elem
       er[k+0] = rowA; em[m+0*nl+0] =  1.0; em[m+0*nl+1] = -0.5; em[m+0*nl+2] = -0.5;
       er[k+1] = rowB; em[m+1*nl+0] = -0.5; em[m+1*nl+1] =  0.5; em[m+1*nl+2] =  0.0;
       er[k+2] = rowC; em[m+2*nl+0] = -0.5; em[m+2*nl+1] =  0.0; em[m+2*nl+2] =  0.5;
-      k += nl; m += nl*nl;
+      k      += nl; m += nl*nl;
       /* Upper triangle */
       er[k+0] = rowD; em[m+0*nl+0] =  1.0; em[m+0*nl+1] = -0.5; em[m+0*nl+2] = -0.5;
       er[k+1] = rowC; em[m+1*nl+0] = -0.5; em[m+1*nl+1] =  0.5; em[m+1*nl+2] =  0.0;
       er[k+2] = rowB; em[m+2*nl+0] = -0.5; em[m+2*nl+1] =  0.0; em[m+2*nl+2] =  0.5;
-      k += nl; m += nl*nl;
+      k      += nl; m += nl*nl;
     }
   }
   ierr = PetscLogEventEnd(integrationEvent,0,0,0,0);CHKERRQ(ierr);
@@ -111,30 +112,30 @@ int main(int argc, char **argv)
   Vec            x, b;
   PetscViewer    viewer;
   PetscInt       Nl, Ne;
-  PetscInt      *elemRows;
-  PetscScalar   *elemMats;
+  PetscInt       *elemRows;
+  PetscScalar    *elemMats;
   PetscBool      doGPU = PETSC_TRUE, doCPU = PETSC_TRUE, doSolve = PETSC_FALSE, doView = PETSC_TRUE;
   PetscLogStage  gpuStage, cpuStage;
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc, &argv, 0, help);CHKERRQ(ierr);
-  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE, DMDA_STENCIL_BOX, -3, -3, PETSC_DECIDE, PETSC_DECIDE, 1, 1, PETSC_NULL, PETSC_NULL, &dm);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE, DMDA_STENCIL_BOX, -3, -3, PETSC_DECIDE, PETSC_DECIDE, 1, 1, NULL, NULL, &dm);CHKERRQ(ierr);
   ierr = IntegrateCells(dm, &Ne, &Nl, &elemRows, &elemMats);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(PETSC_NULL, "-view", &doView, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL, "-view", &doView, NULL);CHKERRQ(ierr);
   /* Construct matrix using GPU */
-  ierr = PetscOptionsGetBool(PETSC_NULL, "-gpu", &doGPU, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL, "-gpu", &doGPU, NULL);CHKERRQ(ierr);
   if (doGPU) {
     ierr = PetscLogStageRegister("GPU Stage", &gpuStage);CHKERRQ(ierr);
     ierr = PetscLogStagePush(gpuStage);CHKERRQ(ierr);
     ierr = DMCreateMatrix(dm, MATAIJ, &A);CHKERRQ(ierr);
     ierr = MatSetType(A, MATAIJCUSP);CHKERRQ(ierr);
-    ierr = MatSeqAIJSetPreallocation(A, 0, PETSC_NULL);CHKERRQ(ierr);
-    ierr = MatMPIAIJSetPreallocation(A, 0, PETSC_NULL, 0, PETSC_NULL);CHKERRQ(ierr);
+    ierr = MatSeqAIJSetPreallocation(A, 0, NULL);CHKERRQ(ierr);
+    ierr = MatMPIAIJSetPreallocation(A, 0, NULL, 0, NULL);CHKERRQ(ierr);
     ierr = MatSetValuesBatch(A, Ne, Nl, elemRows, elemMats);CHKERRQ(ierr);
     ierr = MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     if (doView) {
-      ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD, PETSC_NULL, &viewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD, NULL, &viewer);CHKERRQ(ierr);
       if (Ne > 500) {ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);}
       ierr = MatView(A, viewer);CHKERRQ(ierr);
       ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
@@ -143,7 +144,7 @@ int main(int argc, char **argv)
     ierr = MatDestroy(&A);CHKERRQ(ierr);
   }
   /* Construct matrix using CPU */
-  ierr = PetscOptionsGetBool(PETSC_NULL, "-cpu", &doCPU, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL, "-cpu", &doCPU, NULL);CHKERRQ(ierr);
   if (doCPU) {
     ierr = PetscLogStageRegister("CPU Stage", &cpuStage);CHKERRQ(ierr);
     ierr = PetscLogStagePush(cpuStage);CHKERRQ(ierr);
@@ -153,7 +154,7 @@ int main(int argc, char **argv)
     ierr = MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     if (doView) {
-      ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD, PETSC_NULL, &viewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD, NULL, &viewer);CHKERRQ(ierr);
       if (Ne > 500) {ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);}
       ierr = MatView(A, viewer);CHKERRQ(ierr);
       ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
@@ -161,13 +162,13 @@ int main(int argc, char **argv)
     ierr = PetscLogStagePop();CHKERRQ(ierr);
   }
   /* Solve simple system with random rhs */
-  ierr = PetscOptionsGetBool(PETSC_NULL, "-solve", &doSolve, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL, "-solve", &doSolve, NULL);CHKERRQ(ierr);
   if (doSolve) {
     ierr = MatGetVecs(A, &x, &b);CHKERRQ(ierr);
-    ierr = VecSetRandom(b, PETSC_NULL);CHKERRQ(ierr);
+    ierr = VecSetRandom(b, NULL);CHKERRQ(ierr);
     ierr = KSPCreate(PETSC_COMM_WORLD, &ksp);CHKERRQ(ierr);
     ierr = KSPSetOperators(ksp, A, A, DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
-    ierr = MatNullSpaceCreate(PETSC_COMM_WORLD, PETSC_TRUE, 0, PETSC_NULL, &nullsp);CHKERRQ(ierr);
+    ierr = MatNullSpaceCreate(PETSC_COMM_WORLD, PETSC_TRUE, 0, NULL, &nullsp);CHKERRQ(ierr);
     ierr = KSPSetNullSpace(ksp, nullsp);CHKERRQ(ierr);
     ierr = MatNullSpaceDestroy(&nullsp);CHKERRQ(ierr);
     ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);

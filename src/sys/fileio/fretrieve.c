@@ -7,25 +7,20 @@
 #include <pwd.h>
 #endif
 #include <ctype.h>
-#include <sys/types.h>
 #include <sys/stat.h>
 #if defined(PETSC_HAVE_UNISTD_H)
 #include <unistd.h>
-#endif
-#if defined(PETSC_HAVE_STDLIB_H)
-#include <stdlib.h>
 #endif
 #if defined(PETSC_HAVE_SYS_UTSNAME_H)
 #include <sys/utsname.h>
 #endif
 #include <fcntl.h>
-#include <time.h>  
+#include <time.h>
 #if defined(PETSC_HAVE_SYS_SYSTEMINFO_H)
 #include <sys/systeminfo.h>
 #endif
 
-EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "Petsc_DelTmpShared"
 /*
    Private routine to delete tmp/shared storage
@@ -35,7 +30,7 @@ EXTERN_C_BEGIN
    Note: this is declared extern "C" because it is passed to MPI_Keyval_create()
 
 */
-PetscMPIInt  MPIAPI Petsc_DelTmpShared(MPI_Comm comm,PetscMPIInt keyval,void *count_val,void *extra_state)
+PETSC_EXTERN PetscMPIInt MPIAPI Petsc_DelTmpShared(MPI_Comm comm,PetscMPIInt keyval,void *count_val,void *extra_state)
 {
   PetscErrorCode ierr;
 
@@ -44,9 +39,8 @@ PetscMPIInt  MPIAPI Petsc_DelTmpShared(MPI_Comm comm,PetscMPIInt keyval,void *co
   ierr = PetscFree(count_val);if (ierr) PetscFunctionReturn((PetscMPIInt)ierr);
   PetscFunctionReturn(MPI_SUCCESS);
 }
-EXTERN_C_END
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscGetTmp"
 /*@C
    PetscGetTmp - Gets the name of the tmp directory
@@ -61,7 +55,7 @@ EXTERN_C_END
 .  dir - directory name
 
    Options Database Keys:
-+    -shared_tmp 
++    -shared_tmp
 .    -not_shared_tmp
 -    -tmp tmpdir
 
@@ -72,7 +66,7 @@ EXTERN_C_END
 
    Level: developer
 
-   
+
    If the environmental variable PETSC_TMP is set it will use this directory
   as the "/tmp" directory.
 
@@ -90,7 +84,7 @@ PetscErrorCode  PetscGetTmp(MPI_Comm comm,char dir[],size_t len)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscSharedTmp"
 /*@C
    PetscSharedTmp - Determines if all processors in a communicator share a
@@ -105,7 +99,7 @@ PetscErrorCode  PetscGetTmp(MPI_Comm comm,char dir[],size_t len)
 .  shared - PETSC_TRUE or PETSC_FALSE
 
    Options Database Keys:
-+    -shared_tmp 
++    -shared_tmp
 .    -not_shared_tmp
 -    -tmp tmpdir
 
@@ -149,13 +143,13 @@ PetscErrorCode  PetscSharedTmp(MPI_Comm comm,PetscBool  *shared)
     PetscFunctionReturn(0);
   }
 
-  ierr = PetscOptionsGetenv(comm,"PETSC_SHARED_TMP",PETSC_NULL,0,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetenv(comm,"PETSC_SHARED_TMP",NULL,0,&flg);CHKERRQ(ierr);
   if (flg) {
     *shared = PETSC_TRUE;
     PetscFunctionReturn(0);
   }
 
-  ierr = PetscOptionsGetenv(comm,"PETSC_NOT_SHARED_TMP",PETSC_NULL,0,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetenv(comm,"PETSC_NOT_SHARED_TMP",NULL,0,&flg);CHKERRQ(ierr);
   if (flg) {
     *shared = PETSC_FALSE;
     PetscFunctionReturn(0);
@@ -167,7 +161,7 @@ PetscErrorCode  PetscSharedTmp(MPI_Comm comm,PetscBool  *shared)
 
   ierr = MPI_Attr_get(comm,Petsc_Tmp_keyval,(void**)&tagvalp,(int*)&iflg);CHKERRQ(ierr);
   if (!iflg) {
-    char       filename[PETSC_MAX_PATH_LEN],tmpname[PETSC_MAX_PATH_LEN];
+    char filename[PETSC_MAX_PATH_LEN],tmpname[PETSC_MAX_PATH_LEN];
 
     /* This communicator does not yet have a shared tmp attribute */
     ierr = PetscMalloc(sizeof(PetscMPIInt),&tagvalp);CHKERRQ(ierr);
@@ -182,7 +176,7 @@ PetscErrorCode  PetscSharedTmp(MPI_Comm comm,PetscBool  *shared)
 
     ierr = PetscStrcat(filename,"/petsctestshared");CHKERRQ(ierr);
     ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-    
+
     /* each processor creates a /tmp file and all the later ones check */
     /* this makes sure no subset of processors is shared */
     *shared = PETSC_FALSE;
@@ -191,23 +185,21 @@ PetscErrorCode  PetscSharedTmp(MPI_Comm comm,PetscBool  *shared)
         fd = fopen(filename,"w");
         if (!fd) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to open test file %s",filename);
         err = fclose(fd);
-        if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on file");    
+        if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on file");
       }
       ierr = MPI_Barrier(comm);CHKERRQ(ierr);
       if (rank >= i) {
         fd = fopen(filename,"r");
-        if (fd) cnt = 1; else cnt = 0;
+        if (fd) cnt = 1;
+        else cnt = 0;
         if (fd) {
           err = fclose(fd);
-          if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on file");    
+          if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on file");
         }
-      } else {
-        cnt = 0;
-      }
+      } else cnt = 0;
+
       ierr = MPI_Allreduce(&cnt,&sum,1,MPI_INT,MPI_SUM,comm);CHKERRQ(ierr);
-      if (rank == i) {
-        unlink(filename);
-      }
+      if (rank == i) unlink(filename);
 
       if (sum == size) {
         *shared = PETSC_TRUE;
@@ -216,13 +208,11 @@ PetscErrorCode  PetscSharedTmp(MPI_Comm comm,PetscBool  *shared)
     }
     *tagvalp = (int)*shared;
     ierr = PetscInfo2(0,"processors %s %s\n",(*shared) ? "share":"do NOT share",(iflg ? tmpname:"/tmp"));CHKERRQ(ierr);
-  } else {
-    *shared = (PetscBool) *tagvalp;
-  }
+  } else *shared = (PetscBool) *tagvalp;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscSharedWorkingDirectory"
 /*@C
    PetscSharedWorkingDirectory - Determines if all processors in a communicator share a
@@ -237,7 +227,7 @@ PetscErrorCode  PetscSharedTmp(MPI_Comm comm,PetscBool  *shared)
 .  shared - PETSC_TRUE or PETSC_FALSE
 
    Options Database Keys:
-+    -shared_working_directory 
++    -shared_working_directory
 .    -not_shared_working_directory
 
    Environmental Variables:
@@ -276,13 +266,13 @@ PetscErrorCode  PetscSharedWorkingDirectory(MPI_Comm comm,PetscBool  *shared)
     PetscFunctionReturn(0);
   }
 
-  ierr = PetscOptionsGetenv(comm,"PETSC_SHARED_WORKING_DIRECTORY",PETSC_NULL,0,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetenv(comm,"PETSC_SHARED_WORKING_DIRECTORY",NULL,0,&flg);CHKERRQ(ierr);
   if (flg) {
     *shared = PETSC_TRUE;
     PetscFunctionReturn(0);
   }
 
-  ierr = PetscOptionsGetenv(comm,"PETSC_NOT_SHARED_WORKING_DIRECTORY",PETSC_NULL,0,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetenv(comm,"PETSC_NOT_SHARED_WORKING_DIRECTORY",NULL,0,&flg);CHKERRQ(ierr);
   if (flg) {
     *shared = PETSC_FALSE;
     PetscFunctionReturn(0);
@@ -294,7 +284,7 @@ PetscErrorCode  PetscSharedWorkingDirectory(MPI_Comm comm,PetscBool  *shared)
 
   ierr = MPI_Attr_get(comm,Petsc_WD_keyval,(void**)&tagvalp,(int*)&iflg);CHKERRQ(ierr);
   if (!iflg) {
-    char       filename[PETSC_MAX_PATH_LEN];
+    char filename[PETSC_MAX_PATH_LEN];
 
     /* This communicator does not yet have a shared  attribute */
     ierr = PetscMalloc(sizeof(PetscMPIInt),&tagvalp);CHKERRQ(ierr);
@@ -303,7 +293,7 @@ PetscErrorCode  PetscSharedWorkingDirectory(MPI_Comm comm,PetscBool  *shared)
     ierr = PetscGetWorkingDirectory(filename,240);CHKERRQ(ierr);
     ierr = PetscStrcat(filename,"/petsctestshared");CHKERRQ(ierr);
     ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-    
+
     /* each processor creates a  file and all the later ones check */
     /* this makes sure no subset of processors is shared */
     *shared = PETSC_FALSE;
@@ -312,23 +302,21 @@ PetscErrorCode  PetscSharedWorkingDirectory(MPI_Comm comm,PetscBool  *shared)
         fd = fopen(filename,"w");
         if (!fd) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to open test file %s",filename);
         err = fclose(fd);
-        if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on file");    
+        if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on file");
       }
       ierr = MPI_Barrier(comm);CHKERRQ(ierr);
       if (rank >= i) {
         fd = fopen(filename,"r");
-        if (fd) cnt = 1; else cnt = 0;
+        if (fd) cnt = 1;
+        else cnt = 0;
         if (fd) {
           err = fclose(fd);
-          if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on file");    
+          if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on file");
         }
-      } else {
-        cnt = 0;
-      }
+      } else cnt = 0;
+
       ierr = MPI_Allreduce(&cnt,&sum,1,MPI_INT,MPI_SUM,comm);CHKERRQ(ierr);
-      if (rank == i) {
-        unlink(filename);
-      }
+      if (rank == i) unlink(filename);
 
       if (sum == size) {
         *shared = PETSC_TRUE;
@@ -336,18 +324,16 @@ PetscErrorCode  PetscSharedWorkingDirectory(MPI_Comm comm,PetscBool  *shared)
       } else if (sum != 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Subset of processes share working directory");
     }
     *tagvalp = (int)*shared;
-  } else {
-    *shared = (PetscBool) *tagvalp;
-  }
+  } else *shared = (PetscBool) *tagvalp;
   ierr = PetscInfo1(0,"processors %s working directory\n",(*shared) ? "shared" : "do NOT share");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscFileRetrieve"
 /*@C
-    PetscFileRetrieve - Obtains a library from a URL or compressed 
+    PetscFileRetrieve - Obtains a library from a URL or compressed
         and copies into local disk space as uncompressed.
 
     Collective on MPI_Comm
@@ -366,16 +352,16 @@ PetscErrorCode  PetscSharedWorkingDirectory(MPI_Comm comm,PetscBool  *shared)
 @*/
 PetscErrorCode  PetscFileRetrieve(MPI_Comm comm,const char libname[],char llibname[],size_t llen,PetscBool  *found)
 {
-  char              buf[1024],tmpdir[PETSC_MAX_PATH_LEN],urlget[PETSC_MAX_PATH_LEN],*par;
-  const char        *pdir;
-  FILE              *fp;
-  PetscErrorCode    ierr;
-  int               i;
-  PetscMPIInt       rank;
-  size_t            len = 0;
-  PetscBool         flg1,flg2,flg3,sharedtmp,exists;
+  char           buf[1024],tmpdir[PETSC_MAX_PATH_LEN],urlget[PETSC_MAX_PATH_LEN],*par;
+  const char     *pdir;
+  FILE           *fp;
+  PetscErrorCode ierr;
+  int            i;
+  PetscMPIInt    rank;
+  size_t         len = 0;
+  PetscBool      flg1,flg2,flg3,sharedtmp,exists;
 #if defined(PETSC_HAVE_POPEN)
-  PetscInt          rval;
+  PetscInt       rval;
 #endif
 
   PetscFunctionBegin;
@@ -392,9 +378,9 @@ PetscErrorCode  PetscFileRetrieve(MPI_Comm comm,const char libname[],char llibna
     ierr = PetscStrncpy(llibname,libname,llen);CHKERRQ(ierr);
     ierr = PetscTestFile(libname,'r',found);CHKERRQ(ierr);
     if (*found) {
-      ierr = PetscInfo1(PETSC_NULL,"Found file %s\n",libname);
+      ierr = PetscInfo1(NULL,"Found file %s\n",libname);CHKERRQ(ierr);
     } else {
-      ierr = PetscInfo1(PETSC_NULL,"Did not find file %s\n",libname);
+      ierr = PetscInfo1(NULL,"Did not find file %s\n",libname);CHKERRQ(ierr);
     }
     PetscFunctionReturn(0);
   }
@@ -405,7 +391,7 @@ PetscErrorCode  PetscFileRetrieve(MPI_Comm comm,const char libname[],char llibna
 
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   if (!rank || !sharedtmp) {
-  
+
     /* Construct the script to get URL file */
     ierr = PetscGetPetscDir(&pdir);CHKERRQ(ierr);
     ierr = PetscStrcpy(urlget,pdir);CHKERRQ(ierr);
@@ -429,7 +415,7 @@ PetscErrorCode  PetscFileRetrieve(MPI_Comm comm,const char libname[],char llibna
     ierr = PetscStrcat(urlget," 2>&1 ");CHKERRQ(ierr);
 
 #if defined(PETSC_HAVE_POPEN)
-    ierr = PetscPOpen(PETSC_COMM_SELF,PETSC_NULL,urlget,"r",&fp);CHKERRQ(ierr);
+    ierr = PetscPOpen(PETSC_COMM_SELF,NULL,urlget,"r",&fp);CHKERRQ(ierr);
 #else
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Cannot run external programs on this machine");
 #endif
@@ -441,11 +427,10 @@ PetscErrorCode  PetscFileRetrieve(MPI_Comm comm,const char libname[],char llibna
 #if defined(PETSC_HAVE_POPEN)
     ierr = PetscPClose(PETSC_COMM_SELF,fp,&rval);CHKERRQ(ierr);
 #endif
-    if (flg1 || flg2) {
-      *found = PETSC_FALSE;
-    } else {
+    if (flg1 || flg2) *found = PETSC_FALSE;
+    else {
       *found = PETSC_TRUE;
-  
+
       /* Check for \n and make it 0 */
       for (i=0; i<1024; i++) {
         if (buf[i] == '\n') {
@@ -457,12 +442,11 @@ PetscErrorCode  PetscFileRetrieve(MPI_Comm comm,const char libname[],char llibna
     }
   }
   if (sharedtmp) { /* send library name to all processors */
-    ierr = MPI_Bcast(found,1,MPI_INT,0,comm);CHKERRQ(ierr);
+    ierr = MPI_Bcast(found,1,MPIU_BOOL,0,comm);CHKERRQ(ierr);
     if (*found) {
       ierr = MPI_Bcast(llibname,llen,MPI_CHAR,0,comm);CHKERRQ(ierr);
-      ierr = MPI_Bcast(found,1,MPI_INT,0,comm);CHKERRQ(ierr);
+      ierr = MPI_Bcast(found,1,MPIU_BOOL,0,comm);CHKERRQ(ierr);
     }
   }
-
   PetscFunctionReturn(0);
 }

@@ -1,9 +1,11 @@
 
-#include <petscvec.h>
+#include <petsc-private/vecimpl.h>
 #include <petscpf.h>
+#include <petscsf.h>
+#include <petscao.h>
 
-static PetscBool  ISPackageInitialized = PETSC_FALSE;
-#undef __FUNCT__  
+static PetscBool ISPackageInitialized = PETSC_FALSE;
+#undef __FUNCT__
 #define __FUNCT__ "ISFinalizePackage"
 /*@C
   ISFinalizePackage - This function destroys everything in the IS package. It is
@@ -18,12 +20,12 @@ PetscErrorCode  ISFinalizePackage(void)
 {
   PetscFunctionBegin;
   ISPackageInitialized = PETSC_FALSE;
-  ISList               = PETSC_NULL;
+  ISList               = NULL;
   ISRegisterAllCalled  = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "ISInitializePackage"
 /*@C
       ISInitializePackage - This function initializes everything in the IS package. It is called
@@ -31,19 +33,19 @@ PetscErrorCode  ISFinalizePackage(void)
   when using static libraries.
 
   Input Parameter:
-. path - The dynamic library path, or PETSC_NULL
+. path - The dynamic library path, or NULL
 
   Level: developer
 
 .keywords: Vec, initialize, package
 .seealso: PetscInitialize()
 @*/
-PetscErrorCode  ISInitializePackage(const char path[]) 
+PetscErrorCode  ISInitializePackage(const char path[])
 {
-  char              logList[256];
-  char              *className;
-  PetscBool         opt;
-  PetscErrorCode    ierr;
+  char           logList[256];
+  char           *className;
+  PetscBool      opt;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (ISPackageInitialized) PetscFunctionReturn(0);
@@ -53,9 +55,10 @@ PetscErrorCode  ISInitializePackage(const char path[])
   /* Register Classes */
   ierr = PetscClassIdRegister("Index Set",&IS_CLASSID);CHKERRQ(ierr);
   ierr = PetscClassIdRegister("IS L to G Mapping",&IS_LTOGM_CLASSID);CHKERRQ(ierr);
+  ierr = PetscClassIdRegister("Section",&PETSC_SECTION_CLASSID);CHKERRQ(ierr);
 
   /* Process info exclusions */
-  ierr = PetscOptionsGetString(PETSC_NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt) {
     ierr = PetscStrstr(logList, "is", &className);CHKERRQ(ierr);
     if (className) {
@@ -64,7 +67,7 @@ PetscErrorCode  ISInitializePackage(const char path[])
     }
   }
   /* Process summary exclusions */
-  ierr = PetscOptionsGetString(PETSC_NULL, "-log_summary_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL, "-log_summary_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt) {
     ierr = PetscStrstr(logList, "is", &className);CHKERRQ(ierr);
     if (className) {
@@ -80,18 +83,16 @@ extern MPI_Op PetscSplitReduction_Op;
 extern MPI_Op VecMax_Local_Op;
 extern MPI_Op VecMin_Local_Op;
 
-EXTERN_C_BEGIN
-extern void  MPIAPI VecMax_Local(void*,void*,PetscMPIInt*,MPI_Datatype*);
-extern void  MPIAPI VecMin_Local(void*,void*,PetscMPIInt*,MPI_Datatype*);
-extern void  MPIAPI PetscSplitReduction_Local(void*,void*,PetscMPIInt*,MPI_Datatype*);
-EXTERN_C_END
+PETSC_EXTERN void MPIAPI VecMax_Local(void*,void*,PetscMPIInt*,MPI_Datatype*);
+PETSC_EXTERN void MPIAPI VecMin_Local(void*,void*,PetscMPIInt*,MPI_Datatype*);
+PETSC_EXTERN void MPIAPI PetscSplitReduction_Local(void*,void*,PetscMPIInt*,MPI_Datatype*);
 
 const char *const NormTypes[] = {"1","2","FROBENIUS","INFINITY","1_AND_2","NormType","NORM_",0};
-PetscInt   NormIds[7];  /* map from NormType to IDs used to cache Normvalues */
+PetscInt          NormIds[7];  /* map from NormType to IDs used to cache Normvalues */
 
 static PetscBool  VecPackageInitialized = PETSC_FALSE;
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecInitializePackage"
 /*@C
   VecInitializePackage - This function initializes everything in the Vec package. It is called
@@ -99,20 +100,20 @@ static PetscBool  VecPackageInitialized = PETSC_FALSE;
   when using static libraries.
 
   Input Parameter:
-. path - The dynamic library path, or PETSC_NULL
+. path - The dynamic library path, or NULL
 
   Level: developer
 
 .keywords: Vec, initialize, package
 .seealso: PetscInitialize()
 @*/
-PetscErrorCode  VecInitializePackage(const char path[]) 
+PetscErrorCode  VecInitializePackage(const char path[])
 {
-  char              logList[256];
-  char              *className;
-  PetscBool         opt;
-  PetscErrorCode    ierr;
-  PetscInt          i;
+  char           logList[256];
+  char           *className;
+  PetscBool      opt;
+  PetscErrorCode ierr;
+  PetscInt       i;
 
   PetscFunctionBegin;
   if (VecPackageInitialized) PetscFunctionReturn(0);
@@ -176,7 +177,7 @@ PetscErrorCode  VecInitializePackage(const char path[])
   ierr = PetscLogEventSetActiveAll(VEC_ScatterBarrier, PETSC_FALSE);CHKERRQ(ierr);
   ierr = PetscLogEventSetActiveAll(VEC_ReduceBarrier, PETSC_FALSE);CHKERRQ(ierr);
   /* Process info exclusions */
-  ierr = PetscOptionsGetString(PETSC_NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt) {
     ierr = PetscStrstr(logList, "vec", &className);CHKERRQ(ierr);
     if (className) {
@@ -184,7 +185,7 @@ PetscErrorCode  VecInitializePackage(const char path[])
     }
   }
   /* Process summary exclusions */
-  ierr = PetscOptionsGetString(PETSC_NULL, "-log_summary_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL, "-log_summary_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt) {
     ierr = PetscStrstr(logList, "vec", &className);CHKERRQ(ierr);
     if (className) {
@@ -192,8 +193,8 @@ PetscErrorCode  VecInitializePackage(const char path[])
     }
   }
   /* Special processing */
-  opt = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(PETSC_NULL, "-log_sync", &opt,PETSC_NULL);CHKERRQ(ierr);
+  opt  = PETSC_FALSE;
+  ierr = PetscOptionsGetBool(NULL, "-log_sync", &opt,NULL);CHKERRQ(ierr);
   if (opt) {
     ierr = PetscLogEventSetActiveAll(VEC_ScatterBarrier, PETSC_TRUE);CHKERRQ(ierr);
     ierr = PetscLogEventSetActiveAll(VEC_NormBarrier, PETSC_TRUE);CHKERRQ(ierr);
@@ -214,13 +215,13 @@ PetscErrorCode  VecInitializePackage(const char path[])
   for (i=0; i<4; i++) {
     ierr = PetscObjectComposedDataRegister(NormIds+i);CHKERRQ(ierr);
   }
-  
+
   /* Register finalization routine */
   ierr = PetscRegisterFinalize(VecFinalizePackage);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecFinalizePackage"
 /*@C
   VecFinalizePackage - This function finalizes everything in the Vec package. It is called
@@ -231,21 +232,22 @@ PetscErrorCode  VecInitializePackage(const char path[])
 .keywords: Vec, initialize, package
 .seealso: PetscInitialize()
 @*/
-PetscErrorCode  VecFinalizePackage(void) {
+PetscErrorCode  VecFinalizePackage(void)
+{
   PetscErrorCode ierr;
+
   PetscFunctionBegin;
   ierr = MPI_Op_free(&PetscSplitReduction_Op);CHKERRQ(ierr);
   ierr = MPI_Op_free(&VecMax_Local_Op);CHKERRQ(ierr);
   ierr = MPI_Op_free(&VecMin_Local_Op);CHKERRQ(ierr);
   VecPackageInitialized = PETSC_FALSE;
-  VecList               = PETSC_NULL;
+  VecList               = NULL;
   VecRegisterAllCalled  = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
-#ifdef PETSC_USE_DYNAMIC_LIBRARIES
-EXTERN_C_BEGIN
-#undef __FUNCT__  
+#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
+#undef __FUNCT__
 #define __FUNCT__ "PetscDLLibraryRegister_petscvec"
 /*
   PetscDLLibraryRegister - This function is called when the dynamic library it is in is opened.
@@ -255,16 +257,17 @@ EXTERN_C_BEGIN
   Input Parameter:
   path - library path
  */
-PetscErrorCode  PetscDLLibraryRegister_petscvec(const char path[])
+PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscvec(const char path[])
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscSFInitializePackage(path);CHKERRQ(ierr);
   ierr = ISInitializePackage(path);CHKERRQ(ierr);
+  ierr = AOInitializePackage(path);CHKERRQ(ierr);
   ierr = VecInitializePackage(path);CHKERRQ(ierr);
   ierr = PFInitializePackage(path);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #endif /* PETSC_USE_DYNAMIC_LIBRARIES */

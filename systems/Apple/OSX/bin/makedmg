@@ -1,0 +1,45 @@
+#!/bin/sh
+#
+# This script makes a Apple Mac OS X dmg from the PETSc framework
+#
+# Make sure that "Enable access for assistive devices" is checked in System Preferences>>Universal Access. It is required for the AppleScript to work.
+#
+#  Before runningt this script follow the directions in ./systems/Apple/OSX/bin/makeframework  to make the Apple PETSc Framework 
+#
+echo "Creating ${PETSC_DIR}/${PETSC_ARCH}/PETSc.dmg from ${PETSC_DIR}/${PETSC_ARCH}/PETSc.framework"
+rm -rf pack.temp.dmg tempsource ${PETSC_DIR}/${PETSC_ARCH}/PETSc.dmg
+mkdir tempsource
+cp -r ${PETSC_DIR}/${PETSC_ARCH}/PETSc.framework tempsource
+let size=`du  -c tempsource | tail -1 | cut -f1`
+let size=2*$size
+
+hdiutil create -srcfolder tempsource -volname PETSc -fs HFS+ -fsargs "-c c=64,a=16,e=16" -format UDRW -size ${size}k pack.temp.dmg
+sleep 5
+device=`hdiutil attach -readwrite -noverify -noautoopen "pack.temp.dmg" | head -1 | cut -f1`
+echo Created device $device
+echo '
+   tell application "Finder"
+     tell disk "PETSc"
+           open
+           set current view of container window to icon view
+           set toolbar visible of container window to false
+           set statusbar visible of container window to false
+           set the bounds of container window to {400, 100, 685, 430}
+           set theViewOptions to the icon view options of container window
+           set arrangement of theViewOptions to not arranged
+           set icon size of theViewOptions to 72
+           make new alias file at container window to POSIX file "/Library/Frameworks" with properties {name:"Frameworks"}
+           set position of item "'PETSc.framework'" of container window to {100, 100}
+           set position of item "Frameworks" of container window to {375, 100}
+           update without registering applications
+           delay 5
+           eject
+     end tell
+   end tell
+' | osascript
+sleep 8
+sync
+sync
+#hdiutil detach ${device}
+hdiutil convert "pack.temp.dmg" -format UDZO -imagekey zlib-level=9 -o ${PETSC_DIR}/${PETSC_ARCH}/PETSc.dmg
+rm -rf pack.temp.dmg tempsource

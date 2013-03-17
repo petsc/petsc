@@ -3,8 +3,7 @@
 ALL: lib
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = zbvec2f.c
-OBJSC    = zbvec2f.o
+SOURCEC  = zbvec2f.c zvsectionf.c
 SOURCEF  =
 SOURCEH  =
 DIRS     =

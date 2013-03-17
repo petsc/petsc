@@ -14,11 +14,15 @@ using namespace ALE;
 
 #undef __FUNCT__
 #define __FUNCT__ "getPointInterpolation"
-void getPointInterpolation(Mat A, ALE::Obj<ALE::Mesh> mesh, ALE::Mesh::point_type e, double * point) {
+void getPointInterpolation(Mat A, ALE::Obj<ALE::Mesh> mesh, ALE::Mesh::point_type e, double * point)
+{
   const Obj<ALE::Mesh::real_section_type>& coordinates = mesh->getRealSection("coordinates");
+
   int dim = coordinates->getFiberDimension(0, *mesh->getTopology()->depthStratum(0, 0)->begin());
+
   double v0[dim], J[dim*dim], invJ[dim*dim], detJ;
   double w[dim];
+
   mesh->computeElementGeometry(coordinates, e, v0, J, invJ, detJ);
   for (int i = 0; i < dim; i++) {
     w[i] = 0;
@@ -26,17 +30,18 @@ void getPointInterpolation(Mat A, ALE::Obj<ALE::Mesh> mesh, ALE::Mesh::point_typ
       w[i] += invJ[i*dim+j]*(point[j]-v0[j]);
     }
     w[i] = w[i] - 1;
-  printf("%f, ", w[i]);
+    printf("%f, ", w[i]);
   }
   printf("\n");
- // const ALE::Obj<ALE::Mesh::order_type>& order = mesh->getFactory()->getGlobalOrder(mesh->getTopology(), 0, "default", coordinates->getAtlas());
+  // const ALE::Obj<ALE::Mesh::order_type>& order = mesh->getFactory()->getGlobalOrder(mesh->getTopology(), 0, "default", coordinates->getAtlas());
 }
 
 
 #undef __FUNCT__
 #define __FUNCT__ "getInterpolation"
 
-PetscErrorCode getInterpolation(Obj<ALE::Mesh> mesh_fine, Obj<ALE::Mesh> mesh_coarse, Mat A) {
+PetscErrorCode getInterpolation(Obj<ALE::Mesh> mesh_fine, Obj<ALE::Mesh> mesh_coarse, Mat A)
+{
 /*
  2) For each fine vertex:
     a) Find the coarse triangle it is in (traversal)
@@ -47,32 +52,30 @@ PetscErrorCode getInterpolation(Obj<ALE::Mesh> mesh_fine, Obj<ALE::Mesh> mesh_co
 */
 
 //a)
-  //create a traversal label on both the meshes; allowing for this step to be done quickly.
-  Obj<ALE::Mesh::topology_type> topology_fine = mesh_fine->getTopology();
-  Obj<ALE::Mesh::topology_type> topology_coarse = mesh_coarse->getTopology();
-
+//create a traversal label on both the meshes; allowing for this step to be done quickly.
+  Obj<ALE::Mesh::topology_type>            topology_fine    = mesh_fine->getTopology();
+  Obj<ALE::Mesh::topology_type>            topology_coarse  = mesh_coarse->getTopology();
   const Obj<ALE::Mesh::real_section_type>& coordinates_fine = mesh_fine->getRealSection("coordinates");
-  int dim = coordinates_fine->getFiberDimension(0, *mesh_fine->getTopology()->depthStratum(0, 0)->begin());
 
-  double * tmpCoords;
+  int    dim = coordinates_fine->getFiberDimension(0, *mesh_fine->getTopology()->depthStratum(0, 0)->begin());
+  double *tmpCoords;
   double v0[dim], J[dim*dim], invJ[dim*dim], detJ;
 
   const Obj<ALE::Mesh::real_section_type>& coordinates_coarse = mesh_coarse->getRealSection("coordinates");
 
-  Obj<ALE::Mesh::topology_type::label_sequence> vertices = topology_fine->depthStratum(0, 0);
-  ALE::Mesh::topology_type::label_sequence::iterator v_iter = vertices->begin();
+  Obj<ALE::Mesh::topology_type::label_sequence>      vertices   = topology_fine->depthStratum(0, 0);
+  ALE::Mesh::topology_type::label_sequence::iterator v_iter     = vertices->begin();
   ALE::Mesh::topology_type::label_sequence::iterator v_iter_end = vertices->end();
-  Obj<ALE::Mesh::topology_type::label_sequence> cells = topology_coarse->heightStratum(0, 0);
-  ALE::Mesh::topology_type::label_sequence::iterator c_iter = cells->begin();
+  Obj<ALE::Mesh::topology_type::label_sequence>      cells      = topology_coarse->heightStratum(0, 0);
+  ALE::Mesh::topology_type::label_sequence::iterator c_iter     = cells->begin();
   ALE::Mesh::topology_type::label_sequence::iterator c_iter_end = cells->end();
   //dumbest thing right now; adapt tandem traversals to new and weird situation later.
   double v_coords[dim];
   double v_ref_coords[dim];
   while (v_iter != v_iter_end) {
-    tmpCoords = (double *)coordinates_fine->restrict(0, *v_iter);
-    for (int i = 0; i < dim; i++) {
-      v_coords[i] = tmpCoords[i];
-    }
+    tmpCoords = (double*)coordinates_fine->restrict(0, *v_iter);
+    for (int i = 0; i < dim; i++) v_coords[i] = tmpCoords[i];
+
     bool v_is_found = false;
     c_iter = cells->begin();
     while (c_iter != c_iter_end && !v_is_found) {
@@ -84,7 +87,7 @@ PetscErrorCode getInterpolation(Obj<ALE::Mesh> mesh_fine, Obj<ALE::Mesh> mesh_co
           v_ref_coords[i] += invJ[i*dim+j]*(v_coords[j]-v0[j]);
         }
         v_ref_coords[i] = v_ref_coords[i] - 1;
-        coordsum += v_ref_coords[i];
+        coordsum       += v_ref_coords[i];
       }
       bool isInElement = true;
       if (coordsum > 1/2) isInElement = false;
@@ -100,14 +103,13 @@ PetscErrorCode getInterpolation(Obj<ALE::Mesh> mesh_fine, Obj<ALE::Mesh> mesh_co
       }
       c_iter++;
     }
-    if (!v_is_found) {
-      printf("Operator will not include point %d\n", *v_iter);
-    }
-  v_iter++;
-  }  
+    if (!v_is_found) printf("Operator will not include point %d\n", *v_iter);
+    v_iter++;
+  }
 }
 
-void forcedP1_phi(double * w, int dim, double * v) { //assume that v is within the reference element and we want to get the coefficients for it.
+void forcedP1_phi(double * w, int dim, double * v) //assume that v is within the reference element and we want to get the coefficients for it.
+{
   if (dim == 2) {
     w[1] = 0.5*(v[0] + 1);
     w[2] = 0.5*(v[1] + 1);
@@ -123,8 +125,9 @@ void forcedP1_phi(double * w, int dim, double * v) { //assume that v is within t
 
 static char help[] = "tests getInterpolation\n\n";
 
-int main(int argc, char * argv[]) {
-  int dim = 2;
+int main(int argc, char * argv[])
+{
+  int    dim = 2;
   double c[4][2];
   c[0][0] = -2.0; c[0][1] = 0.0;
   c[1][0] = 0.0; c[1][1] = 7.0;
@@ -139,12 +142,13 @@ int main(int argc, char * argv[]) {
   }
   MPI_Comm comm;
   PetscErrorCode ierr;
+
   PetscFunctionBegin;
-  ierr = PetscInitialize(&argc, &argv, (char *)0, help);
+  ierr = PetscInitialize(&argc, &argv, (char*)0, help);
   comm = PETSC_COMM_WORLD;
   Obj<ALE::Mesh> mesh;
   mesh = new ALE::Mesh(comm, 2, 0);
-  Obj<ALE::Mesh::sieve_type> sieve = new ALE::Mesh::sieve_type(mesh->comm(), 0);
+  Obj<ALE::Mesh::sieve_type>    sieve    = new ALE::Mesh::sieve_type(mesh->comm(), 0);
   Obj<ALE::Mesh::topology_type> topology = new ALE::Mesh::topology_type(mesh->comm(), 0);
 /*mesh
              o203
@@ -163,6 +167,7 @@ int main(int argc, char * argv[]) {
 o202____101__o201
 
 */
+
   //set up the edges
   sieve->addArrow(101, 0);
   sieve->addArrow(102, 0);
@@ -199,7 +204,7 @@ o202____101__o201
 
   Obj<ALE::Mesh> mesh2;
   mesh2 = new ALE::Mesh(comm, 2, 0);
-  Obj<ALE::Mesh::sieve_type> sieve2 = new ALE::Mesh::sieve_type(mesh->comm(), 0);
+  Obj<ALE::Mesh::sieve_type>    sieve2    = new ALE::Mesh::sieve_type(mesh->comm(), 0);
   Obj<ALE::Mesh::topology_type> topology2 = new ALE::Mesh::topology_type(mesh->comm(), 0);
   //set up the edges
   sieve2->addArrow(101, 1);
@@ -224,7 +229,7 @@ o202____101__o201
   sieve2->addArrow(201, 105);
   sieve2->addArrow(204, 106);
   sieve2->addArrow(203, 106);
-  
+
   sieve2->stratify();
   topology2->setPatch(0, sieve2);
   topology2->stratify();

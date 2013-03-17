@@ -65,12 +65,12 @@ public:
 
     PetscFunctionBegin;
     ierr = PetscOptionsBegin(PETSC_COMM_WORLD, "", "Options for interval mesh stress test", "IMesh");CHKERRQ(ierr);
-      ierr = PetscOptionsInt("-debug", "The debugging level", "imesh.c", this->_debug, &this->_debug, PETSC_NULL);CHKERRQ(ierr);
-      ierr = PetscOptionsInt("-iterations", "The number of test repetitions", "imesh.c", this->_iters, &this->_iters, PETSC_NULL);CHKERRQ(ierr);
-      ierr = PetscOptionsInt("-size", "The interval size", "imesh.c", this->_size, &this->_size, PETSC_NULL);CHKERRQ(ierr);
-      ierr = PetscOptionsInt("-dim", "The mesh dimension", "imesh.c", this->_dim, &this->_dim, PETSC_NULL);CHKERRQ(ierr);
-      ierr = PetscOptionsBool("-interpolate", "Flag for mesh interpolation", "imesh.c", this->_interpolate, &this->_interpolate, PETSC_NULL);CHKERRQ(ierr);
-      ierr = PetscOptionsBool("-only_parallel", "Shut off serial tests", "isieve.c", this->_onlyParallel, &this->_onlyParallel, PETSC_NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsInt("-debug", "The debugging level", "imesh.c", this->_debug, &this->_debug, NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsInt("-iterations", "The number of test repetitions", "imesh.c", this->_iters, &this->_iters, NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsInt("-size", "The interval size", "imesh.c", this->_size, &this->_size, NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsInt("-dim", "The mesh dimension", "imesh.c", this->_dim, &this->_dim, NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsBool("-interpolate", "Flag for mesh interpolation", "imesh.c", this->_interpolate, &this->_interpolate, NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsBool("-only_parallel", "Shut off serial tests", "isieve.c", this->_onlyParallel, &this->_onlyParallel, NULL);CHKERRQ(ierr);
     ierr = PetscOptionsEnd();CHKERRQ(ierr);
     PetscFunctionReturn(0);
   };
@@ -149,20 +149,20 @@ public:
 
       CPPUNIT_ASSERT_EQUAL(supportA->size(), supportB->size());
       for(; s_iterA != supportA->end(); ++s_iterA) {
-	bool found = false;
+        bool found = false;
 
-	for(typename Label::traits::supportSequence::const_iterator s_iterB  = supportB->begin(); s_iterB != supportB->end(); ++s_iterB) {
-	  if (*s_iterA == *s_iterB) {
-	    found = true;
-	    break;
-	  }
-	}
-	if (!found) {
-	  ostringstream msg;
+        for(typename Label::traits::supportSequence::const_iterator s_iterB  = supportB->begin(); s_iterB != supportB->end(); ++s_iterB) {
+          if (*s_iterA == *s_iterB) {
+            found = true;
+            break;
+          }
+        }
+        if (!found) {
+          ostringstream msg;
 
-	  msg << "Cound not find point " << *s_iterA << "("<<renumbering[*s_iterA]<<")" << " in support of " << *p_iter;
-	  CPPUNIT_FAIL(msg.str().c_str());
-	}
+          msg << "Cound not find point " << *s_iterA << "("<<renumbering[*s_iterA]<<")" << " in support of " << *p_iter;
+          CPPUNIT_FAIL(msg.str().c_str());
+        }
       }
     }
   };
@@ -215,7 +215,7 @@ public:
       CPPUNIT_ASSERT(valuesA != NULL);
       CPPUNIT_ASSERT(valuesB != NULL);
       for(int d = 0; d < dim; ++d) {
-	comp.equal(valuesA[d], valuesB[d]);
+        comp.equal(valuesA[d], valuesB[d]);
       }
     }
   };
@@ -423,8 +423,8 @@ public:
     ALE::Obj<mesh_type> copyMesh = this->_mesh;
     std::map<mesh_type::point_type,mesh_type::point_type> renumbering;
 
-    this->_m    = PETSC_NULL;
-    this->_mesh = PETSC_NULL;
+    this->_m    = NULL;
+    this->_mesh = NULL;
     this->_renumbering.clear();
     this->setUp();
     // Renumbering must respect the cell/vertex division
@@ -620,10 +620,10 @@ public:
 
     PetscFunctionBegin;
     ierr = PetscOptionsBegin(PETSC_COMM_WORLD, "", "Options for interval section stress test", "ISection");CHKERRQ(ierr);
-      ierr = PetscOptionsInt("-debug", "The debugging level", "isection.c", this->_debug, &this->_debug, PETSC_NULL);CHKERRQ(ierr);
-      ierr = PetscOptionsInt("-iterations", "The number of test repetitions", "isection.c", this->_iters, &this->_iters, PETSC_NULL);CHKERRQ(ierr);
-      ierr = PetscOptionsInt("-size", "The number of points", "isection.c", this->_size, &this->_size, PETSC_NULL);CHKERRQ(ierr);
-      ierr = PetscOptionsBool("-interpolate", "Flag for mesh interpolation", "imesh.c", this->_interpolate, &this->_interpolate, PETSC_NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsInt("-debug", "The debugging level", "isection.c", this->_debug, &this->_debug, NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsInt("-iterations", "The number of test repetitions", "isection.c", this->_iters, &this->_iters, NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsInt("-size", "The number of points", "isection.c", this->_size, &this->_size, NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsBool("-interpolate", "Flag for mesh interpolation", "imesh.c", this->_interpolate, &this->_interpolate, NULL);CHKERRQ(ierr);
     ierr = PetscOptionsEnd();CHKERRQ(ierr);
     PetscFunctionReturn(0);
   };
@@ -644,12 +644,12 @@ public:
       this->_mesh->setSieve(sieve);
       ALE::ISieveConverter::convertMesh(*this->_m, *this->_mesh, this->_renumbering);
       if (this->_mesh->commSize() > 1) {
-	ALE::Obj<mesh_type>             newMesh  = new mesh_type(PETSC_COMM_WORLD, this->_mesh->getDimension(), this->_debug);
-	ALE::Obj<mesh_type::sieve_type> newSieve = new mesh_type::sieve_type(newMesh->comm(), this->_debug);
+        ALE::Obj<mesh_type>             newMesh  = new mesh_type(PETSC_COMM_WORLD, this->_mesh->getDimension(), this->_debug);
+        ALE::Obj<mesh_type::sieve_type> newSieve = new mesh_type::sieve_type(newMesh->comm(), this->_debug);
 
-	newMesh->setSieve(newSieve);
-	ALE::DistributionNew<mesh_type>::distributeMeshAndSectionsV(this->_mesh, newMesh);
-	this->_mesh = newMesh;
+        newMesh->setSieve(newSieve);
+        ALE::DistributionNew<mesh_type>::distributeMeshAndSectionsV(this->_mesh, newMesh);
+        this->_mesh = newMesh;
       }
     } catch (ALE::Exception e) {
       std::cerr << e << std::endl;
@@ -672,9 +672,9 @@ public:
 
       PETSc::Log::Event("ALEAllocatorTest").begin();
       for(int val = 0; val < this->_iters; ++val) {
-	for(int p = val*this->_size + this->_iters; p < (val+1)*this->_size + this->_iters; ++p) {
-	  labelALE.setCone(val, p);
-	}
+        for(int p = val*this->_size + this->_iters; p < (val+1)*this->_size + this->_iters; ++p) {
+          labelALE.setCone(val, p);
+        }
       }
       PETSc::Log::Event("ALEAllocatorTest").end();
       CPPUNIT_ASSERT_EQUAL(this->_iters*this->_size, labelALE.size());
@@ -689,9 +689,9 @@ public:
       pool.deallocate(a, this->_iters*this->_size);
       PETSc::Log::Event("PoolAllocatorTest").begin();
       for(int val = 0; val < this->_iters; ++val) {
-	for(int p = val*this->_size + this->_iters; p < (val+1)*this->_size + this->_iters; ++p) {
-	  labelPool.setCone(val, p);
-	}
+        for(int p = val*this->_size + this->_iters; p < (val+1)*this->_size + this->_iters; ++p) {
+          labelPool.setCone(val, p);
+        }
       }
       PETSc::Log::Event("PoolAllocatorTest").end();
       CPPUNIT_ASSERT_EQUAL(this->_iters*this->_size, labelPool.size());
@@ -744,9 +744,9 @@ public:
 
     for(int r = 0; r < this->_iters; r++) {
       for(mesh_type::label_sequence::iterator c_iter = cellsBegin; c_iter != cellsEnd; ++c_iter) {
-	coordsVisitor.clear();
-	this->_mesh->restrictClosure(*c_iter, coordsVisitor);
-	  count += coordsVisitor.getSize();
+        coordsVisitor.clear();
+        this->_mesh->restrictClosure(*c_iter, coordsVisitor);
+          count += coordsVisitor.getSize();
       }
     }
     ierr = PetscLogEventEnd(closureEvent,0,0,0,0);
@@ -803,8 +803,8 @@ public:
 
     PetscFunctionBegin;
     ierr = PetscOptionsBegin(PETSC_COMM_WORLD, "", "Options for interval section stress test", "ISection");CHKERRQ(ierr);
-      ierr = PetscOptionsInt("-debug", "The debugging level", "isection.c", this->_debug, &this->_debug, PETSC_NULL);CHKERRQ(ierr);
-      ierr = PetscOptionsInt("-iterations", "The number of test repetitions", "isection.c", this->_iters, &this->_iters, PETSC_NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsInt("-debug", "The debugging level", "isection.c", this->_debug, &this->_debug, NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsInt("-iterations", "The number of test repetitions", "isection.c", this->_iters, &this->_iters, NULL);CHKERRQ(ierr);
     ierr = PetscOptionsEnd();CHKERRQ(ierr);
     PetscFunctionReturn(0);
   };

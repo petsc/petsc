@@ -4,7 +4,7 @@ function err = PetscInitialize(args,argfile,arghelp)
 %
 %   Note some 64 bit MATLAB versions will crash on BLAS/LAPACK calls. Some ways of handling this are to 
 %       1) use   -download-f2cblaslapack  or 
-%       2) use --known-64-bit_blas_indices --with-blas-lapack-dir=/Applications/MATLAB_R2011b.app/
+%       2) use --known-64-bit-blas-indices --with-blas-lapack-dir=/Applications/MATLAB_R2011b.app/
 %          the path above should point to the directory above the bin directory where the MATLAB command is
 %
 %  You can build with or without MPI, but cannot run on more than one process

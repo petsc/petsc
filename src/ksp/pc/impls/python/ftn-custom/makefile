@@ -3,8 +3,7 @@
 ALL: lib
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = zpythonpf.c
-OBJSC    = ${SOURCEC:.c=.o}
+SOURCEC  = zpythonpcf.c
 SOURCEF  =
 SOURCEH  =
 DIRS     =

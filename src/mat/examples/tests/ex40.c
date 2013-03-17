@@ -15,22 +15,22 @@ int main(int argc,char **args)
   PetscMPIInt    rank;
   PetscBool      flg;
   Mat            A,B;
-  char           file[PETSC_MAX_PATH_LEN]; 
+  char           file[PETSC_MAX_PATH_LEN];
   PetscViewer    fd;
   IS             *is1,*is2;
   PetscRandom    r;
   PetscScalar    rand;
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
 #if defined(PETSC_USE_COMPLEX)
   SETERRQ(PETSC_COMM_WORLD,1,"This example does not work with complex numbers");
 #else
-  
+
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
-  ierr = PetscOptionsGetString(PETSC_NULL,"-f",file,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,"-f",file,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(PETSC_COMM_WORLD,1,"Must use -f filename to indicate a file containing a PETSc binary matrix");
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-nd",&nd,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-ov",&ov,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-nd",&nd,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-ov",&ov,NULL);CHKERRQ(ierr);
 
   /* Read matrix and RHS */
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd);CHKERRQ(ierr);
@@ -45,7 +45,7 @@ int main(int argc,char **args)
   ierr = MatSetType(B,MATSEQAIJ);CHKERRQ(ierr);
   ierr = MatLoad(B,fd);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
-  
+
   /* Create the IS corresponding to subdomains */
   ierr = PetscMalloc(nd*sizeof(IS **),&is1);CHKERRQ(ierr);
   ierr = PetscMalloc(nd*sizeof(IS **),&is2);CHKERRQ(ierr);
@@ -60,7 +60,7 @@ int main(int argc,char **args)
     ierr  = PetscRandomGetValue(r,&rand);CHKERRQ(ierr);
     end   = (PetscInt)(rand*m);
     lsize =  end - start;
-    if (start > end) { start = end; lsize = -lsize ;}
+    if (start > end) { start = end; lsize = -lsize;}
     ierr = ISCreateStride(PETSC_COMM_SELF,lsize,start,1,is1+i);CHKERRQ(ierr);
     ierr = ISCreateStride(PETSC_COMM_SELF,lsize,start,1,is2+i);CHKERRQ(ierr);
   }
@@ -70,13 +70,13 @@ int main(int argc,char **args)
 
 
   /* Now see if the serial and parallel case have the same answers */
-  for (i=0; i<nd; ++i) { 
+  for (i=0; i<nd; ++i) {
     ierr = ISEqual(is1[i],is2[i],&flg);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_SELF,"proc:[%d], i=%D, flg =%d\n",rank,i,(int)flg);CHKERRQ(ierr);
   }
 
   /* Free allocated memory */
-  for (i=0; i<nd; ++i) { 
+  for (i=0; i<nd; ++i) {
     ierr = ISDestroy(&is1[i]);CHKERRQ(ierr);
     ierr = ISDestroy(&is2[i]);CHKERRQ(ierr);
   }

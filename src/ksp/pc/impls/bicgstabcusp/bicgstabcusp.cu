@@ -9,9 +9,7 @@
 #include <petsc-private/pcimpl.h>   /*I "petscpc.h" I*/
 #include <../src/mat/impls/aij/seq/aij.h>
 #include <cusp/monitor.h>
-#undef VecType
 #include <cusp/krylov/bicgstab.h>
-#define VecType char*
 #include <../src/vec/vec/impls/dvecimpl.h>
 #include <../src/mat/impls/aij/seq/seqcusp/cuspmatimpl.h>
 
@@ -20,10 +18,10 @@
    Private context (data structure) for the CUSP BiCGStab preconditioner.
  */
 typedef struct {
-  PetscInt maxits;
-  PetscReal rtol;
-  PetscBool monitorverbose;
-  CUSPMATRIX* mat;
+  PetscInt   maxits;
+  PetscReal  rtol;
+  PetscBool  monitorverbose;
+  CUSPMATRIX * mat;
 } PC_BiCGStabCUSP;
 
 #undef __FUNCT__
@@ -93,7 +91,7 @@ PetscErrorCode PCBiCGStabCUSPSetTolerance(PC pc, PetscReal rtol)
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   ierr = PetscTryMethod(pc, "PCBiCGStabCUSPSetTolerance_C",(PC,PetscReal),(pc,rtol));CHKERRQ(ierr);
   PetscFunctionReturn(0);
-  }
+}
 
 /* -------------------------------------------------------------------------- */
 /*
@@ -114,18 +112,18 @@ PetscErrorCode PCBiCGStabCUSPSetTolerance(PC pc, PetscReal rtol)
 static PetscErrorCode PCSetUp_BiCGStabCUSP(PC pc)
 {
   PC_BiCGStabCUSP *bicg = (PC_BiCGStabCUSP*)pc->data;
-  PetscBool       flg = PETSC_FALSE;
+  PetscBool       flg   = PETSC_FALSE;
   Mat_SeqAIJCUSP  *gpustruct;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)pc->pmat,MATSEQAIJCUSP,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_SUP,"Currently only handles CUSP matrices");
-  try{
-    ierr = MatCUSPCopyToGPU(pc->pmat);CHKERRQ(ierr);
-    gpustruct = (Mat_SeqAIJCUSP *)(pc->pmat->spptr);
+  if (!flg) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Currently only handles CUSP matrices");
+  try {
+    ierr      = MatCUSPCopyToGPU(pc->pmat);CHKERRQ(ierr);
+    gpustruct = (Mat_SeqAIJCUSP*)(pc->pmat->spptr);
     bicg->mat = (CUSPMATRIX*)gpustruct->mat;
-  } catch(char* ex) {
+  } catch(char *ex) {
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSP error: %s",ex);
   }
   PetscFunctionReturn(0);
@@ -151,12 +149,12 @@ static PetscErrorCode PCApply_BiCGStabCUSP(PC pc,Vec x,Vec y)
   PC_BiCGStabCUSP *bicg = (PC_BiCGStabCUSP*)pc->data;
   PetscErrorCode  ierr;
   PetscBool       flg1,flg2;
-  CUSPARRAY       *xarray,*yarray;
+  CUSPARRAY       *xarray=NULL,*yarray=NULL;
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)x,VECSEQCUSP,&flg1);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)y,VECSEQCUSP,&flg2);CHKERRQ(ierr);
-  if (!(flg1 && flg2)) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_SUP, "Currently only handles CUSP vectors");
+  if (!(flg1 && flg2)) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP, "Currently only handles CUSP vectors");
   if (!bicg->mat) {
     ierr = PCSetUp_BiCGStabCUSP(pc);CHKERRQ(ierr);
   }
@@ -165,13 +163,13 @@ static PetscErrorCode PCApply_BiCGStabCUSP(PC pc,Vec x,Vec y)
   ierr = VecCUSPGetArrayWrite(y,&yarray);CHKERRQ(ierr);
   try {
     cusp::default_monitor<PetscReal> monitor(*xarray,bicg->maxits,bicg->rtol);
-    if (bicg->monitorverbose){
+    if (bicg->monitorverbose) {
       cusp::verbose_monitor<PetscReal> verbosemonitor(*xarray,bicg->maxits,bicg->rtol);
       cusp::krylov::bicgstab(*bicg->mat,*yarray,*xarray,verbosemonitor);
     } else {
       cusp::krylov::bicgstab(*bicg->mat,*yarray,*xarray,monitor);
     }
-  } catch(char* ex) {
+  } catch(char *ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSP error: %s", ex);
   }
   ierr = VecCUSPRestoreArrayRead(x,&xarray);CHKERRQ(ierr);
@@ -221,11 +219,9 @@ static PetscErrorCode PCSetFromOptions_BiCGStabCUSP(PC pc)
 
 /* -------------------------------------------------------------------------- */
 
-
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCCreate_BiCGStabCUSP"
-PetscErrorCode  PCCreate_BiCGStabCUSP(PC pc)
+PETSC_EXTERN PetscErrorCode PCCreate_BiCGStabCUSP(PC pc)
 {
   PC_BiCGStabCUSP *bicg;
   PetscErrorCode  ierr;
@@ -235,7 +231,7 @@ PetscErrorCode  PCCreate_BiCGStabCUSP(PC pc)
      Creates the private data structure for this preconditioner and
      attach it to the PC object.
    */
-  ierr         = PetscNewLog(pc,PC_BiCGStabCUSP,&bicg);CHKERRQ(ierr);
+  ierr = PetscNewLog(pc,PC_BiCGStabCUSP,&bicg);CHKERRQ(ierr);
   /*
      Set default values.  We don't actually want to set max iterations as far as I know, but the Cusp monitor requires them so we use a large number.
    */
@@ -259,10 +255,10 @@ PetscErrorCode  PCCreate_BiCGStabCUSP(PC pc)
   pc->ops->applyrichardson     = 0;
   pc->ops->applysymmetricleft  = 0;
   pc->ops->applysymmetricright = 0;
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCBiCGStabCUSPSetTolerance_C","PCBiCGStabCUSPSetTolerance_BiCGStabCUSP",PCBiCGStabCUSPSetTolerance_BiCGStabCUSP);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc, "PCBiCGStabCUSPSetIterations_C","PCBiCGStabCUSPSetIterations_BiCGStabCUSP", PCBiCGStabCUSPSetIterations_BiCGStabCUSP);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc, "PCBiCGStabCUSPSetUseVerboseMonitor_C", "PCBiCGStabCUSPSetUseVerboseMonitor_BiCGStabCUSP", PCBiCGStabCUSPSetUseVerboseMonitor_BiCGStabCUSP);CHKERRQ(ierr);
+
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBiCGStabCUSPSetTolerance_C","PCBiCGStabCUSPSetTolerance_BiCGStabCUSP",PCBiCGStabCUSPSetTolerance_BiCGStabCUSP);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc, "PCBiCGStabCUSPSetIterations_C","PCBiCGStabCUSPSetIterations_BiCGStabCUSP", PCBiCGStabCUSPSetIterations_BiCGStabCUSP);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc, "PCBiCGStabCUSPSetUseVerboseMonitor_C", "PCBiCGStabCUSPSetUseVerboseMonitor_BiCGStabCUSP", PCBiCGStabCUSPSetUseVerboseMonitor_BiCGStabCUSP);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 

@@ -125,7 +125,6 @@
 !
 ! MatSolverPackages
 !
-#define MATSOLVERSPOOLES      'spooles'
 #define MATSOLVERSUPERLU      'superlu'
 #define MATSOLVERSUPERLU_DIST 'superlu_dist'
 #define MATSOLVERUMFPACK      'umfpack'
@@ -136,7 +135,6 @@
 #define MATSOLVERPASTIX       'pastix'
 #define MATSOLVERMATLAB       'matlab'
 #define MATSOLVERPETSC        'petsc'
-#define MATSOLVERPLAPACK      'plapack'
 #define MATSOLVERBAS          'bas'
 #define MATSOLVERCUSPARSE     'cusparse'
 #define MATSOLVERBSTRM        'bstrm'
@@ -145,13 +143,10 @@
 !
 ! GPU Storage Formats for CUSP and CUSPARSE
 !
-#if defined(PETSC_HAVE_TXPETSCGPU)
 #define MatCUSPARSEStorageFormat PetscEnum
 #define MatCUSPARSEFormatOperation PetscEnum
-#endif
 
-#if defined(PETSC_HAVE_CUSP)
 #define MatCUSPStorageFormat PetscEnum
 #define MatCUSPFormatOperation PetscEnum
-#endif
+
 #endif

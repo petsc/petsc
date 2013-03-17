@@ -6,7 +6,7 @@
 #    Also removes the #define somefunction_ somefunction from the tags list
 #
 #
-# 
+#
 #   Walks through the PETSc tree generating the TAGS file
 #
 import os
@@ -18,7 +18,7 @@ import commands
 
 #
 #  Copies structs from filename to filename.tmp
-    
+
 def addFileNameTags(filename):
   removedefines = 0
   f = open(filename)
@@ -97,7 +97,7 @@ def processDir(tagfiles,dirname,names):
     if exname in names and dirname.find('src') <0:
       names.remove(exname)
   # One-level unique dirs
-  for exname in ['.hg','SCCS', 'output', 'BitKeeper', 'externalpackages', 'bilinear', 'ftn-auto','lib']:
+  for exname in ['.git','.hg','SCCS', 'output', 'BitKeeper', 'externalpackages', 'bilinear', 'ftn-auto','lib','systems']:
     if exname in names:
       names.remove(exname)
   #  Multi-level unique dirs - specify from toplevel
@@ -135,7 +135,7 @@ def main():
   try: os.unlink('CTAGS')
   except: pass
   etagfile = os.path.join(os.getcwd(),'ETAGS')
-  ctagfile = os.path.join(os.getcwd(),'CTAGS')  
+  ctagfile = os.path.join(os.getcwd(),'CTAGS')
   os.path.walk(os.getcwd(),processDir,[etagfile,ctagfile])
   processFiles(os.getcwd(),etagfile,ctagfile)
   addFileNameTags(etagfile)
@@ -144,6 +144,6 @@ def main():
 #
 # The classes in this file can also be used in other python-programs by using 'import'
 #
-if __name__ ==  '__main__': 
+if __name__ ==  '__main__':
     main()
 

@@ -21,7 +21,7 @@
       PetscScalar one
 
       m = 10
-     
+
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       one = 1.d0
       call KSPCreate(PETSC_COMM_SELF,ksp,ierr)
@@ -48,17 +48,17 @@
       end
 
 
-!  This is a bogus multiply that copies the vector. This corresponds to 
+!  This is a bogus multiply that copies the vector. This corresponds to
 !  an identity matrix A
- 
+
       subroutine mymatmult(A,x,y,ierr)
-     
+
       Mat A
       Vec x,y
       PetscErrorCode ierr
- 
+
       call VecCopy(x,y,ierr)
 
-      return 
+      return
       end
-      
+

@@ -10,14 +10,14 @@ static char help[] = "Generates random numbers for radioactive events for ex61.c
 #define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
-  PetscErrorCode      ierr;
-  Vec                 x;
-  PetscRandom         rand;
-  PetscScalar         *values;
-  PetscInt            n = 10000,seed;
-  PetscViewer         viewer;
-  char                filename[PETSC_MAX_PATH_LEN];
-  PetscBool           flg;
+  PetscErrorCode ierr;
+  Vec            x;
+  PetscRandom    rand;
+  PetscScalar    *values;
+  PetscInt       n = 10000,seed;
+  PetscViewer    viewer;
+  char           filename[PETSC_MAX_PATH_LEN];
+  PetscBool      flg;
 
   PetscInitialize(&argc,&argv, (char*)0, help);
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rand);CHKERRQ(ierr);
@@ -26,7 +26,7 @@ int main(int argc, char **argv)
   ierr = VecSetRandom(x,rand);CHKERRQ(ierr);
   ierr = PetscRandomDestroy(&rand);CHKERRQ(ierr);
   ierr = VecGetArray(x,&values);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-random_seed",&seed,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-random_seed",&seed,&flg);CHKERRQ(ierr);
   if (flg) {
     sprintf(filename,"ex61.random.%d",(int)seed);CHKERRQ(ierr);
   } else {

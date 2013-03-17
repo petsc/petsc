@@ -17,8 +17,8 @@ struct DMCompositeLink {
   PetscInt               nlocal;
 
   /* only used for DMCOMPOSITE_DM */
-  PetscInt               *grstarts;     /* global row for first unknown of this DM on each process */
-  DM                     dm;
+  PetscInt *grstarts;                   /* global row for first unknown of this DM on each process */
+  DM       dm;
 };
 
 typedef struct {
@@ -31,6 +31,6 @@ typedef struct {
   PetscErrorCode (*FormCoupleLocations)(DM,Mat,PetscInt*,PetscInt*,PetscInt,PetscInt,PetscInt,PetscInt);
 } DM_Composite;
 
-extern PetscErrorCode DMCreateMatrix_Composite(DM,const MatType,Mat*);
+PETSC_INTERN PetscErrorCode DMCreateMatrix_Composite(DM,MatType,Mat*);
 
 #endif

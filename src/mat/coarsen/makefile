@@ -3,10 +3,9 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-CPPFLAGS = 
+CPPFLAGS =
 SOURCEC  = coarsen.c scoarsen.c
-SOURCEH  = 
-OBJSC    = coarsen.o scoarsen.o
+SOURCEH  =
 LIBBASE  = libpetscmat
 LOCDIR   = src/mat/coarsen/
 MANSEC   = MatOrderings

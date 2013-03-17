@@ -8,13 +8,13 @@
 using ALE::Obj;
 
 typedef struct {
-  int        debug;              // The debugging level
-  PetscBool  useZeroBase;        // Use zero-based indexing
-  char       baseFilename[2048]; // The base filename for mesh files
-  PetscInt   levels;             // The number of levels in the hierarchy
-  PetscReal  coarseFactor;       // The maximum coarsening factor
-  PetscReal  zScale;             // The relative spread of levels for visualization
-  PetscBool  outputVTK;          // Output the mesh in VTK
+  int       debug;               // The debugging level
+  PetscBool useZeroBase;         // Use zero-based indexing
+  char      baseFilename[2048];  // The base filename for mesh files
+  PetscInt  levels;              // The number of levels in the hierarchy
+  PetscReal coarseFactor;        // The maximum coarsening factor
+  PetscReal zScale;              // The relative spread of levels for visualization
+  PetscBool outputVTK;           // Output the mesh in VTK
 } Options;
 
 #undef __FUNCT__
@@ -26,20 +26,20 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
   PetscFunctionBegin;
   options->debug        = 0;
   options->useZeroBase  = PETSC_TRUE;
-  ierr = PetscStrcpy(options->baseFilename, "data/coarsen_mesh");CHKERRQ(ierr);
+  ierr                  = PetscStrcpy(options->baseFilename, "data/coarsen_mesh");CHKERRQ(ierr);
   options->levels       = 6;
   options->coarseFactor = 1.41;
   options->zScale       = 1.0;
   options->outputVTK    = PETSC_TRUE;
 
   ierr = PetscOptionsBegin(comm, "", "Options for mesh coarsening", "Options");CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-debug", "The debugging level", "ex_coarsen", options->debug, &options->debug, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-use_zero_base", "Use zero-based indexing", "ex1.c", options->useZeroBase, &options->useZeroBase, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsString("-base_file", "The base filename for mesh files", "ex_coarsen", options->baseFilename, options->baseFilename, 2048, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-levels", "The number of coarse levels", "ex_coarsen.c", options->levels, &options->levels, PETSC_NULL);    
-    ierr = PetscOptionsReal("-coarsen", "The maximum coarsening factor", "ex_coarsen.c", options->coarseFactor, &options->coarseFactor, PETSC_NULL);    
-    ierr = PetscOptionsReal("-z_scale", "The relative spread of levels for visualization", "ex_coarsen.c", options->zScale, &options->zScale, PETSC_NULL);    
-    ierr = PetscOptionsBool("-output_vtk", "Output the mesh in VTK", "ex1.c", options->outputVTK, &options->outputVTK, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-debug", "The debugging level", "ex_coarsen", options->debug, &options->debug, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-use_zero_base", "Use zero-based indexing", "ex1.c", options->useZeroBase, &options->useZeroBase, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsString("-base_file", "The base filename for mesh files", "ex_coarsen", options->baseFilename, options->baseFilename, 2048, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-levels", "The number of coarse levels", "ex_coarsen.c", options->levels, &options->levels, NULL);
+  ierr = PetscOptionsReal("-coarsen", "The maximum coarsening factor", "ex_coarsen.c", options->coarseFactor, &options->coarseFactor, NULL);
+  ierr = PetscOptionsReal("-z_scale", "The relative spread of levels for visualization", "ex_coarsen.c", options->zScale, &options->zScale, NULL);
+  ierr = PetscOptionsBool("-output_vtk", "Output the mesh in VTK", "ex1.c", options->outputVTK, &options->outputVTK, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
@@ -49,6 +49,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
 PetscErrorCode CreateMesh(MPI_Comm comm, Obj<ALE::Mesh>& mesh, Options *options)
 {
   PetscErrorCode ierr;
+
   PetscFunctionBegin;
   ALE::LogStage stage = ALE::LogStageRegister("MeshCreation");
   ALE::LogStagePush(stage);
@@ -60,9 +61,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, Obj<ALE::Mesh>& mesh, Options *options)
   Obj<ALE::Mesh::topology_type> topology = mesh->getTopology();
   ierr = PetscPrintf(comm, "  Read %d elements\n", topology->heightStratum(0, 0)->size());CHKERRQ(ierr);
   ierr = PetscPrintf(comm, "  Read %d vertices\n", topology->depthStratum(0, 0)->size());CHKERRQ(ierr);
-  if (options->debug) {
-    topology->view("Serial topology");
-  }
+  if (options->debug) topology->view("Serial topology");
   PetscFunctionReturn(0);
 }
 
@@ -88,7 +87,7 @@ PetscErrorCode OutputVTK(const Obj<ALE::Mesh>& mesh, Options *options)
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
     const ALE::Mesh::topology_type::sheaf_type& patches = mesh->getTopology()->getPatches();
 #if 0
-    for(ALE::Mesh::topology_type::sheaf_type::iterator p_iter = patches.begin(); p_iter != patches.end(); ++p_iter) {
+    for (ALE::Mesh::topology_type::sheaf_type::iterator p_iter = patches.begin(); p_iter != patches.end(); ++p_iter) {
       ostringstream filename;
 
       filename << "coarseMesh." << *p_iter << ".vtk";
@@ -116,7 +115,7 @@ int main(int argc, char *argv[])
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscInitialize(&argc, &argv, (char *) 0, NULL);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc, &argv, (char*) 0, NULL);CHKERRQ(ierr);
   comm = PETSC_COMM_WORLD;
 
   try {

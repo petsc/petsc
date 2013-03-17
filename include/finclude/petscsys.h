@@ -12,7 +12,7 @@
 
 ! ------------------------------------------------------------------------
 !     Non Common block Stuff declared first
-!    
+!
 !     Flags
 !
       PetscBool  PETSC_TRUE
@@ -33,7 +33,7 @@
 
       PetscEnum PETSC_FP_TRAP_OFF
       PetscEnum PETSC_FP_TRAP_ON
-      parameter (PETSC_FP_TRAP_OFF = 0,PETSC_FP_TRAP_ON = 1) 
+      parameter (PETSC_FP_TRAP_OFF = 0,PETSC_FP_TRAP_ON = 1)
 
 
 
@@ -54,10 +54,10 @@
       PetscFortranAddr PETSC_VIEWER_MATLAB_SELF
 
 !
-!     The numbers used below should match those in 
+!     The numbers used below should match those in
 !     petsc-private/fortranimpl.h
 !
-      parameter (PETSC_VIEWER_DRAW_WORLD   = 4) 
+      parameter (PETSC_VIEWER_DRAW_WORLD   = 4)
       parameter (PETSC_VIEWER_DRAW_SELF    = 5)
       parameter (PETSC_VIEWER_SOCKET_WORLD = 6)
       parameter (PETSC_VIEWER_SOCKET_SELF  = 7)
@@ -109,17 +109,22 @@
       parameter (PETSC_USE_POINTER = 2)
 !
 ! ------------------------------------------------------------------------
-!     PETSc mathematics include file. Defines certain basic mathematical 
+!     PETSc mathematics include file. Defines certain basic mathematical
 !    constants and functions for working with single and double precision
 !    floating point numbers as well as complex and integers.
 !
 !     Representation of complex i
 !
       PetscFortranComplex PETSC_i
+#if defined(PETSC_USE_REAL_SINGLE)
+      parameter (PETSC_i = (0.0e0,1.0e0))
+#else
       parameter (PETSC_i = (0.0d0,1.0d0))
+#endif
+
 !
 !     Basic constants
-! 
+!
       PetscFortranDouble PETSC_PI
       PetscFortranDouble PETSC_MAX_REAL
       PetscFortranDouble PETSC_MIN_REAL
@@ -144,7 +149,7 @@
 ! ----------------------------------------------------------------------------
 !    BEGIN PETSc aliases for MPI_ constants
 !
-      integer MPIU_SCALAR 
+      integer MPIU_SCALAR
 #if defined(PETSC_USE_COMPLEX)
 #if defined (PETSC_USE_REAL_SINGLE)
       parameter(MPIU_SCALAR = MPI_COMPLEX)
@@ -181,7 +186,6 @@
       PetscChar(80)       PETSC_NULL_CHARACTER
       PetscInt            PETSC_NULL_INTEGER
       PetscFortranDouble  PETSC_NULL_DOUBLE
-      PetscInt            PETSC_NULL
       PetscObject         PETSC_NULL_OBJECT
 !
 !      A PETSC_NULL_FUNCTION pointer
@@ -196,10 +200,9 @@
 !
 !
 !     A string should be in a different common block
-!  
+!
       common /petscfortran1/ PETSC_NULL_CHARACTER
       common /petscfortran2/ PETSC_NULL_INTEGER
-      common /petscfortran3/ PETSC_NULL
       common /petscfortran4/ PETSC_NULL_SCALAR
       common /petscfortran5/ PETSC_NULL_DOUBLE
       common /petscfortran6/ PETSC_NULL_REAL
@@ -221,7 +224,7 @@
       PetscBool  PetscIsInfOrNanScalar
       PetscBool  PetscIsInfOrNanReal
 
-  
+
 !    END COMMON-BLOCK VARIABLES
 ! ----------------------------------------------------------------------------
 !
@@ -230,7 +233,7 @@
 !
 #define PETSCRAND 'rand'
 #define PETSCRAND48 'rand48'
-#define PETSCSPRNG 'sprng'          
+#define PETSCSPRNG 'sprng'
 !
 !
 !
@@ -259,4 +262,8 @@
       parameter (PETSC_BINARY_SEEK_SET = 0,PETSC_BINARY_SEEK_CUR = 1)
       parameter (PETSC_BINARY_SEEK_END = 2)
 
+      PetscEnum PETSC_BUILDTWOSIDED_ALLREDUCE
+      PetscEnum PETSC_BUILDTWOSIDED_IBARRIER
+      parameter (PETSC_BUILDTWOSIDED_ALLREDUCE = 0)
+      parameter (PETSC_BUILDTWOSIDED_IBARRIER = 1)
 !

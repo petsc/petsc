@@ -4,23 +4,25 @@
 #define _DMIMPL_H
 
 #include <petscdm.h>
+#include <petsc-private/petscimpl.h>
 
 typedef PetscErrorCode (*NullSpaceFunc)(DM dm, PetscInt field, MatNullSpace *nullSpace);
 
 typedef struct _DMOps *DMOps;
 struct _DMOps {
-  PetscErrorCode (*view)(DM,PetscViewer); 
-  PetscErrorCode (*load)(DM,PetscViewer); 
-  PetscErrorCode (*setfromoptions)(DM); 
-  PetscErrorCode (*setup)(DM); 
+  PetscErrorCode (*view)(DM,PetscViewer);
+  PetscErrorCode (*load)(DM,PetscViewer);
+  PetscErrorCode (*setfromoptions)(DM);
+  PetscErrorCode (*setup)(DM);
   PetscErrorCode (*createglobalvector)(DM,Vec*);
   PetscErrorCode (*createlocalvector)(DM,Vec*);
   PetscErrorCode (*createlocaltoglobalmapping)(DM);
   PetscErrorCode (*createlocaltoglobalmappingblock)(DM);
   PetscErrorCode (*createfieldis)(DM,PetscInt*,char***,IS**);
+  PetscErrorCode (*createcoordinatedm)(DM,DM*);
 
-  PetscErrorCode (*getcoloring)(DM,ISColoringType,const MatType,ISColoring*);	
-  PetscErrorCode (*creatematrix)(DM, const MatType,Mat*);
+  PetscErrorCode (*getcoloring)(DM,ISColoringType,MatType,ISColoring*);
+  PetscErrorCode (*creatematrix)(DM, MatType,Mat*);
   PetscErrorCode (*createinterpolation)(DM,DM,Mat*,Vec*);
   PetscErrorCode (*getaggregates)(DM,DM,Mat*);
   PetscErrorCode (*getinjection)(DM,DM,VecScatter*);
@@ -30,25 +32,21 @@ struct _DMOps {
   PetscErrorCode (*refinehierarchy)(DM,PetscInt,DM*);
   PetscErrorCode (*coarsenhierarchy)(DM,PetscInt,DM*);
 
-  PetscErrorCode (*globaltolocalbegin)(DM,Vec,InsertMode,Vec);		
+  PetscErrorCode (*globaltolocalbegin)(DM,Vec,InsertMode,Vec);
   PetscErrorCode (*globaltolocalend)(DM,Vec,InsertMode,Vec);
   PetscErrorCode (*localtoglobalbegin)(DM,Vec,InsertMode,Vec);
   PetscErrorCode (*localtoglobalend)(DM,Vec,InsertMode,Vec);
-
-  PetscErrorCode (*initialguess)(DM,Vec);
-  PetscErrorCode (*function)(DM,Vec,Vec);
-  PetscErrorCode (*functionj)(DM,Vec,Vec);
-  PetscErrorCode (*jacobian)(DM,Vec,Mat,Mat,MatStructure*);
 
   PetscErrorCode (*destroy)(DM);
 
   PetscErrorCode (*computevariablebounds)(DM,Vec,Vec);
 
   PetscErrorCode (*createsubdm)(DM,PetscInt,PetscInt*,IS*,DM*);
-  PetscErrorCode (*createfielddecompositiondm)(DM,const char*,DM*);
   PetscErrorCode (*createfielddecomposition)(DM,PetscInt*,char***,IS**,DM**);
-  PetscErrorCode (*createdomaindecompositiondm)(DM,const char*,DM*);
   PetscErrorCode (*createdomaindecomposition)(DM,PetscInt*,char***,IS**,IS**,DM**);
+  PetscErrorCode (*createddscatters)(DM,PetscInt,DM*,VecScatter**,VecScatter**,VecScatter**);
+
+  PetscErrorCode (*locatepoints)(DM,Vec,IS*);
 };
 
 typedef struct _DMCoarsenHookLink *DMCoarsenHookLink;
@@ -67,6 +65,22 @@ struct _DMRefineHookLink {
   DMRefineHookLink next;
 };
 
+typedef struct _DMSubDomainHookLink *DMSubDomainHookLink;
+struct _DMSubDomainHookLink {
+  PetscErrorCode (*ddhook)(DM,DM,void*);
+  PetscErrorCode (*restricthook)(DM,VecScatter,VecScatter,DM,void*);
+  void *ctx;
+  DMSubDomainHookLink next;
+};
+
+typedef struct _DMGlobalToLocalHookLink *DMGlobalToLocalHookLink;
+struct _DMGlobalToLocalHookLink {
+  PetscErrorCode (*beginhook)(DM,Vec,InsertMode,Vec,void*);
+  PetscErrorCode (*endhook)(DM,Vec,InsertMode,Vec,void*);
+  void *ctx;
+  DMGlobalToLocalHookLink next;
+};
+
 typedef enum {DMVEC_STATUS_IN,DMVEC_STATUS_OUT} DMVecStatus;
 typedef struct _DMNamedVecLink *DMNamedVecLink;
 struct _DMNamedVecLink {
@@ -76,47 +90,68 @@ struct _DMNamedVecLink {
   DMNamedVecLink next;
 };
 
+typedef struct _DMWorkLink *DMWorkLink;
+struct _DMWorkLink {
+  size_t     bytes;
+  void       *mem;
+  DMWorkLink next;
+};
+
 #define DM_MAX_WORK_VECTORS 100 /* work vectors available to users  via DMGetGlobalVector(), DMGetLocalVector() */
 
 struct _p_DM {
   PETSCHEADER(struct _DMOps);
-  Vec                    localin[DM_MAX_WORK_VECTORS],localout[DM_MAX_WORK_VECTORS];
-  Vec                    globalin[DM_MAX_WORK_VECTORS],globalout[DM_MAX_WORK_VECTORS];
-  DMNamedVecLink         namedglobal;
-  PetscInt               workSize;
-  PetscScalar            *workArray;
-  void                   *ctx;    /* a user context */
-  PetscErrorCode         (*ctxdestroy)(void**);
-  Vec                    x;       /* location at which the functions/Jacobian are computed */
-  ISColoringType         coloringtype;
-  MatFDColoring          fd;      /* used by DMComputeJacobianDefault() */
-  VecType                vectype;  /* type of vector created with DMCreateLocalVector() and DMCreateGlobalVector() */
-  MatType                mattype;  /* type of matrix created with DMCreateMatrix() */
-  PetscInt               bs;
-  ISLocalToGlobalMapping ltogmap,ltogmapb;
-  PetscBool              prealloc_only; /* Flag indicating the DMCreateMatrix() should only preallocate, not fill the matrix */
-  PetscInt               levelup,leveldown;  /* if the DM has been obtained by refining (or coarsening) this indicates how many times that process has been used to generate this DM */
-  PetscBool              setupcalled;        /* Indicates that the DM has been set up, methods that modify a DM such that a fresh setup is required should reset this flag */
-  void                   *data;
-  DMCoarsenHookLink      coarsenhook; /* For transfering auxiliary problem data to coarser grids */
-  DMRefineHookLink       refinehook;
-  DMLocalFunction1       lf;
-  DMLocalJacobian1       lj;
+  Vec                     localin[DM_MAX_WORK_VECTORS],localout[DM_MAX_WORK_VECTORS];
+  Vec                     globalin[DM_MAX_WORK_VECTORS],globalout[DM_MAX_WORK_VECTORS];
+  DMNamedVecLink          namedglobal;
+  DMNamedVecLink          namedlocal;
+  DMWorkLink              workin,workout;
+  void                    *ctx;    /* a user context */
+  PetscErrorCode          (*ctxdestroy)(void**);
+  Vec                     x;       /* location at which the functions/Jacobian are computed */
+  ISColoringType          coloringtype;
+  MatFDColoring           fd;
+  VecType                 vectype;  /* type of vector created with DMCreateLocalVector() and DMCreateGlobalVector() */
+  MatType                 mattype;  /* type of matrix created with DMCreateMatrix() */
+  PetscInt                bs;
+  ISLocalToGlobalMapping  ltogmap,ltogmapb;
+  PetscBool               prealloc_only; /* Flag indicating the DMCreateMatrix() should only preallocate, not fill the matrix */
+  PetscInt                levelup,leveldown;  /* if the DM has been obtained by refining (or coarsening) this indicates how many times that process has been used to generate this DM */
+  PetscBool               setupcalled;        /* Indicates that the DM has been set up, methods that modify a DM such that a fresh setup is required should reset this flag */
+  void                    *data;
+  DMCoarsenHookLink       coarsenhook; /* For transfering auxiliary problem data to coarser grids */
+  DMRefineHookLink        refinehook;
+  DMSubDomainHookLink     subdomainhook;
+  DMGlobalToLocalHookLink gtolhook;
   /* Flexible communication */
-  PetscSF                sf;                   /* SF for parallel point overlap */
-  PetscSF                defaultSF;            /* SF for parallel dof overlap using default section */
+  PetscSF                 sf;                   /* SF for parallel point overlap */
+  PetscSF                 defaultSF;            /* SF for parallel dof overlap using default section */
   /* Allows a non-standard data layout */
-  PetscSection           defaultSection;       /* Layout for local vectors */
-  PetscSection           defaultGlobalSection; /* Layout for global vectors */
+  PetscSection            defaultSection;       /* Layout for local vectors */
+  PetscSection            defaultGlobalSection; /* Layout for global vectors */
+  PetscLayout             map;
+  /* Coordinates */
+  DM                      coordinateDM;         /* Layout for coordinates (default section) */
+  Vec                     coordinates;          /* Coordinate values in global vector */
+  Vec                     coordinatesLocal;     /* Coordinate values in local  vector */
   /* Null spaces -- of course I should make this have a variable number of fields */
-  NullSpaceFunc          nullspaceConstructors[10];
+  /*   I now believe this might not be the right way: see below */
+  NullSpaceFunc           nullspaceConstructors[10];
+  /* Fields are represented by objects */
+  PetscInt                numFields;
+  PetscObject             *fields;
+
+  PetscObject             dmksp,dmsnes,dmts;
 };
 
 PETSC_EXTERN PetscLogEvent DM_Convert, DM_GlobalToLocal, DM_LocalToGlobal;
 
+PETSC_EXTERN PetscErrorCode DMCreateGlobalVector_Section_Private(DM,Vec*);
+PETSC_EXTERN PetscErrorCode DMCreateLocalVector_Section_Private(DM,Vec*);
+
 /*
 
-          Composite Vectors 
+          Composite Vectors
 
       Single global representation
       Individual global representations
@@ -139,42 +174,42 @@ PETSC_EXTERN PetscLogEvent DM_Convert, DM_GlobalToLocal, DM_LocalToGlobal;
 
        DMDACreate(,&da_p);
        DMCompositeCreate(,&dm_velocities);
-       DMCompositeAddDM(dm,(DM)dm_velocities);     
-       DMCompositeAddDM(dm,(DM)dm_p);     
+       DMCompositeAddDM(dm,(DM)dm_velocities);
+       DMCompositeAddDM(dm,(DM)dm_p);
 
 
     Access parts of composite vectors (Composite only)
     ---------------------------------
       DMCompositeGetAccess  - access the global vector as subvectors and array (for redundant arrays)
-      ADD for local vector - 
+      ADD for local vector -
 
     Element access
     --------------
-      From global vectors 
+      From global vectors
          -DAVecGetArray   - for DMDA
          -VecGetArray - for DMSliced
          ADD for DMComposite???  maybe
 
       From individual vector
           -DAVecGetArray - for DMDA
-          -VecGetArray -for sliced  
+          -VecGetArray -for sliced
          ADD for DMComposite??? maybe
 
       From single local vector
           ADD         * single local vector as arrays?
 
-   Communication 
+   Communication
    -------------
       DMGlobalToLocal - global vector to single local vector
 
       DMCompositeScatter/Gather - direct to individual local vectors and arrays   CHANGE name closer to GlobalToLocal?
 
    Obtaining vectors
-   ----------------- 
-      DMCreateGlobal/Local 
-      DMGetGlobal/Local 
+   -----------------
+      DMCreateGlobal/Local
+      DMGetGlobal/Local
       DMCompositeGetLocalVectors   - gives individual local work vectors and arrays
-         
+
 
 ?????   individual global vectors   ????
 

@@ -1,13 +1,15 @@
 #
-# This is the makefile for compiling PETSc. See 
+# This is the makefile for compiling PETSc. See
 # http://www.mcs.anl.gov/petsc/documentation/installation.html for directions on installing PETSc.
 # See also conf for additional commands.
 #
 ALL: all
 LOCDIR	 = ./
-DIRS	 = src include tutorials
-CFLAGS	 = 
-FFLAGS	 = 
+DIRS	 = src include tutorials lua
+CFLAGS	 =
+FFLAGS	 =
+CPPFLAGS =
+FPPFLAGS =
 
 # next line defines PETSC_DIR and PETSC_ARCH if they are not set
 include ././${PETSC_ARCH}/conf/petscvariables
@@ -18,34 +20,42 @@ include ${PETSC_DIR}/conf/test
 #
 # Basic targets to build PETSc libraries.
 # all: builds the c, fortran, and f90 libraries
-all:
-	@${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} chkpetsc_dir petscnagupgrade | tee ${PETSC_ARCH}/conf/make.log
+all: chk_makej
+	@${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} chk_petscdir chk_upgrade | tee ${PETSC_ARCH}/conf/make.log
 	@ln -sf ${PETSC_ARCH}/conf/make.log make.log
 	@if [ "${PETSC_BUILD_USING_CMAKE}" != "" ]; then \
-	   ${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} all-cmake 2>&1 | tee -a ${PETSC_ARCH}/conf/make.log \
+	   ${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} all-cmake-local 2>&1 | tee -a ${PETSC_ARCH}/conf/make.log \
 		| egrep -v '( --check-build-system |cmake -E | -o CMakeFiles/petsc[[:lower:]]*.dir/| -o lib/libpetsc|CMakeFiles/petsc[[:lower:]]*\.dir/(build|depend|requires)|-f CMakeFiles/Makefile2|Dependee .* is newer than depender |provides\.build. is up to date)'; \
 	 else \
-	   ${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} all-legacy 2>&1 | tee -a ${PETSC_ARCH}/conf/make.log \
+	   ${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} all-legacy-local 2>&1 | tee -a ${PETSC_ARCH}/conf/make.log \
                 | ${GREP} -v "has no symbols"; \
 	 fi
 	@egrep -i "( error | error: |no such file or directory)" ${PETSC_ARCH}/conf/make.log | tee ${PETSC_ARCH}/conf/error.log > /dev/null
 	@if test -s ${PETSC_ARCH}/conf/error.log; then \
-           echo "********************************************************************" 2>&1 | tee -a ${PETSC_ARCH}/conf/make.log; \
+           printf ${PETSC_TEXT_HILIGHT}"**************************ERROR************************************\n" 2>&1 | tee -a ${PETSC_ARCH}/conf/make.log; \
            echo "  Error during compile, check ${PETSC_ARCH}/conf/make.log" 2>&1 | tee -a ${PETSC_ARCH}/conf/make.log; \
            echo "  Send it and ${PETSC_ARCH}/conf/configure.log to petsc-maint@mcs.anl.gov" 2>&1 | tee -a ${PETSC_ARCH}/conf/make.log;\
-           echo "********************************************************************" 2>&1 | tee -a ${PETSC_ARCH}/conf/make.log;\
+           printf "********************************************************************"${PETSC_TEXT_NORMAL}"\n" 2>&1 | tee -a ${PETSC_ARCH}/conf/make.log;\
 	 else \
 	  ${OMAKE} shared_install PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} 2>&1 | tee -a ${PETSC_ARCH}/conf/make.log ;\
         fi #solaris make likes to print the whole command that gave error. So split this up into the smallest chunk below
 	@if test -s ${PETSC_ARCH}/conf/error.log; then exit 1; fi
 
-all-cmake: info cmakegen cmake
+all-cmake:
+	@if [ "${PETSC_BUILD_USING_CMAKE}" != "" ]; then \
+          ${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} all;\
+        else printf ${PETSC_TEXT_HILIGHT}"Build not configured for CMAKE. Quiting"${PETSC_TEXT_NORMAL}"\n"; exit 1; fi
 
-all-legacy: chklib_dir info deletelibs deletemods build shared_nomesg mpi4py petsc4py
+all-legacy:
+	@${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} PETSC_BUILD_USING_CMAKE="" all
+
+all-cmake-local: chk_makej info cmakegen cmake
+
+all-legacy-local: chk_makej chklib_dir info deletelibs deletemods build shared_nomesg mpi4py petsc4py
 #
 # Prints information about the system and version of PETSc being compiled
 #
-info:
+info: chk_makej
 	-@echo "=========================================="
 	-@echo " "
 	-@echo "See documentation/faq.html and documentation/bugreporting.html"
@@ -74,8 +84,16 @@ info:
 	-@grep "\#define " ${PETSC_DIR}/${PETSC_ARCH}/include/petscconf.h
 	-@echo "-----------------------------------------"
 	-@echo "Using C/C++ compile: ${PETSC_COMPILE}"
+	-@if [ "${PETSC_LANGUAGE}" = "CONLY" -a "${MPICC_SHOW}" != "" ]; then \
+             printf  "mpicc -show: %b\n" "${MPICC_SHOW}"; \
+	  elif [ "${PETSC_LANGUAGE}" = "CXXONLY" -a "${MPICXX_SHOW}" != "" ]; then \
+             printf "mpicxx -show: %b\n" "${MPICXX_SHOW}"; \
+          fi;
 	-@if [ "${FC}" != "" ]; then \
 	   echo "Using Fortran compile: ${PETSC_FCOMPILE}";\
+           if [ "${MPIFC_SHOW}" != "" ]; then \
+             printf "mpif90 -show: %b\n" "${MPIFC_SHOW}"; \
+           fi; \
          fi
 	-@if [ "${CUDAC}" != "" ]; then \
 	   echo "Using CUDA compile: ${PETSC_CUCOMPILE}";\
@@ -98,7 +116,7 @@ info:
 # This target also builds fortran77 and f90 interface
 # files and compiles .F files
 #
-build:
+build: chk_makej
 	-@echo "BEGINNING TO COMPILE LIBRARIES IN ALL DIRECTORIES"
 	-@echo "========================================="
 	-@${OMAKE}  PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ACTION=libfast tree
@@ -109,16 +127,21 @@ build:
 #
 # Builds PETSc test examples for a given architecture
 #
-test: 
+check: test
+test:
 	-@${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} test_build 2>&1 | tee ./${PETSC_ARCH}/conf/test.log
-testx: 
+testx:
 	-@${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} testx_build 2>&1 | tee ./${PETSC_ARCH}/conf/testx.log
 test_build:
 	-@echo "Running test examples to verify correct installation"
 	-@echo "Using PETSC_DIR=${PETSC_DIR} and PETSC_ARCH=${PETSC_ARCH}"
 	@cd src/snes/examples/tutorials >/dev/null; ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} clean
 	@cd src/snes/examples/tutorials >/dev/null; ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} testex19
-	@if [ "${FC}" != "" ]; then cd src/snes/examples/tutorials >/dev/null; ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} testex5f; fi;
+	@if [ "${FC}" != "" ]; then \
+          egrep "^#define PETSC_USE_FORTRAN_DATATYPES 1" ${PETSC_DIR}/${PETSC_ARCH}/include/petscconf.h | tee .ftn-dtype.log > /dev/null; \
+          if test -s .ftn-dtype.log; then F90TEST="testex5f90t"; else F90TEST="testex5f"; fi; ${RM} .ftn-dtype.log; \
+          cd src/snes/examples/tutorials >/dev/null; ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} $${F90TEST}; \
+         fi;
 	@cd src/snes/examples/tutorials >/dev/null; ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} clean
 	-@echo "Completed test examples"
 testx_build:
@@ -129,15 +152,15 @@ testx_build:
 	@cd src/snes/examples/tutorials; ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} clean
 	-@echo "Completed graphics test example"
 
-testexamples: info 
+testexamples: info
 	-@echo "BEGINNING TO COMPILE AND RUN TEST EXAMPLES"
 	-@echo "Due to different numerical round-off on certain"
 	-@echo "machines some of the numbers may not match exactly."
 	-@echo "========================================="
-	-@${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} ACTION=testexamples_C  tree 
+	-@${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} ACTION=testexamples_C  tree
 	-@echo "Completed compiling and running test examples"
 	-@echo "========================================="
-testfortran: info 
+testfortran: info
 	-@echo "BEGINNING TO COMPILE AND RUN FORTRAN TEST EXAMPLES"
 	-@echo "========================================="
 	-@echo "Due to different numerical round-off on certain"
@@ -151,15 +174,15 @@ testfortran: info
             echo "Error: No FORTRAN compiler available"; \
           fi
 	-@echo "========================================="
-testexamples_uni: info 
+testexamples_uni: info
 	-@echo "BEGINNING TO COMPILE AND RUN TEST UNI-PROCESSOR EXAMPLES"
 	-@echo "Due to different numerical round-off on certain"
 	-@echo "machines some of the numbers may not match exactly."
 	-@echo "========================================="
-	-@${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ACTION=testexamples_C_X_MPIUni  tree 
+	-@${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ACTION=testexamples_C_X_MPIUni  tree
 	-@echo "Completed compiling and running uniprocessor test examples"
 	-@echo "========================================="
-testfortran_uni: info 
+testfortran_uni: info
 	-@echo "BEGINNING TO COMPILE AND RUN TEST UNI-PROCESSOR FORTRAN EXAMPLES"
 	-@echo "Due to different numerical round-off on certain"
 	-@echo "machines some of the numbers may not match exactly."
@@ -178,9 +201,9 @@ ranlib:
 	${RANLIB} ${PETSC_LIB_DIR}/*.${AR_LIB_SUFFIX}
 
 # Deletes PETSc libraries
-deletelibs:
+deletelibs: chk_makej
 	-${RM} -rf ${PETSC_LIB_DIR}/libpetsc*.*
-deletemods:
+deletemods: chk_makej
 	-${RM} -f ${PETSC_DIR}/${PETSC_ARCH}/include/petsc*.mod
 
 # Cleans up build
@@ -215,20 +238,24 @@ alletags:
 	-@${PYTHON} bin/maint/generateetags.py
 	-@find config -type f -name "*.py" |grep -v SCCS | xargs etags -o TAGS_PYTHON
 
+# obtain gtags from http://www.gnu.org/s/global/
+allgtags:
+	-@find -E ${PETSC_DIR}/{include,src,bin} -regex '(.*makefile|.*\.(cc|hh|cpp|C|hpp|c|h|cu|m)$$)' | grep -v ftn-auto  | gtags -f -
+
 allfortranstubs:
 	-@${RM} -rf include/finclude/ftn-auto/*-tmpdir
 	-@${PYTHON} bin/maint/generatefortranstubs.py ${BFORT}  ${VERBOSE}
 	-@${PYTHON} bin/maint/generatefortranstubs.py -merge  ${VERBOSE}
 	-@${RM} -rf include/finclude/ftn-auto/*-tmpdir
 deletefortranstubs:
-	-@find . -type d -name ftn-auto | xargs rm -rf 
+	-@find . -type d -name ftn-auto | xargs rm -rf
 cmakegen:
 	-@${PYTHON} config/cmakegen.py
 #
 # These are here for the target allci and allco, and etags
 #
 
-BMAKEFILES = conf/variables conf/rules conf/test bmake/adic.init bmake/adicmf.init
+BMAKEFILES = conf/variables conf/rules conf/test 
 SCRIPTS    = bin/maint/builddist  bin/maint/wwwman bin/maint/xclude bin/maint/bugReport.py bin/maint/buildconfigtest bin/maint/builddistlite \
              bin/maint/buildtest bin/maint/checkBuilds.py bin/maint/copylognightly bin/maint/copylognightly.tao bin/maint/countfiles bin/maint/findbadfiles \
              bin/maint/fixinclude bin/maint/getexlist bin/maint/getpdflabels.py bin/maint/helpindex.py bin/maint/hosts.local bin/maint/hosts.solaris  \
@@ -273,7 +300,7 @@ alldoc3: chk_loc
         fi
 
 # modify all generated html files and add in version number, date, canonical URL info.
-docsetdate: chkpetsc_dir
+docsetdate: chk_petscdir
 	@echo "Updating generated html files with petsc version, date, canonical URL info";\
         version_release=`grep '^#define PETSC_VERSION_RELEASE ' include/petscversion.h |tr -s ' ' | cut -d ' ' -f 3`; \
         version_major=`grep '^#define PETSC_VERSION_MAJOR ' include/petscversion.h |tr -s ' ' | cut -d ' ' -f 3`; \
@@ -289,10 +316,10 @@ docsetdate: chkpetsc_dir
           echo "Unknown PETSC_VERSION_RELEASE: $${version_release}"; \
           exit; \
         fi; \
-        datestr=`hg tip --template "{date|shortdate}"`; \
+        datestr=`git log -1 --pretty=format:%ci | cut -d ' ' -f 1`; \
         export datestr; \
         find * -type d -wholename src/docs/website -prune -o -type d -wholename src/benchmarks/results -prune -o \
-          -type d -wholename arch-* -prune -o -type d -wholename src/tops -prune -o -type d -wholename externalpackages -prune -o \
+          -type d -wholename 'arch-*' -prune -o -type d -wholename src/tops -prune -o -type d -wholename externalpackages -prune -o \
           -type f -wholename tutorials/multiphysics/tutorial.html -prune -o -type f -name \*.html \
           -exec perl -pi -e 's^(<body.*>)^$$1\n   <div id=\"version\" align=right><b>$$ENV{petscversion} $$ENV{datestr}</b></div>^i' {} \; \
           -exec perl -pi -e 's^(<head>)^$$1 <link rel="canonical" href="http://www.mcs.anl.gov/petsc/petsc-current/{}" />^i' {} \; ; \
@@ -310,8 +337,7 @@ deletemanualpages: chk_loc
           ${PYTHON} bin/maint/update-docs.py ${PETSC_DIR} ${LOC} clean;\
         fi
 
-allcleanhtml: 
-	-${RM} include/adic/*.h.html 
+allcleanhtml:
 	-${OMAKE} ACTION=cleanhtml PETSC_DIR=${PETSC_DIR} alltree
 
 chk_concepts_dir: chk_loc
@@ -324,7 +350,7 @@ chk_concepts_dir: chk_loc
 
 # Creates ${HOME}/petsc.tar.gz [and petsc-lite.tar.gz]
 dist:
-	${PETSC_DIR}/bin/maint/builddist ${PETSC_DIR}
+	${PETSC_DIR}/bin/maint/builddist ${PETSC_DIR} master
 
 # This target works only if you can do 'ssh petsc@login.mcs.anl.gov'
 # also copy the file over to ftp site.
@@ -357,61 +383,27 @@ update-web:
 #  builds a single list of files for each PETSc library so they may all be built in parallel
 #  without a recursive set of make calls
 createfastbuild:
-	cd src/vec; ${RM} -f files; /bin/echo -n "SOURCEC = " > files; make tree ACTION=sourcelist BASE_DIR=${PETSC_DIR}/src/vec;  /bin/echo -n "OBJSC    = $${SOURCEC:.c=.o} " >> files
+	cd src/vec; ${RM} -f files; /bin/echo -n "SOURCEC = " > files; make tree ACTION=sourcelist BASE_DIR=${PETSC_DIR}/src/vec
 
 ###########################################################
 #
 #  See script for details
-# 
-gcov: 
+#
+gcov:
 	-@${PETSC_DIR}/bin/maint/gcov.py -run_gcov
 
-mergegcov: 
+mergegcov:
 	-@${PETSC_DIR}/bin/maint/gcov.py -merge_gcov ${LOC} *.tar.gz
 
 # usage make allrcslabel NEW_RCS_LABEL=v_2_0_28
-allrcslabel: 
-	-@${OMAKE} PETSC_ARCH=${PETSC_ARCH} NEW_RCS_LABEL=${NEW_RCS_LABEL} ACTION=rcslabel  alltree 
+allrcslabel:
+	-@${OMAKE} PETSC_ARCH=${PETSC_ARCH} NEW_RCS_LABEL=${NEW_RCS_LABEL} ACTION=rcslabel  alltree
 #
-#   The commands below are for generating ADIC versions of the code;
-# they are not currently used.
-#
-alladicignore:
-	-@${RM} ${INSTALL_LIB_DIR}/adicignore
-	-@${OMAKE}  PETSC_ARCH=${PETSC_ARCH} ACTION=adicignore  tree 
-
-alladic:
-	-@echo "Beginning to compile ADIC source code in all directories"
-	-@echo "Using ADIC compiler: ${ADIC_CC} ${CCPPFLAGS}"
-	-@echo "========================================="
-	-@cd include ; \
-           ${ADIC_CC} -s -f 1 ${CCPPFLAGS} petscsys.h 
-	-@${OMAKE}  PETSC_ARCH=${PETSC_ARCH} ACTION=adic  tree 
-
-alladiclib:
-	-@echo "Beginning to compile ADIC libraries in all directories"
-	-@echo "Using compiler: ${PCC} ${COPTFLAGS}"
-	-@echo "-----------------------------------------"
-	-@echo "Using PETSc flags: ${PETSCFLAGS} ${PCONF}"
-	-@echo "-----------------------------------------"
-	-@echo "Using configuration flags:"
-	-@grep "define " ${PETSC_ARCH}/include/petscconf.h
-	-@echo "-----------------------------------------"
-	-@echo "Using include paths: ${CC_PETSC_INCLUDE}"
-	-@echo "-----------------------------------------"
-	-@echo "Using PETSc directory: ${PETSC_DIR}"
-	-@echo "Using PETSc arch: ${PETSC_ARCH}"
-	-@echo "========================================="
-	-@${RM} -f  ${INSTALL_LIB_DIR}/*adic.${AR_LIB_SUFFIX}
-	-@${OMAKE} PETSC_ARCH=${PETSC_ARCH} ACTION=adiclib  tree
-	-@cd src/adic/src ; \
-            ${OMAKE} PETSC_ARCH=${PETSC_ARCH} lib
-
 # -------------------------------------------------------------------------------
 #
 # Some macros to check if the fortran interface is up-to-date.
 #
-countfortranfunctions: 
+countfortranfunctions:
 	-@cd ${PETSC_DIR}/src/fortran; egrep '^void' custom/*.c auto/*.c | \
 	cut -d'(' -f1 | tr -s  ' ' | cut -d' ' -f2 | uniq | egrep -v "(^$$|Petsc)" | \
 	sed "s/_$$//" | sort > /tmp/countfortranfunctions
@@ -449,7 +441,7 @@ checkbadfortranstubs:
 	for OBJ in $$_p_OBJ; do \
 	grep "$$OBJ \*" *.c | tr -s ' ' | tr -s ':' ' ' | \
 	cut -d'(' -f1 | cut -d' ' -f1,3; \
-	done 
+	done
 #
 # Automatically generates PETSc exercises in html from the tutorial examples.
 #
@@ -468,8 +460,8 @@ exercises:
 	-@echo "========================================="
 	-@echo "Generating HTML tutorial exercises"
 	-@${RM} docs/pageform.txt
-	-@echo "title=\"PETSc Exercises\""                >  docs/pageform.txt 
-	-@echo "access_title=Exercise Sections"              >>  docs/pageform.txt 
+	-@echo "title=\"PETSc Exercises\""                >  docs/pageform.txt
+	-@echo "access_title=Exercise Sections"              >>  docs/pageform.txt
 	-@echo "access_format=short"                        >> docs/pageform.txt
 	-@echo "startpage=../exercises/introduction.htm"  >> docs/pageform.txt
 	-@echo "NONE title=\"Introduction\" command=link src=../exercises/introduction.htm" >> docs/pageform.txt
@@ -477,14 +469,14 @@ exercises:
 	-@echo "========================================="
 	-@${OMAKE} PETSC_DIR=${PETSC_DIR} ACTION=pagemaker tree
 	-@echo "Completed HTML for individual directories"
-	-@echo "NONE title=\"<HR>\" " >> docs/pageform.txt; 
+	-@echo "NONE title=\"<HR>\" " >> docs/pageform.txt;
 	-@echo "NONE title=\"PETSc Documentation\" command=link src=../index.html target=replace" >> docs/pageform.txt
 	/home/MPI/class/mpiexmpl/maint/makepage.new -pageform=docs/pageform.txt -access_extra=/dev/null -outdir=docs/exercises
 	-@echo "========================================="
 
 .PHONY: info info_h all build testexamples testfortran testexamples_uni testfortran_uni ranlib deletelibs allclean update \
         alletags etags etags_complete etags_noexamples etags_makefiles etags_examples etags_fexamples alldoc allmanualpages \
-        allhtml allcleanhtml  allci allco allrcslabel alladicignore alladic alladiclib countfortranfunctions \
+        allhtml allcleanhtml  allci allco allrcslabel countfortranfunctions \
         start_configure configure_petsc configure_clean
 
 petscao : petscmat petscao.f90.h

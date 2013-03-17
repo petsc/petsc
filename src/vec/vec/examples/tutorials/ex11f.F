@@ -1,7 +1,5 @@
 !
 !
-! Program usage:  mpiexec ex1 [-help] [all PETSc options] 
-!
 !
 !/*T
 !   Concepts: vectors^norms of sub-vectors;
@@ -56,7 +54,7 @@
 !                            is the same as VecCreateMPI()
 !
 !     With VecCreate(), VecSetSizes() and VecSetFromOptions() the option
-!     -vec_type mpi or -vec_type shared causes the 
+!     -vec_type mpi or -vec_type shared causes the
 !     particular type of vector to be formed.
 
       call VecCreate(PETSC_COMM_WORLD,x,ierr)
@@ -68,35 +66,35 @@
 !
 !     Set the vectors to entries to a constant value.
 !
-      call VecSet(x,one,ierr) 
+      call VecSet(x,one,ierr)
 
-      call VecNorm(x,NORM_2,norm,ierr) 
+      call VecNorm(x,NORM_2,norm,ierr)
       if (rank .eq. 0) then
          write (6,100) norm
  100     format ('Norm of entire vector ',1pe8.2)
       endif
 
       comp = 0
-      call VecStrideNorm(x,comp,NORM_2,norm,ierr) 
+      call VecStrideNorm(x,comp,NORM_2,norm,ierr)
       if (rank .eq. 0) then
          write (6,200) norm
  200     format ('Norm of subvector ',1pe8.2)
       endif
 
       comp = 1
-      call VecStrideNorm(x,comp,NORM_2,norm,ierr) 
+      call VecStrideNorm(x,comp,NORM_2,norm,ierr)
       if (rank .eq. 0) then
          write (6,300) norm
  300     format ('Norm of subvector ',1pe8.2)
       endif
 
-      call VecStrideNorm(x,comp,NORM_1,norm,ierr) 
+      call VecStrideNorm(x,comp,NORM_1,norm,ierr)
       if (rank .eq. 0) then
          write (6,400) norm
  400     format ('Norm of subvector ',1pe8.2)
       endif
 
-      call VecStrideNorm(x,comp,NORM_INFINITY,norm,ierr) 
+      call VecStrideNorm(x,comp,NORM_INFINITY,norm,ierr)
       if (rank .eq. 0) then
          write (6,500) norm
  500     format ('Norm of subvector ',1pe8.2)
@@ -106,7 +104,7 @@
 !     Free work space.  All PETSc objects should be destroyed when they
 !     are no longer needed.
 
-      call VecDestroy(x,ierr)  
+      call VecDestroy(x,ierr)
       call PetscFinalize(ierr)
       end
- 
+

@@ -4,7 +4,7 @@
 # change python to whatever is needed on your system to invoke python
 #
 #  Generates the PDF label given to each latex label in the users manual
-# 
+#
 #  Calling sequence
 #      | getpdflabels.py
 #
@@ -31,7 +31,7 @@ def main():
 
     chapter    = 1
     section    = 0
-    subsection = 0   
+    subsection = 0
     label      = 'chapter.1'
     title      = 'Introduction'
 
@@ -63,10 +63,10 @@ def main():
 #	  print fl.group(2),label,title
 	  print 'man:+'+fl.group(2)+'++'+title+'++++man+../../manual.pdf#'+label
 
-     
+
 #
 # The classes in this file can also be used in other python-programs by using 'import'
 #
-if __name__ ==  '__main__': 
+if __name__ ==  '__main__':
     main()
 

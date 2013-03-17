@@ -6,16 +6,14 @@
 ALL: lib
 #
 #
-CFLAGS   = 
-FFLAGS   = 
+CFLAGS   =
+FFLAGS   =
 CPPFLAGS = ${SPAI_INCLUDE}
 SOURCEC  = ispai.c dspai.c
 SOURCEF  =
-SOURCEH  = 
-OBJSC    = ispai.o dspai.o
-OBJSF    =
+SOURCEH  =
 LIBBASE  = libpetscksp
-DIRS     = 
+DIRS     =
 MANSEC   = PC
 LOCDIR   = src/ksp/pc/impls/spai/
 

@@ -3,9 +3,8 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = fft.c 
+SOURCEC  = fft.c
 SOURCEH  = fft.h
-OBJSC    = fft.o 
 LIBBASE  = libpetscmat
 DIRS     = fftw
 LOCDIR   = src/mat/impls/fft/

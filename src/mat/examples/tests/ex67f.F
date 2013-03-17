@@ -11,7 +11,7 @@
       Mat      A,B
       PetscErrorCode  ierr
       PetscInt one,zero
-      PetscViewer   v    
+      PetscViewer   v
       IS       isrow
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)

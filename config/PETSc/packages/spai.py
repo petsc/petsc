@@ -23,11 +23,11 @@ class Configure(PETSc.package.NewPackage):
     if self.blasLapack.mangling == 'underscore':   FTNOPT = ''
     elif self.blasLapack.mangling == 'caps': FTNOPT = ''
     else:                                          FTNOPT = '-DSP2'
-    
+
     args = 'CC = '+self.framework.getCompiler()+'\nCFLAGS = -DMPI '+FTNOPT+' '+self.framework.getCompilerFlags()+' '+self.headers.toString(self.mpi.include)+'\n'
     args = args+'AR         = '+self.setCompilers.AR+'\n'
     args = args+'ARFLAGS    = '+self.setCompilers.AR_FLAGS+'\n'
-                                  
+
     fd = file(os.path.join(self.packageDir,'lib','Makefile.in'),'w')
     fd.write(args)
     self.framework.popLanguage()
@@ -48,7 +48,7 @@ class Configure(PETSc.package.NewPackage):
     PETSc.package.NewPackage.consistencyChecks(self)
     if self.framework.argDB['with-'+self.package]:
       # SPAI requires dormqr() LAPACK routine
-      if not self.blasLapack.checkForRoutine('dormqr'): 
+      if not self.blasLapack.checkForRoutine('dormqr'):
         raise RuntimeError('SPAI requires the LAPACK routine dormqr(), the current Lapack libraries '+str(self.blasLapack.lib)+' does not have it\nTry using --download-f-blas-lapack=1 option \nIf you are using the IBM ESSL library, it does not contain this function.')
       self.framework.log.write('Found dormqr() in Lapack library as needed by SPAI\n')
     return

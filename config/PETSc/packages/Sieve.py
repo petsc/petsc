@@ -24,7 +24,7 @@ class Configure(PETSc.package.NewPackage):
 
   def getSearchDirectories(self):
     return [self.petscdir.dir]
-    
+
   def setupHelp(self, help):
     PETSc.package.NewPackage.setupHelp(self, help)
     import nargs

@@ -9,13 +9,11 @@ SPECIALLIB     = yes
 SPECIALFASTLIB = yes
 
 
-CFLAGS	   = 
-FFLAGS	   = 
-SOURCEC	   = 
+CFLAGS	   =
+FFLAGS	   =
+SOURCEC	   =
 SOURCEF	   = petscsysmod.F
-SOURCEH	   = 
-OBJSC	   = 
-OBJSF	   = petscsysmod.o
+SOURCEH	   =
 LIBBASE	   = libpetscsys
 MANSEC	   = Sys
 LOCDIR	   = src/sys/f90-mod/

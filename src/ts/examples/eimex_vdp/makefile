@@ -6,8 +6,4 @@ ct_vdp_imex: ct_vdp_imex.o  chkopts
 	-${CLINKER} -o ct_vdp_imex ct_vdp_imex.o ${PETSC_TS_LIB}
 	${RM} ct_vdp_imex.o
 
-ct_vdp_im: ct_vdp_im.o  chkopts
-	-${CLINKER} -o ct_vdp_im ct_vdp_im.o ${PETSC_TS_LIB}
-	${RM} ct_vdp_im.o
-
 all: ct_vdp_imex

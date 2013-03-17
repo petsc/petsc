@@ -1,16 +1,14 @@
 
-ALL: lib 
-CFLAGS    =  
+ALL: lib
+CFLAGS    =
 FFLAGS    =
-CPPFLAGS  = 
+CPPFLAGS  =
 SOURCEC	  = dlimpl.c dl.c   reg.c
 SOURCEF	  =
-SOURCEH	  = dlimpl.h
-OBJSC	  = dlimpl.o dl.o   reg.o
-OBJSF	  =
+SOURCEH	  =
 MANSEC	  = Sys
 LIBBASE	  = libpetscsys
-DIRS	  = 
+DIRS	  =
 LOCDIR	  = src/sys/dll/
 
 include ${PETSC_DIR}/conf/variables

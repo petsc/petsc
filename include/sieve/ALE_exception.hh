@@ -31,9 +31,9 @@ namespace ALE {
     ostrstr _txt;
   public:
     XException(){};
-    explicit 
+    explicit
     XException(const string& msg)   {this->_txt << msg;};
-    explicit 
+    explicit
     XException(const ostrstr& txt)  {this->_txt << txt.str();};
     XException(const XException& e) {this->_txt << e._txt.str();};
     //
@@ -54,10 +54,10 @@ namespace ALE {
   };// class XException
 
 
-  // A helper function that throws an ALE::Exception with a message identifying the function that returned the given error code, 
+  // A helper function that throws an ALE::Exception with a message identifying the function that returned the given error code,
   // including the function and the line where the error occured.
   void ERROR(PetscErrorCode ierr, const char *func, int line, const char *msg);
-  // A helper function that allocates and assembles an error message from a format string 
+  // A helper function that allocates and assembles an error message from a format string
   const char *ERRORMSG(const char *fmt, ...);
   // A helper function for converting MPI errors to exception
   void MPIERROR(PetscErrorCode ierr, const char *func, int line, const char *msg);

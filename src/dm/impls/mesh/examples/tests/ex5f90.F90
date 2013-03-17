@@ -11,7 +11,7 @@ Program test1f90
    Integer                                :: rank
 
 
-   Call PetscInitialize(PETSC_NULL_CHARACTER,ierr); CHKERRQ(ierr)
+   Call PetscInitialize(PETSC_NULL_CHARACTER,ierr);CHKERRQ(ierr)
    Call MPI_COMM_RANK(MPI_COMM_WORLD,rank,ierr)
 
    Call PetscOptionsGetString(PETSC_NULL_CHARACTER, '-i',infilename,inflag,ierr)

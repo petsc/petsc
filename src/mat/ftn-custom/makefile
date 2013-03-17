@@ -2,13 +2,11 @@
 
 ALL: lib
 
-CFLAGS   = 
+CFLAGS   =
 FFLAGS   =
 SOURCEC  = zmat.c
-SOURCEF  = 
-SOURCEH  = 
-OBJSC    = zmat.o
-OBJSF    = 
+SOURCEF  =
+SOURCEH  =
 LIBBASE  = libpetscmat
 MANSEC   = Mat
 LOCDIR   = src/mat/ftn-custom/

@@ -11,7 +11,7 @@ PetscErrorCode DMMeshView_Sieve(const ALE::Obj<PETSC_MESH_TYPE>& mesh, PetscView
 #undef __FUNCT__
 #define __FUNCT__ "DMMeshCreateMatrix"
 template<typename Mesh, typename Section>
-PetscErrorCode  DMMeshCreateMatrix(const Obj<Mesh>& mesh, const Obj<Section>& section, const MatType mtype, Mat *J, int bs = -1, bool fillMatrix = false)
+PetscErrorCode  DMMeshCreateMatrix(const Obj<Mesh>& mesh, const Obj<Section>& section, MatType mtype, Mat *J, int bs = -1, bool fillMatrix = false)
 {
   const ALE::Obj<typename Mesh::order_type>& order = mesh->getFactory()->getGlobalOrder(mesh, section->getName(), section);
   int            localSize  = order->getLocalSize();
@@ -164,7 +164,7 @@ PetscErrorCode  DMMeshCreateGlobalScatter(const ALE::Obj<Mesh>& m, const ALE::Ob
   ierr = ISCreateGeneral(PETSC_COMM_SELF, globalIndx, globalIndices,PETSC_OWN_POINTER, &globalIS);CHKERRQ(ierr);
   // Can remove this when I test it with NULL
 #ifdef PETSC_USE_COMPLEX
-  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF, 1,s->getStorageSize(), PETSC_NULL, &localVec);CHKERRQ(ierr);
+  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF, 1,s->getStorageSize(), NULL, &localVec);CHKERRQ(ierr);
 #else
   ierr = VecCreateSeqWithArray(PETSC_COMM_SELF, 1,s->getStorageSize(), s->restrictSpace(), &localVec);CHKERRQ(ierr);
 #endif

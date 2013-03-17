@@ -30,7 +30,7 @@ class Configure(PETSc.package.NewPackage):
     g.write('EXPATINC_DIR = '+self.headers.toString(self.expat.include)+'\n')
     g.write('MACHINE = '+'petsc\n')
     # from FLAGS.machine
-    g.write('LD ='+self.framework.getCompiler()+'\n')    
+    g.write('LD ='+self.framework.getCompiler()+'\n')
     g.write('CFLAGS_G   ='+self.framework.getCompilerFlags()+'\n')
     g.write('CFLAGS_O   ='+self.framework.getCompilerFlags()+'\n')
     g.write('CFLAGS_EXP = -I./Proto ${P3DINC_DIR} ${EXPATINC_DIR} -I/usr/include/malloc\n')
@@ -63,6 +63,6 @@ class Configure(PETSc.package.NewPackage):
       except RuntimeError, e:
         raise RuntimeError('Error running make on SUGGAR: '+str(e))
       output2,err2,ret2  = PETSc.package.NewPackage.executeShellCommand('mv -f '+os.path.join(self.packageDir,'bin','libsuggar_3d_opt_petsc.a')+' '+os.path.join(self.installDir,'lib'), timeout=5, log = self.framework.log)
-                          
+
       self.postInstall(output1+err1+output2+err2,os.path.join('src','FLAGS.local'))
     return self.installDir

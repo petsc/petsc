@@ -1,14 +1,12 @@
 ALL: lib
 
-CFLAGS   = 
+CFLAGS   =
 FFLAGS   =
 SOURCEC  = mpisbstream.c
-SOURCEF  = 
-SOURCEH  = 
-OBJSC    = mpisbstream.o
-OBJSF    = 
+SOURCEF  =
+SOURCEH  =
 LIBBASE  = libpetscmat
-DIRS     = 
+DIRS     =
 MANSEC   = Mat
 LOCDIR   = src/mat/impls/sbaij/mpi/sbstream/
 

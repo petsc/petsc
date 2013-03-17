@@ -4,24 +4,23 @@
  */
 #include <../src/vec/vec/impls/mpi/pvecimpl.h>   /*I  "petscvec.h"   I*/
 
-#if defined(PETSC_USE_SHARED_MEMORY) 
+#if defined(PETSC_USE_SHARED_MEMORY)
 
 extern PetscErrorCode PetscSharedMalloc(MPI_Comm,PetscInt,PetscInt,void**);
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecDuplicate_Shared"
 PetscErrorCode VecDuplicate_Shared(Vec win,Vec *v)
 {
   PetscErrorCode ierr;
-  Vec_MPI        *w = (Vec_MPI *)win->data;
+  Vec_MPI        *w = (Vec_MPI*)win->data;
   PetscScalar    *array;
 
   PetscFunctionBegin;
-
   /* first processor allocates entire array and sends it's address to the others */
-  ierr = PetscSharedMalloc(((PetscObject)win)->comm,win->map->n*sizeof(PetscScalar),win->map->N*sizeof(PetscScalar),(void**)&array);CHKERRQ(ierr);
+  ierr = PetscSharedMalloc(PetscObjectComm((PetscObject)win),win->map->n*sizeof(PetscScalar),win->map->N*sizeof(PetscScalar),(void**)&array);CHKERRQ(ierr);
 
-  ierr = VecCreate(((PetscObject)win)->comm,v);CHKERRQ(ierr);
+  ierr = VecCreate(PetscObjectComm((PetscObject)win),v);CHKERRQ(ierr);
   ierr = VecSetSizes(*v,win->map->n,win->map->N);CHKERRQ(ierr);
   ierr = VecCreate_MPI_Private(*v,PETSC_FALSE,w->nghost,array);CHKERRQ(ierr);
   ierr = PetscLayoutReference(win->map,&(*v)->map);CHKERRQ(ierr);
@@ -29,35 +28,31 @@ PetscErrorCode VecDuplicate_Shared(Vec win,Vec *v)
   /* New vector should inherit stashing property of parent */
   (*v)->stash.donotstash   = win->stash.donotstash;
   (*v)->stash.ignorenegidx = win->stash.ignorenegidx;
-  
-  ierr = PetscOListDuplicate(((PetscObject)win)->olist,&((PetscObject)*v)->olist);CHKERRQ(ierr);
-  ierr = PetscFListDuplicate(((PetscObject)win)->qlist,&((PetscObject)*v)->qlist);CHKERRQ(ierr);
+
+  ierr = PetscObjectListDuplicate(((PetscObject)win)->olist,&((PetscObject)*v)->olist);CHKERRQ(ierr);
+  ierr = PetscFunctionListDuplicate(((PetscObject)win)->qlist,&((PetscObject)*v)->qlist);CHKERRQ(ierr);
 
   (*v)->ops->duplicate = VecDuplicate_Shared;
-  (*v)->bstash.bs = win->bstash.bs;
+  (*v)->bstash.bs      = win->bstash.bs;
   PetscFunctionReturn(0);
 }
 
 
-EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecCreate_Shared"
-PetscErrorCode  VecCreate_Shared(Vec vv)
+PETSC_EXTERN PetscErrorCode VecCreate_Shared(Vec vv)
 {
   PetscErrorCode ierr;
   PetscScalar    *array;
 
   PetscFunctionBegin;
-  ierr = PetscSplitOwnership(((PetscObject)vv)->comm,&vv->map->n,&vv->map->N);CHKERRQ(ierr);
-  ierr = PetscSharedMalloc(((PetscObject)vv)->comm,vv->map->n*sizeof(PetscScalar),vv->map->N*sizeof(PetscScalar),(void**)&array);CHKERRQ(ierr); 
+  ierr = PetscSplitOwnership(PetscObjectComm((PetscObject)vv),&vv->map->n,&vv->map->N);CHKERRQ(ierr);
+  ierr = PetscSharedMalloc(PetscObjectComm((PetscObject)vv),vv->map->n*sizeof(PetscScalar),vv->map->N*sizeof(PetscScalar),(void**)&array);CHKERRQ(ierr);
 
   ierr = VecCreate_MPI_Private(vv,PETSC_FALSE,0,array);CHKERRQ(ierr);
   vv->ops->duplicate = VecDuplicate_Shared;
-
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
-
 
 /* ----------------------------------------------------------------------------------------
      Code to manage shared memory allocation using standard Unix shared memory
@@ -67,22 +62,15 @@ EXTERN_C_END
 #include <pwd.h>
 #endif
 #include <ctype.h>
-#include <sys/types.h>
 #include <sys/stat.h>
 #if defined(PETSC_HAVE_UNISTD_H)
 #include <unistd.h>
-#endif
-#if defined(PETSC_HAVE_STDLIB_H)
-#include <stdlib.h>
-#endif
-#if defined(PETSC_HAVE_SYS_PARAM_H)
-#include <sys/param.h>
 #endif
 #if defined(PETSC_HAVE_SYS_UTSNAME_H)
 #include <sys/utsname.h>
 #endif
 #include <fcntl.h>
-#include <time.h>  
+#include <time.h>
 #if defined(PETSC_HAVE_SYS_SYSTEMINFO_H)
 #include <sys/systeminfo.h>
 #endif
@@ -92,16 +80,16 @@ EXTERN_C_END
 
 static PetscMPIInt Petsc_Shared_keyval = MPI_KEYVAL_INVALID;
 
-#undef __FUNCT__  
-#define __FUNCT__ "Petsc_DeleteShared" 
+#undef __FUNCT__
+#define __FUNCT__ "Petsc_DeleteShared"
 /*
    Private routine to delete internal storage when a communicator is freed.
   This is called by MPI, not by users.
 
   The binding for the first argument changed from MPI 1.0 to 1.1; in 1.0
-  it was MPI_Comm *comm.  
+  it was MPI_Comm *comm.
 */
-static PetscErrorCode Petsc_DeleteShared(MPI_Comm comm,PetscInt keyval,void* attr_val,void* extra_state)
+static PetscErrorCode Petsc_DeleteShared(MPI_Comm comm,PetscInt keyval,void *attr_val,void *extra_state)
 {
   PetscErrorCode ierr;
 
@@ -110,7 +98,7 @@ static PetscErrorCode Petsc_DeleteShared(MPI_Comm comm,PetscInt keyval,void* att
   PetscFunctionReturn(MPI_SUCCESS);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscSharedMalloc"
 /*
 
@@ -162,35 +150,30 @@ PetscErrorCode PetscSharedMalloc(MPI_Comm comm,PetscInt llen,PetscInt len,void *
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Unable to access shared memory allocated");
   }
   *result = (void*) (value + shift);
-
   PetscFunctionReturn(0);
 }
 
 #else
 
-EXTERN_C_BEGIN
-extern PetscErrorCode  VecCreate_Seq(Vec);
-EXTERN_C_END
+PETSC_EXTERN PetscErrorCode VecCreate_Seq(Vec);
 
-EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecCreate_Shared"
-PetscErrorCode  VecCreate_Shared(Vec vv)
+PETSC_EXTERN PetscErrorCode VecCreate_Shared(Vec vv)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(((PetscObject)vv)->comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)vv),&size);CHKERRQ(ierr);
   if (size > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"No supported for shared memory vector objects on this machine");
   ierr = VecCreate_Seq(vv);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #endif
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecCreateShared"
 /*@
    VecCreateShared - Creates a parallel vector that uses shared memory.
@@ -204,7 +187,7 @@ EXTERN_C_END
 .  vv - the vector
 
    Collective on MPI_Comm
- 
+
    Notes:
    Currently VecCreateShared() is available only on the SGI; otherwise,
    this routine is the same as VecCreateMPI().
@@ -216,10 +199,10 @@ EXTERN_C_END
 
    Concepts: vectors^creating with shared memory
 
-.seealso: VecCreateSeq(), VecCreate(), VecCreateMPI(), VecDuplicate(), VecDuplicateVecs(), 
+.seealso: VecCreateSeq(), VecCreate(), VecCreateMPI(), VecDuplicate(), VecDuplicateVecs(),
           VecCreateGhost(), VecCreateMPIWithArray(), VecCreateGhostWithArray()
 
-@*/ 
+@*/
 PetscErrorCode  VecCreateShared(MPI_Comm comm,PetscInt n,PetscInt N,Vec *v)
 {
   PetscErrorCode ierr;

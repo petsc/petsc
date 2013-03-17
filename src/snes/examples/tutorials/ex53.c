@@ -2,11 +2,11 @@ static const char help[] = "Read linear variational inequality from file and sol
 #include <petscsnes.h>
 
 typedef struct {
-  Vec         q,zz,lb,ub;
-  Mat         M,Jac;
+  Vec q,zz,lb,ub;
+  Mat M,Jac;
 } AppCtx;
 
-/* 
+/*
    User-defined routines
 */
 extern PetscErrorCode FormJacobian1(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
@@ -22,7 +22,7 @@ int main(int argc,char **argv)
   AppCtx         user;         /* user-defined work context */
   PetscViewer    viewer;
 
-  PetscInitialize(&argc,&argv,(char *)0,help);
+  PetscInitialize(&argc,&argv,(char*)0,help);
   ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,"videfinition",FILE_MODE_READ,&viewer);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_SELF,&user.M);CHKERRQ(ierr); ierr = MatLoad(user.M,viewer);CHKERRQ(ierr);
   ierr = MatDuplicate(user.M,MAT_COPY_VALUES,&user.Jac);CHKERRQ(ierr);
@@ -46,7 +46,7 @@ int main(int argc,char **argv)
 
   ierr = SNESVISetVariableBounds(snes,user.lb,user.ub);CHKERRQ(ierr);
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
-  ierr = SNESSolve(snes,PETSC_NULL,user.zz);CHKERRQ(ierr);
+  ierr = SNESSolve(snes,NULL,user.zz);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)user.zz,"x*");CHKERRQ(ierr);
   ierr = VecView(user.zz,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)r,"f(x*)");CHKERRQ(ierr);
@@ -59,7 +59,7 @@ int main(int argc,char **argv)
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "FormFunction1"
-/* 
+/*
    FormFunction1 - Evaluates nonlinear function, F(x).
 
    Input Parameters:

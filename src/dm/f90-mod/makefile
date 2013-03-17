@@ -9,13 +9,11 @@ SPECIALLIB     = yes
 SPECIALFASTLIB = yes
 
 
-CFLAGS	   = 
-FFLAGS	   = 
-SOURCEC	   = 
+CFLAGS	   =
+FFLAGS	   =
+SOURCEC	   =
 SOURCEF	   = petscdmmod.F
-SOURCEH	   = 
-OBJSC	   = 
-OBJSF	   = petscdmmod.o
+SOURCEH	   =
 LIBBASE	   = libpetscdm
 MANSEC	   = DM
 LOCDIR	   = src/dm/f90-mod/

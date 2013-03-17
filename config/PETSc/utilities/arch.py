@@ -15,7 +15,7 @@ class Configure(config.base.Configure):
     desc = ['PETSc:']
     desc.append('  PETSC_ARCH: '+str(self.arch))
     return '\n'.join(desc)+'\n'
-  
+
   def setupHelp(self, help):
     import nargs
     help.addArgument('PETSc', '-PETSC_ARCH=<string>',     nargs.Arg(None, None, 'The configuration name'))

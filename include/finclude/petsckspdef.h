@@ -14,7 +14,7 @@
 
 #define KSPType character*(80)
 #define KSPCGType PetscEnum
-#define KSPConvergedReason PetscEnum 
+#define KSPConvergedReason PetscEnum
 #define KSPNormType PetscEnum
 #define KSPGMRESCGSRefinementType PetscEnum
 !
@@ -36,7 +36,7 @@
 #define KSPBCGS 'bcgs'
 #define KSPIBCGS 'ibcgs'
 #define KSPFBCGS  'fbcgs'
-#define KSPIFBCGS 'ifbcgs'
+#define KSPFBCGSR 'fbcgsr'
 #define KSPBCGSL 'bcgsl'
 #define KSPCGS 'cgs'
 #define KSPTFQMR 'tfqmr'

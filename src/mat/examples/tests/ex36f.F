@@ -22,7 +22,7 @@
 ! -----------------------------------------------------------------
 !
 !  Demo1 -  This subroutine demonstrates the use of PETSc-allocated dense
-!  matrix storage.  Here MatGetArray() is used for direct access to the
+!  matrix storage.  Here MatDenseGetArray() is used for direct access to the
 !  array that stores the dense matrix.  The user declares an array (aa(1))
 !  and index variable (ia), which are then used together to manipulate
 !  the array contents.
@@ -60,12 +60,12 @@
       call MatSetUp(A,ierr)
 
 !  Access array storage
-      call MatGetArray(A,aa,ia,ierr)
+      call MatDenseGetArray(A,aa,ia,ierr)
 
 !  Set matrix values directly
       call FillUpMatrix(m,n,aa(ia+1))
 
-      call MatRestoreArray(A,aa,ia,ierr)
+      call MatDenseRestoreArray(A,aa,ia,ierr)
 
 !  Finalize matrix assembly
       call MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY,ierr)
@@ -75,8 +75,8 @@
       call MatView(A,PETSC_VIEWER_STDOUT_SELF,ierr)
 
 !  Clean up
-      call MatDestroy(A,ierr)     
-      return 
+      call MatDestroy(A,ierr)
+      return
       end
 
 ! -----------------------------------------------------------------
@@ -110,8 +110,8 @@
       call MatView(A,PETSC_VIEWER_STDOUT_SELF,ierr)
 
 !  Clean up
-      call MatDestroy(A,ierr)     
-      return 
+      call MatDestroy(A,ierr)
+      return
       end
 
 ! -----------------------------------------------------------------

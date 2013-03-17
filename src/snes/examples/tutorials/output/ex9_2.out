@@ -1,19 +1,14 @@
-level = 1, global size = 196, lid velocity = 10, prandtl # = 1, grashof # = 1000
-  0 SNES Function norm 140.677 
-  1 SNES Function norm 26.9749 
-  2 SNES Function norm 0.541895 
-  3 SNES Function norm 0.000555022 
-  4 SNES Function norm 7.28506e-09 
-Number of SNES iterations = 4
-level = 2, global size = 676, lid velocity = 10, prandtl # = 1, grashof # = 1000
-  0 SNES Function norm 71.9458 
-  1 SNES Function norm 2.81583 
-  2 SNES Function norm 0.000994615 
-  3 SNES Function norm 7.76107e-09 
-Number of SNES iterations = 3
-level = 3, global size = 2500, lid velocity = 10, prandtl # = 1, grashof # = 1000
-  0 SNES Function norm 70.9322 
-  1 SNES Function norm 3.24991 
-  2 SNES Function norm 0.000237707 
-  3 SNES Function norm 1.55154e-09 
-Number of SNES iterations = 3
+setup done: square       side length = 4.000
+            grid               Mx,My = 21,21
+            spacing            dx,dy = 0.200,0.200
+  0 SNES Function norm 9.14251 
+  1 SNES Function norm 1.70712 
+  2 SNES Function norm 1.25963 
+  3 SNES Function norm 0.739384 
+  4 SNES Function norm 0.0261039 
+  5 SNES Function norm 0.00243901 
+  6 SNES Function norm 6.47302e-05 
+  7 SNES Function norm 6.68307e-08 
+number of Newton iterations = 7; result = CONVERGED_FNORM_RELATIVE
+errors:    av |u-uexact|  = 1.287e-03
+           |u-uexact|_inf = 7.882e-03

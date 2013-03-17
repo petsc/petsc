@@ -1,14 +1,14 @@
 #if !defined(__PETSCDMDA_H)
 #define __PETSCDMDA_H
 
-#include "petscdm.h"
+#include <petscdm.h>
 
 PetscErrorCode  DMADDACreate(MPI_Comm,PetscInt,PetscInt*,PetscInt*,PetscInt,PetscBool *,DM*);
 PetscErrorCode  DMADDASetParameters(DM,PetscInt,PetscInt*,PetscInt*,PetscInt,PetscBool*);
 PetscErrorCode  DMADDASetRefinement(DM, PetscInt *,PetscInt);
 PetscErrorCode  DMADDAGetCorners(DM, PetscInt **, PetscInt **);
 PetscErrorCode  DMADDAGetGhostCorners(DM, PetscInt **, PetscInt **);
-PetscErrorCode  DMADDAGetMatrixNS(DM, DM, const MatType , Mat *);
+PetscErrorCode  DMADDAGetMatrixNS(DM, DM, MatType , Mat *);
 
 /* functions to set values in vectors and matrices */
 struct _ADDAIdx_s {

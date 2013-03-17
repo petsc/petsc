@@ -20,7 +20,7 @@
 !
 !     The Objects vec,comm created in a C routine are now
 !     used in fortran routines.
-!       
+!
        call VecSet(vec,two,ierr)
        call MPI_Comm_rank(comm,rank,ierr)
        call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
@@ -38,7 +38,7 @@
 !  Now Call a Petsc Routine from Fortran
 !
        call VecView(vec,PETSC_VIEWER_STDOUT_WORLD,ierr)
-       return 
+       return
        end
 
- 
+

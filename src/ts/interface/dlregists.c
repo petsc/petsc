@@ -1,8 +1,8 @@
 
 #include <petsc-private/tsimpl.h>
 
-static PetscBool  TSPackageInitialized = PETSC_FALSE;
-#undef __FUNCT__  
+static PetscBool TSPackageInitialized = PETSC_FALSE;
+#undef __FUNCT__
 #define __FUNCT__ "TSFinalizePackage"
 /*@C
   TSFinalizePackage - This function destroys everything in the Petsc interface to Mathematica. It is
@@ -17,12 +17,12 @@ PetscErrorCode  TSFinalizePackage(void)
 {
   PetscFunctionBegin;
   TSPackageInitialized = PETSC_FALSE;
-  TSList               = PETSC_NULL;
+  TSList               = NULL;
   TSRegisterAllCalled  = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSInitializePackage"
 /*@C
   TSInitializePackage - This function initializes everything in the TS package. It is called
@@ -30,7 +30,7 @@ PetscErrorCode  TSFinalizePackage(void)
   when using static libraries.
 
   Input Parameter:
-  path - The dynamic library path, or PETSC_NULL
+  path - The dynamic library path, or NULL
 
   Level: developer
 
@@ -39,10 +39,10 @@ PetscErrorCode  TSFinalizePackage(void)
 @*/
 PetscErrorCode  TSInitializePackage(const char path[])
 {
-  char              logList[256];
-  char              *className;
-  PetscBool         opt;
-  PetscErrorCode    ierr;
+  char           logList[256];
+  char           *className;
+  PetscBool      opt;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (TSPackageInitialized) PetscFunctionReturn(0);
@@ -55,6 +55,7 @@ PetscErrorCode  TSInitializePackage(const char path[])
   ierr = TSGLAdaptInitializePackage(path);CHKERRQ(ierr);
   /* Register Classes */
   ierr = PetscClassIdRegister("TS",&TS_CLASSID);CHKERRQ(ierr);
+  ierr = PetscClassIdRegister("DMTS",&DMTS_CLASSID);CHKERRQ(ierr);
   /* Register Constructors */
   ierr = TSRegisterAll(path);CHKERRQ(ierr);
   /* Register Events */
@@ -63,7 +64,7 @@ PetscErrorCode  TSInitializePackage(const char path[])
   ierr = PetscLogEventRegister("TSFunctionEval",   TS_CLASSID,&TS_FunctionEval);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("TSJacobianEval",   TS_CLASSID,&TS_JacobianEval);CHKERRQ(ierr);
   /* Process info exclusions */
-  ierr = PetscOptionsGetString(PETSC_NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt) {
     ierr = PetscStrstr(logList, "ts", &className);CHKERRQ(ierr);
     if (className) {
@@ -71,7 +72,7 @@ PetscErrorCode  TSInitializePackage(const char path[])
     }
   }
   /* Process summary exclusions */
-  ierr = PetscOptionsGetString(PETSC_NULL, "-log_summary_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL, "-log_summary_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt) {
     ierr = PetscStrstr(logList, "ts", &className);CHKERRQ(ierr);
     if (className) {
@@ -82,9 +83,8 @@ PetscErrorCode  TSInitializePackage(const char path[])
   PetscFunctionReturn(0);
 }
 
-#ifdef PETSC_USE_DYNAMIC_LIBRARIES
-EXTERN_C_BEGIN
-#undef __FUNCT__  
+#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
+#undef __FUNCT__
 #define __FUNCT__ "PetscDLLibraryRegister_petscts"
 /*
   PetscDLLibraryRegister - This function is called when the dynamic library it is in is opened.
@@ -94,7 +94,7 @@ EXTERN_C_BEGIN
   Input Parameter:
   path - library path
  */
-PetscErrorCode  PetscDLLibraryRegister_petscts(const char path[])
+PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscts(const char path[])
 {
   PetscErrorCode ierr;
 
@@ -102,7 +102,6 @@ PetscErrorCode  PetscDLLibraryRegister_petscts(const char path[])
   ierr = TSInitializePackage(path);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 
 #endif /* PETSC_USE_DYNAMIC_LIBRARIES */

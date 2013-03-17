@@ -13,7 +13,7 @@ int main(int argc,char **argv)
   PetscScalar    values[6];
   Vec            x;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
 
   if (size != 1) SETERRQ(PETSC_COMM_SELF,1,"Must be run with one processor");
@@ -25,13 +25,14 @@ int main(int argc,char **argv)
   ierr = VecSetType(x,VECSEQ);CHKERRQ(ierr);
 
   for (i=0; i<6; i++) values[i] = 4.0*i;
-  indices[0] = 0; indices[1] = 2;
-  ierr = VecSetValuesBlocked(x,2,indices,values,INSERT_VALUES);CHKERRQ(ierr);
+  indices[0] = 0;
+  indices[1] = 2;
 
+  ierr = VecSetValuesBlocked(x,2,indices,values,INSERT_VALUES);CHKERRQ(ierr);
   ierr = VecAssemblyBegin(x);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(x);CHKERRQ(ierr);
 
-  /* 
+  /*
       Resulting vector should be 0 4 8  0 0 0 12 16 20
   */
   ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
@@ -41,4 +42,4 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return 0;
 }
- 
+

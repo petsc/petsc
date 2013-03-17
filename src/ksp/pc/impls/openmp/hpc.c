@@ -4,7 +4,7 @@
 
 typedef struct {
   MatStructure flag;               /* pc->flag */
-  PetscInt     setupcalled;        /* pc->setupcalled */  
+  PetscInt     setupcalled;        /* pc->setupcalled */
   PetscInt     n;
   MPI_Comm     comm;                 /* local world used by this preconditioner */
   KSP          ksp;                  /* actual solver used across local world */
@@ -12,22 +12,22 @@ typedef struct {
   Mat          gmat;                 /* matrix known only to process 0 in the local world */
   Vec          x,y,xdummy,ydummy;
   VecScatter   scatter;
-  PetscBool    nonzero_guess; 
+  PetscBool    nonzero_guess;
 } PC_HMPI;
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCView_HMPI_MP"
 /*
     Would like to have this simply call PCView() on the inner PC. The problem is
-  that the outer comm does not live on the inside so cannot do this. Instead 
+  that the outer comm does not live on the inside so cannot do this. Instead
   handle the special case when the viewer is stdout, construct a new one just
   for this call.
 */
 
 static PetscErrorCode PCView_HMPI_MP(MPI_Comm comm,void *ctx)
 {
-  PC_HMPI      *red = (PC_HMPI*)ctx;
+  PC_HMPI        *red = (PC_HMPI*)ctx;
   PetscErrorCode ierr;
   PetscViewer    viewer;
 
@@ -39,16 +39,14 @@ static PetscErrorCode PCView_HMPI_MP(MPI_Comm comm,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCView_HMPI"
 static PetscErrorCode PCView_HMPI(PC pc,PetscViewer viewer)
 {
-  PC_HMPI      *red = (PC_HMPI*)pc->data;
+  PC_HMPI        *red = (PC_HMPI*)pc->data;
   PetscMPIInt    size;
   PetscErrorCode ierr;
   PetscBool      iascii;
-
-  PetscFunctionBegin;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(red->comm,&size);CHKERRQ(ierr);
@@ -62,13 +60,13 @@ static PetscErrorCode PCView_HMPI(PC pc,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-extern PetscErrorCode MatDistribute_MPIAIJ(MPI_Comm,Mat,PetscInt,MatReuse,Mat*);
+PETSC_EXTERN PetscErrorCode MatDistribute_MPIAIJ(MPI_Comm,Mat,PetscInt,MatReuse,Mat*);
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCApply_HMPI_1"
 static PetscErrorCode PCApply_HMPI_1(PC pc,Vec x,Vec y)
 {
-  PC_HMPI      *red = (PC_HMPI*)pc->data;
+  PC_HMPI        *red = (PC_HMPI*)pc->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -77,11 +75,11 @@ static PetscErrorCode PCApply_HMPI_1(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCSetUp_HMPI_MP"
 static PetscErrorCode PCSetUp_HMPI_MP(MPI_Comm comm,void *ctx)
 {
-  PC_HMPI      *red = (PC_HMPI*)ctx;
+  PC_HMPI        *red = (PC_HMPI*)ctx;
   PetscErrorCode ierr;
   PetscInt       m;
   MatReuse       scal;
@@ -89,8 +87,9 @@ static PetscErrorCode PCSetUp_HMPI_MP(MPI_Comm comm,void *ctx)
 
   PetscFunctionBegin;
   red->comm = comm;
+
   ierr = MPI_Bcast(&red->setupcalled,1,MPIU_INT,0,comm);CHKERRQ(ierr);
-  ierr = MPI_Bcast(&red->flag,1,MPIU_INT,0,comm);CHKERRQ(ierr);
+  ierr = MPI_Bcast((PetscEnum*)&red->flag,1,MPIU_ENUM,0,comm);CHKERRQ(ierr);
   if (!red->setupcalled) {
     /* setup vector communication */
     ierr = MPI_Bcast(&red->n,1,MPIU_INT,0,comm);CHKERRQ(ierr);
@@ -130,11 +129,11 @@ static PetscErrorCode PCSetUp_HMPI_MP(MPI_Comm comm,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCSetUp_HMPI"
 static PetscErrorCode PCSetUp_HMPI(PC pc)
 {
-  PC_HMPI      *red = (PC_HMPI*)pc->data;
+  PC_HMPI        *red = (PC_HMPI*)pc->data;
   PetscErrorCode ierr;
   PetscMPIInt    size;
 
@@ -147,7 +146,7 @@ static PetscErrorCode PCSetUp_HMPI(PC pc)
   if (size == 1) {  /* special case where copy of matrix is not needed */
     if (!red->setupcalled) {
       /* create the solver */
-      ierr = KSPCreate(((PetscObject)pc)->comm,&red->ksp);CHKERRQ(ierr);
+      ierr = KSPCreate(PetscObjectComm((PetscObject)pc),&red->ksp);CHKERRQ(ierr);
       ierr = PetscObjectIncrementTabLevel((PetscObject)red->ksp,(PetscObject)pc,1);CHKERRQ(ierr);
       ierr = KSPSetOptionsPrefix(red->ksp,"hmpi_");CHKERRQ(ierr); /* should actually append with global pc prefix */
       ierr = KSPSetOperators(red->ksp,red->gmat,red->gmat,red->flag);CHKERRQ(ierr);
@@ -158,23 +157,23 @@ static PetscErrorCode PCSetUp_HMPI(PC pc)
     pc->ops->apply = PCApply_HMPI_1;
     PetscFunctionReturn(0);
   } else {
-    ierr = MatGetSize(pc->mat,&red->n,PETSC_IGNORE);CHKERRQ(ierr); 
+    ierr = MatGetSize(pc->mat,&red->n,PETSC_IGNORE);CHKERRQ(ierr);
     ierr = PetscHMPIRun(red->comm,PCSetUp_HMPI_MP,red);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCApply_HMPI_MP"
 static PetscErrorCode PCApply_HMPI_MP(MPI_Comm comm,void *ctx)
 {
-  PC_HMPI      *red = (PC_HMPI*)ctx;
+  PC_HMPI        *red = (PC_HMPI*)ctx;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = VecScatterBegin(red->scatter,red->xdummy,red->x,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   ierr = VecScatterEnd(red->scatter,red->xdummy,red->x,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-  ierr = MPI_Bcast(&red->nonzero_guess,1,MPIU_INT,0,red->comm);CHKERRQ(ierr);
+  ierr = MPI_Bcast(&red->nonzero_guess,1,MPIU_BOOL,0,red->comm);CHKERRQ(ierr);
   if (red->nonzero_guess) {
     ierr = VecScatterBegin(red->scatter,red->ydummy,red->y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
     ierr = VecScatterEnd(red->scatter,red->ydummy,red->y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
@@ -188,26 +187,27 @@ static PetscErrorCode PCApply_HMPI_MP(MPI_Comm comm,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCApply_HMPI"
 static PetscErrorCode PCApply_HMPI(PC pc,Vec x,Vec y)
 {
-  PC_HMPI      *red = (PC_HMPI*)pc->data;
+  PC_HMPI        *red = (PC_HMPI*)pc->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   red->xdummy        = x;
   red->ydummy        = y;
   red->nonzero_guess = pc->nonzero_guess;
+
   ierr = PetscHMPIRun(red->comm,PCApply_HMPI_MP,red);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCDestroy_HMPI_MP"
 static PetscErrorCode PCDestroy_HMPI_MP(MPI_Comm comm,void *ctx)
 {
-  PC_HMPI      *red = (PC_HMPI*)ctx;
+  PC_HMPI        *red = (PC_HMPI*)ctx;
   PetscMPIInt    rank;
   PetscErrorCode ierr;
 
@@ -225,11 +225,11 @@ static PetscErrorCode PCDestroy_HMPI_MP(MPI_Comm comm,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCDestroy_HMPI"
 static PetscErrorCode PCDestroy_HMPI(PC pc)
 {
-  PC_HMPI      *red = (PC_HMPI*)pc->data;
+  PC_HMPI        *red = (PC_HMPI*)pc->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -238,7 +238,7 @@ static PetscErrorCode PCDestroy_HMPI(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_HMPI"
 static PetscErrorCode PCSetFromOptions_HMPI(PC pc)
 {
@@ -269,18 +269,18 @@ $     -hmpi_pc_type hypre -hmpi_pc_hypre_type boomeramg
 
 M*/
 
-EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCCreate_HMPI"
-PetscErrorCode  PCCreate_HMPI(PC pc)
+PETSC_EXTERN PetscErrorCode PCCreate_HMPI(PC pc)
 {
   PetscErrorCode ierr;
-  PC_HMPI      *red;
+  PC_HMPI        *red;
   PetscMPIInt    size;
 
   PetscFunctionBegin;
-  ierr      = MPI_Comm_size(((PetscObject)pc)->comm,&size);CHKERRQ(ierr);
-  if (size > 1) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_SIZ,"HMPI preconditioner only works for sequential solves");
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)pc),&size);CHKERRQ(ierr);
+  if (size > 1) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_SIZ,"HMPI preconditioner only works for sequential solves");
+  if (!PETSC_COMM_LOCAL_WORLD) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"PETSc not initialized for PCMPI see the manual pages for PetscHMPISpawn() and PetscHMPIMerge()");
   /* caste the struct length to a PetscInt for easier MPI calls */
 
   ierr      = PetscHMPIMalloc(PETSC_COMM_LOCAL_WORLD,(PetscInt)sizeof(PC_HMPI),(void**)&red);CHKERRQ(ierr);
@@ -294,4 +294,3 @@ PetscErrorCode  PCCreate_HMPI(PC pc)
   pc->ops->view           = PCView_HMPI;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END

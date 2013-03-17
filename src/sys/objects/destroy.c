@@ -2,14 +2,14 @@
 /*
      Provides utility routines for manulating any type of PETSc object.
 */
-#include <petscsys.h>  /*I   "petscsys.h"    I*/
+#include <petsc-private/petscimpl.h>  /*I   "petscsys.h"    I*/
+#include <petscviewer.h>
 
-
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscComposedQuantitiesDestroy"
 PetscErrorCode PetscComposedQuantitiesDestroy(PetscObject obj)
 {
-  PetscErrorCode ierr; 
+  PetscErrorCode ierr;
   PetscInt       i;
 
   PetscFunctionBegin;
@@ -43,16 +43,16 @@ PetscErrorCode PetscComposedQuantitiesDestroy(PetscObject obj)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscObjectDestroy"
 /*@
-   PetscObjectDestroy - Destroys any PetscObject, regardless of the type. 
+   PetscObjectDestroy - Destroys any PetscObject, regardless of the type.
 
    Collective on PetscObject
 
    Input Parameter:
 .  obj - any PETSc object, for example a Vec, Mat or KSP.
-         This must be cast with a (PetscObject*), for example, 
+         This must be cast with a (PetscObject*), for example,
          PetscObjectDestroy((PetscObject*)&mat);
 
    Level: beginner
@@ -75,16 +75,16 @@ PetscErrorCode  PetscObjectDestroy(PetscObject *obj)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscObjectView" 
+#undef __FUNCT__
+#define __FUNCT__ "PetscObjectView"
 /*@C
-   PetscObjectView - Views any PetscObject, regardless of the type. 
+   PetscObjectView - Views any PetscObject, regardless of the type.
 
    Collective on PetscObject
 
    Input Parameters:
 +  obj - any PETSc object, for example a Vec, Mat or KSP.
-         This must be cast with a (PetscObject), for example, 
+         This must be cast with a (PetscObject), for example,
          PetscObjectView((PetscObject)mat,viewer);
 -  viewer - any PETSc viewer
 
@@ -104,13 +104,11 @@ PetscErrorCode  PetscObjectView(PetscObject obj,PetscViewer viewer)
 
   if (obj->bops->view) {
     ierr = (*obj->bops->view)(obj,viewer);CHKERRQ(ierr);
-  } else {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"This PETSc object does not have a generic viewer routine");
-  }
+  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"This PETSc object does not have a generic viewer routine");
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscObjectTypeCompare"
 /*@C
    PetscObjectTypeCompare - Determines whether a PETSc object is of a particular type.
@@ -119,13 +117,13 @@ PetscErrorCode  PetscObjectView(PetscObject obj,PetscViewer viewer)
 
    Input Parameters:
 +  obj - any PETSc object, for example a Vec, Mat or KSP.
-         This must be cast with a (PetscObject), for example, 
+         This must be cast with a (PetscObject), for example,
          PetscObjectTypeCompare((PetscObject)mat);
 -  type_name - string containing a type name
 
    Output Parameter:
 .  same - PETSC_TRUE if they are the same, else PETSC_FALSE
-  
+
    Level: intermediate
 
 .seealso: VecGetType(), KSPGetType(), PCGetType(), SNESGetType()
@@ -140,13 +138,10 @@ PetscErrorCode  PetscObjectTypeCompare(PetscObject obj,const char type_name[],Pe
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!obj) {
-    *same = PETSC_FALSE;
-  } else if (!type_name && !obj->type_name) {
-    *same = PETSC_TRUE;
-  } else if (!type_name || !obj->type_name) {
-    *same = PETSC_FALSE;
-  } else {
+  if (!obj) *same = PETSC_FALSE;
+  else if (!type_name && !obj->type_name) *same = PETSC_TRUE;
+  else if (!type_name || !obj->type_name) *same = PETSC_FALSE;
+  else {
     PetscValidHeader(obj,1);
     PetscValidCharPointer(type_name,2);
     PetscValidPointer(same,3);
@@ -155,7 +150,7 @@ PetscErrorCode  PetscObjectTypeCompare(PetscObject obj,const char type_name[],Pe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscObjectTypeCompareAny"
 /*@C
    PetscObjectTypeCompareAny - Determines whether a PETSc object is of any of a list of types.
@@ -182,7 +177,7 @@ PetscErrorCode  PetscObjectTypeCompare(PetscObject obj,const char type_name[],Pe
 PetscErrorCode PetscObjectTypeCompareAny(PetscObject obj,PetscBool *match,const char type_name[],...)
 {
   PetscErrorCode ierr;
-  va_list Argp;
+  va_list        Argp;
 
   PetscFunctionBegin;
   *match = PETSC_FALSE;
@@ -204,7 +199,7 @@ PetscErrorCode PetscObjectTypeCompareAny(PetscObject obj,PetscBool *match,const 
 static int         PetscObjectRegisterDestroy_Count = 0;
 static PetscObject PetscObjectRegisterDestroy_Objects[MAXREGDESOBJS];
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscObjectRegisterDestroy"
 /*@C
    PetscObjectRegisterDestroy - Registers a PETSc object to be destroyed when
@@ -214,7 +209,7 @@ static PetscObject PetscObjectRegisterDestroy_Objects[MAXREGDESOBJS];
 
    Input Parameter:
 .  obj - any PETSc object, for example a Vec, Mat or KSP.
-         This must be cast with a (PetscObject), for example, 
+         This must be cast with a (PetscObject), for example,
          PetscObjectRegisterDestroy((PetscObject)mat);
 
    Level: developer
@@ -229,13 +224,13 @@ PetscErrorCode  PetscObjectRegisterDestroy(PetscObject obj)
 {
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
-  if (PetscObjectRegisterDestroy_Count < MAXREGDESOBJS) {
+  if (PetscObjectRegisterDestroy_Count < MAXREGDESOBJS) 
     PetscObjectRegisterDestroy_Objects[PetscObjectRegisterDestroy_Count++] = obj;
-  } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"No more room in array, limit %d \n recompile src/sys/objects/destroy.c with larger value for MAXREGDESOBJS\n",MAXREGDESOBJS);
+  else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"No more room in array, limit %d \n recompile src/sys/objects/destroy.c with larger value for MAXREGDESOBJS\n",MAXREGDESOBJS);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscObjectRegisterDestroyAll"
 /*@C
    PetscObjectRegisterDestroyAll - Frees all the PETSc objects that have been registered
@@ -262,10 +257,10 @@ PetscErrorCode  PetscObjectRegisterDestroyAll(void)
 
 
 #define MAXREGFIN 256
-static int         PetscRegisterFinalize_Count = 0;
+static int PetscRegisterFinalize_Count = 0;
 static PetscErrorCode ((*PetscRegisterFinalize_Functions[MAXREGFIN])(void));
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscRegisterFinalize"
 /*@C
    PetscRegisterFinalize - Registers a function that is to be called in PetscFinalize()
@@ -273,7 +268,7 @@ static PetscErrorCode ((*PetscRegisterFinalize_Functions[MAXREGFIN])(void));
    Not Collective
 
    Input Parameter:
-.  PetscErrorCode (*fun)(void) - 
+.  PetscErrorCode (*fun)(void) -
 
    Level: developer
 
@@ -284,15 +279,18 @@ static PetscErrorCode ((*PetscRegisterFinalize_Functions[MAXREGFIN])(void));
 @*/
 PetscErrorCode  PetscRegisterFinalize(PetscErrorCode (*f)(void))
 {
-  PetscFunctionBegin;
+  PetscInt i;
 
-  if (PetscRegisterFinalize_Count < MAXREGFIN) {
-    PetscRegisterFinalize_Functions[PetscRegisterFinalize_Count++] = f;
-  } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"No more room in array, limit %d \n recompile src/sys/objects/destroy.c with larger value for MAXREGFIN\n",MAXREGFIN);
+  PetscFunctionBegin;
+  for (i=0; i<PetscRegisterFinalize_Count; i++) {
+    if (f == PetscRegisterFinalize_Functions[i]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Called twice with same function to register");
+  }
+  if (PetscRegisterFinalize_Count < MAXREGFIN) PetscRegisterFinalize_Functions[PetscRegisterFinalize_Count++] = f;
+  else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"No more room in array, limit %d \n recompile src/sys/objects/destroy.c with larger value for MAXREGFIN\n",MAXREGFIN);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscRegisterFinalizeAll"
 /*@C
    PetscRegisterFinalizeAll - Runs all the finalize functions set with PetscRegisterFinalize()

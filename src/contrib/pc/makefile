@@ -1,5 +1,5 @@
 
-DIRS     = 
+DIRS     =
 LOCDIR   = src/contrib/pc/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base

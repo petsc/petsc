@@ -50,7 +50,7 @@ class PETScMaker(script.Script):
  def setupModules(self):
    self.mpi           = self.framework.require('config.packages.MPI',         None)
    self.base          = self.framework.require('config.base',                 None)
-   self.setCompilers  = self.framework.require('config.setCompilers',         None)   
+   self.setCompilers  = self.framework.require('config.setCompilers',         None)
    self.arch          = self.framework.require('PETSc.utilities.arch',        None)
    self.petscdir      = self.framework.require('PETSc.utilities.petscdir',    None)
    self.languages     = self.framework.require('PETSc.utilities.languages',   None)
@@ -65,7 +65,7 @@ class PETScMaker(script.Script):
    self.libraries     = self.framework.require('config.libraries',            None)
    self.scalarType    = self.framework.require('PETSc.utilities.scalarTypes', None)
    self.memAlign      = self.framework.require('PETSc.utilities.memAlign',    None)
-   self.libraryOptions= self.framework.require('PETSc.utilities.libraryOptions', None)      
+   self.libraryOptions= self.framework.require('PETSc.utilities.libraryOptions', None)
    self.compilerFlags = self.framework.require('config.compilerFlags', self)
    return
 
@@ -76,6 +76,7 @@ class PETScMaker(script.Script):
    self.setupModules()
 
  def cmakeboot(self, args, log):
+   import shlex
    self.setup()
    options = deque()
 
@@ -112,6 +113,9 @@ class PETScMaker(script.Script):
      options.append('-DCMAKE_'+cmakelanguage+'_COMPILER:FILEPATH=' + compiler)
      options.append('-DCMAKE_'+cmakelanguage+'_FLAGS:STRING=' + ''.join(flags))
      self.setCompilers.popLanguage()
+   options.append('-DCMAKE_AR='+self.setCompilers.AR)
+   ranlib = shlex.split(self.setCompilers.RANLIB)[0]
+   options.append('-DCMAKE_RANLIB='+ranlib)
    if win32fe:
      options.append('-DPETSC_WIN32FE:FILEPATH=%s'%win32fe)
      # Default on Windows is to generate Visual Studio project files, but
@@ -120,14 +124,21 @@ class PETScMaker(script.Script):
      options.append('-GUnix Makefiles')
    cmd = [self.cmake.cmake, '--trace', '--debug-output', self.petscdir.dir] + map(lambda x:x.strip(), options) + args
    archdir = os.path.join(self.petscdir.dir, self.arch.arch)
-   try: # Try to remove the old cache because some versions of CMake lose CMAKE_C_FLAGS when reconfiguring this way
+   try:
+     # Try to remove the old cache because some versions of CMake lose CMAKE_C_FLAGS when reconfiguring this way
      os.remove(os.path.join(archdir, 'CMakeCache.txt'))
    except OSError:
      pass
+   import shutil
+   # Try to remove all the old CMake files to avoid infinite loop (CMake-2.8.10.2, maybe other versions)
+   # http://www.mail-archive.com/cmake@cmake.org/msg44765.html
+   self.logPrint('Removing: %s' % os.path.join(archdir, 'CMakeFiles', version.vstring))
+   shutil.rmtree(os.path.join(archdir, 'CMakeFiles', version.vstring), ignore_errors=True)
    log.write('Invoking: %s\n' % cmd)
-   output,error,retcode = self.executeShellCommand(cmd, checkCommand = noCheck, log=log, cwd=archdir)
+   output,error,retcode = self.executeShellCommand(cmd, checkCommand = noCheck, log=log, cwd=archdir,timeout=30)
    if retcode:
      self.logPrintBox('CMake setup incomplete (status %d), falling back to legacy build' % (retcode,))
+     self.logPrint('Output: '+output+'\nError: '+error)
      cachetxt = os.path.join(archdir, 'CMakeCache.txt')
      try:
        with open(cachetxt, 'r') as f:

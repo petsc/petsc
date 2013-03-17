@@ -19,7 +19,7 @@ static PetscErrorCode TSAdaptChoose_CFL(TSAdapt adapt,TS ts,PetscReal h,PetscInt
   PetscFunctionBegin;
   ierr = TSGetTimeStepNumber(ts,&stepno);CHKERRQ(ierr);
   ierr = TSGetCFLTime(ts,&cfltime);CHKERRQ(ierr);
-  ierr = TSAdaptCandidatesGet(adapt,&ncandidates,&order,PETSC_NULL,&ccfl,PETSC_NULL);CHKERRQ(ierr);
+  ierr = TSAdaptCandidatesGet(adapt,&ncandidates,&order,NULL,&ccfl,NULL);CHKERRQ(ierr);
 
   hcfl = cfl->safety * cfltime * ccfl[0];
   if (hcfl < adapt->dt_min) {
@@ -30,17 +30,17 @@ static PetscErrorCode TSAdaptChoose_CFL(TSAdapt adapt,TS ts,PetscReal h,PetscInt
     if (cfl->always_accept) {
       ierr = PetscInfo3(adapt,"Step length %G with scheme of CFL coefficient %G did not satisfy user-provided CFL constraint %G, proceeding anyway\n",h,ccfl[0],cfltime);CHKERRQ(ierr);
     } else {
-      ierr = PetscInfo3(adapt,"Step length %G with scheme of CFL coefficient %G did not satisfy user-provided CFL constraint %G, step REJECTED\n",h,ccfl[0],cfltime);CHKERRQ(ierr);
+      ierr     = PetscInfo3(adapt,"Step length %G with scheme of CFL coefficient %G did not satisfy user-provided CFL constraint %G, step REJECTED\n",h,ccfl[0],cfltime);CHKERRQ(ierr);
       *next_sc = 0;
-      *next_h = PetscClipInterval(hcfl,adapt->dt_min,adapt->dt_max);
-      *accept = PETSC_FALSE;
+      *next_h  = PetscClipInterval(hcfl,adapt->dt_min,adapt->dt_max);
+      *accept  = PETSC_FALSE;
     }
   }
 
   *next_sc = 0;
-  *next_h = PetscClipInterval(hcfl,adapt->dt_min,adapt->dt_max);
-  *accept = PETSC_TRUE;
-  *wlte = -1;                   /* Weighted local truncation error was not evaluated */
+  *next_h  = PetscClipInterval(hcfl,adapt->dt_min,adapt->dt_max);
+  *accept  = PETSC_TRUE;
+  *wlte    = -1;                /* Weighted local truncation error was not evaluated */
   PetscFunctionReturn(0);
 }
 
@@ -59,19 +59,18 @@ static PetscErrorCode TSAdaptDestroy_CFL(TSAdapt adapt)
 #define __FUNCT__ "TSAdaptSetFromOptions_CFL"
 static PetscErrorCode TSAdaptSetFromOptions_CFL(TSAdapt adapt)
 {
-  TSAdapt_CFL  *cfl = (TSAdapt_CFL*)adapt->data;
+  TSAdapt_CFL    *cfl = (TSAdapt_CFL*)adapt->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("CFL adaptive controller options");CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-ts_adapt_cfl_safety","Safety factor relative to target error","",cfl->safety,&cfl->safety,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-ts_adapt_cfl_always_accept","Always accept the step regardless of whether local truncation error meets goal","",cfl->always_accept,&cfl->always_accept,PETSC_NULL);CHKERRQ(ierr);
-  if (!cfl->always_accept) SETERRQ(((PetscObject)adapt)->comm,PETSC_ERR_SUP,"step rejection not implemented yet");
+  ierr = PetscOptionsReal("-ts_adapt_cfl_safety","Safety factor relative to target error","",cfl->safety,&cfl->safety,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-ts_adapt_cfl_always_accept","Always accept the step regardless of whether local truncation error meets goal","",cfl->always_accept,&cfl->always_accept,NULL);CHKERRQ(ierr);
+  if (!cfl->always_accept) SETERRQ(PetscObjectComm((PetscObject)adapt),PETSC_ERR_SUP,"step rejection not implemented yet");
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TSAdaptCreate_CFL"
 /*MC
@@ -81,14 +80,14 @@ EXTERN_C_BEGIN
 
 .seealso: TS, TSAdapt, TSSetAdapt()
 M*/
-PetscErrorCode TSAdaptCreate_CFL(TSAdapt adapt)
+PETSC_EXTERN PetscErrorCode TSAdaptCreate_CFL(TSAdapt adapt)
 {
   PetscErrorCode ierr;
-  TSAdapt_CFL *a;
+  TSAdapt_CFL    *a;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(adapt,TSAdapt_CFL,&a);CHKERRQ(ierr);
-  adapt->data = (void*)a;
+  ierr                       = PetscNewLog(adapt,TSAdapt_CFL,&a);CHKERRQ(ierr);
+  adapt->data                = (void*)a;
   adapt->ops->choose         = TSAdaptChoose_CFL;
   adapt->ops->setfromoptions = TSAdaptSetFromOptions_CFL;
   adapt->ops->destroy        = TSAdaptDestroy_CFL;
@@ -97,4 +96,3 @@ PetscErrorCode TSAdaptCreate_CFL(TSAdapt adapt)
   a->always_accept = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END

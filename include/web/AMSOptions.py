@@ -1,8 +1,8 @@
-#   
+#
 #   Run python pyjsbuild --output . AMSOptions.py to generate the needed HTML and Javascript
 #
 
-import pyjd 
+import pyjd
 
 import AMSJavascript.AMS_Comm as AMS_Comm
 import AMSJavascript.AMS_Memory as AMS_Memory
@@ -32,9 +32,9 @@ class AMSJavascriptExample:
         buttons.add(self.button)
         buttons.add(self.buttonupdate)
         buttons.setSpacing(8)
-        
+
         info = """<p>This example demonstrates the calling of the Memory Snooper in PETSc with Pyjamas and <a href="http://json-rpc.org/">JSON-RPC</a>.</p>"""
-        
+
         self.panel = VerticalPanel()
         self.panel.add(HTML(info))
         self.panel.add(buttons)
@@ -42,7 +42,7 @@ class AMSJavascriptExample:
         RootPanel().add(self.panel)
         self.commobj = AMS_Comm()
         self.tree = None
-        if AMSJavascript.sent > AMSJavascript.recv: 
+        if AMSJavascript.sent > AMSJavascript.recv:
            self.status.setText('Press button again: AMSJavascript.sent '+str(AMSJavascript.sent)+' AMSJavascript.recv '+str(AMSJavascript.recv))
            return
         if self.commobj.commname == 'No AMS publisher running':
@@ -68,7 +68,7 @@ class AMSJavascriptExample:
             self.commobj = AMS_Comm()
             self.status.setText('Updating data: Press Display list button to refesh')
         if sender == self.button:
-            if AMSJavascript.sent > AMSJavascript.recv: 
+            if AMSJavascript.sent > AMSJavascript.recv:
                self.status.setText('Press button again: AMSJavascript.sent '+str(AMSJavascript.sent)+' AMSJavascript.recv '+str(AMSJavascript.recv))
                return
             if self.commobj.commname == 'No AMS publisher running':

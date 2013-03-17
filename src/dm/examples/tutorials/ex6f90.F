@@ -72,7 +72,7 @@
 !-----------------------------------------------------------------------
 !     computations.
 !-----------------------------------------------------------------------
-      IF(fa%comm(j) /= 0)THEN
+      IF (fa%comm(j) /= 0) THEN
          x=fa%xg(j)
          y=fa%yg(j)
          m=fa%mg(j)
@@ -205,7 +205,7 @@
 !-----------------------------------------------------------------------
       fa%p1=24
       fa%p2=15
-      fa%r1=6 
+      fa%r1=6
       fa%r2=6
       fa%sw=1
       fa%r1g=fa%r1+fa%sw
@@ -218,7 +218,7 @@
 !-----------------------------------------------------------------------
 !     set up distributed arrays.
 !-----------------------------------------------------------------------
-      IF(fa%comm(1) /= 0)THEN
+      IF (fa%comm(1) /= 0) THEN
          CALL DMDACreate2d(fa%comm(1),DMDA_BOUNDARY_PERIODIC,                   &
      &        DMDA_BOUNDARY_NONE, DMDA_STENCIL_BOX,                          &
      &        fa%p2,fa%r2g,PETSC_DECIDE,PETSC_DECIDE,1,fa%sw,                &
@@ -226,7 +226,7 @@
          CALL DMGetLocalVector(da2,vl2,ierr)
          CALL DMGetGlobalVector(da2,vg2,ierr)
       ENDIF
-      IF(fa%comm(2) /= 0)THEN
+      IF (fa%comm(2) /= 0) THEN
          CALL DMDACreate2d(fa%comm(2),DMDA_BOUNDARY_NONE,                       &
      &        DMDA_BOUNDARY_NONE, DMDA_STENCIL_BOX,                        &
      &        fa%p1-fa%p2,fa%r2g,PETSC_DECIDE,PETSC_DECIDE,1,fa%sw,          &
@@ -234,7 +234,7 @@
          CALL DMGetLocalVector(da3,vl3,ierr)
          CALL DMGetGlobalVector(da3,vg3,ierr)
       ENDIF
-      IF(fa%comm(0) /= 0)THEN
+      IF (fa%comm(0) /= 0) THEN
          CALL DMDACreate2d(fa%comm(0),DMDA_BOUNDARY_NONE,                       &
      &        DMDA_BOUNDARY_NONE, DMDA_STENCIL_BOX,                        &
      &        fa%p1,fa%r1g,PETSC_DECIDE,PETSC_DECIDE,1,fa%sw,                &
@@ -244,19 +244,19 @@
       ENDIF
 !-----------------------------------------------------------------------
 !     count the number of unknowns owned on each processor and determine
-!     the starting point of each processors ownership 
+!     the starting point of each processors ownership
 !     for global vector with redundancy.
 !-----------------------------------------------------------------------
       tonglobal = 0
-      IF(fa%comm(1) /= 0)THEN
+      IF (fa%comm(1) /= 0) THEN
          CALL DMDAGetCorners(da2,x,y,0,nx,ny,0,ierr)
          tonglobal=tonglobal+nx*ny
       ENDIF
-      IF(fa%comm(2) /= 0)THEN
+      IF (fa%comm(2) /= 0) THEN
          CALL DMDAGetCorners(da3,x,y,0,nx,ny,0,ierr)
          tonglobal=tonglobal+nx*ny
       ENDIF
-      IF(fa%comm(0) /= 0)THEN
+      IF (fa%comm(0) /= 0) THEN
          CALL DMDAGetCorners(da1,x,y,0,nx,ny,0,ierr)
          tonglobal=tonglobal+nx*ny
       ENDIF
@@ -267,7 +267,7 @@
 !-----------------------------------------------------------------------
       ALLOCATE(tonatural(0:tonglobal))
       tonglobal=0
-      IF(fa%comm(1) /= 0)THEN
+      IF (fa%comm(1) /= 0) THEN
          CALL DMDAGetCorners(da2,x,y,0,nx,ny,0,ierr)
          DO j=0,ny-1
             DO i=0,nx-1
@@ -276,11 +276,11 @@
             ENDDO
          ENDDO
       ENDIF
-      IF(fa%comm(2) /= 0)THEN
+      IF (fa%comm(2) /= 0) THEN
          CALL DMDAGetCorners(da3,x,y,0,nx,ny,0,ierr)
          DO j=0,ny-1
             DO i=0,nx-1
-               IF(x+i < (fa%p1-fa%p2)/2)THEN
+               IF (x+i < (fa%p1-fa%p2)/2) THEN
                   tonatural(tonglobal)=x+i+fa%p1*(y+j)
                ELSE
                   tonatural(tonglobal)=fa%p2+x+i+fa%p1*(y+j)
@@ -289,7 +289,7 @@
             ENDDO
          ENDDO
       ENDIF
-      IF(fa%comm(0) /= 0)THEN
+      IF (fa%comm(0) /= 0) THEN
          CALL DMDAGetCorners(da1,x,y,0,nx,ny,0,ierr)
          DO j=0,ny-1
             DO i=0,nx-1
@@ -301,7 +301,7 @@
 !-----------------------------------------------------------------------
 !     diagnose tonatural.
 !-----------------------------------------------------------------------
-      IF(diagnose)THEN
+      IF (diagnose)THEN
          WRITE(*,'(a,i3,a)')"tonglobal = ",tonglobal,", tonatural = "
          WRITE(*,'(2i4)')(i,tonatural(i),i=0,tonglobal-1)
       ENDIF
@@ -319,29 +319,29 @@
       fromnglobal=0
       fa%offg(1)=0
       offt(1)=0
-      IF(fa%comm(1) /= 0)THEN
+      IF (fa%comm(1) /= 0)THEN
          CALL DMDAGetCorners(da2,x,y,0,nx,ny,0,ierr)
          offt(2)=nx*ny
-         IF(y+ny == fa%r2g)ny=ny-1
+         IF (y+ny == fa%r2g)ny=ny-1
          fromnglobal=fromnglobal+nx*ny
          fa%offg(2)=fromnglobal
       ELSE
          offt(2)=0
          fa%offg(2)=0
       ENDIF
-      IF(fa%comm(2) /= 0)THEN
+      IF (fa%comm(2) /= 0)THEN
          CALL DMDAGetCorners(da3,x,y,0,nx,ny,0,ierr)
          offt(0)=offt(2)+nx*ny
-         IF(y+ny == fa%r2g)ny=ny-1
+         IF (y+ny == fa%r2g)ny=ny-1
          fromnglobal=fromnglobal+nx*ny
          fa%offg(0)=fromnglobal
       ELSE
          offt(0)=offt(2)
          fa%offg(0)=fromnglobal
       ENDIF
-      IF(fa%comm(0) /= 0)THEN
+      IF (fa%comm(0) /= 0)THEN
          CALL DMDAGetCorners(da1,x,y,0,nx,ny,0,ierr)
-         IF(y == 0)ny=ny-1
+         IF (y == 0)ny=ny-1
          fromnglobal=fromnglobal+nx*ny
       ENDIF
       CALL MPI_Scan(fromnglobal,globalrstart,1,MPI_INTEGER,                      &
@@ -354,9 +354,9 @@
 !-----------------------------------------------------------------------
       ALLOCATE(fromnatural(0:fromnglobal))
       fromnglobal=0
-      IF(fa%comm(1) /= 0)THEN
+      IF (fa%comm(1) /= 0)THEN
          CALL DMDAGetCorners(da2,x,y,0,nx,ny,0,ierr)
-         IF(y+ny == fa%r2g)ny=ny-1
+         IF (y+ny == fa%r2g)ny=ny-1
          fa%xg(1)=x
          fa%yg(1)=y
          fa%mg(1)=nx
@@ -371,9 +371,9 @@
             ENDDO
          ENDDO
       ENDIF
-      IF(fa%comm(2) /= 0)THEN
+      IF (fa%comm(2) /= 0)THEN
          CALL DMDAGetCorners(da3,x,y,0,nx,ny,0,ierr)
-         IF(y+ny == fa%r2g)ny=ny-1
+         IF (y+ny == fa%r2g)ny=ny-1
          fa%xg(2)=x
          fa%yg(2)=y
          fa%mg(2)=nx
@@ -382,7 +382,7 @@
      &        fa%nl(2),0,ierr)
          DO j=0,ny-1
             DO i=0,nx-1
-               IF(x+i < (fa%p1-fa%p2)/2)THEN
+               IF (x+i < (fa%p1-fa%p2)/2)THEN
                   fromnatural(fromnglobal)=x+i+fa%p1*(y+j)
                ELSE
                   fromnatural(fromnglobal)=fa%p2+x+i+fa%p1*(y+j)
@@ -391,11 +391,11 @@
             ENDDO
          ENDDO
       ENDIF
-      IF(fa%comm(0) /= 0)THEN
+      IF (fa%comm(0) /= 0)THEN
          CALL DMDAGetCorners(da1,x,y,0,nx,ny,0,ierr)
-         IF(y == 0)THEN
+         IF (y == 0)THEN
             ny=ny-1
-         ELSE 
+         ELSE
             y=y-1
          ENDIF
          fa%xg(0)=x
@@ -414,7 +414,7 @@
 !-----------------------------------------------------------------------
 !     diagnose fromnatural.
 !-----------------------------------------------------------------------
-      IF(diagnose)THEN
+      IF (diagnose)THEN
          WRITE(*,'(a,i3,a)')"fromnglobal = ",fromnglobal                        &
      &        ,", fromnatural = "
          WRITE(*,'(2i4)')(i,fromnatural(i),i=0,fromnglobal-1)
@@ -430,7 +430,7 @@
 !-----------------------------------------------------------------------
       ALLOCATE(to(0:tonglobal),from(0:tonglobal))
       nscat=0
-      IF(fa%comm(1) /= 0)THEN
+      IF (fa%comm(1) /= 0)THEN
          CALL DMDAGetCorners(da2,x,y,0,nx,ny,0,ierr)
          DO j=0,ny-1
             DO i=0,nx-1
@@ -440,11 +440,11 @@
             ENDDO
          ENDDO
       ENDIF
-      IF(fa%comm(2) /= 0)THEN
+      IF (fa%comm(2) /= 0)THEN
          CALL DMDAGetCorners(da3,x,y,0,nx,ny,0,ierr)
          DO j=0,ny-1
             DO i=0,nx-1
-               IF(x+i < (fa%p1-fa%p2)/2)THEN
+               IF (x+i < (fa%p1-fa%p2)/2)THEN
                   to(nscat)=x+i+fa%p1*(y+j)
                ELSE
                   to(nscat)=fa%p2+x+i+fa%p1*(y+j)
@@ -454,7 +454,7 @@
             ENDDO
          ENDDO
       ENDIF
-      IF(fa%comm(0) /= 0)THEN
+      IF (fa%comm(0) /= 0)THEN
          CALL DMDAGetCorners(da1,x,y,0,nx,ny,0,ierr)
          DO j=0,ny-1
             DO i=0,nx-1
@@ -467,7 +467,7 @@
 !-----------------------------------------------------------------------
 !     diagnose to and from.
 !-----------------------------------------------------------------------
-      IF(diagnose)THEN
+      IF (diagnose)THEN
          WRITE(*,'(a,i3,a)')"nscat = ",nscat,", to, from = "
          WRITE(*,'(3i4)')(i,to(i),from(i),i=0,nscat-1)
       ENDIF
@@ -499,12 +499,12 @@
 !-----------------------------------------------------------------------
       CALL VecGetArray(globalvec,globalarray,ig,ierr)
       k=ig
-      IF(diagnose)WRITE(*,'(a,i3,a)')                                                &
+      IF (diagnose)WRITE(*,'(a,i3,a)')                                                &
      &     "fromnglobal = ",fromnglobal,", globalarray = "
       DO i=0,fromnglobal-1
          k=k+1
          globalarray(k)=globalrstart+i
-         IF(diagnose)WRITE(*,'(i4,f11.3)')i,globalarray(k)
+         IF (diagnose)WRITE(*,'(i4,f11.3)')i,globalarray(k)
       ENDDO
       CALL VecRestoreArray(globalvec,globalarray,ig,ierr)
 !-----------------------------------------------------------------------
@@ -521,15 +521,15 @@
       cntl1=0
       cntl2=0
       cntl3=0
-      IF(fa%comm(1) /= 0)THEN
+      IF (fa%comm(1) /= 0)THEN
          CALL VecGetSize(vl2,cntl2,ierr)
          nlocal=nlocal+cntl2
       ENDIF
-      IF(fa%comm(2) /= 0)THEN
+      IF (fa%comm(2) /= 0)THEN
          CALL VecGetSize(vl3,cntl3,ierr)
          nlocal=nlocal+cntl3
       ENDIF
-      IF(fa%comm(0) /= 0)THEN
+      IF (fa%comm(0) /= 0)THEN
          CALL VecGetSize(vl1,cntl1,ierr)
          nlocal=nlocal+cntl1
       ENDIF
@@ -542,21 +542,21 @@
 !-----------------------------------------------------------------------
       CALL VecGetArray(localvec,localarray,il,ierr)
       CALL VecGetArray(tovec,toarray,it,ierr)
-      IF(fa%comm(1) /= 0)THEN
+      IF (fa%comm(1) /= 0)THEN
          CALL VecPlaceArray(vl2,localarray(il+1+fa%offl(1)),ierr)
          CALL VecPlaceArray(vg2,toarray(it+1+offt(1)),ierr)
          CALL DMGlobalToLocalBegin(da2,vg2,INSERT_VALUES,vl2,ierr)
          CALL DMGlobalToLocalEnd(da2,vg2,INSERT_VALUES,vl2,ierr)
          CALL DMRestoreGlobalVector(da2,vg2,ierr)
       ENDIF
-      IF(fa%comm(2) /= 0)THEN
+      IF (fa%comm(2) /= 0)THEN
          CALL VecPlaceArray(vl3,localarray(il+1+fa%offl(2)),ierr)
          CALL VecPlaceArray(vg3,toarray(it+1+offt(2)),ierr)
          CALL DMGlobalToLocalBegin(da3,vg3,INSERT_VALUES,vl3,ierr)
          CALL DMGlobalToLocalEnd(da3,vg3,INSERT_VALUES,vl3,ierr)
          CALL DMRestoreGlobalVector(da3,vg3,ierr)
       ENDIF
-      IF(fa%comm(0) /= 0)THEN
+      IF (fa%comm(0) /= 0)THEN
          CALL VecPlaceArray(vl1,localarray(il+1+fa%offl(0)),ierr)
          CALL VecPlaceArray(vg1,toarray(it+1+offt(0)),ierr)
          CALL DMGlobalToLocalBegin(da1,vg1,INSERT_VALUES,vl1,ierr)
@@ -576,12 +576,12 @@
       ALLOCATE(indices(0:nlocal-1))
       CALL VecGetArray(localvec,localarray,il,ierr)
       k=il
-      IF(diagnose)WRITE(*,'(a,i3,a3,i4,a)')                                     &
+      IF (diagnose)WRITE(*,'(a,i3,a3,i4,a)')                                     &
      &     "nlocal = ", nlocal,", offl = ",fa%offl,", indices = "
       DO i=0,nlocal-1
          k=k+1
          indices(i)= int(localarray(k))
-         IF(diagnose)WRITE(*,'(2i4)')i,indices(i)
+         IF (diagnose)WRITE(*,'(2i4)')i,indices(i)
       ENDDO
       CALL VecRestoreArray(localvec,localarray,il,ierr)
       CALL ISCreateBlock(PETSC_COMM_WORLD,2,nlocal,indices,                     &
@@ -605,15 +605,15 @@
       CALL ISDestroy(is,ierr)
       CALL VecDestroy(globalvec,ierr)
       CALL VecDestroy(localvec,ierr)
-      IF(fa%comm(0) /= 0)THEN
+      IF (fa%comm(0) /= 0)THEN
          CALL DMRestoreLocalVector(da1,vl1,ierr)
          CALL DMDestroy(da1,ierr)
       ENDIF
-      IF(fa%comm(1) /= 0)THEN
+      IF (fa%comm(1) /= 0)THEN
          CALL DMRestoreLocalVector(da2,vl2,ierr)
          CALL DMDestroy(da2,ierr)
       ENDIF
-      IF(fa%comm(2) /= 0)THEN
+      IF (fa%comm(2) /= 0)THEN
          CALL DMRestoreLocalVector(da3,vl3,ierr)
          CALL DMDestroy(da3,ierr)
       ENDIF
@@ -707,7 +707,7 @@
 !     fill arrays.
 !-----------------------------------------------------------------------
       DO j=0,2
-         IF(vn == ln)THEN
+         IF (vn == ln)THEN
             offset=iv+2*fa%offl(j)
             patch(j)%mx=fa%ml(j)-1
             patch(j)%my=fa%nl(j)-1
@@ -750,9 +750,10 @@
 !-----------------------------------------------------------------------
 !     draw it.
 !-----------------------------------------------------------------------
-#if defined(PETSC_HAVE_X)
-      CALL PetscDrawOpenX(PETSC_COMM_WORLD,0,"meshes",PETSC_DECIDE,                  &
+#if defined(PETSC_HAVE_X) || defined(PETSC_HAVE_OPENGL)
+      CALL PetscDrawCreate(PETSC_COMM_WORLD,0,"meshes",PETSC_DECIDE,                  &
      &     PETSC_DECIDE,700,700,draw,ierr)
+      CALL PetscDrawSetFromOptions(draw,ierr)
       CALL PetscDrawSetCoordinates(draw,xmin,ymin,xmax,ymax,ierr)
       CALL PetscDrawZoom(draw,barry_draw_patch,patch,ierr)
 #endif
@@ -799,7 +800,7 @@
 !-----------------------------------------------------------------------
       CALL VecGetArray(g,ga,ig,ierr)
       k=ig+2*fa%offg(2)
-      IF(diagnose)THEN
+      IF (diagnose)THEN
          WRITE(*,'(a)')"region 3"
          WRITE(*,10)
       ENDIF
@@ -809,10 +810,10 @@
             theta=theta0+i*dt
             ga(k+1)=r*COS(theta)
             ga(k+2)=r*SIN(theta)-4*r0
-            IF(diagnose)WRITE(*,20)j,i,r,theta,ga(k+1),ga(k+2)
+            IF (diagnose)WRITE(*,20)j,i,r,theta,ga(k+1),ga(k+2)
             k=k+2
          ENDDO
-         IF(diagnose)WRITE(*,10)
+         IF (diagnose)WRITE(*,10)
       ENDDO
       CALL VecRestoreArray(g,ga,ig,ierr)
 !-----------------------------------------------------------------------
@@ -851,7 +852,7 @@
 !-----------------------------------------------------------------------
       CALL VecGetArray(g,ga,ig,ierr)
       k=ig+2*fa%offg(1)
-      IF(diagnose)THEN
+      IF (diagnose)THEN
          WRITE(*,'(a)')"region 2"
          WRITE(*,10)
       ENDIF
@@ -861,10 +862,10 @@
             theta=theta0+i*dt
             ga(k+1)=r*COS(theta)
             ga(k+2)=r*SIN(theta)
-            IF(diagnose)WRITE(*,20)j,i,r,theta,ga(k+1),ga(k+2)
+            IF (diagnose)WRITE(*,20)j,i,r,theta,ga(k+1),ga(k+2)
             k=k+2
          ENDDO
-         IF(diagnose)WRITE(*,10)
+         IF (diagnose)WRITE(*,10)
       ENDDO
       CALL VecRestoreArray(g,ga,ig,ierr)
 !-----------------------------------------------------------------------
@@ -904,18 +905,18 @@
 !-----------------------------------------------------------------------
       CALL VecGetArray(g,ga,ig,ierr)
       k=ig+2*fa%offg(0)
-      IF(diagnose)THEN
+      IF (diagnose)THEN
          WRITE(*,'(a)')"region 1"
          WRITE(*,10)
       ENDIF
       DO j=y,y+n-1
          r=2*r0+j*dr
          DO i=x,x+m-1
-            IF(i < (fa%p1-fa%p2)/2)THEN
+            IF (i < (fa%p1-fa%p2)/2)THEN
                theta=i*dt3
                ga(k+1)=r*COS(theta)
                ga(k+2)=r*SIN(theta)-4*r0
-            ELSEIF(i > fa%p2 + (fa%p1-fa%p2)/2)then
+            ELSEIF (i > fa%p2 + (fa%p1-fa%p2)/2)then
                theta=pi+i*dt3
                ga(k+1)=r*COS(PETSC_PI+i*dt3)
                ga(k+2)=r*SIN(PETSC_PI+i*dt3)-4*r0
@@ -924,10 +925,10 @@
                ga(k+1)=r*COS(theta)
                ga(k+2)=r*SIN(theta)
             ENDIF
-            IF(diagnose)WRITE(*,20)j,i,r,theta,ga(k+1),ga(k+2)
+            IF (diagnose)WRITE(*,20)j,i,r,theta,ga(k+1),ga(k+2)
             k=k+2
          ENDDO
-         IF(diagnose)WRITE(*,10)
+         IF (diagnose)WRITE(*,10)
       ENDDO
       CALL VecRestoreArray(g,ga,ig,ierr)
 !-----------------------------------------------------------------------

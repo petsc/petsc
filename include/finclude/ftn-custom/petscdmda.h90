@@ -1,10 +1,10 @@
-#if !defined(PETSC_USE_FORTRAN_MODULES) 
+#if !defined(PETSC_USE_FORTRAN_MODULES)
 #include "finclude/ftn-custom/petscdmdef.h90"
 #endif
 #include "finclude/ftn-custom/petscvechide.h90"
 #include "finclude/ftn-custom/petscdmhide.h90"
 
-      Interface 
+      Interface
         Subroutine DMDAGetGlobalIndicesF90(v,n,array,ierr)
           USE_DM_HIDE
           PetscInt, pointer :: array(:)

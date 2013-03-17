@@ -3,13 +3,11 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC	 = iscomp.c iscoloring.c isltog.c isdiff.c isblock.c
+SOURCEC	 = isltog.c pmap.c vsectionis.c
 SOURCEF	 =
 SOURCEH	 =
-OBJSC	 = iscomp.o iscoloring.o isltog.o isdiff.o isblock.o
-OBJSF	 =
 LIBBASE	 = libpetscvec
-DIRS	 = 
+DIRS	 =
 MANSEC	 = IS
 LOCDIR	 = src/vec/is/utils/
 

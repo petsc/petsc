@@ -89,7 +89,7 @@
       start = lbound(ptr,1)
       call F90Array1dGetAddrFortranAddr(ptr(start),address)
       end subroutine
-      
+
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       subroutine F90Array1dDestroyScalar(ptr)
       implicit none
@@ -225,7 +225,7 @@
       start2 = lbound(ptr,2)
       call F90Array2dGetAddrFortranAddr(ptr(start1,start2),address)
       end subroutine
-      
+
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       subroutine F90Array2dDestroyScalar(ptr)
       implicit none
@@ -374,7 +374,7 @@
       call F90Array3dGetAddrFortranAddr(ptr(start1,start2,start3),        &
      &                                  address)
       end subroutine
-      
+
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       subroutine F90Array3dDestroyScalar(ptr)
       implicit none

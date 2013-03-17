@@ -1,13 +1,20 @@
   0 SNES Function norm 0.146402 
   1 SNES Function norm 0.00120796 
-  2 SNES Function norm 8.07644e-08 
+  2 SNES Function norm 8.0764e-08 
   3 SNES Function norm < 1.e-11
 SNES Object: 1 MPI processes
-  type: ls
+  type: newtonls
   maximum iterations=50, maximum function evaluations=10000
   tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
   total number of linear solver iterations=6
   total number of function evaluations=4
+  SNESLineSearch Object:   1 MPI processes
+    type: bt
+      interpolation: cubic
+      alpha=1.000000e-04
+    maxstep=1.000000e+08, minlambda=1.000000e-12
+    tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
+    maximum iterations=40
   KSP Object:   1 MPI processes
     type: fgmres
       GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
@@ -31,6 +38,7 @@ SNES Object: 1 MPI processes
         type: lu
           LU: out-of-place factorization
           tolerance for zero pivot 2.22045e-14
+          using diagonal shift on blocks to prevent zero pivot
           matrix ordering: nd
           factor fill ratio given 5, needed 1.875
             Factored matrix follows:
@@ -51,7 +59,7 @@ SNES Object: 1 MPI processes
     Down solver (pre-smoother) on level 1 -------------------------------
       KSP Object:      (mg_levels_1_)       1 MPI processes
         type: chebyshev
-          Chebyshev: eigenvalue estimates:  min = 0.50041, max = 1.1009
+          Chebyshev: eigenvalue estimates:  min = 0.5, max = 1.1
           Chebyshev: estimated using:  [0 0.5; 0 1.1]
           KSP Object:          (mg_levels_1_est_)           1 MPI processes
             type: gmres
@@ -94,11 +102,4 @@ SNES Object: 1 MPI processes
       total: nonzeros=217, allocated nonzeros=217
       total number of mallocs used during MatSetValues calls =0
         not using I-node routines
-  SNESLineSearch Object:   1 MPI processes
-    type: bt
-      interpolation: cubic
-      alpha=1.000000e-04
-    maxstep=1.000000e+08, minlambda=1.000000e-12
-    tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
-    maximum iterations=40
 Number of SNES iterations = 3

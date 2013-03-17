@@ -30,10 +30,10 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
   options->refinementLimit = 0.0;
 
   ierr = PetscOptionsBegin(comm, "", "Options for mesh test", "Mesh");CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-debug", "The debugging level",            "operator1.cxx", options->debug, &options->debug, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-dim",   "The topological mesh dimension", "operator1.cxx", options->dim, &options->dim,   PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-interpolate", "Construct missing elements of the mesh", "operator1.cxx", options->interpolate, &options->interpolate, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-refinement_limit", "The largest allowable cell volume", "operator1.cxx", options->refinementLimit, &options->refinementLimit, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-debug", "The debugging level",            "operator1.cxx", options->debug, &options->debug, NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-dim",   "The topological mesh dimension", "operator1.cxx", options->dim, &options->dim,   NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-interpolate", "Construct missing elements of the mesh", "operator1.cxx", options->interpolate, &options->interpolate, NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-refinement_limit", "The largest allowable cell volume", "operator1.cxx", options->refinementLimit, &options->refinementLimit, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
 
   ierr = PetscLogEventRegister("Assembly", MAT_CLASSID,&options->assemblyEvent);CHKERRQ(ierr);
@@ -90,7 +90,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, Obj<ALE::Mesh>& m, Options *options)
 
   PetscFunctionBegin;
 
-  ierr = PetscOptionsHasName(PETSC_NULL, "-mesh_view", &view);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL, "-mesh_view", &view);CHKERRQ(ierr);
   if (options->dim == 2) {
     double lower[2] = {0.0, 0.0};
     double upper[2] = {1.0, 1.0};
@@ -118,7 +118,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, Obj<ALE::Mesh>& m, Options *options)
     if (view) {newMesh->view("Parallel Mesh");}
     m = newMesh;
   }
-  ierr = PetscOptionsHasName(PETSC_NULL, "-mesh_view_vtk", &view);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL, "-mesh_view_vtk", &view);CHKERRQ(ierr);
   if (view) {ierr = ViewMesh(m, "mesh.vtk");CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
@@ -134,11 +134,11 @@ PetscErrorCode CreateProblem(const Obj<ALE::Mesh>& m, Options *options)
   ierr = MeshCreate(m->comm(), &mesh);CHKERRQ(ierr);
   ierr = MeshSetMesh(mesh, m);CHKERRQ(ierr);
   if (options->dim == 1) {
-    ierr = CreateProblem_gen_0((DM) mesh, "u", 0, PETSC_NULL, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
+    ierr = CreateProblem_gen_0((DM) mesh, "u", 0, NULL, NULL, NULL);CHKERRQ(ierr);
   } else if (options->dim == 2) {
-    ierr = CreateProblem_gen_1((DM) mesh, "u", 0, PETSC_NULL, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
+    ierr = CreateProblem_gen_1((DM) mesh, "u", 0, NULL, NULL, NULL);CHKERRQ(ierr);
   } else if (options->dim == 3) {
-    ierr = CreateProblem_gen_2((DM) mesh, "u", 0, PETSC_NULL, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
+    ierr = CreateProblem_gen_2((DM) mesh, "u", 0, NULL, NULL, NULL);CHKERRQ(ierr);
   } else {
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP, "Dimension not supported: %d", options->dim);
   }
@@ -347,7 +347,7 @@ PetscErrorCode NoAssemblyTest(const Obj<ALE::Mesh>& m, Options *options)
   t->copyBC(s);
   s->set(1.0);
   ierr = AssembleMatrix_None(m, s, t, options);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL, "-vec_view", &view);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL, "-vec_view", &view);CHKERRQ(ierr);
   if (view) {t->view("");}
   ierr = PetscLogStagePop();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -471,7 +471,7 @@ PetscErrorCode StoredAssemblyTest(const Obj<ALE::Mesh>& m, Options *options)
   s->set(1.0);
   ierr = AssembleMatrix_Stored(m, s, o, options);CHKERRQ(ierr);
   ierr = ApplyMatrix_Stored(m, o, s, t, options);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL, "-vec_view", &view);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL, "-vec_view", &view);CHKERRQ(ierr);
   if (view) {t->view("");}
   ierr = PetscLogStagePop();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -614,7 +614,7 @@ PetscErrorCode PartialAssemblyTest(const Obj<ALE::Mesh>& m, Options *options)
   s->set(1.0);
   ierr = AssembleMatrix_Partial(m, s, o, options);CHKERRQ(ierr);
   ierr = ApplyMatrix_Partial(m, o, s, t, options);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL, "-vec_view", &view);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL, "-vec_view", &view);CHKERRQ(ierr);
   if (view) {t->view("");}
   ierr = PetscLogStagePop();CHKERRQ(ierr);
   PetscFunctionReturn(0);

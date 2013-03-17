@@ -1,14 +1,12 @@
 
-ALL: lib 
+ALL: lib
 
 CFLAGS    =
 FFLAGS    =
 SOURCEC   = tcqmr.c
 SOURCEF   =
 SOURCEH   = tcqmrimpl.h
-OBJSC     = tcqmr.o
-OBJSF     = 
-EXAMPLESC = 
+EXAMPLESC =
 LIBBASE   = libpetscksp
 LOCDIR    = src/ksp/ksp/impls/tcqmr/
 MANSEC   = KSP

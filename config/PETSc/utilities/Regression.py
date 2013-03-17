@@ -13,7 +13,7 @@ class Configure(config.base.Configure):
 
   def __str__(self):
     return ''
-    
+
   def setupHelp(self, help):
     import nargs
     return
@@ -22,11 +22,11 @@ class Configure(config.base.Configure):
     config.base.Configure.setupDependencies(self, framework)
     self.arch          = framework.require('PETSc.utilities.arch', self)
     self.scalartypes   = framework.require('PETSc.utilities.scalarTypes', self)
-    self.bmake         = framework.require('PETSc.utilities.bmakeDir', self)    
+    self.bmake         = framework.require('PETSc.utilities.bmakeDir', self)
     self.datafilespath = framework.require('PETSc.utilities.dataFilesPath', self)
     self.compilers     = framework.require('config.compilers', self)
     self.mpi           = framework.require('config.packages.MPI', self)
-    self.x             = framework.require('PETSc.packages.X', self)        
+    self.x             = framework.require('PETSc.packages.X', self)
     return
 
   def configureRegression(self):
@@ -65,12 +65,12 @@ class Configure(config.base.Configure):
       # Note: do these tests only for non-complex builds
       if self.scalartypes.scalartype.lower() != 'complex':
         for i in self.framework.packages:
-          if not i.name.upper() in ['SOWING','C2HTML','BLASLAPACK','MPI','SCALAPACK','BLACS','PTHREAD','CUDA','THRUST','VALGRIND','NUMDIFF']:
+          if not i.name.upper() in ['SOWING','C2HTML','BLASLAPACK','MPI','SCALAPACK','PTHREAD','CUDA','THRUST','VALGRIND','NUMDIFF']:
             ejobs.append(i.name.upper())
 
     self.addMakeMacro('TEST_RUNS',' '.join(jobs)+' '+' '.join(ejobs)+' '+' '.join(rjobs))
     return
-  
+
 
   def configure(self):
     self.executeTest(self.configureRegression)

@@ -10,23 +10,23 @@ static char help[] = "Tests DMComposite routines.\n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
-  PetscInt       nredundant1 = 5,nredundant2 = 2,i;
+  PetscErrorCode         ierr;
+  PetscInt               nredundant1 = 5,nredundant2 = 2,i;
   ISLocalToGlobalMapping *ltog;
-  PetscMPIInt    rank,size;
-  DM             packer;
-  Vec            global,local1,local2,redundant1,redundant2;
-  PF             pf;
-  DM             da1,da2,dmred1,dmred2;
-  PetscScalar    *redundant1a,*redundant2a;
-  PetscViewer    sviewer;
-  PetscBool      gather_add = PETSC_FALSE;
+  PetscMPIInt            rank,size;
+  DM                     packer;
+  Vec                    global,local1,local2,redundant1,redundant2;
+  PF                     pf;
+  DM                     da1,da2,dmred1,dmred2;
+  PetscScalar            *redundant1a,*redundant2a;
+  PetscViewer            sviewer;
+  PetscBool              gather_add = PETSC_FALSE;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
 
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-gather_add",&gather_add,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-gather_add",&gather_add,NULL);CHKERRQ(ierr);
 
   ierr = DMCompositeCreate(PETSC_COMM_WORLD,&packer);CHKERRQ(ierr);
 
@@ -34,7 +34,7 @@ int main(int argc,char **argv)
   ierr = DMCreateLocalVector(dmred1,&redundant1);CHKERRQ(ierr);
   ierr = DMCompositeAddDM(packer,dmred1);CHKERRQ(ierr);
 
-  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,8,1,1,PETSC_NULL,&da1);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,8,1,1,NULL,&da1);CHKERRQ(ierr);
   ierr = DMCreateLocalVector(da1,&local1);CHKERRQ(ierr);
   ierr = DMCompositeAddDM(packer,da1);CHKERRQ(ierr);
 
@@ -42,14 +42,14 @@ int main(int argc,char **argv)
   ierr = DMCreateLocalVector(dmred2,&redundant2);CHKERRQ(ierr);
   ierr = DMCompositeAddDM(packer,dmred2);CHKERRQ(ierr);
 
-  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,6,1,1,PETSC_NULL,&da2);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,6,1,1,NULL,&da2);CHKERRQ(ierr);
   ierr = DMCreateLocalVector(da2,&local2);CHKERRQ(ierr);
   ierr = DMCompositeAddDM(packer,da2);CHKERRQ(ierr);
 
   ierr = DMCreateGlobalVector(packer,&global);CHKERRQ(ierr);
   ierr = PFCreate(PETSC_COMM_WORLD,1,1,&pf);CHKERRQ(ierr);
-  ierr = PFSetType(pf,PFIDENTITY,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PFApplyVec(pf,PETSC_NULL,global);CHKERRQ(ierr);
+  ierr = PFSetType(pf,PFIDENTITY,NULL);CHKERRQ(ierr);
+  ierr = PFApplyVec(pf,NULL,global);CHKERRQ(ierr);
   ierr = PFDestroy(&pf);CHKERRQ(ierr);
   ierr = VecView(global,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
@@ -82,7 +82,7 @@ int main(int argc,char **argv)
   ierr = VecRestoreArray(redundant1,&redundant1a);CHKERRQ(ierr);
   ierr = VecRestoreArray(redundant2,&redundant2a);CHKERRQ(ierr);
 
-  ierr = DMCompositeGather(packer,global,gather_add?ADD_VALUES:INSERT_VALUES,redundant1,local1,redundant2,local2);CHKERRQ(ierr);
+  ierr = DMCompositeGather(packer,global,gather_add ? ADD_VALUES : INSERT_VALUES,redundant1,local1,redundant2,local2);CHKERRQ(ierr);
   ierr = VecView(global,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   /* get the global numbering for each subvector element */
@@ -113,4 +113,4 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return 0;
 }
- 
+

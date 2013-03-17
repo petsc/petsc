@@ -3,11 +3,9 @@ ALL: lib
 
 CFLAGS   = ${PNETCDF_INCLUDE}
 FFLAGS   =
-SOURCEC  = pbvec.c pdvec.c pvec2.c pmap.c vmpicr.c commonmpvec.c
+SOURCEC  = pbvec.c pdvec.c pvec2.c vmpicr.c commonmpvec.c
 SOURCEF  =
-SOURCEH  = pvecimpl.h 
-OBJSC    = pbvec.o pdvec.o pvec2.o pmap.o vmpicr.o commonmpvec.o
-OBJSF    =
+SOURCEH  = pvecimpl.h
 LIBBASE  = libpetscvec
 MANSEC   = Vec
 DIRS     = mpicusp

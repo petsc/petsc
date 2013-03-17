@@ -25,9 +25,9 @@
 #include <finclude/petscsys.h>
 #include <finclude/petscvec.h>
 
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                   Macro definitions
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !
 !  Macros to make clearer the process of setting values in vectors and
 !  getting values from vectors.
@@ -41,7 +41,7 @@
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                 Beginning of program
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
        PetscScalar xwork(6)
        PetscScalar xx_v(1),yy_v(1)
@@ -122,4 +122,4 @@
        call VecDestroy(y,ierr)
        call PetscFinalize(ierr)
        end
- 
+

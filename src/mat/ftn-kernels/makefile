@@ -10,11 +10,9 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = 
+SOURCEC  =
 SOURCEF  = sgemv.F
-SOURCEH  = 
-OBJSC    = 
-OBJSF    = sgemv.o
+SOURCEH  =
 LIBBASE  = libpetscmat
 MANSEC   = Sys
 LOCDIR   = src/mat/ftn-kernels/

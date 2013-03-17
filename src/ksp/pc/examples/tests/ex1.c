@@ -12,19 +12,19 @@ int main(int argc,char **args)
   PetscInt       n = 5;
   Mat            mat;
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
   ierr = PCCreate(PETSC_COMM_WORLD,&pc);CHKERRQ(ierr);
   ierr = PCSetType(pc,PCNONE);CHKERRQ(ierr);
 
   /* Vector and matrix must be set before calling PCSetUp */
-  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,n,n,3,PETSC_NULL,&mat);CHKERRQ(ierr);
+  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,n,n,3,NULL,&mat);CHKERRQ(ierr);
   ierr = PCSetOperators(pc,mat,mat,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = PCSetUp(pc);CHKERRQ(ierr);
   ierr = MatDestroy(&mat);CHKERRQ(ierr);
-  ierr = PCDestroy(&pc);	CHKERRQ(ierr);
+  ierr = PCDestroy(&pc);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }
-    
+
 
 

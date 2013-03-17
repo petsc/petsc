@@ -26,6 +26,7 @@ class Configure(PETSc.package.NewPackage):
 
   def Install(self):
     import os
+    import shlex
 
     if not self.cmake.found:
       raise RuntimeError('CMake > 2.5 is needed to build METIS')
@@ -36,7 +37,9 @@ class Configure(PETSc.package.NewPackage):
 
     self.framework.pushLanguage('C')
     args.append('-DCMAKE_C_COMPILER="'+self.framework.getCompiler()+'"')
-
+    args.append('-DCMAKE_AR='+self.setCompilers.AR)
+    ranlib = shlex.split(self.setCompilers.RANLIB)[0]
+    args.append('-DCMAKE_RANLIB='+ranlib)
     cflags = self.setCompilers.getCompilerFlags()
     args.append('-DCMAKE_C_FLAGS:STRING="'+cflags+'"')
     self.framework.popLanguage()

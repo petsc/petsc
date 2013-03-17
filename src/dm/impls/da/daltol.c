@@ -3,9 +3,9 @@
   Code for manipulating distributed regular arrays in parallel.
 */
 
-#include <petsc-private/daimpl.h>    /*I   "petscdmda.h"   I*/
+#include <petsc-private/dmdaimpl.h>    /*I   "petscdmda.h"   I*/
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMDALocalToLocalCreate"
 /*
    DMDALocalToLocalCreate - Creates the local to local scatter
@@ -26,9 +26,9 @@ PetscErrorCode  DMDALocalToLocalCreate(DM da)
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
 
   if (dd->ltol) PetscFunctionReturn(0);
-  /* 
-     We simply remap the values in the from part of 
-     global to local to read from an array with the ghost values 
+  /*
+     We simply remap the values in the from part of
+     global to local to read from an array with the ghost values
      rather then from the plain array.
   */
   ierr = VecScatterCopy(dd->gtol,&dd->ltol);CHKERRQ(ierr);
@@ -36,40 +36,38 @@ PetscErrorCode  DMDALocalToLocalCreate(DM da)
   if (dd->dim == 1) {
     left = dd->xs - dd->Xs;
     ierr = PetscMalloc((dd->xe-dd->xs)*sizeof(PetscInt),&idx);CHKERRQ(ierr);
-    for (j=0; j<dd->xe-dd->xs; j++) {
-      idx[j] = left + j;
-    }  
+    for (j=0; j<dd->xe-dd->xs; j++) idx[j] = left + j;
   } else if (dd->dim == 2) {
     left  = dd->xs - dd->Xs; down  = dd->ys - dd->Ys; up    = down + dd->ye-dd->ys;
-    ierr = PetscMalloc((dd->xe-dd->xs)*(up - down)*sizeof(PetscInt),&idx);CHKERRQ(ierr);
+    ierr  = PetscMalloc((dd->xe-dd->xs)*(up - down)*sizeof(PetscInt),&idx);CHKERRQ(ierr);
     count = 0;
     for (i=down; i<up; i++) {
       for (j=0; j<dd->xe-dd->xs; j++) {
-	idx[count++] = left + i*(dd->Xe-dd->Xs) + j;
+        idx[count++] = left + i*(dd->Xe-dd->Xs) + j;
       }
     }
   } else if (dd->dim == 3) {
-    left   = dd->xs - dd->Xs; 
-    bottom = dd->ys - dd->Ys; top = bottom + dd->ye-dd->ys ;
+    left   = dd->xs - dd->Xs;
+    bottom = dd->ys - dd->Ys; top = bottom + dd->ye-dd->ys;
     down   = dd->zs - dd->Zs; up  = down + dd->ze-dd->zs;
     count  = (dd->xe-dd->xs)*(top-bottom)*(up-down);
-    ierr = PetscMalloc(count*sizeof(PetscInt),&idx);CHKERRQ(ierr);
+    ierr   = PetscMalloc(count*sizeof(PetscInt),&idx);CHKERRQ(ierr);
     count  = 0;
     for (i=down; i<up; i++) {
       for (j=bottom; j<top; j++) {
-	for (k=0; k<dd->xe-dd->xs; k++) {
-	  idx[count++] = (left+j*(dd->Xe-dd->Xs))+i*(dd->Xe-dd->Xs)*(dd->Ye-dd->Ys) + k;
-	}
+        for (k=0; k<dd->xe-dd->xs; k++) {
+          idx[count++] = (left+j*(dd->Xe-dd->Xs))+i*(dd->Xe-dd->Xs)*(dd->Ye-dd->Ys) + k;
+        }
       }
     }
-  } else SETERRQ1(((PetscObject)da)->comm,PETSC_ERR_ARG_CORRUPT,"DMDA has invalid dimension %D",dd->dim);
+  } else SETERRQ1(PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_CORRUPT,"DMDA has invalid dimension %D",dd->dim);
 
-  ierr = VecScatterRemap(dd->ltol,idx,PETSC_NULL);CHKERRQ(ierr); 
+  ierr = VecScatterRemap(dd->ltol,idx,NULL);CHKERRQ(ierr);
   ierr = PetscFree(idx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMDALocalToLocalBegin"
 /*@
    DMDALocalToLocalBegin - Maps from a local vector (including ghost points
@@ -91,7 +89,7 @@ PetscErrorCode  DMDALocalToLocalCreate(DM da)
    Notes:
    The local vectors used here need not be the same as those
    obtained from DMCreateLocalVector(), BUT they
-   must have the same parallel data layout; they could, for example, be 
+   must have the same parallel data layout; they could, for example, be
    obtained with VecDuplicate() from the DMDA originating vectors.
 
 .keywords: distributed array, local-to-local, begin
@@ -112,12 +110,12 @@ PetscErrorCode  DMDALocalToLocalBegin(DM da,Vec g,InsertMode mode,Vec l)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMDALocalToLocalEnd"
 /*@
    DMDALocalToLocalEnd - Maps from a local vector (including ghost points
    that contain irrelevant values) to another local vector where the ghost
-   points in the second are set correctly.  Must be preceeded by 
+   points in the second are set correctly.  Must be preceeded by
    DMDALocalToLocalBegin().
 
    Neighbor-wise Collective on DMDA and Vec
@@ -135,7 +133,7 @@ PetscErrorCode  DMDALocalToLocalBegin(DM da,Vec g,InsertMode mode,Vec l)
    Note:
    The local vectors used here need not be the same as those
    obtained from DMCreateLocalVector(), BUT they
-   must have the same parallel data layout; they could, for example, be 
+   must have the same parallel data layout; they could, for example, be
    obtained with VecDuplicate() from the DMDA originating vectors.
 
 .keywords: distributed array, local-to-local, end

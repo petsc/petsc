@@ -9,15 +9,14 @@
 #include <petsc-private/kspimpl.h>        /*I "petscksp.h" I*/
 
 typedef struct {
-  Vec  guess;  /* if using right preconditioning with nonzero initial guess must keep that around to "fix" solution */
+  Vec guess;   /* if using right preconditioning with nonzero initial guess must keep that around to "fix" solution */
 } KSP_BCGS;
 
-extern PetscErrorCode KSPSetFromOptions_BCGS(KSP);
-extern PetscErrorCode KSPView_BCGS(KSP,PetscViewer);
-extern PetscErrorCode KSPSetUp_BCGS(KSP);
-extern PetscErrorCode KSPSolve_BCGS(KSP);
-extern PetscErrorCode KSPBuildSolution_BCGS(KSP,Vec,Vec*);
-extern PetscErrorCode KSPReset_BCGS(KSP);
-extern PetscErrorCode KSPDestroy_BCGS(KSP);
+PETSC_INTERN PetscErrorCode KSPSetFromOptions_BCGS(KSP);
+PETSC_INTERN PetscErrorCode KSPSetUp_BCGS(KSP);
+PETSC_INTERN PetscErrorCode KSPSolve_BCGS(KSP);
+PETSC_INTERN PetscErrorCode KSPBuildSolution_BCGS(KSP,Vec,Vec*);
+PETSC_INTERN PetscErrorCode KSPReset_BCGS(KSP);
+PETSC_INTERN PetscErrorCode KSPDestroy_BCGS(KSP);
 
 #endif

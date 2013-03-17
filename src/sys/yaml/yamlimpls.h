@@ -34,8 +34,7 @@ typedef struct options_list_s {
  *
  * returns 1 if the function succeeded, 0 on error.
  */
-int
-options_list_populate(char *filename, options_list_t *options_list);
+int options_list_populate(char *filename, options_list_t *options_list);
 
 /**
  * Reads a YAML file from a string and produces an options_list.
@@ -43,21 +42,19 @@ options_list_populate(char *filename, options_list_t *options_list);
  * The application is responsible for freeing any buffers assiciated with the produced
  * options_list object using the options_list_delete function.
  *
- * @param[in]   str            A string containing the YAML file. 
+ * @param[in]   str            A string containing the YAML file.
  * @param[out]  options_list   An empty options_list object.
  *
  * returns 1 if the function succeeded, 0 on error.
  */
-int
-options_list_populate_yaml(char *str, options_list_t *options_list);
+int options_list_populate_yaml(char *str, options_list_t *options_list);
 
 /**
  * Destroy an options_list
  *
  * @param[in,out]  options_list  An options_list object.
  */
-void
-options_list_delete(options_list_t *options_list);
+void options_list_delete(options_list_t *options_list);
 
 /**
  * Reads data from a file and copies it to a string.
@@ -69,8 +66,7 @@ options_list_delete(options_list_t *options_list);
  *
  * returns 1 on success, 0 on error.
  */
-PetscErrorCode
-file_to_string(char *filename, char **str);
+PetscErrorCode file_to_string(char *filename, char **str);
 
 /* The grouping_stack_group structure */
 typedef struct grouping_stack_group_s {
@@ -114,8 +110,7 @@ typedef struct alias_list_s {
  *
  * returns 1 if the function succeeded, 0 on error.
  */
-int
-yaml_event_initialize(yaml_event_t *out, yaml_event_t *in);
+int yaml_event_initialize(yaml_event_t *out, yaml_event_t *in);
 
 /**
  * Populates a list of alias information from parsing a yaml file.
@@ -129,13 +124,11 @@ yaml_event_initialize(yaml_event_t *out, yaml_event_t *in);
  *
  * returns 1 on success.
  */
-int
-alias_list_populate_yaml(char *str, alias_list_t *list);
+int alias_list_populate_yaml(char *str, alias_list_t *list);
 
 /**
  * Destroy an alias_list_t object.
  *
  * @param[in,out]   list   An alias_list_t object.
  */
-void
-alias_list_delete(alias_list_t *list);
+void alias_list_delete(alias_list_t *list);

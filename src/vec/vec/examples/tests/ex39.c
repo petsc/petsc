@@ -22,7 +22,7 @@ int main(int argc,char **argv)
   const PetscScalar *x,*y;
   PetscScalar       *f;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
+  PetscInitialize(&argc,&argv,(char*)0,help);
 
   /* create vectors X,Y and F and set values in it*/
   ierr = VecCreate(PETSC_COMM_SELF,&X);CHKERRQ(ierr);
@@ -31,11 +31,11 @@ int main(int argc,char **argv)
   ierr = VecDuplicate(X,&Y);CHKERRQ(ierr);
   ierr = VecDuplicate(X,&F);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)F,"F");CHKERRQ(ierr);
-  for(i=0;i < N;i++) {
+  for (i=0; i < N; i++) {
     value = i;
-    ierr = VecSetValues(X,1,&i,&value,INSERT_VALUES);CHKERRQ(ierr);
+    ierr  = VecSetValues(X,1,&i,&value,INSERT_VALUES);CHKERRQ(ierr);
     value = 100 + i;
-    ierr = VecSetValues(Y,1,&i,&value,INSERT_VALUES);CHKERRQ(ierr);
+    ierr  = VecSetValues(Y,1,&i,&value,INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = VecSet(F,zero);CHKERRQ(ierr);
 
@@ -60,7 +60,7 @@ int main(int argc,char **argv)
   ierr = VecPlaceArray(Y2,y+N/2);CHKERRQ(ierr);
   ierr = VecPlaceArray(F1,f);CHKERRQ(ierr);
   ierr = VecPlaceArray(F2,f+N/2);CHKERRQ(ierr);
- 
+
   /* Do subvector addition */
   ierr = VecWAXPY(F1,1.0,X1,Y1);CHKERRQ(ierr);
   ierr = VecWAXPY(F2,1.0,X2,Y2);CHKERRQ(ierr);
@@ -94,4 +94,4 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();
   return 0;
 }
- 
+

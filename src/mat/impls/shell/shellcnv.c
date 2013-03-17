@@ -1,10 +1,10 @@
 
 #include <petsc-private/matimpl.h>        /*I "petscmat.h" I*/
-#include <petsc-private/vecimpl.h>  
-  
-#undef __FUNCT__  
+#include <petsc-private/vecimpl.h>
+
+#undef __FUNCT__
 #define __FUNCT__ "MatConvert_Shell"
-PetscErrorCode MatConvert_Shell(Mat oldmat, const MatType newtype,MatReuse reuse,Mat *newmat)
+PetscErrorCode MatConvert_Shell(Mat oldmat, MatType newtype,MatReuse reuse,Mat *newmat)
 {
   Mat            mat;
   Vec            in,out;
@@ -14,7 +14,7 @@ PetscErrorCode MatConvert_Shell(Mat oldmat, const MatType newtype,MatReuse reuse
   PetscScalar    *array,zero = 0.0,one = 1.0;
 
   PetscFunctionBegin;
-  comm = ((PetscObject)oldmat)->comm;
+  ierr = PetscObjectGetComm((PetscObject)oldmat,&comm);CHKERRQ(ierr);
 
   ierr = MatGetOwnershipRange(oldmat,&start,&end);CHKERRQ(ierr);
   ierr = VecCreateMPI(comm,end-start,PETSC_DECIDE,&in);CHKERRQ(ierr);
@@ -22,7 +22,7 @@ PetscErrorCode MatConvert_Shell(Mat oldmat, const MatType newtype,MatReuse reuse
   ierr = VecGetSize(in,&M);CHKERRQ(ierr);
   ierr = VecGetLocalSize(in,&m);CHKERRQ(ierr);
   ierr = PetscMalloc((m+1)*sizeof(PetscInt),&rows);CHKERRQ(ierr);
-  for (i=0; i<m; i++) {rows[i] = start + i;}
+  for (i=0; i<m; i++) rows[i] = start + i;
 
   ierr = MatCreate(comm,&mat);CHKERRQ(ierr);
   ierr = MatSetSizes(mat,m,M,M,M);CHKERRQ(ierr);
@@ -37,9 +37,9 @@ PetscErrorCode MatConvert_Shell(Mat oldmat, const MatType newtype,MatReuse reuse
     ierr = VecAssemblyEnd(in);CHKERRQ(ierr);
 
     ierr = MatMult(oldmat,in,out);CHKERRQ(ierr);
-    
+
     ierr = VecGetArray(out,&array);CHKERRQ(ierr);
-    ierr = MatSetValues(mat,m,rows,1,&i,array,INSERT_VALUES);CHKERRQ(ierr); 
+    ierr = MatSetValues(mat,m,rows,1,&i,array,INSERT_VALUES);CHKERRQ(ierr);
     ierr = VecRestoreArray(out,&array);CHKERRQ(ierr);
 
   }

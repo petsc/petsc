@@ -23,7 +23,6 @@ def processexample(example):
   for line in lines:
     if '/*F' in line:
       inp = 1
-      g.write(line)
       g.write('</pre>')
       g.write('''<script type="text/x-mathjax-config">
                    MathJax.Hub.Config({
@@ -36,7 +35,6 @@ def processexample(example):
     elif 'F*/' in line:
       inp = 0
       g.write('<pre width="80">')
-      g.write(line)
     elif inp:
       s = line.find('"#B22222">')
       g.write(line[s+10:-8]+'<BR>\n\n')
@@ -51,6 +49,6 @@ def main():
 #
 # The classes in this file can also be used in other python-programs by using 'import'
 #
-if __name__ ==  '__main__': 
+if __name__ ==  '__main__':
     main()
 

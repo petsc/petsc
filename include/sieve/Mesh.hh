@@ -1699,6 +1699,22 @@ namespace ALE {
     };
     int getMaxDof() const {return this->_maxDof;};
     void setMaxDof(const int maxDof) {this->_maxDof = maxDof;};
+    void copy(const Obj<IMesh>& m) {
+      this->setSieve(m->getSieve());
+      this->_calculatedOverlap = m->_calculatedOverlap;
+      this->_sendOverlap       = m->_sendOverlap;
+      this->_recvOverlap       = m->_recvOverlap;
+      this->_renumbering       = m->_renumbering;
+      const labels_type& labels = m->getLabels();
+
+      for(typename labels_type::const_iterator l_iter = labels.begin(); l_iter != labels.end(); ++l_iter) {
+        this->setLabel(l_iter->first, l_iter->second);
+      }
+      this->_maxHeight = m->height();
+      this->_maxDepth  = m->depth();
+      this->setRealSection("coordinates", m->getRealSection("coordinates"));
+      this->setArrowSection("orientation", m->getArrowSection("orientation"));
+    };
   public: // Sizes
     template<typename Section>
     int size(const Obj<Section>& section, const point_type& p) {
@@ -2063,7 +2079,7 @@ namespace ALE {
           }
           detJ = J[0]*J[3] - J[1]*J[2];
         }
-        PetscLogFlopsNoError(8.0 + 3.0);
+        PetscLogFlops(8.0 + 3.0);
       }
       if (invJ) {
         invDet  = 1.0/detJ;
@@ -2071,7 +2087,7 @@ namespace ALE {
         invJ[1] = -invDet*J[1];
         invJ[2] = -invDet*J[2];
         invJ[3] =  invDet*J[0];
-        PetscLogFlopsNoError(5.0);
+        PetscLogFlops(5.0);
       }
     };
     void computeRectangleGeometry(const Obj<real_section_type>& coordinates, const point_type& e, typename real_section_type::value_type v0[], typename real_section_type::value_type J[], typename real_section_type::value_type invJ[], typename real_section_type::value_type& detJ) {
@@ -2091,7 +2107,7 @@ namespace ALE {
           }
         }
         detJ = J[0]*J[3] - J[1]*J[2];
-        PetscLogFlopsNoError(8.0 + 3.0);
+        PetscLogFlops(8.0 + 3.0);
       }
       if (invJ) {
         invDet  = 1.0/detJ;
@@ -2099,7 +2115,7 @@ namespace ALE {
         invJ[1] = -invDet*J[1];
         invJ[2] = -invDet*J[2];
         invJ[3] =  invDet*J[0];
-        PetscLogFlopsNoError(5.0);
+        PetscLogFlops(5.0);
       }
       detJ *= 2.0;
     };
@@ -2123,7 +2139,7 @@ namespace ALE {
         detJ = -(J[0*3+0]*(J[1*3+1]*J[2*3+2] - J[1*3+2]*J[2*3+1]) +
                  J[0*3+1]*(J[1*3+2]*J[2*3+0] - J[1*3+0]*J[2*3+2]) +
                  J[0*3+2]*(J[1*3+0]*J[2*3+1] - J[1*3+1]*J[2*3+0]));
-        PetscLogFlopsNoError(18.0 + 12.0);
+        PetscLogFlops(18.0 + 12.0);
       }
       if (invJ) {
         invDet  = -1.0/detJ;
@@ -2136,7 +2152,7 @@ namespace ALE {
         invJ[2*3+0] = invDet*(J[1*3+0]*J[2*3+1] - J[1*3+1]*J[2*3+0]);
         invJ[2*3+1] = invDet*(J[0*3+1]*J[2*3+0] - J[0*3+0]*J[2*3+1]);
         invJ[2*3+2] = invDet*(J[0*3+0]*J[1*3+1] - J[0*3+1]*J[1*3+0]);
-        PetscLogFlopsNoError(37.0);
+        PetscLogFlops(37.0);
       }
     };
     void computeHexahedronGeometry(const Obj<real_section_type>& coordinates, const point_type& e, typename real_section_type::value_type v0[], typename real_section_type::value_type J[], typename real_section_type::value_type invJ[], typename real_section_type::value_type& detJ) {
@@ -2158,7 +2174,7 @@ namespace ALE {
         detJ = (J[0*3+0]*(J[1*3+1]*J[2*3+2] - J[1*3+2]*J[2*3+1]) +
                 J[0*3+1]*(J[1*3+2]*J[2*3+0] - J[1*3+0]*J[2*3+2]) +
                 J[0*3+2]*(J[1*3+0]*J[2*3+1] - J[1*3+1]*J[2*3+0]));
-        PetscLogFlopsNoError(18.0 + 12.0);
+        PetscLogFlops(18.0 + 12.0);
       }
       if (invJ) {
         invDet  = -1.0/detJ;
@@ -2171,7 +2187,7 @@ namespace ALE {
         invJ[2*3+0] = invDet*(J[1*3+0]*J[2*3+1] - J[1*3+1]*J[2*3+0]);
         invJ[2*3+1] = invDet*(J[0*3+1]*J[2*3+0] - J[0*3+0]*J[2*3+1]);
         invJ[2*3+2] = invDet*(J[0*3+0]*J[1*3+1] - J[0*3+1]*J[1*3+0]);
-        PetscLogFlopsNoError(37.0);
+        PetscLogFlops(37.0);
       }
       detJ *= 8.0;
     };
@@ -2230,7 +2246,7 @@ namespace ALE {
           }
           detJ = J[0]*J[3] - J[1]*J[2];
         }
-        PetscLogFlopsNoError(8.0 + 3.0);
+        PetscLogFlops(8.0 + 3.0);
       }
       if (invJ) {
         invDet  = 1.0/detJ;
@@ -2238,7 +2254,7 @@ namespace ALE {
         invJ[1] = -invDet*J[1];
         invJ[2] = -invDet*J[2];
         invJ[3] =  invDet*J[0];
-        PetscLogFlopsNoError(5.0);
+        PetscLogFlops(5.0);
       }
     };
     void computeBdElementGeometry(const Obj<real_section_type>& coordinates, const point_type& e, typename real_section_type::value_type v0[], typename real_section_type::value_type J[], typename real_section_type::value_type invJ[], typename real_section_type::value_type& detJ) {
@@ -2608,7 +2624,7 @@ namespace ALE {
           const int                           oSize   = pV.getSize();
 
           if (debug > 1) {std::cout << "  Boundary cell " << *c_iter << std::endl;}
-          this->computeElementGeometry(coordinates, *c_iter, v0, J, PETSC_NULL, detJ);
+          this->computeElementGeometry(coordinates, *c_iter, v0, J, NULL, detJ);
           for(int f = 0; f < numFields; ++f) v[f] = 0;
           for(int cl = 0; cl < oSize; ++cl) {
             const int cDim = s->getConstraintDimension(oPoints[cl]);
@@ -2818,7 +2834,9 @@ namespace ALE {
       this->_maxHeight = m->height();
       this->setLabel("depth", m->getLabel("depth"));
       this->_maxDepth  = m->depth();
-      this->setLabel("marker", m->getLabel("marker"));
+      if (m->hasLabel("marker")) {
+        this->setLabel("marker", m->getLabel("marker"));
+      }
       this->setRealSection("coordinates", m->getRealSection("coordinates"));
       this->setArrowSection("orientation", m->getArrowSection("orientation"));
     };
@@ -2864,7 +2882,7 @@ namespace ALE {
           }
           detJ = J[0]*J[3] - J[1]*J[2];
         }
-        PetscLogFlopsNoError(8.0 + 3.0);
+        PetscLogFlops(8.0 + 3.0);
       }
       if (invJ) {
         invDet  = 1.0/detJ;
@@ -2872,7 +2890,7 @@ namespace ALE {
         invJ[1] = -invDet*J[1];
         invJ[2] = -invDet*J[2];
         invJ[3] =  invDet*J[0];
-        PetscLogFlopsNoError(5.0);
+        PetscLogFlops(5.0);
       }
     };
     void computeQuadrilateralGeometry(const Obj<real_section_type>& coordinates, const point_type& e, double point[], double v0[], double J[], double invJ[], double& detJ) {
@@ -2898,7 +2916,7 @@ namespace ALE {
         J[2] = y_1 + (y_3 - y_1 - y_2)*point[1];
         J[3] = y_1 + (y_3 - y_1 - y_2)*point[0];
         detJ = J[0]*J[3] - J[1]*J[2];
-        PetscLogFlopsNoError(6.0 + 16.0 + 3.0);
+        PetscLogFlops(6.0 + 16.0 + 3.0);
       }
       if (invJ) {
         invDet  = 1.0/detJ;
@@ -2906,7 +2924,7 @@ namespace ALE {
         invJ[1] = -invDet*J[1];
         invJ[2] = -invDet*J[2];
         invJ[3] =  invDet*J[0];
-        PetscLogFlopsNoError(5.0);
+        PetscLogFlops(5.0);
       }
     };
     void computeTetrahedronGeometry(const Obj<real_section_type>& coordinates, const point_type& e, double v0[], double J[], double invJ[], double& detJ) {
@@ -2929,7 +2947,7 @@ namespace ALE {
         detJ = -(J[0*3+0]*(J[1*3+1]*J[2*3+2] - J[1*3+2]*J[2*3+1]) +
                  J[0*3+1]*(J[1*3+2]*J[2*3+0] - J[1*3+0]*J[2*3+2]) +
                  J[0*3+2]*(J[1*3+0]*J[2*3+1] - J[1*3+1]*J[2*3+0]));
-        PetscLogFlopsNoError(18.0 + 12.0);
+        PetscLogFlops(18.0 + 12.0);
       }
       if (invJ) {
         invDet  = -1.0/detJ;
@@ -2942,7 +2960,7 @@ namespace ALE {
         invJ[2*3+0] = invDet*(J[1*3+0]*J[2*3+1] - J[1*3+1]*J[2*3+0]);
         invJ[2*3+1] = invDet*(J[0*3+1]*J[2*3+0] - J[0*3+0]*J[2*3+1]);
         invJ[2*3+2] = invDet*(J[0*3+0]*J[1*3+1] - J[0*3+1]*J[1*3+0]);
-        PetscLogFlopsNoError(37.0);
+        PetscLogFlops(37.0);
       }
     };
     void computeHexahedralGeometry(const Obj<real_section_type>& coordinates, const point_type& e, double point[], double v0[], double J[], double invJ[], double& detJ) {
@@ -2993,7 +3011,7 @@ namespace ALE {
         detJ = (J[0*3+0]*(J[1*3+1]*J[2*3+2] - J[1*3+2]*J[2*3+1]) +
                 J[0*3+1]*(J[1*3+2]*J[2*3+0] - J[1*3+0]*J[2*3+2]) +
                 J[0*3+2]*(J[1*3+0]*J[2*3+1] - J[1*3+1]*J[2*3+0]));
-        PetscLogFlopsNoError(39.0 + 81.0 + 12.0);
+        PetscLogFlops(39.0 + 81.0 + 12.0);
       }
       if (invJ) {
         invDet  = 1.0/detJ;
@@ -3006,7 +3024,7 @@ namespace ALE {
         invJ[2*3+0] = invDet*(J[1*3+0]*J[2*3+1] - J[1*3+1]*J[2*3+0]);
         invJ[2*3+1] = invDet*(J[0*3+1]*J[2*3+0] - J[0*3+0]*J[2*3+1]);
         invJ[2*3+2] = invDet*(J[0*3+0]*J[1*3+1] - J[0*3+1]*J[1*3+0]);
-        PetscLogFlopsNoError(37.0);
+        PetscLogFlops(37.0);
       }
     };
     void computeElementGeometry(const Obj<real_section_type>& coordinates, const point_type& e, double v0[], double J[], double invJ[], double& detJ) {
@@ -3550,7 +3568,7 @@ namespace ALE {
           const typename coneArray::iterator end     = closure->end();
 
           if (debug > 1) {std::cout << "  Boundary cell " << *c_iter << std::endl;}
-          this->computeElementGeometry(coordinates, *c_iter, v0, J, PETSC_NULL, detJ);
+          this->computeElementGeometry(coordinates, *c_iter, v0, J, NULL, detJ);
           for(int f = 0; f < numFields; ++f) v[f] = 0;
           for(typename coneArray::iterator cl_iter = closure->begin(); cl_iter != end; ++cl_iter) {
             const int cDim = s->getConstraintDimension(*cl_iter);
@@ -4004,14 +4022,14 @@ namespace ALE {
 
         coords[2] = lower[0];
         coords[3] = lower[1];
-        
+
         coords[4] = lower[0];
         coords[5] = notchpercent[1]*lower[1] + (1 - notchpercent[1])*upper[1];
-        
+
         coords[6] = notchpercent[0]*upper[0] + (1 - notchpercent[0])*lower[0];
         coords[7] = notchpercent[1]*lower[1] + (1 - notchpercent[1])*upper[1];
-        
-        
+
+
         coords[8] = notchpercent[0]*upper[0] + (1 - notchpercent[0])*lower[0];
         coords[9] = upper[1];
 
@@ -4341,8 +4359,8 @@ namespace ALE {
       /       \
      /   v12   \
   v6|\   /|\   /|v5
-    | \v8 | v7/ |          z  
-    |  |7 |8 |  |          | 
+    | \v8 | v7/ |          z
+    |  |7 |8 |  |          |
     |  |v13\ |  |  <-v4   / \
     | v9/ 9 \v10|        x   y
  v1 | 5 \   / 6 |v2
@@ -4408,7 +4426,7 @@ namespace ALE {
       coords[13*3+1] = ilower[1];
       coords[13*3+2] = ilower[2];
 
- 
+
       const Obj<typename Mesh::sieve_type> sieve    = new typename Mesh::sieve_type(mesh->comm(), mesh->debug());
       mesh->setSieve(sieve);
       typename Mesh::point_type p[nVertices];
@@ -4421,26 +4439,26 @@ namespace ALE {
       for (int i = 0; i < nFaces; i++) {
         f[i] = typename Mesh::point_type(i);
       }
-      int order = 0; 
+      int order = 0;
      //assemble the larger square sides
       sieve->addArrow(p[0], f[0], order++);
       sieve->addArrow(p[5], f[0], order++);
       sieve->addArrow(p[2], f[0], order++);
       sieve->addArrow(p[4], f[0], order++);
-      mesh->setValue(markers, f[0], 1);      
+      mesh->setValue(markers, f[0], 1);
 
       sieve->addArrow(p[0], f[1], order++);
       sieve->addArrow(p[4], f[1], order++);
       sieve->addArrow(p[1], f[1], order++);
       sieve->addArrow(p[6], f[1], order++);
-      mesh->setValue(markers, f[1], 1);      
+      mesh->setValue(markers, f[1], 1);
 
       sieve->addArrow(p[4], f[2], order++);
       sieve->addArrow(p[1], f[2], order++);
       sieve->addArrow(p[3], f[2], order++);
       sieve->addArrow(p[2], f[2], order++);
       mesh->setValue(markers, f[2], 1);
-     
+
       //assemble the L-shaped sides
 
       sieve->addArrow(p[0], f[3], order++);
@@ -4510,7 +4528,7 @@ namespace ALE {
     #undef __FUNCT__
     #define __FUNCT__ "createSphereBoundary"
     /*
-      //"sphere" out a cube 
+      //"sphere" out a cube
 
     */
 #if 0
@@ -4570,114 +4588,114 @@ namespace ALE {
       //xll
       for (int i = 0; i < refinement; i++) {
         coords[3*(8+0*refinement+i)+0] = -1. + delta*i;
-	coords[3*(8+0*refinement+i)+1] = -1.;
+        coords[3*(8+0*refinement+i)+1] = -1.;
         coords[3*(8+0*refinement+i)+2] = -1.;
       }
       //xlh
       for (int i = 0; i < refinement; i++) {
         coords[3*(8+1*refinement+i)+0] = -1. + delta*i;
-	coords[3*(8+1*refinement+i)+1] = -1.;
+        coords[3*(8+1*refinement+i)+1] = -1.;
         coords[3*(8+1*refinement+i)+2] = 1.;
       }
       //xhh
       for (int i = 0; i < refinement; i++) {
         coords[3*(8+2*refinement+i)+0] = -1. + delta*i;
-	coords[3*(8+2*refinement+i)+1] = 1.;
+        coords[3*(8+2*refinement+i)+1] = 1.;
         coords[3*(8+2*refinement+i)+2] = 1.;
       }
       //xhl
       for (int i = 0; i < refinement; i++) {
         coords[3*(8+3*refinement+i)+0] = -1. + delta*i;
-	coords[3*(8+3*refinement+i)+1] = 1.;
+        coords[3*(8+3*refinement+i)+1] = 1.;
         coords[3*(8+3*refinement+i)+2] = -1.;
       }
       //lxl
       for (int i = 0; i < refinement; i++) {
         coords[3*(8+4*refinement+i)+0] = -1.;
-	coords[3*(8+4*refinement+i)+1] = -1. + delta*i;
+        coords[3*(8+4*refinement+i)+1] = -1. + delta*i;
         coords[3*(8+4*refinement+i)+2] = -1.;
       }
       //lxh
       for (int i = 0; i < refinement; i++) {
         coords[3*(8+5*refinement+i)+0] = -1.;
-	coords[3*(8+5*refinement+i)+1] = -1. + delta*i;
+        coords[3*(8+5*refinement+i)+1] = -1. + delta*i;
         coords[3*(8+5*refinement+i)+2] = 1.;
       }
       //hxh
       for (int i = 0; i < refinement; i++) {
         coords[3*(8+6*refinement+i)+0] = 1.;
-	coords[3*(8+6*refinement+i)+1] = -1. + delta*i;
+        coords[3*(8+6*refinement+i)+1] = -1. + delta*i;
         coords[3*(8+6*refinement+i)+2] = 1.;
       }
       //hxl
       for (int i = 0; i < refinement; i++) {
         coords[3*(8+7*refinement+i)+0] = 1.;
-	coords[3*(8+7*refinement+i)+1] = -1. + delta*i;
+        coords[3*(8+7*refinement+i)+1] = -1. + delta*i;
         coords[3*(8+7*refinement+i)+2] = -1.;
       }
       //llx
       for (int i = 0; i < refinement; i++) {
         coords[3*(8+8*refinement+i)+0] = -1.;
-	coords[3*(8+8*refinement+i)+1] = -1.;
+        coords[3*(8+8*refinement+i)+1] = -1.;
         coords[3*(8+8*refinement+i)+2] = -1. + delta*i;
       }
       //lhx
       for (int i = 0; i < refinement; i++) {
         coords[3*(8+9*refinement+i)+0] = -1.;
-	coords[3*(8+9*refinement+i)+1] = 1.;
+        coords[3*(8+9*refinement+i)+1] = 1.;
         coords[3*(8+9*refinement+i)+2] = -1. + delta*i;
       }
       //hhx
       for (int i = 0; i < refinement; i++) {
         coords[3*(8+10*refinement+i)+0] = 1.;
-	coords[3*(8+10*refinement+i)+1] = 1.;
+        coords[3*(8+10*refinement+i)+1] = 1.;
         coords[3*(8+10*refinement+i)+2] = -1. + delta*i;
       }
       //hlx
       for (int i = 0; i < refinement; i++) {
         coords[3*(8+11*refinement+i)+0] = 1.;
-	coords[3*(8+11*refinement+i)+1] = -1.;
+        coords[3*(8+11*refinement+i)+1] = -1.;
         coords[3*(8+11*refinement+i)+2] = -1. + delta*i;
       }
       //set up the faces
       //lxx
       for (int i = 0; i < refinement; i++) for (int j = 0; j < refinement; j++) {
         coords[3*(8+12*refinement+0*refinement*refinement+i*refinement+j)+0] = -1.;
-	coords[3*(8+12*refinement+0*refinement*refinement+i*refinement+j)+1] = -1. + delta*j;
+        coords[3*(8+12*refinement+0*refinement*refinement+i*refinement+j)+1] = -1. + delta*j;
         coords[3*(8+12*refinement+0*refinement*refinement+i*refinement+j)+2] = -1. + delta*i;
       }
-      //hxx 
+      //hxx
       for (int i = 0; i < refinement; i++) for (int j = 0; j < refinement; j++) {
         coords[3*(8+12*refinement+1*refinement*refinement+i*refinement+j)+0] = 1.;
-	coords[3*(8+12*refinement+1*refinement*refinement+i*refinement+j)+1] = -1. + delta*j;
+        coords[3*(8+12*refinement+1*refinement*refinement+i*refinement+j)+1] = -1. + delta*j;
         coords[3*(8+12*refinement+1*refinement*refinement+i*refinement+j)+2] = -1. + delta*i;
       }
       //xlx
       for (int i = 0; i < refinement; i++) for (int j = 0; j < refinement; j++) {
         coords[3*(8+12*refinement+2*refinement*refinement+i*refinement+j)+0] = -1. + delta*j;
-	coords[3*(8+12*refinement+2*refinement*refinement+i*refinement+j)+1] = -1.;
+        coords[3*(8+12*refinement+2*refinement*refinement+i*refinement+j)+1] = -1.;
         coords[3*(8+12*refinement+2*refinement*refinement+i*refinement+j)+2] = -1. + delta*i;
       }
       //xhx
       for (int i = 0; i < refinement; i++) for (int j = 0; j < refinement; j++) {
         coords[3*(8+12*refinement+3*refinement*refinement+i*refinement+j)+0] = -1. + delta*j;
-	coords[3*(8+12*refinement+3*refinement*refinement+i*refinement+j)+1] = 1.;
+        coords[3*(8+12*refinement+3*refinement*refinement+i*refinement+j)+1] = 1.;
         coords[3*(8+12*refinement+3*refinement*refinement+i*refinement+j)+2] = -1. + delta*i;
       }
       //xxl
       for (int i = 0; i < refinement; i++) for (int j = 0; j < refinement; j++) {
         coords[3*(8+12*refinement+4*refinement*refinement+i*refinement+j)+0] = -1.;
-	coords[3*(8+12*refinement+4*refinement*refinement+i*refinement+j)+1] = -1. + delta*j;
+        coords[3*(8+12*refinement+4*refinement*refinement+i*refinement+j)+1] = -1. + delta*j;
         coords[3*(8+12*refinement+4*refinement*refinement+i*refinement+j)+2] = -1. + delta*i;
       }
       //xxh
       for (int i = 0; i < refinement; i++) for (int j = 0; j < refinement; j++) {
         coords[3*(8+12*refinement+5*refinement*refinement+i*refinement+j)+0] = 1.;
-	coords[3*(8+12*refinement+5*refinement*refinement+i*refinement+j)+1] = -1. + delta*j;
+        coords[3*(8+12*refinement+5*refinement*refinement+i*refinement+j)+1] = -1. + delta*j;
         coords[3*(8+12*refinement+5*refinement*refinement+i*refinement+j)+2] = -1. + delta*i;
       }
       //stitch the corners up with the edges and the faces
-      
+
       //stitch the edges to the faces
       //fill in the faces
       int face_offset = 8 + 12*refinement;
@@ -4891,7 +4909,7 @@ namespace ALE {
       typedef typename std::map<edge_type, point_type> edge_map_type;
       typedef enum {LINE, LINE_LAGRANGE, TRIANGLE, QUADRILATERAL, TETRAHEDRON, HEXAHEDRON, TRIANGULAR_PRISM, TRIANGULAR_PRISM_LAGRANGE, HEXAHEDRON_LAGRANGE} CellType;
     protected:
-      const MeshType&     _mesh;
+      MeshType&     _mesh;
       int           _dim;
       point_type    _vertexOffset;
       edge_map_type _edge2vertex;
@@ -4903,55 +4921,55 @@ namespace ALE {
     protected:
       CellType getCellType(const point_type cell) {
         const int corners = _mesh.getSieve()->getConeSize(cell);
-	switch (_dim) {
-	  return LINE;
-	case 2:
-	  switch (corners) {
-	  case 3:
-	    return TRIANGLE;
-	  case 4:
-	    throw ALE::Exception("Not implemented.");
-	    return QUADRILATERAL;
-	  case 6:
-	    return LINE_LAGRANGE;
-	  case 0: {
-	    std::ostringstream msg;
-	    std::cerr << "Internal error. Cone size for mesh point " << cell << " is zero. May be a vertex.";
-	    assert(0);
-	    throw ALE::Exception("Could not determine 2-D cell type.");
-	  } // case 0
-	  default : {
-	    std::ostringstream msg;
-	    std::cerr << "Internal error. Unknown cone size for mesh point " << cell << ". Unknown cell type.";
-	    assert(0);
-	    throw ALE::Exception("Could not determine 2-D cell type.");
-	  } // default
-	  } // switch
-	case 3:
-	  switch (corners) {
-	  case 4:
-	    return TETRAHEDRON;
-	  case 6:
+        switch (_dim) {
+          return LINE;
+        case 2:
+          switch (corners) {
+          case 3:
+            return TRIANGLE;
+          case 4:
+            throw ALE::Exception("Not implemented.");
+            return QUADRILATERAL;
+          case 6:
+            return LINE_LAGRANGE;
+          case 0: {
+            std::ostringstream msg;
+            std::cerr << "Internal error. Cone size for mesh point " << cell << " is zero. May be a vertex.";
+            assert(0);
+            throw ALE::Exception("Could not determine 2-D cell type.");
+          } // case 0
+          default : {
+            std::ostringstream msg;
+            std::cerr << "Internal error. Unknown cone size for mesh point " << cell << ". Unknown cell type.";
+            assert(0);
+            throw ALE::Exception("Could not determine 2-D cell type.");
+          } // default
+          } // switch
+        case 3:
+          switch (corners) {
+          case 4:
+            return TETRAHEDRON;
+          case 6:
             return TRIANGULAR_PRISM;
-	  case 9:
+          case 9:
             return TRIANGULAR_PRISM_LAGRANGE;
-	  case 12:
-	    throw ALE::Exception("Not implemented.");
+          case 12:
+            throw ALE::Exception("Not implemented.");
             return HEXAHEDRON_LAGRANGE;
-	  case 0: {
-	    std::ostringstream msg;
-	    std::cerr << "Internal error. Cone size for mesh point " << cell << " is zero. May be a vertex.";
-	    assert(0);
-	    throw ALE::Exception("Could not determine 3-D cell type.");
-	  } // case 0
-	  default : {
-	    std::ostringstream msg;
-	    std::cerr << "Internal error. Unknown cone size for mesh point " << cell << ". Unknown cell type.";
-	    assert(0);
-	    throw ALE::Exception("Could not determine 3-D cell type.");
-	  } // default
-	  } // switch
-	} // switch
+          case 0: {
+            std::ostringstream msg;
+            std::cerr << "Internal error. Cone size for mesh point " << cell << " is zero. May be a vertex.";
+            assert(0);
+            throw ALE::Exception("Could not determine 3-D cell type.");
+          } // case 0
+          default : {
+            std::ostringstream msg;
+            std::cerr << "Internal error. Unknown cone size for mesh point " << cell << ". Unknown cell type.";
+            assert(0);
+            throw ALE::Exception("Could not determine 3-D cell type.");
+          } // default
+          } // switch
+        } // switch
       };
       void getEdges_TRIANGLE(const int coneSize, const point_type cone[],  int *numEdges, const edge_type **edges) {
         static edge_type triEdges[3];
@@ -5051,19 +5069,19 @@ namespace ALE {
           }
           newVertices[e] = _edge2vertex[edges[e]];
         }
-	lineCells[0*6+0] = cone[0]+_vertexOffset; // new cell 0
+        lineCells[0*6+0] = cone[0]+_vertexOffset; // new cell 0
         lineCells[0*6+1] = newVertices[0];
-	lineCells[0*6+2] = cone[2]+_vertexOffset;
+        lineCells[0*6+2] = cone[2]+_vertexOffset;
         lineCells[0*6+3] = newVertices[1];
-	lineCells[0*6+4] = cone[4]+_vertexOffset;
+        lineCells[0*6+4] = cone[4]+_vertexOffset;
         lineCells[0*6+5] = newVertices[2];
 
         lineCells[1*6+0] = newVertices[0]; // new cell 1
-	lineCells[1*6+1] = cone[1]+_vertexOffset;
+        lineCells[1*6+1] = cone[1]+_vertexOffset;
         lineCells[1*6+2] = newVertices[1];
-	lineCells[1*6+3] = cone[3]+_vertexOffset;
+        lineCells[1*6+3] = cone[3]+_vertexOffset;
         lineCells[1*6+4] = newVertices[2];
-	lineCells[1*6+5] = cone[5]+_vertexOffset;
+        lineCells[1*6+5] = cone[5]+_vertexOffset;
 
         *numCells = 2;
         *cells    = lineCells;
@@ -5108,44 +5126,44 @@ namespace ALE {
           newVertices[e] = _edge2vertex[edges[e]];
         }
         tcells[0*9+0] = cone[0]+_vertexOffset; // New cell 0
-	tcells[0*9+1] = newVertices[0];
-	tcells[0*9+2] = newVertices[2];
+        tcells[0*9+1] = newVertices[0];
+        tcells[0*9+2] = newVertices[2];
         tcells[0*9+3] = cone[3]+_vertexOffset;
-	tcells[0*9+4] = newVertices[3];
-	tcells[0*9+5] = newVertices[5];
+        tcells[0*9+4] = newVertices[3];
+        tcells[0*9+5] = newVertices[5];
         tcells[0*9+6] = cone[6]+_vertexOffset;
-	tcells[0*9+7] = newVertices[6];
-	tcells[0*9+8] = newVertices[8];
+        tcells[0*9+7] = newVertices[6];
+        tcells[0*9+8] = newVertices[8];
 
         tcells[1*9+0] = newVertices[0]; // New cell 1
-	tcells[1*9+1] = newVertices[1];
-	tcells[1*9+2] = newVertices[2];
+        tcells[1*9+1] = newVertices[1];
+        tcells[1*9+2] = newVertices[2];
         tcells[1*9+3] = newVertices[3];
-	tcells[1*9+4] = newVertices[4];
-	tcells[1*9+5] = newVertices[5];
+        tcells[1*9+4] = newVertices[4];
+        tcells[1*9+5] = newVertices[5];
         tcells[1*9+6] = newVertices[6];
-	tcells[1*9+7] = newVertices[7];
-	tcells[1*9+8] = newVertices[8];
+        tcells[1*9+7] = newVertices[7];
+        tcells[1*9+8] = newVertices[8];
 
         tcells[2*9+0] = cone[1]+_vertexOffset; // New cell 2
-	tcells[2*9+1] = newVertices[1];
-	tcells[2*9+2] = newVertices[0];
+        tcells[2*9+1] = newVertices[1];
+        tcells[2*9+2] = newVertices[0];
         tcells[2*9+3] = cone[4]+_vertexOffset;
-	tcells[2*9+4] = newVertices[4];
-	tcells[2*9+5] = newVertices[3];
+        tcells[2*9+4] = newVertices[4];
+        tcells[2*9+5] = newVertices[3];
         tcells[2*9+6] = cone[7]+_vertexOffset;
-	tcells[2*9+7] = newVertices[7];
-	tcells[2*9+8] = newVertices[6];
+        tcells[2*9+7] = newVertices[7];
+        tcells[2*9+8] = newVertices[6];
 
         tcells[3*9+0] = cone[2]+_vertexOffset; // New cell 3
-	tcells[3*9+1] = newVertices[2];
-	tcells[3*9+2] = newVertices[1];
+        tcells[3*9+1] = newVertices[2];
+        tcells[3*9+2] = newVertices[1];
         tcells[3*9+3] = cone[5]+_vertexOffset;
-	tcells[3*9+4] = newVertices[5];
-	tcells[3*9+5] = newVertices[4];
+        tcells[3*9+4] = newVertices[5];
+        tcells[3*9+5] = newVertices[4];
         tcells[3*9+6] = cone[8]+_vertexOffset;
-	tcells[3*9+7] = newVertices[8];
-	tcells[3*9+8] = newVertices[7];
+        tcells[3*9+7] = newVertices[8];
+        tcells[3*9+8] = newVertices[7];
 
         *numCells = 4;
         *cells    = tcells;
@@ -5156,10 +5174,10 @@ namespace ALE {
       edge_map_type& getEdgeToVertex() {return _edge2vertex;};
       int numNewCells(const point_type cell) {
         switch(this->getCellType(cell)) {
-	case TRIANGLE:
-	  return 4;
-	case LINE_LAGRANGE:
-	  return 2;
+        case TRIANGLE:
+          return 4;
+        case LINE_LAGRANGE:
+          return 2;
         case TETRAHEDRON:
           return 8;
         case TRIANGULAR_PRISM:
@@ -5169,17 +5187,17 @@ namespace ALE {
         throw ALE::Exception("Could not determine number of new cells for this cell type");
       };
       void splitEdge(const point_type cell, const int coneSize, const point_type cone[], point_type& curNewVertex) {
-        const CellType   t = this->getCellType(cell);
+        CellType   t = this->getCellType(cell);
         int              numEdges;
         const edge_type *edges;
 
         switch(t) {
-	case TRIANGLE:
+        case TRIANGLE:
           getEdges_TRIANGLE(coneSize, cone, &numEdges, &edges);
           break;
-	case LINE_LAGRANGE:
+        case LINE_LAGRANGE:
           getEdges_LINE_LAGRANGE(coneSize, cone, &numEdges, &edges);
-          break;	  
+          break;        
         case TETRAHEDRON:
           getEdges_TETRAHEDRON(coneSize, cone, &numEdges, &edges);
           break;
@@ -5195,13 +5213,13 @@ namespace ALE {
         // Check that vertex does not yet exist
         for(int v = 0; v < numEdges; ++v) {
           if (_edge2vertex.find(edges[v]) == _edge2vertex.end()) {
-	    std::cout << "Edge: " << edges[v] << ", new vertex: " << curNewVertex << std::endl;
+            std::cout << "Edge: " << edges[v] << ", new vertex: " << curNewVertex << std::endl;
             _edge2vertex[edges[v]] = curNewVertex++;
           }
         }
       };
       void getNewCell(const point_type cell, const int coneSize, const point_type cone[], int newCellNumber, int *newConeSize, const point_type **newCone) {
-        const CellType    t = this->getCellType(cell);
+        CellType    t = this->getCellType(cell);
         int               numCells;
         const point_type *cells;
 
@@ -5231,7 +5249,7 @@ namespace ALE {
         }
       };
       void getNeighboringVertices(const point_type cell, const int coneSize, const point_type cone[], const point_type firstNewVertex, point_type vertex2edge[]) {
-        const CellType   t = this->getCellType(cell);
+        CellType   t = this->getCellType(cell);
         int              numEdges;
         const edge_type *edges;
 
@@ -5257,7 +5275,7 @@ namespace ALE {
         for(int v = 0; v < numEdges; ++v) {
           point_type newVertex = _edge2vertex[edges[v]];
 
-	  std::cout << "VERTEX2EDGE index: " << newVertex-firstNewVertex << ", first: " << edges[v].first << ", second: " << edges[v].second << std::endl;
+          std::cout << "VERTEX2EDGE index: " << newVertex-firstNewVertex << ", first: " << edges[v].first << ", second: " << edges[v].second << std::endl;
           vertex2edge[(newVertex-firstNewVertex)*2+0] = edges[v].first;
           vertex2edge[(newVertex-firstNewVertex)*2+1] = edges[v].second;
         }
@@ -5302,400 +5320,400 @@ namespace ALE {
       ALE::ISieveVisitor::PointRetriever<sieve_type> cV(std::max(1, sieve->getMaxConeSize()));
 
       if (mesh->hasLabel("censored depth")) {
-	// :WARNING: Assume all cells in the censored depth come before
-	// any other cells. This guarantees that we add vertices in the
-	// censored depth before adding other vertices.
+        // :WARNING: Assume all cells in the censored depth come before
+        // any other cells. This guarantees that we add vertices in the
+        // censored depth before adding other vertices.
 
-	int counterBegin = 0;
+        int counterBegin = 0;
 
-	int oldNumCellsNormal = 0;
-	int oldNumCellsOther = 0;
-	int oldNumVerticesNormal = 0;
-	int oldNumVerticesOther = 0;
+        int oldNumCellsNormal = 0;
+        int oldNumCellsOther = 0;
+        int oldNumVerticesNormal = 0;
+        int oldNumVerticesOther = 0;
 
-	int newNumCellsNormal = 0;
-	int newNumCellsOther = 0;
-	int newNumVerticesNormal = 0;
-	int newNumVerticesOther = 0;
+        int newNumCellsNormal = 0;
+        int newNumCellsOther = 0;
+        int newNumVerticesNormal = 0;
+        int newNumVerticesOther = 0;
 
-	// Count number of cells in censored depth (normal cells).
-	const Obj<typename MeshType::label_sequence>& cellsNormal = mesh->getLabelStratum("censored depth", mesh->depth());
-	assert(!cellsNormal.isNull());
-	const typename MeshType::label_sequence::iterator cellsNormalEnd = cellsNormal->end();
-	oldNumCellsNormal = cellsNormal->size();
-	for(typename MeshType::label_sequence::iterator c_iter = cellsNormal->begin(); c_iter != cellsNormalEnd; ++c_iter)
-	  newNumCellsNormal += refiner.numNewCells(*c_iter);
+        // Count number of cells in censored depth (normal cells).
+        const Obj<typename MeshType::label_sequence>& cellsNormal = mesh->getLabelStratum("censored depth", mesh->depth());
+        assert(!cellsNormal.isNull());
+        const typename MeshType::label_sequence::iterator cellsNormalEnd = cellsNormal->end();
+        oldNumCellsNormal = cellsNormal->size();
+        for(typename MeshType::label_sequence::iterator c_iter = cellsNormal->begin(); c_iter != cellsNormalEnd; ++c_iter)
+          newNumCellsNormal += refiner.numNewCells(*c_iter);
 
-	// Count number of remaining cells (other cells).
-	const int numSkip = oldNumCellsNormal;
-	oldNumCellsOther = cells->size() - oldNumCellsNormal;
-	typename MeshType::label_sequence::iterator c_iter = cells->begin();
-	for (int i=0; i < numSkip; ++i)
-	  ++c_iter;
-	for (; c_iter != cellsEnd; ++c_iter)
-	  newNumCellsOther += refiner.numNewCells(*c_iter);
+        // Count number of remaining cells (other cells).
+        const int numSkip = oldNumCellsNormal;
+        oldNumCellsOther = cells->size() - oldNumCellsNormal;
+        typename MeshType::label_sequence::iterator c_iter = cells->begin();
+        for (int i=0; i < numSkip; ++i)
+          ++c_iter;
+        for (; c_iter != cellsEnd; ++c_iter)
+          newNumCellsOther += refiner.numNewCells(*c_iter);
 
-	// Get number of old normal vertices.
-	assert(!mesh->getFactory.isNull());
-	Obj<typename Mesh::numbering_type> vNumbering = mesh->getFactory()->getNumbering(mesh, "censored depth", 0);
-	assert(!vNumbering.isNull());
-	oldNumVerticesNormal = vNumbering->size();
+        // Get number of old normal vertices.
+        assert(!mesh->getFactory.isNull());
+        Obj<typename Mesh::numbering_type> vNumbering = mesh->getFactory()->getNumbering(mesh, "censored depth", 0);
+        assert(!vNumbering.isNull());
+        oldNumVerticesNormal = vNumbering->size();
 
-	// Count number of new normal vertices.
-	int counterBegin = newNumCellsNormal + vertices->size();
-	const point_type curNewVertex = counterBegin;
-	for(typename MeshType::label_sequence::iterator c_iter = cellsNormal->begin(); c_iter != cellsNormalEnd; ++c_iter) {
-	  cV.clear();
-	  sieve->cone(*c_iter, cV);
-	  refiner.splitEdge(*c_iter, cV.getSize(), cV.getPoints(), curNewVertex);
-	} // for
-	newNumVerticesNormal = curNewVertex - counterBegin;
+        // Count number of new normal vertices.
+        int counterBegin = newNumCellsNormal + vertices->size();
+        const point_type curNewVertex = counterBegin;
+        for(typename MeshType::label_sequence::iterator c_iter = cellsNormal->begin(); c_iter != cellsNormalEnd; ++c_iter) {
+          cV.clear();
+          sieve->cone(*c_iter, cV);
+          refiner.splitEdge(*c_iter, cV.getSize(), cV.getPoints(), curNewVertex);
+        } // for
+        newNumVerticesNormal = curNewVertex - counterBegin;
 
-	// Count number of remaining vertices (other vertices).
-	oldNumVerticesOther = vertices->size() - oldNumVerticessNormal;
-	counterBegin = curNewVertex + oldNumVerticesOther;
-	curNewVertex = counterBegin;
-	c_iter = cells->begin();
-	for (int i=0; i < numSkip; ++i)
-	  ++c_iter;
-	for (; c_iter != cellsEnd; ++c_iter) {
-	  cV.clear();
-	  sieve->cone(*c_iter, cV);
-	  refiner.splitEdge(*c_iter, cV.getSize(), cV.getPoints(), curNewVertex);
-	} // for
-	newNumVerticesOther = curNewVertex - counterBegin;
+        // Count number of remaining vertices (other vertices).
+        oldNumVerticesOther = vertices->size() - oldNumVerticessNormal;
+        counterBegin = curNewVertex + oldNumVerticesOther;
+        curNewVertex = counterBegin;
+        c_iter = cells->begin();
+        for (int i=0; i < numSkip; ++i)
+          ++c_iter;
+        for (; c_iter != cellsEnd; ++c_iter) {
+          cV.clear();
+          sieve->cone(*c_iter, cV);
+          refiner.splitEdge(*c_iter, cV.getSize(), cV.getPoints(), curNewVertex);
+        } // for
+        newNumVerticesOther = curNewVertex - counterBegin;
 
-	Interval<point_type> oldCellsNormalRange(0, oldNumCellsNormal);
-	Interval<point_type> newCellsNormalRange(0, newNumCellsNormal);
+        Interval<point_type> oldCellsNormalRange(0, oldNumCellsNormal);
+        Interval<point_type> newCellsNormalRange(0, newNumCellsNormal);
 
-	Interval<point_type> oldVerticesNormalRange(oldNumCellsNormal, oldNumCellsNormal+oldNumVerticesNormal);
-	Interval<point_type> newVerticesNormalRange(newNumCellsNormal, newNumCellsNormal+newNumVerticesNormal);
+        Interval<point_type> oldVerticesNormalRange(oldNumCellsNormal, oldNumCellsNormal+oldNumVerticesNormal);
+        Interval<point_type> newVerticesNormalRange(newNumCellsNormal, newNumCellsNormal+newNumVerticesNormal);
 
-	Interval<point_type> oldVerticesOtherRange(oldNumCellsNormal+oldNumVerticesNormal ,
-						   oldNumCellsNormal+oldNumVerticesNormal+oldNumVerticesOther);
-	Interval<point_type> newVerticesOtherRange(newNumCellsNormal+newNumVerticesNormal ,
-						   newNumCellsNormal+newNumVerticesNormal+newNumVerticesOther);
+        Interval<point_type> oldVerticesOtherRange(oldNumCellsNormal+oldNumVerticesNormal ,
+                                                   oldNumCellsNormal+oldNumVerticesNormal+oldNumVerticesOther);
+        Interval<point_type> newVerticesOtherRange(newNumCellsNormal+newNumVerticesNormal ,
+                                                   newNumCellsNormal+newNumVerticesNormal+newNumVerticesOther);
 
-	Interval<point_type> oldCellssOtherRange(oldNumCellsNormal+oldNumVerticesNormal+oldNumVerticesOther,
-						 oldNumCellsNormal+oldNumVerticesNormal+oldNumVerticesOther+oldNumCellsOther);
-	Interval<point_type> newCellssOtherRange(newNumCellsNormal+newNumVerticesNormal+newNumVerticesOther,
-						 newNumCellsNormal+newNumVerticesNormal+newNumVerticesOther+newNumCellsOther);
-
-
-	// Allocate chart for new sieve.
-	const Obj<sieve_type>& newSieve = newMesh->getSieve();
-	assert(!newSieve.isNull());
-	newSieve->setChart(typename sieve_type::chart_type(0, newCellsOtherRange.end()));
-	refiner.setVertexRelativeOffset(newNumCellsNormal-oldNumCellsNormal); // THIS DOES NOT WORK FOR COHESIVE CELLS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-	// Create new sieve with correct sizes for refined cells
-
-	// Start with normal cells.
-	point_type curNewCell = newCellsNormalRange.begin();
-	const typename Interval<point_type>::const_iterator oldCellsNormalRangeEnd = oldCellsNormalRange.end();
-	for (typename Interval<point_type>::const_iterator c_iter=oldCellsNormalRange.begin();
-	     c_iter != oldCellsNormalRangeEnd;
-	     ++c_iter) {
-	  // Set new cone and support sizes
-	  cV.clear();
-	  sieve->cone(*c_iter, cV);
-	  const point_type *cone = cV.getPoints();
-	  const int coneSize = cV.getSize();
-	  const int newCells = refiner.numNewCells(*c_iter);
-
-	  for(int iCell=0; iCell < newCells; ++iCell, ++curNewCell) {
-	    const point_type *newCone;
-	    int newConeSize;
-
-	    newSieve->setConeSize(curNewCell, sieve->getConeSize(*c_iter));
-	    // OPTIMIZE THIS
-	    refiner.getNewCell(*c_iter, coneSize, cone, iCell, &newConeSize, &newCone);
-	    for(int v = 0; v < newConeSize; ++v)
-	      newSieve->addSupportSize(newCone[v], 1);
-	  } // for
-	} // for
-
-	// Continue with other cells.
-	point_type curNewCell = newCellsOtherRange.begin();
-	const typename Interval<point_type>::const_iterator oldCellsOtherRangeEnd = oldCellsOtherRange.end();
-	for (typename Interval<point_type>::const_iterator c_iter=oldCellOtherRange.begin();
-	     c_iter != oldCellsOtherRangeEnd;
-	     ++c_iter) {
-	  // Set new cone and support sizes
-	  cV.clear();
-	  sieve->cone(*c_iter, cV);
-	  const point_type *cone = cV.getPoints();
-	  const int coneSize = cV.getSize();
-	  const int newCells = refiner.numNewCells(*c_iter);
-
-	  for(int iCell=0; iCell < newCells; ++iCell, ++curNewCell) {
-	    const point_type *newCone;
-	    int newConeSize;
-
-	    newSieve->setConeSize(curNewCell, sieve->getConeSize(*c_iter));
-	    // OPTIMIZE THIS
-	    refiner.getNewCell(*c_iter, coneSize, cone, iCell, &newConeSize, &newCone);
-	    for(int v = 0; v < newConeSize; ++v)
-	      newSieve->addSupportSize(newCone[v], 1);
-	  } // for
-	} // for
-	newSieve->allocate();
-	point_type* vertex2edge = new point_type[(newNumVerticesNormal+newNumVerticesOther)*2];
-	typename Refiner::edge_map_type& edge2vertex = refiner.getEdgeToVertex();
+        Interval<point_type> oldCellssOtherRange(oldNumCellsNormal+oldNumVerticesNormal+oldNumVerticesOther,
+                                                 oldNumCellsNormal+oldNumVerticesNormal+oldNumVerticesOther+oldNumCellsOther);
+        Interval<point_type> newCellssOtherRange(newNumCellsNormal+newNumVerticesNormal+newNumVerticesOther,
+                                                 newNumCellsNormal+newNumVerticesNormal+newNumVerticesOther+newNumCellsOther);
 
 
-	// Create refined normal cells in new sieve.
-	curNewCell = newCellsNormalRange.begin();
-	for (typename Interval<point_type>::const_iterator c_iter=oldCellsNormalRange.begin();
-	     c_iter != oldCellsNormalRangeEnd;
-	     ++c_iter) {
-	  cV.clear();
-	  sieve->cone(*c_iter, cV);
-	  const point_type *cone = cV.getPoints();
-	  const int coneSize = cV.getSize();
-	  const int newCells = refiner.numNewCells(*c_iter);
+        // Allocate chart for new sieve.
+        const Obj<sieve_type>& newSieve = newMesh->getSieve();
+        assert(!newSieve.isNull());
+        newSieve->setChart(typename sieve_type::chart_type(0, newCellsOtherRange.end()));
+        refiner.setVertexRelativeOffset(newNumCellsNormal-oldNumCellsNormal); // THIS DOES NOT WORK FOR COHESIVE CELLS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-	  for (int iCell=0; iCell < newCells; ++iCell, ++curNewCell) {
-	    const point_type *newCone;
-	    int newConeSize;
+        // Create new sieve with correct sizes for refined cells
 
-	    refiner.getNewCell(*c_iter, coneSize, cone, iCell, &newConeSize, &newCone);
-	    newSieve->setCone(newCone, curNewCell);
-	  } // for
+        // Start with normal cells.
+        point_type curNewCell = newCellsNormalRange.begin();
+        const typename Interval<point_type>::const_iterator oldCellsNormalRangeEnd = oldCellsNormalRange.end();
+        for (typename Interval<point_type>::const_iterator c_iter=oldCellsNormalRange.begin();
+             c_iter != oldCellsNormalRangeEnd;
+             ++c_iter) {
+          // Set new cone and support sizes
+          cV.clear();
+          sieve->cone(*c_iter, cV);
+          const point_type *cone = cV.getPoints();
+          const int coneSize = cV.getSize();
+          const int newCells = refiner.numNewCells(*c_iter);
 
-	  refiner.getNeighboringVertices(*c_iter, coneSize, cone, firstNewVertex, vertex2edge);
-	} // for
+          for(int iCell=0; iCell < newCells; ++iCell, ++curNewCell) {
+            const point_type *newCone;
+            int newConeSize;
 
-	// Create refined other cells in new sieve.
-	curNewCell = newCellsOtherRange.begin();
-	for (typename Interval<point_type>::const_iterator c_iter=oldCellsOtherRange.begin();
-	     c_iter != oldCellsOtherRangeEnd;
-	     ++c_iter) {
-	  cV.clear();
-	  sieve->cone(*c_iter, cV);
-	  const point_type *cone = cV.getPoints();
-	  const int coneSize = cV.getSize();
-	  const int newCells = refiner.numNewCells(*c_iter);
+            newSieve->setConeSize(curNewCell, sieve->getConeSize(*c_iter));
+            // OPTIMIZE THIS
+            refiner.getNewCell(*c_iter, coneSize, cone, iCell, &newConeSize, &newCone);
+            for(int v = 0; v < newConeSize; ++v)
+              newSieve->addSupportSize(newCone[v], 1);
+          } // for
+        } // for
 
-	  for (int iCell=0; iCell < newCells; ++iCell, ++curNewCell) {
-	    const point_type *newCone;
-	    int newConeSize;
+        // Continue with other cells.
+        point_type curNewCell = newCellsOtherRange.begin();
+        const typename Interval<point_type>::const_iterator oldCellsOtherRangeEnd = oldCellsOtherRange.end();
+        for (typename Interval<point_type>::const_iterator c_iter=oldCellOtherRange.begin();
+             c_iter != oldCellsOtherRangeEnd;
+             ++c_iter) {
+          // Set new cone and support sizes
+          cV.clear();
+          sieve->cone(*c_iter, cV);
+          const point_type *cone = cV.getPoints();
+          const int coneSize = cV.getSize();
+          const int newCells = refiner.numNewCells(*c_iter);
 
-	    refiner.getNewCell(*c_iter, coneSize, cone, iCell, &newConeSize, &newCone);
-	    newSieve->setCone(newCone, curNewCell);
-	  } // for
+          for(int iCell=0; iCell < newCells; ++iCell, ++curNewCell) {
+            const point_type *newCone;
+            int newConeSize;
 
-	  // FIX THIS!!! LAGRANGE VERTICES MUST BE AFTER ALL OTHER VERTICES (INCLUDING OLD LAGRANGE VERTICES)
-	  refiner.getNeighboringVertices(*c_iter, coneSize, cone, firstNewVertex, vertex2edge);
-	} // for
-	newSieve->symmetrize();
+            newSieve->setConeSize(curNewCell, sieve->getConeSize(*c_iter));
+            // OPTIMIZE THIS
+            refiner.getNewCell(*c_iter, coneSize, cone, iCell, &newConeSize, &newCone);
+            for(int v = 0; v < newConeSize; ++v)
+              newSieve->addSupportSize(newCone[v], 1);
+          } // for
+        } // for
+        newSieve->allocate();
+        point_type* vertex2edge = new point_type[(newNumVerticesNormal+newNumVerticesOther)*2];
+        typename Refiner::edge_map_type& edge2vertex = refiner.getEdgeToVertex();
 
-	// Set coordinates in refined mesh.
-	const Obj<typename MeshType::real_section_type>& coordinates = mesh->getRealSection("coordinates");
-	assert(!coordinates.isNull());
-	const Obj<typename MeshType::real_section_type>& newCoordinates = newMesh->getRealSection("coordinates");
-	assert(!newCoordinates.isNull());
 
-	const typename MeshType::label_sequence::const_iterator verticesEnd = vertices->end();
-	assert(vertices->size() > 0);
-	const int spaceDim = coordinates->getFiberDimension(*vertices->begin());
-	assert(spaceDim > 0);
-	newCoordinates->setChart(typename sieve_type::chart_type(newNumCellsNormal, newNumCellsNormal+newNumVertices));
+        // Create refined normal cells in new sieve.
+        curNewCell = newCellsNormalRange.begin();
+        for (typename Interval<point_type>::const_iterator c_iter=oldCellsNormalRange.begin();
+             c_iter != oldCellsNormalRangeEnd;
+             ++c_iter) {
+          cV.clear();
+          sieve->cone(*c_iter, cV);
+          const point_type *cone = cV.getPoints();
+          const int coneSize = cV.getSize();
+          const int newCells = refiner.numNewCells(*c_iter);
 
-	for (int iVertex=0, offset=newNumCellsNormal; iVertex < newNumVertices; ++iVertex) {
-	  const point_type vNew = iVertex + offset;
-	  newCoordinates->setFiberDimension(vNew, spaceDim);
-	} // for
-	newCoordinates->allocatePoint();
+          for (int iCell=0; iCell < newCells; ++iCell, ++curNewCell) {
+            const point_type *newCone;
+            int newConeSize;
 
-	for (int iVertex=0, oldOffset=oldNumCellsNormal, newOffset=newNumCellsNormal; iVertex < oldNumVertices; ++iVertex) {
-	  const point_type vOld = iVertex + oldOffset;
-	  const point_type vNew = iVertex + newOffset;
-	  newCoordinates->updatePoint(vNew, coordinates->restrictPoint(vOld));
-	} // for
-	for(int v=0, iVertex=oldNumVertices, newOffset=newNumCellsNormal; iVertex < newNumVertices; ++v, ++iVertex) {
-	  const point_type vNew = iVertex + newOffset;
-	  const point_type endpointA = vertex2edge[v*2+0];
-	  const point_type endpointB = vertex2edge[v*2+1];
-	  std::cout << "Setting coordinates of vertex " << vNew << " between vertices "
-		    << endpointA << " and " << endpointB << std::endl;
-	  const real *coordsA   = coordinates->restrictPoint(endpointA);
-	  real coords[3];
+            refiner.getNewCell(*c_iter, coneSize, cone, iCell, &newConeSize, &newCone);
+            newSieve->setCone(newCone, curNewCell);
+          } // for
 
-	  for(int d = 0; d < 3; ++d)
-	    coords[d]  = coordsA[d];
-	  const real *coordsB = coordinates->restrictPoint(endpointB);
-	  for(int d = 0; d < 3; ++d) {
-	    coords[d] += coordsB[d];
-	    coords[d] *= 0.5;
-	  } // for
-	  newCoordinates->updatePoint(vNew, coords);
-	} // for
-	delete [] vertex2edge;
-	// Fast stratification
-	const Obj<typename MeshType::label_type>& height = newMesh->createLabel("height");
-	const Obj<typename MeshType::label_type>& depth  = newMesh->createLabel("depth");
+          refiner.getNeighboringVertices(*c_iter, coneSize, cone, firstNewVertex, vertex2edge);
+        } // for
 
-	for (int iCell=0; iCell < newNumCellsNormal; ++iCell) {
-	  const point_type cNew = iCell;
-	  height->setCone(0, cNew);
-	  depth->setCone(1, cNew);
-	} // for
-	for (int iCell=newNumCellsNormal, offset=newNumVertices; iCell < newNumCells; ++iCell) {
-	  const point_type cNew = iCell + offset;
-	  height->setCone(0, cNew);
-	  depth->setCone(1, cNew);
-	} // for
-	for (int iVertex=0, newOffset=newNumCellsNormal; iVertex < newNumVertices; ++iVertex) {
-	  const point_type vNew = iVertex + newOffset;
-	  height->setCone(1, vNew);
-	  depth->setCone(0, vNew);
-	} // for
-	newMesh->setHeight(1);
-	newMesh->setDepth(1);
+        // Create refined other cells in new sieve.
+        curNewCell = newCellsOtherRange.begin();
+        for (typename Interval<point_type>::const_iterator c_iter=oldCellsOtherRange.begin();
+             c_iter != oldCellsOtherRangeEnd;
+             ++c_iter) {
+          cV.clear();
+          sieve->cone(*c_iter, cV);
+          const point_type *cone = cV.getPoints();
+          const int coneSize = cV.getSize();
+          const int newCells = refiner.numNewCells(*c_iter);
+
+          for (int iCell=0; iCell < newCells; ++iCell, ++curNewCell) {
+            const point_type *newCone;
+            int newConeSize;
+
+            refiner.getNewCell(*c_iter, coneSize, cone, iCell, &newConeSize, &newCone);
+            newSieve->setCone(newCone, curNewCell);
+          } // for
+
+          // FIX THIS!!! LAGRANGE VERTICES MUST BE AFTER ALL OTHER VERTICES (INCLUDING OLD LAGRANGE VERTICES)
+          refiner.getNeighboringVertices(*c_iter, coneSize, cone, firstNewVertex, vertex2edge);
+        } // for
+        newSieve->symmetrize();
+
+        // Set coordinates in refined mesh.
+        const Obj<typename MeshType::real_section_type>& coordinates = mesh->getRealSection("coordinates");
+        assert(!coordinates.isNull());
+        const Obj<typename MeshType::real_section_type>& newCoordinates = newMesh->getRealSection("coordinates");
+        assert(!newCoordinates.isNull());
+
+        const typename MeshType::label_sequence::const_iterator verticesEnd = vertices->end();
+        assert(vertices->size() > 0);
+        const int spaceDim = coordinates->getFiberDimension(*vertices->begin());
+        assert(spaceDim > 0);
+        newCoordinates->setChart(typename sieve_type::chart_type(newNumCellsNormal, newNumCellsNormal+newNumVertices));
+
+        for (int iVertex=0, offset=newNumCellsNormal; iVertex < newNumVertices; ++iVertex) {
+          const point_type vNew = iVertex + offset;
+          newCoordinates->setFiberDimension(vNew, spaceDim);
+        } // for
+        newCoordinates->allocatePoint();
+
+        for (int iVertex=0, oldOffset=oldNumCellsNormal, newOffset=newNumCellsNormal; iVertex < oldNumVertices; ++iVertex) {
+          const point_type vOld = iVertex + oldOffset;
+          const point_type vNew = iVertex + newOffset;
+          newCoordinates->updatePoint(vNew, coordinates->restrictPoint(vOld));
+        } // for
+        for(int v=0, iVertex=oldNumVertices, newOffset=newNumCellsNormal; iVertex < newNumVertices; ++v, ++iVertex) {
+          const point_type vNew = iVertex + newOffset;
+          const point_type endpointA = vertex2edge[v*2+0];
+          const point_type endpointB = vertex2edge[v*2+1];
+          std::cout << "Setting coordinates of vertex " << vNew << " between vertices "
+                    << endpointA << " and " << endpointB << std::endl;
+          const real *coordsA   = coordinates->restrictPoint(endpointA);
+          real coords[3];
+
+          for(int d = 0; d < 3; ++d)
+            coords[d]  = coordsA[d];
+          const real *coordsB = coordinates->restrictPoint(endpointB);
+          for(int d = 0; d < 3; ++d) {
+            coords[d] += coordsB[d];
+            coords[d] *= 0.5;
+          } // for
+          newCoordinates->updatePoint(vNew, coords);
+        } // for
+        delete [] vertex2edge;
+        // Fast stratification
+        const Obj<typename MeshType::label_type>& height = newMesh->createLabel("height");
+        const Obj<typename MeshType::label_type>& depth  = newMesh->createLabel("depth");
+
+        for (int iCell=0; iCell < newNumCellsNormal; ++iCell) {
+          const point_type cNew = iCell;
+          height->setCone(0, cNew);
+          depth->setCone(1, cNew);
+        } // for
+        for (int iCell=newNumCellsNormal, offset=newNumVertices; iCell < newNumCells; ++iCell) {
+          const point_type cNew = iCell + offset;
+          height->setCone(0, cNew);
+          depth->setCone(1, cNew);
+        } // for
+        for (int iVertex=0, newOffset=newNumCellsNormal; iVertex < newNumVertices; ++iVertex) {
+          const point_type vNew = iVertex + newOffset;
+          height->setCone(1, vNew);
+          depth->setCone(0, vNew);
+        } // for
+        newMesh->setHeight(1);
+        newMesh->setDepth(1);
 
       } else {
-	int counterBegin = 0;
+        int counterBegin = 0;
 
-	int oldNumCells = 0;
-	int oldNumVertices = 0;
+        int oldNumCells = 0;
+        int oldNumVertices = 0;
 
-	int newNumCells = 0;
-	int newNumVertices = 0;
+        int newNumCells = 0;
+        int newNumVertices = 0;
 
-	// Count number of cells.
-	oldNumCells = cells->size();
-	for (typename MeshType::label_sequence::iterator c_iter = cells->begin(); c_iter != cellsEnd; ++c_iter)
-	  newNumCells += refiner.numNewCells(*c_iter);
+        // Count number of cells.
+        oldNumCells = cells->size();
+        for (typename MeshType::label_sequence::iterator c_iter = cells->begin(); c_iter != cellsEnd; ++c_iter)
+          newNumCells += refiner.numNewCells(*c_iter);
 
-	// Count number of vertices (normal vertices).
-	oldNumVertices = vertices->size();
-	int counterBegin = newNumCells + oldNumVertices;
-	const point_type curNewVertex = counterBegin;
-	for(typename MeshType::label_sequence::iterator c_iter = cells->begin(); c_iter != cellsEnd; ++c_iter) {
-	  cV.clear();
-	  sieve->cone(*c_iter, cV);
-	  refiner.splitEdge(*c_iter, cV.getSize(), cV.getPoints(), curNewVertex);
-	} // for
-	newNumVertices = curNewVertex - counterBegin;
+        // Count number of vertices (normal vertices).
+        oldNumVertices = vertices->size();
+        int counterBegin = newNumCells + oldNumVertices;
+        const point_type curNewVertex = counterBegin;
+        for(typename MeshType::label_sequence::iterator c_iter = cells->begin(); c_iter != cellsEnd; ++c_iter) {
+          cV.clear();
+          sieve->cone(*c_iter, cV);
+          refiner.splitEdge(*c_iter, cV.getSize(), cV.getPoints(), curNewVertex);
+        } // for
+        newNumVertices = curNewVertex - counterBegin;
 
-	Interval<point_type> oldCellsRange(0, oldNumCells);
-	Interval<point_type> newCellsRange(0, newNumCells);
+        Interval<point_type> oldCellsRange(0, oldNumCells);
+        Interval<point_type> newCellsRange(0, newNumCells);
 
-	Interval<point_type> oldVerticesRange(oldNumCells, oldNumCells+oldNumVertices);
-	Interval<point_type> newVerticesRange(newNumCells, newNumCells+newNumVertices);
+        Interval<point_type> oldVerticesRange(oldNumCells, oldNumCells+oldNumVertices);
+        Interval<point_type> newVerticesRange(newNumCells, newNumCells+newNumVertices);
 
-	// Allocate chart for new sieve.
-	const Obj<sieve_type>& newSieve = newMesh->getSieve();
-	assert(!newSieve.isNull());
-	newSieve->setChart(typename sieve_type::chart_type(0, newCellsOtherRange.end()));
-	refiner.setVertexRelativeOffset(newNumCells-oldNumCells);
+        // Allocate chart for new sieve.
+        const Obj<sieve_type>& newSieve = newMesh->getSieve();
+        assert(!newSieve.isNull());
+        newSieve->setChart(typename sieve_type::chart_type(0, newCellsOtherRange.end()));
+        refiner.setVertexRelativeOffset(newNumCells-oldNumCells);
 
-	// Create new sieve with correct sizes for refined cells
+        // Create new sieve with correct sizes for refined cells
 
-	// Start with normal cells.
-	point_type curNewCell = newCellsRange.begin();
-	const typename Interval<point_type>::const_iterator oldCellsRangeEnd = oldCellsRange.end();
-	for (typename Interval<point_type>::const_iterator c_iter=oldCellsRange.begin();
-	     c_iter != oldCellsRangeEnd;
-	     ++c_iter) {
-	  // Set new cone and support sizes
-	  cV.clear();
-	  sieve->cone(*c_iter, cV);
-	  const point_type *cone = cV.getPoints();
-	  const int coneSize = cV.getSize();
-	  const int newCells = refiner.numNewCells(*c_iter);
+        // Start with normal cells.
+        point_type curNewCell = newCellsRange.begin();
+        const typename Interval<point_type>::const_iterator oldCellsRangeEnd = oldCellsRange.end();
+        for (typename Interval<point_type>::const_iterator c_iter=oldCellsRange.begin();
+             c_iter != oldCellsRangeEnd;
+             ++c_iter) {
+          // Set new cone and support sizes
+          cV.clear();
+          sieve->cone(*c_iter, cV);
+          const point_type *cone = cV.getPoints();
+          const int coneSize = cV.getSize();
+          const int newCells = refiner.numNewCells(*c_iter);
 
-	  for(int iCell=0; iCell < newCells; ++iCell, ++curNewCell) {
-	    const point_type *newCone;
-	    int newConeSize;
+          for(int iCell=0; iCell < newCells; ++iCell, ++curNewCell) {
+            const point_type *newCone;
+            int newConeSize;
 
-	    newSieve->setConeSize(curNewCell, sieve->getConeSize(*c_iter));
-	    // OPTIMIZE THIS
-	    refiner.getNewCell(*c_iter, coneSize, cone, iCell, &newConeSize, &newCone);
-	    for(int v = 0; v < newConeSize; ++v)
-	      newSieve->addSupportSize(newCone[v], 1);
-	  } // for
-	} // for
+            newSieve->setConeSize(curNewCell, sieve->getConeSize(*c_iter));
+            // OPTIMIZE THIS
+            refiner.getNewCell(*c_iter, coneSize, cone, iCell, &newConeSize, &newCone);
+            for(int v = 0; v < newConeSize; ++v)
+              newSieve->addSupportSize(newCone[v], 1);
+          } // for
+        } // for
 
-	// Create refined normal cells in new sieve.
-	curNewCell = newCellsRange.begin();
-	for (typename Interval<point_type>::const_iterator c_iter=oldCellsRange.begin();
-	     c_iter != oldCellsRangeEnd;
-	     ++c_iter) {
-	  cV.clear();
-	  sieve->cone(*c_iter, cV);
-	  const point_type *cone = cV.getPoints();
-	  const int coneSize = cV.getSize();
-	  const int newCells = refiner.numNewCells(*c_iter);
+        // Create refined normal cells in new sieve.
+        curNewCell = newCellsRange.begin();
+        for (typename Interval<point_type>::const_iterator c_iter=oldCellsRange.begin();
+             c_iter != oldCellsRangeEnd;
+             ++c_iter) {
+          cV.clear();
+          sieve->cone(*c_iter, cV);
+          const point_type *cone = cV.getPoints();
+          const int coneSize = cV.getSize();
+          const int newCells = refiner.numNewCells(*c_iter);
 
-	  for (int iCell=0; iCell < newCells; ++iCell, ++curNewCell) {
-	    const point_type *newCone;
-	    int newConeSize;
+          for (int iCell=0; iCell < newCells; ++iCell, ++curNewCell) {
+            const point_type *newCone;
+            int newConeSize;
 
-	    refiner.getNewCell(*c_iter, coneSize, cone, iCell, &newConeSize, &newCone);
-	    newSieve->setCone(newCone, curNewCell);
-	  } // for
+            refiner.getNewCell(*c_iter, coneSize, cone, iCell, &newConeSize, &newCone);
+            newSieve->setCone(newCone, curNewCell);
+          } // for
 
-	  refiner.getNeighboringVertices(*c_iter, coneSize, cone, firstNewVertex, vertex2edge);
-	} // for
-	newSieve->symmetrize();
+          refiner.getNeighboringVertices(*c_iter, coneSize, cone, firstNewVertex, vertex2edge);
+        } // for
+        newSieve->symmetrize();
 
-	// Set coordinates in refined mesh.
-	const Obj<typename MeshType::real_section_type>& coordinates = mesh->getRealSection("coordinates");
-	assert(!coordinates.isNull());
-	const Obj<typename MeshType::real_section_type>& newCoordinates = newMesh->getRealSection("coordinates");
-	assert(!newCoordinates.isNull());
+        // Set coordinates in refined mesh.
+        const Obj<typename MeshType::real_section_type>& coordinates = mesh->getRealSection("coordinates");
+        assert(!coordinates.isNull());
+        const Obj<typename MeshType::real_section_type>& newCoordinates = newMesh->getRealSection("coordinates");
+        assert(!newCoordinates.isNull());
 
-	const typename MeshType::label_sequence::const_iterator verticesEnd = vertices->end();
-	assert(vertices->size() > 0);
-	const int spaceDim = coordinates->getFiberDimension(*vertices->begin());
-	assert(spaceDim > 0);
-	newCoordinates->setChart(typename sieve_type::chart_type(newVerticesRange.begin(), newVerticesRange.end()));
+        const typename MeshType::label_sequence::const_iterator verticesEnd = vertices->end();
+        assert(vertices->size() > 0);
+        const int spaceDim = coordinates->getFiberDimension(*vertices->begin());
+        assert(spaceDim > 0);
+        newCoordinates->setChart(typename sieve_type::chart_type(newVerticesRange.begin(), newVerticesRange.end()));
 
-	const typename Interval<point_type>::const_iterator newVerticesRangeEnd = newVerticesRange.end();
-	for (typename Interval<point_type>::const_iterator v_iter=newVerticesRange.begin(); v_iter != newVerticesRangeEnd; ++v_iter)
-	  newCoordinates->setFiberDimension(v_iter, spaceDim);
-	newCoordinates->allocatePoint();
+        const typename Interval<point_type>::const_iterator newVerticesRangeEnd = newVerticesRange.end();
+        for (typename Interval<point_type>::const_iterator v_iter=newVerticesRange.begin(); v_iter != newVerticesRangeEnd; ++v_iter)
+          newCoordinates->setFiberDimension(v_iter, spaceDim);
+        newCoordinates->allocatePoint();
 
-	const typename Interval<point_type>::const_iterator oldVerticesRangeEnd = oldVerticesRange.end();
-	for (typename Interval<point_type>::const_iterator vOld_iter=oldVerticesRange.begin(), vNew_iter=newVerticesRange.begin(); vOld_iter != oldVerticesRangeEnd; ++vOld_iter)
-	  newCoordinates->updatePoint(*vNew_iter, coordinates->restrictPoint(*vOld_iter));
-	for(int v=0, iVertex=oldNumVertices; iVertex < newNumVertices; ++v, ++iVertex) {
-	  const point_type vNew = newVerticesRange.begin() + iVertex;
-	  const point_type endpointA = vertex2edge[v*2+0];
-	  const point_type endpointB = vertex2edge[v*2+1];
-	  std::cout << "Setting coordinates of vertex " << vNew << " between vertices "
-		    << endpointA << " and " << endpointB << std::endl;
-	  const real *coordsA   = coordinates->restrictPoint(endpointA);
-	  real coords[3];
+        const typename Interval<point_type>::const_iterator oldVerticesRangeEnd = oldVerticesRange.end();
+        for (typename Interval<point_type>::const_iterator vOld_iter=oldVerticesRange.begin(), vNew_iter=newVerticesRange.begin(); vOld_iter != oldVerticesRangeEnd; ++vOld_iter)
+          newCoordinates->updatePoint(*vNew_iter, coordinates->restrictPoint(*vOld_iter));
+        for(int v=0, iVertex=oldNumVertices; iVertex < newNumVertices; ++v, ++iVertex) {
+          const point_type vNew = newVerticesRange.begin() + iVertex;
+          const point_type endpointA = vertex2edge[v*2+0];
+          const point_type endpointB = vertex2edge[v*2+1];
+          std::cout << "Setting coordinates of vertex " << vNew << " between vertices "
+                    << endpointA << " and " << endpointB << std::endl;
+          const real *coordsA   = coordinates->restrictPoint(endpointA);
+          real coords[3];
 
-	  for(int d = 0; d < 3; ++d)
-	    coords[d]  = coordsA[d];
-	  const real *coordsB = coordinates->restrictPoint(endpointB);
-	  for(int d = 0; d < 3; ++d) {
-	    coords[d] += coordsB[d];
-	    coords[d] *= 0.5;
-	  } // for
-	  newCoordinates->updatePoint(vNew, coords);
-	} // for
-	delete [] vertex2edge;
+          for(int d = 0; d < 3; ++d)
+            coords[d]  = coordsA[d];
+          const real *coordsB = coordinates->restrictPoint(endpointB);
+          for(int d = 0; d < 3; ++d) {
+            coords[d] += coordsB[d];
+            coords[d] *= 0.5;
+          } // for
+          newCoordinates->updatePoint(vNew, coords);
+        } // for
+        delete [] vertex2edge;
 
-	// Fast stratification
-	const Obj<typename MeshType::label_type>& height = newMesh->createLabel("height");
-	const Obj<typename MeshType::label_type>& depth  = newMesh->createLabel("depth");
-	for (int iCell=0; iCell < newNumCells; ++iCell) {
-	  const point_type cNew = iCell;
-	  height->setCone(0, cNew);
-	  depth->setCone(1, cNew);
-	} // for
-	for (int iVertex=0, newOffset=newNumCellsNormal; iVertex < newNumVertices; ++iVertex) {
-	  const point_type vNew = iVertex + newOffset;
-	  height->setCone(1, vNew);
-	  depth->setCone(0, vNew);
-	} // for
-	newMesh->setHeight(1);
-	newMesh->setDepth(1);
+        // Fast stratification
+        const Obj<typename MeshType::label_type>& height = newMesh->createLabel("height");
+        const Obj<typename MeshType::label_type>& depth  = newMesh->createLabel("depth");
+        for (int iCell=0; iCell < newNumCells; ++iCell) {
+          const point_type cNew = iCell;
+          height->setCone(0, cNew);
+          depth->setCone(1, cNew);
+        } // for
+        for (int iVertex=0, newOffset=newNumCellsNormal; iVertex < newNumVertices; ++iVertex) {
+          const point_type vNew = iVertex + newOffset;
+          height->setCone(1, vNew);
+          depth->setCone(0, vNew);
+        } // for
+        newMesh->setHeight(1);
+        newMesh->setDepth(1);
       } // if/else
 
       // Exchange new boundary vertices

@@ -1,7 +1,7 @@
 #if !defined(__PETSC_HH)
 #define __PETSC_HH
 
-#if defined(PETSC_CLANGUAGE_CXX) && !defined(PETSC_USE_EXTERN_CXX)
+#if defined(PETSC_CLANGUAGE_CXX) && defined(__cplusplus)
 #include <sstream>
 
 namespace PETSc {

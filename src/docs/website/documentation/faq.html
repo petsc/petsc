@@ -26,7 +26,7 @@
           <a href="../documentation/index.html">Documentation</a>
           <ul>
             <li><a href="index.html">Manual pages and Users Manual</a></li>
-            <li><a href="referencing.html">Referencing PETSc</a></li>
+            <li><a href="referencing.html">Citing PETSc</a></li>
             <li><a href="tutorials/index.html">Tutorials</a></li>
             <li><a href="installation.html">Installation</a> </li>
             <li><a href="ams.html">AMS</a></li>
@@ -145,12 +145,13 @@
         <li><a href="#start_in_debugger-doesnotwork">How do I debug if -start_in_debugger does not work on my machine?</a></li>
         <li><a href="#debug-hang">How can I see where my code is hanging?</a></li>
         <li><a href="#debug-inspect">How can I inspect Vec and Mat values when in the debugger?</a></li>
+        <li><a href="#debug-fp">How can I find the cause of floating point exceptions like not-a-number (NaN) or infinity?</a></li>
         <li><a href="#libimf">Error while loading shared libraries: libimf.so: cannot open shared object file: No such file or directory.</a></li>
         <li><a href="#objecttypenotset">What does Object Type not set: Argument # n mean?</a></li>
         <li><a href="#split">What does Error detected in PetscSplitOwnership() about "sum of local lengths ...": mean?</a></li>
         <li><a href="#valgrind">What does Corrupt argument or Caught signal or SEQV or segmentation violation or bus error mean? Can I use valgrind to debug memory corruption issues?</a></li>
         <li><a href="#zeropivot">What does Detected zero pivot in LU factorization mean?</a></li>
-        <li><a href="#xwindows">You create Draw windows or ViewerDraw windows or use options -ksp_monitor or_draw -snes_monitor_draw and the program seems to run OK but windows never open.</a></li>
+        <li><a href="#xwindows">You create Draw windows or ViewerDraw windows or use options -ksp_monitor or_draw -snes_monitor_lg_residualnorm and the program seems to run OK but windows never open.</a></li>
         <li><a href="#memory">The program seems to use more and more memory as it runs, even though you don't think you are allocating more memory.</a></li>
         <li><a href="#key">When calling MatPartitioningApply() you get a message <code>Error! Key 16615 not found</code></a></li>
         <li><a href="#gmres">With GMRES At restart the second residual norm printed does not match the first </a></li>
@@ -372,7 +373,7 @@
         command. In different runs the order at which values arrive at a given
         process (via MPI) can be in a different order, thus the order in which some
         floating point arithmetic operations are performed will be different. Since
-        floating point arithmetic arithmetic is not commutative the computed
+        floating point arithmetic arithmetic is not associative, the computed
         quantity may be (slightly) different. Over a run the many slight
         differences in the inner products and norms will effect all the computed
         results. It is important to realize that none of the computed answers are
@@ -405,7 +406,7 @@
       <p>Here is an example:</p>
       <code>
         [linux]% hg push<br>
-        pushing to https://petsc.cs.iit.edu/petsc/petsc-dev<br>
+        pushing to https://bitbucket.org/petsc/petsc-dev<br>
         searching for changes<br>
         abort: push creates new remote branches!<br>
       </code>
@@ -655,7 +656,7 @@ int main(int ac, char *av[]) {
     strcat(buf," ");
   }
 
-  PetscInitialize(&amp;ac, &amp;av, PETSC_NULL, help);
+  PetscInitialize(&amp;ac, &amp;av, NULL, help);
 
   return WinMain(inst,NULL,buf,SW_SHOWNORMAL);
 }
@@ -1197,11 +1198,11 @@ PETSC_COMM_WORLD = NewComm;
       <ol>
         <li>
           Preallocate enough space for the sparse matrix. For example, rather
-          than calling MatCreateSeqAIJ(comm,n,n,0,PETSC_NULL,&amp;mat); call
-          MatCreateSeqAIJ(comm,n,n,rowmax,PETSC_NULL,&amp;mat); where rowmax is
+          than calling MatCreateSeqAIJ(comm,n,n,0,NULL,&amp;mat); call
+          MatCreateSeqAIJ(comm,n,n,rowmax,NULL,&amp;mat); where rowmax is
           the maximum number of nonzeros expected per row. Or if you know the
           number of nonzeros per row, you can pass this information in instead of
-          the PETSC_NULL argument. See the manual pages for each of the
+          the NULL argument. See the manual pages for each of the
           MatCreateXXX() routines.
         </li>
 
@@ -1358,7 +1359,7 @@ PETSC_COMM_WORLD = NewComm;
         </li>
 
         <li>
-          Run with <code>-mat_view</code> or <code>-mat_view_draw</code> to see
+          Run with <code>-mat_view</code> or <code>-mat_view draw</code> to see
           if the Jacobian looks reasonable
         </li>
 
@@ -1409,14 +1410,14 @@ PETSC_COMM_WORLD = NewComm;
 
         <li>
           Change the units (nondimensionalization), boundary condition scaling,
-          or formulation so that the Jacobian is better conditioned.
+          or formulation so that the Jacobian is better conditioned. See <a href="http://en.wikipedia.org/wiki/Buckingham_π_theorem">http://en.wikipedia.org/wiki/Buckingham_π_theorem</a>
         </li>
 
         <li>
           Mollify features in the function that do not have continuous first
           derivatives (often occurs when there are "if" statements in the
           residual evaluation, e.g.  phase change or TVD limiters). Use
-          a variational inequality solver (SNESVIRS) if the discontinuities are
+          a variational inequality solver (SNESVINEWTONRSLS) if the discontinuities are
           of fundamental importance.
         </li>
 
@@ -1607,6 +1608,15 @@ PETSC_COMM_WORLD = NewComm;
         to add more.
       </p>
 
+      <h3><a name="debug-fp">How can I find the cause of floating point exceptions like not-a-number (NaN) or infinity?</a></h3>
+      <p>
+        The best way to locate floating point exceptions is to use a debugger.
+        On supported architectures (including Linux and glibc-based systems), just run in a debugger and pass -fp_trap to the PETSc application.
+        This will activate signaling exceptions and the debugger will break on the line that first divides by zero or otherwise generates an exceptions.
+        Without a debugger, running with -fp_trap in debug mode will only identify the function in which the error occurred, but not the line or the type of exception.
+        If -fp_trap is not supported on your architecture, consult the documentation for your debugger since there is likely a way to have it catch exceptions.
+      </p>
+
       <h3><a name="libimf">Error while loading shared libraries: libimf.so: cannot open shared object file: No such file or directory.</a></h3>
 
       <p>
@@ -1715,7 +1725,7 @@ source /opt/intel/idb/10.1.012/bin/idbvars.sh
         an error in the code that generates the matrix.
       </p>
 
-      <h3><a name="xwindows">You create <code>Draw</code> windows or <code>ViewerDraw</code> windows or use options <code>-ksp_monitor_draw</code> or <code>-snes_monitor_draw</code> and the program seems to run OK but windows never open.</a></h3>
+      <h3><a name="xwindows">You create <code>Draw</code> windows or <code>ViewerDraw</code> windows or use options <code>-ksp_monitor_lg_residualnorm</code> or <code>-snes_monitor_lg_residualnorm</code> and the program seems to run OK but windows never open.</a></h3>
 
       The libraries were compiled without support for X windows. Make sure that
       ./configure was run with the option <code>--with-x</code>
@@ -1786,7 +1796,7 @@ source /opt/intel/idb/10.1.012/bin/idbvars.sh
 28 KSP Residual norm 2.588642948270e-04
 29 KSP Residual norm 2.268190747349e-04
 30 KSP Residual norm 1.977245964368e-04
-30 KSP Residual norm 1.994426291979e-04 &lt;----- At restart the residual norm is printed a second time  
+30 KSP Residual norm 1.994426291979e-04 &lt;----- At restart the residual norm is printed a second time
     </pre>
 
       <p>
@@ -1856,16 +1866,16 @@ source /opt/intel/idb/10.1.012/bin/idbvars.sh
       <ul>
         <li>get petsc-dev and BuildSystem sources:
           <ul>
-            <li><code>hg clone http://petsc.cs.iit.edu/petsc/petsc-dev</code></li>
-            <li><code>hg clone http://petsc.cs.iit.edu/petsc/BuildSystem petsc-dev/config/BuildSystem</code></li>
+            <li><code>hg clone https://bitbucket.org/petsc/petsc-dev</code></li>
+            <li><code>hg clone https://bitbucket.org/petsc/buildsystem petsc-dev/config/BuildSystem</code></li>
           </ul>
         </li>
 
         <li>
           Find the <b>good</b> and <b>bad</b> markers to
           start the bisection process. This can be done either by checking
-          <code>hg log</code> or <code>hg view</code> or <a href="http://petsc.cs.iit.edu/petsc/petsc-dev">http://petsc.cs.iit.edu/petsc/petsc-dev</a>
-          or <a href="http://petsc.cs.iit.edu/petsc/BuildSystem">http://petsc.cs.iit.edu/petsc/BuildSystem</a>
+          <code>hg log</code> or <code>hg view</code> or <a href="https://bitbucket.org/petsc/petsc-dev">https://bitbucket.org/petsc/petsc-dev</a>
+          or <a href="https://bitbucket.org/petsc/buildsystem">https://bitbucket.org/petsc/buildsystem</a>
           or the web history of petsc-release clones. Lets say the known bad
           changeset is 21af4baa815c and known good changeset is 5ae5ab319844
         </li>

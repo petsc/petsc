@@ -13,7 +13,7 @@ PetscErrorCode MatDestroy_FFT(Mat A)
   Mat_FFT        *fft = (Mat_FFT*)A->data;
 
   PetscFunctionBegin;
-  if (fft->matdestroy){
+  if (fft->matdestroy) {
     ierr = (fft->matdestroy)(A);CHKERRQ(ierr);
   }
   ierr = PetscFree(fft->dim);CHKERRQ(ierr);
@@ -22,7 +22,7 @@ PetscErrorCode MatDestroy_FFT(Mat A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatCreateFFT"
 /*@
       MatCreateFFT - Creates a matrix object that provides FFT via an external package
@@ -42,9 +42,9 @@ PetscErrorCode MatDestroy_FFT(Mat A)
 + -mat_fft_type - set FFT type
 
    Level: intermediate
-   
+
 @*/
-PetscErrorCode MatCreateFFT(MPI_Comm comm,PetscInt ndim,const PetscInt dim[],const MatType mattype,Mat* A)
+PetscErrorCode MatCreateFFT(MPI_Comm comm,PetscInt ndim,const PetscInt dim[],MatType mattype,Mat *A)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size;
@@ -56,11 +56,11 @@ PetscErrorCode MatCreateFFT(MPI_Comm comm,PetscInt ndim,const PetscInt dim[],con
   if (ndim < 1) SETERRQ1(comm,PETSC_ERR_USER,"ndim %d must be > 0",ndim);
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
 
-  ierr = MatCreate(comm,&FFT);CHKERRQ(ierr);
-  ierr = PetscNewLog(FFT,Mat_FFT,&fft);CHKERRQ(ierr);
+  ierr      = MatCreate(comm,&FFT);CHKERRQ(ierr);
+  ierr      = PetscNewLog(FFT,Mat_FFT,&fft);CHKERRQ(ierr);
   FFT->data = (void*)fft;
-  N = 1;
-  for (i=0; i<ndim; i++){
+  N         = 1;
+  for (i=0; i<ndim; i++) {
     if (dim[i] < 1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"dim[%d]=%d must be > 0",i,dim[i]);
     N *= dim[i];
   }
@@ -71,13 +71,14 @@ PetscErrorCode MatCreateFFT(MPI_Comm comm,PetscInt ndim,const PetscInt dim[],con
   fft->ndim = ndim;
   fft->n    = PETSC_DECIDE;
   fft->N    = N;
-  fft->data = PETSC_NULL;
-  
-  ierr = MatSetType(FFT,mattype);CHKERRQ(ierr); 
+  fft->data = NULL;
+
+  ierr = MatSetType(FFT,mattype);CHKERRQ(ierr);
+
   FFT->ops->destroy = MatDestroy_FFT;
- 
+
   /* get runtime options */
-  ierr = PetscOptionsBegin(((PetscObject)FFT)->comm,((PetscObject)FFT)->prefix,"FFT Options","Mat");CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)FFT),((PetscObject)FFT)->prefix,"FFT Options","Mat");CHKERRQ(ierr);
   PetscOptionsEnd();
 
   *A = FFT;

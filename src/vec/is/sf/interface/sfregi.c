@@ -1,0 +1,76 @@
+#include <petsc-private/sfimpl.h>     /*I  "petscsf.h"  I*/
+
+#if defined(PETSC_HAVE_MPI_WIN_CREATE)
+PETSC_EXTERN PetscErrorCode PetscSFCreate_Window(PetscSF);
+#endif
+PETSC_EXTERN PetscErrorCode PetscSFCreate_Basic(PetscSF);
+
+PetscFunctionList PetscSFunctionList;
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSFRegisterAll"
+/*@C
+   PetscSFRegisterAll - Registers all the PetscSF communication implementations
+
+   Not Collective
+
+   Level: advanced
+
+.keywords: PetscSF, register, all
+
+.seealso:  PetscSFRegisterDestroy()
+@*/
+PetscErrorCode  PetscSFRegisterAll(const char path[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscSFRegisterAllCalled = PETSC_TRUE;
+#if defined(PETSC_HAVE_MPI_WIN_CREATE) && defined(PETSC_HAVE_MPI_TYPE_DUP)
+  ierr = PetscSFRegisterDynamic(PETSCSFWINDOW,       path,"PetscSFCreate_Window",       PetscSFCreate_Window);CHKERRQ(ierr);
+#endif
+  ierr = PetscSFRegisterDynamic(PETSCSFBASIC,        path,"PetscSFCreate_Basic",        PetscSFCreate_Basic);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSFRegister"
+/*@C
+  PetscSFRegister - See PetscSFRegisterDynamic()
+
+  Level: advanced
+@*/
+PetscErrorCode  PetscSFRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(PetscSF))
+{
+  char           fullname[PETSC_MAX_PATH_LEN];
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscFunctionListConcat(path,name,fullname);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&PetscSFunctionList,sname,fullname,(void (*)(void))function);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSFRegisterDestroy"
+/*@
+   PetscSFRegisterDestroy - Frees the list of communication implementations registered by PetscSFRegisterDynamic()
+
+   Not Collective
+
+   Level: advanced
+
+.keywords: PetscSF, register, destroy
+
+.seealso: PetscSFRegisterAll()
+@*/
+PetscErrorCode  PetscSFRegisterDestroy(void)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscFunctionListDestroy(&PetscSFunctionList);CHKERRQ(ierr);
+
+  PetscSFRegisterAllCalled = PETSC_FALSE;
+  PetscFunctionReturn(0);
+}

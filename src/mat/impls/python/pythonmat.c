@@ -23,6 +23,7 @@
 PetscErrorCode  MatPythonSetType(Mat mat,const char pyname[])
 {
   PetscErrorCode ierr;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidCharPointer(pyname,2);
@@ -59,6 +60,7 @@ PetscErrorCode  MatPythonSetType(Mat mat,const char pyname[])
 PetscErrorCode  MatPythonCreate(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt N,const char pyname[],Mat *A)
 {
   PetscErrorCode ierr;
+
   PetscFunctionBegin;
   PetscValidCharPointer(pyname,6);
   PetscValidPointer(A,6);

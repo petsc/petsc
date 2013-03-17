@@ -7,7 +7,7 @@ static char help[] = "Tests MatNorm(), MatLUFactor(), MatSolve() and MatSolveAdd
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat            C; 
+  Mat            C;
   PetscInt       i,j,m = 3,n = 3,Ii,J;
   PetscErrorCode ierr;
   PetscBool      flg;
@@ -18,14 +18,14 @@ int main(int argc,char **args)
   MatFactorInfo  info;
   PetscMPIInt    size;
 
-  PetscInitialize(&argc,&args,(char *)0,help);
+  PetscInitialize(&argc,&args,(char*)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size != 1) SETERRQ(PETSC_COMM_WORLD,1,"This is a uniprocessor example only!");
   ierr = MatCreate(PETSC_COMM_WORLD,&C);CHKERRQ(ierr);
   ierr = MatSetSizes(C,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n);CHKERRQ(ierr);
   ierr = MatSetFromOptions(C);CHKERRQ(ierr);
   ierr = MatSetUp(C);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL,"-symmetric",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,"-symmetric",&flg);CHKERRQ(ierr);
   if (flg) {  /* Treat matrix as symmetric only if we set this flag */
     ierr = MatSetOption(C,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
     ierr = MatSetOption(C,MAT_SYMMETRY_ETERNAL,PETSC_TRUE);CHKERRQ(ierr);
@@ -63,30 +63,31 @@ int main(int argc,char **args)
   ierr = MatNorm(C,NORM_INFINITY,&norm);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF,"Infinity norm of matrix %G\n",norm);CHKERRQ(ierr);
 
-  ierr = MatFactorInfoInitialize(&info);CHKERRQ(ierr);
-  info.fill      = 2.0;
-  info.dtcol     = 0.0; 
-  info.zeropivot = 1.e-14; 
+  ierr               = MatFactorInfoInitialize(&info);CHKERRQ(ierr);
+  info.fill          = 2.0;
+  info.dtcol         = 0.0;
+  info.zeropivot     = 1.e-14;
   info.pivotinblocks = 1.0;
-  ierr = MatLUFactor(C,perm,iperm,&info);CHKERRQ(ierr); 
+
+  ierr = MatLUFactor(C,perm,iperm,&info);CHKERRQ(ierr);
   ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   /* Test MatSolve */
-  ierr = MatSolve(C,b,x);CHKERRQ(ierr); 
+  ierr = MatSolve(C,b,x);CHKERRQ(ierr);
   ierr = VecView(b,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
   ierr = VecView(x,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
   ierr = VecAXPY(x,-1.0,u);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
-  if (norm > tol){
+  if (norm > tol) {
     ierr = PetscPrintf(PETSC_COMM_SELF,"MatSolve: Norm of error %G\n",norm);CHKERRQ(ierr);
   }
 
   /* Test MatSolveAdd */
-  ierr = MatSolveAdd(C,b,y,x);CHKERRQ(ierr); 
+  ierr = MatSolveAdd(C,b,y,x);CHKERRQ(ierr);
   ierr = VecAXPY(x,-1.0,y);CHKERRQ(ierr);
   ierr = VecAXPY(x,-1.0,u);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
-  if (norm > tol){
+  if (norm > tol) {
     ierr = PetscPrintf(PETSC_COMM_SELF,"MatSolveAdd(): Norm of error %G\n",norm);CHKERRQ(ierr);
   }
 

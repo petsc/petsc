@@ -21,8 +21,8 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
   options->numLevels = 1;
 
   ierr = PetscOptionsBegin(comm, "", "Options for the Sieve package tests", "Sieve");CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-debug", "Debugging flag", "refineTests", options->debug, &options->debug, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-num_levels", "The number of refinement levels", "refineTests", options->numLevels, &options->numLevels, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-debug", "Debugging flag", "refineTests", options->debug, &options->debug, NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-num_levels", "The number of refinement levels", "refineTests", options->numLevels, &options->numLevels, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
@@ -100,7 +100,7 @@ PetscErrorCode SerialTetrahedronTest(const Options *options)
       if (detJ <= 0.0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB, "Inverted element, detJ %g", detJ);
     }
     mesh = newMesh;
-    newMesh = PETSC_NULL;
+    newMesh = NULL;
   }
   PetscFunctionReturn(0);
 }
@@ -185,7 +185,7 @@ PetscErrorCode SerialSplitDoubletTetrahedronTest(const Options *options)
       if (detJ <= 0.0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB, "Inverted element, detJ %g", detJ);
     }
     mesh = newMesh;
-    newMesh = PETSC_NULL;
+    newMesh = NULL;
   }
   PetscFunctionReturn(0);
 }
@@ -274,7 +274,7 @@ PetscErrorCode ParallelTetrahedronTest(const Options *options)
       if (detJ <= 0.0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB, "Inverted element, detJ %g", detJ);
     }
     mesh = newMesh;
-    newMesh = PETSC_NULL;
+    newMesh = NULL;
   }
   PetscFunctionReturn(0);
 }

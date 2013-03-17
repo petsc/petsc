@@ -1,17 +1,15 @@
 
 #include <petscmat.h>
 
-EXTERN_C_BEGIN
-extern PetscErrorCode  MatPartitioningCreate_Current(MatPartitioning);
-extern PetscErrorCode  MatPartitioningCreate_Square(MatPartitioning);
-extern PetscErrorCode  MatPartitioningCreate_Parmetis(MatPartitioning);
-extern PetscErrorCode  MatPartitioningCreate_Chaco(MatPartitioning);
-extern PetscErrorCode  MatPartitioningCreate_Party(MatPartitioning);
-extern PetscErrorCode  MatPartitioningCreate_PTScotch(MatPartitioning);
-EXTERN_C_END
+PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Current(MatPartitioning);
+PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Square(MatPartitioning);
+PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Parmetis(MatPartitioning);
+PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Chaco(MatPartitioning);
+PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Party(MatPartitioning);
+PETSC_EXTERN PetscErrorCode MatPartitioningCreate_PTScotch(MatPartitioning);
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatPartitioningRegisterAll" 
+#undef __FUNCT__
+#define __FUNCT__ "MatPartitioningRegisterAll"
 /*@C
   MatPartitioningRegisterAll - Registers all of the matrix Partitioning routines in PETSc.
 
@@ -20,8 +18,8 @@ EXTERN_C_END
   Level: developer
 
   Adding new methods:
-  To add a new method to the registry. Copy this routine and 
-  modify it to incorporate a call to MatPartitioningRegisterDynamic() for 
+  To add a new method to the registry. Copy this routine and
+  modify it to incorporate a call to MatPartitioningRegisterDynamic() for
   the new method, after the current list.
 
   Restricting the choices: To prevent all of the methods from being
@@ -40,6 +38,7 @@ PetscErrorCode  MatPartitioningRegisterAll(const char path[])
 
   PetscFunctionBegin;
   MatPartitioningRegisterAllCalled = PETSC_TRUE;
+
   ierr = MatPartitioningRegisterDynamic(MATPARTITIONINGCURRENT,path,"MatPartitioningCreate_Current",MatPartitioningCreate_Current);CHKERRQ(ierr);
   ierr = MatPartitioningRegisterDynamic("square",path,"MatPartitioningCreate_Square",MatPartitioningCreate_Square);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_PARMETIS)

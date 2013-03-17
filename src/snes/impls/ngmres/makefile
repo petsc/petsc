@@ -2,11 +2,9 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = snesngmres.c
+SOURCEC  = snesngmres.c ngmresfunc.c anderson.c
 SOURCEF  =
 SOURCEH  =
-OBJSC    = snesngmres.o
-OBJSF    =
 LIBBASE  = libpetscsnes
 MANSEC   = SNES
 LOCDIR   = src/snes/impls/ngmres/

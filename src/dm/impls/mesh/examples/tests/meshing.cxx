@@ -25,9 +25,9 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options * options) {
   options->interpolate = PETSC_TRUE;
 
   ierr = PetscOptionsBegin(comm, "", "Options for meshing testing", "Meshing");CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-debug", "The debugging level", "meshing.cxx", options->debug, &options->debug, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-dim", "The embedded dimension", "meshing.cxx", options->dim, &options->dim, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-interpolate", "construct (don't eliminate) intermediate elements", "meshing.cxx", options->interpolate, &options->interpolate, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-debug", "The debugging level", "meshing.cxx", options->debug, &options->debug, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-dim", "The embedded dimension", "meshing.cxx", options->dim, &options->dim, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-interpolate", "construct (don't eliminate) intermediate elements", "meshing.cxx", options->interpolate, &options->interpolate, NULL);CHKERRQ(ierr);
   PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
@@ -60,7 +60,7 @@ PetscErrorCode CreateSimplex(MPI_Comm comm, ALE::Obj<ALE::Mesh> &m, Options * op
     }
     m->view("simplex mesh", comm);
   }
-  
+
   delete coord_template;
 }
 

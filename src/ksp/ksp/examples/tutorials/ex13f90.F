@@ -76,7 +76,7 @@
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                 Beginning of program
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr)
@@ -99,9 +99,9 @@
       call UserInitializeLinearSolver(m,n,userctx,ierr)
 
 !  Allocate arrays to hold the solution to the linear system.  This
-!  approach is not normally done in PETSc programs, but in this case, 
-!  since we are calling these routines from a non-PETSc program, we 
-!  would like to reuse the data structures from another code. So in 
+!  approach is not normally done in PETSc programs, but in this case,
+!  since we are calling these routines from a non-PETSc program, we
+!  would like to reuse the data structures from another code. So in
 !  the context of a larger application these would be provided by
 !  other (non-PETSc) parts of the application code.
 
@@ -140,8 +140,8 @@
          call UserDoLinearSolver(rho,userctx,userb,userx,ierr)
 
 !        Compute error: Note that this could (and usually should) all be done
-!        using the PETSc vector operations. Here we demonstrate using more 
-!        standard programming practices to show how they may be mixed with 
+!        using the PETSc vector operations. Here we demonstrate using more
+!        standard programming practices to show how they may be mixed with
 !        PETSc.
          cnorm = 0.0
          do 90 j=1,n
@@ -191,7 +191,7 @@
 
 
 !  Here we assume use of a grid of size m x n, with all points on the
-!  interior of the domain, i.e., we do not include the points corresponding 
+!  interior of the domain, i.e., we do not include the points corresponding
 !  to homogeneous Dirichlet boundary conditions.  We assume that the domain
 !  is [0,1]x[0,1].
 
@@ -212,7 +212,7 @@
      &     PETSC_NULL_SCALAR,b,ierr)
       call VecDuplicate(b,x,ierr)
 
-!  Create linear solver context. This will be used repeatedly for all 
+!  Create linear solver context. This will be used repeatedly for all
 !  the linear solves needed.
 
       call KSPCreate(PETSC_COMM_SELF,ksp,ierr)
@@ -273,15 +273,15 @@
 !  the four corners, each edge and then the interior. Then we won't
 !  have the slow if-tests inside the loop.
 !
-!  Compute the operator 
-!          -div rho grad 
+!  Compute the operator
+!          -div rho grad
 !  on an m by n grid with zero Dirichlet boundary conditions. The rho
-!  is assumed to be given on the same grid as the finite difference 
+!  is assumed to be given on the same grid as the finite difference
 !  stencil is applied.  For a staggered grid, one would have to change
 !  things slightly.
 
       II = 0
-      do 110 j=1,n 
+      do 110 j=1,n
          do 100 i=1,m
             if (j .gt. 1) then
                JJ = II - m
@@ -335,27 +335,27 @@
 !     These options will override those specified above as long as
 !     KSPSetFromOptions() is called _after_ any other customization
 !     routines.
-! 
+!
 !     Run the program with the option -help to see all the possible
 !     linear solver options.
 !
       call KSPSetFromOptions(ksp,ierr)
 
 !
-!     This allows the PETSc linear solvers to compute the solution 
+!     This allows the PETSc linear solvers to compute the solution
 !     directly in the user's array rather than in the PETSc vector.
-! 
-!     This is essentially a hack and not highly recommend unless you 
+!
+!     This is essentially a hack and not highly recommend unless you
 !     are quite comfortable with using PETSc. In general, users should
-!     write their entire application using PETSc vectors rather than 
+!     write their entire application using PETSc vectors rather than
 !     arrays.
 !
       call VecPlaceArray(x,userx,ierr)
       call VecPlaceArray(b,userb,ierr)
 
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                      Solve the linear system
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
       call KSPSolve(ksp,b,x,ierr)
 

@@ -1,9 +1,9 @@
-
+static char help[] = "Tests VecMDot() and VecDot()\n";
 #include "petscvec.h"
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
-int main( int argc, char **argv )
+int main(int argc, char **argv)
 {
   PetscErrorCode ierr;
   Vec            *V,t;
@@ -12,13 +12,13 @@ int main( int argc, char **argv )
   PetscScalar    *val;
   PetscBool      mdot;
 
-  PetscInitialize(&argc,&argv,(char*)0,"");
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-k",&k,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL,"-mdot",&mdot);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Test with %D random vectors of length %D",k,n);CHKERRQ(ierr); 
-  if (mdot) ierr = PetscPrintf(PETSC_COMM_WORLD,"(mdot)",k,n);CHKERRQ(ierr); 
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"\n",k,n);CHKERRQ(ierr); 
+  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscOptionsGetInt(NULL,"-n",&n,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-k",&k,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,"-mdot",&mdot);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Test with %D random vectors of length %D",k,n);CHKERRQ(ierr);
+  if (mdot) ierr = PetscPrintf(PETSC_COMM_WORLD,"(mdot)",k,n);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"\n",k,n);CHKERRQ(ierr);
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rctx);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rctx);CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_WORLD,&t);CHKERRQ(ierr);
@@ -27,9 +27,9 @@ int main( int argc, char **argv )
   ierr = VecDuplicateVecs(t,k,&V);CHKERRQ(ierr);
   ierr = VecSetRandom(t,rctx);CHKERRQ(ierr);
   ierr = PetscMalloc(k*sizeof(PetscScalar),&val);CHKERRQ(ierr);
-  for (i=0;i<k;i++) { ierr = VecSetRandom(V[i],rctx);CHKERRQ(ierr); }
-  for (reps=0;reps<20;reps++) {
-    for (i=1;i<k;i++) {
+  for (i=0; i<k; i++) { ierr = VecSetRandom(V[i],rctx);CHKERRQ(ierr); }
+  for (reps=0; reps<20; reps++) {
+    for (i=1; i<k; i++) {
       if (mdot) {
         ierr = VecMDot(t,i,V,val);CHKERRQ(ierr);
       } else {

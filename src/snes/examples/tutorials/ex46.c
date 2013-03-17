@@ -9,9 +9,10 @@ T*/
 
 
 #include <petscsnes.h>
+#include <petscdmda.h>
 
-/* 
-   User-defined application context - contains data needed by the 
+/*
+   User-defined application context - contains data needed by the
    application-provided call-back routines, FormJacobianLocal() and
    FormFunctionLocal().
 */
@@ -21,7 +22,7 @@ typedef struct {
   PetscInt    m;  /* Exponent for A */
 } AppCtx;
 
-/* 
+/*
    User-defined routines
 */
 extern PetscErrorCode FormFunctionLocal(DMDALocalInfo*,PetscScalar**,PetscScalar**,AppCtx*);
@@ -31,34 +32,34 @@ extern PetscErrorCode FormJacobianLocal(DMDALocalInfo*,PetscScalar**,Mat,AppCtx*
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  SNES                   snes;                 /* nonlinear solver */
-  AppCtx                 user;                 /* user-defined work context */
-  PetscInt               its;                  /* iterations for convergence */
-  PetscErrorCode         ierr;
-  DM                     da;
+  SNES           snes;                         /* nonlinear solver */
+  AppCtx         user;                         /* user-defined work context */
+  PetscInt       its;                          /* iterations for convergence */
+  PetscErrorCode ierr;
+  DM             da;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  PetscInitialize(&argc,&argv,(char *)0,help);
+  PetscInitialize(&argc,&argv,(char*)0,help);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize problem parameters
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD, "", "Surface Process Problem Options", "SNES");CHKERRQ(ierr);
-    user.D = 1.0;
-    ierr = PetscOptionsReal("-D", "The diffusion coefficient D", __FILE__, user.D, &user.D, PETSC_NULL);CHKERRQ(ierr);
-    user.K = 1.0;
-    ierr = PetscOptionsReal("-K", "The advection coefficient K", __FILE__, user.K, &user.K, PETSC_NULL);CHKERRQ(ierr);
-    user.m = 1;
-    ierr = PetscOptionsInt("-m", "The exponent for A", __FILE__, user.m, &user.m, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  ierr   = PetscOptionsBegin(PETSC_COMM_WORLD, "", "Surface Process Problem Options", "SNES");CHKERRQ(ierr);
+  user.D = 1.0;
+  ierr   = PetscOptionsReal("-D", "The diffusion coefficient D", __FILE__, user.D, &user.D, NULL);CHKERRQ(ierr);
+  user.K = 1.0;
+  ierr   = PetscOptionsReal("-K", "The advection coefficient K", __FILE__, user.K, &user.K, NULL);CHKERRQ(ierr);
+  user.m = 1;
+  ierr   = PetscOptionsInt("-m", "The exponent for A", __FILE__, user.m, &user.m, NULL);CHKERRQ(ierr);
+  ierr   = PetscOptionsEnd();CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da);CHKERRQ(ierr);
   ierr = DMDASetUniformCoordinates(da, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0);CHKERRQ(ierr);
   ierr = DMSetApplicationContext(da,&user);CHKERRQ(ierr);
   ierr = SNESCreate(PETSC_COMM_WORLD, &snes);CHKERRQ(ierr);
@@ -67,7 +68,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set local function evaluation routine
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMDASetLocalFunction(da, (DMDALocalFunction1) FormFunctionLocal);CHKERRQ(ierr);
+  ierr = DMDASNESSetFunctionLocal(da,INSERT_VALUES,(PetscErrorCode (*)(DMDALocalInfo*,void*,void*,void*))FormFunctionLocal,&user);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Customize solver; set runtime options
@@ -111,9 +112,7 @@ PetscScalar funcA(PetscScalar z, AppCtx *user)
   PetscScalar v = 1.0;
   PetscInt    i;
 
-  for(i = 0; i < user->m; ++i) {
-    v *= z;
-  }
+  for (i = 0; i < user->m; ++i) v *= z;
   return v;
 }
 
@@ -124,15 +123,13 @@ PetscScalar funcADer(PetscScalar z, AppCtx *user)
   PetscScalar v = 1.0;
   PetscInt    i;
 
-  for(i = 0; i < user->m-1; ++i) {
-    v *= z;
-  }
+  for (i = 0; i < user->m-1; ++i) v *= z;
   return (PetscScalar)user->m*v;
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "FormFunctionLocal"
-/* 
+/*
    FormFunctionLocal - Evaluates nonlinear function, F(x).
 */
 PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,PetscScalar **x,PetscScalar **f,AppCtx *user)
@@ -145,25 +142,23 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,PetscScalar **x,PetscScalar
   PetscInt       i,j;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
-
-  D      = user->D;
-  K      = user->K;
-  hx     = 1.0/(PetscReal)(info->mx-1);
-  hy     = 1.0/(PetscReal)(info->my-1);
-  hxdhy  = hx/hy; 
-  hydhx  = hy/hx;
+  PetscFunctionBeginUser;
+  D     = user->D;
+  K     = user->K;
+  hx    = 1.0/(PetscReal)(info->mx-1);
+  hy    = 1.0/(PetscReal)(info->my-1);
+  hxdhy = hx/hy;
+  hydhx = hy/hx;
   /*
      Compute function over the locally owned part of the grid
   */
-  ierr = DMDAGetCoordinateDA(info->da, &coordDA);CHKERRQ(ierr);
-  ierr = DMDAGetCoordinates(info->da, &coordinates);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDM(info->da, &coordDA);CHKERRQ(ierr);
+  ierr = DMGetCoordinates(info->da, &coordinates);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(coordDA, coordinates, &coords);CHKERRQ(ierr);
   for (j=info->ys; j<info->ys+info->ym; j++) {
     for (i=info->xs; i<info->xs+info->xm; i++) {
-      if (i == 0 || j == 0 || i == info->mx-1 || j == info->my-1) {
-        f[j][i] = x[j][i];
-      } else {
+      if (i == 0 || j == 0 || i == info->mx-1 || j == info->my-1) f[j][i] = x[j][i];
+      else {
         u       = x[j][i];
         ux      = (x[j][i+1] - x[j][i])/hx;
         uy      = (x[j+1][i] - x[j][i])/hy;
@@ -176,8 +171,8 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,PetscScalar **x,PetscScalar
   }
   ierr = DMDAVecRestoreArray(coordDA, coordinates, &coords);CHKERRQ(ierr);
   ierr = PetscLogFlops(11*info->ym*info->xm);CHKERRQ(ierr);
-  PetscFunctionReturn(0); 
-} 
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "FormJacobianLocal"
@@ -192,21 +187,21 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat jac,App
   PetscInt       i, j,k;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
-  D      = user->D;
-  K      = user->K;
-  hx     = 1.0/(PetscReal)(info->mx-1);
-  hy     = 1.0/(PetscReal)(info->my-1);
-  hxdhy  = hx/hy; 
-  hydhx  = hy/hx;
+  PetscFunctionBeginUser;
+  D     = user->D;
+  K     = user->K;
+  hx    = 1.0/(PetscReal)(info->mx-1);
+  hy    = 1.0/(PetscReal)(info->my-1);
+  hxdhy = hx/hy;
+  hydhx = hy/hx;
 
-  /* 
+  /*
      Compute entries for the locally owned part of the Jacobian.
       - Currently, all PETSc parallel matrix formats are partitioned by
-        contiguous chunks of rows across the processors. 
+        contiguous chunks of rows across the processors.
       - Each processor needs to insert only elements that it owns
         locally (but any non-local elements will be sent to the
-        appropriate processor during matrix assembly). 
+        appropriate processor during matrix assembly).
       - Here, we set all entries for a particular row at once.
       - We can set matrix entries either using either
         MatSetValuesLocal() or MatSetValues(), as discussed above.
@@ -223,18 +218,16 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat jac,App
         ux        = (x[j][i+1] - x[j][i])/hx;
         uy        = (x[j+1][i] - x[j][i])/hy;
         normGradZ = PetscRealPart(sqrt(ux*ux + uy*uy));
-        //PetscPrintf(PETSC_COMM_SELF, "i: %d j: %d normGradZ: %g\n", i, j, normGradZ);
-        if (normGradZ < 1.0e-8) {
-          normGradZ = 1.0e-8;
-        }
-        A         = funcA(x[j][i], user);
+        /* PetscPrintf(PETSC_COMM_SELF, "i: %d j: %d normGradZ: %g\n", i, j, normGradZ); */
+        if (normGradZ < 1.0e-8) normGradZ = 1.0e-8;
+        A = funcA(x[j][i], user);
 
         v[0] = -D*hxdhy;                                                                          col[0].j = j - 1; col[0].i = i;
         v[1] = -D*hydhx;                                                                          col[1].j = j;     col[1].i = i-1;
         v[2] = D*2.0*(hydhx + hxdhy) + K*(funcADer(x[j][i], user)*normGradZ - A/normGradZ)*hx*hy; col[2].j = row.j; col[2].i = row.i;
         v[3] = -D*hydhx + K*A*hx*hy/(2.0*normGradZ);                                              col[3].j = j;     col[3].i = i+1;
         v[4] = -D*hxdhy + K*A*hx*hy/(2.0*normGradZ);                                              col[4].j = j + 1; col[4].i = i;
-        for(k = 0; k < 5; ++k) {
+        for (k = 0; k < 5; ++k) {
           if (PetscIsInfOrNanScalar(v[k])) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FP, "Invalid residual: %g", PetscRealPart(v[k]));
         }
         ierr = MatSetValuesStencil(jac,1,&row,5,col,v,INSERT_VALUES);CHKERRQ(ierr);
@@ -242,7 +235,7 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat jac,App
     }
   }
 
-  /* 
+  /*
      Assemble matrix, using the 2-step process:
        MatAssemblyBegin(), MatAssemblyEnd().
   */

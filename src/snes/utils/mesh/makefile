@@ -2,20 +2,16 @@
 
 ALL: lib
 
-CFLAGS   = 
+CFLAGS   =
 FFLAGS   =
 SOURCEC  = dmmeshsnes.c
 SOURCEF  =
-SOURCEH  = 
-OBJSC    = $(SOURCEC:.c=.o)
-OBJSF    =
+SOURCEH  =
 LIBBASE  = libpetscsnes
 MANSEC   = SNES
-DIRS     = 
-EDIRS    = 
+DIRS     =
 LOCDIR   = src/snes/utils/mesh/
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules
 include ${PETSC_DIR}/conf/test
-

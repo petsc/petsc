@@ -1,13 +1,11 @@
 #requirespackage 'PETSC_HAVE_CUSP'
 ALL: lib
 
-CFLAGS   = 
+CFLAGS   =
 FFLAGS   =
 SOURCECU = mpiaijcusp.cu mpiaijAssemble.cu
 SOURCEF	 =
 SOURCEH	 = mpicuspmatimpl.h
-OBJSCU   = mpiaijcusp.o  mpiaijAssemble.o
-OBJSF	 =
 LIBBASE	 = libpetscmat
 DIRS	 =
 MANSEC	 = Mat
