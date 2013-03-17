@@ -3,8 +3,7 @@
  *
  *  Created on: Jun 21, 2012
  *      Written by Hong Zhang (zhang@vt.edu), Virginia Tech
- *
- *      Contributed by Emil Constantinescu (emconsta@mcs.anl.gov), Argonne National Laboratory
+ *                 Emil Constantinescu (emconsta@mcs.anl.gov), Argonne National Laboratory
  */
 /*
   Code for timestepping with Extrapolated IMEX methods
