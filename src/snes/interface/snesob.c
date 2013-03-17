@@ -14,6 +14,8 @@
 .      obj - real to hold the objective value
 -      ctx - optional user-defined objective context
 
+   Level: advanced
+
 .seealso:   SNESSetFunction(), SNESGetFunction(), SNESSetObjectiveFunction(), SNESGetObjectiveFunction()
 M*/
 

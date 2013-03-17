@@ -9,7 +9,7 @@ timestepping.  Runtime options include:\n\
 
 /*
    Concepts: TS^time-dependent nonlinear problems
-             Variational inequality nonlinear solver
+   Concepts: TS^Variational inequality nonlinear solver
    Processors: n
 */
 

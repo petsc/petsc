@@ -11,6 +11,8 @@
 +      object - the PETSc object to be written
 -      viewer - viewer it is to be written to
 
+   Level: developer
+
 .seealso:   PetscViewerVTKAddField()
 M*/
 

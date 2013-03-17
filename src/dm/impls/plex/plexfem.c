@@ -323,8 +323,8 @@ PetscErrorCode DMPlexProjectFunctionLocal(DM dm, PetscInt numComp, PetscScalar (
   This currently just calls the function with the coordinates of each vertex and edge midpoint, and stores the result in a vector.
   We will eventually fix it.
 
-,seealso: DMPlexComputeL2Diff()
-*/
+.seealso: DMPlexComputeL2Diff()
+@*/
 PetscErrorCode DMPlexProjectFunction(DM dm, PetscInt numComp, PetscScalar (**funcs)(const PetscReal []), InsertMode mode, Vec X)
 {
   Vec            localX;
@@ -356,7 +356,7 @@ PetscErrorCode DMPlexProjectFunction(DM dm, PetscInt numComp, PetscScalar (**fun
   Level: developer
 
 .seealso: DMPlexProjectFunction()
-*/
+@*/
 PetscErrorCode DMPlexComputeL2Diff(DM dm, PetscQuadrature quad[], PetscScalar (**funcs)(const PetscReal []), Vec X, PetscReal *diff)
 {
   const PetscInt debug = 0;
@@ -454,7 +454,7 @@ PetscErrorCode DMPlexComputeL2Diff(DM dm, PetscQuadrature quad[], PetscScalar (*
   like a GPU, or vectorize on a multicore machine.
 
 .seealso: DMPlexComputeJacobianActionFEM()
-*/
+@*/
 PetscErrorCode DMPlexComputeResidualFEM(DM dm, Vec X, Vec F, void *user)
 {
   DM_Plex         *mesh = (DM_Plex*) dm->data;
@@ -562,7 +562,7 @@ PetscErrorCode DMPlexComputeResidualFEM(DM dm, Vec X, Vec F, void *user)
   like a GPU, or vectorize on a multicore machine.
 
 .seealso: DMPlexComputeResidualFEM()
-*/
+@*/
 PetscErrorCode DMPlexComputeJacobianActionFEM(DM dm, Mat Jac, Vec X, Vec F, void *user)
 {
   DM_Plex         *mesh = (DM_Plex*) dm->data;
@@ -660,7 +660,7 @@ PetscErrorCode DMPlexComputeJacobianActionFEM(DM dm, Mat Jac, Vec X, Vec F, void
   like a GPU, or vectorize on a multicore machine.
 
 .seealso: FormFunctionLocal()
-*/
+@*/
 PetscErrorCode DMPlexComputeJacobianFEM(DM dm, Vec X, Mat Jac, Mat JacP, MatStructure *str,void *user)
 {
   DM_Plex         *mesh = (DM_Plex*) dm->data;
