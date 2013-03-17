@@ -916,6 +916,12 @@ PetscErrorCode  PetscFinalize(void)
   }
 #endif
 
+  flg1 = PETSC_FALSE;
+  ierr = PetscOptionsGetBool(NULL,"-server",&flg1,NULL);CHKERRQ(ierr);
+  if (flg1) {
+    ierr = PetscPOpen(PETSC_COMM_WORLD,NULL,"pkill -9 petscwebserver","r",NULL);CHKERRQ(ierr);
+  }
+
   ierr = PetscHMPIFinalize();CHKERRQ(ierr);
 
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
