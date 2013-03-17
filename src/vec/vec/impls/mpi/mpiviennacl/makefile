@@ -1,10 +1,10 @@
 #requirespackage 'PETSC_HAVE_VIENNACL'
-#requireslanguage CXXONLY
+
 ALL: lib
 
 CFLAGS   = ${PNETCDF_INCLUDE}
 FFLAGS   =
-SOURCEC  = mpiviennacl.cpp
+SOURCEC  = mpiviennacl.cxx
 SOURCEF  =
 SOURCEH  =
 LIBBASE  = libpetscvec

@@ -1,10 +1,10 @@
 #requirespackage 'PETSC_HAVE_VIENNACL'
-#requireslanguage CXXONLY
+
 ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = vecviennacl.cpp
+SOURCEC  = vecviennacl.cxx
 SOURCEF  =
 SOURCEH  = viennaclvecimpl.h
 LIBBASE  = libpetscvec

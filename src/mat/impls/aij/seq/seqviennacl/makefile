@@ -1,11 +1,10 @@
 #requirespackage 'PETSC_HAVE_VIENNACL'
-#requireslanguage CXXONLY
 
 ALL: lib
 
 CFLAGS    =
 FFLAGS    =
-SOURCEC   = aijviennacl.cpp aijAssemble.cpp
+SOURCEC   = aijviennacl.cxx aijassemble.cxx
 SOURCEF   =
 SOURCEH   = viennaclmatimpl.h
 LIBBASE   = libpetscmat
