@@ -14,8 +14,7 @@
 
    Input Parameters:
 +  da - the distributed array
-.  x,y,z - the physical coordinates
--
+-  x,y,z - the physical coordinates
 
    Output Parameters:
 +   II, JJ, KK - the logical coordinate (-1 on processes that do not contain that point)

@@ -2,7 +2,7 @@
 static char help[] = "Appends to an ASCII file.\n\n";
 
 /*T
-   Concepts: Viewer, append
+   Concepts: viewers^append
 T*/
 
 #include <petscviewer.h>
