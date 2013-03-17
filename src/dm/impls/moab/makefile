@@ -10,8 +10,6 @@ SOURCEC  = dmmoab.cxx
 SOURCEF  =
 SOURCEH  =
 DIRS     = examples
-OBJSC    = $(SOURCEC:.c=.o)
-OBJSF    =
 LIBBASE  = libpetscdm
 MANSEC   = DM
 LOCDIR   = src/dm/impls/moab/
