@@ -76,11 +76,16 @@ class AMSJavascriptExample:
                   subtree = TreeItem(i)
                   memory = self.commobj.memory_attach(i)
                   fields = memory.get_field_list()
+                  block  = false
                   for j in fields:
                      field = memory.get_field_info(j)
                      if str(field[1]) == 'AMS_READ':
-                       subtree.addItem(j+' = '+str(field[4]))
+                       if j == "Publish Block":
+                         if field[4] == "true": block = true
+                       else:
+                         subtree.addItem(j+' = '+str(field[4]))
                      else:
+                       if j == "Block" and not block: continue
                        PN = HorizontalPanel()
                        PN.add(Label(Text=j+' ='))
                        tb = TextBox(Text=str(field[4]))

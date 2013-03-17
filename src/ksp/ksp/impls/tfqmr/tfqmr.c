@@ -96,7 +96,7 @@ static PetscErrorCode  KSPSolve_TFQMR(KSP ksp)
       ierr       = PetscObjectAMSTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
       ksp->rnorm = dpest;
       ierr       = PetscObjectAMSGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
-      KSPLogResidualHistory(ksp,dpest);
+      ierr = KSPLogResidualHistory(ksp,dpest);CHKERRQ(ierr);
       ierr = KSPMonitor(ksp,i+1,dpest);CHKERRQ(ierr);
       ierr = (*ksp->converged)(ksp,i+1,dpest,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
       if (ksp->reason) break;

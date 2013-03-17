@@ -83,8 +83,8 @@ PetscErrorCode  KSPSolve_FBCGSR(KSP ksp)
   ierr       = PetscObjectAMSTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
   ksp->its   = 0;
   ksp->rnorm = rho;
-  ierr       = PetscObjectAMSGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
-  KSPLogResidualHistory(ksp,rho);
+  ierr = PetscObjectAMSGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
+  ierr = KSPLogResidualHistory(ksp,rho);CHKERRQ(ierr);
   ierr = KSPMonitor(ksp,0,rho);CHKERRQ(ierr);
   ierr = (*ksp->converged)(ksp,0,rho,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
   if (ksp->reason) PetscFunctionReturn(0);
@@ -173,8 +173,8 @@ PetscErrorCode  KSPSolve_FBCGSR(KSP ksp)
     ierr = PetscObjectAMSTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
     ksp->its++;
     ksp->rnorm = rho;
-    ierr       = PetscObjectAMSGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
-    KSPLogResidualHistory(ksp,rho);
+    ierr = PetscObjectAMSGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
+    ierr = KSPLogResidualHistory(ksp,rho);CHKERRQ(ierr);
     ierr = KSPMonitor(ksp,i+1,rho);CHKERRQ(ierr);
     ierr = (*ksp->converged)(ksp,i+1,rho,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
     if (ksp->reason) break;

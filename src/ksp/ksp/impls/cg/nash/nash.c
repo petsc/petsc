@@ -266,7 +266,7 @@ PetscErrorCode KSPSolve_NASH(KSP ksp)
     break;
   }
 
-  KSPLogResidualHistory(ksp, norm_r);
+  ierr       = KSPLogResidualHistory(ksp, norm_r);CHKERRQ(ierr);
   ierr       = KSPMonitor(ksp, ksp->its, norm_r);CHKERRQ(ierr);
   ksp->rnorm = norm_r;
 
@@ -510,7 +510,7 @@ PetscErrorCode KSPSolve_NASH(KSP ksp)
       break;
     }
 
-    KSPLogResidualHistory(ksp, norm_r);
+    ierr       = KSPLogResidualHistory(ksp, norm_r);CHKERRQ(ierr);
     ierr       = KSPMonitor(ksp, ksp->its, norm_r);CHKERRQ(ierr);
     ksp->rnorm = norm_r;
 

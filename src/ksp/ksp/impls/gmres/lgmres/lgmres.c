@@ -173,7 +173,7 @@ PetscErrorCode KSPLGMRESCycle(PetscInt *itcount,KSP ksp)
   ierr = (*ksp->converged)(ksp,ksp->its,res,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
 
   while (!ksp->reason && loc_it < it_total && ksp->its < max_it) { /* LGMRES_MOD: changed to it_total */
-    KSPLogResidualHistory(ksp,res);
+    ierr       = KSPLogResidualHistory(ksp,res);CHKERRQ(ierr);
     lgmres->it = (loc_it - 1);
     ierr       = KSPMonitor(ksp,ksp->its,res);CHKERRQ(ierr);
 

@@ -138,7 +138,7 @@ PetscErrorCode KSPGMRESCycle(PetscInt *itcount,KSP ksp)
   ksp->rnorm = res;
   ierr       = PetscObjectAMSGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
   gmres->it  = (it - 1);
-  KSPLogResidualHistory(ksp,res);
+  ierr = KSPLogResidualHistory(ksp,res);CHKERRQ(ierr);
   ierr = KSPMonitor(ksp,ksp->its,res);CHKERRQ(ierr);
   if (!res) {
     if (itcount) *itcount = 0;
@@ -150,7 +150,7 @@ PetscErrorCode KSPGMRESCycle(PetscInt *itcount,KSP ksp)
   ierr = (*ksp->converged)(ksp,ksp->its,res,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
   while (!ksp->reason && it < max_k && ksp->its < ksp->max_it) {
     if (it) {
-      KSPLogResidualHistory(ksp,res);
+      ierr = KSPLogResidualHistory(ksp,res);CHKERRQ(ierr);
       ierr = KSPMonitor(ksp,ksp->its,res);CHKERRQ(ierr);
     }
     gmres->it = (it - 1);
@@ -200,7 +200,7 @@ PetscErrorCode KSPGMRESCycle(PetscInt *itcount,KSP ksp)
 
   /* Monitor if we know that we will not return for a restart */
   if (it && (ksp->reason || ksp->its >= ksp->max_it)) {
-    KSPLogResidualHistory(ksp,res);
+    ierr = KSPLogResidualHistory(ksp,res);CHKERRQ(ierr);
     ierr = KSPMonitor(ksp,ksp->its,res);CHKERRQ(ierr);
   }
 

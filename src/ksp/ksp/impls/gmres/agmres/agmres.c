@@ -559,8 +559,8 @@ static PetscErrorCode KSPAGMRESCycle(PetscInt *itcount,KSP ksp)
   agmres->it = KspSize-1;
   /*  Test for the convergence */
   ierr = (*ksp->converged)(ksp,ksp->its,res,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
-  KSPLogResidualHistory(ksp,res);
-  KSPMonitor(ksp,ksp->its,res);
+  ierr = KSPLogResidualHistory(ksp,res);CHKERRQ(ierr);
+  ierr = KSPMonitor(ksp,ksp->its,res);CHKERRQ(ierr);
 
 
   *itcount = KspSize;

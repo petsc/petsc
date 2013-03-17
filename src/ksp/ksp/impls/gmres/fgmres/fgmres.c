@@ -129,7 +129,7 @@ PetscErrorCode KSPFGMRESCycle(PetscInt *itcount,KSP ksp)
   *RS(0) = res_norm;
 
   ksp->rnorm = res_norm;
-  KSPLogResidualHistory(ksp,res_norm);
+  ierr       = KSPLogResidualHistory(ksp,res_norm);CHKERRQ(ierr);
 
   /* check for the convergence - maybe the current guess is good enough */
   ierr = (*ksp->converged)(ksp,ksp->its,res_norm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
@@ -145,7 +145,7 @@ PetscErrorCode KSPFGMRESCycle(PetscInt *itcount,KSP ksp)
   /* keep iterating until we have converged OR generated the max number
      of directions OR reached the max number of iterations for the method */
   while (!ksp->reason && loc_it < max_k && ksp->its < ksp->max_it) {
-    if (loc_it) KSPLogResidualHistory(ksp,res_norm);
+    if (loc_it) {ierr = KSPLogResidualHistory(ksp,res_norm);CHKERRQ(ierr);}
     fgmres->it = (loc_it - 1);
     ierr       = KSPMonitor(ksp,ksp->its,res_norm);CHKERRQ(ierr);
 

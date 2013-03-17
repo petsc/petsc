@@ -157,7 +157,7 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
   ksp->its   = 0;
   ksp->rnorm = bsnrm;
   ierr       = PetscObjectAMSGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
-  KSPLogResidualHistory(ksp,bsnrm);
+  ierr = KSPLogResidualHistory(ksp,bsnrm);CHKERRQ(ierr);
   ierr = KSPMonitor(ksp,0,bsnrm);CHKERRQ(ierr);
   ierr = (*ksp->converged)(ksp,0,bsnrm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
   if (ksp->reason) PetscFunctionReturn(0);
@@ -250,7 +250,7 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
         ierr       = PetscObjectAMSTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
         ksp->rnorm = rnrm;
         ierr       = PetscObjectAMSGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
-        KSPLogResidualHistory(ksp,rnrm);
+        ierr = KSPLogResidualHistory(ksp,rnrm);CHKERRQ(ierr);
         ierr = KSPMonitor(ksp,i+1,rnrm);CHKERRQ(ierr);
         ierr = (*ksp->converged)(ksp,i+1,rnrm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
         if (ksp->reason) {                 /* convergence for */

@@ -68,7 +68,7 @@ static PetscErrorCode KSPPGMRESCycle(PetscInt *itcount,KSP ksp)
   ksp->rnorm = res;
   ierr       = PetscObjectAMSGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
   pgmres->it = it-2;
-  KSPLogResidualHistory(ksp,res);
+  ierr = KSPLogResidualHistory(ksp,res);CHKERRQ(ierr);
   ierr = KSPMonitor(ksp,ksp->its,res);CHKERRQ(ierr);
   if (!res) {
     ksp->reason = KSP_CONVERGED_ATOL;
@@ -110,7 +110,7 @@ static PetscErrorCode KSPPGMRESCycle(PetscInt *itcount,KSP ksp)
 
       ierr = (*ksp->converged)(ksp,ksp->its,res,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
       if (it < pgmres->max_k+1 || ksp->reason || ksp->its == ksp->max_it) {  /* Monitor if we are done or still iterating, but not before a restart. */
-        KSPLogResidualHistory(ksp,res);
+        ierr = KSPLogResidualHistory(ksp,res);CHKERRQ(ierr);
         ierr = KSPMonitor(ksp,ksp->its,res);CHKERRQ(ierr);
       }
       if (ksp->reason) break;
