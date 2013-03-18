@@ -23,7 +23,7 @@ from pyjamas.ui.TreeItem import TreeItem
 from pyjamas.ui.TextBox import TextBox
 
 
-comm   = -1  # Currently attached AMS communicator; only one is supported at a time
+statusbar = 0
 args   = {}  # Arguments to each remote call
 sent   = 0   # Number of calls sent to server
 recv   = 0   # Number of calls received from server
@@ -31,7 +31,8 @@ boxes  = {}  # The memory and field name for each writable text box created
 
 class AMSJavascriptExample:
     def onModuleLoad(self):
-        self.status=Label()
+        global statusbar
+        statusbar = Label()
         self.button = Button("Display list of all published memories and fields", self)
         self.buttonupdate = Button("Update data from AMS publisher", self)
 
@@ -45,30 +46,35 @@ class AMSJavascriptExample:
         self.panel = VerticalPanel()
         self.panel.add(HTML(info))
         self.panel.add(buttons)
-        self.panel.add(self.status)
+        self.panel.add(statusbar)
         RootPanel().add(self.panel)
         self.commobj = AMS_Comm()
         self.tree = None
 
     def textboxlistener(self,arg):
-      global boxes
-      self.status.setText('User changed value in text box to ' + str(arg.getText())+ str(boxes[arg]))
+      global boxes,statusbar
+      statusbar.setText('User changed value in text box to ' + str(arg.getText()) + " " + str(boxes[arg]))
       # the user has changed this value we should send it back to the AMS program
       boxes[arg][2].set_field_info(boxes[arg][1],arg.getText())
 
     def onClick(self, sender):
-        global sent,recv,boxes
-        self.status.setText('Button pressed')
+        global statusbar,sent,recv,boxes
+        statusbar.setText('Button pressed')
+        pass
         if sender == self.buttonupdate:
             self.commobj = AMS_Comm()
-            self.status.setText('Updating data: Press Display list button to refesh')
+            if self.commobj.commname == 'No AMS publisher running' or not self.commobj.commname or  self.commobj.comm == -1:
+              if self.tree: self.panel.remove(self.tree)
+              statusbar.setText('Publisher is not accessable')
+            else:
+              statusbar.setText('Updating data: Press Display list button to refesh')
         if sender == self.button:
             if sent > recv:
-               self.status.setText('Press button again: sent '+str(sent)+' recv '+str(recv))
-            if self.commobj.commname == 'No AMS publisher running':
-               self.status.setText(self.commobj.commname)
+               statusbar.setText('Press button again: sent '+str(sent)+' recv '+str(recv))
+            if self.commobj.commname == 'No AMS publisher running' or not self.commobj.commname or  self.commobj.comm == -1:
+               if self.tree: self.panel.remove(self.tree)
             else:
-               self.status.setText('Memories for AMS Comm: '+self.commobj.commname)
+               statusbar.setText('Memories for AMS Comm: '+self.commobj.commname)
                result = self.commobj.get_memory_list()
                if self.tree: self.panel.remove(self.tree)
                self.tree = Tree()
@@ -140,7 +146,7 @@ class AMS_Memory(JSONProxy):
         id = self.remote.YAML_AMS_Memory_update_send_begin(self.memory,self)
 
     def onRemoteResponse(self, response, request_info):
-        global args,sent,recv
+        global args,sent,recv,statusbar
         recv += 1
         method = str(request_info.method)
         rid    = request_info.id
@@ -159,11 +165,18 @@ class AMS_Memory(JSONProxy):
             self.fields[args[rid][2]] = response
         elif method == "YAML_AMS_Memory_set_field_info":
           self.update_send_begin()
-          self.status.setText("Value updated on server")
+          statusbar.setText("Value updated on server")
 
 
     def onRemoteError(self, code, errobj, request_info):
-        pass
+        global statusbar,recv
+        recv += 1
+        method = str(request_info.method)
+        if method == "YAML_AMS_Memory_update_send_begin":
+          self.comm.comm = -1;
+          statusbar.setText("Publisher is no longer accessable")
+        else:
+          statusbar.setText("Error "+str(errobj))
 
 # ---------------------------------------------------------
 class AMS_Comm(JSONProxy):
@@ -197,7 +210,6 @@ class AMS_Comm(JSONProxy):
 
     def onRemoteResponse(self, response, request_info):
         global args,sent,recv
-        global comm
         recv += 1
         method = str(request_info.method)
         rid    = request_info.id
@@ -228,7 +240,9 @@ class AMS_Comm(JSONProxy):
                 self.memory_list_func = null
 
     def onRemoteError(self, code, errobj, request_info):
-        pass
+        global statusbar,recv
+        recv += 1
+        statusbar.setText("Error "+str(errobj))
 
 if __name__ == '__main__':
     pyjd.setup()

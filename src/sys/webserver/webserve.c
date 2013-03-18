@@ -374,7 +374,7 @@ static PetscErrorCode  PetscWebServeRequestGet(FILE *fd,const char path[])
 */
 #undef __FUNCT__
 #define __FUNCT__ "YAML_echo"
-PETSC_UNUSED static PetscErrorCode YAML_echo(PetscInt argc,char **args,PetscInt *argco,char ***argso)
+PETSC_UNUSED static PetscErrorCode YAML_echo(PetscInt argc,char **args,PetscInt *argco,char ***argso,char **err)
 {
   PetscErrorCode ierr;
   PetscInt       i;
@@ -480,10 +480,9 @@ static PetscErrorCode YAML_AMS_Utility_StringToArray(const char *instring,AMS_Da
   }
   ierr = PetscTokenDestroy(&token);CHKERRQ(ierr);
   ierr = PetscFree(cstring);CHKERRQ(ierr);
+  *n   = N;
   PetscFunctionReturn(0);
 }
-
-
 
 #undef __FUNCT__
 #define __FUNCT__ "YAML_AMS_Utility_ArrayToString"
@@ -570,6 +569,21 @@ static PetscErrorCode YAML_AMS_Utility_ArrayToString(PetscInt n,void *addr,AMS_D
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "YAML_AMS_Utility_Error"
+static PetscErrorCode YAML_AMS_Utility_Error(PetscInt ier,const char *message,char **err)
+{
+  PetscErrorCode ierr;
+  char           fullmess[128];
+
+  PetscFunctionBegin;
+  ierr = PetscInfo2(NULL,"%s Error code %d\n",message,(int)ier);CHKERRQ(ierr);
+  ierr = PetscSNPrintf(fullmess,128,"{ \"code\": \"%d\", \"message\": \"%s\", \"data\": null }",1+(int)ier,message);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(fullmess,err);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
 #define __FUNCT__ "YAML_AMS_Connect"
 /*
       Connects to the local AMS and gets only the first communication name
@@ -581,28 +595,27 @@ static PetscErrorCode YAML_AMS_Utility_ArrayToString(PetscInt n,void *addr,AMS_D
 .     oarg1 - the string name of the first communicator
 
 */
-PETSC_EXTERN PetscErrorCode YAML_AMS_Connect(PetscInt argc,char **args,PetscInt *argco,char ***argso)
+PETSC_EXTERN PetscErrorCode YAML_AMS_Connect(PetscInt argc,char **args,PetscInt *argco,char ***argso,char **err)
 {
   PetscErrorCode ierr;
   char           host[256],**list = 0;
   PetscInt       n = 0;
 
   PetscFunctionBegin;
+  *argco = 0;
   ierr = PetscGetHostName(host,256);CHKERRQ(ierr);
   ierr = AMS_Connect(host,-1,&list);
   if (ierr) {
-    ierr = PetscInfo1(NULL,"AMS_Connect() error %d\n",ierr);CHKERRQ(ierr);
+    ierr = YAML_AMS_Utility_Error(ierr,"AMS_Connect()",err);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
   } else if (!list) {
-    ierr = PetscInfo(NULL,"AMS_Connect() list empty, not running AMS server\n");CHKERRQ(ierr);
+    ierr = YAML_AMS_Utility_Error(ierr,"AMS_Connect() list empty, not running AMS server",err);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
   }
   *argco = 1;
   ierr   = PetscMalloc(sizeof(char*),argso);CHKERRQ(ierr);
-  if (list) {
-    while (list[n]) n++;
-    ierr = YAML_AMS_Utility_ArrayToString(n,list,AMS_STRING,&(*argso)[0]);CHKERRQ(ierr);
-  } else {
-    ierr = PetscStrallocpy("No AMS publisher running",&(*argso)[0]);CHKERRQ(ierr);
-  }
+  while (list[n]) n++;
+  ierr = YAML_AMS_Utility_ArrayToString(n,list,AMS_STRING,&(*argso)[0]);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -618,15 +631,17 @@ PETSC_EXTERN PetscErrorCode YAML_AMS_Connect(PetscInt argc,char **args,PetscInt 
 .     oarg1 - the integer name of the communicator
 
 */
-PETSC_EXTERN PetscErrorCode YAML_AMS_Comm_attach(PetscInt argc,char **args,PetscInt *argco,char ***argso)
+PETSC_EXTERN PetscErrorCode YAML_AMS_Comm_attach(PetscInt argc,char **args,PetscInt *argco,char ***argso,char **err)
 {
   PetscErrorCode ierr;
   AMS_Comm       comm = -1;
 
   PetscFunctionBegin;
+  *argco = 0;
   ierr = AMS_Comm_attach(args[0],&comm);
   if (ierr) {
-    ierr = PetscInfo1(NULL,"AMS_Comm_attach() error %d\n",ierr);CHKERRQ(ierr);
+    ierr = YAML_AMS_Utility_Error(ierr,"AMS_Comm_attach()",err);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
   }
   *argco = 1;
   ierr   = PetscMalloc(sizeof(char*),argso);CHKERRQ(ierr);
@@ -647,7 +662,7 @@ PETSC_EXTERN PetscErrorCode YAML_AMS_Comm_attach(PetscInt argc,char **args,Petsc
 .     oarg1 - the list of names
 
 */
-PETSC_EXTERN PetscErrorCode YAML_AMS_Comm_get_memory_list(PetscInt argc,char **args,PetscInt *argco,char ***argso)
+PETSC_EXTERN PetscErrorCode YAML_AMS_Comm_get_memory_list(PetscInt argc,char **args,PetscInt *argco,char ***argso,char **err)
 {
   PetscErrorCode ierr;
   char           **mem_list;
@@ -655,10 +670,12 @@ PETSC_EXTERN PetscErrorCode YAML_AMS_Comm_get_memory_list(PetscInt argc,char **a
   PetscInt       i,iargco = 0;
 
   PetscFunctionBegin;
+  *argco = 0;
   sscanf(args[0],"%d",&comm);
   ierr = AMS_Comm_get_memory_list(comm,&mem_list);
   if (ierr) {
-    ierr = PetscInfo1(NULL,"AMS_Comm_get_memory_list() error %d\n",ierr);CHKERRQ(ierr);
+    ierr = YAML_AMS_Utility_Error(ierr,"AMS_Comm_get_memory_list()",err);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
   } else {
     while (mem_list[iargco++]) ;
     iargco--;
@@ -686,7 +703,7 @@ PETSC_EXTERN PetscErrorCode YAML_AMS_Comm_get_memory_list(PetscInt argc,char **a
 .     oarg2 - the integer step of the memory
 
 */
-PETSC_EXTERN PetscErrorCode YAML_AMS_Memory_attach(PetscInt argc,char **args,PetscInt *argco,char ***argso)
+PETSC_EXTERN PetscErrorCode YAML_AMS_Memory_attach(PetscInt argc,char **args,PetscInt *argco,char ***argso,char **err)
 {
   PetscErrorCode ierr;
   AMS_Comm       comm;
@@ -694,9 +711,13 @@ PETSC_EXTERN PetscErrorCode YAML_AMS_Memory_attach(PetscInt argc,char **args,Pet
   unsigned int   step;
 
   PetscFunctionBegin;
+  *argco = 0;
   sscanf(args[0],"%d",&comm);
   ierr = AMS_Memory_attach(comm,args[1],&mem,&step);
-  if (ierr) {ierr = PetscInfo1(NULL,"AMS_Memory_attach() error %d\n",ierr);CHKERRQ(ierr);}
+  if (ierr) {
+    ierr = YAML_AMS_Utility_Error(ierr,"AMS_Memory_attach()",err);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
   *argco = 2;
   ierr   = PetscMalloc(2*sizeof(char*),argso);CHKERRQ(ierr);
   ierr   = PetscMalloc(3*sizeof(char*),&argso[0][0]);CHKERRQ(ierr);
@@ -718,7 +739,7 @@ PETSC_EXTERN PetscErrorCode YAML_AMS_Memory_attach(PetscInt argc,char **args,Pet
 .     oarg1 - the list of names
 
 */
-PETSC_EXTERN PetscErrorCode YAML_AMS_Memory_get_field_list(PetscInt argc,char **args,PetscInt *argco,char ***argso)
+PETSC_EXTERN PetscErrorCode YAML_AMS_Memory_get_field_list(PetscInt argc,char **args,PetscInt *argco,char ***argso,char **err)
 {
   PetscErrorCode ierr;
   char           **field_list;
@@ -726,10 +747,12 @@ PETSC_EXTERN PetscErrorCode YAML_AMS_Memory_get_field_list(PetscInt argc,char **
   PetscInt       i,iargco = 0;
 
   PetscFunctionBegin;
+  *argco = 0;
   sscanf(args[0],"%d",&mem);
   ierr = AMS_Memory_get_field_list(mem,&field_list);
   if (ierr) {
-    ierr = PetscInfo1(NULL,"AMS_Memory_get_field_list() error %d\n",ierr);CHKERRQ(ierr);
+    ierr = YAML_AMS_Utility_Error(ierr,"AMS_Memory_get_field_list()",err);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
   } else {
     while (field_list[iargco++]) ;
     iargco--;
@@ -761,7 +784,7 @@ const char *AMS_Reduction_types[] = {"AMS_REDUCTION_WHY_NOT_UNDEF?","AMS_SUM","A
    Output Parameter:
 
 */
-PETSC_EXTERN PetscErrorCode YAML_AMS_Memory_get_field_info(PetscInt argc,char **args,PetscInt *argco,char ***argso)
+PETSC_EXTERN PetscErrorCode YAML_AMS_Memory_get_field_info(PetscInt argc,char **args,PetscInt *argco,char ***argso,char **err)
 {
   PetscErrorCode     ierr;
   AMS_Memory         mem;
@@ -773,9 +796,13 @@ PETSC_EXTERN PetscErrorCode YAML_AMS_Memory_get_field_info(PetscInt argc,char **
   AMS_Reduction_type rtype;
 
   PetscFunctionBegin;
+  *argco = 0;
   sscanf(args[0],"%d",&mem);
   ierr = AMS_Memory_get_field_info(mem,args[1],(void**)&addr,&len,&dtype,&mtype,&stype,&rtype);
-  if (ierr) {ierr = PetscInfo1(NULL,"AMS_Memory_get_field_info() error %d\n",ierr);CHKERRQ(ierr);}
+  if (ierr) {
+    ierr = YAML_AMS_Utility_Error(ierr,"AMS_Memory_get_field_info() ",err);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
   *argco = 5;
   ierr   = PetscMalloc((*argco)*sizeof(char*),argso);CHKERRQ(ierr);
   ierr   = PetscStrallocpy(AMS_Data_types[dtype],&argso[0][0]);CHKERRQ(ierr);
@@ -798,7 +825,7 @@ PETSC_EXTERN PetscErrorCode YAML_AMS_Memory_get_field_info(PetscInt argc,char **
    Output Parameter:
 
 */
-PETSC_EXTERN PetscErrorCode YAML_AMS_Memory_set_field_info(PetscInt argc,char **args,PetscInt *argco,char ***argso)
+PETSC_EXTERN PetscErrorCode YAML_AMS_Memory_set_field_info(PetscInt argc,char **args,PetscInt *argco,char ***argso,char **err)
 {
   PetscErrorCode     ierr;
   AMS_Memory         mem;
@@ -810,36 +837,25 @@ PETSC_EXTERN PetscErrorCode YAML_AMS_Memory_set_field_info(PetscInt argc,char **
   AMS_Reduction_type rtype;
 
   PetscFunctionBegin;
+  *argco = 0;
   sscanf(args[0],"%d",&mem);
   ierr = AMS_Memory_get_field_info(mem,args[1],(void**)&addr,&len,&dtype,&mtype,&stype,&rtype);
   if (ierr) {
-    ierr = PetscInfo1(NULL,"AMS_Memory_get_field_info() error %d\n",ierr);CHKERRQ(ierr);
-    *argco = 1;
-    ierr   = PetscMalloc(sizeof(char*),argso);CHKERRQ(ierr);
-    ierr   = PetscStrallocpy("Memory field can not be located",*argso);
+    ierr = YAML_AMS_Utility_Error(ierr,"AMS_Memory_set_field_info() Memory field can not be located",err);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
   if (mtype == AMS_READ) {
-    ierr = PetscInfo1(NULL,"AMS_Memory_set_field_info() error %d\n",ierr);CHKERRQ(ierr);
-    *argco = 1;
-    ierr   = PetscMalloc(sizeof(char*),argso);CHKERRQ(ierr);
-    ierr   = PetscStrallocpy("Memory field is read only",*argso);
+    ierr = YAML_AMS_Utility_Error(ierr,"AMS_Memory_set_field_info() Memory field is read only",err);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
   ierr = YAML_AMS_Utility_StringToArray(args[2],dtype,&newlen,(void**)&addr);CHKERRQ(ierr);
   if (newlen != len) {
-    ierr = PetscInfo(NULL,"AMS_Memory_set_field_info() newlen != len skipping set\n");CHKERRQ(ierr);
-    *argco = 1;
-    ierr   = PetscMalloc(sizeof(char*),argso);CHKERRQ(ierr);
-    ierr   = PetscStrallocpy("Changed array length skipping set",*argso);
+    ierr = YAML_AMS_Utility_Error(ierr,"AMS_Memory_set_field_info() Changing array length",err);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
   ierr = AMS_Memory_set_field_info(mem,args[1],addr,len);CHKERRQ(ierr);
   if (ierr) {
-    ierr = PetscInfo1(NULL,"AMS_Memory_set_field_info() error %d\n",ierr);CHKERRQ(ierr);
-    *argco = 1;
-    ierr   = PetscMalloc(sizeof(char*),argso);CHKERRQ(ierr);
-    ierr   = PetscStrallocpy("Memory field can not be located",*argso);
+    ierr = YAML_AMS_Utility_Error(ierr,"AMS_Memory_set_field_info() ",err);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
   *argco = 1;
@@ -850,16 +866,17 @@ PETSC_EXTERN PetscErrorCode YAML_AMS_Memory_set_field_info(PetscInt argc,char **
 
 #undef __FUNCT__
 #define __FUNCT__ "YAML_AMS_Memory_update_send_begin"
-PETSC_EXTERN PetscErrorCode YAML_AMS_Memory_update_send_begin(PetscInt argc,char **args,PetscInt *argco,char ***argso)
+PETSC_EXTERN PetscErrorCode YAML_AMS_Memory_update_send_begin(PetscInt argc,char **args,PetscInt *argco,char ***argso,char **err)
 {
   PetscErrorCode     ierr;
   AMS_Memory         mem;
 
   PetscFunctionBegin;
+  *argco = 0;
   sscanf(args[0],"%d",&mem);
   ierr = AMS_Memory_update_send_begin(mem);
   if (ierr) {
-    ierr = PetscInfo1(NULL,"AMS_Memory_update_send_begin() error %d\n",ierr);CHKERRQ(ierr);
+    ierr = YAML_AMS_Utility_Error(ierr,"AMS_Memory_update_send_begin() ",err);CHKERRQ(ierr);
   }
   *argco = 0;
   PetscFunctionReturn(0);
@@ -883,9 +900,9 @@ static PetscErrorCode PetscProcessYAMLRPC(const char *request,char **result)
   size_t         len;
   PetscErrorCode ierr;
   PetscBool      method,params,id;
-  char           *methodname,*idname,**args,**argso = 0;
+  char           *methodname,*idname,**args,**argso = 0,*err = 0;
   PetscInt       argc = 0,argco,i;
-  PetscErrorCode (*fun)(PetscInt,char**,PetscInt*,char***);
+  PetscErrorCode (*fun)(PetscInt,char**,PetscInt*,char***,char**);
 
   PetscFunctionBegin;
   ierr = PetscMalloc(20*sizeof(char*),&args);CHKERRQ(ierr);
@@ -972,7 +989,7 @@ static PetscErrorCode PetscProcessYAMLRPC(const char *request,char **result)
   ierr = PetscDLLibrarySym(PETSC_COMM_SELF,NULL,NULL,methodname,(void**)&fun);CHKERRQ(ierr);
   if (fun) {
     ierr = PetscInfo1(NULL,"Located function %s and running it\n",methodname);CHKERRQ(ierr);
-    ierr = (*fun)(argc,args,&argco,&argso);CHKERRQ(ierr);
+    ierr = (*fun)(argc,args,&argco,&argso,&err);CHKERRQ(ierr);
   } else {
     ierr = PetscInfo1(NULL,"Did not locate function %s skipping it\n",methodname);CHKERRQ(ierr);
   }
@@ -985,21 +1002,35 @@ static PetscErrorCode PetscProcessYAMLRPC(const char *request,char **result)
 
   /* convert the result back to YAML/JSON; should use YAML/JSON encoder, does not handle zero return arguments */
   ierr = PetscMalloc(16000,result);CHKERRQ(ierr);
-  ierr = PetscStrcpy(*result,"{\"error\": null, \"id\": \"");CHKERRQ(ierr);
-  ierr = PetscStrcat(*result,idname);CHKERRQ(ierr);
-  ierr = PetscStrcat(*result,"\", \"result\" : ");CHKERRQ(ierr);
-  if (argco > 1) {ierr = PetscStrcat(*result,"[");CHKERRQ(ierr);}
-  for (i=0; i<argco; i++) {
-    if (argso[i][0] != '[') {
-      ierr = PetscStrcat(*result,"\"");CHKERRQ(ierr);
-    }
-    ierr = PetscStrcat(*result,argso[i]);CHKERRQ(ierr);
-    if (argso[i][0] != '[') {
-      ierr = PetscStrcat(*result,"\"");CHKERRQ(ierr);
-    }
-    if (i < argco-1) {ierr = PetscStrcat(*result,",");CHKERRQ(ierr);}
+  ierr = PetscStrcpy(*result,"{\"jsonrpc\": \"2.0\", ");CHKERRQ(ierr);
+  if (err) {
+    ierr = PetscStrcat(*result,"\"error\": ");CHKERRQ(ierr);
+    ierr = PetscStrcat(*result,err);CHKERRQ(ierr);
+    ierr = PetscStrcat(*result,",");CHKERRQ(ierr);
+  } else {
+    ierr = PetscStrcat(*result,"\"error\": null,");CHKERRQ(ierr);
   }
-  if (argco > 1) {ierr = PetscStrcat(*result,"]");CHKERRQ(ierr);}
+  ierr = PetscStrcat(*result," \"id\": \"");CHKERRQ(ierr);
+  ierr = PetscStrcat(*result,idname);CHKERRQ(ierr);
+  if (err) {
+    ierr = PetscStrcat(*result,"\", \"result\" : null");CHKERRQ(ierr);
+  } else {
+    ierr = PetscStrcat(*result,"\", \"result\" : ");CHKERRQ(ierr);
+    if (!argco) {ierr = PetscStrcat(*result,"null");CHKERRQ(ierr);}
+    if (argco > 1) {ierr = PetscStrcat(*result,"[");CHKERRQ(ierr);}
+    for (i=0; i<argco; i++) {
+      if (argso[i][0] != '[') {
+        ierr = PetscStrcat(*result,"\"");CHKERRQ(ierr);
+      }
+      ierr = PetscStrcat(*result,argso[i]);CHKERRQ(ierr);
+      if (argso[i][0] != '[') {
+        ierr = PetscStrcat(*result,"\"");CHKERRQ(ierr);
+      }
+      if (i < argco-1) {ierr = PetscStrcat(*result,",");CHKERRQ(ierr);}
+    }
+    if (argco > 1) {ierr = PetscStrcat(*result,"]");CHKERRQ(ierr);}
+  }
+  ierr = PetscFree(err);CHKERRQ(ierr);
   ierr = PetscStrcat(*result,"}");CHKERRQ(ierr);
   ierr = PetscInfo1(NULL,"YAML/JSON result of function %s\n",*result);CHKERRQ(ierr);
 
