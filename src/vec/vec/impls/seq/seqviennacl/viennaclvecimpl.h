@@ -7,6 +7,8 @@
 #include <vector>
 #include <string>
 
+#define VIENNACL_WITH_OPENCL
+
 #include "viennacl/vector.hpp"
 
 typedef viennacl::vector<PetscScalar>    ViennaCLVector;

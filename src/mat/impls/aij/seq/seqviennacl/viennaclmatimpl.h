@@ -1,6 +1,7 @@
 #if !defined(__VIENNACLMATIMPL)
 #define __VIENNACLMATIMPL
 
+/* Pulls in some ViennaCL includes as well as VIENNACL_WITH_OPENCL: */
 #include <../src/vec/vec/impls/seq/seqviennacl/viennaclvecimpl.h>
 
 /* for everything else */
