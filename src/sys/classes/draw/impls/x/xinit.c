@@ -87,8 +87,8 @@ PetscErrorCode PetscDrawXiDisplayWindow(PetscDraw_X *XiWin,char *label,int x,int
   border_width = 0;
   if (x < 0) x = 0;
   if (y < 0) y = 0;
-  x = ((unsigned int) x + w > wavail) ? wavail - w : x;
-  y = ((unsigned int) y + h > havail) ? havail - h : y;
+  x = ((unsigned int) x + w > wavail) ? wavail - w : (unsigned int)x;
+  y = ((unsigned int) y + h > havail) ? havail - h : (unsigned int)y;
 
   /* We need XCreateWindow since we may need an visual other than the default one */
   XGetWindowAttributes(XiWin->disp,RootWindow(XiWin->disp,XiWin->screen),&in_window_attributes);
