@@ -341,9 +341,6 @@ PetscErrorCode MatDestroy_SeqAIJViennaCL(Mat A)
 }
 
 
-extern PetscErrorCode MatSetValuesBatch_SeqAIJViennaCL(Mat, PetscInt, PetscInt, PetscInt*,const PetscScalar*);
-
-
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_SeqAIJViennaCL"
 PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJViennaCL(Mat B)
@@ -364,7 +361,6 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJViennaCL(Mat B)
   B->ops->assemblyend    = MatAssemblyEnd_SeqAIJViennaCL;
   B->ops->destroy        = MatDestroy_SeqAIJViennaCL;
   B->ops->getvecs        = MatGetVecs_SeqAIJViennaCL;
-  B->ops->setvaluesbatch = MatSetValuesBatch_SeqAIJViennaCL;
 
   //ierr = PetscObjectComposeFunction((PetscObject)B,"MatViennaCLSetFormat_C", "MatViennaCLSetFormat_SeqAIJViennaCL", MatViennaCLSetFormat_SeqAIJViennaCL);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQAIJVIENNACL);CHKERRQ(ierr);
