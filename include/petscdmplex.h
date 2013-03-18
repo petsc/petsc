@@ -112,6 +112,7 @@ PETSC_EXTERN PetscErrorCode DMPlexSetRefinementLimit(DM, PetscReal);
 PETSC_EXTERN PetscErrorCode DMPlexGetRefinementUniform(DM, PetscBool *);
 PETSC_EXTERN PetscErrorCode DMPlexSetRefinementUniform(DM, PetscBool);
 PETSC_EXTERN PetscErrorCode DMPlexInterpolate(DM, DM *);
+PETSC_EXTERN PetscErrorCode DMPlexCopyCoordinates(DM, DM);
 PETSC_EXTERN PetscErrorCode DMPlexDistribute(DM, const char[], PetscInt, DM*);
 PETSC_EXTERN PetscErrorCode DMPlexLoad(PetscViewer, DM);
 PETSC_EXTERN PetscErrorCode DMPlexGetSubpointMap(DM, DMLabel*);

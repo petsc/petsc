@@ -255,6 +255,22 @@ static PetscErrorCode DMPlexInterpolateFaces_Internal(DM dm, PetscInt cellDepth,
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexInterpolate"
+/*@
+  DMPlexInterpolate - Take in a cell-vertex mesh and return one with all intermediate faces, edges, etc.
+
+  Collective on DM
+
+  Input Parameter:
+. dmA - The DMPlex object with only cells and vertices
+
+  Output Parameter:
+. dmB - The complete DMPlex object
+
+  Level: intermediate
+
+.keywords: mesh
+.seealso: DMPlexCreateFromCellList()
+@*/
 PetscErrorCode DMPlexInterpolate(DM dm, DM *dmInt)
 {
   DM             idm, odm = dm;
@@ -278,6 +294,24 @@ PetscErrorCode DMPlexInterpolate(DM dm, DM *dmInt)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexCopyCoordinates"
+/*@
+  DMPlexCopyCoordinates - Copy coordinates from one mesh to another with the same vertices
+
+  Collective on DM
+
+  Input Parameter:
+. dmA - The DMPlex object with initial coordinates
+
+  Output Parameter:
+. dmB - The DMPlex object with copied coordinates
+
+  Level: intermediate
+
+  Note: This is typically used when adding pieces other than vertices to a mesh
+
+.keywords: mesh
+.seealso: DMGetCoordinates(), DMGetCoordinatesLocal(), DMGetCoordinateDM(), DMPlexGetCoordinateSection()
+@*/
 PetscErrorCode DMPlexCopyCoordinates(DM dmA, DM dmB)
 {
   Vec            coordinatesA, coordinatesB;
