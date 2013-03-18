@@ -63,11 +63,7 @@ class AMSJavascriptExample:
         pass
         if sender == self.buttonupdate:
             self.commobj = AMS_Comm()
-            if self.commobj.commname == 'No AMS publisher running' or not self.commobj.commname or  self.commobj.comm == -1:
-              if self.tree: self.panel.remove(self.tree)
-              statusbar.setText('Publisher is not accessable')
-            else:
-              statusbar.setText('Updating data: Press Display list button to refesh')
+            statusbar.setText('Updating data: Press Display list button to refesh')
         if sender == self.button:
             if sent > recv:
                statusbar.setText('Press button again: sent '+str(sent)+' recv '+str(recv))

@@ -586,7 +586,7 @@ static PetscErrorCode YAML_AMS_Utility_Error(PetscInt ier,const char *message,ch
 #undef __FUNCT__
 #define __FUNCT__ "YAML_AMS_Connect"
 /*
-      Connects to the local AMS and gets only the first communication name
+      Connects to the local AMS and gets communicator names
 
    Input Parameters:
 .     none
