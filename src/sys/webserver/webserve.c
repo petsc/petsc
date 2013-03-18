@@ -803,7 +803,7 @@ PETSC_EXTERN PetscErrorCode YAML_AMS_Memory_set_field_info(PetscInt argc,char **
   PetscErrorCode     ierr;
   AMS_Memory         mem;
   void               *addr;
-  int                len;
+  int                len,newlen;
   AMS_Data_type      dtype;
   AMS_Memory_type    mtype;
   AMS_Shared_type    stype;
@@ -826,7 +826,14 @@ PETSC_EXTERN PetscErrorCode YAML_AMS_Memory_set_field_info(PetscInt argc,char **
     ierr   = PetscStrallocpy("Memory field is read only",*argso);
     PetscFunctionReturn(0);
   }
-  ierr = YAML_AMS_Utility_StringToArray(args[2],dtype,&len,(void**)&addr);CHKERRQ(ierr);
+  ierr = YAML_AMS_Utility_StringToArray(args[2],dtype,&newlen,(void**)&addr);CHKERRQ(ierr);
+  if (newlen != len) {
+    ierr = PetscInfo(NULL,"AMS_Memory_set_field_info() newlen != len skipping set\n");CHKERRQ(ierr);
+    *argco = 1;
+    ierr   = PetscMalloc(sizeof(char*),argso);CHKERRQ(ierr);
+    ierr   = PetscStrallocpy("Changed array length skipping set",*argso);
+    PetscFunctionReturn(0);
+  }
   ierr = AMS_Memory_set_field_info(mem,args[1],addr,len);CHKERRQ(ierr);
   if (ierr) {
     ierr = PetscInfo1(NULL,"AMS_Memory_set_field_info() error %d\n",ierr);CHKERRQ(ierr);
