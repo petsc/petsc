@@ -489,7 +489,7 @@ PetscErrorCode DMPlexComputeCellGeometry(DM dm, PetscInt cell, PetscReal *v0, Pe
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMPlexGetDimension(dm, &depth);CHKERRQ(ierr);
+  ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
   ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMPlexGetConeSize(dm, cell, &coneSize);CHKERRQ(ierr);
   if (depth == 1) {
