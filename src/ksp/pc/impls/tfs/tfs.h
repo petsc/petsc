@@ -236,7 +236,7 @@ typedef struct gather_scatter_id *PCTFS_gs_ADT;
 
 PETSC_INTERN PCTFS_gs_ADT PCTFS_gs_init(PetscInt *elms, PetscInt nel, PetscInt level);
 PETSC_INTERN PetscErrorCode   PCTFS_gs_gop_vec(PCTFS_gs_ADT PCTFS_gs_handle, PetscScalar *vals, const char *op, PetscInt step);
-/*PETSC_INTERN PetscErrorCode   PCTFS_gs_gop_binary(PCTFS_gs_ADT gs, PetscScalar *vals, Rbfp fct);*/
+/* PETSC_INTERN PetscErrorCode   PCTFS_gs_gop_binary(PCTFS_gs_ADT gs, PetscScalar *vals, Rbfp fct); */
 PETSC_INTERN PetscErrorCode   PCTFS_gs_gop_hc(PCTFS_gs_ADT PCTFS_gs_handle, PetscScalar *vals, const char *op, PetscInt dim);
 PETSC_INTERN PetscErrorCode   PCTFS_gs_free(PCTFS_gs_ADT PCTFS_gs_handle);
 PETSC_INTERN PetscErrorCode   PCTFS_gs_init_msg_buf_sz(PetscInt buf_size);

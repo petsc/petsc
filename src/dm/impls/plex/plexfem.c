@@ -323,8 +323,8 @@ PetscErrorCode DMPlexProjectFunctionLocal(DM dm, PetscInt numComp, PetscScalar (
   This currently just calls the function with the coordinates of each vertex and edge midpoint, and stores the result in a vector.
   We will eventually fix it.
 
-,seealso: DMPlexComputeL2Diff()
-*/
+.seealso: DMPlexComputeL2Diff()
+@*/
 PetscErrorCode DMPlexProjectFunction(DM dm, PetscInt numComp, PetscScalar (**funcs)(const PetscReal []), InsertMode mode, Vec X)
 {
   Vec            localX;
@@ -356,7 +356,7 @@ PetscErrorCode DMPlexProjectFunction(DM dm, PetscInt numComp, PetscScalar (**fun
   Level: developer
 
 .seealso: DMPlexProjectFunction()
-*/
+@*/
 PetscErrorCode DMPlexComputeL2Diff(DM dm, PetscQuadrature quad[], PetscScalar (**funcs)(const PetscReal []), Vec X, PetscReal *diff)
 {
   const PetscInt debug = 0;
@@ -453,8 +453,10 @@ PetscErrorCode DMPlexComputeL2Diff(DM dm, PetscQuadrature quad[], PetscScalar (*
   We form the residual one batch of elements at a time. This allows us to offload work onto an accelerator,
   like a GPU, or vectorize on a multicore machine.
 
+  Level: developer
+
 .seealso: DMPlexComputeJacobianActionFEM()
-*/
+@*/
 PetscErrorCode DMPlexComputeResidualFEM(DM dm, Vec X, Vec F, void *user)
 {
   DM_Plex         *mesh = (DM_Plex*) dm->data;
@@ -561,8 +563,10 @@ PetscErrorCode DMPlexComputeResidualFEM(DM dm, Vec X, Vec F, void *user)
   We form the residual one batch of elements at a time. This allows us to offload work onto an accelerator,
   like a GPU, or vectorize on a multicore machine.
 
+  Level: developer
+
 .seealso: DMPlexComputeResidualFEM()
-*/
+@*/
 PetscErrorCode DMPlexComputeJacobianActionFEM(DM dm, Mat Jac, Vec X, Vec F, void *user)
 {
   DM_Plex         *mesh = (DM_Plex*) dm->data;
@@ -659,8 +663,10 @@ PetscErrorCode DMPlexComputeJacobianActionFEM(DM dm, Mat Jac, Vec X, Vec F, void
   We form the residual one batch of elements at a time. This allows us to offload work onto an accelerator,
   like a GPU, or vectorize on a multicore machine.
 
+  Level: developer
+
 .seealso: FormFunctionLocal()
-*/
+@*/
 PetscErrorCode DMPlexComputeJacobianFEM(DM dm, Vec X, Mat Jac, Mat JacP, MatStructure *str,void *user)
 {
   DM_Plex         *mesh = (DM_Plex*) dm->data;

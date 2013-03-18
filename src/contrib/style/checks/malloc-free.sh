@@ -8,7 +8,7 @@
 # - find any malloc() and free() calls
 
 
-grep -H "[ =)]malloc(\|[ =)]free(" "$@"
+grep -n -H "[ =)]malloc(\|[ =)]free(" "$@"
 
 
 

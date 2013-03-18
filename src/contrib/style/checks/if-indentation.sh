@@ -16,6 +16,6 @@
 # - get all lines with 'if(', 'for(', 'while (', 'switch('
 
 
-grep -H " if(\| for(\| while(\| switch(" "$@"
+grep -n -H " if(\| for(\| while(\| switch(" "$@"
 
 

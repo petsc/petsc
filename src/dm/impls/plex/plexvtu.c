@@ -347,7 +347,7 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm,PetscViewer viewer)
           PetscInt cnt;
           for (v=vStart,cnt=0; v<vEnd; v++) {
             const PetscScalar *xpoint;
-            ierr     = DMPlexPointLocalRead(dm,c,x,&xpoint);CHKERRQ(ierr);
+            ierr     = DMPlexPointLocalRead(dm,v,x,&xpoint);CHKERRQ(ierr);
             y[cnt++] = xpoint[i];
           }
           if (cnt != piece.nvertices) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Count does not match");

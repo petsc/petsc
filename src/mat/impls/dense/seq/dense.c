@@ -2082,6 +2082,14 @@ static struct _MatOps MatOps_Values = { MatSetValues_SeqDense,
                                         MatTransposeMatMult_SeqDense_SeqDense,
                                         MatTransposeMatMultSymbolic_SeqDense_SeqDense,
                                         MatTransposeMatMultNumeric_SeqDense_SeqDense,
+                                        0,
+                                /*134*/ 0,
+                                        0,
+                                        0,
+                                        0,
+                                        0,
+                                /*139*/ 0,
+                                        0
 };
 
 #undef __FUNCT__

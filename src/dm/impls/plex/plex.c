@@ -2780,7 +2780,11 @@ PetscErrorCode DMPlexDistribute(DM dm, const char partitioner[], PetscInt overla
       if (!rank) {ierr = PetscMemcpy(name, next->name, nameSize+1);CHKERRQ(ierr);}
       ierr = MPI_Bcast(name, nameSize+1, MPI_CHAR, 0, comm);CHKERRQ(ierr);
       ierr = PetscStrcmp(name, "depth", &isdepth);CHKERRQ(ierr);
-      if (isdepth) {ierr = PetscFree(name);CHKERRQ(ierr); continue;}
+      if (isdepth) {            /* skip because "depth" is not distributed */
+        ierr = PetscFree(name);CHKERRQ(ierr);
+        if (!rank) next = next->next;
+        continue;
+      }
       ierr           = PetscNew(struct _n_DMLabel, &newLabel);CHKERRQ(ierr);
       newLabel->name = name;
       /* Bcast numStrata (could filter for no points in stratum) */

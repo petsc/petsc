@@ -27,6 +27,8 @@ class Configure(config.package.GNUPackage):
     args = []
     args.append('AR="'+self.setCompilers.AR+'"')
     args.append('ARFLAGS="'+self.setCompilers.AR_FLAGS+'"')
+    args.append('CPPFLAGS="'+self.headers.toString(self.hdf5.include)+'"')
+    args.append('LIBS="'+self.libraries.toString(self.hdf5.lib)+'"')
     args.append('--libdir='+os.path.join(self.installDir,self.libdir))
     args.append('--disable-dap')
     args.append('--disable-hdf4')
