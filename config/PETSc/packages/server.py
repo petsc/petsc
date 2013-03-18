@@ -14,6 +14,8 @@ class Configure(PETSc.package.NewPackage):
   def setupDependencies(self, framework):
     PETSc.package.NewPackage.setupDependencies(self, framework)
     self.pthread = framework.require('PETSc.packages.pthread',self)
+    self.yaml    = framework.require('PETSc.packages.yaml',self)
+    self.ams     = framework.require('PETSc.packages.ams',self)
     self.deps    = []
     return
 

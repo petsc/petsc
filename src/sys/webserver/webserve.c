@@ -406,23 +406,80 @@ PETSC_UNUSED static PetscErrorCode YAML_echo(PetscInt argc,char **args,PetscInt 
 
 #undef __FUNCT__
 #define __FUNCT__ "YAML_AMS_Utility_StringToArray"
-static PetscErrorCode YAML_AMS_Utility_StringToArray(const char *string,AMS_Data_type dtype,PetscInt *n,PetscBool **addr)
+static PetscErrorCode YAML_AMS_Utility_StringToArray(const char *instring,AMS_Data_type dtype,PetscInt *n,void **addr)
 {
   PetscErrorCode ierr;
-  char           *bracket;
+  char           *bracket,*sub;
+  PetscInt       N;
+  PetscToken     token;
+  char           *string,*cstring;
 
   PetscFunctionBegin;
-  ierr = PetscStrchr(string,'[',&bracket);CHKERRQ(ierr);
-  if (!bracket) {
-    *n = 1;
-    if (dtype == AMS_STRING) {
-      ierr = PetscStrallocpy(string,(char**)addr);CHKERRQ(ierr);
-    } else if (dtype == AMS_BOOLEAN) {
-      ierr = PetscMalloc(sizeof(PetscBool),addr);CHKERRQ(ierr);
-      ierr = PetscOptionsStringToBool(string,*addr);CHKERRQ(ierr);
-      ierr = PetscInfo2(NULL,"String value %s, computed value %d\n",string,(int)**addr);CHKERRQ(ierr);
-    }
+  ierr = PetscStrallocpy(instring,&cstring);CHKERRQ(ierr);
+  ierr = PetscStrchr(instring,'[',&bracket);CHKERRQ(ierr);
+  if (bracket) {
+    string = bracket + 1;
+    ierr = PetscStrchr(instring,']',&bracket);CHKERRQ(ierr);
+    if (bracket) *bracket = 0;
+  } else string = cstring;
+
+  N = 0;
+  ierr = PetscTokenCreate(string,',',&token);CHKERRQ(ierr);
+  ierr = PetscTokenFind(token,&sub);CHKERRQ(ierr);
+  while (sub) {
+    ierr = PetscTokenFind(token,&sub);CHKERRQ(ierr);
+    N++;
   }
+  ierr = PetscTokenDestroy(&token);CHKERRQ(ierr);
+  ierr = PetscInfo2(NULL,"String value %s number of entries in array %d\n",string,(int)N);CHKERRQ(ierr);
+  ierr = PetscTokenCreate(string,',',&token);CHKERRQ(ierr);
+  ierr = PetscTokenFind(token,&sub);CHKERRQ(ierr);
+
+  if (dtype == AMS_STRING) {
+    char **caddr;
+    ierr = PetscMalloc(N*sizeof(char*),&caddr);CHKERRQ(ierr);
+    *addr = (void*) caddr;
+    while (sub) {
+      ierr = PetscStrallocpy(sub,(char**)caddr);CHKERRQ(ierr);
+      ierr = PetscInfo2(NULL,"String value %s, computed value %s\n",sub,*caddr);CHKERRQ(ierr);
+      ierr = PetscTokenFind(token,&sub);CHKERRQ(ierr);
+      caddr++;
+    }
+  } else if (dtype == AMS_BOOLEAN) {
+    PetscBool *baddr;
+    ierr = PetscMalloc(N*sizeof(PetscBool),&baddr);CHKERRQ(ierr);
+    *addr = (void*) baddr;
+    while (sub) {
+      ierr = PetscOptionsStringToBool(sub,baddr);CHKERRQ(ierr);
+      ierr = PetscInfo2(NULL,"String value %s, computed value %d\n",sub,(int)*baddr);CHKERRQ(ierr);
+      ierr = PetscTokenFind(token,&sub);CHKERRQ(ierr);
+      baddr++;
+    }
+  } else if (dtype == AMS_INT) {
+    PetscInt *iaddr;
+    ierr = PetscMalloc(N*sizeof(PetscInt),&iaddr);CHKERRQ(ierr);
+    *addr = (void*) iaddr;
+    while (sub) {
+      sscanf(sub,"%d",iaddr);
+      ierr = PetscInfo2(NULL,"String value %s, computed value %d\n",sub,(int)*iaddr);CHKERRQ(ierr);
+      ierr = PetscTokenFind(token,&sub);CHKERRQ(ierr);
+      iaddr++;
+    }
+  } else if (dtype == AMS_DOUBLE) {
+    PetscReal *raddr;
+    ierr = PetscMalloc(N*sizeof(PetscReal),&raddr);CHKERRQ(ierr);
+    *addr = (void*) raddr;
+    while (sub) {
+      sscanf(sub,"%le",(double*)raddr);
+      ierr = PetscInfo2(NULL,"String value %s, computed value %g\n",sub,(double)*raddr);CHKERRQ(ierr);
+      ierr = PetscTokenFind(token,&sub);CHKERRQ(ierr);
+      raddr++;
+    }
+  } else {
+    ierr = PetscInfo1(NULL,"String value %s, datatype not handled\n",string);CHKERRQ(ierr);
+  }
+  ierr = PetscTokenDestroy(&token);CHKERRQ(ierr);
+  ierr = PetscFree(cstring);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -497,13 +554,14 @@ static PetscErrorCode YAML_AMS_Utility_ArrayToString(PetscInt n,void *addr,AMS_D
       ierr = PetscStrcat(*result,"\"]");CHKERRQ(ierr);
     } else if (dtype == AMS_BOOLEAN) {
       ierr = PetscMalloc(7*n*sizeof(char),result);CHKERRQ(ierr);
-      ierr = PetscStrcpy(*result,"[\"");CHKERRQ(ierr);
+      ierr = PetscStrcpy(*result,"[");CHKERRQ(ierr);
       for (i=0; i<n-1; i++) {
-      ierr = PetscStrcat(*result,*(PetscBool*)addr ? "true" : "false");CHKERRQ(ierr);
+        ierr = PetscStrcat(*result,*(PetscBool*)addr ? "\"true\"" : "\"false\"");CHKERRQ(ierr);
+        ierr = PetscStrcat(*result,",");CHKERRQ(ierr);
         addr = (void *) ((char *)addr + sizeof(int));
       }
-      ierr = PetscStrcat(*result,*(PetscBool*)addr ? "true" : "false");CHKERRQ(ierr);
-      ierr = PetscStrcat(*result,"\"]");CHKERRQ(ierr);
+      ierr = PetscStrcat(*result,*(PetscBool*)addr ? "\"true\"" : "\"false\"");CHKERRQ(ierr);
+      ierr = PetscStrcat(*result,"]");CHKERRQ(ierr);
     } else {
       ierr = PetscStrallocpy("Not yet done",result);CHKERRQ(ierr);
     }
@@ -761,7 +819,14 @@ PETSC_EXTERN PetscErrorCode YAML_AMS_Memory_set_field_info(PetscInt argc,char **
     ierr   = PetscStrallocpy("Memory field can not be located",*argso);
     PetscFunctionReturn(0);
   }
-  ierr = YAML_AMS_Utility_StringToArray(args[2],dtype,&len,(PetscBool**)&addr);CHKERRQ(ierr);
+  if (mtype == AMS_READ) {
+    ierr = PetscInfo1(NULL,"AMS_Memory_set_field_info() error %d\n",ierr);CHKERRQ(ierr);
+    *argco = 1;
+    ierr   = PetscMalloc(sizeof(char*),argso);CHKERRQ(ierr);
+    ierr   = PetscStrallocpy("Memory field is read only",*argso);
+    PetscFunctionReturn(0);
+  }
+  ierr = YAML_AMS_Utility_StringToArray(args[2],dtype,&len,(void**)&addr);CHKERRQ(ierr);
   ierr = AMS_Memory_set_field_info(mem,args[1],addr,len);CHKERRQ(ierr);
   if (ierr) {
     ierr = PetscInfo1(NULL,"AMS_Memory_set_field_info() error %d\n",ierr);CHKERRQ(ierr);

@@ -22,3 +22,7 @@ petscwebserver: petscwebserver.o webserve.o  chkopts
         ${CLINKER} -o petscwebserver petscwebserver.o webserve.o $$lib ${PETSC_SYS_LIB}
 	${RM} -f petscwebserver.o webserve.o
 	${MV} -f petscwebserver ${PETSC_DIR}/${PETSC_ARCH}/bin
+
+petscwebclient: petscwebclient.o  chkopts
+	${CLINKER} -o petscwebclient petscwebclient.o ${PETSC_SYS_LIB}
+	${RM} -f petscwebclient.o
