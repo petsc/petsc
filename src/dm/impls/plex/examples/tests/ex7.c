@@ -141,10 +141,11 @@ cell   9-----31------8-----42------13 cell
 
 typedef struct {
   DM        dm;
-  PetscInt  debug;       /* The debugging level */
-  PetscInt  testNum;     /* Indicates the mesh to create */
-  PetscInt  dim;         /* The topological mesh dimension */
-  PetscBool cellSimplex; /* Use simplices or hexes */
+  PetscInt  debug;        /* The debugging level */
+  PetscInt  testNum;      /* Indicates the mesh to create */
+  PetscInt  dim;          /* The topological mesh dimension */
+  PetscBool cellSimplex;  /* Use simplices or hexes */
+  PetscBool useGenerator; /* Construct mesh with a mesh generator */
 } AppCtx;
 
 #undef __FUNCT__
@@ -154,16 +155,18 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  options->debug       = 0;
-  options->testNum     = 0;
-  options->dim         = 2;
-  options->cellSimplex = PETSC_TRUE;
+  options->debug        = 0;
+  options->testNum      = 0;
+  options->dim          = 2;
+  options->cellSimplex  = PETSC_TRUE;
+  options->useGenerator = PETSC_FALSE;
 
   ierr = PetscOptionsBegin(comm, "", "Meshing Problem Options", "DMPLEX");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-debug", "The debugging level", "ex7.c", options->debug, &options->debug, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-testnum", "The mesh to create", "ex7.c", options->testNum, &options->testNum, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex7.c", options->dim, &options->dim, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-cell_simplex", "Use simplices if true, otherwise hexes", "ex7.c", options->cellSimplex, &options->cellSimplex, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-use_generator", "Use a mesh generator to build the mesh", "ex7.c", options->useGenerator, &options->useGenerator, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
   PetscFunctionReturn(0);
 };
@@ -341,34 +344,39 @@ PetscErrorCode CreateHex_3D(MPI_Comm comm, DM dm)
 #define __FUNCT__ "CreateMesh"
 PetscErrorCode CreateMesh(MPI_Comm comm, PetscInt testNum, AppCtx *user, DM *dm)
 {
-  PetscInt       dim         = user->dim;
-  PetscBool      cellSimplex = user->cellSimplex;
-  const char    *partitioner = "chaco";
+  PetscInt       dim          = user->dim;
+  PetscBool      cellSimplex  = user->cellSimplex;
+  PetscBool      useGenerator = user->useGenerator;
+  const char    *partitioner  = "chaco";
   PetscMPIInt    rank;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-  ierr = DMCreate(comm, dm);CHKERRQ(ierr);
-  ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
-  ierr = DMPlexSetDimension(*dm, dim);CHKERRQ(ierr);
-  switch (dim) {
-  case 2:
-    if (cellSimplex) {
-      ierr = CreateSimplex_2D(comm, *dm);CHKERRQ(ierr);
-    } else {
-      ierr = CreateQuad_2D(comm, testNum, *dm);CHKERRQ(ierr);
+  if (useGenerator) {
+    ierr = DMPlexCreateBoxMesh(comm, dim, PETSC_FALSE, dm);CHKERRQ(ierr);
+  } else {
+    ierr = DMCreate(comm, dm);CHKERRQ(ierr);
+    ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
+    ierr = DMPlexSetDimension(*dm, dim);CHKERRQ(ierr);
+    switch (dim) {
+    case 2:
+      if (cellSimplex) {
+        ierr = CreateSimplex_2D(comm, *dm);CHKERRQ(ierr);
+      } else {
+        ierr = CreateQuad_2D(comm, testNum, *dm);CHKERRQ(ierr);
+      }
+      break;
+    case 3:
+      if (cellSimplex) {
+        ierr = CreateSimplex_3D(comm, *dm);CHKERRQ(ierr);
+      } else {
+        ierr = CreateHex_3D(comm, *dm);CHKERRQ(ierr);
+      }
+      break;
+    default:
+      SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "Cannot make meshes for dimension %d", dim);
     }
-    break;
-  case 3:
-    if (cellSimplex) {
-      ierr = CreateSimplex_3D(comm, *dm);CHKERRQ(ierr);
-    } else {
-      ierr = CreateHex_3D(comm, *dm);CHKERRQ(ierr);
-    }
-    break;
-  default:
-    SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "Cannot make meshes for dimension %d", dim);
   }
   {
     DM interpolatedMesh = NULL;
@@ -395,6 +403,23 @@ PetscErrorCode CreateMesh(MPI_Comm comm, PetscInt testNum, AppCtx *user, DM *dm)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "CheckMesh"
+PetscErrorCode CheckMesh(DM dm)
+{
+  PetscReal      detJ;
+  PetscInt       cStart, cEnd, c;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  for (c = cStart; c < cEnd; ++c) {
+    ierr = DMPlexComputeCellGeometry(dm, c, NULL, NULL, NULL, &detJ);CHKERRQ(ierr);
+    if (detJ < 0.0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Mesh cell %d is inverted, |J| = %g", c, detJ);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
@@ -404,6 +429,7 @@ int main(int argc, char **argv)
   ierr = PetscInitialize(&argc, &argv, NULL, help);CHKERRQ(ierr);
   ierr = ProcessOptions(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);
   ierr = CreateMesh(PETSC_COMM_WORLD, user.testNum, &user, &user.dm);CHKERRQ(ierr);
+  ierr = CheckMesh(user.dm);CHKERRQ(ierr);
   ierr = DMDestroy(&user.dm);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
