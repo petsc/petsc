@@ -485,39 +485,72 @@ static PetscErrorCode DMPlexComputeHexahedronGeometry_Internal(DM dm, PetscInt e
 @*/
 PetscErrorCode DMPlexComputeCellGeometry(DM dm, PetscInt cell, PetscReal *v0, PetscReal *J, PetscReal *invJ, PetscReal *detJ)
 {
-  PetscInt       dim, coneSize;
+  PetscInt       depth, dim, coneSize;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = DMPlexGetDimension(dm, &depth);CHKERRQ(ierr);
   ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMPlexGetConeSize(dm, cell, &coneSize);CHKERRQ(ierr);
-  switch (dim) {
-  case 2:
-    switch (coneSize) {
+  if (depth == 1) {
+    switch (dim) {
+    case 2:
+      switch (coneSize) {
+      case 3:
+        ierr = DMPlexComputeTriangleGeometry_Internal(dm, cell, v0, J, invJ, detJ);CHKERRQ(ierr);
+        break;
+      case 4:
+        ierr = DMPlexComputeRectangleGeometry_Internal(dm, cell, v0, J, invJ, detJ);CHKERRQ(ierr);
+        break;
+      default:
+        SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Unsupported number of vertices %D in cell %D for element geometry computation", coneSize, cell);
+      }
+      break;
     case 3:
-      ierr = DMPlexComputeTriangleGeometry_Internal(dm, cell, v0, J, invJ, detJ);CHKERRQ(ierr);
-      break;
-    case 4:
-      ierr = DMPlexComputeRectangleGeometry_Internal(dm, cell, v0, J, invJ, detJ);CHKERRQ(ierr);
-      break;
-    default:
-      SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Unsupported number of vertices %D in cell %D for element geometry computation", coneSize, cell);
-    }
-    break;
-  case 3:
-    switch (coneSize) {
-    case 4:
-      ierr = DMPlexComputeTetrahedronGeometry_Internal(dm, cell, v0, J, invJ, detJ);CHKERRQ(ierr);
-      break;
-    case 8:
-      ierr = DMPlexComputeHexahedronGeometry_Internal(dm, cell, v0, J, invJ, detJ);CHKERRQ(ierr);
+      switch (coneSize) {
+      case 4:
+        ierr = DMPlexComputeTetrahedronGeometry_Internal(dm, cell, v0, J, invJ, detJ);CHKERRQ(ierr);
+        break;
+      case 8:
+        ierr = DMPlexComputeHexahedronGeometry_Internal(dm, cell, v0, J, invJ, detJ);CHKERRQ(ierr);
+        break;
+      default:
+        SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Unsupported number of vertices %D in cell %D for element geometry computation", coneSize, cell);
+      }
       break;
     default:
-      SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Unsupported number of vertices %D in cell %D for element geometry computation", coneSize, cell);
+      SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Unsupported dimension %D for element geometry computation", dim);
     }
-    break;
-  default:
-    SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Unsupported dimension %D for element geometry computation", dim);
+  } else {
+    /* Cone size is now the number of faces */
+    switch (dim) {
+    case 2:
+      switch (coneSize) {
+      case 3:
+        ierr = DMPlexComputeTriangleGeometry_Internal(dm, cell, v0, J, invJ, detJ);CHKERRQ(ierr);
+        break;
+      case 4:
+        ierr = DMPlexComputeRectangleGeometry_Internal(dm, cell, v0, J, invJ, detJ);CHKERRQ(ierr);
+        break;
+      default:
+        SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Unsupported number of vertices %D in cell %D for element geometry computation", coneSize, cell);
+      }
+      break;
+    case 3:
+      switch (coneSize) {
+      case 4:
+        ierr = DMPlexComputeTetrahedronGeometry_Internal(dm, cell, v0, J, invJ, detJ);CHKERRQ(ierr);
+        break;
+      case 6:
+        ierr = DMPlexComputeHexahedronGeometry_Internal(dm, cell, v0, J, invJ, detJ);CHKERRQ(ierr);
+        break;
+      default:
+        SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Unsupported number of vertices %D in cell %D for element geometry computation", coneSize, cell);
+      }
+      break;
+    default:
+      SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Unsupported dimension %D for element geometry computation", dim);
+    }
   }
   PetscFunctionReturn(0);
 }
