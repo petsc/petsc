@@ -308,6 +308,8 @@ static PetscErrorCode DMPlexComputeTriangleGeometry_Internal(DM dm, PetscInt e, 
     }
 #endif
     PetscLogFlops(8.0 + 3.0);
+  } else {
+    *detJ = 0.0;
   }
   if (invJ) {
     const PetscReal invDet = 1.0/(*detJ);
@@ -348,6 +350,8 @@ static PetscErrorCode DMPlexComputeRectangleGeometry_Internal(DM dm, PetscInt e,
     }
     *detJ = J[0]*J[3] - J[1]*J[2];
     PetscLogFlops(8.0 + 3.0);
+  } else {
+    *detJ = 0.0;
   }
   if (invJ) {
     const PetscReal invDet = 1.0/(*detJ);
@@ -438,6 +442,8 @@ static PetscErrorCode DMPlexComputeHexahedronGeometry_Internal(DM dm, PetscInt e
              J[0*3+1]*(J[1*3+2]*J[2*3+0] - J[1*3+0]*J[2*3+2]) +
              J[0*3+2]*(J[1*3+0]*J[2*3+1] - J[1*3+1]*J[2*3+0]));
     PetscLogFlops(18.0 + 12.0);
+  } else {
+    *detJ = 0.0;
   }
   if (invJ) {
     const PetscReal invDet = -1.0/(*detJ);
