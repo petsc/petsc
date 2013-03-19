@@ -63,12 +63,12 @@ static PetscErrorCode DMPlexGetFaces_Internal(DM dm, PetscInt dim, PetscInt p, P
       if (faces)    *faces            = facesTmp;
       break;
     case 4:
-      /* Vertices of first face follow right hand rule and normal points towards last vertex */
+      /* Vertices of first face follow right hand rule and normal points away from last vertex */
       if (faces) {
-        facesTmp[0] = cone[0]; facesTmp[1]  = cone[2]; facesTmp[2]  = cone[1];
-        facesTmp[3] = cone[0]; facesTmp[4]  = cone[1]; facesTmp[5]  = cone[3];
-        facesTmp[6] = cone[0]; facesTmp[7]  = cone[3]; facesTmp[8]  = cone[2];
-        facesTmp[9] = cone[1]; facesTmp[10] = cone[2]; facesTmp[11] = cone[3];
+        facesTmp[0] = cone[0]; facesTmp[1]  = cone[1]; facesTmp[2]  = cone[2];
+        facesTmp[3] = cone[0]; facesTmp[4]  = cone[3]; facesTmp[5]  = cone[1];
+        facesTmp[6] = cone[0]; facesTmp[7]  = cone[2]; facesTmp[8]  = cone[3];
+        facesTmp[9] = cone[2]; facesTmp[10] = cone[1]; facesTmp[11] = cone[3];
         *faces = facesTmp;
       }
       if (numFaces) *numFaces         = 4;
@@ -77,12 +77,12 @@ static PetscErrorCode DMPlexGetFaces_Internal(DM dm, PetscInt dim, PetscInt p, P
       break;
     case 8:
       if (faces) {
-        facesTmp[0]  = cone[0]; facesTmp[1]  = cone[3]; facesTmp[2]  = cone[2]; facesTmp[3]  = cone[1];
+        facesTmp[0]  = cone[0]; facesTmp[1]  = cone[1]; facesTmp[2]  = cone[2]; facesTmp[3]  = cone[3];
         facesTmp[4]  = cone[4]; facesTmp[5]  = cone[5]; facesTmp[6]  = cone[6]; facesTmp[7]  = cone[7];
-        facesTmp[8]  = cone[0]; facesTmp[9]  = cone[1]; facesTmp[10] = cone[5]; facesTmp[11] = cone[4];
-        facesTmp[12] = cone[2]; facesTmp[13] = cone[3]; facesTmp[14] = cone[7]; facesTmp[15] = cone[6];
-        facesTmp[16] = cone[1]; facesTmp[17] = cone[2]; facesTmp[18] = cone[6]; facesTmp[19] = cone[5];
-        facesTmp[20] = cone[0]; facesTmp[21] = cone[4]; facesTmp[22] = cone[7]; facesTmp[23] = cone[3];
+        facesTmp[8]  = cone[0]; facesTmp[9]  = cone[3]; facesTmp[10] = cone[5]; facesTmp[11] = cone[4];
+        facesTmp[12] = cone[2]; facesTmp[13] = cone[1]; facesTmp[14] = cone[7]; facesTmp[15] = cone[6];
+        facesTmp[16] = cone[3]; facesTmp[17] = cone[2]; facesTmp[18] = cone[6]; facesTmp[19] = cone[5];
+        facesTmp[20] = cone[0]; facesTmp[21] = cone[4]; facesTmp[22] = cone[7]; facesTmp[23] = cone[1];
         *faces = facesTmp;
       }
       if (numFaces) *numFaces         = 6;
@@ -225,7 +225,7 @@ static PetscErrorCode DMPlexInterpolateFaces_Internal(DM dm, PetscInt cellDepth,
         PetscInt        coneSize, ornt, i, j;
 
         ierr = DMPlexInsertCone(idm, c, cf, f);CHKERRQ(ierr);
-        /* Orient face */
+        /* Orient face: Do not allow reverse orientation at the first vertex */
         ierr = DMPlexGetConeSize(idm, f, &coneSize);CHKERRQ(ierr);
         ierr = DMPlexGetCone(idm, f, &cone);CHKERRQ(ierr);
         if (coneSize != faceSize) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid number of face vertices %D for face %D should be %D", coneSize, f, faceSize);
@@ -239,8 +239,10 @@ static PetscErrorCode DMPlexInterpolateFaces_Internal(DM dm, PetscInt cellDepth,
         } else {
           /* - Try backward comparison */
           for (j = 0; j < faceSize; ++j) if (cellFace[j] != cone[(i+faceSize-j)%faceSize]) break;
-          if (j == faceSize) ornt = -(i+1);
-          else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Could not determine face orientation");
+          if (j == faceSize) {
+            if (i == 0) ornt = -faceSize;
+            else        ornt = -(i+1);
+          } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Could not determine face orientation");
         }
         ierr = DMPlexInsertConeOrientation(idm, c, cf, ornt);CHKERRQ(ierr);
       }
@@ -275,17 +277,18 @@ static PetscErrorCode DMPlexInterpolateFaces_Internal(DM dm, PetscInt cellDepth,
 PetscErrorCode DMPlexInterpolate(DM dm, DM *dmInt)
 {
   DM             idm, odm = dm;
-  PetscInt       dim, d;
+  PetscInt       depth, dim, d;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
   ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
   for (d = 1; d < dim; ++d) {
     /* Create interpolated mesh */
     ierr = DMCreate(PetscObjectComm((PetscObject)dm), &idm);CHKERRQ(ierr);
     ierr = DMSetType(idm, DMPLEX);CHKERRQ(ierr);
     ierr = DMPlexSetDimension(idm, dim);CHKERRQ(ierr);
-    ierr = DMPlexInterpolateFaces_Internal(odm, 1, idm);CHKERRQ(ierr);
+    if (depth > 0) {ierr = DMPlexInterpolateFaces_Internal(odm, 1, idm);CHKERRQ(ierr);}
     if (odm != dm) {ierr = DMDestroy(&odm);CHKERRQ(ierr);}
     odm  = idm;
   }
