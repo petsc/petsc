@@ -154,16 +154,13 @@ runex10f90_2:
 	   ${RM} -f ex10f90_2.tmp
 
 TESTEXAMPLES_C		      = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm \
-                            ex3.PETSc runex3 ex3.rm ex4.PETSc runex4 ex4.rm ex6.PETSc runex6 ex6.rm \
-                            ex9_1.PETSc runex9_1 ex9_1.rmex9_2.PETSc runex9_2 ex9_2.rm
+                            ex3.PETSc runex3 ex3.rm ex4.PETSc runex4 ex4.rm ex6.PETSc runex6 ex6.rm
 TESTEXAMPLES_C_NOCOMPLEX  = ex5.PETSc runex5 ex5.rm
 TESTEXAMPLES_C_X_MPIUNI   = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm \
                             ex3.PETSc runex3 ex3.rm
 TESTEXAMPLES_FORTRAN	  = ex3f.PETSc runex3f ex3f.rm ex4f.PETSc runex4f ex4f.rm
-TESTEXAMPLES_F90	      = ex4f90.PETSc runex4f90 ex4f90.rm\
-                            ex10f90_1.PETSc runex10f90_1 ex10f90_1.rm ex10f90_2.PETSc runex10f90_2 ex10f90_2.rm 
+TESTEXAMPLES_F90	      = ex4f90.PETSc runex4f90 ex4f90.rm
 TESTEXAMPLES_F2003        = ex5f90.PETSc runex5f90 ex5f90.rm  ex8f90.PETSc runex8f90 ex8f90.rm
-TESTEXAMPLES_YAML         = ex9_1.PETSc runex9_1 ex9_1.rmex9_2.PETSc runex9_2 ex9_2.rm \
-                            ex10f90_1.PETSc runex10f90_1 ex10f90_1.rm ex10f90_2.PETSc runex10f90_2 ex10f90_2.rm 
+TESTEXAMPLES_YAML         = ex9.PETSc runex9_1 runex9_2 ex9.rm ex10f90.PETSc runex10f90_1 runex10f90_2 ex10f90.rm
 include ${PETSC_DIR}/conf/test
 
