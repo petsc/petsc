@@ -66,7 +66,6 @@ PetscErrorCode PetscWebSendError(FILE *f, int status, const char *title, const c
   PetscFunctionReturn(0);
 }
 
-#if defined(PETSC_HAVE_AMS)
 #include <petscviewerams.h>
 #undef __FUNCT__
 #define __FUNCT__ "PetscAMSObjectsDisplayList"
@@ -268,7 +267,6 @@ static PetscErrorCode PetscAMSObjectsDisplayTree(FILE *fd)
   ierr = PetscWebSendFooter(fd);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-#endif
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscWebServeRequestGet"
@@ -318,16 +316,13 @@ static PetscErrorCode  PetscWebServeRequestGet(FILE *fd,const char path[])
     ierr = PetscOptionsView(viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
     fprintf(fd, "<HR>\r\n");
-#if defined(PETSC_HAVE_AMS)
     fprintf(fd, "<a href=\"./ams-tree\">Connect to Memory Snooper--Tree Display</a></p>\r\n\r\n");
     fprintf(fd, "<a href=\"./ams-list\">Connect to Memory Snooper--List Display</a></p>\r\n\r\n");
-    fprintf(fd, "<a href=\"./AMSJavascript.html\">Connect to Memory Snooper--Interactive Javascript</a></p>\r\n\r\n");
-#endif
+    fprintf(fd, "<a href=\"./AMSSnoopObjects.html\">Connect to Memory Snooper--Interactive Javascript</a></p>\r\n\r\n");
     ierr = PetscWebSendFooter(fd);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
 
-#if defined(PETSC_HAVE_AMS)
   ierr = PetscStrcmp(path,"/ams-list",&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscAMSObjectsDisplayList(fd);CHKERRQ(ierr);
@@ -338,7 +333,6 @@ static PetscErrorCode  PetscWebServeRequestGet(FILE *fd,const char path[])
     ierr = PetscAMSObjectsDisplayTree(fd);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
-#endif
   ierr = PetscStrcpy(fullpath,"${PETSC_DIR}/include/web");CHKERRQ(ierr);
   ierr = PetscStrcat(fullpath,path);CHKERRQ(ierr);
   ierr = PetscInfo1(NULL,"Checking for file %s\n",fullpath);CHKERRQ(ierr);
@@ -366,8 +360,6 @@ static PetscErrorCode  PetscWebServeRequestGet(FILE *fd,const char path[])
   ierr = PetscWebSendError(fd, 501, "Not supported", NULL, "Unknown request.");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-#if defined(PETSC_HAVE_YAML)
 
 /*
     Toy YAML/JSON-RPC function that returns all the arguments it is passed
@@ -1111,7 +1103,6 @@ static PetscErrorCode  PetscWebServeRequestPostAMSJSONRPC(FILE *fd,const char pa
   ierr = PetscInfo(NULL,"Completed AMS JSON-RPC function call\n");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-#endif
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscWebServeRequest"
@@ -1160,14 +1151,10 @@ static PetscErrorCode  PetscWebServeRequest(int port)
   if (flg) {
       ierr = PetscWebServeRequestGet(fd,path);CHKERRQ(ierr);
   } else {
-#if defined(PETSC_HAVE_YAML)
     ierr = PetscStrcmp(method,"POST",&flg);
     if (flg) {
       ierr = PetscWebServeRequestPostAMSJSONRPC(fd,path);CHKERRQ(ierr);
     } else {
-#else
-    {
-#endif
       ierr = PetscWebSendError(fd, 501, "Not supported", NULL, "Method is not supported.");CHKERRQ(ierr);
       ierr = PetscInfo(NULL,"Web request not a GET or POST, giving up\n");CHKERRQ(ierr);
     }
@@ -1231,7 +1218,7 @@ PetscErrorCode PetscWebServeWait(int *port)
 
       If the PETSc program completes before you connect with the browser you will not be able to connect to the PETSc webserver.
 
-      Read the top of $PETSC_DIR/include/web/AMSJavascript.py before running.
+      Read the top of $PETSC_DIR/include/web/AMSSnoopObjects.py before running.
 
     Level: intermediate
 
