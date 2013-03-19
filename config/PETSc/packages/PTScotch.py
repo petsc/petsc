@@ -3,10 +3,10 @@ import PETSc.package
 class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
     PETSc.package.NewPackage.__init__(self, framework)
-    #'https://gforge.inria.fr/frs/download.php/28978/scotch_5.1.12b_esmumps.tar.gz'
-    self.download     = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/scotch_5.1.12b_esmumps-p1.tar.gz']
+    self.download     = ['https://gforge.inria.fr/frs/download.php/31832/scotch_6.0.0_esmumps.tar.gz',
+                         'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/scotch_6.0.0_esmumps.tar.gz']
     self.downloadfilename = 'scotch'
-    self.liblist      = [['libptesmumps.a', 'libptscotch.a','libptscotcherr.a']]
+    self.liblist      = [['libptscotch.a','libptscotcherr.a','libscotch.a','libscotcherr.a']]
     self.functions    = ['SCOTCH_archBuild']
     self.includes     = ['ptscotch.h']
     self.requires32bitint = 0
@@ -51,7 +51,8 @@ class Configure(PETSc.package.NewPackage):
     if self.libraries.add('-lz','gzwrite'):
       self.cflags = self.cflags + ' -DCOMMON_FILE_COMPRESS_GZ'
       ldflags += ' -lz'
-    if self.libraries.add('-lpthread','pthread_key_create'):
+    # OSX does not have pthread_barrierattr_t - so check for that
+    if self.libraries.add('-lpthread','pthread_barrierattr_t'):
       self.cflags = self.cflags + ' -DCOMMON_PTHREAD'
       ldflags += ' -lpthread'
     if self.libraries.add('-lm','sin'): ldflags += ' -lm'
