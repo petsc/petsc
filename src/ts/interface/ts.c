@@ -3519,7 +3519,7 @@ PetscErrorCode TSComputeIJacobianConstant(TS ts,PetscReal t,Vec U,Vec Udot,Petsc
 .  ts - the TS context
 
    Output Parameter:
-.  equation_type - see TSEquatioType
+.  equation_type - see TSEquationType
 
    Level: beginner
 
@@ -3545,7 +3545,7 @@ PetscErrorCode  TSGetEquationType(TS ts,TSEquationType *equation_type)
 
    Input Parameter:
 +  ts - the TS context
-.  equation_type - see TSEquatioType
+.  equation_type - see TSEquationType
 
    Level: advanced
 
