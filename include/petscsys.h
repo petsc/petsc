@@ -2389,6 +2389,21 @@ PETSC_EXTERN PetscErrorCode PetscSubcommSetNumber(PetscSubcomm,PetscInt);
 PETSC_EXTERN PetscErrorCode PetscSubcommSetType(PetscSubcomm,PetscSubcommType);
 PETSC_EXTERN PetscErrorCode PetscSubcommSetTypeGeneral(PetscSubcomm,PetscMPIInt,PetscMPIInt,PetscMPIInt);
 
+/*S
+   PetscSegBuffer - a segmented extendable buffer
+
+   Level: developer
+
+.seealso: PetscSegBufferCreate(), PetscSegBufferGet(), PetscSegBufferExtract(), PetscSegBufferDestroy()
+S*/
+typedef struct _n_PetscSegBuffer *PetscSegBuffer;
+PETSC_EXTERN PetscErrorCode PetscSegBufferCreate(PetscInt,PetscInt,PetscSegBuffer*);
+PETSC_EXTERN PetscErrorCode PetscSegBufferDestroy(PetscSegBuffer*);
+PETSC_EXTERN PetscErrorCode PetscSegBufferGet(PetscSegBuffer*,PetscInt,void*);
+PETSC_EXTERN PetscErrorCode PetscSegBufferExtractAlloc(PetscSegBuffer*,void*);
+PETSC_EXTERN PetscErrorCode PetscSegBufferExtractTo(PetscSegBuffer*,void*);
+PETSC_EXTERN PetscErrorCode PetscSegBufferExtractInPlace(PetscSegBuffer*,void*);
+
 /* Reset __FUNCT__ in case the user does not define it themselves */
 #undef __FUNCT__
 #define __FUNCT__ "User provided function"
