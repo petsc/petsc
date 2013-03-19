@@ -17,41 +17,49 @@ PetscErrorCode PetscParseLayerYAML(yaml_parser_t *parser,int *lvl)
 
   PetscFunctionBegin;
   ierr = PetscSNPrintf(option,PETSC_MAX_PATH_LEN,"%s"," ");CHKERRQ(ierr);
-  while (1) {
+  do {
     yaml_parser_parse(parser,&event);
     /* Parse value either as a new leaf in the mapping */
     /*  or as a leaf value (one of them, in case it's a sequence) */
-    if (event.type == YAML_SCALAR_EVENT) {
-      if (storage) {
-        ierr = PetscSNPrintf(option,PETSC_MAX_PATH_LEN,"-%s %s",key,(char*)event.data.scalar.value);CHKERRQ(ierr);
-        ierr = PetscOptionsInsertString(option);CHKERRQ(ierr);
-      } else {
-        ierr = PetscStrncpy(key,(char*)event.data.scalar.value,event.data.scalar.length+1);CHKERRQ(ierr);
-      }
-      storage ^= VAL;           /* Flip VAR/VAL switch for the next event */
-    } else if (event.type == YAML_SEQUENCE_START_EVENT) {
-      /* Sequence - all the following scalars will be appended to the last_leaf */
-      storage = SEQ;
-      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP ,"Unable to open YAML option file: sequences not supported");
-    } else if (event.type == YAML_SEQUENCE_END_EVENT) {
-      storage = VAR;
-    } else if (event.type == YAML_MAPPING_START_EVENT) {
-      ierr = PetscSNPrintf(prefix,PETSC_MAX_PATH_LEN,"%s_",key);CHKERRQ(ierr);
-      if (*lvl > 0) {
-        ierr = PetscOptionsPrefixPush(prefix);CHKERRQ(ierr);
-      }
-      (*lvl)++;
-      ierr = PetscParseLayerYAML(parser,lvl);CHKERRQ(ierr);
-      (*lvl)--;
-      if (*lvl > 0) {
-        ierr = PetscOptionsPrefixPop();CHKERRQ(ierr);
-      }
-      storage ^= VAL;           /* Flip VAR/VAL, w/o touching SEQ */
-    } else if (event.type == YAML_MAPPING_END_EVENT || event.type == YAML_STREAM_END_EVENT) {
-      break;
+    switch (event.type) {
+      case YAML_SCALAR_EVENT:
+        if (storage) {
+          ierr = PetscSNPrintf(option,PETSC_MAX_PATH_LEN,"-%s %s",key,(char*)event.data.scalar.value);CHKERRQ(ierr);
+          ierr = PetscOptionsInsertString(option);CHKERRQ(ierr);
+        } else {
+          ierr = PetscStrncpy(key,(char*)event.data.scalar.value,event.data.scalar.length+1);CHKERRQ(ierr);
+        }
+        storage ^= VAL;           /* Flip VAR/VAL switch for the next event */
+        break;
+      case YAML_SEQUENCE_START_EVENT:
+        /* Sequence - all the following scalars will be appended to the last_leaf */
+        storage = SEQ;
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP ,"Unable to open YAML option file: sequences not supported");
+        yaml_event_delete(&event);
+        break;
+      case YAML_SEQUENCE_END_EVENT:
+        storage = VAR;
+        yaml_event_delete(&event);
+        break;
+      case YAML_MAPPING_START_EVENT:
+        ierr = PetscSNPrintf(prefix,PETSC_MAX_PATH_LEN,"%s_",key);CHKERRQ(ierr);
+        if (*lvl > 0) {
+          ierr = PetscOptionsPrefixPush(prefix);CHKERRQ(ierr);
+        }
+        (*lvl)++;
+        ierr = PetscParseLayerYAML(parser,lvl);CHKERRQ(ierr);
+        (*lvl)--;
+        if (*lvl > 0) {
+          ierr = PetscOptionsPrefixPop();CHKERRQ(ierr);
+        }
+        storage ^= VAL;           /* Flip VAR/VAL, w/o touching SEQ */
+        yaml_event_delete(&event);
+        break;
+      default:
+        break;
     }
-    yaml_event_delete(&event);
   }
+  while ((event.type != YAML_MAPPING_END_EVENT) && (event.type != YAML_STREAM_END_EVENT));
   PetscFunctionReturn(0);
 }
 
