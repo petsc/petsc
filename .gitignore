@@ -130,3 +130,6 @@ src/snes/examples/tutorials/ex72\.h
 src/dm/impls/complex/examples/tests/ex3_gpu_inline\.h
 src/dm/impls/complex/examples/tests/ex3_gpu\.h
 src/dm/impls/complex/examples/tests/ex3\.h
+src/snes/examples/tutorials/ex12.h
+src/snes/examples/tutorials/ex12_gpu.h
+src/snes/examples/tutorials/ex12_gpu_inline.h
