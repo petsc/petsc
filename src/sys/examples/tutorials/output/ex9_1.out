@@ -1,0 +1,6 @@
+#PETSc Option Table entries:
+-f petsc.yml
+#End of PETSc Option Table entries
+WARNING! There are options you set that were not used!
+WARNING! could be spelling mistake, etc!
+Option left: name:-f value: petsc.yml
