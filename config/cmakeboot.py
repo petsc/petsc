@@ -98,21 +98,35 @@ class PETScMaker(script.Script):
    langlist = [('C','C')]
    if hasattr(self.compilers,'FC'):
      langlist.append(('FC','Fortran'))
+   if hasattr(self.compilers,'CUDAC'):
+     langlist.append(('CUDA','CUDA'))
    if (self.languages.clanguage == 'Cxx'):
      langlist.append(('Cxx','CXX'))
    win32fe = None
    for petsclanguage,cmakelanguage in langlist:
      self.setCompilers.pushLanguage(petsclanguage)
      compiler = self.setCompilers.getCompiler()
-     flags = [self.setCompilers.getCompilerFlags(),
-              self.setCompilers.CPPFLAGS,
-              self.CHUD.CPPFLAGS]
-     if compiler.split()[0].endswith('win32fe'): # Hack to support win32fe without changing the rest of configure
-       win32fe = compiler.split()[0] + '.exe'
-       compiler = ' '.join(compiler.split()[1:])
-     options.append('-DCMAKE_'+cmakelanguage+'_COMPILER:FILEPATH=' + compiler)
-     options.append('-DCMAKE_'+cmakelanguage+'_FLAGS:STRING=' + ''.join(flags))
-     self.setCompilers.popLanguage()
+     if (cmakelanguage == 'CUDA'):
+       self.cuda = self.framework.require('PETSc.packages.cuda',       None)
+       if (self.cuda.directory != None):
+         options.append('-DCUDA_TOOLKIT_ROOT_DIR:STRING=' + self.cuda.directory)
+       options.append('-DCUDA_NVCC_FLAGS:STRING=' + self.setCompilers.getCompilerFlags())
+     else:
+       flags = [self.setCompilers.getCompilerFlags(),
+                self.setCompilers.CPPFLAGS,
+                self.CHUD.CPPFLAGS]
+       if compiler.split()[0].endswith('win32fe'): # Hack to support win32fe without changing the rest of configure
+         win32fe = compiler.split()[0] + '.exe'
+         compiler = ' '.join(compiler.split()[1:])
+       options.append('-DCMAKE_'+cmakelanguage+'_COMPILER:FILEPATH=' + compiler)
+       options.append('-DCMAKE_'+cmakelanguage+'_FLAGS:STRING=' + ''.join(flags))
+       if (petsclanguage == self.languages.clanguage): #CUDA host compiler is fed with the flags for the standard host compiler
+         flagstring = ''
+         for flag in flags:
+           for f in flag.split():
+             flagstring += ',\\"' + f + '\\"'
+         options.append('-DPETSC_CUDA_HOST_FLAGS:STRING=' + flagstring)
+       self.setCompilers.popLanguage()
    options.append('-DCMAKE_AR='+self.setCompilers.AR)
    ranlib = shlex.split(self.setCompilers.RANLIB)[0]
    options.append('-DCMAKE_RANLIB='+ranlib)
