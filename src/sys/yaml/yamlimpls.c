@@ -66,11 +66,11 @@ PetscErrorCode PetscParseLayerYAML(yaml_parser_t *parser,int *lvl)
 #undef __FUNCT__
 #define __FUNCT__ "PetscOptionsInsertFileYAML"
 /*C
-  
+
   PetscOptionsInsertFileYAML - Insert a YAML-formatted file in the option database
-  
+
   Collective on MPI_Comm
-  
+
   Input Parameter:
 +   comm - the processes that will share the options (usually PETSC_COMM_WORLD)
 .   file - name of file
@@ -78,10 +78,10 @@ PetscErrorCode PetscParseLayerYAML(yaml_parser_t *parser,int *lvl)
 
 
   Only a small subset of the YAML standard is implemented. Sequences and alias
-  are NOT supported. 
+  are NOT supported.
   The algorithm recursively parses the yaml file, pushing and popping prefixes
   and inserting key + values pairs using PetscOptionsInsertString.
-  
+
   Inspired by  http://stackoverflow.com/a/621451
 
   Level: developer
@@ -104,7 +104,7 @@ extern PetscErrorCode PetscOptionsInsertFileYAML(MPI_Comm comm,const char file[]
   int            lvl=0;
   FILE          *source;
   PetscInt       offset;
-  
+
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   if (!rank) {
@@ -124,17 +124,17 @@ extern PetscErrorCode PetscOptionsInsertFileYAML(MPI_Comm comm,const char file[]
     } else if (require) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to open YAML option file %s\n",fname);
     }
-    ierr = MPI_Bcast(&yamlLength,1,MPI_INT,0,comm);
-    ierr = MPI_Bcast(optionsStr,yamlLength+1,MPI_CHAR,0,comm);
+    ierr = MPI_Bcast(&yamlLength,1,MPI_INT,0,comm);CHKERRQ(ierr);
+    ierr = MPI_Bcast(optionsStr,yamlLength+1,MPI_UNSIGNED_CHAR,0,comm);CHKERRQ(ierr);
   } else {
-    ierr = MPI_Bcast(&yamlLength,1,MPI_INT,0,comm);
+    ierr = MPI_Bcast(&yamlLength,1,MPI_INT,0,comm);CHKERRQ(ierr);
     ierr = PetscMalloc((yamlLength+1)*sizeof(unsigned char),&optionsStr);CHKERRQ(ierr);
-    ierr = MPI_Bcast(optionsStr,yamlLength+1,MPI_CHAR,0,comm);
+    ierr = MPI_Bcast(optionsStr,yamlLength+1,MPI_UNSIGNED_CHAR,0,comm);CHKERRQ(ierr);
   }
-  
   yaml_parser_initialize(&parser);
   yaml_parser_set_input_string(&parser,optionsStr,(size_t) yamlLength);
   ierr = PetscParseLayerYAML(&parser,&lvl);
   yaml_parser_delete(&parser);
+  ierr = PetscFree(optionsStr);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
