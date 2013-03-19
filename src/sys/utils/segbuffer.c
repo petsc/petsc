@@ -53,7 +53,7 @@ static PetscErrorCode PetscSegBufferAlloc_Private(PetscSegBuffer *seg,PetscInt c
 
    Level: developer
 
-.seealso: PetscSegBufferGet(), PetscSegBufferExtract(), PetscSegBufferDestroy()
+.seealso: PetscSegBufferGet(), PetscSegBufferExtractAlloc(), PetscSegBufferExtractTo(), PetscSegBufferExtractInPlace(), PetscSegBufferDestroy()
 @*/
 PetscErrorCode PetscSegBufferCreate(PetscInt unitbytes,PetscInt expected,PetscSegBuffer *seg)
 {
@@ -84,7 +84,7 @@ PetscErrorCode PetscSegBufferCreate(PetscInt unitbytes,PetscInt expected,PetscSe
 
    Level: developer
 
-.seealso: PetscSegBufferCreate(), PetscSegBufferExtract(), PetscSegBufferDestroy()
+.seealso: PetscSegBufferCreate(), PetscSegBufferExtractAlloc(), PetscSegBufferExtractTo(), PetscSegBufferExtractInPlace(), PetscSegBufferDestroy()
 @*/
 PetscErrorCode PetscSegBufferGet(PetscSegBuffer *seg,PetscInt count,void *buf)
 {
@@ -130,9 +130,52 @@ PetscErrorCode PetscSegBufferDestroy(PetscSegBuffer *seg)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscSegBufferExtract"
+#define __FUNCT__ "PetscSegBufferExtractTo"
 /*@C
-   PetscSegBufferExtract - extract contiguous data and reset segmented buffer
+   PetscSegBufferExtractTo - extract contiguous data to provided buffer and reset segmented buffer
+
+   Not Collective
+
+   Input Argument:
++  seg - segmented buffer
+-  contig - allocated buffer to hold contiguous data
+
+   Level: developer
+
+.seealso: PetscSegBufferCreate(), PetscSegBufferGet(), PetscSegBufferDestroy(), PetscSegBufferExtractAlloc(), PetscSegBufferExtractInPlace()
+@*/
+PetscErrorCode PetscSegBufferExtractTo(PetscSegBuffer *seg,void *contig)
+{
+  PetscErrorCode ierr;
+  PetscInt       unitbytes;
+  PetscSegBuffer s,t;
+  char           *ptr;
+
+  PetscFunctionBegin;
+  s = *seg;
+
+  unitbytes = s->unitbytes;
+
+  ptr  = ((char*)contig) + s->tailused*unitbytes;
+  ierr = PetscMemcpy(ptr,s->u.array,s->used*unitbytes);CHKERRQ(ierr);
+  for (t=s->tail; t;) {
+    PetscSegBuffer tail = t->tail;
+    ptr -= t->used*unitbytes;
+    ierr = PetscMemcpy(ptr,t->u.array,t->used*unitbytes);CHKERRQ(ierr);
+    ierr = PetscFree(t);CHKERRQ(ierr);
+    t    = tail;
+  }
+  if (ptr != contig) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Tail count does not match");
+  s->used             = 0;
+  s->tailused         = 0;
+  s->tail             = NULL;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSegBufferExtractAlloc"
+/*@C
+   PetscSegBufferExtractAlloc - extract contiguous data to new allocation and reset segmented buffer
 
    Not Collective
 
@@ -144,33 +187,57 @@ PetscErrorCode PetscSegBufferDestroy(PetscSegBuffer *seg)
 
    Level: developer
 
-.seealso: PetscSegBufferCreate(), PetscSegBufferGet(), PetscSegBufferDestroy()
+   Developer Notes: 'seg' argument is a pointer so that implementation could reallocate, though this is not currently done
+
+.seealso: PetscSegBufferCreate(), PetscSegBufferGet(), PetscSegBufferDestroy(), PetscSegBufferExtractTo(), PetscSegBufferExtractInPlace()
 @*/
-PetscErrorCode PetscSegBufferExtract(PetscSegBuffer *seg,void *contiguous)
+PetscErrorCode PetscSegBufferExtractAlloc(PetscSegBuffer *seg,void *contiguous)
 {
   PetscErrorCode ierr;
-  PetscInt       unitbytes;
-  PetscSegBuffer s,t;
-  char           *contig,*ptr;
+  PetscSegBuffer s;
+  void           *contig;
 
   PetscFunctionBegin;
   s = *seg;
 
-  unitbytes = s->unitbytes;
+  ierr = PetscMalloc((s->used+s->tailused)*s->unitbytes,&contig);CHKERRQ(ierr);
+  ierr = PetscSegBufferExtractTo(seg,contig);CHKERRQ(ierr);
+  *(void**)contiguous = contig;
+  PetscFunctionReturn(0);
+}
 
-  ierr = PetscMalloc((s->used+s->tailused)*unitbytes,&contig);CHKERRQ(ierr);
-  ptr  = contig + s->tailused*unitbytes;
-  ierr = PetscMemcpy(ptr,s->u.array,s->used*unitbytes);CHKERRQ(ierr);
-  for (t=s->tail; t;) {
-    PetscSegBuffer tail = t->tail;
-    ptr -= t->used*unitbytes;
-    ierr = PetscMemcpy(ptr,t->u.array,t->used*unitbytes);CHKERRQ(ierr);
-    ierr = PetscFree(t);CHKERRQ(ierr);
-    t    = tail;
+#undef __FUNCT__
+#define __FUNCT__ "PetscSegBufferExtractInPlace"
+/*@C
+   PetscSegBufferExtractInPlace - extract in-place contiguous representation of data and reset segmented buffer for reuse
+
+   Collective
+
+   Input Arguments:
+.  seg - segmented buffer object
+
+   Output Arguments:
+.  contig - address of pointer to contiguous memory
+
+   Level: developer
+
+.seealso: PetscSegBufferExtractAlloc(), PetscSegBufferExtractTo()
+@*/
+PetscErrorCode PetscSegBufferExtractInPlace(PetscSegBuffer *seg,void *contig)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!(*seg)->tail) {
+    *(char**)contig = (*seg)->u.array;
+  } else {
+    PetscSegBuffer s = *seg,newseg;
+
+    ierr = PetscSegBufferCreate(s->unitbytes,s->used+s->tailused,&newseg);CHKERRQ(ierr);
+    ierr = PetscSegBufferExtractTo(seg,newseg->u.array);CHKERRQ(ierr);
+    ierr = PetscSegBufferDestroy(seg);CHKERRQ(ierr);
+    *seg = newseg;
+    *(void**)contig = newseg->u.array;
   }
-  if (ptr != contig) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Tail count does not match");
-  s->tailused         = 0;
-  s->tail             = NULL;
-  *(char**)contiguous = contig;
   PetscFunctionReturn(0);
 }

@@ -135,9 +135,9 @@ static PetscErrorCode PetscCommBuildTwoSided_Ibarrier(MPI_Comm comm,PetscMPIInt 
     }
   }
   *nfrom = nrecvs;
-  ierr   = PetscSegBufferExtract(&segrank,fromranks);CHKERRQ(ierr);
+  ierr   = PetscSegBufferExtractAlloc(&segrank,fromranks);CHKERRQ(ierr);
   ierr   = PetscSegBufferDestroy(&segrank);CHKERRQ(ierr);
-  ierr   = PetscSegBufferExtract(&segdata,fromdata);CHKERRQ(ierr);
+  ierr   = PetscSegBufferExtractAlloc(&segdata,fromdata);CHKERRQ(ierr);
   ierr   = PetscSegBufferDestroy(&segdata);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

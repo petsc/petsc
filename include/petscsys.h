@@ -2400,7 +2400,9 @@ typedef struct _n_PetscSegBuffer *PetscSegBuffer;
 PETSC_EXTERN PetscErrorCode PetscSegBufferCreate(PetscInt,PetscInt,PetscSegBuffer*);
 PETSC_EXTERN PetscErrorCode PetscSegBufferDestroy(PetscSegBuffer*);
 PETSC_EXTERN PetscErrorCode PetscSegBufferGet(PetscSegBuffer*,PetscInt,void*);
-PETSC_EXTERN PetscErrorCode PetscSegBufferExtract(PetscSegBuffer*,void*);
+PETSC_EXTERN PetscErrorCode PetscSegBufferExtractAlloc(PetscSegBuffer*,void*);
+PETSC_EXTERN PetscErrorCode PetscSegBufferExtractTo(PetscSegBuffer*,void*);
+PETSC_EXTERN PetscErrorCode PetscSegBufferExtractInPlace(PetscSegBuffer*,void*);
 
 /* Reset __FUNCT__ in case the user does not define it themselves */
 #undef __FUNCT__
