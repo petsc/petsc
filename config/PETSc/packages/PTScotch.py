@@ -56,7 +56,7 @@ class Configure(PETSc.package.NewPackage):
       ldflags += ' -lpthread'
     if self.libraries.add('-lm','sin'): ldflags += ' -lm'
     if self.libraries.add('-lrt','timer_create'): ldflags += ' -lrt'
-    self.cflags = self.cflags + '-DCOMMON_RANDOM_FIXED_SEED'
+    self.cflags = self.cflags + ' -DCOMMON_RANDOM_FIXED_SEED'
     # do not use -DSCOTCH_PTHREAD because requires MPI built for threads.
     self.cflags = self.cflags + ' -DSCOTCH_RENAME -Drestrict="" '
     # this is needed on the Mac, because common2.c includes common.h which DOES NOT include mpi.h because
