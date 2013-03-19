@@ -93,10 +93,10 @@ def checkSingleRun(maker, ex, replace, extraArgs = '', isRegression = False):
   # Process testnum
   if args.testnum is not None:
     if args.testnum[0] == '[':
-      testnum = args.testnum[1:-1].split(',')
+      validTestnum = args.testnum[1:-1].split(',')
     else:
-      testnum = [args.testnum]
-    numtests = len(testnum)
+      validTestnum = [args.testnum]
+    numtests = len(validTestnum)
   else:
     numtests = len(params)
   rebuildTest = True
@@ -104,7 +104,7 @@ def checkSingleRun(maker, ex, replace, extraArgs = '', isRegression = False):
   for testnum, param in enumerate(params):
     testnum = str(testnum)
     if 'num' in param: testnum = param['num']
-    if not args.testnum is None and not testnum in str(args.testnum): continue
+    if not args.testnum is None and not testnum in validTestnum: continue
     if 'setup' in param:
       print(param['setup'])
       os.system(sys.executable+' '+param['setup'])
