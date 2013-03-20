@@ -7,6 +7,12 @@ static char help[] = "Solves -Laplacian u - exp(u) = 0,  0 < x < 1 using GPU\n\n
 #include <petscsnes.h>
 #include <petsccusp.h>
 
+#include <thrust/for_each.h>
+#include <thrust/tuple.h>
+#include <thrust/iterator/constant_iterator.h>
+#include <thrust/iterator/counting_iterator.h>
+#include <thrust/iterator/zip_iterator.h>
+
 extern PetscErrorCode ComputeFunction(SNES,Vec,Vec,void*), ComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 PetscBool useCUSP = PETSC_FALSE;
 
@@ -67,14 +73,14 @@ struct ApplyStencil
 
 PetscErrorCode ComputeFunction(SNES snes,Vec x,Vec f,void *ctx)
 {
-  PetscInt       i,Mx,xs,xm,xstartshift,xendshift,fstart;
+  PetscInt       i,Mx,xs,xm,xstartshift,xendshift,fstart,lsize;
   PetscScalar    *xx,*ff,hx;
   DM             da = (DM) ctx;
   Vec            xlocal;
   PetscErrorCode ierr;
   PetscMPIInt    rank,size;
   MPI_Comm       comm;
-  CUSPARRAY      *xarray,*farray;
+  cusp::array1d<PetscScalar,cusp::device_memory> *xarray,*farray;
 
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
   hx   = 1.0/(PetscReal)(Mx-1);
@@ -93,6 +99,7 @@ PetscErrorCode ComputeFunction(SNES snes,Vec x,Vec f,void *ctx)
     if (rank != size-1) xendshift = 1;
     else xendshift = 0;
     ierr = VecGetOwnershipRange(f,&fstart,NULL);CHKERRQ(ierr);
+    ierr = VecGetLocalSize(x,&lsize);CHKERRQ(ierr);
     try {
       thrust::for_each(
         thrust::make_zip_iterator(
@@ -110,7 +117,7 @@ PetscErrorCode ComputeFunction(SNES snes,Vec x,Vec f,void *ctx)
             xarray->end()-xendshift,
             xarray->end()-xendshift + 1,
             xarray->end()-xendshift - 1,
-            thrust::counting_iterator<int>(fstart) + x->map->n,
+            thrust::counting_iterator<int>(fstart) + lsize,
             thrust::constant_iterator<int>(Mx),
             thrust::constant_iterator<PetscScalar>(hx))),
         ApplyStencil());
