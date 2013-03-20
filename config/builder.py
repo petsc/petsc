@@ -11,8 +11,7 @@ sys.path.insert(0, os.path.join(os.environ['PETSC_DIR'], 'config', 'BuildSystem'
 
 import logger, script
 
-regressionRequirements = {'src/vec/vec/examples/tests/ex31':  set(['Matlab']),
-                          'src/vec/vec/examples/tests/ex52':  set(['Cuda'])
+regressionRequirements = {'src/snes/examples/tutorials/ex52':  set(['Cuda'])
                           }
 
 regressionParameters = {'src/sys/comm/examples/tests/ex1':    [{'numProcs': 2},

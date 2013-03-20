@@ -81,7 +81,7 @@ def checkSingleRun(maker, ex, replace, extraArgs = '', isRegression = False):
   paramKey    = os.path.join(os.path.relpath(exampleDir, maker.petscDir), os.path.basename(executable))
   if paramKey in builder.regressionRequirements:
     if not builder.regressionRequirements[paramKey].issubset(packageNames):
-      raise RuntimeError('This test requires packages: %s' % builder.regressionRequirements[paramKey])
+      raise RuntimeError('This test (%s) requires packages: %s' % (paramKey, builder.regressionRequirements[paramKey]))
   params = builder.regressionParameters.get(paramKey, {})
   if not params:
     params = builder.getRegressionParameters(maker, exampleDir).get(paramKey, {})
