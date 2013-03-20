@@ -189,6 +189,9 @@
         <li>  SNESLS  "ls" changed to SNESNEWTONLS newtonls </li>
         <li>  SNESTR  "tr" changed to SNESNEWTONTR newtontr </li>
         <li>  SNESDefaultComputeJacobian(), SNESDefaultComputeJacobianColor(), SNESDefaultObjectiveComputeFunctionFD(), SNESDefaultConverged() changed to SNESComputeJacobianDefault(), SNESComputeJacobianDefaultColor(), SNESConvergedDefault(), SNESObjectiveComputeFunctionDefaultFD() to match more consistent naming standards.</li>
+        <li> Added nonlinear additive Schwarz as SNESNASM "nasm" </li>
+        <li> Added helper SNES type SNESASPIN "aspin" for setting up additive Schwarz preconditioned inexact Newton.</li>
+        <li> Added Anderson Mixing as SNESANDERSON "anderson"</li>
         </ul>
 
       <h4>SNESLineSearch:</h4>
@@ -207,6 +210,10 @@
             that the calling sequences of these functions are different and also the calling sequence of the Jacobian function you provide</li>
         <li>DMSetFunction() and DMSetJacobian() have been removed use SNESSetFunction() and SNESSetJacobian() instead, note the calling sequences are
             slightly different</li>
+        <li>DMDACreatePatchIS() for getting the indices of an arbitrary subdomain on a DMDA </li>
+        <li>DMDAGet/SetOverlap(),DMDAGet/SetOffset() for manipulating DMDA subdomains </li>
+        <li>DMCreateDomainDecompositionScatters() gives VecScatter objects for transferring to/from subdomain DMs </li>
+        <li>DMGet/RestoreNamedLocalVector()</li>
       </ul>
       <h4>DMComplex/DMPlex:</h4>
       <ul>
