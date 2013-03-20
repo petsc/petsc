@@ -87,7 +87,7 @@ PetscErrorCode  PetscOptionsGetViewer(MPI_Comm comm,const char pre[],const char 
           *viewer = PETSC_VIEWER_MATLAB_(comm);CHKERRQ(ierr);
           break;
 #endif
-        default: SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unsupported viewer %s",cvalue);CHKERRQ(ierr);
+        default: SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unsupported viewer %s",cvalue);
           break;
         }
         ierr = PetscObjectReference((PetscObject)*viewer);CHKERRQ(ierr);
