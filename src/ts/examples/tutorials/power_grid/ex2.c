@@ -11,13 +11,13 @@ static char help[] = "Basic equation for generator stability analysis.\n";
 
 
   Ensemble of initial conditions
-   ./ex2 -ensemble -ts_monitor_draw_solution_phase -1,-3,3,3      -ts_adapt_dt_max .01  -ts_monitor -ts_type rosw -pc_type lu -ksp_type preonly
+   ./ex2 -ensemble -ts_monitor_draw_solution_phase -3,0.7,3,1.3      -ts_adapt_dt_max .01  -ts_monitor -ts_type rosw -pc_type lu -ksp_type preonly
 
   Fault at .1 seconds
-   ./ex2           -ts_monitor_draw_solution_phase .42,.95,.6,1.05 -ts_adapt_dt_max .01  -ts_monitor -ts_type rosw -pc_type lu -ksp_type preonly
+   ./ex2 -ts_monitor_draw_solution_phase 0.2,.98,1.2,1.02 -ts_adapt_dt_max .01  -ts_monitor -ts_type rosw -pc_type lu -ksp_type preonly
 
   Initial conditions same as when fault is ended
-   ./ex2 -u 0.496792,1.00932 -ts_monitor_draw_solution_phase .42,.95,.6,1.05  -ts_adapt_dt_max .01  -ts_monitor -ts_type rosw -pc_type lu -ksp_type preonly 
+   ./ex2 -u 0.499793,1.00454 -ts_monitor_draw_solution_phase .2,.98,1.2,1.02  -ts_adapt_dt_max .01  -ts_monitor -ts_type rosw -pc_type lu -ksp_type preonly 
 
 
 F*/
@@ -111,11 +111,11 @@ PetscErrorCode PostStep(TS ts)
 
   PetscFunctionBegin;
   ierr = TSGetTime(ts,&t);CHKERRQ(ierr);
-  if (t >= .2) {
+  if (t >= 1.05) {
     ierr = TSGetSolution(ts,&X);CHKERRQ(ierr);
     ierr = VecView(X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     exit(0);
-    /* results in initial conditions after fault of -u 0.496792,1.00932 */
+    /* results in initial conditions after fault of -u 0.499793,1.00454 */
   }
   PetscFunctionReturn(0);
 }
@@ -214,20 +214,20 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set solver options
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = TSSetDuration(ts,100000,35.0);CHKERRQ(ierr);
+  ierr = TSSetDuration(ts,100000,10.0);CHKERRQ(ierr);
   ierr = TSSetInitialTimeStep(ts,0.0,.01);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
-  /* ierr = TSSetPostStep(ts,PostStep);CHKERRQ(ierr);  */
+  /* ierr = TSSetPostStep(ts,PostStep);CHKERRQ(ierr); */
 
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve nonlinear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   if (ensemble) {
-    for (du[1] = -2.5; du[1] <= .01; du[1] += .1) {
+    for (du[1] = -0.1; du[1] <= .1; du[1] += .01) {
       ierr = VecGetArray(U,&u);CHKERRQ(ierr);
       u[0] = asin(ctx.Pm/ctx.Pmax);
-      u[1] = ctx.omega_s;
+      u[1] = 1.0;
       u[0] += du[0];
       u[1] += du[1];
       ierr = VecRestoreArray(U,&u);CHKERRQ(ierr);
