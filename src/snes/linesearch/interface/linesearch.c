@@ -163,6 +163,8 @@ PetscErrorCode SNESLineSearchReset(SNESLineSearch linesearch)
 .      y - search direction vector
 -      changed - flag to indicate the precheck changed x or y.
 
+   Level: advanced
+
 .seealso:   SNESLineSearchSetPreCheck(), SNESLineSearchSetPostCheck()
 M*/
 
@@ -237,6 +239,7 @@ PetscErrorCode  SNESLineSearchGetPreCheck(SNESLineSearch linesearch, PetscErrorC
 .      changed_y - indicates that the line search changed y
 -      changed_w - indicates that the line search changed w
 
+   Level: advanced
 
 .seealso:   SNESLineSearchSetPreCheck(), SNESLineSearchSetPostCheck()
 M*/

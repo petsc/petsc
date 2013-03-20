@@ -1495,6 +1495,8 @@ PetscErrorCode  SNESCreate(MPI_Comm comm,SNES *outsnes)
      Output Parameter:
 .     f  - vector to put residual (function value)
 
+   Level: intermediate
+
 .seealso:   SNESSetFunction(), SNESGetFunction()
 M*/
 
@@ -1692,6 +1694,8 @@ $    SNESGSFunction(SNES snes,Vec x,Vec b,void *ctx);
 +  X   - solution vector
 .  B   - RHS vector
 -  ctx - optional user-defined Gauss-Seidel context
+
+   Level: intermediate
 
 .seealso:   SNESSetGS(), SNESGetGS()
 M*/
@@ -2326,6 +2330,8 @@ $     SNESJacobianFunction(SNES snes,Vec x,Mat *Amat,Mat *Pmat,int *flag,void *c
 .  flag - flag indicating information about the preconditioner matrix
    structure (same as flag in KSPSetOperators()), one of SAME_NONZERO_PATTERN,DIFFERENT_NONZERO_PATTERN,SAME_PRECONDITIONER
 -  ctx - [optional] user-defined Jacobian context
+
+   Level: intermediate
 
 .seealso:   SNESSetFunction(), SNESGetFunction(), SNESSetJacobian(), SNESGetJacobian()
 M*/
@@ -3143,6 +3149,8 @@ $    PetscErrorCode SNESMonitorFunction(SNES snes,PetscInt its, PetscReal norm,v
 .    norm - 2-norm function value (may be estimated)
 -    mctx - [optional] monitoring context
 
+   Level: advanced
+
 .seealso:   SNESMonitorSet(), SNESMonitorGet()
 M*/
 
@@ -3263,6 +3271,7 @@ $     PetscErrorCode SNESConvergenceTest(SNES snes,PetscInt it,PetscReal xnorm,P
 .    gnorm - 2-norm of current step
 -    f - 2-norm of function
 
+   Level: intermediate
 
 .seealso:   SNESSetConvergenceTest(), SNESGetConvergenceTest()
 M*/

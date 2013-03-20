@@ -68,6 +68,7 @@ testexamples_CMAKE:
 testexamples_AFTERIMAGE:
 testexamples_PTHREADCLASSES:
 testexamples_OPENMP:
+testexamples_NETCDF:
 
 buildexamples_C:
 	-@${OMAKE} testexamples_C TESTEXAMPLES_C=`echo ${TESTEXAMPLES_C} | sed s/runex[0-9]*[a-z0-9_]*//g`

@@ -6,22 +6,16 @@
 # It uses "TEST" variable set by the calling script - and setsup:
 # TNAME : the actual config file for this test
 # RNAME : name of the local repo clone for this test [petsc-dev vs petsc33]
-# PURL  : petsc url
-# BURL  : buildsystem url
+# URL  : petsc repo url
 #
   set SSH=ssh
   set SCP=scp
   set DASHN=-n
-  set MERCURIAL=yes
-  echo $TEST | grep ^rel/ > /dev/null
-  if ("$?" == "0") then
-    set TNAME=`echo ${TEST} | sed 's^rel/^^'`
-    set PURL=https://bitbucket.org/petsc/petsc-3.3
-    set BURL=https://bitbucket.org/petsc/buildsystem-3.3
-    set RNAME=petsc33
-  else
-    set TNAME=${TEST}
-    set PURL=https://bitbucket.org/petsc/petsc-dev
-    set BURL=https://bitbucket.org/petsc/buildsystem
-    set RNAME=petsc-dev
+  set GIT=yes
+  set URL=https://bitbucket.org/petsc/petsc
+  set RNAME=petsc.clone
+  set TNAME=`echo ${TEST} | cut -d ':' -f 1`
+  set BRANCH=`echo ${TEST} | cut -s -d ':' -f 2`
+  if ("$BRANCH" == "") then
+    set BRANCH='next'
   endif

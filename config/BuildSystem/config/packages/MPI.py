@@ -482,12 +482,12 @@ class Configure(config.package.Package):
     args = ['--prefix='+installDir]
     compiler = self.getCompiler()
     args.append('CC="'+self.getCompiler()+'"')
-    args.append('CFLAGS="'+self.getCompilerFlags()+'"')
+    args.append('CFLAGS="'+self.getCompilerFlags().replace('-fvisibility=hidden','')+'"')
     self.popLanguage()
     if hasattr(self.compilers, 'CXX'):
       self.pushLanguage('Cxx')
       args.append('CXX="'+self.getCompiler()+'"')
-      args.append('CXXFLAGS="'+self.getCompilerFlags()+'"')
+      args.append('CXXFLAGS="'+self.getCompilerFlags().replace('-fvisibility=hidden','')+'"')
       self.popLanguage()
     else:
       args.append('--disable-cxx')

@@ -1212,7 +1212,22 @@ static struct _MatOps MatOps_Values = { MatSetValues_MPIDense,
                                         0,
                                         0,
                                 /*124*/ 0,
-                                        MatGetColumnNorms_MPIDense
+                                        MatGetColumnNorms_MPIDense,
+                                        0,
+                                        0,
+                                        0,
+                                /*129*/ 0,
+                                        0,
+                                        0,
+                                        0,
+                                        0,
+                                /*134*/ 0,
+                                        0,
+                                        0,
+                                        0,
+                                        0,
+                                /*139*/ 0,
+                                        0
 };
 
 #undef __FUNCT__

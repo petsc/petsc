@@ -247,7 +247,8 @@ static struct _ISOps myops = { ISGetSize_Block,
                                ISCopy_Block,
                                0,
                                ISOnComm_Block,
-                               ISSetBlockSize_Block};
+                               ISSetBlockSize_Block,
+                               0};
 
 #undef __FUNCT__
 #define __FUNCT__ "ISBlockSetIndices"

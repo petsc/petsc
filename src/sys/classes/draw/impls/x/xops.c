@@ -640,7 +640,8 @@ static struct _PetscDrawOps DvOps = { PetscDrawSetDoubleBuffer_X,
                                       PetscDrawArrow_X,
                                       PetscDrawCoordinateToPixel_X,
                                       PetscDrawPixelToCoordinate_X,
-                                      PetscDrawPointPixel_X};
+                                      PetscDrawPointPixel_X,
+                                      0};
 
 
 extern PetscErrorCode PetscDrawXiQuickWindow(PetscDraw_X*,char*,char*,int,int,int,int);

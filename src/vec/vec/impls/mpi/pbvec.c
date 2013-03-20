@@ -158,7 +158,13 @@ static struct _VecOps DvOps = { VecDuplicate_MPI, /* 1 */
                                 0,
                                 0,
                                 VecStrideGather_Default,
-                                VecStrideScatter_Default};
+                                VecStrideScatter_Default,
+                                0,
+                                0,
+                                0,
+                                0,
+                                0
+};
 
 #undef __FUNCT__
 #define __FUNCT__ "VecCreate_MPI_Private"

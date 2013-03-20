@@ -107,7 +107,7 @@ def checkSingleRun(maker, ex, replace, extraArgs = '', isRegression = False):
     if not args.testnum is None and not testnum in str(args.testnum): continue
     if 'setup' in param:
       print(param['setup'])
-      os.system('python '+param['setup'])
+      os.system(sys.executable+' '+param['setup'])
       rebuildTest = True
     if 'source' in param:
       if not isinstance(ex, list):
@@ -246,7 +246,7 @@ def showSingleRun(maker, ex, extraArgs = ''):
   params = builder.regressionParameters.get(paramKey, {})
   if not params:
     params = builder.getRegressionParameters(maker, exampleDir).get(paramKey, {})
-    maker.logPrint('Makefile params '+strparams)
+    maker.logPrint('Makefile params '+str(params))
   if not isinstance(params, list):
     params = [params]
   for testnum, param in enumerate(params):

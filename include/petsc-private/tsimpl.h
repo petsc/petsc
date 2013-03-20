@@ -36,13 +36,6 @@ struct _TSOps {
   PetscErrorCode (*load)(TS,PetscViewer);
 };
 
-struct _TSUserOps {
-  PetscErrorCode (*rhsfunction)(TS,PetscReal,Vec,Vec,void*);
-  PetscErrorCode (*rhsjacobian)(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*,void*);
-  PetscErrorCode (*ifunction)(TS,PetscReal,Vec,Vec,Vec,void*);
-  PetscErrorCode (*ijacobian)(TS,PetscReal,Vec,Vec,PetscReal,Mat*,Mat*,MatStructure*,void*);
-};
-
 struct _p_TS {
   PETSCHEADER(struct _TSOps);
   DM            dm;

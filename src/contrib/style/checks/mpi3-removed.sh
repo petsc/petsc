@@ -34,7 +34,7 @@ do
    for mpiidentifier in "${mpideprecated[@]}";
    do
      #grep -H -B 3 -A 3 "${mpiidentifier}" $f  #use this for additional context
-     grep -H "${mpiidentifier}" $f
+     grep -n -H "${mpiidentifier}" $f
    done
  fi
 done

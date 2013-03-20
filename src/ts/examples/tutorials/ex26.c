@@ -17,7 +17,8 @@ The flow can be driven with the lid or with bouyancy or both:\n\
 /*T
    Concepts: TS^solving a system of nonlinear equations (parallel multicomponent example);
    Concepts: DMDA^using distributed arrays;
-   Concepts: multicomponent;differential-algebraic equation
+   Concepts: TS^multicomponent
+   Concepts: TS^differential-algebraic equation
    Processors: n
 T*/
 /* ------------------------------------------------------------------------
