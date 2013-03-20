@@ -2,11 +2,12 @@
 
 configure_options = [
   '--with-debugger=/bin/true',
-  '--with-clanguage=cxx',
-  '--with-debugging=0',
+  '--with-scalar-type=complex',
+  #'--with-clanguage=cxx', # solaris C++ compiler behave differently with PETSC_EXTERN stuff - and breaks
 
-  '--download-mpich=1',
-  #'--with-mpi-dir=/export/home/petsc/soft/mpich2-1.2.1p1',
+  # mpich does not build with -g - compiler bug? So revert this build to a pre-built mpich
+  #'--download-mpich=1',
+  '--with-mpi-dir=/export/home/petsc/soft/mpich2-1.2.1p1',
   '--with-c2html=0',
 
   #'-download-f-blas-lapack=1',
@@ -14,18 +15,19 @@ configure_options = [
   '--download-metis=1',
   '--download-parmetis=1',
   '--download-triangle=1',
-  '--download-superlu=1',
-  '--download-superlu_dist=1',
+  #'--download-superlu=1',
+  #'--download-superlu_dist=1',
   '--download-f-blas-lapack=1', # -lsunperf is insufficient for scalapack
   '--download-scalapack=1',
   '--download-mumps=1',
   #'--download-elemental=1', breaks with solaris compilers
   #'--download-hdf5',
-  '--download-sundials=1',
-  '--download-hypre=1',
-  '--download-umfpack=1',
-  '--download-chaco=1',
-  '--download-spai=1',
+  #'--download-sundials=1',
+  #'--download-hypre=1',
+  #'--download-umfpack=1',
+  #'--download-chaco=1',
+  #'--download-spai=1',
+
   ]
 
 if __name__ == '__main__':
