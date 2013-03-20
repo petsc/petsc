@@ -7,9 +7,10 @@ class Configure(config.package.GNUPackage):
     self.downloadpath     = 'http://www.unidata.ucar.edu/downloads/netcdf/ftp/'
     self.downloadext      = 'tar.gz'
     self.downloadversion  = '4-4.2'
-    self.functions        = []
-    self.includes         = ['netcdfcpp.h']
-    self.liblist          = [['libnetcdf_c++.a']]
+    self.functions        = ['ncCheck']
+    self.functionsCxx     = [1, 'namespace netCDF {void ncCheck(int,char*,int);}','netCDF::ncCheck(0,0,0);']
+    self.includes         = ['ncCheck.h']
+    self.liblist          = [['libnetcdf_c++4.a']]
     self.cxx              = 1
     return
 
