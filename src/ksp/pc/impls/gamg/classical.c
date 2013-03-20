@@ -7,8 +7,8 @@ typedef struct {
 
 
 #undef __FUNCT__
-#define __FUNCT__ "PCGAMGClassicalCreateGhostVector"
-PetscErrorCode PCGAMGClassicalCreateGhostVector(Mat G,Vec *gvec,PetscInt **global)
+#define __FUNCT__ "PCGAMGClassicalCreateGhostVector_Private"
+PetscErrorCode PCGAMGClassicalCreateGhostVector_Private(Mat G,Vec *gvec,PetscInt **global)
 {
   Mat_MPIAIJ     *aij = (Mat_MPIAIJ*)G->data;
   PetscErrorCode ierr;
@@ -28,12 +28,12 @@ PetscErrorCode PCGAMGClassicalCreateGhostVector(Mat G,Vec *gvec,PetscInt **globa
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PCGAMGClassicalGraphSplitting"
+#define __FUNCT__ "PCGAMGClassicalGraphSplitting_Private"
 /*
  Split the relevant graph into diagonal and off-diagonal parts in local numbering; for now this
  a roundabout private interface to the mats' internal diag and offdiag mats.
  */
-PetscErrorCode PCGAMGClassicalGraphSplitting(Mat G,Mat *Gd, Mat *Go)
+PetscErrorCode PCGAMGClassicalGraphSplitting_Private(Mat G,Mat *Gd, Mat *Go)
 {
   Mat_MPIAIJ     *aij = (Mat_MPIAIJ*)G->data;
   PetscErrorCode ierr;
@@ -77,7 +77,7 @@ PetscErrorCode PCGAMGGraph_Classical(PC pc,Mat A,Mat *G)
   ierr = PetscMalloc(sizeof(PetscInt)*(f - s),&lsparse);CHKERRQ(ierr);
   ierr = PetscMalloc(sizeof(PetscInt)*(f - s),&gsparse);CHKERRQ(ierr);
 
-  ierr = PCGAMGClassicalGraphSplitting(A,&lA,&gA);CHKERRQ(ierr);
+  ierr = PCGAMGClassicalGraphSplitting_Private(A,&lA,&gA);CHKERRQ(ierr);
 
   /* find the maximum off-diagonal entry in the matrix */
   rmax = 0.;
@@ -196,7 +196,7 @@ PetscErrorCode PCGAMGCoarsen_Classical(PC pc,Mat *G,PetscCoarsenData **agg_lists
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PCGAMGClassicalGhost"
+#define __FUNCT__ "PCGAMGClassicalGhost_Private"
 /*
  Find all ghost nodes that are coarse and output the fine/coarse splitting for those as well
 
@@ -210,7 +210,7 @@ PetscErrorCode PCGAMGCoarsen_Classical(PC pc,Mat *G,PetscCoarsenData **agg_lists
  findx - indirection t
 
  */
-PetscErrorCode PCGAMGClassicalGhost(Mat G,Vec v,Vec gv)
+PetscErrorCode PCGAMGClassicalGhost_Private(Mat G,Vec v,Vec gv)
 {
   PetscErrorCode ierr;
   Mat_MPIAIJ     *aij = (Mat_MPIAIJ*)G->data;
@@ -306,12 +306,12 @@ PetscErrorCode PCGAMGProlongator_Classical(PC pc, Mat A, Mat G, PetscCoarsenData
   ierr = VecAssemblyEnd(F);CHKERRQ(ierr);
 
   /* split the graph into two */
-  ierr = PCGAMGClassicalGraphSplitting(G,&lG,&gG);CHKERRQ(ierr);
-  ierr = PCGAMGClassicalGraphSplitting(A,&lA,&gA);CHKERRQ(ierr);
+  ierr = PCGAMGClassicalGraphSplitting_Private(G,&lG,&gG);CHKERRQ(ierr);
+  ierr = PCGAMGClassicalGraphSplitting_Private(A,&lA,&gA);CHKERRQ(ierr);
 
   /* scatter to the ghost vector */
-  ierr = PCGAMGClassicalCreateGhostVector(G,&gF,NULL);CHKERRQ(ierr);
-  ierr = PCGAMGClassicalGhost(G,F,gF);CHKERRQ(ierr);
+  ierr = PCGAMGClassicalCreateGhostVector_Private(G,&gF,NULL);CHKERRQ(ierr);
+  ierr = PCGAMGClassicalGhost_Private(G,F,gF);CHKERRQ(ierr);
 
   if (gG) {
     ierr = VecGetSize(gF,&gn);CHKERRQ(ierr);
@@ -406,9 +406,9 @@ PetscErrorCode PCGAMGProlongator_Classical(PC pc, Mat A, Mat G, PetscCoarsenData
         ierr = MatGetRow(gG,i,&ncols,&rcol,&rval);CHKERRQ(ierr);
         for (k = 0; k < ncols; k++) {
           if (PetscRealPart(rval[k]) > 0.) {
-            g_pos += PetscRealPart(rval[k]);
+            g_pos += rval[k];
           } else {
-            g_neg += PetscRealPart(rval[k]);
+            g_neg += rval[k];
           }
         }
         ierr = MatRestoreRow(gG,i,&ncols,&rcol,&rval);CHKERRQ(ierr);
@@ -418,12 +418,12 @@ PetscErrorCode PCGAMGProlongator_Classical(PC pc, Mat A, Mat G, PetscCoarsenData
       ierr = MatGetRow(lA,i,&ncols,&rcol,&rval);CHKERRQ(ierr);
       for (k = 0; k < ncols; k++) {
         if (PetscRealPart(rval[k]) > 0) {
-          a_pos += PetscRealPart(rval[k]);
+          a_pos += rval[k];
         } else {
-          a_neg += PetscRealPart(rval[k]);
+          a_neg += rval[k];
         }
         if (rcol[k] == i) {
-          diag = PetscRealPart(rval[k]);
+          diag = rval[k];
         }
       }
       ierr = MatRestoreRow(lA,i,&ncols,&rcol,&rval);CHKERRQ(ierr);
