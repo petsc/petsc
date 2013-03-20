@@ -73,9 +73,11 @@ class AMSSnoopObjects:
                if self.tree: self.panel.remove(self.tree)
                self.tree = Tree()
                for i in result:
+                  if i == "Stack": continue
                   subtree = TreeItem(i)
                   memory = self.commobj.memory_attach(i)
                   fields = memory.get_field_list()
+                  if not isinstance(fields,list): fields = [fields]
                   block  = false
                   for j in fields:
                      field = memory.get_field_info(j)

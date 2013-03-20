@@ -267,9 +267,6 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
   int            i;
   PetscMPIInt    rank;
   char           version[256];
-#if defined(PETSC_USE_SERVER)
-  PetscBool      flgz;
-#endif
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);

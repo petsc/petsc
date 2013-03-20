@@ -1,5 +1,7 @@
 #
-#   Defines the interface from Pyjs to the AMS memory snooper
+#   Defines an interface from Pyjs to the AMS memory snooper.  This version downloads ALL the memories and fields when the AMS_Comm is attached
+#  thus all memory and field value inquiries are local and immediate and do not involve accessing the publisher. To get fresh values one simply
+#  creates another AMS_Comm() which makes a freash connection to the publisher
 #
 
 import pyjd
@@ -63,6 +65,7 @@ class AMS_Memory(JSONProxy):
             sent += 1
         elif method == "YAML_AMS_Memory_get_field_list":
             self.fieldlist = response
+            if not isinstance(self.fieldlist,list): self.fieldlist = [self.fieldlist]
             for i in self.fieldlist:
                 id = self.remote.YAML_AMS_Memory_get_field_info(self.memory,i,self)
                 args[id] = ['YAML_AMS_Memory_get_field_info',self.memory,i]

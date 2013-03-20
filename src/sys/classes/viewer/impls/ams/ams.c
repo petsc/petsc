@@ -204,7 +204,7 @@ static PetscErrorCode PetscViewerDestroy_AMS(PetscViewer viewer)
      Make sure that we mark that the stack is no longer published
   */
   if (PetscObjectComm((PetscObject)viewer) == PETSC_COMM_WORLD) {
-    ierr = PetscStackDepublish();CHKERRQ(ierr);
+    ierr = PetscStackAMSViewOff();CHKERRQ(ierr);
   }
 
   PetscStackCallAMS(AMS_Comm_destroy,(vams->ams_comm));

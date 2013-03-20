@@ -1389,12 +1389,22 @@ PETSC_EXTERN PetscErrorCode PetscObjectAMSSetBlock(PetscObject,PetscBool);
 PETSC_EXTERN PetscErrorCode PetscObjectAMSBlock(PetscObject);
 PETSC_EXTERN PetscErrorCode PetscObjectAMSGrantAccess(PetscObject);
 PETSC_EXTERN PetscErrorCode PetscObjectAMSTakeAccess(PetscObject);
+PETSC_EXTERN void           PetscStackAMSGrantAccess(void);
+PETSC_EXTERN void           PetscStackAMSTakeAccess(void);
+PETSC_EXTERN PetscErrorCode PetscStackViewAMS(void);
+PETSC_EXTERN PetscErrorCode PetscStackAMSViewOff(void);
+
 #else
-#define PetscObjectAMSViewOff(obj)           0
+#define PetscObjectAMSViewOff(obj)             0
 #define PetscObjectAMSSetBlock(obj,flg)        0
 #define PetscObjectAMSBlock(obj)               0
 #define PetscObjectAMSGrantAccess(obj)         0
 #define PetscObjectAMSTakeAccess(obj)          0
+#define PetscStackViewAMS()                    0
+#define PetscStackAMSViewOff()                 0
+#define PetscStackAMSTakeAccess()
+#define PetscStackAMSGrantAccess()
+
 #endif
 
 typedef void* PetscDLHandle;

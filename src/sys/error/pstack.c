@@ -11,21 +11,91 @@ PETSC_PTHREAD_LOCAL PetscStack *petscstack = 0;
 PetscStack *petscstack = 0;
 #endif
 
+
+#if defined(PETSC_HAVE_AMS)
+#include <petscviewerams.h>
+
+static AMS_Memory amsmemstack = -1;
+
 #undef __FUNCT__
-#define __FUNCT__ "PetscStackPublish"
-PetscErrorCode  PetscStackPublish(void)
+#define __FUNCT__ "PetscStackAMSGrantAccess"
+/*@C
+   PetscStackAMSGrantAccess - Grants access of the PETSc stack frames to the AMS publisher
+
+   Collective on PETSC_COMM_WORLD?
+
+   Level: developer
+
+   Concepts: publishing object
+
+   Developers Note: Cannot use PetscFunctionBegin/Return() or PetscStackCallAMS() since it may be used within those routines
+
+.seealso: PetscObjectSetName(), PetscObjectAMSViewOff(), PetscObjectAMSTakeAccess()
+
+@*/
+void  PetscStackAMSGrantAccess(void)
 {
-  PetscFunctionBegin;
-  PetscFunctionReturn(0);
+  if (amsmemstack != -1) {
+    AMS_Memory_grant_access(amsmemstack);
+  }
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscStackDepublish"
-PetscErrorCode  PetscStackDepublish(void)
+#define __FUNCT__ "PetscStackAMSTakeAccess"
+/*@C
+   PetscStackAMSTakeAccess - Takes access of the PETSc stack frames to the AMS publisher
+
+   Collective on PETSC_COMM_WORLD?
+
+   Level: developer
+
+   Concepts: publishing object
+
+   Developers Note: Cannot use PetscFunctionBegin/Return() or PetscStackCallAMS() since it may be used within those routines
+
+.seealso: PetscObjectSetName(), PetscObjectAMSViewOff(), PetscObjectAMSTakeAccess()
+
+@*/
+void  PetscStackAMSTakeAccess(void)
 {
+  if (amsmemstack != -1) {
+    AMS_Memory_take_access(amsmemstack);
+  }
+}
+
+PetscErrorCode PetscStackViewAMS(void)
+{
+  AMS_Comm       acomm;
+  PetscErrorCode ierr;
+  AMS_Memory     mem;
+  PetscStack*    petscstackp;
+
+  petscstackp = (PetscStack*)PetscThreadLocalGetValue(petscstack);
+  ierr = PetscViewerAMSGetAMSComm(PETSC_VIEWER_AMS_WORLD,&acomm);CHKERRQ(ierr);
+  PetscStackCallAMS(AMS_Memory_create,(acomm,"Stack",&mem));
+  PetscStackCallAMS(AMS_Memory_take_access,(mem));
+  PetscStackCallAMS(AMS_Memory_add_field,(mem,"functions",petscstackp->function,10,AMS_STRING,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF));
+  PetscStackCallAMS(AMS_Memory_add_field,(mem,"current size",&petscstackp->currentsize,1,AMS_INT,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF));
+  PetscStackCallAMS(AMS_Memory_publish,(mem));
+  PetscStackCallAMS(AMS_Memory_grant_access,(mem));
+  amsmemstack = mem;
+  return 0;
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscStackAMSViewOff"
+PetscErrorCode PetscStackAMSViewOff(void)
+{
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
+  if (amsmemstack == -1) PetscFunctionReturn(0);
+  ierr        = AMS_Memory_destroy(amsmemstack);CHKERRQ(ierr);
+  amsmemstack = -1;
   PetscFunctionReturn(0);
 }
+
+#endif
 
 PetscErrorCode PetscStackCreate(void)
 {
@@ -35,8 +105,17 @@ PetscErrorCode PetscStackCreate(void)
   petscstack_in              = (PetscStack*)malloc(sizeof(PetscStack));
   petscstack_in->currentsize = 0;
   PetscThreadLocalSetValue((PetscThreadKey*)&petscstack,petscstack_in);
+
+#if defined(PETSC_HAVE_AMS)
+  {
+  PetscBool flg = PETSC_FALSE;
+  PetscOptionsHasName(NULL,"-stack_view",&flg);
+  if (flg) PetscStackViewAMS();
+  }
+#endif
   return 0;
 }
+
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscStackView"
@@ -108,20 +187,7 @@ PetscErrorCode  PetscStackPrint(PetscStack *sint,FILE *fp)
 }
 
 #else
-#undef __FUNCT__
-#define __FUNCT__ "PetscStackPublish"
-PetscErrorCode  PetscStackPublish(void)
-{
-  PetscFunctionBegin;
-  PetscFunctionReturn(0);
-}
-#undef __FUNCT__
-#define __FUNCT__ "PetscStackDepublish"
-PetscErrorCode  PetscStackDepublish(void)
-{
-  PetscFunctionBegin;
-  PetscFunctionReturn(0);
-}
+
 #undef __FUNCT__
 #define __FUNCT__ "PetscStackCreate"
 PetscErrorCode  PetscStackCreate(void)
