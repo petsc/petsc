@@ -458,7 +458,7 @@ PetscErrorCode KSPSolve_Chebyshev(KSP ksp)
   ierr = VecAYPX(p[k],scale,p[km1]);CHKERRQ(ierr);
 
   for (i=0; i<maxit; i++) {
-    ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
+    ierr = PetscObjectAMSTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
     if (hybrid && cheb->its && (cheb->its%cheb->chebysteps==0)) {
       /* Adaptive step: update eigenvalue estimate - does not seem to improve convergence */
       PetscReal max,min;
@@ -497,14 +497,13 @@ PetscErrorCode KSPSolve_Chebyshev(KSP ksp)
 
     ksp->its++;
     cheb->its++;
-    ierr   = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
+    ierr   = PetscObjectAMSGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
     c[kp1] = 2.0*mu*c[k] - c[km1];
     omega  = omegaprod*c[k]/c[kp1];
 
     ierr = KSP_MatMult(ksp,Amat,p[k],r);CHKERRQ(ierr);          /*  r = b - Ap[k]    */
     ierr = VecAYPX(r,-1.0,b);CHKERRQ(ierr);
     ierr = KSP_PCApply(ksp,r,p[kp1]);CHKERRQ(ierr);             /*  p[kp1] = B^{-1}r  */
-    ierr         = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
     ksp->vec_sol = p[k];
 
     /* calculate residual norm if requested */
@@ -514,9 +513,10 @@ PetscErrorCode KSPSolve_Chebyshev(KSP ksp)
       } else {
         ierr = VecNorm(p[kp1],NORM_2,&rnorm);CHKERRQ(ierr);
       }
-      ierr         = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
+      ierr         = PetscObjectAMSTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
       ksp->rnorm   = rnorm;
-      KSPLogResidualHistory(ksp,rnorm);
+      ierr = PetscObjectAMSGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
+      ierr = KSPLogResidualHistory(ksp,rnorm);CHKERRQ(ierr);
       ierr = KSPMonitor(ksp,i,rnorm);CHKERRQ(ierr);
       ierr = (*ksp->converged)(ksp,i,rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
       if (ksp->reason) break;
@@ -542,11 +542,11 @@ PetscErrorCode KSPSolve_Chebyshev(KSP ksp)
         ierr = KSP_PCApply(ksp,r,p[kp1]);CHKERRQ(ierr); /* p[kp1] = B^{-1}r */
         ierr = VecNorm(p[kp1],NORM_2,&rnorm);CHKERRQ(ierr);
       }
-      ierr         = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
+      ierr         = PetscObjectAMSTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
       ksp->rnorm   = rnorm;
-      ierr         = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
+      ierr         = PetscObjectAMSGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
       ksp->vec_sol = p[k];
-      KSPLogResidualHistory(ksp,rnorm);
+      ierr = KSPLogResidualHistory(ksp,rnorm);CHKERRQ(ierr);
       ierr = KSPMonitor(ksp,i,rnorm);CHKERRQ(ierr);
     }
     if (ksp->its >= ksp->max_it) {

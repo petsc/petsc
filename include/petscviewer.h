@@ -407,6 +407,10 @@ PETSC_EXTERN PetscErrorCode PetscViewerMatlabPutArray(PetscViewer,int,int,const 
 PETSC_EXTERN PetscErrorCode PetscViewerMatlabGetArray(PetscViewer,int,int,PetscScalar*,const char*);
 PETSC_EXTERN PetscErrorCode PetscViewerMatlabPutVariable(PetscViewer,const char*,void*);
 
+#if defined(PETSC_HAVE_AMS)
+PETSC_EXTERN PetscErrorCode PetscObjectViewAMS(PetscObject,PetscViewer);
+#endif
+
 /*S
      PetscViewers - Abstract collection of PetscViewers. It is just an expandable array of viewers.
 
@@ -421,20 +425,5 @@ typedef struct _n_PetscViewers* PetscViewers;
 PETSC_EXTERN PetscErrorCode PetscViewersCreate(MPI_Comm,PetscViewers*);
 PETSC_EXTERN PetscErrorCode PetscViewersDestroy(PetscViewers*);
 PETSC_EXTERN PetscErrorCode PetscViewersGetViewer(PetscViewers,PetscInt,PetscViewer*);
-
-#if defined(PETSC_HAVE_AMS)
-#include <ams.h>
-PETSC_EXTERN PetscErrorCode PetscViewerAMSSetCommName(PetscViewer,const char[]);
-PETSC_EXTERN PetscErrorCode PetscViewerAMSGetAMSComm(PetscViewer,AMS_Comm *);
-PETSC_EXTERN PetscErrorCode PetscViewerAMSOpen(MPI_Comm,const char[],PetscViewer*);
-PETSC_EXTERN PetscErrorCode PetscViewerAMSLock(PetscViewer);
-PETSC_EXTERN PetscViewer    PETSC_VIEWER_AMS_(MPI_Comm);
-PETSC_EXTERN PetscErrorCode PETSC_VIEWER_AMS_Destroy(MPI_Comm);
-#define PETSC_VIEWER_AMS_WORLD PETSC_VIEWER_AMS_(PETSC_COMM_WORLD)
-#endif
-
-/* Reset __FUNCT__ in case the user does not define it themselves */
-#undef __FUNCT__
-#define __FUNCT__ "User provided function"
 
 #endif

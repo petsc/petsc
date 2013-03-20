@@ -109,7 +109,7 @@ PetscErrorCode  KSPSolve_PIPECG(KSP ksp)
     break;
   default: SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"%s",KSPNormTypes[ksp->normtype]);
   }
-  KSPLogResidualHistory(ksp,dp);
+  ierr       = KSPLogResidualHistory(ksp,dp);CHKERRQ(ierr);
   ierr       = KSPMonitor(ksp,0,dp);CHKERRQ(ierr);
   ksp->rnorm = dp;
   ierr       = (*ksp->converged)(ksp,0,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr); /* test for convergence */
@@ -144,7 +144,7 @@ PetscErrorCode  KSPSolve_PIPECG(KSP ksp)
       else if (ksp->normtype == KSP_NORM_NONE) dp = 0.0;
 
       ksp->rnorm = dp;
-      KSPLogResidualHistory(ksp,dp);
+      ierr = KSPLogResidualHistory(ksp,dp);CHKERRQ(ierr);
       ierr = KSPMonitor(ksp,i,dp);CHKERRQ(ierr);
       ierr = (*ksp->converged)(ksp,i,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
       if (ksp->reason) break;

@@ -105,9 +105,9 @@ static PetscErrorCode SNESSolve_NEWTONTR(SNES snes)
   G      = snes->work[1];
   Ytmp   = snes->work[2];
 
-  ierr       = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
+  ierr       = PetscObjectAMSTakeAccess((PetscObject)snes);CHKERRQ(ierr);
   snes->iter = 0;
-  ierr       = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
+  ierr       = PetscObjectAMSGrantAccess((PetscObject)snes);CHKERRQ(ierr);
 
   if (!snes->vec_func_init_set) {
     ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);          /* F(X) */
@@ -129,9 +129,9 @@ static PetscErrorCode SNESSolve_NEWTONTR(SNES snes)
     snes->norm_init_set = PETSC_FALSE;
   }
 
-  ierr       = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
+  ierr       = PetscObjectAMSTakeAccess((PetscObject)snes);CHKERRQ(ierr);
   snes->norm = fnorm;
-  ierr       = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
+  ierr       = PetscObjectAMSGrantAccess((PetscObject)snes);CHKERRQ(ierr);
   delta      = neP->delta0*fnorm;
   neP->delta = delta;
   ierr       = SNESLogConvergenceHistory(snes,fnorm,0);CHKERRQ(ierr);
@@ -226,10 +226,10 @@ static PetscErrorCode SNESSolve_NEWTONTR(SNES snes)
       ierr  = VecCopy(G,F);CHKERRQ(ierr);
       ierr  = VecCopy(Y,X);CHKERRQ(ierr);
       /* Monitor convergence */
-      ierr       = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
+      ierr       = PetscObjectAMSTakeAccess((PetscObject)snes);CHKERRQ(ierr);
       snes->iter = i+1;
       snes->norm = fnorm;
-      ierr       = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
+      ierr       = PetscObjectAMSGrantAccess((PetscObject)snes);CHKERRQ(ierr);
       ierr       = SNESLogConvergenceHistory(snes,snes->norm,lits);CHKERRQ(ierr);
       ierr       = SNESMonitor(snes,snes->iter,snes->norm);CHKERRQ(ierr);
       /* Test for convergence, xnorm = || X || */
@@ -243,9 +243,9 @@ static PetscErrorCode SNESSolve_NEWTONTR(SNES snes)
     ierr = PetscInfo1(snes,"Maximum number of iterations has been reached: %D\n",maxits);CHKERRQ(ierr);
     if (!reason) reason = SNES_DIVERGED_MAX_IT;
   }
-  ierr         = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
+  ierr         = PetscObjectAMSTakeAccess((PetscObject)snes);CHKERRQ(ierr);
   snes->reason = reason;
-  ierr         = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
+  ierr         = PetscObjectAMSGrantAccess((PetscObject)snes);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /*------------------------------------------------------------*/

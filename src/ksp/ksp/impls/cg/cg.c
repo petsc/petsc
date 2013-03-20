@@ -164,7 +164,7 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
     break;
   default: SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"%s",KSPNormTypes[ksp->normtype]);
   }
-  KSPLogResidualHistory(ksp,dp);
+  ierr       = KSPLogResidualHistory(ksp,dp);CHKERRQ(ierr);
   ierr       = KSPMonitor(ksp,0,dp);CHKERRQ(ierr);
   ksp->rnorm = dp;
 
@@ -272,7 +272,7 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
       dp = 0.0;
     }
     ksp->rnorm = dp;
-    KSPLogResidualHistory(ksp,dp);
+    CHKERRQ(ierr);KSPLogResidualHistory(ksp,dp);CHKERRQ(ierr);
     ierr = KSPMonitor(ksp,i+1,dp);CHKERRQ(ierr);
     ierr = (*ksp->converged)(ksp,i+1,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
     if (ksp->reason) break;

@@ -210,12 +210,16 @@ typedef struct {
 #define __FUNCT__ "SNESLogConvergenceHistory"
 PETSC_STATIC_INLINE PetscErrorCode SNESLogConvergenceHistory(SNES snes,PetscReal res,PetscInt its)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
+  ierr = PetscObjectAMSTakeAccess((PetscObject)snes);CHKERRQ(ierr);
   if (snes->conv_hist && snes->conv_hist_max > snes->conv_hist_len) {
     if (snes->conv_hist)     snes->conv_hist[snes->conv_hist_len]     = res;
     if (snes->conv_hist_its) snes->conv_hist_its[snes->conv_hist_len] = its;
     snes->conv_hist_len++;
   }
+  ierr = PetscObjectAMSGrantAccess((PetscObject)snes);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

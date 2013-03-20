@@ -547,6 +547,7 @@ M*/
 #define PetscFunctionBegin \
   do {                                                                        \
     PetscStack* petscstackp;                                                  \
+    PetscStackAMSTakeAccess();                                                \
     petscstackp = (PetscStack*)PetscThreadLocalGetValue(petscstack);          \
     if (petscstackp && (petscstackp->currentsize < PETSCSTACKSIZE)) {         \
       petscstackp->function[petscstackp->currentsize]  = PETSC_FUNCTION_NAME; \
@@ -558,6 +559,7 @@ M*/
     }                                                                         \
     PetscCheck__FUNCT__();                                                    \
     PetscRegister__FUNCT__();                                                 \
+    PetscStackAMSGrantAccess();                                               \
   } while (0)
 
 /*MC
@@ -588,6 +590,7 @@ M*/
 #define PetscFunctionBeginUser \
   do {                                                                        \
     PetscStack* petscstackp;                                                  \
+    PetscStackAMSTakeAccess();                                                \
     petscstackp = (PetscStack*)PetscThreadLocalGetValue(petscstack);          \
     if (petscstackp && (petscstackp->currentsize < PETSCSTACKSIZE)) {         \
       petscstackp->function[petscstackp->currentsize]  = PETSC_FUNCTION_NAME; \
@@ -599,6 +602,7 @@ M*/
     }                                                                         \
     PetscCheck__FUNCT__();                                                    \
     PetscRegister__FUNCT__();                                                 \
+    PetscStackAMSGrantAccess();                                               \
   } while (0)
 
 
@@ -630,6 +634,7 @@ M*/
 #define PetscStackPush(n) \
   do {                                                                  \
     PetscStack * petscstackp;                                           \
+    PetscStackAMSTakeAccess();                                          \
     petscstackp = (PetscStack*)PetscThreadLocalGetValue(petscstack);    \
     if (petscstackp && (petscstackp->currentsize < PETSCSTACKSIZE)) {   \
       petscstackp->function[petscstackp->currentsize]  = n;             \
@@ -637,10 +642,14 @@ M*/
       petscstackp->directory[petscstackp->currentsize] = "unknown";     \
       petscstackp->line[petscstackp->currentsize]      = 0;             \
       petscstackp->currentsize++;                                       \
-    } CHKMEMQ;} while (0)
+    }                                                                   \
+    PetscStackAMSGrantAccess();                                         \
+    CHKMEMQ;                                                            \
+  } while (0)
 
 #define PetscStackPop \
   do {PetscStack* petscstackp;CHKMEMQ;                                  \
+    PetscStackAMSTakeAccess();                                          \
     petscstackp = (PetscStack*)PetscThreadLocalGetValue(petscstack);    \
     if (petscstackp && petscstackp->currentsize > 0) {                  \
       petscstackp->currentsize--;                                       \
@@ -648,7 +657,9 @@ M*/
       petscstackp->file[petscstackp->currentsize]      = 0;             \
       petscstackp->directory[petscstackp->currentsize] = 0;             \
       petscstackp->line[petscstackp->currentsize]      = 0;             \
-    }} while (0)
+    }                                                                   \
+    PetscStackAMSGrantAccess();                                         \
+  } while (0)
 
 /*MC
    PetscFunctionReturn - Last executable line of each PETSc function
@@ -679,6 +690,7 @@ M*/
 #define PetscFunctionReturn(a) \
   do {                                                                \
     PetscStack* petscstackp;                                          \
+    PetscStackAMSTakeAccess();                                        \
     petscstackp = (PetscStack*)PetscThreadLocalGetValue(petscstack);  \
     if (petscstackp && petscstackp->currentsize > 0) {                \
       petscstackp->currentsize--;                                     \
@@ -687,11 +699,13 @@ M*/
       petscstackp->directory[petscstackp->currentsize] = 0;           \
       petscstackp->line[petscstackp->currentsize]      = 0;           \
     }                                                                 \
+    PetscStackAMSGrantAccess();                                       \
     return(a);} while (0)
 
 #define PetscFunctionReturnVoid() \
   do {                                                                \
     PetscStack* petscstackp;                                          \
+    PetscStackAMSTakeAccess();                                        \
     petscstackp = (PetscStack*)PetscThreadLocalGetValue(petscstack);  \
     if (petscstackp && petscstackp->currentsize > 0) {                \
       petscstackp->currentsize--;                                     \
@@ -700,16 +714,17 @@ M*/
       petscstackp->directory[petscstackp->currentsize] = 0;           \
       petscstackp->line[petscstackp->currentsize]      = 0;           \
     }                                                                 \
+    PetscStackAMSGrantAccess();                                       \
     return;} while (0)
 #else
 
 #define PetscFunctionBegin
 #define PetscFunctionBeginUser
-#define PetscFunctionReturn(a)  return(a)
+#define PetscFunctionReturn(a)    return(a)
 #define PetscFunctionReturnVoid() return
-#define PetscStackPop     CHKMEMQ
-#define PetscStackPush(f) CHKMEMQ
-#define PetscStackActive        PETSC_FALSE
+#define PetscStackPop             CHKMEMQ
+#define PetscStackPush(f)         CHKMEMQ
+#define PetscStackActive          PETSC_FALSE
 
 #endif
 
@@ -748,7 +763,5 @@ M*/
 PETSC_EXTERN PetscErrorCode PetscStackCreate(void);
 PETSC_EXTERN PetscErrorCode PetscStackView(FILE*);
 PETSC_EXTERN PetscErrorCode PetscStackDestroy(void);
-PETSC_EXTERN PetscErrorCode PetscStackPublish(void);
-PETSC_EXTERN PetscErrorCode PetscStackDepublish(void);
 
 #endif

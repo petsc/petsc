@@ -571,19 +571,19 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
     ierr = KSPMonitorSet(ksp,KSPMonitorLGRange,ctx,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
   }
 
+#if defined(PETSC_HAVE_AMS)
   /*
-    Publishes convergence information using AMS
+    Publish convergence information using AMS
   */
   flg  = PETSC_FALSE;
   ierr = PetscOptionsBool("-ksp_monitor_ams","Publish KSP progress using AMS","KSPMonitorSet",flg,&flg,NULL);CHKERRQ(ierr);
   if (flg) {
-    char amscommname[256];
     void *ctx;
-    ierr = PetscSNPrintf(amscommname,sizeof(amscommname),"%sksp_monitor_ams",((PetscObject)ksp)->prefix ? ((PetscObject)ksp)->prefix : "");CHKERRQ(ierr);
-    ierr = KSPMonitorAMSCreate(ksp,amscommname,&ctx);CHKERRQ(ierr);
+    ierr = KSPMonitorAMSCreate(ksp,NULL,&ctx);CHKERRQ(ierr);
     ierr = KSPMonitorSet(ksp,KSPMonitorAMS,ctx,KSPMonitorAMSDestroy);CHKERRQ(ierr);
     ierr = KSPSetComputeSingularValues(ksp,PETSC_TRUE);CHKERRQ(ierr);
   }
+#endif
 
   /* -----------------------------------------------------------------------*/
   ierr = KSPSetUpNorms_Private(ksp,&normtype,&pcside);CHKERRQ(ierr);
@@ -600,6 +600,16 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
   ierr = PetscOptionsBool("-ksp_plot_eigenvalues","Scatter plot extreme eigenvalues","KSPSetComputeSingularValues",flg,&flg,NULL);CHKERRQ(ierr);
   if (flg) { ierr = KSPSetComputeSingularValues(ksp,PETSC_TRUE);CHKERRQ(ierr); }
 
+#if defined(PETSC_HAVE_AMS)
+  {
+  PetscBool set;
+  flg  = PETSC_FALSE;
+  ierr = PetscOptionsBool("-ksp_ams_block","Block for AMS memory snooper at end of KSPSolve","PetscObjectAMSBlock",((PetscObject)ksp)->amspublishblock,&flg,&set);CHKERRQ(ierr);
+  if (set) {
+    ierr = PetscObjectAMSSetBlock((PetscObject)ksp,flg);CHKERRQ(ierr);
+  }
+  }
+#endif
 
   if (ksp->ops->setfromoptions) {
     ierr = (*ksp->ops->setfromoptions)(ksp);CHKERRQ(ierr);
