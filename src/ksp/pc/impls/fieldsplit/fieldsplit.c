@@ -29,7 +29,6 @@ typedef struct {
   PCCompositeType type;
   PetscBool       defaultsplit;                    /* Flag for a system with a set of 'k' scalar fields with the same layout (and bs = k) */
   PetscBool       splitdefined;                    /* Flag is set after the splits have been defined, to prevent more splits from being added */
-  PetscBool       realdiagonal;                    /* Flag to use the diagonal blocks of mat preconditioned by pmat, instead of just pmat */
   PetscInt        bs;                              /* Block size for IS and Mat structures */
   PetscInt        nsplits;                         /* Number of field divisions defined */
   Vec             *x,*y,w1,w2;
@@ -93,8 +92,8 @@ static PetscErrorCode PCView_FieldSplit(PC pc,PetscViewer viewer)
     } else {
       ierr = PetscViewerASCIIPrintf(viewer,"  FieldSplit with %s composition: total splits = %D\n",PCCompositeTypes[jac->type],jac->nsplits);CHKERRQ(ierr);
     }
-    if (jac->realdiagonal) {
-      ierr = PetscViewerASCIIPrintf(viewer,"  using actual matrix for blocks rather than preconditioner matrix\n");CHKERRQ(ierr);
+    if (pc->useAmat) {
+      ierr = PetscViewerASCIIPrintf(viewer,"  using Amat (not Pmat) as operator for blocks\n");CHKERRQ(ierr);
     }
     ierr = PetscViewerASCIIPrintf(viewer,"  Solver info for each split is in the following KSP objects:\n");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
@@ -158,8 +157,8 @@ static PetscErrorCode PCView_FieldSplit_Schur(PC pc,PetscViewer viewer)
     } else {
       ierr = PetscViewerASCIIPrintf(viewer,"  FieldSplit with Schur preconditioner, factorization %s\n",PCFieldSplitSchurFactTypes[jac->schurfactorization]);CHKERRQ(ierr);
     }
-    if (jac->realdiagonal) {
-      ierr = PetscViewerASCIIPrintf(viewer,"  using actual matrix for blocks rather than preconditioner matrix\n");CHKERRQ(ierr);
+    if (pc->useAmat) {
+      ierr = PetscViewerASCIIPrintf(viewer,"  using Amat (not Pmat) as operator for blocks\n");CHKERRQ(ierr);
     }
     switch (jac->schurpre) {
     case PC_FIELDSPLIT_SCHUR_PRE_SELF:
@@ -553,7 +552,7 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
       ilink = ilink->next;
     }
   }
-  if (jac->realdiagonal) {
+  if (pc->useAmat) {
     ilink = jac->head;
     if (!jac->mat) {
       ierr = PetscMalloc(nsplit*sizeof(Mat),&jac->mat);CHKERRQ(ierr);
@@ -638,7 +637,7 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
       ierr  = MatGetSubMatrix(pc->mat,ilink->is,ccis,MAT_INITIAL_MATRIX,&jac->C);CHKERRQ(ierr);
       ierr  = ISDestroy(&ccis);CHKERRQ(ierr);
 
-      /* Use mat[0] (diagonal block of the real matrix) preconditioned by pmat[0] to define Schur complement */
+      /* Use mat[0] (diagonal block of Amat) preconditioned by pmat[0] to define Schur complement */
       ierr = MatCreate(((PetscObject)jac->mat[0])->comm,&jac->schur);CHKERRQ(ierr);
       ierr = MatSetType(jac->schur,MATSCHURCOMPLEMENT);CHKERRQ(ierr);
       ierr = MatSchurComplementGetKSP(jac->schur, &ksp);CHKERRQ(ierr);
@@ -1049,7 +1048,6 @@ static PetscErrorCode PCSetFromOptions_FieldSplit(PC pc)
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("FieldSplit options");CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-pc_fieldsplit_real_diagonal","Use diagonal blocks of the operator","PCFieldSplitSetRealDiagonal",jac->realdiagonal,&jac->realdiagonal,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_fieldsplit_dm_splits","Whether to use DMCreateFieldDecomposition() for splits","PCFieldSplitSetDMSplits",jac->dm_splits,&jac->dm_splits,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-pc_fieldsplit_block_size","Blocksize that defines number of fields","PCFieldSplitSetBlockSize",jac->bs,&bs,&flg);CHKERRQ(ierr);
   if (flg) {
