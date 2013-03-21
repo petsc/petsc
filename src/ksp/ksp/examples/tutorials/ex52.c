@@ -261,8 +261,12 @@ int main(int argc,char **args)
      print statement from all processes that share a communicator.
      An alternative is PetscFPrintf(), which prints to a file.
   */
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %G iterations %D\n",
+  if (norm < 1.e-12) {
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error < 1.e-12 iterations %D\n",norm,its);CHKERRQ(ierr);
+  } else {
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %G iterations %D\n",
                      norm,its);CHKERRQ(ierr);
+ }
 
   /*
      Free work space.  All PETSc objects should be destroyed when they
