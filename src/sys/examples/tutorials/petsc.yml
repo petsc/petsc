@@ -16,8 +16,10 @@ temp:
         type: ksponly
     KSP:
         type: cg
-        monitor: 
+        monitor:
           true_residual:
 vs0030:
     tempBC: 1
     temp:   1.
+malloc:
+    test:

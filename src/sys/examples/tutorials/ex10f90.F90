@@ -6,7 +6,7 @@
       PetscErrorCode                            :: ierr
       Character(len=256)                        :: filename
       PetscBool                                 :: flg
-      
+
       Call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       call PetscOptionsGetString(PETSC_NULL_CHARACTER,"-f",filename,flg,ierr)
       if (flg) then

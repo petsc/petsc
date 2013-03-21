@@ -2144,7 +2144,7 @@ PetscErrorCode  PetscOptionsLeft(void)
       if (options->values[i]) {
         ierr = PetscPrintf(PETSC_COMM_WORLD,"Option left: name:-%s value: %s\n",options->names[i],options->values[i]);CHKERRQ(ierr);
       } else {
-        ierr = PetscPrintf(PETSC_COMM_WORLD,"Option left: name:-%s no value \n",options->names[i]);CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_WORLD,"Option left: name:-%s (no value)\n",options->names[i]);CHKERRQ(ierr);
       }
     }
   }

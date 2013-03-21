@@ -130,25 +130,25 @@ runex8f90:
 	   ${RM} -f ex8f90_1.tmp
 
 runex9_1:
-	-@${MPIEXEC} -n 1 ./ex9 -f petsc.yml > ex9_1.tmp 5>&1; \
+	-@PETSC_OPTIONS= ${MPIEXEC} -n 1 ./ex9 -f petsc.yml > ex9_1.tmp 5>&1; \
 	   if (${DIFF} output/ex9_1.out ex9_1.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex9_1, diffs above \n========================================="; fi; \
 	   ${RM} -f ex9_1.tmp
 
 runex9_2:
-	-@${MPIEXEC} -n 1 ./ex9 -options_file_yaml petsc.yml > ex9_2.tmp 5>&1; \
+	-@PETSC_OPTIONS= ${MPIEXEC} -n 1 ./ex9 -options_file_yaml petsc.yml > ex9_2.tmp 5>&1; \
 	   if (${DIFF} output/ex9_2.out ex9_2.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex9_2, diffs above \n========================================="; fi; \
 	   ${RM} -f ex9_2.tmp
 
 runex10f90_1:
-	-@${MPIEXEC} -n 1 ./ex10f90 -f petsc.yml > ex10f90_1.tmp 8>&1; \
+	-@PETSC_OPTIONS= ${MPIEXEC} -n 1 ./ex10f90 -f petsc.yml > ex10f90_1.tmp 8>&1; \
 	   if (${DIFF} output/ex10f90_1.out ex10f90_1.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex10f90_1, diffs above \n========================================="; fi; \
 	   ${RM} -f ex10f90_1.tmp
 
 runex10f90_2:
-	-@${MPIEXEC} -n 1 ./ex10f90 -options_file_yaml petsc.yml > ex10f90_2.tmp 8>&1; \
+	-@PETSC_OPTIONS= ${MPIEXEC} -n 1 ./ex10f90 -options_file_yaml petsc.yml > ex10f90_2.tmp 8>&1; \
 	   if (${DIFF} output/ex10f90_2.out ex10f90_2.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex10f90_2, diffs above \n========================================="; fi; \
 	   ${RM} -f ex10f90_2.tmp

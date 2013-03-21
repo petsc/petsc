@@ -3,6 +3,7 @@
 -cs0010_force 0.
 -cs0010_hookeslaw 1,2,3,4,5,6
 -cs0020_force 0.
+-malloc_test
 -options_file_yaml petsc.yml
 -temp_KSP_monitor_true_residual
 -temp_KSP_type cg
@@ -20,7 +21,7 @@ Option left: name:-cs0001_force value: 0.
 Option left: name:-cs0010_force value: 0.
 Option left: name:-cs0010_hookeslaw value: 1,2,3,4,5,6
 Option left: name:-cs0020_force value: 0.
-Option left: name:-temp_KSP_monitor_true_residual no value 
+Option left: name:-temp_KSP_monitor_true_residual (no value)
 Option left: name:-temp_KSP_type value: cg
 Option left: name:-temp_snes_type value: ksponly
 Option left: name:-vs0010_temp value: 0.
