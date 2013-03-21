@@ -142,8 +142,8 @@ int main(int argc,char **args)
   /*
     Example of how to use external package MUMPS
     Note: runtime options
-          '-ksp_type preonly -pc_type lu -pc_factor_mat_solver_package mumps -mat_mumps_icntl_7 2'
-          are equivalent to these procedual calls
+          '-ksp_type preonly -pc_type lu -pc_factor_mat_solver_package mumps -mat_mumps_icntl_7 2 -mat_mumps_icntl_1 0.0'
+          are equivalent to these procedural calls
   */
 #if defined(PETSC_HAVE_MUMPS)
   flg    = PETSC_FALSE;
@@ -152,9 +152,10 @@ int main(int argc,char **args)
   ierr   = PetscOptionsGetBool(NULL,"-use_mumps_ch",&flg_ch,NULL);CHKERRQ(ierr);
   if (flg || flg_ch) {
     ierr = KSPSetType(ksp,KSPPREONLY);CHKERRQ(ierr);
-    PC       pc;
-    Mat      F;
-    PetscInt ival,icntl;
+    PC        pc;
+    Mat       F;
+    PetscInt  ival,icntl;
+    PetscReal val;
     ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
     if (flg) {
       ierr = PCSetType(pc,PCLU);CHKERRQ(ierr);
@@ -165,8 +166,10 @@ int main(int argc,char **args)
     ierr = PCFactorSetMatSolverPackage(pc,MATSOLVERMUMPS);CHKERRQ(ierr);
     ierr = PCFactorSetUpMatSolverPackage(pc);CHKERRQ(ierr); /* call MatGetFactor() to create F */
     ierr = PCFactorGetMatrix(pc,&F);CHKERRQ(ierr);
-    icntl=7; ival = 2;
+    icntl = 7; ival = 2;
     ierr = MatMumpsSetIcntl(F,icntl,ival);CHKERRQ(ierr);
+    icntl = 1; val = 0.0;
+    ierr = MatMumpsSetCntl(F,icntl,val);CHKERRQ(ierr);
   }
 #endif
 
