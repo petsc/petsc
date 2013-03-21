@@ -724,8 +724,10 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
       ts->time_step = ts_start->time_step;
       ts->steps++;
       ierr = VecCopy(((TS_ARKIMEX*)ts_start->data)->Ydot0,Ydot0);CHKERRQ(ierr);
-      ierr = TSDestroy(&ts_start);CHKERRQ(ierr);
+      ts_start->snes=NULL;
       ierr = TSSetSNES(ts,snes_start);CHKERRQ(ierr);
+      ierr = SNESDestroy(&snes_start);CHKERRQ(ierr);
+      ierr = TSDestroy(&ts_start);CHKERRQ(ierr);
     }
   }
 
