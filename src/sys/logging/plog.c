@@ -232,7 +232,7 @@ PetscErrorCode  PetscLogBegin_Private(void)
 
   /* All processors sync here for more consistent logging */
   ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
-  PetscTime(petsc_BaseTime);
+  PetscTime(&petsc_BaseTime);
   ierr = PetscLogStagePush(stage);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1159,7 +1159,7 @@ PetscErrorCode  PetscLogDump(const char sname[])
 
   PetscFunctionBegin;
   /* Calculate the total elapsed time */
-  PetscTime(_TotalTime);
+  PetscTime(&_TotalTime);
   _TotalTime -= petsc_BaseTime;
   /* Open log file */
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRQ(ierr);
@@ -1287,7 +1287,7 @@ PetscErrorCode  PetscLogView(PetscViewer viewer)
     ierr      = PetscStageLogGetCurrent(stageLog, &stage);CHKERRQ(ierr);
   }
   /* Get the total elapsed time */
-  PetscTime(locTotalTime);  locTotalTime -= petsc_BaseTime;
+  PetscTime(&locTotalTime);  locTotalTime -= petsc_BaseTime;
 
   ierr = PetscFPrintf(comm, fd, "************************************************************************************************************************\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fd, "***             WIDEN YOUR WINDOW TO 120 CHARACTERS.  Use 'enscript -r -fCourier9' to print this document            ***\n");CHKERRQ(ierr);
@@ -1642,10 +1642,10 @@ PetscErrorCode  PetscLogView(PetscViewer viewer)
 
   /* Information unrelated to this particular run */
   ierr = PetscFPrintf(comm, fd, "========================================================================================================================\n");CHKERRQ(ierr);
-  PetscTime(y);
-  PetscTime(x);
-  PetscTime(y); PetscTime(y); PetscTime(y); PetscTime(y); PetscTime(y);
-  PetscTime(y); PetscTime(y); PetscTime(y); PetscTime(y); PetscTime(y);
+  PetscTime(&y);
+  PetscTime(&x);
+  PetscTime(&y); PetscTime(&y); PetscTime(&y); PetscTime(&y); PetscTime(&y);
+  PetscTime(&y); PetscTime(&y); PetscTime(&y); PetscTime(&y); PetscTime(&y);
   ierr = PetscFPrintf(comm,fd,"Average time to get PetscTime(): %g\n", (y-x)/10.0);CHKERRQ(ierr);
   /* MPI information */
   if (size > 1) {
@@ -1654,13 +1654,13 @@ PetscErrorCode  PetscLogView(PetscViewer viewer)
     MPI_Comm    newcomm;
 
     ierr = MPI_Barrier(comm);CHKERRQ(ierr);
-    PetscTime(x);
+    PetscTime(&x);
     ierr = MPI_Barrier(comm);CHKERRQ(ierr);
     ierr = MPI_Barrier(comm);CHKERRQ(ierr);
     ierr = MPI_Barrier(comm);CHKERRQ(ierr);
     ierr = MPI_Barrier(comm);CHKERRQ(ierr);
     ierr = MPI_Barrier(comm);CHKERRQ(ierr);
-    PetscTime(y);
+    PetscTime(&y);
     ierr = PetscFPrintf(comm, fd, "Average time for MPI_Barrier(): %g\n", (y-x)/5.0);CHKERRQ(ierr);
     ierr = PetscCommDuplicate(comm,&newcomm, &tag);CHKERRQ(ierr);
     ierr = MPI_Barrier(comm);CHKERRQ(ierr);
@@ -1668,10 +1668,10 @@ PetscErrorCode  PetscLogView(PetscViewer viewer)
       ierr = MPI_Recv(0, 0, MPI_INT, rank-1,            tag, newcomm, &status);CHKERRQ(ierr);
       ierr = MPI_Send(0, 0, MPI_INT, (rank+1)%size, tag, newcomm);CHKERRQ(ierr);
     } else {
-      PetscTime(x);
+      PetscTime(&x);
       ierr = MPI_Send(0, 0, MPI_INT, 1,          tag, newcomm);CHKERRQ(ierr);
       ierr = MPI_Recv(0, 0, MPI_INT, size-1, tag, newcomm, &status);CHKERRQ(ierr);
-      PetscTime(y);
+      PetscTime(&y);
       ierr = PetscFPrintf(comm,fd,"Average time for zero size MPI_Send(): %g\n", (y-x)/size);CHKERRQ(ierr);
     }
     ierr = PetscCommDestroy(&newcomm);CHKERRQ(ierr);
@@ -1770,7 +1770,7 @@ PetscErrorCode  PetscLogPrintDetailed(MPI_Comm comm, const char filename[])
     ierr = PetscStageLogGetCurrent(stageLog, &stage);CHKERRQ(ierr);
   }
   /* Get the total elapsed time */
-  PetscTime(TotalTime);  TotalTime -= petsc_BaseTime;
+  PetscTime(&TotalTime);  TotalTime -= petsc_BaseTime;
   /* Open the summary file */
   if (filename) {
     ierr = PetscFOpen(comm, filename, "w", &fd);CHKERRQ(ierr);
@@ -1881,7 +1881,7 @@ PetscErrorCode  PetscLogPrintDetailed(MPI_Comm comm, const char filename[])
 
 .keywords: log, flops, floating point operations
 
-.seealso: PetscGetTime(), PetscLogFlops()
+.seealso: PetscTime(), PetscLogFlops()
 @*/
 PetscErrorCode  PetscGetFlops(PetscLogDouble *flops)
 {
@@ -2107,7 +2107,7 @@ PetscErrorCode  PetscLogViewPython(PetscViewer viewer)
     ierr = PetscStageLogGetCurrent(stageLog, &stage);CHKERRQ(ierr);
   }
   /* Get the total elapsed time */
-  PetscTime(locTotalTime);  locTotalTime -= petsc_BaseTime;
+  PetscTime(&locTotalTime);  locTotalTime -= petsc_BaseTime;
 
   ierr = PetscFPrintf(comm, fd, "\n#------ PETSc Performance Summary ----------\n\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fd, "Nproc = %d\n",size);CHKERRQ(ierr);
@@ -2466,10 +2466,10 @@ PetscErrorCode  PetscLogViewPython(PetscViewer viewer)
 
   /* Information unrelated to this particular run */
   ierr = PetscFPrintf(comm, fd, "# ========================================================================================================================\n");CHKERRQ(ierr);
-  PetscTime(y);
-  PetscTime(x);
-  PetscTime(y); PetscTime(y); PetscTime(y); PetscTime(y); PetscTime(y);
-  PetscTime(y); PetscTime(y); PetscTime(y); PetscTime(y); PetscTime(y);
+  PetscTime(&y);
+  PetscTime(&x);
+  PetscTime(&y); PetscTime(&y); PetscTime(&y); PetscTime(&y); PetscTime(&y);
+  PetscTime(&y); PetscTime(&y); PetscTime(&y); PetscTime(&y); PetscTime(&y);
   ierr = PetscFPrintf(comm,fd,"AveragetimetogetPetscTime = %g\n", (y-x)/10.0);CHKERRQ(ierr);
   /* MPI information */
   if (size > 1) {
@@ -2478,13 +2478,13 @@ PetscErrorCode  PetscLogViewPython(PetscViewer viewer)
     MPI_Comm    newcomm;
 
     ierr = MPI_Barrier(comm);CHKERRQ(ierr);
-    PetscTime(x);
+    PetscTime(&x);
     ierr = MPI_Barrier(comm);CHKERRQ(ierr);
     ierr = MPI_Barrier(comm);CHKERRQ(ierr);
     ierr = MPI_Barrier(comm);CHKERRQ(ierr);
     ierr = MPI_Barrier(comm);CHKERRQ(ierr);
     ierr = MPI_Barrier(comm);CHKERRQ(ierr);
-    PetscTime(y);
+    PetscTime(&y);
     ierr = PetscFPrintf(comm, fd, "AveragetimeforMPI_Barrier = %g\n", (y-x)/5.0);CHKERRQ(ierr);
     ierr = PetscCommDuplicate(comm,&newcomm, &tag);CHKERRQ(ierr);
     ierr = MPI_Barrier(comm);CHKERRQ(ierr);
@@ -2492,10 +2492,10 @@ PetscErrorCode  PetscLogViewPython(PetscViewer viewer)
       ierr = MPI_Recv(0, 0, MPI_INT, rank-1,            tag, newcomm, &status);CHKERRQ(ierr);
       ierr = MPI_Send(0, 0, MPI_INT, (rank+1)%size, tag, newcomm);CHKERRQ(ierr);
     } else {
-      PetscTime(x);
+      PetscTime(&x);
       ierr = MPI_Send(0, 0, MPI_INT, 1,          tag, newcomm);CHKERRQ(ierr);
       ierr = MPI_Recv(0, 0, MPI_INT, size-1, tag, newcomm, &status);CHKERRQ(ierr);
-      PetscTime(y);
+      PetscTime(&y);
       ierr = PetscFPrintf(comm,fd,"AveragetimforzerosizeMPI_Send = %g\n", (y-x)/size);CHKERRQ(ierr);
     }
     ierr = PetscCommDestroy(&newcomm);CHKERRQ(ierr);

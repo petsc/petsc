@@ -1,5 +1,6 @@
 
 #include <petscsys.h>
+#include <petsctime.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -20,9 +21,9 @@ int main(int argc,char **argv)
   }
   /* To take care of paging effects */
   ierr = PetscMemcpy(A,B,sizeof(PetscScalar)*0);CHKERRQ(ierr);
-  ierr = PetscGetTime(&x);CHKERRQ(ierr);
+  ierr = PetscTime(&x);CHKERRQ(ierr);
 
-  ierr = PetscGetTime(&x);CHKERRQ(ierr);
+  ierr = PetscTime(&x);CHKERRQ(ierr);
   /*
   PetscMemcpy(A,B,sizeof(PetscScalar)*8000000);
   PetscMemcpy(A,B,sizeof(PetscScalar)*8000000);
@@ -38,7 +39,7 @@ int main(int argc,char **argv)
     for (j = 0; j<10; j++)
       for (i=0; i<8000000; i++) B[i] = A[i];}
 
-  ierr = PetscGetTime(&y);CHKERRQ(ierr);
+  ierr = PetscTime(&y);CHKERRQ(ierr);
   ierr = PetscMemcpy(A,B,sizeof(PetscScalar)*0);CHKERRQ(ierr);
   ierr = PetscMemcpy(A,B,sizeof(PetscScalar)*0);CHKERRQ(ierr);
   ierr = PetscMemcpy(A,B,sizeof(PetscScalar)*0);CHKERRQ(ierr);
@@ -49,7 +50,7 @@ int main(int argc,char **argv)
   ierr = PetscMemcpy(A,B,sizeof(PetscScalar)*0);CHKERRQ(ierr);
   ierr = PetscMemcpy(A,B,sizeof(PetscScalar)*0);CHKERRQ(ierr);
   ierr = PetscMemcpy(A,B,sizeof(PetscScalar)*0);CHKERRQ(ierr);
-  ierr = PetscGetTime(&z);CHKERRQ(ierr);
+  ierr = PetscTime(&z);CHKERRQ(ierr);
 
   fprintf(stdout,"%s : \n","PetscMemcpy");
   fprintf(stdout,"    %-15s : %e MB/s\n","Bandwidth",10.0*8*8/(y-x));

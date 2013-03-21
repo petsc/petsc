@@ -35,6 +35,7 @@ options are:\n\
 */
 
 #include "snes.h"
+#include <petsctime.h>
 #include "da.h"
 #include "mg.h"
 
@@ -184,11 +185,11 @@ int main(int argc, char **argv)
   ierr    = SNESSetTolerances(snes,atol,rtol,stol,maxit,maxf);CHKERRA(ierr);
   ierr    = FormInitialGuess1(&user,finegrid->x);CHKERRA(ierr);
   ierr    = PLogStagePush(1);CHKERRA(ierr);
-  ierr    = PetscGetTime(&v1);CHKERRA(ierr);
+  ierr    = PetscTime(&v1);CHKERRA(ierr);
   ierr    = SNESSolve(snes,NULL,finegrid->x);CHKERRA(ierr);
   ierr    = SNESGetIterationNumber(snes, &its);CHKERRA(ierr);
   ierr    = SNESView(snes,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
-  ierr    = PetscGetTime(&v2);CHKERRA(ierr);
+  ierr    = PetscTime(&v2);CHKERRA(ierr);
   ierr    = PLogStagePop();CHKERRA(ierr);
   elapsed = v2 - v1;
   ierr    = SNESGetLinearSolveIterations(snes,&lits);CHKERRA(ierr);

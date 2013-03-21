@@ -5847,7 +5847,7 @@ PETSc application programmers can access the wall clock time directly
 with the command \sindex{wall clock time}
 \begin{tabbing}
   PetscLogDouble time;\\
-  PetscGetTime(\&time);CHKERRQ(ierr);
+  PetscTime(\&time);CHKERRQ(ierr);
 \end{tabbing}
 \sindex{time}
 which returns the current time in seconds since the epoch, and is commonly
