@@ -11,6 +11,7 @@
 #include "viennacl/linalg/norm_1.hpp"
 #include "viennacl/linalg/norm_2.hpp"
 #include "viennacl/linalg/norm_inf.hpp"
+#include "viennacl/ocl/backend.hpp"
 
 #undef __FUNCT__
 #define __FUNCT__ "VecViennaCLAllocateCheckHost"
@@ -680,8 +681,6 @@ PetscErrorCode VecPointwiseMult_SeqViennaCL(Vec win,Vec xin,Vec yin)
 }
 
 
-/* should do infinity norm in cusp */
-
 #undef __FUNCT__
 #define __FUNCT__ "VecNorm_SeqViennaCL"
 PetscErrorCode VecNorm_SeqViennaCL(Vec xin,NormType type,PetscReal *z)
@@ -878,6 +877,46 @@ PetscErrorCode VecDestroy_SeqViennaCL(Vec v)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "VecSetFromOptions_SeqViennaCL"
+PetscErrorCode VecSetFromOptions_SeqViennaCL(Vec v)
+{
+  PetscErrorCode       ierr;
+  PetscBool            flg;
+
+  PetscFunctionBegin;
+  ierr = PetscOptionsHead("SeqAIJCUSP options");CHKERRQ(ierr);
+  ierr = PetscObjectOptionsBegin((PetscObject)v);
+  
+  ierr = PetscOptionsHasName(NULL,"-viennacl_device_cpu",&flg);CHKERRQ(ierr);
+  if (flg) {
+    try {
+      viennacl::ocl::set_context_device_type(0, CL_DEVICE_TYPE_CPU);
+    } catch (std::exception const & ex) {
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex.what());
+    }
+  }
+  ierr = PetscOptionsHasName(NULL,"-viennacl_device_gpu",&flg);CHKERRQ(ierr);
+  if (flg) {
+    try {
+      viennacl::ocl::set_context_device_type(0, CL_DEVICE_TYPE_GPU);
+    } catch (std::exception const & ex) {
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex.what());
+    }
+  }
+  ierr = PetscOptionsHasName(NULL,"-viennacl_device_accelerator",&flg);CHKERRQ(ierr);
+  if (flg) {
+    try {
+      viennacl::ocl::set_context_device_type(0, CL_DEVICE_TYPE_ACCELERATOR);
+    } catch (std::exception const & ex) {
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex.what());
+    }
+  }
+  
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+
+}
 
 
 #undef __FUNCT__
@@ -922,6 +961,7 @@ PETSC_EXTERN PetscErrorCode VecCreate_SeqViennaCL(Vec V)
   V->ops->duplicate       = VecDuplicate_SeqViennaCL;
   //V->ops->conjugate       = VecConjugate_SeqViennaCL;
 
+  ierr = VecSetFromOptions_SeqViennaCL(V);CHKERRQ(ierr); /* Allows to set device type before allocating any objects */
   ierr = VecViennaCLAllocateCheck(V);CHKERRQ(ierr);
   V->valid_GPU_array      = PETSC_VIENNACL_GPU;
   ierr = VecSet(V,0.0);CHKERRQ(ierr);
