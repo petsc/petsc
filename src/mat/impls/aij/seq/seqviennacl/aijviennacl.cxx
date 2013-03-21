@@ -33,46 +33,48 @@ PetscErrorCode MatViennaCLCopyToGPU(Mat A)
 
 
   PetscFunctionBegin;
-  if (A->valid_GPU_matrix == PETSC_VIENNACL_UNALLOCATED || A->valid_GPU_matrix == PETSC_VIENNACL_CPU) {
-    ierr = PetscLogEventBegin(MAT_ViennaCLCopyToGPU,A,0,0,0);CHKERRQ(ierr);
+  if (A->rmap->n > 0 && A->cmap->n > 0) { //some OpenCL SDKs have issues with buffers of size 0
+    if (A->valid_GPU_matrix == PETSC_VIENNACL_UNALLOCATED || A->valid_GPU_matrix == PETSC_VIENNACL_CPU) {
+      ierr = PetscLogEventBegin(MAT_ViennaCLCopyToGPU,A,0,0,0);CHKERRQ(ierr);
 
-    try {
-      //viennaclstruct->nonzerorow=0;
-      //for (PetscInt j = 0; j<m; j++) viennaclstruct->nonzerorow += (a->i[j+1] > a->i[j]);
+      try {
+        //viennaclstruct->nonzerorow=0;
+        //for (PetscInt j = 0; j<m; j++) viennaclstruct->nonzerorow += (a->i[j+1] > a->i[j]);
 
-      viennaclstruct->mat = new ViennaCLAIJMatrix();
-      if (a->compressedrow.use) {
-        //m    = a->compressedrow.nrows;
-        ii   = a->compressedrow.i;
-        //ridx = a->compressedrow.rindex;
-        
-        viennaclstruct->mat->set(ii, a->j, a->a, A->rmap->n, A->cmap->n, a->nz);
-        
-        // TODO: Either convert to full CSR (inefficient), or hold row indices in temporary vector (requires additional bookkeeping for matrix-vector multiplications)
-        
-        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: Compressed CSR (only nonzero rows) not yet supported");
-      } else {
-        
-        // Since PetscInt is in general different from cl_uint, we have to convert:
-        viennacl::backend::mem_handle dummy;
-        
-        viennacl::backend::typesafe_host_array<unsigned int> row_buffer; row_buffer.raw_resize(dummy, A->rmap->n+1);
-        for (PetscInt i=0; i<=A->rmap->n; ++i)
-          row_buffer.set(i, (a->i)[i]);
-        
-        viennacl::backend::typesafe_host_array<unsigned int> col_buffer; col_buffer.raw_resize(dummy, a->nz);
-        for (PetscInt i=0; i<a->nz; ++i)
-          col_buffer.set(i, (a->j)[i]);
-        
-        viennaclstruct->mat->set(row_buffer.get(), col_buffer.get(), a->a, A->rmap->n, A->cmap->n, a->nz);
+        viennaclstruct->mat = new ViennaCLAIJMatrix();
+        if (a->compressedrow.use) {
+          //m    = a->compressedrow.nrows;
+          ii   = a->compressedrow.i;
+          //ridx = a->compressedrow.rindex;
+
+          viennaclstruct->mat->set(ii, a->j, a->a, A->rmap->n, A->cmap->n, a->nz);
+
+          // TODO: Either convert to full CSR (inefficient), or hold row indices in temporary vector (requires additional bookkeeping for matrix-vector multiplications)
+
+          SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: Compressed CSR (only nonzero rows) not yet supported");
+        } else {
+
+          // Since PetscInt is in general different from cl_uint, we have to convert:
+          viennacl::backend::mem_handle dummy;
+
+          viennacl::backend::typesafe_host_array<unsigned int> row_buffer; row_buffer.raw_resize(dummy, A->rmap->n+1);
+          for (PetscInt i=0; i<=A->rmap->n; ++i)
+            row_buffer.set(i, (a->i)[i]);
+
+          viennacl::backend::typesafe_host_array<unsigned int> col_buffer; col_buffer.raw_resize(dummy, a->nz);
+          for (PetscInt i=0; i<a->nz; ++i)
+            col_buffer.set(i, (a->j)[i]);
+
+          viennaclstruct->mat->set(row_buffer.get(), col_buffer.get(), a->a, A->rmap->n, A->cmap->n, a->nz);
+        }
+      } catch(char *ex) {
+        SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex);
       }
-    } catch(char *ex) {
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex);
+
+      A->valid_GPU_matrix = PETSC_VIENNACL_BOTH;
+
+      ierr = PetscLogEventEnd(MAT_ViennaCLCopyToGPU,A,0,0,0);CHKERRQ(ierr);
     }
-
-    A->valid_GPU_matrix = PETSC_VIENNACL_BOTH;
-
-    ierr = PetscLogEventEnd(MAT_ViennaCLCopyToGPU,A,0,0,0);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -117,7 +119,7 @@ PetscErrorCode MatViennaCLCopyFromGPU(Mat A, ViennaCLAIJMatrix *Agpu)
 
         /* Copy data back from GPU */
         viennacl::backend::typesafe_host_array<unsigned int> row_buffer; row_buffer.raw_resize(Agpu->handle1(), Agpu->size1() + 1);
-        
+
         // copy row array
         viennacl::backend::memory_read(Agpu->handle1(), 0, row_buffer.raw_size(), row_buffer.get());
         (a->i)[0] = row_buffer[0];
@@ -125,16 +127,16 @@ PetscErrorCode MatViennaCLCopyFromGPU(Mat A, ViennaCLAIJMatrix *Agpu)
           (a->i)[i+1] = row_buffer[i+1];
           a->imax[i]  = a->ilen[i] = a->i[i+1] - a->i[i];  //Set imax[] and ilen[] arrays at the same time as i[] for better cache reuse
         }
-        
+
         // copy column indices
         viennacl::backend::typesafe_host_array<unsigned int> col_buffer; col_buffer.raw_resize(Agpu->handle2(), Agpu->nnz());
         viennacl::backend::memory_read(Agpu->handle2(), 0, col_buffer.raw_size(), col_buffer.get());
         for (PetscInt i=0; i < (PetscInt)Agpu->nnz(); ++i)
           (a->j)[i] = col_buffer[i];
-        
+
         // copy nonzero entries directly to destination (no conversion required)
         viennacl::backend::memory_read(Agpu->handle(), 0, sizeof(PetscScalar)*Agpu->nnz(), a->a);
-        
+
         /* TODO: What about a->diag? */
       }
     } catch(char *ex) {
@@ -186,16 +188,18 @@ PetscErrorCode MatMult_SeqAIJViennaCL(Mat A,Vec xx,Vec yy)
   ViennaCLVector     *xgpu=NULL,*ygpu=NULL;
 
   PetscFunctionBegin;
-  ierr = VecViennaCLGetArrayRead(xx,&xgpu);CHKERRQ(ierr);
-  ierr = VecViennaCLGetArrayWrite(yy,&ygpu);CHKERRQ(ierr);
-  try {
-    *ygpu = viennacl::linalg::prod(*viennaclstruct->mat,*xgpu);
-  } catch (char *ex) {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex);
+  if (A->rmap->n > 0 && A->cmap->n > 0) {
+    ierr = VecViennaCLGetArrayRead(xx,&xgpu);CHKERRQ(ierr);
+    ierr = VecViennaCLGetArrayWrite(yy,&ygpu);CHKERRQ(ierr);
+    try {
+      *ygpu = viennacl::linalg::prod(*viennaclstruct->mat,*xgpu);
+    } catch (char *ex) {
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex);
+    }
+    ierr = VecViennaCLRestoreArrayRead(xx,&xgpu);CHKERRQ(ierr);
+    ierr = VecViennaCLRestoreArrayWrite(yy,&ygpu);CHKERRQ(ierr);
+    ierr = PetscLogFlops(2.0*a->nz - viennaclstruct->mat->nnz());CHKERRQ(ierr);
   }
-  ierr = VecViennaCLRestoreArrayRead(xx,&xgpu);CHKERRQ(ierr);
-  ierr = VecViennaCLRestoreArrayWrite(yy,&ygpu);CHKERRQ(ierr);
-  ierr = PetscLogFlops(2.0*a->nz - viennaclstruct->mat->nnz());CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -211,31 +215,33 @@ PetscErrorCode MatMultAdd_SeqAIJViennaCL(Mat A,Vec xx,Vec yy,Vec zz)
   ViennaCLVector     *xgpu=NULL,*ygpu=NULL,*zgpu=NULL;
 
   PetscFunctionBegin;
-  try {
-    ierr = VecViennaCLGetArrayRead(xx,&xgpu);CHKERRQ(ierr);
-    ierr = VecViennaCLGetArrayRead(yy,&ygpu);CHKERRQ(ierr);
-    ierr = VecViennaCLGetArrayWrite(zz,&zgpu);CHKERRQ(ierr);
+  if (A->rmap->n > 0 && A->cmap->n > 0) {
+    try {
+      ierr = VecViennaCLGetArrayRead(xx,&xgpu);CHKERRQ(ierr);
+      ierr = VecViennaCLGetArrayRead(yy,&ygpu);CHKERRQ(ierr);
+      ierr = VecViennaCLGetArrayWrite(zz,&zgpu);CHKERRQ(ierr);
 
-    if (a->compressedrow.use) {
-        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: Compressed CSR (only nonzero rows) not yet supported");
-    } else {
-      if (zz == xx || zz == yy) { //temporary required
-        ViennaCLVector temp = viennacl::linalg::prod(*viennaclstruct->mat, *xgpu);
-        *zgpu = *ygpu + temp;
+      if (a->compressedrow.use) {
+          SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: Compressed CSR (only nonzero rows) not yet supported");
       } else {
-        *zgpu = viennacl::linalg::prod(*viennaclstruct->mat, *xgpu);
-        *zgpu += *ygpu;
+        if (zz == xx || zz == yy) { //temporary required
+          ViennaCLVector temp = viennacl::linalg::prod(*viennaclstruct->mat, *xgpu);
+          *zgpu = *ygpu + temp;
+        } else {
+          *zgpu = viennacl::linalg::prod(*viennaclstruct->mat, *xgpu);
+          *zgpu += *ygpu;
+        }
       }
+
+      ierr = VecViennaCLRestoreArrayRead(xx,&xgpu);CHKERRQ(ierr);
+      ierr = VecViennaCLRestoreArrayRead(yy,&ygpu);CHKERRQ(ierr);
+      ierr = VecViennaCLRestoreArrayWrite(zz,&zgpu);CHKERRQ(ierr);
+
+    } catch(char *ex) {
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex);
     }
-
-    ierr = VecViennaCLRestoreArrayRead(xx,&xgpu);CHKERRQ(ierr);
-    ierr = VecViennaCLRestoreArrayRead(yy,&ygpu);CHKERRQ(ierr);
-    ierr = VecViennaCLRestoreArrayWrite(zz,&zgpu);CHKERRQ(ierr);
-
-  } catch(char *ex) {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex);
+    ierr = PetscLogFlops(2.0*a->nz);CHKERRQ(ierr);
   }
-  ierr = PetscLogFlops(2.0*a->nz);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
