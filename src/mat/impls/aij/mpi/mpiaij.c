@@ -3285,21 +3285,10 @@ PetscErrorCode  MatMPIAIJSetPreallocation_MPIAIJ(Mat B,PetscInt d_nz,const Petsc
 {
   Mat_MPIAIJ     *b;
   PetscErrorCode ierr;
-  PetscInt       i;
 
   PetscFunctionBegin;
   ierr = PetscLayoutSetUp(B->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(B->cmap);CHKERRQ(ierr);
-  if (d_nnz) {
-    for (i=0; i<B->rmap->n; i++) {
-      if (d_nnz[i] < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"d_nnz cannot be less than 0: local row %D value %D",i,d_nnz[i]);
-    }
-  }
-  if (o_nnz) {
-    for (i=0; i<B->rmap->n; i++) {
-      if (o_nnz[i] < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"o_nnz cannot be less than 0: local row %D value %D",i,o_nnz[i]);
-    }
-  }
   b = (Mat_MPIAIJ*)B->data;
 
   if (!B->preallocated) {
