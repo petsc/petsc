@@ -169,7 +169,6 @@ a_noinsert:; \
     if (b->nonew == 1) goto b_noinsert; \
     if (b->nonew == -1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero (%D, %D) into matrix", row, col); \
     MatSeqXAIJReallocateAIJ(B,b->mbs,bs2,nrow,brow,bcol,rmax,ba,bi,bj,rp,ap,bimax,b->nonew,MatScalar); \
-    CHKMEMQ; \
     N = nrow++ - 1;  \
     /* shift up all the later entries in this row */ \
     for (ii=N; ii>=_i; ii--) { \
@@ -2486,7 +2485,6 @@ PetscErrorCode MatFDColoringCreate_MPIBAIJ(Mat mat,ISColoring iscoloring,MatFDCo
     }
     ierr = VecCreateGhost(PetscObjectComm((PetscObject)mat),baij->A->rmap->n,PETSC_DETERMINE,baij->B->cmap->n,garray,&c->vscale);CHKERRQ(ierr);
     ierr = PetscFree(garray);CHKERRQ(ierr);
-    CHKMEMQ;
     ierr = PetscMalloc(c->ncolors*sizeof(PetscInt*),&c->vscaleforrow);CHKERRQ(ierr);
     for (k=0; k<c->ncolors; k++) {
       ierr = PetscMalloc((c->nrows[k]+1)*sizeof(PetscInt),&c->vscaleforrow[k]);CHKERRQ(ierr);
@@ -2536,7 +2534,6 @@ PetscErrorCode MatFDColoringCreate_MPIBAIJ(Mat mat,ISColoring iscoloring,MatFDCo
   ierr = MatRestoreColumnIJ(baij->A,0,PETSC_FALSE,PETSC_FALSE,&ncols,&A_ci,&A_cj,&done);CHKERRQ(ierr);
   ierr = MatRestoreColumnIJ(baij->B,0,PETSC_FALSE,PETSC_FALSE,&ncols,&B_ci,&B_cj,&done);CHKERRQ(ierr);
   if (map) {ierr = ISLocalToGlobalMappingRestoreIndices(map,&ltog);CHKERRQ(ierr);}
-  CHKMEMQ;
   PetscFunctionReturn(0);
 }
 
@@ -3087,7 +3084,6 @@ PETSC_EXTERN PetscErrorCode MatConvert_MPIBAIJ_MPIAdj(Mat B, MatType newtype,Mat
   PetscFunctionBegin;
   ierr  = PetscMalloc((M+1)*sizeof(PetscInt),&ii);CHKERRQ(ierr);
   ii[0] = 0;
-  CHKMEMQ;
   for (i=0; i<M; i++) {
     if ((id[i+1] - id[i]) < 0) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Indices wrong %D %D %D",i,id[i],id[i+1]);
     if ((io[i+1] - io[i]) < 0) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Indices wrong %D %D %D",i,io[i],io[i+1]);
@@ -3096,7 +3092,6 @@ PETSC_EXTERN PetscErrorCode MatConvert_MPIBAIJ_MPIAdj(Mat B, MatType newtype,Mat
     for (j=id[i]; j<id[i+1]; j++) {
       if (jd[j] == i) {ii[i+1]--;break;}
     }
-    CHKMEMQ;
   }
   ierr = PetscMalloc(ii[M]*sizeof(PetscInt),&jj);CHKERRQ(ierr);
   cnt  = 0;
@@ -3104,17 +3099,14 @@ PETSC_EXTERN PetscErrorCode MatConvert_MPIBAIJ_MPIAdj(Mat B, MatType newtype,Mat
     for (j=io[i]; j<io[i+1]; j++) {
       if (garray[jo[j]] > rstart) break;
       jj[cnt++] = garray[jo[j]];
-      CHKMEMQ;
     }
     for (k=id[i]; k<id[i+1]; k++) {
       if (jd[k] != i) {
         jj[cnt++] = rstart + jd[k];
-        CHKMEMQ;
       }
     }
     for (; j<io[i+1]; j++) {
       jj[cnt++] = garray[jo[j]];
-      CHKMEMQ;
     }
   }
   ierr = MatCreateMPIAdj(PetscObjectComm((PetscObject)B),M,B->cmap->N/B->rmap->bs,ii,jj,NULL,adj);CHKERRQ(ierr);

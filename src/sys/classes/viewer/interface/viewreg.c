@@ -198,7 +198,6 @@ PetscErrorCode  PetscViewerSetType(PetscViewer viewer,PetscViewerType type)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   PetscValidCharPointer(type,2);
-  CHKMEMQ;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,type,&match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
 

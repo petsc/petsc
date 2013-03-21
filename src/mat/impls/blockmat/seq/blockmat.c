@@ -407,7 +407,6 @@ PetscErrorCode MatLoad_BlockMat(Mat newmat, PetscViewer viewer)
     }
     amat->ilen[i] = lens[i];
   }
-  CHKMEMQ;
 
   ierr = PetscFree3(lens,ii,ilens);CHKERRQ(ierr);
   ierr = PetscFree(llens);CHKERRQ(ierr);
@@ -483,7 +482,6 @@ PetscErrorCode MatMult_BlockMat(Mat A,Vec x,Vec y)
   Mat            *aa;
 
   PetscFunctionBegin;
-  CHKMEMQ;
   /*
      Standard CSR multiply except each entry is a Mat
   */
@@ -508,7 +506,6 @@ PetscErrorCode MatMult_BlockMat(Mat A,Vec x,Vec y)
   }
   ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
   ierr = VecRestoreArray(y,&yy);CHKERRQ(ierr);
-  CHKMEMQ;
   PetscFunctionReturn(0);
 }
 
@@ -523,7 +520,6 @@ PetscErrorCode MatMult_BlockMat_Symmetric(Mat A,Vec x,Vec y)
   Mat            *aa;
 
   PetscFunctionBegin;
-  CHKMEMQ;
   /*
      Standard CSR multiply except each entry is a Mat
   */
@@ -562,7 +558,6 @@ PetscErrorCode MatMult_BlockMat_Symmetric(Mat A,Vec x,Vec y)
   }
   ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
   ierr = VecRestoreArray(y,&yy);CHKERRQ(ierr);
-  CHKMEMQ;
   PetscFunctionReturn(0);
 }
 
@@ -727,7 +722,6 @@ PetscErrorCode MatAssemblyEnd_BlockMat(Mat A,MatAssemblyType mode)
     ierr = MatAssemblyBegin(aa[i],MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(aa[i],MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
-  CHKMEMQ;
   ierr = PetscInfo4(A,"Matrix size: %D X %D; storage space: %D unneeded,%D used\n",m,A->cmap->n/A->cmap->bs,fshift,a->nz);CHKERRQ(ierr);
   ierr = PetscInfo1(A,"Number of mallocs during MatSetValues() is %D\n",a->reallocs);CHKERRQ(ierr);
   ierr = PetscInfo1(A,"Maximum nonzeros in any row is %D\n",rmax);CHKERRQ(ierr);

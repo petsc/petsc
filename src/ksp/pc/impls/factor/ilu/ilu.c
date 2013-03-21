@@ -172,7 +172,6 @@ static PetscErrorCode PCSetUp_ILU(PC pc)
   }
 
   if (ilu->inplace) {
-    CHKMEMQ;
     if (!pc->setupcalled) {
 
       /* In-place factorization only makes sense with the natural ordering,
@@ -187,7 +186,7 @@ static PetscErrorCode PCSetUp_ILU(PC pc)
     ((PC_Factor*)ilu)->info.fill          = 1.0;
     ((PC_Factor*)ilu)->info.diagonal_fill = 0.0;
 
-    ierr = MatILUFactor(pc->pmat,ilu->row,ilu->col,&((PC_Factor*)ilu)->info);CHKERRQ(ierr);CHKMEMQ;
+    ierr = MatILUFactor(pc->pmat,ilu->row,ilu->col,&((PC_Factor*)ilu)->info);CHKERRQ(ierr);CHKERRQ(ierr);
     ((PC_Factor*)ilu)->fact = pc->pmat;
   } else {
     if (!pc->setupcalled) {
@@ -230,9 +229,7 @@ static PetscErrorCode PCSetUp_ILU(PC pc)
 
       ierr = PetscLogObjectParent(pc,((PC_Factor*)ilu)->fact);CHKERRQ(ierr);
     }
-    CHKMEMQ;
     ierr = MatLUFactorNumeric(((PC_Factor*)ilu)->fact,pc->pmat,&((PC_Factor*)ilu)->info);CHKERRQ(ierr);
-    CHKMEMQ;
   }
   PetscFunctionReturn(0);
 }

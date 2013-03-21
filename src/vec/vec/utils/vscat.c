@@ -1617,7 +1617,6 @@ PetscErrorCode  VecScatterBegin(VecScatter inctx,Vec x,Vec y,InsertMode addv,Sca
   PetscValidHeaderSpecific(x,VEC_CLASSID,2);
   PetscValidHeaderSpecific(y,VEC_CLASSID,3);
   if (inctx->inuse) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE," Scatter ctx already in use");
-  CHKMEMQ;
 
 #if defined(PETSC_USE_DEBUG)
   /*
@@ -1647,7 +1646,6 @@ PetscErrorCode  VecScatterBegin(VecScatter inctx,Vec x,Vec y,InsertMode addv,Sca
     ierr = (*inctx->end)(inctx,x,y,addv,mode);CHKERRQ(ierr);
   }
   ierr = PetscLogEventBarrierEnd(VEC_ScatterBarrier,0,0,0,0,PetscObjectComm((PetscObject)inctx));CHKERRQ(ierr);
-  CHKMEMQ;
   PetscFunctionReturn(0);
 }
 
@@ -1687,13 +1685,11 @@ PetscErrorCode  VecScatterEnd(VecScatter ctx,Vec x,Vec y,InsertMode addv,Scatter
   PetscValidHeaderSpecific(y,VEC_CLASSID,3);
   ctx->inuse = PETSC_FALSE;
   if (!ctx->end) PetscFunctionReturn(0);
-  CHKMEMQ;
   if (!ctx->beginandendtogether) {
     ierr = PetscLogEventBegin(VEC_ScatterEnd,ctx,x,y,0);CHKERRQ(ierr);
     ierr = (*(ctx)->end)(ctx,x,y,addv,mode);CHKERRQ(ierr);
     ierr = PetscLogEventEnd(VEC_ScatterEnd,ctx,x,y,0);CHKERRQ(ierr);
   }
-  CHKMEMQ;
   PetscFunctionReturn(0);
 }
 

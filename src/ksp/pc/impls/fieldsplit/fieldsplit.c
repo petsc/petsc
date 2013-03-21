@@ -833,7 +833,6 @@ static PetscErrorCode PCApply_FieldSplit(PC pc,Vec x,Vec y)
   PetscInt          cnt,bs;
 
   PetscFunctionBegin;
-  CHKMEMQ;
   if (jac->type == PC_COMPOSITE_ADDITIVE) {
     if (jac->defaultsplit) {
       ierr = VecGetBlockSize(x,&bs);CHKERRQ(ierr);
@@ -887,7 +886,6 @@ static PetscErrorCode PCApply_FieldSplit(PC pc,Vec x,Vec y)
       }
     }
   } else SETERRQ1(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Unsupported or unknown composition",(int) jac->type);
-  CHKMEMQ;
   PetscFunctionReturn(0);
 }
 
@@ -908,7 +906,6 @@ static PetscErrorCode PCApplyTranspose_FieldSplit(PC pc,Vec x,Vec y)
   PetscInt          bs;
 
   PetscFunctionBegin;
-  CHKMEMQ;
   if (jac->type == PC_COMPOSITE_ADDITIVE) {
     if (jac->defaultsplit) {
       ierr = VecGetBlockSize(x,&bs);CHKERRQ(ierr);
@@ -961,7 +958,6 @@ static PetscErrorCode PCApplyTranspose_FieldSplit(PC pc,Vec x,Vec y)
       }
     }
   }
-  CHKMEMQ;
   PetscFunctionReturn(0);
 }
 

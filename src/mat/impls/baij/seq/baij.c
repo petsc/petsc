@@ -2773,7 +2773,6 @@ PetscErrorCode  MatFDColoringApply_BAIJ(Mat J,MatFDColoring coloring,Vec x1,MatS
   }
   w3 = coloring->w3;
 
-  CHKMEMQ;
   /* Compute all the local scale factors, including ghost points */
   ierr = VecGetLocalSize(x1_tmp,&N);CHKERRQ(ierr);
   ierr = VecGetArray(x1_tmp,&xx);CHKERRQ(ierr);
@@ -2785,7 +2784,6 @@ PetscErrorCode  MatFDColoringApply_BAIJ(Mat J,MatFDColoring coloring,Vec x1,MatS
     vscale_array = vscale_array - start;
     col_start    = start; col_end = N + start;
   }
-  CHKMEMQ;
   for (col=col_start; col<col_end; col++) {
     /* Loop over each local column, vscale[col] = 1./(epsilon*dx[col]) */
     if (coloring->htype[0] == 'w') {
@@ -2798,14 +2796,13 @@ PetscErrorCode  MatFDColoringApply_BAIJ(Mat J,MatFDColoring coloring,Vec x1,MatS
     else if (PetscRealPart(dx) < 0.0 && PetscAbsScalar(dx) < umin) dx = -umin;
     dx               *= epsilon;
     vscale_array[col] = (PetscScalar)1.0/dx;
-  }     CHKMEMQ;
+  }
   if (ctype == IS_COLORING_GLOBAL) vscale_array = vscale_array + start;
   ierr = VecRestoreArray(coloring->vscale,&vscale_array);CHKERRQ(ierr);
   if (ctype == IS_COLORING_GLOBAL) {
     ierr = VecGhostUpdateBegin(coloring->vscale,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecGhostUpdateEnd(coloring->vscale,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   }
-  CHKMEMQ;
   if (coloring->vscaleforrow) {
     vscaleforrow = coloring->vscaleforrow;
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Null Object: coloring->vscaleforrow");
