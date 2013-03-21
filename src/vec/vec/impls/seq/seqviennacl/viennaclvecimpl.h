@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <vector>
 #include <string>
+#include <exception>
 
 #define VIENNACL_WITH_OPENCL
 

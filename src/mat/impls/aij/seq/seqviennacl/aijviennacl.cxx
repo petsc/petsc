@@ -61,8 +61,8 @@ PetscErrorCode MatViennaCLCopyToGPU(Mat A)
 
           viennaclstruct->mat->set(row_buffer.get(), col_buffer.get(), a->a, A->rmap->n, A->cmap->n, a->nz);
         }
-      } catch(char *ex) {
-        SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex);
+      } catch(std::exception const & ex) {
+        SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex.what());
       }
 
       A->valid_GPU_matrix = PETSC_VIENNACL_BOTH;
@@ -132,8 +132,8 @@ PetscErrorCode MatViennaCLCopyFromGPU(Mat A, ViennaCLAIJMatrix *Agpu)
 
         /* TODO: What about a->diag? */
       }
-    } catch(char *ex) {
-      SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_LIB, "ViennaCL error: %s", ex);
+    } catch(std::exception const & ex) {
+      SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_LIB, "ViennaCL error: %s", ex.what());
     }
 
     /* This assembly prevents resetting the flag to PETSC_VIENNACL_CPU and recopying */
@@ -186,8 +186,8 @@ PetscErrorCode MatMult_SeqAIJViennaCL(Mat A,Vec xx,Vec yy)
     ierr = VecViennaCLGetArrayWrite(yy,&ygpu);CHKERRQ(ierr);
     try {
       *ygpu = viennacl::linalg::prod(*viennaclstruct->mat,*xgpu);
-    } catch (char *ex) {
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex);
+    } catch (std::exception const & ex) {
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex.what());
     }
     ierr = VecViennaCLRestoreArrayRead(xx,&xgpu);CHKERRQ(ierr);
     ierr = VecViennaCLRestoreArrayWrite(yy,&ygpu);CHKERRQ(ierr);
@@ -230,8 +230,8 @@ PetscErrorCode MatMultAdd_SeqAIJViennaCL(Mat A,Vec xx,Vec yy,Vec zz)
       ierr = VecViennaCLRestoreArrayRead(yy,&ygpu);CHKERRQ(ierr);
       ierr = VecViennaCLRestoreArrayWrite(zz,&zgpu);CHKERRQ(ierr);
 
-    } catch(char *ex) {
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex);
+    } catch(std::exception const & ex) {
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex.what());
     }
     ierr = PetscLogFlops(2.0*a->nz);CHKERRQ(ierr);
   }
@@ -330,8 +330,8 @@ PetscErrorCode MatDestroy_SeqAIJViennaCL(Mat A)
     if (A->valid_GPU_matrix != PETSC_VIENNACL_UNALLOCATED) delete (ViennaCLAIJMatrix*)(viennaclcontainer->mat);
     delete viennaclcontainer;
     A->valid_GPU_matrix = PETSC_VIENNACL_UNALLOCATED;
-  } catch(char *ex) {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex);
+  } catch(std::exception const & ex) {
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex.what());
   }
   /*this next line is because MatDestroy tries to PetscFree spptr if it is not zero, and PetscFree only works if the memory was allocated with PetscNew or PetscMalloc, which don't call the constructor */
   A->spptr = 0;

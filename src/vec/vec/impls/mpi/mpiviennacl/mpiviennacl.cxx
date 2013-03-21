@@ -18,8 +18,8 @@ PetscErrorCode VecDestroy_MPIViennaCL(Vec v)
       delete ((Vec_ViennaCL*)v->spptr)->GPUarray;
       delete (Vec_ViennaCL*) v->spptr;
     }
-  } catch(char * ex) {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex);
+  } catch(std::exception const & ex) {
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex.what());
   }
   ierr = VecDestroy_MPI(v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
