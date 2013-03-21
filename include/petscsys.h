@@ -1244,8 +1244,6 @@ PETSC_EXTERN PetscErrorCode PetscMemoryGetMaximumUsage(PetscLogDouble *);
 PETSC_EXTERN PetscErrorCode PetscMemorySetGetMaximumUsage(void);
 
 PETSC_EXTERN PetscErrorCode PetscInfoAllow(PetscBool ,const char []);
-PETSC_EXTERN PetscErrorCode PetscGetTime(PetscLogDouble*);
-PETSC_EXTERN PetscErrorCode PetscGetCPUTime(PetscLogDouble*);
 PETSC_EXTERN PetscErrorCode PetscSleep(PetscReal);
 
 /*

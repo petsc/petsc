@@ -34,6 +34,7 @@ T*/
      petscviewer.h - viewers               petscpc.h  - preconditioners
 */
 #include <petscksp.h>
+#include <petsctime.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -265,9 +266,9 @@ int main(int argc,char **args)
   PetscPreLoadStage("KSPSetUpSolve");
 
   /*
-     We also explicitly time this stage via PetscGetTime()
+     We also explicitly time this stage via PetscTime()
   */
-  ierr = PetscGetTime(&tsetup1);CHKERRQ(ierr);
+  ierr = PetscTime(&tsetup1);CHKERRQ(ierr);
 
   /*
      Create linear solver; set operators; set runtime options.
@@ -301,7 +302,7 @@ int main(int argc,char **args)
     */
     ierr   = KSPSetUp(ksp);CHKERRQ(ierr);
     ierr   = KSPSetUpOnBlocks(ksp);CHKERRQ(ierr);
-    ierr   = PetscGetTime(&tsetup2);CHKERRQ(ierr);
+    ierr   = PetscTime(&tsetup2);CHKERRQ(ierr);
     tsetup = tsetup2 - tsetup1;
 
     /* - - - - - - - - - - - New Stage - - - - - - - - - - - - -
@@ -311,7 +312,7 @@ int main(int argc,char **args)
     /*
      Solve linear system; we also explicitly time this stage.
     */
-    ierr = PetscGetTime(&tsolve1);CHKERRQ(ierr);
+    ierr = PetscTime(&tsolve1);CHKERRQ(ierr);
     if (trans) {
       ierr = KSPSolveTranspose(ksp,b,x);CHKERRQ(ierr);
       ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
@@ -341,7 +342,7 @@ int main(int argc,char **args)
         }
       }
     }   /* while (num_rhs--) */
-    ierr   = PetscGetTime(&tsolve2);CHKERRQ(ierr);
+    ierr   = PetscTime(&tsolve2);CHKERRQ(ierr);
     tsolve = tsolve2 - tsolve1;
 
     /* - - - - - - - - - - - New Stage - - - - - - - - - - - - -

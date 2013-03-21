@@ -4,6 +4,7 @@ Input arguments are:\n\
   -f <input_file> : file to load. For example see $PETSC_DIR/share/petsc/datafiles/matrices\n\n";
 
 #include <petscksp.h>
+#include <petsctime.h>
 #include <petsclog.h>
 
 #undef __FUNCT__
@@ -76,22 +77,22 @@ int main(int argc,char **args)
 
   PetscLogStageRegister("mystage 1",&stage1);
   PetscLogStagePush(stage1);
-  ierr   = PetscGetTime(&tsetup1);CHKERRQ(ierr);
+  ierr   = PetscTime(&tsetup1);CHKERRQ(ierr);
   ierr   = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
   ierr   = KSPSetOperators(ksp,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr   = KSPSetFromOptions(ksp);CHKERRQ(ierr);
   ierr   = KSPSetUp(ksp);CHKERRQ(ierr);
   ierr   = KSPSetUpOnBlocks(ksp);CHKERRQ(ierr);
-  ierr   = PetscGetTime(&tsetup2);CHKERRQ(ierr);
+  ierr   = PetscTime(&tsetup2);CHKERRQ(ierr);
   tsetup = tsetup2 -tsetup1;
   PetscLogStagePop();
   ierr = PetscBarrier((PetscObject)A);CHKERRQ(ierr);
 
   PetscLogStageRegister("mystage 2",&stage2);
   PetscLogStagePush(stage2);
-  ierr   = PetscGetTime(&tsolve1);CHKERRQ(ierr);
+  ierr   = PetscTime(&tsolve1);CHKERRQ(ierr);
   ierr   = KSPSolve(ksp,b,x);CHKERRQ(ierr);
-  ierr   = PetscGetTime(&tsolve2);CHKERRQ(ierr);
+  ierr   = PetscTime(&tsolve2);CHKERRQ(ierr);
   tsolve = tsolve2 - tsolve1;
   PetscLogStagePop();
 
