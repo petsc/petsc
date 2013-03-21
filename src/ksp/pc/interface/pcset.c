@@ -156,11 +156,14 @@ extern PetscErrorCode PCGetDefaultType_Private(PC,const char*[]);
    Input Parameter:
 .  pc - the preconditioner context
 
+   Options Database:
+.   -pc_use_amat true,false see PCSetUseAmat()
+
    Level: developer
 
 .keywords: PC, set, from, options, database
 
-.seealso:
+.seealso: PCSetUseAmat()
 
 @*/
 PetscErrorCode  PCSetFromOptions(PC pc)
@@ -189,6 +192,7 @@ PetscErrorCode  PCSetFromOptions(PC pc)
   }
 
   ierr = PetscOptionsGetInt(((PetscObject)pc)->prefix,"-pc_reuse",&pc->reuse,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(((PetscObject)pc)->prefix,"-pc_use_amat",&pc->useAmat,NULL);CHKERRQ(ierr);
 
   if (pc->ops->setfromoptions) {
     ierr = (*pc->ops->setfromoptions)(pc);CHKERRQ(ierr);
