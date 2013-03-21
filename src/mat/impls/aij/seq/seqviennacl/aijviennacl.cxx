@@ -27,7 +27,6 @@ PetscErrorCode MatViennaCLCopyToGPU(Mat A)
 
   Mat_SeqAIJViennaCL *viennaclstruct = (Mat_SeqAIJViennaCL*)A->spptr;
   Mat_SeqAIJ         *a              = (Mat_SeqAIJ*)A->data;
-  //PetscInt           m               = A->rmap->n,*ii,*ridx;
   PetscInt           *ii;
   PetscErrorCode     ierr;
 
@@ -38,14 +37,9 @@ PetscErrorCode MatViennaCLCopyToGPU(Mat A)
       ierr = PetscLogEventBegin(MAT_ViennaCLCopyToGPU,A,0,0,0);CHKERRQ(ierr);
 
       try {
-        //viennaclstruct->nonzerorow=0;
-        //for (PetscInt j = 0; j<m; j++) viennaclstruct->nonzerorow += (a->i[j+1] > a->i[j]);
-
         viennaclstruct->mat = new ViennaCLAIJMatrix();
         if (a->compressedrow.use) {
-          //m    = a->compressedrow.nrows;
-          ii   = a->compressedrow.i;
-          //ridx = a->compressedrow.rindex;
+          ii = a->compressedrow.i;
 
           viennaclstruct->mat->set(ii, a->j, a->a, A->rmap->n, A->cmap->n, a->nz);
 
@@ -83,7 +77,6 @@ PetscErrorCode MatViennaCLCopyToGPU(Mat A)
 #define __FUNCT__ "MatViennaCLCopyFromGPU"
 PetscErrorCode MatViennaCLCopyFromGPU(Mat A, ViennaCLAIJMatrix *Agpu)
 {
-  //Mat_SeqAIJViennaCL *viennaclstruct = (Mat_SeqAIJViennaCL*)A->spptr;
   Mat_SeqAIJ         *a              = (Mat_SeqAIJ*)A->data;
   PetscInt           m               = A->rmap->n;
   PetscErrorCode     ierr;
@@ -362,13 +355,12 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJViennaCL(Mat B)
   B->ops->multadd = MatMultAdd_SeqAIJViennaCL;
   B->spptr        = new Mat_SeqAIJViennaCL();
 
-  ((Mat_SeqAIJViennaCL*)B->spptr)->mat     = 0;
+  ((Mat_SeqAIJViennaCL*)B->spptr)->mat = 0;
 
   B->ops->assemblyend    = MatAssemblyEnd_SeqAIJViennaCL;
   B->ops->destroy        = MatDestroy_SeqAIJViennaCL;
   B->ops->getvecs        = MatGetVecs_SeqAIJViennaCL;
 
-  //ierr = PetscObjectComposeFunction((PetscObject)B,"MatViennaCLSetFormat_C", "MatViennaCLSetFormat_SeqAIJViennaCL", MatViennaCLSetFormat_SeqAIJViennaCL);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQAIJVIENNACL);CHKERRQ(ierr);
 
   B->valid_GPU_matrix = PETSC_VIENNACL_UNALLOCATED;

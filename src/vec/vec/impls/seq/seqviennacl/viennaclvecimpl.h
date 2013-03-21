@@ -51,23 +51,6 @@ struct Vec_ViennaCL {
 };
 
 
-/*
-#define CUSPARRAY cusp::array1d<PetscScalar,cusp::device_memory>
-#define CUSPARRAYCPU cusp::array1d<PetscScalar,cusp::host_memory>
-#define CUSPINTARRAYGPU cusp::array1d<PetscInt,cusp::device_memory>
-#define CUSPINTARRAYCPU cusp::array1d<PetscInt,cusp::host_memory>
-
-struct  _p_PetscViennaCLIndices {
-  CUSPINTARRAYCPU sendIndicesCPU;
-  CUSPINTARRAYGPU sendIndicesGPU;
-
-  CUSPINTARRAYCPU recvIndicesCPU;
-  CUSPINTARRAYGPU recvIndicesGPU;
-}; */
-
-
-
-
 #undef __FUNCT__
 #define __FUNCT__ "VecViennaCLGetArrayReadWrite"
 PETSC_STATIC_INLINE PetscErrorCode VecViennaCLGetArrayReadWrite(Vec v, ViennaCLVector **a)

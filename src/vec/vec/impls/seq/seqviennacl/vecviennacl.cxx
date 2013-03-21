@@ -95,38 +95,6 @@ PetscErrorCode VecViennaCLCopyToGPU(Vec v)
 }
 
 
-/* TODO
-#undef __FUNCT__
-#define __FUNCT__ "VecViennaCLCopyToGPUSome"
-static PetscErrorCode VecViennaCLCopyToGPUSome(Vec v, PetscViennaCLIndices ci)
-{
-  PetscErrorCode ierr;
-  ViennaCLARRAY      *varray;
-
-  PetscFunctionBegin;
-  ierr = VecViennaCLAllocateCheck(v);CHKERRQ(ierr);
-  if (v->valid_GPU_array == PETSC_ViennaCL_CPU) {
-    ierr = PetscLogEventBegin(VEC_ViennaCLCopyToGPUSome,v,0,0,0);CHKERRQ(ierr);
-    
-    ViennaCLVector & vec = ((Vec_ViennaCL*)v->spptr)->GPUarray;
-    Vec_Seq *s           = (Vec_Seq*)v->data;
-
-    ViennaCLINTARRAYCPU *indicesCPU=&ci->recvIndicesCPU;
-    ViennaCLINTARRAYGPU *indicesGPU=&ci->recvIndicesGPU;
-
-    viennacl::fast_copy(
-    thrust::copy(thrust::make_permutation_iterator(s->array,indicesCPU->begin()),
-                 thrust::make_permutation_iterator(s->array,indicesCPU->end()),
-                 thrust::make_permutation_iterator(varray->begin(),indicesGPU->begin()));
-
-    // Set the buffer states
-    v->valid_GPU_array = PETSC_VIENNACL_BOTH;
-    ierr = PetscLogEventEnd(VEC_ViennaCLCopyToGPUSome,v,0,0,0);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-*/
-
 
 #undef __FUNCT__
 #define __FUNCT__ "VecViennaCLCopyFromGPU"
@@ -153,41 +121,6 @@ PetscErrorCode VecViennaCLCopyFromGPU(Vec v)
   }
   PetscFunctionReturn(0);
 }
-
-#undef __FUNCT__
-#define __FUNCT__ "VecViennaCLCopyFromGPUSome"
-/* Note that this function only copies *some* of the values up from the GPU to CPU,
-   which means that we need recombine the data at some point before using any of the standard functions.
-   We could add another few flag-types to keep track of this, or treat things like VecGetArray VecRestoreArray
-   where you have to always call in pairs
-*/
-/* TODO
-PetscErrorCode VecViennaCLCopyFromGPUSome(Vec v, PetscViennaCLIndices ci)
-{
-  ViennaCLARRAY      *varray;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = VecViennaCLAllocateCheck(v);CHKERRQ(ierr);
-  ierr = VecViennaCLAllocateCheckHost(v);CHKERRQ(ierr);
-  if (v->valid_GPU_array == PETSC_ViennaCL_GPU) {
-    ierr   = PetscLogEventBegin(VEC_ViennaCLCopyFromGPUSome,v,0,0,0);CHKERRQ(ierr);
-    varray = ((Vec_ViennaCL*)v->spptr)->GPUarray;
-    Vec_Seq *s;
-    s = (Vec_Seq*)v->data;
-    ViennaCLINTARRAYCPU *indicesCPU=&ci->sendIndicesCPU;
-    ViennaCLINTARRAYGPU *indicesGPU=&ci->sendIndicesGPU;
-
-    thrust::copy(thrust::make_permutation_iterator(varray->begin(),indicesGPU->begin()),
-                 thrust::make_permutation_iterator(varray->begin(),indicesGPU->end()),
-                 thrust::make_permutation_iterator(s->array,indicesCPU->begin()));
-    
-    ierr = VecViennaCLRestoreArrayRead(v,&varray);CHKERRQ(ierr);
-    ierr = PetscLogEventEnd(VEC_ViennaCLCopyFromGPUSome,v,0,0,0);CHKERRQ(ierr);
-    v->valid_GPU_array = PETSC_ViennaCL_BOTH;
-  }
-  PetscFunctionReturn(0);
-} */
 
 
 /* Copy on CPU */
@@ -253,124 +186,6 @@ static PetscErrorCode VecResetArray_SeqViennaCL_Private(Vec vin)
   v->unplacedarray = 0;
   PetscFunctionReturn(0);
 }
-
-/* these following 3 public versions are necessary because we use ViennaCL in the regular PETSc code and these need to be called from plain C code. */
-/*
-#undef __FUNCT__
-#define __FUNCT__ "VecViennaCLAllocateCheck_Public"
-PetscErrorCode VecViennaCLAllocateCheck_Public(Vec v)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = VecViennaCLAllocateCheck(v);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "VecViennaCLCopyToGPU_Public"
-PetscErrorCode VecViennaCLCopyToGPU_Public(Vec v)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = VecViennaCLCopyToGPU(v);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-} */
-
-#undef __FUNCT__
-#define __FUNCT__ "PetscViennaCLIndicesCreate"
-/*
-    PetscViennaCLIndicesCreate - creates the data structure needed by VecViennaCLCopyToGPUSome_Public()
-
-   Input Parameters:
-+    n - the number of indices
--    indices - integer list of indices
-
-   Output Parameter:
-.    ci - the ViennaCLIndices object suitable to pass to VecViennaCLCopyToGPUSome_Public()
-
-.seealso: PetscViennaCLIndicesDestroy(), VecViennaCLCopyToGPUSome_Public()
-*/
-/*PetscErrorCode PetscViennaCLIndicesCreate(PetscInt ns,PetscInt *sendIndices,PetscInt nr,PetscInt *recvIndices,PetscViennaCLIndices *ci)
-{
-  PetscViennaCLIndices cci;
-
-  PetscFunctionBegin;
-  cci = new struct _p_PetscViennaCLIndices;
-
-  cci->sendIndicesCPU.assign(sendIndices,sendIndices+ns);
-  cci->sendIndicesGPU.assign(sendIndices,sendIndices+ns);
-
-  cci->recvIndicesCPU.assign(recvIndices,recvIndices+nr);
-  cci->recvIndicesGPU.assign(recvIndices,recvIndices+nr);
-  
-  *ci = cci;
-  PetscFunctionReturn(0);
-}*/
-
-#undef __FUNCT__
-#define __FUNCT__ "PetscViennaCLIndicesDestroy"
-/*
-    PetscViennaCLIndicesDestroy - destroys the data structure needed by VecViennaCLCopyToGPUSome_Public()
-
-   Input Parameters:
-.    ci - the ViennaCLIndices object suitable to pass to VecViennaCLCopyToGPUSome_Public()
-
-.seealso: PetscViennaCLIndicesCreate(), VecViennaCLCopyToGPUSome_Public()
-*/
-/*PetscErrorCode PetscViennaCLIndicesDestroy(PetscViennaCLIndices *ci)
-{
-  PetscFunctionBegin;
-  if (!(*ci)) PetscFunctionReturn(0);
-  try {
-    if (ci) delete *ci;
-  } catch(char *ex) {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex);
-  }
-  *ci = 0;
-  PetscFunctionReturn(0);
-} */
-
-
-
-#undef __FUNCT__
-#define __FUNCT__ "VecViennaCLCopyToGPUSome_Public"
-/*
-    VecViennaCLCopyToGPUSome_Public - Copies certain entries down to the GPU from the CPU of a vector
-
-   Input Parameters:
-+    v - the vector
--    indices - the requested indices, this should be created with ViennaCLIndicesCreate()
-
-*/
-/*PetscErrorCode VecViennaCLCopyToGPUSome_Public(Vec v, PetscViennaCLIndices ci)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = VecViennaCLCopyToGPUSome(v,ci);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-} */
-
-#undef __FUNCT__
-#define __FUNCT__ "VecViennaCLCopyFromGPUSome_Public"
-/*
-  VecViennaCLCopyFromGPUSome_Public - Copies certain entries up to the CPU from the GPU of a vector
-
-  Input Parameters:
- +    v - the vector
- -    indices - the requested indices, this should be created with ViennaCLIndicesCreate()
-*/
-/*PetscErrorCode VecViennaCLCopyFromGPUSome_Public(Vec v, PetscViennaCLIndices ci)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = VecViennaCLCopyFromGPUSome(v,ci);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-} */
-
 
 
 /*MC
