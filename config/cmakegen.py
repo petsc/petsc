@@ -116,7 +116,7 @@ def writeRoot(f):
   f.write(r'''cmake_minimum_required (VERSION 2.6.2)
 project (PETSc C)
 
-include ($ENV{PETSC_ARCH}/conf/PETScConfig.cmake)
+include (${PETSC_CMAKE_ARCH}/conf/PETScConfig.cmake)
 
 if (PETSC_HAVE_FORTRAN)
   enable_language (Fortran)

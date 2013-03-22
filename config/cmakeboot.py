@@ -135,7 +135,7 @@ class PETScMaker(script.Script):
      
    archdir = os.path.join(self.petscdir.dir, self.arch.arch)
    initial_cache_filename = os.path.join(archdir, 'initial_cache_file.cmake')  
-   cmd = [self.cmake.cmake, '--trace', '--debug-output', '-C' + str(initial_cache_filename), '-DPETSC_ARCH:FILEPATH=' + str(self.arch.arch), self.petscdir.dir] + args
+   cmd = [self.cmake.cmake, '--trace', '--debug-output', '-C' + str(initial_cache_filename), '-DPETSC_CMAKE_ARCH:STRING='+str(self.arch.arch), self.petscdir.dir] + args
    if win32fe:
      # Default on Windows is to generate Visual Studio project files, but
      # 1. the build process for those is different, need to give different build instructions
