@@ -7,7 +7,6 @@ class Configure(PETSc.package.NewPackage):
     self.download        = ['http://downloads.sourceforge.net/project/viennacl/1.4.x/ViennaCL-1.4.1.tar.gz']
     self.downloadfilename = str('ViennaCL-1.4.1')
     self.includes        = ['viennacl/forwards.h']
-    self.includedir      = ['.']
     self.cxx             = 1
     self.archIndependent = 1
     self.worksonWindows  = 1
