@@ -258,7 +258,7 @@ PetscErrorCode MatAssemblyEnd_SeqAIJViennaCL(Mat A,MatAssemblyType mode)
 #define __FUNCT__ "MatCreateSeqAIJViennaCL"
 /*@
    MatCreateSeqAIJViennaCL - Creates a sparse matrix in AIJ (compressed row) format
-   (the default parallel PETSc format).  This matrix will ultimately pushed down
+   (the default parallel PETSc format).  This matrix will ultimately be pushed down
    to GPUs and use the ViennaCL library for calculations. For good matrix
    assembly performance the user should preallocate the matrix storage by setting
    the parameter nz (or the array nnz).  By setting these parameters accurately,
@@ -295,11 +295,6 @@ PetscErrorCode MatAssemblyEnd_SeqAIJViennaCL(Mat A,MatAssemblyType mode)
    allocation.  For large problems you MUST preallocate memory or you
    will get TERRIBLE performance, see the users' manual chapter on matrices.
 
-   By default, this format uses inodes (identical nodes) when possible, to
-   improve numerical efficiency of matrix-vector products and solves. We
-   search for consecutive rows with the same nonzero structure, thereby
-   reusing matrix information to achieve increased efficiency.
-
    Level: intermediate
 
 .seealso: MatCreate(), MatCreateAIJ(), MatCreateAIJCUSP(), MatSetValues(), MatSeqAIJSetColumnIndices(), MatCreateSeqAIJWithArrays(), MatCreateAIJ()
@@ -333,7 +328,7 @@ PetscErrorCode MatDestroy_SeqAIJViennaCL(Mat A)
   } catch(std::exception const & ex) {
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex.what());
   }
-  /*this next line is because MatDestroy tries to PetscFree spptr if it is not zero, and PetscFree only works if the memory was allocated with PetscNew or PetscMalloc, which don't call the constructor */
+  /* this next line is because MatDestroy tries to PetscFree spptr if it is not zero, and PetscFree only works if the memory was allocated with PetscNew or PetscMalloc, which don't call the constructor */
   A->spptr = 0;
   ierr     = MatDestroy_SeqAIJ(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);

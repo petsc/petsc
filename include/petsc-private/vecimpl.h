@@ -147,7 +147,6 @@ PETSC_EXTERN PetscLogEvent VEC_Swap, VEC_AssemblyBegin, VEC_NormBarrier, VEC_Dot
 PETSC_EXTERN PetscLogEvent VEC_CUSPCopyToGPU, VEC_CUSPCopyFromGPU;
 PETSC_EXTERN PetscLogEvent VEC_CUSPCopyToGPUSome, VEC_CUSPCopyFromGPUSome;
 PETSC_EXTERN PetscLogEvent VEC_ViennaCLCopyToGPU,     VEC_ViennaCLCopyFromGPU;
-/*PETSC_EXTERN PetscLogEvent VEC_ViennaCLCopyToGPUSome, VEC_ViennaCLCopyFromGPUSome;*/
 
 #if defined(PETSC_HAVE_CUSP)
 PETSC_EXTERN PetscErrorCode VecCUSPAllocateCheckHost(Vec v);

@@ -369,7 +369,7 @@ PetscErrorCode VecDot_SeqViennaCL(Vec xin,Vec yin,PetscScalar *z)
 
 /*
  * Operation z[j] = dot(x, y[j])
- * 
+ *
  * We use an iterated application of dot() for each j. For small ranges of j this is still faster than an allocation of extra memory in order to use gemv().
  */
 #undef __FUNCT__
@@ -735,8 +735,6 @@ PetscErrorCode VecNorm_SeqViennaCL(Vec xin,NormType type,PetscReal *z)
 }
 
 
-/*the following few functions should be modified to actually work with the GPU so they don't force unneccesary allocation of CPU memory */
-
 #undef __FUNCT__
 #define __FUNCT__ "VecSetRandom_SeqViennaCL"
 PetscErrorCode VecSetRandom_SeqViennaCL(Vec xin,PetscRandom r)
@@ -826,8 +824,8 @@ PetscErrorCode  VecCreateSeqViennaCL(MPI_Comm comm,PetscInt n,Vec *v)
 }
 
 
-/*  VecDotNorm2 - computes the inner product of two vectors and the 2-norm squared of the second vector 
- * 
+/*  VecDotNorm2 - computes the inner product of two vectors and the 2-norm squared of the second vector
+ *
  *  Simply reuses VecDot() and VecNorm(). Performance improvement through custom kernel (kernel generator) possible.
  */
 #undef __FUNCT__
@@ -887,7 +885,7 @@ PetscErrorCode VecSetFromOptions_SeqViennaCL(Vec v)
   PetscFunctionBegin;
   ierr = PetscOptionsHead("SeqAIJCUSP options");CHKERRQ(ierr);
   ierr = PetscObjectOptionsBegin((PetscObject)v);
-  
+
   ierr = PetscOptionsHasName(NULL,"-viennacl_device_cpu",&flg);CHKERRQ(ierr);
   if (flg) {
     try {
@@ -912,7 +910,7 @@ PetscErrorCode VecSetFromOptions_SeqViennaCL(Vec v)
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex.what());
     }
   }
-  
+
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 
@@ -959,7 +957,6 @@ PETSC_EXTERN PetscErrorCode VecCreate_SeqViennaCL(Vec V)
   V->ops->resetarray      = VecResetArray_SeqViennaCL;
   V->ops->destroy         = VecDestroy_SeqViennaCL;
   V->ops->duplicate       = VecDuplicate_SeqViennaCL;
-  //V->ops->conjugate       = VecConjugate_SeqViennaCL;
 
   ierr = VecSetFromOptions_SeqViennaCL(V);CHKERRQ(ierr); /* Allows to set device type before allocating any objects */
   ierr = VecViennaCLAllocateCheck(V);CHKERRQ(ierr);
