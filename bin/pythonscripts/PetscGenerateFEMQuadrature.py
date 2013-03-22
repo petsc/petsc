@@ -19,6 +19,7 @@ from FIAT.discontinuous_lagrange import DiscontinuousLagrange
 generator  = PETSc.FEM.QuadratureGenerator()
 generator.setup()
 elements   = []
+bdElements = []
 if not (len(sys.argv)-2) % 5 == 0:
   sys.exit('Incomplete set of arguments')
 for n in range((len(sys.argv)-2) / 5):
@@ -27,12 +28,20 @@ for n in range((len(sys.argv)-2) / 5):
   components = int(sys.argv[n*5+3])
   numBlocks  = int(sys.argv[n*5+4])
   operator   = sys.argv[n*5+5]
-  if order == 0:
-    element  = DiscontinuousLagrange(default_simplex(dim), order)
+  if operator == 'boundary':
+    if order == 0:
+      element  = DiscontinuousLagrange(default_simplex(dim-1), order)
+    else:
+      element  = Lagrange(default_simplex(dim-1), order)
+    element.numComponents = components
+    bdElements.append(element)
   else:
-    element  = Lagrange(default_simplex(dim), order)
-  element.numComponents = components
-  elements.append(element)
+    if order == 0:
+      element  = DiscontinuousLagrange(default_simplex(dim), order)
+    else:
+      element  = Lagrange(default_simplex(dim), order)
+    element.numComponents = components
+    elements.append(element)
 filename = sys.argv[-1]
 generator.quadDegree = max([e.order for e in elements])
-generator.run(elements, numBlocks, operator, filename)
+generator.run(elements, bdElements, numBlocks, operator, filename)

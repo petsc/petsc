@@ -649,6 +649,193 @@ PetscErrorCode FEMIntegrateJacobianBatch(PetscInt Ne, PetscInt numFields, PetscI
   /* ierr = PetscLogEventEnd(IntegrateJacobianEvent,0,0,0,0);CHKERRQ(ierr); */
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "FEMIntegrateBdResidualBatch"
+/*C
+  FEMIntegrateBdResidualBatch - Produce the element residual vector for a batch of elements by quadrature integration
+
+  Not collective
+
+  Input Parameters:
++ Ne                   - The number of elements in the batch
+. numFields            - The number of physical fields
+. field                - The field being integrated
+. quad                 - PetscQuadrature objects for each field
+. coefficients         - The array of FEM basis coefficients for the elements
+. v0s                  - The coordinates of the initial vertex for each element (the constant part of the transform from the reference element)
+. jacobians            - The Jacobian for each element (the linear part of the transform from the reference element)
+. jacobianInverses     - The Jacobian inverse for each element (the linear part of the transform to the reference element)
+. jacobianDeterminants - The Jacobian determinant for each element
+. f0_func              - f_0 function from the first order FEM model
+- f1_func              - f_1 function from the first order FEM model
+
+  Output Parameter
+. elemVec              - the element residual vectors from each element
+
+   Calling sequence of f0_func and f1_func:
+$    void f0(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[], const PetscReal n[], PetscScalar f0[])
+
+  Note:
+$ Loop over batch of elements (e):
+$   Loop over quadrature points (q):
+$     Make u_q and gradU_q (loops over fields,Nb,Ncomp) and x_q
+$     Call f_0 and f_1
+$   Loop over element vector entries (f,fc --> i):
+$     elemVec[i] += \psi^{fc}_f(q) f0_{fc}(u, \nabla u) + \nabla\psi^{fc}_f(q) \cdot f1_{fc,df}(u, \nabla u)
+*/
+PetscErrorCode FEMIntegrateBdResidualBatch(PetscInt Ne, PetscInt numFields, PetscInt field, PetscQuadrature quad[], const PetscScalar coefficients[],
+                                           const PetscReal v0s[], const PetscReal normals[], const PetscReal jacobians[], const PetscReal jacobianInverses[], const PetscReal jacobianDeterminants[],
+                                           void (*f0_func)(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[], const PetscReal n[], PetscScalar f0[]),
+                                           void (*f1_func)(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[], const PetscReal n[], PetscScalar f1[]), PetscScalar elemVec[])
+{
+  const PetscInt debug   = 0;
+  const PetscInt dim     = SPATIAL_DIM_0;
+  const PetscInt numComponents = NUM_BASIS_COMPONENTS_TOTAL;
+  PetscInt       cOffset = 0;
+  PetscInt       eOffset = 0, e;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  /* ierr = PetscLogEventBegin(IntegrateResidualEvent,0,0,0,0);CHKERRQ(ierr); */
+  for (e = 0; e < Ne; ++e) {
+    const PetscReal  detJ = jacobianDeterminants[e];
+    const PetscReal *v0   = &v0s[e*dim];
+    const PetscReal *n    = &normals[e*dim];
+    const PetscReal *J    = &jacobians[e*dim*dim];
+    const PetscReal *invJ = &jacobianInverses[e*dim*dim];
+    const PetscInt   Nq   = quad[field].numQuadPoints;
+    PetscScalar      f0[NUM_QUADRATURE_POINTS_0*dim];
+    PetscScalar      f1[NUM_QUADRATURE_POINTS_0*dim*dim];
+    PetscInt         q, f;
+
+    if (Nq > NUM_QUADRATURE_POINTS_0) SETERRQ2(PETSC_COMM_WORLD, PETSC_ERR_LIB, "Number of quadrature points %d should be <= %d", Nq, NUM_QUADRATURE_POINTS_0);
+    if (debug > 1) {
+      ierr = PetscPrintf(PETSC_COMM_SELF, "  detJ: %g\n", detJ);CHKERRQ(ierr);
+      ierr = DMPrintCellMatrix(e, "invJ", dim, dim, invJ);CHKERRQ(ierr);
+    }
+    for (q = 0; q < Nq; ++q) {
+      if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "  quad point %d\n", q);CHKERRQ(ierr);}
+      PetscScalar      u[NUM_BASIS_COMPONENTS_TOTAL];
+      PetscScalar      gradU[dim*(NUM_BASIS_COMPONENTS_TOTAL)];
+      PetscReal        x[SPATIAL_DIM_0];
+      PetscInt         fOffset     = 0;
+      PetscInt         dOffset     = cOffset;
+      const PetscInt   Ncomp       = quad[field].numComponents;
+      const PetscReal *quadPoints  = quad[field].quadPoints;
+      const PetscReal *quadWeights = quad[field].quadWeights;
+      PetscInt         d, d2, f, i;
+
+      for (d = 0; d < numComponents; ++d)       {u[d]     = 0.0;}
+      for (d = 0; d < dim*(numComponents); ++d) {gradU[d] = 0.0;}
+      for (d = 0; d < dim; ++d) {
+        x[d] = v0[d];
+        for (d2 = 0; d2 < dim; ++d2) {
+          x[d] += J[d*dim+d2]*(quadPoints[q*dim+d2] + 1.0);
+        }
+      }
+      for (f = 0; f < numFields; ++f) {
+        const PetscInt   Nb       = quad[f].numBasisFuncs;
+        const PetscInt   Ncomp    = quad[f].numComponents;
+        const PetscReal *basis    = quad[f].basis;
+        const PetscReal *basisDer = quad[f].basisDer;
+        PetscInt         b, comp;
+
+        for (b = 0; b < Nb; ++b) {
+          for (comp = 0; comp < Ncomp; ++comp) {
+            const PetscInt cidx = b*Ncomp+comp;
+            PetscScalar    realSpaceDer[dim];
+            PetscInt       d, g;
+
+            u[fOffset+comp] += coefficients[dOffset+cidx]*basis[q*Nb*Ncomp+cidx];
+            for (d = 0; d < dim; ++d) {
+              realSpaceDer[d] = 0.0;
+              for (g = 0; g < dim; ++g) {
+                realSpaceDer[d] += invJ[g*dim+d]*basisDer[(q*Nb*Ncomp+cidx)*dim+g];
+              }
+              gradU[(fOffset+comp)*dim+d] += coefficients[dOffset+cidx]*realSpaceDer[d];
+            }
+          }
+        }
+        if (debug > 1) {
+          PetscInt d;
+          for (comp = 0; comp < Ncomp; ++comp) {
+            ierr = PetscPrintf(PETSC_COMM_SELF, "    u[%d,%d]: %g\n", f, comp, u[fOffset+comp]);CHKERRQ(ierr);
+            for (d = 0; d < dim; ++d) {
+              ierr = PetscPrintf(PETSC_COMM_SELF, "    gradU[%d,%d]_%c: %g\n", f, comp, 'x'+d, gradU[(fOffset+comp)*dim+d]);CHKERRQ(ierr);
+            }
+          }
+        }
+        fOffset += Ncomp;
+        dOffset += Nb*Ncomp;
+      }
+
+      f0_func(u, gradU, x, n, &f0[q*Ncomp]);
+      for (i = 0; i < Ncomp; ++i) {
+        f0[q*Ncomp+i] *= detJ*quadWeights[q];
+      }
+      f1_func(u, gradU, x, n, &f1[q*Ncomp*dim]);
+      for (i = 0; i < Ncomp*dim; ++i) {
+        f1[q*Ncomp*dim+i] *= detJ*quadWeights[q];
+      }
+      if (debug > 1) {
+        PetscInt c,d;
+        for (c = 0; c < Ncomp; ++c) {
+          ierr = PetscPrintf(PETSC_COMM_SELF, "    f0[%d]: %g\n", c, f0[q*Ncomp+c]);CHKERRQ(ierr);
+          for (d = 0; d < dim; ++d) {
+            ierr = PetscPrintf(PETSC_COMM_SELF, "    f1[%d]_%c: %g\n", c, 'x'+d, f1[(q*Ncomp + c)*dim+d]);CHKERRQ(ierr);
+          }
+        }
+      }
+      if (q == Nq-1) {cOffset = dOffset;}
+    }
+    for (f = 0; f < numFields; ++f) {
+      const PetscInt   Nq       = quad[f].numQuadPoints;
+      const PetscInt   Nb       = quad[f].numBasisFuncs;
+      const PetscInt   Ncomp    = quad[f].numComponents;
+      const PetscReal *basis    = quad[f].basis;
+      const PetscReal *basisDer = quad[f].basisDer;
+      PetscInt         b, comp;
+
+      if (f == field) {
+      for (b = 0; b < Nb; ++b) {
+        for (comp = 0; comp < Ncomp; ++comp) {
+          const PetscInt cidx = b*Ncomp+comp;
+          PetscInt       q;
+
+          elemVec[eOffset+cidx] = 0.0;
+          for (q = 0; q < Nq; ++q) {
+            PetscScalar realSpaceDer[dim];
+            PetscInt    d, g;
+
+            elemVec[eOffset+cidx] += basis[q*Nb*Ncomp+cidx]*f0[q*Ncomp+comp];
+            for (d = 0; d < dim; ++d) {
+              realSpaceDer[d] = 0.0;
+              for (g = 0; g < dim; ++g) {
+                realSpaceDer[d] += invJ[g*dim+d]*basisDer[(q*Nb*Ncomp+cidx)*dim+g];
+              }
+              elemVec[eOffset+cidx] += realSpaceDer[d]*f1[(q*Ncomp+comp)*dim+d];
+            }
+          }
+        }
+      }
+      if (debug > 1) {
+        PetscInt b, comp;
+
+        for (b = 0; b < Nb; ++b) {
+          for (comp = 0; comp < Ncomp; ++comp) {
+            ierr = PetscPrintf(PETSC_COMM_SELF, "    elemVec[%d,%d]: %g\n", b, comp, elemVec[eOffset+b*Ncomp+comp]);CHKERRQ(ierr);
+          }
+        }
+      }
+      }
+      eOffset += Nb*Ncomp;
+    }
+  }
+  /* TODO ierr = PetscLogFlops();CHKERRQ(ierr); */
+  /* ierr = PetscLogEventEnd(IntegrateResidualEvent,0,0,0,0);CHKERRQ(ierr); */
+  PetscFunctionReturn(0);
+}
 '''
 
 class QuadratureGenerator(script.Script):
@@ -1626,7 +1813,7 @@ class QuadratureGenerator(script.Script):
     header.purpose    = CodePurpose.SKELETON
     return header
 
-  def getElementSource(self, elements, numBlocks = 1, operator = None, sourceType = 'CPU', tensor = 0):
+  def getElementSource(self, elements, numBlocks = 1, operator = None, sourceType = 'CPU', tensor = 0, isBoundary = False):
     from GenericCompiler import CompilerException
 
     self.logPrint('Generating element module', debugSection = 'codegen')
@@ -1649,8 +1836,12 @@ class QuadratureGenerator(script.Script):
           defns.extend(self.getPhysicsRoutines(operator))
           defns.extend(self.getComputationLayoutStructs(numBlocks))
         elif sourceType == 'CPU':
-          defns.extend(self.getQuadratureStructs(2*len(quadrature.pts)-1, quadrature, n, tensor))
-          defns.extend(self.getBasisStructs(name, element, quadrature, n, tensor))
+          if isBoundary:
+            defns.extend(self.getQuadratureStructs(2*len(quadrature.pts)-1, quadrature, str(n)+'_BD', tensor))
+            defns.extend(self.getBasisStructs(name, element, quadrature, str(n)+'_BD', tensor))
+          else:
+            defns.extend(self.getQuadratureStructs(2*len(quadrature.pts)-1, quadrature, n, tensor))
+            defns.extend(self.getBasisStructs(name, element, quadrature, n, tensor))
           #defns.extend(self.getIntegratorPoints(n, element))
           #defns.extend(self.getIntegratorSetup(n, element))
           #defns.extend(self.getIntegratorSetup(n, element, True))
@@ -1661,7 +1852,8 @@ class QuadratureGenerator(script.Script):
           n += element.value_shape()[0]
         else:
           n += 1
-      defns.extend(self.getAggregateBasisStructs(elements))
+      if not isBoundary:
+        defns.extend(self.getAggregateBasisStructs(elements))
       #defns.extend(self.getQuadratureSetup())
       #defns.extend(self.getElementIntegrals())
     except CompilerException, e:
@@ -1693,7 +1885,7 @@ class QuadratureGenerator(script.Script):
         print e
     return
 
-  def run(self, elements, numBlocks, operator, filename = ''):
+  def run(self, elements, bdElements, numBlocks, operator, filename = ''):
     import os
     if elements is None:
       from FIAT.reference_element import default_simplex
@@ -1704,6 +1896,8 @@ class QuadratureGenerator(script.Script):
     self.outputElementSource(self.getElementSource(elements), filename, extra = femIntegrationCode)
     self.outputElementSource(self.getElementSource(elements, numBlocks, operator, sourceType = 'GPU'), os.path.splitext(filename)[0]+'_gpu'+os.path.splitext(filename)[1])
     self.outputElementSource(self.getElementSource(elements, numBlocks, operator, sourceType = 'GPU_inline'), os.path.splitext(filename)[0]+'_gpu_inline'+os.path.splitext(filename)[1])
+    if bdElements:
+      self.outputElementSource(self.getElementSource(bdElements, isBoundary = True), os.path.splitext(filename)[0]+'_bd'+os.path.splitext(filename)[1])
     return
 
   def runTensorProduct(self, dim, elements, numBlocks, operator, filename = ''):
