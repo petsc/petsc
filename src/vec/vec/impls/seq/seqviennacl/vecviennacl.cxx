@@ -205,8 +205,9 @@ M*/
 #define __FUNCT__ "VecAYPX_SeqViennaCL"
 PetscErrorCode VecAYPX_SeqViennaCL(Vec yin, PetscScalar alpha, Vec xin)
 {
-  ViennaCLVector *xgpu,*ygpu;
-  PetscErrorCode ierr;
+  const ViennaCLVector  *xgpu;
+  ViennaCLVector        *ygpu;
+  PetscErrorCode        ierr;
 
   PetscFunctionBegin;
   if (alpha != 0.0 && xin->map->n > 0) {
@@ -229,8 +230,9 @@ PetscErrorCode VecAYPX_SeqViennaCL(Vec yin, PetscScalar alpha, Vec xin)
 #define __FUNCT__ "VecAXPY_SeqViennaCL"
 PetscErrorCode VecAXPY_SeqViennaCL(Vec yin,PetscScalar alpha,Vec xin)
 {
-  ViennaCLVector *xgpu,*ygpu;
-  PetscErrorCode ierr;
+  const ViennaCLVector  *xgpu;
+  ViennaCLVector        *ygpu;
+  PetscErrorCode        ierr;
 
   PetscFunctionBegin;
   if (alpha != 0.0 && xin->map->n > 0) {
@@ -253,8 +255,9 @@ PetscErrorCode VecAXPY_SeqViennaCL(Vec yin,PetscScalar alpha,Vec xin)
 #define __FUNCT__ "VecPointwiseDivide_SeqViennaCL"
 PetscErrorCode VecPointwiseDivide_SeqViennaCL(Vec win, Vec xin, Vec yin)
 {
-  ViennaCLVector *xgpu,*ygpu,*wgpu;
-  PetscErrorCode ierr;
+  const ViennaCLVector  *xgpu,*ygpu;
+  ViennaCLVector        *wgpu;
+  PetscErrorCode        ierr;
 
   PetscFunctionBegin;
   if (xin->map->n > 0) {
@@ -279,8 +282,9 @@ PetscErrorCode VecPointwiseDivide_SeqViennaCL(Vec win, Vec xin, Vec yin)
 #define __FUNCT__ "VecWAXPY_SeqViennaCL"
 PetscErrorCode VecWAXPY_SeqViennaCL(Vec win,PetscScalar alpha,Vec xin, Vec yin)
 {
-  ViennaCLVector *xgpu,*ygpu,*wgpu;
-  PetscErrorCode ierr;
+  const ViennaCLVector  *xgpu,*ygpu;
+  ViennaCLVector        *wgpu;
+  PetscErrorCode        ierr;
 
   PetscFunctionBegin;
   if (alpha == 0.0 && xin->map->n > 0) {
@@ -344,8 +348,8 @@ PetscErrorCode VecMAXPY_SeqViennaCL(Vec xin, PetscInt nv,const PetscScalar *alph
 #define __FUNCT__ "VecDot_SeqViennaCL"
 PetscErrorCode VecDot_SeqViennaCL(Vec xin,Vec yin,PetscScalar *z)
 {
-  ViennaCLVector *xgpu,*ygpu;
-  PetscErrorCode ierr;
+  const ViennaCLVector  *xgpu,*ygpu;
+  PetscErrorCode        ierr;
 
   PetscFunctionBegin;
   if (xin->map->n > 0) {
@@ -376,10 +380,10 @@ PetscErrorCode VecDot_SeqViennaCL(Vec xin,Vec yin,PetscScalar *z)
 #define __FUNCT__ "VecMDot_SeqViennaCL"
 PetscErrorCode VecMDot_SeqViennaCL(Vec xin,PetscInt nv,const Vec yin[],PetscScalar *z)
 {
-  PetscErrorCode ierr;
-  PetscInt       n = xin->map->n,i;
-  ViennaCLVector *xgpu,*ygpu;
-  Vec            *yyin = (Vec*)yin;
+  PetscErrorCode       ierr;
+  PetscInt             n = xin->map->n,i;
+  const ViennaCLVector *xgpu,*ygpu;
+  Vec                  *yyin = (Vec*)yin;
 
   PetscFunctionBegin;
   if (xin->map->n > 0) {
@@ -466,8 +470,9 @@ PetscErrorCode VecTDot_SeqViennaCL(Vec xin,Vec yin,PetscScalar *z)
 #define __FUNCT__ "VecCopy_SeqViennaCL"
 PetscErrorCode VecCopy_SeqViennaCL(Vec xin,Vec yin)
 {
-  ViennaCLVector *xgpu,*ygpu;
-  PetscErrorCode ierr;
+  const ViennaCLVector *xgpu;
+  ViennaCLVector       *ygpu;
+  PetscErrorCode       ierr;
 
   PetscFunctionBegin;
   if (xin != yin && xin->map->n > 0) {
@@ -552,9 +557,10 @@ PetscErrorCode VecSwap_SeqViennaCL(Vec xin,Vec yin)
 #define __FUNCT__ "VecAXPBY_SeqViennaCL"
 PetscErrorCode VecAXPBY_SeqViennaCL(Vec yin,PetscScalar alpha,PetscScalar beta,Vec xin)
 {
-  PetscErrorCode ierr;
-  PetscScalar    a = alpha,b = beta;
-  ViennaCLVector *xgpu,*ygpu;
+  PetscErrorCode       ierr;
+  PetscScalar          a = alpha,b = beta;
+  const ViennaCLVector *xgpu;
+  ViennaCLVector       *ygpu;
 
   PetscFunctionBegin;
   if (a == 0.0 && xin->map->n > 0) {
@@ -595,9 +601,10 @@ PetscErrorCode VecAXPBY_SeqViennaCL(Vec yin,PetscScalar alpha,PetscScalar beta,V
 #define __FUNCT__ "VecAXPBYPCZ_SeqViennaCL"
 PetscErrorCode VecAXPBYPCZ_SeqViennaCL(Vec zin,PetscScalar alpha,PetscScalar beta,PetscScalar gamma,Vec xin,Vec yin)
 {
-  PetscErrorCode ierr;
-  PetscInt       n = zin->map->n;
-  ViennaCLVector *xgpu,*ygpu,*zgpu;
+  PetscErrorCode       ierr;
+  PetscInt             n = zin->map->n;
+  const ViennaCLVector *xgpu,*ygpu;
+  ViennaCLVector       *zgpu;
 
   PetscFunctionBegin;
   ierr = VecViennaCLGetArrayRead(xin,&xgpu);CHKERRQ(ierr);
@@ -658,9 +665,10 @@ PetscErrorCode VecAXPBYPCZ_SeqViennaCL(Vec zin,PetscScalar alpha,PetscScalar bet
 #define __FUNCT__ "VecPointwiseMult_SeqViennaCL"
 PetscErrorCode VecPointwiseMult_SeqViennaCL(Vec win,Vec xin,Vec yin)
 {
-  PetscErrorCode ierr;
-  PetscInt       n = win->map->n;
-  ViennaCLVector *xgpu,*ygpu,*wgpu;
+  PetscErrorCode       ierr;
+  PetscInt             n = win->map->n;
+  const ViennaCLVector *xgpu,*ygpu;
+  ViennaCLVector       *wgpu;
 
   PetscFunctionBegin;
   if (xin->map->n > 0) {
@@ -685,10 +693,10 @@ PetscErrorCode VecPointwiseMult_SeqViennaCL(Vec win,Vec xin,Vec yin)
 #define __FUNCT__ "VecNorm_SeqViennaCL"
 PetscErrorCode VecNorm_SeqViennaCL(Vec xin,NormType type,PetscReal *z)
 {
-  PetscErrorCode    ierr;
-  PetscInt          n = xin->map->n;
-  PetscBLASInt      bn;
-  ViennaCLVector    *xgpu;
+  PetscErrorCode       ierr;
+  PetscInt             n = xin->map->n;
+  PetscBLASInt         bn;
+  const ViennaCLVector *xgpu;
 
   PetscFunctionBegin;
   if (xin->map->n > 0) {

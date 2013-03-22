@@ -75,7 +75,7 @@ PetscErrorCode MatViennaCLCopyToGPU(Mat A)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatViennaCLCopyFromGPU"
-PetscErrorCode MatViennaCLCopyFromGPU(Mat A, ViennaCLAIJMatrix *Agpu)
+PetscErrorCode MatViennaCLCopyFromGPU(Mat A, const ViennaCLAIJMatrix *Agpu)
 {
   Mat_SeqAIJ         *a              = (Mat_SeqAIJ*)A->data;
   PetscInt           m               = A->rmap->n;
@@ -175,10 +175,11 @@ PetscErrorCode MatGetVecs_SeqAIJViennaCL(Mat mat, Vec *right, Vec *left)
 #define __FUNCT__ "MatMult_SeqAIJViennaCL"
 PetscErrorCode MatMult_SeqAIJViennaCL(Mat A,Vec xx,Vec yy)
 {
-  Mat_SeqAIJ         *a = (Mat_SeqAIJ*)A->data;
-  PetscErrorCode     ierr;
-  Mat_SeqAIJViennaCL *viennaclstruct = (Mat_SeqAIJViennaCL*)A->spptr;
-  ViennaCLVector     *xgpu=NULL,*ygpu=NULL;
+  Mat_SeqAIJ           *a = (Mat_SeqAIJ*)A->data;
+  PetscErrorCode       ierr;
+  Mat_SeqAIJViennaCL   *viennaclstruct = (Mat_SeqAIJViennaCL*)A->spptr;
+  const ViennaCLVector *xgpu=NULL;
+  ViennaCLVector       *ygpu=NULL;
 
   PetscFunctionBegin;
   if (A->rmap->n > 0 && A->cmap->n > 0) {
@@ -202,10 +203,11 @@ PetscErrorCode MatMult_SeqAIJViennaCL(Mat A,Vec xx,Vec yy)
 #define __FUNCT__ "MatMultAdd_SeqAIJViennaCL"
 PetscErrorCode MatMultAdd_SeqAIJViennaCL(Mat A,Vec xx,Vec yy,Vec zz)
 {
-  Mat_SeqAIJ         *a = (Mat_SeqAIJ*)A->data;
-  PetscErrorCode     ierr;
-  Mat_SeqAIJViennaCL *viennaclstruct = (Mat_SeqAIJViennaCL*)A->spptr;
-  ViennaCLVector     *xgpu=NULL,*ygpu=NULL,*zgpu=NULL;
+  Mat_SeqAIJ           *a = (Mat_SeqAIJ*)A->data;
+  PetscErrorCode       ierr;
+  Mat_SeqAIJViennaCL   *viennaclstruct = (Mat_SeqAIJViennaCL*)A->spptr;
+  const ViennaCLVector *xgpu=NULL,*ygpu=NULL;
+  ViennaCLVector       *zgpu=NULL;
 
   PetscFunctionBegin;
   if (A->rmap->n > 0 && A->cmap->n > 0) {

@@ -80,7 +80,7 @@ PETSC_STATIC_INLINE PetscErrorCode VecViennaCLRestoreArrayReadWrite(Vec v, Vienn
 
 #undef __FUNCT__
 #define __FUNCT__ "VecViennaCLGetArrayRead"
-PETSC_STATIC_INLINE PetscErrorCode VecViennaCLGetArrayRead(Vec v, ViennaCLVector **a)
+PETSC_STATIC_INLINE PetscErrorCode VecViennaCLGetArrayRead(Vec v, const ViennaCLVector **a)
 {
   PetscErrorCode ierr;
 
@@ -93,7 +93,7 @@ PETSC_STATIC_INLINE PetscErrorCode VecViennaCLGetArrayRead(Vec v, ViennaCLVector
 
 #undef __FUNCT__
 #define __FUNCT__ "VecViennaCLRestoreArrayRead"
-PETSC_STATIC_INLINE PetscErrorCode VecViennaCLRestoreArrayRead(Vec v, ViennaCLVector **a)
+PETSC_STATIC_INLINE PetscErrorCode VecViennaCLRestoreArrayRead(Vec v, const ViennaCLVector **a)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
