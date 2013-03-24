@@ -44,7 +44,6 @@ struct _p_PC {
   PetscErrorCode (*modifysubmatrices)(PC,PetscInt,const IS[],const IS[],Mat[],void*); /* user provided routine */
   void           *modifysubmatricesP; /* context for user routine */
   void           *data;
-  PetscInt       reuse; /* flag for reusing the numerical factorization */
   PetscInt       presolvedone;  /* has PCPreSolve() already been run */
   void           *user;             /* optional user-defined context */
 };

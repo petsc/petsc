@@ -191,7 +191,6 @@ PetscErrorCode  PCSetFromOptions(PC pc)
     ierr = PCSetType(pc,def);CHKERRQ(ierr);
   }
 
-  ierr = PetscOptionsGetInt(((PetscObject)pc)->prefix,"-pc_reuse",&pc->reuse,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_use_amat","use Amat (instead of Pmat) to define preconditioner in nested inner solves","PCSetUseAmat",pc->useAmat,&pc->useAmat,NULL);CHKERRQ(ierr);
 
   if (pc->ops->setfromoptions) {
