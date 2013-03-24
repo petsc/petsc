@@ -16,8 +16,8 @@ struct _DMOps {
   PetscErrorCode (*setup)(DM);
   PetscErrorCode (*createglobalvector)(DM,Vec*);
   PetscErrorCode (*createlocalvector)(DM,Vec*);
-  PetscErrorCode (*createlocaltoglobalmapping)(DM);
-  PetscErrorCode (*createlocaltoglobalmappingblock)(DM);
+  PetscErrorCode (*getlocaltoglobalmapping)(DM);
+  PetscErrorCode (*getlocaltoglobalmappingblock)(DM);
   PetscErrorCode (*createfieldis)(DM,PetscInt*,char***,IS**);
   PetscErrorCode (*createcoordinatedm)(DM,DM*);
 
