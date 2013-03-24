@@ -230,6 +230,7 @@ PetscErrorCode PetscSegBufferExtractInPlace(PetscSegBuffer *seg,void *contig)
   PetscFunctionBegin;
   if (!(*seg)->tail) {
     *(char**)contig = (*seg)->u.array;
+    (*seg)->used = 0;
   } else {
     PetscSegBuffer s = *seg,newseg;
 
