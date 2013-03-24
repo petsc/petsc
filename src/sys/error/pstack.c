@@ -210,5 +210,23 @@ PetscErrorCode  PetscStackDestroy(void)
   PetscFunctionReturn(0);
 }
 
+#if defined(PETSC_HAVE_AMS)     /* AMS stack functions do nothing in optimized mode */
+void PetscStackAMSGrantAccess(void) {}
+void PetscStackAMSTakeAccess(void) {}
+
+PetscErrorCode PetscStackViewAMS(void)
+{
+  return 0;
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscStackAMSViewOff"
+PetscErrorCode  PetscStackAMSViewOff(void)
+{
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
+}
+#endif
+
 #endif
 
