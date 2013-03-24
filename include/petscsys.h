@@ -2407,6 +2407,8 @@ PETSC_EXTERN PetscErrorCode PetscSegBufferGet(PetscSegBuffer*,PetscInt,void*);
 PETSC_EXTERN PetscErrorCode PetscSegBufferExtractAlloc(PetscSegBuffer*,void*);
 PETSC_EXTERN PetscErrorCode PetscSegBufferExtractTo(PetscSegBuffer*,void*);
 PETSC_EXTERN PetscErrorCode PetscSegBufferExtractInPlace(PetscSegBuffer*,void*);
+PETSC_EXTERN PetscErrorCode PetscSegBufferGetSize(PetscSegBuffer,PetscInt*);
+PETSC_EXTERN PetscErrorCode PetscSegBufferUnuse(PetscSegBuffer,PetscInt);
 
 /* Reset __FUNCT__ in case the user does not define it themselves */
 #undef __FUNCT__

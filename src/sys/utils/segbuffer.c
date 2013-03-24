@@ -211,7 +211,7 @@ PetscErrorCode PetscSegBufferExtractAlloc(PetscSegBuffer *seg,void *contiguous)
 /*@C
    PetscSegBufferExtractInPlace - extract in-place contiguous representation of data and reset segmented buffer for reuse
 
-   Collective
+   Not Collective
 
    Input Arguments:
 .  seg - segmented buffer object
@@ -240,5 +240,54 @@ PetscErrorCode PetscSegBufferExtractInPlace(PetscSegBuffer *seg,void *contig)
     *seg = newseg;
     *(void**)contig = newseg->u.array;
   }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSegBufferGetSize"
+/*@C
+   PetscSegBufferGetSize - get currently used size of segmented buffer
+
+   Not Collective
+
+   Input Arguments:
+.  seg - segmented buffer object
+
+   Output Arguments:
+.  usedsize - number of used units
+
+   Level: developer
+
+.seealso: PetscSegBufferExtractAlloc(), PetscSegBufferExtractTo(), PetscSegBufferCreate(), PetscSegBufferGet()
+@*/
+PetscErrorCode PetscSegBufferGetSize(PetscSegBuffer seg,PetscInt *usedsize)
+{
+
+  PetscFunctionBegin;
+  *usedsize = seg->tailused + seg->used;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSegBufferUnuse"
+/*@C
+   PetscSegBufferUnuse - return some unused entries obtained with an overzealous PetscSegBufferGet()
+
+   Not Collective
+
+   Input Arguments:
++  seg - segmented buffer object
+-  unused - number of unused units
+
+   Level: developer
+
+.seealso: PetscSegBufferCreate(), PetscSegBufferGet()
+@*/
+PetscErrorCode PetscSegBufferUnuse(PetscSegBuffer seg,PetscInt unused)
+{
+
+  PetscFunctionBegin;
+  if (PetscUnlikely(seg->used < unused)) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Attempt to return more unused entries (%D) than previously gotten (%D)",unused,seg->used);
+  seg->used -= unused;
   PetscFunctionReturn(0);
 }
