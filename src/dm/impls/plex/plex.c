@@ -2516,15 +2516,15 @@ PetscErrorCode DMPlexCreatePartitionClosure(DM dm, PetscSection pointSection, IS
         if (!PetscBTLookupSet(bt,cpoint-pStart)) {
           PetscInt *pt;
           partSize++;
-          ierr = PetscSegBufferGet(&segpart,1,&pt);CHKERRQ(ierr);
+          ierr = PetscSegBufferGet(segpart,1,&pt);CHKERRQ(ierr);
           *pt = cpoint;
         }
       }
       ierr = DMPlexRestoreTransitiveClosure(dm, point, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
     }
     ierr = PetscSectionSetDof(*section, rank, partSize);CHKERRQ(ierr);
-    ierr = PetscSegBufferGet(&segpack,partSize,&packPoints);CHKERRQ(ierr);
-    ierr = PetscSegBufferExtractTo(&segpart,packPoints);CHKERRQ(ierr);
+    ierr = PetscSegBufferGet(segpack,partSize,&packPoints);CHKERRQ(ierr);
+    ierr = PetscSegBufferExtractTo(segpart,packPoints);CHKERRQ(ierr);
     ierr = PetscSortInt(partSize,packPoints);CHKERRQ(ierr);
     for (p=0; p<partSize; p++) {ierr = PetscBTClear(bt,packPoints[p]-pStart);CHKERRQ(ierr);}
   }
@@ -2535,7 +2535,7 @@ PetscErrorCode DMPlexCreatePartitionClosure(DM dm, PetscSection pointSection, IS
   ierr = PetscSectionGetStorageSize(*section, &newSize);CHKERRQ(ierr);
   ierr = PetscMalloc(newSize * sizeof(PetscInt), &allPoints);CHKERRQ(ierr);
 
-  ierr = PetscSegBufferExtractInPlace(&segpack,&packPoints);CHKERRQ(ierr);
+  ierr = PetscSegBufferExtractInPlace(segpack,&packPoints);CHKERRQ(ierr);
   for (rank = rStart; rank < rEnd; ++rank) {
     PetscInt numPoints, offset;
 
