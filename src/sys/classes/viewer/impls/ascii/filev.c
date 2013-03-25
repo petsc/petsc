@@ -745,7 +745,6 @@ PetscErrorCode PetscViewerGetSingleton_ASCII(PetscViewer viewer,PetscViewer *out
   vascii->sviewer = *outviewer;
 
   (*outviewer)->format  = viewer->format;
-  (*outviewer)->iformat = viewer->iformat;
 
   ierr = PetscObjectGetName((PetscObject)viewer,&name);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)(*outviewer),name);CHKERRQ(ierr);
@@ -801,7 +800,6 @@ PetscErrorCode PetscViewerGetSubcomm_ASCII(PetscViewer viewer,MPI_Comm subcomm,P
   vascii->sviewer = *outviewer;
 
   (*outviewer)->format  = viewer->format;
-  (*outviewer)->iformat = viewer->iformat;
 
   ierr = PetscObjectGetName((PetscObject)viewer,&name);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)(*outviewer),name);CHKERRQ(ierr);
@@ -871,8 +869,6 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_ASCII(PetscViewer viewer)
   vascii->mode      = FILE_MODE_WRITE;
   vascii->bviewer   = 0;
   vascii->sviewer   = 0;
-  viewer->format    = PETSC_VIEWER_DEFAULT;
-  viewer->iformat   = 0;
   vascii->tab       = 0;
   vascii->tab_store = 0;
   vascii->filename  = 0;

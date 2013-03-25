@@ -22,7 +22,7 @@ struct _PetscViewerOps {
 struct _p_PetscViewer {
   PETSCHEADER(struct _PetscViewerOps);
   PetscViewerFormat format,formats[10];
-  int               iformat;
+  int               iformat;   /* number of formats that have been pushed on formats[] stack */
   void              *data;
 };
 
