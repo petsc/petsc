@@ -2413,7 +2413,7 @@ PETSC_EXTERN PetscErrorCode PetscSegBufferUnuse(PetscSegBuffer,PetscInt);
 /* Type-safe wrapper to encourage use of PETSC_RESTRICT. Does not use PetscFunctionBegin because the error handling
  * prevents the compiler from completely erasing the stub. This is called in inner loops so it has to be as fast as
  * possible. */
-PETSC_STATIC_INLINE PetscErrorCode PetscSegBufferGetInts(PetscSegBuffer seg,PetscInt count,PetscInt *PETSC_RESTRICT *slot) {return PetscSegBufferGet(seg,count,(void*)slot);}
+PETSC_STATIC_INLINE PetscErrorCode PetscSegBufferGetInts(PetscSegBuffer seg,PetscInt count,PetscInt *PETSC_RESTRICT *slot) {return PetscSegBufferGet(seg,count,(void**)slot);}
 
 /* Reset __FUNCT__ in case the user does not define it themselves */
 #undef __FUNCT__
