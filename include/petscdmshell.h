@@ -16,5 +16,7 @@ PETSC_EXTERN PetscErrorCode DMShellSetLocalToGlobalVecScatter(DM,VecScatter*);
 PETSC_EXTERN PetscErrorCode DMShellSetCreateMatrix(DM,PetscErrorCode (*)(DM,MatType,Mat*));
 PETSC_EXTERN PetscErrorCode DMGlobalToLocalBeginDefaultShell(DM,Vec,InsertMode,Vec);
 PETSC_EXTERN PetscErrorCode DMGlobalToLocalEndDefaultShell(DM,Vec,InsertMode,Vec);
+PETSC_EXTERN PetscErrorCode DMLocalToGlobalBeginDefaultShell(DM,Vec,InsertMode,Vec);
+PETSC_EXTERN PetscErrorCode DMLocalToGlobalEndDefaultShell(DM,Vec,InsertMode,Vec);
 
 #endif

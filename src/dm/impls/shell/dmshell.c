@@ -67,6 +67,63 @@ PetscErrorCode DMGlobalToLocalEndDefaultShell(DM dm,Vec g,InsertMode mode,Vec l)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMLocalToGlobalBeginDefaultShell"
+/*@
+   DMLocalToGlobalBeginDefaultShell - Uses the LocalToGlobal VecScatter context set by the user to begin a local to global scatter
+   Collective
+
+   Input Arguments:
++  dm - shell DM
+.  l - local vector
+.  mode - InsertMode
+-  g - global vector
+
+   Level: advanced
+
+   Note:  This is not normally called directly by user code, generally user code calls DMLocalToGlobalBegin() and DMLocalToGlobalEnd(). If the user provides their own custom routines to DMShellSetLocalToGlobal() then those routines might have reason to call this function. 
+
+.seealso: DMLocalToGlobalEndDefaultShell()
+@*/
+PetscErrorCode DMLocalToGlobalBeginDefaultShell(DM dm,Vec l,InsertMode mode,Vec g)
+{
+  PetscErrorCode ierr;
+  DM_Shell       *shell = (DM_Shell*)dm->data;
+
+  PetscFunctionBegin;
+  if (!shell->ltog) SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_ARG_WRONGSTATE, "Cannot be used without first setting the scatter context via DMShellSetLocalToGlobalVecScatter()");
+  ierr = VecScatterBegin(*(shell->ltog),l,g,mode,SCATTER_FORWARD);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMLocalToGlobalEndDefaultShell"
+/*@
+   DMLocalToGlobalEndDefaultShell - Uses the LocalToGlobal VecScatter context set by the user to end a local to global scatter
+   Collective
+
+   Input Arguments:
++  dm - shell DM
+.  l - local vector
+.  mode - InsertMode
+-  g - global vector
+
+   Level: advanced
+
+.seealso: DMLocalToGlobalBeginDefaultShell()
+@*/
+PetscErrorCode DMLocalToGlobalEndDefaultShell(DM dm,Vec l,InsertMode mode,Vec g)
+{
+  PetscErrorCode ierr;
+  DM_Shell       *shell = (DM_Shell*)dm->data;
+
+  PetscFunctionBegin;
+   if (!shell->ltog) SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_ARG_WRONGSTATE, "Cannot be used without first setting the scatter context via DMShellSetLocalToGlobalVecScatter()");
+  ierr = VecScatterEnd(*(shell->ltog),l,g,mode,SCATTER_FORWARD);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
 #define __FUNCT__ "DMCreateMatrix_Shell"
 static PetscErrorCode DMCreateMatrix_Shell(DM dm,MatType mtype,Mat *J)
 {
