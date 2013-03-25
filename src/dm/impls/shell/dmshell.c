@@ -406,6 +406,30 @@ PetscErrorCode DMShellSetGlobalToLocalVecScatter(DM dm, VecScatter *gtol)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMShellSetLocalToGlobalVecScatter"
+/*@
+   DMShellSetLocalToGlobalVecScatter - Sets a VecScatter context for local to global communication
+
+   Logically Collective on DM
+
+   Input Arguments
++  dm - the shell DM
+-  ltog - the local to global VecScatter context
+
+   Level: advanced
+
+.seealso: DMShellSetLocalToGlobal()
+@*/
+PetscErrorCode DMShellSetLocalToGlobalVecScatter(DM dm, VecScatter *ltog)
+{
+  DM_Shell       *shell = (DM_Shell*)dm->data;
+
+  PetscFunctionBegin;
+  shell->ltog = ltog;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMDestroy_Shell"
 static PetscErrorCode DMDestroy_Shell(DM dm)
 {
