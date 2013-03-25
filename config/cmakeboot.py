@@ -159,7 +159,7 @@ class PETScMaker(script.Script):
    self.logPrint('Removing: %s' % os.path.join(archdir, 'CMakeFiles', version.vstring))
    shutil.rmtree(os.path.join(archdir, 'CMakeFiles', version.vstring), ignore_errors=True)
    log.write('Invoking: %s\n' % cmd)
-   output,error,retcode = self.executeShellCommand(cmd, checkCommand = noCheck, log=log, cwd=archdir,timeout=60)
+   output,error,retcode = self.executeShellCommand(cmd, checkCommand = noCheck, log=log, cwd=archdir,timeout=300)
    if retcode:
      self.logPrintBox('CMake setup incomplete (status %d), falling back to legacy build' % (retcode,))
      self.logPrint('Output: '+output+'\nError: '+error)
