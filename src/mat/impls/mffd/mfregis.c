@@ -25,8 +25,8 @@ PetscErrorCode  MatMFFDRegisterAll(const char *path)
   PetscFunctionBegin;
   MatMFFDRegisterAllCalled = PETSC_TRUE;
 
-  ierr = MatMFFDRegisterDynamic(MATMFFD_DS,path,"MatCreateMFFD_DS",MatCreateMFFD_DS);CHKERRQ(ierr);
-  ierr = MatMFFDRegisterDynamic(MATMFFD_WP,path,"MatCreateMFFD_WP",MatCreateMFFD_WP);CHKERRQ(ierr);
+  ierr = MatMFFDRegister(MATMFFD_DS,path,"MatCreateMFFD_DS",MatCreateMFFD_DS);CHKERRQ(ierr);
+  ierr = MatMFFDRegister(MATMFFD_WP,path,"MatCreateMFFD_WP",MatCreateMFFD_WP);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

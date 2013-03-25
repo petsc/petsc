@@ -128,7 +128,40 @@ PetscErrorCode  ISGetType(IS is, ISType *type)
 #undef __FUNCT__
 #define __FUNCT__ "ISRegister"
 /*@C
-  ISRegister - See ISRegisterDynamic()
+  ISRegister - Adds a new index set implementation
+
+  Not Collective
+
+  Input Parameters:
++ name        - The name of a new user-defined creation routine
+. func_name   - The name of routine to create method context
+- create_func - The creation routine itself
+
+  Notes:
+  ISRegister() may be called multiple times to add several user-defined vectors
+
+  Sample usage:
+.vb
+    ISRegister("my_is_name", "MyISCreate", MyISCreate);
+.ve
+
+  Then, your vector type can be chosen with the procedural interface via
+.vb
+    ISCreate(MPI_Comm, IS *);
+    ISSetType(IS,"my_is_name");
+.ve
+   or at runtime via the option
+.vb
+    -is_type my_is_name
+.ve
+
+  This is no ISSetFromOptions() and the current implementations do not have a way to dynamically determine type, so
+  dynamic registration of custom IS types will be of limited use to users.
+
+  Level: developer
+
+.keywords: IS, register
+.seealso: ISRegisterAll(), ISRegisterDestroy(), ISRegister()
 
   Level: advanced
 @*/
@@ -150,14 +183,14 @@ PetscErrorCode  ISRegister(const char sname[], const char path[], const char nam
 #undef __FUNCT__
 #define __FUNCT__ "ISRegisterDestroy"
 /*@C
-   ISRegisterDestroy - Frees the list of IS methods that were registered by ISRegister()/ISRegisterDynamic().
+   ISRegisterDestroy - Frees the list of IS methods that were registered by ISRegister().
 
    Not Collective
 
    Level: advanced
 
 .keywords: IS, register, destroy
-.seealso: ISRegister(), ISRegisterAll(), ISRegisterDynamic()
+.seealso: ISRegister(), ISRegisterAll(), ISRegister()
 @*/
 PetscErrorCode  ISRegisterDestroy(void)
 {

@@ -80,7 +80,7 @@ PetscErrorCode  MatSetType(Mat mat, MatType matype)
 #define __FUNCT__ "MatRegisterDestroy"
 /*@C
    MatRegisterDestroy - Frees the list of matrix types that were
-   registered by MatRegister()/MatRegisterDynamic().
+   registered by MatRegister()/MatRegister().
 
    Not Collective
 
@@ -88,7 +88,7 @@ PetscErrorCode  MatSetType(Mat mat, MatType matype)
 
 .keywords: Mat, register, destroy
 
-.seealso: MatRegister(), MatRegisterAll(), MatRegisterDynamic()
+.seealso: MatRegister(), MatRegisterAll(), MatRegister()
 @*/
 PetscErrorCode  MatRegisterDestroy(void)
 {
@@ -133,7 +133,34 @@ PetscErrorCode  MatGetType(Mat mat,MatType *type)
 #undef __FUNCT__
 #define __FUNCT__ "MatRegister"
 /*@C
-  MatRegister - See MatRegisterDynamic()
+  MatRegister -  - Adds a new matrix type
+
+   Not Collective
+
+   Input Parameters:
++  name - name of a new user-defined matrix type
+.  name_create - name of routine to create method context
+-  routine_create - routine to create method context
+
+   Notes:
+   MatRegister() may be called multiple times to add several user-defined solvers.
+
+   Sample usage:
+.vb
+   MatRegister("my_mat","MyMatCreate",MyMatCreate);
+.ve
+
+   Then, your solver can be chosen with the procedural interface via
+$     MatSetType(Mat,"my_mat")
+   or at runtime via the option
+$     -mat_type my_mat
+
+   Level: advanced
+
+.keywords: Mat, register
+
+.seealso: MatRegisterAll(), MatRegisterDestroy()
+
 
   Level: advanced
 @*/

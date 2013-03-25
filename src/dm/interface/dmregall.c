@@ -26,7 +26,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Cartesian(DM);
   Level: advanced
 
 .keywords: DM, register, all
-.seealso:  DMRegister(), DMRegisterDestroy(), DMRegisterDynamic()
+.seealso:  DMRegister(), DMRegisterDestroy(), DMRegister()
 @*/
 PetscErrorCode  DMRegisterAll(const char path[])
 {
@@ -35,17 +35,17 @@ PetscErrorCode  DMRegisterAll(const char path[])
   PetscFunctionBegin;
   DMRegisterAllCalled = PETSC_TRUE;
 
-  ierr = DMRegisterDynamic(DMDA,        path, "DMCreate_DA",        DMCreate_DA);CHKERRQ(ierr);
-  ierr = DMRegisterDynamic(DMCOMPOSITE, path, "DMCreate_Composite", DMCreate_Composite);CHKERRQ(ierr);
-  ierr = DMRegisterDynamic(DMSLICED,    path, "DMCreate_Sliced",    DMCreate_Sliced);CHKERRQ(ierr);
-  ierr = DMRegisterDynamic(DMSHELL,     path, "DMCreate_Shell",     DMCreate_Shell);CHKERRQ(ierr);
-  ierr = DMRegisterDynamic(DMADDA,      path, "DMCreate_ADDA",      DMCreate_ADDA);CHKERRQ(ierr);
-  ierr = DMRegisterDynamic(DMREDUNDANT, path, "DMCreate_Redundant", DMCreate_Redundant);CHKERRQ(ierr);
-  ierr = DMRegisterDynamic(DMPLEX,      path, "DMCreate_Plex",      DMCreate_Plex);CHKERRQ(ierr);
-  ierr = DMRegisterDynamic(DMPATCH,     path, "DMCreate_Patch",     DMCreate_Patch);CHKERRQ(ierr);
+  ierr = DMRegister(DMDA,        path, "DMCreate_DA",        DMCreate_DA);CHKERRQ(ierr);
+  ierr = DMRegister(DMCOMPOSITE, path, "DMCreate_Composite", DMCreate_Composite);CHKERRQ(ierr);
+  ierr = DMRegister(DMSLICED,    path, "DMCreate_Sliced",    DMCreate_Sliced);CHKERRQ(ierr);
+  ierr = DMRegister(DMSHELL,     path, "DMCreate_Shell",     DMCreate_Shell);CHKERRQ(ierr);
+  ierr = DMRegister(DMADDA,      path, "DMCreate_ADDA",      DMCreate_ADDA);CHKERRQ(ierr);
+  ierr = DMRegister(DMREDUNDANT, path, "DMCreate_Redundant", DMCreate_Redundant);CHKERRQ(ierr);
+  ierr = DMRegister(DMPLEX,      path, "DMCreate_Plex",      DMCreate_Plex);CHKERRQ(ierr);
+  ierr = DMRegister(DMPATCH,     path, "DMCreate_Patch",     DMCreate_Patch);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_SIEVE)
-  ierr = DMRegisterDynamic(DMMESH,      path, "DMCreate_Mesh",      DMCreate_Mesh);CHKERRQ(ierr);
-  ierr = DMRegisterDynamic(DMCARTESIAN, path, "DMCreate_Cartesian", DMCreate_Cartesian);CHKERRQ(ierr);
+  ierr = DMRegister(DMMESH,      path, "DMCreate_Mesh",      DMCreate_Mesh);CHKERRQ(ierr);
+  ierr = DMRegister(DMCARTESIAN, path, "DMCreate_Cartesian", DMCreate_Cartesian);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
 }

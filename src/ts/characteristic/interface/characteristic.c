@@ -235,7 +235,37 @@ PetscErrorCode CharacteristicSetUp(Characteristic c)
 #undef __FUNCT__
 #define __FUNCT__ "CharacteristicRegister"
 /*@C
-  CharacteristicRegister - See CharacteristicRegisterDynamic()
+  CharacteristicRegister -  Adds a solver to the method of characteristics package.
+
+   Not Collective
+
+   Input Parameters:
++  name_solver - name of a new user-defined solver
+.  path - path (either absolute or relative) the library containing this solver
+.  name_create - name of routine to create method context
+-  routine_create - routine to create method context
+
+  Sample usage:
+.vb
+    CharacteristicRegister("my_char","MyCharCreate", MyCharCreate);
+.ve
+
+  Then, your Characteristic type can be chosen with the procedural interface via
+.vb
+    CharacteristicCreate(MPI_Comm, Characteristic* &char);
+    CharacteristicSetType(char,"my_char");
+.ve
+   or at runtime via the option
+.vb
+    -characteristic_type my_char
+.ve
+
+   Notes:
+   CharacteristicRegister() may be called multiple times to add several user-defined solvers.
+
+.keywords: Characteristic, register
+
+.seealso: CharacteristicRegisterAll(), CharacteristicRegisterDestroy()
 
   Level: advanced
 @*/

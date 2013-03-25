@@ -93,6 +93,32 @@ PETSC_EXTERN PetscErrorCode MatGetOrdering_RowLength(Mat mat,MatOrderingType typ
 
 #undef __FUNCT__
 #define __FUNCT__ "MatOrderingRegister"
+/*@
+   MatOrderingRegister - Adds a new sparse matrix ordering to the matrix package.
+
+   Not Collective
+
+   Input Parameters:
++  sname - name of ordering (for example MATORDERINGND)
+.  name - name of function that creates the ordering type,a string
+-  function - function pointer that creates the ordering
+
+   Level: developer
+
+   Sample usage:
+.vb
+   MatOrderingRegister("my_order" "MyOrder",MyOrder);
+.ve
+
+   Then, your partitioner can be chosen with the procedural interface via
+$     MatOrderingSetType(part,"my_order)
+   or at runtime via the option
+$     -pc_factor_mat_ordering_type my_order
+
+.keywords: matrix, ordering, register
+
+.seealso: MatOrderingRegisterDestroy(), MatOrderingRegisterAll()
+@*/
 PetscErrorCode  MatOrderingRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(Mat,MatOrderingType,IS*,IS*))
 {
   PetscErrorCode ierr;
@@ -115,7 +141,7 @@ PetscErrorCode  MatOrderingRegister(const char sname[],const char path[],const c
 
 .keywords: matrix, register, destroy
 
-.seealso: MatOrderingRegisterDynamic(), MatOrderingRegisterAll()
+.seealso: MatOrderingRegister(), MatOrderingRegisterAll()
 @*/
 PetscErrorCode  MatOrderingRegisterDestroy(void)
 {
@@ -160,7 +186,7 @@ $      MATORDERINGQMD - Quotient Minimum Degree
    that define a reordering. This is usually not used directly, rather use the
    options PCFactorSetMatOrderingType()
 
-   The user can define additional orderings; see MatOrderingRegisterDynamic().
+   The user can define additional orderings; see MatOrderingRegister().
 
    These are generally only implemented for sequential sparse matrices.
 
@@ -173,7 +199,7 @@ $      MATORDERINGQMD - Quotient Minimum Degree
            One-way Dissection, Cholesky, Reverse Cuthill-McKee,
            Quotient Minimum Degree
 
-.seealso:   MatOrderingRegisterDynamic(), PCFactorSetMatOrderingType()
+.seealso:   MatOrderingRegister(), PCFactorSetMatOrderingType()
 @*/
 PetscErrorCode  MatGetOrdering(Mat mat,MatOrderingType type,IS *rperm,IS *cperm)
 {

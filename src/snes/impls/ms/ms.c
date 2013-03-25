@@ -115,7 +115,7 @@ PetscErrorCode SNESMSRegisterAll(void)
    Level: advanced
 
 .keywords: TSRosW, register, destroy
-.seealso: TSRosWRegister(), TSRosWRegisterAll(), TSRosWRegisterDynamic()
+.seealso: TSRosWRegister(), TSRosWRegisterAll(), TSRosWRegister()
 @*/
 PetscErrorCode SNESMSRegisterDestroy(void)
 {

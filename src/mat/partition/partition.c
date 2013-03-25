@@ -88,6 +88,32 @@ PetscBool         MatPartitioningRegisterAllCalled = PETSC_FALSE;
 
 #undef __FUNCT__
 #define __FUNCT__ "MatPartitioningRegister"
+/*@C
+   MatPartitioningRegister - Adds a new sparse matrix partitioning to the  matrix package.
+
+   Not Collective
+
+   Input Parameters:
++  sname - name of partitioning (for example MATPARTITIONINGCURRENT) or parmetis
+.  name - name of function that creates the partitioning type, a string
+-  function - function pointer that creates the partitioning type
+
+   Level: developer
+
+   Sample usage:
+.vb
+   MatPartitioningRegister("my_part","MyPartCreate",MyPartCreate);
+.ve
+
+   Then, your partitioner can be chosen with the procedural interface via
+$     MatPartitioningSetType(part,"my_part")
+   or at runtime via the option
+$     -mat_partitioning_type my_part
+
+.keywords: matrix, partitioning, register
+
+.seealso: MatPartitioningRegisterDestroy(), MatPartitioningRegisterAll()
+@*/
 PetscErrorCode  MatPartitioningRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(MatPartitioning))
 {
   PetscErrorCode ierr;
@@ -110,7 +136,7 @@ PetscErrorCode  MatPartitioningRegister(const char sname[],const char path[],con
 
 .keywords: matrix, register, destroy
 
-.seealso: MatPartitioningRegisterDynamic(), MatPartitioningRegisterAll()
+.seealso: MatPartitioningRegister(), MatPartitioningRegisterAll()
 @*/
 PetscErrorCode  MatPartitioningRegisterDestroy(void)
 {
@@ -203,11 +229,11 @@ $    -mat_partitioning_view
 
    Level: beginner
 
-   The user can define additional partitionings; see MatPartitioningRegisterDynamic().
+   The user can define additional partitionings; see MatPartitioningRegister().
 
 .keywords: matrix, get, partitioning
 
-.seealso:  MatPartitioningRegisterDynamic(), MatPartitioningCreate(),
+.seealso:  MatPartitioningRegister(), MatPartitioningCreate(),
            MatPartitioningDestroy(), MatPartitioningSetAdjacency(), ISPartitioningToNumbering(),
            ISPartitioningCount()
 @*/

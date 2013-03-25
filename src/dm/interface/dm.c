@@ -2535,9 +2535,39 @@ foundconv:
 #undef __FUNCT__
 #define __FUNCT__ "DMRegister"
 /*@C
-  DMRegister - See DMRegisterDynamic()
+  DMRegister -  Adds a new DM component implementation
+
+  Not Collective
+
+  Input Parameters:
++ name        - The name of a new user-defined creation routine
+. func_name   - The name of routine to create method context
+- create_func - The creation routine itself
+
+  Notes:
+  DMRegister() may be called multiple times to add several user-defined DMs
+
+
+  Sample usage:
+.vb
+    DMRegister("my_da","MyDMCreate", MyDMCreate);
+.ve
+
+  Then, your DM type can be chosen with the procedural interface via
+.vb
+    DMCreate(MPI_Comm, DM *);
+    DMSetType(DM,"my_da");
+.ve
+   or at runtime via the option
+.vb
+    -da_type my_da
+.ve
 
   Level: advanced
+
+.keywords: DM, register
+.seealso: DMRegisterAll(), DMRegisterDestroy(), DMRegister()
+
 @*/
 PetscErrorCode  DMRegister(const char sname[], const char path[], const char name[], PetscErrorCode (*function)(DM))
 {
@@ -2557,14 +2587,14 @@ PetscErrorCode  DMRegister(const char sname[], const char path[], const char nam
 #undef __FUNCT__
 #define __FUNCT__ "DMRegisterDestroy"
 /*@C
-   DMRegisterDestroy - Frees the list of DM methods that were registered by DMRegister()/DMRegisterDynamic().
+   DMRegisterDestroy - Frees the list of DM methods that were registered by DMRegister()/DMRegister().
 
    Not Collective
 
    Level: advanced
 
 .keywords: DM, register, destroy
-.seealso: DMRegister(), DMRegisterAll(), DMRegisterDynamic()
+.seealso: DMRegister(), DMRegisterAll(), DMRegister()
 @*/
 PetscErrorCode  DMRegisterDestroy(void)
 {

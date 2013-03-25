@@ -71,7 +71,7 @@ PetscErrorCode  DMInitializePackage(const char path[])
 #endif
 
 #if defined(PETSC_HAVE_HYPRE)
-  ierr = MatRegisterDynamic(MATHYPRESTRUCT,    path,"MatCreate_HYPREStruct", MatCreate_HYPREStruct);CHKERRQ(ierr);
+  ierr = MatRegister(MATHYPRESTRUCT,    path,"MatCreate_HYPREStruct", MatCreate_HYPREStruct);CHKERRQ(ierr);
 #endif
 
   /* Register Constructors */

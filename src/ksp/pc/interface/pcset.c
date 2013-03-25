@@ -90,7 +90,7 @@ PetscErrorCode  PCSetType(PC pc,PCType type)
 #define __FUNCT__ "PCRegisterDestroy"
 /*@
    PCRegisterDestroy - Frees the list of preconditioners that were
-   registered by PCRegisterDynamic().
+   registered by PCRegister().
 
    Not Collective
 

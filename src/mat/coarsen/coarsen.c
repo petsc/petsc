@@ -9,6 +9,32 @@ PetscBool         MatCoarsenRegisterAllCalled = PETSC_FALSE;
 
 #undef __FUNCT__
 #define __FUNCT__ "MatCoarsenRegister"
+/*@C
+   MatCoarsenRegister - Adds a new sparse matrix coarsen to the  matrix package.
+
+   Not Collective
+
+   Input Parameters:
++  sname - name of coarsen (for example MATCOARSENMIS)
+.  name - name of function that creates the coarsen type, a string
+-  function - function pointer that creates the coarsen type
+
+   Level: developer
+
+   Sample usage:
+.vb
+   MatCoarsenRegister("my_agg","MyAggCreate",MyAggCreate);
+.ve
+
+   Then, your aggregator can be chosen with the procedural interface via
+$     MatCoarsenSetType(agg,"my_agg")
+   or at runtime via the option
+$     -mat_coarsen_type my_agg
+
+.keywords: matrix, coarsen, register
+
+.seealso: MatCoarsenRegisterDestroy(), MatCoarsenRegisterAll()
+@*/
 PetscErrorCode  MatCoarsenRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(MatCoarsen))
 {
   PetscErrorCode ierr;
@@ -31,7 +57,7 @@ PetscErrorCode  MatCoarsenRegister(const char sname[],const char path[],const ch
 
 .keywords: matrix, register, destroy
 
-.seealso: MatCoarsenRegisterDynamic(), MatCoarsenRegisterAll()
+.seealso: MatCoarsenRegister(), MatCoarsenRegisterAll()
 @*/
 PetscErrorCode  MatCoarsenRegisterDestroy(void)
 {
@@ -96,11 +122,11 @@ $    -mat_coarsen_view
 
    Level: beginner
 
-   The user can define additional coarsens; see MatCoarsenRegisterDynamic().
+   The user can define additional coarsens; see MatCoarsenRegister().
 
 .keywords: matrix, get, coarsen
 
-.seealso:  MatCoarsenRegisterDynamic(), MatCoarsenCreate(),
+.seealso:  MatCoarsenRegister(), MatCoarsenCreate(),
            MatCoarsenDestroy(), MatCoarsenSetAdjacency(), ISCoarsenToNumbering(),
            ISCoarsenCount()
 @*/

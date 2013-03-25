@@ -29,6 +29,6 @@ PetscErrorCode CharacteristicRegisterAll(const char path[])
   PetscFunctionBegin;
   CharacteristicRegisterAllCalled = PETSC_TRUE;
 
-  ierr = CharacteristicRegisterDynamic(CHARACTERISTICDA, path, "CharacteristicCreate_DA", CharacteristicCreate_DA);CHKERRQ(ierr);
+  ierr = CharacteristicRegister(CHARACTERISTICDA, path, "CharacteristicCreate_DA", CharacteristicCreate_DA);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

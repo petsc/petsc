@@ -35,19 +35,19 @@ PetscErrorCode  PetscDrawRegisterAll(const char *path)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscDrawRegisterDynamic(PETSC_DRAW_TIKZ,     path,"PetscDrawCreate_TikZ",  PetscDrawCreate_TikZ);CHKERRQ(ierr);
+  ierr = PetscDrawRegister(PETSC_DRAW_TIKZ,     path,"PetscDrawCreate_TikZ",  PetscDrawCreate_TikZ);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_OPENGLES)
-  ierr = PetscDrawRegisterDynamic(PETSC_DRAW_OPENGLES, path,"PetscDrawCreate_OpenGLES",  PetscDrawCreate_OpenGLES);CHKERRQ(ierr);
+  ierr = PetscDrawRegister(PETSC_DRAW_OPENGLES, path,"PetscDrawCreate_OpenGLES",  PetscDrawCreate_OpenGLES);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_GLUT)
-  ierr = PetscDrawRegisterDynamic(PETSC_DRAW_GLUT,     path,"PetscDrawCreate_GLUT",  PetscDrawCreate_GLUT);CHKERRQ(ierr);
+  ierr = PetscDrawRegister(PETSC_DRAW_GLUT,     path,"PetscDrawCreate_GLUT",  PetscDrawCreate_GLUT);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_X)
-  ierr = PetscDrawRegisterDynamic(PETSC_DRAW_X,        path,"PetscDrawCreate_X",     PetscDrawCreate_X);CHKERRQ(ierr);
+  ierr = PetscDrawRegister(PETSC_DRAW_X,        path,"PetscDrawCreate_X",     PetscDrawCreate_X);CHKERRQ(ierr);
 #elif defined(PETSC_USE_WINDOWS_GRAPHICS)
-  ierr = PetscDrawRegisterDynamic(PETSC_DRAW_WIN32,    path,"PetscDrawCreate_Win32", PetscDrawCreate_Win32);CHKERRQ(ierr);
+  ierr = PetscDrawRegister(PETSC_DRAW_WIN32,    path,"PetscDrawCreate_Win32", PetscDrawCreate_Win32);CHKERRQ(ierr);
 #endif
-  ierr = PetscDrawRegisterDynamic(PETSC_DRAW_NULL,     path,"PetscDrawCreate_Null",  PetscDrawCreate_Null);CHKERRQ(ierr);
+  ierr = PetscDrawRegister(PETSC_DRAW_NULL,     path,"PetscDrawCreate_Null",  PetscDrawCreate_Null);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

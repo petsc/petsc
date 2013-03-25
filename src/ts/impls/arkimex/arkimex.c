@@ -436,7 +436,7 @@ PetscErrorCode TSARKIMEXRegisterAll(void)
    Level: advanced
 
 .keywords: TSARKIMEX, register, destroy
-.seealso: TSARKIMEXRegister(), TSARKIMEXRegisterAll(), TSARKIMEXRegisterDynamic()
+.seealso: TSARKIMEXRegister(), TSARKIMEXRegisterAll(), TSARKIMEXRegister()
 @*/
 PetscErrorCode TSARKIMEXRegisterDestroy(void)
 {

@@ -17,7 +17,7 @@ PETSC_EXTERN PetscErrorCode ISCreate_Block(IS);
   Level: advanced
 
 .keywords: IS, register, all
-.seealso:  ISRegister(), ISRegisterDestroy(), ISRegisterDynamic()
+.seealso:  ISRegister(), ISRegisterDestroy(), ISRegister()
 @*/
 PetscErrorCode  ISRegisterAll(const char path[])
 {
@@ -26,9 +26,9 @@ PetscErrorCode  ISRegisterAll(const char path[])
   PetscFunctionBegin;
   ISRegisterAllCalled = PETSC_TRUE;
 
-  ierr = ISRegisterDynamic(ISGENERAL,     path, "ISCreate_General",    ISCreate_General);CHKERRQ(ierr);
-  ierr = ISRegisterDynamic(ISSTRIDE,      path, "ISCreate_Stride",     ISCreate_Stride);CHKERRQ(ierr);
-  ierr = ISRegisterDynamic(ISBLOCK,       path, "ISCreate_Block",      ISCreate_Block);CHKERRQ(ierr);
+  ierr = ISRegister(ISGENERAL,     path, "ISCreate_General",    ISCreate_General);CHKERRQ(ierr);
+  ierr = ISRegister(ISSTRIDE,      path, "ISCreate_Stride",     ISCreate_Stride);CHKERRQ(ierr);
+  ierr = ISRegister(ISBLOCK,       path, "ISCreate_Block",      ISCreate_Block);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

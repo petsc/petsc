@@ -844,7 +844,7 @@ PetscErrorCode  KSPSetType(KSP ksp, KSPType type)
 #define __FUNCT__ "KSPRegisterDestroy"
 /*@
    KSPRegisterDestroy - Frees the list of KSP methods that were
-   registered by KSPRegisterDynamic().
+   registered by KSPRegister().
 
    Not Collective
 
@@ -852,7 +852,7 @@ PetscErrorCode  KSPSetType(KSP ksp, KSPType type)
 
 .keywords: KSP, register, destroy
 
-.seealso: KSPRegisterDynamic(), KSPRegisterAll()
+.seealso: KSPRegister(), KSPRegisterAll()
 @*/
 PetscErrorCode  KSPRegisterDestroy(void)
 {
@@ -895,9 +895,34 @@ PetscErrorCode  KSPGetType(KSP ksp,KSPType *type)
 #undef __FUNCT__
 #define __FUNCT__ "KSPRegister"
 /*@C
-  KSPRegister - See KSPRegisterDynamic()
+  KSPRegister -  Adds a method to the Krylov subspace solver package.
 
-  Level: advanced
+   Not Collective
+
+   Input Parameters:
++  name_solver - name of a new user-defined solver
+.  name_create - name of routine to create method context
+-  routine_create - routine to create method context
+
+   Notes:
+   KSPRegister() may be called multiple times to add several user-defined solvers.
+
+   Sample usage:
+.vb
+   KSPRegister("my_solver","MySolverCreate",MySolverCreate);
+.ve
+
+   Then, your solver can be chosen with the procedural interface via
+$     KSPSetType(ksp,"my_solver")
+   or at runtime via the option
+$     -ksp_type my_solver
+
+   Level: advanced
+
+.keywords: KSP, register
+
+.seealso: KSPRegisterAll(), KSPRegisterDestroy()
+
 @*/
 PetscErrorCode  KSPRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(KSP))
 {

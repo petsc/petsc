@@ -302,7 +302,7 @@ PetscErrorCode  PFView(PF pf,PetscViewer viewer)
 
    Synopsis:
    #include "petscpf.h"
-   PetscErrorCode PFRegisterDynamic(char *name_solver,char *path,char *name_create,PetscErrorCode (*routine_create)(PF))
+   PetscErrorCode PFRegister(char *name_solver,char *path,char *name_create,PetscErrorCode (*routine_create)(PF))
 
    Not collective
 
@@ -313,14 +313,14 @@ PetscErrorCode  PFView(PF pf,PetscViewer viewer)
 -  routine_create - routine to create method context
 
    Notes:
-   PFRegisterDynamic() may be called multiple times to add several user-defined functions
+   PFRegister() may be called multiple times to add several user-defined functions
 
    If dynamic libraries are used, then the fourth input argument (routine_create)
    is ignored.
 
    Sample usage:
 .vb
-   PFRegisterDynamic("my_function","/home/username/my_lib/lib/libO/solaris/mylib",
+   PFRegister("my_function","/home/username/my_lib/lib/libO/solaris/mylib",
               "MyFunctionCreate",MyFunctionSetCreate);
 .ve
 
@@ -407,7 +407,7 @@ PetscErrorCode  PFGetType(PF pf,PFType *type)
 
 .keywords: PF, set, method, type
 
-.seealso: PFSet(), PFRegisterDynamic(), PFCreate(), DMDACreatePF()
+.seealso: PFSet(), PFRegister(), PFCreate(), DMDACreatePF()
 
 @*/
 PetscErrorCode  PFSetType(PF pf,PFType type,void *ctx)

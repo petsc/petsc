@@ -31,12 +31,12 @@ PetscErrorCode PetscThreadCommRegisterAll(const char path[])
   PetscFunctionBegin;
   PetscThreadCommRegisterAllCalled = PETSC_TRUE;
 
-  ierr = PetscThreadCommRegisterDynamic(NOTHREAD,         path,"PetscThreadCommCreate_NoThread",         PetscThreadCommCreate_NoThread);CHKERRQ(ierr);
+  ierr = PetscThreadCommRegister(NOTHREAD,         path,"PetscThreadCommCreate_NoThread",         PetscThreadCommCreate_NoThread);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_PTHREADCLASSES)
-  ierr = PetscThreadCommRegisterDynamic(PTHREAD,          path,"PetscThreadCommCreate_PThread",          PetscThreadCommCreate_PThread);CHKERRQ(ierr);
+  ierr = PetscThreadCommRegister(PTHREAD,          path,"PetscThreadCommCreate_PThread",          PetscThreadCommCreate_PThread);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_OPENMP)
-  ierr = PetscThreadCommRegisterDynamic(OPENMP,         path,"PetscThreadCommCreate_OpenMP",         PetscThreadCommCreate_OpenMP);CHKERRQ(ierr);
+  ierr = PetscThreadCommRegister(OPENMP,         path,"PetscThreadCommCreate_OpenMP",         PetscThreadCommCreate_OpenMP);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
 }

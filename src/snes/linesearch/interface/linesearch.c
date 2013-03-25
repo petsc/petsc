@@ -1625,7 +1625,7 @@ extern PetscErrorCode SNESLineSearchGetVIFunctions(SNESLineSearch linesearch, SN
 #undef __FUNCT__
 #define __FUNCT__ "SNESLineSearchRegister"
 /*@C
-  SNESLineSearchRegister - See SNESLineSearchRegisterDynamic()
+  SNESLineSearchRegister - See SNESLineSearchRegister()
 
   Level: advanced
 @*/

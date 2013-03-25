@@ -785,6 +785,39 @@ PetscErrorCode  PetscObjectQuery(PetscObject obj,const char name[],PetscObject *
   PetscFunctionReturn(0);
 }
 
+/*MC
+   PetscObjectComposeFunction - Associates a function with a given PETSc object.
+
+    Synopsis:
+    #include "petscsys.h"
+    PetscErrorCode PetscObjectComposeFunction(PetscObject obj,const char name[],const char fname[],void *ptr)
+
+   Logically Collective on PetscObject
+
+   Input Parameters:
++  obj - the PETSc object; this must be cast with a (PetscObject), for example,
+         PetscObjectCompose((PetscObject)mat,...);
+.  name - name associated with the child function
+.  fname - name of the function
+-  ptr - function pointer (or NULL if using dynamic libraries)
+
+   Level: advanced
+
+   Notes:
+   To remove a registered routine, pass in a NULL rname and fnc().
+
+   PetscObjectComposeFunctionDynamic() can be used with any PETSc object (such as
+   Mat, Vec, KSP, SNES, etc.) or any user-provided object.
+
+   Concepts: objects^composing functions
+   Concepts: composing functions
+   Concepts: functions^querying
+   Concepts: objects^querying
+   Concepts: querying objects
+
+.seealso: PetscObjectQueryFunction()
+M*/
+
 #undef __FUNCT__
 #define __FUNCT__ "PetscObjectComposeFunction_Private"
 PetscErrorCode  PetscObjectComposeFunction_Private(PetscObject obj,const char name[],const char fname[],void (*ptr)(void))

@@ -100,9 +100,39 @@ PetscErrorCode  TSGetType(TS ts, TSType *type)
 #undef __FUNCT__
 #define __FUNCT__ "TSRegister"
 /*@C
-  TSRegister - See TSRegisterDynamic()
+  TSRegister - Adds a creation method to the TS package.
+
+  Not Collective
+
+  Input Parameters:
++ name        - The name of a new user-defined creation routine
+. func_name   - The name of the creation routine
+- create_func - The creation routine itself
+
+  Notes:
+  TSRegister() may be called multiple times to add several user-defined tses.
+
+  Sample usage:
+.vb
+  TSRegister("my_ts", "MyTSCreate", MyTSCreate);
+.ve
+
+  Then, your ts type can be chosen with the procedural interface via
+.vb
+    TS ts;
+    TSCreate(MPI_Comm, &ts);
+    TSSetType(ts, "my_ts")
+.ve
+  or at runtime via the option
+.vb
+    -ts_type my_ts
+.ve
 
   Level: advanced
+
+.keywords: TS, register
+
+.seealso: TSRegisterAll(), TSRegisterDestroy()
 @*/
 PetscErrorCode  TSRegister(const char sname[], const char path[], const char name[], PetscErrorCode (*function)(TS))
 {
@@ -121,14 +151,14 @@ PetscErrorCode  TSRegister(const char sname[], const char path[], const char nam
 #undef __FUNCT__
 #define __FUNCT__ "TSRegisterDestroy"
 /*@C
-   TSRegisterDestroy - Frees the list of timestepping routines that were registered by TSRegister()/TSRegisterDynamic().
+   TSRegisterDestroy - Frees the list of timestepping routines that were registered by TSRegister()/TSRegister().
 
    Not Collective
 
    Level: advanced
 
 .keywords: TS, timestepper, register, destroy
-.seealso: TSRegister(), TSRegisterAll(), TSRegisterDynamic()
+.seealso: TSRegister(), TSRegisterAll(), TSRegister()
 @*/
 PetscErrorCode  TSRegisterDestroy(void)
 {

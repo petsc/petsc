@@ -13,9 +13,33 @@ PETSC_EXTERN PetscErrorCode TSAdaptCreate_CFL(TSAdapt);
 #undef __FUNCT__
 #define __FUNCT__ "TSAdaptRegister"
 /*@C
-   TSAdaptRegister - see TSAdaptRegisterDynamic()
+   TSAdaptRegister -  adds a TSAdapt implementation
+
+   Not Collective
+
+   Input Parameters:
++  name_scheme - name of user-defined adaptivity scheme
+.  name_create - name of routine to create method context
+-  routine_create - routine to create method context
+
+   Notes:
+   TSAdaptRegister() may be called multiple times to add several user-defined families.
+
+   Sample usage:
+.vb
+   TSAdaptRegister("my_scheme","MySchemeCreate",MySchemeCreate);
+.ve
+
+   Then, your scheme can be chosen with the procedural interface via
+$     TSAdaptSetType(ts,"my_scheme")
+   or at runtime via the option
+$     -ts_adapt_type my_scheme
 
    Level: advanced
+
+.keywords: TSAdapt, register
+
+.seealso: TSAdaptRegisterAll()
 @*/
 PetscErrorCode  TSAdaptRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(TSAdapt))
 {
@@ -46,9 +70,9 @@ PetscErrorCode  TSAdaptRegisterAll(const char path[])
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = TSAdaptRegisterDynamic(TSADAPTBASIC,path,"TSAdaptCreate_Basic",TSAdaptCreate_Basic);CHKERRQ(ierr);
-  ierr = TSAdaptRegisterDynamic(TSADAPTNONE, path,"TSAdaptCreate_None", TSAdaptCreate_None);CHKERRQ(ierr);
-  ierr = TSAdaptRegisterDynamic(TSADAPTCFL,  path,"TSAdaptCreate_CFL",  TSAdaptCreate_CFL);CHKERRQ(ierr);
+  ierr = TSAdaptRegister(TSADAPTBASIC,path,"TSAdaptCreate_Basic",TSAdaptCreate_Basic);CHKERRQ(ierr);
+  ierr = TSAdaptRegister(TSADAPTNONE, path,"TSAdaptCreate_None", TSAdaptCreate_None);CHKERRQ(ierr);
+  ierr = TSAdaptRegister(TSADAPTCFL,  path,"TSAdaptCreate_CFL",  TSAdaptCreate_CFL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -103,14 +127,14 @@ PetscErrorCode  TSAdaptInitializePackage(const char path[])
 #undef __FUNCT__
 #define __FUNCT__ "TSAdaptRegisterDestroy"
 /*@C
-   TSAdaptRegisterDestroy - Frees the list of adaptivity schemes that were registered by TSAdaptRegister()/TSAdaptRegisterDynamic().
+   TSAdaptRegisterDestroy - Frees the list of adaptivity schemes that were registered by TSAdaptRegister()/TSAdaptRegister().
 
    Not Collective
 
    Level: advanced
 
 .keywords: TSAdapt, register, destroy
-.seealso: TSAdaptRegister(), TSAdaptRegisterAll(), TSAdaptRegisterDynamic()
+.seealso: TSAdaptRegister(), TSAdaptRegisterAll(), TSAdaptRegister()
 @*/
 PetscErrorCode  TSAdaptRegisterDestroy(void)
 {

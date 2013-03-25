@@ -163,13 +163,13 @@ PetscErrorCode  PetscDrawSetType(PetscDraw draw,PetscDrawType type)
 #define __FUNCT__ "PetscDrawRegisterDestroy"
 /*@C
    PetscDrawRegisterDestroy - Frees the list of PetscDraw methods that were
-   registered by PetscDrawRegisterDynamic().
+   registered by PetscDrawRegister().
 
    Not Collective
 
    Level: developer
 
-.seealso: PetscDrawRegisterDynamic(), PetscDrawRegisterAll()
+.seealso: PetscDrawRegister(), PetscDrawRegisterAll()
 @*/
 PetscErrorCode  PetscDrawRegisterDestroy(void)
 {
@@ -207,6 +207,36 @@ PetscErrorCode  PetscDrawGetType(PetscDraw draw,PetscDrawType *type)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDrawRegister"
+/*@
+   PetscDrawRegister - Adds a method to the graphics package.
+
+   Not Collective
+
+   Input Parameters:
++  name_solver - name of a new user-defined solver
+.  name_create - name of routine to create method context
+-  routine_create - routine to create method context
+
+   Level: developer
+
+   Notes:
+   PetscDrawRegister() may be called multiple times to add several user-defined solvers.
+
+   Sample usage:
+.vb
+   PetscDrawRegister("my_draw_type", "MyDrawCreate",MyDrawCreate);
+.ve
+
+   Then, your solver can be chosen with the procedural interface via
+$     PetscDrawSetType(ksp,"my_draw_type")
+   or at runtime via the option
+$     -draw_type my_draw_type
+
+   Concepts: graphics^registering new draw classes
+   Concepts: PetscDraw^registering new draw classes
+
+.seealso: PetscDrawRegisterAll(), PetscDrawRegisterDestroy()
+@*/
 PetscErrorCode  PetscDrawRegister(const char *sname,const char *path,const char *name,PetscErrorCode (*function)(PetscDraw))
 {
   PetscErrorCode ierr;

@@ -93,9 +93,41 @@ PetscErrorCode  VecGetType(Vec vec, VecType *type)
 #undef __FUNCT__
 #define __FUNCT__ "VecRegister"
 /*@C
-  VecRegister - See VecRegisterDynamic()
+  VecRegister -  Adds a new vector component implementation
+
+  Not Collective
+
+  Input Parameters:
++ name        - The name of a new user-defined creation routine
+. func_name   - The name of routine to create method context
+- create_func - The creation routine itself
+
+  Notes:
+  VecRegister() may be called multiple times to add several user-defined vectors
+
+  Sample usage:
+.vb
+    VecRegister("my_vec","MyVectorCreate", MyVectorCreate);
+.ve
+
+  Then, your vector type can be chosen with the procedural interface via
+.vb
+    VecCreate(MPI_Comm, Vec *);
+    VecSetType(Vec,"my_vector_name");
+.ve
+   or at runtime via the option
+.vb
+    -vec_type my_vector_name
+.ve
+
+  Notes: $PETSC_ARCH occuring in pathname will be replaced with appropriate values.
+         If your function is not being put into a shared library then use VecRegister() instead
 
   Level: advanced
+
+.keywords: Vec, register
+
+.seealso: VecRegisterAll(), VecRegisterDestroy(), VecRegister()
 @*/
 PetscErrorCode  VecRegister(const char sname[], const char path[], const char name[], PetscErrorCode (*function)(Vec))
 {
@@ -115,14 +147,14 @@ PetscErrorCode  VecRegister(const char sname[], const char path[], const char na
 #undef __FUNCT__
 #define __FUNCT__ "VecRegisterDestroy"
 /*@C
-   VecRegisterDestroy - Frees the list of Vec methods that were registered by VecRegister()/VecRegisterDynamic().
+   VecRegisterDestroy - Frees the list of Vec methods that were registered by VecRegister()/VecRegister().
 
    Not Collective
 
    Level: advanced
 
 .keywords: Vec, register, destroy
-.seealso: VecRegister(), VecRegisterAll(), VecRegisterDynamic()
+.seealso: VecRegister(), VecRegisterAll(), VecRegister()
 @*/
 PetscErrorCode  VecRegisterDestroy(void)
 {

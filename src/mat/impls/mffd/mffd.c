@@ -105,7 +105,7 @@ PetscErrorCode  MatMFFDInitializePackage(const char path[])
           F'(u)a  ~=  ----------------
                               h
 
-.seealso: MatCreateSNESMF(), MatMFFDRegisterDynamic(), MatMFFDSetFunction()
+.seealso: MatCreateSNESMF(), MatMFFDRegister(), MatMFFDSetFunction()
 @*/
 PetscErrorCode  MatMFFDSetType(Mat mat,MatMFFDType ftype)
 {
@@ -173,6 +173,35 @@ PetscErrorCode  MatMFFDResetHHistory_MFFD(Mat J)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMFFDRegister"
+/*@C
+   MatMFFDRegister - Adds a method to the MatMFFD registry.
+
+   Not Collective
+
+   Input Parameters:
++  name_solver - name of a new user-defined compute-h module
+.  name_create - name of routine to create method context
+-  routine_create - routine to create method context
+
+   Level: developer
+
+   Notes:
+   MatMFFDRegister() may be called multiple times to add several user-defined solvers.
+
+   Sample usage:
+.vb
+   MatMFFDRegister("my_h","MyHCreate",MyHCreate);
+.ve
+
+   Then, your solver can be chosen with the procedural interface via
+$     MatMFFDSetType(mfctx,"my_h")
+   or at runtime via the option
+$     -snes_mf_type my_h
+
+.keywords: MatMFFD, register
+
+.seealso: MatMFFDRegisterAll(), MatMFFDRegisterDestroy()
+ @*/
 PetscErrorCode  MatMFFDRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(MatMFFD))
 {
   PetscErrorCode ierr;

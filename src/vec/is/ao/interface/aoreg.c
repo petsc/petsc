@@ -87,7 +87,7 @@ PetscErrorCode  AOGetType(AO ao, AOType *type)
 #undef __FUNCT__
 #define __FUNCT__ "AORegister"
 /*@C
-  AORegister - See AORegisterDynamic()
+  AORegister - See AORegister()
 
   Level: advanced
 @*/
@@ -109,14 +109,14 @@ PetscErrorCode  AORegister(const char sname[], const char path[], const char nam
 #undef __FUNCT__
 #define __FUNCT__ "AORegisterDestroy"
 /*@C
-   AORegisterDestroy - Frees the list of AO methods that were registered by AORegister()/AORegisterDynamic().
+   AORegisterDestroy - Frees the list of AO methods that were registered by AORegister()/AORegister().
 
    Not Collective
 
    Level: advanced
 
 .keywords: AO, register, destroy
-.seealso: AORegister(), AORegisterAll(), AORegisterDynamic()
+.seealso: AORegister(), AORegisterAll(), AORegister()
 @*/
 PetscErrorCode  AORegisterDestroy(void)
 {

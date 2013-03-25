@@ -3760,7 +3760,7 @@ PetscErrorCode  SNESSetType(SNES snes,SNESType type)
 #define __FUNCT__ "SNESRegisterDestroy"
 /*@
    SNESRegisterDestroy - Frees the list of nonlinear solvers that were
-   registered by SNESRegisterDynamic().
+   registered by SNESRegister().
 
    Not Collective
 
@@ -4054,7 +4054,35 @@ PetscErrorCode  SNESGetOptionsPrefix(SNES snes,const char *prefix[])
 #undef __FUNCT__
 #define __FUNCT__ "SNESRegister"
 /*@C
-  SNESRegister - See SNESRegisterDynamic()
+  SNESRegister - Adds a method to the nonlinear solver package.
+
+   Not collective
+
+   Input Parameters:
++  name_solver - name of a new user-defined solver
+.  name_create - name of routine to create method context
+-  routine_create - routine to create method context
+
+   Notes:
+   SNESRegister() may be called multiple times to add several user-defined solvers.
+
+   Sample usage:
+.vb
+   SNESRegister("my_solver","MySolverCreate",MySolverCreate);
+.ve
+
+   Then, your solver can be chosen with the procedural interface via
+$     SNESSetType(snes,"my_solver")
+   or at runtime via the option
+$     -snes_type my_solver
+
+   Level: advanced
+
+    Note: If your function is not being put into a shared library then use SNESRegister() instead
+
+.keywords: SNES, nonlinear, register
+
+.seealso: SNESRegisterAll(), SNESRegisterDestroy()
 
   Level: advanced
 @*/

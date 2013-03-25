@@ -182,7 +182,7 @@ static PetscFunctionList dlallhead = 0;
 
    Users who wish to register new classes for use by a particular PETSc
    component (e.g., SNES) should generally call the registration routine
-   for that particular component (e.g., SNESRegisterDynamic()) instead of
+   for that particular component (e.g., SNESRegister()) instead of
    calling PetscFunctionListAdd() directly.
 
    ${PETSC_ARCH}, ${PETSC_DIR}, ${PETSC_LIB_DIR}, or ${any environmental variable}
@@ -190,8 +190,8 @@ static PetscFunctionList dlallhead = 0;
 
    Level: developer
 
-.seealso: PetscFunctionListDestroy(), SNESRegisterDynamic(), KSPRegisterDynamic(),
-          PCRegisterDynamic(), TSRegisterDynamic(), PetscFunctionList
+.seealso: PetscFunctionListDestroy(), SNESRegister(), KSPRegister(),
+          PCRegister(), TSRegister(), PetscFunctionList
 @*/
 PetscErrorCode  PetscFunctionListAdd(MPI_Comm comm,PetscFunctionList *fl,const char name[],const char rname[],void (*fnc)(void))
 {

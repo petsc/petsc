@@ -1716,9 +1716,33 @@ PetscErrorCode  PCSetInitialGuessNonzero(PC pc,PetscBool flg)
 #undef __FUNCT__
 #define __FUNCT__ "PCRegister"
 /*@C
-  PCRegister - See PCRegisterDynamic()
+  PCRegister -  Adds a method to the preconditioner package.
 
-  Level: advanced
+   Not collective
+
+   Input Parameters:
++  name_solver - name of a new user-defined solver
+.  name_create - name of routine to create method context
+-  routine_create - routine to create method context
+
+   Notes:
+   PCRegister() may be called multiple times to add several user-defined preconditioners.
+
+   Sample usage:
+.vb
+   PCRegister("my_solver", "MySolverCreate",MySolverCreate);
+.ve
+
+   Then, your solver can be chosen with the procedural interface via
+$     PCSetType(pc,"my_solver")
+   or at runtime via the option
+$     -pc_type my_solver
+
+   Level: advanced
+
+.keywords: PC, register
+
+.seealso: PCRegisterAll(), PCRegisterDestroy()
 @*/
 PetscErrorCode  PCRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(PC))
 {

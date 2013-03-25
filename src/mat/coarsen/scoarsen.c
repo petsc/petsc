@@ -15,7 +15,7 @@ PETSC_EXTERN PetscErrorCode MatCoarsenCreate_HEM(MatCoarsen);
 
   Adding new methods:
   To add a new method to the registry. Copy this routine and
-  modify it to incorporate a call to MatCoarsenRegisterDynamic() for
+  modify it to incorporate a call to MatCoarsenRegister() for
   the new method, after the current list.
 
   Restricting the choices: To prevent all of the methods from being
@@ -26,7 +26,7 @@ PETSC_EXTERN PetscErrorCode MatCoarsenCreate_HEM(MatCoarsen);
 
  .keywords: matrix, Coarsen, register, all
 
- .seealso: MatCoarsenRegisterDynamic(), MatCoarsenRegisterDestroy()
+ .seealso: MatCoarsenRegister(), MatCoarsenRegisterDestroy()
  @*/
 PetscErrorCode  MatCoarsenRegisterAll(const char path[])
 {
@@ -35,8 +35,8 @@ PetscErrorCode  MatCoarsenRegisterAll(const char path[])
   PetscFunctionBegin;
   MatCoarsenRegisterAllCalled = PETSC_TRUE;
 
-  ierr = MatCoarsenRegisterDynamic(MATCOARSENMIS,path,"MatCoarsenCreate_MIS",MatCoarsenCreate_MIS);CHKERRQ(ierr);
-  ierr = MatCoarsenRegisterDynamic(MATCOARSENHEM,path,"MatCoarsenCreate_HEM",MatCoarsenCreate_HEM);CHKERRQ(ierr);
+  ierr = MatCoarsenRegister(MATCOARSENMIS,path,"MatCoarsenCreate_MIS",MatCoarsenCreate_MIS);CHKERRQ(ierr);
+  ierr = MatCoarsenRegister(MATCOARSENHEM,path,"MatCoarsenCreate_HEM",MatCoarsenCreate_HEM);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

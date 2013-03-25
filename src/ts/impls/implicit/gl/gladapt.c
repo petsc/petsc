@@ -25,9 +25,37 @@ PETSC_EXTERN PetscErrorCode TSGLAdaptCreate_Both(TSGLAdapt);
 #undef __FUNCT__
 #define __FUNCT__ "TSGLAdaptRegister"
 /*@C
-   TSGLAdaptRegister - see TSGLAdaptRegisterDynamic()
+   TSGLAdaptRegister -  adds a TSGLAdapt implementation
+
+   Not Collective
+
+   Input Parameters:
++  name_scheme - name of user-defined adaptivity scheme
+.  name_create - name of routine to create method context
+-  routine_create - routine to create method context
+
+   Notes:
+   TSGLAdaptRegister() may be called multiple times to add several user-defined families.
+
+   Sample usage:
+.vb
+   TSGLAdaptRegister("my_scheme","MySchemeCreate",MySchemeCreate);
+.ve
+
+   Then, your scheme can be chosen with the procedural interface via
+$     TSGLAdaptSetType(ts,"my_scheme")
+   or at runtime via the option
+$     -ts_adapt_type my_scheme
 
    Level: advanced
+
+   Notes: Environmental variables such as ${PETSC_ARCH}, ${PETSC_DIR}, ${PETSC_LIB_DIR},
+          and others of the form ${any_environmental_variable} occuring in pathname will be
+          replaced with appropriate values.
+
+.keywords: TSGLAdapt, register
+
+.seealso: TSGLAdaptRegisterAll()
 @*/
 PetscErrorCode  TSGLAdaptRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(TSGLAdapt))
 {
@@ -58,9 +86,9 @@ PetscErrorCode  TSGLAdaptRegisterAll(const char path[])
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = TSGLAdaptRegisterDynamic(TSGLADAPT_NONE,path,"TSGLAdaptCreate_None",TSGLAdaptCreate_None);CHKERRQ(ierr);
-  ierr = TSGLAdaptRegisterDynamic(TSGLADAPT_SIZE,path,"TSGLAdaptCreate_Size",TSGLAdaptCreate_Size);CHKERRQ(ierr);
-  ierr = TSGLAdaptRegisterDynamic(TSGLADAPT_BOTH,path,"TSGLAdaptCreate_Both",TSGLAdaptCreate_Both);CHKERRQ(ierr);
+  ierr = TSGLAdaptRegister(TSGLADAPT_NONE,path,"TSGLAdaptCreate_None",TSGLAdaptCreate_None);CHKERRQ(ierr);
+  ierr = TSGLAdaptRegister(TSGLADAPT_SIZE,path,"TSGLAdaptCreate_Size",TSGLAdaptCreate_Size);CHKERRQ(ierr);
+  ierr = TSGLAdaptRegister(TSGLADAPT_BOTH,path,"TSGLAdaptCreate_Both",TSGLAdaptCreate_Both);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -115,14 +143,14 @@ PetscErrorCode  TSGLAdaptInitializePackage(const char path[])
 #undef __FUNCT__
 #define __FUNCT__ "TSGLAdaptRegisterDestroy"
 /*@C
-   TSGLAdaptRegisterDestroy - Frees the list of adaptivity schemes that were registered by TSGLAdaptRegister()/TSGLAdaptRegisterDynamic().
+   TSGLAdaptRegisterDestroy - Frees the list of adaptivity schemes that were registered by TSGLAdaptRegister()/TSGLAdaptRegister().
 
    Not Collective
 
    Level: advanced
 
 .keywords: TSGLAdapt, register, destroy
-.seealso: TSGLAdaptRegister(), TSGLAdaptRegisterAll(), TSGLAdaptRegisterDynamic()
+.seealso: TSGLAdaptRegister(), TSGLAdaptRegisterAll(), TSGLAdaptRegister()
 @*/
 PetscErrorCode  TSGLAdaptRegisterDestroy(void)
 {

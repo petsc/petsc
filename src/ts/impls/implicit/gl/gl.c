@@ -684,7 +684,7 @@ PetscErrorCode  TSGLSetType(TS ts,TSGLType type)
 
    Level: intermediate
 
-.seealso: TS, TSGL, TSGLAcceptRegisterDynamic(), TSGLAdapt, set type
+.seealso: TS, TSGL, TSGLAcceptRegister(), TSGLAdapt, set type
 @*/
 PetscErrorCode  TSGLSetAcceptType(TS ts,TSGLAcceptType type)
 {
@@ -716,7 +716,7 @@ PetscErrorCode  TSGLSetAcceptType(TS ts,TSGLAcceptType type)
 
    Level: advanced
 
-.seealso: TSGLAdapt, TSGLAdaptRegisterDynamic()
+.seealso: TSGLAdapt, TSGLAdaptRegister()
 @*/
 PetscErrorCode  TSGLGetAdapt(TS ts,TSGLAdapt *adapt)
 {
@@ -1282,9 +1282,33 @@ static PetscErrorCode TSView_GL(TS ts,PetscViewer viewer)
 #undef __FUNCT__
 #define __FUNCT__ "TSGLRegister"
 /*@C
-   TSGLRegister - see TSGLRegisterDynamic()
+   TSGLRegister -  adds a TSGL implementation
+
+   Not Collective
+
+   Input Parameters:
++  name_scheme - name of user-defined general linear scheme
+.  name_create - name of routine to create method context
+-  routine_create - routine to create method context
+
+   Notes:
+   TSGLRegister() may be called multiple times to add several user-defined families.
+
+   Sample usage:
+.vb
+   TSGLRegister("my_scheme","MySchemeCreate",MySchemeCreate);
+.ve
+
+   Then, your scheme can be chosen with the procedural interface via
+$     TSGLSetType(ts,"my_scheme")
+   or at runtime via the option
+$     -ts_gl_type my_scheme
 
    Level: advanced
+
+.keywords: TSGL, register
+
+.seealso: TSGLRegisterAll()
 @*/
 PetscErrorCode  TSGLRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(TS))
 {
@@ -1300,9 +1324,37 @@ PetscErrorCode  TSGLRegister(const char sname[],const char path[],const char nam
 #undef __FUNCT__
 #define __FUNCT__ "TSGLAcceptRegister"
 /*@C
-   TSGLAcceptRegister - see TSGLAcceptRegisterDynamic()
+   TSGLAcceptRegister -  adds a TSGL acceptance scheme
+
+   Not Collective
+
+   Input Parameters:
++  name_scheme - name of user-defined acceptance scheme
+.  name_create - name of routine to create method context
+-  routine_create - routine to create method context
+
+   Notes:
+   TSGLAcceptRegister() may be called multiple times to add several user-defined families.
+
+   Sample usage:
+.vb
+   TSGLAcceptRegister("my_scheme","MySchemeCreate",MySchemeCreate);
+.ve
+
+   Then, your scheme can be chosen with the procedural interface via
+$     TSGLSetAcceptType(ts,"my_scheme")
+   or at runtime via the option
+$     -ts_gl_accept_type my_scheme
 
    Level: advanced
+
+   Notes: Environmental variables such as ${PETSC_ARCH}, ${PETSC_DIR}, ${PETSC_LIB_DIR},
+          and others of the form ${any_environmental_variable} occuring in pathname will be
+          replaced with appropriate values.
+
+.keywords: TSGL, TSGLAcceptType, register
+
+.seealso: TSGLRegisterAll()
 @*/
 PetscErrorCode  TSGLAcceptRegister(const char sname[],const char path[],const char name[],TSGLAcceptFunction function)
 {
@@ -1336,22 +1388,22 @@ PetscErrorCode  TSGLRegisterAll(const char path[])
   if (TSGLRegisterAllCalled) PetscFunctionReturn(0);
   TSGLRegisterAllCalled = PETSC_TRUE;
 
-  ierr = TSGLRegisterDynamic(TSGL_IRKS,path,"TSGLCreate_IRKS",TSGLCreate_IRKS);CHKERRQ(ierr);
-  ierr = TSGLAcceptRegisterDynamic(TSGLACCEPT_ALWAYS,path,"TSGLAccept_Always",TSGLAccept_Always);CHKERRQ(ierr);
+  ierr = TSGLRegister(TSGL_IRKS,path,"TSGLCreate_IRKS",TSGLCreate_IRKS);CHKERRQ(ierr);
+  ierr = TSGLAcceptRegister(TSGLACCEPT_ALWAYS,path,"TSGLAccept_Always",TSGLAccept_Always);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "TSGLRegisterDestroy"
 /*@C
-   TSGLRegisterDestroy - Frees the list of schemes that were registered by TSGLRegister()/TSGLRegisterDynamic().
+   TSGLRegisterDestroy - Frees the list of schemes that were registered by TSGLRegister()/TSGLRegister().
 
    Not Collective
 
    Level: advanced
 
 .keywords: TSGL, register, destroy
-.seealso: TSGLRegister(), TSGLRegisterAll(), TSGLRegisterDynamic()
+.seealso: TSGLRegister(), TSGLRegisterAll(), TSGLRegister()
 @*/
 PetscErrorCode  TSGLRegisterDestroy(void)
 {

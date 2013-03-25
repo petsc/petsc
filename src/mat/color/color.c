@@ -377,6 +377,32 @@ PetscBool         MatColoringRegisterAllCalled = PETSC_FALSE;
 
 #undef __FUNCT__
 #define __FUNCT__ "MatColoringRegister"
+/*@C
+   MatColoringRegister - Adds a new sparse matrix coloring to the  matrix package.
+
+   Not Collective
+
+   Input Parameters:
++  sname - name of Coloring (for example MATCOLORINGSL)
+.  name - name of function that creates the Coloring type, a string
+-  function - function pointer that creates the coloring
+
+   Level: developer
+
+   Sample usage:
+.vb
+   MatColoringRegister("my_color","MyColor",MyColor);
+.ve
+
+   Then, your partitioner can be chosen with the procedural interface via
+$     MatColoringSetType(part,"my_color")
+   or at runtime via the option
+$     -mat_coloring_type my_color
+
+.keywords: matrix, Coloring, register
+
+.seealso: MatColoringRegisterDestroy(), MatColoringRegisterAll()
+@*/
 PetscErrorCode  MatColoringRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(Mat,MatColoringType,ISColoring*))
 {
   PetscErrorCode ierr;
@@ -399,7 +425,7 @@ PetscErrorCode  MatColoringRegister(const char sname[],const char path[],const c
 
 .keywords: matrix, register, destroy
 
-.seealso: MatColoringRegisterDynamic(), MatColoringRegisterAll()
+.seealso: MatColoringRegister(), MatColoringRegisterAll()
 @*/
 PetscErrorCode  MatColoringRegisterDestroy(void)
 {
@@ -447,7 +473,7 @@ $    A suitable coloring for a  smoother  is simply C(A).
 $    A suitable coloring for efficient Jacobian computation is a division of the columns so that two columns of the same color do not share any common rows.
 $         This corresponds to C(A^{T} A).  This is what MatGetColoring() computes.
 
-   The user can define additional colorings; see MatColoringRegisterDynamic().
+   The user can define additional colorings; see MatColoringRegister().
 
    For parallel matrices currently converts to sequential matrix and uses the sequential coloring
    on that.
@@ -466,7 +492,7 @@ $         Sources and Development of Mathematical Software, Wayne R. Cowell edit
 
 .keywords: matrix, get, coloring
 
-.seealso:  MatGetColoringTypeFromOptions(), MatColoringRegisterDynamic(), MatFDColoringCreate(),
+.seealso:  MatGetColoringTypeFromOptions(), MatColoringRegister(), MatFDColoringCreate(),
            SNESComputeJacobianDefaultColor()
 @*/
 PetscErrorCode  MatGetColoring(Mat mat,MatColoringType type,ISColoring *iscoloring)

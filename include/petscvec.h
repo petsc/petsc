@@ -315,56 +315,6 @@ PETSC_EXTERN PetscErrorCode VecRegister(const char[],const char[],const char[],P
 PETSC_EXTERN PetscErrorCode VecRegisterAll(const char []);
 PETSC_EXTERN PetscErrorCode VecRegisterDestroy(void);
 
-/*MC
-  VecRegisterDynamic - Adds a new vector component implementation
-
-  Synopsis:
-  #include "petscvec.h"
-  PetscErrorCode VecRegisterDynamic(const char *name, const char *path, const char *func_name, PetscErrorCode (*create_func)(Vec))
-
-  Not Collective
-
-  Input Parameters:
-+ name        - The name of a new user-defined creation routine
-. path        - The path (either absolute or relative) of the library containing this routine
-. func_name   - The name of routine to create method context
-- create_func - The creation routine itself
-
-  Notes:
-  VecRegisterDynamic() may be called multiple times to add several user-defined vectors
-
-  If dynamic libraries are used, then the fourth input argument (routine_create) is ignored.
-
-  Sample usage:
-.vb
-    VecRegisterDynamic("my_vec","/home/username/my_lib/lib/libO/solaris/libmy.a", "MyVectorCreate", MyVectorCreate);
-.ve
-
-  Then, your vector type can be chosen with the procedural interface via
-.vb
-    VecCreate(MPI_Comm, Vec *);
-    VecSetType(Vec,"my_vector_name");
-.ve
-   or at runtime via the option
-.vb
-    -vec_type my_vector_name
-.ve
-
-  Notes: $PETSC_ARCH occuring in pathname will be replaced with appropriate values.
-         If your function is not being put into a shared library then use VecRegister() instead
-
-  Level: advanced
-
-.keywords: Vec, register
-.seealso: VecRegisterAll(), VecRegisterDestroy(), VecRegister()
-M*/
-#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
-#define VecRegisterDynamic(a,b,c,d) VecRegister(a,b,c,0)
-#else
-#define VecRegisterDynamic(a,b,c,d) VecRegister(a,b,c,d)
-#endif
-
-
 PETSC_EXTERN PetscErrorCode VecScatterCreate(Vec,IS,Vec,IS,VecScatter *);
 PETSC_EXTERN PetscErrorCode VecScatterCreateEmpty(MPI_Comm,VecScatter *);
 PETSC_EXTERN PetscErrorCode VecScatterCreateLocal(VecScatter,PetscInt,const PetscInt[],const PetscInt[],const PetscInt[],PetscInt,const PetscInt[],const PetscInt[],const PetscInt[],PetscInt);

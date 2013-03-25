@@ -126,11 +126,6 @@ extern PetscThreadComm PETSC_THREAD_COMM_WORLD;
 /* register thread communicator models */
 PETSC_EXTERN PetscErrorCode PetscThreadCommRegister(const char[],const char[],const char[],PetscErrorCode(*)(PetscThreadComm));
 PETSC_EXTERN PetscErrorCode PetscThreadCommRegisterAll(const char path[]);
-#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
-#define PetscThreadCommRegisterDynamic(a,b,c,d) PetscThreadCommRegister(a,b,c,0)
-#else
-#define PetscThreadCommRegisterDynamic(a,b,c,d) PetscThreadCommRegister(a,b,c,d)
-#endif
 
 #undef __FUNCT__
 #define __FUNCT__

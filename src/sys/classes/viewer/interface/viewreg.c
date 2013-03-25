@@ -222,13 +222,13 @@ PetscErrorCode  PetscViewerSetType(PetscViewer viewer,PetscViewerType type)
 #define __FUNCT__ "PetscViewerRegisterDestroy"
 /*@C
    PetscViewerRegisterDestroy - Frees the list of PetscViewer methods that were
-   registered by PetscViewerRegisterDynamic().
+   registered by PetscViewerRegister().
 
    Not Collective
 
    Level: developer
 
-.seealso: PetscViewerRegisterDynamic(), PetscViewerRegisterAll()
+.seealso: PetscViewerRegister(), PetscViewerRegisterAll()
 @*/
 PetscErrorCode  PetscViewerRegisterDestroy(void)
 {
@@ -241,6 +241,34 @@ PetscErrorCode  PetscViewerRegisterDestroy(void)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerRegister"
+/*@C
+   PetscViewerRegister - Adds a viewer
+
+   Not Collective
+
+   Input Parameters:
++  name_solver - name of a new user-defined viewer
+.  name_create - name of routine to create method context
+-  routine_create - routine to create method context
+
+   Level: developer
+   Notes:
+   PetscViewerRegister() may be called multiple times to add several user-defined viewers.
+
+   Sample usage:
+.vb
+   PetscViewerRegister("my_viewer_type","MyViewerCreate",MyViewerCreate);
+.ve
+
+   Then, your solver can be chosen with the procedural interface via
+$     PetscViewerSetType(viewer,"my_viewer_type")
+   or at runtime via the option
+$     -viewer_type my_viewer_type
+
+  Concepts: registering^Viewers
+
+.seealso: PetscViewerRegisterAll(), PetscViewerRegisterDestroy()
+ @*/
 PetscErrorCode  PetscViewerRegister(const char *sname,const char *path,const char *name,PetscErrorCode (*function)(PetscViewer))
 {
   PetscErrorCode ierr;

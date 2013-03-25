@@ -16,7 +16,7 @@ PETSC_EXTERN PetscErrorCode AOCreate_MemoryScalable(AO ao);
   Level: advanced
 
 .keywords: AO, register, all
-.seealso:  AORegister(), AORegisterDestroy(), AORegisterDynamic()
+.seealso:  AORegister(), AORegisterDestroy(), AORegister()
 @*/
 PetscErrorCode  AORegisterAll(const char path[])
 {
@@ -25,7 +25,7 @@ PetscErrorCode  AORegisterAll(const char path[])
   PetscFunctionBegin;
   AORegisterAllCalled = PETSC_TRUE;
 
-  ierr = AORegisterDynamic(AOBASIC,           path, "AOCreate_Basic",          AOCreate_Basic);CHKERRQ(ierr);
-  ierr = AORegisterDynamic(AOMEMORYSCALABLE,  path, "AOCreate_MemoryScalable", AOCreate_MemoryScalable);CHKERRQ(ierr);
+  ierr = AORegister(AOBASIC,           path, "AOCreate_Basic",          AOCreate_Basic);CHKERRQ(ierr);
+  ierr = AORegister(AOMEMORYSCALABLE,  path, "AOCreate_MemoryScalable", AOCreate_MemoryScalable);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

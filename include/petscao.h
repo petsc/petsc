@@ -61,12 +61,6 @@ PETSC_EXTERN PetscErrorCode AORegister(const char [], const char [], const char 
 PETSC_EXTERN PetscErrorCode AORegisterAll(const char []);
 PETSC_EXTERN PetscErrorCode AORegisterDestroy(void);
 
-#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
-#define AORegisterDynamic(a,b,c,d) AORegister(a,b,c,0)
-#else
-#define AORegisterDynamic(a,b,c,d) AORegister(a,b,c,d)
-#endif
-
 PETSC_EXTERN PetscErrorCode AOPetscToApplication(AO,PetscInt,PetscInt[]);
 PETSC_EXTERN PetscErrorCode AOApplicationToPetsc(AO,PetscInt,PetscInt[]);
 PETSC_EXTERN PetscErrorCode AOPetscToApplicationIS(AO,IS);

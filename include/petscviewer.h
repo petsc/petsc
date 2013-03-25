@@ -38,50 +38,6 @@ PETSC_EXTERN PetscErrorCode PetscViewerInitializePackage(const char[]);
 
 PETSC_EXTERN PetscErrorCode PetscViewerRegister(const char*,const char*,const char*,PetscErrorCode (*)(PetscViewer));
 
-/*MC
-   PetscViewerRegisterDynamic - Adds a viewer
-
-   Synopsis
-   #include "petscviewer.h"
-   PetscErrorCode PetscViewerRegisterDynamic(const char *name_solver,const char *path,const char *name_create,PetscErrorCode (*routine_create)(PetscViewer))
-
-   Not Collective
-
-   Input Parameters:
-+  name_solver - name of a new user-defined viewer
-.  path - path (either absolute or relative) the library containing this viewer
-.  name_create - name of routine to create method context
--  routine_create - routine to create method context
-
-   Level: developer
-
-   Notes:
-   PetscViewerRegisterDynamic() may be called multiple times to add several user-defined viewers.
-
-   If dynamic libraries are used, then the fourth input argument (routine_create)
-   is ignored.
-
-   Sample usage:
-.vb
-   PetscViewerRegisterDynamic("my_viewer_type",/home/username/my_lib/lib/libO/solaris/mylib.a,
-               "MyViewerCreate",MyViewerCreate);
-.ve
-
-   Then, your solver can be chosen with the procedural interface via
-$     PetscViewerSetType(viewer,"my_viewer_type")
-   or at runtime via the option
-$     -viewer_type my_viewer_type
-
-  Concepts: registering^Viewers
-
-.seealso: PetscViewerRegisterAll(), PetscViewerRegisterDestroy()
-M*/
-#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
-#define PetscViewerRegisterDynamic(a,b,c,d) PetscViewerRegister(a,b,c,0)
-#else
-#define PetscViewerRegisterDynamic(a,b,c,d) PetscViewerRegister(a,b,c,d)
-#endif
-
 PETSC_EXTERN PetscErrorCode PetscViewerCreate(MPI_Comm,PetscViewer*);
 PETSC_EXTERN PetscErrorCode PetscViewerSetFromOptions(PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscViewerASCIIOpenWithFILE(MPI_Comm,FILE*,PetscViewer*);
