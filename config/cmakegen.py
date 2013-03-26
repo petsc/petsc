@@ -134,7 +134,7 @@ endif ()
 if (PETSC_HAVE_CUDA)
   find_package (CUDA REQUIRED)
   set (CUDA_PROPAGATE_HOST_FLAGS OFF)
-  set (CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "--compiler-options ${PETSC_CUDA_HOST_FLAGS}")
+  set (CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} --compiler-options ${PETSC_CUDA_HOST_FLAGS})
 endif ()
 
 include_directories ("${PETSc_SOURCE_DIR}/include" "${PETSc_BINARY_DIR}/include")

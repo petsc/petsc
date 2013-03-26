@@ -110,7 +110,7 @@ class PETScMaker(script.Script):
        self.cuda = self.framework.require('PETSc.packages.cuda',       None)
        if (self.cuda.directory != None):
          options.append('CUDA_TOOLKIT_ROOT_DIR ' + self.cuda.directory + ' CACHE FILEPATH')
-       options.append('CUDA_NVCC_FLAGS "' + self.setCompilers.getCompilerFlags() + '" CACHE STRING')
+       options.append('CUDA_NVCC_FLAGS ' + self.setCompilers.getCompilerFlags() + ' CACHE STRING')
      else:
        flags = [self.setCompilers.getCompilerFlags(),
                 self.setCompilers.CPPFLAGS,
@@ -125,7 +125,7 @@ class PETScMaker(script.Script):
          for flag in flags:
            for f in flag.split():
              flagstring += ',' + f
-         options.append('PETSC_CUDA_HOST_FLAGS "' + flagstring + '" CACHE STRING')
+         options.append('PETSC_CUDA_HOST_FLAGS ' + flagstring + ' CACHE STRING')
        self.setCompilers.popLanguage()
    options.append('CMAKE_AR '+self.setCompilers.AR + " CACHE FILEPATH")
    ranlib = shlex.split(self.setCompilers.RANLIB)[0]
@@ -144,8 +144,10 @@ class PETScMaker(script.Script):
 
    # Create inital cache file:
    initial_cache_file = open(initial_cache_filename, 'w')
+   self.logPrint('Contents of initial cache file %s :' % initial_cache_filename)
    for option in options:
      initial_cache_file.write('SET (' + option + ' "Dummy comment" FORCE)\n')
+     self.logPrint('SET (' + option + ' "Dummy comment" FORCE)\n')
    initial_cache_file.close()   
    try:
      # Try to remove the old cache because some versions of CMake lose CMAKE_C_FLAGS when reconfiguring this way
