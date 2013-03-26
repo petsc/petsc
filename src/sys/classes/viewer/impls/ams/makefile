@@ -6,7 +6,7 @@ CFLAGS   = -DAMS_HOME='"${AMS_HOME}"'
 FFLAGS   =
 SOURCEC  = ams.c amsopen.c
 SOURCEF  =
-SOURCEH  = include/petscviewerams.h
+SOURCEH  = ../../../../../../include/petscviewerams.h
 MANSEC   = Viewer
 LIBBASE  = libpetscsys
 DIRS     =
