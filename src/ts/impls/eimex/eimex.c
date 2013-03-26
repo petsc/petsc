@@ -5,15 +5,16 @@
  *      Written by Hong Zhang (zhang@vt.edu), Virginia Tech
  *                 Emil Constantinescu (emconsta@mcs.anl.gov), Argonne National Laboratory
  */
-/*
-  Code for timestepping with Extrapolated IMEX methods
+/*MC
+      EIMEX - Time stepping with Extrapolated IMEX methods.
 
   Notes:
   The general system is written as
 
   G(t,X,Xdot) = F(t,X)
 
-  where G represents the stiff part of the physics and F represents the non-stiff part.
+  where G represents the stiff part and F represents the non-stiff part. The user should provide the stiff part
+  of the equation using TSSetIFunction() and the non-stiff part with TSSetRHSFunction().
   This method is designed to be linearly implicit on G and can use an approximate and lagged Jacobian.
 
   Another common form for the system is
@@ -28,7 +29,11 @@
   E. Constantinescu and A. Sandu, Extrapolated implicit-explicit time stepping, SIAM Journal on Scientific
 Computing, 31 (2010), pp. 4452–4477.
 
-*/
+      Level: beginner
+
+.seealso:  TSCreate(), TS, TSSetType(), TSEIMEXSetMaxRows(), TSEIMEXSetRowCol(), TSEIMEXSetOrdAdapt()
+
+ M*/
 #include <petsc-private/tsimpl.h>                /*I   "petscts.h"   I*/
 #include <petscdm.h>
 
@@ -97,7 +102,7 @@ static PetscErrorCode TSStage_EIMEX(TS ts,PetscInt istage)
   for(i=0; i<ext->N[istage]; i++){
     ext->ctime = ts->ptime + h*i;
     ierr = VecCopy(Y,Z);CHKERRQ(ierr);/*Save the solution of the previous substep*/
-    ierr = SNESSolve(snes,PETSC_NULL,Y);CHKERRQ(ierr);
+    ierr = SNESSolve(snes,NULL,Y);CHKERRQ(ierr);
     ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
     ierr = SNESGetLinearSolveIterations(snes,&lits);CHKERRQ(ierr);
     ts->snes_its += its; ts->ksp_its += lits;
@@ -139,14 +144,13 @@ static PetscErrorCode TSStep_EIMEX(TS ts)
   for(i=1;i<ns;i++){
     for(j=i;j<ns;j++){
       alpha = -(PetscReal)ext->N[j]/ext->N[j-i];
-      ierr  = VecAXPBYPCZ(T[Map(j,i,ns)],alpha,1.0,0,T[Map(j,i-1,ns)],
-		  T[Map(j-1,i-1,ns)]);/*T[j][i]=alpha*T[j][i-1]+T[j-1][i-1]*/
+      ierr  = VecAXPBYPCZ(T[Map(j,i,ns)],alpha,1.0,0,T[Map(j,i-1,ns)],T[Map(j-1,i-1,ns)]);/*T[j][i]=alpha*T[j][i-1]+T[j-1][i-1]*/
       alpha = 1.0/(1.0 + alpha);
       ierr  = VecScale(T[Map(j,i,ns)],alpha);CHKERRQ(ierr);
     }
   }
 
-  ierr = TSEvaluateStep(ts,ns,ts->vec_sol,PETSC_NULL);CHKERRQ(ierr);/*update ts solution */
+  ierr = TSEvaluateStep(ts,ns,ts->vec_sol,NULL);CHKERRQ(ierr);/*update ts solution */
 
   if(ext->ord_adapt && ext->nstages < ext->max_rows){
 	accept = PETSC_FALSE;
@@ -176,7 +180,7 @@ static PetscErrorCode TSStep_EIMEX(TS ts)
 	      ierr  = VecScale(T[Map(ext->nstages-1,i,ext->nstages)],alpha);CHKERRQ(ierr);
 	    }
 	    /*update ts solution */
-	    ierr = TSEvaluateStep(ts,ext->nstages,ts->vec_sol,PETSC_NULL);CHKERRQ(ierr);
+	    ierr = TSEvaluateStep(ts,ext->nstages,ts->vec_sol,NULL);CHKERRQ(ierr);
 	  }/*end if !accept*/
 	}/*end while*/
 
@@ -212,13 +216,13 @@ static PetscErrorCode TSInterpolate_EIMEX(TS ts,PetscReal itime,Vec X)
   ierr = VecZeroEntries(Ydot);CHKERRQ(ierr);
   ierr = TSComputeIFunction(ts,ts->ptime-h,Y0,Ydot,YdotI,PETSC_FALSE);CHKERRQ(ierr);
 
-  a    = 2.0*pow(t,3) - 3.0*t*t + 1.0;
-  b    = -(pow(t,3) - 2.0*t*t + t)*h;
+  a    = 2.0*t*t*t - 3.0*t*t + 1.0;
+  b    = -(t*t*t - 2.0*t*t + t)*h;
   ierr = VecAXPBYPCZ(X,a,b,0.0,Y0,YdotI);CHKERRQ(ierr);
 
   ierr = TSComputeIFunction(ts,ts->ptime,Y1,Ydot,YdotI,PETSC_FALSE);CHKERRQ(ierr);
-  a    = -2.0*pow(t,3)+3.0*t*t;
-  b    = -(pow(t,3) - t*t)*h;
+  a    = -2.0*t*t*t+3.0*t*t;
+  b    = -(t*t*t - t*t)*h;
   ierr = VecAXPBYPCZ(X,a,b,1.0,Y1,YdotI);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
@@ -255,9 +259,9 @@ static PetscErrorCode TSDestroy_EIMEX(TS ts)
   PetscFunctionBegin;
   ierr = TSReset_EIMEX(ts);CHKERRQ(ierr);
   ierr = PetscFree(ts->data);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSEIMEXSetMaxRows_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSEIMEXSetRowCol_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSEIMEXSetOrdAdapt_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSEIMEXSetMaxRows_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSEIMEXSetRowCol_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSEIMEXSetOrdAdapt_C","",NULL);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -345,7 +349,7 @@ static PetscErrorCode SNESTSFormFunction_EIMEX(SNES snes,Vec X,Vec G,TS ts)
   ierr = VecZeroEntries(G);CHKERRQ(ierr);
 
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
-  ierr = TSEIMEXGetVecs(ts,dm,&Z,&Ydot,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = TSEIMEXGetVecs(ts,dm,&Z,&Ydot,NULL,NULL);CHKERRQ(ierr);
   ierr = VecZeroEntries(Ydot);CHKERRQ(ierr);
   dmsave = ts->dm;
   ts->dm = dm;
@@ -353,7 +357,7 @@ static PetscErrorCode SNESTSFormFunction_EIMEX(SNES snes,Vec X,Vec G,TS ts)
   /* PETSC_FALSE indicates non-imex, adding explicit RHS to the implicit I function.  */
   ierr = VecCopy(G,Ydot);CHKERRQ(ierr);
   ts->dm = dmsave;
-  ierr = TSEIMEXRestoreVecs(ts,dm,&Z,&Ydot,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = TSEIMEXRestoreVecs(ts,dm,&Z,&Ydot,NULL,NULL);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -371,14 +375,14 @@ static PetscErrorCode SNESTSFormJacobian_EIMEX(SNES snes,Vec X,Mat *A,Mat *B,Mat
   DM              dm,dmsave;
   PetscFunctionBegin;
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
-  ierr = TSEIMEXGetVecs(ts,dm,PETSC_NULL,&Ydot,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = TSEIMEXGetVecs(ts,dm,NULL,&Ydot,NULL,NULL);CHKERRQ(ierr);
   /*  ierr = VecZeroEntries(Ydot);CHKERRQ(ierr);*/
   /* ext->Ydot have already been computed in SNESTSFormFunction_EIMEX (SNES guarantees this) */
   dmsave = ts->dm;
   ts->dm = dm;
   ierr = TSComputeIJacobian(ts,ts->ptime,X,Ydot,ext->shift,A,B,str,PETSC_TRUE);CHKERRQ(ierr);
   ts->dm = dmsave;
-  ierr = TSEIMEXRestoreVecs(ts,dm,PETSC_NULL,&Ydot,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = TSEIMEXRestoreVecs(ts,dm,NULL,&Ydot,NULL,NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -400,12 +404,12 @@ static PetscErrorCode DMRestrictHook_TSEIMEX(DM fine,Mat restrct,Vec rscale,Mat 
   Vec Z,Z_c;
 
   PetscFunctionBegin;
-  ierr = TSEIMEXGetVecs(ts,fine,&Z,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-  ierr = TSEIMEXGetVecs(ts,coarse,&Z_c,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = TSEIMEXGetVecs(ts,fine,&Z,NULL,NULL,NULL);CHKERRQ(ierr);
+  ierr = TSEIMEXGetVecs(ts,coarse,&Z_c,NULL,NULL,NULL);CHKERRQ(ierr);
   ierr = MatRestrict(restrct,Z,Z_c);CHKERRQ(ierr);
   ierr = VecPointwiseMult(Z_c,rscale,Z_c);CHKERRQ(ierr);
-  ierr = TSEIMEXRestoreVecs(ts,fine,&Z,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-  ierr = TSEIMEXRestoreVecs(ts,coarse,&Z_c,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = TSEIMEXRestoreVecs(ts,fine,&Z,NULL,NULL,NULL);CHKERRQ(ierr);
+  ierr = TSEIMEXRestoreVecs(ts,coarse,&Z_c,NULL,NULL,NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -472,7 +476,7 @@ static PetscErrorCode TSSetFromOptions_EIMEX(TS ts)
     if(flg){
       ierr = TSEIMEXSetRowCol(ts,tindex[0],tindex[1]);CHKERRQ(ierr);
     }
-    ierr = PetscOptionsBool("-ts_eimex_order_adapt","Solve the problem with adaptive order","TSEIMEXSetOrdAdapt",ext->ord_adapt,&ext->ord_adapt,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-ts_eimex_order_adapt","Solve the problem with adaptive order","TSEIMEXSetOrdAdapt",ext->ord_adapt,&ext->ord_adapt,NULL);CHKERRQ(ierr);
     ierr = SNESSetFromOptions(ts->snes);CHKERRQ(ierr);
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
@@ -582,9 +586,7 @@ static PetscErrorCode TSEIMEXSetMaxRows_EIMEX(TS ts,PetscInt nrows)
 
   PetscFunctionBegin;
   if (nrows < 0 || nrows > 100) SETERRQ1(((PetscObject)ts)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Max number of rows (current value %D) should be an integer number between 1 and 100\n",nrows);
-  if(ext->N){
-	ierr = PetscFree(ext->N);CHKERRQ(ierr);
-  }
+  ierr = PetscFree(ext->N);CHKERRQ(ierr);
   ext->max_rows = nrows;
   ierr = PetscMalloc(nrows*sizeof(PetscInt),&ext->N);CHKERRQ(ierr);
   for(i=0;i<nrows;i++) ext->N[i]=i+1;
