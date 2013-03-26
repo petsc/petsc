@@ -23,9 +23,9 @@ PetscErrorCode  ISRegisterAll(void)
   PetscFunctionBegin;
   ISRegisterAllCalled = PETSC_TRUE;
 
-  ierr = ISRegister(ISGENERAL, "ISCreate_General",    ISCreate_General);CHKERRQ(ierr);
-  ierr = ISRegister(ISSTRIDE,  "ISCreate_Stride",     ISCreate_Stride);CHKERRQ(ierr);
-  ierr = ISRegister(ISBLOCK,   "ISCreate_Block",      ISCreate_Block);CHKERRQ(ierr);
+  ierr = ISRegister(ISGENERAL, ISCreate_General);CHKERRQ(ierr);
+  ierr = ISRegister(ISSTRIDE,  ISCreate_Stride);CHKERRQ(ierr);
+  ierr = ISRegister(ISBLOCK,   ISCreate_Block);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

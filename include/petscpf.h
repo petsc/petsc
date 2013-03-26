@@ -7,7 +7,7 @@
 
 /*
     PFunctionList contains the list of preconditioners currently registered
-   These are added with the PFRegister() macro
+   These are added with PFRegister()
 */
 PETSC_EXTERN PetscFunctionList PFunctionList;
 
@@ -50,7 +50,7 @@ PETSC_EXTERN PetscErrorCode PFRegisterAll(void);
 PETSC_EXTERN PetscErrorCode PFInitializePackage(void);
 PETSC_EXTERN PetscBool PFRegisterAllCalled;
 
-PETSC_EXTERN PetscErrorCode PFRegister(const char[],const char[],PetscErrorCode (*)(PF,void*));
+PETSC_EXTERN PetscErrorCode PFRegister(const char[],PetscErrorCode (*)(PF,void*));
 
 PETSC_EXTERN PetscErrorCode PFDestroy(PF*);
 PETSC_EXTERN PetscErrorCode PFSetFromOptions(PF);

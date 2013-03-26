@@ -416,7 +416,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqsbaij_cholmod(Mat A,MatFactorType ft
   B->ops->view                   = MatView_CHOLMOD;
   B->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_CHOLMOD;
   B->ops->destroy                = MatDestroy_CHOLMOD;
-  ierr                           = PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverPackage_C","MatFactorGetSolverPackage_seqsbaij_cholmod",MatFactorGetSolverPackage_seqsbaij_cholmod);CHKERRQ(ierr);
+  ierr                           = PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverPackage_C",MatFactorGetSolverPackage_seqsbaij_cholmod);CHKERRQ(ierr);
   B->factortype                  = MAT_FACTOR_CHOLESKY;
   B->assembled                   = PETSC_TRUE; /* required by -ksp_view */
   B->preallocated                = PETSC_TRUE;

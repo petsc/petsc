@@ -145,7 +145,7 @@ int main(int argc,char **args)
   /*
        First register a new PC type with the command PCRegister()
   */
-  ierr = PCRegister("ourjacobi","PCCreate_Jacobi",PCCreate_Jacobi);CHKERRQ(ierr);
+  ierr = PCRegister("ourjacobi",PCCreate_Jacobi);CHKERRQ(ierr);
 
   /*
      Set the PC type to be the new method

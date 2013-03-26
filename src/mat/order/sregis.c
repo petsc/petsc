@@ -43,14 +43,14 @@ PetscErrorCode  MatOrderingRegisterAll(void)
   PetscFunctionBegin;
   MatOrderingRegisterAllCalled = PETSC_TRUE;
 
-  ierr = MatOrderingRegister(MATORDERINGNATURAL,  "MatGetOrdering_Natural"  ,MatGetOrdering_Natural);CHKERRQ(ierr);
-  ierr = MatOrderingRegister(MATORDERINGND,       "MatGetOrdering_ND"       ,MatGetOrdering_ND);CHKERRQ(ierr);
-  ierr = MatOrderingRegister(MATORDERING1WD,      "MatGetOrdering_1WD"      ,MatGetOrdering_1WD);CHKERRQ(ierr);
-  ierr = MatOrderingRegister(MATORDERINGRCM,      "MatGetOrdering_RCM"      ,MatGetOrdering_RCM);CHKERRQ(ierr);
-  ierr = MatOrderingRegister(MATORDERINGQMD,      "MatGetOrdering_QMD"      ,MatGetOrdering_QMD);CHKERRQ(ierr);
-  ierr = MatOrderingRegister(MATORDERINGROWLENGTH,"MatGetOrdering_RowLength",MatGetOrdering_RowLength);CHKERRQ(ierr);
+  ierr = MatOrderingRegister(MATORDERINGNATURAL,  MatGetOrdering_Natural);CHKERRQ(ierr);
+  ierr = MatOrderingRegister(MATORDERINGND,       MatGetOrdering_ND);CHKERRQ(ierr);
+  ierr = MatOrderingRegister(MATORDERING1WD,      MatGetOrdering_1WD);CHKERRQ(ierr);
+  ierr = MatOrderingRegister(MATORDERINGRCM,      MatGetOrdering_RCM);CHKERRQ(ierr);
+  ierr = MatOrderingRegister(MATORDERINGQMD,      MatGetOrdering_QMD);CHKERRQ(ierr);
+  ierr = MatOrderingRegister(MATORDERINGROWLENGTH,MatGetOrdering_RowLength);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_UMFPACK)
-  ierr = MatOrderingRegister(MATORDERINGAMD,      "MatGetOrdering_AMD",MatGetOrdering_AMD);CHKERRQ(ierr);
+  ierr = MatOrderingRegister(MATORDERINGAMD,      MatGetOrdering_AMD);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
 }

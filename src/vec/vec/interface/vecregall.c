@@ -34,18 +34,18 @@ PetscErrorCode  VecRegisterAll(void)
   PetscFunctionBegin;
   VecRegisterAllCalled = PETSC_TRUE;
 
-  ierr = VecRegister(VECSEQ,        "VecCreate_Seq",       VecCreate_Seq);CHKERRQ(ierr);
-  ierr = VecRegister(VECMPI,        "VecCreate_MPI",       VecCreate_MPI);CHKERRQ(ierr);
-  ierr = VecRegister(VECSTANDARD,   "VecCreate_Standard",  VecCreate_Standard);CHKERRQ(ierr);
-  ierr = VecRegister(VECSHARED,     "VecCreate_Shared",    VecCreate_Shared);CHKERRQ(ierr);
+  ierr = VecRegister(VECSEQ,        VecCreate_Seq);CHKERRQ(ierr);
+  ierr = VecRegister(VECMPI,        VecCreate_MPI);CHKERRQ(ierr);
+  ierr = VecRegister(VECSTANDARD,   VecCreate_Standard);CHKERRQ(ierr);
+  ierr = VecRegister(VECSHARED,     VecCreate_Shared);CHKERRQ(ierr);
 #if defined PETSC_HAVE_CUSP
-  ierr = VecRegister(VECSEQCUSP,   "VecCreate_SeqCUSP",  VecCreate_SeqCUSP);CHKERRQ(ierr);
-  ierr = VecRegister(VECMPICUSP,   "VecCreate_MPICUSP",  VecCreate_MPICUSP);CHKERRQ(ierr);
-  ierr = VecRegister(VECCUSP,      "VecCreate_CUSP",     VecCreate_CUSP);CHKERRQ(ierr);
+  ierr = VecRegister(VECSEQCUSP,    VecCreate_SeqCUSP);CHKERRQ(ierr);
+  ierr = VecRegister(VECMPICUSP,    VecCreate_MPICUSP);CHKERRQ(ierr);
+  ierr = VecRegister(VECCUSP,       VecCreate_CUSP);CHKERRQ(ierr);
 #endif
 #if 0
 #if defined(PETSC_HAVE_SIEVE)
-  ierr = VecRegister(VECSIEVE,     "VecCreate_Sieve",    VecCreate_Sieve);CHKERRQ(ierr);
+  ierr = VecRegister(VECSIEVE,      VecCreate_Sieve);CHKERRQ(ierr);
 #endif
 #endif
   PetscFunctionReturn(0);

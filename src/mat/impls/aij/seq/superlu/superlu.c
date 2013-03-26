@@ -274,8 +274,8 @@ PetscErrorCode MatDestroy_SuperLU(Mat A)
   ierr = PetscFree(A->spptr);CHKERRQ(ierr);
 
   /* clear composed functions */
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatFactorGetSolverPackage_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatSuperluSetILUDropTol_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatFactorGetSolverPackage_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatSuperluSetILUDropTol_C",NULL);CHKERRQ(ierr);
 
   ierr = MatDestroy_SeqAIJ(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -690,8 +690,8 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_superlu(Mat A,MatFactorType ftyp
 #if defined(SUPERLU2)
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatCreateNull","MatCreateNull_SuperLU",(void (*)(void))MatCreateNull_SuperLU);CHKERRQ(ierr);
 #endif
-  ierr     = PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverPackage_C","MatFactorGetSolverPackage_seqaij_superlu",MatFactorGetSolverPackage_seqaij_superlu);CHKERRQ(ierr);
-  ierr     = PetscObjectComposeFunction((PetscObject)B,"MatSuperluSetILUDropTol_C","MatSuperluSetILUDropTol_SuperLU",MatSuperluSetILUDropTol_SuperLU);CHKERRQ(ierr);
+  ierr     = PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverPackage_C",MatFactorGetSolverPackage_seqaij_superlu);CHKERRQ(ierr);
+  ierr     = PetscObjectComposeFunction((PetscObject)B,"MatSuperluSetILUDropTol_C",MatSuperluSetILUDropTol_SuperLU);CHKERRQ(ierr);
   B->spptr = lu;
   *F       = B;
   PetscFunctionReturn(0);

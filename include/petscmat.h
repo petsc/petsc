@@ -172,7 +172,7 @@ PETSC_EXTERN PetscErrorCode MatSetType(Mat,MatType);
 PETSC_EXTERN PetscErrorCode MatSetFromOptions(Mat);
 PETSC_EXTERN PetscErrorCode MatViewFromOptions(Mat,const char[]);
 PETSC_EXTERN PetscErrorCode MatRegisterAll(void);
-PETSC_EXTERN PetscErrorCode MatRegister(const char[],const char[],PetscErrorCode(*)(Mat));
+PETSC_EXTERN PetscErrorCode MatRegister(const char[],PetscErrorCode(*)(Mat));
 PETSC_EXTERN PetscErrorCode MatRegisterBaseName(const char[],const char[],const char[]);
 PETSC_EXTERN PetscErrorCode MatSetOptionsPrefix(Mat,const char[]);
 PETSC_EXTERN PetscErrorCode MatAppendOptionsPrefix(Mat,const char[]);
@@ -927,7 +927,7 @@ typedef const char* MatOrderingType;
 
 PETSC_EXTERN PetscErrorCode MatGetOrdering(Mat,MatOrderingType,IS*,IS*);
 PETSC_EXTERN PetscErrorCode MatGetOrderingList(PetscFunctionList*);
-PETSC_EXTERN PetscErrorCode MatOrderingRegister(const char[],const char[],PetscErrorCode(*)(Mat,MatOrderingType,IS*,IS*));
+PETSC_EXTERN PetscErrorCode MatOrderingRegister(const char[],PetscErrorCode(*)(Mat,MatOrderingType,IS*,IS*));
 
 PETSC_EXTERN PetscErrorCode MatOrderingRegisterDestroy(void);
 PETSC_EXTERN PetscErrorCode MatOrderingRegisterAll(void);
@@ -1037,7 +1037,7 @@ typedef const char* MatColoringType;
 #define MATCOLORINGID      "id"
 
 PETSC_EXTERN PetscErrorCode MatGetColoring(Mat,MatColoringType,ISColoring*);
-PETSC_EXTERN PetscErrorCode MatColoringRegister(const char[],const char[],PetscErrorCode(*)(Mat,MatColoringType,ISColoring *));
+PETSC_EXTERN PetscErrorCode MatColoringRegister(const char[],PetscErrorCode(*)(Mat,MatColoringType,ISColoring *));
 
 PETSC_EXTERN PetscBool MatColoringRegisterAllCalled;
 
@@ -1127,7 +1127,7 @@ PETSC_EXTERN PetscErrorCode MatPartitioningSetPartitionWeights(MatPartitioning,c
 PETSC_EXTERN PetscErrorCode MatPartitioningApply(MatPartitioning,IS*);
 PETSC_EXTERN PetscErrorCode MatPartitioningDestroy(MatPartitioning*);
 
-PETSC_EXTERN PetscErrorCode MatPartitioningRegister(const char[],const char[],PetscErrorCode (*)(MatPartitioning));
+PETSC_EXTERN PetscErrorCode MatPartitioningRegister(const char[],PetscErrorCode (*)(MatPartitioning));
 
 PETSC_EXTERN PetscBool MatPartitioningRegisterAllCalled;
 
@@ -1246,7 +1246,7 @@ PETSC_EXTERN PetscErrorCode MatCoarsenGetData( MatCoarsen, PetscCoarsenData ** )
 PETSC_EXTERN PetscErrorCode MatCoarsenApply(MatCoarsen);
 PETSC_EXTERN PetscErrorCode MatCoarsenDestroy(MatCoarsen*);
 
-PETSC_EXTERN PetscErrorCode MatCoarsenRegister(const char[],const char[],PetscErrorCode (*)(MatCoarsen));
+PETSC_EXTERN PetscErrorCode MatCoarsenRegister(const char[],PetscErrorCode (*)(MatCoarsen));
 
 PETSC_EXTERN PetscBool MatCoarsenRegisterAllCalled;
 
@@ -1503,7 +1503,7 @@ typedef const char* MatMFFDType;
 #define MATMFFD_WP  "wp"
 
 PETSC_EXTERN PetscErrorCode MatMFFDSetType(Mat,MatMFFDType);
-PETSC_EXTERN PetscErrorCode MatMFFDRegister(const char[],const char[],PetscErrorCode (*)(MatMFFD));
+PETSC_EXTERN PetscErrorCode MatMFFDRegister(const char[],PetscErrorCode (*)(MatMFFD));
 
 PETSC_EXTERN PetscErrorCode MatMFFDRegisterAll(void);
 PETSC_EXTERN PetscErrorCode MatMFFDRegisterDestroy(void);

@@ -38,10 +38,10 @@ PetscErrorCode MatColoringRegisterAll(void)
   PetscFunctionBegin;
   MatColoringRegisterAllCalled = PETSC_TRUE;
 
-  ierr = MatColoringRegister(MATCOLORINGNATURAL,"MatGetColoring_Natural",   MatGetColoring_Natural);CHKERRQ(ierr);
-  ierr = MatColoringRegister(MATCOLORINGSL,     "MatGetColoring_SL_Minpack",MatGetColoring_SL_Minpack);CHKERRQ(ierr);
-  ierr = MatColoringRegister(MATCOLORINGLF,     "MatGetColoring_LF_Minpack",MatGetColoring_LF_Minpack);CHKERRQ(ierr);
-  ierr = MatColoringRegister(MATCOLORINGID,     "MatGetColoring_ID_Minpack",MatGetColoring_ID_Minpack);CHKERRQ(ierr);
+  ierr = MatColoringRegister(MATCOLORINGNATURAL,MatGetColoring_Natural);CHKERRQ(ierr);
+  ierr = MatColoringRegister(MATCOLORINGSL,     MatGetColoring_SL_Minpack);CHKERRQ(ierr);
+  ierr = MatColoringRegister(MATCOLORINGLF,     MatGetColoring_LF_Minpack);CHKERRQ(ierr);
+  ierr = MatColoringRegister(MATCOLORINGID,     MatGetColoring_ID_Minpack);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

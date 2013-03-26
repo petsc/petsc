@@ -35,8 +35,8 @@ PetscErrorCode  MatCoarsenRegisterAll(void)
   PetscFunctionBegin;
   MatCoarsenRegisterAllCalled = PETSC_TRUE;
 
-  ierr = MatCoarsenRegister(MATCOARSENMIS,"MatCoarsenCreate_MIS",MatCoarsenCreate_MIS);CHKERRQ(ierr);
-  ierr = MatCoarsenRegister(MATCOARSENHEM,"MatCoarsenCreate_HEM",MatCoarsenCreate_HEM);CHKERRQ(ierr);
+  ierr = MatCoarsenRegister(MATCOARSENMIS,MatCoarsenCreate_MIS);CHKERRQ(ierr);
+  ierr = MatCoarsenRegister(MATCOARSENHEM,MatCoarsenCreate_HEM);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -39,19 +39,19 @@ PetscErrorCode  MatPartitioningRegisterAll(void)
   PetscFunctionBegin;
   MatPartitioningRegisterAllCalled = PETSC_TRUE;
 
-  ierr = MatPartitioningRegister(MATPARTITIONINGCURRENT,"MatPartitioningCreate_Current",MatPartitioningCreate_Current);CHKERRQ(ierr);
-  ierr = MatPartitioningRegister("square",               "MatPartitioningCreate_Square",MatPartitioningCreate_Square);CHKERRQ(ierr);
+  ierr = MatPartitioningRegister(MATPARTITIONINGCURRENT, MatPartitioningCreate_Current);CHKERRQ(ierr);
+  ierr = MatPartitioningRegister("square",               MatPartitioningCreate_Square);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_PARMETIS)
-  ierr = MatPartitioningRegister(MATPARTITIONINGPARMETIS,"MatPartitioningCreate_Parmetis",MatPartitioningCreate_Parmetis);CHKERRQ(ierr);
+  ierr = MatPartitioningRegister(MATPARTITIONINGPARMETIS,MatPartitioningCreate_Parmetis);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_CHACO)
-  ierr = MatPartitioningRegister(MATPARTITIONINGCHACO,   "MatPartitioningCreate_Chaco",MatPartitioningCreate_Chaco);CHKERRQ(ierr);
+  ierr = MatPartitioningRegister(MATPARTITIONINGCHACO,   MatPartitioningCreate_Chaco);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_PARTY)
-  ierr = MatPartitioningRegister(MATPARTITIONINGPARTY,   "MatPartitioningCreate_Party",MatPartitioningCreate_Party);CHKERRQ(ierr);
+  ierr = MatPartitioningRegister(MATPARTITIONINGPARTY,   MatPartitioningCreate_Party);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_PTSCOTCH)
-  ierr = MatPartitioningRegister(MATPARTITIONINGPTSCOTCH,"MatPartitioningCreate_PTScotch",MatPartitioningCreate_PTScotch);CHKERRQ(ierr);
+  ierr = MatPartitioningRegister(MATPARTITIONINGPTSCOTCH,MatPartitioningCreate_PTScotch);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
 }

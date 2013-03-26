@@ -248,7 +248,6 @@ PetscErrorCode  PetscViewerRegisterDestroy(void)
 
    Input Parameters:
 +  name_solver - name of a new user-defined viewer
-.  name_create - name of routine to create method context
 -  routine_create - routine to create method context
 
    Level: developer
@@ -257,7 +256,7 @@ PetscErrorCode  PetscViewerRegisterDestroy(void)
 
    Sample usage:
 .vb
-   PetscViewerRegister("my_viewer_type","MyViewerCreate",MyViewerCreate);
+   PetscViewerRegister("my_viewer_type",MyViewerCreate);
 .ve
 
    Then, your solver can be chosen with the procedural interface via
@@ -269,12 +268,12 @@ $     -viewer_type my_viewer_type
 
 .seealso: PetscViewerRegisterAll(), PetscViewerRegisterDestroy()
  @*/
-PetscErrorCode  PetscViewerRegister(const char *sname,const char *name,PetscErrorCode (*function)(PetscViewer))
+PetscErrorCode  PetscViewerRegister(const char *sname,PetscErrorCode (*function)(PetscViewer))
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListAdd(&PetscViewerList,sname,name,(void (*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&PetscViewerList,sname,(void (*)(void))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

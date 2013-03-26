@@ -95,14 +95,13 @@ PetscBool         MatPartitioningRegisterAllCalled = PETSC_FALSE;
 
    Input Parameters:
 +  sname - name of partitioning (for example MATPARTITIONINGCURRENT) or parmetis
-.  name - name of function that creates the partitioning type, a string
 -  function - function pointer that creates the partitioning type
 
    Level: developer
 
    Sample usage:
 .vb
-   MatPartitioningRegister("my_part","MyPartCreate",MyPartCreate);
+   MatPartitioningRegister("my_part",MyPartCreate);
 .ve
 
    Then, your partitioner can be chosen with the procedural interface via
@@ -114,12 +113,12 @@ $     -mat_partitioning_type my_part
 
 .seealso: MatPartitioningRegisterDestroy(), MatPartitioningRegisterAll()
 @*/
-PetscErrorCode  MatPartitioningRegister(const char sname[],const char name[],PetscErrorCode (*function)(MatPartitioning))
+PetscErrorCode  MatPartitioningRegister(const char sname[],PetscErrorCode (*function)(MatPartitioning))
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListAdd(&MatPartitioningList,sname,name,(void (*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&MatPartitioningList,sname,(void (*)(void))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

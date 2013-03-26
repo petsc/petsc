@@ -36,7 +36,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerRegisterAll(void);
 PETSC_EXTERN PetscErrorCode PetscViewerRegisterDestroy(void);
 PETSC_EXTERN PetscErrorCode PetscViewerInitializePackage(void);
 
-PETSC_EXTERN PetscErrorCode PetscViewerRegister(const char[],const char[],PetscErrorCode (*)(PetscViewer));
+PETSC_EXTERN PetscErrorCode PetscViewerRegister(const char[],PetscErrorCode (*)(PetscViewer));
 
 PETSC_EXTERN PetscErrorCode PetscViewerCreate(MPI_Comm,PetscViewer*);
 PETSC_EXTERN PetscErrorCode PetscViewerSetFromOptions(PetscViewer);

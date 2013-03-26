@@ -19,7 +19,6 @@ PETSC_EXTERN PetscErrorCode TSAdaptCreate_CFL(TSAdapt);
 
    Input Parameters:
 +  name_scheme - name of user-defined adaptivity scheme
-.  name_create - name of routine to create method context
 -  routine_create - routine to create method context
 
    Notes:
@@ -27,7 +26,7 @@ PETSC_EXTERN PetscErrorCode TSAdaptCreate_CFL(TSAdapt);
 
    Sample usage:
 .vb
-   TSAdaptRegister("my_scheme","MySchemeCreate",MySchemeCreate);
+   TSAdaptRegister("my_scheme",MySchemeCreate);
 .ve
 
    Then, your scheme can be chosen with the procedural interface via
@@ -41,12 +40,12 @@ $     -ts_adapt_type my_scheme
 
 .seealso: TSAdaptRegisterAll()
 @*/
-PetscErrorCode  TSAdaptRegister(const char sname[],const char name[],PetscErrorCode (*function)(TSAdapt))
+PetscErrorCode  TSAdaptRegister(const char sname[],PetscErrorCode (*function)(TSAdapt))
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListAdd(&TSAdaptList,sname,name,(void(*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&TSAdaptList,sname,(void(*)(void))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -68,9 +67,9 @@ PetscErrorCode  TSAdaptRegisterAll(void)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = TSAdaptRegister(TSADAPTBASIC,"TSAdaptCreate_Basic",TSAdaptCreate_Basic);CHKERRQ(ierr);
-  ierr = TSAdaptRegister(TSADAPTNONE, "TSAdaptCreate_None", TSAdaptCreate_None);CHKERRQ(ierr);
-  ierr = TSAdaptRegister(TSADAPTCFL,  "TSAdaptCreate_CFL",  TSAdaptCreate_CFL);CHKERRQ(ierr);
+  ierr = TSAdaptRegister(TSADAPTBASIC,TSAdaptCreate_Basic);CHKERRQ(ierr);
+  ierr = TSAdaptRegister(TSADAPTNONE, TSAdaptCreate_None);CHKERRQ(ierr);
+  ierr = TSAdaptRegister(TSADAPTCFL,  TSAdaptCreate_CFL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

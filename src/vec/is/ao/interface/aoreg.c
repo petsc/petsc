@@ -91,12 +91,12 @@ PetscErrorCode  AOGetType(AO ao, AOType *type)
 
   Level: advanced
 @*/
-PetscErrorCode  AORegister(const char sname[], const char name[], PetscErrorCode (*function)(AO))
+PetscErrorCode  AORegister(const char sname[], PetscErrorCode (*function)(AO))
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListAdd(&AOList, sname, name, (void (*)(void)) function);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&AOList, sname, (void (*)(void)) function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

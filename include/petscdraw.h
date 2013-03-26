@@ -28,7 +28,7 @@ PETSC_EXTERN PetscErrorCode PetscDrawRegisterAll(void);
 PETSC_EXTERN PetscErrorCode PetscDrawInitializePackage(void);
 PETSC_EXTERN PetscErrorCode PetscDrawRegisterDestroy(void);
 
-PETSC_EXTERN PetscErrorCode PetscDrawRegister(const char[],const char[],PetscErrorCode(*)(PetscDraw));
+PETSC_EXTERN PetscErrorCode PetscDrawRegister(const char[],PetscErrorCode(*)(PetscDraw));
 
 PETSC_EXTERN PetscErrorCode PetscDrawGetType(PetscDraw,PetscDrawType*);
 PETSC_EXTERN PetscErrorCode PetscDrawSetType(PetscDraw,PetscDrawType);

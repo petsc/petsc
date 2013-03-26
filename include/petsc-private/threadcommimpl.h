@@ -124,7 +124,7 @@ struct _p_PetscThreadComm{
 extern PetscThreadComm PETSC_THREAD_COMM_WORLD;
 
 /* register thread communicator models */
-PETSC_EXTERN PetscErrorCode PetscThreadCommRegister(const char[],const char[],PetscErrorCode(*)(PetscThreadComm));
+PETSC_EXTERN PetscErrorCode PetscThreadCommRegister(const char[],PetscErrorCode(*)(PetscThreadComm));
 PETSC_EXTERN PetscErrorCode PetscThreadCommRegisterAll(void);
 
 #undef __FUNCT__

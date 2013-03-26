@@ -76,7 +76,7 @@ PETSC_EXTERN PetscErrorCode SNESSetUpdate(SNES, PetscErrorCode (*)(SNES, PetscIn
 PETSC_EXTERN PetscErrorCode SNESRegisterDestroy(void);
 PETSC_EXTERN PetscErrorCode SNESRegisterAll(void);
 
-PETSC_EXTERN PetscErrorCode SNESRegister(const char[],const char[],PetscErrorCode (*)(SNES));
+PETSC_EXTERN PetscErrorCode SNESRegister(const char[],PetscErrorCode (*)(SNES));
 
 PETSC_EXTERN PetscErrorCode SNESGetKSP(SNES,KSP*);
 PETSC_EXTERN PetscErrorCode SNESSetKSP(SNES,KSP);
@@ -556,7 +556,7 @@ PETSC_EXTERN PetscErrorCode SNESLineSearchBTSetAlpha(SNESLineSearch, PetscReal);
 PETSC_EXTERN PetscErrorCode SNESLineSearchBTGetAlpha(SNESLineSearch, PetscReal*);
 
 /*register line search types */
-PETSC_EXTERN PetscErrorCode SNESLineSearchRegister(const char[],const char[],PetscErrorCode(*)(SNESLineSearch));
+PETSC_EXTERN PetscErrorCode SNESLineSearchRegister(const char[],PetscErrorCode(*)(SNESLineSearch));
 PETSC_EXTERN PetscErrorCode SNESLineSearchRegisterAll(void);
 PETSC_EXTERN PetscErrorCode SNESLineSearchRegisterDestroy(void);
 

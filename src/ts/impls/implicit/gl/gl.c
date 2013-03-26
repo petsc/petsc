@@ -1098,9 +1098,9 @@ static PetscErrorCode TSDestroy_GL(TS ts)
   if (gl->adapt) {ierr = TSGLAdaptDestroy(&gl->adapt);CHKERRQ(ierr);}
   if (gl->Destroy) {ierr = (*gl->Destroy)(gl);CHKERRQ(ierr);}
   ierr = PetscFree(ts->data);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSGLSetType_C",      "",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSGLSetAcceptType_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSGLGetAdapt_C",     "",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSGLSetType_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSGLSetAcceptType_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSGLGetAdapt_C",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1288,7 +1288,6 @@ static PetscErrorCode TSView_GL(TS ts,PetscViewer viewer)
 
    Input Parameters:
 +  name_scheme - name of user-defined general linear scheme
-.  name_create - name of routine to create method context
 -  routine_create - routine to create method context
 
    Notes:
@@ -1296,7 +1295,7 @@ static PetscErrorCode TSView_GL(TS ts,PetscViewer viewer)
 
    Sample usage:
 .vb
-   TSGLRegister("my_scheme","MySchemeCreate",MySchemeCreate);
+   TSGLRegister("my_scheme",MySchemeCreate);
 .ve
 
    Then, your scheme can be chosen with the procedural interface via
@@ -1310,12 +1309,12 @@ $     -ts_gl_type my_scheme
 
 .seealso: TSGLRegisterAll()
 @*/
-PetscErrorCode  TSGLRegister(const char sname[],const char name[],PetscErrorCode (*function)(TS))
+PetscErrorCode  TSGLRegister(const char sname[],PetscErrorCode (*function)(TS))
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListAdd(&TSGLList,sname,name,(void(*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&TSGLList,sname,(void(*)(void))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1328,7 +1327,6 @@ PetscErrorCode  TSGLRegister(const char sname[],const char name[],PetscErrorCode
 
    Input Parameters:
 +  name_scheme - name of user-defined acceptance scheme
-.  name_create - name of routine to create method context
 -  routine_create - routine to create method context
 
    Notes:
@@ -1336,7 +1334,7 @@ PetscErrorCode  TSGLRegister(const char sname[],const char name[],PetscErrorCode
 
    Sample usage:
 .vb
-   TSGLAcceptRegister("my_scheme","MySchemeCreate",MySchemeCreate);
+   TSGLAcceptRegister("my_scheme",MySchemeCreate);
 .ve
 
    Then, your scheme can be chosen with the procedural interface via
@@ -1350,12 +1348,12 @@ $     -ts_gl_accept_type my_scheme
 
 .seealso: TSGLRegisterAll()
 @*/
-PetscErrorCode  TSGLAcceptRegister(const char sname[],const char name[],TSGLAcceptFunction function)
+PetscErrorCode  TSGLAcceptRegister(const char sname[],TSGLAcceptFunction function)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListAdd(&TSGLAcceptList,sname,name,(void(*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&TSGLAcceptList,sname,(void(*)(void))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1380,8 +1378,8 @@ PetscErrorCode  TSGLRegisterAll(void)
   if (TSGLRegisterAllCalled) PetscFunctionReturn(0);
   TSGLRegisterAllCalled = PETSC_TRUE;
 
-  ierr = TSGLRegister(TSGL_IRKS,"TSGLCreate_IRKS",TSGLCreate_IRKS);CHKERRQ(ierr);
-  ierr = TSGLAcceptRegister(TSGLACCEPT_ALWAYS,"TSGLAccept_Always",TSGLAccept_Always);CHKERRQ(ierr);
+  ierr = TSGLRegister(TSGL_IRKS,              TSGLCreate_IRKS);CHKERRQ(ierr);
+  ierr = TSGLAcceptRegister(TSGLACCEPT_ALWAYS,TSGLAccept_Always);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1581,8 +1579,8 @@ PETSC_EXTERN PetscErrorCode TSCreate_GL(TS ts)
   gl->wrms_atol = 1e-8;
   gl->wrms_rtol = 1e-5;
 
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSGLSetType_C",      "TSGLSetType_GL",      &TSGLSetType_GL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSGLSetAcceptType_C","TSGLSetAcceptType_GL",&TSGLSetAcceptType_GL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSGLGetAdapt_C",     "TSGLGetAdapt_GL",     &TSGLGetAdapt_GL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSGLSetType_C",      &TSGLSetType_GL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSGLSetAcceptType_C",&TSGLSetAcceptType_GL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSGLGetAdapt_C",     &TSGLGetAdapt_GL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

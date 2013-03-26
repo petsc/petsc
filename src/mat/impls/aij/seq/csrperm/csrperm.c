@@ -613,7 +613,7 @@ PETSC_EXTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJPERM(Mat A,MatType type,MatR
     ierr = MatSeqAIJPERM_create_perm(B);CHKERRQ(ierr);
   }
 
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqaijperm_seqaij_C","MatConvert_SeqAIJPERM_SeqAIJ",MatConvert_SeqAIJPERM_SeqAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqaijperm_seqaij_C",MatConvert_SeqAIJPERM_SeqAIJ);CHKERRQ(ierr);
 
   ierr    = PetscObjectChangeTypeName((PetscObject)B,MATSEQAIJPERM);CHKERRQ(ierr);
   *newmat = B;

@@ -26,11 +26,11 @@ PetscErrorCode SNESLineSearchRegisterAll(void)
 
   PetscFunctionBegin;
   SNESLineSearchRegisterAllCalled = PETSC_TRUE;
-  ierr = SNESLineSearchRegister(SNESLINESEARCHSHELL,             "SNESLineSearchCreate_Shell",             SNESLineSearchCreate_Shell);CHKERRQ(ierr);
-  ierr = SNESLineSearchRegister(SNESLINESEARCHBASIC,             "SNESLineSearchCreate_Basic",             SNESLineSearchCreate_Basic);CHKERRQ(ierr);
-  ierr = SNESLineSearchRegister(SNESLINESEARCHL2,                "SNESLineSearchCreate_L2",                SNESLineSearchCreate_L2);CHKERRQ(ierr);
-  ierr = SNESLineSearchRegister(SNESLINESEARCHBT,                "SNESLineSearchCreate_BT",                SNESLineSearchCreate_BT);CHKERRQ(ierr);
-  ierr = SNESLineSearchRegister(SNESLINESEARCHCP,                "SNESLineSearchCreate_CP",                SNESLineSearchCreate_CP);CHKERRQ(ierr);
+  ierr = SNESLineSearchRegister(SNESLINESEARCHSHELL, SNESLineSearchCreate_Shell);CHKERRQ(ierr);
+  ierr = SNESLineSearchRegister(SNESLINESEARCHBASIC, SNESLineSearchCreate_Basic);CHKERRQ(ierr);
+  ierr = SNESLineSearchRegister(SNESLINESEARCHL2,    SNESLineSearchCreate_L2);CHKERRQ(ierr);
+  ierr = SNESLineSearchRegister(SNESLINESEARCHBT,    SNESLineSearchCreate_BT);CHKERRQ(ierr);
+  ierr = SNESLineSearchRegister(SNESLINESEARCHCP,    SNESLineSearchCreate_CP);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

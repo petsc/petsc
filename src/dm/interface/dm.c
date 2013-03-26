@@ -2541,7 +2541,6 @@ foundconv:
 
   Input Parameters:
 + name        - The name of a new user-defined creation routine
-. func_name   - The name of routine to create method context
 - create_func - The creation routine itself
 
   Notes:
@@ -2550,7 +2549,7 @@ foundconv:
 
   Sample usage:
 .vb
-    DMRegister("my_da","MyDMCreate", MyDMCreate);
+    DMRegister("my_da", MyDMCreate);
 .ve
 
   Then, your DM type can be chosen with the procedural interface via
@@ -2566,15 +2565,15 @@ foundconv:
   Level: advanced
 
 .keywords: DM, register
-.seealso: DMRegisterAll(), DMRegisterDestroy(), DMRegister()
+.seealso: DMRegisterAll(), DMRegisterDestroy()
 
 @*/
-PetscErrorCode  DMRegister(const char sname[], const char name[], PetscErrorCode (*function)(DM))
+PetscErrorCode  DMRegister(const char sname[],PetscErrorCode (*function)(DM))
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListAdd(&DMList, sname, name, (void (*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&DMList, sname, (void (*)(void))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

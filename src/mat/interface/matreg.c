@@ -139,7 +139,6 @@ PetscErrorCode  MatGetType(Mat mat,MatType *type)
 
    Input Parameters:
 +  name - name of a new user-defined matrix type
-.  name_create - name of routine to create method context
 -  routine_create - routine to create method context
 
    Notes:
@@ -147,7 +146,7 @@ PetscErrorCode  MatGetType(Mat mat,MatType *type)
 
    Sample usage:
 .vb
-   MatRegister("my_mat","MyMatCreate",MyMatCreate);
+   MatRegister("my_mat",MyMatCreate);
 .ve
 
    Then, your solver can be chosen with the procedural interface via
@@ -164,12 +163,12 @@ $     -mat_type my_mat
 
   Level: advanced
 @*/
-PetscErrorCode  MatRegister(const char sname[],const char name[],PetscErrorCode (*function)(Mat))
+PetscErrorCode  MatRegister(const char sname[],PetscErrorCode (*function)(Mat))
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListAdd(&MatList,sname,name,(void (*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&MatList,sname,(void (*)(void))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

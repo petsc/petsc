@@ -640,6 +640,6 @@ PetscErrorCode KSPMatRegisterAll()
   PetscFunctionBegin;
   if (KSPMatRegisterAllCalled) PetscFunctionReturn(0);
   KSPMatRegisterAllCalled = PETSC_TRUE;
-  ierr = MatRegister(MATSCHURCOMPLEMENT,"MatCreate_SchurComplement",MatCreate_SchurComplement);CHKERRQ(ierr);
+  ierr = MatRegister(MATSCHURCOMPLEMENT,MatCreate_SchurComplement);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

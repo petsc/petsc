@@ -297,19 +297,16 @@ PetscErrorCode  PFView(PF pf,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-/*MC
-   PFRegisterDynamic - Adds a method to the mathematical function package.
 
-   Synopsis:
-   #include "petscpf.h"
-   PetscErrorCode PFRegister(char *name_solver,char *name_create,PetscErrorCode (*routine_create)(PF))
+#undef __FUNCT__
+#define __FUNCT__ "PFRegister"
+/*@C
+   PFRegister - Adds a method to the mathematical function package.
 
    Not collective
 
    Input Parameters:
 +  name_solver - name of a new user-defined solver
-.  path - path (either absolute or relative) the library containing this solver
-.  name_create - name of routine to create method context
 -  routine_create - routine to create method context
 
    Notes:
@@ -317,7 +314,7 @@ PetscErrorCode  PFView(PF pf,PetscViewer viewer)
 
    Sample usage:
 .vb
-   PFRegister("my_function","MyFunctionCreate",MyFunctionSetCreate);
+   PFRegister("my_function",MyFunctionSetCreate);
 .ve
 
    Then, your solver can be chosen with the procedural interface via
@@ -330,16 +327,13 @@ $     -pf_type my_function
 .keywords: PF, register
 
 .seealso: PFRegisterAll(), PFRegisterDestroy(), PFRegister()
-M*/
-
-#undef __FUNCT__
-#define __FUNCT__ "PFRegister"
-PetscErrorCode  PFRegister(const char sname[],const char name[],PetscErrorCode (*function)(PF,void*))
+@*/
+PetscErrorCode  PFRegister(const char sname[],PetscErrorCode (*function)(PF,void*))
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListAdd(&PFunctionList,sname,name,(void (*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&PFunctionList,sname,(void (*)(void))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

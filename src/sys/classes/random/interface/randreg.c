@@ -90,7 +90,6 @@ PetscErrorCode  PetscRandomGetType(PetscRandom rnd, PetscRandomType *type)
 
   Input Parameters:
 + name        - The name of a new user-defined creation routine
-. func_name   - The name of routine to create method context
 - create_func - The creation routine itself
 
   Notes:
@@ -98,7 +97,7 @@ PetscErrorCode  PetscRandomGetType(PetscRandom rnd, PetscRandomType *type)
 
   Sample usage:
 .vb
-    PetscRandomRegister("my_rand", "MyPetscRandomtorCreate", MyPetscRandomtorCreate);
+    PetscRandomRegister("my_rand",  MyPetscRandomtorCreate);
 .ve
 
   Then, your random type can be chosen with the procedural interface via
@@ -120,12 +119,12 @@ PetscErrorCode  PetscRandomGetType(PetscRandom rnd, PetscRandomType *type)
 
 .seealso: PetscRandomRegisterAll(), PetscRandomRegisterDestroy(), PetscRandomRegister()
 @*/
-PetscErrorCode  PetscRandomRegister(const char sname[], const char name[], PetscErrorCode (*function)(PetscRandom))
+PetscErrorCode  PetscRandomRegister(const char sname[], PetscErrorCode (*function)(PetscRandom))
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListAdd(&PetscRandomList,sname,name,(void (*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&PetscRandomList,sname,(void (*)(void))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -183,13 +182,13 @@ PetscErrorCode  PetscRandomRegisterAll(void)
   PetscFunctionBegin;
   PetscRandomRegisterAllCalled = PETSC_TRUE;
 #if defined(PETSC_HAVE_RAND)
-  ierr = PetscRandomRegister(PETSCRAND,  "PetscRandomCreate_Rand",  PetscRandomCreate_Rand);CHKERRQ(ierr);
+  ierr = PetscRandomRegister(PETSCRAND,  PetscRandomCreate_Rand);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_DRAND48)
-  ierr = PetscRandomRegister(PETSCRAND48,"PetscRandomCreate_Rand48",PetscRandomCreate_Rand48);CHKERRQ(ierr);
+  ierr = PetscRandomRegister(PETSCRAND48,PetscRandomCreate_Rand48);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_SPRNG)
-  ierr = PetscRandomRegister(PETSCSPRNG, "PetscRandomCreate_Sprng",PetscRandomCreate_Sprng);CHKERRQ(ierr);
+  ierr = PetscRandomRegister(PETSCSPRNG, PetscRandomCreate_Sprng);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
 }

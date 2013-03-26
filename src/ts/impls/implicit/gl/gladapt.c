@@ -31,7 +31,6 @@ PETSC_EXTERN PetscErrorCode TSGLAdaptCreate_Both(TSGLAdapt);
 
    Input Parameters:
 +  name_scheme - name of user-defined adaptivity scheme
-.  name_create - name of routine to create method context
 -  routine_create - routine to create method context
 
    Notes:
@@ -39,7 +38,7 @@ PETSC_EXTERN PetscErrorCode TSGLAdaptCreate_Both(TSGLAdapt);
 
    Sample usage:
 .vb
-   TSGLAdaptRegister("my_scheme","MySchemeCreate",MySchemeCreate);
+   TSGLAdaptRegister("my_scheme",MySchemeCreate);
 .ve
 
    Then, your scheme can be chosen with the procedural interface via
@@ -53,12 +52,12 @@ $     -ts_adapt_type my_scheme
 
 .seealso: TSGLAdaptRegisterAll()
 @*/
-PetscErrorCode  TSGLAdaptRegister(const char sname[],const char name[],PetscErrorCode (*function)(TSGLAdapt))
+PetscErrorCode  TSGLAdaptRegister(const char sname[],PetscErrorCode (*function)(TSGLAdapt))
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListAdd(&TSGLAdaptList,sname,name,(void (*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&TSGLAdaptList,sname,(void (*)(void))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -80,9 +79,9 @@ PetscErrorCode  TSGLAdaptRegisterAll(void)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = TSGLAdaptRegister(TSGLADAPT_NONE,"TSGLAdaptCreate_None",TSGLAdaptCreate_None);CHKERRQ(ierr);
-  ierr = TSGLAdaptRegister(TSGLADAPT_SIZE,"TSGLAdaptCreate_Size",TSGLAdaptCreate_Size);CHKERRQ(ierr);
-  ierr = TSGLAdaptRegister(TSGLADAPT_BOTH,"TSGLAdaptCreate_Both",TSGLAdaptCreate_Both);CHKERRQ(ierr);
+  ierr = TSGLAdaptRegister(TSGLADAPT_NONE,TSGLAdaptCreate_None);CHKERRQ(ierr);
+  ierr = TSGLAdaptRegister(TSGLADAPT_SIZE,TSGLAdaptCreate_Size);CHKERRQ(ierr);
+  ierr = TSGLAdaptRegister(TSGLADAPT_BOTH,TSGLAdaptCreate_Both);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

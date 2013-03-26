@@ -368,10 +368,10 @@ PETSC_EXTERN PetscErrorCode PCCreate_AINVCUSP(PC pc)
   pc->ops->applysymmetricleft  = 0;
   pc->ops->applysymmetricright = 0;
 
-  ierr = PetscObjectComposeFunction((PetscObject)pc, "PCAINVCUSPSetDropTolerance_C", "PCAINVCUSPSetDropTolerance_AINVCUSP", PCAINVCUSPSetDropTolerance_AINVCUSP);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc, "PCAINVCUSPUseScaling_C", "PCAINVCUSPUseScaling_AINVCUSP", PCAINVCUSPUseScaling_AINVCUSP);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc, "PCAINVCUSPSetLinParameter_C", "PCAINVCUSPSetLinParameter_AINVCUSP", PCAINVCUSPSetLinParameter_AINVCUSP);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc, "PCAINVCUSPSetNonzeros_C", "PCAINVCUSPSetNonzeros_AINVCUSP", PCAINVCUSPSetNonzeros_AINVCUSP);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc, "PCAINVCUSPSetDropTolerance_C", PCAINVCUSPSetDropTolerance_AINVCUSP);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc, "PCAINVCUSPUseScaling_C",  PCAINVCUSPUseScaling_AINVCUSP);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc, "PCAINVCUSPSetLinParameter_C" PCAINVCUSPSetLinParameter_AINVCUSP);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc, "PCAINVCUSPSetNonzeros_C",  PCAINVCUSPSetNonzeros_AINVCUSP);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

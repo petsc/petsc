@@ -238,7 +238,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_KSP(PC pc)
 
 
   jac->its             = 0;
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCKSPGetKSP_C","PCKSPGetKSP_KSP",PCKSPGetKSP_KSP);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCKSPGetKSP_C",PCKSPGetKSP_KSP);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

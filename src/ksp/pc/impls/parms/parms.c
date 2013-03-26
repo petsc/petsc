@@ -265,12 +265,12 @@ static PetscErrorCode PCDestroy_PARMS(PC pc)
   ierr = PetscFree(pc->data);CHKERRQ(ierr);
 
   ierr = PetscObjectChangeTypeName((PetscObject)pc,0);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCPARMSSetGlobal_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCPARMSSetLocal_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCPARMSSetSolveTolerances_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCPARMSSetSolveRestart_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCPARMSSetNonsymPerm_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCPARMSSetFill_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCPARMSSetGlobal_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCPARMSSetLocal_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCPARMSSetSolveTolerances_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCPARMSSetSolveRestart_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCPARMSSetNonsymPerm_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCPARMSSetFill_C",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -732,11 +732,11 @@ PETSC_EXTERN PetscErrorCode PCCreate_PARMS(PC pc)
   pc->ops->apply          = PCApply_PARMS;
   pc->ops->view           = PCView_PARMS;
 
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCPARMSSetGlobal_C","PCPARMSSetGlobal_PARMS",PCPARMSSetGlobal_PARMS);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCPARMSSetLocal_C","PCPARMSSetLocal_PARMS",PCPARMSSetLocal_PARMS);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCPARMSSetSolveTolerances_C","PCPARMSSetSolveTolerances_PARMS",PCPARMSSetSolveTolerances_PARMS);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCPARMSSetSolveRestart_C","PCPARMSSetSolveRestart_PARMS",PCPARMSSetSolveRestart_PARMS);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCPARMSSetNonsymPerm_C","PCPARMSSetNonsymPerm_PARMS",PCPARMSSetNonsymPerm_PARMS);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCPARMSSetFill_C","PCPARMSSetFill_PARMS",PCPARMSSetFill_PARMS);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCPARMSSetGlobal_C",PCPARMSSetGlobal_PARMS);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCPARMSSetLocal_C",PCPARMSSetLocal_PARMS);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCPARMSSetSolveTolerances_C",PCPARMSSetSolveTolerances_PARMS);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCPARMSSetSolveRestart_C",PCPARMSSetSolveRestart_PARMS);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCPARMSSetNonsymPerm_C",PCPARMSSetNonsymPerm_PARMS);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCPARMSSetFill_C",PCPARMSSetFill_PARMS);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

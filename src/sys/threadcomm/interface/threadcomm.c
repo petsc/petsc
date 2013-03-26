@@ -581,12 +581,12 @@ PetscErrorCode  PetscThreadCommRegisterDestroy(void)
 
   Level: advanced
 @*/
-PetscErrorCode  PetscThreadCommRegister(const char sname[],const char name[],PetscErrorCode (*function)(PetscThreadComm))
+PetscErrorCode  PetscThreadCommRegister(const char sname[],PetscErrorCode (*function)(PetscThreadComm))
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListAdd(&PetscThreadCommList,sname,name,(void (*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&PetscThreadCommList,sname,(void (*)(void))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

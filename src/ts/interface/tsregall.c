@@ -35,20 +35,20 @@ PetscErrorCode  TSRegisterAll(void)
   PetscFunctionBegin;
   TSRegisterAllCalled = PETSC_TRUE;
 
-  ierr = TSRegister(TSEULER,           "TSCreate_Euler",    TSCreate_Euler);CHKERRQ(ierr);
-  ierr = TSRegister(TSBEULER,          "TSCreate_BEuler",   TSCreate_BEuler);CHKERRQ(ierr);
-  ierr = TSRegister(TSCN,              "TSCreate_CN",       TSCreate_CN);CHKERRQ(ierr);
-  ierr = TSRegister(TSPSEUDO,          "TSCreate_Pseudo",   TSCreate_Pseudo);CHKERRQ(ierr);
-  ierr = TSRegister(TSGL,              "TSCreate_GL",       TSCreate_GL);CHKERRQ(ierr);
-  ierr = TSRegister(TSSSP,             "TSCreate_SSP",      TSCreate_SSP);CHKERRQ(ierr);
-  ierr = TSRegister(TSTHETA,           "TSCreate_Theta",    TSCreate_Theta);CHKERRQ(ierr);
-  ierr = TSRegister(TSALPHA,           "TSCreate_Alpha",    TSCreate_Alpha);CHKERRQ(ierr);
+  ierr = TSRegister(TSEULER,    TSCreate_Euler);CHKERRQ(ierr);
+  ierr = TSRegister(TSBEULER,   TSCreate_BEuler);CHKERRQ(ierr);
+  ierr = TSRegister(TSCN,       TSCreate_CN);CHKERRQ(ierr);
+  ierr = TSRegister(TSPSEUDO,   TSCreate_Pseudo);CHKERRQ(ierr);
+  ierr = TSRegister(TSGL,       TSCreate_GL);CHKERRQ(ierr);
+  ierr = TSRegister(TSSSP,      TSCreate_SSP);CHKERRQ(ierr);
+  ierr = TSRegister(TSTHETA,    TSCreate_Theta);CHKERRQ(ierr);
+  ierr = TSRegister(TSALPHA,    TSCreate_Alpha);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_SUNDIALS)
-  ierr = TSRegister(TSSUNDIALS,        "TSCreate_Sundials", TSCreate_Sundials);CHKERRQ(ierr);
+  ierr = TSRegister(TSSUNDIALS, TSCreate_Sundials);CHKERRQ(ierr);
 #endif
-  ierr = TSRegister(TSRK,              "TSCreate_RK",       TSCreate_RK);CHKERRQ(ierr);
-  ierr = TSRegister(TSARKIMEX,         "TSCreate_ARKIMEX",  TSCreate_ARKIMEX);CHKERRQ(ierr);
-  ierr = TSRegister(TSROSW,            "TSCreate_RosW",     TSCreate_RosW);CHKERRQ(ierr);
+  ierr = TSRegister(TSRK,       TSCreate_RK);CHKERRQ(ierr);
+  ierr = TSRegister(TSARKIMEX,  TSCreate_ARKIMEX);CHKERRQ(ierr);
+  ierr = TSRegister(TSROSW,     TSCreate_RosW);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

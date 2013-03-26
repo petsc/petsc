@@ -31,12 +31,12 @@ PetscErrorCode PetscThreadCommRegisterAll(void)
   PetscFunctionBegin;
   PetscThreadCommRegisterAllCalled = PETSC_TRUE;
 
-  ierr = PetscThreadCommRegister(NOTHREAD,"PetscThreadCommCreate_NoThread", PetscThreadCommCreate_NoThread);CHKERRQ(ierr);
+  ierr = PetscThreadCommRegister(NOTHREAD,PetscThreadCommCreate_NoThread);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_PTHREADCLASSES)
-  ierr = PetscThreadCommRegister(PTHREAD, "PetscThreadCommCreate_PThread",  PetscThreadCommCreate_PThread);CHKERRQ(ierr);
+  ierr = PetscThreadCommRegister(PTHREAD, PetscThreadCommCreate_PThread);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_OPENMP)
-  ierr = PetscThreadCommRegister(OPENMP,  "PetscThreadCommCreate_OpenMP",   PetscThreadCommCreate_OpenMP);CHKERRQ(ierr);
+  ierr = PetscThreadCommRegister(OPENMP,  PetscThreadCommCreate_OpenMP);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
 }

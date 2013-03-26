@@ -177,7 +177,6 @@ PetscErrorCode  MatMFFDResetHHistory_MFFD(Mat J)
 
    Input Parameters:
 +  name_solver - name of a new user-defined compute-h module
-.  name_create - name of routine to create method context
 -  routine_create - routine to create method context
 
    Level: developer
@@ -187,7 +186,7 @@ PetscErrorCode  MatMFFDResetHHistory_MFFD(Mat J)
 
    Sample usage:
 .vb
-   MatMFFDRegister("my_h","MyHCreate",MyHCreate);
+   MatMFFDRegister("my_h",MyHCreate);
 .ve
 
    Then, your solver can be chosen with the procedural interface via
@@ -199,12 +198,12 @@ $     -snes_mf_type my_h
 
 .seealso: MatMFFDRegisterAll(), MatMFFDRegisterDestroy()
  @*/
-PetscErrorCode  MatMFFDRegister(const char sname[],const char name[],PetscErrorCode (*function)(MatMFFD))
+PetscErrorCode  MatMFFDRegister(const char sname[],PetscErrorCode (*function)(MatMFFD))
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListAdd(&MatMFFDList,sname,name,(void (*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&MatMFFDList,sname,(void (*)(void))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -269,15 +268,15 @@ PetscErrorCode MatDestroy_MFFD(Mat mat)
   ierr      = PetscHeaderDestroy(&ctx);CHKERRQ(ierr);
   mat->data = 0;
 
-  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMFFDSetBase_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMFFDSetFunctioniBase_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMFFDSetFunctioni_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMFFDSetFunction_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMFFDSetFunctionError_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMFFDSetCheckh_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMFFDSetPeriod_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMFFDResetHHistory_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMFFDAddNullSpace_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMFFDSetBase_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMFFDSetFunctioniBase_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMFFDSetFunctioni_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMFFDSetFunction_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMFFDSetFunctionError_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMFFDSetCheckh_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMFFDSetPeriod_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMFFDResetHHistory_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMFFDAddNullSpace_C",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -770,15 +769,15 @@ PETSC_EXTERN PetscErrorCode MatCreate_MFFD(Mat A)
   ierr = PetscLayoutSetUp(A->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(A->cmap);CHKERRQ(ierr);
 
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatMFFDSetBase_C","MatMFFDSetBase_MFFD",MatMFFDSetBase_MFFD);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatMFFDSetFunctioniBase_C","MatMFFDSetFunctioniBase_MFFD",MatMFFDSetFunctioniBase_MFFD);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatMFFDSetFunctioni_C","MatMFFDSetFunctioni_MFFD",MatMFFDSetFunctioni_MFFD);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatMFFDSetFunction_C","MatMFFDSetFunction_MFFD",MatMFFDSetFunction_MFFD);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatMFFDSetCheckh_C","MatMFFDSetCheckh_MFFD",MatMFFDSetCheckh_MFFD);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatMFFDSetPeriod_C","MatMFFDSetPeriod_MFFD",MatMFFDSetPeriod_MFFD);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatMFFDSetFunctionError_C","MatMFFDSetFunctionError_MFFD",MatMFFDSetFunctionError_MFFD);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatMFFDResetHHistory_C","MatMFFDResetHHistory_MFFD",MatMFFDResetHHistory_MFFD);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatMFFDAddNullSpace_C","MatMFFDAddNullSpace_MFFD",MatMFFDAddNullSpace_MFFD);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatMFFDSetBase_C",MatMFFDSetBase_MFFD);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatMFFDSetFunctioniBase_C",MatMFFDSetFunctioniBase_MFFD);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatMFFDSetFunctioni_C",MatMFFDSetFunctioni_MFFD);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatMFFDSetFunction_C",MatMFFDSetFunction_MFFD);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatMFFDSetCheckh_C",MatMFFDSetCheckh_MFFD);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatMFFDSetPeriod_C",MatMFFDSetPeriod_MFFD);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatMFFDSetFunctionError_C",MatMFFDSetFunctionError_MFFD);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatMFFDResetHHistory_C",MatMFFDResetHHistory_MFFD);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatMFFDAddNullSpace_C",MatMFFDAddNullSpace_MFFD);CHKERRQ(ierr);
 
   mfctx->mat = A;
 

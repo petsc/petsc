@@ -68,7 +68,7 @@ PetscErrorCode  DMInitializePackage(void)
 #endif
 
 #if defined(PETSC_HAVE_HYPRE)
-  ierr = MatRegister(MATHYPRESTRUCT,"MatCreate_HYPREStruct", MatCreate_HYPREStruct);CHKERRQ(ierr);
+  ierr = MatRegister(MATHYPRESTRUCT, MatCreate_HYPREStruct);CHKERRQ(ierr);
 #endif
 
   /* Register Constructors */

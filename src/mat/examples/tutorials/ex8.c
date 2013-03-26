@@ -48,13 +48,13 @@ PetscErrorCode RegisterMatScaleUserImpl(Mat mat)
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)mat), &size);CHKERRQ(ierr);
 
   if (size == 1) { /* SeqAIJ Matrix */
-    ierr = PetscObjectComposeFunction((PetscObject)mat,"MatScaleUserImpl_C","MatScaleUserImpl_SeqAIJ",MatScaleUserImpl_SeqAIJ);CHKERRQ(ierr);
+    ierr = PetscObjectComposeFunction((PetscObject)mat,"MatScaleUserImpl_C",MatScaleUserImpl_SeqAIJ);CHKERRQ(ierr);
 
   } else { /* MPIAIJ Matrix */
     Mat_MPIAIJ *a = (Mat_MPIAIJ*)mat->data;
-    ierr = PetscObjectComposeFunction((PetscObject)mat,"MatScaleUserImpl_C","MatScaleUserImpl_MPIAIJ",MatScaleUserImpl_MPIAIJ);CHKERRQ(ierr);
-    ierr = PetscObjectComposeFunction((PetscObject)(a->A),"MatScaleUserImpl_C","MatScaleUserImpl_SeqAIJ",MatScaleUserImpl_SeqAIJ);CHKERRQ(ierr);
-    ierr = PetscObjectComposeFunction((PetscObject)(a->B),"MatScaleUserImpl_C","MatScaleUserImpl_SeqAIJ",MatScaleUserImpl_SeqAIJ);CHKERRQ(ierr);
+    ierr = PetscObjectComposeFunction((PetscObject)mat,"MatScaleUserImpl_C",MatScaleUserImpl_MPIAIJ);CHKERRQ(ierr);
+    ierr = PetscObjectComposeFunction((PetscObject)(a->A),"MatScaleUserImpl_C",MatScaleUserImpl_SeqAIJ);CHKERRQ(ierr);
+    ierr = PetscObjectComposeFunction((PetscObject)(a->B),"MatScaleUserImpl_C",MatScaleUserImpl_SeqAIJ);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

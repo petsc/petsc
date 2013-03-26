@@ -901,7 +901,6 @@ PetscErrorCode  KSPGetType(KSP ksp,KSPType *type)
 
    Input Parameters:
 +  name_solver - name of a new user-defined solver
-.  name_create - name of routine to create method context
 -  routine_create - routine to create method context
 
    Notes:
@@ -909,7 +908,7 @@ PetscErrorCode  KSPGetType(KSP ksp,KSPType *type)
 
    Sample usage:
 .vb
-   KSPRegister("my_solver","MySolverCreate",MySolverCreate);
+   KSPRegister("my_solver",MySolverCreate);
 .ve
 
    Then, your solver can be chosen with the procedural interface via
@@ -924,12 +923,12 @@ $     -ksp_type my_solver
 .seealso: KSPRegisterAll(), KSPRegisterDestroy()
 
 @*/
-PetscErrorCode  KSPRegister(const char sname[],const char name[],PetscErrorCode (*function)(KSP))
+PetscErrorCode  KSPRegister(const char sname[],PetscErrorCode (*function)(KSP))
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListAdd(&KSPList,sname,name,(void (*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&KSPList,sname,(void (*)(void))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

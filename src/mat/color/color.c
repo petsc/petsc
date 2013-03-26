@@ -384,14 +384,13 @@ PetscBool         MatColoringRegisterAllCalled = PETSC_FALSE;
 
    Input Parameters:
 +  sname - name of Coloring (for example MATCOLORINGSL)
-.  name - name of function that creates the Coloring type, a string
 -  function - function pointer that creates the coloring
 
    Level: developer
 
    Sample usage:
 .vb
-   MatColoringRegister("my_color","MyColor",MyColor);
+   MatColoringRegister("my_color",MyColor);
 .ve
 
    Then, your partitioner can be chosen with the procedural interface via
@@ -403,12 +402,12 @@ $     -mat_coloring_type my_color
 
 .seealso: MatColoringRegisterDestroy(), MatColoringRegisterAll()
 @*/
-PetscErrorCode  MatColoringRegister(const char sname[],const char name[],PetscErrorCode (*function)(Mat,MatColoringType,ISColoring*))
+PetscErrorCode  MatColoringRegister(const char sname[],PetscErrorCode (*function)(Mat,MatColoringType,ISColoring*))
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListAdd(&MatColoringList,sname,name,(void (*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&MatColoringList,sname,(void (*)(void))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -582,7 +582,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_HYPREStruct(Mat B)
   ex->needsinitialization = PETSC_TRUE;
 
   ierr = MPI_Comm_dup(PetscObjectComm((PetscObject)B),&(ex->hcomm));CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatSetupDM_C","MatSetupDM_HYPREStruct",MatSetupDM_HYPREStruct);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatSetupDM_C",MatSetupDM_HYPREStruct);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATHYPRESTRUCT);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1109,7 +1109,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_HYPRESStruct(Mat B)
   ex->needsinitialization = PETSC_TRUE;
 
   ierr = MPI_Comm_dup(PetscObjectComm((PetscObject)B),&(ex->hcomm));CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatSetupDM_C","MatSetupDM_HYPRESStruct",MatSetupDM_HYPRESStruct);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatSetupDM_C",MatSetupDM_HYPRESStruct);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATHYPRESSTRUCT);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

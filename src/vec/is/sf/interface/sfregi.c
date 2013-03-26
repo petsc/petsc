@@ -27,9 +27,9 @@ PetscErrorCode  PetscSFRegisterAll(void)
   PetscFunctionBegin;
   PetscSFRegisterAllCalled = PETSC_TRUE;
 #if defined(PETSC_HAVE_MPI_WIN_CREATE) && defined(PETSC_HAVE_MPI_TYPE_DUP)
-  ierr = PetscSFRegister(PETSCSFWINDOW, "PetscSFCreate_Window",       PetscSFCreate_Window);CHKERRQ(ierr);
+  ierr = PetscSFRegister(PETSCSFWINDOW, PetscSFCreate_Window);CHKERRQ(ierr);
 #endif
-  ierr = PetscSFRegister(PETSCSFBASIC,  "PetscSFCreate_Basic",        PetscSFCreate_Basic);CHKERRQ(ierr);
+  ierr = PetscSFRegister(PETSCSFBASIC,  PetscSFCreate_Basic);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -42,7 +42,6 @@ PetscErrorCode  PetscSFRegisterAll(void)
 
    Input Parameters:
 +  name_impl - name of a new user-defined implementation
-.  name_create - name of routine to create method context
 -  routine_create - routine to create method context
 
    Notes:
@@ -50,7 +49,7 @@ PetscErrorCode  PetscSFRegisterAll(void)
 
    Sample usage:
 .vb
-   PetscSFRegister("my_impl","MyImplCreate",MyImplCreate);
+   PetscSFRegister("my_impl",MyImplCreate);
 .ve
 
    Then, this implementation can be chosen with the procedural interface via
@@ -64,12 +63,12 @@ $     -snes_type my_solver
 
 .seealso: PetscSFRegisterAll(), PetscSFRegisterDestroy()
 @*/
-PetscErrorCode  PetscSFRegister(const char sname[],const char name[],PetscErrorCode (*function)(PetscSF))
+PetscErrorCode  PetscSFRegister(const char sname[],PetscErrorCode (*function)(PetscSF))
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListAdd(&PetscSFunctionList,sname,name,(void (*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&PetscSFunctionList,sname,(void (*)(void))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

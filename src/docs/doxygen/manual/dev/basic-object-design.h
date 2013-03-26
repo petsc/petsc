@@ -362,7 +362,7 @@ Each %PETSc object contains a PetscFList object. The `composefunction()` and
 `queryfunction()` are given by
 
 \code
-PetscErrorCode PetscObjectComposeFunction_Petsc(PetscObject obj,char *name,char *fname,void *ptr)
+PetscErrorCode PetscObjectComposeFunction_Petsc(PetscObject obj,char *name,void *ptr)
 {
   PetscErrorCode ierr;
 

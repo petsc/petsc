@@ -1307,8 +1307,8 @@ PETSC_EXTERN PetscErrorCode PetscObjectGetNewTag(PetscObject,PetscMPIInt *);
 PETSC_EXTERN PetscErrorCode PetscObjectCompose(PetscObject,const char[],PetscObject);
 PETSC_EXTERN PetscErrorCode PetscObjectRemoveReference(PetscObject,const char[]);
 PETSC_EXTERN PetscErrorCode PetscObjectQuery(PetscObject,const char[],PetscObject *);
-PETSC_EXTERN PetscErrorCode PetscObjectComposeFunction_Private(PetscObject,const char[],const char[],void (*)(void));
-#define PetscObjectComposeFunction(a,b,c,d) PetscObjectComposeFunction_Private(a,b,c,(PetscVoidFunction)(d))
+PETSC_EXTERN PetscErrorCode PetscObjectComposeFunction_Private(PetscObject,const char[],void (*)(void));
+#define PetscObjectComposeFunction(a,b,d) PetscObjectComposeFunction_Private(a,b,(PetscVoidFunction)(d))
 PETSC_EXTERN PetscErrorCode PetscObjectSetFromOptions(PetscObject);
 PETSC_EXTERN PetscErrorCode PetscObjectSetUp(PetscObject);
 PETSC_EXTERN PetscErrorCode PetscCommGetNewTag(MPI_Comm,PetscMPIInt *);
@@ -1396,7 +1396,7 @@ PETSC_EXTERN PetscErrorCode PetscObjectListDuplicate(PetscObjectList,PetscObject
     Dynamic library lists. Lists of names of routines in objects or in dynamic
   link libraries that will be loaded as needed.
 */
-PETSC_EXTERN PetscErrorCode PetscFunctionListAdd(PetscFunctionList*,const char[],const char[],void (*)(void));
+PETSC_EXTERN PetscErrorCode PetscFunctionListAdd(PetscFunctionList*,const char[],void (*)(void));
 PETSC_EXTERN PetscErrorCode PetscFunctionListDestroy(PetscFunctionList*);
 PETSC_EXTERN PetscErrorCode PetscFunctionListFind(PetscFunctionList,const char[],void (**)(void));
 PETSC_EXTERN PetscErrorCode PetscFunctionListPrintTypes(MPI_Comm,FILE*,const char[],const char[],const char[],const char[],PetscFunctionList,const char[]);
@@ -2118,7 +2118,7 @@ PETSC_EXTERN PetscFunctionList PetscRandomList;
 PETSC_EXTERN PetscBool         PetscRandomRegisterAllCalled;
 
 PETSC_EXTERN PetscErrorCode PetscRandomRegisterAll(void);
-PETSC_EXTERN PetscErrorCode PetscRandomRegister(const char[],const char[],PetscErrorCode (*)(PetscRandom));
+PETSC_EXTERN PetscErrorCode PetscRandomRegister(const char[],PetscErrorCode (*)(PetscRandom));
 PETSC_EXTERN PetscErrorCode PetscRandomRegisterDestroy(void);
 PETSC_EXTERN PetscErrorCode PetscRandomSetType(PetscRandom, PetscRandomType);
 PETSC_EXTERN PetscErrorCode PetscRandomSetFromOptions(PetscRandom);

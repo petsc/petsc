@@ -134,7 +134,6 @@ PetscErrorCode  ISGetType(IS is, ISType *type)
 
   Input Parameters:
 + name        - The name of a new user-defined creation routine
-. func_name   - The name of routine to create method context
 - create_func - The creation routine itself
 
   Notes:
@@ -142,7 +141,7 @@ PetscErrorCode  ISGetType(IS is, ISType *type)
 
   Sample usage:
 .vb
-    ISRegister("my_is_name", "MyISCreate", MyISCreate);
+    ISRegister("my_is_name",  MyISCreate);
 .ve
 
   Then, your vector type can be chosen with the procedural interface via
@@ -165,12 +164,12 @@ PetscErrorCode  ISGetType(IS is, ISType *type)
 
   Level: advanced
 @*/
-PetscErrorCode  ISRegister(const char sname[], const char name[], PetscErrorCode (*function)(IS))
+PetscErrorCode  ISRegister(const char sname[], PetscErrorCode (*function)(IS))
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListAdd(&ISList, sname, name, (void (*)(void)) function);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&ISList, sname, (void (*)(void)) function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

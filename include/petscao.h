@@ -57,7 +57,7 @@ PETSC_EXTERN PetscBool         AORegisterAllCalled;
 PETSC_EXTERN PetscErrorCode AOSetType(AO, AOType);
 PETSC_EXTERN PetscErrorCode AOGetType(AO, AOType *);
 
-PETSC_EXTERN PetscErrorCode AORegister(const char [], const char [], PetscErrorCode (*)(AO));
+PETSC_EXTERN PetscErrorCode AORegister(const char [], PetscErrorCode (*)(AO));
 PETSC_EXTERN PetscErrorCode AORegisterAll(void);
 PETSC_EXTERN PetscErrorCode AORegisterDestroy(void);
 

@@ -4060,7 +4060,6 @@ PetscErrorCode  SNESGetOptionsPrefix(SNES snes,const char *prefix[])
 
    Input Parameters:
 +  name_solver - name of a new user-defined solver
-.  name_create - name of routine to create method context
 -  routine_create - routine to create method context
 
    Notes:
@@ -4068,7 +4067,7 @@ PetscErrorCode  SNESGetOptionsPrefix(SNES snes,const char *prefix[])
 
    Sample usage:
 .vb
-   SNESRegister("my_solver","MySolverCreate",MySolverCreate);
+   SNESRegister("my_solver",MySolverCreate);
 .ve
 
    Then, your solver can be chosen with the procedural interface via
@@ -4086,12 +4085,12 @@ $     -snes_type my_solver
 
   Level: advanced
 @*/
-PetscErrorCode  SNESRegister(const char sname[],const char name[],PetscErrorCode (*function)(SNES))
+PetscErrorCode  SNESRegister(const char sname[],PetscErrorCode (*function)(SNES))
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListAdd(&SNESList,sname,name,(void (*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&SNESList,sname,(void (*)(void))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

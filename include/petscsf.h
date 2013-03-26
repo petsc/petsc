@@ -87,7 +87,7 @@ PETSC_EXTERN const char *const PetscSFDuplicateOptions[];
 PETSC_EXTERN PetscFunctionList PetscSFunctionList;
 PETSC_EXTERN PetscErrorCode PetscSFRegisterDestroy(void);
 PETSC_EXTERN PetscErrorCode PetscSFRegisterAll(void);
-PETSC_EXTERN PetscErrorCode PetscSFRegister(const char[],const char[],PetscErrorCode (*)(PetscSF));
+PETSC_EXTERN PetscErrorCode PetscSFRegister(const char[],PetscErrorCode (*)(PetscSF));
 
 PETSC_EXTERN PetscErrorCode PetscSFInitializePackage(void);
 PETSC_EXTERN PetscErrorCode PetscSFFinalizePackage(void);

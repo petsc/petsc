@@ -214,7 +214,6 @@ PetscErrorCode  PetscDrawGetType(PetscDraw draw,PetscDrawType *type)
 
    Input Parameters:
 +  name_solver - name of a new user-defined solver
-.  name_create - name of routine to create method context
 -  routine_create - routine to create method context
 
    Level: developer
@@ -224,7 +223,7 @@ PetscErrorCode  PetscDrawGetType(PetscDraw draw,PetscDrawType *type)
 
    Sample usage:
 .vb
-   PetscDrawRegister("my_draw_type", "MyDrawCreate",MyDrawCreate);
+   PetscDrawRegister("my_draw_type", MyDrawCreate);
 .ve
 
    Then, your solver can be chosen with the procedural interface via
@@ -237,12 +236,12 @@ $     -draw_type my_draw_type
 
 .seealso: PetscDrawRegisterAll(), PetscDrawRegisterDestroy()
 @*/
-PetscErrorCode  PetscDrawRegister(const char *sname,const char *name,PetscErrorCode (*function)(PetscDraw))
+PetscErrorCode  PetscDrawRegister(const char *sname,PetscErrorCode (*function)(PetscDraw))
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListAdd(&PetscDrawList,sname,name,(void (*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&PetscDrawList,sname,(void (*)(void))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

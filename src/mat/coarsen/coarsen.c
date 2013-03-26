@@ -16,14 +16,13 @@ PetscBool         MatCoarsenRegisterAllCalled = PETSC_FALSE;
 
    Input Parameters:
 +  sname - name of coarsen (for example MATCOARSENMIS)
-.  name - name of function that creates the coarsen type, a string
 -  function - function pointer that creates the coarsen type
 
    Level: developer
 
    Sample usage:
 .vb
-   MatCoarsenRegister("my_agg","MyAggCreate",MyAggCreate);
+   MatCoarsenRegister("my_agg",MyAggCreate);
 .ve
 
    Then, your aggregator can be chosen with the procedural interface via
@@ -35,12 +34,12 @@ $     -mat_coarsen_type my_agg
 
 .seealso: MatCoarsenRegisterDestroy(), MatCoarsenRegisterAll()
 @*/
-PetscErrorCode  MatCoarsenRegister(const char sname[],const char name[],PetscErrorCode (*function)(MatCoarsen))
+PetscErrorCode  MatCoarsenRegister(const char sname[],PetscErrorCode (*function)(MatCoarsen))
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListAdd(&MatCoarsenList,sname,name,(void (*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&MatCoarsenList,sname,(void (*)(void))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -99,7 +99,6 @@ PetscErrorCode  VecGetType(Vec vec, VecType *type)
 
   Input Parameters:
 + name        - The name of a new user-defined creation routine
-. func_name   - The name of routine to create method context
 - create_func - The creation routine itself
 
   Notes:
@@ -107,7 +106,7 @@ PetscErrorCode  VecGetType(Vec vec, VecType *type)
 
   Sample usage:
 .vb
-    VecRegister("my_vec","MyVectorCreate", MyVectorCreate);
+    VecRegister("my_vec",MyVectorCreate);
 .ve
 
   Then, your vector type can be chosen with the procedural interface via
@@ -126,12 +125,12 @@ PetscErrorCode  VecGetType(Vec vec, VecType *type)
 
 .seealso: VecRegisterAll(), VecRegisterDestroy()
 @*/
-PetscErrorCode  VecRegister(const char sname[], const char name[], PetscErrorCode (*function)(Vec))
+PetscErrorCode  VecRegister(const char sname[], PetscErrorCode (*function)(Vec))
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListAdd(&VecList, sname, name, (void (*)(void)) function);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&VecList, sname, (void (*)(void)) function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

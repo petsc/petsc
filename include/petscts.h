@@ -330,7 +330,7 @@ PETSC_EXTERN PetscFunctionList TSList;
 PETSC_EXTERN PetscBool         TSRegisterAllCalled;
 PETSC_EXTERN PetscErrorCode TSGetType(TS,TSType*);
 PETSC_EXTERN PetscErrorCode TSSetType(TS,TSType);
-PETSC_EXTERN PetscErrorCode TSRegister(const char[], const char[], PetscErrorCode (*)(TS));
+PETSC_EXTERN PetscErrorCode TSRegister(const char[], PetscErrorCode (*)(TS));
 PETSC_EXTERN PetscErrorCode TSRegisterAll(void);
 PETSC_EXTERN PetscErrorCode TSRegisterDestroy(void);
 
@@ -401,7 +401,7 @@ typedef const char *TSAdaptType;
 #define TSADAPTCFL   "cfl"
 
 PETSC_EXTERN PetscErrorCode TSGetTSAdapt(TS,TSAdapt*);
-PETSC_EXTERN PetscErrorCode TSAdaptRegister(const char[],const char[],PetscErrorCode (*)(TSAdapt));
+PETSC_EXTERN PetscErrorCode TSAdaptRegister(const char[],PetscErrorCode (*)(TSAdapt));
 PETSC_EXTERN PetscErrorCode TSAdaptRegisterAll(void);
 PETSC_EXTERN PetscErrorCode TSAdaptRegisterDestroy(void);
 PETSC_EXTERN PetscErrorCode TSAdaptInitializePackage(void);
@@ -448,7 +448,7 @@ typedef const char *TSGLAdaptType;
 #define TSGLADAPT_SIZE "size"
 #define TSGLADAPT_BOTH "both"
 
-PETSC_EXTERN PetscErrorCode TSGLAdaptRegister(const char[],const char[],PetscErrorCode (*)(TSGLAdapt));
+PETSC_EXTERN PetscErrorCode TSGLAdaptRegister(const char[],PetscErrorCode (*)(TSGLAdapt));
 PETSC_EXTERN PetscErrorCode TSGLAdaptRegisterAll(void);
 PETSC_EXTERN PetscErrorCode TSGLAdaptRegisterDestroy(void);
 PETSC_EXTERN PetscErrorCode TSGLAdaptInitializePackage(void);
@@ -474,7 +474,7 @@ typedef const char *TSGLAcceptType;
 #define TSGLACCEPT_ALWAYS "always"
 
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*TSGLAcceptFunction)(TS,PetscReal,PetscReal,const PetscReal[],PetscBool *);
-PETSC_EXTERN PetscErrorCode TSGLAcceptRegister(const char[],const char[],TSGLAcceptFunction);
+PETSC_EXTERN PetscErrorCode TSGLAcceptRegister(const char[],TSGLAcceptFunction);
 
 /*J
   TSGLType - family of time integration method within the General Linear class
@@ -486,7 +486,7 @@ J*/
 typedef const char* TSGLType;
 #define TSGL_IRKS   "irks"
 
-PETSC_EXTERN PetscErrorCode TSGLRegister(const char[],const char[],PetscErrorCode(*)(TS));
+PETSC_EXTERN PetscErrorCode TSGLRegister(const char[],PetscErrorCode(*)(TS));
 PETSC_EXTERN PetscErrorCode TSGLRegisterAll(void);
 PETSC_EXTERN PetscErrorCode TSGLRegisterDestroy(void);
 PETSC_EXTERN PetscErrorCode TSGLInitializePackage(void);

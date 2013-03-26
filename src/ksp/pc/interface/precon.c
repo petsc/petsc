@@ -1722,7 +1722,6 @@ PetscErrorCode  PCSetInitialGuessNonzero(PC pc,PetscBool flg)
 
    Input Parameters:
 +  name_solver - name of a new user-defined solver
-.  name_create - name of routine to create method context
 -  routine_create - routine to create method context
 
    Notes:
@@ -1730,7 +1729,7 @@ PetscErrorCode  PCSetInitialGuessNonzero(PC pc,PetscBool flg)
 
    Sample usage:
 .vb
-   PCRegister("my_solver", "MySolverCreate",MySolverCreate);
+   PCRegister("my_solver", MySolverCreate);
 .ve
 
    Then, your solver can be chosen with the procedural interface via
@@ -1744,12 +1743,12 @@ $     -pc_type my_solver
 
 .seealso: PCRegisterAll(), PCRegisterDestroy()
 @*/
-PetscErrorCode  PCRegister(const char sname[],const char name[],PetscErrorCode (*function)(PC))
+PetscErrorCode  PCRegister(const char sname[],PetscErrorCode (*function)(PC))
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListAdd(&PCList,sname,name,(void (*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&PCList,sname,(void (*)(void))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -29,7 +29,7 @@ PetscErrorCode MatDestroy_IS(Mat A)
   ierr = ISLocalToGlobalMappingDestroy(&b->mapping);CHKERRQ(ierr);
   ierr = PetscFree(A->data);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)A,0);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatISGetLocalMat_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatISGetLocalMat_C",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -573,8 +573,8 @@ PETSC_EXTERN PetscErrorCode MatCreate_IS(Mat A)
   b->ctx = 0;
   b->x   = 0;
   b->y   = 0;
-  ierr   = PetscObjectComposeFunction((PetscObject)A,"MatISGetLocalMat_C","MatISGetLocalMat_IS",MatISGetLocalMat_IS);CHKERRQ(ierr);
-  ierr   = PetscObjectComposeFunction((PetscObject)A,"MatISSetLocalMat_C","MatISSetLocalMat_IS",MatISSetLocalMat_IS);CHKERRQ(ierr);
+  ierr   = PetscObjectComposeFunction((PetscObject)A,"MatISGetLocalMat_C",MatISGetLocalMat_IS);CHKERRQ(ierr);
+  ierr   = PetscObjectComposeFunction((PetscObject)A,"MatISSetLocalMat_C",MatISSetLocalMat_IS);CHKERRQ(ierr);
   ierr   = PetscObjectChangeTypeName((PetscObject)A,MATIS);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

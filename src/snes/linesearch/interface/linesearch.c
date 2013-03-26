@@ -1629,11 +1629,11 @@ extern PetscErrorCode SNESLineSearchGetVIFunctions(SNESLineSearch linesearch, SN
 
   Level: advanced
 @*/
-PetscErrorCode  SNESLineSearchRegister(const char sname[],const char name[],PetscErrorCode (*function)(SNESLineSearch))
+PetscErrorCode  SNESLineSearchRegister(const char sname[],PetscErrorCode (*function)(SNESLineSearch))
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListAdd(&SNESLineSearchList,sname,name,(void (*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&SNESLineSearchList,sname,(void (*)(void))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

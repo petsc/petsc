@@ -126,7 +126,6 @@ PetscErrorCode PetscFinalize_DynamicLibraries(void)
 struct _n_PetscFunctionList {
   void              (*routine)(void);    /* the routine */
   char              *name;               /* string to identify routine */
-  char              *rname;              /* string version of routine name */
   PetscFunctionList next;                /* next pointer */
   PetscFunctionList next_list;           /* used to maintain list of all lists for freeing */
 };
@@ -147,11 +146,10 @@ static PetscFunctionList dlallhead = 0;
    Input Parameters:
 +  fl    - pointer registry
 .  name  - string to identify routine
-.  rname - routine name in dynamic library
 -  fnc   - function pointer (optional if using dynamic libraries)
 
    Notes:
-   To remove a registered routine, pass in a NULL rname and fnc().
+   To remove a registered routine, pass in a NULL  fnc().
 
    Users who wish to register new classes for use by a particular PETSc
    component (e.g., SNES) should generally call the registration routine
@@ -163,7 +161,7 @@ static PetscFunctionList dlallhead = 0;
 .seealso: PetscFunctionListDestroy(), SNESRegister(), KSPRegister(),
           PCRegister(), TSRegister(), PetscFunctionList
 @*/
-PetscErrorCode  PetscFunctionListAdd(PetscFunctionList *fl,const char name[],const char rname[],void (*fnc)(void))
+PetscErrorCode  PetscFunctionListAdd(PetscFunctionList *fl,const char name[],void (*fnc)(void))
 {
   PetscFunctionList entry,ne;
   PetscErrorCode    ierr;
@@ -172,7 +170,6 @@ PetscErrorCode  PetscFunctionListAdd(PetscFunctionList *fl,const char name[],con
   if (!*fl) {
     ierr           = PetscNew(struct _n_PetscFunctionList,&entry);CHKERRQ(ierr);
     ierr           = PetscStrallocpy(name,&entry->name);CHKERRQ(ierr);
-    ierr           = PetscStrallocpy(rname,&entry->rname);CHKERRQ(ierr);
     entry->routine = fnc;
     entry->next    = 0;
     *fl            = entry;
@@ -194,8 +191,6 @@ PetscErrorCode  PetscFunctionListAdd(PetscFunctionList *fl,const char name[],con
 
       ierr = PetscStrcmp(ne->name,name,&founddup);CHKERRQ(ierr);
       if (founddup) { /* found duplicate */
-        ierr        = PetscFree(ne->rname);CHKERRQ(ierr);
-        ierr        = PetscStrallocpy(rname,&ne->rname);CHKERRQ(ierr);
         ne->routine = fnc;
         PetscFunctionReturn(0);
       }
@@ -205,7 +200,6 @@ PetscErrorCode  PetscFunctionListAdd(PetscFunctionList *fl,const char name[],con
     /* create new entry and add to end of list */
     ierr           = PetscNew(struct _n_PetscFunctionList,&entry);CHKERRQ(ierr);
     ierr           = PetscStrallocpy(name,&entry->name);CHKERRQ(ierr);
-    ierr           = PetscStrallocpy(rname,&entry->rname);CHKERRQ(ierr);
     entry->routine = fnc;
     entry->next    = 0;
     ne->next       = entry;
@@ -253,7 +247,6 @@ PetscErrorCode  PetscFunctionListDestroy(PetscFunctionList *fl)
   while (entry) {
     next  = entry->next;
     ierr  = PetscFree(entry->name);CHKERRQ(ierr);
-    ierr  = PetscFree(entry->rname);CHKERRQ(ierr);
     ierr  = PetscFree(entry);CHKERRQ(ierr);
     entry = next;
   }
@@ -301,16 +294,15 @@ PetscErrorCode  PetscFunctionListFind(PetscFunctionList fl,const char name[],voi
 {
   PetscFunctionList entry = fl;
   PetscErrorCode    ierr;
-  PetscBool         flg1,flg2;
+  PetscBool         flg;
 
   PetscFunctionBegin;
   if (!name) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Trying to find routine with null name");
 
   *r = 0;
   while (entry) {
-    ierr = PetscStrcmp(name,entry->name,&flg1);CHKERRQ(ierr);
-    ierr = PetscStrcmp(name,entry->rname,&flg2);CHKERRQ(ierr);
-    if (flg1 || flg2) {
+    ierr = PetscStrcmp(name,entry->name,&flg);CHKERRQ(ierr);
+    if (flg) {
       *r   = entry->routine;
       PetscFunctionReturn(0);
     }
@@ -348,7 +340,7 @@ PetscErrorCode  PetscFunctionListView(PetscFunctionList list,PetscViewer viewer)
   if (!iascii) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only ASCII viewer supported");
 
   while (list) {
-    ierr = PetscViewerASCIIPrintf(viewer," %s %s\n",list->name,list->rname);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer," %s\n",list->name);CHKERRQ(ierr);
     list = list->next;
   }
   ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
@@ -468,7 +460,7 @@ PetscErrorCode  PetscFunctionListDuplicate(PetscFunctionList fl,PetscFunctionLis
 
   PetscFunctionBegin;
   while (fl) {
-    ierr = PetscFunctionListAdd(nl,fl->name,fl->rname,fl->routine);CHKERRQ(ierr);
+    ierr = PetscFunctionListAdd(nl,fl->name,fl->routine);CHKERRQ(ierr);
     fl   = fl->next;
   }
   PetscFunctionReturn(0);

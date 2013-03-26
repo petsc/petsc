@@ -241,13 +241,11 @@ PetscErrorCode CharacteristicSetUp(Characteristic c)
 
    Input Parameters:
 +  name_solver - name of a new user-defined solver
-.  path - path (either absolute or relative) the library containing this solver
-.  name_create - name of routine to create method context
 -  routine_create - routine to create method context
 
   Sample usage:
 .vb
-    CharacteristicRegister("my_char","MyCharCreate", MyCharCreate);
+    CharacteristicRegister("my_char", MyCharCreate);
 .ve
 
   Then, your Characteristic type can be chosen with the procedural interface via
@@ -269,12 +267,12 @@ PetscErrorCode CharacteristicSetUp(Characteristic c)
 
   Level: advanced
 @*/
-PetscErrorCode CharacteristicRegister(const char sname[],const char name[],PetscErrorCode (*function)(Characteristic))
+PetscErrorCode CharacteristicRegister(const char sname[],PetscErrorCode (*function)(Characteristic))
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListAdd(&CharacteristicList,sname,name,(void (*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&CharacteristicList,sname,(void (*)(void))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

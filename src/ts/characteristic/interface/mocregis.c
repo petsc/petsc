@@ -29,6 +29,6 @@ PetscErrorCode CharacteristicRegisterAll(void)
   PetscFunctionBegin;
   CharacteristicRegisterAllCalled = PETSC_TRUE;
 
-  ierr = CharacteristicRegister(CHARACTERISTICDA,  "CharacteristicCreate_DA", CharacteristicCreate_DA);CHKERRQ(ierr);
+  ierr = CharacteristicRegister(CHARACTERISTICDA,  CharacteristicCreate_DA);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

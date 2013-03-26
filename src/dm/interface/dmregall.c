@@ -35,17 +35,17 @@ PetscErrorCode  DMRegisterAll()
   PetscFunctionBegin;
   DMRegisterAllCalled = PETSC_TRUE;
 
-  ierr = DMRegister(DMDA,         "DMCreate_DA",        DMCreate_DA);CHKERRQ(ierr);
-  ierr = DMRegister(DMCOMPOSITE,  "DMCreate_Composite", DMCreate_Composite);CHKERRQ(ierr);
-  ierr = DMRegister(DMSLICED,     "DMCreate_Sliced",    DMCreate_Sliced);CHKERRQ(ierr);
-  ierr = DMRegister(DMSHELL,      "DMCreate_Shell",     DMCreate_Shell);CHKERRQ(ierr);
-  ierr = DMRegister(DMADDA,       "DMCreate_ADDA",      DMCreate_ADDA);CHKERRQ(ierr);
-  ierr = DMRegister(DMREDUNDANT,  "DMCreate_Redundant", DMCreate_Redundant);CHKERRQ(ierr);
-  ierr = DMRegister(DMPLEX,       "DMCreate_Plex",      DMCreate_Plex);CHKERRQ(ierr);
-  ierr = DMRegister(DMPATCH,      "DMCreate_Patch",     DMCreate_Patch);CHKERRQ(ierr);
+  ierr = DMRegister(DMDA,         DMCreate_DA);CHKERRQ(ierr);
+  ierr = DMRegister(DMCOMPOSITE,  DMCreate_Composite);CHKERRQ(ierr);
+  ierr = DMRegister(DMSLICED,     DMCreate_Sliced);CHKERRQ(ierr);
+  ierr = DMRegister(DMSHELL,      DMCreate_Shell);CHKERRQ(ierr);
+  ierr = DMRegister(DMADDA,       DMCreate_ADDA);CHKERRQ(ierr);
+  ierr = DMRegister(DMREDUNDANT,  DMCreate_Redundant);CHKERRQ(ierr);
+  ierr = DMRegister(DMPLEX,       DMCreate_Plex);CHKERRQ(ierr);
+  ierr = DMRegister(DMPATCH,      DMCreate_Patch);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_SIEVE)
-  ierr = DMRegister(DMMESH,       "DMCreate_Mesh",      DMCreate_Mesh);CHKERRQ(ierr);
-  ierr = DMRegister(DMCARTESIAN,  "DMCreate_Cartesian", DMCreate_Cartesian);CHKERRQ(ierr);
+  ierr = DMRegister(DMMESH,       DMCreate_Mesh);CHKERRQ(ierr);
+  ierr = DMRegister(DMCARTESIAN,  DMCreate_Cartesian);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
 }

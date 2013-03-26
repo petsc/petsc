@@ -80,7 +80,7 @@ PETSC_EXTERN PetscFunctionList KSPList;
 PETSC_EXTERN PetscBool         KSPRegisterAllCalled;
 PETSC_EXTERN PetscErrorCode KSPRegisterAll(void);
 PETSC_EXTERN PetscErrorCode KSPRegisterDestroy(void);
-PETSC_EXTERN PetscErrorCode KSPRegister(const char[],const char[],PetscErrorCode (*)(KSP));
+PETSC_EXTERN PetscErrorCode KSPRegister(const char[],PetscErrorCode (*)(KSP));
 PETSC_EXTERN PetscErrorCode KSPMatRegisterAll(void);
 
 PETSC_EXTERN PetscErrorCode KSPGetType(KSP,KSPType *);

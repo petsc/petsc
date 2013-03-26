@@ -93,21 +93,20 @@ PETSC_EXTERN PetscErrorCode MatGetOrdering_RowLength(Mat mat,MatOrderingType typ
 
 #undef __FUNCT__
 #define __FUNCT__ "MatOrderingRegister"
-/*@
+/*@C
    MatOrderingRegister - Adds a new sparse matrix ordering to the matrix package.
 
    Not Collective
 
    Input Parameters:
 +  sname - name of ordering (for example MATORDERINGND)
-.  name - name of function that creates the ordering type,a string
 -  function - function pointer that creates the ordering
 
    Level: developer
 
    Sample usage:
 .vb
-   MatOrderingRegister("my_order" "MyOrder",MyOrder);
+   MatOrderingRegister("my_order", MyOrder);
 .ve
 
    Then, your partitioner can be chosen with the procedural interface via
@@ -119,12 +118,12 @@ $     -pc_factor_mat_ordering_type my_order
 
 .seealso: MatOrderingRegisterDestroy(), MatOrderingRegisterAll()
 @*/
-PetscErrorCode  MatOrderingRegister(const char sname[],const char name[],PetscErrorCode (*function)(Mat,MatOrderingType,IS*,IS*))
+PetscErrorCode  MatOrderingRegister(const char sname[],PetscErrorCode (*function)(Mat,MatOrderingType,IS*,IS*))
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListAdd(&MatOrderingList,sname,name,(void (*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&MatOrderingList,sname,(void (*)(void))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

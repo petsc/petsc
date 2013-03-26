@@ -106,7 +106,6 @@ PetscErrorCode  TSGetType(TS ts, TSType *type)
 
   Input Parameters:
 + name        - The name of a new user-defined creation routine
-. func_name   - The name of the creation routine
 - create_func - The creation routine itself
 
   Notes:
@@ -114,7 +113,7 @@ PetscErrorCode  TSGetType(TS ts, TSType *type)
 
   Sample usage:
 .vb
-  TSRegister("my_ts", "MyTSCreate", MyTSCreate);
+  TSRegister("my_ts",  MyTSCreate);
 .ve
 
   Then, your ts type can be chosen with the procedural interface via
@@ -134,12 +133,12 @@ PetscErrorCode  TSGetType(TS ts, TSType *type)
 
 .seealso: TSRegisterAll(), TSRegisterDestroy()
 @*/
-PetscErrorCode  TSRegister(const char sname[], const char name[], PetscErrorCode (*function)(TS))
+PetscErrorCode  TSRegister(const char sname[], PetscErrorCode (*function)(TS))
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListAdd(&TSList, sname, name, (void (*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&TSList, sname, (void (*)(void))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

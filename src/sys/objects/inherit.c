@@ -11,7 +11,7 @@ PetscInt    PetscObjectsCounts = 0, PetscObjectsMaxCounts = 0;
 extern PetscErrorCode PetscObjectGetComm_Petsc(PetscObject,MPI_Comm*);
 extern PetscErrorCode PetscObjectCompose_Petsc(PetscObject,const char[],PetscObject);
 extern PetscErrorCode PetscObjectQuery_Petsc(PetscObject,const char[],PetscObject*);
-extern PetscErrorCode PetscObjectComposeFunction_Petsc(PetscObject,const char[],const char[],void (*)(void));
+extern PetscErrorCode PetscObjectComposeFunction_Petsc(PetscObject,const char[],void (*)(void));
 extern PetscErrorCode PetscObjectQueryFunction_Petsc(PetscObject,const char[],void (**)(void));
 
 #undef __FUNCT__
@@ -654,13 +654,13 @@ PetscErrorCode PetscObjectQuery_Petsc(PetscObject obj,const char name[],PetscObj
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscObjectComposeFunction_Petsc"
-PetscErrorCode PetscObjectComposeFunction_Petsc(PetscObject obj,const char name[],const char fname[],void (*ptr)(void))
+PetscErrorCode PetscObjectComposeFunction_Petsc(PetscObject obj,const char name[],void (*ptr)(void))
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
-  ierr = PetscFunctionListAdd(&obj->qlist,name,fname,ptr);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&obj->qlist,name,ptr);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -820,14 +820,14 @@ M*/
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscObjectComposeFunction_Private"
-PetscErrorCode  PetscObjectComposeFunction_Private(PetscObject obj,const char name[],const char fname[],void (*ptr)(void))
+PetscErrorCode  PetscObjectComposeFunction_Private(PetscObject obj,const char name[],void (*ptr)(void))
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
   PetscValidCharPointer(name,2);
-  ierr = (*obj->bops->composefunction)(obj,name,fname,ptr);CHKERRQ(ierr);
+  ierr = (*obj->bops->composefunction)(obj,name,ptr);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

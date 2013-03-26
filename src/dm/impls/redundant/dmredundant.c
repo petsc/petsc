@@ -53,8 +53,8 @@ static PetscErrorCode DMDestroy_Redundant(DM dm)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectComposeFunction((PetscObject)dm,"DMRedundantSetSize_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)dm,"DMRedundantGetSize_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)dm,"DMRedundantSetSize_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)dm,"DMRedundantGetSize_C",NULL);CHKERRQ(ierr);
   /* This was originally freed in DMDestroy(), but that prevents reference counting of backend objects */
   ierr = PetscFree(dm->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -442,8 +442,8 @@ PETSC_EXTERN PetscErrorCode DMCreate_Redundant(DM dm)
   dm->ops->getcoloring        = DMCreateColoring_Redundant;
 
   ierr = PetscStrallocpy(VECSTANDARD,(char**)&dm->vectype);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)dm,"DMRedundantSetSize_C","DMRedundantSetSize_Redundant",DMRedundantSetSize_Redundant);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)dm,"DMRedundantGetSize_C","DMRedundantGetSize_Redundant",DMRedundantGetSize_Redundant);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)dm,"DMRedundantSetSize_C",DMRedundantSetSize_Redundant);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)dm,"DMRedundantGetSize_C",DMRedundantGetSize_Redundant);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
