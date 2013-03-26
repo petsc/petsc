@@ -94,7 +94,7 @@ PetscErrorCode  PetscInitialize_DynamicLibraries(void)
     The classes, from PetscDraw to PetscTS, are initialized the first
     time an XXCreate() is called.
   */
-  ierr = PetscSysInitializePackage(NULL);CHKERRQ(ierr);
+  ierr = PetscSysInitializePackage();CHKERRQ(ierr);
 #else
 #if defined(PETSC_USE_SINGLE_LIBRARY)
   ierr = PetscLoadDynamicLibrary("",&found);CHKERRQ(ierr);

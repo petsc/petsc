@@ -436,7 +436,7 @@ PetscErrorCode TSARKIMEXRegisterAll(void)
    Level: advanced
 
 .keywords: TSARKIMEX, register, destroy
-.seealso: TSARKIMEXRegister(), TSARKIMEXRegisterAll(), TSARKIMEXRegister()
+.seealso: TSARKIMEXRegister(), TSARKIMEXRegisterAll()
 @*/
 PetscErrorCode TSARKIMEXRegisterDestroy(void)
 {
@@ -464,15 +464,12 @@ PetscErrorCode TSARKIMEXRegisterDestroy(void)
   from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to TSCreate_ARKIMEX()
   when using static libraries.
 
-  Input Parameter:
-  path - The dynamic library path, or NULL
-
   Level: developer
 
 .keywords: TS, TSARKIMEX, initialize, package
 .seealso: PetscInitialize()
 @*/
-PetscErrorCode TSARKIMEXInitializePackage(const char path[])
+PetscErrorCode TSARKIMEXInitializePackage(void)
 {
   PetscErrorCode ierr;
 
@@ -1345,7 +1342,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_ARKIMEX(TS ts)
 
   PetscFunctionBegin;
 #if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
-  ierr = TSARKIMEXInitializePackage(NULL);CHKERRQ(ierr);
+  ierr = TSARKIMEXInitializePackage();CHKERRQ(ierr);
 #endif
 
   ts->ops->reset          = TSReset_ARKIMEX;

@@ -86,10 +86,10 @@ PETSC_EXTERN const char *const PetscSFDuplicateOptions[];
 
 PETSC_EXTERN PetscFunctionList PetscSFunctionList;
 PETSC_EXTERN PetscErrorCode PetscSFRegisterDestroy(void);
-PETSC_EXTERN PetscErrorCode PetscSFRegisterAll(const char[]);
-PETSC_EXTERN PetscErrorCode PetscSFRegister(const char[],const char[],const char[],PetscErrorCode (*)(PetscSF));
+PETSC_EXTERN PetscErrorCode PetscSFRegisterAll(void);
+PETSC_EXTERN PetscErrorCode PetscSFRegister(const char[],const char[],PetscErrorCode (*)(PetscSF));
 
-PETSC_EXTERN PetscErrorCode PetscSFInitializePackage(const char*);
+PETSC_EXTERN PetscErrorCode PetscSFInitializePackage(void);
 PETSC_EXTERN PetscErrorCode PetscSFFinalizePackage(void);
 PETSC_EXTERN PetscErrorCode PetscSFCreate(MPI_Comm comm,PetscSF*);
 PETSC_EXTERN PetscErrorCode PetscSFDestroy(PetscSF*);

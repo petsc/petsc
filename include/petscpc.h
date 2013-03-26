@@ -6,7 +6,7 @@
 #include <petscmat.h>
 #include <petscdmtypes.h>
 
-PETSC_EXTERN PetscErrorCode PCInitializePackage(const char[]);
+PETSC_EXTERN PetscErrorCode PCInitializePackage(void);
 
 /*
     PCList contains the list of preconditioners currently registered
@@ -133,10 +133,10 @@ PETSC_EXTERN PetscErrorCode PCSetUseAmat(PC,PetscBool);
 PETSC_EXTERN PetscErrorCode PCGetUseAmat(PC,PetscBool*);
 
 PETSC_EXTERN PetscErrorCode PCRegisterDestroy(void);
-PETSC_EXTERN PetscErrorCode PCRegisterAll(const char[]);
+PETSC_EXTERN PetscErrorCode PCRegisterAll(void);
 PETSC_EXTERN PetscBool PCRegisterAllCalled;
 
-PETSC_EXTERN PetscErrorCode PCRegister(const char[],const char[],const char[],PetscErrorCode(*)(PC));
+PETSC_EXTERN PetscErrorCode PCRegister(const char[],const char[],PetscErrorCode(*)(PC));
 
 PETSC_EXTERN PetscErrorCode PCReset(PC);
 PETSC_EXTERN PetscErrorCode PCDestroy(PC*);

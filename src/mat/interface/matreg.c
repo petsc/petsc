@@ -80,7 +80,7 @@ PetscErrorCode  MatSetType(Mat mat, MatType matype)
 #define __FUNCT__ "MatRegisterDestroy"
 /*@C
    MatRegisterDestroy - Frees the list of matrix types that were
-   registered by MatRegister()/MatRegister().
+   registered by MatRegister().
 
    Not Collective
 
@@ -88,7 +88,7 @@ PetscErrorCode  MatSetType(Mat mat, MatType matype)
 
 .keywords: Mat, register, destroy
 
-.seealso: MatRegister(), MatRegisterAll(), MatRegister()
+.seealso: MatRegister(), MatRegisterAll()
 @*/
 PetscErrorCode  MatRegisterDestroy(void)
 {
@@ -164,14 +164,12 @@ $     -mat_type my_mat
 
   Level: advanced
 @*/
-PetscErrorCode  MatRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(Mat))
+PetscErrorCode  MatRegister(const char sname[],const char name[],PetscErrorCode (*function)(Mat))
 {
   PetscErrorCode ierr;
-  char           fullname[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListConcat(path,name,fullname);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&MatList,sname,fullname,(void (*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&MatList,sname,name,(void (*)(void))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

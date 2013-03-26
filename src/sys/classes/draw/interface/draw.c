@@ -34,15 +34,12 @@ PetscErrorCode  PetscDrawFinalizePackage(void)
   from PetscDLLibraryRegister() when using dynamic libraries, and on the call to PetscInitialize()
   when using static libraries.
 
-  Input Parameter:
-  path - The dynamic library path, or NULL
-
   Level: developer
 
 .keywords: Petsc, initialize, package
 .seealso: PetscInitialize()
 @*/
-PetscErrorCode  PetscDrawInitializePackage(const char path[])
+PetscErrorCode  PetscDrawInitializePackage(void)
 {
   char           logList[256];
   char           *className;
@@ -59,7 +56,7 @@ PetscErrorCode  PetscDrawInitializePackage(const char path[])
   ierr = PetscClassIdRegister("Histogram",&PETSC_DRAWHG_CLASSID);CHKERRQ(ierr);
   ierr = PetscClassIdRegister("Scatter Plot",&PETSC_DRAWSP_CLASSID);CHKERRQ(ierr);
   /* Register Constructors */
-  ierr = PetscDrawRegisterAll(path);CHKERRQ(ierr);
+  ierr = PetscDrawRegisterAll();CHKERRQ(ierr);
   /* Process info exclusions */
   ierr = PetscOptionsGetString(NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt) {

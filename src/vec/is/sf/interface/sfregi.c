@@ -20,16 +20,16 @@ PetscFunctionList PetscSFunctionList;
 
 .seealso:  PetscSFRegisterDestroy()
 @*/
-PetscErrorCode  PetscSFRegisterAll(const char path[])
+PetscErrorCode  PetscSFRegisterAll(void)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscSFRegisterAllCalled = PETSC_TRUE;
 #if defined(PETSC_HAVE_MPI_WIN_CREATE) && defined(PETSC_HAVE_MPI_TYPE_DUP)
-  ierr = PetscSFRegister(PETSCSFWINDOW,       path,"PetscSFCreate_Window",       PetscSFCreate_Window);CHKERRQ(ierr);
+  ierr = PetscSFRegister(PETSCSFWINDOW, "PetscSFCreate_Window",       PetscSFCreate_Window);CHKERRQ(ierr);
 #endif
-  ierr = PetscSFRegister(PETSCSFBASIC,        path,"PetscSFCreate_Basic",        PetscSFCreate_Basic);CHKERRQ(ierr);
+  ierr = PetscSFRegister(PETSCSFBASIC,  "PetscSFCreate_Basic",        PetscSFCreate_Basic);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -64,14 +64,12 @@ $     -snes_type my_solver
 
 .seealso: PetscSFRegisterAll(), PetscSFRegisterDestroy()
 @*/
-PetscErrorCode  PetscSFRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(PetscSF))
+PetscErrorCode  PetscSFRegister(const char sname[],const char name[],PetscErrorCode (*function)(PetscSF))
 {
-  char           fullname[PETSC_MAX_PATH_LEN];
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListConcat(path,name,fullname);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&PetscSFunctionList,sname,fullname,(void (*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&PetscSFunctionList,sname,name,(void (*)(void))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

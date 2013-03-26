@@ -611,7 +611,7 @@ PetscErrorCode TSRosWRegisterAll(void)
    Level: advanced
 
 .keywords: TSRosW, register, destroy
-.seealso: TSRosWRegister(), TSRosWRegisterAll(), TSRosWRegister()
+.seealso: TSRosWRegister(), TSRosWRegisterAll()
 @*/
 PetscErrorCode TSRosWRegisterDestroy(void)
 {
@@ -640,15 +640,12 @@ PetscErrorCode TSRosWRegisterDestroy(void)
   from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to TSCreate_RosW()
   when using static libraries.
 
-  Input Parameter:
-  path - The dynamic library path, or NULL
-
   Level: developer
 
 .keywords: TS, TSRosW, initialize, package
 .seealso: PetscInitialize()
 @*/
-PetscErrorCode TSRosWInitializePackage(const char path[])
+PetscErrorCode TSRosWInitializePackage(void)
 {
   PetscErrorCode ierr;
 
@@ -1678,7 +1675,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_RosW(TS ts)
 
   PetscFunctionBegin;
 #if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
-  ierr = TSRosWInitializePackage(NULL);CHKERRQ(ierr);
+  ierr = TSRosWInitializePackage();CHKERRQ(ierr);
 #endif
 
   ts->ops->reset          = TSReset_RosW;

@@ -39,15 +39,12 @@ PetscErrorCode  MatMFFDFinalizePackage(void)
   from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to MatCreate_MFFD()
   when using static libraries.
 
-  Input Parameter:
-. path - The dynamic library path, or NULL
-
   Level: developer
 
 .keywords: Vec, initialize, package
 .seealso: PetscInitialize()
 @*/
-PetscErrorCode  MatMFFDInitializePackage(const char path[])
+PetscErrorCode  MatMFFDInitializePackage(void)
 {
   char           logList[256];
   char           *className;
@@ -60,7 +57,7 @@ PetscErrorCode  MatMFFDInitializePackage(const char path[])
   /* Register Classes */
   ierr = PetscClassIdRegister("MatMFFD",&MATMFFD_CLASSID);CHKERRQ(ierr);
   /* Register Constructors */
-  ierr = MatMFFDRegisterAll(path);CHKERRQ(ierr);
+  ierr = MatMFFDRegisterAll();CHKERRQ(ierr);
   /* Register Events */
   ierr = PetscLogEventRegister("MatMult MF",          MATMFFD_CLASSID,&MATMFFD_Mult);CHKERRQ(ierr);
 
@@ -202,14 +199,12 @@ $     -snes_mf_type my_h
 
 .seealso: MatMFFDRegisterAll(), MatMFFDRegisterDestroy()
  @*/
-PetscErrorCode  MatMFFDRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(MatMFFD))
+PetscErrorCode  MatMFFDRegister(const char sname[],const char name[],PetscErrorCode (*function)(MatMFFD))
 {
   PetscErrorCode ierr;
-  char           fullname[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListConcat(path,name,fullname);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&MatMFFDList,sname,fullname,(void (*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&MatMFFDList,sname,name,(void (*)(void))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -724,7 +719,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MFFD(Mat A)
 
   PetscFunctionBegin;
 #if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
-  ierr = MatMFFDInitializePackage(NULL);CHKERRQ(ierr);
+  ierr = MatMFFDInitializePackage();CHKERRQ(ierr);
 #endif
 
   ierr = PetscHeaderCreate(mfctx,_p_MatMFFD,struct _MFOps,MATMFFD_CLASSID,"MatMFFD","Matrix-free Finite Differencing","Mat",PetscObjectComm((PetscObject)A),MatDestroy_MFFD,MatView_MFFD);CHKERRQ(ierr);

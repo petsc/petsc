@@ -176,7 +176,7 @@ PetscErrorCode  PCSetFromOptions(PC pc)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
 
-  if (!PCRegisterAllCalled) {ierr = PCRegisterAll(NULL);CHKERRQ(ierr);}
+  if (!PCRegisterAllCalled) {ierr = PCRegisterAll();CHKERRQ(ierr);}
   ierr = PetscObjectOptionsBegin((PetscObject)pc);CHKERRQ(ierr);
   if (!((PetscObject)pc)->type_name) {
     ierr = PCGetDefaultType_Private(pc,&def);CHKERRQ(ierr);

@@ -13,14 +13,11 @@ static PetscMPIInt Petsc_Elemental_keyval = MPI_KEYVAL_INVALID;
 
    Logically Collective
 
-   Input Arguments:
-.  path - the dynamic library path or NULL
-
    Level: developer
 
 .seealso: MATELEMENTAL, PetscElementalFinalizePackage()
 @*/
-PetscErrorCode PetscElementalInitializePackage(const char *path)
+PetscErrorCode PetscElementalInitializePackage(void)
 {
   PetscErrorCode ierr;
 
@@ -1090,7 +1087,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_Elemental(Mat A)
   PetscInt           optv1,optv2;
 
   PetscFunctionBegin;
-  ierr = PetscElementalInitializePackage(NULL);CHKERRQ(ierr);
+  ierr = PetscElementalInitializePackage();CHKERRQ(ierr);
   ierr = PetscMemcpy(A->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
   A->insertmode = NOT_SET_VALUES;
 

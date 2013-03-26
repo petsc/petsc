@@ -727,7 +727,7 @@ PetscErrorCode  KSPCreate(MPI_Comm comm,KSP *inksp)
   PetscValidPointer(inksp,2);
   *inksp = 0;
 #if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
-  ierr = KSPInitializePackage(NULL);CHKERRQ(ierr);
+  ierr = KSPInitializePackage();CHKERRQ(ierr);
 #endif
 
   ierr = PetscHeaderCreate(ksp,_p_KSP,struct _KSPOps,KSP_CLASSID,"KSP","Krylov Method","KSP",comm,KSPDestroy,KSPView);CHKERRQ(ierr);
@@ -924,14 +924,12 @@ $     -ksp_type my_solver
 .seealso: KSPRegisterAll(), KSPRegisterDestroy()
 
 @*/
-PetscErrorCode  KSPRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(KSP))
+PetscErrorCode  KSPRegister(const char sname[],const char name[],PetscErrorCode (*function)(KSP))
 {
   PetscErrorCode ierr;
-  char           fullname[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListConcat(path,name,fullname);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&KSPList,sname,fullname,(void (*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&KSPList,sname,name,(void (*)(void))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

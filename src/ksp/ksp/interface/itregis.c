@@ -57,47 +57,47 @@ extern PetscBool KSPRegisterAllCalled;
 
 .seealso:  KSPRegisterDestroy()
 @*/
-PetscErrorCode  KSPRegisterAll(const char path[])
+PetscErrorCode  KSPRegisterAll(void)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   KSPRegisterAllCalled = PETSC_TRUE;
 
-  ierr = KSPRegister(KSPCG,         path,"KSPCreate_CG",        KSPCreate_CG);CHKERRQ(ierr);
-  ierr = KSPRegister(KSPGROPPCG,    path,"KSPCreate_GROPPCG",   KSPCreate_GROPPCG);CHKERRQ(ierr);
-  ierr = KSPRegister(KSPPIPECG,     path,"KSPCreate_PIPECG",    KSPCreate_PIPECG);CHKERRQ(ierr);
-  ierr = KSPRegister(KSPCGNE,       path,"KSPCreate_CGNE",      KSPCreate_CGNE);CHKERRQ(ierr);
-  ierr = KSPRegister(KSPNASH,       path,"KSPCreate_NASH",      KSPCreate_NASH);CHKERRQ(ierr);
-  ierr = KSPRegister(KSPSTCG,       path,"KSPCreate_STCG",      KSPCreate_STCG);CHKERRQ(ierr);
-  ierr = KSPRegister(KSPGLTR,       path,"KSPCreate_GLTR",      KSPCreate_GLTR);CHKERRQ(ierr);
-  ierr = KSPRegister(KSPRICHARDSON, path,"KSPCreate_Richardson",KSPCreate_Richardson);CHKERRQ(ierr);
-  ierr = KSPRegister(KSPCHEBYSHEV,  path,"KSPCreate_Chebyshev", KSPCreate_Chebyshev);CHKERRQ(ierr);
-  ierr = KSPRegister(KSPGMRES,      path,"KSPCreate_GMRES",     KSPCreate_GMRES);CHKERRQ(ierr);
-  ierr = KSPRegister(KSPTCQMR,      path,"KSPCreate_TCQMR",     KSPCreate_TCQMR);CHKERRQ(ierr);
-  ierr = KSPRegister(KSPBCGS,       path,"KSPCreate_BCGS",      KSPCreate_BCGS);CHKERRQ(ierr);
-  ierr = KSPRegister(KSPIBCGS,      path,"KSPCreate_IBCGS",     KSPCreate_IBCGS);CHKERRQ(ierr);
-  ierr = KSPRegister(KSPFBCGS,      path,"KSPCreate_FBCGS",     KSPCreate_FBCGS);CHKERRQ(ierr);
-  ierr = KSPRegister(KSPFBCGSR,     path,"KSPCreate_FBCGSR",    KSPCreate_FBCGSR);CHKERRQ(ierr);
-  ierr = KSPRegister(KSPBCGSL,      path,"KSPCreate_BCGSL",     KSPCreate_BCGSL);CHKERRQ(ierr);
-  ierr = KSPRegister(KSPCGS,        path,"KSPCreate_CGS",       KSPCreate_CGS);CHKERRQ(ierr);
-  ierr = KSPRegister(KSPTFQMR,      path,"KSPCreate_TFQMR",     KSPCreate_TFQMR);CHKERRQ(ierr);
-  ierr = KSPRegister(KSPCR,         path,"KSPCreate_CR",        KSPCreate_CR);CHKERRQ(ierr);
-  ierr = KSPRegister(KSPPIPECR,     path,"KSPCreate_PIPECR",    KSPCreate_PIPECR);CHKERRQ(ierr);
-  ierr = KSPRegister(KSPLSQR,       path,"KSPCreate_LSQR",      KSPCreate_LSQR);CHKERRQ(ierr);
-  ierr = KSPRegister(KSPPREONLY,    path,"KSPCreate_PREONLY",   KSPCreate_PREONLY);CHKERRQ(ierr);
-  ierr = KSPRegister(KSPQCG,        path,"KSPCreate_QCG",       KSPCreate_QCG);CHKERRQ(ierr);
-  ierr = KSPRegister(KSPBICG,       path,"KSPCreate_BiCG",      KSPCreate_BiCG);CHKERRQ(ierr);
-  ierr = KSPRegister(KSPFGMRES,     path,"KSPCreate_FGMRES",    KSPCreate_FGMRES);CHKERRQ(ierr);
-  ierr = KSPRegister(KSPMINRES,     path,"KSPCreate_MINRES",    KSPCreate_MINRES);CHKERRQ(ierr);
-  ierr = KSPRegister(KSPSYMMLQ,     path,"KSPCreate_SYMMLQ",    KSPCreate_SYMMLQ);CHKERRQ(ierr);
-  ierr = KSPRegister(KSPLGMRES,     path,"KSPCreate_LGMRES",    KSPCreate_LGMRES);CHKERRQ(ierr);
-  ierr = KSPRegister(KSPLCD,        path,"KSPCreate_LCD",       KSPCreate_LCD);CHKERRQ(ierr);
-  ierr = KSPRegister(KSPGCR,        path,"KSPCreate_GCR",       KSPCreate_GCR);CHKERRQ(ierr);
-  ierr = KSPRegister(KSPPGMRES,     path,"KSPCreate_PGMRES",    KSPCreate_PGMRES);CHKERRQ(ierr);
-  ierr = KSPRegister(KSPSPECEST,    path,"KSPCreate_SpecEst",  KSPCreate_SpecEst);CHKERRQ(ierr);
+  ierr = KSPRegister(KSPCG,         "KSPCreate_CG",        KSPCreate_CG);CHKERRQ(ierr);
+  ierr = KSPRegister(KSPGROPPCG,    "KSPCreate_GROPPCG",   KSPCreate_GROPPCG);CHKERRQ(ierr);
+  ierr = KSPRegister(KSPPIPECG,     "KSPCreate_PIPECG",    KSPCreate_PIPECG);CHKERRQ(ierr);
+  ierr = KSPRegister(KSPCGNE,       "KSPCreate_CGNE",      KSPCreate_CGNE);CHKERRQ(ierr);
+  ierr = KSPRegister(KSPNASH,       "KSPCreate_NASH",      KSPCreate_NASH);CHKERRQ(ierr);
+  ierr = KSPRegister(KSPSTCG,       "KSPCreate_STCG",      KSPCreate_STCG);CHKERRQ(ierr);
+  ierr = KSPRegister(KSPGLTR,       "KSPCreate_GLTR",      KSPCreate_GLTR);CHKERRQ(ierr);
+  ierr = KSPRegister(KSPRICHARDSON, "KSPCreate_Richardson",KSPCreate_Richardson);CHKERRQ(ierr);
+  ierr = KSPRegister(KSPCHEBYSHEV,  "KSPCreate_Chebyshev", KSPCreate_Chebyshev);CHKERRQ(ierr);
+  ierr = KSPRegister(KSPGMRES,      "KSPCreate_GMRES",     KSPCreate_GMRES);CHKERRQ(ierr);
+  ierr = KSPRegister(KSPTCQMR,      "KSPCreate_TCQMR",     KSPCreate_TCQMR);CHKERRQ(ierr);
+  ierr = KSPRegister(KSPBCGS,       "KSPCreate_BCGS",      KSPCreate_BCGS);CHKERRQ(ierr);
+  ierr = KSPRegister(KSPIBCGS,      "KSPCreate_IBCGS",     KSPCreate_IBCGS);CHKERRQ(ierr);
+  ierr = KSPRegister(KSPFBCGS,      "KSPCreate_FBCGS",     KSPCreate_FBCGS);CHKERRQ(ierr);
+  ierr = KSPRegister(KSPFBCGSR,     "KSPCreate_FBCGSR",    KSPCreate_FBCGSR);CHKERRQ(ierr);
+  ierr = KSPRegister(KSPBCGSL,      "KSPCreate_BCGSL",     KSPCreate_BCGSL);CHKERRQ(ierr);
+  ierr = KSPRegister(KSPCGS,        "KSPCreate_CGS",       KSPCreate_CGS);CHKERRQ(ierr);
+  ierr = KSPRegister(KSPTFQMR,      "KSPCreate_TFQMR",     KSPCreate_TFQMR);CHKERRQ(ierr);
+  ierr = KSPRegister(KSPCR,         "KSPCreate_CR",        KSPCreate_CR);CHKERRQ(ierr);
+  ierr = KSPRegister(KSPPIPECR,     "KSPCreate_PIPECR",    KSPCreate_PIPECR);CHKERRQ(ierr);
+  ierr = KSPRegister(KSPLSQR,       "KSPCreate_LSQR",      KSPCreate_LSQR);CHKERRQ(ierr);
+  ierr = KSPRegister(KSPPREONLY,    "KSPCreate_PREONLY",   KSPCreate_PREONLY);CHKERRQ(ierr);
+  ierr = KSPRegister(KSPQCG,        "KSPCreate_QCG",       KSPCreate_QCG);CHKERRQ(ierr);
+  ierr = KSPRegister(KSPBICG,       "KSPCreate_BiCG",      KSPCreate_BiCG);CHKERRQ(ierr);
+  ierr = KSPRegister(KSPFGMRES,     "KSPCreate_FGMRES",    KSPCreate_FGMRES);CHKERRQ(ierr);
+  ierr = KSPRegister(KSPMINRES,     "KSPCreate_MINRES",    KSPCreate_MINRES);CHKERRQ(ierr);
+  ierr = KSPRegister(KSPSYMMLQ,     "KSPCreate_SYMMLQ",    KSPCreate_SYMMLQ);CHKERRQ(ierr);
+  ierr = KSPRegister(KSPLGMRES,     "KSPCreate_LGMRES",    KSPCreate_LGMRES);CHKERRQ(ierr);
+  ierr = KSPRegister(KSPLCD,        "KSPCreate_LCD",       KSPCreate_LCD);CHKERRQ(ierr);
+  ierr = KSPRegister(KSPGCR,        "KSPCreate_GCR",       KSPCreate_GCR);CHKERRQ(ierr);
+  ierr = KSPRegister(KSPPGMRES,     "KSPCreate_PGMRES",    KSPCreate_PGMRES);CHKERRQ(ierr);
+  ierr = KSPRegister(KSPSPECEST,    "KSPCreate_SpecEst",  KSPCreate_SpecEst);CHKERRQ(ierr);
 #if !defined(PETSC_USE_COMPLEX)
-  ierr = KSPRegister(KSPDGMRES,     path,"KSPCreate_DGMRES", KSPCreate_DGMRES);CHKERRQ(ierr);
+  ierr = KSPRegister(KSPDGMRES,     "KSPCreate_DGMRES", KSPCreate_DGMRES);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
 }

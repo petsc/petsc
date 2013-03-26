@@ -49,22 +49,16 @@ $     -ts_adapt_type my_scheme
 
    Level: advanced
 
-   Notes: Environmental variables such as ${PETSC_ARCH}, ${PETSC_DIR}, ${PETSC_LIB_DIR},
-          and others of the form ${any_environmental_variable} occuring in pathname will be
-          replaced with appropriate values.
-
 .keywords: TSGLAdapt, register
 
 .seealso: TSGLAdaptRegisterAll()
 @*/
-PetscErrorCode  TSGLAdaptRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(TSGLAdapt))
+PetscErrorCode  TSGLAdaptRegister(const char sname[],const char name[],PetscErrorCode (*function)(TSGLAdapt))
 {
   PetscErrorCode ierr;
-  char           fullname[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListConcat(path,name,fullname);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&TSGLAdaptList,sname,fullname,(void (*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&TSGLAdaptList,sname,name,(void (*)(void))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -81,14 +75,14 @@ PetscErrorCode  TSGLAdaptRegister(const char sname[],const char path[],const cha
 
 .seealso: TSGLAdaptRegisterDestroy()
 @*/
-PetscErrorCode  TSGLAdaptRegisterAll(const char path[])
+PetscErrorCode  TSGLAdaptRegisterAll(void)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = TSGLAdaptRegister(TSGLADAPT_NONE,path,"TSGLAdaptCreate_None",TSGLAdaptCreate_None);CHKERRQ(ierr);
-  ierr = TSGLAdaptRegister(TSGLADAPT_SIZE,path,"TSGLAdaptCreate_Size",TSGLAdaptCreate_Size);CHKERRQ(ierr);
-  ierr = TSGLAdaptRegister(TSGLADAPT_BOTH,path,"TSGLAdaptCreate_Both",TSGLAdaptCreate_Both);CHKERRQ(ierr);
+  ierr = TSGLAdaptRegister(TSGLADAPT_NONE,"TSGLAdaptCreate_None",TSGLAdaptCreate_None);CHKERRQ(ierr);
+  ierr = TSGLAdaptRegister(TSGLADAPT_SIZE,"TSGLAdaptCreate_Size",TSGLAdaptCreate_Size);CHKERRQ(ierr);
+  ierr = TSGLAdaptRegister(TSGLADAPT_BOTH,"TSGLAdaptCreate_Both",TSGLAdaptCreate_Both);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -119,15 +113,12 @@ PetscErrorCode  TSGLAdaptFinalizePackage(void)
   called from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to
   TSCreate_GL() when using static libraries.
 
-  Input Parameter:
-  path - The dynamic library path, or NULL
-
   Level: developer
 
 .keywords: TSGLAdapt, initialize, package
 .seealso: PetscInitialize()
 @*/
-PetscErrorCode  TSGLAdaptInitializePackage(const char path[])
+PetscErrorCode  TSGLAdaptInitializePackage(void)
 {
   PetscErrorCode ierr;
 
@@ -135,7 +126,7 @@ PetscErrorCode  TSGLAdaptInitializePackage(const char path[])
   if (TSGLAdaptPackageInitialized) PetscFunctionReturn(0);
   TSGLAdaptPackageInitialized = PETSC_TRUE;
   ierr = PetscClassIdRegister("TSGLAdapt",&TSGLADAPT_CLASSID);CHKERRQ(ierr);
-  ierr = TSGLAdaptRegisterAll(path);CHKERRQ(ierr);
+  ierr = TSGLAdaptRegisterAll();CHKERRQ(ierr);
   ierr = PetscRegisterFinalize(TSGLAdaptFinalizePackage);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -143,14 +134,14 @@ PetscErrorCode  TSGLAdaptInitializePackage(const char path[])
 #undef __FUNCT__
 #define __FUNCT__ "TSGLAdaptRegisterDestroy"
 /*@C
-   TSGLAdaptRegisterDestroy - Frees the list of adaptivity schemes that were registered by TSGLAdaptRegister()/TSGLAdaptRegister().
+   TSGLAdaptRegisterDestroy - Frees the list of adaptivity schemes that were registered by TSGLAdaptRegister()
 
    Not Collective
 
    Level: advanced
 
 .keywords: TSGLAdapt, register, destroy
-.seealso: TSGLAdaptRegister(), TSGLAdaptRegisterAll(), TSGLAdaptRegister()
+.seealso: TSGLAdaptRegister(), TSGLAdaptRegisterAll()
 @*/
 PetscErrorCode  TSGLAdaptRegisterDestroy(void)
 {

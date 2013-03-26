@@ -26,29 +26,29 @@ PETSC_EXTERN PetscErrorCode TSCreate_RosW(TS);
   Level: advanced
 
 .keywords: TS, timestepper, register, all
-.seealso: TSCreate(), TSRegister(), TSRegisterDestroy(), TSRegister()
+.seealso: TSCreate(), TSRegister(), TSRegisterDestroy()
 @*/
-PetscErrorCode  TSRegisterAll(const char path[])
+PetscErrorCode  TSRegisterAll(void)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   TSRegisterAllCalled = PETSC_TRUE;
 
-  ierr = TSRegister(TSEULER,           path, "TSCreate_Euler",    TSCreate_Euler);CHKERRQ(ierr);
-  ierr = TSRegister(TSBEULER,          path, "TSCreate_BEuler",   TSCreate_BEuler);CHKERRQ(ierr);
-  ierr = TSRegister(TSCN,              path, "TSCreate_CN",       TSCreate_CN);CHKERRQ(ierr);
-  ierr = TSRegister(TSPSEUDO,          path, "TSCreate_Pseudo",   TSCreate_Pseudo);CHKERRQ(ierr);
-  ierr = TSRegister(TSGL,              path, "TSCreate_GL",       TSCreate_GL);CHKERRQ(ierr);
-  ierr = TSRegister(TSSSP,             path, "TSCreate_SSP",      TSCreate_SSP);CHKERRQ(ierr);
-  ierr = TSRegister(TSTHETA,           path, "TSCreate_Theta",    TSCreate_Theta);CHKERRQ(ierr);
-  ierr = TSRegister(TSALPHA,           path, "TSCreate_Alpha",    TSCreate_Alpha);CHKERRQ(ierr);
+  ierr = TSRegister(TSEULER,           "TSCreate_Euler",    TSCreate_Euler);CHKERRQ(ierr);
+  ierr = TSRegister(TSBEULER,          "TSCreate_BEuler",   TSCreate_BEuler);CHKERRQ(ierr);
+  ierr = TSRegister(TSCN,              "TSCreate_CN",       TSCreate_CN);CHKERRQ(ierr);
+  ierr = TSRegister(TSPSEUDO,          "TSCreate_Pseudo",   TSCreate_Pseudo);CHKERRQ(ierr);
+  ierr = TSRegister(TSGL,              "TSCreate_GL",       TSCreate_GL);CHKERRQ(ierr);
+  ierr = TSRegister(TSSSP,             "TSCreate_SSP",      TSCreate_SSP);CHKERRQ(ierr);
+  ierr = TSRegister(TSTHETA,           "TSCreate_Theta",    TSCreate_Theta);CHKERRQ(ierr);
+  ierr = TSRegister(TSALPHA,           "TSCreate_Alpha",    TSCreate_Alpha);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_SUNDIALS)
-  ierr = TSRegister(TSSUNDIALS,        path, "TSCreate_Sundials", TSCreate_Sundials);CHKERRQ(ierr);
+  ierr = TSRegister(TSSUNDIALS,        "TSCreate_Sundials", TSCreate_Sundials);CHKERRQ(ierr);
 #endif
-  ierr = TSRegister(TSRK,              path, "TSCreate_RK",       TSCreate_RK);CHKERRQ(ierr);
-  ierr = TSRegister(TSARKIMEX,         path, "TSCreate_ARKIMEX",  TSCreate_ARKIMEX);CHKERRQ(ierr);
-  ierr = TSRegister(TSROSW,            path, "TSCreate_RosW",     TSCreate_RosW);CHKERRQ(ierr);
+  ierr = TSRegister(TSRK,              "TSCreate_RK",       TSCreate_RK);CHKERRQ(ierr);
+  ierr = TSRegister(TSARKIMEX,         "TSCreate_ARKIMEX",  TSCreate_ARKIMEX);CHKERRQ(ierr);
+  ierr = TSRegister(TSROSW,            "TSCreate_RosW",     TSCreate_RosW);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

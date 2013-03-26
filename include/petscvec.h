@@ -115,7 +115,7 @@ PETSC_EXTERN PetscClassId VEC_CLASSID;
 PETSC_EXTERN PetscClassId VEC_SCATTER_CLASSID;
 
 
-PETSC_EXTERN PetscErrorCode VecInitializePackage(const char[]);
+PETSC_EXTERN PetscErrorCode VecInitializePackage(void);
 PETSC_EXTERN PetscErrorCode VecFinalizePackage(void);
 
 PETSC_EXTERN PetscErrorCode VecCreate(MPI_Comm,Vec*);
@@ -311,8 +311,8 @@ PETSC_EXTERN PetscFunctionList VecList;
 PETSC_EXTERN PetscBool         VecRegisterAllCalled;
 PETSC_EXTERN PetscErrorCode VecSetType(Vec, VecType);
 PETSC_EXTERN PetscErrorCode VecGetType(Vec, VecType *);
-PETSC_EXTERN PetscErrorCode VecRegister(const char[],const char[],const char[],PetscErrorCode (*)(Vec));
-PETSC_EXTERN PetscErrorCode VecRegisterAll(const char []);
+PETSC_EXTERN PetscErrorCode VecRegister(const char[],const char[],PetscErrorCode (*)(Vec));
+PETSC_EXTERN PetscErrorCode VecRegisterAll(void);
 PETSC_EXTERN PetscErrorCode VecRegisterDestroy(void);
 
 PETSC_EXTERN PetscErrorCode VecScatterCreate(Vec,IS,Vec,IS,VecScatter *);

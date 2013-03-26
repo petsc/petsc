@@ -134,16 +134,12 @@ PetscErrorCode  TSGetType(TS ts, TSType *type)
 
 .seealso: TSRegisterAll(), TSRegisterDestroy()
 @*/
-PetscErrorCode  TSRegister(const char sname[], const char path[], const char name[], PetscErrorCode (*function)(TS))
+PetscErrorCode  TSRegister(const char sname[], const char name[], PetscErrorCode (*function)(TS))
 {
-  char           fullname[PETSC_MAX_PATH_LEN];
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscStrcpy(fullname, path);CHKERRQ(ierr);
-  ierr = PetscStrcat(fullname, ":");CHKERRQ(ierr);
-  ierr = PetscStrcat(fullname, name);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&TSList, sname, fullname, (void (*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&TSList, sname, name, (void (*)(void))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -151,14 +147,14 @@ PetscErrorCode  TSRegister(const char sname[], const char path[], const char nam
 #undef __FUNCT__
 #define __FUNCT__ "TSRegisterDestroy"
 /*@C
-   TSRegisterDestroy - Frees the list of timestepping routines that were registered by TSRegister()/TSRegister().
+   TSRegisterDestroy - Frees the list of timestepping routines that were registered by TSRegister()
 
    Not Collective
 
    Level: advanced
 
 .keywords: TS, timestepper, register, destroy
-.seealso: TSRegister(), TSRegisterAll(), TSRegister()
+.seealso: TSRegister(), TSRegisterAll()
 @*/
 PetscErrorCode  TSRegisterDestroy(void)
 {

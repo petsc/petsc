@@ -43,7 +43,7 @@ PetscErrorCode  PetscDrawCreate(MPI_Comm comm,const char display[],const char ti
 
   PetscFunctionBegin;
 #if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
-  ierr = PetscDrawInitializePackage(NULL);CHKERRQ(ierr);
+  ierr = PetscDrawInitializePackage();CHKERRQ(ierr);
 #endif
   *indraw = 0;
   ierr = PetscHeaderCreate(draw,_p_PetscDraw,struct _PetscDrawOps,PETSC_DRAW_CLASSID,"Draw","Graphics","Draw",comm,PetscDrawDestroy,0);CHKERRQ(ierr);
@@ -207,7 +207,7 @@ PetscErrorCode  PetscDrawGetType(PetscDraw draw,PetscDrawType *type)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDrawRegister"
-/*@
+/*@C
    PetscDrawRegister - Adds a method to the graphics package.
 
    Not Collective
@@ -237,14 +237,12 @@ $     -draw_type my_draw_type
 
 .seealso: PetscDrawRegisterAll(), PetscDrawRegisterDestroy()
 @*/
-PetscErrorCode  PetscDrawRegister(const char *sname,const char *path,const char *name,PetscErrorCode (*function)(PetscDraw))
+PetscErrorCode  PetscDrawRegister(const char *sname,const char *name,PetscErrorCode (*function)(PetscDraw))
 {
   PetscErrorCode ierr;
-  char           fullname[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListConcat(path,name,fullname);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&PetscDrawList,sname,fullname,(void (*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&PetscDrawList,sname,name,(void (*)(void))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -294,7 +292,7 @@ PetscErrorCode  PetscDrawSetFromOptions(PetscDraw draw)
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
 
   if (!PetscDrawList) {
-    ierr = PetscDrawRegisterAll(NULL);CHKERRQ(ierr);
+    ierr = PetscDrawRegisterAll();CHKERRQ(ierr);
   }
 
   if (((PetscObject)draw)->type_name) def = ((PetscObject)draw)->type_name;

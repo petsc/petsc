@@ -11,7 +11,7 @@
 #define IS_FILE_CLASSID 1211218
 PETSC_EXTERN PetscClassId IS_CLASSID;
 
-PETSC_EXTERN PetscErrorCode ISInitializePackage(const char[]);
+PETSC_EXTERN PetscErrorCode ISInitializePackage(void);
 
 /*S
      IS - Abstract PETSc object that allows indexing.
@@ -43,8 +43,8 @@ PETSC_EXTERN PetscFunctionList ISList;
 PETSC_EXTERN PetscBool         ISRegisterAllCalled;
 PETSC_EXTERN PetscErrorCode ISSetType(IS, ISType);
 PETSC_EXTERN PetscErrorCode ISGetType(IS, ISType *);
-PETSC_EXTERN PetscErrorCode ISRegister(const char[],const char[],const char[],PetscErrorCode (*)(IS));
-PETSC_EXTERN PetscErrorCode ISRegisterAll(const char []);
+PETSC_EXTERN PetscErrorCode ISRegister(const char[],const char[],PetscErrorCode (*)(IS));
+PETSC_EXTERN PetscErrorCode ISRegisterAll(void);
 PETSC_EXTERN PetscErrorCode ISRegisterDestroy(void);
 PETSC_EXTERN PetscErrorCode ISCreate(MPI_Comm,IS*);
 

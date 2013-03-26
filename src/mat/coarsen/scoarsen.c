@@ -28,15 +28,15 @@ PETSC_EXTERN PetscErrorCode MatCoarsenCreate_HEM(MatCoarsen);
 
  .seealso: MatCoarsenRegister(), MatCoarsenRegisterDestroy()
  @*/
-PetscErrorCode  MatCoarsenRegisterAll(const char path[])
+PetscErrorCode  MatCoarsenRegisterAll(void)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   MatCoarsenRegisterAllCalled = PETSC_TRUE;
 
-  ierr = MatCoarsenRegister(MATCOARSENMIS,path,"MatCoarsenCreate_MIS",MatCoarsenCreate_MIS);CHKERRQ(ierr);
-  ierr = MatCoarsenRegister(MATCOARSENHEM,path,"MatCoarsenCreate_HEM",MatCoarsenCreate_HEM);CHKERRQ(ierr);
+  ierr = MatCoarsenRegister(MATCOARSENMIS,"MatCoarsenCreate_MIS",MatCoarsenCreate_MIS);CHKERRQ(ierr);
+  ierr = MatCoarsenRegister(MATCOARSENHEM,"MatCoarsenCreate_HEM",MatCoarsenCreate_HEM);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

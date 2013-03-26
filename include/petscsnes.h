@@ -51,7 +51,7 @@ typedef const char* SNESType;
 PETSC_EXTERN PetscClassId SNES_CLASSID;
 PETSC_EXTERN PetscClassId DMSNES_CLASSID;
 
-PETSC_EXTERN PetscErrorCode SNESInitializePackage(const char[]);
+PETSC_EXTERN PetscErrorCode SNESInitializePackage(void);
 
 PETSC_EXTERN PetscErrorCode SNESCreate(MPI_Comm,SNES*);
 PETSC_EXTERN PetscErrorCode SNESReset(SNES);
@@ -74,9 +74,9 @@ PETSC_EXTERN PetscErrorCode SNESAddOptionsChecker(PetscErrorCode (*)(SNES));
 PETSC_EXTERN PetscErrorCode SNESSetUpdate(SNES, PetscErrorCode (*)(SNES, PetscInt));
 
 PETSC_EXTERN PetscErrorCode SNESRegisterDestroy(void);
-PETSC_EXTERN PetscErrorCode SNESRegisterAll(const char[]);
+PETSC_EXTERN PetscErrorCode SNESRegisterAll(void);
 
-PETSC_EXTERN PetscErrorCode SNESRegister(const char[],const char[],const char[],PetscErrorCode (*)(SNES));
+PETSC_EXTERN PetscErrorCode SNESRegister(const char[],const char[],PetscErrorCode (*)(SNES));
 
 PETSC_EXTERN PetscErrorCode SNESGetKSP(SNES,KSP*);
 PETSC_EXTERN PetscErrorCode SNESSetKSP(SNES,KSP);
@@ -556,8 +556,8 @@ PETSC_EXTERN PetscErrorCode SNESLineSearchBTSetAlpha(SNESLineSearch, PetscReal);
 PETSC_EXTERN PetscErrorCode SNESLineSearchBTGetAlpha(SNESLineSearch, PetscReal*);
 
 /*register line search types */
-PETSC_EXTERN PetscErrorCode SNESLineSearchRegister(const char[],const char[],const char[],PetscErrorCode(*)(SNESLineSearch));
-PETSC_EXTERN PetscErrorCode SNESLineSearchRegisterAll(const char path[]);
+PETSC_EXTERN PetscErrorCode SNESLineSearchRegister(const char[],const char[],PetscErrorCode(*)(SNESLineSearch));
+PETSC_EXTERN PetscErrorCode SNESLineSearchRegisterAll(void);
 PETSC_EXTERN PetscErrorCode SNESLineSearchRegisterDestroy(void);
 
 /* Routines for VI solver */
@@ -636,7 +636,7 @@ typedef const char* SNESMSType;
 PETSC_EXTERN PetscErrorCode SNESMSRegister(SNESMSType,PetscInt,PetscInt,PetscReal,const PetscReal[],const PetscReal[],const PetscReal[]);
 PETSC_EXTERN PetscErrorCode SNESMSSetType(SNES,SNESMSType);
 PETSC_EXTERN PetscErrorCode SNESMSFinalizePackage(void);
-PETSC_EXTERN PetscErrorCode SNESMSInitializePackage(const char path[]);
+PETSC_EXTERN PetscErrorCode SNESMSInitializePackage(void);
 PETSC_EXTERN PetscErrorCode SNESMSRegisterDestroy(void);
 PETSC_EXTERN PetscErrorCode SNESMSRegisterAll(void);
 

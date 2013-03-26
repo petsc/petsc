@@ -81,7 +81,7 @@ PetscErrorCode  VecGetType(Vec vec, VecType *type)
   PetscValidHeaderSpecific(vec, VEC_CLASSID,1);
   PetscValidCharPointer(type,2);
   if (!VecRegisterAllCalled) {
-    ierr = VecRegisterAll(NULL);CHKERRQ(ierr);
+    ierr = VecRegisterAll();CHKERRQ(ierr);
   }
   *type = ((PetscObject)vec)->type_name;
   PetscFunctionReturn(0);
@@ -120,25 +120,18 @@ PetscErrorCode  VecGetType(Vec vec, VecType *type)
     -vec_type my_vector_name
 .ve
 
-  Notes: $PETSC_ARCH occuring in pathname will be replaced with appropriate values.
-         If your function is not being put into a shared library then use VecRegister() instead
-
   Level: advanced
 
 .keywords: Vec, register
 
-.seealso: VecRegisterAll(), VecRegisterDestroy(), VecRegister()
+.seealso: VecRegisterAll(), VecRegisterDestroy()
 @*/
-PetscErrorCode  VecRegister(const char sname[], const char path[], const char name[], PetscErrorCode (*function)(Vec))
+PetscErrorCode  VecRegister(const char sname[], const char name[], PetscErrorCode (*function)(Vec))
 {
-  char           fullname[PETSC_MAX_PATH_LEN];
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscStrcpy(fullname, path);CHKERRQ(ierr);
-  ierr = PetscStrcat(fullname, ":");CHKERRQ(ierr);
-  ierr = PetscStrcat(fullname, name);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&VecList, sname, fullname, (void (*)(void)) function);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&VecList, sname, name, (void (*)(void)) function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -147,7 +140,7 @@ PetscErrorCode  VecRegister(const char sname[], const char path[], const char na
 #undef __FUNCT__
 #define __FUNCT__ "VecRegisterDestroy"
 /*@C
-   VecRegisterDestroy - Frees the list of Vec methods that were registered by VecRegister()/VecRegister().
+   VecRegisterDestroy - Frees the list of Vec methods that were registered by VecRegister()
 
    Not Collective
 

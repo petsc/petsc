@@ -264,7 +264,7 @@ PetscErrorCode  AOCreateMapping(MPI_Comm comm,PetscInt napp,const PetscInt myapp
   PetscValidPointer(aoout,5);
   *aoout = 0;
 #if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
-  ierr = AOInitializePackage(NULL);CHKERRQ(ierr);
+  ierr = AOInitializePackage();CHKERRQ(ierr);
 #endif
 
   ierr     = PetscHeaderCreate(ao, _p_AO, struct _AOOps, AO_CLASSID, "AO", "Application Ordering", "AO", comm, AODestroy, AOView);CHKERRQ(ierr);

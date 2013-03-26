@@ -27,15 +27,12 @@ PetscErrorCode  AOFinalizePackage(void)
   AOInitializePackage - This function initializes everything in the AO package. It is called
   from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to AOCreate().
 
-  Input Parameter:
-  path - The dynamic library path, or NULL
-
   Level: developer
 
 .keywords: AO, initialize, package
 .seealso: PetscInitialize()
 @*/
-PetscErrorCode  AOInitializePackage(const char path[])
+PetscErrorCode  AOInitializePackage(void)
 {
   char           logList[256];
   char           *className;
@@ -48,7 +45,7 @@ PetscErrorCode  AOInitializePackage(const char path[])
   /* Register Classes */
   ierr = PetscClassIdRegister("Application Order",&AO_CLASSID);CHKERRQ(ierr);
   /* Register Constructors */
-  ierr = AORegisterAll(path);CHKERRQ(ierr);
+  ierr = AORegisterAll();CHKERRQ(ierr);
   /* Register Events */
   ierr = PetscLogEventRegister("AOPetscToApplication", AO_CLASSID,&AO_PetscToApplication);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("AOApplicationToPetsc", AO_CLASSID,&AO_ApplicationToPetsc);CHKERRQ(ierr);

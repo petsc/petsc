@@ -31,17 +31,17 @@ PETSC_EXTERN PetscErrorCode MatGetColoring_ID_Minpack(Mat,MatColoringType,ISColo
 
 .seealso: MatColoringRegister(), MatColoringRegisterDestroy()
 @*/
-PetscErrorCode MatColoringRegisterAll(const char path[])
+PetscErrorCode MatColoringRegisterAll(void)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   MatColoringRegisterAllCalled = PETSC_TRUE;
 
-  ierr = MatColoringRegister(MATCOLORINGNATURAL,path,"MatGetColoring_Natural",   MatGetColoring_Natural);CHKERRQ(ierr);
-  ierr = MatColoringRegister(MATCOLORINGSL,     path,"MatGetColoring_SL_Minpack",MatGetColoring_SL_Minpack);CHKERRQ(ierr);
-  ierr = MatColoringRegister(MATCOLORINGLF,     path,"MatGetColoring_LF_Minpack",MatGetColoring_LF_Minpack);CHKERRQ(ierr);
-  ierr = MatColoringRegister(MATCOLORINGID,     path,"MatGetColoring_ID_Minpack",MatGetColoring_ID_Minpack);CHKERRQ(ierr);
+  ierr = MatColoringRegister(MATCOLORINGNATURAL,"MatGetColoring_Natural",   MatGetColoring_Natural);CHKERRQ(ierr);
+  ierr = MatColoringRegister(MATCOLORINGSL,     "MatGetColoring_SL_Minpack",MatGetColoring_SL_Minpack);CHKERRQ(ierr);
+  ierr = MatColoringRegister(MATCOLORINGLF,     "MatGetColoring_LF_Minpack",MatGetColoring_LF_Minpack);CHKERRQ(ierr);
+  ierr = MatColoringRegister(MATCOLORINGID,     "MatGetColoring_ID_Minpack",MatGetColoring_ID_Minpack);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

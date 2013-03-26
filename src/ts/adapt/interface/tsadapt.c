@@ -41,14 +41,12 @@ $     -ts_adapt_type my_scheme
 
 .seealso: TSAdaptRegisterAll()
 @*/
-PetscErrorCode  TSAdaptRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(TSAdapt))
+PetscErrorCode  TSAdaptRegister(const char sname[],const char name[],PetscErrorCode (*function)(TSAdapt))
 {
   PetscErrorCode ierr;
-  char           fullname[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListConcat(path,name,fullname);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&TSAdaptList,sname,fullname,(void(*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&TSAdaptList,sname,name,(void(*)(void))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -65,14 +63,14 @@ PetscErrorCode  TSAdaptRegister(const char sname[],const char path[],const char 
 
 .seealso: TSAdaptRegisterDestroy()
 @*/
-PetscErrorCode  TSAdaptRegisterAll(const char path[])
+PetscErrorCode  TSAdaptRegisterAll(void)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = TSAdaptRegister(TSADAPTBASIC,path,"TSAdaptCreate_Basic",TSAdaptCreate_Basic);CHKERRQ(ierr);
-  ierr = TSAdaptRegister(TSADAPTNONE, path,"TSAdaptCreate_None", TSAdaptCreate_None);CHKERRQ(ierr);
-  ierr = TSAdaptRegister(TSADAPTCFL,  path,"TSAdaptCreate_CFL",  TSAdaptCreate_CFL);CHKERRQ(ierr);
+  ierr = TSAdaptRegister(TSADAPTBASIC,"TSAdaptCreate_Basic",TSAdaptCreate_Basic);CHKERRQ(ierr);
+  ierr = TSAdaptRegister(TSADAPTNONE, "TSAdaptCreate_None", TSAdaptCreate_None);CHKERRQ(ierr);
+  ierr = TSAdaptRegister(TSADAPTCFL,  "TSAdaptCreate_CFL",  TSAdaptCreate_CFL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -103,15 +101,12 @@ PetscErrorCode  TSAdaptFinalizePackage(void)
   called from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to
   TSCreate_GL() when using static libraries.
 
-  Input Parameter:
-  path - The dynamic library path, or NULL
-
   Level: developer
 
 .keywords: TSAdapt, initialize, package
 .seealso: PetscInitialize()
 @*/
-PetscErrorCode  TSAdaptInitializePackage(const char path[])
+PetscErrorCode  TSAdaptInitializePackage(void)
 {
   PetscErrorCode ierr;
 
@@ -119,7 +114,7 @@ PetscErrorCode  TSAdaptInitializePackage(const char path[])
   if (TSAdaptPackageInitialized) PetscFunctionReturn(0);
   TSAdaptPackageInitialized = PETSC_TRUE;
   ierr = PetscClassIdRegister("TSAdapt",&TSADAPT_CLASSID);CHKERRQ(ierr);
-  ierr = TSAdaptRegisterAll(path);CHKERRQ(ierr);
+  ierr = TSAdaptRegisterAll();CHKERRQ(ierr);
   ierr = PetscRegisterFinalize(TSAdaptFinalizePackage);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -127,14 +122,14 @@ PetscErrorCode  TSAdaptInitializePackage(const char path[])
 #undef __FUNCT__
 #define __FUNCT__ "TSAdaptRegisterDestroy"
 /*@C
-   TSAdaptRegisterDestroy - Frees the list of adaptivity schemes that were registered by TSAdaptRegister()/TSAdaptRegister().
+   TSAdaptRegisterDestroy - Frees the list of adaptivity schemes that were registered by TSAdaptRegister()
 
    Not Collective
 
    Level: advanced
 
 .keywords: TSAdapt, register, destroy
-.seealso: TSAdaptRegister(), TSAdaptRegisterAll(), TSAdaptRegister()
+.seealso: TSAdaptRegister(), TSAdaptRegisterAll()
 @*/
 PetscErrorCode  TSAdaptRegisterDestroy(void)
 {

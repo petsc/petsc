@@ -32,11 +32,11 @@ typedef const char* PetscViewerType;
 #define PETSCVIEWERAMS          "ams"
 
 PETSC_EXTERN PetscFunctionList PetscViewerList;
-PETSC_EXTERN PetscErrorCode PetscViewerRegisterAll(const char *);
+PETSC_EXTERN PetscErrorCode PetscViewerRegisterAll(void);
 PETSC_EXTERN PetscErrorCode PetscViewerRegisterDestroy(void);
-PETSC_EXTERN PetscErrorCode PetscViewerInitializePackage(const char[]);
+PETSC_EXTERN PetscErrorCode PetscViewerInitializePackage(void);
 
-PETSC_EXTERN PetscErrorCode PetscViewerRegister(const char*,const char*,const char*,PetscErrorCode (*)(PetscViewer));
+PETSC_EXTERN PetscErrorCode PetscViewerRegister(const char[],const char[],PetscErrorCode (*)(PetscViewer));
 
 PETSC_EXTERN PetscErrorCode PetscViewerCreate(MPI_Comm,PetscViewer*);
 PETSC_EXTERN PetscErrorCode PetscViewerSetFromOptions(PetscViewer);
@@ -177,7 +177,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerVUGetVecSeen(PetscViewer, PetscBool  *);
 PETSC_EXTERN PetscErrorCode PetscViewerVUPrintDeferred(PetscViewer, const char [], ...);
 PETSC_EXTERN PetscErrorCode PetscViewerVUFlushDeferred(PetscViewer);
 
-PETSC_EXTERN PetscErrorCode PetscViewerMathematicaInitializePackage(const char[]);
+PETSC_EXTERN PetscErrorCode PetscViewerMathematicaInitializePackage(void);
 PETSC_EXTERN PetscErrorCode PetscViewerMathematicaFinalizePackage(void);
 PETSC_EXTERN PetscErrorCode PetscViewerMathematicaGetName(PetscViewer, const char **);
 PETSC_EXTERN PetscErrorCode PetscViewerMathematicaSetName(PetscViewer, const char []);

@@ -84,7 +84,7 @@ PetscErrorCode CharacteristicCreate(MPI_Comm comm, Characteristic *c)
   PetscValidPointer(c, 2);
   *c = NULL;
 #if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
-  ierr = CharacteristicInitializePackage(NULL);CHKERRQ(ierr);
+  ierr = CharacteristicInitializePackage();CHKERRQ(ierr);
 #endif
 
   ierr = PetscHeaderCreate(newC, _p_Characteristic, struct _CharacteristicOps, CHARACTERISTIC_CLASSID, "Characteristic", "Characteristic", "SemiLagrange", comm, CharacteristicDestroy, CharacteristicView);CHKERRQ(ierr);
@@ -269,14 +269,12 @@ PetscErrorCode CharacteristicSetUp(Characteristic c)
 
   Level: advanced
 @*/
-PetscErrorCode CharacteristicRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(Characteristic))
+PetscErrorCode CharacteristicRegister(const char sname[],const char name[],PetscErrorCode (*function)(Characteristic))
 {
   PetscErrorCode ierr;
-  char           fullname[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListConcat(path,name,fullname);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&CharacteristicList,sname,fullname,(void (*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&CharacteristicList,sname,name,(void (*)(void))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

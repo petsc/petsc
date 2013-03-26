@@ -11,24 +11,21 @@ PETSC_EXTERN PetscErrorCode ISCreate_Block(IS);
 
   Not Collective
 
-  Input parameter:
-. path - The dynamic library path
-
   Level: advanced
 
 .keywords: IS, register, all
-.seealso:  ISRegister(), ISRegisterDestroy(), ISRegister()
+.seealso:  ISRegister(), ISRegisterDestroy()
 @*/
-PetscErrorCode  ISRegisterAll(const char path[])
+PetscErrorCode  ISRegisterAll(void)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ISRegisterAllCalled = PETSC_TRUE;
 
-  ierr = ISRegister(ISGENERAL,     path, "ISCreate_General",    ISCreate_General);CHKERRQ(ierr);
-  ierr = ISRegister(ISSTRIDE,      path, "ISCreate_Stride",     ISCreate_Stride);CHKERRQ(ierr);
-  ierr = ISRegister(ISBLOCK,       path, "ISCreate_Block",      ISCreate_Block);CHKERRQ(ierr);
+  ierr = ISRegister(ISGENERAL, "ISCreate_General",    ISCreate_General);CHKERRQ(ierr);
+  ierr = ISRegister(ISSTRIDE,  "ISCreate_Stride",     ISCreate_Stride);CHKERRQ(ierr);
+  ierr = ISRegister(ISBLOCK,   "ISCreate_Block",      ISCreate_Block);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

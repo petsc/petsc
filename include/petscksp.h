@@ -5,7 +5,7 @@
 #define __PETSCKSP_H
 #include <petscpc.h>
 
-PETSC_EXTERN PetscErrorCode KSPInitializePackage(const char[]);
+PETSC_EXTERN PetscErrorCode KSPInitializePackage(void);
 
 /*S
      KSP - Abstract PETSc object that manages all Krylov methods
@@ -78,10 +78,10 @@ PETSC_EXTERN PetscErrorCode KSPDestroy(KSP*);
 
 PETSC_EXTERN PetscFunctionList KSPList;
 PETSC_EXTERN PetscBool         KSPRegisterAllCalled;
-PETSC_EXTERN PetscErrorCode KSPRegisterAll(const char[]);
+PETSC_EXTERN PetscErrorCode KSPRegisterAll(void);
 PETSC_EXTERN PetscErrorCode KSPRegisterDestroy(void);
-PETSC_EXTERN PetscErrorCode KSPRegister(const char[],const char[],const char[],PetscErrorCode (*)(KSP));
-PETSC_EXTERN PetscErrorCode KSPMatRegisterAll(const char[]);
+PETSC_EXTERN PetscErrorCode KSPRegister(const char[],const char[],PetscErrorCode (*)(KSP));
+PETSC_EXTERN PetscErrorCode KSPMatRegisterAll(void);
 
 PETSC_EXTERN PetscErrorCode KSPGetType(KSP,KSPType *);
 PETSC_EXTERN PetscErrorCode KSPSetPCSide(KSP,PCSide);

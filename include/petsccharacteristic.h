@@ -7,7 +7,7 @@
 #include <petscvec.h>
 #include <petscdmdatypes.h>
 
-PETSC_EXTERN PetscErrorCode CharacteristicInitializePackage(const char[]);
+PETSC_EXTERN PetscErrorCode CharacteristicInitializePackage(void);
 
 /*S
      Characteristic - Abstract PETSc object that manages method of characteristics solves
@@ -44,9 +44,9 @@ PETSC_EXTERN PetscErrorCode CharacteristicDestroy(Characteristic*);
 
 PETSC_EXTERN PetscBool         CharacteristicRegisterAllCalled;
 PETSC_EXTERN PetscFunctionList CharacteristicList;
-PETSC_EXTERN PetscErrorCode CharacteristicRegisterAll(const char[]);
+PETSC_EXTERN PetscErrorCode CharacteristicRegisterAll(void);
 PETSC_EXTERN PetscErrorCode CharacteristicRegisterDestroy(void);
 
-PETSC_EXTERN PetscErrorCode CharacteristicRegister(const char[],const char[],const char[],PetscErrorCode (*)(Characteristic));
+PETSC_EXTERN PetscErrorCode CharacteristicRegister(const char[],const char[],PetscErrorCode (*)(Characteristic));
 
 #endif /*__PETSCCHARACTERISTICS_H*/

@@ -6,7 +6,7 @@
 #include <petscmat.h>
 #include <petscdmtypes.h>
 
-PETSC_EXTERN PetscErrorCode DMInitializePackage(const char[]);
+PETSC_EXTERN PetscErrorCode DMInitializePackage(void);
 
 PETSC_EXTERN PetscClassId DM_CLASSID;
 
@@ -37,8 +37,8 @@ PETSC_EXTERN PetscBool         DMRegisterAllCalled;
 PETSC_EXTERN PetscErrorCode DMCreate(MPI_Comm,DM*);
 PETSC_EXTERN PetscErrorCode DMSetType(DM, DMType);
 PETSC_EXTERN PetscErrorCode DMGetType(DM, DMType *);
-PETSC_EXTERN PetscErrorCode DMRegister(const char[],const char[],const char[],PetscErrorCode (*)(DM));
-PETSC_EXTERN PetscErrorCode DMRegisterAll(const char []);
+PETSC_EXTERN PetscErrorCode DMRegister(const char[],const char[],PetscErrorCode (*)(DM));
+PETSC_EXTERN PetscErrorCode DMRegisterAll(void);
 PETSC_EXTERN PetscErrorCode DMRegisterDestroy(void);
 
 PETSC_EXTERN PetscErrorCode DMView(DM,PetscViewer);

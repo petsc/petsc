@@ -215,7 +215,7 @@ PetscErrorCode  PCSetFromOptions_Factor(PC pc)
   PetscEnum         etmp;
 
   PetscFunctionBegin;
-  if (!MatOrderingRegisterAllCalled) {ierr = MatOrderingRegisterAll(NULL);CHKERRQ(ierr);}
+  if (!MatOrderingRegisterAllCalled) {ierr = MatOrderingRegisterAll();CHKERRQ(ierr);}
   ierr = PetscOptionsBool("-pc_factor_in_place","Form factored matrix in the same memory as the matrix","PCFactorSetUseInPlace",flg,&flg,NULL);CHKERRQ(ierr);
   if (flg) {
     ierr = PCFactorSetUseInPlace(pc);CHKERRQ(ierr);

@@ -30,15 +30,12 @@ PetscErrorCode  PetscSysFinalizePackage(void)
   from PetscDLLibraryRegister() when using dynamic libraries, and on the call to PetscInitialize()
   when using static libraries.
 
-  Input Parameter:
-  path - The dynamic library path, or NULL
-
   Level: developer
 
 .keywords: Petsc, initialize, package
 .seealso: PetscInitialize()
 @*/
-PetscErrorCode  PetscSysInitializePackage(const char path[])
+PetscErrorCode  PetscSysInitializePackage(void)
 {
   char           logList[256];
   char           *className;
@@ -77,12 +74,12 @@ PetscErrorCode  PetscSysInitializePackage(const char path[])
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
 
 #if defined(PETSC_USE_SINGLE_LIBRARY)
-PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscvec(const char[]);
-PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscmat(const char[]);
-PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscdm(const char[]);
-PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscksp(const char[]);
-PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscsnes(const char[]);
-PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscts(const char[]);
+PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscvec(void);
+PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscmat(void);
+PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscdm(void);
+PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscksp(void);
+PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscsnes(void);
+PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscts(void);
 #endif
 
 #undef __FUNCT__
@@ -96,13 +93,11 @@ PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscts(const char[]);
 
   This one registers all the draw and PetscViewer objects.
 
-  Input Parameter:
-  path - library path
  */
 #if defined(PETSC_USE_SINGLE_LIBRARY)
-PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petsc(const char path[])
+PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petsc(void)
 #else
-PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscsys(const char path[])
+PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscsys(void)
 #endif
 {
   PetscErrorCode ierr;
@@ -111,18 +106,18 @@ PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscsys(const char path[])
   /*
       If we got here then PETSc was properly loaded
   */
-  ierr = PetscSysInitializePackage(path);CHKERRQ(ierr);
-  ierr = PetscDrawInitializePackage(path);CHKERRQ(ierr);
-  ierr = PetscViewerInitializePackage(path);CHKERRQ(ierr);
-  ierr = PetscRandomInitializePackage(path);CHKERRQ(ierr);
+  ierr = PetscSysInitializePackage();CHKERRQ(ierr);
+  ierr = PetscDrawInitializePackage();CHKERRQ(ierr);
+  ierr = PetscViewerInitializePackage();CHKERRQ(ierr);
+  ierr = PetscRandomInitializePackage();CHKERRQ(ierr);
 
 #if defined(PETSC_USE_SINGLE_LIBRARY)
-  ierr = PetscDLLibraryRegister_petscvec(path);CHKERRQ(ierr);
-  ierr = PetscDLLibraryRegister_petscmat(path);CHKERRQ(ierr);
-  ierr = PetscDLLibraryRegister_petscdm(path);CHKERRQ(ierr);
-  ierr = PetscDLLibraryRegister_petscksp(path);CHKERRQ(ierr);
-  ierr = PetscDLLibraryRegister_petscsnes(path);CHKERRQ(ierr);
-  ierr = PetscDLLibraryRegister_petscts(path);CHKERRQ(ierr);
+  ierr = PetscDLLibraryRegister_petscvec();CHKERRQ(ierr);
+  ierr = PetscDLLibraryRegister_petscmat();CHKERRQ(ierr);
+  ierr = PetscDLLibraryRegister_petscdm();CHKERRQ(ierr);
+  ierr = PetscDLLibraryRegister_petscksp();CHKERRQ(ierr);
+  ierr = PetscDLLibraryRegister_petscsnes();CHKERRQ(ierr);
+  ierr = PetscDLLibraryRegister_petscts();CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
 }

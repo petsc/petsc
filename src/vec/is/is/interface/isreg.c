@@ -37,7 +37,7 @@ PetscErrorCode  ISCreate(MPI_Comm comm,IS *is)
   PetscFunctionBegin;
   PetscValidPointer(is,2);
 #if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
-  ierr = ISInitializePackage(NULL);CHKERRQ(ierr);
+  ierr = ISInitializePackage();CHKERRQ(ierr);
 #endif
 
   ierr = PetscHeaderCreate(*is,_p_IS,struct _ISOps,IS_CLASSID,"IS","Index Set","IS",comm,ISDestroy,ISView);CHKERRQ(ierr);
@@ -79,7 +79,7 @@ PetscErrorCode  ISSetType(IS is, ISType method)
   ierr = PetscObjectTypeCompare((PetscObject) is, method, &match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
 
-  if (!ISRegisterAllCalled) {ierr = ISRegisterAll(NULL);CHKERRQ(ierr);}
+  if (!ISRegisterAllCalled) {ierr = ISRegisterAll();CHKERRQ(ierr);}
   ierr = PetscFunctionListFind(PetscObjectComm((PetscObject)is),ISList, method,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown IS type: %s", method);
   if (is->ops->destroy) {
@@ -116,7 +116,7 @@ PetscErrorCode  ISGetType(IS is, ISType *type)
   PetscValidHeaderSpecific(is, IS_CLASSID,1);
   PetscValidCharPointer(type,2);
   if (!ISRegisterAllCalled) {
-    ierr = ISRegisterAll(NULL);CHKERRQ(ierr);
+    ierr = ISRegisterAll();CHKERRQ(ierr);
   }
   *type = ((PetscObject)is)->type_name;
   PetscFunctionReturn(0);
@@ -165,16 +165,12 @@ PetscErrorCode  ISGetType(IS is, ISType *type)
 
   Level: advanced
 @*/
-PetscErrorCode  ISRegister(const char sname[], const char path[], const char name[], PetscErrorCode (*function)(IS))
+PetscErrorCode  ISRegister(const char sname[], const char name[], PetscErrorCode (*function)(IS))
 {
-  char           fullname[PETSC_MAX_PATH_LEN];
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscStrcpy(fullname, path);CHKERRQ(ierr);
-  ierr = PetscStrcat(fullname, ":");CHKERRQ(ierr);
-  ierr = PetscStrcat(fullname, name);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&ISList, sname, fullname, (void (*)(void)) function);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&ISList, sname, name, (void (*)(void)) function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -190,7 +186,7 @@ PetscErrorCode  ISRegister(const char sname[], const char path[], const char nam
    Level: advanced
 
 .keywords: IS, register, destroy
-.seealso: ISRegister(), ISRegisterAll(), ISRegister()
+.seealso: ISRegister(), ISRegisterAll()
 @*/
 PetscErrorCode  ISRegisterDestroy(void)
 {

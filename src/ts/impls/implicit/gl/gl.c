@@ -1310,14 +1310,12 @@ $     -ts_gl_type my_scheme
 
 .seealso: TSGLRegisterAll()
 @*/
-PetscErrorCode  TSGLRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(TS))
+PetscErrorCode  TSGLRegister(const char sname[],const char name[],PetscErrorCode (*function)(TS))
 {
   PetscErrorCode ierr;
-  char           fullname[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListConcat(path,name,fullname);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&TSGLList,sname,fullname,(void(*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&TSGLList,sname,name,(void(*)(void))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1348,22 +1346,16 @@ $     -ts_gl_accept_type my_scheme
 
    Level: advanced
 
-   Notes: Environmental variables such as ${PETSC_ARCH}, ${PETSC_DIR}, ${PETSC_LIB_DIR},
-          and others of the form ${any_environmental_variable} occuring in pathname will be
-          replaced with appropriate values.
-
 .keywords: TSGL, TSGLAcceptType, register
 
 .seealso: TSGLRegisterAll()
 @*/
-PetscErrorCode  TSGLAcceptRegister(const char sname[],const char path[],const char name[],TSGLAcceptFunction function)
+PetscErrorCode  TSGLAcceptRegister(const char sname[],const char name[],TSGLAcceptFunction function)
 {
   PetscErrorCode ierr;
-  char           fullname[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListConcat(path,name,fullname);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&TSGLAcceptList,sname,fullname,(void(*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&TSGLAcceptList,sname,name,(void(*)(void))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1380,7 +1372,7 @@ PetscErrorCode  TSGLAcceptRegister(const char sname[],const char path[],const ch
 
 .seealso:  TSGLRegisterDestroy()
 @*/
-PetscErrorCode  TSGLRegisterAll(const char path[])
+PetscErrorCode  TSGLRegisterAll(void)
 {
   PetscErrorCode ierr;
 
@@ -1388,8 +1380,8 @@ PetscErrorCode  TSGLRegisterAll(const char path[])
   if (TSGLRegisterAllCalled) PetscFunctionReturn(0);
   TSGLRegisterAllCalled = PETSC_TRUE;
 
-  ierr = TSGLRegister(TSGL_IRKS,path,"TSGLCreate_IRKS",TSGLCreate_IRKS);CHKERRQ(ierr);
-  ierr = TSGLAcceptRegister(TSGLACCEPT_ALWAYS,path,"TSGLAccept_Always",TSGLAccept_Always);CHKERRQ(ierr);
+  ierr = TSGLRegister(TSGL_IRKS,"TSGLCreate_IRKS",TSGLCreate_IRKS);CHKERRQ(ierr);
+  ierr = TSGLAcceptRegister(TSGLACCEPT_ALWAYS,"TSGLAccept_Always",TSGLAccept_Always);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1423,22 +1415,19 @@ PetscErrorCode  TSGLRegisterDestroy(void)
   from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to TSCreate_GL()
   when using static libraries.
 
-  Input Parameter:
-  path - The dynamic library path, or NULL
-
   Level: developer
 
 .keywords: TS, TSGL, initialize, package
 .seealso: PetscInitialize()
 @*/
-PetscErrorCode  TSGLInitializePackage(const char path[])
+PetscErrorCode  TSGLInitializePackage(void)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (TSGLPackageInitialized) PetscFunctionReturn(0);
   TSGLPackageInitialized = PETSC_TRUE;
-  ierr = TSGLRegisterAll(NULL);CHKERRQ(ierr);
+  ierr = TSGLRegisterAll();CHKERRQ(ierr);
   ierr = PetscRegisterFinalize(TSGLFinalizePackage);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1567,7 +1556,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_GL(TS ts)
 
   PetscFunctionBegin;
 #if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
-  ierr = TSGLInitializePackage(NULL);CHKERRQ(ierr);
+  ierr = TSGLInitializePackage();CHKERRQ(ierr);
 #endif
 
   ierr = PetscNewLog(ts,TS_GL,&gl);CHKERRQ(ierr);

@@ -142,15 +142,12 @@ PetscErrorCode SNESMSRegisterDestroy(void)
   from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to SNESCreate_MS()
   when using static libraries.
 
-  Input Parameter:
-  path - The dynamic library path, or NULL
-
   Level: developer
 
 .keywords: SNES, SNESMS, initialize, package
 .seealso: PetscInitialize()
 @*/
-PetscErrorCode SNESMSInitializePackage(const char path[])
+PetscErrorCode SNESMSInitializePackage(void)
 {
   PetscErrorCode ierr;
 
@@ -560,7 +557,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_MS(SNES snes)
 
   PetscFunctionBegin;
 #if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
-  ierr = SNESMSInitializePackage(NULL);CHKERRQ(ierr);
+  ierr = SNESMSInitializePackage();CHKERRQ(ierr);
 #endif
 
   snes->ops->setup          = SNESSetUp_MS;

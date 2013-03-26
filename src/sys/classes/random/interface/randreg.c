@@ -120,14 +120,12 @@ PetscErrorCode  PetscRandomGetType(PetscRandom rnd, PetscRandomType *type)
 
 .seealso: PetscRandomRegisterAll(), PetscRandomRegisterDestroy(), PetscRandomRegister()
 @*/
-PetscErrorCode  PetscRandomRegister(const char sname[], const char path[], const char name[], PetscErrorCode (*function)(PetscRandom))
+PetscErrorCode  PetscRandomRegister(const char sname[], const char name[], PetscErrorCode (*function)(PetscRandom))
 {
-  char           fullname[PETSC_MAX_PATH_LEN];
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListConcat(path,name,fullname);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&PetscRandomList,sname,fullname,(void (*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&PetscRandomList,sname,name,(void (*)(void))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -136,7 +134,7 @@ PetscErrorCode  PetscRandomRegister(const char sname[], const char path[], const
 #undef __FUNCT__
 #define __FUNCT__ "PetscRandomRegisterDestroy"
 /*@C
-   PetscRandomRegisterDestroy - Frees the list of Random types that were registered by PetscRandomRegister()/PetscRandomRegister().
+   PetscRandomRegisterDestroy - Frees the list of Random types that were registered by PetscRandomRegister().
 
    Not Collective
 
@@ -173,28 +171,25 @@ PETSC_EXTERN PetscErrorCode PetscRandomCreate_Sprng(PetscRandom);
 
   Not Collective
 
-  Input parameter:
-. path - The dynamic library path
-
   Level: advanced
 
 .keywords: PetscRandom, register, all
-.seealso:  PetscRandomRegister(), PetscRandomRegisterDestroy(), PetscRandomRegister()
+.seealso:  PetscRandomRegister(), PetscRandomRegisterDestroy()
 @*/
-PetscErrorCode  PetscRandomRegisterAll(const char path[])
+PetscErrorCode  PetscRandomRegisterAll(void)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscRandomRegisterAllCalled = PETSC_TRUE;
 #if defined(PETSC_HAVE_RAND)
-  ierr = PetscRandomRegister(PETSCRAND,  path,"PetscRandomCreate_Rand",  PetscRandomCreate_Rand);CHKERRQ(ierr);
+  ierr = PetscRandomRegister(PETSCRAND,  "PetscRandomCreate_Rand",  PetscRandomCreate_Rand);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_DRAND48)
-  ierr = PetscRandomRegister(PETSCRAND48,path,"PetscRandomCreate_Rand48",PetscRandomCreate_Rand48);CHKERRQ(ierr);
+  ierr = PetscRandomRegister(PETSCRAND48,"PetscRandomCreate_Rand48",PetscRandomCreate_Rand48);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_SPRNG)
-  ierr = PetscRandomRegister(PETSCSPRNG,path,"PetscRandomCreate_Sprng",PetscRandomCreate_Sprng);CHKERRQ(ierr);
+  ierr = PetscRandomRegister(PETSCSPRNG, "PetscRandomCreate_Sprng",PetscRandomCreate_Sprng);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
 }
