@@ -308,6 +308,26 @@ PetscErrorCode MatRARt_SeqAIJ_SeqAIJ(Mat A,Mat R,MatReuse scall,PetscReal fill,M
   }
 
   /* use coloring */
+  PetscBool     newimpl=PETSC_FALSE;
+  ierr = PetscOptionsGetBool(NULL,"-matrart_new",&newimpl,NULL);CHKERRQ(ierr);
+  if (newimpl) {
+    Mat ARt,RARt;
+    printf(" MatRARt_new ....\n");
+    if (scall == MAT_INITIAL_MATRIX) {
+      ierr = PetscLogEventBegin(MAT_RARtSymbolic,A,R,0,0);CHKERRQ(ierr);
+      ierr = MatMatTransposeMultSymbolic_SeqAIJ_SeqAIJ(A,R,fill,&ARt);CHKERRQ(ierr);
+      ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ(R,ARt,fill,&RARt);CHKERRQ(ierr);
+      ierr = PetscLogEventEnd(MAT_RARtSymbolic,A,R,0,0);CHKERRQ(ierr);
+    } 
+    ierr = PetscLogEventBegin(MAT_RARtNumeric,A,R,0,0);CHKERRQ(ierr);
+    ierr = MatMatTransposeMultNumeric_SeqAIJ_SeqAIJ(A,R,ARt);CHKERRQ(ierr);
+    ierr = MatMatMultNumeric_SeqAIJ_SeqAIJ(R,ARt,RARt);CHKERRQ(ierr);
+    *C = RARt;
+    ierr = PetscLogEventEnd(MAT_RARtNumeric,A,R,0,0);CHKERRQ(ierr);
+    
+    ierr = MatDestroy(&ARt);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
   if (scall == MAT_INITIAL_MATRIX) {
     ierr = PetscLogEventBegin(MAT_RARtSymbolic,A,R,0,0);CHKERRQ(ierr);
     ierr = MatRARtSymbolic_SeqAIJ_SeqAIJ(A,R,fill,C);CHKERRQ(ierr);
