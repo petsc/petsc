@@ -1749,7 +1749,7 @@ PetscErrorCode  PCRegister(const char sname[],const char name[],PetscErrorCode (
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&PCList,sname,name,(void (*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&PCList,sname,name,(void (*)(void))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

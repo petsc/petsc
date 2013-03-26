@@ -40,7 +40,7 @@ PetscErrorCode  MatCoarsenRegister(const char sname[],const char name[],PetscErr
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&MatCoarsenList,sname,name,(void (*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&MatCoarsenList,sname,name,(void (*)(void))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -403,7 +403,7 @@ PetscErrorCode  MatCoarsenSetType(MatCoarsen coarser, MatCoarsenType type)
     coarser->setupcalled  = 0;
   }
 
-  ierr =  PetscFunctionListFind(PetscObjectComm((PetscObject)coarser),MatCoarsenList,type,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
+  ierr =  PetscFunctionListFind(MatCoarsenList,type,(void (**)(void)) &r);CHKERRQ(ierr);
 
   if (!r) SETERRQ1(PetscObjectComm((PetscObject)coarser),PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown coarsen type %s",type);
 

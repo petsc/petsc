@@ -386,7 +386,7 @@ int main(int argc,char **argv)
   {
     PetscErrorCode (*pcreate)(Problem);
 
-    ierr = PetscFunctionListFind(,MPI_COMM_WORLD,plistpname,PETSC_FALSE,(void (**)(void))&pcreate);CHKERRQ(ierr);
+    ierr = PetscFunctionListFind(plistpname,(void (**)(void))&pcreate);CHKERRQ(ierr);
     if (!pcreate) SETERRQ1(PETSC_COMM_SELF,1,"No problem '%s'",pname);
     ierr = (*pcreate)(problem);CHKERRQ(ierr);
   }

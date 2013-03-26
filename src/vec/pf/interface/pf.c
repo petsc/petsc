@@ -339,7 +339,7 @@ PetscErrorCode  PFRegister(const char sname[],const char name[],PetscErrorCode (
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&PFunctionList,sname,name,(void (*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&PFunctionList,sname,name,(void (*)(void))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -417,7 +417,7 @@ PetscErrorCode  PFSetType(PF pf,PFType type,void *ctx)
   pf->data = 0;
 
   /* Determine the PFCreateXXX routine for a particular function */
-  ierr = PetscFunctionListFind(PetscObjectComm((PetscObject)pf),PFunctionList,type,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
+  ierr = PetscFunctionListFind(PFunctionList,type,(void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested PF type %s",type);
   pf->ops->destroy  = 0;
   pf->ops->view     = 0;

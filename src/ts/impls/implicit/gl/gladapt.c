@@ -58,7 +58,7 @@ PetscErrorCode  TSGLAdaptRegister(const char sname[],const char name[],PetscErro
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&TSGLAdaptList,sname,name,(void (*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&TSGLAdaptList,sname,name,(void (*)(void))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -161,7 +161,7 @@ PetscErrorCode  TSGLAdaptSetType(TSGLAdapt adapt,TSGLAdaptType type)
   PetscErrorCode ierr,(*r)(TSGLAdapt);
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListFind(PetscObjectComm((PetscObject)adapt),TSGLAdaptList,type,PETSC_TRUE,(void(**)(void))&r);CHKERRQ(ierr);
+  ierr = PetscFunctionListFind(TSGLAdaptList,type,(void(**)(void))&r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown TSGLAdapt type \"%s\" given",type);
   if (((PetscObject)adapt)->type_name) {ierr = (*adapt->ops->destroy)(adapt);CHKERRQ(ierr);}
   ierr = (*r)(adapt);CHKERRQ(ierr);

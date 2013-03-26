@@ -950,7 +950,7 @@ PetscErrorCode PetscObjectQueryFunction\_Petsc(PetscObject obj,const char *name,
   PetscErrorCode ierr;\\
 \\
   PetscFunctionBegin;\\
-  ierr = PetscFunctionListFind(obj-$>$qlist,obj-$>$comm,name,PETSC\_FALSE,( int(**)(void *)) ptr);\\
+  ierr = PetscFunctionListFind(obj-$>$qlist,obj-$>$comm,name,( int(**)(void *)) ptr);\\
   CHKERRQ(ierr);\\
   PetscFunctionReturn(0);\\
 \}

@@ -660,7 +660,7 @@ PetscErrorCode PetscObjectComposeFunction_Petsc(PetscObject obj,const char name[
 
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
-  ierr = PetscFunctionListAdd(obj->comm,&obj->qlist,name,fname,ptr);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&obj->qlist,name,fname,ptr);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -672,7 +672,7 @@ PetscErrorCode PetscObjectQueryFunction_Petsc(PetscObject obj,const char name[],
 
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
-  ierr = PetscFunctionListFind(obj->comm,obj->qlist,name,PETSC_FALSE,ptr);CHKERRQ(ierr);
+  ierr = PetscFunctionListFind(obj->qlist,name,ptr);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -1396,13 +1396,12 @@ PETSC_EXTERN PetscErrorCode PetscObjectListDuplicate(PetscObjectList,PetscObject
     Dynamic library lists. Lists of names of routines in objects or in dynamic
   link libraries that will be loaded as needed.
 */
-PETSC_EXTERN PetscErrorCode PetscFunctionListAdd(MPI_Comm,PetscFunctionList*,const char[],const char[],void (*)(void));
+PETSC_EXTERN PetscErrorCode PetscFunctionListAdd(PetscFunctionList*,const char[],const char[],void (*)(void));
 PETSC_EXTERN PetscErrorCode PetscFunctionListDestroy(PetscFunctionList*);
-PETSC_EXTERN PetscErrorCode PetscFunctionListFind(MPI_Comm,PetscFunctionList,const char[],PetscBool,void (**)(void));
+PETSC_EXTERN PetscErrorCode PetscFunctionListFind(PetscFunctionList,const char[],void (**)(void));
 PETSC_EXTERN PetscErrorCode PetscFunctionListPrintTypes(MPI_Comm,FILE*,const char[],const char[],const char[],const char[],PetscFunctionList,const char[]);
 PETSC_EXTERN PetscErrorCode PetscFunctionListDuplicate(PetscFunctionList,PetscFunctionList *);
 PETSC_EXTERN PetscErrorCode PetscFunctionListView(PetscFunctionList,PetscViewer);
-PETSC_EXTERN PetscErrorCode PetscFunctionListConcat(const char [],const char [],char []);
 PETSC_EXTERN PetscErrorCode PetscFunctionListGet(PetscFunctionList,const char ***,int*);
 
 /*S
