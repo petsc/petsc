@@ -924,8 +924,6 @@ The PetscFunctionList object is a linked list of function data; each
 of which contains
 \begin{itemize}
 \item a function pointer (if it has already been loaded into memory from the dynamic library)
-\item the ``path'' (directory and library name) where the function exists (if it is
-      loaded from a dynamic library)
 \item the ``short'' name of the function,
 \item the actual name of the function as a string (for dynamic libraries this string is used
       to load in the actual function pointer).
@@ -941,17 +939,16 @@ PetscErrorCode PetscObjectComposeFunction\_Petsc(\=PetscObject obj,const char *n
   PetscErrorCode ierr;\\
 \\
   PetscFunctionBegin;\\
-  ierr = PetscFunctionListAdd(\&obj-$>$qlist,name,fname,(int (*)(void *))ptr);CHKERRQ(ierr);\\
+  ierr = PetscFunctionListAdd(\&obj-$>$qlist,name,fname,ptr);CHKERRQ(ierr);\\
   PetscFunctionReturn(0);\\
 \}\\
 \\
-PetscErrorCode PetscObjectQueryFunction\_Petsc(PetscObject obj,const char *name,void **ptr)\\
+PetscErrorCode PetscObjectQueryFunction\_Petsc(PetscObject obj,const char *name,void (**ptr)(void))\\
 \{\\
   PetscErrorCode ierr;\\
 \\
   PetscFunctionBegin;\\
-  ierr = PetscFunctionListFind(obj-$>$qlist,obj-$>$comm,name,( int(**)(void *)) ptr);\\
-  CHKERRQ(ierr);\\
+  ierr = PetscFunctionListFind(obj-$>$qlist,name,ptr);CHKERRQ(ierr);\\
   PetscFunctionReturn(0);\\
 \}
 \end{tabbing}
