@@ -124,7 +124,7 @@ class PETScMaker(script.Script):
          flagstring = ''
          for flag in flags:
            for f in flag.split():
-             flagstring += ',\\\"' + f + '\\\"'
+             flagstring += ',' + f
          options.append('PETSC_CUDA_HOST_FLAGS "' + flagstring + '" CACHE STRING')
        self.setCompilers.popLanguage()
    options.append('CMAKE_AR '+self.setCompilers.AR + " CACHE FILEPATH")
