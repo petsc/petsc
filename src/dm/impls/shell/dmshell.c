@@ -6,8 +6,8 @@ typedef struct  {
   Vec        Xglobal;
   Vec        Xlocal;
   Mat        A;
-  VecScatter *gtol;
-  VecScatter *ltog;
+  VecScatter gtol;
+  VecScatter ltog;
 } DM_Shell;
 
 #undef __FUNCT__
@@ -35,7 +35,7 @@ PetscErrorCode DMGlobalToLocalBeginDefaultShell(DM dm,Vec g,InsertMode mode,Vec 
 
   PetscFunctionBegin;
   if (!shell->gtol) SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_ARG_WRONGSTATE, "Cannot be used without first setting the scatter context via DMShellSetGlobalToLocalVecScatter()");
-  ierr = VecScatterBegin(*(shell->gtol),g,l,mode,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterBegin(shell->gtol,g,l,mode,SCATTER_FORWARD);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -62,7 +62,7 @@ PetscErrorCode DMGlobalToLocalEndDefaultShell(DM dm,Vec g,InsertMode mode,Vec l)
 
   PetscFunctionBegin;
    if (!shell->gtol) SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_ARG_WRONGSTATE, "Cannot be used without first setting the scatter context via DMShellSetGlobalToLocalVecScatter()");
-  ierr = VecScatterEnd(*(shell->gtol),g,l,mode,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd(shell->gtol,g,l,mode,SCATTER_FORWARD);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -91,7 +91,7 @@ PetscErrorCode DMLocalToGlobalBeginDefaultShell(DM dm,Vec l,InsertMode mode,Vec 
 
   PetscFunctionBegin;
   if (!shell->ltog) SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_ARG_WRONGSTATE, "Cannot be used without first setting the scatter context via DMShellSetLocalToGlobalVecScatter()");
-  ierr = VecScatterBegin(*(shell->ltog),l,g,mode,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterBegin(shell->ltog,l,g,mode,SCATTER_FORWARD);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -118,7 +118,7 @@ PetscErrorCode DMLocalToGlobalEndDefaultShell(DM dm,Vec l,InsertMode mode,Vec g)
 
   PetscFunctionBegin;
    if (!shell->ltog) SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_ARG_WRONGSTATE, "Cannot be used without first setting the scatter context via DMShellSetLocalToGlobalVecScatter()");
-  ierr = VecScatterEnd(*(shell->ltog),l,g,mode,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd(shell->ltog,l,g,mode,SCATTER_FORWARD);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -453,11 +453,12 @@ PetscErrorCode DMShellSetLocalToGlobal(DM dm,PetscErrorCode (*begin)(DM,Vec,Inse
 
 .seealso: DMShellSetGlobalToLocal()
 @*/
-PetscErrorCode DMShellSetGlobalToLocalVecScatter(DM dm, VecScatter *gtol)
+PetscErrorCode DMShellSetGlobalToLocalVecScatter(DM dm, VecScatter gtol)
 {
   DM_Shell       *shell = (DM_Shell*)dm->data;
 
   PetscFunctionBegin;
+  PetscObjectReference((PetscObject)gtol);
   shell->gtol = gtol;
   PetscFunctionReturn(0);
 }
@@ -477,11 +478,12 @@ PetscErrorCode DMShellSetGlobalToLocalVecScatter(DM dm, VecScatter *gtol)
 
 .seealso: DMShellSetLocalToGlobal()
 @*/
-PetscErrorCode DMShellSetLocalToGlobalVecScatter(DM dm, VecScatter *ltog)
+PetscErrorCode DMShellSetLocalToGlobalVecScatter(DM dm, VecScatter ltog)
 {
   DM_Shell       *shell = (DM_Shell*)dm->data;
 
   PetscFunctionBegin;
+  PetscObjectReference((PetscObject)ltog);
   shell->ltog = ltog;
   PetscFunctionReturn(0);
 }
@@ -497,6 +499,8 @@ static PetscErrorCode DMDestroy_Shell(DM dm)
   ierr = MatDestroy(&shell->A);CHKERRQ(ierr);
   ierr = VecDestroy(&shell->Xglobal);CHKERRQ(ierr);
   ierr = VecDestroy(&shell->Xlocal);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(&shell->gtol);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(&shell->ltog);CHKERRQ(ierr);
   /* This was originally freed in DMDestroy(), but that prevents reference counting of backend objects */
   ierr = PetscFree(shell);CHKERRQ(ierr);
   PetscFunctionReturn(0);
