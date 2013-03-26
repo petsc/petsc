@@ -518,7 +518,7 @@ PetscErrorCode MatRARtNumeric_SeqAIJ_SeqAIJ(Mat A,Mat R,Mat C)
   ierr  = PetscTime(&tf);CHKERRQ(ierr);
   app1 += tf - t0;
 
-  /* Get dense RARt = R*A*Rt */
+  /* Get dense RARt = R*A*Rt -- dominates! */
   ierr = PetscTime(&t0);CHKERRQ(ierr);
   RARt = rart->RARt;
   ierr = MatMatMatMultNumeric_SeqAIJ_SeqAIJ_SeqDense(R,A,Rt,RARt,rart->work);CHKERRQ(ierr);
@@ -559,8 +559,12 @@ PetscErrorCode MatRARt_SeqAIJ_SeqAIJ(Mat A,Mat R,MatReuse scall,PetscReal fill,M
 
   /* use coloring */
   if (scall == MAT_INITIAL_MATRIX) {
+    ierr = PetscLogEventBegin(MAT_RARtSymbolic,A,R,0,0);CHKERRQ(ierr);
     ierr = MatRARtSymbolic_SeqAIJ_SeqAIJ(A,R,fill,C);CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(MAT_RARtSymbolic,A,R,0,0);CHKERRQ(ierr);
   }
+  ierr = PetscLogEventBegin(MAT_RARtNumeric,A,R,0,0);CHKERRQ(ierr);
   ierr = MatRARtNumeric_SeqAIJ_SeqAIJ(A,R,*C);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_RARtNumeric,A,R,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
