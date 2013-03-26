@@ -2,7 +2,7 @@
 # ----------------
 -ts_exact_final_time MATCHSTEP
 -ts_type ssp
--ts_final_time 2.0
+-ts_final_time 5.0
 -ts_dt 0.001
 
 -q 0.0
@@ -13,8 +13,8 @@
 
 -deltamin 0.0
 -deltamax 1.2
--omegamin 0.98
--omegamax 1.02
+-omegamin 0.99
+-omegamax 1.01
 
 -da_grid_x 200
 -da_grid_y 201
@@ -26,7 +26,7 @@
 -ts_monitor_draw_solution
 -ts_monitor_draw_solution_show_time
 -ts_monitor
-#-ts_monitor_solution_binary ex8output
+-ts_monitor_solution_binary ex10output
 
 -snes_monitor
 -snes_atol 1.e-12
@@ -35,6 +35,6 @@
 
 -stencil_width 1
 
--tf 0.1
--tcl 0.15
+-tf 1.0
+-tcl 1.05
 

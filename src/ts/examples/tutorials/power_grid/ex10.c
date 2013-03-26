@@ -27,9 +27,9 @@ static char help[] = "Time-dependent PDE in 2d for calculating joint PDF. \n";
                  the boundary, this is not really a problem)
    ------------
    1st order upwinding scheme
-   ./ex10 -ts_type ssp -ts_dt 0.001 -discretization UPWIND1 -deltamin 0.0 -deltamax 1.2 -omegamin 0.99 -omegamax 1.01 -ts_final_time 2.0
+   ./ex10 -ts_type ssp -ts_dt 0.001 -discretization UPWIND1 -deltamin 0.0 -deltamax 1.2 -omegamin 0.99 -omegamax 1.01 -ts_final_time 5.0
    3rd order upwinding scheme
-   ./ex10 -ts_type ssp -ts_dt 0.001 -discretization UPWIND3_WITH_FLUXLIMITER -deltamin 0.0 -deltamax 1.2 -omegamin 0.99 -omegamax 1.01 -ts_final_time 2.0
+   ./ex10 -ts_type ssp -ts_dt 0.001 -discretization UPWIND3_WITH_FLUXLIMITER -deltamin 0.0 -deltamax 1.2 -omegamin 0.99 -omegamax 1.01 -ts_final_time 5.0
 
 */
 
