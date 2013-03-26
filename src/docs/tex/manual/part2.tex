@@ -1980,7 +1980,7 @@ The resulting \trl{isg} contains for each local node the new global
 number of that node. The resulting \trl{is} contains the new process number
 that each local node has been assigned to.
 
-Now that a new numbering of the nodes has been determined one must
+Now that a new numbering of the nodes has been determined, one must
 renumber all the nodes and migrate the grid information to the correct process.
 The command
 \begin{tabbing}
@@ -1989,6 +1989,9 @@ The command
 generates, see Section \ref{sec_ao}, an AO object that can be used in conjunction with the
 \trl{is} and \trl{isg} to move the relevant grid information to the correct process
 and renumber the nodes etc.
+In this context, the new ordering is the ``application'' ordering so AOPetscToApplication()
+converts old global indices to new global indices and AOApplicationToPetsc() converts new
+global indices back to old global indices.
 
 PETSc does not currently provide tools that completely manage the migration and
 node renumbering, since it will be dependent on the particular data structure you
