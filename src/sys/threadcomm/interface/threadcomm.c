@@ -35,9 +35,9 @@ PetscErrorCode PetscGetNCores(PetscInt *ncores)
   if (N_CORES == -1) {
     N_CORES = 1; /* Default value if number of cores cannot be found out */
 
-#if defined(PETSC_HAVE_SCHED_CPU_SET_T) /* Linux */
+#if defined(PETSC_HAVE_SYS_SYSINFO_H) && (PETSC_HAVE_GET_NPROCS) /* Linux */
     N_CORES = get_nprocs();
-#elif defined(PETSC_HAVE_SYS_SYSCTL_H) /* MacOS, BSD */
+#elif defined(PETSC_HAVE_SYS_SYSCTL_H) && (PETSC_HAVE_SYSCTLBYNAME) /* MacOS, BSD */
     {
       PetscErrorCode ierr;
       size_t         len = sizeof(N_CORES);
