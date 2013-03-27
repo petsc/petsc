@@ -294,16 +294,33 @@ PetscErrorCode MatRARtNumeric_SeqAIJ_SeqAIJ(Mat A,Mat R,Mat C)
 PetscErrorCode MatRARt_SeqAIJ_SeqAIJ(Mat A,Mat R,MatReuse scall,PetscReal fill,Mat *C)
 {
   PetscErrorCode ierr;
-  PetscBool      usecoloring = PETSC_TRUE;
+  PetscBool      usecoloring = PETSC_FALSE;
 
   PetscFunctionBegin;
   ierr = PetscOptionsGetBool(NULL,"-matrart_color",&usecoloring,NULL);CHKERRQ(ierr);
 
-  if (!usecoloring) {
-    Mat Rt;
-    ierr = MatTranspose(R,MAT_INITIAL_MATRIX,&Rt);CHKERRQ(ierr); /* replace MAT_INITIAL_MATRIX with scall if !usecoloring is better */
-    ierr = MatMatMatMult(R,A,Rt,scall,fill,C);CHKERRQ(ierr);
-    ierr = MatDestroy(&Rt);CHKERRQ(ierr); 
+  if (!usecoloring) { /* Rt=R^T, C=R*A*Rt - avoid inefficient sparse inner products */
+    Mat           Rt;
+    Mat_SeqAIJ    *c;
+    Mat_RARt      *rart;
+    
+    if (scall == MAT_INITIAL_MATRIX) {
+      ierr = MatTranspose(R,MAT_INITIAL_MATRIX,&Rt);CHKERRQ(ierr); 
+      ierr = MatMatMatMult(R,A,Rt,scall,fill,C);CHKERRQ(ierr);
+
+      ierr = PetscNew(Mat_RARt,&rart);CHKERRQ(ierr);
+      rart->Rt = Rt;
+      c        = (Mat_SeqAIJ*)(*C)->data;
+      c->rart  = rart;
+      rart->destroy      = (*C)->ops->destroy;
+      (*C)->ops->destroy = MatDestroy_SeqAIJ_RARt;
+    } else {
+      c  = (Mat_SeqAIJ*)(*C)->data;
+      rart = c->rart;
+      Rt   = rart->Rt;
+      ierr = MatTranspose(R,MAT_REUSE_MATRIX,&Rt);CHKERRQ(ierr); 
+      ierr = MatMatMatMult(R,A,Rt,scall,fill,C);CHKERRQ(ierr);
+    }
     PetscFunctionReturn(0);
   }
 
