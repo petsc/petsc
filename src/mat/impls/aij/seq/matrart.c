@@ -157,6 +157,7 @@ PetscErrorCode MatMatMatMultNumeric_SeqAIJ_SeqAIJ_SeqDense(Mat R,Mat A,Mat B,Mat
   PetscScalar    *d,*c,*c2,*c3,*c4;
   PetscInt       *rj,rm=R->rmap->n,dm=RAB->rmap->n,dn=RAB->cmap->n;
   PetscInt       rm2=2*rm,rm3=3*rm,colrm;
+  PetscLogDouble t0,tf,Mult_sp_den1=0.0,Mult_sp_den2=0.0;
 
   PetscFunctionBegin;
   if (!dm || !dn) PetscFunctionReturn(0);
@@ -164,6 +165,30 @@ PetscErrorCode MatMatMatMultNumeric_SeqAIJ_SeqAIJ_SeqDense(Mat R,Mat A,Mat B,Mat
   if (am != R->cmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Number columns in R %D not equal rows in A %D\n",R->cmap->n,am);
   if (R->rmap->n != RAB->rmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Number rows in RAB %D not equal rows in R %D\n",RAB->rmap->n,R->rmap->n);
   if (B->cmap->n != RAB->cmap->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Number columns in RAB %D not equal columns in B %D\n",RAB->cmap->n,B->cmap->n);
+
+  { /* 
+     This approach is not as good as original ones (will be removed later), but it reveals that
+     AB_den=A*B takes almost all execution time in R*A*B for src/ksp/ksp/examples/tutorials/ex56.c
+     */
+    PetscBool via_matmatmult=PETSC_FALSE;
+    ierr = PetscOptionsGetBool(NULL,"-matrart_via_matmatmult",&via_matmatmult,NULL);CHKERRQ(ierr);
+    if (via_matmatmult) {
+      Mat AB_den;
+      ierr = MatMatMultSymbolic_SeqAIJ_SeqDense(A,B,0.0,&AB_den);CHKERRQ(ierr);
+
+      ierr = PetscGetTime(&t0);CHKERRQ(ierr);
+      ierr = MatMatMultNumeric_SeqAIJ_SeqDense(A,B,AB_den);CHKERRQ(ierr);
+      ierr  = PetscGetTime(&tf);CHKERRQ(ierr);
+      Mult_sp_den1 += tf - t0;
+      ierr = PetscGetTime(&t0);CHKERRQ(ierr);
+      ierr = MatMatMultNumeric_SeqAIJ_SeqDense(R,AB_den,RAB);CHKERRQ(ierr);
+      ierr  = PetscGetTime(&tf);CHKERRQ(ierr);
+      Mult_sp_den2 += tf - t0;
+      printf(" MatMatMatMultNumeric_SeqAIJ_SeqAIJ_SeqDense...time = %g + %g = %g; ncolor: %d\n",Mult_sp_den1, Mult_sp_den2, Mult_sp_den1+ Mult_sp_den2,B->cmap->n);
+      ierr = MatDestroy(&AB_den);CHKERRQ(ierr);
+      PetscFunctionReturn(0);
+    }
+  }
 
   ierr = MatDenseGetArray(B,&b);CHKERRQ(ierr);
   ierr = MatDenseGetArray(RAB,&d);CHKERRQ(ierr);
