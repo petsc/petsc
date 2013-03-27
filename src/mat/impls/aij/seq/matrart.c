@@ -10,38 +10,24 @@
 */
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscContainerDestroy_Mat_RARt"
-PetscErrorCode PetscContainerDestroy_Mat_RARt(void *ptr)
+#define __FUNCT__ "MatDestroy_SeqAIJ_RARt"
+PetscErrorCode MatDestroy_SeqAIJ_RARt(Mat A)
 {
   PetscErrorCode ierr;
-  Mat_RARt       *rart=(Mat_RARt*)ptr;
+  Mat_SeqAIJ     *a    = (Mat_SeqAIJ*)A->data;
+  Mat_RARt       *rart = a->rart; 
 
   PetscFunctionBegin;
   ierr = MatTransposeColoringDestroy(&rart->matcoloring);CHKERRQ(ierr);
   ierr = MatDestroy(&rart->Rt);CHKERRQ(ierr);
   ierr = MatDestroy(&rart->RARt);CHKERRQ(ierr);
   ierr = PetscFree(rart->work);CHKERRQ(ierr);
-  ierr = PetscFree(rart);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDestroy_SeqAIJ_RARt"
-PetscErrorCode MatDestroy_SeqAIJ_RARt(Mat A)
-{
-  PetscErrorCode ierr;
-  PetscContainer container;
-  Mat_RARt       *rart=NULL;
-
-  PetscFunctionBegin;
-  ierr = PetscObjectQuery((PetscObject)A,"Mat_RARt",(PetscObject*)&container);CHKERRQ(ierr);
-  if (!container) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Container does not exit");
-  ierr            = PetscContainerGetPointer(container,(void**)&rart);CHKERRQ(ierr);
   A->ops->destroy = rart->destroy;
   if (A->ops->destroy) {
     ierr = (*A->ops->destroy)(A);CHKERRQ(ierr);
   }
-  ierr = PetscObjectCompose((PetscObject)A,"Mat_RARt",0);CHKERRQ(ierr);
+  ierr = PetscFree(rart);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -53,7 +39,6 @@ PetscErrorCode MatRARtSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat R,PetscReal fill,Mat *C)
   Mat                  P;
   PetscInt             *rti,*rtj;
   Mat_RARt             *rart;
-  PetscContainer       container;
   MatTransposeColoring matcoloring;
   ISColoring           iscoloring;
   Mat                  Rt_dense,RARt_dense;
@@ -73,19 +58,13 @@ PetscErrorCode MatRARtSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat R,PetscReal fill,Mat *C)
 
   /* create a supporting struct */
   ierr = PetscNew(Mat_RARt,&rart);CHKERRQ(ierr);
-
-  /* attach the supporting struct to C */
-  ierr   = PetscContainerCreate(PETSC_COMM_SELF,&container);CHKERRQ(ierr);
-  ierr   = PetscContainerSetPointer(container,rart);CHKERRQ(ierr);
-  ierr   = PetscContainerSetUserDestroy(container,PetscContainerDestroy_Mat_RARt);CHKERRQ(ierr);
-  ierr   = PetscObjectCompose((PetscObject)(*C),"Mat_RARt",(PetscObject)container);CHKERRQ(ierr);
-  ierr   = PetscContainerDestroy(&container);CHKERRQ(ierr);
+  c       = (Mat_SeqAIJ*)(*C)->data;
+  c->rart = rart;
   ierr   = PetscTime(&tf);CHKERRQ(ierr);
   etime += tf - t0;
 
   /* ------ Use coloring ---------- */
   /* Create MatTransposeColoring from symbolic C=R*A*R^T */
-  c       = (Mat_SeqAIJ*)(*C)->data;
   ierr    = PetscTime(&t0);CHKERRQ(ierr);
   ierr    = MatGetColoring(*C,MATCOLORINGLF,&iscoloring);CHKERRQ(ierr);
   ierr    = PetscTime(&tf);CHKERRQ(ierr);
@@ -273,17 +252,13 @@ PetscErrorCode MatMatMatMultNumeric_SeqAIJ_SeqAIJ_SeqDense(Mat R,Mat A,Mat B,Mat
 PetscErrorCode MatRARtNumeric_SeqAIJ_SeqAIJ(Mat A,Mat R,Mat C)
 {
   PetscErrorCode       ierr;
-  Mat_RARt             *rart;
-  PetscContainer       container;
+  Mat_SeqAIJ           *c = (Mat_SeqAIJ*)C->data;
+  Mat_RARt             *rart=c->rart;
   MatTransposeColoring matcoloring;
   Mat                  Rt,RARt;
   PetscLogDouble       Mult_sp_den=0.0,app1=0.0,app2=0.0,t0,tf;
 
   PetscFunctionBegin;
-  ierr = PetscObjectQuery((PetscObject)C,"Mat_RARt",(PetscObject*)&container);CHKERRQ(ierr);
-  if (!container) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Container does not exit");
-  ierr = PetscContainerGetPointer(container,(void**)&rart);CHKERRQ(ierr);
-  
   /* Get dense Rt by Apply MatTransposeColoring to R */
   matcoloring = rart->matcoloring;
   Rt          = rart->Rt;

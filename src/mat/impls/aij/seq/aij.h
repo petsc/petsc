@@ -54,7 +54,7 @@ typedef struct {
 
 typedef struct {
   MatTransposeColoring matcoloring;
-  Mat                  Rt;    /* dense matrix of R^T */
+  Mat                  Rt;    /* sparse or dense matrix of R^T */
   Mat                  RARt;  /* dense matrix of R*A*R^T */
   MatScalar            *work; /* work array to store columns of A*R^T used in MatMatMatMultNumeric_SeqAIJ_SeqAIJ_SeqDense() */
   PetscErrorCode (*destroy)(Mat);
@@ -112,6 +112,7 @@ typedef struct {
   PetscScalar       *matmult_abdense;    /* used by MatMatMult() */
   Mat_PtAP          *ptap;               /* used by MatPtAP() */
   Mat_MatMatMatMult *matmatmatmult;      /* used by MatMatMatMult() */
+  Mat_RARt          *rart;               /* used by MatRARt() */
 } Mat_SeqAIJ;
 
 /*
