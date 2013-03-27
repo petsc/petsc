@@ -6,7 +6,7 @@ class Configure(PETSc.package.NewPackage):
     self.download     = ['https://gforge.inria.fr/frs/download.php/31832/scotch_6.0.0_esmumps.tar.gz',
                          'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/scotch_6.0.0_esmumps.tar.gz']
     self.downloadfilename = 'scotch'
-    self.liblist      = [['libptscotch.a','libptscotcherr.a','libscotch.a','libscotcherr.a']]
+    self.liblist      = [['libptesmumps.a','libptscotch.a','libptscotcherr.a','libscotch.a','libscotcherr.a']]
     self.functions    = ['SCOTCH_archBuild']
     self.includes     = ['ptscotch.h']
     self.requires32bitint = 0
@@ -89,9 +89,9 @@ class Configure(PETSc.package.NewPackage):
 #        output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cd '+os.path.join(self.packageDir,'src')+' && make clean scotch ptscotch', timeout=2500, log = self.framework.log)
 #
         if self.mpi.found:
-          output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cd '+os.path.join(self.packageDir,'src')+' && make clean ptscotch', timeout=2500, log = self.framework.log)
+          output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cd '+os.path.join(self.packageDir,'src')+' && make clean ptesmumps', timeout=2500, log = self.framework.log)
         else:
-          output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cd '+os.path.join(self.packageDir,'src')+' && make clean scotch', timeout=2500, log = self.framework.log)
+          output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cd '+os.path.join(self.packageDir,'src')+' && make clean esmumps', timeout=2500, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running make on PTScotch: '+str(e))
 
