@@ -26,6 +26,7 @@ configure_options = [
   '--download-umfpack=1',
   '--download-chaco=1',
   '--download-spai=1',
+  '--download-moab=1',
   ]
 
 if __name__ == '__main__':

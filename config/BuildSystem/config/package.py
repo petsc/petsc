@@ -919,7 +919,12 @@ class GNUPackage(Package):
         args.append('--with-'+d.package+'='+d.directory)
     for d in self.odeps:
       if hasattr(d,'found') and d.found:
-        args.append('--with-'+d.package+'='+d.directory)
+        if d.directory:
+          args.append('--with-'+d.package+'='+d.directory)
+        else:
+          args.append('--with-'+d.package)
+      else:
+        args.append('--without-'+d.package)
     return args
 
   def formGNUConfigureArgs(self):
@@ -960,22 +965,18 @@ class GNUPackage(Package):
         args.append('--disable-f90')
       args.append('F77="'+fc+'"')
       args.append('FFLAGS="'+self.getCompilerFlags().replace('-Mfree','')+'"')
+      args.append('FC="'+fc+'"')
+      args.append('FCLAGS="'+self.getCompilerFlags().replace('-Mfree','')+'"')
       self.popLanguage()
     else:
+      args.append('--disable-fortran')
+      args.append('--disable-fc')
       args.append('--disable-f77')
       args.append('--disable-f90')
     if self.framework.argDB['with-shared-libraries'] or self.framework.argDB['download-'+self.package+'-shared']:
-      if self.compilers.isGCC or config.setCompilers.Configure.isIntel(compiler):
-        if config.setCompilers.Configure.isDarwin():
-          args.append('--enable-sharedlibs=gcc-osx')
-        else:
-          args.append('--enable-sharedlibs=gcc')
-      elif config.setCompilers.Configure.isSun(compiler):
-        args.append('--enable-sharedlibs=solaris-cc')
-      else:
-        args.append('--enable-sharedlibs=libtool')
+      args.append('--enable-shared')
     else:
-        args.append('--disable-shared')
+      args.append('--disable-shared')
     args.extend(self.formGNUConfigureDepArgs())
     args.extend(self.formGNUConfigureExtraArgs())
     return args

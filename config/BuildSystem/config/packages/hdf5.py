@@ -37,6 +37,10 @@ class Configure(config.package.Package):
       args.append('F9X="'+self.setCompilers.getCompiler()+'"')
       args.append('F90="'+self.setCompilers.getCompiler()+'"')
       self.setCompilers.popLanguage()
+    if self.framework.argDB['with-shared-libraries']:
+      args.append('--enable-shared')
+    else:
+      args.append('--disable-shared')
 
     args = ' '.join(args)
     fd = file(os.path.join(self.packageDir,'hdf5'), 'w')

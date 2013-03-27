@@ -27,10 +27,13 @@ class Configure(config.package.GNUPackage):
     args = []
     args.append('AR="'+self.setCompilers.AR+'"')
     args.append('ARFLAGS="'+self.setCompilers.AR_FLAGS+'"')
-    args.append('CPPFLAGS="'+self.headers.toString(self.hdf5.include)+'"')
-    args.append('LIBS="'+self.libraries.toString(self.hdf5.lib)+'"')
     args.append('--libdir='+os.path.join(self.installDir,self.libdir))
+    if hasattr(self.hdf5,'found') and self.hdf5.found:
+      args.append('CPPFLAGS="'+self.headers.toString(self.hdf5.include)+'"')
+      args.append('LIBS="'+self.libraries.toString(self.hdf5.lib)+'"')
+      args.append('--enable-netcdf-4')
+    else:
+      args.append('--disable-netcdf-4')
     args.append('--disable-dap')
     args.append('--disable-hdf4')
-    args.append('--enable-netcdf-4')
     return args
