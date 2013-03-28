@@ -142,7 +142,7 @@ class Configure(config.base.Configure):
     # no match - assuming the given name is already in short notation
     return lib
 
-  def check(self, libName, funcs, libDir = None, otherLibs = [], prototype = '', call = '', fortranMangle = 0, cxxMangle = 0):
+  def check(self, libName, funcs, libDir = None, otherLibs = [], prototype = '', call = '', fortranMangle = 0, cxxMangle = 0, cxxLink = 0):
     '''Checks that the library "libName" contains "funcs", and if it does defines HAVE_LIB"libName"
        - libDir may be a list of directories
        - libName may be a list of library names'''
@@ -203,9 +203,11 @@ extern "C" {
         self.setCompilers.LIBS = ' '+self.toString(otherLibs) +' '+ self.setCompilers.LIBS
       elif libName:
         self.setCompilers.LIBS = ' '+self.toString(libName) +' '+ self.setCompilers.LIBS
+      if cxxLink: linklang = 'Cxx'
+      else: linklang = self.language[-1]
       self.pushLanguage(self.language[-1])
       found = 0
-      if self.checkLink(includes, body):
+      if self.checkLink(includes, body, linkLanguage=linklang):
         found = 1
         # add to list of found libraries
         if libName:

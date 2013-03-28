@@ -67,7 +67,7 @@ int main(int argc,char **args)
   ierr = MatCreateComposite(PETSC_COMM_WORLD,3,A,&B);CHKERRQ(ierr);
   ierr = MatMult(B,x,y);CHKERRQ(ierr);
   ierr = MatDestroy(&B);CHKERRQ(ierr);
-  ierr = VecAXPY(y,-1.0,y);CHKERRQ(ierr);
+  ierr = VecAXPY(y,-1.0,z);CHKERRQ(ierr);
   ierr = VecNorm(y,NORM_2,&rnorm);CHKERRQ(ierr);
   if (rnorm > 1.e-10) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Error with composite add %G\n",rnorm);
@@ -77,7 +77,7 @@ int main(int argc,char **args)
   ierr = MatCompositeMerge(B);CHKERRQ(ierr);
   ierr = MatMult(B,x,y);CHKERRQ(ierr);
   ierr = MatDestroy(&B);CHKERRQ(ierr);
-  ierr = VecAXPY(y,-1.0,y);CHKERRQ(ierr);
+  ierr = VecAXPY(y,-1.0,z);CHKERRQ(ierr);
   ierr = VecNorm(y,NORM_2,&rnorm);CHKERRQ(ierr);
   if (rnorm > 1.e-10) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Error with composite add after merge %G\n",rnorm);
@@ -92,7 +92,7 @@ int main(int argc,char **args)
   ierr = MatCompositeSetType(B,MAT_COMPOSITE_MULTIPLICATIVE);CHKERRQ(ierr);
   ierr = MatMult(B,x,y);CHKERRQ(ierr);
   ierr = MatDestroy(&B);CHKERRQ(ierr);
-  ierr = VecAXPY(y,-1.0,y);CHKERRQ(ierr);
+  ierr = VecAXPY(y,-1.0,z);CHKERRQ(ierr);
   ierr = VecNorm(y,NORM_2,&rnorm);CHKERRQ(ierr);
   if (rnorm > 1.e-10) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Error with composite multiplicative %G\n",rnorm);
@@ -103,7 +103,7 @@ int main(int argc,char **args)
   ierr = MatCompositeMerge(B);CHKERRQ(ierr);
   ierr = MatMult(B,x,y);CHKERRQ(ierr);
   ierr = MatDestroy(&B);CHKERRQ(ierr);
-  ierr = VecAXPY(y,-1.0,y);CHKERRQ(ierr);
+  ierr = VecAXPY(y,-1.0,z);CHKERRQ(ierr);
   ierr = VecNorm(y,NORM_2,&rnorm);CHKERRQ(ierr);
   if (rnorm > 1.e-10) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Error with composite multiplicative after merge %G\n",rnorm);

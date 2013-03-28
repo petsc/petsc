@@ -316,9 +316,10 @@ docsetdate: chk_petscdir
           echo "Unknown PETSC_VERSION_RELEASE: $${version_release}"; \
           exit; \
         fi; \
-        datestr=`hg tip --template "{date|shortdate}"`; \
+        datestr=`git log -1 --pretty=format:%ci | cut -d ' ' -f 1`; \
         export datestr; \
         find * -type d -wholename src/docs/website -prune -o -type d -wholename src/benchmarks/results -prune -o \
+          -type d -wholename config/BuildSystem/docs/website -prune -o -type d -wholename include/web -prune -o \
           -type d -wholename 'arch-*' -prune -o -type d -wholename src/tops -prune -o -type d -wholename externalpackages -prune -o \
           -type f -wholename tutorials/multiphysics/tutorial.html -prune -o -type f -name \*.html \
           -exec perl -pi -e 's^(<body.*>)^$$1\n   <div id=\"version\" align=right><b>$$ENV{petscversion} $$ENV{datestr}</b></div>^i' {} \; \
@@ -350,7 +351,7 @@ chk_concepts_dir: chk_loc
 
 # Creates ${HOME}/petsc.tar.gz [and petsc-lite.tar.gz]
 dist:
-	${PETSC_DIR}/bin/maint/builddist ${PETSC_DIR}
+	${PETSC_DIR}/bin/maint/builddist ${PETSC_DIR} master
 
 # This target works only if you can do 'ssh petsc@login.mcs.anl.gov'
 # also copy the file over to ftp site.

@@ -318,21 +318,21 @@ PetscErrorCode PetscLogObjCreateDefault(PetscObject obj)
   classPerfLog->classInfo[oclass].creations++;
   /* Dynamically enlarge logging structures */
   if (petsc_numActions >= petsc_maxActions) {
-    PetscTime(start);
+    PetscTime(&start);
     ierr = PetscMalloc(petsc_maxActions*2 * sizeof(Action), &tmpAction);CHKERRQ(ierr);
     ierr = PetscMemcpy(tmpAction, petsc_actions, petsc_maxActions * sizeof(Action));CHKERRQ(ierr);
     ierr = PetscFree(petsc_actions);CHKERRQ(ierr);
 
     petsc_actions     = tmpAction;
     petsc_maxActions *= 2;
-    PetscTime(end);
+    PetscTime(&end);
     petsc_BaseTime += (end - start);
   }
 
   petsc_numObjects = obj->id;
   /* Record the creation action */
   if (petsc_logActions) {
-    PetscTime(petsc_actions[petsc_numActions].time);
+    PetscTime(&petsc_actions[petsc_numActions].time);
     petsc_actions[petsc_numActions].time   -= petsc_BaseTime;
     petsc_actions[petsc_numActions].action  = CREATE;
     petsc_actions[petsc_numActions].classid = obj->classid;
@@ -355,14 +355,14 @@ PetscErrorCode PetscLogObjCreateDefault(PetscObject obj)
 
     /* Dynamically enlarge logging structures */
     if (petsc_numObjects >= petsc_maxObjects) {
-      PetscTime(start);
+      PetscTime(&start);
       ierr = PetscMalloc(petsc_maxObjects*2 * sizeof(Object), &tmpObjects);CHKERRQ(ierr);
       ierr = PetscMemcpy(tmpObjects, petsc_objects, petsc_maxObjects * sizeof(Object));CHKERRQ(ierr);
       ierr = PetscFree(petsc_objects);CHKERRQ(ierr);
 
       petsc_objects     = tmpObjects;
       petsc_maxObjects *= 2;
-      PetscTime(end);
+      PetscTime(&end);
       petsc_BaseTime += (end - start);
     }
   }
@@ -399,19 +399,19 @@ PetscErrorCode PetscLogObjDestroyDefault(PetscObject obj)
   petsc_numObjectsDestroyed++;
   /* Dynamically enlarge logging structures */
   if (petsc_numActions >= petsc_maxActions) {
-    PetscTime(start);
+    PetscTime(&start);
     ierr = PetscMalloc(petsc_maxActions*2 * sizeof(Action), &tmpAction);CHKERRQ(ierr);
     ierr = PetscMemcpy(tmpAction, petsc_actions, petsc_maxActions * sizeof(Action));CHKERRQ(ierr);
     ierr = PetscFree(petsc_actions);CHKERRQ(ierr);
 
     petsc_actions     = tmpAction;
     petsc_maxActions *= 2;
-    PetscTime(end);
+    PetscTime(&end);
     petsc_BaseTime += (end - start);
   }
   /* Record the destruction action */
   if (petsc_logActions) {
-    PetscTime(petsc_actions[petsc_numActions].time);
+    PetscTime(&petsc_actions[petsc_numActions].time);
     petsc_actions[petsc_numActions].time   -= petsc_BaseTime;
     petsc_actions[petsc_numActions].action  = DESTROY;
     petsc_actions[petsc_numActions].classid = obj->classid;

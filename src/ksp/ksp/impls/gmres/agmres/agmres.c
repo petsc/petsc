@@ -559,8 +559,8 @@ static PetscErrorCode KSPAGMRESCycle(PetscInt *itcount,KSP ksp)
   agmres->it = KspSize-1;
   /*  Test for the convergence */
   ierr = (*ksp->converged)(ksp,ksp->its,res,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
-  KSPLogResidualHistory(ksp,res);
-  KSPMonitor(ksp,ksp->its,res);
+  ierr = KSPLogResidualHistory(ksp,res);CHKERRQ(ierr);
+  ierr = KSPMonitor(ksp,ksp->its,res);CHKERRQ(ierr);
 
 
   *itcount = KspSize;
@@ -579,9 +579,9 @@ PetscErrorCode KSPSolve_AGMRES(KSP ksp)
   PetscInt       test;
 
   PetscFunctionBegin;
-  ierr     = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
+  ierr     = PetscObjectAMSTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
   ksp->its = 0;
-  ierr     = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
+  ierr     = PetscObjectAMSGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
 
   ksp->reason = KSP_CONVERGED_ITERATING;
   if (!agmres->HasShifts) { /* Compute Shifts for the Newton basis */

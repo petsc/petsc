@@ -38,7 +38,7 @@ class Configure(config.package.Package):
       self.setCompilers.pushLanguage('FC')
       configOpts.append('FC="'+self.setCompilers.getCompiler()+'"')
       configOpts.append('F77OPTIONS="'+self.setCompilers.getCompilerFlags()+'"')
-    self.setCompilers.popLanguage()
+      self.setCompilers.popLanguage()
 
     mkfile = 'make.inc'
     g = open(os.path.join(self.packageDir, mkfile), 'w')

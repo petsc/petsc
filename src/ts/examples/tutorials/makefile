@@ -6,7 +6,7 @@ FPPFLAGS        =
 LOCDIR          = src/ts/examples/tutorials/
 EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c \
                 ex9.c ex10.c ex12.c ex13.c ex14.c ex15.c ex16.c ex17.c \
-                ex18.c ex19.c ex20.c ex21.c ex22.c ex23.c ex24.c ex25.c ex26.c ex28.c
+                ex19.c ex20.c ex21.c ex22.c ex23.c ex24.c ex25.c ex26.c ex28.c
 EXAMPLESF       = ex1f.F ex2f.F ex22f.F # ex22f_mf.F90
 EXAMPLESFH      = ex2f.h
 MANSEC          = TS
@@ -90,9 +90,6 @@ ex16: ex16.o  chkopts
 ex17: ex17.o  chkopts
 	-${CLINKER} -o ex17 ex17.o  ${PETSC_TS_LIB}
 	${RM} ex17.o
-ex18: ex18.o  chkopts
-	-${CLINKER} -o ex18 ex18.o  ${PETSC_TS_LIB}
-	${RM} ex18.o
 
 ex19: ex19.o  chkopts
 	-${CLINKER} -o ex19 ex19.o  ${PETSC_TS_LIB}
@@ -327,7 +324,7 @@ runex16:
 	   ${RM} -f ex16_1.tmp
 
 runex17:
-	-@${MPIEXEC} -n 1 ./ex17 -da_grid_x 40 -ts_max_steps 2 -snes_monitor_short -ksp_monitor_short > ex17_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex17 -da_grid_x 40 -ts_max_steps 2 -snes_monitor_short -ksp_monitor_short -ts_monitor > ex17_1.tmp 2>&1; \
 	   ${DIFF} output/ex17_1.out ex17_1.tmp || echo  ${PWD} "\nPossible problem with ex17_1, diffs above \n========================================="; \
 	   ${RM} -f ex17_1.tmp
 

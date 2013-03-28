@@ -173,7 +173,7 @@ PetscErrorCode KSPLGMRESCycle(PetscInt *itcount,KSP ksp)
   ierr = (*ksp->converged)(ksp,ksp->its,res,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
 
   while (!ksp->reason && loc_it < it_total && ksp->its < max_it) { /* LGMRES_MOD: changed to it_total */
-    KSPLogResidualHistory(ksp,res);
+    ierr       = KSPLogResidualHistory(ksp,res);CHKERRQ(ierr);
     lgmres->it = (loc_it - 1);
     ierr       = KSPMonitor(ksp,ksp->its,res);CHKERRQ(ierr);
 
@@ -231,10 +231,10 @@ PetscErrorCode KSPLGMRESCycle(PetscInt *itcount,KSP ksp)
     loc_it++;
     lgmres->it = (loc_it-1);   /* Add this here in case it has converged */
 
-    ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
+    ierr = PetscObjectAMSTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
     ksp->its++;
     ksp->rnorm = res;
-    ierr       = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
+    ierr       = PetscObjectAMSGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
 
     ierr = (*ksp->converged)(ksp,ksp->its,res,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
 
@@ -354,13 +354,13 @@ PetscErrorCode KSPSolve_LGMRES(KSP ksp)
   PetscFunctionBegin;
   if (ksp->calc_sings && !lgmres->Rsvd) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ORDER,"Must call KSPSetComputeSingularValues() before KSPSetUp() is called");
 
-  ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
+  ierr = PetscObjectAMSTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
 
   ksp->its        = 0;
   lgmres->aug_ct  = 0;
   lgmres->matvecs = 0;
 
-  ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
+  ierr = PetscObjectAMSGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
 
   /* initialize */
   itcount     = 0;

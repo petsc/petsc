@@ -163,6 +163,8 @@ PetscErrorCode SNESLineSearchReset(SNESLineSearch linesearch)
 .      y - search direction vector
 -      changed - flag to indicate the precheck changed x or y.
 
+   Level: advanced
+
 .seealso:   SNESLineSearchSetPreCheck(), SNESLineSearchSetPostCheck()
 M*/
 
@@ -237,6 +239,7 @@ PetscErrorCode  SNESLineSearchGetPreCheck(SNESLineSearch linesearch, PetscErrorC
 .      changed_y - indicates that the line search changed y
 -      changed_w - indicates that the line search changed w
 
+   Level: advanced
 
 .seealso:   SNESLineSearchSetPreCheck(), SNESLineSearchSetPostCheck()
 M*/
@@ -551,7 +554,7 @@ PetscErrorCode SNESLineSearchDestroy(SNESLineSearch * linesearch)
   if (!*linesearch) PetscFunctionReturn(0);
   PetscValidHeaderSpecific((*linesearch),SNESLINESEARCH_CLASSID,1);
   if (--((PetscObject)(*linesearch))->refct > 0) {*linesearch = 0; PetscFunctionReturn(0);}
-  ierr = PetscObjectDepublish((*linesearch));CHKERRQ(ierr);
+  ierr = PetscObjectAMSViewOff((PetscObject)*linesearch);CHKERRQ(ierr);
   ierr = SNESLineSearchReset(*linesearch);CHKERRQ(ierr);
   if ((*linesearch)->ops->destroy) (*linesearch)->ops->destroy(*linesearch);
   ierr = PetscViewerDestroy(&(*linesearch)->monitor);CHKERRQ(ierr);
@@ -819,11 +822,6 @@ PetscErrorCode SNESLineSearchSetType(SNESLineSearch linesearch, SNESLineSearchTy
 
   ierr = PetscObjectChangeTypeName((PetscObject)linesearch,type);CHKERRQ(ierr);
   ierr = (*r)(linesearch);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_AMS)
-  if (PetscAMSPublishAll) {
-    ierr = PetscObjectAMSPublish((PetscObject)linesearch);CHKERRQ(ierr);
-  }
-#endif
   PetscFunctionReturn(0);
 }
 

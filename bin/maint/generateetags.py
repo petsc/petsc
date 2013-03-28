@@ -97,7 +97,7 @@ def processDir(tagfiles,dirname,names):
     if exname in names and dirname.find('src') <0:
       names.remove(exname)
   # One-level unique dirs
-  for exname in ['.hg','SCCS', 'output', 'BitKeeper', 'externalpackages', 'bilinear', 'ftn-auto','lib','systems']:
+  for exname in ['.git','.hg','SCCS', 'output', 'BitKeeper', 'externalpackages', 'bilinear', 'ftn-auto','lib','systems']:
     if exname in names:
       names.remove(exname)
   #  Multi-level unique dirs - specify from toplevel

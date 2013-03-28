@@ -125,10 +125,10 @@ PetscErrorCode SNESSolve_NRichardson(SNES snes)
   Y      = snes->vec_sol_update; /* \tilde X */
   F      = snes->vec_func;       /* residual vector */
 
-  ierr       = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
+  ierr       = PetscObjectAMSTakeAccess((PetscObject)snes);CHKERRQ(ierr);
   snes->iter = 0;
   snes->norm = 0.;
-  ierr       = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
+  ierr       = PetscObjectAMSGrantAccess((PetscObject)snes);CHKERRQ(ierr);
   if (!snes->vec_func_init_set) {
     ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
     if (snes->domainerror) {
@@ -148,9 +148,9 @@ PetscErrorCode SNESSolve_NRichardson(SNES snes)
     snes->norm_init_set = PETSC_FALSE;
   }
 
-  ierr       = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
+  ierr       = PetscObjectAMSTakeAccess((PetscObject)snes);CHKERRQ(ierr);
   snes->norm = fnorm;
-  ierr       = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
+  ierr       = PetscObjectAMSGrantAccess((PetscObject)snes);CHKERRQ(ierr);
   ierr       = SNESLogConvergenceHistory(snes,fnorm,0);CHKERRQ(ierr);
   ierr       = SNESMonitor(snes,0,fnorm);CHKERRQ(ierr);
 
@@ -200,10 +200,10 @@ PetscErrorCode SNESSolve_NRichardson(SNES snes)
       PetscFunctionReturn(0);
     }
     /* Monitor convergence */
-    ierr       = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
+    ierr       = PetscObjectAMSTakeAccess((PetscObject)snes);CHKERRQ(ierr);
     snes->iter = i+1;
     snes->norm = fnorm;
-    ierr       = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
+    ierr       = PetscObjectAMSGrantAccess((PetscObject)snes);CHKERRQ(ierr);
     ierr       = SNESLogConvergenceHistory(snes,snes->norm,0);CHKERRQ(ierr);
     ierr       = SNESMonitor(snes,snes->iter,snes->norm);CHKERRQ(ierr);
     /* Test for convergence */

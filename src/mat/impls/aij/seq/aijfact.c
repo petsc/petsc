@@ -3347,7 +3347,6 @@ PetscErrorCode MatILUDTFactor_SeqAIJ(Mat A,IS isrow,IS iscol,const MatFactorInfo
   B->factortype            = MAT_FACTOR_ILUDT;
   B->info.factor_mallocs   = 0;
   B->info.fill_ratio_given = ((PetscReal)nnz_max)/((PetscReal)ai[n]);
-  CHKMEMQ;
   /* ------- end of symbolic factorization ---------*/
 
   ierr = ISGetIndices(isrow,&r);CHKERRQ(ierr);

@@ -10,7 +10,7 @@
 # - Ignore special case inside printf() with %g and %d
 
 
-grep -H "( \| )" "$@" \
+grep -n -H "( \| )" "$@" \
  | grep -v -F ":$" \
  | grep -v "/\*.*( " \
  | grep -v "[pP]rintf(.*%[dg]"

@@ -2,8 +2,8 @@
 #
 # This script builds the PETSc tar file distribution
 #
-# Usage: builddist petscrepo
-# example usage: builddist /sandbox/petsc/petsc-dist
+# Usage: builddist petscrepo branch
+# example usage: builddist /sandbox/petsc/petsc.clone
 # Notes: version info is automatically obtained from include/petscversion.h
 #
 #echo "------- Have you done ALL of the following?? -----------------------------"
@@ -19,8 +19,12 @@
 # If version specified on the commandline, set the version
 echo "Starting date: `date`"
 
-if [ $# = 1 ]; then
+if [ $# = 2 ]; then
   petscrepo=$1
+  branch=$2
+elif [ $# = 1 ]; then
+  petscrepo=$1
+  branch='master'
 else
   echo 'Error: petscrepo not specified. Usge: builddist petscrepo'
   exit
@@ -32,9 +36,25 @@ if [ ! -d $petscrepo ]; then
   exit
 fi
 
+if [ ! -d $petscrepo/.git ]; then
+  echo 'Error: dir $petscrepo is not a git repo'
+  exit
+fi
+
 # Initialize vars
 PETSC_ARCH=arch-build; export PETSC_ARCH
 PETSC_DIR=`cd $petscrepo;pwd -P`; export PETSC_DIR
+
+# Clean and Update the git repository and check for branch
+cd $PETSC_DIR
+git checkout -f $branch
+if [ "$?" != "0" ]; then
+  echo 'Error: branch: $branch does not exist in $PETSC_DIR'
+  exit
+fi
+git clean -q -f -d -x
+git pull -q
+
 pdir=`basename $PETSC_DIR`
 
 # Create a tmp dir
@@ -52,10 +72,6 @@ if [ ! -d $tmpdir ]; then
   exit
 fi
 
-# Clean and Update the hg repository
-cd $PETSC_DIR/config/BuildSystem; hg revert -a; hg -q clean --all; hg -q pull -u
-cd $PETSC_DIR; hg revert -a; hg -q clean -X bin/win32fe --all; hg -q pull -u
-
 # check petscversion.h and set the version string
 version_release=`grep '^#define PETSC_VERSION_RELEASE ' include/petscversion.h |tr -s ' ' | cut -d ' ' -f 3`
 version_major=`grep '^#define PETSC_VERSION_MAJOR ' include/petscversion.h |tr -s ' ' | cut -d ' ' -f 3`
@@ -64,10 +80,14 @@ version_patch=`grep '^#define PETSC_VERSION_PATCH ' include/petscversion.h |tr -
 
 #generated a couple of more values
 version_patch_date=`date`
-version_hg=`hg tip --template '{node}'`
-version_date_hg=`hg tip --template '{date|date}'`
+version_git=`git log -1 --pretty=format:%H`
+version_date_git=`git log -1 --pretty=format:%ci`
 if  [ ${version_release} = 0 ]; then
-  version=-dev
+  if [ "$branch" = "master" ]; then
+    version=-dev
+  else
+    version=-$branch
+  fi
 elif [ ${version_release} = 1 ]; then
   version=-${version_major}.${version_minor}-p${version_patch}
 else
@@ -109,14 +129,14 @@ cd $tmpdir/petsc$version
 /bin/grep -v 'chmod' conf/rules.bak > conf/rules
 /bin/rm -f  conf/rules.bak
 
-#add in PETSC_VERSION_PATCH_DATE and PETSC_VERSION_HG
+#add in PETSC_VERSION_PATCH_DATE and PETSC_VERSION_GIT
 echo Using PETSC_VERSION_PATCH_DATE: ${version_patch_date}
-echo Using PETSC_VERSION_HG: ${version_hg}
+echo Using PETSC_VERSION_GIT: ${version_git}
 /bin/mv include/petscversion.h include/petscversion.h.bak
 cat include/petscversion.h.bak | \
   sed -e "s/#define PETSC_VERSION_PATCH_DATE.*/#define PETSC_VERSION_PATCH_DATE \"${version_patch_date}\"/" | \
-  sed -e "s/#define PETSC_VERSION_HG.*/#define PETSC_VERSION_HG         \"${version_hg}\"/" | \
-  sed -e "s/#define PETSC_VERSION_DATE_HG.*/#define PETSC_VERSION_DATE_HG         \"${version_date_hg}\"/" \
+  sed -e "s/#define PETSC_VERSION_GIT.*/#define PETSC_VERSION_GIT         \"${version_git}\"/" | \
+  sed -e "s/#define PETSC_VERSION_DATE_GIT.*/#define PETSC_VERSION_DATE_GIT         \"${version_date_git}\"/" \
   > include/petscversion.h
 /bin/rm -f include/petscversion.h.bak
 

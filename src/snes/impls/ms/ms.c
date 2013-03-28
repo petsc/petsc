@@ -302,10 +302,10 @@ static PetscErrorCode SNESSolve_MS(SNES snes)
 
   PetscFunctionBegin;
   snes->reason = SNES_CONVERGED_ITERATING;
-  ierr         = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
+  ierr         = PetscObjectAMSTakeAccess((PetscObject)snes);CHKERRQ(ierr);
   snes->iter   = 0;
   snes->norm   = 0.;
-  ierr         = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
+  ierr         = PetscObjectAMSGrantAccess((PetscObject)snes);CHKERRQ(ierr);
   if (!snes->vec_func_init_set) {
     ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
     if (snes->domainerror) {
@@ -330,10 +330,10 @@ static PetscErrorCode SNESSolve_MS(SNES snes)
       snes->norm_init_set = PETSC_FALSE;
     }
     /* Monitor convergence */
-    ierr       = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
+    ierr       = PetscObjectAMSTakeAccess((PetscObject)snes);CHKERRQ(ierr);
     snes->iter = 0;
     snes->norm = fnorm;
-    ierr       = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
+    ierr       = PetscObjectAMSGrantAccess((PetscObject)snes);CHKERRQ(ierr);
     ierr       = SNESLogConvergenceHistory(snes,snes->norm,0);CHKERRQ(ierr);
     ierr       = SNESMonitor(snes,snes->iter,snes->norm);CHKERRQ(ierr);
 
@@ -367,10 +367,10 @@ static PetscErrorCode SNESSolve_MS(SNES snes)
       }
 
       /* Monitor convergence */
-      ierr       = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
+      ierr       = PetscObjectAMSTakeAccess((PetscObject)snes);CHKERRQ(ierr);
       snes->iter = i+1;
       snes->norm = fnorm;
-      ierr       = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
+      ierr       = PetscObjectAMSGrantAccess((PetscObject)snes);CHKERRQ(ierr);
       ierr       = SNESLogConvergenceHistory(snes,snes->norm,0);CHKERRQ(ierr);
       ierr       = SNESMonitor(snes,snes->iter,snes->norm);CHKERRQ(ierr);
 

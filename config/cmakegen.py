@@ -75,7 +75,7 @@ def pkgsources(pkg):
                           'symmetric diff',sorted(smdirs.symmetric_difference(sdirs))))
   def compareSourceLists(msources, files):
     smsources = set(msources)
-    ssources  = set(f for f in files if os.path.splitext(f)[1] in ['.c', '.cxx', '.cc', '.cpp', '.F'])
+    ssources  = set(f for f in files if os.path.splitext(f)[1] in ['.c', '.cxx', '.cc', '.cu', '.cpp', '.F'])
     if not smsources.issubset(ssources):
       MISTAKES.append('Makefile contains file not on filesystem: %s: %r' % (root, sorted(smsources - ssources)))
     if not VERBOSE: return
@@ -104,10 +104,11 @@ def pkgsources(pkg):
       conditions.update(set(tuple(stripsplit(line)) for line in lines if line.startswith('#requires')))
     def relpath(filename):
       return os.path.join(root,filename)
+    sourcecu = makevars.get('SOURCECU','').split()
     sourcec = makevars.get('SOURCEC','').split()
     sourcef = makevars.get('SOURCEF','').split()
-    compareSourceLists(sourcec+sourcef, files) # Diagnostic output about unused source files
-    sources[repr(sorted(conditions))].extend(relpath(f) for f in sourcec + sourcef)
+    compareSourceLists(sourcec+sourcef+sourcecu, files) # Diagnostic output about unused source files
+    sources[repr(sorted(conditions))].extend(relpath(f) for f in sourcec + sourcef + sourcecu)
     allconditions[root] = conditions
   return sources
 
@@ -115,7 +116,7 @@ def writeRoot(f):
   f.write(r'''cmake_minimum_required (VERSION 2.6.2)
 project (PETSc C)
 
-include (${PETSc_BINARY_DIR}/conf/PETScConfig.cmake)
+include (${PETSC_CMAKE_ARCH}/conf/PETScConfig.cmake)
 
 if (PETSC_HAVE_FORTRAN)
   enable_language (Fortran)
@@ -128,6 +129,12 @@ if (APPLE)
   SET(CMAKE_C_ARCHIVE_FINISH "<CMAKE_RANLIB> -c <TARGET> ")
   SET(CMAKE_CXX_ARCHIVE_FINISH "<CMAKE_RANLIB> -c <TARGET> ")
   SET(CMAKE_Fortran_ARCHIVE_FINISH "<CMAKE_RANLIB> -c <TARGET> ")
+endif ()
+
+if (PETSC_HAVE_CUDA)
+  find_package (CUDA REQUIRED)
+  set (CUDA_PROPAGATE_HOST_FLAGS OFF)
+  set (CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} --compiler-options ${PETSC_CUDA_HOST_FLAGS})
 endif ()
 
 include_directories ("${PETSc_SOURCE_DIR}/include" "${PETSc_BINARY_DIR}/include")
@@ -157,7 +164,11 @@ def writePackage(f,pkg,pkgdeps):
       f.write(body(0))
   f.write('''
 if (NOT PETSC_USE_SINGLE_LIBRARY)
-  add_library (petsc%(pkg)s ${PETSC%(PKG)s_SRCS})
+  if (PETSC_HAVE_CUDA)
+    cuda_add_library (petsc%(pkg)s ${PETSC%(PKG)s_SRCS})
+  else ()
+    add_library (petsc%(pkg)s ${PETSC%(PKG)s_SRCS})
+  endif ()
   target_link_libraries (petsc%(pkg)s %(pkgdeps)s ${PETSC_PACKAGE_LIBS})
   if (PETSC_WIN32FE)
     set_target_properties (petsc%(pkg)s PROPERTIES RULE_LAUNCH_COMPILE "${PETSC_WIN32FE}")
@@ -185,7 +196,11 @@ def main(petscdir, log=StdoutLogger()):
         writePackage(f,pkg,deps.split())
       f.write ('''
 if (PETSC_USE_SINGLE_LIBRARY)
-  add_library (petsc %s)
+  if (PETSC_HAVE_CUDA)
+    cuda_add_library (petsc %(allsrc)s)
+  else ()
+    add_library (petsc %(allsrc)s)
+  endif ()
   target_link_libraries (petsc ${PETSC_PACKAGE_LIBS})
   if (PETSC_WIN32FE)
     set_target_properties (petsc PROPERTIES RULE_LAUNCH_COMPILE "${PETSC_WIN32FE}")
@@ -193,7 +208,7 @@ if (PETSC_USE_SINGLE_LIBRARY)
   endif ()
 
 endif ()
-''' % (' '.join([r'${PETSC' + pkg.upper() + r'_SRCS}' for pkg,deps in pkglist]),))
+''' % dict(allsrc=' '.join([r'${PETSC' + pkg.upper() + r'_SRCS}' for pkg,deps in pkglist])))
       f.write('''
 if (PETSC_CLANGUAGE_Cxx)
   foreach (file IN LISTS %s)
@@ -211,7 +226,7 @@ endif()''' % ('\n  '.join([r'PETSC' + pkg.upper() + r'_SRCS' for (pkg,_) in pkgl
   if MISTAKES:
     for m in MISTAKES:
       log.write(m + '\n')
-    raise RuntimeError('PETSc makefiles contain mistakes or files are missing on filesystem.\n%s\nPossible reasons:\n\t1. Files were deleted locally, try "hg update".\n\t2. Files were deleted from mercurial, but were not removed from makefile. Send mail to petsc-maint@mcs.anl.gov.\n\t3. Someone forgot "hg add" new files. Send mail to petsc-maint@mcs.anl.gov.' % ('\n'.join(MISTAKES)))
+    raise RuntimeError('PETSc makefiles contain mistakes or files are missing on filesystem.\n%s\nPossible reasons:\n\t1. Files were deleted locally, try "hg revert filename" or "git checkout filename".\n\t2. Files were deleted from repository, but were not removed from makefile. Send mail to petsc-maint@mcs.anl.gov.\n\t3. Someone forgot to "add" new files to the repository. Send mail to petsc-maint@mcs.anl.gov.' % ('\n'.join(MISTAKES)))
 
 if __name__ == "__main__":
   import optparse

@@ -47,6 +47,8 @@ int main(int argc,char **argv)
   Vec            u;                    /* solution, residual vectors */
   Mat            J;                    /* Jacobian matrix */
   PetscInt       maxsteps = 1000;     /* iterations for convergence */
+  PetscInt       nsteps;
+  PetscReal      vmin,vmax,norm;
   PetscErrorCode ierr;
   DM             da;
   PetscReal      ftime,dt;
@@ -123,6 +125,16 @@ int main(int argc,char **argv)
      Integrate ODE system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSSolve(ts,u);CHKERRQ(ierr);
+
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+   Compute diagnostics of the solution
+   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+  ierr = VecNorm(u,NORM_1,&norm);CHKERRQ(ierr);
+  ierr = VecMax(u,NULL,&vmax);CHKERRQ(ierr);
+  ierr = VecMin(u,NULL,&vmin);CHKERRQ(ierr);
+  ierr = TSGetTimeStepNumber(ts,&nsteps);CHKERRQ(ierr);
+  ierr = TSGetTime(ts,&ftime);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"timestep %D: time %G, solution norm %G, max %G, min %G\n",nsteps,ftime,norm,vmax,vmin);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.

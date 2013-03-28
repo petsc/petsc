@@ -117,7 +117,7 @@ PetscErrorCode  PCDestroy(PC *pc)
   ierr = PCReset(*pc);CHKERRQ(ierr);
 
   /* if memory was published with AMS then destroy it */
-  ierr = PetscObjectDepublish((*pc));CHKERRQ(ierr);
+  ierr = PetscObjectAMSViewOff((PetscObject)*pc);CHKERRQ(ierr);
   if ((*pc)->ops->destroy) {ierr = (*(*pc)->ops->destroy)((*pc));CHKERRQ(ierr);}
   ierr = DMDestroy(&(*pc)->dm);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(pc);CHKERRQ(ierr);
@@ -285,16 +285,6 @@ PetscErrorCode  PCDiagonalScaleRight(PC pc,Vec in,Vec out)
   PetscFunctionReturn(0);
 }
 
-#if 0
-#undef __FUNCT__
-#define __FUNCT__ "PCPublish_Petsc"
-static PetscErrorCode PCPublish_Petsc(PetscObject obj)
-{
-  PetscFunctionBegin;
-  PetscFunctionReturn(0);
-}
-#endif
-
 #undef __FUNCT__
 #define __FUNCT__ "PCSetUseAmat"
 /*@
@@ -403,7 +393,6 @@ PetscErrorCode  PCCreate(MPI_Comm comm,PC *newpc)
   pc->diagonalscale        = PETSC_FALSE;
   pc->diagonalscaleleft    = 0;
   pc->diagonalscaleright   = 0;
-  pc->reuse                = 0;
 
   pc->modifysubmatrices  = 0;
   pc->modifysubmatricesP = 0;
@@ -1551,6 +1540,9 @@ PetscErrorCode  PCLoad(PC newdm, PetscViewer viewer)
 }
 
 #include <petscdraw.h>
+#if defined(PETSC_HAVE_AMS)
+#include <petscviewerams.h>
+#endif
 #undef __FUNCT__
 #define __FUNCT__ "PCView"
 /*@C
@@ -1585,6 +1577,9 @@ PetscErrorCode  PCView(PC pc,PetscViewer viewer)
   PetscErrorCode    ierr;
   PetscBool         iascii,isstring,isbinary,isdraw;
   PetscViewerFormat format;
+#if defined(PETSC_HAVE_AMS)
+  PetscBool         isams;
+#endif
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
@@ -1598,6 +1593,9 @@ PetscErrorCode  PCView(PC pc,PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_AMS)
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERAMS,&isams);CHKERRQ(ierr);
+#endif
 
   if (iascii) {
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
@@ -1668,6 +1666,14 @@ PetscErrorCode  PCView(PC pc,PetscViewer viewer)
       ierr = (*pc->ops->view)(pc,viewer);CHKERRQ(ierr);
     }
     ierr = PetscDrawPopCurrentPoint(draw);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_AMS)
+  } else if (isams) {
+    if (((PetscObject)pc)->amsmem == -1) {
+      ierr = PetscObjectViewAMS((PetscObject)pc,viewer);CHKERRQ(ierr);
+    }
+    if (pc->mat) {ierr = MatView(pc->mat,viewer);CHKERRQ(ierr);}
+    if (pc->pmat && pc->pmat != pc->mat) {ierr = MatView(pc->pmat,viewer);CHKERRQ(ierr);}
+#endif
   }
   PetscFunctionReturn(0);
 }

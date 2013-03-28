@@ -169,7 +169,6 @@ a_noinsert:; \
     if (b->nonew == 1) goto b_noinsert; \
     if (b->nonew == -1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero (%D, %D) into matrix", row, col); \
     MatSeqXAIJReallocateAIJ(B,b->mbs,bs2,nrow,brow,bcol,rmax,ba,bi,bj,rp,ap,bimax,b->nonew,MatScalar); \
-    CHKMEMQ; \
     N = nrow++ - 1;  \
     /* shift up all the later entries in this row */ \
     for (ii=N; ii>=_i; ii--) { \
@@ -2486,7 +2485,6 @@ PetscErrorCode MatFDColoringCreate_MPIBAIJ(Mat mat,ISColoring iscoloring,MatFDCo
     }
     ierr = VecCreateGhost(PetscObjectComm((PetscObject)mat),baij->A->rmap->n,PETSC_DETERMINE,baij->B->cmap->n,garray,&c->vscale);CHKERRQ(ierr);
     ierr = PetscFree(garray);CHKERRQ(ierr);
-    CHKMEMQ;
     ierr = PetscMalloc(c->ncolors*sizeof(PetscInt*),&c->vscaleforrow);CHKERRQ(ierr);
     for (k=0; k<c->ncolors; k++) {
       ierr = PetscMalloc((c->nrows[k]+1)*sizeof(PetscInt),&c->vscaleforrow[k]);CHKERRQ(ierr);
@@ -2536,7 +2534,6 @@ PetscErrorCode MatFDColoringCreate_MPIBAIJ(Mat mat,ISColoring iscoloring,MatFDCo
   ierr = MatRestoreColumnIJ(baij->A,0,PETSC_FALSE,PETSC_FALSE,&ncols,&A_ci,&A_cj,&done);CHKERRQ(ierr);
   ierr = MatRestoreColumnIJ(baij->B,0,PETSC_FALSE,PETSC_FALSE,&ncols,&B_ci,&B_cj,&done);CHKERRQ(ierr);
   if (map) {ierr = ISLocalToGlobalMappingRestoreIndices(map,&ltog);CHKERRQ(ierr);}
-  CHKMEMQ;
   PetscFunctionReturn(0);
 }
 
@@ -2750,134 +2747,147 @@ PetscErrorCode  MatInvertBlockDiagonal_MPIBAIJ(Mat A,const PetscScalar **values)
 
 
 /* -------------------------------------------------------------------*/
-static struct _MatOps MatOps_Values = {
-       MatSetValues_MPIBAIJ,
-       MatGetRow_MPIBAIJ,
-       MatRestoreRow_MPIBAIJ,
-       MatMult_MPIBAIJ,
-/* 4*/ MatMultAdd_MPIBAIJ,
-       MatMultTranspose_MPIBAIJ,
-       MatMultTransposeAdd_MPIBAIJ,
-       0,
-       0,
-       0,
-/*10*/ 0,
-       0,
-       0,
-       MatSOR_MPIBAIJ,
-       MatTranspose_MPIBAIJ,
-/*15*/ MatGetInfo_MPIBAIJ,
-       MatEqual_MPIBAIJ,
-       MatGetDiagonal_MPIBAIJ,
-       MatDiagonalScale_MPIBAIJ,
-       MatNorm_MPIBAIJ,
-/*20*/ MatAssemblyBegin_MPIBAIJ,
-       MatAssemblyEnd_MPIBAIJ,
-       MatSetOption_MPIBAIJ,
-       MatZeroEntries_MPIBAIJ,
-/*24*/ MatZeroRows_MPIBAIJ,
-       0,
-       0,
-       0,
-       0,
-/*29*/ MatSetUp_MPIBAIJ,
-       0,
-       0,
-       0,
-       0,
-/*34*/ MatDuplicate_MPIBAIJ,
-       0,
-       0,
-       0,
-       0,
-/*39*/ MatAXPY_MPIBAIJ,
-       MatGetSubMatrices_MPIBAIJ,
-       MatIncreaseOverlap_MPIBAIJ,
-       MatGetValues_MPIBAIJ,
-       MatCopy_MPIBAIJ,
-/*44*/ 0,
-       MatScale_MPIBAIJ,
-       0,
-       0,
-       0,
-/*49*/ 0,
-       0,
-       0,
-       0,
-       0,
-/*54*/ MatFDColoringCreate_MPIBAIJ,
-       0,
-       MatSetUnfactored_MPIBAIJ,
-       MatPermute_MPIBAIJ,
-       MatSetValuesBlocked_MPIBAIJ,
-/*59*/ MatGetSubMatrix_MPIBAIJ,
-       MatDestroy_MPIBAIJ,
-       MatView_MPIBAIJ,
-       0,
-       0,
-/*64*/ 0,
-       0,
-       0,
-       0,
-       0,
-/*69*/ MatGetRowMaxAbs_MPIBAIJ,
-       0,
-       0,
-       0,
-       0,
-/*74*/ 0,
-       MatFDColoringApply_BAIJ,
-       0,
-       0,
-       0,
-/*79*/ 0,
-       0,
-       0,
-       0,
-       MatLoad_MPIBAIJ,
-/*84*/ 0,
-       0,
-       0,
-       0,
-       0,
-/*89*/ 0,
-       0,
-       0,
-       0,
-       0,
-/*94*/ 0,
-       0,
-       0,
-       0,
-       0,
-/*99*/ 0,
-       0,
-       0,
-       0,
-       0,
-/*104*/0,
-       MatRealPart_MPIBAIJ,
-       MatImaginaryPart_MPIBAIJ,
-       0,
-       0,
-/*109*/0,
-       0,
-       0,
-       0,
-       0,
-/*114*/MatGetSeqNonzeroStructure_MPIBAIJ,
-       0,
-       MatGetGhosts_MPIBAIJ,
-       0,
-       0,
-/*119*/0,
-       0,
-       0,
-       0,
-       0,
-/*124*/0,
-       0,
-       MatInvertBlockDiagonal_MPIBAIJ
+static struct _MatOps MatOps_Values = {MatSetValues_MPIBAIJ,
+                                       MatGetRow_MPIBAIJ,
+                                       MatRestoreRow_MPIBAIJ,
+                                       MatMult_MPIBAIJ,
+                                /* 4*/ MatMultAdd_MPIBAIJ,
+                                       MatMultTranspose_MPIBAIJ,
+                                       MatMultTransposeAdd_MPIBAIJ,
+                                       0,
+                                       0,
+                                       0,
+                                /*10*/ 0,
+                                       0,
+                                       0,
+                                       MatSOR_MPIBAIJ,
+                                       MatTranspose_MPIBAIJ,
+                                /*15*/ MatGetInfo_MPIBAIJ,
+                                       MatEqual_MPIBAIJ,
+                                       MatGetDiagonal_MPIBAIJ,
+                                       MatDiagonalScale_MPIBAIJ,
+                                       MatNorm_MPIBAIJ,
+                                /*20*/ MatAssemblyBegin_MPIBAIJ,
+                                       MatAssemblyEnd_MPIBAIJ,
+                                       MatSetOption_MPIBAIJ,
+                                       MatZeroEntries_MPIBAIJ,
+                                /*24*/ MatZeroRows_MPIBAIJ,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                                /*29*/ MatSetUp_MPIBAIJ,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                                /*34*/ MatDuplicate_MPIBAIJ,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                                /*39*/ MatAXPY_MPIBAIJ,
+                                       MatGetSubMatrices_MPIBAIJ,
+                                       MatIncreaseOverlap_MPIBAIJ,
+                                       MatGetValues_MPIBAIJ,
+                                       MatCopy_MPIBAIJ,
+                                /*44*/ 0,
+                                       MatScale_MPIBAIJ,
+                                       0,
+                                       0,
+                                       0,
+                                /*49*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                                /*54*/ MatFDColoringCreate_MPIBAIJ,
+                                       0,
+                                       MatSetUnfactored_MPIBAIJ,
+                                       MatPermute_MPIBAIJ,
+                                       MatSetValuesBlocked_MPIBAIJ,
+                                /*59*/ MatGetSubMatrix_MPIBAIJ,
+                                       MatDestroy_MPIBAIJ,
+                                       MatView_MPIBAIJ,
+                                       0,
+                                       0,
+                                /*64*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                                /*69*/ MatGetRowMaxAbs_MPIBAIJ,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                                /*74*/ 0,
+                                       MatFDColoringApply_BAIJ,
+                                       0,
+                                       0,
+                                       0,
+                                /*79*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       MatLoad_MPIBAIJ,
+                                /*84*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                                /*89*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                                /*94*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                                /*99*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                                /*104*/0,
+                                       MatRealPart_MPIBAIJ,
+                                       MatImaginaryPart_MPIBAIJ,
+                                       0,
+                                       0,
+                                /*109*/0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                                /*114*/MatGetSeqNonzeroStructure_MPIBAIJ,
+                                       0,
+                                       MatGetGhosts_MPIBAIJ,
+                                       0,
+                                       0,
+                                /*119*/0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                                /*124*/0,
+                                       0,
+                                       MatInvertBlockDiagonal_MPIBAIJ,
+                                       0,
+                                       0,
+                               /*129*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /*134*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /*139*/ 0,
+                                       0
 };
 
 #undef __FUNCT__
@@ -2994,17 +3004,8 @@ PetscErrorCode  MatMPIBAIJSetPreallocation_MPIBAIJ(Mat B,PetscInt bs,PetscInt d_
   Mat_MPIBAIJ    *b;
   PetscErrorCode ierr;
   PetscInt       i;
-  PetscBool      d_realalloc = PETSC_FALSE,o_realalloc = PETSC_FALSE;
 
   PetscFunctionBegin;
-  if (d_nz >= 0 || d_nnz) d_realalloc = PETSC_TRUE;
-  if (o_nz >= 0 || o_nnz) o_realalloc = PETSC_TRUE;
-
-  if (d_nz == PETSC_DEFAULT || d_nz == PETSC_DECIDE) d_nz = 5;
-  if (o_nz == PETSC_DEFAULT || o_nz == PETSC_DECIDE) o_nz = 2;
-  if (d_nz < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"d_nz cannot be less than 0: value %D",d_nz);
-  if (o_nz < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"o_nz cannot be less than 0: value %D",o_nz);
-
   ierr = PetscLayoutSetBlockSize(B->rmap,bs);CHKERRQ(ierr);
   ierr = PetscLayoutSetBlockSize(B->cmap,bs);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(B->rmap);CHKERRQ(ierr);
@@ -3051,9 +3052,6 @@ PetscErrorCode  MatMPIBAIJSetPreallocation_MPIBAIJ(Mat B,PetscInt bs,PetscInt d_
 
   ierr = MatSeqBAIJSetPreallocation(b->A,bs,d_nz,d_nnz);CHKERRQ(ierr);
   ierr = MatSeqBAIJSetPreallocation(b->B,bs,o_nz,o_nnz);CHKERRQ(ierr);
-  /* Do not error if the user did not give real preallocation information. Ugly because this would overwrite a previous user call to MatSetOption(). */
-  if (!d_realalloc) {ierr = MatSetOption(b->A,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);}
-  if (!o_realalloc) {ierr = MatSetOption(b->B,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);}
   B->preallocated = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
@@ -3074,7 +3072,6 @@ PETSC_EXTERN PetscErrorCode MatConvert_MPIBAIJ_MPIAdj(Mat B, MatType newtype,Mat
   PetscFunctionBegin;
   ierr  = PetscMalloc((M+1)*sizeof(PetscInt),&ii);CHKERRQ(ierr);
   ii[0] = 0;
-  CHKMEMQ;
   for (i=0; i<M; i++) {
     if ((id[i+1] - id[i]) < 0) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Indices wrong %D %D %D",i,id[i],id[i+1]);
     if ((io[i+1] - io[i]) < 0) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Indices wrong %D %D %D",i,io[i],io[i+1]);
@@ -3083,7 +3080,6 @@ PETSC_EXTERN PetscErrorCode MatConvert_MPIBAIJ_MPIAdj(Mat B, MatType newtype,Mat
     for (j=id[i]; j<id[i+1]; j++) {
       if (jd[j] == i) {ii[i+1]--;break;}
     }
-    CHKMEMQ;
   }
   ierr = PetscMalloc(ii[M]*sizeof(PetscInt),&jj);CHKERRQ(ierr);
   cnt  = 0;
@@ -3091,17 +3087,14 @@ PETSC_EXTERN PetscErrorCode MatConvert_MPIBAIJ_MPIAdj(Mat B, MatType newtype,Mat
     for (j=io[i]; j<io[i+1]; j++) {
       if (garray[jo[j]] > rstart) break;
       jj[cnt++] = garray[jo[j]];
-      CHKMEMQ;
     }
     for (k=id[i]; k<id[i+1]; k++) {
       if (jd[k] != i) {
         jj[cnt++] = rstart + jd[k];
-        CHKMEMQ;
       }
     }
     for (; j<io[i+1]; j++) {
       jj[cnt++] = garray[jo[j]];
-      CHKMEMQ;
     }
   }
   ierr = MatCreateMPIAdj(PetscObjectComm((PetscObject)B),M,B->cmap->N/B->rmap->bs,ii,jj,NULL,adj);CHKERRQ(ierr);
@@ -3643,7 +3636,7 @@ PetscErrorCode MatLoad_MPIBAIJ(Mat newmat,PetscViewer viewer)
       mmax = PetscMax(mmax,rowners[i]);
     }
     mmax*=bs;
-  } else mmax = m;
+  } else mmax = -1;             /* unused, but compiler warns anyway */
 
   rowners[0] = 0;
   for (i=2; i<=size; i++) rowners[i] += rowners[i-1];
@@ -3652,13 +3645,13 @@ PetscErrorCode MatLoad_MPIBAIJ(Mat newmat,PetscViewer viewer)
   rend   = rowners[rank+1];
 
   /* distribute row lengths to all processors */
-  ierr = PetscMalloc((mmax+1)*sizeof(PetscInt),&locrowlens);CHKERRQ(ierr);
+  ierr = PetscMalloc(m*sizeof(PetscInt),&locrowlens);CHKERRQ(ierr);
   if (!rank) {
     mend = m;
     if (size == 1) mend = mend - extra_rows;
     ierr = PetscBinaryRead(fd,locrowlens,mend,PETSC_INT);CHKERRQ(ierr);
     for (j=mend; j<m; j++) locrowlens[j] = 1;
-    ierr = PetscMalloc(m*sizeof(PetscInt),&rowlengths);CHKERRQ(ierr);
+    ierr = PetscMalloc(mmax*sizeof(PetscInt),&rowlengths);CHKERRQ(ierr);
     ierr = PetscMalloc(size*sizeof(PetscInt),&procsnz);CHKERRQ(ierr);
     ierr = PetscMemzero(procsnz,size*sizeof(PetscInt));CHKERRQ(ierr);
     for (j=0; j<m; j++) {

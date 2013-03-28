@@ -1,5 +1,5 @@
 
-static char help[] = "Demonstrates using PetscWebServe().\nRun with -ams_publish_objects\n\n";
+static char help[] = "Demonstrates using PetscWebServe().\nRun with -random_view ams\n\n";
 
 /*T
    Concepts: introduction to PETSc;

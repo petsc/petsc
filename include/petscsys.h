@@ -1073,6 +1073,7 @@ PETSC_EXTERN PetscErrorCode PetscMallocDumpLog(FILE *);
 PETSC_EXTERN PetscErrorCode PetscMallocGetCurrentUsage(PetscLogDouble *);
 PETSC_EXTERN PetscErrorCode PetscMallocGetMaximumUsage(PetscLogDouble *);
 PETSC_EXTERN PetscErrorCode PetscMallocDebug(PetscBool);
+PETSC_EXTERN PetscErrorCode PetscMallocGetDebug(PetscBool*);
 PETSC_EXTERN PetscErrorCode PetscMallocValidate(int,const char[],const char[],const char[]);
 PETSC_EXTERN PetscErrorCode PetscMallocSetDumpLog(void);
 PETSC_EXTERN PetscErrorCode PetscMallocSetDumpLogThreshold(PetscLogDouble);
@@ -1243,8 +1244,6 @@ PETSC_EXTERN PetscErrorCode PetscMemoryGetMaximumUsage(PetscLogDouble *);
 PETSC_EXTERN PetscErrorCode PetscMemorySetGetMaximumUsage(void);
 
 PETSC_EXTERN PetscErrorCode PetscInfoAllow(PetscBool ,const char []);
-PETSC_EXTERN PetscErrorCode PetscGetTime(PetscLogDouble*);
-PETSC_EXTERN PetscErrorCode PetscGetCPUTime(PetscLogDouble*);
 PETSC_EXTERN PetscErrorCode PetscSleep(PetscReal);
 
 /*
@@ -1382,10 +1381,29 @@ PETSC_EXTERN PetscErrorCode PetscObjectTypeCompareAny(PetscObject,PetscBool*,con
 PETSC_EXTERN PetscErrorCode PetscRegisterFinalize(PetscErrorCode (*)(void));
 PETSC_EXTERN PetscErrorCode PetscRegisterFinalizeAll(void);
 
-PETSC_EXTERN PetscErrorCode PetscObjectAMSPublish(PetscObject);
-PETSC_EXTERN PetscErrorCode PetscObjectAMSUnPublish(PetscObject);
+#if defined(PETSC_HAVE_AMS)
+PETSC_EXTERN PetscErrorCode PetscObjectAMSViewOff(PetscObject);
 PETSC_EXTERN PetscErrorCode PetscObjectAMSSetBlock(PetscObject,PetscBool);
 PETSC_EXTERN PetscErrorCode PetscObjectAMSBlock(PetscObject);
+PETSC_EXTERN PetscErrorCode PetscObjectAMSGrantAccess(PetscObject);
+PETSC_EXTERN PetscErrorCode PetscObjectAMSTakeAccess(PetscObject);
+PETSC_EXTERN void           PetscStackAMSGrantAccess(void);
+PETSC_EXTERN void           PetscStackAMSTakeAccess(void);
+PETSC_EXTERN PetscErrorCode PetscStackViewAMS(void);
+PETSC_EXTERN PetscErrorCode PetscStackAMSViewOff(void);
+
+#else
+#define PetscObjectAMSViewOff(obj)             0
+#define PetscObjectAMSSetBlock(obj,flg)        0
+#define PetscObjectAMSBlock(obj)               0
+#define PetscObjectAMSGrantAccess(obj)         0
+#define PetscObjectAMSTakeAccess(obj)          0
+#define PetscStackViewAMS()                    0
+#define PetscStackAMSViewOff()                 0
+#define PetscStackAMSTakeAccess()
+#define PetscStackAMSGrantAccess()
+
+#endif
 
 typedef void* PetscDLHandle;
 typedef enum {PETSC_DL_DECIDE=0,PETSC_DL_NOW=1,PETSC_DL_LOCAL=2} PetscDLMode;
@@ -1511,21 +1529,7 @@ PETSC_EXTERN PetscErrorCode (*PetscHelpPrintf)(MPI_Comm,const char[],...);
 */
 #include <petsclog.h>
 
-/*
-          For locking, unlocking and destroying AMS memories associated with  PETSc objects. ams.h is included in petscviewer.h
 
-          Developers note: These should all be made functions and ams.h removed from public petscviewer.h
-*/
-#if defined(PETSC_HAVE_AMS)
-PETSC_EXTERN PetscBool PetscAMSPublishAll;
-#define PetscObjectTakeAccess(obj)  ((((PetscObject)(obj))->amsmem == -1) ? 0 : AMS_Memory_take_access(((PetscObject)(obj))->amsmem))
-#define PetscObjectGrantAccess(obj) ((((PetscObject)(obj))->amsmem == -1) ? 0 : AMS_Memory_grant_access(((PetscObject)(obj))->amsmem))
-#define PetscObjectDepublish(obj)   ((((PetscObject)(obj))->amsmem == -1) ? 0 : AMS_Memory_destroy(((PetscObject)(obj))->amsmem));((PetscObject)(obj))->amsmem = -1;
-#else
-#define PetscObjectTakeAccess(obj)   0
-#define PetscObjectGrantAccess(obj)  0
-#define PetscObjectDepublish(obj)    0
-#endif
 
 /*
       Simple PETSc parallel IO for ASCII printing
@@ -2388,6 +2392,21 @@ PETSC_EXTERN PetscErrorCode PetscSubcommDestroy(PetscSubcomm*);
 PETSC_EXTERN PetscErrorCode PetscSubcommSetNumber(PetscSubcomm,PetscInt);
 PETSC_EXTERN PetscErrorCode PetscSubcommSetType(PetscSubcomm,PetscSubcommType);
 PETSC_EXTERN PetscErrorCode PetscSubcommSetTypeGeneral(PetscSubcomm,PetscMPIInt,PetscMPIInt,PetscMPIInt);
+
+/*S
+   PetscSegBuffer - a segmented extendable buffer
+
+   Level: developer
+
+.seealso: PetscSegBufferCreate(), PetscSegBufferGet(), PetscSegBufferExtract(), PetscSegBufferDestroy()
+S*/
+typedef struct _n_PetscSegBuffer *PetscSegBuffer;
+PETSC_EXTERN PetscErrorCode PetscSegBufferCreate(PetscInt,PetscInt,PetscSegBuffer*);
+PETSC_EXTERN PetscErrorCode PetscSegBufferDestroy(PetscSegBuffer*);
+PETSC_EXTERN PetscErrorCode PetscSegBufferGet(PetscSegBuffer*,PetscInt,void*);
+PETSC_EXTERN PetscErrorCode PetscSegBufferExtractAlloc(PetscSegBuffer*,void*);
+PETSC_EXTERN PetscErrorCode PetscSegBufferExtractTo(PetscSegBuffer*,void*);
+PETSC_EXTERN PetscErrorCode PetscSegBufferExtractInPlace(PetscSegBuffer*,void*);
 
 /* Reset __FUNCT__ in case the user does not define it themselves */
 #undef __FUNCT__

@@ -5,14 +5,9 @@
 
 #if !defined(__PETSCTIME_H)
 #define __PETSCTIME_H
-
 #include <petscsys.h>
-#if defined(PETSC_HAVE_SYS_TIME_H)
-#include <sys/time.h>
-#endif
-#if defined(PETSC_NEEDS_GETTIMEOFDAY_PROTO)
-PETSC_EXTERN int gettimeofday(struct timeval *,struct timezone *);
-#endif
+
+PETSC_EXTERN PetscErrorCode PetscGetCPUTime(PetscLogDouble*);
 
 /* Global counters */
 PETSC_EXTERN PetscLogDouble petsc_BaseTime;
@@ -22,7 +17,7 @@ PETSC_EXTERN PetscLogDouble petsc_BaseTime;
 
    Synopsis:
     #include "petsctime.h"
-   PetscTime(PetscLogDouble v)
+   PetscTime(PetscLogDouble *v)
 
    Not Collective
 
@@ -32,7 +27,7 @@ PETSC_EXTERN PetscLogDouble petsc_BaseTime;
 
    Usage:
      PetscLogDouble v;
-     PetscTime(v);
+     PetscTime(&v);
      .... perform some calculation ...
      printf("Time for operation %g\n",v);
 
@@ -55,7 +50,7 @@ M*/
 
    Synopsis:
     #include "petsctime.h"
-   PetscTimeSubtract(PetscLogDouble v)
+   PetscTimeSubtract(&PetscLogDouble *v)
 
    Not Collective
 
@@ -85,7 +80,7 @@ M*/
 
    Synopsis:
     #include "petsctime.h"
-   PetscTimeAdd(PetscLogDouble v)
+   PetscTimeAdd(PetscLogDouble *v)
 
    Not Collective
 
@@ -112,22 +107,47 @@ M*/
     Some machines have very fast MPI_Wtime()
 */
 #if (defined(PETSC_HAVE_FAST_MPI_WTIME) && !defined(__MPIUNI_H))
-#define PetscTime(v)         (v)=MPI_Wtime();
+PETSC_STATIC_INLINE PetscErrorCode PetscTime(PetscLogDouble *v)
+{
+  *v = MPI_Wtime();
+  return 0;
+}
 
-#define PetscTimeSubtract(v) (v)-=MPI_Wtime();
+PETSC_STATIC_INLINE PetscErrorCode PetscTimeSubtract(PetscLogDouble *v)
+{
+  *v -= MPI_Wtime();
+  return 0;
+}
 
-#define PetscTimeAdd(v)      (v)+=MPI_Wtime();
+PETSC_STATIC_INLINE PetscErrorCode PetscTimeAdd(PetscLogDouble *v)
+{
+  *v += MPI_Wtime();
+  return 0;
+}
 
 /* ------------------------------------------------------------------
    IBM Power and PowerPC machines have a fast clock read_real_time()
 */
 #elif defined(PETSC_USE_READ_REAL_TIME)
 PETSC_EXTERN PetscLogDouble PetscReadRealTime(void);
-#define PetscTime(v)         (v)=PetscReadRealTime();
 
-#define PetscTimeSubtract(v) (v)-=PetscReadRealTime();
+PETSC_STATIC_INLINE PetscErrorCode PetscTime(PetscLogDouble *v)
+{
+  *v = PetscReadRealTime();
+  return 0;
+}
 
-#define PetscTimeAdd(v)      (v)+=PetscReadRealTime();
+PETSC_STATIC_INLINE PetscErrorCode PetscTimeSubtract(PetscLogDouble *v)
+{
+  *v -= PetscReadRealTime();
+  return 0;
+}
+
+PETSC_STATIC_INLINE PetscErrorCode PetscTimeAdd(PetscLogDouble *v)
+{
+  *v += PetscReadRealTime();
+  return 0;
+}
 
 /* ------------------------------------------------------------------
    Microsoft Windows has its own time routines
@@ -135,38 +155,65 @@ PETSC_EXTERN PetscLogDouble PetscReadRealTime(void);
 #elif defined (PETSC_USE_MICROSOFT_TIME)
 #include <time.h>
 PETSC_EXTERN PetscLogDouble PetscMicrosoftTime(void);
-#define PetscTime(v)         (v)=PetscMicrosoftTime();
 
-#define PetscTimeSubtract(v) (v)-=PetscMicrosoftTime();
+PETSC_STATIC_INLINE PetscErrorCode PetscTime(PetscLogDouble *v)
+{
+  *v = PetscMicrosoftTime();
+  return 0;
+}
 
-#define PetscTimeAdd(v)      (v)+=PetscMicrosoftTime();
+PETSC_STATIC_INLINE PetscErrorCode PetscTimeSubtract(PetscLogDouble *v)
+{
+  *v -= PetscMicrosoftTime();
+  return 0;
+}
+
+PETSC_STATIC_INLINE PetscErrorCode PetscTimeAdd(PetscLogDouble *v)
+{
+  *v += PetscMicrosoftTime();
+  return 0;
+}
 
 /* ------------------------------------------------------------------
     The usual Unix time routines.
 */
 #else
-#define PetscTime(v)         do {                                       \
-    static struct timeval _tp;                                          \
-    gettimeofday(&_tp,(struct timezone *)0);                            \
-    (v)=((PetscLogDouble)_tp.tv_sec)+(1.0e-6)*(_tp.tv_usec);            \
-  } while (0)
 
-#define PetscTimeSubtract(v) do {                                       \
-    static struct timeval _tp;                                          \
-    gettimeofday(&_tp,(struct timezone *)0);                            \
-    (v)-=((PetscLogDouble)_tp.tv_sec)+(1.0e-6)*(_tp.tv_usec);           \
-  } while (0)
+#if defined(PETSC_HAVE_SYS_TIME_H)
+#include <sys/time.h>
+#endif
 
-#define PetscTimeAdd(v) do {                                            \
-    static struct timeval _tp;                                          \
-    gettimeofday(&_tp,(struct timezone *)0);                            \
-    (v)+=((PetscLogDouble)_tp.tv_sec)+(1.0e-6)*(_tp.tv_usec);           \
-  } while (0)
+#if defined(PETSC_NEEDS_GETTIMEOFDAY_PROTO)
+PETSC_EXTERN int gettimeofday(struct timeval *,struct timezone *);
+#endif
+
+PETSC_STATIC_INLINE PetscErrorCode PetscTime(PetscLogDouble *v)
+{
+  static struct timeval _tp;
+  gettimeofday(&_tp,(struct timezone *)0);
+  *v = ((PetscLogDouble)_tp.tv_sec)+(1.0e-6)*(_tp.tv_usec);
+  return 0;
+}
+
+PETSC_STATIC_INLINE PetscErrorCode PetscTimeSubtract(PetscLogDouble *v)
+{
+  static struct timeval _tp;
+  gettimeofday(&_tp,(struct timezone *)0);
+  *v -= ((PetscLogDouble)_tp.tv_sec)+(1.0e-6)*(_tp.tv_usec);
+  return 0;
+}
+
+PETSC_STATIC_INLINE PetscErrorCode PetscTimeAdd(PetscLogDouble *v)
+{
+  static struct timeval _tp;
+  gettimeofday(&_tp,(struct timezone *)0);
+  *v += ((PetscLogDouble)_tp.tv_sec)+(1.0e-6)*(_tp.tv_usec);
+  return 0;
+}
+
 #endif
 
 #endif
-
-
 
 
 

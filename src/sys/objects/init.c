@@ -267,9 +267,6 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
   int            i;
   PetscMPIInt    rank;
   char           version[256];
-#if defined(PETSC_USE_SERVER)
-  PetscBool      flgz;
-#endif
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
@@ -457,18 +454,6 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
   ierr = PetscOptionsGetString(NULL,"-on_error_emacs",emacsmachinename,128,&flg1);CHKERRQ(ierr);
   if (flg1 && !rank) {ierr = PetscPushErrorHandler(PetscEmacsClientErrorHandler,emacsmachinename);CHKERRQ(ierr);}
 
-#if defined(PETSC_USE_SERVER)
-  ierr = PetscOptionsHasName(NULL,"-server", &flgz);CHKERRQ(ierr);
-  if (flgz) {
-    PetscInt port = PETSC_DECIDE;
-    ierr = PetscOptionsGetInt(NULL,"-server",&port,NULL);CHKERRQ(ierr);
-    ierr = PetscWebServe(PETSC_COMM_WORLD,(int)port);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_AMS)
-    PetscAMSPublishAll = PETSC_TRUE;
-#endif
-  }
-#endif
-
   /*
         Setup profiling and logging
   */
@@ -611,6 +596,12 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
     ierr = (*PetscHelpPrintf)(comm," -options_file <file>: reads options from file\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm," -petsc_sleep n: sleeps n seconds before running program\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm,"-----------------------------------------------\n");CHKERRQ(ierr);
+  }
+
+  flg1 = PETSC_FALSE;
+  ierr = PetscOptionsGetBool(NULL,"-server",&flg1,NULL);CHKERRQ(ierr);
+  if (flg1) {
+    ierr = PetscPOpen(PETSC_COMM_WORLD,NULL,"${PETSC_DIR}/${PETSC_ARCH}/bin/petscwebserver","r",NULL);CHKERRQ(ierr);
   }
 
   ierr = PetscOptionsGetReal(NULL,"-petsc_sleep",&si,&flg1);CHKERRQ(ierr);

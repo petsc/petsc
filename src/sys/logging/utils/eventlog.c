@@ -628,7 +628,7 @@ PetscErrorCode PetscLogEventBeginDefault(PetscLogEvent event, int t, PetscObject
   /* Log performance info */
   eventLog->eventInfo[event].count++;
   eventLog->eventInfo[event].timeTmp = 0.0;
-  PetscTimeSubtract(eventLog->eventInfo[event].timeTmp);
+  PetscTimeSubtract(&eventLog->eventInfo[event].timeTmp);
   eventLog->eventInfo[event].flopsTmp = 0.0;
 #if defined(PETSC_HAVE_CHUD)
   eventLog->eventInfo[event].flopsTmp -= chudGetPMCEventCount(chudCPU1Dev,PMC_1);
@@ -666,7 +666,7 @@ PetscErrorCode PetscLogEventEndDefault(PetscLogEvent event, int t, PetscObject o
   if (eventLog->eventInfo[event].depth > 0) PetscFunctionReturn(0);
   else if (eventLog->eventInfo[event].depth < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Logging event had unbalanced begin/end pairs");
   /* Log performance info */
-  PetscTimeAdd(eventLog->eventInfo[event].timeTmp);
+  PetscTimeAdd(&eventLog->eventInfo[event].timeTmp);
   eventLog->eventInfo[event].time  += eventLog->eventInfo[event].timeTmp;
   eventLog->eventInfo[event].time2 += eventLog->eventInfo[event].timeTmp*eventLog->eventInfo[event].timeTmp;
 #if defined(PETSC_HAVE_CHUD)
@@ -705,14 +705,14 @@ PetscErrorCode PetscLogEventBeginComplete(PetscLogEvent event, int t, PetscObjec
   PetscFunctionBegin;
   /* Dynamically enlarge logging structures */
   if (petsc_numActions >= petsc_maxActions) {
-    PetscTime(start);
+    PetscTime(&start);
     ierr = PetscMalloc(petsc_maxActions*2 * sizeof(Action), &tmpAction);CHKERRQ(ierr);
     ierr = PetscMemcpy(tmpAction, petsc_actions, petsc_maxActions * sizeof(Action));CHKERRQ(ierr);
     ierr = PetscFree(petsc_actions);CHKERRQ(ierr);
 
     petsc_actions     = tmpAction;
     petsc_maxActions *= 2;
-    PetscTime(end);
+    PetscTime(&end);
     petsc_BaseTime += (end - start);
   }
   /* Record the event */
@@ -720,7 +720,7 @@ PetscErrorCode PetscLogEventBeginComplete(PetscLogEvent event, int t, PetscObjec
   ierr = PetscStageLogGetCurrent(stageLog, &stage);CHKERRQ(ierr);
   ierr = PetscStageLogGetEventRegLog(stageLog, &eventRegLog);CHKERRQ(ierr);
   ierr = PetscStageLogGetEventPerfLog(stageLog, stage, &eventPerfLog);CHKERRQ(ierr);
-  PetscTime(curTime);
+  PetscTime(&curTime);
   if (petsc_logActions) {
     petsc_actions[petsc_numActions].time    = curTime - petsc_BaseTime;
     petsc_actions[petsc_numActions].action  = ACTIONBEGIN;
@@ -767,14 +767,14 @@ PetscErrorCode PetscLogEventEndComplete(PetscLogEvent event, int t, PetscObject 
   PetscFunctionBegin;
   /* Dynamically enlarge logging structures */
   if (petsc_numActions >= petsc_maxActions) {
-    PetscTime(start);
+    PetscTime(&start);
     ierr = PetscMalloc(petsc_maxActions*2 * sizeof(Action), &tmpAction);CHKERRQ(ierr);
     ierr = PetscMemcpy(tmpAction, petsc_actions, petsc_maxActions * sizeof(Action));CHKERRQ(ierr);
     ierr = PetscFree(petsc_actions);CHKERRQ(ierr);
 
     petsc_actions     = tmpAction;
     petsc_maxActions *= 2;
-    PetscTime(end);
+    PetscTime(&end);
     petsc_BaseTime += (end - start);
   }
   /* Record the event */
@@ -782,7 +782,7 @@ PetscErrorCode PetscLogEventEndComplete(PetscLogEvent event, int t, PetscObject 
   ierr = PetscStageLogGetCurrent(stageLog, &stage);CHKERRQ(ierr);
   ierr = PetscStageLogGetEventRegLog(stageLog, &eventRegLog);CHKERRQ(ierr);
   ierr = PetscStageLogGetEventPerfLog(stageLog, stage, &eventPerfLog);CHKERRQ(ierr);
-  PetscTime(curTime);
+  PetscTime(&curTime);
   if (petsc_logActions) {
     petsc_actions[petsc_numActions].time    = curTime - petsc_BaseTime;
     petsc_actions[petsc_numActions].action  = ACTIONEND;
@@ -827,7 +827,7 @@ PetscErrorCode PetscLogEventBeginTrace(PetscLogEvent event, int t, PetscObject o
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  if (!petsc_tracetime) PetscTime(petsc_tracetime);
+  if (!petsc_tracetime) PetscTime(&petsc_tracetime);
 
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRQ(ierr);
   ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
@@ -839,7 +839,7 @@ PetscErrorCode PetscLogEventBeginTrace(PetscLogEvent event, int t, PetscObject o
   petsc_tracelevel++;
   if (eventPerfLog->eventInfo[event].depth > 1) PetscFunctionReturn(0);
   /* Log performance info */
-  PetscTime(cur_time);
+  PetscTime(&cur_time);
   ierr = PetscFPrintf(PETSC_COMM_SELF,petsc_tracefile, "%s[%d] %g Event begin: %s\n", petsc_tracespace, rank, cur_time-petsc_tracetime, eventRegLog->eventInfo[event].name);CHKERRQ(ierr);
   ierr = PetscStrncpy(petsc_tracespace, petsc_traceblanks, 2*petsc_tracelevel);CHKERRQ(ierr);
 
@@ -878,7 +878,7 @@ PetscErrorCode PetscLogEventEndTrace(PetscLogEvent event,int t,PetscObject o1,Pe
   ierr = PetscStrncpy(petsc_tracespace, petsc_traceblanks, 2*petsc_tracelevel);CHKERRQ(ierr);
 
   petsc_tracespace[2*petsc_tracelevel] = 0;
-  PetscTime(cur_time);
+  PetscTime(&cur_time);
   ierr = PetscFPrintf(PETSC_COMM_SELF,petsc_tracefile, "%s[%d] %g Event end: %s\n", petsc_tracespace, rank, cur_time-petsc_tracetime, eventRegLog->eventInfo[event].name);CHKERRQ(ierr);
   err  = fflush(petsc_tracefile);
   if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on file");

@@ -221,18 +221,21 @@ class Configure(config.package.Package):
       yield ('User specified AMD ACML lib dir', None, [os.path.join(dir,'lib','libacml_mp.a'), os.path.join(dir,'lib','libacml_mv.a')], 1)
       # Check MATLAB [ILP64] MKL
       yield ('User specified MATLAB [ILP64] MKL Linux lib dir', None, [os.path.join(dir,'bin','glnxa64','mkl.so'), os.path.join(dir,'sys','os','glnxa64','libiomp5.so'), 'pthread'], 1)
-      # Check Linux MKL variations
+      # Some new MKL 11/12 variations
+      for libdir in [os.path.join('lib','32'),os.path.join('lib','ia32'),'32','ia32','']:
+        if not os.path.exists(os.path.join(dir,libdir)):
+          self.framework.logPrint('MLK Path not found.. skipping: '+os.path.join(dir,libdir))
+        else:
+          yield ('User specified MKL11/12 Linux32', None, [os.path.join(dir,libdir,'libmkl_intel.a'),'mkl_sequential','mkl_core','pthread','-lm'],1)
+      for libdir in [os.path.join('lib','64'),os.path.join('lib','ia64'),os.path.join('lib','em64t'),os.path.join('lib','intel64'),'64','ia64','em64t','intel64','']:
+        if not os.path.exists(os.path.join(dir,libdir)):
+          self.framework.logPrint('MLK Path not found.. skipping: '+os.path.join(dir,libdir))
+        else:
+          yield ('User specified MKL11/12 Linux64', None, [os.path.join(dir,libdir,'libmkl_intel_lp64.a'),'mkl_sequential','mkl_core','pthread','-lm'],1)
+      # Older Linux MKL checks
       yield ('User specified MKL Linux lib dir', None, [os.path.join(dir, 'libmkl_lapack.a'), 'mkl', 'guide', 'pthread'], 1)
       for libdir in ['32','64','em64t']:
         yield ('User specified MKL Linux installation root', None, [os.path.join(dir,'lib',libdir,'libmkl_lapack.a'),'mkl', 'guide', 'pthread'], 1)
-      # Some new MKL 11/12 variations
-      for libdir in ['',os.path.join('lib','32'),os.path.join('lib','ia32')]:
-        yield ('User specified MKL11/12 Linux32', None, [os.path.join(dir,libdir,'libmkl_intel.a'),'mkl_intel_thread','mkl_core','iomp5','pthread'],1)
-        yield ('User specified MKL11/12 Linux32', None, [os.path.join(dir,libdir,'libmkl_intel.a'),'mkl_gnu_thread','mkl_core','gomp','pthread'],1) #gnu
-      for libdir in ['',os.path.join('lib','em64t'),os.path.join('lib','intel64')]:
-        yield ('User specified MKL11/12 Linux64', None, [os.path.join(dir,libdir,'libmkl_intel_lp64.a'),'mkl_intel_thread','mkl_core','iomp5','pthread'],1)
-        yield ('User specified MKL11/12 Linux64', None, [os.path.join(dir,libdir,'libmkl_intel_lp64.a'),'mkl_gnu_thread','mkl_core','gomp','pthread'],1) #gnu
-      # Older Linux MKL checks
       yield ('User specified MKL Linux-x86 lib dir', None, [os.path.join(dir, 'libmkl_lapack.a'), 'libmkl_def.a', 'guide', 'pthread'], 1)
       yield ('User specified MKL Linux-x86 lib dir', None, [os.path.join(dir, 'libmkl_lapack.a'), 'libmkl_def.a', 'guide', 'vml','pthread'], 1)
       yield ('User specified MKL Linux-ia64 lib dir', None, [os.path.join(dir, 'libmkl_lapack.a'), 'libmkl_ipf.a', 'guide', 'pthread'], 1)

@@ -564,9 +564,7 @@ prepend-path PATH %s
       except (ImportError, KeyError), e:
         self.framework.logPrint('Importing cmakeboot failed:\n' + str(e))
       if self.cmakeboot_success:
-        if self.framework.argDB['with-cuda']: # Our CMake build does not support CUDA at this time
-          self.framework.logPrint('CMake configured successfully, but could not be used by default because --with-cuda was used\n')
-        elif hasattr(self.compilers, 'FC') and self.compilers.fortranIsF90 and not self.setCompilers.fortranModuleOutputFlag:
+        if hasattr(self.compilers, 'FC') and self.compilers.fortranIsF90 and not self.setCompilers.fortranModuleOutputFlag:
           self.framework.logPrint('CMake configured successfully, but could not be used by default because of missing fortranModuleOutputFlag\n')
         else:
           self.framework.logPrint('CMake configured successfully, using as default build\n')

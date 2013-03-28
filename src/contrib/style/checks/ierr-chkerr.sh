@@ -11,7 +11,7 @@
 # - ignore ierr = PetscFinalize();
 
 
-grep -H "ierr *=" "$@" \
+grep -n -H "ierr *=" "$@" \
  | grep -v "CHKERR" \
  | grep -v ",$" \
  | grep -v "ierr = PetscFinalize();" \

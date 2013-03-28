@@ -119,7 +119,7 @@ PetscErrorCode  KSPSolve_CGNE(KSP ksp)
     ierr = VecXDot(Z,R,&beta);CHKERRQ(ierr);
     dp   = PetscSqrtReal(PetscAbsScalar(beta));
   } else dp = 0.0;
-  KSPLogResidualHistory(ksp,dp);
+  ierr       = KSPLogResidualHistory(ksp,dp);CHKERRQ(ierr);
   ierr       = KSPMonitor(ksp,0,dp);CHKERRQ(ierr);
   ksp->rnorm = dp;
   ierr       = (*ksp->converged)(ksp,0,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr); /* test for convergence */
@@ -175,7 +175,7 @@ PetscErrorCode  KSPSolve_CGNE(KSP ksp)
       dp = 0.0;
     }
     ksp->rnorm = dp;
-    KSPLogResidualHistory(ksp,dp);
+    ierr = KSPLogResidualHistory(ksp,dp);CHKERRQ(ierr);
     ierr = KSPMonitor(ksp,i+1,dp);CHKERRQ(ierr);
     ierr = (*ksp->converged)(ksp,i+1,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
     if (ksp->reason) break;

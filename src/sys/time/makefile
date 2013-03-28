@@ -3,7 +3,7 @@ ALL: lib
 
 CFLAGS    =
 FFLAGS    =
-SOURCEC	  = cputime.c fdate.c ptime.c
+SOURCEC	  = cputime.c fdate.c
 SOURCEF	  =
 SOURCEH	  =
 MANSEC	  = Sys

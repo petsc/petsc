@@ -2,7 +2,8 @@
 static char help[] = "Example of using PetscLikely() and PetscUnlikely().\n\n";
 
 /*T
-   Concepts: optimization, likely, unlikely
+   Concepts: optimization^likely
+   Concepts: optimization^unlikely
    Processors: n
 T*/
 

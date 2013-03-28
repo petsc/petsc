@@ -1497,7 +1497,6 @@ PetscErrorCode MatSOR_SeqAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscR
 
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArrayRead(bb,&b);CHKERRQ(ierr);
-  CHKMEMQ;
   /* We count flops by assuming the upper triangular and lower triangular parts have the same number of nonzeros */
   if (flag == SOR_APPLY_UPPER) {
     /* apply (U + D/omega) to the vector */
@@ -1618,7 +1617,7 @@ PetscErrorCode MatSOR_SeqAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscR
   }
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(bb,&b);CHKERRQ(ierr);
-  CHKMEMQ;  PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 
@@ -3175,7 +3174,9 @@ static struct _MatOps MatOps_Values = { MatSetValues_SeqAIJ,
                                         MatTransColoringApplyDenToSp_SeqAIJ,
                                         MatRARt_SeqAIJ_SeqAIJ,
                                         MatRARtSymbolic_SeqAIJ_SeqAIJ,
-                                        MatRARtNumeric_SeqAIJ_SeqAIJ
+                                        MatRARtNumeric_SeqAIJ_SeqAIJ,
+                                 /*139*/0,
+                                        0
 };
 
 #undef __FUNCT__

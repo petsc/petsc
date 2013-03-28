@@ -2,7 +2,7 @@
 static char help[] = "Synchronized printing.\n\n";
 
 /*T
-   Concepts: introduction to PETSc;
+   Concepts: petsc^introduction
    Concepts: printing^synchronized
    Concepts: printing^in parallel
    Concepts: printf^synchronized

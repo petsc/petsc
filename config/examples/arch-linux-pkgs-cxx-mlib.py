@@ -18,7 +18,10 @@ configure_options = [
   '--download-mumps=1',
   '--download-elemental=1',
   '--download-spai=1',
-  '--download-chaco=1'
+  '--download-chaco=1',
+  '--download-netcdf=1',
+  '--download-hdf5=1',
+  '--download-moab=1',
   ]
 
 if __name__ == '__main__':

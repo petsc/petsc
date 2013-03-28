@@ -5,6 +5,7 @@ Input arguments are:\n\
 
 #include <petscmat.h>
 #include <petscksp.h>
+#include <petsctime.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -64,9 +65,9 @@ int main(int argc,char **args)
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
   ierr = KSPSetOperators(ksp,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
-  ierr = PetscGetTime(&time1);CHKERRQ(ierr);
+  ierr = PetscTime(&time1);CHKERRQ(ierr);
   ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
-  ierr = PetscGetTime(&time2);CHKERRQ(ierr);
+  ierr = PetscTime(&time2);CHKERRQ(ierr);
   time = time2 - time1;
   ierr = PetscLogStagePop();CHKERRQ(ierr);
 

@@ -9,12 +9,12 @@
 #define PETSC_VERSION_DATE       "Jun, 5, 2012"
 #define PETSC_VERSION_PATCH_DATE "unknown"
 
-#if !defined (PETSC_VERSION_HG)
-#define PETSC_VERSION_HG         "unknown"
+#if !defined (PETSC_VERSION_GIT)
+#define PETSC_VERSION_GIT         "unknown"
 #endif
 
-#if !defined(PETSC_VERSION_DATE_HG)
-#define PETSC_VERSION_DATE_HG    "unknown"
+#if !defined(PETSC_VERSION_DATE_GIT)
+#define PETSC_VERSION_DATE_GIT    "unknown"
 #endif
 
 #define PETSC_VERSION_(MAJOR,MINOR,SUBMINOR) \

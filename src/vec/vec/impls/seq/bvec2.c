@@ -1130,8 +1130,6 @@ PetscErrorCode VecDestroy_Seq(Vec v)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectDepublish(v);CHKERRQ(ierr);
-
 #if defined(PETSC_USE_LOG)
   PetscLogObjectState((PetscObject)v,"Length=%D",v->map->n);
 #endif
@@ -1228,7 +1226,13 @@ static struct _VecOps DvOps = {VecDuplicate_Seq, /* 1 */
                                0,
                                0,
                                VecStrideGather_Default,
-                               VecStrideScatter_Default};
+                               VecStrideScatter_Default,
+                               0,
+                               0,
+                               0,
+                               0,
+                               0
+};
 
 
 /*

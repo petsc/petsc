@@ -13,7 +13,7 @@
 # - Ignore a special string inside src/snes/impls/test/snestest.c
 # - Ignore other special cases
 
-grep -H -F "//" "$@" \
+grep -n -H -F "//" "$@" \
  | grep -v "http\|ftp:\|file:" \
  | grep -v -F ":$" \
  | grep -v -F "src/dm/impls/mesh/" \

@@ -1,8 +1,8 @@
 
 #include <petsc-private/viewerimpl.h>
+#include <petscviewerams.h>
 #include <petscsys.h>
 
-#include <ams.h>
 typedef struct {
   char     *ams_name;
   AMS_Comm ams_comm;
@@ -21,12 +21,12 @@ PetscErrorCode PetscViewerAMSSetCommName_AMS(PetscViewer v,const char name[])
   PetscFunctionBegin;
   ierr = PetscOptionsGetInt(NULL,"-ams_port",&port,NULL);CHKERRQ(ierr);
   ierr = PetscInfo1(v,"Publishing with the AMS on port %d\n",port);CHKERRQ(ierr);
-  ierr = AMS_Comm_publish((char*)name,&vams->ams_comm,MPI_TYPE,PetscObjectComm((PetscObject)v),&port);CHKERRQ(ierr);
+  PetscStackCallAMS(AMS_Comm_publish,((char*)name,&vams->ams_comm,MPI_TYPE,PetscObjectComm((PetscObject)v),&port));
 
   ierr = PetscOptionsHasName(NULL,"-ams_printf",&flg);CHKERRQ(ierr);
   if (!flg) {
 #if !defined(PETSC_MISSING_DEV_NULL)
-    ierr = AMS_Set_output_file("/dev/null");CHKERRQ(ierr);
+    PetscStackCallAMS(AMS_Set_output_file,("/dev/null"));
 #endif
   }
 
@@ -100,7 +100,7 @@ PetscErrorCode PetscViewerAMSSetCommName(PetscViewer v,const char name[])
   Concepts: AMS^getting communicator
   Concepts: communicator^accessing AMS communicator
 
-.seealso: PetscViewerDestroy(), PetscViewerAMSOpen(), PetscViewer_AMS_, PetscViewer_AMS_WORLD, PetscViewer_AMS_SELF
+.seealso: PetscViewerDestroy(), PetscViewerAMSOpen(), PETSC_VIEWER_AMS_, PETSC_VIEWER_AMS_WORLD, PETSC_VIEWER_AMS_SELF
 
 @*/
 PetscErrorCode PetscViewerAMSGetAMSComm(PetscViewer v,AMS_Comm *ams_comm)
@@ -133,11 +133,11 @@ static PetscMPIInt Petsc_Viewer_Ams_keyval = MPI_KEYVAL_INVALID;
      Level: developer
 
      Notes:
-     Unlike almost all other PETSc routines, PetscViewer_AMS_ does not return
+     Unlike almost all other PETSc routines, PETSC_VIEWER_AMS_() does not return
      an error code.  The window PetscViewer is usually used in the form
 $       XXXView(XXX object,PETSC_VIEWER_AMS_(comm));
 
-.seealso: PetscViewer_AMS_WORLD, PetscViewer_AMS_SELF, PetscViewerAMSOpen(),
+.seealso: PETSC_VIEWER_AMS_WORLD, PETSC_VIEWER_AMS_SELF
 @*/
 PetscViewer PETSC_VIEWER_AMS_(MPI_Comm comm)
 {
@@ -165,6 +165,8 @@ PetscViewer PETSC_VIEWER_AMS_(MPI_Comm comm)
     ierr = MPI_Attr_put(ncomm,Petsc_Viewer_Ams_keyval,(void*)viewer);
     if (ierr) {PetscError(ncomm,__LINE__,"PETSC_VIEWER_AMS_",__FILE__,__SDIR__,1,PETSC_ERROR_INITIAL," "); viewer = 0;}
   }
+  ierr = PetscCommDestroy(&ncomm);
+  if (ierr) {PetscError(PETSC_COMM_SELF,__LINE__,"PETSC_VIEWER_AMS_",__FILE__,__SDIR__,PETSC_ERR_PLIB,PETSC_ERROR_INITIAL," ");PetscFunctionReturn(0);}
   PetscFunctionReturn(viewer);
 }
 
@@ -202,15 +204,10 @@ static PetscErrorCode PetscViewerDestroy_AMS(PetscViewer viewer)
      Make sure that we mark that the stack is no longer published
   */
   if (PetscObjectComm((PetscObject)viewer) == PETSC_COMM_WORLD) {
-    ierr = PetscStackDepublish();CHKERRQ(ierr);
+    ierr = PetscStackAMSViewOff();CHKERRQ(ierr);
   }
 
-  ierr = AMS_Comm_destroy(vams->ams_comm);
-  if (ierr) {
-    char *err;
-    AMS_Explain_error(ierr,&err);
-    SETERRQ(PetscObjectComm((PetscObject)viewer),ierr,err);
-  }
+  PetscStackCallAMS(AMS_Comm_destroy,(vams->ams_comm));
   ierr = PetscFree(vams);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

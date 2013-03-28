@@ -829,11 +829,6 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   }
 #endif
 
-#if defined(PETSC_HAVE_AMS)
-  ierr = PetscOptionsHasName(NULL,"-ams_publish_objects",&flg);CHKERRQ(ierr);
-  if (flg) PetscAMSPublishAll = PETSC_TRUE;
-#endif
-
   ierr = PetscOptionsHasName(NULL,"-python",&flg);CHKERRQ(ierr);
   if (flg) {
     PetscInitializeCalled = PETSC_TRUE;
@@ -920,6 +915,12 @@ PetscErrorCode  PetscFinalize(void)
     ierr = PetscOptionsAMSDestroy();CHKERRQ(ierr);
   }
 #endif
+
+  flg1 = PETSC_FALSE;
+  ierr = PetscOptionsGetBool(NULL,"-server",&flg1,NULL);CHKERRQ(ierr);
+  if (flg1) {
+    ierr = PetscPOpen(PETSC_COMM_WORLD,NULL,"pkill -9 petscwebserver","r",NULL);CHKERRQ(ierr);
+  }
 
   ierr = PetscHMPIFinalize();CHKERRQ(ierr);
 

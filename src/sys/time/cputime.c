@@ -5,6 +5,7 @@
 */
 
 #include <petscsys.h>                       /*I "petscsys.h" I*/
+#include <petsctime.h>                      /*I "petsctime.h" I*/
 #include <ctype.h>
 #include <sys/stat.h>
 #if defined(PETSC_HAVE_SYS_UTSNAME_H)
@@ -75,7 +76,7 @@ PetscErrorCode  PetscGetCPUTime(PetscLogDouble *t)
     Level: intermediate
 
     Notes:
-    One should use PetscGetTime() or the -log_summary option of
+    One should use PetscTime() or the -log_summary option of
     PETSc for profiling. The CPU time is NOT a realistic number to
     use since it does not include the time for message passing etc.
     Also on many systems the accuracy is only on the order of microseconds.

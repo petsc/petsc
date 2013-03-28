@@ -7,6 +7,7 @@
 #include <../src/mat/impls/aij/seq/aij.h>   /*I "petscmat.h" I*/
 #include <../src/mat/utils/freespace.h>
 #include <petscbt.h>
+#include <petsctime.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "MatPtAP_SeqAIJ_SeqAIJ"
@@ -357,7 +358,7 @@ PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat C)
   for (i=0; i<am; i++) {
     /* Form sparse row of AP[i,:] = A[i,:]*P */
 #if defined(PROFILE_MatPtAPNumeric)
-    ierr = PetscGetTime(&t0);CHKERRQ(ierr);
+    ierr = PetscTime(&t0);CHKERRQ(ierr);
 #endif
     anz  = ai[i+1] - ai[i];
     apnz = 0;
@@ -376,14 +377,14 @@ PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat C)
     }
     aj += anz; aa += anz;
 #if defined(PROFILE_MatPtAPNumeric)
-    ierr = PetscGetTime(&tf);CHKERRQ(ierr);
+    ierr = PetscTime(&tf);CHKERRQ(ierr);
 
     time_Cseq0 += tf - t0;
 #endif
 
     /* Compute P^T*A*P using outer product P[i,:]^T*AP[i,:]. */
 #if defined(PROFILE_MatPtAPNumeric)
-    ierr = PetscGetTime(&t0);CHKERRQ(ierr);
+    ierr = PetscTime(&t0);CHKERRQ(ierr);
 #endif
     apj  = ptap->apj + ptap->api[i];
     apnz = ptap->api[i+1] - ptap->api[i];
@@ -405,7 +406,7 @@ PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat C)
 #endif
     }
 #if defined(PROFILE_MatPtAPNumeric)
-    ierr        = PetscGetTime(&tf);CHKERRQ(ierr);
+    ierr        = PetscTime(&tf);CHKERRQ(ierr);
     time_Cseq1 += tf - t0;
 #endif
 

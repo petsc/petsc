@@ -32,7 +32,6 @@
                           with the first object using a name.
       composefunction() - Attaches an a function to a PETSc object with a name.
       queryfunction()   - Requests a registered function that has been attached to a PETSc object.
-      publish()         - Not currently used
 */
 
 typedef struct {
@@ -43,7 +42,6 @@ typedef struct {
    PetscErrorCode (*query)(PetscObject,const char[],PetscObject *);
    PetscErrorCode (*composefunction)(PetscObject,const char[],const char[],void (*)(void));
    PetscErrorCode (*queryfunction)(PetscObject,const char[],void (**)(void));
-   PetscErrorCode (*publish)(PetscObject);
 } PetscOps;
 
 typedef enum {PETSC_FORTRAN_CALLBACK_CLASS,PETSC_FORTRAN_CALLBACK_SUBTYPE,PETSC_FORTRAN_CALLBACK_MAXTYPE} PetscFortranCallbackType;
@@ -111,6 +109,7 @@ typedef struct _p_PetscObject {
 #if defined(PETSC_HAVE_AMS)
   PetscInt             amsmem;
   PetscBool            amspublishblock; /* if PETSC_TRUE and publishing objects then will block at PetscObjectAMSBlock() */
+  PetscBool            amsblock;
 #endif
 } _p_PetscObject;
 
