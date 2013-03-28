@@ -1983,3 +1983,76 @@ PETSC_EXTERN PetscErrorCode VecCreate_SeqCUSP(Vec V)
   ierr = VecSet(V,0.0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "VecCUSPGetArrayReadWrite"
+PETSC_EXTERN PetscErrorCode VecCUSPGetArrayReadWrite(Vec v, CUSPARRAY **a)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  *a   = 0;
+  ierr = VecCUSPCopyToGPU(v);CHKERRQ(ierr);
+  *a   = ((Vec_CUSP*)v->spptr)->GPUarray;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecCUSPRestoreArrayReadWrite"
+PETSC_EXTERN PetscErrorCode VecCUSPRestoreArrayReadWrite(Vec v, CUSPARRAY **a)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  v->valid_GPU_array = PETSC_CUSP_GPU;
+
+  ierr = PetscObjectStateIncrease((PetscObject)v);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecCUSPGetArrayRead"
+PETSC_EXTERN PetscErrorCode VecCUSPGetArrayRead(Vec v, CUSPARRAY **a)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  *a   = 0;
+  ierr = VecCUSPCopyToGPU(v);CHKERRQ(ierr);
+  *a   = ((Vec_CUSP*)v->spptr)->GPUarray;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecCUSPRestoreArrayRead"
+PETSC_EXTERN PetscErrorCode VecCUSPRestoreArrayRead(Vec v, CUSPARRAY **a)
+{
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecCUSPGetArrayWrite"
+PETSC_EXTERN PetscErrorCode VecCUSPGetArrayWrite(Vec v, CUSPARRAY **a)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  *a   = 0;
+  ierr = VecCUSPAllocateCheck(v);CHKERRQ(ierr);
+  *a   = ((Vec_CUSP*)v->spptr)->GPUarray;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecCUSPRestoreArrayWrite"
+PETSC_EXTERN PetscErrorCode VecCUSPRestoreArrayWrite(Vec v, CUSPARRAY **a)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  v->valid_GPU_array = PETSC_CUSP_GPU;
+
+  ierr = PetscObjectStateIncrease((PetscObject)v);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
