@@ -790,7 +790,7 @@ PetscErrorCode  PetscObjectQuery(PetscObject obj,const char name[],PetscObject *
 
     Synopsis:
     #include "petscsys.h"
-    PetscErrorCode PetscObjectComposeFunction(PetscObject obj,const char name[],const char fname[],void *ptr)
+    PetscErrorCode PetscObjectComposeFunction(PetscObject obj,const char name[],void (*fptr)(void))
 
    Logically Collective on PetscObject
 
@@ -799,14 +799,14 @@ PetscErrorCode  PetscObjectQuery(PetscObject obj,const char name[],PetscObject *
          PetscObjectCompose((PetscObject)mat,...);
 .  name - name associated with the child function
 .  fname - name of the function
--  ptr - function pointer (or NULL if using dynamic libraries)
+-  fptr - function pointer
 
    Level: advanced
 
    Notes:
-   To remove a registered routine, pass in a NULL rname and fnc().
+   To remove a registered routine, pass in NULL for fptr().
 
-   PetscObjectComposeFunctionDynamic() can be used with any PETSc object (such as
+   PetscObjectComposeFunction() can be used with any PETSc object (such as
    Mat, Vec, KSP, SNES, etc.) or any user-provided object.
 
    Concepts: objects^composing functions
@@ -815,19 +815,19 @@ PetscErrorCode  PetscObjectQuery(PetscObject obj,const char name[],PetscObject *
    Concepts: objects^querying
    Concepts: querying objects
 
-.seealso: PetscObjectQueryFunction()
+.seealso: PetscObjectQueryFunction(), PetscContainerCreate()
 M*/
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscObjectComposeFunction_Private"
-PetscErrorCode  PetscObjectComposeFunction_Private(PetscObject obj,const char name[],void (*ptr)(void))
+PetscErrorCode  PetscObjectComposeFunction_Private(PetscObject obj,const char name[],void (*fptr)(void))
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
   PetscValidCharPointer(name,2);
-  ierr = (*obj->bops->composefunction)(obj,name,ptr);CHKERRQ(ierr);
+  ierr = (*obj->bops->composefunction)(obj,name,fptr);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -854,7 +854,7 @@ PetscErrorCode  PetscObjectComposeFunction_Private(PetscObject obj,const char na
    Concepts: objects^querying
    Concepts: querying objects
 
-.seealso: PetscObjectComposeFunctionDynamic()
+.seealso: PetscObjectComposeFunction()
 @*/
 PetscErrorCode  PetscObjectQueryFunction(PetscObject obj,const char name[],void (**ptr)(void))
 {

@@ -559,7 +559,7 @@ PetscErrorCode MatGetSchurComplement_Basic(Mat mat,IS isrow0,IS iscol0,IS isrow1
     which will rarely produce a scalable algorithm.
 
     Sometimes users would like to provide problem-specific data in the Schur complement, usually only for special row
-    and column index sets.  In that case, the user should call PetscObjectComposeFunctionDynamic() to set
+    and column index sets.  In that case, the user should call PetscObjectComposeFunction() to set
     "MatNestGetSubMat_C" to their function.  If their function needs to fall back to the default implementation, it
     should call MatGetSchurComplement_Basic().
 

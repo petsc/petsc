@@ -687,9 +687,6 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_superlu(Mat A,MatFactorType ftyp
 #endif
 #endif
 
-#if defined(SUPERLU2)
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatCreateNull","MatCreateNull_SuperLU",(void (*)(void))MatCreateNull_SuperLU);CHKERRQ(ierr);
-#endif
   ierr     = PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverPackage_C",MatFactorGetSolverPackage_seqaij_superlu);CHKERRQ(ierr);
   ierr     = PetscObjectComposeFunction((PetscObject)B,"MatSuperluSetILUDropTol_C",MatSuperluSetILUDropTol_SuperLU);CHKERRQ(ierr);
   B->spptr = lu;
