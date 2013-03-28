@@ -43,8 +43,8 @@ PetscErrorCode PetscGetNCores(PetscInt *ncores)
       size_t         len = sizeof(N_CORES);
       ierr = sysctlbyname("hw.activecpu",&N_CORES,&len,NULL,0); /* osx preferes activecpu over ncpu */
       if (ierr) { /* freebsd check ncpu */
-        ierr = sysctlbyname("hw.ncpu",&N_CORES,&len,NULL,0);
-        /* if (ierr) continue */
+        sysctlbyname("hw.ncpu",&N_CORES,&len,NULL,0);
+        /* continue even if there is an error */
       }
     }
 #elif defined(PETSC_HAVE_WINDOWS_H)   /* Windows */
