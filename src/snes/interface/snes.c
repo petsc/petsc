@@ -872,7 +872,7 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESSetComputeApplicationContext"
-/*@
+/*@C
    SNESSetComputeApplicationContext - Sets an optional function to compute a user-defined context for
    the nonlinear solvers.
 
@@ -884,6 +884,9 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
 -  destroy - function to destroy the context
 
    Level: intermediate
+
+   Notes:
+   This function is currently not available from Fortran.
 
 .keywords: SNES, nonlinear, set, application, context
 
