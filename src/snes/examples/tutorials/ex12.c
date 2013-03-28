@@ -9,9 +9,10 @@ domain, using a parallel unstructured mesh (DMPLEX) to discretize it.\n\n\n";
 #endif
 
 /*------------------------------------------------------------------------------
-  This code can be generated using 'bin/pythonscripts/PetscGenerateFEMQuadrature.py dim order dim 1 laplacian src/snes/examples/tutorials/ex12.h'
+  This code can be generated using 'bin/pythonscripts/PetscGenerateFEMQuadrature.py dim order dim 1 laplacian dim order dim 1 boundary src/snes/examples/tutorials/ex12.h'
  -----------------------------------------------------------------------------*/
 #include "ex12.h"
+#include "ex12_bd.h"
 
 typedef enum {NEUMANN, DIRICHLET} BCType;
 typedef enum {RUN_FULL, RUN_TEST} RunType;
@@ -37,6 +38,7 @@ typedef struct {
   PetscInt      numBlocks;         /* The number of concurrent blocks per kernel */
   /* Element quadrature */
   PetscQuadrature q[NUM_FIELDS];
+  PetscQuadrature qbd[NUM_FIELDS];
   /* Problem definition */
   void (*f0Funcs[NUM_FIELDS])(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[], PetscScalar f0[]); /* f0_u(x,y,z), and f0_p(x,y,z) */
   void (*f1Funcs[NUM_FIELDS])(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[], PetscScalar f1[]); /* f1_u(x,y,z), and f1_p(x,y,z) */
@@ -45,6 +47,8 @@ typedef struct {
   void (*g2Funcs[NUM_FIELDS*NUM_FIELDS])(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[], PetscScalar g2[]); /* g2_uu(x,y,z), g2_up(x,y,z), g2_pu(x,y,z), and g2_pp(x,y,z) */
   void (*g3Funcs[NUM_FIELDS*NUM_FIELDS])(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[], PetscScalar g3[]); /* g3_uu(x,y,z), g3_up(x,y,z), g3_pu(x,y,z), and g3_pp(x,y,z) */
   PetscScalar (*exactFuncs[NUM_BASIS_COMPONENTS_TOTAL])(const PetscReal x[]); /* The exact solution function u(x,y,z), v(x,y,z), and p(x,y,z) */
+  void (*f0BdFuncs[NUM_FIELDS])(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[], const PetscReal n[], PetscScalar f0[]); /* f0_u(x,y,z), and f0_p(x,y,z) */
+  void (*f1BdFuncs[NUM_FIELDS])(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[], const PetscReal n[], PetscScalar f1[]); /* f1_u(x,y,z), and f1_p(x,y,z) */
   BCType bcType;
 } AppCtx;
 
@@ -69,6 +73,10 @@ PetscScalar zero(const PetscReal coords[])
     \nabla u \cdot  \hat y |_{y=1} =  (2y)|_{y=1} = 2 (top)
     \nabla u \cdot -\hat x |_{x=0} = -(2x)|_{x=0} = 0 (left)
     \nabla u \cdot  \hat x |_{x=1} =  (2x)|_{x=1} = 2 (right)
+
+  Which we can express as
+
+    \nabla u \cdot  \hat n|_\Gamma = 2 (x + y)
 */
 PetscScalar quadratic_u_2d(const PetscReal x[])
 {
@@ -81,6 +89,24 @@ void f0_u(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[],
   PetscInt       comp;
 
   for (comp = 0; comp < Ncomp; ++comp) f0[comp] = 4.0;
+}
+
+void f0_bd_zero(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[], const PetscReal n[], PetscScalar f0[])
+{
+  const PetscInt Ncomp = NUM_BASIS_COMPONENTS_0;
+  PetscInt       comp;
+
+  for (comp = 0; comp < Ncomp; ++comp) f0[comp] = 0.0;
+}
+
+void f0_bd_u(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[], const PetscReal n[], PetscScalar f0[])
+{
+  const PetscInt Ncomp = NUM_BASIS_COMPONENTS_0;
+  PetscInt       comp;
+  PetscScalar    val = 0.0;
+
+  if ((fabs(x[0] - 1.0) < 1.0e-9) || (fabs(x[1] - 1.0) < 1.0e-9)) {val = 2.0;}
+  for (comp = 0; comp < Ncomp; ++comp) f0[comp] = val;
 }
 
 /* gradU[comp*dim+d] = {u_x, u_y} or {u_x, u_y, u_z} */
@@ -158,6 +184,9 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->fem.g2Funcs = (void (**)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[])) &options->g2Funcs;
   options->fem.g3Funcs = (void (**)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[])) &options->g3Funcs;
   options->fem.bcFuncs = (PetscScalar (**)(const PetscReal[])) &options->exactFuncs;
+  options->fem.quadBd    = (PetscQuadrature*) &options->qbd;
+  options->fem.f0BdFuncs = (void (**)(const PetscScalar[], const PetscScalar[], const PetscReal[], const PetscReal[], PetscScalar[])) &options->f0BdFuncs;
+  options->fem.f1BdFuncs = (void (**)(const PetscScalar[], const PetscScalar[], const PetscReal[], const PetscReal[], PetscScalar[])) &options->f1BdFuncs;
 
   ierr = MPI_Comm_size(comm, &options->numProcs);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &options->rank);CHKERRQ(ierr);
@@ -287,6 +316,13 @@ PetscErrorCode SetupQuadrature(AppCtx *user)
   user->fem.quad[0].numComponents = NUM_BASIS_COMPONENTS_0;
   user->fem.quad[0].basis         = Basis_0;
   user->fem.quad[0].basisDer      = BasisDerivatives_0;
+  user->fem.quadBd[0].numQuadPoints = NUM_QUADRATURE_POINTS_0_BD;
+  user->fem.quadBd[0].quadPoints    = points_0_BD;
+  user->fem.quadBd[0].quadWeights   = weights_0_BD;
+  user->fem.quadBd[0].numBasisFuncs = NUM_BASIS_FUNCTIONS_0_BD;
+  user->fem.quadBd[0].numComponents = NUM_BASIS_COMPONENTS_0_BD;
+  user->fem.quadBd[0].basis         = Basis_0_BD;
+  user->fem.quadBd[0].basisDer      = BasisDerivatives_0_BD;
   PetscFunctionReturn(0);
 }
 
@@ -301,6 +337,7 @@ PetscErrorCode SetupSection(DM dm, AppCtx *user)
   PetscSection   section;
   const PetscInt numFields           = NUM_FIELDS;
   PetscInt       dim                 = user->dim;
+  const char    *bdLabel             = user->interpolate ? "boundary" : "marker";
   PetscInt       numBC               = 0;
   PetscInt       numComp[NUM_FIELDS] = {NUM_BASIS_COMPONENTS_0};
   PetscInt       bcFields[1]         = {0};
@@ -320,12 +357,12 @@ PetscErrorCode SetupSection(DM dm, AppCtx *user)
       if ((numDof[f*(dim+1)+d] > 0) && !user->interpolate) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Mesh must be interpolated when unknowns are specified on edges or faces.");
     }
   }
-  ierr = DMPlexHasLabel(dm, "marker", &has);CHKERRQ(ierr);
+  ierr = DMPlexHasLabel(dm, bdLabel, &has);CHKERRQ(ierr);
   if (!has) {
     DMLabel label;
 
-    ierr = DMPlexCreateLabel(dm, "marker");CHKERRQ(ierr);
-    ierr = DMPlexGetLabel(dm, "marker", &label);CHKERRQ(ierr);
+    ierr = DMPlexCreateLabel(dm, bdLabel);CHKERRQ(ierr);
+    ierr = DMPlexGetLabel(dm, bdLabel, &label);CHKERRQ(ierr);
     ierr = DMPlexMarkBoundaryFaces(dm, label);CHKERRQ(ierr);
     if (user->bcType == DIRICHLET) {
       ierr  = DMPlexLabelComplete(dm, label);CHKERRQ(ierr);
@@ -333,7 +370,7 @@ PetscErrorCode SetupSection(DM dm, AppCtx *user)
   }
   if (user->bcType == DIRICHLET) {
     numBC = 1;
-    ierr  = DMPlexGetStratumIS(dm, "marker", 1, &bcPoints[0]);CHKERRQ(ierr);
+    ierr  = DMPlexGetStratumIS(dm, bdLabel, 1, &bcPoints[0]);CHKERRQ(ierr);
   }
   ierr = DMPlexCreateSection(dm, dim, numFields, numComp, numDof, numBC, bcFields, bcPoints, &section);CHKERRQ(ierr);
   ierr = PetscSectionSetFieldName(section, 0, "potential");CHKERRQ(ierr);
@@ -358,9 +395,14 @@ PetscErrorCode SetupExactSolution(DM dm, AppCtx *user)
   fem->g1Funcs[0] = NULL;
   fem->g2Funcs[0] = NULL;
   fem->g3Funcs[0] = g3_uu;      /* < \nabla v, \nabla u > */
+  fem->f0BdFuncs[0] = f0_bd_zero;
+  fem->f1BdFuncs[0] = f0_bd_zero;
   switch (user->dim) {
   case 2:
     user->exactFuncs[0] = quadratic_u_2d;
+    if (user->bcType == NEUMANN) {
+      fem->f0BdFuncs[0] = f0_bd_u;
+    }
     break;
   case 3:
     user->exactFuncs[0] = quadratic_u_3d;
@@ -368,7 +410,7 @@ PetscErrorCode SetupExactSolution(DM dm, AppCtx *user)
   default:
     SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension %d", user->dim);
   }
-  ierr = DMPlexSetFEMIntegration(dm, FEMIntegrateResidualBatch, FEMIntegrateJacobianActionBatch, FEMIntegrateJacobianBatch);CHKERRQ(ierr);
+  ierr = DMPlexSetFEMIntegration(dm, FEMIntegrateResidualBatch, FEMIntegrateBdResidualBatch, FEMIntegrateJacobianActionBatch, FEMIntegrateJacobianBatch);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
