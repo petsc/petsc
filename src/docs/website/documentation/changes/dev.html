@@ -106,6 +106,10 @@
           Plugins distributed as shared libraries should register their implementations by calling suitable <tt>XXRegister()</tt> functions from within their <tt>PetscDLLibraryRegister_basename()</tt>, see documentation for PetscDLLibraryOpen().
         </li>
         <li>
+          MatRegisterDynamic(), PCRegisterDynamic(), KSPRegisterDynamic(), etc., have been simplified to drop the string function name argument, and are simply named MatRegister(), PCRegister(), KSPRegister(), etc.
+          PetscObjectComposeFunctionDynamic() also drops the string function name argument and is called PetscObjectComposeFunction().
+        </li>
+        <li>
           The configure options <tt>--with-c-support</tt> and <tt>--with-c++-support</tt> have been removed. A PETSc
           library built using C or C++ can be called from either C or C++. The primary functional reason to
           use <tt>--with-clanguage=C++</tt> is to use <tt>std::complex</tt> data types. Other users will likely
