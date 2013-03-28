@@ -1203,8 +1203,9 @@ class PETScMaker(script.Script):
 
  def linkShared(self, sharedLib, libDir, tmpDir):
    osName = sys.platform
+   self.logPrint('Making shared libraries for OS %s using language %s' % (osName, self.language[-1]))
    # PCC_LINKER PCC_LINKER_FLAGS
-   linker      = self.configInfo.setCompilers.getLinker()
+   linker      = self.configInfo.setCompilers.getSharedLinker()
    linkerFlags = self.configInfo.setCompilers.getLinkerFlags()
    packageIncludes, packageLibs = self.getPackageInfo()
    extraLibs = self.configInfo.libraries.toStringNoDupes(self.configInfo.compilers.flibs+self.configInfo.compilers.cxxlibs+self.configInfo.compilers.LIBS.split(' '))+self.configInfo.CHUD.LIBS
@@ -1235,11 +1236,11 @@ class PETScMaker(script.Script):
          cmd += 'MACOSX_DEPLOYMENT_TARGET=10.5 '
        if self.configInfo.setCompilers.getLinkerFlags().find('-Wl,-commons,use_dylibs') > -1:
          flags += '-Wl,-commons,use_dylibs'
-       cmd += self.configInfo.setCompilers.getSharedLinker()+' -g  -dynamiclib -single_module -multiply_defined suppress -undefined dynamic_lookup '+flags+' -o '+sharedLib+' *.o -L'+libDir+' '+packageLibs+' '+sysLib+' '+extraLibs+' -lm -lc'
+       cmd += linker+' -g  -dynamiclib -single_module -multiply_defined suppress -undefined dynamic_lookup '+flags+' -o '+sharedLib+' *.o -L'+libDir+' '+packageLibs+' '+sysLib+' '+extraLibs+' -lm -lc'
      elif osName == 'cygwin':
        cmd = linker+' '+linkerFlags+' -shared -o '+sharedLib+' *.o '+externalLib
      else:
-       raise RuntimeError('Do not know how to make shared library for your crappy '+osName+' OS')
+       raise RuntimeError('Do not know how to make shared library for your '+osName+' OS')
      oldDir = os.getcwd()
      os.chdir(tmpDir)
      (output, error, status) = self.executeShellCommand(cmd, checkCommand = noCheckCommand, log=self.log)
