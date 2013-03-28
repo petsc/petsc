@@ -238,6 +238,23 @@ static PetscErrorCode DMPlexComputeProjection3Dto2D_Internal(PetscScalar coords[
     will rotate the normal vector to \hat z
   */
   sqrtz = sqrt(1.0 - n[2]*n[2]);
+  /* Check for n = z */
+  if (sqrtz < 1.0e-10) {
+    coords[0] = 0.0;
+    coords[1] = 0.0;
+    if (n[2] < 0.0) {
+      coords[2] = x2[0];
+      coords[3] = x2[1];
+      coords[4] = x1[0];
+      coords[5] = x1[1];
+    } else {
+      coords[2] = x1[0];
+      coords[3] = x1[1];
+      coords[4] = x2[0];
+      coords[5] = x2[1];
+    }
+    PetscFunctionReturn(0);
+  }
   alpha = 1.0/sqrtz;
   R[0] =  alpha*n[0]*n[2]; R[1] = alpha*n[1]*n[2]; R[2] = -sqrtz;
   R[3] = -alpha*n[1];      R[4] = alpha*n[0];      R[5] = 0.0;
