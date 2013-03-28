@@ -240,8 +240,8 @@ if (PETSC_CLANGUAGE_Cxx)
   endforeach ()
 endif()''' % ('\n  '.join([r'PETSC' + pkg.upper() + r'_SRCS' for (pkg,_) in pkglist])))
     written = True
-    f.close()
   finally:
+    f.close()
     if written:
       shutil.move(tmplists,os.path.join(petscdir,'CMakeLists.txt'))
     else:
