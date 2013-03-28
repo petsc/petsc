@@ -907,7 +907,7 @@ class PETScMaker(script.Script):
      raise RuntimeError('You must provide a valid PETSC_ARCH')
    return arch
 
- def __init__(self):
+ def __init__(self, logname = 'make.log'):
    import RDict
    import os
 
@@ -917,7 +917,7 @@ class PETScMaker(script.Script):
    argDB.saveFilename = os.path.join(self.petscDir, arch, 'conf', 'RDict.db')
    argDB.load()
    script.Script.__init__(self, argDB = argDB)
-   self.logName = 'make.log'
+   self.logName = logname
    #self.log = sys.stdout
    return
 

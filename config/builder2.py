@@ -50,7 +50,7 @@ def buildSingleExample(maker, ex):
 def buildExample(args):
   '''Build and link an example'''
   ret   = 0
-  maker = builder.PETScMaker()
+  maker = builder.PETScMaker('example.log')
   maker.setup()
   examples = []
   for f in args.files:
@@ -133,7 +133,7 @@ def check(args):
   '''Check that build is functional'''
   ret       = 0
   extraArgs = ' '+' '.join(args.args)
-  maker     = builder.PETScMaker()
+  maker     = builder.PETScMaker('example.log')
   maker.setup()
   # C test
   if len(args.files):
@@ -166,7 +166,7 @@ def regression(args):
   '''Run complete regression suite'''
   ret   = 0
   gret  = 0
-  maker = builder.PETScMaker()
+  maker = builder.PETScMaker('regression.log')
   maker.setup()
   haltOnError = False
 
