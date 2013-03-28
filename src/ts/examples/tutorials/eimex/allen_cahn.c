@@ -164,10 +164,9 @@ static PetscErrorCode FormIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void 
 static PetscErrorCode FormIJacobian(TS ts,PetscReal t,Vec U, Vec Udot, PetscReal a, Mat *J,Mat *Jpre,MatStructure *flag,void *ctx)
 {
   PetscErrorCode ierr;
-  AppCtx *user = (AppCtx *)ctx;
-  PetscScalar *x;
+  AppCtx         *user = (AppCtx *)ctx;
+  PetscScalar    *x,v;
   PetscInt       i,col;
-  PetscReal      v;
 
   ierr = VecGetArray(U,&x);CHKERRQ(ierr);
   PetscFunctionBegin;

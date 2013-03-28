@@ -50,12 +50,13 @@ int main(int argc, char **argv)
   TS                ts;
   Vec               x; /*solution vector*/
   Mat               A; /*Jacobian*/
-  PetscInt          steps,maxsteps,mx;
+  PetscInt          steps,maxsteps,mx,eimex_rowcol[2],two;
   PetscErrorCode    ierr;
   PetscScalar       *x_ptr;
   PetscReal         ftime,dt,norm;
   Vec               ref;
   struct _User      user;       /* user-defined work context */
+  PetscViewer       viewer;
 
   PetscInitialize(&argc,&argv,NULL,help);
 
@@ -138,22 +139,26 @@ int main(int argc, char **argv)
   ierr = TSSolve(ts,x);CHKERRQ(ierr);
   ierr = TSGetTime(ts,&ftime);CHKERRQ(ierr);
   ierr = TSGetTimeStepNumber(ts,&steps);CHKERRQ(ierr);
-  /*
-   ierr = PetscPrintf(PETSC_COMM_WORLD,"mu %G, steps %D, ftime %G\n",user.mu,steps,ftime);CHKERRQ(ierr);*/
-  /*
-   ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);*/
-  ierr = VecGetArray(x,&x_ptr);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"final solution = %24.15f %24.15f \n",x_ptr[0],x_ptr[1]);CHKERRQ(ierr);
 
   ierr = VecAXPY(x,-1.0,ref);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
   ierr = TSGetTimeStep(ts,&dt);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"%24.15f %24.15f \n",dt,norm);CHKERRQ(ierr);
 
-  FILE *fp;
-  fp = fopen("eimex_nonstiff_vdp.txt","a");
-  fprintf(fp,"%24.15f %24.15f \n",dt,norm);
-  fclose(fp);
+  eimex_rowcol[0] = 0; eimex_rowcol[1] = 0; two = 2;
+  ierr = PetscOptionsGetIntArray(NULL,"-ts_eimex_row_col",eimex_rowcol,&two,NULL);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"order %11s %18s %37s\n","dt","norm","final solution components 0 and 1");CHKERRQ(ierr);
+  ierr = VecGetArray(x,&x_ptr);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"(%D,%D) %10.8F %18.15F %18.15F %18.15F\n",eimex_rowcol[0],eimex_rowcol[1],dt,norm,PetscRealPart(x_ptr[0]),PetscRealPart(x_ptr[1]));CHKERRQ(ierr);
+  ierr = VecRestoreArray(x,&x_ptr);CHKERRQ(ierr);
+
+  /* Write line in convergence log */
+  ierr = PetscViewerCreate(PETSC_COMM_WORLD,&viewer);CHKERRQ(ierr);
+  ierr = PetscViewerSetType(viewer,PETSCVIEWERASCII);CHKERRQ(ierr);
+  ierr = PetscViewerFileSetMode(viewer,FILE_MODE_APPEND);CHKERRQ(ierr);
+  ierr = PetscViewerFileSetName(viewer,"eimex_nonstiff_vdp.txt");CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"%D %D %10.8F %18.15F\n",eimex_rowcol[0],eimex_rowcol[1],dt,norm);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    Free work space.
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -195,7 +200,7 @@ static PetscErrorCode IFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ptr
   VecGetArray(Xdot,&xdot);
   VecGetArray(F,&f);
   f[0] = xdot[0];
-  f[1] = xdot[1]-((1-x[0]*x[0])*x[1]-x[0])/user->mu;
+  f[1] = xdot[1]-((1.-x[0]*x[0])*x[1]-x[0])/user->mu;
   VecRestoreArray(X,&x);
   VecRestoreArray(Xdot,&xdot);
   VecRestoreArray(F,&f);

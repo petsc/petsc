@@ -26,7 +26,8 @@ runct_vdp_imex_adapt:
 	-@${MPIEXEC} -n 1 ./ct_vdp_imex -ts_type eimex -ts_adapt_type none -fp_trap -pc_type lu -ts_dt 0.01 -ts_final_time 10 -ts_eimex_order_adapt -ts_eimex_max_rows 7 -ts_monitor_lg_solution
 
 runct_vdp_imex_conv:
-	-@for j in 1 2 3; do \
+	-@rm -f eimex_nonstiff_vdp.txt; \
+          for j in 1 2 3; do \
             for i in $$(seq $$j 3); do \
               for dt in 0.005 0.001 0.0005; do \
                  ftime=0.5; \
