@@ -11,7 +11,7 @@
 #define IS_FILE_CLASSID 1211218
 PETSC_EXTERN PetscClassId IS_CLASSID;
 
-PETSC_EXTERN PetscErrorCode ISInitializePackage(const char[]);
+PETSC_EXTERN PetscErrorCode ISInitializePackage(void);
 
 /*S
      IS - Abstract PETSc object that allows indexing.
@@ -43,62 +43,10 @@ PETSC_EXTERN PetscFunctionList ISList;
 PETSC_EXTERN PetscBool         ISRegisterAllCalled;
 PETSC_EXTERN PetscErrorCode ISSetType(IS, ISType);
 PETSC_EXTERN PetscErrorCode ISGetType(IS, ISType *);
-PETSC_EXTERN PetscErrorCode ISRegister(const char[],const char[],const char[],PetscErrorCode (*)(IS));
-PETSC_EXTERN PetscErrorCode ISRegisterAll(const char []);
+PETSC_EXTERN PetscErrorCode ISRegister(const char[],PetscErrorCode (*)(IS));
+PETSC_EXTERN PetscErrorCode ISRegisterAll(void);
 PETSC_EXTERN PetscErrorCode ISRegisterDestroy(void);
 PETSC_EXTERN PetscErrorCode ISCreate(MPI_Comm,IS*);
-
-/*MC
-  ISRegisterDynamic - Adds a new index set implementation
-
-  Synopsis:
-  #include "petscis.h"
-  PetscErrorCode ISRegisterDynamic(const char *name, const char *path, const char *func_name, PetscErrorCode (*create_func)(IS))
-
-  Not Collective
-
-  Input Parameters:
-+ name        - The name of a new user-defined creation routine
-. path        - The path (either absolute or relative) of the library containing this routine
-. func_name   - The name of routine to create method context
-- create_func - The creation routine itself
-
-  Notes:
-  ISRegisterDynamic() may be called multiple times to add several user-defined vectors
-
-  If dynamic libraries are used, then the fourth input argument (routine_create) is ignored.
-
-  Sample usage:
-.vb
-    ISRegisterDynamic("my_is_name","/home/username/my_lib/lib/libO/solaris/libmy.a", "MyISCreate", MyISCreate);
-.ve
-
-  Then, your vector type can be chosen with the procedural interface via
-.vb
-    ISCreate(MPI_Comm, IS *);
-    ISSetType(IS,"my_is_name");
-.ve
-   or at runtime via the option
-.vb
-    -is_type my_is_name
-.ve
-
-  Notes: $PETSC_ARCH occuring in pathname will be replaced with appropriate values.
-         If your function is not being put into a shared library then use ISRegister() instead
-
-  This is no ISSetFromOptions() and the current implementations do not have a way to dynamically determine type, so
-  dynamic registration of custom IS types will be of limited use to users.
-
-  Level: developer
-
-.keywords: IS, register
-.seealso: ISRegisterAll(), ISRegisterDestroy(), ISRegister()
-M*/
-#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
-#define ISRegisterDynamic(a,b,c,d) ISRegister(a,b,c,0)
-#else
-#define ISRegisterDynamic(a,b,c,d) ISRegister(a,b,c,d)
-#endif
 
 /*
     Default index set data structures that PETSc provides.

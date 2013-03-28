@@ -1,82 +1,19 @@
 #
-#   Run
-#
-#     python pyjsbuild --frame=AMSJavascript.html --enable-debug --enable-wrap-calls --output . AMSJavascript.py
-#     hg revert AMSJavascript.html
-#
-#   to generate the needed HTML and Javascript
+#   Defines an interface from Pyjs to the AMS memory snooper.  This version downloads ALL the memories and fields when the AMS_Comm is attached
+#  thus all memory and field value inquiries are local and immediate and do not involve accessing the publisher. To get fresh values one simply
+#  creates another AMS_Comm() which makes a freash connection to the publisher
 #
 
 import pyjd
-
-from pyjamas.ui.RootPanel import RootPanel
-from pyjamas.ui.TextArea import TextArea
-from pyjamas.ui.Label import Label
-from pyjamas.ui.Button import Button
-from pyjamas.ui.HTML import HTML
-from pyjamas.ui.VerticalPanel import VerticalPanel
-from pyjamas.ui.HorizontalPanel import HorizontalPanel
-from pyjamas.ui.ListBox import ListBox
 from pyjamas.JSONService import JSONProxy
-from pyjamas.ui.Tree import Tree
-from pyjamas.ui.TreeItem import TreeItem
 
-
-comm   = -1  # Currently attached AMS communicator; only one is supported at a time
 args   = {}  # Arguments to each remote call
 sent   = 0   # Number of calls sent to server
 recv   = 0   # Number of calls received from server
 
-class AMSJavascriptExample:
-    def onModuleLoad(self):
-        self.status=Label()
-        self.button = Button("Display list of all published memories and fields", self)
-        self.buttonupdate = Button("Update data from AMS publisher", self)
-
-        buttons = HorizontalPanel()
-        buttons.add(self.button)
-        buttons.add(self.buttonupdate)
-        buttons.setSpacing(8)
-
-        info = """<p>This example demonstrates the calling of the Memory Snooper in PETSc with Pyjamas and <a href="http://json-rpc.org/">JSON-RPC</a>.</p>"""
-
-        self.panel = VerticalPanel()
-        self.panel.add(HTML(info))
-        self.panel.add(buttons)
-        self.panel.add(self.status)
-        RootPanel().add(self.panel)
-        self.commobj = AMS_Comm()
-        self.tree = None
-
-    def onClick(self, sender):
-        global sent,recv
-        self.status.setText('Button pressed')
-        if sender == self.buttonupdate:
-            self.commobj = AMS_Comm()
-            self.status.setText('Updating data: Press Display list button to refesh')
-        if sender == self.button:
-            if sent > recv:
-               self.status.setText('Press button again: sent '+str(sent)+' recv '+str(recv))
-            if self.commobj.commname == 'No AMS publisher running':
-               self.status.setText(self.commobj.commname)
-            else:
-               self.status.setText('Memories for AMS Comm: '+self.commobj.commname)
-               result = self.commobj.get_memory_list()
-               if self.tree: self.panel.remove(self.tree)
-               self.tree = Tree()
-               for i in result:
-                  subtree = TreeItem(i)
-                  memory = self.commobj.memory_attach(i)
-                  fields = memory.get_field_list()
-                  for j in fields:
-                     field = memory.get_field_info(j)
-                     subtree.addItem(j+' = '+str(field[4]))
-                  self.tree.addItem(subtree)
-                  self.panel.add(self.tree)
-
 class ServicePython(JSONProxy):
     def __init__(self):
-        JSONProxy.__init__(self, "No service name", ["YAML_echo", "YAML_AMS_Connect", "YAML_AMS_Comm_attach", "YAML_AMS_Comm_get_memory_list","YAML_AMS_Memory_attach","YAML_AMS_Memory_get_field_list","YAML_AMS_Memory_get_field_info"])
+        JSONProxy.__init__(self, "No service name", ["YAML_echo", "YAML_AMS_Connect", "YAML_AMS_Comm_attach", "YAML_AMS_Comm_get_memory_list","YAML_AMS_Memory_attach","YAML_AMS_Memory_get_field_list","YAML_AMS_Memory_get_field_info","YAML_AMS_Memory_set_field_info","YAML_AMS_Memory_update_send_begin"])
 
 # ---------------------------------------------------------
 class AMS_Memory(JSONProxy):
@@ -103,8 +40,21 @@ class AMS_Memory(JSONProxy):
             return 'Memory does not have field named '+field
         return self.fields[field]
 
+    def set_field_info(self,field,value,funct = null):
+        '''Pass in string name of AMS field and value to be set back on publisher
+           If called with func (not yet done) then first updates remove and then calls func with any error information'''
+        if not self.fields.has_key(field):
+            return 'Memory does not have field named '+field+' thus value not set'
+        id = self.remote.YAML_AMS_Memory_set_field_info(self.memory,field,value,self)
+        args[id] = ['YAML_AMS_Memory_set_field_info',comm,memory,field]
+
+    def update_send_begin(self,funct = null):
+        '''Tells the accessor to update the values in the memory on the publisher
+           If called with func (not yet done) then first updates remove and then calls func with any error information'''
+        id = self.remote.YAML_AMS_Memory_update_send_begin(self.memory,self)
+
     def onRemoteResponse(self, response, request_info):
-        global args,sent,recv
+        global args,sent,recv,statusbar
         recv += 1
         method = str(request_info.method)
         rid    = request_info.id
@@ -115,16 +65,28 @@ class AMS_Memory(JSONProxy):
             sent += 1
         elif method == "YAML_AMS_Memory_get_field_list":
             self.fieldlist = response
+            if not isinstance(self.fieldlist,list): self.fieldlist = [self.fieldlist]
             for i in self.fieldlist:
                 id = self.remote.YAML_AMS_Memory_get_field_info(self.memory,i,self)
                 args[id] = ['YAML_AMS_Memory_get_field_info',self.memory,i]
                 sent += 1
         elif method == "YAML_AMS_Memory_get_field_info":
             self.fields[args[rid][2]] = response
+        elif method == "YAML_AMS_Memory_set_field_info":
+          self.update_send_begin()
+#          statusbar.setText("Value updated on server")
 
 
     def onRemoteError(self, code, errobj, request_info):
-        pass
+        global statusbar,recv
+        recv += 1
+        method = str(request_info.method)
+        if method == "YAML_AMS_Memory_update_send_begin":
+          self.comm.comm = -1;
+#          statusbar.setText("Publisher is no longer accessable")
+        else:
+#          statusbar.setText("Error "+str(errobj))
+          pass
 
 # ---------------------------------------------------------
 class AMS_Comm(JSONProxy):
@@ -158,12 +120,15 @@ class AMS_Comm(JSONProxy):
 
     def onRemoteResponse(self, response, request_info):
         global args,sent,recv
-        global comm
         recv += 1
         method = str(request_info.method)
         rid    = request_info.id
         if method == "YAML_AMS_Connect":
-            self.commname = str(response)
+            if isinstance(response,list):
+#             Currently always connects to the zeroth communicator published, no way to connect to others.
+              self.commname = str(response[0])
+            else:
+              self.commname = str(response)
             if self.commname == 'No AMS publisher running':
                  pass
             else:
@@ -179,17 +144,14 @@ class AMS_Comm(JSONProxy):
             if not isinstance(response,list):response = [response]
             self.memlist = response
             for i in self.memlist:
-                self.memories[i] = AMS_Memory(comm,i)
+                self.memories[i] = AMS_Memory(self.comm,i)
             if self.memory_list_func:
                 self.memory_list_func(response)
                 self.memory_list_func = null
 
     def onRemoteError(self, code, errobj, request_info):
-        pass
+        global statusbar,recv
+        recv += 1
+#        statusbar.setText("Error "+str(errobj))
 
-if __name__ == '__main__':
-    pyjd.setup()
-    app = AMSJavascriptExample()
-    app.onModuleLoad()
-    pyjd.run()
 

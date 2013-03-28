@@ -243,10 +243,10 @@ PetscErrorCode SNESSolve_GS(SNES snes)
   F = snes->vec_func;
   B = snes->vec_rhs;
 
-  ierr         = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
+  ierr         = PetscObjectAMSTakeAccess((PetscObject)snes);CHKERRQ(ierr);
   snes->iter   = 0;
   snes->norm   = 0.;
-  ierr         = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
+  ierr         = PetscObjectAMSGrantAccess((PetscObject)snes);CHKERRQ(ierr);
   snes->reason = SNES_CONVERGED_ITERATING;
 
   ierr = SNESGetNormType(snes, &normtype);CHKERRQ(ierr);
@@ -271,10 +271,10 @@ PetscErrorCode SNESSolve_GS(SNES snes)
       fnorm               = snes->norm_init;
       snes->norm_init_set = PETSC_FALSE;
     }
-    ierr       = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
+    ierr       = PetscObjectAMSTakeAccess((PetscObject)snes);CHKERRQ(ierr);
     snes->iter = 0;
     snes->norm = fnorm;
-    ierr       = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
+    ierr       = PetscObjectAMSGrantAccess((PetscObject)snes);CHKERRQ(ierr);
     ierr       = SNESLogConvergenceHistory(snes,snes->norm,0);CHKERRQ(ierr);
     ierr       = SNESMonitor(snes,0,snes->norm);CHKERRQ(ierr);
 
@@ -285,7 +285,7 @@ PetscErrorCode SNESSolve_GS(SNES snes)
     ierr = (*snes->ops->converged)(snes,0,0.0,0.0,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
     if (snes->reason) PetscFunctionReturn(0);
   } else {
-    ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
+    ierr = PetscObjectAMSGrantAccess((PetscObject)snes);CHKERRQ(ierr);
     ierr = SNESLogConvergenceHistory(snes,snes->norm,0);CHKERRQ(ierr);
     ierr = SNESMonitor(snes,0,snes->norm);CHKERRQ(ierr);
   }
@@ -312,10 +312,10 @@ PetscErrorCode SNESSolve_GS(SNES snes)
       }
     }
     /* Monitor convergence */
-    ierr       = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
+    ierr       = PetscObjectAMSTakeAccess((PetscObject)snes);CHKERRQ(ierr);
     snes->iter = i+1;
     snes->norm = fnorm;
-    ierr       = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
+    ierr       = PetscObjectAMSGrantAccess((PetscObject)snes);CHKERRQ(ierr);
     ierr       = SNESLogConvergenceHistory(snes,snes->norm,0);CHKERRQ(ierr);
     ierr       = SNESMonitor(snes,snes->iter,snes->norm);CHKERRQ(ierr);
     /* Test for convergence */

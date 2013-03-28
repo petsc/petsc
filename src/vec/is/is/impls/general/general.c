@@ -29,7 +29,7 @@ PetscErrorCode ISDestroy_General(IS is)
   if (is_general->allocated) {
     ierr = PetscFree(is_general->idx);CHKERRQ(ierr);
   }
-  ierr = PetscObjectComposeFunction((PetscObject)is,"ISGeneralSetIndices_C","",0);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)is,"ISGeneralSetIndices_C",0);CHKERRQ(ierr);
   ierr = PetscFree(is->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -510,7 +510,7 @@ PETSC_EXTERN PetscErrorCode ISCreate_General(IS is)
   ierr = PetscNewLog(is,IS_General,&sub);CHKERRQ(ierr);
   is->data = (void*)sub;
   is->bs   = 1;
-  ierr = PetscObjectComposeFunction((PetscObject)is,"ISGeneralSetIndices_C","ISGeneralSetIndices_General",ISGeneralSetIndices_General);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)is,"ISGeneralSetIndices_C",ISGeneralSetIndices_General);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

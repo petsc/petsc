@@ -58,9 +58,9 @@ PetscErrorCode  DMCreate(MPI_Comm comm,DM *dm)
   PetscValidPointer(dm,2);
   *dm = NULL;
 #if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
-  ierr = VecInitializePackage(NULL);CHKERRQ(ierr);
-  ierr = MatInitializePackage(NULL);CHKERRQ(ierr);
-  ierr = DMInitializePackage(NULL);CHKERRQ(ierr);
+  ierr = VecInitializePackage();CHKERRQ(ierr);
+  ierr = MatInitializePackage();CHKERRQ(ierr);
+  ierr = DMInitializePackage();CHKERRQ(ierr);
 #endif
 
   ierr = PetscHeaderCreate(v, _p_DM, struct _DMOps, DM_CLASSID, "DM", "Distribution Manager", "DM", comm, DMDestroy, DMView);CHKERRQ(ierr);
@@ -434,7 +434,7 @@ PetscErrorCode  DMDestroy(DM *dm)
   }
   ierr = PetscFree((*dm)->fields);CHKERRQ(ierr);
   /* if memory was published with AMS then destroy it */
-  ierr = PetscObjectDepublish(*dm);CHKERRQ(ierr);
+  ierr = PetscObjectAMSViewOff((PetscObject)*dm);CHKERRQ(ierr);
 
   ierr = (*(*dm)->ops->destroy)(*dm);CHKERRQ(ierr);
   /* We do not destroy (*dm)->data here so that we can reference count backend objects */
@@ -671,8 +671,8 @@ PetscErrorCode  DMGetLocalToGlobalMapping(DM dm,ISLocalToGlobalMapping *ltog)
       ierr = ISLocalToGlobalMappingCreate(PETSC_COMM_SELF, size, ltog, PETSC_OWN_POINTER, &dm->ltogmap);CHKERRQ(ierr);
       ierr = PetscLogObjectParent(dm, dm->ltogmap);CHKERRQ(ierr);
     } else {
-      if (!dm->ops->createlocaltoglobalmapping) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"DM can not create LocalToGlobalMapping");
-      ierr = (*dm->ops->createlocaltoglobalmapping)(dm);CHKERRQ(ierr);
+      if (!dm->ops->getlocaltoglobalmapping) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"DM can not create LocalToGlobalMapping");
+      ierr = (*dm->ops->getlocaltoglobalmapping)(dm);CHKERRQ(ierr);
     }
   }
   *ltog = dm->ltogmap;
@@ -711,8 +711,8 @@ PetscErrorCode  DMGetLocalToGlobalMappingBlock(DM dm,ISLocalToGlobalMapping *lto
     PetscInt bs;
     ierr = DMGetBlockSize(dm,&bs);CHKERRQ(ierr);
     if (bs > 1) {
-      if (!dm->ops->createlocaltoglobalmappingblock) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"DM can not create LocalToGlobalMappingBlock");
-      ierr = (*dm->ops->createlocaltoglobalmappingblock)(dm);CHKERRQ(ierr);
+      if (!dm->ops->getlocaltoglobalmappingblock) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"DM can not create LocalToGlobalMappingBlock");
+      ierr = (*dm->ops->getlocaltoglobalmappingblock)(dm);CHKERRQ(ierr);
     } else {
       ierr = DMGetLocalToGlobalMapping(dm,&dm->ltogmapb);CHKERRQ(ierr);
       ierr = PetscObjectReference((PetscObject)dm->ltogmapb);CHKERRQ(ierr);
@@ -890,7 +890,7 @@ PetscErrorCode  DMCreateMatrix(DM dm,MatType mtype,Mat *mat)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
 #if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
-  ierr = MatInitializePackage(NULL);CHKERRQ(ierr);
+  ierr = MatInitializePackage();CHKERRQ(ierr);
 #endif
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidPointer(mat,3);
@@ -2389,8 +2389,8 @@ PetscErrorCode  DMSetType(DM dm, DMType method)
   ierr = PetscObjectTypeCompare((PetscObject) dm, method, &match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
 
-  if (!DMRegisterAllCalled) {ierr = DMRegisterAll(NULL);CHKERRQ(ierr);}
-  ierr = PetscFunctionListFind(PetscObjectComm((PetscObject)dm), DMList, method,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
+  if (!DMRegisterAllCalled) {ierr = DMRegisterAll();CHKERRQ(ierr);}
+  ierr = PetscFunctionListFind(DMList, method,(void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown DM type: %s", method);
 
   if (dm->ops->destroy) {
@@ -2428,7 +2428,7 @@ PetscErrorCode  DMGetType(DM dm, DMType *type)
   PetscValidHeaderSpecific(dm, DM_CLASSID,1);
   PetscValidCharPointer(type,2);
   if (!DMRegisterAllCalled) {
-    ierr = DMRegisterAll(NULL);CHKERRQ(ierr);
+    ierr = DMRegisterAll();CHKERRQ(ierr);
   }
   *type = ((PetscObject)dm)->type_name;
   PetscFunctionReturn(0);
@@ -2535,20 +2535,45 @@ foundconv:
 #undef __FUNCT__
 #define __FUNCT__ "DMRegister"
 /*@C
-  DMRegister - See DMRegisterDynamic()
+  DMRegister -  Adds a new DM component implementation
+
+  Not Collective
+
+  Input Parameters:
++ name        - The name of a new user-defined creation routine
+- create_func - The creation routine itself
+
+  Notes:
+  DMRegister() may be called multiple times to add several user-defined DMs
+
+
+  Sample usage:
+.vb
+    DMRegister("my_da", MyDMCreate);
+.ve
+
+  Then, your DM type can be chosen with the procedural interface via
+.vb
+    DMCreate(MPI_Comm, DM *);
+    DMSetType(DM,"my_da");
+.ve
+   or at runtime via the option
+.vb
+    -da_type my_da
+.ve
 
   Level: advanced
+
+.keywords: DM, register
+.seealso: DMRegisterAll(), DMRegisterDestroy()
+
 @*/
-PetscErrorCode  DMRegister(const char sname[], const char path[], const char name[], PetscErrorCode (*function)(DM))
+PetscErrorCode  DMRegister(const char sname[],PetscErrorCode (*function)(DM))
 {
-  char           fullname[PETSC_MAX_PATH_LEN];
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscStrcpy(fullname, path);CHKERRQ(ierr);
-  ierr = PetscStrcat(fullname, ":");CHKERRQ(ierr);
-  ierr = PetscStrcat(fullname, name);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&DMList, sname, fullname, (void (*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&DMList, sname, (void (*)(void))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2557,14 +2582,14 @@ PetscErrorCode  DMRegister(const char sname[], const char path[], const char nam
 #undef __FUNCT__
 #define __FUNCT__ "DMRegisterDestroy"
 /*@C
-   DMRegisterDestroy - Frees the list of DM methods that were registered by DMRegister()/DMRegisterDynamic().
+   DMRegisterDestroy - Frees the list of DM methods that were registered by DMRegister().
 
    Not Collective
 
    Level: advanced
 
 .keywords: DM, register, destroy
-.seealso: DMRegister(), DMRegisterAll(), DMRegisterDynamic()
+.seealso: DMRegister(), DMRegisterAll()
 @*/
 PetscErrorCode  DMRegisterDestroy(void)
 {

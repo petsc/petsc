@@ -376,7 +376,7 @@ extern PetscErrorCode DMLocalToGlobalBegin_Mesh(DM dm, Vec l, InsertMode mode, V
 extern PetscErrorCode DMLocalToGlobalEnd_Mesh(DM dm, Vec l, InsertMode mode, Vec g);
 extern PetscErrorCode DMCreateGlobalVector_Mesh(DM dm, Vec *gvec);
 extern PetscErrorCode DMCreateLocalVector_Mesh(DM dm, Vec *lvec);
-extern PetscErrorCode DMCreateLocalToGlobalMapping_Mesh(DM dm);
+extern PetscErrorCode DMGetLocalToGlobalMapping_Mesh(DM dm);
 extern PetscErrorCode DMCreateInterpolation_Mesh(DM dmCoarse, DM dmFine, Mat *interpolation, Vec *scaling);
 extern PetscErrorCode DMCreateMatrix_Mesh(DM dm, MatType mtype, Mat *J);
 extern PetscErrorCode DMRefine_Mesh(DM dm, MPI_Comm comm, DM *dmRefined);
@@ -680,8 +680,8 @@ PetscErrorCode DMCreate_Mesh(DM dm)
   dm->ops->setup                           = 0;
   dm->ops->createglobalvector              = DMCreateGlobalVector_Mesh;
   dm->ops->createlocalvector               = DMCreateLocalVector_Mesh;
-  dm->ops->createlocaltoglobalmapping      = DMCreateLocalToGlobalMapping_Mesh;
-  dm->ops->createlocaltoglobalmappingblock = 0;
+  dm->ops->getlocaltoglobalmapping         = DMGetLocalToGlobalMapping_Mesh;
+  dm->ops->getlocaltoglobalmappingblock    = 0;
 
   dm->ops->getcoloring         = 0;
   dm->ops->creatematrix        = DMCreateMatrix_Mesh;
@@ -701,7 +701,7 @@ PetscErrorCode DMCreate_Mesh(DM dm)
 
   dm->ops->destroy = DMDestroy_Mesh;
 
-  ierr = PetscObjectComposeFunction((PetscObject) dm, "DMConvert_da_mesh_C", "DMConvert_DA_Mesh", (void (*)(void))DMConvert_DA_Mesh);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject) dm, "DMConvert_da_mesh_C", (void (*)(void))DMConvert_DA_Mesh);CHKERRQ(ierr);
 
   /* NEW_MESH_IMPL */
   ierr = PetscOptionsBool("-dm_mesh_new_impl", "Use the new C unstructured mesh implementation", "DMCreate", PETSC_FALSE, &mesh->useNewImpl, NULL);CHKERRQ(ierr);

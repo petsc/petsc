@@ -19,6 +19,6 @@ static PetscErrorCode oursnesshellsolve(SNES snes,Vec x)
 
 PETSC_EXTERN void PETSC_STDCALL snesshellsetsolve_(SNES *snes,void (PETSC_STDCALL *func)(SNES*,Vec*,PetscErrorCode*),PetscErrorCode *ierr)
 {
-  PetscObjectComposeFunction((PetscObject)*snes,"SNESShellSolve_C",NULL,(PetscVoidFunction)func);
+  PetscObjectComposeFunction((PetscObject)*snes,"SNESShellSolve_C",(PetscVoidFunction)func);
   *ierr = SNESShellSetSolve(*snes,oursnesshellsolve);
 }

@@ -183,6 +183,9 @@ PetscErrorCode  SNESLoad(SNES snes, PetscViewer viewer)
 }
 
 #include <petscdraw.h>
+#if defined(PETSC_HAVE_AMS)
+#include <petscviewerams.h>
+#endif
 #undef __FUNCT__
 #define __FUNCT__ "SNESView"
 /*@C
@@ -222,6 +225,9 @@ PetscErrorCode  SNESView(SNES snes,PetscViewer viewer)
   SNESLineSearch linesearch;
   PetscBool      iascii,isstring,isbinary,isdraw;
   DMSNES         dmsnes;
+#if defined(PETSC_HAVE_AMS)
+  PetscBool      isams;
+#endif
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
@@ -235,6 +241,9 @@ PetscErrorCode  SNESView(SNES snes,PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_AMS)
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERAMS,&isams);CHKERRQ(ierr);
+#endif
   if (iascii) {
     ierr = PetscObjectPrintClassNamePrefixType((PetscObject)snes,viewer,"SNES Object");CHKERRQ(ierr);
     if (snes->ops->view) {
@@ -302,6 +311,19 @@ PetscErrorCode  SNESView(SNES snes,PetscViewer viewer)
     if (snes->ops->view) {
       ierr = (*snes->ops->view)(snes,viewer);CHKERRQ(ierr);
     }
+#if defined(PETSC_HAVE_AMS)
+  } else if (isams) {
+    if (((PetscObject)snes)->amsmem == -1) {
+      ierr = PetscObjectViewAMS((PetscObject)snes,viewer);CHKERRQ(ierr);
+      PetscStackCallAMS(AMS_Memory_take_access,(((PetscObject)snes)->amsmem));
+      PetscStackCallAMS(AMS_Memory_add_field,(((PetscObject)snes)->amsmem,"its",&snes->iter,1,AMS_INT,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF));
+      if (!snes->conv_hist) {
+        ierr = SNESSetConvergenceHistory(snes,NULL,NULL,PETSC_DECIDE,PETSC_FALSE);CHKERRQ(ierr);
+      }
+      PetscStackCallAMS(AMS_Memory_add_field,(((PetscObject)snes)->amsmem,"conv_hist",snes->conv_hist,10,AMS_DOUBLE,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF));
+      PetscStackCallAMS(AMS_Memory_grant_access,(((PetscObject)snes)->amsmem));
+    }
+#endif
   }
   if (snes->linesearch) {
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
@@ -640,7 +662,7 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
 
-  if (!SNESRegisterAllCalled) {ierr = SNESRegisterAll(NULL);CHKERRQ(ierr);}
+  if (!SNESRegisterAllCalled) {ierr = SNESRegisterAll();CHKERRQ(ierr);}
   ierr = PetscObjectOptionsBegin((PetscObject)snes);CHKERRQ(ierr);
   if (((PetscObject)snes)->type_name) deft = ((PetscObject)snes)->type_name;
   ierr = PetscOptionsList("-snes_type","Nonlinear solver method","SNESSetType",SNESList,deft,type,256,&flg);CHKERRQ(ierr);
@@ -1001,9 +1023,9 @@ PetscErrorCode  SNESSetIterationNumber(SNES snes,PetscInt iter)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
-  ierr       = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
+  ierr       = PetscObjectAMSTakeAccess((PetscObject)snes);CHKERRQ(ierr);
   snes->iter = iter;
-  ierr       = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
+  ierr       = PetscObjectAMSGrantAccess((PetscObject)snes);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1061,9 +1083,9 @@ PetscErrorCode  SNESSetFunctionNorm(SNES snes,PetscReal fnorm)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
-  ierr       = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
+  ierr       = PetscObjectAMSTakeAccess((PetscObject)snes);CHKERRQ(ierr);
   snes->norm = fnorm;
-  ierr       = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
+  ierr       = PetscObjectAMSGrantAccess((PetscObject)snes);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1350,16 +1372,6 @@ PetscErrorCode  SNESSetKSP(SNES snes,KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#if defined(PETSC_HAVE_AMS)
-#undef __FUNCT__
-#define __FUNCT__ "SNESPublish_Petsc"
-static PetscErrorCode SNESPublish_Petsc(PetscObject obj)
-{
-  PetscFunctionBegin;
-  PetscFunctionReturn(0);
-}
-#endif
-
 /* -----------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "SNESCreate"
@@ -1399,7 +1411,7 @@ PetscErrorCode  SNESCreate(MPI_Comm comm,SNES *outsnes)
   PetscValidPointer(outsnes,2);
   *outsnes = NULL;
 #if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
-  ierr = SNESInitializePackage(NULL);CHKERRQ(ierr);
+  ierr = SNESInitializePackage();CHKERRQ(ierr);
 #endif
 
   ierr = PetscHeaderCreate(snes,_p_SNES,struct _SNESOps,SNES_CLASSID,"SNES","Nonlinear solver","SNES",comm,SNESDestroy,SNESView);CHKERRQ(ierr);
@@ -1440,10 +1452,6 @@ PetscErrorCode  SNESCreate(MPI_Comm comm,SNES *outsnes)
   snes->norm_init_set     = PETSC_FALSE;
   snes->reason            = SNES_CONVERGED_ITERATING;
   snes->pcside            = PC_RIGHT;
-
-#if defined(PETSC_HAVE_AMS)
-  ((PetscObject)snes)->bops->publish = SNESPublish_Petsc;
-#endif
 
   snes->mf          = PETSC_FALSE;
   snes->mf_operator = PETSC_FALSE;
@@ -2655,7 +2663,7 @@ PetscErrorCode  SNESDestroy(SNES *snes)
   ierr = SNESDestroy(&(*snes)->pc);CHKERRQ(ierr);
 
   /* if memory was published with AMS then destroy it */
-  ierr = PetscObjectDepublish((*snes));CHKERRQ(ierr);
+  ierr = PetscObjectAMSViewOff((PetscObject)*snes);CHKERRQ(ierr);
   if ((*snes)->ops->destroy) {ierr = (*((*snes))->ops->destroy)((*snes));CHKERRQ(ierr);}
 
   ierr = DMDestroy(&(*snes)->dm);CHKERRQ(ierr);
@@ -3371,9 +3379,9 @@ PetscErrorCode  SNESSetConvergenceHistory(SNES snes,PetscReal a[],PetscInt its[]
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
-  if (na) PetscValidScalarPointer(a,2);
+  if (a) PetscValidScalarPointer(a,2);
   if (its) PetscValidIntPointer(its,3);
-  if (na == PETSC_DECIDE || na == PETSC_DEFAULT || !a) {
+  if (!a) {
     if (na == PETSC_DECIDE || na == PETSC_DEFAULT) na = 1000;
     ierr = PetscMalloc(na*sizeof(PetscReal),&a);CHKERRQ(ierr);
     ierr = PetscMalloc(na*sizeof(PetscInt),&its);CHKERRQ(ierr);
@@ -3581,6 +3589,14 @@ PetscErrorCode  SNESSolve(SNES snes,Vec b,Vec x)
     x    = xcreated;
   }
 
+  ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject)snes),((PetscObject)snes)->prefix,"-snes_view_pre",&viewer,&format,&flg);CHKERRQ(ierr);
+  if (flg && !PetscPreLoadingOn) {
+    ierr = PetscViewerPushFormat(viewer,format);CHKERRQ(ierr);
+    ierr = SNESView(snes,viewer);CHKERRQ(ierr);
+    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+  }
+
   for (grid=0; grid<snes->gridsequence; grid++) {ierr = PetscViewerASCIIPushTab(PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)snes)));CHKERRQ(ierr);}
   for (grid=0; grid<snes->gridsequence+1; grid++) {
 
@@ -3660,9 +3676,7 @@ PetscErrorCode  SNESSolve(SNES snes,Vec b,Vec x)
   ierr = VecViewFromOptions(snes->vec_sol,"-snes_view_solution");CHKERRQ(ierr);
 
   ierr = VecDestroy(&xcreated);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_AMS)
   ierr = PetscObjectAMSBlock((PetscObject)snes);CHKERRQ(ierr);
-#endif
   PetscFunctionReturn(0);
 }
 
@@ -3720,7 +3734,7 @@ PetscErrorCode  SNESSetType(SNES snes,SNESType type)
   ierr = PetscObjectTypeCompare((PetscObject)snes,type,&match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
 
-  ierr =  PetscFunctionListFind(PetscObjectComm((PetscObject)snes),SNESList,type,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
+  ierr =  PetscFunctionListFind(SNESList,type,(void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested SNES type %s",type);
   /* Destroy the previous private SNES context */
   if (snes->ops->destroy) {
@@ -3738,11 +3752,6 @@ PetscErrorCode  SNESSetType(SNES snes,SNESType type)
 
   ierr = PetscObjectChangeTypeName((PetscObject)snes,type);CHKERRQ(ierr);
   ierr = (*r)(snes);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_AMS)
-  if (PetscAMSPublishAll) {
-    ierr = PetscObjectAMSPublish((PetscObject)snes);CHKERRQ(ierr);
-  }
-#endif
   PetscFunctionReturn(0);
 }
 
@@ -3751,7 +3760,7 @@ PetscErrorCode  SNESSetType(SNES snes,SNESType type)
 #define __FUNCT__ "SNESRegisterDestroy"
 /*@
    SNESRegisterDestroy - Frees the list of nonlinear solvers that were
-   registered by SNESRegisterDynamic().
+   registered by SNESRegister().
 
    Not Collective
 
@@ -4045,18 +4054,43 @@ PetscErrorCode  SNESGetOptionsPrefix(SNES snes,const char *prefix[])
 #undef __FUNCT__
 #define __FUNCT__ "SNESRegister"
 /*@C
-  SNESRegister - See SNESRegisterDynamic()
+  SNESRegister - Adds a method to the nonlinear solver package.
+
+   Not collective
+
+   Input Parameters:
++  name_solver - name of a new user-defined solver
+-  routine_create - routine to create method context
+
+   Notes:
+   SNESRegister() may be called multiple times to add several user-defined solvers.
+
+   Sample usage:
+.vb
+   SNESRegister("my_solver",MySolverCreate);
+.ve
+
+   Then, your solver can be chosen with the procedural interface via
+$     SNESSetType(snes,"my_solver")
+   or at runtime via the option
+$     -snes_type my_solver
+
+   Level: advanced
+
+    Note: If your function is not being put into a shared library then use SNESRegister() instead
+
+.keywords: SNES, nonlinear, register
+
+.seealso: SNESRegisterAll(), SNESRegisterDestroy()
 
   Level: advanced
 @*/
-PetscErrorCode  SNESRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(SNES))
+PetscErrorCode  SNESRegister(const char sname[],PetscErrorCode (*function)(SNES))
 {
-  char           fullname[PETSC_MAX_PATH_LEN];
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListConcat(path,name,fullname);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&SNESList,sname,fullname,(void (*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&SNESList,sname,(void (*)(void))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

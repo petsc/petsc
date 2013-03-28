@@ -193,7 +193,6 @@ PETSC_EXTERN PetscErrorCode MatDistribute_MPIAIJ(MPI_Comm comm,Mat gmat,PetscInt
   MatScalar      *gmataa,*ao,*ad,*gmataarestore=0;
 
   PetscFunctionBegin;
-  CHKMEMQ;
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   if (!rank) {
@@ -345,7 +344,6 @@ PETSC_EXTERN PetscErrorCode MatDistribute_MPIAIJ(MPI_Comm comm,Mat gmat,PetscInt
   }
   ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  CHKMEMQ;
   PetscFunctionReturn(0);
 }
 
@@ -1294,14 +1292,14 @@ PetscErrorCode MatDestroy_MPIAIJ(Mat mat)
   ierr = PetscFree(mat->data);CHKERRQ(ierr);
 
   ierr = PetscObjectChangeTypeName((PetscObject)mat,0);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatStoreValues_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatRetrieveValues_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatGetDiagonalBlock_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatIsTranspose_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMPIAIJSetPreallocation_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMPIAIJSetPreallocationCSR_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatDiagonalScaleLocal_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatConvert_mpiaij_mpisbaij_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatStoreValues_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatRetrieveValues_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatGetDiagonalBlock_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatIsTranspose_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMPIAIJSetPreallocation_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMPIAIJSetPreallocationCSR_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatDiagonalScaleLocal_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatConvert_mpiaij_mpisbaij_C",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -3097,156 +3095,158 @@ static PetscErrorCode  MatSetRandom_MPIAIJ(Mat x,PetscRandom rctx)
 
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
-       MatGetRow_MPIAIJ,
-       MatRestoreRow_MPIAIJ,
-       MatMult_MPIAIJ,
-/* 4*/ MatMultAdd_MPIAIJ,
-       MatMultTranspose_MPIAIJ,
-       MatMultTransposeAdd_MPIAIJ,
+                                       MatGetRow_MPIAIJ,
+                                       MatRestoreRow_MPIAIJ,
+                                       MatMult_MPIAIJ,
+                                /* 4*/ MatMultAdd_MPIAIJ,
+                                       MatMultTranspose_MPIAIJ,
+                                       MatMultTransposeAdd_MPIAIJ,
 #if defined(PETSC_HAVE_PBGL)
-       MatSolve_MPIAIJ,
+                                       MatSolve_MPIAIJ,
 #else
-       0,
+                                       0,
 #endif
-       0,
-       0,
-/*10*/ 0,
-       0,
-       0,
-       MatSOR_MPIAIJ,
-       MatTranspose_MPIAIJ,
-/*15*/ MatGetInfo_MPIAIJ,
-       MatEqual_MPIAIJ,
-       MatGetDiagonal_MPIAIJ,
-       MatDiagonalScale_MPIAIJ,
-       MatNorm_MPIAIJ,
-/*20*/ MatAssemblyBegin_MPIAIJ,
-       MatAssemblyEnd_MPIAIJ,
-       MatSetOption_MPIAIJ,
-       MatZeroEntries_MPIAIJ,
-/*24*/ MatZeroRows_MPIAIJ,
-       0,
+                                       0,
+                                       0,
+                                /*10*/ 0,
+                                       0,
+                                       0,
+                                       MatSOR_MPIAIJ,
+                                       MatTranspose_MPIAIJ,
+                                /*15*/ MatGetInfo_MPIAIJ,
+                                       MatEqual_MPIAIJ,
+                                       MatGetDiagonal_MPIAIJ,
+                                       MatDiagonalScale_MPIAIJ,
+                                       MatNorm_MPIAIJ,
+                                /*20*/ MatAssemblyBegin_MPIAIJ,
+                                       MatAssemblyEnd_MPIAIJ,
+                                       MatSetOption_MPIAIJ,
+                                       MatZeroEntries_MPIAIJ,
+                                /*24*/ MatZeroRows_MPIAIJ,
+                                       0,
 #if defined(PETSC_HAVE_PBGL)
-       0,
+                                       0,
 #else
-       0,
+                                       0,
 #endif
-       0,
-       0,
-/*29*/ MatSetUp_MPIAIJ,
+                                       0,
+                                       0,
+                                /*29*/ MatSetUp_MPIAIJ,
 #if defined(PETSC_HAVE_PBGL)
-       0,
+                                       0,
 #else
-       0,
+                                       0,
 #endif
-       0,
-       0,
-       0,
-/*34*/ MatDuplicate_MPIAIJ,
-       0,
-       0,
-       0,
-       0,
-/*39*/ MatAXPY_MPIAIJ,
-       MatGetSubMatrices_MPIAIJ,
-       MatIncreaseOverlap_MPIAIJ,
-       MatGetValues_MPIAIJ,
-       MatCopy_MPIAIJ,
-/*44*/ MatGetRowMax_MPIAIJ,
-       MatScale_MPIAIJ,
-       0,
-       0,
-       MatZeroRowsColumns_MPIAIJ,
-/*49*/ MatSetRandom_MPIAIJ,
-       0,
-       0,
-       0,
-       0,
-/*54*/ MatFDColoringCreate_MPIAIJ,
-       0,
-       MatSetUnfactored_MPIAIJ,
-       MatPermute_MPIAIJ,
-       0,
-/*59*/ MatGetSubMatrix_MPIAIJ,
-       MatDestroy_MPIAIJ,
-       MatView_MPIAIJ,
-       0,
-       MatMatMatMult_MPIAIJ_MPIAIJ_MPIAIJ,
-/*64*/ MatMatMatMultSymbolic_MPIAIJ_MPIAIJ_MPIAIJ,
-       MatMatMatMultNumeric_MPIAIJ_MPIAIJ_MPIAIJ,
-       0,
-       0,
-       0,
-/*69*/ MatGetRowMaxAbs_MPIAIJ,
-       MatGetRowMinAbs_MPIAIJ,
-       0,
-       MatSetColoring_MPIAIJ,
-       0,
-       MatSetValuesAdifor_MPIAIJ,
-/*75*/ MatFDColoringApply_AIJ,
-       0,
-       0,
-       0,
-       MatFindZeroDiagonals_MPIAIJ,
-/*80*/ 0,
-       0,
-       0,
-/*83*/ MatLoad_MPIAIJ,
-       0,
-       0,
-       0,
-       0,
-       0,
-/*89*/ MatMatMult_MPIAIJ_MPIAIJ,
-       MatMatMultSymbolic_MPIAIJ_MPIAIJ,
-       MatMatMultNumeric_MPIAIJ_MPIAIJ,
-       MatPtAP_MPIAIJ_MPIAIJ,
-       MatPtAPSymbolic_MPIAIJ_MPIAIJ,
-/*94*/ MatPtAPNumeric_MPIAIJ_MPIAIJ,
-       0,
-       0,
-       0,
-       0,
-/*99*/ 0,
-       0,
-       0,
-       MatConjugate_MPIAIJ,
-       0,
-/*104*/MatSetValuesRow_MPIAIJ,
-       MatRealPart_MPIAIJ,
-       MatImaginaryPart_MPIAIJ,
-       0,
-       0,
-/*109*/0,
-       MatGetRedundantMatrix_MPIAIJ,
-       MatGetRowMin_MPIAIJ,
-       0,
-       0,
-/*114*/MatGetSeqNonzeroStructure_MPIAIJ,
-       0,
-       0,
-       0,
-       0,
-/*119*/0,
-       0,
-       0,
-       0,
-       MatGetMultiProcBlock_MPIAIJ,
-/*124*/MatFindNonzeroRows_MPIAIJ,
-       MatGetColumnNorms_MPIAIJ,
-       MatInvertBlockDiagonal_MPIAIJ,
-       0,
-       MatGetSubMatricesParallel_MPIAIJ,
-/*129*/0,
-       MatTransposeMatMult_MPIAIJ_MPIAIJ,
-       MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ,
-       MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ,
-       0,
-/*134*/0,
-       0,
-       0,
-       0,
-       0
+                                       0,
+                                       0,
+                                       0,
+                                /*34*/ MatDuplicate_MPIAIJ,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                                /*39*/ MatAXPY_MPIAIJ,
+                                       MatGetSubMatrices_MPIAIJ,
+                                       MatIncreaseOverlap_MPIAIJ,
+                                       MatGetValues_MPIAIJ,
+                                       MatCopy_MPIAIJ,
+                                /*44*/ MatGetRowMax_MPIAIJ,
+                                       MatScale_MPIAIJ,
+                                       0,
+                                       0,
+                                       MatZeroRowsColumns_MPIAIJ,
+                                /*49*/ MatSetRandom_MPIAIJ,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                                /*54*/ MatFDColoringCreate_MPIAIJ,
+                                       0,
+                                       MatSetUnfactored_MPIAIJ,
+                                       MatPermute_MPIAIJ,
+                                       0,
+                                /*59*/ MatGetSubMatrix_MPIAIJ,
+                                       MatDestroy_MPIAIJ,
+                                       MatView_MPIAIJ,
+                                       0,
+                                       MatMatMatMult_MPIAIJ_MPIAIJ_MPIAIJ,
+                                /*64*/ MatMatMatMultSymbolic_MPIAIJ_MPIAIJ_MPIAIJ,
+                                       MatMatMatMultNumeric_MPIAIJ_MPIAIJ_MPIAIJ,
+                                       0,
+                                       0,
+                                       0,
+                                /*69*/ MatGetRowMaxAbs_MPIAIJ,
+                                       MatGetRowMinAbs_MPIAIJ,
+                                       0,
+                                       MatSetColoring_MPIAIJ,
+                                       0,
+                                       MatSetValuesAdifor_MPIAIJ,
+                                /*75*/ MatFDColoringApply_AIJ,
+                                       0,
+                                       0,
+                                       0,
+                                       MatFindZeroDiagonals_MPIAIJ,
+                                /*80*/ 0,
+                                       0,
+                                       0,
+                                /*83*/ MatLoad_MPIAIJ,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                                /*89*/ MatMatMult_MPIAIJ_MPIAIJ,
+                                       MatMatMultSymbolic_MPIAIJ_MPIAIJ,
+                                       MatMatMultNumeric_MPIAIJ_MPIAIJ,
+                                       MatPtAP_MPIAIJ_MPIAIJ,
+                                       MatPtAPSymbolic_MPIAIJ_MPIAIJ,
+                                /*94*/ MatPtAPNumeric_MPIAIJ_MPIAIJ,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                                /*99*/ 0,
+                                       0,
+                                       0,
+                                       MatConjugate_MPIAIJ,
+                                       0,
+                                /*104*/MatSetValuesRow_MPIAIJ,
+                                       MatRealPart_MPIAIJ,
+                                       MatImaginaryPart_MPIAIJ,
+                                       0,
+                                       0,
+                                /*109*/0,
+                                       MatGetRedundantMatrix_MPIAIJ,
+                                       MatGetRowMin_MPIAIJ,
+                                       0,
+                                       0,
+                                /*114*/MatGetSeqNonzeroStructure_MPIAIJ,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                                /*119*/0,
+                                       0,
+                                       0,
+                                       0,
+                                       MatGetMultiProcBlock_MPIAIJ,
+                                /*124*/MatFindNonzeroRows_MPIAIJ,
+                                       MatGetColumnNorms_MPIAIJ,
+                                       MatInvertBlockDiagonal_MPIAIJ,
+                                       0,
+                                       MatGetSubMatricesParallel_MPIAIJ,
+                                /*129*/0,
+                                       MatTransposeMatMult_MPIAIJ_MPIAIJ,
+                                       MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ,
+                                       MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ,
+                                       0,
+                                /*134*/0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                                /*139*/0,
+                                       0
 };
 
 /* ----------------------------------------------------------------------------------------*/
@@ -3283,29 +3283,10 @@ PetscErrorCode  MatMPIAIJSetPreallocation_MPIAIJ(Mat B,PetscInt d_nz,const Petsc
 {
   Mat_MPIAIJ     *b;
   PetscErrorCode ierr;
-  PetscInt       i;
-  PetscBool      d_realalloc = PETSC_FALSE,o_realalloc = PETSC_FALSE;
 
   PetscFunctionBegin;
-  if (d_nz >= 0 || d_nnz) d_realalloc = PETSC_TRUE;
-  if (o_nz >= 0 || o_nnz) o_realalloc = PETSC_TRUE;
-  if (d_nz == PETSC_DEFAULT || d_nz == PETSC_DECIDE) d_nz = 5;
-  if (o_nz == PETSC_DEFAULT || o_nz == PETSC_DECIDE) o_nz = 2;
-  if (d_nz < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"d_nz cannot be less than 0: value %D",d_nz);
-  if (o_nz < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"o_nz cannot be less than 0: value %D",o_nz);
-
   ierr = PetscLayoutSetUp(B->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(B->cmap);CHKERRQ(ierr);
-  if (d_nnz) {
-    for (i=0; i<B->rmap->n; i++) {
-      if (d_nnz[i] < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"d_nnz cannot be less than 0: local row %D value %D",i,d_nnz[i]);
-    }
-  }
-  if (o_nnz) {
-    for (i=0; i<B->rmap->n; i++) {
-      if (o_nnz[i] < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"o_nnz cannot be less than 0: local row %D value %D",i,o_nnz[i]);
-    }
-  }
   b = (Mat_MPIAIJ*)B->data;
 
   if (!B->preallocated) {
@@ -3324,9 +3305,6 @@ PetscErrorCode  MatMPIAIJSetPreallocation_MPIAIJ(Mat B,PetscInt d_nz,const Petsc
 
   ierr = MatSeqAIJSetPreallocation(b->A,d_nz,d_nnz);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(b->B,o_nz,o_nnz);CHKERRQ(ierr);
-  /* Do not error if the user did not give real preallocation information. Ugly because this would overwrite a previous user call to MatSetOption(). */
-  if (!d_realalloc) {ierr = MatSetOption(b->A,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);}
-  if (!o_realalloc) {ierr = MatSetOption(b->B,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);}
   B->preallocated = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
@@ -3456,7 +3434,7 @@ PetscErrorCode MatLoad_MPIAIJ(Mat newMat, PetscViewer viewer)
     for (i=2; i<=size; i++) {
       mmax = PetscMax(mmax, rowners[i]);
     }
-  };
+  } else mmax = -1;             /* unused, but compilers complain */
 
   rowners[0] = 0;
   for (i=2; i<=size; i++) {
@@ -5639,30 +5617,30 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJ(Mat B)
   b->spptr = NULL;
 
 #if defined(PETSC_HAVE_MUMPS)
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatGetFactor_mumps_C","MatGetFactor_aij_mumps",MatGetFactor_aij_mumps);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatGetFactor_mumps_C",MatGetFactor_aij_mumps);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_PASTIX)
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatGetFactor_pastix_C","MatGetFactor_mpiaij_pastix",MatGetFactor_mpiaij_pastix);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatGetFactor_pastix_C",MatGetFactor_mpiaij_pastix);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_SUPERLU_DIST)
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatGetFactor_superlu_dist_C","MatGetFactor_mpiaij_superlu_dist",MatGetFactor_mpiaij_superlu_dist);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatGetFactor_superlu_dist_C",MatGetFactor_mpiaij_superlu_dist);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_CLIQUE)
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatGetFactor_clique_C","MatGetFactor_aij_clique",MatGetFactor_aij_clique);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatGetFactor_clique_C",MatGetFactor_aij_clique);CHKERRQ(ierr);
 #endif
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatStoreValues_C","MatStoreValues_MPIAIJ",MatStoreValues_MPIAIJ);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatRetrieveValues_C","MatRetrieveValues_MPIAIJ",MatRetrieveValues_MPIAIJ);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatGetDiagonalBlock_C","MatGetDiagonalBlock_MPIAIJ",MatGetDiagonalBlock_MPIAIJ);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatIsTranspose_C","MatIsTranspose_MPIAIJ",MatIsTranspose_MPIAIJ);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMPIAIJSetPreallocation_C","MatMPIAIJSetPreallocation_MPIAIJ",MatMPIAIJSetPreallocation_MPIAIJ);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMPIAIJSetPreallocationCSR_C","MatMPIAIJSetPreallocationCSR_MPIAIJ",MatMPIAIJSetPreallocationCSR_MPIAIJ);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatDiagonalScaleLocal_C","MatDiagonalScaleLocal_MPIAIJ",MatDiagonalScaleLocal_MPIAIJ);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_mpiaij_mpiaijperm_C","MatConvert_MPIAIJ_MPIAIJPERM",MatConvert_MPIAIJ_MPIAIJPERM);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_mpiaij_mpiaijcrl_C","MatConvert_MPIAIJ_MPIAIJCRL",MatConvert_MPIAIJ_MPIAIJCRL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_mpiaij_mpisbaij_C","MatConvert_MPIAIJ_MPISBAIJ",MatConvert_MPIAIJ_MPISBAIJ);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMult_mpidense_mpiaij_C","MatMatMult_MPIDense_MPIAIJ",MatMatMult_MPIDense_MPIAIJ);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMultSymbolic_mpidense_mpiaij_C","MatMatMultSymbolic_MPIDense_MPIAIJ",MatMatMultSymbolic_MPIDense_MPIAIJ);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMultNumeric_mpidense_mpiaij_C","MatMatMultNumeric_MPIDense_MPIAIJ",MatMatMultNumeric_MPIDense_MPIAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatStoreValues_C",MatStoreValues_MPIAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatRetrieveValues_C",MatRetrieveValues_MPIAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatGetDiagonalBlock_C",MatGetDiagonalBlock_MPIAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatIsTranspose_C",MatIsTranspose_MPIAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMPIAIJSetPreallocation_C",MatMPIAIJSetPreallocation_MPIAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMPIAIJSetPreallocationCSR_C",MatMPIAIJSetPreallocationCSR_MPIAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatDiagonalScaleLocal_C",MatDiagonalScaleLocal_MPIAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_mpiaij_mpiaijperm_C",MatConvert_MPIAIJ_MPIAIJPERM);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_mpiaij_mpiaijcrl_C",MatConvert_MPIAIJ_MPIAIJCRL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_mpiaij_mpisbaij_C",MatConvert_MPIAIJ_MPISBAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMult_mpidense_mpiaij_C",MatMatMult_MPIDense_MPIAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMultSymbolic_mpidense_mpiaij_C",MatMatMultSymbolic_MPIDense_MPIAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMultNumeric_mpidense_mpiaij_C",MatMatMultNumeric_MPIDense_MPIAIJ);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATMPIAIJ);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

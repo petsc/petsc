@@ -7,7 +7,7 @@
 
 /*
     PFunctionList contains the list of preconditioners currently registered
-   These are added with the PFRegisterDynamic() macro
+   These are added with PFRegister()
 */
 PETSC_EXTERN PetscFunctionList PFunctionList;
 
@@ -46,16 +46,11 @@ PETSC_EXTERN PetscErrorCode PFApply(PF,PetscInt,const PetscScalar*,PetscScalar*)
 PETSC_EXTERN PetscErrorCode PFApplyVec(PF,Vec,Vec);
 
 PETSC_EXTERN PetscErrorCode PFRegisterDestroy(void);
-PETSC_EXTERN PetscErrorCode PFRegisterAll(const char[]);
-PETSC_EXTERN PetscErrorCode PFInitializePackage(const char[]);
+PETSC_EXTERN PetscErrorCode PFRegisterAll(void);
+PETSC_EXTERN PetscErrorCode PFInitializePackage(void);
 PETSC_EXTERN PetscBool PFRegisterAllCalled;
 
-PETSC_EXTERN PetscErrorCode PFRegister(const char[],const char[],const char[],PetscErrorCode (*)(PF,void*));
-#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
-#define PFRegisterDynamic(a,b,c,d) PFRegister(a,b,c,0)
-#else
-#define PFRegisterDynamic(a,b,c,d) PFRegister(a,b,c,d)
-#endif
+PETSC_EXTERN PetscErrorCode PFRegister(const char[],PetscErrorCode (*)(PF,void*));
 
 PETSC_EXTERN PetscErrorCode PFDestroy(PF*);
 PETSC_EXTERN PetscErrorCode PFSetFromOptions(PF);

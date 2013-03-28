@@ -2,6 +2,7 @@
 
 configure_options = [
   '--with-64-bit-indices=1',
+  '--download-openmpi=1', #download-mpich works - but system mpich gives wierd errors with superlu_dist+parmeits [with shared/64-bit-indices]?
   '--download-metis=1',
   '--download-parmetis=1',
   '--download-pastix=1',

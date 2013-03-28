@@ -16,11 +16,6 @@ PetscErrorCode  MatMPIAIJSetPreallocation_MPIAIJCUSP(Mat B,PetscInt d_nz,const P
   PetscInt       i;
 
   PetscFunctionBegin;
-  if (d_nz == PETSC_DEFAULT || d_nz == PETSC_DECIDE) d_nz = 5;
-  if (o_nz == PETSC_DEFAULT || o_nz == PETSC_DECIDE) o_nz = 2;
-  if (d_nz < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"d_nz cannot be less than 0: value %D",d_nz);
-  if (o_nz < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"o_nz cannot be less than 0: value %D",o_nz);
-
   ierr = PetscLayoutSetUp(B->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(B->cmap);CHKERRQ(ierr);
   if (d_nnz) {
@@ -209,7 +204,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJCUSP(Mat A)
 
   PetscFunctionBegin;
   ierr = MatCreate_MPIAIJ(A);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatMPIAIJSetPreallocation_C","MatMPIAIJSetPreallocation_MPIAIJCUSP",MatMPIAIJSetPreallocation_MPIAIJCUSP);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatMPIAIJSetPreallocation_C",MatMPIAIJSetPreallocation_MPIAIJCUSP);CHKERRQ(ierr);
   A->ops->getvecs        = MatGetVecs_MPIAIJCUSP;
   A->ops->setvaluesbatch = MatSetValuesBatch_MPIAIJCUSP;
 
@@ -225,7 +220,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJCUSP(Mat A)
   A->ops->setfromoptions = MatSetFromOptions_MPIAIJCUSP;
   A->ops->destroy        = MatDestroy_MPIAIJCUSP;
 
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatCUSPSetFormat_C", "MatCUSPSetFormat_MPIAIJCUSP", MatCUSPSetFormat_MPIAIJCUSP);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatCUSPSetFormat_C", MatCUSPSetFormat_MPIAIJCUSP);CHKERRQ(ierr);
 #endif
   ierr = PetscObjectChangeTypeName((PetscObject)A,MATMPIAIJCUSP);CHKERRQ(ierr);
   PetscFunctionReturn(0);

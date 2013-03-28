@@ -129,12 +129,10 @@ PetscErrorCode  PetscObjectChangeTypeName(PetscObject obj,const char type_name[]
 
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
-  ierr = PetscObjectTakeAccess(obj);CHKERRQ(ierr);
   ierr = PetscFree(obj->type_name);CHKERRQ(ierr);
   ierr = PetscStrallocpy(type_name,&obj->type_name);CHKERRQ(ierr);
   /* Clear all the old subtype callbacks so they can't accidentally be called (shouldn't happen anyway) */
   ierr = PetscMemzero(obj->fortrancallback[PETSC_FORTRAN_CALLBACK_SUBTYPE],obj->num_fortrancallback[PETSC_FORTRAN_CALLBACK_SUBTYPE]*sizeof(PetscFortranCallback));CHKERRQ(ierr);
-  ierr = PetscObjectGrantAccess(obj);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

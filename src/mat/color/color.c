@@ -377,14 +377,37 @@ PetscBool         MatColoringRegisterAllCalled = PETSC_FALSE;
 
 #undef __FUNCT__
 #define __FUNCT__ "MatColoringRegister"
-PetscErrorCode  MatColoringRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(Mat,MatColoringType,ISColoring*))
+/*@C
+   MatColoringRegister - Adds a new sparse matrix coloring to the  matrix package.
+
+   Not Collective
+
+   Input Parameters:
++  sname - name of Coloring (for example MATCOLORINGSL)
+-  function - function pointer that creates the coloring
+
+   Level: developer
+
+   Sample usage:
+.vb
+   MatColoringRegister("my_color",MyColor);
+.ve
+
+   Then, your partitioner can be chosen with the procedural interface via
+$     MatColoringSetType(part,"my_color")
+   or at runtime via the option
+$     -mat_coloring_type my_color
+
+.keywords: matrix, Coloring, register
+
+.seealso: MatColoringRegisterDestroy(), MatColoringRegisterAll()
+@*/
+PetscErrorCode  MatColoringRegister(const char sname[],PetscErrorCode (*function)(Mat,MatColoringType,ISColoring*))
 {
   PetscErrorCode ierr;
-  char           fullname[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListConcat(path,name,fullname);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&MatColoringList,sname,fullname,(void (*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&MatColoringList,sname,(void (*)(void))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -399,7 +422,7 @@ PetscErrorCode  MatColoringRegister(const char sname[],const char path[],const c
 
 .keywords: matrix, register, destroy
 
-.seealso: MatColoringRegisterDynamic(), MatColoringRegisterAll()
+.seealso: MatColoringRegister(), MatColoringRegisterAll()
 @*/
 PetscErrorCode  MatColoringRegisterDestroy(void)
 {
@@ -447,7 +470,7 @@ $    A suitable coloring for a  smoother  is simply C(A).
 $    A suitable coloring for efficient Jacobian computation is a division of the columns so that two columns of the same color do not share any common rows.
 $         This corresponds to C(A^{T} A).  This is what MatGetColoring() computes.
 
-   The user can define additional colorings; see MatColoringRegisterDynamic().
+   The user can define additional colorings; see MatColoringRegister().
 
    For parallel matrices currently converts to sequential matrix and uses the sequential coloring
    on that.
@@ -466,7 +489,7 @@ $         Sources and Development of Mathematical Software, Wayne R. Cowell edit
 
 .keywords: matrix, get, coloring
 
-.seealso:  MatGetColoringTypeFromOptions(), MatColoringRegisterDynamic(), MatFDColoringCreate(),
+.seealso:  MatGetColoringTypeFromOptions(), MatColoringRegister(), MatFDColoringCreate(),
            SNESComputeJacobianDefaultColor()
 @*/
 PetscErrorCode  MatGetColoring(Mat mat,MatColoringType type,ISColoring *iscoloring)
@@ -483,12 +506,12 @@ PetscErrorCode  MatGetColoring(Mat mat,MatColoringType type,ISColoring *iscolori
   if (mat->factortype) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
 
   /* look for type on command line */
-  if (!MatColoringRegisterAllCalled) {ierr = MatColoringRegisterAll(NULL);CHKERRQ(ierr);}
+  if (!MatColoringRegisterAllCalled) {ierr = MatColoringRegisterAll();CHKERRQ(ierr);}
   ierr = PetscOptionsGetString(((PetscObject)mat)->prefix,"-mat_coloring_type",tname,256,&flag);CHKERRQ(ierr);
   if (flag) type = tname;
 
   ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
-  ierr = PetscFunctionListFind(comm,MatColoringList,type,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
+  ierr = PetscFunctionListFind(MatColoringList,type,(void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_OUTOFRANGE,"Unknown or unregistered type: %s",type);
 
   ierr = PetscLogEventBegin(MAT_GetColoring,mat,0,0,0);CHKERRQ(ierr);

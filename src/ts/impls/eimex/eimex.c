@@ -259,9 +259,9 @@ static PetscErrorCode TSDestroy_EIMEX(TS ts)
   PetscFunctionBegin;
   ierr = TSReset_EIMEX(ts);CHKERRQ(ierr);
   ierr = PetscFree(ts->data);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSEIMEXSetMaxRows_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSEIMEXSetRowCol_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSEIMEXSetOrdAdapt_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSEIMEXSetMaxRows_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSEIMEXSetRowCol_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSEIMEXSetOrdAdapt_C",NULL);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -662,8 +662,8 @@ PETSC_EXTERN PetscErrorCode TSCreate_EIMEX(TS ts)
   ext->max_rows  = TSEIMEXDefault;
   ext->nstages   = TSEIMEXDefault;
 
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSEIMEXSetMaxRows_C","TSEIMEXSetMaxRows_EIMEX",TSEIMEXSetMaxRows_EIMEX);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSEIMEXSetRowCol_C","TSEIMEXSetRowCol_EIMEX",TSEIMEXSetRowCol_EIMEX);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSEIMEXSetOrdAdapt_C","TSEIMEXSetOrdAdapt_EIMEX",TSEIMEXSetOrdAdapt_EIMEX);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSEIMEXSetMaxRows_C", TSEIMEXSetMaxRows_EIMEX);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSEIMEXSetRowCol_C",  TSEIMEXSetRowCol_EIMEX);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSEIMEXSetOrdAdapt_C",TSEIMEXSetOrdAdapt_EIMEX);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

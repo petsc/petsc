@@ -1408,16 +1408,16 @@ PetscErrorCode MatDestroy_SeqBAIJ(Mat A)
   ierr = PetscFree(A->data);CHKERRQ(ierr);
 
   ierr = PetscObjectChangeTypeName((PetscObject)A,0);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatInvertBlockDiagonal_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatStoreValues_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatRetrieveValues_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatSeqBAIJSetColumnIndices_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_seqbaij_seqaij_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_seqbaij_seqsbaij_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatSeqBAIJSetPreallocation_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatSeqBAIJSetPreallocationCSR_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_seqbaij_seqbstrm_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatIsTranspose_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatInvertBlockDiagonal_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatStoreValues_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatRetrieveValues_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatSeqBAIJSetColumnIndices_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_seqbaij_seqaij_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_seqbaij_seqsbaij_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatSeqBAIJSetPreallocation_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatSeqBAIJSetPreallocationCSR_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_seqbaij_seqbstrm_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatIsTranspose_C",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2773,7 +2773,6 @@ PetscErrorCode  MatFDColoringApply_BAIJ(Mat J,MatFDColoring coloring,Vec x1,MatS
   }
   w3 = coloring->w3;
 
-  CHKMEMQ;
   /* Compute all the local scale factors, including ghost points */
   ierr = VecGetLocalSize(x1_tmp,&N);CHKERRQ(ierr);
   ierr = VecGetArray(x1_tmp,&xx);CHKERRQ(ierr);
@@ -2785,7 +2784,6 @@ PetscErrorCode  MatFDColoringApply_BAIJ(Mat J,MatFDColoring coloring,Vec x1,MatS
     vscale_array = vscale_array - start;
     col_start    = start; col_end = N + start;
   }
-  CHKMEMQ;
   for (col=col_start; col<col_end; col++) {
     /* Loop over each local column, vscale[col] = 1./(epsilon*dx[col]) */
     if (coloring->htype[0] == 'w') {
@@ -2798,14 +2796,13 @@ PetscErrorCode  MatFDColoringApply_BAIJ(Mat J,MatFDColoring coloring,Vec x1,MatS
     else if (PetscRealPart(dx) < 0.0 && PetscAbsScalar(dx) < umin) dx = -umin;
     dx               *= epsilon;
     vscale_array[col] = (PetscScalar)1.0/dx;
-  }     CHKMEMQ;
+  }
   if (ctype == IS_COLORING_GLOBAL) vscale_array = vscale_array + start;
   ierr = VecRestoreArray(coloring->vscale,&vscale_array);CHKERRQ(ierr);
   if (ctype == IS_COLORING_GLOBAL) {
     ierr = VecGhostUpdateBegin(coloring->vscale,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecGhostUpdateEnd(coloring->vscale,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   }
-  CHKMEMQ;
   if (coloring->vscaleforrow) {
     vscaleforrow = coloring->vscaleforrow;
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Null Object: coloring->vscaleforrow");
@@ -2881,134 +2878,147 @@ PetscErrorCode  MatFDColoringApply_BAIJ(Mat J,MatFDColoring coloring,Vec x1,MatS
 }
 
 /* -------------------------------------------------------------------*/
-static struct _MatOps MatOps_Values = {
-        MatSetValues_SeqBAIJ,
-        MatGetRow_SeqBAIJ,
-        MatRestoreRow_SeqBAIJ,
-        MatMult_SeqBAIJ_N,
-/* 4*/  MatMultAdd_SeqBAIJ_N,
-        MatMultTranspose_SeqBAIJ,
-        MatMultTransposeAdd_SeqBAIJ,
-        0,
-        0,
-        0,
-/* 10*/ 0,
-        MatLUFactor_SeqBAIJ,
-        0,
-        0,
-        MatTranspose_SeqBAIJ,
-/* 15*/ MatGetInfo_SeqBAIJ,
-        MatEqual_SeqBAIJ,
-        MatGetDiagonal_SeqBAIJ,
-        MatDiagonalScale_SeqBAIJ,
-        MatNorm_SeqBAIJ,
-/* 20*/ 0,
-        MatAssemblyEnd_SeqBAIJ,
-        MatSetOption_SeqBAIJ,
-        MatZeroEntries_SeqBAIJ,
-/* 24*/ MatZeroRows_SeqBAIJ,
-        0,
-        0,
-        0,
-        0,
-/* 29*/ MatSetUp_SeqBAIJ,
-        0,
-        0,
-        0,
-        0,
-/* 34*/ MatDuplicate_SeqBAIJ,
-        0,
-        0,
-        MatILUFactor_SeqBAIJ,
-        0,
-/* 39*/ MatAXPY_SeqBAIJ,
-        MatGetSubMatrices_SeqBAIJ,
-        MatIncreaseOverlap_SeqBAIJ,
-        MatGetValues_SeqBAIJ,
-        MatCopy_SeqBAIJ,
-/* 44*/ 0,
-        MatScale_SeqBAIJ,
-        0,
-        0,
-        MatZeroRowsColumns_SeqBAIJ,
-/* 49*/ 0,
-        MatGetRowIJ_SeqBAIJ,
-        MatRestoreRowIJ_SeqBAIJ,
-        MatGetColumnIJ_SeqBAIJ,
-        MatRestoreColumnIJ_SeqBAIJ,
-/* 54*/ MatFDColoringCreate_SeqAIJ,
-        0,
-        0,
-        0,
-        MatSetValuesBlocked_SeqBAIJ,
-/* 59*/ MatGetSubMatrix_SeqBAIJ,
-        MatDestroy_SeqBAIJ,
-        MatView_SeqBAIJ,
-        0,
-        0,
-/* 64*/ 0,
-        0,
-        0,
-        0,
-        0,
-/* 69*/ MatGetRowMaxAbs_SeqBAIJ,
-        0,
-        MatConvert_Basic,
-        0,
-        0,
-/* 74*/ 0,
-        MatFDColoringApply_BAIJ,
-        0,
-        0,
-        0,
-/* 79*/ 0,
-        0,
-        0,
-        0,
-        MatLoad_SeqBAIJ,
-/* 84*/ 0,
-        0,
-        0,
-        0,
-        0,
-/* 89*/ 0,
-        0,
-        0,
-        0,
-        0,
-/* 94*/ 0,
-        0,
-        0,
-        0,
-        0,
-/* 99*/ 0,
-        0,
-        0,
-        0,
-        0,
-/*104*/ 0,
-        MatRealPart_SeqBAIJ,
-        MatImaginaryPart_SeqBAIJ,
-        0,
-        0,
-/*109*/ 0,
-        0,
-        0,
-        0,
-        MatMissingDiagonal_SeqBAIJ,
-/*114*/ 0,
-        0,
-        0,
-        0,
-        0,
-/*119*/ 0,
-        0,
-        MatMultHermitianTranspose_SeqBAIJ,
-        MatMultHermitianTransposeAdd_SeqBAIJ,
-        0,
-/*124*/ 0,
-        0,
-        MatInvertBlockDiagonal_SeqBAIJ
+static struct _MatOps MatOps_Values = {MatSetValues_SeqBAIJ,
+                                       MatGetRow_SeqBAIJ,
+                                       MatRestoreRow_SeqBAIJ,
+                                       MatMult_SeqBAIJ_N,
+                               /* 4*/  MatMultAdd_SeqBAIJ_N,
+                                       MatMultTranspose_SeqBAIJ,
+                                       MatMultTransposeAdd_SeqBAIJ,
+                                       0,
+                                       0,
+                                       0,
+                               /* 10*/ 0,
+                                       MatLUFactor_SeqBAIJ,
+                                       0,
+                                       0,
+                                       MatTranspose_SeqBAIJ,
+                               /* 15*/ MatGetInfo_SeqBAIJ,
+                                       MatEqual_SeqBAIJ,
+                                       MatGetDiagonal_SeqBAIJ,
+                                       MatDiagonalScale_SeqBAIJ,
+                                       MatNorm_SeqBAIJ,
+                               /* 20*/ 0,
+                                       MatAssemblyEnd_SeqBAIJ,
+                                       MatSetOption_SeqBAIJ,
+                                       MatZeroEntries_SeqBAIJ,
+                               /* 24*/ MatZeroRows_SeqBAIJ,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /* 29*/ MatSetUp_SeqBAIJ,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /* 34*/ MatDuplicate_SeqBAIJ,
+                                       0,
+                                       0,
+                                       MatILUFactor_SeqBAIJ,
+                                       0,
+                               /* 39*/ MatAXPY_SeqBAIJ,
+                                       MatGetSubMatrices_SeqBAIJ,
+                                       MatIncreaseOverlap_SeqBAIJ,
+                                       MatGetValues_SeqBAIJ,
+                                       MatCopy_SeqBAIJ,
+                               /* 44*/ 0,
+                                       MatScale_SeqBAIJ,
+                                       0,
+                                       0,
+                                       MatZeroRowsColumns_SeqBAIJ,
+                               /* 49*/ 0,
+                                       MatGetRowIJ_SeqBAIJ,
+                                       MatRestoreRowIJ_SeqBAIJ,
+                                       MatGetColumnIJ_SeqBAIJ,
+                                       MatRestoreColumnIJ_SeqBAIJ,
+                               /* 54*/ MatFDColoringCreate_SeqAIJ,
+                                       0,
+                                       0,
+                                       0,
+                                       MatSetValuesBlocked_SeqBAIJ,
+                               /* 59*/ MatGetSubMatrix_SeqBAIJ,
+                                       MatDestroy_SeqBAIJ,
+                                       MatView_SeqBAIJ,
+                                       0,
+                                       0,
+                               /* 64*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /* 69*/ MatGetRowMaxAbs_SeqBAIJ,
+                                       0,
+                                       MatConvert_Basic,
+                                       0,
+                                       0,
+                               /* 74*/ 0,
+                                       MatFDColoringApply_BAIJ,
+                                       0,
+                                       0,
+                                       0,
+                               /* 79*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       MatLoad_SeqBAIJ,
+                               /* 84*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /* 89*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /* 94*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /* 99*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /*104*/ 0,
+                                       MatRealPart_SeqBAIJ,
+                                       MatImaginaryPart_SeqBAIJ,
+                                       0,
+                                       0,
+                               /*109*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       MatMissingDiagonal_SeqBAIJ,
+                               /*114*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /*119*/ 0,
+                                       0,
+                                       MatMultHermitianTranspose_SeqBAIJ,
+                                       MatMultHermitianTransposeAdd_SeqBAIJ,
+                                       0,
+                               /*124*/ 0,
+                                       0,
+                                       MatInvertBlockDiagonal_SeqBAIJ,
+                                       0,
+                                       0,
+                               /*129*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /*134*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /*139*/ 0,
+                                       0
 };
 
 #undef __FUNCT__
@@ -3296,22 +3306,22 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqBAIJ(Mat B)
   b->XtoY               = 0;
   B->same_nonzero       = PETSC_FALSE;
 
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatGetFactorAvailable_petsc_C","MatGetFactorAvailable_seqbaij_petsc",MatGetFactorAvailable_seqbaij_petsc);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatGetFactor_petsc_C","MatGetFactor_seqbaij_petsc",MatGetFactor_seqbaij_petsc);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatGetFactor_bstrm_C","MatGetFactor_seqbaij_bstrm",MatGetFactor_seqbaij_bstrm);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatGetFactorAvailable_petsc_C",MatGetFactorAvailable_seqbaij_petsc);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatGetFactor_petsc_C",MatGetFactor_seqbaij_petsc);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatGetFactor_bstrm_C",MatGetFactor_seqbaij_bstrm);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MUMPS)
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatGetFactor_mumps_C", "MatGetFactor_baij_mumps", MatGetFactor_baij_mumps);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatGetFactor_mumps_C", MatGetFactor_baij_mumps);CHKERRQ(ierr);
 #endif
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatInvertBlockDiagonal_C","MatInvertBlockDiagonal_SeqBAIJ",MatInvertBlockDiagonal_SeqBAIJ);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatStoreValues_C","MatStoreValues_SeqBAIJ",MatStoreValues_SeqBAIJ);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatRetrieveValues_C","MatRetrieveValues_SeqBAIJ",MatRetrieveValues_SeqBAIJ);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatSeqBAIJSetColumnIndices_C","MatSeqBAIJSetColumnIndices_SeqBAIJ",MatSeqBAIJSetColumnIndices_SeqBAIJ);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqbaij_seqaij_C","MatConvert_SeqBAIJ_SeqAIJ",MatConvert_SeqBAIJ_SeqAIJ);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqbaij_seqsbaij_C","MatConvert_SeqBAIJ_SeqSBAIJ",MatConvert_SeqBAIJ_SeqSBAIJ);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatSeqBAIJSetPreallocation_C","MatSeqBAIJSetPreallocation_SeqBAIJ",MatSeqBAIJSetPreallocation_SeqBAIJ);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatSeqBAIJSetPreallocationCSR_C","MatSeqBAIJSetPreallocationCSR_SeqBAIJ",MatSeqBAIJSetPreallocationCSR_SeqBAIJ);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqbaij_seqbstrm_C","MatConvert_SeqBAIJ_SeqBSTRM",MatConvert_SeqBAIJ_SeqBSTRM);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatIsTranspose_C","MatIsTranspose_SeqBAIJ",MatIsTranspose_SeqBAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatInvertBlockDiagonal_C",MatInvertBlockDiagonal_SeqBAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatStoreValues_C",MatStoreValues_SeqBAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatRetrieveValues_C",MatRetrieveValues_SeqBAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatSeqBAIJSetColumnIndices_C",MatSeqBAIJSetColumnIndices_SeqBAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqbaij_seqaij_C",MatConvert_SeqBAIJ_SeqAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqbaij_seqsbaij_C",MatConvert_SeqBAIJ_SeqSBAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatSeqBAIJSetPreallocation_C",MatSeqBAIJSetPreallocation_SeqBAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatSeqBAIJSetPreallocationCSR_C",MatSeqBAIJSetPreallocationCSR_SeqBAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqbaij_seqbstrm_C",MatConvert_SeqBAIJ_SeqBSTRM);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatIsTranspose_C",MatIsTranspose_SeqBAIJ);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQBAIJ);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

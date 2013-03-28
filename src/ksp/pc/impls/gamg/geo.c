@@ -873,6 +873,6 @@ PetscErrorCode  PCCreateGAMG_GEO(PC pc)
 
   pc_gamg->createdefaultdata = PCSetData_GEO;
 
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCSetCoordinates_C","PCSetCoordinates_GEO",PCSetCoordinates_GEO);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCSetCoordinates_C",PCSetCoordinates_GEO);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

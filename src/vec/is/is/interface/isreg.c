@@ -37,7 +37,7 @@ PetscErrorCode  ISCreate(MPI_Comm comm,IS *is)
   PetscFunctionBegin;
   PetscValidPointer(is,2);
 #if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
-  ierr = ISInitializePackage(NULL);CHKERRQ(ierr);
+  ierr = ISInitializePackage();CHKERRQ(ierr);
 #endif
 
   ierr = PetscHeaderCreate(*is,_p_IS,struct _ISOps,IS_CLASSID,"IS","Index Set","IS",comm,ISDestroy,ISView);CHKERRQ(ierr);
@@ -79,8 +79,8 @@ PetscErrorCode  ISSetType(IS is, ISType method)
   ierr = PetscObjectTypeCompare((PetscObject) is, method, &match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
 
-  if (!ISRegisterAllCalled) {ierr = ISRegisterAll(NULL);CHKERRQ(ierr);}
-  ierr = PetscFunctionListFind(PetscObjectComm((PetscObject)is),ISList, method,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
+  if (!ISRegisterAllCalled) {ierr = ISRegisterAll();CHKERRQ(ierr);}
+  ierr = PetscFunctionListFind(ISList, method,(void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown IS type: %s", method);
   if (is->ops->destroy) {
     ierr = (*is->ops->destroy)(is);CHKERRQ(ierr);
@@ -116,7 +116,7 @@ PetscErrorCode  ISGetType(IS is, ISType *type)
   PetscValidHeaderSpecific(is, IS_CLASSID,1);
   PetscValidCharPointer(type,2);
   if (!ISRegisterAllCalled) {
-    ierr = ISRegisterAll(NULL);CHKERRQ(ierr);
+    ierr = ISRegisterAll();CHKERRQ(ierr);
   }
   *type = ((PetscObject)is)->type_name;
   PetscFunctionReturn(0);
@@ -128,20 +128,48 @@ PetscErrorCode  ISGetType(IS is, ISType *type)
 #undef __FUNCT__
 #define __FUNCT__ "ISRegister"
 /*@C
-  ISRegister - See ISRegisterDynamic()
+  ISRegister - Adds a new index set implementation
+
+  Not Collective
+
+  Input Parameters:
++ name        - The name of a new user-defined creation routine
+- create_func - The creation routine itself
+
+  Notes:
+  ISRegister() may be called multiple times to add several user-defined vectors
+
+  Sample usage:
+.vb
+    ISRegister("my_is_name",  MyISCreate);
+.ve
+
+  Then, your vector type can be chosen with the procedural interface via
+.vb
+    ISCreate(MPI_Comm, IS *);
+    ISSetType(IS,"my_is_name");
+.ve
+   or at runtime via the option
+.vb
+    -is_type my_is_name
+.ve
+
+  This is no ISSetFromOptions() and the current implementations do not have a way to dynamically determine type, so
+  dynamic registration of custom IS types will be of limited use to users.
+
+  Level: developer
+
+.keywords: IS, register
+.seealso: ISRegisterAll(), ISRegisterDestroy(), ISRegister()
 
   Level: advanced
 @*/
-PetscErrorCode  ISRegister(const char sname[], const char path[], const char name[], PetscErrorCode (*function)(IS))
+PetscErrorCode  ISRegister(const char sname[], PetscErrorCode (*function)(IS))
 {
-  char           fullname[PETSC_MAX_PATH_LEN];
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscStrcpy(fullname, path);CHKERRQ(ierr);
-  ierr = PetscStrcat(fullname, ":");CHKERRQ(ierr);
-  ierr = PetscStrcat(fullname, name);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&ISList, sname, fullname, (void (*)(void)) function);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&ISList, sname, (void (*)(void)) function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -150,14 +178,14 @@ PetscErrorCode  ISRegister(const char sname[], const char path[], const char nam
 #undef __FUNCT__
 #define __FUNCT__ "ISRegisterDestroy"
 /*@C
-   ISRegisterDestroy - Frees the list of IS methods that were registered by ISRegister()/ISRegisterDynamic().
+   ISRegisterDestroy - Frees the list of IS methods that were registered by ISRegister().
 
    Not Collective
 
    Level: advanced
 
 .keywords: IS, register, destroy
-.seealso: ISRegister(), ISRegisterAll(), ISRegisterDynamic()
+.seealso: ISRegister(), ISRegisterAll()
 @*/
 PetscErrorCode  ISRegisterDestroy(void)
 {

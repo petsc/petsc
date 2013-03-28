@@ -89,14 +89,14 @@ PetscErrorCode  KSPSolve_Richardson(KSP ksp)
         ierr       = VecNorm(r,NORM_2,&rnorm);CHKERRQ(ierr); /*   rnorm <- r'*r     */
         ierr       = KSPMonitor(ksp,i,rnorm);CHKERRQ(ierr);
         ksp->rnorm = rnorm;
-        KSPLogResidualHistory(ksp,rnorm);
+        ierr = KSPLogResidualHistory(ksp,rnorm);CHKERRQ(ierr);
         ierr = (*ksp->converged)(ksp,i,rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
         if (ksp->reason) break;
       } else if (ksp->normtype == KSP_NORM_PRECONDITIONED) {
         ierr       = VecNorm(z,NORM_2,&rnorm);CHKERRQ(ierr); /*   rnorm <- z'*z     */
         ierr       = KSPMonitor(ksp,i,rnorm);CHKERRQ(ierr);
         ksp->rnorm = rnorm;
-        KSPLogResidualHistory(ksp,rnorm);
+        ierr = KSPLogResidualHistory(ksp,rnorm);CHKERRQ(ierr);
         ierr = (*ksp->converged)(ksp,i,rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
         if (ksp->reason) break;
       }
@@ -116,7 +116,7 @@ PetscErrorCode  KSPSolve_Richardson(KSP ksp)
         ierr       = VecNorm(r,NORM_2,&rnorm);CHKERRQ(ierr); /*   rnorm <- r'*r     */
         ierr       = KSPMonitor(ksp,i,rnorm);CHKERRQ(ierr);
         ksp->rnorm = rnorm;
-        KSPLogResidualHistory(ksp,rnorm);
+        ierr = KSPLogResidualHistory(ksp,rnorm);CHKERRQ(ierr);
         ierr = (*ksp->converged)(ksp,i,rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
         if (ksp->reason) break;
       }
@@ -127,7 +127,7 @@ PetscErrorCode  KSPSolve_Richardson(KSP ksp)
         ierr       = VecNorm(z,NORM_2,&rnorm);CHKERRQ(ierr); /*   rnorm <- z'*z     */
         ierr       = KSPMonitor(ksp,i,rnorm);CHKERRQ(ierr);
         ksp->rnorm = rnorm;
-        KSPLogResidualHistory(ksp,rnorm);
+        ierr = KSPLogResidualHistory(ksp,rnorm);CHKERRQ(ierr);
         ierr = (*ksp->converged)(ksp,i,rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
         if (ksp->reason) break;
       }
@@ -150,7 +150,7 @@ PetscErrorCode  KSPSolve_Richardson(KSP ksp)
         ierr = VecNorm(z,NORM_2,&rnorm);CHKERRQ(ierr);     /*   rnorm <- z'*z     */
       }
       ksp->rnorm = rnorm;
-      KSPLogResidualHistory(ksp,rnorm);
+      ierr = KSPLogResidualHistory(ksp,rnorm);CHKERRQ(ierr);
       ierr = KSPMonitor(ksp,i,rnorm);CHKERRQ(ierr);
     }
     if (ksp->its >= ksp->max_it) {
@@ -211,7 +211,7 @@ PetscErrorCode KSPDestroy_Richardson(KSP ksp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPRichardsonSetScale_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPRichardsonSetScale_C",NULL);CHKERRQ(ierr);
   ierr = KSPDestroyDefault(ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -298,8 +298,8 @@ PETSC_EXTERN PetscErrorCode KSPCreate_Richardson(KSP ksp)
   ksp->ops->view           = KSPView_Richardson;
   ksp->ops->setfromoptions = KSPSetFromOptions_Richardson;
 
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPRichardsonSetScale_C","KSPRichardsonSetScale_Richardson",KSPRichardsonSetScale_Richardson);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPRichardsonSetSelfScale_C","KSPRichardsonSetSelfScale_Richardson",KSPRichardsonSetSelfScale_Richardson);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPRichardsonSetScale_C",KSPRichardsonSetScale_Richardson);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPRichardsonSetSelfScale_C",KSPRichardsonSetSelfScale_Richardson);CHKERRQ(ierr);
 
   richardsonP->scale = 1.0;
   PetscFunctionReturn(0);

@@ -64,7 +64,7 @@ PetscErrorCode  PCSetType(PC pc,PCType type)
   ierr = PetscObjectTypeCompare((PetscObject)pc,type,&match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
 
-  ierr =  PetscFunctionListFind(PetscObjectComm((PetscObject)pc),PCList,type,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
+  ierr =  PetscFunctionListFind(PCList,type,(void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested PC type %s",type);
   /* Destroy the previous private PC context */
   if (pc->ops->destroy) {
@@ -83,11 +83,6 @@ PetscErrorCode  PCSetType(PC pc,PCType type)
 
   ierr = PetscObjectChangeTypeName((PetscObject)pc,type);CHKERRQ(ierr);
   ierr = (*r)(pc);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_AMS)
-  if (PetscAMSPublishAll) {
-    ierr = PetscObjectAMSPublish((PetscObject)pc);CHKERRQ(ierr);
-  }
-#endif
   PetscFunctionReturn(0);
 }
 
@@ -95,7 +90,7 @@ PetscErrorCode  PCSetType(PC pc,PCType type)
 #define __FUNCT__ "PCRegisterDestroy"
 /*@
    PCRegisterDestroy - Frees the list of preconditioners that were
-   registered by PCRegisterDynamic().
+   registered by PCRegister().
 
    Not Collective
 
@@ -161,11 +156,14 @@ extern PetscErrorCode PCGetDefaultType_Private(PC,const char*[]);
    Input Parameter:
 .  pc - the preconditioner context
 
+   Options Database:
+.   -pc_use_amat true,false see PCSetUseAmat()
+
    Level: developer
 
 .keywords: PC, set, from, options, database
 
-.seealso:
+.seealso: PCSetUseAmat()
 
 @*/
 PetscErrorCode  PCSetFromOptions(PC pc)
@@ -178,7 +176,7 @@ PetscErrorCode  PCSetFromOptions(PC pc)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
 
-  if (!PCRegisterAllCalled) {ierr = PCRegisterAll(NULL);CHKERRQ(ierr);}
+  if (!PCRegisterAllCalled) {ierr = PCRegisterAll();CHKERRQ(ierr);}
   ierr = PetscObjectOptionsBegin((PetscObject)pc);CHKERRQ(ierr);
   if (!((PetscObject)pc)->type_name) {
     ierr = PCGetDefaultType_Private(pc,&def);CHKERRQ(ierr);
@@ -193,7 +191,7 @@ PetscErrorCode  PCSetFromOptions(PC pc)
     ierr = PCSetType(pc,def);CHKERRQ(ierr);
   }
 
-  ierr = PetscOptionsGetInt(((PetscObject)pc)->prefix,"-pc_reuse",&pc->reuse,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-pc_use_amat","use Amat (instead of Pmat) to define preconditioner in nested inner solves","PCSetUseAmat",pc->useAmat,&pc->useAmat,NULL);CHKERRQ(ierr);
 
   if (pc->ops->setfromoptions) {
     ierr = (*pc->ops->setfromoptions)(pc);CHKERRQ(ierr);

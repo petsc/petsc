@@ -117,7 +117,7 @@ PetscErrorCode  PCDestroy(PC *pc)
   ierr = PCReset(*pc);CHKERRQ(ierr);
 
   /* if memory was published with AMS then destroy it */
-  ierr = PetscObjectDepublish((*pc));CHKERRQ(ierr);
+  ierr = PetscObjectAMSViewOff((PetscObject)*pc);CHKERRQ(ierr);
   if ((*pc)->ops->destroy) {ierr = (*(*pc)->ops->destroy)((*pc));CHKERRQ(ierr);}
   ierr = DMDestroy(&(*pc)->dm);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(pc);CHKERRQ(ierr);
@@ -285,16 +285,6 @@ PetscErrorCode  PCDiagonalScaleRight(PC pc,Vec in,Vec out)
   PetscFunctionReturn(0);
 }
 
-#if 0
-#undef __FUNCT__
-#define __FUNCT__ "PCPublish_Petsc"
-static PetscErrorCode PCPublish_Petsc(PetscObject obj)
-{
-  PetscFunctionBegin;
-  PetscFunctionReturn(0);
-}
-#endif
-
 #undef __FUNCT__
 #define __FUNCT__ "PCSetUseAmat"
 /*@
@@ -390,7 +380,7 @@ PetscErrorCode  PCCreate(MPI_Comm comm,PC *newpc)
   PetscValidPointer(newpc,1);
   *newpc = 0;
 #if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
-  ierr = PCInitializePackage(NULL);CHKERRQ(ierr);
+  ierr = PCInitializePackage();CHKERRQ(ierr);
 #endif
 
   ierr = PetscHeaderCreate(pc,_p_PC,struct _PCOps,PC_CLASSID,"PC","Preconditioner","PC",comm,PCDestroy,PCView);CHKERRQ(ierr);
@@ -403,7 +393,6 @@ PetscErrorCode  PCCreate(MPI_Comm comm,PC *newpc)
   pc->diagonalscale        = PETSC_FALSE;
   pc->diagonalscaleleft    = 0;
   pc->diagonalscaleright   = 0;
-  pc->reuse                = 0;
 
   pc->modifysubmatrices  = 0;
   pc->modifysubmatricesP = 0;
@@ -1551,6 +1540,9 @@ PetscErrorCode  PCLoad(PC newdm, PetscViewer viewer)
 }
 
 #include <petscdraw.h>
+#if defined(PETSC_HAVE_AMS)
+#include <petscviewerams.h>
+#endif
 #undef __FUNCT__
 #define __FUNCT__ "PCView"
 /*@C
@@ -1585,6 +1577,9 @@ PetscErrorCode  PCView(PC pc,PetscViewer viewer)
   PetscErrorCode    ierr;
   PetscBool         iascii,isstring,isbinary,isdraw;
   PetscViewerFormat format;
+#if defined(PETSC_HAVE_AMS)
+  PetscBool         isams;
+#endif
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
@@ -1598,6 +1593,9 @@ PetscErrorCode  PCView(PC pc,PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_AMS)
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERAMS,&isams);CHKERRQ(ierr);
+#endif
 
   if (iascii) {
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
@@ -1668,6 +1666,14 @@ PetscErrorCode  PCView(PC pc,PetscViewer viewer)
       ierr = (*pc->ops->view)(pc,viewer);CHKERRQ(ierr);
     }
     ierr = PetscDrawPopCurrentPoint(draw);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_AMS)
+  } else if (isams) {
+    if (((PetscObject)pc)->amsmem == -1) {
+      ierr = PetscObjectViewAMS((PetscObject)pc,viewer);CHKERRQ(ierr);
+    }
+    if (pc->mat) {ierr = MatView(pc->mat,viewer);CHKERRQ(ierr);}
+    if (pc->pmat && pc->pmat != pc->mat) {ierr = MatView(pc->pmat,viewer);CHKERRQ(ierr);}
+#endif
   }
   PetscFunctionReturn(0);
 }
@@ -1710,18 +1716,39 @@ PetscErrorCode  PCSetInitialGuessNonzero(PC pc,PetscBool flg)
 #undef __FUNCT__
 #define __FUNCT__ "PCRegister"
 /*@C
-  PCRegister - See PCRegisterDynamic()
+  PCRegister -  Adds a method to the preconditioner package.
 
-  Level: advanced
+   Not collective
+
+   Input Parameters:
++  name_solver - name of a new user-defined solver
+-  routine_create - routine to create method context
+
+   Notes:
+   PCRegister() may be called multiple times to add several user-defined preconditioners.
+
+   Sample usage:
+.vb
+   PCRegister("my_solver", MySolverCreate);
+.ve
+
+   Then, your solver can be chosen with the procedural interface via
+$     PCSetType(pc,"my_solver")
+   or at runtime via the option
+$     -pc_type my_solver
+
+   Level: advanced
+
+.keywords: PC, register
+
+.seealso: PCRegisterAll(), PCRegisterDestroy()
 @*/
-PetscErrorCode  PCRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(PC))
+PetscErrorCode  PCRegister(const char sname[],PetscErrorCode (*function)(PC))
 {
   PetscErrorCode ierr;
-  char           fullname[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListConcat(path,name,fullname);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&PCList,sname,fullname,(void (*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&PCList,sname,(void (*)(void))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

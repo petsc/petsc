@@ -164,67 +164,19 @@ typedef enum {MAT_INITIAL_MATRIX,MAT_REUSE_MATRIX,MAT_IGNORE_MATRIX} MatReuse;
 E*/
 typedef enum {MAT_DO_NOT_GET_VALUES,MAT_GET_VALUES} MatGetSubMatrixOption;
 
-PETSC_EXTERN PetscErrorCode MatInitializePackage(const char[]);
+PETSC_EXTERN PetscErrorCode MatInitializePackage(void);
 
 PETSC_EXTERN PetscErrorCode MatCreate(MPI_Comm,Mat*);
 PETSC_EXTERN PetscErrorCode MatSetSizes(Mat,PetscInt,PetscInt,PetscInt,PetscInt);
 PETSC_EXTERN PetscErrorCode MatSetType(Mat,MatType);
 PETSC_EXTERN PetscErrorCode MatSetFromOptions(Mat);
 PETSC_EXTERN PetscErrorCode MatViewFromOptions(Mat,const char[]);
-PETSC_EXTERN PetscErrorCode MatRegisterAll(const char[]);
-PETSC_EXTERN PetscErrorCode MatRegister(const char[],const char[],const char[],PetscErrorCode(*)(Mat));
+PETSC_EXTERN PetscErrorCode MatRegisterAll(void);
+PETSC_EXTERN PetscErrorCode MatRegister(const char[],PetscErrorCode(*)(Mat));
 PETSC_EXTERN PetscErrorCode MatRegisterBaseName(const char[],const char[],const char[]);
 PETSC_EXTERN PetscErrorCode MatSetOptionsPrefix(Mat,const char[]);
 PETSC_EXTERN PetscErrorCode MatAppendOptionsPrefix(Mat,const char[]);
 PETSC_EXTERN PetscErrorCode MatGetOptionsPrefix(Mat,const char*[]);
-
-/*MC
-   MatRegisterDynamic - Adds a new matrix type
-
-   Synopsis:
-   #include "petscmat.h"
-   PetscErrorCode MatRegisterDynamic(const char *name,const char *path,const char *name_create,PetscErrorCode (*routine_create)(Mat))
-
-   Not Collective
-
-   Input Parameters:
-+  name - name of a new user-defined matrix type
-.  path - path (either absolute or relative) the library containing this solver
-.  name_create - name of routine to create method context
--  routine_create - routine to create method context
-
-   Notes:
-   MatRegisterDynamic() may be called multiple times to add several user-defined solvers.
-
-   If dynamic libraries are used, then the fourth input argument (routine_create)
-   is ignored.
-
-   Sample usage:
-.vb
-   MatRegisterDynamic("my_mat",/home/username/my_lib/lib/libO/solaris/mylib.a,
-               "MyMatCreate",MyMatCreate);
-.ve
-
-   Then, your solver can be chosen with the procedural interface via
-$     MatSetType(Mat,"my_mat")
-   or at runtime via the option
-$     -mat_type my_mat
-
-   Level: advanced
-
-   Notes: ${PETSC_ARCH} occuring in pathname will be replaced with appropriate values.
-         If your function is not being put into a shared library then use VecRegister() instead
-
-.keywords: Mat, register
-
-.seealso: MatRegisterAll(), MatRegisterDestroy()
-
-M*/
-#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
-#define MatRegisterDynamic(a,b,c,d) MatRegister(a,b,c,0)
-#else
-#define MatRegisterDynamic(a,b,c,d) MatRegister(a,b,c,d)
-#endif
 
 PETSC_EXTERN PetscBool         MatRegisterAllCalled;
 PETSC_EXTERN PetscFunctionList MatList;
@@ -975,53 +927,10 @@ typedef const char* MatOrderingType;
 
 PETSC_EXTERN PetscErrorCode MatGetOrdering(Mat,MatOrderingType,IS*,IS*);
 PETSC_EXTERN PetscErrorCode MatGetOrderingList(PetscFunctionList*);
-PETSC_EXTERN PetscErrorCode MatOrderingRegister(const char[],const char[],const char[],PetscErrorCode(*)(Mat,MatOrderingType,IS*,IS*));
-
-/*MC
-   MatOrderingRegisterDynamic - Adds a new sparse matrix ordering to the matrix package.
-
-   Synopsis:
-   #include "petscmat.h"
-   PetscErrorCode MatOrderingRegisterDynamic(const char *name_ordering,const char *path,const char *name_create,PetscErrorCode (*routine_create)(MatOrdering))
-
-   Not Collective
-
-   Input Parameters:
-+  sname - name of ordering (for example MATORDERINGND)
-.  path - location of library where creation routine is
-.  name - name of function that creates the ordering type,a string
--  function - function pointer that creates the ordering
-
-   Level: developer
-
-   If dynamic libraries are used, then the fourth input argument (function)
-   is ignored.
-
-   Sample usage:
-.vb
-   MatOrderingRegisterDynamic("my_order",/home/username/my_lib/lib/libO/solaris/mylib.a,
-               "MyOrder",MyOrder);
-.ve
-
-   Then, your partitioner can be chosen with the procedural interface via
-$     MatOrderingSetType(part,"my_order)
-   or at runtime via the option
-$     -pc_factor_mat_ordering_type my_order
-
-   ${PETSC_ARCH} occuring in pathname will be replaced with appropriate values.
-
-.keywords: matrix, ordering, register
-
-.seealso: MatOrderingRegisterDestroy(), MatOrderingRegisterAll()
-M*/
-#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
-#define MatOrderingRegisterDynamic(a,b,c,d) MatOrderingRegister(a,b,c,0)
-#else
-#define MatOrderingRegisterDynamic(a,b,c,d) MatOrderingRegister(a,b,c,d)
-#endif
+PETSC_EXTERN PetscErrorCode MatOrderingRegister(const char[],PetscErrorCode(*)(Mat,MatOrderingType,IS*,IS*));
 
 PETSC_EXTERN PetscErrorCode MatOrderingRegisterDestroy(void);
-PETSC_EXTERN PetscErrorCode MatOrderingRegisterAll(const char[]);
+PETSC_EXTERN PetscErrorCode MatOrderingRegisterAll(void);
 PETSC_EXTERN PetscBool         MatOrderingRegisterAllCalled;
 PETSC_EXTERN PetscFunctionList MatOrderingList;
 
@@ -1128,55 +1037,11 @@ typedef const char* MatColoringType;
 #define MATCOLORINGID      "id"
 
 PETSC_EXTERN PetscErrorCode MatGetColoring(Mat,MatColoringType,ISColoring*);
-PETSC_EXTERN PetscErrorCode MatColoringRegister(const char[],const char[],const char[],PetscErrorCode(*)(Mat,MatColoringType,ISColoring *));
-
-/*MC
-   MatColoringRegisterDynamic - Adds a new sparse matrix coloring to the
-                               matrix package.
-
-   Synopsis:
-   #include "petscmat.h"
-   PetscErrorCode MatColoringRegisterDynamic(const char *name_coloring,const char *path,const char *name_create,PetscErrorCode (*routine_create)(MatColoring))
-
-   Not Collective
-
-   Input Parameters:
-+  sname - name of Coloring (for example MATCOLORINGSL)
-.  path - location of library where creation routine is
-.  name - name of function that creates the Coloring type, a string
--  function - function pointer that creates the coloring
-
-   Level: developer
-
-   If dynamic libraries are used, then the fourth input argument (function)
-   is ignored.
-
-   Sample usage:
-.vb
-   MatColoringRegisterDynamic("my_color",/home/username/my_lib/lib/libO/solaris/mylib.a,
-               "MyColor",MyColor);
-.ve
-
-   Then, your partitioner can be chosen with the procedural interface via
-$     MatColoringSetType(part,"my_color")
-   or at runtime via the option
-$     -mat_coloring_type my_color
-
-   $PETSC_ARCH occuring in pathname will be replaced with appropriate values.
-
-.keywords: matrix, Coloring, register
-
-.seealso: MatColoringRegisterDestroy(), MatColoringRegisterAll()
-M*/
-#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
-#define MatColoringRegisterDynamic(a,b,c,d) MatColoringRegister(a,b,c,0)
-#else
-#define MatColoringRegisterDynamic(a,b,c,d) MatColoringRegister(a,b,c,d)
-#endif
+PETSC_EXTERN PetscErrorCode MatColoringRegister(const char[],PetscErrorCode(*)(Mat,MatColoringType,ISColoring *));
 
 PETSC_EXTERN PetscBool MatColoringRegisterAllCalled;
 
-PETSC_EXTERN PetscErrorCode MatColoringRegisterAll(const char[]);
+PETSC_EXTERN PetscErrorCode MatColoringRegisterAll(void);
 PETSC_EXTERN PetscErrorCode MatColoringRegisterDestroy(void);
 PETSC_EXTERN PetscErrorCode MatColoringPatch(Mat,PetscInt,PetscInt,ISColoringValue[],ISColoring*);
 
@@ -1262,55 +1127,11 @@ PETSC_EXTERN PetscErrorCode MatPartitioningSetPartitionWeights(MatPartitioning,c
 PETSC_EXTERN PetscErrorCode MatPartitioningApply(MatPartitioning,IS*);
 PETSC_EXTERN PetscErrorCode MatPartitioningDestroy(MatPartitioning*);
 
-PETSC_EXTERN PetscErrorCode MatPartitioningRegister(const char[],const char[],const char[],PetscErrorCode (*)(MatPartitioning));
-
-/*MC
-   MatPartitioningRegisterDynamic - Adds a new sparse matrix partitioning to the
-   matrix package.
-
-   Synopsis:
-   #include "petscmat.h"
-   PetscErrorCode MatPartitioningRegisterDynamic(const char *name_partitioning,const char *path,const char *name_create,PetscErrorCode (*routine_create)(MatPartitioning))
-
-   Not Collective
-
-   Input Parameters:
-+  sname - name of partitioning (for example MATPARTITIONINGCURRENT) or parmetis
-.  path - location of library where creation routine is
-.  name - name of function that creates the partitioning type, a string
--  function - function pointer that creates the partitioning type
-
-   Level: developer
-
-   If dynamic libraries are used, then the fourth input argument (function)
-   is ignored.
-
-   Sample usage:
-.vb
-   MatPartitioningRegisterDynamic("my_part",/home/username/my_lib/lib/libO/solaris/mylib.a,
-               "MyPartCreate",MyPartCreate);
-.ve
-
-   Then, your partitioner can be chosen with the procedural interface via
-$     MatPartitioningSetType(part,"my_part")
-   or at runtime via the option
-$     -mat_partitioning_type my_part
-
-   $PETSC_ARCH occuring in pathname will be replaced with appropriate values.
-
-.keywords: matrix, partitioning, register
-
-.seealso: MatPartitioningRegisterDestroy(), MatPartitioningRegisterAll()
-M*/
-#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
-#define MatPartitioningRegisterDynamic(a,b,c,d) MatPartitioningRegister(a,b,c,0)
-#else
-#define MatPartitioningRegisterDynamic(a,b,c,d) MatPartitioningRegister(a,b,c,d)
-#endif
+PETSC_EXTERN PetscErrorCode MatPartitioningRegister(const char[],PetscErrorCode (*)(MatPartitioning));
 
 PETSC_EXTERN PetscBool MatPartitioningRegisterAllCalled;
 
-PETSC_EXTERN PetscErrorCode MatPartitioningRegisterAll(const char[]);
+PETSC_EXTERN PetscErrorCode MatPartitioningRegisterAll(void);
 PETSC_EXTERN PetscErrorCode MatPartitioningRegisterDestroy(void);
 
 PETSC_EXTERN PetscErrorCode MatPartitioningView(MatPartitioning,PetscViewer);
@@ -1425,55 +1246,11 @@ PETSC_EXTERN PetscErrorCode MatCoarsenGetData( MatCoarsen, PetscCoarsenData ** )
 PETSC_EXTERN PetscErrorCode MatCoarsenApply(MatCoarsen);
 PETSC_EXTERN PetscErrorCode MatCoarsenDestroy(MatCoarsen*);
 
-PETSC_EXTERN PetscErrorCode MatCoarsenRegister(const char[],const char[],const char[],PetscErrorCode (*)(MatCoarsen));
-
-/*MC
-   MatCoarsenRegisterDynamic - Adds a new sparse matrix coarsen to the
-   matrix package.
-
-   Synopsis:
-   #include "petscmat.h"
-   PetscErrorCode MatCoarsenRegisterDynamic(const char *name_coarsen,const char *path,const char *name_create,PetscErrorCode (*routine_create)(MatCoarsen))
-
-   Not Collective
-
-   Input Parameters:
-+  sname - name of coarsen (for example MATCOARSENMIS)
-.  path - location of library where creation routine is
-.  name - name of function that creates the coarsen type, a string
--  function - function pointer that creates the coarsen type
-
-   Level: developer
-
-   If dynamic libraries are used, then the fourth input argument (function)
-   is ignored.
-
-   Sample usage:
-.vb
-   MatCoarsenRegisterDynamic("my_agg",/home/username/my_lib/lib/libO/solaris/mylib.a,
-               "MyAggCreate",MyAggCreate);
-.ve
-
-   Then, your aggregator can be chosen with the procedural interface via
-$     MatCoarsenSetType(agg,"my_agg")
-   or at runtime via the option
-$     -mat_coarsen_type my_agg
-
-   $PETSC_ARCH occuring in pathname will be replaced with appropriate values.
-
-.keywords: matrix, coarsen, register
-
-.seealso: MatCoarsenRegisterDestroy(), MatCoarsenRegisterAll()
-M*/
-#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
-#define MatCoarsenRegisterDynamic(a,b,c,d) MatCoarsenRegister(a,b,c,0)
-#else
-#define MatCoarsenRegisterDynamic(a,b,c,d) MatCoarsenRegister(a,b,c,d)
-#endif
+PETSC_EXTERN PetscErrorCode MatCoarsenRegister(const char[],PetscErrorCode (*)(MatCoarsen));
 
 PETSC_EXTERN PetscBool MatCoarsenRegisterAllCalled;
 
-PETSC_EXTERN PetscErrorCode MatCoarsenRegisterAll(const char[]);
+PETSC_EXTERN PetscErrorCode MatCoarsenRegisterAll(void);
 PETSC_EXTERN PetscErrorCode MatCoarsenRegisterDestroy(void);
 
 PETSC_EXTERN PetscErrorCode MatCoarsenView(MatCoarsen,PetscViewer);
@@ -1726,53 +1503,9 @@ typedef const char* MatMFFDType;
 #define MATMFFD_WP  "wp"
 
 PETSC_EXTERN PetscErrorCode MatMFFDSetType(Mat,MatMFFDType);
-PETSC_EXTERN PetscErrorCode MatMFFDRegister(const char[],const char[],const char[],PetscErrorCode (*)(MatMFFD));
+PETSC_EXTERN PetscErrorCode MatMFFDRegister(const char[],PetscErrorCode (*)(MatMFFD));
 
-/*MC
-   MatMFFDRegisterDynamic - Adds a method to the MatMFFD registry.
-
-   Synopsis:
-   #include "petscmat.h"
-   PetscErrorCode MatMFFDRegisterDynamic(const char *name_solver,const char *path,const char *name_create,PetscErrorCode (*routine_create)(MatMFFD))
-
-   Not Collective
-
-   Input Parameters:
-+  name_solver - name of a new user-defined compute-h module
-.  path - path (either absolute or relative) the library containing this solver
-.  name_create - name of routine to create method context
--  routine_create - routine to create method context
-
-   Level: developer
-
-   Notes:
-   MatMFFDRegisterDynamic() may be called multiple times to add several user-defined solvers.
-
-   If dynamic libraries are used, then the fourth input argument (routine_create)
-   is ignored.
-
-   Sample usage:
-.vb
-   MatMFFDRegisterDynamic("my_h",/home/username/my_lib/lib/libO/solaris/mylib.a,
-               "MyHCreate",MyHCreate);
-.ve
-
-   Then, your solver can be chosen with the procedural interface via
-$     MatMFFDSetType(mfctx,"my_h")
-   or at runtime via the option
-$     -snes_mf_type my_h
-
-.keywords: MatMFFD, register
-
-.seealso: MatMFFDRegisterAll(), MatMFFDRegisterDestroy()
-M*/
-#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
-#define MatMFFDRegisterDynamic(a,b,c,d) MatMFFDRegister(a,b,c,0)
-#else
-#define MatMFFDRegisterDynamic(a,b,c,d) MatMFFDRegister(a,b,c,d)
-#endif
-
-PETSC_EXTERN PetscErrorCode MatMFFDRegisterAll(const char[]);
+PETSC_EXTERN PetscErrorCode MatMFFDRegisterAll(void);
 PETSC_EXTERN PetscErrorCode MatMFFDRegisterDestroy(void);
 PETSC_EXTERN PetscErrorCode MatMFFDDSSetUmin(Mat,PetscReal);
 PETSC_EXTERN PetscErrorCode MatMFFDWPSetComputeNormU(Mat,PetscBool );
@@ -1785,6 +1518,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerMathematicaPutCSRMatrix(PetscViewer, Pets
 */
 #ifdef PETSC_HAVE_MUMPS
 PETSC_EXTERN PetscErrorCode MatMumpsSetIcntl(Mat,PetscInt,PetscInt);
+PETSC_EXTERN PetscErrorCode MatMumpsSetCntl(Mat,PetscInt,PetscReal);
 #endif
 
 /*
@@ -1906,7 +1640,7 @@ PETSC_EXTERN PetscErrorCode MatGetVecsFFTW(Mat,Vec*,Vec*,Vec*);
 #endif
 
 #if defined(PETSC_HAVE_ELEMENTAL)
-PETSC_EXTERN PetscErrorCode PetscElementalInitializePackage(const char*);
+PETSC_EXTERN PetscErrorCode PetscElementalInitializePackage(void);
 PETSC_EXTERN PetscErrorCode PetscElementalFinalizePackage(void);
 #endif
 

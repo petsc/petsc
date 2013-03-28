@@ -382,7 +382,7 @@ PetscErrorCode DMCreateMatrix_Mesh(DM dm, MatType mtype, Mat *J)
 
   PetscFunctionBegin;
 #if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
-  ierr = MatInitializePackage(NULL);CHKERRQ(ierr);
+  ierr = MatInitializePackage();CHKERRQ(ierr);
 #endif
   if (!mtype) mtype = MATAIJ;
   if (mesh->useNewImpl) {
@@ -443,7 +443,7 @@ PetscErrorCode DMMeshCreateMatrix(DM dm, SectionReal section, MatType mtype, Mat
 
   PetscFunctionBegin;
 #if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
-  ierr = MatInitializePackage(NULL);CHKERRQ(ierr);
+  ierr = MatInitializePackage();CHKERRQ(ierr);
 #endif
   if (!mtype) mtype = MATAIJ;
   ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
@@ -599,8 +599,8 @@ PetscErrorCode DMCreateLocalVector_Mesh(DM dm, Vec *lvec)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMCreateLocalToGlobalMapping_Mesh"
-PetscErrorCode DMCreateLocalToGlobalMapping_Mesh(DM dm)
+#define __FUNCT__ "DMGetLocalToGlobalMapping_Mesh"
+PetscErrorCode DMGetLocalToGlobalMapping_Mesh(DM dm)
 {
   ALE::Obj<PETSC_MESH_TYPE>                    m;
   ALE::Obj<PETSC_MESH_TYPE::real_section_type> s;

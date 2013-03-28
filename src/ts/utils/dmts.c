@@ -62,15 +62,26 @@ PetscErrorCode DMTSView(DMTS kdm,PetscViewer viewer)
     }
 #endif
   } else if (isbinary) {
-    ierr = PetscViewerBinaryWrite(viewer,(void*)kdm->ops->ifunction,1,PETSC_FUNCTION,PETSC_FALSE);CHKERRQ(ierr);
-    ierr = PetscViewerBinaryWrite(viewer,(void*)kdm->ops->ifunctionview,1,PETSC_FUNCTION,PETSC_FALSE);CHKERRQ(ierr);
-    ierr = PetscViewerBinaryWrite(viewer,(void*)kdm->ops->ifunctionload,1,PETSC_FUNCTION,PETSC_FALSE);CHKERRQ(ierr);
+    struct {
+      TSIFunction ifunction;
+      PetscErrorCode (*ifunctionview)(void*,PetscViewer);
+      PetscErrorCode (*ifunctionload)(void**,PetscViewer);
+    } funcstruct = {kdm->ops->ifunction,
+                    kdm->ops->ifunctionview,
+                    kdm->ops->ifunctionload};
+    struct {
+      TSIJacobian ijacobian;
+      PetscErrorCode (*ijacobianview)(void*,PetscViewer);
+      PetscErrorCode (*ijacobianload)(void**,PetscViewer);
+    } jacstruct = {kdm->ops->ijacobian,
+                   kdm->ops->ijacobianview,
+                   kdm->ops->ijacobianload};
+
+    ierr = PetscViewerBinaryWrite(viewer,&funcstruct,3,PETSC_FUNCTION,PETSC_FALSE);CHKERRQ(ierr);
     if (kdm->ops->ifunctionview) {
       ierr = (*kdm->ops->ifunctionview)(kdm->ifunctionctx,viewer);CHKERRQ(ierr);
     }
-    ierr = PetscViewerBinaryWrite(viewer,(void*)kdm->ops->ijacobian,1,PETSC_FUNCTION,PETSC_FALSE);CHKERRQ(ierr);
-    ierr = PetscViewerBinaryWrite(viewer,(void*)kdm->ops->ijacobianview,1,PETSC_FUNCTION,PETSC_FALSE);CHKERRQ(ierr);
-    ierr = PetscViewerBinaryWrite(viewer,(void*)kdm->ops->ijacobianload,1,PETSC_FUNCTION,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryWrite(viewer,&jacstruct,3,PETSC_FUNCTION,PETSC_FALSE);CHKERRQ(ierr);
     if (kdm->ops->ijacobianview) {
       ierr = (*kdm->ops->ijacobianview)(kdm->ijacobianctx,viewer);CHKERRQ(ierr);
     }
@@ -86,7 +97,7 @@ static PetscErrorCode DMTSCreate(MPI_Comm comm,DMTS *kdm)
 
   PetscFunctionBegin;
 #if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
-  ierr = TSInitializePackage(NULL);CHKERRQ(ierr);
+  ierr = TSInitializePackage();CHKERRQ(ierr);
 #endif
   ierr = PetscHeaderCreate(*kdm, _p_DMTS, struct _DMTSOps, DMTS_CLASSID, "DMTS", "DMTS", "DMTS", comm, DMTSDestroy, DMTSView);CHKERRQ(ierr);
   ierr = PetscMemzero((*kdm)->ops, sizeof(struct _DMTSOps));CHKERRQ(ierr);

@@ -149,13 +149,13 @@ PetscErrorCode MatDestroy_SeqSBAIJ(Mat A)
   ierr = PetscFree(A->data);CHKERRQ(ierr);
 
   ierr = PetscObjectChangeTypeName((PetscObject)A,0);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatStoreValues_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatRetrieveValues_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatSeqSBAIJSetColumnIndices_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_seqsbaij_seqaij_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_seqsbaij_seqbaij_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatSeqSBAIJSetPreallocation_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_seqsbaij_seqsbstrm_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatStoreValues_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatRetrieveValues_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatSeqSBAIJSetColumnIndices_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_seqsbaij_seqaij_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_seqsbaij_seqbaij_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatSeqSBAIJSetPreallocation_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_seqsbaij_seqsbstrm_C",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -818,23 +818,17 @@ PetscErrorCode MatAssemblyEnd_SeqSBAIJ_SeqAIJ_Inode(Mat A)
     row  = 0;
     for (i=0; i<node_count; i++) {
       cols = aj + ai[row] + a->inode.size[i];
-      CHKMEMQ;
       counts[2*cnt] = cols[0];
-      CHKMEMQ;
       nz   = ai[row+1] - ai[row] - a->inode.size[i];
       cnt2 = 1;
       for (j=1; j<nz; j++) {
         if (cols[j] != cols[j-1]+1) {
-          CHKMEMQ;
           counts[2*(cnt++)+1] = cnt2;
           counts[2*cnt]       = cols[j];
-          CHKMEMQ;
           cnt2 = 1;
         } else cnt2++;
       }
-      CHKMEMQ;
       counts[2*(cnt++)+1] = cnt2;
-      CHKMEMQ;
       row += a->inode.size[i];
     }
     ierr = PetscIntView(2*cnt,counts,0);CHKERRQ(ierr);
@@ -1379,130 +1373,147 @@ PetscErrorCode MatZeroRowsColumns_SeqSBAIJ(Mat A,PetscInt is_n,const PetscInt is
 }
 
 /* -------------------------------------------------------------------*/
-static struct _MatOps MatOps_Values = {
-        MatSetValues_SeqSBAIJ,
-        MatGetRow_SeqSBAIJ,
-        MatRestoreRow_SeqSBAIJ,
-        MatMult_SeqSBAIJ_N,
-/*  4*/ MatMultAdd_SeqSBAIJ_N,
-        MatMult_SeqSBAIJ_N,       /* transpose versions are same as non-transpose versions */
-        MatMultAdd_SeqSBAIJ_N,
-        0,
-        0,
-        0,
-/* 10*/ 0,
-        0,
-        MatCholeskyFactor_SeqSBAIJ,
-        MatSOR_SeqSBAIJ,
-        MatTranspose_SeqSBAIJ,
-/* 15*/ MatGetInfo_SeqSBAIJ,
-        MatEqual_SeqSBAIJ,
-        MatGetDiagonal_SeqSBAIJ,
-        MatDiagonalScale_SeqSBAIJ,
-        MatNorm_SeqSBAIJ,
-/* 20*/ 0,
-        MatAssemblyEnd_SeqSBAIJ,
-        MatSetOption_SeqSBAIJ,
-        MatZeroEntries_SeqSBAIJ,
-/* 24*/ 0,
-        0,
-        0,
-        0,
-        0,
-/* 29*/ MatSetUp_SeqSBAIJ,
-        0,
-        0,
-        0,
-        0,
-/* 34*/ MatDuplicate_SeqSBAIJ,
-        0,
-        0,
-        0,
-        MatICCFactor_SeqSBAIJ,
-/* 39*/ MatAXPY_SeqSBAIJ,
-        MatGetSubMatrices_SeqSBAIJ,
-        MatIncreaseOverlap_SeqSBAIJ,
-        MatGetValues_SeqSBAIJ,
-        MatCopy_SeqSBAIJ,
-/* 44*/ 0,
-        MatScale_SeqSBAIJ,
-        0,
-        0,
-        MatZeroRowsColumns_SeqSBAIJ,
-/* 49*/ 0,
-        MatGetRowIJ_SeqSBAIJ,
-        MatRestoreRowIJ_SeqSBAIJ,
-        0,
-        0,
-/* 54*/ 0,
-        0,
-        0,
-        0,
-        MatSetValuesBlocked_SeqSBAIJ,
-/* 59*/ MatGetSubMatrix_SeqSBAIJ,
-        0,
-        0,
-        0,
-        0,
-/* 64*/ 0,
-        0,
-        0,
-        0,
-        0,
-/* 69*/ MatGetRowMaxAbs_SeqSBAIJ,
-        0,
-        0,
-        0,
-        0,
-/* 74*/ 0,
-        0,
-        0,
-        0,
-        0,
-/* 79*/ 0,
-        0,
-        0,
-        MatGetInertia_SeqSBAIJ,
-        MatLoad_SeqSBAIJ,
-/* 84*/ MatIsSymmetric_SeqSBAIJ,
-        MatIsHermitian_SeqSBAIJ,
-        MatIsStructurallySymmetric_SeqSBAIJ,
-        0,
-        0,
-/* 89*/ 0,
-        0,
-        0,
-        0,
-        0,
-/* 94*/ 0,
-        0,
-        0,
-        0,
-        0,
-/* 99*/ 0,
-        0,
-        0,
-        0,
-        0,
-/*104*/ 0,
-        MatRealPart_SeqSBAIJ,
-        MatImaginaryPart_SeqSBAIJ,
-        MatGetRowUpperTriangular_SeqSBAIJ,
-        MatRestoreRowUpperTriangular_SeqSBAIJ,
-/*109*/ 0,
-        0,
-        0,
-        0,
-        MatMissingDiagonal_SeqSBAIJ,
-/*114*/ 0,
-        0,
-        0,
-        0,
-        0,
-/*119*/ 0,
-        0,
-        0,
-        0
+static struct _MatOps MatOps_Values = {MatSetValues_SeqSBAIJ,
+                                       MatGetRow_SeqSBAIJ,
+                                       MatRestoreRow_SeqSBAIJ,
+                                       MatMult_SeqSBAIJ_N,
+                               /*  4*/ MatMultAdd_SeqSBAIJ_N,
+                                       MatMult_SeqSBAIJ_N,       /* transpose versions are same as non-transpose versions */
+                                       MatMultAdd_SeqSBAIJ_N,
+                                       0,
+                                       0,
+                                       0,
+                               /* 10*/ 0,
+                                       0,
+                                       MatCholeskyFactor_SeqSBAIJ,
+                                       MatSOR_SeqSBAIJ,
+                                       MatTranspose_SeqSBAIJ,
+                               /* 15*/ MatGetInfo_SeqSBAIJ,
+                                       MatEqual_SeqSBAIJ,
+                                       MatGetDiagonal_SeqSBAIJ,
+                                       MatDiagonalScale_SeqSBAIJ,
+                                       MatNorm_SeqSBAIJ,
+                               /* 20*/ 0,
+                                       MatAssemblyEnd_SeqSBAIJ,
+                                       MatSetOption_SeqSBAIJ,
+                                       MatZeroEntries_SeqSBAIJ,
+                               /* 24*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /* 29*/ MatSetUp_SeqSBAIJ,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /* 34*/ MatDuplicate_SeqSBAIJ,
+                                       0,
+                                       0,
+                                       0,
+                                       MatICCFactor_SeqSBAIJ,
+                               /* 39*/ MatAXPY_SeqSBAIJ,
+                                       MatGetSubMatrices_SeqSBAIJ,
+                                       MatIncreaseOverlap_SeqSBAIJ,
+                                       MatGetValues_SeqSBAIJ,
+                                       MatCopy_SeqSBAIJ,
+                               /* 44*/ 0,
+                                       MatScale_SeqSBAIJ,
+                                       0,
+                                       0,
+                                       MatZeroRowsColumns_SeqSBAIJ,
+                               /* 49*/ 0,
+                                       MatGetRowIJ_SeqSBAIJ,
+                                       MatRestoreRowIJ_SeqSBAIJ,
+                                       0,
+                                       0,
+                               /* 54*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       MatSetValuesBlocked_SeqSBAIJ,
+                               /* 59*/ MatGetSubMatrix_SeqSBAIJ,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /* 64*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /* 69*/ MatGetRowMaxAbs_SeqSBAIJ,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /* 74*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /* 79*/ 0,
+                                       0,
+                                       0,
+                                       MatGetInertia_SeqSBAIJ,
+                                       MatLoad_SeqSBAIJ,
+                               /* 84*/ MatIsSymmetric_SeqSBAIJ,
+                                       MatIsHermitian_SeqSBAIJ,
+                                       MatIsStructurallySymmetric_SeqSBAIJ,
+                                       0,
+                                       0,
+                               /* 89*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /* 94*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /* 99*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /*104*/ 0,
+                                       MatRealPart_SeqSBAIJ,
+                                       MatImaginaryPart_SeqSBAIJ,
+                                       MatGetRowUpperTriangular_SeqSBAIJ,
+                                       MatRestoreRowUpperTriangular_SeqSBAIJ,
+                               /*109*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       MatMissingDiagonal_SeqSBAIJ,
+                               /*114*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /*119*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /*124*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /*129*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /*134*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /*139*/ 0,
+                                       0
 };
 
 #undef __FUNCT__
@@ -1889,24 +1900,24 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqSBAIJ(Mat B)
   ierr = PetscOptionsGetBool(((PetscObject)B)->prefix,"-mat_getrow_uppertriangular",&b->getrow_utriangular,NULL);CHKERRQ(ierr);
 
 #if defined(PETSC_HAVE_PASTIX)
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatGetFactor_pastix_C","MatGetFactor_seqsbaij_pastix",MatGetFactor_seqsbaij_pastix);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatGetFactor_pastix_C",MatGetFactor_seqsbaij_pastix);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_MUMPS)
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatGetFactor_mumps_C","MatGetFactor_sbaij_mumps",MatGetFactor_sbaij_mumps);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatGetFactor_mumps_C",MatGetFactor_sbaij_mumps);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_CHOLMOD)
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatGetFactor_cholmod_C","MatGetFactor_seqsbaij_cholmod",MatGetFactor_seqsbaij_cholmod);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatGetFactor_cholmod_C",MatGetFactor_seqsbaij_cholmod);CHKERRQ(ierr);
 #endif
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatGetFactorAvailable_petsc_C","MatGetFactorAvailable_seqsbaij_petsc",MatGetFactorAvailable_seqsbaij_petsc);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatGetFactor_petsc_C","MatGetFactor_seqsbaij_petsc",MatGetFactor_seqsbaij_petsc);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatGetFactor_sbstrm_C","MatGetFactor_seqsbaij_sbstrm",MatGetFactor_seqsbaij_sbstrm);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatStoreValues_C","MatStoreValues_SeqSBAIJ",MatStoreValues_SeqSBAIJ);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatRetrieveValues_C","MatRetrieveValues_SeqSBAIJ",MatRetrieveValues_SeqSBAIJ);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatSeqSBAIJSetColumnIndices_C","MatSeqSBAIJSetColumnIndices_SeqSBAIJ",MatSeqSBAIJSetColumnIndices_SeqSBAIJ);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqsbaij_seqaij_C","MatConvert_SeqSBAIJ_SeqAIJ",MatConvert_SeqSBAIJ_SeqAIJ);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqsbaij_seqbaij_C","MatConvert_SeqSBAIJ_SeqBAIJ",MatConvert_SeqSBAIJ_SeqBAIJ);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatSeqSBAIJSetPreallocation_C","MatSeqSBAIJSetPreallocation_SeqSBAIJ",MatSeqSBAIJSetPreallocation_SeqSBAIJ);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqsbaij_seqsbstrm_C","MatConvert_SeqSBAIJ_SeqSBSTRM",MatConvert_SeqSBAIJ_SeqSBSTRM);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatGetFactorAvailable_petsc_C",MatGetFactorAvailable_seqsbaij_petsc);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatGetFactor_petsc_C",MatGetFactor_seqsbaij_petsc);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatGetFactor_sbstrm_C",MatGetFactor_seqsbaij_sbstrm);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatStoreValues_C",MatStoreValues_SeqSBAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatRetrieveValues_C",MatRetrieveValues_SeqSBAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatSeqSBAIJSetColumnIndices_C",MatSeqSBAIJSetColumnIndices_SeqSBAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqsbaij_seqaij_C",MatConvert_SeqSBAIJ_SeqAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqsbaij_seqbaij_C",MatConvert_SeqSBAIJ_SeqBAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatSeqSBAIJSetPreallocation_C",MatSeqSBAIJSetPreallocation_SeqSBAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqsbaij_seqsbstrm_C",MatConvert_SeqSBAIJ_SeqSBSTRM);CHKERRQ(ierr);
 
   B->symmetric                  = PETSC_TRUE;
   B->structurally_symmetric     = PETSC_TRUE;

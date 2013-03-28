@@ -527,6 +527,7 @@ PetscErrorCode  VecDestroy(Vec *v)
   PetscValidHeaderSpecific((*v),VEC_CLASSID,1);
   if (--((PetscObject)(*v))->refct > 0) {*v = 0; PetscFunctionReturn(0);}
 
+  ierr = PetscObjectAMSViewOff((PetscObject)*v);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&(*v)->viewonassembly);CHKERRQ(ierr);
   /* destroy the internal part */
   if ((*v)->ops->destroy) {
@@ -1331,7 +1332,7 @@ static PetscErrorCode VecSetTypeFromOptions_Private(Vec vec)
     else defaultType = VECSEQ;
   }
 
-  if (!VecRegisterAllCalled) {ierr = VecRegisterAll(NULL);CHKERRQ(ierr);}
+  if (!VecRegisterAllCalled) {ierr = VecRegisterAll();CHKERRQ(ierr);}
   ierr = PetscOptionsList("-vec_type","Vector type","VecSetType",VecList,defaultType,typeName,256,&opt);CHKERRQ(ierr);
   if (opt) {
     ierr = VecSetType(vec, typeName);CHKERRQ(ierr);

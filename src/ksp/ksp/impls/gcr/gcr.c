@@ -68,7 +68,7 @@ PetscErrorCode KSPSolve_GCR_cycle(KSP ksp)
     res        = norm_r;
     ksp->rnorm = res;
 
-    KSPLogResidualHistory(ksp,res);
+    ierr = KSPLogResidualHistory(ksp,res);CHKERRQ(ierr);
     ierr = KSPMonitor(ksp,ksp->its,res);CHKERRQ(ierr);
 
     if (ksp->its > ksp->chknorm) {
@@ -109,7 +109,7 @@ PetscErrorCode KSPSolve_GCR(KSP ksp)
   ksp->its    = 0;
   ksp->rnorm0 = norm_r;
 
-  KSPLogResidualHistory(ksp,ksp->rnorm0);
+  ierr = KSPLogResidualHistory(ksp,ksp->rnorm0);CHKERRQ(ierr);
   ierr = KSPMonitor(ksp,ksp->its,ksp->rnorm0);CHKERRQ(ierr);
   ierr = (*ksp->converged)(ksp,ksp->its,ksp->rnorm0,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
   if (ksp->reason) PetscFunctionReturn(0);
@@ -384,8 +384,8 @@ PETSC_EXTERN PetscErrorCode KSPCreate_GCR(KSP ksp)
   ksp->ops->buildsolution  = KSPBuildSolution_GCR;
   ksp->ops->buildresidual  = KSPBuildResidual_GCR;
 
-  ierr = PetscObjectComposeFunction((PetscObject)ksp, "KSPGCRSetRestart_C","KSPGCRSetRestart_GCR",KSPGCRSetRestart_GCR);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGCRSetModifyPC_C","KSPGCRSetModifyPC_GCR",KSPGCRSetModifyPC_GCR);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp, "KSPGCRSetRestart_C",KSPGCRSetRestart_GCR);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGCRSetModifyPC_C",KSPGCRSetModifyPC_GCR);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

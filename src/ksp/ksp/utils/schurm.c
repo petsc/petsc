@@ -559,7 +559,7 @@ PetscErrorCode MatGetSchurComplement_Basic(Mat mat,IS isrow0,IS iscol0,IS isrow1
     which will rarely produce a scalable algorithm.
 
     Sometimes users would like to provide problem-specific data in the Schur complement, usually only for special row
-    and column index sets.  In that case, the user should call PetscObjectComposeFunctionDynamic() to set
+    and column index sets.  In that case, the user should call PetscObjectComposeFunction() to set
     "MatNestGetSubMat_C" to their function.  If their function needs to fall back to the default implementation, it
     should call MatGetSchurComplement_Basic().
 
@@ -633,13 +633,13 @@ static PetscBool KSPMatRegisterAllCalled;
 
 .seealso: MatRegisterAll(), MatRegisterDestroy(), KSPInitializePackage()
 @*/
-PetscErrorCode KSPMatRegisterAll(const char path[])
+PetscErrorCode KSPMatRegisterAll()
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (KSPMatRegisterAllCalled) PetscFunctionReturn(0);
   KSPMatRegisterAllCalled = PETSC_TRUE;
-  ierr = MatRegisterDynamic(MATSCHURCOMPLEMENT,path,"MatCreate_SchurComplement",MatCreate_SchurComplement);CHKERRQ(ierr);
+  ierr = MatRegister(MATSCHURCOMPLEMENT,MatCreate_SchurComplement);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

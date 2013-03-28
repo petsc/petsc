@@ -353,7 +353,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_Eisenstat(PC pc)
   eis->diag    = 0;
   eis->usediag = PETSC_TRUE;
 
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCEisenstatSetOmega_C","PCEisenstatSetOmega_Eisenstat",PCEisenstatSetOmega_Eisenstat);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCEisenstatNoDiagonalScaling_C","PCEisenstatNoDiagonalScaling_Eisenstat",PCEisenstatNoDiagonalScaling_Eisenstat);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCEisenstatSetOmega_C",PCEisenstatSetOmega_Eisenstat);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCEisenstatNoDiagonalScaling_C",PCEisenstatNoDiagonalScaling_Eisenstat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -38,15 +38,12 @@ PetscErrorCode  PetscViewerMathematicaFinalizePackage(void)
   called from PetscDLLibraryRegister() when using dynamic libraries, and on the call to PetscInitialize()
   when using static libraries.
 
-  Input Parameter:
-  path - The dynamic library path, or NULL
-
   Level: developer
 
 .keywords: Petsc, initialize, package
 .seealso: PetscSysInitializePackage(), PetscInitialize()
 @*/
-PetscErrorCode  PetscViewerMathematicaInitializePackage(const char path[])
+PetscErrorCode  PetscViewerMathematicaInitializePackage(void)
 {
   PetscError ierr;
 
@@ -171,7 +168,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_Mathematica(PetscViewer v)
 
   PetscFunctionBegin;
 #if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
-  ierr = PetscViewerMathematicaInitializePackage(NULL);CHKERRQ(ierr);
+  ierr = PetscViewerMathematicaInitializePackage();CHKERRQ(ierr);
 #endif
 
   ierr            = PetscNewLog(v,PetscViewer_Mathematica, &vmath);CHKERRQ(ierr);

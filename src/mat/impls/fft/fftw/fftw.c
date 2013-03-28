@@ -1223,9 +1223,9 @@ PETSC_EXTERN PetscErrorCode MatCreate_FFTW(Mat A)
   A->assembled    = PETSC_TRUE;
   A->preallocated = PETSC_TRUE;
 
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatGetVecsFFTW_C","MatGetVecsFFTW_FFTW",MatGetVecsFFTW_FFTW);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"VecScatterPetscToFFTW_C","VecScatterPetscToFFTW_FFTW",VecScatterPetscToFFTW_FFTW);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"VecScatterFFTWToPetsc_C","VecScatterFFTWToPetsc_FFTW",VecScatterFFTWToPetsc_FFTW);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatGetVecsFFTW_C",MatGetVecsFFTW_FFTW);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"VecScatterPetscToFFTW_C",VecScatterPetscToFFTW_FFTW);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"VecScatterFFTWToPetsc_C",VecScatterFFTWToPetsc_FFTW);CHKERRQ(ierr);
 
   /* get runtime options */
   ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)A),((PetscObject)A)->prefix,"FFTW Options","Mat");CHKERRQ(ierr);

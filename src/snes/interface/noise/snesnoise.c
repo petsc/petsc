@@ -86,8 +86,8 @@ PetscErrorCode SNESDiffParameterCompute_More(SNES snes,void *nePv,Vec x,Vec p,do
   Vec            w, xp, fvec;    /* work vectors to use in computing h */
   double         zero = 0.0, hl, hu, h, fnoise_s, fder2_s;
   PetscScalar    alpha;
-  PetscScalar    fval[7], tab[7][7], eps[7], f;
-  double         rerrf, fder2;
+  PetscScalar    fval[7], tab[7][7], eps[7], f = -1;
+  double         rerrf = -1., fder2;
   PetscErrorCode ierr;
   PetscInt       iter, k, i, j,  info;
   PetscInt       nf = 7;         /* number of function evaluations */

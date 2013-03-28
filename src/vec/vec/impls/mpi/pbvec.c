@@ -158,7 +158,13 @@ static struct _VecOps DvOps = { VecDuplicate_MPI, /* 1 */
                                 0,
                                 0,
                                 VecStrideGather_Default,
-                                VecStrideScatter_Default};
+                                VecStrideScatter_Default,
+                                0,
+                                0,
+                                0,
+                                0,
+                                0
+};
 
 #undef __FUNCT__
 #define __FUNCT__ "VecCreate_MPI_Private"
@@ -206,8 +212,8 @@ PetscErrorCode VecCreate_MPI_Private(Vec v,PetscBool alloc,PetscInt nghost,const
   ierr = VecStashCreate_Private(PetscObjectComm((PetscObject)v),v->map->bs,&v->bstash);CHKERRQ(ierr);
 
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
-  ierr = PetscObjectComposeFunction((PetscObject)v,"PetscMatlabEnginePut_C","VecMatlabEnginePut_Default",VecMatlabEnginePut_Default);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)v,"PetscMatlabEngineGet_C","VecMatlabEngineGet_Default",VecMatlabEngineGet_Default);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)v,"PetscMatlabEnginePut_C",VecMatlabEnginePut_Default);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)v,"PetscMatlabEngineGet_C",VecMatlabEngineGet_Default);CHKERRQ(ierr);
 #endif
   ierr = PetscObjectChangeTypeName((PetscObject)v,VECMPI);CHKERRQ(ierr);
   PetscFunctionReturn(0);

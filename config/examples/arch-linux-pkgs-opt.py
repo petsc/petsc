@@ -2,7 +2,10 @@
 
 configure_options = [
   '--with-debugging=0',
-  '--download-mpich=1',
+  '--with-cc=mpicc.openmpi',
+  '--with-cxx=mpicxx.openmpi',
+  '--with-fc=mpif90.openmpi',
+  '--with-mpiexec=mpiexec.openmpi',
   '--download-f-blas-lapack=1',
   '--download-hypre=1',
   '--download-cmake=1',

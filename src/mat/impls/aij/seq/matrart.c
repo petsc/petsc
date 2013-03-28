@@ -7,6 +7,7 @@
 #include <../src/mat/impls/aij/seq/aij.h>
 #include <../src/mat/utils/freespace.h>
 #include <../src/mat/impls/dense/seq/dense.h> /*I "petscmat.h" I*/
+#include <petsctime.h>
 
 /*
      MatApplyPAPt_Symbolic_SeqAIJ_SeqAIJ - Forms the symbolic product of two SeqAIJ matrices
@@ -310,7 +311,7 @@ PetscErrorCode MatRARtSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat R,PetscReal fill,Mat *C)
   Mat_SeqAIJ           *c;
 
   PetscFunctionBegin;
-  ierr = PetscGetTime(&t0);CHKERRQ(ierr);
+  ierr = PetscTime(&t0);CHKERRQ(ierr);
   /* create symbolic P=Rt */
   ierr = MatGetSymbolicTranspose_SeqAIJ(R,&rti,&rtj);CHKERRQ(ierr);
   ierr = MatCreateSeqAIJWithArrays(PETSC_COMM_SELF,R->cmap->n,R->rmap->n,rti,rtj,NULL,&P);CHKERRQ(ierr);
@@ -329,26 +330,26 @@ PetscErrorCode MatRARtSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat R,PetscReal fill,Mat *C)
   ierr   = PetscContainerSetUserDestroy(container,PetscContainerDestroy_Mat_RARt);CHKERRQ(ierr);
   ierr   = PetscObjectCompose((PetscObject)(*C),"Mat_RARt",(PetscObject)container);CHKERRQ(ierr);
   ierr   = PetscContainerDestroy(&container);CHKERRQ(ierr);
-  ierr   = PetscGetTime(&tf);CHKERRQ(ierr);
+  ierr   = PetscTime(&tf);CHKERRQ(ierr);
   etime += tf - t0;
 
   /* Create MatTransposeColoring from symbolic C=R*A*R^T */
   c       = (Mat_SeqAIJ*)(*C)->data;
-  ierr    = PetscGetTime(&t0);CHKERRQ(ierr);
+  ierr    = PetscTime(&t0);CHKERRQ(ierr);
   ierr    = MatGetColoring(*C,MATCOLORINGLF,&iscoloring);CHKERRQ(ierr);
-  ierr    = PetscGetTime(&tf);CHKERRQ(ierr);
+  ierr    = PetscTime(&tf);CHKERRQ(ierr);
   GColor += tf - t0;
 
-  ierr = PetscGetTime(&t0);CHKERRQ(ierr);
+  ierr = PetscTime(&t0);CHKERRQ(ierr);
   ierr = MatTransposeColoringCreate(*C,iscoloring,&matcoloring);CHKERRQ(ierr);
 
   rart->matcoloring = matcoloring;
 
   ierr      = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);
-  ierr      = PetscGetTime(&tf);CHKERRQ(ierr);
+  ierr      = PetscTime(&tf);CHKERRQ(ierr);
   MCCreate += tf - t0;
 
-  ierr = PetscGetTime(&t0);CHKERRQ(ierr);
+  ierr = PetscTime(&t0);CHKERRQ(ierr);
   /* Create Rt_dense */
   ierr = MatCreate(PETSC_COMM_SELF,&Rt_dense);CHKERRQ(ierr);
   ierr = MatSetSizes(Rt_dense,A->cmap->n,matcoloring->ncolors,A->cmap->n,matcoloring->ncolors);CHKERRQ(ierr);
@@ -369,7 +370,7 @@ PetscErrorCode MatRARtSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat R,PetscReal fill,Mat *C)
   /* Allocate work array to store columns of A*R^T used in MatMatMatMultNumeric_SeqAIJ_SeqAIJ_SeqDense() */
   ierr = PetscMalloc(A->rmap->n*4*sizeof(PetscScalar),&rart->work);CHKERRQ(ierr);
 
-  ierr        = PetscGetTime(&tf);CHKERRQ(ierr);
+  ierr        = PetscTime(&tf);CHKERRQ(ierr);
   MDenCreate += tf - t0;
 
   rart->destroy      = (*C)->ops->destroy;
@@ -511,23 +512,23 @@ PetscErrorCode MatRARtNumeric_SeqAIJ_SeqAIJ(Mat A,Mat R,Mat C)
   matcoloring = rart->matcoloring;
   Rt          = rart->Rt;
 
-  ierr  = PetscGetTime(&t0);CHKERRQ(ierr);
+  ierr  = PetscTime(&t0);CHKERRQ(ierr);
   ierr  = MatTransColoringApplySpToDen(matcoloring,R,Rt);CHKERRQ(ierr);
-  ierr  = PetscGetTime(&tf);CHKERRQ(ierr);
+  ierr  = PetscTime(&tf);CHKERRQ(ierr);
   app1 += tf - t0;
 
   /* Get dense RARt = R*A*Rt */
-  ierr = PetscGetTime(&t0);CHKERRQ(ierr);
+  ierr = PetscTime(&t0);CHKERRQ(ierr);
   RARt = rart->RARt;
   ierr = MatMatMatMultNumeric_SeqAIJ_SeqAIJ_SeqDense(R,A,Rt,RARt,rart->work);CHKERRQ(ierr);
-  ierr = PetscGetTime(&tf);CHKERRQ(ierr);
+  ierr = PetscTime(&tf);CHKERRQ(ierr);
 
   Mult_sp_den += tf - t0;
 
   /* Recover C from C_dense */
-  ierr = PetscGetTime(&t0);CHKERRQ(ierr);
+  ierr = PetscTime(&t0);CHKERRQ(ierr);
   ierr = MatTransColoringApplyDenToSp(matcoloring,RARt,C);CHKERRQ(ierr);
-  ierr = PetscGetTime(&tf);CHKERRQ(ierr);
+  ierr = PetscTime(&tf);CHKERRQ(ierr);
 
   app2 += tf - t0;
 

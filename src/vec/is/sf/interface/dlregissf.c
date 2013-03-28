@@ -13,14 +13,11 @@ PetscBool PetscSFRegisterAllCalled;
 
    Logically Collective
 
-   Input Arguments:
-.  path - the dynamic library path or NULL
-
    Level: developer
 
 .seealso: PetscSFFinalizePackage()
 @*/
-PetscErrorCode PetscSFInitializePackage(const char *path)
+PetscErrorCode PetscSFInitializePackage(void)
 {
   PetscErrorCode ierr;
 
@@ -29,7 +26,7 @@ PetscErrorCode PetscSFInitializePackage(const char *path)
   PetscSFPackageInitialized = PETSC_TRUE;
 
   ierr = PetscClassIdRegister("Bipartite Graph",&PETSCSF_CLASSID);CHKERRQ(ierr);
-  ierr = PetscSFRegisterAll(path);CHKERRQ(ierr);
+  ierr = PetscSFRegisterAll();CHKERRQ(ierr);
   ierr = PetscRegisterFinalize(PetscSFFinalizePackage);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

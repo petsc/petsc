@@ -1,5 +1,8 @@
 
 #include <petsc-private/viewerimpl.h>  /*I "petscviewer.h" I*/
+#if defined(PETSC_HAVE_AMS)
+#include <petscviewerams.h>
+#endif
 
 PetscFunctionList PetscViewerList = 0;
 
@@ -27,7 +30,8 @@ $       ascii[:[filename][:format]]   defaults to stdout - format can be one of 
 $                                     about the object to standard out
 $       binary[:[filename][:format]]   defaults to binaryoutput
 $       draw
-$       socket[:port]    defaults to the standard output port
+$       socket[:port]                  defaults to the standard output port
+$       ams[:communicatorname]         publishes object to the AMS (Argonne Memory Snooper) 
 
    Use PetscViewerDestroy() after using the viewer, otherwise a memory leak will occur
 
@@ -59,7 +63,7 @@ PetscErrorCode  PetscOptionsGetViewer(MPI_Comm comm,const char pre[],const char 
     } else {
       char       *cvalue,*loc,*loc2 = NULL;
       PetscInt   cnt;
-      const char *viewers[] = {PETSCVIEWERASCII,PETSCVIEWERBINARY,PETSCVIEWERDRAW,PETSCVIEWERSOCKET,PETSCVIEWERMATLAB,PETSCVIEWERVTK,0};
+      const char *viewers[] = {PETSCVIEWERASCII,PETSCVIEWERBINARY,PETSCVIEWERDRAW,PETSCVIEWERSOCKET,PETSCVIEWERMATLAB,PETSCVIEWERAMS,PETSCVIEWERVTK,0};
 
       ierr = PetscStrallocpy(value,&cvalue);CHKERRQ(ierr);
       ierr = PetscStrchr(cvalue,':',&loc);CHKERRQ(ierr);
@@ -87,6 +91,11 @@ PetscErrorCode  PetscOptionsGetViewer(MPI_Comm comm,const char pre[],const char 
           *viewer = PETSC_VIEWER_MATLAB_(comm);CHKERRQ(ierr);
           break;
 #endif
+#if defined(PETSC_HAVE_AMS)
+        case 5:
+          *viewer = PETSC_VIEWER_AMS_(comm);CHKERRQ(ierr);
+          break;
+#endif
         default: SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unsupported viewer %s",cvalue);CHKERRQ(ierr);
           break;
         }
@@ -100,6 +109,9 @@ PetscErrorCode  PetscOptionsGetViewer(MPI_Comm comm,const char pre[],const char 
         } else {
           ierr = PetscViewerCreate(comm,viewer);CHKERRQ(ierr);
           ierr = PetscViewerSetType(*viewer,*cvalue ? cvalue : "ascii");CHKERRQ(ierr);
+#if defined(PETSC_HAVE_AMS)
+          ierr = PetscViewerAMSSetCommName(*viewer,loc);CHKERRQ(ierr);
+#endif
           ierr = PetscViewerFileSetMode(*viewer,FILE_MODE_WRITE);CHKERRQ(ierr);
           ierr = PetscViewerFileSetName(*viewer,loc);CHKERRQ(ierr);
         }
@@ -147,7 +159,7 @@ PetscErrorCode  PetscViewerCreate(MPI_Comm comm,PetscViewer *inviewer)
   PetscFunctionBegin;
   *inviewer = 0;
 #if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
-  ierr = PetscViewerInitializePackage(NULL);CHKERRQ(ierr);
+  ierr = PetscViewerInitializePackage();CHKERRQ(ierr);
 #endif
   ierr         = PetscHeaderCreate(viewer,_p_PetscViewer,struct _PetscViewerOps,PETSC_VIEWER_CLASSID,"PetscViewer","PetscViewer","Viewer",comm,PetscViewerDestroy,0);CHKERRQ(ierr);
   *inviewer    = viewer;
@@ -186,7 +198,6 @@ PetscErrorCode  PetscViewerSetType(PetscViewer viewer,PetscViewerType type)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   PetscValidCharPointer(type,2);
-  CHKMEMQ;
   ierr = PetscObjectTypeCompare((PetscObject)viewer,type,&match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
 
@@ -199,7 +210,7 @@ PetscErrorCode  PetscViewerSetType(PetscViewer viewer,PetscViewerType type)
   }
   ierr = PetscMemzero(viewer->ops,sizeof(struct _PetscViewerOps));CHKERRQ(ierr);
 
-  ierr =  PetscFunctionListFind(PetscObjectComm((PetscObject)viewer),PetscViewerList,type,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
+  ierr =  PetscFunctionListFind(PetscViewerList,type,(void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown PetscViewer type given: %s",type);
 
   ierr = PetscObjectChangeTypeName((PetscObject)viewer,type);CHKERRQ(ierr);
@@ -211,13 +222,13 @@ PetscErrorCode  PetscViewerSetType(PetscViewer viewer,PetscViewerType type)
 #define __FUNCT__ "PetscViewerRegisterDestroy"
 /*@C
    PetscViewerRegisterDestroy - Frees the list of PetscViewer methods that were
-   registered by PetscViewerRegisterDynamic().
+   registered by PetscViewerRegister().
 
    Not Collective
 
    Level: developer
 
-.seealso: PetscViewerRegisterDynamic(), PetscViewerRegisterAll()
+.seealso: PetscViewerRegister(), PetscViewerRegisterAll()
 @*/
 PetscErrorCode  PetscViewerRegisterDestroy(void)
 {
@@ -230,14 +241,39 @@ PetscErrorCode  PetscViewerRegisterDestroy(void)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerRegister"
-PetscErrorCode  PetscViewerRegister(const char *sname,const char *path,const char *name,PetscErrorCode (*function)(PetscViewer))
+/*@C
+   PetscViewerRegister - Adds a viewer
+
+   Not Collective
+
+   Input Parameters:
++  name_solver - name of a new user-defined viewer
+-  routine_create - routine to create method context
+
+   Level: developer
+   Notes:
+   PetscViewerRegister() may be called multiple times to add several user-defined viewers.
+
+   Sample usage:
+.vb
+   PetscViewerRegister("my_viewer_type",MyViewerCreate);
+.ve
+
+   Then, your solver can be chosen with the procedural interface via
+$     PetscViewerSetType(viewer,"my_viewer_type")
+   or at runtime via the option
+$     -viewer_type my_viewer_type
+
+  Concepts: registering^Viewers
+
+.seealso: PetscViewerRegisterAll(), PetscViewerRegisterDestroy()
+ @*/
+PetscErrorCode  PetscViewerRegister(const char *sname,PetscErrorCode (*function)(PetscViewer))
 {
   PetscErrorCode ierr;
-  char           fullname[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListConcat(path,name,fullname);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&PetscViewerList,sname,fullname,(void (*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&PetscViewerList,sname,(void (*)(void))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -272,7 +308,7 @@ PetscErrorCode  PetscViewerSetFromOptions(PetscViewer viewer)
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
 
   if (!PetscViewerList) {
-    ierr = PetscViewerRegisterAll(NULL);CHKERRQ(ierr);
+    ierr = PetscViewerRegisterAll();CHKERRQ(ierr);
   }
   ierr = PetscObjectOptionsBegin((PetscObject)viewer);CHKERRQ(ierr);
   ierr = PetscOptionsList("-viewer_type","Type of PetscViewer","None",PetscViewerList,(char*)(((PetscObject)viewer)->type_name ? ((PetscObject)viewer)->type_name : PETSCVIEWERASCII),vtype,256,&flg);CHKERRQ(ierr);

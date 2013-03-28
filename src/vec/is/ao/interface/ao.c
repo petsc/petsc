@@ -76,7 +76,7 @@ PetscErrorCode  AODestroy(AO *ao)
   PetscValidHeaderSpecific((*ao),AO_CLASSID,1);
   if (--((PetscObject)(*ao))->refct > 0) {*ao = 0; PetscFunctionReturn(0);}
   /* if memory was published with AMS then destroy it */
-  ierr = PetscObjectDepublish((*ao));CHKERRQ(ierr);
+  ierr = PetscObjectAMSViewOff((PetscObject)*ao);CHKERRQ(ierr);
   /* destroy the internal part */
   if ((*ao)->ops->destroy) {
     ierr = (*(*ao)->ops->destroy)(*ao);CHKERRQ(ierr);
@@ -535,7 +535,7 @@ PetscErrorCode  AOCreate(MPI_Comm comm,AO *ao)
   PetscValidPointer(ao,2);
   *ao = NULL;
 #if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
-  ierr = AOInitializePackage(NULL);CHKERRQ(ierr);
+  ierr = AOInitializePackage();CHKERRQ(ierr);
 #endif
 
   ierr = PetscHeaderCreate(aonew,_p_AO,struct _AOOps,AO_CLASSID,"AO","Application Ordering","AO",comm,AODestroy,AOView);CHKERRQ(ierr);

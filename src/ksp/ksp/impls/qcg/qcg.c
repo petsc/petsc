@@ -153,11 +153,11 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
   ierr = PCApplySymmetricLeft(pc,B,BS);CHKERRQ(ierr);
 
   ierr       = VecNorm(BS,NORM_2,&bsnrm);CHKERRQ(ierr);
-  ierr       = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
+  ierr       = PetscObjectAMSTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
   ksp->its   = 0;
   ksp->rnorm = bsnrm;
-  ierr       = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
-  KSPLogResidualHistory(ksp,bsnrm);
+  ierr       = PetscObjectAMSGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
+  ierr = KSPLogResidualHistory(ksp,bsnrm);CHKERRQ(ierr);
   ierr = KSPMonitor(ksp,0,bsnrm);CHKERRQ(ierr);
   ierr = (*ksp->converged)(ksp,0,bsnrm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
   if (ksp->reason) PetscFunctionReturn(0);
@@ -169,9 +169,9 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
   ierr = VecDotRealPart(R,R,&rtr);CHKERRQ(ierr);
 
   for (i=0; i<=maxit; i++) {
-    ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
+    ierr = PetscObjectAMSTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
     ksp->its++;
-    ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
+    ierr = PetscObjectAMSGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
 
     /* Compute:  asp = D^{-T}*A*D^{-1}*p  */
     ierr = PCApplySymmetricRight(pc,P,WA);CHKERRQ(ierr);
@@ -247,10 +247,10 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
         ierr = VecAXPY(R,-step,ASP);CHKERRQ(ierr); /* r <- -step*asp + r */
         ierr = VecNorm(R,NORM_2,&rnrm);CHKERRQ(ierr);
 
-        ierr       = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
+        ierr       = PetscObjectAMSTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
         ksp->rnorm = rnrm;
-        ierr       = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
-        KSPLogResidualHistory(ksp,rnrm);
+        ierr       = PetscObjectAMSGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
+        ierr = KSPLogResidualHistory(ksp,rnrm);CHKERRQ(ierr);
         ierr = KSPMonitor(ksp,i+1,rnrm);CHKERRQ(ierr);
         ierr = (*ksp->converged)(ksp,i+1,rnrm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
         if (ksp->reason) {                 /* convergence for */
@@ -299,9 +299,9 @@ PetscErrorCode KSPDestroy_QCG(KSP ksp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPQCGGetQuadratic_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPQCGGetTrialStepNorm_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPQCGSetTrustRegionRadius_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPQCGGetQuadratic_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPQCGGetTrialStepNorm_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPQCGSetTrustRegionRadius_C",NULL);CHKERRQ(ierr);
   ierr = KSPDestroyDefault(ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -425,9 +425,9 @@ PETSC_EXTERN PetscErrorCode KSPCreate_QCG(KSP ksp)
   ksp->ops->setfromoptions = 0;
   ksp->ops->view           = 0;
 
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPQCGGetQuadratic_C","KSPQCGGetQuadratic_QCG",KSPQCGGetQuadratic_QCG);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPQCGGetTrialStepNorm_C","KSPQCGGetTrialStepNorm_QCG",KSPQCGGetTrialStepNorm_QCG);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPQCGSetTrustRegionRadius_C","KSPQCGSetTrustRegionRadius_QCG",KSPQCGSetTrustRegionRadius_QCG);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPQCGGetQuadratic_C",KSPQCGGetQuadratic_QCG);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPQCGGetTrialStepNorm_C",KSPQCGGetTrialStepNorm_QCG);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPQCGSetTrustRegionRadius_C",KSPQCGSetTrustRegionRadius_QCG);CHKERRQ(ierr);
   cgP->delta = PETSC_MAX_REAL; /* default trust region radius is infinite */
   PetscFunctionReturn(0);
 }

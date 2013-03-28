@@ -782,11 +782,11 @@ PetscErrorCode MatDestroy_MPISBAIJ(Mat mat)
   ierr = PetscFree(mat->data);CHKERRQ(ierr);
 
   ierr = PetscObjectChangeTypeName((PetscObject)mat,0);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatStoreValues_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatRetrieveValues_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatGetDiagonalBlock_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMPISBAIJSetPreallocation_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatConvert_mpisbaij_mpisbstrm_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatStoreValues_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatRetrieveValues_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatGetDiagonalBlock_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMPISBAIJSetPreallocation_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatConvert_mpisbaij_mpisbstrm_C",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1420,130 +1420,147 @@ PetscErrorCode MatGetSubMatrices_MPISBAIJ(Mat A,PetscInt n,const IS irow[],const
 
 
 /* -------------------------------------------------------------------*/
-static struct _MatOps MatOps_Values = {
-        MatSetValues_MPISBAIJ,
-        MatGetRow_MPISBAIJ,
-        MatRestoreRow_MPISBAIJ,
-        MatMult_MPISBAIJ,
-/*  4*/ MatMultAdd_MPISBAIJ,
-        MatMult_MPISBAIJ,       /* transpose versions are same as non-transpose */
-        MatMultAdd_MPISBAIJ,
-        0,
-        0,
-        0,
-/* 10*/ 0,
-        0,
-        0,
-        MatSOR_MPISBAIJ,
-        MatTranspose_MPISBAIJ,
-/* 15*/ MatGetInfo_MPISBAIJ,
-        MatEqual_MPISBAIJ,
-        MatGetDiagonal_MPISBAIJ,
-        MatDiagonalScale_MPISBAIJ,
-        MatNorm_MPISBAIJ,
-/* 20*/ MatAssemblyBegin_MPISBAIJ,
-        MatAssemblyEnd_MPISBAIJ,
-        MatSetOption_MPISBAIJ,
-        MatZeroEntries_MPISBAIJ,
-/* 24*/ 0,
-        0,
-        0,
-        0,
-        0,
-/* 29*/ MatSetUp_MPISBAIJ,
-        0,
-        0,
-        0,
-        0,
-/* 34*/ MatDuplicate_MPISBAIJ,
-        0,
-        0,
-        0,
-        0,
-/* 39*/ MatAXPY_MPISBAIJ,
-        MatGetSubMatrices_MPISBAIJ,
-        MatIncreaseOverlap_MPISBAIJ,
-        MatGetValues_MPISBAIJ,
-        MatCopy_MPISBAIJ,
-/* 44*/ 0,
-        MatScale_MPISBAIJ,
-        0,
-        0,
-        0,
-/* 49*/ 0,
-        0,
-        0,
-        0,
-        0,
-/* 54*/ 0,
-        0,
-        MatSetUnfactored_MPISBAIJ,
-        0,
-        MatSetValuesBlocked_MPISBAIJ,
-/* 59*/ 0,
-        0,
-        0,
-        0,
-        0,
-/* 64*/ 0,
-        0,
-        0,
-        0,
-        0,
-/* 69*/ MatGetRowMaxAbs_MPISBAIJ,
-        0,
-        0,
-        0,
-        0,
-/* 74*/ 0,
-        0,
-        0,
-        0,
-        0,
-/* 79*/ 0,
-        0,
-        0,
-        0,
-        MatLoad_MPISBAIJ,
-/* 84*/ 0,
-        0,
-        0,
-        0,
-        0,
-/* 89*/ 0,
-        0,
-        0,
-        0,
-        0,
-/* 94*/ 0,
-        0,
-        0,
-        0,
-        0,
-/* 99*/ 0,
-        0,
-        0,
-        0,
-        0,
-/*104*/ 0,
-        MatRealPart_MPISBAIJ,
-        MatImaginaryPart_MPISBAIJ,
-        MatGetRowUpperTriangular_MPISBAIJ,
-        MatRestoreRowUpperTriangular_MPISBAIJ,
-/*109*/ 0,
-        0,
-        0,
-        0,
-        0,
-/*114*/ 0,
-        0,
-        0,
-        0,
-        0,
-/*119*/ 0,
-        0,
-        0,
-        0
+static struct _MatOps MatOps_Values = {MatSetValues_MPISBAIJ,
+                                       MatGetRow_MPISBAIJ,
+                                       MatRestoreRow_MPISBAIJ,
+                                       MatMult_MPISBAIJ,
+                               /*  4*/ MatMultAdd_MPISBAIJ,
+                                       MatMult_MPISBAIJ,       /* transpose versions are same as non-transpose */
+                                       MatMultAdd_MPISBAIJ,
+                                       0,
+                                       0,
+                                       0,
+                               /* 10*/ 0,
+                                       0,
+                                       0,
+                                       MatSOR_MPISBAIJ,
+                                       MatTranspose_MPISBAIJ,
+                               /* 15*/ MatGetInfo_MPISBAIJ,
+                                       MatEqual_MPISBAIJ,
+                                       MatGetDiagonal_MPISBAIJ,
+                                       MatDiagonalScale_MPISBAIJ,
+                                       MatNorm_MPISBAIJ,
+                               /* 20*/ MatAssemblyBegin_MPISBAIJ,
+                                       MatAssemblyEnd_MPISBAIJ,
+                                       MatSetOption_MPISBAIJ,
+                                       MatZeroEntries_MPISBAIJ,
+                               /* 24*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /* 29*/ MatSetUp_MPISBAIJ,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /* 34*/ MatDuplicate_MPISBAIJ,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /* 39*/ MatAXPY_MPISBAIJ,
+                                       MatGetSubMatrices_MPISBAIJ,
+                                       MatIncreaseOverlap_MPISBAIJ,
+                                       MatGetValues_MPISBAIJ,
+                                       MatCopy_MPISBAIJ,
+                               /* 44*/ 0,
+                                       MatScale_MPISBAIJ,
+                                       0,
+                                       0,
+                                       0,
+                               /* 49*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /* 54*/ 0,
+                                       0,
+                                       MatSetUnfactored_MPISBAIJ,
+                                       0,
+                                       MatSetValuesBlocked_MPISBAIJ,
+                               /* 59*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /* 64*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /* 69*/ MatGetRowMaxAbs_MPISBAIJ,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /* 74*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /* 79*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       MatLoad_MPISBAIJ,
+                               /* 84*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /* 89*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /* 94*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /* 99*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /*104*/ 0,
+                                       MatRealPart_MPISBAIJ,
+                                       MatImaginaryPart_MPISBAIJ,
+                                       MatGetRowUpperTriangular_MPISBAIJ,
+                                       MatRestoreRowUpperTriangular_MPISBAIJ,
+                               /*109*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /*114*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /*119*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /*124*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /*129*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /*134*/ 0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                               /*139*/ 0,
+                                       0
 };
 
 
@@ -1565,27 +1582,11 @@ PetscErrorCode  MatMPISBAIJSetPreallocation_MPISBAIJ(Mat B,PetscInt bs,PetscInt 
   PetscInt       i,mbs,Mbs;
 
   PetscFunctionBegin;
-  if (d_nz == PETSC_DECIDE || d_nz == PETSC_DEFAULT) d_nz = 3;
-  if (o_nz == PETSC_DECIDE || o_nz == PETSC_DEFAULT) o_nz = 1;
-  if (d_nz < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"d_nz cannot be less than 0: value %D",d_nz);
-  if (o_nz < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"o_nz cannot be less than 0: value %D",o_nz);
-
   ierr = PetscLayoutSetBlockSize(B->rmap,bs);CHKERRQ(ierr);
   ierr = PetscLayoutSetBlockSize(B->cmap,bs);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(B->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(B->cmap);CHKERRQ(ierr);
   ierr = PetscLayoutGetBlockSize(B->rmap,&bs);CHKERRQ(ierr);
-
-  if (d_nnz) {
-    for (i=0; i<B->rmap->n/bs; i++) {
-      if (d_nnz[i] < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"d_nnz cannot be less than -1: local row %D value %D",i,d_nnz[i]);
-    }
-  }
-  if (o_nnz) {
-    for (i=0; i<B->rmap->n/bs; i++) {
-      if (o_nnz[i] < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"o_nnz cannot be less than -1: local row %D value %D",i,o_nnz[i]);
-    }
-  }
 
   b   = (Mat_MPISBAIJ*)B->data;
   mbs = B->rmap->n/bs;
@@ -1794,17 +1795,17 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPISBAIJ(Mat B)
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
 #if defined(PETSC_HAVE_PASTIX)
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatGetFactor_pastix_C","MatGetFactor_mpisbaij_pastix",MatGetFactor_mpisbaij_pastix);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatGetFactor_pastix_C",MatGetFactor_mpisbaij_pastix);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_MUMPS)
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatGetFactor_mumps_C","MatGetFactor_sbaij_mumps",MatGetFactor_sbaij_mumps);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatGetFactor_mumps_C",MatGetFactor_sbaij_mumps);CHKERRQ(ierr);
 #endif
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatStoreValues_C","MatStoreValues_MPISBAIJ",MatStoreValues_MPISBAIJ);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatRetrieveValues_C","MatRetrieveValues_MPISBAIJ",MatRetrieveValues_MPISBAIJ);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatGetDiagonalBlock_C","MatGetDiagonalBlock_MPISBAIJ",MatGetDiagonalBlock_MPISBAIJ);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMPISBAIJSetPreallocation_C","MatMPISBAIJSetPreallocation_MPISBAIJ",MatMPISBAIJSetPreallocation_MPISBAIJ);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMPISBAIJSetPreallocationCSR_C","MatMPISBAIJSetPreallocationCSR_MPISBAIJ",MatMPISBAIJSetPreallocationCSR_MPISBAIJ);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_mpisbaij_mpisbstrm_C","MatConvert_MPISBAIJ_MPISBSTRM",MatConvert_MPISBAIJ_MPISBSTRM);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatStoreValues_C",MatStoreValues_MPISBAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatRetrieveValues_C",MatRetrieveValues_MPISBAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatGetDiagonalBlock_C",MatGetDiagonalBlock_MPISBAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMPISBAIJSetPreallocation_C",MatMPISBAIJSetPreallocation_MPISBAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMPISBAIJSetPreallocationCSR_C",MatMPISBAIJSetPreallocationCSR_MPISBAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_mpisbaij_mpisbstrm_C",MatConvert_MPISBAIJ_MPISBSTRM);CHKERRQ(ierr);
 
   B->symmetric                  = PETSC_TRUE;
   B->structurally_symmetric     = PETSC_TRUE;

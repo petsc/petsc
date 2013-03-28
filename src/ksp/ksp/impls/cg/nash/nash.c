@@ -266,7 +266,7 @@ PetscErrorCode KSPSolve_NASH(KSP ksp)
     break;
   }
 
-  KSPLogResidualHistory(ksp, norm_r);
+  ierr       = KSPLogResidualHistory(ksp, norm_r);CHKERRQ(ierr);
   ierr       = KSPMonitor(ksp, ksp->its, norm_r);CHKERRQ(ierr);
   ksp->rnorm = norm_r;
 
@@ -510,7 +510,7 @@ PetscErrorCode KSPSolve_NASH(KSP ksp)
       break;
     }
 
-    KSPLogResidualHistory(ksp, norm_r);
+    ierr       = KSPLogResidualHistory(ksp, norm_r);CHKERRQ(ierr);
     ierr       = KSPMonitor(ksp, ksp->its, norm_r);CHKERRQ(ierr);
     ksp->rnorm = norm_r;
 
@@ -620,9 +620,9 @@ PetscErrorCode KSPDestroy_NASH(KSP ksp)
   /* Clear composed functions                                                */
   /***************************************************************************/
 
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPNASHSetRadius_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPNASHGetNormD_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPNASHGetObjFcn_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPNASHSetRadius_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPNASHGetNormD_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPNASHGetObjFcn_C",NULL);CHKERRQ(ierr);
 
   /***************************************************************************/
   /* Destroy KSP object.                                                     */
@@ -752,8 +752,8 @@ PETSC_EXTERN PetscErrorCode KSPCreate_NASH(KSP ksp)
   ksp->ops->buildresidual  = KSPBuildResidualDefault;
   ksp->ops->view           = 0;
 
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPNASHSetRadius_C","KSPNASHSetRadius_NASH",KSPNASHSetRadius_NASH);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPNASHGetNormD_C","KSPNASHGetNormD_NASH",KSPNASHGetNormD_NASH);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPNASHGetObjFcn_C","KSPNASHGetObjFcn_NASH",KSPNASHGetObjFcn_NASH);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPNASHSetRadius_C",KSPNASHSetRadius_NASH);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPNASHGetNormD_C",KSPNASHGetNormD_NASH);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPNASHGetObjFcn_C",KSPNASHGetObjFcn_NASH);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

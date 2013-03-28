@@ -2168,7 +2168,7 @@ int main(int argc, char **argv)
 
     ierr = PetscOptionsBool("-ufv_vtk_cellgeom","Write cell geometry (for debugging)","",vtkCellGeom,&vtkCellGeom,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsList("-physics","Physics module to solve","",PhysicsList,physname,physname,sizeof physname,NULL);CHKERRQ(ierr);
-    ierr = PetscFunctionListFind(comm,PhysicsList,physname,PETSC_TRUE,(void(**)(void))&physcreate);CHKERRQ(ierr);
+    ierr = PetscFunctionListFind(PhysicsList,physname,(void(**)(void))&physcreate);CHKERRQ(ierr);
     ierr = PetscMemzero(phys,sizeof(struct _n_Physics));CHKERRQ(ierr);
     ierr = (*physcreate)(mod,phys);CHKERRQ(ierr);
     mod->maxspeed = phys->maxspeed;
@@ -2183,7 +2183,7 @@ int main(int argc, char **argv)
     ierr = PetscOptionsBool("-ufv_split_faces","Split faces between cell sets","",splitFaces,&splitFaces,NULL);CHKERRQ(ierr);
     if (user->reconstruct) {
       ierr = PetscOptionsList("-ufv_limit","Limiter to apply to reconstructed solution","",LimitList,limitname,limitname,sizeof limitname,NULL);CHKERRQ(ierr);
-      ierr = PetscFunctionListFind(comm,LimitList,limitname,PETSC_TRUE,(void(**)(void))&user->Limit);CHKERRQ(ierr);
+      ierr = PetscFunctionListFind(LimitList,limitname,(void(**)(void))&user->Limit);CHKERRQ(ierr);
     }
     ierr = ModelFunctionalSetFromOptions(mod);CHKERRQ(ierr);
   }
