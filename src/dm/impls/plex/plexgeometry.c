@@ -512,9 +512,9 @@ PetscErrorCode DMPlexComputeCellGeometry(DM dm, PetscInt cell, PetscReal *v0, Pe
 
   PetscFunctionBegin;
   ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
-  ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMPlexGetConeSize(dm, cell, &coneSize);CHKERRQ(ierr);
   if (depth == 1) {
+    ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
     switch (dim) {
     case 2:
       switch (coneSize) {
@@ -544,6 +544,8 @@ PetscErrorCode DMPlexComputeCellGeometry(DM dm, PetscInt cell, PetscReal *v0, Pe
       SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Unsupported dimension %D for element geometry computation", dim);
     }
   } else {
+    /* We need to keep a pointer to the depth label */
+    ierr = DMPlexGetLabelValue(dm, "depth", cell, &dim);CHKERRQ(ierr);
     /* Cone size is now the number of faces */
     switch (dim) {
     case 2:
