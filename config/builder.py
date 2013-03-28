@@ -1203,7 +1203,7 @@ class PETScMaker(script.Script):
 
  def linkShared(self, sharedLib, libDir, tmpDir):
    osName = sys.platform
-   self.logPrint('Making shared libraries for OS %s using language %s' % (osName, self.language[-1]))
+   self.logPrint('Making shared libraries for OS %s using language %s' % (osName, self.configInfo.setCompilers.language[-1]))
    # PCC_LINKER PCC_LINKER_FLAGS
    linker      = self.configInfo.setCompilers.getSharedLinker()
    linkerFlags = self.configInfo.setCompilers.getLinkerFlags()
