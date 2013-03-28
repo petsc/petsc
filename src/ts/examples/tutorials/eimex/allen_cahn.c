@@ -167,12 +167,10 @@ static PetscErrorCode FormIJacobian(TS ts,PetscReal t,Vec U, Vec Udot, PetscReal
   AppCtx *user = (AppCtx *)ctx;
   PetscScalar *x;
   PetscInt       i,col;
-  PetscReal      hx,v;
+  PetscReal      v;
 
   ierr = VecGetArray(U,&x);CHKERRQ(ierr);
   PetscFunctionBegin;
-
-  hx = (user->xright - user->xleft)/(PetscReal)(user->mx -1);
 
   for(i=0; i < user->mx; i++) {
     v = a - 1. + 3.*x[i]*x[i];
