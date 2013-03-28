@@ -169,7 +169,6 @@ PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
   PetscScalar    *ab_dense;
 
   PetscFunctionBegin;
-  /* printf("MatMatMultNumeric_SeqAIJ_SeqAIJ...ca %p\n",c->a); */
   if (!c->a) { /* first call of MatMatMultNumeric_SeqAIJ_SeqAIJ, allocate ca and matmult_abdense */
     ierr      = PetscMalloc((ci[cm]+1)*sizeof(MatScalar),&ca);CHKERRQ(ierr);
     c->a      = ca;
@@ -976,18 +975,29 @@ PetscErrorCode MatMatTransposeMultNumeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
     Mat                  Bt_dense;
     PetscInt             m,n;
     Mat                  C_dense = multtrans->ABt_den;
-
-    Bt_dense = multtrans->Bt_den;
-    ierr     = MatGetLocalSize(Bt_dense,&m,&n);CHKERRQ(ierr);
+    PetscLogDouble       t0,t1,t2,t3,Bt_den,C_den,C_sp;
 
     /* Get Bt_dense by Apply MatTransposeColoring to B */
+    ierr = PetscGetTime(&t0);CHKERRQ(ierr);
+    Bt_dense = multtrans->Bt_den;
     ierr = MatTransColoringApplySpToDen(matcoloring,B,Bt_dense);CHKERRQ(ierr);
+    ierr = PetscGetTime(&t1);CHKERRQ(ierr);
+    Bt_den = t1 - t0;
 
     /* C_dense = A*Bt_dense */
     ierr = MatMatMultNumeric_SeqAIJ_SeqDense(A,Bt_dense,C_dense);CHKERRQ(ierr);
+    ierr = PetscGetTime(&t2);CHKERRQ(ierr);
+    C_den = t2 - t1;
 
     /* Recover C from C_dense */
     ierr = MatTransColoringApplyDenToSp(matcoloring,C_dense,C);CHKERRQ(ierr);
+    ierr = PetscGetTime(&t3);CHKERRQ(ierr);
+    C_sp = t3 - t2;
+#if defined(PETSC_USE_INFO)
+    ierr = PetscInfo4(C,"Coloring A*B^T = Bt_den %g + C_den %g + C_sp %g = %g;\n",Bt_den,C_den,C_sp,Bt_den+C_den+C_sp);CHKERRQ(ierr);
+    ierr     = MatGetLocalSize(Bt_dense,&m,&n);CHKERRQ(ierr);
+    ierr = PetscInfo4(C,"Bt_den: %d x %d, B: %d x %d\n",m,n,m,C->cmap->n);CHKERRQ(ierr);
+#endif
     PetscFunctionReturn(0);
   }
 
