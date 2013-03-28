@@ -197,9 +197,9 @@ def main(petscdir, log=StdoutLogger()):
       f.write ('''
 if (PETSC_USE_SINGLE_LIBRARY)
   if (PETSC_HAVE_CUDA)
-    cuda_add_library (petsc %s)
+    cuda_add_library (petsc %(allsrc)s)
   else ()
-    add_library (petsc %s)
+    add_library (petsc %(allsrc)s)
   endif ()
   target_link_libraries (petsc ${PETSC_PACKAGE_LIBS})
   if (PETSC_WIN32FE)
@@ -208,7 +208,7 @@ if (PETSC_USE_SINGLE_LIBRARY)
   endif ()
 
 endif ()
-''' % (' '.join([r'${PETSC' + pkg.upper() + r'_SRCS}' for pkg,deps in pkglist]),' '.join([r'${PETSC' + pkg.upper() + r'_SRCS}' for pkg,deps in pkglist])))
+''' % dict(allsrc=' '.join([r'${PETSC' + pkg.upper() + r'_SRCS}' for pkg,deps in pkglist])))
       f.write('''
 if (PETSC_CLANGUAGE_Cxx)
   foreach (file IN LISTS %s)
