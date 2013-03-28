@@ -188,6 +188,10 @@ PetscErrorCode DMPlexSetFEMIntegration(DM dm,
                                                                                  const PetscReal[], const PetscReal[], const PetscReal[], const PetscReal[],
                                                                                  void (*)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
                                                                                  void (*)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]), PetscScalar[]),
+                                          PetscErrorCode (*integrateBdResidualFEM)(PetscInt, PetscInt, PetscInt, PetscQuadrature[], const PetscScalar[],
+                                                                                   const PetscReal[], const PetscReal[], const PetscReal[], const PetscReal[], const PetscReal[],
+                                                                                   void (*)(const PetscScalar[], const PetscScalar[], const PetscReal[], const PetscReal[], PetscScalar[]),
+                                                                                   void (*)(const PetscScalar[], const PetscScalar[], const PetscReal[], const PetscReal[], PetscScalar[]), PetscScalar[]),
                                           PetscErrorCode (*integrateJacobianActionFEM)(PetscInt, PetscInt, PetscInt, PetscQuadrature[], const PetscScalar[], const PetscScalar[],
                                                                                        const PetscReal[], const PetscReal[], const PetscReal[], const PetscReal[],
                                                                                        void (**)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
@@ -206,6 +210,7 @@ PetscErrorCode DMPlexSetFEMIntegration(DM dm,
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   mesh->integrateResidualFEM       = integrateResidualFEM;
+  mesh->integrateBdResidualFEM     = integrateBdResidualFEM;
   mesh->integrateJacobianActionFEM = integrateJacobianActionFEM;
   mesh->integrateJacobianFEM       = integrateJacobianFEM;
   PetscFunctionReturn(0);
@@ -464,7 +469,7 @@ PetscErrorCode DMPlexComputeResidualFEM(DM dm, Vec X, Vec F, void *user)
   PetscQuadrature *quad   = fem->quad;
   PetscQuadrature *quadBd = fem->quadBd;
   PetscSection     section;
-  PetscReal       *v0, *J, *invJ, *detJ;
+  PetscReal       *v0, *n, *J, *invJ, *detJ;
   PetscScalar     *elemVec, *u;
   PetscInt         dim, numFields, field, numBatchesTmp = 1, numCells, cStart, cEnd, c;
   PetscInt         cellDof, numComponents;
@@ -542,12 +547,13 @@ PetscErrorCode DMPlexComputeResidualFEM(DM dm, Vec X, Vec F, void *user)
       cellDof       += quadBd[field].numBasisFuncs*quadBd[field].numComponents;
       numComponents += quadBd[field].numComponents;
     }
-    ierr = PetscMalloc6(numPoints*cellDof,PetscScalar,&u,numPoints*dim,PetscReal,&v0,numPoints*dim*dim,PetscReal,&J,numPoints*dim*dim,PetscReal,&invJ,numPoints,PetscReal,&detJ,numPoints*cellDof,PetscScalar,&elemVec);CHKERRQ(ierr);
+    ierr = PetscMalloc7(numPoints*cellDof,PetscScalar,&u,numPoints*dim,PetscReal,&v0,numPoints*dim,PetscReal,&n,numPoints*dim*dim,PetscReal,&J,numPoints*dim*dim,PetscReal,&invJ,numPoints,PetscReal,&detJ,numPoints*cellDof,PetscScalar,&elemVec);CHKERRQ(ierr);
     for (p = 0; p < numPoints; ++p) {
       const PetscInt point = points[p];
       PetscScalar   *x;
       PetscInt       i;
 
+      /* TODO: Add normal determination here */
       ierr = DMPlexComputeCellGeometry(dm, point, &v0[p*dim], &J[p*dim*dim], &invJ[p*dim*dim], &detJ[p]);CHKERRQ(ierr);
       if (detJ[p] <= 0.0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJ[p], p);
       ierr = DMPlexVecGetClosure(dm, NULL, X, point, NULL, &x);CHKERRQ(ierr);
@@ -558,8 +564,8 @@ PetscErrorCode DMPlexComputeResidualFEM(DM dm, Vec X, Vec F, void *user)
     for (field = 0; field < numFields; ++field) {
       const PetscInt numQuadPoints = quadBd[field].numQuadPoints;
       const PetscInt numBasisFuncs = quadBd[field].numBasisFuncs;
-      void           (*f0)(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[], PetscScalar f0[]) = fem->f0BdFuncs[field];
-      void           (*f1)(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[], PetscScalar f1[]) = fem->f1BdFuncs[field];
+      void           (*f0)(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[], const PetscReal n[], PetscScalar f0[]) = fem->f0BdFuncs[field];
+      void           (*f1)(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[], const PetscReal n[], PetscScalar f1[]) = fem->f1BdFuncs[field];
       /* Conforming batches */
       PetscInt blockSize  = numBasisFuncs*numQuadPoints;
       PetscInt numBlocks  = 1;
@@ -570,9 +576,9 @@ PetscErrorCode DMPlexComputeResidualFEM(DM dm, Vec X, Vec F, void *user)
       PetscInt numRemainder = numPoints % (numBatches * batchSize);
       PetscInt offset       = numPoints - numRemainder;
 
-      ierr = (*mesh->integrateResidualFEM)(numChunks*numBatches*batchSize, numFields, field, quad, u, v0, J, invJ, detJ, f0, f1, elemVec);CHKERRQ(ierr);
-      ierr = (*mesh->integrateResidualFEM)(numRemainder, numFields, field, quad, &u[offset*cellDof], &v0[offset*dim], &J[offset*dim*dim], &invJ[offset*dim*dim], &detJ[offset],
-                                           f0, f1, &elemVec[offset*cellDof]);CHKERRQ(ierr);
+      ierr = (*mesh->integrateBdResidualFEM)(numChunks*numBatches*batchSize, numFields, field, quadBd, u, v0, n, J, invJ, detJ, f0, f1, elemVec);CHKERRQ(ierr);
+      ierr = (*mesh->integrateBdResidualFEM)(numRemainder, numFields, field, quadBd, &u[offset*cellDof], &v0[offset*dim], &n[offset*dim], &J[offset*dim*dim], &invJ[offset*dim*dim], &detJ[offset],
+                                             f0, f1, &elemVec[offset*cellDof]);CHKERRQ(ierr);
     }
     for (p = 0; p < numPoints; ++p) {
       const PetscInt point = points[p];
@@ -582,7 +588,7 @@ PetscErrorCode DMPlexComputeResidualFEM(DM dm, Vec X, Vec F, void *user)
     }
     ierr = ISRestoreIndices(pointIS, &points);CHKERRQ(ierr);
     ierr = ISDestroy(&pointIS);CHKERRQ(ierr);
-    ierr = PetscFree6(u,v0,J,invJ,detJ,elemVec);CHKERRQ(ierr);
+    ierr = PetscFree7(u,v0,n,J,invJ,detJ,elemVec);CHKERRQ(ierr);
   }
   if (mesh->printFEM) {
     PetscMPIInt rank, numProcs;
