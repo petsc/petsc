@@ -71,21 +71,53 @@
       One can browse the development repositories at the following location
 
       <ul>
-        <li><a href="https://bitbucket.org/petsc/petsc-dev">https://bitbucket.org/petsc/petsc-dev</a></li>
-        <li><a href="https://bitbucket.org/petsc/buildsystem">https://bitbucket.org/petsc/buildsystem</a></li>
+        <li><a href="https://bitbucket.org/petsc/petsc">https://bitbucket.org/petsc/petsc</a></li>
       </ul>
 
       <h2><a name="obtaining">Obtaining the development version of PETSc:</a></h2>
 
-      You have three options
+      You have four options
 
       <ol>
-        <li><a href="#first">download and install <b>mercurial</b> (recommended)</a></li>
-        <li><a href="#second">access tarballs directly from our mercurial server.</a></li>
-        <li><a href="#third">access the nightly tarball snapshot</a> at <a href="http://ftp.mcs.anl.gov/pub/petsc/petsc-dev.tar.gz">http://ftp.mcs.anl.gov/pub/petsc/petsc-dev.tar.gz</a></li>
+        <li><a href="#first">download and install via <b>Git</b> (recommended)</a></li>
+        <li><a href="#second">download and install via mercurial</a></li>
+        <li><a href="#third">access tarballs directly from our developer server.</a></li>
+        <li><a href="#fourth">access the nightly tarball snapshot</a> at <a href="http://ftp.mcs.anl.gov/pub/petsc/petsc-dev.tar.gz">http://ftp.mcs.anl.gov/pub/petsc/petsc-dev.tar.gz</a></li>
       </ol>
 
-      <a name="first">1)</a> To use <a href="http://www.selenic.com/mercurial">mercurial</a> - first install the software
+      <a name="first">1)</a> If <a href="http://git-scm.com/">Git</a> is not already installed on your machine, install according to the <a href="http://git-scm.com/book/en/Getting-Started-Installing-Git">Installation instructions in the git book</a>.
+
+      Once Git is installed obtain petsc-dev with the following:
+
+      <ul>
+        <li><code>git clone https://bitbucket.org/petsc/petsc</code></li>
+        <li><code>cd petsc</code></li>
+      </ul>
+
+      PETSc can now be configured in the usual way, specified on the
+      <a href="../documentation/installation.html">Installation page</a>.
+
+      To update your copy of petsc-dev
+      <ul>
+        <li><code>git pull</code></li>
+      </ul>
+
+      Once updated, you will usually want to rebuild completely
+
+      <ul>
+        <li><code>./$PETSC_ARCH/conf/reconfigure-$PETSC_ARCH.py</code></li>
+        <li><code>make</code></li>
+      </ul>
+
+      The Git download always has the latest version of petsc-dev. For additional help use
+      <ul>
+        <li>git help [or]</li>
+        <li>man git</li>
+        <li><a href="https://bitbucket.org/petsc/petsc/wiki/Home">[developer instructions at our wiki]</a></li>
+        <li><a href="http://git-scm.com/book/en/">[Pro Git book]</a></li>
+      </ul>
+
+      <a name="second">2)</a> To use <a href="http://www.selenic.com/mercurial">mercurial</a> - first install the software
 
       <ul>
         <li>
@@ -137,15 +169,8 @@
       Once Mercurial is installed obtain petsc-dev with the following:
 
       <ul>
-        <li><code>hg clone https://bitbucket.org/petsc/petsc-dev</code></li>
-        <li><code>cd petsc-dev</code></li>
-        <li><code>edit .hg/hgrc and the two lines</code>
-      <pre>
-[hooks]
-post-pull = "$HG" $HG_ARGS -u  $@ --cwd config/BuildSystem
-      </pre>
-        </li>
-        <li><code>hg clone https://bitbucket.org/petsc/buildsystem config/BuildSystem</code></li>
+        <li><code>hg clone https://bitbucket.org/petsc/petsc-hg</code></li>
+        <li><code>cd petsc-hg</code></li>
       </ul>
 
       PETSc can now be configured in the usual way, specified on the
@@ -153,14 +178,12 @@ post-pull = "$HG" $HG_ARGS -u  $@ --cwd config/BuildSystem
 
       To update your copy of petsc-dev
       <ul>
-        <li><code>cd petsc-dev</code></li>
         <li><code>hg pull -u</code></li>
       </ul>
 
       Once updated, you will usually want to rebuild completely
 
       <ul>
-        <li><code>cd petsc-dev</code></li>
         <li><code>./$PETSC_ARCH/conf/reconfigure-$PETSC_ARCH.py</code></li>
         <li><code>make</code></li>
       </ul>
@@ -173,40 +196,27 @@ post-pull = "$HG" $HG_ARGS -u  $@ --cwd config/BuildSystem
       </ul>
 
       <p>
-        <a name="second">2)</a> One can obtain the current petsc-dev and BuildSystem repositories as
-        tarballs from the mercurial server using the following URLs:
+        <a name="third">3)</a> One can obtain the current petsc-dev repositories as
+        tarball from the git server using the following URL:
       </p>
 
       <ul>
         <li>
-          <a href="https://bitbucket.org/petsc/petsc-dev/get/tip.tar.gz">https://bitbucket.org/petsc/petsc-dev/get/tip.tar.gz</a>
-        </li>
-
-        <li>
-          <a href="https://bitbucket.org/petsc/buildsystem/get/tip.tar.gz">https://bitbucket.org/petsc/buildsystem/get/tip.tar.gz</a>
+          <a href="https://bitbucket.org/petsc/petsc/get/tip.tar.gz">https://bitbucket.org/petsc/petsc-dev/get/tip.tar.gz</a>
         </li>
       </ul>
 
       <h4>Note 1:</h4>
 
       <p>
-        This mode is useful - if you are on a machine where you cannot install
-        mercurial - or if it has a firewall blocking http downloads.
+        This mode is useful if you are on a machine where you cannot install
+        mercurial or if it has a firewall blocking http downloads.
       </p>
 
-      <h4>Note 2:</h4>
-      If using a web browser to download - the tarballs will get the names
-      petsc-petsc-dev-CHANGESET.tar.gz and petsc-buildsystem-CHANGESET.tar.gz.  However, if
-      <code>wget</code> or <code>curl</code> is used - both tarballs will get
-      the name 'tip.tar.gz'.  In this case rename the tarballs [to avoid the
-      name conflict].
-
-      After both the tarballs are obtained - do the following:
+      After the tarballs is obtained - do the following:
       <ul>
-        <li><code>tar zxf petsc-petsc-dev-CHANGESET.tar.gz</code></li>
-        <li><code>mv petsc-petsc-dev-CHANGESET petsc-dev</code></li>
-        <li><code>tar zxf petsc-buildsystem-CHANGESET.tar.gz</code></li>
-        <li><code>mv petsc-buildsystem-CHANGESET petsc-dev/config/BuildSystem</code></li>
+        <li><code>tar zxf petsc-petsc-CHANGESET.tar.gz</code></li>
+        <li><code>mv petsc-petsc-CHANGESET petsc-dev</code></li>
       </ul>
 
       <p>

@@ -5,6 +5,7 @@
 
 #include <../src/mat/impls/aij/seq/aij.h>
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
+#include <petsctime.h>
 #if defined(PETSC_HAVE_STDLIB_H) /* This is to get around weird problem with SuperLU on cray */
 #include <stdlib.h>
 #endif
@@ -274,7 +275,7 @@ PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat F,Mat A,const MatFactorInfo *
 
   if (lu->options.PrintStat) { /* collect time for mat conversion */
     ierr = MPI_Barrier(PetscObjectComm((PetscObject)A));CHKERRQ(ierr);
-    ierr = PetscGetTime(&time0);CHKERRQ(ierr);
+    ierr = PetscTime(&time0);CHKERRQ(ierr);
   }
 
   if (lu->MatInputMode == GLOBAL) { /* global mat input */
@@ -393,7 +394,7 @@ PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat F,Mat A,const MatFactorInfo *
 #endif
   }
   if (lu->options.PrintStat) {
-    ierr  = PetscGetTime(&time);CHKERRQ(ierr);
+    ierr  = PetscTime(&time);CHKERRQ(ierr);
     time0 = time - time0;
   }
 

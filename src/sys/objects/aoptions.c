@@ -473,7 +473,6 @@ PetscErrorCode PetscOptionsEnd_Private(void)
   size_t         j;
 
   PetscFunctionBegin;
-  CHKMEMQ;
   if (PetscOptionsObject.next) {
     if (!PetscOptionsPublishCount) {
 #if defined(PETSC_HAVE_AMS)
@@ -566,9 +565,7 @@ PetscErrorCode PetscOptionsEnd_Private(void)
     last                    = PetscOptionsObject.next;
     PetscOptionsObject.next = PetscOptionsObject.next->next;
     ierr                    = PetscFree(last);CHKERRQ(ierr);
-    CHKMEMQ;
   }
-  CHKMEMQ;
   PetscOptionsObject.next = 0;
   PetscFunctionReturn(0);
 }

@@ -228,8 +228,8 @@ PetscErrorCode  KSPMonitorDefault(KSP ksp,PetscInt n,PetscReal rnorm,void *dummy
 PetscErrorCode  KSPMonitorTrueResidualNorm(KSP ksp,PetscInt n,PetscReal rnorm,void *dummy)
 {
   PetscErrorCode ierr;
-  Vec            resid,work;
-  PetscReal      scnorm,bnorm;
+  Vec            resid;
+  PetscReal      truenorm,bnorm;
   PetscViewer    viewer = (PetscViewer)dummy;
   char           normtype[256];
 
@@ -241,20 +241,13 @@ PetscErrorCode  KSPMonitorTrueResidualNorm(KSP ksp,PetscInt n,PetscReal rnorm,vo
   if (n == 0 && ((PetscObject)ksp)->prefix) {
     ierr = PetscViewerASCIIPrintf(viewer,"  Residual norms for %s solve.\n",((PetscObject)ksp)->prefix);CHKERRQ(ierr);
   }
-  ierr = VecDuplicate(ksp->vec_rhs,&work);CHKERRQ(ierr);
-  ierr = KSPBuildResidual(ksp,0,work,&resid);CHKERRQ(ierr);
-
-  /*
-     Unscale the residual but only if both matrices are the same matrix, since only then would
-    they be scaled.
-  */
-  ierr = VecCopy(resid,work);CHKERRQ(ierr);
-  ierr = VecNorm(work,NORM_2,&scnorm);CHKERRQ(ierr);
-  ierr = VecDestroy(&work);CHKERRQ(ierr);
+  ierr = KSPBuildResidual(ksp,NULL,NULL,&resid);CHKERRQ(ierr);
+  ierr = VecNorm(resid,NORM_2,&truenorm);CHKERRQ(ierr);
+  ierr = VecDestroy(&resid);CHKERRQ(ierr);
   ierr = VecNorm(ksp->vec_rhs,NORM_2,&bnorm);CHKERRQ(ierr);
   ierr = PetscStrncpy(normtype,KSPNormTypes[ksp->normtype],sizeof(normtype));CHKERRQ(ierr);
   ierr = PetscStrtolower(normtype);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"%3D KSP %s resid norm %14.12e true resid norm %14.12e ||r(i)||/||b|| %14.12e\n",n,normtype,(double)rnorm,(double)scnorm,(double)(scnorm/bnorm));CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"%3D KSP %s resid norm %14.12e true resid norm %14.12e ||r(i)||/||b|| %14.12e\n",n,normtype,(double)rnorm,(double)truenorm,(double)(truenorm/bnorm));CHKERRQ(ierr);
   ierr = PetscViewerASCIISubtractTab(viewer,((PetscObject)ksp)->tablevel);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -288,8 +281,8 @@ PetscErrorCode  KSPMonitorTrueResidualNorm(KSP ksp,PetscInt n,PetscReal rnorm,vo
 PetscErrorCode  KSPMonitorTrueResidualMaxNorm(KSP ksp,PetscInt n,PetscReal rnorm,void *dummy)
 {
   PetscErrorCode ierr;
-  Vec            resid,work;
-  PetscReal      scnorm,bnorm;
+  Vec            resid;
+  PetscReal      truenorm,bnorm;
   PetscViewer    viewer = (PetscViewer)dummy;
   char           normtype[256];
 
@@ -301,21 +294,14 @@ PetscErrorCode  KSPMonitorTrueResidualMaxNorm(KSP ksp,PetscInt n,PetscReal rnorm
   if (n == 0 && ((PetscObject)ksp)->prefix) {
     ierr = PetscViewerASCIIPrintf(viewer,"  Residual norms (max) for %s solve.\n",((PetscObject)ksp)->prefix);CHKERRQ(ierr);
   }
-  ierr = VecDuplicate(ksp->vec_rhs,&work);CHKERRQ(ierr);
-  ierr = KSPBuildResidual(ksp,0,work,&resid);CHKERRQ(ierr);
-
-  /*
-     Unscale the residual but only if both matrices are the same matrix, since only then would
-    they be scaled.
-  */
-  ierr = VecCopy(resid,work);CHKERRQ(ierr);
-  ierr = VecNorm(work,NORM_INFINITY,&scnorm);CHKERRQ(ierr);
-  ierr = VecDestroy(&work);CHKERRQ(ierr);
+  ierr = KSPBuildResidual(ksp,NULL,NULL,&resid);CHKERRQ(ierr);
+  ierr = VecNorm(resid,NORM_INFINITY,&truenorm);CHKERRQ(ierr);
+  ierr = VecDestroy(&resid);CHKERRQ(ierr);
   ierr = VecNorm(ksp->vec_rhs,NORM_INFINITY,&bnorm);CHKERRQ(ierr);
   ierr = PetscStrncpy(normtype,KSPNormTypes[ksp->normtype],sizeof(normtype));CHKERRQ(ierr);
   ierr = PetscStrtolower(normtype);CHKERRQ(ierr);
-  /* ierr = PetscViewerASCIIPrintf(viewer,"%3D KSP %s resid norm %14.12e true resid norm %14.12e ||r(i)||_inf/||b||_inf %14.12e\n",n,normtype,(double)rnorm,(double)scnorm,(double)(scnorm/bnorm));CHKERRQ(ierr); */
-  ierr = PetscViewerASCIIPrintf(viewer,"%3D KSP true resid max norm %14.12e ||r(i)||/||b|| %14.12e\n",n,(double)scnorm,(double)(scnorm/bnorm));CHKERRQ(ierr);
+  /* ierr = PetscViewerASCIIPrintf(viewer,"%3D KSP %s resid norm %14.12e true resid norm %14.12e ||r(i)||_inf/||b||_inf %14.12e\n",n,normtype,(double)rnorm,(double)truenorm,(double)(truenorm/bnorm));CHKERRQ(ierr); */
+  ierr = PetscViewerASCIIPrintf(viewer,"%3D KSP true resid max norm %14.12e ||r(i)||/||b|| %14.12e\n",n,(double)truenorm,(double)(truenorm/bnorm));CHKERRQ(ierr);
   ierr = PetscViewerASCIISubtractTab(viewer,((PetscObject)ksp)->tablevel);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -325,29 +311,22 @@ PetscErrorCode  KSPMonitorTrueResidualMaxNorm(KSP ksp,PetscInt n,PetscReal rnorm
 PetscErrorCode  KSPMonitorRange_Private(KSP ksp,PetscInt it,PetscReal *per)
 {
   PetscErrorCode ierr;
-  Vec            resid,work;
+  Vec            resid;
   PetscReal      rmax,pwork;
   PetscInt       i,n,N;
-  PetscScalar    *r;
+  const PetscScalar *r;
 
   PetscFunctionBegin;
-  ierr = VecDuplicate(ksp->vec_rhs,&work);CHKERRQ(ierr);
-  ierr = KSPBuildResidual(ksp,0,work,&resid);CHKERRQ(ierr);
-
-  /*
-     Unscale the residual if the matrix is, but only if both matrices are the same matrix, since only then would
-    they be scaled.
-  */
-  ierr  = VecCopy(resid,work);CHKERRQ(ierr);
-  ierr  = VecNorm(work,NORM_INFINITY,&rmax);CHKERRQ(ierr);
-  ierr  = VecGetLocalSize(work,&n);CHKERRQ(ierr);
-  ierr  = VecGetSize(work,&N);CHKERRQ(ierr);
-  ierr  = VecGetArray(work,&r);CHKERRQ(ierr);
+  ierr = KSPBuildResidual(ksp,NULL,NULL,&resid);CHKERRQ(ierr);
+  ierr = VecNorm(resid,NORM_INFINITY,&rmax);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(resid,&n);CHKERRQ(ierr);
+  ierr = VecGetSize(resid,&N);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(resid,&r);CHKERRQ(ierr);
   pwork = 0.0;
   for (i=0; i<n; i++) pwork += (PetscAbsScalar(r[i]) > .20*rmax);
+  ierr = VecRestoreArrayRead(resid,&r);CHKERRQ(ierr);
+  ierr = VecDestroy(&resid);CHKERRQ(ierr);
   ierr = MPI_Allreduce(&pwork,per,1,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)ksp));CHKERRQ(ierr);
-  ierr = VecRestoreArray(work,&r);CHKERRQ(ierr);
-  ierr = VecDestroy(&work);CHKERRQ(ierr);
   *per = *per/N;
   PetscFunctionReturn(0);
 }

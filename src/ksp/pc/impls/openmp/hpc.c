@@ -107,7 +107,6 @@ static PetscErrorCode PCSetUp_HMPI_MP(MPI_Comm comm,void *ctx)
     if (red->flag == DIFFERENT_NONZERO_PATTERN) {
       ierr = MatDestroy(&red->mat);CHKERRQ(ierr);
       scal = MAT_INITIAL_MATRIX;
-      CHKMEMQ;
     } else {
       scal = MAT_REUSE_MATRIX;
     }

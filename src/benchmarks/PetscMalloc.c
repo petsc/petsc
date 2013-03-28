@@ -1,5 +1,6 @@
 
 #include <petscsys.h>
+#include <petsctime.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -26,14 +27,14 @@ int main(int argc,char **argv)
   /* Take care of paging effects */
   ierr = PetscMalloc(100,&dummy);CHKERRQ(ierr);
   ierr = PetscFree(dummy);CHKERRQ(ierr);
-  ierr = PetscGetTime(&x);CHKERRQ(ierr);
+  ierr = PetscTime(&x);CHKERRQ(ierr);
 
   /* Do all mallocs */
   for (i=0; i< 1000; i++) {
     ierr = PetscMalloc(rand1[i],&arr[i]);CHKERRQ(ierr);
   }
 
-  ierr = PetscGetTime(&x);CHKERRQ(ierr);
+  ierr = PetscTime(&x);CHKERRQ(ierr);
 
   /* Do some frees */
   for (i=0; i< 1000; i+=2) {
@@ -44,7 +45,7 @@ int main(int argc,char **argv)
   for (i=0; i< 1000; i+=2) {
     ierr = PetscMalloc(rand2[i],&arr[i]);CHKERRQ(ierr);
   }
-  ierr = PetscGetTime(&y);CHKERRQ(ierr);
+  ierr = PetscTime(&y);CHKERRQ(ierr);
 
   for (i=0; i< 1000; i++) {
     ierr = PetscFree(arr[i]);CHKERRQ(ierr);

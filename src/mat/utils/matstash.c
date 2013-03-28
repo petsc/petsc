@@ -623,14 +623,12 @@ PetscErrorCode MatStashScatterGetMesg_Private(MatStash *stash,PetscMPIInt *nvals
   /* If a matching pair of receives are found, process them, and return the data to
      the calling function. Until then keep receiving messages */
   while (!match_found) {
-    CHKMEMQ;
     if (stash->reproduce) {
       i    = stash->reproduce_count++;
       ierr = MPI_Wait(stash->recv_waits+i,&recv_status);CHKERRQ(ierr);
     } else {
       ierr = MPI_Waitany(2*stash->nrecvs,stash->recv_waits,&i,&recv_status);CHKERRQ(ierr);
     }
-    CHKMEMQ;
     if (recv_status.MPI_SOURCE < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Negative MPI source!");
 
     /* Now pack the received message into a structure which is usable by others */

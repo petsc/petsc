@@ -470,13 +470,11 @@ PetscErrorCode MatMPIDenseScatter(Mat A,Mat B,Mat C,Mat *outworkB)
 
   for (i=0; i<to->n; i++) {
     /* pack a message at a time */
-    CHKMEMQ;
     for (j=0; j<sstarts[i+1]-sstarts[i]; j++) {
       for (k=0; k<ncols; k++) {
         svalues[ncols*(sstarts[i] + j) + k] = b[sindices[sstarts[i]+j] + nrowsB*k];
       }
     }
-    CHKMEMQ;
     ierr = MPI_Isend(svalues+ncols*sstarts[i],ncols*(sstarts[i+1]-sstarts[i]),MPIU_SCALAR,sprocs[i],tag,comm,swaits+i);CHKERRQ(ierr);
   }
 
@@ -485,13 +483,11 @@ PetscErrorCode MatMPIDenseScatter(Mat A,Mat B,Mat C,Mat *outworkB)
     ierr = MPI_Waitany(from->n,rwaits,&imdex,&status);CHKERRQ(ierr);
     nrecvs--;
     /* unpack a message at a time */
-    CHKMEMQ;
     for (j=0; j<rstarts[imdex+1]-rstarts[imdex]; j++) {
       for (k=0; k<ncols; k++) {
         w[rindices[rstarts[imdex]+j] + nrows*k] = rvalues[ncols*(rstarts[imdex] + j) + k];
       }
     }
-    CHKMEMQ;
   }
   if (to->n) {ierr = MPI_Waitall(to->n,swaits,to->sstatus);CHKERRQ(ierr);}
 

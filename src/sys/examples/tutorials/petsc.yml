@@ -1,0 +1,25 @@
+vs0010: &clamped {tempBC: 1, temp:   0. }
+
+vs0020:
+    tempBC: 12
+    temp:   1.
+#vs0040: *clamped
+cs0001:
+    force:  0.
+cs0010:
+    force:  0.
+    hookeslaw: 1,2,3,4,5,6
+cs0020:
+    force:  0.
+temp:
+    snes:
+        type: ksponly
+    KSP:
+        type: cg
+        monitor:
+          true_residual:
+vs0030:
+    tempBC: 1
+    temp:   1.
+malloc:
+    test:

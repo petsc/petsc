@@ -3,10 +3,10 @@ import PETSc.package
 class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
     PETSc.package.NewPackage.__init__(self, framework)
-    #'https://gforge.inria.fr/frs/download.php/28978/scotch_5.1.12b_esmumps.tar.gz'
-    self.download     = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/scotch_5.1.12b_esmumps-p1.tar.gz']
+    self.download     = ['https://gforge.inria.fr/frs/download.php/31832/scotch_6.0.0_esmumps.tar.gz',
+                         'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/scotch_6.0.0_esmumps.tar.gz']
     self.downloadfilename = 'scotch'
-    self.liblist      = [['libptesmumps.a', 'libptscotch.a','libptscotcherr.a']]
+    self.liblist      = [['libptesmumps.a','libptscotch.a','libptscotcherr.a','libscotch.a','libscotcherr.a']]
     self.functions    = ['SCOTCH_archBuild']
     self.includes     = ['ptscotch.h']
     self.requires32bitint = 0
@@ -51,12 +51,13 @@ class Configure(PETSc.package.NewPackage):
     if self.libraries.add('-lz','gzwrite'):
       self.cflags = self.cflags + ' -DCOMMON_FILE_COMPRESS_GZ'
       ldflags += ' -lz'
-    if self.libraries.add('-lpthread','pthread_key_create'):
+    # OSX does not have pthread_barrierattr_t - so check for that
+    if self.libraries.add('-lpthread','pthread_barrierattr_t'):
       self.cflags = self.cflags + ' -DCOMMON_PTHREAD'
       ldflags += ' -lpthread'
     if self.libraries.add('-lm','sin'): ldflags += ' -lm'
     if self.libraries.add('-lrt','timer_create'): ldflags += ' -lrt'
-    self.cflags = self.cflags + '-DCOMMON_RANDOM_FIXED_SEED'
+    self.cflags = self.cflags + ' -DCOMMON_RANDOM_FIXED_SEED'
     # do not use -DSCOTCH_PTHREAD because requires MPI built for threads.
     self.cflags = self.cflags + ' -DSCOTCH_RENAME -Drestrict="" '
     # this is needed on the Mac, because common2.c includes common.h which DOES NOT include mpi.h because
@@ -88,9 +89,9 @@ class Configure(PETSc.package.NewPackage):
 #        output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cd '+os.path.join(self.packageDir,'src')+' && make clean scotch ptscotch', timeout=2500, log = self.framework.log)
 #
         if self.mpi.found:
-          output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cd '+os.path.join(self.packageDir,'src')+' && make clean ptscotch', timeout=2500, log = self.framework.log)
+          output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cd '+os.path.join(self.packageDir,'src')+' && make clean ptesmumps', timeout=2500, log = self.framework.log)
         else:
-          output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cd '+os.path.join(self.packageDir,'src')+' && make clean scotch', timeout=2500, log = self.framework.log)
+          output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cd '+os.path.join(self.packageDir,'src')+' && make clean esmumps', timeout=2500, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running make on PTScotch: '+str(e))
 

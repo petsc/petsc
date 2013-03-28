@@ -7,6 +7,7 @@ static char help[] = "Micro-benchmark kernel times.\n\n";
 #include <petscthreadcomm.h>
 #include <petsc-private/threadcommimpl.h>
 #include <petscvec.h>
+#include <petsctime.h>
 #if defined(PETSC_HAVE_OPENMP)
 #  include <omp.h>
 #endif
@@ -49,20 +50,20 @@ int main(int argc,char **argv)
   for (i=0; i<10; i++) {
     PetscReal t0,t1;
     ierr = PetscThreadCommBarrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
-    ierr = PetscGetTime(&t0);CHKERRQ(ierr);
+    ierr = PetscTime(&t0);CHKERRQ(ierr);
     for (j=0; j<N; j++) {
       /*      ierr = PetscThreadCommRunKernel(PETSC_COMM_WORLD,(PetscThreadKernel)CounterIncrement_kernel,1,counters);CHKERRQ(ierr); */
       ierr = PetscThreadCommRunKernel1(PETSC_COMM_WORLD,(PetscThreadKernel)CounterIncrement_kernel,counters);CHKERRQ(ierr);
     }
     ierr = PetscThreadCommBarrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
-    ierr = PetscGetTime(&t1);CHKERRQ(ierr);
+    ierr = PetscTime(&t1);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Time per kernel: %g us\n",1e6*(t1-t0)/N);CHKERRQ(ierr);
   }
 
   for (i=0; i<10; i++) {
     PetscReal t0,t1;
     ierr = PetscThreadCommBarrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
-    ierr = PetscGetTime(&t0);CHKERRQ(ierr);
+    ierr = PetscTime(&t0);CHKERRQ(ierr);
     for (j=0; j<N; j++) {
 #pragma omp parallel num_threads(tsize)
       {
@@ -71,25 +72,25 @@ int main(int argc,char **argv)
       }
     }
     ierr = PetscThreadCommBarrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
-    ierr = PetscGetTime(&t1);CHKERRQ(ierr);
+    ierr = PetscTime(&t1);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"OpenMP inline time per kernel: %g us\n",1e6*(t1-t0)/N);CHKERRQ(ierr);
   }
 
   for (i=0; i<10; i++) {
     PetscReal t0,t1;
-    ierr = PetscGetTime(&t0);CHKERRQ(ierr);
+    ierr = PetscTime(&t0);CHKERRQ(ierr);
     for (j=0; j<N; j++) CounterIncrement_kernel(0,counters);
-    ierr = PetscGetTime(&t1);CHKERRQ(ierr);
+    ierr = PetscTime(&t1);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Serial inline time per single kernel: %g us\n",1e6*(t1-t0)/N);CHKERRQ(ierr);
   }
 
   for (i=0; i<10; i++) {
     PetscReal t0,t1;
-    ierr = PetscGetTime(&t0);CHKERRQ(ierr);
+    ierr = PetscTime(&t0);CHKERRQ(ierr);
     for (j=0; j<N; j++) {
       for (k=0; k<tsize; k++) CounterIncrement_kernel(k,counters);
     }
-    ierr = PetscGetTime(&t1);CHKERRQ(ierr);
+    ierr = PetscTime(&t1);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Serial inline time per kernel: %g us\n",1e6*(t1-t0)/N);CHKERRQ(ierr);
   }
 

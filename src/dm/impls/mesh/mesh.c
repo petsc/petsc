@@ -599,8 +599,8 @@ PetscErrorCode DMCreateLocalVector_Mesh(DM dm, Vec *lvec)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMCreateLocalToGlobalMapping_Mesh"
-PetscErrorCode DMCreateLocalToGlobalMapping_Mesh(DM dm)
+#define __FUNCT__ "DMGetLocalToGlobalMapping_Mesh"
+PetscErrorCode DMGetLocalToGlobalMapping_Mesh(DM dm)
 {
   ALE::Obj<PETSC_MESH_TYPE>                    m;
   ALE::Obj<PETSC_MESH_TYPE::real_section_type> s;

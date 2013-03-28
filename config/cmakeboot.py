@@ -98,34 +98,60 @@ class PETScMaker(script.Script):
    langlist = [('C','C')]
    if hasattr(self.compilers,'FC'):
      langlist.append(('FC','Fortran'))
+   if hasattr(self.compilers,'CUDAC'):
+     langlist.append(('CUDA','CUDA'))
    if (self.languages.clanguage == 'Cxx'):
      langlist.append(('Cxx','CXX'))
    win32fe = None
    for petsclanguage,cmakelanguage in langlist:
      self.setCompilers.pushLanguage(petsclanguage)
      compiler = self.setCompilers.getCompiler()
-     flags = [self.setCompilers.getCompilerFlags(),
-              self.setCompilers.CPPFLAGS,
-              self.CHUD.CPPFLAGS]
-     if compiler.split()[0].endswith('win32fe'): # Hack to support win32fe without changing the rest of configure
-       win32fe = compiler.split()[0] + '.exe'
-       compiler = ' '.join(compiler.split()[1:])
-     options.append('-DCMAKE_'+cmakelanguage+'_COMPILER:FILEPATH=' + compiler)
-     options.append('-DCMAKE_'+cmakelanguage+'_FLAGS:STRING=' + ''.join(flags))
-     self.setCompilers.popLanguage()
-   options.append('-DCMAKE_AR='+self.setCompilers.AR)
+     if (cmakelanguage == 'CUDA'):
+       self.cuda = self.framework.require('PETSc.packages.cuda',       None)
+       if (self.cuda.directory != None):
+         options.append('CUDA_TOOLKIT_ROOT_DIR ' + self.cuda.directory + ' CACHE FILEPATH')
+       options.append('CUDA_NVCC_FLAGS ' + self.setCompilers.getCompilerFlags() + ' CACHE STRING')
+     else:
+       flags = [self.setCompilers.getCompilerFlags(),
+                self.setCompilers.CPPFLAGS,
+                self.CHUD.CPPFLAGS]
+       if compiler.split()[0].endswith('win32fe'): # Hack to support win32fe without changing the rest of configure
+         win32fe = compiler.split()[0] + '.exe'
+         compiler = ' '.join(compiler.split()[1:])
+       options.append('CMAKE_'+cmakelanguage+'_COMPILER ' + compiler + ' CACHE FILEPATH')
+       options.append('CMAKE_'+cmakelanguage+'_FLAGS "' + ''.join(flags) + '" CACHE STRING')
+       if (petsclanguage == self.languages.clanguage): #CUDA host compiler is fed with the flags for the standard host compiler
+         flagstring = ''
+         for flag in flags:
+           for f in flag.split():
+             flagstring += ',' + f
+         options.append('PETSC_CUDA_HOST_FLAGS ' + flagstring + ' CACHE STRING')
+       self.setCompilers.popLanguage()
+   options.append('CMAKE_AR '+self.setCompilers.AR + " CACHE FILEPATH")
    ranlib = shlex.split(self.setCompilers.RANLIB)[0]
-   options.append('-DCMAKE_RANLIB='+ranlib)
+   options.append('CMAKE_RANLIB '+ranlib + " CACHE FILEPATH")
    if win32fe:
-     options.append('-DPETSC_WIN32FE:FILEPATH=%s'%win32fe)
+     options.append('PETSC_WIN32FE %s' % win32fe)
+     
+   archdir = os.path.join(self.petscdir.dir, self.arch.arch)
+   initial_cache_filename = os.path.join(archdir, 'initial_cache_file.cmake')  
+   cmd = [self.cmake.cmake, '--trace', '--debug-output', '-C' + str(initial_cache_filename), '-DPETSC_CMAKE_ARCH:STRING='+str(self.arch.arch), self.petscdir.dir] + args
+   if win32fe:
      # Default on Windows is to generate Visual Studio project files, but
      # 1. the build process for those is different, need to give different build instructions
      # 2. the current WIN32FE workaround does not work with VS project files
-     options.append('-GUnix Makefiles')
-   cmd = [self.cmake.cmake, '--trace', '--debug-output', self.petscdir.dir] + map(lambda x:x.strip(), options) + args
-   archdir = os.path.join(self.petscdir.dir, self.arch.arch)
+     cmd.append('-GUnix Makefiles')
+
+   # Create inital cache file:
+   initial_cache_file = open(initial_cache_filename, 'w')
+   self.logPrint('Contents of initial cache file %s :' % initial_cache_filename)
+   for option in options:
+     initial_cache_file.write('SET (' + option + ' "Dummy comment" FORCE)\n')
+     self.logPrint('SET (' + option + ' "Dummy comment" FORCE)\n')
+   initial_cache_file.close()   
    try:
      # Try to remove the old cache because some versions of CMake lose CMAKE_C_FLAGS when reconfiguring this way
+     self.logPrint('Removing: %s' % os.path.join(archdir, 'CMakeCache.txt'))
      os.remove(os.path.join(archdir, 'CMakeCache.txt'))
    except OSError:
      pass
@@ -135,7 +161,7 @@ class PETScMaker(script.Script):
    self.logPrint('Removing: %s' % os.path.join(archdir, 'CMakeFiles', version.vstring))
    shutil.rmtree(os.path.join(archdir, 'CMakeFiles', version.vstring), ignore_errors=True)
    log.write('Invoking: %s\n' % cmd)
-   output,error,retcode = self.executeShellCommand(cmd, checkCommand = noCheck, log=log, cwd=archdir,timeout=30)
+   output,error,retcode = self.executeShellCommand(cmd, checkCommand = noCheck, log=log, cwd=archdir,timeout=300)
    if retcode:
      self.logPrintBox('CMake setup incomplete (status %d), falling back to legacy build' % (retcode,))
      self.logPrint('Output: '+output+'\nError: '+error)

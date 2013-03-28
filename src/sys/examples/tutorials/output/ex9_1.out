@@ -1,0 +1,33 @@
+#PETSc Option Table entries:
+-cs0001_force 0.
+-cs0010_force 0.
+-cs0010_hookeslaw 1,2,3,4,5,6
+-cs0020_force 0.
+-f petsc.yml
+-malloc_test
+-temp_KSP_monitor_true_residual
+-temp_KSP_type cg
+-temp_snes_type ksponly
+-vs0010_temp 0.
+-vs0010_tempBC 1
+-vs0020_temp 1.
+-vs0020_tempBC 12
+-vs0030_temp 1.
+-vs0030_tempBC 1
+#End of PETSc Option Table entries
+WARNING! There are options you set that were not used!
+WARNING! could be spelling mistake, etc!
+Option left: name:-cs0001_force value: 0.
+Option left: name:-cs0010_force value: 0.
+Option left: name:-cs0010_hookeslaw value: 1,2,3,4,5,6
+Option left: name:-cs0020_force value: 0.
+Option left: name:-malloc_test (no value)
+Option left: name:-temp_KSP_monitor_true_residual (no value)
+Option left: name:-temp_KSP_type value: cg
+Option left: name:-temp_snes_type value: ksponly
+Option left: name:-vs0010_temp value: 0.
+Option left: name:-vs0010_tempBC value: 1
+Option left: name:-vs0020_temp value: 1.
+Option left: name:-vs0020_tempBC value: 12
+Option left: name:-vs0030_temp value: 1.
+Option left: name:-vs0030_tempBC value: 1

@@ -818,23 +818,17 @@ PetscErrorCode MatAssemblyEnd_SeqSBAIJ_SeqAIJ_Inode(Mat A)
     row  = 0;
     for (i=0; i<node_count; i++) {
       cols = aj + ai[row] + a->inode.size[i];
-      CHKMEMQ;
       counts[2*cnt] = cols[0];
-      CHKMEMQ;
       nz   = ai[row+1] - ai[row] - a->inode.size[i];
       cnt2 = 1;
       for (j=1; j<nz; j++) {
         if (cols[j] != cols[j-1]+1) {
-          CHKMEMQ;
           counts[2*(cnt++)+1] = cnt2;
           counts[2*cnt]       = cols[j];
-          CHKMEMQ;
           cnt2 = 1;
         } else cnt2++;
       }
-      CHKMEMQ;
       counts[2*(cnt++)+1] = cnt2;
-      CHKMEMQ;
       row += a->inode.size[i];
     }
     ierr = PetscIntView(2*cnt,counts,0);CHKERRQ(ierr);

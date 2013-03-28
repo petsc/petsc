@@ -82,10 +82,7 @@ docs/manconcepts
 docs/manual.pdf
 docs/developers.pdf
 docs/troubleshooting.html
-src/docs/tex/manual/anchors
-src/docs/tex/manual/developerstmp.{aux,idx,out,tex}
-src/docs/tex/manual/intro.{aux,out,pdf}
-src/docs/tex/manual/manual1.{aux,bbl,blg,idx,ilg,ind,out,toc,tex}
+src/docs/website/publications/generated_topics.html
 src/dm/mesh/examples/tests/unitTests
 src/dm/mesh/examples/tutorials/*_quadrature.h
 src/dm/mesh/examples/tutorials/*.vtk

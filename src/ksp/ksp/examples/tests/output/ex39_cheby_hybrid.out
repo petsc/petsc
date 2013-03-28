@@ -1,4 +1,4 @@
-    Residual norms for adapt_ solve.
+    Residual norms for est_ solve.
     0 KSP Residual norm 43.6987 
     1 KSP Residual norm 6.86453 
     2 KSP Residual norm 1.69547 
@@ -11,7 +11,7 @@
   3 KSP Residual norm 0.00136633 
   4 KSP Residual norm 0.000523033 
   5 KSP Residual norm 0.000409659 
-    Residual norms for adapt_ solve.
+    Residual norms for est_ solve.
     0 KSP Residual norm 0.000168974 
     1 KSP Residual norm 2.92077e-05 
     2 KSP Residual norm 4.21083e-06 

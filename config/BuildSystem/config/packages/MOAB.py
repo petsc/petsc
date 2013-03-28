@@ -8,11 +8,10 @@ class Configure(config.package.GNUPackage):
     self.downloadfilename  = 'moab'
     self.downloadversion   = 'nightly'
     self.downloadext       = 'tar.gz'
-
-    self.functions         = ['iMesh_newMesh']
-    self.functionsFortran  = 1
-    self.includes          = ['iMesh.h']
-    self.liblist           = [['libiMesh.a', 'libMOAB.a']]
+    self.functions         = ['Core']
+    self.functionsCxx     = [1, 'namespace moab {class Core {public: Core();};}','moab::Core *mb = new moab::Core()']
+    self.includes          = ['moab/Core.hpp']
+    self.liblist           = [['libiMesh.a', 'libMOAB.a'],['libMOAB.a']]
     self.cxx               = 1
     return
 

@@ -95,6 +95,7 @@
 
       <h4>General:</h4>
       <ul>
+        <li>PetscGetTime() is replaced with PetscTime(), in C you must include petsctime.h to use</li>
         <li>PetscViewerBinaryMatlabOpen() and friends are all removed, simply use PetscViewerBinaryOpen() followed by PetscViewerSetFormat(viewer,PETSC_FORMAT_BINARY_MATLAB)</li>
         <li>Added <tt>Users should use PetscFunctionBeginUser in there code instead of PetscFunctionBegin.</li>
         <li>Replaced the hodge-podge of -xxx_view -xxx_view_yyy with a single consistent scheme: -xxx_view [ascii,binary,draw,socket,matlab,vtk][:filename][:ascii_info,ascii_info_detail,ascii_matlab,draw_contour,etc].</li>
@@ -162,7 +163,7 @@
 
       <h4>PC:</h4>
       <ul>
-        <li>Merged PCBJacobiSetUseTrueLocal(), -pc_bjacobi_true_local, PCKSPSetUseTrue(), -pc_ksp_true, PCCompositeSetUseTrue() -pc_composite_true to PCSetUseAmat(), -pc_use_amat. 
+        <li>Merged PCBJacobiSetUseTrueLocal(), <tt>-pc_bjacobi_true_local</tt>, PCKSPSetUseTrue(), <tt>-pc_ksp_true</tt>, PCCompositeSetUseTrue() <tt>-pc_composite_true</tt>, PCFieldSplitSetRealDiagonal <tt>-pc_fieldpslit_real_diagonal</tt> to PCSetUseAmat(), <tt>-pc_use_amat</tt>.</li>
         <li>Added <tt>PCISSetSubdomainDiagonalScaling()</tt> if a user wants to set a custom scaling at the interface.</li>
         <li>Added initial version of FETI-DP in PCBDDC code.</li>
         <li>Added <tt>PCBDDCCreateFETIDPOperators()</tt> for creation of FETI-DP mat and the related Dirichlet preconditioner using an already existing PCBDDC object.</li>
@@ -189,6 +190,9 @@
         <li>  SNESLS  "ls" changed to SNESNEWTONLS newtonls </li>
         <li>  SNESTR  "tr" changed to SNESNEWTONTR newtontr </li>
         <li>  SNESDefaultComputeJacobian(), SNESDefaultComputeJacobianColor(), SNESDefaultObjectiveComputeFunctionFD(), SNESDefaultConverged() changed to SNESComputeJacobianDefault(), SNESComputeJacobianDefaultColor(), SNESConvergedDefault(), SNESObjectiveComputeFunctionDefaultFD() to match more consistent naming standards.</li>
+        <li> Added nonlinear additive Schwarz as SNESNASM "nasm" </li>
+        <li> Added helper SNES type SNESASPIN "aspin" for setting up additive Schwarz preconditioned inexact Newton.</li>
+        <li> Added Anderson Mixing as SNESANDERSON "anderson"</li>
         </ul>
 
       <h4>SNESLineSearch:</h4>
@@ -207,6 +211,10 @@
             that the calling sequences of these functions are different and also the calling sequence of the Jacobian function you provide</li>
         <li>DMSetFunction() and DMSetJacobian() have been removed use SNESSetFunction() and SNESSetJacobian() instead, note the calling sequences are
             slightly different</li>
+        <li>DMDACreatePatchIS() for getting the indices of an arbitrary subdomain on a DMDA </li>
+        <li>DMDAGet/SetOverlap(),DMDAGet/SetOffset() for manipulating DMDA subdomains </li>
+        <li>DMCreateDomainDecompositionScatters() gives VecScatter objects for transferring to/from subdomain DMs </li>
+        <li>DMGet/RestoreNamedLocalVector()</li>
       </ul>
       <h4>DMComplex/DMPlex:</h4>
       <ul>

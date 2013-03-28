@@ -33,7 +33,7 @@ PETSC_EXTERN PetscErrorCode PetscOptionsCreate(void);
 PETSC_EXTERN PetscErrorCode PetscOptionsInsert(int*,char ***,const char[]);
 PETSC_EXTERN PetscErrorCode PetscOptionsInsertFile(MPI_Comm,const char[],PetscBool );
 #if defined(PETSC_HAVE_YAML)
-PETSC_EXTERN PetscErrorCode PetscOptionsInsertFile_YAML(MPI_Comm,const char[],PetscBool);
+PETSC_EXTERN PetscErrorCode PetscOptionsInsertFileYAML(MPI_Comm,const char[],PetscBool);
 #endif
 PETSC_EXTERN PetscErrorCode PetscOptionsInsertString(const char[]);
 PETSC_EXTERN PetscErrorCode PetscOptionsDestroy(void);

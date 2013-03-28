@@ -8,6 +8,7 @@
 #include <../src/mat/utils/freespace.h>
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
 #include <petscbt.h>
+#include <petsctime.h>
 
 /* #define PTAP_PROFILE */
 
@@ -119,7 +120,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
 #if defined(PTAP_PROFILE)
-  ierr = PetscGetTime(&t0);CHKERRQ(ierr);
+  ierr = PetscTime(&t0);CHKERRQ(ierr);
 #endif
 
   /* check if matrix local sizes are compatible */
@@ -150,7 +151,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   pi_loc = p_loc->i; pj_loc = p_loc->j;
   pi_oth = p_oth->i; pj_oth = p_oth->j;
 #if defined(PTAP_PROFILE)
-  ierr = PetscGetTime(&t1);CHKERRQ(ierr);
+  ierr = PetscTime(&t1);CHKERRQ(ierr);
 #endif
 
   /* first, compute symbolic AP = A_loc*P = A_diag*P_loc + A_off*P_oth */
@@ -212,7 +213,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   if (afill_tmp > afill) afill = afill_tmp;
 
 #if defined(PTAP_PROFILE)
-  ierr = PetscGetTime(&t2);CHKERRQ(ierr);
+  ierr = PetscTime(&t2);CHKERRQ(ierr);
 #endif
 
   /* determine symbolic Co=(p->B)^T*AP - send to others */
@@ -367,7 +368,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   ierr = PetscFree(buf_s);CHKERRQ(ierr);
 
 #if defined(PTAP_PROFILE)
-  ierr = PetscGetTime(&t3);CHKERRQ(ierr);
+  ierr = PetscTime(&t3);CHKERRQ(ierr);
 #endif
 
   /* compute the local portion of C (mpi mat) */
@@ -488,7 +489,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   }
 
 #if defined(PTAP_PROFILE)
-  ierr = PetscGetTime(&t4);CHKERRQ(ierr);
+  ierr = PetscTime(&t4);CHKERRQ(ierr);
   if (rank==1) PetscPrintf(MPI_COMM_SELF,"  [%d] PtAPSymbolic %g/P + %g/AP + %g/comm + %g/PtAP = %g\n",rank,t1-t0,t2-t1,t3-t2,t4-t3,t4-t0);CHKERRQ(ierr);
 #endif
 
@@ -537,7 +538,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)C,&comm);CHKERRQ(ierr);
 #if defined(PTAP_PROFILE)
-  ierr = PetscGetTime(&t0);CHKERRQ(ierr);
+  ierr = PetscTime(&t0);CHKERRQ(ierr);
 #endif
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
@@ -558,7 +559,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
     ierr = MatMPIAIJGetLocalMat(P,MAT_REUSE_MATRIX,&ptap->P_loc);CHKERRQ(ierr);
   }
 #if defined(PTAP_PROFILE)
-  ierr = PetscGetTime(&t1);CHKERRQ(ierr);
+  ierr = PetscTime(&t1);CHKERRQ(ierr);
 #endif
 
   /* 2) compute numeric C_seq = P_loc^T*A_loc*P - dominating part */
@@ -585,7 +586,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
     /*-----------------------------------------------------------------------------------------------------*/
     for (i=0; i<am; i++) {
 #if defined(PTAP_PROFILE)
-      ierr = PetscGetTime(&t2_0);CHKERRQ(ierr);
+      ierr = PetscTime(&t2_0);CHKERRQ(ierr);
 #endif
       /* 2-a) form i-th sparse row of A_loc*P = Ad*P_loc + Ao*P_oth */
       /*------------------------------------------------------------*/
@@ -627,7 +628,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
         ierr = PetscLogFlops(2.0*pnz);CHKERRQ(ierr);
       }
 #if defined(PTAP_PROFILE)
-      ierr    = PetscGetTime(&t2_1);CHKERRQ(ierr);
+      ierr    = PetscTime(&t2_1);CHKERRQ(ierr);
       et2_AP += t2_1 - t2_0;
 #endif
 
@@ -671,7 +672,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
       /* zero the current row of A*P */
       for (k=0; k<apnz; k++) apa[apJ[k]] = 0.0;
 #if defined(PTAP_PROFILE)
-      ierr      = PetscGetTime(&t2_2);CHKERRQ(ierr);
+      ierr      = PetscTime(&t2_2);CHKERRQ(ierr);
       et2_PtAP += t2_2 - t2_1;
 #endif
     }
@@ -681,7 +682,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
     pA=pa_loc;
     for (i=0; i<am; i++) {
 #if defined(PTAP_PROFILE)
-      ierr = PetscGetTime(&t2_0);CHKERRQ(ierr);
+      ierr = PetscTime(&t2_0);CHKERRQ(ierr);
 #endif
       /* form i-th sparse row of A*P */
       apnz = api[i+1] - api[i];
@@ -723,7 +724,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
         ierr = PetscLogFlops(2.0*pnz);CHKERRQ(ierr);
       }
 #if defined(PTAP_PROFILE)
-      ierr    = PetscGetTime(&t2_1);CHKERRQ(ierr);
+      ierr    = PetscTime(&t2_1);CHKERRQ(ierr);
       et2_AP += t2_1 - t2_0;
 #endif
 
@@ -753,13 +754,13 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
       /* zero the current row info for A*P */
       ierr = PetscMemzero(apa,apnz*sizeof(MatScalar));CHKERRQ(ierr);
 #if defined(PTAP_PROFILE)
-      ierr      = PetscGetTime(&t2_2);CHKERRQ(ierr);
+      ierr      = PetscTime(&t2_2);CHKERRQ(ierr);
       et2_PtAP += t2_2 - t2_1;
 #endif
     }
   }
 #if defined(PTAP_PROFILE)
-  ierr = PetscGetTime(&t2);CHKERRQ(ierr);
+  ierr = PetscTime(&t2);CHKERRQ(ierr);
 #endif
 
   /* 3) send and recv matrix values coa */
@@ -784,7 +785,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
   ierr = PetscFree(r_waits);CHKERRQ(ierr);
   ierr = PetscFree(coa);CHKERRQ(ierr);
 #if defined(PTAP_PROFILE)
-  ierr = PetscGetTime(&t3);CHKERRQ(ierr);
+  ierr = PetscTime(&t3);CHKERRQ(ierr);
 #endif
 
   /* 4) insert local Cseq and received values into Cmpi */
@@ -829,7 +830,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
   ierr = PetscFree(abuf_r);CHKERRQ(ierr);
   ierr = PetscFree3(buf_ri_k,nextrow,nextci);CHKERRQ(ierr);
 #if defined(PTAP_PROFILE)
-  ierr = PetscGetTime(&t4);CHKERRQ(ierr);
+  ierr = PetscTime(&t4);CHKERRQ(ierr);
   if (rank==1) PetscPrintf(MPI_COMM_SELF,"  [%d] PtAPNum %g/P + %g/PtAP( %g + %g ) + %g/comm + %g/Cloc = %g\n\n",rank,t1-t0,t2-t1,et2_AP,et2_PtAP,t3-t2,t4-t3,t4-t0);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
