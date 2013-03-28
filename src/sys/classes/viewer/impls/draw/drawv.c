@@ -453,7 +453,6 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_Draw(PetscViewer viewer)
   viewer->ops->setfromoptions   = PetscViewerSetFromOptions_Draw;
   viewer->ops->getsingleton     = PetscViewerGetSingleton_Draw;
   viewer->ops->restoresingleton = PetscViewerRestoreSingleton_Draw;
-  viewer->format                = PETSC_VIEWER_NOFORMAT;
 
   /* these are created on the fly if requested */
   vdraw->draw_max  = 5;

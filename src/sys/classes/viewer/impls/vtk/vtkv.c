@@ -167,7 +167,6 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_VTK(PetscViewer v)
   v->data         = (void*)vtk;
   v->ops->destroy = PetscViewerDestroy_VTK;
   v->ops->flush   = PetscViewerFlush_VTK;
-  v->iformat      = 0;
   vtk->btype      = (PetscFileMode) -1;
   vtk->filename   = 0;
 

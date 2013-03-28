@@ -144,8 +144,6 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_VU(PetscViewer viewer)
   viewer->ops->flush            = PetscViewerFlush_VU;
   viewer->ops->getsingleton     = NULL;
   viewer->ops->restoresingleton = NULL;
-  viewer->format                = PETSC_VIEWER_DEFAULT;
-  viewer->iformat               = 0;
 
   vu->fd          = NULL;
   vu->mode        = FILE_MODE_WRITE;

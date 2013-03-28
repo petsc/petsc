@@ -1109,7 +1109,6 @@ PetscErrorCode PetscViewerFileSetName_Binary(PetscViewer viewer,const char name[
     } else if (fname) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Unknown file type");
 #endif
   } else vbinary->fdes = -1;
-  viewer->format = PETSC_VIEWER_NOFORMAT;
 
   /*
       try to open info file: all processors open this file if read only
@@ -1172,7 +1171,6 @@ PetscErrorCode PetscViewerFileSetName_MPIIO(PetscViewer viewer,const char name[]
   } else if (type == FILE_MODE_WRITE) {
     MPI_File_open(PetscObjectComm((PetscObject)viewer),vbinary->filename,MPI_MODE_WRONLY | MPI_MODE_CREATE,MPI_INFO_NULL,&vbinary->mfdes);CHKERRQ(ierr);
   }
-  viewer->format = PETSC_VIEWER_NOFORMAT;
 
   /*
       try to open info file: all processors open this file if read only
@@ -1254,7 +1252,6 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_Binary(PetscViewer v)
   v->ops->destroy          = PetscViewerDestroy_Binary;
   v->ops->view             = PetscViewerView_Binary;
   v->ops->flush            = 0;
-  v->iformat               = 0;
   vbinary->fdes_info       = 0;
   vbinary->fdes            = 0;
   vbinary->skipinfo        = PETSC_FALSE;

@@ -94,7 +94,6 @@ PetscErrorCode  PetscViewerFileSetName_HDF5(PetscViewer viewer, const char name[
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER, "Must call PetscViewerFileSetMode() before PetscViewerFileSetName()");
   }
   if (hdf5->file_id < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB, "H5Fcreate failed for %s", name);
-  viewer->format = PETSC_VIEWER_NOFORMAT;
   H5Pclose(plist_id);
   PetscFunctionReturn(0);
 }
@@ -112,7 +111,6 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_HDF5(PetscViewer v)
   v->data         = (void*) hdf5;
   v->ops->destroy = PetscViewerDestroy_HDF5;
   v->ops->flush   = 0;
-  v->iformat      = 0;
   hdf5->btype     = (PetscFileMode) -1;
   hdf5->filename  = 0;
   hdf5->timestep  = -1;
