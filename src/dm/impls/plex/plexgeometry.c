@@ -210,7 +210,7 @@ static PetscErrorCode DMPlexComputeProjection3Dto2D_Internal(PetscScalar coords[
 {
   PetscScalar    x1[3], x2[3], n[3], norm;
   PetscScalar    R[9], x1p[3], x2p[3];
-  PetscScalar    sqrtz, alpha;
+  PetscReal      sqrtz, alpha;
   const PetscInt dim = 3;
   PetscInt       d, e;
 
@@ -237,12 +237,12 @@ static PetscErrorCode DMPlexComputeProjection3Dto2D_Internal(PetscScalar coords[
 
     will rotate the normal vector to \hat z
   */
-  sqrtz = sqrt(1.0 - n[2]*n[2]);
+  sqrtz = sqrt(1.0 - PetscAbsScalar(n[2]*n[2]));
   /* Check for n = z */
   if (sqrtz < 1.0e-10) {
     coords[0] = 0.0;
     coords[1] = 0.0;
-    if (n[2] < 0.0) {
+    if (PetscRealPart(n[2]) < 0.0) {
       coords[2] = x2[0];
       coords[3] = x2[1];
       coords[4] = x1[0];
