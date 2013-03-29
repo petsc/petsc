@@ -113,7 +113,7 @@ PetscErrorCode  PetscOptionsGetViewer(MPI_Comm comm,const char pre[],const char 
           ierr = PetscViewerAMSSetCommName(*viewer,loc);CHKERRQ(ierr);
 #endif
           ierr = PetscViewerFileSetMode(*viewer,FILE_MODE_WRITE);CHKERRQ(ierr);
-          if (cnt == 0) { /* Allow append for ASCII files */
+          if (cnt == 0 && loc2) { /* Allow append for ASCII files */
             ierr = PetscStrchr(loc2,':',&loc3);CHKERRQ(ierr);
             if (loc3) {*loc3 = 0; loc3++;}
             if (loc3 && *loc3) {
