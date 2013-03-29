@@ -4282,7 +4282,7 @@ Note that the routine MatFDColoringCreate() currently is only supported for the 
 \section{Variational Inequalities}
 \label{sec_vi}
 
-SNES can also solve variational inequalities with box constraints. That is nonlinear algebraic systems with additional inequality constraints on some or all of the variables: $ Lu \le u_i \le Hu_i $.
+SNES can also solve variational inequalities with box constraints. That is nonlinear algebraic systems with additional inequality constraints on some or all of the variables: $ Lu_i \le u_i \le Hu_i $.
 Some or all of the lower bounds may be negative infinity (indicated to PETSc with SNES\_VI\_NINF) and some or all of the upper bounds may be infinity (indicated by SNES\_VI\_INF). The command
 \begin{tabbing}
    SNESVISetVariableBounds(SNES,Vec Lu,Vec Hu);
