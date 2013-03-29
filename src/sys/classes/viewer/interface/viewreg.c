@@ -26,8 +26,8 @@ PetscFunctionList PetscViewerList = 0;
    Level: intermediate
 
    Notes: If no value is provided ascii:stdout is used
-$       ascii[:[filename][:format]]   defaults to stdout - format can be one of ascii_info, ascii_info_detail, or ascii_matlab, for example ascii::ascii_info prints just the info
-$                                     about the object to standard out
+$       ascii[:[filename][:[format][:append]]   defaults to stdout - format can be one of ascii_info, ascii_info_detail, or ascii_matlab, for example ascii::ascii_info prints just the info
+$                                     about the object to standard out - unless :append is given filename opens in write mode
 $       binary[:[filename][:format]]   defaults to binaryoutput
 $       draw
 $       socket[:port]                  defaults to the standard output port
@@ -61,7 +61,7 @@ PetscErrorCode  PetscOptionsGetViewer(MPI_Comm comm,const char pre[],const char 
       ierr = PetscViewerASCIIGetStdout(comm,viewer);CHKERRQ(ierr);
       ierr = PetscObjectReference((PetscObject)*viewer);CHKERRQ(ierr);
     } else {
-      char       *cvalue,*loc,*loc2 = NULL;
+      char       *cvalue,*loc,*loc2 = NULL,*loc3 = NULL;
       PetscInt   cnt;
       const char *viewers[] = {PETSCVIEWERASCII,PETSCVIEWERBINARY,PETSCVIEWERDRAW,PETSCVIEWERSOCKET,PETSCVIEWERMATLAB,PETSCVIEWERAMS,PETSCVIEWERVTK,0};
 
@@ -113,6 +113,24 @@ PetscErrorCode  PetscOptionsGetViewer(MPI_Comm comm,const char pre[],const char 
           ierr = PetscViewerAMSSetCommName(*viewer,loc);CHKERRQ(ierr);
 #endif
           ierr = PetscViewerFileSetMode(*viewer,FILE_MODE_WRITE);CHKERRQ(ierr);
+          if (cnt == 0) { /* Allow append for ASCII files */
+            ierr = PetscStrchr(loc2,':',&loc3);CHKERRQ(ierr);
+            if (loc3) {*loc3 = 0; loc3++;}
+            if (loc3 && *loc3) {
+              const char *modes[] = {"w","write","a","append"};
+              ierr = PetscStrtolower(loc3);CHKERRQ(ierr);
+              ierr = PetscStrendswithwhich(loc3,modes,&cnt);CHKERRQ(ierr);
+              if (cnt > (PetscInt) sizeof(modes)-1) SETERRQ1(comm,PETSC_ERR_ARG_OUTOFRANGE,"Invalid viewer file mode: %s",loc3);
+              switch (cnt) {
+              case 2:
+              case 3:
+                ierr = PetscViewerFileSetMode(*viewer,FILE_MODE_APPEND);CHKERRQ(ierr);
+                break;
+              default:
+                break;
+              }
+            }
+          }
           ierr = PetscViewerFileSetName(*viewer,loc);CHKERRQ(ierr);
         }
       }
