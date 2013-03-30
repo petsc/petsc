@@ -953,13 +953,19 @@ PetscErrorCode  PCBDDCGetPrimalVerticesLocalIdx(PC pc, PetscInt *n_vertices, Pet
   vertices = 0;
   if (pcbddc->ConstraintMatrix) {
     ierr = MatGetSize(pcbddc->ConstraintMatrix,&local_primal_size,&i);CHKERRQ(ierr);
-    ierr = PetscMalloc(local_primal_size*sizeof(PetscInt),&vertices);CHKERRQ(ierr);
+    for (i=0;i<local_primal_size;i++) {
+      ierr = MatGetRow(pcbddc->ConstraintMatrix,i,&size_of_constraint,NULL,NULL);CHKERRQ(ierr);
+      if (size_of_constraint == 1) n++;
+      ierr = MatRestoreRow(pcbddc->ConstraintMatrix,i,&size_of_constraint,NULL,NULL);CHKERRQ(ierr);
+    }
+    ierr = PetscMalloc(n*sizeof(PetscInt),&vertices);CHKERRQ(ierr);
+    n = 0;
     for (i=0;i<local_primal_size;i++) {
       ierr = MatGetRow(pcbddc->ConstraintMatrix,i,&size_of_constraint,(const PetscInt**)&row_cmat_indices,NULL);CHKERRQ(ierr);
       if (size_of_constraint == 1) {
         vertices[n++]=row_cmat_indices[0];
       }
-    ierr = MatRestoreRow(pcbddc->ConstraintMatrix,i,&size_of_constraint,(const PetscInt**)&row_cmat_indices,NULL);CHKERRQ(ierr);
+      ierr = MatRestoreRow(pcbddc->ConstraintMatrix,i,&size_of_constraint,(const PetscInt**)&row_cmat_indices,NULL);CHKERRQ(ierr);
     }
   }
   *n_vertices = n;
