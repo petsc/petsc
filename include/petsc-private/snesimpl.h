@@ -95,6 +95,10 @@ struct _p_SNES {
   PetscBool   printreason;        /* print reason for convergence/divergence after each solve */
   PetscInt    lagpreconditioner;  /* SNESSetLagPreconditioner() */
   PetscInt    lagjacobian;        /* SNESSetLagJacobian() */
+  PetscInt    jac_iter;           /* The present iteration of the Jacobian lagging */
+  PetscBool   lagjac_persist;     /* The jac_iter persists until reset */
+  PetscInt    pre_iter;           /* The present iteration of the Preconditioner lagging */
+  PetscBool   lagpre_persist;     /* The pre_iter persists until reset */
   PetscInt    gridsequence;       /* number of grid sequence steps to take; defaults to zero */
 
   PetscBool   tolerancesset;      /* SNESSetTolerances() called and tolerances should persist through SNESCreate_XXX()*/

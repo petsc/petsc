@@ -647,7 +647,7 @@ PetscErrorCode SNESSetUpMatrices(SNES snes)
 @*/
 PetscErrorCode  SNESSetFromOptions(SNES snes)
 {
-  PetscBool      flg,pcset;
+  PetscBool      flg,pcset,persist;
   PetscInt       i,indx,lag,grids;
   MatStructure   matflag;
   const char     *deft        = SNESNEWTONLS;
@@ -688,10 +688,19 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
   if (flg) {
     ierr = SNESSetLagPreconditioner(snes,lag);CHKERRQ(ierr);
   }
+  ierr = PetscOptionsBool("-snes_lag_preconditioner_persists","Preconditioner lagging through multiple solves","SNESSetLagPreconditionerPersists",snes->lagjac_persist,&persist,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = SNESSetLagPreconditionerPersists(snes,persist);CHKERRQ(ierr);
+  }
   ierr = PetscOptionsInt("-snes_lag_jacobian","How often to rebuild Jacobian","SNESSetLagJacobian",snes->lagjacobian,&lag,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = SNESSetLagJacobian(snes,lag);CHKERRQ(ierr);
   }
+  ierr = PetscOptionsBool("-snes_lag_jacobian_persists","Jacobian lagging through multiple solves","SNESSetLagJacobianPersists",snes->lagjac_persist,&persist,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = SNESSetLagJacobianPersists(snes,persist);CHKERRQ(ierr);
+  }
+
   ierr = PetscOptionsInt("-snes_grid_sequence","Use grid sequencing to generate initial guess","SNESSetGridSequence",snes->gridsequence,&grids,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = SNESSetGridSequence(snes,grids);CHKERRQ(ierr);
@@ -1436,7 +1445,11 @@ PetscErrorCode  SNESCreate(MPI_Comm comm,SNES *outsnes)
   snes->maxFailures       = 1;
   snes->linear_its        = 0;
   snes->lagjacobian       = 1;
+  snes->jac_iter          = 0;
+  snes->lagjac_persist    = PETSC_FALSE;
   snes->lagpreconditioner = 1;
+  snes->pre_iter          = 0;
+  snes->lagpre_persist    = PETSC_FALSE;
   snes->numbermonitors    = 0;
   snes->data              = 0;
   snes->setupcalled       = PETSC_FALSE;
@@ -2122,7 +2135,7 @@ PetscErrorCode  SNESComputeJacobian(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *
       ierr = MatAssemblyEnd(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     }
     PetscFunctionReturn(0);
-  } else if (snes->lagjacobian > 1 && snes->iter % snes->lagjacobian) {
+  } else if (snes->lagjacobian > 1 && (snes->iter + snes->jac_iter) % snes->lagjacobian) {
     *flg = SAME_PRECONDITIONER;
     ierr = PetscInfo2(snes,"Reusing Jacobian/preconditioner because lag is %D and SNES iteration is %D\n",snes->lagjacobian,snes->iter);CHKERRQ(ierr);
     ierr = PetscObjectTypeCompare((PetscObject)*A,MATMFFD,&flag);CHKERRQ(ierr);
@@ -2154,7 +2167,7 @@ PetscErrorCode  SNESComputeJacobian(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *
   } else if (snes->lagpreconditioner == -1) {
     *flg = SAME_PRECONDITIONER;
     ierr = PetscInfo(snes,"Reusing preconditioner because lag is -1\n");CHKERRQ(ierr);
-  } else if (snes->lagpreconditioner > 1 && snes->iter % snes->lagpreconditioner) {
+  } else if (snes->lagpreconditioner > 1 && (snes->iter + snes->pre_iter) % snes->lagpreconditioner) {
     *flg = SAME_PRECONDITIONER;
     ierr = PetscInfo2(snes,"Reusing preconditioner because lag is %D and SNES iteration is %D\n",snes->lagpreconditioner,snes->iter);CHKERRQ(ierr);
   }
@@ -2571,6 +2584,9 @@ PetscErrorCode  SNESSetUp(SNES snes)
     ierr = PetscObjectCopyFortranFunctionPointers((PetscObject)linesearch, (PetscObject)pclinesearch);CHKERRQ(ierr);
   }
 
+  snes->jac_iter = 0;
+  snes->pre_iter = 0;
+
   if (snes->ops->setup) {
     ierr = (*snes->ops->setup)(snes);CHKERRQ(ierr);
   }
@@ -2868,6 +2884,74 @@ PetscErrorCode  SNESGetLagJacobian(SNES snes,PetscInt *lag)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   *lag = snes->lagjacobian;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "SNESSetLagJacobianPersists"
+/*@
+   SNESSetLagJacobianPersists - Set whether or not the Jacobian lagging persists through multiple solves
+
+   Logically collective on SNES
+
+   Input Parameter:
++  snes - the SNES context
+-   flg - whether to keep lagging the Jacobian or not through through multiple solves
+
+   Options Database Keys:
+.    -snes_lag_jacobian_persists <flg>
+
+   Notes: This is useful both for nonlinear preconditioning, where it's appropriate to have the Jacobian be stale by
+   several solves, and for implicit time-stepping, where Jacobian lagging in the inner nonlinear solve over several
+   timesteps may present huge efficiency gains.
+
+   Level: developer
+
+.keywords: SNES, nonlinear, lag, NPC
+
+.seealso: SNESSetLagPreconditionerPersists(), SNESSetLagJacobian(), SNESGetLagJacobian(), SNESGetPC()
+
+@*/
+PetscErrorCode  SNESSetLagJacobianPersists(SNES snes,PetscBool flg)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
+  PetscValidLogicalCollectiveBool(snes,flg,2);
+  snes->lagjac_persist = flg;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "SNESSetLagPreconditionerPersists"
+/*@
+   SNESSetLagPreconditionerPersists - Set whether or not the preconditioner lagging persists through multiple solves
+
+   Logically Collective on SNES
+
+   Input Parameter:
++  snes - the SNES context
+-   flg - whether to keep lagging the Jacobian or not through through multiple solves
+
+   Options Database Keys:
+.    -snes_lag_jacobian_persists <flg>
+
+   Notes: This is useful both for nonlinear preconditioning, where it's appropriate to have the preconditioner be stale
+   by several solves, and for implicit time-stepping, where preconditioner lagging in the inner nonlinear solve over
+   several timesteps may present huge efficiency gains.
+
+   Level: developer
+
+.keywords: SNES, nonlinear, lag, NPC
+
+.seealso: SNESSetLagJacobianPersists(), SNESSetLagJacobian(), SNESGetLagJacobian(), SNESGetPC()
+
+@*/
+PetscErrorCode  SNESSetLagPreconditionerPersists(SNES snes,PetscBool flg)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
+  PetscValidLogicalCollectiveBool(snes,flg,2);
+  snes->lagpre_persist = flg;
   PetscFunctionReturn(0);
 }
 
@@ -3633,6 +3717,9 @@ PetscErrorCode  SNESSolve(SNES snes,Vec b,Vec x)
       snes->domainerror = PETSC_FALSE;
     }
     if (!snes->reason) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Internal error, solver returned without setting converged reason");
+
+    if (snes->lagjac_persist) snes->jac_iter += snes->iter;
+    if (snes->lagpre_persist) snes->pre_iter += snes->iter;
 
     flg  = PETSC_FALSE;
     ierr = PetscOptionsGetBool(((PetscObject)snes)->prefix,"-snes_test_local_min",&flg,NULL);CHKERRQ(ierr);
