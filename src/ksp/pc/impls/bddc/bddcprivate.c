@@ -935,7 +935,7 @@ PetscErrorCode PCBDDCAnalyzeInterface(PC pc)
 
   /* print some info to stdout */
   if (pcbddc->dbg_flag) {
-    ierr = PCBDDCGraphASCIIView(pcbddc->mat_graph,viewer);
+    ierr = PCBDDCGraphASCIIView(pcbddc->mat_graph,pcbddc->dbg_flag,viewer);
   }
   PetscFunctionReturn(0);
 }
