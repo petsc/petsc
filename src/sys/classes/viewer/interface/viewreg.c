@@ -26,9 +26,9 @@ PetscFunctionList PetscViewerList = 0;
    Level: intermediate
 
    Notes: If no value is provided ascii:stdout is used
-$       ascii[:[filename][:[format][:append]]   defaults to stdout - format can be one of ascii_info, ascii_info_detail, or ascii_matlab, for example ascii::ascii_info prints just the info
+$       ascii[:[filename][:[format][:append]]]   defaults to stdout - format can be one of ascii_info, ascii_info_detail, or ascii_matlab, for example ascii::ascii_info prints just the info
 $                                     about the object to standard out - unless :append is given filename opens in write mode
-$       binary[:[filename][:format]]   defaults to binaryoutput
+$       binary[:[filename][:[format][:append]]]   defaults to binaryoutput
 $       draw
 $       socket[:port]                  defaults to the standard output port
 $       ams[:communicatorname]         publishes object to the AMS (Argonne Memory Snooper) 
@@ -112,18 +112,18 @@ PetscErrorCode  PetscOptionsGetViewer(MPI_Comm comm,const char pre[],const char 
           ierr = PetscViewerASCIIGetStdout(comm,viewer);CHKERRQ(ierr);
           ierr = PetscObjectReference((PetscObject)*viewer);CHKERRQ(ierr);
         } else {
+          PetscFileMode fmode;
           ierr = PetscViewerCreate(comm,viewer);CHKERRQ(ierr);
           ierr = PetscViewerSetType(*viewer,*loc0_vtype ? loc0_vtype : "ascii");CHKERRQ(ierr);
 #if defined(PETSC_HAVE_AMS)
           ierr = PetscViewerAMSSetCommName(*viewer,loc1_fname);CHKERRQ(ierr);
 #endif
-          ierr = PetscViewerFileSetMode(*viewer,FILE_MODE_WRITE);CHKERRQ(ierr);
-          if (cnt == 0 && loc3_fmode && *loc3_fmode) { /* Allow append for ASCII files */
-            PetscFileMode fmode;
+          fmode = FILE_MODE_WRITE;
+          if (loc3_fmode && *loc3_fmode) { /* Has non-empty file mode ("write" or "append") */
             ierr = PetscEnumFind(PetscFileModes,loc3_fmode,(PetscEnum*)&fmode,&flag);CHKERRQ(ierr);
-            if (flag) {ierr = PetscViewerFileSetMode(*viewer,fmode);CHKERRQ(ierr);}
-            else SETERRQ1(comm,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown file mode: %s",loc3_fmode);
+            if (!flag) SETERRQ1(comm,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown file mode: %s",loc3_fmode);
           }
+          ierr = PetscViewerFileSetMode(*viewer,flag?fmode:FILE_MODE_WRITE);CHKERRQ(ierr);
           ierr = PetscViewerFileSetName(*viewer,loc1_fname);CHKERRQ(ierr);
         }
       }
