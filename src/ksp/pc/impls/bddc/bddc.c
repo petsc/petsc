@@ -40,7 +40,7 @@ PetscErrorCode PCSetFromOptions_BDDC(PC pc)
   PetscFunctionBegin;
   ierr = PetscOptionsHead("BDDC options");CHKERRQ(ierr);
   /* Verbose debugging of main data structures */
-  ierr = PetscOptionsBool("-pc_bddc_check_all"       ,"Verbose (debugging) output for PCBDDC"                       ,"none",pcbddc->dbg_flag      ,&pcbddc->dbg_flag      ,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-pc_bddc_check_level"       ,"Verbose (debugging) output for PCBDDC"                       ,"none",pcbddc->dbg_flag      ,&pcbddc->dbg_flag      ,NULL);CHKERRQ(ierr);
   /* Some customization for default primal space */
   ierr = PetscOptionsBool("-pc_bddc_vertices_only"   ,"Use only vertices in coarse space (i.e. discard constraints)","none",pcbddc->vertices_flag   ,&pcbddc->vertices_flag   ,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_bddc_constraints_only","Use only constraints in coarse space (i.e. discard vertices)","none",pcbddc->constraints_flag,&pcbddc->constraints_flag,NULL);CHKERRQ(ierr);
@@ -1216,7 +1216,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC pc)
   pcbddc->local_primal_sizes         = 0;
   pcbddc->local_primal_displacements = 0;
   pcbddc->coarse_loc_to_glob         = 0;
-  pcbddc->dbg_flag                   = PETSC_FALSE;
+  pcbddc->dbg_flag                   = 0;
   pcbddc->coarsening_ratio           = 8;
   pcbddc->use_exact_dirichlet        = PETSC_TRUE;
   pcbddc->current_level              = 0;
@@ -1579,7 +1579,6 @@ static PetscErrorCode PCBDDCCoarseSetUp(PC pc)
       ierr = VecDestroy(&temp_vec);CHKERRQ(ierr);
       use_exact = 1;
       if (PetscAbsReal(value) > 1.e-4) use_exact = 0;
-
       ierr = MPI_Allreduce(&use_exact,&use_exact_reduced,1,MPIU_INT,MPI_LAND,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
       pcbddc->use_exact_dirichlet = (PetscBool) use_exact_reduced;
       if (dbg_flag) {
@@ -2117,13 +2116,15 @@ static PetscErrorCode PCBDDCSetUpCoarseEnvironment(PC pc,PetscScalar* coarse_sub
 
   if (dbg_flag) {
     ierr = PetscViewerASCIIPrintf(viewer,"Size of coarse problem is %d\n",pcbddc->coarse_size);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"Distribution of local primal indices\n");CHKERRQ(ierr);
-    ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Subdomain %04d\n",PetscGlobalRank);CHKERRQ(ierr);
-    for (i=0;i<pcbddc->local_primal_size;i++) {
-      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"local_primal_indices[%d]=%d \n",i,pcbddc->local_primal_indices[i]);
+    if (dbg_flag > 1) {
+      ierr = PetscViewerASCIIPrintf(viewer,"Distribution of local primal indices\n");CHKERRQ(ierr);
+      ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Subdomain %04d\n",PetscGlobalRank);CHKERRQ(ierr);
+      for (i=0;i<pcbddc->local_primal_size;i++) {
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer,"local_primal_indices[%d]=%d \n",i,pcbddc->local_primal_indices[i]);
+      }
+      ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
     }
-    ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
   }
 
   im_active = 0;

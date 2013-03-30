@@ -33,7 +33,7 @@ PetscErrorCode PCBDDCNullSpaceAssembleCoarse(PC pc, MatNullSpace* CoarseNullSpac
     ierr = PCBDDCScatterCoarseDataBegin(pc,local_primal_vec,pcbddc->coarse_vec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = PCBDDCScatterCoarseDataEnd(pc,local_primal_vec,pcbddc->coarse_vec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     if (pcbddc->coarse_mat) {
-      if (pcbddc->dbg_flag ) {
+      if (pcbddc->dbg_flag) {
         ierr = MatMult(pcbddc->coarse_mat,pcbddc->coarse_vec,pcbddc->coarse_rhs);CHKERRQ(ierr);
         ierr = VecNorm(pcbddc->coarse_rhs,NORM_INFINITY,&test_null);CHKERRQ(ierr);
         ierr = PetscViewerASCIIPrintf(pcbddc->dbg_viewer,"Constant coarse null space error % 1.14e\n",test_null);CHKERRQ(ierr);
@@ -49,7 +49,7 @@ PetscErrorCode PCBDDCNullSpaceAssembleCoarse(PC pc, MatNullSpace* CoarseNullSpac
     ierr = PCBDDCScatterCoarseDataBegin(pc,local_primal_vec,pcbddc->coarse_vec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = PCBDDCScatterCoarseDataEnd(pc,local_primal_vec,pcbddc->coarse_vec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     if (pcbddc->coarse_mat) {
-      if (pcbddc->dbg_flag ) {
+      if (pcbddc->dbg_flag) {
         ierr = MatMult(pcbddc->coarse_mat,pcbddc->coarse_vec,pcbddc->coarse_rhs);CHKERRQ(ierr);
         ierr = VecNorm(pcbddc->coarse_rhs,NORM_2,&test_null);CHKERRQ(ierr);
         ierr = PetscViewerASCIIPrintf(pcbddc->dbg_viewer,"Vec %d coarse null space error % 1.14e\n",i,test_null);CHKERRQ(ierr);

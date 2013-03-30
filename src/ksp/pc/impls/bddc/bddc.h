@@ -80,7 +80,7 @@ typedef struct {
   PetscBool                  use_deluxe_scaling;
   PCBDDCDeluxeScaling        deluxe_ctx;
   /* For verbose output of some bddc data structures */
-  PetscBool                  dbg_flag;
+  PetscInt                   dbg_flag;
   PetscViewer                dbg_viewer;
 } PC_BDDC;
 
