@@ -364,9 +364,9 @@ int main(int argc,char **argv)
   if (size > 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Only for sequential runs");
 
   /* Register the available problems */
-  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&plist,"rober","",(void (*)(void))&RoberCreate);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&plist,"ce",   "",(void (*)(void))&CECreate);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&plist,"orego","",(void (*)(void))&OregoCreate);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&plist,"rober",(void (*)(void))&RoberCreate);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&plist,"ce",   (void (*)(void))&CECreate);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&plist,"orego",(void (*)(void))&OregoCreate);CHKERRQ(ierr);
   ierr = PetscStrcpy(pname,"ce");CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -386,7 +386,7 @@ int main(int argc,char **argv)
   {
     PetscErrorCode (*pcreate)(Problem);
 
-    ierr = PetscFunctionListFind(plistpname,(void (**)(void))&pcreate);CHKERRQ(ierr);
+    ierr = PetscFunctionListFind(plist,pname,(void (**)(void))&pcreate);CHKERRQ(ierr);
     if (!pcreate) SETERRQ1(PETSC_COMM_SELF,1,"No problem '%s'",pname);
     ierr = (*pcreate)(problem);CHKERRQ(ierr);
   }

@@ -2140,18 +2140,18 @@ int main(int argc, char **argv)
   mod->comm = comm;
 
   /* Register physical models to be available on the command line */
-  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&PhysicsList,"advect"          ,"",(void(*)(void))PhysicsCreate_Advect);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&PhysicsList,"sw"              ,"",(void(*)(void))PhysicsCreate_SW);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&PhysicsList,"euler"              ,"",(void(*)(void))PhysicsCreate_Euler);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&PhysicsList,"advect"          ,(void(*)(void))PhysicsCreate_Advect);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&PhysicsList,"sw"              ,(void(*)(void))PhysicsCreate_SW);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&PhysicsList,"euler"           ,(void(*)(void))PhysicsCreate_Euler);CHKERRQ(ierr);
 
-  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&LimitList,"zero"              ,"",(void(*)(void))Limit_Zero);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&LimitList,"none"              ,"",(void(*)(void))Limit_None);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&LimitList,"minmod"            ,"",(void(*)(void))Limit_Minmod);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&LimitList,"vanleer"           ,"",(void(*)(void))Limit_VanLeer);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&LimitList,"vanalbada"         ,"",(void(*)(void))Limit_VanAlbada);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&LimitList,"sin"               ,"",(void(*)(void))Limit_Sin);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&LimitList,"superbee"          ,"",(void(*)(void))Limit_Superbee);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&LimitList,"mc"                ,"",(void(*)(void))Limit_MC);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&LimitList,"zero"              ,(void(*)(void))Limit_Zero);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&LimitList,"none"              ,(void(*)(void))Limit_None);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&LimitList,"minmod"            ,(void(*)(void))Limit_Minmod);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&LimitList,"vanleer"           ,(void(*)(void))Limit_VanLeer);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&LimitList,"vanalbada"         ,(void(*)(void))Limit_VanAlbada);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&LimitList,"sin"               ,(void(*)(void))Limit_Sin);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&LimitList,"superbee"          ,(void(*)(void))Limit_Superbee);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&LimitList,"mc"                ,(void(*)(void))Limit_MC);CHKERRQ(ierr);
 
   ierr = PetscOptionsBegin(comm,NULL,"Unstructured Finite Volume Options","");CHKERRQ(ierr);
   {
