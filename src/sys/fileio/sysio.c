@@ -14,6 +14,8 @@
 #endif
 #include <petscbt.h>
 
+const char *const PetscFileModes[] = {"READ","WRITE","APPEND","UPDATE","APPEND_UPDATE","PetscFileMode","PETSC_FILE_",0};
+
 /* --------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "PetscByteSwapEnum"
