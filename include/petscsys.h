@@ -1166,6 +1166,9 @@ PETSC_EXTERN PetscErrorCode PetscTokenCreate(const char[],const char,PetscToken*
 PETSC_EXTERN PetscErrorCode PetscTokenFind(PetscToken,char *[]);
 PETSC_EXTERN PetscErrorCode PetscTokenDestroy(PetscToken*);
 
+PETSC_EXTERN PetscErrorCode PetscEListFind(PetscInt,const char *const*,const char*,PetscInt*,PetscBool*);
+PETSC_EXTERN PetscErrorCode PetscEnumFind(const char *const*,const char*,PetscEnum*,PetscBool*);
+
 /*
    These are  MPI operations for MPI_Allreduce() etc
 */

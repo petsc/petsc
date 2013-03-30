@@ -1096,4 +1096,80 @@ PetscErrorCode  PetscStrreplace(MPI_Comm comm,const char aa[],char b[],size_t le
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "PetscEListFind"
+/*@C
+   PetscEListFind - searches list of strings for given string, using case insensitive matching
 
+   Not Collective
+
+   Input Parameters:
++  n - number of strings in
+.  list - list of strings to search
+-  str - string to look for, empty string "" accepts default (first entry in list)
+
+   Output Parameters:
++  value - index of matching string (if found)
+-  found - boolean indicating whether string was found (can be NULL)
+
+   Notes:
+   Not for use in Fortran
+
+   Level: advanced
+@*/
+PetscErrorCode PetscEListFind(PetscInt n,const char *const *list,const char *str,PetscInt *value,PetscBool *found)
+{
+  PetscErrorCode ierr;
+  PetscBool matched;
+  PetscInt i;
+
+  PetscFunctionBegin;
+  if (found) *found = PETSC_FALSE;
+  for (i=0; i<n; i++) {
+    ierr = PetscStrcasecmp(str,list[i],&matched);CHKERRQ(ierr);
+    if (matched || !str[0]) {
+      if (found) *found = PETSC_TRUE;
+      *value = i;
+      break;
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscEnumFind"
+/*@C
+   PetscEListFind - searches enum list of strings for given string, using case insensitive matching
+
+   Not Collective
+
+   Input Parameters:
++  enumlist - list of strings to search, followed by enum name, then enum prefix, then NUL
+-  str - string to look for
+
+   Output Parameters:
++  value - index of matching string (if found)
+-  found - boolean indicating whether string was found (can be NULL)
+
+   Notes:
+   Not for use in Fortran
+
+   Level: advanced
+@*/
+PetscErrorCode PetscEnumFind(const char *const *enumlist,const char *str,PetscEnum *value,PetscBool *found)
+{
+  PetscErrorCode ierr;
+  PetscInt n,evalue;
+  PetscBool efound;
+
+  PetscFunctionBegin;
+  for (n = 0; enumlist[n]; n++) {
+    if (n > 50) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"List argument appears to be wrong or have more than 50 entries");
+  }
+  if (n < 3) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"List argument must have at least two entries: typename and type prefix");
+  n -= 3;                       /* drop enum name, prefix, and null termination */
+  ierr = PetscEListFind(n,enumlist,str,&evalue,&efound);CHKERRQ(ierr);
+  if (efound) *value = (PetscBool)evalue;
+  if (found) *found = efound;
+  PetscFunctionReturn(0);
+}
