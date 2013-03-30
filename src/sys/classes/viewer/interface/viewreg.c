@@ -61,16 +61,24 @@ PetscErrorCode  PetscOptionsGetViewer(MPI_Comm comm,const char pre[],const char 
       ierr = PetscViewerASCIIGetStdout(comm,viewer);CHKERRQ(ierr);
       ierr = PetscObjectReference((PetscObject)*viewer);CHKERRQ(ierr);
     } else {
-      char       *cvalue,*loc,*loc2 = NULL,*loc3 = NULL;
+      char       *loc0_vtype,*loc1_fname,*loc2_fmt = NULL,*loc3_fmode = NULL;
       PetscInt   cnt;
       const char *viewers[] = {PETSCVIEWERASCII,PETSCVIEWERBINARY,PETSCVIEWERDRAW,PETSCVIEWERSOCKET,PETSCVIEWERMATLAB,PETSCVIEWERAMS,PETSCVIEWERVTK,0};
 
-      ierr = PetscStrallocpy(value,&cvalue);CHKERRQ(ierr);
-      ierr = PetscStrchr(cvalue,':',&loc);CHKERRQ(ierr);
-      if (loc) {*loc = 0; loc++;}
-      ierr = PetscStrendswithwhich(*cvalue ? cvalue : "ascii",viewers,&cnt);CHKERRQ(ierr);
-      if (cnt > (PetscInt) sizeof(viewers)-1) SETERRQ1(comm,PETSC_ERR_ARG_OUTOFRANGE,"Unknown viewer type: %s",cvalue);
-      if (!loc) {
+      ierr = PetscStrallocpy(value,&loc0_vtype);CHKERRQ(ierr);
+      ierr = PetscStrchr(loc0_vtype,':',&loc1_fname);CHKERRQ(ierr);
+      if (loc1_fname) {
+        *loc1_fname++ = 0;
+        ierr = PetscStrchr(loc1_fname,':',&loc2_fmt);CHKERRQ(ierr);
+      }
+      if (loc2_fmt) {
+        *loc2_fmt++ = 0;
+        ierr = PetscStrchr(loc2_fmt,':',&loc3_fmode);CHKERRQ(ierr);
+      }
+      if (loc3_fmode) *loc3_fmode++ = 0;
+      ierr = PetscStrendswithwhich(*loc0_vtype ? loc0_vtype : "ascii",viewers,&cnt);CHKERRQ(ierr);
+      if (cnt > (PetscInt) sizeof(viewers)-1) SETERRQ1(comm,PETSC_ERR_ARG_OUTOFRANGE,"Unknown viewer type: %s",loc0_vtype);
+      if (!loc1_fname) {
         switch (cnt) {
         case 0:
           ierr = PetscViewerASCIIGetStdout(comm,viewer);CHKERRQ(ierr);
@@ -96,52 +104,36 @@ PetscErrorCode  PetscOptionsGetViewer(MPI_Comm comm,const char pre[],const char 
           *viewer = PETSC_VIEWER_AMS_(comm);CHKERRQ(ierr);
           break;
 #endif
-        default: SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unsupported viewer %s",cvalue);CHKERRQ(ierr);
+        default: SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unsupported viewer %s",loc0_vtype);CHKERRQ(ierr);
           break;
         }
         ierr = PetscObjectReference((PetscObject)*viewer);CHKERRQ(ierr);
       } else {
-        ierr = PetscStrchr(loc,':',&loc2);CHKERRQ(ierr);
-        if (loc2) {*loc2 = 0; loc2++;}
-        if (loc2 && !*loc && (cnt == 0)) { /* ASCII format without file name */
+        if (loc2_fmt && !*loc1_fname && (cnt == 0)) { /* ASCII format without file name */
           ierr = PetscViewerASCIIGetStdout(comm,viewer);CHKERRQ(ierr);
           ierr = PetscObjectReference((PetscObject)*viewer);CHKERRQ(ierr);
         } else {
           ierr = PetscViewerCreate(comm,viewer);CHKERRQ(ierr);
-          ierr = PetscViewerSetType(*viewer,*cvalue ? cvalue : "ascii");CHKERRQ(ierr);
+          ierr = PetscViewerSetType(*viewer,*loc0_vtype ? loc0_vtype : "ascii");CHKERRQ(ierr);
 #if defined(PETSC_HAVE_AMS)
-          ierr = PetscViewerAMSSetCommName(*viewer,loc);CHKERRQ(ierr);
+          ierr = PetscViewerAMSSetCommName(*viewer,loc1_fname);CHKERRQ(ierr);
 #endif
           ierr = PetscViewerFileSetMode(*viewer,FILE_MODE_WRITE);CHKERRQ(ierr);
-          if (cnt == 0 && loc2) { /* Allow append for ASCII files */
-            ierr = PetscStrchr(loc2,':',&loc3);CHKERRQ(ierr);
-            if (loc3) {*loc3 = 0; loc3++;}
-            if (loc3 && *loc3) {
-              const char *modes[] = {"w","write","a","append"};
-              ierr = PetscStrtolower(loc3);CHKERRQ(ierr);
-              ierr = PetscStrendswithwhich(loc3,modes,&cnt);CHKERRQ(ierr);
-              if (cnt > (PetscInt) sizeof(modes)-1) SETERRQ1(comm,PETSC_ERR_ARG_OUTOFRANGE,"Invalid viewer file mode: %s",loc3);
-              switch (cnt) {
-              case 2:
-              case 3:
-                ierr = PetscViewerFileSetMode(*viewer,FILE_MODE_APPEND);CHKERRQ(ierr);
-                break;
-              default:
-                break;
-              }
-            }
+          if (cnt == 0 && loc3_fmode && *loc3_fmode) { /* Allow append for ASCII files */
+            PetscFileMode fmode;
+            ierr = PetscEnumFind(PetscFileModes,loc3_fmode,(PetscEnum*)&fmode,&flag);CHKERRQ(ierr);
+            if (flag) {ierr = PetscViewerFileSetMode(*viewer,fmode);CHKERRQ(ierr);}
+            else SETERRQ1(comm,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown file mode: %s",loc3_fmode);
           }
-          ierr = PetscViewerFileSetName(*viewer,loc);CHKERRQ(ierr);
+          ierr = PetscViewerFileSetName(*viewer,loc1_fname);CHKERRQ(ierr);
         }
       }
-      ierr = PetscViewerSetUp(*viewer);CHKERRQ(ierr);
-      if (loc2 && *loc2) {
-        ierr = PetscStrtoupper(loc2);CHKERRQ(ierr);
-        ierr = PetscStrendswithwhich(loc2,PetscViewerFormats,&cnt);CHKERRQ(ierr);
-        if (!PetscViewerFormats[cnt]) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unknown viewer format %s",loc2);CHKERRQ(ierr);
-        if (format) *format = (PetscViewerFormat)cnt;
+      if (loc2_fmt && *loc2_fmt) {
+        ierr = PetscEnumFind(PetscViewerFormats,loc2_fmt,(PetscEnum*)format,&flag);CHKERRQ(ierr);
+        if (!flag) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unknown viewer format %s",loc2_fmt);CHKERRQ(ierr);
       }
-      ierr = PetscFree(cvalue);CHKERRQ(ierr);
+      ierr = PetscViewerSetUp(*viewer);CHKERRQ(ierr);
+      ierr = PetscFree(loc0_vtype);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);

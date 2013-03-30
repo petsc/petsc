@@ -28,13 +28,13 @@ runex4:
 	  ${MPIEXEC} -n 1 ./ex4 -myviewer ascii:ex4w2.tmp:: ;\
 	  if (${DIFF} output/ex4w.out ex4w2.tmp) then true; \
 		else echo  ${PWD} ; echo "\nPossible problem with ex4, diffs above \n========================================="; fi;\
-	  ${MPIEXEC} -n 1 ./ex4 -myviewer ascii:ex4w3.tmp::w ; \
+	  ${MPIEXEC} -n 1 ./ex4 -myviewer ascii:ex4w3.tmp::write ; \
 	  if (${DIFF} output/ex4w.out ex4w3.tmp) then true; \
 		else echo  ${PWD} ; echo "\nPossible problem with ex4, diffs above \n========================================="; fi;\
 	  ${MPIEXEC} -n 1 ./ex4 -myviewer ascii:ex4w4.tmp::write ; \
 	  if (${DIFF} output/ex4w.out ex4w4.tmp) then true; \
 		else echo  ${PWD} ; echo "\nPossible problem with ex4, diffs above \n========================================="; fi;\
-	  ${MPIEXEC} -n 1 ./ex4 -myviewer ascii:ex4a1.tmp::a ; \
+	  ${MPIEXEC} -n 1 ./ex4 -myviewer ascii:ex4a1.tmp::append ; \
 	  if (${DIFF} output/ex4a.out ex4a1.tmp) then true; \
 		else echo  ${PWD} ; echo "\nPossible problem with ex4, diffs above \n========================================="; fi;\
 	  ${MPIEXEC} -n 1 ./ex4 -myviewer ascii:ex4a2.tmp::append ; \
