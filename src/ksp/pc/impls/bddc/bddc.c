@@ -1385,7 +1385,16 @@ static PetscErrorCode PCBDDCCoarseSetUp(PC pc)
     }
     ierr = MatAssemblyBegin(change_mat_all,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(change_mat_all,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatPtAP(matis->A,change_mat_all,MAT_INITIAL_MATRIX,1.0,&pcbddc->local_mat);CHKERRQ(ierr);
+    /* TODO: HOW TO WORK WITH BAIJ? PtAP not provided */
+    ierr = MatGetBlockSize(matis->A,&i);CHKERRQ(ierr);
+    if (i==1) {
+      ierr = MatPtAP(matis->A,change_mat_all,MAT_INITIAL_MATRIX,1.0,&pcbddc->local_mat);CHKERRQ(ierr);
+    } else {
+      Mat work_mat;
+      ierr = MatConvert(matis->A,MATSEQAIJ,MAT_INITIAL_MATRIX,&work_mat);CHKERRQ(ierr);
+      ierr = MatPtAP(work_mat,change_mat_all,MAT_INITIAL_MATRIX,1.0,&pcbddc->local_mat);CHKERRQ(ierr);
+      ierr = MatDestroy(&work_mat);CHKERRQ(ierr);
+    }
     ierr = MatDestroy(&pcis->A_IB);CHKERRQ(ierr);
     ierr = MatDestroy(&pcis->A_BI);CHKERRQ(ierr);
     ierr = MatDestroy(&pcis->A_BB);CHKERRQ(ierr);
