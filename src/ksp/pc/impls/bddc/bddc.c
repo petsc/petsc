@@ -1977,6 +1977,13 @@ static PetscErrorCode PCBDDCCoarseSetUp(PC pc)
 
 /* -------------------------------------------------------------------------- */
 
+/* BDDC requires metis 5.0.1 for multilevel */
+#if defined(PETSC_HAVE_METIS)
+#include "metis.h"
+#define MetisInt    idx_t
+#define MetisScalar real_t
+#endif
+
 #undef __FUNCT__  
 #define __FUNCT__ "PCBDDCSetUpCoarseEnvironment"
 static PetscErrorCode PCBDDCSetUpCoarseEnvironment(PC pc,PetscScalar* coarse_submat_vals)
@@ -2132,6 +2139,7 @@ static PetscErrorCode PCBDDCSetUpCoarseEnvironment(PC pc,PetscScalar* coarse_sub
   ierr = MPI_Allreduce(&im_active,&active_procs,1,MPIU_INT,MPI_SUM,prec_comm);CHKERRQ(ierr);
 
   /* adapt coarse problem type */
+#if defined(PETSC_HAVE_METIS)
   if (pcbddc->coarse_problem_type == MULTILEVEL_BDDC) {
     if (pcbddc->current_level < pcbddc->max_levels) {
       if ( (active_procs/pcbddc->coarsening_ratio) < 2 ) {
@@ -2148,12 +2156,16 @@ static PetscErrorCode PCBDDCSetUpCoarseEnvironment(PC pc,PetscScalar* coarse_sub
       }
       pcbddc->coarse_problem_type = PARALLEL_BDDC;
     }
-  }  
+  }
+#else
+  pcbddc->coarse_problem_type = PARALLEL_BDDC;
+#endif
 
   switch(pcbddc->coarse_problem_type){
 
     case(MULTILEVEL_BDDC):   /* we define a coarse mesh where subdomains are elements */
     {
+#if defined(PETSC_HAVE_METIS)
       /* we need additional variables */
       MetisInt    n_subdomains,n_parts,objval,ncon,faces_nvtxs;
       MetisInt    *metis_coarse_subdivision;
@@ -2422,6 +2434,7 @@ static PetscErrorCode PCBDDCSetUpCoarseEnvironment(PC pc,PetscScalar* coarse_sub
         ierr = PetscFree(total_ranks_recv);CHKERRQ(ierr);
         ierr = PetscFree(displacements_recv);CHKERRQ(ierr);
       }
+#endif
       break;
     }
 

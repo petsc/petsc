@@ -4,11 +4,6 @@
 #include <../src/ksp/pc/impls/is/pcis.h>
 #include "bddcstructs.h"
 
-/* BDDC requires metis 5.0.1 for multilevel */
-#include "metis.h"
-#define MetisInt    idx_t
-#define MetisScalar real_t
-
 typedef enum {SCATTERS_BDDC,GATHERS_BDDC} CoarseCommunicationsType;
 
 /* Private context (data structure) for the BDDC preconditioner.  */
