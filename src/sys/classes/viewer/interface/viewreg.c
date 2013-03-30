@@ -84,28 +84,27 @@ PetscErrorCode  PetscOptionsGetViewer(MPI_Comm comm,const char pre[],const char 
           ierr = PetscViewerASCIIGetStdout(comm,viewer);CHKERRQ(ierr);
           break;
         case 1:
-          *viewer = PETSC_VIEWER_BINARY_(comm);CHKERRQ(ierr);
+          if (!(*viewer = PETSC_VIEWER_BINARY_(comm))) CHKERRQ(PETSC_ERR_PLIB);
           break;
         case 2:
-          *viewer = PETSC_VIEWER_DRAW_(comm);CHKERRQ(ierr);
+          if (!(*viewer = PETSC_VIEWER_DRAW_(comm))) CHKERRQ(PETSC_ERR_PLIB);
           break;
 #if defined(PETSC_USE_SOCKET_VIEWER)
         case 3:
-          *viewer = PETSC_VIEWER_SOCKET_(comm);CHKERRQ(ierr);
+          if (!(*viewer = PETSC_VIEWER_SOCKET_(comm))) CHKERRQ(PETSC_ERR_PLIB);
           break;
 #endif
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
         case 4:
-          *viewer = PETSC_VIEWER_MATLAB_(comm);CHKERRQ(ierr);
+          if (!(*viewer = PETSC_VIEWER_MATLAB_(comm))) CHKERRQ(PETSC_ERR_PLIB);
           break;
 #endif
 #if defined(PETSC_HAVE_AMS)
         case 5:
-          *viewer = PETSC_VIEWER_AMS_(comm);CHKERRQ(ierr);
+          if (!(*viewer = PETSC_VIEWER_AMS_(comm))) CHKERRQ(PETSC_ERR_PLIB);
           break;
 #endif
-        default: SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unsupported viewer %s",loc0_vtype);CHKERRQ(ierr);
-          break;
+        default: SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unsupported viewer %s",loc0_vtype);
         }
         ierr = PetscObjectReference((PetscObject)*viewer);CHKERRQ(ierr);
       } else {
