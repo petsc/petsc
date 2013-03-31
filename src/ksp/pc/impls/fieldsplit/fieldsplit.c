@@ -609,7 +609,6 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
         ierr = KSPSetDMActive(ksp, PETSC_FALSE);CHKERRQ(ierr);
       } else {
         ierr = MatSchurComplementSetKSP(jac->schur, jac->head->ksp);CHKERRQ(ierr);
-        ierr = PetscObjectReference((PetscObject) jac->head->ksp);CHKERRQ(ierr);
       }
       /* Need to call this everytime because new matrix is being created */
       ierr  = MatSetFromOptions(jac->schur);CHKERRQ(ierr);
