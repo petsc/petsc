@@ -34,6 +34,7 @@ typedef struct gamg_TAG {
   PetscErrorCode (*optprol)(PC, const Mat, Mat*);
   PetscErrorCode (*formkktprol)(PC, const Mat, const Mat, Mat*);
   PetscErrorCode (*createdefaultdata)(PC, Mat); /* for data methods that have a default (SA) */
+  PetscErrorCode (*setfromoptions)(PC);
 
   void *subctx;
 } PC_GAMG;

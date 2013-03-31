@@ -1370,6 +1370,13 @@ PetscErrorCode PCSetFromOptions_GAMG(PC pc)
   ierr = PetscObjectGetComm((PetscObject)pc,&comm);CHKERRQ(ierr);
   ierr = PetscOptionsHead("GAMG options");CHKERRQ(ierr);
   {
+    /* -pc_gamg_type */
+    {
+      char tname[256] = PCGAMGAGG;
+      ierr = PetscOptionsList("-pc_gamg_type","Type of AMG method","PCGAMGSetType",GAMGList, tname, tname, sizeof(tname), NULL);CHKERRQ(ierr);
+      /* call PCCreateGAMG_XYZ */
+      ierr = PCGAMGSetType(pc, tname);CHKERRQ(ierr);
+    }
     /* -pc_gamg_verbose */
     ierr = PetscOptionsInt("-pc_gamg_verbose","Verbose (debugging) output for PCGAMG",
                            "none", pc_gamg->verbose,
@@ -1419,7 +1426,7 @@ PetscErrorCode PCSetFromOptions_GAMG(PC pc)
     if (flag && pc_gamg->verbose) {
       ierr = PetscPrintf(comm,"\t[%d]%s threshold set %e\n",0,__FUNCT__,pc_gamg->threshold);CHKERRQ(ierr);
     }
-
+    /* -pc_gamg_eigtarget */
     ierr = PetscOptionsRealArray("-pc_gamg_eigtarget","Target eigenvalue range as fraction of estimated maximum eigenvalue","PCGAMGSetEigTarget",pc_gamg->eigtarget,&two,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-pc_mg_levels",
                            "Set number of MG levels",
@@ -1427,6 +1434,9 @@ PetscErrorCode PCSetFromOptions_GAMG(PC pc)
                            pc_gamg->Nlevels,
                            &pc_gamg->Nlevels,
                            &flag);CHKERRQ(ierr);
+
+    /* set options for subtype */
+    if (pc_gamg->setfromoptions) {ierr = (*pc_gamg->setfromoptions)(pc);CHKERRQ(ierr);}
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1564,14 +1574,6 @@ PETSC_EXTERN PetscErrorCode PCCreate_GAMG(PC pc)
   ierr = PetscLogEventRegister("GAMGKKTProl_AGG", PC_CLASSID, &PC_GAMGKKTProl_AGG);CHKERRQ(ierr);
 #endif
 
-  /* instantiate derived type */
-  ierr = PetscOptionsHead("GAMG options");CHKERRQ(ierr);
-  {
-    char tname[256] = PCGAMGAGG;
-    ierr = PetscOptionsList("-pc_gamg_type","Type of GAMG method","PCGAMGSetType",GAMGList, tname, tname, sizeof(tname), NULL);CHKERRQ(ierr);
-    ierr = PCGAMGSetType(pc, tname);CHKERRQ(ierr);
-  }
-  ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

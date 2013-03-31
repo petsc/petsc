@@ -119,9 +119,6 @@ PetscErrorCode PCSetFromOptions_GEO(PC pc)
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
 
-  /* call base class */
-  ierr = PCSetFromOptions_GAMG(pc);CHKERRQ(ierr);
-
   if (pc_gamg->verbose) {
     PetscPrintf(PetscObjectComm((PetscObject)pc),"[%d]%s done\n",0,__FUNCT__);
   }
@@ -860,7 +857,7 @@ PetscErrorCode  PCCreateGAMG_GEO(PC pc)
   PC_GAMG        *pc_gamg = (PC_GAMG*)mg->innerctx;
 
   PetscFunctionBegin;
-  pc->ops->setfromoptions = PCSetFromOptions_GEO;
+  pc_gamg->setfromoptions = PCSetFromOptions_GEO;
   /* pc->ops->destroy        = PCDestroy_GEO; */
   /* reset does not do anything; setup not virtual */
 

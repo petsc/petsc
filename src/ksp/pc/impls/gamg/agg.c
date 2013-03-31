@@ -157,8 +157,6 @@ PetscErrorCode PCSetFromOptions_GAMG_AGG(PC pc)
   PetscBool      flag;
 
   PetscFunctionBegin;
-  /* call base class */
-  ierr = PCSetFromOptions_GAMG(pc);CHKERRQ(ierr);
 
   ierr = PetscOptionsHead("GAMG-AGG options");CHKERRQ(ierr);
   {
@@ -1495,7 +1493,7 @@ PetscErrorCode  PCCreateGAMG_AGG(PC pc)
   ierr            = PetscNewLog(pc, PC_GAMG_AGG, &pc_gamg_agg);CHKERRQ(ierr);
   pc_gamg->subctx = pc_gamg_agg;
 
-  pc->ops->setfromoptions = PCSetFromOptions_GAMG_AGG;
+  pc_gamg->setfromoptions = PCSetFromOptions_GAMG_AGG;
   pc->ops->destroy        = PCDestroy_AGG;
   /* reset does not do anything; setup not virtual */
 
