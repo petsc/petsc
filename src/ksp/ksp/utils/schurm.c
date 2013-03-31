@@ -316,6 +316,7 @@ PetscErrorCode MatSchurComplementSetKSP(Mat A, KSP ksp)
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,2);
   Na      = (Mat_SchurComplement*) A->data;
+  ierr    = PetscObjectReference((PetscObject)ksp);CHKERRQ(ierr);
   ierr    = KSPDestroy(&Na->ksp);CHKERRQ(ierr);
   Na->ksp = ksp;
   ierr    = KSPSetOperators(Na->ksp, Na->A, Na->Ap, SAME_NONZERO_PATTERN);CHKERRQ(ierr);

@@ -665,7 +665,6 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
         ierr = KSPSetFromOptions(jac->head->ksp);CHKERRQ(ierr);
       } else {
         ierr = MatSchurComplementSetKSP(jac->schur, jac->head->ksp);CHKERRQ(ierr);
-        ierr = PetscObjectReference((PetscObject) jac->head->ksp);CHKERRQ(ierr);
       }
       ierr = MatSetFromOptions(jac->schur);CHKERRQ(ierr);
 
