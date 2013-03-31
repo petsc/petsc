@@ -1153,6 +1153,8 @@ PETSC_EXTERN PetscErrorCode PCCreate_MG(PC pc)
   pc->data    = (void*)mg;
   mg->nlevels = -1;
 
+  pc->useAmat = PETSC_TRUE;
+
   pc->ops->apply          = PCApply_MG;
   pc->ops->setup          = PCSetUp_MG;
   pc->ops->reset          = PCReset_MG;
