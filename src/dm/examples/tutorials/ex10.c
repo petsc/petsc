@@ -11,6 +11,7 @@
 
 #include <petscdmda.h>
 #include <petscsys.h>
+#include <petscviewerhdf5.h>
 
 static char help[] = "Test to write HDF5 file from PETSc DMDA Vec.\n\n";
 

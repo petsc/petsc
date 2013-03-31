@@ -1,6 +1,7 @@
 static char help[] = "This example reads in a FVM mesh for PFLOTRAN.\n\n";
 
 #include <petscmesh.hh>
+#include <petscviewerhdf5.h>
 
 /*
 Barry and Matt,
