@@ -129,7 +129,7 @@ PetscErrorCode SNESSolve_NRichardson(SNES snes)
   snes->iter = 0;
   snes->norm = 0.;
   ierr       = PetscObjectAMSGrantAccess((PetscObject)snes);CHKERRQ(ierr);
-  if (!snes->vec_func_init_set) {
+  if (!snes->vec_func_init_set || snes->pcside != PC_RIGHT) {
     ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
     if (snes->domainerror) {
       snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;
@@ -137,7 +137,7 @@ PetscErrorCode SNESSolve_NRichardson(SNES snes)
     }
   } else snes->vec_func_init_set = PETSC_FALSE;
 
-  if (!snes->norm_init_set) {
+  if (!snes->norm_init_set || snes->pcside != PC_RIGHT) {
     ierr = VecNorm(F,NORM_2,&fnorm);CHKERRQ(ierr); /* fnorm <- ||F||  */
     if (PetscIsInfOrNanReal(fnorm)) {
       snes->reason = SNES_DIVERGED_FNORM_NAN;

@@ -140,6 +140,7 @@ PetscErrorCode SNESSolve_NEWTONLS(SNES snes)
   PetscBool           domainerror;
   SNESLineSearch      linesearch;
   SNESConvergedReason reason;
+  PCSide              npcside;
 
   PetscFunctionBegin;
   snes->numFailures            = 0;
@@ -158,7 +159,7 @@ PetscErrorCode SNESSolve_NEWTONLS(SNES snes)
   snes->norm = 0.0;
   ierr       = PetscObjectAMSGrantAccess((PetscObject)snes);CHKERRQ(ierr);
   ierr       = SNESGetSNESLineSearch(snes, &linesearch);CHKERRQ(ierr);
-  if (!snes->vec_func_init_set) {
+  if (!snes->vec_func_init_set || snes->pcside != PC_RIGHT) {
     ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
     ierr = SNESGetFunctionDomainError(snes, &domainerror);CHKERRQ(ierr);
     if (domainerror) {
@@ -167,7 +168,7 @@ PetscErrorCode SNESSolve_NEWTONLS(SNES snes)
     }
   } else snes->vec_func_init_set = PETSC_FALSE;
 
-  if (!snes->norm_init_set) {
+  if (!snes->norm_init_set || snes->pcside != PC_RIGHT) {
     ierr = VecNormBegin(F,NORM_2,&fnorm);CHKERRQ(ierr);        /* fnorm <- ||F||  */
     ierr = VecNormEnd(F,NORM_2,&fnorm);CHKERRQ(ierr);
     if (PetscIsInfOrNanReal(fnorm)) {
@@ -209,9 +210,15 @@ PetscErrorCode SNESSolve_NEWTONLS(SNES snes)
         snes->reason = SNES_DIVERGED_INNER;
         PetscFunctionReturn(0);
       }
-      ierr = SNESGetFunction(snes->pc, &FPC, NULL, NULL);CHKERRQ(ierr);
-      ierr = VecCopy(FPC, F);CHKERRQ(ierr);
-      ierr = SNESGetFunctionNorm(snes->pc, &fnorm);CHKERRQ(ierr);
+      ierr = SNESGetPCSide(snes->pc,&npcside);CHKERRQ(ierr);
+      if (npcside == PC_RIGHT) {
+        ierr = SNESGetFunction(snes->pc, &FPC, NULL, NULL);CHKERRQ(ierr);
+        ierr = VecCopy(FPC, F);CHKERRQ(ierr);
+        ierr = SNESGetFunctionNorm(snes->pc, &fnorm);CHKERRQ(ierr);
+      } else {
+        ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
+        ierr = VecNorm(F,NORM_2,&fnorm);CHKERRQ(ierr);
+      }
     }
 
     /* Solve J Y = F, where J is Jacobian matrix */

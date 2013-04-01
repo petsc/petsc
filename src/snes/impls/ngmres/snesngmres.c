@@ -176,6 +176,7 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
 
   SNESConvergedReason reason;
   PetscBool           lssucceed;
+  PCSide              npcside;
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
@@ -201,7 +202,7 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
   /* initialization */
 
   /* r = F(x) */
-  if (!snes->vec_func_init_set) {
+  if (!snes->vec_func_init_set || snes->pcside != PC_RIGHT) {
     ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
     if (snes->domainerror) {
       snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;
@@ -209,7 +210,7 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
     }
   } else snes->vec_func_init_set = PETSC_FALSE;
 
-  if (!snes->norm_init_set) {
+  if (!snes->norm_init_set || snes->pcside != PC_RIGHT) {
     ierr = VecNorm(F,NORM_2,&fnorm);CHKERRQ(ierr);
     if (PetscIsInfOrNanReal(fnorm)) {
       snes->reason = SNES_DIVERGED_FNORM_NAN;
@@ -253,9 +254,15 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
         snes->reason = SNES_DIVERGED_INNER;
         PetscFunctionReturn(0);
       }
-      ierr = SNESGetFunction(snes->pc,&FPC,NULL,NULL);CHKERRQ(ierr);
-      ierr = VecCopy(FPC,FM);CHKERRQ(ierr);
-      ierr = SNESGetFunctionNorm(snes->pc,&fMnorm);CHKERRQ(ierr);
+      ierr = SNESGetPCSide(snes->pc,&npcside);CHKERRQ(ierr);
+      if (npcside == PC_RIGHT) {
+        ierr = SNESGetFunction(snes->pc,&FPC,NULL,NULL);CHKERRQ(ierr);
+        ierr = VecCopy(FPC,FM);CHKERRQ(ierr);
+        ierr = SNESGetFunctionNorm(snes->pc,&fMnorm);CHKERRQ(ierr);
+      } else {
+        ierr = SNESComputeFunction(snes,XM,FM);CHKERRQ(ierr);
+        ierr = VecNorm(FM,NORM_2,&fMnorm);CHKERRQ(ierr);
+      }
     } else {
       /* no preconditioner -- just take gradient descent with line search */
       ierr = VecCopy(F,Y);CHKERRQ(ierr);
