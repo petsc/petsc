@@ -102,7 +102,7 @@
         <li>In PETSc options files, the comment characters <tt>!</tt> and <tt>%</tt> are no longer supported, use <tt>#</tt>.</li>
         <li>
           <tt>PetscFList</tt> and <tt>PetscOList</tt> have been changed to <tt>PetscFunctionList</tt> and <tt>PetscObjectList</tt>.
-          <tt>PetscFunctionListFind()</tt> no longer takes the path to a shared library.
+          <tt>PetscFunctionListFind()</tt> no longer takes the path to a shared library or the string name of the function.
           Plugins distributed as shared libraries should register their implementations by calling suitable <tt>XXRegister()</tt> functions from within their <tt>PetscDLLibraryRegister_basename()</tt>, see documentation for PetscDLLibraryOpen().
         </li>
         <li>
