@@ -1,18 +1,16 @@
 /*
   Defines the basic matrix operations for the AIJ (compressed row)
-  matrix storage format.
+  matrix storage format using the CUSPARSE library,
 */
 
 #include "petscconf.h"
-PETSC_CUDA_EXTERN_C_BEGIN
 #include "../src/mat/impls/aij/seq/aij.h"          /*I "petscmat.h" I*/
 #include <../src/mat/impls/sbaij/seq/sbaij.h>
-
 #include "../src/vec/vec/impls/dvecimpl.h"
 #include "petsc-private/vecimpl.h"
-PETSC_CUDA_EXTERN_C_END
 #undef VecType
 #include "cusparsematimpl.h"
+
 const char *const MatCUSPARSEStorageFormats[] = {"CSR","ELL","HYB","MatCUSPARSEStorageFormat","MAT_CUSPARSE_",0};
 
 /* this is such a hack ... but I don't know of another way to pass this variable
@@ -49,9 +47,6 @@ PetscErrorCode MatFactorGetSolverPackage_seqaij_cusparse(Mat A,const MatSolverPa
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_petsc(Mat,MatFactorType,Mat*);
-
-
 /*MC
   MATSOLVERCUSPARSE = "cusparse" - A matrix type providing triangular solvers for seq matrices
   on a single GPU of type, seqaijcusparse, aijcusparse, or seqaijcusp, aijcusp. Currently supported
@@ -78,18 +73,23 @@ M*/
 PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_cusparse(Mat A,MatFactorType ftype,Mat *B)
 {
   PetscErrorCode ierr;
+  PetscInt       n = A->rmap->n;
 
   PetscFunctionBegin;
-  ierr = MatGetFactor_seqaij_petsc(A,ftype,B);CHKERRQ(ierr);
+  ierr = MatCreate(PetscObjectComm((PetscObject)A),B);CHKERRQ(ierr);
+  ierr = MatSetSizes(*B,n,n,n,n);CHKERRQ(ierr);
   ierr = MatSetType(*B,MATSEQAIJCUSPARSE);CHKERRQ(ierr);
-  ierr = MatSetFromOptions_SeqAIJCUSPARSE(*B);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(*B,MAT_SKIP_ALLOCATION,NULL);CHKERRQ(ierr);
+
   if (ftype == MAT_FACTOR_LU || ftype == MAT_FACTOR_ILU || ftype == MAT_FACTOR_ILUDT) {
+    ierr = MatSetBlockSizes(*B,A->rmap->bs,A->cmap->bs);CHKERRQ(ierr);
     (*B)->ops->ilufactorsymbolic = MatILUFactorSymbolic_SeqAIJCUSPARSE;
     (*B)->ops->lufactorsymbolic  = MatLUFactorSymbolic_SeqAIJCUSPARSE;
   } else if (ftype == MAT_FACTOR_CHOLESKY || ftype == MAT_FACTOR_ICC) {
     (*B)->ops->iccfactorsymbolic      = MatICCFactorSymbolic_SeqAIJCUSPARSE;
     (*B)->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_SeqAIJCUSPARSE;
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Factor type not supported for CUSPARSE Matrix Types");
+
   ierr = PetscObjectComposeFunction((PetscObject)(*B),"MatFactorGetSolverPackage_C","MatFactorGetSolverPackage_seqaij_cusparse",MatFactorGetSolverPackage_seqaij_cusparse);CHKERRQ(ierr);
   (*B)->factortype = ftype;
   PetscFunctionReturn(0);
@@ -97,7 +97,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_cusparse(Mat A,MatFactorType fty
 
 #undef __FUNCT__
 #define __FUNCT__ "MatCUSPARSESetFormat_SeqAIJCUSPARSE"
-PetscErrorCode MatCUSPARSESetFormat_SeqAIJCUSPARSE(Mat A,MatCUSPARSEFormatOperation op,MatCUSPARSEStorageFormat format)
+PETSC_INTERN PetscErrorCode MatCUSPARSESetFormat_SeqAIJCUSPARSE(Mat A,MatCUSPARSEFormatOperation op,MatCUSPARSEStorageFormat format)
 {
   Mat_SeqAIJCUSPARSE *cusparseMat = (Mat_SeqAIJCUSPARSE*)A->spptr;
 
@@ -827,21 +827,21 @@ PetscErrorCode MatSeqAIJCUSPARSECopyToGPU(Mat A)
 
       /* Create the streams and events (if desired).  */
       PetscMPIInt size;
-      ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
+      ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRQ(ierr);
       ierr = cusparseMat->mat->buildStreamsAndEvents(size, &theBodyStream);CHKERRCUSP(ierr);
 
-      ierr = MatIsSymmetricKnown(A,&symmetryOptionIsSet,&symmetryOptionTest);
+      ierr = MatIsSymmetricKnown(A,&symmetryOptionIsSet,&symmetryOptionTest);CHKERRQ(ierr);
       if ((symmetryOptionIsSet && !symmetryOptionTest) || !symmetryOptionIsSet) {
 	/* CUSPARSE_FILL_MODE_UPPER and CUSPARSE_DIAG_TYPE_NON_UNIT are irrelevant here */
         cusparseStatus_t stat = cusparseMat->mat->initializeCusparseMat(MAT_cusparseHandle, CUSPARSE_MATRIX_TYPE_GENERAL, CUSPARSE_FILL_MODE_UPPER, CUSPARSE_DIAG_TYPE_NON_UNIT);CHKERRCUSP(stat);
         cusparseMat->isSymmOrHerm = PETSC_FALSE;
       } else {
-        ierr = MatIsSymmetric(A,0.0,&symmetryTest);
+        ierr = MatIsSymmetric(A,0.0,&symmetryTest);CHKERRQ(ierr);
         if (symmetryTest) {
           cusparseStatus_t stat = cusparseMat->mat->initializeCusparseMat(MAT_cusparseHandle, CUSPARSE_MATRIX_TYPE_SYMMETRIC, CUSPARSE_FILL_MODE_UPPER, CUSPARSE_DIAG_TYPE_NON_UNIT);CHKERRCUSP(stat);
           cusparseMat->isSymmOrHerm = PETSC_TRUE;
         } else {
-          ierr = MatIsHermitian(A,0.0,&hermitianTest);
+          ierr = MatIsHermitian(A,0.0,&hermitianTest);CHKERRQ(ierr);
           if (hermitianTest) {
             cusparseStatus_t stat = cusparseMat->mat->initializeCusparseMat(MAT_cusparseHandle, CUSPARSE_MATRIX_TYPE_HERMITIAN, CUSPARSE_FILL_MODE_UPPER, CUSPARSE_DIAG_TYPE_NON_UNIT);CHKERRCUSP(stat);
             cusparseMat->isSymmOrHerm = PETSC_TRUE;
@@ -1052,7 +1052,9 @@ PetscErrorCode MatAssemblyEnd_SeqAIJCUSPARSE(Mat A,MatAssemblyType mode)
 
   PetscFunctionBegin;
   ierr = MatAssemblyEnd_SeqAIJ(A,mode);CHKERRQ(ierr);
-  ierr = MatSeqAIJCUSPARSECopyToGPU(A);CHKERRQ(ierr);
+  if (A->factortype==MAT_FACTOR_NONE) {
+    ierr = MatSeqAIJCUSPARSECopyToGPU(A);CHKERRQ(ierr);
+  }
   if (mode == MAT_FLUSH_ASSEMBLY) PetscFunctionReturn(0);
   A->ops->mult             = MatMult_SeqAIJCUSPARSE;
   A->ops->multadd          = MatMultAdd_SeqAIJCUSPARSE;
@@ -1181,7 +1183,6 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJCUSPARSE(Mat B)
     /* you cannot check the inode.use flag here since the matrix was just created.
        now build a GPU matrix data structure */
     B->spptr = new Mat_SeqAIJCUSPARSE;
-
     ((Mat_SeqAIJCUSPARSE*)B->spptr)->mat          = 0;
     ((Mat_SeqAIJCUSPARSE*)B->spptr)->tempvec      = 0;
     ((Mat_SeqAIJCUSPARSE*)B->spptr)->format       = MAT_CUSPARSE_CSR;
@@ -1190,7 +1191,6 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJCUSPARSE(Mat B)
   } else {
     /* NEXT, set the pointers to the triangular factors */
     B->spptr = new Mat_SeqAIJCUSPARSETriFactors;
-
     ((Mat_SeqAIJCUSPARSETriFactors*)B->spptr)->loTriFactorPtr = 0;
     ((Mat_SeqAIJCUSPARSETriFactors*)B->spptr)->upTriFactorPtr = 0;
     ((Mat_SeqAIJCUSPARSETriFactors*)B->spptr)->tempvec        = 0;
@@ -1216,7 +1216,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJCUSPARSE(Mat B)
   B->ops->multadd          = MatMultAdd_SeqAIJCUSPARSE;
   B->ops->multtranspose    = MatMultTranspose_SeqAIJCUSPARSE;
   B->ops->multtransposeadd = MatMultTransposeAdd_SeqAIJCUSPARSE;
-  
+
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQAIJCUSPARSE);CHKERRQ(ierr);
 
   B->valid_GPU_matrix = PETSC_CUSP_UNALLOCATED;

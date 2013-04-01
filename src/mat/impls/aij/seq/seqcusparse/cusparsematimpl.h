@@ -37,7 +37,4 @@ struct Mat_SeqAIJCUSPARSE {
 };
 
 PETSC_INTERN PetscErrorCode MatCUSPARSECopyToGPU(Mat);
-/* PETSC_INTERN PetscErrorCode MatGetFactor_seqaij_cusparse(Mat,MatFactorType,Mat*); */
-/* PETSC_INTERN PetscErrorCode MatFactorGetSolverPackage_seqaij_cusparse(Mat,const MatSolverPackage *); */
-/* PETSC_INTERN PetscErrorCode MatCUSPARSECopyFromGPU(Mat, CUSPMATRIX *); */
 #endif
