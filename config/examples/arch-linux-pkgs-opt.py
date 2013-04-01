@@ -1,4 +1,5 @@
-#!/usr/bin/env python
+#!/home/petsc/soft/linux-Ubuntu_12.04-x86_64/Python-2.4.6/bin/python2.4
+# Test python2.4 && cmake
 
 configure_options = [
   '--with-debugging=0',
