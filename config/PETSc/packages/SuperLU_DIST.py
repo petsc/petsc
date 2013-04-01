@@ -3,6 +3,8 @@ import PETSc.package
 class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
     PETSc.package.NewPackage.__init__(self, framework)
+    self.gitcommit  = '826158d1673072002d00d6ea7e9f832149873ccc' # v3.3
+    self.giturls    = ['https://bitbucket.org/petsc/pkg-superlu_dist.git']
     self.download   = ['http://crd-legacy.lbl.gov/~xiaoye/SuperLU/superlu_dist_3.3.tar.gz']
     self.functions  = ['set_default_options_dist']
     self.includes   = ['superlu_ddefs.h']
