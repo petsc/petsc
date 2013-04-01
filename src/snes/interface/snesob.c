@@ -16,7 +16,7 @@
 
    Level: advanced
 
-.seealso:   SNESSetFunction(), SNESGetFunction(), SNESSetObjectiveFunction(), SNESGetObjectiveFunction()
+.seealso:   SNESSetFunction(), SNESGetFunction(), SNESSetObjective(), SNESGetObjective()
 M*/
 
 
@@ -64,7 +64,7 @@ PetscErrorCode  SNESSetObjective(SNES snes,PetscErrorCode (*SNESObjectiveFunctio
 .  snes - the SNES context
 
    Output Parameter:
-+  func - the function (or NULL)
++  SNESObjectiveFunction - objective evaluation routine (or NULL)
 -  ctx - the function context (or NULL)
 
    Level: advanced
@@ -126,10 +126,40 @@ PetscErrorCode SNESComputeObjective(SNES snes,Vec X,PetscReal *ob)
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESObjectiveComputeFunctionDefaultFD"
+/*@C
+   SNESObjectiveComputeFunctionDefaultFD - Computes the gradient of a user provided objective
+
+   Collective on SNES
+
+   Input Parameter:
++  snes - the SNES context
+.  X    - the state vector
+-  ctx  - the (ignored) function context
+
+   Output Parameter:
+.  F   - the function value
+
+   Options Database Key:
++  -snes_fd_function_eps - The differencing parameter
+-  -snes_fd_function - Compute function from user provided objective with finite difference
+
+   Notes:
+   SNESObjectiveComputeFunctionDefaultFD is similar in character to SNESComputeJacobianDefault.
+   Therefore, it should be used for debugging purposes only.  Using it in conjunction with
+   SNESComputeJacobianDefault is excessively costly and produces a Jacobian that is quite
+   noisy.  This is often necessary, but should be done with a grain of salt, even when debugging
+   small problems.
+
+   Note that this uses quadratic interpolation of the objective to form each value in the function.
+
+   Level: advanced
+
+.keywords: SNES, objective, debugging, finite differences, function
+
+.seealso: SNESSetFunction(), SNESComputeObjective(), SNESComputeJacobianDefault()
+@*/
 PetscErrorCode SNESObjectiveComputeFunctionDefaultFD(SNES snes,Vec X,Vec F,void *ctx)
 {
-  /* Quadratically interpolates the change in the objective based upon a change in a particular direction */
-
   Vec            Xh;
   PetscErrorCode ierr;
   PetscInt       i,N,start,end;

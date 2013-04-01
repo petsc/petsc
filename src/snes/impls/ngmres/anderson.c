@@ -19,8 +19,8 @@ PetscErrorCode SNESSetFromOptions_Anderson(SNES snes)
   PetscFunctionBegin;
   ierr = PetscOptionsHead("SNES NGMRES options");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-snes_anderson_m",            "Number of directions","SNES",ngmres->msize,&ngmres->msize,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-snes_anderson_beta",        "Number of directions","SNES",ngmres->andersonBeta,&ngmres->andersonBeta,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-snes_anderson_monitor",     "Monitor actions of NGMRES","SNES",ngmres->monitor ? PETSC_TRUE : PETSC_FALSE,&debug,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-snes_anderson_beta",        "Mixing parameter","SNES",ngmres->andersonBeta,&ngmres->andersonBeta,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-snes_anderson_monitor",     "Monitor steps of Anderson Mixing","SNES",ngmres->monitor ? PETSC_TRUE : PETSC_FALSE,&debug,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-snes_anderson_restart",      "Iterations before forced restart", "SNES",ngmres->restart_periodic,&ngmres->restart_periodic,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-snes_anderson_restart_it",   "Tolerance iterations before restart","SNES",ngmres->restart_it,&ngmres->restart_it,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnum("-snes_anderson_restart_type","Restart type","SNESNGMRESSetRestartType",SNESNGMRESRestartTypes,
@@ -195,6 +195,9 @@ PetscErrorCode SNESSolve_Anderson(SNES snes)
    Options Database:
 +  -snes_anderson_m                - Number of stored previous solutions and residuals
 .  -snes_anderson_beta             - Relaxation parameter; X_{update} = X + \beta F
+.  -snes_anderson_restart_type     - Type of restart (see SNESNGMRES)
+.  -snes_anderson_restart_it       - Number of iterations of restart conditions before restart
+.  -snes_anderson_restart          - Number of iterations before periodic restart
 -  -snes_anderson_monitor          - Prints relevant information about the ngmres iteration
 
    Notes:
@@ -207,7 +210,7 @@ PetscErrorCode SNESSolve_Anderson(SNES snes)
     "D. G. Anderson. Iterative procedures for nonlinear integral equations.
     J. Assoc. Comput. Mach., 12:547–560, 1965."
 
-.seealso: SNESCreate(), SNES, SNESSetType(), SNESType (for list of available types)
+.seealso: SNESNGMRES, SNESCreate(), SNES, SNESSetType(), SNESType (for list of available types)
 M*/
 
 #undef __FUNCT__
