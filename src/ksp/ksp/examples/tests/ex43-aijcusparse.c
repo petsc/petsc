@@ -1,0 +1,83 @@
+static char help[] = "Reads a PETSc matrix from a file and solves a linear system \n\
+using the aijcusparse class. This example also demonstrates how to set the storage \n\
+format on the GPU using the MatCUSPARSESetFormat method. Input parameters are:\n\
+  -f <input_file> : the file to load\n\n";
+
+/*
+  This code can be used to test PETSc interface to other packages.\n\
+  Examples of command line options:       \n\
+   ./ex43-aijcusparse -f DATAFILESPATH/matrices/cfd.2.10 -mat_cusparse_mult_storage_format ell  \n\
+  In a second example, one can read a symmetric matrix stored in upper triangular form.\n\
+  Then one can invoke the ICC preconditioner, however one has to indicate explicitly \n\
+  that the matrix is symmetric.
+   ./ex43-aijcusparse -f DATAFILESPATH/matrices/shallow_water1 -ksp_type cgs -pc_type icc -mat_symmetric -mat_cusparse_mult_storage_format ell  \n\
+   \n\n";
+*/
+
+#include <petscksp.h>
+
+#undef __FUNCT__
+#define __FUNCT__ "main"
+int main(int argc,char **argv)
+{
+  KSP                ksp;
+  Mat                A;
+  Vec                X,B;
+  PetscInt           m, its;
+  PetscReal          norm;
+  char               file[PETSC_MAX_PATH_LEN];
+  PetscBool          flg;
+  PetscViewer        fd;
+  PetscErrorCode     ierr;
+
+  ierr = PetscInitialize(&argc,&argv,0,help);CHKERRQ(ierr);
+
+  /* Load the data from a file */
+  ierr = PetscOptionsGetString(NULL,"-f",file,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+  if (!flg) SETERRQ(PETSC_COMM_WORLD,1,"Must indicate binary file with the -f option");
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd);CHKERRQ(ierr);
+
+  /* Build the matrix */
+  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
+  ierr = MatSetType(A,MATSEQAIJCUSPARSE);CHKERRQ(ierr);
+  ierr = MatCUSPARSESetFormat(A,MAT_CUSPARSE_MULT,MAT_CUSPARSE_ELL);CHKERRQ(ierr);
+
+  /* inform the matrix that it is symmetric */
+  ierr = PetscOptionsHasName(NULL, "-mat_symmetric", &flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr=MatSetOption(A,MAT_SYMMETRIC,PETSC_TRUE);
+  }
+  ierr = MatSetFromOptions(A);CHKERRQ(ierr);
+  ierr = MatLoad(A,fd);CHKERRQ(ierr);
+
+  /* Build the vectors */
+  ierr = MatGetLocalSize(A,&m,PETSC_NULL);CHKERRQ(ierr);
+  ierr = VecCreateSeqCUSP(PETSC_COMM_WORLD,m,&B);CHKERRQ(ierr);
+  ierr = VecSet(B,1.0);CHKERRQ(ierr);
+  ierr = VecDuplicate(B,&X);CHKERRQ(ierr);
+
+  /* Build the KSP */
+  ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
+  ierr = KSPSetOperators(ksp,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = KSPSetType(ksp,KSPGMRES);CHKERRQ(ierr);
+  ierr = KSPSetTolerances(ksp,1.0e-12,PETSC_DEFAULT,PETSC_DEFAULT,100);CHKERRQ(ierr);
+  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
+
+  /* Solve */
+  ierr = KSPSolve(ksp,B,X);CHKERRQ(ierr);
+
+  /* print out norm and the number of iterations */
+  ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
+  ierr = KSPGetResidualNorm(ksp,&norm);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3D\n",its);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm %G\n",norm);CHKERRQ(ierr);
+
+  /* Cleanup */
+  ierr = VecDestroy(&X);CHKERRQ(ierr);
+  ierr = VecDestroy(&B);CHKERRQ(ierr);
+  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
+  PetscFinalize();
+  return 0;
+}

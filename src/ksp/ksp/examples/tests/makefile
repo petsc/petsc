@@ -7,7 +7,8 @@ LOCDIR    = src/ksp/ksp/examples/tests/
 EXAMPLESC       = ex1.c ex3.c ex4.c ex6.c ex7.c ex10.c ex11.c ex14.c \
                 ex15.c ex17.c ex18.c ex19.c ex20.c ex21.c ex22.c ex24.c \
                 ex25.c ex26.c ex27.c ex28.c ex29.c ex30.c ex31.c ex32.c \
-                ex33.c ex34.c ex35.c ex36.c ex37.c ex38.c ex39.c ex40.c ex41.c ex42.c
+                ex33.c ex34.c ex35.c ex36.c ex37.c ex38.c ex39.c ex40.c ex41.c ex42.c \
+                ex43-aijcusparse.c
 EXAMPLESCH      =
 EXAMPLESF       = ex5f.F ex12f.F ex16f.F
 
@@ -163,6 +164,9 @@ ex41: ex41.o chkopts
 ex42: ex42.o chkopts
 	-${CLINKER} -o ex42 ex42.o ${PETSC_KSP_LIB}
 	${RM} ex42.o
+ex43-aijcusparse: ex43-aijcusparse.o chkopts
+	-${CLINKER} -o ex43-aijcusparse ex43-aijcusparse.o ${PETSC_KSP_LIB}
+	${RM} ex43-aijcusparse.o
 #------------------------------------------------------------------------------------
 runex1:
 	-@${MPIEXEC} -n 1 ./ex1 -pc_type jacobi -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex1_1.tmp 2>&1;	  \
@@ -849,7 +853,19 @@ runex42_2:
 	-@${MPIEXEC} -n 3 ./ex42 -ksp_type minres -pc_type none -ksp_converged_reason > ex42.tmp 2>&1;\
 	if (${DIFF} output/ex42_2.out ex42.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex42_2, diffs above \n========================================="; fi; \
-	   ${RM} -f ex42.tm
+	   ${RM} -f ex42.tmp
+
+runex43-aijcusparse:
+	-@${MPIEXEC} -n 1 ./ex43-aijcusparse -f ${DATAFILESPATH}/matrices/cfd.2.10 > ex43-aijcusparse.tmp 2>&1;\
+	if (${DIFF} output/ex43-aijcusparse.out ex43-aijcusparse.tmp) then true; \
+	   else echo ${PWD} ; echo "Possible problem with with ex43-aijcusparse, diffs above \n========================================="; fi; \
+	   ${RM} -f ex43-aijcusparse.tmp
+
+runex43-aijcusparse_2:
+	-@${MPIEXEC} -n 1 ./ex43-aijcusparse -f ${DATAFILESPATH}/matrices/shallow_water1 -ksp_type cg -pc_type icc -mat_symmetric > ex43-aijcusparse_2.tmp 2>&1;\
+	if (${DIFF} output/ex43-aijcusparse_2.out ex43-aijcusparse_2.tmp) then true; \
+	   else echo ${PWD} ; echo "Possible problem with with ex43-aijcusparse_2, diffs above \n========================================="; fi; \
+	   ${RM} -f ex43-aijcusparse_2.tmp
 
 
 TESTEXAMPLES_C		       = ex1.PETSc ex1.rm ex3.PETSc runex3 runex3_2 ex3.rm ex4.PETSc runex4 runex4_3 \
@@ -880,5 +896,5 @@ TESTEXAMPLES_FORTRAN_NOCOMPLEX =
 TESTEXAMPLES_13		       = ex18.PETSc ex18.rm ex20.PETSc runex20 ex20.rm ex5f.PETSc ex5f.rm
 TESTEXAMPLES_ML                = ex26.PETSc runex26_ml runex26_ml_2 runex26_ml_3 ex26.rm ex29.PETSc runex29 runex29_2 ex29.rm
 TESTEXAMPLES_ELEMENTAL         = ex40.PETSc runex40 runex40_2 ex40.rm
-
+TESTEXAMPLES_TXPETSCGPU        = ex43-aijcusparse.PETSc runex43-aijcusparse runex43-aijcusparse_2 ex43-aijcusparse.rm 
 include ${PETSC_DIR}/conf/test
