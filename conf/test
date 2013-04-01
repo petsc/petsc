@@ -190,6 +190,7 @@ alltests:
 
 alltest:
 	-@for i in ${TEST_RUNS} ; do \
+          echo "******* Testing: ${TESTMODE}_$$i *******"; \
 	  ${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ACTION=${TESTMODE}_$$i MPIEXEC="${MPIEXEC}" NO_PRINT_DIR=yes tree ; \
 	done
 
