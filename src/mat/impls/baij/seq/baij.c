@@ -147,6 +147,7 @@ PetscErrorCode MatSOR_SeqBAIJ_1(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pet
 
   if (!a->idiagvalid) {ierr = MatInvertBlockDiagonal(A,NULL);CHKERRQ(ierr);}
 
+  if (!m) PetscFunctionReturn(0);
   diag  = a->diag;
   idiag = a->idiag;
   ierr  = VecGetArray(xx,&x);CHKERRQ(ierr);
@@ -232,6 +233,7 @@ PetscErrorCode MatSOR_SeqBAIJ_2(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pet
 
   if (!a->idiagvalid) {ierr = MatInvertBlockDiagonal(A,NULL);CHKERRQ(ierr);}
 
+  if (!m) PetscFunctionReturn(0);
   diag  = a->diag;
   idiag = a->idiag;
   ierr  = VecGetArray(xx,&x);CHKERRQ(ierr);
@@ -334,6 +336,7 @@ PetscErrorCode MatSOR_SeqBAIJ_3(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pet
 
   if (!a->idiagvalid) {ierr = MatInvertBlockDiagonal(A,NULL);CHKERRQ(ierr);}
 
+  if (!m) PetscFunctionReturn(0);
   diag  = a->diag;
   idiag = a->idiag;
   ierr  = VecGetArray(xx,&x);CHKERRQ(ierr);
@@ -443,6 +446,7 @@ PetscErrorCode MatSOR_SeqBAIJ_4(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pet
 
   if (!a->idiagvalid) {ierr = MatInvertBlockDiagonal(A,NULL);CHKERRQ(ierr);}
 
+  if (!m) PetscFunctionReturn(0);
   diag  = a->diag;
   idiag = a->idiag;
   ierr  = VecGetArray(xx,&x);CHKERRQ(ierr);
@@ -559,6 +563,7 @@ PetscErrorCode MatSOR_SeqBAIJ_5(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pet
 
   if (!a->idiagvalid) {ierr = MatInvertBlockDiagonal(A,NULL);CHKERRQ(ierr);}
 
+  if (!m) PetscFunctionReturn(0);
   diag  = a->diag;
   idiag = a->idiag;
   ierr  = VecGetArray(xx,&x);CHKERRQ(ierr);
@@ -682,6 +687,7 @@ PetscErrorCode MatSOR_SeqBAIJ_6(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pet
 
   if (!a->idiagvalid) {ierr = MatInvertBlockDiagonal(A,NULL);CHKERRQ(ierr);}
 
+  if (!m) PetscFunctionReturn(0);
   diag  = a->diag;
   idiag = a->idiag;
   ierr  = VecGetArray(xx,&x);CHKERRQ(ierr);
@@ -812,6 +818,7 @@ PetscErrorCode MatSOR_SeqBAIJ_7(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pet
 
   if (!a->idiagvalid) {ierr = MatInvertBlockDiagonal(A,NULL);CHKERRQ(ierr);}
 
+  if (!m) PetscFunctionReturn(0);
   diag  = a->diag;
   idiag = a->idiag;
   ierr  = VecGetArray(xx,&x);CHKERRQ(ierr);
@@ -949,6 +956,7 @@ PetscErrorCode MatSOR_SeqBAIJ_N(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pet
 
   if (!a->idiagvalid) {ierr = MatInvertBlockDiagonal(A,NULL);CHKERRQ(ierr);}
 
+  if (!m) PetscFunctionReturn(0);
   diag  = a->diag;
   idiag = a->idiag;
   if (!a->mult_work) {
