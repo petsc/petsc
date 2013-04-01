@@ -155,13 +155,13 @@ PetscErrorCode MatMatMatMultNumeric_SeqAIJ_SeqAIJ_SeqDense(Mat R,Mat A,Mat B,Mat
       Mat AB_den;
       ierr = MatMatMultSymbolic_SeqAIJ_SeqDense(A,B,0.0,&AB_den);CHKERRQ(ierr);
 
-      ierr = PetscGetTime(&t0);CHKERRQ(ierr);
+      ierr = PetscTime(&t0);CHKERRQ(ierr);
       ierr = MatMatMultNumeric_SeqAIJ_SeqDense(A,B,AB_den);CHKERRQ(ierr);
-      ierr  = PetscGetTime(&tf);CHKERRQ(ierr);
+      ierr  = PetscTime(&tf);CHKERRQ(ierr);
       Mult_sp_den1 += tf - t0;
-      ierr = PetscGetTime(&t0);CHKERRQ(ierr);
+      ierr = PetscTime(&t0);CHKERRQ(ierr);
       ierr = MatMatMultNumeric_SeqAIJ_SeqDense(R,AB_den,RAB);CHKERRQ(ierr);
-      ierr  = PetscGetTime(&tf);CHKERRQ(ierr);
+      ierr  = PetscTime(&tf);CHKERRQ(ierr);
       Mult_sp_den2 += tf - t0;
       printf(" MatMatMatMultNumeric_SeqAIJ_SeqAIJ_SeqDense...time = %g + %g = %g; ncolor: %d\n",Mult_sp_den1, Mult_sp_den2, Mult_sp_den1+ Mult_sp_den2,B->cmap->n);
       ierr = MatDestroy(&AB_den);CHKERRQ(ierr);
@@ -339,11 +339,11 @@ PetscErrorCode MatRARt_SeqAIJ_SeqAIJ(Mat A,Mat R,MatReuse scall,PetscReal fill,M
       ierr = PetscLogEventEnd(MAT_RARtSymbolic,A,R,0,0);CHKERRQ(ierr);
     } 
     ierr = PetscLogEventBegin(MAT_RARtNumeric,A,R,0,0);CHKERRQ(ierr);
-    ierr = PetscGetTime(&t0);CHKERRQ(ierr);
+    ierr = PetscTime(&t0);CHKERRQ(ierr);
     ierr = MatMatTransposeMultNumeric_SeqAIJ_SeqAIJ(A,R,ARt);CHKERRQ(ierr); /* dominate! */
-    ierr = PetscGetTime(&t1);CHKERRQ(ierr);
+    ierr = PetscTime(&t1);CHKERRQ(ierr);
     ierr = MatMatMultNumeric_SeqAIJ_SeqAIJ(R,ARt,RARt);CHKERRQ(ierr);
-    ierr = PetscGetTime(&t2);CHKERRQ(ierr);
+    ierr = PetscTime(&t2);CHKERRQ(ierr);
     printf(" matrart_color_art_num = %g + %g = %g\n",t1-t0,t2-t1,t2-t0);
     *C = RARt;
     ierr = PetscLogEventEnd(MAT_RARtNumeric,A,R,0,0);CHKERRQ(ierr);
