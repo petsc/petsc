@@ -659,6 +659,7 @@ class QuadratureGenerator(script.Script):
     self.baseDir    = os.getcwd()
     self.quadDegree = -1
     self.gpuScalarType = 'float'
+    self.logName = 'quadrature.log'
     return
 
   def setupPaths(self):
