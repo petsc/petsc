@@ -543,7 +543,7 @@ prepend-path PATH %s
 
   def dumpCMakeLists(self):
     import sys
-    if sys.version_info >= (2,5):
+    if sys.version_info >= (2,4):
       import cmakegen
       try:
         cmakegen.main(self.petscdir.dir, log=self.framework.log)
@@ -555,7 +555,7 @@ prepend-path PATH %s
   def cmakeBoot(self):
     import sys
     self.cmakeboot_success = False
-    if sys.version_info >= (2,5) and hasattr(self.cmake,'cmake'):
+    if sys.version_info >= (2,4) and hasattr(self.cmake,'cmake'):
       try:
         import cmakeboot
         self.cmakeboot_success = cmakeboot.main(petscdir=self.petscdir.dir,petscarch=self.arch.arch,argDB=self.argDB,framework=self.framework,log=self.framework.log)
