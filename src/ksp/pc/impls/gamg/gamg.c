@@ -1348,7 +1348,7 @@ static PetscErrorCode PCGAMGSetType_GAMG(PC pc, PCGAMGType type)
   PetscErrorCode ierr,(*r)(PC);
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListFind(GAMGList,type,(PetscVoidStarFunction)&r);CHKERRQ(ierr);
+  ierr = PetscFunctionListFind(GAMGList,type,&r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown GAMG type %s given",type);
   ierr = (*r)(pc);CHKERRQ(ierr);
   PetscFunctionReturn(0);

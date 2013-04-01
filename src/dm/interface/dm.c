@@ -2390,7 +2390,7 @@ PetscErrorCode  DMSetType(DM dm, DMType method)
   if (match) PetscFunctionReturn(0);
 
   if (!DMRegisterAllCalled) {ierr = DMRegisterAll();CHKERRQ(ierr);}
-  ierr = PetscFunctionListFind(DMList, method,(void (**)(void)) &r);CHKERRQ(ierr);
+  ierr = PetscFunctionListFind(DMList,method,&r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown DM type: %s", method);
 
   if (dm->ops->destroy) {

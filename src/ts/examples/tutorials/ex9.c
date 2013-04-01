@@ -1546,13 +1546,13 @@ int main(int argc,char *argv[])
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   /* Choose the limiter from the list of registered limiters */
-  ierr = PetscFunctionListFind(limiters,lname,(void(**)(void))&ctx.limit);CHKERRQ(ierr);
+  ierr = PetscFunctionListFind(limiters,lname,&ctx.limit);CHKERRQ(ierr);
   if (!ctx.limit) SETERRQ1(PETSC_COMM_SELF,1,"Limiter '%s' not found",lname);CHKERRQ(ierr);
 
   /* Choose the physics from the list of registered models */
   {
     PetscErrorCode (*r)(FVCtx*);
-    ierr = PetscFunctionListFind(physics,physname,(void(**)(void))&r);CHKERRQ(ierr);
+    ierr = PetscFunctionListFind(physics,physname,&r);CHKERRQ(ierr);
     if (!r) SETERRQ1(PETSC_COMM_SELF,1,"Physics '%s' not found",physname);CHKERRQ(ierr);
     /* Create the physics, will set the number of fields and their names */
     ierr = (*r)(&ctx);CHKERRQ(ierr);

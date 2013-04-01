@@ -274,23 +274,27 @@ PetscErrorCode  PetscFunctionListDestroyAll(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFunctionListFind"
-/*@C
-    PetscFunctionListFind - Given a name registered to a function
+/*MC
+    PetscFunctionListFind - Find function registered under given name
+
+    Synopsis:
+    #include "petscsys.h"
+    PetscErrorCode PetscFunctionListFind(PetscFunctionList flist,const char name[],void (**fptr)(void))
 
     Input Parameters:
-+   fl   - pointer to list
--   name - either the name registered for the function or the name of the function
++   flist   - pointer to list
+-   name - name registered for the function
 
     Output Parameters:
-.   r - the function pointer if name was found else NULL
+.   fptr - the function pointer if name was found, else NULL
 
     Level: developer
 
-.seealso: PetscFunctionListAddDynamic(), PetscFunctionList
-@*/
-PetscErrorCode  PetscFunctionListFind(PetscFunctionList fl,const char name[],void (**r)(void))
+.seealso: PetscFunctionListAdd(), PetscFunctionList, PetscObjectQueryFunction()
+M*/
+#undef __FUNCT__
+#define __FUNCT__ "PetscFunctionListFind_Private"
+PETSC_EXTERN PetscErrorCode PetscFunctionListFind_Private(PetscFunctionList fl,const char name[],void (**r)(void))
 {
   PetscFunctionList entry = fl;
   PetscErrorCode    ierr;
