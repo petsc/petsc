@@ -96,7 +96,7 @@ PetscErrorCode  AORegister(const char sname[], PetscErrorCode (*function)(AO))
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListAdd(&AOList, sname, (void (*)(void)) function);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&AOList,sname,function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

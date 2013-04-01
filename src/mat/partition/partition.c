@@ -118,7 +118,7 @@ PetscErrorCode  MatPartitioningRegister(const char sname[],PetscErrorCode (*func
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListAdd(&MatPartitioningList,sname,(void (*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&MatPartitioningList,sname,function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

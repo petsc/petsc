@@ -169,7 +169,7 @@ PetscErrorCode  ISRegister(const char sname[], PetscErrorCode (*function)(IS))
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListAdd(&ISList, sname, (void (*)(void)) function);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&ISList,sname,function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

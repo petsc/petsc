@@ -123,7 +123,7 @@ PetscErrorCode  MatOrderingRegister(const char sname[],PetscErrorCode (*function
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListAdd(&MatOrderingList,sname,(void (*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&MatOrderingList,sname,function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

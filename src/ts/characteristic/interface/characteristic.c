@@ -272,7 +272,7 @@ PetscErrorCode CharacteristicRegister(const char sname[],PetscErrorCode (*functi
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListAdd(&CharacteristicList,sname,(void (*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&CharacteristicList,sname,function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

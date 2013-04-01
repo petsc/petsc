@@ -333,7 +333,7 @@ PetscErrorCode  PFRegister(const char sname[],PetscErrorCode (*function)(PF,void
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListAdd(&PFunctionList,sname,(void (*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&PFunctionList,sname,function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

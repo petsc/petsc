@@ -407,7 +407,7 @@ PetscErrorCode  MatColoringRegister(const char sname[],PetscErrorCode (*function
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListAdd(&MatColoringList,sname,(void (*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&MatColoringList,sname,function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

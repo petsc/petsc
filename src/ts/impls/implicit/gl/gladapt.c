@@ -57,7 +57,7 @@ PetscErrorCode  TSGLAdaptRegister(const char sname[],PetscErrorCode (*function)(
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListAdd(&TSGLAdaptList,sname,(void (*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&TSGLAdaptList,sname,function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

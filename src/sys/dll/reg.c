@@ -135,21 +135,23 @@ struct _n_PetscFunctionList {
 */
 static PetscFunctionList dlallhead = 0;
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFunctionListAdd"
-/*@C
+/*MC
    PetscFunctionListAdd - Given a routine and a string id, saves that routine in the
    specified registry.
 
-     Not Collective
+   Synopsis:
+   #include "petscsys.h"
+   PetscErrorCode PetscFunctionListAdd(PetscFunctionList flist,const char name[],void (*fptr)(void))
+
+   Not Collective
 
    Input Parameters:
-+  fl    - pointer registry
-.  name  - string to identify routine
--  fnc   - function pointer (optional if using dynamic libraries)
++  flist - pointer registry
+.  name - string to identify routine
+-  fptr - function pointer
 
    Notes:
-   To remove a registered routine, pass in a NULL  fnc().
+   To remove a registered routine, pass in a NULL fptr.
 
    Users who wish to register new classes for use by a particular PETSc
    component (e.g., SNES) should generally call the registration routine
@@ -159,9 +161,11 @@ static PetscFunctionList dlallhead = 0;
     Level: developer
 
 .seealso: PetscFunctionListDestroy(), SNESRegister(), KSPRegister(),
-          PCRegister(), TSRegister(), PetscFunctionList
-@*/
-PetscErrorCode  PetscFunctionListAdd(PetscFunctionList *fl,const char name[],void (*fnc)(void))
+          PCRegister(), TSRegister(), PetscFunctionList, PetscObjectComposeFunction()
+M*/
+#undef __FUNCT__
+#define __FUNCT__ "PetscFunctionListAdd_Private"
+PETSC_EXTERN PetscErrorCode PetscFunctionListAdd_Private(PetscFunctionList *fl,const char name[],void (*fnc)(void))
 {
   PetscFunctionList entry,ne;
   PetscErrorCode    ierr;
@@ -217,7 +221,7 @@ PetscErrorCode  PetscFunctionListAdd(PetscFunctionList *fl,const char name[],voi
 
     Level: developer
 
-.seealso: PetscFunctionListAddDynamic(), PetscFunctionList
+.seealso: PetscFunctionListAdd(), PetscFunctionList
 @*/
 PetscErrorCode  PetscFunctionListDestroy(PetscFunctionList *fl)
 {
@@ -328,7 +332,7 @@ PETSC_EXTERN PetscErrorCode PetscFunctionListFind_Private(PetscFunctionList fl,c
 
    Level: developer
 
-.seealso: PetscFunctionListAddDynamic(), PetscFunctionListPrintTypes(), PetscFunctionList
+.seealso: PetscFunctionListAdd(), PetscFunctionListPrintTypes(), PetscFunctionList
 @*/
 PetscErrorCode  PetscFunctionListView(PetscFunctionList list,PetscViewer viewer)
 {
@@ -372,7 +376,7 @@ PetscErrorCode  PetscFunctionListView(PetscFunctionList list,PetscViewer viewer)
 
    Level: developer
 
-.seealso: PetscFunctionListAddDynamic(), PetscFunctionList
+.seealso: PetscFunctionListAdd(), PetscFunctionList
 @*/
 PetscErrorCode  PetscFunctionListGet(PetscFunctionList list,const char ***array,int *n)
 {
@@ -417,7 +421,7 @@ PetscErrorCode  PetscFunctionListGet(PetscFunctionList list,const char ***array,
 
    Level: developer
 
-.seealso: PetscFunctionListAddDynamic(), PetscFunctionList
+.seealso: PetscFunctionListAdd(), PetscFunctionList
 @*/
 PetscErrorCode  PetscFunctionListPrintTypes(MPI_Comm comm,FILE *fd,const char prefix[],const char name[],const char text[],const char man[],PetscFunctionList list,const char def[])
 {

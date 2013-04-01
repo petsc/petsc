@@ -39,7 +39,7 @@ PetscErrorCode  MatCoarsenRegister(const char sname[],PetscErrorCode (*function)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListAdd(&MatCoarsenList,sname,(void (*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&MatCoarsenList,sname,function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

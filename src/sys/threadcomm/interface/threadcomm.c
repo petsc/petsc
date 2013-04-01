@@ -586,7 +586,7 @@ PetscErrorCode  PetscThreadCommRegister(const char sname[],PetscErrorCode (*func
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListAdd(&PetscThreadCommList,sname,(void (*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&PetscThreadCommList,sname,function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

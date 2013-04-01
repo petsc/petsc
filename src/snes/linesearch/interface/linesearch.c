@@ -1634,6 +1634,6 @@ PetscErrorCode  SNESLineSearchRegister(const char sname[],PetscErrorCode (*funct
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListAdd(&SNESLineSearchList,sname,(void (*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&SNESLineSearchList,sname,function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -273,7 +273,7 @@ PetscErrorCode  PetscViewerRegister(const char *sname,PetscErrorCode (*function)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListAdd(&PetscViewerList,sname,(void (*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&PetscViewerList,sname,function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

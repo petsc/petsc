@@ -1314,7 +1314,7 @@ PetscErrorCode  TSGLRegister(const char sname[],PetscErrorCode (*function)(TS))
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListAdd(&TSGLList,sname,(void(*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&TSGLList,sname,function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1353,7 +1353,7 @@ PetscErrorCode  TSGLAcceptRegister(const char sname[],TSGLAcceptFunction functio
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListAdd(&TSGLAcceptList,sname,(void(*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&TSGLAcceptList,sname,function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -4090,7 +4090,7 @@ PetscErrorCode  SNESRegister(const char sname[],PetscErrorCode (*function)(SNES)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListAdd(&SNESList,sname,(void (*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&SNESList,sname,function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

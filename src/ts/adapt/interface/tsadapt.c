@@ -45,7 +45,7 @@ PetscErrorCode  TSAdaptRegister(const char sname[],PetscErrorCode (*function)(TS
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListAdd(&TSAdaptList,sname,(void(*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&TSAdaptList,sname,function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

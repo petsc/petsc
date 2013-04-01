@@ -495,9 +495,9 @@ PETSC_EXTERN PetscErrorCode TSCreate_SSP(TS ts)
 
   PetscFunctionBegin;
   if (!TSSSPList) {
-    ierr = PetscFunctionListAdd(&TSSSPList,TSSSPRKS2,  (void(*)(void))TSSSPStep_RK_2);CHKERRQ(ierr);
-    ierr = PetscFunctionListAdd(&TSSSPList,TSSSPRKS3,  (void(*)(void))TSSSPStep_RK_3);CHKERRQ(ierr);
-    ierr = PetscFunctionListAdd(&TSSSPList,TSSSPRK104, (void(*)(void))TSSSPStep_RK_10_4);CHKERRQ(ierr);
+    ierr = PetscFunctionListAdd(&TSSSPList,TSSSPRKS2, TSSSPStep_RK_2);CHKERRQ(ierr);
+    ierr = PetscFunctionListAdd(&TSSSPList,TSSSPRKS3, TSSSPStep_RK_3);CHKERRQ(ierr);
+    ierr = PetscFunctionListAdd(&TSSSPList,TSSSPRK104,TSSSPStep_RK_10_4);CHKERRQ(ierr);
   }
 
   ts->ops->setup          = TSSetUp_SSP;

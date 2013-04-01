@@ -130,7 +130,7 @@ PetscErrorCode  VecRegister(const char sname[], PetscErrorCode (*function)(Vec))
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListAdd(&VecList, sname, (void (*)(void)) function);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&VecList,sname,function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -168,7 +168,7 @@ PetscErrorCode  MatRegister(const char sname[],PetscErrorCode (*function)(Mat))
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListAdd(&MatList,sname,(void (*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&MatList,sname,function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
