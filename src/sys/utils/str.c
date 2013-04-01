@@ -1169,7 +1169,7 @@ PetscErrorCode PetscEnumFind(const char *const *enumlist,const char *str,PetscEn
   if (n < 3) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"List argument must have at least two entries: typename and type prefix");
   n -= 3;                       /* drop enum name, prefix, and null termination */
   ierr = PetscEListFind(n,enumlist,str,&evalue,&efound);CHKERRQ(ierr);
-  if (efound) *value = (PetscBool)evalue;
+  if (efound) *value = (PetscEnum)evalue;
   if (found) *found = efound;
   PetscFunctionReturn(0);
 }
