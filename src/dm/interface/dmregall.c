@@ -12,6 +12,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Patch(DM);
 PETSC_EXTERN PetscErrorCode DMCreate_Mesh(DM);
 PETSC_EXTERN PetscErrorCode DMCreate_Cartesian(DM);
 #endif
+PETSC_EXTERN PetscErrorCode  DMCreate_Moab(DM);
 
 #undef __FUNCT__
 #define __FUNCT__ "DMRegisterAll"
@@ -46,6 +47,9 @@ PetscErrorCode  DMRegisterAll(const char path[])
 #if defined(PETSC_HAVE_SIEVE)
   ierr = DMRegisterDynamic(DMMESH,      path, "DMCreate_Mesh",      DMCreate_Mesh);CHKERRQ(ierr);
   ierr = DMRegisterDynamic(DMCARTESIAN, path, "DMCreate_Cartesian", DMCreate_Cartesian);CHKERRQ(ierr);
+#endif
+#if defined(PETSC_HAVE_MOAB)
+  ierr = DMRegisterDynamic(DMMOAB,      path, "DMCreate_Moab",      DMCreate_Moab);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
 }

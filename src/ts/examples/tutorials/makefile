@@ -6,7 +6,7 @@ FPPFLAGS        =
 LOCDIR          = src/ts/examples/tutorials/
 EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c \
                 ex9.c ex10.c ex12.c ex13.c ex14.c ex15.c ex16.c ex17.c \
-                ex19.c ex20.c ex21.c ex22.c ex23.c ex24.c ex25.c ex26.c ex28.c
+                ex19.c ex20.c ex21.c ex22.c ex23.c ex24.c ex25.c ex26.c ex28.c ex30.cxx
 EXAMPLESF       = ex1f.F ex2f.F ex22f.F # ex22f_mf.F90
 EXAMPLESFH      = ex2f.h
 MANSEC          = TS
@@ -146,6 +146,10 @@ ex28: ex28.o chkopts
 ex29: ex29.o chkopts
 	-${CLINKER} -o ex29 ex29.o ${PETSC_TS_LIB}
 	${RM} ex29.o
+
+ex30: ex30.o chkopts
+	-${CLINKER} -o ex30 ex30.o ${PETSC_TS_LIB}
+	${RM} ex30.o
 
 #---------------------------------------------------------------------------------
 runex1:
@@ -389,6 +393,10 @@ runex29:
 	   ${DIFF} output/ex29.out ex29.tmp || echo  ${PWD} "\nPossible problem with ex29, diffs above \n=========================================";  \
 	   ${RM} -f ex29.tmp
 
+runex30:
+	-@${MPIEXEC} -n 1 ./ex30 > ex30_1.tmp 2>&1;	  \
+	   ${DIFF} output/ex30_1.out ex30_1.tmp || echo  ${PWD} "\nPossible problem with ex30_1, diffs above \n========================================="; \
+	   ${RM} -f ex30_1.tmp
 
 TESTEXAMPLES_C		  = ex1.PETSc runex1 runex1_2 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 runex3_2 ex3.rm \
                             ex4.PETSc runex4 runex4_2 runex4_3 runex4_4 ex4.rm ex5.PETSc ex5.rm \
@@ -402,6 +410,7 @@ TESTEXAMPLES_FORTRAN	  = ex1f.PETSc runex1f ex1f.rm ex2f.PETSc runex2f ex2f.rm e
 TESTEXAMPLES_C_X_MPIUNI =
 TESTEXAMPLES_13		  = ex2.PETSc ex2.rm ex3.PETSc ex3.rm ex4.PETSc ex4.rm \
                             ex5.PETSc ex5.rm
-TESTEXAMPLES_EXODUSII = ex11.PETSc runex11 ex11.rm
+TESTEXAMPLES_EXODUSII     = ex11.PETSc runex11 ex11.rm
+TESTEXAMPLES_MOAB         = ex30.PETSc runex30 ex30.rm
 
 include ${PETSC_DIR}/conf/test

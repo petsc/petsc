@@ -31,6 +31,7 @@ typedef const char* DMType;
 #define DMREDUNDANT "redundant"
 #define DMAKKT      "akkt"
 #define DMPATCH     "patch"
+#define DMMOAB      "moab"
 
 PETSC_EXTERN PetscFunctionList DMList;
 PETSC_EXTERN PetscBool         DMRegisterAllCalled;
