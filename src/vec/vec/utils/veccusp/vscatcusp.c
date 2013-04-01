@@ -29,8 +29,7 @@
 PetscErrorCode  VecScatterInitializeForGPU(VecScatter inctx,Vec x,ScatterMode mode)
 {
   VecScatter_MPI_General *to,*from;
-  PetscScalar            *xv,*svalues;
-  MPI_Request            *rwaits,*swaits;
+  PetscScalar            *xv;
   PetscErrorCode         ierr;
   PetscInt               i,*indices,*sstartsSends,*sstartsRecvs,nrecvs,nsends,bs;
 
@@ -38,16 +37,11 @@ PetscErrorCode  VecScatterInitializeForGPU(VecScatter inctx,Vec x,ScatterMode mo
   if (mode & SCATTER_REVERSE) {
     to     = (VecScatter_MPI_General*)inctx->fromdata;
     from   = (VecScatter_MPI_General*)inctx->todata;
-    rwaits = from->rev_requests;
-    swaits = to->rev_requests;
   } else {
     to     = (VecScatter_MPI_General*)inctx->todata;
     from   = (VecScatter_MPI_General*)inctx->fromdata;
-    rwaits = from->requests;
-    swaits = to->requests;
   }
   bs           = to->bs;
-  svalues      = to->values;
   nrecvs       = from->n;
   nsends       = to->n;
   indices      = to->indices;
@@ -61,18 +55,18 @@ PetscErrorCode  VecScatterInitializeForGPU(VecScatter inctx,Vec x,ScatterMode mo
       ierr = PetscMalloc(ns*sizeof(PetscInt),&tindicesSends);CHKERRQ(ierr);
       ierr = PetscMalloc(nr*sizeof(PetscInt),&tindicesRecvs);CHKERRQ(ierr);
 
-      ierr = PetscMemcpy(tindicesSends,to->indices,ns*sizeof(PetscInt));CHKERRQ(ierr);
+      ierr = PetscMemcpy(tindicesSends,indices,ns*sizeof(PetscInt));CHKERRQ(ierr);
       ierr = PetscMemcpy(tindicesRecvs,from->indices,nr*sizeof(PetscInt));CHKERRQ(ierr);
 
       ierr = PetscSortRemoveDupsInt(&ns,tindicesSends);CHKERRQ(ierr);
       ierr = PetscSortRemoveDupsInt(&nr,tindicesRecvs);CHKERRQ(ierr);
 
-      ierr = PetscMalloc(to->bs*ns*sizeof(PetscInt),&sindicesSends);CHKERRQ(ierr);
+      ierr = PetscMalloc(bs*ns*sizeof(PetscInt),&sindicesSends);CHKERRQ(ierr);
       ierr = PetscMalloc(from->bs*nr*sizeof(PetscInt),&sindicesRecvs);CHKERRQ(ierr);
 
       /* sender indices */
       for (i=0; i<ns; i++) {
-        for (k=0; k<to->bs; k++) sindicesSends[i*to->bs+k] = tindicesSends[i]+k;
+        for (k=0; k<bs; k++) sindicesSends[i*bs+k] = tindicesSends[i]+k;
       }
       ierr = PetscFree(tindicesSends);CHKERRQ(ierr);
 
@@ -83,7 +77,7 @@ PetscErrorCode  VecScatterInitializeForGPU(VecScatter inctx,Vec x,ScatterMode mo
       ierr = PetscFree(tindicesRecvs);CHKERRQ(ierr);
 
       /* create GPU indices, work vectors, ... */
-      ierr = PetscCUSPIndicesCreate(ns*to->bs,sindicesSends,nr*from->bs,sindicesRecvs,(PetscCUSPIndices*)&inctx->spptr);CHKERRQ(ierr);
+      ierr = PetscCUSPIndicesCreate(ns*bs,sindicesSends,nr*from->bs,sindicesRecvs,(PetscCUSPIndices*)&inctx->spptr);CHKERRQ(ierr);
       ierr = PetscFree(sindicesSends);CHKERRQ(ierr);
       ierr = PetscFree(sindicesRecvs);CHKERRQ(ierr);
     }
