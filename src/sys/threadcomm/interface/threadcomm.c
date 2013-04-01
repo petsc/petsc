@@ -35,15 +35,16 @@ PetscErrorCode PetscGetNCores(PetscInt *ncores)
   if (N_CORES == -1) {
     N_CORES = 1; /* Default value if number of cores cannot be found out */
 
-#if defined(PETSC_HAVE_SCHED_CPU_SET_T) /* Linux */
+#if defined(PETSC_HAVE_SYS_SYSINFO_H) && (PETSC_HAVE_GET_NPROCS) /* Linux */
     N_CORES = get_nprocs();
-#elif defined(PETSC_HAVE_SYS_SYSCTL_H) /* MacOS, BSD */
+#elif defined(PETSC_HAVE_SYS_SYSCTL_H) && (PETSC_HAVE_SYSCTLBYNAME) /* MacOS, BSD */
     {
       PetscErrorCode ierr;
       size_t         len = sizeof(N_CORES);
-      ierr = sysctlbyname("hw.activecpu",&N_CORES,&len,NULL,0);CHKERRQ(ierr); /* osx preferes activecpu over ncpu */
+      ierr = sysctlbyname("hw.activecpu",&N_CORES,&len,NULL,0); /* osx preferes activecpu over ncpu */
       if (ierr) { /* freebsd check ncpu */
-        ierr = sysctlbyname("hw.ncpu",&N_CORES,&len,NULL,0);CHKERRQ(ierr);
+        sysctlbyname("hw.ncpu",&N_CORES,&len,NULL,0);
+        /* continue even if there is an error */
       }
     }
 #elif defined(PETSC_HAVE_WINDOWS_H)   /* Windows */
