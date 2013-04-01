@@ -371,12 +371,12 @@ PetscErrorCode PetscObjectComposeFunction_Petsc(PetscObject obj,char *name,void 
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscObjectQueryFunction_Petsc(PetscObject obj,char *name,void **ptr)
+PetscErrorCode PetscObjectQueryFunction_Petsc(PetscObject obj,char *name,void (**fptr)(void))
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFListFind(obj-$>$qlist,obj-$>$comm,name,PETSC_FALSE,( int(**)(void *)) ptr);CHKERRQ(ierr);
+  ierr = PetscFunctionListFind(obj-$>$qlist,obj-$>$comm,name,fptr);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 \endcode

@@ -313,7 +313,7 @@ PetscErrorCode  PCFactorGetMatSolverPackage(PC pc,const MatSolverPackage *stype)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCFactorGetMatSolverPackage_C",(void(**)(void))&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCFactorGetMatSolverPackage_C",&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,stype);CHKERRQ(ierr);
   } else {

@@ -423,7 +423,7 @@ PETSC_STATIC_INLINE PetscBool PetscCheckPointer(const void *ptr,PETSC_UNUSED Pet
 */
 #define  PetscTryMethod(obj,A,B,C) \
   0;{ PetscErrorCode (*f)B, __ierr; \
-    __ierr = PetscObjectQueryFunction((PetscObject)obj,A,(PetscVoidStarFunction)&f);CHKERRQ(__ierr); \
+    __ierr = PetscObjectQueryFunction((PetscObject)obj,A,&f);CHKERRQ(__ierr); \
     if (f) {__ierr = (*f)C;CHKERRQ(__ierr);}\
   }
 
@@ -437,7 +437,7 @@ PETSC_STATIC_INLINE PetscBool PetscCheckPointer(const void *ptr,PETSC_UNUSED Pet
 */
 #define  PetscUseMethod(obj,A,B,C) \
   0;{ PetscErrorCode (*f)B, __ierr; \
-    __ierr = PetscObjectQueryFunction((PetscObject)obj,A,(PetscVoidStarFunction)&f);CHKERRQ(__ierr); \
+    __ierr = PetscObjectQueryFunction((PetscObject)obj,A,&f);CHKERRQ(__ierr); \
     if (f) {__ierr = (*f)C;CHKERRQ(__ierr);}\
     else SETERRQ1(PetscObjectComm((PetscObject)obj),PETSC_ERR_SUP,"Cannot locate function %s in object",A); \
   }

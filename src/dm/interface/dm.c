@@ -2488,7 +2488,7 @@ PetscErrorCode DMConvert(DM dm, DMType newtype, DM *M)
     ierr = PetscStrcat(convname,"_");CHKERRQ(ierr);
     ierr = PetscStrcat(convname,newtype);CHKERRQ(ierr);
     ierr = PetscStrcat(convname,"_C");CHKERRQ(ierr);
-    ierr = PetscObjectQueryFunction((PetscObject)dm,convname,(void (**)(void))&conv);CHKERRQ(ierr);
+    ierr = PetscObjectQueryFunction((PetscObject)dm,convname,&conv);CHKERRQ(ierr);
     if (conv) goto foundconv;
 
     /* 2)  See if a specialized converter is known to the desired DM class. */
@@ -2499,7 +2499,7 @@ PetscErrorCode DMConvert(DM dm, DMType newtype, DM *M)
     ierr = PetscStrcat(convname,"_");CHKERRQ(ierr);
     ierr = PetscStrcat(convname,newtype);CHKERRQ(ierr);
     ierr = PetscStrcat(convname,"_C");CHKERRQ(ierr);
-    ierr = PetscObjectQueryFunction((PetscObject)B,convname,(void (**)(void))&conv);CHKERRQ(ierr);
+    ierr = PetscObjectQueryFunction((PetscObject)B,convname,&conv);CHKERRQ(ierr);
     if (conv) {
       ierr = DMDestroy(&B);CHKERRQ(ierr);
       goto foundconv;
