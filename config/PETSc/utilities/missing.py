@@ -24,13 +24,6 @@ class Configure(config.base.Configure):
     self.libraries = framework.require('config.libraries', self)
     return
 
-  def checkPrototype(self, includes = '', body = '', cleanup = 1, codeBegin = None, codeEnd = None):
-    (output, error, status) = self.outputCompile(includes, body, cleanup, codeBegin, codeEnd)
-    output += error
-    if output.find('implicit') >= 0 or output.find('Implicit') >= 0:
-      return 0
-    return 1
-
 #-------------------------------------------------------
   def configureMissingDefines(self):
     '''Checks for limits'''
@@ -95,15 +88,16 @@ class Configure(config.base.Configure):
 #endif
 '''
     code = '''
+int (*getdomainname_ptr)(char*,size_t) = getdomainname;
 char test[10];
-int err = getdomainname(test,10);
+if (getdomainname_ptr(test,10)) return 1;
 '''
-    if not self.checkPrototype(head,code):
-      self.addPrototype('int getdomainname(char *, int);', 'C')
+    if not self.checkCompile(head,code):
+      self.addPrototype('#include <stddef.h>\nint getdomainname(char *, size_t);', 'C')
     if hasattr(self.compilers, 'CXX'):
       self.pushLanguage('C++')
       if not self.checkLink(head,code):
-        self.addPrototype('int getdomainname(char *, int);', 'extern C')
+        self.addPrototype('#include <stddef.h>\nint getdomainname(char *, size_t);', 'extern C')
       self.popLanguage()
     return
 
@@ -114,20 +108,20 @@ int err = getdomainname(test,10);
 #endif
 '''
     code = '''
-double a;
-long   b=10;
-srand(b);
-a=drand48();
-
+double (*drand48_ptr)(void) = drand48;
+void (*srand48_ptr)(long int) = srand48;
+long int seed=10;
+srand48_ptr(seed);
+if (drand48_ptr() > 0.5) return 1;
 '''
-    if not self.checkPrototype(head,code):
-      self.addPrototype('double drand48();', 'C')
-      self.addPrototype('void   srand48(long);', 'C')
+    if not self.checkCompile(head,code):
+      self.addPrototype('double drand48(void);', 'C')
+      self.addPrototype('void   srand48(long int);', 'C')
     if hasattr(self.compilers, 'CXX'):
       self.pushLanguage('C++')
       if not self.checkLink(head,code):
-        self.addPrototype('double drand48();', 'extern C')
-        self.addPrototype('void   srand48(long);', 'extern C')
+        self.addPrototype('double drand48(void);', 'extern C')
+        self.addPrototype('void   srand48(long int);', 'extern C')
       self.popLanguage()
     return
 
