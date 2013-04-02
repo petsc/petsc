@@ -856,7 +856,7 @@ runex42_2:
 EX43RICH=-ksp_type richardson -ksp_max_it 1 -ksp_final_residual -pc_type sor
 EX43RICHNONZ=${EX43RICH} -ksp_initial_guess_nonzero
 runex43:
-	-@for mt in aij baij blockmat dense; do \
+	-@for mt in aij baij dense; do \
 	  case $$mt in \
 	    aij) \
 	      ;& \
@@ -866,10 +866,7 @@ runex43:
 	      bss="1" \
 	      ;; \
 	    baij) \
-	      bss="1 2 3 4 5 6 7" \
-	      ;; \
-	    blockmat) \
-	      bss="1 2 3" \
+	      bss="1 2 3 4 5 6 7 15" \
 	      ;; \
 	  esac; \
 	  for bs in $$bss; do \
