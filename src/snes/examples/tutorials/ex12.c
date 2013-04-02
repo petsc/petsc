@@ -337,7 +337,7 @@ PetscErrorCode SetupSection(DM dm, AppCtx *user)
   PetscSection   section;
   const PetscInt numFields           = NUM_FIELDS;
   PetscInt       dim                 = user->dim;
-  const char    *bdLabel             = user->interpolate ? "boundary" : "marker";
+  const char    *bdLabel             = user->bcType == NEUMANN ? "boundary" : "marker";
   PetscInt       numBC               = 0;
   PetscInt       numComp[NUM_FIELDS] = {NUM_BASIS_COMPONENTS_0};
   PetscInt       bcFields[1]         = {0};

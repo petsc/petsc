@@ -1,23 +1,65 @@
+Mesh in 3 dimensions:
+  0-cells: 27
+  3-cells: 48
+Labels:
+  marker: 1 strata of sizes (26)
+  depth: 2 strata of sizes (27, 48)
 Local function
 Vector Object: 1 MPI processes
   type: seq
 0
-0.25
 1
-0.25
-0.5
-1.25
 1
-1.25
 2
+1
+2
+2
+3
+1.25
+1.25
+2.25
+2.25
+0.25
+0.25
+1.25
+1.25
+0.25
+1.25
+1.25
+2.25
+0.5
+1.5
+1.5
+0.5
+0.5
+1.5
+0.75
 Initial guess
 Vector Object: 1 MPI processes
   type: seq
-0.5
-L_2 Error: 0.111111
+0.75
+L_2 Error: 0.15625
 Residual:
 Vector Object: 1 MPI processes
   type: seq
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
 0
 0
 0
@@ -43,11 +85,29 @@ Vector Object: 1 MPI processes
 0
 0
 0
--2
 0
 0
 0
 0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+-3
 Au - b = Au + F(0)
 Vector Object: 1 MPI processes
   type: seq
