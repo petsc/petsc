@@ -73,6 +73,7 @@ typedef struct {
 /*
    User-defined routines
 */
+static PetscErrorCode FormRHS(AppCtx*,DM,Vec);
 static PetscErrorCode FormInitialGuess(AppCtx*,DM,Vec);
 static PetscErrorCode FormFunctionLocal(DMDALocalInfo*,PetscScalar**,PetscScalar**,AppCtx*);
 static PetscErrorCode FormFunctionPicardLocal(DMDALocalInfo*,PetscScalar**,PetscScalar**,AppCtx*);
@@ -96,7 +97,7 @@ PetscErrorCode PreCheckSetFromOptions(PreCheck);
 int main(int argc,char **argv)
 {
   SNES                snes;                    /* nonlinear solver */
-  Vec                 x,r;                     /* solution, residual vectors */
+  Vec                 x,r,b;                   /* solution, residual, rhs vectors */
   Mat                 A,B;                     /* Jacobian and preconditioning matrices */
   AppCtx              user;                    /* user-defined work context */
   PetscInt            its;                     /* iterations for convergence */
@@ -171,6 +172,7 @@ int main(int argc,char **argv)
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = DMCreateGlobalVector(da,&x);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&r);CHKERRQ(ierr);
+  ierr = VecDuplicate(x,&b);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create matrix data structure; set Jacobian evaluation routine
@@ -234,11 +236,12 @@ int main(int argc,char **argv)
   */
 
   ierr = FormInitialGuess(&user,da,x);CHKERRQ(ierr);
+  ierr = FormRHS(&user,da,b);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve nonlinear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = SNESSolve(snes,NULL,x);CHKERRQ(ierr);
+  ierr = SNESSolve(snes,b,x);CHKERRQ(ierr);
   ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
   ierr = SNESGetConvergedReason(snes,&reason);CHKERRQ(ierr);
 
@@ -360,6 +363,46 @@ static PetscErrorCode FormInitialGuess(AppCtx *user,DM da,Vec X)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "FormRHS"
+/*
+   FormRHS - Forms constant RHS for the problem.
+
+   Input Parameters:
+   user - user-defined application context
+   B - RHS vector
+
+   Output Parameter:
+   B - vector
+ */
+static PetscErrorCode FormRHS(AppCtx *user,DM da,Vec B)
+{
+  PetscInt       i,j,Mx,My,xs,ys,xm,ym;
+  PetscErrorCode ierr;
+  PetscReal      hx,hy;
+  PetscScalar    **b;
+
+  PetscFunctionBeginUser;
+  ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
+                     PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
+
+  hx    = 1.0/(PetscReal)(Mx-1);
+  hy    = 1.0/(PetscReal)(My-1);
+  ierr = DMDAVecGetArray(da,B,&b);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,&ys,NULL,&xm,&ym,NULL);CHKERRQ(ierr);
+  for (j=ys; j<ys+ym; j++) {
+    for (i=xs; i<xs+xm; i++) {
+      if (i == 0 || j == 0 || i == Mx-1 || j == My-1) {
+        b[j][i] = 0.0;
+      } else {
+        b[j][i] = hx*hy*user->source;
+      }
+    }
+  }
+  ierr = DMDAVecRestoreArray(da,B,&b);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 PETSC_STATIC_INLINE PetscReal kappa(const AppCtx *ctx,PetscReal x,PetscReal y)
 {
   return (((PetscInt)(x*ctx->blocks[0])) + ((PetscInt)(y*ctx->blocks[1]))) % 2 ? ctx->kappa : 1.0;
@@ -385,7 +428,7 @@ PETSC_STATIC_INLINE PetscScalar deta(const AppCtx *ctx,PetscReal x,PetscReal y,P
  */
 static PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,PetscScalar **x,PetscScalar **f,AppCtx *user)
 {
-  PetscReal      hx,hy,dhx,dhy,sc,source;
+  PetscReal      hx,hy,dhx,dhy,sc;
   PetscInt       i,j;
   PetscScalar    eu;
   PetscErrorCode ierr;
@@ -395,7 +438,6 @@ static PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,PetscScalar **x,Pets
   hx     = 1.0/(PetscReal)(info->mx-1);
   hy     = 1.0/(PetscReal)(info->my-1);
   sc     = hx*hy*user->lambda;
-  source = hx*hy*user->source;
   dhx    = 1/hx;
   dhy    = 1/hy;
   /*
@@ -429,7 +471,7 @@ static PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,PetscScalar **x,Pets
         * uxx = (2.0*u - x[j][i-1] - x[j][i+1])*hydhx
         * uyy = (2.0*u - x[j-1][i] - x[j+1][i])*hxdhy
         **/
-        f[j][i] = uxx + uyy - sc*eu - source;
+        f[j][i] = uxx + uyy - sc*eu;
       }
     }
   }
@@ -446,7 +488,7 @@ static PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,PetscScalar **x,Pets
 */
 static PetscErrorCode FormFunctionPicardLocal(DMDALocalInfo *info,PetscScalar **x,PetscScalar **f,AppCtx *user)
 {
-  PetscReal hx,hy,sc,source;
+  PetscReal hx,hy,sc;
   PetscInt  i,j;
   PetscErrorCode ierr;
 
@@ -454,7 +496,6 @@ static PetscErrorCode FormFunctionPicardLocal(DMDALocalInfo *info,PetscScalar **
   hx     = 1.0/(PetscReal)(info->mx-1);
   hy     = 1.0/(PetscReal)(info->my-1);
   sc     = hx*hy*user->lambda;
-  source = hx*hy*user->source;
   /*
      Compute function over the locally owned part of the grid
   */
@@ -462,7 +503,7 @@ static PetscErrorCode FormFunctionPicardLocal(DMDALocalInfo *info,PetscScalar **
     for (i=info->xs; i<info->xs+info->xm; i++) {
       if (!(i == 0 || j == 0 || i == info->mx-1 || j == info->my-1)) {
         const PetscScalar u = x[j][i];
-        f[j][i] = sc*PetscExpScalar(u) + source;
+        f[j][i] = sc*PetscExpScalar(u);
       }
     }
   }
@@ -746,7 +787,7 @@ PetscErrorCode NonlinearGS(SNES snes,Vec X, Vec B, void *ctx)
   PetscInt       i,j,k,xs,ys,xm,ym,its,tot_its,sweeps,l,m;
   PetscErrorCode ierr;
   PetscReal      hx,hy,hxdhy,hydhx,dhx,dhy,sc;
-  PetscScalar    **x,**b,bij,F,F0=0,J,y,u,source,eu;
+  PetscScalar    **x,**b,bij,F,F0=0,J,y,u,eu;
   PetscReal      atol,rtol,stol;
   DM             da;
   AppCtx         *user = (AppCtx*)ctx;
@@ -760,7 +801,6 @@ PetscErrorCode NonlinearGS(SNES snes,Vec X, Vec B, void *ctx)
   hx     = 1.0/(PetscReal)(info.mx-1);
   hy     = 1.0/(PetscReal)(info.my-1);
   sc     = hx*hy*user->lambda;
-  source = hx*hy*user->source;
   dhx    = 1/hx;
   dhy    = 1/hy;
   hxdhy  = hx/hy;
@@ -834,7 +874,7 @@ PetscErrorCode NonlinearGS(SNES snes,Vec X, Vec B, void *ctx)
               if (sc) eu = PetscExpScalar(u);
               else    eu = 0;
 
-              F = uxx + uyy - sc*eu - source - bij;
+              F = uxx + uyy - sc*eu - bij;
               if (k == 0) F0 = F;
               J  = hxdhy*(newt_N + newt_S) + hydhx*(newt_E + newt_W) - sc*eu;
               y  = F/J;
