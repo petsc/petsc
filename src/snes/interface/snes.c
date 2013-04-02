@@ -1975,6 +1975,8 @@ PetscErrorCode  SNESComputeFunction(SNES snes,Vec x,Vec y)
     ierr = SNESSolve(snes->pc,snes->vec_rhs,y);CHKERRQ(ierr);
     ierr = PetscLogEventEnd(SNES_NPCSolve,snes->pc,x,y,0);CHKERRQ(ierr);
     ierr = VecAYPX(y,-1.0,x);CHKERRQ(ierr);
+    ierr = VecValidValues(y,3,PETSC_FALSE);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
   } else if (sdm->ops->computefunction) {
     ierr = PetscLogEventBegin(SNES_FunctionEval,snes,x,y,0);CHKERRQ(ierr);
     PetscStackPush("SNES user function");
