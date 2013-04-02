@@ -1208,9 +1208,11 @@ PetscErrorCode  SNESGetMaxNonlinearStepFailures(SNES snes, PetscInt *maxFails)
 
    Level: intermediate
 
+   Notes: Reset every time SNESSolve is called unless SNESSetCountersReset() is used.
+
 .keywords: SNES, nonlinear, get, maximum, unsuccessful, steps
 
-.seealso: SNESGetMaxLinearSolveFailures(), SNESGetLinearSolveIterations(), SNESSetMaxLinearSolveFailures(), SNESGetLinearSolveFailures()
+.seealso: SNESGetMaxLinearSolveFailures(), SNESGetLinearSolveIterations(), SNESSetMaxLinearSolveFailures(), SNESGetLinearSolveFailures(), SNESSetCountersReset()
 @*/
 PetscErrorCode  SNESGetNumberFunctionEvals(SNES snes, PetscInt *nfuncs)
 {
@@ -1328,13 +1330,13 @@ PetscErrorCode  SNESGetMaxLinearSolveFailures(SNES snes, PetscInt *maxFails)
 .  lits - number of linear iterations
 
    Notes:
-   This counter is reset to zero for each successive call to SNESSolve().
+   This counter is reset to zero for each successive call to SNESSolve() unless SNESSetCountersReset() is used.
 
    Level: intermediate
 
 .keywords: SNES, nonlinear, get, number, linear, iterations
 
-.seealso:  SNESGetIterationNumber(), SNESGetFunctionNorm(), SNESGetLinearSolveFailures(), SNESGetMaxLinearSolveFailures()
+.seealso:  SNESGetIterationNumber(), SNESGetFunctionNorm(), SNESGetLinearSolveFailures(), SNESGetMaxLinearSolveFailures(), SNESSetCountersReset()
 @*/
 PetscErrorCode  SNESGetLinearSolveIterations(SNES snes,PetscInt *lits)
 {
@@ -1342,6 +1344,36 @@ PetscErrorCode  SNESGetLinearSolveIterations(SNES snes,PetscInt *lits)
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   PetscValidIntPointer(lits,2);
   *lits = snes->linear_its;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "SNESSetCountersReset"
+/*@
+   SNESSetCountersReset - Sets whether or not the counters for linear iterations and function evaluations
+   are reset every time SNESSolve() is called.
+
+   Logically Collective on SNES
+
+   Input Parameter:
++  snes - SNES context
+-  reset - whether to reset the counters or not
+
+   Notes:
+   This is automatically called with FALSE
+
+   Level: developer
+
+.keywords: SNES, nonlinear, set, reset, number, linear, iterations
+
+.seealso:  SNESGetNumberFunctionEvals(), SNESGetNumberLinearSolveIterations(), SNESGetPC()
+@*/
+PetscErrorCode  SNESSetCountersReset(SNES snes,PetscBool reset)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
+  PetscValidLogicalCollectiveBool(snes,reset,2);
+  snes->counters_reset = reset;
   PetscFunctionReturn(0);
 }
 
@@ -1463,6 +1495,7 @@ PetscErrorCode  SNESCreate(MPI_Comm comm,SNES *outsnes)
   snes->conv_hist         = NULL;
   snes->conv_hist_its     = NULL;
   snes->conv_hist_reset   = PETSC_TRUE;
+  snes->counters_reset    = PETSC_TRUE;
   snes->vec_func_init_set = PETSC_FALSE;
   snes->norm_init         = 0.;
   snes->norm_init_set     = PETSC_FALSE;
@@ -3714,7 +3747,7 @@ PetscErrorCode  SNESSolve(SNES snes,Vec b,Vec x)
     }
 
     if (snes->conv_hist_reset) snes->conv_hist_len = 0;
-    snes->nfuncs = 0; snes->linear_its = 0; snes->numFailures = 0;
+    if (snes->counters_reset) {snes->nfuncs = 0; snes->linear_its = 0; snes->numFailures = 0;}
 
     ierr = PetscLogEventBegin(SNES_Solve,snes,0,0,0);CHKERRQ(ierr);
     ierr = (*snes->ops->solve)(snes);CHKERRQ(ierr);
@@ -4667,6 +4700,7 @@ PetscErrorCode SNESGetPC(SNES snes, SNES *pc)
     ierr = SNESGetOptionsPrefix(snes,&optionsprefix);CHKERRQ(ierr);
     ierr = SNESSetOptionsPrefix(snes->pc,optionsprefix);CHKERRQ(ierr);
     ierr = SNESAppendOptionsPrefix(snes->pc,"npc_");CHKERRQ(ierr);
+    ierr = SNESSetCountersReset(snes->pc,PETSC_FALSE);CHKERRQ(ierr);
   }
   *pc = snes->pc;
   PetscFunctionReturn(0);

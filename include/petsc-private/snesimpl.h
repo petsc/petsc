@@ -124,6 +124,8 @@ struct _p_SNES {
   PetscBool   conv_hist_reset;    /* reset counter for each new SNES solve */
   PetscBool   conv_malloc;
 
+  PetscBool    counters_reset;    /* reset counter for each new SNES solve */
+
   /* the next two are used for failures in the line search; they should be put elsewhere */
   PetscInt    numFailures;        /* number of unsuccessful step attempts */
   PetscInt    maxFailures;        /* maximum number of unsuccessful step attempts */
@@ -148,6 +150,7 @@ struct _p_SNES {
   Vec         xl,xu;             /* upper and lower bounds for box constrained VI problems */
   PetscInt    ntruebounds;       /* number of non-infinite bounds set for VI box constraints */
   PetscBool   usersetbounds;     /* bounds have been set via SNESVISetVariableBounds(), rather than via computevariablebounds() callback. */
+
 };
 
 typedef struct _p_DMSNES *DMSNES;
