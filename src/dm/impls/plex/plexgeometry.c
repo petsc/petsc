@@ -202,6 +202,22 @@ PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, IS *cellIS)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMPlexComputeProjection2Dto1D_Internal"
+/*
+  DMPlexComputeProjection2Dto1D_Internal - Rewrite coordinates to be the 1D projection of the 2D
+*/
+static PetscErrorCode DMPlexComputeProjection2Dto1D_Internal(PetscScalar coords[])
+{
+  const PetscReal x = PetscRealPart(coords[2] - coords[0]);
+  const PetscReal y = PetscRealPart(coords[3] - coords[1]);
+
+  PetscFunctionBegin;
+  coords[0] = 0.0;
+  coords[1] = sqrt(x*x + y*y);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMPlexComputeProjection3Dto2D_Internal"
 /*
   DMPlexComputeProjection3Dto2D_Internal - Rewrite coordinates to be the 2D projection of the 3D
@@ -276,6 +292,46 @@ static PetscErrorCode DMPlexComputeProjection3Dto2D_Internal(PetscScalar coords[
   coords[3] = x1p[1];
   coords[4] = x2p[0];
   coords[5] = x2p[1];
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexComputeLineGeometry_Internal"
+static PetscErrorCode DMPlexComputeLineGeometry_Internal(DM dm, PetscInt e, PetscReal v0[], PetscReal J[], PetscReal invJ[], PetscReal *detJ)
+{
+  PetscSection   coordSection;
+  Vec            coordinates;
+  PetscScalar   *coords;
+  const PetscInt dim = 1;
+  PetscInt       numCoords, d, f;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
+  ierr = DMPlexGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
+  ierr = DMPlexVecGetClosure(dm, coordSection, coordinates, e, &numCoords, &coords);CHKERRQ(ierr);
+  if (numCoords == 4) {
+    ierr = DMPlexComputeProjection2Dto1D_Internal(coords);CHKERRQ(ierr);
+  } else if (numCoords != 2) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "The number of coordinates for this segment is %d != 2", numCoords);
+  if (v0) {
+    for (d = 0; d < dim; d++) v0[d] = PetscRealPart(coords[d]);
+  }
+  if (J) {
+    for (d = 0; d < dim; d++) {
+      for (f = 0; f < dim; f++) {
+        J[d*dim+f] = 0.5*(PetscRealPart(coords[(f+1)*dim+d]) - PetscRealPart(coords[0*dim+d]));
+      }
+    }
+    *detJ = J[0];
+    PetscLogFlops(2.0);
+  } else {
+    *detJ = 0.0;
+  }
+  if (invJ) {
+    invJ[0] =  1.0/J[0];
+    PetscLogFlops(1.0);
+  }
+  ierr = DMPlexVecRestoreClosure(dm, coordSection, coordinates, e, &numCoords, &coords);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -516,6 +572,9 @@ PetscErrorCode DMPlexComputeCellGeometry(DM dm, PetscInt cell, PetscReal *v0, Pe
   if (depth == 1) {
     ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
     switch (dim) {
+    case 1:
+      ierr = DMPlexComputeLineGeometry_Internal(dm, cell, v0, J, invJ, detJ);CHKERRQ(ierr);
+      break;
     case 2:
       switch (coneSize) {
       case 3:
@@ -548,6 +607,9 @@ PetscErrorCode DMPlexComputeCellGeometry(DM dm, PetscInt cell, PetscReal *v0, Pe
     ierr = DMPlexGetLabelValue(dm, "depth", cell, &dim);CHKERRQ(ierr);
     /* Cone size is now the number of faces */
     switch (dim) {
+    case 1:
+      ierr = DMPlexComputeLineGeometry_Internal(dm, cell, v0, J, invJ, detJ);CHKERRQ(ierr);
+      break;
     case 2:
       switch (coneSize) {
       case 3:
