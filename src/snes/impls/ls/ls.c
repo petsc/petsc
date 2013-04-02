@@ -159,7 +159,7 @@ PetscErrorCode SNESSolve_NEWTONLS(SNES snes)
   snes->norm = 0.0;
   ierr       = PetscObjectAMSGrantAccess((PetscObject)snes);CHKERRQ(ierr);
   ierr       = SNESGetSNESLineSearch(snes, &linesearch);CHKERRQ(ierr);
-  if (!snes->vec_func_init_set || snes->pcside != PC_RIGHT) {
+  if (!snes->vec_func_init_set) {
     ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
     ierr = SNESGetFunctionDomainError(snes, &domainerror);CHKERRQ(ierr);
     if (domainerror) {
@@ -168,7 +168,7 @@ PetscErrorCode SNESSolve_NEWTONLS(SNES snes)
     }
   } else snes->vec_func_init_set = PETSC_FALSE;
 
-  if (!snes->norm_init_set || snes->pcside != PC_RIGHT) {
+  if (!snes->norm_init_set) {
     ierr = VecNormBegin(F,NORM_2,&fnorm);CHKERRQ(ierr);        /* fnorm <- ||F||  */
     ierr = VecNormEnd(F,NORM_2,&fnorm);CHKERRQ(ierr);
     if (PetscIsInfOrNanReal(fnorm)) {

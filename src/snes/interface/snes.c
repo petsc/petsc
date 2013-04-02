@@ -1599,6 +1599,10 @@ PetscErrorCode  SNESSetInitialFunction(SNES snes, Vec f)
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   PetscValidHeaderSpecific(f,VEC_CLASSID,2);
   PetscCheckSameComm(snes,1,f,2);
+  if (snes->pcside != PC_RIGHT) {
+    snes->vec_func_init_set = PETSC_FALSE;
+    PetscFunctionReturn(0);
+  }
   ierr = SNESGetFunction(snes,&vec_func,NULL,NULL);CHKERRQ(ierr);
   ierr = VecCopy(f, vec_func);CHKERRQ(ierr);
 
@@ -1633,6 +1637,10 @@ PetscErrorCode  SNESSetInitialFunctionNorm(SNES snes, PetscReal fnorm)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
+  if (snes->pcside != PC_RIGHT) {
+    snes->norm_init_set = PETSC_FALSE;
+    PetscFunctionReturn(0);
+  }
   snes->norm_init     = fnorm;
   snes->norm_init_set = PETSC_TRUE;
   PetscFunctionReturn(0);
@@ -2497,7 +2505,6 @@ PetscErrorCode  SNESSetUp(SNES snes)
   void           *funcctx;
   PetscErrorCode (*jac)(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
   void           *jacctx,*appctx;
-  Mat            A,B;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
@@ -2556,8 +2563,8 @@ PetscErrorCode  SNESSetUp(SNES snes)
     ierr = SNESGetFunction(snes,&f,&func,&funcctx);CHKERRQ(ierr);
     ierr = VecDuplicate(f,&fpc);CHKERRQ(ierr);
     ierr = SNESSetFunction(snes->pc,fpc,func,funcctx);CHKERRQ(ierr);
-    ierr = SNESGetJacobian(snes,&A,&B,&jac,&jacctx);CHKERRQ(ierr);
-    ierr = SNESSetJacobian(snes->pc,A,B,jac,jacctx);CHKERRQ(ierr);
+    ierr = SNESGetJacobian(snes,NULL,NULL,&jac,&jacctx);CHKERRQ(ierr);
+    ierr = SNESSetJacobian(snes->pc,NULL,NULL,jac,jacctx);CHKERRQ(ierr);
     ierr = SNESGetApplicationContext(snes,&appctx);CHKERRQ(ierr);
     ierr = SNESSetApplicationContext(snes->pc,appctx);CHKERRQ(ierr);
     ierr = VecDestroy(&fpc);CHKERRQ(ierr);

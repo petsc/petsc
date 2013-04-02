@@ -202,7 +202,7 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
   /* initialization */
 
   /* r = F(x) */
-  if (!snes->vec_func_init_set || snes->pcside != PC_RIGHT) {
+  if (!snes->vec_func_init_set) {
     ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
     if (snes->domainerror) {
       snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;
@@ -210,7 +210,7 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
     }
   } else snes->vec_func_init_set = PETSC_FALSE;
 
-  if (!snes->norm_init_set || snes->pcside != PC_RIGHT) {
+  if (!snes->norm_init_set) {
     ierr = VecNorm(F,NORM_2,&fnorm);CHKERRQ(ierr);
     if (PetscIsInfOrNanReal(fnorm)) {
       snes->reason = SNES_DIVERGED_FNORM_NAN;
