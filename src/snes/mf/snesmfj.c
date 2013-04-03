@@ -121,7 +121,7 @@ PetscErrorCode  MatMFFDSetBase_SNESMF(Mat J,Vec U,Vec F)
 
 .seealso: MatDestroy(), MatMFFDSetFunctionError(), MatMFFDDSSetUmin()
           MatMFFDSetHHistory(), MatMFFDResetHHistory(), MatCreateMFFD(),
-          MatMFFDGetH(), MatMFFDRegisterDynamic), MatMFFDComputeJacobian()
+          MatMFFDGetH(), MatMFFDRegister(), MatMFFDComputeJacobian()
 
 @*/
 PetscErrorCode  MatCreateSNESMF(SNES snes,Mat *J)

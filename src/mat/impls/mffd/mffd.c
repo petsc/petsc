@@ -212,7 +212,7 @@ PetscErrorCode  MatMFFDRegister(const char sname[],PetscErrorCode (*function)(Ma
 #define __FUNCT__ "MatMFFDRegisterDestroy"
 /*@C
    MatMFFDRegisterDestroy - Frees the list of MatMFFD methods that were
-   registered by MatMFFDRegisterDynamic).
+   registered by MatMFFDRegister().
 
    Not Collective
 
@@ -220,7 +220,7 @@ PetscErrorCode  MatMFFDRegister(const char sname[],PetscErrorCode (*function)(Ma
 
 .keywords: MatMFFD, register, destroy
 
-.seealso: MatMFFDRegisterDynamic), MatMFFDRegisterAll()
+.seealso: MatMFFDRegister(), MatMFFDRegisterAll()
 @*/
 PetscErrorCode  MatMFFDRegisterDestroy(void)
 {
@@ -846,7 +846,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MFFD(Mat A)
 
 .seealso: MatDestroy(), MatMFFDSetFunctionError(), MatMFFDDSSetUmin(), MatMFFDSetFunction()
           MatMFFDSetHHistory(), MatMFFDResetHHistory(), MatCreateSNESMF(),
-          MatMFFDGetH(), MatMFFDRegisterDynamic), MatMFFDComputeJacobian()
+          MatMFFDGetH(), MatMFFDRegister(), MatMFFDComputeJacobian()
 
 @*/
 PetscErrorCode  MatCreateMFFD(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt N,Mat *J)
