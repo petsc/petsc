@@ -1166,6 +1166,9 @@ PETSC_EXTERN PetscErrorCode PetscTokenCreate(const char[],const char,PetscToken*
 PETSC_EXTERN PetscErrorCode PetscTokenFind(PetscToken,char *[]);
 PETSC_EXTERN PetscErrorCode PetscTokenDestroy(PetscToken*);
 
+PETSC_EXTERN PetscErrorCode PetscEListFind(PetscInt,const char *const*,const char*,PetscInt*,PetscBool*);
+PETSC_EXTERN PetscErrorCode PetscEnumFind(const char *const*,const char*,PetscEnum*,PetscBool*);
+
 /*
    These are  MPI operations for MPI_Allreduce() etc
 */
@@ -1226,6 +1229,8 @@ typedef struct _n_PetscFunctionList *PetscFunctionList;
 .seealso: PetscViewerFileSetMode()
 E*/
 typedef enum {FILE_MODE_READ, FILE_MODE_WRITE, FILE_MODE_APPEND, FILE_MODE_UPDATE, FILE_MODE_APPEND_UPDATE} PetscFileMode;
+extern const char *const PetscFileModes[];
+
 /*
     Defines PETSc error handling.
 */
