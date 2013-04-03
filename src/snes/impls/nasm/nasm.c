@@ -497,7 +497,7 @@ PetscErrorCode SNESNASMSetDamping(SNES snes,PetscReal dmp)
 
   PetscFunctionBegin;
   ierr = PetscObjectQueryFunction((PetscObject)snes,"SNESNASMSetDamping_C",(void (**)(void))&f);CHKERRQ(ierr);
-  ierr = (f)(snes,dmp);CHKERRQ(ierr);
+  if (f) {ierr = (f)(snes,dmp);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -536,7 +536,7 @@ PetscErrorCode SNESNASMGetDamping(SNES snes,PetscReal *dmp)
 
   PetscFunctionBegin;
   ierr = PetscObjectQueryFunction((PetscObject)snes,"SNESNASMGetDamping_C",(void (**)(void))&f);CHKERRQ(ierr);
-  ierr = (f)(snes,dmp);CHKERRQ(ierr);
+  if (f) {ierr = (f)(snes,dmp);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
