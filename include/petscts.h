@@ -40,7 +40,7 @@ typedef const char* TSType;
 #define TSSSP             "ssp"
 #define TSARKIMEX         "arkimex"
 #define TSROSW            "rosw"
-
+#define TSEIMEX           "eimex"
 /*E
     TSProblemType - Determines the type of problem this TS object is to be used to solve
 
@@ -494,6 +494,19 @@ PETSC_EXTERN PetscErrorCode TSGLFinalizePackage(void);
 PETSC_EXTERN PetscErrorCode TSGLSetType(TS,TSGLType);
 PETSC_EXTERN PetscErrorCode TSGLGetAdapt(TS,TSGLAdapt*);
 PETSC_EXTERN PetscErrorCode TSGLSetAcceptType(TS,TSGLAcceptType);
+
+/*J
+    TSEIMEXType - String with the name of an Extrapolated IMEX method.
+
+   Level: beginner
+
+.seealso: TSEIMEXSetType(), TS, TSEIMEX, TSEIMEXRegister()
+J*/
+#define TSEIMEXType   char*
+
+PETSC_EXTERN PetscErrorCode TSEIMEXSetMaxRows(TS ts,PetscInt);
+PETSC_EXTERN PetscErrorCode TSEIMEXSetRowCol(TS ts,PetscInt,PetscInt);
+PETSC_EXTERN PetscErrorCode TSEIMEXSetOrdAdapt(TS,PetscBool);
 
 /*J
     TSARKIMEXType - String with the name of an Additive Runge-Kutta IMEX method.

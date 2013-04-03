@@ -707,7 +707,7 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
 
       ierr = TSSetSolution(ts_start,ts->vec_sol);CHKERRQ(ierr);
       ierr = TSSetTime(ts_start,ts->ptime);CHKERRQ(ierr);
-      ierr = TSSetDuration(ts_start,1,ts->time_step);CHKERRQ(ierr);
+      ierr = TSSetDuration(ts_start,1,ts->ptime+ts->time_step);CHKERRQ(ierr);
       ierr = TSSetTimeStep(ts_start,ts->time_step);CHKERRQ(ierr);
       ierr = TSSetType(ts_start,TSARKIMEX);CHKERRQ(ierr);
       ierr = TSARKIMEXSetFullyImplicit(ts_start,PETSC_TRUE);CHKERRQ(ierr);
@@ -721,8 +721,10 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
       ts->time_step = ts_start->time_step;
       ts->steps++;
       ierr = VecCopy(((TS_ARKIMEX*)ts_start->data)->Ydot0,Ydot0);CHKERRQ(ierr);
-      ierr = TSDestroy(&ts_start);CHKERRQ(ierr);
+      ts_start->snes=NULL;
       ierr = TSSetSNES(ts,snes_start);CHKERRQ(ierr);
+      ierr = SNESDestroy(&snes_start);CHKERRQ(ierr);
+      ierr = TSDestroy(&ts_start);CHKERRQ(ierr);
     }
   }
 

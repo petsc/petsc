@@ -33,6 +33,7 @@
 #define TSSSP             'ssp'
 #define TSARKIMEX         'arkimex'
 #define TSROSW            'rosw'
+#define TSEIMEX           'eimex'
 
 #define TSSSPType character*(80)
 #define TSSSPRKS2  'rks2'
@@ -81,5 +82,10 @@
 #define TSROSWSHAMP4      'shamp4'
 #define TSROSWVELDD4      'veldd4'
 #define TSROSW4L          '4l'
+
+#define TSEIMEXType character*(80)
+#define TSEIMEXS2     's2'
+#define TSEIMEXS3     's3'
+#define TSEIMEXS4     's4'
 
 #endif
