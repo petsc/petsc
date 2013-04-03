@@ -6,31 +6,6 @@
 #include <petsc-private/petscimpl.h>           /*I "petscsys.h" I*/
 #include <petscviewer.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscFunctionListGetPathAndFunction"
-PetscErrorCode  PetscFunctionListGetPathAndFunction(const char name[],char *path[],char *function[])
-{
-  PetscErrorCode ierr;
-  char           work[PETSC_MAX_PATH_LEN],*lfunction;
-
-  PetscFunctionBegin;
-  ierr = PetscStrncpy(work,name,sizeof(work));CHKERRQ(ierr);
-
-  work[sizeof(work) - 1] = 0;
-
-  ierr = PetscStrchr(work,':',&lfunction);CHKERRQ(ierr);
-  if (lfunction != work && lfunction && lfunction[1] != ':') {
-    lfunction[0] = 0;
-
-    ierr = PetscStrallocpy(work,path);CHKERRQ(ierr);
-    ierr = PetscStrallocpy(lfunction+1,function);CHKERRQ(ierr);
-  } else {
-    *path = 0;
-    ierr  = PetscStrallocpy(name,function);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
 /*
     This is the default list used by PETSc with the PetscDLLibrary register routines
 */
@@ -94,7 +69,7 @@ PetscErrorCode  PetscInitialize_DynamicLibraries(void)
     The classes, from PetscDraw to PetscTS, are initialized the first
     time an XXCreate() is called.
   */
-  ierr = PetscSysInitializePackage(NULL);CHKERRQ(ierr);
+  ierr = PetscSysInitializePackage();CHKERRQ(ierr);
 #else
 #if defined(PETSC_USE_SINGLE_LIBRARY)
   ierr = PetscLoadDynamicLibrary("",&found);CHKERRQ(ierr);
@@ -150,9 +125,7 @@ PetscErrorCode PetscFinalize_DynamicLibraries(void)
 /* ------------------------------------------------------------------------------*/
 struct _n_PetscFunctionList {
   void              (*routine)(void);    /* the routine */
-  char              *path;               /* path of link library containing routine */
   char              *name;               /* string to identify routine */
-  char              *rname;              /* routine name in dynamic library */
   PetscFunctionList next;                /* next pointer */
   PetscFunctionList next_list;           /* used to maintain list of all lists for freeing */
 };
@@ -168,44 +141,35 @@ static PetscFunctionList dlallhead = 0;
    PetscFunctionListAdd - Given a routine and a string id, saves that routine in the
    specified registry.
 
-     Formally Collective on MPI_Comm
+     Not Collective
 
    Input Parameters:
-+  comm  - the comm where this exists (currently not used)
-.  fl    - pointer registry
++  fl    - pointer registry
 .  name  - string to identify routine
-.  rname - routine name in dynamic library
 -  fnc   - function pointer (optional if using dynamic libraries)
 
    Notes:
-   To remove a registered routine, pass in a NULL rname and fnc().
+   To remove a registered routine, pass in a NULL  fnc().
 
    Users who wish to register new classes for use by a particular PETSc
    component (e.g., SNES) should generally call the registration routine
-   for that particular component (e.g., SNESRegisterDynamic()) instead of
+   for that particular component (e.g., SNESRegister()) instead of
    calling PetscFunctionListAdd() directly.
 
-   ${PETSC_ARCH}, ${PETSC_DIR}, ${PETSC_LIB_DIR}, or ${any environmental variable}
-  occuring in pathname will be replaced with appropriate values.
+    Level: developer
 
-   Level: developer
-
-.seealso: PetscFunctionListDestroy(), SNESRegisterDynamic(), KSPRegisterDynamic(),
-          PCRegisterDynamic(), TSRegisterDynamic(), PetscFunctionList
+.seealso: PetscFunctionListDestroy(), SNESRegister(), KSPRegister(),
+          PCRegister(), TSRegister(), PetscFunctionList
 @*/
-PetscErrorCode  PetscFunctionListAdd(MPI_Comm comm,PetscFunctionList *fl,const char name[],const char rname[],void (*fnc)(void))
+PetscErrorCode  PetscFunctionListAdd(PetscFunctionList *fl,const char name[],void (*fnc)(void))
 {
   PetscFunctionList entry,ne;
   PetscErrorCode    ierr;
-  char              *fpath,*fname;
 
   PetscFunctionBegin;
   if (!*fl) {
     ierr           = PetscNew(struct _n_PetscFunctionList,&entry);CHKERRQ(ierr);
     ierr           = PetscStrallocpy(name,&entry->name);CHKERRQ(ierr);
-    ierr           = PetscFunctionListGetPathAndFunction(rname,&fpath,&fname);CHKERRQ(ierr);
-    entry->path    = fpath;
-    entry->rname   = fname;
     entry->routine = fnc;
     entry->next    = 0;
     *fl            = entry;
@@ -227,12 +191,6 @@ PetscErrorCode  PetscFunctionListAdd(MPI_Comm comm,PetscFunctionList *fl,const c
 
       ierr = PetscStrcmp(ne->name,name,&founddup);CHKERRQ(ierr);
       if (founddup) { /* found duplicate */
-        ierr = PetscFunctionListGetPathAndFunction(rname,&fpath,&fname);CHKERRQ(ierr);
-        ierr = PetscFree(ne->path);CHKERRQ(ierr);
-        ierr = PetscFree(ne->rname);CHKERRQ(ierr);
-
-        ne->path    = fpath;
-        ne->rname   = fname;
         ne->routine = fnc;
         PetscFunctionReturn(0);
       }
@@ -242,9 +200,6 @@ PetscErrorCode  PetscFunctionListAdd(MPI_Comm comm,PetscFunctionList *fl,const c
     /* create new entry and add to end of list */
     ierr           = PetscNew(struct _n_PetscFunctionList,&entry);CHKERRQ(ierr);
     ierr           = PetscStrallocpy(name,&entry->name);CHKERRQ(ierr);
-    ierr           = PetscFunctionListGetPathAndFunction(rname,&fpath,&fname);CHKERRQ(ierr);
-    entry->path    = fpath;
-    entry->rname   = fname;
     entry->routine = fnc;
     entry->next    = 0;
     ne->next       = entry;
@@ -291,9 +246,7 @@ PetscErrorCode  PetscFunctionListDestroy(PetscFunctionList *fl)
   entry = *fl;
   while (entry) {
     next  = entry->next;
-    ierr  = PetscFree(entry->path);CHKERRQ(ierr);
     ierr  = PetscFree(entry->name);CHKERRQ(ierr);
-    ierr  = PetscFree(entry->rname);CHKERRQ(ierr);
     ierr  = PetscFree(entry);CHKERRQ(ierr);
     entry = next;
   }
@@ -324,111 +277,37 @@ PetscErrorCode  PetscFunctionListDestroyAll(void)
 #undef __FUNCT__
 #define __FUNCT__ "PetscFunctionListFind"
 /*@C
-    PetscFunctionListFind - Given a name, finds the matching routine.
+    PetscFunctionListFind - Given a name registered to a function
 
     Input Parameters:
 +   fl   - pointer to list
-.   comm - processors looking for routine
-.   name - name string
--   searchlibraries - if not found in the list then search the dynamic libraries and executable for the symbol
+-   name - either the name registered for the function or the name of the function
 
     Output Parameters:
-.   r - the routine
+.   r - the function pointer if name was found else NULL
 
     Level: developer
 
 .seealso: PetscFunctionListAddDynamic(), PetscFunctionList
 @*/
-PetscErrorCode  PetscFunctionListFind(MPI_Comm comm,PetscFunctionList fl,const char name[],PetscBool searchlibraries,void (**r)(void))
+PetscErrorCode  PetscFunctionListFind(PetscFunctionList fl,const char name[],void (**r)(void))
 {
   PetscFunctionList entry = fl;
   PetscErrorCode    ierr;
-  char              *function,*path;
-  PetscBool         flg,f1,f2,f3;
-#if defined(PETSC_HAVE_DYNAMIC_LIBRARIES)
-  char              *newpath;
-#endif
+  PetscBool         flg;
 
   PetscFunctionBegin;
   if (!name) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Trying to find routine with null name");
 
   *r = 0;
-  ierr = PetscFunctionListGetPathAndFunction(name,&path,&function);CHKERRQ(ierr);
-
-  /*
-        If path then append it to search libraries
-  */
-#if defined(PETSC_HAVE_DYNAMIC_LIBRARIES)
-  if (path) {
-    ierr = PetscDLLibraryAppend(comm,&PetscDLLibrariesLoaded,path);CHKERRQ(ierr);
-  }
-#endif
-
   while (entry) {
-    flg = PETSC_FALSE;
-    if (path && entry->path) {
-      ierr = PetscStrcmp(path,entry->path,&f1);CHKERRQ(ierr);
-      ierr = PetscStrcmp(function,entry->rname,&f2);CHKERRQ(ierr);
-      ierr = PetscStrcmp(function,entry->name,&f3);CHKERRQ(ierr);
-      flg  =  (PetscBool) ((f1 && f2) || (f1 && f3));
-    } else if (!path) {
-      ierr = PetscStrcmp(function,entry->name,&f1);CHKERRQ(ierr);
-      ierr = PetscStrcmp(function,entry->rname,&f2);CHKERRQ(ierr);
-      flg  =  (PetscBool) (f1 || f2);
-    } else {
-      ierr = PetscStrcmp(function,entry->name,&flg);CHKERRQ(ierr);
-      if (flg) {
-        ierr = PetscFree(function);CHKERRQ(ierr);
-        ierr = PetscStrallocpy(entry->rname,&function);CHKERRQ(ierr);
-      } else {
-        ierr = PetscStrcmp(function,entry->rname,&flg);CHKERRQ(ierr);
-      }
-    }
-
+    ierr = PetscStrcmp(name,entry->name,&flg);CHKERRQ(ierr);
     if (flg) {
-      if (entry->routine) {
-        *r   = entry->routine;
-        ierr = PetscFree(path);CHKERRQ(ierr);
-        ierr = PetscFree(function);CHKERRQ(ierr);
-        PetscFunctionReturn(0);
-      }
-      if (!(entry->rname && entry->rname[0])) { /* The entry has been cleared */
-        ierr = PetscFree(function);CHKERRQ(ierr);
-        PetscFunctionReturn(0);
-      }
-      if ((path && entry->path && f3) || (!path && f1)) { /* convert name of function (alias) to actual function name */
-        ierr = PetscFree(function);CHKERRQ(ierr);
-        ierr = PetscStrallocpy(entry->rname,&function);CHKERRQ(ierr);
-      }
-
-      /* it is not yet in memory so load from dynamic library */
-#if defined(PETSC_HAVE_DYNAMIC_LIBRARIES)
-      newpath = path;
-      if (!path) newpath = entry->path;
-      ierr = PetscDLLibrarySym(comm,&PetscDLLibrariesLoaded,newpath,entry->rname,(void**)r);CHKERRQ(ierr);
-      if (*r) {
-        entry->routine = *r;
-
-        ierr = PetscFree(path);CHKERRQ(ierr);
-        ierr = PetscFree(function);CHKERRQ(ierr);
-        PetscFunctionReturn(0);
-      }
-#endif
+      *r   = entry->routine;
+      PetscFunctionReturn(0);
     }
     entry = entry->next;
   }
-
-#if defined(PETSC_HAVE_DYNAMIC_LIBRARIES)
-  if (searchlibraries) {
-    /* Function never registered; try for it anyway */
-    ierr = PetscDLLibrarySym(comm,&PetscDLLibrariesLoaded,path,function,(void**)r);CHKERRQ(ierr);
-    ierr = PetscFree(path);CHKERRQ(ierr);
-    if (*r) {
-      ierr = PetscFunctionListAdd(comm,&fl,name,name,*r);CHKERRQ(ierr);
-    }
-  }
-#endif
-  ierr = PetscFree(function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -461,11 +340,7 @@ PetscErrorCode  PetscFunctionListView(PetscFunctionList list,PetscViewer viewer)
   if (!iascii) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only ASCII viewer supported");
 
   while (list) {
-    if (list->path) {
-      ierr = PetscViewerASCIIPrintf(viewer," %s %s %s\n",list->path,list->name,list->rname);CHKERRQ(ierr);
-    } else {
-      ierr = PetscViewerASCIIPrintf(viewer," %s %s\n",list->name,list->rname);CHKERRQ(ierr);
-    }
+    ierr = PetscViewerASCIIPrintf(viewer," %s\n",list->name);CHKERRQ(ierr);
     list = list->next;
   }
   ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
@@ -478,7 +353,7 @@ PetscErrorCode  PetscFunctionListView(PetscFunctionList list,PetscViewer viewer)
    PetscFunctionListGet - Gets an array the contains the entries in PetscFunctionList, this is used
          by help etc.
 
-   Collective over MPI_Comm
+   Not Collective
 
    Input Parameter:
 .  list   - list of types
@@ -582,55 +457,12 @@ PetscErrorCode  PetscFunctionListPrintTypes(MPI_Comm comm,FILE *fd,const char pr
 PetscErrorCode  PetscFunctionListDuplicate(PetscFunctionList fl,PetscFunctionList *nl)
 {
   PetscErrorCode ierr;
-  char           path[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
   while (fl) {
-    /* this is silly, rebuild the complete pathname */
-    if (fl->path) {
-      ierr = PetscStrcpy(path,fl->path);CHKERRQ(ierr);
-      ierr = PetscStrcat(path,":");CHKERRQ(ierr);
-      ierr = PetscStrcat(path,fl->name);CHKERRQ(ierr);
-    } else {
-      ierr = PetscStrcpy(path,fl->name);CHKERRQ(ierr);
-    }
-    ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,nl,path,fl->rname,fl->routine);CHKERRQ(ierr);
+    ierr = PetscFunctionListAdd(nl,fl->name,fl->routine);CHKERRQ(ierr);
     fl   = fl->next;
   }
   PetscFunctionReturn(0);
 }
 
-
-#undef __FUNCT__
-#define __FUNCT__ "PetscFunctionListConcat"
-/*
-    PetscFunctionListConcat - joins name of a libary, and the path where it is located
-    into a single string.
-
-    Input Parameters:
-.   path   - path to the library name.
-.   name   - name of the library
-
-    Output Parameters:
-.   fullname - the name that is the union of the path and the library name,
-               delimited by a semicolon, i.e., path:name
-
-    Notes:
-    If the path is NULL, assumes that the name, specified also includes
-    the path as path:name
-
-*/
-PetscErrorCode  PetscFunctionListConcat(const char path[],const char name[],char fullname[])
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  if (path) {
-    ierr = PetscStrcpy(fullname,path);CHKERRQ(ierr);
-    ierr = PetscStrcat(fullname,":");CHKERRQ(ierr);
-    ierr = PetscStrcat(fullname,name);CHKERRQ(ierr);
-  } else {
-    ierr = PetscStrcpy(fullname,name);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}

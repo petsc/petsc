@@ -12,9 +12,9 @@ Files:
 
 To use:
 
-- Register the lgmres method in your code, for example: 
- 
-    ierr = KSPRegisterDynamic("lgmres", "/home/saros/allisonb/petsc/mywork/lib/libO/solaris/liballison.a", "KSPCreate_LGMRES", KSPCreate_LGMRES); CHKERRQ(ierr); 
+- Register the lgmres method in your code, for example:
+
+    ierr = KSPRegister("lgmres", KSPCreate_LGMRES); CHKERRQ(ierr);
 
   This is done automatically by Petsc 2.1.5
 

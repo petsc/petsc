@@ -79,14 +79,11 @@ PETSC_EXTERN PetscMPIInt MPIAPI Petsc_DelThreadComm(MPI_Comm comm,PetscMPIInt ke
 
    Logically collective
 
-   Input Parameter:
-.  path - The dynamic library path, or NULL
-
    Level: developer
 
 .seealso: PetscThreadCommFinalizePackage()
 @*/
-PetscErrorCode PetscThreadCommInitializePackage(const char *path)
+PetscErrorCode PetscThreadCommInitializePackage(void)
 {
   PetscErrorCode ierr;
 

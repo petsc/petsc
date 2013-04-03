@@ -189,8 +189,8 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_Matlab(PetscViewer viewer)
   e->btype     = (PetscFileMode)-1;
   viewer->data = (void*) e;
 
-  ierr = PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerFileSetName_C","PetscViewerFileSetName_Matlab",PetscViewerFileSetName_Matlab);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerFileSetMode_C","PetscViewerFileSetMode_Matlab",PetscViewerFileSetMode_Matlab);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerFileSetName_C",PetscViewerFileSetName_Matlab);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerFileSetMode_C",PetscViewerFileSetMode_Matlab);CHKERRQ(ierr);
 
   viewer->ops->destroy = PetscViewerDestroy_Matlab;
   PetscFunctionReturn(0);

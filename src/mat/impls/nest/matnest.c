@@ -191,14 +191,14 @@ static PetscErrorCode MatDestroy_Nest(Mat A)
   }
   ierr = PetscFree(A->data);CHKERRQ(ierr);
 
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatNestGetSubMat_C",   "",0);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatNestSetSubMat_C",   "",0);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatNestGetSubMats_C",  "",0);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatNestGetSize_C",     "",0);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatNestGetISs_C",      "",0);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatNestGetLocalISs_C", "",0);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatNestSetVecType_C",  "",0);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatNestSetSubMats_C",   "",0);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatNestGetSubMat_C",0);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatNestSetSubMat_C",0);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatNestGetSubMats_C",0);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatNestGetSize_C",0);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatNestGetISs_C",0);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatNestGetLocalISs_C",0);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatNestSetVecType_C",0);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatNestSetSubMats_C",0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1555,14 +1555,14 @@ PETSC_EXTERN PetscErrorCode MatCreate_Nest(Mat A)
   A->assembled    = PETSC_FALSE;
 
   /* expose Nest api's */
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatNestGetSubMat_C",   "MatNestGetSubMat_Nest",   MatNestGetSubMat_Nest);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatNestSetSubMat_C",   "MatNestSetSubMat_Nest",   MatNestSetSubMat_Nest);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatNestGetSubMats_C",  "MatNestGetSubMats_Nest",  MatNestGetSubMats_Nest);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatNestGetSize_C",     "MatNestGetSize_Nest",     MatNestGetSize_Nest);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatNestGetISs_C",      "MatNestGetISs_Nest",      MatNestGetISs_Nest);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatNestGetLocalISs_C", "MatNestGetLocalISs_Nest", MatNestGetLocalISs_Nest);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatNestSetVecType_C",  "MatNestSetVecType_Nest",  MatNestSetVecType_Nest);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatNestSetSubMats_C",  "MatNestSetSubMats_Nest",  MatNestSetSubMats_Nest);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatNestGetSubMat_C",   MatNestGetSubMat_Nest);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatNestSetSubMat_C",   MatNestSetSubMat_Nest);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatNestGetSubMats_C",  MatNestGetSubMats_Nest);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatNestGetSize_C",     MatNestGetSize_Nest);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatNestGetISs_C",      MatNestGetISs_Nest);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatNestGetLocalISs_C", MatNestGetLocalISs_Nest);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatNestSetVecType_C",  MatNestSetVecType_Nest);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatNestSetSubMats_C",  MatNestSetSubMats_Nest);CHKERRQ(ierr);
 
   ierr = PetscObjectChangeTypeName((PetscObject)A,MATNEST);CHKERRQ(ierr);
   PetscFunctionReturn(0);

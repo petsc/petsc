@@ -202,7 +202,7 @@ PETSC_EXTERN PetscErrorCode MatConvert_MPISBAIJ_MPISBSTRM(Mat A,MatType type,Mat
   }
 
   ierr = PetscObjectChangeTypeName((PetscObject) B, MATMPISBSTRM);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMPISBAIJSetPreallocation_C","MatMPISBAIJSetPreallocation_MPISBSTRM",MatMPISBAIJSetPreallocation_MPISBSTRM);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMPISBAIJSetPreallocation_C",MatMPISBAIJSetPreallocation_MPISBSTRM);CHKERRQ(ierr);
   *newmat = B;
   PetscFunctionReturn(0);
 }

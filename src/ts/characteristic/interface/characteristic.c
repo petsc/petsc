@@ -84,7 +84,7 @@ PetscErrorCode CharacteristicCreate(MPI_Comm comm, Characteristic *c)
   PetscValidPointer(c, 2);
   *c = NULL;
 #if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
-  ierr = CharacteristicInitializePackage(NULL);CHKERRQ(ierr);
+  ierr = CharacteristicInitializePackage();CHKERRQ(ierr);
 #endif
 
   ierr = PetscHeaderCreate(newC, _p_Characteristic, struct _CharacteristicOps, CHARACTERISTIC_CLASSID, "Characteristic", "Characteristic", "SemiLagrange", comm, CharacteristicDestroy, CharacteristicView);CHKERRQ(ierr);
@@ -185,7 +185,7 @@ PetscErrorCode CharacteristicSetType(Characteristic c, CharacteristicType type)
     c->data         = 0;
   }
 
-  ierr =  PetscFunctionListFind(PetscObjectComm((PetscObject)c),CharacteristicList, type,PETSC_TRUE, (void (**)(void)) &r);CHKERRQ(ierr);
+  ierr =  PetscFunctionListFind(CharacteristicList, type,(void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown Characteristic type given: %s", type);
   c->setupcalled = 0;
   ierr = (*r)(c);CHKERRQ(ierr);
@@ -235,18 +235,44 @@ PetscErrorCode CharacteristicSetUp(Characteristic c)
 #undef __FUNCT__
 #define __FUNCT__ "CharacteristicRegister"
 /*@C
-  CharacteristicRegister - See CharacteristicRegisterDynamic()
+  CharacteristicRegister -  Adds a solver to the method of characteristics package.
+
+   Not Collective
+
+   Input Parameters:
++  name_solver - name of a new user-defined solver
+-  routine_create - routine to create method context
+
+  Sample usage:
+.vb
+    CharacteristicRegister("my_char", MyCharCreate);
+.ve
+
+  Then, your Characteristic type can be chosen with the procedural interface via
+.vb
+    CharacteristicCreate(MPI_Comm, Characteristic* &char);
+    CharacteristicSetType(char,"my_char");
+.ve
+   or at runtime via the option
+.vb
+    -characteristic_type my_char
+.ve
+
+   Notes:
+   CharacteristicRegister() may be called multiple times to add several user-defined solvers.
+
+.keywords: Characteristic, register
+
+.seealso: CharacteristicRegisterAll(), CharacteristicRegisterDestroy()
 
   Level: advanced
 @*/
-PetscErrorCode CharacteristicRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(Characteristic))
+PetscErrorCode CharacteristicRegister(const char sname[],PetscErrorCode (*function)(Characteristic))
 {
   PetscErrorCode ierr;
-  char           fullname[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListConcat(path,name,fullname);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&CharacteristicList,sname,fullname,(void (*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&CharacteristicList,sname,(void (*)(void))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

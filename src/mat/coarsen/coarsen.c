@@ -9,14 +9,37 @@ PetscBool         MatCoarsenRegisterAllCalled = PETSC_FALSE;
 
 #undef __FUNCT__
 #define __FUNCT__ "MatCoarsenRegister"
-PetscErrorCode  MatCoarsenRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(MatCoarsen))
+/*@C
+   MatCoarsenRegister - Adds a new sparse matrix coarsen to the  matrix package.
+
+   Not Collective
+
+   Input Parameters:
++  sname - name of coarsen (for example MATCOARSENMIS)
+-  function - function pointer that creates the coarsen type
+
+   Level: developer
+
+   Sample usage:
+.vb
+   MatCoarsenRegister("my_agg",MyAggCreate);
+.ve
+
+   Then, your aggregator can be chosen with the procedural interface via
+$     MatCoarsenSetType(agg,"my_agg")
+   or at runtime via the option
+$     -mat_coarsen_type my_agg
+
+.keywords: matrix, coarsen, register
+
+.seealso: MatCoarsenRegisterDestroy(), MatCoarsenRegisterAll()
+@*/
+PetscErrorCode  MatCoarsenRegister(const char sname[],PetscErrorCode (*function)(MatCoarsen))
 {
   PetscErrorCode ierr;
-  char           fullname[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListConcat(path,name,fullname);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&MatCoarsenList,sname,fullname,(void (*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&MatCoarsenList,sname,(void (*)(void))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -31,7 +54,7 @@ PetscErrorCode  MatCoarsenRegister(const char sname[],const char path[],const ch
 
 .keywords: matrix, register, destroy
 
-.seealso: MatCoarsenRegisterDynamic(), MatCoarsenRegisterAll()
+.seealso: MatCoarsenRegister(), MatCoarsenRegisterAll()
 @*/
 PetscErrorCode  MatCoarsenRegisterDestroy(void)
 {
@@ -96,11 +119,11 @@ $    -mat_coarsen_view
 
    Level: beginner
 
-   The user can define additional coarsens; see MatCoarsenRegisterDynamic().
+   The user can define additional coarsens; see MatCoarsenRegister().
 
 .keywords: matrix, get, coarsen
 
-.seealso:  MatCoarsenRegisterDynamic(), MatCoarsenCreate(),
+.seealso:  MatCoarsenRegister(), MatCoarsenCreate(),
            MatCoarsenDestroy(), MatCoarsenSetAdjacency(), ISCoarsenToNumbering(),
            ISCoarsenCount()
 @*/
@@ -273,7 +296,7 @@ PetscErrorCode  MatCoarsenCreate(MPI_Comm comm, MatCoarsen *newcrs)
   *newcrs = 0;
 
 #if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
-  ierr = MatInitializePackage(NULL);CHKERRQ(ierr);
+  ierr = MatInitializePackage();CHKERRQ(ierr);
 #endif
   ierr = PetscHeaderCreate(agg, _p_MatCoarsen, struct _MatCoarsenOps, MAT_COARSEN_CLASSID,"MatCoarsen","Matrix/graph coarsen",
                            "MatCoarsen", comm, MatCoarsenDestroy, MatCoarsenView);CHKERRQ(ierr);
@@ -379,7 +402,7 @@ PetscErrorCode  MatCoarsenSetType(MatCoarsen coarser, MatCoarsenType type)
     coarser->setupcalled  = 0;
   }
 
-  ierr =  PetscFunctionListFind(PetscObjectComm((PetscObject)coarser),MatCoarsenList,type,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
+  ierr =  PetscFunctionListFind(MatCoarsenList,type,(void (**)(void)) &r);CHKERRQ(ierr);
 
   if (!r) SETERRQ1(PetscObjectComm((PetscObject)coarser),PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown coarsen type %s",type);
 

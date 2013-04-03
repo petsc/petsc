@@ -10,22 +10,19 @@ PETSC_EXTERN PetscErrorCode AOCreate_MemoryScalable(AO ao);
 
   Not Collective
 
-  Input parameter:
-. path - The dynamic library path
-
   Level: advanced
 
 .keywords: AO, register, all
-.seealso:  AORegister(), AORegisterDestroy(), AORegisterDynamic()
+.seealso:  AORegister(), AORegisterDestroy()
 @*/
-PetscErrorCode  AORegisterAll(const char path[])
+PetscErrorCode  AORegisterAll(void)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   AORegisterAllCalled = PETSC_TRUE;
 
-  ierr = AORegisterDynamic(AOBASIC,           path, "AOCreate_Basic",          AOCreate_Basic);CHKERRQ(ierr);
-  ierr = AORegisterDynamic(AOMEMORYSCALABLE,  path, "AOCreate_MemoryScalable", AOCreate_MemoryScalable);CHKERRQ(ierr);
+  ierr = AORegister(AOBASIC,          AOCreate_Basic);CHKERRQ(ierr);
+  ierr = AORegister(AOMEMORYSCALABLE, AOCreate_MemoryScalable);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

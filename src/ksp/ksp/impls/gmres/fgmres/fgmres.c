@@ -316,7 +316,7 @@ PetscErrorCode KSPDestroy_FGMRES(KSP ksp)
 
   PetscFunctionBegin;
   ierr = KSPReset_FGMRES(ksp);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPFGMRESSetModifyPC_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPFGMRESSetModifyPC_C",NULL);CHKERRQ(ierr);
   ierr = KSPDestroy_GMRES(ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -706,14 +706,14 @@ PETSC_EXTERN PetscErrorCode KSPCreate_FGMRES(KSP ksp)
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_RIGHT,2);CHKERRQ(ierr);
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_LEFT,0);CHKERRQ(ierr);
 
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESSetPreAllocateVectors_C","KSPGMRESSetPreAllocateVectors_GMRES",KSPGMRESSetPreAllocateVectors_GMRES);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESSetOrthogonalization_C","KSPGMRESSetOrthogonalization_GMRES",KSPGMRESSetOrthogonalization_GMRES);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESGetOrthogonalization_C","KSPGMRESGetOrthogonalization_GMRES",KSPGMRESGetOrthogonalization_GMRES);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESSetRestart_C","KSPGMRESSetRestart_FGMRES",KSPGMRESSetRestart_FGMRES);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESGetRestart_C","KSPGMRESGetRestart_FGMRES",KSPGMRESGetRestart_FGMRES);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPFGMRESSetModifyPC_C","KSPFGMRESSetModifyPC_FGMRES",KSPFGMRESSetModifyPC_FGMRES);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESSetCGSRefinementType_C","KSPGMRESSetCGSRefinementType_GMRES",KSPGMRESSetCGSRefinementType_GMRES);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESGetCGSRefinementType_C","KSPGMRESGetCGSRefinementType_GMRES",KSPGMRESGetCGSRefinementType_GMRES);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESSetPreAllocateVectors_C",KSPGMRESSetPreAllocateVectors_GMRES);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESSetOrthogonalization_C",KSPGMRESSetOrthogonalization_GMRES);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESGetOrthogonalization_C",KSPGMRESGetOrthogonalization_GMRES);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESSetRestart_C",KSPGMRESSetRestart_FGMRES);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESGetRestart_C",KSPGMRESGetRestart_FGMRES);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPFGMRESSetModifyPC_C",KSPFGMRESSetModifyPC_FGMRES);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESSetCGSRefinementType_C",KSPGMRESSetCGSRefinementType_GMRES);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESGetCGSRefinementType_C",KSPGMRESGetCGSRefinementType_GMRES);CHKERRQ(ierr);
 
 
   fgmres->haptol         = 1.0e-30;

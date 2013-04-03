@@ -40,7 +40,7 @@ typedef struct {
    PetscErrorCode (*destroy)(PetscObject*);
    PetscErrorCode (*compose)(PetscObject,const char[],PetscObject);
    PetscErrorCode (*query)(PetscObject,const char[],PetscObject *);
-   PetscErrorCode (*composefunction)(PetscObject,const char[],const char[],void (*)(void));
+   PetscErrorCode (*composefunction)(PetscObject,const char[],void (*)(void));
    PetscErrorCode (*queryfunction)(PetscObject,const char[],void (**)(void));
 } PetscOps;
 

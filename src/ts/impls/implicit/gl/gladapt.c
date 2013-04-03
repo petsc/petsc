@@ -25,18 +25,39 @@ PETSC_EXTERN PetscErrorCode TSGLAdaptCreate_Both(TSGLAdapt);
 #undef __FUNCT__
 #define __FUNCT__ "TSGLAdaptRegister"
 /*@C
-   TSGLAdaptRegister - see TSGLAdaptRegisterDynamic()
+   TSGLAdaptRegister -  adds a TSGLAdapt implementation
+
+   Not Collective
+
+   Input Parameters:
++  name_scheme - name of user-defined adaptivity scheme
+-  routine_create - routine to create method context
+
+   Notes:
+   TSGLAdaptRegister() may be called multiple times to add several user-defined families.
+
+   Sample usage:
+.vb
+   TSGLAdaptRegister("my_scheme",MySchemeCreate);
+.ve
+
+   Then, your scheme can be chosen with the procedural interface via
+$     TSGLAdaptSetType(ts,"my_scheme")
+   or at runtime via the option
+$     -ts_adapt_type my_scheme
 
    Level: advanced
+
+.keywords: TSGLAdapt, register
+
+.seealso: TSGLAdaptRegisterAll()
 @*/
-PetscErrorCode  TSGLAdaptRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(TSGLAdapt))
+PetscErrorCode  TSGLAdaptRegister(const char sname[],PetscErrorCode (*function)(TSGLAdapt))
 {
   PetscErrorCode ierr;
-  char           fullname[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListConcat(path,name,fullname);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&TSGLAdaptList,sname,fullname,(void (*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&TSGLAdaptList,sname,(void (*)(void))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -53,14 +74,14 @@ PetscErrorCode  TSGLAdaptRegister(const char sname[],const char path[],const cha
 
 .seealso: TSGLAdaptRegisterDestroy()
 @*/
-PetscErrorCode  TSGLAdaptRegisterAll(const char path[])
+PetscErrorCode  TSGLAdaptRegisterAll(void)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = TSGLAdaptRegisterDynamic(TSGLADAPT_NONE,path,"TSGLAdaptCreate_None",TSGLAdaptCreate_None);CHKERRQ(ierr);
-  ierr = TSGLAdaptRegisterDynamic(TSGLADAPT_SIZE,path,"TSGLAdaptCreate_Size",TSGLAdaptCreate_Size);CHKERRQ(ierr);
-  ierr = TSGLAdaptRegisterDynamic(TSGLADAPT_BOTH,path,"TSGLAdaptCreate_Both",TSGLAdaptCreate_Both);CHKERRQ(ierr);
+  ierr = TSGLAdaptRegister(TSGLADAPT_NONE,TSGLAdaptCreate_None);CHKERRQ(ierr);
+  ierr = TSGLAdaptRegister(TSGLADAPT_SIZE,TSGLAdaptCreate_Size);CHKERRQ(ierr);
+  ierr = TSGLAdaptRegister(TSGLADAPT_BOTH,TSGLAdaptCreate_Both);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -91,15 +112,12 @@ PetscErrorCode  TSGLAdaptFinalizePackage(void)
   called from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to
   TSCreate_GL() when using static libraries.
 
-  Input Parameter:
-  path - The dynamic library path, or NULL
-
   Level: developer
 
 .keywords: TSGLAdapt, initialize, package
 .seealso: PetscInitialize()
 @*/
-PetscErrorCode  TSGLAdaptInitializePackage(const char path[])
+PetscErrorCode  TSGLAdaptInitializePackage(void)
 {
   PetscErrorCode ierr;
 
@@ -107,7 +125,7 @@ PetscErrorCode  TSGLAdaptInitializePackage(const char path[])
   if (TSGLAdaptPackageInitialized) PetscFunctionReturn(0);
   TSGLAdaptPackageInitialized = PETSC_TRUE;
   ierr = PetscClassIdRegister("TSGLAdapt",&TSGLADAPT_CLASSID);CHKERRQ(ierr);
-  ierr = TSGLAdaptRegisterAll(path);CHKERRQ(ierr);
+  ierr = TSGLAdaptRegisterAll();CHKERRQ(ierr);
   ierr = PetscRegisterFinalize(TSGLAdaptFinalizePackage);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -115,14 +133,14 @@ PetscErrorCode  TSGLAdaptInitializePackage(const char path[])
 #undef __FUNCT__
 #define __FUNCT__ "TSGLAdaptRegisterDestroy"
 /*@C
-   TSGLAdaptRegisterDestroy - Frees the list of adaptivity schemes that were registered by TSGLAdaptRegister()/TSGLAdaptRegisterDynamic().
+   TSGLAdaptRegisterDestroy - Frees the list of adaptivity schemes that were registered by TSGLAdaptRegister()
 
    Not Collective
 
    Level: advanced
 
 .keywords: TSGLAdapt, register, destroy
-.seealso: TSGLAdaptRegister(), TSGLAdaptRegisterAll(), TSGLAdaptRegisterDynamic()
+.seealso: TSGLAdaptRegister(), TSGLAdaptRegisterAll()
 @*/
 PetscErrorCode  TSGLAdaptRegisterDestroy(void)
 {
@@ -142,7 +160,7 @@ PetscErrorCode  TSGLAdaptSetType(TSGLAdapt adapt,TSGLAdaptType type)
   PetscErrorCode ierr,(*r)(TSGLAdapt);
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListFind(PetscObjectComm((PetscObject)adapt),TSGLAdaptList,type,PETSC_TRUE,(void(**)(void))&r);CHKERRQ(ierr);
+  ierr = PetscFunctionListFind(TSGLAdaptList,type,(void(**)(void))&r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown TSGLAdapt type \"%s\" given",type);
   if (((PetscObject)adapt)->type_name) {ierr = (*adapt->ops->destroy)(adapt);CHKERRQ(ierr);}
   ierr = (*r)(adapt);CHKERRQ(ierr);

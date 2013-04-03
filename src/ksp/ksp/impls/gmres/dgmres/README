@@ -8,7 +8,7 @@ To compile it :
     #define KSPDGMRES "dgmres"
     EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_DGMRES(KSP);  
     /* Inside the code and before  a call to KSPCreate  */
-    KSPRegisterDynamic(KSPDGMRES, "PATH-TO-libdgmres.a", "KSPCreate_DGMRES", KSPCreate_DGMRES);
+    KSPRegister(KSPDGMRES, KSPCreate_DGMRES);
 
 To use it : 
 Use this KSP just as the basic  GMRES KSP with the common options plus the following ones :

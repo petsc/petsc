@@ -6,11 +6,11 @@
 #include <petscmat.h>
 #include <petscdmtypes.h>
 
-PETSC_EXTERN PetscErrorCode PCInitializePackage(const char[]);
+PETSC_EXTERN PetscErrorCode PCInitializePackage(void);
 
 /*
     PCList contains the list of preconditioners currently registered
-   These are added with the PCRegisterDynamic() macro
+   These are added with PCRegister()
 */
 PETSC_EXTERN PetscFunctionList PCList;
 
@@ -133,58 +133,10 @@ PETSC_EXTERN PetscErrorCode PCSetUseAmat(PC,PetscBool);
 PETSC_EXTERN PetscErrorCode PCGetUseAmat(PC,PetscBool*);
 
 PETSC_EXTERN PetscErrorCode PCRegisterDestroy(void);
-PETSC_EXTERN PetscErrorCode PCRegisterAll(const char[]);
+PETSC_EXTERN PetscErrorCode PCRegisterAll(void);
 PETSC_EXTERN PetscBool PCRegisterAllCalled;
 
-PETSC_EXTERN PetscErrorCode PCRegister(const char[],const char[],const char[],PetscErrorCode(*)(PC));
-
-/*MC
-   PCRegisterDynamic - Adds a method to the preconditioner package.
-
-   Synopsis:
-    #include "petscpc.h"
-   PetscErrorCode PCRegisterDynamic(const char *name_solver,const char *path,const char *name_create,PetscErrorCode (*routine_create)(PC))
-
-   Not collective
-
-   Input Parameters:
-+  name_solver - name of a new user-defined solver
-.  path - path (either absolute or relative) the library containing this solver
-.  name_create - name of routine to create method context
--  routine_create - routine to create method context
-
-   Notes:
-   PCRegisterDynamic() may be called multiple times to add several user-defined preconditioners.
-
-   If dynamic libraries are used, then the fourth input argument (routine_create)
-   is ignored.
-
-   Sample usage:
-.vb
-   PCRegisterDynamic("my_solver","/home/username/my_lib/lib/libO/solaris/mylib",
-              "MySolverCreate",MySolverCreate);
-.ve
-
-   Then, your solver can be chosen with the procedural interface via
-$     PCSetType(pc,"my_solver")
-   or at runtime via the option
-$     -pc_type my_solver
-
-   Level: advanced
-
-   Notes: ${PETSC_ARCH}, ${PETSC_DIR}, ${PETSC_LIB_DIR},  or ${any environmental variable}
-           occuring in pathname will be replaced with appropriate values.
-         If your function is not being put into a shared library then use PCRegister() instead
-
-.keywords: PC, register
-
-.seealso: PCRegisterAll(), PCRegisterDestroy()
-M*/
-#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
-#define PCRegisterDynamic(a,b,c,d) PCRegister(a,b,c,0)
-#else
-#define PCRegisterDynamic(a,b,c,d) PCRegister(a,b,c,d)
-#endif
+PETSC_EXTERN PetscErrorCode PCRegister(const char[],PetscErrorCode(*)(PC));
 
 PETSC_EXTERN PetscErrorCode PCReset(PC);
 PETSC_EXTERN PetscErrorCode PCDestroy(PC*);

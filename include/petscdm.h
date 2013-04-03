@@ -6,7 +6,7 @@
 #include <petscmat.h>
 #include <petscdmtypes.h>
 
-PETSC_EXTERN PetscErrorCode DMInitializePackage(const char[]);
+PETSC_EXTERN PetscErrorCode DMInitializePackage(void);
 
 PETSC_EXTERN PetscClassId DM_CLASSID;
 
@@ -38,59 +38,9 @@ PETSC_EXTERN PetscBool         DMRegisterAllCalled;
 PETSC_EXTERN PetscErrorCode DMCreate(MPI_Comm,DM*);
 PETSC_EXTERN PetscErrorCode DMSetType(DM, DMType);
 PETSC_EXTERN PetscErrorCode DMGetType(DM, DMType *);
-PETSC_EXTERN PetscErrorCode DMRegister(const char[],const char[],const char[],PetscErrorCode (*)(DM));
-PETSC_EXTERN PetscErrorCode DMRegisterAll(const char []);
+PETSC_EXTERN PetscErrorCode DMRegister(const char[],PetscErrorCode (*)(DM));
+PETSC_EXTERN PetscErrorCode DMRegisterAll(void);
 PETSC_EXTERN PetscErrorCode DMRegisterDestroy(void);
-
-
-/*MC
-  DMRegisterDynamic - Adds a new DM component implementation
-
-  Synopsis:
-  #include "petscdm.h"
-  PetscErrorCode DMRegisterDynamic(const char *name,const char *path,const char *func_name, PetscErrorCode (*create_func)(DM))
-
-  Not Collective
-
-  Input Parameters:
-+ name        - The name of a new user-defined creation routine
-. path        - The path (either absolute or relative) of the library containing this routine
-. func_name   - The name of routine to create method context
-- create_func - The creation routine itself
-
-  Notes:
-  DMRegisterDynamic() may be called multiple times to add several user-defined DMs
-
-  If dynamic libraries are used, then the fourth input argument (routine_create) is ignored.
-
-  Sample usage:
-.vb
-    DMRegisterDynamic("my_da","/home/username/my_lib/lib/libO/solaris/libmy.a", "MyDMCreate", MyDMCreate);
-.ve
-
-  Then, your DM type can be chosen with the procedural interface via
-.vb
-    DMCreate(MPI_Comm, DM *);
-    DMSetType(DM,"my_da_name");
-.ve
-   or at runtime via the option
-.vb
-    -da_type my_da_name
-.ve
-
-  Notes: $PETSC_ARCH occuring in pathname will be replaced with appropriate values.
-         If your function is not being put into a shared library then use DMRegister() instead
-
-  Level: advanced
-
-.keywords: DM, register
-.seealso: DMRegisterAll(), DMRegisterDestroy(), DMRegister()
-M*/
-#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
-#define DMRegisterDynamic(a,b,c,d) DMRegister(a,b,c,0)
-#else
-#define DMRegisterDynamic(a,b,c,d) DMRegister(a,b,c,d)
-#endif
 
 PETSC_EXTERN PetscErrorCode DMView(DM,PetscViewer);
 PETSC_EXTERN PetscErrorCode DMLoad(DM,PetscViewer);

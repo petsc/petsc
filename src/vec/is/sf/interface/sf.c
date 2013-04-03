@@ -37,7 +37,7 @@ PetscErrorCode PetscSFCreate(MPI_Comm comm,PetscSF *sf)
   PetscFunctionBegin;
   PetscValidPointer(sf,2);
 #if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
-  ierr = PetscSFInitializePackage(NULL);CHKERRQ(ierr);
+  ierr = PetscSFInitializePackage();CHKERRQ(ierr);
 #endif
 
   ierr = PetscHeaderCreate(b,_p_PetscSF,struct _PetscSFOps,PETSCSF_CLASSID,"PetscSF","Star Forest","PetscSF",comm,PetscSFDestroy,PetscSFView);CHKERRQ(ierr);
@@ -127,7 +127,7 @@ PetscErrorCode PetscSFSetType(PetscSF sf,PetscSFType type)
   ierr = PetscObjectTypeCompare((PetscObject)sf,type,&match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
 
-  ierr = PetscFunctionListFind(PetscObjectComm((PetscObject)sf),PetscSFunctionList,type,PETSC_TRUE,(void (**)(void))&r);CHKERRQ(ierr);
+  ierr = PetscFunctionListFind(PetscSFunctionList,type,(void (**)(void))&r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested PetscSF type %s",type);
   /* Destroy the previous private PetscSF context */
   if (sf->ops->Destroy) {

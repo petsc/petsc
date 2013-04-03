@@ -29,15 +29,12 @@ PetscErrorCode  PetscRandomFinalizePackage(void)
   from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to PetscRandomCreate()
   when using static libraries.
 
-  Input Parameter:
-  path - The dynamic library path, or NULL
-
   Level: developer
 
 .keywords: PetscRandom, initialize, package
 .seealso: PetscInitialize()
 @*/
-PetscErrorCode  PetscRandomInitializePackage(const char path[])
+PetscErrorCode  PetscRandomInitializePackage(void)
 {
   PetscErrorCode ierr;
 
@@ -46,7 +43,7 @@ PetscErrorCode  PetscRandomInitializePackage(const char path[])
   PetscRandomPackageInitialized = PETSC_TRUE;
   /* Register Class */
   ierr = PetscClassIdRegister("PetscRandom",&PETSC_RANDOM_CLASSID);CHKERRQ(ierr);
-  ierr = PetscRandomRegisterAll(path);CHKERRQ(ierr);
+  ierr = PetscRandomRegisterAll();CHKERRQ(ierr);
   ierr = PetscRegisterFinalize(PetscRandomFinalizePackage);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

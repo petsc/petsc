@@ -905,77 +905,41 @@ The PETSc object \trl{compose()} and \trl{query()} functions are then simply
 
 \subsection{Compose and Query Function}
 
-PETSc allows one to compose functions by string name (to be loaded later from
-a dynamic library) or by function pointer. In \href{http://www.mcs.anl.gov/petsc/petsc-dev/src/sys/dll/reg.c.html}{src/sys/dll/reg.c}
-PETSc defines the C structure
+PETSc allows one to compose functions by function pointer. In \href{http://www.mcs.anl.gov/petsc/petsc-dev/src/sys/dll/reg.c.html}{src/sys/dll/reg.c},
+PETSc defines the linked list structure
 
 \begin{tabbing}
-typedef struct \_PetscFunctionList* PetscFunctionList;\\
-struct \_PetscFunctionList \{\\
-  int    (*routine)(void *);\\
-  char   *path;\\
-  char   *name;  \\
-  char   *rname;            /* name of create function in link library */\\
-  PetscFunctionList  *next;\\
+typedef struct \_PetscFunctionList *PetscFunctionList;\\
+st\=ruct \_PetscFunctionList \{\\
+ \>void   (*routine)(void);\\
+ \>char   *name;  \\
+ \>PetscFunctionList  *next;\\
 \};
 \end{tabbing}
-
-The PetscFunctionList object is a linked list of function data; each
-of which contains
-\begin{itemize}
-\item a function pointer (if it has already been loaded into memory from the dynamic library)
-\item the ``path'' (directory and library name) where the function exists (if it is
-      loaded from a dynamic library)
-\item the ``short'' name of the function,
-\item the actual name of the function as a string (for dynamic libraries this string is used
-      to load in the actual function pointer).
-\end{itemize}
 
 Each PETSc object contains a PetscFunctionList object. The \trl{composefunction()} and
 \trl{queryfunction()} are given by
 
 \begin{tabbing}
 PetscErrorCode PetscObjectComposeFunction\_Petsc(\=PetscObject obj,const char *name,\\
-   \> const char *fname,void *ptr)\\
+   \> void *ptr)\\
 \{\\
   PetscErrorCode ierr;\\
 \\
   PetscFunctionBegin;\\
-  ierr = PetscFunctionListAdd(\&obj-$>$qlist,name,fname,(int (*)(void *))ptr);CHKERRQ(ierr);\\
+  ierr = PetscFunctionListAdd(\&obj-$>$qlist,name,fname,ptr);CHKERRQ(ierr);\\
   PetscFunctionReturn(0);\\
 \}\\
 \\
-PetscErrorCode PetscObjectQueryFunction\_Petsc(PetscObject obj,const char *name,void **ptr)\\
+PetscErrorCode PetscObjectQueryFunction\_Petsc(PetscObject obj,const char *name,void (**ptr)(void))\\
 \{\\
   PetscErrorCode ierr;\\
 \\
   PetscFunctionBegin;\\
-  ierr = PetscFunctionListFind(obj-$>$qlist,obj-$>$comm,name,PETSC\_FALSE,( int(**)(void *)) ptr);\\
-  CHKERRQ(ierr);\\
+  ierr = PetscFunctionListFind(obj-$>$qlist,name,ptr);CHKERRQ(ierr);\\
   PetscFunctionReturn(0);\\
 \}
 \end{tabbing}
-
-  Because we need to support function composition on systems both {\bf with} and {\bf without}
-dynamic link libraries the actual source code is a little messy. The idea is that
-on systems with dynamic libraries all PETSc ``register'' and ``composefunction''
-function calls that take the actual
-function pointer argument must eliminate this argument in the preprocessor step before
-the code is compiled. Otherwise, since the compiler sees the function pointer, it will
-compile it in and link in all those functions; thus one could not take advantage of the
-dynamic libraries. This is done with macros like the following
-\begin{tabbing}
-\#if defined(USE\_DYNAMIC\_LIBRARIES)\\
-\#define       PetscFunctionListAdd(a,b,p,c) PetscFunctionListAdd\_Private(a,b,p,0)\\
-\#else\\
-\#define       PetscFunctionListAdd(a,b,p,c) PetscFunctionListAdd\_Private(a,b,p,(int (*)(void *))c)\\
-\#endif\\
-\end{tabbing}
-Thus when the code is compiled with the dynamic link library flag the function pointer
-argument is removed from the code; otherwise it is retained.
-
-The \trl{PetscFunctionListAdd_Private()} and all related routines can be found in the directory
-\trl{src/sys/dll}.
 
 In addition to using the PetscFunctionList mechanism to compose functions into PETSc objects, it is
 also used to allow registration of new class implementations; for example, new

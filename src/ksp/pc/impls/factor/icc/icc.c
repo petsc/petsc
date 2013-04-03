@@ -210,16 +210,16 @@ PETSC_EXTERN PetscErrorCode PCCreate_ICC(PC pc)
   pc->ops->applysymmetricleft  = PCApplySymmetricLeft_ICC;
   pc->ops->applysymmetricright = PCApplySymmetricRight_ICC;
 
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetUpMatSolverPackage_C","PCFactorSetUpMatSolverPackage_Factor",PCFactorSetUpMatSolverPackage_Factor);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorGetMatSolverPackage_C","PCFactorGetMatSolverPackage_Factor",PCFactorGetMatSolverPackage_Factor);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetZeroPivot_C","PCFactorSetZeroPivot_Factor",PCFactorSetZeroPivot_Factor);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetShiftType_C","PCFactorSetShiftType_Factor",PCFactorSetShiftType_Factor);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetShiftAmount_C","PCFactorSetShiftAmount_Factor",PCFactorSetShiftAmount_Factor);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetLevels_C","PCFactorSetLevels_Factor",PCFactorSetLevels_Factor);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetFill_C","PCFactorSetFill_Factor",PCFactorSetFill_Factor);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetMatOrderingType_C","PCFactorSetMatOrderingType_Factor",PCFactorSetMatOrderingType_Factor);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetMatSolverPackage_C","PCFactorSetMatSolverPackage_Factor",PCFactorSetMatSolverPackage_Factor);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetDropTolerance_C","PCFactorSetDropTolerance_ILU",PCFactorSetDropTolerance_ILU);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetUpMatSolverPackage_C",PCFactorSetUpMatSolverPackage_Factor);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorGetMatSolverPackage_C",PCFactorGetMatSolverPackage_Factor);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetZeroPivot_C",PCFactorSetZeroPivot_Factor);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetShiftType_C",PCFactorSetShiftType_Factor);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetShiftAmount_C",PCFactorSetShiftAmount_Factor);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetLevels_C",PCFactorSetLevels_Factor);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetFill_C",PCFactorSetFill_Factor);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetMatOrderingType_C",PCFactorSetMatOrderingType_Factor);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetMatSolverPackage_C",PCFactorSetMatSolverPackage_Factor);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetDropTolerance_C",PCFactorSetDropTolerance_ILU);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

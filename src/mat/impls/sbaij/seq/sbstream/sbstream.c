@@ -160,7 +160,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqSBSTRM(Mat A)
   ierr = MatSetType(A,MATSEQSBAIJ);CHKERRQ(ierr);
   ierr = MatConvert_SeqSBAIJ_SeqSBSTRM(A,MATSEQSBSTRM,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
 
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_seqisbaij_seqsbstrm_C","MatConvert_SeqSBAIJ_SeqSBSTRM",MatConvert_SeqSBAIJ_SeqSBSTRM);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_seqisbaij_seqsbstrm_C",MatConvert_SeqSBAIJ_SeqSBSTRM);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

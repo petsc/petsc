@@ -271,7 +271,7 @@ PETSC_EXTERN PetscErrorCode MatCreateMFFD_DS(MatMFFD ctx)
   ctx->ops->view           = MatMFFDView_DS;
   ctx->ops->setfromoptions = MatMFFDSetFromOptions_DS;
 
-  ierr = PetscObjectComposeFunction((PetscObject)ctx->mat,"MatMFFDDSSetUmin_C","MatMFFDDSSetUmin_DS",MatMFFDDSSetUmin_DS);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ctx->mat,"MatMFFDDSSetUmin_C",MatMFFDDSSetUmin_DS);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

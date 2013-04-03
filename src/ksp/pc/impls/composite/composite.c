@@ -539,10 +539,10 @@ PETSC_EXTERN PetscErrorCode PCCreate_Composite(PC pc)
   jac->work2 = 0;
   jac->head  = 0;
 
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCCompositeSetType_C","PCCompositeSetType_Composite",PCCompositeSetType_Composite);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCCompositeAddPC_C","PCCompositeAddPC_Composite",PCCompositeAddPC_Composite);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCCompositeGetPC_C","PCCompositeGetPC_Composite",PCCompositeGetPC_Composite);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCCompositeSpecialSetAlpha_C","PCCompositeSpecialSetAlpha_Composite",PCCompositeSpecialSetAlpha_Composite);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCCompositeSetType_C",PCCompositeSetType_Composite);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCCompositeAddPC_C",PCCompositeAddPC_Composite);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCCompositeGetPC_C",PCCompositeGetPC_Composite);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCCompositeSpecialSetAlpha_C",PCCompositeSpecialSetAlpha_Composite);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

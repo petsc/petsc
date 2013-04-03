@@ -64,7 +64,7 @@ PetscErrorCode  PCSetType(PC pc,PCType type)
   ierr = PetscObjectTypeCompare((PetscObject)pc,type,&match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
 
-  ierr =  PetscFunctionListFind(PetscObjectComm((PetscObject)pc),PCList,type,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
+  ierr =  PetscFunctionListFind(PCList,type,(void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested PC type %s",type);
   /* Destroy the previous private PC context */
   if (pc->ops->destroy) {
@@ -90,7 +90,7 @@ PetscErrorCode  PCSetType(PC pc,PCType type)
 #define __FUNCT__ "PCRegisterDestroy"
 /*@
    PCRegisterDestroy - Frees the list of preconditioners that were
-   registered by PCRegisterDynamic().
+   registered by PCRegister().
 
    Not Collective
 
@@ -176,7 +176,7 @@ PetscErrorCode  PCSetFromOptions(PC pc)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
 
-  if (!PCRegisterAllCalled) {ierr = PCRegisterAll(NULL);CHKERRQ(ierr);}
+  if (!PCRegisterAllCalled) {ierr = PCRegisterAll();CHKERRQ(ierr);}
   ierr = PetscObjectOptionsBegin((PetscObject)pc);CHKERRQ(ierr);
   if (!((PetscObject)pc)->type_name) {
     ierr = PCGetDefaultType_Private(pc,&def);CHKERRQ(ierr);

@@ -727,7 +727,7 @@ PetscErrorCode  KSPCreate(MPI_Comm comm,KSP *inksp)
   PetscValidPointer(inksp,2);
   *inksp = 0;
 #if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
-  ierr = KSPInitializePackage(NULL);CHKERRQ(ierr);
+  ierr = KSPInitializePackage();CHKERRQ(ierr);
 #endif
 
   ierr = PetscHeaderCreate(ksp,_p_KSP,struct _KSPOps,KSP_CLASSID,"KSP","Krylov Method","KSP",comm,KSPDestroy,KSPView);CHKERRQ(ierr);
@@ -821,7 +821,7 @@ PetscErrorCode  KSPSetType(KSP ksp, KSPType type)
   ierr = PetscObjectTypeCompare((PetscObject)ksp,type,&match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
 
-  ierr =  PetscFunctionListFind(PetscObjectComm((PetscObject)ksp),KSPList,type,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
+  ierr =  PetscFunctionListFind(KSPList,type,(void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested KSP type %s",type);
   /* Destroy the previous private KSP context */
   if (ksp->ops->destroy) {
@@ -844,7 +844,7 @@ PetscErrorCode  KSPSetType(KSP ksp, KSPType type)
 #define __FUNCT__ "KSPRegisterDestroy"
 /*@
    KSPRegisterDestroy - Frees the list of KSP methods that were
-   registered by KSPRegisterDynamic().
+   registered by KSPRegister().
 
    Not Collective
 
@@ -852,7 +852,7 @@ PetscErrorCode  KSPSetType(KSP ksp, KSPType type)
 
 .keywords: KSP, register, destroy
 
-.seealso: KSPRegisterDynamic(), KSPRegisterAll()
+.seealso: KSPRegister(), KSPRegisterAll()
 @*/
 PetscErrorCode  KSPRegisterDestroy(void)
 {
@@ -895,18 +895,40 @@ PetscErrorCode  KSPGetType(KSP ksp,KSPType *type)
 #undef __FUNCT__
 #define __FUNCT__ "KSPRegister"
 /*@C
-  KSPRegister - See KSPRegisterDynamic()
+  KSPRegister -  Adds a method to the Krylov subspace solver package.
 
-  Level: advanced
+   Not Collective
+
+   Input Parameters:
++  name_solver - name of a new user-defined solver
+-  routine_create - routine to create method context
+
+   Notes:
+   KSPRegister() may be called multiple times to add several user-defined solvers.
+
+   Sample usage:
+.vb
+   KSPRegister("my_solver",MySolverCreate);
+.ve
+
+   Then, your solver can be chosen with the procedural interface via
+$     KSPSetType(ksp,"my_solver")
+   or at runtime via the option
+$     -ksp_type my_solver
+
+   Level: advanced
+
+.keywords: KSP, register
+
+.seealso: KSPRegisterAll(), KSPRegisterDestroy()
+
 @*/
-PetscErrorCode  KSPRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(KSP))
+PetscErrorCode  KSPRegister(const char sname[],PetscErrorCode (*function)(KSP))
 {
   PetscErrorCode ierr;
-  char           fullname[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListConcat(path,name,fullname);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&KSPList,sname,fullname,(void (*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&KSPList,sname,(void (*)(void))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

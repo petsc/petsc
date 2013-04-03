@@ -24,56 +24,11 @@ typedef const char* PetscDrawType;
 #define PETSC_DRAW_TIKZ       "tikz"
 
 PETSC_EXTERN PetscFunctionList PetscDrawList;
-PETSC_EXTERN PetscErrorCode PetscDrawRegisterAll(const char[]);
-PETSC_EXTERN PetscErrorCode PetscDrawInitializePackage(const char[]);
+PETSC_EXTERN PetscErrorCode PetscDrawRegisterAll(void);
+PETSC_EXTERN PetscErrorCode PetscDrawInitializePackage(void);
 PETSC_EXTERN PetscErrorCode PetscDrawRegisterDestroy(void);
 
-PETSC_EXTERN PetscErrorCode PetscDrawRegister(const char*,const char*,const char*,PetscErrorCode(*)(PetscDraw));
-
-/*MC
-   PetscDrawRegisterDynamic - Adds a method to the graphics package.
-
-   Synopsis:
-   #include "petscdraw.h"
-   PetscErrorCode PetscDrawRegisterDynamic(const char *name_solver,const char *path,const char *name_create,PetscErrorCode (*routine_create)(PetscDraw))
-
-   Not Collective
-
-   Input Parameters:
-+  name_solver - name of a new user-defined solver
-.  path - path (either absolute or relative) the library containing this solver
-.  name_create - name of routine to create method context
--  routine_create - routine to create method context
-
-   Level: developer
-
-   Notes:
-   PetscDrawRegisterDynamic() may be called multiple times to add several user-defined solvers.
-
-   If dynamic libraries are used, then the fourth input argument (routine_create)
-   is ignored.
-
-   Sample usage:
-.vb
-   PetscDrawRegisterDynamic("my_draw_type",/home/username/my_lib/lib/libO/solaris/mylib.a,
-               "MyDrawCreate",MyDrawCreate);
-.ve
-
-   Then, your solver can be chosen with the procedural interface via
-$     PetscDrawSetType(ksp,"my_draw_type")
-   or at runtime via the option
-$     -draw_type my_draw_type
-
-   Concepts: graphics^registering new draw classes
-   Concepts: PetscDraw^registering new draw classes
-
-.seealso: PetscDrawRegisterAll(), PetscDrawRegisterDestroy()
-M*/
-#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
-#define PetscDrawRegisterDynamic(a,b,c,d) PetscDrawRegister(a,b,c,0)
-#else
-#define PetscDrawRegisterDynamic(a,b,c,d) PetscDrawRegister(a,b,c,d)
-#endif
+PETSC_EXTERN PetscErrorCode PetscDrawRegister(const char[],PetscErrorCode(*)(PetscDraw));
 
 PETSC_EXTERN PetscErrorCode PetscDrawGetType(PetscDraw,PetscDrawType*);
 PETSC_EXTERN PetscErrorCode PetscDrawSetType(PetscDraw,PetscDrawType);

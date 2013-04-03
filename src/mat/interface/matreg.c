@@ -59,7 +59,7 @@ PetscErrorCode  MatSetType(Mat mat, MatType matype)
   ierr = PetscObjectTypeCompare((PetscObject)mat,matype,&sametype);CHKERRQ(ierr);
   if (sametype) PetscFunctionReturn(0);
 
-  ierr =  PetscFunctionListFind(PetscObjectComm((PetscObject)mat),MatList,matype,PETSC_TRUE,(void(**)(void))&r);CHKERRQ(ierr);
+  ierr =  PetscFunctionListFind(MatList,matype,(void(**)(void))&r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown Mat type given: %s",matype);
 
   /* free the old data structure if it existed */
@@ -80,7 +80,7 @@ PetscErrorCode  MatSetType(Mat mat, MatType matype)
 #define __FUNCT__ "MatRegisterDestroy"
 /*@C
    MatRegisterDestroy - Frees the list of matrix types that were
-   registered by MatRegister()/MatRegisterDynamic().
+   registered by MatRegister().
 
    Not Collective
 
@@ -88,7 +88,7 @@ PetscErrorCode  MatSetType(Mat mat, MatType matype)
 
 .keywords: Mat, register, destroy
 
-.seealso: MatRegister(), MatRegisterAll(), MatRegisterDynamic()
+.seealso: MatRegister(), MatRegisterAll()
 @*/
 PetscErrorCode  MatRegisterDestroy(void)
 {
@@ -133,18 +133,42 @@ PetscErrorCode  MatGetType(Mat mat,MatType *type)
 #undef __FUNCT__
 #define __FUNCT__ "MatRegister"
 /*@C
-  MatRegister - See MatRegisterDynamic()
+  MatRegister -  - Adds a new matrix type
+
+   Not Collective
+
+   Input Parameters:
++  name - name of a new user-defined matrix type
+-  routine_create - routine to create method context
+
+   Notes:
+   MatRegister() may be called multiple times to add several user-defined solvers.
+
+   Sample usage:
+.vb
+   MatRegister("my_mat",MyMatCreate);
+.ve
+
+   Then, your solver can be chosen with the procedural interface via
+$     MatSetType(Mat,"my_mat")
+   or at runtime via the option
+$     -mat_type my_mat
+
+   Level: advanced
+
+.keywords: Mat, register
+
+.seealso: MatRegisterAll(), MatRegisterDestroy()
+
 
   Level: advanced
 @*/
-PetscErrorCode  MatRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(Mat))
+PetscErrorCode  MatRegister(const char sname[],PetscErrorCode (*function)(Mat))
 {
   PetscErrorCode ierr;
-  char           fullname[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListConcat(path,name,fullname);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&MatList,sname,fullname,(void (*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&MatList,sname,(void (*)(void))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

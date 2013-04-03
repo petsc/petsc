@@ -401,6 +401,8 @@ runex30:
 TESTEXAMPLES_C		  = ex1.PETSc runex1 runex1_2 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 runex3_2 ex3.rm \
                             ex4.PETSc runex4 runex4_2 runex4_3 runex4_4 ex4.rm ex5.PETSc ex5.rm \
                             ex6.PETSc runex6 ex6.rm ex7.PETSc runex7 runex7_2 runex7_3 ex7.rm \
+                            ex8.PETSc ex8.rm \
+                            ex9.PETSc runex9 runex9_2 runex9_3 ex9.rm \
                             ex10.PETSc runex10 runex10_2 runex10_3  ex10.rm \
                             ex12.PETSc ex12.rm ex13.PETSc runex13 runex13_2 runex13_3 ex13.rm\
                             ex15.PETSc runex15 runex15_2 runex15_3 runex15_4 runex15_5 ex15.rm \

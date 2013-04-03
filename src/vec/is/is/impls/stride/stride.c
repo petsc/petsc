@@ -122,7 +122,7 @@ PetscErrorCode ISDestroy_Stride(IS is)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectComposeFunction((PetscObject)is,"ISStrideSetStride_C","",0);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)is,"ISStrideSetStride_C",0);CHKERRQ(ierr);
   ierr = PetscFree(is->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -432,7 +432,7 @@ PETSC_EXTERN PetscErrorCode ISCreate_Stride(IS is)
   ierr = PetscNewLog(is,IS_Stride,&sub);CHKERRQ(ierr);
   is->bs   = 1;
   is->data = sub;
-  ierr = PetscObjectComposeFunction((PetscObject)is,"ISStrideSetStride_C","ISStrideSetStride_Stride",ISStrideSetStride_Stride);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)is,"ISStrideSetStride_C",ISStrideSetStride_Stride);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

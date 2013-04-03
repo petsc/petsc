@@ -93,14 +93,37 @@ PETSC_EXTERN PetscErrorCode MatGetOrdering_RowLength(Mat mat,MatOrderingType typ
 
 #undef __FUNCT__
 #define __FUNCT__ "MatOrderingRegister"
-PetscErrorCode  MatOrderingRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(Mat,MatOrderingType,IS*,IS*))
+/*@C
+   MatOrderingRegister - Adds a new sparse matrix ordering to the matrix package.
+
+   Not Collective
+
+   Input Parameters:
++  sname - name of ordering (for example MATORDERINGND)
+-  function - function pointer that creates the ordering
+
+   Level: developer
+
+   Sample usage:
+.vb
+   MatOrderingRegister("my_order", MyOrder);
+.ve
+
+   Then, your partitioner can be chosen with the procedural interface via
+$     MatOrderingSetType(part,"my_order)
+   or at runtime via the option
+$     -pc_factor_mat_ordering_type my_order
+
+.keywords: matrix, ordering, register
+
+.seealso: MatOrderingRegisterDestroy(), MatOrderingRegisterAll()
+@*/
+PetscErrorCode  MatOrderingRegister(const char sname[],PetscErrorCode (*function)(Mat,MatOrderingType,IS*,IS*))
 {
   PetscErrorCode ierr;
-  char           fullname[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListConcat(path,name,fullname);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&MatOrderingList,sname,fullname,(void (*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&MatOrderingList,sname,(void (*)(void))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -115,7 +138,7 @@ PetscErrorCode  MatOrderingRegister(const char sname[],const char path[],const c
 
 .keywords: matrix, register, destroy
 
-.seealso: MatOrderingRegisterDynamic(), MatOrderingRegisterAll()
+.seealso: MatOrderingRegister(), MatOrderingRegisterAll()
 @*/
 PetscErrorCode  MatOrderingRegisterDestroy(void)
 {
@@ -160,7 +183,7 @@ $      MATORDERINGQMD - Quotient Minimum Degree
    that define a reordering. This is usually not used directly, rather use the
    options PCFactorSetMatOrderingType()
 
-   The user can define additional orderings; see MatOrderingRegisterDynamic().
+   The user can define additional orderings; see MatOrderingRegister().
 
    These are generally only implemented for sequential sparse matrices.
 
@@ -173,7 +196,7 @@ $      MATORDERINGQMD - Quotient Minimum Degree
            One-way Dissection, Cholesky, Reverse Cuthill-McKee,
            Quotient Minimum Degree
 
-.seealso:   MatOrderingRegisterDynamic(), PCFactorSetMatOrderingType()
+.seealso:   MatOrderingRegister(), PCFactorSetMatOrderingType()
 @*/
 PetscErrorCode  MatGetOrdering(Mat mat,MatOrderingType type,IS *rperm,IS *cperm)
 {
@@ -256,8 +279,8 @@ PetscErrorCode  MatGetOrdering(Mat mat,MatOrderingType type,IS *rperm,IS *cperm)
   ierr = MatGetLocalSize(mat,&mmat,&nmat);CHKERRQ(ierr);
   if (mmat != nmat) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Must be square matrix, rows %D columns %D",mmat,nmat);
 
-  if (!MatOrderingRegisterAllCalled) {ierr = MatOrderingRegisterAll(NULL);CHKERRQ(ierr);}
-  ierr = PetscFunctionListFind(PetscObjectComm((PetscObject)mat),MatOrderingList,type,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
+  if (!MatOrderingRegisterAllCalled) {ierr = MatOrderingRegisterAll();CHKERRQ(ierr);}
+  ierr = PetscFunctionListFind(MatOrderingList,type,(void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Unknown or unregistered type: %s",type);
 
   ierr = PetscLogEventBegin(MAT_GetOrdering,mat,0,0,0);CHKERRQ(ierr);

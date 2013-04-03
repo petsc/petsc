@@ -1332,7 +1332,7 @@ static PetscErrorCode VecSetTypeFromOptions_Private(Vec vec)
     else defaultType = VECSEQ;
   }
 
-  if (!VecRegisterAllCalled) {ierr = VecRegisterAll(NULL);CHKERRQ(ierr);}
+  if (!VecRegisterAllCalled) {ierr = VecRegisterAll();CHKERRQ(ierr);}
   ierr = PetscOptionsList("-vec_type","Vector type","VecSetType",VecList,defaultType,typeName,256,&opt);CHKERRQ(ierr);
   if (opt) {
     ierr = VecSetType(vec, typeName);CHKERRQ(ierr);

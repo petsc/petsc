@@ -276,7 +276,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_CGNE(KSP ksp)
       KSPCGSetType() checks for this attached function and calls it if it finds
       it. (Sort of like a dynamic member function that can be added at run time
   */
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPCGSetType_C","KSPCGSetType_CGNE",KSPCGSetType_CGNE);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPCGSetType_C",KSPCGSetType_CGNE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

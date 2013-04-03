@@ -712,7 +712,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqsbaij_sbstrm(Mat A,MatFactorType fty
 
   ierr = PetscNewLog(B,Mat_SeqSBSTRM,&sbstrm);CHKERRQ(ierr);
 
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverPackage_C","MatFactorGetSolverPackage_seqsbaij_sbstrm",MatFactorGetSolverPackage_seqsbaij_sbstrm);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverPackage_C",MatFactorGetSolverPackage_seqsbaij_sbstrm);CHKERRQ(ierr);
 
   B->spptr = sbstrm;
   *F       = B;

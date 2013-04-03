@@ -86,60 +86,10 @@ PETSC_EXTERN const char *const PetscSFDuplicateOptions[];
 
 PETSC_EXTERN PetscFunctionList PetscSFunctionList;
 PETSC_EXTERN PetscErrorCode PetscSFRegisterDestroy(void);
-PETSC_EXTERN PetscErrorCode PetscSFRegisterAll(const char[]);
-PETSC_EXTERN PetscErrorCode PetscSFRegister(const char[],const char[],const char[],PetscErrorCode (*)(PetscSF));
+PETSC_EXTERN PetscErrorCode PetscSFRegisterAll(void);
+PETSC_EXTERN PetscErrorCode PetscSFRegister(const char[],PetscErrorCode (*)(PetscSF));
 
-/*MC
-   PetscSFRegisterDynamic - Adds an implementation of the PetscSF communication protocol.
-
-   Synopsis:
-    #include "petscsf.h"
-   PetscErrorCode PetscSFRegisterDynamic(const char *name_method,const char *path,const char *name_create,PetscErrorCode (*routine_create)(PetscSF))
-
-   Not collective
-
-   Input Parameters:
-+  name_impl - name of a new user-defined implementation
-.  path - path (either absolute or relative) the library containing this solver
-.  name_create - name of routine to create method context
--  routine_create - routine to create method context
-
-   Notes:
-   PetscSFRegisterDynamic() may be called multiple times to add several user-defined implementations.
-
-   If dynamic libraries are used, then the fourth input argument (routine_create)
-   is ignored.
-
-   Environmental variables such as ${PETSC_ARCH}, ${PETSC_DIR}, ${PETSC_LIB_DIR},
-   and others of the form ${any_environmental_variable} occuring in pathname will be
-   replaced with appropriate values.
-
-   Sample usage:
-.vb
-   PetscSFRegisterDynamic("my_impl",/home/username/my_lib/lib/libg/solaris/mylib.a,
-                "MyImplCreate",MyImplCreate);
-.ve
-
-   Then, this implementation can be chosen with the procedural interface via
-$     PetscSFSetType(sf,"my_impl")
-   or at runtime via the option
-$     -snes_type my_solver
-
-   Level: advanced
-
-    Note: If your function is not being put into a shared library then use PetscSFRegister() instead
-
-.keywords: PetscSF, register
-
-.seealso: PetscSFRegisterAll(), PetscSFRegisterDestroy()
-M*/
-#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
-#define PetscSFRegisterDynamic(a,b,c,d) PetscSFRegister(a,b,c,0)
-#else
-#define PetscSFRegisterDynamic(a,b,c,d) PetscSFRegister(a,b,c,d)
-#endif
-
-PETSC_EXTERN PetscErrorCode PetscSFInitializePackage(const char*);
+PETSC_EXTERN PetscErrorCode PetscSFInitializePackage(void);
 PETSC_EXTERN PetscErrorCode PetscSFFinalizePackage(void);
 PETSC_EXTERN PetscErrorCode PetscSFCreate(MPI_Comm comm,PetscSF*);
 PETSC_EXTERN PetscErrorCode PetscSFDestroy(PetscSF*);

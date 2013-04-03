@@ -52,11 +52,11 @@ static PetscErrorCode VecDestroy_Nest(Vec v)
     ierr = ISDestroy(&vs->is[i]);CHKERRQ(ierr);
   }
   ierr = PetscFree(vs->is);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)v,"","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)v,"","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)v,"","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)v,"","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)v,"","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)v,"",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)v,"",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)v,"",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)v,"",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)v,"",NULL);CHKERRQ(ierr);
 
   ierr = PetscFree(vs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1279,11 +1279,11 @@ PetscErrorCode  VecCreateNest(MPI_Comm comm,PetscInt nb,IS is[],Vec x[],Vec *Y)
 
 
   /* expose block api's */
-  ierr = PetscObjectComposeFunction((PetscObject)V,"VecNestGetSubVec_C","VecNestGetSubVec_Nest",VecNestGetSubVec_Nest);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)V,"VecNestGetSubVecs_C","VecNestGetSubVecs_Nest",VecNestGetSubVecs_Nest);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)V,"VecNestSetSubVec_C","VecNestSetSubVec_Nest",VecNestSetSubVec_Nest);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)V,"VecNestSetSubVecs_C","VecNestSetSubVecs_Nest",VecNestSetSubVecs_Nest);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)V,"VecNestGetSize_C","VecNestGetSize_Nest",VecNestGetSize_Nest);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)V,"VecNestGetSubVec_C",VecNestGetSubVec_Nest);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)V,"VecNestGetSubVecs_C",VecNestGetSubVecs_Nest);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)V,"VecNestSetSubVec_C",VecNestSetSubVec_Nest);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)V,"VecNestSetSubVecs_C",VecNestSetSubVecs_Nest);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)V,"VecNestGetSize_C",VecNestGetSize_Nest);CHKERRQ(ierr);
 
   *Y = V;
   PetscFunctionReturn(0);

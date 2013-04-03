@@ -1882,8 +1882,8 @@ PetscErrorCode SNESDestroy_VIRSAUG(SNES snes)
   ierr = PetscFree(snes->data);CHKERRQ(ierr);
 
   /* clear composed functions */
-  ierr = PetscObjectComposeFunction((PetscObject)snes,"SNESLineSearchSet_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)snes,"SNESLineSearchSetMonitor_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)snes,"SNESLineSearchSet_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)snes,"SNESLineSearchSetMonitor_C",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2523,9 +2523,9 @@ PETSC_EXTERN PetscErrorCode SNESCreate_VIRSAUG(SNES snes)
   vi->const_tol       =  2.2204460492503131e-16;
   vi->checkredundancy = NULL;
 
-  ierr = PetscObjectComposeFunction((PetscObject)snes,"SNESVISetVariableBounds_C","SNESVISetVariableBounds_VI",SNESVISetVariableBounds_VI);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)snes,"SNESVISetComputeVariableBounds_C","SNESVISetComputeVariableBounds_VI",SNESVISetComputeVariableBounds_VI);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)snes,"SNESLineSearchSetType_C","SNESLineSearchSetType_VI",SNESLineSearchSetType_VIRSAUG);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)snes,"SNESVISetVariableBounds_C",SNESVISetVariableBounds_VI);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)snes,"SNESVISetComputeVariableBounds_C",SNESVISetComputeVariableBounds_VI);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)snes,"SNESLineSearchSetType_C",SNESLineSearchSetType_VIRSAUG);CHKERRQ(ierr);
   ierr = SNESLineSearchSetType(snes, SNES_LS_CUBIC);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

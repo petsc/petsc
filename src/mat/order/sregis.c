@@ -34,23 +34,23 @@ PETSC_EXTERN PetscErrorCode MatGetOrdering_AMD(Mat,MatOrderingType,IS*,IS*);
 
 .keywords: matrix, reordering, register, all
 
-.seealso: MatOrderingRegisterDynamic(), MatOrderingRegisterDestroy()
+.seealso: MatOrderingRegister(), MatOrderingRegisterDestroy()
 @*/
-PetscErrorCode  MatOrderingRegisterAll(const char path[])
+PetscErrorCode  MatOrderingRegisterAll(void)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   MatOrderingRegisterAllCalled = PETSC_TRUE;
 
-  ierr = MatOrderingRegisterDynamic(MATORDERINGNATURAL,  path,"MatGetOrdering_Natural"  ,MatGetOrdering_Natural);CHKERRQ(ierr);
-  ierr = MatOrderingRegisterDynamic(MATORDERINGND,       path,"MatGetOrdering_ND"       ,MatGetOrdering_ND);CHKERRQ(ierr);
-  ierr = MatOrderingRegisterDynamic(MATORDERING1WD,      path,"MatGetOrdering_1WD"      ,MatGetOrdering_1WD);CHKERRQ(ierr);
-  ierr = MatOrderingRegisterDynamic(MATORDERINGRCM,      path,"MatGetOrdering_RCM"      ,MatGetOrdering_RCM);CHKERRQ(ierr);
-  ierr = MatOrderingRegisterDynamic(MATORDERINGQMD,      path,"MatGetOrdering_QMD"      ,MatGetOrdering_QMD);CHKERRQ(ierr);
-  ierr = MatOrderingRegisterDynamic(MATORDERINGROWLENGTH,path,"MatGetOrdering_RowLength",MatGetOrdering_RowLength);CHKERRQ(ierr);
+  ierr = MatOrderingRegister(MATORDERINGNATURAL,  MatGetOrdering_Natural);CHKERRQ(ierr);
+  ierr = MatOrderingRegister(MATORDERINGND,       MatGetOrdering_ND);CHKERRQ(ierr);
+  ierr = MatOrderingRegister(MATORDERING1WD,      MatGetOrdering_1WD);CHKERRQ(ierr);
+  ierr = MatOrderingRegister(MATORDERINGRCM,      MatGetOrdering_RCM);CHKERRQ(ierr);
+  ierr = MatOrderingRegister(MATORDERINGQMD,      MatGetOrdering_QMD);CHKERRQ(ierr);
+  ierr = MatOrderingRegister(MATORDERINGROWLENGTH,MatGetOrdering_RowLength);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_UMFPACK)
-  ierr = MatOrderingRegisterDynamic(MATORDERINGAMD,      path,"MatGetOrdering_AMD",MatGetOrdering_AMD);CHKERRQ(ierr);
+  ierr = MatOrderingRegister(MATORDERINGAMD,      MatGetOrdering_AMD);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
 }

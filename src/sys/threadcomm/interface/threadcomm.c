@@ -500,7 +500,7 @@ PetscErrorCode PetscThreadCommSetType(PetscThreadComm tcomm,PetscThreadCommType 
 
   PetscFunctionBegin;
   PetscValidCharPointer(type,2);
-  if (!PetscThreadCommRegisterAllCalled) { ierr = PetscThreadCommRegisterAll(NULL);CHKERRQ(ierr);}
+  if (!PetscThreadCommRegisterAllCalled) { ierr = PetscThreadCommRegisterAll();CHKERRQ(ierr);}
 
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Thread comm - setting threading model",NULL);CHKERRQ(ierr);
   ierr = PetscOptionsList("-threadcomm_type","Thread communicator model","PetscThreadCommSetType",PetscThreadCommList,type,ttype,256,&flg);CHKERRQ(ierr);
@@ -508,7 +508,7 @@ PetscErrorCode PetscThreadCommSetType(PetscThreadComm tcomm,PetscThreadCommType 
   if (!flg) {
     ierr = PetscStrcpy(ttype,type);CHKERRQ(ierr);
   }
-  ierr = PetscFunctionListFind(PETSC_COMM_WORLD,PetscThreadCommList,ttype,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
+  ierr = PetscFunctionListFind(PetscThreadCommList,ttype,(void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested PetscThreadComm type %s",ttype);
   ierr = (*r)(tcomm);CHKERRQ(ierr);
   ierr = PetscStrcmp(NOTHREAD,tcomm->type,&tcomm->isnothread);CHKERRQ(ierr);
@@ -555,7 +555,7 @@ PetscErrorCode PetscThreadCommBarrier(MPI_Comm comm)
 #define __FUNCT__ "PetscThreadCommRegisterDestroy"
 /*@C
    PetscThreadCommRegisterDestroy - Frees the list of thread communicator models that were
-   registered by PetscThreadCommRegisterDynamic().
+   registered by PetscThreadCommRegister().
 
    Not Collective
 
@@ -578,18 +578,16 @@ PetscErrorCode  PetscThreadCommRegisterDestroy(void)
 #undef __FUNCT__
 #define __FUNCT__ "PetscThreadCommRegister"
 /*@C
-  PetscThreadCommRegister - See PetscThreadCommRegisterDynamic()
+  PetscThreadCommRegister - 
 
   Level: advanced
 @*/
-PetscErrorCode  PetscThreadCommRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(PetscThreadComm))
+PetscErrorCode  PetscThreadCommRegister(const char sname[],PetscErrorCode (*function)(PetscThreadComm))
 {
-  char           fullname[PETSC_MAX_PATH_LEN];
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListConcat(path,name,fullname);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&PetscThreadCommList,sname,fullname,(void (*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&PetscThreadCommList,sname,(void (*)(void))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

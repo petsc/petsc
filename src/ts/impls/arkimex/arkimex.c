@@ -436,7 +436,7 @@ PetscErrorCode TSARKIMEXRegisterAll(void)
    Level: advanced
 
 .keywords: TSARKIMEX, register, destroy
-.seealso: TSARKIMEXRegister(), TSARKIMEXRegisterAll(), TSARKIMEXRegisterDynamic()
+.seealso: TSARKIMEXRegister(), TSARKIMEXRegisterAll()
 @*/
 PetscErrorCode TSARKIMEXRegisterDestroy(void)
 {
@@ -464,15 +464,12 @@ PetscErrorCode TSARKIMEXRegisterDestroy(void)
   from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to TSCreate_ARKIMEX()
   when using static libraries.
 
-  Input Parameter:
-  path - The dynamic library path, or NULL
-
   Level: developer
 
 .keywords: TS, TSARKIMEX, initialize, package
 .seealso: PetscInitialize()
 @*/
-PetscErrorCode TSARKIMEXInitializePackage(const char path[])
+PetscErrorCode TSARKIMEXInitializePackage(void)
 {
   PetscErrorCode ierr;
 
@@ -899,9 +896,9 @@ static PetscErrorCode TSDestroy_ARKIMEX(TS ts)
   PetscFunctionBegin;
   ierr = TSReset_ARKIMEX(ts);CHKERRQ(ierr);
   ierr = PetscFree(ts->data);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSARKIMEXGetType_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSARKIMEXSetType_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSARKIMEXSetFullyImplicit_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSARKIMEXGetType_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSARKIMEXSetType_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSARKIMEXSetFullyImplicit_C",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1345,7 +1342,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_ARKIMEX(TS ts)
 
   PetscFunctionBegin;
 #if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
-  ierr = TSARKIMEXInitializePackage(NULL);CHKERRQ(ierr);
+  ierr = TSARKIMEXInitializePackage();CHKERRQ(ierr);
 #endif
 
   ts->ops->reset          = TSReset_ARKIMEX;
@@ -1364,8 +1361,8 @@ PETSC_EXTERN PetscErrorCode TSCreate_ARKIMEX(TS ts)
   ts->data = (void*)th;
   th->imex = PETSC_TRUE;
 
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSARKIMEXGetType_C","TSARKIMEXGetType_ARKIMEX",TSARKIMEXGetType_ARKIMEX);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSARKIMEXSetType_C","TSARKIMEXSetType_ARKIMEX",TSARKIMEXSetType_ARKIMEX);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSARKIMEXSetFullyImplicit_C","TSARKIMEXSetFullyImplicit_ARKIMEX",TSARKIMEXSetFullyImplicit_ARKIMEX);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSARKIMEXGetType_C",TSARKIMEXGetType_ARKIMEX);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSARKIMEXSetType_C",TSARKIMEXSetType_ARKIMEX);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSARKIMEXSetFullyImplicit_C",TSARKIMEXSetFullyImplicit_ARKIMEX);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

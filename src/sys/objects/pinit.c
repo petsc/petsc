@@ -835,7 +835,7 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
     ierr = PetscPythonInitialize(NULL,NULL);CHKERRQ(ierr);
   }
 
-  ierr = PetscThreadCommInitializePackage(NULL);CHKERRQ(ierr);
+  ierr = PetscThreadCommInitializePackage();CHKERRQ(ierr);
 
   /*
       Setup building of stack frames for all function calls

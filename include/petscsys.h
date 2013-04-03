@@ -1261,7 +1261,7 @@ PETSC_EXTERN PetscErrorCode PetscGetArguments(char ***);
 PETSC_EXTERN PetscErrorCode PetscFreeArguments(char **);
 
 PETSC_EXTERN PetscErrorCode PetscEnd(void);
-PETSC_EXTERN PetscErrorCode PetscSysInitializePackage(const char[]);
+PETSC_EXTERN PetscErrorCode PetscSysInitializePackage(void);
 
 PETSC_EXTERN MPI_Comm PETSC_COMM_LOCAL_WORLD;
 PETSC_EXTERN PetscErrorCode PetscHMPIMerge(PetscMPIInt,PetscErrorCode (*)(void*),void*);
@@ -1307,8 +1307,8 @@ PETSC_EXTERN PetscErrorCode PetscObjectGetNewTag(PetscObject,PetscMPIInt *);
 PETSC_EXTERN PetscErrorCode PetscObjectCompose(PetscObject,const char[],PetscObject);
 PETSC_EXTERN PetscErrorCode PetscObjectRemoveReference(PetscObject,const char[]);
 PETSC_EXTERN PetscErrorCode PetscObjectQuery(PetscObject,const char[],PetscObject *);
-PETSC_EXTERN PetscErrorCode PetscObjectComposeFunction_Private(PetscObject,const char[],const char[],void (*)(void));
-#define PetscObjectComposeFunction(a,b,c,d) PetscObjectComposeFunction_Private(a,b,c,(PetscVoidFunction)(d))
+PETSC_EXTERN PetscErrorCode PetscObjectComposeFunction_Private(PetscObject,const char[],void (*)(void));
+#define PetscObjectComposeFunction(a,b,d) PetscObjectComposeFunction_Private(a,b,(PetscVoidFunction)(d))
 PETSC_EXTERN PetscErrorCode PetscObjectSetFromOptions(PetscObject);
 PETSC_EXTERN PetscErrorCode PetscObjectSetUp(PetscObject);
 PETSC_EXTERN PetscErrorCode PetscCommGetNewTag(MPI_Comm,PetscMPIInt *);
@@ -1323,49 +1323,6 @@ PETSC_EXTERN PetscErrorCode PetscObjectsGetGlobalNumbering(MPI_Comm,PetscInt,Pet
 PETSC_EXTERN PetscErrorCode PetscMemoryShowUsage(PetscViewer,const char[]);
 PETSC_EXTERN PetscErrorCode PetscObjectPrintClassNamePrefixType(PetscObject,PetscViewer,const char[]);
 PETSC_EXTERN PetscErrorCode PetscObjectView(PetscObject,PetscViewer);
-
-/*MC
-   PetscObjectComposeFunctionDynamic - Associates a function with a given PETSc object.
-
-    Synopsis:
-    #include "petscsys.h"
-    PetscErrorCode PetscObjectComposeFunctionDynamic(PetscObject obj,const char name[],const char fname[],void *ptr)
-
-   Logically Collective on PetscObject
-
-   Input Parameters:
-+  obj - the PETSc object; this must be cast with a (PetscObject), for example,
-         PetscObjectCompose((PetscObject)mat,...);
-.  name - name associated with the child function
-.  fname - name of the function
--  ptr - function pointer (or NULL if using dynamic libraries)
-
-   Level: advanced
-
-
-   Notes:
-   To remove a registered routine, pass in a NULL rname and fnc().
-
-   PetscObjectComposeFunctionDynamic() can be used with any PETSc object (such as
-   Mat, Vec, KSP, SNES, etc.) or any user-provided object.
-
-   The composed function must be wrapped in a EXTERN_C_BEGIN/END for this to
-   work in C++/complex with dynamic link libraries (./configure options --with-shared-libraries --with-dynamic-loading)
-   enabled.
-
-   Concepts: objects^composing functions
-   Concepts: composing functions
-   Concepts: functions^querying
-   Concepts: objects^querying
-   Concepts: querying objects
-
-.seealso: PetscObjectQueryFunction()
-M*/
-#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
-#define PetscObjectComposeFunctionDynamic(a,b,c,d) PetscObjectComposeFunction(a,b,c,0)
-#else
-#define PetscObjectComposeFunctionDynamic(a,b,c,d) PetscObjectComposeFunction(a,b,c,d)
-#endif
 
 PETSC_EXTERN PetscErrorCode PetscObjectQueryFunction(PetscObject,const char[],void (**)(void));
 PETSC_EXTERN PetscErrorCode PetscObjectSetOptionsPrefix(PetscObject,const char[]);
@@ -1439,18 +1396,12 @@ PETSC_EXTERN PetscErrorCode PetscObjectListDuplicate(PetscObjectList,PetscObject
     Dynamic library lists. Lists of names of routines in objects or in dynamic
   link libraries that will be loaded as needed.
 */
-PETSC_EXTERN PetscErrorCode PetscFunctionListAdd(MPI_Comm,PetscFunctionList*,const char[],const char[],void (*)(void));
+PETSC_EXTERN PetscErrorCode PetscFunctionListAdd(PetscFunctionList*,const char[],void (*)(void));
 PETSC_EXTERN PetscErrorCode PetscFunctionListDestroy(PetscFunctionList*);
-PETSC_EXTERN PetscErrorCode PetscFunctionListFind(MPI_Comm,PetscFunctionList,const char[],PetscBool,void (**)(void));
+PETSC_EXTERN PetscErrorCode PetscFunctionListFind(PetscFunctionList,const char[],void (**)(void));
 PETSC_EXTERN PetscErrorCode PetscFunctionListPrintTypes(MPI_Comm,FILE*,const char[],const char[],const char[],const char[],PetscFunctionList,const char[]);
-#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
-#define    PetscFunctionListAddDynamic(mc,a,b,p,c) PetscFunctionListAdd(mc,a,b,p,0)
-#else
-#define    PetscFunctionListAddDynamic(mc,a,b,p,c) PetscFunctionListAdd(mc,a,b,p,(void (*)(void))c)
-#endif
 PETSC_EXTERN PetscErrorCode PetscFunctionListDuplicate(PetscFunctionList,PetscFunctionList *);
 PETSC_EXTERN PetscErrorCode PetscFunctionListView(PetscFunctionList,PetscViewer);
-PETSC_EXTERN PetscErrorCode PetscFunctionListConcat(const char [],const char [],char []);
 PETSC_EXTERN PetscErrorCode PetscFunctionListGet(PetscFunctionList,const char ***,int*);
 
 /*S
@@ -2149,7 +2100,7 @@ typedef const char* PetscRandomType;
 /* Logging support */
 PETSC_EXTERN PetscClassId PETSC_RANDOM_CLASSID;
 
-PETSC_EXTERN PetscErrorCode PetscRandomInitializePackage(const char[]);
+PETSC_EXTERN PetscErrorCode PetscRandomInitializePackage(void);
 
 /*S
      PetscRandom - Abstract PETSc object that manages generating random numbers
@@ -2166,65 +2117,14 @@ typedef struct _p_PetscRandom*   PetscRandom;
 PETSC_EXTERN PetscFunctionList PetscRandomList;
 PETSC_EXTERN PetscBool         PetscRandomRegisterAllCalled;
 
-PETSC_EXTERN PetscErrorCode PetscRandomRegisterAll(const char []);
-PETSC_EXTERN PetscErrorCode PetscRandomRegister(const char[],const char[],const char[],PetscErrorCode (*)(PetscRandom));
+PETSC_EXTERN PetscErrorCode PetscRandomRegisterAll(void);
+PETSC_EXTERN PetscErrorCode PetscRandomRegister(const char[],PetscErrorCode (*)(PetscRandom));
 PETSC_EXTERN PetscErrorCode PetscRandomRegisterDestroy(void);
 PETSC_EXTERN PetscErrorCode PetscRandomSetType(PetscRandom, PetscRandomType);
 PETSC_EXTERN PetscErrorCode PetscRandomSetFromOptions(PetscRandom);
 PETSC_EXTERN PetscErrorCode PetscRandomGetType(PetscRandom, PetscRandomType*);
 PETSC_EXTERN PetscErrorCode PetscRandomViewFromOptions(PetscRandom,const char[]);
 PETSC_EXTERN PetscErrorCode PetscRandomView(PetscRandom,PetscViewer);
-
-/*MC
-  PetscRandomRegisterDynamic - Adds a new PetscRandom component implementation
-
-  Synopsis:
-    #include "petscsys.h"
-  PetscErrorCode PetscRandomRegisterDynamic(const char *name, const char *path, const char *func_name, PetscErrorCode (*create_func)(PetscRandom))
-
-  Not Collective
-
-  Input Parameters:
-+ name        - The name of a new user-defined creation routine
-. path        - The path (either absolute or relative) of the library containing this routine
-. func_name   - The name of routine to create method context
-- create_func - The creation routine itself
-
-  Notes:
-  PetscRandomRegisterDynamic() may be called multiple times to add several user-defined randome number generators
-
-  If dynamic libraries are used, then the fourth input argument (routine_create) is ignored.
-
-  Sample usage:
-.vb
-    PetscRandomRegisterDynamic("my_rand","/home/username/my_lib/lib/libO/solaris/libmy.a", "MyPetscRandomtorCreate", MyPetscRandomtorCreate);
-.ve
-
-  Then, your random type can be chosen with the procedural interface via
-.vb
-    PetscRandomCreate(MPI_Comm, PetscRandom *);
-    PetscRandomSetType(PetscRandom,"my_random_name");
-.ve
-   or at runtime via the option
-.vb
-    -random_type my_random_name
-.ve
-
-  Notes: $PETSC_ARCH occuring in pathname will be replaced with appropriate values.
-
-         For an example of the code needed to interface your own random number generator see
-         src/sys/random/impls/rand/rand.c
-
-  Level: advanced
-
-.keywords: PetscRandom, register
-.seealso: PetscRandomRegisterAll(), PetscRandomRegisterDestroy(), PetscRandomRegister()
-M*/
-#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
-#define PetscRandomRegisterDynamic(a,b,c,d) PetscRandomRegister(a,b,c,0)
-#else
-#define PetscRandomRegisterDynamic(a,b,c,d) PetscRandomRegister(a,b,c,d)
-#endif
 
 PETSC_EXTERN PetscErrorCode PetscRandomCreate(MPI_Comm,PetscRandom*);
 PETSC_EXTERN PetscErrorCode PetscRandomGetValue(PetscRandom,PetscScalar*);

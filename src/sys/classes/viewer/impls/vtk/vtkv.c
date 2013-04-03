@@ -59,9 +59,9 @@ static PetscErrorCode PetscViewerDestroy_VTK(PetscViewer viewer)
   PetscFunctionBegin;
   ierr = PetscFree(vtk->filename);CHKERRQ(ierr);
   ierr = PetscFree(vtk);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerFileSetName_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerFileSetMode_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerVTKAddField_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerFileSetName_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerFileSetMode_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerVTKAddField_C",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -170,9 +170,9 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_VTK(PetscViewer v)
   vtk->btype      = (PetscFileMode) -1;
   vtk->filename   = 0;
 
-  ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerFileSetName_C","PetscViewerFileSetName_VTK",PetscViewerFileSetName_VTK);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerFileSetMode_C","PetscViewerFileSetMode_VTK",PetscViewerFileSetMode_VTK);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerVTKAddField_C","PetscViewerVTKAddField_VTK",PetscViewerVTKAddField_VTK);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerFileSetName_C",PetscViewerFileSetName_VTK);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerFileSetMode_C",PetscViewerFileSetMode_VTK);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerVTKAddField_C",PetscViewerVTKAddField_VTK);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

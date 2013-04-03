@@ -1292,14 +1292,14 @@ PetscErrorCode MatDestroy_MPIAIJ(Mat mat)
   ierr = PetscFree(mat->data);CHKERRQ(ierr);
 
   ierr = PetscObjectChangeTypeName((PetscObject)mat,0);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatStoreValues_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatRetrieveValues_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatGetDiagonalBlock_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatIsTranspose_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMPIAIJSetPreallocation_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMPIAIJSetPreallocationCSR_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatDiagonalScaleLocal_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatConvert_mpiaij_mpisbaij_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatStoreValues_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatRetrieveValues_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatGetDiagonalBlock_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatIsTranspose_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMPIAIJSetPreallocation_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMPIAIJSetPreallocationCSR_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatDiagonalScaleLocal_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatConvert_mpiaij_mpisbaij_C",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -5617,30 +5617,30 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJ(Mat B)
   b->spptr = NULL;
 
 #if defined(PETSC_HAVE_MUMPS)
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatGetFactor_mumps_C","MatGetFactor_aij_mumps",MatGetFactor_aij_mumps);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatGetFactor_mumps_C",MatGetFactor_aij_mumps);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_PASTIX)
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatGetFactor_pastix_C","MatGetFactor_mpiaij_pastix",MatGetFactor_mpiaij_pastix);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatGetFactor_pastix_C",MatGetFactor_mpiaij_pastix);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_SUPERLU_DIST)
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatGetFactor_superlu_dist_C","MatGetFactor_mpiaij_superlu_dist",MatGetFactor_mpiaij_superlu_dist);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatGetFactor_superlu_dist_C",MatGetFactor_mpiaij_superlu_dist);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_CLIQUE)
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatGetFactor_clique_C","MatGetFactor_aij_clique",MatGetFactor_aij_clique);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatGetFactor_clique_C",MatGetFactor_aij_clique);CHKERRQ(ierr);
 #endif
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatStoreValues_C","MatStoreValues_MPIAIJ",MatStoreValues_MPIAIJ);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatRetrieveValues_C","MatRetrieveValues_MPIAIJ",MatRetrieveValues_MPIAIJ);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatGetDiagonalBlock_C","MatGetDiagonalBlock_MPIAIJ",MatGetDiagonalBlock_MPIAIJ);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatIsTranspose_C","MatIsTranspose_MPIAIJ",MatIsTranspose_MPIAIJ);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMPIAIJSetPreallocation_C","MatMPIAIJSetPreallocation_MPIAIJ",MatMPIAIJSetPreallocation_MPIAIJ);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMPIAIJSetPreallocationCSR_C","MatMPIAIJSetPreallocationCSR_MPIAIJ",MatMPIAIJSetPreallocationCSR_MPIAIJ);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatDiagonalScaleLocal_C","MatDiagonalScaleLocal_MPIAIJ",MatDiagonalScaleLocal_MPIAIJ);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_mpiaij_mpiaijperm_C","MatConvert_MPIAIJ_MPIAIJPERM",MatConvert_MPIAIJ_MPIAIJPERM);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_mpiaij_mpiaijcrl_C","MatConvert_MPIAIJ_MPIAIJCRL",MatConvert_MPIAIJ_MPIAIJCRL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_mpiaij_mpisbaij_C","MatConvert_MPIAIJ_MPISBAIJ",MatConvert_MPIAIJ_MPISBAIJ);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMult_mpidense_mpiaij_C","MatMatMult_MPIDense_MPIAIJ",MatMatMult_MPIDense_MPIAIJ);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMultSymbolic_mpidense_mpiaij_C","MatMatMultSymbolic_MPIDense_MPIAIJ",MatMatMultSymbolic_MPIDense_MPIAIJ);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMultNumeric_mpidense_mpiaij_C","MatMatMultNumeric_MPIDense_MPIAIJ",MatMatMultNumeric_MPIDense_MPIAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatStoreValues_C",MatStoreValues_MPIAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatRetrieveValues_C",MatRetrieveValues_MPIAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatGetDiagonalBlock_C",MatGetDiagonalBlock_MPIAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatIsTranspose_C",MatIsTranspose_MPIAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMPIAIJSetPreallocation_C",MatMPIAIJSetPreallocation_MPIAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMPIAIJSetPreallocationCSR_C",MatMPIAIJSetPreallocationCSR_MPIAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatDiagonalScaleLocal_C",MatDiagonalScaleLocal_MPIAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_mpiaij_mpiaijperm_C",MatConvert_MPIAIJ_MPIAIJPERM);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_mpiaij_mpiaijcrl_C",MatConvert_MPIAIJ_MPIAIJCRL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_mpiaij_mpisbaij_C",MatConvert_MPIAIJ_MPISBAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMult_mpidense_mpiaij_C",MatMatMult_MPIDense_MPIAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMultSymbolic_mpidense_mpiaij_C",MatMatMultSymbolic_MPIDense_MPIAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMatMultNumeric_mpidense_mpiaij_C",MatMatMultNumeric_MPIDense_MPIAIJ);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATMPIAIJ);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

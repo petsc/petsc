@@ -382,7 +382,7 @@ PetscErrorCode DMCreateMatrix_Mesh(DM dm, MatType mtype, Mat *J)
 
   PetscFunctionBegin;
 #if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
-  ierr = MatInitializePackage(NULL);CHKERRQ(ierr);
+  ierr = MatInitializePackage();CHKERRQ(ierr);
 #endif
   if (!mtype) mtype = MATAIJ;
   if (mesh->useNewImpl) {
@@ -443,7 +443,7 @@ PetscErrorCode DMMeshCreateMatrix(DM dm, SectionReal section, MatType mtype, Mat
 
   PetscFunctionBegin;
 #if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
-  ierr = MatInitializePackage(NULL);CHKERRQ(ierr);
+  ierr = MatInitializePackage();CHKERRQ(ierr);
 #endif
   if (!mtype) mtype = MATAIJ;
   ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);

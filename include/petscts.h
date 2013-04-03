@@ -169,7 +169,7 @@ PETSC_EXTERN const char *const TSExactFinalTimeOptions[];
 PETSC_EXTERN PetscClassId TS_CLASSID;
 PETSC_EXTERN PetscClassId DMTS_CLASSID;
 
-PETSC_EXTERN PetscErrorCode TSInitializePackage(const char[]);
+PETSC_EXTERN PetscErrorCode TSInitializePackage(void);
 
 PETSC_EXTERN PetscErrorCode TSCreate(MPI_Comm,TS*);
 PETSC_EXTERN PetscErrorCode TSDestroy(TS*);
@@ -330,59 +330,9 @@ PETSC_EXTERN PetscFunctionList TSList;
 PETSC_EXTERN PetscBool         TSRegisterAllCalled;
 PETSC_EXTERN PetscErrorCode TSGetType(TS,TSType*);
 PETSC_EXTERN PetscErrorCode TSSetType(TS,TSType);
-PETSC_EXTERN PetscErrorCode TSRegister(const char[], const char[], const char[], PetscErrorCode (*)(TS));
-PETSC_EXTERN PetscErrorCode TSRegisterAll(const char[]);
+PETSC_EXTERN PetscErrorCode TSRegister(const char[], PetscErrorCode (*)(TS));
+PETSC_EXTERN PetscErrorCode TSRegisterAll(void);
 PETSC_EXTERN PetscErrorCode TSRegisterDestroy(void);
-
-/*MC
-  TSRegisterDynamic - Adds a creation method to the TS package.
-
-  Synopsis:
-  #include "petscts.h"
-  PetscErrorCode TSRegisterDynamic(const char *name, const char *path, const char *func_name, PetscErrorCode (*create_func)(TS))
-
-  Not Collective
-
-  Input Parameters:
-+ name        - The name of a new user-defined creation routine
-. path        - The path (either absolute or relative) of the library containing this routine
-. func_name   - The name of the creation routine
-- create_func - The creation routine itself
-
-  Notes:
-  TSRegisterDynamic() may be called multiple times to add several user-defined tses.
-
-  If dynamic libraries are used, then the fourth input argument (create_func) is ignored.
-
-  Sample usage:
-.vb
-  TSRegisterDynamic("my_ts", "/home/username/my_lib/lib/libO/solaris/libmy.a", "MyTSCreate", MyTSCreate);
-.ve
-
-  Then, your ts type can be chosen with the procedural interface via
-.vb
-    TS ts;
-    TSCreate(MPI_Comm, &ts);
-    TSSetType(ts, "my_ts")
-.ve
-  or at runtime via the option
-.vb
-    -ts_type my_ts
-.ve
-
-  Notes: $PETSC_ARCH occuring in pathname will be replaced with appropriate values.
-        If your function is not being put into a shared library then use TSRegister() instead
-
-  Level: advanced
-
-.keywords: TS, register
-.seealso: TSRegisterAll(), TSRegisterDestroy()
-M*/
-#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
-#define TSRegisterDynamic(a,b,c,d) TSRegister(a,b,c,0)
-#else
-#define TSRegisterDynamic(a,b,c,d) TSRegister(a,b,c,d)
-#endif
 
 PETSC_EXTERN PetscErrorCode TSGetSNES(TS,SNES*);
 PETSC_EXTERN PetscErrorCode TSSetSNES(TS,SNES);
@@ -450,59 +400,11 @@ typedef const char *TSAdaptType;
 #define TSADAPTNONE  "none"
 #define TSADAPTCFL   "cfl"
 
-/*MC
-   TSAdaptRegisterDynamic - adds a TSAdapt implementation
-
-   Synopsis:
-   #include "petscts.h"
-   PetscErrorCode TSAdaptRegisterDynamic(const char *name_scheme,const char *path,const char *name_create,PetscErrorCode (*routine_create)(TS))
-
-   Not Collective
-
-   Input Parameters:
-+  name_scheme - name of user-defined adaptivity scheme
-.  path - path (either absolute or relative) the library containing this scheme
-.  name_create - name of routine to create method context
--  routine_create - routine to create method context
-
-   Notes:
-   TSAdaptRegisterDynamic() may be called multiple times to add several user-defined families.
-
-   If dynamic libraries are used, then the fourth input argument (routine_create)
-   is ignored.
-
-   Sample usage:
-.vb
-   TSAdaptRegisterDynamic("my_scheme",/home/username/my_lib/lib/libO/solaris/mylib.a,
-                            "MySchemeCreate",MySchemeCreate);
-.ve
-
-   Then, your scheme can be chosen with the procedural interface via
-$     TSAdaptSetType(ts,"my_scheme")
-   or at runtime via the option
-$     -ts_adapt_type my_scheme
-
-   Level: advanced
-
-   Notes: Environmental variables such as ${PETSC_ARCH}, ${PETSC_DIR}, ${PETSC_LIB_DIR},
-          and others of the form ${any_environmental_variable} occuring in pathname will be
-          replaced with appropriate values.
-
-.keywords: TSAdapt, register
-
-.seealso: TSAdaptRegisterAll()
-M*/
-#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
-#  define TSAdaptRegisterDynamic(a,b,c,d)  TSAdaptRegister(a,b,c,0)
-#else
-#  define TSAdaptRegisterDynamic(a,b,c,d)  TSAdaptRegister(a,b,c,d)
-#endif
-
 PETSC_EXTERN PetscErrorCode TSGetTSAdapt(TS,TSAdapt*);
-PETSC_EXTERN PetscErrorCode TSAdaptRegister(const char[],const char[],const char[],PetscErrorCode (*)(TSAdapt));
-PETSC_EXTERN PetscErrorCode TSAdaptRegisterAll(const char[]);
+PETSC_EXTERN PetscErrorCode TSAdaptRegister(const char[],PetscErrorCode (*)(TSAdapt));
+PETSC_EXTERN PetscErrorCode TSAdaptRegisterAll(void);
 PETSC_EXTERN PetscErrorCode TSAdaptRegisterDestroy(void);
-PETSC_EXTERN PetscErrorCode TSAdaptInitializePackage(const char[]);
+PETSC_EXTERN PetscErrorCode TSAdaptInitializePackage(void);
 PETSC_EXTERN PetscErrorCode TSAdaptFinalizePackage(void);
 PETSC_EXTERN PetscErrorCode TSAdaptCreate(MPI_Comm,TSAdapt*);
 PETSC_EXTERN PetscErrorCode TSAdaptSetType(TSAdapt,TSAdaptType);
@@ -546,58 +448,10 @@ typedef const char *TSGLAdaptType;
 #define TSGLADAPT_SIZE "size"
 #define TSGLADAPT_BOTH "both"
 
-/*MC
-   TSGLAdaptRegisterDynamic - adds a TSGLAdapt implementation
-
-   Synopsis:
-   #include "petscts.h"
-   PetscErrorCode TSGLAdaptRegisterDynamic(const char *name_scheme,const char *path,const char *name_create,PetscErrorCode (*routine_create)(TS))
-
-   Not Collective
-
-   Input Parameters:
-+  name_scheme - name of user-defined adaptivity scheme
-.  path - path (either absolute or relative) the library containing this scheme
-.  name_create - name of routine to create method context
--  routine_create - routine to create method context
-
-   Notes:
-   TSGLAdaptRegisterDynamic() may be called multiple times to add several user-defined families.
-
-   If dynamic libraries are used, then the fourth input argument (routine_create)
-   is ignored.
-
-   Sample usage:
-.vb
-   TSGLAdaptRegisterDynamic("my_scheme",/home/username/my_lib/lib/libO/solaris/mylib.a,
-                            "MySchemeCreate",MySchemeCreate);
-.ve
-
-   Then, your scheme can be chosen with the procedural interface via
-$     TSGLAdaptSetType(ts,"my_scheme")
-   or at runtime via the option
-$     -ts_adapt_type my_scheme
-
-   Level: advanced
-
-   Notes: Environmental variables such as ${PETSC_ARCH}, ${PETSC_DIR}, ${PETSC_LIB_DIR},
-          and others of the form ${any_environmental_variable} occuring in pathname will be
-          replaced with appropriate values.
-
-.keywords: TSGLAdapt, register
-
-.seealso: TSGLAdaptRegisterAll()
-M*/
-#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
-#  define TSGLAdaptRegisterDynamic(a,b,c,d)  TSGLAdaptRegister(a,b,c,0)
-#else
-#  define TSGLAdaptRegisterDynamic(a,b,c,d)  TSGLAdaptRegister(a,b,c,d)
-#endif
-
-PETSC_EXTERN PetscErrorCode TSGLAdaptRegister(const char[],const char[],const char[],PetscErrorCode (*)(TSGLAdapt));
-PETSC_EXTERN PetscErrorCode TSGLAdaptRegisterAll(const char[]);
+PETSC_EXTERN PetscErrorCode TSGLAdaptRegister(const char[],PetscErrorCode (*)(TSGLAdapt));
+PETSC_EXTERN PetscErrorCode TSGLAdaptRegisterAll(void);
 PETSC_EXTERN PetscErrorCode TSGLAdaptRegisterDestroy(void);
-PETSC_EXTERN PetscErrorCode TSGLAdaptInitializePackage(const char[]);
+PETSC_EXTERN PetscErrorCode TSGLAdaptInitializePackage(void);
 PETSC_EXTERN PetscErrorCode TSGLAdaptFinalizePackage(void);
 PETSC_EXTERN PetscErrorCode TSGLAdaptCreate(MPI_Comm,TSGLAdapt*);
 PETSC_EXTERN PetscErrorCode TSGLAdaptSetType(TSGLAdapt,TSGLAdaptType);
@@ -620,55 +474,7 @@ typedef const char *TSGLAcceptType;
 #define TSGLACCEPT_ALWAYS "always"
 
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*TSGLAcceptFunction)(TS,PetscReal,PetscReal,const PetscReal[],PetscBool *);
-PETSC_EXTERN PetscErrorCode TSGLAcceptRegister(const char[],const char[],const char[],TSGLAcceptFunction);
-
-/*MC
-   TSGLAcceptRegisterDynamic - adds a TSGL acceptance scheme
-
-   Synopsis:
-   #include "petscts.h"
-   PetscErrorCode TSGLAcceptRegisterDynamic(const char *name_scheme,const char *path,const char *name_create,PetscErrorCode (*routine_create)(TS))
-
-   Not Collective
-
-   Input Parameters:
-+  name_scheme - name of user-defined acceptance scheme
-.  path - path (either absolute or relative) the library containing this scheme
-.  name_create - name of routine to create method context
--  routine_create - routine to create method context
-
-   Notes:
-   TSGLAcceptRegisterDynamic() may be called multiple times to add several user-defined families.
-
-   If dynamic libraries are used, then the fourth input argument (routine_create)
-   is ignored.
-
-   Sample usage:
-.vb
-   TSGLAcceptRegisterDynamic("my_scheme",/home/username/my_lib/lib/libO/solaris/mylib.a,
-                             "MySchemeCreate",MySchemeCreate);
-.ve
-
-   Then, your scheme can be chosen with the procedural interface via
-$     TSGLSetAcceptType(ts,"my_scheme")
-   or at runtime via the option
-$     -ts_gl_accept_type my_scheme
-
-   Level: advanced
-
-   Notes: Environmental variables such as ${PETSC_ARCH}, ${PETSC_DIR}, ${PETSC_LIB_DIR},
-          and others of the form ${any_environmental_variable} occuring in pathname will be
-          replaced with appropriate values.
-
-.keywords: TSGL, TSGLAcceptType, register
-
-.seealso: TSGLRegisterAll()
-M*/
-#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
-#  define TSGLAcceptRegisterDynamic(a,b,c,d) TSGLAcceptRegister(a,b,c,0)
-#else
-#  define TSGLAcceptRegisterDynamic(a,b,c,d) TSGLAcceptRegister(a,b,c,d)
-#endif
+PETSC_EXTERN PetscErrorCode TSGLAcceptRegister(const char[],TSGLAcceptFunction);
 
 /*J
   TSGLType - family of time integration method within the General Linear class
@@ -680,58 +486,10 @@ J*/
 typedef const char* TSGLType;
 #define TSGL_IRKS   "irks"
 
-/*MC
-   TSGLRegisterDynamic - adds a TSGL implementation
-
-   Synopsis:
-   #include "petscts.h"
-   PetscErrorCode TSGLRegisterDynamic(const char *name_scheme,const char *path,const char *name_create,PetscErrorCode (*routine_create)(TS))
-
-   Not Collective
-
-   Input Parameters:
-+  name_scheme - name of user-defined general linear scheme
-.  path - path (either absolute or relative) the library containing this scheme
-.  name_create - name of routine to create method context
--  routine_create - routine to create method context
-
-   Notes:
-   TSGLRegisterDynamic() may be called multiple times to add several user-defined families.
-
-   If dynamic libraries are used, then the fourth input argument (routine_create)
-   is ignored.
-
-   Sample usage:
-.vb
-   TSGLRegisterDynamic("my_scheme",/home/username/my_lib/lib/libO/solaris/mylib.a,
-                       "MySchemeCreate",MySchemeCreate);
-.ve
-
-   Then, your scheme can be chosen with the procedural interface via
-$     TSGLSetType(ts,"my_scheme")
-   or at runtime via the option
-$     -ts_gl_type my_scheme
-
-   Level: advanced
-
-   Notes: Environmental variables such as ${PETSC_ARCH}, ${PETSC_DIR}, ${PETSC_LIB_DIR},
-          and others of the form ${any_environmental_variable} occuring in pathname will be
-          replaced with appropriate values.
-
-.keywords: TSGL, register
-
-.seealso: TSGLRegisterAll()
-M*/
-#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
-#  define TSGLRegisterDynamic(a,b,c,d)       TSGLRegister(a,b,c,0)
-#else
-#  define TSGLRegisterDynamic(a,b,c,d)       TSGLRegister(a,b,c,d)
-#endif
-
-PETSC_EXTERN PetscErrorCode TSGLRegister(const char[],const char[],const char[],PetscErrorCode(*)(TS));
-PETSC_EXTERN PetscErrorCode TSGLRegisterAll(const char[]);
+PETSC_EXTERN PetscErrorCode TSGLRegister(const char[],PetscErrorCode(*)(TS));
+PETSC_EXTERN PetscErrorCode TSGLRegisterAll(void);
 PETSC_EXTERN PetscErrorCode TSGLRegisterDestroy(void);
-PETSC_EXTERN PetscErrorCode TSGLInitializePackage(const char[]);
+PETSC_EXTERN PetscErrorCode TSGLInitializePackage(void);
 PETSC_EXTERN PetscErrorCode TSGLFinalizePackage(void);
 PETSC_EXTERN PetscErrorCode TSGLSetType(TS,TSGLType);
 PETSC_EXTERN PetscErrorCode TSGLGetAdapt(TS,TSGLAdapt*);
@@ -763,7 +521,7 @@ PETSC_EXTERN PetscErrorCode TSARKIMEXSetType(TS ts,TSARKIMEXType);
 PETSC_EXTERN PetscErrorCode TSARKIMEXSetFullyImplicit(TS,PetscBool);
 PETSC_EXTERN PetscErrorCode TSARKIMEXRegister(TSARKIMEXType,PetscInt,PetscInt,const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[],PetscInt,const PetscReal[],const PetscReal[]);
 PETSC_EXTERN PetscErrorCode TSARKIMEXFinalizePackage(void);
-PETSC_EXTERN PetscErrorCode TSARKIMEXInitializePackage(const char path[]);
+PETSC_EXTERN PetscErrorCode TSARKIMEXInitializePackage(void);
 PETSC_EXTERN PetscErrorCode TSARKIMEXRegisterDestroy(void);
 PETSC_EXTERN PetscErrorCode TSARKIMEXRegisterAll(void);
 
@@ -798,7 +556,7 @@ PETSC_EXTERN PetscErrorCode TSRosWSetRecomputeJacobian(TS,PetscBool);
 PETSC_EXTERN PetscErrorCode TSRosWRegister(TSRosWType,PetscInt,PetscInt,const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[],PetscInt,const PetscReal[]);
 PETSC_EXTERN PetscErrorCode TSRosWRegisterRos4(TSRosWType,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal);
 PETSC_EXTERN PetscErrorCode TSRosWFinalizePackage(void);
-PETSC_EXTERN PetscErrorCode TSRosWInitializePackage(const char path[]);
+PETSC_EXTERN PetscErrorCode TSRosWInitializePackage(void);
 PETSC_EXTERN PetscErrorCode TSRosWRegisterDestroy(void);
 PETSC_EXTERN PetscErrorCode TSRosWRegisterAll(void);
 

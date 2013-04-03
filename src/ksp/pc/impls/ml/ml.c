@@ -1016,7 +1016,7 @@ PetscErrorCode PCDestroy_ML(PC pc)
   ierr = PCReset_ML(pc);CHKERRQ(ierr);
   ierr = PetscFree(pc_ml);CHKERRQ(ierr);
   ierr = PCDestroy_MG(pc);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCSetCoordinates_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCSetCoordinates_C",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1220,7 +1220,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_ML(PC pc)
   pc_ml->AuxThreshold             = 0.0;
 
   /* allow for coordinates to be passed */
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCSetCoordinates_C","PCSetCoordinates_ML",PCSetCoordinates_ML);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCSetCoordinates_C",PCSetCoordinates_ML);CHKERRQ(ierr);
 
   /* overwrite the pointers of PCMG by the functions of PCML */
   pc->ops->setfromoptions = PCSetFromOptions_ML;

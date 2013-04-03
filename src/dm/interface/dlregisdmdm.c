@@ -44,15 +44,12 @@ PETSC_EXTERN PetscErrorCode MatCreate_HYPREStruct(Mat);
   from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to AOCreate()
   or DMDACreate() when using static libraries.
 
-  Input Parameter:
-  path - The dynamic library path, or NULL
-
   Level: developer
 
 .keywords: AO, initialize, package
 .seealso: PetscInitialize()
 @*/
-PetscErrorCode  DMInitializePackage(const char path[])
+PetscErrorCode  DMInitializePackage(void)
 {
   char           logList[256];
   char           *className;
@@ -71,11 +68,11 @@ PetscErrorCode  DMInitializePackage(const char path[])
 #endif
 
 #if defined(PETSC_HAVE_HYPRE)
-  ierr = MatRegisterDynamic(MATHYPRESTRUCT,    path,"MatCreate_HYPREStruct", MatCreate_HYPREStruct);CHKERRQ(ierr);
+  ierr = MatRegister(MATHYPRESTRUCT, MatCreate_HYPREStruct);CHKERRQ(ierr);
 #endif
 
   /* Register Constructors */
-  ierr = DMRegisterAll(path);CHKERRQ(ierr);
+  ierr = DMRegisterAll();CHKERRQ(ierr);
   /* Register Events */
   ierr = PetscLogEventRegister("DMConvert",              DM_CLASSID,&DM_Convert);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("DMGlobalToLocal",        DM_CLASSID,&DM_GlobalToLocal);CHKERRQ(ierr);
@@ -147,16 +144,14 @@ PetscErrorCode  DMInitializePackage(const char path[])
   This one registers all the mesh generators and partitioners that are in
   the basic DM library.
 
-  Input Parameter:
-  path - library path
 */
-PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscdm(const char path[])
+PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscdm(void)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = AOInitializePackage(path);CHKERRQ(ierr);
-  ierr = DMInitializePackage(path);CHKERRQ(ierr);
+  ierr = AOInitializePackage();CHKERRQ(ierr);
+  ierr = DMInitializePackage();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

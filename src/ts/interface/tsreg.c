@@ -52,7 +52,7 @@ PetscErrorCode  TSSetType(TS ts,TSType type)
   ierr = PetscObjectTypeCompare((PetscObject) ts, type, &match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
 
-  ierr = PetscFunctionListFind(PetscObjectComm((PetscObject)ts),TSList, type,PETSC_TRUE, (void (**)(void)) &r);CHKERRQ(ierr);
+  ierr = PetscFunctionListFind(TSList, type,(void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown TS type: %s", type);
   if (ts->ops->destroy) {
     ierr = (*(ts)->ops->destroy)(ts);CHKERRQ(ierr);
@@ -100,20 +100,45 @@ PetscErrorCode  TSGetType(TS ts, TSType *type)
 #undef __FUNCT__
 #define __FUNCT__ "TSRegister"
 /*@C
-  TSRegister - See TSRegisterDynamic()
+  TSRegister - Adds a creation method to the TS package.
+
+  Not Collective
+
+  Input Parameters:
++ name        - The name of a new user-defined creation routine
+- create_func - The creation routine itself
+
+  Notes:
+  TSRegister() may be called multiple times to add several user-defined tses.
+
+  Sample usage:
+.vb
+  TSRegister("my_ts",  MyTSCreate);
+.ve
+
+  Then, your ts type can be chosen with the procedural interface via
+.vb
+    TS ts;
+    TSCreate(MPI_Comm, &ts);
+    TSSetType(ts, "my_ts")
+.ve
+  or at runtime via the option
+.vb
+    -ts_type my_ts
+.ve
 
   Level: advanced
+
+.keywords: TS, register
+
+.seealso: TSRegisterAll(), TSRegisterDestroy()
 @*/
-PetscErrorCode  TSRegister(const char sname[], const char path[], const char name[], PetscErrorCode (*function)(TS))
+PetscErrorCode  TSRegister(const char sname[], PetscErrorCode (*function)(TS))
 {
-  char           fullname[PETSC_MAX_PATH_LEN];
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscStrcpy(fullname, path);CHKERRQ(ierr);
-  ierr = PetscStrcat(fullname, ":");CHKERRQ(ierr);
-  ierr = PetscStrcat(fullname, name);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&TSList, sname, fullname, (void (*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&TSList, sname, (void (*)(void))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -121,14 +146,14 @@ PetscErrorCode  TSRegister(const char sname[], const char path[], const char nam
 #undef __FUNCT__
 #define __FUNCT__ "TSRegisterDestroy"
 /*@C
-   TSRegisterDestroy - Frees the list of timestepping routines that were registered by TSRegister()/TSRegisterDynamic().
+   TSRegisterDestroy - Frees the list of timestepping routines that were registered by TSRegister()
 
    Not Collective
 
    Level: advanced
 
 .keywords: TS, timestepper, register, destroy
-.seealso: TSRegister(), TSRegisterAll(), TSRegisterDynamic()
+.seealso: TSRegister(), TSRegisterAll()
 @*/
 PetscErrorCode  TSRegisterDestroy(void)
 {

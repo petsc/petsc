@@ -82,7 +82,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_cholmod(Mat A,MatFactorType ftyp
   B->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_CHOLMOD;
   B->ops->destroy                = MatDestroy_CHOLMOD;
 
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverPackage_C","MatFactorGetSolverPackage_seqaij_cholmod",MatFactorGetSolverPackage_seqaij_cholmod);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverPackage_C",MatFactorGetSolverPackage_seqaij_cholmod);CHKERRQ(ierr);
 
   B->factortype   = MAT_FACTOR_CHOLESKY;
   B->assembled    = PETSC_TRUE; /* required by -ksp_view */

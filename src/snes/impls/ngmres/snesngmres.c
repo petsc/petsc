@@ -516,8 +516,8 @@ PETSC_EXTERN PetscErrorCode SNESCreate_NGMRES(SNES snes)
   ngmres->restart_type = SNES_NGMRES_RESTART_DIFFERENCE;
   ngmres->select_type  = SNES_NGMRES_SELECT_DIFFERENCE;
 
-  ierr = PetscObjectComposeFunction((PetscObject)snes,"SNESNGMRESSetSelectType_C","SNESNGMRESSetSelectType_NGMRES",SNESNGMRESSetSelectType_NGMRES);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)snes,"SNESNGMRESSetRestartType_C","SNESNGMRESSetRestartType_NGMRES",SNESNGMRESSetRestartType_NGMRES);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)snes,"SNESNGMRESSetSelectType_C",SNESNGMRESSetSelectType_NGMRES);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)snes,"SNESNGMRESSetRestartType_C",SNESNGMRESSetRestartType_NGMRES);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

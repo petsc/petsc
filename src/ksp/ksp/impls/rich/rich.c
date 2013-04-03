@@ -211,7 +211,7 @@ PetscErrorCode KSPDestroy_Richardson(KSP ksp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPRichardsonSetScale_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPRichardsonSetScale_C",NULL);CHKERRQ(ierr);
   ierr = KSPDestroyDefault(ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -298,8 +298,8 @@ PETSC_EXTERN PetscErrorCode KSPCreate_Richardson(KSP ksp)
   ksp->ops->view           = KSPView_Richardson;
   ksp->ops->setfromoptions = KSPSetFromOptions_Richardson;
 
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPRichardsonSetScale_C","KSPRichardsonSetScale_Richardson",KSPRichardsonSetScale_Richardson);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPRichardsonSetSelfScale_C","KSPRichardsonSetSelfScale_Richardson",KSPRichardsonSetSelfScale_Richardson);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPRichardsonSetScale_C",KSPRichardsonSetScale_Richardson);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPRichardsonSetSelfScale_C",KSPRichardsonSetSelfScale_Richardson);CHKERRQ(ierr);
 
   richardsonP->scale = 1.0;
   PetscFunctionReturn(0);

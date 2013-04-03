@@ -32,15 +32,12 @@ PetscErrorCode  SNESFinalizePackage(void)
   from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to SNESCreate()
   when using static libraries.
 
-  Input Parameter:
-  path - The dynamic library path, or NULL
-
   Level: developer
 
 .keywords: SNES, initialize, package
 .seealso: PetscInitialize()
 @*/
-PetscErrorCode  SNESInitializePackage(const char path[])
+PetscErrorCode  SNESInitializePackage(void)
 {
   char           logList[256];
   char           *className;
@@ -51,14 +48,14 @@ PetscErrorCode  SNESInitializePackage(const char path[])
   if (SNESPackageInitialized) PetscFunctionReturn(0);
   SNESPackageInitialized = PETSC_TRUE;
   /* Initialize subpackages */
-  ierr = SNESMSInitializePackage(path);CHKERRQ(ierr);
+  ierr = SNESMSInitializePackage();CHKERRQ(ierr);
   /* Register Classes */
   ierr = PetscClassIdRegister("SNES",&SNES_CLASSID);CHKERRQ(ierr);
   ierr = PetscClassIdRegister("SNESLineSearch",&SNESLINESEARCH_CLASSID);CHKERRQ(ierr);
   ierr = PetscClassIdRegister("DMSNES",&DMSNES_CLASSID);CHKERRQ(ierr);
   /* Register Constructors */
-  ierr = SNESRegisterAll(path);CHKERRQ(ierr);
-  ierr = SNESLineSearchRegisterAll(path);CHKERRQ(ierr);
+  ierr = SNESRegisterAll();CHKERRQ(ierr);
+  ierr = SNESLineSearchRegisterAll();CHKERRQ(ierr);
   /* Register Events */
   ierr = PetscLogEventRegister("SNESSolve",            SNES_CLASSID,&SNES_Solve);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("SNESFunctionEval",     SNES_CLASSID,&SNES_FunctionEval);CHKERRQ(ierr);
@@ -94,16 +91,13 @@ PetscErrorCode  SNESInitializePackage(const char path[])
 
   This registers all of the SNES methods that are in the basic PETSc libpetscsnes library.
 
-  Input Parameter:
-  path - library path
-
  */
-PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscsnes(const char path[])
+PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscsnes(void)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = SNESInitializePackage(path);CHKERRQ(ierr);
+  ierr = SNESInitializePackage();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

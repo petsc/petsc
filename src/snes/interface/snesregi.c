@@ -48,29 +48,29 @@ extern PetscBool SNESRegisterAllCalled;
 
 .seealso:  SNESRegisterDestroy()
 @*/
-PetscErrorCode  SNESRegisterAll(const char path[])
+PetscErrorCode  SNESRegisterAll(void)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   SNESRegisterAllCalled = PETSC_TRUE;
 
-  ierr = SNESRegisterDynamic(SNESNEWTONLS,     path,"SNESCreate_NEWTONLS",     SNESCreate_NEWTONLS);CHKERRQ(ierr);
-  ierr = SNESRegisterDynamic(SNESNEWTONTR,     path,"SNESCreate_NEWTONTR",     SNESCreate_NEWTONTR);CHKERRQ(ierr);
-  ierr = SNESRegisterDynamic(SNESTEST,         path,"SNESCreate_Test",         SNESCreate_Test);CHKERRQ(ierr);
-  ierr = SNESRegisterDynamic(SNESNRICHARDSON,  path,"SNESCreate_NRichardson",  SNESCreate_NRichardson);CHKERRQ(ierr);
-  ierr = SNESRegisterDynamic(SNESKSPONLY,      path,"SNESCreate_KSPONLY",      SNESCreate_KSPONLY);CHKERRQ(ierr);
-  ierr = SNESRegisterDynamic(SNESVINEWTONRSLS, path,"SNESCreate_VINEWTONRSLS", SNESCreate_VINEWTONRSLS);CHKERRQ(ierr);
-  ierr = SNESRegisterDynamic(SNESVINEWTONSSLS, path,"SNESCreate_VINEWTONSSLS", SNESCreate_VINEWTONSSLS);CHKERRQ(ierr);
-  ierr = SNESRegisterDynamic(SNESNGMRES,       path,"SNESCreate_NGMRES",       SNESCreate_NGMRES);CHKERRQ(ierr);
-  ierr = SNESRegisterDynamic(SNESQN,           path,"SNESCreate_QN",           SNESCreate_QN);CHKERRQ(ierr);
-  ierr = SNESRegisterDynamic(SNESSHELL,        path,"SNESCreate_Shell",        SNESCreate_Shell);CHKERRQ(ierr);
-  ierr = SNESRegisterDynamic(SNESGS,           path,"SNESCreate_GS",           SNESCreate_GS);CHKERRQ(ierr);
-  ierr = SNESRegisterDynamic(SNESNCG,          path,"SNESCreate_NCG",          SNESCreate_NCG);CHKERRQ(ierr);
-  ierr = SNESRegisterDynamic(SNESFAS,          path,"SNESCreate_FAS",          SNESCreate_FAS);CHKERRQ(ierr);
-  ierr = SNESRegisterDynamic(SNESMS,           path,"SNESCreate_MS",           SNESCreate_MS);CHKERRQ(ierr);
-  ierr = SNESRegisterDynamic(SNESNASM,         path,"SNESCreate_NASM",         SNESCreate_NASM);CHKERRQ(ierr);
-  ierr = SNESRegisterDynamic(SNESANDERSON,     path,"SNESCreate_Anderson",     SNESCreate_Anderson);CHKERRQ(ierr);
-  ierr = SNESRegisterDynamic(SNESASPIN,        path,"SNESCreate_ASPIN",        SNESCreate_ASPIN);CHKERRQ(ierr);
+  ierr = SNESRegister(SNESNEWTONLS,     SNESCreate_NEWTONLS);CHKERRQ(ierr);
+  ierr = SNESRegister(SNESNEWTONTR,     SNESCreate_NEWTONTR);CHKERRQ(ierr);
+  ierr = SNESRegister(SNESTEST,         SNESCreate_Test);CHKERRQ(ierr);
+  ierr = SNESRegister(SNESNRICHARDSON,  SNESCreate_NRichardson);CHKERRQ(ierr);
+  ierr = SNESRegister(SNESKSPONLY,      SNESCreate_KSPONLY);CHKERRQ(ierr);
+  ierr = SNESRegister(SNESVINEWTONRSLS, SNESCreate_VINEWTONRSLS);CHKERRQ(ierr);
+  ierr = SNESRegister(SNESVINEWTONSSLS, SNESCreate_VINEWTONSSLS);CHKERRQ(ierr);
+  ierr = SNESRegister(SNESNGMRES,       SNESCreate_NGMRES);CHKERRQ(ierr);
+  ierr = SNESRegister(SNESQN,           SNESCreate_QN);CHKERRQ(ierr);
+  ierr = SNESRegister(SNESSHELL,        SNESCreate_Shell);CHKERRQ(ierr);
+  ierr = SNESRegister(SNESGS,           SNESCreate_GS);CHKERRQ(ierr);
+  ierr = SNESRegister(SNESNCG,          SNESCreate_NCG);CHKERRQ(ierr);
+  ierr = SNESRegister(SNESFAS,          SNESCreate_FAS);CHKERRQ(ierr);
+  ierr = SNESRegister(SNESMS,           SNESCreate_MS);CHKERRQ(ierr);
+  ierr = SNESRegister(SNESNASM,         SNESCreate_NASM);CHKERRQ(ierr);
+  ierr = SNESRegister(SNESANDERSON,     SNESCreate_Anderson);CHKERRQ(ierr);
+  ierr = SNESRegister(SNESASPIN,        SNESCreate_ASPIN);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

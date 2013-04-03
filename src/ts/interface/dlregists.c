@@ -29,15 +29,12 @@ PetscErrorCode  TSFinalizePackage(void)
   from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to TSCreate()
   when using static libraries.
 
-  Input Parameter:
-  path - The dynamic library path, or NULL
-
   Level: developer
 
 .keywords: TS, initialize, package
 .seealso: PetscInitialize()
 @*/
-PetscErrorCode  TSInitializePackage(const char path[])
+PetscErrorCode  TSInitializePackage(void)
 {
   char           logList[256];
   char           *className;
@@ -48,16 +45,16 @@ PetscErrorCode  TSInitializePackage(const char path[])
   if (TSPackageInitialized) PetscFunctionReturn(0);
   TSPackageInitialized = PETSC_TRUE;
   /* Inialize subpackages */
-  ierr = TSGLInitializePackage(path);CHKERRQ(ierr);
-  ierr = TSARKIMEXInitializePackage(path);CHKERRQ(ierr);
-  ierr = TSRosWInitializePackage(path);CHKERRQ(ierr);
-  ierr = TSAdaptInitializePackage(path);CHKERRQ(ierr);
-  ierr = TSGLAdaptInitializePackage(path);CHKERRQ(ierr);
+  ierr = TSGLInitializePackage();CHKERRQ(ierr);
+  ierr = TSARKIMEXInitializePackage();CHKERRQ(ierr);
+  ierr = TSRosWInitializePackage();CHKERRQ(ierr);
+  ierr = TSAdaptInitializePackage();CHKERRQ(ierr);
+  ierr = TSGLAdaptInitializePackage();CHKERRQ(ierr);
   /* Register Classes */
   ierr = PetscClassIdRegister("TS",&TS_CLASSID);CHKERRQ(ierr);
   ierr = PetscClassIdRegister("DMTS",&DMTS_CLASSID);CHKERRQ(ierr);
   /* Register Constructors */
-  ierr = TSRegisterAll(path);CHKERRQ(ierr);
+  ierr = TSRegisterAll();CHKERRQ(ierr);
   /* Register Events */
   ierr = PetscLogEventRegister("TSStep",           TS_CLASSID,&TS_Step);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("TSPseudoCmptTStp", TS_CLASSID,&TS_PseudoComputeTimeStep);CHKERRQ(ierr);
@@ -91,15 +88,13 @@ PetscErrorCode  TSInitializePackage(const char path[])
 
   This one registers all the TS methods that are in the basic PETSc libpetscts library.
 
-  Input Parameter:
-  path - library path
  */
-PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscts(const char path[])
+PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscts(void)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = TSInitializePackage(path);CHKERRQ(ierr);
+  ierr = TSInitializePackage();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
