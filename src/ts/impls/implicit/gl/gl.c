@@ -795,7 +795,7 @@ PetscErrorCode  TSGLSetType_GL(TS ts,TSGLType type)
     ierr = (*gl->Destroy)(gl);CHKERRQ(ierr);
   }
 
-  ierr = PetscFunctionListFind(TSGLList,type,(PetscVoidStarFunction)&r);CHKERRQ(ierr);
+  ierr = PetscFunctionListFind(TSGLList,type,&r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown TSGL type \"%s\" given",type);
   ierr = (*r)(ts);CHKERRQ(ierr);
   ierr = PetscStrcpy(gl->type_name,type);CHKERRQ(ierr);
@@ -811,7 +811,7 @@ PetscErrorCode  TSGLSetAcceptType_GL(TS ts,TSGLAcceptType type)
   TS_GL              *gl = (TS_GL*)ts->data;
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListFind(TSGLAcceptList,type,(PetscVoidStarFunction)&r);CHKERRQ(ierr);
+  ierr = PetscFunctionListFind(TSGLAcceptList,type,&r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown TSGLAccept type \"%s\" given",type);
   gl->Accept = r;
   ierr = PetscStrncpy(gl->accept_name,type,sizeof(gl->accept_name));CHKERRQ(ierr);
@@ -1314,7 +1314,7 @@ PetscErrorCode  TSGLRegister(const char sname[],PetscErrorCode (*function)(TS))
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListAdd(&TSGLList,sname,(void(*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&TSGLList,sname,function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1353,7 +1353,7 @@ PetscErrorCode  TSGLAcceptRegister(const char sname[],TSGLAcceptFunction functio
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListAdd(&TSGLAcceptList,sname,(void(*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&TSGLAcceptList,sname,function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

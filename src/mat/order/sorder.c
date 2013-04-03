@@ -123,7 +123,7 @@ PetscErrorCode  MatOrderingRegister(const char sname[],PetscErrorCode (*function
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListAdd(&MatOrderingList,sname,(void (*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&MatOrderingList,sname,function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -280,7 +280,7 @@ PetscErrorCode  MatGetOrdering(Mat mat,MatOrderingType type,IS *rperm,IS *cperm)
   if (mmat != nmat) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Must be square matrix, rows %D columns %D",mmat,nmat);
 
   if (!MatOrderingRegisterAllCalled) {ierr = MatOrderingRegisterAll();CHKERRQ(ierr);}
-  ierr = PetscFunctionListFind(MatOrderingList,type,(void (**)(void)) &r);CHKERRQ(ierr);
+  ierr = PetscFunctionListFind(MatOrderingList,type,&r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Unknown or unregistered type: %s",type);
 
   ierr = PetscLogEventBegin(MAT_GetOrdering,mat,0,0,0);CHKERRQ(ierr);

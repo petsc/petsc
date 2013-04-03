@@ -68,7 +68,7 @@ PetscErrorCode  PetscSFRegister(const char sname[],PetscErrorCode (*function)(Pe
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListAdd(&PetscSFunctionList,sname,(void (*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&PetscSFunctionList,sname,function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

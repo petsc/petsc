@@ -52,7 +52,7 @@ PetscErrorCode  TSSetType(TS ts,TSType type)
   ierr = PetscObjectTypeCompare((PetscObject) ts, type, &match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
 
-  ierr = PetscFunctionListFind(TSList, type,(void (**)(void)) &r);CHKERRQ(ierr);
+  ierr = PetscFunctionListFind(TSList,type,&r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown TS type: %s", type);
   if (ts->ops->destroy) {
     ierr = (*(ts)->ops->destroy)(ts);CHKERRQ(ierr);
@@ -138,7 +138,7 @@ PetscErrorCode  TSRegister(const char sname[], PetscErrorCode (*function)(TS))
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListAdd(&TSList, sname, (void (*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&TSList,sname,function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

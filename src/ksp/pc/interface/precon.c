@@ -22,7 +22,7 @@ PetscErrorCode PCGetDefaultType_Private(PC pc,const char *type[])
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)pc),&size);CHKERRQ(ierr);
   if (pc->pmat) {
     PetscErrorCode (*f)(Mat,MatReuse,Mat*);
-    ierr = PetscObjectQueryFunction((PetscObject)pc->pmat,"MatGetDiagonalBlock_C",(void (**)(void))&f);CHKERRQ(ierr);
+    ierr = PetscObjectQueryFunction((PetscObject)pc->pmat,"MatGetDiagonalBlock_C",&f);CHKERRQ(ierr);
     if (size == 1) {
       ierr = MatGetFactorAvailable(pc->pmat,"petsc",MAT_FACTOR_ICC,&flg1);CHKERRQ(ierr);
       ierr = MatGetFactorAvailable(pc->pmat,"petsc",MAT_FACTOR_ILU,&flg2);CHKERRQ(ierr);
@@ -1748,7 +1748,7 @@ PetscErrorCode  PCRegister(const char sname[],PetscErrorCode (*function)(PC))
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListAdd(&PCList,sname,(void (*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&PCList,sname,function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

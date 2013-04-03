@@ -701,7 +701,7 @@ PetscErrorCode DMCreate_Mesh(DM dm)
 
   dm->ops->destroy = DMDestroy_Mesh;
 
-  ierr = PetscObjectComposeFunction((PetscObject) dm, "DMConvert_da_mesh_C", (void (*)(void))DMConvert_DA_Mesh);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject) dm, "DMConvert_da_mesh_C", DMConvert_DA_Mesh);CHKERRQ(ierr);
 
   /* NEW_MESH_IMPL */
   ierr = PetscOptionsBool("-dm_mesh_new_impl", "Use the new C unstructured mesh implementation", "DMCreate", PETSC_FALSE, &mesh->useNewImpl, NULL);CHKERRQ(ierr);

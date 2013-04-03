@@ -4295,7 +4295,7 @@ PetscErrorCode  MatInodeGetInodeSizes(Mat A,PetscInt *node_count,PetscInt *sizes
 
   PetscFunctionBegin;
   if (!A->assembled) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
-  ierr = PetscObjectQueryFunction((PetscObject)A,"MatInodeGetInodeSizes_C",(void (**)(void))&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)A,"MatInodeGetInodeSizes_C",&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(A,node_count,sizes,limit);CHKERRQ(ierr);
   }

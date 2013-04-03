@@ -2140,18 +2140,18 @@ int main(int argc, char **argv)
   mod->comm = comm;
 
   /* Register physical models to be available on the command line */
-  ierr = PetscFunctionListAdd(&PhysicsList,"advect"          ,(void(*)(void))PhysicsCreate_Advect);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(&PhysicsList,"sw"              ,(void(*)(void))PhysicsCreate_SW);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(&PhysicsList,"euler"           ,(void(*)(void))PhysicsCreate_Euler);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&PhysicsList,"advect"          ,PhysicsCreate_Advect);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&PhysicsList,"sw"              ,PhysicsCreate_SW);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&PhysicsList,"euler"           ,PhysicsCreate_Euler);CHKERRQ(ierr);
 
-  ierr = PetscFunctionListAdd(&LimitList,"zero"              ,(void(*)(void))Limit_Zero);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(&LimitList,"none"              ,(void(*)(void))Limit_None);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(&LimitList,"minmod"            ,(void(*)(void))Limit_Minmod);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(&LimitList,"vanleer"           ,(void(*)(void))Limit_VanLeer);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(&LimitList,"vanalbada"         ,(void(*)(void))Limit_VanAlbada);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(&LimitList,"sin"               ,(void(*)(void))Limit_Sin);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(&LimitList,"superbee"          ,(void(*)(void))Limit_Superbee);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(&LimitList,"mc"                ,(void(*)(void))Limit_MC);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&LimitList,"zero"              ,Limit_Zero);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&LimitList,"none"              ,Limit_None);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&LimitList,"minmod"            ,Limit_Minmod);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&LimitList,"vanleer"           ,Limit_VanLeer);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&LimitList,"vanalbada"         ,Limit_VanAlbada);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&LimitList,"sin"               ,Limit_Sin);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&LimitList,"superbee"          ,Limit_Superbee);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&LimitList,"mc"                ,Limit_MC);CHKERRQ(ierr);
 
   ierr = PetscOptionsBegin(comm,NULL,"Unstructured Finite Volume Options","");CHKERRQ(ierr);
   {
@@ -2168,7 +2168,7 @@ int main(int argc, char **argv)
 
     ierr = PetscOptionsBool("-ufv_vtk_cellgeom","Write cell geometry (for debugging)","",vtkCellGeom,&vtkCellGeom,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsList("-physics","Physics module to solve","",PhysicsList,physname,physname,sizeof physname,NULL);CHKERRQ(ierr);
-    ierr = PetscFunctionListFind(PhysicsList,physname,(void(**)(void))&physcreate);CHKERRQ(ierr);
+    ierr = PetscFunctionListFind(PhysicsList,physname,&physcreate);CHKERRQ(ierr);
     ierr = PetscMemzero(phys,sizeof(struct _n_Physics));CHKERRQ(ierr);
     ierr = (*physcreate)(mod,phys);CHKERRQ(ierr);
     mod->maxspeed = phys->maxspeed;
@@ -2183,7 +2183,7 @@ int main(int argc, char **argv)
     ierr = PetscOptionsBool("-ufv_split_faces","Split faces between cell sets","",splitFaces,&splitFaces,NULL);CHKERRQ(ierr);
     if (user->reconstruct) {
       ierr = PetscOptionsList("-ufv_limit","Limiter to apply to reconstructed solution","",LimitList,limitname,limitname,sizeof limitname,NULL);CHKERRQ(ierr);
-      ierr = PetscFunctionListFind(LimitList,limitname,(void(**)(void))&user->Limit);CHKERRQ(ierr);
+      ierr = PetscFunctionListFind(LimitList,limitname,&user->Limit);CHKERRQ(ierr);
     }
     ierr = ModelFunctionalSetFromOptions(mod);CHKERRQ(ierr);
   }

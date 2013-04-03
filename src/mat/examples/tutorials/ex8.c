@@ -69,7 +69,7 @@ PetscErrorCode MatScaleUserImpl(Mat mat,PetscScalar a)
   PetscErrorCode ierr,(*f)(Mat,PetscScalar);
 
   PetscFunctionBegin;
-  ierr = PetscObjectQueryFunction((PetscObject)mat,"MatScaleUserImpl_C",(void (**)(void))&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)mat,"MatScaleUserImpl_C",&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(mat,a);CHKERRQ(ierr);
   }

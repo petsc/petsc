@@ -127,7 +127,7 @@ PetscErrorCode PetscSFSetType(PetscSF sf,PetscSFType type)
   ierr = PetscObjectTypeCompare((PetscObject)sf,type,&match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
 
-  ierr = PetscFunctionListFind(PetscSFunctionList,type,(void (**)(void))&r);CHKERRQ(ierr);
+  ierr = PetscFunctionListFind(PetscSFunctionList,type,&r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested PetscSF type %s",type);
   /* Destroy the previous private PetscSF context */
   if (sf->ops->Destroy) {

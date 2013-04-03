@@ -126,7 +126,7 @@ PetscErrorCode  MatMFFDSetType(Mat mat,MatMFFDType ftype)
     ierr = (*ctx->ops->destroy)(ctx);CHKERRQ(ierr);
   }
 
-  ierr =  PetscFunctionListFind(MatMFFDList,ftype,(void (**)(void)) &r);CHKERRQ(ierr);
+  ierr =  PetscFunctionListFind(MatMFFDList,ftype,&r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown MatMFFD type %s given",ftype);
   ierr = (*r)(ctx);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)ctx,ftype);CHKERRQ(ierr);
@@ -203,7 +203,7 @@ PetscErrorCode  MatMFFDRegister(const char sname[],PetscErrorCode (*function)(Ma
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListAdd(&MatMFFDList,sname,(void (*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&MatMFFDList,sname,function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -40,7 +40,7 @@ PetscErrorCode  VecSetType(Vec vec, VecType method)
   ierr = PetscObjectTypeCompare((PetscObject) vec, method, &match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
 
-  ierr = PetscFunctionListFind(VecList,  method,(void (**)(void)) &r);CHKERRQ(ierr);
+  ierr = PetscFunctionListFind(VecList,method,&r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown vector type: %s", method);
   if (vec->ops->destroy) {
     ierr = (*vec->ops->destroy)(vec);CHKERRQ(ierr);
@@ -130,7 +130,7 @@ PetscErrorCode  VecRegister(const char sname[], PetscErrorCode (*function)(Vec))
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListAdd(&VecList, sname, (void (*)(void)) function);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&VecList,sname,function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

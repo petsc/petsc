@@ -185,7 +185,7 @@ PetscErrorCode CharacteristicSetType(Characteristic c, CharacteristicType type)
     c->data         = 0;
   }
 
-  ierr =  PetscFunctionListFind(CharacteristicList, type,(void (**)(void)) &r);CHKERRQ(ierr);
+  ierr =  PetscFunctionListFind(CharacteristicList,type,&r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown Characteristic type given: %s", type);
   c->setupcalled = 0;
   ierr = (*r)(c);CHKERRQ(ierr);
@@ -272,7 +272,7 @@ PetscErrorCode CharacteristicRegister(const char sname[],PetscErrorCode (*functi
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListAdd(&CharacteristicList,sname,(void (*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&CharacteristicList,sname,function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

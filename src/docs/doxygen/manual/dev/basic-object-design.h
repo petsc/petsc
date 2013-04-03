@@ -88,13 +88,13 @@ All PETSc/PETSc objects have the following common header structures
 \code
 /* Function table common to all %PETSc compatible classes */
 typedef struct {
-   int (*getcomm)(PetscObject,MPI_Comm *);
-   int (*view)(PetscObject,Viewer);
-   int (*destroy)(PetscObject);
-   int (*query)(PetscObject,char *,PetscObject *);
-   int (*compose)(PetscObject,char*,PetscObject);
-   int (*composefunction)(PetscObject,char *,char *,void *);
-   int (*queryfunction)(PetscObject,char *, void **);
+  int (*getcomm)(PetscObject,MPI_Comm *);
+  int (*view)(PetscObject,Viewer);
+  int (*destroy)(PetscObject);
+  int (*query)(PetscObject,const char *,PetscObject *);
+  int (*compose)(PetscObject,const char*,PetscObject);
+  int (*composefunction)(PetscObject,const char *,void (*)(void));
+  int (*queryfunction)(PetscObject,const char *,void (**)(void));
 } PetscOps;
 
 /* Data structure header common to all PETSc compatible classs */
@@ -333,76 +333,42 @@ The %PETSc object `compose()` and `query()` functions are then simply
 
 \subsection dev-basic-object-design-compose-and-query-function Compose and Query Function
 
-%PETSc allows one to compose functions by string name (to be loaded later from
-a dynamic library) or by function pointer. In `src/sys/dll/reg.c`
-%PETSc defines the C structure
+%PETSc allows one to compose functions by string name and function pointer. In `src/sys/dll/reg.c`,
+%PETSc defines the linked list structure
 
 \code
-typedef struct _PetscFList* PetscFList;
-struct _PetscFList {
-  int    (*routine)(void *);
-  char   *path;
-  char   *name;
-  char   *rname;            /* name of create function in link library */
-  PetscFList  *next;
+typedef struct _PetscFunctionList *PetscFunctionList;
+struct _PetscFunctionList {
+  int  (*routine)(void);
+  char *name;
+  PetscFunctionList *next;
 };
 \endcode
 
-The PetscFList object is a linked list of function data; each
-of which contains
-  - a function pointer (if it has already been loaded into memory from the dynamic library)
-  - the ``path'' (directory and library name) where the function exists (if it is
-      loaded from a dynamic library)
-  - the ``short'' name of the function,
-  - the actual name of the function as a string (for dynamic libraries this string is used
-      to load in the actual function pointer).
-
-
-Each %PETSc object contains a PetscFList object. The `composefunction()` and
+Each %PETSc object contains a PetscFunctionList object. The `composefunction()` and
 `queryfunction()` are given by
 
 \code
-PetscErrorCode PetscObjectComposeFunction_Petsc(PetscObject obj,char *name,void *ptr)
+PetscErrorCode PetscObjectComposeFunction_Petsc(PetscObject obj,char *name,void (*ptr)(void))
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFListAdd(\&obj-$>$qlist,name,fname,(int (*)(void *))ptr);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(\&obj-$>$qlist,name,fname,ptr);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscObjectQueryFunction_Petsc(PetscObject obj,char *name,void **ptr)
+PetscErrorCode PetscObjectQueryFunction_Petsc(PetscObject obj,char *name,void (**fptr)(void))
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFListFind(obj-$>$qlist,obj-$>$comm,name,PETSC_FALSE,( int(**)(void *)) ptr);CHKERRQ(ierr);
+  ierr = PetscFunctionListFind(obj-$>$qlist,obj-$>$comm,name,fptr);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 \endcode
 
-  Because we need to support function composition on systems both **with** and **without**
-dynamic link libraries the actual source code is a little messy. The idea is that
-on systems with dynamic libraries all %PETSc ``register'' and ``composefunction''
-function calls that take the actual
-function pointer argument must eliminate this argument in the preprocessor step before
-the code is compiled. Otherwise, since the compiler sees the function pointer, it will
-compile it in and link in all those functions; thus one could not take advantage of the
-dynamic libraries. This is done with macros like the following
-\code
-#if defined(USE_DYNAMIC_LIBRARIES)
-#define       PetscFListAdd(a,b,p,c) PetscFListAdd_Private(a,b,p,0)
-#else
-#define       PetscFListAdd(a,b,p,c) PetscFListAdd_Private(a,b,p,(int (*)(void *))c)
-#endif
-\endcode
-Thus when the code is compiled with the dynamic link library flag the function pointer
-argument is removed from the code; otherwise it is retained. Ugly, but neccessary.
-
-The `PetscFListAdd_Private()` and all related routines can be found in the directory
-`src/sys/dll`.
-
-In addition to using the PetscFList mechanism to compose functions into %PETSc objects, it is
+In addition to using the PetscFunctionList mechanism to compose functions into %PETSc objects, it is
 also used to allow registration of new class implementations; for example, new
 preconditioners, see Section \ref dev-petsc-objects-registering.
 

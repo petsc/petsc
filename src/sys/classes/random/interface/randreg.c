@@ -39,7 +39,7 @@ PetscErrorCode  PetscRandomSetType(PetscRandom rnd, PetscRandomType type)
   ierr = PetscObjectTypeCompare((PetscObject)rnd, type, &match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
 
-  ierr = PetscFunctionListFind(PetscRandomList,  type,(void (**)(void)) &r);CHKERRQ(ierr);
+  ierr = PetscFunctionListFind(PetscRandomList,type,&r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown random type: %s", type);
 
   if (rnd->ops->destroy) {
@@ -124,7 +124,7 @@ PetscErrorCode  PetscRandomRegister(const char sname[], PetscErrorCode (*functio
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListAdd(&PetscRandomList,sname,(void (*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&PetscRandomList,sname,function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

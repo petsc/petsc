@@ -80,7 +80,7 @@ PetscErrorCode  ISSetType(IS is, ISType method)
   if (match) PetscFunctionReturn(0);
 
   if (!ISRegisterAllCalled) {ierr = ISRegisterAll();CHKERRQ(ierr);}
-  ierr = PetscFunctionListFind(ISList, method,(void (**)(void)) &r);CHKERRQ(ierr);
+  ierr = PetscFunctionListFind(ISList,method,&r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown IS type: %s", method);
   if (is->ops->destroy) {
     ierr = (*is->ops->destroy)(is);CHKERRQ(ierr);
@@ -169,7 +169,7 @@ PetscErrorCode  ISRegister(const char sname[], PetscErrorCode (*function)(IS))
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListAdd(&ISList, sname, (void (*)(void)) function);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&ISList,sname,function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

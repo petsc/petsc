@@ -831,10 +831,12 @@ PetscErrorCode  PetscObjectComposeFunction_Private(PetscObject obj,const char na
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscObjectQueryFunction"
-/*@C
+/*MC
    PetscObjectQueryFunction - Gets a function associated with a given object.
+
+    Synopsis:
+    #include "petscsys.h"
+    PetscErrorCode PetscObjectQueryFunction(PetscObject obj,const char name[],void (**fptr)(void))
 
    Logically Collective on PetscObject
 
@@ -844,7 +846,7 @@ PetscErrorCode  PetscObjectComposeFunction_Private(PetscObject obj,const char na
 -  name - name associated with the child function
 
    Output Parameter:
-.  ptr - function pointer
+.  fptr - function pointer
 
    Level: advanced
 
@@ -854,9 +856,11 @@ PetscErrorCode  PetscObjectComposeFunction_Private(PetscObject obj,const char na
    Concepts: objects^querying
    Concepts: querying objects
 
-.seealso: PetscObjectComposeFunction()
-@*/
-PetscErrorCode  PetscObjectQueryFunction(PetscObject obj,const char name[],void (**ptr)(void))
+.seealso: PetscObjectComposeFunction(), PetscFunctionListFind()
+M*/
+#undef __FUNCT__
+#define __FUNCT__ "PetscObjectQueryFunction_Private"
+PETSC_EXTERN PetscErrorCode PetscObjectQueryFunction_Private(PetscObject obj,const char name[],void (**ptr)(void))
 {
   PetscErrorCode ierr;
 
