@@ -46,6 +46,7 @@ typedef const char* SNESType;
 #define SNESNASM         "nasm"
 #define SNESANDERSON     "anderson"
 #define SNESASPIN        "aspin"
+#define SNESCOMPOSITE    "composite"
 
 /* Logging support */
 PETSC_EXTERN PetscClassId SNES_CLASSID;
@@ -687,5 +688,29 @@ PETSC_EXTERN PetscErrorCode SNESNASMGetSubdomains(SNES,PetscInt*,SNES**,VecScatt
 PETSC_EXTERN PetscErrorCode SNESNASMSetSubdomains(SNES,PetscInt,SNES*,VecScatter*,VecScatter*,VecScatter*);
 PETSC_EXTERN PetscErrorCode SNESNASMGetSubdomainVecs(SNES,PetscInt*,Vec**,Vec**,Vec**,Vec**);
 PETSC_EXTERN PetscErrorCode SNESNASMSetComputeFinalJacobian(SNES,PetscBool);
+
+
+/*E
+    SNESCompositeType - Determines how two or more preconditioner are composed
+
+$  SNES_COMPOSITE_ADDITIVE - results from application of all preconditioners are added together
+$  SNES_COMPOSITE_MULTIPLICATIVE - preconditioners are applied sequentially to the residual freshly
+$                                computed after the previous preconditioner application
+$  SNES_COMPOSITE_SYMMETRIC_MULTIPLICATIVE - preconditioners are applied sequentially to the residual freshly
+$                                computed from first preconditioner to last and then back (Use only for symmetric matrices and preconditions)
+$  SNES_COMPOSITE_SPECIAL - This is very special for a matrix of the form alpha I + R + S
+$                         where first preconditioner is built from alpha I + S and second from
+$                         alpha I + R
+
+   Level: beginner
+
+.seealso: SNESCompositeSetType()
+E*/
+typedef enum {SNES_COMPOSITE_ADDITIVE,SNES_COMPOSITE_MULTIPLICATIVE} SNESCompositeType;
+PETSC_EXTERN const char *const SNESCompositeTypes[];
+
+PETSC_EXTERN PetscErrorCode SNESCompositeSetType(SNES,SNESCompositeType);
+PETSC_EXTERN PetscErrorCode SNESCompositeAddSNES(SNES,SNESType);
+PETSC_EXTERN PetscErrorCode SNESCompositeGetSNES(SNES,PetscInt,SNES *);
 
 #endif
