@@ -620,7 +620,6 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
       }
       ierr = KSPSetOperators(jac->kspschur,jac->schur,FieldSplitSchurPre(jac),pc->flag);CHKERRQ(ierr);
     } else {
-      KSP          ksp;
       const char   *Dprefix;
       char         schurprefix[256];
       char         schurtestoption[256];
@@ -640,11 +639,6 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
       /* Use mat[0] (diagonal block of Amat) preconditioned by pmat[0] to define Schur complement */
       ierr = MatCreate(((PetscObject)jac->mat[0])->comm,&jac->schur);CHKERRQ(ierr);
       ierr = MatSetType(jac->schur,MATSCHURCOMPLEMENT);CHKERRQ(ierr);
-      ierr = MatSchurComplementGetKSP(jac->schur, &ksp);CHKERRQ(ierr);
-      ierr = PetscSNPrintf(schurprefix, sizeof(schurprefix), "%sfieldsplit_%s_inner_", ((PetscObject)pc)->prefix ? ((PetscObject)pc)->prefix : "", ilink->splitname);CHKERRQ(ierr);
-      /* Indent this deeper to emphasize the "inner" nature of this solver. */
-      ierr = PetscObjectIncrementTabLevel((PetscObject)ksp, (PetscObject) pc, 2);CHKERRQ(ierr);
-      ierr = KSPSetOptionsPrefix(ksp, schurprefix);CHKERRQ(ierr);
       ierr = MatSchurComplementSet(jac->schur,jac->mat[0],jac->pmat[0],jac->B,jac->C,jac->mat[1]);CHKERRQ(ierr);
 
       ierr = MatGetNullSpace(jac->pmat[1], &sp);CHKERRQ(ierr);
@@ -655,18 +649,31 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
       ierr = PetscSNPrintf(schurtestoption, sizeof(schurtestoption), "-fieldsplit_%s_inner_", ilink->splitname);CHKERRQ(ierr);
       ierr = PetscOptionsFindPairPrefix_Private(((PetscObject)pc)->prefix, schurtestoption, NULL, &flg);CHKERRQ(ierr);
       if (flg) {
-        DM dmInner;
+        DM  dmInner;
+        KSP kspInner;
+
+        ierr = MatSchurComplementGetKSP(jac->schur, &kspInner);CHKERRQ(ierr);
+        ierr = PetscSNPrintf(schurprefix, sizeof(schurprefix), "%sfieldsplit_%s_inner_", ((PetscObject)pc)->prefix ? ((PetscObject)pc)->prefix : "", ilink->splitname);CHKERRQ(ierr);
+        /* Indent this deeper to emphasize the "inner" nature of this solver. */
+        ierr = PetscObjectIncrementTabLevel((PetscObject)kspInner, (PetscObject) pc, 2);CHKERRQ(ierr);
+        ierr = KSPSetOptionsPrefix(kspInner, schurprefix);CHKERRQ(ierr);
 
         /* Set DM for new solver */
         ierr = KSPGetDM(jac->head->ksp, &dmInner);CHKERRQ(ierr);
-        ierr = KSPSetDM(ksp, dmInner);CHKERRQ(ierr);
-        ierr = KSPSetDMActive(ksp, PETSC_FALSE);CHKERRQ(ierr);
-        ierr = KSPSetOperators(jac->head->ksp,jac->mat[0],jac->pmat[0],flag);CHKERRQ(ierr);
-        ierr = KSPSetFromOptions(jac->head->ksp);CHKERRQ(ierr);
+        ierr = KSPSetDM(kspInner, dmInner);CHKERRQ(ierr);
+        ierr = KSPSetDMActive(kspInner, PETSC_FALSE);CHKERRQ(ierr);
       } else {
-        ierr = MatSchurComplementSetKSP(jac->schur, jac->head->ksp);CHKERRQ(ierr);
-        ierr = PetscObjectReference((PetscObject) jac->head->ksp);CHKERRQ(ierr);
+         /* Use the outer solver for the inner solve, but revert the KSPPREONLY from PCFieldSplitSetFields_FieldSplit or
+          * PCFieldSplitSetIS_FieldSplit. We don't want KSPPREONLY because it makes the Schur complement inexact,
+          * preventing Schur complement reduction to be an accurate solve. Usually when an iterative solver is used for
+          * S = D - C A_inner^{-1} B, we expect S to be defined using an accurate definition of A_inner^{-1}, so we make
+          * GMRES the default. Note that it is also common to use PREONLY for S, in which case S may not be used
+          * directly, and the user is responsible for setting an inexact method for fieldsplit's A^{-1}. */
+        ierr = KSPSetType(jac->head->ksp,KSPGMRES);CHKERRQ(ierr);
+        ierr = MatSchurComplementSetKSP(jac->schur,jac->head->ksp);CHKERRQ(ierr);
       }
+      ierr = KSPSetOperators(jac->head->ksp,jac->mat[0],jac->pmat[0],flag);CHKERRQ(ierr);
+      ierr = KSPSetFromOptions(jac->head->ksp);CHKERRQ(ierr);
       ierr = MatSetFromOptions(jac->schur);CHKERRQ(ierr);
 
       ierr = PetscSNPrintf(schurtestoption, sizeof(schurtestoption), "-fieldsplit_%s_upper_", ilink->splitname);CHKERRQ(ierr);
