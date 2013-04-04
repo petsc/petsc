@@ -338,7 +338,9 @@ PetscErrorCode MatRARt_SeqAIJ_SeqAIJ(Mat A,Mat R,MatReuse scall,PetscReal fill,M
   Mat_RARt       *rart;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsEList("-matrart_via","Algorithm of MatRARt","",algTypes,3,algTypes[0],&alg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectOptionsBegin((PetscObject)A);CHKERRQ(ierr);
+  ierr = PetscOptionsEList("-matrart_via","Algorithmic approach","MatRARt",algTypes,3,algTypes[0],&alg,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
   switch (alg) {
   case 1:
     /* via matmattransposemult: ARt=A*R^T, C=R*ARt - matrix coloring can be applied to A*R^T */
