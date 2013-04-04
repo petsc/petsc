@@ -1780,24 +1780,26 @@ static PetscErrorCode DMPlexCreateSubmesh_Uninterpolated(DM dm, const char verte
     ierr = PetscSectionSetUp(subCoordSection);CHKERRQ(ierr);
     ierr = PetscSectionGetStorageSize(subCoordSection, &coordSize);CHKERRQ(ierr);
     ierr = VecCreate(comm, &subCoordinates);CHKERRQ(ierr);
-    ierr = VecSetSizes(subCoordinates, coordSize, PETSC_DETERMINE);CHKERRQ(ierr);
-    ierr = VecSetFromOptions(subCoordinates);CHKERRQ(ierr);
-    ierr = VecGetArray(coordinates,    &coords);CHKERRQ(ierr);
-    ierr = VecGetArray(subCoordinates, &subCoords);CHKERRQ(ierr);
-    for (v = 0; v < numSubVertices; ++v) {
-      const PetscInt vertex    = subVertices[v];
-      const PetscInt subvertex = firstSubVertex+v;
-      PetscInt       dof, off, sdof, soff, d;
+    if (coordSize) {
+      ierr = VecSetSizes(subCoordinates, coordSize, PETSC_DETERMINE);CHKERRQ(ierr);
+      ierr = VecSetFromOptions(subCoordinates);CHKERRQ(ierr);
+      ierr = VecGetArray(coordinates,    &coords);CHKERRQ(ierr);
+      ierr = VecGetArray(subCoordinates, &subCoords);CHKERRQ(ierr);
+      for (v = 0; v < numSubVertices; ++v) {
+        const PetscInt vertex    = subVertices[v];
+        const PetscInt subvertex = firstSubVertex+v;
+        PetscInt       dof, off, sdof, soff, d;
 
-      ierr = PetscSectionGetDof(coordSection, vertex, &dof);CHKERRQ(ierr);
-      ierr = PetscSectionGetOffset(coordSection, vertex, &off);CHKERRQ(ierr);
-      ierr = PetscSectionGetDof(subCoordSection, subvertex, &sdof);CHKERRQ(ierr);
-      ierr = PetscSectionGetOffset(subCoordSection, subvertex, &soff);CHKERRQ(ierr);
-      if (dof != sdof) SETERRQ4(comm, PETSC_ERR_PLIB, "Coordinate dimension %d on subvertex %d, vertex %d should be %d", sdof, subvertex, vertex, dof);
-      for (d = 0; d < dof; ++d) subCoords[soff+d] = coords[off+d];
+        ierr = PetscSectionGetDof(coordSection, vertex, &dof);CHKERRQ(ierr);
+        ierr = PetscSectionGetOffset(coordSection, vertex, &off);CHKERRQ(ierr);
+        ierr = PetscSectionGetDof(subCoordSection, subvertex, &sdof);CHKERRQ(ierr);
+        ierr = PetscSectionGetOffset(subCoordSection, subvertex, &soff);CHKERRQ(ierr);
+        if (dof != sdof) SETERRQ4(comm, PETSC_ERR_PLIB, "Coordinate dimension %d on subvertex %d, vertex %d should be %d", sdof, subvertex, vertex, dof);
+        for (d = 0; d < dof; ++d) subCoords[soff+d] = coords[off+d];
+      }
+      ierr = VecRestoreArray(coordinates,    &coords);CHKERRQ(ierr);
+      ierr = VecRestoreArray(subCoordinates, &subCoords);CHKERRQ(ierr);
     }
-    ierr = VecRestoreArray(coordinates,    &coords);CHKERRQ(ierr);
-    ierr = VecRestoreArray(subCoordinates, &subCoords);CHKERRQ(ierr);
     ierr = DMSetCoordinatesLocal(subdm, subCoordinates);CHKERRQ(ierr);
     ierr = VecDestroy(&subCoordinates);CHKERRQ(ierr);
   }
