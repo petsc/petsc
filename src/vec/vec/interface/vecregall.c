@@ -49,9 +49,9 @@ PetscErrorCode  VecRegisterAll(void)
   ierr = VecRegister(VECCUSP,       VecCreate_CUSP);CHKERRQ(ierr);
 #endif
 #if defined PETSC_HAVE_VIENNACL
-  ierr = VecRegisterDynamic(VECSEQVIENNACL,  path, "VecCreate_SeqViennaCL",  VecCreate_SeqViennaCL);CHKERRQ(ierr);
-  ierr = VecRegisterDynamic(VECMPIVIENNACL,  path, "VecCreate_MPIViennaCL",  VecCreate_MPIViennaCL);CHKERRQ(ierr);
-  ierr = VecRegisterDynamic(VECVIENNACL,     path, "VecCreate_ViennaCL",     VecCreate_ViennaCL);CHKERRQ(ierr);
+  ierr = VecRegister(VECSEQVIENNACL,  VecCreate_SeqViennaCL);CHKERRQ(ierr);
+  ierr = VecRegister(VECMPIVIENNACL,  VecCreate_MPIViennaCL);CHKERRQ(ierr);
+  ierr = VecRegister(VECVIENNACL,     VecCreate_ViennaCL);CHKERRQ(ierr);
 #endif
 #if 0
 #if defined(PETSC_HAVE_SIEVE)

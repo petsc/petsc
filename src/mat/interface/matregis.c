@@ -146,8 +146,8 @@ PetscErrorCode  MatRegisterAll(void)
 
   #if defined PETSC_HAVE_VIENNACL
   ierr = MatRegisterBaseName(MATAIJVIENNACL,MATSEQAIJVIENNACL,MATMPIAIJVIENNACL);CHKERRQ(ierr);
-  ierr = MatRegisterDynamic(MATSEQAIJVIENNACL,     path,"MatCreate_SeqAIJViennaCL",  MatCreate_SeqAIJViennaCL);CHKERRQ(ierr);
-  ierr = MatRegisterDynamic(MATMPIAIJVIENNACL,     path,"MatCreate_MPIAIJViennaCL",  MatCreate_MPIAIJViennaCL);CHKERRQ(ierr);
+  ierr = MatRegister(MATSEQAIJVIENNACL, MatCreate_SeqAIJViennaCL);CHKERRQ(ierr);
+  ierr = MatRegister(MATMPIAIJVIENNACL, MatCreate_MPIAIJViennaCL);CHKERRQ(ierr);
 #endif
 
 
