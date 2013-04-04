@@ -21,7 +21,12 @@
 #define PCPARMSLocalType PetscEnum
 #define PCFieldSplitSchurFactType PetscEnum
 #define CoarseProblemType PetscEnum
-#define PCGAMGType PetscEnum
+#define PCGAMGType character*(80)
+!
+! GAMG types
+!
+#define PCGAMGAGG 'agg'
+#define PCGAMGGEO  'geo'
 !
 !  Various preconditioners
 !

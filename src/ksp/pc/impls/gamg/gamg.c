@@ -1483,8 +1483,8 @@ PETSC_EXTERN PetscErrorCode PCCreate_GAMG(PC pc)
 
   /* register AMG type */
   if (!GAMGList) {
-    ierr = PetscFunctionListAdd(&GAMGList,GAMGGEO,PCCreateGAMG_GEO);CHKERRQ(ierr);
-    ierr = PetscFunctionListAdd(&GAMGList,GAMGAGG,PCCreateGAMG_AGG);CHKERRQ(ierr);
+    ierr = PetscFunctionListAdd(&GAMGList,PCGAMGGEO,PCCreateGAMG_GEO);CHKERRQ(ierr);
+    ierr = PetscFunctionListAdd(&GAMGList,PCGAMGAGG,PCCreateGAMG_AGG);CHKERRQ(ierr);
   }
 
   /* overwrite the pointers of PCMG by the functions of base class PCGAMG */
@@ -1567,7 +1567,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_GAMG(PC pc)
   /* instantiate derived type */
   ierr = PetscOptionsHead("GAMG options");CHKERRQ(ierr);
   {
-    char tname[256] = GAMGAGG;
+    char tname[256] = PCGAMGAGG;
     ierr = PetscOptionsList("-pc_gamg_type","Type of GAMG method","PCGAMGSetType",GAMGList, tname, tname, sizeof(tname), NULL);CHKERRQ(ierr);
     ierr = PCGAMGSetType(pc, tname);CHKERRQ(ierr);
   }

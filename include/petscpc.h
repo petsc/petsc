@@ -428,6 +428,9 @@ PETSC_EXTERN PetscErrorCode PCPARMSSetSolveRestart(PC pc,PetscInt restart);
 PETSC_EXTERN PetscErrorCode PCPARMSSetNonsymPerm(PC pc,PetscBool nonsym);
 PETSC_EXTERN PetscErrorCode PCPARMSSetFill(PC pc,PetscInt lfil0,PetscInt lfil1,PetscInt lfil2);
 
+typedef const char *PCGAMGType;
+#define PCGAMGAGG         "agg"
+#define PCGAMGGEO         "geo"
 PETSC_EXTERN PetscErrorCode PCGAMGSetProcEqLim(PC,PetscInt);
 PETSC_EXTERN PetscErrorCode PCGAMGSetRepartitioning(PC,PetscBool);
 PETSC_EXTERN PetscErrorCode PCGAMGSetUseASMAggs(PC,PetscBool);
@@ -435,7 +438,6 @@ PETSC_EXTERN PetscErrorCode PCGAMGSetSolverType(PC,char[],PetscInt);
 PETSC_EXTERN PetscErrorCode PCGAMGSetThreshold(PC,PetscReal);
 PETSC_EXTERN PetscErrorCode PCGAMGSetCoarseEqLim(PC,PetscInt);
 PETSC_EXTERN PetscErrorCode PCGAMGSetNlevels(PC,PetscInt);
-typedef const char* PCGAMGType;
 PETSC_EXTERN PetscErrorCode PCGAMGSetType( PC,PCGAMGType );
 PETSC_EXTERN PetscErrorCode PCGAMGSetNSmooths(PC pc, PetscInt n);
 PETSC_EXTERN PetscErrorCode PCGAMGSetSymGraph(PC pc, PetscBool n);

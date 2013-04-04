@@ -38,9 +38,6 @@ typedef struct gamg_TAG {
   void *subctx;
 } PC_GAMG;
 
-#define GAMGAGG "agg"
-#define GAMGGEO "geo"
-
 PetscErrorCode PCSetFromOptions_MG(PC);
 PetscErrorCode PCReset_MG(PC);
 
