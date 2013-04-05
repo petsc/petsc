@@ -805,6 +805,7 @@ PetscErrorCode PCBDDCGraphResetCSR(PCBDDCGraph graph)
   PetscFunctionBegin;
   ierr = PetscFree(graph->xadj);CHKERRQ(ierr);
   ierr = PetscFree(graph->adjncy);CHKERRQ(ierr);
+  graph->nvtxs_csr = 0;
   PetscFunctionReturn(0);
 }
 
@@ -913,6 +914,7 @@ PetscErrorCode PCBDDCGraphCreate(PCBDDCGraph *graph)
   new_graph->subset_ncc = 0;
   new_graph->touched = 0;
   /* zeroes pointers to csr graph of local nodes connectivity (optional data) */
+  new_graph->nvtxs_csr = 0;
   new_graph->xadj = 0;
   new_graph->adjncy = 0;
   *graph = new_graph;

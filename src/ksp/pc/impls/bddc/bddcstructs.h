@@ -10,6 +10,7 @@ struct _PCBDDCGraph {
   PetscInt               ncc;
   PetscInt               n_subsets;
   PetscInt               custom_minimal_size;
+  PetscInt               nvtxs_csr;
   PetscInt               *xadj;
   PetscInt               *adjncy;
   PetscInt               **neighbours_set;

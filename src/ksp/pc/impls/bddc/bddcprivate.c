@@ -888,6 +888,10 @@ PetscErrorCode PCBDDCAnalyzeInterface(PC pc)
   /* Init local Graph struct */
   ierr = PCBDDCGraphInit(pcbddc->mat_graph,matis->mapping);CHKERRQ(ierr);
 
+  /* Check validity of the csr graph passed in by the user */
+  if (pcbddc->mat_graph->nvtxs_csr != pcbddc->mat_graph->nvtxs) {
+    ierr = PCBDDCGraphResetCSR(pcbddc->mat_graph);CHKERRQ(ierr);
+  }
   /* Set default CSR adjacency of local dofs if not provided by the user with PCBDDCSetLocalAdjacencyGraph */
   if (!pcbddc->mat_graph->xadj || !pcbddc->mat_graph->adjncy) {
     Mat mat_adj;

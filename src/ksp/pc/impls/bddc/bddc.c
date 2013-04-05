@@ -462,6 +462,7 @@ static PetscErrorCode PCBDDCSetLocalAdjacencyGraph_BDDC(PC pc, PetscInt nvtxs,co
     mat_graph->xadj = (PetscInt*)xadj;
     mat_graph->adjncy = (PetscInt*)adjncy;
   }
+  mat_graph->nvtxs_csr = nvtxs;
   PetscFunctionReturn(0);
 }
 
@@ -487,8 +488,7 @@ static PetscErrorCode PCBDDCSetLocalAdjacencyGraph_BDDC(PC pc, PetscInt nvtxs,co
 @*/
 PetscErrorCode PCBDDCSetLocalAdjacencyGraph(PC pc,PetscInt nvtxs,const PetscInt xadj[],const PetscInt adjncy[], PetscCopyMode copymode)
 {
-  PetscInt       nrows,ncols;
-  Mat_IS         *matis = (Mat_IS*)pc->pmat->data;
+  void (*f)(void) = 0;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -498,10 +498,13 @@ PetscErrorCode PCBDDCSetLocalAdjacencyGraph(PC pc,PetscInt nvtxs,const PetscInt 
   if (copymode != PETSC_COPY_VALUES && copymode != PETSC_OWN_POINTER) {
     SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unsupported copy mode %d in %s\n",copymode,__FUNCT__);
   }
-  /* pcis info could not be available at this point */
-  ierr = MatGetSize(matis->A,&nrows,&ncols);CHKERRQ(ierr);
-  if (nvtxs != nrows) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local adjacency size %d passed in %s differs from local problem size %d!\n",nvtxs,__FUNCT__,nrows);
   ierr = PetscTryMethod(pc,"PCBDDCSetLocalAdjacencyGraph_C",(PC,PetscInt,const PetscInt[],const PetscInt[],PetscCopyMode),(pc,nvtxs,xadj,adjncy,copymode));CHKERRQ(ierr);
+  /* free arrays if PCBDDC is not the PC type */
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCBDDCSetLocalAdjacencyGraph_C",&f);CHKERRQ(ierr);
+  if (!f && copymode == PETSC_OWN_POINTER) {
+    ierr = PetscFree(xadj);CHKERRQ(ierr);
+    ierr = PetscFree(adjncy);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
