@@ -542,7 +542,6 @@ PetscErrorCode DMPlexComputeResidualFEM(DM dm, Vec X, Vec F, void *user)
     ierr = DMLabelGetStratumSize(label, 1, &numPoints);CHKERRQ(ierr);
     ierr = DMLabelGetStratumIS(label, 1, &pointIS);CHKERRQ(ierr);
     ierr = ISGetIndices(pointIS, &points);CHKERRQ(ierr);
-    ierr = DMPlexGetLabelValue(dm, "depth", points[0], &dim);CHKERRQ(ierr);
     for (field = 0, cellDof = 0, numComponents = 0; field < numFields; ++field) {
       cellDof       += quadBd[field].numBasisFuncs*quadBd[field].numComponents;
       numComponents += quadBd[field].numComponents;
