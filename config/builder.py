@@ -179,7 +179,7 @@ regressionParameters = {'src/sys/comm/examples/tests/ex1':    [{'numProcs': 2},
                                                                 'setup': './bin/pythonscripts/PetscGenerateFEMQuadrature.py 2 1 1 1 laplacian 2 1 1 1 boundary src/snes/examples/tutorials/ex12.h'},
                                                                {'numProcs': 1, 'args': '-run_type test -refinement_limit 0.0    -bc_type dirichlet -interpolate 1 -show_initial -dm_plex_print_fem 1'},
                                                                {'numProcs': 1, 'args': '-run_type test -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -show_initial -dm_plex_print_fem 1'},
-                                                               {'numProcs': 1, 'args': '-run_type test -refinement_limit 0.0    -bc_type neumann   -interpolate 1 -show_initial -dm_plex_print_fem 1'},
+                                                               {'numProcs': 1, 'args': '-run_type test -refinement_limit 0.0    -bc_type neumann   -interpolate 1 -show_initial -dm_plex_print_fem 1 -dm_view ::ascii_info_detail'},
                                                                {'numProcs': 1, 'args': '-run_type test -refinement_limit 0.0625 -bc_type neumann   -interpolate 1 -show_initial -dm_plex_print_fem 1'},
                                                                # 3D serial P1 test 5-7
                                                                {'numProcs': 1, 'args': '-run_type test -dim 3 -refinement_limit 0.0    -bc_type dirichlet -interpolate 0 -show_initial -dm_plex_print_fem 1 -dm_view',

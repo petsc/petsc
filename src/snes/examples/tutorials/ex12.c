@@ -105,7 +105,7 @@ void f0_bd_u(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x
   PetscInt       comp;
   PetscScalar    val = 0.0;
 
-  if ((fabs(x[0] - 1.0) < 1.0e-9) || (fabs(x[1] - 1.0) < 1.0e-9)) {val = 2.0;}
+  if ((fabs(x[0] - 1.0) < 1.0e-9) || (fabs(x[1] - 1.0) < 1.0e-9)) {val = -2.0;}
   for (comp = 0; comp < Ncomp; ++comp) f0[comp] = val;
 }
 
