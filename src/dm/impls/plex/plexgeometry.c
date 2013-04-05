@@ -206,14 +206,17 @@ PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, IS *cellIS)
 /*
   DMPlexComputeProjection2Dto1D_Internal - Rewrite coordinates to be the 1D projection of the 2D
 */
-static PetscErrorCode DMPlexComputeProjection2Dto1D_Internal(PetscScalar coords[])
+static PetscErrorCode DMPlexComputeProjection2Dto1D_Internal(PetscScalar coords[], PetscReal R[])
 {
   const PetscReal x = PetscRealPart(coords[2] - coords[0]);
   const PetscReal y = PetscRealPart(coords[3] - coords[1]);
+  const PetscReal r = sqrt(x*x + y*y), c = x/r, s = y/r;
 
   PetscFunctionBegin;
+  R[0] =  c; R[1] = s;
+  R[2] = -s; R[3] = c;
   coords[0] = 0.0;
-  coords[1] = sqrt(x*x + y*y);
+  coords[1] = r;
   PetscFunctionReturn(0);
 }
 
@@ -222,10 +225,10 @@ static PetscErrorCode DMPlexComputeProjection2Dto1D_Internal(PetscScalar coords[
 /*
   DMPlexComputeProjection3Dto2D_Internal - Rewrite coordinates to be the 2D projection of the 3D
 */
-static PetscErrorCode DMPlexComputeProjection3Dto2D_Internal(PetscScalar coords[])
+static PetscErrorCode DMPlexComputeProjection3Dto2D_Internal(PetscScalar coords[], PetscReal R[])
 {
-  PetscScalar    x1[3], x2[3], n[3], norm;
-  PetscScalar    R[9], x1p[3], x2p[3];
+  PetscScalar    x1[3],  x2[3], n[3], norm;
+  PetscScalar    x1p[3], x2p[3];
   PetscReal      sqrtz, alpha;
   const PetscInt dim = 3;
   PetscInt       d, e;
@@ -292,7 +295,66 @@ static PetscErrorCode DMPlexComputeProjection3Dto2D_Internal(PetscScalar coords[
   coords[3] = x1p[1];
   coords[4] = x2p[0];
   coords[5] = x2p[1];
+  /* Output R^T which rotates \hat z to the input normal */
+  for (d = 0; d < dim; ++d) {
+    for (e = d+1; e < dim; ++e) {
+      PetscReal tmp;
+
+      tmp        = R[d*dim+e];
+      R[d*dim+e] = R[e*dim+d];
+      R[e*dim+d] = tmp;
+    }
+  }
   PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "Invert2D_Internal"
+PETSC_STATIC_INLINE void Invert2D_Internal(PetscReal invJ[], PetscReal J[], PetscReal detJ)
+{
+  const PetscReal invDet = 1.0/detJ;
+
+  invJ[0] =  invDet*J[3];
+  invJ[1] = -invDet*J[1];
+  invJ[2] = -invDet*J[2];
+  invJ[3] =  invDet*J[0];
+  PetscLogFlops(5.0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "Invert3D_Internal"
+PETSC_STATIC_INLINE void Invert3D_Internal(PetscReal invJ[], PetscReal J[], PetscReal detJ)
+{
+  const PetscReal invDet = 1.0/detJ;
+
+  invJ[0*3+0] = invDet*(J[1*3+1]*J[2*3+2] - J[1*3+2]*J[2*3+1]);
+  invJ[0*3+1] = invDet*(J[0*3+2]*J[2*3+1] - J[0*3+1]*J[2*3+2]);
+  invJ[0*3+2] = invDet*(J[0*3+1]*J[1*3+2] - J[0*3+2]*J[1*3+1]);
+  invJ[1*3+0] = invDet*(J[1*3+2]*J[2*3+0] - J[1*3+0]*J[2*3+2]);
+  invJ[1*3+1] = invDet*(J[0*3+0]*J[2*3+2] - J[0*3+2]*J[2*3+0]);
+  invJ[1*3+2] = invDet*(J[0*3+2]*J[1*3+0] - J[0*3+0]*J[1*3+2]);
+  invJ[2*3+0] = invDet*(J[1*3+0]*J[2*3+1] - J[1*3+1]*J[2*3+0]);
+  invJ[2*3+1] = invDet*(J[0*3+1]*J[2*3+0] - J[0*3+0]*J[2*3+1]);
+  invJ[2*3+2] = invDet*(J[0*3+0]*J[1*3+1] - J[0*3+1]*J[1*3+0]);
+  PetscLogFlops(37.0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "Det2D_Internal"
+PETSC_STATIC_INLINE void Det2D_Internal(PetscReal *detJ, PetscReal J[])
+{
+  *detJ = J[0]*J[3] - J[1]*J[2];
+  PetscLogFlops(3.0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "Det3D_Internal"
+PETSC_STATIC_INLINE void Det3D_Internal(PetscReal *detJ, PetscReal J[])
+{
+  *detJ = (J[0*3+0]*(J[1*3+2]*J[2*3+1] - J[1*3+1]*J[2*3+2]) +
+           J[0*3+1]*(J[1*3+0]*J[2*3+2] - J[1*3+2]*J[2*3+0]) +
+           J[0*3+2]*(J[1*3+1]*J[2*3+0] - J[1*3+0]*J[2*3+1]));
+  PetscLogFlops(12.0);
 }
 
 #undef __FUNCT__
@@ -302,35 +364,38 @@ static PetscErrorCode DMPlexComputeLineGeometry_Internal(DM dm, PetscInt e, Pets
   PetscSection   coordSection;
   Vec            coordinates;
   PetscScalar   *coords;
-  const PetscInt dim = 1;
-  PetscInt       numCoords, d, f;
+  PetscInt       numCoords, d;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
   ierr = DMPlexGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
   ierr = DMPlexVecGetClosure(dm, coordSection, coordinates, e, &numCoords, &coords);CHKERRQ(ierr);
+  *detJ = 0.0;
   if (numCoords == 4) {
-    ierr = DMPlexComputeProjection2Dto1D_Internal(coords);CHKERRQ(ierr);
-  } else if (numCoords != 2) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "The number of coordinates for this segment is %d != 2", numCoords);
-  if (v0) {
-    for (d = 0; d < dim; d++) v0[d] = PetscRealPart(coords[d]);
-  }
-  if (J) {
-    for (d = 0; d < dim; d++) {
-      for (f = 0; f < dim; f++) {
-        J[d*dim+f] = 0.5*(PetscRealPart(coords[(f+1)*dim+d]) - PetscRealPart(coords[0*dim+d]));
-      }
+    const PetscInt dim = 2;
+    PetscReal      R[4], J0;
+
+    if (v0)   {for (d = 0; d < dim; d++) v0[d] = PetscRealPart(coords[d]);}
+    ierr = DMPlexComputeProjection2Dto1D_Internal(coords, R);CHKERRQ(ierr);
+    if (J)    {
+      J0   = 0.5*PetscRealPart(coords[1]);
+      J[0] = R[0]*J0; J[1] = R[1];
+      J[2] = R[2]*J0; J[3] = R[3];
+      Det2D_Internal(detJ, J);
     }
-    *detJ = J[0];
-    PetscLogFlops(2.0);
-  } else {
-    *detJ = 0.0;
-  }
-  if (invJ) {
-    invJ[0] =  1.0/J[0];
-    PetscLogFlops(1.0);
-  }
+    if (invJ) {Invert2D_Internal(invJ, J, *detJ);}
+  } else if (numCoords == 2) {
+    const PetscInt dim = 1;
+
+    if (v0)   {for (d = 0; d < dim; d++) v0[d] = PetscRealPart(coords[d]);}
+    if (J)    {
+      J[0]  = 0.5*(PetscRealPart(coords[1]) - PetscRealPart(coords[0]));
+      *detJ = J[0];
+      PetscLogFlops(2.0);
+    }
+    if (invJ) {invJ[0] = 1.0/J[0]; PetscLogFlops(1.0);}
+  } else SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "The number of coordinates for this segment is %d != 2", numCoords);
   ierr = DMPlexVecRestoreClosure(dm, coordSection, coordinates, e, &numCoords, &coords);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -342,57 +407,54 @@ static PetscErrorCode DMPlexComputeTriangleGeometry_Internal(DM dm, PetscInt e, 
   PetscSection   coordSection;
   Vec            coordinates;
   PetscScalar   *coords;
-  const PetscInt dim = 2;
-  PetscInt       numCoords, d, f;
+  PetscInt       numCoords, d, f, g;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
   ierr = DMPlexGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
   ierr = DMPlexVecGetClosure(dm, coordSection, coordinates, e, &numCoords, &coords);CHKERRQ(ierr);
+  *detJ = 0.0;
   if (numCoords == 9) {
-    ierr = DMPlexComputeProjection3Dto2D_Internal(coords);CHKERRQ(ierr);
-  } else if (numCoords != 6) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "The number of coordinates for this triangle is %d != 6", numCoords);
-  if (v0) {
-    for (d = 0; d < dim; d++) v0[d] = PetscRealPart(coords[d]);
-  }
-  if (J) {
-    for (d = 0; d < dim; d++) {
-      for (f = 0; f < dim; f++) {
-        J[d*dim+f] = 0.5*(PetscRealPart(coords[(f+1)*dim+d]) - PetscRealPart(coords[0*dim+d]));
-      }
-    }
-    *detJ = J[0]*J[3] - J[1]*J[2];
-#if 0
-    if (detJ < 0.0) {
-      const PetscReal xLength = mesh->periodicity[0];
+    const PetscInt dim = 3;
+    PetscReal      R[9], J0[9] = {1.0,0.0,0.0,0.0,1.0,0.0,0.0,0.0,1.0};
 
-      if (xLength != 0.0) {
-        PetscReal v0x = coords[0*dim+0];
-
-        if (v0x == 0.0) v0x = v0[0] = xLength;
-        for (f = 0; f < dim; f++) {
-          const PetscReal px = coords[(f+1)*dim+0] == 0.0 ? xLength : coords[(f+1)*dim+0];
-
-          J[0*dim+f] = 0.5*(px - v0x);
+    if (v0)   {for (d = 0; d < dim; d++) v0[d] = PetscRealPart(coords[d]);}
+    ierr = DMPlexComputeProjection3Dto2D_Internal(coords, R);CHKERRQ(ierr);
+    if (J)    {
+      for (d = 0; d < dim-1; d++) {
+        for (f = 0; f < dim-1; f++) {
+          J0[d*(dim+1)+f] = 0.5*(PetscRealPart(coords[(f+1)*dim+d]) - PetscRealPart(coords[0*dim+d]));
         }
       }
-      detJ = J[0]*J[3] - J[1]*J[2];
+      PetscLogFlops(8.0);
+      for (d = 0; d < dim; d++) {
+        for (f = 0; f < dim; f++) {
+          J[d*dim+f] = 0.0;
+          for (g = 0; g < dim; g++) {
+            J[d*dim+f] += R[d*dim+g]*J0[g*dim+f];
+          }
+        }
+      }
+      PetscLogFlops(18.0);
+      Det3D_Internal(detJ, J);
     }
-#endif
-    PetscLogFlops(8.0 + 3.0);
-  } else {
-    *detJ = 0.0;
-  }
-  if (invJ) {
-    const PetscReal invDet = 1.0/(*detJ);
+    if (invJ) {Invert3D_Internal(invJ, J, *detJ);}
+  } else if (numCoords == 6) {
+    const PetscInt dim = 2;
 
-    invJ[0] =  invDet*J[3];
-    invJ[1] = -invDet*J[1];
-    invJ[2] = -invDet*J[2];
-    invJ[3] =  invDet*J[0];
-    PetscLogFlops(5.0);
-  }
+    if (v0)   {for (d = 0; d < dim; d++) v0[d] = PetscRealPart(coords[d]);}
+    if (J)    {
+      for (d = 0; d < dim; d++) {
+        for (f = 0; f < dim; f++) {
+          J[d*dim+f] = 0.5*(PetscRealPart(coords[(f+1)*dim+d]) - PetscRealPart(coords[0*dim+d]));
+        }
+      }
+      PetscLogFlops(8.0);
+      Det2D_Internal(detJ, J);
+    }
+    if (invJ) {Invert2D_Internal(invJ, J, *detJ);}
+  } else SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "The number of coordinates for this triangle is %d != 6", numCoords);
   ierr = DMPlexVecRestoreClosure(dm, coordSection, coordinates, e, &numCoords, &coords);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -412,29 +474,18 @@ static PetscErrorCode DMPlexComputeRectangleGeometry_Internal(DM dm, PetscInt e,
   ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
   ierr = DMPlexGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
   ierr = DMPlexVecGetClosure(dm, coordSection, coordinates, e, NULL, &coords);CHKERRQ(ierr);
-  if (v0) {
-    for (d = 0; d < dim; d++) v0[d] = PetscRealPart(coords[d]);
-  }
-  if (J) {
+  *detJ = 0.0;
+  if (v0)   {for (d = 0; d < dim; d++) v0[d] = PetscRealPart(coords[d]);}
+  if (J)    {
     for (d = 0; d < dim; d++) {
       for (f = 0; f < dim; f++) {
         J[d*dim+f] = 0.5*(PetscRealPart(coords[(f*2+1)*dim+d]) - PetscRealPart(coords[0*dim+d]));
       }
     }
-    *detJ = J[0]*J[3] - J[1]*J[2];
-    PetscLogFlops(8.0 + 3.0);
-  } else {
-    *detJ = 0.0;
+    PetscLogFlops(8.0);
+    Det2D_Internal(detJ, J);
   }
-  if (invJ) {
-    const PetscReal invDet = 1.0/(*detJ);
-
-    invJ[0] =  invDet*J[3];
-    invJ[1] = -invDet*J[1];
-    invJ[2] = -invDet*J[2];
-    invJ[3] =  invDet*J[0];
-    PetscLogFlops(5.0);
-  }
+  if (invJ) {Invert2D_Internal(invJ, J, *detJ);}
   ierr = DMPlexVecRestoreClosure(dm, coordSection, coordinates, e, NULL, &coords);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -454,34 +505,18 @@ static PetscErrorCode DMPlexComputeTetrahedronGeometry_Internal(DM dm, PetscInt 
   ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
   ierr = DMPlexGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
   ierr = DMPlexVecGetClosure(dm, coordSection, coordinates, e, NULL, &coords);CHKERRQ(ierr);
-  if (v0) {
-    for (d = 0; d < dim; d++) v0[d] = PetscRealPart(coords[d]);
-  }
-  if (J) {
+  *detJ = 0.0;
+  if (v0)   {for (d = 0; d < dim; d++) v0[d] = PetscRealPart(coords[d]);}
+  if (J)    {
     for (d = 0; d < dim; d++) {
       for (f = 0; f < dim; f++) {
         J[d*dim+f] = 0.5*(PetscRealPart(coords[(f+1)*dim+d]) - PetscRealPart(coords[0*dim+d]));
       }
     }
-    *detJ = (J[0*3+0]*(J[1*3+2]*J[2*3+1] - J[1*3+1]*J[2*3+2]) +
-             J[0*3+1]*(J[1*3+0]*J[2*3+2] - J[1*3+2]*J[2*3+0]) +
-             J[0*3+2]*(J[1*3+1]*J[2*3+0] - J[1*3+0]*J[2*3+1]));
-    PetscLogFlops(18.0 + 12.0);
+    PetscLogFlops(18.0);
+    Det3D_Internal(detJ, J);
   }
-  if (invJ) {
-    const PetscReal invDet = 1.0/(*detJ);
-
-    invJ[0*3+0] = invDet*(J[1*3+1]*J[2*3+2] - J[1*3+2]*J[2*3+1]);
-    invJ[0*3+1] = invDet*(J[0*3+2]*J[2*3+1] - J[0*3+1]*J[2*3+2]);
-    invJ[0*3+2] = invDet*(J[0*3+1]*J[1*3+2] - J[0*3+2]*J[1*3+1]);
-    invJ[1*3+0] = invDet*(J[1*3+2]*J[2*3+0] - J[1*3+0]*J[2*3+2]);
-    invJ[1*3+1] = invDet*(J[0*3+0]*J[2*3+2] - J[0*3+2]*J[2*3+0]);
-    invJ[1*3+2] = invDet*(J[0*3+2]*J[1*3+0] - J[0*3+0]*J[1*3+2]);
-    invJ[2*3+0] = invDet*(J[1*3+0]*J[2*3+1] - J[1*3+1]*J[2*3+0]);
-    invJ[2*3+1] = invDet*(J[0*3+1]*J[2*3+0] - J[0*3+0]*J[2*3+1]);
-    invJ[2*3+2] = invDet*(J[0*3+0]*J[1*3+1] - J[0*3+1]*J[1*3+0]);
-    PetscLogFlops(37.0);
-  }
+  if (invJ) {Invert3D_Internal(invJ, J, *detJ);}
   ierr = DMPlexVecRestoreClosure(dm, coordSection, coordinates, e, NULL, &coords);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -501,37 +536,19 @@ static PetscErrorCode DMPlexComputeHexahedronGeometry_Internal(DM dm, PetscInt e
   ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
   ierr = DMPlexGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
   ierr = DMPlexVecGetClosure(dm, coordSection, coordinates, e, NULL, &coords);CHKERRQ(ierr);
-  if (v0) {
-    for (d = 0; d < dim; d++) v0[d] = PetscRealPart(coords[d]);
-  }
-  if (J) {
+  *detJ = 0.0;
+  if (v0)   {for (d = 0; d < dim; d++) v0[d] = PetscRealPart(coords[d]);}
+  if (J)    {
     for (d = 0; d < dim; d++) {
       J[d*dim+0] = 0.5*(PetscRealPart(coords[(0+1)*dim+d]) - PetscRealPart(coords[0*dim+d]));
       J[d*dim+1] = 0.5*(PetscRealPart(coords[(1+1)*dim+d]) - PetscRealPart(coords[0*dim+d]));
       J[d*dim+2] = 0.5*(PetscRealPart(coords[(3+1)*dim+d]) - PetscRealPart(coords[0*dim+d]));
     }
-    *detJ = (J[0*3+0]*(J[1*3+2]*J[2*3+1] - J[1*3+1]*J[2*3+2]) +
-             J[0*3+1]*(J[1*3+0]*J[2*3+2] - J[1*3+2]*J[2*3+0]) +
-             J[0*3+2]*(J[1*3+1]*J[2*3+0] - J[1*3+0]*J[2*3+1]));
-    PetscLogFlops(18.0 + 12.0);
-  } else {
-    *detJ = 0.0;
+    PetscLogFlops(18.0);
+    Det3D_Internal(detJ, J);
   }
-  if (invJ) {
-    const PetscReal invDet = -1.0/(*detJ);
-
-    invJ[0*3+0] = invDet*(J[1*3+1]*J[2*3+2] - J[1*3+2]*J[2*3+1]);
-    invJ[0*3+1] = invDet*(J[0*3+2]*J[2*3+1] - J[0*3+1]*J[2*3+2]);
-    invJ[0*3+2] = invDet*(J[0*3+1]*J[1*3+2] - J[0*3+2]*J[1*3+1]);
-    invJ[1*3+0] = invDet*(J[1*3+2]*J[2*3+0] - J[1*3+0]*J[2*3+2]);
-    invJ[1*3+1] = invDet*(J[0*3+0]*J[2*3+2] - J[0*3+2]*J[2*3+0]);
-    invJ[1*3+2] = invDet*(J[0*3+2]*J[1*3+0] - J[0*3+0]*J[1*3+2]);
-    invJ[2*3+0] = invDet*(J[1*3+0]*J[2*3+1] - J[1*3+1]*J[2*3+0]);
-    invJ[2*3+1] = invDet*(J[0*3+1]*J[2*3+0] - J[0*3+0]*J[2*3+1]);
-    invJ[2*3+2] = invDet*(J[0*3+0]*J[1*3+1] - J[0*3+1]*J[1*3+0]);
-    PetscLogFlops(37.0);
-  }
-  *detJ *= 8.0;
+  if (invJ) {Invert3D_Internal(invJ, J, *detJ);}
+  *detJ *= -8.0;
   ierr   = DMPlexVecRestoreClosure(dm, coordSection, coordinates, e, NULL, &coords);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
