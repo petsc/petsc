@@ -730,7 +730,7 @@ PetscErrorCode FEMIntegrateBdResidualBatch(PetscInt Ne, PetscInt numFields, Pets
       for (d = 0; d < dim*(numComponents); ++d) {gradU[d] = 0.0;}
       for (d = 0; d < dim; ++d) {
         x[d] = v0[d];
-        for (d2 = 0; d2 < dim; ++d2) {
+        for (d2 = 0; d2 < dim-1; ++d2) {
           x[d] += J[d*dim+d2]*(quadPoints[q*dim+d2] + 1.0);
         }
       }
@@ -750,7 +750,7 @@ PetscErrorCode FEMIntegrateBdResidualBatch(PetscInt Ne, PetscInt numFields, Pets
             u[fOffset+comp] += coefficients[dOffset+cidx]*basis[q*Nb*Ncomp+cidx];
             for (d = 0; d < dim; ++d) {
               realSpaceDer[d] = 0.0;
-              for (g = 0; g < dim; ++g) {
+              for (g = 0; g < dim-1; ++g) {
                 realSpaceDer[d] += invJ[g*dim+d]*basisDer[(q*Nb*Ncomp+cidx)*dim+g];
               }
               gradU[(fOffset+comp)*dim+d] += coefficients[dOffset+cidx]*realSpaceDer[d];
@@ -811,7 +811,7 @@ PetscErrorCode FEMIntegrateBdResidualBatch(PetscInt Ne, PetscInt numFields, Pets
             elemVec[eOffset+cidx] += basis[q*Nb*Ncomp+cidx]*f0[q*Ncomp+comp];
             for (d = 0; d < dim; ++d) {
               realSpaceDer[d] = 0.0;
-              for (g = 0; g < dim; ++g) {
+              for (g = 0; g < dim-1; ++g) {
                 realSpaceDer[d] += invJ[g*dim+d]*basisDer[(q*Nb*Ncomp+cidx)*dim+g];
               }
               elemVec[eOffset+cidx] += realSpaceDer[d]*f1[(q*Ncomp+comp)*dim+d];
