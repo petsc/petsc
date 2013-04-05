@@ -404,9 +404,10 @@ PetscErrorCode MatRARt_SeqAIJ_SeqAIJ(Mat A,Mat R,MatReuse scall,PetscReal fill,M
     /* via matmatmatmult: Rt=R^T, C=R*A*Rt - avoid inefficient sparse inner products */
     /*-------------------------------------------------------------------------------*/
     Mat           Rt;
-    if (scall == MAT_INITIAL_MATRIX) {
-      ierr = MatTranspose(R,MAT_INITIAL_MATRIX,&Rt);CHKERRQ(ierr); 
-      ierr = MatMatMatMult(R,A,Rt,scall,fill,C);CHKERRQ(ierr);
+    if (scall == MAT_INITIAL_MATRIX) { 
+      ierr = PetscLogEventBegin(MAT_RARtSymbolic,A,R,0,0);CHKERRQ(ierr);
+      ierr = MatTranspose_SeqAIJ(R,MAT_INITIAL_MATRIX,&Rt);CHKERRQ(ierr);
+      ierr = MatMatMatMultSymbolic_SeqAIJ_SeqAIJ_SeqAIJ(R,A,Rt,fill,C);CHKERRQ(ierr);
 
       ierr = PetscNew(Mat_RARt,&rart);CHKERRQ(ierr);
       rart->Rt = Rt;
@@ -414,16 +415,19 @@ PetscErrorCode MatRARt_SeqAIJ_SeqAIJ(Mat A,Mat R,MatReuse scall,PetscReal fill,M
       c->rart  = rart;
       rart->destroy      = (*C)->ops->destroy;
       (*C)->ops->destroy = MatDestroy_SeqAIJ_RARt;
-    } else {
-      c  = (Mat_SeqAIJ*)(*C)->data;
-      rart = c->rart;
-      Rt   = rart->Rt;
-      ierr = MatTranspose(R,MAT_REUSE_MATRIX,&Rt);CHKERRQ(ierr); 
-      ierr = MatMatMatMult(R,A,Rt,scall,fill,C);CHKERRQ(ierr);
-    }
+      ierr = PetscLogEventEnd(MAT_RARtSymbolic,A,R,0,0);CHKERRQ(ierr);
+    } 
+    
+    ierr = PetscLogEventBegin(MAT_RARtNumeric,A,R,0,0);CHKERRQ(ierr);
+    c  = (Mat_SeqAIJ*)(*C)->data;
+    rart = c->rart;
+    Rt   = rart->Rt;
+    ierr = MatTranspose_SeqAIJ(R,MAT_REUSE_MATRIX,&Rt);CHKERRQ(ierr); 
+    ierr = MatMatMatMultNumeric_SeqAIJ_SeqAIJ_SeqAIJ(R,A,Rt,*C);CHKERRQ(ierr);
 #if defined(PETSC_USE_INFO)
     ierr = PetscInfo(*C,"Use Rt=R^T and C=R*A*Rt via MatMatMatMult() to avoid sparse inner products\n");CHKERRQ(ierr); 
 #endif
+    ierr = PetscLogEventEnd(MAT_RARtNumeric,A,R,0,0);CHKERRQ(ierr);
     break;
   }
   PetscFunctionReturn(0);
