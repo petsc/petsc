@@ -7,7 +7,7 @@ path(path,'../../')
 PetscInitialize({'-ksp_monitor','-pc_type','none','-ksp_converged_reason'});
 %%
 %   Create a DM object
-da = PetscDMDACreate2d(PetscDM.NONPERIODIC,PetscDM.STENCIL_BOX,4,4,1,1,1,1);
+da = PetscDMDACreate2d(PetscDM.BOUNDARY_GHOSTED,PetscDM.BOUNDARY_GHOSTED,PetscDM.STENCIL_BOX,4,4,1,1,1,1);
 da.SetFunction('rhsfunction');
 type rhsfunction
 da.SetJacobian('jacobian');

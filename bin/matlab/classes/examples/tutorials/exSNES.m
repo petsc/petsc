@@ -15,10 +15,11 @@ x = b.Duplicate();
 mat = PetscMat();
 mat.SetType('seqaij');
 mat.SetSizes(10,10);
+mat.SetUp();
 %%
 %  Create the nonlinear solver 
 snes = PetscSNES();
-snes.SetType('vi');
+snes.SetType('newtonls');
 %%
 %  Provide a function 
 snes.SetFunction(b,'nlfunction',0);
