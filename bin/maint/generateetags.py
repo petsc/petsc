@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #!/bin/env python
 #
-#    Generates etag files for PETSc
+#    Generates etag and ctag (use -noctags to skip generation of ctags) files for PETSc
 #    Adds file names to list of tags in a TAGS file
 #    Also removes the #define somefunction_ somefunction from the tags list
 #
@@ -48,17 +48,18 @@ def createTags(etagfile,ctagfile,dirname,files):
     raise RuntimeError("Error running etags "+output)
 
   # linux can use '--tag-relative=yes --langmap=c:+.cu'. For others [Mac,bsd] try running ctags in root directory - with relative path to file
-  (status,output) = commands.getstatusoutput('cd '+dirname+';ctags --tag-relative=yes --langmap=c:+.cu  -a -f '+ctagfile+' '+' '.join(files))
-  if status:
-    files= []
-    gfiles = glob.glob(os.path.join(dirname,'*'))
-    for file in gfiles:
-      if file.endswith('.h') or file.endswith('.c') or file.endswith('.cu') or file.endswith('.F') or file.endswith('.cpp') or file.endswith('.F90'):
-        files.append(os.path.realpath(os.path.realpath(file)))
-    if files:
-      (status,output) = commands.getstatusoutput('ctags -a -f '+ctagfile+' '+' '.join(files))
-      if status:
-        raise RuntimeError("Error running ctags "+output)
+  if ctagfile:
+    (status,output) = commands.getstatusoutput('cd '+dirname+';ctags --tag-relative=yes --langmap=c:+.cu  -a -f '+ctagfile+' '+' '.join(files))
+    if status:
+       files= []
+       gfiles = glob.glob(os.path.join(dirname,'*'))
+       for file in gfiles:
+         if file.endswith('.h') or file.endswith('.c') or file.endswith('.cu') or file.endswith('.F') or file.endswith('.cpp') or file.endswith('.F90'):
+           files.append(os.path.realpath(os.path.realpath(file)))
+       if files:
+         (status,output) = commands.getstatusoutput('ctags -a -f '+ctagfile+' '+' '.join(files))
+         if status:
+            raise RuntimeError("Error running ctags "+output)
     return
 
 def endsWithSuffix(file,suffixes):
@@ -129,13 +130,16 @@ def processFiles(dirname,etagfile,ctagfile):
   if files: createTags(etagfile,ctagfile,dirname,files)
   return
 
-def main():
+def main(ctags):
   try: os.unlink('TAGS')
   except: pass
-  try: os.unlink('CTAGS')
-  except: pass
   etagfile = os.path.join(os.getcwd(),'ETAGS')
-  ctagfile = os.path.join(os.getcwd(),'CTAGS')
+  if ctags:
+    try: os.unlink('CTAGS')
+    except: pass
+    ctagfile = os.path.join(os.getcwd(),'CTAGS')
+  else:
+    ctagfile = None
   os.path.walk(os.getcwd(),processDir,[etagfile,ctagfile])
   processFiles(os.getcwd(),etagfile,ctagfile)
   addFileNameTags(etagfile)
@@ -145,5 +149,7 @@ def main():
 # The classes in this file can also be used in other python-programs by using 'import'
 #
 if __name__ ==  '__main__':
-    main()
+    if (len(sys.argv) > 1 and sys.argv[1] == "-noctags"): ctags = 0
+    else: ctags = 1
+    main(ctags)
 
