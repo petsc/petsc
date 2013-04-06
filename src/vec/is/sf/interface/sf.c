@@ -127,7 +127,7 @@ PetscErrorCode PetscSFSetType(PetscSF sf,PetscSFType type)
   ierr = PetscObjectTypeCompare((PetscObject)sf,type,&match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
 
-  ierr = PetscFunctionListFind(PetscSFunctionList,type,&r);CHKERRQ(ierr);
+  ierr = PetscFunctionListFind(PetscSFList,type,&r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested PetscSF type %s",type);
   /* Destroy the previous private PetscSF context */
   if (sf->ops->Destroy) {
@@ -223,7 +223,7 @@ PetscErrorCode PetscSFSetFromOptions(PetscSF sf)
   PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
   ierr = PetscObjectOptionsBegin((PetscObject)sf);CHKERRQ(ierr);
   deft = ((PetscObject)sf)->type_name ? ((PetscObject)sf)->type_name : PETSCSFBASIC;
-  ierr = PetscOptionsList("-sf_type","PetscSF implementation type","PetscSFSetType",PetscSFunctionList,deft,type,256,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsList("-sf_type","PetscSF implementation type","PetscSFSetType",PetscSFList,deft,type,256,&flg);CHKERRQ(ierr);
   ierr = PetscSFSetType(sf,flg ? type : deft);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-sf_rank_order","sort composite points for gathers and scatters in rank order, gathers are non-deterministic otherwise","PetscSFSetRankOrder",sf->rankorder,&sf->rankorder,NULL);CHKERRQ(ierr);
   if (sf->ops->SetFromOptions) {ierr = (*sf->ops->SetFromOptions)(sf);CHKERRQ(ierr);}
