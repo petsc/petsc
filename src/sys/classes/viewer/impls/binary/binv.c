@@ -965,8 +965,6 @@ PetscErrorCode  PetscViewerFileGetMode(PetscViewer viewer,PetscFileMode *type)
     Options Database:
     -viewer_binary_mpiio : Flag for using MPI-IO
 
-   Notes: turns off the default usage of the .info file since that is not scalable
-
   Level: advanced
 
 .seealso: PetscViewerFileSetMode(), PetscViewerCreate(), PetscViewerSetType(), PetscViewerBinaryOpen()
@@ -1216,7 +1214,6 @@ PetscErrorCode PetscViewerBinarySetMPIIO_Binary(PetscViewer viewer)
   if (vbinary->filename) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call before calling PetscViewerFileSetName()");
   viewer->ops->destroy = PetscViewerDestroy_MPIIO;
   vbinary->MPIIO       = PETSC_TRUE;
-  /*  vbinary->skipinfo    = PETSC_TRUE; */
   ierr = PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerFileSetName_C",PetscViewerFileSetName_MPIIO);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
