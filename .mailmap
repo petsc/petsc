@@ -1,0 +1,68 @@
+# Canonical names for contributors, to simplify inconsistent use of
+# initials, for example. We also repair email addresses that are not
+# used or that cannot deliver mail. Could also be used to remap
+# addresses to current versions, though we don't do that here.
+
+#
+# See 'git help shortlog' for details
+
+Andy Terrel <aterrel@uchicago.edu>
+Aron Ahmadia <aron@ahmadia.net>                 <ahmadia@harley.mcs.anl.gov>
+Blaise Bourdin <bourdin@lsu.edu>
+Brad Aagaard <baagaard@usgs.gov>                <baagaard at usgs.gov>
+Ethan Coon <ecoon@lanl.gov>
+Ethan Coon <ecoon@lanl.gov>                     <ecoon@aeneas>
+Glenn Hammond <glenn.hammond@pnnl.gov>          Glenn Hammond <unknown>
+Hong Zhang <hzhang@mcs.anl.gov>                 hzhang <unknown>
+Jason Sarich <sarich@mcs.anl.gov>               <sarich@24-148-35-133.na.21stcentury.net>
+Jason Sarich <sarich@mcs.anl.gov>               <sarich@Chico.mcs.anl.gov>
+Jed Brown <jed@59A2.org>                        <jed@59A2.org>
+Jed Brown <jed@59A2.org>                        Jed Brown <unknown>
+Jose Roman <jroman@dsic.upv.es>
+Jose Roman <jroman@dsic.upv.es>                 <jroman@hypercat1-1.dsic.upv.es>
+Kris Buschelman <buschelm@mcs.anl.gov>          <Kris@attempt2>
+Kris Buschelman <buschelm@mcs.anl.gov>          <kris@192.168.1.104>
+Lisandro Dalcin <dalcinl@gmail.com>             <dalcinl@trantor.ceride.gov.ar>
+Mark Adams <mark.adams@columbia.edu>
+Mark Adams <mark.adams@columbia.edu>            <adams@jaguarpf-login1.ccs.ornl.gov>
+Mark Spiegelman <mspieg@ldea.columbia.edu>      <mspieg@mingus.ldeo.columbia.edu>
+Matthew Knepley <knepley@gmail.com>
+Matthew Knepley <knepley@ci.uchicago.edu>
+Matthew Knepley <knepley@mcs.anl.gov>
+Peter Brune <brune@uchicago.edu>
+Peter Brune <brune@uchicago.edu>                <brune@cs.uchicago.edu>
+Peter Brune <brune@uchicago.edu>                <emppter@pbrune>
+Peter Brune <brune@mcs.anl.gov>                 <brune@localhost>
+Peter Brune <brune@mcs.anl.gov>                 <prbrune@localhost>
+Shri Abhyankar <abhyshr@mcs.anl.gov>
+Stefano Zampini <stefano.zampini@gmail.com>
+Todd Munson <tmunson@mcs.anl.gov>               <tmunson@akita.mcs.anl.gov>
+Todd Munson <tmunson@mcs.anl.gov>               <tmunson@shepherd.mcs.anl.gov>
+Victor Eijkhout <eijkhout@tacc.utexas.edu>      <victor@administrators-computer.local>
+Victor Eijkhout <eijkhout@tacc.utexas.edu>      <victor@albook1g5vle.cs.utk.edu>
+Victor Eijkhout <eijkhout@tacc.utexas.edu>      <victor@tibook500ve.cs.utk.edu>
+Victor Eijkhout <eijkhout@tacc.utexas.edu>      <victor@wireless-128-62-148-170.public.utexas.edu>
+Victor Eijkhout <eijkhout@tacc.utexas.edu>      <victorle@tibook500ve.cs.utk.edu>
+Victor Minden <victorminden@gmail.com>          <Victor Minden victorminden@gmail.com>
+Vijay Mahadevan <vijay.m@gmail.com>
+Vijay Mahadevan <mahadevan@anl.gov>
+Xavier Lacoste <xl64100@gmail.com>
+Xuemin Tu <xtu@math.ku.edu>                     xuemin <unknown>
+Xuemin Tu <xtu@math.ku.edu>                     <xht@xuemin-laptop.mcs.anl.gov>
+
+PETSc MCS <petsc@mcs.anl.gov>
+PETSc MCS <petsc@mcs.anl.gov>                   <petsc@crunch.mcs.anl.gov>
+PETSc MCS <petsc@mcs.anl.gov>                   <petsc@shakey.mcs.anl.gov>
+PETSc MCS <petsc@mcs.anl.gov>                   <petsc@smash.mcs.anl.gov>
+PETSc MCS <petsc@mcs.anl.gov>                   <petsc@zither.mcs.anl.gov>
+PETSc MCS <petsc@mcs.anl.gov>                   <petsc@steamroller.mcs.anl.gov>
+PETSc MCS <petsc@mcs.anl.gov>                   <petsc@blaze.mcs.anl.gov>
+PETSc MCS <petsc@mcs.anl.gov>                   <petsc@buster.mcs.anl.gov>
+PETSc MCS <petsc@mcs.anl.gov>                   <petsc@dactyl.mcs.anl.gov>
+PETSc MCS <petsc@mcs.anl.gov>                   <petsc@harley.mcs.anl.gov>
+PETSc MCS <petsc@mcs.anl.gov>                   <petsc@jlogin2.lcrc.anl.gov>
+PETSc MCS <petsc@mcs.anl.gov>                   <petsc@ksl2.mcs.anl.gov>
+PETSc MCS <petsc@mcs.anl.gov>                   <petsc@manu.mcs.anl.gov>
+PETSc MCS <petsc@mcs.anl.gov>                   <petsc@petsc.mcs.anl.gov>
+PETSc MCS <petsc@mcs.anl.gov>                   <petsc@schwinn.mcs.anl.gov>
+PETSc MCS <petsc@mcs.anl.gov>                   <petsc@spark.mcs.anl.gov>
