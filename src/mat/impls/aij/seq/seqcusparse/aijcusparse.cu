@@ -24,19 +24,19 @@ static PetscErrorCode MatICCFactorSymbolic_SeqAIJCUSPARSE(Mat,Mat,IS,const MatFa
 static PetscErrorCode MatCholeskyFactorSymbolic_SeqAIJCUSPARSE(Mat,Mat,IS,const MatFactorInfo*);
 static PetscErrorCode MatCholeskyFactorNumeric_SeqAIJCUSPARSE(Mat,Mat,const MatFactorInfo*);
 
-PetscErrorCode MatILUFactorSymbolic_SeqAIJCUSPARSE(Mat,Mat,IS,IS,const MatFactorInfo*);
-PetscErrorCode MatLUFactorSymbolic_SeqAIJCUSPARSE(Mat,Mat,IS,IS,const MatFactorInfo*);
-PetscErrorCode MatLUFactorNumeric_SeqAIJCUSPARSE(Mat,Mat,const MatFactorInfo*);
+static PetscErrorCode MatILUFactorSymbolic_SeqAIJCUSPARSE(Mat,Mat,IS,IS,const MatFactorInfo*);
+static PetscErrorCode MatLUFactorSymbolic_SeqAIJCUSPARSE(Mat,Mat,IS,IS,const MatFactorInfo*);
+static PetscErrorCode MatLUFactorNumeric_SeqAIJCUSPARSE(Mat,Mat,const MatFactorInfo*);
 
-PetscErrorCode MatSolve_SeqAIJCUSPARSE(Mat,Vec,Vec);
-PetscErrorCode MatSolve_SeqAIJCUSPARSE_NaturalOrdering(Mat,Vec,Vec);
-PetscErrorCode MatSolveTranspose_SeqAIJCUSPARSE(Mat,Vec,Vec);
-PetscErrorCode MatSolveTranspose_SeqAIJCUSPARSE_NaturalOrdering(Mat,Vec,Vec);
-PetscErrorCode MatSetFromOptions_SeqAIJCUSPARSE(Mat);
-PetscErrorCode MatMult_SeqAIJCUSPARSE(Mat,Vec,Vec);
-PetscErrorCode MatMultAdd_SeqAIJCUSPARSE(Mat,Vec,Vec,Vec);
-PetscErrorCode MatMultTranspose_SeqAIJCUSPARSE(Mat,Vec,Vec);
-PetscErrorCode MatMultTransposeAdd_SeqAIJCUSPARSE(Mat,Vec,Vec,Vec);
+static PetscErrorCode MatSolve_SeqAIJCUSPARSE(Mat,Vec,Vec);
+static PetscErrorCode MatSolve_SeqAIJCUSPARSE_NaturalOrdering(Mat,Vec,Vec);
+static PetscErrorCode MatSolveTranspose_SeqAIJCUSPARSE(Mat,Vec,Vec);
+static PetscErrorCode MatSolveTranspose_SeqAIJCUSPARSE_NaturalOrdering(Mat,Vec,Vec);
+static PetscErrorCode MatSetFromOptions_SeqAIJCUSPARSE(Mat);
+static PetscErrorCode MatMult_SeqAIJCUSPARSE(Mat,Vec,Vec);
+static PetscErrorCode MatMultAdd_SeqAIJCUSPARSE(Mat,Vec,Vec,Vec);
+static PetscErrorCode MatMultTranspose_SeqAIJCUSPARSE(Mat,Vec,Vec);
+static PetscErrorCode MatMultTransposeAdd_SeqAIJCUSPARSE(Mat,Vec,Vec,Vec);
 
 #undef __FUNCT__
 #define __FUNCT__ "MatFactorGetSolverPackage_seqaij_cusparse"
@@ -152,7 +152,7 @@ PetscErrorCode MatCUSPARSESetFormat(Mat A,MatCUSPARSEFormatOperation op,MatCUSPA
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSetFromOptions_SeqAIJCUSPARSE"
-PetscErrorCode MatSetFromOptions_SeqAIJCUSPARSE(Mat A)
+static PetscErrorCode MatSetFromOptions_SeqAIJCUSPARSE(Mat A)
 {
   PetscErrorCode           ierr;
   MatCUSPARSEStorageFormat format;
@@ -186,7 +186,7 @@ PetscErrorCode MatSetFromOptions_SeqAIJCUSPARSE(Mat A)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatILUFactorSymbolic_SeqAIJCUSPARSE"
-PetscErrorCode MatILUFactorSymbolic_SeqAIJCUSPARSE(Mat B,Mat A,IS isrow,IS iscol,const MatFactorInfo *info)
+static PetscErrorCode MatILUFactorSymbolic_SeqAIJCUSPARSE(Mat B,Mat A,IS isrow,IS iscol,const MatFactorInfo *info)
 {
   PetscErrorCode ierr;
 
@@ -198,7 +198,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJCUSPARSE(Mat B,Mat A,IS isrow,IS iscol
 
 #undef __FUNCT__
 #define __FUNCT__ "MatLUFactorSymbolic_SeqAIJCUSPARSE"
-PetscErrorCode MatLUFactorSymbolic_SeqAIJCUSPARSE(Mat B,Mat A,IS isrow,IS iscol,const MatFactorInfo *info)
+static PetscErrorCode MatLUFactorSymbolic_SeqAIJCUSPARSE(Mat B,Mat A,IS isrow,IS iscol,const MatFactorInfo *info)
 {
   PetscErrorCode ierr;
 
@@ -521,7 +521,7 @@ static PetscErrorCode MatSeqAIJCUSPARSEICCAnalysisAndCopyToGPU(Mat A)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatLUFactorNumeric_SeqAIJCUSPARSE"
-PetscErrorCode MatLUFactorNumeric_SeqAIJCUSPARSE(Mat B,Mat A,const MatFactorInfo *info)
+static PetscErrorCode MatLUFactorNumeric_SeqAIJCUSPARSE(Mat B,Mat A,const MatFactorInfo *info)
 {
   Mat_SeqAIJ     *b = (Mat_SeqAIJ*)B->data;
   IS             isrow = b->row,iscol = b->col;
@@ -618,7 +618,7 @@ static PetscErrorCode MatSeqAIJCUSPARSEGenerateTransposeForMult(Mat A)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSolveTranspose_SeqAIJCUSPARSE"
-PetscErrorCode MatSolveTranspose_SeqAIJCUSPARSE(Mat A,Vec bb,Vec xx)
+static PetscErrorCode MatSolveTranspose_SeqAIJCUSPARSE(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqAIJ                   *a = (Mat_SeqAIJ*)A->data;
   CUSPARRAY                    *xGPU, *bGPU;
@@ -661,7 +661,7 @@ PetscErrorCode MatSolveTranspose_SeqAIJCUSPARSE(Mat A,Vec bb,Vec xx)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSolveTranspose_SeqAIJCUSPARSE_NaturalOrdering"
-PetscErrorCode MatSolveTranspose_SeqAIJCUSPARSE_NaturalOrdering(Mat A,Vec bb,Vec xx)
+static PetscErrorCode MatSolveTranspose_SeqAIJCUSPARSE_NaturalOrdering(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqAIJ                   *a = (Mat_SeqAIJ*)A->data;
   CUSPARRAY                    *xGPU,*bGPU;
@@ -701,7 +701,7 @@ PetscErrorCode MatSolveTranspose_SeqAIJCUSPARSE_NaturalOrdering(Mat A,Vec bb,Vec
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSolve_SeqAIJCUSPARSE"
-PetscErrorCode MatSolve_SeqAIJCUSPARSE(Mat A,Vec bb,Vec xx)
+static PetscErrorCode MatSolve_SeqAIJCUSPARSE(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqAIJ                   *a = (Mat_SeqAIJ*)A->data;
   CUSPARRAY                    *xGPU,*bGPU;
@@ -736,7 +736,7 @@ PetscErrorCode MatSolve_SeqAIJCUSPARSE(Mat A,Vec bb,Vec xx)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSolve_SeqAIJCUSPARSE_NaturalOrdering"
-PetscErrorCode MatSolve_SeqAIJCUSPARSE_NaturalOrdering(Mat A,Vec bb,Vec xx)
+static PetscErrorCode MatSolve_SeqAIJCUSPARSE_NaturalOrdering(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqAIJ                   *a = (Mat_SeqAIJ*)A->data;
   CUSPARRAY                    *xGPU,*bGPU;
@@ -769,7 +769,7 @@ PetscErrorCode MatSolve_SeqAIJCUSPARSE_NaturalOrdering(Mat A,Vec bb,Vec xx)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSeqAIJCUSPARSECopyToGPU"
-PetscErrorCode MatSeqAIJCUSPARSECopyToGPU(Mat A)
+static PetscErrorCode MatSeqAIJCUSPARSECopyToGPU(Mat A)
 {
 
   Mat_SeqAIJCUSPARSE *cusparseMat = (Mat_SeqAIJCUSPARSE*)A->spptr;
@@ -876,7 +876,7 @@ PetscErrorCode MatSeqAIJCUSPARSECopyToGPU(Mat A)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatGetVecs_SeqAIJCUSPARSE"
-PetscErrorCode MatGetVecs_SeqAIJCUSPARSE(Mat mat, Vec *right, Vec *left)
+static PetscErrorCode MatGetVecs_SeqAIJCUSPARSE(Mat mat, Vec *right, Vec *left)
 {
   PetscErrorCode ierr;
 
@@ -900,7 +900,7 @@ PetscErrorCode MatGetVecs_SeqAIJCUSPARSE(Mat mat, Vec *right, Vec *left)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMult_SeqAIJCUSPARSE"
-PetscErrorCode MatMult_SeqAIJCUSPARSE(Mat A,Vec xx,Vec yy)
+static PetscErrorCode MatMult_SeqAIJCUSPARSE(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqAIJ         *a = (Mat_SeqAIJ*)A->data;
   Mat_SeqAIJCUSPARSE *cusparseMat = (Mat_SeqAIJCUSPARSE*)A->spptr;
@@ -932,7 +932,7 @@ PetscErrorCode MatMult_SeqAIJCUSPARSE(Mat A,Vec xx,Vec yy)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMultTranspose_SeqAIJCUSPARSE"
-PetscErrorCode MatMultTranspose_SeqAIJCUSPARSE(Mat A,Vec xx,Vec yy)
+static PetscErrorCode MatMultTranspose_SeqAIJCUSPARSE(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqAIJ         *a = (Mat_SeqAIJ*)A->data;
   Mat_SeqAIJCUSPARSE *cusparseMat = (Mat_SeqAIJCUSPARSE*)A->spptr;
@@ -968,7 +968,7 @@ PetscErrorCode MatMultTranspose_SeqAIJCUSPARSE(Mat A,Vec xx,Vec yy)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMultAdd_SeqAIJCUSPARSE"
-PetscErrorCode MatMultAdd_SeqAIJCUSPARSE(Mat A,Vec xx,Vec yy,Vec zz)
+static PetscErrorCode MatMultAdd_SeqAIJCUSPARSE(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqAIJ         *a = (Mat_SeqAIJ*)A->data;
   Mat_SeqAIJCUSPARSE *cusparseMat = (Mat_SeqAIJCUSPARSE*)A->spptr;
@@ -1005,7 +1005,7 @@ PetscErrorCode MatMultAdd_SeqAIJCUSPARSE(Mat A,Vec xx,Vec yy,Vec zz)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMultTransposeAdd_SeqAIJCUSPARSE"
-PetscErrorCode MatMultTransposeAdd_SeqAIJCUSPARSE(Mat A,Vec xx,Vec yy,Vec zz)
+static PetscErrorCode MatMultTransposeAdd_SeqAIJCUSPARSE(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqAIJ         *a = (Mat_SeqAIJ*)A->data;
   Mat_SeqAIJCUSPARSE *cusparseMat = (Mat_SeqAIJCUSPARSE*)A->spptr;
@@ -1046,7 +1046,7 @@ PetscErrorCode MatMultTransposeAdd_SeqAIJCUSPARSE(Mat A,Vec xx,Vec yy,Vec zz)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatAssemblyEnd_SeqAIJCUSPARSE"
-PetscErrorCode MatAssemblyEnd_SeqAIJCUSPARSE(Mat A,MatAssemblyType mode)
+static PetscErrorCode MatAssemblyEnd_SeqAIJCUSPARSE(Mat A,MatAssemblyType mode)
 {
   PetscErrorCode ierr;
 
@@ -1127,7 +1127,7 @@ PetscErrorCode  MatCreateSeqAIJCUSPARSE(MPI_Comm comm,PetscInt m,PetscInt n,Pets
 
 #undef __FUNCT__
 #define __FUNCT__ "MatDestroy_SeqAIJCUSPARSE"
-PetscErrorCode MatDestroy_SeqAIJCUSPARSE(Mat A)
+static PetscErrorCode MatDestroy_SeqAIJCUSPARSE(Mat A)
 {
   PetscErrorCode     ierr;
   Mat_SeqAIJCUSPARSE *cusparseMat = (Mat_SeqAIJCUSPARSE*)A->spptr;
