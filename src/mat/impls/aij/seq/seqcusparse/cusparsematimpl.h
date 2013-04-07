@@ -24,6 +24,7 @@ struct Mat_SeqAIJCUSPARSETriFactors {
   CUSPARRAY                *tempvec;
   MatCUSPARSEStorageFormat format;   /* the storage format for the matrix on the device */
   PetscBool hasTranspose; /* boolean describing whether a transpose has been built or not */
+  PetscBool isSymmOrHerm;  /* boolean describing whether the matrix is symmetric (hermitian) or not. This is used mostly for performance logging purposes. */
 };
 
 struct Mat_SeqAIJCUSPARSE {
@@ -32,6 +33,7 @@ struct Mat_SeqAIJCUSPARSE {
   PetscInt                 nonzerorow; /* number of nonzero rows ... used in the flop calculations */
   MatCUSPARSEStorageFormat format;   /* the storage format for the matrix on the device */
   PetscBool hasTranspose; /* boolean describing whether a transpose has been built or not */
+  PetscBool isSymmOrHerm;  /* boolean describing whether the matrix is symmetric (hermitian) or not. This is used mostly for performance logging purposes. */
 };
 
 PETSC_INTERN PetscErrorCode MatCUSPARSECopyToGPU(Mat);
