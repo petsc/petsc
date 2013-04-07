@@ -239,14 +239,14 @@ static PetscErrorCode MatSeqAIJCUSPARSEBuildILULowerTriMatrix(Mat A)
   Mat_SeqAIJ                   *a                  = (Mat_SeqAIJ*)A->data;
   PetscInt                     n                   = A->rmap->n;
   Mat_SeqAIJCUSPARSETriFactors *cusparseTriFactors = (Mat_SeqAIJCUSPARSETriFactors*)A->spptr;
-  GPU_Matrix_Ifc               * cusparseMat       = (GPU_Matrix_Ifc*)cusparseTriFactors->loTriFactorPtr;
+  GPU_Matrix_Ifc               *cusparseMat        = (GPU_Matrix_Ifc*)cusparseTriFactors->loTriFactorPtr;
   cusparseStatus_t             stat;
   const PetscInt               *ai = a->i,*aj = a->j,*vi;
   const MatScalar              *aa = a->a,*v;
-  PetscErrorCode               ierr;
   PetscInt                     *AiLo, *AjLo;
   PetscScalar                  *AALo;
   PetscInt                     i,nz, nzLower, offset, rowOffset;
+  PetscErrorCode               ierr;
 
   PetscFunctionBegin;
   if (A->valid_GPU_matrix == PETSC_CUSP_UNALLOCATED || A->valid_GPU_matrix == PETSC_CUSP_CPU) {
@@ -310,7 +310,7 @@ static PetscErrorCode MatSeqAIJCUSPARSEBuildILUUpperTriMatrix(Mat A)
   Mat_SeqAIJ                   *a                  = (Mat_SeqAIJ*)A->data;
   PetscInt                     n                   = A->rmap->n;
   Mat_SeqAIJCUSPARSETriFactors *cusparseTriFactors = (Mat_SeqAIJCUSPARSETriFactors*)A->spptr;
-  GPU_Matrix_Ifc               * cusparseMat       = (GPU_Matrix_Ifc*)cusparseTriFactors->upTriFactorPtr;
+  GPU_Matrix_Ifc               *cusparseMat        = (GPU_Matrix_Ifc*)cusparseTriFactors->upTriFactorPtr;
   cusparseStatus_t             stat;
   const PetscInt               *aj = a->j,*adiag = a->diag,*vi;
   const MatScalar              *aa = a->a,*v;
@@ -377,7 +377,7 @@ static PetscErrorCode MatSeqAIJCUSPARSEILUAnalysisAndCopyToGPU(Mat A)
   PetscErrorCode               ierr;
   Mat_SeqAIJ                   *a                  = (Mat_SeqAIJ*)A->data;
   Mat_SeqAIJCUSPARSETriFactors *cusparseTriFactors = (Mat_SeqAIJCUSPARSETriFactors*)A->spptr;
-  IS                           isrow               = a->row,iscol = a->icol;
+  IS                           isrow = a->row,iscol = a->icol;
   PetscBool                    row_identity,col_identity;
   const PetscInt               *r,*c;
   PetscInt                     n = A->rmap->n;
@@ -414,17 +414,17 @@ static PetscErrorCode MatSeqAIJCUSPARSEBuildICCTriMatrices(Mat A)
 {
   Mat_SeqAIJ                   *a                  = (Mat_SeqAIJ*)A->data;
   Mat_SeqAIJCUSPARSETriFactors *cusparseTriFactors = (Mat_SeqAIJCUSPARSETriFactors*)A->spptr;
-  GPU_Matrix_Ifc               * cusparseMatLo       = (GPU_Matrix_Ifc*)cusparseTriFactors->loTriFactorPtr;
-  GPU_Matrix_Ifc               * cusparseMatUp       = (GPU_Matrix_Ifc*)cusparseTriFactors->upTriFactorPtr;
+  GPU_Matrix_Ifc               *cusparseMatLo      = (GPU_Matrix_Ifc*)cusparseTriFactors->loTriFactorPtr;
+  GPU_Matrix_Ifc               *cusparseMatUp      = (GPU_Matrix_Ifc*)cusparseTriFactors->upTriFactorPtr;
   cusparseStatus_t             stat;
   PetscErrorCode               ierr;
   PetscInt                     *AiUp, *AjUp;
   PetscScalar                  *AAUp;
   PetscScalar                  *AALo;
-  PetscInt          nzUpper=a->nz,n=A->rmap->n,i,offset,nz,j;
-  Mat_SeqSBAIJ      *b = (Mat_SeqSBAIJ*)A->data;
-  const PetscInt    *ai=b->i,*aj=b->j,*vj;
-  const MatScalar   *aa=b->a,*v;
+  PetscInt                     nzUpper = a->nz,n = A->rmap->n,i,offset,nz,j;
+  Mat_SeqSBAIJ                 *b = (Mat_SeqSBAIJ*)A->data;
+  const PetscInt               *ai = b->i,*aj = b->j,*vj;
+  const MatScalar              *aa = b->a,*v;
 
   PetscFunctionBegin;
   if (A->valid_GPU_matrix == PETSC_CUSP_UNALLOCATED || A->valid_GPU_matrix == PETSC_CUSP_CPU) {
@@ -499,9 +499,9 @@ static PetscErrorCode MatSeqAIJCUSPARSEICCAnalysisAndCopyToGPU(Mat A)
   PetscErrorCode               ierr;
   Mat_SeqAIJ                   *a                  = (Mat_SeqAIJ*)A->data;
   Mat_SeqAIJCUSPARSETriFactors *cusparseTriFactors = (Mat_SeqAIJCUSPARSETriFactors*)A->spptr;
-  IS             ip=a->row;
-  const PetscInt *rip;
-  PetscBool      perm_identity;
+  IS                           ip = a->row;
+  const PetscInt               *rip;
+  PetscBool                    perm_identity;
   PetscInt                     n = A->rmap->n;
 
   PetscFunctionBegin;
@@ -523,10 +523,10 @@ static PetscErrorCode MatSeqAIJCUSPARSEICCAnalysisAndCopyToGPU(Mat A)
 #define __FUNCT__ "MatLUFactorNumeric_SeqAIJCUSPARSE"
 PetscErrorCode MatLUFactorNumeric_SeqAIJCUSPARSE(Mat B,Mat A,const MatFactorInfo *info)
 {
-  PetscErrorCode ierr;
-  Mat_SeqAIJ     *b    =(Mat_SeqAIJ*)B->data;
+  Mat_SeqAIJ     *b = (Mat_SeqAIJ*)B->data;
   IS             isrow = b->row,iscol = b->col;
   PetscBool      row_identity,col_identity;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MatLUFactorNumeric_SeqAIJ(B,A,info);CHKERRQ(ierr);
@@ -550,10 +550,10 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJCUSPARSE(Mat B,Mat A,const MatFactorInfo
 #define __FUNCT__ "MatCholeskyFactorNumeric_SeqAIJCUSPARSE"
 static PetscErrorCode MatCholeskyFactorNumeric_SeqAIJCUSPARSE(Mat B,Mat A,const MatFactorInfo *info)
 {
-  PetscErrorCode ierr;
-  Mat_SeqAIJ     *b    =(Mat_SeqAIJ*)B->data;
-  IS             ip=b->row;
+  Mat_SeqAIJ     *b = (Mat_SeqAIJ*)B->data;
+  IS             ip = b->row;
   PetscBool      perm_identity;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MatCholeskyFactorNumeric_SeqAIJ(B,A,info);CHKERRQ(ierr);
@@ -575,12 +575,13 @@ static PetscErrorCode MatCholeskyFactorNumeric_SeqAIJCUSPARSE(Mat B,Mat A,const 
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSeqAIJCUSPARSEAnalyzeTransposeForSolve"
-PetscErrorCode MatSeqAIJCUSPARSEAnalyzeTransposeForSolve(Mat A)
+static PetscErrorCode MatSeqAIJCUSPARSEAnalyzeTransposeForSolve(Mat A)
 {
-  Mat_SeqAIJCUSPARSETriFactors *cusparseTriFactors  = (Mat_SeqAIJCUSPARSETriFactors*)A->spptr;
-  GPU_Matrix_Ifc* cusparseMatLo  = (GPU_Matrix_Ifc*)cusparseTriFactors->loTriFactorPtr;
-  GPU_Matrix_Ifc* cusparseMatUp  = (GPU_Matrix_Ifc*)cusparseTriFactors->upTriFactorPtr;
-  cusparseStatus_t stat;
+  Mat_SeqAIJCUSPARSETriFactors *cusparseTriFactors = (Mat_SeqAIJCUSPARSETriFactors*)A->spptr;
+  GPU_Matrix_Ifc               *cusparseMatLo      = (GPU_Matrix_Ifc*)cusparseTriFactors->loTriFactorPtr;
+  GPU_Matrix_Ifc               *cusparseMatUp      = (GPU_Matrix_Ifc*)cusparseTriFactors->upTriFactorPtr;
+  cusparseStatus_t             stat;
+
   PetscFunctionBegin;
   stat = cusparseMatLo->initializeCusparseMatTranspose(MAT_cusparseHandle,
                                                        CUSPARSE_MATRIX_TYPE_TRIANGULAR,
@@ -598,12 +599,13 @@ PetscErrorCode MatSeqAIJCUSPARSEAnalyzeTransposeForSolve(Mat A)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSeqAIJCUSPARSEGenerateTransposeForMult"
-PetscErrorCode MatSeqAIJCUSPARSEGenerateTransposeForMult(Mat A)
+static PetscErrorCode MatSeqAIJCUSPARSEGenerateTransposeForMult(Mat A)
 {
+  Mat_SeqAIJCUSPARSE *cusparseMat = (Mat_SeqAIJCUSPARSE*)A->spptr;
+  Mat_SeqAIJ         *a = (Mat_SeqAIJ*)A->data;
+  cusparseStatus_t   stat;
   PetscErrorCode     ierr;
-  Mat_SeqAIJCUSPARSE *cusparseMat  = (Mat_SeqAIJCUSPARSE*)A->spptr;
-  Mat_SeqAIJ      *a          = (Mat_SeqAIJ*)A->data;
-  cusparseStatus_t stat;
+
   PetscFunctionBegin;
   if (cusparseMat->isSymmOrHerm) {
     stat = cusparseMat->mat->initializeCusparseMatTranspose(MAT_cusparseHandle, CUSPARSE_MATRIX_TYPE_SYMMETRIC, CUSPARSE_FILL_MODE_UPPER, CUSPARSE_DIAG_TYPE_NON_UNIT);CHKERRCUSP(stat);
@@ -618,14 +620,14 @@ PetscErrorCode MatSeqAIJCUSPARSEGenerateTransposeForMult(Mat A)
 #define __FUNCT__ "MatSolveTranspose_SeqAIJCUSPARSE"
 PetscErrorCode MatSolveTranspose_SeqAIJCUSPARSE(Mat A,Vec bb,Vec xx)
 {
-  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
-  PetscErrorCode ierr;
-  CUSPARRAY      *xGPU, *bGPU;
-  cusparseStatus_t stat;
-  Mat_SeqAIJCUSPARSETriFactors *cusparseTriFactors  = (Mat_SeqAIJCUSPARSETriFactors*)A->spptr;
-  GPU_Matrix_Ifc *cusparseMatLo  = (GPU_Matrix_Ifc*)cusparseTriFactors->loTriFactorPtr;
-  GPU_Matrix_Ifc *cusparseMatUp  = (GPU_Matrix_Ifc*)cusparseTriFactors->upTriFactorPtr;
-  CUSPARRAY * tempGPU = (CUSPARRAY*) cusparseTriFactors->tempvec;
+  Mat_SeqAIJ                   *a = (Mat_SeqAIJ*)A->data;
+  CUSPARRAY                    *xGPU, *bGPU;
+  cusparseStatus_t             stat;
+  Mat_SeqAIJCUSPARSETriFactors *cusparseTriFactors = (Mat_SeqAIJCUSPARSETriFactors*)A->spptr;
+  GPU_Matrix_Ifc               *cusparseMatLo      = (GPU_Matrix_Ifc*)cusparseTriFactors->loTriFactorPtr;
+  GPU_Matrix_Ifc               *cusparseMatUp      = (GPU_Matrix_Ifc*)cusparseTriFactors->upTriFactorPtr;
+  CUSPARRAY                    *tempGPU            = (CUSPARRAY*) cusparseTriFactors->tempvec;
+  PetscErrorCode               ierr;
 
   PetscFunctionBegin;
   /* Analyze the matrix ... on the fly */
@@ -661,14 +663,14 @@ PetscErrorCode MatSolveTranspose_SeqAIJCUSPARSE(Mat A,Vec bb,Vec xx)
 #define __FUNCT__ "MatSolveTranspose_SeqAIJCUSPARSE_NaturalOrdering"
 PetscErrorCode MatSolveTranspose_SeqAIJCUSPARSE_NaturalOrdering(Mat A,Vec bb,Vec xx)
 {
-  Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
-  PetscErrorCode    ierr;
-  CUSPARRAY         *xGPU, *bGPU;
-  cusparseStatus_t stat;
-  Mat_SeqAIJCUSPARSETriFactors *cusparseTriFactors  = (Mat_SeqAIJCUSPARSETriFactors*)A->spptr;
-  GPU_Matrix_Ifc *cusparseMatLo  = (GPU_Matrix_Ifc*)cusparseTriFactors->loTriFactorPtr;
-  GPU_Matrix_Ifc *cusparseMatUp  = (GPU_Matrix_Ifc*)cusparseTriFactors->upTriFactorPtr;
-  CUSPARRAY * tempGPU = (CUSPARRAY*) cusparseTriFactors->tempvec;
+  Mat_SeqAIJ                   *a = (Mat_SeqAIJ*)A->data;
+  CUSPARRAY                    *xGPU,*bGPU;
+  cusparseStatus_t             stat;
+  Mat_SeqAIJCUSPARSETriFactors *cusparseTriFactors = (Mat_SeqAIJCUSPARSETriFactors*)A->spptr;
+  GPU_Matrix_Ifc               *cusparseMatLo      = (GPU_Matrix_Ifc*)cusparseTriFactors->loTriFactorPtr;
+  GPU_Matrix_Ifc               *cusparseMatUp      = (GPU_Matrix_Ifc*)cusparseTriFactors->upTriFactorPtr;
+  CUSPARRAY                    *tempGPU            = (CUSPARRAY*) cusparseTriFactors->tempvec;
+  PetscErrorCode               ierr;
 
   PetscFunctionBegin;
   /* Analyze the matrix ... on the fly */
@@ -697,19 +699,18 @@ PetscErrorCode MatSolveTranspose_SeqAIJCUSPARSE_NaturalOrdering(Mat A,Vec bb,Vec
   PetscFunctionReturn(0);
 }
 
-
 #undef __FUNCT__
 #define __FUNCT__ "MatSolve_SeqAIJCUSPARSE"
 PetscErrorCode MatSolve_SeqAIJCUSPARSE(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqAIJ                   *a = (Mat_SeqAIJ*)A->data;
-  PetscErrorCode               ierr;
-  CUSPARRAY                    *xGPU, *bGPU;
+  CUSPARRAY                    *xGPU,*bGPU;
   cusparseStatus_t             stat;
   Mat_SeqAIJCUSPARSETriFactors *cusparseTriFactors = (Mat_SeqAIJCUSPARSETriFactors*)A->spptr;
   GPU_Matrix_Ifc               *cusparseMatLo      = (GPU_Matrix_Ifc*)cusparseTriFactors->loTriFactorPtr;
   GPU_Matrix_Ifc               *cusparseMatUp      = (GPU_Matrix_Ifc*)cusparseTriFactors->upTriFactorPtr;
-  CUSPARRAY                    * tempGPU           = (CUSPARRAY*) cusparseTriFactors->tempvec;
+  CUSPARRAY                    *tempGPU            = (CUSPARRAY*)cusparseTriFactors->tempvec;
+  PetscErrorCode               ierr;
 
   PetscFunctionBegin;
   /* Get the GPU pointers */
@@ -733,21 +734,18 @@ PetscErrorCode MatSolve_SeqAIJCUSPARSE(Mat A,Vec bb,Vec xx)
   PetscFunctionReturn(0);
 }
 
-
-
-
 #undef __FUNCT__
 #define __FUNCT__ "MatSolve_SeqAIJCUSPARSE_NaturalOrdering"
 PetscErrorCode MatSolve_SeqAIJCUSPARSE_NaturalOrdering(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqAIJ                   *a = (Mat_SeqAIJ*)A->data;
-  PetscErrorCode               ierr;
-  CUSPARRAY                    *xGPU, *bGPU;
+  CUSPARRAY                    *xGPU,*bGPU;
   cusparseStatus_t             stat;
   Mat_SeqAIJCUSPARSETriFactors *cusparseTriFactors = (Mat_SeqAIJCUSPARSETriFactors*)A->spptr;
   GPU_Matrix_Ifc               *cusparseMatLo      = (GPU_Matrix_Ifc*)cusparseTriFactors->loTriFactorPtr;
   GPU_Matrix_Ifc               *cusparseMatUp      = (GPU_Matrix_Ifc*)cusparseTriFactors->upTriFactorPtr;
-  CUSPARRAY                    * tempGPU           = (CUSPARRAY*) cusparseTriFactors->tempvec;
+  CUSPARRAY                    *tempGPU            = (CUSPARRAY*)cusparseTriFactors->tempvec;
+  PetscErrorCode               ierr;
 
   PetscFunctionBegin;
   /* Get the GPU pointers */
@@ -775,11 +773,11 @@ PetscErrorCode MatSeqAIJCUSPARSECopyToGPU(Mat A)
 {
 
   Mat_SeqAIJCUSPARSE *cusparseMat = (Mat_SeqAIJCUSPARSE*)A->spptr;
-  Mat_SeqAIJ         *a           = (Mat_SeqAIJ*)A->data;
-  PetscInt           m            = A->rmap->n,*ii,*ridx;
-  PetscErrorCode     ierr;
+  Mat_SeqAIJ         *a = (Mat_SeqAIJ*)A->data;
+  PetscInt           m = A->rmap->n,*ii,*ridx;
   PetscBool          symmetryTest=PETSC_FALSE, hermitianTest=PETSC_FALSE;
   PetscBool          symmetryOptionIsSet=PETSC_FALSE, symmetryOptionTest=PETSC_FALSE;
+  PetscErrorCode     ierr;
 
   PetscFunctionBegin;
   if (A->valid_GPU_matrix == PETSC_CUSP_UNALLOCATED || A->valid_GPU_matrix == PETSC_CUSP_CPU) {
@@ -905,9 +903,9 @@ PetscErrorCode MatGetVecs_SeqAIJCUSPARSE(Mat mat, Vec *right, Vec *left)
 PetscErrorCode MatMult_SeqAIJCUSPARSE(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqAIJ         *a = (Mat_SeqAIJ*)A->data;
-  PetscErrorCode     ierr;
   Mat_SeqAIJCUSPARSE *cusparseMat = (Mat_SeqAIJCUSPARSE*)A->spptr;
   CUSPARRAY          *xarray,*yarray;
+  PetscErrorCode     ierr;
 
   PetscFunctionBegin;
   /* The line below should not be necessary as it has been moved to MatAssemblyEnd_SeqAIJCUSPARSE
@@ -932,15 +930,14 @@ PetscErrorCode MatMult_SeqAIJCUSPARSE(Mat A,Vec xx,Vec yy)
   PetscFunctionReturn(0);
 }
 
-
 #undef __FUNCT__
 #define __FUNCT__ "MatMultTranspose_SeqAIJCUSPARSE"
 PetscErrorCode MatMultTranspose_SeqAIJCUSPARSE(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqAIJ         *a = (Mat_SeqAIJ*)A->data;
-  PetscErrorCode     ierr;
   Mat_SeqAIJCUSPARSE *cusparseMat = (Mat_SeqAIJCUSPARSE*)A->spptr;
   CUSPARRAY          *xarray,*yarray;
+  PetscErrorCode     ierr;
 
   PetscFunctionBegin;
   /* The line below should not be necessary as it has been moved to MatAssemblyEnd_SeqAIJCUSPARSE
@@ -974,9 +971,9 @@ PetscErrorCode MatMultTranspose_SeqAIJCUSPARSE(Mat A,Vec xx,Vec yy)
 PetscErrorCode MatMultAdd_SeqAIJCUSPARSE(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqAIJ         *a = (Mat_SeqAIJ*)A->data;
-  PetscErrorCode     ierr;
   Mat_SeqAIJCUSPARSE *cusparseMat = (Mat_SeqAIJCUSPARSE*)A->spptr;
   CUSPARRAY          *xarray,*yarray,*zarray;
+  PetscErrorCode     ierr;
 
   PetscFunctionBegin;
   /* The line below should not be necessary as it has been moved to MatAssemblyEnd_SeqAIJCUSPARSE
@@ -1007,13 +1004,13 @@ PetscErrorCode MatMultAdd_SeqAIJCUSPARSE(Mat A,Vec xx,Vec yy,Vec zz)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatMultAdd_SeqAIJCUSPARSE"
+#define __FUNCT__ "MatMultTransposeAdd_SeqAIJCUSPARSE"
 PetscErrorCode MatMultTransposeAdd_SeqAIJCUSPARSE(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqAIJ         *a = (Mat_SeqAIJ*)A->data;
-  PetscErrorCode     ierr;
   Mat_SeqAIJCUSPARSE *cusparseMat = (Mat_SeqAIJCUSPARSE*)A->spptr;
   CUSPARRAY          *xarray,*yarray,*zarray;
+  PetscErrorCode     ierr;
 
   PetscFunctionBegin;
   /* The line below should not be necessary as it has been moved to MatAssemblyEnd_SeqAIJCUSPARSE
