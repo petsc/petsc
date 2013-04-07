@@ -4,6 +4,7 @@ static char help[] = "Second Order TVD Finite Volume Example.\n";
 */
 #include <petscts.h>
 #include <petscdmplex.h>
+#include <petscsf.h>
 #include <petscblaslapack.h>
 #if defined(PETSC_HAVE_EXODUSII)
 #include <exodusII.h>

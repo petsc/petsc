@@ -1,6 +1,7 @@
 #include <petsc-private/dmpleximpl.h>   /*I      "petscdmplex.h"   I*/
 #include <../src/sys/utils/hash.h>
 #include <petsc-private/isimpl.h>
+#include <petscsf.h>
 
 /* Logging support */
 PetscLogEvent DMPLEX_Distribute, DMPLEX_Stratify;
