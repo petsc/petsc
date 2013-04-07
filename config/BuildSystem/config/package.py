@@ -408,11 +408,15 @@ class Package(config.base.Configure):
     err =''
     if hasattr(self.sourceControl, 'git') and self.gitcommit:
       for giturl in self.giturls: # First try to fetch using Git
-        gitrepo = os.path.join(self.externalPackagesDir, self.downloadname)
-        self.executeShellCommand([self.sourceControl.git, 'clone', giturl, gitrepo])
-        self.executeShellCommand([self.sourceControl.git, 'checkout', '-f', self.gitcommit], cwd=gitrepo)
-        self.framework.actions.addArgument(self.PACKAGE, 'Download', 'Git cloned '+self.name+' into '+self.getDir(0))
-        return
+        try:
+          gitrepo = os.path.join(self.externalPackagesDir, self.downloadname)
+          self.executeShellCommand([self.sourceControl.git, 'clone', giturl, gitrepo])
+          self.executeShellCommand([self.sourceControl.git, 'checkout', '-f', self.gitcommit], cwd=gitrepo)
+          self.framework.actions.addArgument(self.PACKAGE, 'Download', 'Git cloned '+self.name+' into '+self.getDir(0))
+          return
+        except RuntimeError, e:
+          self.logPrint('ERROR: '+str(e))
+          err += str(e)
     for url in download_urls:
       try:
         retriever.genericRetrieve(url, self.externalPackagesDir, self.downloadname)
