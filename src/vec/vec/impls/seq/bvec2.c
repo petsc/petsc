@@ -925,22 +925,16 @@ PetscErrorCode VecView_Seq_Binary(Vec xin,PetscViewer viewer)
   } else {
     MPI_Offset   off;
     MPI_File     mfdes;
-    PetscMPIInt  gsizes[1],lsizes[1],lstarts[1];
-    MPI_Datatype view;
+    PetscMPIInt  lsize;
 
-    ierr       = PetscMPIIntCast(n,lsizes);CHKERRQ(ierr);
-    ierr       = PetscMPIIntCast(n,gsizes);CHKERRQ(ierr);
-    lstarts[0] = 0;
-    ierr = MPI_Type_create_subarray(1,gsizes,lsizes,lstarts,MPI_ORDER_FORTRAN,MPIU_SCALAR,&view);CHKERRQ(ierr);
-    ierr = MPI_Type_commit(&view);CHKERRQ(ierr);
-
+    ierr = PetscMPIIntCast(n,&lsize);CHKERRQ(ierr);
     ierr = PetscViewerBinaryGetMPIIODescriptor(viewer,&mfdes);CHKERRQ(ierr);
     ierr = PetscViewerBinaryGetMPIIOOffset(viewer,&off);CHKERRQ(ierr);
+    ierr = MPI_File_set_view(mfdes,off,MPIU_SCALAR,MPIU_SCALAR,(char*)"native",MPI_INFO_NULL);CHKERRQ(ierr);
     ierr = VecGetArrayRead(xin,&xv);CHKERRQ(ierr);
-    ierr = MPIU_File_write_all(mfdes,(void*)xv,lsizes[0],MPIU_SCALAR,MPI_STATUS_IGNORE);CHKERRQ(ierr);
+    ierr = MPIU_File_write_all(mfdes,(void*)xv,lsize,MPIU_SCALAR,MPI_STATUS_IGNORE);CHKERRQ(ierr);
     ierr = VecRestoreArrayRead(xin,&xv);CHKERRQ(ierr);
     ierr = PetscViewerBinaryAddMPIIOOffset(viewer,n*sizeof(PetscScalar));CHKERRQ(ierr);
-    ierr = MPI_Type_free(&view);CHKERRQ(ierr);
   }
 #endif
 
