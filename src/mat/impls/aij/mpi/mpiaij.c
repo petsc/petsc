@@ -2,6 +2,7 @@
 #include <../src/mat/impls/aij/mpi/mpiaij.h>   /*I "petscmat.h" I*/
 #include <petsc-private/vecimpl.h>
 #include <petscblaslapack.h>
+#include <petscsf.h>
 
 /*MC
    MATAIJ - MATAIJ = "aij" - A matrix type to be used for sparse matrices.

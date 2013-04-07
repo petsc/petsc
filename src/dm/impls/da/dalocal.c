@@ -4,6 +4,7 @@
 */
 
 #include <petsc-private/dmdaimpl.h>    /*I   "petscdmda.h"   I*/
+#include <petscsf.h>
 
 /*
    This allows the DMDA vectors to properly tell MATLAB their dimensions

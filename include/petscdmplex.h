@@ -4,7 +4,7 @@
 #if !defined(__PETSCDMPLEX_H)
 #define __PETSCDMPLEX_H
 
-#include <petscsf.h>
+#include <petscsftypes.h>
 #include <petscdm.h>
 
 PETSC_EXTERN PetscErrorCode DMPlexCreate(MPI_Comm, DM*);

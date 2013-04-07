@@ -1,6 +1,7 @@
 #include <petsc-private/meshimpl.h>   /*I      "petscdmmesh.h"   I*/
 #include <petscdmmesh_viewers.hh>
 #include <petscdmmesh_formats.hh>
+#include <petscsf.h>
 
 /* Logging support */
 PetscLogEvent DMMesh_View, DMMesh_GetGlobalScatter, DMMesh_restrictVector, DMMesh_assembleVector, DMMesh_assembleVectorComplete, DMMesh_assembleMatrix, DMMesh_updateOperator;

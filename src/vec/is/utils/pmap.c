@@ -4,6 +4,7 @@
 */
 
 #include <petscvec.h>
+#include <petscsf.h>
 #include <petsc-private/threadcommimpl.h>
 #undef __FUNCT__
 #define __FUNCT__ "PetscLayoutCreate"
