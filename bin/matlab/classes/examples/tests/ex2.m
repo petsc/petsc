@@ -3,7 +3,7 @@
 
 path(path,'../../')
 
-PetscInitialize({'-malloc_dump','-snes_monitor','-ksp_monitor'});
+PetscInitialize({'-malloc_dump','-info','-snes_monitor','-ksp_monitor'});
 
 viewer = PetscViewer();
 viewer.SetType('ascii');
@@ -45,6 +45,7 @@ is.Destroy();
 mat = PetscMat();
 mat.SetType('seqaij');
 mat.SetSizes(10,10,10,10);
+mat.SetUp();
 for i=1:10
   mat.SetValues(i,i,2*i);
 end
@@ -74,7 +75,7 @@ ksp.Destroy();
 
 arg = [1 2 4];
 snes = PetscSNES();
-snes.SetType('ls');
+snes.SetType('newtonls');
 snes.SetFunction(b,'ex2_nlfunction',arg);
 snes.SetJacobian(mat,mat,'ex2_nljacobian',arg);
 snes.SetFromOptions();

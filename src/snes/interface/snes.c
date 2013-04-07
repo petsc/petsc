@@ -4832,6 +4832,8 @@ $      f'(x) x = -f(x),
 
    Level: beginner
 
+   Developer Note:  This bleeds the allocated memory SNESMatlabContext *sctx;
+
 .keywords: SNES, nonlinear, set, function
 
 .seealso: SNESGetFunction(), SNESComputeFunction(), SNESSetJacobian(), SNESSetFunction()
@@ -4931,6 +4933,8 @@ PetscErrorCode  SNESComputeJacobian_Matlab(SNES snes,Vec x,Mat *A,Mat *B,MatStru
 
    Level: developer
 
+   Developer Note:  This bleeds the allocated memory SNESMatlabContext *sctx;
+
 .keywords: SNES, nonlinear, set, function
 
 .seealso: SNESGetFunction(), SNESComputeFunction(), SNESSetJacobian(), SNESSetFunction(), SNESJacobianFunction
@@ -5000,6 +5004,8 @@ PetscErrorCode  SNESMonitor_Matlab(SNES snes,PetscInt it, PetscReal fnorm, void 
    SNESMonitorSetMatlab - Sets the monitor function from MATLAB
 
    Level: developer
+
+   Developer Note:  This bleeds the allocated memory SNESMatlabContext *sctx;
 
 .keywords: SNES, nonlinear, set, function
 
