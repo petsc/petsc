@@ -2,7 +2,6 @@ static char help[] = "Run C version of TetGen to construct and refine a mesh\n\n
 
 #include <petscdmplex.h>
 
-#define PETSC_HAVE_CGNS 1
 #if defined(PETSC_HAVE_CGNS)
 #include <cgnslib.h>
 #endif
