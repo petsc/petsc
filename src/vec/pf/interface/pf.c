@@ -4,7 +4,7 @@
 #include <../src/vec/pf/pfimpl.h>            /*I "petscpf.h" I*/
 
 PetscClassId      PF_CLASSID          = 0;
-PetscFunctionList PFunctionList       = NULL;   /* list of all registered PD functions */
+PetscFunctionList PFList              = NULL;   /* list of all registered PD functions */
 PetscBool         PFRegisterAllCalled = PETSC_FALSE;
 
 #undef __FUNCT__
@@ -333,7 +333,7 @@ PetscErrorCode  PFRegister(const char sname[],PetscErrorCode (*function)(PF,void
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListAdd(&PFunctionList,sname,function);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&PFList,sname,function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -411,7 +411,7 @@ PetscErrorCode  PFSetType(PF pf,PFType type,void *ctx)
   pf->data = 0;
 
   /* Determine the PFCreateXXX routine for a particular function */
-  ierr = PetscFunctionListFind(PFunctionList,type,&r);CHKERRQ(ierr);
+  ierr = PetscFunctionListFind(PFList,type,&r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested PF type %s",type);
   pf->ops->destroy  = 0;
   pf->ops->view     = 0;
@@ -457,7 +457,7 @@ PetscErrorCode  PFSetFromOptions(PF pf)
   PetscValidHeaderSpecific(pf,PF_CLASSID,1);
 
   ierr = PetscObjectOptionsBegin((PetscObject)pf);CHKERRQ(ierr);
-  ierr = PetscOptionsList("-pf_type","Type of function","PFSetType",PFunctionList,0,type,256,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsList("-pf_type","Type of function","PFSetType",PFList,0,type,256,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PFSetType(pf,type,NULL);CHKERRQ(ierr);
   }
@@ -485,9 +485,11 @@ static PetscBool PFPackageInitialized = PETSC_FALSE;
 @*/
 PetscErrorCode  PFFinalizePackage(void)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
+  ierr = PetscFunctionListDestroy(&PFList);CHKERRQ(ierr);
   PFPackageInitialized = PETSC_FALSE;
-  PFunctionList        = NULL;
   PFRegisterAllCalled  = PETSC_FALSE;
   PetscFunctionReturn(0);
 }

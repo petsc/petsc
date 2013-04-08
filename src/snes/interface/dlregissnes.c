@@ -17,11 +17,13 @@ static PetscBool SNESPackageInitialized = PETSC_FALSE;
 @*/
 PetscErrorCode  SNESFinalizePackage(void)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
+  ierr = PetscFunctionListDestroy(&SNESList);CHKERRQ(ierr);
+  ierr = PetscFunctionListDestroy(&SNESLineSearchList);CHKERRQ(ierr);
   SNESPackageInitialized = PETSC_FALSE;
   SNESRegisterAllCalled  = PETSC_FALSE;
-  SNESList               = NULL;
-  SNESLineSearchList     = NULL;
   PetscFunctionReturn(0);
 }
 

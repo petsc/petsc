@@ -15,9 +15,11 @@ static PetscBool TSPackageInitialized = PETSC_FALSE;
 @*/
 PetscErrorCode  TSFinalizePackage(void)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
+  ierr = PetscFunctionListDestroy(&TSList);CHKERRQ(ierr);
   TSPackageInitialized = PETSC_FALSE;
-  TSList               = NULL;
   TSRegisterAllCalled  = PETSC_FALSE;
   PetscFunctionReturn(0);
 }

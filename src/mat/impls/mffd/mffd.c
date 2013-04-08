@@ -25,10 +25,9 @@ PetscErrorCode  MatMFFDFinalizePackage(void)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscFunctionListDestroy(&MatMFFDList);CHKERRQ(ierr);
   MatMFFDPackageInitialized = PETSC_FALSE;
   MatMFFDRegisterAllCalled  = PETSC_FALSE;
-  ierr = MatMFFDRegisterDestroy();CHKERRQ(ierr);
-  MatMFFDList               = NULL;
   PetscFunctionReturn(0);
 }
 

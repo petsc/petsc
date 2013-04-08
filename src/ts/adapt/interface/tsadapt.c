@@ -86,10 +86,12 @@ PetscErrorCode  TSAdaptRegisterAll(void)
 @*/
 PetscErrorCode  TSAdaptFinalizePackage(void)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
+  ierr = PetscFunctionListDestroy(&TSAdaptList);CHKERRQ(ierr);
   TSAdaptPackageInitialized = PETSC_FALSE;
   TSAdaptRegisterAllCalled  = PETSC_FALSE;
-  TSAdaptList               = NULL;
   PetscFunctionReturn(0);
 }
 

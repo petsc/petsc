@@ -19,13 +19,11 @@ static PetscBool DMPackageInitialized = PETSC_FALSE;
 @*/
 PetscErrorCode  DMFinalizePackage(void)
 {
-#if defined(PETSC_HAVE_SIEVE)
   PetscErrorCode ierr;
-#endif
 
   PetscFunctionBegin;
+  ierr = PetscFunctionListDestroy(&DMList);CHKERRQ(ierr);
   DMPackageInitialized = PETSC_FALSE;
-  DMList               = NULL;
   DMRegisterAllCalled  = PETSC_FALSE;
 #if defined(PETSC_HAVE_SIEVE)
   ierr = DMMeshFinalize();CHKERRQ(ierr);

@@ -98,10 +98,12 @@ PetscErrorCode  TSGLAdaptRegisterAll(void)
 @*/
 PetscErrorCode  TSGLAdaptFinalizePackage(void)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
+  ierr = PetscFunctionListDestroy(&TSGLAdaptList);CHKERRQ(ierr);
   TSGLAdaptPackageInitialized = PETSC_FALSE;
   TSGLAdaptRegisterAllCalled  = PETSC_FALSE;
-  TSGLAdaptList               = NULL;
   PetscFunctionReturn(0);
 }
 

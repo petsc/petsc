@@ -1443,11 +1443,13 @@ PetscErrorCode  TSGLInitializePackage(void)
 @*/
 PetscErrorCode  TSGLFinalizePackage(void)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
+  ierr = PetscFunctionListDestroy(&TSGLList);CHKERRQ(ierr);
+  ierr = PetscFunctionListDestroy(&TSGLAcceptList);CHKERRQ(ierr);
   TSGLPackageInitialized = PETSC_FALSE;
   TSGLRegisterAllCalled  = PETSC_FALSE;
-  TSGLList               = NULL;
-  TSGLAcceptList         = NULL;
   PetscFunctionReturn(0);
 }
 

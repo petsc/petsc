@@ -14,10 +14,12 @@ static PetscBool CharacteristicPackageInitialized = PETSC_FALSE;
 @*/
 PetscErrorCode CharacteristicFinalizePackage(void)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
+  ierr = PetscFunctionListDestroy(&CharacteristicList);CHKERRQ(ierr);
   CharacteristicPackageInitialized = PETSC_FALSE;
   CharacteristicRegisterAllCalled  = PETSC_FALSE;
-  CharacteristicList               = NULL;
   PetscFunctionReturn(0);
 }
 

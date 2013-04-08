@@ -46,17 +46,17 @@ PetscErrorCode  MatFinalizePackage(void)
     ierr   = PetscFree(names);CHKERRQ(ierr);
     names  = nnames;
   }
+  ierr = PetscFunctionListDestroy(&MatList);CHKERRQ(ierr);
+  ierr = PetscFunctionListDestroy(&MatOrderingList);CHKERRQ(ierr);
+  ierr = PetscFunctionListDestroy(&MatColoringList);CHKERRQ(ierr);
+  ierr = PetscFunctionListDestroy(&MatPartitioningList);CHKERRQ(ierr);
+  ierr = PetscFunctionListDestroy(&MatCoarsenList);CHKERRQ(ierr);
   MatBaseNameList                  = NULL;
   MatPackageInitialized            = PETSC_FALSE;
   MatRegisterAllCalled             = PETSC_FALSE;
-  MatList                          = NULL;
   MatOrderingRegisterAllCalled     = PETSC_FALSE;
-  MatOrderingList                  = NULL;
-  MatColoringList                  = NULL;
   MatColoringRegisterAllCalled     = PETSC_FALSE;
-  MatPartitioningList              = NULL;
   MatPartitioningRegisterAllCalled = PETSC_FALSE;
-  MatCoarsenList                   = NULL;
   MatCoarsenRegisterAllCalled      = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
