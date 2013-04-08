@@ -49,6 +49,6 @@ PetscErrorCode PetscSFFinalizePackage(void)
   PetscFunctionBegin;
   ierr = PetscFunctionListDestroy(&PetscSFList);CHKERRQ(ierr);
   PetscSFPackageInitialized = PETSC_FALSE;
-  PetscSFRegisterAllCalled  = PETSC_TRUE;
+  PetscSFRegisterAllCalled  = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
