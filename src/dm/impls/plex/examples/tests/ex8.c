@@ -82,8 +82,8 @@ PetscErrorCode TestTriangle(MPI_Comm comm)
   /* if ((v0[0] != -1.0) || (v0[1] != -1.0)) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid v0 (%g, %g)", v0[0], v0[1]); */
   for (i = 0; i < dim; ++i) {
     for (j = 0; j < dim; ++j) {
-      if (fabs(J[i*dim+j] - (i == j ? 1.0 : 0.0)) > 1.0e-9) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid J");
-      if (fabs(invJ[i*dim+j] - (i == j ? 1.0 : 0.0)) > 1.0e-9) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid invJ");
+      if (fabs(J[i*dim+j] - (i == j ? 1.0 : 0.0)) > 1.0e-9) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid J[%d,%d]", i, j);
+      if (fabs(invJ[i*dim+j] - (i == j ? 1.0 : 0.0)) > 1.0e-9) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid invJ[%d,%d]", i, j);
     }
   }
   if (fabs(detJ - 1.0) > 1.0e-9) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid |J| = %g should be 1.0", detJ);
