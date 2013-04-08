@@ -540,7 +540,7 @@ static PetscErrorCode DMPlexComputeHexahedronGeometry_Internal(DM dm, PetscInt e
   if (v0)   {for (d = 0; d < dim; d++) v0[d] = PetscRealPart(coords[d]);}
   if (J)    {
     for (d = 0; d < dim; d++) {
-      J[d*dim+0] = 0.5*(PetscRealPart(coords[(0+1)*dim+d]) - PetscRealPart(coords[0*dim+d]));
+      J[d*dim+0] = 0.5*(PetscRealPart(coords[(2+1)*dim+d]) - PetscRealPart(coords[0*dim+d]));
       J[d*dim+1] = 0.5*(PetscRealPart(coords[(1+1)*dim+d]) - PetscRealPart(coords[0*dim+d]));
       J[d*dim+2] = 0.5*(PetscRealPart(coords[(3+1)*dim+d]) - PetscRealPart(coords[0*dim+d]));
     }
