@@ -1112,7 +1112,11 @@ PetscErrorCode  PetscFinalize(void)
   */
   ierr = PetscFinalize_DynamicLibraries();CHKERRQ(ierr);
 
+  /*
+     Print PetscFunctionLists that have not been properly freed
+
   ierr = PetscFunctionListPrintAll();CHKERRQ(ierr);
+  */
 
   if (petsc_history) {
     ierr = PetscCloseHistoryFile(&petsc_history);CHKERRQ(ierr);

@@ -840,30 +840,6 @@ PetscErrorCode  KSPSetType(KSP ksp, KSPType type)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "KSPRegisterDestroy"
-/*@
-   KSPRegisterDestroy - Frees the list of KSP methods that were
-   registered by KSPRegister().
-
-   Not Collective
-
-   Level: advanced
-
-.keywords: KSP, register, destroy
-
-.seealso: KSPRegister(), KSPRegisterAll()
-@*/
-PetscErrorCode  KSPRegisterDestroy(void)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr                 = PetscFunctionListDestroy(&KSPList);CHKERRQ(ierr);
-  KSPRegisterAllCalled = PETSC_FALSE;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "KSPGetType"
 /*@C
    KSPGetType - Gets the KSP type as a string from the KSP object.

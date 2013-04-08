@@ -132,7 +132,6 @@ PETSC_EXTERN PetscErrorCode PCSetInitialGuessNonzero(PC,PetscBool );
 PETSC_EXTERN PetscErrorCode PCSetUseAmat(PC,PetscBool);
 PETSC_EXTERN PetscErrorCode PCGetUseAmat(PC,PetscBool*);
 
-PETSC_EXTERN PetscErrorCode PCRegisterDestroy(void);
 PETSC_EXTERN PetscErrorCode PCRegisterAll(void);
 PETSC_EXTERN PetscBool PCRegisterAllCalled;
 

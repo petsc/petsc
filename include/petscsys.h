@@ -2127,7 +2127,6 @@ PETSC_EXTERN PetscBool         PetscRandomRegisterAllCalled;
 
 PETSC_EXTERN PetscErrorCode PetscRandomRegisterAll(void);
 PETSC_EXTERN PetscErrorCode PetscRandomRegister(const char[],PetscErrorCode (*)(PetscRandom));
-PETSC_EXTERN PetscErrorCode PetscRandomRegisterDestroy(void);
 PETSC_EXTERN PetscErrorCode PetscRandomSetType(PetscRandom, PetscRandomType);
 PETSC_EXTERN PetscErrorCode PetscRandomSetFromOptions(PetscRandom);
 PETSC_EXTERN PetscErrorCode PetscRandomGetType(PetscRandom, PetscRandomType*);

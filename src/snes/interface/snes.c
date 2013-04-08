@@ -3758,32 +3758,6 @@ PetscErrorCode  SNESSetType(SNES snes,SNESType type)
   PetscFunctionReturn(0);
 }
 
-/* --------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "SNESRegisterDestroy"
-/*@
-   SNESRegisterDestroy - Frees the list of nonlinear solvers that were
-   registered by SNESRegister().
-
-   Not Collective
-
-   Level: advanced
-
-.keywords: SNES, nonlinear, register, destroy
-
-.seealso: SNESRegisterAll()
-@*/
-PetscErrorCode  SNESRegisterDestroy(void)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscFunctionListDestroy(&SNESList);CHKERRQ(ierr);
-
-  SNESRegisterAllCalled = PETSC_FALSE;
-  PetscFunctionReturn(0);
-}
-
 #undef __FUNCT__
 #define __FUNCT__ "SNESGetType"
 /*@C

@@ -412,30 +412,6 @@ PetscErrorCode  MatColoringRegister(const char sname[],PetscErrorCode (*function
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatColoringRegisterDestroy"
-/*@C
-   MatColoringRegisterDestroy - Frees the list of coloringing routines.
-
-   Not Collective
-
-   Level: developer
-
-.keywords: matrix, register, destroy
-
-.seealso: MatColoringRegister(), MatColoringRegisterAll()
-@*/
-PetscErrorCode  MatColoringRegisterDestroy(void)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscFunctionListDestroy(&MatColoringList);CHKERRQ(ierr);
-
-  MatColoringRegisterAllCalled = PETSC_FALSE;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "MatGetColoring"
 /*@C
    MatGetColoring - Gets a coloring for a matrix, from its sparsity structure,

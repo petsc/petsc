@@ -228,27 +228,6 @@ PetscErrorCode  PetscViewerSetType(PetscViewer viewer,PetscViewerType type)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscViewerRegisterDestroy"
-/*@C
-   PetscViewerRegisterDestroy - Frees the list of PetscViewer methods that were
-   registered by PetscViewerRegister().
-
-   Not Collective
-
-   Level: developer
-
-.seealso: PetscViewerRegister(), PetscViewerRegisterAll()
-@*/
-PetscErrorCode  PetscViewerRegisterDestroy(void)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscFunctionListDestroy(&PetscViewerList);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "PetscViewerRegister"
 /*@C
    PetscViewerRegister - Adds a viewer

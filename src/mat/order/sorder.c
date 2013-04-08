@@ -127,29 +127,6 @@ PetscErrorCode  MatOrderingRegister(const char sname[],PetscErrorCode (*function
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatOrderingRegisterDestroy"
-/*@
-   MatOrderingRegisterDestroy - Frees the list of ordering routines.
-
-   Not collective
-
-   Level: developer
-
-.keywords: matrix, register, destroy
-
-.seealso: MatOrderingRegister(), MatOrderingRegisterAll()
-@*/
-PetscErrorCode  MatOrderingRegisterDestroy(void)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr                         = PetscFunctionListDestroy(&MatOrderingList);CHKERRQ(ierr);
-  MatOrderingRegisterAllCalled = PETSC_FALSE;
-  PetscFunctionReturn(0);
-}
-
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
 #undef __FUNCT__
 #define __FUNCT__ "MatGetOrdering"

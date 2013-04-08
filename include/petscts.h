@@ -332,7 +332,6 @@ PETSC_EXTERN PetscErrorCode TSGetType(TS,TSType*);
 PETSC_EXTERN PetscErrorCode TSSetType(TS,TSType);
 PETSC_EXTERN PetscErrorCode TSRegister(const char[], PetscErrorCode (*)(TS));
 PETSC_EXTERN PetscErrorCode TSRegisterAll(void);
-PETSC_EXTERN PetscErrorCode TSRegisterDestroy(void);
 
 PETSC_EXTERN PetscErrorCode TSGetSNES(TS,SNES*);
 PETSC_EXTERN PetscErrorCode TSSetSNES(TS,SNES);
@@ -403,7 +402,6 @@ typedef const char *TSAdaptType;
 PETSC_EXTERN PetscErrorCode TSGetTSAdapt(TS,TSAdapt*);
 PETSC_EXTERN PetscErrorCode TSAdaptRegister(const char[],PetscErrorCode (*)(TSAdapt));
 PETSC_EXTERN PetscErrorCode TSAdaptRegisterAll(void);
-PETSC_EXTERN PetscErrorCode TSAdaptRegisterDestroy(void);
 PETSC_EXTERN PetscErrorCode TSAdaptInitializePackage(void);
 PETSC_EXTERN PetscErrorCode TSAdaptFinalizePackage(void);
 PETSC_EXTERN PetscErrorCode TSAdaptCreate(MPI_Comm,TSAdapt*);
@@ -450,7 +448,6 @@ typedef const char *TSGLAdaptType;
 
 PETSC_EXTERN PetscErrorCode TSGLAdaptRegister(const char[],PetscErrorCode (*)(TSGLAdapt));
 PETSC_EXTERN PetscErrorCode TSGLAdaptRegisterAll(void);
-PETSC_EXTERN PetscErrorCode TSGLAdaptRegisterDestroy(void);
 PETSC_EXTERN PetscErrorCode TSGLAdaptInitializePackage(void);
 PETSC_EXTERN PetscErrorCode TSGLAdaptFinalizePackage(void);
 PETSC_EXTERN PetscErrorCode TSGLAdaptCreate(MPI_Comm,TSGLAdapt*);
@@ -488,7 +485,6 @@ typedef const char* TSGLType;
 
 PETSC_EXTERN PetscErrorCode TSGLRegister(const char[],PetscErrorCode(*)(TS));
 PETSC_EXTERN PetscErrorCode TSGLRegisterAll(void);
-PETSC_EXTERN PetscErrorCode TSGLRegisterDestroy(void);
 PETSC_EXTERN PetscErrorCode TSGLInitializePackage(void);
 PETSC_EXTERN PetscErrorCode TSGLFinalizePackage(void);
 PETSC_EXTERN PetscErrorCode TSGLSetType(TS,TSGLType);

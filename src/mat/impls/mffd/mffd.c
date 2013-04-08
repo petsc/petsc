@@ -206,32 +206,6 @@ PetscErrorCode  MatMFFDRegister(const char sname[],PetscErrorCode (*function)(Ma
   PetscFunctionReturn(0);
 }
 
-
-#undef __FUNCT__
-#define __FUNCT__ "MatMFFDRegisterDestroy"
-/*@C
-   MatMFFDRegisterDestroy - Frees the list of MatMFFD methods that were
-   registered by MatMFFDRegister().
-
-   Not Collective
-
-   Level: developer
-
-.keywords: MatMFFD, register, destroy
-
-.seealso: MatMFFDRegister(), MatMFFDRegisterAll()
-@*/
-PetscErrorCode  MatMFFDRegisterDestroy(void)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscFunctionListDestroy(&MatMFFDList);CHKERRQ(ierr);
-
-  MatMFFDRegisterAllCalled = PETSC_FALSE;
-  PetscFunctionReturn(0);
-}
-
 #undef __FUNCT__
 #define __FUNCT__ "MatMFFDAddNullSpace_MFFD"
 PetscErrorCode  MatMFFDAddNullSpace_MFFD(Mat J,MatNullSpace nullsp)

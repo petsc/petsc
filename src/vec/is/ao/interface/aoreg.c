@@ -101,26 +101,3 @@ PetscErrorCode  AORegister(const char sname[], PetscErrorCode (*function)(AO))
 }
 
 
-/*--------------------------------------------------------------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "AORegisterDestroy"
-/*@C
-   AORegisterDestroy - Frees the list of AO methods that were registered by AORegister()
-
-   Not Collective
-
-   Level: advanced
-
-.keywords: AO, register, destroy
-.seealso: AORegister(), AORegisterAll()
-@*/
-PetscErrorCode  AORegisterDestroy(void)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr                = PetscFunctionListDestroy(&AOList);CHKERRQ(ierr);
-  AORegisterAllCalled = PETSC_FALSE;
-  PetscFunctionReturn(0);
-}
-
