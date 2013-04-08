@@ -2935,6 +2935,7 @@ namespace ALE {
       ierr = VecCreate(mesh.comm(), &coordinates);CHKERRXX(ierr);
       convertCoordinates(*mesh.getRealSection("coordinates"), coordSection, coordinates, renumbering);
       ierr = DMSetCoordinatesLocal(*dm, coordinates);CHKERRXX(ierr);
+      ierr = VecDestroy(&coordinates);CHKERRXX(ierr);
       const typename Mesh::labels_type& labels = mesh.getLabels();
 
       for(typename Mesh::labels_type::const_iterator l_iter = labels.begin(); l_iter != labels.end(); ++l_iter) {
