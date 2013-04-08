@@ -93,17 +93,19 @@ PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool inter
         for (v_loc = 0; v_loc < num_vertex_per_cell; ++v_loc, ++v) {
           cone[v_loc] = cs_connect[v]+numCells-1;
         }
-        /* Tetrahedra are inverted */
-        if (num_vertex_per_cell == 4) {
-          PetscInt tmp = cone[0];
-          cone[0] = cone[1];
-          cone[1] = tmp;
-        }
-        /* Hexahedra are inverted */
-        if (num_vertex_per_cell == 8) {
-          PetscInt tmp = cone[1];
-          cone[1] = cone[3];
-          cone[3] = tmp;
+        if (dim == 3) {
+          /* Tetrahedra are inverted */
+          if (num_vertex_per_cell == 4) {
+            PetscInt tmp = cone[0];
+            cone[0] = cone[1];
+            cone[1] = tmp;
+          }
+          /* Hexahedra are inverted */
+          if (num_vertex_per_cell == 8) {
+            PetscInt tmp = cone[1];
+            cone[1] = cone[3];
+            cone[3] = tmp;
+          }
         }
         ierr = DMPlexSetCone(*dm, c, cone);CHKERRQ(ierr);
         ierr = DMPlexSetLabelValue(*dm, "Cell Sets", c, cs_id[cs]);CHKERRQ(ierr);
