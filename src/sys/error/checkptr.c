@@ -4,8 +4,9 @@
 #if defined(PETSC_HAVE_SETJMP_H) && defined(PETSC_HAVE_SIGINFO_T)
 #include <signal.h>
 #include <setjmp.h>
-PETSC_EXTERN jmp_buf PetscSegvJumpBuf;
-PETSC_EXTERN void PetscSegv_sigaction(int, siginfo_t*, void *);
+PETSC_INTERN jmp_buf PetscSegvJumpBuf;
+PETSC_INTERN void PetscSegv_sigaction(int, siginfo_t*, void *);
+
 /*@C
      PetscCheckPointer - Returns PETSC_TRUE if a pointer points to accessible data
 

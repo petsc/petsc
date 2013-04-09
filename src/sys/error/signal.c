@@ -405,14 +405,14 @@ PetscErrorCode  PetscPopSignalHandler(void)
 
 #if defined(PETSC_HAVE_SETJMP_H) && defined(PETSC_HAVE_SIGINFO_T)
 #include <setjmp.h>
-jmp_buf PetscSegvJumpBuf;
+PETSC_VISIBILITY_INTERNAL jmp_buf PetscSegvJumpBuf;
 /*
     This routine is called if a segmentation violation, i.e. inaccessible memory access
     is triggered when PETSc is testing for a buggy pointer with PetscCheckPointer()
 
     It simply unrolls the UNIX signal and returns to the location where setjump(PetscSeqvJumpBuf) is declared.
 */
-void PetscSegv_sigaction(int signal, siginfo_t *si, void *arg)
+PETSC_INTERN void PetscSegv_sigaction(int signal, siginfo_t *si, void *arg)
 {
   longjmp(PetscSegvJumpBuf,1);
   return;
