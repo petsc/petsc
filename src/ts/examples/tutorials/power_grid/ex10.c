@@ -37,8 +37,8 @@ static char help[] = "Time-dependent PDE in 2d for calculating joint PDF. \n";
 #include <petscts.h>
 
 static const char *const BoundaryTypes[] = {"NONE","GHOSTED","MIRROR","PERIODIC","DMDABoundaryType","DMDA_BOUNDARY_",0};
-typedef enum {DMDA_DISCRETIZATION_UPWIND1,DMDA_DISCRETIZATION_UPWIND3_WITH_FLUXLIMITER,DMDA_DISCRETIZATION_HJWENO} DMDADiscretizationType;
-static const char *const DiscretizationTypes[] = {"UPWIND1","UPWIND3_WITH_FLUXLIMITER","HJWENO","DMDADiscretizationType","DMDA_DISCRETIZATION_",0};
+typedef enum {DMDA_DISCRETIZATION_UPWIND1,DMDA_DISCRETIZATION_UPWIND3_WITH_FLUXLIMITER,DMDA_DISCRETIZATION_WENO5} DMDADiscretizationType;
+static const char *const DiscretizationTypes[] = {"UPWIND1","UPWIND3_WITH_FLUXLIMITER","WENO5","DMDADiscretizationType","DMDA_DISCRETIZATION_",0};
 typedef enum{FLUX_LIMITER_KOREN} FluxLimiterType;
 static const char *const FluxLimiterTypes[] = {"KOREN","FluxLimiterType","FLUX_LIMITER_",0};
 
@@ -198,6 +198,8 @@ PetscErrorCode ini_bou(Vec X,AppCtx* user)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "flux_limiter"
 PETSC_STATIC_INLINE PetscErrorCode flux_limiter(PetscScalar theta,PetscScalar *psi,AppCtx *user)
 {
   PetscFunctionBegin;
@@ -208,72 +210,94 @@ PETSC_STATIC_INLINE PetscErrorCode flux_limiter(PetscScalar theta,PetscScalar *p
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "WENO5"
+PETSC_STATIC_INLINE PetscErrorCode WENO5(PetscScalar m3,PetscScalar m2,PetscScalar m1, PetscScalar p1, PetscScalar p2,PetscScalar *f)
+{
+  PetscReal f1,f2,f3;
+  PetscReal b1,b2,b3;
+  PetscReal c1=0.3, c2 = 0.6, c3 = 0.1;
+  PetscReal a1,a2,a3, a_sum_inv, w1, w2, w3;
+  PetscReal one_sixth  = 1.0/6.0;
+  PetscReal one_fourth = 1.0/4.0;
+  PetscReal frac_13_12 = 13.0/12.0;
+
+  PetscFunctionBegin;
+
+  f1 = (2*one_sixth)*m1 + (5*one_sixth)*p1 - (one_sixth)*p2;
+  f2 = (-one_sixth)*m2 + (5.0*one_sixth)*m1 + (2*one_sixth)*p1;
+  f3 = (2*one_sixth)*m3 - (7.0*one_sixth)*m2 + (11.0*one_sixth)*m1;
+
+  b1 = frac_13_12*(m1-2*p1+p2)*(m1-2*p1+p2) + one_fourth*(3*m1-4*p1+p2)*(3*m1-4*p1+p2);
+  b2 = frac_13_12*(m2-2*m1+p1)*(m2-2*m1+p1) + one_fourth*(m2-p1)*(m2-p1);
+  b3 = frac_13_12*(m3-2*m2+m1)*(m3-2*m2+m1) + one_fourth*(m3-4*m2+3*m1)*(m3-4*m2+3*m1);
+
+  a1 = c1/PetscPowScalar(b1+1e-6,2);
+  a2 = c2/PetscPowScalar(b2+1e-6,2);
+  a3 = c3/PetscPowScalar(b3+1e-6,2);
+
+  a_sum_inv = 1.0 / (a1 + a2 + a3);
+  w1 = a1 * a_sum_inv;
+  w2 = a2 * a_sum_inv;
+  w3 = a3 * a_sum_inv;
+
+  *f = w1*f1 + w2*f2 + w3*f3;
+
+  PetscFunctionReturn(0);
+}
+
 /* First advection term */
 #undef __FUNCT__
 #define __FUNCT__ "adv1"
 PetscErrorCode adv1(PetscScalar **p,PetscScalar y,PetscInt i,PetscInt j,PetscInt M,PetscScalar *dp_ddelta,AppCtx *user)
 {
   PetscErrorCode ierr;
-  PetscScalar    f;
+  PetscScalar    f, fminushalf, fplushalf;
   PetscFunctionBegin;
   f   =  user->omega_s*(y - 1.0); /* f = f(i-1/2) = f(i+1/2) */
   if (user->dis == DMDA_DISCRETIZATION_UPWIND1) {
-    PetscScalar f1,f2;
     if (f >= 0.) {
-      f1    = f*p[j][i-1];      
-      f2    = f*p[j][i];
+      fminushalf    = f*p[j][i-1];      
+      fplushalf    = f*p[j][i];
     } else {
-      f1    = f*p[j][i];
-      f2    = f*p[j][i+1];
+      fminushalf    = f*p[j][i];
+      fplushalf    = f*p[j][i+1];
     }
-    *dp_ddelta = (f1 - f2)/user->ddelta;
+    *dp_ddelta = (fminushalf - fplushalf)/user->ddelta;
   } else if (user->dis == DMDA_DISCRETIZATION_UPWIND3_WITH_FLUXLIMITER) {
-    PetscScalar f1,f2,psi,theta;
+    PetscScalar psi,theta;
     if (f >= 0.) {
       theta = (p[j][i-1] - p[j][i-2])/(p[j][i] - p[j][i-1]);
       ierr = flux_limiter(theta,&psi,user);CHKERRQ(ierr);
-      f1    = f*(p[j][i-1] + psi*(p[j][i] - p[j][i-1]));
+      fminushalf    = f*(p[j][i-1] + psi*(p[j][i] - p[j][i-1]));
       
       theta = (p[j][i] - p[j][i-1])/(p[j][i+1] - p[j][i]);
       ierr = flux_limiter(theta,&psi,user);CHKERRQ(ierr);
       psi   = PetscMax(0,PetscMin(1,PetscMin(1./3. + theta/6.,theta)));
-      f2    = f*(p[j][i] + psi*(p[j][i+1] - p[j][i]));
+      fplushalf    = f*(p[j][i] + psi*(p[j][i+1] - p[j][i]));
     } else {
       theta = (p[j][i] - p[j][i+1])/(p[j][i-1] - p[j][i]);
       ierr = flux_limiter(theta,&psi,user);CHKERRQ(ierr);
-      f1    = f*(p[j][i] + psi*(p[j][i-1] - p[j][i]));
+      fminushalf    = f*(p[j][i] + psi*(p[j][i-1] - p[j][i]));
 
       theta = (p[j][i+1] - p[j][i+2])/(p[j][i] - p[j][i+1]);
       ierr = flux_limiter(theta,&psi,user);CHKERRQ(ierr);
-      f2    =  f*(p[j][i+1] + psi*(p[j][i] - p[j][i+1]));
+      fplushalf    =  f*(p[j][i+1] + psi*(p[j][i] - p[j][i+1]));
     }
-    *dp_ddelta = (f1 - f2)/user->ddelta;
-  } else if (user->dis == DMDA_DISCRETIZATION_HJWENO) {
-    SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"WENO scheme not implemented yet");
-    PetscScalar v1,v2,v3,v4,v5,p1,p2,p3;
+    *dp_ddelta = (fminushalf - fplushalf)/user->ddelta;
+  } else if (user->dis == DMDA_DISCRETIZATION_WENO5) {
     if (f >= 0.) {
-      v1 = p[j][i-2] - p[j][i-3];
-      v2 = p[j][i-1] - p[j][i-2];
-      v3 = p[j][i]   - p[j][i-1];
-      v4 = p[j][i+1] - p[j][i];
-      v5 = p[j][i+2] - p[j][i+1];
-
-      p1 = v1/3.0 - 7*v2/6. + 11*v3/6.;
-      p2 = -v2/6. - 5*v3/6. + v4/3.;
-      p3 = v3/3. - 5*v4/6. - v5/6.;
+      ierr = WENO5(p[j][i-3],p[j][i-2],p[j][i-1],p[j][i],p[j][i+1],&fminushalf);CHKERRQ(ierr);
+      ierr = WENO5(p[j][i-2],p[j][i-1],p[j][i],p[j][i+1],p[j][i+2],&fplushalf);CHKERRQ(ierr);
+      fminushalf = f*fminushalf;
+      fplushalf = f*fplushalf;
     } else {
-      v1 = p[j][i+2] - p[j][i+3];
-      v2 = p[j][i+1] - p[j][i+2];
-      v3 = p[j][i]   - p[j][i+1];
-      v4 = p[j][i-1] - p[j][i];
-      v5 = p[j][i-2] - p[j][i-1];
-
-      p1 = v1/3.0 - 7*v2/6. + 11*v3/6.;
-      p2 = -v2/6. - 5*v3/6. + v4/3.;
-      p3 = v3/3. - 5*v4/6. - v5/6.;
-      
+      ierr = WENO5(p[j][i+2],p[j][i+1],p[j][i],p[j][i-1],p[j][i-2],&fminushalf);CHKERRQ(ierr);
+      ierr = WENO5(p[j][i+3],p[j][i+2],p[j][i+1],p[j][i],p[j][i-1],&fplushalf);CHKERRQ(ierr);
+      fminushalf = f*fminushalf;
+      fplushalf = f*fplushalf;
     }
-    *dp_ddelta = (0.1*p1 + 0.6*p2 + 0.3*p3)/user->ddelta;
+    *dp_ddelta = (fminushalf - fplushalf)/user->ddelta;
   }
   PetscFunctionReturn(0);
 }
@@ -318,7 +342,25 @@ PetscErrorCode adv2(PetscScalar **p,PetscScalar x,PetscScalar y,PetscInt i,Petsc
       f2    =  fplushalf*(p[j+1][i] + psi*(p[j][i] - p[j+1][i]));
     }
     *dp_dw = (f1 - f2)/user->domega;
-  }
+  } else if (user->dis == DMDA_DISCRETIZATION_WENO5) {
+    PetscScalar f1,f2;
+    if (fminushalf > 0.) {
+      ierr = WENO5(p[j-3][i],p[j-2][i],p[j-1][i],p[j][i],p[j+1][i],&f1);CHKERRQ(ierr);
+      f1    = fminushalf*f1;
+    } else {
+      ierr = WENO5(p[j+2][i],p[j+1][i],p[j][i],p[j-1][i],p[j-2][i],&f1);CHKERRQ(ierr);
+      f1    = fminushalf*f1;
+    }
+    
+    if (fplushalf >= 0.) {
+      ierr = WENO5(p[j-2][i],p[j-1][i],p[j][i],p[j+1][i],p[j+2][i],&f2);CHKERRQ(ierr);
+      f2    = fplushalf*f2;
+    } else {
+      ierr = WENO5(p[j+3][i],p[j+2][i],p[j+1][i],p[j][i],p[j-1][i],&f2);CHKERRQ(ierr);
+      f2    =  fplushalf*f2;
+    }
+    *dp_dw = (f1 - f2)/user->domega;
+  }    
   PetscFunctionReturn(0);
 }
 
@@ -442,5 +484,6 @@ PetscErrorCode Parameter_settings(AppCtx *user)
   ierr = PetscOptionsGetReal(NULL,"-tf",&user->tf,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(NULL,"-tcl",&user->tcl,&flg);CHKERRQ(ierr);
   if ( user->dis == DMDA_DISCRETIZATION_UPWIND1) user->st_width = 1;
+  if (user->dis == DMDA_DISCRETIZATION_WENO5) user->st_width = 3;
   PetscFunctionReturn(0);
 }
