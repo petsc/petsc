@@ -3,7 +3,7 @@
 -ts_exact_final_time MATCHSTEP
 -ts_type ssp
 -ts_final_time 5.0
--ts_dt 0.005
+-ts_dt 0.001
 
 -q 0.0
 -Inertia 5.0
