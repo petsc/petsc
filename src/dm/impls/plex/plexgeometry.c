@@ -358,6 +358,68 @@ PETSC_STATIC_INLINE void Det3D_Internal(PetscReal *detJ, PetscReal J[])
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "Volume_Triangle_Internal"
+PETSC_STATIC_INLINE void Volume_Triangle_Internal(PetscReal *vol, PetscReal coords[])
+{
+  /* Signed volume is 1/2 the determinant
+
+   |  1  1  1 |
+   | x0 x1 x2 |
+   | y0 y1 y2 |
+
+     but if x0,y0 is the origin, we have
+
+   | x1 x2 |
+   | y1 y2 |
+  */
+  const PetscReal x1 = coords[2] - coords[0], y1 = coords[3] - coords[1];
+  const PetscReal x2 = coords[4] - coords[0], y2 = coords[5] - coords[1];
+  PetscReal       M[4], detM;
+  M[0] = x1; M[1] = x2;
+  M[3] = y1; M[4] = y2;
+  Det2D_Internal(&detM, M);
+  *vol = 0.5*detM;
+  PetscLogFlops(5.0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "Volume_Triangle_Origin_Internal"
+PETSC_STATIC_INLINE void Volume_Triangle_Origin_Internal(PetscReal *vol, PetscReal coords[])
+{
+  Det2D_Internal(vol, coords);
+  *vol *= 0.5;
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "Volume_Tetrahedron_Internal"
+PETSC_STATIC_INLINE void Volume_Tetrahedron_Internal(PetscReal *vol, PetscReal coords[])
+{
+  /* Signed volume is 1/6th of the determinant
+
+   |  1  1  1  1 |
+   | x0 x1 x2 x3 |
+   | y0 y1 y2 y3 |
+   | z0 z1 z2 z3 |
+
+     but if x0,y0,z0 is the origin, we have
+
+   | x1 x2 x3 |
+   | y1 y2 y3 |
+   | z1 z2 z3 |
+  */
+  const PetscReal x1 = coords[3] - coords[0], y1 = coords[4]  - coords[1], z1 = coords[5]  - coords[2];
+  const PetscReal x2 = coords[6] - coords[0], y2 = coords[7]  - coords[1], z2 = coords[8]  - coords[2];
+  const PetscReal x3 = coords[9] - coords[0], y3 = coords[10] - coords[1], z3 = coords[11] - coords[2];
+  PetscReal       M[9], detM;
+  M[0] = x1; M[1] = x2; M[2] = x3;
+  M[3] = y1; M[4] = y2; M[5] = y3;
+  M[6] = z1; M[7] = z2; M[8] = z3;
+  Det3D_Internal(&detM, M);
+  *vol = 0.16666666666666666666666*detM;
+  PetscLogFlops(10.0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMPlexComputeLineGeometry_Internal"
 static PetscErrorCode DMPlexComputeLineGeometry_Internal(DM dm, PetscInt e, PetscReal v0[], PetscReal J[], PetscReal invJ[], PetscReal *detJ)
 {
@@ -654,6 +716,91 @@ PetscErrorCode DMPlexComputeCellGeometry(DM dm, PetscInt cell, PetscReal *v0, Pe
     default:
       SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Unsupported dimension %D for element geometry computation", dim);
     }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexComputeCellGeometryFVM"
+/*@C
+  DMPlexComputeCellGeometryFVM - Compute the volume for a given cell
+
+  Collective on DM
+
+  Input Arguments:
++ dm   - the DM
+- cell - the cell
+
+  Output Arguments:
++ volume   - the cell volume
+- centroid - the cell centroid
+
+  Level: advanced
+
+  Fortran Notes:
+  Since it returns arrays, this routine is only available in Fortran 90, and you must
+  include petsc.h90 in your code.
+
+.seealso: DMPlexGetCoordinateSection(), DMPlexGetCoordinateVec()
+@*/
+PetscErrorCode DMPlexComputeCellGeometryFVM(DM dm, PetscInt cell, PetscReal *vol, PetscReal centroid[])
+{
+  PetscInt       depth, dim, coneSize;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
+  ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMPlexGetConeSize(dm, cell, &coneSize);CHKERRQ(ierr);
+  if (depth != dim) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Mesh must be interpolated");
+  /* We need to keep a pointer to the depth label */
+  ierr = DMPlexGetLabelValue(dm, "depth", cell, &dim);CHKERRQ(ierr);
+  /* Cone size is now the number of faces */
+  switch (dim) {
+  case 2:
+  {
+    /*
+     Centroid_i = (\sum_n A_n Cn_i ) / A
+    */
+    PetscSection coordSection;
+    Vec          coordinates;
+    PetscScalar *coords = NULL;
+    PetscInt     coordSize, numCorners, p, d;
+    PetscReal    vsum, vtmp, ctmp[4];
+
+    ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
+    ierr = DMPlexGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
+    ierr = DMPlexVecGetClosure(dm, coordSection, coordinates, cell, &coordSize, &coords);CHKERRQ(ierr);
+    numCorners = coordSize/dim;
+    for (p = 0; p < numCorners-1; ++p) {
+      Volume_Triangle_Origin_Internal(&vtmp, &coords[p*dim]);
+      vsum += vtmp;
+      for (d = 0; d < dim; ++d) {
+        centroid[d] += (coords[p*dim+d] + coords[(p+1)*dim+d])*vtmp;
+      }
+    }
+    for (d = 0; d < dim; ++d) {
+      ctmp[d]     = coords[(numCorners-1)*dim+d];
+      ctmp[dim+d] = coords[d];
+    }
+    Volume_Triangle_Origin_Internal(&vtmp, ctmp);
+    vsum += vtmp;
+    for (d = 0; d < dim; ++d) {
+      centroid[d] += (coords[(numCorners-1)*dim+d] + coords[0*dim+d])*vtmp;
+      centroid[d] /= (dim+1)*vsum;
+    }
+    ierr = DMPlexVecRestoreClosure(dm, coordSection, coordinates, cell, &coordSize, &coords);CHKERRQ(ierr);
+    *vol = PetscAbsScalar(vsum);
+  }
+  break;
+  case 3:
+    switch (coneSize) {
+    default:
+      SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Unsupported number of vertices %D in cell %D for element geometry computation", coneSize, cell);
+    }
+    break;
+  default:
+    SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Unsupported dimension %D for element geometry computation", dim);
   }
   PetscFunctionReturn(0);
 }
