@@ -1223,26 +1223,11 @@ PetscErrorCode ConstructGeometry(DM dm, Vec *facegeom, Vec *cellgeom, User user)
   ierr = DMCreateLocalVector(dmCell, cellgeom);CHKERRQ(ierr);
   ierr = VecGetArray(*cellgeom, &cgeom);CHKERRQ(ierr);
   for (c = cStart; c < user->cEndInterior; ++c) {
-    PetscScalar *coords = NULL;
-    PetscInt     coordSize, numCorners, p;
-    PetscScalar  sx = 0, sy = 0;
-    CellGeom    *cg;
+    CellGeom *cg;
 
-    ierr = DMPlexVecGetClosure(dm, coordSection, coordinates, c, &coordSize, &coords);CHKERRQ(ierr);
     ierr = DMPlexPointLocalRef(dmCell, c, cgeom, &cg);CHKERRQ(ierr);
     ierr = PetscMemzero(cg,sizeof(*cg));CHKERRQ(ierr);
-    numCorners = coordSize/dim;
-    for (p = 0; p < numCorners; ++p) {
-      const PetscScalar *x    = coords+p*dim, *y = coords+((p+1)%numCorners)*dim;
-      const PetscScalar cross = x[0]*y[1] - x[1]*y[0];
-      cg->volume += 0.5*cross;
-      sx += (x[0] + y[0])*cross;
-      sy += (x[1] + y[1])*cross;
-    }
-    cg->centroid[0] = sx / (6*cg->volume);
-    cg->centroid[1] = sy / (6*cg->volume);
-    cg->volume      = PetscAbsScalar(cg->volume);
-    ierr            = DMPlexVecRestoreClosure(dm, coordSection, coordinates, c, &coordSize, &coords);CHKERRQ(ierr);
+    ierr = DMPlexComputeCellGeometryFVM(dmCell, c, &cg->volume, cg->centroid);CHKERRQ(ierr);
   }
 
   /* Make normals and fill in ghost centroids */
