@@ -143,6 +143,10 @@ PETSC_STATIC_INLINE void Normalize2(PetscScalar *x) { PetscReal a = 1./Norm2(x);
 PETSC_STATIC_INLINE void Waxpy2(PetscScalar a,const PetscScalar *x,const PetscScalar *y,PetscScalar *w) { w[0] = a*x[0] + y[0]; w[1] = a*x[1] + y[1]; }
 PETSC_STATIC_INLINE void Scale2(PetscScalar a,const PetscScalar *x,PetscScalar *y) { y[0] = a*x[0]; y[1] = a*x[1]; }
 
+PETSC_STATIC_INLINE void WaxpyD(PetscInt dim, PetscScalar a, const PetscScalar *x, const PetscScalar *y, PetscScalar *w) {PetscInt d; for (d = 0; d < dim; ++d) w[d] = a*x[d] + y[d];}
+PETSC_STATIC_INLINE PetscScalar DotD(PetscInt dim, const PetscScalar *x, const PetscScalar *y) {PetscScalar sum = 0.0; PetscInt d; for (d = 0; d < dim; ++d) sum += x[d]*y[d]; return sum;}
+PETSC_STATIC_INLINE PetscReal NormD(PetscInt dim, const PetscScalar *x) {return PetscSqrtReal(PetscAbsScalar(DotD(dim,x,x)));}
+
 PETSC_STATIC_INLINE void NormalSplit(const PetscReal *n,const PetscScalar *x,PetscScalar *xn,PetscScalar *xt)
 {                               /* Split x into normal and tangential components */
   Scale2(Dot2(x,n)/Dot2(n,n),n,xn);
@@ -1229,8 +1233,7 @@ PetscErrorCode ConstructGeometry(DM dm, Vec *facegeom, Vec *cellgeom, User user)
     ierr = PetscMemzero(cg,sizeof(*cg));CHKERRQ(ierr);
     ierr = DMPlexComputeCellGeometryFVM(dmCell, c, &cg->volume, cg->centroid);CHKERRQ(ierr);
   }
-
-  /* Make normals and fill in ghost centroids */
+  /* Compute face normals and minimum cell radius */
   ierr = DMPlexClone(dm, &dmFace);CHKERRQ(ierr);
   ierr = PetscSectionCreate(PetscObjectComm((PetscObject)dm), &sectionFace);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 1, &fStart, &fEnd);CHKERRQ(ierr);
@@ -1245,55 +1248,82 @@ PetscErrorCode ConstructGeometry(DM dm, Vec *facegeom, Vec *cellgeom, User user)
   ierr = VecGetArray(*facegeom, &fgeom);CHKERRQ(ierr);
   minradius = PETSC_MAX_REAL;
   for (f = fStart; f < fEnd; ++f) {
-    PetscScalar    *coords = NULL;
-    const PetscInt *cells;
-    PetscInt        ghost,i,coordSize;
-    PetscScalar     v[2];
-    FaceGeom       *fg;
-    CellGeom       *cL,*cR;
+    FaceGeom *fg;
+    PetscInt  ghost;
 
     ierr = DMPlexGetLabelValue(dm, "ghost", f, &ghost);CHKERRQ(ierr);
     if (ghost >= 0) continue;
-    ierr = DMPlexVecGetClosure(dm, coordSection, coordinates, f, &coordSize, &coords);CHKERRQ(ierr);
     ierr = DMPlexPointLocalRef(dmFace, f, fgeom, &fg);CHKERRQ(ierr);
-    /* Only support edges right now */
-    if (coordSize != dim*2) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "We only support edges right now");
-    fg->centroid[0] = 0.5*(coords[0] + coords[dim]);
-    fg->centroid[1] = 0.5*(coords[1] + coords[dim+1]);
-    fg->normal[0]   =  (coords[1] - coords[dim+1]);
-    fg->normal[1]   = -(coords[0] - coords[dim+0]);
-    ierr = DMPlexVecRestoreClosure(dm, coordSection, coordinates, f, &coordSize, &coords);CHKERRQ(ierr);
-    ierr = DMPlexGetSupport(dm, f, &cells);CHKERRQ(ierr);
-    /* Reflect ghost centroid across plane of face */
-    for (i=0; i<2; i++) {
-      if (cells[i] >= user->cEndInterior) {
+    /* Replace with DMPlexComputeCellGeometryFVM() */
+    {
+      PetscScalar *coords = NULL;
+      PetscInt     coordSize;
+
+      ierr = DMPlexVecGetClosure(dm, coordSection, coordinates, f, &coordSize, &coords);CHKERRQ(ierr);
+      if (coordSize != dim*2) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "We only support edges right now");
+      fg->centroid[0] = 0.5*(coords[0] + coords[dim]);
+      fg->centroid[1] = 0.5*(coords[1] + coords[dim+1]);
+      fg->normal[0]   =  (coords[1] - coords[dim+1]);
+      fg->normal[1]   = -(coords[0] - coords[dim+0]);
+      ierr = DMPlexVecRestoreClosure(dm, coordSection, coordinates, f, &coordSize, &coords);CHKERRQ(ierr);
+    }
+    /* Flip face orientation if necessary to match ordering in support, and Update minimum radius */
+    {
+      CellGeom       *cL, *cR;
+      const PetscInt *cells;
+      PetscReal      *lcentroid, *rcentroid;
+      PetscScalar     v[3];
+      PetscInt        d;
+
+      ierr = DMPlexGetSupport(dm, f, &cells);CHKERRQ(ierr);
+      ierr = DMPlexPointLocalRead(dmCell, cells[0], cgeom, &cL);CHKERRQ(ierr);
+      ierr = DMPlexPointLocalRead(dmCell, cells[1], cgeom, &cR);CHKERRQ(ierr);
+      lcentroid = cells[0] >= user->cEndInterior ? fg->centroid : cL->centroid;
+      rcentroid = cells[1] >= user->cEndInterior ? fg->centroid : cR->centroid;
+      WaxpyD(dim, -1, lcentroid, rcentroid, v);
+      if (DotD(dim, fg->normal, v) < 0) {
+        for (d = 0; d < dim; ++d) fg->normal[d] = -fg->normal[d];
+      }
+      if (DotD(dim, fg->normal, v) <= 0) SETERRQ5(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Direction for face %d could not be fixed, normal (%g,%g) v (%g,%g)", f, fg->normal[0], fg->normal[1], v[0], v[1]);
+      if (cells[0] < user->cEndInterior) {
+        WaxpyD(dim, -1, fg->centroid, cL->centroid, v);
+        minradius = PetscMin(minradius, NormD(dim, v));
+      }
+      if (cells[1] < user->cEndInterior) {
+        WaxpyD(dim, -1, fg->centroid, cR->centroid, v);
+        minradius = PetscMin(minradius, NormD(dim, v));
+      }
+    }
+  }
+  /* Compute centroids of ghost cells */
+  for (c = user->cEndInterior; c < cEnd; ++c) {
+    FaceGeom       *fg;
+    const PetscInt *cone,    *support;
+    PetscInt        coneSize, supportSize, s;
+
+    ierr = DMPlexGetConeSize(dmCell, c, &coneSize);CHKERRQ(ierr);
+    if (coneSize != 1) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Ghost cell %d has cone size %d != 1", c, coneSize);
+    ierr = DMPlexGetCone(dmCell, c, &cone);CHKERRQ(ierr);
+    ierr = DMPlexGetSupportSize(dmCell, cone[0], &supportSize);CHKERRQ(ierr);
+    if (supportSize != 2) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Face %d has support size %d != 1", cone[0], supportSize);
+    ierr = DMPlexGetSupport(dmCell, cone[0], &support);CHKERRQ(ierr);
+    ierr = DMPlexPointLocalRef(dmFace, cone[0], fgeom, &fg);CHKERRQ(ierr);
+    for (s = 0; s < 2; ++s) {
+      /* Reflect ghost centroid across plane of face */
+      if (support[s] == c) {
         const CellGeom *ci;
         CellGeom       *cg;
-        PetscScalar    c2f[2],a;
-        ierr = DMPlexPointLocalRead(dmCell, cells[(i+1)%2], cgeom, &ci);CHKERRQ(ierr);
-        Waxpy2(-1,ci->centroid,fg->centroid,c2f); /* cell to face centroid */
-        a    = Dot2(c2f,fg->normal)/Dot2(fg->normal,fg->normal);
-        ierr = DMPlexPointLocalRef(dmCell, cells[i], cgeom, &cg);CHKERRQ(ierr);
-        Waxpy2(2*a,fg->normal,ci->centroid,cg->centroid);
+        PetscScalar     c2f[3], a;
+
+        ierr = DMPlexPointLocalRead(dmCell, support[(s+1)%2], cgeom, &ci);CHKERRQ(ierr);
+        WaxpyD(dim, -1, ci->centroid, fg->centroid, c2f); /* cell to face centroid */
+        a    = DotD(dim, c2f, fg->normal)/DotD(dim, fg->normal, fg->normal);
+        ierr = DMPlexPointLocalRef(dmCell, support[s], cgeom, &cg);CHKERRQ(ierr);
+        WaxpyD(dim, 2*a, fg->normal, ci->centroid, cg->centroid);
         cg->volume = ci->volume;
       }
     }
-    /* Flip face orientation if necessary to match ordering in support */
-    ierr = DMPlexPointLocalRead(dmCell, cells[0], cgeom, &cL);CHKERRQ(ierr);
-    ierr = DMPlexPointLocalRead(dmCell, cells[1], cgeom, &cR);CHKERRQ(ierr);
-    Waxpy2(-1,cL->centroid,cR->centroid,v);
-    if (Dot2(fg->normal, v) < 0) {
-      fg->normal[0] = -fg->normal[0];
-      fg->normal[1] = -fg->normal[1];
-    }
-    if (Dot2(fg->normal,v) <= 0) SETERRQ5(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Direction for face %d could not be fixed, normal (%g,%g) v (%g,%g)", f, fg->normal[0], fg->normal[1], v[0], v[1]);
-    /* Update minimum radius */
-    Waxpy2(-1,fg->centroid,cL->centroid,v);
-    minradius = PetscMin(minradius,Norm2(v));
-    Waxpy2(-1,fg->centroid,cR->centroid,v);
-    minradius = PetscMin(minradius,Norm2(v));
   }
-
   if (user->reconstruct) {
     PetscSection sectionGrad;
     ierr = BuildLeastSquares(dm,user->cEndInterior,dmFace,fgeom,dmCell,cgeom);CHKERRQ(ierr);
