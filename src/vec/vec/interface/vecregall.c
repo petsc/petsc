@@ -9,11 +9,6 @@ PETSC_EXTERN PetscErrorCode VecCreate_SeqCUSP(Vec);
 PETSC_EXTERN PetscErrorCode VecCreate_MPICUSP(Vec);
 PETSC_EXTERN PetscErrorCode VecCreate_CUSP(Vec);
 #endif
-#if 0
-#if defined(PETSC_HAVE_SIEVE)
-PETSC_EXTERN PetscErrorCode VecCreate_Sieve(Vec);
-#endif
-#endif
 
 #undef __FUNCT__
 #define __FUNCT__ "VecRegisterAll"
@@ -42,11 +37,6 @@ PetscErrorCode  VecRegisterAll(void)
   ierr = VecRegister(VECSEQCUSP,    VecCreate_SeqCUSP);CHKERRQ(ierr);
   ierr = VecRegister(VECMPICUSP,    VecCreate_MPICUSP);CHKERRQ(ierr);
   ierr = VecRegister(VECCUSP,       VecCreate_CUSP);CHKERRQ(ierr);
-#endif
-#if 0
-#if defined(PETSC_HAVE_SIEVE)
-  ierr = VecRegister(VECSIEVE,      VecCreate_Sieve);CHKERRQ(ierr);
-#endif
 #endif
   PetscFunctionReturn(0);
 }
