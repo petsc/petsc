@@ -38,18 +38,18 @@
       parameter (SNES_DIVERGED_LOCAL_MIN          = -8)
       parameter (SNES_CONVERGED_ITERATING         =  0)
 !
-! SNESNormType
+  ! SNESNormSchedule
 !
       PetscEnum SNES_NORM_DEFAULT
       PetscEnum SNES_NORM_NONE
-      PetscEnum SNES_NORM_FUNCTION
+      PetscEnum SNES_NORM_ALWAYS
       PetscEnum SNES_NORM_INITIAL_ONLY
       PetscEnum SNES_NORM_FINAL_ONLY
       PetscEnum SNES_NORM_INITIAL_FINAL_ONLY
 
       parameter (SNES_NORM_DEFAULT                = -1)
       parameter (SNES_NORM_NONE                   =  0)
-      parameter (SNES_NORM_FUNCTION               =  1)
+      parameter (SNES_NORM_ALWAYS                 =  1)
       parameter (SNES_NORM_INITIAL_ONLY           =  2)
       parameter (SNES_NORM_FINAL_ONLY             =  3)
       parameter (SNES_NORM_INITIAL_FINAL_ONLY     =  4)

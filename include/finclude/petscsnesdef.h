@@ -17,7 +17,7 @@
 #define MatMFFDType PetscFortranAddr
 #define SNESLineSearch PetscFortranAddr
 #define SNESLineSearchOrder PetscEnum
-#define SNESNormType PetscEnum
+#define SNESNormSchedule PetscEnum
 #define SNESQNRestartType PetscEnum
 #define SNESQNCompositionType PetscEnum
 #define SNESQNScaleType PetscEnum

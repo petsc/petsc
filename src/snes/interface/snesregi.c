@@ -25,8 +25,8 @@ const char *SNESConvergedReasons_Shifted[] = {" "," ","DIVERGED_LOCAL_MIN","DIVE
                                               "CONVERGED_SNORM_RELATIVE","CONVERGED_ITS"," ","CONVERGED_TR_DELTA","SNESConvergedReason","",0};
 const char *const *SNESConvergedReasons = SNESConvergedReasons_Shifted + 10;
 
-const char *SNESNormTypes_Shifted[]    = {"DEFAULT","NONE","FUNCTION","INITIALONLY","FINALONLY","INITIALFINALONLY","SNESNormType","SNES_NORM_",0};
-const char *const *const SNESNormTypes = SNESNormTypes_Shifted + 1;
+const char *SNESNormSchedules_Shifted[]    = {"DEFAULT","NONE","ALWAYS","INITIALONLY","FINALONLY","INITIALFINALONLY","SNESNormSchedule","SNES_NORM_",0};
+const char *const *const SNESNormSchedules = SNESNormSchedules_Shifted + 1;
 
 /*
       This is used by SNESSetType() to make sure that at least one

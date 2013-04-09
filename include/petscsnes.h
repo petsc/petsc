@@ -334,8 +334,7 @@ PETSC_EXTERN PetscErrorCode SNESGetObjective(SNES,PetscErrorCode (**SNESObjectiv
 PETSC_EXTERN PetscErrorCode SNESComputeObjective(SNES,Vec,PetscReal *);
 
 /*E
-    SNESNormType - Norm that is passed in the Krylov convergence
-       test routines.
+    SNESNormSchedule - Frequency with which the norm is computed
 
    Level: advanced
 
@@ -351,11 +350,11 @@ E*/
 
 typedef enum {SNES_NORM_DEFAULT            = -1,
               SNES_NORM_NONE               =  0,
-              SNES_NORM_FUNCTION           =  1,
+              SNES_NORM_ALWAYS             =  1,
               SNES_NORM_INITIAL_ONLY       =  2,
               SNES_NORM_FINAL_ONLY         =  3,
-              SNES_NORM_INITIAL_FINAL_ONLY =  4} SNESNormType;
-PETSC_EXTERN const char *const*const SNESNormTypes;
+              SNES_NORM_INITIAL_FINAL_ONLY =  4} SNESNormSchedule;
+PETSC_EXTERN const char *const*const SNESNormSchedules;
 /*MC
     SNES_NORM_NONE - Don't compute function and its L2 norm.
 
@@ -364,18 +363,18 @@ PETSC_EXTERN const char *const*const SNESNormTypes;
     Notes:
     This is most useful for stationary solvers with a fixed number of iterations used as smoothers.
 
-.seealso: SNESNormType, SNESSetNormType(), SNES_NORM_DEFAULT
+.seealso: SNESNormSchedule, SNESSetNormSchedule(), SNES_NORM_DEFAULT
 M*/
 
 /*MC
-    SNES_NORM_FUNCTION - Compute the function and its L2 norm at each iteration.
+    SNES_NORM_ALWAYS - Compute the function and its L2 norm at each iteration.
 
    Level: advanced
 
     Notes:
     Most solvers will use this no matter what norm type is passed to them.
 
-.seealso: SNESNormType, SNESSetNormType(), SNES_NORM_NONE
+.seealso: SNESNormSchedule, SNESSetNormSchedule(), SNES_NORM_NONE
 M*/
 
 /*MC
@@ -390,7 +389,7 @@ M*/
    For solvers that require the computation of the L2 norm of the function as part of the method, this merely cancels
    the norm computation at the last iteration (if possible).
 
-.seealso: SNESNormType, SNESSetNormType(), SNES_NORM_FINAL_ONLY, SNES_NORM_INITIAL_FINAL_ONLY
+.seealso: SNESNormSchedule, SNESSetNormSchedule(), SNES_NORM_FINAL_ONLY, SNES_NORM_INITIAL_FINAL_ONLY
 M*/
 
 /*MC
@@ -404,7 +403,7 @@ M*/
    used in subsequent computation for methods that do not need the norm computed during the rest of the
    solution procedure.
 
-.seealso: SNESNormType, SNESSetNormType(), SNES_NORM_INITIAL_ONLY, SNES_NORM_INITIAL_FINAL_ONLY
+.seealso: SNESNormSchedule, SNESSetNormSchedule(), SNES_NORM_INITIAL_ONLY, SNES_NORM_INITIAL_FINAL_ONLY
 M*/
 
 /*MC
@@ -415,12 +414,12 @@ M*/
    Notes:
    This method combines the benefits of SNES_NORM_INITIAL_ONLY and SNES_NORM_FINAL_ONLY.
 
-.seealso: SNESNormType, SNESSetNormType(), SNES_NORM_SNES_NORM_INITIAL_ONLY, SNES_NORM_FINAL_ONLY
+.seealso: SNESNormSchedule, SNESSetNormSchedule(), SNES_NORM_SNES_NORM_INITIAL_ONLY, SNES_NORM_FINAL_ONLY
 M*/
 
 
-PETSC_EXTERN PetscErrorCode SNESSetNormType(SNES,SNESNormType);
-PETSC_EXTERN PetscErrorCode SNESGetNormType(SNES,SNESNormType*);
+PETSC_EXTERN PetscErrorCode SNESSetNormSchedule(SNES,SNESNormSchedule);
+PETSC_EXTERN PetscErrorCode SNESGetNormSchedule(SNES,SNESNormSchedule*);
 
 PETSC_EXTERN PetscErrorCode SNESSetGS(SNES,PetscErrorCode (*SNESGSFunction)(SNES,Vec,Vec,void*),void*);
 PETSC_EXTERN PetscErrorCode SNESGetGS(SNES,PetscErrorCode (**SNESGSFunction)(SNES,Vec,Vec,void*),void**);

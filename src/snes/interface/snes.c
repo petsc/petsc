@@ -706,8 +706,8 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
 
   ierr = PetscOptionsBool("-snes_converged_reason","Print reason for converged or diverged","SNESSolve",snes->printreason,&snes->printreason,NULL);CHKERRQ(ierr);
 
-  ierr = PetscOptionsEList("-snes_norm_type","SNES Norm type","SNESSetNormType",SNESNormTypes,5,"function",&indx,&flg);CHKERRQ(ierr);
-  if (flg) { ierr = SNESSetNormType(snes,(SNESNormType)indx);CHKERRQ(ierr); }
+  ierr = PetscOptionsEList("-snes_norm_schedule","SNES Norm schedule","SNESSetNormSchedule",SNESNormSchedules,5,"function",&indx,&flg);CHKERRQ(ierr);
+  if (flg) { ierr = SNESSetNormSchedule(snes,(SNESNormSchedule)indx);CHKERRQ(ierr); }
 
   kctx = (SNESKSPEW*)snes->kspconvctx;
 
@@ -1427,7 +1427,7 @@ PetscErrorCode  SNESCreate(MPI_Comm comm,SNES *outsnes)
   snes->max_its           = 50;
   snes->max_funcs         = 10000;
   snes->norm              = 0.0;
-  snes->normtype          = SNES_NORM_FUNCTION;
+  snes->normschedule      = SNES_NORM_ALWAYS;
   snes->rtol              = 1.e-8;
   snes->ttol              = 0.0;
   snes->abstol            = 1.e-50;
@@ -1628,19 +1628,19 @@ PetscErrorCode  SNESSetInitialFunctionNorm(SNES snes, PetscReal fnorm)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "SNESSetNormType"
+#define __FUNCT__ "SNESSetNormSchedule"
 /*@
-   SNESSetNormType - Sets the SNESNormType used in covergence and monitoring
+   SNESSetNormSchedule - Sets the SNESNormSchedule used in covergence and monitoring
    of the SNES method.
 
    Logically Collective on SNES
 
    Input Parameters:
 +  snes - the SNES context
--  normtype - the type of the norm used
+-  normschedule - the frequency of norm computation
 
    Notes:
-   Only certain SNES methods support certain SNESNormTypes.  Most require evaluation
+   Only certain SNES methods support certain SNESNormSchedules.  Most require evaluation
    of the nonlinear function and the taking of its norm at every iteration to
    even ensure convergence at all.  However, methods such as custom Gauss-Seidel methods
    (SNESGS) and the like do not require the norm of the function to be computed, and therfore
@@ -1652,40 +1652,40 @@ PetscErrorCode  SNESSetInitialFunctionNorm(SNES snes, PetscReal fnorm)
 
 .keywords: SNES, nonlinear, set, function, norm, type
 
-.seealso: SNESGetNormType(), SNESComputeFunction(), VecNorm(), SNESSetFunction(), SNESSetInitialFunction(), SNESNormType
+.seealso: SNESGetNormSchedule(), SNESComputeFunction(), VecNorm(), SNESSetFunction(), SNESSetInitialFunction(), SNESNormSchedule
 @*/
-PetscErrorCode  SNESSetNormType(SNES snes, SNESNormType normtype)
+PetscErrorCode  SNESSetNormSchedule(SNES snes, SNESNormSchedule normschedule)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
-  snes->normtype = normtype;
+  snes->normschedule = normschedule;
   PetscFunctionReturn(0);
 }
 
 
 #undef __FUNCT__
-#define __FUNCT__ "SNESGetNormType"
+#define __FUNCT__ "SNESGetNormSchedule"
 /*@
-   SNESGetNormType - Gets the SNESNormType used in covergence and monitoring
+   SNESGetNormSchedule - Gets the SNESNormSchedule used in covergence and monitoring
    of the SNES method.
 
    Logically Collective on SNES
 
    Input Parameters:
 +  snes - the SNES context
--  normtype - the type of the norm used
+-  normschedule - the type of the norm used
 
    Level: advanced
 
 .keywords: SNES, nonlinear, set, function, norm, type
 
-.seealso: SNESSetNormType(), SNESComputeFunction(), VecNorm(), SNESSetFunction(), SNESSetInitialFunction(), SNESNormType
+.seealso: SNESSetNormSchedule(), SNESComputeFunction(), VecNorm(), SNESSetFunction(), SNESSetInitialFunction(), SNESNormSchedule
 @*/
-PetscErrorCode  SNESGetNormType(SNES snes, SNESNormType *normtype)
+PetscErrorCode  SNESGetNormSchedule(SNES snes, SNESNormSchedule *normschedule)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
-  *normtype = snes->normtype;
+  *normschedule = snes->normschedule;
   PetscFunctionReturn(0);
 }
 
@@ -2559,9 +2559,9 @@ PetscErrorCode  SNESSetUp(SNES snes)
     /* default to 1 iteration */
     ierr = SNESSetTolerances(snes->pc,0.0,0.0,0.0,1,snes->pc->max_funcs);CHKERRQ(ierr);
     if (snes->pcside==PC_RIGHT) {
-      ierr = SNESSetNormType(snes->pc,SNES_NORM_FINAL_ONLY);CHKERRQ(ierr);
+      ierr = SNESSetNormSchedule(snes->pc,SNES_NORM_FINAL_ONLY);CHKERRQ(ierr);
     } else {
-      ierr = SNESSetNormType(snes->pc,SNES_NORM_NONE);CHKERRQ(ierr);
+      ierr = SNESSetNormSchedule(snes->pc,SNES_NORM_NONE);CHKERRQ(ierr);
     }
     ierr = SNESSetFromOptions(snes->pc);CHKERRQ(ierr);
 
