@@ -484,7 +484,7 @@ PetscErrorCode PreallocateJacobian(Mat J, Userctx *user)
     ierr = MatRestoreRow(user->Ybus,2*i,&ncols,NULL,NULL);CHKERRQ(ierr);
   }
 
-  ierr = MatSeqAIJSetPreallocation(J,NULL,d_nnz);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(J,0,d_nnz);CHKERRQ(ierr);
 
   ierr = PetscFree(d_nnz);CHKERRQ(ierr);
   PetscFunctionReturn(0);
