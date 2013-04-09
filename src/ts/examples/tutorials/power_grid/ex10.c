@@ -177,13 +177,14 @@ PetscErrorCode ini_bou(Vec X,AppCtx* user)
   PetscFunctionBeginUser;
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = DMDAGetInfo(user->da,NULL,&M,&N,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL);
+  user->ddelta = (user->deltamax - user->deltamin)/(M-1);
+  user->domega = (user->omegamax - user->omegamin)/(N-1);
+
   ierr = DMGetCoordinateDM(user->da,&cda);CHKERRQ(ierr);
   ierr = DMGetCoordinates(user->da,&gc);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(cda,gc,&coors);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(user->da,X,&p);CHKERRQ(ierr);
 
-  user->ddelta = coors[0][1].x - coors[0][0].x;
-  user->domega = coors[1][0].y - coors[0][0].y;
   /* Point mass at (mu_delta,mu_w) */
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Original user->mu_delta = %f, user->mu_w = %f\n",user->mu_delta,user->mu_w);CHKERRQ(ierr);
   ierr = DMDAGetLogicalCoordinate(user->da,user->mu_delta,user->mu_w,0.0,&I,&J,NULL,&user->mu_delta,&user->mu_w,NULL);CHKERRQ(ierr);
