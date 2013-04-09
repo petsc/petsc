@@ -50,7 +50,7 @@ echo "Build on $MACH $ARCH $nPETSC_DIR `date` " > build.log
 
 echo "Cleaning throughly and updating git clone at $nPETSC_DIR" >>& build.log
 (git reset --hard; git clean -q -f -d -x -e build.log;git pull -q) >>& build.log
-
+echo "Currently building git branch:" `git describe --contains --all HEAD`
 # if externalpackage tarball also packs a git repo - one has to explicitly remove it
 rm -rf ./externalpackages
 
