@@ -2974,7 +2974,7 @@ static PetscErrorCode DMPlexInvertCells_Internal(PetscInt numCells, PetscInt num
   PetscFunctionBegin;
   if (numCorners != 4) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cannot invert cells with %d corners", numCorners);
   for (c = 0; c < numCells; ++c) {
-    PetscInt *cone = &cells[c*4], tmpc;
+    int *cone = &cells[c*4], tmpc;
 
     tmpc    = cone[0];
     cone[0] = cone[1];
@@ -3390,8 +3390,8 @@ PetscErrorCode DMPlexGenerate_Tetgen(DM boundary, PetscBool interpolate, DM *dm)
     const PetscInt numCorners  = 4;
     const PetscInt numCells    = out.numberoftetrahedra;
     const PetscInt numVertices = out.numberofpoints;
-    const int     *cells      = out.tetrahedronlist;
-    const double  *meshCoords = out.pointlist;
+    const double   *meshCoords = out.pointlist;
+    int            *cells      = out.tetrahedronlist;
 
     ierr = DMPlexInvertCells_Internal(numCells, numCorners, cells);CHKERRQ(ierr);
     ierr = DMPlexCreateFromCellList(comm, dim, numCells, numVertices, numCorners, interpolate, cells, dim, meshCoords, dm);CHKERRQ(ierr);
@@ -3510,8 +3510,9 @@ PetscErrorCode DMPlexRefine_Tetgen(DM dm, double *maxVolumes, DM *dmRefined)
     const PetscInt numCorners  = 4;
     const PetscInt numCells    = out.numberoftetrahedra;
     const PetscInt numVertices = out.numberofpoints;
-    const int     *cells      = out.tetrahedronlist;
-    const double  *meshCoords = out.pointlist;
+    const double   *meshCoords = out.pointlist;
+    int            *cells      = out.tetrahedronlist;
+
     PetscBool      interpolate = depthGlobal > 1 ? PETSC_TRUE : PETSC_FALSE;
 
     ierr = DMPlexInvertCells_Internal(numCells, numCorners, cells);CHKERRQ(ierr);
@@ -3657,8 +3658,8 @@ PetscErrorCode DMPlexGenerate_CTetgen(DM boundary, PetscBool interpolate, DM *dm
     const PetscInt numCorners  = 4;
     const PetscInt numCells    = out->numberoftetrahedra;
     const PetscInt numVertices = out->numberofpoints;
-    const int     *cells      = out->tetrahedronlist;
-    const double  *meshCoords = out->pointlist;
+    const double   *meshCoords = out->pointlist;
+    int            *cells      = out->tetrahedronlist;
 
     ierr = DMPlexInvertCells_Internal(numCells, numCorners, cells);CHKERRQ(ierr);
     ierr = DMPlexCreateFromCellList(comm, dim, numCells, numVertices, numCorners, interpolate, cells, dim, meshCoords, dm);CHKERRQ(ierr);
@@ -3791,8 +3792,8 @@ PetscErrorCode DMPlexRefine_CTetgen(DM dm, PetscReal *maxVolumes, DM *dmRefined)
     const PetscInt numCorners  = 4;
     const PetscInt numCells    = out->numberoftetrahedra;
     const PetscInt numVertices = out->numberofpoints;
-    const int     *cells       = out->tetrahedronlist;
-    const double  *meshCoords  = out->pointlist;
+    const double   *meshCoords = out->pointlist;
+    int            *cells      = out->tetrahedronlist;
     PetscBool      interpolate = depthGlobal > 1 ? PETSC_TRUE : PETSC_FALSE;
 
     ierr = DMPlexInvertCells_Internal(numCells, numCorners, cells);CHKERRQ(ierr);
