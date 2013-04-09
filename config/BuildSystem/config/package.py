@@ -287,7 +287,6 @@ class Package(config.base.Configure):
       if not isinstance(inc, list): inc = inc.split(' ')
       if not isinstance(libs, list): libs = libs.split(' ')
       inc = [os.path.abspath(i) for i in inc]
-      print inc
       # hope that package root is one level above first include directory specified
       d = os.path.dirname(inc[0])
       yield('User specified '+self.PACKAGE+' libraries', d, libs, inc)
