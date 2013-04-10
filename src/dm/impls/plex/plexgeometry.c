@@ -721,6 +721,79 @@ PetscErrorCode DMPlexComputeCellGeometry(DM dm, PetscInt cell, PetscReal *v0, Pe
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMPlexComputeGeometryFVM_1D_Internal"
+static PetscErrorCode DMPlexComputeGeometryFVM_1D_Internal(DM dm, PetscInt cell, PetscReal *vol, PetscReal centroid[], PetscReal normal[])
+{
+  PetscSection   coordSection;
+  Vec            coordinates;
+  PetscScalar   *coords;
+  const PetscInt dim = 2;
+  PetscInt       coordSize;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
+  ierr = DMPlexGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
+  ierr = DMPlexVecGetClosure(dm, coordSection, coordinates, cell, &coordSize, &coords);CHKERRQ(ierr);
+  if (coordSize != dim*2) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "We only support 2D edges right now");
+  if (centroid) {
+    centroid[0] = 0.5*(coords[0] + coords[dim+0]);
+    centroid[1] = 0.5*(coords[1] + coords[dim+1]);
+  }
+  if (normal) {
+    normal[0] =  (coords[1] - coords[dim+1]);
+    normal[1] = -(coords[0] - coords[dim+0]);
+  }
+  if (vol) {
+    *vol = sqrt(PetscSqr(coords[0] - coords[dim+0]) + PetscSqr(coords[1] - coords[dim+1]));
+  }
+  ierr = DMPlexVecRestoreClosure(dm, coordSection, coordinates, cell, &coordSize, &coords);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexComputeGeometryFVM_2D_Internal"
+/* Centroid_i = (\sum_n A_n Cn_i ) / A */
+static PetscErrorCode DMPlexComputeGeometryFVM_2D_Internal(DM dm, PetscInt cell, PetscReal *vol, PetscReal centroid[], PetscReal normal[])
+{
+  PetscSection   coordSection;
+  Vec            coordinates;
+  PetscScalar   *coords = NULL;
+  PetscReal      vsum, csum[3], vtmp, ctmp[6];
+  const PetscInt dim = 2;
+  PetscInt       coordSize, numCorners, p, d;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
+  ierr = DMPlexGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
+  ierr = DMPlexVecGetClosure(dm, coordSection, coordinates, cell, &coordSize, &coords);CHKERRQ(ierr);
+  numCorners = coordSize/dim;
+  for (p = 0; p < numCorners-1; ++p) {
+    Volume_Triangle_Origin_Internal(&vtmp, &coords[p*dim]);
+    vsum += vtmp;
+    for (d = 0; d < dim; ++d) {
+      csum[d] += (coords[p*dim+d] + coords[(p+1)*dim+d])*vtmp;
+    }
+  }
+  for (d = 0; d < dim; ++d) {
+    ctmp[d]     = coords[(numCorners-1)*dim+d];
+    ctmp[dim+d] = coords[d];
+  }
+  Volume_Triangle_Origin_Internal(&vtmp, ctmp);
+  vsum += vtmp;
+  for (d = 0; d < dim; ++d) {
+    csum[d] += (coords[(numCorners-1)*dim+d] + coords[0*dim+d])*vtmp;
+    csum[d] /= (dim+1)*vsum;
+  }
+  ierr = DMPlexVecRestoreClosure(dm, coordSection, coordinates, cell, &coordSize, &coords);CHKERRQ(ierr);
+  if (vol) *vol = PetscAbsScalar(vsum);
+  if (centroid) for (d = 0; d < dim; ++d) centroid[d] = csum[d];
+  if (normal)   for (d = 0; d < dim; ++d) normal[d]   = 0.0;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMPlexComputeCellGeometryFVM"
 /*@C
   DMPlexComputeCellGeometryFVM - Compute the volume for a given cell
@@ -733,7 +806,8 @@ PetscErrorCode DMPlexComputeCellGeometry(DM dm, PetscInt cell, PetscReal *v0, Pe
 
   Output Arguments:
 + volume   - the cell volume
-- centroid - the cell centroid
+. centroid - the cell centroid
+- normal - the cell normal, if appropriate
 
   Level: advanced
 
@@ -743,7 +817,7 @@ PetscErrorCode DMPlexComputeCellGeometry(DM dm, PetscInt cell, PetscReal *v0, Pe
 
 .seealso: DMPlexGetCoordinateSection(), DMPlexGetCoordinateVec()
 @*/
-PetscErrorCode DMPlexComputeCellGeometryFVM(DM dm, PetscInt cell, PetscReal *vol, PetscReal centroid[])
+PetscErrorCode DMPlexComputeCellGeometryFVM(DM dm, PetscInt cell, PetscReal *vol, PetscReal centroid[], PetscReal normal[])
 {
   PetscInt       depth, dim, coneSize;
   PetscErrorCode ierr;
@@ -757,42 +831,12 @@ PetscErrorCode DMPlexComputeCellGeometryFVM(DM dm, PetscInt cell, PetscReal *vol
   ierr = DMPlexGetLabelValue(dm, "depth", cell, &dim);CHKERRQ(ierr);
   /* Cone size is now the number of faces */
   switch (dim) {
+  case 1:
+    ierr = DMPlexComputeGeometryFVM_1D_Internal(dm, cell, vol, centroid, normal);CHKERRQ(ierr);
+    break;
   case 2:
-  {
-    /*
-     Centroid_i = (\sum_n A_n Cn_i ) / A
-    */
-    PetscSection coordSection;
-    Vec          coordinates;
-    PetscScalar *coords = NULL;
-    PetscInt     coordSize, numCorners, p, d;
-    PetscReal    vsum, vtmp, ctmp[4];
-
-    ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
-    ierr = DMPlexGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
-    ierr = DMPlexVecGetClosure(dm, coordSection, coordinates, cell, &coordSize, &coords);CHKERRQ(ierr);
-    numCorners = coordSize/dim;
-    for (p = 0; p < numCorners-1; ++p) {
-      Volume_Triangle_Origin_Internal(&vtmp, &coords[p*dim]);
-      vsum += vtmp;
-      for (d = 0; d < dim; ++d) {
-        centroid[d] += (coords[p*dim+d] + coords[(p+1)*dim+d])*vtmp;
-      }
-    }
-    for (d = 0; d < dim; ++d) {
-      ctmp[d]     = coords[(numCorners-1)*dim+d];
-      ctmp[dim+d] = coords[d];
-    }
-    Volume_Triangle_Origin_Internal(&vtmp, ctmp);
-    vsum += vtmp;
-    for (d = 0; d < dim; ++d) {
-      centroid[d] += (coords[(numCorners-1)*dim+d] + coords[0*dim+d])*vtmp;
-      centroid[d] /= (dim+1)*vsum;
-    }
-    ierr = DMPlexVecRestoreClosure(dm, coordSection, coordinates, cell, &coordSize, &coords);CHKERRQ(ierr);
-    *vol = PetscAbsScalar(vsum);
-  }
-  break;
+    ierr = DMPlexComputeGeometryFVM_2D_Internal(dm, cell, vol, centroid, normal);CHKERRQ(ierr);
+    break;
   case 3:
     switch (coneSize) {
     default:

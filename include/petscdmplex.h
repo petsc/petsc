@@ -132,7 +132,7 @@ PETSC_EXTERN PetscErrorCode DMPlexMarkBoundaryFaces(DM, DMLabel);
 PETSC_EXTERN PetscErrorCode DMPlexLabelComplete(DM, DMLabel);
 
 /* FVM Support */
-PETSC_EXTERN PetscErrorCode DMPlexComputeCellGeometryFVM(DM, PetscInt, PetscReal *, PetscReal []);
+PETSC_EXTERN PetscErrorCode DMPlexComputeCellGeometryFVM(DM, PetscInt, PetscReal *, PetscReal [], PetscReal []);
 
 /* FEM Support */
 PETSC_EXTERN PetscErrorCode DMPlexComputeCellGeometry(DM, PetscInt, PetscReal *, PetscReal *, PetscReal *, PetscReal *);
