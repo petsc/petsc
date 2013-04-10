@@ -902,6 +902,9 @@ PetscErrorCode MatMatTransposeMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal f
     MatTransposeColoring matcoloring;
     ISColoring           iscoloring;
     Mat                  Bt_dense,C_dense;
+    Mat_SeqAIJ           *c=(Mat_SeqAIJ*)(*C)->data;
+    /* inode causes memory problem, don't know why */
+    if (c->inode.use) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"MAT_USE_INODES is not supported. Use '-mat_no_inode'");
 
     ierr = MatGetColoring(*C,MATCOLORINGLF,&iscoloring);CHKERRQ(ierr);
     ierr = MatTransposeColoringCreate(*C,iscoloring,&matcoloring);CHKERRQ(ierr);

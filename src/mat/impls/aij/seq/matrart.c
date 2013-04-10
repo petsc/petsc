@@ -74,6 +74,9 @@ PetscErrorCode MatRARtSymbolic_SeqAIJ_SeqAIJ_colorrart(Mat A,Mat R,PetscReal fil
 #endif
 
   /* ------ Use coloring ---------- */
+  /* inode causes memory problem, don't know why */
+  if (c->inode.use) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"MAT_USE_INODES is not supported. Use '-mat_no_inode'");
+
   /* Create MatTransposeColoring from symbolic C=R*A*R^T */
 #if defined(RART_PROFILE)
   ierr    = PetscTime(&t0);CHKERRQ(ierr);
