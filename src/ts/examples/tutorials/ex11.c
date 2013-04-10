@@ -1231,7 +1231,7 @@ PetscErrorCode ConstructGeometry(DM dm, Vec *facegeom, Vec *cellgeom, User user)
 
     ierr = DMPlexPointLocalRef(dmCell, c, cgeom, &cg);CHKERRQ(ierr);
     ierr = PetscMemzero(cg,sizeof(*cg));CHKERRQ(ierr);
-    ierr = DMPlexComputeCellGeometryFVM(dmCell, c, &cg->volume, cg->centroid);CHKERRQ(ierr);
+    ierr = DMPlexComputeCellGeometryFVM(dmCell, c, &cg->volume, cg->centroid, NULL);CHKERRQ(ierr);
   }
   /* Compute face normals and minimum cell radius */
   ierr = DMPlexClone(dm, &dmFace);CHKERRQ(ierr);
@@ -1254,19 +1254,7 @@ PetscErrorCode ConstructGeometry(DM dm, Vec *facegeom, Vec *cellgeom, User user)
     ierr = DMPlexGetLabelValue(dm, "ghost", f, &ghost);CHKERRQ(ierr);
     if (ghost >= 0) continue;
     ierr = DMPlexPointLocalRef(dmFace, f, fgeom, &fg);CHKERRQ(ierr);
-    /* Replace with DMPlexComputeCellGeometryFVM() */
-    {
-      PetscScalar *coords = NULL;
-      PetscInt     coordSize;
-
-      ierr = DMPlexVecGetClosure(dm, coordSection, coordinates, f, &coordSize, &coords);CHKERRQ(ierr);
-      if (coordSize != dim*2) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "We only support edges right now");
-      fg->centroid[0] = 0.5*(coords[0] + coords[dim]);
-      fg->centroid[1] = 0.5*(coords[1] + coords[dim+1]);
-      fg->normal[0]   =  (coords[1] - coords[dim+1]);
-      fg->normal[1]   = -(coords[0] - coords[dim+0]);
-      ierr = DMPlexVecRestoreClosure(dm, coordSection, coordinates, f, &coordSize, &coords);CHKERRQ(ierr);
-    }
+    ierr = DMPlexComputeCellGeometryFVM(dm, f, NULL, fg->centroid, fg->normal);CHKERRQ(ierr);
     /* Flip face orientation if necessary to match ordering in support, and Update minimum radius */
     {
       CellGeom       *cL, *cR;
