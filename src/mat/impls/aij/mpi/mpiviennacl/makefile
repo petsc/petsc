@@ -9,7 +9,7 @@ SOURCEH  =
 LIBBASE  = libpetscmat
 DIRS     =
 MANSEC   = Mat
-LOCDIR   = src/mat/impls/aij/mpi/mpiviennacl
+LOCDIR   = src/mat/impls/aij/mpi/mpiviennacl/
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules
