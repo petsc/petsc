@@ -3,8 +3,9 @@ import PETSc.package
 class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
     PETSc.package.NewPackage.__init__(self, framework)
-    self.download          = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/ctetgen-0.1.tar.gz',
-                              'https://bitbucket.org/petsc/ctetgen/get/ctetgen-0.1.tar.gz']
+    self.gitcommit         = '6ed398f4e75cc071360bebaaf575ce249477d61f'
+    self.giturls           = ['https://bitbucket.org/petsc/ctetgen.git']
+    self.download          = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/ctetgen-0.1.tar.gz']
     self.functions         = []
     self.includes          = []
     self.liblist           = [['libctetgen.a']]

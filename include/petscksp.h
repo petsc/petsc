@@ -5,7 +5,7 @@
 #define __PETSCKSP_H
 #include <petscpc.h>
 
-PETSC_EXTERN PetscErrorCode KSPInitializePackage(const char[]);
+PETSC_EXTERN PetscErrorCode KSPInitializePackage(void);
 
 /*S
      KSP - Abstract PETSc object that manages all Krylov methods
@@ -78,60 +78,10 @@ PETSC_EXTERN PetscErrorCode KSPDestroy(KSP*);
 
 PETSC_EXTERN PetscFunctionList KSPList;
 PETSC_EXTERN PetscBool         KSPRegisterAllCalled;
-PETSC_EXTERN PetscErrorCode KSPRegisterAll(const char[]);
+PETSC_EXTERN PetscErrorCode KSPRegisterAll(void);
 PETSC_EXTERN PetscErrorCode KSPRegisterDestroy(void);
-PETSC_EXTERN PetscErrorCode KSPRegister(const char[],const char[],const char[],PetscErrorCode (*)(KSP));
-PETSC_EXTERN PetscErrorCode KSPMatRegisterAll(const char[]);
-
-/*MC
-   KSPRegisterDynamic - Adds a method to the Krylov subspace solver package.
-
-   Synopsis:
-   #include "petscksp.h"
-   PetscErrorCode KSPRegisterDynamic(const char *name_solver,const char *path,const char *name_create,PetscErrorCode (*routine_create)(KSP))
-
-   Not Collective
-
-   Input Parameters:
-+  name_solver - name of a new user-defined solver
-.  path - path (either absolute or relative) the library containing this solver
-.  name_create - name of routine to create method context
--  routine_create - routine to create method context
-
-   Notes:
-   KSPRegisterDynamic() may be called multiple times to add several user-defined solvers.
-
-   If dynamic libraries are used, then the fourth input argument (routine_create)
-   is ignored.
-
-   Sample usage:
-.vb
-   KSPRegisterDynamic("my_solver",/home/username/my_lib/lib/libO/solaris/mylib.a,
-               "MySolverCreate",MySolverCreate);
-.ve
-
-   Then, your solver can be chosen with the procedural interface via
-$     KSPSetType(ksp,"my_solver")
-   or at runtime via the option
-$     -ksp_type my_solver
-
-   Level: advanced
-
-   Notes: Environmental variables such as ${PETSC_ARCH}, ${PETSC_DIR}, ${PETSC_LIB_DIR},
-          and others of the form ${any_environmental_variable} occuring in pathname will be
-          replaced with appropriate values.
-         If your function is not being put into a shared library then use KSPRegister() instead
-
-.keywords: KSP, register
-
-.seealso: KSPRegisterAll(), KSPRegisterDestroy()
-
-M*/
-#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
-#define KSPRegisterDynamic(a,b,c,d) KSPRegister(a,b,c,0)
-#else
-#define KSPRegisterDynamic(a,b,c,d) KSPRegister(a,b,c,d)
-#endif
+PETSC_EXTERN PetscErrorCode KSPRegister(const char[],PetscErrorCode (*)(KSP));
+PETSC_EXTERN PetscErrorCode KSPMatRegisterAll(void);
 
 PETSC_EXTERN PetscErrorCode KSPGetType(KSP,KSPType *);
 PETSC_EXTERN PetscErrorCode KSPSetPCSide(KSP,PCSide);

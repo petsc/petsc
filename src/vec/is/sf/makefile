@@ -1,6 +1,6 @@
 ALL: lib
 
-SOURCEH	 = ../../../../include/petsc-private/sfimpl.h ../../../../include/petscsf.h
+SOURCEH	 = ../../../../include/petsc-private/sfimpl.h ../../../../include/petscsf.h ../../../../include/petscsftypes.h
 SOURCEC  =
 LIBBASE	 = libpetscsys
 DIRS	 = interface impls examples

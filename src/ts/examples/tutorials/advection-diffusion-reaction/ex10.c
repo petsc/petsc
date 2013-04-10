@@ -66,6 +66,7 @@ typedef struct {
 extern PetscErrorCode IFunction(TS,PetscReal,Vec,Vec,Vec,void*);
 extern PetscErrorCode InitialConditions(DM,Vec);
 extern PetscErrorCode MyMonitorSetUp(TS);
+extern PetscErrorCode GetDfill(PetscInt*,void*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -76,7 +77,8 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
   DM             da;                  /* manages the grid data */
   AppCtx         ctx;                 /* holds problem specific paramters */
-  PetscInt       He,dof = 3*N+N*N,*ofill;
+  PetscInt       He,dof = 3*N+N*N,*ofill,*dfill;
+  
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
@@ -111,13 +113,19 @@ int main(int argc,char **argv)
      ofill array indicates that the degree of freedom i at a point is coupled to degree of freedom j at the
      adjacent point. In this case ofill has only a few diagonal entries since the only spatial coupling is regular diffusion. */
   ierr = PetscMalloc(dof*dof*sizeof(PetscInt),&ofill);CHKERRQ(ierr);
+  ierr = PetscMalloc(dof*dof*sizeof(PetscInt),&dfill);CHKERRQ(ierr);
   ierr = PetscMemzero(ofill,dof*dof*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscMemzero(dfill,dof*dof*sizeof(PetscInt));CHKERRQ(ierr);
 
   for (He=0; He<PetscMin(N,5); He++) ofill[He*dof + He] = 1;
   ofill[N*dof + N] = ofill[2*N*dof + 2*N] = 1;
 
   ierr = DMDASetBlockFills(da,NULL,ofill);CHKERRQ(ierr);
   ierr = PetscFree(ofill);CHKERRQ(ierr);
+  ierr = GetDfill(dfill,&ctx);CHKERRQ(ierr);
+  ierr = PetscFree(dfill);CHKERRQ(ierr);
+
+ 
 
   /*  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    Extract global vector from DMDA to hold solution
@@ -396,6 +404,20 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec C,Vec Cdot,Vec F,void *ptr)
       }
     }
     /*  V[V] + I[I]  ->   V[V-I] if V > I else I[I-V] */
+    /*  What should the correct reaction rate should be? */
+    for (V=1; V<N+1; V++) {
+      for (I=1; I<V; I++) {
+        f[xi].V[V-I] -= ctx->reactionScale*c[xi].V[V]*c[xi].I[I];
+        f[xi].V[V] += ctx->reactionScale*c[xi].V[V]*c[xi].I[I];
+        f[xi].I[I] += ctx->reactionScale*c[xi].V[V]*c[xi].I[I];
+      }
+      for (I=V+1; I<N+1; I++) {
+          f[xi].I[I-V] -= ctx->reactionScale*c[xi].V[V]*c[xi].I[I];
+          f[xi].V[V] += ctx->reactionScale*c[xi].V[V]*c[xi].I[I];
+          f[xi].I[I] += ctx->reactionScale*c[xi].V[V]*c[xi].I[I];
+      }
+    }
+
 
 
     if (ctx->nodissociations) continue;
@@ -455,6 +477,15 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec C,Vec Cdot,Vec F,void *ptr)
       }
     }
     /*   He[He]-V[V] ->  He[He]-V[V+1] + I[1]  */
+    /* Again, what is the reasonable dissociation rate? */
+    for (He=1; He<N+1; He++) {
+      for (V=1; V<N; V++) {
+        f[xi].HeV[He][V+1] -= 1000*ctx->reactionScale*c[xi].HeV[He][V];
+        f[xi].I[1]         -= 1000*ctx->reactionScale*c[xi].HeV[He][V];
+        f[xi].HeV[He][V]   += 1000*ctx->reactionScale*c[xi].HeV[He][V];
+      }
+    }
+
   }
 
   /*
@@ -468,6 +499,221 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec C,Vec Cdot,Vec F,void *ptr)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "GetDfill"
+
+PetscErrorCode GetDfill(PetscInt *dfill, void *ptr) 
+{
+  AppCtx         *ctx = (AppCtx*) ptr;
+  PetscInt       He,he,V,v,I,i,dof = 3*N+N*N,reactants[3],row,col1,col2,j;
+
+  if (!ctx->noreactions) {
+    
+    for (He=2; He<N+1; He++) {
+      /* compute all pairs of clusters of smaller size that can combine to create a cluster of size He,
+       remove the upper half since they are symmetric to the lower half of the pairs. For example
+       when He = 5 (cluster size 5) the pairs are
+       1   4
+       2   2
+       3   2  these last two are not needed in the sum since they repeat from above
+       4   1  this is why he < (He/2) + 1            */
+      for (he=1; he<(He/2)+1; he++) {
+        reactants[0] = he, reactants[1] = He-he, reactants[2] = He;
+        for (j=0; j<3; j++) {
+          row = reactants[j], col1 = reactants[0], col2 = reactants[1];
+          dfill[(row-1)*dof + col1 - 1] = 1, dfill[(row-1)*dof + col2 - 1] = 1;
+        }
+      }
+    }
+    /*   V[V]  +  V[v] ->  V[V+v]  */
+    for (V=2; V<N+1; V++) {
+      for (v=1; v<(V/2)+1; v++) {
+        reactants[0] = N+v, reactants[1] = N+V-v, reactants[2] = N+V;
+        for (j=0; j<3; j++) {
+          row = reactants[j], col1 = reactants[0], col2 = reactants[1];
+          dfill[(row-1)*dof + col1 - 1] = 1, dfill[(row-1)*dof + col2 - 1] = 1;
+        }
+      }
+    }
+
+    /*   I[I] +  I[i] -> I[I+i] */
+    for (I=2; I<N+1; I++) {
+      for (i=1; i<(I/2)+1; i++) {
+        reactants[0] = 2*N+i, reactants[1] = 2*N+I-i, reactants[2] = 2*N+I;
+        for (j=0; j<3; j++) {
+          row = reactants[j], col1 = reactants[0], col2 = reactants[1];
+          dfill[(row-1)*dof + col1 - 1] = 1, dfill[(row-1)*dof + col2 - 1] = 1;
+        }
+      }
+    }
+  
+    /* He[1] +  V[1]  ->  He[1]-V[1] */
+    reactants[0] = 1, reactants[1] = N+1, reactants[2] = 3*N+1;
+    for (j=0; j<3; j++) {
+      row = reactants[j], col1 = reactants[0], col2 = reactants[1];
+      dfill[(row-1)*dof + col1 - 1] = 1, dfill[(row-1)*dof + col2 - 1] = 1;
+    }
+
+    /*  He[He]-V[V] + He[he] -> He[He+he]-V[V]  */
+    for (He=1; He<N; He++) {
+      for (V=1; V<N+1; V++) {
+        for (he=1; he<N-He+1; he++) {
+          reactants[0] = 3*N + (He-1)*N + V, reactants[1] = he, reactants[2] = 3*N+(He+he-1)*N+V;
+          for (j=0; j<3; j++) {
+            row = reactants[j], col1 = reactants[0], col2 = reactants[1];
+            dfill[(row-1)*dof + col1 - 1] = 1, dfill[(row-1)*dof + col2 - 1] = 1;
+          }
+        }
+      }
+    }
+    /*  He[He]-V[V] + V[v] -> He[He][V+v] */
+    for (He=1; He<N+1; He++) {
+      for (V=1; V<N; V++) {
+        for (v=1; v<N-V+1; v++) {
+          reactants[0] = 3*N+(He-1)*N+V, reactants[1] = N+v, reactants[2] = 3*N+(He-1)*N+V+v;
+          for (j=0; j<3; j++) {
+            row = reactants[j], col1 = reactants[0], col2 = reactants[1];
+            dfill[(row-1)*dof + col1 - 1] = 1, dfill[(row-1)*dof + col2 - 1] = 1;
+          }
+        }
+      }
+    }
+
+    /*  He[He]-V[V]  + He[he]-V[v] -> He[He+he][V+v]  */
+    /*  Currently the reaction rates for this are zero */
+    for (He=1; He<N; He++) {
+      for (V=1; V<N; V++) {
+        for (he=1; he<N-He+1; he++) {
+          for (v=1; v<N-V+1; v++) {
+            reactants[0] = 3*N+(He-1)*N+V, reactants[1] = 3*N+(he-1)*N+V, reactants[2] = 3*N + (He+he-1)*N + V+v;
+            for (j=0; j<3; j++) {
+              row = reactants[j], col1 = reactants[0], col2 = reactants[1];
+              dfill[(row-1)*dof + col1 - 1] = 1, dfill[(row-1)*dof + col2 - 1] = 1;
+            }
+          }
+        }
+      }
+    }
+    /*  V[V] + I[I]  ->   V[V-I] if V > I else I[I-V] */
+    /*  What should the correct reaction rate should be? */
+    for (V=1; V<N+1; V++) {
+      for (I=1; I<V; I++) {
+        reactants[0] = N+V, reactants[1] = 2*N+I, reactants[2] = N+V-I;
+        for (j=0; j<3; j++) {
+          row = reactants[j], col1 = reactants[0], col2 = reactants[1];
+          dfill[(row-1)*dof + col1 - 1] = 1, dfill[(row-1)*dof + col2 - 1] = 1;
+        }
+      }
+      for (I=V+1; I<N+1; I++) {
+        reactants[0] = N+V, reactants[1] = 2*N+I, reactants[2] = 2*N+I-V;
+        for (j=0; j<3; j++) {
+          row = reactants[j], col1 = reactants[0], col2 = reactants[1];
+          dfill[(row-1)*dof + col1 - 1] = 1, dfill[(row-1)*dof + col2 - 1] = 1;
+        }
+      }
+    }
+  }
+    /* -------------------------------------------------------------------------
+     ---- Compute dissociation terms that removes an item from a cluster
+          I assume dissociation means losing only a single item from a cluster
+          I cannot tell from the notes if clusters can break up into any sub-size.
+    */
+  if (!ctx->nodissociations) {
+    /*   He[He] ->  He[He-1] + He[1] */
+    for (He=2; He<N+1; He++) {
+      reactants[0] = He, reactants[1] = He-1, reactants[2] = 1;
+
+      for (j=0; j<3; j++) {
+        row = reactants[j], col1 = reactants[0];
+        dfill[(row-1)*dof + col1 - 1] = 1;
+      }
+    }
+    /*   V[V] ->  V[V-1] + V[1] */
+    for (V=2; V<N+1; V++) {
+      reactants[0] = N+V, reactants[1] = N+V-1, reactants[2] = N+1;
+
+      for (j=0; j<3; j++) {
+        row = reactants[j], col1 = reactants[0];
+        dfill[(row-1)*dof + col1 - 1] = 1;
+      }
+    }
+
+    /*   I[I] ->  I[I-1] + I[1] */
+    for (I=2; I<N+1; I++) {
+      reactants[0] = 2*N+I, reactants[1] = 2*N+I-1, reactants[2] = 2*N+1;
+
+      for (j=0; j<3; j++) {
+        row = reactants[j], col1 = reactants[0];
+        dfill[(row-1)*dof + col1 - 1] = 1;
+      }
+    }
+
+    /* He[1]-V[1]  ->  He[1] + V[1] */
+    reactants[0] = 3*N+1, reactants[1] = 1, reactants[2] = N+1;
+
+    for (j=0; j<3; j++) {
+      row = reactants[j], col1 = reactants[0];
+      dfill[(row-1)*dof + col1 - 1] = 1;
+    }
+    
+    /*   He[He]-V[1] ->  He[He] + V[1]  */
+    for (He=2; He<N+1; He++) {
+      reactants[0] = 3*N+(He-1)*N+1, reactants[1] = He, reactants[2] = N+1;
+
+      for (j=0; j<3; j++) {
+        row = reactants[j], col1 = reactants[0];
+        dfill[(row-1)*dof + col1 - 1] = 1;
+      }
+    }
+
+    /*   He[1]-V[V] ->  He[1] + V[V]  */
+    for (V=2; V<N+1; V++) {
+      reactants[0] = 3*N+V, reactants[1] = 1, reactants[2] = N+V;
+
+      for (j=0; j<3; j++) {
+        row = reactants[j], col1 = reactants[0];
+        dfill[(row-1)*dof + col1 - 1] = 1;
+      }
+    }
+
+    /*   He[He]-V[V] ->  He[He-1]-V[V] + He[1]  */
+    for (He=2; He<N+1; He++) {
+      for (V=2; V<N+1; V++) {
+        reactants[0] = 3*N+(He-1)*N+V, reactants[1] = 3*N+(He-2)*N+V, reactants[2] = 1;
+
+        for (j=0; j<3; j++) {
+          row = reactants[j], col1 = reactants[0];
+          dfill[(row-1)*dof + col1 - 1] = 1;
+        }
+      }
+    }
+    
+    /*   He[He]-V[V] ->  He[He]-V[V-1] + V[1]  */
+    for (He=2; He<N+1; He++) {
+      for (V=2; V<N+1; V++) {
+        reactants[0] = 3*N+(He-1)*N+V, reactants[1] = 3*N+(He-1)*N+V-1, reactants[2] = N+1;
+
+        for (j=0; j<3; j++) {
+          row = reactants[j], col1 = reactants[0];
+          dfill[(row-1)*dof + col1 - 1] = 1;
+        }
+      }
+    }
+
+    /*   He[He]-V[V] ->  He[He]-V[V+1] + I[1]  */
+    /* Again, what is the reasonable dissociation rate? */
+    for (He=1; He<N+1; He++) {
+      for (V=1; V<N; V++) {
+        reactants[0] = 3*N+(He-1)*N+V, reactants[1] = 3*N+(He-1)*N+V+1, reactants[2] = 2*N+1;
+
+        for (j=0; j<3; j++) {
+          row = reactants[j], col1 = reactants[0];
+          dfill[(row-1)*dof + col1 - 1] = 1;
+        }
+      }
+    }
+  }
+}
 /* ------------------------------------------------------------------- */
 
 typedef struct {

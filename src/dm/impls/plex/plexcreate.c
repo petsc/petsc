@@ -1,6 +1,7 @@
 #define PETSCDM_DLL
 #include <petsc-private/dmpleximpl.h>    /*I   "petscdmplex.h"   I*/
 #include <petscdmda.h>
+#include <petscsf.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "DMSetFromOptions_Plex"

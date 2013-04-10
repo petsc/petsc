@@ -14,7 +14,7 @@ PetscErrorCode PetscCliqueFinalizePackage(void)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscCliqueInitializePackage"
-PetscErrorCode PetscCliqueInitializePackage(const char *path)
+PetscErrorCode PetscCliqueInitializePackage(void)
 {
   PetscErrorCode ierr;
 
@@ -164,7 +164,7 @@ PetscErrorCode MatDestroy_Clique(Mat A)
   ierr = PetscFree(A->spptr);CHKERRQ(ierr);
 
   /* clear composed functions */
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatFactorGetSolverPackage_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatFactorGetSolverPackage_C",NULL);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -287,7 +287,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_aij_clique(Mat A,MatFactorType ftype,Ma
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscCliqueInitializePackage(NULL);CHKERRQ(ierr);
+  ierr = PetscCliqueInitializePackage();CHKERRQ(ierr);
   ierr = MatCreate(PetscObjectComm((PetscObject)A),&B);CHKERRQ(ierr);
   ierr = MatSetSizes(B,A->rmap->n,A->cmap->n,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);

@@ -384,8 +384,8 @@ PETSC_EXTERN PetscErrorCode KSPCreate_GCR(KSP ksp)
   ksp->ops->buildsolution  = KSPBuildSolution_GCR;
   ksp->ops->buildresidual  = KSPBuildResidual_GCR;
 
-  ierr = PetscObjectComposeFunction((PetscObject)ksp, "KSPGCRSetRestart_C","KSPGCRSetRestart_GCR",KSPGCRSetRestart_GCR);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGCRSetModifyPC_C","KSPGCRSetModifyPC_GCR",KSPGCRSetModifyPC_GCR);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp, "KSPGCRSetRestart_C",KSPGCRSetRestart_GCR);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGCRSetModifyPC_C",KSPGCRSetModifyPC_GCR);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

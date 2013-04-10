@@ -146,13 +146,15 @@ int MPI_Comm_free(MPI_Comm *comm)
   int i;
 
   if (*comm-1 < 0 || *comm-1 > 3) return 1;
-  if (--dups[*comm-1]) return MPI_SUCCESS;
-  for (i=0; i<num_attr; i++) {
-    if (attr[*comm-1][i].active && attr_keyval[i].del) (*attr_keyval[i].del)(*comm,i,attr[*comm-1][i].attribute_val,attr_keyval[i].extra_state);
-    attr[*comm-1][i].active        = 0;
-    attr[*comm-1][i].attribute_val = 0;
-  }
-  *comm = 0;
+  if (dups[*comm-1] == 1) {
+    for (i=0; i<num_attr; i++) {
+      if (attr[*comm-1][i].active && attr_keyval[i].del) (*attr_keyval[i].del)(*comm,i,attr[*comm-1][i].attribute_val,attr_keyval[i].extra_state);
+      attr[*comm-1][i].active        = 0;
+      attr[*comm-1][i].attribute_val = 0;
+    }
+    dups[*comm-1] = 1;
+    *comm = 0;
+  } else if (dups[*comm-1] > 1) dups[*comm-1]--;
   return MPI_SUCCESS;
 }
 

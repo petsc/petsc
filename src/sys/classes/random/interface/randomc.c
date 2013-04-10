@@ -145,7 +145,7 @@ static PetscErrorCode PetscRandomSetTypeFromOptions_Private(PetscRandom rnd)
 #endif
   }
 
-  if (!PetscRandomRegisterAllCalled) {ierr = PetscRandomRegisterAll(NULL);CHKERRQ(ierr);}
+  if (!PetscRandomRegisterAllCalled) {ierr = PetscRandomRegisterAll();CHKERRQ(ierr);}
   ierr = PetscOptionsList("-random_type","PetscRandom type","PetscRandomSetType",PetscRandomList,defaultType,typeName,256,&opt);CHKERRQ(ierr);
   if (opt) {
     ierr = PetscRandomSetType(rnd, typeName);CHKERRQ(ierr);
@@ -360,7 +360,7 @@ PetscErrorCode  PetscRandomCreate(MPI_Comm comm,PetscRandom *r)
   PetscValidPointer(r,3);
   *r = NULL;
 #if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
-  ierr = PetscRandomInitializePackage(NULL);CHKERRQ(ierr);
+  ierr = PetscRandomInitializePackage();CHKERRQ(ierr);
 #endif
 
   ierr = PetscHeaderCreate(rr,_p_PetscRandom,struct _PetscRandomOps,PETSC_RANDOM_CLASSID,"PetscRandom","Random number generator","Sys",comm,PetscRandomDestroy,0);CHKERRQ(ierr);

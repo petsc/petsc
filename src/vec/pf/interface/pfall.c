@@ -16,28 +16,25 @@ PETSC_EXTERN PetscErrorCode PFCreate_Matlab(PF,void*);
 
    Not Collective
 
-   Input Parameter:
-.  path - the library where the routines are to be found (optional)
-
    Level: advanced
 
 .keywords: PF, register, all
 
-.seealso: PFRegisterDynamic(), PFRegisterDestroy()
+.seealso: PFRegister(), PFRegisterDestroy()
 @*/
-PetscErrorCode  PFRegisterAll(const char path[])
+PetscErrorCode  PFRegisterAll(void)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PFRegisterAllCalled = PETSC_TRUE;
 
-  ierr = PFRegisterDynamic(PFCONSTANT         ,path,"PFCreate_Constant",PFCreate_Constant);CHKERRQ(ierr);
-  ierr = PFRegisterDynamic(PFSTRING           ,path,"PFCreate_String",PFCreate_String);CHKERRQ(ierr);
-  ierr = PFRegisterDynamic(PFQUICK            ,path,"PFCreate_Quick",PFCreate_Quick);CHKERRQ(ierr);
-  ierr = PFRegisterDynamic(PFIDENTITY         ,path,"PFCreate_Identity",PFCreate_Identity);CHKERRQ(ierr);
+  ierr = PFRegister(PFCONSTANT,         PFCreate_Constant);CHKERRQ(ierr);
+  ierr = PFRegister(PFSTRING,           PFCreate_String);CHKERRQ(ierr);
+  ierr = PFRegister(PFQUICK,            PFCreate_Quick);CHKERRQ(ierr);
+  ierr = PFRegister(PFIDENTITY,         PFCreate_Identity);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
-  ierr = PFRegisterDynamic(PFMATLAB           ,path,"PFCreate_Matlab",PFCreate_Matlab);CHKERRQ(ierr);
+  ierr = PFRegister(PFMATLAB,           PFCreate_Matlab);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
 }

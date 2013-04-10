@@ -1401,16 +1401,9 @@ PetscErrorCode  PetscOptionsGetEList(const char pre[],const char opt[],const cha
   ierr = PetscMalloc(len*sizeof(char),&svalue);CHKERRQ(ierr);
   ierr = PetscOptionsGetString(pre,opt,svalue,len,&aset);CHKERRQ(ierr);
   if (aset) {
-    if (set) *set = PETSC_TRUE;
-    for (i=0; i<ntext; i++) {
-      ierr = PetscStrcasecmp(svalue,list[i],&flg);CHKERRQ(ierr);
-      if (flg || !svalue[0]) {
-        flg    = PETSC_TRUE;
-        *value = i;
-        break;
-      }
-    }
+    ierr = PetscEListFind(ntext,list,svalue,value,&flg);CHKERRQ(ierr);
     if (!flg) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_USER,"Unknown option %s for -%s%s",svalue,pre ? pre : "",opt+1);
+    if (set) *set = PETSC_TRUE;
   } else if (set) *set = PETSC_FALSE;
   ierr = PetscFree(svalue);CHKERRQ(ierr);
   PetscFunctionReturn(0);

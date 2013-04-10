@@ -22,7 +22,7 @@ PetscErrorCode PCGetDefaultType_Private(PC pc,const char *type[])
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)pc),&size);CHKERRQ(ierr);
   if (pc->pmat) {
     PetscErrorCode (*f)(Mat,MatReuse,Mat*);
-    ierr = PetscObjectQueryFunction((PetscObject)pc->pmat,"MatGetDiagonalBlock_C",(void (**)(void))&f);CHKERRQ(ierr);
+    ierr = PetscObjectQueryFunction((PetscObject)pc->pmat,"MatGetDiagonalBlock_C",&f);CHKERRQ(ierr);
     if (size == 1) {
       ierr = MatGetFactorAvailable(pc->pmat,"petsc",MAT_FACTOR_ICC,&flg1);CHKERRQ(ierr);
       ierr = MatGetFactorAvailable(pc->pmat,"petsc",MAT_FACTOR_ILU,&flg2);CHKERRQ(ierr);
@@ -380,7 +380,7 @@ PetscErrorCode  PCCreate(MPI_Comm comm,PC *newpc)
   PetscValidPointer(newpc,1);
   *newpc = 0;
 #if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
-  ierr = PCInitializePackage(NULL);CHKERRQ(ierr);
+  ierr = PCInitializePackage();CHKERRQ(ierr);
 #endif
 
   ierr = PetscHeaderCreate(pc,_p_PC,struct _PCOps,PC_CLASSID,"PC","Preconditioner","PC",comm,PCDestroy,PCView);CHKERRQ(ierr);
@@ -1716,18 +1716,39 @@ PetscErrorCode  PCSetInitialGuessNonzero(PC pc,PetscBool flg)
 #undef __FUNCT__
 #define __FUNCT__ "PCRegister"
 /*@C
-  PCRegister - See PCRegisterDynamic()
+  PCRegister -  Adds a method to the preconditioner package.
 
-  Level: advanced
+   Not collective
+
+   Input Parameters:
++  name_solver - name of a new user-defined solver
+-  routine_create - routine to create method context
+
+   Notes:
+   PCRegister() may be called multiple times to add several user-defined preconditioners.
+
+   Sample usage:
+.vb
+   PCRegister("my_solver", MySolverCreate);
+.ve
+
+   Then, your solver can be chosen with the procedural interface via
+$     PCSetType(pc,"my_solver")
+   or at runtime via the option
+$     -pc_type my_solver
+
+   Level: advanced
+
+.keywords: PC, register
+
+.seealso: PCRegisterAll(), PCRegisterDestroy()
 @*/
-PetscErrorCode  PCRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(PC))
+PetscErrorCode  PCRegister(const char sname[],PetscErrorCode (*function)(PC))
 {
   PetscErrorCode ierr;
-  char           fullname[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListConcat(path,name,fullname);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&PCList,sname,fullname,(void (*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&PCList,sname,function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

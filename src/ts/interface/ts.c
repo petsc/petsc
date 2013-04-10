@@ -37,7 +37,7 @@ static PetscErrorCode TSSetTypeFromOptions(TS ts)
   if (((PetscObject)ts)->type_name) defaultType = ((PetscObject)ts)->type_name;
   else defaultType = TSEULER;
 
-  if (!TSRegisterAllCalled) {ierr = TSRegisterAll(NULL);CHKERRQ(ierr);}
+  if (!TSRegisterAllCalled) {ierr = TSRegisterAll();CHKERRQ(ierr);}
   ierr = PetscOptionsList("-ts_type", "TS method"," TSSetType", TSList, defaultType, typeName, 256, &opt);CHKERRQ(ierr);
   if (opt) {
     ierr = TSSetType(ts, typeName);CHKERRQ(ierr);
@@ -3550,7 +3550,7 @@ PetscErrorCode TSComputeIJacobianConstant(TS ts,PetscReal t,Vec U,Vec Udot,Petsc
 .  ts - the TS context
 
    Output Parameter:
-.  equation_type - see TSEquatioType
+.  equation_type - see TSEquationType
 
    Level: beginner
 
@@ -3576,7 +3576,7 @@ PetscErrorCode  TSGetEquationType(TS ts,TSEquationType *equation_type)
 
    Input Parameter:
 +  ts - the TS context
-.  equation_type - see TSEquatioType
+.  equation_type - see TSEquationType
 
    Level: advanced
 

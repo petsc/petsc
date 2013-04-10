@@ -178,24 +178,6 @@ PetscErrorCode  PetscViewerFileGetMode_ASCII(PetscViewer viewer, PetscFileMode *
   PetscFunctionReturn(0);
 }
 
-/*@C
-    PetscViewerFileSetMode - Sets the mode in which to open the file.
-
-    Not Collective
-
-+   viewer - viewer context, obtained from PetscViewerCreate()
--   mode   - The file mode
-
-    Level: intermediate
-
-    Fortran Note:
-    This routine is not supported in Fortran.
-
-.keywords: Viewer, file, get, pointer
-
-.seealso: PetscViewerASCIIOpen(), PetscViewerBinaryOpen()
-@*/
-
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerFileSetMode_ASCII"
 PetscErrorCode  PetscViewerFileSetMode_ASCII(PetscViewer viewer, PetscFileMode mode)
@@ -874,10 +856,10 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_ASCII(PetscViewer viewer)
   vascii->filename  = 0;
   vascii->closefile = PETSC_TRUE;
 
-  ierr = PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerFileSetName_C","PetscViewerFileSetName_ASCII",PetscViewerFileSetName_ASCII);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerFileGetName_C","PetscViewerFileGetName_ASCII",PetscViewerFileGetName_ASCII);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerFileGetMode_C","PetscViewerFileGetMode_ASCII",PetscViewerFileGetMode_ASCII);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerFileSetMode_C","PetscViewerFileSetMode_ASCII",PetscViewerFileSetMode_ASCII);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerFileSetName_C",PetscViewerFileSetName_ASCII);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerFileGetName_C",PetscViewerFileGetName_ASCII);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerFileGetMode_C",PetscViewerFileGetMode_ASCII);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerFileSetMode_C",PetscViewerFileSetMode_ASCII);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

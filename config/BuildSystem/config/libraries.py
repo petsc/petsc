@@ -203,9 +203,11 @@ extern "C" {
         self.setCompilers.LIBS = ' '+self.toString(otherLibs) +' '+ self.setCompilers.LIBS
       elif libName:
         self.setCompilers.LIBS = ' '+self.toString(libName) +' '+ self.setCompilers.LIBS
+      if cxxMangle: compileLang = 'Cxx'
+      else:         compileLang = self.language[-1]
       if cxxLink: linklang = 'Cxx'
       else: linklang = self.language[-1]
-      self.pushLanguage(self.language[-1])
+      self.pushLanguage(compileLang)
       found = 0
       if self.checkLink(includes, body, linkLanguage=linklang):
         found = 1

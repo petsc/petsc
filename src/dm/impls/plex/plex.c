@@ -1,6 +1,7 @@
 #include <petsc-private/dmpleximpl.h>   /*I      "petscdmplex.h"   I*/
 #include <../src/sys/utils/hash.h>
 #include <petsc-private/isimpl.h>
+#include <petscsf.h>
 
 /* Logging support */
 PetscLogEvent DMPLEX_Distribute, DMPLEX_Stratify;
@@ -405,7 +406,7 @@ PetscErrorCode DMCreateMatrix_Plex(DM dm, MatType mtype, Mat *J)
 
   PetscFunctionBegin;
 #if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
-  ierr = MatInitializePackage(NULL);CHKERRQ(ierr);
+  ierr = MatInitializePackage();CHKERRQ(ierr);
 #endif
   if (!mtype) mtype = MATAIJ;
   ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
@@ -1956,8 +1957,8 @@ PetscErrorCode DMPlexGetFullMeet(DM dm, PetscInt numPoints, const PetscInt point
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMPlexGetNumFaceVertices_Internal"
-PetscErrorCode DMPlexGetNumFaceVertices_Internal(DM dm, PetscInt cellDim, PetscInt numCorners, PetscInt *numFaceVertices)
+#define __FUNCT__ "DMPlexGetNumFaceVertices"
+PetscErrorCode DMPlexGetNumFaceVertices(DM dm, PetscInt cellDim, PetscInt numCorners, PetscInt *numFaceVertices)
 {
   MPI_Comm       comm;
   PetscErrorCode ierr;
@@ -2114,7 +2115,7 @@ PetscErrorCode DMPlexCreateNeighborCSR(DM dm, PetscInt cellHeight, PetscInt *num
         if (numFaceCases >= maxFaceCases) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Exceeded maximum number of face recognition cases");
         cornersSeen[corners] = 1;
 
-        ierr = DMPlexGetNumFaceVertices_Internal(dm, cellDim, corners, &nFV);CHKERRQ(ierr);
+        ierr = DMPlexGetNumFaceVertices(dm, cellDim, corners, &nFV);CHKERRQ(ierr);
 
         numFaceVertices[numFaceCases++] = nFV;
       }

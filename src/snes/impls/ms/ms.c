@@ -115,7 +115,7 @@ PetscErrorCode SNESMSRegisterAll(void)
    Level: advanced
 
 .keywords: TSRosW, register, destroy
-.seealso: TSRosWRegister(), TSRosWRegisterAll(), TSRosWRegisterDynamic()
+.seealso: TSRosWRegister(), TSRosWRegisterAll(), TSRosWRegister()
 @*/
 PetscErrorCode SNESMSRegisterDestroy(void)
 {
@@ -142,15 +142,12 @@ PetscErrorCode SNESMSRegisterDestroy(void)
   from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to SNESCreate_MS()
   when using static libraries.
 
-  Input Parameter:
-  path - The dynamic library path, or NULL
-
   Level: developer
 
 .keywords: SNES, SNESMS, initialize, package
 .seealso: PetscInitialize()
 @*/
-PetscErrorCode SNESMSInitializePackage(const char path[])
+PetscErrorCode SNESMSInitializePackage(void)
 {
   PetscErrorCode ierr;
 
@@ -419,7 +416,7 @@ static PetscErrorCode SNESDestroy_MS(SNES snes)
 
   PetscFunctionBegin;
   ierr = PetscFree(snes->data);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)snes,"","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)snes,"",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -560,7 +557,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_MS(SNES snes)
 
   PetscFunctionBegin;
 #if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
-  ierr = SNESMSInitializePackage(NULL);CHKERRQ(ierr);
+  ierr = SNESMSInitializePackage();CHKERRQ(ierr);
 #endif
 
   snes->ops->setup          = SNESSetUp_MS;
@@ -578,7 +575,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_MS(SNES snes)
   ms->damping = 0.9;
   ms->norms   = PETSC_FALSE;
 
-  ierr = PetscObjectComposeFunction((PetscObject)snes,"SNESMSSetType_C","SNESMSSetType_MS",SNESMSSetType_MS);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)snes,"SNESMSSetType_C",SNESMSSetType_MS);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

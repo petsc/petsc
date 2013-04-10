@@ -283,9 +283,9 @@ PETSC_EXTERN PetscErrorCode PCCreate_Galerkin(PC pc)
 
   pc->data = (void*)jac;
 
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGalerkinSetRestriction_C","PCGalerkinSetRestriction_Galerkin",PCGalerkinSetRestriction_Galerkin);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGalerkinSetInterpolation_C","PCGalerkinSetInterpolation_Galerkin",PCGalerkinSetInterpolation_Galerkin);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGalerkinGetKSP_C","PCGalerkinGetKSP_Galerkin",PCGalerkinGetKSP_Galerkin);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGalerkinSetRestriction_C",PCGalerkinSetRestriction_Galerkin);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGalerkinSetInterpolation_C",PCGalerkinSetInterpolation_Galerkin);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGalerkinGetKSP_C",PCGalerkinGetKSP_Galerkin);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

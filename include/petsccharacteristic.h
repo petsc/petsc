@@ -7,7 +7,7 @@
 #include <petscvec.h>
 #include <petscdmdatypes.h>
 
-PETSC_EXTERN PetscErrorCode CharacteristicInitializePackage(const char[]);
+PETSC_EXTERN PetscErrorCode CharacteristicInitializePackage(void);
 
 /*S
      Characteristic - Abstract PETSc object that manages method of characteristics solves
@@ -44,59 +44,9 @@ PETSC_EXTERN PetscErrorCode CharacteristicDestroy(Characteristic*);
 
 PETSC_EXTERN PetscBool         CharacteristicRegisterAllCalled;
 PETSC_EXTERN PetscFunctionList CharacteristicList;
-PETSC_EXTERN PetscErrorCode CharacteristicRegisterAll(const char[]);
+PETSC_EXTERN PetscErrorCode CharacteristicRegisterAll(void);
 PETSC_EXTERN PetscErrorCode CharacteristicRegisterDestroy(void);
 
-PETSC_EXTERN PetscErrorCode CharacteristicRegister(const char[],const char[],const char[],PetscErrorCode (*)(Characteristic));
-
-/*MC
-   CharacteristicRegisterDynamic - Adds a solver to the method of characteristics package.
-
-   Synopsis:
-   #include "petsccharacteristic.h"
-   PetscErrorCode CharacteristicRegisterDynamic(const char *name_solver,const char *path,const char *name_create,PetscErrorCode (*routine_create)(Characteristic))
-
-   Not Collective
-
-   Input Parameters:
-+  name_solver - name of a new user-defined solver
-.  path - path (either absolute or relative) the library containing this solver
-.  name_create - name of routine to create method context
--  routine_create - routine to create method context
-
-   Notes:
-   CharacteristicRegisterDynamic() may be called multiple times to add several user-defined solvers.
-
-   If dynamic libraries are used, then the fourth input argument (routine_create)
-   is ignored.
-
-   Sample usage:
-.vb
-   CharacteristicRegisterDynamic("my_solver",/home/username/my_lib/lib/libO/solaris/mylib.a,
-               "MySolverCreate",MySolverCreate);
-.ve
-
-   Then, your solver can be chosen with the procedural interface via
-$     CharacteristicSetType(ksp,"my_solver")
-   or at runtime via the option
-$     -characteristic_type my_solver
-
-   Level: advanced
-
-   Notes: Environmental variables such as ${PETSC_ARCH}, ${PETSC_DIR}, ${PETSC_LIB_DIR},
-          and others of the form ${any_environmental_variable} occuring in pathname will be
-          replaced with appropriate values.
-         If your function is not being put into a shared library then use CharacteristicRegister() instead
-
-.keywords: Characteristic, register
-
-.seealso: CharacteristicRegisterAll(), CharacteristicRegisterDestroy()
-
-M*/
-#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
-#define CharacteristicRegisterDynamic(a,b,c,d) CharacteristicRegister(a,b,c,0)
-#else
-#define CharacteristicRegisterDynamic(a,b,c,d) CharacteristicRegister(a,b,c,d)
-#endif
+PETSC_EXTERN PetscErrorCode CharacteristicRegister(const char[],PetscErrorCode (*)(Characteristic));
 
 #endif /*__PETSCCHARACTERISTICS_H*/

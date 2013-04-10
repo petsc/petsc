@@ -38,15 +38,12 @@ PetscErrorCode  PCFinalizePackage(void)
   from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to PCCreate()
   when using static libraries.
 
-  Input Parameter:
-  path - The dynamic library path, or NULL
-
   Level: developer
 
 .keywords: PC, initialize, package
 .seealso: PetscInitialize()
 @*/
-PetscErrorCode  PCInitializePackage(const char path[])
+PetscErrorCode  PCInitializePackage(void)
 {
   char           logList[256];
   char           *className;
@@ -59,7 +56,7 @@ PetscErrorCode  PCInitializePackage(const char path[])
   /* Register Classes */
   ierr = PetscClassIdRegister("Preconditioner",&PC_CLASSID);CHKERRQ(ierr);
   /* Register Constructors */
-  ierr = PCRegisterAll(path);CHKERRQ(ierr);
+  ierr = PCRegisterAll();CHKERRQ(ierr);
   /* Register Events */
   ierr = PetscLogEventRegister("PCSetUp",          PC_CLASSID,&PC_SetUp);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("PCSetUpOnBlocks",  PC_CLASSID,&PC_SetUpOnBlocks);CHKERRQ(ierr);
@@ -131,15 +128,12 @@ PetscErrorCode  KSPFinalizePackage(void)
   from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to KSPCreate()
   when using static libraries.
 
-  Input Parameter:
-  path - The dynamic library path, or NULL
-
   Level: developer
 
 .keywords: KSP, initialize, package
 .seealso: PetscInitialize()
 @*/
-PetscErrorCode  KSPInitializePackage(const char path[])
+PetscErrorCode  KSPInitializePackage(void)
 {
   char           logList[256];
   char           *className;
@@ -153,9 +147,9 @@ PetscErrorCode  KSPInitializePackage(const char path[])
   ierr = PetscClassIdRegister("Krylov Solver",&KSP_CLASSID);CHKERRQ(ierr);
   ierr = PetscClassIdRegister("DMKSP interface",&DMKSP_CLASSID);CHKERRQ(ierr);
   /* Register Constructors */
-  ierr = KSPRegisterAll(path);CHKERRQ(ierr);
+  ierr = KSPRegisterAll();CHKERRQ(ierr);
   /* Register matrix implementations packaged in KSP */
-  ierr = KSPMatRegisterAll(path);CHKERRQ(ierr);
+  ierr = KSPMatRegisterAll();CHKERRQ(ierr);
   /* Register Events */
   ierr = PetscLogEventRegister("KSPGMRESOrthog",   KSP_CLASSID,&KSP_GMRESOrthogonalization);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("KSPSetUp",         KSP_CLASSID,&KSP_SetUp);CHKERRQ(ierr);
@@ -190,16 +184,14 @@ PetscErrorCode  KSPInitializePackage(const char path[])
   This one registers all the KSP and PC methods that are in the basic PETSc libpetscksp
   library.
 
-  Input Parameter:
-  path - library path
  */
-PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscksp(const char path[])
+PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscksp(void)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PCInitializePackage(path);CHKERRQ(ierr);
-  ierr = KSPInitializePackage(path);CHKERRQ(ierr);
+  ierr = PCInitializePackage();CHKERRQ(ierr);
+  ierr = KSPInitializePackage();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

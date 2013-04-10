@@ -4,6 +4,7 @@
 */
 
 #include <petsc-private/dmdaimpl.h>    /*I   "petscdmda.h"   I*/
+#include <petscsf.h>
 
 /*
    This allows the DMDA vectors to properly tell MATLAB their dimensions
@@ -63,7 +64,7 @@ PetscErrorCode  DMCreateLocalVector_DA(DM da,Vec *g)
     ierr = VecSetDM(*g, da);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
     if (dd->w == 1  && dd->dim == 2) {
-      ierr = PetscObjectComposeFunction((PetscObject)*g,"PetscMatlabEnginePut_C","VecMatlabEnginePut_DA2d",VecMatlabEnginePut_DA2d);CHKERRQ(ierr);
+      ierr = PetscObjectComposeFunction((PetscObject)*g,"PetscMatlabEnginePut_C",VecMatlabEnginePut_DA2d);CHKERRQ(ierr);
     }
 #endif
   }

@@ -356,7 +356,7 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
   if (!ksp->pc) {ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr);}
   ierr = PCSetFromOptions(ksp->pc);CHKERRQ(ierr);
 
-  if (!KSPRegisterAllCalled) {ierr = KSPRegisterAll(NULL);CHKERRQ(ierr);}
+  if (!KSPRegisterAllCalled) {ierr = KSPRegisterAll();CHKERRQ(ierr);}
   ierr = PetscObjectOptionsBegin((PetscObject)ksp);CHKERRQ(ierr);
   ierr = PetscOptionsList("-ksp_type","Krylov method","KSPSetType",KSPList,(char*)(((PetscObject)ksp)->type_name ? ((PetscObject)ksp)->type_name : KSPGMRES),type,256,&flg);CHKERRQ(ierr);
   if (flg) {

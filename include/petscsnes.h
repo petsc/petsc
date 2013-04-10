@@ -51,7 +51,7 @@ typedef const char* SNESType;
 PETSC_EXTERN PetscClassId SNES_CLASSID;
 PETSC_EXTERN PetscClassId DMSNES_CLASSID;
 
-PETSC_EXTERN PetscErrorCode SNESInitializePackage(const char[]);
+PETSC_EXTERN PetscErrorCode SNESInitializePackage(void);
 
 PETSC_EXTERN PetscErrorCode SNESCreate(MPI_Comm,SNES*);
 PETSC_EXTERN PetscErrorCode SNESReset(SNES);
@@ -74,59 +74,9 @@ PETSC_EXTERN PetscErrorCode SNESAddOptionsChecker(PetscErrorCode (*)(SNES));
 PETSC_EXTERN PetscErrorCode SNESSetUpdate(SNES, PetscErrorCode (*)(SNES, PetscInt));
 
 PETSC_EXTERN PetscErrorCode SNESRegisterDestroy(void);
-PETSC_EXTERN PetscErrorCode SNESRegisterAll(const char[]);
+PETSC_EXTERN PetscErrorCode SNESRegisterAll(void);
 
-PETSC_EXTERN PetscErrorCode SNESRegister(const char[],const char[],const char[],PetscErrorCode (*)(SNES));
-
-/*MC
-   SNESRegisterDynamic - Adds a method to the nonlinear solver package.
-
-   Synopsis:
-    #include "petscsnes.h"
-   PetscErrorCode SNESRegisterDynamic(const char *name_solver,const char *path,const char *name_create,PetscErrorCode (*routine_create)(SNES))
-
-   Not collective
-
-   Input Parameters:
-+  name_solver - name of a new user-defined solver
-.  path - path (either absolute or relative) the library containing this solver
-.  name_create - name of routine to create method context
--  routine_create - routine to create method context
-
-   Notes:
-   SNESRegisterDynamic() may be called multiple times to add several user-defined solvers.
-
-   If dynamic libraries are used, then the fourth input argument (routine_create)
-   is ignored.
-
-   Environmental variables such as ${PETSC_ARCH}, ${PETSC_DIR}, ${PETSC_LIB_DIR},
-   and others of the form ${any_environmental_variable} occuring in pathname will be
-   replaced with appropriate values.
-
-   Sample usage:
-.vb
-   SNESRegisterDynamic("my_solver",/home/username/my_lib/lib/libg/solaris/mylib.a,
-                "MySolverCreate",MySolverCreate);
-.ve
-
-   Then, your solver can be chosen with the procedural interface via
-$     SNESSetType(snes,"my_solver")
-   or at runtime via the option
-$     -snes_type my_solver
-
-   Level: advanced
-
-    Note: If your function is not being put into a shared library then use SNESRegister() instead
-
-.keywords: SNES, nonlinear, register
-
-.seealso: SNESRegisterAll(), SNESRegisterDestroy()
-M*/
-#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
-#define SNESRegisterDynamic(a,b,c,d) SNESRegister(a,b,c,0)
-#else
-#define SNESRegisterDynamic(a,b,c,d) SNESRegister(a,b,c,d)
-#endif
+PETSC_EXTERN PetscErrorCode SNESRegister(const char[],PetscErrorCode (*)(SNES));
 
 PETSC_EXTERN PetscErrorCode SNESGetKSP(SNES,KSP*);
 PETSC_EXTERN PetscErrorCode SNESSetKSP(SNES,KSP);
@@ -606,15 +556,9 @@ PETSC_EXTERN PetscErrorCode SNESLineSearchBTSetAlpha(SNESLineSearch, PetscReal);
 PETSC_EXTERN PetscErrorCode SNESLineSearchBTGetAlpha(SNESLineSearch, PetscReal*);
 
 /*register line search types */
-PETSC_EXTERN PetscErrorCode SNESLineSearchRegister(const char[],const char[],const char[],PetscErrorCode(*)(SNESLineSearch));
-PETSC_EXTERN PetscErrorCode SNESLineSearchRegisterAll(const char path[]);
+PETSC_EXTERN PetscErrorCode SNESLineSearchRegister(const char[],PetscErrorCode(*)(SNESLineSearch));
+PETSC_EXTERN PetscErrorCode SNESLineSearchRegisterAll(void);
 PETSC_EXTERN PetscErrorCode SNESLineSearchRegisterDestroy(void);
-
-#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
-#define SNESLineSearchRegisterDynamic(a,b,c,d) SNESLineSearchRegister(a,b,c,0)
-#else
-#define SNESLineSearchRegisterDynamic(a,b,c,d) SNESLineSearchRegister(a,b,c,d)
-#endif
 
 /* Routines for VI solver */
 PETSC_EXTERN PetscErrorCode SNESVISetVariableBounds(SNES,Vec,Vec);
@@ -692,7 +636,7 @@ typedef const char* SNESMSType;
 PETSC_EXTERN PetscErrorCode SNESMSRegister(SNESMSType,PetscInt,PetscInt,PetscReal,const PetscReal[],const PetscReal[],const PetscReal[]);
 PETSC_EXTERN PetscErrorCode SNESMSSetType(SNES,SNESMSType);
 PETSC_EXTERN PetscErrorCode SNESMSFinalizePackage(void);
-PETSC_EXTERN PetscErrorCode SNESMSInitializePackage(const char path[]);
+PETSC_EXTERN PetscErrorCode SNESMSInitializePackage(void);
 PETSC_EXTERN PetscErrorCode SNESMSRegisterDestroy(void);
 PETSC_EXTERN PetscErrorCode SNESMSRegisterAll(void);
 

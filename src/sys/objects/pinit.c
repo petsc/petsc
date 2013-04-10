@@ -835,7 +835,7 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
     ierr = PetscPythonInitialize(NULL,NULL);CHKERRQ(ierr);
   }
 
-  ierr = PetscThreadCommInitializePackage(NULL);CHKERRQ(ierr);
+  ierr = PetscThreadCommInitializePackage();CHKERRQ(ierr);
 
   /*
       Setup building of stack frames for all function calls
@@ -916,11 +916,14 @@ PetscErrorCode  PetscFinalize(void)
   }
 #endif
 
+#if defined(PETSC_HAVE_SERVER)
   flg1 = PETSC_FALSE;
   ierr = PetscOptionsGetBool(NULL,"-server",&flg1,NULL);CHKERRQ(ierr);
   if (flg1) {
+    /*  this is a crude hack, but better than nothing */
     ierr = PetscPOpen(PETSC_COMM_WORLD,NULL,"pkill -9 petscwebserver","r",NULL);CHKERRQ(ierr);
   }
+#endif
 
   ierr = PetscHMPIFinalize();CHKERRQ(ierr);
 

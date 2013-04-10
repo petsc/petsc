@@ -56,11 +56,12 @@ class Configure(config.base.Configure):
           rjobs.append('Fortran_Complex')
         else:
           rjobs.append('Fortran_NoComplex')
-      if self.datafilespath.datafilespath:
-        if self.scalartypes.scalartype.lower() == 'complex':
-          rjobs.append('C_Complex')
-        else:
-          rjobs.append('C_NoComplex')
+      if self.scalartypes.scalartype.lower() == 'complex':
+        rjobs.append('C_Complex')
+      else:
+        rjobs.append('C_NoComplex')
+        if self.datafilespath.datafilespath:
+          rjobs.append('DATAFILESPATH')
       # add jobs for each external package BUGBUGBUG may be run before all packages
       # Note: do these tests only for non-complex builds
       if self.scalartypes.scalartype.lower() != 'complex':

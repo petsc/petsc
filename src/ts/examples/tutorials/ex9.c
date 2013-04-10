@@ -212,7 +212,7 @@ PetscErrorCode RiemannListAdd(PetscFunctionList *flist,const char *name,RiemannF
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,flist,name,"",(void(*)(void))rsolve);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(flist,name,rsolve);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -223,7 +223,7 @@ PetscErrorCode RiemannListFind(PetscFunctionList flist,const char *name,RiemannF
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = PetscFunctionListFind(PETSC_COMM_WORLD,flist,name,PETSC_FALSE,(void(**)(void))rsolve);CHKERRQ(ierr);
+  ierr = PetscFunctionListFind(flist,name,rsolve);CHKERRQ(ierr);
   if (!*rsolve) SETERRQ1(PETSC_COMM_SELF,1,"Riemann solver \"%s\" could not be found",name);
   PetscFunctionReturn(0);
 }
@@ -235,7 +235,7 @@ PetscErrorCode ReconstructListAdd(PetscFunctionList *flist,const char *name,Reco
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,flist,name,"",(void(*)(void))r);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(flist,name,r);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -246,7 +246,7 @@ PetscErrorCode ReconstructListFind(PetscFunctionList flist,const char *name,Reco
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = PetscFunctionListFind(PETSC_COMM_WORLD,flist,name,PETSC_FALSE,(void(**)(void))r);CHKERRQ(ierr);
+  ierr = PetscFunctionListFind(flist,name,r);CHKERRQ(ierr);
   if (!*r) SETERRQ1(PETSC_COMM_SELF,1,"Reconstruction \"%s\" could not be found",name);
   PetscFunctionReturn(0);
 }
@@ -1500,32 +1500,32 @@ int main(int argc,char *argv[])
   ierr = PetscMemzero(&ctx,sizeof(ctx));CHKERRQ(ierr);
 
   /* Register limiters to be available on the command line */
-  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&limiters,"upwind"          ,"",(void(*)(void))Limit_Upwind);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&limiters,"lax-wendroff"    ,"",(void(*)(void))Limit_LaxWendroff);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&limiters,"beam-warming"    ,"",(void(*)(void))Limit_BeamWarming);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&limiters,"fromm"           ,"",(void(*)(void))Limit_Fromm);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&limiters,"minmod"          ,"",(void(*)(void))Limit_Minmod);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&limiters,"superbee"        ,"",(void(*)(void))Limit_Superbee);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&limiters,"mc"              ,"",(void(*)(void))Limit_MC);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&limiters,"vanleer"         ,"",(void(*)(void))Limit_VanLeer);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&limiters,"vanalbada"       ,"",(void(*)(void))Limit_VanAlbada);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&limiters,"vanalbadatvd"    ,"",(void(*)(void))Limit_VanAlbadaTVD);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&limiters,"koren"           ,"",(void(*)(void))Limit_Koren);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&limiters,"korensym"        ,"",(void(*)(void))Limit_KorenSym);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&limiters,"koren3"          ,"",(void(*)(void))Limit_Koren3);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&limiters,"cada-torrilhon2" ,"",(void(*)(void))Limit_CadaTorrilhon2);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&limiters,"cada-torrilhon3-r0p1","",(void(*)(void))Limit_CadaTorrilhon3R0p1);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&limiters,"cada-torrilhon3-r1"  ,"",(void(*)(void))Limit_CadaTorrilhon3R1);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&limiters,"cada-torrilhon3-r10" ,"",(void(*)(void))Limit_CadaTorrilhon3R10);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&limiters,"cada-torrilhon3-r100","",(void(*)(void))Limit_CadaTorrilhon3R100);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&limiters,"upwind"              ,Limit_Upwind);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&limiters,"lax-wendroff"        ,Limit_LaxWendroff);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&limiters,"beam-warming"        ,Limit_BeamWarming);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&limiters,"fromm"               ,Limit_Fromm);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&limiters,"minmod"              ,Limit_Minmod);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&limiters,"superbee"            ,Limit_Superbee);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&limiters,"mc"                  ,Limit_MC);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&limiters,"vanleer"             ,Limit_VanLeer);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&limiters,"vanalbada"           ,Limit_VanAlbada);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&limiters,"vanalbadatvd"        ,Limit_VanAlbadaTVD);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&limiters,"koren"               ,Limit_Koren);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&limiters,"korensym"            ,Limit_KorenSym);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&limiters,"koren3"              ,Limit_Koren3);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&limiters,"cada-torrilhon2"     ,Limit_CadaTorrilhon2);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&limiters,"cada-torrilhon3-r0p1",Limit_CadaTorrilhon3R0p1);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&limiters,"cada-torrilhon3-r1"  ,Limit_CadaTorrilhon3R1);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&limiters,"cada-torrilhon3-r10" ,Limit_CadaTorrilhon3R10);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&limiters,"cada-torrilhon3-r100",Limit_CadaTorrilhon3R100);CHKERRQ(ierr);
 
   /* Register physical models to be available on the command line */
-  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&physics,"advect"          ,"",(void(*)(void))PhysicsCreate_Advect);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&physics,"burgers"         ,"",(void(*)(void))PhysicsCreate_Burgers);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&physics,"traffic"         ,"",(void(*)(void))PhysicsCreate_Traffic);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&physics,"acoustics"       ,"",(void(*)(void))PhysicsCreate_Acoustics);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&physics,"isogas"          ,"",(void(*)(void))PhysicsCreate_IsoGas);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&physics,"shallow"         ,"",(void(*)(void))PhysicsCreate_Shallow);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&physics,"advect"          ,PhysicsCreate_Advect);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&physics,"burgers"         ,PhysicsCreate_Burgers);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&physics,"traffic"         ,PhysicsCreate_Traffic);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&physics,"acoustics"       ,PhysicsCreate_Acoustics);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&physics,"isogas"          ,PhysicsCreate_IsoGas);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&physics,"shallow"         ,PhysicsCreate_Shallow);CHKERRQ(ierr);
 
   ctx.comm = comm;
   ctx.cfl  = 0.9; ctx.bctype = FVBC_PERIODIC;
@@ -1546,13 +1546,13 @@ int main(int argc,char *argv[])
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   /* Choose the limiter from the list of registered limiters */
-  ierr = PetscFunctionListFind(comm,limiters,lname,PETSC_FALSE,(void(**)(void))&ctx.limit);CHKERRQ(ierr);
+  ierr = PetscFunctionListFind(limiters,lname,&ctx.limit);CHKERRQ(ierr);
   if (!ctx.limit) SETERRQ1(PETSC_COMM_SELF,1,"Limiter '%s' not found",lname);CHKERRQ(ierr);
 
   /* Choose the physics from the list of registered models */
   {
     PetscErrorCode (*r)(FVCtx*);
-    ierr = PetscFunctionListFind(comm,physics,physname,PETSC_FALSE,(void(**)(void))&r);CHKERRQ(ierr);
+    ierr = PetscFunctionListFind(physics,physname,&r);CHKERRQ(ierr);
     if (!r) SETERRQ1(PETSC_COMM_SELF,1,"Physics '%s' not found",physname);CHKERRQ(ierr);
     /* Create the physics, will set the number of fields and their names */
     ierr = (*r)(&ctx);CHKERRQ(ierr);

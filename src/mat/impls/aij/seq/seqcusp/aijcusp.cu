@@ -641,8 +641,8 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJCUSP(Mat B)
   /* Here we overload MatGetFactor_cusparse_C which enables -pc_factor_mat_solver_package cusparse to work with
      -mat_type aijcusp. That is, an aijcusp matrix can call the cusparse tri solve.
      Note the difference with the implementation in MatCreate_SeqAIJCUSPARSE in ../seqcusparse/aijcusparse.cu */
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatGetFactor_cusparse_C","MatGetFactor_seqaij_cusparse",MatGetFactor_seqaij_cusparse);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatCUSPSetFormat_C", "MatCUSPSetFormat_SeqAIJCUSP", MatCUSPSetFormat_SeqAIJCUSP);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatGetFactor_cusparse_C",MatGetFactor_seqaij_cusparse);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatCUSPSetFormat_C", MatCUSPSetFormat_SeqAIJCUSP);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -672,7 +672,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJCUSP(Mat B)
   B->ops->getvecs        = MatGetVecs_SeqAIJCUSP;
   B->ops->setvaluesbatch = MatSetValuesBatch_SeqAIJCUSP;
 
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatCUSPSetFormat_C", "MatCUSPSetFormat_SeqAIJCUSP", MatCUSPSetFormat_SeqAIJCUSP);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatCUSPSetFormat_C", MatCUSPSetFormat_SeqAIJCUSP);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQAIJCUSP);CHKERRQ(ierr);
 
   B->valid_GPU_matrix = PETSC_CUSP_UNALLOCATED;

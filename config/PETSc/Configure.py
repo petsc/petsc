@@ -96,7 +96,7 @@ class Configure(config.base.Configure):
                  'gettimeofday', 'getwd', 'memalign', 'memmove', 'mkstemp', 'popen', 'PXFGETARG', 'rand', 'getpagesize',
                  'readlink', 'realpath',  'sigaction', 'signal', 'sigset', 'usleep', 'sleep', '_sleep', 'socket',
                  'times', 'gethostbyname', 'uname','snprintf','_snprintf','_fullpath','lseek','_lseek','time','fork','stricmp',
-                 'strcasecmp', 'bzero', 'dlopen', 'dlsym', 'dlclose', 'dlerror',
+                 'strcasecmp', 'bzero', 'dlopen', 'dlsym', 'dlclose', 'dlerror','get_nprocs','sysctlbyname',
                  '_intel_fast_memcpy','_intel_fast_memset']
     libraries1 = [(['socket', 'nsl'], 'socket'), (['fpe'], 'handle_sigfpes')]
     self.headers.headers.extend(headersC)
@@ -543,7 +543,7 @@ prepend-path PATH %s
 
   def dumpCMakeLists(self):
     import sys
-    if sys.version_info >= (2,5):
+    if sys.version_info >= (2,4):
       import cmakegen
       try:
         cmakegen.main(self.petscdir.dir, log=self.framework.log)
@@ -555,7 +555,7 @@ prepend-path PATH %s
   def cmakeBoot(self):
     import sys
     self.cmakeboot_success = False
-    if sys.version_info >= (2,5) and hasattr(self.cmake,'cmake'):
+    if sys.version_info >= (2,4) and hasattr(self.cmake,'cmake'):
       try:
         import cmakeboot
         self.cmakeboot_success = cmakeboot.main(petscdir=self.petscdir.dir,petscarch=self.arch.arch,argDB=self.argDB,framework=self.framework,log=self.framework.log)

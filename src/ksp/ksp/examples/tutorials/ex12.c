@@ -15,7 +15,7 @@ T*/
    Demonstrates registering a new preconditioner (PC) type.
 
    To register a PC type whose code is linked into the executable,
-   use PCRegister(). To register a PC type in a dynamic library use PCRegisterDynamic()
+   use PCRegister(). To register a PC type in a dynamic library use PCRegister()
 
    Also provide the prototype for your PCCreate_XXX() function. In
    this example we use the PETSc implementation of the Jacobi method,
@@ -24,7 +24,7 @@ T*/
    See the file src/ksp/pc/impls/jacobi/jacobi.c for details on how to
    write a new PC component.
 
-   See the manual page PCRegisterDynamic() for details on how to register a method.
+   See the manual page PCRegister() for details on how to register a method.
 */
 
 /*
@@ -145,7 +145,7 @@ int main(int argc,char **args)
   /*
        First register a new PC type with the command PCRegister()
   */
-  ierr = PCRegister("ourjacobi",0,"PCCreate_Jacobi",PCCreate_Jacobi);CHKERRQ(ierr);
+  ierr = PCRegister("ourjacobi",PCCreate_Jacobi);CHKERRQ(ierr);
 
   /*
      Set the PC type to be the new method

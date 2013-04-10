@@ -1,5 +1,6 @@
 
 #include <petsc-private/isimpl.h>    /*I "petscis.h"  I*/
+#include <petscsf.h>
 #include <petscviewer.h>
 
 PetscClassId IS_LTOGM_CLASSID;
@@ -219,7 +220,7 @@ PetscErrorCode  ISLocalToGlobalMappingCreate(MPI_Comm cm,PetscInt n,const PetscI
 
   *mapping = NULL;
 #if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
-  ierr = ISInitializePackage(NULL);CHKERRQ(ierr);
+  ierr = ISInitializePackage();CHKERRQ(ierr);
 #endif
 
   ierr = PetscHeaderCreate(*mapping,_p_ISLocalToGlobalMapping,int,IS_LTOGM_CLASSID,"ISLocalToGlobalMapping","Local to global mapping","IS",

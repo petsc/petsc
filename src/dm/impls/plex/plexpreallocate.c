@@ -1,5 +1,6 @@
 #include <petsc-private/dmpleximpl.h>   /*I      "petscdmplex.h"   I*/
 #include <petsc-private/isimpl.h>
+#include <petscsf.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexGetAdjacency_Internal"

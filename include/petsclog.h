@@ -508,4 +508,8 @@ do {\
 PETSC_EXTERN PetscBool PetscPreLoadingUsed;       /* true if we are or have done preloading */
 PETSC_EXTERN PetscBool PetscPreLoadingOn;         /* true if we are currently in a preloading calculation */
 
+/* Reset __FUNCT__ in case the user does not define it themselves */
+#undef __FUNCT__
+#define __FUNCT__ "User provided function"
+
 #endif

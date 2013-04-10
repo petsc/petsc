@@ -102,7 +102,12 @@
         <li>In PETSc options files, the comment characters <tt>!</tt> and <tt>%</tt> are no longer supported, use <tt>#</tt>.</li>
         <li>
           <tt>PetscFList</tt> and <tt>PetscOList</tt> have been changed to <tt>PetscFunctionList</tt> and <tt>PetscObjectList</tt>.
-          The arguments to <tt>PetscFunctionListFind</tt> now takes the communicator as the first argument.
+          <tt>PetscFunctionListFind()</tt> no longer takes the path to a shared library or the string name of the function.
+          Plugins distributed as shared libraries should register their implementations by calling suitable <tt>XXRegister()</tt> functions from within their <tt>PetscDLLibraryRegister_basename()</tt>, see documentation for PetscDLLibraryOpen().
+        </li>
+        <li>
+          MatRegisterDynamic(), PCRegisterDynamic(), KSPRegisterDynamic(), etc., have been simplified to drop the string function name argument, and are simply named MatRegister(), PCRegister(), KSPRegister(), etc.
+          PetscObjectComposeFunctionDynamic() also drops the string function name argument and is called PetscObjectComposeFunction().
         </li>
         <li>
           The configure options <tt>--with-c-support</tt> and <tt>--with-c++-support</tt> have been removed. A PETSc

@@ -7,7 +7,6 @@ configure_options = [
   '--download-parmetis=1',
   '--download-pastix=1',
   '--download-ptscotch=1',
-  '--download-elemental=1',
   '--download-hypre=1',
   '--download-superlu_dist=1',
   ]

@@ -18,7 +18,7 @@ PETSC_EXTERN PetscErrorCode MatGetColoring_ID_Minpack(Mat,MatColoringType,ISColo
 
   Adding new methods:
   To add a new method to the registry. Copy this routine and
-  modify it to incorporate a call to MatColoringRegisterDynamic() for
+  modify it to incorporate a call to MatColoringRegister() for
   the new method, after the current list.
 
   Restricting the choices: To prevent all of the methods from being
@@ -29,19 +29,19 @@ PETSC_EXTERN PetscErrorCode MatGetColoring_ID_Minpack(Mat,MatColoringType,ISColo
 
 .keywords: matrix, coloring, register, all
 
-.seealso: MatColoringRegisterDynamic(), MatColoringRegisterDestroy()
+.seealso: MatColoringRegister(), MatColoringRegisterDestroy()
 @*/
-PetscErrorCode MatColoringRegisterAll(const char path[])
+PetscErrorCode MatColoringRegisterAll(void)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   MatColoringRegisterAllCalled = PETSC_TRUE;
 
-  ierr = MatColoringRegisterDynamic(MATCOLORINGNATURAL,path,"MatGetColoring_Natural",   MatGetColoring_Natural);CHKERRQ(ierr);
-  ierr = MatColoringRegisterDynamic(MATCOLORINGSL,     path,"MatGetColoring_SL_Minpack",MatGetColoring_SL_Minpack);CHKERRQ(ierr);
-  ierr = MatColoringRegisterDynamic(MATCOLORINGLF,     path,"MatGetColoring_LF_Minpack",MatGetColoring_LF_Minpack);CHKERRQ(ierr);
-  ierr = MatColoringRegisterDynamic(MATCOLORINGID,     path,"MatGetColoring_ID_Minpack",MatGetColoring_ID_Minpack);CHKERRQ(ierr);
+  ierr = MatColoringRegister(MATCOLORINGNATURAL,MatGetColoring_Natural);CHKERRQ(ierr);
+  ierr = MatColoringRegister(MATCOLORINGSL,     MatGetColoring_SL_Minpack);CHKERRQ(ierr);
+  ierr = MatColoringRegister(MATCOLORINGLF,     MatGetColoring_LF_Minpack);CHKERRQ(ierr);
+  ierr = MatColoringRegister(MATCOLORINGID,     MatGetColoring_ID_Minpack);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

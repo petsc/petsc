@@ -20,6 +20,7 @@ x(:) = x(:) .* x(:).* x(:);
 mat = PetscMat();
 mat.SetType('seqaij');
 mat.SetSizes(10,10,10,10);
+mat.SetUp();
 %%
 %  Create the ODE integrator
 ts = PetscTS();

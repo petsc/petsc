@@ -38,9 +38,8 @@ classdef PetscTS < PetscObject
     function err = SetUp(obj)
       err = calllib('libpetsc', 'TSSetUp', obj.pobj);PetscCHKERRQ(err);
     end
-    function [err,ftime] = Solve(obj,x)
-      ftime=0.0;
-      [err,ftime] = calllib('libpetsc', 'TSSolve', obj.pobj,x.pobj,ftime);PetscCHKERRQ(err);
+    function err = Solve(obj,x)
+      err = calllib('libpetsc', 'TSSolve', obj.pobj,x.pobj);PetscCHKERRQ(err);
     end
     function err = SetFunction(obj,func,arg)
       if (nargin < 3) 

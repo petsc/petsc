@@ -39,7 +39,7 @@ PETSC_EXTERN const char* const PetscThreadCommReductionOps[];
 
 PETSC_EXTERN PetscErrorCode PetscGetNCores(PetscInt*);
 PETSC_EXTERN PetscErrorCode PetscCommGetThreadComm(MPI_Comm,PetscThreadComm*);
-PETSC_EXTERN PetscErrorCode PetscThreadCommInitializePackage(const char *path);
+PETSC_EXTERN PetscErrorCode PetscThreadCommInitializePackage(void);
 PETSC_EXTERN PetscErrorCode PetscThreadCommFinalizePackage(void);
 PETSC_EXTERN PetscErrorCode PetscThreadCommInitialize(void);
 PETSC_EXTERN PetscErrorCode PetscThreadCommGetNThreads(MPI_Comm,PetscInt*);

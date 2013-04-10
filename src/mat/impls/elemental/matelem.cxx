@@ -13,14 +13,11 @@ static PetscMPIInt Petsc_Elemental_keyval = MPI_KEYVAL_INVALID;
 
    Logically Collective
 
-   Input Arguments:
-.  path - the dynamic library path or NULL
-
    Level: developer
 
 .seealso: MATELEMENTAL, PetscElementalFinalizePackage()
 @*/
-PetscErrorCode PetscElementalInitializePackage(const char *path)
+PetscErrorCode PetscElementalInitializePackage(void)
 {
   PetscErrorCode ierr;
 
@@ -723,7 +720,7 @@ static PetscErrorCode MatGetFactor_elemental_elemental(Mat A,MatFactorType ftype
   ierr = MatSetType(B,MATELEMENTAL);CHKERRQ(ierr);
   ierr = MatSetUp(B);CHKERRQ(ierr);
   B->factortype = ftype;
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverPackage_C","MatFactorGetSolverPackage_elemental_elemental",MatFactorGetSolverPackage_elemental_elemental);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverPackage_C",MatFactorGetSolverPackage_elemental_elemental);CHKERRQ(ierr);
   *F            = B;
   PetscFunctionReturn(0);
 }
@@ -868,9 +865,9 @@ static PetscErrorCode MatDestroy_Elemental(Mat A)
     ierr = PetscFree(commgrid);CHKERRQ(ierr);
   }
   ierr = PetscCommDestroy(&icomm);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatGetOwnershipIS_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatGetFactor_petsc_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatFactorGetSolverPackage_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatGetOwnershipIS_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatGetFactor_petsc_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatFactorGetSolverPackage_C",NULL);CHKERRQ(ierr);
   ierr = PetscFree(A->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1090,7 +1087,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_Elemental(Mat A)
   PetscInt           optv1,optv2;
 
   PetscFunctionBegin;
-  ierr = PetscElementalInitializePackage(NULL);CHKERRQ(ierr);
+  ierr = PetscElementalInitializePackage();CHKERRQ(ierr);
   ierr = PetscMemcpy(A->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
   A->insertmode = NOT_SET_VALUES;
 
@@ -1137,8 +1134,8 @@ PETSC_EXTERN PetscErrorCode MatCreate_Elemental(Mat A)
   /* build cache for off array entries formed */
   a->interface->Attach(elem::LOCAL_TO_GLOBAL,*(a->emat));
 
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatGetOwnershipIS_C","MatGetOwnershipIS_Elemental",MatGetOwnershipIS_Elemental);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatGetFactor_elemental_C","MatGetFactor_elemental_elemental",MatGetFactor_elemental_elemental);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatGetOwnershipIS_C",MatGetOwnershipIS_Elemental);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatGetFactor_elemental_C",MatGetFactor_elemental_elemental);CHKERRQ(ierr);
 
   ierr = PetscObjectChangeTypeName((PetscObject)A,MATELEMENTAL);CHKERRQ(ierr);
   PetscFunctionReturn(0);

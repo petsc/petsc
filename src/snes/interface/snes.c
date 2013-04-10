@@ -662,7 +662,7 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
 
-  if (!SNESRegisterAllCalled) {ierr = SNESRegisterAll(NULL);CHKERRQ(ierr);}
+  if (!SNESRegisterAllCalled) {ierr = SNESRegisterAll();CHKERRQ(ierr);}
   ierr = PetscObjectOptionsBegin((PetscObject)snes);CHKERRQ(ierr);
   if (((PetscObject)snes)->type_name) deft = ((PetscObject)snes)->type_name;
   ierr = PetscOptionsList("-snes_type","Nonlinear solver method","SNESSetType",SNESList,deft,type,256,&flg);CHKERRQ(ierr);
@@ -872,7 +872,7 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESSetComputeApplicationContext"
-/*@
+/*@C
    SNESSetComputeApplicationContext - Sets an optional function to compute a user-defined context for
    the nonlinear solvers.
 
@@ -884,6 +884,9 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
 -  destroy - function to destroy the context
 
    Level: intermediate
+
+   Notes:
+   This function is currently not available from Fortran.
 
 .keywords: SNES, nonlinear, set, application, context
 
@@ -1411,7 +1414,7 @@ PetscErrorCode  SNESCreate(MPI_Comm comm,SNES *outsnes)
   PetscValidPointer(outsnes,2);
   *outsnes = NULL;
 #if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
-  ierr = SNESInitializePackage(NULL);CHKERRQ(ierr);
+  ierr = SNESInitializePackage();CHKERRQ(ierr);
 #endif
 
   ierr = PetscHeaderCreate(snes,_p_SNES,struct _SNESOps,SNES_CLASSID,"SNES","Nonlinear solver","SNES",comm,SNESDestroy,SNESView);CHKERRQ(ierr);
@@ -3734,7 +3737,7 @@ PetscErrorCode  SNESSetType(SNES snes,SNESType type)
   ierr = PetscObjectTypeCompare((PetscObject)snes,type,&match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
 
-  ierr =  PetscFunctionListFind(PetscObjectComm((PetscObject)snes),SNESList,type,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
+  ierr =  PetscFunctionListFind(SNESList,type,&r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested SNES type %s",type);
   /* Destroy the previous private SNES context */
   if (snes->ops->destroy) {
@@ -3760,7 +3763,7 @@ PetscErrorCode  SNESSetType(SNES snes,SNESType type)
 #define __FUNCT__ "SNESRegisterDestroy"
 /*@
    SNESRegisterDestroy - Frees the list of nonlinear solvers that were
-   registered by SNESRegisterDynamic().
+   registered by SNESRegister().
 
    Not Collective
 
@@ -4054,18 +4057,43 @@ PetscErrorCode  SNESGetOptionsPrefix(SNES snes,const char *prefix[])
 #undef __FUNCT__
 #define __FUNCT__ "SNESRegister"
 /*@C
-  SNESRegister - See SNESRegisterDynamic()
+  SNESRegister - Adds a method to the nonlinear solver package.
+
+   Not collective
+
+   Input Parameters:
++  name_solver - name of a new user-defined solver
+-  routine_create - routine to create method context
+
+   Notes:
+   SNESRegister() may be called multiple times to add several user-defined solvers.
+
+   Sample usage:
+.vb
+   SNESRegister("my_solver",MySolverCreate);
+.ve
+
+   Then, your solver can be chosen with the procedural interface via
+$     SNESSetType(snes,"my_solver")
+   or at runtime via the option
+$     -snes_type my_solver
+
+   Level: advanced
+
+    Note: If your function is not being put into a shared library then use SNESRegister() instead
+
+.keywords: SNES, nonlinear, register
+
+.seealso: SNESRegisterAll(), SNESRegisterDestroy()
 
   Level: advanced
 @*/
-PetscErrorCode  SNESRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(SNES))
+PetscErrorCode  SNESRegister(const char sname[],PetscErrorCode (*function)(SNES))
 {
-  char           fullname[PETSC_MAX_PATH_LEN];
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListConcat(path,name,fullname);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&SNESList,sname,fullname,(void (*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&SNESList,sname,function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -4804,6 +4832,8 @@ $      f'(x) x = -f(x),
 
    Level: beginner
 
+   Developer Note:  This bleeds the allocated memory SNESMatlabContext *sctx;
+
 .keywords: SNES, nonlinear, set, function
 
 .seealso: SNESGetFunction(), SNESComputeFunction(), SNESSetJacobian(), SNESSetFunction()
@@ -4903,6 +4933,8 @@ PetscErrorCode  SNESComputeJacobian_Matlab(SNES snes,Vec x,Mat *A,Mat *B,MatStru
 
    Level: developer
 
+   Developer Note:  This bleeds the allocated memory SNESMatlabContext *sctx;
+
 .keywords: SNES, nonlinear, set, function
 
 .seealso: SNESGetFunction(), SNESComputeFunction(), SNESSetJacobian(), SNESSetFunction(), SNESJacobianFunction
@@ -4972,6 +5004,8 @@ PetscErrorCode  SNESMonitor_Matlab(SNES snes,PetscInt it, PetscReal fnorm, void 
    SNESMonitorSetMatlab - Sets the monitor function from MATLAB
 
    Level: developer
+
+   Developer Note:  This bleeds the allocated memory SNESMatlabContext *sctx;
 
 .keywords: SNES, nonlinear, set, function
 

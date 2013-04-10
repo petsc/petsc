@@ -1,4 +1,5 @@
 #include <petsc-private/dmimpl.h>     /*I      "petscdm.h"     I*/
+#include <petscsf.h>
 
 PetscClassId  DM_CLASSID;
 PetscLogEvent DM_Convert, DM_GlobalToLocal, DM_LocalToGlobal;
@@ -58,9 +59,9 @@ PetscErrorCode  DMCreate(MPI_Comm comm,DM *dm)
   PetscValidPointer(dm,2);
   *dm = NULL;
 #if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
-  ierr = VecInitializePackage(NULL);CHKERRQ(ierr);
-  ierr = MatInitializePackage(NULL);CHKERRQ(ierr);
-  ierr = DMInitializePackage(NULL);CHKERRQ(ierr);
+  ierr = VecInitializePackage();CHKERRQ(ierr);
+  ierr = MatInitializePackage();CHKERRQ(ierr);
+  ierr = DMInitializePackage();CHKERRQ(ierr);
 #endif
 
   ierr = PetscHeaderCreate(v, _p_DM, struct _DMOps, DM_CLASSID, "DM", "Distribution Manager", "DM", comm, DMDestroy, DMView);CHKERRQ(ierr);
@@ -890,7 +891,7 @@ PetscErrorCode  DMCreateMatrix(DM dm,MatType mtype,Mat *mat)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
 #if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
-  ierr = MatInitializePackage(NULL);CHKERRQ(ierr);
+  ierr = MatInitializePackage();CHKERRQ(ierr);
 #endif
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidPointer(mat,3);
@@ -1413,7 +1414,7 @@ PetscErrorCode  DMRefine(DM dm,MPI_Comm comm,DM *dmf)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMRefineHookAdd"
-/*@
+/*@C
    DMRefineHookAdd - adds a callback to be run when interpolating a nonlinear problem to a finer grid
 
    Logically Collective
@@ -1445,6 +1446,8 @@ $    interphook(DM coarse,Mat interp,DM fine,void *ctx)
    This function is only needed if auxiliary data needs to be passed to fine grids while grid sequencing
 
    If this function is called multiple times, the hooks will be run in the order they are added.
+
+   This function is currently not available from Fortran.
 
 .seealso: DMCoarsenHookAdd(), SNESFASGetInterpolation(), SNESFASGetInjection(), PetscObjectCompose(), PetscContainerCreate()
 @*/
@@ -1523,7 +1526,7 @@ PetscErrorCode  DMGetRefineLevel(DM dm,PetscInt *level)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMGlobalToLocalHookAdd"
-/*@
+/*@C
    DMGlobalToLocalHookAdd - adds a callback to be run when global to local is called
 
    Logically Collective
@@ -1559,6 +1562,8 @@ $    beginhook(DM fine,VecScatter out,VecScatter in,DM coarse,void *ctx)
 
    In order to compose with nonlinear preconditioning without duplicating storage, the hook should be implemented to
    extract the finest level information from its context (instead of from the SNES).
+
+   This function is currently not available from Fortran.
 
 .seealso: DMRefineHookAdd(), SNESFASGetInterpolation(), SNESFASGetInjection(), PetscObjectCompose(), PetscContainerCreate()
 @*/
@@ -1830,7 +1835,7 @@ PetscErrorCode  DMCoarsen(DM dm, MPI_Comm comm, DM *dmc)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMCoarsenHookAdd"
-/*@
+/*@C
    DMCoarsenHookAdd - adds a callback to be run when restricting a nonlinear problem to the coarse grid
 
    Logically Collective
@@ -1867,6 +1872,8 @@ $    restricthook(DM fine,Mat mrestrict,Vec rscale,Mat inject,DM coarse,void *ct
 
    In order to compose with nonlinear preconditioning without duplicating storage, the hook should be implemented to
    extract the finest level information from its context (instead of from the SNES).
+
+   This function is currently not available from Fortran.
 
 .seealso: DMRefineHookAdd(), SNESFASGetInterpolation(), SNESFASGetInjection(), PetscObjectCompose(), PetscContainerCreate()
 @*/
@@ -1920,7 +1927,7 @@ PetscErrorCode DMRestrict(DM fine,Mat restrct,Vec rscale,Mat inject,DM coarse)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMSubDomainHookAdd"
-/*@
+/*@C
    DMSubDomainHookAdd - adds a callback to be run when restricting a problem to the coarse grid
 
    Logically Collective
@@ -1948,6 +1955,8 @@ $    restricthook(DM fine,VecScatter out,VecScatter in,DM coarse,void *ctx)
 
    In order to compose with nonlinear preconditioning without duplicating storage, the hook should be implemented to
    extract the finest level information from its context (instead of from the SNES).
+
+   This function is currently not available from Fortran.
 
 .seealso: DMRefineHookAdd(), SNESFASGetInterpolation(), SNESFASGetInjection(), PetscObjectCompose(), PetscContainerCreate()
 @*/
@@ -2389,8 +2398,8 @@ PetscErrorCode  DMSetType(DM dm, DMType method)
   ierr = PetscObjectTypeCompare((PetscObject) dm, method, &match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
 
-  if (!DMRegisterAllCalled) {ierr = DMRegisterAll(NULL);CHKERRQ(ierr);}
-  ierr = PetscFunctionListFind(PetscObjectComm((PetscObject)dm), DMList, method,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
+  if (!DMRegisterAllCalled) {ierr = DMRegisterAll();CHKERRQ(ierr);}
+  ierr = PetscFunctionListFind(DMList,method,&r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown DM type: %s", method);
 
   if (dm->ops->destroy) {
@@ -2428,7 +2437,7 @@ PetscErrorCode  DMGetType(DM dm, DMType *type)
   PetscValidHeaderSpecific(dm, DM_CLASSID,1);
   PetscValidCharPointer(type,2);
   if (!DMRegisterAllCalled) {
-    ierr = DMRegisterAll(NULL);CHKERRQ(ierr);
+    ierr = DMRegisterAll();CHKERRQ(ierr);
   }
   *type = ((PetscObject)dm)->type_name;
   PetscFunctionReturn(0);
@@ -2488,7 +2497,7 @@ PetscErrorCode DMConvert(DM dm, DMType newtype, DM *M)
     ierr = PetscStrcat(convname,"_");CHKERRQ(ierr);
     ierr = PetscStrcat(convname,newtype);CHKERRQ(ierr);
     ierr = PetscStrcat(convname,"_C");CHKERRQ(ierr);
-    ierr = PetscObjectQueryFunction((PetscObject)dm,convname,(void (**)(void))&conv);CHKERRQ(ierr);
+    ierr = PetscObjectQueryFunction((PetscObject)dm,convname,&conv);CHKERRQ(ierr);
     if (conv) goto foundconv;
 
     /* 2)  See if a specialized converter is known to the desired DM class. */
@@ -2499,7 +2508,7 @@ PetscErrorCode DMConvert(DM dm, DMType newtype, DM *M)
     ierr = PetscStrcat(convname,"_");CHKERRQ(ierr);
     ierr = PetscStrcat(convname,newtype);CHKERRQ(ierr);
     ierr = PetscStrcat(convname,"_C");CHKERRQ(ierr);
-    ierr = PetscObjectQueryFunction((PetscObject)B,convname,(void (**)(void))&conv);CHKERRQ(ierr);
+    ierr = PetscObjectQueryFunction((PetscObject)B,convname,&conv);CHKERRQ(ierr);
     if (conv) {
       ierr = DMDestroy(&B);CHKERRQ(ierr);
       goto foundconv;
@@ -2535,20 +2544,45 @@ foundconv:
 #undef __FUNCT__
 #define __FUNCT__ "DMRegister"
 /*@C
-  DMRegister - See DMRegisterDynamic()
+  DMRegister -  Adds a new DM component implementation
+
+  Not Collective
+
+  Input Parameters:
++ name        - The name of a new user-defined creation routine
+- create_func - The creation routine itself
+
+  Notes:
+  DMRegister() may be called multiple times to add several user-defined DMs
+
+
+  Sample usage:
+.vb
+    DMRegister("my_da", MyDMCreate);
+.ve
+
+  Then, your DM type can be chosen with the procedural interface via
+.vb
+    DMCreate(MPI_Comm, DM *);
+    DMSetType(DM,"my_da");
+.ve
+   or at runtime via the option
+.vb
+    -da_type my_da
+.ve
 
   Level: advanced
+
+.keywords: DM, register
+.seealso: DMRegisterAll(), DMRegisterDestroy()
+
 @*/
-PetscErrorCode  DMRegister(const char sname[], const char path[], const char name[], PetscErrorCode (*function)(DM))
+PetscErrorCode  DMRegister(const char sname[],PetscErrorCode (*function)(DM))
 {
-  char           fullname[PETSC_MAX_PATH_LEN];
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscStrcpy(fullname, path);CHKERRQ(ierr);
-  ierr = PetscStrcat(fullname, ":");CHKERRQ(ierr);
-  ierr = PetscStrcat(fullname, name);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&DMList, sname, fullname, (void (*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&DMList,sname,function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2557,14 +2591,14 @@ PetscErrorCode  DMRegister(const char sname[], const char path[], const char nam
 #undef __FUNCT__
 #define __FUNCT__ "DMRegisterDestroy"
 /*@C
-   DMRegisterDestroy - Frees the list of DM methods that were registered by DMRegister()/DMRegisterDynamic().
+   DMRegisterDestroy - Frees the list of DM methods that were registered by DMRegister().
 
    Not Collective
 
    Level: advanced
 
 .keywords: DM, register, destroy
-.seealso: DMRegister(), DMRegisterAll(), DMRegisterDynamic()
+.seealso: DMRegister(), DMRegisterAll()
 @*/
 PetscErrorCode  DMRegisterDestroy(void)
 {

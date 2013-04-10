@@ -10,8 +10,6 @@
 #
 # by configure before running this script.
 
-from __future__ import with_statement  # For python-2.5
-
 import os,sys,string
 from collections import deque
 sys.path.insert(0, os.path.join(os.path.abspath('config')))
@@ -167,9 +165,10 @@ class PETScMaker(script.Script):
      self.logPrint('Output: '+output+'\nError: '+error)
      cachetxt = os.path.join(archdir, 'CMakeCache.txt')
      try:
-       with open(cachetxt, 'r') as f:
-         log.write('Contents of %s:\n' % cachetxt)
-         log.write(f.read())
+       f = open(cachetxt, 'r')
+       log.write('Contents of %s:\n' % cachetxt)
+       log.write(f.read())
+       f.close()
      except IOError, e:
        log.write('Could not read file %s: %r\n' % (cachetxt, e))
      return False

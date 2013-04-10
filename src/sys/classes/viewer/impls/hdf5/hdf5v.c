@@ -36,15 +36,16 @@ PetscErrorCode PetscViewerDestroy_HDF5(PetscViewer viewer)
 
   PetscFunctionBegin;
   ierr = PetscViewerFileClose_HDF5(viewer);CHKERRQ(ierr);
-  if (hdf5->groups)
-    while (hdf5->groups) {
-      GroupList *tmp = hdf5->groups->next;
+  while (hdf5->groups) {
+    GroupList *tmp = hdf5->groups->next;
 
-      ierr         = PetscFree(hdf5->groups->name);CHKERRQ(ierr);
-      ierr         = PetscFree(hdf5->groups);CHKERRQ(ierr);
-      hdf5->groups = tmp;
-    }
+    ierr         = PetscFree(hdf5->groups->name);CHKERRQ(ierr);
+    ierr         = PetscFree(hdf5->groups);CHKERRQ(ierr);
+    hdf5->groups = tmp;
+  }
   ierr = PetscFree(hdf5);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerFileSetName_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerFileSetMode_C",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -116,8 +117,8 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_HDF5(PetscViewer v)
   hdf5->timestep  = -1;
   hdf5->groups    = NULL;
 
-  ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerFileSetName_C","PetscViewerFileSetName_HDF5",PetscViewerFileSetName_HDF5);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerFileSetMode_C","PetscViewerFileSetMode_HDF5",PetscViewerFileSetMode_HDF5);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerFileSetName_C",PetscViewerFileSetName_HDF5);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerFileSetMode_C",PetscViewerFileSetMode_HDF5);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

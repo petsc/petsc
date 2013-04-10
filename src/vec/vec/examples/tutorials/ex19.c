@@ -7,6 +7,7 @@ static char help[] = "Parallel HDF5 Vec Viewing.\n\n";
 T*/
 
 #include <petscvec.h>
+#include <petscviewerhdf5.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

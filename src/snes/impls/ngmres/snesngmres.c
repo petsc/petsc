@@ -459,7 +459,7 @@ PetscErrorCode SNESNGMRESSetRestartType_NGMRES(SNES snes,SNESNGMRESRestartType r
 .  -snes_ngmres_epsilonB         - Difference tolerance between subsequent solutions triggering restart
 .  -snes_ngmres_deltaB           - Difference tolerance between residuals triggering restart
 .  -snes_ngmres_monitor          - Prints relevant information about the ngmres iteration
-.  -snes_linesearch_type <basic,basicnonorms,quadratic,critical> - Line search type used for the default smoother
+.  -snes_linesearch_type <basic,l2,cp> - Line search type used for the default smoother
 -  -additive_snes_linesearch_type - linesearch type used to select between the candidate and combined solution with additive select type
 
    Notes:
@@ -516,8 +516,8 @@ PETSC_EXTERN PetscErrorCode SNESCreate_NGMRES(SNES snes)
   ngmres->restart_type = SNES_NGMRES_RESTART_DIFFERENCE;
   ngmres->select_type  = SNES_NGMRES_SELECT_DIFFERENCE;
 
-  ierr = PetscObjectComposeFunction((PetscObject)snes,"SNESNGMRESSetSelectType_C","SNESNGMRESSetSelectType_NGMRES",SNESNGMRESSetSelectType_NGMRES);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)snes,"SNESNGMRESSetRestartType_C","SNESNGMRESSetRestartType_NGMRES",SNESNGMRESSetRestartType_NGMRES);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)snes,"SNESNGMRESSetSelectType_C",SNESNGMRESSetSelectType_NGMRES);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)snes,"SNESNGMRESSetRestartType_C",SNESNGMRESSetRestartType_NGMRES);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
