@@ -9,7 +9,7 @@ SOURCEF  =
 SOURCEH  = virsaugimpl.h
 LIBBASE  = libpetscsnes
 MANSEC   = SNES
-LOCDIR   = src/snes/impls/vi/rsaug
+LOCDIR   = src/snes/impls/vi/rsaug/
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

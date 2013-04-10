@@ -7,7 +7,7 @@ SOURCEF  =
 SOURCEH  =
 DIRS     =
 LIBBASE  = libpetscvec
-LOCDIR   = src/vec/vec/impls/nest/ftn-custom
+LOCDIR   = src/vec/vec/impls/nest/ftn-custom/
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

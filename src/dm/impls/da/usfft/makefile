@@ -12,7 +12,7 @@ LIBBASE  = libpetscdm
 MANSEC   = DM
 SUBMANSEC= DMDA
 DIRS     =
-LOCDIR   = src/dm/da/src/usfft/
+LOCDIR   = src/dm/impls/da/usfft/
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

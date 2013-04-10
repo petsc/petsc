@@ -8,7 +8,7 @@ SOURCEF  =
 SOURCEH  =
 LIBBASE  = libpetscdm
 MANSEC   = AO
-LOCDIR   = src/vec/is/aointerface/
+LOCDIR   = src/vec/is/ao/interface/
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

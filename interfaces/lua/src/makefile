@@ -10,7 +10,7 @@ SOURCEH	  =
 MANSEC	  = Sys
 LIBBASE	  = libpetscsys
 DIRS	  =
-LOCDIR	  = interfaces/lua/src
+LOCDIR	  = interfaces/lua/src/
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

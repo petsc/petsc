@@ -3,7 +3,7 @@ ALL: lib
 
 SOURCEH  =
 DIRS     = is sf ao utils
-LOCDIR   = src/vec/is
+LOCDIR   = src/vec/is/
 MANSEC   = IS
 
 include ${PETSC_DIR}/conf/variables

@@ -2,7 +2,7 @@
 ALL: lib
 
 DIRS     = tests
-LOCDIR   = src/dm/adda/examples/
+LOCDIR   = src/dm/impls/adda/examples/
 MANSEC   = DM
 SUBMANSEC= DMADDA
 
