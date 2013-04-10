@@ -50,6 +50,7 @@ PetscErrorCode  TSInitializePackage(void)
   ierr = TSGLInitializePackage();CHKERRQ(ierr);
   ierr = TSARKIMEXInitializePackage();CHKERRQ(ierr);
   ierr = TSRosWInitializePackage();CHKERRQ(ierr);
+  ierr = TSSSPInitializePackage();CHKERRQ(ierr);
   ierr = TSAdaptInitializePackage();CHKERRQ(ierr);
   ierr = TSGLAdaptInitializePackage();CHKERRQ(ierr);
   /* Register Classes */

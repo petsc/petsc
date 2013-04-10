@@ -4,6 +4,7 @@
 #include <petsc-private/tsimpl.h>                /*I   "petscts.h"   I*/
 
 PetscFunctionList TSSSPList = 0;
+static PetscBool TSSSPPackageInitialized;
 
 typedef struct {
   PetscErrorCode (*onestep)(TS,PetscReal,PetscReal,Vec);
@@ -49,7 +50,6 @@ static PetscErrorCode TSSSPRestoreWorkVectors(TS ts,PetscInt n,Vec **work)
   *work = NULL;
   PetscFunctionReturn(0);
 }
-
 
 #undef __FUNCT__
 #define __FUNCT__ "TSSSPStep_RK_2"
@@ -494,11 +494,9 @@ PETSC_EXTERN PetscErrorCode TSCreate_SSP(TS ts)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!TSSSPList) {
-    ierr = PetscFunctionListAdd(&TSSSPList,TSSSPRKS2, TSSSPStep_RK_2);CHKERRQ(ierr);
-    ierr = PetscFunctionListAdd(&TSSSPList,TSSSPRKS3, TSSSPStep_RK_3);CHKERRQ(ierr);
-    ierr = PetscFunctionListAdd(&TSSSPList,TSSSPRK104,TSSSPStep_RK_10_4);CHKERRQ(ierr);
-  }
+#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
+  ierr = TSSSPInitializePackage();CHKERRQ(ierr);
+#endif
 
   ts->ops->setup          = TSSetUp_SSP;
   ts->ops->step           = TSStep_SSP;
@@ -517,5 +515,52 @@ PETSC_EXTERN PetscErrorCode TSCreate_SSP(TS ts)
 
   ierr = TSSSPSetType(ts,TSSSPRKS2);CHKERRQ(ierr);
   ssp->nstages = 5;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSSSPInitializePackage"
+/*@C
+  TSSSPInitializePackage - This function initializes everything in the TSSSP package. It is called
+  from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to TSCreate_SSP()
+  when using static libraries.
+
+  Level: developer
+
+.keywords: TS, TSSSP, initialize, package
+.seealso: PetscInitialize()
+@*/
+PetscErrorCode TSSSPInitializePackage(void)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (TSSSPPackageInitialized) PetscFunctionReturn(0);
+  TSSSPPackageInitialized = PETSC_TRUE;
+  ierr = PetscFunctionListAdd(&TSSSPList,TSSSPRKS2, TSSSPStep_RK_2);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&TSSSPList,TSSSPRKS3, TSSSPStep_RK_3);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&TSSSPList,TSSSPRK104,TSSSPStep_RK_10_4);CHKERRQ(ierr);
+  ierr = PetscRegisterFinalize(TSSSPFinalizePackage);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSSSPFinalizePackage"
+/*@C
+  TSSSPFinalizePackage - This function destroys everything in the TSSSP package. It is
+  called from PetscFinalize().
+
+  Level: developer
+
+.keywords: Petsc, destroy, package
+.seealso: PetscFinalize()
+@*/
+PetscErrorCode TSSSPFinalizePackage(void)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  TSSSPPackageInitialized = PETSC_FALSE;
+  ierr = PetscFunctionListDestroy(&TSSSPList);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
