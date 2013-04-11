@@ -89,13 +89,13 @@ typedef struct {
   void (*g1Funcs[NUM_FIELDS*NUM_FIELDS])(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[], PetscScalar g1[]); /* g1_uu(x,y,z), g1_up(x,y,z), g1_pu(x,y,z), and g1_pp(x,y,z) */
   void (*g2Funcs[NUM_FIELDS*NUM_FIELDS])(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[], PetscScalar g2[]); /* g2_uu(x,y,z), g2_up(x,y,z), g2_pu(x,y,z), and g2_pp(x,y,z) */
   void (*g3Funcs[NUM_FIELDS*NUM_FIELDS])(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[], PetscScalar g3[]); /* g3_uu(x,y,z), g3_up(x,y,z), g3_pu(x,y,z), and g3_pp(x,y,z) */
-  PetscScalar (*exactFuncs[NUM_BASIS_COMPONENTS_TOTAL])(const PetscReal x[]); /* The exact solution function u(x,y,z), v(x,y,z), and p(x,y,z) */
+  void (*exactFuncs[NUM_BASIS_COMPONENTS_TOTAL])(const PetscReal x[], PetscScalar *u); /* The exact solution function u(x,y,z), v(x,y,z), and p(x,y,z) */
   BCType bcType;
 } AppCtx;
 
-PetscScalar zero(const PetscReal coords[])
+void zero(const PetscReal coords[], PetscScalar *u)
 {
-  return 0.0;
+  *u = 0.0;
 }
 
 /*
@@ -111,19 +111,19 @@ PetscScalar zero(const PetscReal coords[])
     -\Delta u + \nabla p + f = <-4, -4> + <1, 1> + <3, 3> = 0
     \nabla \cdot u           = 2x - 2x                    = 0
 */
-PetscScalar quadratic_u_2d(const PetscReal x[])
+void quadratic_u_2d(const PetscReal x[], PetscScalar *u)
 {
-  return x[0]*x[0] + x[1]*x[1];
+  *u = x[0]*x[0] + x[1]*x[1];
 }
 
-PetscScalar quadratic_v_2d(const PetscReal x[])
+void quadratic_v_2d(const PetscReal x[], PetscScalar *v)
 {
-  return 2.0*x[0]*x[0] - 2.0*x[0]*x[1];
+  *v = 2.0*x[0]*x[0] - 2.0*x[0]*x[1];
 }
 
-PetscScalar linear_p_2d(const PetscReal x[])
+void linear_p_2d(const PetscReal x[], PetscScalar *p)
 {
-  return x[0] + x[1] - 1.0;
+  *p = x[0] + x[1] - 1.0;
 }
 
 void f0_u(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[], PetscScalar f0[])
@@ -218,24 +218,24 @@ void g3_uu(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[]
     -\Delta u + \nabla p + f = <-4, -4, -4> + <1, 1, 1> + <3, 3, 3> = 0
     \nabla \cdot u           = 2x + 2y - 2(x + y)                   = 0
 */
-PetscScalar quadratic_u_3d(const PetscReal x[])
+void quadratic_u_3d(const PetscReal x[], PetscScalar *u)
 {
-  return x[0]*x[0] + x[1]*x[1];
+  *u = x[0]*x[0] + x[1]*x[1];
 }
 
-PetscScalar quadratic_v_3d(const PetscReal x[])
+void quadratic_v_3d(const PetscReal x[], PetscScalar *v)
 {
-  return x[1]*x[1] + x[2]*x[2];
+  *v = x[1]*x[1] + x[2]*x[2];
 }
 
-PetscScalar quadratic_w_3d(const PetscReal x[])
+void quadratic_w_3d(const PetscReal x[], PetscScalar *w)
 {
-  return x[0]*x[0] + x[1]*x[1] - 2.0*(x[0] + x[1])*x[2];
+  *w = x[0]*x[0] + x[1]*x[1] - 2.0*(x[0] + x[1])*x[2];
 }
 
-PetscScalar linear_p_3d(const PetscReal x[])
+void linear_p_3d(const PetscReal x[], PetscScalar *p)
 {
-  return x[0] + x[1] + x[2] - 1.5;
+  *p = x[0] + x[1] + x[2] - 1.5;
 }
 
 #undef __FUNCT__
@@ -267,7 +267,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->fem.g1Funcs = (void (**)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[])) &options->g1Funcs;
   options->fem.g2Funcs = (void (**)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[])) &options->g2Funcs;
   options->fem.g3Funcs = (void (**)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[])) &options->g3Funcs;
-  options->fem.bcFuncs = (PetscScalar (**)(const PetscReal[])) &options->exactFuncs;
+  options->fem.bcFuncs = (void (**)(const PetscReal[], PetscScalar *)) &options->exactFuncs;
 
   ierr = MPI_Comm_size(comm, &options->numProcs);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &options->rank);CHKERRQ(ierr);
@@ -470,7 +470,7 @@ PetscErrorCode SetupExactSolution(DM dm, AppCtx *user)
   default:
     SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension %d", user->dim);
   }
-  ierr = DMPlexSetFEMIntegration(dm, FEMIntegrateResidualBatch, FEMIntegrateJacobianActionBatch, FEMIntegrateJacobianBatch);CHKERRQ(ierr);
+  ierr = DMPlexSetFEMIntegration(dm, FEMIntegrateResidualBatch, NULL, FEMIntegrateJacobianActionBatch, FEMIntegrateJacobianBatch);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

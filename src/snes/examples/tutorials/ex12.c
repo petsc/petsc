@@ -46,15 +46,15 @@ typedef struct {
   void (*g1Funcs[NUM_FIELDS*NUM_FIELDS])(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[], PetscScalar g1[]); /* g1_uu(x,y,z), g1_up(x,y,z), g1_pu(x,y,z), and g1_pp(x,y,z) */
   void (*g2Funcs[NUM_FIELDS*NUM_FIELDS])(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[], PetscScalar g2[]); /* g2_uu(x,y,z), g2_up(x,y,z), g2_pu(x,y,z), and g2_pp(x,y,z) */
   void (*g3Funcs[NUM_FIELDS*NUM_FIELDS])(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[], PetscScalar g3[]); /* g3_uu(x,y,z), g3_up(x,y,z), g3_pu(x,y,z), and g3_pp(x,y,z) */
-  PetscScalar (*exactFuncs[NUM_BASIS_COMPONENTS_TOTAL])(const PetscReal x[]); /* The exact solution function u(x,y,z), v(x,y,z), and p(x,y,z) */
+  void (*exactFuncs[NUM_BASIS_COMPONENTS_TOTAL])(const PetscReal x[], PetscScalar *u); /* The exact solution function u(x,y,z), v(x,y,z), and p(x,y,z) */
   void (*f0BdFuncs[NUM_FIELDS])(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[], const PetscReal n[], PetscScalar f0[]); /* f0_u(x,y,z), and f0_p(x,y,z) */
   void (*f1BdFuncs[NUM_FIELDS])(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[], const PetscReal n[], PetscScalar f1[]); /* f1_u(x,y,z), and f1_p(x,y,z) */
   BCType bcType;
 } AppCtx;
 
-PetscScalar zero(const PetscReal coords[])
+void zero(const PetscReal coords[], PetscScalar *u)
 {
-  return 0.0;
+  *u = 0.0;
 }
 
 /*
@@ -78,9 +78,9 @@ PetscScalar zero(const PetscReal coords[])
 
     \nabla u \cdot  \hat n|_\Gamma = 2 (x + y)
 */
-PetscScalar quadratic_u_2d(const PetscReal x[])
+void quadratic_u_2d(const PetscReal x[], PetscScalar *u)
 {
-  return x[0]*x[0] + x[1]*x[1];
+  *u = x[0]*x[0] + x[1]*x[1];
 }
 
 void f0_u(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[], PetscScalar f0[])
@@ -148,9 +148,9 @@ void g3_uu(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[]
 
     -\Delta u + f = -6 + 6 = 0
 */
-PetscScalar quadratic_u_3d(const PetscReal x[])
+void quadratic_u_3d(const PetscReal x[], PetscScalar *u)
 {
-  return x[0]*x[0] + x[1]*x[1] + x[2]*x[2];
+  *u = x[0]*x[0] + x[1]*x[1] + x[2]*x[2];
 }
 
 #undef __FUNCT__

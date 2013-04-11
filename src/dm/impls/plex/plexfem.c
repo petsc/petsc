@@ -218,7 +218,7 @@ PetscErrorCode DMPlexSetFEMIntegration(DM dm,
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexProjectFunctionLocal"
-PetscErrorCode DMPlexProjectFunctionLocal(DM dm, PetscInt numComp, PetscScalar (**funcs)(const PetscReal []), InsertMode mode, Vec localX)
+PetscErrorCode DMPlexProjectFunctionLocal(DM dm, PetscInt numComp, void (**funcs)(const PetscReal [], PetscScalar *), InsertMode mode, Vec localX)
 {
   Vec            coordinates;
   PetscSection   section, cSection;
@@ -243,7 +243,7 @@ PetscErrorCode DMPlexProjectFunctionLocal(DM dm, PetscInt numComp, PetscScalar (
     ierr = PetscSectionGetOffset(cSection, v, &off);CHKERRQ(ierr);
     if (dof > dim) SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Cannot have more coordinates %d then dimensions %d", dof, dim);
     for (d = 0; d < dof; ++d) coords[d] = PetscRealPart(cArray[off+d]);
-    for (c = 0; c < numComp; ++c) values[c] = (*funcs[c])(coords);
+    for (c = 0; c < numComp; ++c) (*funcs[c])(coords, &values[c]);
     ierr = VecSetValuesSection(localX, section, v, values, mode);CHKERRQ(ierr);
   }
   ierr = VecRestoreArray(coordinates, &cArray);CHKERRQ(ierr);
@@ -267,7 +267,7 @@ PetscErrorCode DMPlexProjectFunctionLocal(DM dm, PetscInt numComp, PetscScalar (
       for (d = 0; d < dim; ++d) {
         coords[d] = 0.5*(PetscRealPart(coordsA[d]) + PetscRealPart(coordsB[d]));
       }
-      for (c = 0; c < numComp; ++c) values[c] = (*funcs[c])(coords);
+      for (c = 0; c < numComp; ++c) (*funcs[c])(coords, &values[c]);
       ierr = VecSetValuesSection(localX, section, e, values, mode);CHKERRQ(ierr);
     }
   }
@@ -330,7 +330,7 @@ PetscErrorCode DMPlexProjectFunctionLocal(DM dm, PetscInt numComp, PetscScalar (
 
 .seealso: DMPlexComputeL2Diff()
 @*/
-PetscErrorCode DMPlexProjectFunction(DM dm, PetscInt numComp, PetscScalar (**funcs)(const PetscReal []), InsertMode mode, Vec X)
+PetscErrorCode DMPlexProjectFunction(DM dm, PetscInt numComp, void (**funcs)(const PetscReal [], PetscScalar *), InsertMode mode, Vec X)
 {
   Vec            localX;
   PetscErrorCode ierr;
@@ -362,7 +362,7 @@ PetscErrorCode DMPlexProjectFunction(DM dm, PetscInt numComp, PetscScalar (**fun
 
 .seealso: DMPlexProjectFunction()
 @*/
-PetscErrorCode DMPlexComputeL2Diff(DM dm, PetscQuadrature quad[], PetscScalar (**funcs)(const PetscReal []), Vec X, PetscReal *diff)
+PetscErrorCode DMPlexComputeL2Diff(DM dm, PetscQuadrature quad[], void (**funcs)(const PetscReal [], PetscScalar *), Vec X, PetscReal *diff)
 {
   const PetscInt debug = 0;
   PetscSection   section;
@@ -415,14 +415,16 @@ PetscErrorCode DMPlexComputeL2Diff(DM dm, PetscQuadrature quad[], PetscScalar (*
           }
         }
         for (fc = 0; fc < numBasisComps; ++fc) {
-          const PetscReal funcVal     = PetscRealPart((*funcs[comp+fc])(coords));
-          PetscReal       interpolant = 0.0;
+          PetscScalar funcVal;
+          PetscScalar interpolant = 0.0;
+
+          (*funcs[comp+fc])(coords, &funcVal);
           for (f = 0; f < numBasisFuncs; ++f) {
             const PetscInt fidx = f*numBasisComps+fc;
-            interpolant += PetscRealPart(x[fieldOffset+fidx])*basis[q*numBasisFuncs*numBasisComps+fidx];
+            interpolant += x[fieldOffset+fidx]*basis[q*numBasisFuncs*numBasisComps+fidx];
           }
-          if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "    elem %d field %d diff %g\n", c, field, PetscSqr(interpolant - funcVal)*quadWeights[q]*detJ);CHKERRQ(ierr);}
-          elemDiff += PetscSqr(interpolant - funcVal)*quadWeights[q]*detJ;
+          if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "    elem %d field %d diff %g\n", c, field, PetscSqr(PetscRealPart(interpolant - funcVal))*quadWeights[q]*detJ);CHKERRQ(ierr);}
+          elemDiff += PetscSqr(PetscRealPart(interpolant - funcVal))*quadWeights[q]*detJ;
         }
       }
       comp        += numBasisComps;
