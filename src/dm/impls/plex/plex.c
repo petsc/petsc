@@ -2967,7 +2967,7 @@ PetscErrorCode DMPlexDistribute(DM dm, const char partitioner[], PetscInt overla
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexInvertCells_Internal"
 /* This is to fix the tetrahedron orientation from TetGen */
-static PetscErrorCode DMPlexInvertCells_Internal(PetscInt numCells, PetscInt numCorners, int cells[])
+PETSC_UNUSED static PetscErrorCode DMPlexInvertCells_Internal(PetscInt numCells, PetscInt numCorners, int cells[])
 {
   PetscInt c;
 
