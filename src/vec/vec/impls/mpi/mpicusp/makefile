@@ -8,7 +8,7 @@ SOURCEF  =
 SOURCEH  =
 LIBBASE  = libpetscvec
 MANSEC   = Vec
-LOCDIR   = src/vec/vec/impls/mpi/mpicusp
+LOCDIR   = src/vec/vec/impls/mpi/mpicusp/
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

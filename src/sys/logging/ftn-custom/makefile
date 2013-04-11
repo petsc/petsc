@@ -8,7 +8,7 @@ SOURCEF  =
 SOURCEH  =
 DIRS     =
 LIBBASE  = libpetscsys
-LOCDIR   = src/sys/plog/ftn-custom/
+LOCDIR   = src/sys/logging/ftn-custom/
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

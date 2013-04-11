@@ -11,7 +11,7 @@ SOURCEH	  =
 MANSEC	  = Profiling
 LIBBASE	  = libpetscsys
 DIRS	  =
-LOCDIR	  = src/sys/plog/utils/
+LOCDIR	  = src/sys/logging/utils/
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

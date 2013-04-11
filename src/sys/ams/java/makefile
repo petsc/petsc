@@ -12,7 +12,7 @@ ALL: lib
 SOURCEH   =
 SOURCEC   =
 DIRS      =
-LOCDIR    = src/sys/ams/java
+LOCDIR    = src/sys/ams/java/
 MANSEC    = Sys
 
 include ${PETSC_DIR}/conf/variables

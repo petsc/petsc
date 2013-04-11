@@ -9,7 +9,7 @@ CFLAGS	        =
 FFLAGS	        =
 CPPFLAGS        = -I${PETFMM_DIR}/src -I. -DDIMENSION=${DIM} -DNUM_TERMS=${NUM_TERMS} -DNUM_COEFFICIENTS=${NUM_COEFFICIENTS}
 FPPFLAGS        =
-LOCDIR          = src/dm/mesh/examples/tutorials/
+LOCDIR          = src/dm/impls/mesh/examples/tutorials/
 EXAMPLESC       = ex1.c ex10.cxx ex12.cxx
 EXAMPLESF       = ex12f90.F90 mex12f90.F90
 MANSEC          = DM

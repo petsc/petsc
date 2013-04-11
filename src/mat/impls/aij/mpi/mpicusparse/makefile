@@ -9,7 +9,7 @@ SOURCEH	 = mpicusparsematimpl.h
 LIBBASE	 = libpetscmat
 DIRS	 =
 MANSEC	 = Mat
-LOCDIR	 = src/mat/impls/aij/mpi/mpicusparse
+LOCDIR	 = src/mat/impls/aij/mpi/mpicusparse/
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

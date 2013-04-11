@@ -10,7 +10,7 @@ SOURCEH  =
 DIRS     =
 LIBBASE  = libpetscvec
 MANSEC   = Vec
-LOCDIR   = src/vec/vec/utils/veccusp
+LOCDIR   = src/vec/vec/utils/veccusp/
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

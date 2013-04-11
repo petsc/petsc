@@ -8,7 +8,7 @@ SOURCEF  =
 SOURCEH  =
 LIBBASE  = libpetscsnes
 MANSEC   = SNES
-LOCDIR   = src/snes/impls/ms
+LOCDIR   = src/snes/impls/ms/
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules
