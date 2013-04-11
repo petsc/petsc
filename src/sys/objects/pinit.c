@@ -28,7 +28,7 @@ extern FILE *petsc_history;
 
 extern PetscErrorCode PetscInitialize_DynamicLibraries(void);
 extern PetscErrorCode PetscFinalize_DynamicLibraries(void);
-extern PetscErrorCode PetscFunctionListDestroyAll(void);
+extern PetscErrorCode PetscFunctionListPrintAll(void);
 extern PetscErrorCode PetscSequentialPhaseBegin_Private(MPI_Comm,int);
 extern PetscErrorCode PetscSequentialPhaseEnd_Private(MPI_Comm,int);
 extern PetscErrorCode PetscCloseHistoryFile(FILE**);
@@ -1103,11 +1103,6 @@ PetscErrorCode  PetscFinalize(void)
 #endif
 
   /*
-       Free all the registered create functions, such as KSPList, VecList, SNESList, etc
-  */
-  ierr = PetscFunctionListDestroyAll();CHKERRQ(ierr);
-
-  /*
      Destroy any packages that registered a finalize
   */
   ierr = PetscRegisterFinalizeAll();CHKERRQ(ierr);
@@ -1116,6 +1111,12 @@ PetscErrorCode  PetscFinalize(void)
      Destroy all the function registration lists created
   */
   ierr = PetscFinalize_DynamicLibraries();CHKERRQ(ierr);
+
+  /*
+     Print PetscFunctionLists that have not been properly freed
+
+  ierr = PetscFunctionListPrintAll();CHKERRQ(ierr);
+  */
 
   if (petsc_history) {
     ierr = PetscCloseHistoryFile(&petsc_history);CHKERRQ(ierr);

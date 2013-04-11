@@ -72,26 +72,3 @@ PetscErrorCode  PetscSFRegister(const char sname[],PetscErrorCode (*function)(Pe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSFRegisterDestroy"
-/*@
-   PetscSFRegisterDestroy - Frees the list of communication implementations registered by PetscSFRegister()
-
-   Not Collective
-
-   Level: advanced
-
-.keywords: PetscSF, register, destroy
-
-.seealso: PetscSFRegisterAll()
-@*/
-PetscErrorCode  PetscSFRegisterDestroy(void)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscFunctionListDestroy(&PetscSFList);CHKERRQ(ierr);
-
-  PetscSFRegisterAllCalled = PETSC_FALSE;
-  PetscFunctionReturn(0);
-}

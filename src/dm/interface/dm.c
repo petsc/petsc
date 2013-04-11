@@ -2586,30 +2586,6 @@ PetscErrorCode  DMRegister(const char sname[],PetscErrorCode (*function)(DM))
   PetscFunctionReturn(0);
 }
 
-
-/*--------------------------------------------------------------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "DMRegisterDestroy"
-/*@C
-   DMRegisterDestroy - Frees the list of DM methods that were registered by DMRegister().
-
-   Not Collective
-
-   Level: advanced
-
-.keywords: DM, register, destroy
-.seealso: DMRegister(), DMRegisterAll()
-@*/
-PetscErrorCode  DMRegisterDestroy(void)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr                = PetscFunctionListDestroy(&DMList);CHKERRQ(ierr);
-  DMRegisterAllCalled = PETSC_FALSE;
-  PetscFunctionReturn(0);
-}
-
 #undef __FUNCT__
 #define __FUNCT__ "DMLoad"
 /*@C

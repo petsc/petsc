@@ -160,27 +160,6 @@ PetscErrorCode  PetscDrawSetType(PetscDraw draw,PetscDrawType type)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscDrawRegisterDestroy"
-/*@C
-   PetscDrawRegisterDestroy - Frees the list of PetscDraw methods that were
-   registered by PetscDrawRegister().
-
-   Not Collective
-
-   Level: developer
-
-.seealso: PetscDrawRegister(), PetscDrawRegisterAll()
-@*/
-PetscErrorCode  PetscDrawRegisterDestroy(void)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscFunctionListDestroy(&PetscDrawList);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "PetscDrawGetType"
 /*@C
    PetscDrawGetType - Gets the PetscDraw type as a string from the PetscDraw object.

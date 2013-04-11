@@ -87,32 +87,6 @@ PetscErrorCode  PCSetType(PC pc,PCType type)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PCRegisterDestroy"
-/*@
-   PCRegisterDestroy - Frees the list of preconditioners that were
-   registered by PCRegister().
-
-   Not Collective
-
-   Level: advanced
-
-.keywords: PC, register, destroy
-
-.seealso: PCRegisterAll(), PCRegisterAll()
-
-@*/
-PetscErrorCode  PCRegisterDestroy(void)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscFunctionListDestroy(&PCList);CHKERRQ(ierr);
-
-  PCRegisterAllCalled = PETSC_FALSE;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "PCGetType"
 /*@C
    PCGetType - Gets the PC method type and name (as a string) from the PC

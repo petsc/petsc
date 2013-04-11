@@ -34,15 +34,3 @@ PetscErrorCode SNESLineSearchRegisterAll(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESLineSearchRegisterDestroy"
-PetscErrorCode  SNESLineSearchRegisterDestroy(void)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscFunctionListDestroy(&SNESLineSearchList);CHKERRQ(ierr);
-
-  SNESLineSearchRegisterAllCalled = PETSC_FALSE;
-  PetscFunctionReturn(0);
-}

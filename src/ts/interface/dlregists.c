@@ -15,9 +15,11 @@ static PetscBool TSPackageInitialized = PETSC_FALSE;
 @*/
 PetscErrorCode  TSFinalizePackage(void)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
+  ierr = PetscFunctionListDestroy(&TSList);CHKERRQ(ierr);
   TSPackageInitialized = PETSC_FALSE;
-  TSList               = NULL;
   TSRegisterAllCalled  = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
@@ -48,6 +50,7 @@ PetscErrorCode  TSInitializePackage(void)
   ierr = TSGLInitializePackage();CHKERRQ(ierr);
   ierr = TSARKIMEXInitializePackage();CHKERRQ(ierr);
   ierr = TSRosWInitializePackage();CHKERRQ(ierr);
+  ierr = TSSSPInitializePackage();CHKERRQ(ierr);
   ierr = TSAdaptInitializePackage();CHKERRQ(ierr);
   ierr = TSGLAdaptInitializePackage();CHKERRQ(ierr);
   /* Register Classes */

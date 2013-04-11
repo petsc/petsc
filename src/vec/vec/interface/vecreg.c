@@ -135,26 +135,3 @@ PetscErrorCode  VecRegister(const char sname[], PetscErrorCode (*function)(Vec))
 }
 
 
-/*--------------------------------------------------------------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "VecRegisterDestroy"
-/*@C
-   VecRegisterDestroy - Frees the list of Vec methods that were registered by VecRegister()
-
-   Not Collective
-
-   Level: advanced
-
-.keywords: Vec, register, destroy
-.seealso: VecRegister(), VecRegisterAll(), VecRegister()
-@*/
-PetscErrorCode  VecRegisterDestroy(void)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscFunctionListDestroy(&VecList);CHKERRQ(ierr);
-  VecRegisterAllCalled = PETSC_FALSE;
-  PetscFunctionReturn(0);
-}
-

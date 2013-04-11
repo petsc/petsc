@@ -75,32 +75,6 @@ PetscErrorCode  MatSetType(Mat mat, MatType matype)
   PetscFunctionReturn(0);
 }
 
-
-#undef __FUNCT__
-#define __FUNCT__ "MatRegisterDestroy"
-/*@C
-   MatRegisterDestroy - Frees the list of matrix types that were
-   registered by MatRegister().
-
-   Not Collective
-
-   Level: advanced
-
-.keywords: Mat, register, destroy
-
-.seealso: MatRegister(), MatRegisterAll()
-@*/
-PetscErrorCode  MatRegisterDestroy(void)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscFunctionListDestroy(&MatList);CHKERRQ(ierr);
-
-  MatRegisterAllCalled = PETSC_FALSE;
-  PetscFunctionReturn(0);
-}
-
 #undef __FUNCT__
 #define __FUNCT__ "MatGetType"
 /*@C

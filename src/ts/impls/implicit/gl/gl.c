@@ -1384,29 +1384,6 @@ PetscErrorCode  TSGLRegisterAll(void)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TSGLRegisterDestroy"
-/*@C
-   TSGLRegisterDestroy - Frees the list of schemes that were registered by TSGLRegister()/TSGLRegister().
-
-   Not Collective
-
-   Level: advanced
-
-.keywords: TSGL, register, destroy
-.seealso: TSGLRegister(), TSGLRegisterAll(), TSGLRegister()
-@*/
-PetscErrorCode  TSGLRegisterDestroy(void)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscFunctionListDestroy(&TSGLList);CHKERRQ(ierr);
-  TSGLRegisterAllCalled = PETSC_FALSE;
-  PetscFunctionReturn(0);
-}
-
-
-#undef __FUNCT__
 #define __FUNCT__ "TSGLInitializePackage"
 /*@C
   TSGLInitializePackage - This function initializes everything in the TSGL package. It is called
@@ -1443,11 +1420,13 @@ PetscErrorCode  TSGLInitializePackage(void)
 @*/
 PetscErrorCode  TSGLFinalizePackage(void)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
+  ierr = PetscFunctionListDestroy(&TSGLList);CHKERRQ(ierr);
+  ierr = PetscFunctionListDestroy(&TSGLAcceptList);CHKERRQ(ierr);
   TSGLPackageInitialized = PETSC_FALSE;
   TSGLRegisterAllCalled  = PETSC_FALSE;
-  TSGLList               = NULL;
-  TSGLAcceptList         = NULL;
   PetscFunctionReturn(0);
 }
 

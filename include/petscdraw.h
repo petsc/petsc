@@ -26,8 +26,6 @@ typedef const char* PetscDrawType;
 PETSC_EXTERN PetscFunctionList PetscDrawList;
 PETSC_EXTERN PetscErrorCode PetscDrawRegisterAll(void);
 PETSC_EXTERN PetscErrorCode PetscDrawInitializePackage(void);
-PETSC_EXTERN PetscErrorCode PetscDrawRegisterDestroy(void);
-
 PETSC_EXTERN PetscErrorCode PetscDrawRegister(const char[],PetscErrorCode(*)(PetscDraw));
 
 PETSC_EXTERN PetscErrorCode PetscDrawGetType(PetscDraw,PetscDrawType*);

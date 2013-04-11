@@ -128,31 +128,6 @@ PetscErrorCode  PetscRandomRegister(const char sname[], PetscErrorCode (*functio
   PetscFunctionReturn(0);
 }
 
-
-/*--------------------------------------------------------------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "PetscRandomRegisterDestroy"
-/*@C
-   PetscRandomRegisterDestroy - Frees the list of Random types that were registered by PetscRandomRegister().
-
-   Not Collective
-
-   Level: advanced
-
-.keywords: PetscRandom, register, destroy
-.seealso: PetscRandomRegister(), PetscRandomRegisterAll(), PetscRandomRegister()
-@*/
-PetscErrorCode  PetscRandomRegisterDestroy(void)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscFunctionListDestroy(&PetscRandomList);CHKERRQ(ierr);
-
-  PetscRandomRegisterAllCalled = PETSC_FALSE;
-  PetscFunctionReturn(0);
-}
-
 #if defined(PETSC_HAVE_RAND)
 PETSC_EXTERN PetscErrorCode PetscRandomCreate_Rand(PetscRandom);
 #endif

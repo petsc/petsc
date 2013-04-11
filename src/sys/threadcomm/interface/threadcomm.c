@@ -552,33 +552,9 @@ PetscErrorCode PetscThreadCommBarrier(MPI_Comm comm)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscThreadCommRegisterDestroy"
-/*@C
-   PetscThreadCommRegisterDestroy - Frees the list of thread communicator models that were
-   registered by PetscThreadCommRegister().
-
-   Not Collective
-
-   Level: advanced
-
-.keywords: PetscThreadComm, register, destroy
-
-.seealso: PetscThreadCommRegisterAll()
-@*/
-PetscErrorCode  PetscThreadCommRegisterDestroy(void)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscFunctionListDestroy(&PetscThreadCommList);CHKERRQ(ierr);
-  PetscThreadCommRegisterAllCalled = PETSC_FALSE;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "PetscThreadCommRegister"
 /*@C
-  PetscThreadCommRegister - 
+  PetscThreadCommRegister -
 
   Level: advanced
 @*/

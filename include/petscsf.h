@@ -70,7 +70,6 @@ typedef enum {PETSCSF_DUPLICATE_CONFONLY,PETSCSF_DUPLICATE_RANKS,PETSCSF_DUPLICA
 PETSC_EXTERN const char *const PetscSFDuplicateOptions[];
 
 PETSC_EXTERN PetscFunctionList PetscSFList;
-PETSC_EXTERN PetscErrorCode PetscSFRegisterDestroy(void);
 PETSC_EXTERN PetscErrorCode PetscSFRegisterAll(void);
 PETSC_EXTERN PetscErrorCode PetscSFRegister(const char[],PetscErrorCode (*)(PetscSF));
 
