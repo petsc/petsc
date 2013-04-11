@@ -4,7 +4,9 @@ import os
 class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
     PETSc.package.NewPackage.__init__(self, framework)
-    self.download  = ['https://bitbucket.org/petsc/ams/get/tip.tar.gz',
+    self.gitcommit = '3c24ac8df967279c3ceafa5c39fc230af30c63c4'
+    self.giturls   = ['https://bitbucket.org/petsc/ams.git']
+    self.download  = ['https://bitbucket.org/petsc/ams/get/master.tar.gz',
                       'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/ams-dev.tar.gz']
     self.functions = ['AMS_Memory_create']
     self.includes  = ['ams.h']
