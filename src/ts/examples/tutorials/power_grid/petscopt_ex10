@@ -26,7 +26,7 @@
 -ts_monitor_draw_solution
 -ts_monitor_draw_solution_show_time
 -ts_monitor
--ts_monitor_solution_binary ex10output
+-geometry 0,0,1440,900
 
 -snes_monitor
 -snes_atol 1.e-12

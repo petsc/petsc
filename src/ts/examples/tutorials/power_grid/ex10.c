@@ -74,12 +74,15 @@ typedef struct {
   DMDADiscretizationType dis; /* Spatial discretization scheme */
   PetscInt               st_width; /* Stencil width */
   FluxLimiterType ftype;
+  PetscViewer     binv;
+  PetscInt        howoften;
 } AppCtx;
 
 PetscErrorCode Parameter_settings(AppCtx*);
 PetscErrorCode ini_bou(Vec,AppCtx*);
 PetscErrorCode RHSFunction(TS,PetscReal,Vec,Vec,void*);
 PetscErrorCode PostStep(TS);
+PetscErrorCode Monitor(TS,PetscInt,PetscReal,Vec,void*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -115,21 +118,36 @@ int main(int argc, char **argv)
   ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
   ierr = TSSetType(ts,TSARKIMEX);CHKERRQ(ierr);
   ierr = TSSetRHSFunction(ts,NULL,RHSFunction,&user);CHKERRQ(ierr);
+
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"ex10output",FILE_MODE_WRITE,&user.binv);CHKERRQ(ierr);
+  user.howoften = 1;
+  ierr = PetscOptionsGetInt(NULL,"-howoften",&user.howoften,NULL);CHKERRQ(ierr);
+  ierr = TSMonitorSet(ts,Monitor,&user,NULL);CHKERRQ(ierr);
   ierr = TSSetApplicationContext(ts,&user);CHKERRQ(ierr);
   ierr = TSSetInitialTimeStep(ts,0.0,.005);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
   ierr = TSSetPostStep(ts,PostStep);CHKERRQ(ierr);
   ierr = TSSolve(ts,x);CHKERRQ(ierr);
 
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"fin_x",FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
-  ierr = VecView(x,viewer);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-
   ierr = VecDestroy(&x);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&user.binv);CHKERRQ(ierr);
   ierr = DMDestroy(&user.da);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
   PetscFinalize();
   return 0;
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "Monitor"
+PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec X,void *ctx)
+{
+  PetscErrorCode ierr;
+  AppCtx         *user=(AppCtx*)ctx;
+  PetscFunctionBegin;
+  if (step % user->howoften == 0) {
+    ierr = VecView(X,user->binv);
+  }
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
@@ -146,13 +164,6 @@ PetscErrorCode PostStep(TS ts)
   ierr = TSGetApplicationContext(ts,&user);CHKERRQ(ierr);
   ierr = TSGetTime(ts,&t);CHKERRQ(ierr);
   ierr = TSGetSolution(ts,&X);CHKERRQ(ierr);
-  /*
-  if (t >= .2) {
-    ierr = TSGetSolution(ts,&X);CHKERRQ(ierr);
-    ierr = VecView(X,PETSC_VIEWER_BINARY_WORLD);CHKERRQ(ierr);
-    exit(0);
-     results in initial conditions after fault in binaryoutput
-  }*/
 
   if ((t > user->tf) && (t < user->tcl)) user->Pmax = 0.0; /* A short-circuit on the generator terminal that drives the electrical power output (Pmax*sin(delta)) to 0 */
   else if (t >= user->tcl) user->Pmax = user->E/0.745;
@@ -371,7 +382,7 @@ PetscErrorCode adv2(PetscScalar **p,PetscScalar x,PetscScalar y,PetscInt i,Petsc
 PetscErrorCode diffuse(PetscScalar **p,PetscInt i,PetscInt j,PetscReal t,PetscScalar *p_diff,AppCtx * user)
 {
   PetscFunctionBeginUser;
-  *p_diff = user->disper_coe*((p[j-1][i] - 2*p[j][i] + p[j+1][i])/(user->domega*user->domega));
+  *p_diff = -user->disper_coe*((p[j-1][i] - 2*p[j][i] + p[j+1][i])/(user->domega*user->domega));
   PetscFunctionReturn(0);
 }
 
