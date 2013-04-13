@@ -9,7 +9,7 @@ PetscBool               PetscThreadCommRegisterAllCalled = PETSC_FALSE;
 PetscFunctionList       PetscThreadCommList              = NULL;
 PetscMPIInt             Petsc_ThreadComm_keyval          = MPI_KEYVAL_INVALID;
 PetscThreadCommJobQueue PetscJobQueue                    = NULL;
-PetscThreadComm         PETSC_THREAD_COMM_WORLD             = NULL;
+PetscThreadComm         PETSC_THREAD_COMM_WORLD          = NULL;
 
 /* Logging support */
 PetscLogEvent ThreadComm_RunKernel, ThreadComm_Barrier;
