@@ -213,7 +213,7 @@ typedef struct {
   void (**g1Funcs)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]); /* The g_1 functions for each field pair */
   void (**g2Funcs)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]); /* The g_2 functions for each field pair */
   void (**g3Funcs)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]); /* The g_3 functions for each field pair */
-  PetscScalar (**bcFuncs)(const PetscReal x[]); /* The boundary condition function for each field component */
+  void (**bcFuncs)(const PetscReal[], PetscScalar *); /* The boundary condition function for each field component */
   PetscQuadrature *quadBd;
   void (**f0BdFuncs)(const PetscScalar[], const PetscScalar[], const PetscReal[], const PetscReal[], PetscScalar[]); /* The f_0 functions for each field */
   void (**f1BdFuncs)(const PetscScalar[], const PetscScalar[], const PetscReal[], const PetscReal[], PetscScalar[]); /* The f_1 functions for each field */
