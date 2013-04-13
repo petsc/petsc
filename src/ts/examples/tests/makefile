@@ -4,7 +4,7 @@ FFLAGS	        =
 CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR          = src/ts/examples/tests/
-EXAMPLESC       = ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c ex10.c
+EXAMPLESC       = ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c ex10.c ex25.c
 EXAMPLESF       =
 EXAMPLESFH      =
 MANSEC          = TS
@@ -55,6 +55,10 @@ ex9: ex9.o  chkopts
 ex10: ex10.o  chkopts
 	-${CLINKER} -o ex10 ex10.o ${PETSC_TS_LIB}
 	${RM} ex10.o
+
+ex25: ex25.o  chkopts
+	-${CLINKER} -o ex25 ex25.o ${PETSC_TS_LIB}
+	${RM} ex25.o
 
 #----------------------------------------------------------------------------------
 NPROCS    = 1  3
@@ -124,8 +128,18 @@ runex5_2:
 	   ${DIFF} output/ex5.out ex5.tmp || echo  ${PWD} "\nPossible problem with ex5_2, diffs above \n========================================="; \
 	   ${RM} -f ex5.tmp
 
+runex25:
+	-@${MPIEXEC} -n 1 ./ex25 -ts_exact_final_time INTERPOLATE > ex25_1.tmp 2>&1;	  \
+	   ${DIFF} output/ex25_1.out ex25_1.tmp || printf "${PWD}\nPossible problem with ex25_1, diffs above \n=========================================\n"; \
+	   ${RM} -f ex25_1.tmp
+
+runex25_2:
+	-@${MPIEXEC} -n 2 ./ex25 -ts_exact_final_time INTERPOLATE > ex25_2.tmp 2>&1;	  \
+	   ${DIFF} output/ex25_2.out ex25_2.tmp || printf "${PWD}\nPossible problem with ex25_2, diffs above \n=========================================\n"; \
+	   ${RM} -f ex25_2.tmp
+
 TESTEXAMPLES_C		  = ex4.PETSc runex4 runex4_2 runex4_3 runex4_4 runex4_5 runex4_6 \
-                            runex4_7 ex4.rm
+                            runex4_7 ex4.rm ex25.PETSc runex25 runex25_2 ex25.rm
 
 testexamples_C_NoComplex  = ex3.PETSc runex3 runex3_2 ex3.rm ex5.PETSc runex5 runex5_2 ex5.rm
 TESTEXAMPLES_C_X	  =
