@@ -795,6 +795,11 @@ runex10_mpiaijperm:
 	   if (${DIFF} output/ex10_mpicsrperm.out ex10_mpiaijperm.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex10_mpiaijperm, diffs above \n========================================="; fi; \
 	   ${RM} -f ex10_mpiaijperm.tmp
+runex10_aijcusparse:
+	-@${MPIEXEC} -n 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/medium -ksp_monitor_short -ksp_view -mat_view ::ascii_info -mat_type aijcusparse > ex10_aijcusparse.tmp 2>&1; \
+	   if (${DIFF} output/ex10_aijcusparse.out ex10_aijcusparse.tmp) then true; \
+	   else echo ${PWD} ; echo "Possible problem with with ex10_aijcusparse, diffs above \n========================================="; fi; \
+	   ${RM} -f ex10_aijcusparse.tmp
 runex11:
 	-@${MPIEXEC} -n 1 ./ex11 -n 6 -norandom -pc_type none -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex11_1.tmp 2>&1; \
 	   if (${DIFF} output/ex11_1.out ex11_1.tmp) then true; \
@@ -1117,5 +1122,6 @@ TESTEXAMPLES_MUMPS             = ex10.PETSc runex10_mumps_lu_1 runex10_mumps_lu_
 TESTEXAMPLES_SUPERLU           = ex10.PETSc runex10_superlu_lu_1 ex10.rm ex52.PETSc runex52_superlu ex52.rm
 TESTEXAMPLES_FFTW              =
 TESTEXAMPLES_SUPERLU_DIST      = ex10.PETSc runex10_superlu_dist_lu_1 runex10_superlu_dist_lu_2 runex10_superlu_dist_redundant ex10.rm
+TESTEXAMPLES_TXPETSCGPU        = ex10.PETSc runex10_aijcusparse ex10.rm 
 
 include ${PETSC_DIR}/conf/test
