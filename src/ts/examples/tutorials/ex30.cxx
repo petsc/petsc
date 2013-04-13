@@ -72,7 +72,7 @@ int main(int argc,char **argv)
   Mat               J;          /* Jacobian matrix */
   PetscInt          steps,maxsteps,mx;
   PetscErrorCode    ierr;
-  PetscReal         ftime,dt;
+  PetscReal         ftime,hx,dt;
   _User             user;       /* user-defined work context */
   TSConvergedReason reason;
   DM                dm;
@@ -110,7 +110,8 @@ int main(int argc,char **argv)
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSSetSolution(ts,X);CHKERRQ(ierr);
   ierr = VecGetSize(X,&mx);CHKERRQ(ierr);
-  dt   = 0.4 * user.alpha / PetscSqr(mx); /* Diffusive CFL */
+  hx = 1.0/(PetscReal)(mx/2-1);
+  dt = 0.4 * PetscSqr(hx) / user.alpha; /* Diffusive stability limit */
   ierr = TSSetInitialTimeStep(ts,0.0,dt);CHKERRQ(ierr);
 
   // /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
