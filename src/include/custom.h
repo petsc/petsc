@@ -467,8 +467,6 @@ KSPSetResidualNorm(KSP ksp, PetscReal rnorm)
   PetscFunctionReturn(0);
 }
 
-#define KSPLogConvergenceHistory KSPLogResidualHistory
-
 #undef __FUNCT__
 #define __FUNCT__ "KSPConvergenceTestCall"
 static PetscErrorCode

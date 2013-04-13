@@ -95,6 +95,7 @@ cdef extern from * nogil:
     int KSPSetConvergenceTest(PetscKSP,PetscKSPConvergedFunction,void*,PetscKSPCtxDel)
     int KSPSetResidualHistory(PetscKSP,PetscReal[],PetscInt,PetscBool)
     int KSPGetResidualHistory(PetscKSP,PetscReal*[],PetscInt*)
+    int KSPLogResidualHistory(PetscKSP,PetscReal)
     int KSPDefaultConvergedCreate(void**)
     int KSPDefaultConvergedDestroy(void*)
     int KSPDefaultConverged(PetscKSP,PetscInt,PetscReal,PetscKSPConvergedReason*,void*) except PETSC_ERR_PYTHON
@@ -157,7 +158,6 @@ cdef extern from * nogil:
 cdef extern from "custom.h" nogil:
     int KSPSetIterationNumber(PetscKSP,PetscInt)
     int KSPSetResidualNorm(PetscKSP,PetscReal)
-    int KSPLogConvergenceHistory(PetscKSP,PetscReal)
     int KSPConvergenceTestCall(PetscKSP,PetscInt,PetscReal,PetscKSPConvergedReason*)
     int KSPSetConvergedReason(PetscKSP,PetscKSPConvergedReason)
 

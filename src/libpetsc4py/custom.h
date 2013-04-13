@@ -55,8 +55,8 @@ PetscErrorCode KSPLogHistory(KSP ksp,PetscReal rnorm)
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-#if !defined(PETSC_VERSION_LE) || PETSC_VERSION_LE(3,3,0)
-  ierr=0;KSPLogResidualHistory(ksp,rnorm);;CHKERRQ(ierr);
+#if PETSC_VERSION_(3,3,0) || PETSC_VERSION_(3,2,0)
+  ierr=0;KSPLogResidualHistory(ksp,rnorm);CHKERRQ(ierr);
 #else
   ierr = KSPLogResidualHistory(ksp,rnorm);CHKERRQ(ierr);
 #endif
@@ -71,7 +71,7 @@ PetscErrorCode SNESLogHistory(SNES snes,PetscReal rnorm,PetscInt lits)
     PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
-#if !defined(PETSC_VERSION_LE) || PETSC_VERSION_LE(3,3,0)
+#if PETSC_VERSION_(3,3,0) || PETSC_VERSION_(3,2,0)
   ierr=0;SNESLogConvHistory(snes,rnorm,lits);CHKERRQ(ierr);
 #else
   ierr = SNESLogConvergenceHistory(snes,rnorm,lits);CHKERRQ(ierr);
@@ -132,6 +132,9 @@ PetscErrorCode SNESConverged(SNES snes,
   PetscFunctionReturn(0);
 }
 
+#if PETSC_VERSION_(3,2,0)
+#define TSPreStage(ts,t) (0)
+#endif
 
 #ifndef PETSC_ERR_PYTHON
 #define PETSC_ERR_PYTHON ((PetscErrorCode)(-1))

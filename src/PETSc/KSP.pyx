@@ -255,7 +255,7 @@ cdef class KSP(Object):
 
     def logConvergenceHistory(self, rnorm):
         cdef PetscReal rval = asReal(rnorm)
-        CHKERR( KSPLogConvergenceHistory(self.ksp, rval) )
+        CHKERR( KSPLogResidualHistory(self.ksp, rval) )
 
     # --- monitoring ---
 
