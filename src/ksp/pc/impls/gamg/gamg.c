@@ -28,6 +28,7 @@ static PetscLogStage gamg_stages[GAMG_MAXLEVELS];
 #endif
 
 static PetscFunctionList GAMGList = 0;
+static PetscBool PCGAMGPackageInitialized;
 
 /* ----------------------------------------------------------------------------- */
 #undef __FUNCT__
@@ -1482,10 +1483,9 @@ PETSC_EXTERN PetscErrorCode PCCreate_GAMG(PC pc)
   pc_gamg->data    = 0;
 
   /* register AMG type */
-  if (!GAMGList) {
-    ierr = PetscFunctionListAdd(&GAMGList,PCGAMGGEO,PCCreateGAMG_GEO);CHKERRQ(ierr);
-    ierr = PetscFunctionListAdd(&GAMGList,PCGAMGAGG,PCCreateGAMG_AGG);CHKERRQ(ierr);
-  }
+#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
+  ierr = PCGAMGInitializePackage();CHKERRQ(ierr);
+#endif
 
   /* overwrite the pointers of PCMG by the functions of base class PCGAMG */
   pc->ops->setfromoptions = PCSetFromOptions_GAMG;
@@ -1572,5 +1572,51 @@ PETSC_EXTERN PetscErrorCode PCCreate_GAMG(PC pc)
     ierr = PCGAMGSetType(pc, tname);CHKERRQ(ierr);
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PCGAMGInitializePackage"
+/*@C
+ PCGAMGInitializePackage - This function initializes everything in the PCGAMG package. It is called
+ from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to PCCreate_GAMG()
+ when using static libraries.
+
+ Level: developer
+
+ .keywords: PC, PCGAMG, initialize, package
+ .seealso: PetscInitialize()
+@*/
+PetscErrorCode PCGAMGInitializePackage(void)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (PCGAMGPackageInitialized) PetscFunctionReturn(0);
+  PCGAMGPackageInitialized = PETSC_TRUE;
+  ierr = PetscFunctionListAdd(&GAMGList,PCGAMGGEO,PCCreateGAMG_GEO);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&GAMGList,PCGAMGAGG,PCCreateGAMG_AGG);CHKERRQ(ierr);
+  ierr = PetscRegisterFinalize(PCGAMGFinalizePackage);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PCGAMGFinalizePackage"
+/*@C
+ PCGAMGFinalizePackage - This function destroys everything in the PCGAMG package. It is
+ called from PetscFinalize().
+
+ Level: developer
+
+ .keywords: Petsc, destroy, package
+ .seealso: PetscFinalize()
+@*/
+PetscErrorCode PCGAMGFinalizePackage(void)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PCGAMGPackageInitialized = PETSC_FALSE;
+  ierr = PetscFunctionListDestroy(&GAMGList);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
