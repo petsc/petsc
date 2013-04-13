@@ -1817,8 +1817,12 @@ runex161:
 	   ${DIFF} output/ex161.out ex161.tmp || echo ${PWD} "\nPossible problem with ex161, diffs above \n========================================="; \
 	   ${RM} -f ex161.tmp
 runex161_2:
-	-@${MPIEXEC} -n 1 ./ex161 -matmattransmult_color > ex161.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex161 -matmattransmult_color -mat_no_inode > ex161.tmp 2>&1; \
 	   ${DIFF} output/ex161.out ex161.tmp || echo ${PWD} "\nPossible problem with ex161_2, diffs above \n========================================="; \
+	   ${RM} -f ex161.tmp
+runex161_3:
+	-@${MPIEXEC} -n 1 ./ex161 -matmattransmult_color -mat_no_inode -matden2sp_brows 3 > ex161.tmp 2>&1; \
+	   ${DIFF} output/ex161.out ex161.tmp || echo ${PWD} "\nPossible problem with ex161_3, diffs above \n========================================="; \
 	   ${RM} -f ex161.tmp
 
 runex164:

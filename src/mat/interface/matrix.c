@@ -9239,6 +9239,7 @@ PetscErrorCode  MatTransposeColoringDestroy(MatTransposeColoring *c)
   ierr = PetscFree(matcolor->nrows);CHKERRQ(ierr);
   ierr = PetscFree(matcolor->colorforrow);CHKERRQ(ierr);
   ierr = PetscFree2(matcolor->rows,matcolor->columnsforspidx);CHKERRQ(ierr);
+  ierr = PetscFree(matcolor->den2sp);CHKERRQ(ierr);
   ierr = PetscFree(matcolor->colorforcol);CHKERRQ(ierr);
   ierr = PetscFree(matcolor->columns);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(c);CHKERRQ(ierr);
