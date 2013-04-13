@@ -376,7 +376,7 @@ PETSC_STATIC_INLINE void Volume_Triangle_Internal(PetscReal *vol, PetscReal coor
   const PetscReal x2 = coords[4] - coords[0], y2 = coords[5] - coords[1];
   PetscReal       M[4], detM;
   M[0] = x1; M[1] = x2;
-  M[3] = y1; M[4] = y2;
+  M[2] = y1; M[3] = y2;
   Det2D_Internal(&detM, M);
   *vol = 0.5*detM;
   PetscLogFlops(5.0);
@@ -766,7 +766,7 @@ static PetscErrorCode DMPlexComputeGeometryFVM_2D_Internal(DM dm, PetscInt dim, 
   PetscSection   coordSection;
   Vec            coordinates;
   PetscScalar   *coords = NULL;
-  PetscReal      vsum, csum[2], vtmp, ctmp[4];
+  PetscReal      vsum = 0.0, csum[2], vtmp, ctmp[4];
   PetscInt       coordSize, numCorners, p, d;
   PetscErrorCode ierr;
 
@@ -811,7 +811,7 @@ static PetscErrorCode DMPlexComputeGeometryFVM_3D_Internal(DM dm, PetscInt dim, 
   PetscSection    coordSection;
   Vec             coordinates;
   PetscScalar    *coords = NULL;
-  PetscReal       vsum, vtmp, coordsTmp[3*3];
+  PetscReal       vsum = 0.0, vtmp, coordsTmp[3*3];
   const PetscInt *faces;
   PetscInt        numFaces, f, coordSize, numCorners, p, d;
   PetscErrorCode  ierr;
