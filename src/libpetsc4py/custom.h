@@ -14,6 +14,16 @@
 #include "petsc-private/tsimpl.h"
 #endif
 
+#if PETSC_VERSION_(3,3,0) || PETSC_VERSION_(3,2,0)
+#define PetscObjectComposeFunction(o,n,f) \
+        PetscObjectComposeFunction(o,n,"",(PetscVoidFunction)(f))
+#define MatRegister(s,f)  MatRegister(s,0,0,f)
+#define PCRegister(s,f)   PCRegister(s,0,0,f)
+#define KSPRegister(s,f)  KSPRegister(s,0,0,f)
+#define SNESRegister(s,f) SNESRegister(s,0,0,f)
+#define TSRegister(s,f)   TSRegister(s,0,0,f)
+#endif
+
 #if PETSC_VERSION_(3,2,0)
 #define PetscObjectTypeCompare PetscTypeCompare
 #endif

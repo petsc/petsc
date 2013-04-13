@@ -1,6 +1,8 @@
+#define PetscTime PetscGetTime
+
 #undef __FUNCT__  
 #define __FUNCT__ "PetscTokenDestroy_Compat"
-PetscErrorCode PetscTokenDestroy_Compat(PetscToken *a)
+static PetscErrorCode PetscTokenDestroy_Compat(PetscToken *a)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;

@@ -3,7 +3,11 @@
 
 #include "Python.h"
 
-/*#define NPY_NO_DEPRECATED_API*/
+/*
+#ifndef NPY_NO_DEPRECATED_API
+#define NPY_NO_DEPRECATED_API NPY_API_VERSION
+#endif
+*/
 #include "numpy/arrayobject.h"
 
 #ifndef NPY_ARRAY_ALIGNED

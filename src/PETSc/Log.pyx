@@ -65,7 +65,7 @@ cdef class Log:
     @classmethod
     def getTime(cls):
         cdef PetscLogDouble wctime=0
-        CHKERR( PetscGetTime(&wctime) )
+        CHKERR( PetscTime(&wctime) )
         return wctime
 
     @classmethod

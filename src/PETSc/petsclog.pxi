@@ -3,11 +3,13 @@ cdef extern from * nogil:
     ctypedef double PetscLogDouble
     int PetscLogFlops(PetscLogDouble)
     int PetscGetFlops(PetscLogDouble*)
-    int PetscGetTime(PetscLogDouble*)
     int PetscGetCPUTime(PetscLogDouble*)
     int PetscMallocGetCurrentUsage(PetscLogDouble*)
     int PetscMemoryGetCurrentUsage(PetscLogDouble*)
 
+    int PetscTime(PetscLogDouble*)
+    int PetscTimeSubtract(PetscLogDouble*)
+    int PetscTimeAdd(PetscLogDouble*)
 
     ctypedef int PetscLogStage
     int PetscLogStageRegister(char[],PetscLogStage*)

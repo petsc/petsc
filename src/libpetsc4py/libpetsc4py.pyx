@@ -63,7 +63,7 @@ cdef extern from * nogil:
     PetscErrorCode PetscObjectQuery(PetscObject,char[],PetscObject*)
     PetscErrorCode PetscObjectReference(PetscObject)
     ctypedef void (*PetscVoidFunction)()
-    PetscErrorCode PetscObjectComposeFunction(PetscObject,char[],char[],void (*ptr)())
+    PetscErrorCode PetscObjectComposeFunction(PetscObject,char[],void (*ptr)())
     PetscErrorCode PetscObjectTypeCompare(PetscObject,char[],PetscBool*)
     PetscErrorCode PetscObjectChangeTypeName(PetscObject, char[])
     PetscErrorCode PetscOptionsString(char[],char[],char[],char[],char[],size_t,PetscBool*)
@@ -561,11 +561,9 @@ cdef PetscErrorCode MatCreate_Python(
     #
     CHKERR( PetscObjectComposeFunction(
             <PetscObject>mat,b"MatGetDiagonalBlock_C",
-            b"MatGetDiagonalBlock_Python",
             <PetscVoidFunction>MatGetDiagonalBlock_Python) )
     CHKERR( PetscObjectComposeFunction(
             <PetscObject>mat,b"MatPythonSetType_C",
-            b"MatPythonSetType_PYTHON",
             <PetscVoidFunction>MatPythonSetType_PYTHON) )
     CHKERR( PetscObjectChangeTypeName(
             <PetscObject>mat,MATPYTHON) )
@@ -582,10 +580,10 @@ cdef PetscErrorCode MatDestroy_Python(
     FunctionBegin(b"MatDestroy_Python")
     CHKERR( PetscObjectComposeFunction(
             <PetscObject>mat,b"MatGetDiagonalBlock_C",
-            b"", <PetscVoidFunction>NULL) )
+            <PetscVoidFunction>NULL) )
     CHKERR( PetscObjectComposeFunction(
             <PetscObject>mat,b"MatPythonSetType_C",
-            b"", <PetscVoidFunction>NULL) )
+            <PetscVoidFunction>NULL) )
     CHKERR( PetscObjectChangeTypeName(
             <PetscObject>mat,NULL) )
     #
@@ -1137,9 +1135,8 @@ cdef PetscErrorCode PCCreate_Python(
     ops.applysymmetricright = PCApplySymmetricRight_Python
     #
     CHKERR( PetscObjectComposeFunction(
-        <PetscObject>pc, b"PCPythonSetType_C",
-         b"PCPythonSetType_PYTHON",
-         <PetscVoidFunction>PCPythonSetType_PYTHON) )
+            <PetscObject>pc, b"PCPythonSetType_C",
+            <PetscVoidFunction>PCPythonSetType_PYTHON) )
     #
     cdef ctx = PyPC(NULL)
     pc.data = <void*> ctx
@@ -1153,7 +1150,7 @@ cdef PetscErrorCode PCDestroy_Python(
     FunctionBegin(b"PCDestroy_Python")
     CHKERR( PetscObjectComposeFunction(
             <PetscObject>pc, b"PCPythonSetType_C",
-             b"", <PetscVoidFunction>NULL) )
+            <PetscVoidFunction>NULL) )
     #
     if not Py_IsInitialized(): return FunctionEnd()
     try:
@@ -1409,8 +1406,7 @@ cdef PetscErrorCode KSPCreate_Python(
     #
     CHKERR( PetscObjectComposeFunction(
             <PetscObject>ksp, b"KSPPythonSetType_C",
-             b"KSPPythonSetType_PYTHON",
-             <PetscVoidFunction>KSPPythonSetType_PYTHON) )
+            <PetscVoidFunction>KSPPythonSetType_PYTHON) )
     #
     cdef ctx = PyKSP(NULL)
     ksp.data = <void*> ctx
@@ -1437,7 +1433,7 @@ cdef PetscErrorCode KSPDestroy_Python(
     FunctionBegin(b"KSPDestroy_Python")
     CHKERR( PetscObjectComposeFunction(
             <PetscObject>ksp, b"KSPPythonSetType_C",
-             b"", <PetscVoidFunction>NULL))
+            <PetscVoidFunction>NULL))
     #
     if not Py_IsInitialized(): return FunctionEnd()
     try:
@@ -1760,8 +1756,7 @@ cdef PetscErrorCode SNESCreate_Python(
     #
     CHKERR( PetscObjectComposeFunction(
             <PetscObject>snes, b"SNESPythonSetType_C",
-             b"SNESPythonSetType_PYTHON",
-             <PetscVoidFunction>SNESPythonSetType_PYTHON) )
+            <PetscVoidFunction>SNESPythonSetType_PYTHON) )
     #
     cdef ctx = PySNES(NULL)
     snes.data = <void*> ctx
@@ -1775,7 +1770,7 @@ cdef PetscErrorCode SNESDestroy_Python(
     FunctionBegin(b"SNESDestroy_Python")
     CHKERR( PetscObjectComposeFunction(
             <PetscObject>snes, b"SNESPythonSetType_C",
-             b"", <PetscVoidFunction>NULL) )
+            <PetscVoidFunction>NULL) )
     #
     if not Py_IsInitialized(): return FunctionEnd()
     try:
@@ -2086,8 +2081,7 @@ cdef PetscErrorCode TSCreate_Python(
     #
     CHKERR( PetscObjectComposeFunction(
             <PetscObject>ts, b"TSPythonSetType_C",
-             b"TSPythonSetType_PYTHON",
-             <PetscVoidFunction>TSPythonSetType_PYTHON) )
+            <PetscVoidFunction>TSPythonSetType_PYTHON) )
     #
     cdef ctx = PyTS(NULL)
     ts.data = <void*> ctx
@@ -2101,7 +2095,7 @@ cdef PetscErrorCode TSDestroy_Python(
     FunctionBegin(b"TSDestroy_Python")
     CHKERR( PetscObjectComposeFunction(
             <PetscObject>ts, b"TSPythonSetType_C",
-             b"", <PetscVoidFunction>NULL) )
+            <PetscVoidFunction>NULL) )
     #
     if not Py_IsInitialized(): return FunctionEnd()
     try:
@@ -2414,25 +2408,25 @@ cdef extern from * nogil:
   ctypedef PetscErrorCode SNESCreateFunction (PetscSNES) except IERR
   ctypedef PetscErrorCode TSCreateFunction   (PetscTS)   except IERR
 
-  PetscErrorCode MatRegister  (char[],char[],char[],MatCreateFunction* )
-  PetscErrorCode PCRegister   (char[],char[],char[],PCCreateFunction*  )
-  PetscErrorCode KSPRegister  (char[],char[],char[],KSPCreateFunction* )
-  PetscErrorCode SNESRegister (char[],char[],char[],SNESCreateFunction*)
-  PetscErrorCode TSRegister   (char[],char[],char[],TSCreateFunction*  )
+  PetscErrorCode MatRegister  (char[],MatCreateFunction* )
+  PetscErrorCode PCRegister   (char[],PCCreateFunction*  )
+  PetscErrorCode KSPRegister  (char[],KSPCreateFunction* )
+  PetscErrorCode SNESRegister (char[],SNESCreateFunction*)
+  PetscErrorCode TSRegister   (char[],TSCreateFunction*  )
 
   PetscErrorCode (*PetscPythonMonitorSet_C) \
       (PetscObject, const_char[]) except IERR
 
 
-cdef public PetscErrorCode PetscPythonRegisterAll(char path[]) except IERR:
+cdef public PetscErrorCode PetscPythonRegisterAll() except IERR:
     FunctionBegin(b"PetscPythonRegisterAll")
 
     # Python subtypes
-    CHKERR( MatRegister ( MATPYTHON,  path, b"MatCreate_Python",  MatCreate_Python  ) )
-    CHKERR( PCRegister  ( PCPYTHON,   path, b"PCCreate_Python",   PCCreate_Python   ) )
-    CHKERR( KSPRegister ( KSPPYTHON,  path, b"KSPCreate_Python",  KSPCreate_Python  ) )
-    CHKERR( SNESRegister( SNESPYTHON, path, b"SNESCreate_Python", SNESCreate_Python ) )
-    CHKERR( TSRegister  ( TSPYTHON,   path, b"TSCreate_Python",   TSCreate_Python   ) )
+    CHKERR( MatRegister ( MATPYTHON,  MatCreate_Python  ) )
+    CHKERR( PCRegister  ( PCPYTHON,   PCCreate_Python   ) )
+    CHKERR( KSPRegister ( KSPPYTHON,  KSPCreate_Python  ) )
+    CHKERR( SNESRegister( SNESPYTHON, SNESCreate_Python ) )
+    CHKERR( TSRegister  ( TSPYTHON,   TSCreate_Python   ) )
 
     # Python monitors
     global PetscPythonMonitorSet_C
@@ -2459,6 +2453,6 @@ if PETSC_FALSE:
     <void>SNESPythonSetContext(NULL,NULL)
     <void>TSPythonGetContext(NULL,NULL)
     <void>TSPythonSetContext(NULL,NULL)
-    <void>PetscPythonRegisterAll(NULL)
+    <void>PetscPythonRegisterAll()
 
 # --------------------------------------------------------------------

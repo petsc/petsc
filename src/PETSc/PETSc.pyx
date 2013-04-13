@@ -244,11 +244,11 @@ cdef extern from "stdio.h" nogil:
     int fprintf(FILE *, char *, ...)
 
 cdef extern from "initpkg.h":
-    int PetscInitializePackageAll(char[])
+    int PetscInitializePackageAll()
 
 cdef extern from "libpetsc4py.h":
     int import_libpetsc4py() except -1
-    int PetscPythonRegisterAll(char[])
+    int PetscPythonRegisterAll()
 
 cdef int    PyPetsc_Argc = 0
 cdef char** PyPetsc_Argv = NULL
@@ -342,15 +342,15 @@ cdef extern from *:
 
 cdef bint registercalled = 0
 
-cdef int register(char path[]) except -1:
+cdef int register() except -1:
     global registercalled
     if registercalled: return 0
     registercalled = True
     # make sure all PETSc packages are initialized
-    CHKERR( PetscInitializePackageAll(NULL) )
+    CHKERR( PetscInitializePackageAll() )
     # register custom implementations
     import_libpetsc4py()
-    CHKERR( PetscPythonRegisterAll(path) )
+    CHKERR( PetscPythonRegisterAll() )
     # register Python types
     PyPetscType_Register(PETSC_OBJECT_CLASSID,    Object)
     PyPetscType_Register(PETSC_VIEWER_CLASSID,    Viewer)
@@ -377,11 +377,8 @@ def _initialize(args=None, comm=None):
     global PetscError
     PetscError = Error
     #
-    global __file__
-    cdef bytes filename = __file__.encode()
-    cdef char* path = filename
     cdef int ready = initialize(args, comm)
-    if ready: register(path)
+    if ready: register()
     #
     global __COMM_SELF__, __COMM_WORLD__
     __COMM_SELF__.comm  = PETSC_COMM_SELF
