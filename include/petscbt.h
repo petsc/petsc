@@ -10,15 +10,16 @@
 
      Level: advanced
 
-     PetscBTCreate(m,&bt)       - creates a bit array with enough room to hold m values
-     PetscBTDestroy(&bt)        - destroys the bit array
-     PetscBTMemzero(m,bt)       - zeros the entire bit array (sets all values to false)
-     PetscBTSet(bt,index)       - sets a particular entry as true
-     PetscBTClear(bt,index)     - sets a particular entry as false
-     PetscBTLookup(bt,index)    - returns the value
-     PetscBTLookupSet(bt,index) - returns the value and then sets it true
-     PetscBTLength(m)           - returns number of bytes in array with m bits
-     PetscBTView(m,bt,viewer)   - prints all the entries in a bit array
+     PetscBTCreate(m,&bt)         - creates a bit array with enough room to hold m values
+     PetscBTDestroy(&bt)          - destroys the bit array
+     PetscBTMemzero(m,bt)         - zeros the entire bit array (sets all values to false)
+     PetscBTSet(bt,index)         - sets a particular entry as true
+     PetscBTClear(bt,index)       - sets a particular entry as false
+     PetscBTLookup(bt,index)      - returns the value
+     PetscBTLookupSet(bt,index)   - returns the value and then sets it true
+     PetscBTLookupClear(bt,index) - returns the value and then sets it false
+     PetscBTLength(m)             - returns number of bytes in array with m bits
+     PetscBTView(m,bt,viewer)     - prints all the entries in a bit array
 
     We do not currently check error flags on PetscBTSet(), PetscBTClear(), PetscBTLookup(),
     PetcBTLookupSet(), PetscBTLength() cause error checking would cost hundreds more cycles then
@@ -96,6 +97,18 @@ PETSC_STATIC_INLINE PetscErrorCode PetscBTSet(PetscBT array,PetscInt index)
   BT_mask       = (char)1 << ((index)%PETSC_BITS_PER_BYTE);
   array[BT_idx] = BT_c | BT_mask;
   return 0;
+}
+
+PETSC_STATIC_INLINE char PetscBTLookupClear(PetscBT array,PetscInt index)
+{
+  char      BT_mask,BT_c;
+  PetscInt  BT_idx;
+
+  return (BT_idx        = (index)/PETSC_BITS_PER_BYTE,
+          BT_c          = array[BT_idx],
+          BT_mask       = (char)1 << ((index)%PETSC_BITS_PER_BYTE),
+          array[BT_idx] = BT_c & (~BT_mask),
+          BT_c & BT_mask);
 }
 
 PETSC_STATIC_INLINE PetscErrorCode PetscBTClear(PetscBT array,PetscInt index)
