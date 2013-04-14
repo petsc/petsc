@@ -81,6 +81,7 @@ typedef struct {
   PetscInt      numBatches;        /* The number of cell batches per kernel */
   PetscInt      numBlocks;         /* The number of concurrent blocks per kernel */
   /* Element quadrature */
+  PetscInt        order[NUM_FIELDS];
   PetscQuadrature q[NUM_FIELDS];
   /* Problem definition */
   void (*f0Funcs[NUM_FIELDS])(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[], PetscScalar f0[]); /* f0_u(x,y,z), and f0_p(x,y,z) */
@@ -242,9 +243,9 @@ void linear_p_3d(const PetscReal x[], PetscScalar *p)
 #define __FUNCT__ "ProcessOptions"
 PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
-  const char     *bcTypes[2]  = {"neumann", "dirichlet"};
-  const char     *runTypes[2] = {"full", "test"};
-  PetscInt       bc, run;
+  const char    *bcTypes[2]  = {"neumann", "dirichlet"};
+  const char    *runTypes[2] = {"full", "test"};
+  PetscInt       bc, run, n;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
@@ -259,6 +260,8 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->jacobianMF      = PETSC_FALSE;
   options->showInitial     = PETSC_FALSE;
   options->showSolution    = PETSC_TRUE;
+  options->order[0]        = 1;
+  options->order[1]        = 1;
 
   options->fem.quad    = (PetscQuadrature*) &options->q;
   options->fem.f0Funcs = (void (**)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[])) &options->f0Funcs;
@@ -293,6 +296,8 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsBool("-jacobian_mf", "Calculate the action of the Jacobian on the fly", "ex62.c", options->jacobianMF, &options->jacobianMF, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-show_initial", "Output the initial guess for verification", "ex62.c", options->showInitial, &options->showInitial, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-show_solution", "Output the solution for verification", "ex62.c", options->showSolution, &options->showSolution, NULL);CHKERRQ(ierr);
+  n    = NUM_FIELDS;
+  ierr = PetscOptionsIntArray("-order", "The FEM order", "ex62.c", options->order, &n, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
 
   ierr = PetscLogEventRegister("CreateMesh", DM_CLASSID, &options->createMeshEvent);CHKERRQ(ierr);
@@ -364,21 +369,62 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 #define __FUNCT__ "SetupQuadrature"
 PetscErrorCode SetupQuadrature(AppCtx *user)
 {
+  PetscReal     *x, *w;
+  const PetscInt dim = user->dim;
+  PetscInt       order, numPoints, p, d;
+  PetscErrorCode ierr;
+
   PetscFunctionBeginUser;
-  user->fem.quad[0].numQuadPoints = NUM_QUADRATURE_POINTS_0;
-  user->fem.quad[0].quadPoints    = points_0;
-  user->fem.quad[0].quadWeights   = weights_0;
+  /* Velocity discretization */
+  order     = PetscMax(user->order[0], user->order[1]);
+  numPoints = dim > 1 ? dim > 2 ? order*PetscSqr(order) : PetscSqr(order) : order;
+  if (numPoints != NUM_QUADRATURE_POINTS_0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid number of quadrature points: %d != %d", numPoints, NUM_QUADRATURE_POINTS_0);
+  ierr = PetscDTGaussJacobiQuadrature(dim, order, -1.0, 1.0, &x, &w);CHKERRQ(ierr);
+  for (p = 0; p < numPoints; ++p) {
+    for (d = 0; d < dim; ++d) {
+      if (fabs(x[p*dim+d] - points_0[p*dim+d]) > 1.0e-10) SETERRQ4(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid point %d, component %d: %g != %g", p, d, x[p*dim+d], points_0[p*dim+d]);
+    }
+    if (fabs(w[p] - weights_0[p]) > 1.0e-10) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid weight %d: %g != %g", p, w[p], weights_0[p]);
+  }
+  user->fem.quad[0].numQuadPoints = numPoints;
+  user->fem.quad[0].quadPoints    = x;
+  user->fem.quad[0].quadWeights   = w;
   user->fem.quad[0].numBasisFuncs = NUM_BASIS_FUNCTIONS_0;
   user->fem.quad[0].numComponents = NUM_BASIS_COMPONENTS_0;
   user->fem.quad[0].basis         = Basis_0;
   user->fem.quad[0].basisDer      = BasisDerivatives_0;
-  user->fem.quad[1].numQuadPoints = NUM_QUADRATURE_POINTS_1;
-  user->fem.quad[1].quadPoints    = points_1;
-  user->fem.quad[1].quadWeights   = weights_1;
+  /* Pressure discretization */
+  order     = PetscMax(user->order[0], user->order[1]);
+  numPoints = dim > 1 ? dim > 2 ? order*PetscSqr(order) : PetscSqr(order) : order;
+  if (numPoints != NUM_QUADRATURE_POINTS_1) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid number of quadrature points: %d != %d", numPoints, NUM_QUADRATURE_POINTS_1);
+  ierr = PetscDTGaussJacobiQuadrature(dim, order, -1.0, 1.0, &x, &w);CHKERRQ(ierr);
+  for (p = 0; p < numPoints; ++p) {
+    for (d = 0; d < dim; ++d) {
+      if (fabs(x[p*dim+d] - points_1[p*dim+d]) > 1.0e-10) SETERRQ4(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid point %d, component %d: %g != %g", p, d, x[p*dim+d], points_1[p*dim+d]);
+    }
+    if (fabs(w[p] - weights_1[p]) > 1.0e-10) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid weight %d: %g != %g", p, w[p], weights_1[p]);
+  }
+  user->fem.quad[1].numQuadPoints = numPoints;
+  user->fem.quad[1].quadPoints    = x;
+  user->fem.quad[1].quadWeights   = w;
   user->fem.quad[1].numBasisFuncs = NUM_BASIS_FUNCTIONS_1;
   user->fem.quad[1].numComponents = NUM_BASIS_COMPONENTS_1;
   user->fem.quad[1].basis         = Basis_1;
   user->fem.quad[1].basisDer      = BasisDerivatives_1;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DestroyQuadrature"
+PetscErrorCode DestroyQuadrature(AppCtx *user)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBeginUser;
+  ierr = PetscFree(user->fem.quad[0].quadPoints);CHKERRQ(ierr);
+  ierr = PetscFree(user->fem.quad[0].quadWeights);CHKERRQ(ierr);
+  ierr = PetscFree(user->fem.quad[1].quadPoints);CHKERRQ(ierr);
+  ierr = PetscFree(user->fem.quad[1].quadWeights);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -750,6 +796,7 @@ int main(int argc, char **argv)
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   }
 
+  ierr = DestroyQuadrature(&user);CHKERRQ(ierr);
   ierr = MatNullSpaceDestroy(&nullSpace);CHKERRQ(ierr);
   if (user.jacobianMF) {
     ierr = VecDestroy(&userJ.u);CHKERRQ(ierr);
