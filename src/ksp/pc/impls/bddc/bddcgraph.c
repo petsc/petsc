@@ -6,7 +6,7 @@
 #define DIRICHLET_MARK -2
 #define SPECIAL_MARK -3
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCBDDCGraphASCIIView"
 PetscErrorCode PCBDDCGraphASCIIView(PCBDDCGraph graph, PetscInt verbosity_level, PetscViewer viewer)
 {
@@ -67,7 +67,7 @@ PetscErrorCode PCBDDCGraphASCIIView(PCBDDCGraph graph, PetscInt verbosity_level,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCBDDCGraphGetCandidatesIS"
 PetscErrorCode PCBDDCGraphGetCandidatesIS(PCBDDCGraph graph, PetscBool use_faces, PetscBool use_edges, PetscBool use_vertices, PetscInt *n_faces, IS *FacesIS[], PetscInt *n_edges, IS *EdgesIS[], IS *VerticesIS)
 {
@@ -84,7 +84,7 @@ PetscErrorCode PCBDDCGraphGetCandidatesIS(PCBDDCGraph graph, PetscBool use_faces
   twodim_flag = PETSC_FALSE;
   for (i=0;i<graph->ncc;i++) {
     if (graph->cptr[i+1]-graph->cptr[i] > graph->custom_minimal_size) {
-      if (graph->count[graph->queue[graph->cptr[i]]] == 1) { 
+      if (graph->count[graph->queue[graph->cptr[i]]] == 1) {
         nfc++;
       } else { /* note that nec will be zero in 2d */
         nec++;
@@ -128,7 +128,7 @@ PetscErrorCode PCBDDCGraphGetCandidatesIS(PCBDDCGraph graph, PetscBool use_faces
             ierr = ISCreateGeneral(PETSC_COMM_SELF,graph->cptr[i+1]-graph->cptr[i],&graph->queue[graph->cptr[i]],PETSC_COPY_VALUES,&ISForFaces[nfc]);CHKERRQ(ierr);
             nfc++;
           }
-        } 
+        }
       } else {
         if (use_edges) {
           ierr = ISCreateGeneral(PETSC_COMM_SELF,graph->cptr[i+1]-graph->cptr[i],&graph->queue[graph->cptr[i]],PETSC_COPY_VALUES,&ISForEdges[nec]);CHKERRQ(ierr);
@@ -148,7 +148,7 @@ PetscErrorCode PCBDDCGraphGetCandidatesIS(PCBDDCGraph graph, PetscBool use_faces
       }
     }
     /* sort vertex set (by local ordering) */
-    ierr = PetscSortInt(nvc,idx);CHKERRQ(ierr); 
+    ierr = PetscSortInt(nvc,idx);CHKERRQ(ierr);
     ierr = ISCreateGeneral(PETSC_COMM_SELF,nvc,idx,PETSC_OWN_POINTER,&ISForVertices);CHKERRQ(ierr);
   }
   /* get back info */
@@ -160,7 +160,7 @@ PetscErrorCode PCBDDCGraphGetCandidatesIS(PCBDDCGraph graph, PetscBool use_faces
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCBDDCGraphComputeConnectedComponents"
 PetscErrorCode PCBDDCGraphComputeConnectedComponents(PCBDDCGraph graph)
 {
@@ -187,7 +187,7 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponents(PCBDDCGraph graph)
   for (i=0;i<graph->n_subsets;i++) {
     /* We are not sure that on a given subset of the local interface,
        with two connected components, the latters be the same among sharing subdomains */
-    if (graph->subset_ncc[i] > 1) { 
+    if (graph->subset_ncc[i] > 1) {
       adapt_interface=1;
       break;
     }
@@ -219,7 +219,7 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponents(PCBDDCGraph graph)
         new_adjncy[new_xadj[i]]=i;
       }
     }
-    ierr = PetscFree(aux_new_xadj);CHKERRQ(ierr); 
+    ierr = PetscFree(aux_new_xadj);CHKERRQ(ierr);
     for (i=0;i<graph->ncc;i++) {
       k = graph->cptr[i+1]-graph->cptr[i];
       for (j=0;j<k;j++) {
@@ -250,7 +250,7 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponents(PCBDDCGraph graph)
     ierr = PetscMalloc(2*cum_recv_counts[graph->n_subsets]*sizeof(*recv_buffer_subset),&recv_buffer_subset);CHKERRQ(ierr);
     ierr = PetscMalloc(cum_recv_counts[graph->n_subsets]*sizeof(MPI_Request),&send_requests);CHKERRQ(ierr);
     ierr = PetscMalloc(cum_recv_counts[graph->n_subsets]*sizeof(MPI_Request),&recv_requests);CHKERRQ(ierr);
-    for (i=0;i<cum_recv_counts[graph->n_subsets];i++) { 
+    for (i=0;i<cum_recv_counts[graph->n_subsets];i++) {
       send_requests[i]=MPI_REQUEST_NULL;
       recv_requests[i]=MPI_REQUEST_NULL;
     }
@@ -261,9 +261,9 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponents(PCBDDCGraph graph)
       for (k=0;k<graph->count[j];k++) {
         ierr = PetscMPIIntCast(graph->neighbours_set[j][k],&neigh);CHKERRQ(ierr);
         ierr = PetscMPIIntCast((PetscInt)(rank+1)*graph->count[j],&tag);CHKERRQ(ierr);
-        ierr = MPI_Isend(&graph->subset_ncc[i],1,MPIU_INT,neigh,tag,interface_comm,&send_requests[sum_requests]);CHKERRQ(ierr); 
+        ierr = MPI_Isend(&graph->subset_ncc[i],1,MPIU_INT,neigh,tag,interface_comm,&send_requests[sum_requests]);CHKERRQ(ierr);
         ierr = PetscMPIIntCast((PetscInt)(neigh+1)*graph->count[j],&tag);CHKERRQ(ierr);
-        ierr = MPI_Irecv(&recv_buffer_subset[sum_requests],1,MPIU_INT,neigh,tag,interface_comm,&recv_requests[sum_requests]);CHKERRQ(ierr); 
+        ierr = MPI_Irecv(&recv_buffer_subset[sum_requests],1,MPIU_INT,neigh,tag,interface_comm,&recv_requests[sum_requests]);CHKERRQ(ierr);
         sum_requests++;
       }
     }
@@ -275,7 +275,7 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponents(PCBDDCGraph graph)
     for (i=0;i<graph->n_subsets;i++) {
       for (j=cum_recv_counts[i];j<cum_recv_counts[i+1];j++){
         /* The first condition is natural (someone has a different number of ccs than me), the second one is just to be safe */
-        if ( graph->subset_ncc[i] != recv_buffer_subset[j] || graph->subset_ncc[i] > 1 ) { 
+        if ( graph->subset_ncc[i] != recv_buffer_subset[j] || graph->subset_ncc[i] > 1 ) {
           subset_cc_adapt[i] = PETSC_TRUE;
           break;
         }
@@ -290,7 +290,7 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponents(PCBDDCGraph graph)
           }
         }
       }
-    }  
+    }
     ierr = PetscMalloc(buffer_size*sizeof(*send_buffer),&send_buffer);CHKERRQ(ierr);
     /* now get from neighbours their ccs (in global numbering) and adapt them (in case it is needed) */
     ierr = PetscMalloc(graph->nvtxs*sizeof(*queue_in_global_numbering),&queue_in_global_numbering);CHKERRQ(ierr);
@@ -319,7 +319,7 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponents(PCBDDCGraph graph)
         for (k=0;k<graph->count[j];k++) {
           ierr = PetscMPIIntCast(graph->neighbours_set[j][k],&neigh);CHKERRQ(ierr);
           ierr = PetscMPIIntCast((PetscInt)(rank+1)*graph->count[j],&tag);CHKERRQ(ierr);
-          ierr = MPI_Isend(&sizes_of_sends[i],1,MPIU_INT,neigh,tag,interface_comm,&send_requests[sum_requests]);CHKERRQ(ierr); 
+          ierr = MPI_Isend(&sizes_of_sends[i],1,MPIU_INT,neigh,tag,interface_comm,&send_requests[sum_requests]);CHKERRQ(ierr);
           ierr = PetscMPIIntCast((PetscInt)(neigh+1)*graph->count[j],&tag);CHKERRQ(ierr);
           ierr = MPI_Irecv(&recv_buffer_subset[sum_requests+start_of_recv],1,MPIU_INT,neigh,tag,interface_comm,&recv_requests[sum_requests]);CHKERRQ(ierr);
           sum_requests++;
@@ -378,7 +378,7 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponents(PCBDDCGraph graph)
             temp_buffer_size++;
           } else {
             nodes_to_temp_buffer_indices[j] = -1;
-          } 
+          }
         }
         /* allocate some temporary space */
         ierr = PetscMalloc(temp_buffer_size*sizeof(PetscInt*),&temp_buffer);CHKERRQ(ierr);
@@ -387,7 +387,7 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponents(PCBDDCGraph graph)
         for (j=1;j<temp_buffer_size;j++) {
           temp_buffer[j] = temp_buffer[j-1]+cum_recv_counts[i+1]-cum_recv_counts[i];
         }
-        /* analyze contributions from neighbouring subdomains for i-th conn comp 
+        /* analyze contributions from neighbouring subdomains for i-th conn comp
            temp buffer structure:
            supposing part of the interface has dimension 5 (for example with global dofs 0,1,2,3,4)
            3 neighs procs with structured connected components:
@@ -402,7 +402,7 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponents(PCBDDCGraph graph)
                0, 1, 0; ];
            This way we can simply find intersections of ccs among neighs.
            For the example above, the graph->subset array will be modified to reproduce the following 4 connected components [0], [1], [2 3], [4];
-                                                                                                                                   */     
+                                                                                                                                   */
         for (j=0;j<cum_recv_counts[i+1]-cum_recv_counts[i];j++) {
           ins_val = 0;
           size_of_recv = recv_buffer_subset[sum_requests];  /* total size of recv from neighs */
@@ -484,17 +484,17 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponents(PCBDDCGraph graph)
   PetscFunctionReturn(0);
 }
 
-/* The following code has been adapted from function IsConnectedSubdomain contained 
+/* The following code has been adapted from function IsConnectedSubdomain contained
    in source file contig.c of METIS library (version 5.0.1)
-   It finds connected components for each subset  */                                
-#undef __FUNCT__  
+   It finds connected components for each subset  */
+#undef __FUNCT__
 #define __FUNCT__ "PCBDDCGraphComputeConnectedComponentsLocal"
 PetscErrorCode PCBDDCGraphComputeConnectedComponentsLocal(PCBDDCGraph graph)
 {
   PetscInt       i,j,k,first,last,nleft,ncc,pid,cum_queue,n,ncc_pid;
   PetscInt       *queue_global;
   PetscErrorCode ierr;
- 
+
   PetscFunctionBegin;
   /* quiet return if no csr info is available */
   if (!graph->xadj || !graph->adjncy) {
@@ -505,7 +505,7 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponentsLocal(PCBDDCGraph graph)
   ierr = PetscMemzero(graph->touched,graph->nvtxs*sizeof(*graph->touched));CHKERRQ(ierr);
   graph->n_subsets = 0;
   for (i=0;i<graph->nvtxs;i++) {
-    if (graph->which_dof[i] == DIRICHLET_MARK || !graph->count[i]) { 
+    if (graph->which_dof[i] == DIRICHLET_MARK || !graph->count[i]) {
       graph->touched[i] = PETSC_TRUE;
       graph->subset[i] = 0;
     }
@@ -627,7 +627,7 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
       graph->count[shared[i][j]] += 1;
     }
   }
-  /* Allocate space for storing the set of neighbours for each node */ 
+  /* Allocate space for storing the set of neighbours for each node */
   if (graph->nvtxs) {
     ierr = PetscMalloc(k*sizeof(PetscInt),&graph->neighbours_set[0]);CHKERRQ(ierr);
   }
@@ -697,7 +697,7 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
           SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"BDDC cannot have boundary nodes which are marked Neumann and Dirichlet at the same time! Local node %d is wrong!\n",k);
         }
         array2[k] = 1.0;
-      } 
+      }
     }
     ierr = ISRestoreIndices(dirichlet_is,(const PetscInt**)&is_indices);CHKERRQ(ierr);
     ierr = VecRestoreArray(local_vec,&array);CHKERRQ(ierr);
@@ -729,7 +729,7 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
   }
   /* mark interior nodes as touched and belonging to partition number 0 */
   for (i=0;i<graph->nvtxs;i++) {
-    if (!graph->count[i]) {  
+    if (!graph->count[i]) {
       graph->touched[i] = PETSC_TRUE;
       graph->subset[i] = 0;
     }

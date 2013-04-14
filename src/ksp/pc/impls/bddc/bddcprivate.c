@@ -2,7 +2,7 @@
 #include "bddcprivate.h"
 #include <petscblaslapack.h>
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCBDDCResetCustomization"
 PetscErrorCode PCBDDCResetCustomization(PC pc)
 {
@@ -23,7 +23,7 @@ PetscErrorCode PCBDDCResetCustomization(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCBDDCResetTopography"
 PetscErrorCode PCBDDCResetTopography(PC pc)
 {
@@ -37,7 +37,7 @@ PetscErrorCode PCBDDCResetTopography(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCBDDCResetSolvers"
 PetscErrorCode PCBDDCResetSolvers(PC pc)
 {
@@ -77,7 +77,7 @@ PetscErrorCode PCBDDCResetSolvers(PC pc)
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCSolveSaddlePoint"
 static PetscErrorCode  PCBDDCSolveSaddlePoint(PC pc)
-{ 
+{
   PetscErrorCode ierr;
   PC_BDDC*       pcbddc = (PC_BDDC*)(pc->data);
 
@@ -93,7 +93,7 @@ static PetscErrorCode  PCBDDCSolveSaddlePoint(PC pc)
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCApplyInterfacePreconditioner"
 PetscErrorCode  PCBDDCApplyInterfacePreconditioner(PC pc)
-{ 
+{
   PetscErrorCode ierr;
   PC_BDDC*        pcbddc = (PC_BDDC*)(pc->data);
   PC_IS*            pcis = (PC_IS*)  (pc->data);
@@ -142,7 +142,7 @@ PetscErrorCode  PCBDDCApplyInterfacePreconditioner(PC pc)
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCScatterCoarseDataBegin"
 PetscErrorCode PCBDDCScatterCoarseDataBegin(PC pc,Vec vec_from, Vec vec_to, InsertMode imode, ScatterMode smode)
-{ 
+{
   PetscErrorCode ierr;
   PC_BDDC*       pcbddc = (PC_BDDC*)(pc->data);
 
@@ -160,7 +160,7 @@ PetscErrorCode PCBDDCScatterCoarseDataBegin(PC pc,Vec vec_from, Vec vec_to, Inse
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCScatterCoarseDataEnd"
 PetscErrorCode PCBDDCScatterCoarseDataEnd(PC pc,Vec vec_from, Vec vec_to, InsertMode imode, ScatterMode smode)
-{ 
+{
   PetscErrorCode ierr;
   PC_BDDC*       pcbddc = (PC_BDDC*)(pc->data);
   PetscScalar*   array_to;
@@ -225,11 +225,11 @@ PetscErrorCode PCBDDCScatterCoarseDataEnd(PC pc,Vec vec_from, Vec vec_to, Insert
           } else { /* no communications needed for SCATTER_REVERSE since needed data is already present */
             if (imode == ADD_VALUES) {
               for (i=0;i<pcbddc->local_primal_size;i++) {
-                array_to[i]+=array_from[pcbddc->local_primal_indices[i]]; 
+                array_to[i]+=array_from[pcbddc->local_primal_indices[i]];
               }
             } else {
               for (i=0;i<pcbddc->local_primal_size;i++) {
-                array_to[i]=array_from[pcbddc->local_primal_indices[i]]; 
+                array_to[i]=array_from[pcbddc->local_primal_indices[i]];
               }
             }
           }
@@ -250,10 +250,10 @@ PetscErrorCode PCBDDCScatterCoarseDataEnd(PC pc,Vec vec_from, Vec vec_to, Insert
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCBDDCConstraintsSetUp"
 PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
-{   
+{
   PetscErrorCode ierr;
   PC_IS*         pcis = (PC_IS*)(pc->data);
   PC_BDDC*       pcbddc = (PC_BDDC*)pc->data;
@@ -335,9 +335,9 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
   ierr = MatGetNearNullSpace(pc->pmat,&nearnullsp);CHKERRQ(ierr);
   if (nearnullsp) {
     ierr = MatNullSpaceGetVecs(nearnullsp,&nnsp_has_cnst,&nnsp_size,&nearnullvecs);CHKERRQ(ierr);
-  } else { /* if near null space is not provided it uses constants */ 
+  } else { /* if near null space is not provided it uses constants */
     nnsp_has_cnst = PETSC_TRUE;
-    use_nnsp_true = PETSC_TRUE; 
+    use_nnsp_true = PETSC_TRUE;
   }
   if (nnsp_has_cnst) {
     nnsp_addone = 1;
@@ -366,7 +366,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
     } else {
       used_IS = &ISForFaces[i-n_ISForEdges];
     }
-    ierr = ISGetSize(*used_IS,&j);CHKERRQ(ierr); 
+    ierr = ISGetSize(*used_IS,&j);CHKERRQ(ierr);
     total_counts += j;
     max_size_of_constraint = PetscMax(j,max_size_of_constraint);
   }
@@ -480,7 +480,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
         temp_indices_to_constraint_B[temp_indices[total_counts]]=local_to_B[is_indices[i]];
         temp_quadrature_constraint[temp_indices[total_counts]]=1.0;
         temp_indices[total_counts+1]=temp_indices[total_counts]+1;
-        change_basis[total_counts]=PETSC_FALSE; 
+        change_basis[total_counts]=PETSC_FALSE;
         total_counts++;
       }
     } else { /* consider vertices for which exist at least a localnearnullsp which is not null there */
@@ -494,8 +494,8 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
             temp_indices_to_constraint_B[temp_indices[total_counts]]=local_to_B[is_indices[i]];
             temp_quadrature_constraint[temp_indices[total_counts]]=1.0;
             temp_indices[total_counts+1]=temp_indices[total_counts]+1;
-            change_basis[total_counts]=PETSC_FALSE; 
-            total_counts++; 
+            change_basis[total_counts]=PETSC_FALSE;
+            total_counts++;
             used_vertex=PETSC_TRUE;
           }
           ierr = VecRestoreArrayRead(localnearnullsp[k],(const PetscScalar**)&array_vector);CHKERRQ(ierr);
@@ -529,7 +529,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
       }
       temp_indices[total_counts+1]=temp_indices[total_counts]+size_of_constraint;  /* store new starting point */
       change_basis[total_counts]=boolforface;
-      total_counts++; 
+      total_counts++;
     }
     for (k=0;k<nnsp_size;k++) {
       ierr = VecGetArrayRead(localnearnullsp[k],(const PetscScalar**)&array_vector);CHKERRQ(ierr);
@@ -575,10 +575,10 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
 #else
 /*  LAPACK call is missing here! TODO */
       SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Not yet implemented for complexes when PETSC_MISSING_GESVD = 1");
-#endif   
+#endif
       if (lierr) {
         SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in SYEVX Lapack routine %d",(int)lierr);
-      } 
+      }
       ierr = PetscFPTrapPop();CHKERRQ(ierr);
       /* retain eigenvalues greater than tol: note that lapack SYEV gives eigs in ascending order */
       j=0;
@@ -757,7 +757,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
           if (i == local_primal_size -1 ||  temp_start_ptr != temp_indices_to_constraint_B[temp_indices[i+1]]) {
             compute_submatrix = PETSC_TRUE;
           }
-        } 
+        }
         if (compute_submatrix) {
           if (temp_constraints > 1 || pcbddc->use_nnsp_true) {
             useksp = PETSC_TRUE;
@@ -775,7 +775,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
           for (s=0;s<dual_dofs;s++) {
             is_indices[0] = s;
             for (j=0;j<temp_constraints;j++) {
-              for (k=0;k<temp_constraints;k++) { 
+              for (k=0;k<temp_constraints;k++) {
                 temp_basis[j*temp_constraints+k]=temp_quadrature_constraint[temp_indices[start_constraint+k]+s+j+1];
               }
               work[j]=-temp_quadrature_constraint[temp_indices[start_constraint+j]+s];
@@ -785,7 +785,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
             ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
             LAPACKgesv_(&Bt,&Bone,temp_basis,&Bt,ipiv,work,&Bt,&lierr);
             if ( lierr ) {
-              SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in GESV Lapack routine %d",(int)lierr);          
+              SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in GESV Lapack routine %d",(int)lierr);
             }
             ierr = PetscFPTrapPop();CHKERRQ(ierr);
             j = temp_indices_to_constraint_B[temp_indices[start_constraint]+s];
@@ -838,7 +838,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
           }
           /* prepare for the next cycle */
           temp_constraints = 0;
-          if (i != local_primal_size -1 ) { 
+          if (i != local_primal_size -1 ) {
             temp_start_ptr = temp_indices_to_constraint_B[temp_indices[i+1]];
           }
         }
@@ -850,7 +850,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
     ierr = PetscFree(ipiv);CHKERRQ(ierr);
     ierr = PetscFree(is_indices);CHKERRQ(ierr);
   }
-  /* free workspace no longer needed */ 
+  /* free workspace no longer needed */
   ierr = PetscFree(rwork);CHKERRQ(ierr);
   ierr = PetscFree(work);CHKERRQ(ierr);
   ierr = PetscFree(temp_basis);CHKERRQ(ierr);
@@ -874,15 +874,15 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCBDDCAnalyzeInterface"
 PetscErrorCode PCBDDCAnalyzeInterface(PC pc)
 {
   PC_BDDC     *pcbddc = (PC_BDDC*)pc->data;
   PC_IS       *pcis = (PC_IS*)pc->data;
-  Mat_IS      *matis  = (Mat_IS*)pc->pmat->data; 
+  Mat_IS      *matis  = (Mat_IS*)pc->pmat->data;
   PetscInt    bs,ierr,i,vertex_size;
-  PetscViewer viewer=pcbddc->dbg_viewer;  
+  PetscViewer viewer=pcbddc->dbg_viewer;
 
   PetscFunctionBegin;
   /* Init local Graph struct */
@@ -1000,7 +1000,7 @@ PetscErrorCode  PCBDDCGetPrimalConstraintsLocalIdx(PC pc, PetscInt *n_constraint
       }
       max_size_of_constraint = PetscMax(size_of_constraint,max_size_of_constraint);
       ierr = MatRestoreRow(pcbddc->ConstraintMatrix,i,&size_of_constraint,NULL,NULL);CHKERRQ(ierr);
-    }    
+    }
     ierr = PetscMalloc(n*sizeof(PetscInt),&constraints_index);CHKERRQ(ierr);
     ierr = PetscMalloc(max_size_of_constraint*sizeof(PetscInt),&row_cmat_global_indices);CHKERRQ(ierr);
     ierr = PetscMalloc(local_size*sizeof(PetscBool),&touched);CHKERRQ(ierr);
@@ -1023,7 +1023,7 @@ PetscErrorCode  PCBDDCGetPrimalConstraintsLocalIdx(PC pc, PetscInt *n_constraint
         constraints_index[n++] = row_cmat_indices[min_loc];
       }
       ierr = MatRestoreRow(pcbddc->ConstraintMatrix,i,&size_of_constraint,(const PetscInt**)&row_cmat_indices,NULL);CHKERRQ(ierr);
-    }  
+    }
   }
   ierr = PetscFree(touched);CHKERRQ(ierr);
   ierr = PetscFree(row_cmat_global_indices);CHKERRQ(ierr);
@@ -1067,7 +1067,7 @@ PetscErrorCode  PCBDDCApplySchurTranspose(PC pc, Vec v, Vec vec1_B, Vec vec2_B, 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCBDDCSubsetNumbering"
 PetscErrorCode PCBDDCSubsetNumbering(MPI_Comm comm,ISLocalToGlobalMapping l2gmap, PetscInt n_local_dofs, PetscInt local_dofs[], PetscInt local_dofs_mult[], PetscInt* n_global_subset, PetscInt* global_numbering_subset[])
 {
@@ -1083,7 +1083,7 @@ PetscErrorCode PCBDDCSubsetNumbering(MPI_Comm comm,ISLocalToGlobalMapping l2gmap
   PetscMPIInt    *dof_sizes,*dof_displs;
   PetscBool      first_found;
   PetscErrorCode ierr;
- 
+
   PetscFunctionBegin;
   /* mpi buffers */
   MPI_Comm_size(comm,&size_prec_comm);
@@ -1201,6 +1201,6 @@ PetscErrorCode PCBDDCSubsetNumbering(MPI_Comm comm,ISLocalToGlobalMapping l2gmap
   ierr = PetscFree(dof_sizes);CHKERRQ(ierr);
   ierr = PetscFree(dof_displs);CHKERRQ(ierr);
   /* return pointer to global ordering of local dofs */
-  *global_numbering_subset = temp_global_dofs; 
+  *global_numbering_subset = temp_global_dofs;
   PetscFunctionReturn(0);
 }

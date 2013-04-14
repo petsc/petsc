@@ -1,7 +1,7 @@
 #include "bddc.h"
 #include "bddcprivate.h"
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCBDDCCreateFETIDPMatContext"
 PetscErrorCode PCBDDCCreateFETIDPMatContext(PC pc, FETIDPMat_ctx *fetidpmat_ctx)
 {
@@ -23,7 +23,7 @@ PetscErrorCode PCBDDCCreateFETIDPMatContext(PC pc, FETIDPMat_ctx *fetidpmat_ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCBDDCCreateFETIDPPCContext"
 PetscErrorCode PCBDDCCreateFETIDPPCContext(PC pc, FETIDPPC_ctx *fetidppc_ctx)
 {
@@ -42,7 +42,7 @@ PetscErrorCode PCBDDCCreateFETIDPPCContext(PC pc, FETIDPPC_ctx *fetidppc_ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCBDDCDestroyFETIDPMat"
 PetscErrorCode PCBDDCDestroyFETIDPMat(Mat A)
 {
@@ -62,7 +62,7 @@ PetscErrorCode PCBDDCDestroyFETIDPMat(Mat A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCBDDCDestroyFETIDPPC"
 PetscErrorCode PCBDDCDestroyFETIDPPC(PC pc)
 {
@@ -79,7 +79,7 @@ PetscErrorCode PCBDDCDestroyFETIDPPC(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCBDDCSetupFETIDPMatContext"
 PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx )
 {
@@ -138,7 +138,7 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx )
   for (i=0;i<pcis->n;i++){
     j = mat_graph->count[i]; /* RECALL: mat_graph->count[i] does not count myself */
     k = 0;
-    if (j > 0) { 
+    if (j > 0) {
       k = (mat_graph->neighbours_set[i][0] == -1 ?  1 : 0);
     }
     j = j - k ;
@@ -374,7 +374,7 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx )
   ierr = PetscOptionsGetBool(NULL,"-fetidp_check",&test_fetidp,NULL);CHKERRQ(ierr);
 
   if (test_fetidp && !pcbddc->use_deluxe_scaling) {
-    
+
     ierr = PetscViewerASCIIGetStdout(comm,&viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_TRUE);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"----------FETI_DP TESTS--------------\n");CHKERRQ(ierr);
@@ -472,7 +472,7 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx )
     ierr = PCBDDCScalingExtension(fetidpmat_ctx->pc,pcis->vec2_B,pcis->vec1_global);CHKERRQ(ierr);
     ierr = VecScatterBegin(pcis->global_to_B,pcis->vec1_global,pcis->vec2_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterEnd  (pcis->global_to_B,pcis->vec1_global,pcis->vec2_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-   
+
     /* test E_D=I-P_D */
     scalar_value = 1.0;
     ierr = VecAXPY(pcis->vec1_B,scalar_value,pcis->vec2_B);CHKERRQ(ierr);
@@ -545,7 +545,7 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx )
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCBDDCSetupFETIDPPCContext"
 PetscErrorCode PCBDDCSetupFETIDPPCContext(Mat fetimat, FETIDPPC_ctx fetidppc_ctx)
 {
@@ -564,7 +564,7 @@ PetscErrorCode PCBDDCSetupFETIDPPCContext(Mat fetimat, FETIDPPC_ctx fetidppc_ctx
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "FETIDPMatMult"
 PetscErrorCode FETIDPMatMult(Mat fetimat, Vec x, Vec y)
 {
@@ -590,7 +590,7 @@ PetscErrorCode FETIDPMatMult(Mat fetimat, Vec x, Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "FETIDPPCApply"
 PetscErrorCode FETIDPPCApply(PC fetipc, Vec x, Vec y)
 {

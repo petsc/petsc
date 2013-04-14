@@ -1,9 +1,9 @@
 #include "bddc.h"
 #include "bddcprivate.h"
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCBDDCNullSpaceAssembleCoarse"
-PetscErrorCode PCBDDCNullSpaceAssembleCoarse(PC pc, MatNullSpace* CoarseNullSpace) 
+PetscErrorCode PCBDDCNullSpaceAssembleCoarse(PC pc, MatNullSpace* CoarseNullSpace)
 {
   PC_BDDC        *pcbddc = (PC_BDDC*)pc->data;
   Mat_IS         *matis = (Mat_IS*)pc->pmat->data;
@@ -15,7 +15,7 @@ PetscErrorCode PCBDDCNullSpaceAssembleCoarse(PC pc, MatNullSpace* CoarseNullSpac
   PetscReal      test_null;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;  
+  PetscFunctionBegin;
   tempCoarseNullSpace = 0;
   coarse_nsp_size = 0;
   coarse_nsp_vecs = 0;
@@ -72,13 +72,13 @@ PetscErrorCode PCBDDCNullSpaceAssembleCoarse(PC pc, MatNullSpace* CoarseNullSpac
   ierr = VecDestroy(&local_vec);CHKERRQ(ierr);
   ierr = VecDestroy(&local_primal_vec);CHKERRQ(ierr);
   *CoarseNullSpace = tempCoarseNullSpace;
-  PetscFunctionReturn(0);  
+  PetscFunctionReturn(0);
 }
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCBDDCApplyNullSpaceCorrectionPC"
-static PetscErrorCode PCBDDCApplyNullSpaceCorrectionPC(PC pc,Vec x,Vec y) 
+static PetscErrorCode PCBDDCApplyNullSpaceCorrectionPC(PC pc,Vec x,Vec y)
 {
   NullSpaceCorrection_ctx pc_ctx;
   PetscErrorCode          ierr;
@@ -99,9 +99,9 @@ static PetscErrorCode PCBDDCApplyNullSpaceCorrectionPC(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCBDDCDestroyNullSpaceCorrectionPC"
-static PetscErrorCode PCBDDCDestroyNullSpaceCorrectionPC(PC pc) 
+static PetscErrorCode PCBDDCDestroyNullSpaceCorrectionPC(PC pc)
 {
   NullSpaceCorrection_ctx pc_ctx;
   PetscErrorCode          ierr;
@@ -123,7 +123,7 @@ static PetscErrorCode PCBDDCDestroyNullSpaceCorrectionPC(PC pc)
 /*PETSC_EXTERN PetscErrorCode PCBDDCApplyNullSpaceCorrectionPC(PC,Vec,Vec);
 PETSC_EXTERN PetscErrorCode PCBDDCDestroyNullSpaceCorrectionPC(PC);*/
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCBDDCNullSpaceAssembleCorrection"
 PetscErrorCode PCBDDCNullSpaceAssembleCorrection(PC pc,IS local_dofs)
 {
@@ -162,7 +162,7 @@ PetscErrorCode PCBDDCNullSpaceAssembleCorrection(PC pc,IS local_dofs)
   }
   ierr = KSPGetOperators(*local_ksp,&local_mat,&local_pmat,&local_mat_struct);CHKERRQ(ierr);
 
-  /* Get null space vecs */ 
+  /* Get null space vecs */
   ierr = MatNullSpaceGetVecs(pcbddc->NullSpace,&nnsp_has_cnst,&nnsp_size,&nullvecs);CHKERRQ(ierr);
   basis_size = nnsp_size;
   if (nnsp_has_cnst) {
@@ -188,7 +188,7 @@ PetscErrorCode PCBDDCNullSpaceAssembleCorrection(PC pc,IS local_dofs)
   ierr = MatDenseGetArray(shell_ctx->basis_mat,&basis_mat);CHKERRQ(ierr);
   ierr = MatDenseGetArray(shell_ctx->Kbasis_mat,&Kbasis_mat);CHKERRQ(ierr);
 
-  /* Restrict local null space on selected dofs (Dirichlet or Neumann) 
+  /* Restrict local null space on selected dofs (Dirichlet or Neumann)
      and compute matrices N and K*N */
   ierr = VecDuplicate(shell_ctx->work_full_1,&work1);CHKERRQ(ierr);
   ierr = VecDuplicate(shell_ctx->work_full_1,&work2);CHKERRQ(ierr);
@@ -240,8 +240,8 @@ PetscErrorCode PCBDDCNullSpaceAssembleCorrection(PC pc,IS local_dofs)
   ierr = MatCreateSeqDense(PETSC_COMM_SELF,basis_size,basis_size,array_mat,&inv_small_mat);CHKERRQ(ierr);
   ierr = MatMatMult(shell_ctx->basis_mat,inv_small_mat,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&shell_ctx->Lbasis_mat);CHKERRQ(ierr);
   ierr = PetscFree(array_mat);CHKERRQ(ierr);
-  ierr = MatDestroy(&inv_small_mat);CHKERRQ(ierr); 
-  ierr = MatDestroy(&small_mat);CHKERRQ(ierr); 
+  ierr = MatDestroy(&inv_small_mat);CHKERRQ(ierr);
+  ierr = MatDestroy(&small_mat);CHKERRQ(ierr);
   ierr = MatScale(shell_ctx->Kbasis_mat,m_one);CHKERRQ(ierr);
 
   /* Rebuild local PC */
