@@ -266,11 +266,17 @@ static PetscErrorCode DMPlexComputeProjection3Dto2D_Internal(PetscScalar coords[
       coords[3] = x2[1];
       coords[4] = x1[0];
       coords[5] = x1[1];
+      R[0] = 1.0; R[1] = 0.0; R[2] = 0.0;
+      R[3] = 0.0; R[4] = 1.0; R[5] = 0.0;
+      R[6] = 0.0; R[7] = 0.0; R[8] = -1.0;
     } else {
       coords[2] = x1[0];
       coords[3] = x1[1];
       coords[4] = x2[0];
       coords[5] = x2[1];
+      R[0] = 1.0; R[1] = 0.0; R[2] = 0.0;
+      R[3] = 0.0; R[4] = 1.0; R[5] = 0.0;
+      R[6] = 0.0; R[7] = 0.0; R[8] = 1.0;
     }
     PetscFunctionReturn(0);
   }
@@ -351,9 +357,9 @@ PETSC_STATIC_INLINE void Det2D_Internal(PetscReal *detJ, PetscReal J[])
 #define __FUNCT__ "Det3D_Internal"
 PETSC_STATIC_INLINE void Det3D_Internal(PetscReal *detJ, PetscReal J[])
 {
-  *detJ = (J[0*3+0]*(J[1*3+2]*J[2*3+1] - J[1*3+1]*J[2*3+2]) +
-           J[0*3+1]*(J[1*3+0]*J[2*3+2] - J[1*3+2]*J[2*3+0]) +
-           J[0*3+2]*(J[1*3+1]*J[2*3+0] - J[1*3+0]*J[2*3+1]));
+  *detJ = (J[0*3+0]*(J[1*3+1]*J[2*3+2] - J[1*3+2]*J[2*3+1]) +
+           J[0*3+1]*(J[1*3+2]*J[2*3+0] - J[1*3+0]*J[2*3+2]) +
+           J[0*3+2]*(J[1*3+0]*J[2*3+1] - J[1*3+1]*J[2*3+0]));
   PetscLogFlops(12.0);
 }
 
@@ -415,7 +421,7 @@ PETSC_STATIC_INLINE void Volume_Tetrahedron_Internal(PetscReal *vol, PetscReal c
   M[3] = y1; M[4] = y2; M[5] = y3;
   M[6] = z1; M[7] = z2; M[8] = z3;
   Det3D_Internal(&detM, M);
-  *vol = 0.16666666666666666666666*detM;
+  *vol = -0.16666666666666666666666*detM;
   PetscLogFlops(10.0);
 }
 
@@ -424,7 +430,7 @@ PETSC_STATIC_INLINE void Volume_Tetrahedron_Internal(PetscReal *vol, PetscReal c
 PETSC_STATIC_INLINE void Volume_Tetrahedron_Origin_Internal(PetscReal *vol, PetscReal coords[])
 {
   Det3D_Internal(vol, coords);
-  *vol *= 0.16666666666666666666666;
+  *vol *= -0.16666666666666666666666;
 }
 
 #undef __FUNCT__
@@ -492,9 +498,11 @@ static PetscErrorCode DMPlexComputeTriangleGeometry_Internal(DM dm, PetscInt e, 
     if (v0)   {for (d = 0; d < dim; d++) v0[d] = PetscRealPart(coords[d]);}
     ierr = DMPlexComputeProjection3Dto2D_Internal(coords, R);CHKERRQ(ierr);
     if (J)    {
-      for (d = 0; d < dim-1; d++) {
-        for (f = 0; f < dim-1; f++) {
-          J0[d*(dim+1)+f] = 0.5*(PetscRealPart(coords[(f+1)*dim+d]) - PetscRealPart(coords[0*dim+d]));
+      const PetscInt pdim = 2;
+
+      for (d = 0; d < pdim; d++) {
+        for (f = 0; f < pdim; f++) {
+          J0[d*dim+f] = 0.5*(PetscRealPart(coords[(f+1)*pdim+d]) - PetscRealPart(coords[0*pdim+d]));
         }
       }
       PetscLogFlops(8.0);
@@ -585,6 +593,7 @@ static PetscErrorCode DMPlexComputeTetrahedronGeometry_Internal(DM dm, PetscInt 
     }
     PetscLogFlops(18.0);
     Det3D_Internal(detJ, J);
+    *detJ = -*detJ;
   }
   if (invJ) {Invert3D_Internal(invJ, J, *detJ);}
   ierr = DMPlexVecRestoreClosure(dm, coordSection, coordinates, e, NULL, &coords);CHKERRQ(ierr);
@@ -616,6 +625,7 @@ static PetscErrorCode DMPlexComputeHexahedronGeometry_Internal(DM dm, PetscInt e
     }
     PetscLogFlops(18.0);
     Det3D_Internal(detJ, J);
+    *detJ = -*detJ;
   }
   if (invJ) {Invert3D_Internal(invJ, J, *detJ);}
   *detJ *= -8.0;
