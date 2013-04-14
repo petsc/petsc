@@ -9,6 +9,7 @@ PETSC_CUDA_EXTERN_C_BEGIN
 PETSC_CUDA_EXTERN_C_END
 #include <../src/vec/vec/impls/seq/seqcusp/cuspvecimpl.h>
 
+#include <cuda_runtime.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "VecCUSPAllocateCheckHost"
@@ -978,66 +979,207 @@ PetscErrorCode VecDot_SeqCUSP(Vec xin,Vec yin,PetscScalar *z)
   PetscFunctionReturn(0);
 }
 
-/*The following few template functions are for VecMDot_SeqCUSP*/
+//
+// CUDA kernels for MDot to follow
+//
 
-template <typename T1,typename T2>
-struct cuspmult2 : thrust::unary_function<T1,T2>
-{
-  __host__ __device__
-  T2 operator()(T1 x)
-  {
-    return thrust::make_tuple(thrust::get<0>(x)*thrust::get<1>(x),thrust::get<0>(x)*thrust::get<2>(x));
-  }
-};
+// set work group size to be a power of 2 (128 is usually a good compromise between portability and speed)
+#define MDOT_WORKGROUP_SIZE 128
+#define MDOT_WORKGROUP_NUM  128
 
-template <typename T>
-struct cuspadd2 : thrust::binary_function<T,T,T>
+// M = 2:
+__global__ void VecMDot_SeqCUSP_kernel2(const PetscScalar *x,const PetscScalar *y0,const PetscScalar *y1,
+                                        PetscInt size, PetscScalar *group_results)
 {
-  __host__ __device__
-  T operator()(T x,T y)
-  {
-    return thrust::make_tuple(thrust::get<0>(x)+thrust::get<0>(y),thrust::get<1>(x)+thrust::get<1>(y));
-  }
-};
+  __shared__ PetscScalar tmp_buffer[2*MDOT_WORKGROUP_SIZE];
+  PetscInt entries_per_group = (size - 1) / gridDim.x + 1;
+  entries_per_group = (entries_per_group == 0) ? 1 : entries_per_group;  // for very small vectors, a group should still do some work
+  PetscInt vec_start_index = blockIdx.x * entries_per_group;
+  PetscInt vec_stop_index  = min((blockIdx.x + 1) * entries_per_group, size); // don't go beyond vec size
 
-template <typename T1,typename T2>
-struct cuspmult3 : thrust::unary_function<T1,T2>
-{
-  __host__ __device__
-  T2 operator()(T1 x)
-  {
-    return thrust::make_tuple(thrust::get<0>(x)*thrust::get<1>(x),thrust::get<0>(x)*thrust::get<2>(x),thrust::get<0>(x)*thrust::get<3>(x));
+  PetscScalar entry_x    = 0;
+  PetscScalar group_sum0 = 0;
+  PetscScalar group_sum1 = 0;
+  for (PetscInt i = vec_start_index + threadIdx.x; i < vec_stop_index; i += blockDim.x) {
+    entry_x     = x[i];   // load only once from global memory!
+    group_sum0 += entry_x * y0[i];
+    group_sum1 += entry_x * y1[i];
   }
-};
+  tmp_buffer[threadIdx.x]                       = group_sum0;
+  tmp_buffer[threadIdx.x + MDOT_WORKGROUP_SIZE] = group_sum1;
 
-template <typename T>
-struct cuspadd3 : thrust::binary_function<T,T,T>
-{
-  __host__ __device__
-  T operator()(T x,T y)
-  {
-    return thrust::make_tuple(thrust::get<0>(x)+thrust::get<0>(y),thrust::get<1>(x)+thrust::get<1>(y),thrust::get<2>(x)+thrust::get<2>(y));
+  // parallel reduction
+  for (PetscInt stride = blockDim.x/2; stride > 0; stride /= 2) {
+    __syncthreads();
+    if (threadIdx.x < stride) {
+      tmp_buffer[threadIdx.x                      ] += tmp_buffer[threadIdx.x+stride                      ];
+      tmp_buffer[threadIdx.x + MDOT_WORKGROUP_SIZE] += tmp_buffer[threadIdx.x+stride + MDOT_WORKGROUP_SIZE];
+    }
   }
-};
-template <typename T1,typename T2>
-struct cuspmult4 : thrust::unary_function<T1,T2>
-{
-  __host__ __device__
-  T2 operator()(T1 x)
-  {
-    return thrust::make_tuple(thrust::get<0>(x)*thrust::get<1>(x),thrust::get<0>(x)*thrust::get<2>(x),thrust::get<0>(x)*thrust::get<3>(x),thrust::get<0>(x)*thrust::get<4>(x));
-  }
-};
 
-template <typename T>
-struct cuspadd4 : thrust::binary_function<T,T,T>
-{
-  __host__ __device__
-  T operator()(T x,T y)
-  {
-    return thrust::make_tuple(thrust::get<0>(x)+thrust::get<0>(y),thrust::get<1>(x)+thrust::get<1>(y),thrust::get<2>(x)+thrust::get<2>(y),thrust::get<3>(x)+thrust::get<3>(y));
+  // write result of group to group_results
+  if (threadIdx.x == 0) {
+    group_results[blockIdx.x]             = tmp_buffer[0];
+    group_results[blockIdx.x + gridDim.x] = tmp_buffer[MDOT_WORKGROUP_SIZE];
   }
-};
+}
+
+// M = 3:
+__global__ void VecMDot_SeqCUSP_kernel3(const PetscScalar *x,const PetscScalar *y0,const PetscScalar *y1,const PetscScalar *y2,
+                                        PetscInt size, PetscScalar *group_results)
+{
+  __shared__ PetscScalar tmp_buffer[3*MDOT_WORKGROUP_SIZE];
+  PetscInt entries_per_group = (size - 1) / gridDim.x + 1;
+  entries_per_group = (entries_per_group == 0) ? 1 : entries_per_group;  // for very small vectors, a group should still do some work
+  PetscInt vec_start_index = blockIdx.x * entries_per_group;
+  PetscInt vec_stop_index  = min((blockIdx.x + 1) * entries_per_group, size); // don't go beyond vec size
+
+  PetscScalar entry_x    = 0;
+  PetscScalar group_sum0 = 0;
+  PetscScalar group_sum1 = 0;
+  PetscScalar group_sum2 = 0;
+  for (PetscInt i = vec_start_index + threadIdx.x; i < vec_stop_index; i += blockDim.x) {
+    entry_x     = x[i];   // load only once from global memory!
+    group_sum0 += entry_x * y0[i];
+    group_sum1 += entry_x * y1[i];
+    group_sum2 += entry_x * y2[i];
+  }
+  tmp_buffer[threadIdx.x]                           = group_sum0;
+  tmp_buffer[threadIdx.x +     MDOT_WORKGROUP_SIZE] = group_sum1;
+  tmp_buffer[threadIdx.x + 2 * MDOT_WORKGROUP_SIZE] = group_sum2;
+
+  // parallel reduction
+  for (PetscInt stride = blockDim.x/2; stride > 0; stride /= 2) {
+    __syncthreads();
+    if (threadIdx.x < stride) {
+      tmp_buffer[threadIdx.x                          ] += tmp_buffer[threadIdx.x+stride                          ];
+      tmp_buffer[threadIdx.x +     MDOT_WORKGROUP_SIZE] += tmp_buffer[threadIdx.x+stride +     MDOT_WORKGROUP_SIZE];
+      tmp_buffer[threadIdx.x + 2 * MDOT_WORKGROUP_SIZE] += tmp_buffer[threadIdx.x+stride + 2 * MDOT_WORKGROUP_SIZE];
+    }
+  }
+
+  // write result of group to group_results
+  if (threadIdx.x == 0) {
+    group_results[blockIdx.x                ] = tmp_buffer[0];
+    group_results[blockIdx.x +     gridDim.x] = tmp_buffer[    MDOT_WORKGROUP_SIZE];
+    group_results[blockIdx.x + 2 * gridDim.x] = tmp_buffer[2 * MDOT_WORKGROUP_SIZE];
+  }
+}
+
+// M = 4:
+__global__ void VecMDot_SeqCUSP_kernel4(const PetscScalar *x,const PetscScalar *y0,const PetscScalar *y1,const PetscScalar *y2,const PetscScalar *y3,
+                                        PetscInt size, PetscScalar *group_results)
+{
+  __shared__ PetscScalar tmp_buffer[4*MDOT_WORKGROUP_SIZE];
+  PetscInt entries_per_group = (size - 1) / gridDim.x + 1;
+  entries_per_group = (entries_per_group == 0) ? 1 : entries_per_group;  // for very small vectors, a group should still do some work
+  PetscInt vec_start_index = blockIdx.x * entries_per_group;
+  PetscInt vec_stop_index  = min((blockIdx.x + 1) * entries_per_group, size); // don't go beyond vec size
+
+  PetscScalar entry_x    = 0;
+  PetscScalar group_sum0 = 0;
+  PetscScalar group_sum1 = 0;
+  PetscScalar group_sum2 = 0;
+  PetscScalar group_sum3 = 0;
+  for (PetscInt i = vec_start_index + threadIdx.x; i < vec_stop_index; i += blockDim.x) {
+    entry_x     = x[i];   // load only once from global memory!
+    group_sum0 += entry_x * y0[i];
+    group_sum1 += entry_x * y1[i];
+    group_sum2 += entry_x * y2[i];
+    group_sum3 += entry_x * y3[i];
+  }
+  tmp_buffer[threadIdx.x]                           = group_sum0;
+  tmp_buffer[threadIdx.x +     MDOT_WORKGROUP_SIZE] = group_sum1;
+  tmp_buffer[threadIdx.x + 2 * MDOT_WORKGROUP_SIZE] = group_sum2;
+  tmp_buffer[threadIdx.x + 3 * MDOT_WORKGROUP_SIZE] = group_sum3;
+
+  // parallel reduction
+  for (PetscInt stride = blockDim.x/2; stride > 0; stride /= 2) {
+    __syncthreads();
+    if (threadIdx.x < stride) {
+      tmp_buffer[threadIdx.x                          ] += tmp_buffer[threadIdx.x+stride                          ];
+      tmp_buffer[threadIdx.x +     MDOT_WORKGROUP_SIZE] += tmp_buffer[threadIdx.x+stride +     MDOT_WORKGROUP_SIZE];
+      tmp_buffer[threadIdx.x + 2 * MDOT_WORKGROUP_SIZE] += tmp_buffer[threadIdx.x+stride + 2 * MDOT_WORKGROUP_SIZE];
+      tmp_buffer[threadIdx.x + 3 * MDOT_WORKGROUP_SIZE] += tmp_buffer[threadIdx.x+stride + 3 * MDOT_WORKGROUP_SIZE];
+    }
+  }
+
+  // write result of group to group_results
+  if (threadIdx.x == 0) {
+    group_results[blockIdx.x                ] = tmp_buffer[0];
+    group_results[blockIdx.x +     gridDim.x] = tmp_buffer[    MDOT_WORKGROUP_SIZE];
+    group_results[blockIdx.x + 2 * gridDim.x] = tmp_buffer[2 * MDOT_WORKGROUP_SIZE];
+    group_results[blockIdx.x + 3 * gridDim.x] = tmp_buffer[3 * MDOT_WORKGROUP_SIZE];
+  }
+}
+
+// M = 8:
+__global__ void VecMDot_SeqCUSP_kernel8(const PetscScalar *x,const PetscScalar *y0,const PetscScalar *y1,const PetscScalar *y2,const PetscScalar *y3,
+                                          const PetscScalar *y4,const PetscScalar *y5,const PetscScalar *y6,const PetscScalar *y7,
+                                          PetscInt size, PetscScalar *group_results)
+{
+  __shared__ PetscScalar tmp_buffer[8*MDOT_WORKGROUP_SIZE];
+  PetscInt entries_per_group = (size - 1) / gridDim.x + 1;
+  entries_per_group = (entries_per_group == 0) ? 1 : entries_per_group;  // for very small vectors, a group should still do some work
+  PetscInt vec_start_index = blockIdx.x * entries_per_group;
+  PetscInt vec_stop_index  = min((blockIdx.x + 1) * entries_per_group, size); // don't go beyond vec size
+
+  PetscScalar entry_x    = 0;
+  PetscScalar group_sum0 = 0;
+  PetscScalar group_sum1 = 0;
+  PetscScalar group_sum2 = 0;
+  PetscScalar group_sum3 = 0;
+  PetscScalar group_sum4 = 0;
+  PetscScalar group_sum5 = 0;
+  PetscScalar group_sum6 = 0;
+  PetscScalar group_sum7 = 0;
+  for (PetscInt i = vec_start_index + threadIdx.x; i < vec_stop_index; i += blockDim.x) {
+    entry_x     = x[i];   // load only once from global memory!
+    group_sum0 += entry_x * y0[i];
+    group_sum1 += entry_x * y1[i];
+    group_sum2 += entry_x * y2[i];
+    group_sum3 += entry_x * y3[i];
+    group_sum4 += entry_x * y4[i];
+    group_sum5 += entry_x * y5[i];
+    group_sum6 += entry_x * y6[i];
+    group_sum7 += entry_x * y7[i];
+  }
+  tmp_buffer[threadIdx.x]                           = group_sum0;
+  tmp_buffer[threadIdx.x +     MDOT_WORKGROUP_SIZE] = group_sum1;
+  tmp_buffer[threadIdx.x + 2 * MDOT_WORKGROUP_SIZE] = group_sum2;
+  tmp_buffer[threadIdx.x + 3 * MDOT_WORKGROUP_SIZE] = group_sum3;
+  tmp_buffer[threadIdx.x + 4 * MDOT_WORKGROUP_SIZE] = group_sum4;
+  tmp_buffer[threadIdx.x + 5 * MDOT_WORKGROUP_SIZE] = group_sum5;
+  tmp_buffer[threadIdx.x + 6 * MDOT_WORKGROUP_SIZE] = group_sum6;
+  tmp_buffer[threadIdx.x + 7 * MDOT_WORKGROUP_SIZE] = group_sum7;
+
+  // parallel reduction
+  for (PetscInt stride = blockDim.x/2; stride > 0; stride /= 2) {
+    __syncthreads();
+    if (threadIdx.x < stride) {
+      tmp_buffer[threadIdx.x                          ] += tmp_buffer[threadIdx.x+stride                          ];
+      tmp_buffer[threadIdx.x +     MDOT_WORKGROUP_SIZE] += tmp_buffer[threadIdx.x+stride +     MDOT_WORKGROUP_SIZE];
+      tmp_buffer[threadIdx.x + 2 * MDOT_WORKGROUP_SIZE] += tmp_buffer[threadIdx.x+stride + 2 * MDOT_WORKGROUP_SIZE];
+      tmp_buffer[threadIdx.x + 3 * MDOT_WORKGROUP_SIZE] += tmp_buffer[threadIdx.x+stride + 3 * MDOT_WORKGROUP_SIZE];
+      tmp_buffer[threadIdx.x + 4 * MDOT_WORKGROUP_SIZE] += tmp_buffer[threadIdx.x+stride + 4 * MDOT_WORKGROUP_SIZE];
+      tmp_buffer[threadIdx.x + 5 * MDOT_WORKGROUP_SIZE] += tmp_buffer[threadIdx.x+stride + 5 * MDOT_WORKGROUP_SIZE];
+      tmp_buffer[threadIdx.x + 6 * MDOT_WORKGROUP_SIZE] += tmp_buffer[threadIdx.x+stride + 6 * MDOT_WORKGROUP_SIZE];
+      tmp_buffer[threadIdx.x + 7 * MDOT_WORKGROUP_SIZE] += tmp_buffer[threadIdx.x+stride + 7 * MDOT_WORKGROUP_SIZE];
+    }
+  }
+
+  // write result of group to group_results
+  if (threadIdx.x == 0) {
+    group_results[blockIdx.x                ] = tmp_buffer[0];
+    group_results[blockIdx.x +     gridDim.x] = tmp_buffer[    MDOT_WORKGROUP_SIZE];
+    group_results[blockIdx.x + 2 * gridDim.x] = tmp_buffer[2 * MDOT_WORKGROUP_SIZE];
+    group_results[blockIdx.x + 3 * gridDim.x] = tmp_buffer[3 * MDOT_WORKGROUP_SIZE];
+    group_results[blockIdx.x + 4 * gridDim.x] = tmp_buffer[4 * MDOT_WORKGROUP_SIZE];
+    group_results[blockIdx.x + 5 * gridDim.x] = tmp_buffer[5 * MDOT_WORKGROUP_SIZE];
+    group_results[blockIdx.x + 6 * gridDim.x] = tmp_buffer[6 * MDOT_WORKGROUP_SIZE];
+    group_results[blockIdx.x + 7 * gridDim.x] = tmp_buffer[7 * MDOT_WORKGROUP_SIZE];
+  }
+}
 
 
 #undef __FUNCT__
@@ -1045,246 +1187,209 @@ struct cuspadd4 : thrust::binary_function<T,T,T>
 PetscErrorCode VecMDot_SeqCUSP(Vec xin,PetscInt nv,const Vec yin[],PetscScalar *z)
 {
   PetscErrorCode ierr;
-  PetscInt       n = xin->map->n,i;
-  CUSPARRAY      *xarray,*yy;
-  PetscScalar    *V,*xptr,*yptr,*zgpu;
-  Vec            *yyin = (Vec*)yin;
-  cublasStatus   stat;
+  PetscInt       i,j,n = xin->map->n,current_y_index = 0;
+  CUSPARRAY      *xarray,*y0array,*y1array,*y2array,*y3array,*y4array,*y5array,*y6array,*y7array;
+  PetscScalar    *group_results_gpu,*xptr,*y0ptr,*y1ptr,*y2ptr,*y3ptr,*y4ptr,*y5ptr,*y6ptr,*y7ptr;
+  PetscScalar    group_results_cpu[MDOT_WORKGROUP_NUM * 8]; // we process at most eight vectors in one kernel
+  cudaError_t    cuda_ierr;
 
   PetscFunctionBegin;
-  stat = cublasAlloc(n*nv,sizeof(PetscScalar),(void**)&V);
-  if (stat!=CUBLAS_STATUS_SUCCESS) SETERRQ1(PETSC_COMM_SELF,1,"CUBLAS error %d",stat);
-  stat = cublasAlloc(nv,sizeof(PetscScalar),(void**)&zgpu);
-  if (stat!=CUBLAS_STATUS_SUCCESS) SETERRQ1(PETSC_COMM_SELF,1,"CUBLAS error %d",stat);
-  for (i=0; i<nv; i++) {
-    ierr = VecCUSPGetArrayRead(yyin[i],&yy);CHKERRQ(ierr);
-    yptr = thrust::raw_pointer_cast(&(*yy)[0]);
-    cudaMemcpy(V+i*n,yptr,n*sizeof(PetscScalar),cudaMemcpyDeviceToDevice);
-    ierr = VecCUSPRestoreArrayRead(yyin[i],&yy);CHKERRQ(ierr);
-  }
+  // allocate scratchpad memory for the results of individual work groups:
+  if (nv <= 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Number of vectors provided to VecMDot_SeqCUSP not positive.");
+  cuda_ierr = cudaMalloc((void**)&group_results_gpu, sizeof(PetscScalar) * MDOT_WORKGROUP_NUM * 8);
+  if (cuda_ierr != cudaSuccess) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Could not allocate CUDA work memory. Error code: %d", (int)cuda_ierr);
+
   ierr = VecCUSPGetArrayRead(xin,&xarray);CHKERRQ(ierr);
-  xptr = thrust::raw_pointer_cast(&(*xarray)[0]);
-#if defined(PETSC_USE_COMPLEX)
-#if defined(PETSC_USE_REAL_DOUBLE)
-#define cublasXgemv cublasZgemv
-  cuDoubleComplex one  = {1.0, 0.0};
-  cuDoubleComplex zero = {0.0, 0.0};
-#else
-#define cublasXgemv cublasCgemv
-  cuFloatComplex one  = {1.0f, 0.0f};
-  cuFloatComplex zero = {0.0f, 0.0f};
-#endif
-#else
-#if defined(PETSC_USE_REAL_DOUBLE)
-#define cublasXgemv cublasDgemv
-  PetscScalar one  = 1.0;
-  PetscScalar zero = 0.0;
-#else
-#define cublasXgemv cublasSgemv
-  PetscScalar one  = 1.0f;
-  PetscScalar zero = 0.0f;
-#endif
-#endif
+  xptr = thrust::raw_pointer_cast(xarray->data());
+
+  while (current_y_index < nv)
+  {
+    switch (nv - current_y_index) {
+
+    case 7:
+    case 6:
+    case 5:
+    case 4:
+      ierr = VecCUSPGetArrayRead(yin[current_y_index  ],&y0array);CHKERRQ(ierr);
+      ierr = VecCUSPGetArrayRead(yin[current_y_index+1],&y1array);CHKERRQ(ierr);
+      ierr = VecCUSPGetArrayRead(yin[current_y_index+2],&y2array);CHKERRQ(ierr);
+      ierr = VecCUSPGetArrayRead(yin[current_y_index+3],&y3array);CHKERRQ(ierr);
 
 #if defined(PETSC_USE_COMPLEX)
-  cublasXgemv('C',n,nv,one,V,n,xptr,1,zero,zgpu,1);
+      z[current_y_index]   = cusp::blas::dot(*y0array,*xarray);
+      z[current_y_index+1] = cusp::blas::dot(*y1array,*xarray);
+      z[current_y_index+2] = cusp::blas::dot(*y2array,*xarray);
+      z[current_y_index+3] = cusp::blas::dot(*y3array,*xarray);
 #else
-  cublasXgemv('T',n,nv,one,V,n,xptr,1,zero,zgpu,1);
+      // extract raw device pointers:
+      y0ptr = thrust::raw_pointer_cast(y0array->data());
+      y1ptr = thrust::raw_pointer_cast(y1array->data());
+      y2ptr = thrust::raw_pointer_cast(y2array->data());
+      y3ptr = thrust::raw_pointer_cast(y3array->data());
+
+      // run kernel:
+      VecMDot_SeqCUSP_kernel4<<<MDOT_WORKGROUP_NUM,MDOT_WORKGROUP_SIZE>>>(xptr,y0ptr,y1ptr,y2ptr,y3ptr,n,group_results_gpu);
+
+      // copy results back to
+      cuda_ierr = cudaMemcpy(group_results_cpu,group_results_gpu,sizeof(PetscScalar) * MDOT_WORKGROUP_NUM * 4,cudaMemcpyDeviceToHost);
+      if (cuda_ierr != cudaSuccess) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Could not copy CUDA buffer to host. Error code: %d", (int)cuda_ierr);
+
+      // sum group results into z:
+      for (j=0; j<4; ++j) {
+        z[current_y_index + j] = 0;
+        for (i=j*MDOT_WORKGROUP_NUM; i<(j+1)*MDOT_WORKGROUP_NUM; ++i) z[current_y_index + j] += group_results_cpu[i];
+      }
 #endif
-  ierr = cudaMemcpy(z,zgpu,nv*sizeof(PetscScalar),cudaMemcpyDeviceToHost);CHKERRCUSP(ierr);
+      ierr = VecCUSPRestoreArrayRead(yin[current_y_index  ],&y0array);CHKERRQ(ierr);
+      ierr = VecCUSPRestoreArrayRead(yin[current_y_index+1],&y1array);CHKERRQ(ierr);
+      ierr = VecCUSPRestoreArrayRead(yin[current_y_index+2],&y2array);CHKERRQ(ierr);
+      ierr = VecCUSPRestoreArrayRead(yin[current_y_index+3],&y3array);CHKERRQ(ierr);
+      current_y_index += 4;
+      break;
+
+    case 3:
+      ierr = VecCUSPGetArrayRead(yin[current_y_index  ],&y0array);CHKERRQ(ierr);
+      ierr = VecCUSPGetArrayRead(yin[current_y_index+1],&y1array);CHKERRQ(ierr);
+      ierr = VecCUSPGetArrayRead(yin[current_y_index+2],&y2array);CHKERRQ(ierr);
+
+#if defined(PETSC_USE_COMPLEX)
+      z[current_y_index]   = cusp::blas::dot(*y0array,*xarray);
+      z[current_y_index+1] = cusp::blas::dot(*y1array,*xarray);
+      z[current_y_index+2] = cusp::blas::dot(*y2array,*xarray);
+#else
+      // extract raw device pointers:
+      y0ptr = thrust::raw_pointer_cast(y0array->data());
+      y1ptr = thrust::raw_pointer_cast(y1array->data());
+      y2ptr = thrust::raw_pointer_cast(y2array->data());
+
+      // run kernel:
+      VecMDot_SeqCUSP_kernel3<<<MDOT_WORKGROUP_NUM,MDOT_WORKGROUP_SIZE>>>(xptr,y0ptr,y1ptr,y2ptr,n,group_results_gpu);
+
+      // copy results back to
+      cuda_ierr = cudaMemcpy(group_results_cpu,group_results_gpu,sizeof(PetscScalar) * MDOT_WORKGROUP_NUM * 3,cudaMemcpyDeviceToHost);
+      if (cuda_ierr != cudaSuccess) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Could not copy CUDA buffer to host. Error code: %d", (int)cuda_ierr);
+
+      // sum group results into z:
+      for (j=0; j<3; ++j) {
+        z[current_y_index + j] = 0;
+        for (i=j*MDOT_WORKGROUP_NUM; i<(j+1)*MDOT_WORKGROUP_NUM; ++i) z[current_y_index + j] += group_results_cpu[i];
+      }
+#endif
+
+      ierr = VecCUSPRestoreArrayRead(yin[current_y_index  ],&y0array);CHKERRQ(ierr);
+      ierr = VecCUSPRestoreArrayRead(yin[current_y_index+1],&y1array);CHKERRQ(ierr);
+      ierr = VecCUSPRestoreArrayRead(yin[current_y_index+2],&y2array);CHKERRQ(ierr);
+      current_y_index += 3;
+      break;
+
+    case 2:
+      ierr = VecCUSPGetArrayRead(yin[current_y_index],&y0array);CHKERRQ(ierr);
+      ierr = VecCUSPGetArrayRead(yin[current_y_index+1],&y1array);CHKERRQ(ierr);
+
+#if defined(PETSC_USE_COMPLEX)
+      z[current_y_index]   = cusp::blas::dot(*y0array,*xarray);
+      z[current_y_index+1] = cusp::blas::dot(*y1array,*xarray);
+#else
+      // extract raw device pointers:
+      y0ptr = thrust::raw_pointer_cast(y0array->data());
+      y1ptr = thrust::raw_pointer_cast(y1array->data());
+
+      // run kernel:
+      VecMDot_SeqCUSP_kernel2<<<MDOT_WORKGROUP_NUM,MDOT_WORKGROUP_SIZE>>>(xptr,y0ptr,y1ptr,n,group_results_gpu);
+
+      // copy results back to 
+      cuda_ierr = cudaMemcpy(group_results_cpu,group_results_gpu,sizeof(PetscScalar) * MDOT_WORKGROUP_NUM * 2,cudaMemcpyDeviceToHost);
+      if (cuda_ierr != cudaSuccess) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Could not copy CUDA buffer to host. Error code: %d", (int)cuda_ierr);
+
+      // sum group results into z:
+      for (j=0; j<2; ++j) {
+        z[current_y_index + j] = 0;
+        for (i=j*MDOT_WORKGROUP_NUM; i<(j+1)*MDOT_WORKGROUP_NUM; ++i) z[current_y_index + j] += group_results_cpu[i];
+      }
+#endif
+      ierr = VecCUSPRestoreArrayRead(yin[current_y_index],&y0array);CHKERRQ(ierr);
+      ierr = VecCUSPRestoreArrayRead(yin[current_y_index+1],&y1array);CHKERRQ(ierr);
+      current_y_index += 2;
+      break;
+
+    case 1:
+      ierr = VecCUSPGetArrayRead(yin[current_y_index],&y0array);CHKERRQ(ierr);
+#if defined(PETSC_USE_COMPLEX)
+      z[current_y_index] = cusp::blas::dotc(*y0array, *xarray);
+#else
+      z[current_y_index] = cusp::blas::dot(*xarray, *y0array);
+#endif
+      ierr = VecCUSPRestoreArrayRead(yin[current_y_index],&y0array);CHKERRQ(ierr);
+      current_y_index += 1;
+      break;
+
+    default: // 8 or more vectors left
+      ierr = VecCUSPGetArrayRead(yin[current_y_index  ],&y0array);CHKERRQ(ierr);
+      ierr = VecCUSPGetArrayRead(yin[current_y_index+1],&y1array);CHKERRQ(ierr);
+      ierr = VecCUSPGetArrayRead(yin[current_y_index+2],&y2array);CHKERRQ(ierr);
+      ierr = VecCUSPGetArrayRead(yin[current_y_index+3],&y3array);CHKERRQ(ierr);
+      ierr = VecCUSPGetArrayRead(yin[current_y_index+4],&y4array);CHKERRQ(ierr);
+      ierr = VecCUSPGetArrayRead(yin[current_y_index+5],&y5array);CHKERRQ(ierr);
+      ierr = VecCUSPGetArrayRead(yin[current_y_index+6],&y6array);CHKERRQ(ierr);
+      ierr = VecCUSPGetArrayRead(yin[current_y_index+7],&y7array);CHKERRQ(ierr);
+
+#if defined(PETSC_USE_COMPLEX)
+      z[current_y_index]   = cusp::blas::dot(*y0array,*xarray);
+      z[current_y_index+1] = cusp::blas::dot(*y1array,*xarray);
+      z[current_y_index+2] = cusp::blas::dot(*y2array,*xarray);
+      z[current_y_index+3] = cusp::blas::dot(*y3array,*xarray);
+      z[current_y_index+4] = cusp::blas::dot(*y4array,*xarray);
+      z[current_y_index+5] = cusp::blas::dot(*y5array,*xarray);
+      z[current_y_index+6] = cusp::blas::dot(*y6array,*xarray);
+      z[current_y_index+7] = cusp::blas::dot(*y7array,*xarray);
+#else
+      // extract raw device pointers:
+      y0ptr = thrust::raw_pointer_cast(y0array->data());
+      y1ptr = thrust::raw_pointer_cast(y1array->data());
+      y2ptr = thrust::raw_pointer_cast(y2array->data());
+      y3ptr = thrust::raw_pointer_cast(y3array->data());
+      y4ptr = thrust::raw_pointer_cast(y4array->data());
+      y5ptr = thrust::raw_pointer_cast(y5array->data());
+      y6ptr = thrust::raw_pointer_cast(y6array->data());
+      y7ptr = thrust::raw_pointer_cast(y7array->data());
+
+      // run kernel:
+      VecMDot_SeqCUSP_kernel8<<<MDOT_WORKGROUP_NUM,MDOT_WORKGROUP_SIZE>>>(xptr,y0ptr,y1ptr,y2ptr,y3ptr,y4ptr,y5ptr,y6ptr,y7ptr,n,group_results_gpu);
+
+      // copy results back to
+      cuda_ierr = cudaMemcpy(group_results_cpu,group_results_gpu,sizeof(PetscScalar) * MDOT_WORKGROUP_NUM * 8,cudaMemcpyDeviceToHost);
+      if (cuda_ierr != cudaSuccess) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Could not copy CUDA buffer to host. Error code: %d", (int)cuda_ierr);
+
+      // sum group results into z:
+      for (j=0; j<8; ++j) {
+        z[current_y_index + j] = 0;
+        for (i=j*MDOT_WORKGROUP_NUM; i<(j+1)*MDOT_WORKGROUP_NUM; ++i) z[current_y_index + j] += group_results_cpu[i];
+      }
+#endif
+      ierr = VecCUSPRestoreArrayRead(yin[current_y_index  ],&y0array);CHKERRQ(ierr);
+      ierr = VecCUSPRestoreArrayRead(yin[current_y_index+1],&y1array);CHKERRQ(ierr);
+      ierr = VecCUSPRestoreArrayRead(yin[current_y_index+2],&y2array);CHKERRQ(ierr);
+      ierr = VecCUSPRestoreArrayRead(yin[current_y_index+3],&y3array);CHKERRQ(ierr);
+      ierr = VecCUSPRestoreArrayRead(yin[current_y_index+4],&y4array);CHKERRQ(ierr);
+      ierr = VecCUSPRestoreArrayRead(yin[current_y_index+5],&y5array);CHKERRQ(ierr);
+      ierr = VecCUSPRestoreArrayRead(yin[current_y_index+6],&y6array);CHKERRQ(ierr);
+      ierr = VecCUSPRestoreArrayRead(yin[current_y_index+7],&y7array);CHKERRQ(ierr);
+      current_y_index += 8;
+      break;
+    }
+  }
   ierr = VecCUSPRestoreArrayRead(xin,&xarray);CHKERRQ(ierr);
-  stat = cublasFree(V);CHKERRCUSP(stat);
-  stat = cublasFree(zgpu);CHKERRCUSP(stat);
-  ierr = WaitForGPU();CHKERRCUSP(ierr);
+
+  cuda_ierr = cudaFree(group_results_gpu);
+  if (cuda_ierr != cudaSuccess) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Could not copy CUDA buffer to host: %d", (int)cuda_ierr);
   ierr = PetscLogFlops(PetscMax(nv*(2.0*n-1),0.0));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecMDot_SeqCUSP_CUBLAS_1"
-PetscErrorCode VecMDot_SeqCUSP_CUBLAS_1(Vec xin,PetscInt nv,const Vec yin[],PetscScalar *z)
-{
-  PetscErrorCode ierr;
-  PetscInt       n = xin->map->n,i;
-  CUSPARRAY      *xarray,*yy;
-  PetscScalar    *V,*xptr,*yptr,*zgpu;
-  Vec            *yyin = (Vec*)yin;
-  cublasStatus   stat;
-  cudaError      cuerr;
-  size_t         pitch;
+#undef MDOT_WORKGROUP_SIZE
+#undef MDOT_WORKGROUP_NUM
 
-  PetscFunctionBegin;
-  cuerr = cudaMallocPitch((void**)&V,&pitch,nv*sizeof(PetscScalar),n);
-  if (cuerr!=cudaSuccess) SETERRQ1(PETSC_COMM_SELF,1,"CUDA error %d",cuerr);
-  stat = cublasAlloc(nv,sizeof(PetscScalar),(void**)&zgpu);
-  if (stat!=CUBLAS_STATUS_SUCCESS) SETERRQ1(PETSC_COMM_SELF,1,"CUBLAS error %d",stat);
-  for (i=0; i<nv; i++) {
-    ierr  = VecCUSPGetArrayRead(yyin[i],&yy);CHKERRQ(ierr);
-    yptr  = thrust::raw_pointer_cast(&(*yy)[0]);
-    cuerr = cudaMemcpy2D(V+i,pitch,yptr,sizeof(PetscScalar),sizeof(PetscScalar),n,cudaMemcpyDeviceToDevice);
-    if (cuerr!=cudaSuccess) SETERRQ1(PETSC_COMM_SELF,1,"CUDA error %d",cuerr);
-    ierr = VecCUSPRestoreArrayRead(yyin[i],&yy);CHKERRQ(ierr);
-  }
-  ierr = VecCUSPGetArrayRead(xin,&xarray);CHKERRQ(ierr);
-  xptr = thrust::raw_pointer_cast(&(*xarray)[0]);
-#if defined(PETSC_USE_COMPLEX)
-#if defined(PETSC_USE_REAL_DOUBLE)
-#define cublasXgemv cublasZgemv
-  cuDoubleComplex one  = {1.0, 0.0};
-  cuDoubleComplex zero = {0.0, 0.0};
-#else
-#define cublasXgemv cublasCgemv
-  cuFloatComplex one  = {1.0f, 0.0f};
-  cuFloatComplex zero = {0.0f, 0.0f};
-#endif
-#else
-#if defined(PETSC_USE_REAL_DOUBLE)
-#define cublasXgemv cublasDgemv
-  PetscScalar one  = 1.0;
-  PetscScalar zero = 0.0;
-#else
-#define cublasXgemv cublasSgemv
-  PetscScalar one  = 1.0f;
-  PetscScalar zero = 0.0f;
-#endif
-#endif
-  cublasXgemv('N',nv,n,one,V,pitch/sizeof(PetscScalar),xptr,1,zero,zgpu,1);
-  cudaMemcpy(z,zgpu,nv*sizeof(PetscScalar),cudaMemcpyDeviceToHost);
-  ierr = VecCUSPRestoreArrayRead(xin,&xarray);CHKERRQ(ierr);
-  cublasFree(V);
-  cublasFree(zgpu);
-  ierr = WaitForGPU();CHKERRCUSP(ierr);
-  ierr = PetscLogFlops(PetscMax(nv*(2.0*n-1),0.0));CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
 
-#undef __FUNCT__
-#define __FUNCT__ "VecMDot_SeqCUSPOld"
-PetscErrorCode VecMDot_SeqCUSPOld(Vec xin,PetscInt nv,const Vec yin[],PetscScalar *z)
-{
-  PetscErrorCode    ierr;
-  PetscInt          n = xin->map->n,j,j_rem;
-  /*Vec               yy0,yy1,yy2,yy3;*/
-  CUSPARRAY         *xarray,*yy0,*yy1,*yy2,*yy3;
-  PetscScalar       zero=0.0;
-  Vec               *yyin = (Vec*)yin;
-
-  thrust::tuple<PetscScalar,PetscScalar> result2;
-  thrust::tuple<PetscScalar,PetscScalar,PetscScalar> result3;
-  thrust::tuple<PetscScalar,PetscScalar,PetscScalar,PetscScalar>result4;
-
-  PetscFunctionBegin;
-  ierr = VecCUSPGetArrayRead(xin,&xarray);CHKERRQ(ierr);
-  switch (j_rem=nv&0x3) {
-  case 3:
-    ierr = VecCUSPGetArrayRead(yyin[0],&yy0);CHKERRQ(ierr);
-    ierr = VecCUSPGetArrayRead(yyin[1],&yy1);CHKERRQ(ierr);
-    ierr = VecCUSPGetArrayRead(yyin[2],&yy2);CHKERRQ(ierr);
-    try {
-      result3 = thrust::transform_reduce(
-                  thrust::make_zip_iterator(
-                    thrust::make_tuple(
-                      xarray->begin(),
-                      yy0->begin(),
-                      yy1->begin(),
-                      yy2->begin())),
-                  thrust::make_zip_iterator(
-                    thrust::make_tuple(
-                      xarray->end(),
-                      yy0->end(),
-                      yy1->end(),
-                      yy2->end())),
-                  cuspmult3<thrust::tuple<PetscScalar,PetscScalar,PetscScalar,PetscScalar>, thrust::tuple<PetscScalar,PetscScalar,PetscScalar> >(),
-                  thrust::make_tuple(zero,zero,zero),              /*init */
-                  cuspadd3<thrust::tuple<PetscScalar,PetscScalar,PetscScalar> >());              /* binary function */
-      z[0] = thrust::get<0>(result3);
-      z[1] = thrust::get<1>(result3);
-      z[2] = thrust::get<2>(result3);
-    } catch(char *ex) {
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSP error: %s", ex);
-    }
-    z    += 3;
-    ierr  = VecCUSPRestoreArrayRead(yyin[0],&yy0);CHKERRQ(ierr);
-    ierr  = VecCUSPRestoreArrayRead(yyin[1],&yy1);CHKERRQ(ierr);
-    ierr  = VecCUSPRestoreArrayRead(yyin[2],&yy2);CHKERRQ(ierr);
-    yyin += 3;
-    break;
-  case 2:
-    ierr = VecCUSPGetArrayRead(yyin[0],&yy0);CHKERRQ(ierr);
-    ierr = VecCUSPGetArrayRead(yyin[1],&yy1);CHKERRQ(ierr);
-    try {
-      result2 = thrust::transform_reduce(
-                  thrust::make_zip_iterator(
-                    thrust::make_tuple(
-                      xarray->begin(),
-                      yy0->begin(),
-                      yy1->begin())),
-                  thrust::make_zip_iterator(
-                    thrust::make_tuple(
-                      xarray->end(),
-                      yy0->end(),
-                      yy1->end())),
-                  cuspmult2<thrust::tuple<PetscScalar,PetscScalar,PetscScalar>, thrust::tuple<PetscScalar,PetscScalar> >(),
-                  thrust::make_tuple(zero,zero),             /*init */
-                  cuspadd2<thrust::tuple<PetscScalar, PetscScalar> >());             /* binary function */
-      z[0] = thrust::get<0>(result2);
-      z[1] = thrust::get<1>(result2);
-    } catch(char *ex) {
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSP error: %s", ex);
-    }
-    z    += 2;
-    ierr  = VecCUSPRestoreArrayRead(yyin[0],&yy0);CHKERRQ(ierr);
-    ierr  = VecCUSPRestoreArrayRead(yyin[1],&yy1);CHKERRQ(ierr);
-    yyin += 2;
-    break;
-  case 1:
-    ierr  =  VecDot_SeqCUSP(xin,yyin[0],&z[0]);CHKERRQ(ierr);
-    z    += 1;
-    yyin += 1;
-    break;
-  }
-  for (j=j_rem; j<nv; j+=4) {
-    ierr = VecCUSPGetArrayRead(yyin[0],&yy0);CHKERRQ(ierr);
-    ierr = VecCUSPGetArrayRead(yyin[1],&yy1);CHKERRQ(ierr);
-    ierr = VecCUSPGetArrayRead(yyin[2],&yy2);CHKERRQ(ierr);
-    ierr = VecCUSPGetArrayRead(yyin[3],&yy3);CHKERRQ(ierr);
-    try {
-      result4 = thrust::transform_reduce(
-                  thrust::make_zip_iterator(
-                    thrust::make_tuple(
-                      xarray->begin(),
-                      yy0->begin(),
-                      yy1->begin(),
-                      yy2->begin(),
-                      yy3->begin())),
-                  thrust::make_zip_iterator(
-                    thrust::make_tuple(
-                      xarray->end(),
-                      yy0->end(),
-                      yy1->end(),
-                      yy2->end(),
-                      yy3->end())),
-                  cuspmult4<thrust::tuple<PetscScalar,PetscScalar,PetscScalar,PetscScalar,PetscScalar>, thrust::tuple<PetscScalar,PetscScalar,PetscScalar,PetscScalar> >(),
-                  thrust::make_tuple(zero,zero,zero,zero),              /*init */
-                  cuspadd4<thrust::tuple<PetscScalar,PetscScalar,PetscScalar,PetscScalar> >());              /* binary function */
-      z[0] = thrust::get<0>(result4);
-      z[1] = thrust::get<1>(result4);
-      z[2] = thrust::get<2>(result4);
-      z[3] = thrust::get<3>(result4);
-    } catch(char *ex) {
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSP error: %s", ex);
-    }
-    z    += 4;
-    ierr  = VecCUSPRestoreArrayRead(yyin[0],&yy0);CHKERRQ(ierr);
-    ierr  = VecCUSPRestoreArrayRead(yyin[1],&yy1);CHKERRQ(ierr);
-    ierr  = VecCUSPRestoreArrayRead(yyin[2],&yy2);CHKERRQ(ierr);
-    ierr  = VecCUSPRestoreArrayRead(yyin[3],&yy3);CHKERRQ(ierr);
-    yyin += 4;
-  }
-  ierr = WaitForGPU();CHKERRCUSP(ierr);
-  ierr = PetscLogFlops(PetscMax(nv*(2.0*n-1),0.0));CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
 
 #undef __FUNCT__
 #define __FUNCT__ "VecSet_SeqCUSP"
