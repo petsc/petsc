@@ -43,6 +43,7 @@ PetscErrorCode TestTriangle(MPI_Comm comm)
   /* Check random triangles: rotate and translate */
 
   /* Move to 3D */
+  dim = 3;
   {
     PetscSection coordSection;
     Vec          coordinates;
@@ -79,7 +80,7 @@ PetscErrorCode TestTriangle(MPI_Comm comm)
   }
   /* Check reference geometry: determinant is scaled by reference volume (2.0) */
   ierr = DMPlexComputeCellGeometry(dm, 0, v0, J, invJ, &detJ);CHKERRQ(ierr);
-  /* if ((v0[0] != -1.0) || (v0[1] != -1.0)) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid v0 (%g, %g)", v0[0], v0[1]); */
+  if ((v0[0] != -1.0) || (v0[1] != -1.0) || (v0[2] != 0.0)) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid v0(%g, %g, %g)", v0[0], v0[1], v0[2]);
   for (i = 0; i < dim; ++i) {
     for (j = 0; j < dim; ++j) {
       if (fabs(J[i*dim+j] - (i == j ? 1.0 : 0.0)) > 1.0e-9) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid J[%d,%d]", i, j);
@@ -111,10 +112,11 @@ PetscErrorCode TestTriangle(MPI_Comm comm)
     ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
   }
   ierr = DMPlexComputeCellGeometry(dm, 0, v0, J, invJ, &detJ);CHKERRQ(ierr);
+  if ((v0[0] != 0.0) || (v0[1] != -1.0) || (v0[2] != -1.0)) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid v0(%g, %g, %g)", v0[0], v0[1], v0[2]);
   for (i = 0; i < dim; ++i) {
     for (j = 0; j < dim; ++j) {
-      if (fabs(J[i*dim+j] - (i == j ? 0.0 : i == 0 ? -1.0 : 1.0)) > 1.0e-9) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid J");
-      if (fabs(invJ[i*dim+j] - (i == j ? 0.0 : i == 0 ? 1.0 : -1.0)) > 1.0e-9) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid invJ");
+      if (fabs(J[i*dim+j] - ((i+2)%3 == j ? 1.0 : 0.0)) > 1.0e-9) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid J");
+      if (fabs(invJ[i*dim+j] - ((i+1)%3 == j ? 1.0 : 0.0)) > 1.0e-9) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid invJ");
     }
   }
   if (fabs(detJ - 1.0) > 1.0e-9) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid |J| = %g should be 1.0", detJ);
