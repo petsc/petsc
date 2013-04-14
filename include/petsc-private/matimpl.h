@@ -478,8 +478,9 @@ struct  _p_MatTransposeColoring{
 
   PetscInt       *colorforrow,*colorforcol;  /* pointer to rows and columns */
   PetscInt       *rows;                      /* lists the local rows for each color (using the local row numbering) */
-  PetscInt       *columnsforspidx,*den2sp;   /* maps (row,color) in the dense matrix to index of sparse matrix array a->a */
+  PetscInt       *den2sp;                    /* maps (row,color) in the dense matrix to index of sparse matrix array a->a */
   PetscInt       *columns;                   /* lists the local columns of each color (using global column numbering) */
+  PetscInt       brows;                      /* number of rows for efficient implementation of MatTransColoringApplyDenToSp() */
 };
 
 /*
