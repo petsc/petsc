@@ -1340,7 +1340,9 @@ PetscErrorCode  VecPermute(Vec x, IS row, PetscBool inv)
 #undef __FUNCT__
 #define __FUNCT__ "VecEqual"
 /*@
-   VecEqual - Compares two vectors.
+   VecEqual - Compares two vectors. Returns true if the two vectors are either pointing to the same memory buffer,
+   or if the two vectors have the same local and global layout as well as bitwise equality of all entries.
+   Does NOT take round-off errors into account.
 
    Collective on Vec
 
