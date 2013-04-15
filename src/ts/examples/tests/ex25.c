@@ -52,6 +52,7 @@ int main(int argc,char **argv)
     Brusselator(argc,argv,cycle);
   }
   MPI_Finalize();
+  return 0;
 }
 
 #undef __FUNCT__
