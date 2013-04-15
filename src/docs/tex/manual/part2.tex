@@ -2561,6 +2561,7 @@ SOR with Eisenstat trick             & PCEISENSTAT   & eisenstat\\
 Incomplete Cholesky                  & PCICC         & icc\\
 Incomplete LU                        & PCILU         & ilu\\
 Additive Schwarz                     & PCASM         & asm\\
+Algebraic Multigrid                    & PCGAMG         & gamg\\
 Linear solver                        & PCKSP         & ksp \\
 Combination of preconditioners       & PCCOMPOSITE   & composite \\
 \hline
@@ -2849,6 +2850,16 @@ Jacobi preconditioner.  Note that one can define initial index sets
 \trl{is} with {\em any} overlap via PCASMSetTotalSubdomains() or
 PCASMSetLocalSubdomains(); the routine PCASMSetOverlap()
 merely allows PETSc to extend that overlap further if desired.
+
+%----------------------------------------------------------------------
+\subsection{Algebraic Multigrid Preconditioners}
+
+PETSc provides a framework and tools for developing algebraic multigrid (AMG) methods.
+Developers can write a preconditioner (PC) class and an application can select this PC as a command line argument or explicitly in the code.
+PETSc provides interfaces to two external AMG packages have been imported into PETSc as external, downloaded packages: {\it hypre} and {\it ML}.
+These packages are monolithic in that they implement one class of algorithms, ``classic" AMG in the case of  {\it hypre}  and smoothed aggregation for {\it ML}.
+The PETSc AMG framework provides one basic aggregation AMG method (\texttt{-pc_gamg_type agg}) and the popular variant smoothed aggregation (\texttt{-pc_gamg_agg_nsmooths 1}).
+Smoothed aggregation is recommended for symmetric positive definite systems;  unsmoothed aggregation can be useful for unsymmetric problems.
 
 %----------------------------------------------------------------------
 \subsection{Shell Preconditioners}
