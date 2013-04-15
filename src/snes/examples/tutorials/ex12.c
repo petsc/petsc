@@ -91,14 +91,6 @@ void f0_u(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[],
   for (comp = 0; comp < Ncomp; ++comp) f0[comp] = 4.0;
 }
 
-void f0_bd_zero(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[], const PetscReal n[], PetscScalar f0[])
-{
-  const PetscInt Ncomp = NUM_BASIS_COMPONENTS_0;
-  PetscInt       comp;
-
-  for (comp = 0; comp < Ncomp; ++comp) f0[comp] = 0.0;
-}
-
 void f0_bd_u(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[], const PetscReal n[], PetscScalar f0[])
 {
   const PetscInt Ncomp = NUM_BASIS_COMPONENTS_0;
@@ -107,6 +99,22 @@ void f0_bd_u(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x
 
   if ((fabs(x[0] - 1.0) < 1.0e-9) || (fabs(x[1] - 1.0) < 1.0e-9)) {val = -2.0;}
   for (comp = 0; comp < Ncomp; ++comp) f0[comp] = val;
+}
+
+void f0_bd_zero(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[], const PetscReal n[], PetscScalar f0[])
+{
+  const PetscInt Ncomp = NUM_BASIS_COMPONENTS_0;
+  PetscInt       comp;
+
+  for (comp = 0; comp < Ncomp; ++comp) f0[comp] = 0.0;
+}
+
+void f1_bd_zero(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[], const PetscReal n[], PetscScalar f1[])
+{
+  const PetscInt Ncomp = SPATIAL_DIM_0*NUM_BASIS_COMPONENTS_0;
+  PetscInt       comp;
+
+  for (comp = 0; comp < Ncomp; ++comp) f1[comp] = 0.0;
 }
 
 /* gradU[comp*dim+d] = {u_x, u_y} or {u_x, u_y, u_z} */
@@ -396,7 +404,7 @@ PetscErrorCode SetupExactSolution(DM dm, AppCtx *user)
   fem->g2Funcs[0] = NULL;
   fem->g3Funcs[0] = g3_uu;      /* < \nabla v, \nabla u > */
   fem->f0BdFuncs[0] = f0_bd_zero;
-  fem->f1BdFuncs[0] = f0_bd_zero;
+  fem->f1BdFuncs[0] = f1_bd_zero;
   switch (user->dim) {
   case 2:
     user->exactFuncs[0] = quadratic_u_2d;
