@@ -89,8 +89,10 @@ int main(int argc,char **args)
   PetscInt    maxfails                       = 10000;
   char        pvtu_fname[PETSC_MAX_PATH_LEN] = "incomp";
 
-  ierr = PetscInitialize(&argc,&args,"petsc.opt",help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&args,PETSC_NULL,help);CHKERRQ(ierr);
   ierr = PetscInitializeFortran();CHKERRQ(ierr);
+  ierr = PetscOptionsInsertFile(PETSC_COMM_WORLD,"petsc.opt",PETSC_FALSE);CHKERRQ(ierr);
+
   comm = PETSC_COMM_WORLD;
   f77FORLINK();                               /* Link FORTRAN and C COMMONS */
 
@@ -167,7 +169,7 @@ int main(int argc,char **args)
   /* Create nonlinear solver */
   ierr = SetPetscDS(&f_pntr,&tsCtx);CHKERRQ(ierr);
   ierr = SNESCreate(comm,&snes);CHKERRQ(ierr);
-  ierr = SNESSetType(snes,"ls");CHKERRQ(ierr);
+  ierr = SNESSetType(snes,"newtonls");CHKERRQ(ierr);
 
 
   /* Set various routines and options */
@@ -2490,8 +2492,8 @@ int SetPetscDS(GRID *grid,TstepCtx *tsCtx)
     val_offd[i] = nbrs_offd;
   }
   ierr = MatCreateBAIJ(comm,bs,bs*nnodesLoc,bs*nnodesLoc,
-                       bs*nnodes,bs*nnodes,NULL,val_diag,
-                       NULL,val_offd,&grid->A);CHKERRQ(ierr);
+                       bs*nnodes,bs*nnodes,PETSC_DEFAULT,val_diag,
+                       PETSC_DEFAULT,val_offd,&grid->A);CHKERRQ(ierr);
 #else
   ICALLOC(nnodesLoc*4,&val_diag);
   ICALLOC(nnodesLoc*4,&val_offd);
