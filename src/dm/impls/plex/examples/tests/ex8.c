@@ -7,10 +7,11 @@ static char help[] = "Tests for cell geometry\n\n";
 
 #undef __FUNCT__
 #define __FUNCT__ "TestTriangle"
-PetscErrorCode TestTriangle(MPI_Comm comm)
+PetscErrorCode TestTriangle(MPI_Comm comm, PetscBool interpolate)
 {
   DM             dm;
   PetscReal      v0[3], J[9], invJ[9], detJ;
+  PetscReal      centroid[3], normal[3], vol;
   PetscInt       dim, i, j;
   PetscErrorCode ierr;
 
@@ -28,6 +29,14 @@ PetscErrorCode TestTriangle(MPI_Comm comm)
     PetscScalar vertexCoords[6]     = {-1.0, -1.0, 1.0, -1.0, -1.0, 1.0};
 
     ierr = DMPlexCreateFromDAG(dm, 1, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
+    if (interpolate) {
+      DM idm;
+
+      ierr = DMPlexInterpolate(dm, &idm);CHKERRQ(ierr);
+      ierr = DMPlexCopyCoordinates(dm, idm);CHKERRQ(ierr);
+      ierr = DMDestroy(&dm);CHKERRQ(ierr);
+      dm   = idm;
+    }
     ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
   }
   /* Check reference geometry: determinant is scaled by reference volume (2.0) */
@@ -40,6 +49,14 @@ PetscErrorCode TestTriangle(MPI_Comm comm)
     }
   }
   if (fabs(detJ - 1.0) > 1.0e-9) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid |J| = %g should be 1.0", detJ);
+  if (interpolate) {
+    ierr = DMPlexComputeCellGeometryFVM(dm, 0, &vol, centroid, normal);CHKERRQ(ierr);
+    for (i = 0; i < dim; ++i) {
+      if (fabs(centroid[i] + 0.333333) > 1.0e-6) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid centroid[%d], %g != -0.333333 (%g)", i, centroid[i]);
+      if (fabs(normal[i]) > 1.0e-9) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid normal[%d], %g != 0.0", i, normal[i]);
+    }
+    if (fabs(detJ*2.0 - vol) > 1.0e-9) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid volume = %g should be 2.0", vol);
+  }
   /* Check random triangles: rotate and translate */
 
   /* Move to 3D */
@@ -88,6 +105,14 @@ PetscErrorCode TestTriangle(MPI_Comm comm)
     }
   }
   if (fabs(detJ - 1.0) > 1.0e-9) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid |J| = %g should be 1.0", detJ);
+  if (interpolate) {
+    ierr = DMPlexComputeCellGeometryFVM(dm, 0, &vol, centroid, normal);CHKERRQ(ierr);
+    for (i = 0; i < dim; ++i) {
+      if (fabs(centroid[i] - (i < 2 ? -0.333333 : 0.0)) > 1.0e-6) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid centroid[%d], %g != %g", i, centroid[i], (i < 2 ? -0.333333 : 0.0));
+      if (fabs(normal[i] - (i < 2 ? 0.0 : 1.0)) > 1.0e-9) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid normal[%d], %g != %g", i, normal[i], (i < 2 ? 0.0 : 1.0));
+    }
+    if (fabs(detJ*2.0 - vol) > 1.0e-9) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid volume = %g should be 2.0", vol);
+  }
   /* Rotated reference element */
   {
     PetscSection coordSection;
@@ -120,7 +145,14 @@ PetscErrorCode TestTriangle(MPI_Comm comm)
     }
   }
   if (fabs(detJ - 1.0) > 1.0e-9) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid |J| = %g should be 1.0", detJ);
-
+  if (interpolate) {
+    ierr = DMPlexComputeCellGeometryFVM(dm, 0, &vol, centroid, normal);CHKERRQ(ierr);
+    for (i = 0; i < dim; ++i) {
+      if (fabs(centroid[i] - (i > 0 ? -0.333333 : 0.0)) > 1.0e-6) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid centroid[%d], %g != %g", i, centroid[i], (i > 0 ? -0.333333 : 0.0));
+      if (fabs(normal[i] - (i > 0 ? 0.0 : 1.0)) > 1.0e-9) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid normal[%d], %g != %g", i, normal[i], (i > 0 ? 0.0 : 1.0));
+    }
+    if (fabs(detJ*2.0 - vol) > 1.0e-9) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid volume = %g should be 2.0", vol);
+  }
   /* Cleanup */
   ierr = DMDestroy(&dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -133,7 +165,8 @@ int main(int argc, char **argv)
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc, &argv, NULL, help);CHKERRQ(ierr);
-  ierr = TestTriangle(PETSC_COMM_SELF);CHKERRQ(ierr);
+  ierr = TestTriangle(PETSC_COMM_SELF, PETSC_FALSE);CHKERRQ(ierr);
+  ierr = TestTriangle(PETSC_COMM_SELF, PETSC_TRUE);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }
