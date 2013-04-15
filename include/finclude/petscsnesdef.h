@@ -12,7 +12,7 @@
 #define SNESType character*(80)
 #define SNESMSType character*(80)
 #define SNESConvergedReason PetscEnum
-#define SNESLineSearchType  PetscEnum
+#define SNESLineSearchType  character*(80)
 #define MatMFFD PetscFortranAddr
 #define MatMFFDType PetscFortranAddr
 #define SNESLineSearch PetscFortranAddr
