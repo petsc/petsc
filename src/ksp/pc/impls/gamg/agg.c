@@ -1493,18 +1493,18 @@ PetscErrorCode  PCCreateGAMG_AGG(PC pc)
   ierr            = PetscNewLog(pc, PC_GAMG_AGG, &pc_gamg_agg);CHKERRQ(ierr);
   pc_gamg->subctx = pc_gamg_agg;
 
-  pc_gamg->setfromoptions = PCSetFromOptions_GAMG_AGG;
+  pc_gamg->ops->setfromoptions = PCSetFromOptions_GAMG_AGG;
   pc->ops->destroy        = PCDestroy_AGG;
   /* reset does not do anything; setup not virtual */
 
   /* set internal function pointers */
-  pc_gamg->graph       = PCGAMGgraph_AGG;
-  pc_gamg->coarsen     = PCGAMGCoarsen_AGG;
-  pc_gamg->prolongator = PCGAMGProlongator_AGG;
-  pc_gamg->optprol     = PCGAMGOptprol_AGG;
-  pc_gamg->formkktprol = PCGAMGKKTProl_AGG;
+  pc_gamg->ops->graph       = PCGAMGgraph_AGG;
+  pc_gamg->ops->coarsen     = PCGAMGCoarsen_AGG;
+  pc_gamg->ops->prolongator = PCGAMGProlongator_AGG;
+  pc_gamg->ops->optprol     = PCGAMGOptprol_AGG;
+  pc_gamg->ops->formkktprol = PCGAMGKKTProl_AGG;
 
-  pc_gamg->createdefaultdata = PCSetData_AGG;
+  pc_gamg->ops->createdefaultdata = PCSetData_AGG;
 
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCSetCoordinates_C",PCSetCoordinates_AGG);CHKERRQ(ierr);
   PetscFunctionReturn(0);

@@ -857,18 +857,17 @@ PetscErrorCode  PCCreateGAMG_GEO(PC pc)
   PC_GAMG        *pc_gamg = (PC_GAMG*)mg->innerctx;
 
   PetscFunctionBegin;
-  pc_gamg->setfromoptions = PCSetFromOptions_GEO;
+  pc_gamg->ops->setfromoptions = PCSetFromOptions_GEO;
   /* pc->ops->destroy        = PCDestroy_GEO; */
   /* reset does not do anything; setup not virtual */
 
   /* set internal function pointers */
-  pc_gamg->graph       = PCGAMGgraph_GEO;
-  pc_gamg->coarsen     = PCGAMGcoarsen_GEO;
-  pc_gamg->prolongator = PCGAMGProlongator_GEO;
-  pc_gamg->optprol     = 0;
-  pc_gamg->formkktprol = 0;
-
-  pc_gamg->createdefaultdata = PCSetData_GEO;
+  pc_gamg->ops->graph       = PCGAMGgraph_GEO;
+  pc_gamg->ops->coarsen     = PCGAMGcoarsen_GEO;
+  pc_gamg->ops->prolongator = PCGAMGProlongator_GEO;
+  pc_gamg->ops->optprol     = 0;
+  pc_gamg->ops->formkktprol = 0;
+  pc_gamg->ops->createdefaultdata = PCSetData_GEO;
 
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCSetCoordinates_C",PCSetCoordinates_GEO);CHKERRQ(ierr);
   PetscFunctionReturn(0);

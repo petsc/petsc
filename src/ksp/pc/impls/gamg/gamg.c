@@ -605,9 +605,9 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
       ierr = PetscMalloc(pc_gamg->data_sz*sizeof(PetscReal), &pc_gamg->data);CHKERRQ(ierr);
       for (qq=0; qq<pc_gamg->data_sz; qq++) pc_gamg->data[qq] = pc_gamg->orig_data[qq];
     } else {
-      if (!pc_gamg->createdefaultdata) SETERRQ(comm,PETSC_ERR_PLIB,"'createdefaultdata' not set(?) need to support NULL data");
+      if (!pc_gamg->ops->createdefaultdata) SETERRQ(comm,PETSC_ERR_PLIB,"'createdefaultdata' not set(?) need to support NULL data");
       if (stokes) SETERRQ(comm,PETSC_ERR_PLIB,"Need data (eg, PCSetCoordinates) for Stokes problems");
-      ierr = pc_gamg->createdefaultdata(pc, kktMatsArr[0].A11);CHKERRQ(ierr);
+      ierr = pc_gamg->ops->createdefaultdata(pc, kktMatsArr[0].A11);CHKERRQ(ierr);
     }
   }
 
@@ -661,9 +661,9 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
       PetscCoarsenData *agg_lists;
       Mat              Prol11,Prol22;
 
-      ierr = pc_gamg->graph(pc,kktMatsArr[level].A11, &Gmat);CHKERRQ(ierr);
-      ierr = pc_gamg->coarsen(pc, &Gmat, &agg_lists);CHKERRQ(ierr);
-      ierr = pc_gamg->prolongator(pc, kktMatsArr[level].A11, Gmat, agg_lists, &Prol11);CHKERRQ(ierr);
+      ierr = pc_gamg->ops->graph(pc,kktMatsArr[level].A11, &Gmat);CHKERRQ(ierr);
+      ierr = pc_gamg->ops->coarsen(pc, &Gmat, &agg_lists);CHKERRQ(ierr);
+      ierr = pc_gamg->ops->prolongator(pc, kktMatsArr[level].A11, Gmat, agg_lists, &Prol11);CHKERRQ(ierr);
 
       /* could have failed to create new level */
       if (Prol11) {
@@ -671,14 +671,14 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
         ierr = MatGetBlockSizes(Prol11, NULL, &bs);CHKERRQ(ierr);
 
         if (stokes) {
-          if (!pc_gamg->formkktprol) SETERRQ(comm,PETSC_ERR_USER,"Stokes not supportd by AMG method.");
+          if (!pc_gamg->ops->formkktprol) SETERRQ(comm,PETSC_ERR_USER,"Stokes not supportd by AMG method.");
           /* R A12 == (T = A21 P)';  G = T' T; coarsen G; form plain agg with G */
-          ierr = pc_gamg->formkktprol(pc, Prol11, kktMatsArr[level].A21, &Prol22);CHKERRQ(ierr);
+          ierr = pc_gamg->ops->formkktprol(pc, Prol11, kktMatsArr[level].A21, &Prol22);CHKERRQ(ierr);
         }
 
-        if (pc_gamg->optprol) {
+        if (pc_gamg->ops->optprol) {
           /* smooth */
-          ierr = pc_gamg->optprol(pc, kktMatsArr[level].A11, &Prol11);CHKERRQ(ierr);
+          ierr = pc_gamg->ops->optprol(pc, kktMatsArr[level].A11, &Prol11);CHKERRQ(ierr);
         }
 
         if (stokes) {
@@ -1011,6 +1011,8 @@ PetscErrorCode PCDestroy_GAMG(PC pc)
 
   PetscFunctionBegin;
   ierr = PCReset_GAMG(pc);CHKERRQ(ierr);
+  ierr = PetscFree(pc_gamg->ops);CHKERRQ(ierr);
+  ierr = PetscFree(pc_gamg->gamg_type_name);CHKERRQ(ierr);
   ierr = PetscFree(pc_gamg);CHKERRQ(ierr);
   ierr = PCDestroy_MG(pc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1347,10 +1349,18 @@ PetscErrorCode PCGAMGSetType(PC pc, PCGAMGType type)
 static PetscErrorCode PCGAMGSetType_GAMG(PC pc, PCGAMGType type)
 {
   PetscErrorCode ierr,(*r)(PC);
+  PC_MG          *mg      = (PC_MG*)pc->data;
+  PC_GAMG        *pc_gamg = (PC_GAMG*)mg->innerctx;
 
   PetscFunctionBegin;
   ierr = PetscFunctionListFind(GAMGList,type,&r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown GAMG type %s given",type);
+  if (pc_gamg->ops->destroy) {
+    ierr = (*pc_gamg->ops->destroy)(pc);CHKERRQ(ierr);
+    ierr = PetscMemzero(pc_gamg->ops,sizeof(struct _PCGAMGOps));CHKERRQ(ierr);
+  }
+  ierr = PetscFree(pc_gamg->gamg_type_name);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(type,&pc_gamg->gamg_type_name);CHKERRQ(ierr);
   ierr = (*r)(pc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1373,9 +1383,12 @@ PetscErrorCode PCSetFromOptions_GAMG(PC pc)
     /* -pc_gamg_type */
     {
       char tname[256] = PCGAMGAGG;
-      ierr = PetscOptionsList("-pc_gamg_type","Type of AMG method","PCGAMGSetType",GAMGList, tname, tname, sizeof(tname), NULL);CHKERRQ(ierr);
+      const char *deftype = pc_gamg->gamg_type_name ? pc_gamg->gamg_type_name : tname;
+      ierr = PetscOptionsList("-pc_gamg_type","Type of AMG method","PCGAMGSetType",GAMGList, tname, tname, sizeof(tname), &flag);CHKERRQ(ierr);
       /* call PCCreateGAMG_XYZ */
-      ierr = PCGAMGSetType(pc, tname);CHKERRQ(ierr);
+      if (flag || !pc_gamg->gamg_type_name) {
+        ierr = PCGAMGSetType(pc, flag ? tname : deftype);CHKERRQ(ierr);
+      }
     }
     /* -pc_gamg_verbose */
     ierr = PetscOptionsInt("-pc_gamg_verbose","Verbose (debugging) output for PCGAMG",
@@ -1436,7 +1449,7 @@ PetscErrorCode PCSetFromOptions_GAMG(PC pc)
                            &flag);CHKERRQ(ierr);
 
     /* set options for subtype */
-    if (pc_gamg->setfromoptions) {ierr = (*pc_gamg->setfromoptions)(pc);CHKERRQ(ierr);}
+    if (pc_gamg->ops->setfromoptions) {ierr = (*pc_gamg->ops->setfromoptions)(pc);CHKERRQ(ierr);}
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1486,6 +1499,8 @@ PETSC_EXTERN PetscErrorCode PCCreate_GAMG(PC pc)
   mg           = (PC_MG*)pc->data;
   mg->galerkin = 2;             /* Use Galerkin, but it is computed externally */
   mg->innerctx = pc_gamg;
+
+  ierr = PetscNewLog(pc,struct _PCGAMGOps,&pc_gamg->ops);CHKERRQ(ierr);
 
   pc_gamg->setup_count = 0;
   /* these should be in subctx but repartitioning needs simple arrays */
