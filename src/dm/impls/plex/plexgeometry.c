@@ -776,39 +776,64 @@ static PetscErrorCode DMPlexComputeGeometryFVM_2D_Internal(DM dm, PetscInt dim, 
   PetscSection   coordSection;
   Vec            coordinates;
   PetscScalar   *coords = NULL;
-  PetscReal      vsum = 0.0, csum[2], vtmp, ctmp[4];
-  PetscInt       coordSize, numCorners, p, d;
+  PetscReal      vsum = 0.0, csum[3] = {0.0, 0.0, 0.0}, vtmp, ctmp[4], v0[3], R[9];
+  PetscInt       tdim = 2, coordSize, numCorners, p, d, e;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (dim != 2) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "We only support 2D triangles right now");
   ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
+  ierr = DMPlexGetConeSize(dm, cell, &numCorners);CHKERRQ(ierr);
   ierr = DMPlexGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
   ierr = DMPlexVecGetClosure(dm, coordSection, coordinates, cell, &coordSize, &coords);CHKERRQ(ierr);
-  numCorners = coordSize/dim;
+  dim  = coordSize/numCorners;
+  if (normal) {
+    if (dim > 2) {
+      const PetscReal x0 = coords[dim+0] - coords[0], x1 = coords[dim*2+0] - coords[0];
+      const PetscReal y0 = coords[dim+1] - coords[1], y1 = coords[dim*2+1] - coords[1];
+      const PetscReal z0 = coords[dim+2] - coords[2], z1 = coords[dim*2+2] - coords[2];
+      PetscReal       norm;
+
+      v0[0]     = coords[0];
+      v0[1]     = coords[1];
+      v0[2]     = coords[2];
+      normal[0] = y0*z1 - z0*y1;
+      normal[1] = z0*x1 - x0*z1;
+      normal[2] = x0*y1 - y0*x1;
+      norm = sqrt(normal[0]*normal[0] + normal[1]*normal[1] + normal[2]*normal[2]);
+      normal[0] /= norm;
+      normal[1] /= norm;
+      normal[2] /= norm;
+    } else {
+      for (d = 0; d < dim; ++d) normal[d] = 0.0;
+    }
+  }
+  if (dim == 3) {ierr = DMPlexComputeProjection3Dto2D_Internal(coords, R);CHKERRQ(ierr);}
   for (p = 0; p < numCorners; ++p) {
     /* Need to do this copy to get types right */
-    for (d = 0; d < dim; ++d) {
-      ctmp[d]     = coords[p*dim+d];
-      ctmp[dim+d] = coords[((p+1)%numCorners)*dim+d];
+    for (d = 0; d < tdim; ++d) {
+      ctmp[d]      = coords[p*tdim+d];
+      ctmp[tdim+d] = coords[((p+1)%numCorners)*tdim+d];
     }
     Volume_Triangle_Origin_Internal(&vtmp, ctmp);
     vsum += vtmp;
-    for (d = 0; d < dim; ++d) {
-      csum[d] += (ctmp[d] + ctmp[dim+d])*vtmp;
+    for (d = 0; d < tdim; ++d) {
+      csum[d] += (ctmp[d] + ctmp[tdim+d])*vtmp;
     }
   }
-  for (d = 0; d < dim; ++d) {
-    csum[d] /= (dim+1)*vsum;
+  for (d = 0; d < tdim; ++d) {
+    csum[d] /= (tdim+1)*vsum;
   }
   ierr = DMPlexVecRestoreClosure(dm, coordSection, coordinates, cell, &coordSize, &coords);CHKERRQ(ierr);
   if (vol) *vol = PetscAbsScalar(vsum);
-  if (centroid) for (d = 0; d < dim; ++d) centroid[d] = csum[d];
-  if (normal) {
+  if (centroid) {
     if (dim > 2) {
-    } else {
-      for (d = 0; d < dim; ++d) normal[d]   = 0.0;
-    }
+      for (d = 0; d < dim; ++d) {
+        centroid[d] = v0[d];
+        for (e = 0; e < dim; ++e) {
+          centroid[d] += R[d*dim+e]*csum[e];
+        }
+      }
+    } else for (d = 0; d < dim; ++d) centroid[d] = csum[d];
   }
   PetscFunctionReturn(0);
 }
