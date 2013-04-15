@@ -61,7 +61,7 @@ PetscErrorCode TaoCreate(MPI_Comm comm, TaoSolver *newtao)
     ierr = TaoInitializePackage(PETSC_NULL); CHKERRQ(ierr);
     ierr = TaoLineSearchInitializePackage(PETSC_NULL); CHKERRQ(ierr);
 
-    ierr = PetscHeaderCreate(tao,_p_TaoSolver, struct _TaoSolverOps, TAOSOLVER_CLASSID,0,"TaoSolver",0,0,comm,TaoDestroy,TaoView); CHKERRQ(ierr);
+    ierr = PetscHeaderCreate(tao,_p_TaoSolver, struct _TaoSolverOps, TAOSOLVER_CLASSID,"TaoSolver",0,0,comm,TaoDestroy,TaoView); CHKERRQ(ierr);
     
     tao->ops->computeobjective=0;
     tao->ops->computeobjectiveandgradient=0;
@@ -260,7 +260,6 @@ PetscErrorCode TaoDestroy(TaoSolver *tao)
 
   if (--((PetscObject)*tao)->refct > 0) {*tao=0;PetscFunctionReturn(0);}
 
-  ierr = PetscObjectDepublish(*tao); CHKERRQ(ierr);
   
   if ((*tao)->ops->destroy) {
     ierr = (*((*tao))->ops->destroy)(*tao); CHKERRQ(ierr);

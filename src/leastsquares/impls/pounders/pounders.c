@@ -64,7 +64,7 @@ PetscErrorCode gqtwrap(TaoSolver tao,PetscReal *gnorm, PetscReal *qmin)
       ierr = MatAssemblyEnd(mfqP->subH,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
       
       ierr = TaoResetStatistics(mfqP->subtao); CHKERRQ(ierr);
-      ierr = TaoSetTolerances(mfqP->subtao,PETSC_NULL,PETSC_NULL,*gnorm,*gnorm,PETSC_NULL); CHKERRQ(ierr);
+      ierr = TaoSetTolerances(mfqP->subtao,PETSC_DEFAULT,PETSC_DEFAULT,*gnorm,*gnorm,PETSC_DEFAULT); CHKERRQ(ierr);
       /* enforce bound constraints -- experimental */
       if (tao->XU && tao->XL) {
 	ierr = VecCopy(tao->XU,mfqP->subxu); CHKERRQ(ierr);

@@ -1,3 +1,4 @@
+#include "petsc-private/petscimpl.h"
 #include "taosolver.h"
 
 #undef __FUNCT__  
@@ -74,6 +75,7 @@ PetscErrorCode VecStepMaxBounded(Vec X, Vec DX, Vec XL, Vec XU, PetscReal *stepm
   PetscInt i,nn;
   PetscReal *xx,*dx,*xl,*xu;
   PetscReal localmax=0;
+  PetscMPIInt comm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(X,VEC_CLASSID,2);
@@ -98,9 +100,8 @@ PetscErrorCode VecStepMaxBounded(Vec X, Vec DX, Vec XL, Vec XU, PetscReal *stepm
   ierr = VecRestoreArray(XL,&xl);CHKERRQ(ierr);
   ierr = VecRestoreArray(XU,&xu);CHKERRQ(ierr);
   ierr = VecRestoreArray(DX,&dx);CHKERRQ(ierr);
-
-  ierr = MPI_Allreduce(&localmax,stepmax,1,MPIU_REAL,MPIU_MAX,((PetscObject)X)->comm);
-  CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject)X,&comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&localmax,stepmax,1,MPIU_REAL,MPIU_MAX,comm);CHKERRQ(ierr);
 
 
   PetscFunctionReturn(0);
@@ -166,6 +167,7 @@ PetscErrorCode VecStepMax(Vec X, Vec DX, PetscReal *step){
   PetscInt i, nn;
   PetscReal stepmax=TAO_INFINITY;
   PetscReal *xx, *dx;
+  PetscMPIInt comm;
     
   PetscFunctionBegin;
   PetscValidHeaderSpecific(X,VEC_CLASSID,1);
@@ -182,7 +184,8 @@ PetscErrorCode VecStepMax(Vec X, Vec DX, PetscReal *step){
   }
   ierr = VecRestoreArray(X,&xx);CHKERRQ(ierr);
   ierr = VecRestoreArray(DX,&dx);CHKERRQ(ierr);
-  ierr = MPI_Allreduce(&stepmax,step,1,MPIU_REAL,MPIU_MIN,((PetscObject)X)->comm);
+  ierr = PetscObjectGetComm((PetscObject)X,&comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&stepmax,step,1,MPIU_REAL,MPIU_MIN,comm);
   CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

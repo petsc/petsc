@@ -136,7 +136,7 @@ PetscErrorCode TaoLineSearchCreate(MPI_Comm comm, TaoLineSearch *newls)
  #endif 
 
      ierr = PetscHeaderCreate(ls,_p_TaoLineSearch,struct _TaoLineSearchOps,
-			      TAOLINESEARCH_CLASSID, 0, "TaoLineSearch",0,0,
+			      TAOLINESEARCH_CLASSID, "TaoLineSearch",0,0,
 			      comm,TaoLineSearchDestroy, TaoLineSearchView);
      CHKERRQ(ierr);
      ls->bounded = 0;
