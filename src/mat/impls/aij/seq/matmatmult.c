@@ -1616,8 +1616,8 @@ PetscErrorCode MatTransposeColoringCreate_SeqAIJ(Mat mat,ISColoring iscoloring,M
       nrows = 0;
       for (j=0; j<cm; j++) {
         if (rowhit[j]) {
-          rows_i[nrows] = j;
-          den2sp_i[j]   = idxhit[j];
+          rows_i[nrows]   = j;
+          den2sp_i[nrows] = idxhit[j];
           nrows++;
         }
       } 
@@ -1626,8 +1626,8 @@ PetscErrorCode MatTransposeColoringCreate_SeqAIJ(Mat mat,ISColoring iscoloring,M
       nrows = 0;
       for (j=0; j<cm; j++) {
         if (rowhit[j]) {
-          rows_i[nrows] = j;
-          den2sp_i[j]   = idxhit[j];
+          rows_i[nrows]   = j;
+          den2sp_i[j] = idxhit[j];
           nrows++;
         }
       } 
