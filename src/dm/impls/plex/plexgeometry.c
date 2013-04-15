@@ -506,6 +506,7 @@ static PetscErrorCode DMPlexComputeTriangleGeometry_Internal(DM dm, PetscInt e, 
         }
       }
       PetscLogFlops(8.0);
+      Det3D_Internal(detJ, J0);
       for (d = 0; d < dim; d++) {
         for (f = 0; f < dim; f++) {
           J[d*dim+f] = 0.0;
@@ -515,7 +516,6 @@ static PetscErrorCode DMPlexComputeTriangleGeometry_Internal(DM dm, PetscInt e, 
         }
       }
       PetscLogFlops(18.0);
-      Det3D_Internal(detJ, J);
     }
     if (invJ) {Invert3D_Internal(invJ, J, *detJ);}
   } else if (numCoords == 6) {
