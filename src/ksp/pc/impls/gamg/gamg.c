@@ -1011,6 +1011,9 @@ PetscErrorCode PCDestroy_GAMG(PC pc)
 
   PetscFunctionBegin;
   ierr = PCReset_GAMG(pc);CHKERRQ(ierr);
+  if (pc_gamg->ops->destroy) {
+    ierr = (*pc_gamg->ops->destroy)(pc);CHKERRQ(ierr);
+  }
   ierr = PetscFree(pc_gamg->ops);CHKERRQ(ierr);
   ierr = PetscFree(pc_gamg->gamg_type_name);CHKERRQ(ierr);
   ierr = PetscFree(pc_gamg);CHKERRQ(ierr);

@@ -841,6 +841,17 @@ PetscErrorCode PCGAMGProlongator_GEO(PC pc,const Mat Amat,const Mat Gmat,PetscCo
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "PCDestroy_GAMG_GEO"
+static PetscErrorCode PCDestroy_GAMG_GEO(PC pc)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCSetCoordinates_C",NULL);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /* -------------------------------------------------------------------------- */
 /*
  PCCreateGAMG_GEO
@@ -858,7 +869,7 @@ PetscErrorCode  PCCreateGAMG_GEO(PC pc)
 
   PetscFunctionBegin;
   pc_gamg->ops->setfromoptions = PCSetFromOptions_GEO;
-  /* pc->ops->destroy        = PCDestroy_GEO; */
+  pc_gamg->ops->destroy        = PCDestroy_GAMG_GEO;
   /* reset does not do anything; setup not virtual */
 
   /* set internal function pointers */

@@ -202,22 +202,15 @@ PetscErrorCode PCSetFromOptions_GAMG_AGG(PC pc)
    . pc -
 */
 #undef __FUNCT__
-#define __FUNCT__ "PCDestroy_AGG"
-PetscErrorCode PCDestroy_AGG(PC pc)
+#define __FUNCT__ "PCDestroy_GAMG_AGG"
+PetscErrorCode PCDestroy_GAMG_AGG(PC pc)
 {
   PetscErrorCode ierr;
   PC_MG          *mg          = (PC_MG*)pc->data;
   PC_GAMG        *pc_gamg     = (PC_GAMG*)mg->innerctx;
-  PC_GAMG_AGG    *pc_gamg_agg = (PC_GAMG_AGG*)pc_gamg->subctx;
 
   PetscFunctionBegin;
-  if (pc_gamg_agg) {
-    ierr        = PetscFree(pc_gamg_agg);CHKERRQ(ierr);
-    pc_gamg_agg = 0;
-  }
-
-  /* call base class */
-  ierr = PCDestroy_GAMG(pc);CHKERRQ(ierr);
+  ierr = PetscFree(pc_gamg->subctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1484,17 +1477,12 @@ PetscErrorCode  PCCreateGAMG_AGG(PC pc)
   PC_GAMG_AGG    *pc_gamg_agg;
 
   PetscFunctionBegin;
-  if (pc_gamg->subctx) {
-    /* call base class */
-    ierr = PCDestroy_GAMG(pc);CHKERRQ(ierr);
-  }
-
   /* create sub context for SA */
   ierr            = PetscNewLog(pc, PC_GAMG_AGG, &pc_gamg_agg);CHKERRQ(ierr);
   pc_gamg->subctx = pc_gamg_agg;
 
   pc_gamg->ops->setfromoptions = PCSetFromOptions_GAMG_AGG;
-  pc->ops->destroy        = PCDestroy_AGG;
+  pc_gamg->ops->destroy        = PCDestroy_GAMG_AGG;
   /* reset does not do anything; setup not virtual */
 
   /* set internal function pointers */
