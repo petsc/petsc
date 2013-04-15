@@ -1272,7 +1272,10 @@ PetscErrorCode ConstructGeometry(DM dm, Vec *facegeom, Vec *cellgeom, User user)
       if (DotD(dim, fg->normal, v) < 0) {
         for (d = 0; d < dim; ++d) fg->normal[d] = -fg->normal[d];
       }
-      if (DotD(dim, fg->normal, v) <= 0) SETERRQ5(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Direction for face %d could not be fixed, normal (%g,%g) v (%g,%g)", f, fg->normal[0], fg->normal[1], v[0], v[1]);
+      if (DotD(dim, fg->normal, v) <= 0) {
+        if (dim > 2) SETERRQ7(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Direction for face %d could not be fixed, normal (%g,%g,%g) v (%g,%g,%g)", f, fg->normal[0], fg->normal[1], fg->normal[2], v[0], v[1], v[2]);
+        else         SETERRQ5(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Direction for face %d could not be fixed, normal (%g,%g) v (%g,%g)", f, fg->normal[0], fg->normal[1], v[0], v[1]);
+      }
       if (cells[0] < user->cEndInterior) {
         WaxpyD(dim, -1, fg->centroid, cL->centroid, v);
         minradius = PetscMin(minradius, NormD(dim, v));
