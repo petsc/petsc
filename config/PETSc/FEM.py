@@ -731,7 +731,7 @@ PetscErrorCode FEMIntegrateBdResidualBatch(PetscInt Ne, PetscInt numFields, Pets
       for (d = 0; d < dim; ++d) {
         x[d] = v0[d];
         for (d2 = 0; d2 < dim-1; ++d2) {
-          x[d] += J[d*dim+d2]*(quadPoints[q*dim+d2] + 1.0);
+          x[d] += J[d*dim+d2]*(quadPoints[q*(dim-1)+d2] + 1.0);
         }
       }
       for (f = 0; f < numFields; ++f) {
