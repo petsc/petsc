@@ -21,7 +21,7 @@
 #define dmplexgetmeet_                  DMPLEXGETMEET
 #define dmplexgetfullmeet_              DMPLEXGETFULLMEET
 #define dmplexrestoremeet_              DMPLEXRESTOREMEET
-#define dmplexcreatesectionf90_         DMPLEXCREATESECTIONF90
+#define dmplexcreatesection_            DMPLEXCREATESECTION
 #define dmplexcomputecellgeometry_      DMPLEXCOMPUTECELLGEOMETRY
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
 #define dmplexgetcone_                  dmplexgetcone
@@ -42,7 +42,7 @@
 #define dmplexgetmeet_                  dmplexgetmeet
 #define dmplexgetfullmeet_              dmplexgetfullmeet
 #define dmplexrestoremeet_              dmplexrestoremeet
-#define dmplexcreatesectionf90_         dmplexcreatesectionf90
+#define dmplexcreatesection_            dmplexcreatesection
 #define dmplexcomputecellgeometry_      dmplexcomputecellgeometry
 #endif
 
@@ -207,7 +207,7 @@ PETSC_EXTERN void PETSC_STDCALL dmplexrestoremeet_(DM *dm, PetscInt *numPoints, 
   *__ierr = F90Array1dDestroy(cptr, PETSC_INT PETSC_F90_2PTR_PARAM(cptrd));if (*__ierr) return;
 }
 
-PETSC_EXTERN void PETSC_STDCALL dmplexcreatesectionf90_(DM *dm, PetscInt *dim, PetscInt *numFields, F90Array1d *ptrC, F90Array1d *ptrD, PetscInt *numBC, F90Array1d *ptrF, F90Array1d *ptrP, PetscSection *section, int *__ierr PETSC_F90_2PTR_PROTO(ptrCd) PETSC_F90_2PTR_PROTO(ptrDd) PETSC_F90_2PTR_PROTO(ptrFd) PETSC_F90_2PTR_PROTO(ptrPd))
+PETSC_EXTERN void PETSC_STDCALL dmplexcreatesection_(DM *dm, PetscInt *dim, PetscInt *numFields, F90Array1d *ptrC, F90Array1d *ptrD, PetscInt *numBC, F90Array1d *ptrF, F90Array1d *ptrP, PetscSection *section, int *__ierr PETSC_F90_2PTR_PROTO(ptrCd) PETSC_F90_2PTR_PROTO(ptrDd) PETSC_F90_2PTR_PROTO(ptrFd) PETSC_F90_2PTR_PROTO(ptrPd))
 {
   PetscInt *numComp;
   PetscInt *numDof;

@@ -1,14 +1,22 @@
       program DMPlexTestField
       implicit none
 #include "finclude/petsc.h"
-      DM             :: dm
-      PetscSection   :: section
-      PetscInt       :: dim,numFields,numBC,i
-      PetscInt       :: numComp(3)
-      PetscInt       :: numDof(12)
-      PetscInt       :: bcField(1)
-      IS             :: bcPointIS(1)
-      PetscBool      :: interpolate
+      DM :: dm
+      PetscSection :: section
+      PetscInt :: dim,numFields,numBC,i
+      PetscInt, target, dimension(3) ::                                 &
+     &     numComp
+      PetscInt, pointer :: pNumComp(:)
+      PetscInt, target, dimension(12) ::                                &
+     &     numDof
+      PetscInt, pointer :: pNumDof(:)
+      PetscInt, target, dimension(1) ::                                 &
+     &     bcField
+      PetscInt, pointer :: pBcField(:)
+      IS, target, dimension(1) ::                                       &
+     &     bcPointIS
+      IS, pointer :: pBcPointIS(:)
+      PetscBool :: interpolate
       PetscErrorCode :: ierr
 
       call PetscInitialize(PETSC_NULL_CHARACTER, ierr)
@@ -27,6 +35,7 @@
       numComp(1) = 1
       numComp(2) = dim
       numComp(3) = dim-1
+      pNumComp => numComp
       do i = 1, numFields*(dim+1)
          numDof(i) = 0
       end do
@@ -36,14 +45,17 @@
       numDof(1*(dim+1)+dim+1) = dim
 !     Let v be defined on faces
       numDof(2*(dim+1)+dim)   = dim-1
+      pNumDof => numDof
 !     Setup boundary conditions
       numBC = 1
 !     Prescribe a Dirichlet condition on u on the boundary
 !       Label "marker" is made by the mesh creation routine
       bcField(1) = 0
+      pBcField => bcField
       call DMPlexGetStratumIS(dm, "marker", 1, bcPointIS(1),
      $     ierr)
       CHKERRQ(ierr)
+      pBcPointIS => bcPointIS
 !     Create a PetscSection with this data layout
       call DMPlexCreateSection(dm, dim, numFields, numComp,
      $     numDof, numBC, bcField, bcPointIS, section,
