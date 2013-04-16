@@ -4683,8 +4683,8 @@ PetscErrorCode SNESSetSNESLineSearch(SNES snes, SNESLineSearch linesearch)
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESGetSNESLineSearch"
-/*@C
   SNESGetSNESLineSearch - Returns a pointer to the line search context set with SNESSetLineSearch()
+/*@
   or creates a default line search instance associated with the SNES and returns it.
 
   Not Collective
