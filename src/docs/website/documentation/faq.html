@@ -71,7 +71,7 @@
         <li><a href="#logging-overhead">Does all the PETSc error checking and logging reduce PETSc's efficiency?</a></li>
         <li><a href="#work-efficiently">How do such a small group of people manage to write and maintain such a large and marvelous package as PETSc?</a></li>
         <li><a href="#complex">For complex numbers will I get better performance using C or C++?</a></li>
-        <li><a href="#different">How come when I run the same program on the same number of processes I get "different" answers"?</a></li>
+        <li><a href="#different">How come when I run the same program on the same number of processes I get "different" answers?</a></li>
         <li><a href="#differentiterations">How come when I run the same linear solver with different number of processes it takes a different number of iterations?</a></li>
         <li><a href="#newremotebranches">How come I get an hg error indicating "new remote branches" might be created when I try to push?</a></li>
         <li><a href="#gpus">Can PETSc use GPUs to speed up the computation time?</a></li>
@@ -1852,81 +1852,55 @@ source /opt/intel/idb/10.1.012/bin/idbvars.sh
       that might have caused this behavior. This is achieved by:
 
       <ul>
-        <li>using <a href="http://mercurial.selenic.com/">Mercurial</a> DVCS to access petsc-dev sources [and BuildSystem sources]</li>
+        <li>using <a href="http://git-scm.com/">Git</a> to access PETSc sources</li>
 
-        <li>knowing the changeset number [in mercurial] for the <b>known working</b> version of petsc</li>
+        <li>knowing the Git commit for the <b>known working</b> version of PETSc</li>
 
-        <li>knowing the changeset number [in mercurial] for the <b>known broken</b> version of petsc</li>
+        <li>knowing the Git commit for the <b>known broken</b> version of PETSc</li>
 
-        <li>using <a href="http://mercurial.selenic.com/wiki/BisectExtension">bisect</a> functionality of mercurial</li>
+        <li>using the <a href="https://www.kernel.org/pub/software/scm/git/docs/git-bisect.html">bisect</a> functionality of Git</li>
       </ul>
 
       This process can be as follows:
 
       <ul>
-        <li>get petsc-dev and BuildSystem sources:
+        <li>get petsc-dev sources:
           <ul>
-            <li><code>hg clone https://bitbucket.org/petsc/petsc-dev</code></li>
-            <li><code>hg clone https://bitbucket.org/petsc/buildsystem petsc-dev/config/BuildSystem</code></li>
+            <li><code>git clone https://bitbucket.org/petsc/petsc</code></li>
           </ul>
         </li>
 
         <li>
           Find the <b>good</b> and <b>bad</b> markers to
           start the bisection process. This can be done either by checking
-          <code>hg log</code> or <code>hg view</code> or <a href="https://bitbucket.org/petsc/petsc-dev">https://bitbucket.org/petsc/petsc-dev</a>
-          or <a href="https://bitbucket.org/petsc/buildsystem">https://bitbucket.org/petsc/buildsystem</a>
+          <code>git log</code> or <code>gitk</code> or <a href="https://bitbucket.org/petsc/petsc">https://bitbucket.org/petsc/petsc</a>
           or the web history of petsc-release clones. Lets say the known bad
-          changeset is 21af4baa815c and known good changeset is 5ae5ab319844
+          commit is 21af4baa815c and known good commit is 5ae5ab319844
         </li>
 
         <li>
           Now start the bisection process with these known revisions. [build PETSc, and test your code to confirm known good/bad behavior]
           <ul>
-            <li><code>hg update -C 21af4baa815c</code></li>
-            <li><code>hg update -C --date "&lt;`hg parent --template '{date|date}'`" -R config/BuildSystem</code></li>
+            <li><code>git bisect start 21af4baa815c 5ae5ab319844</code></li>
             <li>&lt;build/test/confirm-bad&gt;</li>
-            <li><code>hg bisect --bad</code></li>
-            <li><code>hg update -C 5ae5ab319844</code></li>
-            <li><code>hg update -C --date "&lt;`hg parent --template '{date|date}'`" -R config/BuildSystem</code></li>
+            <li><code>git bisect bad</code></li>
             <li>&lt;build/test/confirm-good&gt;</li>
-            <li><code>hg bisect --good</code></li>
-            <li><code>hg update -C --date "&lt;`hg parent --template '{date|date}'`" -R config/BuildSystem</code></li>
+            <li><code>git bisect good</code></li>
           </ul>
         </li>
 
         <li>
-          Now until done - keep bisecting, building PETSc, and testing your code with it and determine if the code is working or not. i.e:
-          <ul>
-            <li>
-              if &lt;build&gt; broken:
-              <ul>
-                <li><code>hg bisect --skip</code></li>
-                <li><code>hg update -C --date "&lt;`hg parent --template '{date|date}'`" -R config/BuildSystem</code></li>
-              </ul>
-            </li>
-
-            <li>
-              if &lt;test&gt; good:
-              <ul>
-                <li><code>hg bisect --bad</code></li>
-                <li><code>hg update -C --date "&lt;`hg parent --template '{date|date}'`" -R config/BuildSystem</code></li>
-              </ul>
-            </li>
-          </ul>
-
-          Notice the <code>hg update -C --date "&lt;`hg parent --template '{date|date}'`" -R config/BuildSystem</code>
-          after each <code>hg update</code> or <code>hg bisect</code>. This is to update
-          BuildSystem to be in sync to petsc-dev. If this is not done - and
-          BuildSystem is out of sync with petsc-dev - configure will keep
-          failing.
-        </li>
-
-        <li>
-          After something like 5-15 iterations - <code>hg bisect</code> will
+          Now until done - keep bisecting, building PETSc, and testing your code with it and determine if the code is working or not.
+          After something like 5-15 iterations, <code>git bisect</code> will
           pin-point the exact code change that resulted in the difference in
-          application behavior
+          application behavior.
         </li>
+
+        <li>
+          See <a href="https://www.kernel.org/pub/software/scm/git/docs/git-bisect.html">git-bisect(1)</a>
+          and the <a href="http://git-scm.com/book/en/Git-Tools-Debugging-with-Git">debugging
+          section of the Git Book</a> for more debugging tips.
+        <li>
       </ul>
 
       <hr>
