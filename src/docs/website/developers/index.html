@@ -34,7 +34,6 @@
             <li><a href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/index.html">Development copy of documentation</a></li>
             <li><a href="developers.pdf">Developers Instructions</a></li>
             <li><a href="https://bitbucket.org/petsc/petsc-dev/issues?status=new&status=open">Proposed projects</a></li>
-            <li><a href="mercurial-hosting.html">Hosting mercurial repository</a></li>
           </ul>
         </li>
       </ul>
@@ -79,13 +78,13 @@
       You have four options
 
       <ol>
-        <li><a href="#first">download and install via <b>Git</b> (recommended)</a></li>
-        <li><a href="#second">download and install via mercurial</a></li>
-        <li><a href="#third">access tarballs directly from our developer server.</a></li>
-        <li><a href="#fourth">access the nightly tarball snapshot</a> at <a href="http://ftp.mcs.anl.gov/pub/petsc/petsc-dev.tar.gz">http://ftp.mcs.anl.gov/pub/petsc/petsc-dev.tar.gz</a></li>
+        <li><a href="#using-git">download and install via <b>Git</b> (recommended)</a></li>
+        <li><a href="#using-mercurial">download and install via mercurial</a></li>
+        <li><a href="#master-tarball">access tarballs directly from 'master' branch.</a></li>
+        <li><a href="#nightly-tarball">access the nightly tarball snapshot</a> at <a href="http://ftp.mcs.anl.gov/pub/petsc/petsc-dev.tar.gz">http://ftp.mcs.anl.gov/pub/petsc/petsc-dev.tar.gz</a></li>
       </ol>
 
-      <a name="first">1)</a> If <a href="http://git-scm.com/">Git</a> is not already installed on your machine, install according to the <a href="http://git-scm.com/book/en/Getting-Started-Installing-Git">Installation instructions in the git book</a>.
+      <a name="using-git"><h3>1. Using Git</h3></a><a href="http://git-scm.com/downloads">Install Git</a> if it is not already installed on your machine.
 
       Once Git is installed obtain petsc-dev with the following:
 
@@ -117,7 +116,7 @@
         <li><a href="http://git-scm.com/book/en/">[Pro Git book]</a></li>
       </ul>
 
-      <a name="second">2)</a> To use <a href="http://www.selenic.com/mercurial">mercurial</a> - first install the software
+      <a name="using-mercurial"><h3>2. Using Mercurial</h3></a> To use <a href="http://www.selenic.com/mercurial">mercurial</a> - first install the software
 
       <ul>
         <li>
@@ -196,13 +195,13 @@
       </ul>
 
       <p>
-        <a name="third">3)</a> One can obtain the current petsc-dev repositories as
+        <a name="master-tarball"><h3>3. Tarball of 'master'</h3></a> One can obtain the current petsc-dev repositories as
         tarball from the git server using the following URL:
       </p>
 
       <ul>
         <li>
-          <a href="https://bitbucket.org/petsc/petsc/get/tip.tar.gz">https://bitbucket.org/petsc/petsc-dev/get/tip.tar.gz</a>
+          <a href="https://bitbucket.org/petsc/petsc/get/master.tar.gz">https://bitbucket.org/petsc/petsc/get/master.tar.gz</a>
         </li>
       </ul>
 
@@ -210,7 +209,7 @@
 
       <p>
         This mode is useful if you are on a machine where you cannot install
-        mercurial or if it has a firewall blocking http downloads.
+        Git or if it has a firewall blocking http downloads.
       </p>
 
       After the tarballs is obtained - do the following:
@@ -220,13 +219,12 @@
       </ul>
 
       <p>
-        To update this copy of petsc-dev, re-download the above two tarballs.
-        Each time the repository gets new changesets, the above url will give the
-        tarballs including the new changes.
+        To update this copy of petsc-dev, re-download the above tarball.
+        The URL above gets the latest changes immediately when they are pushed to the repository.
       </p>
 
       <p>
-        <a name="third">3)</a> The nightly tarball will be equivalent to the release
+        <a name="nightly-tarball"><h3>4. Nightly tarball</h3></a> The nightly tarball will be equivalent to the release
         tarball - with all the doumentation built. To use the <b>nightly tarball</b>
         snapshot, simply download
         <a href="http://ftp.mcs.anl.gov/pub/petsc/petsc-dev.tar.gz">http://ftp.mcs.anl.gov/pub/petsc/petsc-dev.tar.gz</a>
