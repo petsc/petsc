@@ -106,7 +106,7 @@ static PetscErrorCode TSStage_EIMEX(TS ts,PetscInt istage)
     ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
     ierr = SNESGetLinearSolveIterations(snes,&lits);CHKERRQ(ierr);
     ts->snes_its += its; ts->ksp_its += lits;
-    ierr = TSGetTSAdapt(ts,&adapt);CHKERRQ(ierr);
+    ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
     ierr = TSAdaptCheckStage(adapt,ts,&accept);CHKERRQ(ierr);
   }
 

@@ -1028,7 +1028,7 @@ static PetscErrorCode TSStep_RosW(TS ts)
         ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
         ierr = SNESGetLinearSolveIterations(snes,&lits);CHKERRQ(ierr);
         ts->snes_its += its; ts->ksp_its += lits;
-        ierr = TSGetTSAdapt(ts,&adapt);CHKERRQ(ierr);
+        ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
         ierr = TSAdaptCheckStage(adapt,ts,&accept);CHKERRQ(ierr);
         if (!accept) goto reject_step;
       } else {
@@ -1056,7 +1056,7 @@ static PetscErrorCode TSStep_RosW(TS ts)
     ros->status = TS_STEP_PENDING;
 
     /* Register only the current method as a candidate because we're not supporting multiple candidates yet. */
-    ierr = TSGetTSAdapt(ts,&adapt);CHKERRQ(ierr);
+    ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
     ierr = TSAdaptCandidatesClear(adapt);CHKERRQ(ierr);
     ierr = TSAdaptCandidateAdd(adapt,tab->name,tab->order,1,tab->ccfl,1.*tab->s,PETSC_TRUE);CHKERRQ(ierr);
     ierr = TSAdaptChoose(adapt,ts,ts->time_step,&next_scheme,&next_time_step,&accept);CHKERRQ(ierr);
@@ -1472,7 +1472,7 @@ static PetscErrorCode TSView_RosW(TS ts,PetscViewer viewer)
     ierr = PetscFormatRealArray(buf,sizeof(buf),"% 8.6f",tab->s,abscissa);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Abscissa of A+Gamma = %s\n",buf);CHKERRQ(ierr);
   }
-  ierr = TSGetTSAdapt(ts,&adapt);CHKERRQ(ierr);
+  ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
   ierr = TSAdaptView(adapt,viewer);CHKERRQ(ierr);
   ierr = SNESView(ts->snes,viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);

@@ -106,7 +106,7 @@ PETSC_EXTERN const char *const*TSConvergedReasons;
 
    Level: beginner
 
-.seealso: TSSolve(), TSGetConvergedReason(), TSGetTSAdapt()
+.seealso: TSSolve(), TSGetConvergedReason(), TSGetAdapt()
 M*/
 
 /*MC
@@ -114,7 +114,7 @@ M*/
 
    Level: beginner
 
-.seealso: TSSolve(), TSGetConvergedReason(), TSGetTSAdapt(), TSSetDuration(), TSGetSolveTime()
+.seealso: TSSolve(), TSGetConvergedReason(), TSGetAdapt(), TSSetDuration(), TSGetSolveTime()
 M*/
 
 /*MC
@@ -122,7 +122,7 @@ M*/
 
    Level: beginner
 
-.seealso: TSSolve(), TSGetConvergedReason(), TSGetTSAdapt(), TSSetDuration()
+.seealso: TSSolve(), TSGetConvergedReason(), TSGetAdapt(), TSSetDuration()
 M*/
 /*MC
    TS_CONVERGED_USER - user requested termination
@@ -137,7 +137,7 @@ M*/
 
    Level: beginner
 
-.seealso: TSSolve(), TSGetConvergedReason(), TSGetTSAdapt(), TSGetSNES(), SNESGetConvergedReason()
+.seealso: TSSolve(), TSGetConvergedReason(), TSGetAdapt(), TSGetSNES(), SNESGetConvergedReason()
 M*/
 
 /*MC
@@ -145,7 +145,7 @@ M*/
 
    Level: beginner
 
-.seealso: TSSolve(), TSGetConvergedReason(), TSGetTSAdapt()
+.seealso: TSSolve(), TSGetConvergedReason(), TSGetAdapt()
 M*/
 
 /*E
@@ -401,7 +401,7 @@ typedef const char *TSAdaptType;
 #define TSADAPTNONE  "none"
 #define TSADAPTCFL   "cfl"
 
-PETSC_EXTERN PetscErrorCode TSGetTSAdapt(TS,TSAdapt*);
+PETSC_EXTERN PetscErrorCode TSGetAdapt(TS,TSAdapt*);
 PETSC_EXTERN PetscErrorCode TSAdaptRegister(const char[],PetscErrorCode (*)(TSAdapt));
 PETSC_EXTERN PetscErrorCode TSAdaptRegisterAll(void);
 PETSC_EXTERN PetscErrorCode TSAdaptInitializePackage(void);
