@@ -199,7 +199,7 @@ int main(int argc,char **argv)
      Set an optional user-defined routine to check the validity of candidate
      iterates that are determined by line search methods
   */
-  ierr = SNESGetSNESLineSearch(snes, &linesearch);CHKERRQ(ierr);
+  ierr = SNESGetLineSearch(snes, &linesearch);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(NULL,"-post_check_iterates",&post_check);CHKERRQ(ierr);
 
   if (post_check) {

@@ -743,7 +743,7 @@ PetscErrorCode SNESSetUp_VINEWTONRSLS(SNES snes)
 
   /* set the line search functions */
   if (!snes->linesearch) {
-    ierr = SNESGetSNESLineSearch(snes, &linesearch);CHKERRQ(ierr);
+    ierr = SNESGetLineSearch(snes, &linesearch);CHKERRQ(ierr);
     ierr = SNESLineSearchSetType(linesearch, SNESLINESEARCHBT);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

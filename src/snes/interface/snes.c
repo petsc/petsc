@@ -327,7 +327,7 @@ PetscErrorCode  SNESView(SNES snes,PetscViewer viewer)
   }
   if (snes->linesearch) {
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-    ierr = SNESGetSNESLineSearch(snes, &linesearch);CHKERRQ(ierr);
+    ierr = SNESGetLineSearch(snes, &linesearch);CHKERRQ(ierr);
     ierr = SNESLineSearchView(linesearch, viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
   }
@@ -857,7 +857,7 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
   ierr = KSPSetFromOptions(snes->ksp);CHKERRQ(ierr);
 
   if (!snes->linesearch) {
-    ierr = SNESGetSNESLineSearch(snes, &snes->linesearch);CHKERRQ(ierr);
+    ierr = SNESGetLineSearch(snes, &snes->linesearch);CHKERRQ(ierr);
   }
   ierr = SNESLineSearchSetFromOptions(snes->linesearch);CHKERRQ(ierr);
 
@@ -2519,7 +2519,7 @@ PetscErrorCode  SNESSetUp(SNES snes)
   }
 
   if (!snes->linesearch) {
-    ierr = SNESGetSNESLineSearch(snes, &snes->linesearch);CHKERRQ(ierr);
+    ierr = SNESGetLineSearch(snes, &snes->linesearch);CHKERRQ(ierr);
   }
 
   if (snes->pc && (snes->pcside == PC_LEFT)) {
@@ -2562,8 +2562,8 @@ PetscErrorCode  SNESSetUp(SNES snes)
     ierr = SNESSetFromOptions(snes->pc);CHKERRQ(ierr);
 
     /* copy the line search context over */
-    ierr = SNESGetSNESLineSearch(snes,&linesearch);CHKERRQ(ierr);
-    ierr = SNESGetSNESLineSearch(snes->pc,&pclinesearch);CHKERRQ(ierr);
+    ierr = SNESGetLineSearch(snes,&linesearch);CHKERRQ(ierr);
+    ierr = SNESGetLineSearch(snes->pc,&pclinesearch);CHKERRQ(ierr);
     ierr = SNESLineSearchGetPreCheck(linesearch,&precheck,&lsprectx);CHKERRQ(ierr);
     ierr = SNESLineSearchGetPostCheck(linesearch,&postcheck,&lspostctx);CHKERRQ(ierr);
     ierr = SNESLineSearchSetPreCheck(pclinesearch,precheck,lsprectx);CHKERRQ(ierr);
@@ -3949,7 +3949,7 @@ PetscErrorCode  SNESSetOptionsPrefix(SNES snes,const char prefix[])
   ierr = PetscObjectSetOptionsPrefix((PetscObject)snes,prefix);CHKERRQ(ierr);
   if (!snes->ksp) {ierr = SNESGetKSP(snes,&snes->ksp);CHKERRQ(ierr);}
   if (snes->linesearch) {
-    ierr = SNESGetSNESLineSearch(snes,&snes->linesearch);CHKERRQ(ierr);
+    ierr = SNESGetLineSearch(snes,&snes->linesearch);CHKERRQ(ierr);
     ierr = PetscObjectSetOptionsPrefix((PetscObject)snes->linesearch,prefix);CHKERRQ(ierr);
   }
   ierr = KSPSetOptionsPrefix(snes->ksp,prefix);CHKERRQ(ierr);
@@ -3987,7 +3987,7 @@ PetscErrorCode  SNESAppendOptionsPrefix(SNES snes,const char prefix[])
   ierr = PetscObjectAppendOptionsPrefix((PetscObject)snes,prefix);CHKERRQ(ierr);
   if (!snes->ksp) {ierr = SNESGetKSP(snes,&snes->ksp);CHKERRQ(ierr);}
   if (snes->linesearch) {
-    ierr = SNESGetSNESLineSearch(snes,&snes->linesearch);CHKERRQ(ierr);
+    ierr = SNESGetLineSearch(snes,&snes->linesearch);CHKERRQ(ierr);
     ierr = PetscObjectAppendOptionsPrefix((PetscObject)snes->linesearch,prefix);CHKERRQ(ierr);
   }
   ierr = KSPAppendOptionsPrefix(snes->ksp,prefix);CHKERRQ(ierr);
@@ -4645,9 +4645,9 @@ PetscErrorCode  SNESGetPCSide(SNES snes,PCSide *side)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "SNESSetSNESLineSearch"
+#define __FUNCT__ "SNESSetLineSearch"
 /*@
-  SNESSetSNESLineSearch - Sets the linesearch on the SNES instance.
+  SNESSetLineSearch - Sets the linesearch on the SNES instance.
 
   Collective on SNES
 
@@ -4656,15 +4656,15 @@ PetscErrorCode  SNESGetPCSide(SNES snes,PCSide *side)
 - linesearch   - the linesearch object
 
   Notes:
-  Use SNESGetSNESLineSearch() to retrieve the preconditioner context (for example,
+  Use SNESGetLineSearch() to retrieve the preconditioner context (for example,
   to configure it using the API).
 
   Level: developer
 
 .keywords: SNES, set, linesearch
-.seealso: SNESGetSNESLineSearch()
+.seealso: SNESGetLineSearch()
 @*/
-PetscErrorCode SNESSetSNESLineSearch(SNES snes, SNESLineSearch linesearch)
+PetscErrorCode SNESSetLineSearch(SNES snes, SNESLineSearch linesearch)
 {
   PetscErrorCode ierr;
 
@@ -4682,9 +4682,9 @@ PetscErrorCode SNESSetSNESLineSearch(SNES snes, SNESLineSearch linesearch)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "SNESGetSNESLineSearch"
-  SNESGetSNESLineSearch - Returns a pointer to the line search context set with SNESSetLineSearch()
+#define __FUNCT__ "SNESGetLineSearch"
 /*@
+  SNESGetLineSearch - Returns a pointer to the line search context set with SNESSetLineSearch()
   or creates a default line search instance associated with the SNES and returns it.
 
   Not Collective
@@ -4698,9 +4698,9 @@ PetscErrorCode SNESSetSNESLineSearch(SNES snes, SNESLineSearch linesearch)
   Level: developer
 
 .keywords: SNES, get, linesearch
-.seealso: SNESSetSNESLineSearch()
+.seealso: SNESSetLineSearch()
 @*/
-PetscErrorCode SNESGetSNESLineSearch(SNES snes, SNESLineSearch *linesearch)
+PetscErrorCode SNESGetLineSearch(SNES snes, SNESLineSearch *linesearch)
 {
   PetscErrorCode ierr;
   const char     *optionsprefix;

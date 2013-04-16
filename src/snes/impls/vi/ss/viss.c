@@ -463,7 +463,7 @@ static PetscErrorCode SNESSetFromOptions_VINEWTONSSLS(SNES snes)
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   /* set up the default line search */
   if (!snes->linesearch) {
-    ierr = SNESGetSNESLineSearch(snes, &linesearch);CHKERRQ(ierr);
+    ierr = SNESGetLineSearch(snes, &linesearch);CHKERRQ(ierr);
     ierr = SNESLineSearchSetType(linesearch, SNESLINESEARCHBT);CHKERRQ(ierr);
     ierr = SNESLineSearchBTSetAlpha(linesearch, 0.0);CHKERRQ(ierr);
   }

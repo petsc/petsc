@@ -592,7 +592,7 @@ static PetscErrorCode SNESSetFromOptions_QN(SNES snes)
                           (PetscEnum)qn->type,(PetscEnum*)&qn->type,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   if (!snes->linesearch) {
-    ierr = SNESGetSNESLineSearch(snes, &linesearch);CHKERRQ(ierr);
+    ierr = SNESGetLineSearch(snes, &linesearch);CHKERRQ(ierr);
     ierr = SNESLineSearchSetType(linesearch, SNESLINESEARCHCP);CHKERRQ(ierr);
   }
   if (monflg) {

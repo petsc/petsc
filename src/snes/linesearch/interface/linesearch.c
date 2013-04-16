@@ -838,7 +838,7 @@ PetscErrorCode SNESLineSearchSetType(SNESLineSearch linesearch, SNESLineSearchTy
 
    Notes:
    This happens automatically when the line search is gotten/created with
-   SNESGetSNESLineSearch().  This routine is therefore mainly called within SNES
+   SNESGetLineSearch().  This routine is therefore mainly called within SNES
    implementations.
 
    Level: developer

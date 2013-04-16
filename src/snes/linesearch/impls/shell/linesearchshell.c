@@ -42,7 +42,7 @@ $  }
 $
 $  ...
 $
-$  ierr = SNESGetSNESLineSearch(snes, &linesearch);CHKERRQ(ierr);
+$  ierr = SNESGetLineSearch(snes, &linesearch);CHKERRQ(ierr);
 $  ierr = SNESLineSearchSetType(linesearch, SNESLINESEARCHSHELL);CHKERRQ(ierr);
 $  ierr = SNESLineSearchShellSetUserFunc(linesearch, shellfunc, NULL);CHKERRQ(ierr);
 

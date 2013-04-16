@@ -129,7 +129,7 @@ PetscErrorCode SNESSetFromOptions_NGMRES(SNES snes)
 
   /* set the default type of the line search if the user hasn't already. */
   if (!snes->linesearch) {
-    ierr = SNESGetSNESLineSearch(snes,&linesearch);CHKERRQ(ierr);
+    ierr = SNESGetLineSearch(snes,&linesearch);CHKERRQ(ierr);
     ierr = SNESLineSearchSetType(linesearch,SNESLINESEARCHBASIC);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
