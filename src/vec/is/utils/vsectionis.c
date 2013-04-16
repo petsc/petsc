@@ -547,6 +547,22 @@ PetscErrorCode PetscSectionAddFieldDof(PetscSection s, PetscInt point, PetscInt 
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSectionGetConstraintDof"
+/*@
+  PetscSectionGetConstraintDof - Return the number of constrained degrees of freedom associated with a given point.
+
+  Not collective
+
+  Input Parameters:
++ s - the PetscSection
+- point - the point
+
+  Output Parameter:
+. numDof - the number of dof which are fixed by constraints
+
+  Level: intermediate
+
+.seealso: PetscSectionGetDof(), PetscSectionSetConstraintDof(), PetscSectionCreate()
+@*/
 PetscErrorCode PetscSectionGetConstraintDof(PetscSection s, PetscInt point, PetscInt *numDof)
 {
   PetscErrorCode ierr;
@@ -560,6 +576,20 @@ PetscErrorCode PetscSectionGetConstraintDof(PetscSection s, PetscInt point, Pets
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSectionSetConstraintDof"
+/*@
+  PetscSectionSetConstraintDof - Set the number of constrained degrees of freedom associated with a given point.
+
+  Not collective
+
+  Input Parameters:
++ s - the PetscSection
+. point - the point
+- numDof - the number of dof which are fixed by constraints
+
+  Level: intermediate
+
+.seealso: PetscSectionSetDof(), PetscSectionGetConstraintDof(), PetscSectionCreate()
+@*/
 PetscErrorCode PetscSectionSetConstraintDof(PetscSection s, PetscInt point, PetscInt numDof)
 {
   PetscErrorCode ierr;
@@ -574,6 +604,20 @@ PetscErrorCode PetscSectionSetConstraintDof(PetscSection s, PetscInt point, Pets
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSectionAddConstraintDof"
+/*@
+  PetscSectionAddConstraintDof - Increment the number of constrained degrees of freedom associated with a given point.
+
+  Not collective
+
+  Input Parameters:
++ s - the PetscSection
+. point - the point
+- numDof - the number of additional dof which are fixed by constraints
+
+  Level: intermediate
+
+.seealso: PetscSectionAddDof(), PetscSectionGetConstraintDof(), PetscSectionCreate()
+@*/
 PetscErrorCode PetscSectionAddConstraintDof(PetscSection s, PetscInt point, PetscInt numDof)
 {
   PetscErrorCode ierr;
@@ -588,6 +632,23 @@ PetscErrorCode PetscSectionAddConstraintDof(PetscSection s, PetscInt point, Pets
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSectionGetFieldConstraintDof"
+/*@
+  PetscSectionGetFieldConstraintDof - Return the number of constrained degrees of freedom associated with a given field on a point.
+
+  Not collective
+
+  Input Parameters:
++ s - the PetscSection
+. point - the point
+- field - the field
+
+  Output Parameter:
+. numDof - the number of dof which are fixed by constraints
+
+  Level: intermediate
+
+.seealso: PetscSectionGetDof(), PetscSectionSetFieldConstraintDof(), PetscSectionCreate()
+@*/
 PetscErrorCode PetscSectionGetFieldConstraintDof(PetscSection s, PetscInt point, PetscInt field, PetscInt *numDof)
 {
   PetscErrorCode ierr;
@@ -600,6 +661,21 @@ PetscErrorCode PetscSectionGetFieldConstraintDof(PetscSection s, PetscInt point,
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSectionSetFieldConstraintDof"
+/*@
+  PetscSectionSetFieldConstraintDof - Set the number of constrained degrees of freedom associated with a given field on a point.
+
+  Not collective
+
+  Input Parameters:
++ s - the PetscSection
+. point - the point
+. field - the field
+- numDof - the number of dof which are fixed by constraints
+
+  Level: intermediate
+
+.seealso: PetscSectionSetDof(), PetscSectionGetFieldConstraintDof(), PetscSectionCreate()
+@*/
 PetscErrorCode PetscSectionSetFieldConstraintDof(PetscSection s, PetscInt point, PetscInt field, PetscInt numDof)
 {
   PetscErrorCode ierr;
@@ -612,6 +688,21 @@ PetscErrorCode PetscSectionSetFieldConstraintDof(PetscSection s, PetscInt point,
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSectionAddFieldConstraintDof"
+/*@
+  PetscSectionAddFieldConstraintDof - Increment the number of constrained degrees of freedom associated with a given field on a point.
+
+  Not collective
+
+  Input Parameters:
++ s - the PetscSection
+. point - the point
+. field - the field
+- numDof - the number of additional dof which are fixed by constraints
+
+  Level: intermediate
+
+.seealso: PetscSectionAddDof(), PetscSectionGetFieldConstraintDof(), PetscSectionCreate()
+@*/
 PetscErrorCode PetscSectionAddFieldConstraintDof(PetscSection s, PetscInt point, PetscInt field, PetscInt numDof)
 {
   PetscErrorCode ierr;
