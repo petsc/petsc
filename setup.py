@@ -17,7 +17,7 @@ all message-passing communication.
     $ pip install petsc==dev
 
   .. _petsc-dev: https://bitbucket.org/petsc/
-                 petsc-dev/get/tip.tar.gz#egg=petsc-dev
+                 petsc/get/master.tar.gz#egg=petsc-dev
 """
 
 import sys, os
