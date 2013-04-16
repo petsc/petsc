@@ -6529,15 +6529,14 @@ PetscErrorCode updatePointFields_private(PetscSection section, PetscInt point, P
 
   Input Parameters:
 + dm - The DM
-. section - The section describing the layout in v, or NULL to use the default sectionw
+. section - The section describing the layout in v, or NULL to use the default section
 . v - The local vector
 . point - The sieve point in the DM
-. values - The array of values, which is a borrowed array and should not be freed
+. values - The array of values
 - mode - The insert mode, where INSERT_ALL_VALUES and ADD_ALL_VALUES also overwrite boundary conditions
 
   Fortran Notes:
-  Since it returns an array, this routine is only available in Fortran 90, and you must
-  include petsc.h90 in your code.
+  This routine is only available in Fortran 90, and you must include petsc.h90 in your code.
 
   Level: intermediate
 
@@ -6777,6 +6776,27 @@ PetscErrorCode indicesPointFields_private(PetscSection section, PetscInt point, 
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexMatSetClosure"
+/*@C
+  DMPlexMatSetClosure - Set an array of the values on the closure of 'point'
+
+  Not collective
+
+  Input Parameters:
++ dm - The DM
+. section - The section describing the layout in v, or NULL to use the default section
+. globalSection - The section describing the layout in v, or NULL to use the default section
+. A - The matrix
+. point - The sieve point in the DM
+. values - The array of values
+- mode - The insert mode, where INSERT_ALL_VALUES and ADD_ALL_VALUES also overwrite boundary conditions
+
+  Fortran Notes:
+  This routine is only available in Fortran 90, and you must include petsc.h90 in your code.
+
+  Level: intermediate
+
+.seealso DMPlexVecGetClosure(), DMPlexVecSetClosure()
+@*/
 PetscErrorCode DMPlexMatSetClosure(DM dm, PetscSection section, PetscSection globalSection, Mat A, PetscInt point, const PetscScalar values[], InsertMode mode)
 {
   DM_Plex       *mesh   = (DM_Plex*) dm->data;

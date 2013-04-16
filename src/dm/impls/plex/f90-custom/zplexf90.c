@@ -14,6 +14,7 @@
 #define dmplexvecgetclosure_            DMPLEXVECGETCLOSURE
 #define dmplexvecrestoreclosure_        DMPLEXVECRESTORECLOSURE
 #define dmplexvecsetclosure_            DMPLEXVECSETCLOSURE
+#define dmplexmatsetclosure_            DMPLEXMATSETCLOSURE
 #define dmplexgetjoin_                  DMPLEXGETJOIN
 #define dmplexgetfulljoin_              DMPLEXGETFULLJOIN
 #define dmplexrestorejoin_              DMPLEXRESTOREJOIN
@@ -34,6 +35,7 @@
 #define dmplexvecgetclosure_            dmplexvecgetclosure
 #define dmplexvecrestoreclosure_        dmplexvecrestoreclosure
 #define dmplexvecsetclosure_            dmplexvecsetclosure
+#define dmplexmatsetclosure_            dmplexmatsetclosure
 #define dmplexgetjoin_                  dmplexgetjoin
 #define dmplexgetfulljoin_              dmplexgetfulljoin
 #define dmplexrestorejoin_              dmplexrestorejoin
@@ -133,6 +135,14 @@ PETSC_EXTERN void PETSC_STDCALL dmplexvecsetclosure_(DM *dm, PetscSection *secti
 
   *__ierr = F90Array1dAccess(ptr, PETSC_SCALAR, (void**) &array PETSC_F90_2PTR_PARAM(ptrd));if (*__ierr) return;
   *__ierr = DMPlexVecSetClosure(*dm, *section, *v, *point, array, *mode);
+}
+
+PETSC_EXTERN void PETSC_STDCALL dmplexmatsetclosure_(DM *dm, PetscSection *section, PetscSection *globalSection, Mat *A, PetscInt *point, F90Array1d *ptr, InsertMode *mode, int *__ierr PETSC_F90_2PTR_PROTO(ptrd))
+{
+  PetscScalar *array;
+
+  *__ierr = F90Array1dAccess(ptr, PETSC_SCALAR, (void**) &array PETSC_F90_2PTR_PARAM(ptrd));if (*__ierr) return;
+  *__ierr = DMPlexMatSetClosure(*dm, *section, *globalSection, *A, *point, array, *mode);
 }
 
 PETSC_EXTERN void PETSC_STDCALL dmplexgetjoin_(DM *dm, PetscInt *numPoints, F90Array1d *pptr, F90Array1d *cptr, int *__ierr PETSC_F90_2PTR_PROTO(pptrd) PETSC_F90_2PTR_PROTO(cptrd))
