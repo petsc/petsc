@@ -258,7 +258,7 @@ static PetscErrorCode PetscDTGaussJacobiQuadrature1D_Internal(PetscInt npoints, 
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDTGaussJacobiQuadrature"
-/*@
+/*@C
   PetscDTGaussJacobiQuadrature - create Gauss-Jacobi quadrature for a simplex
 
   Not Collective
