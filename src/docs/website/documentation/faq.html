@@ -73,7 +73,6 @@
         <li><a href="#complex">For complex numbers will I get better performance using C or C++?</a></li>
         <li><a href="#different">How come when I run the same program on the same number of processes I get "different" answers?</a></li>
         <li><a href="#differentiterations">How come when I run the same linear solver with different number of processes it takes a different number of iterations?</a></li>
-        <li><a href="#newremotebranches">How come I get an hg error indicating "new remote branches" might be created when I try to push?</a></li>
         <li><a href="#gpus">Can PETSc use GPUs to speed up the computation time?</a></li>
         <li><a href="#precision">Can I run PETSc with extended precision?</a></li>
         <li><a href="#qd">Why doesn't PETSc use QD to implement support for extended precision?</a></li>
@@ -400,36 +399,6 @@
       This is the nature of iterative solvers, the more parallelism means the
       more "older" information is used in the solution process hence slower
       convergence.
-
-      <h3><a name="newremotebranches">How come I get an hg error indicating "new remote branches" might be created when I try to push?</a></h3>
-
-      <p>Here is an example:</p>
-      <code>
-        [linux]% hg push<br>
-        pushing to https://bitbucket.org/petsc/petsc-dev<br>
-        searching for changes<br>
-        abort: push creates new remote branches!<br>
-      </code>
-
-      <p>
-        This is almost always an indication that you have done serious harm to
-        your local repo. If you run hg heads and there are more than 1 (which
-        causes this), then you know its true.
-      </p>
-
-      <p>
-        Here is how it happens. You make some local changes, but do not commit.
-        You pull down and it aborts part way because you have "uncommitted local
-        changes". However, you do not hg rollback. Instead you just hg commit,
-        which creates another head. This is supposed to be a feature. I think it
-        should have a user disable.
-      </p>
-
-      <p>
-        Fixing this is complicated. Basically, you clone the repo before you made
-        head #2, then create the diff for the bad changeset that made head #2.
-        Apply it to the clone and checkin, then pull the master.
-      </p>
 
       <h3><a name="gpus">Can PETSc use GPUs to speedup computations?</a></h3>
 
