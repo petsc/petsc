@@ -227,7 +227,8 @@ PetscErrorCode FormInitialGuess(SNES snes,Vec X,void *ctx)
   AppCtx         *user;
   PetscInt       i,j,Mx,My,xs,ys,xm,ym;
   PetscErrorCode ierr;
-  PetscReal      lambda,temp1,temp,hx,hy;
+  PetscReal      lambda,hx,hy;
+  PETSC_UNUSED PetscReal temp1;
   Field          **x;
   DM             da;
 
@@ -263,7 +264,6 @@ PetscErrorCode FormInitialGuess(SNES snes,Vec X,void *ctx)
      Compute initial guess over the locally owned part of the grid
   */
   for (j=ys; j<ys+ym; j++) {
-    temp = (PetscReal)(PetscMin(j,My-j-1))*hy;
     for (i=xs; i<xs+xm; i++) {
 #define CHECK_SOLUTION
 #if defined(CHECK_SOLUTION)
@@ -273,6 +273,7 @@ PetscErrorCode FormInitialGuess(SNES snes,Vec X,void *ctx)
         /* Boundary conditions are usually zero Dirichlet */
         ierr = ExactSolution(i*hx, j*hy, &x[j][i]);CHKERRQ(ierr);
       } else {
+        PetscReal temp = (PetscReal)(PetscMin(j,My-j-1))*hy;
         x[j][i].u = temp1*sqrt(PetscMin((PetscReal)(PetscMin(i,Mx-i-1))*hx,temp));
         x[j][i].v = temp1*sqrt(PetscMin((PetscReal)(PetscMin(i,Mx-i-1))*hx,temp));
         x[j][i].p = 1.0;
@@ -294,12 +295,13 @@ PetscErrorCode constantResidual(PetscReal lambda, PetscBool isLower, int i, int 
 {
   Field       rLocal[3] = {{0.0, 0.0}, {0.0, 0.0}, {0.0, 0.0}};
   PetscScalar phi[3]    = {0.0, 0.0, 0.0};
-  PetscReal   xI = i*hx, yI = j*hy, hxhy = hx*hy, x, y;
+  PetscReal   xI = i*hx, yI = j*hy, hxhy = hx*hy;
   Field       res;
   PetscInt    q, k;
 
   PetscFunctionBeginUser;
   for (q = 0; q < 4; q++) {
+    PETSC_UNUSED PetscReal x, y;
     phi[0] = 1.0 - quadPoints[q*2] - quadPoints[q*2+1];
     phi[1] = quadPoints[q*2];
     phi[2] = quadPoints[q*2+1];
