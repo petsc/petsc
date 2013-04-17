@@ -103,6 +103,7 @@ int main(int argc,char **argv)
   AppCtx              *user;                   /* user-defined work context */
   PetscBag            bag;
   PetscInt            its;                     /* iterations for convergence */
+  PetscMPIInt         size;
   SNESConvergedReason reason;
   PetscErrorCode      ierr;
   PetscReal           lambda_max = 6.81, lambda_min = 0.0, error;
@@ -112,6 +113,8 @@ int main(int argc,char **argv)
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
+  if (size != 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Example only works for one process.");
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize problem parameters
