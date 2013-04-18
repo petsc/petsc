@@ -442,6 +442,8 @@ PETSC_EXTERN PetscErrorCode PCGAMGSetNSmooths(PC pc, PetscInt n);
 PETSC_EXTERN PetscErrorCode PCGAMGSetSymGraph(PC pc, PetscBool n);
 PETSC_EXTERN PetscErrorCode PCGAMGSetSquareGraph(PC,PetscBool);
 PETSC_EXTERN PetscErrorCode PCGAMGSetReuseProl(PC,PetscBool);
+PETSC_EXTERN PetscErrorCode PCGAMGFinalizePackage(void);
+PETSC_EXTERN PetscErrorCode PCGAMGInitializePackage(void);
 
 #if defined(PETSC_HAVE_PCBDDC)
 /* Enum defining how to treat the coarse problem */
