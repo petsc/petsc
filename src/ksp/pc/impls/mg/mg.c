@@ -450,7 +450,7 @@ PetscErrorCode PCView_MG(PC pc,PetscViewer viewer)
   PC_MG          *mg        = (PC_MG*)pc->data;
   PC_MG_Levels   **mglevels = mg->levels;
   PetscErrorCode ierr;
-  PetscInt       levels = mglevels[0]->levels,i;
+  PetscInt       levels = mglevels ? mglevels[0]->levels : 0,i;
   PetscBool      iascii,isbinary,isdraw;
 
   PetscFunctionBegin;
@@ -458,7 +458,8 @@ PetscErrorCode PCView_MG(PC pc,PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw);CHKERRQ(ierr);
   if (iascii) {
-    ierr = PetscViewerASCIIPrintf(viewer,"  MG: type is %s, levels=%D cycles=%s\n", PCMGTypes[mg->am],levels,(mglevels[0]->cycles == PC_MG_CYCLE_V) ? "v" : "w");CHKERRQ(ierr);
+    const char *cyclename = levels ? (mglevels[0]->cycles == PC_MG_CYCLE_V ? "v" : "w") : "unknown";
+    ierr = PetscViewerASCIIPrintf(viewer,"  MG: type is %s, levels=%D cycles=%s\n", PCMGTypes[mg->am],levels,cyclename);CHKERRQ(ierr);
     if (mg->am == PC_MG_MULTIPLICATIVE) {
       ierr = PetscViewerASCIIPrintf(viewer,"    Cycles per PCApply=%d\n",mg->cyclesperpcapply);CHKERRQ(ierr);
     }
