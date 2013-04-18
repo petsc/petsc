@@ -1,7 +1,9 @@
       program DMPlexTestField
       implicit none
-#include "finclude/petsc.h"
+#include "finclude/petsc.h90"
       DM :: dm
+      Vec :: u
+      PetscViewer :: viewer
       PetscSection :: section
       PetscInt :: dim,numFields,numBC,i
       PetscInt, target, dimension(3) ::                                 &
@@ -57,8 +59,8 @@
       CHKERRQ(ierr)
       pBcPointIS => bcPointIS
 !     Create a PetscSection with this data layout
-      call DMPlexCreateSection(dm, dim, numFields, numComp,
-     $     numDof, numBC, bcField, bcPointIS, section,
+      call DMPlexCreateSection(dm, dim, numFields, pNumComp,
+     $     pNumDof, numBC, pBcField, pBcPointIS, section,
      $     ierr)
       CHKERRQ(ierr)
 !     Name the Field variables
@@ -72,6 +74,23 @@
       CHKERRQ(ierr)
 !     Tell the DM to use this data layout
       call DMSetDefaultSection(dm, section, ierr)
+      CHKERRQ(ierr)
+!     Create a Vec with this layout and view it
+      call DMGetGlobalVector(dm, u, ierr)
+      CHKERRQ(ierr)
+      call PetscViewerCreate(PETSC_COMM_WORLD, viewer, ierr)
+      CHKERRQ(ierr)
+      call PetscViewerSetType(viewer, PETSCVIEWERVTK, ierr)
+      CHKERRQ(ierr)
+      call PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK, ierr)
+      CHKERRQ(ierr)
+      call PetscViewerFileSetName(viewer, 'sol.vtk', ierr)
+      CHKERRQ(ierr)
+      call VecView(u, viewer, ierr)
+      CHKERRQ(ierr)
+      call PetscViewerDestroy(viewer, ierr)
+      CHKERRQ(ierr)
+      call DMRestoreGlobalVector(dm, u, ierr)
       CHKERRQ(ierr)
 !     Cleanup
       call PetscSectionDestroy(section, ierr)

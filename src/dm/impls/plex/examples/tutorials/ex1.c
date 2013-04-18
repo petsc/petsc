@@ -7,7 +7,9 @@ static char help[] = "Define a simple field over the mesh\n\n";
 int main(int argc, char **argv)
 {
   DM             dm;
+  Vec            u;
   PetscSection   section;
+  PetscViewer    viewer;
   PetscInt       dim = 2, numFields, numBC, i;
   PetscInt       numComp[3];
   PetscInt       numDof[12];
@@ -47,6 +49,15 @@ int main(int argc, char **argv)
   ierr = PetscSectionView(section, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   /* Tell the DM to use this data layout */
   ierr = DMSetDefaultSection(dm, section);CHKERRQ(ierr);
+  /* Create a Vec with this layout and view it */
+  ierr = DMGetGlobalVector(dm, &u);CHKERRQ(ierr);
+  ierr = PetscViewerCreate(PETSC_COMM_WORLD, &viewer);CHKERRQ(ierr);
+  ierr = PetscViewerSetType(viewer, PETSCVIEWERVTK);CHKERRQ(ierr);
+  ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
+  ierr = PetscViewerFileSetName(viewer, "sol.vtk");CHKERRQ(ierr);
+  ierr = VecView(u, viewer);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+  ierr = DMRestoreGlobalVector(dm, &u);CHKERRQ(ierr);
   /* Cleanup */
   ierr = PetscSectionDestroy(&section);CHKERRQ(ierr);
   ierr = DMDestroy(&dm);CHKERRQ(ierr);
