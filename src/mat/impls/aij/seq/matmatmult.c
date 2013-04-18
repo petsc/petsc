@@ -1027,9 +1027,9 @@ PetscErrorCode MatMatTransposeMultNumeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
 #else
       nexta = 0; nextb = 0;
       while (nexta<anzi && nextb<bnzj) {
-        while (acol[nexta] < bcol[nextb] && nexta < anzi) nexta++;
+        while (nexta < anzi && acol[nexta] < bcol[nextb]) nexta++;
         if (nexta == anzi) break;
-        while (acol[nexta] > bcol[nextb] && nextb < bnzj) nextb++;
+        while (nextb < bnzj && acol[nexta] > bcol[nextb]) nextb++;
         if (nextb == bnzj) break;
         if (acol[nexta] == bcol[nextb]) {
           cval[j] += aval[nexta]*bval[nextb];
