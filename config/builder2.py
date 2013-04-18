@@ -115,12 +115,17 @@ def checkSingleRun(maker, ex, replace, extraArgs = '', isRegression = False):
         ex = [ex]+param['source']
       else:
         ex = ex+param['source']
+    # TODO: Fix this hack
+    if ex[-1] == 'F':
+      linkLanguage = 'FC'
+    else:
+      linkLanguage = maker.configInfo.languages.clanguage
     if rebuildTest:
       objects = maker.buildFile(ex, objDir)
       if not len(objects):
         print('TEST BUILD FAILED (check make.log for details)')
         return 1
-      maker.link(executable, objects, maker.configInfo.languages.clanguage)
+      maker.link(executable, objects, linkLanguage)
     if not 'args' in param: param['args'] = ''
     param['args'] += extraArgs
     if maker.runTest(exampleDir, executable, testnum, replace, **param):
