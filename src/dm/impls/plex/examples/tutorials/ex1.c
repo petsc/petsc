@@ -42,6 +42,7 @@ int main(int argc, char **argv)
   ierr = DMPlexGetStratumIS(dm, "marker", 1, &bcPointIS[0]);CHKERRQ(ierr);
   /* Create a PetscSection with this data layout */
   ierr = DMPlexCreateSection(dm, dim, numFields, numComp, numDof, numBC, bcField, bcPointIS, &section);CHKERRQ(ierr);
+  ierr = ISDestroy(&bcPointIS[0]);CHKERRQ(ierr);
   /* Name the Field variables */
   ierr = PetscSectionSetFieldName(section, 0, "u");CHKERRQ(ierr);
   ierr = PetscSectionSetFieldName(section, 1, "v");CHKERRQ(ierr);

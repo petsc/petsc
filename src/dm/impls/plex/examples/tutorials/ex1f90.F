@@ -63,6 +63,8 @@
      $     pNumDof, numBC, pBcField, pBcPointIS, section,
      $     ierr)
       CHKERRQ(ierr)
+      call ISDestroy(bcPointIS(1), ierr)
+      CHKERRQ(ierr)
 !     Name the Field variables
       call PetscSectionSetFieldName(section, 0, "u", ierr)
       CHKERRQ(ierr)
