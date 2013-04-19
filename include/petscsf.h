@@ -124,4 +124,14 @@ PETSC_EXTERN PetscErrorCode PetscSFScatterBegin(PetscSF,MPI_Datatype,const void 
 PETSC_EXTERN PetscErrorCode PetscSFScatterEnd(PetscSF,MPI_Datatype,const void *multirootdata,void *leafdata)
   PetscAttrMPIPointerWithType(3,2) PetscAttrMPIPointerWithType(4,2);
 
+#if defined(MPI_REPLACE)
+#  define MPIU_REPLACE MPI_REPLACE
+#else
+/* When using an old MPI such that MPI_REPLACE is not defined, we do not pass MPI_REPLACE to MPI at all.  Instead, we
+ * use it as a flag for our own reducer in the PETSCSFBASIC implementation.  This could be any unique value unlikely to
+ * collide with another MPI_Op so we'll just use the value that has been used by every version of MPICH since
+ * MPICH2-1.0.6. */
+#  define MPIU_REPLACE (MPI_Op)(0x5800000d)
+#endif
+
 #endif

@@ -407,7 +407,7 @@ static PetscErrorCode PetscSFBasicPackGetUnpackOp(PetscSF sf,PetscSFBasicPack li
 {
   PetscFunctionBegin;
   *UnpackOp = NULL;
-  if (op == MPI_REPLACE) *UnpackOp = link->UnpackInsert;
+  if (op == MPIU_REPLACE) *UnpackOp = link->UnpackInsert;
   else if (op == MPI_SUM || op == MPIU_SUM) *UnpackOp = link->UnpackAdd;
   else if (op == MPI_MAX || op == MPIU_MAX) *UnpackOp = link->UnpackMax;
   else if (op == MPI_MIN || op == MPIU_MIN) *UnpackOp = link->UnpackMin;
@@ -422,7 +422,7 @@ static PetscErrorCode PetscSFBasicPackGetFetchAndOp(PetscSF sf,PetscSFBasicPack 
 {
   PetscFunctionBegin;
   *FetchAndOp = NULL;
-  if (op == MPI_REPLACE) *FetchAndOp = link->FetchAndInsert;
+  if (op == MPIU_REPLACE) *FetchAndOp = link->FetchAndInsert;
   else if (op == MPI_SUM || op == MPIU_SUM) *FetchAndOp = link->FetchAndAdd;
   else if (op == MPI_MAX || op == MPIU_MAX) *FetchAndOp = link->FetchAndMax;
   else if (op == MPI_MIN || op == MPIU_MIN) *FetchAndOp = link->FetchAndMin;
