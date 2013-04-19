@@ -771,6 +771,8 @@ class Configure(config.package.Package):
     for f in funcs:
       if self.libraries.check(self.dlib, f):
         self.addDefine('HAVE_' + f.upper(),1)
+    if self.checkCompile('#include <mpi.h>', 'int combiner = MPI_COMBINER_DUP;'):
+      self.addDefine('HAVE_MPI_COMBINER_DUP',1)
     if self.libraries.check(self.dlib, "MPIDI_CH3I_sock_set"):
       self.addDefine('HAVE_MPICH_CH3_SOCK', 1)
     if self.libraries.check(self.dlib, "MPIDI_CH3I_sock_fixed_nbc_progress"):
