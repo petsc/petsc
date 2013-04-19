@@ -349,9 +349,10 @@ class Configure(config.package.Package):
     return ''
 
   def checkNoOptFlag(self):
-    flag = '-O0'
-    if self.setCompilers.checkCompilerFlag(flag):
-      return flag
+    flags = ['-O0','-Od']
+    for flag in flags:
+      if self.setCompilers.checkCompilerFlag(flag):
+        return flag
     return ''
 
   def downLoadBlasLapack(self, f2c, l):
