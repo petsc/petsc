@@ -495,6 +495,9 @@ PetscErrorCode  MatRestoreRow(Mat mat,PetscInt row,PetscInt *ncols,const PetscIn
   if (!mat->assembled) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (!mat->ops->restorerow) PetscFunctionReturn(0);
   ierr = (*mat->ops->restorerow)(mat,row,ncols,(PetscInt **)cols,(PetscScalar **)vals);CHKERRQ(ierr);
+  if (ncols) *ncols = 0;
+  if (cols)  *cols = NULL;
+  if (vals)  *vals = NULL;
   PetscFunctionReturn(0);
 }
 

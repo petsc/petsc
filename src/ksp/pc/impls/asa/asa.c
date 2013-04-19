@@ -595,7 +595,7 @@ PetscErrorCode PCCreateTransferOp_ASA(PC_ASA_level *asa_lev, PetscBool construct
     ierr = PetscMalloc(sizeof(PetscInt)*cand_vec_length[a], &(agg_arr[a]));CHKERRQ(ierr);
     ierr = PetscMemcpy(agg_arr[a], agg, sizeof(PetscInt)*cand_vec_length[a]);CHKERRQ(ierr);
     /* restore row */
-    ierr = MatRestoreRow(logical_agg, a+mat_agg_loc_start, &cand_vec_length[a], &agg, 0);CHKERRQ(ierr);
+    ierr = MatRestoreRow(logical_agg, a+mat_agg_loc_start, NULL, &agg, 0);CHKERRQ(ierr);
 
     /* create index sets */
     ierr = ISCreateGeneral(PETSC_COMM_SELF, cand_vec_length[a], agg_arr[a],PETSC_COPY_VALUES, &(idxm_is_B_arr[a]));CHKERRQ(ierr);
