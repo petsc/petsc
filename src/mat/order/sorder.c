@@ -34,7 +34,7 @@ PETSC_EXTERN PetscErrorCode MatGetOrdering_Natural(Mat mat,MatOrderingType type,
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
   ierr = MatGetRowIJ(mat,0,PETSC_FALSE,PETSC_TRUE,&n,NULL,NULL,&done);CHKERRQ(ierr);
-  ierr = MatRestoreRowIJ(mat,0,PETSC_FALSE,PETSC_TRUE,&n,NULL,NULL,&done);CHKERRQ(ierr);
+  ierr = MatRestoreRowIJ(mat,0,PETSC_FALSE,PETSC_TRUE,NULL,NULL,NULL,&done);CHKERRQ(ierr);
   if (done) { /* matrix may be "compressed" in symbolic factorization, due to i-nodes or block storage */
     /*
       We actually create general index sets because this avoids mallocs to
@@ -81,7 +81,7 @@ PETSC_EXTERN PetscErrorCode MatGetOrdering_RowLength(Mat mat,MatOrderingType typ
     lens[i]  = ia[i+1] - ia[i];
     permr[i] = i;
   }
-  ierr = MatRestoreRowIJ(mat,0,PETSC_FALSE,PETSC_TRUE,&n,&ia,&ja,&done);CHKERRQ(ierr);
+  ierr = MatRestoreRowIJ(mat,0,PETSC_FALSE,PETSC_TRUE,NULL,&ia,&ja,&done);CHKERRQ(ierr);
 
   ierr = PetscSortIntWithPermutation(n,lens,permr);CHKERRQ(ierr);
 

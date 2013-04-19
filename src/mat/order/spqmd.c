@@ -23,7 +23,7 @@ PETSC_EXTERN PetscErrorCode MatGetOrdering_QMD(Mat mat,MatOrderingType type,IS *
   ierr = PetscMalloc2(nrow,PetscInt,&qsize,nrow,PetscInt,&qlink);CHKERRQ(ierr);
   /* WARNING - genqmd trashes ja */
   SPARSEPACKgenqmd(&nrow,ia,ja,perm,iperm,deg,marker,rchset,nbrhd,qsize,qlink,&nofsub);
-  ierr = MatRestoreRowIJ(mat,1,PETSC_TRUE,PETSC_TRUE,&nrow,&ia,&ja,&done);CHKERRQ(ierr);
+  ierr = MatRestoreRowIJ(mat,1,PETSC_TRUE,PETSC_TRUE,NULL,&ia,&ja,&done);CHKERRQ(ierr);
 
   ierr = PetscFree2(qsize,qlink);CHKERRQ(ierr);
   ierr = PetscFree5(iperm,deg,marker,rchset,nbrhd);CHKERRQ(ierr);

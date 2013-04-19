@@ -6873,6 +6873,9 @@ PetscErrorCode MatRestoreRowIJ(Mat mat,PetscInt shift,PetscBool symmetric,PetscB
   else {
     *done = PETSC_TRUE;
     ierr  = (*mat->ops->restorerowij)(mat,shift,symmetric,inodecompressed,n,ia,ja,done);CHKERRQ(ierr);
+    if (n)  *n = 0;
+    if (ia) *ia = NULL;
+    if (ja) *ja = NULL;
   }
   PetscFunctionReturn(0);
 }
@@ -6920,6 +6923,9 @@ PetscErrorCode MatRestoreColumnIJ(Mat mat,PetscInt shift,PetscBool symmetric,Pet
   else {
     *done = PETSC_TRUE;
     ierr  = (*mat->ops->restorecolumnij)(mat,shift,symmetric,inodecompressed,n,ia,ja,done);CHKERRQ(ierr);
+    if (n)  *n = 0;
+    if (ia) *ia = NULL;
+    if (ja) *ja = NULL;
   }
   PetscFunctionReturn(0);
 }
