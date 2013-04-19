@@ -207,24 +207,31 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm,PetscViewer viewer)
       /* all the vectors */
       for (link=vtk->link; link; link=link->next) {
         Vec        X = (Vec)link->vec;
-        PetscInt   bs;
+        PetscInt   bs,nfields,field;
         const char *vecname = "";
         if ((link->ft != PETSC_VTK_CELL_FIELD) && (link->ft != PETSC_VTK_CELL_VECTOR_FIELD)) continue;
         if (((PetscObject)X)->name || link != vtk->link) { /* If the object is already named, use it. If it is past the first link, name it to disambiguate. */
           ierr = PetscObjectGetName((PetscObject)X,&vecname);CHKERRQ(ierr);
         }
         ierr = PetscSectionGetDof(dm->defaultSection,cStart,&bs);CHKERRQ(ierr);
-        for (i=0; i<bs; i++) {
-          char       buf[256];
+        ierr = PetscSectionGetNumFields(dm->defaultSection,&nfields);CHKERRQ(ierr);
+        for (field=0,i=0; field<nfields; field++) {
+          PetscInt   fbs,j;
           const char *fieldname = NULL;
-          /* ierr = DMDAGetFieldName(da,i,&fieldname);CHKERRQ(ierr); */
+          char       buf[256];
+          ierr = PetscSectionGetFieldDof(dm->defaultSection,cStart,field,&fbs);CHKERRQ(ierr);
+          ierr = PetscSectionGetFieldName(dm->defaultSection,field,&fieldname);CHKERRQ(ierr);
           if (!fieldname) {
-            ierr      = PetscSNPrintf(buf,sizeof(buf),"Unnamed%D",i);CHKERRQ(ierr);
+            ierr = PetscSNPrintf(buf,sizeof(buf),"CellField%D",field);CHKERRQ(ierr);
             fieldname = buf;
           }
-          ierr     = PetscFPrintf(comm,fp,"        <DataArray type=\"%s\" Name=\"%s%s\" NumberOfComponents=\"1\" format=\"appended\" offset=\"%D\" />\n",precision,vecname,fieldname,boffset);CHKERRQ(ierr);
-          boffset += gpiece[r].ncells*sizeof(PetscScalar) + sizeof(int);
+          for (j=0; j<fbs; j++) {
+            ierr = PetscFPrintf(comm,fp,"        <DataArray type=\"%s\" Name=\"%s%s.%D\" NumberOfComponents=\"1\" format=\"appended\" offset=\"%D\" />\n",precision,vecname,fieldname,j,boffset);CHKERRQ(ierr);
+            boffset += gpiece[r].ncells*sizeof(PetscScalar) + sizeof(int);
+            i++;
+          }
         }
+        if (i != bs) SETERRQ2(comm,PETSC_ERR_PLIB,"Total number of field components %D != block size %D",i,bs);
       }
       ierr = PetscFPrintf(PETSC_COMM_SELF,fp,"      </CellData>\n");CHKERRQ(ierr);
 
@@ -234,18 +241,28 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm,PetscViewer viewer)
       ierr = PetscFPrintf(PETSC_COMM_SELF,fp,"      <PointData>\n");CHKERRQ(ierr);
       for (link=vtk->link; link; link=link->next) {
         Vec        X = (Vec)link->vec;
-        PetscInt   bs;
+        PetscInt   bs,nfields,field;
         const char *vecname = "";
         if ((link->ft != PETSC_VTK_POINT_FIELD) && (link->ft != PETSC_VTK_POINT_VECTOR_FIELD)) continue;
         if (((PetscObject)X)->name || link != vtk->link) { /* If the object is already named, use it. If it is past the first link, name it to disambiguate. */
           ierr = PetscObjectGetName((PetscObject)X,&vecname);CHKERRQ(ierr);
         }
         ierr = PetscSectionGetDof(dm->defaultSection,vStart,&bs);CHKERRQ(ierr);
-        for (i=0; i<bs; i++) {
-          char fieldname[256];
-          ierr     = PetscSNPrintf(fieldname,sizeof(fieldname),"Point%D",i);CHKERRQ(ierr);
-          ierr     = PetscFPrintf(comm,fp,"        <DataArray type=\"%s\" Name=\"%s%s\" NumberOfComponents=\"1\" format=\"appended\" offset=\"%D\" />\n",precision,vecname,fieldname,boffset);CHKERRQ(ierr);
-          boffset += gpiece[r].nvertices*sizeof(PetscScalar) + sizeof(int);
+        ierr = PetscSectionGetNumFields(dm->defaultSection,&nfields);CHKERRQ(ierr);
+        for (field=0,i=0; field<nfields; field++) {
+          PetscInt   fbs,j;
+          const char *fieldname = NULL;
+          char       buf[256];
+          ierr = PetscSectionGetFieldDof(dm->defaultSection,vStart,field,&fbs);CHKERRQ(ierr);
+          ierr = PetscSectionGetFieldName(dm->defaultSection,field,&fieldname);CHKERRQ(ierr);
+          if (!fieldname) {
+            ierr = PetscSNPrintf(buf,sizeof(buf),"PointField%D",field);CHKERRQ(ierr);
+            fieldname = buf;
+          }
+          for (j=0; j<fbs; j++) {
+            ierr = PetscFPrintf(comm,fp,"        <DataArray type=\"%s\" Name=\"%s%s.%D\" NumberOfComponents=\"1\" format=\"appended\" offset=\"%D\" />\n",precision,vecname,fieldname,j,boffset);CHKERRQ(ierr);
+            boffset += gpiece[r].nvertices*sizeof(PetscScalar) + sizeof(int);
+          }
         }
       }
       ierr = PetscFPrintf(PETSC_COMM_SELF,fp,"      </PointData>\n");CHKERRQ(ierr);
