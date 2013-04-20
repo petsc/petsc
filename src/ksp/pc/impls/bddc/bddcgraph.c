@@ -11,6 +11,7 @@
 PetscErrorCode PCBDDCGraphASCIIView(PCBDDCGraph graph, PetscInt verbosity_level, PetscViewer viewer)
 {
   PetscInt       i,j;
+  PetscInt*      queue_in_global_numbering;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -48,6 +49,8 @@ PetscErrorCode PCBDDCGraphASCIIView(PCBDDCGraph graph, PetscInt verbosity_level,
     }
   }
   ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Total number of connected components %d\n",graph->ncc);CHKERRQ(ierr);
+  ierr = PetscMalloc(graph->cptr[graph->ncc]*sizeof(*queue_in_global_numbering),&queue_in_global_numbering);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingApply(graph->l2gmap,graph->cptr[graph->ncc],graph->queue,queue_in_global_numbering);CHKERRQ(ierr);
   for (i=0;i<graph->ncc;i++) {
     ierr = PetscViewerASCIISynchronizedPrintf(viewer,"  %d (neighs:",i);CHKERRQ(ierr);
     PetscInt node_num=graph->queue[graph->cptr[i]];
@@ -56,10 +59,11 @@ PetscErrorCode PCBDDCGraphASCIIView(PCBDDCGraph graph, PetscInt verbosity_level,
     }
     ierr = PetscViewerASCIISynchronizedPrintf(viewer,"):");CHKERRQ(ierr);
     for (j=graph->cptr[i];j<graph->cptr[i+1];j++) {
-      ierr = PetscViewerASCIISynchronizedPrintf(viewer," %d",graph->queue[j]);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer," %d (%d)",graph->queue[j],queue_in_global_numbering[j]);CHKERRQ(ierr);
     }
     ierr = PetscViewerASCIISynchronizedPrintf(viewer,"\n");CHKERRQ(ierr);
   }
+  ierr = PetscFree(queue_in_global_numbering);CHKERRQ(ierr);
   if (graph->custom_minimal_size > 1 && verbosity_level > 1) {
     ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Custom minimal size %d\n",graph->custom_minimal_size);CHKERRQ(ierr);
   }
@@ -293,7 +297,7 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponents(PCBDDCGraph graph)
     }
     ierr = PetscMalloc(buffer_size*sizeof(*send_buffer),&send_buffer);CHKERRQ(ierr);
     /* now get from neighbours their ccs (in global numbering) and adapt them (in case it is needed) */
-    ierr = PetscMalloc(graph->nvtxs*sizeof(*queue_in_global_numbering),&queue_in_global_numbering);CHKERRQ(ierr);
+    ierr = PetscMalloc(graph->cptr[graph->ncc]*sizeof(*queue_in_global_numbering),&queue_in_global_numbering);CHKERRQ(ierr);
     ierr = ISLocalToGlobalMappingApply(graph->l2gmap,graph->cptr[graph->ncc],graph->queue,queue_in_global_numbering);CHKERRQ(ierr);
     /* determine how much data to send (size of each queue plus the global indices) and communicate it to neighbours */
     ierr = PetscMalloc(graph->n_subsets*sizeof(*sizes_of_sends),&sizes_of_sends);CHKERRQ(ierr);
@@ -646,7 +650,7 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
   }
   /* sort set of sharing subdomains */
   for (i=0;i<graph->nvtxs;i++) {
-    ierr = PetscSortInt(graph->count[i],graph->neighbours_set[i]);CHKERRQ(ierr);
+    ierr = PetscSortRemoveDupsInt(&graph->count[i],graph->neighbours_set[i]);CHKERRQ(ierr);
   }
   /* Get info for dofs splitting */
   for (i=0;i<n_ISForDofs;i++) {
