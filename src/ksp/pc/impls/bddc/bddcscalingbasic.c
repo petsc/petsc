@@ -204,8 +204,8 @@ PetscErrorCode PCBDDCScalingSetUp(PC pc)
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   /* create work vector for the operator */
   ierr = VecDuplicate(pcis->vec1_B,&pcbddc->work_scaling);CHKERRQ(ierr);
-  /* rebuild pcis->D if change of basis and stiffness scaling has been requested */
-  if (pcis->use_stiffness_scaling && pcbddc->use_change_of_basis) {
+  /* rebuild pcis->D if stiffness scaling has been requested */
+  if (pcis->use_stiffness_scaling) {
     ierr = MatGetDiagonal(pcbddc->local_mat,pcis->vec1_N);CHKERRQ(ierr);
     ierr = VecScatterBegin(pcis->N_to_B,pcis->vec1_N,pcis->D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterEnd(pcis->N_to_B,pcis->vec1_N,pcis->D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
