@@ -75,19 +75,12 @@ int PyPetscBuffer_FillInfo(Py_buffer *view,
   view->internal = NULL;
   if ((flags & PyBUF_ND) == PyBUF_ND) {
     view->ndim = 1;
-    #if PY_VERSION_HEX >= 0x02070000
-    view->shape = &view->smalltable[0];
-    #else
     view->internal = PyMem_Malloc(2*sizeof(Py_ssize_t));
-    if (!view->internal) {
-      PyErr_NoMemory();
-      return -1;
-    }
+    if (!view->internal) { PyErr_NoMemory(); return -1; }
     view->shape = (Py_ssize_t *) view->internal;
-    #endif
     view->shape[0] = view->len/view->itemsize;
     if ((flags & PyBUF_STRIDES) == PyBUF_STRIDES) {
-      view->strides = &view->shape[1];
+      view->strides = view->shape + 1;
       view->strides[0] = view->itemsize;
     }
   }
@@ -97,10 +90,9 @@ int PyPetscBuffer_FillInfo(Py_buffer *view,
 PETSC_STATIC_INLINE
 void PyPetscBuffer_Release(Py_buffer *view)
 {
-  #if PY_VERSION_HEX < 0x02070000
+  if (view == NULL) return;
   if (view->internal) PyMem_Free(view->internal);
   view->internal = NULL;
-  #endif
 }
 
 #undef _PyPetsc_FMT_PETSC_INT
