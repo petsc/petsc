@@ -124,7 +124,7 @@ cdef class _IS_buffer:
     cdef int acquirebuffer(self, Py_buffer *view, int flags) except -1:
         self.acquire()
         PyPetscBuffer_FillInfo(view, <void*>self.data,
-                               self.size, c'i', 0, flags)
+                               self.size, c'i', 1, flags)
         if view != NULL: view.obj = self
         return 0
 
