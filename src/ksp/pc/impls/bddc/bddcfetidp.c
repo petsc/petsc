@@ -137,11 +137,6 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx )
   ierr = VecGetArray(pcis->vec1_N,&array);CHKERRQ(ierr);
   for (i=0;i<pcis->n;i++){
     j = mat_graph->count[i]; /* RECALL: mat_graph->count[i] does not count myself */
-    k = 0;
-    if (j > 0) {
-      k = (mat_graph->neighbours_set[i][0] == -1 ?  1 : 0);
-    }
-    j = j - k ;
     if ( j > 0 ) {
       n_boundary_dofs++;
     }
@@ -202,10 +197,6 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx )
   ierr = PetscMalloc( partial_sum*sizeof(PetscScalar),&all_factors[0]);CHKERRQ(ierr);
   for (i=0;i<pcis->n-1;i++) {
     j = mat_graph->count[i];
-    if (j>0) {
-      k = (mat_graph->neighbours_set[i][0] == -1 ?  1 : 0);
-      j = j - k;
-    }
     all_factors[i+1]=all_factors[i]+j;
   }
   /* scatter B scaling to N vec */
@@ -230,8 +221,6 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx )
       k = pcis->shared[i][j];
       neigh_position = 0;
       while(mat_graph->neighbours_set[k][neigh_position] != pcis->neigh[i]) {neigh_position++;}
-      s = (mat_graph->neighbours_set[k][0] == -1 ?  1 : 0);
-      neigh_position = neigh_position - s;
       all_factors[k][neigh_position]=recv_buffer[ptrs_buffer[i-1]+j];
     }
   }
@@ -253,15 +242,13 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx )
   for (i=0;i<dual_size;i++) {
     n_global_lambda = aux_global_numbering[i];
     j = mat_graph->count[aux_local_numbering_1[i]];
-    k = (mat_graph->neighbours_set[aux_local_numbering_1[i]][0] == -1 ?  1 : 0);
-    j = j - k;
     aux_sums[0]=0;
     for (s=1;s<j;s++) {
       aux_sums[s]=aux_sums[s-1]+j-s+1;
     }
     array = all_factors[aux_local_numbering_1[i]];
     n_neg_values = 0;
-    while(n_neg_values < j && mat_graph->neighbours_set[aux_local_numbering_1[i]][n_neg_values+k] < rank) {n_neg_values++;}
+    while(n_neg_values < j && mat_graph->neighbours_set[aux_local_numbering_1[i]][n_neg_values] < rank) {n_neg_values++;}
     n_pos_values = j - n_neg_values;
     if (fully_redundant) {
       for (s=0;s<n_neg_values;s++) {
