@@ -1647,6 +1647,8 @@ int main(int argc,char *argv[])
   ierr = MatDestroy(&B);CHKERRQ(ierr);
   ierr = DMDestroy(&da);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
+  ierr = PetscFunctionListDestroy(&limiters);CHKERRQ(ierr);
+  ierr = PetscFunctionListDestroy(&physics);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }
