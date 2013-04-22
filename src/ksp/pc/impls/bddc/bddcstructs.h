@@ -21,6 +21,8 @@ struct _PCBDDCGraph {
   PetscInt               *count;
   PetscInt               *subset_ncc;
   PetscBool              *touched;
+  PetscInt               *mirrors;
+  PetscInt               **mirrors_set;
 };
 typedef struct _PCBDDCGraph *PCBDDCGraph;
 

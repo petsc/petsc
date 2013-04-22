@@ -289,7 +289,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
   PetscInt       s,start_constraint,dual_dofs;
   PetscBool      compute_submatrix,useksp=PETSC_FALSE;
   PetscInt       *aux_primal_permutation,*aux_primal_numbering;
-  PetscBool      boolforface,*change_basis;
+  PetscBool      boolforchange,*change_basis;
 /* some ugly conditional declarations */
 #if defined(PETSC_MISSING_LAPACK_GESVD)
   PetscScalar    one=1.0,zero=0.0;
@@ -516,15 +516,19 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
   for (i=0;i<n_ISForEdges+n_ISForFaces;i++) {
     if (i<n_ISForEdges) {
       used_IS = &ISForEdges[i];
-      boolforface = pcbddc->use_change_of_basis;
+      boolforchange = pcbddc->use_change_of_basis;
     } else {
       used_IS = &ISForFaces[i-n_ISForEdges];
-      boolforface = pcbddc->use_change_on_faces;
+      boolforchange = pcbddc->use_change_on_faces;
     }
     temp_constraints = 0;          /* zero the number of constraints I have on this conn comp */
     temp_start_ptr = total_counts; /* need to know the starting index of constraints stored */
     ierr = ISGetSize(*used_IS,&size_of_constraint);CHKERRQ(ierr);
     ierr = ISGetIndices(*used_IS,(const PetscInt**)&is_indices);CHKERRQ(ierr);
+    /* HACK: change of basis should not performed on local periodic nodes */
+    if (pcbddc->mat_graph->mirrors && pcbddc->mat_graph->mirrors[is_indices[0]]) {
+      boolforchange = PETSC_FALSE;
+    }
     if (nnsp_has_cnst) {
       temp_constraints++;
       quad_value = (PetscScalar)(1.0/PetscSqrtReal((PetscReal)size_of_constraint));
@@ -534,7 +538,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
         temp_quadrature_constraint[temp_indices[total_counts]+j]=quad_value;
       }
       temp_indices[total_counts+1]=temp_indices[total_counts]+size_of_constraint;  /* store new starting point */
-      change_basis[total_counts]=boolforface;
+      change_basis[total_counts]=boolforchange;
       total_counts++;
     }
     for (k=0;k<nnsp_size;k++) {
@@ -553,7 +557,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
       if (quad_value > 0.0) { /* keep indices and values */
         temp_constraints++;
         temp_indices[total_counts+1]=temp_indices[total_counts]+size_of_constraint;  /* store new starting point */
-        change_basis[total_counts]=boolforface;
+        change_basis[total_counts]=boolforchange;
         total_counts++;
       }
     }
