@@ -157,7 +157,7 @@ PetscErrorCode  PCISSetUp(PC pc)
     ierr = VecGetSize(matis->x,&pcis->n);CHKERRQ(ierr);
     ierr = PetscMalloc(pcis->n*sizeof(PetscInt),&array);CHKERRQ(ierr);
     ierr = PetscMemzero(array,pcis->n*sizeof(PetscInt));CHKERRQ(ierr);
-    for (i=1;i<pcis->n_neigh;i++)
+    for (i=0;i<pcis->n_neigh;i++)
       for (j=0;j<pcis->n_shared[i];j++)
           array[pcis->shared[i][j]] += 1;
  
