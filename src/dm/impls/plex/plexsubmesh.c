@@ -1092,7 +1092,7 @@ PetscErrorCode DMPlexLabelCohesiveComplete(DM dm, DMLabel label)
 
      For any marked cell, the marked vertices constitute a single face
 */
-static PetscErrorCode DMPlexMarkSubmesh_Uninterpolated(DM dm, DMLabel vertexLabel, DMLabel subpointMap, PetscInt *numFaces, PetscInt *nFV, DM subdm)
+static PetscErrorCode DMPlexMarkSubmesh_Uninterpolated(DM dm, DMLabel vertexLabel, PetscInt value, DMLabel subpointMap, PetscInt *numFaces, PetscInt *nFV, DM subdm)
 {
   IS               subvertexIS;
   const PetscInt  *subvertices;
@@ -1112,7 +1112,7 @@ static PetscErrorCode DMPlexMarkSubmesh_Uninterpolated(DM dm, DMLabel vertexLabe
     if (pMax[d] >= 0) pEnd[d] = PetscMin(pEnd[d], pMax[d]);
   }
   /* Loop over initial vertices and mark all faces in the collective star() */
-  ierr = DMLabelGetStratumIS(vertexLabel, 1, &subvertexIS);CHKERRQ(ierr);
+  ierr = DMLabelGetStratumIS(vertexLabel, value, &subvertexIS);CHKERRQ(ierr);
   if (subvertexIS) {
     ierr = ISGetSize(subvertexIS, &numSubVerticesInitial);CHKERRQ(ierr);
     ierr = ISGetIndices(subvertexIS, &subvertices);CHKERRQ(ierr);
@@ -1144,7 +1144,7 @@ static PetscErrorCode DMPlexMarkSubmesh_Uninterpolated(DM dm, DMLabel vertexLabe
         if ((point >= pStart[0]) && (point < pEnd[0])) {
           ++numCorners;
           ierr = DMLabelGetValue(vertexLabel, point, &vertexLoc);CHKERRQ(ierr);
-          if (vertexLoc >= 0) closure[faceSize++] = point;
+          if (vertexLoc == value) closure[faceSize++] = point;
         }
       }
       if (!(*nFV)) {ierr = DMPlexGetNumFaceVertices(dm, dim, numCorners, nFV);CHKERRQ(ierr);}
@@ -1170,7 +1170,7 @@ static PetscErrorCode DMPlexMarkSubmesh_Uninterpolated(DM dm, DMLabel vertexLabe
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexMarkSubmesh_Interpolated"
-static PetscErrorCode DMPlexMarkSubmesh_Interpolated(DM dm, DMLabel vertexLabel, DMLabel subpointMap, DM subdm)
+static PetscErrorCode DMPlexMarkSubmesh_Interpolated(DM dm, DMLabel vertexLabel, PetscInt value, DMLabel subpointMap, DM subdm)
 {
   IS               subvertexIS;
   const PetscInt  *subvertices;
@@ -1187,7 +1187,7 @@ static PetscErrorCode DMPlexMarkSubmesh_Interpolated(DM dm, DMLabel vertexLabel,
     if (pMax[d] >= 0) pEnd[d] = PetscMin(pEnd[d], pMax[d]);
   }
   /* Loop over initial vertices and mark all faces in the collective star() */
-  ierr = DMLabelGetStratumIS(vertexLabel, 1, &subvertexIS);CHKERRQ(ierr);
+  ierr = DMLabelGetStratumIS(vertexLabel, value, &subvertexIS);CHKERRQ(ierr);
   if (subvertexIS) {
     ierr = ISGetSize(subvertexIS, &numSubVerticesInitial);CHKERRQ(ierr);
     ierr = ISGetIndices(subvertexIS, &subvertices);CHKERRQ(ierr);
@@ -1218,7 +1218,7 @@ static PetscErrorCode DMPlexMarkSubmesh_Interpolated(DM dm, DMLabel vertexLabel,
 
         if ((point >= pStart[0]) && (point < pEnd[0])) {
           ierr = DMLabelGetValue(vertexLabel, point, &vertexLoc);CHKERRQ(ierr);
-          if (vertexLoc < 0) break;
+          if (vertexLoc != value) break;
         }
       }
       if (c == closureSize*2) {
@@ -1780,7 +1780,7 @@ static PetscErrorCode DMPlexInsertFace_Internal(DM dm, DM subdm, PetscInt numFac
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexCreateSubmesh_Uninterpolated"
-static PetscErrorCode DMPlexCreateSubmesh_Uninterpolated(DM dm, const char vertexLabelName[], DM subdm)
+static PetscErrorCode DMPlexCreateSubmesh_Uninterpolated(DM dm, const char vertexLabelName[], PetscInt value, DM subdm)
 {
   MPI_Comm        comm;
   DMLabel         vertexLabel, subpointMap;
@@ -1798,7 +1798,7 @@ static PetscErrorCode DMPlexCreateSubmesh_Uninterpolated(DM dm, const char verte
   ierr = DMPlexSetSubpointMap(subdm, subpointMap);CHKERRQ(ierr);
   ierr = DMLabelDestroy(&subpointMap);CHKERRQ(ierr);
   ierr = DMPlexGetLabel(dm, vertexLabelName, &vertexLabel);CHKERRQ(ierr);
-  ierr = DMPlexMarkSubmesh_Uninterpolated(dm, vertexLabel, subpointMap, &numSubFaces, &nFV, subdm);CHKERRQ(ierr);
+  ierr = DMPlexMarkSubmesh_Uninterpolated(dm, vertexLabel, value, subpointMap, &numSubFaces, &nFV, subdm);CHKERRQ(ierr);
   /* Setup chart */
   ierr = DMLabelGetStratumSize(subpointMap, 0, &numSubVertices);CHKERRQ(ierr);
   ierr = DMLabelGetStratumSize(subpointMap, 2, &numSubCells);CHKERRQ(ierr);
@@ -1875,9 +1875,9 @@ static PetscErrorCode DMPlexCreateSubmesh_Uninterpolated(DM dm, const char verte
     ierr = PetscSectionSetUp(subCoordSection);CHKERRQ(ierr);
     ierr = PetscSectionGetStorageSize(subCoordSection, &coordSize);CHKERRQ(ierr);
     ierr = VecCreate(comm, &subCoordinates);CHKERRQ(ierr);
+    ierr = VecSetSizes(subCoordinates, coordSize, PETSC_DETERMINE);CHKERRQ(ierr);
+    ierr = VecSetFromOptions(subCoordinates);CHKERRQ(ierr);
     if (coordSize) {
-      ierr = VecSetSizes(subCoordinates, coordSize, PETSC_DETERMINE);CHKERRQ(ierr);
-      ierr = VecSetFromOptions(subCoordinates);CHKERRQ(ierr);
       ierr = VecGetArray(coordinates,    &coords);CHKERRQ(ierr);
       ierr = VecGetArray(subCoordinates, &subCoords);CHKERRQ(ierr);
       for (v = 0; v < numSubVertices; ++v) {
@@ -1908,7 +1908,7 @@ static PetscErrorCode DMPlexCreateSubmesh_Uninterpolated(DM dm, const char verte
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexCreateSubmesh_Interpolated"
-static PetscErrorCode DMPlexCreateSubmesh_Interpolated(DM dm, const char vertexLabelName[], DM subdm)
+static PetscErrorCode DMPlexCreateSubmesh_Interpolated(DM dm, const char vertexLabelName[], PetscInt value, DM subdm)
 {
   MPI_Comm         comm;
   DMLabel          subpointMap, vertexLabel;
@@ -1925,7 +1925,7 @@ static PetscErrorCode DMPlexCreateSubmesh_Interpolated(DM dm, const char vertexL
   ierr = DMPlexSetSubpointMap(subdm, subpointMap);CHKERRQ(ierr);
   ierr = DMLabelDestroy(&subpointMap);CHKERRQ(ierr);
   ierr = DMPlexGetLabel(dm, vertexLabelName, &vertexLabel);CHKERRQ(ierr);
-  ierr = DMPlexMarkSubmesh_Interpolated(dm, vertexLabel, subpointMap, subdm);CHKERRQ(ierr);
+  ierr = DMPlexMarkSubmesh_Interpolated(dm, vertexLabel, value, subpointMap, subdm);CHKERRQ(ierr);
   /* Setup chart */
   ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = PetscMalloc4(dim+1,PetscInt,&numSubPoints,dim+1,PetscInt,&firstSubPoint,dim+1,IS,&subpointIS,dim+1,const PetscInt *,&subpoints);CHKERRQ(ierr);
@@ -2042,12 +2042,13 @@ static PetscErrorCode DMPlexCreateSubmesh_Interpolated(DM dm, const char vertexL
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexCreateSubmesh"
-/*
+/*@C
   DMPlexCreateSubmesh - Extract a hypersurface from the mesh using vertices defined by a label
 
   Input Parameters:
 + dm           - The original mesh
-- vertexLabel  - The DMLabel marking vertices contained in the surface
+. vertexLabel  - The DMLabel marking vertices contained in the surface
+- value        - The label value to use
 
   Output Parameter:
 . subdm - The surface mesh
@@ -2057,8 +2058,8 @@ static PetscErrorCode DMPlexCreateSubmesh_Interpolated(DM dm, const char vertexL
   Level: developer
 
 .seealso: DMPlexGetSubpointMap(), DMPlexGetLabel(), DMLabelSetValue()
-*/
-PetscErrorCode DMPlexCreateSubmesh(DM dm, const char vertexLabel[], DM *subdm)
+@*/
+PetscErrorCode DMPlexCreateSubmesh(DM dm, const char vertexLabel[], PetscInt value, DM *subdm)
 {
   PetscInt       dim, depth;
   PetscErrorCode ierr;
@@ -2073,9 +2074,9 @@ PetscErrorCode DMPlexCreateSubmesh(DM dm, const char vertexLabel[], DM *subdm)
   ierr = DMSetType(*subdm, DMPLEX);CHKERRQ(ierr);
   ierr = DMPlexSetDimension(*subdm, dim-1);CHKERRQ(ierr);
   if (depth == dim) {
-    ierr = DMPlexCreateSubmesh_Interpolated(dm, vertexLabel, *subdm);CHKERRQ(ierr);
+    ierr = DMPlexCreateSubmesh_Interpolated(dm, vertexLabel, value, *subdm);CHKERRQ(ierr);
   } else {
-    ierr = DMPlexCreateSubmesh_Uninterpolated(dm, vertexLabel, *subdm);CHKERRQ(ierr);
+    ierr = DMPlexCreateSubmesh_Uninterpolated(dm, vertexLabel, value, *subdm);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
