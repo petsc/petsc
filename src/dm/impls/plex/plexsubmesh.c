@@ -2091,7 +2091,7 @@ static PetscErrorCode DMPlexCreateCohesiveSubmesh_Uninterpolated(DM dm, PetscBoo
   const PetscInt *subVertices;
   PetscInt        numSubVertices, firstSubVertex, numSubCells, *subCells;
   PetscInt       *subface, maxConeSize, numSubFaces, firstSubFace, newFacePoint, nFV;
-  PetscInt        vStart, vEnd, c, f;
+  PetscInt        cMax, c, f;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
@@ -2112,10 +2112,6 @@ static PetscErrorCode DMPlexCreateCohesiveSubmesh_Uninterpolated(DM dm, PetscBoo
   newFacePoint   = firstSubFace;
   ierr = DMLabelGetStratumIS(subpointMap, 0, &subvertexIS);CHKERRQ(ierr);
   if (subvertexIS) {ierr = ISGetIndices(subvertexIS, &subVertices);CHKERRQ(ierr);}
-#if 0
-  ierr = DMLabelGetStratumIS(subpointMap, 2, &subcellIS);CHKERRQ(ierr);
-  if (subcellIS) {ierr = ISGetIndices(subcellIS, &subCells);CHKERRQ(ierr);}
-#endif
   for (c = 0; c < numSubCells; ++c) {
     ierr = DMPlexSetConeSize(subdm, c, 1);CHKERRQ(ierr);
   }
@@ -2124,35 +2120,38 @@ static PetscErrorCode DMPlexCreateCohesiveSubmesh_Uninterpolated(DM dm, PetscBoo
   }
   ierr = DMSetUp(subdm);CHKERRQ(ierr);
   /* Create face cones */
-  ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
   ierr = DMPlexGetMaxSizes(dm, &maxConeSize, NULL);CHKERRQ(ierr);
+  ierr = DMPlexGetHybridBounds(dm, &cMax, NULL, NULL, NULL);CHKERRQ(ierr);
   ierr = DMGetWorkArray(subdm, maxConeSize, PETSC_INT, (void**) &subface);CHKERRQ(ierr);
   for (c = 0; c < numSubCells; ++c) {
-    const PetscInt cell    = subCells[c];
-    const PetscInt subcell = c;
-    PetscInt      *closure = NULL;
-    PetscInt       closureSize, cl, numCorners = 0, faceSize = 0;
+    const PetscInt  cell    = subCells[c];
+    const PetscInt  subcell = c;
+    const PetscInt *cone, *cells;
+    PetscInt        numCells, subVertex, p, v;
 
-    ierr = DMPlexGetTransitiveClosure(dm, cell, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
-    for (cl = 0; cl < closureSize*2; cl += 2) {
-      const PetscInt point = closure[cl];
-      PetscInt       subVertex;
+    if (cell < cMax) continue;
+    ierr = DMPlexGetCone(dm, cell, &cone);CHKERRQ(ierr);
+    for (v = 0; v < nFV; ++v) {
+      ierr = PetscFindInt(cone[v], numSubVertices, subVertices, &subVertex);CHKERRQ(ierr);
+      subface[v] = firstSubVertex+subVertex;
+    }
+    ierr = DMPlexSetCone(subdm, newFacePoint, subface);CHKERRQ(ierr);
+    ierr = DMPlexSetCone(subdm, subcell, &newFacePoint);CHKERRQ(ierr);
+    ierr = DMPlexGetJoin(dm, nFV, cone, &numCells, &cells);CHKERRQ(ierr);
+    if (numCells != 2) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cohesive cells should separate two cells");
+    for (p = 0; p < numCells; ++p) {
+      PetscInt negsubcell;
 
-      if ((point >= vStart) && (point < vEnd)) {
-        ++numCorners;
-        ierr = PetscFindInt(point, numSubVertices, subVertices, &subVertex);CHKERRQ(ierr);
-        if (subVertex >= 0) {
-          closure[faceSize] = point;
-          subface[faceSize] = firstSubVertex+subVertex;
-          ++faceSize;
-        }
+      if (cells[p] >= cMax) continue;
+      /* I know this is a crap search */
+      for (negsubcell = 0; negsubcell < numSubCells; ++negsubcell) {
+        if (subCells[negsubcell] == cells[p]) break;
       }
+      if (negsubcell == numSubCells) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Could not find negative face neighbor for cohesive cell %d", cell);
+      ierr = DMPlexSetCone(subdm, negsubcell, &newFacePoint);CHKERRQ(ierr);
     }
-    if (faceSize > nFV) SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "Invalid submesh: Too many vertices %d of an element on the surface", faceSize);
-    if (faceSize == nFV) {
-      ierr = DMPlexInsertFace_Internal(dm, subdm, faceSize, closure, subface, numCorners, cell, subcell, firstSubFace, &newFacePoint);CHKERRQ(ierr);
-    }
-    ierr = DMPlexRestoreTransitiveClosure(dm, cell, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+    ierr = DMPlexRestoreJoin(dm, nFV, cone, &numCells, &cells);CHKERRQ(ierr);
+    ++newFacePoint;
   }
   ierr = DMRestoreWorkArray(subdm, maxConeSize, PETSC_INT, (void**) &subface);CHKERRQ(ierr);
   ierr = DMPlexSymmetrize(subdm);CHKERRQ(ierr);
@@ -2205,12 +2204,7 @@ static PetscErrorCode DMPlexCreateCohesiveSubmesh_Uninterpolated(DM dm, PetscBoo
   /* Cleanup */
   if (subvertexIS) {ierr = ISRestoreIndices(subvertexIS, &subVertices);CHKERRQ(ierr);}
   ierr = ISDestroy(&subvertexIS);CHKERRQ(ierr);
-#if 0
-  if (subcellIS) {ierr = ISRestoreIndices(subcellIS, &subCells);CHKERRQ(ierr);}
-  ierr = ISDestroy(&subcellIS);CHKERRQ(ierr);
-#else
   ierr = PetscFree(subCells);CHKERRQ(ierr);
-#endif
   PetscFunctionReturn(0);
 }
 
