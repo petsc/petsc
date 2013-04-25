@@ -1406,7 +1406,7 @@ PetscErrorCode MatTransColoringApplyDenToSp_SeqAIJ(MatTransposeColoring matcolor
   PetscFunctionBegin;
   ierr   = MatDenseGetArray(Cden,&ca_den);CHKERRQ(ierr);
  
-  if (brows) {  /* rowblock-wise sweeping Cden - would be 40% faster than column-wise sweeping */
+  if (brows > 0) {  /* rowblock-wise sweeping Cden - would be 40% faster than column-wise sweeping */
     PetscInt       row_i,i,spidx;
     for (i=0; i<m-brows; i += brows) {  /* loop over row blocks of Csp */
       for (k=0; k<ncolors; k++) {       /* loop over colors (columns of Cden) */
@@ -1433,6 +1433,8 @@ PetscErrorCode MatTransColoringApplyDenToSp_SeqAIJ(MatTransposeColoring matcolor
     PetscInt       *rows=matcoloring->rows,*colorforrow=matcoloring->colorforrow;
     PetscScalar    *cp_den;
     cp_den = ca_den;
+    if (brows == 0) {
+      cp_den = ca_den;
     for (k=0; k<ncolors; k++) {
       nrows = matcoloring->nrows[k];
       row   = rows  + colorforrow[k];
@@ -1442,6 +1444,37 @@ PetscErrorCode MatTransColoringApplyDenToSp_SeqAIJ(MatTransposeColoring matcolor
       }
       cp_den += m;
     }
+    } else { /* new impls! ---------- */
+      /* printf(" \n new  ... m=%d \n",m); */
+      PetscInt *lstart,row_end, brows_given=100,row_start;
+      ierr = PetscMalloc((ncolors+1)*sizeof(PetscInt),&lstart);CHKERRQ(ierr);
+      ierr = PetscMemzero(lstart,ncolors*sizeof(PetscInt));CHKERRQ(ierr);
+
+      row_end = brows_given;
+      if (row_end > m) row_end = m;
+
+      for (row_start=0; row_start<m; row_start+=brows_given) {
+        cp_den = ca_den;
+        for (k=0; k<ncolors; k++) {
+          nrows = matcoloring->nrows[k];
+          row   = rows  + colorforrow[k];
+          idx   = den2sp + colorforrow[k];
+          for (l=lstart[k]; l<nrows; l++) {
+            if (row[l] >= row_end) {
+              lstart[k] = l;
+              /* printf(" color %d, lstart %d\n",k,l); */
+              break;
+            } else {
+              ca[idx[l]] = cp_den[row[l]];
+            }
+          }
+          cp_den += m;
+        }
+        row_end += brows_given;
+        if (row_end > m) row_end = m;
+      }
+      ierr = PetscFree(lstart);CHKERRQ(ierr);
+    } /* new impls! ---------- */
   }
 
   ierr = MatDenseRestoreArray(Cden,&ca_den);CHKERRQ(ierr);
@@ -1557,7 +1590,7 @@ PetscErrorCode MatTransposeColoringCreate_SeqAIJ(Mat mat,ISColoring iscoloring,M
   brows = c->brows;
   ierr = PetscOptionsGetInt(NULL,"-matden2sp_brows",&brows,&flg);CHKERRQ(ierr);
   if (flg) c->brows = brows;
-  if (brows) {
+  if (brows > 0) {
     ierr = PetscMalloc(nis*c->m*sizeof(PetscInt),&den2sp);CHKERRQ(ierr);
     for (i=0; i<nis*c->m; i++) den2sp[i] = -1;
   } else {
@@ -1612,7 +1645,7 @@ PetscErrorCode MatTransposeColoringCreate_SeqAIJ(Mat mat,ISColoring iscoloring,M
     c->nrows[i]      = nrows;
     colorforrow[i+1] = colorforrow[i] + nrows;
 
-    if (brows == 0) {
+    if (brows <= 0) {
       nrows = 0;
       for (j=0; j<cm; j++) {
         if (rowhit[j]) {
