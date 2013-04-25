@@ -374,6 +374,7 @@ static PetscErrorCode PhysicsCreate_Advect(Model mod,Physics phys)
 
   {
     const PetscInt inflowids[] = {100,200,300},outflowids[] = {101};
+    /*const PetscInt inflowids[] = {100,101,200},outflowids[] = {201};*/
     /* Register "canned" boundary conditions and defaults for where to apply. */
     ierr = ModelBoundaryRegister(mod,"inflow",PhysicsBoundary_Advect_Inflow,phys,ALEN(inflowids),inflowids);CHKERRQ(ierr);
     ierr = ModelBoundaryRegister(mod,"outflow",PhysicsBoundary_Advect_Outflow,phys,ALEN(outflowids),outflowids);CHKERRQ(ierr);
