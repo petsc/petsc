@@ -9235,14 +9235,14 @@ PetscErrorCode  MatTransposeColoringDestroy(MatTransposeColoring *c)
   if (!matcolor) PetscFunctionReturn(0);
   if (--((PetscObject)matcolor)->refct > 0) {matcolor = 0; PetscFunctionReturn(0);}
 
-  ierr = PetscFree(matcolor->ncolumns);CHKERRQ(ierr);
-  ierr = PetscFree(matcolor->nrows);CHKERRQ(ierr);
-  ierr = PetscFree(matcolor->colorforrow);CHKERRQ(ierr);
+  ierr = PetscFree3(matcolor->ncolumns,matcolor->nrows,matcolor->colorforrow);CHKERRQ(ierr);
   ierr = PetscFree(matcolor->rows);CHKERRQ(ierr);
   ierr = PetscFree(matcolor->den2sp);CHKERRQ(ierr);
   ierr = PetscFree(matcolor->colorforcol);CHKERRQ(ierr);
   ierr = PetscFree(matcolor->columns);CHKERRQ(ierr);
-  ierr = PetscFree(matcolor->lstart);CHKERRQ(ierr);
+  if (matcolor->brows>0) {
+    ierr = PetscFree(matcolor->lstart);CHKERRQ(ierr);
+  }
   ierr = PetscHeaderDestroy(c);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
