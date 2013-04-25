@@ -168,6 +168,7 @@ typedef int    MPI_Offset;
 #define MPI_UNSIGNED         sizeof(unsigned)
 #define MPI_UNSIGNED_CHAR    sizeof(unsigned char)
 #define MPI_UNSIGNED_LONG    sizeof(unsigned long)
+#define MPI_UNSIGNED_LONG_LONG sizeof(unsigned long long)
 #define MPI_COMPLEX          2*sizeof(float)
 #define MPI_C_COMPLEX        2*sizeof(float)
 #define MPI_C_DOUBLE_COMPLEX 2*sizeof(double)
