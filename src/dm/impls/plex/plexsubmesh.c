@@ -1987,6 +1987,19 @@ PetscErrorCode DMPlexCreateSubmesh(DM dm, const char vertexLabel[], DM *subdm)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexGetSubpointMap"
+/*@
+  DMPlexGetSubpointMap - Returns a DMLabel with point dimension as values
+
+  Input Parameter:
+. dm - The submesh DM
+
+  Output Parameter:
+. subpointMap - The DMLabel of all the points from the original mesh in this submesh, or NULL if this is not a submesh
+
+  Level: developer
+
+.seealso: DMPlexCreateSubmesh(), DMPlexCreateSubpointIS()
+@*/
 PetscErrorCode DMPlexGetSubpointMap(DM dm, DMLabel *subpointMap)
 {
   DM_Plex *mesh = (DM_Plex*) dm->data;
@@ -2016,7 +2029,7 @@ PetscErrorCode DMPlexSetSubpointMap(DM dm, DMLabel subpointMap)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexCreateSubpointIS"
-/*
+/*@
   DMPlexCreateSubpointIS - Creates an IS covering the entire subdm chart with the original points as data
 
   Input Parameter:
@@ -2026,7 +2039,11 @@ PetscErrorCode DMPlexSetSubpointMap(DM dm, DMLabel subpointMap)
 . subpointIS - The IS of all the points from the original mesh in this submesh, or NULL if this is not a submesh
 
   Note: This is IS is guaranteed to be sorted by the construction of the submesh
-*/
+
+  Level: developer
+
+.seealso: DMPlexCreateSubmesh(), DMPlexGetSubpointMap()
+@*/
 PetscErrorCode DMPlexCreateSubpointIS(DM dm, IS *subpointIS)
 {
   MPI_Comm        comm;
