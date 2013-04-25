@@ -29,7 +29,6 @@ typedef const char* DMType;
 #define DMPLEX      "plex"
 #define DMCARTESIAN "cartesian"
 #define DMREDUNDANT "redundant"
-#define DMAKKT      "akkt"
 #define DMPATCH     "patch"
 #define DMMOAB      "moab"
 
