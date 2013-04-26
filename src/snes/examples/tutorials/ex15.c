@@ -215,7 +215,7 @@ int main(int argc,char **argv)
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
   ierr = SNESSetGS(snes,NonlinearGS,&user);CHKERRQ(ierr);
-  ierr = SNESGetSNESLineSearch(snes, &linesearch);CHKERRQ(ierr);
+  ierr = SNESGetLineSearch(snes, &linesearch);CHKERRQ(ierr);
   /* Set up the precheck context if requested */
   if (use_precheck == 1) {      /* Use the precheck routines in this file */
     ierr = PreCheckCreate(PETSC_COMM_WORLD,&precheck);CHKERRQ(ierr);

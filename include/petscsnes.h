@@ -579,10 +579,13 @@ PETSC_EXTERN PetscErrorCode SNESSetPC(SNES,SNES);
 PETSC_EXTERN PetscErrorCode SNESGetPC(SNES,SNES*);
 PETSC_EXTERN PetscErrorCode SNESSetPCSide(SNES,PCSide);
 PETSC_EXTERN PetscErrorCode SNESGetPCSide(SNES,PCSide*);
-PETSC_EXTERN PetscErrorCode SNESSetSNESLineSearch(SNES,SNESLineSearch);
-PETSC_EXTERN PetscErrorCode SNESGetSNESLineSearch(SNES,SNESLineSearch*);
+PETSC_EXTERN PetscErrorCode SNESSetLineSearch(SNES,SNESLineSearch);
+PETSC_EXTERN PetscErrorCode SNESGetLineSearch(SNES,SNESLineSearch*);
 PETSC_EXTERN PetscErrorCode SNESRestrictHookAdd(SNES,PetscErrorCode (*)(SNES,SNES,void*),void*);
 PETSC_EXTERN PetscErrorCode SNESRestrictHooksRun(SNES,SNES);
+
+PETSC_DEPRECATED("Use SNESGetLineSearch()") PETSC_STATIC_INLINE PetscErrorCode SNESGetSNESLineSearch(SNES snes,SNESLineSearch *ls) {return SNESGetLineSearch(snes,ls);}
+PETSC_DEPRECATED("Use SNESSetLineSearch()") PETSC_STATIC_INLINE PetscErrorCode SNESSetSNESLineSearch(SNES snes,SNESLineSearch ls) {return SNESSetLineSearch(snes,ls);}
 
 PETSC_EXTERN PetscErrorCode SNESSetUpMatrices(SNES);
 PETSC_EXTERN PetscErrorCode DMSNESSetFunction(DM,PetscErrorCode(*SNESFunction)(SNES,Vec,Vec,void*),void*);

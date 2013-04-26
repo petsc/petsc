@@ -153,7 +153,7 @@
       call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-setls',setls,ierr)
 
       if (setls) then
-        call SNESGetSNESLineSearch(snes, linesearch, ierr)
+        call SNESGetLineSearch(snes, linesearch, ierr)
         call SNESLineSearchSetType(linesearch, "shell", ierr)
         call SNESLineSearchShellSetUserFunc(linesearch, MyLineSearch,   &
      &PETSC_NULL_OBJECT, ierr)

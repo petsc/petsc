@@ -231,8 +231,8 @@ PetscErrorCode SNESSetUp_FAS(SNES snes)
     }
     ierr = PetscObjectCopyFortranFunctionPointers((PetscObject)snes, (PetscObject)fas->smoothd);CHKERRQ(ierr);
     ierr = SNESSetFromOptions(fas->smoothd);CHKERRQ(ierr);
-    ierr = SNESGetSNESLineSearch(snes,&linesearch);CHKERRQ(ierr);
-    ierr = SNESGetSNESLineSearch(fas->smoothd,&slinesearch);CHKERRQ(ierr);
+    ierr = SNESGetLineSearch(snes,&linesearch);CHKERRQ(ierr);
+    ierr = SNESGetLineSearch(fas->smoothd,&slinesearch);CHKERRQ(ierr);
     ierr = SNESLineSearchGetPreCheck(linesearch,&precheck,&lsprectx);CHKERRQ(ierr);
     ierr = SNESLineSearchGetPostCheck(linesearch,&postcheck,&lspostctx);CHKERRQ(ierr);
     ierr = SNESLineSearchSetPreCheck(slinesearch,precheck,lsprectx);CHKERRQ(ierr);
@@ -260,8 +260,8 @@ PetscErrorCode SNESSetUp_FAS(SNES snes)
     }
     ierr = PetscObjectCopyFortranFunctionPointers((PetscObject)snes, (PetscObject)fas->smoothu);CHKERRQ(ierr);
     ierr = SNESSetFromOptions(fas->smoothu);CHKERRQ(ierr);
-    ierr = SNESGetSNESLineSearch(snes,&linesearch);CHKERRQ(ierr);
-    ierr = SNESGetSNESLineSearch(fas->smoothu,&slinesearch);CHKERRQ(ierr);
+    ierr = SNESGetLineSearch(snes,&linesearch);CHKERRQ(ierr);
+    ierr = SNESGetLineSearch(fas->smoothu,&slinesearch);CHKERRQ(ierr);
     ierr = SNESLineSearchGetPreCheck(linesearch,&precheck,&lsprectx);CHKERRQ(ierr);
     ierr = SNESLineSearchGetPostCheck(linesearch,&postcheck,&lspostctx);CHKERRQ(ierr);
     ierr = SNESLineSearchSetPreCheck(slinesearch,precheck,lsprectx);CHKERRQ(ierr);
@@ -286,8 +286,8 @@ PetscErrorCode SNESSetUp_FAS(SNES snes)
     if (!next->vec_sol) {ierr = SNESFASCreateCoarseVec(snes,&next->vec_sol);CHKERRQ(ierr);}
     if (!next->vec_rhs) {ierr = SNESFASCreateCoarseVec(snes,&next->vec_rhs);CHKERRQ(ierr);}
     ierr = PetscObjectCopyFortranFunctionPointers((PetscObject)snes, (PetscObject)next);CHKERRQ(ierr);
-    ierr = SNESGetSNESLineSearch(snes,&linesearch);CHKERRQ(ierr);
-    ierr = SNESGetSNESLineSearch(fas->next,&slinesearch);CHKERRQ(ierr);
+    ierr = SNESGetLineSearch(snes,&linesearch);CHKERRQ(ierr);
+    ierr = SNESGetLineSearch(fas->next,&slinesearch);CHKERRQ(ierr);
     ierr = SNESLineSearchGetPreCheck(linesearch,&precheck,&lsprectx);CHKERRQ(ierr);
     ierr = SNESLineSearchGetPostCheck(linesearch,&postcheck,&lspostctx);CHKERRQ(ierr);
     ierr = SNESLineSearchSetPreCheck(slinesearch,precheck,lsprectx);CHKERRQ(ierr);
@@ -374,7 +374,7 @@ PetscErrorCode SNESSetFromOptions_FAS(SNES snes)
   /* set up the default line search for coarse grid corrections */
   if (fas->fastype == SNES_FAS_ADDITIVE) {
     if (!snes->linesearch) {
-      ierr = SNESGetSNESLineSearch(snes, &linesearch);CHKERRQ(ierr);
+      ierr = SNESGetLineSearch(snes, &linesearch);CHKERRQ(ierr);
       ierr = SNESLineSearchSetType(linesearch, SNESLINESEARCHL2);CHKERRQ(ierr);
     }
   }

@@ -101,7 +101,7 @@
       call TSSetIJacobian(ts,J,J,FormIJacobian,user,ierr)
 
       call TSGetSNES(ts,snes,ierr)
-      call SNESGetSNESLineSearch(snes,linesearch,ierr)
+      call SNESGetLineSearch(snes,linesearch,ierr)
       call SNESLineSearchSetType(linesearch,SNESLINESEARCHBASIC,ierr)
 
       ftime = 1.0

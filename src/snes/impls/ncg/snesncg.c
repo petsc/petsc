@@ -83,7 +83,7 @@ static PetscErrorCode SNESSetFromOptions_NCG(SNES snes)
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   if (!snes->linesearch) {
-    ierr = SNESGetSNESLineSearch(snes, &linesearch);CHKERRQ(ierr);
+    ierr = SNESGetLineSearch(snes, &linesearch);CHKERRQ(ierr);
     if (!snes->pc) {
       ierr = SNESLineSearchSetType(linesearch, SNESLINESEARCHCP);CHKERRQ(ierr);
     } else {
@@ -280,7 +280,7 @@ PetscErrorCode SNESSolve_NCG(SNES snes)
   F      = snes->vec_func;           /* residual vector */
   B      = snes->vec_rhs;            /* the right hand side */
 
-  ierr = SNESGetSNESLineSearch(snes, &linesearch);CHKERRQ(ierr);
+  ierr = SNESGetLineSearch(snes, &linesearch);CHKERRQ(ierr);
 
   ierr       = PetscObjectAMSTakeAccess((PetscObject)snes);CHKERRQ(ierr);
   snes->iter = 0;

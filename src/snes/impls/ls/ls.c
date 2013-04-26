@@ -157,7 +157,7 @@ PetscErrorCode SNESSolve_NEWTONLS(SNES snes)
   snes->iter = 0;
   snes->norm = 0.0;
   ierr       = PetscObjectAMSGrantAccess((PetscObject)snes);CHKERRQ(ierr);
-  ierr       = SNESGetSNESLineSearch(snes, &linesearch);CHKERRQ(ierr);
+  ierr       = SNESGetLineSearch(snes, &linesearch);CHKERRQ(ierr);
   if (!snes->vec_func_init_set) {
     ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
     ierr = SNESGetFunctionDomainError(snes, &domainerror);CHKERRQ(ierr);
@@ -382,7 +382,7 @@ static PetscErrorCode SNESSetFromOptions_NEWTONLS(SNES snes)
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   /* set the default line search type */
   if (!snes->linesearch) {
-    ierr = SNESGetSNESLineSearch(snes, &linesearch);CHKERRQ(ierr);
+    ierr = SNESGetLineSearch(snes, &linesearch);CHKERRQ(ierr);
     ierr = SNESLineSearchSetType(linesearch, SNESLINESEARCHBT);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
