@@ -1,1 +1,0 @@
-all = ['base', 'retrieval', 'build']
