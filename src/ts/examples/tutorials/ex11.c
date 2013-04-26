@@ -32,10 +32,16 @@ typedef PetscErrorCode (*RiemannFunction)(Physics,const PetscReal*,const PetscRe
 typedef PetscErrorCode (*SolutionFunction)(Model,PetscReal,const PetscReal*,PetscScalar*,void*);
 typedef PetscErrorCode (*BoundaryFunction)(Model,PetscReal,const PetscReal*,const PetscReal*,const PetscScalar*,PetscScalar*,void*);
 typedef PetscErrorCode (*FunctionalFunction)(Model,PetscReal,const PetscReal*,const PetscScalar*,PetscReal*,void*);
+typedef PetscErrorCode (*SetupFields)(Physics,PetscSection);
 static PetscErrorCode ModelBoundaryRegister(Model,const char*,BoundaryFunction,void*,PetscInt,const PetscInt*);
 static PetscErrorCode ModelSolutionSetDefault(Model,SolutionFunction,void*);
 static PetscErrorCode ModelFunctionalRegister(Model,const char*,PetscInt*,FunctionalFunction,void*);
 static PetscErrorCode OutputVTK(DM,const char*,PetscViewer*);
+
+struct FieldDescription {
+  const char *name;
+  PetscInt dof;
+};
 
 typedef struct _n_BoundaryLink *BoundaryLink;
 struct _n_BoundaryLink {
@@ -61,6 +67,8 @@ struct _n_Physics {
   PetscInt        dof;          /* number of degrees of freedom per cell */
   PetscReal       maxspeed;     /* kludge to pick initial time step, need to add monitoring and step control */
   void            *data;
+  PetscInt        nfields;
+  const struct FieldDescription *field_desc;
 };
 
 struct _n_Model {
@@ -225,6 +233,8 @@ typedef struct {
   } functional;
 } Physics_Advect;
 
+static const struct FieldDescription PhysicsFields_Advect[] = {{"U",1},{NULL,0}};
+
 #undef __FUNCT__
 #define __FUNCT__ "PhysicsBoundary_Advect_Inflow"
 static PetscErrorCode PhysicsBoundary_Advect_Inflow(Model mod, PetscReal time, const PetscReal *c, const PetscReal *n, const PetscScalar *xI, PetscScalar *xG, void *ctx)
@@ -333,7 +343,7 @@ static PetscErrorCode PhysicsCreate_Advect(Model mod,Physics phys)
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  phys->dof     = 1;
+  phys->field_desc = PhysicsFields_Advect;
   phys->riemann = PhysicsRiemann_Advect;
   ierr = PetscNew(Physics_Advect,&phys->data);CHKERRQ(ierr);
   advect = phys->data;
@@ -397,6 +407,8 @@ typedef struct {
   PetscScalar h;
   PetscScalar uh[DIM];
 } SWNode;
+
+static const struct FieldDescription PhysicsFields_SW[] = {{"Height",1},{"Momentum",DIM},{NULL,0}};
 
 #undef __FUNCT__
 #define __FUNCT__ "SWFlux"
@@ -499,7 +511,7 @@ static PetscErrorCode PhysicsCreate_SW(Model mod,Physics phys)
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  phys->dof     = 1+DIM;
+  phys->field_desc = PhysicsFields_SW;
   phys->riemann = PhysicsRiemann_SW;
   ierr          = PetscNew(Physics_SW,&phys->data);CHKERRQ(ierr);
   sw            = phys->data;
@@ -543,6 +555,8 @@ typedef struct {
     PetscInt Speed;
   } monitor;
 } PhysicsEuler;
+
+static const struct FieldDescription PhysicsFields_Euler[] = {{"Density",1},{"Momentum",DIM},{"Energy",1},{NULL,0}};
 
 #undef __FUNCT__
 #define __FUNCT__ "Pressure_PG"
@@ -679,7 +693,7 @@ static PetscErrorCode PhysicsCreate_Euler(Model mod,Physics phys)
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  phys->dof     = 2+DIM;
+  phys->field_desc = PhysicsFields_Euler;
   phys->riemann = PhysicsRiemann_Euler_Rusanov;
   ierr = PetscNew(PhysicsEuler,&phys->data);CHKERRQ(ierr);
   eu   = phys->data;
@@ -1456,22 +1470,25 @@ PetscErrorCode CreateMassMatrix(DM dm, Vec *massMatrix, User user)
 PetscErrorCode SetUpLocalSpace(DM dm, User user)
 {
   PetscSection   stateSection;
-  PetscInt       dof = user->model->physics->dof, *cind, d, stateSize, cStart, cEnd, c;
+  Physics        phys;
+  PetscInt       dof = user->model->physics->dof, *cind, d, stateSize, cStart, cEnd, c, i;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = PetscSectionCreate(PetscObjectComm((PetscObject)dm), &stateSection);CHKERRQ(ierr);
+  phys = user->model->physics;
+  ierr = PetscSectionSetNumFields(stateSection,phys->nfields);CHKERRQ(ierr);
+  for (i=0; i<phys->nfields; i++) {
+    ierr = PetscSectionSetFieldName(stateSection,i,phys->field_desc[i].name);CHKERRQ(ierr);
+    ierr = PetscSectionSetFieldComponents(stateSection,i,phys->field_desc[i].dof);CHKERRQ(ierr);
+  }
   ierr = PetscSectionSetChart(stateSection, cStart, cEnd);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; ++c) {
-    ierr = PetscSectionSetDof(stateSection, c, dof);CHKERRQ(ierr);
-#if 0
-    {
-      PetscInt val;
-      ierr = DMPlexGetLabelValue(dm, "vtk", c, &val);CHKERRQ(ierr);
-      if (val < 0) {ierr = PetscSectionSetConstraintDof(stateSection, c, dof);CHKERRQ(ierr);}
+    for (i=0; i<phys->nfields; i++) {
+      ierr = PetscSectionSetFieldDof(stateSection,c,i,phys->field_desc[i].dof);CHKERRQ(ierr);
     }
-#endif
+    ierr = PetscSectionSetDof(stateSection, c, dof);CHKERRQ(ierr);
   }
   for (c = user->cEndInterior; c < cEnd; ++c) {
     ierr = PetscSectionSetConstraintDof(stateSection, c, dof);CHKERRQ(ierr);
@@ -2173,6 +2190,8 @@ int main(int argc, char **argv)
     ierr = PetscMemzero(phys,sizeof(struct _n_Physics));CHKERRQ(ierr);
     ierr = (*physcreate)(mod,phys);CHKERRQ(ierr);
     mod->maxspeed = phys->maxspeed;
+    /* Count number of fields and dofs */
+    for (phys->nfields=0,phys->dof=0; phys->field_desc[phys->nfields].name; phys->nfields++) phys->dof += phys->field_desc[phys->nfields].dof;
 
     if (mod->maxspeed <= 0) SETERRQ1(comm,PETSC_ERR_ARG_WRONGSTATE,"Physics '%s' did not set maxspeed",physname);
     if (phys->dof <= 0) SETERRQ1(comm,PETSC_ERR_ARG_WRONGSTATE,"Physics '%s' did not set dof",physname);
