@@ -285,7 +285,7 @@ PetscErrorCode  TSSetFromOptions(TS ts)
     ierr = TSMonitorSet(ts,TSMonitorDMDARay,rayctx,TSMonitorDMDARayDestroy);CHKERRQ(ierr);
   }
 
-  ierr = TSGetTSAdapt(ts,&adapt);CHKERRQ(ierr);
+  ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
   ierr = TSAdaptSetFromOptions(adapt);CHKERRQ(ierr);
 
   ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
@@ -1719,7 +1719,7 @@ PetscErrorCode  TSSetUp(TS ts)
 
   if (!ts->vec_sol) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call TSSetSolution() first");
 
-  ierr = TSGetTSAdapt(ts,&ts->adapt);CHKERRQ(ierr);
+  ierr = TSGetAdapt(ts,&ts->adapt);CHKERRQ(ierr);
 
   if (ts->ops->setup) {
     ierr = (*ts->ops->setup)(ts);CHKERRQ(ierr);
@@ -3999,9 +3999,9 @@ PetscErrorCode TSMonitorSolutionVTKDestroy(void *filenametemplate)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TSGetTSAdapt"
+#define __FUNCT__ "TSGetAdapt"
 /*@
-   TSGetTSAdapt - Get the adaptive controller context for the current method
+   TSGetAdapt - Get the adaptive controller context for the current method
 
    Collective on TS if controller has not been created yet
 
@@ -4015,7 +4015,7 @@ PetscErrorCode TSMonitorSolutionVTKDestroy(void *filenametemplate)
 
 .seealso: TSAdapt, TSAdaptSetType(), TSAdaptChoose()
 @*/
-PetscErrorCode TSGetTSAdapt(TS ts,TSAdapt *adapt)
+PetscErrorCode TSGetAdapt(TS ts,TSAdapt *adapt)
 {
   PetscErrorCode ierr;
 

@@ -767,7 +767,7 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
         ierr          = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
         ierr          = SNESGetLinearSolveIterations(snes,&lits);CHKERRQ(ierr);
         ts->snes_its += its; ts->ksp_its += lits;
-        ierr          = TSGetTSAdapt(ts,&adapt);CHKERRQ(ierr);
+        ierr          = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
         ierr          = TSAdaptCheckStage(adapt,ts,&accept);CHKERRQ(ierr);
         if (!accept) goto reject_step;
       }
@@ -792,7 +792,7 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
     ark->status = TS_STEP_PENDING;
 
     /* Register only the current method as a candidate because we're not supporting multiple candidates yet. */
-    ierr = TSGetTSAdapt(ts,&adapt);CHKERRQ(ierr);
+    ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
     ierr = TSAdaptCandidatesClear(adapt);CHKERRQ(ierr);
     ierr = TSAdaptCandidateAdd(adapt,tab->name,tab->order,1,tab->ccfl,1.*tab->s,PETSC_TRUE);CHKERRQ(ierr);
     ierr = TSAdaptChoose(adapt,ts,ts->time_step,&next_scheme,&next_time_step,&accept);CHKERRQ(ierr);
@@ -1164,7 +1164,7 @@ static PetscErrorCode TSView_ARKIMEX(TS ts,PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer,"FSAL property: %s\n",tab->FSAL_implicit ? "yes" : "no");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Nonstiff abscissa     c = %s\n",buf);CHKERRQ(ierr);
   }
-  ierr = TSGetTSAdapt(ts,&adapt);CHKERRQ(ierr);
+  ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
   ierr = TSAdaptView(adapt,viewer);CHKERRQ(ierr);
   ierr = SNESView(ts->snes,viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1179,7 +1179,7 @@ static PetscErrorCode TSLoad_ARKIMEX(TS ts,PetscViewer viewer)
   TSAdapt        tsadapt;
 
   PetscFunctionBegin;
-  ierr = TSGetTSAdapt(ts,&tsadapt);CHKERRQ(ierr);
+  ierr = TSGetAdapt(ts,&tsadapt);CHKERRQ(ierr);
   ierr = TSAdaptLoad(tsadapt,viewer);CHKERRQ(ierr);
   ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
   ierr = SNESLoad(snes,viewer);CHKERRQ(ierr);
