@@ -5,7 +5,7 @@ CPPFLAGS         =
 FPPFLAGS         = 
 LOCDIR           = src/vec/is/examples/tutorials/
 EXAMPLESC        = ex1.c ex2.c ex3.c ex4.c
-EXAMPLESF        = ex1f.F ex2f.F ex1f90.F ex3f90.F
+EXAMPLESF        = ex1f.F ex1f90.F ex2f.F ex3f90.F
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

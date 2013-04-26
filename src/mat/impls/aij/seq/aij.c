@@ -8,7 +8,7 @@
 #include <../src/mat/impls/aij/seq/aij.h>          /*I "petscmat.h" I*/
 #include <petscblaslapack.h>
 #include <petscbt.h>
-
+#include <../src/mat/blocktranspose.h>
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetColumnNorms_SeqAIJ"
@@ -145,6 +145,8 @@ PetscErrorCode  MatDiagonalSet_SeqAIJ(Mat Y,Vec D,InsertMode is)
       ierr = VecRestoreArray(D,&v);CHKERRQ(ierr);
       PetscFunctionReturn(0);
     }
+    aij->idiagvalid  = PETSC_FALSE;
+    aij->ibdiagvalid = PETSC_FALSE;
   }
   ierr = MatDiagonalSet_Default(Y,D,is);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -856,6 +858,8 @@ PetscErrorCode MatRealPart_SeqAIJ(Mat A)
 
   PetscFunctionBegin;  
   for (i=0; i<nz; i++) aa[i] = PetscRealPart(aa[i]);
+  a->idiagvalid  = PETSC_FALSE;
+  a->ibdiagvalid = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -869,6 +873,8 @@ PetscErrorCode MatImaginaryPart_SeqAIJ(Mat A)
 
   PetscFunctionBegin;  
   for (i=0; i<nz; i++) aa[i] = PetscImaginaryPart(aa[i]);
+  a->idiagvalid  = PETSC_FALSE;
+  a->ibdiagvalid = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -881,6 +887,8 @@ PetscErrorCode MatZeroEntries_SeqAIJ(Mat A)
 
   PetscFunctionBegin;  
   ierr = PetscMemzero(a->a,(a->i[A->rmap->n])*sizeof(PetscScalar));CHKERRQ(ierr);
+  a->idiagvalid  = PETSC_FALSE;
+  a->ibdiagvalid = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -1151,7 +1159,7 @@ PetscErrorCode MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
 
 #if defined(PETSC_HAVE_PTHREADCLASSES)
 
-//*******************
+/* ******************* */
 #if defined(PETSC_HAVE_PTHREADCLASSES)
 extern PetscBool    PetscUseThreadPool;
 void* DoCoreAffinity(void);
@@ -1242,7 +1250,7 @@ PetscErrorCode MatMult_SeqAIJPThread(Mat A,Vec xx,Vec yy)
     const MatScalar   *aa = a->a;
     const PetscInt    *aj = a->j,*ii = a->compressedrow.i,*ridx=a->compressedrow.rindex;
     PetscInt          i,iStartVal,iEndVal,iStartIndex,iEndIndex;
-    const PetscInt    iNumThreads = PetscMaxThreads;  //this number could be different
+    const PetscInt    iNumThreads = PetscMaxThreads;  /* this number could be different */
     MatMult_KernelData* kerneldatap = (MatMult_KernelData*)malloc(iNumThreads*sizeof(MatMult_KernelData));
     MatMult_KernelData** pdata = (MatMult_KernelData**)malloc(iNumThreads*sizeof(MatMult_KernelData*));
 
@@ -1253,12 +1261,12 @@ PetscErrorCode MatMult_SeqAIJPThread(Mat A,Vec xx,Vec yy)
       iStartIndex = iindex;
       iStartVal = ii[iStartIndex];
       iEndVal = iStartVal;
-      //determine number of rows to process
+      /* determine number of rows to process */
       while(iEndVal-iStartVal<NumPerThread) {
 	iindex++;
 	iEndVal = ii[iindex];
       }
-      //determine whether to go back 1
+      /* determine whether to go back 1 */
       if(iEndVal-iStartVal-NumPerThread>NumPerThread-(ii[iindex-1]-iStartVal)) {
 	iindex--;
 	iEndVal = ii[iindex];
@@ -1290,7 +1298,7 @@ PetscErrorCode MatMult_SeqAIJPThread(Mat A,Vec xx,Vec yy)
   PetscInt            i,iindex;
     const MatScalar   *aa = a->a;
     const PetscInt    *aj = a->j,*ii = a->i;
-    const PetscInt    iNumThreads = PetscMaxThreads;  //this number could be different
+    const PetscInt    iNumThreads = PetscMaxThreads;  /* this number could be different */
     PetscInt          Q = m/iNumThreads;
     PetscInt          R = m-Q*iNumThreads;
     PetscBool         S;
@@ -1308,12 +1316,12 @@ PetscErrorCode MatMult_SeqAIJPThread(Mat A,Vec xx,Vec yy)
       kerneldatap[i].rownumnz = ii + iindex;
       kerneldatap[i].numrows  = S?Q+1:Q;
       kerneldatap[i].specidx  = PETSC_NULL;
-      kerneldatap[i].nzr      = iindex; //serves as the 'base' row (needed to access correctly into output vector y)
+      kerneldatap[i].nzr      = iindex; /* serves as the 'base' row (needed to access correctly into output vector y) */
       pdata[i] = &kerneldatap[i];
       iindex += kerneldatap[i].numrows;
     }
     MainJob(MatMult_Kernel,(void**)pdata,iNumThreads);
-    //collect results
+    /* collect results */
     for(i=0; i<iNumThreads; i++) {
       nonzerorow += kerneldatap[i].nzr;
     }
@@ -1327,7 +1335,7 @@ PetscErrorCode MatMult_SeqAIJPThread(Mat A,Vec xx,Vec yy)
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-//*******************
+/* ******************* */
 #endif
 
 #include <../src/mat/impls/aij/seq/ftn-kernels/fmultadd.h>
@@ -2081,6 +2089,8 @@ PetscErrorCode MatDiagonalScale_SeqAIJ(Mat A,Vec ll,Vec rr)
     ierr = VecRestoreArray(rr,&r);CHKERRQ(ierr); 
     ierr = PetscLogFlops(nz);CHKERRQ(ierr);
   }
+  a->idiagvalid  = PETSC_FALSE;
+  a->ibdiagvalid = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -2306,6 +2316,8 @@ PetscErrorCode MatScale_SeqAIJ(Mat inA,PetscScalar alpha)
   PetscFunctionBegin;
   BLASscal_(&bnz,&oalpha,a->a,&one);
   ierr = PetscLogFlops(a->nz);CHKERRQ(ierr);
+  a->idiagvalid  = PETSC_FALSE;
+  a->ibdiagvalid = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -2679,6 +2691,8 @@ PetscErrorCode MatAXPY_SeqAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
   if (str == SAME_NONZERO_PATTERN) {
     PetscScalar alpha = a;
     BLASaxpy_(&bnz,&alpha,x->a,&one,y->a,&one);
+    y->idiagvalid  = PETSC_FALSE;
+    y->ibdiagvalid = PETSC_FALSE;
   } else if (str == SUBSET_NONZERO_PATTERN) { /* nonzeros of X is a subset of Y's */
     if (y->xtoy && y->XtoY != X) {
       ierr = PetscFree(y->xtoy);CHKERRQ(ierr);
@@ -2945,7 +2959,8 @@ PetscErrorCode  MatInvertBlockDiagonal_SeqAIJ(Mat A,PetscScalar **values)
       for (i=0; i<mbs; i++) {
         ij[0] = 2*i; ij[1] = 2*i + 1;
         ierr  = MatGetValues(A,2,ij,2,ij,diag);CHKERRQ(ierr);
-	ierr  = Kernel_A_gets_inverse_A_2(diag,shift);CHKERRQ(ierr);
+        ierr  = Kernel_A_gets_inverse_A_2(diag,shift);CHKERRQ(ierr);
+        ierr  = Kernel_A_gets_transpose_A_2(diag);CHKERRQ(ierr);
 	diag  += 4;
       }
       break;
@@ -2953,7 +2968,8 @@ PetscErrorCode  MatInvertBlockDiagonal_SeqAIJ(Mat A,PetscScalar **values)
       for (i=0; i<mbs; i++) {
         ij[0] = 3*i; ij[1] = 3*i + 1; ij[2] = 3*i + 2;
         ierr  = MatGetValues(A,3,ij,3,ij,diag);CHKERRQ(ierr);
-	ierr     = Kernel_A_gets_inverse_A_3(diag,shift);CHKERRQ(ierr);
+        ierr  = Kernel_A_gets_inverse_A_3(diag,shift);CHKERRQ(ierr);
+        ierr  = Kernel_A_gets_transpose_A_3(diag);CHKERRQ(ierr);
 	diag    += 9;
       }
       break;
@@ -2961,7 +2977,8 @@ PetscErrorCode  MatInvertBlockDiagonal_SeqAIJ(Mat A,PetscScalar **values)
       for (i=0; i<mbs; i++) {
         ij[0] = 4*i; ij[1] = 4*i + 1; ij[2] = 4*i + 2; ij[3] = 4*i + 3;
         ierr  = MatGetValues(A,4,ij,4,ij,diag);CHKERRQ(ierr);
-	ierr   = Kernel_A_gets_inverse_A_4(diag,shift);CHKERRQ(ierr);
+        ierr  = Kernel_A_gets_inverse_A_4(diag,shift);CHKERRQ(ierr);
+        ierr  = Kernel_A_gets_transpose_A_4(diag);CHKERRQ(ierr);
 	diag  += 16;
       }
       break;
@@ -2969,7 +2986,8 @@ PetscErrorCode  MatInvertBlockDiagonal_SeqAIJ(Mat A,PetscScalar **values)
       for (i=0; i<mbs; i++) {
         ij[0] = 5*i; ij[1] = 5*i + 1; ij[2] = 5*i + 2; ij[3] = 5*i + 3; ij[4] = 5*i + 4;
         ierr  = MatGetValues(A,5,ij,5,ij,diag);CHKERRQ(ierr);
-	ierr   = Kernel_A_gets_inverse_A_5(diag,ipvt,work,shift);CHKERRQ(ierr);
+        ierr  = Kernel_A_gets_inverse_A_5(diag,ipvt,work,shift);CHKERRQ(ierr);
+        ierr  = Kernel_A_gets_transpose_A_5(diag);CHKERRQ(ierr);
 	diag  += 25;
       }
       break;
@@ -2977,7 +2995,8 @@ PetscErrorCode  MatInvertBlockDiagonal_SeqAIJ(Mat A,PetscScalar **values)
       for (i=0; i<mbs; i++) {
         ij[0] = 6*i; ij[1] = 6*i + 1; ij[2] = 6*i + 2; ij[3] = 6*i + 3; ij[4] = 6*i + 4; ij[5] = 6*i + 5;
         ierr  = MatGetValues(A,6,ij,6,ij,diag);CHKERRQ(ierr);
-	ierr   = Kernel_A_gets_inverse_A_6(diag,shift);CHKERRQ(ierr);
+        ierr  = Kernel_A_gets_inverse_A_6(diag,shift);CHKERRQ(ierr);
+        ierr  = Kernel_A_gets_transpose_A_6(diag);CHKERRQ(ierr);
 	diag  += 36;
       }
       break;
@@ -2985,7 +3004,8 @@ PetscErrorCode  MatInvertBlockDiagonal_SeqAIJ(Mat A,PetscScalar **values)
       for (i=0; i<mbs; i++) {
         ij[0] = 7*i; ij[1] = 7*i + 1; ij[2] = 7*i + 2; ij[3] = 7*i + 3; ij[4] = 7*i + 4; ij[5] = 7*i + 5; ij[5] = 7*i + 6;
         ierr  = MatGetValues(A,7,ij,7,ij,diag);CHKERRQ(ierr);
-	ierr   = Kernel_A_gets_inverse_A_7(diag,shift);CHKERRQ(ierr);
+        ierr  = Kernel_A_gets_inverse_A_7(diag,shift);CHKERRQ(ierr);
+        ierr  = Kernel_A_gets_transpose_A_7(diag);CHKERRQ(ierr);
 	diag  += 49;
       }
       break;
@@ -2996,7 +3016,8 @@ PetscErrorCode  MatInvertBlockDiagonal_SeqAIJ(Mat A,PetscScalar **values)
           IJ[j] = bs*i + j;
         }
         ierr  = MatGetValues(A,bs,IJ,bs,IJ,diag);CHKERRQ(ierr);
-        ierr   = Kernel_A_gets_inverse_A(bs,diag,v_pivots,v_work);CHKERRQ(ierr);
+        ierr  = Kernel_A_gets_inverse_A(bs,diag,v_pivots,v_work);CHKERRQ(ierr);
+        ierr  = Kernel_A_gets_transpose_A_N(diag,bs);CHKERRQ(ierr);
 	diag  += bs2;
       }
       ierr = PetscFree3(v_work,v_pivots,IJ);CHKERRQ(ierr);
@@ -3259,12 +3280,12 @@ $      ierr = MatRetrieveValues(mat);
 $      Set nonlinear terms in matrix
  
   Common Usage without SNESSolve(), i.e. when you handle nonlinear solve yourself:
-$    // build linear portion of Jacobian 
+$    // build linear portion of Jacobian
 $    ierr = MatSetOption(mat,MAT_NEW_NONZERO_LOCATIONS,PETSC_FALSE);
 $    ierr = MatStoreValues(mat);
 $    loop over nonlinear iterations
 $       ierr = MatRetrieveValues(mat);
-$       // call MatSetValues(mat,...) to set nonliner portion of Jacobian 
+$       // call MatSetValues(mat,...) to set nonliner portion of Jacobian
 $       // call MatAssemblyBegin/End() on matrix
 $       Solve linear system with Jacobian
 $    endloop 

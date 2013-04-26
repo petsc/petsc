@@ -83,6 +83,7 @@ typedef struct _p_PetscObject {
   PetscInt       *scalarcomposedstate,*scalarstarcomposedstate; 
   PetscScalar    *scalarcomposeddata, **scalarstarcomposeddata; 
   void           (**fortran_func_pointers)(void);                  /* used by Fortran interface functions to stash user provided Fortran functions */
+  PetscInt       num_fortran_func_pointers;                        /* number of Fortran function pointers allocated */
   void           *python_context;                               
   PetscErrorCode (*python_destroy)(void*);
 
@@ -153,6 +154,7 @@ extern PetscErrorCode PetscHeaderCreate_Private(PetscObject,PetscClassId,PetscIn
    PetscFree(*h))
 
 extern PetscErrorCode  PetscHeaderDestroy_Private(PetscObject);
+extern PetscErrorCode PetscObjectCopyFortranFunctionPointers(PetscObject,PetscObject);
 
 /* ---------------------------------------------------------------------------------------*/
 

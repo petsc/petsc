@@ -56,7 +56,7 @@ int main(int argc,char **argv)
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = DMCreateGlobalVector(da,&X);CHKERRQ(ierr);
 
-  /* Set Initialize user application context */
+  /* Initialize user application context */
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,PETSC_NULL,"Advection-reaction options",""); {
     ierr = PetscOptionsReal("-a0","Advection rate 0","",user.a[0]=1,&user.a[0],PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-a1","Advection rate 1","",user.a[1]=0,&user.a[1],PETSC_NULL);CHKERRQ(ierr);
@@ -109,7 +109,7 @@ int main(int argc,char **argv)
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
   ierr = DMDestroy(&da);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  PetscFunctionReturn(0);
+  return 0;
 }
 
 #undef __FUNCT__
@@ -269,9 +269,9 @@ PetscErrorCode FormInitialSolution(TS ts,Vec X,void *ctx)
 
   /* Compute function over the locally owned part of the grid */
   for (i=info.xs; i<info.xs+info.xm; i++) {
-    PetscReal r = (i+1)*hx;
+    PetscReal r = (i+1)*hx,ik = user->k[1] != 0.0 ? 1.0/user->k[1] : 1.0;
     x[i][0] = 1 + user->s[1]*r;
-    x[i][1] = user->k[0]/user->k[1]*x[i][0] + user->s[1]/user->k[1];
+    x[i][1] = user->k[0]*ik*x[i][0] + user->s[1]*ik;
   }
   ierr = DMDAVecRestoreArray(da,X,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);

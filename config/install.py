@@ -73,7 +73,6 @@ class Installer(script.Script):
     self.rootDir    = self.petscdir.dir
     self.destDir    = os.path.abspath(self.argDB['destDir'])
     self.installDir = self.framework.argDB['prefix']
-    print self.installDir
     self.arch       = self.arch.arch
     self.rootIncludeDir    = os.path.join(self.rootDir, 'include')
     self.archIncludeDir    = os.path.join(self.rootDir, self.arch, 'include')
@@ -219,6 +218,8 @@ for src, dst in copies:
     if os.path.splitext(dst)[1] == '.dylib' and os.path.isfile('/usr/bin/install_name_tool'):
       installName = re.sub(self.destDir, self.installDir, dst)
       self.executeShellCommand('/usr/bin/install_name_tool -id ' + installName + ' ' + dst)
+    # preserve the original timestamps - so that the .a vs .so time order is preserved
+    shutil.copystat(src,dst)
     return
 
   def installLib(self):

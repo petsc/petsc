@@ -91,8 +91,8 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
   ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
-  ierr = TSSetType(ts,TSTHETA);CHKERRQ(ierr); /* General Linear method, TSTHETA can also solve DAE */
-  ierr = TSThetaSetTheta(ts,1.0);CHKERRQ(ierr); 
+  ierr = TSSetType(ts,TSTHETA);CHKERRQ(ierr);
+  ierr = TSThetaSetTheta(ts,1.0);CHKERRQ(ierr); /* Make the Theta method behave like backward Euler */
   ierr = TSSetIFunction(ts,PETSC_NULL,FormIFunction,&user);CHKERRQ(ierr);
 
   ierr = DMGetMatrix(da,MATAIJ,&J);CHKERRQ(ierr);

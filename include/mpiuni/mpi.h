@@ -231,6 +231,8 @@ typedef void  (MPI_User_function)(void*, void *, int *, MPI_Datatype *);
 #define MPI_Finalize      Petsc_MPI_Finalize
 #define MPI_Initialized   Petsc_MPI_Initialized
 #define MPI_Finalized     Petsc_MPI_Finalized
+#define MPI_Comm_size     Petsc_MPI_Comm_size
+#define MPI_Comm_rank     Petsc_MPI_Comm_rank
 
 extern int    MPI_Abort(MPI_Comm,int);
 extern int    MPI_Attr_get(MPI_Comm comm,int keyval,void *attribute_val,int *flag);
@@ -245,7 +247,8 @@ extern int    MPI_Init(int *, char ***);
 extern int    MPI_Finalize(void);
 extern int    MPI_Initialized(int*);
 extern int    MPI_Finalized(int*);
-
+extern int    MPI_Comm_size(MPI_Comm,int*);
+extern int    MPI_Comm_rank(MPI_Comm,int*);
 
 #define MPI_Aint MPIUNI_INTPTR
 /* 
@@ -629,14 +632,6 @@ extern int    MPI_Finalized(int*);
 #define MPI_Group_range_excl(group,n,ranges,newgroup) MPI_SUCCESS
 #define MPI_Group_free(group) \
      (MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (group),\
-     MPI_SUCCESS)
-#define MPI_Comm_size(comm,size) \
-     (MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (comm),\
-     *(size)=1,\
-     MPI_SUCCESS)
-#define MPI_Comm_rank(comm,rank) \
-     (MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (comm),\
-     *(rank)=0,\
      MPI_SUCCESS)
 #define MPI_Comm_compare(comm1,comm2,result) \
      (MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (comm1),\

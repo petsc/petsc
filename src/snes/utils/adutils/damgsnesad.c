@@ -342,7 +342,7 @@ PetscErrorCode PetscADView(PetscInt N,PetscInt nc,double *ptr,PetscViewer viewer
 
   PetscFunctionBegin;
   for (i=0; i<N; i++) {
-    ierr = PetscPrintf(PETSC_COMM_SELF,"Element %D value %G derivatives: ",i,*(double*)cptr);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"Element %D value %g derivatives: ",i,*(double*)cptr);CHKERRQ(ierr);
     values = PetscADGetGradArray(cptr);
     for (j=0; j<nc; j++) {
       ierr = PetscPrintf(PETSC_COMM_SELF,"%G ",*values++);CHKERRQ(ierr);

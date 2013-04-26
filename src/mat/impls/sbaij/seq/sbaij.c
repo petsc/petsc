@@ -437,11 +437,11 @@ static PetscErrorCode MatView_SeqSBAIJ_ASCII(Mat A,PetscViewer viewer)
       }
       
     } else { /* for non-factored matrix */
-      for (i=0; i<a->mbs; i++) { // for row block i
-        for (j=0; j<bs; j++) {   // for row bs*i + j
+      for (i=0; i<a->mbs; i++) { /* for row block i */
+        for (j=0; j<bs; j++) {   /* for row bs*i + j */
           ierr = PetscViewerASCIIPrintf(viewer,"row %D:",i*bs+j);CHKERRQ(ierr);
-          for (k=a->i[i]; k<a->i[i+1]; k++) { // for column block 
-            for (l=0; l<bs; l++) {            // for column 
+          for (k=a->i[i]; k<a->i[i+1]; k++) { /* for column block */
+            for (l=0; l<bs; l++) {            /* for column */
 #if defined(PETSC_USE_COMPLEX)
               if (PetscImaginaryPart(a->a[bs2*k + l*bs + j]) > 0.0) {
               ierr = PetscViewerASCIIPrintf(viewer," (%D, %G + %G i) ",bs*a->j[k]+l,
@@ -903,14 +903,16 @@ PetscErrorCode MatAssemblyEnd_SeqSBAIJ(Mat A,MatAssemblyType mode)
   a->idiagvalid = PETSC_FALSE;
 
   if (A->cmap->n < 65536 && A->cmap->bs == 1) {
-    if (!a->jshort) {
-      ierr = PetscMalloc(a->i[A->rmap->n]*sizeof(unsigned short),&a->jshort);CHKERRQ(ierr);
-      ierr = PetscLogObjectMemory(A,a->i[A->rmap->n]*sizeof(unsigned short));CHKERRQ(ierr);
-      for (i=0; i<a->i[A->rmap->n]; i++) a->jshort[i] = a->j[i];
-      A->ops->mult  = MatMult_SeqSBAIJ_1_ushort;
-      A->ops->sor = MatSOR_SeqSBAIJ_ushort;
-      a->free_jshort = PETSC_TRUE;
+    if (a->jshort){ 
+      /* when matrix data structure is changed, previous jshort must be replaced */
+      ierr = PetscFree(a->jshort);CHKERRQ(ierr);
     }
+    ierr = PetscMalloc(a->i[A->rmap->n]*sizeof(unsigned short),&a->jshort);CHKERRQ(ierr);
+    ierr = PetscLogObjectMemory(A,a->i[A->rmap->n]*sizeof(unsigned short));CHKERRQ(ierr);
+    for (i=0; i<a->i[A->rmap->n]; i++) a->jshort[i] = a->j[i];
+    A->ops->mult  = MatMult_SeqSBAIJ_1_ushort;
+    A->ops->sor = MatSOR_SeqSBAIJ_ushort;
+    a->free_jshort = PETSC_TRUE;
   }
   PetscFunctionReturn(0);
 }

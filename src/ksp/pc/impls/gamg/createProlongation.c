@@ -204,7 +204,7 @@ PetscErrorCode smoothAggs( const Mat a_Gmat_2, /* base (squared) graph */
                 a_id_llist[lastid] = a_id_llist[lidj];                    /* remove lidj from list */
                 a_id_llist[lidj] = a_id_llist[lid]; a_id_llist[lid] = lidj; /* insert 'lidj' into head of llist */
                 hav=1;
-                //break;
+                /* break; */
               }
               lastid = flid;
             }
@@ -233,7 +233,7 @@ PetscErrorCode smoothAggs( const Mat a_Gmat_2, /* base (squared) graph */
 		  if( flid == lid ) {
 		    a_id_llist[lastid] = a_id_llist[lid];   /* remove lid from 'old_sel_lid' list */
 		    hv++;
-		    //break;
+		    /* break; */
 		  }
 		  lastid = flid;
 		}
@@ -396,7 +396,7 @@ if(mype==target||target==-1)PetscPrintf(PETSC_COMM_SELF,"\t[%d]%s %d) try gid %d
               PetscInt cpid = idx[j]; /* compressed row ID in B mat */
               PetscInt gid = (PetscInt)cpcol_gid[cpid];
               NState statej = (NState)cpcol_state[cpid];
-	      //if(mype==target||target==-1)PetscPrintf(PETSC_COMM_SELF,"\t\t[%d]%s %d) check (local id) ghost %d on pe %d, for local gid %d \n",mype,__FUNCT__,iter,cpid,pe,lid+my0);
+	      /* if(mype==target||target==-1)PetscPrintf(PETSC_COMM_SELF,"\t\t[%d]%s %d) check (local id) ghost %d on pe %d, for local gid %d \n",mype,__FUNCT__,iter,cpid,pe,lid+my0); */
               if( statej == NOT_DONE && gid >= Iend ) { /* should be (pe>mype), use gid as pe proxy */
                 isOK = PETSC_FALSE; /* can not delete */
 if(mype==target||target==-1)PetscPrintf(PETSC_COMM_SELF,"\t\t\t[%d]%s %d) skip gid %d \n",mype,__FUNCT__,iter,lid+my0);
@@ -710,7 +710,7 @@ PetscErrorCode formProl0(IS a_selected, /* list of selected local ID, includes s
       /* QR */
       LAPACKgeqrf_( &Mdata, &N, qqc, &LDA, TAU, WORK, &LWORK, &INFO );
       if( INFO != 0 ) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"xGEQRS error");
-      // get R - column oriented - output B_{i+1}
+      /* get R - column oriented - output B_{i+1} */
       {
         PetscReal *data = &out_data[clid*a_nSAvec];
         for( jj = 0; jj < a_nSAvec ; jj++ ) {
@@ -722,7 +722,7 @@ PetscErrorCode formProl0(IS a_selected, /* list of selected local ID, includes s
         }
       }
 
-      // get Q - row oriented
+      /* get Q - row oriented */
       LAPACKungqr_( &Mdata, &N, &N, qqc, &LDA, TAU, WORK, &LWORK, &INFO );
       if( INFO != 0 ) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"xORGQR error arg %d",-INFO);
 
@@ -899,7 +899,7 @@ PetscErrorCode triangulateAndFormProl( IS  a_selected_2, /* list of selected loc
 
       sprintf(fname,"C%d_%d.node",level,mype); file = fopen(fname, "w");
       /*First line: <# of vertices> <dimension (must be 2)> <# of attributes> <# of boundary markers (0 or 1)>*/
-      //fprintf(file, "%d  %d  %d  %d\n",in.numberofpoints,2,0,0);
+      /* fprintf(file, "%d  %d  %d  %d\n",in.numberofpoints,2,0,0); */
       fprintf(file, "%d  %d  %d  %d\n",nPlotPts,2,0,0);
       /*Following lines: <vertex #> <x> <y> */
       for(kk=0,sid=0;kk<in.numberofpoints;kk++,sid+=2){
@@ -1178,8 +1178,8 @@ PetscErrorCode getGIDsOnSquareGraph( const IS a_selected_1,
 
 /* Private context for the GAMG preconditioner */
 typedef struct{
-  PetscInt       m_lid;      // local vertex index
-  PetscInt       m_degree;   // vertex degree
+  PetscInt       m_lid;      /* local vertex index */
+  PetscInt       m_degree;   /* vertex degree */
 } GNode;
 int compare (const void *a, const void *b)
 {

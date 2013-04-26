@@ -17,7 +17,7 @@ PETSC_EXTERN_CXX_BEGIN
 S*/
 typedef struct _p_SNES* SNES;
 
-/*E
+/*J
     SNESType - String with the name of a PETSc SNES method or the creation function
        with an optional dynamic library name, for example
        http://www.mcs.anl.gov/petsc/lib.a:mysnescreate()
@@ -25,7 +25,7 @@ typedef struct _p_SNES* SNES;
    Level: beginner
 
 .seealso: SNESSetType(), SNES
-E*/
+J*/
 #define SNESType char*
 #define SNESLS      "ls"
 #define SNESTR      "tr"
@@ -46,6 +46,7 @@ extern PetscErrorCode  SNESCreate(MPI_Comm,SNES*);
 extern PetscErrorCode  SNESReset(SNES);
 extern PetscErrorCode  SNESDestroy(SNES*);
 extern PetscErrorCode  SNESSetType(SNES,const SNESType);
+extern PetscErrorCode  SNESMonitor(SNES,PetscInt,PetscReal);
 extern PetscErrorCode  SNESMonitorSet(SNES,PetscErrorCode(*)(SNES,PetscInt,PetscReal,void*),void *,PetscErrorCode (*)(void**));
 extern PetscErrorCode  SNESMonitorCancel(SNES);
 extern PetscErrorCode  SNESSetConvergenceHistory(SNES,PetscReal[],PetscInt[],PetscInt,PetscBool );

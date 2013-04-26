@@ -1,10 +1,6 @@
 static char help[] = "Illustrate how to use mpi FFTW and PETSc-FFTW interface \n\n";
 
 /*
-  Compiling the code:
-      This code uses the complex numbers version of PETSc, so configure
-      must be run to enable this
-
  Usage:
    mpiexec -n <np> ./ex158 -use_FFTW_interface NO
    mpiexec -n <np> ./ex158 -use_FFTW_interface YES
@@ -28,15 +24,12 @@ PetscInt main(PetscInt argc,char **args)
 
   ierr = PetscInitialize(&argc,&args,(char *)0,help);CHKERRQ(ierr);
 #if defined(PETSC_USE_COMPLEX)
-  SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP, "This example requires real numbers. Your current scalar type is complex!");
+  SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP, "This example requires real numbers. Your current scalar type is complex");
 #endif
 
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD, PETSC_NULL, "FFTW Options", "ex143");CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-vec_view_draw", "View the vectors", "ex143", view, &view, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-use_FFTW_interface", "Use PETSc-FFTW interface", "ex143",use_interface, &use_interface, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(PETSC_COMM_WORLD, PETSC_NULL, "FFTW Options", "ex158");CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-use_FFTW_interface", "Use PETSc-FFTW interface", "ex158",use_interface, &use_interface, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
-
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-use_FFTW_interface",&use_interface,PETSC_NULL);CHKERRQ(ierr);
 
   ierr = MPI_Comm_size(PETSC_COMM_WORLD, &size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRQ(ierr);
@@ -99,7 +92,7 @@ PetscInt main(PetscInt argc,char **args)
     /*-------------------------------------------*/
     PetscInt i,*dim,k,DIM;
     Mat      A; 
-    Vec input,output;
+    Vec      input,output;
 
     N=30;
     for (i=2; i<5; i++){

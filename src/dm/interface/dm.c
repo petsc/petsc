@@ -7,7 +7,7 @@ PetscLogEvent DM_Convert, DM_GlobalToLocal, DM_LocalToGlobal;
 #undef __FUNCT__  
 #define __FUNCT__ "DMCreate"
 /*@
-  DMCreate - Creates an empty vector object. The type can then be set with DMetType().
+  DMCreate - Creates an empty vector object. The type can then be set with DMSetType().
 
    If you never  call DMSetType()  it will generate an 
    error when you try to use the vector.
@@ -635,6 +635,7 @@ PetscErrorCode  DMRefine(DM dm,MPI_Comm comm,DM *dmf)
   if (dm->ops->jacobian != DMComputeJacobianDefault) {
     (*dmf)->ops->jacobian     = dm->ops->jacobian;
   }
+  ierr = PetscObjectCopyFortranFunctionPointers((PetscObject)dm,(PetscObject)*dmf);CHKERRQ(ierr);
   (*dmf)->ctx     = dm->ctx;
   (*dmf)->levelup = dm->levelup + 1;
   PetscFunctionReturn(0);
@@ -845,6 +846,7 @@ PetscErrorCode  DMCoarsen(DM dm, MPI_Comm comm, DM *dmc)
   if (dm->ops->jacobian != DMComputeJacobianDefault) {
     (*dmc)->ops->jacobian     = dm->ops->jacobian;
   }
+  ierr = PetscObjectCopyFortranFunctionPointers((PetscObject)dm,(PetscObject)*dmc);CHKERRQ(ierr);
   (*dmc)->ctx       = dm->ctx;
   (*dmc)->leveldown = dm->leveldown + 1;
   PetscFunctionReturn(0);
@@ -1013,7 +1015,7 @@ PetscErrorCode  DMGetApplicationContext(DM dm,void *ctx)
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMSetInitialGuess"
-/*@
+/*@C
     DMSetInitialGuess - sets a function to compute an initial guess vector entries for the solvers
 
     Logically Collective on DM
@@ -1036,7 +1038,7 @@ PetscErrorCode  DMSetInitialGuess(DM dm,PetscErrorCode (*f)(DM,Vec))
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMSetFunction"
-/*@
+/*@C
     DMSetFunction - sets a function to compute the right hand side vector entries for the KSP solver or nonlinear function for SNES
 
     Logically Collective on DM
@@ -1066,7 +1068,7 @@ PetscErrorCode  DMSetFunction(DM dm,PetscErrorCode (*f)(DM,Vec,Vec))
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMSetJacobian"
-/*@
+/*@C
     DMSetJacobian - sets a function to compute the matrix entries for the KSP solver or Jacobian for SNES
 
     Logically Collective on DM

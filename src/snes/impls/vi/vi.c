@@ -1178,7 +1178,6 @@ PetscErrorCode SNESSolveVI_RS(SNES snes)
     
     ierr = MatFindNonzeroRows(jac_inact_inact,&keptrows);CHKERRQ(ierr);
     if (0 && keptrows) {
-    // if (keptrows) {
       PetscInt       cnt,*nrows,k;
       const PetscInt *krows,*inact;
       PetscInt       rstart=jac_inact_inact->rmap->rstart;

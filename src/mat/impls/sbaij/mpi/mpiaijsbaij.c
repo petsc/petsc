@@ -34,7 +34,8 @@ PetscErrorCode  MatConvert_MPIAIJ_MPISBAIJ(Mat A, MatType newtype,MatReuse reuse
 
   ierr = MatCreate(((PetscObject)A)->comm,&M);CHKERRQ(ierr);
   ierr = MatSetSizes(M,lm,ln,m,n);CHKERRQ(ierr);
-  ierr = MatSetType(M,newtype);CHKERRQ(ierr);
+  ierr = MatSetType(M,MATMPISBAIJ);CHKERRQ(ierr);
+  ierr = MatSeqSBAIJSetPreallocation(M,1,0,d_nnz);CHKERRQ(ierr);
   ierr = MatMPISBAIJSetPreallocation(M,1,0,d_nnz,0,o_nnz);CHKERRQ(ierr);
 
   ierr = PetscFree2(d_nnz,o_nnz);CHKERRQ(ierr);
@@ -87,7 +88,8 @@ PetscErrorCode MatConvert_MPIBAIJ_MPISBAIJ(Mat A, MatType newtype,MatReuse reuse
 
   ierr = MatCreate(((PetscObject)A)->comm,&M);CHKERRQ(ierr);
   ierr = MatSetSizes(M,lm,ln,m,n);CHKERRQ(ierr);
-  ierr = MatSetType(M,newtype);CHKERRQ(ierr);
+  ierr = MatSetType(M,MATMPISBAIJ);CHKERRQ(ierr);
+  ierr = MatSeqSBAIJSetPreallocation(M,bs,0,d_nnz);CHKERRQ(ierr);
   ierr = MatMPISBAIJSetPreallocation(M,bs,0,d_nnz,0,o_nnz);CHKERRQ(ierr);
 
   ierr = PetscFree2(d_nnz,o_nnz);CHKERRQ(ierr);

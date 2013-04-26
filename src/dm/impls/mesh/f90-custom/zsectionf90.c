@@ -68,19 +68,23 @@ void PETSC_STDCALL sectionrealrestrictclosure_(SectionReal *section, DM *dm, int
 {
   PetscScalar *c;
 
-  // Should be able to get array size
+  /* Should be able to get array size */
   *ierr = F90Array1dAccess(ptr, PETSC_SCALAR, (void**) &c PETSC_F90_2PTR_PARAM(ptrd));if (*ierr) return;
   *ierr = SectionRealRestrictClosure(*section, *dm, *point,*size,c); if (*ierr) return;
-  // *ierr = F90Array1dCreate(const_cast<PetscScalar *>(c),PETSC_SCALAR,1,n,ptr PETSC_F90_2PTR_PARAM(ptrd));
+#if 0
+  *ierr = F90Array1dCreate(const_cast<PetscScalar *>(c),PETSC_SCALAR,1,n,ptr PETSC_F90_2PTR_PARAM(ptrd));
+#endif
 }
 void PETSC_STDCALL sectionintrestrictclosure_(SectionInt *section, DM *dm, int *point,int *size,F90Array1d *ptr,int *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
   PetscInt *c;
 
-  // Should be able to get array size
+  /* Should be able to get array size */
   *ierr = F90Array1dAccess(ptr, PETSC_INT, (void**) &c PETSC_F90_2PTR_PARAM(ptrd));if (*ierr) return;
   *ierr = SectionIntRestrictClosure(*section, *dm, *point,*size,c); if (*ierr) return;
-  // *ierr = F90Array1dCreate(const_cast<PetscScalar *>(c),PETSC_SCALAR,1,n,ptr PETSC_F90_2PTR_PARAM(ptrd));
+#if 0
+  *ierr = F90Array1dCreate(const_cast<PetscScalar *>(c),PETSC_SCALAR,1,n,ptr PETSC_F90_2PTR_PARAM(ptrd));
+#endif
 }
 void PETSC_STDCALL sectionrealupdate_(SectionReal *section, int *point,F90Array1d *ptr,InsertMode *mode,int *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {

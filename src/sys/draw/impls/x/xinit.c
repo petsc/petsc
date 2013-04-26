@@ -291,7 +291,7 @@ PetscErrorCode  PetscDrawSetSave_X(PetscDraw draw,const char *filename)
 #include <afterimage.h>
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDrawSave_X" 
-PetscErrorCode PetscDrawSave_X(PetscDraw draw,PetscViewer viewer)
+PetscErrorCode PetscDrawSave_X(PetscDraw draw)
 {
   PetscDraw_X              *drawx = (PetscDraw_X*)draw->data;
   XImage                   *image;
@@ -328,10 +328,10 @@ void deflate(void) {;}
 void deflateEnd(void) {;}
 
 #elif defined(PETSC_HAVE_IMAGEMAGICK)
-#include <MagicCore/MagickCore.h>
+#include <magick/MagickCore.h>
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDrawSave_X" 
-PetscErrorCode PetscDrawSave_X(PetscDraw draw,PetscViewer viewer)
+PetscErrorCode PetscDrawSave_X(PetscDraw draw)
 {
   PetscDraw_X  *drawx = (PetscDraw_X*)draw->data;
   Image        *image;

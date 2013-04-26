@@ -73,7 +73,6 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLayoutFindOwner(PetscLayout map,PetscInt
 {
   PetscErrorCode ierr;
   PetscMPIInt    lo = 0,hi,t;
-  PetscInt       bs = map->bs;
 
   PetscFunctionBegin;
   if (!((map->n >= 0) && (map->N >= 0) && (map->range))) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"PetscLayoutSetUp() must be called first");
@@ -81,7 +80,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLayoutFindOwner(PetscLayout map,PetscInt
   ierr = MPI_Comm_size(map->comm,&hi);CHKERRQ(ierr);
   while (hi - lo > 1) {
     t = lo + (hi - lo) / 2;
-    if (idx < map->range[t]/bs) hi = t;
+    if (idx < map->range[t]) hi = t;
     else                     lo = t;
   }
   *owner = lo;
@@ -307,6 +306,7 @@ PETSC_STATIC_INLINE PetscErrorCode VecRestoreArrayRead(Vec x,const PetscScalar *
   } else {
     ierr = (*x->ops->restorearray)(x,(PetscScalar**)a);CHKERRQ(ierr);
   }
+  if (a) *a = PETSC_NULL;
   PetscFunctionReturn(0);
 }
 
@@ -347,6 +347,7 @@ PETSC_STATIC_INLINE PetscErrorCode VecRestoreArray(Vec x,PetscScalar *a[])
     ierr = (*x->ops->restorearray)(x,a);CHKERRQ(ierr);
   }
   ierr = PetscObjectStateIncrease((PetscObject)x);CHKERRQ(ierr);
+  if (a) *a = PETSC_NULL;
   PetscFunctionReturn(0);
 }
 

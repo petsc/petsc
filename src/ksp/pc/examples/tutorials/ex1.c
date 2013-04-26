@@ -31,7 +31,6 @@ int main(int argc,char **argv)
   PetscErrorCode     ierr;
 
   ierr = PetscInitialize(&argc,&argv,0,0);CHKERRQ(ierr);
-  ierr = PetscOptionsSetValue("-options_left",PETSC_NULL);CHKERRQ(ierr);
   comm = MPI_COMM_SELF;
   
   /*
@@ -64,7 +63,6 @@ int main(int argc,char **argv)
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = VecAssemblyBegin(B);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(B);CHKERRQ(ierr);
-  printf("\nThe Kershaw matrix:\n\n"); MatView(A,0);
 
   /*
    * A Conjugate Gradient method
@@ -95,7 +93,6 @@ int main(int argc,char **argv)
   ierr = PCFactorGetMatrix(prec,&M);CHKERRQ(ierr);
   ierr = VecDuplicate(B,&D);CHKERRQ(ierr);
   ierr = MatGetDiagonal(M,D);CHKERRQ(ierr);
-  printf("\nPivots:\n\n"); VecView(D,0);
 
   /*
    * Solve the system;
@@ -105,15 +102,13 @@ int main(int argc,char **argv)
   ierr = KSPSolve(solver,B,X);CHKERRQ(ierr);
   ierr = KSPGetConvergedReason(solver,&reason);CHKERRQ(ierr);
   if (reason==KSP_DIVERGED_INDEFINITE_PC) {
-    printf("\nDivergence because of indefinite preconditioner;\n");
-    printf("Run the executable again but with '-pc_factor_shift_type POSITIVE_DEFINITE' option.\n");
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"\nDivergence because of indefinite preconditioner;\n");CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Run the executable again but with '-pc_factor_shift_type POSITIVE_DEFINITE' option.\n");CHKERRQ(ierr);
   } else if (reason<0) {
-    printf("\nOther kind of divergence: this should not happen.\n");
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"\nOther kind of divergence: this should not happen.\n");CHKERRQ(ierr);
   } else {
     ierr = KSPGetIterationNumber(solver,&its);CHKERRQ(ierr);
-    printf("\nConvergence in %d iterations.\n",(int)its);
   }
-  printf("\n");
 
   ierr = VecDestroy(&X);CHKERRQ(ierr);
   ierr = VecDestroy(&B);CHKERRQ(ierr);

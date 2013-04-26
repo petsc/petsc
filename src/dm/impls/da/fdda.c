@@ -526,8 +526,13 @@ PetscErrorCode  MatView_MPI_DA(Mat A,PetscViewer viewer)
   PetscInt       rstart,rend,*petsc,i;
   IS             is;
   MPI_Comm       comm;
+  PetscViewerFormat format;
 
   PetscFunctionBegin;
+  /* Check whether we are just printing info, in which case MatView() already viewed everything we wanted to view */
+  ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
+  if (format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_DETAIL) PetscFunctionReturn(0);
+
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
   ierr = PetscObjectQuery((PetscObject)A,"DM",(PetscObject*)&da);CHKERRQ(ierr);
   if (!da) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_WRONG,"Matrix not generated from a DMDA");
@@ -708,7 +713,13 @@ PetscErrorCode  DMGetMatrix_DA(DM da, const MatType mtype,Mat *J)
       SETERRQ3(((PetscObject)da)->comm,PETSC_ERR_SUP,"Not implemented for %D dimension and Matrix Type: %s in %D dimension!\n" \
 	       "Send mail to petsc-maint@mcs.anl.gov for code",dim,Atype,dim);
     }
-  } 
+  } else {
+    ISLocalToGlobalMapping ltog,ltogb;
+    ierr = DMGetLocalToGlobalMapping(da,&ltog);CHKERRQ(ierr);
+    ierr = DMGetLocalToGlobalMappingBlock(da,&ltogb);CHKERRQ(ierr);
+    ierr = MatSetLocalToGlobalMapping(A,ltog,ltog);CHKERRQ(ierr);
+    ierr = MatSetLocalToGlobalMappingBlock(A,ltogb,ltogb);CHKERRQ(ierr);
+  }
   ierr = DMDAGetGhostCorners(da,&starts[0],&starts[1],&starts[2],&dims[0],&dims[1],&dims[2]);CHKERRQ(ierr);
   ierr = MatSetStencil(A,dim,dims,starts,dof);CHKERRQ(ierr);
   ierr = PetscObjectCompose((PetscObject)A,"DM",(PetscObject)da);CHKERRQ(ierr);

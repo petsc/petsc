@@ -116,7 +116,6 @@ struct _p_TS {
   Vec      *work;
 };
 
-extern PetscErrorCode TSMonitor(TS,PetscInt,PetscReal,Vec);
 
 extern PetscLogEvent TS_Step, TS_PseudoComputeTimeStep, TS_FunctionEval, TS_JacobianEval;
 

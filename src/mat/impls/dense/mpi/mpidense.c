@@ -252,6 +252,7 @@ static PetscErrorCode MatGetSubMatrix_MPIDense(Mat A,IS isrow,IS iscol,MatReuse 
   /* Free work space */
   ierr = ISRestoreIndices(isrow,&irow);CHKERRQ(ierr);
   ierr = ISRestoreIndices(iscol_local,&icol);CHKERRQ(ierr);
+  ierr = ISDestroy(&iscol_local);CHKERRQ(ierr);
   *B = newmat;
   PetscFunctionReturn(0);
 }
@@ -362,6 +363,8 @@ PetscErrorCode MatZeroRows_MPIDense(Mat A,PetscInt N,const PetscInt rows[],Petsc
   PetscScalar       *bb;
 
   PetscFunctionBegin;
+  if (A->rmap->N != A->cmap->N) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_SUP,"Only handles square matrices");
+  if (A->rmap->n != A->cmap->n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only handles matrices with identical column and row ownership");
   /*  first count number of contributors to each processor */
   ierr  = PetscMalloc(2*size*sizeof(PetscInt),&nprocs);CHKERRQ(ierr);
   ierr  = PetscMemzero(nprocs,2*size*sizeof(PetscInt));CHKERRQ(ierr);
@@ -454,7 +457,15 @@ PetscErrorCode MatZeroRows_MPIDense(Mat A,PetscInt N,const PetscInt rows[],Petsc
   }
 
   /* actually zap the local rows */
-  ierr = MatZeroRows(l->A,slen,lrows,diag,0,0);CHKERRQ(ierr);
+  ierr = MatZeroRows(l->A,slen,lrows,0.0,0,0);CHKERRQ(ierr);
+  if (diag != 0.0) {
+    Mat_SeqDense *ll = (Mat_SeqDense*)l->A->data;
+    PetscInt      m = ll->lda, i;
+ 
+    for (i=0; i<slen; i++) {
+      ll->v[lrows[i] + m*(A->cmap->rstart + lrows[i])] = diag;
+    }
+  }
   ierr = PetscFree(lrows);CHKERRQ(ierr);
 
   /* wait on sends */
@@ -851,6 +862,7 @@ PetscErrorCode MatSetOption_MPIDense(Mat A,MatOption op,PetscBool  flg)
     ierr = MatSetOption(a->A,op,flg);CHKERRQ(ierr);
     break;
   case MAT_NEW_DIAGONALS:
+  case MAT_KEEP_NONZERO_PATTERN:
   case MAT_USE_HASH_TABLE:
     ierr = PetscInfo1(A,"Option %s ignored\n",MatOptions[op]);CHKERRQ(ierr);
     break;

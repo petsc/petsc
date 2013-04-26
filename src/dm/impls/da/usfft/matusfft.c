@@ -13,9 +13,9 @@ typedef struct {
   Vec            sampleCoords;
   PetscInt       dof;
   DM             freqDA;       /* frequency DMDA */
-  PetscInt       *freqSizes;   // sizes of the frequency DMDA, one per each dim
+  PetscInt       *freqSizes;   /* sizes of the frequency DMDA, one per each dim */
   DM             resampleDa;   /* the Battle-Lemarie interpolant DMDA */
-  Vec            resample;     // Vec of samples, one per dof per sample point
+  Vec            resample;     /* Vec of samples, one per dof per sample point */
   fftw_plan      p_forward,p_backward;
   unsigned       p_flag; /* planner flags, FFTW_ESTIMATE,FFTW_MEASURE, FFTW_PATIENT, FFTW_EXHAUSTIVE */
 } Mat_USFFT;
@@ -32,7 +32,7 @@ PetscErrorCode MatApply_USFFT_Private(Mat_USFFT *usfft, fftw_plan *plan, int dir
 
   PetscFunctionBegin;
 #if 0
-  // resample x to usfft->resample
+  /* resample x to usfft->resample */
   ierr = MatResample_USFFT_Private(Mat_USFFT *usfft, x); CHKERRQ(ierr);
 
   /* NB: for now we use outdim for both x and y; this will change once a full USFFT is implemented */
@@ -218,15 +218,17 @@ PetscErrorCode  MatCreateSeqUSFFT(Vec sampleCoords, DMDA freqDA, Mat* A)
     usfft->outdim[usfft->ndim-i] = dim[i-1];
   }
 
-  // TODO: Use the new form of DMDACreate()
-  //ierr = DMDACreate(comm,usfft->dim, DMDA_NONPERIODIC, DMDA_STENCIL_STAR, usfft->freqSizes[0], usfft->freqSizes[1], usfft->freqSizes[2],
-  //                PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE, dof, 0, PETSC_NULL, PETSC_NULL, PETSC_NULL,  0, &(usfft->resampleDA)); CHKERRQ(ierr);
+  /* TODO: Use the new form of DMDACreate() */
+#if 0
+  ierr = DMDACreate(comm,usfft->dim, DMDA_NONPERIODIC, DMDA_STENCIL_STAR, usfft->freqSizes[0], usfft->freqSizes[1], usfft->freqSizes[2],
+                    PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE, dof, 0, PETSC_NULL, PETSC_NULL, PETSC_NULL,  0, &(usfft->resampleDA)); CHKERRQ(ierr);
+#endif
   ierr = DMDAGetVec(usfft->resampleDA, usfft->resample); CHKERRQ(ierr);
 
 
-  // CONTINUE: Need to build the connectivity "Sieve" attaching sample points to the resample points they are close to
+  /* CONTINUE: Need to build the connectivity "Sieve" attaching sample points to the resample points they are close to */
 
-  // CONTINUE: recalculate matrix sizes based on the connectivity "Sieve"
+  /* CONTINUE: recalculate matrix sizes based on the connectivity "Sieve" */
   /* mat sizes */
   m = 1; n = 1;
   for (i=0; i<usfft->ndim; i++){

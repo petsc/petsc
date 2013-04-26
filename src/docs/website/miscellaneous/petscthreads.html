@@ -72,12 +72,14 @@
               <li>POSIX threads (pthread) calls to parallelize some of
                 the methods. </li>
             </ol>
-            In petsc-dev we have implemented 2. the classes are
+            In petsc-3.2 we have implemented 2. the classes are
             VECSEQPTHREAD and MATSEQAIJPTHREAD they are very preliminary
             but can be played with. We hope to obtain from some elses
             implementations of 1. The user is free to also use threads
             for OpenMP in their code so long as that code does not make
-            PETSc calls.<br>
+            PETSc calls. See <a
+                href="../features/threads.html">threads</a>
+              for how to use the thread-based Vec and Mat.</p> <br>
             <br>
             <span style="font-weight: bold; text-decoration: underline;">A
               more complicated model of PETSc with threads</span> would

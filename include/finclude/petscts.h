@@ -27,6 +27,10 @@
 !
       external TSDEFAULTCOMPUTEJACOBIAN
       external TSDEFAULTCOMPUTEJACOBIANCOLOR
+      external TSCOMPUTERHSFUNCTIONLINEAR
+      external TSCOMPUTERHSJACOBIANCONSTANT
+      external TSCOMPUTEIFUNCTIONLINEAR
+      external TSCOMPUTEIJACOBIANCONSTANT
 
 !  End of Fortran include file for the TS package in PETSc
 

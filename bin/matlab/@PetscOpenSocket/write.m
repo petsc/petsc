@@ -7,6 +7,8 @@ function write(sreader,data,datatype)
     datatype = 0;
   case 'double'
     datatype = 1;
+  case 'float64'
+    datatype = 1;
   case 'uchar'
     datatype = 6;
     data     = data';

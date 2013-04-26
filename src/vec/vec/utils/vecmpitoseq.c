@@ -24,7 +24,7 @@
    Usage:
 $        VecScatterCreateToAll(vin,&ctx,&vout);
 $
-$        // scatter as many times as you need 
+$        // scatter as many times as you need
 $        VecScatterBegin(ctx,vin,vout,INSERT_VALUES,SCATTER_FORWARD);
 $        VecScatterEnd(ctx,vin,vout,INSERT_VALUES,SCATTER_FORWARD);
 $
@@ -96,7 +96,7 @@ PetscErrorCode  VecScatterCreateToAll(Vec vin,VecScatter *ctx,Vec *vout)
    Usage:
 $        VecScatterCreateToZero(vin,&ctx,&vout);
 $
-$        // scatter as many times as you need 
+$        // scatter as many times as you need
 $        VecScatterBegin(ctx,vin,vout,INSERT_VALUES,SCATTER_FORWARD);
 $        VecScatterEnd(ctx,vin,vout,INSERT_VALUES,SCATTER_FORWARD);
 $

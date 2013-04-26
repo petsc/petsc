@@ -20,6 +20,10 @@ void PETSC_STDCALL vecgetarrayf90_(Vec *x,F90Array1d *ptr,int *__ierr PETSC_F90_
 {
   PetscScalar *fa;
   PetscInt     len;
+  if (!ptr) {
+    *__ierr = PetscError(((PetscObject)*x)->comm,__LINE__,PETSC_FUNCTION_NAME,__FILE__,__SDIR__,PETSC_ERR_ARG_BADPTR,PETSC_ERROR_INITIAL,"ptr==NULL, maybe #include <finclude/petscvec.h90> is missing?");
+    return;
+  }
   *__ierr = VecGetArray(*x,&fa);      if (*__ierr) return;
   *__ierr = VecGetLocalSize(*x,&len); if (*__ierr) return;
   *__ierr = F90Array1dCreate(fa,PETSC_SCALAR,1,len,ptr PETSC_F90_2PTR_PARAM(ptrd));

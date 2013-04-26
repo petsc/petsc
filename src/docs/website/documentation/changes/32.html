@@ -94,11 +94,11 @@
             <p><u><b>General:</b></u></p>
             <ul>
               <li> --download-c-blas-lapack is replaced with
-                --download-f2cblaslapack&lt;\li&gt; </li>
+                --download-f2cblaslapack </li>
               <li> --with-precision=__float128 --download-f2cblaslapack
-                is now support for newish GNU gcc compiler&lt;\li&gt; </li>
+                is now support for newish GNU gcc compiler </li>
               <li> Calling sequence of PetscBinarRead.m has been
-                changed&lt;\li&gt; </li>
+                changed </li>
               <li>PetscError() and SETERRQX() now take a MPI_Comm as the
                 first argument to indicate where the error is known. If
                 you don't know
@@ -235,9 +235,7 @@
               <li>VecDestroy() now zeros the pointer to the destroyed
                 vector
                 so it cannot be reused</li>
-              <li>VecDestroyVecs(PetscInt n,Vec **) instead of
-                VecDestroyVecs(Vec**,PetscInt n)<br>
-              </li>
+              <li>VecDestroyVecs(PetscInt n,Vec **) instead of VecDestroyVecs(Vec**,PetscInt n), also VecDestroyVecsF90(PetscInt n,{Vec, pointer :: x},PetscErrorCode ierr)</li>
             </ul>
             <p><u><b> </b></u></p>
             <p><u><b>VecScatter:<br>
@@ -426,6 +424,7 @@
               <li>DAXXX() routines are now either DMXXX() or DMDAXXX()
                 see
                 petscdmda.h for details</li>
+              <li>The operation DALocalToGlobal() which performed no communication can now be performed with DMLocalToGlobalBegin/End() with INSERT_VALUES.</li>
               <li>petscda.h, petscdadef.h and petscda.h90 are now
                 petscdmda.h,
                 petscdmdadef.h, and petscdmda.h90<br>

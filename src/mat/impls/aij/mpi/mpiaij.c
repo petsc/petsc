@@ -1000,11 +1000,13 @@ PetscErrorCode MatZeroRowsColumns_MPIAIJ(Mat A,PetscInt N,const PetscInt rows[],
   ierr = VecScatterBegin(l->Mvctx,xmask,lmask,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(l->Mvctx,xmask,lmask,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecDestroy(&xmask);CHKERRQ(ierr);
-  ierr = VecScatterBegin(l->Mvctx,x,l->lvec,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterEnd(l->Mvctx,x,l->lvec,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(l->lvec,&xx);CHKERRQ(ierr);
+  if (x) {
+    ierr = VecScatterBegin(l->Mvctx,x,l->lvec,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterEnd(l->Mvctx,x,l->lvec,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecGetArrayRead(l->lvec,&xx);CHKERRQ(ierr);
+    ierr = VecGetArray(b,&bb);CHKERRQ(ierr);
+  }
   ierr = VecGetArray(lmask,&mask);CHKERRQ(ierr);
-  ierr = VecGetArray(b,&bb);CHKERRQ(ierr);
 
   /* remove zeroed rows of off diagonal matrix */
   ii = aij->i;
@@ -1024,7 +1026,7 @@ PetscErrorCode MatZeroRowsColumns_MPIAIJ(Mat A,PetscInt N,const PetscInt rows[],
 
       for (j=0; j<n; j++) {
         if (PetscAbsScalar(mask[*aj])) {
-          bb[*ridx] -= *aa*xx[*aj];
+          if (b) bb[*ridx] -= *aa*xx[*aj];
           *aa        = 0.0;
         }
         aa++;
@@ -1040,7 +1042,7 @@ PetscErrorCode MatZeroRowsColumns_MPIAIJ(Mat A,PetscInt N,const PetscInt rows[],
       aa  = aij->a + ii[i];
       for (j=0; j<n; j++) {
         if (PetscAbsScalar(mask[*aj])) {
-          bb[i] -= *aa*xx[*aj];
+          if (b) bb[i] -= *aa*xx[*aj];
           *aa    = 0.0;
         }
         aa++;
@@ -1048,9 +1050,11 @@ PetscErrorCode MatZeroRowsColumns_MPIAIJ(Mat A,PetscInt N,const PetscInt rows[],
       }
     }
   }
-  ierr = VecRestoreArray(b,&bb);CHKERRQ(ierr);
+  if (x) {
+    ierr = VecRestoreArray(b,&bb);CHKERRQ(ierr);
+    ierr = VecRestoreArrayRead(l->lvec,&xx);CHKERRQ(ierr);
+  }
   ierr = VecRestoreArray(lmask,&mask);CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(l->lvec,&xx);CHKERRQ(ierr);
   ierr = VecDestroy(&lmask);CHKERRQ(ierr);
   ierr = PetscFree(lrows);CHKERRQ(ierr);
 
@@ -1672,7 +1676,7 @@ PetscErrorCode MatSOR_MPIAIJ(Mat matin,Vec bb,PetscReal omega,MatSORType flag,Pe
     ierr = (*mat->A->ops->sor)(mat->A,bb1,omega,(MatSORType)(SOR_ZERO_INITIAL_GUESS | SOR_LOCAL_FORWARD_SWEEP),fshift,lits,1,xx1);CHKERRQ(ierr);
     ierr = VecAXPY(xx,1.0,xx1);CHKERRQ(ierr);
     ierr = VecDestroy(&xx1);CHKERRQ(ierr);
-  } else SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_SUP,"Parallel SOR not supported");
+  } else SETERRQ(((PetscObject)matin)->comm,PETSC_ERR_SUP,"Parallel SOR not supported");
 
   ierr = VecDestroy(&bb1);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -4266,7 +4270,7 @@ PetscErrorCode MatSetValuesAdifor_MPIAIJ(Mat A,PetscInt nl,void *advalues)
 #undef __FUNCT__  
 #define __FUNCT__ "MatMerge"
 /*@
-      MatMerge - Creates a single large PETSc matrix by concatinating sequential
+      MatMerge - Creates a single large PETSc matrix by concatenating sequential
                  matrices from each processor
 
     Collective on MPI_Comm
@@ -4415,29 +4419,6 @@ PetscErrorCode  MatDestroy_MPIAIJ_SeqsToMPI(Mat A)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMerge_SeqsToMPINumeric"
-/*@C
-      MatMerge_SeqsToMPI - Creates a MPIAIJ matrix by adding sequential
-                 matrices from each processor
-
-    Collective on MPI_Comm
-
-   Input Parameters:
-+    comm - the communicators the parallel matrix will live on
-.    seqmat - the input sequential matrices
-.    m - number of local rows (or PETSC_DECIDE)
-.    n - number of local columns (or PETSC_DECIDE)
--    scall - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX
-
-   Output Parameter:
-.    mpimat - the parallel matrix generated
-
-    Level: advanced
-
-   Notes:
-     The dimensions of the sequential matrix in each processor MUST be the same.
-     The input seqmat is included into the container "Mat_Merge_SeqsToMPI", and will be
-     destroyed when mpimat is destroyed. Call PetscObjectQuery() to access seqmat.
-@*/
 PetscErrorCode  MatMerge_SeqsToMPINumeric(Mat seqmat,Mat mpimat)
 {
   PetscErrorCode       ierr;
@@ -4809,6 +4790,29 @@ PetscErrorCode  MatMerge_SeqsToMPISymbolic(MPI_Comm comm,Mat seqmat,PetscInt m,P
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMerge_SeqsToMPI"
+/*@C
+      MatMerge_SeqsToMPI - Creates a MPIAIJ matrix by adding sequential
+                 matrices from each processor
+
+    Collective on MPI_Comm
+
+   Input Parameters:
++    comm - the communicators the parallel matrix will live on
+.    seqmat - the input sequential matrices
+.    m - number of local rows (or PETSC_DECIDE)
+.    n - number of local columns (or PETSC_DECIDE)
+-    scall - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX
+
+   Output Parameter:
+.    mpimat - the parallel matrix generated
+
+    Level: advanced
+
+   Notes:
+     The dimensions of the sequential matrix in each processor MUST be the same.
+     The input seqmat is included into the container "Mat_Merge_SeqsToMPI", and will be
+     destroyed when mpimat is destroyed. Call PetscObjectQuery() to access seqmat.
+@*/
 PetscErrorCode  MatMerge_SeqsToMPI(MPI_Comm comm,Mat seqmat,PetscInt m,PetscInt n,MatReuse scall,Mat *mpimat)
 {
   PetscErrorCode   ierr;

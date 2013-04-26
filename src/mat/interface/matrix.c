@@ -1697,7 +1697,8 @@ PetscErrorCode  MatGetValues(Mat mat,PetscInt m,const PetscInt idxm[],PetscInt n
 #undef __FUNCT__
 #define __FUNCT__ "MatSetValuesBatch"
 /*@
-  MatSetValuesBatch - Inserts many blocks of values into a matrix at once. The blocks must all be square and the same size.
+  MatSetValuesBatch - Adds (ADD_VALUES) many blocks of values into a matrix at once. The blocks must all be square and
+  the same size. Currently, this can only be called once and creates the given matrix.
 
   Not Collective
 
@@ -1709,7 +1710,7 @@ PetscErrorCode  MatGetValues(Mat mat,PetscInt m,const PetscInt idxm[],PetscInt n
 - v - a concatenation of logically two-dimensional arrays of values
 
   Notes:
-  In the future, we may extend this routine to handle rectangular blocks, and additive mode.
+  In the future, we will extend this routine to handle rectangular blocks, and to allow multiple calls for a given matrix.
 
   Level: advanced
 
@@ -4332,7 +4333,7 @@ PetscErrorCode  MatGetRowSum(Mat mat, Vec v)
 
    Input Parameter:
 +  mat - the matrix to transpose
--  reuse - store the transpose matrix in the provided B
+-  reuse - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX
 
    Output Parameters:
 .  B - the transpose 

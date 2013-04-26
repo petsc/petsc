@@ -221,12 +221,11 @@ tree: ${ACTION}
 
 # Performs the specified action throughout the directory tree
 tree_basic: ${ACTION}
-	@-if [ "${DIRS}" != "" ]; then \
-	for dir in ${DIRS} foo ; do if [ -d $$dir ]; then \
+	-@for dir in ${DIRS} ftn-custom ; do if [ -d $$dir ]; then \
 	(cd $$dir ; echo ${ACTION} in: `pwd`; \
 	${OMAKE}  tree_basic ACTION=${ACTION}  \
 	PETSC_ARCH=${PETSC_ARCH}  LOC=${LOC}) ;fi; \
-	done ; fi
+	done
 
 #This target goes through all the dirs that contains a makefile
 alltree_makefile: ${ACTION}
@@ -680,7 +679,7 @@ html: chk_c2html
               -e "s/ierr [ ]*= //g"  -e "s/PETSC[A-Z]*_DLLEXPORT//g" $$i | ${C2HTML} -n  | \
               sed "s?splicer.begin(\([_A-Za-z0-9.]*\))?splicer.begin(\1)  <a name=\1></p>?g" | \
               ${PETSC_DIR}/bin/maint/fixinclude $$i $${ROOT} | \
-              egrep -v '(PetscValid|PetscFunctionBegin|PetscCheck|PetscErrorCode ierr;|#if !defined\(__|#define __|#undef __|EXTERN_C|extern )' | \
+              egrep -v '(PetscValid|PetscFunctionBegin|PetscCheck|PetscErrorCode ierr;|#if !defined\(__|#define __|#undef __|EXTERN_C )' | \
               ${MAPNAMES} -map /tmp/$$USER.htmlmap -inhtml | sed -e s?ROOT?$${IROOT}?g >> $${loc}/$$i.html ; \
 	    fi; \
          done
@@ -941,7 +940,7 @@ shared_darwin:
         if [ "${LIBNAME}" = "libpetsc" ]; then OTHERLIBS="${PETSC_EXTERNAL_LIB_BASIC}   ${SYS_LIB}  ${OTHERSHAREDLIBS}  ${SL_LINKER_LIBS} -lm -lc "; fi;\
         if [ "${LIBNAME}" = "libpetscsys" ]; then OTHERLIBS="  ${SYS_LIB}  ${OTHERSHAREDLIBS}  ${SL_LINKER_LIBS} -lm -lc "; fi;\
         if [ "${LIBNAME}" = "libpetscvec" ]; then OTHERLIBS="${HYPRE_LIB} ${PETSC_SYS_LIB_BASIC}"  ; fi;\
-        if [ "${LIBNAME}" = "libpetscmat" ]; then OTHERLIBS="${PLAPACK_LIB} ${SCOTCH_LIB} ${PARTY_LIB} ${CHACO_LIB} ${JOSTLE_LIB} ${SUPERLU_LIB} ${SUPERLU_DIST_LIB} ${SPOOLES_LIB} ${MUMPS_LIB} ${SCALAPACK_LIB} ${BLACS_LIB} ${PARMETIS_LIB} ${UMFPACK_LIB} ${LUSOL_LIB} ${PETSC_VEC_LIB_BASIC}"  ; fi;\
+        if [ "${LIBNAME}" = "libpetscmat" ]; then OTHERLIBS="${PLAPACK_LIB} ${SCOTCH_LIB} ${PARTY_LIB} ${CHACO_LIB} ${SUPERLU_LIB} ${SUPERLU_DIST_LIB} ${SPOOLES_LIB} ${MUMPS_LIB} ${SCALAPACK_LIB} ${BLACS_LIB} ${PARMETIS_LIB} ${UMFPACK_LIB} ${LUSOL_LIB} ${PETSC_VEC_LIB_BASIC}"  ; fi;\
         if [ "${LIBNAME}" = "libpetscdm" ]; then OTHERLIBS="${TRIANGLE_LIB} ${TETGEN_LIB} ${HYPRE_LIB} ${PETSC_MAT_LIB_BASIC} ${MPI_LIB}"  ; fi;\
         if [ "${LIBNAME}" = "libpetscksp" ]; then OTHERLIBS="${HYPRE_LIB} ${PETSC_CHARACTERISTIC_LIB_BASIC}"  ; fi;\
         if [ "${LIBNAME}" = "libpetscsnes" ]; then OTHERLIBS="${PETSC_KSP_LIB_BASIC}"  ; fi;\

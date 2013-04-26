@@ -344,9 +344,9 @@ PetscErrorCode VecDestroy_MPIFFTW(Vec v)
 .   A - the matrix
 
    Output Parameter:
-+   fin - (optional) input vector of forward FFTW
--   fout - (optional) output vector of forward FFTW
--   bout - (optional) output vector of backward FFTW
++   x - (optional) input vector of forward FFTW
+-   y - (optional) output vector of forward FFTW
+-   z - (optional) output vector of backward FFTW
 
   Level: advanced
 
@@ -604,7 +604,7 @@ PetscErrorCode VecScatterPetscToFFTW(Mat A,Vec x,Vec y)
 
 EXTERN_C_BEGIN 
 #undef __FUNCT__  
-#define __FUNCT__ "VecScatterPetscToFFTW_FTTW"
+#define __FUNCT__ "VecScatterPetscToFFTW_FFTW"
 PetscErrorCode VecScatterPetscToFFTW_FFTW(Mat A,Vec x,Vec y)
 {
   PetscErrorCode ierr;
@@ -1155,7 +1155,7 @@ PetscErrorCode MatCreate_FFTW(Mat A)
   fft->data = (void*)fftw;
   
   fft->n            = n;
-  fftw->ndim_fftw   = (ptrdiff_t)ndim; // This is dimension of fft
+  fftw->ndim_fftw   = (ptrdiff_t)ndim; /* This is dimension of fft */
   fftw->partial_dim = partial_dim;
   ierr = PetscMalloc(ndim*sizeof(ptrdiff_t), (ptrdiff_t *)&(fftw->dim_fftw));CHKERRQ(ierr); 
   for(ctr=0;ctr<ndim;ctr++) (fftw->dim_fftw)[ctr]=dim[ctr];

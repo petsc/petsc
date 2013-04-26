@@ -213,13 +213,19 @@ typedef enum { ENUM_DUMMY } PetscEnum;
 
 .seealso: PetscScalar, PetscBLASInt, PetscMPIInt
 M*/
+#if defined(PETSC_HAVE___INT64)
+typedef __int64 Petsc64bitInt;
+#else
+typedef long long Petsc64bitInt;
+#endif
 #if defined(PETSC_USE_64BIT_INDICES)
-typedef long long PetscInt;
+typedef Petsc64bitInt PetscInt;
 #define MPIU_INT MPI_LONG_LONG_INT
 #else
 typedef int PetscInt;
 #define MPIU_INT MPI_INT
 #endif
+
 
 /*EC
 
@@ -2223,7 +2229,7 @@ extern PetscErrorCode  PetscProcessTree(PetscInt,const PetscBool [],const PetscI
 extern PetscErrorCode  PetscSetDisplay(void);
 extern PetscErrorCode  PetscGetDisplay(char[],size_t);
 
-/*E
+/*J
     PetscRandomType - String with the name of a PETSc randomizer
        with an optional dynamic library name, for example
        http://www.mcs.anl.gov/petsc/lib.a:myrandcreate()
@@ -2234,7 +2240,7 @@ extern PetscErrorCode  PetscGetDisplay(char[],size_t);
    with the option --download-sprng
 
 .seealso: PetscRandomSetType(), PetscRandom
-E*/
+J*/
 #define PetscRandomType char*
 #define PETSCRAND       "rand"
 #define PETSCRAND48     "rand48"
@@ -2374,6 +2380,7 @@ E*/
 typedef enum {PETSC_BINARY_SEEK_SET = 0,PETSC_BINARY_SEEK_CUR = 1,PETSC_BINARY_SEEK_END = 2} PetscBinarySeekType;
 extern PetscErrorCode  PetscBinarySeek(int,off_t,PetscBinarySeekType,off_t*);
 extern PetscErrorCode  PetscBinarySynchronizedSeek(MPI_Comm,int,off_t,PetscBinarySeekType,off_t*);
+extern PetscErrorCode  PetscByteSwap(void *,PetscDataType,PetscInt);
 
 extern PetscErrorCode  PetscSetDebugTerminal(const char[]);
 extern PetscErrorCode  PetscSetDebugger(const char[],PetscBool );

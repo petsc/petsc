@@ -330,6 +330,11 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
     }
     ierr = PetscFree(values);CHKERRQ(ierr);
   } else {
+    ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
+    if (format == PETSC_VIEWER_ASCII_MATLAB) {
+      /* this may be a collective operation so make sure everyone calls it */
+      ierr = PetscObjectGetName((PetscObject)xin,&name);CHKERRQ(ierr);
+    }
     /* send values */
     ierr = MPI_Send((void*)xarray,xin->map->n,MPIU_SCALAR,0,tag,((PetscObject)xin)->comm);CHKERRQ(ierr);
   }

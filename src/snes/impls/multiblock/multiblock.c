@@ -34,8 +34,9 @@ PetscErrorCode SNESReset_Multiblock(SNES snes)
   PetscFunctionBegin;
   while (blocks) {
     ierr = SNESReset(blocks->snes);CHKERRQ(ierr);
-    //ierr = VecDestroy(&blocks->x);CHKERRQ(ierr);
-    //ierr = VecDestroy(&blocks->y);CHKERRQ(ierr);
+#if 0
+    ierr = VecDestroy(&blocks->x);CHKERRQ(ierr);
+#endif
     ierr = VecScatterDestroy(&blocks->sctx);CHKERRQ(ierr);
     ierr = ISDestroy(&blocks->is);CHKERRQ(ierr);
     next   = blocks->next;

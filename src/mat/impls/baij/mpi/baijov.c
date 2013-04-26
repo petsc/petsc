@@ -22,13 +22,13 @@ PetscErrorCode MatIncreaseOverlap_MPIBAIJ(Mat C,PetscInt imax,IS is[],PetscInt o
   PetscFunctionBegin;
   ierr = PetscMalloc(imax*sizeof(IS),&is_new);CHKERRQ(ierr);
   /* Convert the indices into block format */
-  ierr = ISCompressIndicesGeneral(N,bs,imax,is,is_new);CHKERRQ(ierr);
+  ierr = ISCompressIndicesGeneral(N,C->rmap->n,bs,imax,is,is_new);CHKERRQ(ierr);
   if (ov < 0){ SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative overlap specified\n");}
   for (i=0; i<ov; ++i) {
     ierr = MatIncreaseOverlap_MPIBAIJ_Once(C,imax,is_new);CHKERRQ(ierr);
   }
   for (i=0; i<imax; i++) {ierr = ISDestroy(&is[i]);CHKERRQ(ierr);}
-  ierr = ISExpandIndicesGeneral(N,bs,imax,is_new,is);CHKERRQ(ierr);
+  ierr = ISExpandIndicesGeneral(N,N,bs,imax,is_new,is);CHKERRQ(ierr);
   for (i=0; i<imax; i++) {ierr = ISDestroy(&is_new[i]);CHKERRQ(ierr);}
   ierr = PetscFree(is_new);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -106,7 +106,7 @@ PetscErrorCode MatIncreaseOverlap_MPIBAIJ_Once(Mat C,PetscInt imax,IS is[])
       if (row < 0) {
         SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Index set cannot have negative entries");
       }
-      ierr = PetscLayoutFindOwner(C->rmap,row,&proc);CHKERRQ(ierr);
+      ierr = PetscLayoutFindOwner(C->rmap,row*C->rmap->bs,&proc);CHKERRQ(ierr);
       w4[proc]++;
     }
     for (j=0; j<size; j++){ 
@@ -194,7 +194,7 @@ PetscErrorCode MatIncreaseOverlap_MPIBAIJ_Once(Mat C,PetscInt imax,IS is[])
       isz_i   = isz[i];
       for (j=0;  j<n_i; j++) {  /* parse the indices of each IS */
         row  = idx_i[j];
-        ierr = PetscLayoutFindOwner(C->rmap,row,&proc);CHKERRQ(ierr);
+        ierr = PetscLayoutFindOwner(C->rmap,row*C->rmap->bs,&proc);CHKERRQ(ierr);
         if (proc != rank) { /* copy to the outgoing buffer */
           ctr[proc]++;
           *ptr[proc] = row;
@@ -549,8 +549,8 @@ PetscErrorCode MatGetSubMatrices_MPIBAIJ(Mat C,PetscInt ismax,const IS isrow[],c
      out errors might change the indices hence buggey */
 
   ierr = PetscMalloc2(ismax+1,IS,&isrow_new,ismax+1,IS,&iscol_new);CHKERRQ(ierr);
-  ierr = ISCompressIndicesGeneral(N,bs,ismax,isrow,isrow_new);CHKERRQ(ierr);
-  ierr = ISCompressIndicesGeneral(N,bs,ismax,iscol,iscol_new);CHKERRQ(ierr);
+  ierr = ISCompressIndicesGeneral(N,C->rmap->n,bs,ismax,isrow,isrow_new);CHKERRQ(ierr);
+  ierr = ISCompressIndicesGeneral(N,C->cmap->n,bs,ismax,iscol,iscol_new);CHKERRQ(ierr);
 
   /* Allocate memory to hold all the submatrices */
   if (scall != MAT_REUSE_MATRIX) {

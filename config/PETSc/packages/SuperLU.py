@@ -10,6 +10,10 @@ class Configure(PETSc.package.NewPackage):
     self.complex      = 1
     # SuperLU has NO support for 64 bit integers, use SuperLU_Dist if you need that
     self.excludedDirs = ['SuperLU_DIST']
+    # SuperLU does not work with --download-f-blas-lapack with Compaqf90 compiler on windows.
+    # However it should work with intel ifort.
+    self.worksonWindows   = 1
+    self.downloadonWindows= 1
     return
 
   def setupDependencies(self, framework):
@@ -24,8 +28,8 @@ class Configure(PETSc.package.NewPackage):
 
     g = open(os.path.join(self.packageDir,'make.inc'),'w')
     g.write('SuperLUroot  = '+self.packageDir+'\n')
-    g.write('TMGLIB       = tmglib.a\n')
-    g.write('SUPERLULIB   = $(SuperLUroot)/lib/libsuperlu_4.2.a\n')
+    g.write('TMGLIB       = tmglib.'+self.setCompilers.AR_LIB_SUFFIX+'\n')
+    g.write('SUPERLULIB   = $(SuperLUroot)/lib/libsuperlu_4.2.'+self.setCompilers.AR_LIB_SUFFIX+'\n')
     g.write('BLASLIB      = '+self.libraries.toString(self.blasLapack.dlib)+'\n')
     g.write('BLASDEF      = -DUSE_VENDOR_BLAS\n')
     g.write('LIBS         = $(SUPERLULIB) $(BLASLIB)\n')
@@ -56,7 +60,7 @@ class Configure(PETSc.package.NewPackage):
         self.logPrintBox('Compiling superlu; this may take several minutes')
         if not os.path.exists(os.path.join(self.packageDir,'lib')):
           os.makedirs(os.path.join(self.packageDir,'lib'))
-        output,err,ret = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+' && make clean && make lib LAAUX="" SLASRC="" DLASRC="" CLASRC="" ZLASRC="" SCLAUX="" DZLAUX="" && cp -f lib/*.a '+os.path.join(self.installDir,self.libdir,'')+' &&  cp -f SRC/*.h '+os.path.join(self.installDir,self.includedir,''), timeout=2500, log = self.framework.log)
+        output,err,ret = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+' && make clean && make superlulib LAAUX="" SLASRC="" DLASRC="" CLASRC="" ZLASRC="" SCLAUX="" DZLAUX="" && cp -f lib/*.'+self.setCompilers.AR_LIB_SUFFIX+' '+os.path.join(self.installDir,self.libdir,'')+' &&  cp -f SRC/*.h '+os.path.join(self.installDir,self.includedir,''), timeout=2500, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running make on SUPERLU: '+str(e))
       self.postInstall(output+err,'make.inc')

@@ -18,7 +18,7 @@ PETSC_EXTERN_CXX_BEGIN
 S*/
 typedef struct _p_TS* TS;
 
-/*E
+/*J
     TSType - String with the name of a PETSc TS method or the creation function
        with an optional dynamic library name, for example
        http://www.mcs.anl.gov/petsc/lib.a:mytscreate()
@@ -26,7 +26,7 @@ typedef struct _p_TS* TS;
    Level: beginner
 
 .seealso: TSSetType(), TS
-E*/
+J*/
 #define TSType char*
 #define TSEULER           "euler"
 #define TSBEULER          "beuler"
@@ -69,6 +69,7 @@ extern PetscErrorCode   TSDestroy(TS*);
 
 extern PetscErrorCode   TSSetProblemType(TS,TSProblemType);
 extern PetscErrorCode   TSGetProblemType(TS,TSProblemType*);
+extern PetscErrorCode   TSMonitor(TS,PetscInt,PetscReal,Vec);
 extern PetscErrorCode   TSMonitorSet(TS,PetscErrorCode(*)(TS,PetscInt,PetscReal,Vec,void*),void *,PetscErrorCode (*)(void**));
 extern PetscErrorCode   TSMonitorCancel(TS);
 
@@ -218,6 +219,23 @@ extern PetscErrorCode   TSMonitorLGCreate(const char[],const char[],int,int,int,
 extern PetscErrorCode   TSMonitorLG(TS,PetscInt,PetscReal,Vec,void *);
 extern PetscErrorCode   TSMonitorLGDestroy(PetscDrawLG*);
 
+/*J
+   TSSSPType - string with the name of TSSSP scheme.
+
+   Level: beginner
+
+.seealso: TSSSPSetType(), TS
+J*/
+#define TSSSPType char*
+#define TSSSPRKS2  "rks2"
+#define TSSSPRKS3  "rks3"
+#define TSSSPRK104 "rk104"
+
+extern PetscErrorCode TSSSPSetType(TS,const TSSSPType);
+extern PetscErrorCode TSSSPGetType(TS,const TSSSPType*);
+extern PetscErrorCode TSSSPSetNumStages(TS,PetscInt);
+extern PetscErrorCode TSSSPGetNumStages(TS,PetscInt*);
+
 /*S
    TSGLAdapt - Abstract object that manages time-step adaptivity
 
@@ -227,7 +245,7 @@ extern PetscErrorCode   TSMonitorLGDestroy(PetscDrawLG*);
 S*/
 typedef struct _p_TSGLAdapt *TSGLAdapt;
 
-/*E
+/*J
     TSGLAdaptType - String with the name of TSGLAdapt scheme or the creation function
        with an optional dynamic library name, for example
        http://www.mcs.anl.gov/petsc/lib.a:mytsgladaptcreate()
@@ -235,7 +253,7 @@ typedef struct _p_TSGLAdapt *TSGLAdapt;
    Level: beginner
 
 .seealso: TSGLAdaptSetType(), TS
-E*/
+J*/
 #define TSGLAdaptType  char*
 #define TSGLADAPT_NONE "none"
 #define TSGLADAPT_SIZE "size"
@@ -301,7 +319,7 @@ extern PetscErrorCode  TSGLAdaptView(TSGLAdapt,PetscViewer);
 extern PetscErrorCode  TSGLAdaptSetFromOptions(TSGLAdapt);
 extern PetscErrorCode  TSGLAdaptDestroy(TSGLAdapt*);
 
-/*E
+/*J
     TSGLAcceptType - String with the name of TSGLAccept scheme or the function
        with an optional dynamic library name, for example
        http://www.mcs.anl.gov/petsc/lib.a:mytsglaccept()
@@ -309,7 +327,7 @@ extern PetscErrorCode  TSGLAdaptDestroy(TSGLAdapt*);
    Level: beginner
 
 .seealso: TSGLSetAcceptType(), TS
-E*/
+J*/
 #define TSGLAcceptType  char*
 #define TSGLACCEPT_ALWAYS "always"
 
@@ -363,13 +381,13 @@ M*/
 #  define TSGLAcceptRegisterDynamic(a,b,c,d) TSGLAcceptRegister(a,b,c,d)
 #endif
 
-/*E
+/*J
   TSGLType - family of time integration method within the General Linear class
 
   Level: beginner
 
 .seealso: TSGLSetType(), TSGLRegister()
-E*/
+J*/
 #define TSGLType char*
 #define TSGL_IRKS   "irks"
 

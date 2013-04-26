@@ -209,6 +209,7 @@ PetscErrorCode KSPSolve_Chebychev(KSP ksp)
     if (nonzero) {ierr = VecDuplicate(ksp->vec_sol,&X);CHKERRQ(ierr);}
     ierr = KSPSolve(cheb->kspest,ksp->vec_rhs,X);CHKERRQ(ierr);
     if (nonzero) {ierr = VecDestroy(&X);CHKERRQ(ierr);}
+    else {ierr = VecZeroEntries(X);CHKERRQ(ierr);}
     ierr = KSPComputeExtremeSingularValues(cheb->kspest,&max,&min);CHKERRQ(ierr);
     cheb->emin = cheb->tform[0]*min + cheb->tform[1]*max;
     cheb->emax = cheb->tform[2]*min + cheb->tform[3]*max;

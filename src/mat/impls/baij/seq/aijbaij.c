@@ -23,7 +23,7 @@ PetscErrorCode  MatConvert_SeqBAIJ_SeqAIJ(Mat A, MatType newtype,MatReuse reuse,
   }
   ierr = MatCreate(((PetscObject)A)->comm,&B);CHKERRQ(ierr);
   ierr = MatSetSizes(B,A->rmap->n,A->cmap->n,A->rmap->N,A->cmap->N);CHKERRQ(ierr);
-  ierr = MatSetType(B,newtype);CHKERRQ(ierr);
+  ierr = MatSetType(B,MATSEQAIJ);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(B,0,rowlengths);CHKERRQ(ierr);
   ierr = MatSetOption(B,MAT_ROW_ORIENTED,PETSC_FALSE);CHKERRQ(ierr);
   ierr = PetscFree(rowlengths);CHKERRQ(ierr);
@@ -82,7 +82,7 @@ PetscErrorCode  MatConvert_SeqAIJ_SeqBAIJ(Mat A,const MatType newtype,MatReuse r
   }
   ierr = MatCreate(((PetscObject)A)->comm,&B);CHKERRQ(ierr);
   ierr = MatSetSizes(B,m,n,m,n);CHKERRQ(ierr);
-  ierr = MatSetType(B,newtype);CHKERRQ(ierr);
+  ierr = MatSetType(B,MATSEQBAIJ);CHKERRQ(ierr);
   ierr = MatSeqBAIJSetPreallocation_SeqBAIJ(B,1,0,rowlengths);CHKERRQ(ierr);
   ierr = PetscFree(rowlengths);CHKERRQ(ierr);
 

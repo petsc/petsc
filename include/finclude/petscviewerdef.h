@@ -18,9 +18,11 @@
 #define PETSCVIEWERBINARY 'binary'
 #define PETSCVIEWERSTRING 'string'
 #define PETSCVIEWERDRAW 'draw'
-#define PETSCVIEWERAMS 'ams'
-#define PETSCVIEWERHDF5 'hdf5'
+#define PETSCVIEWERVU 'vu'
+#define PETSCVIEWERMATHEMATICA 'mathematica'
 #define PETSCVIEWERNETCDF 'netcdf'
+#define PETSCVIEWERHDF5 'hdf5'
 #define PETSCVIEWERMATLAB 'matlab'
+#define PETSCVIEWERAMS 'ams'
 
 #endif

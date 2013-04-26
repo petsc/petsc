@@ -59,7 +59,7 @@ sigfpe_handler_type PetscDefaultFPTrap(int sig,int code,struct sigcontext *scp,c
   } else {
     (*PetscErrorPrintf)("*** floating point error 0x%x occurred at pc=%X ***\n",code,SIGPC(scp));
   }
-  ierr = PetscError(PETSC_COMM_SELF,PETSC_ERR_FP,"User provided function","Unknown file","Unknown directory",PETSC_ERR_FP,1,"floating point error");
+  ierr = PetscError(PETSC_COMM_SELF,PETSC_ERR_FP,"User provided function","Unknown file","Unknown directory",PETSC_ERR_FP,PETSC_ERROR_REPEAT,"floating point error");
   MPI_Abort(PETSC_COMM_WORLD,0);
   PetscFunctionReturn(0);
 }
@@ -161,7 +161,7 @@ void PetscDefaultFPTrap(int sig,siginfo_t *scp,ucontext_t *uap)
   } else {
     (*PetscErrorPrintf)("*** floating point error 0x%x occurred at pc=%X ***\n",code,SIGPC(scp));
   }
-  ierr = PetscError(PETSC_COMM_SELF,0,"User provided function","Unknown file","Unknown directory",PETSC_ERR_FP,1,"floating point error");
+  ierr = PetscError(PETSC_COMM_SELF,0,"User provided function","Unknown file","Unknown directory",PETSC_ERR_FP,PETSC_ERROR_REPEAT,"floating point error");
   MPI_Abort(PETSC_COMM_WORLD,0);
 }
 
@@ -214,7 +214,7 @@ void PetscDefaultFPTrap(unsigned exception[],int val[])
   } else{
     (*PetscErrorPrintf)("*** floating point error 0x%x occurred ***\n",code);  
   }
-  PetscError(PETSC_COMM_SELF,0,"User provided function","Unknown file","Unknown directory",PETSC_ERR_FP,1,"floating point error");
+  PetscError(PETSC_COMM_SELF,0,"User provided function","Unknown file","Unknown directory",PETSC_ERR_FP,PETSC_ERROR_REPEAT,"floating point error");
   MPI_Abort(PETSC_COMM_WORLD,0);
 }
 
@@ -280,7 +280,7 @@ void PetscDefaultFPTrap(int sig,int code,struct sigcontext *scp)
   } else{
     (*PetscErrorPrintf)("*** floating point error 0x%x occurred ***\n",flt_context.trap);
   }
-  ierr = PetscError(PETSC_COMM_SELF,0,"User provided function","Unknown file","Unknown directory",PETSC_ERR_FP,1,"floating point error");
+  ierr = PetscError(PETSC_COMM_SELF,0,"User provided function","Unknown file","Unknown directory",PETSC_ERR_FP,PETSC_ERROR_REPEAT,"floating point error");
   MPI_Abort(PETSC_COMM_WORLD,0);
 }
 

@@ -14,8 +14,6 @@
 #endif
 #include <petscbt.h>
 
-#if !defined(PETSC_WORDS_BIGENDIAN)
-
 /* --------------------------------------------------------- */
 #undef __FUNCT__  
 #define __FUNCT__ "PetscByteSwapEnum"
@@ -208,7 +206,6 @@ PetscErrorCode PetscByteSwap(void *data,PetscDataType pdtype,PetscInt count)
   PetscFunctionReturn(0);
 }
 
-#endif
 /* --------------------------------------------------------- */
 #undef __FUNCT__  
 #define __FUNCT__ "PetscBinaryRead"

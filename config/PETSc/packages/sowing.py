@@ -3,7 +3,7 @@ import PETSc.package
 class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
     PETSc.package.NewPackage.__init__(self, framework)
-    self.download          = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/sowing-1.1.16b.tar.gz']
+    self.download          = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/sowing-1.1.16c.tar.gz']
     self.complex           = 1
     self.double            = 0
     self.requires32bitint  = 0
@@ -14,11 +14,11 @@ class Configure(PETSc.package.NewPackage):
   def setupHelp(self, help):
     import nargs
     PETSc.package.NewPackage.setupHelp(self, help)
-    help.addArgument('SOWING', '--download-sowing-cc=<prog>',                     nargs.Arg(None, None, 'C compiler for sowing configure'))
-    help.addArgument('SOWING', '--download-sowing-cxx=<prog>',                    nargs.Arg(None, None, 'CXX compiler for sowing configure'))
-    help.addArgument('SOWING', '--download-sowing-cpp=<prog>',                    nargs.Arg(None, None, 'CPP for sowing configure'))
-    help.addArgument('SOWING', '--download-sowing-cxxcpp=<prog>',                 nargs.Arg(None, None, 'CXX CPP for sowing configure'))
-    help.addArgument('SOWING', '--download-sowing-configure-options=<options>',   nargs.Arg(None, None, 'additional options for sowing configure'))
+    help.addArgument('SOWING', '-download-sowing-cc=<prog>',                     nargs.Arg(None, None, 'C compiler for sowing configure'))
+    help.addArgument('SOWING', '-download-sowing-cxx=<prog>',                    nargs.Arg(None, None, 'CXX compiler for sowing configure'))
+    help.addArgument('SOWING', '-download-sowing-cpp=<prog>',                    nargs.Arg(None, None, 'CPP for sowing configure'))
+    help.addArgument('SOWING', '-download-sowing-cxxcpp=<prog>',                 nargs.Arg(None, None, 'CXX CPP for sowing configure'))
+    help.addArgument('SOWING', '-download-sowing-configure-options=<options>',   nargs.Arg(None, None, 'additional options for sowing configure'))
     return
 
   def Install(self):

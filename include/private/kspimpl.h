@@ -121,8 +121,6 @@ typedef struct {
     {if (ksp->res_hist && ksp->res_hist_max > ksp->res_hist_len) \
      ksp->res_hist[ksp->res_hist_len++] = norm;}
 
-extern PetscErrorCode KSPMonitor(KSP,PetscInt,PetscReal);
-
 extern PetscErrorCode KSPDefaultDestroy(KSP);
 extern PetscErrorCode KSPGetVecs(KSP,PetscInt,Vec**,PetscInt,Vec**);
 extern PetscErrorCode KSPDefaultGetWork(KSP,PetscInt);

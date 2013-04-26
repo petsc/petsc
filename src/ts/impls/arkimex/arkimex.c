@@ -51,12 +51,16 @@ typedef struct {
 
      This method has one explicit stage and two implicit stages.
 
+     Level: advanced
+
 .seealso: TSARKIMEX
 M*/
 /*MC
      TSARKIMEX2E - Second order ARK IMEX scheme with L-stable implicit part.
 
      This method has one explicit stage and two implicit stages. It is is an optimal method developed by Emil Constantinescu.
+
+     Level: advanced
 
 .seealso: TSARKIMEX
 M*/
@@ -68,6 +72,8 @@ M*/
      References:
      Kennedy and Carpenter 2003.
 
+     Level: advanced
+
 .seealso: TSARKIMEX
 M*/
 /*MC
@@ -78,6 +84,8 @@ M*/
      References:
      Kennedy and Carpenter 2003.
 
+     Level: advanced
+
 .seealso: TSARKIMEX
 M*/
 /*MC
@@ -87,6 +95,8 @@ M*/
 
      References:
      Kennedy and Carpenter 2003.
+
+     Level: advanced
 
 .seealso: TSARKIMEX
 M*/
@@ -477,6 +487,7 @@ static PetscErrorCode TSDestroy_ARKIMEX(TS ts)
   ierr = PetscFree(ts->data);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSARKIMEXGetType_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSARKIMEXSetType_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSARKIMEXSetFullyImplicit_C","",PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -570,12 +581,13 @@ static PetscErrorCode TSSetFromOptions_ARKIMEX(TS ts)
 static PetscErrorCode PetscFormatRealArray(char buf[],size_t len,const char *fmt,PetscInt n,const PetscReal x[])
 {
   PetscErrorCode ierr;
-  int i,left,count;
+  PetscInt i;
+  size_t left,count;
   char *p;
 
   PetscFunctionBegin;
-  for (i=0,p=buf,left=(int)len; i<n; i++) {
-    ierr = PetscSNPrintf(p,left,fmt,&count,x[i]);CHKERRQ(ierr);
+  for (i=0,p=buf,left=len; i<n; i++) {
+    ierr = PetscSNPrintfCount(p,left,fmt,&count,x[i]);CHKERRQ(ierr);
     if (count >= left) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Insufficient space in buffer");
     left -= count;
     p += count;
@@ -753,7 +765,7 @@ EXTERN_C_END
   Level: beginner
 
 .seealso:  TSCreate(), TS, TSSetType(), TSARKIMEXSetType(), TSARKIMEXGetType(), TSARKIMEXSetFullyImplicit(), TSARKIMEX2D, TTSARKIMEX2E, TSARKIMEX3, 
-           TSARKIMEX4, TSARKIMEX5, TSARKIMEXType, SARKIMEXRegister()
+           TSARKIMEX4, TSARKIMEX5, TSARKIMEXType, TSARKIMEXRegister()
 
 M*/
 EXTERN_C_BEGIN

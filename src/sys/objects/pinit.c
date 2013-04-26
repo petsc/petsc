@@ -357,7 +357,7 @@ void  PetscMax_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *datatype)
   }
 
   for (i=0; i<count; i++) {
-    xout[i] += PetscMax(xout[i],xin[i]); 
+    xout[i] = PetscMax(xout[i],xin[i]); 
   }
   PetscFunctionReturnVoid();
 }
@@ -378,7 +378,7 @@ void  PetscMin_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *datatype)
   }
 
   for (i=0; i<count; i++) {
-    xout[i] += PetscMin(xout[i],xin[i]); 
+    xout[i] = PetscMin(xout[i],xin[i]); 
   }
   PetscFunctionReturnVoid();
 }
@@ -1246,3 +1246,26 @@ PetscErrorCode  PetscFinalize(void)
   PetscFunctionReturn(ierr);
 }
 
+#if defined(PETSC_MISSING_LAPACK_lsame_)
+EXTERN_C_BEGIN
+int lsame_(char *a,char *b)
+{
+  if (*a == *b) return 1;
+  if (*a + 32 == *b) return 1;
+  if (*a - 32 == *b) return 1;
+  return 0;
+}
+EXTERN_C_END
+#endif
+
+#if defined(PETSC_MISSING_LAPACK_lsame)
+EXTERN_C_BEGIN
+int lsame(char *a,char *b)
+{
+  if (*a == *b) return 1;
+  if (*a + 32 == *b) return 1;
+  if (*a - 32 == *b) return 1;
+  return 0;
+}
+EXTERN_C_END
+#endif

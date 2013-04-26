@@ -4,8 +4,8 @@ FFLAGS	        =
 CPPFLAGS        =
 FPPFLAGS        =	 
 LOCDIR          = src/snes/examples/tests/
-EXAMPLESC       = ex1.c ex4.c ex5.c ex7.c ex9.c ex11.c ex13.c ex17.c
-EXAMPLESF       = ex1f.F ex12f.F
+EXAMPLESC       = ex1.c ex4.c ex5.c ex7.c ex8.c ex9.c ex10.c ex11.c ex13.c ex15.c ex16.c ex17.c
+EXAMPLESF       = ex1f.F ex12f.F ex14f.F
 DIRS	        = 
 MANSEC          = SNES
 

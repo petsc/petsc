@@ -50,6 +50,7 @@ BLASSRC="$1"
 LAPACKSRC="$2"
 ORIG=$PWD
 MAXPROCS="16"
+TESTING="0"   # 0: don't include second, dsecnd and qsecnd
 
 # 0) Create the temp directory and compile some scripts
 mkdir $TMP
@@ -115,8 +116,8 @@ ALL: blas_lib lapack_lib
 # Specify options to compile and create libraries
 ########################################################################################
 CC         = cc
-COPTFLAGS  = -O -DDOUBLE=double -DLONG=""
-CNOOPT     = -O0 -DDOUBLE=double -DLONG=""
+COPTFLAGS  = -O
+CNOOPT     = -O0
 RM         = /bin/rm
 AR         = ar
 AR_FLAGS   = cr
@@ -232,6 +233,9 @@ for p in blas qblas lapack qlapack; do
 		SRC=$BLASSRC
 		DES=$BLASDIR
 		NOOP=""
+		echo "pow_ii" > ${TMP}/AUX.list
+		echo $'pow_si\nsmaxloc\nsf__cabs' > ${TMP}/SINGLE.list
+		echo $'pow_di\ndmaxloc\ndf__cabs' > ${TMP}/DOUBLE.list
 		cd $SRC
 		files="`ls *.f`"
 		cd -
@@ -240,6 +244,7 @@ for p in blas qblas lapack qlapack; do
 		SRC=$TMP
 		DES=$BLASDIR
 		NOOP=""
+		echo $'pow_qi\nqmaxloc\nqf__cabs' > ${TMP}/QUAD.list
 		files="`cat ${TMP}/ql.list`"
 		;;
 
@@ -248,8 +253,12 @@ for p in blas qblas lapack qlapack; do
 		DES=$LAPACKDIR
 		NOOP="slaruv dlaruv slamch dlamch"
 		rm ${TMP}/AUX.list
-		echo $'slamch\nsecond' > ${TMP}/SINGLE.list
-		echo $'dlamch\ndsecnd' > ${TMP}/DOUBLE.list
+		echo 'slamch' > ${TMP}/SINGLE.list
+		echo 'dlamch' > ${TMP}/DOUBLE.list
+		if [[ ${TESTING} != "0" ]]; then
+			echo 'second' > ${TMP}/SINGLE.list
+			echo 'dsecnd' > ${TMP}/DOUBLE.list
+		fi
 		rm ${TMP}/QUAD.list
 		cd $SRC
 		files="`ls *.f`"
@@ -290,6 +299,7 @@ for p in blas qblas lapack qlapack; do
 		# - Replace CHARACTER(1) by CHARACTER
 		# - Replace the intrinsic functions exit and maxloc by the macros myexit and mymaxloc
 		# - Replace sqrt, sin, cos, log and exp by M(*)
+		# - Replace max and min by f2cmax and f2cmin
 		$SED -r -e "
 			s/RECURSIVE//g;
 			s/CHARACTER\\(1\\)/CHARACTER/g;
@@ -307,7 +317,9 @@ for p in blas qblas lapack qlapack; do
 			s/myexit_\\(void\\)/mecago_()/g;
 			$( for i in sqrt sin cos log exp; do
 				echo "s/([^a-zA-Z_1-9]+)${i}([^a-zA-Z_1-9]+)/\\1M(${i})\\2/g;"
-			done )" |
+			done )
+			s/([^a-zA-Z_1-9]+)max([^a-zA-Z_1-9]+)/\\1f2cmax\\2/g;
+			s/([^a-zA-Z_1-9]+)min([^a-zA-Z_1-9]+)/\\1f2cmin\\2/g;" |
 		$AWK '
 			BEGIN {	a=1; }
 			{
@@ -1008,38 +1020,38 @@ L10:
 /*            ( Non twos-complement machines, with gradual underflow; */
 /*              e.g., IEEE standard followers ) */
 	    } else {
-		lemin = min(ngpmin,gpmin);
+		lemin = f2cmin(ngpmin,gpmin);
 /*            ( A guess; no known machine ) */
 		iwarn = TRUE_;
 	    }
 
 	} else if (ngpmin == gpmin && ngnmin == gnmin) {
 	    if ((i__1 = ngpmin - ngnmin, abs(i__1)) == 1) {
-		lemin = max(ngpmin,ngnmin);
+		lemin = f2cmax(ngpmin,ngnmin);
 /*            ( Twos-complement machines, no gradual underflow; */
 /*              e.g., CYBER 205 ) */
 	    } else {
-		lemin = min(ngpmin,ngnmin);
+		lemin = f2cmin(ngpmin,ngnmin);
 /*            ( A guess; no known machine ) */
 		iwarn = TRUE_;
 	    }
 
 	} else if ((i__1 = ngpmin - ngnmin, abs(i__1)) == 1 && gpmin == gnmin)
 		 {
-	    if (gpmin - min(ngpmin,ngnmin) == 3) {
-		lemin = max(ngpmin,ngnmin) - 1 + lt;
+	    if (gpmin - f2cmin(ngpmin,ngnmin) == 3) {
+		lemin = f2cmax(ngpmin,ngnmin) - 1 + lt;
 /*            ( Twos-complement machines with gradual underflow; */
 /*              no known machine ) */
 	    } else {
-		lemin = min(ngpmin,ngnmin);
+		lemin = f2cmin(ngpmin,ngnmin);
 /*            ( A guess; no known machine ) */
 		iwarn = TRUE_;
 	    }
 
 	} else {
 /* Computing MIN */
-	    i__1 = min(ngpmin,ngnmin), i__1 = min(i__1,gpmin);
-	    lemin = min(i__1,gnmin);
+	    i__1 = f2cmin(ngpmin,ngnmin), i__1 = f2cmin(i__1,gpmin);
+	    lemin = f2cmin(i__1,gnmin);
 /*         ( A guess; no known machine ) */
 	    iwarn = TRUE_;
 	}
@@ -2003,38 +2015,38 @@ L10:
 /*            ( Non twos-complement machines, with gradual underflow; */
 /*              e.g., IEEE standard followers ) */
 	    } else {
-		lemin = min(ngpmin,gpmin);
+		lemin = f2cmin(ngpmin,gpmin);
 /*            ( A guess; no known machine ) */
 		iwarn = TRUE_;
 	    }
 
 	} else if (ngpmin == gpmin && ngnmin == gnmin) {
 	    if ((i__1 = ngpmin - ngnmin, abs(i__1)) == 1) {
-		lemin = max(ngpmin,ngnmin);
+		lemin = f2cmax(ngpmin,ngnmin);
 /*            ( Twos-complement machines, no gradual underflow; */
 /*              e.g., CYBER 205 ) */
 	    } else {
-		lemin = min(ngpmin,ngnmin);
+		lemin = f2cmin(ngpmin,ngnmin);
 /*            ( A guess; no known machine ) */
 		iwarn = TRUE_;
 	    }
 
 	} else if ((i__1 = ngpmin - ngnmin, abs(i__1)) == 1 && gpmin == gnmin)
 		 {
-	    if (gpmin - min(ngpmin,ngnmin) == 3) {
-		lemin = max(ngpmin,ngnmin) - 1 + lt;
+	    if (gpmin - f2cmin(ngpmin,ngnmin) == 3) {
+		lemin = f2cmax(ngpmin,ngnmin) - 1 + lt;
 /*            ( Twos-complement machines with gradual underflow; */
 /*              no known machine ) */
 	    } else {
-		lemin = min(ngpmin,ngnmin);
+		lemin = f2cmin(ngpmin,ngnmin);
 /*            ( A guess; no known machine ) */
 		iwarn = TRUE_;
 	    }
 
 	} else {
 /* Computing MIN */
-	    i__1 = min(ngpmin,ngnmin), i__1 = min(i__1,gpmin);
-	    lemin = min(i__1,gnmin);
+	    i__1 = f2cmin(ngpmin,ngnmin), i__1 = f2cmin(i__1,gpmin);
+	    lemin = f2cmin(i__1,gnmin);
 /*         ( A guess; no known machine ) */
 	    iwarn = TRUE_;
 	}
@@ -2999,38 +3011,38 @@ L10:
 /*            ( Non twos-complement machines, with gradual underflow; */
 /*              e.g., IEEE standard followers ) */
 	    } else {
-		lemin = min(ngpmin,gpmin);
+		lemin = f2cmin(ngpmin,gpmin);
 /*            ( A guess; no known machine ) */
 		iwarn = TRUE_;
 	    }
 
 	} else if (ngpmin == gpmin && ngnmin == gnmin) {
 	    if ((i__1 = ngpmin - ngnmin, abs(i__1)) == 1) {
-		lemin = max(ngpmin,ngnmin);
+		lemin = f2cmax(ngpmin,ngnmin);
 /*            ( Twos-complement machines, no gradual underflow; */
 /*              e.g., CYBER 205 ) */
 	    } else {
-		lemin = min(ngpmin,ngnmin);
+		lemin = f2cmin(ngpmin,ngnmin);
 /*            ( A guess; no known machine ) */
 		iwarn = TRUE_;
 	    }
 
 	} else if ((i__1 = ngpmin - ngnmin, abs(i__1)) == 1 && gpmin == gnmin)
 		 {
-	    if (gpmin - min(ngpmin,ngnmin) == 3) {
-		lemin = max(ngpmin,ngnmin) - 1 + lt;
+	    if (gpmin - f2cmin(ngpmin,ngnmin) == 3) {
+		lemin = f2cmax(ngpmin,ngnmin) - 1 + lt;
 /*            ( Twos-complement machines with gradual underflow; */
 /*              no known machine ) */
 	    } else {
-		lemin = min(ngpmin,ngnmin);
+		lemin = f2cmin(ngpmin,ngnmin);
 /*            ( A guess; no known machine ) */
 		iwarn = TRUE_;
 	    }
 
 	} else {
 /* Computing MIN */
-	    i__1 = min(ngpmin,ngnmin), i__1 = min(i__1,gpmin);
-	    lemin = min(i__1,gnmin);
+	    i__1 = f2cmin(ngpmin,ngnmin), i__1 = f2cmin(i__1,gpmin);
+	    lemin = f2cmin(i__1,gnmin);
 /*         ( A guess; no known machine ) */
 	    iwarn = TRUE_;
 	}
@@ -3406,7 +3418,8 @@ L10:
 } /* qlamc5_ */
 EOF
 
-	cat << EOF > ${LAPACKDIR}/second.c
+	if [[ $TESTING != 0 ]]; then
+		cat << EOF > ${LAPACKDIR}/second.c
 #include "f2c.h"
 #include <sys/times.h>
 #include <sys/types.h>
@@ -3426,7 +3439,7 @@ real second_()
 } /* second_ */
 EOF
 
-	cat << EOF > ${LAPACKDIR}/dsecnd.c
+		cat << EOF > ${LAPACKDIR}/dsecnd.c
 #include "f2c.h"
 #include <sys/times.h>
 #include <sys/types.h>
@@ -3444,9 +3457,8 @@ doublereal dsecnd_()
   return (doublereal)(rusage.tms_utime) / CLK_TCK;
 
 } /* dsecnd_ */
-
 EOF
-
+	fi
 
 	cat << EOF > ${BLASDIR}/lsame.c
 #include "f2c.h"
@@ -3700,10 +3712,19 @@ EOF
 #	define M(A) A##q
 	typedef __float128 quadreal;
 	typedef struct { quadreal r, i; } quadcomplex;
+#	define scalar __float128
+#	define scalarcomplex quadcomplex
+#	define dscalar __float128
 #elif defined( __LAPACK_PRECISION_SINGLE)
 #	define M(A) A##f
+#	define scalar float
+#	define scalarcomplex complex
+#	define dscalar double
 #else
 #	define M(A) A
+#	define scalar double
+#	define scalarcomplex doublecomplex
+#	define dscalar double
 #endif
 #include <stdlib.h>
 #include <string.h>
@@ -3841,12 +3862,12 @@ struct Namelist {
 	};
 typedef struct Namelist Namelist;
 
-#define abs(x) ({ typeof(x) __x=(x); __x >= 0 ? __x : -__x; })
+#define abs(x) ((x) >= 0 ? (x) : -(x))
 #define dabs(x) (abs(x))
-#define min(a,b) ({ typeof(a) __a=(a), __b=(b); __a <= __b ? __a : __b; })
-#define max(a,b) ({ typeof(a) __a=(a), __b=(b); __a >= __b ? __a : __b; })
-#define dmin(a,b) (min(a,b))
-#define dmax(a,b) (max(a,b))
+#define f2cmin(a,b) ((a) <= (b) ? (a) : (b))
+#define f2cmax(a,b) ((a) >= (b) ? (a) : (b))
+#define dmin(a,b) (f2cmin(a,b))
+#define dmax(a,b) (f2cmax(a,b))
 #define bit_test(a,b)	((a) >> (b) & 1)
 #define bit_clear(a,b)	((a) & ~((uinteger)1 << (b)))
 #define bit_set(a,b)	((a) |  ((uinteger)1 << (b)))
@@ -3854,28 +3875,20 @@ typedef struct Namelist Namelist;
 #define abort_() { \
 sig_die("Fortran abort routine called", 1); \
 }
-#define f__cabs(_r, _i) ({ \
-	typeof(_r) __r=(_r), __i=(_i), __temp; \
-	if(__r < 0) \
-		__r = -__r; \
-	if(__i < 0) \
-		__i = -__i; \
-	if(__i > __r){ \
-		__temp = __r; \
-		__r = __i; \
-		__i = __temp; \
-	} \
-	if((__r+__i) == __r) \
-		__temp = __r; \
-	else { \
-		__temp = __i/__r; \
-		__temp = __r*M(sqrt)(M(1.0) + __temp*__temp);  /*overflow!!*/ \
-	} \
-	__temp; })
+#if defined(__LAPACK_PRECISION_QUAD)
+#	define f__cabs(r,i) qf__cabs((r),(i))
+	extern scalar qf__cabs(scalar r, scalar i);
+#elif defined( __LAPACK_PRECISION_SINGLE)
+#	define f__cabs(r,i) sf__cabs((r),(i))
+	extern scalar sf__cabs(scalar r, scalar i);
+#else
+#	define f__cabs(r,i) df__cabs((r),(i))
+	extern scalar df__cabs(scalar r, scalar i);
+#endif
 #define c_abs(z) ( f__cabs( (z)->r, (z)->i ) )
 #define c_cos(R,Z) {(R)->r = (M(cos)((Z)->r) * M(cosh)((Z)->i)); (R)->i = (-M(sin)((Z)->r) * M(sinh)((Z)->i));}
 #define c_div(c, a, b) { \
-	typeof((c)->r) __ratio, __den, __abr, __abi, __cr; \
+	scalar __ratio, __den, __abr, __abi, __cr; \
 	if( (__abr = (b)->r) < 0.) \
 		__abr = - __abr; \
 	if( (__abi = (b)->i) < 0.) \
@@ -3903,7 +3916,7 @@ sig_die("Fortran abort routine called", 1); \
 #define c_log(R, Z) { (R)->i = M(atan2)((Z)->i, (Z)->r); (R)->r = M(log)( f__cabs((Z)->r, (Z)->i) ); }
 #define c_sin(R, Z) { (R)->r = (M(sin)((Z)->r) * M(cosh)((Z)->i)); (R)->i = (M(cos)((Z)->r) * M(sinh)((Z)->i)); }
 #define c_sqrt(R, Z) { \
-	typeof((R)->r) __mag, __t, __zi = (Z)->i, __zr = (Z)->r; \
+	scalar __mag, __t, __zi = (Z)->i, __zr = (Z)->r; \
 	if( (__mag = f__cabs(__zr, __zi)) == 0.) (R)->r = (R)->i = 0.; \
 	else if(__zr > 0) { \
 		(R)->r = __t = M(sqrt)(M(0.5) * (__mag + __zr) ); \
@@ -3917,7 +3930,7 @@ sig_die("Fortran abort routine called", 1); \
 		(R)->r = M(0.5) * __t; \
 	} \
 }
-#define d_abs(x) abs(*(x)
+#define d_abs(x) abs(*(x))
 #define d_acos(x) (M(acos)(*(x)))
 #define d_asin(x) (M(asin)(*(x)))
 #define d_atan(x) (M(atan)(*(x)))
@@ -3925,16 +3938,16 @@ sig_die("Fortran abort routine called", 1); \
 #define d_cnjg(R, Z) { (R)->r = (Z)->r;	(R)->i = -((Z)->i); }
 #define d_cos(x) (M(cos)(*(x)))
 #define d_cosh(x) (M(cosh)(*(x)))
-#define d_dim(a, b) ({typeof(*(a)) __a=*(a), __b=*(b); __a > __b ? __a - __b : 0.0; })
+#define d_dim(__a, __b) ( *(__a) > *(__b) ? *(__a) - *(__b) : 0.0 )
 #define d_exp(x) (M(exp)(*(x)))
 #define d_imag(z) ((z)->i)
-#define d_int(x) ({ typeof(*(x)) __x=*(x); __x>0 ? M(floor)(__x) : -M(floor)(- __x); })
+#define d_int(__x) (*(__x)>0 ? M(floor)(*(__x)) : -M(floor)(- *(__x)))
 #define d_lg10(x) ( M(0.43429448190325182765) * M(log)(*(x)) )
 #define d_log(x) (M(log)(*(x)))
 #define d_mod(x, y) (M(fmod)(*(x), *(y)))
-#define u_nint(x) ({ typeof(x) __x=(x); __x>=0 ? M(floor)(__x + M(.5)) : -M(floor)(M(.5) - __x); })
+#define u_nint(__x) ((__x)>=0 ? M(floor)((__x) + M(.5)) : -M(floor)(M(.5) - (__x)))
 #define d_nint(x) u_nint(*(x))
-#define u_sign(a,b) ({ typeof(a) __a=(a), __b=(b), __c=__a >= 0 ? __a : -__a; __b >= 0 ? __c : -__c; })
+#define u_sign(__a,__b) ((__b) >= 0 ? ((__a) >= 0 ? (__a) : -(__a)) : -((__a) >= 0 ? (__a) : -(__a)))
 #define d_sign(a,b) u_sign(*(a),*(b))
 #define d_sin(x) (M(sin)(*(x)))
 #define d_sinh(x) (M(sinh)(*(x)))
@@ -3948,38 +3961,20 @@ sig_die("Fortran abort routine called", 1); \
 #define i_sign(a,b) ((integer)u_sign((integer)*(a),(integer)*(b)))
 #define pow_ci(p, a, b) { pow_zi((p), (a), (b)); }
 #define pow_dd(ap, bp) (M(pow)(*(ap), *(bp)))
-#define pow_di(B,E) pow_ui(*(B),*(E))
-#define pow_ii(B,E) ({ \
-	integer __x=*(B), __n=*(E), __pow; unsigned long int __u; \
-	if (__n <= 0) { \
-		if (__n == 0 || __x == 1) __pow = 1; \
-		else if (__x != -1) __pow = __x == 0 ? 1/__x : 0; \
-		else __n = -__n; \
-	} \
-	if ((__n > 0) || !(__n == 0 || __x == 1 || __x != -1)) { \
-		__u = __n; \
-		for(__pow = 1; ; ) { \
-			if(__u & 01) __pow *= __x; \
-			if(__u >>= 1) __x *= __x; \
-			else break; \
-		} \
-	} \
-	__pow; })
-#define pow_ri(B,E) pow_ui((doublereal)/*critical casting*/*(B),*(E))
-#define pow_ui(B,E) ({ \
-	typeof(B)  __x = (B); integer __n = (E); typeof(B) __pow=1.0; unsigned long int __u; \
-	if(__n != 0) { \
-		if(__n < 0) __n = -__n, __x = 1/__x; \
-		for(__u = __n; ; ) { \
-			if(__u & 01) __pow *= __x; \
-			if(__u >>= 1) __x *= __x; \
-			else break; \
-		} \
-	} \
-	__pow; })
+#if defined(__LAPACK_PRECISION_QUAD)
+#	define pow_di(B,E) qpow_ui((B),*(E))
+	extern dscalar qpow_ui(scalar *_x, integer n);
+#elif defined( __LAPACK_PRECISION_SINGLE)
+#	define pow_ri(B,E) spow_ui((B),*(E))
+	extern dscalar spow_ui(scalar *_x, integer n);
+#else
+#	define pow_di(B,E) dpow_ui((B),*(E))
+	extern dscalar dpow_ui(scalar *_x, integer n);
+#endif
+extern integer pow_ii(integer*,integer*);
 #define pow_zi(p, a, b) { \
-	integer __n=*(b); unsigned long __u; typeof((p)->r) __t; typeof(*(p)) __x; \
-	static typeof(*(p)) one = {1.0, 0.0}; \
+	integer __n=*(b); unsigned long __u; scalar __t; scalarcomplex __x; \
+	static scalarcomplex one = {1.0, 0.0}; \
 	(p)->r = 1; (p)->i = 0; \
 	if(__n != 0) { \
 		if(__n < 0) { \
@@ -4003,7 +3998,7 @@ sig_die("Fortran abort routine called", 1); \
 	} \
 }
 #define pow_zz(R,A,B) { \
-	typeof((R)->r) __logr, __logi, __x, __y; \
+	scalar __logr, __logi, __x, __y; \
 	__logr = M(log)( f__cabs((A)->r, (A)->i) ); \
 	__logi = M(atan2)((A)->i, (A)->r); \
 	__x = M(exp)( __logr * (B)->r - __logi * (B)->i ); \
@@ -4027,21 +4022,25 @@ sig_die("Fortran abort routine called", 1); \
         } \
 	while(--ll >= 0) *lp++ = ' '; \
 }
-#define s_cmp(a,b,c,d) ((integer)strncmp((a),(b),min((c),(d))))
-#define s_copy(A,B,C,D) { strncpy((A),(B),min((C),(D))); }
+#define s_cmp(a,b,c,d) ((integer)strncmp((a),(b),f2cmin((c),(d))))
+#define s_copy(A,B,C,D) { strncpy((A),(B),f2cmin((C),(D))); }
 #define sig_die(s, kill) { exit(1); }
 #define s_stop(s, n) {exit(0);}
 static char junk[] = "\n@(#)LIBF77 VERSION 19990503\n";
 #define z_abs(z) c_abs(z)
 #define z_exp(R, Z) c_exp(R, Z)
 #define z_sqrt(R, Z) c_sqrt(R, Z)
-//#define myexit_() exit(EXIT_FAILURE)
 #define myexit_() break;
-#define mymaxloc_(w,s,e,n) ({ \
-	typeof(*(w)) __m; integer __i, __mi; \
-	for(__m=(w)[*(s)-1], __mi=*(s), __i=*(s)+1; __i<=*(e); __i++) \
-		if ((w)[__i-1]>__m) __mi=__i ,__m=(w)[__i-1]; \
-	__mi-*(s)+1; })
+#if defined(__LAPACK_PRECISION_QUAD)
+#	define mymaxloc_(w,s,e,n) qmaxloc_((w),*(s),*(e),n)
+	extern integer qmaxloc_(scalar *w, integer s, integer e, integer *n);
+#elif defined( __LAPACK_PRECISION_SINGLE)
+#	define mymaxloc_(w,s,e,n) smaxloc_((w),*(s),*(e),n)
+	extern integer smaxloc_(scalar *w, integer s, integer e, integer *n);
+#else
+#	define mymaxloc_(w,s,e,n) dmaxloc_((w),*(s),*(e),n)
+	extern integer dmaxloc_(scalar *w, integer s, integer e, integer *n);
+#endif
 
 /* procedure parameter types for -A and -C++ */
 
@@ -4056,6 +4055,87 @@ EOF
 	cp ${TMP}/f2c.h ${BLASDIR}
 	cp ${TMP}/f2c.h ${LAPACKDIR}
 
+
+	cat <<EOF > ${BLASDIR}/pow_ii.c
+#include "f2c.h"
+integer pow_ii(integer *_x, integer *_n) {
+	integer x=*_x, n=*_n, pow; unsigned long int u;
+	if (n <= 0) {
+		if (n == 0 || x == 1) pow = 1;
+		else if (x != -1) pow = x == 0 ? 1/x : 0;
+		else n = -n;
+	}
+	if ((n > 0) || !(n == 0 || x == 1 || x != -1)) {
+		u = n;
+		for(pow = 1; ; ) {
+			if(u & 01) pow *= x;
+			if(u >>= 1) x *= x;
+			else break;
+		}
+	}
+	return pow;
+}
+EOF
+
+	for i in s d q; do
+		case $i in
+		s) P="SINGLE";;
+		d) P="DOUBLE";;
+		q) P="QUAD";;
+		esac
+
+		cat <<EOF > ${BLASDIR}/pow_${i}i.c
+#define __LAPACK_PRECISION_${P}
+#include "f2c.h"
+dscalar ${i}pow_ui(scalar *_x, integer n) {
+	dscalar x = *_x; dscalar pow=1.0; unsigned long int u;
+	if(n != 0) {
+		if(n < 0) n = -n, x = 1/x;
+		for(u = n; ; ) {
+			if(u & 01) pow *= x;
+			if(u >>= 1) x *= x;
+			else break;
+		}
+	}
+	return pow;
+}
+EOF
+		cat <<EOF > ${BLASDIR}/${i}maxloc.c
+#define __LAPACK_PRECISION_${P}
+#include "f2c.h"
+integer ${i}maxloc_(scalar *w, integer s, integer e, integer *n)
+{
+	scalar m; integer i, mi;
+	for(m=w[s-1], mi=s, i=s+1; i<=e; i++)
+		if (w[i-1]>m) mi=i ,m=w[i-1];
+	return mi-s+1;
+}
+EOF
+
+		cat <<EOF > ${BLASDIR}/${i}f__cabs.c
+#define __LAPACK_PRECISION_${P}
+#include "f2c.h"
+scalar ${i}f__cabs(scalar r, scalar i) {
+	scalar temp;
+	if(r < 0) r = -r;
+	if(i < 0) i = -i;
+	if(i > r){
+		temp = r;
+		r = i;
+		i = temp;
+	}
+	if((r+i) == r)
+		temp = r;
+	else {
+		temp = i/r;
+		temp = r*M(sqrt)(M(1.0) + temp*temp);  /*overflow!!*/
+	}
+	return temp;
+}
+EOF
+	done
+
+		
 # 3) Make the package, copy it to the current directory
 #	 and remove temp directory
 cd $TMP
