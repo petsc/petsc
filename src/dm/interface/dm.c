@@ -1716,11 +1716,7 @@ PetscErrorCode  DMLocalToGlobalBegin(DM dm,Vec l,InsertMode mode,Vec g)
     switch (mode) {
     case INSERT_VALUES:
     case INSERT_ALL_VALUES:
-#if defined(PETSC_HAVE_MPI_REPLACE)
-      op = MPI_REPLACE; break;
-#else
-      SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"No support for INSERT_VALUES without an MPI-2 implementation");
-#endif
+      op = MPIU_REPLACE; break;
     case ADD_VALUES:
     case ADD_ALL_VALUES:
       op = MPI_SUM; break;
@@ -1772,11 +1768,7 @@ PetscErrorCode  DMLocalToGlobalEnd(DM dm,Vec l,InsertMode mode,Vec g)
     switch (mode) {
     case INSERT_VALUES:
     case INSERT_ALL_VALUES:
-#if defined(PETSC_HAVE_MPI_REPLACE)
-      op = MPI_REPLACE; break;
-#else
-      SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"No support for INSERT_VALUES without an MPI-2 implementation");
-#endif
+      op = MPIU_REPLACE; break;
     case ADD_VALUES:
     case ADD_ALL_VALUES:
       op = MPI_SUM; break;
