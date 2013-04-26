@@ -75,12 +75,12 @@ class Configure(config.package.Package):
       otherLibs += self.compilers.flibs
     return otherLibs
 
-  def checkBlas(self, blasLibrary, otherLibs, fortranMangle, routine = 'dot'):
+  def checkBlas(self, blasLibrary, otherLibs, fortranMangle, routineIn = 'dot'):
     '''This checks the given library for the routine, dot by default'''
     oldLibs = self.compilers.LIBS
     prototype = ''
     call      = ''
-    routine   = self.getPrefix()+routine
+    routine   = self.getPrefix()+routineIn
     if fortranMangle=='stdcall':
       if routine=='ddot':
         prototype = 'double __stdcall DDOT(int*,double*,int*,double*,int*);'
@@ -89,8 +89,9 @@ class Configure(config.package.Package):
     self.compilers.LIBS = oldLibs
     return found
 
-  def checkLapack(self, lapackLibrary, otherLibs, fortranMangle, routines = ['getrs', 'geev']):
+  def checkLapack(self, lapackLibrary, otherLibs, fortranMangle, routinesIn = ['getrs', 'geev']):
     oldLibs = self.compilers.LIBS
+    routines = list(routinesIn)
     found   = 0
     prototypes = ['','']
     calls      = ['','']
