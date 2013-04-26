@@ -1382,7 +1382,6 @@ if (dlclose(handle)) {
             self.dynamicLibraries = 1
             self.logPrint('Using dynamic linker '+self.dynamicLinker+' with flags '+str(self.dynamicLibraryFlags)+' and library extension '+self.dynamicLibraryExt)
             break
-          os.remove(oldLib)
         if os.path.isfile(self.linkerObj): os.remove(self.linkerObj)
         del self.dynamicLinker
     return

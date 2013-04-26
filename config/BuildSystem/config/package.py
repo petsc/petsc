@@ -204,8 +204,11 @@ class Package(config.base.Configure):
     for libSet in self.liblist:
       libs = []
       # add full path only to the first library in the list
-      if not self.libdir == directory and len(libSet) > 0:
-        libs.append(os.path.join(directory, libSet[0]))
+      if len(libSet) > 0:
+        if not self.libdir == directory:
+          libs.append(os.path.join(directory, libSet[0]))
+        else:
+          libs.append(libSet[0])
       for library in libSet[1:]:
         # if the library name doesn't start with lib - then add the fullpath
         if library.startswith('lib') or self.libdir == directory:

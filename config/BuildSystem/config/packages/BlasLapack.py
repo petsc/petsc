@@ -155,7 +155,10 @@ class Configure(config.package.Package):
     if self.f2cblaslapack.found:
       self.f2c = 1
       libDir = self.f2cblaslapack.libDir
-      yield ('f2cblaslapack',os.path.join(libDir,'libf2cblas.a') , os.path.join(libDir,'libf2clapack.a'), 0)
+      f2cLibs = [os.path.join(libDir,'libf2cblas.a')]
+      if self.libraries.math:
+        f2cLibs = f2cLibs+self.libraries.math
+      yield ('f2cblaslapack', f2cLibs, os.path.join(libDir,'libf2clapack.a'), 0)
       raise RuntimeError('--download-f2cblaslapack libraries cannot be used')
     if 'with-blas-lib' in self.framework.argDB and not 'with-lapack-lib' in self.framework.argDB:
       raise RuntimeError('If you use the --with-blas-lib=<lib> you must also use --with-lapack-lib=<lib> option')
@@ -214,8 +217,10 @@ class Configure(config.package.Package):
       # Some new MKL 11/12 variations
       for libdir in ['',os.path.join('lib','32'),os.path.join('lib','ia32')]:
         yield ('User specified MKL11/12 Linux32', None, [os.path.join(dir,libdir,'libmkl_intel.a'),'mkl_intel_thread','mkl_core','iomp5','pthread'],1)
+        yield ('User specified MKL11/12 Linux32', None, [os.path.join(dir,libdir,'libmkl_intel.a'),'mkl_gnu_thread','mkl_core','gomp','pthread'],1) #gnu
       for libdir in ['',os.path.join('lib','em64t'),os.path.join('lib','intel64')]:
         yield ('User specified MKL11/12 Linux64', None, [os.path.join(dir,libdir,'libmkl_intel_lp64.a'),'mkl_intel_thread','mkl_core','iomp5','pthread'],1)
+        yield ('User specified MKL11/12 Linux64', None, [os.path.join(dir,libdir,'libmkl_intel_lp64.a'),'mkl_gnu_thread','mkl_core','gomp','pthread'],1) #gnu
       # Older Linux MKL checks
       yield ('User specified MKL Linux-x86 lib dir', None, [os.path.join(dir, 'libmkl_lapack.a'), 'libmkl_def.a', 'guide', 'pthread'], 1)
       yield ('User specified MKL Linux-x86 lib dir', None, [os.path.join(dir, 'libmkl_lapack.a'), 'libmkl_def.a', 'guide', 'vml','pthread'], 1)
@@ -324,7 +329,7 @@ class Configure(config.package.Package):
     return ''
 
   def getWindowsNonOptFlags(self,cflags):
-    for flag in ['-MT','-MTd','-MD','-threads']:
+    for flag in ['-MT','-MTd','-MD','-MDd','-threads']:
       if cflags.find(flag) >=0: return flag
     return ''
 
@@ -520,6 +525,19 @@ class Configure(config.package.Package):
         self.compilers.LIBS = oldLibs
     return
 
+  def checklsame(self):
+    ''' Do the BLAS/LAPACK libraries have a valid lsame() function with correction binding. Lion and xcode 4.2 do not'''
+    routine = 'lsame';
+    if self.f2c:
+      if self.mangling == 'underscore':
+        routine = routine + '_'
+    else:
+      routine = self.compilers.mangleFortranFunction(routine)
+    if not self.libraries.check(self.dlib,routine,fortranMangle = 0):
+      self.addDefine('MISSING_LAPACK_'+routine, 1)
+
+
+
   def checkForRoutine(self,routine):
     ''' used by other packages to see if a BLAS routine is available
         This is not really correct because other packages do not (usually) know about f2cblasLapack'''
@@ -531,11 +549,14 @@ class Configure(config.package.Package):
     else:
       return self.libraries.check(self.dlib,routine,fortranMangle = hasattr(self.compilers, 'FC'))
 
+
+
   def configure(self):
     self.executeTest(self.configureLibrary)
     self.executeTest(self.checkESSL)
     self.executeTest(self.checkPESSL)
     self.executeTest(self.checkMissing)
+    self.executeTest(self.checklsame)
     return
 
 if __name__ == '__main__':

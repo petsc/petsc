@@ -5,6 +5,8 @@ class Configure(config.package.Package):
     config.package.Package.__init__(self, framework)
     self.download         = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/f2cblaslapack-3.1.1.q.tar.gz']
     self.double           = 0
+    self.worksonWindows   = 1
+    self.downloadonWindows= 1
 
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
@@ -38,15 +40,15 @@ class Configure(config.package.Package):
     return ''
 
   def getWindowsNonOptFlags(self,cflags):
-    for flag in ['-MT','-MTd','-MD','-threads']:
+    for flag in ['-MT','-MTd','-MD','-MDd','-threads']:
       if cflags.find(flag) >=0: return flag
     return ''
 
   def Install(self):
     import os
 
-    precision = self.defaultPrecision
-    if precision == '__float128': precision = 'quad'
+    make_target = 'single double'
+    if self.defaultPrecision == '__float128': make_target += ' quad'
 
     libdir = self.libDir
     confdir = self.confDir
@@ -90,7 +92,7 @@ class Configure(config.package.Package):
 
     try:
       self.logPrintBox('Compiling BLASLAPACK; this may take several minutes')
-      output,err,ret  = config.base.Configure.executeShellCommand('cd '+blasDir+' && make -f tmpmakefile cleanblaslapck cleanlib && make -f tmpmakefile '+precision, timeout=2500, log = self.framework.log)
+      output,err,ret  = config.base.Configure.executeShellCommand('cd '+blasDir+' && make -f tmpmakefile cleanblaslapck cleanlib && make -f tmpmakefile '+make_target, timeout=2500, log = self.framework.log)
     except RuntimeError, e:
       raise RuntimeError('Error running make on '+blasDir+': '+str(e))
     try:
