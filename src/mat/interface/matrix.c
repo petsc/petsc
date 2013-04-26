@@ -495,6 +495,9 @@ PetscErrorCode  MatRestoreRow(Mat mat,PetscInt row,PetscInt *ncols,const PetscIn
   if (!mat->assembled) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (!mat->ops->restorerow) PetscFunctionReturn(0);
   ierr = (*mat->ops->restorerow)(mat,row,ncols,(PetscInt **)cols,(PetscScalar **)vals);CHKERRQ(ierr);
+  if (ncols) *ncols = 0;
+  if (cols)  *cols = NULL;
+  if (vals)  *vals = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -6870,6 +6873,9 @@ PetscErrorCode MatRestoreRowIJ(Mat mat,PetscInt shift,PetscBool symmetric,PetscB
   else {
     *done = PETSC_TRUE;
     ierr  = (*mat->ops->restorerowij)(mat,shift,symmetric,inodecompressed,n,ia,ja,done);CHKERRQ(ierr);
+    if (n)  *n = 0;
+    if (ia) *ia = NULL;
+    if (ja) *ja = NULL;
   }
   PetscFunctionReturn(0);
 }
@@ -6917,6 +6923,9 @@ PetscErrorCode MatRestoreColumnIJ(Mat mat,PetscInt shift,PetscBool symmetric,Pet
   else {
     *done = PETSC_TRUE;
     ierr  = (*mat->ops->restorecolumnij)(mat,shift,symmetric,inodecompressed,n,ia,ja,done);CHKERRQ(ierr);
+    if (n)  *n = 0;
+    if (ia) *ia = NULL;
+    if (ja) *ja = NULL;
   }
   PetscFunctionReturn(0);
 }

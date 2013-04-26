@@ -73,7 +73,7 @@ PETSC_EXTERN PetscErrorCode MatGetOrdering_AMD(Mat mat,MatOrderingType type,IS *
   default:
     SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_LIB,"Unexpected return value");
   }
-  ierr = MatRestoreRowIJ(mat,0,PETSC_FALSE,PETSC_TRUE,&nrow,&ia,&ja,&done);CHKERRQ(ierr);
+  ierr = MatRestoreRowIJ(mat,0,PETSC_FALSE,PETSC_TRUE,NULL,&ia,&ja,&done);CHKERRQ(ierr);
 
   ierr = ISCreateGeneral(PETSC_COMM_SELF,nrow,perm,PETSC_COPY_VALUES,row);CHKERRQ(ierr);
   ierr = ISCreateGeneral(PETSC_COMM_SELF,nrow,perm,PETSC_OWN_POINTER,col);CHKERRQ(ierr);
