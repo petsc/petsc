@@ -5,6 +5,17 @@
 #include <../src/mat/impls/aij/seq/aij.h>
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
 
+struct _PCGAMGOps {
+  PetscErrorCode (*graph)(PC, const Mat, Mat*);
+  PetscErrorCode (*coarsen)(PC, Mat*, PetscCoarsenData**);
+  PetscErrorCode (*prolongator)(PC, const Mat, const Mat, PetscCoarsenData*, Mat*);
+  PetscErrorCode (*optprol)(PC, const Mat, Mat*);
+  PetscErrorCode (*formkktprol)(PC, const Mat, const Mat, Mat*);
+  PetscErrorCode (*createdefaultdata)(PC, Mat); /* for data methods that have a default (SA) */
+  PetscErrorCode (*setfromoptions)(PC);
+  PetscErrorCode (*destroy)(PC);
+};
+
 /* Private context for the GAMG preconditioner */
 typedef struct gamg_TAG {
   PetscInt  Nlevels;
@@ -28,12 +39,8 @@ typedef struct gamg_TAG {
   PetscReal *data;          /* [data_sz] blocked vector of vertex data on fine grid (coordinates/nullspace) */
   PetscReal *orig_data;          /* cache data */
 
-  PetscErrorCode (*graph)(PC, const Mat, Mat*);
-  PetscErrorCode (*coarsen)(PC, Mat*, PetscCoarsenData**);
-  PetscErrorCode (*prolongator)(PC, const Mat, const Mat, PetscCoarsenData*, Mat*);
-  PetscErrorCode (*optprol)(PC, const Mat, Mat*);
-  PetscErrorCode (*formkktprol)(PC, const Mat, const Mat, Mat*);
-  PetscErrorCode (*createdefaultdata)(PC, Mat); /* for data methods that have a default (SA) */
+  struct _PCGAMGOps *ops;
+  char *gamg_type_name;
 
   void *subctx;
 } PC_GAMG;
