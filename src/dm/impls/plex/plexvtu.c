@@ -215,12 +215,14 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm,PetscViewer viewer)
         }
         ierr = PetscSectionGetDof(dm->defaultSection,cStart,&bs);CHKERRQ(ierr);
         ierr = PetscSectionGetNumFields(dm->defaultSection,&nfields);CHKERRQ(ierr);
-        for (field=0,i=0; field<nfields; field++) {
+        for (field=0,i=0; field<(nfields?nfields:1); field++) {
           PetscInt   fbs,j;
           const char *fieldname = NULL;
           char       buf[256];
-          ierr = PetscSectionGetFieldDof(dm->defaultSection,cStart,field,&fbs);CHKERRQ(ierr);
-          ierr = PetscSectionGetFieldName(dm->defaultSection,field,&fieldname);CHKERRQ(ierr);
+          if (nfields) {        /* We have user-defined fields/components */
+            ierr = PetscSectionGetFieldDof(dm->defaultSection,cStart,field,&fbs);CHKERRQ(ierr);
+            ierr = PetscSectionGetFieldName(dm->defaultSection,field,&fieldname);CHKERRQ(ierr);
+          } else fbs = bs;      /* Say we have one field with 'bs' components */
           if (!fieldname) {
             ierr = PetscSNPrintf(buf,sizeof(buf),"CellField%D",field);CHKERRQ(ierr);
             fieldname = buf;
@@ -249,12 +251,14 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm,PetscViewer viewer)
         }
         ierr = PetscSectionGetDof(dm->defaultSection,vStart,&bs);CHKERRQ(ierr);
         ierr = PetscSectionGetNumFields(dm->defaultSection,&nfields);CHKERRQ(ierr);
-        for (field=0,i=0; field<nfields; field++) {
+        for (field=0,i=0; field<(nfields?nfields:1); field++) {
           PetscInt   fbs,j;
           const char *fieldname = NULL;
           char       buf[256];
-          ierr = PetscSectionGetFieldDof(dm->defaultSection,vStart,field,&fbs);CHKERRQ(ierr);
-          ierr = PetscSectionGetFieldName(dm->defaultSection,field,&fieldname);CHKERRQ(ierr);
+          if (nfields) {        /* We have user-defined fields/components */
+            ierr = PetscSectionGetFieldDof(dm->defaultSection,vStart,field,&fbs);CHKERRQ(ierr);
+            ierr = PetscSectionGetFieldName(dm->defaultSection,field,&fieldname);CHKERRQ(ierr);
+          } else fbs = bs;      /* Say we have one field with 'bs' components */
           if (!fieldname) {
             ierr = PetscSNPrintf(buf,sizeof(buf),"PointField%D",field);CHKERRQ(ierr);
             fieldname = buf;
