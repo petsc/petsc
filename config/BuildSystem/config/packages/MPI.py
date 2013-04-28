@@ -15,6 +15,7 @@ class Configure(config.package.Package):
                                'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/openmpi-1.6.4.tar.gz']
     self.download_mpich     = ['http://www.mpich.org/static/downloads/3.0.4/mpich-3.0.4.tar.gz',
                                'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/mpich-3.0.4.tar.gz']
+    self.download_mpich_bsd = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/mpich-3.0.3.tar.gz']
     self.download           = ['redefine']
     self.functions          = ['MPI_Init', 'MPI_Comm_create']
     self.includes           = ['mpi.h']
@@ -346,7 +347,10 @@ class Configure(config.package.Package):
       if config.setCompilers.Configure.isCygwin() and not config.setCompilers.Configure.isGNU(self.setCompilers.CC):
         raise RuntimeError('Sorry, cannot download-install MPICH on Windows. Sugest installing windows version of MPICH manually')
       self.liblist      = [[]]
-      self.download         = self.download_mpich
+      if config.setCompilers.Configure.isFreeBSD():
+        self.download         = self.download_mpich_bsd
+      else:
+        self.download         = self.download_mpich
       self.downloadname     = 'mpich'
       self.downloadfilename = 'mpich'
       return config.package.Package.checkDownload(self, requireDownload)
