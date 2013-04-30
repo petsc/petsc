@@ -806,8 +806,7 @@ PetscErrorCode MatMatTransposeMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal f
     ISColoring           iscoloring;
     Mat                  Bt_dense,C_dense;
 
-    //ierr = MatGetColoring(*C,MATCOLORINGLF,&iscoloring);CHKERRQ(ierr);
-    ierr = MatGetColoring(*C,MATCOLORINGSL,&iscoloring);CHKERRQ(ierr);
+    ierr = MatGetColoring(*C,MATCOLORINGLF,&iscoloring);CHKERRQ(ierr);
     ierr = MatTransposeColoringCreate(*C,iscoloring,&matcoloring);CHKERRQ(ierr);
 
     multtrans->matcoloring = matcoloring;
@@ -1164,7 +1163,7 @@ PetscErrorCode MatMatMult_SeqAIJ_SeqDense(Mat A,Mat B,MatReuse scall,PetscReal f
   }
   ierr = PetscLogEventBegin(MAT_MatMultNumeric,A,B,0,0);CHKERRQ(ierr);
   ierr = MatMatMultNumeric_SeqAIJ_SeqDense(A,B,*C);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(MAT_MatMult,A,B,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_MatMultNumeric,A,B,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
