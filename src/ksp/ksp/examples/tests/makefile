@@ -244,13 +244,6 @@ runex6_2:
 	   if (${DIFF} output/ex6_2.out ex6_2.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex6_2, diffs above \n========================================="; fi; \
 	   ${RM} -f ex6_2.tmp
-runex6_3:
-	-@${MPIEXEC} -n 1 ./ex6 -pc_type ilu -options_left no \
-	   -f ${DATAFILESPATH}/matrices/arco4 \
-	   -ksp_gmres_restart 100  -ksp_gmres_cgs_refinement_type refine_always -ksp_monitor_short  > ex6_3.tmp 2>&1; \
-	   if (${DIFF} output/ex6_3.out ex6_3.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex6_3, diffs above \n========================================="; fi; \
-	   ${RM} -f ex6_3.tmp
 
 runex6_7:
 	-@${MPIEXEC} -n 1 ./ex6 -ksp_gmres_cgs_refinement_type refine_always -pc_type asm -pc_asm_blocks 6 \
@@ -887,7 +880,7 @@ TESTEXAMPLES_FORTRAN_MPIUNI    = ex12f.PETSc ex12f.rm ex16f.PETSc ex16f.rm
 TESTEXAMPLES_C_X_MPIUNI      = ex3.PETSc runex3 ex3.rm ex4.PETSc runex4 ex4.rm
 TESTEXAMPLES_C_COMPLEX	       = ex17.PETSc runex17 ex17.rm
 TESTEXAMPLES_C_COMPLEX_MPIUNI  = ex17.PETSc runex17 ex17.rm
-TESTEXAMPLES_DATAFILESPATH     = ex6.PETSc runex6 runex6_2 runex6_3 ex6.rm ex11.PETSc runex11 runex11_2 ex11.rm \
+TESTEXAMPLES_DATAFILESPATH     = ex6.PETSc runex6 runex6_2 ex6.rm ex11.PETSc runex11 runex11_2 ex11.rm \
                                  ex25.PETSc runex25 runex25_2 ex25.rm ex27.PETSc runex27 ex25.rm \
                                  ex30.PETSc runex30_shift runex30_shift_cholesky_aij runex30_shift_cholesky_sbaij ex30.rm \
                                  ex31.PETSc runex31 ex31.rm \
