@@ -234,7 +234,7 @@ static PetscErrorCode PetscDTGaussJacobiQuadrature1D_Internal(PetscInt npoints, 
   /* Computes the m roots of P_{m}^{a,b} on [-1,1] by Newton's method with Chebyshev points as initial guesses.
    Algorithm implemented from the pseudocode given by Karniadakis and Sherwin and Python in FIAT */
   for (k = 0; k < npoints; ++k) {
-    PetscReal r = -cos((2.0*k + 1.0) * M_PI / (2.0 * npoints)), dP;
+    PetscReal r = -cos((2.0*k + 1.0) * PETSC_PI / (2.0 * npoints)), dP;
     PetscInt  j;
 
     if (k > 0) r = 0.5 * (r + x[k-1]);
