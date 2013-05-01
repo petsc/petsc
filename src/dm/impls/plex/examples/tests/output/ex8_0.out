@@ -27,7 +27,7 @@ base <-- cap:
 [0]: 0 <---- 2 (0)
 [0]: 0 <---- 3 (0)
 coordinates with 1 fields
-  field 0 with 2 components
+  field 0 with 3 components
 Process 0:
   (   1) dim  3 offset   0 -1 -1 0
   (   2) dim  3 offset   3 1 -1 0
@@ -44,7 +44,7 @@ base <-- cap:
 [0]: 0 <---- 2 (0)
 [0]: 0 <---- 3 (0)
 coordinates with 1 fields
-  field 0 with 2 components
+  field 0 with 3 components
 Process 0:
   (   1) dim  3 offset   0 0 -1 -1
   (   2) dim  3 offset   3 0 1 -1
@@ -102,7 +102,7 @@ base <-- cap:
 [0]: 6 <---- 3 (0)
 [0]: 6 <---- 1 (0)
 coordinates with 1 fields
-  field 0 with 2 components
+  field 0 with 3 components
 Process 0:
   (   1) dim  3 offset   0 -1 -1 0
   (   2) dim  3 offset   3 1 -1 0
@@ -131,7 +131,7 @@ base <-- cap:
 [0]: 6 <---- 3 (0)
 [0]: 6 <---- 1 (0)
 coordinates with 1 fields
-  field 0 with 2 components
+  field 0 with 3 components
 Process 0:
   (   1) dim  3 offset   0 0 -1 -1
   (   2) dim  3 offset   3 0 1 -1
