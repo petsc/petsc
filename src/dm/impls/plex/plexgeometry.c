@@ -256,7 +256,7 @@ static PetscErrorCode DMPlexComputeProjection3Dto2D_Internal(PetscScalar coords[
 
     will rotate the normal vector to \hat z
   */
-  sqrtz = sqrt(1.0 - PetscAbsScalar(n[2]*n[2]));
+  sqrtz = sqrt(1.0 - n[2]*n[2]);
   /* Check for n = z */
   if (sqrtz < 1.0e-10) {
     coords[0] = 0.0;
@@ -292,8 +292,8 @@ static PetscErrorCode DMPlexComputeProjection3Dto2D_Internal(PetscScalar coords[
       x2p[d] += R[d*dim+e]*x2[e];
     }
   }
-  if (PetscAbsScalar(x1p[2]) > 1.0e-9) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid rotation calculated");
-  if (PetscAbsScalar(x2p[2]) > 1.0e-9) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid rotation calculated");
+  if (PetscAbsReal(x1p[2]) > 1.0e-9) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid rotation calculated");
+  if (PetscAbsReal(x2p[2]) > 1.0e-9) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid rotation calculated");
   /* 2) Project to (x, y) */
   coords[0] = 0.0;
   coords[1] = 0.0;
@@ -909,7 +909,7 @@ static PetscErrorCode DMPlexComputeGeometryFVM_3D_Internal(DM dm, PetscInt dim, 
     }
     ierr = DMPlexVecRestoreClosure(dm, coordSection, coordinates, cell, &coordSize, &coords);CHKERRQ(ierr);
   }
-  if (vol)   *vol = PetscAbsScalar(vsum);
+  if (vol)   *vol = PetscAbsReal(vsum);
   if (normal) for (d = 0; d < dim; ++d) normal[d] = 0.0;
   PetscFunctionReturn(0);
 }
