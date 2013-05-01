@@ -1780,6 +1780,7 @@ PetscErrorCode  TSReset(TS ts)
   ierr = VecDestroy(&ts->vatol);CHKERRQ(ierr);
   ierr = VecDestroy(&ts->vrtol);CHKERRQ(ierr);
   ierr = VecDestroyVecs(ts->nwork,&ts->work);CHKERRQ(ierr);
+  ierr = ISDestroy(&ts->is_diff);CHKERRQ(ierr);
 
   ts->setupcalled = PETSC_FALSE;
   PetscFunctionReturn(0);
@@ -4102,6 +4103,34 @@ PetscErrorCode TSGetTolerances(TS ts,PetscReal *atol,Vec *vatol,PetscReal *rtol,
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "TSSetDifferentialEquationsIS"
+/*@
+   TSSetDifferentialEquationsIS - Sets an IS containing locations of differential equations in a DAE
+
+   Not Collective
+
+   Input Arguments:
++  ts - time stepping context
+-  is_diff - Index set for differential equations
+
+   Level: advanced
+
+@*/
+PetscErrorCode TSSetDifferentialEquationsIS(TS ts, IS is_diff)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidHeaderSpecific(is_diff,IS_CLASSID,2);
+  PetscCheckSameComm(ts,1,is_diff,2);
+  ierr = PetscObjectReference((PetscObject)is_diff);CHKERRQ(ierr);
+  ierr = ISDestroy(&ts->is_diff);CHKERRQ(ierr);
+  ts->is_diff = is_diff;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "TSErrorNormWRMS"
 /*@
    TSErrorNormWRMS - compute a weighted norm of the difference between a vector and the current state
@@ -4122,7 +4151,7 @@ PetscErrorCode TSGetTolerances(TS ts,PetscReal *atol,Vec *vatol,PetscReal *rtol,
 PetscErrorCode TSErrorNormWRMS(TS ts,Vec Y,PetscReal *norm)
 {
   PetscErrorCode    ierr;
-  PetscInt          i,n,N;
+  PetscInt          i,n,N,rstart;
   const PetscScalar *u,*y;
   Vec               U;
   PetscReal         sum,gsum;
@@ -4137,6 +4166,7 @@ PetscErrorCode TSErrorNormWRMS(TS ts,Vec Y,PetscReal *norm)
 
   ierr = VecGetSize(U,&N);CHKERRQ(ierr);
   ierr = VecGetLocalSize(U,&n);CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(U,&rstart,NULL);CHKERRQ(ierr);
   ierr = VecGetArrayRead(U,&u);CHKERRQ(ierr);
   ierr = VecGetArrayRead(Y,&y);CHKERRQ(ierr);
   sum  = 0.;
@@ -4167,9 +4197,21 @@ PetscErrorCode TSErrorNormWRMS(TS ts,Vec Y,PetscReal *norm)
     }
     ierr = VecRestoreArrayRead(ts->vrtol,&rtol);CHKERRQ(ierr);
   } else {                      /* scalar atol, scalar rtol */
-    for (i=0; i<n; i++) {
-      PetscReal tol = ts->atol + ts->rtol * PetscMax(PetscAbsScalar(u[i]),PetscAbsScalar(y[i]));
-      sum += PetscSqr(PetscAbsScalar(y[i] - u[i]) / tol);
+    if (ts->is_diff) {
+      const PetscInt *idx;
+      PetscInt k;
+      ierr = ISGetIndices(ts->is_diff,&idx);CHKERRQ(ierr);
+      ierr = ISGetLocalSize(ts->is_diff,&n);CHKERRQ(ierr);
+      for (i=0; i<n; i++) {
+	k = idx[i] - rstart;
+	PetscReal tol = ts->atol + ts->rtol * PetscMax(PetscAbsScalar(u[k]),PetscAbsScalar(y[k]));
+	sum += PetscSqr(PetscAbsScalar(y[k] - u[k]) / tol);
+      }
+    } else {
+      for (i=0; i<n; i++) {
+	PetscReal tol = ts->atol + ts->rtol * PetscMax(PetscAbsScalar(u[i]),PetscAbsScalar(y[i]));
+	sum += PetscSqr(PetscAbsScalar(y[i] - u[i]) / tol);
+      }
     }
   }
   ierr = VecRestoreArrayRead(U,&u);CHKERRQ(ierr);

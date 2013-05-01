@@ -53,6 +53,8 @@ struct _p_TS {
   PetscErrorCode (*prestage)(TS,PetscReal);
   PetscErrorCode (*poststep)(TS);
 
+  IS is_diff; /* Index set containing indices corresponding to differential equations in DAE */
+
   /* ---------------------- IMEX support ---------------------------------*/
   /* These extra slots are only used when the user provides both Implicit and RHS */
   Mat Arhs;     /* Right hand side matrix */
