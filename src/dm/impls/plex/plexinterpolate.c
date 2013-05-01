@@ -145,6 +145,8 @@ static PetscErrorCode DMPlexInterpolateFaces_Internal(DM dm, PetscInt cellDepth,
       if (faceSize == 2) {
         key.i = PetscMin(cellFace[0], cellFace[1]);
         key.j = PetscMax(cellFace[0], cellFace[1]);
+        key.k = 0;
+        key.l = 0;
       } else {
         key.i = cellFace[0]; key.j = cellFace[1]; key.k = cellFace[2]; key.l = faceSize > 3 ? cellFace[3] : 0;
         ierr = PetscSortInt(faceSize, (PetscInt *) &key);
@@ -214,6 +216,8 @@ static PetscErrorCode DMPlexInterpolateFaces_Internal(DM dm, PetscInt cellDepth,
       if (faceSize == 2) {
         key.i = PetscMin(cellFace[0], cellFace[1]);
         key.j = PetscMax(cellFace[0], cellFace[1]);
+        key.k = 0;
+        key.l = 0;
       } else {
         key.i = cellFace[0]; key.j = cellFace[1]; key.k = cellFace[2]; key.l = faceSize > 3 ? cellFace[3] : 0;
         ierr = PetscSortInt(faceSize, (PetscInt *) &key);
