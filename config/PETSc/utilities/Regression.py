@@ -60,7 +60,7 @@ class Configure(config.base.Configure):
         rjobs.append('C_Complex')
       else:
         rjobs.append('C_NoComplex')
-        if self.datafilespath.datafilespath:
+        if self.datafilespath.datafilespath and self.scalartypes.precision == 'double':
           rjobs.append('DATAFILESPATH')
       # add jobs for each external package BUGBUGBUG may be run before all packages
       # Note: do these tests only for non-complex builds
