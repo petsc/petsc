@@ -988,7 +988,7 @@ PetscErrorCode PCGAMGCoarsen_AGG(PC a_pc,Mat *a_Gmat1,PetscCoarsenData **agg_lis
     PetscBool       rart=PETSC_FALSE;
     
     if (verbose > 1) PetscPrintf(comm,"[%d]%s square graph\n",rank,__FUNCT__);
-    ierr = PetscOptionsGetBool(NULL,"-use_rart",&rart,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetBool(NULL,"-Guse_rart",&rart,NULL);CHKERRQ(ierr);
     if (rart) { /* Gmat2 = Gmat1*Gmat1^T - via inner products */
       ierr = MatMatTransposeMult(Gmat1, Gmat1, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &Gmat2);CHKERRQ(ierr);
     } else {    /* Gmat2 = Gmat1^T*Gmat1 - via outer products */

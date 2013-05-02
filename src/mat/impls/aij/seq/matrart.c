@@ -328,6 +328,9 @@ PetscErrorCode MatRARtNumeric_SeqAIJ_SeqAIJ_colorrart(Mat A,Mat R,Mat C)
 #if defined(RART_PROFILE)
   printf("MatRARtNumeric_SeqAIJ_SeqAIJ: ColorApp %g + %g + Mult_sp_den %g  = %g\n",app1,app2,Mult_sp_den,app1+app2+Mult_sp_den);CHKERRQ(ierr);
 #endif
+#if defined(PETSC_USE_INFO)
+  ierr = PetscInfo(C,"C=R*(A*Rt) via coloring C - use sparse-dense inner products\n");CHKERRQ(ierr); 
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -439,9 +442,10 @@ PetscErrorCode MatRARt_SeqAIJ_SeqAIJ(Mat A,Mat R,MatReuse scall,PetscReal fill,M
   
   PetscFunctionBegin;
   if (scall == MAT_INITIAL_MATRIX) {
-    /* ierr = PetscObjectOptionsBegin((PetscObject)A);CHKERRQ(ierr); -- prefix ? */
+    ierr = PetscObjectOptionsBegin((PetscObject)A);CHKERRQ(ierr); 
     ierr = PetscOptionsEList("-matrart_via","Algorithmic approach","MatRARt",algTypes,3,algTypes[0],&alg,NULL);CHKERRQ(ierr);
-    /* ierr = PetscOptionsEnd();CHKERRQ(ierr); */
+    ierr = PetscOptionsEnd();CHKERRQ(ierr); 
+
     ierr = PetscLogEventBegin(MAT_RARtSymbolic,A,R,0,0);CHKERRQ(ierr);
     switch (alg) {
     case 1:
