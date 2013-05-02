@@ -824,7 +824,7 @@ static PetscErrorCode DMPlexComputeGeometryFVM_2D_Internal(DM dm, PetscInt dim, 
     csum[d] /= (tdim+1)*vsum;
   }
   ierr = DMPlexVecRestoreClosure(dm, coordSection, coordinates, cell, &coordSize, &coords);CHKERRQ(ierr);
-  if (vol) *vol = PetscAbsScalar(vsum);
+  if (vol) *vol = PetscAbsReal(vsum);
   if (centroid) {
     if (dim > 2) {
       for (d = 0; d < dim; ++d) {
