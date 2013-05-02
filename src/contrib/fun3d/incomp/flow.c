@@ -89,8 +89,10 @@ int main(int argc,char **args)
   PetscInt    maxfails                       = 10000;
   char        pvtu_fname[PETSC_MAX_PATH_LEN] = "incomp";
 
-  ierr = PetscInitialize(&argc,&args,"petsc.opt",help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&args,NULL,help);CHKERRQ(ierr);
   ierr = PetscInitializeFortran();CHKERRQ(ierr);
+  ierr = PetscOptionsInsertFile(PETSC_COMM_WORLD,"petsc.opt",PETSC_FALSE);CHKERRQ(ierr);
+
   comm = PETSC_COMM_WORLD;
   f77FORLINK();                               /* Link FORTRAN and C COMMONS */
 
@@ -167,7 +169,7 @@ int main(int argc,char **args)
   /* Create nonlinear solver */
   ierr = SetPetscDS(&f_pntr,&tsCtx);CHKERRQ(ierr);
   ierr = SNESCreate(comm,&snes);CHKERRQ(ierr);
-  ierr = SNESSetType(snes,"ls");CHKERRQ(ierr);
+  ierr = SNESSetType(snes,"newtonls");CHKERRQ(ierr);
 
 
   /* Set various routines and options */
@@ -1874,16 +1876,16 @@ static PetscErrorCode PetscFWrite_FUN3D(MPI_Comm comm,FILE *fp,void *data,PetscI
       size_t        b64alloc = 9 + (n*size*4) / 3 + (n*size*4) % 3;
       ierr = PetscMalloc(b64alloc,&buf);CHKERRQ(ierr);
       ptr  = buf;
-      ptr  = base64_encodeblock(ptr,&bytes,3);
-      ptr  = base64_encodeblock(ptr,((char*)&bytes)+3,1);
+      ptr  = (unsigned char*)base64_encodeblock(ptr,&bytes,3);
+      ptr  = (unsigned char*)base64_encodeblock(ptr,((char*)&bytes)+3,1);
       for (i=0; i<bytes; i+=3) {
         int left = bytes - i;
-        ptr = base64_encodeblock(ptr,((char*)data)+i,left);
+        ptr = (unsigned char*)base64_encodeblock(ptr,((char*)data)+i,left);
       }
       *ptr++ = '\n';
       /* printf("encoded 4+%d raw bytes in %zd base64 chars, allocated for %zd\n",bytes,ptr-buf,b64alloc); */
       count = fwrite(buf,1,ptr-buf,fp);
-      if (count < (ptr-buf)) {
+      if (count < (size_t)(ptr-buf)) {
         perror("");
         SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_WRITE,"Wrote %D of %D bytes",(PetscInt)count,(PetscInt)(ptr-buf));
       }
@@ -2490,8 +2492,8 @@ int SetPetscDS(GRID *grid,TstepCtx *tsCtx)
     val_offd[i] = nbrs_offd;
   }
   ierr = MatCreateBAIJ(comm,bs,bs*nnodesLoc,bs*nnodesLoc,
-                       bs*nnodes,bs*nnodes,0,val_diag,
-                       0,val_offd,&grid->A);CHKERRQ(ierr);
+                       bs*nnodes,bs*nnodes,PETSC_DEFAULT,val_diag,
+                       PETSC_DEFAULT,val_offd,&grid->A);CHKERRQ(ierr);
 #else
   ICALLOC(nnodesLoc*4,&val_diag);
   ICALLOC(nnodesLoc*4,&val_offd);
