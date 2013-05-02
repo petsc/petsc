@@ -41,6 +41,8 @@ typedef const char* TSType;
 #define TSARKIMEX         "arkimex"
 #define TSROSW            "rosw"
 #define TSEIMEX           "eimex"
+#define TSDAESIMPLE       "daesimple"
+
 /*E
     TSProblemType - Determines the type of problem this TS object is to be used to solve
 
@@ -229,6 +231,9 @@ PETSC_EXTERN PetscErrorCode TSGetTime(TS,PetscReal*);
 PETSC_EXTERN PetscErrorCode TSSetTime(TS,PetscReal);
 PETSC_EXTERN PetscErrorCode TSGetTimeStepNumber(TS,PetscInt*);
 PETSC_EXTERN PetscErrorCode TSSetTimeStep(TS,PetscReal);
+
+PETSC_EXTERN PetscErrorCode TSDAESimpleSetRHSFunction(TS,Vec,PetscErrorCode (*)(PetscReal,Vec,Vec,Vec,void*),void*);
+PETSC_EXTERN PetscErrorCode TSDAESimpleSetIFunction(TS,Vec,PetscErrorCode (*)(PetscReal,Vec,Vec,Vec,void*),void*);
 
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*TSRHSFunction)(TS,PetscReal,Vec,Vec,void*);
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*TSRHSJacobian)(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*,void*);

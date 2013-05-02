@@ -210,4 +210,10 @@ typedef enum {TS_STEP_INCOMPLETE, /* vec_sol, ptime, etc point to beginning of s
               TS_STEP_COMPLETE    /* step accepted and ptime, steps, etc have been advanced */
 } TSStepStatus;
 
+PETSC_INTERN PetscErrorCode TSDestroy_DAESimple(TS);
+PETSC_INTERN PetscErrorCode TSReset_DAESimple(TS);
+PETSC_INTERN PetscErrorCode TSSetFromOptions_DAESimple(TS);
+PETSC_INTERN PetscErrorCode TSSetUp_DAESimple(TS);
+PETSC_INTERN PetscErrorCode TSSolve_DAESimple(TS);
+
 #endif

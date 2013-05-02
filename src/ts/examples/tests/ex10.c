@@ -32,8 +32,8 @@ PetscErrorCode TSDAESimpleCreate(MPI_Comm comm,TSDAESimple *tsdae)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TSDAESimpleSetRHSFunction"
-PetscErrorCode TSDAESimpleSetRHSFunction(TSDAESimple tsdae,Vec U,PetscErrorCode (*f)(PetscReal,Vec,Vec,Vec,void*),void *ctx)
+#define __FUNCT__ "TS_DAESimpleSetRHSFunction"
+PetscErrorCode TS_DAESimpleSetRHSFunction(TSDAESimple tsdae,Vec U,PetscErrorCode (*f)(PetscReal,Vec,Vec,Vec,void*),void *ctx)
 {
   PetscErrorCode ierr;
 
@@ -46,8 +46,8 @@ PetscErrorCode TSDAESimpleSetRHSFunction(TSDAESimple tsdae,Vec U,PetscErrorCode 
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TSDAESimpleSetIFunction"
-PetscErrorCode TSDAESimpleSetIFunction(TSDAESimple tsdae,Vec V,PetscErrorCode (*F)(PetscReal,Vec,Vec,Vec,void*),void *ctx)
+#define __FUNCT__ "TS_DAESimpleSetIFunction"
+PetscErrorCode TS_DAESimpleSetIFunction(TSDAESimple tsdae,Vec V,PetscErrorCode (*F)(PetscReal,Vec,Vec,Vec,void*),void *ctx)
 {
   PetscErrorCode ierr;
 
@@ -422,8 +422,8 @@ int main(int argc,char **argv)
 
   ierr = VecCreateMPI(PETSC_COMM_WORLD,1,PETSC_DETERMINE,&U);CHKERRQ(ierr);
   ierr = VecCreateMPI(PETSC_COMM_WORLD,1,PETSC_DETERMINE,&V);CHKERRQ(ierr);
-  ierr = TSDAESimpleSetRHSFunction(tsdae,U,f,NULL);CHKERRQ(ierr);
-  ierr = TSDAESimpleSetIFunction(tsdae,V,F,NULL);CHKERRQ(ierr);
+  ierr = TS_DAESimpleSetRHSFunction(tsdae,U,f,NULL);CHKERRQ(ierr);
+  ierr = TS_DAESimpleSetIFunction(tsdae,V,F,NULL);CHKERRQ(ierr);
 
   ierr = VecDuplicate(U,&Usolution);CHKERRQ(ierr);
   ierr = VecSet(Usolution,1.0);CHKERRQ(ierr);
