@@ -75,12 +75,12 @@ class Configure(config.package.Package):
       otherLibs += self.compilers.flibs
     return otherLibs
 
-  def checkBlas(self, blasLibrary, otherLibs, fortranMangle, routine = 'dot'):
+  def checkBlas(self, blasLibrary, otherLibs, fortranMangle, routineIn = 'dot'):
     '''This checks the given library for the routine, dot by default'''
     oldLibs = self.compilers.LIBS
     prototype = ''
     call      = ''
-    routine   = self.getPrefix()+routine
+    routine   = self.getPrefix()+routineIn
     if fortranMangle=='stdcall':
       if routine=='ddot':
         prototype = 'double __stdcall DDOT(int*,double*,int*,double*,int*);'
@@ -89,8 +89,9 @@ class Configure(config.package.Package):
     self.compilers.LIBS = oldLibs
     return found
 
-  def checkLapack(self, lapackLibrary, otherLibs, fortranMangle, routines = ['getrs', 'geev']):
+  def checkLapack(self, lapackLibrary, otherLibs, fortranMangle, routinesIn = ['getrs', 'geev']):
     oldLibs = self.compilers.LIBS
+    routines = list(routinesIn)
     found   = 0
     prototypes = ['','']
     calls      = ['','']
@@ -298,8 +299,8 @@ class Configure(config.package.Package):
     # /usr/local/lib
     dir = os.path.join('/usr','local','lib')
     yield ('Default compiler locations /usr/local/lib', os.path.join(dir,'libblas.a'), os.path.join(dir,'liblapack.a'), 1)
-    yield ('Default Atlas location /usr/local/lib',[os.path.join(dir, 'libcblas.a'),os.path.join(dir, 'libf77blas.a'), os.path.join(dir, 'libatlas.a')],  [os.path.join(dir, 'liblapack.a')], 1)
-    yield ('Default Atlas location /usr/local/lib',[os.path.join(dir, 'libf77blas.a'), os.path.join(dir, 'libatlas.a')],  [os.path.join(dir, 'liblapack.a')], 1)
+    yield ('Default Atlas location',['libcblas.a','libf77blas.a','libatlas.a'],  ['liblapack.a'], 1)
+    yield ('Default Atlas location',['libf77blas.a','libatlas.a'],  ['liblapack.a'], 1)
     yield ('Default compiler locations with G77', None, ['liblapack.a', 'libblas.a','libg2c.a'], 1)
     yield ('Default compiler locations with gfortran', None, ['liblapack.a', 'libblas.a','libgfortran.a'], 1)
     # Try MacOSX location
