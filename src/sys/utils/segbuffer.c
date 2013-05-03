@@ -1,39 +1,42 @@
 #include <petscsys.h>
 
-/* Segmented (extendable) array implementation */
-struct _n_PetscSegBuffer {
-  PetscInt unitbytes;
+struct _PetscSegBufferLink {
+  struct _PetscSegBufferLink *tail;
   PetscInt alloc;
   PetscInt used;
   PetscInt tailused;
-  PetscSegBuffer tail;
   union {                       /* Dummy types to ensure alignment */
     PetscReal dummy_real;
     PetscInt  dummy_int;
-    char      array[1];
+    char      array[1];         /* This array is over-allocated for the size of the link */
   } u;
+};
+
+/* Segmented (extendable) array implementation */
+struct _n_PetscSegBuffer {
+  struct _PetscSegBufferLink *head;
+  PetscInt unitbytes;
 };
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSegBufferAlloc_Private"
-static PetscErrorCode PetscSegBufferAlloc_Private(PetscSegBuffer *seg,PetscInt count)
+static PetscErrorCode PetscSegBufferAlloc_Private(PetscSegBuffer seg,PetscInt count)
 {
-  PetscErrorCode ierr;
-  PetscSegBuffer newseg,s;
-  PetscInt       alloc;
+  PetscErrorCode     ierr;
+  PetscInt           alloc;
+  struct _PetscSegBufferLink *newlink,*s;
 
   PetscFunctionBegin;
-  s = *seg;
+  s = seg->head;
   /* Grow at least fast enough to hold next item, like Fibonacci otherwise (up to 1MB chunks) */
-  alloc = PetscMax(s->used+count,PetscMin(1000000/s->unitbytes+1,s->alloc+s->tailused));
-  ierr  = PetscMalloc(offsetof(struct _n_PetscSegBuffer,u)+alloc*s->unitbytes,&newseg);CHKERRQ(ierr);
-  ierr  = PetscMemzero(newseg,offsetof(struct _n_PetscSegBuffer,u));CHKERRQ(ierr);
+  alloc = PetscMax(s->used+count,PetscMin(1000000/seg->unitbytes+1,s->alloc+s->tailused));
+  ierr  = PetscMalloc(offsetof(struct _PetscSegBufferLink,u)+alloc*seg->unitbytes,&newlink);CHKERRQ(ierr);
+  ierr  = PetscMemzero(newlink,offsetof(struct _PetscSegBufferLink,u));CHKERRQ(ierr);
 
-  newseg->unitbytes = s->unitbytes;
-  newseg->tailused  = s->used + s->tailused;
-  newseg->tail      = s;
-  newseg->alloc     = alloc;
-  *seg              = newseg;
+  newlink->tailused  = s->used + s->tailused;
+  newlink->tail      = s;
+  newlink->alloc     = alloc;
+  seg->head = newlink;
   PetscFunctionReturn(0);
 }
 
@@ -58,13 +61,16 @@ static PetscErrorCode PetscSegBufferAlloc_Private(PetscSegBuffer *seg,PetscInt c
 PetscErrorCode PetscSegBufferCreate(PetscInt unitbytes,PetscInt expected,PetscSegBuffer *seg)
 {
   PetscErrorCode ierr;
+  struct _PetscSegBufferLink *head;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc(offsetof(struct _n_PetscSegBuffer,u)+expected*unitbytes,seg);CHKERRQ(ierr);
-  ierr = PetscMemzero(*seg,offsetof(struct _n_PetscSegBuffer,u));CHKERRQ(ierr);
+  ierr = PetscMalloc(sizeof(struct _n_PetscSegBuffer),seg);CHKERRQ(ierr);
+  ierr = PetscMalloc(offsetof(struct _PetscSegBufferLink,u)+expected*unitbytes,&head);CHKERRQ(ierr);
+  ierr = PetscMemzero(head,offsetof(struct _PetscSegBufferLink,u));CHKERRQ(ierr);
 
+  head->alloc       = expected;
   (*seg)->unitbytes = unitbytes;
-  (*seg)->alloc     = expected;
+  (*seg)->head      = head;
   PetscFunctionReturn(0);
 }
 
@@ -86,16 +92,16 @@ PetscErrorCode PetscSegBufferCreate(PetscInt unitbytes,PetscInt expected,PetscSe
 
 .seealso: PetscSegBufferCreate(), PetscSegBufferExtractAlloc(), PetscSegBufferExtractTo(), PetscSegBufferExtractInPlace(), PetscSegBufferDestroy()
 @*/
-PetscErrorCode PetscSegBufferGet(PetscSegBuffer *seg,PetscInt count,void *buf)
+PetscErrorCode PetscSegBufferGet(PetscSegBuffer seg,PetscInt count,void *buf)
 {
   PetscErrorCode ierr;
-  PetscSegBuffer s;
+  struct _PetscSegBufferLink *s;
 
   PetscFunctionBegin;
-  s = *seg;
+  s = seg->head;
   if (PetscUnlikely(s->used + count > s->alloc)) {ierr = PetscSegBufferAlloc_Private(seg,count);CHKERRQ(ierr);}
-  s = *seg;
-  *(char**)buf = &s->u.array[s->used*s->unitbytes];
+  s = seg->head;
+  *(char**)buf = &s->u.array[s->used*seg->unitbytes];
   s->used += count;
   PetscFunctionReturn(0);
 }
@@ -116,16 +122,16 @@ PetscErrorCode PetscSegBufferGet(PetscSegBuffer *seg,PetscInt count,void *buf)
 @*/
 PetscErrorCode PetscSegBufferDestroy(PetscSegBuffer *seg)
 {
-  PetscErrorCode ierr;
-  PetscSegBuffer s;
+  PetscErrorCode             ierr;
+  struct _PetscSegBufferLink *s;
 
   PetscFunctionBegin;
-  for (s=*seg; s;) {
-    PetscSegBuffer tail = s->tail;
+  for (s=(*seg)->head; s;) {
+    struct _PetscSegBufferLink *tail = s->tail;
     ierr = PetscFree(s);CHKERRQ(ierr);
     s = tail;
   }
-  *seg = NULL;
+  ierr = PetscFree(*seg);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -144,22 +150,20 @@ PetscErrorCode PetscSegBufferDestroy(PetscSegBuffer *seg)
 
 .seealso: PetscSegBufferCreate(), PetscSegBufferGet(), PetscSegBufferDestroy(), PetscSegBufferExtractAlloc(), PetscSegBufferExtractInPlace()
 @*/
-PetscErrorCode PetscSegBufferExtractTo(PetscSegBuffer *seg,void *contig)
+PetscErrorCode PetscSegBufferExtractTo(PetscSegBuffer seg,void *contig)
 {
-  PetscErrorCode ierr;
-  PetscInt       unitbytes;
-  PetscSegBuffer s,t;
-  char           *ptr;
+  PetscErrorCode             ierr;
+  PetscInt                   unitbytes;
+  struct _PetscSegBufferLink *s,*t;
+  char                       *ptr;
 
   PetscFunctionBegin;
-  s = *seg;
-
-  unitbytes = s->unitbytes;
-
+  unitbytes = seg->unitbytes;
+  s = seg->head;
   ptr  = ((char*)contig) + s->tailused*unitbytes;
   ierr = PetscMemcpy(ptr,s->u.array,s->used*unitbytes);CHKERRQ(ierr);
   for (t=s->tail; t;) {
-    PetscSegBuffer tail = t->tail;
+    struct _PetscSegBufferLink *tail = t->tail;
     ptr -= t->used*unitbytes;
     ierr = PetscMemcpy(ptr,t->u.array,t->used*unitbytes);CHKERRQ(ierr);
     ierr = PetscFree(t);CHKERRQ(ierr);
@@ -191,16 +195,16 @@ PetscErrorCode PetscSegBufferExtractTo(PetscSegBuffer *seg,void *contig)
 
 .seealso: PetscSegBufferCreate(), PetscSegBufferGet(), PetscSegBufferDestroy(), PetscSegBufferExtractTo(), PetscSegBufferExtractInPlace()
 @*/
-PetscErrorCode PetscSegBufferExtractAlloc(PetscSegBuffer *seg,void *contiguous)
+PetscErrorCode PetscSegBufferExtractAlloc(PetscSegBuffer seg,void *contiguous)
 {
-  PetscErrorCode ierr;
-  PetscSegBuffer s;
-  void           *contig;
+  PetscErrorCode             ierr;
+  struct _PetscSegBufferLink *s;
+  void                       *contig;
 
   PetscFunctionBegin;
-  s = *seg;
+  s = seg->head;
 
-  ierr = PetscMalloc((s->used+s->tailused)*s->unitbytes,&contig);CHKERRQ(ierr);
+  ierr = PetscMalloc((s->used+s->tailused)*seg->unitbytes,&contig);CHKERRQ(ierr);
   ierr = PetscSegBufferExtractTo(seg,contig);CHKERRQ(ierr);
   *(void**)contiguous = contig;
   PetscFunctionReturn(0);
@@ -211,7 +215,7 @@ PetscErrorCode PetscSegBufferExtractAlloc(PetscSegBuffer *seg,void *contiguous)
 /*@C
    PetscSegBufferExtractInPlace - extract in-place contiguous representation of data and reset segmented buffer for reuse
 
-   Collective
+   Not Collective
 
    Input Arguments:
 .  seg - segmented buffer object
@@ -223,21 +227,75 @@ PetscErrorCode PetscSegBufferExtractAlloc(PetscSegBuffer *seg,void *contiguous)
 
 .seealso: PetscSegBufferExtractAlloc(), PetscSegBufferExtractTo()
 @*/
-PetscErrorCode PetscSegBufferExtractInPlace(PetscSegBuffer *seg,void *contig)
+PetscErrorCode PetscSegBufferExtractInPlace(PetscSegBuffer seg,void *contig)
 {
   PetscErrorCode ierr;
+  struct _PetscSegBufferLink *head;
 
   PetscFunctionBegin;
-  if (!(*seg)->tail) {
-    *(char**)contig = (*seg)->u.array;
-  } else {
-    PetscSegBuffer s = *seg,newseg;
+  head = seg->head;
+  if (PetscUnlikely(head->tail)) {
+    PetscSegBuffer newseg;
 
-    ierr = PetscSegBufferCreate(s->unitbytes,s->used+s->tailused,&newseg);CHKERRQ(ierr);
-    ierr = PetscSegBufferExtractTo(seg,newseg->u.array);CHKERRQ(ierr);
-    ierr = PetscSegBufferDestroy(seg);CHKERRQ(ierr);
-    *seg = newseg;
-    *(void**)contig = newseg->u.array;
+    ierr = PetscSegBufferCreate(seg->unitbytes,head->used+head->tailused,&newseg);CHKERRQ(ierr);
+    ierr = PetscSegBufferExtractTo(seg,newseg->head->u.array);CHKERRQ(ierr);
+    seg->head = newseg->head;
+    newseg->head = head;
+    ierr = PetscSegBufferDestroy(&newseg);CHKERRQ(ierr);
+    head = seg->head;
   }
+  *(char**)contig = head->u.array;
+  head->used = 0;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSegBufferGetSize"
+/*@C
+   PetscSegBufferGetSize - get currently used size of segmented buffer
+
+   Not Collective
+
+   Input Arguments:
+.  seg - segmented buffer object
+
+   Output Arguments:
+.  usedsize - number of used units
+
+   Level: developer
+
+.seealso: PetscSegBufferExtractAlloc(), PetscSegBufferExtractTo(), PetscSegBufferCreate(), PetscSegBufferGet()
+@*/
+PetscErrorCode PetscSegBufferGetSize(PetscSegBuffer seg,PetscInt *usedsize)
+{
+
+  PetscFunctionBegin;
+  *usedsize = seg->head->tailused + seg->head->used;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSegBufferUnuse"
+/*@C
+   PetscSegBufferUnuse - return some unused entries obtained with an overzealous PetscSegBufferGet()
+
+   Not Collective
+
+   Input Arguments:
++  seg - segmented buffer object
+-  unused - number of unused units
+
+   Level: developer
+
+.seealso: PetscSegBufferCreate(), PetscSegBufferGet()
+@*/
+PetscErrorCode PetscSegBufferUnuse(PetscSegBuffer seg,PetscInt unused)
+{
+  struct _PetscSegBufferLink *head;
+
+  PetscFunctionBegin;
+  head = seg->head;
+  if (PetscUnlikely(head->used < unused)) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Attempt to return more unused entries (%D) than previously gotten (%D)",unused,head->used);
+  head->used -= unused;
   PetscFunctionReturn(0);
 }
