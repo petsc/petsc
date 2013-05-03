@@ -49,6 +49,10 @@ F*/
 #include <petscdmda.h>
 #include <petscsnes.h>
 
+/* These functions _should_ be internal, but currently have a reverse dependency so cannot be set with
+ * DMDASNESSetPicardLocal.  This hack needs to be fixed in PETSc. */
+PETSC_EXTERN PetscErrorCode SNESPicardComputeFunction(SNES,Vec,Vec,void*);
+PETSC_EXTERN PetscErrorCode SNESPicardComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 
 typedef enum {JAC_BRATU,JAC_PICARD,JAC_STAR,JAC_NEWTON} JacType;
 static const char *const JacTypes[] = {"BRATU","PICARD","STAR","NEWTON","JacType","JAC_",0};
@@ -198,8 +202,6 @@ int main(int argc,char **argv)
         This is not really right requiring the user to call SNESSetFunction/Jacobian but the DMDASNESSetPicardLocal() cannot access
         the SNES to set it
     */
-    extern PetscErrorCode  SNESPicardComputeFunction(SNES,Vec,Vec,void*);
-    extern PetscErrorCode  SNESPicardComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
     ierr = DMDASNESSetPicardLocal(da,INSERT_VALUES,(PetscErrorCode (*)(DMDALocalInfo*,void*,void*,void*))FormFunctionPicardLocal,
                                   (PetscErrorCode (*)(DMDALocalInfo*,void*,Mat,Mat,MatStructure*,void*))FormJacobianLocal,&user);CHKERRQ(ierr);
     ierr = SNESSetFunction(snes,NULL,SNESPicardComputeFunction,&user);CHKERRQ(ierr);
