@@ -569,15 +569,15 @@ static PetscErrorCode MatSolve_Elemental(Mat A,Vec B,Vec X)
   switch (A->factortype) {
   case MAT_FACTOR_LU:
     if ((*a->pivot).AllocatedMemory()) {
-      elem::SolveAfterLU(elem::NORMAL,*a->emat,*a->pivot,xer);
+      elem::lu::SolveAfter(elem::NORMAL,*a->emat,*a->pivot,xer);
       elem::Copy(xer,xe);
     } else {
-      elem::SolveAfterLU(elem::NORMAL,*a->emat,xer);
+      elem::lu::SolveAfter(elem::NORMAL,*a->emat,xer);
       elem::Copy(xer,xe);
     }
     break;
   case MAT_FACTOR_CHOLESKY:
-    elem::SolveAfterCholesky(elem::UPPER,elem::NORMAL,*a->emat,xer);
+    elem::cholesky::SolveAfter(elem::UPPER,elem::NORMAL,*a->emat,xer);
     elem::Copy(xer,xe);
     break;
   default:
@@ -613,13 +613,13 @@ static PetscErrorCode MatMatSolve_Elemental(Mat A,Mat B,Mat X)
   switch (A->factortype) {
   case MAT_FACTOR_LU:
     if ((*a->pivot).AllocatedMemory()) {
-      elem::SolveAfterLU(elem::NORMAL,*a->emat,*a->pivot,*x->emat);
+      elem::lu::SolveAfter(elem::NORMAL,*a->emat,*a->pivot,*x->emat);
     } else {
-      elem::SolveAfterLU(elem::NORMAL,*a->emat,*x->emat);
+      elem::lu::SolveAfter(elem::NORMAL,*a->emat,*x->emat);
     }
     break;
   case MAT_FACTOR_CHOLESKY:
-    elem::SolveAfterCholesky(elem::UPPER,elem::NORMAL,*a->emat,*x->emat);
+    elem::cholesky::SolveAfter(elem::UPPER,elem::NORMAL,*a->emat,*x->emat);
     break;
   default:
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unfactored Matrix or Unsupported MatFactorType");
@@ -738,13 +738,13 @@ static PetscErrorCode MatNorm_Elemental(Mat A,NormType type,PetscReal *nrm)
   PetscFunctionBegin;
   switch (type){
   case NORM_1:
-    *nrm = elem::Norm(*a->emat,elem::ONE_NORM);
+    *nrm = elem::OneNorm(*a->emat);
     break;
   case NORM_FROBENIUS:
-    *nrm = elem::Norm(*a->emat,elem::FROBENIUS_NORM);
+    *nrm = elem::FrobeniusNorm(*a->emat);
     break;
   case NORM_INFINITY:
-    *nrm = elem::Norm(*a->emat,elem::INFINITY_NORM);
+    *nrm = elem::InfinityNorm(*a->emat);
     break;
   default:
     printf("Error: unsupported norm type!\n");
