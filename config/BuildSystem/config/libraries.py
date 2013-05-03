@@ -244,6 +244,15 @@ extern "C" {
       self.logPrint('Warning: erf() not found')
     return
 
+  def checkMathTgamma(self):
+    '''Check for tgama() in libm, the math library'''
+    if not self.math is None and self.check(self.math, ['tgamma'], prototype = ['double tgamma(double);'], call = ['double x = 0,y; y = tgamma(x);\n']):
+      self.logPrint('tgamma() found')
+      self.addDefine('HAVE_TGAMMA', 1)
+    else:
+      self.logPrint('Warning: tgamma() not found')
+    return
+
   def checkCompression(self):
     '''Check for libz, the compression library'''
     self.compression = None
@@ -428,6 +437,7 @@ int checkInit(void) {
     map(lambda args: self.executeTest(self.check, list(args)), self.libraries)
     self.executeTest(self.checkMath)
     self.executeTest(self.checkMathErf)
+    self.executeTest(self.checkMathTgamma)
     self.executeTest(self.checkCompression)
     self.executeTest(self.checkRealtime)
     self.executeTest(self.checkDynamic)
