@@ -387,7 +387,7 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm,PetscViewer viewer)
       for (link=vtk->link; link; link=link->next) {
         PetscInt bs;
         if ((link->ft != PETSC_VTK_CELL_FIELD) && (link->ft != PETSC_VTK_CELL_VECTOR_FIELD)) continue;
-        ierr = PetscSectionGetDof(dm->defaultSection,vStart,&bs);CHKERRQ(ierr);
+        ierr = PetscSectionGetDof(dm->defaultSection,cStart,&bs);CHKERRQ(ierr);
         for (i=0; i<bs; i++) {
           ierr = TransferWrite(viewer,fp,r,0,NULL,buffer,gpiece[r].ncells,PETSC_SCALAR,tag);CHKERRQ(ierr);
         }
