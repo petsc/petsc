@@ -232,7 +232,7 @@ PetscErrorCode VecLoad_HDF5(Vec xin, PetscViewer viewer)
 #endif
   lenInd = timestep >= 0 ? 1 : 0;
   if (rdim != dim) {
-    if (rdim == dim+1 && bs == 1) bs = dims[bsInd];
+    if (rdim == dim+1 && bs == -1) bs = dims[bsInd];
     else SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Dimension of array in file %d not %d as expected",rdim,dim);
   } else if (bs >= 1 && bs != (PetscInt) dims[bsInd]) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "Block size %d specified for vector does not match blocksize in file %d",bs,dims[bsInd]);
 
