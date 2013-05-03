@@ -593,9 +593,9 @@ static PetscErrorCode DMPlexComputeTetrahedronGeometry_Internal(DM dm, PetscInt 
     }
     PetscLogFlops(18.0);
     Det3D_Internal(detJ, J);
-    *detJ = -*detJ;
+    *detJ = -*detJ; /* I orient with outward face normals */
   }
-  if (invJ) {Invert3D_Internal(invJ, J, *detJ);}
+  if (invJ) {Invert3D_Internal(invJ, J, -*detJ);}
   ierr = DMPlexVecRestoreClosure(dm, coordSection, coordinates, e, NULL, &coords);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -855,6 +855,7 @@ static PetscErrorCode DMPlexComputeGeometryFVM_3D_Internal(DM dm, PetscInt dim, 
   ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
   ierr = DMPlexGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
 
+  if (centroid) for (d = 0; d < dim; ++d) centroid[d] = 0.0;
   ierr = DMPlexGetConeSize(dm, cell, &numFaces);CHKERRQ(ierr);
   ierr = DMPlexGetCone(dm, cell, &faces);CHKERRQ(ierr);
   for (f = 0; f < numFaces; ++f) {
@@ -909,8 +910,9 @@ static PetscErrorCode DMPlexComputeGeometryFVM_3D_Internal(DM dm, PetscInt dim, 
     }
     ierr = DMPlexVecRestoreClosure(dm, coordSection, coordinates, cell, &coordSize, &coords);CHKERRQ(ierr);
   }
-  if (vol)   *vol = PetscAbsReal(vsum);
-  if (normal) for (d = 0; d < dim; ++d) normal[d] = 0.0;
+  if (vol)     *vol = PetscAbsReal(vsum);
+  if (normal)   for (d = 0; d < dim; ++d) normal[d]    = 0.0;
+  if (centroid) for (d = 0; d < dim; ++d) centroid[d] /= (vsum*4);
   PetscFunctionReturn(0);
 }
 

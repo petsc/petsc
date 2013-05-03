@@ -359,6 +359,57 @@ PetscErrorCode TestTriangle(MPI_Comm comm, PetscBool interpolate, PetscBool tran
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "TestTetrahedron"
+PetscErrorCode TestTetrahedron(MPI_Comm comm, PetscBool interpolate, PetscBool transform)
+{
+  DM             dm;
+  PetscRandom    r, ang, ang2;
+  PetscInt       dim, t;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  /* Create reference tetrahedron */
+  dim  = 3;
+  ierr = DMCreate(comm, &dm);CHKERRQ(ierr);
+  ierr = DMSetType(dm, DMPLEX);CHKERRQ(ierr);
+  ierr = DMPlexSetDimension(dm, dim);CHKERRQ(ierr);
+  {
+    PetscInt    numPoints[2]        = {4, 1};
+    PetscInt    coneSize[5]         = {4, 0, 0, 0, 0};
+    PetscInt    cones[4]            = {1, 2, 3, 4};
+    PetscInt    coneOrientations[4] = {0, 0, 0, 0};
+    PetscScalar vertexCoords[12]    = {-1.0, -1.0, -1.0,  -1.0, 1.0, -1.0,  1.0, -1.0, -1.0,  -1.0, -1.0, 1.0};
+
+    ierr = DMPlexCreateFromDAG(dm, 1, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
+    if (interpolate) {
+      DM idm;
+
+      ierr = DMPlexInterpolate(dm, &idm);CHKERRQ(ierr);
+      ierr = DMPlexCopyCoordinates(dm, idm);CHKERRQ(ierr);
+      ierr = DMDestroy(&dm);CHKERRQ(ierr);
+      dm   = idm;
+    }
+    ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
+  }
+  /* Check reference geometry: determinant is scaled by reference volume (4/3) */
+  {
+    PetscReal v0Ex[3]       = {-1.0, -1.0, -1.0};
+    PetscReal JEx[9]        = {0.0, 1.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0};
+    PetscReal invJEx[9]     = {0.0, 1.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0};
+    PetscReal detJEx        = 1.0;
+    PetscReal centroidEx[3] = {-0.5, -0.5, -0.5};
+    PetscReal normalEx[3]   = {0.0, 0.0, 0.0};
+    PetscReal volEx         = 4.0/3.0;
+
+    ierr = CheckFEMGeometry(dm, 0, dim, v0Ex, JEx, invJEx, detJEx);CHKERRQ(ierr);
+    if (interpolate) {ierr = CheckFVMGeometry(dm, 0, dim, centroidEx, normalEx, volEx);CHKERRQ(ierr);}
+  }
+  /* Cleanup */
+  ierr = DMDestroy(&dm);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
@@ -370,6 +421,8 @@ int main(int argc, char **argv)
   if (transform) {ierr = PetscPrintf(PETSC_COMM_WORLD, "Using random transforms");CHKERRQ(ierr);}
   ierr = TestTriangle(PETSC_COMM_SELF, PETSC_FALSE, transform);CHKERRQ(ierr);
   ierr = TestTriangle(PETSC_COMM_SELF, PETSC_TRUE,  transform);CHKERRQ(ierr);
+  ierr = TestTetrahedron(PETSC_COMM_SELF, PETSC_FALSE, transform);CHKERRQ(ierr);
+  ierr = TestTetrahedron(PETSC_COMM_SELF, PETSC_TRUE,  transform);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }
