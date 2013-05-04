@@ -1207,6 +1207,7 @@ PetscErrorCode ConstructGeometry(DM dm, Vec *facegeom, Vec *cellgeom, User user)
 
   PetscFunctionBeginUser;
   ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
+  if (dim != DIM) SETERRQ2(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"No support for dim %D != DIM %D",dim,DIM);
   ierr = DMPlexGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
 
@@ -1273,8 +1274,13 @@ PetscErrorCode ConstructGeometry(DM dm, Vec *facegeom, Vec *cellgeom, User user)
         for (d = 0; d < dim; ++d) fg->normal[d] = -fg->normal[d];
       }
       if (DotD(dim, fg->normal, v) <= 0) {
-        if (dim > 2) SETERRQ7(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Direction for face %d could not be fixed, normal (%g,%g,%g) v (%g,%g,%g)", f, fg->normal[0], fg->normal[1], fg->normal[2], v[0], v[1], v[2]);
-        else         SETERRQ5(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Direction for face %d could not be fixed, normal (%g,%g) v (%g,%g)", f, fg->normal[0], fg->normal[1], v[0], v[1]);
+#if DIM == 2
+        SETERRQ5(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Direction for face %d could not be fixed, normal (%g,%g) v (%g,%g)", f, fg->normal[0], fg->normal[1], v[0], v[1]);
+#elif DIM == 3
+        SETERRQ7(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Direction for face %d could not be fixed, normal (%g,%g,%g) v (%g,%g,%g)", f, fg->normal[0], fg->normal[1], fg->normal[2], v[0], v[1], v[2]);
+#else
+#  error DIM not supported
+#endif
       }
       if (cells[0] < user->cEndInterior) {
         WaxpyD(dim, -1, fg->centroid, cL->centroid, v);
