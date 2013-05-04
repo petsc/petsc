@@ -220,15 +220,21 @@ static PetscErrorCode PetscDTGaussJacobiQuadrature1D_Internal(PetscInt npoints, 
 {
   PetscInt       maxIter = 100;
   PetscReal      eps     = 1.0e-8;
-  PetscReal      a1      = pow(2, a+b+1);
-  PetscReal      a2      = gamma(a + npoints + 1);
-  PetscReal      a3      = gamma(b + npoints + 1);
-  PetscReal      a4      = gamma(a + b + npoints + 1);
-  PetscReal      a5, a6;
+  PetscReal      a1, a2, a3, a4, a5, a6;
   PetscInt       k;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+
+  a1      = pow(2, a+b+1);
+#if defined(PETSC_HAVE_TGAMMA)
+  a2      = tgamma(a + npoints + 1);
+  a3      = tgamma(b + npoints + 1);
+  a4      = tgamma(a + b + npoints + 1);
+#else
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"tgamma() - math routine is unavailable.");
+#endif
+
   ierr = PetscDTFactorial_Internal(npoints, &a5);CHKERRQ(ierr);
   a6   = a1 * a2 * a3 / a4 / a5;
   /* Computes the m roots of P_{m}^{a,b} on [-1,1] by Newton's method with Chebyshev points as initial guesses.
