@@ -559,14 +559,15 @@ PetscErrorCode TestHexahedron(MPI_Comm comm, PetscBool interpolate, PetscBool tr
     ierr = PetscRandomSetFromOptions(ang2);CHKERRQ(ierr);
     ierr = PetscRandomSetInterval(ang2, 0.0, PETSC_PI);CHKERRQ(ierr);
     for (t = 0; t < 100; ++t) {
-      PetscScalar vertexCoords[12] = {-1.0, -1.0, -1.0,  -1.0, 1.0, -1.0,  1.0, -1.0, -1.0,  -1.0, -1.0, 1.0}, trans[3];
+      PetscScalar vertexCoords[24] = {-1.0, -1.0, -1.0,  -1.0,  1.0, -1.0,  1.0, 1.0, -1.0,   1.0, -1.0, -1.0,
+                                      -1.0, -1.0,  1.0,   1.0, -1.0,  1.0,  1.0, 1.0,  1.0,  -1.0,  1.0,  1.0}, trans[3];
       PetscReal   v0Ex[3]          = {-1.0, -1.0, -1.0};
       PetscReal   JEx[9]           = {1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0}, R[9], rot[3], rotM[9];
       PetscReal   invJEx[9]        = {1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0};
       PetscReal   detJEx           = 1.0, scale, phi, theta, psi = 0.0;
-      PetscReal   centroidEx[3]    = {-0.5, -0.5, -0.5};
+      PetscReal   centroidEx[3]    = {0.0, 0.0, 0.0};
       PetscReal   normalEx[3]      = {0.0, 0.0, 0.0};
-      PetscReal   volEx            = 4.0/3.0;
+      PetscReal   volEx            = 8.0;
       PetscInt    d, e, f, p;
 
       ierr = PetscRandomGetValueReal(r, &scale);CHKERRQ(ierr);
@@ -574,7 +575,7 @@ PetscErrorCode TestHexahedron(MPI_Comm comm, PetscBool interpolate, PetscBool tr
       ierr = PetscRandomGetValueReal(ang2, &theta);CHKERRQ(ierr);
       for (d = 0; d < dim; ++d) {
         ierr = PetscRandomGetValueReal(r, &trans[d]);CHKERRQ(ierr);
-        for (p = 0; p < 4; ++p) {
+        for (p = 0; p < 8; ++p) {
           vertexCoords[p*dim+d] *= scale;
           vertexCoords[p*dim+d] += trans[d];
         }
@@ -590,7 +591,7 @@ PetscErrorCode TestHexahedron(MPI_Comm comm, PetscBool interpolate, PetscBool tr
       R[0] = cos(theta)*cos(psi); R[1] = sin(phi)*sin(theta)*cos(psi) - cos(phi)*sin(psi); R[2] = sin(phi)*sin(psi) + cos(phi)*sin(theta)*cos(psi);
       R[3] = cos(theta)*sin(psi); R[4] = cos(phi)*cos(psi) + sin(phi)*sin(theta)*sin(psi); R[5] = cos(phi)*sin(theta)*sin(psi) - sin(phi)*cos(psi);
       R[6] = -sin(theta);         R[7] = sin(phi)*cos(theta);                              R[8] = cos(phi)*cos(theta);
-      for (p = 0; p < 4; ++p) {
+      for (p = 0; p < 8; ++p) {
         for (d = 0; d < dim; ++d) {
           for (e = 0, rot[d] = 0.0; e < dim; ++e) {
             rot[d] += R[d*dim+e] * vertexCoords[p*dim+e];
