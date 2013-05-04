@@ -18,7 +18,11 @@ class Configure(config.package.Package):
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
     self.netcdf = framework.require('config.packages.netcdf', self)
-    self.deps   = [self.netcdf]
+    # ExodusII does not call HDF5 directly, but it does call nc_def_var_deflate(), which is only
+    # part of libnetcdf when built using --enable-netcdf-4.  Currently --download-netcdf (netcdf.py)
+    # sets --enable-netcdf-4 only when HDF5 is enabled.
+    self.hdf5   = framework.require('config.packages.hdf5', self)
+    self.deps   = [self.netcdf, self.hdf5]
     return
 
   def Install(self):
