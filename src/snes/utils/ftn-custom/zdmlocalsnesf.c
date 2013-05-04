@@ -28,13 +28,13 @@ static PetscErrorCode sourlj(DM dm, Vec X, Mat J, Mat P, MatStructure *str, void
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN void PETSC_STDCALL dmsnessetjacobianlocal_(DM *dm, void (PETSC_STDCALL *jac)(DM*,void*,void*,void*,void*,void*,PetscErrorCode*), void *ctx, PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL dmsnessetjacobianlocal_(DM *dm, void (PETSC_STDCALL *jac)(DM*,Vec*,Mat*,Mat*,MatStructure*,void*,PetscErrorCode*), void *ctx, PetscErrorCode *ierr)
 {
   DMSNES sdm;
 
   *ierr = DMGetDMSNESWrite(*dm, &sdm); if (*ierr) return;
   *ierr = PetscObjectSetFortranCallback((PetscObject) sdm, PETSC_FORTRAN_CALLBACK_SUBTYPE, &_cb.lj, (PetscVoidFunction) jac, ctx); if (*ierr) return;
-  *ierr = DMSNESSetJacobianLocal(*dm, (PetscErrorCode (*)(DM,Vec,Mat,Mat,MatStructure*,void*)) sourlj, NULL);
+  *ierr = DMSNESSetJacobianLocal(*dm, sourlj, NULL);
 }
 
 #undef __FUNCT__
@@ -58,5 +58,5 @@ PETSC_EXTERN void PETSC_STDCALL dmsnessetfunctionlocal_(DM *dm, void (PETSC_STDC
 
   *ierr = DMGetDMSNESWrite(*dm, &sdm); if (*ierr) return;
   *ierr = PetscObjectSetFortranCallback((PetscObject) sdm, PETSC_FORTRAN_CALLBACK_SUBTYPE, &_cb.lf, (PetscVoidFunction) func, ctx); if (*ierr) return;
-  *ierr = DMSNESSetFunctionLocal(*dm, (PetscErrorCode (*)(DM,Vec,Vec,void*))sourlf, NULL);
+  *ierr = DMSNESSetFunctionLocal(*dm, sourlf, NULL);
 }
