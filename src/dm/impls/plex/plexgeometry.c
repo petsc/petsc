@@ -576,7 +576,7 @@ static PetscErrorCode DMPlexComputeTetrahedronGeometry_Internal(DM dm, PetscInt 
   Vec            coordinates;
   PetscScalar   *coords;
   const PetscInt dim = 3;
-  PetscInt       d, f;
+  PetscInt       d;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
