@@ -587,15 +587,15 @@ static PetscErrorCode DMPlexComputeTetrahedronGeometry_Internal(DM dm, PetscInt 
   if (v0)   {for (d = 0; d < dim; d++) v0[d] = PetscRealPart(coords[d]);}
   if (J)    {
     for (d = 0; d < dim; d++) {
-      for (f = 0; f < dim; f++) {
-        J[d*dim+f] = 0.5*(PetscRealPart(coords[(f+1)*dim+d]) - PetscRealPart(coords[0*dim+d]));
-      }
+      /* I orient with outward face normals */
+      J[d*dim+0] = 0.5*(PetscRealPart(coords[2*dim+d]) - PetscRealPart(coords[0*dim+d]));
+      J[d*dim+1] = 0.5*(PetscRealPart(coords[1*dim+d]) - PetscRealPart(coords[0*dim+d]));
+      J[d*dim+2] = 0.5*(PetscRealPart(coords[3*dim+d]) - PetscRealPart(coords[0*dim+d]));
     }
     PetscLogFlops(18.0);
     Det3D_Internal(detJ, J);
-    *detJ = -*detJ; /* I orient with outward face normals */
   }
-  if (invJ) {Invert3D_Internal(invJ, J, -*detJ);}
+  if (invJ) {Invert3D_Internal(invJ, J, *detJ);}
   ierr = DMPlexVecRestoreClosure(dm, coordSection, coordinates, e, NULL, &coords);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -619,17 +619,15 @@ static PetscErrorCode DMPlexComputeHexahedronGeometry_Internal(DM dm, PetscInt e
   if (v0)   {for (d = 0; d < dim; d++) v0[d] = PetscRealPart(coords[d]);}
   if (J)    {
     for (d = 0; d < dim; d++) {
-      J[d*dim+0] = 0.5*(PetscRealPart(coords[(2+1)*dim+d]) - PetscRealPart(coords[0*dim+d]));
-      J[d*dim+1] = 0.5*(PetscRealPart(coords[(1+1)*dim+d]) - PetscRealPart(coords[0*dim+d]));
-      J[d*dim+2] = 0.5*(PetscRealPart(coords[(3+1)*dim+d]) - PetscRealPart(coords[0*dim+d]));
+      J[d*dim+0] = 0.5*(PetscRealPart(coords[3*dim+d]) - PetscRealPart(coords[0*dim+d]));
+      J[d*dim+1] = 0.5*(PetscRealPart(coords[1*dim+d]) - PetscRealPart(coords[0*dim+d]));
+      J[d*dim+2] = 0.5*(PetscRealPart(coords[4*dim+d]) - PetscRealPart(coords[0*dim+d]));
     }
     PetscLogFlops(18.0);
     Det3D_Internal(detJ, J);
-    *detJ = -*detJ;
   }
   if (invJ) {Invert3D_Internal(invJ, J, *detJ);}
-  *detJ *= -8.0;
-  ierr   = DMPlexVecRestoreClosure(dm, coordSection, coordinates, e, NULL, &coords);CHKERRQ(ierr);
+  ierr = DMPlexVecRestoreClosure(dm, coordSection, coordinates, e, NULL, &coords);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
