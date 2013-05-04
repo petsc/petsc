@@ -1,5 +1,3 @@
-/*$Id: ex25.c,v 1.3 2000/11/15 22:56:05 balay Exp $*/
-
 static char help[] = "Tests CG, MINRES and SYMMLQ on the symmetric indefinite matrices: afiro and golan\n\
 Runtime options: ex25 -fload ~petsc/matrices/indefinite/afiro -pc_type jacobi -pc_jacobi_rowmax\n\
 See ~petsc/matrices/indefinite/readme \n\n";
@@ -11,11 +9,10 @@ See ~petsc/matrices/indefinite/readme \n\n";
 int main(int argc,char **args)
 {
   Mat         C;
-  PetscScalar v,none = -1.0;
-  int         i,j,ierr,Istart,Iend,N,rank,size,its,k;
+  PetscScalar none = -1.0;
+  int         ierr,rank,size,its,k;
   double      err_norm,res_norm;
   Vec         x,b,u,u_tmp;
-  PetscRandom r;
   PC          pc;
   KSP         ksp;
   PetscViewer view;
