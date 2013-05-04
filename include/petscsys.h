@@ -1373,9 +1373,9 @@ PETSC_EXTERN PetscErrorCode PetscStackAMSViewOff(void);
 
 typedef void* PetscDLHandle;
 typedef enum {PETSC_DL_DECIDE=0,PETSC_DL_NOW=1,PETSC_DL_LOCAL=2} PetscDLMode;
-extern PetscErrorCode  PetscDLOpen(const char[],PetscDLMode,PetscDLHandle *);
-extern PetscErrorCode  PetscDLClose(PetscDLHandle *);
-extern PetscErrorCode  PetscDLSym(PetscDLHandle,const char[],void **);
+PETSC_EXTERN PetscErrorCode PetscDLOpen(const char[],PetscDLMode,PetscDLHandle *);
+PETSC_EXTERN PetscErrorCode PetscDLClose(PetscDLHandle *);
+PETSC_EXTERN PetscErrorCode PetscDLSym(PetscDLHandle,const char[],void **);
 
 
 #if defined(PETSC_USE_DEBUG)
