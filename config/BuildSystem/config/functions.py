@@ -197,5 +197,5 @@ choke me
       self.executeTest(self.checkSignalHandlerType)
     self.executeTest(self.checkFreeReturnType)
     self.executeTest(self.checkVariableArgumentLists)
-    map(lambda function: self.executeTest(self.check, function), self.functions)
+    map(lambda function: self.executeTest(self.check, function), set(self.functions))
     return
