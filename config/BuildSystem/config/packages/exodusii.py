@@ -8,7 +8,6 @@ class Configure(config.package.Package):
     config.package.Package.__init__(self, framework)
     self.download   = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/exodus-5.24.tar.bz2']
     self.downloadfilename = 'exodus'
-    self.liblist    = [['libexoIIv2for.a', 'libexodus.a'], ['libexoIIv2for.a', 'libexoIIv2c.a'], ['libexoIIv2c.a']]
     self.functions  = ['ex_close']
     self.includes   = ['exodusII.h']
     self.includedir = ['include']
@@ -24,6 +23,13 @@ class Configure(config.package.Package):
     self.hdf5   = framework.require('config.packages.hdf5', self)
     self.deps   = [self.netcdf, self.hdf5]
     return
+
+  def configureLibrary(self):
+    self.liblist = [['libexodus.a'], ['libexoIIv2c.a']]
+    if hasattr(self.compilers, 'FC'):
+      self.liblist = [['libexoIIv2for.a'] + libs for libs in self.liblist]
+      self.functions.append(self.compilers.mangleFortranFunction('exclos'))
+    config.package.Package.configureLibrary(self)
 
   def Install(self):
     self.logPrintBox('Compiling ExodusII; this may take several minutes')
