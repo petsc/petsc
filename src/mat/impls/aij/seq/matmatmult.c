@@ -10,14 +10,14 @@
 #include <petscbt.h>
 #include <../src/mat/impls/dense/seq/dense.h>
 
-static PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_Sort(Mat,Mat,PetscReal,Mat*);
+static PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_LLCondensed(Mat,Mat,PetscReal,Mat*);
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMatMult_SeqAIJ_SeqAIJ"
 PetscErrorCode MatMatMult_SeqAIJ_SeqAIJ(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C)
 {
   PetscErrorCode ierr;
-  PetscBool      scalable=PETSC_FALSE,scalable_fast=PETSC_FALSE,heap = PETSC_FALSE,btheap = PETSC_FALSE,sort = PETSC_FALSE;
+  PetscBool      scalable=PETSC_FALSE,scalable_fast=PETSC_FALSE,heap = PETSC_FALSE,btheap = PETSC_FALSE,llcondensed = PETSC_FALSE;
 
   PetscFunctionBegin;
   if (scall == MAT_INITIAL_MATRIX) {
@@ -26,7 +26,7 @@ PetscErrorCode MatMatMult_SeqAIJ_SeqAIJ(Mat A,Mat B,MatReuse scall,PetscReal fil
     ierr = PetscOptionsBool("-matmatmult_scalable_fast","Use a scalable but slower C=A*B","",scalable_fast,&scalable_fast,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-matmatmult_heap","Use heap implementation of symbolic factorization C=A*B","",heap,&heap,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-matmatmult_btheap","Use btheap implementation of symbolic factorization C=A*B","",btheap,&btheap,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-matmatmult_sort","Use BT and sorting for symbolic C=A*B","",sort,&sort,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-matmatmult_llcondensed","Use LLCondensed to for symbolic C=A*B","",llcondensed,&llcondensed,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsEnd();CHKERRQ(ierr);
     if (scalable_fast) {
       ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ_Scalable_fast(A,B,fill,C);CHKERRQ(ierr);
@@ -36,8 +36,8 @@ PetscErrorCode MatMatMult_SeqAIJ_SeqAIJ(Mat A,Mat B,MatReuse scall,PetscReal fil
       ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ_Heap(A,B,fill,C);CHKERRQ(ierr);
     } else if (btheap) {
       ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ_BTHeap(A,B,fill,C);CHKERRQ(ierr);
-    } else if (sort) {
-      ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ_Sort(A,B,fill,C);CHKERRQ(ierr);
+    } else if (llcondensed) {
+      ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ_LLCondensed(A,B,fill,C);CHKERRQ(ierr);
     } else {
       ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ(A,B,fill,C);CHKERRQ(ierr);
     }
@@ -48,8 +48,8 @@ PetscErrorCode MatMatMult_SeqAIJ_SeqAIJ(Mat A,Mat B,MatReuse scall,PetscReal fil
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatMatMultSymbolic_SeqAIJ_SeqAIJ"
-PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal fill,Mat *C)
+#define __FUNCT__ "MatMatMultSymbolic_SeqAIJ_SeqAIJ_LLCondensed"
+static PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_LLCondensed(Mat A,Mat B,PetscReal fill,Mat *C)
 {
   PetscErrorCode     ierr;
   Mat_SeqAIJ         *a =(Mat_SeqAIJ*)A->data,*b=(Mat_SeqAIJ*)B->data,*c;
@@ -711,9 +711,9 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_BTHeap(Mat A,Mat B,PetscReal fil
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatMatMultSymbolic_SeqAIJ_SeqAIJ_Sort"
+#define __FUNCT__ "MatMatMultSymbolic_SeqAIJ_SeqAIJ"
 /* concatenate unique entries and then sort */
-static PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_Sort(Mat A,Mat B,PetscReal fill,Mat *C)
+PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal fill,Mat *C)
 {
   PetscErrorCode     ierr;
   Mat_SeqAIJ         *a  = (Mat_SeqAIJ*)A->data,*b=(Mat_SeqAIJ*)B->data,*c;
