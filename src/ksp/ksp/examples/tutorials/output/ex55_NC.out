@@ -1,17 +1,17 @@
-[0]PCSetData_AGG bs=2 MM=450
-  0 KSP Residual norm 88.273 
-  1 KSP Residual norm 16.6255 
-  2 KSP Residual norm 19.4732 
-  3 KSP Residual norm 10.5871 
-  4 KSP Residual norm 4.37733 
-  5 KSP Residual norm 2.65701 
-  6 KSP Residual norm 1.55471 
-  7 KSP Residual norm 0.591864 
-  8 KSP Residual norm 0.435847 
-  9 KSP Residual norm 0.251391 
- 10 KSP Residual norm 0.0639263 
- 11 KSP Residual norm 0.0324393 
- 12 KSP Residual norm 0.00648073 
- 13 KSP Residual norm 0.00214803 
- 14 KSP Residual norm 0.000646423 
-Linear solve converged due to CONVERGED_RTOL iterations 14
+  0 KSP Residual norm 91.4782 
+  1 KSP Residual norm 15.0674 
+  2 KSP Residual norm 19.1468 
+  3 KSP Residual norm 9.75197 
+  4 KSP Residual norm 4.02956 
+  5 KSP Residual norm 2.16479 
+  6 KSP Residual norm 1.02271 
+  7 KSP Residual norm 0.312731 
+  8 KSP Residual norm 0.1328 
+  9 KSP Residual norm 0.0946056 
+ 10 KSP Residual norm 0.0302418 
+ 11 KSP Residual norm 0.022488 
+ 12 KSP Residual norm 0.00713725 
+ 13 KSP Residual norm 0.00513686 
+ 14 KSP Residual norm 0.00136275 
+ 15 KSP Residual norm 0.000690562 
+Linear solve converged due to CONVERGED_RTOL iterations 15

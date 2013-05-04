@@ -1530,11 +1530,11 @@ PETSC_EXTERN PetscErrorCode PCCreate_GAMG(PC pc)
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGAMGSetType_C",PCGAMGSetType_GAMG);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGAMGSetNlevels_C",PCGAMGSetNlevels_GAMG);CHKERRQ(ierr);
   pc_gamg->repart           = PETSC_FALSE;
-  pc_gamg->reuse_prol       = PETSC_TRUE;
+  pc_gamg->reuse_prol       = PETSC_FALSE;
   pc_gamg->use_aggs_in_gasm = PETSC_FALSE;
   pc_gamg->min_eq_proc      = 50;
   pc_gamg->coarse_eq_limit  = 800;
-  pc_gamg->threshold        = 0.001;
+  pc_gamg->threshold        = 0.;
   pc_gamg->Nlevels          = GAMG_MAXLEVELS;
   pc_gamg->verbose          = 0;
   pc_gamg->emax_id          = -1;
