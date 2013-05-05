@@ -267,6 +267,10 @@ PetscErrorCode DMPlexInterpolate(DM dm, DM *dmInt)
 
   PetscFunctionBegin;
   ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
+  if (dim <= 1) {
+    ierr = PetscObjectReference((PetscObject) dm);CHKERRQ(ierr);
+    idm  = dm;
+  }
   for (d = 1; d < dim; ++d) {
     /* Create interpolated mesh */
     ierr = DMCreate(PetscObjectComm((PetscObject)dm), &idm);CHKERRQ(ierr);
@@ -291,6 +295,7 @@ PetscErrorCode DMPlexCopyCoordinates(DM dmA, DM dmB)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (dmA == dmB) PetscFunctionReturn(0);
   ierr = DMPlexGetDepthStratum(dmA, 0, &vStartA, &vEndA);CHKERRQ(ierr);
   ierr = DMPlexGetDepthStratum(dmB, 0, &vStartB, &vEndB);CHKERRQ(ierr);
   if ((vEndA-vStartA) != (vEndB-vStartB)) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "The number of vertices in first DM %d != %d in the second DM", vEndA-vStartA, vEndB-vStartB);
