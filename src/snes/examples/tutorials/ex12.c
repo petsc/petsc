@@ -552,7 +552,6 @@ int main(int argc, char **argv)
   } else {
     A = J;
   }
-#if 0
   if (user.bcType == NEUMANN) {
     ierr = MatNullSpaceCreate(PetscObjectComm((PetscObject) user.dm), PETSC_TRUE, 0, NULL, &nullSpace);CHKERRQ(ierr);
     ierr = MatSetNullSpace(J, nullSpace);CHKERRQ(ierr);
@@ -560,7 +559,6 @@ int main(int argc, char **argv)
       ierr = MatSetNullSpace(A, nullSpace);CHKERRQ(ierr);
     }
   }
-#endif
 
   ierr = DMSNESSetFunctionLocal(user.dm,  (PetscErrorCode (*)(DM,Vec,Vec,void*))DMPlexComputeResidualFEM,&user);CHKERRQ(ierr);
   ierr = DMSNESSetJacobianLocal(user.dm,  (PetscErrorCode (*)(DM,Vec,Mat,Mat,MatStructure*,void*))DMPlexComputeJacobianFEM,&user);CHKERRQ(ierr);
@@ -646,7 +644,9 @@ int main(int argc, char **argv)
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   }
 
-  ierr = MatNullSpaceDestroy(&nullSpace);CHKERRQ(ierr);
+  if (user.bcType == NEUMANN) {
+    ierr = MatNullSpaceDestroy(&nullSpace);CHKERRQ(ierr);
+  }
   if (user.jacobianMF) {
     ierr = VecDestroy(&userJ.u);CHKERRQ(ierr);
   }
