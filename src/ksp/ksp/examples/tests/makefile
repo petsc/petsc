@@ -8,7 +8,7 @@ EXAMPLESC       = ex1.c ex3.c ex4.c ex6.c ex7.c ex10.c ex11.c ex14.c \
                 ex15.c ex17.c ex18.c ex19.c ex20.c ex21.c ex22.c ex24.c \
                 ex25.c ex26.c ex27.c ex28.c ex29.c ex30.c ex31.c ex32.c \
                 ex33.c ex34.c ex35.c ex36.c ex37.c ex38.c ex39.c ex40.c ex41.c ex42.c \
-                ex43-aijcusparse.c
+                ex43-aijcusparse.c ex44.c
 EXAMPLESCH      =
 EXAMPLESF       = ex5f.F ex12f.F ex16f.F
 
@@ -167,6 +167,9 @@ ex42: ex42.o chkopts
 ex43-aijcusparse: ex43-aijcusparse.o chkopts
 	-${CLINKER} -o ex43-aijcusparse ex43-aijcusparse.o ${PETSC_KSP_LIB}
 	${RM} ex43-aijcusparse.o
+ex44: ex44.o chkopts
+	-${CLINKER} -o ex44 ex44.o ${PETSC_KSP_LIB}
+	${RM} ex44.o
 #------------------------------------------------------------------------------------
 runex1:
 	-@${MPIEXEC} -n 1 ./ex1 -pc_type jacobi -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex1_1.tmp 2>&1;	  \
@@ -860,6 +863,32 @@ runex43-aijcusparse_2:
 	   else echo ${PWD} ; echo "Possible problem with with ex43-aijcusparse_2, diffs above \n========================================="; fi; \
 	   ${RM} -f ex43-aijcusparse_2.tmp
 
+EX44RICH=-ksp_type richardson -ksp_max_it 1 -ksp_final_residual -pc_type sor
+EX44RICHNONZ=${EX44RICH} -ksp_initial_guess_nonzero
+runex44:
+	-@for mt in aij baij dense; do \
+	  case $$mt in \
+	    aij) \
+	      ;& \
+	    dense) \
+	      ;& \
+	    sbaij) \
+	      bss="1" \
+	      ;; \
+	    baij) \
+	      bss="1 2 3 4 5 6 7 15" \
+	      ;; \
+	  esac; \
+	  for bs in $$bss; do \
+	    ${MPIEXEC} -n 1 ./ex44 ${EX44RICH} -mat_type $$mt -mat_block_size $$bs > ex44.tmp 2>&1;\
+	    if (${DIFF} output/ex44_aij_zero.out ex44.tmp) then true; \
+	       else echo ${PWD} ; echo "Possible problem with with ex44 -mat_type $$mt -mat_block_size $$bs, diffs above \n========================================="; fi; \
+	    ${MPIEXEC} -n 1 ./ex44 ${EX44RICHNONZ} -mat_type $$mt -mat_block_size $$bs > ex44.tmp 2>&1;\
+	    if (${DIFF} output/ex44_aij_nonz.out ex44.tmp) then true; \
+	       else echo ${PWD} ; echo "Possible problem with with ex44 -mat_type $$mt -mat_block_size $$bs -ksp_initial_guess_nonzero, diffs above \n========================================="; fi; \
+		  ${RM} ex44.tmp; \
+	  done \
+	done
 
 TESTEXAMPLES_C		       = ex1.PETSc ex1.rm ex3.PETSc runex3 runex3_2 ex3.rm ex4.PETSc runex4 runex4_3 \
                                  runex4_5 ex4.rm ex7.PETSc ex7.rm ex19.PETSc runex19 runex19_2 ex19.rm \
@@ -872,7 +901,8 @@ TESTEXAMPLES_C		       = ex1.PETSc ex1.rm ex3.PETSc runex3 runex3_2 ex3.rm ex4.P
                                  runex32_inode5 runex32_inode5_nd ex32.rm \
 				 ex35.PETSc runex35_1 runex35_2 runex35_inode ex35.rm \
                                  ex38.PETSc runex38 ex38.rm ex39.PETSc runex39 runex39_2 runex39_cheby_hybrid runex39_fgmres_cheby_hybrid ex39.rm \
-                                 ex42.PETSc runex42 runex42_2 ex42.rm
+                                 ex42.PETSc runex42 runex42_2 ex42.rm \
+                                 ex44.PETSc runex44 ex44.rm
 TESTEXAMPLES_C_X	       = ex10.PETSc runex10 ex10.rm ex15.PETSc ex15.rm
 TESTEXAMPLES_C_NOCOMPLEX       = ex33.PETSc runex33 ex33.rm
 TESTEXAMPLES_FORTRAN	       = ex5f.PETSc runex5f ex5f.rm ex12f.PETSc ex12f.rm
