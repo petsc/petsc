@@ -186,6 +186,12 @@ namespace ALE {
         this->oPoints = NULL;
         this->setSize(size);
       };
+      void operator=(const PointRetriever& pr) {
+        this->i = 0; this->o = 0; this->skip = 0; this->limit = 0; this->visitor = pr.visitor;
+        this->points  = NULL;
+        this->oPoints = NULL;
+        this->setSize(pr.size);
+      };
       virtual ~PointRetriever() {
         delete [] this->points;
         delete [] this->oPoints;
@@ -269,6 +275,12 @@ namespace ALE {
     public:
       NConeRetriever(const Sieve& s, const size_t size) : PointRetriever<Sieve,Visitor>(size, true), sieve(s) {};
       NConeRetriever(const Sieve& s, const size_t size, Visitor& v) : PointRetriever<Sieve,Visitor>(size, v, true), sieve(s) {};
+      void operator=(const NConeRetriever& ncr) {
+        this->i = 0; this->o = 0; this->skip = 0; this->limit = 0; this->visitor = ncr.visitor;
+        this->points  = NULL;
+        this->oPoints = NULL;
+        this->setSize(ncr.size);
+      };
       virtual ~NConeRetriever() {};
     };
     template<typename Mesh, typename Visitor = NullVisitor<typename Mesh::sieve_type> >
@@ -2800,8 +2812,9 @@ namespace ALE {
 
         for(typename Sieve::coneSequence::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter, ++i) {
           typename ArrowSection::point_type arrow(*c_iter, *b_iter);
+          const int o = orientation->restrictPoint(arrow)[0];
 
-          orientations[i] = orientation->restrictPoint(arrow)[0];
+          orientations[i] = o == 1 ? 0 : o;
         }
         ierr = DMPlexSetConeOrientation(dm, renumbering[*b_iter], orientations);
       }
@@ -2922,6 +2935,7 @@ namespace ALE {
       ierr = VecCreate(mesh.comm(), &coordinates);CHKERRXX(ierr);
       convertCoordinates(*mesh.getRealSection("coordinates"), coordSection, coordinates, renumbering);
       ierr = DMSetCoordinatesLocal(*dm, coordinates);CHKERRXX(ierr);
+      ierr = VecDestroy(&coordinates);CHKERRXX(ierr);
       const typename Mesh::labels_type& labels = mesh.getLabels();
 
       for(typename Mesh::labels_type::const_iterator l_iter = labels.begin(); l_iter != labels.end(); ++l_iter) {

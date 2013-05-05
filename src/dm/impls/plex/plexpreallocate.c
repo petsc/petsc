@@ -103,8 +103,8 @@ PetscErrorCode DMPlexPreallocateOperator(DM dm, PetscInt bs, PetscSection sectio
   ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
   ierr = DMPlexGetMaxSizes(dm, &maxConeSize, &maxSupportSize);CHKERRQ(ierr);
 
-  maxClosureSize = 2*PetscMax(PetscPowInt(mesh->maxConeSize,depth),PetscPowInt(mesh->maxSupportSize,depth)) + 2;
-  maxAdjSize     = PetscPowInt(mesh->maxConeSize,depth) * PetscPowInt(mesh->maxSupportSize,depth) + 1;
+  maxClosureSize = 2*PetscMax(PetscPowInt(mesh->maxConeSize,depth+1),PetscPowInt(mesh->maxSupportSize,depth+1));
+  maxAdjSize     = PetscPowInt(mesh->maxConeSize,depth+1) * PetscPowInt(mesh->maxSupportSize,depth+1) + 1;
 
   ierr = PetscMalloc2(maxClosureSize,PetscInt,&tmpClosure,maxAdjSize,PetscInt,&tmpAdj);CHKERRQ(ierr);
 
@@ -505,7 +505,7 @@ PetscErrorCode DMPlexPreallocateOperator_2(DM dm, PetscInt bs, PetscSection sect
   ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
   ierr = DMPlexGetMaxSizes(dm, &maxConeSize, &maxSupportSize);CHKERRQ(ierr);
 
-  maxClosureSize = 2*PetscMax(PetscPowInt(mesh->maxConeSize,depth),PetscPowInt(mesh->maxSupportSize,depth));
+  maxClosureSize = 2*PetscMax(PetscPowInt(mesh->maxConeSize,depth+1),PetscPowInt(mesh->maxSupportSize,depth+1));
 
   ierr    = PetscSectionGetChart(section, &pStart, &pEnd);CHKERRQ(ierr);
   npoints = pEnd - pStart;
