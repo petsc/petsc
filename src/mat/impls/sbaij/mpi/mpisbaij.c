@@ -1388,11 +1388,11 @@ PetscErrorCode MatAXPY_MPISBAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
     xa   = (Mat_SeqSBAIJ*)xx->A->data;
     ya   = (Mat_SeqSBAIJ*)yy->A->data;
     ierr = PetscBLASIntCast(xa->nz,&bnz);CHKERRQ(ierr);
-    PetscStackCall("BLASaxpy",BLASaxpy_(&bnz,&alpha,xa->a,&one,ya->a,&one));
+    PetscStackCallBLAS("BLASaxpy",BLASaxpy_(&bnz,&alpha,xa->a,&one,ya->a,&one));
     xb   = (Mat_SeqBAIJ*)xx->B->data;
     yb   = (Mat_SeqBAIJ*)yy->B->data;
     ierr = PetscBLASIntCast(xb->nz,&bnz);CHKERRQ(ierr);
-    PetscStackCall("BLASaxpy",BLASaxpy_(&bnz,&alpha,xb->a,&one,yb->a,&one));
+    PetscStackCallBLAS("BLASaxpy",BLASaxpy_(&bnz,&alpha,xb->a,&one,yb->a,&one));
   } else {
     ierr = MatGetRowUpperTriangular(X);CHKERRQ(ierr);
     ierr = MatAXPY_Basic(Y,a,X,str);CHKERRQ(ierr);

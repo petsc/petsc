@@ -2323,7 +2323,7 @@ PetscErrorCode MatScale_SeqAIJ(Mat inA,PetscScalar alpha)
 
   PetscFunctionBegin;
   ierr = PetscBLASIntCast(a->nz,&bnz);CHKERRQ(ierr);
-  PetscStackCall("BLASscal",BLASscal_(&bnz,&oalpha,a->a,&one));
+  PetscStackCallBLAS("BLASscal",BLASscal_(&bnz,&oalpha,a->a,&one));
   ierr = PetscLogFlops(a->nz);CHKERRQ(ierr);
   ierr = MatSeqAIJInvalidateDiagonal(inA);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -2683,7 +2683,7 @@ PetscErrorCode MatAXPY_SeqAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
   ierr = PetscBLASIntCast(x->nz,&bnz);CHKERRQ(ierr);
   if (str == SAME_NONZERO_PATTERN) {
     PetscScalar alpha = a;
-    PetscStackCall("BLASaxpy",BLASaxpy_(&bnz,&alpha,x->a,&one,y->a,&one));
+    PetscStackCallBLAS("BLASaxpy",BLASaxpy_(&bnz,&alpha,x->a,&one,y->a,&one));
     ierr = MatSeqAIJInvalidateDiagonal(Y);CHKERRQ(ierr);
   } else if (str == SUBSET_NONZERO_PATTERN) { /* nonzeros of X is a subset of Y's */
     if (y->xtoy && y->XtoY != X) {

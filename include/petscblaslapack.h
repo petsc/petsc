@@ -9,6 +9,13 @@
 #if !defined(_BLASLAPACK_H)
 #define _BLASLAPACK_H
 
+/* Do not use PetscStackPush/PetscStackPop because  */
+#define PetscStackCallBLAS(name,routine) do {                   \
+    PetscStackPushNoCheck(name,PETSC_FALSE);                    \
+    routine;                                                    \
+    PetscStackPop;                                              \
+  } while(0)
+
 #if defined(PETSC_BLASLAPACK_STDCALL)
 #include <petscblaslapack_stdcall.h>
 #else
