@@ -116,8 +116,8 @@ static PetscErrorCode PetscCommBuildTwoSided_Ibarrier(MPI_Comm comm,PetscMPIInt 
     if (flag) {                 /* incoming message */
       PetscMPIInt *recvrank;
       void        *buf;
-      ierr      = PetscSegBufferGet(&segrank,1,&recvrank);CHKERRQ(ierr);
-      ierr      = PetscSegBufferGet(&segdata,count,&buf);CHKERRQ(ierr);
+      ierr      = PetscSegBufferGet(segrank,1,&recvrank);CHKERRQ(ierr);
+      ierr      = PetscSegBufferGet(segdata,count,&buf);CHKERRQ(ierr);
       *recvrank = status.MPI_SOURCE;
       ierr      = MPI_Recv(buf,count,dtype,status.MPI_SOURCE,tag,comm,MPI_STATUS_IGNORE);CHKERRQ(ierr);
       nrecvs++;
@@ -135,9 +135,9 @@ static PetscErrorCode PetscCommBuildTwoSided_Ibarrier(MPI_Comm comm,PetscMPIInt 
     }
   }
   *nfrom = nrecvs;
-  ierr   = PetscSegBufferExtractAlloc(&segrank,fromranks);CHKERRQ(ierr);
+  ierr   = PetscSegBufferExtractAlloc(segrank,fromranks);CHKERRQ(ierr);
   ierr   = PetscSegBufferDestroy(&segrank);CHKERRQ(ierr);
-  ierr   = PetscSegBufferExtractAlloc(&segdata,fromdata);CHKERRQ(ierr);
+  ierr   = PetscSegBufferExtractAlloc(segdata,fromdata);CHKERRQ(ierr);
   ierr   = PetscSegBufferDestroy(&segdata);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
