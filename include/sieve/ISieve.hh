@@ -2848,14 +2848,20 @@ namespace ALE {
       PetscInt                            n;
       PetscErrorCode                      ierr;
 
-      if (!chart.size()) return;
+      ierr = PetscSectionSetNumFields(coordSection, 1);CHKERRXX(ierr);
+      if (!chart.size()) {
+        ierr = PetscSectionSetFieldComponents(coordSection, 0, 1);CHKERRXX(ierr);
+        return;
+      }
       for(typename Section::chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
         min = std::min(min, renumbering[*p_iter]);
         max = std::max(max, renumbering[*p_iter]);
       }
+      ierr = PetscSectionSetFieldComponents(coordSection, 0, coordinates.getFiberDimension(*chart.begin()));CHKERRXX(ierr);
       ierr = PetscSectionSetChart(coordSection, min, max+1);CHKERRXX(ierr);
       for(typename Section::chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
         ierr = PetscSectionSetDof(coordSection, renumbering[*p_iter], coordinates.getFiberDimension(*p_iter));CHKERRXX(ierr);
+        ierr = PetscSectionSetFieldDof(coordSection, renumbering[*p_iter], 0, coordinates.getFiberDimension(*p_iter));CHKERRXX(ierr);
       }
       ierr = PetscSectionSetUp(coordSection);CHKERRXX(ierr);
       ierr = PetscSectionGetStorageSize(coordSection, &n);CHKERRXX(ierr);
