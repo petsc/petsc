@@ -43,5 +43,4 @@
     1 SNES Function norm 5.463460779413e-02 
     2 SNES Function norm 1.312557452733e-07 
 10 TS dt 0.0384615 time 0.384615
--1 TS dt 0.0384615 time 0.384615
 CONVERGED_ITS at time 0.384615 after 10 steps

@@ -2412,6 +2412,7 @@ PetscErrorCode TSInterpolate(TS ts,PetscReal t,Vec U)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidHeaderSpecific(U,VEC_CLASSID,3);
   if (t < ts->ptime - ts->time_step_prev || t > ts->ptime) SETERRQ3(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_OUTOFRANGE,"Requested time %G not in last time steps [%G,%G]",t,ts->ptime-ts->time_step_prev,ts->ptime);
   if (!ts->ops->interpolate) SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"%s does not provide interpolation",((PetscObject)ts)->type_name);
   ierr = (*ts->ops->interpolate)(ts,t,U);CHKERRQ(ierr);
@@ -2534,6 +2535,7 @@ PetscErrorCode TSSolve(TS ts,Vec u)
 {
   PetscBool         flg;
   PetscViewer       viewer;
+  Vec               solution;
   PetscErrorCode    ierr;
   PetscViewerFormat format;
 
@@ -2541,15 +2543,13 @@ PetscErrorCode TSSolve(TS ts,Vec u)
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   if (u) PetscValidHeaderSpecific(u,VEC_CLASSID,2);
   if (ts->exact_final_time == TS_EXACTFINALTIME_INTERPOLATE) {   /* Need ts->vec_sol to be distinct so it is not overwritten when we interpolate at the end */
+    PetscValidHeaderSpecific(u,VEC_CLASSID,2);
     if (!ts->vec_sol || u == ts->vec_sol) {
-      Vec y;
-      ierr = VecDuplicate(u,&y);CHKERRQ(ierr);
-      ierr = TSSetSolution(ts,y);CHKERRQ(ierr);
-      ierr = VecDestroy(&y);CHKERRQ(ierr); /* grant ownership */
+      ierr = VecDuplicate(u,&solution);CHKERRQ(ierr);
+      ierr = TSSetSolution(ts,solution);CHKERRQ(ierr);
+      ierr = VecDestroy(&solution);CHKERRQ(ierr); /* grant ownership */
     }
-    if (u) {
-      ierr = VecCopy(u,ts->vec_sol);CHKERRQ(ierr);
-    }
+    ierr = VecCopy(u,ts->vec_sol);CHKERRQ(ierr);
   } else if (u) {
     ierr = TSSetSolution(ts,u);CHKERRQ(ierr);
   }
@@ -2573,28 +2573,27 @@ PetscErrorCode TSSolve(TS ts,Vec u)
   if (ts->ops->solve) {         /* This private interface is transitional and should be removed when all implementations are updated. */
     ierr = (*ts->ops->solve)(ts);CHKERRQ(ierr);
     ierr = VecCopy(ts->vec_sol,u);CHKERRQ(ierr);
-
     ts->solvetime = ts->ptime;
   } else {
     /* steps the requested number of timesteps. */
-    ierr = TSMonitor(ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
     if (ts->steps >= ts->max_steps)     ts->reason = TS_CONVERGED_ITS;
     else if (ts->ptime >= ts->max_time) ts->reason = TS_CONVERGED_TIME;
     while (!ts->reason) {
+      ierr = TSMonitor(ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
       ierr = TSStep(ts);CHKERRQ(ierr);
       ierr = TSPostStep(ts);CHKERRQ(ierr);
-      ierr = TSMonitor(ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
     }
     if (ts->exact_final_time == TS_EXACTFINALTIME_INTERPOLATE && ts->ptime > ts->max_time) {
       ierr = TSInterpolate(ts,ts->max_time,u);CHKERRQ(ierr);
-
       ts->solvetime = ts->max_time;
+      solution = u;
     } else {
       if (u) {ierr = VecCopy(ts->vec_sol,u);CHKERRQ(ierr);}
       ts->solvetime = ts->ptime;
+      solution = ts->vec_sol;
     }
+    ierr = TSMonitor(ts,ts->steps,ts->solvetime,solution);CHKERRQ(ierr);
   }
-  ierr = TSMonitor(ts,-1,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
   ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject)ts),((PetscObject)ts)->prefix,"-ts_view",&viewer,&format,&flg);CHKERRQ(ierr);
   if (flg && !PetscPreLoadingOn) {
     ierr = PetscViewerPushFormat(viewer,format);CHKERRQ(ierr);
@@ -2632,6 +2631,8 @@ PetscErrorCode TSMonitor(TS ts,PetscInt step,PetscReal ptime,Vec u)
   PetscInt       i,n = ts->numbermonitors;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidHeaderSpecific(u,VEC_CLASSID,4);
   for (i=0; i<n; i++) {
     ierr = (*ts->monitor[i])(ts,step,ptime,u,ts->monitorcontext[i]);CHKERRQ(ierr);
   }
@@ -2704,14 +2705,14 @@ PetscErrorCode  TSMonitorLGCtxCreate(MPI_Comm comm,const char host[],const char 
 
 #undef __FUNCT__
 #define __FUNCT__ "TSMonitorLGTimeStep"
-PetscErrorCode TSMonitorLGTimeStep(TS ts,PetscInt n,PetscReal ptime,Vec v,void *monctx)
+PetscErrorCode TSMonitorLGTimeStep(TS ts,PetscInt step,PetscReal ptime,Vec v,void *monctx)
 {
   TSMonitorLGCtx ctx = (TSMonitorLGCtx) monctx;
   PetscReal      x   = ptime,y;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!n) {
+  if (!step) {
     PetscDrawAxis axis;
     ierr = PetscDrawLGGetAxis(ctx->lg,&axis);CHKERRQ(ierr);
     ierr = PetscDrawAxisSetLabels(axis,"Timestep as function of time","Time","Time step");CHKERRQ(ierr);
@@ -2719,7 +2720,7 @@ PetscErrorCode TSMonitorLGTimeStep(TS ts,PetscInt n,PetscReal ptime,Vec v,void *
   }
   ierr = TSGetTimeStep(ts,&y);CHKERRQ(ierr);
   ierr = PetscDrawLGAddPoint(ctx->lg,&x,&y);CHKERRQ(ierr);
-  if (((ctx->howoften > 0) && (!(n % ctx->howoften))) || ((ctx->howoften == -1) && (n == -1))) {
+  if (((ctx->howoften > 0) && (!(step % ctx->howoften))) || ((ctx->howoften == -1) && ts->reason)) {
     ierr = PetscDrawLGDraw(ctx->lg);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -3039,7 +3040,7 @@ PetscErrorCode  TSMonitorDrawSolution(TS ts,PetscInt step,PetscReal ptime,Vec u,
     }
     ierr = VecCopy(u,ictx->initialsolution);CHKERRQ(ierr);
   }
-  if (!(((ictx->howoften > 0) && (!(step % ictx->howoften)) && (step > -1)) || ((ictx->howoften == -1) && (step == -1)))) PetscFunctionReturn(0);
+  if (!(((ictx->howoften > 0) && (!(step % ictx->howoften))) || ((ictx->howoften == -1) && ts->reason))) PetscFunctionReturn(0);
 
   if (ictx->showinitial) {
     PetscReal pause;
@@ -3234,7 +3235,7 @@ PetscErrorCode  TSMonitorDrawError(TS ts,PetscInt step,PetscReal ptime,Vec u,voi
   Vec              work;
 
   PetscFunctionBegin;
-  if (!(((ctx->howoften > 0) && (!(step % ctx->howoften)) && (step > -1)) || ((ctx->howoften == -1) && (step == -1)))) PetscFunctionReturn(0);
+  if (!(((ctx->howoften > 0) && (!(step % ctx->howoften))) || ((ctx->howoften == -1) && ts->reason))) PetscFunctionReturn(0);
   ierr = VecDuplicate(u,&work);CHKERRQ(ierr);
   ierr = TSComputeSolutionFunction(ts,ptime,work);CHKERRQ(ierr);
   ierr = VecAXPY(work,-1.0,u);CHKERRQ(ierr);
@@ -4621,7 +4622,7 @@ PetscErrorCode  TSMonitorLGSolution(TS ts,PetscInt step,PetscReal ptime,Vec u,vo
   ierr = PetscDrawLGAddCommonPoint(ctx->lg,ptime,yy);CHKERRQ(ierr);
 #endif
   ierr = VecRestoreArrayRead(u,&yy);CHKERRQ(ierr);
-  if (((ctx->howoften > 0) && (!(step % ctx->howoften)) && (step > -1)) || ((ctx->howoften == -1) && (step == -1))) {
+  if (((ctx->howoften > 0) && (!(step % ctx->howoften))) || ((ctx->howoften == -1) && ts->reason)) {
     ierr = PetscDrawLGDraw(ctx->lg);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -4691,7 +4692,7 @@ PetscErrorCode  TSMonitorLGError(TS ts,PetscInt step,PetscReal ptime,Vec u,void 
 #endif
   ierr = VecRestoreArrayRead(y,&yy);CHKERRQ(ierr);
   ierr = VecDestroy(&y);CHKERRQ(ierr);
-  if (((ctx->howoften > 0) && (!(step % ctx->howoften)) && (step > -1)) || ((ctx->howoften == -1) && (step == -1))) {
+  if (((ctx->howoften > 0) && (!(step % ctx->howoften))) || ((ctx->howoften == -1) && ts->reason)) {
     ierr = PetscDrawLGDraw(ctx->lg);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
