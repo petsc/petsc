@@ -352,6 +352,14 @@ class Configure(config.base.Configure):
     return 0
   isDarwin = staticmethod(isDarwin)
 
+  def isFreeBSD():
+    '''Returns true if system is FreeBSD'''
+    (output, error, status) = config.base.Configure.executeShellCommand('uname -s')
+    if not status:
+      return output.lower().strip() == 'freebsd'
+    return 0
+  isFreeBSD = staticmethod(isFreeBSD)
+
   def isWindows(compiler):
     '''Returns true if the compiler is a Windows compiler'''
     if compiler in ['icl', 'cl', 'bcc32', 'ifl', 'df']:
