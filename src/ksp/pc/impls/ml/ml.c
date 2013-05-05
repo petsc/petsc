@@ -581,6 +581,7 @@ PetscErrorCode PCSetUp_ML(PC pc)
   KSP            smoother;
   PC             subpc;
   PetscInt       mesh_level, old_mesh_level;
+  MatInfo        info;
 
   PetscFunctionBegin;
   A    = pc->pmat;
@@ -797,6 +798,9 @@ PetscErrorCode PCSetUp_ML(PC pc)
     ml_object->Amat[0].aux_data->max_level = 10;
     ml_object->Amat[0].num_PDEs            = bs;
   }
+
+  ierr = MatGetInfo(A,MAT_LOCAL,&info);CHKERRQ(ierr);
+  ml_object->Amat[0].N_nonzeros = (int) info.nz_used;
 
   if (pc_ml->dim) {
     PetscInt               i,dim = pc_ml->dim;
