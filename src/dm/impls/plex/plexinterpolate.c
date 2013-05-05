@@ -104,6 +104,7 @@ static PetscErrorCode DMPlexGetFaces_Internal(DM dm, PetscInt dim, PetscInt p, P
 /* This interpolates faces for cells at some stratum */
 static PetscErrorCode DMPlexInterpolateFaces_Internal(DM dm, PetscInt cellDepth, DM idm)
 {
+  DMLabel        subpointMap;
   PetscHashIJKL  faceTable;
   PetscInt      *pStart, *pEnd;
   PetscInt       cellDim, depth, faceDepth = cellDepth, numPoints = 0, faceSizeAll = 0, face, c, d;
@@ -111,6 +112,9 @@ static PetscErrorCode DMPlexInterpolateFaces_Internal(DM dm, PetscInt cellDepth,
 
   PetscFunctionBegin;
   ierr = DMPlexGetDimension(dm, &cellDim);CHKERRQ(ierr);
+  /* HACK: I need a better way to determine face dimension, or an alternative to GetFaces() */
+  ierr = DMPlexGetSubpointMap(dm, &subpointMap);CHKERRQ(ierr);
+  if (subpointMap) ++cellDim;
   ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
   ++depth;
   ++cellDepth;
