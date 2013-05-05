@@ -1150,11 +1150,18 @@ static PetscErrorCode DMPlexMarkSubmesh_Uninterpolated(DM dm, DMLabel vertexLabe
       if (!(*nFV)) {ierr = DMPlexGetNumFaceVertices(dm, dim, numCorners, nFV);CHKERRQ(ierr);}
       if (faceSize > *nFV) SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Invalid submesh: Too many vertices %d of an element on the surface", faceSize);
       if (faceSize == *nFV) {
+        const PetscInt *cells = NULL;
+        PetscInt        numCells, nc;
+
         ++(*numFaces);
         for (cl = 0; cl < faceSize; ++cl) {
           ierr = DMLabelSetValue(subpointMap, closure[cl], 0);CHKERRQ(ierr);
         }
-        ierr = DMLabelSetValue(subpointMap, cell, 2);CHKERRQ(ierr);
+        ierr = DMPlexGetJoin(dm, faceSize, closure, &numCells, &cells);CHKERRQ(ierr);
+        for (nc = 0; nc < numCells; ++nc) {
+          ierr = DMLabelSetValue(subpointMap, cells[nc], 2);CHKERRQ(ierr);
+        }
+        ierr = DMPlexRestoreJoin(dm, faceSize, closure, &numCells, &cells);CHKERRQ(ierr);
       }
       ierr = DMPlexRestoreTransitiveClosure(dm, cell, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
     }
