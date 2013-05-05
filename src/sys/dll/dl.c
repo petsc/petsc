@@ -180,6 +180,7 @@ PetscErrorCode  PetscDLLibraryOpen(MPI_Comm comm,const char path[],PetscDLLibrar
   else {
     ierr = PetscInfo1(0,"Dynamic library %s does not have lib prefix\n",libname);CHKERRQ(ierr);
   }
+  for (s=basename; *s; s++) if (*s == '-') *s = '_';
   ierr = PetscStrlen(basename,&len);CHKERRQ(ierr);
   ierr = PetscStrcpy(registername,"PetscDLLibraryRegister_");CHKERRQ(ierr);
   ierr = PetscStrncat(registername,basename,len);CHKERRQ(ierr);
