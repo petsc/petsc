@@ -669,13 +669,13 @@ PetscErrorCode  KSPSetPreSolve(KSP ksp,PetscErrorCode (*presolve)(KSP,Vec,Vec,vo
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetPostSolve"
 /*@C
-   KSPSetPostSolve - Sets a function that is called before every KSPSolve() is started
+   KSPSetPostSolve - Sets a function that is called after every KSPSolve() completes (whether it converges or not)
 
    Logically Collective on KSP
 
    Input Parameters:
 +   ksp - the solver object
-.   postsolve - the function to call before the solve
+.   postsolve - the function to call after the solve
 -   postctx - any context needed by the function
 
    Level: developer
