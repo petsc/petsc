@@ -6,19 +6,30 @@ import os
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.download   = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/exodusii-5.22b.tar.gz']
-    self.liblist    = [['libexoIIv2for.a', 'libexodus.a'], ['libexoIIv2for.a', 'libexoIIv2c.a'], ['libexoIIv2c.a']]
+    self.download   = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/exodus-5.24.tar.bz2']
+    self.downloadfilename = 'exodus'
     self.functions  = ['ex_close']
     self.includes   = ['exodusII.h']
-    self.includedir = ['include', os.path.join('cbind', 'include'), os.path.join('forbind', 'include')]
+    self.includedir = ['include']
     self.altlibdir  = '.'
     return
 
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
     self.netcdf = framework.require('config.packages.netcdf', self)
-    self.deps   = [self.netcdf]
+    # ExodusII does not call HDF5 directly, but it does call nc_def_var_deflate(), which is only
+    # part of libnetcdf when built using --enable-netcdf-4.  Currently --download-netcdf (netcdf.py)
+    # sets --enable-netcdf-4 only when HDF5 is enabled.
+    self.hdf5   = framework.require('config.packages.hdf5', self)
+    self.deps   = [self.netcdf, self.hdf5]
     return
+
+  def configureLibrary(self):
+    self.liblist = [['libexodus.a'], ['libexoIIv2c.a']]
+    if hasattr(self.compilers, 'FC'):
+      self.liblist = [['libexoIIv2for.a'] + libs for libs in self.liblist]
+      self.functions.append(self.compilers.mangleFortranFunction('exclos'))
+    config.package.Package.configureLibrary(self)
 
   def Install(self):
     self.logPrintBox('Compiling ExodusII; this may take several minutes')
@@ -54,16 +65,17 @@ class Configure(config.package.Package):
       fincludes  = ['exodusII.inc','exodusII_int.inc']
       try:
         self.logPrintBox('Compiling ExodusII; this may take several minutes')
-        output,err,ret = config.base.Configure.executeShellCommand('cd '+self.packageDir+' && make -f Makefile.standalone libexodus.a '+args, timeout=2500, log = self.framework.log)
-        shutil.copy(os.path.join(self.packageDir,'libexodus.a'),os.path.join(self.installDir,'lib'))
+        builddir = os.path.join(self.packageDir, 'exodus')
+        output,err,ret = config.base.Configure.executeShellCommand('cd '+builddir+' && make -f Makefile.standalone libexodus.a '+args, timeout=2500, log = self.framework.log)
+        shutil.copy(os.path.join(builddir,'libexodus.a'),os.path.join(self.installDir,'lib'))
         for i in cincludes:
-          shutil.copy(os.path.join(self.packageDir,'cbind','include',i),os.path.join(self.installDir,'include'))
+          shutil.copy(os.path.join(builddir,'cbind','include',i),os.path.join(self.installDir,'include'))
         if hasattr(self.setCompilers, 'FC'):
-          output,err,ret = config.base.Configure.executeShellCommand('cd '+self.packageDir+' && make -f Makefile.standalone libexoIIv2for.a '+args, timeout=2500, log = self.framework.log)
-          shutil.copy(os.path.join(self.packageDir,'libexoIIv2for.a'),os.path.join(self.installDir,'lib'))
+          output,err,ret = config.base.Configure.executeShellCommand('cd '+builddir+' && make -f Makefile.standalone libexoIIv2for.a '+args, timeout=2500, log = self.framework.log)
+          shutil.copy(os.path.join(builddir,'libexoIIv2for.a'),os.path.join(self.installDir,'lib'))
           for i in fincludes:
-            shutil.copy(os.path.join(self.packageDir,'forbind','include',i),os.path.join(self.installDir,'include'))
+            shutil.copy(os.path.join(builddir,'forbind','include',i),os.path.join(self.installDir,'include'))
       except RuntimeError, e:
-        raise RuntimeError('Error running make on exodusII: '+str(e))
+        raise RuntimeError('Error running make on ExodusII: '+str(e))
       self.postInstall(output+err, mkfile)
     return self.installDir
