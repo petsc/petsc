@@ -2815,7 +2815,7 @@ int write_fine_grid(GRID *grid)
   if (!(output = fopen("frame.out","a"))) SETERRQ(PETSC_COMM_SELF,1,"can't open frame.out");
   fprintf(output,"information for fine grid\n");
   fprintf(output,"\n");
-  fprintf(output," address of fine grid = %p\n",grid);
+  fprintf(output," address of fine grid = %p\n",(void*)grid);
 
   fprintf(output,"grid.nnodes  = %d\n",grid->nnodes);
   fprintf(output,"grid.ncell   = %d\n",grid->ncell);
