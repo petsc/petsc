@@ -1078,7 +1078,7 @@ PetscErrorCode DMPlexGetTransitiveClosure(DM dm, PetscInt p, PetscBool useCone, 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   ierr    = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
-  maxSize = 2*PetscMax(PetscMax(PetscPowInt(mesh->maxConeSize,depth+1),PetscPowInt(mesh->maxSupportSize,depth+1)),depth);
+  maxSize = 2*PetscMax(PetscMax(PetscPowInt(mesh->maxConeSize,depth+1),PetscPowInt(mesh->maxSupportSize,depth+1)),depth+1);
   ierr    = DMGetWorkArray(dm, maxSize, PETSC_INT, &fifo);CHKERRQ(ierr);
   if (*points) {
     closure = *points;
