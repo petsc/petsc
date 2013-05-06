@@ -859,11 +859,7 @@ EX44RICHNONZ=${EX44RICH} -ksp_initial_guess_nonzero
 runex44:
 	-@for mt in aij baij dense; do \
 	  case $$mt in \
-	    aij) \
-	      ;& \
-	    dense) \
-	      ;& \
-	    sbaij) \
+	    aij|dense|sbaij) \
 	      bss="1" \
 	      ;; \
 	    baij) \
