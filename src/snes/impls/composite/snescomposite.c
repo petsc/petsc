@@ -9,6 +9,7 @@ const char *const        SNESCompositeTypes[]   = {"ADDITIVE","MULTIPLICATIVE","
 typedef struct _SNES_CompositeLink *SNES_CompositeLink;
 struct _SNES_CompositeLink {
   SNES               snes;
+  PetscReal          dmp;
   SNES_CompositeLink next;
   SNES_CompositeLink previous;
 };
@@ -76,7 +77,6 @@ static PetscErrorCode SNESCompositeApply_Additive(SNES snes,Vec X,Vec B,Vec F,Pe
   Xorig = jac->Xorig;
   ierr = VecCopy(X,Xorig);
   if (!next) SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE,"No composite SNESes supplied via SNESCompositeAddSNES() or -snes_composite_sneses");
-  ierr = SNESSolve(next->snes,B,X);CHKERRQ(ierr);
   if (snes->normtype == SNES_NORM_FUNCTION) {
     ierr = SNESSetInitialFunction(next->snes,F);CHKERRQ(ierr);
     if (fnorm) {ierr = SNESSetInitialFunctionNorm(next->snes,*fnorm);CHKERRQ(ierr);}
@@ -87,12 +87,16 @@ static PetscErrorCode SNESCompositeApply_Additive(SNES snes,Vec X,Vec B,Vec F,Pe
     }
   }
   next = jac->head;
+  ierr = VecCopy(Xorig,Y);CHKERRQ(ierr);
+  ierr = SNESSolve(next->snes,B,Y);CHKERRQ(ierr);
+  ierr = VecAXPY(Y,-1.0,Xorig);CHKERRQ(ierr);
+  ierr = VecAXPY(X,next->dmp,Y);CHKERRQ(ierr);
   while (next->next) {
     next = next->next;
-    ierr = VecCopy(X,Y);CHKERRQ(ierr);
+    ierr = VecCopy(Xorig,Y);CHKERRQ(ierr);
     ierr = SNESSolve(next->snes,B,Y);CHKERRQ(ierr);
     ierr = VecAXPY(Y,-1.0,Xorig);CHKERRQ(ierr);
-    ierr = VecAXPY(Y,1.0,X);CHKERRQ(ierr);
+    ierr = VecAXPY(X,next->dmp,Y);CHKERRQ(ierr);
   }
   if (snes->normtype == SNES_NORM_FUNCTION) {
     ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
@@ -162,6 +166,7 @@ static PetscErrorCode SNESSetFromOptions_Composite(SNES snes)
   PetscInt           nmax = 8,i;
   SNES_CompositeLink next;
   char               *sneses[8];
+  PetscReal          dmps[8];
   PetscBool          flg;
 
   PetscFunctionBegin;
@@ -175,6 +180,12 @@ static PetscErrorCode SNESSetFromOptions_Composite(SNES snes)
     for (i=0; i<nmax; i++) {
       ierr = SNESCompositeAddSNES(snes,sneses[i]);CHKERRQ(ierr);
       ierr = PetscFree(sneses[i]);CHKERRQ(ierr);   /* deallocate string sneses[i], which is allocated in PetscOptionsStringArray() */
+    }
+  }
+  ierr = PetscOptionsRealArray("-snes_composite_damping","Damping of the additive composite solvers","SNESCompositeSetDamping",dmps,&nmax,&flg);CHKERRQ(ierr);
+  if (flg) {
+    for (i=0; i<nmax; i++) {
+      ierr = SNESCompositeSetDamping(snes,i,dmps[i]);CHKERRQ(ierr);
     }
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
@@ -268,7 +279,9 @@ static PetscErrorCode  SNESCompositeAddSNES_Composite(SNES snes,SNESType type)
   ierr = SNESSetOptionsPrefix(ilink->snes,prefix);CHKERRQ(ierr);
   sprintf(newprefix,"sub_%d_",(int)cnt);
   ierr = SNESAppendOptionsPrefix(ilink->snes,newprefix);CHKERRQ(ierr);
+  ierr = PetscObjectIncrementTabLevel((PetscObject)ilink->snes,(PetscObject)snes,1);CHKERRQ(ierr);
   ierr = SNESSetType(ilink->snes,type);CHKERRQ(ierr);
+  ilink->dmp = 1.0;
   PetscFunctionReturn(0);
 }
 
@@ -345,7 +358,6 @@ PetscErrorCode  SNESCompositeAddSNES(SNES snes,SNESType type)
   ierr = PetscTryMethod(snes,"SNESCompositeAddSNES_C",(SNES,SNESType),(snes,type));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 #undef __FUNCT__
 #define __FUNCT__ "SNESCompositeGetSNES"
 /*@
@@ -374,6 +386,53 @@ PetscErrorCode  SNESCompositeGetSNES(SNES snes,PetscInt n,SNES *subsnes)
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   PetscValidPointer(subsnes,3);
   ierr = PetscUseMethod(snes,"SNESCompositeGetSNES_C",(SNES,PetscInt,SNES*),(snes,n,subsnes));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "SNESCompositeSetDamping_Composite"
+static PetscErrorCode  SNESCompositeSetDamping_Composite(SNES snes,PetscInt n,PetscReal dmp)
+{
+  SNES_Composite     *jac;
+  SNES_CompositeLink next;
+  PetscInt         i;
+
+  PetscFunctionBegin;
+  jac  = (SNES_Composite*)snes->data;
+  next = jac->head;
+  for (i=0; i<n; i++) {
+    if (!next->next) SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_INCOMP,"Not enough SNESes in composite preconditioner");
+    next = next->next;
+  }
+  next->dmp = dmp;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "SNESCompositeSetDamping"
+/*@
+   SNESCompositeSetDamping - Sets the damping of a subsolver when using additive composite SNES.
+
+   Not Collective
+
+   Input Parameter:
++  snes - the preconditioner context
+.  n - the number of the snes requested
+-  dmp - the damping
+
+   Level: Developer
+
+.keywords: SNES, get, composite preconditioner, sub preconditioner
+
+.seealso: SNESCompositeAddSNES()
+@*/
+PetscErrorCode  SNESCompositeSetDamping(SNES snes,PetscInt n,PetscReal dmp)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
+  ierr = PetscUseMethod(snes,"SNESCompositeSetDamping_C",(SNES,PetscInt,PetscReal),(snes,n,dmp));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -526,9 +585,10 @@ PETSC_EXTERN PetscErrorCode SNESCreate_Composite(SNES snes)
   jac->type  = SNES_COMPOSITE_ADDITIVE;
   jac->head  = 0;
 
-  ierr = PetscObjectComposeFunction((PetscObject)snes,"SNESCompositeSetType_C","SNESCompositeSetType_Composite",SNESCompositeSetType_Composite);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)snes,"SNESCompositeAddSNES_C","SNESCompositeAddSNES_Composite",SNESCompositeAddSNES_Composite);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)snes,"SNESCompositeGetSNES_C","SNESCompositeGetSNES_Composite",SNESCompositeGetSNES_Composite);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)snes,"SNESCompositeSetType_C",SNESCompositeSetType_Composite);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)snes,"SNESCompositeAddSNES_C",SNESCompositeAddSNES_Composite);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)snes,"SNESCompositeGetSNES_C",SNESCompositeGetSNES_Composite);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)snes,"SNESCompositeSetDamping_C",SNESCompositeSetDamping_Composite);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
