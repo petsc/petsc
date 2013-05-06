@@ -132,7 +132,7 @@ PetscErrorCode MatSOR_SeqBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Petsc
   PetscScalar       *x,*work,*w,*workt,*t;
   const MatScalar   *v,*aa = a->a, *idiag;
   const PetscScalar *b,*xb;
-  PetscScalar       s[7], xw[7];
+  PetscScalar       s[7], xw[7]={0}; /* avoid some compilers thinking xw is uninitialized */
   PetscErrorCode    ierr;
   PetscInt          m = a->mbs,i,i2,nz,bs = A->rmap->bs,bs2 = bs*bs,k,j,idx,it;
   const PetscInt    *diag,*ai = a->i,*aj = a->j,*vi;
