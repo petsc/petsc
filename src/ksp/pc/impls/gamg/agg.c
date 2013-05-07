@@ -769,7 +769,7 @@ static PetscErrorCode formProl0(const PetscCoarsenData *agg_llists, /* list from
   out_data_stride = nSelected*nSAvec;
 
   ierr = PetscMalloc(out_data_stride*nSAvec*sizeof(PetscReal), &out_data);CHKERRQ(ierr);
-  for (ii=0;ii<out_data_stride*nSAvec;ii++) out_data[ii]=1.e300;
+  for (ii=0;ii<out_data_stride*nSAvec;ii++) out_data[ii]=PETSC_MAX_REAL;
   *a_data_out = out_data; /* output - stride nSelected*nSAvec */
 
   /* find points and set prolongation */
@@ -850,7 +850,7 @@ static PetscErrorCode formProl0(const PetscCoarsenData *agg_llists, /* list from
         PetscReal *data = &out_data[clid*nSAvec];
         for (jj = 0; jj < nSAvec; jj++) {
           for (ii = 0; ii < nSAvec; ii++) {
-           if (data[jj*out_data_stride + ii] != 1.e300) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"data[jj*out_data_stride + ii] != 1.e300");
+            if (data[jj*out_data_stride + ii] != PETSC_MAX_REAL) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"data[jj*out_data_stride + ii] != %e",PETSC_MAX_REAL);
            if (ii <= jj) data[jj*out_data_stride + ii] = PetscRealPart(qqc[jj*Mdata + ii]);
            else data[jj*out_data_stride + ii] = 0.;
           }
