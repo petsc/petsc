@@ -1,0 +1,9 @@
+[0] A Istart,Iend: 0 100; nloc 100
+[1] A Istart,Iend: 100 200; nloc 100
+[2] A Istart,Iend: 200 1200; nloc 1000
+[3] A Istart,Iend: 1200 2200; nloc 1000
+[4] A Istart,Iend: 2200 3200; nloc 1000
+[5] A Istart,Iend: 3200 4200; nloc 1000
+[6] A Istart,Iend: 4200 5200; nloc 1000
+[7] A Istart,Iend: 5200 6200; nloc 1000
+Norm of error 2.09751e-06 iterations 1
