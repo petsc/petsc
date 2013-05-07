@@ -1151,11 +1151,18 @@ static PetscErrorCode DMPlexMarkSubmesh_Uninterpolated(DM dm, DMLabel vertexLabe
       if (!(*nFV)) {ierr = DMPlexGetNumFaceVertices(dm, dim, numCorners, nFV);CHKERRQ(ierr);}
       if (faceSize > *nFV) SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Invalid submesh: Too many vertices %d of an element on the surface", faceSize);
       if (faceSize == *nFV) {
+        const PetscInt *cells = NULL;
+        PetscInt        numCells, nc;
+
         ++(*numFaces);
         for (cl = 0; cl < faceSize; ++cl) {
           ierr = DMLabelSetValue(subpointMap, closure[cl], 0);CHKERRQ(ierr);
         }
-        ierr = DMLabelSetValue(subpointMap, cell, 2);CHKERRQ(ierr);
+        ierr = DMPlexGetJoin(dm, faceSize, closure, &numCells, &cells);CHKERRQ(ierr);
+        for (nc = 0; nc < numCells; ++nc) {
+          ierr = DMLabelSetValue(subpointMap, cells[nc], 2);CHKERRQ(ierr);
+        }
+        ierr = DMPlexRestoreJoin(dm, faceSize, closure, &numCells, &cells);CHKERRQ(ierr);
       }
       ierr = DMPlexRestoreTransitiveClosure(dm, cell, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
     }
@@ -1859,11 +1866,14 @@ static PetscErrorCode DMPlexCreateSubmesh_Uninterpolated(DM dm, const char verte
     PetscSection coordSection, subCoordSection;
     Vec          coordinates, subCoordinates;
     PetscScalar *coords, *subCoords;
-    PetscInt     coordSize, v;
+    PetscInt     numComp, coordSize, v;
 
     ierr = DMPlexGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
     ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
     ierr = DMPlexGetCoordinateSection(subdm, &subCoordSection);CHKERRQ(ierr);
+    ierr = PetscSectionSetNumFields(subCoordSection, 1);CHKERRQ(ierr);
+    ierr = PetscSectionGetFieldComponents(coordSection, 0, &numComp);CHKERRQ(ierr);
+    ierr = PetscSectionSetFieldComponents(subCoordSection, 0, numComp);CHKERRQ(ierr);
     ierr = PetscSectionSetChart(subCoordSection, firstSubVertex, firstSubVertex+numSubVertices);CHKERRQ(ierr);
     for (v = 0; v < numSubVertices; ++v) {
       const PetscInt vertex    = subVertices[v];
@@ -1872,6 +1882,7 @@ static PetscErrorCode DMPlexCreateSubmesh_Uninterpolated(DM dm, const char verte
 
       ierr = PetscSectionGetDof(coordSection, vertex, &dof);CHKERRQ(ierr);
       ierr = PetscSectionSetDof(subCoordSection, subvertex, dof);CHKERRQ(ierr);
+      ierr = PetscSectionSetFieldDof(subCoordSection, subvertex, 0, dof);CHKERRQ(ierr);
     }
     ierr = PetscSectionSetUp(subCoordSection);CHKERRQ(ierr);
     ierr = PetscSectionGetStorageSize(subCoordSection, &coordSize);CHKERRQ(ierr);
@@ -1994,11 +2005,14 @@ static PetscErrorCode DMPlexCreateSubmesh_Interpolated(DM dm, const char vertexL
     PetscSection coordSection, subCoordSection;
     Vec          coordinates, subCoordinates;
     PetscScalar *coords, *subCoords;
-    PetscInt     coordSize;
+    PetscInt     numComp, coordSize;
 
     ierr = DMPlexGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
     ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
     ierr = DMPlexGetCoordinateSection(subdm, &subCoordSection);CHKERRQ(ierr);
+    ierr = PetscSectionSetNumFields(subCoordSection, 1);CHKERRQ(ierr);
+    ierr = PetscSectionGetFieldComponents(coordSection, 0, &numComp);CHKERRQ(ierr);
+    ierr = PetscSectionSetFieldComponents(subCoordSection, 0, numComp);CHKERRQ(ierr);
     ierr = PetscSectionSetChart(subCoordSection, firstSubPoint[0], firstSubPoint[0]+numSubPoints[0]);CHKERRQ(ierr);
     for (v = 0; v < numSubPoints[0]; ++v) {
       const PetscInt vertex    = subpoints[0][v];
@@ -2007,6 +2021,7 @@ static PetscErrorCode DMPlexCreateSubmesh_Interpolated(DM dm, const char vertexL
 
       ierr = PetscSectionGetDof(coordSection, vertex, &dof);CHKERRQ(ierr);
       ierr = PetscSectionSetDof(subCoordSection, subvertex, dof);CHKERRQ(ierr);
+      ierr = PetscSectionSetFieldDof(subCoordSection, subvertex, 0, dof);CHKERRQ(ierr);
     }
     ierr = PetscSectionSetUp(subCoordSection);CHKERRQ(ierr);
     ierr = PetscSectionGetStorageSize(subCoordSection, &coordSize);CHKERRQ(ierr);
@@ -2162,11 +2177,14 @@ static PetscErrorCode DMPlexCreateCohesiveSubmesh_Uninterpolated(DM dm, PetscBoo
     PetscSection coordSection, subCoordSection;
     Vec          coordinates, subCoordinates;
     PetscScalar *coords, *subCoords;
-    PetscInt     coordSize, v;
+    PetscInt     numComp, coordSize, v;
 
     ierr = DMPlexGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
     ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
     ierr = DMPlexGetCoordinateSection(subdm, &subCoordSection);CHKERRQ(ierr);
+    ierr = PetscSectionSetNumFields(subCoordSection, 1);CHKERRQ(ierr);
+    ierr = PetscSectionGetFieldComponents(coordSection, 0, &numComp);CHKERRQ(ierr);
+    ierr = PetscSectionSetFieldComponents(subCoordSection, 0, numComp);CHKERRQ(ierr);
     ierr = PetscSectionSetChart(subCoordSection, firstSubVertex, firstSubVertex+numSubVertices);CHKERRQ(ierr);
     for (v = 0; v < numSubVertices; ++v) {
       const PetscInt vertex    = subVertices[v];
@@ -2175,6 +2193,7 @@ static PetscErrorCode DMPlexCreateCohesiveSubmesh_Uninterpolated(DM dm, PetscBoo
 
       ierr = PetscSectionGetDof(coordSection, vertex, &dof);CHKERRQ(ierr);
       ierr = PetscSectionSetDof(subCoordSection, subvertex, dof);CHKERRQ(ierr);
+      ierr = PetscSectionSetFieldDof(subCoordSection, subvertex, 0, dof);CHKERRQ(ierr);
     }
     ierr = PetscSectionSetUp(subCoordSection);CHKERRQ(ierr);
     ierr = PetscSectionGetStorageSize(subCoordSection, &coordSize);CHKERRQ(ierr);
@@ -2295,11 +2314,14 @@ static PetscErrorCode DMPlexCreateCohesiveSubmesh_Interpolated(DM dm, PetscBool 
     PetscSection coordSection, subCoordSection;
     Vec          coordinates, subCoordinates;
     PetscScalar *coords, *subCoords;
-    PetscInt     coordSize;
+    PetscInt     numComp, coordSize;
 
     ierr = DMPlexGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
     ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
     ierr = DMPlexGetCoordinateSection(subdm, &subCoordSection);CHKERRQ(ierr);
+    ierr = PetscSectionSetNumFields(subCoordSection, 1);CHKERRQ(ierr);
+    ierr = PetscSectionGetFieldComponents(coordSection, 0, &numComp);CHKERRQ(ierr);
+    ierr = PetscSectionSetFieldComponents(subCoordSection, 0, numComp);CHKERRQ(ierr);
     ierr = PetscSectionSetChart(subCoordSection, firstSubPoint[0], firstSubPoint[0]+numSubPoints[0]);CHKERRQ(ierr);
     for (v = 0; v < numSubPoints[0]; ++v) {
       const PetscInt vertex    = subpoints[0][v];
@@ -2308,6 +2330,7 @@ static PetscErrorCode DMPlexCreateCohesiveSubmesh_Interpolated(DM dm, PetscBool 
 
       ierr = PetscSectionGetDof(coordSection, vertex, &dof);CHKERRQ(ierr);
       ierr = PetscSectionSetDof(subCoordSection, subvertex, dof);CHKERRQ(ierr);
+      ierr = PetscSectionSetFieldDof(subCoordSection, subvertex, 0, dof);CHKERRQ(ierr);
     }
     ierr = PetscSectionSetUp(subCoordSection);CHKERRQ(ierr);
     ierr = PetscSectionGetStorageSize(subCoordSection, &coordSize);CHKERRQ(ierr);
@@ -2400,13 +2423,15 @@ PetscErrorCode DMPlexGetSubpointMap(DM dm, DMLabel *subpointMap)
 PetscErrorCode DMPlexSetSubpointMap(DM dm, DMLabel subpointMap)
 {
   DM_Plex       *mesh = (DM_Plex *) dm->data;
+  DMLabel        tmp;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  ierr = DMLabelDestroy(&mesh->subpointMap);CHKERRQ(ierr);
+  tmp  = mesh->subpointMap;
   mesh->subpointMap = subpointMap;
-  ++mesh->subpointMap->refct;CHKERRQ(ierr);
+  ++mesh->subpointMap->refct;
+  ierr = DMLabelDestroy(&tmp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

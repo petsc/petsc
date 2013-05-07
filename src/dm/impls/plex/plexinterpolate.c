@@ -104,6 +104,7 @@ static PetscErrorCode DMPlexGetFaces_Internal(DM dm, PetscInt dim, PetscInt p, P
 /* This interpolates faces for cells at some stratum */
 static PetscErrorCode DMPlexInterpolateFaces_Internal(DM dm, PetscInt cellDepth, DM idm)
 {
+  DMLabel        subpointMap;
   PetscHashIJKL  faceTable;
   PetscInt      *pStart, *pEnd;
   PetscInt       cellDim, depth, faceDepth = cellDepth, numPoints = 0, faceSizeAll = 0, face, c, d;
@@ -111,6 +112,9 @@ static PetscErrorCode DMPlexInterpolateFaces_Internal(DM dm, PetscInt cellDepth,
 
   PetscFunctionBegin;
   ierr = DMPlexGetDimension(dm, &cellDim);CHKERRQ(ierr);
+  /* HACK: I need a better way to determine face dimension, or an alternative to GetFaces() */
+  ierr = DMPlexGetSubpointMap(dm, &subpointMap);CHKERRQ(ierr);
+  if (subpointMap) ++cellDim;
   ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
   ++depth;
   ++cellDepth;
@@ -264,6 +268,10 @@ PetscErrorCode DMPlexInterpolate(DM dm, DM *dmInt)
 
   PetscFunctionBegin;
   ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
+  if (dim <= 1) {
+    ierr = PetscObjectReference((PetscObject) dm);CHKERRQ(ierr);
+    idm  = dm;
+  }
   for (d = 1; d < dim; ++d) {
     /* Create interpolated mesh */
     ierr = DMCreate(PetscObjectComm((PetscObject)dm), &idm);CHKERRQ(ierr);
@@ -288,6 +296,7 @@ PetscErrorCode DMPlexCopyCoordinates(DM dmA, DM dmB)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (dmA == dmB) PetscFunctionReturn(0);
   ierr = DMPlexGetDepthStratum(dmA, 0, &vStartA, &vEndA);CHKERRQ(ierr);
   ierr = DMPlexGetDepthStratum(dmB, 0, &vStartB, &vEndB);CHKERRQ(ierr);
   if ((vEndA-vStartA) != (vEndB-vStartB)) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "The number of vertices in first DM %d != %d in the second DM", vEndA-vStartA, vEndB-vStartB);
