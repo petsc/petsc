@@ -307,7 +307,7 @@ static PetscErrorCode  SNESCompositeGetSNES_Composite(SNES snes,PetscInt n,SNES 
 /* -------------------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "SNESCompositeSetType"
-/*@
+/*@C
    SNESCompositeSetType - Sets the type of composite preconditioner.
 
    Logically Collective on SNES
