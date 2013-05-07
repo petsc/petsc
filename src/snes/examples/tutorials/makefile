@@ -361,6 +361,20 @@ runex5_5_nasm:
 	   else  echo  ${PWD} "\nPossible problem with with ex5_5_nasm, diffs above \n========================================="; fi; \
 	   ${RM} -f ex5_5_nasm.tmp
 
+runex5_5_newton_asm_dmda:
+	-@${MPIEXEC} -n 4 ./ex5 -snes_monitor_short -ksp_monitor_short -snes_converged_reason -da_refine 4 -da_overlap 3 \
+        -snes_type newtonls -pc_type asm -pc_asm_dm_subdomains -malloc_dump > ex5_5_newton_asm_dmda.tmp 2>&1; \
+	   if (${DIFF} output/ex5_5_newton_asm_dmda.out ex5_5_newton_asm_dmda.tmp) then true; \
+	   else  echo  ${PWD} "\nPossible problem with with ex5_5_newton_asm_dmda, diffs above \n========================================="; fi; \
+	   ${RM} -f ex5_5_newton_asm_dmda.tmp
+
+runex5_5_newton_gasm_dmda:
+	-@${MPIEXEC} -n 4 ./ex5 -snes_monitor_short -ksp_monitor_short -snes_converged_reason -da_refine 4 -da_overlap 3 \
+        -snes_type newtonls -pc_type gasm -pc_gasm_dm_subdomains -malloc_dump > ex5_5_newton_gasm_dmda.tmp 2>&1; \
+	   if (${DIFF} output/ex5_5_newton_gasm_dmda.out ex5_5_newton_gasm_dmda.tmp) then true; \
+	   else  echo  ${PWD} "\nPossible problem with with ex5_5_newton_gasm_dmda, diffs above \n========================================="; fi; \
+	   ${RM} -f ex5_5_newton_gasm_dmda.tmp
+
 runex5_5_aspin:
 	-@${MPIEXEC} -n 4 ./ex5 -snes_monitor_short -ksp_monitor_short -snes_converged_reason -da_refine 4 -da_overlap 3 \
         -snes_type aspin > ex5_5_aspin.tmp 2>&1; \
@@ -967,6 +981,7 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2  runex2_3 ex2.
                                  runex5_5_ngmres runex5_5_ngmres_nrichardson runex5_5_ncg runex5_5_nrichardson \
                                  runex5_5_ngmres_ngs runex5_5_qn runex5_5_ls \
                                  runex5_5_fas runex5_5_ngmres_fas runex5_5_fas_additive \
+                                 runex5_5_nasm runex5_5_newton_asm_dmda runex5_5_newton_gasm_dmda \
                                  runex5_6 ex5.rm ex7.PETSc runex7 ex7.rm\
                                  ex14.PETSc runex14 runex14_2 ex14.rm ex15.PETSc runex15 runex15_3 ex15.rm ex18.PETSc runex18 ex18.rm \
                                  ex19.PETSc runex19 runex19_5 \
