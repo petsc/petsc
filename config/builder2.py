@@ -42,7 +42,7 @@ def buildSingleExample(maker, ex):
   executable = os.path.join(objDir, exampleName)
   objects    = maker.buildFile(ex, objDir)
   if not len(objects):
-    print('EXAMPLE BUILD FAILED (check make.log for details)')
+    print('EXAMPLE BUILD FAILED (check example.log for details)')
     return 1
   maker.link(executable, objects, maker.configInfo.languages.clanguage)
   return 0
@@ -117,13 +117,13 @@ def checkSingleRun(maker, ex, replace, extraArgs = '', isRegression = False):
     if rebuildTest:
       objects = maker.buildFile(ex, objDir)
       if not len(objects):
-        print('TEST BUILD FAILED (check make.log for details)')
+        print('TEST BUILD FAILED (check example.log for details)')
         return 1
       maker.link(executable, objects, maker.configInfo.languages.clanguage)
     if not 'args' in param: param['args'] = ''
     param['args'] += extraArgs
     if maker.runTest(exampleDir, executable, testnum, replace, **param):
-      print('TEST RUN FAILED (check make.log for details)')
+      print('TEST RUN FAILED (check example.log for details)')
       return 1
     rebuildTest = False
   if not args.retain and os.path.isdir(objDir): shutil.rmtree(objDir)
