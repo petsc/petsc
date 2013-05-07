@@ -92,14 +92,14 @@ typedef struct {
   void (*g1Funcs[NUM_FIELDS*NUM_FIELDS])(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[], PetscScalar g1[]); /* g1_uu(x,y,z), g1_up(x,y,z), g1_pu(x,y,z), and g1_pp(x,y,z) */
   void (*g2Funcs[NUM_FIELDS*NUM_FIELDS])(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[], PetscScalar g2[]); /* g2_uu(x,y,z), g2_up(x,y,z), g2_pu(x,y,z), and g2_pp(x,y,z) */
   void (*g3Funcs[NUM_FIELDS*NUM_FIELDS])(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[], PetscScalar g3[]); /* g3_uu(x,y,z), g3_up(x,y,z), g3_pu(x,y,z), and g3_pp(x,y,z) */
-  PetscScalar (*exactFuncs[NUM_BASIS_COMPONENTS_TOTAL])(const PetscReal x[]); /* The exact solution function u(x,y,z), v(x,y,z), p(x,y,z), and T(x,y,z) */
+  void (*exactFuncs[NUM_BASIS_COMPONENTS_TOTAL])(const PetscReal x[], PetscScalar *u); /* The exact solution function u(x,y,z), v(x,y,z), p(x,y,z), and T(x,y,z) */
   BCType      bcType;              /* The type of boundary conditions */
   ForcingType forcingType;         /* The type of rhs */
 } AppCtx;
 
-PetscScalar zero(const PetscReal coords[])
+void zero(const PetscReal coords[], PetscScalar *u)
 {
-  return 0.0;
+  *u = 0.0;
 }
 
 /*
@@ -120,24 +120,24 @@ PetscScalar zero(const PetscReal coords[])
     \nabla \cdot u           = 2x - 2x                    = 0
     -\Delta T + q_T          = 0
 */
-PetscScalar quadratic_u_2d(const PetscReal x[])
+void quadratic_u_2d(const PetscReal x[], PetscScalar *u)
 {
-  return x[0]*x[0] + x[1]*x[1];
+  *u = x[0]*x[0] + x[1]*x[1];
 };
 
-PetscScalar quadratic_v_2d(const PetscReal x[])
+void quadratic_v_2d(const PetscReal x[], PetscScalar *v)
 {
-  return 2.0*x[0]*x[0] - 2.0*x[0]*x[1];
+  *v = 2.0*x[0]*x[0] - 2.0*x[0]*x[1];
 };
 
-PetscScalar linear_p_2d(const PetscReal x[])
+void linear_p_2d(const PetscReal x[], PetscScalar *p)
 {
-  return x[0] + x[1] - 1.0;
+  *p = x[0] + x[1] - 1.0;
 };
 
-PetscScalar linear_T_2d(const PetscReal x[])
+void linear_T_2d(const PetscReal x[], PetscScalar *T)
 {
-  return x[0] + x[1];
+  *T = x[0] + x[1];
 };
 
 /*
@@ -159,14 +159,14 @@ PetscScalar linear_T_2d(const PetscReal x[])
     \nabla \cdot u           = (4x-2) (1-2y) - (4y-2) (1-2x)         = 0
     -\Delta T + q_T          = 0
 */
-PetscScalar cubic_u_2d(const PetscReal x[])
+void cubic_u_2d(const PetscReal x[], PetscScalar *u)
 {
-  return 2.0*x[0]*(x[0]-1.0)*(1.0 - 2.0*x[1]);
+  *u = 2.0*x[0]*(x[0]-1.0)*(1.0 - 2.0*x[1]);
 };
 
-PetscScalar cubic_v_2d(const PetscReal x[])
+void cubic_v_2d(const PetscReal x[], PetscScalar *v)
 {
-  return -2.0*x[1]*(x[1]-1.0)*(1.0 - 2.0*x[0]);
+  *v = -2.0*x[1]*(x[1]-1.0)*(1.0 - 2.0*x[0]);
 };
 
 /*
@@ -210,14 +210,14 @@ PetscScalar cubic_v_2d(const PetscReal x[])
     \nabla \cdot u           = 6 x(1-x) y(1-y) -6 (1-2y) x(1-x) = 0
     -\Delta T + q_T          = 0
 */
-PetscScalar quintic_u_2d(const PetscReal x[])
+void quintic_u_2d(const PetscReal x[], PetscScalar *u)
 {
-  return (3.0*x[0]*x[0] - 2.0*x[0]*x[0]*x[0] + 1.0)*x[1]*(1.0-x[1]);
+  *u = (3.0*x[0]*x[0] - 2.0*x[0]*x[0]*x[0] + 1.0)*x[1]*(1.0-x[1]);
 };
 
-PetscScalar quintic_v_2d(const PetscReal x[])
+void quintic_v_2d(const PetscReal x[], PetscScalar *v)
 {
-  return -(3.0*x[1]*x[1] - 2.0*x[1]*x[1]*x[1] + 1.0)*x[0]*(1.0-x[0]);
+  *v = -(3.0*x[1]*x[1] - 2.0*x[1]*x[1]*x[1] + 1.0)*x[0]*(1.0-x[0]);
 };
 
 void f0_u_constant(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[], PetscScalar f0[])
@@ -359,24 +359,24 @@ void g3_TT(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[]
     -\Delta u + \nabla p + f = <-4, -4, -4> + <1, 1, 1> + <3, 3, 3> = 0
     \nabla \cdot u           = 2x + 2y - 2(x + y)                   = 0
 */
-PetscScalar quadratic_u_3d(const PetscReal x[])
+void quadratic_u_3d(const PetscReal x[], PetscScalar *u)
 {
-  return x[0]*x[0] + x[1]*x[1];
+  *u = x[0]*x[0] + x[1]*x[1];
 };
 
-PetscScalar quadratic_v_3d(const PetscReal x[])
+void quadratic_v_3d(const PetscReal x[], PetscScalar *v)
 {
-  return x[1]*x[1] + x[2]*x[2];
+  *v = x[1]*x[1] + x[2]*x[2];
 };
 
-PetscScalar quadratic_w_3d(const PetscReal x[])
+void quadratic_w_3d(const PetscReal x[], PetscScalar *w)
 {
-  return x[0]*x[0] + x[1]*x[1] - 2.0*(x[0] + x[1])*x[2];
+  *w = x[0]*x[0] + x[1]*x[1] - 2.0*(x[0] + x[1])*x[2];
 };
 
-PetscScalar linear_p_3d(const PetscReal x[])
+void linear_p_3d(const PetscReal x[], PetscScalar *p)
 {
-  return x[0] + x[1] + x[2] - 1.5;
+  *p = x[0] + x[1] + x[2] - 1.5;
 };
 
 #undef __FUNCT__

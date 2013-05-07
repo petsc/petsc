@@ -14,13 +14,14 @@
 #define dmplexvecgetclosure_            DMPLEXVECGETCLOSURE
 #define dmplexvecrestoreclosure_        DMPLEXVECRESTORECLOSURE
 #define dmplexvecsetclosure_            DMPLEXVECSETCLOSURE
+#define dmplexmatsetclosure_            DMPLEXMATSETCLOSURE
 #define dmplexgetjoin_                  DMPLEXGETJOIN
 #define dmplexgetfulljoin_              DMPLEXGETFULLJOIN
 #define dmplexrestorejoin_              DMPLEXRESTOREJOIN
 #define dmplexgetmeet_                  DMPLEXGETMEET
 #define dmplexgetfullmeet_              DMPLEXGETFULLMEET
 #define dmplexrestoremeet_              DMPLEXRESTOREMEET
-#define dmplexcreatesectionf90_         DMPLEXCREATESECTIONF90
+#define dmplexcreatesection_            DMPLEXCREATESECTION
 #define dmplexcomputecellgeometry_      DMPLEXCOMPUTECELLGEOMETRY
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
 #define dmplexgetcone_                  dmplexgetcone
@@ -34,13 +35,14 @@
 #define dmplexvecgetclosure_            dmplexvecgetclosure
 #define dmplexvecrestoreclosure_        dmplexvecrestoreclosure
 #define dmplexvecsetclosure_            dmplexvecsetclosure
+#define dmplexmatsetclosure_            dmplexmatsetclosure
 #define dmplexgetjoin_                  dmplexgetjoin
 #define dmplexgetfulljoin_              dmplexgetfulljoin
 #define dmplexrestorejoin_              dmplexrestorejoin
 #define dmplexgetmeet_                  dmplexgetmeet
 #define dmplexgetfullmeet_              dmplexgetfullmeet
 #define dmplexrestoremeet_              dmplexrestoremeet
-#define dmplexcreatesectionf90_         dmplexcreatesectionf90
+#define dmplexcreatesection_            dmplexcreatesection
 #define dmplexcomputecellgeometry_      dmplexcomputecellgeometry
 #endif
 
@@ -135,6 +137,14 @@ PETSC_EXTERN void PETSC_STDCALL dmplexvecsetclosure_(DM *dm, PetscSection *secti
   *__ierr = DMPlexVecSetClosure(*dm, *section, *v, *point, array, *mode);
 }
 
+PETSC_EXTERN void PETSC_STDCALL dmplexmatsetclosure_(DM *dm, PetscSection *section, PetscSection *globalSection, Mat *A, PetscInt *point, F90Array1d *ptr, InsertMode *mode, int *__ierr PETSC_F90_2PTR_PROTO(ptrd))
+{
+  PetscScalar *array;
+
+  *__ierr = F90Array1dAccess(ptr, PETSC_SCALAR, (void**) &array PETSC_F90_2PTR_PARAM(ptrd));if (*__ierr) return;
+  *__ierr = DMPlexMatSetClosure(*dm, *section, *globalSection, *A, *point, array, *mode);
+}
+
 PETSC_EXTERN void PETSC_STDCALL dmplexgetjoin_(DM *dm, PetscInt *numPoints, F90Array1d *pptr, F90Array1d *cptr, int *__ierr PETSC_F90_2PTR_PROTO(pptrd) PETSC_F90_2PTR_PROTO(cptrd))
 {
   PetscInt       *points;
@@ -197,7 +207,7 @@ PETSC_EXTERN void PETSC_STDCALL dmplexrestoremeet_(DM *dm, PetscInt *numPoints, 
   *__ierr = F90Array1dDestroy(cptr, PETSC_INT PETSC_F90_2PTR_PARAM(cptrd));if (*__ierr) return;
 }
 
-PETSC_EXTERN void PETSC_STDCALL dmplexcreatesectionf90_(DM *dm, PetscInt *dim, PetscInt *numFields, F90Array1d *ptrC, F90Array1d *ptrD, PetscInt *numBC, F90Array1d *ptrF, F90Array1d *ptrP, PetscSection *section, int *__ierr PETSC_F90_2PTR_PROTO(ptrCd) PETSC_F90_2PTR_PROTO(ptrDd) PETSC_F90_2PTR_PROTO(ptrFd) PETSC_F90_2PTR_PROTO(ptrPd))
+PETSC_EXTERN void PETSC_STDCALL dmplexcreatesection_(DM *dm, PetscInt *dim, PetscInt *numFields, F90Array1d *ptrC, F90Array1d *ptrD, PetscInt *numBC, F90Array1d *ptrF, F90Array1d *ptrP, PetscSection *section, int *__ierr PETSC_F90_2PTR_PROTO(ptrCd) PETSC_F90_2PTR_PROTO(ptrDd) PETSC_F90_2PTR_PROTO(ptrFd) PETSC_F90_2PTR_PROTO(ptrPd))
 {
   PetscInt *numComp;
   PetscInt *numDof;

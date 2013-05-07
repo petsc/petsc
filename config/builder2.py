@@ -79,9 +79,6 @@ def checkSingleRun(maker, ex, replace, extraArgs = '', isRegression = False):
   os.mkdir(objDir)
   executable  = os.path.join(objDir, exampleName)
   paramKey    = os.path.join(os.path.relpath(exampleDir, maker.petscDir), os.path.basename(executable))
-  if paramKey in builder.regressionRequirements:
-    if not builder.regressionRequirements[paramKey].issubset(packageNames):
-      raise RuntimeError('This test requires packages: %s' % builder.regressionRequirements[paramKey])
   params = builder.regressionParameters.get(paramKey, {})
   if not params:
     params = builder.getRegressionParameters(maker, exampleDir).get(paramKey, {})
@@ -93,18 +90,22 @@ def checkSingleRun(maker, ex, replace, extraArgs = '', isRegression = False):
   # Process testnum
   if args.testnum is not None:
     if args.testnum[0] == '[':
-      testnum = args.testnum[1:-1].split(',')
+      validTestnum = args.testnum[1:-1].split(',')
     else:
-      testnum = [args.testnum]
-    numtests = len(testnum)
+      validTestnum = [args.testnum]
+    numtests = len(validTestnum)
   else:
     numtests = len(params)
   rebuildTest = True
   maker.logPrint('Running %d tests\n' % (numtests,), debugSection='screen', forceScroll=True)
   for testnum, param in enumerate(params):
     testnum = str(testnum)
+    if 'requires' in param:
+      if not set(param['requires']).issubset(packageNames):
+        maker.logPrint('Test %s requires packages %s\n' % (testnum, param['requires']), debugSection='screen', forceScroll=True)
+        continue
     if 'num' in param: testnum = param['num']
-    if not args.testnum is None and not testnum in str(args.testnum): continue
+    if not args.testnum is None and not testnum in validTestnum: continue
     if 'setup' in param:
       print(param['setup'])
       os.system(sys.executable+' '+param['setup'])
@@ -114,12 +115,17 @@ def checkSingleRun(maker, ex, replace, extraArgs = '', isRegression = False):
         ex = [ex]+param['source']
       else:
         ex = ex+param['source']
+    # TODO: Fix this hack
+    if ex[-1] == 'F':
+      linkLanguage = 'FC'
+    else:
+      linkLanguage = maker.configInfo.languages.clanguage
     if rebuildTest:
       objects = maker.buildFile(ex, objDir)
       if not len(objects):
         print('TEST BUILD FAILED (check example.log for details)')
         return 1
-      maker.link(executable, objects, maker.configInfo.languages.clanguage)
+      maker.link(executable, objects, linkLanguage)
     if not 'args' in param: param['args'] = ''
     param['args'] += extraArgs
     if maker.runTest(exampleDir, executable, testnum, replace, **param):
@@ -240,18 +246,30 @@ def showSingleRun(maker, ex, extraArgs = ''):
   objDir        = maker.getObjDir(exampleName)
   executable    = os.path.join(objDir, exampleName)
   paramKey      = os.path.join(os.path.relpath(exampleDir, maker.petscDir), os.path.basename(executable))
-  if paramKey in builder.regressionRequirements:
-    if not builder.regressionRequirements[paramKey].issubset(packageNames):
-      raise RuntimeError('This test requires packages: %s' % builder.regressionRequirements[paramKey])
   params = builder.regressionParameters.get(paramKey, {})
   if not params:
     params = builder.getRegressionParameters(maker, exampleDir).get(paramKey, {})
     maker.logPrint('Makefile params '+str(params))
   if not isinstance(params, list):
     params = [params]
+  # Process testnum
+  if args.testnum is not None:
+    if args.testnum[0] == '[':
+      validTestnum = args.testnum[1:-1].split(',')
+    else:
+      validTestnum = [args.testnum]
+    numtests = len(validTestnum)
+  else:
+    numtests = len(params)
+  maker.logPrint('Running %d tests\n' % (numtests,), debugSection='screen', forceScroll=True)
   for testnum, param in enumerate(params):
+    testnum = str(testnum)
+    if 'requires' in param:
+      if not set(param['requires']).issubset(packageNames):
+        maker.logPrint('Test %s requires packages %s\n' % (testnum, param['requires']), debugSection='screen', forceScroll=True)
+        continue
     if 'num' in param: testnum = param['num']
-    if not args.testnum is None and testnum != args.testnum: continue
+    if not args.testnum is None and not testnum in validTestnum: continue
     if not 'args' in param: param['args'] = ''
     param['args'] += extraArgs
     print(str(testnum)+':  '+maker.getTestCommand(executable, **param))

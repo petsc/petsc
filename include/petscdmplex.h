@@ -135,6 +135,9 @@ PETSC_EXTERN PetscErrorCode DMPlexLabelComplete(DM, DMLabel);
 /* Support for cell-vertex meshes */
 PETSC_EXTERN PetscErrorCode DMPlexGetNumFaceVertices(DM, PetscInt, PetscInt, PetscInt *);
 
+/* FVM Support */
+PETSC_EXTERN PetscErrorCode DMPlexComputeCellGeometryFVM(DM, PetscInt, PetscReal *, PetscReal [], PetscReal []);
+
 /* FEM Support */
 PETSC_EXTERN PetscErrorCode DMPlexComputeCellGeometry(DM, PetscInt, PetscReal *, PetscReal *, PetscReal *, PetscReal *);
 PETSC_EXTERN PetscErrorCode DMPlexVecGetClosure(DM, PetscSection, Vec, PetscInt, PetscInt *, PetscScalar *[]);
@@ -143,6 +146,7 @@ PETSC_EXTERN PetscErrorCode DMPlexVecSetClosure(DM, PetscSection, Vec, PetscInt,
 PETSC_EXTERN PetscErrorCode DMPlexMatSetClosure(DM, PetscSection, PetscSection, Mat, PetscInt, const PetscScalar[], InsertMode);
 
 PETSC_EXTERN PetscErrorCode DMPlexCreateExodus(MPI_Comm, PetscInt, PetscBool, DM *);
+PETSC_EXTERN PetscErrorCode DMPlexCreateCGNS(MPI_Comm, PetscInt, PetscBool, DM *);
 
 PETSC_EXTERN PetscErrorCode DMPlexConstructGhostCells(DM, const char [], PetscInt *, DM *);
 PETSC_EXTERN PetscErrorCode DMPlexConstructCohesiveCells(DM, DMLabel, DM *);
@@ -163,9 +167,9 @@ typedef struct {
   void *user;
 } JacActionCtx;
 
-PETSC_EXTERN PetscErrorCode DMPlexProjectFunction(DM, PetscInt, PetscScalar (**)(const PetscReal []), InsertMode, Vec);
-PETSC_EXTERN PetscErrorCode DMPlexProjectFunctionLocal(DM, PetscInt, PetscScalar (**)(const PetscReal []), InsertMode, Vec);
-PETSC_EXTERN PetscErrorCode DMPlexComputeL2Diff(DM, PetscQuadrature[], PetscScalar (**)(const PetscReal []), Vec, PetscReal *);
+PETSC_EXTERN PetscErrorCode DMPlexProjectFunction(DM, PetscInt, void (**)(const PetscReal [], PetscScalar *), InsertMode, Vec);
+PETSC_EXTERN PetscErrorCode DMPlexProjectFunctionLocal(DM, PetscInt, void (**)(const PetscReal [], PetscScalar *), InsertMode, Vec);
+PETSC_EXTERN PetscErrorCode DMPlexComputeL2Diff(DM, PetscQuadrature[], void (**)(const PetscReal [], PetscScalar *), Vec, PetscReal *);
 PETSC_EXTERN PetscErrorCode DMPlexComputeResidualFEM(DM, Vec, Vec, void *);
 PETSC_EXTERN PetscErrorCode DMPlexComputeJacobianActionFEM(DM, Mat, Vec, Vec, void *);
 PETSC_EXTERN PetscErrorCode DMPlexComputeJacobianFEM(DM, Vec, Mat, Mat, MatStructure*,void *);
@@ -174,6 +178,10 @@ PETSC_EXTERN PetscErrorCode DMPlexSetFEMIntegration(DM,
                                                                           const PetscReal[], const PetscReal[], const PetscReal[], const PetscReal[],
                                                                           void (*)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
                                                                           void (*)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]), PetscScalar[]),
+                                                       PetscErrorCode (*)(PetscInt, PetscInt, PetscInt, PetscQuadrature[], const PetscScalar[],
+                                                                          const PetscReal[], const PetscReal[], const PetscReal[], const PetscReal[], const PetscReal[],
+                                                                          void (*)(const PetscScalar[], const PetscScalar[], const PetscReal[], const PetscReal[], PetscScalar[]),
+                                                                          void (*)(const PetscScalar[], const PetscScalar[], const PetscReal[], const PetscReal[], PetscScalar[]), PetscScalar[]),
                                                        PetscErrorCode (*)(PetscInt, PetscInt, PetscInt, PetscQuadrature[], const PetscScalar[], const PetscScalar[],
                                                                           const PetscReal[], const PetscReal[], const PetscReal[], const PetscReal[],
                                                                           void (**)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),

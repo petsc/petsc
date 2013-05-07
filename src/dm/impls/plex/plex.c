@@ -1123,10 +1123,18 @@ PetscErrorCode DMPlexGetTransitiveClosure(DM dm, PetscInt p, PetscBool useCone, 
     for (t = 0; t < tmpSize; ++t) {
       const PetscInt i  = ((rev ? tmpSize-t : t) + off)%tmpSize;
       const PetscInt cp = tmp[i];
-      /* Must propogate orientation */
-      const PetscInt co = tmpO ? (rev ? -(tmpO[i]+1) : tmpO[i]) : 0;
+      /* Must propogate orientation: When we reverse orientation, we both reverse the direction of iteration and start at the other end of the chain. */
+      /* HACK: It is worse to get the size here, than to change the interpretation of -(*+1)
+       const PetscInt co = tmpO ? (rev ? -(tmpO[i]+1) : tmpO[i]) : 0; */
+      PetscInt       co = tmpO ? tmpO[i] : 0;
       PetscInt       c;
 
+      if (rev) {
+        PetscInt childSize, coff;
+        ierr = DMPlexGetConeSize(dm, cp, &childSize);CHKERRQ(ierr);
+        coff = tmpO[i] < 0 ? -(tmpO[i]+1) : tmpO[i];
+        co   = childSize ? -(((coff+childSize-1)%childSize)+1) : 0;
+      }
       /* Check for duplicate */
       for (c = 0; c < closureSize; c += 2) {
         if (closure[c] == cp) break;
@@ -2956,6 +2964,25 @@ PetscErrorCode DMPlexDistribute(DM dm, const char partitioner[], PetscInt overla
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexInvertCells_Internal"
+/* This is to fix the tetrahedron orientation from TetGen */
+PETSC_UNUSED static PetscErrorCode DMPlexInvertCells_Internal(PetscInt numCells, PetscInt numCorners, int cells[])
+{
+  PetscInt c;
+
+  PetscFunctionBegin;
+  if (numCorners != 4) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cannot invert cells with %d corners", numCorners);
+  for (c = 0; c < numCells; ++c) {
+    int *cone = &cells[c*4], tmpc;
+
+    tmpc    = cone[0];
+    cone[0] = cone[1];
+    cone[1] = tmpc;
+  }
+  PetscFunctionReturn(0);
+}
+
 #if defined(PETSC_HAVE_TRIANGLE)
 #include <triangle.h>
 
@@ -3363,9 +3390,10 @@ PetscErrorCode DMPlexGenerate_Tetgen(DM boundary, PetscBool interpolate, DM *dm)
     const PetscInt numCorners  = 4;
     const PetscInt numCells    = out.numberoftetrahedra;
     const PetscInt numVertices = out.numberofpoints;
-    const int     *cells      = out.tetrahedronlist;
-    const double  *meshCoords = out.pointlist;
+    const double   *meshCoords = out.pointlist;
+    int            *cells      = out.tetrahedronlist;
 
+    ierr = DMPlexInvertCells_Internal(numCells, numCorners, cells);CHKERRQ(ierr);
     ierr = DMPlexCreateFromCellList(comm, dim, numCells, numVertices, numCorners, interpolate, cells, dim, meshCoords, dm);CHKERRQ(ierr);
     /* Set labels */
     for (v = 0; v < numVertices; ++v) {
@@ -3482,10 +3510,12 @@ PetscErrorCode DMPlexRefine_Tetgen(DM dm, double *maxVolumes, DM *dmRefined)
     const PetscInt numCorners  = 4;
     const PetscInt numCells    = out.numberoftetrahedra;
     const PetscInt numVertices = out.numberofpoints;
-    const int     *cells      = out.tetrahedronlist;
-    const double  *meshCoords = out.pointlist;
+    const double   *meshCoords = out.pointlist;
+    int            *cells      = out.tetrahedronlist;
+
     PetscBool      interpolate = depthGlobal > 1 ? PETSC_TRUE : PETSC_FALSE;
 
+    ierr = DMPlexInvertCells_Internal(numCells, numCorners, cells);CHKERRQ(ierr);
     ierr = DMPlexCreateFromCellList(comm, dim, numCells, numVertices, numCorners, interpolate, cells, dim, meshCoords, dmRefined);CHKERRQ(ierr);
     /* Set labels */
     for (v = 0; v < numVertices; ++v) {
@@ -3628,9 +3658,10 @@ PetscErrorCode DMPlexGenerate_CTetgen(DM boundary, PetscBool interpolate, DM *dm
     const PetscInt numCorners  = 4;
     const PetscInt numCells    = out->numberoftetrahedra;
     const PetscInt numVertices = out->numberofpoints;
-    const int     *cells      = out->tetrahedronlist;
-    const double  *meshCoords = out->pointlist;
+    const double   *meshCoords = out->pointlist;
+    int            *cells      = out->tetrahedronlist;
 
+    ierr = DMPlexInvertCells_Internal(numCells, numCorners, cells);CHKERRQ(ierr);
     ierr = DMPlexCreateFromCellList(comm, dim, numCells, numVertices, numCorners, interpolate, cells, dim, meshCoords, dm);CHKERRQ(ierr);
     /* Set labels */
     for (v = 0; v < numVertices; ++v) {
@@ -3761,10 +3792,11 @@ PetscErrorCode DMPlexRefine_CTetgen(DM dm, PetscReal *maxVolumes, DM *dmRefined)
     const PetscInt numCorners  = 4;
     const PetscInt numCells    = out->numberoftetrahedra;
     const PetscInt numVertices = out->numberofpoints;
-    const int     *cells       = out->tetrahedronlist;
-    const double  *meshCoords  = out->pointlist;
+    const double   *meshCoords = out->pointlist;
+    int            *cells      = out->tetrahedronlist;
     PetscBool      interpolate = depthGlobal > 1 ? PETSC_TRUE : PETSC_FALSE;
 
+    ierr = DMPlexInvertCells_Internal(numCells, numCorners, cells);CHKERRQ(ierr);
     ierr = DMPlexCreateFromCellList(comm, dim, numCells, numVertices, numCorners, interpolate, cells, dim, meshCoords, dmRefined);CHKERRQ(ierr);
     /* Set labels */
     for (v = 0; v < numVertices; ++v) {
@@ -6497,15 +6529,14 @@ PetscErrorCode updatePointFields_private(PetscSection section, PetscInt point, P
 
   Input Parameters:
 + dm - The DM
-. section - The section describing the layout in v, or NULL to use the default sectionw
+. section - The section describing the layout in v, or NULL to use the default section
 . v - The local vector
 . point - The sieve point in the DM
-. values - The array of values, which is a borrowed array and should not be freed
+. values - The array of values
 - mode - The insert mode, where INSERT_ALL_VALUES and ADD_ALL_VALUES also overwrite boundary conditions
 
   Fortran Notes:
-  Since it returns an array, this routine is only available in Fortran 90, and you must
-  include petsc.h90 in your code.
+  This routine is only available in Fortran 90, and you must include petsc.h90 in your code.
 
   Level: intermediate
 
@@ -6745,6 +6776,27 @@ PetscErrorCode indicesPointFields_private(PetscSection section, PetscInt point, 
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexMatSetClosure"
+/*@C
+  DMPlexMatSetClosure - Set an array of the values on the closure of 'point'
+
+  Not collective
+
+  Input Parameters:
++ dm - The DM
+. section - The section describing the layout in v, or NULL to use the default section
+. globalSection - The section describing the layout in v, or NULL to use the default section
+. A - The matrix
+. point - The sieve point in the DM
+. values - The array of values
+- mode - The insert mode, where INSERT_ALL_VALUES and ADD_ALL_VALUES also overwrite boundary conditions
+
+  Fortran Notes:
+  This routine is only available in Fortran 90, and you must include petsc.h90 in your code.
+
+  Level: intermediate
+
+.seealso DMPlexVecGetClosure(), DMPlexVecSetClosure()
+@*/
 PetscErrorCode DMPlexMatSetClosure(DM dm, PetscSection section, PetscSection globalSection, Mat A, PetscInt point, const PetscScalar values[], InsertMode mode)
 {
   DM_Plex       *mesh   = (DM_Plex*) dm->data;

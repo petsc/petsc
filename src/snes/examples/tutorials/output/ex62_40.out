@@ -2,8 +2,8 @@
     0 KSP Residual norm 27.5941 
     1 KSP Residual norm 8.01214 
     2 KSP Residual norm 0.469682 
-    3 KSP Residual norm 1.39449e-09 
-  1 SNES Function norm 1.39449e-09 
+    3 KSP Residual norm 1.73777e-09 
+  1 SNES Function norm 1.73777e-09 
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 SNES Object: 1 MPI processes
   type: newtonls
@@ -143,4 +143,4 @@ SNES Object: 1 MPI processes
       total number of mallocs used during MatSetValues calls =0
         using I-node routines: found 513 nodes, limit used is 5
 Number of SNES iterations = 1
-L_2 Error: 1.27e-09
+L_2 Error: 1.47e-09

@@ -81,6 +81,7 @@ typedef struct {
   PetscInt      numBatches;        /* The number of cell batches per kernel */
   PetscInt      numBlocks;         /* The number of concurrent blocks per kernel */
   /* Element quadrature */
+  PetscInt        order[NUM_FIELDS];
   PetscQuadrature q[NUM_FIELDS];
   /* Problem definition */
   void (*f0Funcs[NUM_FIELDS])(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[], PetscScalar f0[]); /* f0_u(x,y,z), and f0_p(x,y,z) */
@@ -89,13 +90,13 @@ typedef struct {
   void (*g1Funcs[NUM_FIELDS*NUM_FIELDS])(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[], PetscScalar g1[]); /* g1_uu(x,y,z), g1_up(x,y,z), g1_pu(x,y,z), and g1_pp(x,y,z) */
   void (*g2Funcs[NUM_FIELDS*NUM_FIELDS])(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[], PetscScalar g2[]); /* g2_uu(x,y,z), g2_up(x,y,z), g2_pu(x,y,z), and g2_pp(x,y,z) */
   void (*g3Funcs[NUM_FIELDS*NUM_FIELDS])(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[], PetscScalar g3[]); /* g3_uu(x,y,z), g3_up(x,y,z), g3_pu(x,y,z), and g3_pp(x,y,z) */
-  PetscScalar (*exactFuncs[NUM_BASIS_COMPONENTS_TOTAL])(const PetscReal x[]); /* The exact solution function u(x,y,z), v(x,y,z), and p(x,y,z) */
+  void (*exactFuncs[NUM_BASIS_COMPONENTS_TOTAL])(const PetscReal x[], PetscScalar *u); /* The exact solution function u(x,y,z), v(x,y,z), and p(x,y,z) */
   BCType bcType;
 } AppCtx;
 
-PetscScalar zero(const PetscReal coords[])
+void zero(const PetscReal coords[], PetscScalar *u)
 {
-  return 0.0;
+  *u = 0.0;
 }
 
 /*
@@ -111,19 +112,19 @@ PetscScalar zero(const PetscReal coords[])
     -\Delta u + \nabla p + f = <-4, -4> + <1, 1> + <3, 3> = 0
     \nabla \cdot u           = 2x - 2x                    = 0
 */
-PetscScalar quadratic_u_2d(const PetscReal x[])
+void quadratic_u_2d(const PetscReal x[], PetscScalar *u)
 {
-  return x[0]*x[0] + x[1]*x[1];
+  *u = x[0]*x[0] + x[1]*x[1];
 }
 
-PetscScalar quadratic_v_2d(const PetscReal x[])
+void quadratic_v_2d(const PetscReal x[], PetscScalar *v)
 {
-  return 2.0*x[0]*x[0] - 2.0*x[0]*x[1];
+  *v = 2.0*x[0]*x[0] - 2.0*x[0]*x[1];
 }
 
-PetscScalar linear_p_2d(const PetscReal x[])
+void linear_p_2d(const PetscReal x[], PetscScalar *p)
 {
-  return x[0] + x[1] - 1.0;
+  *p = x[0] + x[1] - 1.0;
 }
 
 void f0_u(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[], PetscScalar f0[])
@@ -218,33 +219,33 @@ void g3_uu(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[]
     -\Delta u + \nabla p + f = <-4, -4, -4> + <1, 1, 1> + <3, 3, 3> = 0
     \nabla \cdot u           = 2x + 2y - 2(x + y)                   = 0
 */
-PetscScalar quadratic_u_3d(const PetscReal x[])
+void quadratic_u_3d(const PetscReal x[], PetscScalar *u)
 {
-  return x[0]*x[0] + x[1]*x[1];
+  *u = x[0]*x[0] + x[1]*x[1];
 }
 
-PetscScalar quadratic_v_3d(const PetscReal x[])
+void quadratic_v_3d(const PetscReal x[], PetscScalar *v)
 {
-  return x[1]*x[1] + x[2]*x[2];
+  *v = x[1]*x[1] + x[2]*x[2];
 }
 
-PetscScalar quadratic_w_3d(const PetscReal x[])
+void quadratic_w_3d(const PetscReal x[], PetscScalar *w)
 {
-  return x[0]*x[0] + x[1]*x[1] - 2.0*(x[0] + x[1])*x[2];
+  *w = x[0]*x[0] + x[1]*x[1] - 2.0*(x[0] + x[1])*x[2];
 }
 
-PetscScalar linear_p_3d(const PetscReal x[])
+void linear_p_3d(const PetscReal x[], PetscScalar *p)
 {
-  return x[0] + x[1] + x[2] - 1.5;
+  *p = x[0] + x[1] + x[2] - 1.5;
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "ProcessOptions"
 PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
-  const char     *bcTypes[2]  = {"neumann", "dirichlet"};
-  const char     *runTypes[2] = {"full", "test"};
-  PetscInt       bc, run;
+  const char    *bcTypes[2]  = {"neumann", "dirichlet"};
+  const char    *runTypes[2] = {"full", "test"};
+  PetscInt       bc, run, n;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
@@ -259,6 +260,8 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->jacobianMF      = PETSC_FALSE;
   options->showInitial     = PETSC_FALSE;
   options->showSolution    = PETSC_TRUE;
+  options->order[0]        = 1;
+  options->order[1]        = 1;
 
   options->fem.quad    = (PetscQuadrature*) &options->q;
   options->fem.f0Funcs = (void (**)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[])) &options->f0Funcs;
@@ -267,7 +270,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->fem.g1Funcs = (void (**)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[])) &options->g1Funcs;
   options->fem.g2Funcs = (void (**)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[])) &options->g2Funcs;
   options->fem.g3Funcs = (void (**)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[])) &options->g3Funcs;
-  options->fem.bcFuncs = (PetscScalar (**)(const PetscReal[])) &options->exactFuncs;
+  options->fem.bcFuncs = (void (**)(const PetscReal[], PetscScalar *)) &options->exactFuncs;
 
   ierr = MPI_Comm_size(comm, &options->numProcs);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &options->rank);CHKERRQ(ierr);
@@ -293,6 +296,8 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsBool("-jacobian_mf", "Calculate the action of the Jacobian on the fly", "ex62.c", options->jacobianMF, &options->jacobianMF, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-show_initial", "Output the initial guess for verification", "ex62.c", options->showInitial, &options->showInitial, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-show_solution", "Output the solution for verification", "ex62.c", options->showSolution, &options->showSolution, NULL);CHKERRQ(ierr);
+  n    = NUM_FIELDS;
+  ierr = PetscOptionsIntArray("-order", "The FEM order", "ex62.c", options->order, &n, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
 
   ierr = PetscLogEventRegister("CreateMesh", DM_CLASSID, &options->createMeshEvent);CHKERRQ(ierr);
@@ -364,21 +369,62 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 #define __FUNCT__ "SetupQuadrature"
 PetscErrorCode SetupQuadrature(AppCtx *user)
 {
+  PetscReal     *x, *w;
+  const PetscInt dim = user->dim;
+  PetscInt       order, numPoints, p, d;
+  PetscErrorCode ierr;
+
   PetscFunctionBeginUser;
-  user->fem.quad[0].numQuadPoints = NUM_QUADRATURE_POINTS_0;
-  user->fem.quad[0].quadPoints    = points_0;
-  user->fem.quad[0].quadWeights   = weights_0;
+  /* Velocity discretization */
+  order     = PetscMax(user->order[0], user->order[1]);
+  numPoints = dim > 1 ? dim > 2 ? order*PetscSqr(order) : PetscSqr(order) : order;
+  if (numPoints != NUM_QUADRATURE_POINTS_0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid number of quadrature points: %d != %d", numPoints, NUM_QUADRATURE_POINTS_0);
+  ierr = PetscDTGaussJacobiQuadrature(dim, order, -1.0, 1.0, &x, &w);CHKERRQ(ierr);
+  for (p = 0; p < numPoints; ++p) {
+    for (d = 0; d < dim; ++d) {
+      if (fabs(x[p*dim+d] - points_0[p*dim+d]) > 1.0e-10) SETERRQ4(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid point %d, component %d: %g != %g", p, d, x[p*dim+d], points_0[p*dim+d]);
+    }
+    if (fabs(w[p] - weights_0[p]) > 1.0e-10) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid weight %d: %g != %g", p, w[p], weights_0[p]);
+  }
+  user->fem.quad[0].numQuadPoints = numPoints;
+  user->fem.quad[0].quadPoints    = x;
+  user->fem.quad[0].quadWeights   = w;
   user->fem.quad[0].numBasisFuncs = NUM_BASIS_FUNCTIONS_0;
   user->fem.quad[0].numComponents = NUM_BASIS_COMPONENTS_0;
   user->fem.quad[0].basis         = Basis_0;
   user->fem.quad[0].basisDer      = BasisDerivatives_0;
-  user->fem.quad[1].numQuadPoints = NUM_QUADRATURE_POINTS_1;
-  user->fem.quad[1].quadPoints    = points_1;
-  user->fem.quad[1].quadWeights   = weights_1;
+  /* Pressure discretization */
+  order     = PetscMax(user->order[0], user->order[1]);
+  numPoints = dim > 1 ? dim > 2 ? order*PetscSqr(order) : PetscSqr(order) : order;
+  if (numPoints != NUM_QUADRATURE_POINTS_1) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid number of quadrature points: %d != %d", numPoints, NUM_QUADRATURE_POINTS_1);
+  ierr = PetscDTGaussJacobiQuadrature(dim, order, -1.0, 1.0, &x, &w);CHKERRQ(ierr);
+  for (p = 0; p < numPoints; ++p) {
+    for (d = 0; d < dim; ++d) {
+      if (fabs(x[p*dim+d] - points_1[p*dim+d]) > 1.0e-10) SETERRQ4(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid point %d, component %d: %g != %g", p, d, x[p*dim+d], points_1[p*dim+d]);
+    }
+    if (fabs(w[p] - weights_1[p]) > 1.0e-10) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid weight %d: %g != %g", p, w[p], weights_1[p]);
+  }
+  user->fem.quad[1].numQuadPoints = numPoints;
+  user->fem.quad[1].quadPoints    = x;
+  user->fem.quad[1].quadWeights   = w;
   user->fem.quad[1].numBasisFuncs = NUM_BASIS_FUNCTIONS_1;
   user->fem.quad[1].numComponents = NUM_BASIS_COMPONENTS_1;
   user->fem.quad[1].basis         = Basis_1;
   user->fem.quad[1].basisDer      = BasisDerivatives_1;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DestroyQuadrature"
+PetscErrorCode DestroyQuadrature(AppCtx *user)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBeginUser;
+  ierr = PetscFree(user->fem.quad[0].quadPoints);CHKERRQ(ierr);
+  ierr = PetscFree(user->fem.quad[0].quadWeights);CHKERRQ(ierr);
+  ierr = PetscFree(user->fem.quad[1].quadPoints);CHKERRQ(ierr);
+  ierr = PetscFree(user->fem.quad[1].quadWeights);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -470,7 +516,7 @@ PetscErrorCode SetupExactSolution(DM dm, AppCtx *user)
   default:
     SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension %d", user->dim);
   }
-  ierr = DMPlexSetFEMIntegration(dm, FEMIntegrateResidualBatch, FEMIntegrateJacobianActionBatch, FEMIntegrateJacobianBatch);CHKERRQ(ierr);
+  ierr = DMPlexSetFEMIntegration(dm, FEMIntegrateResidualBatch, NULL, FEMIntegrateJacobianActionBatch, FEMIntegrateJacobianBatch);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -750,6 +796,7 @@ int main(int argc, char **argv)
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   }
 
+  ierr = DestroyQuadrature(&user);CHKERRQ(ierr);
   ierr = MatNullSpaceDestroy(&nullSpace);CHKERRQ(ierr);
   if (user.jacobianMF) {
     ierr = VecDestroy(&userJ.u);CHKERRQ(ierr);

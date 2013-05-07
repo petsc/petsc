@@ -1,18 +1,17 @@
 
+#requiresdefine 'PETSC_USING_F90'
 ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = zdmdasnesf.c zdmlocalsnesf.c zdmsnesf.c
+SOURCEC  = zvsectionf90.c
 SOURCEF  =
 SOURCEH  =
-LIBBASE  = libpetscsnes
-MANSEC   = SNES
-DIRS     =
-EDIRS    =
-LOCDIR   = src/snes/utils/ftn-custom/
+LIBBASE  = libpetscvec
+LOCDIR   = src/vec/vec/utils/f90-custom/
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules
 include ${PETSC_DIR}/conf/test
+
 

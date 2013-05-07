@@ -65,6 +65,10 @@ typedef struct {
                                          const PetscReal[], const PetscReal[], const PetscReal[], const PetscReal[],
                                          void (*)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
                                          void (*)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]), PetscScalar[]);
+  PetscErrorCode (*integrateBdResidualFEM)(PetscInt, PetscInt, PetscInt, PetscQuadrature[], const PetscScalar[],
+                                           const PetscReal[], const PetscReal[], const PetscReal[], const PetscReal[], const PetscReal[],
+                                           void (*)(const PetscScalar[], const PetscScalar[], const PetscReal[], const PetscReal[], PetscScalar[]),
+                                           void (*)(const PetscScalar[], const PetscScalar[], const PetscReal[], const PetscReal[], PetscScalar[]), PetscScalar[]);
   PetscErrorCode (*integrateJacobianActionFEM)(PetscInt, PetscInt, PetscInt, PetscQuadrature[], const PetscScalar[], const PetscScalar[],
                                                const PetscReal[], const PetscReal[], const PetscReal[], const PetscReal[],
                                                void (**)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
