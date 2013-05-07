@@ -1545,22 +1545,12 @@ $    beginhook(DM fine,VecScatter out,VecScatter in,DM coarse,void *ctx)
 
 
    Calling sequence for endhook:
-$    beginhook(DM fine,VecScatter out,VecScatter in,DM coarse,void *ctx)
+$    endhook(DM fine,VecScatter out,VecScatter in,DM coarse,void *ctx)
 
 +  global - global DM
 -  ctx - optional user-defined function context
 
    Level: advanced
-
-   Notes:
-   This function is only needed if auxiliary data needs to be set up on coarse grids.
-
-   If this function is called multiple times, the hooks will be run in the order they are added.
-
-   In order to compose with nonlinear preconditioning without duplicating storage, the hook should be implemented to
-   extract the finest level information from its context (instead of from the SNES).
-
-   This function is currently not available from Fortran.
 
 .seealso: DMRefineHookAdd(), SNESFASGetInterpolation(), SNESFASGetInjection(), PetscObjectCompose(), PetscContainerCreate()
 @*/
@@ -1923,27 +1913,36 @@ PetscErrorCode DMRestrict(DM fine,Mat restrct,Vec rscale,Mat inject,DM coarse)
 
    Input Arguments:
 +  global - global DM
+.  ddhook - function to run to pass data to the decomposition DM upon its creation
 .  restricthook - function to run to update data on block solve (at the beginning of the block solve)
 -  ctx - [optional] user-defined context for provide data for the hooks (may be NULL)
 
+
+   Calling sequence for ddhook:
+$    ddhook(DM global,DM block,void *ctx)
+
++  global - global DM
+.  block  - block DM
+-  ctx - optional user-defined function context
+
    Calling sequence for restricthook:
-$    restricthook(DM fine,VecScatter out,VecScatter in,DM coarse,void *ctx)
+$    restricthook(DM global,VecScatter out,VecScatter in,DM block,void *ctx)
 
 +  global - global DM
 .  out    - scatter to the outer (with ghost and overlap points) block vector
 .  in     - scatter to block vector values only owned locally
-.  block  - block DM (may just be a shell if the global DM is passed in correctly)
+.  block  - block DM
 -  ctx - optional user-defined function context
 
    Level: advanced
 
    Notes:
-   This function is only needed if auxiliary data needs to be set up on coarse grids.
+   This function is only needed if auxiliary data needs to be set up on subdomain DMs.
 
    If this function is called multiple times, the hooks will be run in the order they are added.
 
    In order to compose with nonlinear preconditioning without duplicating storage, the hook should be implemented to
-   extract the finest level information from its context (instead of from the SNES).
+   extract the global information from its context (instead of from the SNES).
 
    This function is currently not available from Fortran.
 
