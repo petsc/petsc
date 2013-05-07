@@ -233,6 +233,62 @@ PetscErrorCode  DMDASetOverlap(DM da,PetscInt x,PetscInt y,PetscInt z)
   PetscFunctionReturn(0);
 }
 
+
+#undef __FUNCT__
+#define __FUNCT__ "DMDAGetNumLocalSubDomains"
+/*@
+  DMDAGetNumLocalSubDomains - Gets the number of local subdomains created upon decomposition.
+
+  Not collective
+
+  Input Parameters:
+. da  - The DMDA
+
+  Output Parameters:
++ Nsub   - Number of local subdomains created upon decomposition
+
+  Level: intermediate
+
+.keywords:  distributed array, domain decomposition
+.seealso: DMDACreateDomainDecomposition(), DMDASetNumLocalSubDomains(), DMDA
+@*/
+PetscErrorCode  DMDAGetNumLocalSubDomains(DM da,PetscInt *Nsub)
+{
+  DM_DA *dd = (DM_DA*)da->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  if (Nsub) *Nsub = dd->Nsub;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMDASetNumLocalSubDomains"
+/*@
+  DMDASetNumLocalSubDomains - Sets the number of local subdomains created upon decomposition.
+
+  Not collective
+
+  Input Parameters:
++ da  - The DMDA
+- Nsub - The number of local subdomains requested
+
+  Level: intermediate
+
+.keywords:  distributed array, domain decomposition
+.seealso: DMDACreateDomainDecomposition(), DMDAGetNumLocalSubDomains(), DMDA
+@*/
+PetscErrorCode  DMDASetNumLocalSubDomains(DM da,PetscInt Nsub)
+{
+  DM_DA *dd = (DM_DA*)da->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  PetscValidLogicalCollectiveInt(da,Nsub,2);
+  dd->Nsub = Nsub;
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__
 #define __FUNCT__ "DMDASetOffset"
 /*@
@@ -318,6 +374,87 @@ PetscErrorCode  DMDAGetOffset(DM da,PetscInt *xo,PetscInt *yo,PetscInt *zo,Petsc
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "DMDAGetNonOverlappingRegion"
+/*@
+  DMDAGetNonOverlappingRegion - Gets the indices of the nonoverlapping region of a subdomain DM.
+
+  Not collective
+
+  Input Parameter:
+. da  - The DMDA
+
+  Output Parameters:
++ xs  - The start of the region in x
+. ys  - The start of the region in y
+. zs  - The start of the region in z
+. xs  - The size of the region in x
+. ys  - The size of the region in y
+. zs  - The size of the region in z
+
+  Level: intermediate
+
+.keywords:  distributed array, degrees of freedom
+.seealso: DMDAGetOffset(), DMDAVecGetArray()
+@*/
+PetscErrorCode  DMDAGetNonOverlappingRegion(DM da, PetscInt *xs, PetscInt *ys, PetscInt *zs, PetscInt *xm, PetscInt *ym, PetscInt *zm)
+{
+  DM_DA          *dd = (DM_DA*)da->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  if (xs) *xs = dd->nonxs;
+  if (ys) *ys = dd->nonys;
+  if (zs) *zs = dd->nonzs;
+  if (xm) *xm = dd->nonxm;
+  if (ym) *ym = dd->nonym;
+  if (zm) *zm = dd->nonzm;
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
+#define __FUNCT__ "DMDASetNonOverlappingRegion"
+/*@
+  DMDASetNonOverlappingRegion - Sets the indices of the nonoverlapping region of a subdomain DM.
+
+  Collective on DA
+
+  Input Parameter:
++ da  - The DMDA
+. xs  - The start of the region in x
+. ys  - The start of the region in y
+. zs  - The start of the region in z
+. xs  - The size of the region in x
+. ys  - The size of the region in y
+. zs  - The size of the region in z
+
+  Level: intermediate
+
+.keywords:  distributed array, degrees of freedom
+.seealso: DMDAGetOffset(), DMDAVecGetArray()
+@*/
+PetscErrorCode  DMDASetNonOverlappingRegion(DM da, PetscInt xs, PetscInt ys, PetscInt zs, PetscInt xm, PetscInt ym, PetscInt zm)
+{
+  DM_DA          *dd = (DM_DA*)da->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  PetscValidLogicalCollectiveInt(da,xs,2);
+  PetscValidLogicalCollectiveInt(da,ys,3);
+  PetscValidLogicalCollectiveInt(da,zs,4);
+  PetscValidLogicalCollectiveInt(da,xm,5);
+  PetscValidLogicalCollectiveInt(da,ym,6);
+  PetscValidLogicalCollectiveInt(da,zm,7);
+  dd->nonxs = xs;
+  dd->nonys = ys;
+  dd->nonzs = zs;
+  dd->nonxm = xm;
+  dd->nonym = ym;
+  dd->nonzm = zm;
+
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "DMDASetStencilType"

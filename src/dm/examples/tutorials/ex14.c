@@ -94,7 +94,7 @@ int main(int argc,char **argv)
 
     /* test the patch IS as a thing to scatter to/from */
     ierr = DMDACreatePatchIS(da,&lower,&upper,&patchis);CHKERRQ(ierr);
-    ierr = ISView(patchis,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = ISView(patchis,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
     ierr = DMGetGlobalVector(da,&largevec);CHKERRQ(ierr);
 
     ierr = VecCreate(PETSC_COMM_SELF,&smallvec);CHKERRQ(ierr);
