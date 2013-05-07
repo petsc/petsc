@@ -425,10 +425,15 @@ PetscErrorCode DMCreateDomainDecomposition_DA(DM dm,PetscInt *len,char ***names,
   ierr = DMDASubDomainDA_Private(dm,&n,&sdm);CHKERRQ(ierr);
   if (names) {
     ierr = PetscMalloc(n*sizeof(char*),names);CHKERRQ(ierr);
-    for (i=0;i<n;i++) names[i] = 0;
+    for (i=0;i<n;i++) (*names)[i] = 0;
   }
   ierr = DMDASubDomainIS_Private(dm,n,sdm,iis,ois);CHKERRQ(ierr);
   if (subdm) *subdm = sdm;
+  else {
+    for (i=0;i<n;i++) {
+      ierr = DMDestroy(&sdm[i]);CHKERRQ(ierr);
+    }
+  }
   if (len) *len = n;
   PetscFunctionReturn(0);
 }
