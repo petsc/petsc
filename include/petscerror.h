@@ -518,6 +518,42 @@ PETSC_STATIC_INLINE PetscBool PetscStackActive(void)
   return(PetscThreadLocalGetValue(petscstack) ? PETSC_TRUE : PETSC_FALSE);
 }
 
+/* Stack handling is based on the following two "NoCheck" macros.  These should only be called directly by other error
+ * handling macros.  We record the line of the call, which may or may not be the location of the definition.  But is at
+ * least more useful than "unknown" because it can distinguish multiple calls from the same function.
+ */
+
+#define PetscStackPushNoCheck(funct,petsc_routine)                            \
+  do {                                                                        \
+    PetscStack* petscstackp;                                                  \
+    PetscStackAMSTakeAccess();                                                \
+    petscstackp = (PetscStack*)PetscThreadLocalGetValue(petscstack);          \
+    if (petscstackp && (petscstackp->currentsize < PETSCSTACKSIZE)) {         \
+      petscstackp->function[petscstackp->currentsize]  = funct;               \
+      petscstackp->file[petscstackp->currentsize]      = __FILE__;            \
+      petscstackp->directory[petscstackp->currentsize] = __SDIR__;            \
+      petscstackp->line[petscstackp->currentsize]      = __LINE__;            \
+      petscstackp->petscroutine[petscstackp->currentsize] = petsc_routine;    \
+      petscstackp->currentsize++;                                             \
+    }                                                                         \
+    PetscStackAMSGrantAccess();                                               \
+  } while (0)
+
+#define PetscStackPopNoCheck                                            \
+  do {PetscStack* petscstackp;                                          \
+    PetscStackAMSTakeAccess();                                          \
+    petscstackp = (PetscStack*)PetscThreadLocalGetValue(petscstack);    \
+    if (petscstackp && petscstackp->currentsize > 0) {                  \
+      petscstackp->currentsize--;                                       \
+      petscstackp->function[petscstackp->currentsize]  = 0;             \
+      petscstackp->file[petscstackp->currentsize]      = 0;             \
+      petscstackp->directory[petscstackp->currentsize] = 0;             \
+      petscstackp->line[petscstackp->currentsize]      = 0;             \
+      petscstackp->petscroutine[petscstackp->currentsize] = PETSC_FALSE;\
+    }                                                                   \
+    PetscStackAMSGrantAccess();                                         \
+  } while (0)
+
 /*MC
    PetscFunctionBegin - First executable line of each PETSc function
         used for error handling.
@@ -544,22 +580,10 @@ PETSC_STATIC_INLINE PetscBool PetscStackActive(void)
 
 .keywords: traceback, error handling
 M*/
-#define PetscFunctionBegin \
-  do {                                                                        \
-    PetscStack* petscstackp;                                                  \
-    PetscStackAMSTakeAccess();                                                \
-    petscstackp = (PetscStack*)PetscThreadLocalGetValue(petscstack);          \
-    if (petscstackp && (petscstackp->currentsize < PETSCSTACKSIZE)) {         \
-      petscstackp->function[petscstackp->currentsize]  = PETSC_FUNCTION_NAME; \
-      petscstackp->file[petscstackp->currentsize]      = __FILE__;            \
-      petscstackp->directory[petscstackp->currentsize] = __SDIR__;            \
-      petscstackp->line[petscstackp->currentsize]      = __LINE__;            \
-      petscstackp->petscroutine[petscstackp->currentsize] = PETSC_TRUE;       \
-      petscstackp->currentsize++;                                             \
-    }                                                                         \
-    PetscCheck__FUNCT__();                                                    \
-    PetscRegister__FUNCT__();                                                 \
-    PetscStackAMSGrantAccess();                                               \
+#define PetscFunctionBegin do {                                   \
+    PetscStackPushNoCheck(PETSC_FUNCTION_NAME,PETSC_TRUE);        \
+    PetscCheck__FUNCT__();                                        \
+    PetscRegister__FUNCT__();                                     \
   } while (0)
 
 /*MC
@@ -587,22 +611,11 @@ M*/
 
 .keywords: traceback, error handling
 M*/
-#define PetscFunctionBeginUser \
-  do {                                                                        \
-    PetscStack* petscstackp;                                                  \
-    PetscStackAMSTakeAccess();                                                \
-    petscstackp = (PetscStack*)PetscThreadLocalGetValue(petscstack);          \
-    if (petscstackp && (petscstackp->currentsize < PETSCSTACKSIZE)) {         \
-      petscstackp->function[petscstackp->currentsize]  = PETSC_FUNCTION_NAME; \
-      petscstackp->file[petscstackp->currentsize]      = __FILE__;            \
-      petscstackp->directory[petscstackp->currentsize] = __SDIR__;            \
-      petscstackp->line[petscstackp->currentsize]      = __LINE__;            \
-      petscstackp->petscroutine[petscstackp->currentsize] = PETSC_FALSE;      \
-      petscstackp->currentsize++;                                             \
-    }                                                                         \
-    PetscCheck__FUNCT__();                                                    \
-    PetscRegister__FUNCT__();                                                 \
-    PetscStackAMSGrantAccess();                                               \
+#define PetscFunctionBeginUser                                          \
+  do {                                                                  \
+    PetscStackPushNoCheck(PETSC_FUNCTION_NAME,PETSC_FALSE);             \
+    PetscCheck__FUNCT__();                                              \
+    PetscRegister__FUNCT__();                                           \
   } while (0)
 
 
@@ -633,33 +646,15 @@ M*/
 
 #define PetscStackPush(n) \
   do {                                                                  \
-    PetscStack * petscstackp;                                           \
-    PetscStackAMSTakeAccess();                                          \
-    petscstackp = (PetscStack*)PetscThreadLocalGetValue(petscstack);    \
-    if (petscstackp && (petscstackp->currentsize < PETSCSTACKSIZE)) {   \
-      petscstackp->function[petscstackp->currentsize]  = n;             \
-      petscstackp->file[petscstackp->currentsize]      = "unknown";     \
-      petscstackp->directory[petscstackp->currentsize] = "unknown";     \
-      petscstackp->line[petscstackp->currentsize]      = 0;             \
-      petscstackp->currentsize++;                                       \
-    }                                                                   \
-    PetscStackAMSGrantAccess();                                         \
+    PetscStackPushNoCheck(n,PETSC_FALSE);                               \
     CHKMEMQ;                                                            \
   } while (0)
 
-#define PetscStackPop \
-  do {PetscStack* petscstackp;CHKMEMQ;                                  \
-    PetscStackAMSTakeAccess();                                          \
-    petscstackp = (PetscStack*)PetscThreadLocalGetValue(petscstack);    \
-    if (petscstackp && petscstackp->currentsize > 0) {                  \
-      petscstackp->currentsize--;                                       \
-      petscstackp->function[petscstackp->currentsize]  = 0;             \
-      petscstackp->file[petscstackp->currentsize]      = 0;             \
-      petscstackp->directory[petscstackp->currentsize] = 0;             \
-      petscstackp->line[petscstackp->currentsize]      = 0;             \
-    }                                                                   \
-    PetscStackAMSGrantAccess();                                         \
-  } while (0)
+#define PetscStackPop                           \
+    do {                                        \
+      CHKMEMQ;                                  \
+      PetscStackPopNoCheck;                     \
+    } while (0)
 
 /*MC
    PetscFunctionReturn - Last executable line of each PETSc function
@@ -689,35 +684,17 @@ M*/
 M*/
 #define PetscFunctionReturn(a) \
   do {                                                                \
-    PetscStack* petscstackp;                                          \
-    PetscStackAMSTakeAccess();                                        \
-    petscstackp = (PetscStack*)PetscThreadLocalGetValue(petscstack);  \
-    if (petscstackp && petscstackp->currentsize > 0) {                \
-      petscstackp->currentsize--;                                     \
-      petscstackp->function[petscstackp->currentsize]  = 0;           \
-      petscstackp->file[petscstackp->currentsize]      = 0;           \
-      petscstackp->directory[petscstackp->currentsize] = 0;           \
-      petscstackp->line[petscstackp->currentsize]      = 0;           \
-    }                                                                 \
-    PetscStackAMSGrantAccess();                                       \
+    PetscStackPopNoCheck;                                             \
     return(a);} while (0)
 
 #define PetscFunctionReturnVoid() \
   do {                                                                \
-    PetscStack* petscstackp;                                          \
-    PetscStackAMSTakeAccess();                                        \
-    petscstackp = (PetscStack*)PetscThreadLocalGetValue(petscstack);  \
-    if (petscstackp && petscstackp->currentsize > 0) {                \
-      petscstackp->currentsize--;                                     \
-      petscstackp->function[petscstackp->currentsize]  = 0;           \
-      petscstackp->file[petscstackp->currentsize]      = 0;           \
-      petscstackp->directory[petscstackp->currentsize] = 0;           \
-      petscstackp->line[petscstackp->currentsize]      = 0;           \
-    }                                                                 \
-    PetscStackAMSGrantAccess();                                       \
+    PetscStackPopNoCheck;                                             \
     return;} while (0)
 #else
 
+#define PetscStackPushNoCheck(funct,petsc_routine) do {} while (0)
+#define PetscStackPopNoCheck                       do {} while (0)
 #define PetscFunctionBegin
 #define PetscFunctionBeginUser
 #define PetscFunctionReturn(a)    return(a)

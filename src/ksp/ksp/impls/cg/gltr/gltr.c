@@ -933,7 +933,7 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
 #if defined(PETSC_MISSING_LAPACK_STEBZ)
   SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"STEBZ - Lapack routine is unavailable.");
 #else
-  PetscStackCall("LAPACKstebz",LAPACKstebz_("I", "E", &t_size, &vl, &vu, &il, &iu, &cg->eigen_tol,cg->diag, cg->offd + 1, &e_valus, &e_splts, e_valu,e_iblk, e_splt, e_rwrk, e_iwrk, &info));
+  PetscStackCallBLAS("LAPACKstebz",LAPACKstebz_("I", "E", &t_size, &vl, &vu, &il, &iu, &cg->eigen_tol,cg->diag, cg->offd + 1, &e_valus, &e_splts, e_valu,e_iblk, e_splt, e_rwrk, e_iwrk, &info));
 
   if ((0 != info) || (1 != e_valus)) {
     /*************************************************************************/
@@ -966,7 +966,7 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
 #if defined(PETSC_MISSING_LAPACK_PTTRF)
     SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"PTTRF - Lapack routine is unavailable.");
 #else
-    PetscStackCall("LAPACKpttrf",LAPACKpttrf_(&t_size, t_diag, t_offd + 1, &info));
+    PetscStackCallBLAS("LAPACKpttrf",LAPACKpttrf_(&t_size, t_diag, t_offd + 1, &info));
 
     if (0 == info) break;
 
@@ -988,7 +988,7 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
 #if defined(PETSC_MISSING_LAPACK_PTTRS)
   SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"PTTRS - Lapack routine is unavailable.");
 #else
-  PetscStackCall("LAPACKpttrs",LAPACKpttrs_(&t_size, &nrhs, t_diag, t_offd + 1, t_soln, &nldb, &info));
+  PetscStackCallBLAS("LAPACKpttrs",LAPACKpttrs_(&t_size, &nrhs, t_diag, t_offd + 1, t_soln, &nldb, &info));
 #endif
 
   if (0 != info) {
@@ -1026,7 +1026,7 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
 #if defined(PETSC_MISSING_LAPACK_STEIN)
       SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"STEIN - Lapack routine is unavailable.");
 #else
-      PetscStackCall("LAPACKstein",LAPACKstein_(&t_size, cg->diag, cg->offd + 1, &e_valus, e_valu,e_iblk, e_splt, e_vect, &nldb,e_rwrk, e_iwrk, e_iwrk + t_size, &info));
+      PetscStackCallBLAS("LAPACKstein",LAPACKstein_(&t_size, cg->diag, cg->offd + 1, &e_valus, e_valu,e_iblk, e_splt, e_vect, &nldb,e_rwrk, e_iwrk, e_iwrk + t_size, &info));
 #endif
 
       if (0 != info) {
@@ -1131,7 +1131,7 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
 #if defined(PETSC_MISSING_LAPACK_PTTRS)
       SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"PTTRS - Lapack routine is unavailable.");
 #else
-      PetscStackCall("LAPACKpttrs",LAPACKpttrs_(&t_size, &nrhs, t_diag, t_offd + 1, e_rwrk, &nldb, &info));
+      PetscStackCallBLAS("LAPACKpttrs",LAPACKpttrs_(&t_size, &nrhs, t_diag, t_offd + 1, e_rwrk, &nldb, &info));
 #endif
 
       if (0 != info) {
@@ -1166,7 +1166,7 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
 #if defined(PETSC_MISSING_LAPACK_PTTRF)
       SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"PTTRF - Lapack routine is unavailable.");
 #else
-      PetscStackCall("LAPACKpttrf",LAPACKpttrf_(&t_size, t_diag, t_offd + 1, &info));
+      PetscStackCallBLAS("LAPACKpttrf",LAPACKpttrf_(&t_size, t_diag, t_offd + 1, &info));
 #endif
 
       if (0 != info) {
@@ -1190,7 +1190,7 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
 #if defined(PETSC_MISSING_LAPACK_PTTRS)
       SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"PTTRS - Lapack routine is unavailable.");
 #else
-      PetscStackCall("LAPACKpttrs",LAPACKpttrs_(&t_size, &nrhs, t_diag, t_offd + 1, t_soln, &nldb, &info));
+      PetscStackCallBLAS("LAPACKpttrs",LAPACKpttrs_(&t_size, &nrhs, t_diag, t_offd + 1, t_soln, &nldb, &info));
 #endif
 
       if (0 != info) {

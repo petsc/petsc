@@ -677,13 +677,13 @@ PetscErrorCode PCCreateTransferOp_ASA(PC_ASA_level *asa_lev, PetscBool construct
 
     ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
 #if !defined(PETSC_MISSING_LAPACK_GEQRF)
-    PetscStackCall("LAPACKgeqrf",LAPACKgeqrf_(&b1, &b2, b_submat_tp, &b1, tau, work, &b2, &info));
+    PetscStackCallBLAS("LAPACKgeqrf",LAPACKgeqrf_(&b1, &b2, b_submat_tp, &b1, tau, work, &b2, &info));
     if (info) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB, "LAPACKgeqrf_ LAPACK routine failed");
 #else
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"geqrf() - Lapack routine is unavailable\n");
 #endif
 #if !defined(PETSC_MISSING_LAPACK_ORGQR)
-    PetscStackCall("LAPACKungqr",LAPACKungqr_(&b1, &b2, &b2, b_submat_tp, &b1, tau, work, &b2, &info));
+    PetscStackCallBLAS("LAPACKungqr",LAPACKungqr_(&b1, &b2, &b2, b_submat_tp, &b1, tau, work, &b2, &info));
 #else
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"ORGQR - Lapack routine is unavailable\nIf linking with ESSL you MUST also link with full LAPACK, for example\nuse ./configure with --with-blas-lib=libessl.a --with-lapack-lib=/usr/local/lib/liblapack.a'");
 #endif
