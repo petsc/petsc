@@ -48,12 +48,13 @@ PetscErrorCode TSDAESimpleSetRHSFunction(TS ts,Vec U,PetscErrorCode (*f)(PetscRe
 {
   TS_DAESimple *tsdae = (TS_DAESimple*)ts->data;
   PetscErrorCode ierr;
+  DM             dm;
 
   PetscFunctionBegin;
-  tsdae->f    = f;
+  ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
+  ierr = DMTSSetDAESimpleRHSFunction(dm,f,ctx);CHKERRQ(ierr);
   tsdae->U    = U;
   ierr        = PetscObjectReference((PetscObject)U);CHKERRQ(ierr);
-  tsdae->fctx = ctx;
   PetscFunctionReturn(0);
 }
 
@@ -63,12 +64,13 @@ PetscErrorCode TSDAESimpleSetIFunction(TS ts,Vec V,PetscErrorCode (*F)(PetscReal
 {
   TS_DAESimple *tsdae = (TS_DAESimple*)ts->data;
   PetscErrorCode ierr;
+  DM             dm;
 
   PetscFunctionBegin;
-  tsdae->F    = F;
+  ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
+  ierr = DMTSSetDAESimpleIFunction(dm,F,ctx);CHKERRQ(ierr);
   tsdae->V    = V;
   ierr        = PetscObjectReference((PetscObject)V);CHKERRQ(ierr);
-  tsdae->Fctx = ctx;
   PetscFunctionReturn(0);
 }
 

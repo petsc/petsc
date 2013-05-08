@@ -9,8 +9,6 @@ typedef struct {
   PetscErrorCode (*solve)(TS);
   PetscErrorCode (*destroy)(TS);
   PetscErrorCode (*view)(TS,PetscViewer);
-  PetscErrorCode (*f)(PetscReal,Vec,Vec,Vec,void*);
-  PetscErrorCode (*F)(PetscReal,Vec,Vec,Vec,void*);
   void           *fctx,*Fctx;
   void           *data;
 }TS_DAESimple;

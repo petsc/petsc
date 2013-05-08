@@ -43,14 +43,16 @@ int main(int argc,char **argv)
   Vec            U,V,Usolution;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
-  ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
-  ierr = TSSetType(ts,TSDAESIMPLE);CHKERRQ(ierr);
+
   ierr = VecCreateMPI(PETSC_COMM_WORLD,1,PETSC_DETERMINE,&U);CHKERRQ(ierr);
   ierr = VecCreateMPI(PETSC_COMM_WORLD,1,PETSC_DETERMINE,&V);CHKERRQ(ierr);
 
   ierr = VecDuplicate(U,&Usolution);CHKERRQ(ierr);
   ierr = VecSet(Usolution,1.0);CHKERRQ(ierr);
+  ierr = VecSet(V,1.0);CHKERRQ(ierr);
 
+  ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
+  ierr = TSSetType(ts,TSDAESIMPLERED);CHKERRQ(ierr);
   ierr = TSDAESimpleSetRHSFunction(ts,Usolution,f,NULL);CHKERRQ(ierr);
   ierr = TSDAESimpleSetIFunction(ts,V,F,NULL);CHKERRQ(ierr);
 

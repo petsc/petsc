@@ -41,7 +41,8 @@ typedef const char* TSType;
 #define TSARKIMEX         "arkimex"
 #define TSROSW            "rosw"
 #define TSEIMEX           "eimex"
-#define TSDAESIMPLE       "daesimple"
+#define TSDAESIMPLERED    "daesimplered"
+#define TSDAESIMPLEFULL   "daesimplefull"
 
 /*E
     TSProblemType - Determines the type of problem this TS object is to be used to solve
@@ -310,6 +311,11 @@ PETSC_EXTERN PetscErrorCode DMTSGetForcingFunction(DM,PetscErrorCode (**TSForcin
 
 PETSC_EXTERN PetscErrorCode DMTSSetIFunctionSerialize(DM,PetscErrorCode (*)(void*,PetscViewer),PetscErrorCode (*)(void**,PetscViewer));
 PETSC_EXTERN PetscErrorCode DMTSSetIJacobianSerialize(DM,PetscErrorCode (*)(void*,PetscViewer),PetscErrorCode (*)(void**,PetscViewer));
+
+PETSC_EXTERN PetscErrorCode DMTSSetDAESimpleRHSFunction(DM,PetscErrorCode (*)(PetscReal,Vec,Vec,Vec,void*),void*);
+PETSC_EXTERN PetscErrorCode DMTSSetDAESimpleIFunction(DM,PetscErrorCode (*)(PetscReal,Vec,Vec,Vec,void*),void*);
+PETSC_EXTERN PetscErrorCode DMTSGetDAESimpleRHSFunction(DM,PetscErrorCode (**)(PetscReal,Vec,Vec,Vec,void*),void**);
+PETSC_EXTERN PetscErrorCode DMTSGetDAESimpleIFunction(DM,PetscErrorCode (**)(PetscReal,Vec,Vec,Vec,void*),void**);
 
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*DMDATSRHSFunctionLocal)(DMDALocalInfo*,PetscReal,void*,void*,void*);
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*DMDATSRHSJacobianLocal)(DMDALocalInfo*,PetscReal,void*,Mat,Mat,MatStructure*,void*);

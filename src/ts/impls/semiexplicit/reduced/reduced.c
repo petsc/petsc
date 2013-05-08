@@ -66,17 +66,23 @@ PetscErrorCode TSSolve_DAESimple_Reduced(TS ts)
    Solves F(U,V) for V and then computes f(U,V)
 
 */
-PetscErrorCode TSDAESimple_Reduced_TSFunction(TS ts,PetscReal t,Vec U,Vec F,void *actx)
+PetscErrorCode TSDAESimple_Reduced_TSFunction(TS tsinner,PetscReal t,Vec U,Vec F,void *actx)
 {
-  TS_DAESimple         *tsdae = (TS_DAESimple*)actx;
+  TS                   ts = (TS)actx;
+  TS_DAESimple         *tsdae = (TS_DAESimple*)ts->data;
   TS_DAESimple_Reduced *red = (TS_DAESimple_Reduced*)tsdae->data;
   PetscErrorCode       ierr;
+  DM                   dm;
+  PetscErrorCode       (*rhsfunction)(PetscReal,Vec,Vec,Vec,void*);
+  void                 *rhsfunctionctx;
 
-  PetscFunctionBeginUser;
+  PetscFunctionBegin;
   red->t = t;
   red->U = U;
   ierr   = SNESSolve(red->snes,NULL,tsdae->V);CHKERRQ(ierr);
-  ierr   = (*tsdae->f)(t,U,tsdae->V,F,tsdae->fctx);CHKERRQ(ierr);
+  ierr   = TSGetDM(ts,&dm);CHKERRQ(ierr);
+  ierr   = DMTSGetDAESimpleRHSFunction(dm,&rhsfunction,&rhsfunctionctx);CHKERRQ(ierr);
+  ierr   = (*rhsfunction)(t,U,tsdae->V,F,rhsfunctionctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -88,12 +94,18 @@ PetscErrorCode TSDAESimple_Reduced_TSFunction(TS ts,PetscReal t,Vec U,Vec F,void
 */
 PetscErrorCode TSDAESimple_Reduced_SNESFunction(SNES snes,Vec V,Vec F,void *actx)
 {
-  TS_DAESimple         *tsdae = (TS_DAESimple*)actx;
+  TS                   ts=(TS)actx;
+  TS_DAESimple         *tsdae = (TS_DAESimple*)ts->data;
   TS_DAESimple_Reduced *red = (TS_DAESimple_Reduced*)tsdae->data;
   PetscErrorCode       ierr;
+  DM                   dm;
+  PetscErrorCode       (*ifunction)(PetscReal,Vec,Vec,Vec,void*);
+  void                 *ifunctionctx;
 
-  PetscFunctionBeginUser;
-  ierr = (*tsdae->F)(red->t,red->U,V,F,tsdae->Fctx);CHKERRQ(ierr);
+  PetscFunctionBegin;
+  ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
+  ierr = DMTSGetDAESimpleIFunction(dm,&ifunction,&ifunctionctx);
+  ierr = (*ifunction)(red->t,red->U,V,F,ifunctionctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -107,19 +119,20 @@ PetscErrorCode TSSetUp_DAESimple_Reduced(TS ts)
   Vec                  tsrhs;
 
   PetscFunctionBegin;
-
+  ierr = VecCopy(ts->vec_sol,tsdae->U);CHKERRQ(ierr);
   ierr = TSCreate(PetscObjectComm((PetscObject)ts),&red->ts);CHKERRQ(ierr);
+  ierr = TSSetOptionsPrefix(red->ts,"dae_reduced_ode_");CHKERRQ(ierr);
   ierr = TSSetProblemType(red->ts,TS_NONLINEAR);CHKERRQ(ierr);
   ierr = TSSetType(red->ts,TSEULER);CHKERRQ(ierr);
   ierr = VecDuplicate(tsdae->U,&tsrhs);CHKERRQ(ierr);
-  ierr = TSSetRHSFunction(red->ts,tsrhs,TSDAESimple_Reduced_TSFunction,tsdae);CHKERRQ(ierr);
+  ierr = TSSetRHSFunction(red->ts,tsrhs,TSDAESimple_Reduced_TSFunction,ts);CHKERRQ(ierr);
   ierr = TSSetFromOptions(red->ts);CHKERRQ(ierr);
   ierr = VecDestroy(&tsrhs);CHKERRQ(ierr);
 
   ierr = SNESCreate(PetscObjectComm((PetscObject)ts),&red->snes);CHKERRQ(ierr);
-  ierr = SNESSetOptionsPrefix(red->snes,"tsdaesimple_");CHKERRQ(ierr);
-  ierr = SNESSetFunction(red->snes,NULL,TSDAESimple_Reduced_SNESFunction,tsdae);CHKERRQ(ierr);
-  ierr = SNESSetJacobian(red->snes,NULL,NULL,SNESComputeJacobianDefault,tsdae);CHKERRQ(ierr);
+  ierr = SNESSetOptionsPrefix(red->snes,"dae_reduced_alg_");CHKERRQ(ierr);
+  ierr = SNESSetFunction(red->snes,NULL,TSDAESimple_Reduced_SNESFunction,ts);CHKERRQ(ierr);
+  ierr = SNESSetJacobian(red->snes,NULL,NULL,SNESComputeJacobianDefault,ts);CHKERRQ(ierr);
   ierr = SNESSetFromOptions(red->snes);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
