@@ -2105,7 +2105,7 @@ static PetscErrorCode DMPlexCreateCohesiveSubmesh_Uninterpolated(DM dm, PetscBoo
   IS              subvertexIS;
   const PetscInt *subVertices;
   PetscInt        numSubVertices, firstSubVertex, numSubCells, *subCells;
-  PetscInt       *subface, maxConeSize, numSubFaces, firstSubFace, newFacePoint, nFV;
+  PetscInt       *subface, maxConeSize, numSubFaces=0, firstSubFace, newFacePoint, nFV=0;
   PetscInt        cMax, c, f;
   PetscErrorCode  ierr;
 
