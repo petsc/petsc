@@ -306,11 +306,11 @@ PetscErrorCode constantResidual(PetscReal lambda, PetscBool isLower, int i, int 
     phi[1] = quadPoints[q*2];
     phi[2] = quadPoints[q*2+1];
     if (isLower) {
-      x = xI + quadPoints[q*2]*hx;
-      y = yI + quadPoints[q*2+1]*hy;
+      x = xI + PetscAbsScalar(quadPoints[q*2])*hx;
+      y = yI + PetscAbsScalar(quadPoints[q*2+1])*hy;
     } else {
-      x = xI + 1.0 - quadPoints[q*2]*hx;
-      y = yI + 1.0 - quadPoints[q*2+1]*hy;
+      x = xI + 1.0 - PetscAbsScalar(quadPoints[q*2])*hx;
+      y = yI + 1.0 - PetscAbsScalar(quadPoints[q*2+1])*hy;
     }
     res.u = quadWeights[q]*(0.0);
     res.v = quadWeights[q]*(0.0);
@@ -837,7 +837,7 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info, Field **x, Mat A,Mat jac, 
         }
       }
 
-      ierr = nonlinearJacobian(-1.0*sc, uLocal, JLocal);CHKERRQ(ierr);
+      ierr = nonlinearJacobian(-1.0*PetscAbsScalar(sc), uLocal, JLocal);CHKERRQ(ierr);
       /* printf("Element matrix for (%d, %d)\n", i, j);*/
       /* printf("   col         ");*/
       for (l = 0; l < 4*3; l++) {
@@ -921,10 +921,10 @@ PetscErrorCode L_2Error(DM da, Vec fVec, double *error, AppCtx *user)
         u.u     = uLocal[0].u*phi[0]+ uLocal[1].u*phi[1] + uLocal[3].u*phi[2];
         u.v     = uLocal[0].v*phi[0]+ uLocal[1].v*phi[1] + uLocal[3].v*phi[2];
         u.p     = uLocal[0].p*phi[0]+ uLocal[1].p*phi[1] + uLocal[3].p*phi[2];
-        x       = (quadPoints[q*2] + i)*hx;
-        y       = (quadPoints[q*2+1] + j)*hy;
-        ierr    = ExactSolution(x, y, &uExact);CHKERRQ(ierr);
-        *error += hxhy*quadWeights[q]*((u.u - uExact.u)*(u.u - uExact.u) + (u.v - uExact.v)*(u.v - uExact.v) + (u.p - uExact.p)*(u.p - uExact.p));
+        x       = (quadPoints[q*2] + (PetscReal)i)*hx;
+        y       = (quadPoints[q*2+1] + (PetscReal)j)*hy;
+        ierr    = ExactSolution(PetscAbsScalar(x), PetscAbsScalar(y), &uExact);CHKERRQ(ierr);
+        *error += PetscAbsScalar(hxhy*quadWeights[q]*((u.u - uExact.u)*(u.u - uExact.u) + (u.v - uExact.v)*(u.v - uExact.v) + (u.p - uExact.p)*(u.p - uExact.p)));
       }
       /* Upper element */
       /*
@@ -940,10 +940,10 @@ PetscErrorCode L_2Error(DM da, Vec fVec, double *error, AppCtx *user)
         u.u     = uLocal[2].u*phi[0]+ uLocal[3].u*phi[1] + uLocal[1].u*phi[2];
         u.v     = uLocal[2].v*phi[0]+ uLocal[3].v*phi[1] + uLocal[1].v*phi[2];
         u.p     = uLocal[0].p*phi[0]+ uLocal[1].p*phi[1] + uLocal[3].p*phi[2];
-        x       = (1.0 - quadPoints[q*2] + i)*hx;
-        y       = (1.0 - quadPoints[q*2+1] + j)*hy;
-        ierr    = ExactSolution(x, y, &uExact);CHKERRQ(ierr);
-        *error += hxhy*quadWeights[q]*((u.u - uExact.u)*(u.u - uExact.u) + (u.v - uExact.v)*(u.v - uExact.v) + (u.p - uExact.p)*(u.p - uExact.p));
+        x       = (1.0 - quadPoints[q*2] + (PetscReal)i)*hx;
+        y       = (1.0 - quadPoints[q*2+1] + (PetscReal)j)*hy;
+        ierr    = ExactSolution(PetscAbsScalar(x), PetscAbsScalar(y), &uExact);CHKERRQ(ierr);
+        *error += PetscAbsScalar(hxhy*quadWeights[q]*((u.u - uExact.u)*(u.u - uExact.u) + (u.v - uExact.v)*(u.v - uExact.v) + (u.p - uExact.p)*(u.p - uExact.p)));
       }
     }
   }
