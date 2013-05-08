@@ -2936,7 +2936,7 @@ PetscErrorCode  SNESGetLagJacobian(SNES snes,PetscInt *lag)
 
    Input Parameter:
 +  snes - the SNES context
--   flg - whether to keep lagging the Jacobian or not through through multiple solves
+-   flg - jacobian lagging persists if true
 
    Options Database Keys:
 .    -snes_lag_jacobian_persists <flg>
@@ -2970,7 +2970,7 @@ PetscErrorCode  SNESSetLagJacobianPersists(SNES snes,PetscBool flg)
 
    Input Parameter:
 +  snes - the SNES context
--   flg - whether to keep lagging the Jacobian or not through through multiple solves
+-   flg - preconditioner lagging persists if true
 
    Options Database Keys:
 .    -snes_lag_jacobian_persists <flg>
