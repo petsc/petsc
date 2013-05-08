@@ -252,8 +252,8 @@ PetscErrorCode  MatConvertFrom_MPIAdj(Mat A,MatType type,MatReuse reuse,Mat *new
     for (j=0; j<len; j++) {
       if (rj[j] == i+rstart) {len--; break;}    /* don't count diagonal */
     }
-    ierr    = MatRestoreRow(A,i+rstart,&len,&rj,NULL);CHKERRQ(ierr);
     nzeros += len;
+    ierr    = MatRestoreRow(A,i+rstart,&len,&rj,NULL);CHKERRQ(ierr);
   }
 
   /* malloc space for nonzeros */
