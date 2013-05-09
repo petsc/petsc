@@ -12,7 +12,7 @@ int main(int argc,char **argv)
   PetscBool      flg;
   PetscInt       option1;
 
-  PetscInitialize(&argc,&argv,"ex19options",help);
+  PetscInitialize(&argc,&argv,"${PETSC_DIR}/src/sys/examples/tests/ex19options",help);
   ierr = PetscOptionsGetInt(0,"-option1",&option1,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetString(0,"-option2",option2,20,&flg);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"%s\n",option2);CHKERRQ(ierr);
