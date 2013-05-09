@@ -2027,6 +2027,107 @@ PetscErrorCode DMPlexGetNumFaceVertices(DM dm, PetscInt cellDim, PetscInt numCor
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMPlexOrient"
+/* Trys to give the mesh a consistent orientation */
+PetscErrorCode DMPlexOrient(DM dm)
+{
+  PetscBT        seenCells, flippedCells;
+  PetscInt       dim, h, pStart, pEnd, p, fStart, fEnd, f, maxConeSize, *revcone, *revconeO;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
+  ierr = PetscBTCreate(pEnd - pStart, &seenCells);CHKERRQ(ierr);
+  ierr = PetscBTMemzero(pEnd - pStart, seenCells);CHKERRQ(ierr);
+  ierr = PetscBTCreate(pEnd - pStart, &flippedCells);CHKERRQ(ierr);
+  ierr = PetscBTMemzero(pEnd - pStart, flippedCells);CHKERRQ(ierr);
+  /* Truth Table
+     mismatch    flips   do action   mismatch   flipA ^ flipB   action
+         F       0 flips     no         F             F           F
+         F       1 flip      yes        F             T           T
+         F       2 flips     no         T             F           T
+         T       0 flips     yes        T             T           F
+         T       1 flip      no
+         T       2 flips     yes
+  */
+  ierr = DMPlexGetVTKCellHeight(dm, &h);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(dm, h+1, &fStart, &fEnd);CHKERRQ(ierr);
+  for (f = fStart; f < fEnd; ++f) {
+    const PetscInt *support, *coneA, *coneB, *coneOA, *coneOB;
+    PetscInt        supportSize, coneSizeA, coneSizeB, posA, posB;
+    PetscInt        seenA, flippedA, seenB, flippedB, mismatch;
+
+    ierr = PetscPrintf(PETSC_COMM_SELF, "  Checking orientation of fault face %d\n", f);CHKERRQ(ierr);
+    ierr = DMPlexGetSupportSize(dm, f, &supportSize);CHKERRQ(ierr);
+    ierr = DMPlexGetSupport(dm, f, &support);CHKERRQ(ierr);
+    if (supportSize < 2) continue;
+    if (supportSize != 2) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Faces should separate only two cells, not %d", supportSize);
+    seenA    = PetscBTLookup(seenCells,    support[0]);
+    flippedA = PetscBTLookup(flippedCells, support[0]);
+    seenB    = PetscBTLookup(seenCells,    support[1]);
+    flippedB = PetscBTLookup(flippedCells, support[1]);
+
+    ierr = DMPlexGetConeSize(dm, support[0], &coneSizeA);CHKERRQ(ierr);
+    ierr = DMPlexGetConeSize(dm, support[1], &coneSizeB);CHKERRQ(ierr);
+    ierr = DMPlexGetCone(dm, support[0], &coneA);CHKERRQ(ierr);
+    ierr = DMPlexGetCone(dm, support[1], &coneB);CHKERRQ(ierr);
+    ierr = DMPlexGetConeOrientation(dm, support[0], &coneOA);CHKERRQ(ierr);
+    ierr = DMPlexGetConeOrientation(dm, support[1], &coneOB);CHKERRQ(ierr);
+    for (posA = 0; posA < coneSizeA; ++posA) if (coneA[posA] == f) break;
+    if (posA == coneSizeA) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Face %d could not be located in cell %d", f, support[0]);
+    for (posB = 0; posB < 2; ++posB) if (coneB[posB] == f) break;
+    if (posB == coneSizeB) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Face %d could not be located in cell %d", f, support[1]);
+    ierr = PetscPrintf(PETSC_COMM_SELF, "    with face positions %d and %d\n", posA, posB);CHKERRQ(ierr);
+
+    if (dim == 1) {
+      mismatch = posA == posB;
+    } else {
+      ierr = PetscPrintf(PETSC_COMM_SELF, "    with face orientations %d and %d\n", coneOA[posA], coneOB[posB]);CHKERRQ(ierr);
+      mismatch = coneOA[posA] == coneOB[posB];
+    }
+
+    if (mismatch ^ (flippedA ^ flippedB)) {
+      ierr = PetscPrintf(PETSC_COMM_SELF, "Invalid orientation in fault mesh\n  fault face: %d  cellA: %d  cellB: %d\n", f, support[0], support[1]);
+      if (seenA && seenB) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Previously seen cells %d and %d do not match: Fault mesh is non-orientable", support[0], support[1]);
+      if (!seenA && !flippedA) {
+        ierr = PetscBTSet(flippedCells, support[0]);CHKERRQ(ierr);
+      } else if (!seenB && !flippedB) {
+        ierr = PetscBTSet(flippedCells, support[1]);CHKERRQ(ierr);
+      } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Inconsistent mesh orientation: Fault mesh is non-orientable");
+    } else if (flippedA && flippedB) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Attempt to flip already flipped cell: Fault mesh is non-orientable");
+    ierr = PetscBTSet(seenCells, support[0]);CHKERRQ(ierr);
+    ierr = PetscBTSet(seenCells, support[1]);CHKERRQ(ierr);
+  }
+  ierr = DMPlexGetMaxSizes(dm, &maxConeSize, NULL);CHKERRQ(ierr);
+  ierr = DMGetWorkArray(dm, maxConeSize, PETSC_INT, &revcone);CHKERRQ(ierr);
+  ierr = DMGetWorkArray(dm, maxConeSize, PETSC_INT, &revconeO);CHKERRQ(ierr);
+  for (p = pStart; p < pEnd; ++p) {
+    const PetscInt *cone, *coneO;
+    PetscInt        coneSize, faceSize, c;
+
+    if (!PetscBTLookup(flippedCells, p)) continue;
+    ierr = PetscPrintf(PETSC_COMM_SELF, "  Reversing fault cell %d\n", p);CHKERRQ(ierr);
+    ierr = DMPlexGetConeSize(dm, p, &coneSize);CHKERRQ(ierr);
+    ierr = DMPlexGetCone(dm, p, &cone);CHKERRQ(ierr);
+    ierr = DMPlexGetConeOrientation(dm, p, &coneO);CHKERRQ(ierr);
+    for (c = 0; c < coneSize; ++c) {
+      ierr = DMPlexGetConeSize(dm, cone[coneSize-c-1], &faceSize);CHKERRQ(ierr);
+      revcone[c]  = cone[coneSize-c-1];
+      revconeO[c] = coneO[coneSize-c-1] >= 0 ? -(faceSize-coneO[coneSize-c-1]) : faceSize+coneO[coneSize-c-1];
+      ierr = PetscPrintf(PETSC_COMM_SELF, "    Reversing orientation of %d-->%d from %d to %d\n", cone[coneSize-c-1], p, coneO[coneSize-c-1], revconeO[c]);CHKERRQ(ierr);
+    }
+    ierr = DMPlexSetCone(dm, p, revcone);CHKERRQ(ierr);
+    ierr = DMPlexSetConeOrientation(dm, p, revconeO);CHKERRQ(ierr);
+  }
+  ierr = DMRestoreWorkArray(dm, maxConeSize, PETSC_INT, &revcone);CHKERRQ(ierr);
+  ierr = DMRestoreWorkArray(dm, maxConeSize, PETSC_INT, &revconeO);CHKERRQ(ierr);
+  ierr = PetscBTDestroy(&flippedCells);CHKERRQ(ierr);
+  ierr = PetscBTDestroy(&seenCells);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMPlexGetAdjacencySingleLevel_Internal"
 static PetscErrorCode DMPlexGetAdjacencySingleLevel_Internal(DM dm, PetscInt p, PetscBool useClosure, const PetscInt *tmpClosure, PetscInt *adjSize, PetscInt adj[])
 {
