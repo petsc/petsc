@@ -1729,7 +1729,7 @@ static PetscErrorCode DMPlexInsertFace_Internal(DM dm, DM subdm, PetscInt numFac
     PetscInt f;
 
     numFaces = 0;
-    ierr     = DMGetWorkArray(subdm, 1, PETSC_INT, (void**) &faces);CHKERRQ(ierr);
+    ierr     = DMGetWorkArray(subdm, 1, PETSC_INT, (void **) &faces);CHKERRQ(ierr);
     for (f = firstFace; f < *newFacePoint; ++f) {
       PetscInt dof, off, d;
 
@@ -1781,7 +1781,11 @@ static PetscErrorCode DMPlexInsertFace_Internal(DM dm, DM subdm, PetscInt numFac
     ierr = DMRestoreWorkArray(subdm, 4*numFaceVertices * sizeof(PetscInt), PETSC_INT, &orientedVertices);CHKERRQ(ierr);
     ++(*newFacePoint);
   }
+#if 0
   ierr = DMPlexRestoreJoin(subdm, numFaceVertices, subfaceVertices, &numFaces, &faces);CHKERRQ(ierr);
+#else
+  ierr = DMRestoreWorkArray(subdm, 1, PETSC_INT, (void **) &faces);CHKERRQ(ierr);
+#endif
   PetscFunctionReturn(0);
 }
 
