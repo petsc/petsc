@@ -314,7 +314,7 @@ PetscErrorCode  MatFDColoringSetFromOptions(MatFDColoring matfd)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatFDColoringViewFromOptions"
-PetscErrorCode MatFDColoringViewFromOptions(MatFDColoring fd,const char optionname[])
+PetscErrorCode MatFDColoringViewFromOptions(MatFDColoring fd,const char prefix[],const char optionname[])
 {
   PetscErrorCode    ierr;
   PetscBool         flg;
@@ -322,7 +322,11 @@ PetscErrorCode MatFDColoringViewFromOptions(MatFDColoring fd,const char optionna
   PetscViewerFormat format;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject)fd),((PetscObject)fd)->prefix,optionname,&viewer,&format,&flg);CHKERRQ(ierr);
+  if (prefix) {
+    ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject)fd),prefix,optionname,&viewer,&format,&flg);CHKERRQ(ierr);
+  } else {
+    ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject)fd),((PetscObject)fd)->prefix,optionname,&viewer,&format,&flg);CHKERRQ(ierr);
+  }
   if (flg) {
     ierr = PetscViewerPushFormat(viewer,format);CHKERRQ(ierr);
     ierr = MatFDColoringView(fd,viewer);CHKERRQ(ierr);
@@ -665,6 +669,6 @@ PetscErrorCode  MatFDColoringApply_AIJ(Mat J,MatFDColoring coloring,Vec x1,MatSt
   ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_FDColoringApply,coloring,J,x1,0);CHKERRQ(ierr);
 
-  ierr = MatFDColoringViewFromOptions(coloring,"-mat_fd_coloring_view");CHKERRQ(ierr);
+  ierr = MatFDColoringViewFromOptions(coloring,NULL,"-mat_fd_coloring_view");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

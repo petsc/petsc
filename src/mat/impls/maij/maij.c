@@ -3576,7 +3576,7 @@ PetscErrorCode  MatCreateMAIJ(Mat A,PetscInt dof,Mat *maij)
     B->ops->getsubmatrix = MatGetSubMatrix_MAIJ;
     ierr  = MatSetUp(B);CHKERRQ(ierr);
     *maij = B;
-    ierr  = MatViewFromOptions(B,"-mat_view");CHKERRQ(ierr);
+    ierr  = MatViewFromOptions(B,NULL,"-mat_view");CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

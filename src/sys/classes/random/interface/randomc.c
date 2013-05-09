@@ -200,7 +200,7 @@ PetscErrorCode  PetscRandomSetFromOptions(PetscRandom rnd)
     ierr = PetscRandomSeed(rnd);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
-  ierr = PetscRandomViewFromOptions(rnd, "-random_view");CHKERRQ(ierr);
+  ierr = PetscRandomViewFromOptions(rnd,NULL, "-random_view");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -287,7 +287,7 @@ PetscErrorCode  PetscRandomView(PetscRandom rnd,PetscViewer viewer)
 .keywords: PetscRandom, view, options, database
 .seealso: PetscRandomSetFromOptions()
 @*/
-PetscErrorCode  PetscRandomViewFromOptions(PetscRandom rnd, const char optionname[])
+PetscErrorCode  PetscRandomViewFromOptions(PetscRandom rnd, const char prefix[], const char optionname[])
 {
   PetscBool         flg;
   PetscViewer       viewer;
@@ -295,7 +295,11 @@ PetscErrorCode  PetscRandomViewFromOptions(PetscRandom rnd, const char optionnam
   PetscViewerFormat format;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject)rnd),((PetscObject)rnd)->prefix,optionname,&viewer,&format,&flg);CHKERRQ(ierr);
+  if (prefix) {
+    ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject)rnd),prefix,optionname,&viewer,&format,&flg);CHKERRQ(ierr);
+  } else {
+    ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject)rnd),((PetscObject)rnd)->prefix,optionname,&viewer,&format,&flg);CHKERRQ(ierr);
+  }
   if (flg) {
     ierr = PetscViewerPushFormat(viewer,format);CHKERRQ(ierr);
     ierr = PetscRandomView(rnd,viewer);CHKERRQ(ierr);

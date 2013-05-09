@@ -11,7 +11,7 @@ PetscLogEvent DM_Convert, DM_GlobalToLocal, DM_LocalToGlobal;
   is to be viewed.
 
 */
-PetscErrorCode  DMViewFromOptions(DM dm,const char optionname[])
+PetscErrorCode  DMViewFromOptions(DM dm,const char prefix[],const char optionname[])
 {
   PetscErrorCode    ierr;
   PetscBool         flg;
@@ -19,7 +19,11 @@ PetscErrorCode  DMViewFromOptions(DM dm,const char optionname[])
   PetscViewerFormat format;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject)dm),((PetscObject)dm)->prefix,optionname,&viewer,&format,&flg);CHKERRQ(ierr);
+  if (prefix) {
+    ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject)dm),prefix,optionname,&viewer,&format,&flg);CHKERRQ(ierr);
+  } else {
+    ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject)dm),((PetscObject)dm)->prefix,optionname,&viewer,&format,&flg);CHKERRQ(ierr);
+  }
   if (flg) {
     ierr = PetscViewerPushFormat(viewer,format);CHKERRQ(ierr);
     ierr = DMView(dm,viewer);CHKERRQ(ierr);
@@ -518,7 +522,7 @@ PetscErrorCode  DMSetFromOptions(DM dm)
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
   ierr = PetscObjectProcessOptionsHandlers((PetscObject) dm);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
-  ierr = DMViewFromOptions(dm,"-dm_view");CHKERRQ(ierr);
+  ierr = DMViewFromOptions(dm,NULL,"-dm_view");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

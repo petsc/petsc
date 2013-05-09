@@ -4843,7 +4843,7 @@ PetscErrorCode  MatAssembled(Mat mat,PetscBool  *assembled)
     Processes command line options to determine if/how a matrix
   is to be viewed. Called by MatAssemblyEnd() and MatLoad().
 */
-PetscErrorCode MatViewFromOptions(Mat mat,const char optionname[])
+PetscErrorCode MatViewFromOptions(Mat mat,const char prefix[],const char optionname[])
 {
   PetscErrorCode    ierr;
   PetscViewer       viewer;
@@ -4854,7 +4854,11 @@ PetscErrorCode MatViewFromOptions(Mat mat,const char optionname[])
   PetscFunctionBegin;
   if (incall) PetscFunctionReturn(0);
   incall = PETSC_TRUE;
-  ierr   = PetscOptionsGetViewer(PetscObjectComm((PetscObject)mat),((PetscObject)mat)->prefix,optionname,&viewer,&format,&flg);CHKERRQ(ierr);
+  if (prefix) {
+    ierr   = PetscOptionsGetViewer(PetscObjectComm((PetscObject)mat),prefix,optionname,&viewer,&format,&flg);CHKERRQ(ierr);
+  } else {
+    ierr   = PetscOptionsGetViewer(PetscObjectComm((PetscObject)mat),((PetscObject)mat)->prefix,optionname,&viewer,&format,&flg);CHKERRQ(ierr);
+  }
   if (flg) {
     ierr = PetscViewerPushFormat(viewer,format);CHKERRQ(ierr);
     ierr = MatView(mat,viewer);CHKERRQ(ierr);

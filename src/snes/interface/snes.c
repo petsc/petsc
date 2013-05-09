@@ -3678,7 +3678,7 @@ PetscErrorCode  SNESSolve(SNES snes,Vec b,Vec x)
     ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   }
-  ierr = VecViewFromOptions(snes->vec_sol,"-snes_view_solution");CHKERRQ(ierr);
+  ierr = VecViewFromOptions(snes->vec_sol,((PetscObject)snes)->prefix,"-snes_view_solution");CHKERRQ(ierr);
 
   ierr = VecDestroy(&xcreated);CHKERRQ(ierr);
   ierr = PetscObjectAMSBlock((PetscObject)snes);CHKERRQ(ierr);

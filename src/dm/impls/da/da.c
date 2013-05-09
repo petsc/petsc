@@ -1004,7 +1004,7 @@ PetscErrorCode  DMRefine_DA(DM da,MPI_Comm comm,DM *daref)
 
   ierr = DMSetFromOptions(da2);CHKERRQ(ierr);
   ierr = DMSetUp(da2);CHKERRQ(ierr);
-  ierr = DMViewFromOptions(da2,"-dm_view");CHKERRQ(ierr);
+  ierr = DMViewFromOptions(da2,NULL,"-dm_view");CHKERRQ(ierr);
 
   /* interpolate coordinates if they are set on the coarse grid */
   if (da->coordinates) {
@@ -1135,7 +1135,7 @@ PetscErrorCode  DMCoarsen_DA(DM da, MPI_Comm comm,DM *daref)
 
   ierr = DMSetFromOptions(da2);CHKERRQ(ierr);
   ierr = DMSetUp(da2);CHKERRQ(ierr);
-  ierr = DMViewFromOptions(da2,"-dm_view");CHKERRQ(ierr);
+  ierr = DMViewFromOptions(da2,NULL,"-dm_view");CHKERRQ(ierr);
 
   /* inject coordinates if they are set on the fine grid */
   if (da->coordinates) {
