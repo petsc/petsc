@@ -299,10 +299,12 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
           if (subdomain_names)    {ierr = PetscFree(subdomain_names[d]);CHKERRQ(ierr);}
           if (inner_subdomain_is) {ierr = ISDestroy(&inner_subdomain_is[d]);CHKERRQ(ierr);}
           if (outer_subdomain_is) {ierr = ISDestroy(&outer_subdomain_is[d]);CHKERRQ(ierr);}
+          if (subdomain_dm)       {ierr = DMDestroy(&subdomain_dm[d]);CHKERRQ(ierr);}
         }
         ierr = PetscFree(subdomain_names);CHKERRQ(ierr);
         ierr = PetscFree(inner_subdomain_is);CHKERRQ(ierr);
         ierr = PetscFree(outer_subdomain_is);CHKERRQ(ierr);
+        ierr = PetscFree(subdomain_dm);CHKERRQ(ierr);
       }
       if (osm->n == PETSC_DECIDE) { /* still no subdomains; use one per processor */
         osm->nmax = osm->n = 1;
