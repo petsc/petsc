@@ -694,10 +694,10 @@ PetscErrorCode DMPlexClone(DM dm, DM *newdm)
   ierr           = DMSetApplicationContext(*newdm, ctx);CHKERRQ(ierr);
   ierr           = DMGetCoordinatesLocal(dm, &coords);CHKERRQ(ierr);
   if (coords) {
-    ierr         = DMSetCoordinatesLocal(*newdm, coords);CHKERRQ(ierr);
-  } else {
+    ierr         = DMSetCoordinatesLocal(*newdm, coords);CHKERRQ(ierr);}
+  else {
     ierr         = DMGetCoordinates(dm, &coords);CHKERRQ(ierr);
-    ierr         = DMSetCoordinates(*newdm, coords);CHKERRQ(ierr);
+    if (coords) {ierr = DMSetCoordinates(*newdm, coords);CHKERRQ(ierr);}
   }
   PetscFunctionReturn(0);
 }
