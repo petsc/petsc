@@ -7,4 +7,6 @@
 
 #include "finclude/petscdmdef.h"
 
+#define DMLabel PetscFortranAddr
+
 #endif
