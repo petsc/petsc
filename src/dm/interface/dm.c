@@ -7,9 +7,19 @@ PetscLogEvent DM_Convert, DM_GlobalToLocal, DM_LocalToGlobal;
 #undef __FUNCT__
 #define __FUNCT__ "DMViewFromOptions"
 /*
-  Processes command line options to determine if/how a dm
-  is to be viewed.
+  DMViewFromOptions - Processes command line options to determine if/how a DM is to be viewed.
 
+  Collective on Vec
+
+  Input Parameters:
++ dm   - the DM
+. prefix - prefix to use for viewing, or NULL to use prefix of 'rnd'
+- optionname - option to activate viewing
+
+  Level: intermediate
+
+.keywords: DM, view, options, database
+.seealso: VecViewFromOptions(), MatViewFromOptions()
 */
 PetscErrorCode  DMViewFromOptions(DM dm,const char prefix[],const char optionname[])
 {

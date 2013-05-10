@@ -273,20 +273,21 @@ PetscErrorCode  PetscRandomView(PetscRandom rnd,PetscViewer viewer)
 
 #undef  __FUNCT__
 #define __FUNCT__ "PetscRandomViewFromOptions"
-/*@
+/*
   PetscRandomViewFromOptions - This function visualizes the type and the seed of the generated random numbers based upon user options.
 
   Collective on PetscRandom
 
   Input Parameters:
-. rnd   - The random number generator context
-. title - The title
++ rnd   - The random number generator context
+. prefix - prefix to use for viewing, or NULL to use prefix of 'rnd'
+- optionname - option to activate viewing
 
   Level: intermediate
 
 .keywords: PetscRandom, view, options, database
 .seealso: PetscRandomSetFromOptions()
-@*/
+*/
 PetscErrorCode  PetscRandomViewFromOptions(PetscRandom rnd, const char prefix[], const char optionname[])
 {
   PetscBool         flg;

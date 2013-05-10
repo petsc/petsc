@@ -227,11 +227,19 @@ PetscErrorCode  VecAssemblyBegin(Vec vec)
 #undef __FUNCT__
 #define __FUNCT__ "VecViewFromOptions"
 /*
-  Processes command line options to determine if/how a matrix
-  is to be viewed. Called by VecAssemblyEnd() and VecLoad()
+  VecViewFromOptions - Processes command line options to determine if/how a vector is to be viewed. Called from higher level packages.
 
+  Collective on Vec
+
+  Input Parameters:
++ vec   - the vector
+. prefix - prefix to use for viewing, or NULL to use prefix of 'rnd'
+- optionname - option to activate viewing
+
+  Level: intermediate
+
+.keywords: Vec, view, options, database
 .seealso: MatViewFromOptions()
-
 */
 PetscErrorCode  VecViewFromOptions(Vec vec,const char prefix[],const char optionname[])
 {

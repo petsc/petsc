@@ -4840,8 +4840,19 @@ PetscErrorCode  MatAssembled(Mat mat,PetscBool  *assembled)
 #undef __FUNCT__
 #define __FUNCT__ "MatViewFromOptions"
 /*
-    Processes command line options to determine if/how a matrix
-  is to be viewed. Called by MatAssemblyEnd() and MatLoad().
+  MatViewFromOptions - Processes command line options to determine if/how a matrix is to be viewed. Called from higher level packages.
+
+  Collective on Vec
+
+  Input Parameters:
++ mat   - the matrix
+. prefix - prefix to use for viewing, or NULL to use prefix of 'rnd'
+- optionname - option to activate viewing
+
+  Level: intermediate
+
+.keywords: Mat, view, options, database
+.seealso: MatViewFromOptions()
 */
 PetscErrorCode MatViewFromOptions(Mat mat,const char prefix[],const char optionname[])
 {
