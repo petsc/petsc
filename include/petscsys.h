@@ -2326,6 +2326,22 @@ PETSC_EXTERN PetscErrorCode PetscSegBufferUnuse(PetscSegBuffer,PetscInt);
  * possible. */
 PETSC_STATIC_INLINE PetscErrorCode PetscSegBufferGetInts(PetscSegBuffer seg,PetscInt count,PetscInt *PETSC_RESTRICT *slot) {return PetscSegBufferGet(seg,count,(void**)slot);}
 
+extern PetscSegBuffer PetscCitationsList;
+PETSC_STATIC_INLINE PetscErrorCode PetscCitationsRegister(const char cit[],PetscBool *set)
+{
+  size_t         len;
+  char           *vstring;
+  PetscErrorCode ierr;
+
+  if (set && *set) return 0;
+  ierr = PetscStrlen(cit,&len);CHKERRQ(ierr);
+  ierr = PetscSegBufferGet(PetscCitationsList,(PetscInt)len,&vstring);CHKERRQ(ierr);
+  ierr = PetscMemcpy(vstring,cit,len);CHKERRQ(ierr);
+  if (set) *set = PETSC_TRUE;
+  return 0;
+}
+
+
 /* Reset __FUNCT__ in case the user does not define it themselves */
 #undef __FUNCT__
 #define __FUNCT__ "User provided function"

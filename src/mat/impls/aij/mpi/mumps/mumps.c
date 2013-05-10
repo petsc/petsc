@@ -550,14 +550,16 @@ PetscErrorCode MatDestroy_MUMPS(Mat A)
 #define __FUNCT__ "MatSolve_MUMPS"
 PetscErrorCode MatSolve_MUMPS(Mat A,Vec b,Vec x)
 {
-  Mat_MUMPS      *mumps=(Mat_MUMPS*)A->spptr;
-  PetscScalar    *array;
-  Vec            b_seq;
-  IS             is_iden,is_petsc;
-  PetscErrorCode ierr;
-  PetscInt       i;
+  Mat_MUMPS        *mumps=(Mat_MUMPS*)A->spptr;
+  PetscScalar      *array;
+  Vec              b_seq;
+  IS               is_iden,is_petsc;
+  PetscErrorCode   ierr;
+  PetscInt         i;
+  static PetscBool cite = PETSC_FALSE;
 
   PetscFunctionBegin;
+  ierr = PetscCitationsRegister("MUMPS\n",&cite);CHKERRQ(ierr);
   mumps->id.nrhs = 1;
   b_seq          = mumps->b_seq;
   if (mumps->size > 1) {
