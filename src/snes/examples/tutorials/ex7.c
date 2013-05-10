@@ -92,7 +92,7 @@ extern PetscErrorCode CreateNullSpace(DM, Vec*);
 extern PetscErrorCode FormInitialGuess(SNES,Vec,void*);
 extern PetscErrorCode FormFunctionLocal(DMDALocalInfo*,Field**,Field**,AppCtx*);
 extern PetscErrorCode FormJacobianLocal(DMDALocalInfo*,Field**,Mat,Mat,MatStructure*,AppCtx*);
-extern PetscErrorCode L_2Error(DM, Vec, double*, AppCtx*);
+extern PetscErrorCode L_2Error(DM, Vec, PetscReal*, AppCtx*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -164,7 +164,7 @@ int main(int argc,char **argv)
   ierr = SNESGetDM(snes,&da);CHKERRQ(ierr);
   ierr = SNESGetSolution(snes,&x);CHKERRQ(ierr);
   ierr = L_2Error(da, x, &error, user);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"L_2 error in the solution: %G\n", error);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"L_2 error in the solution: %g\n", (double)error);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they
@@ -886,7 +886,7 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info, Field **x, Mat A,Mat jac, 
 /*
   L_2Error - Integrate the L_2 error of our solution over each face
 */
-PetscErrorCode L_2Error(DM da, Vec fVec, double *error, AppCtx *user)
+PetscErrorCode L_2Error(DM da, Vec fVec, PetscReal *error, AppCtx *user)
 {
   DMDALocalInfo  info;
   Vec            fLocalVec;
