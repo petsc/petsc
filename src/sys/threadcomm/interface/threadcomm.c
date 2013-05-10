@@ -220,6 +220,7 @@ PetscErrorCode  PetscThreadCommStackCreate(void)
 PetscErrorCode  PetscThreadCommStackDestroy(void)
 {
   PetscFunctionBegin;
+  PETSC_THREAD_COMM_WORLD = NULL;
   PetscFunctionReturn(0);
 }
 
