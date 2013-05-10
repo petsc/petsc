@@ -363,8 +363,7 @@ PetscErrorCode  PetscOptionsInsertFile(MPI_Comm comm,const char file[],PetscBool
 {
   char           *string,fname[PETSC_MAX_PATH_LEN],*first,*second,*third,*vstring = 0,*astring = 0;
   PetscErrorCode ierr;
-  size_t         i,len;
-  PetscInt       bytes;
+  size_t         i,len,bytes;
   FILE           *fd;
   PetscToken     token;
   int            err;
@@ -412,12 +411,12 @@ PetscErrorCode  PetscOptionsInsertFile(MPI_Comm comm,const char file[],PetscBool
           goto destroy;
         } else if (first[0] == '-') {
           ierr = PetscStrlen(first,&len);CHKERRQ(ierr);
-          ierr = PetscSegBufferGet(vseg,(PetscInt)len+1,&vstring);CHKERRQ(ierr);
+          ierr = PetscSegBufferGet(vseg,len+1,&vstring);CHKERRQ(ierr);
           ierr = PetscMemcpy(vstring,first,len);CHKERRQ(ierr);
           vstring[len] = ' ';
           if (second) {
             ierr = PetscStrlen(second,&len);CHKERRQ(ierr);
-            ierr = PetscSegBufferGet(vseg,(PetscInt)len+3,&vstring);CHKERRQ(ierr);
+            ierr = PetscSegBufferGet(vseg,len+3,&vstring);CHKERRQ(ierr);
             vstring[0] = '"';
             ierr = PetscMemcpy(vstring+1,second,len);CHKERRQ(ierr);
             vstring[len+1] = '"';
@@ -431,12 +430,12 @@ PetscErrorCode  PetscOptionsInsertFile(MPI_Comm comm,const char file[],PetscBool
             ierr = PetscTokenFind(token,&third);CHKERRQ(ierr);
             if (!third) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Error in options file:alias missing (%s)",second);
             ierr = PetscStrlen(second,&len);CHKERRQ(ierr);
-            ierr = PetscSegBufferGet(aseg,(PetscInt)len+1,&astring);CHKERRQ(ierr);
+            ierr = PetscSegBufferGet(aseg,len+1,&astring);CHKERRQ(ierr);
             ierr = PetscMemcpy(astring,second,len);CHKERRQ(ierr);
             astring[len] = ' ';
 
             ierr = PetscStrlen(third,&len);CHKERRQ(ierr);
-            ierr = PetscSegBufferGet(aseg,(PetscInt)len+1,&astring);CHKERRQ(ierr);
+            ierr = PetscSegBufferGet(aseg,len+1,&astring);CHKERRQ(ierr);
             ierr = PetscMemcpy(astring,third,len);CHKERRQ(ierr);
             astring[len] = ' ';
           } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Unknown statement in options file: (%s)",string);

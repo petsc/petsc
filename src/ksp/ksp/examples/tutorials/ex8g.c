@@ -171,16 +171,16 @@ int main(int argc,char **args)
     flg  = PETSC_FALSE;
     ierr = PetscOptionsGetBool(NULL,"-subdomain_view",&flg,NULL);CHKERRQ(ierr);
     if (flg) {
-      printf("Nmesh points: %d x %d; subdomain partition: %d x %d; overlap: %d; Nsub: %d\n",m,n,M,N,overlap,Nsub);
-      printf("Outer IS:\n");
+      ierr = PetscPrintf(PETSC_COMM_SELF,"Nmesh points: %D x %D; subdomain partition: %D x %D; overlap: %D; Nsub: %D\n",m,n,M,N,overlap,Nsub);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_SELF,"IS:\n");CHKERRQ(ierr);
       for (i=0; i<Nsub; i++) {
-        printf("  outer IS[%d]\n",i);
-        ierr = ISView(outeris[i],PETSC_VIEWER_STDOUT_SELF);
+        ierr = PetscPrintf(PETSC_COMM_SELF,"  IS[%D]\n",i);CHKERRQ(ierr);
+        ierr = ISView(is[i],PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
       }
-      printf("Inner IS:\n");
+      ierr = PetscPrintf(PETSC_COMM_SELF,"IS_local:\n");CHKERRQ(ierr);
       for (i=0; i<Nsub; i++) {
-        printf("  inner IS[%d]\n",i);
-        ierr = ISView(inneris[i],PETSC_VIEWER_STDOUT_SELF);
+        ierr = PetscPrintf(PETSC_COMM_SELF,"  IS_local[%D]\n",i);CHKERRQ(ierr);
+        ierr = ISView(is_local[i],PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
       }
     }
   }

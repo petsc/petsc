@@ -674,6 +674,7 @@ PetscErrorCode DMPlexCreate(MPI_Comm comm, DM *mesh)
 PetscErrorCode DMPlexClone(DM dm, DM *newdm)
 {
   DM_Plex        *mesh;
+  Vec             coords;
   void           *ctx;
   PetscErrorCode ierr;
 
@@ -691,6 +692,13 @@ PetscErrorCode DMPlexClone(DM dm, DM *newdm)
   ierr           = DMInitialize_Plex(*newdm);CHKERRQ(ierr);
   ierr           = DMGetApplicationContext(dm, &ctx);CHKERRQ(ierr);
   ierr           = DMSetApplicationContext(*newdm, ctx);CHKERRQ(ierr);
+  ierr           = DMGetCoordinatesLocal(dm, &coords);CHKERRQ(ierr);
+  if (coords) {
+    ierr         = DMSetCoordinatesLocal(*newdm, coords);CHKERRQ(ierr);
+  } else {
+    ierr         = DMGetCoordinates(dm, &coords);CHKERRQ(ierr);
+    if (coords) {ierr = DMSetCoordinates(*newdm, coords);CHKERRQ(ierr);}
+  }
   PetscFunctionReturn(0);
 }
 
