@@ -604,7 +604,10 @@ PetscErrorCode  PetscOptionsInsert(int *argc,char ***args,const char file[])
   options->args = (args) ? *args : NULL;
 
   if (file && file[0]) {
-    ierr = PetscOptionsInsertFile(PETSC_COMM_WORLD,file,PETSC_TRUE);CHKERRQ(ierr);
+    char fullpath[PETSC_MAX_PATH_LEN];
+
+    ierr = PetscStrreplace(PETSC_COMM_WORLD,file,fullpath,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
+    ierr = PetscOptionsInsertFile(PETSC_COMM_WORLD,fullpath,PETSC_TRUE);CHKERRQ(ierr);
   }
   /*
      We want to be able to give -skip_petscrc on the command line, but need to parse it first.  Since the command line
