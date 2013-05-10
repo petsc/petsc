@@ -79,7 +79,6 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_cusparse(Mat A,MatFactorType fty
   ierr = MatCreate(PetscObjectComm((PetscObject)A),B);CHKERRQ(ierr);
   ierr = MatSetSizes(*B,n,n,n,n);CHKERRQ(ierr);
   ierr = MatSetType(*B,MATSEQAIJCUSPARSE);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(*B,MAT_SKIP_ALLOCATION,NULL);CHKERRQ(ierr);
 
   if (ftype == MAT_FACTOR_LU || ftype == MAT_FACTOR_ILU || ftype == MAT_FACTOR_ILUDT) {
     ierr = MatSetBlockSizes(*B,A->rmap->bs,A->cmap->bs);CHKERRQ(ierr);
@@ -90,6 +89,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_cusparse(Mat A,MatFactorType fty
     (*B)->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_SeqAIJCUSPARSE;
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Factor type not supported for CUSPARSE Matrix Types");
 
+  ierr = MatSeqAIJSetPreallocation(*B,MAT_SKIP_ALLOCATION,NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)(*B),"MatFactorGetSolverPackage_C",MatFactorGetSolverPackage_seqaij_cusparse);CHKERRQ(ierr);
   (*B)->factortype = ftype;
   PetscFunctionReturn(0);
