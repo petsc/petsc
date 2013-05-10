@@ -2058,7 +2058,6 @@ PetscErrorCode DMPlexOrient(DM dm)
     PetscInt        supportSize, coneSizeA, coneSizeB, posA, posB;
     PetscInt        seenA, flippedA, seenB, flippedB, mismatch;
 
-    ierr = PetscPrintf(PETSC_COMM_SELF, "  Checking orientation of fault face %d\n", f);CHKERRQ(ierr);
     ierr = DMPlexGetSupportSize(dm, f, &supportSize);CHKERRQ(ierr);
     ierr = DMPlexGetSupport(dm, f, &support);CHKERRQ(ierr);
     if (supportSize < 2) continue;
@@ -2078,17 +2077,14 @@ PetscErrorCode DMPlexOrient(DM dm)
     if (posA == coneSizeA) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Face %d could not be located in cell %d", f, support[0]);
     for (posB = 0; posB < 2; ++posB) if (coneB[posB] == f) break;
     if (posB == coneSizeB) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Face %d could not be located in cell %d", f, support[1]);
-    ierr = PetscPrintf(PETSC_COMM_SELF, "    with face positions %d and %d\n", posA, posB);CHKERRQ(ierr);
 
     if (dim == 1) {
       mismatch = posA == posB;
     } else {
-      ierr = PetscPrintf(PETSC_COMM_SELF, "    with face orientations %d and %d\n", coneOA[posA], coneOB[posB]);CHKERRQ(ierr);
       mismatch = coneOA[posA] == coneOB[posB];
     }
 
     if (mismatch ^ (flippedA ^ flippedB)) {
-      ierr = PetscPrintf(PETSC_COMM_SELF, "Invalid orientation in fault mesh\n  fault face: %d  cellA: %d  cellB: %d\n", f, support[0], support[1]);
       if (seenA && seenB) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Previously seen cells %d and %d do not match: Fault mesh is non-orientable", support[0], support[1]);
       if (!seenA && !flippedA) {
         ierr = PetscBTSet(flippedCells, support[0]);CHKERRQ(ierr);
@@ -2107,7 +2103,6 @@ PetscErrorCode DMPlexOrient(DM dm)
     PetscInt        coneSize, faceSize, c;
 
     if (!PetscBTLookup(flippedCells, p)) continue;
-    ierr = PetscPrintf(PETSC_COMM_SELF, "  Reversing fault cell %d\n", p);CHKERRQ(ierr);
     ierr = DMPlexGetConeSize(dm, p, &coneSize);CHKERRQ(ierr);
     ierr = DMPlexGetCone(dm, p, &cone);CHKERRQ(ierr);
     ierr = DMPlexGetConeOrientation(dm, p, &coneO);CHKERRQ(ierr);
@@ -2115,7 +2110,6 @@ PetscErrorCode DMPlexOrient(DM dm)
       ierr = DMPlexGetConeSize(dm, cone[coneSize-c-1], &faceSize);CHKERRQ(ierr);
       revcone[c]  = cone[coneSize-c-1];
       revconeO[c] = coneO[coneSize-c-1] >= 0 ? -(faceSize-coneO[coneSize-c-1]) : faceSize+coneO[coneSize-c-1];
-      ierr = PetscPrintf(PETSC_COMM_SELF, "    Reversing orientation of %d-->%d from %d to %d\n", cone[coneSize-c-1], p, coneO[coneSize-c-1], revconeO[c]);CHKERRQ(ierr);
     }
     ierr = DMPlexSetCone(dm, p, revcone);CHKERRQ(ierr);
     ierr = DMPlexSetConeOrientation(dm, p, revconeO);CHKERRQ(ierr);
