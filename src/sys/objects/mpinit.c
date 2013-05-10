@@ -64,6 +64,9 @@ $
 @*/
 PetscErrorCode  PetscHMPISpawn(PetscMPIInt nodesize)
 {
+
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"HMPI functionality is currently broken");
+#if defined(broken_functionality_commented_out)
   PetscErrorCode ierr;
   PetscMPIInt    size;
   MPI_Comm       parent,children;
@@ -91,6 +94,7 @@ PetscErrorCode  PetscHMPISpawn(PetscMPIInt nodesize)
     PetscEnd();  /* cannot continue into user code */
   }
   PetscFunctionReturn(0);
+#endif
 }
 #endif
 
@@ -148,6 +152,9 @@ $
 @*/
 PetscErrorCode  PetscHMPIMerge(PetscMPIInt nodesize,PetscErrorCode (*func)(void*),void *ctx)
 {
+
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"HMPI functionality is currently broken");
+#if defined(broken_functionality_commented_out)
   PetscErrorCode ierr;
   PetscMPIInt    size,rank,*ranks,i;
   MPI_Group      group,newgroup;
@@ -192,6 +199,7 @@ PetscErrorCode  PetscHMPIMerge(PetscMPIInt nodesize,PetscErrorCode (*func)(void*
     ierr = (*func)(ctx);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
+#endif
 }
 
 #undef __FUNCT__
