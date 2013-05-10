@@ -2348,7 +2348,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscCitationsRegister(const char cit[],Petsc
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (set && *set) return 0;
+  if (set && *set) PetscFunctionReturn(0);
   ierr = PetscStrlen(cit,&len);CHKERRQ(ierr);
   ierr = PetscSegBufferGet(PetscCitationsList,(PetscInt)len,&vstring);CHKERRQ(ierr);
   ierr = PetscMemcpy(vstring,cit,len);CHKERRQ(ierr);
