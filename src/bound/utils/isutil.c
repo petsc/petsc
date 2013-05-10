@@ -132,7 +132,7 @@ PetscErrorCode VecWhichLessThan(Vec Vec1, Vec Vec2, IS * S)
     ierr = PetscMalloc( n*sizeof(PetscInt),&lt ); CHKERRQ(ierr);
     
     for (i=0; i<n; i++){
-      if (v1[i] < v2[i]) {lt[n_lt]=high+i; n_lt++;}
+      if (v1[i] < v2[i]) {lt[n_lt]=low+i; n_lt++;}
     }
 
     if (Vec1 == Vec2){

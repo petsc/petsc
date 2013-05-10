@@ -61,6 +61,8 @@ PetscErrorCode main(int argc,char **argv)
   PetscErrorCode ierr;                /* used to check for functions returning nonzeros */
   TaoSolver tao;
   TaoSolverTerminationReason reason;        
+  KSP ksp;
+  PC  pc;
   AppCtx      user;                /* application context */
 
   /* Initialize TAO,PETSc */
@@ -86,6 +88,17 @@ PetscErrorCode main(int argc,char **argv)
   ierr = TaoSetTolerances(tao,1e-12,0,0,0,0); CHKERRQ(ierr);
 
   ierr = TaoSetFromOptions(tao);CHKERRQ(ierr);
+
+  ierr = TaoGetKSP(tao,&ksp); CHKERRQ(ierr);
+  ierr = KSPGetPC(ksp,&pc); CHKERRQ(ierr);
+  ierr = PCFactorSetMatSolverPackage(pc,MATSOLVERSUPERLU); CHKERRQ(ierr);
+  /* TODO -- why didn't that work? */
+  ierr = PetscOptionsSetValue("-pc_factor_mat_solver_package","superlu");CHKERRQ(ierr);
+  ierr = PCSetType(pc,PCLU); CHKERRQ(ierr);
+  ierr = KSPSetType(ksp,KSPPREONLY); CHKERRQ(ierr);
+  ierr = KSPSetFromOptions(ksp); CHKERRQ(ierr);
+
+  ierr = TaoSetTolerances(tao,1e-12,0,0,0,0); CHKERRQ(ierr);
 
   /* Solve */
   ierr = TaoSolve(tao);CHKERRQ(ierr);
