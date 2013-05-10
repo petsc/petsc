@@ -29,6 +29,8 @@ PetscErrorCode  PetscDataTypeToMPIDataType(PetscDataType ptype,MPI_Datatype *mty
 #if defined(PETSC_USE_COMPLEX)
 #if defined(PETSC_USE_REAL_SINGLE)
   else if (ptype == PETSC_COMPLEX)     *mtype = MPIU_C_COMPLEX;
+#elif defined(PETSC_USE_REAL___FLOAT128)
+  else if (ptype == PETSC_COMPLEX)     *mtype = MPIU___COMPLEX128;
 #else
   else if (ptype == PETSC_COMPLEX)     *mtype = MPIU_C_DOUBLE_COMPLEX;
 #endif
@@ -40,7 +42,9 @@ PetscErrorCode  PetscDataTypeToMPIDataType(PetscDataType ptype,MPI_Datatype *mty
   else if (ptype == PETSC_FLOAT)       *mtype = MPI_FLOAT;
   else if (ptype == PETSC_CHAR)        *mtype = MPI_CHAR;
   else if (ptype == PETSC_BIT_LOGICAL) *mtype = MPI_BYTE;
-  else if (ptype == PETSC___FLOAT128)  *mtype = MPI_LONG_DOUBLE;
+#if defined(PETSC_USE_REAL___FLOAT128)
+  else if (ptype == PETSC___FLOAT128)  *mtype = MPIU___FLOAT128;
+#endif
   else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Unknown PETSc datatype");
   PetscFunctionReturn(0);
 }
@@ -71,6 +75,8 @@ PetscErrorCode  PetscMPIDataTypeToPetscDataType(MPI_Datatype mtype,PetscDataType
 #if defined(PETSC_USE_COMPLEX)
 #if defined(PETSC_USE_REAL_SINGLE)
   else if (mtype == MPIU_C_COMPLEX)  *ptype = PETSC_COMPLEX;
+#elif defined(PETSC_USE_REAL___FLOAT128)
+  else if (mtype == MPIU___COMPLEX128) *ptype = PETSC_COMPLEX;
 #else
   else if (mtype == MPIU_C_DOUBLE_COMPLEX) *ptype = PETSC_COMPLEX;
 #endif
@@ -79,7 +85,9 @@ PetscErrorCode  PetscMPIDataTypeToPetscDataType(MPI_Datatype mtype,PetscDataType
   else if (mtype == MPI_SHORT)       *ptype = PETSC_SHORT;
   else if (mtype == MPI_FLOAT)       *ptype = PETSC_FLOAT;
   else if (mtype == MPI_CHAR)        *ptype = PETSC_CHAR;
-  else if (mtype == MPI_LONG_DOUBLE) *ptype = PETSC___FLOAT128;
+#if defined(PETSC_USE_REAL___FLOAT128)
+  else if (mtype == MPIU___FLOAT128) *ptype = PETSC___FLOAT128;
+#endif
   else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unhandled MPI datatype");
   PetscFunctionReturn(0);
 }
