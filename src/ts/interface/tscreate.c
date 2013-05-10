@@ -27,7 +27,7 @@ const char *const*TSConvergedReasons = TSConvergedReasons_Shifted + 2;
   Level: beginner
 
 .keywords: TS, create
-.seealso: TSSetType(), TSSetUp(), TSDestroy(), MeshCreate(), TSSetProblemType()
+.seealso: TSSetType(), TSSetUp(), TSDestroy(), TSSetProblemType()
 @*/
 PetscErrorCode  TSCreate(MPI_Comm comm, TS *ts)
 {

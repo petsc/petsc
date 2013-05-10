@@ -13,7 +13,6 @@
 #include <petscdmda.h>
 #include <petscdmadda.h>
 #include <petscdmcomposite.h>
-#include <petscdmmesh.h>
 #include <petscdmpatch.h>
 #include <petscdmplex.h>
 #include <petscdmredundant.h>

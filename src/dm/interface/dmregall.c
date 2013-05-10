@@ -8,11 +8,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_ADDA(DM);
 PETSC_EXTERN PetscErrorCode DMCreate_Redundant(DM);
 PETSC_EXTERN PetscErrorCode DMCreate_Plex(DM);
 PETSC_EXTERN PetscErrorCode DMCreate_Patch(DM);
-#if defined(PETSC_HAVE_SIEVE)
-PETSC_EXTERN PetscErrorCode DMCreate_Mesh(DM);
-PETSC_EXTERN PetscErrorCode DMCreate_Cartesian(DM);
-#endif
-PETSC_EXTERN PetscErrorCode  DMCreate_Moab(DM);
+PETSC_EXTERN PetscErrorCode DMCreate_Moab(DM);
 
 #undef __FUNCT__
 #define __FUNCT__ "DMRegisterAll"
@@ -44,10 +40,6 @@ PetscErrorCode  DMRegisterAll()
   ierr = DMRegister(DMREDUNDANT,  DMCreate_Redundant);CHKERRQ(ierr);
   ierr = DMRegister(DMPLEX,       DMCreate_Plex);CHKERRQ(ierr);
   ierr = DMRegister(DMPATCH,      DMCreate_Patch);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_SIEVE)
-  ierr = DMRegister(DMMESH,       DMCreate_Mesh);CHKERRQ(ierr);
-  ierr = DMRegister(DMCARTESIAN,  DMCreate_Cartesian);CHKERRQ(ierr);
-#endif
 #if defined(PETSC_HAVE_MOAB)
   ierr = DMRegister(DMMOAB,       DMCreate_Moab);CHKERRQ(ierr);
 #endif

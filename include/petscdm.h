@@ -25,7 +25,6 @@ typedef const char* DMType;
 #define DMCOMPOSITE "composite"
 #define DMSLICED    "sliced"
 #define DMSHELL     "shell"
-#define DMMESH      "mesh"
 #define DMPLEX      "plex"
 #define DMCARTESIAN "cartesian"
 #define DMREDUNDANT "redundant"
