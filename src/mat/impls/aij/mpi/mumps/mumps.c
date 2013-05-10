@@ -559,7 +559,7 @@ PetscErrorCode MatSolve_MUMPS(Mat A,Vec b,Vec x)
   static PetscBool cite = PETSC_FALSE;
 
   PetscFunctionBegin;
-  ierr = PetscCitationsRegister("MUMPS\n",&cite);CHKERRQ(ierr);
+  ierr = PetscCitationsRegister("@article{MUMPS01,\n  author = {P.~R. Amestoy and I.~S. Duff and J.-Y. L'Excellent and J. Koster},\n  title = {A fully asynchronous multifrontal solver using distributed dynamic scheduling},\n  journal = {SIAM Journal on Matrix Analysis and Applications},\n  volume = {23},\n  number = {1},\n  pages = {15--41},\n  year = {2001}\n}\n",&cite);CHKERRQ(ierr);
   mumps->id.nrhs = 1;
   b_seq          = mumps->b_seq;
   if (mumps->size > 1) {

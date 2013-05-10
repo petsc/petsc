@@ -907,14 +907,25 @@ PetscErrorCode  PetscFinalize(void)
   }
   ierr = PetscInfo(NULL,"PetscFinalize() called\n");CHKERRQ(ierr);
 
-  ierr = PetscOptionsGetBool(NULL,"-citations",&flg,NULL);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+
+  ierr = PetscOptionsHasName(NULL,"-citations",&flg);CHKERRQ(ierr);
   if (flg) {
-    char *cits;
+    char  *cits, filename[PETSC_MAX_PATH_LEN];
+    FILE  *fd = PETSC_STDOUT;
+
+    ierr = PetscOptionsGetString(NULL,"-citations",filename,PETSC_MAX_PATH_LEN,NULL);CHKERRQ(ierr);
+    if (filename[0]) {
+      ierr = PetscFOpen(PETSC_COMM_WORLD,filename,"w",&fd);CHKERRQ(ierr);
+    }
     ierr = PetscSegBufferGet(PetscCitationsList,1,&cits);CHKERRQ(ierr);
     cits[0] = 0;
     ierr = PetscSegBufferExtractAlloc(PetscCitationsList,&cits);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"If you publish results based on this computation please cite the following:\n");CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"%s",cits);CHKERRQ(ierr);
+    ierr = PetscFPrintf(PETSC_COMM_WORLD,fd,"If you publish results based on this computation please cite the following:\n");CHKERRQ(ierr);
+    ierr = PetscFPrintf(PETSC_COMM_WORLD,fd,"===========================================================================\n");CHKERRQ(ierr);
+    ierr = PetscFPrintf(PETSC_COMM_WORLD,fd,"%s",cits);CHKERRQ(ierr);
+    ierr = PetscFPrintf(PETSC_COMM_WORLD,fd,"===========================================================================\n");CHKERRQ(ierr);
+    ierr = PetscFClose(PETSC_COMM_WORLD,fd);CHKERRQ(ierr);
     ierr = PetscFree(cits);CHKERRQ(ierr);
   }
   ierr = PetscSegBufferDestroy(&PetscCitationsList);CHKERRQ(ierr);
@@ -943,7 +954,6 @@ PetscErrorCode  PetscFinalize(void)
 
   ierr = PetscHMPIFinalize();CHKERRQ(ierr);
 
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,"-malloc_info",&flg2,NULL);CHKERRQ(ierr);
   if (!flg2) {
     flg2 = PETSC_FALSE;

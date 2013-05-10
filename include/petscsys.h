@@ -2327,18 +2327,33 @@ PETSC_EXTERN PetscErrorCode PetscSegBufferUnuse(PetscSegBuffer,size_t);
 PETSC_STATIC_INLINE PetscErrorCode PetscSegBufferGetInts(PetscSegBuffer seg,PetscInt count,PetscInt *PETSC_RESTRICT *slot) {return PetscSegBufferGet(seg,count,(void**)slot);}
 
 extern PetscSegBuffer PetscCitationsList;
+#undef __FUNCT__
+#define __FUNCT__ "PetscCitationsRegister"
+/*@C
+      PetscCitationsRegister - Register a bibtex item to obtain credit for an implemented algorithm used in the code.
+
+     Not Collective - only what is registered on rank 0 of PETSC_COMM_WORLD will be printed
+
+     Input Parameters:
++      cite - the bibtex item, formated to displayed on multiple lines nicely
+-      set - a boolean variable initially set to PETSC_FALSE; this is used to insure only a single registration of the citation
+
+     Options Database:
+.     -citations [filenmae]   - print out the bibtex entries for the given computation
+@*/
 PETSC_STATIC_INLINE PetscErrorCode PetscCitationsRegister(const char cit[],PetscBool *set)
 {
   size_t         len;
   char           *vstring;
   PetscErrorCode ierr;
 
+  PetscFunctionBegin;
   if (set && *set) return 0;
   ierr = PetscStrlen(cit,&len);CHKERRQ(ierr);
   ierr = PetscSegBufferGet(PetscCitationsList,(PetscInt)len,&vstring);CHKERRQ(ierr);
   ierr = PetscMemcpy(vstring,cit,len);CHKERRQ(ierr);
   if (set) *set = PETSC_TRUE;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 
