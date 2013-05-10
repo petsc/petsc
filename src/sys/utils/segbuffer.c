@@ -2,9 +2,9 @@
 
 struct _PetscSegBufferLink {
   struct _PetscSegBufferLink *tail;
-  PetscInt alloc;
-  PetscInt used;
-  PetscInt tailused;
+  size_t alloc;
+  size_t used;
+  size_t tailused;
   union {                       /* Dummy types to ensure alignment */
     PetscReal dummy_real;
     PetscInt  dummy_int;
@@ -15,15 +15,15 @@ struct _PetscSegBufferLink {
 /* Segmented (extendable) array implementation */
 struct _n_PetscSegBuffer {
   struct _PetscSegBufferLink *head;
-  PetscInt unitbytes;
+  size_t unitbytes;
 };
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSegBufferAlloc_Private"
-static PetscErrorCode PetscSegBufferAlloc_Private(PetscSegBuffer seg,PetscInt count)
+static PetscErrorCode PetscSegBufferAlloc_Private(PetscSegBuffer seg,size_t count)
 {
   PetscErrorCode     ierr;
-  PetscInt           alloc;
+  size_t             alloc;
   struct _PetscSegBufferLink *newlink,*s;
 
   PetscFunctionBegin;
@@ -58,7 +58,7 @@ static PetscErrorCode PetscSegBufferAlloc_Private(PetscSegBuffer seg,PetscInt co
 
 .seealso: PetscSegBufferGet(), PetscSegBufferExtractAlloc(), PetscSegBufferExtractTo(), PetscSegBufferExtractInPlace(), PetscSegBufferDestroy()
 @*/
-PetscErrorCode PetscSegBufferCreate(PetscInt unitbytes,PetscInt expected,PetscSegBuffer *seg)
+PetscErrorCode PetscSegBufferCreate(size_t unitbytes,size_t expected,PetscSegBuffer *seg)
 {
   PetscErrorCode ierr;
   struct _PetscSegBufferLink *head;
@@ -92,7 +92,7 @@ PetscErrorCode PetscSegBufferCreate(PetscInt unitbytes,PetscInt expected,PetscSe
 
 .seealso: PetscSegBufferCreate(), PetscSegBufferExtractAlloc(), PetscSegBufferExtractTo(), PetscSegBufferExtractInPlace(), PetscSegBufferDestroy()
 @*/
-PetscErrorCode PetscSegBufferGet(PetscSegBuffer seg,PetscInt count,void *buf)
+PetscErrorCode PetscSegBufferGet(PetscSegBuffer seg,size_t count,void *buf)
 {
   PetscErrorCode ierr;
   struct _PetscSegBufferLink *s;
@@ -153,7 +153,7 @@ PetscErrorCode PetscSegBufferDestroy(PetscSegBuffer *seg)
 PetscErrorCode PetscSegBufferExtractTo(PetscSegBuffer seg,void *contig)
 {
   PetscErrorCode             ierr;
-  PetscInt                   unitbytes;
+  size_t                     unitbytes;
   struct _PetscSegBufferLink *s,*t;
   char                       *ptr;
 
@@ -266,7 +266,7 @@ PetscErrorCode PetscSegBufferExtractInPlace(PetscSegBuffer seg,void *contig)
 
 .seealso: PetscSegBufferExtractAlloc(), PetscSegBufferExtractTo(), PetscSegBufferCreate(), PetscSegBufferGet()
 @*/
-PetscErrorCode PetscSegBufferGetSize(PetscSegBuffer seg,PetscInt *usedsize)
+PetscErrorCode PetscSegBufferGetSize(PetscSegBuffer seg,size_t *usedsize)
 {
 
   PetscFunctionBegin;
@@ -289,7 +289,7 @@ PetscErrorCode PetscSegBufferGetSize(PetscSegBuffer seg,PetscInt *usedsize)
 
 .seealso: PetscSegBufferCreate(), PetscSegBufferGet()
 @*/
-PetscErrorCode PetscSegBufferUnuse(PetscSegBuffer seg,PetscInt unused)
+PetscErrorCode PetscSegBufferUnuse(PetscSegBuffer seg,size_t unused)
 {
   struct _PetscSegBufferLink *head;
 
