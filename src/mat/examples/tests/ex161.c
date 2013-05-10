@@ -73,7 +73,7 @@ int main(int argc,char **argv)
   ierr = MatAssemblyBegin(Rt_dense,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(Rt_dense,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatGetLocalSize(Rt_dense,&m,&n);CHKERRQ(ierr);
-  printf("Rt_dense: %d,%d\n",m,n);
+  printf("Rt_dense: %d,%d\n",(int)m,(int)n);
 
   /* Get Rt_dense by Apply MatTransposeColoring to R */
   ierr = MatTransColoringApplySpToDen(matcoloring,R,Rt_dense);CHKERRQ(ierr);

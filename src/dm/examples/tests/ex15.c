@@ -11,7 +11,7 @@ int main(int argc,char **argv)
   PetscErrorCode   ierr;
   DM               da_c,da_f;
   Vec              v_c,v_f;
-  Mat              I;
+  Mat              Interp;
   PetscScalar      one = 1.0;
   PetscBool        pt;
   DMDABoundaryType bx = DMDA_BOUNDARY_NONE,by = DMDA_BOUNDARY_NONE,bz = DMDA_BOUNDARY_NONE;
@@ -52,13 +52,13 @@ int main(int argc,char **argv)
   ierr = DMCreateGlobalVector(da_f,&v_f);CHKERRQ(ierr);
 
   ierr = VecSet(v_c,one);CHKERRQ(ierr);
-  ierr = DMCreateInterpolation(da_c,da_f,&I,NULL);CHKERRQ(ierr);
-  ierr = MatMult(I,v_c,v_f);CHKERRQ(ierr);
+  ierr = DMCreateInterpolation(da_c,da_f,&Interp,NULL);CHKERRQ(ierr);
+  ierr = MatMult(Interp,v_c,v_f);CHKERRQ(ierr);
   ierr = VecView(v_f,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = MatMultTranspose(I,v_f,v_c);CHKERRQ(ierr);
+  ierr = MatMultTranspose(Interp,v_f,v_c);CHKERRQ(ierr);
   ierr = VecView(v_c,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
-  ierr = MatDestroy(&I);CHKERRQ(ierr);
+  ierr = MatDestroy(&Interp);CHKERRQ(ierr);
   ierr = VecDestroy(&v_c);CHKERRQ(ierr);
   ierr = DMDestroy(&da_c);CHKERRQ(ierr);
   ierr = VecDestroy(&v_f);CHKERRQ(ierr);

@@ -96,6 +96,7 @@ int main(int argc,char **args)
   }
 
   info.fill = 5.0;
+  info.shifttype = (PetscReal) MAT_SHIFT_NONE;
   ierr      = MatLUFactorSymbolic(F,A,perm,iperm,&info);CHKERRQ(ierr);
 
   for (nfact = 0; nfact < 2; nfact++) {

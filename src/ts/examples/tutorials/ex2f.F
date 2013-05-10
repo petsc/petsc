@@ -101,7 +101,8 @@
       time_steps_max = 1000
       time_total_max = 100.0
       m              = 60
-      debug          = .false.
+      debug          = PETSC_FALSE
+      monitor        = PETSC_FALSE
       call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-m',M,flg,ierr)
       call PetscOptionsGetBool(PETSC_NULL_CHARACTER,'-debug',debug,flg, &
      &     ierr)
