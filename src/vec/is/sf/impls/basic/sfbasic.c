@@ -587,7 +587,9 @@ static PetscErrorCode PetscSFReset_Basic(PetscSF sf)
   if (bas->inuse) SETERRQ(PetscObjectComm((PetscObject)sf),PETSC_ERR_ARG_WRONGSTATE,"Outstanding operation has not been completed");
   for (link=bas->avail; link; link=next) {
     next = link->next;
+#if defined(PETSC_HAVE_MPI_TYPE_DUP)
     ierr = MPI_Type_free(&link->unit);CHKERRQ(ierr);
+#endif
     ierr = PetscFree2(link->root,link->leaf);CHKERRQ(ierr);
     ierr = PetscFree(link->requests);CHKERRQ(ierr);
     ierr = PetscFree(link);CHKERRQ(ierr);
