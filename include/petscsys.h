@@ -2312,14 +2312,14 @@ PETSC_EXTERN PetscErrorCode PetscSubcommSetTypeGeneral(PetscSubcomm,PetscMPIInt,
 .seealso: PetscSegBufferCreate(), PetscSegBufferGet(), PetscSegBufferExtract(), PetscSegBufferDestroy()
 S*/
 typedef struct _n_PetscSegBuffer *PetscSegBuffer;
-PETSC_EXTERN PetscErrorCode PetscSegBufferCreate(PetscInt,PetscInt,PetscSegBuffer*);
+PETSC_EXTERN PetscErrorCode PetscSegBufferCreate(size_t,size_t,PetscSegBuffer*);
 PETSC_EXTERN PetscErrorCode PetscSegBufferDestroy(PetscSegBuffer*);
-PETSC_EXTERN PetscErrorCode PetscSegBufferGet(PetscSegBuffer,PetscInt,void*);
+PETSC_EXTERN PetscErrorCode PetscSegBufferGet(PetscSegBuffer,size_t,void*);
 PETSC_EXTERN PetscErrorCode PetscSegBufferExtractAlloc(PetscSegBuffer,void*);
 PETSC_EXTERN PetscErrorCode PetscSegBufferExtractTo(PetscSegBuffer,void*);
 PETSC_EXTERN PetscErrorCode PetscSegBufferExtractInPlace(PetscSegBuffer,void*);
-PETSC_EXTERN PetscErrorCode PetscSegBufferGetSize(PetscSegBuffer,PetscInt*);
-PETSC_EXTERN PetscErrorCode PetscSegBufferUnuse(PetscSegBuffer,PetscInt);
+PETSC_EXTERN PetscErrorCode PetscSegBufferGetSize(PetscSegBuffer,size_t*);
+PETSC_EXTERN PetscErrorCode PetscSegBufferUnuse(PetscSegBuffer,size_t);
 
 /* Type-safe wrapper to encourage use of PETSC_RESTRICT. Does not use PetscFunctionBegin because the error handling
  * prevents the compiler from completely erasing the stub. This is called in inner loops so it has to be as fast as
