@@ -842,7 +842,6 @@ PetscErrorCode NonlinearGS(SNES snes,Vec X, Vec B, void *ctx)
             /* boundary conditions are all zero Dirichlet */
             x[j][i] = 0.0 + bij;
           } else {
-            u = x[j][i];
             const PetscScalar
               u_E = x[j][i+1],
               u_W = x[j][i-1],
@@ -853,6 +852,7 @@ PetscErrorCode NonlinearGS(SNES snes,Vec X, Vec B, void *ctx)
               uy_W   = 0.25*dhy*(x[j+1][i-1]+x[j+1][i]-x[j-1][i-1]-x[j-1][i]),
               ux_N   = 0.25*dhx*(x[j][i+1]+x[j+1][i+1]-x[j][i-1]-x[j+1][i-1]),
               ux_S   = 0.25*dhx*(x[j-1][i+1]+x[j][i+1]-x[j-1][i-1]-x[j][i-1]);
+            u = x[j][i];
             for (k=0; k<its; k++) {
               const PetscScalar
                 ux_E   = dhx*(u_E-u),

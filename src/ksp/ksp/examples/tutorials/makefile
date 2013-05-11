@@ -776,27 +776,27 @@ runex10_cg_singlereduction:
 	   else echo ${PWD} ; echo "Possible problem with with ex10_cg_singlereduction, diffs above \n========================================="; fi; \
 	   ${RM} -f ex10_20.tmp
 runex10_seqaijcrl:
-	-@${MPIEXEC} -n 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -ksp_monitor_short -ksp_view -mat_view ::ascii_info -mat_type seqaijcrl > ex10_seqaijcrl.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -ksp_monitor_short -ksp_view -mat_view ascii::ascii_info -mat_type seqaijcrl > ex10_seqaijcrl.tmp 2>&1; \
 	   if (${DIFF} output/ex10_seqcrl.out ex10_seqaijcrl.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex10_seqaijcrl, diffs above \n========================================="; fi; \
 	   ${RM} -f ex10_seqaijcrl.tmp
 runex10_mpiaijcrl:
-	-@${MPIEXEC} -n 2 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -ksp_monitor_short -ksp_view -mat_view ::ascii_info -mat_type mpiaijcrl > ex10_mpiaijcrl.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -ksp_monitor_short -ksp_view -mat_view ascii::ascii_info -mat_type mpiaijcrl > ex10_mpiaijcrl.tmp 2>&1; \
 	   if (${DIFF} output/ex10_mpiaij.out ex10_mpiaijcrl.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex10_mpiaijcrl, diffs above \n========================================="; fi; \
 	   ${RM} -f ex10_mpiaijcrl.tmp
 runex10_seqaijperm:
-	-@${MPIEXEC} -n 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -ksp_monitor_short -ksp_view -mat_view ::ascii_info -mat_type seqaijperm > ex10_seqaijperm.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -ksp_monitor_short -ksp_view -mat_view ascii::ascii_info -mat_type seqaijperm > ex10_seqaijperm.tmp 2>&1; \
 	   if (${DIFF} output/ex10_seqcsrperm.out ex10_seqaijperm.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex10_seqaijperm, diffs above \n========================================="; fi; \
 	   ${RM} -f ex10_seqaijperm.tmp
 runex10_mpiaijperm:
-	-@${MPIEXEC} -n 2 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -ksp_monitor_short -ksp_view -mat_view ::ascii_info -mat_type mpiaijperm > ex10_mpiaijperm.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -ksp_monitor_short -ksp_view -mat_view ascii::ascii_info -mat_type mpiaijperm > ex10_mpiaijperm.tmp 2>&1; \
 	   if (${DIFF} output/ex10_mpicsrperm.out ex10_mpiaijperm.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex10_mpiaijperm, diffs above \n========================================="; fi; \
 	   ${RM} -f ex10_mpiaijperm.tmp
 runex10_aijcusparse:
-	-@${MPIEXEC} -n 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/medium -ksp_monitor_short -ksp_view -mat_view ::ascii_info -mat_type aijcusparse > ex10_aijcusparse.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/medium -ksp_monitor_short -ksp_view -mat_view ascii::ascii_info -mat_type aijcusparse > ex10_aijcusparse.tmp 2>&1; \
 	   if (${DIFF} output/ex10_aijcusparse.out ex10_aijcusparse.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex10_aijcusparse, diffs above \n========================================="; fi; \
 	   ${RM} -f ex10_aijcusparse.tmp
