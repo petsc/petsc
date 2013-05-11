@@ -24,7 +24,7 @@
    (PETSC_VERSION_RELEASE  == 1))
 
 #define PETSC_VERSION_LT(MAJOR,MINOR,SUBMINOR)          \
-  (!PETSC_VERSION_RELEASE &&                            \
+  (PETSC_VERSION_RELEASE == 0 &&                        \
    (PETSC_VERSION_MAJOR < (MAJOR) ||                    \
     (PETSC_VERSION_MAJOR == (MAJOR) &&                  \
      (PETSC_VERSION_MINOR < (MINOR) ||                  \
