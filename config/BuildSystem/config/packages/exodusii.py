@@ -27,8 +27,12 @@ class Configure(config.package.Package):
   def configureLibrary(self):
     self.liblist = [['libexodus.a'], ['libexoIIv2c.a']]
     if hasattr(self.compilers, 'FC'):
-      self.liblist = [['libexoIIv2for.a'] + libs for libs in self.liblist]
-      self.functions.append(self.compilers.mangleFortranFunction('exclos'))
+      self.liblist = [['libexoIIv2for.a'] + libs for libs in self.liblist] + self.liblist
+      # We would like to only test for the Fortran function 'exclos_' when actually linking the
+      # Fortran interface, but that seems to require custom logic, so give up on testing until we
+      # have a better system.
+      #
+      # self.functions.append(self.compilers.mangleFortranFunction('exclos'))
     config.package.Package.configureLibrary(self)
 
   def Install(self):
