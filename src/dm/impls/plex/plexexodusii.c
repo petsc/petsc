@@ -24,7 +24,7 @@
   Level: beginner
 
 .keywords: mesh,ExodusII
-.seealso: MeshCreate(), MeshCreateExodus()
+.seealso: DMPLEX, DMCreate()
 @*/
 PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool interpolate, DM *dm)
 {
