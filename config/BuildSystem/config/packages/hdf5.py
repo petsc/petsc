@@ -8,7 +8,7 @@ class Configure(config.package.Package):
                          'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/hdf5-1.8.10-patch1.tar.gz']
     self.functions = ['H5T_init']
     self.includes  = ['hdf5.h']
-    self.liblist   = [['libhdf5.a','libhdf5_hl.a']]
+    self.liblist   = [['libhdf5_hl.a', 'libhdf5.a']]
     self.needsMath = 1
     self.needsCompression = 1
     self.complex   = 1
