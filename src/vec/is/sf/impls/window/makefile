@@ -5,7 +5,7 @@ ALL: lib
 
 SOURCEH	 =
 SOURCEC  = sfwindow.c
-LIBBASE	 = libpetscsys
+LIBBASE	 = libpetscvec
 DIRS	 =
 LOCDIR   = src/vec/is/sf/impls/window/
 MANSEC   = PetscSF
