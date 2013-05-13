@@ -4,6 +4,8 @@
 */
 #include <petscsys.h>
 
+#include <errno.h>
+
 #undef __FUNCT__
 #define __FUNCT__ "PetscFOpen"
 /*@C
@@ -135,7 +137,7 @@ PetscErrorCode PetscPClose(MPI_Comm comm,FILE *fd,PetscInt *rval)
     while (fgets(buf,1024,fd)) ; /* wait till it prints everything */
     err = pclose(fd);
     if (rval) *rval = err;
-    else if (err) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SYS,"pclose() failed with error code %D",err);
+    else if (err) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SYS,"pclose() failed with error code %d, errno %d",err,errno);
   }
   PetscFunctionReturn(0);
 }
