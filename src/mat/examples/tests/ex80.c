@@ -14,7 +14,7 @@ T*/
      petscis.h     - index sets
      petscviewer.h - viewers
 */
-#include <petscksp.h>
+#include <petscmat.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
