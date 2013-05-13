@@ -1097,7 +1097,7 @@ static PetscErrorCode DMPlexMarkSubmesh_Uninterpolated(DM dm, DMLabel vertexLabe
 {
   IS               subvertexIS;
   const PetscInt  *subvertices;
-  PetscInt        *pStart, *pEnd, *pMax;
+  PetscInt        *pStart, *pEnd, *pMax, pSize;
   PetscInt         depth, dim, d, numSubVerticesInitial = 0, v;
   PetscErrorCode   ierr;
 
@@ -1106,7 +1106,8 @@ static PetscErrorCode DMPlexMarkSubmesh_Uninterpolated(DM dm, DMLabel vertexLabe
   *nFV      = 0;
   ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
   ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
-  ierr = PetscMalloc3(dim+1,PetscInt,&pStart,dim+1,PetscInt,&pEnd,dim+1,PetscInt,&pMax);CHKERRQ(ierr);
+  pSize = PetscMax(depth, dim) + 1;
+  ierr = PetscMalloc3(pSize,PetscInt,&pStart,pSize,PetscInt,&pEnd,pSize,PetscInt,&pMax);CHKERRQ(ierr);
   ierr = DMPlexGetHybridBounds(dm, &pMax[depth], depth>1 ? &pMax[depth-1] : NULL, depth > 2 ? &pMax[1] : NULL, &pMax[0]);CHKERRQ(ierr);
   for (d = 0; d <= depth; ++d) {
     ierr = DMPlexGetDepthStratum(dm, d, &pStart[d], &pEnd[d]);CHKERRQ(ierr);
@@ -1734,7 +1735,7 @@ static PetscErrorCode DMPlexInsertFace_Internal(DM dm, DM subdm, PetscInt numFac
     PetscInt f;
 
     numFaces = 0;
-    ierr     = DMGetWorkArray(subdm, 1, PETSC_INT, (void**) &faces);CHKERRQ(ierr);
+    ierr     = DMGetWorkArray(subdm, 1, PETSC_INT, (void **) &faces);CHKERRQ(ierr);
     for (f = firstFace; f < *newFacePoint; ++f) {
       PetscInt dof, off, d;
 
@@ -1786,7 +1787,11 @@ static PetscErrorCode DMPlexInsertFace_Internal(DM dm, DM subdm, PetscInt numFac
     ierr = DMRestoreWorkArray(subdm, 4*numFaceVertices * sizeof(PetscInt), PETSC_INT, &orientedVertices);CHKERRQ(ierr);
     ++(*newFacePoint);
   }
+#if 0
   ierr = DMPlexRestoreJoin(subdm, numFaceVertices, subfaceVertices, &numFaces, &faces);CHKERRQ(ierr);
+#else
+  ierr = DMRestoreWorkArray(subdm, 1, PETSC_INT, (void **) &faces);CHKERRQ(ierr);
+#endif
   PetscFunctionReturn(0);
 }
 
