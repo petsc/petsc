@@ -1009,16 +1009,7 @@ PetscErrorCode  PetscFinalize(void)
   */
   ierr = PetscObjectRegisterDestroyAll();CHKERRQ(ierr);
 
-  {
-    PetscThreadComm tcomm_world;
-    ierr = PetscGetThreadCommWorld(&tcomm_world);CHKERRQ(ierr);
-    /* Free global thread communicator */
-    ierr = PetscThreadCommDestroy(&tcomm_world);CHKERRQ(ierr);
-  }
-
-#if defined(PETSC_USE_DEBUG)
   ierr = PetscStackDestroy();CHKERRQ(ierr);
-#endif
 
   flg1 = PETSC_FALSE;
   ierr = PetscOptionsGetBool(NULL,"-no_signal_handler",&flg1,NULL);CHKERRQ(ierr);
@@ -1076,6 +1067,13 @@ PetscErrorCode  PetscFinalize(void)
 #endif
       ierr = PetscOptionsLeft();CHKERRQ(ierr);
     }
+  }
+
+  {
+    PetscThreadComm tcomm_world;
+    ierr = PetscGetThreadCommWorld(&tcomm_world);CHKERRQ(ierr);
+    /* Free global thread communicator */
+    ierr = PetscThreadCommDestroy(&tcomm_world);CHKERRQ(ierr);
   }
 
   /*
