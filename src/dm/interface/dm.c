@@ -7,11 +7,21 @@ PetscLogEvent DM_Convert, DM_GlobalToLocal, DM_LocalToGlobal;
 #undef __FUNCT__
 #define __FUNCT__ "DMViewFromOptions"
 /*
-  Processes command line options to determine if/how a dm
-  is to be viewed.
+  DMViewFromOptions - Processes command line options to determine if/how a DM is to be viewed.
 
+  Collective on Vec
+
+  Input Parameters:
++ dm   - the DM
+. prefix - prefix to use for viewing, or NULL to use prefix of 'rnd'
+- optionname - option to activate viewing
+
+  Level: intermediate
+
+.keywords: DM, view, options, database
+.seealso: VecViewFromOptions(), MatViewFromOptions()
 */
-PetscErrorCode  DMViewFromOptions(DM dm,const char optionname[])
+PetscErrorCode  DMViewFromOptions(DM dm,const char prefix[],const char optionname[])
 {
   PetscErrorCode    ierr;
   PetscBool         flg;
@@ -19,7 +29,11 @@ PetscErrorCode  DMViewFromOptions(DM dm,const char optionname[])
   PetscViewerFormat format;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject)dm),((PetscObject)dm)->prefix,optionname,&viewer,&format,&flg);CHKERRQ(ierr);
+  if (prefix) {
+    ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject)dm),prefix,optionname,&viewer,&format,&flg);CHKERRQ(ierr);
+  } else {
+    ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject)dm),((PetscObject)dm)->prefix,optionname,&viewer,&format,&flg);CHKERRQ(ierr);
+  }
   if (flg) {
     ierr = PetscViewerPushFormat(viewer,format);CHKERRQ(ierr);
     ierr = DMView(dm,viewer);CHKERRQ(ierr);
@@ -518,7 +532,7 @@ PetscErrorCode  DMSetFromOptions(DM dm)
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
   ierr = PetscObjectProcessOptionsHandlers((PetscObject) dm);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
-  ierr = DMViewFromOptions(dm,"-dm_view");CHKERRQ(ierr);
+  ierr = DMViewFromOptions(dm,NULL,"-dm_view");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

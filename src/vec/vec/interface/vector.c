@@ -227,13 +227,21 @@ PetscErrorCode  VecAssemblyBegin(Vec vec)
 #undef __FUNCT__
 #define __FUNCT__ "VecViewFromOptions"
 /*
-  Processes command line options to determine if/how a matrix
-  is to be viewed. Called by VecAssemblyEnd() and VecLoad()
+  VecViewFromOptions - Processes command line options to determine if/how a vector is to be viewed. Called from higher level packages.
 
+  Collective on Vec
+
+  Input Parameters:
++ vec   - the vector
+. prefix - prefix to use for viewing, or NULL to use prefix of 'rnd'
+- optionname - option to activate viewing
+
+  Level: intermediate
+
+.keywords: Vec, view, options, database
 .seealso: MatViewFromOptions()
-
 */
-PetscErrorCode  VecViewFromOptions(Vec vec,const char optionname[])
+PetscErrorCode  VecViewFromOptions(Vec vec,const char prefix[],const char optionname[])
 {
   PetscErrorCode    ierr;
   PetscBool         flg;
@@ -241,7 +249,11 @@ PetscErrorCode  VecViewFromOptions(Vec vec,const char optionname[])
   PetscViewerFormat format;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject)vec),((PetscObject)vec)->prefix,optionname,&viewer,&format,&flg);CHKERRQ(ierr);
+  if (prefix) {
+    ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject)vec),prefix,optionname,&viewer,&format,&flg);CHKERRQ(ierr);
+  } else {
+    ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject)vec),((PetscObject)vec)->prefix,optionname,&viewer,&format,&flg);CHKERRQ(ierr);
+  }
   if (flg) {
     ierr = PetscViewerPushFormat(viewer,format);CHKERRQ(ierr);
     ierr = VecView(vec,viewer);CHKERRQ(ierr);

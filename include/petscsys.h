@@ -2134,7 +2134,7 @@ PETSC_EXTERN PetscErrorCode PetscRandomRegister(const char[],PetscErrorCode (*)(
 PETSC_EXTERN PetscErrorCode PetscRandomSetType(PetscRandom, PetscRandomType);
 PETSC_EXTERN PetscErrorCode PetscRandomSetFromOptions(PetscRandom);
 PETSC_EXTERN PetscErrorCode PetscRandomGetType(PetscRandom, PetscRandomType*);
-PETSC_EXTERN PetscErrorCode PetscRandomViewFromOptions(PetscRandom,const char[]);
+ PETSC_EXTERN PetscErrorCode PetscRandomViewFromOptions(PetscRandom,const char[],const char[]);
 PETSC_EXTERN PetscErrorCode PetscRandomView(PetscRandom,PetscViewer);
 
 PETSC_EXTERN PetscErrorCode PetscRandomCreate(MPI_Comm,PetscRandom*);
