@@ -34,6 +34,14 @@ ssh petsc@login.mcs.anl.gov " \
 ssh petsc@login.mcs.anl.gov chmod u+w /mcs/web/research/projects/petsc/download/index.html
 scp ${PETSC_DIR}/src/docs/website/download/index.html petsc@login.mcs.anl.gov:/mcs/web/research/projects/petsc/download
 
+# update websnapshot. 'petsc-current' link is updated manually
+echo "*** updating snapshot ***"
+ssh petsc@login.mcs.anl.gov " \
+  cd  /mcs/web/research/projects/petsc; \
+  /bin/tar -xzf /mcs/ftp/pub/petsc/release-snapshots/petsc-${VERSION}.tar.gz; \
+  /bin/rm -f petsc-${RELEASE}; \
+  /bin/ln -s petsc-${VERSION} petsc-${RELEASE}"
+
 #######################################
 # M bin/maint/createpatch
 # M bin/maint/rebuildtar
