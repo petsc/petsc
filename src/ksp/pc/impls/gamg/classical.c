@@ -15,7 +15,7 @@ PetscErrorCode PCGAMGClassicalCreateGhostVector_Private(Mat G,Vec *gvec,PetscInt
   PetscBool      isMPIAIJ;
 
   PetscFunctionBegin;
-  ierr = PetscObjectTypeCompare((PetscObject)G, MATMPIAIJ, &isMPIAIJ ); CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)G, MATMPIAIJ, &isMPIAIJ); CHKERRQ(ierr);
   if (isMPIAIJ) {
     if (gvec)ierr = VecDuplicate(aij->lvec,gvec);CHKERRQ(ierr);
     if (global)*global = aij->garray;
@@ -74,10 +74,13 @@ PetscErrorCode PCGAMGGraph_Classical(PC pc,Mat A,Mat *G)
 
   ierr = MatGetOwnershipRange(A,&s,&f);CHKERRQ(ierr);
 
-  ierr = PetscMalloc(sizeof(PetscInt)*(f - s),&lsparse);CHKERRQ(ierr);
-  ierr = PetscMalloc(sizeof(PetscInt)*(f - s),&gsparse);CHKERRQ(ierr);
-
   ierr = PCGAMGClassicalGraphSplitting_Private(A,&lA,&gA);CHKERRQ(ierr);
+
+  ierr = PetscMalloc(sizeof(PetscInt)*(f - s),&lsparse);CHKERRQ(ierr);
+  if (gA) {ierr = PetscMalloc(sizeof(PetscInt)*(f - s),&gsparse);CHKERRQ(ierr);}
+  else {
+    gsparse = NULL;
+  }
 
   /* find the maximum off-diagonal entry in the matrix */
   rmax = 0.;
@@ -99,7 +102,7 @@ PetscErrorCode PCGAMGGraph_Classical(PC pc,Mat A,Mat *G)
 
   for (r = 0;r < f-s;r++) {
     lsparse[r] = 0;
-    gsparse[r] = 0;
+    if (gsparse) gsparse[r] = 0;
   }
 
   /* for now this recreates the entire matrix due to a bug in MatCoarsen */
@@ -157,8 +160,6 @@ PetscErrorCode PCGAMGGraph_Classical(PC pc,Mat A,Mat *G)
   }
   ierr = MatAssemblyBegin(*G, MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*G, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-
-
 
   ierr = PetscFree(gval);CHKERRQ(ierr);
   ierr = PetscFree(gcol);CHKERRQ(ierr);
@@ -343,7 +344,6 @@ PetscErrorCode PCGAMGProlongator_Classical(PC pc, Mat A, Mat G, PetscCoarsenData
           lsparse[i] += 1;
         }
       }
-
       ierr = MatRestoreRow(lG,i,&ncols,&icols,&vcols);CHKERRQ(ierr);
       ncolstotal += ncols;
       /* off */
@@ -399,7 +399,6 @@ PetscErrorCode PCGAMGProlongator_Classical(PC pc, Mat A, Mat G, PetscCoarsenData
         }
       }
       ierr = MatRestoreRow(lG,i,&ncols,&rcol,&rval);CHKERRQ(ierr);
-
 
       /* ghosted strong connections */
       if (gG) {
@@ -498,11 +497,12 @@ PetscErrorCode PCGAMGProlongator_Classical(PC pc, Mat A, Mat G, PetscCoarsenData
             }
           }
         }
-        ierr = MatSetValues(*P,1,&row_f,idx,pcols,pvals,INSERT_VALUES);CHKERRQ(ierr);
-        ierr = MatRestoreRow(gG,i,&ncols,NULL,NULL);CHKERRQ(ierr);
+        ierr = MatRestoreRow(gG,i,&ncols,&icols,&vcols);CHKERRQ(ierr);
       }
+      ierr = MatSetValues(*P,1,&row_f,idx,pcols,pvals,INSERT_VALUES);CHKERRQ(ierr);
     }
   }
+
   ierr = MatAssemblyBegin(*P, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*P, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
