@@ -11,9 +11,15 @@ PETSC_DIR=/home/balay/git-repo/petsc-maint.clone
 maintdir=`dirname $0`
 ${maintdir}/builddist ${PETSC_DIR} maint
 
+#determine tarball version
+version_major=`grep '^#define PETSC_VERSION_MAJOR ' ${PETSC_DIR}/include/petscversion.h |tr -s ' ' | cut -d ' ' -f 3`
+version_minor=`grep '^#define PETSC_VERSION_MINOR ' ${PETSC_DIR}/include/petscversion.h |tr -s ' ' | cut -d ' ' -f 3`
+version_subminor=`grep '^#define PETSC_VERSION_SUBMINOR ' ${PETSC_DIR}/include/petscversion.h |tr -s ' ' | cut -d ' ' -f 3`
+
+RELEASE=${version_major}.${version_minor}
+VERSION=${version_major}.${version_minor}.${version_subminor}
+
 #Now copy the generated tarfiles over to the website
-PATCH_VERSION=`grep '^#define PETSC_VERSION_PATCH ' ${PETSC_DIR}/include/petscversion.h |tr -s ' ' | cut -d ' ' -f 3`
-VERSION=${RELEASE}-p${PATCH_VERSION}
 scp ~/petsc-${VERSION}.tar.gz petsc@login.mcs.anl.gov:/mcs/ftp/pub/petsc/release-snapshots/
 scp ~/petsc-lite-${VERSION}.tar.gz petsc@login.mcs.anl.gov:/mcs/ftp/pub/petsc/release-snapshots/
 

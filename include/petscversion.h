@@ -5,16 +5,16 @@
 #define PETSC_VERSION_MAJOR      3
 #define PETSC_VERSION_MINOR      3
 #define PETSC_VERSION_SUBMINOR   0
-#define PETSC_VERSION_PATCH      7
-#define PETSC_VERSION_DATE       "Jun, 5, 2012"
-#define PETSC_VERSION_PATCH_DATE "unknown"
+#define PETSC_VERSION_PATCH      0
+#define PETSC_RELEASE_DATE       "Jun, 5, 2012"
+#define PETSC_VERSION_DATE       "unknown"
 
 #if !defined (PETSC_VERSION_GIT)
-#define PETSC_VERSION_GIT         "unknown"
+#define PETSC_VERSION_GIT        "unknown"
 #endif
 
 #if !defined(PETSC_VERSION_DATE_GIT)
-#define PETSC_VERSION_DATE_GIT    "unknown"
+#define PETSC_VERSION_DATE_GIT   "unknown"
 #endif
 
 #define PETSC_VERSION_(MAJOR,MINOR,SUBMINOR) \
