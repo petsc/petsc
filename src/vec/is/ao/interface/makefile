@@ -6,7 +6,7 @@ FFLAGS   =
 SOURCEC  = ao.c dlregisdm.c aoreg.c aoregall.c
 SOURCEF  =
 SOURCEH  =
-LIBBASE  = libpetscdm
+LIBBASE  = libpetscvec
 MANSEC   = AO
 LOCDIR   = src/vec/is/ao/interface/
 

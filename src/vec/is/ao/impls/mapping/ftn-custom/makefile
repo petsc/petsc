@@ -7,7 +7,7 @@ SOURCEC  = zaomappingf.c
 SOURCEF  =
 SOURCEH  =
 DIRS     =
-LIBBASE  = libpetscdm
+LIBBASE  = libpetscvec
 LOCDIR   = src/vec/is/ao/impls/mapping/ftn-custom/
 
 include ${PETSC_DIR}/conf/variables

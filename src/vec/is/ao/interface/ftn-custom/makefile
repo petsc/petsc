@@ -7,7 +7,7 @@ SOURCEC  = zaof.c
 SOURCEF  =
 SOURCEH  =
 DIRS     =
-LIBBASE  = libpetscdm
+LIBBASE  = libpetscvec
 LOCDIR   = src/vec/is/ao/interface/ftn-custom/
 
 include ${PETSC_DIR}/conf/variables
