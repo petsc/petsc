@@ -112,8 +112,6 @@ PetscErrorCode PCGAMGGraph_Classical(PC pc,Mat A,Mat *G)
     for (c = 0; c < ncols; c++) {
       if (PetscAbsScalar(rval[c]) > gamg->threshold*Amax) {
         idx++;
-      } else {
-        idx++;
       }
     }
     ierr = MatRestoreRow(lA,r,&ncols,&rcol,&rval);CHKERRQ(ierr);
@@ -125,8 +123,6 @@ PetscErrorCode PCGAMGGraph_Classical(PC pc,Mat A,Mat *G)
       idx = 0;
       for (c = 0; c < ncols; c++) {
         if (PetscAbsScalar(rval[c]) > gamg->threshold*Amax) {
-          idx++;
-        } else {
           idx++;
         }
       }
@@ -148,10 +144,6 @@ PetscErrorCode PCGAMGGraph_Classical(PC pc,Mat A,Mat *G)
       if (PetscAbsScalar(rval[c]) > gamg->threshold*Amax) {
         gcol[idx] = rcol[c];
         gval[idx] = rval[c];
-        idx++;
-      } else {
-        gcol[idx] = rcol[c];
-        gval[idx] = 0.;
         idx++;
       }
     }
