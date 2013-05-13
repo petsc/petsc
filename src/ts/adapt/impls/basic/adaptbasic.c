@@ -27,7 +27,7 @@ static PetscErrorCode TSAdaptChoose_Basic(TSAdapt adapt,TS ts,PetscReal h,PetscI
   ierr  = TSEvaluateStep(ts,order-1,Y,NULL);CHKERRQ(ierr);
 
   safety = basic->safety;
-  ierr   = TSErrorNormWRMS(ts,Y,&enorm);CHKERRQ(ierr);
+  ierr   = TSErrorWeightedNorm(ts,Y,&enorm);CHKERRQ(ierr);
   if (enorm > 1.) {
     if (!*accept) safety *= basic->reject_safety; /* The last attempt also failed, shorten more aggressively */
     if (h < (1 + PETSC_SQRT_MACHINE_EPSILON)*adapt->dt_min) {
