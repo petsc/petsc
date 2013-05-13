@@ -9,7 +9,11 @@
       PetscInt, pointer :: pES(:)
       PetscInt c,d, firstCell, numCells
       PetscInt v, numVertices, numPoints
+      PetscInt i0,i4
       PetscErrorCode ierr
+
+      i0 = 0
+      i4 = 4
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       call DMPlexCreate(PETSC_COMM_WORLD, dm, ierr)
@@ -17,9 +21,9 @@
       numCells = 2
       numVertices = 6
       numPoints = numCells+numVertices
-      call DMPlexSetChart(dm, 0, numPoints, ierr)
+      call DMPlexSetChart(dm, i0, numPoints, ierr)
       do c=firstCell,numCells-1
-         call DMPlexSetConeSize(dm, c, 4, ierr)
+         call DMPlexSetConeSize(dm, c, i4, ierr)
       end do
       call DMSetUp(dm, ierr)
 

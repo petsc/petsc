@@ -2,13 +2,20 @@
   1 SNES Function norm 21.1059 
   2 SNES Function norm 1.48792 
   3 SNES Function norm 0.0100219 
-  4 SNES Function norm 4.69212e-07 
+  4 SNES Function norm 4.69213e-07 
 SNES Object: 1 MPI processes
-  type: ls
+  type: newtonls
   maximum iterations=50, maximum function evaluations=10000
   tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
   total number of linear solver iterations=4
   total number of function evaluations=22
+  SNESLineSearch Object:   1 MPI processes
+    type: bt
+      interpolation: cubic
+      alpha=1.000000e-04
+    maxstep=1.000000e+08, minlambda=1.000000e-12
+    tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
+    maximum iterations=40
   KSP Object:   1 MPI processes
     type: fgmres
       GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
@@ -32,6 +39,7 @@ SNES Object: 1 MPI processes
         type: lu
           LU: out-of-place factorization
           tolerance for zero pivot 2.22045e-14
+          using diagonal shift on blocks to prevent zero pivot
           matrix ordering: nd
           factor fill ratio given 5, needed 2.38265
             Factored matrix follows:
@@ -52,9 +60,9 @@ SNES Object: 1 MPI processes
     Down solver (pre-smoother) on level 1 -------------------------------
       KSP Object:      (mg_levels_1_)       1 MPI processes
         type: chebyshev
-          Chebyshev: eigenvalue estimates:  min = 0.955071, max = 10.5058
+          Chebyshev: eigenvalue estimates:  min = 0.327737, max = 3.60511
           Chebyshev: estimated using:  [0 0.1; 0 1.1]
-          KSP Object:           1 MPI processes
+          KSP Object:          (mg_levels_1_est_)           1 MPI processes
             type: gmres
               GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
               GMRES: happy breakdown tolerance 1e-30
@@ -96,10 +104,3 @@ SNES Object: 1 MPI processes
       total: nonzeros=12100, allocated nonzeros=12100
       total number of mallocs used during MatSetValues calls =0
         using I-node routines: found 361 nodes, limit used is 5
-  SNESLineSearch Object:   1 MPI processes
-    type: bt
-      interpolation: cubic
-      alpha=1.000000e-04
-    maxstep=1.000000e+08, minlambda=1.000000e-12
-    tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
-    maximum iterations=40
