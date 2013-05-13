@@ -250,14 +250,14 @@ runex9_3:
 
 runex10:
 	-@${MPIEXEC} -n 1 ./ex10 -da_grid_x 20 -rd_initial 1 -rd_discretization fd \
-	   -rd_jacobian fd_coloring -rd_endpoint -ts_final_time 3 -ts_dt 1e-1 -ts_theta_extrapolate 0 \
+	   -rd_jacobian fd_coloring -rd_endpoint -ts_final_time 1 -ts_dt 2e-1 -ts_theta_extrapolate 0 \
 	   -ts_monitor -snes_monitor_short -ksp_monitor_short > ex10_1.tmp 2>&1; \
 	   ${DIFF} output/ex10_1.out ex10_1.tmp || echo  ${PWD} "\nPossible problem with ex10_1, diffs above \n========================================="; \
 	   ${RM} -f ex10_1.tmp
 
 runex10_2:
 	-@${MPIEXEC} -n 1 ./ex10 -da_grid_x 20 -rd_initial 1 -rd_discretization fe -rd_quadrature lobatto2 \
-	   -rd_jacobian fd_coloring -rd_endpoint -ts_final_time 3 -ts_dt 1e-1 -ts_theta_extrapolate 0 \
+	   -rd_jacobian fd_coloring -rd_endpoint -ts_final_time 1 -ts_dt 2e-1 -ts_theta_extrapolate 0 \
 	   -ts_monitor -snes_monitor_short -ksp_monitor_short > ex10_2.tmp 2>&1; \
 	   ${DIFF} output/ex10_2.out ex10_2.tmp || echo  ${PWD} "\nPossible problem with ex10_2, diffs above \n========================================="; \
 	   ${RM} -f ex10_2.tmp
