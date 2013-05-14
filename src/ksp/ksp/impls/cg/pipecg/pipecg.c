@@ -121,7 +121,8 @@ PetscErrorCode  KSPSolve_PIPECG(KSP ksp)
       ierr = VecNormBegin(R,NORM_2,&dp);CHKERRQ(ierr);
     } else if (i > 0 && ksp->normtype == KSP_NORM_PRECONDITIONED) {
       ierr = VecNormBegin(U,NORM_2,&dp);CHKERRQ(ierr);
-    } else if (!(i == 0 && ksp->normtype == KSP_NORM_NATURAL)) {
+    }
+    if (!(i == 0 && ksp->normtype == KSP_NORM_NATURAL)) {
       ierr = VecDotBegin(R,U,&gamma);CHKERRQ(ierr);
     }
     ierr = VecDotBegin(W,U,&delta);CHKERRQ(ierr);
@@ -134,7 +135,8 @@ PetscErrorCode  KSPSolve_PIPECG(KSP ksp)
       ierr = VecNormEnd(R,NORM_2,&dp);CHKERRQ(ierr);
     } else if (i > 0 && ksp->normtype == KSP_NORM_PRECONDITIONED) {
       ierr = VecNormEnd(U,NORM_2,&dp);CHKERRQ(ierr);
-    } else if (!(i == 0 && ksp->normtype == KSP_NORM_NATURAL)) {
+    }
+    if (!(i == 0 && ksp->normtype == KSP_NORM_NATURAL)) {
       ierr = VecDotEnd(R,U,&gamma);CHKERRQ(ierr);
     }
     ierr = VecDotEnd(W,U,&delta);CHKERRQ(ierr);
