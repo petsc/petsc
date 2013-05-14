@@ -95,6 +95,10 @@ struct _p_SNES {
   PetscBool   printreason;        /* print reason for convergence/divergence after each solve */
   PetscInt    lagpreconditioner;  /* SNESSetLagPreconditioner() */
   PetscInt    lagjacobian;        /* SNESSetLagJacobian() */
+  PetscInt    jac_iter;           /* The present iteration of the Jacobian lagging */
+  PetscBool   lagjac_persist;     /* The jac_iter persists until reset */
+  PetscInt    pre_iter;           /* The present iteration of the Preconditioner lagging */
+  PetscBool   lagpre_persist;     /* The pre_iter persists until reset */
   PetscInt    gridsequence;       /* number of grid sequence steps to take; defaults to zero */
 
   PetscBool   tolerancesset;      /* SNESSetTolerances() called and tolerances should persist through SNESCreate_XXX()*/
@@ -120,6 +124,8 @@ struct _p_SNES {
   PetscBool   conv_hist_reset;    /* reset counter for each new SNES solve */
   PetscBool   conv_malloc;
 
+  PetscBool    counters_reset;    /* reset counter for each new SNES solve */
+
   /* the next two are used for failures in the line search; they should be put elsewhere */
   PetscInt    numFailures;        /* number of unsuccessful step attempts */
   PetscInt    maxFailures;        /* maximum number of unsuccessful step attempts */
@@ -144,6 +150,7 @@ struct _p_SNES {
   Vec         xl,xu;             /* upper and lower bounds for box constrained VI problems */
   PetscInt    ntruebounds;       /* number of non-infinite bounds set for VI box constraints */
   PetscBool   usersetbounds;     /* bounds have been set via SNESVISetVariableBounds(), rather than via computevariablebounds() callback. */
+
 };
 
 typedef struct _p_DMSNES *DMSNES;

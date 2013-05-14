@@ -124,12 +124,15 @@ PETSC_EXTERN PetscErrorCode SNESSetLagPreconditioner(SNES,PetscInt);
 PETSC_EXTERN PetscErrorCode SNESGetLagPreconditioner(SNES,PetscInt*);
 PETSC_EXTERN PetscErrorCode SNESSetLagJacobian(SNES,PetscInt);
 PETSC_EXTERN PetscErrorCode SNESGetLagJacobian(SNES,PetscInt*);
+PETSC_EXTERN PetscErrorCode SNESSetLagPreconditionerPersists(SNES,PetscBool);
+PETSC_EXTERN PetscErrorCode SNESSetLagJacobianPersists(SNES,PetscBool);
 PETSC_EXTERN PetscErrorCode SNESSetGridSequence(SNES,PetscInt);
 
 PETSC_EXTERN PetscErrorCode SNESGetLinearSolveIterations(SNES,PetscInt*);
 PETSC_EXTERN PetscErrorCode SNESGetLinearSolveFailures(SNES,PetscInt*);
 PETSC_EXTERN PetscErrorCode SNESSetMaxLinearSolveFailures(SNES,PetscInt);
 PETSC_EXTERN PetscErrorCode SNESGetMaxLinearSolveFailures(SNES,PetscInt*);
+PETSC_EXTERN PetscErrorCode SNESSetCountersReset(SNES,PetscBool);
 
 PETSC_EXTERN PetscErrorCode SNESKSPSetUseEW(SNES,PetscBool );
 PETSC_EXTERN PetscErrorCode SNESKSPGetUseEW(SNES,PetscBool *);
