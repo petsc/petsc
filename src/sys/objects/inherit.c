@@ -505,7 +505,9 @@ PetscErrorCode  PetscObjectDestroyOptionsHandlers(PetscObject obj)
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
   for (i=0; i<obj->noptionhandler; i++) {
-    ierr = (*obj->optiondestroy[i])(obj,obj->optionctx[i]);CHKERRQ(ierr);
+    if (obj->optiondestroy[i]) {
+      ierr = (*obj->optiondestroy[i])(obj,obj->optionctx[i]);CHKERRQ(ierr);
+    }
   }
   obj->noptionhandler = 0;
   PetscFunctionReturn(0);
