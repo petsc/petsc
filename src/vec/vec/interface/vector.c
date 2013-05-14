@@ -14,6 +14,7 @@ PetscLogEvent VEC_AssemblyEnd, VEC_PointwiseMult, VEC_SetValues, VEC_Load, VEC_S
 PetscLogEvent VEC_SetRandom, VEC_ReduceArithmetic, VEC_ReduceBarrier, VEC_ReduceCommunication,VEC_ReduceBegin,VEC_ReduceEnd,VEC_Ops;
 PetscLogEvent VEC_DotNormBarrier, VEC_DotNorm, VEC_AXPBYPCZ, VEC_CUSPCopyFromGPU, VEC_CUSPCopyToGPU;
 PetscLogEvent VEC_CUSPCopyFromGPUSome, VEC_CUSPCopyToGPUSome;
+PetscLogEvent VEC_ViennaCLCopyFromGPU, VEC_ViennaCLCopyToGPU;
 
 extern PetscErrorCode VecStashGetInfo_Private(VecStash*,PetscInt*,PetscInt*);
 #undef __FUNCT__

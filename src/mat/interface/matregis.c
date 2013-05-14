@@ -47,6 +47,11 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJCUSPARSE(Mat);
 PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJCUSPARSE(Mat);
 #endif
 
+#if defined PETSC_HAVE_VIENNACL
+PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJViennaCL(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJViennaCL(Mat);
+#endif
+
 #if defined PETSC_HAVE_FFTW
 PETSC_EXTERN PetscErrorCode MatCreate_FFTW(Mat);
 #endif
@@ -138,6 +143,13 @@ PetscErrorCode  MatRegisterAll(void)
   ierr = MatRegister(MATSEQAIJCUSPARSE, MatCreate_SeqAIJCUSPARSE);CHKERRQ(ierr);
   ierr = MatRegister(MATMPIAIJCUSPARSE, MatCreate_MPIAIJCUSPARSE);CHKERRQ(ierr);
 #endif
+
+  #if defined PETSC_HAVE_VIENNACL
+  ierr = MatRegisterBaseName(MATAIJVIENNACL,MATSEQAIJVIENNACL,MATMPIAIJVIENNACL);CHKERRQ(ierr);
+  ierr = MatRegister(MATSEQAIJVIENNACL, MatCreate_SeqAIJViennaCL);CHKERRQ(ierr);
+  ierr = MatRegister(MATMPIAIJVIENNACL, MatCreate_MPIAIJViennaCL);CHKERRQ(ierr);
+#endif
+
 
 #if defined PETSC_HAVE_FFTW
   ierr = MatRegister(MATFFTW,           MatCreate_FFTW);CHKERRQ(ierr);
