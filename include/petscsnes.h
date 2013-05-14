@@ -46,6 +46,7 @@ typedef const char* SNESType;
 #define SNESNASM         "nasm"
 #define SNESANDERSON     "anderson"
 #define SNESASPIN        "aspin"
+#define SNESCOMPOSITE    "composite"
 
 /* Logging support */
 PETSC_EXTERN PetscClassId SNES_CLASSID;
@@ -692,5 +693,13 @@ PETSC_EXTERN PetscErrorCode SNESNASMSetDamping(SNES,PetscReal);
 PETSC_EXTERN PetscErrorCode SNESNASMGetDamping(SNES,PetscReal*);
 PETSC_EXTERN PetscErrorCode SNESNASMGetSubdomainVecs(SNES,PetscInt*,Vec**,Vec**,Vec**,Vec**);
 PETSC_EXTERN PetscErrorCode SNESNASMSetComputeFinalJacobian(SNES,PetscBool);
+
+typedef enum {SNES_COMPOSITE_ADDITIVE,SNES_COMPOSITE_MULTIPLICATIVE,SNES_COMPOSITE_ADDITIVEOPTIMAL} SNESCompositeType;
+PETSC_EXTERN const char *const SNESCompositeTypes[];
+
+PETSC_EXTERN PetscErrorCode SNESCompositeSetType(SNES,SNESCompositeType);
+PETSC_EXTERN PetscErrorCode SNESCompositeAddSNES(SNES,SNESType);
+PETSC_EXTERN PetscErrorCode SNESCompositeGetSNES(SNES,PetscInt,SNES *);
+PETSC_EXTERN PetscErrorCode SNESCompositeSetDamping(SNES,PetscInt,PetscReal);
 
 #endif
