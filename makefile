@@ -1,3 +1,10 @@
+# ---
+
+package = petsc4py
+MODULE  = PETSc
+
+# ---
+
 .PHONY: default \
 	config build test install sdist \
 	docs rst2html sphinx sphinx-html sphinx-pdf epydoc epydoc-html \
@@ -27,22 +34,22 @@ clean:
 
 distclean: clean
 	-${RM} -r build  _configtest.* *.py[co]
-	-${RM} -r MANIFEST dist petsc4py.egg-info
+	-${RM} -r MANIFEST dist ${package}.egg-info
 	-${RM} -r `find . -name '__pycache__'`
 	-${RM} `find . -name '*.py[co]'`
 	-${RM} `find . -name '*~'`
 
 srcclean:
-	-${RM} src/petsc4py.PETSc.c
-	-${RM} src/libpetsc4py/libpetsc4py.[ch]
-	-${RM} src/include/petsc4py/petsc4py.PETSc.h
-	-${RM} src/include/petsc4py/petsc4py.PETSc_api.h
+	-${RM} src/${package}.${MODULE}.c
+	-${RM} src/lib${package}/lib${package}.[ch]
+	-${RM} src/include/${package}/${package}.${MODULE}.h
+	-${RM} src/include/${package}/${package}.${MODULE}_api.h
 
 fullclean: distclean srcclean docsclean
 
 uninstall:
-	-${RM} -r $(shell ${PYTHON} -m site --user-site)/petsc4py
-	-${RM} -r $(shell ${PYTHON} -m site --user-site)/petsc4py-*-py*.egg-info
+	-${RM} -r $(shell ${PYTHON} -m site --user-site)/${package}
+	-${RM} -r $(shell ${PYTHON} -m site --user-site)/${package}-*-py*.egg-info
 
 # ----
 
@@ -63,12 +70,12 @@ SPHINXBUILD = sphinx-build
 SPHINXOPTS  =
 sphinx: sphinx-html sphinx-pdf
 sphinx-html:
-	${PYTHON} -c 'import petsc4py.PETSc'
+	${PYTHON} -c 'import ${package}.${MODULE}'
 	mkdir -p build/doctrees docs/usrman
 	${SPHINXBUILD} -b html -d build/doctrees ${SPHINXOPTS} \
 	docs/source docs/usrman
 sphinx-pdf:
-	${PYTHON} -c 'import petsc4py.PETSc'
+	${PYTHON} -c 'import ${package}.${MODULE}'
 	mkdir -p build/doctrees build/latex
 	${SPHINXBUILD} -b latex -d build/doctrees ${SPHINXOPTS} \
 	docs/source build/latex
@@ -79,7 +86,7 @@ EPYDOCBUILD = ${PYTHON} ./conf/epydocify.py
 EPYDOCOPTS  =
 epydoc: epydoc-html
 epydoc-html:
-	${PYTHON} -c 'import petsc4py.PETSc'
+	${PYTHON} -c 'import ${package}.${MODULE}'
 	mkdir -p docs/apiref
 	${EPYDOCBUILD} ${EPYDOCOPTS} -o docs/apiref
 
