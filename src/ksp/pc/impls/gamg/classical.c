@@ -96,9 +96,9 @@ PetscErrorCode PCGAMGGraph_Classical(PC pc,Mat A,Mat *G)
   }
   ierr = PetscMalloc(sizeof(PetscScalar)*cmax,&gval);CHKERRQ(ierr);
   ierr = PetscMalloc(sizeof(PetscInt)*cmax,&gcol);CHKERRQ(ierr);
-  ierr = MPI_Reduce(&rmax,&Amax,1,MPI_DOUBLE,MPI_MAX,0,PetscObjectComm((PetscObject)pc));
+  ierr = MPI_Allreduce(&rmax,&Amax,1,MPI_DOUBLE,MPI_MAX,PetscObjectComm((PetscObject)pc));
 
-  ierr = PetscInfo1(pc,"Maximum off-diagonal value in classical AMG graph: %f",rmax);CHKERRQ(ierr);
+  ierr = PetscInfo2(pc,"Maximum off-diagonal value in classical AMG graph: %f threshold: %f \n",rmax,gamg->threshold);CHKERRQ(ierr);
 
   for (r = 0;r < f-s;r++) {
     lsparse[r] = 0;
