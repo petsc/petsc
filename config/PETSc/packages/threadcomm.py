@@ -15,5 +15,6 @@ class Configure(PETSc.package.NewPackage):
     return
 
   def configureLibrary(self):
+    raise RuntimeError('Please use petsc-dev for threadcomm functionality')
     self.addDefine('THREADCOMM_ACTIVE',1)
     return
