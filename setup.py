@@ -10,10 +10,9 @@ Python bindings for PETSc libraries.
 
   You can also install `petsc4py-dev`_ with::
 
-    $ pip install petsc4py==dev petsc==dev
+    $ pip install petsc==dev petsc4py==dev 
 
-  .. _petsc4py-dev: hg+https://code.google.com/p/
-                    petsc4py/#egg=petsc4py-dev
+  .. _petsc4py-dev: hg+https://code.google.com/p/petsc4py/#egg=petsc4py-dev
 """
 
 ## try:
