@@ -420,8 +420,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
 #if !defined(PETSC_USE_COMPLEX)
     abs_tol=1.e-8;
 /*    LAPACKsyev_("V","U",&Bt,correlation_mat,&Bt,singular_vals,&temp_work,&lwork,&lierr); */
-    LAPACKsyevx_("V","A","U",&Bt,correlation_mat,&Bt,&dummy_real,&dummy_real,&dummy_int,&dummy_int,
-                 &abs_tol,&eigs_found,singular_vals,singular_vectors,&Bt,&temp_work,&lwork,iwork,ifail,&lierr);
+    PetscStackCallBLAS("LAPACKsyevx",LAPACKsyevx_("V","A","U",&Bt,correlation_mat,&Bt,&dummy_real,&dummy_real,&dummy_int,&dummy_int,&abs_tol,&eigs_found,singular_vals,singular_vectors,&Bt,&temp_work,&lwork,iwork,ifail,&lierr));
 #else
 /*    LAPACKsyev_("V","U",&Bt,correlation_mat,&Bt,singular_vals,&temp_work,&lwork,rwork,&lierr); */
 /*  LAPACK call is missing here! TODO */
@@ -451,11 +450,9 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
     dummy_int = Bs;
     ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
 #if !defined(PETSC_USE_COMPLEX)
-    LAPACKgesvd_("O","N",&Bs,&Bt,&temp_quadrature_constraint[0],&Bs,singular_vals,
-                 &dummy_scalar,&dummy_int,&dummy_scalar,&dummy_int,&temp_work,&lwork,&lierr);
+    PetscStackCallBLAS("LAPACKgesvd",LAPACKgesvd_("O","N",&Bs,&Bt,&temp_quadrature_constraint[0],&Bs,singular_vals,&dummy_scalar,&dummy_int,&dummy_scalar,&dummy_int,&temp_work,&lwork,&lierr));
 #else
-    LAPACKgesvd_("O","N",&Bs,&Bt,&temp_quadrature_constraint[0],&Bs,singular_vals,
-                 &dummy_scalar,&dummy_int,&dummy_scalar,&dummy_int,&temp_work,&lwork,rwork,&lierr);
+    PetscStackCallBLAS("LAPACKgesvd",LAPACKgesvd_("O","N",&Bs,&Bt,&temp_quadrature_constraint[0],&Bs,singular_vals,&dummy_scalar,&dummy_int,&dummy_scalar,&dummy_int,&temp_work,&lwork,rwork,&lierr));
 #endif
     if ( lierr ) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in query to SVD Lapack routine %d",(int)lierr);
@@ -552,7 +549,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
       quad_value = 1.0;
       if (use_nnsp_true) { /* check if array is null on the connected component in case use_nnsp_true has been requested */
         ierr = PetscBLASIntCast(size_of_constraint,&Bs);CHKERRQ(ierr);
-        quad_value = BLASasum_(&Bs,&temp_quadrature_constraint[temp_indices[total_counts]],&Bone);
+        PetscStackCallBLAS("BLASasum",quad_value = BLASasum_(&Bs,&temp_quadrature_constraint[temp_indices[total_counts]],&Bone));
       }
       if (quad_value > 0.0) { /* keep indices and values */
         temp_constraints++;
@@ -572,16 +569,14 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
       /* Store upper triangular part of correlation matrix */
       for (j=0;j<temp_constraints;j++) {
         for (k=0;k<j+1;k++) {
-          correlation_mat[j*temp_constraints+k]=BLASdot_(&Bs,&temp_quadrature_constraint[temp_indices[temp_start_ptr+j]],&Bone,
-                                                         &temp_quadrature_constraint[temp_indices[temp_start_ptr+k]],&Bone);
+          PetscStackCallBLAS("BLASdot_",correlation_mat[j*temp_constraints+k]=BLASdot_(&Bs,&temp_quadrature_constraint[temp_indices[temp_start_ptr+j]],&Bone,&temp_quadrature_constraint[temp_indices[temp_start_ptr+k]],&Bone));
 
         }
       }
       ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
 #if !defined(PETSC_USE_COMPLEX)
 /*      LAPACKsyev_("V","U",&Bt,correlation_mat,&Bt,singular_vals,work,&lwork,&lierr); */
-      LAPACKsyevx_("V","A","U",&Bt,correlation_mat,&Bt,&dummy_real,&dummy_real,&dummy_int,&dummy_int,
-                 &abs_tol,&eigs_found,singular_vals,singular_vectors,&Bt,work,&lwork,iwork,ifail,&lierr);
+      PetscStackCallBLAS("LAPACKsyevx",LAPACKsyevx_("V","A","U",&Bt,correlation_mat,&Bt,&dummy_real,&dummy_real,&dummy_int,&dummy_int,&abs_tol,&eigs_found,singular_vals,singular_vectors,&Bt,work,&lwork,iwork,ifail,&lierr));
 #else
 /*  LAPACK call is missing here! TODO */
       SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Not yet implemented for complexes when PETSC_MISSING_GESVD = 1");
@@ -599,7 +594,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
           singular_vals[k]=1.0/PetscSqrtReal(singular_vals[k]);
         }
         ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
-        BLASgemm_("N","N",&Bs,&Bt,&Bt,&one,&temp_quadrature_constraint[temp_indices[temp_start_ptr]],&Bs,correlation_mat,&Bt,&zero,temp_basis,&Bs);
+        PetscStackCallBLAS("BLASgemm_",BLASgemm_("N","N",&Bs,&Bt,&Bt,&one,&temp_quadrature_constraint[temp_indices[temp_start_ptr]],&Bs,correlation_mat,&Bt,&zero,temp_basis,&Bs));
         ierr = PetscFPTrapPop();CHKERRQ(ierr);
         /* copy POD basis into used quadrature memory */
         for (k=0;k<Bt-j;k++) {
@@ -615,11 +610,9 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
       dummy_int = Bs;
       ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
 #if !defined(PETSC_USE_COMPLEX)
-      LAPACKgesvd_("O","N",&Bs,&Bt,&temp_quadrature_constraint[temp_indices[temp_start_ptr]],&Bs,singular_vals,
-                   &dummy_scalar,&dummy_int,&dummy_scalar,&dummy_int,work,&lwork,&lierr);
+      PetscStackCallBLAS("LAPACKgesvd",LAPACKgesvd_("O","N",&Bs,&Bt,&temp_quadrature_constraint[temp_indices[temp_start_ptr]],&Bs,singular_vals,&dummy_scalar,&dummy_int,&dummy_scalar,&dummy_int,work,&lwork,&lierr));
 #else
-      LAPACKgesvd_("O","N",&Bs,&Bt,&temp_quadrature_constraint[temp_indices[temp_start_ptr]],&Bs,singular_vals,
-                   &dummy_scalar,&dummy_int,&dummy_scalar,&dummy_int,work,&lwork,rwork,&lierr);
+      PetscStackCallBLAS("LAPACKgesvd",LAPACKgesvd_("O","N",&Bs,&Bt,&temp_quadrature_constraint[temp_indices[temp_start_ptr]],&Bs,singular_vals,&dummy_scalar,&dummy_int,&dummy_scalar,&dummy_int,work,&lwork,rwork,&lierr));
 #endif
       if (lierr) {
         SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in SVD Lapack routine %d",(int)lierr);
@@ -793,7 +786,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
             }
             Bt = temp_constraints;
             ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
-            LAPACKgesv_(&Bt,&Bone,temp_basis,&Bt,ipiv,work,&Bt,&lierr);
+            PetscStackCallBLAS("LAPACKgesv",LAPACKgesv_(&Bt,&Bone,temp_basis,&Bt,ipiv,work,&Bt,&lierr));
             if ( lierr ) {
               SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in GESV Lapack routine %d",(int)lierr);
             }
