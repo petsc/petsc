@@ -96,13 +96,13 @@ def getpythoninfo():
 
 def getlibraryinfo():
     from petsc4py import PETSc
-    (major, minor, micro), patch = PETSc.Sys.getVersion(patch=True)
+    (major, minor, micro) = PETSc.Sys.getVersion()
     r = PETSc.Sys.getVersionInfo()['release']
     if r: release = 'release'
     else: release = 'development'
     arch = PETSc.__arch__
-    return ("PETSc %d.%d.%d-p%d %s (conf: '%s')"
-            % (major, minor, micro, patch, release, arch) )
+    return ("PETSc %d.%d.%d %s (conf: '%s')"
+            % (major, minor, micro, release, arch) )
     
 def getpackageinfo(pkg):
     return ("%s %s (%s)" % (pkg.__name__,

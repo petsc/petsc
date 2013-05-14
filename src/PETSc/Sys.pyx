@@ -10,8 +10,7 @@ cdef class Sys:
         cdef int cmicro = PETSC_VERSION_SUBMINOR
         cdef int cpatch = PETSC_VERSION_PATCH
         cdef int cdevel = not PETSC_VERSION_RELEASE
-        cdef const_char *cdate       = PETSC_VERSION_DATE
-        cdef const_char *cpatchdate  = PETSC_VERSION_PATCH_DATE
+        cdef const_char *cdate = PETSC_VERSION_DATE
         cdef const_char *cauthorinfo = PETSC_AUTHOR_INFO
         version = (cmajor, cminor, cmicro)
         out = version
@@ -22,8 +21,7 @@ cdef class Sys:
             if devel:
                 out.append(<bint>cdevel)
             if date:
-                if patch: date = [bytes2str(cdate), bytes2str(cpatchdate)]
-                else:     date = bytes2str(cdate)
+                date = bytes2str(cdate)
                 out.append(date)
             if author:
                 author = bytes2str(cauthorinfo).split('\n')
@@ -38,8 +36,7 @@ cdef class Sys:
         cdef int cmicro = PETSC_VERSION_SUBMINOR
         cdef int cpatch = PETSC_VERSION_PATCH
         cdef int crelease = PETSC_VERSION_RELEASE
-        cdef const_char *cdate       = PETSC_VERSION_DATE
-        cdef const_char *cpatchdate  = PETSC_VERSION_PATCH_DATE
+        cdef const_char *cdate = PETSC_VERSION_DATE
         cdef const_char *cauthorinfo = PETSC_AUTHOR_INFO
         author = bytes2str(cauthorinfo).split('\n')
         author = [s.strip() for s in author if s]
@@ -49,7 +46,6 @@ cdef class Sys:
                     patch      = cpatch,
                     release    = <bint>crelease,
                     date       = bytes2str(cdate),
-                    patchdate  = bytes2str(cpatchdate),
                     authorinfo = author)
 
     # --- xxx ---

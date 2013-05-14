@@ -6,7 +6,6 @@ cdef extern from * nogil:
     enum: PETSC_VERSION_PATCH
     enum: PETSC_VERSION_RELEASE
     char* PETSC_VERSION_DATE
-    char* PETSC_VERSION_PATCH_DATE
     char* PETSC_AUTHOR_INFO
 
     int PetscInitialize(int*,char***,char[],char[])
