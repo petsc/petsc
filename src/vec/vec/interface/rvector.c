@@ -1443,7 +1443,7 @@ PetscErrorCode VecGetArray(Vec x,PetscScalar **a)
     }
 #endif
 #if defined(PETSC_HAVE_VIENNACL)
-    if (x->valid_GPU_array == PETSC_VIENNACL_GPU || !*((PetscScalar**)x->data)) {
+    if (x->valid_GPU_array == PETSC_VIENNACL_GPU) {
       ierr = VecViennaCLCopyFromGPU(x);CHKERRQ(ierr);
     }
 #endif
@@ -1493,7 +1493,7 @@ PetscErrorCode VecGetArrayRead(Vec x,const PetscScalar **a)
     }
 #endif
 #if defined(PETSC_HAVE_VIENNACL)
-    if (x->valid_GPU_array == PETSC_VIENNACL_GPU || !*((PetscScalar**)x->data)) {
+    if (x->valid_GPU_array == PETSC_VIENNACL_GPU) {
       ierr = VecViennaCLCopyFromGPU(x);CHKERRQ(ierr);
     }
 #endif
