@@ -124,7 +124,7 @@ PetscErrorCode  PetscFClose(MPI_Comm comm,FILE *fd)
 .seealso: PetscFOpen(), PetscFClose(), PetscPOpen()
 
 @*/
-PetscErrorCode PetscPClose(MPI_Comm comm,FILE *fd,PetscInt *rval)
+PetscErrorCode PetscPClose(MPI_Comm comm,FILE *fd,int *rval)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;
