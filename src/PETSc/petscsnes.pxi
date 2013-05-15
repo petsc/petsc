@@ -16,6 +16,17 @@ cdef extern from * nogil:
     PetscSNESType SNESNCG
     PetscSNESType SNESFAS
     PetscSNESType SNESMS
+    PetscSNESType SNESNASM
+    PetscSNESType SNESANDERSON
+    PetscSNESType SNESASPIN
+
+    ctypedef enum PetscSNESNormType "SNESNormType":
+      SNES_NORM_DEFAULT
+      SNES_NORM_NONE
+      SNES_NORM_FUNCTION
+      SNES_NORM_INITIAL_ONLY
+      SNES_NORM_FINAL_ONLY
+      SNES_NORM_INITIAL_FINAL_ONLY
 
     ctypedef enum PetscSNESConvergedReason "SNESConvergedReason":
       # iterating
@@ -57,6 +68,11 @@ cdef extern from * nogil:
                                               PetscMatStructure*,
                                               void*) except PETSC_ERR_PYTHON
 
+    ctypedef int (*PetscSNESObjectiveFunction)(PetscSNES,
+                                               PetscVec,
+                                               PetscReal*,
+                                               void*) except PETSC_ERR_PYTHON
+
     ctypedef int (*PetscSNESConvergedFunction)(PetscSNES,
                                                PetscInt,
                                                PetscReal,
@@ -97,9 +113,15 @@ cdef extern from * nogil:
     int SNESSetUpdate(PetscSNES,PetscSNESUpdateFunction)
     int SNESSetJacobian(PetscSNES,PetscMat,PetscMat,PetscSNESJacobianFunction,void*)
     int SNESGetJacobian(PetscSNES,PetscMat*,PetscMat*,PetscSNESJacobianFunction*,void**)
+    int SNESSetObjective(PetscSNES,PetscSNESObjectiveFunction,void*)
+    int SNESGetObjective(PetscSNES,PetscSNESObjectiveFunction*,void**)
 
     int SNESComputeFunction(PetscSNES,PetscVec,PetscVec)
     int SNESComputeJacobian(PetscSNES,PetscVec,PetscMat*,PetscMat*,PetscMatStructure*)
+    int SNESComputeObjective(PetscSNES,PetscVec,PetscReal*)
+
+    int SNESSetNormType(PetscSNES,PetscSNESNormType)
+    int SNESGetNormType(PetscSNES,PetscSNESNormType*)
 
     int SNESSetTolerances(PetscSNES,PetscReal,PetscReal,PetscReal,PetscInt,PetscInt)
     int SNESGetTolerances(PetscSNES,PetscReal*,PetscReal*,PetscReal*,PetscInt*,PetscInt*)
@@ -232,6 +254,22 @@ cdef int SNES_Jacobian(
     cdef PetscMat Jtmp = NULL, Ptmp = NULL
     Jtmp = J[0]; J[0] = Jmat.mat; Jmat.mat = Jtmp
     Ptmp = P[0]; P[0] = Pmat.mat; Pmat.mat = Ptmp
+    return 0
+
+# -----------------------------------------------------------------------------
+
+cdef int SNES_Objective(
+    PetscSNES  snes,
+    PetscVec   x,
+    PetscReal *o,
+    void*      ctx,
+    ) except PETSC_ERR_PYTHON with gil:
+    cdef SNES Snes = ref_SNES(snes)
+    cdef Vec  Xvec = ref_Vec(x)
+    cdef object obj
+    (objective, args, kargs) = Snes.get_attr('__objective__')
+    obj = objective(Snes, Xvec, *args, **kargs)
+    o[0] = asReal(obj)
     return 0
 
 # -----------------------------------------------------------------------------

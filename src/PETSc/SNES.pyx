@@ -15,6 +15,25 @@ class SNESType(object):
     NCG          = S_(SNESNCG)
     FAS          = S_(SNESFAS)
     MS           = S_(SNESMS)
+    NASM         = S_(SNESNASM)
+    ANDERSON     = S_(SNESANDERSON)
+    ASPIN        = S_(SNESASPIN)
+
+class SNESNormType(object):
+    # native
+    NORM_DEFAULT            = SNES_NORM_DEFAULT
+    NORM_NONE               = SNES_NORM_NONE
+    NORM_FUNCTION           = SNES_NORM_FUNCTION
+    NORM_INITIAL_ONLY       = SNES_NORM_INITIAL_ONLY
+    NORM_FINAL_ONLY         = SNES_NORM_FINAL_ONLY
+    NORM_INITIAL_FINAL_ONLY = SNES_NORM_INITIAL_FINAL_ONLY
+    # aliases
+    DEFAULT            = NORM_DEFAULT           
+    NONE               = NORM_NONE              
+    FUNCTION           = NORM_FUNCTION          
+    INITIAL_ONLY       = NORM_INITIAL_ONLY      
+    FINAL_ONLY         = NORM_FINAL_ONLY        
+    INITIAL_FINAL_ONLY = NORM_INITIAL_FINAL_ONLY
 
 class SNESConvergedReason(object):
     # iterating
@@ -40,6 +59,7 @@ class SNESConvergedReason(object):
 cdef class SNES(Object):
 
     Type = SNESType
+    NormType = SNESNormType
     ConvergedReason = SNESConvergedReason
 
     # --- xxx ---
@@ -180,6 +200,20 @@ cdef class SNES(Object):
         cdef object jacobian = self.get_attr('__jacobian__')
         return (J, P, jacobian)
 
+    def setObjective(self, objective, args=None, kargs=None):
+        if objective is not None:
+            CHKERR( SNESSetObjective(self.snes, SNES_Objective, NULL) )
+            if args  is None: args  = ()
+            if kargs is None: kargs = {}
+            self.set_attr('__objective__', (objective, args, kargs))
+        else:
+            CHKERR( SNESSetObjective(self.snes, NULL, NULL) )
+
+    def getObjective(self):
+        CHKERR( SNESGetObjective(self.snes, NULL, NULL) )
+        cdef object objective = self.get_attr('__objective__')
+        return objective
+
     def computeFunction(self, Vec x not None, Vec f not None):
         CHKERR( SNESComputeFunction(self.snes, x.vec, f.vec) )
 
@@ -189,6 +223,11 @@ cdef class SNES(Object):
         cdef PetscMatStructure flag = MAT_DIFFERENT_NONZERO_PATTERN
         CHKERR( SNESComputeJacobian(self.snes, x.vec, jmat, pmat, &flag) )
         return flag
+
+    def computeObjective(self, Vec x not None):
+        cdef PetscReal o = 0
+        CHKERR( SNESComputeObjective(self.snes, x.vec, &o) )
+        return toReal(o)
 
     # --- tolerances and convergence ---
 
@@ -209,6 +248,14 @@ cdef class SNES(Object):
         CHKERR( SNESGetTolerances(self.snes, &catol, &crtol, &cstol,
                                   &cmaxit, NULL) )
         return (toReal(crtol), toReal(catol), toReal(cstol), toInt(cmaxit))
+
+    def setNormType(self, normtype):
+        CHKERR( SNESSetNormType(self.snes, normtype) )
+
+    def getNormType(self):
+        cdef PetscSNESNormType normtype = SNES_NORM_NONE
+        CHKERR( SNESGetNormType(self.snes, &normtype) )
+        return normtype
 
     def setConvergenceTest(self, converged, args=None, kargs=None):
         if converged is not None:
@@ -648,6 +695,7 @@ cdef class SNES(Object):
 # --------------------------------------------------------------------
 
 del SNESType
+del SNESNormType
 del SNESConvergedReason
 
 # --------------------------------------------------------------------
