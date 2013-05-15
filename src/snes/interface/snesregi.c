@@ -28,6 +28,9 @@ const char *const *SNESConvergedReasons = SNESConvergedReasons_Shifted + 10;
 const char *SNESNormSchedules_Shifted[]    = {"DEFAULT","NONE","ALWAYS","INITIALONLY","FINALONLY","INITIALFINALONLY","SNESNormSchedule","SNES_NORM_",0};
 const char *const *const SNESNormSchedules = SNESNormSchedules_Shifted + 1;
 
+const char *SNESFunctionTypes_Shifted[]    = {"DEFAULT","UNPRECONDITIONED","PRECONDITIONED","SNESFunctionType","SNES_FUNCTION_",0};
+const char *const *const SNESFunctionTypes = SNESFunctionTypes_Shifted + 1;
+
 /*
       This is used by SNESSetType() to make sure that at least one
     SNESRegisterAll() is called. In general, if there is more than one

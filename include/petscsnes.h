@@ -421,6 +421,24 @@ M*/
 PETSC_EXTERN PetscErrorCode SNESSetNormSchedule(SNES,SNESNormSchedule);
 PETSC_EXTERN PetscErrorCode SNESGetNormSchedule(SNES,SNESNormSchedule*);
 
+/*E
+    SNESFunctionType - Type of function computed
+
+   Level: advanced
+
+   Support for these is highly dependent on the solver.
+
+.seealso: SNESSolve(), SNESGetConvergedReason(), KSPSetNormType(),
+          KSPSetConvergenceTest(), KSPSetPCSide()
+E*/
+typedef enum {SNES_FUNCTION_DEFAULT          = -1,
+              SNES_FUNCTION_UNPRECONDITIONED =  0,
+              SNES_FUNCTION_PRECONDITIONED   =  1} SNESFunctionType;
+PETSC_EXTERN const char *const*const SNESFunctionTypes;
+
+PETSC_EXTERN PetscErrorCode SNESSetFunctionType(SNES,SNESFunctionType);
+PETSC_EXTERN PetscErrorCode SNESGetFunctionType(SNES,SNESFunctionType*);
+
 PETSC_EXTERN PetscErrorCode SNESSetGS(SNES,PetscErrorCode (*SNESGSFunction)(SNES,Vec,Vec,void*),void*);
 PETSC_EXTERN PetscErrorCode SNESGetGS(SNES,PetscErrorCode (**SNESGSFunction)(SNES,Vec,Vec,void*),void**);
 PETSC_EXTERN PetscErrorCode SNESSetUseGS(SNES,PetscBool);
