@@ -1890,11 +1890,11 @@ M*/
 
 .vb
            0 1 2 3 4 5 6 7 8 9 10 11
-          -------------------
-   row 3  |  . . . d d d o o o o o o
-   row 4  |  . . . d d d o o o o o o
-   row 5  |  . . . d d d o o o o o o
-          -------------------
+          --------------------------
+   row 3  |. . . d d d o o o o  o  o
+   row 4  |. . . d d d o o o o  o  o
+   row 5  |. . . d d d o o o o  o  o
+          --------------------------
 .ve
 
    Thus, any entries in the d locations are stored in the d (diagonal)
@@ -2007,11 +2007,11 @@ PetscErrorCode  MatMPISBAIJSetPreallocation(Mat B,PetscInt bs,PetscInt d_nz,cons
 
 .vb
            0 1 2 3 4 5 6 7 8 9 10 11
-          -------------------
-   row 3  |  . . . d d d o o o o o o
-   row 4  |  . . . d d d o o o o o o
-   row 5  |  . . . d d d o o o o o o
-          -------------------
+          --------------------------
+   row 3  |. . . d d d o o o o  o  o
+   row 4  |. . . d d d o o o o  o  o
+   row 5  |. . . d d d o o o o  o  o
+          --------------------------
 .ve
 
    Thus, any entries in the d locations are stored in the d (diagonal)
