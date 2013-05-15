@@ -63,7 +63,7 @@ PetscErrorCode  PetscEmacsClientErrorHandler(MPI_Comm comm,int line,const char *
   char           command[PETSC_MAX_PATH_LEN];
   const char     *pdir;
   FILE           *fp;
-  PetscInt       rval;
+  int            rval;
 
   PetscFunctionBegin;
   ierr = PetscGetPetscDir(&pdir);if (ierr) PetscFunctionReturn(ierr);
