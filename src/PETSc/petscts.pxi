@@ -14,10 +14,26 @@ cdef extern from * nogil:
     PetscTSType TSSSP
     PetscTSType TSARKIMEX
     PetscTSType TSROSW
+    PetscTSType TSEIMEX
 
     ctypedef enum PetscTSProblemType "TSProblemType":
-        TS_LINEAR
-        TS_NONLINEAR
+      TS_LINEAR
+      TS_NONLINEAR
+
+    ctypedef enum PetscTSEquationType "TSEquationType":
+      TS_EQ_UNSPECIFIED
+      TS_EQ_EXPLICIT
+      TS_EQ_ODE_EXPLICIT
+      TS_EQ_DAE_SEMI_EXPLICIT_INDEX1
+      TS_EQ_DAE_SEMI_EXPLICIT_INDEX2
+      TS_EQ_DAE_SEMI_EXPLICIT_INDEX3
+      TS_EQ_DAE_SEMI_EXPLICIT_INDEXHI
+      TS_EQ_IMPLICIT
+      TS_EQ_ODE_IMPLICIT
+      TS_EQ_DAE_IMPLICIT_INDEX1
+      TS_EQ_DAE_IMPLICIT_INDEX2
+      TS_EQ_DAE_IMPLICIT_INDEX3
+      TS_EQ_DAE_IMPLICIT_INDEXHI
 
     ctypedef enum PetscTSConvergedReason "TSConvergedReason":
       # iterating
@@ -76,6 +92,8 @@ cdef extern from * nogil:
 
     int TSSetProblemType(PetscTS,PetscTSProblemType)
     int TSGetProblemType(PetscTS,PetscTSProblemType*)
+    int TSSetEquationType(PetscTS,PetscTSEquationType)
+    int TSGetEquationType(PetscTS,PetscTSEquationType*)
     int TSSetType(PetscTS,PetscTSType)
     int TSGetType(PetscTS,PetscTSType*)
 
@@ -86,6 +104,7 @@ cdef extern from * nogil:
 
     int TSSetSolution(PetscTS,PetscVec)
     int TSGetSolution(PetscTS,PetscVec*)
+    int TSGetSolveTime(PetscTS,PetscReal*)
 
     int TSGetRHSFunction(PetscTS,PetscVec*,PetscTSFunctionFunction*,void*)
     int TSGetRHSJacobian(PetscTS,PetscMat*,PetscMat*,PetscTSJacobianFunction*,void**)

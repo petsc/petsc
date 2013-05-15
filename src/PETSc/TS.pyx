@@ -15,6 +15,7 @@ class TSType(object):
     SSP      = S_(TSSSP)
     ARKIMEX  = S_(TSARKIMEX)
     ROSW     = S_(TSROSW)
+    EIMEX    = S_(TSEIMEX)
     # aliases
     FE = EULER
     BE = BEULER
@@ -24,6 +25,21 @@ class TSType(object):
 class TSProblemType(object):
     LINEAR    = TS_LINEAR
     NONLINEAR = TS_NONLINEAR
+
+class TSEquationType(object):
+    UNSPECIFIED               = TS_EQ_UNSPECIFIED
+    EXPLICIT                  = TS_EQ_EXPLICIT
+    ODE_EXPLICIT              = TS_EQ_ODE_EXPLICIT
+    DAE_SEMI_EXPLICIT_INDEX1  = TS_EQ_DAE_SEMI_EXPLICIT_INDEX1
+    DAE_SEMI_EXPLICIT_INDEX2  = TS_EQ_DAE_SEMI_EXPLICIT_INDEX2
+    DAE_SEMI_EXPLICIT_INDEX3  = TS_EQ_DAE_SEMI_EXPLICIT_INDEX3
+    DAE_SEMI_EXPLICIT_INDEXHI = TS_EQ_DAE_SEMI_EXPLICIT_INDEXHI
+    IMPLICIT                  = TS_EQ_IMPLICIT
+    ODE_IMPLICIT              = TS_EQ_ODE_IMPLICIT
+    DAE_IMPLICIT_INDEX1       = TS_EQ_DAE_IMPLICIT_INDEX1
+    DAE_IMPLICIT_INDEX2       = TS_EQ_DAE_IMPLICIT_INDEX2
+    DAE_IMPLICIT_INDEX3       = TS_EQ_DAE_IMPLICIT_INDEX3
+    DAE_IMPLICIT_INDEXHI      = TS_EQ_DAE_IMPLICIT_INDEXHI
 
 class TSConvergedReason(object):
     # iterating
@@ -42,6 +58,7 @@ cdef class TS(Object):
 
     Type = TSType
     ProblemType = TSProblemType
+    EquationType = TSEquationType
     ConvergedReason = TSConvergedReason
 
     # --- xxx ---
@@ -85,6 +102,14 @@ cdef class TS(Object):
         cdef PetscTSProblemType ptype = TS_NONLINEAR
         CHKERR( TSGetProblemType(self.ts, &ptype) )
         return ptype
+
+    def setEquationType(self, eqtype):
+        CHKERR( TSSetEquationType(self.ts, eqtype) )
+
+    def getEquationType(self):
+        cdef PetscTSEquationType eqtype = TS_EQ_UNSPECIFIED
+        CHKERR( TSGetEquationType(self.ts, &eqtype) )
+        return eqtype
 
     def setOptionsPrefix(self, prefix):
         cdef const_char *cval = NULL
@@ -250,6 +275,11 @@ cdef class TS(Object):
         CHKERR( TSGetSolution(self.ts, &u.vec) )
         PetscINCREF(u.obj)
         return u
+
+    def getSolveTime(self):
+        cdef PetscReal rval = 0
+        CHKERR( TSGetSolveTime(self.ts, &rval) )
+        return toReal(rval)
 
     # --- inner solver ---
 
@@ -598,6 +628,12 @@ cdef class TS(Object):
         def __set__(self, value):
             self.setProblemType(value)
 
+    property equation_type:
+        def __get__(self):
+            return self.getEquationType()
+        def __set__(self, value):
+            self.setEquationType(value)
+
     property snes:
         def __get__(self):
             return self.getSNES()
@@ -678,6 +714,7 @@ cdef class TS(Object):
 
 del TSType
 del TSProblemType
+del TSEquationType
 del TSConvergedReason
 
 # -----------------------------------------------------------------------------
