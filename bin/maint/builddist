@@ -47,13 +47,13 @@ PETSC_DIR=`cd $petscrepo;pwd -P`; export PETSC_DIR
 
 # Clean and Update the git repository and check for branch
 cd $PETSC_DIR
-git checkout -f $branch
+git clean -q -f -d -x
+git fetch -q origin
+git checkout -f origin/$branch
 if [ "$?" != "0" ]; then
   echo 'Error: branch: $branch does not exist in $PETSC_DIR'
   exit
 fi
-git clean -q -f -d -x
-git pull -q
 
 pdir=`basename $PETSC_DIR`
 
