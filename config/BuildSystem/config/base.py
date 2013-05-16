@@ -112,7 +112,7 @@ class Configure(script.Script):
     if test.__doc__: self.logWrite('  '+test.__doc__+'\n')
     #t = time.time()
     if not isinstance(args, list): args = [args]
-    ret = apply(test, args,kargs)
+    ret = test(*args,**kargs)
     #self.logPrint('  TIME: '+str(time.time() - t)+' sec', debugSection = 'screen', indent = 0)
     return ret
 
