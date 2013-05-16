@@ -73,6 +73,8 @@ struct _p_TaoSolver {
     Vec XU;
     Vec IL;
     Vec IU;
+    Vec DI;
+    Vec DE;
     Mat hessian;
     Mat hessian_pre;
     Vec sep_objective;

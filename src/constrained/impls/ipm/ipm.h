@@ -17,6 +17,7 @@ typedef struct {
   Vec lamdai, dlamdai, rhs_lamdai;
   Vec lamdae, dlamdae, rhs_lamdae;
   Vec s,ds,rhs_s; /* replaces yi */
+  Vec ci, di;
   Vec Yaff,Laff,dYaff, dLaff;
   Vec Zero_nb, One_nb,Inf_nb,worknb;
   PetscScalar kkt_f; /* d'*x + (1/2)*x'*H*x; */
@@ -33,7 +34,6 @@ typedef struct {
 	      -JacI (ub)
 	      I (xlb)
 	      -I (xub) */
-  Vec ci; /* non-infinite inequality bounds */
   Mat K; /* [ H , 0,   Ae',-Ai']; 
 	    [Ae , 0,   0  , 0];
             [Ai ,-Imi, 0 ,  0];  

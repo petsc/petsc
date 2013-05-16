@@ -121,8 +121,10 @@ PETSC_EXTERN PetscErrorCode TaoDefaultComputeHessian(TaoSolver, Vec, Mat*, Mat*,
 
 PETSC_EXTERN PetscErrorCode TaoDefaultComputeHessianColor(TaoSolver, Vec, Mat*, Mat*, MatStructure*, void*);
 PETSC_EXTERN PetscErrorCode TaoComputeDualVariables(TaoSolver, Vec, Vec);
+PETSC_EXTERN PetscErrorCode TaoComputeDualVariables(TaoSolver, Vec, Vec);
 PETSC_EXTERN PetscErrorCode TaoSetVariableBounds(TaoSolver, Vec, Vec);
 PETSC_EXTERN PetscErrorCode TaoGetVariableBounds(TaoSolver, Vec*, Vec*);
+PETSC_EXTERN PetscErrorCode TaoGetDualVariables(TaoSolver, Vec*, Vec*);
 PETSC_EXTERN PetscErrorCode TaoSetInequalityBounds(TaoSolver, Vec, Vec);
 PETSC_EXTERN PetscErrorCode TaoGetInequalityBounds(TaoSolver, Vec*, Vec*);
 PETSC_EXTERN PetscErrorCode TaoSetVariableBoundsRoutine(TaoSolver, PetscErrorCode(*)(TaoSolver, Vec, Vec, void*), void*);

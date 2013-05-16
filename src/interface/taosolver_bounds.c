@@ -321,6 +321,20 @@ PetscErrorCode TaoComputeDualVariables(TaoSolver tao, Vec DL, Vec DU)
     PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "TaoGetDualVariables"
+PetscErrorCode TaoGetDualVariables(TaoSolver tao, Vec *DE, Vec *DI)
+{
+    PetscFunctionBegin;
+    PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);
+    if (DE) {
+      *DE = tao->DE;
+    } 
+    if (DI) {
+      *DI = tao->DI;
+    }
+    PetscFunctionReturn(0);
+} 
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoSetEqualityConstraintsRoutine"
