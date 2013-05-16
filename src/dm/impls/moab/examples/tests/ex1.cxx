@@ -56,7 +56,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(user->createMeshEvent,0,0,0,0);CHKERRQ(ierr);
-  ierr = DMMoabCreateMoab(comm, user->iface, user->pcomm, user->ltog_tag, &user->range, dm);CHKERRQ(ierr);
+  ierr = DMMoabCreateMoab(comm, user->iface, user->pcomm, &user->ltog_tag, &user->range, dm);CHKERRQ(ierr);
   std::cout << "Created DMMoab using DMMoabCreateDMAndInstance." << std::endl;
   ierr = DMMoabGetInterface(*dm, &user->iface);CHKERRQ(ierr);
 
@@ -70,9 +70,12 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       // make a simple structured mesh
     moab::ScdInterface *scdi;
     merr = user->iface->query_interface(scdi);
+  std::cout << "creating structured." << std::endl;
+
     moab::ScdBox *box;
     merr = scdi->construct_box (moab::HomCoord(0,0,0), moab::HomCoord(2,2,2), NULL, 0, box);MBERRNM(merr);
     user->dim = 3;
+    merr = user->iface->set_dimension(user->dim);MBERRNM(merr);
     std::cout << "Created structured 2x2x2 mesh." << std::endl;
   }
   if (-1 == user->dim) {
@@ -84,7 +87,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     user->dim = user->iface->dimension_from_handle(*tmp_range.rbegin());
   }
   merr = user->iface->get_entities_by_dimension(0, user->dim, user->range);MBERRNM(merr);
-  ierr = DMMoabSetRange(*dm, user->range);CHKERRQ(ierr);
+  ierr = DMMoabSetRange(*dm, &user->range);CHKERRQ(ierr);
 
     // get the requested tag if a name was input
   if (strlen(user->tagname)) {
@@ -110,6 +113,8 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   }
   merr = user->iface->tag_get_length(user->tag, user->tagsize);MBERRNM(merr);
 
+  ierr = DMSetUp(*dm);CHKERRQ(ierr);
+
     // create the dmmoab and initialize its data
   ierr = PetscObjectSetName((PetscObject) *dm, "MOAB mesh");CHKERRQ(ierr);
   ierr = PetscLogEventEnd(user->createMeshEvent,0,0,0,0);CHKERRQ(ierr);
@@ -129,7 +134,7 @@ int main(int argc, char **argv)
   ierr = ProcessOptions(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);
 
   ierr = CreateMesh(PETSC_COMM_WORLD, &user, &user.dm);CHKERRQ(ierr); /* create the MOAB dm and the mesh */
-  ierr = DMMoabCreateVector(user.dm, user.tag, 1, user.range, PETSC_TRUE, PETSC_FALSE,
+  ierr = DMMoabCreateVector(user.dm, user.tag, 1, &user.range, PETSC_TRUE, PETSC_FALSE,
                               &vec);CHKERRQ(ierr); /* create a vec from user-input tag */
   std::cout << "Created VecMoab from existing tag." << std::endl;
   ierr = VecDestroy(&vec);CHKERRQ(ierr);

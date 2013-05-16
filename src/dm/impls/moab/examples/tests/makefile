@@ -13,10 +13,12 @@ include ${PETSC_DIR}/conf/rules
 
 ex1: ex1.o  chkopts
 	-${CLINKER} -o ex1 ex1.o ${PETSC_DM_LIB}
+	dsymutil ./ex1
 	${RM} -f ex1.o
 
 ex2: ex2.o  chkopts
 	-${CLINKER} -o ex2 ex2.o ${PETSC_DM_LIB}
+	dsymutil ./ex2
 	${RM} -f ex2.o
 
 #--------------------------------------------------------------------------
