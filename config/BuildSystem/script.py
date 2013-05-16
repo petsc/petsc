@@ -250,7 +250,6 @@ class Script(logger.Logger):
       else:
         return Script.runShellCommand(command, log, cwd)
 
-    log.write('sh: %s\n' % (command,))
     (output, error, status) = runInShell(command, log, cwd)
     output = logOutput(log, output)
     checkCommand(command, status, output, error)
