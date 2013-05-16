@@ -2091,9 +2091,9 @@ PetscErrorCode DMPlexOrient(DM dm)
     if (supportSize < 2) continue;
     if (supportSize != 2) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Faces should separate only two cells, not %d", supportSize);
     seenA    = PetscBTLookup(seenCells,    support[0]-cStart);
-    flippedA = PetscBTLookup(flippedCells, support[0]-cStart);
+    flippedA = PetscBTLookup(flippedCells, support[0]-cStart) ? 1 : 0;
     seenB    = PetscBTLookup(seenCells,    support[1]-cStart);
-    flippedB = PetscBTLookup(flippedCells, support[1]-cStart);
+    flippedB = PetscBTLookup(flippedCells, support[1]-cStart) ? 1 : 0;
 
     ierr = DMPlexGetConeSize(dm, support[0], &coneSizeA);CHKERRQ(ierr);
     ierr = DMPlexGetConeSize(dm, support[1], &coneSizeB);CHKERRQ(ierr);
@@ -2133,7 +2133,7 @@ PetscErrorCode DMPlexOrient(DM dm)
       } else if (!seenB && !flippedB) {
         ierr = PetscBTSet(flippedCells, support[1]-cStart);CHKERRQ(ierr);
       } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Inconsistent mesh orientation: Fault mesh is non-orientable");
-    } else if (flippedA && flippedB) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Attempt to flip already flipped cell: Fault mesh is non-orientable");
+    } else if (mismatch && flippedA && flippedB) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Attempt to flip already flipped cell: Fault mesh is non-orientable");
     ierr = PetscBTSet(seenCells, support[0]-cStart);CHKERRQ(ierr);
     ierr = PetscBTSet(seenCells, support[1]-cStart);CHKERRQ(ierr);
   }
