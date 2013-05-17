@@ -148,6 +148,31 @@ class Configure(config.base.Configure):
        - libName may be a list of library names'''
     if not isinstance(funcs,list): funcs = [funcs]
     if not isinstance(libName, list): libName = [libName]
+    def genPreamble(f, funcName):
+      # Construct prototype
+      if self.language[-1] == 'FC':
+        return ''
+      if prototype:
+        if isinstance(prototype, str):
+          pre = prototype
+        else:
+          pre = prototype[f]
+      else:
+        # We use char because int might match the return type of a gcc2 builtin and its argument prototype would still apply.
+        pre = 'char '+funcName+'();'
+      return pre
+    def genCall(f, funcName):
+      # Construct function call
+      if call:
+        if isinstance(call, str):
+          body = call
+        else:
+          body = call[f]
+      else:
+        body = funcName+'()'
+      if self.language[-1] != 'FC':
+        body += ';'
+      return body
     for f, funcName in enumerate(funcs):
       # Handle Fortran mangling
       if fortranMangle:
@@ -164,16 +189,7 @@ class Configure(config.base.Configure):
 extern "C" {
 #endif
 '''
-      # Construct prototype
-      if not self.language[-1] == 'FC':
-        if prototype:
-          if isinstance(prototype, str):
-            includes += prototype
-          else:
-            includes += prototype[f]
-        else:
-          # We use char because int might match the return type of a gcc2 builtin and its argument prototype would still apply.
-          includes += 'char '+funcName+'();\n'
+      includes += genPreamble(f, funcName)
       # Handle C++ mangling
       if self.language[-1] == 'Cxx' and not cxxMangle:
         includes += '''
@@ -181,14 +197,7 @@ extern "C" {
 }
 #endif
 '''
-      # Construct function call
-      if call:
-        if isinstance(call, str):
-          body = call
-        else:
-          body = call[f]
-      else:
-        body = funcName+'()\n'
+      body = genCall(f, funcName)
       # Setup link line
       oldLibs = self.setCompilers.LIBS
       if libDir:
