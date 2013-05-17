@@ -125,7 +125,6 @@ class Configure(config.package.Package):
     foundBlas   = 0
     foundLapack = 0
     self.f2c    = 0
-    self.f2cpkg = 0
     mangleFunc = self.compilers.fortranMangling
     foundBlas = self.checkBlas(blasLibrary, self.getOtherLibs(foundBlas, blasLibrary), mangleFunc,'dot')
     if foundBlas:
@@ -149,7 +148,6 @@ class Configure(config.package.Package):
           self.framework.logPrint('Found underscore name mangling on BLAS/LAPACK')
           self.mangling = 'underscore'
           self.f2c = 1
-    self.f2cpkg = self.checkBlas(blasLibrary, self.getOtherLibs(foundBlas, blasLibrary), 0, 'f2cblaslapack311_id')
     return (foundBlas, foundLapack)
 
   def generateGuesses(self):
