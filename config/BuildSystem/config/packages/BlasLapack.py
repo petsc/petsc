@@ -543,17 +543,6 @@ class Configure(config.package.Package):
     if not self.libraries.check(self.dlib,routine,fortranMangle = 0):
       self.addDefine('MISSING_LAPACK_'+routine, 1)
 
-  def checkForRoutine(self,routine):
-    ''' used by other packages to see if a BLAS routine is available
-        This is not really correct because other packages do not (usually) know about f2cblasLapack'''
-    if self.f2c:
-      if self.mangling == 'underscore':
-        return self.libraries.check(self.dlib,routine+'_')
-      else:
-        return self.libraries.check(self.dlib,routine)
-    else:
-      return self.libraries.check(self.dlib,routine,fortranMangle = hasattr(self.compilers, 'FC'))
-
   def check64BitBLASIndices(self):
     '''Check for and use 64bit integer blas'''
     if 'known-64-bit-blas-indices' in self.argDB:
