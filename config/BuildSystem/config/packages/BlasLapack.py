@@ -92,7 +92,7 @@ class Configure(config.package.Package):
   def checkLapack(self, lapackLibrary, otherLibs, fortranMangle, routinesIn = ['getrs', 'geev']):
     oldLibs = self.compilers.LIBS
     routines = list(routinesIn)
-    found   = 0
+    found   = 1
     prototypes = ['','']
     calls      = ['','']
     for routine in range(len(routines)):
@@ -105,8 +105,8 @@ class Configure(config.package.Package):
         calls      = ['DGETRS(0,0,0,0,0,0,0,0,0,0);',
                       'DGEEV(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0);']
     for routine, prototype, call in zip(routines, prototypes, calls):
-      found = found or self.libraries.check(lapackLibrary, routine, otherLibs = otherLibs, fortranMangle = fortranMangle, prototype = prototype, call = call)
-      if found: break
+      found = found and self.libraries.check(lapackLibrary, routine, otherLibs = otherLibs, fortranMangle = fortranMangle, prototype = prototype, call = call)
+      if not found: break
     self.compilers.LIBS = oldLibs
     return found
 
