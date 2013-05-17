@@ -509,25 +509,28 @@ class Configure(config.package.Package):
       raise RuntimeError('Cannot use PESSL instead of ESSL!')
     return
 
+  def mangleBlas(self, baseName):
+    prefix = self.getPrefix()
+    if self.f2c:
+      if self.mangling == 'underscore':
+        return prefix+baseName+'_'
+      else:
+        return prefix+baseName
+    else:
+      return prefix+baseName
+
   def checkMissing(self):
     '''Check for missing LAPACK routines'''
     if self.foundLapack:
       mangleFunc = hasattr(self.compilers, 'FC') and not self.f2c
-      for baseName in ['trsen','gerfs','gges','tgsen','gesvd','getrf','getrs','geev','gelss','syev','syevx','sygv','sygvx','potrf','potrs','stebz','pttrf','pttrs','stein','orgqr','geqrf','gesv','hseqr','geqrf','steqr']:
-        prefix = self.getPrefix()
-        if self.f2c:
-          if self.mangling == 'underscore':
-            routine = prefix+baseName+'_'
-          else:
-            routine = prefix+baseName
-        else:
-          routine = prefix+baseName
-        oldLibs = self.compilers.LIBS
-        if not self.libraries.check(self.lapackLibrary, routine, otherLibs = self.getOtherLibs(), fortranMangle = mangleFunc):
-          self.missingRoutines.append(baseName)
-          self.addDefine('MISSING_LAPACK_'+baseName.upper(), 1)
-        self.compilers.LIBS = oldLibs
-    return
+    routines = ['trsen','gerfs','gges','tgsen','gesvd','getrf','getrs','geev','gelss','syev','syevx','sygv','sygvx','potrf','potrs','stebz','pttrf','pttrs','stein','orgqr','geqrf','gesv','hseqr','steqr']
+    oldLibs = self.compilers.LIBS
+    found, missing = self.libraries.checkClassify(self.lapackLibrary, map(self.mangleBlas,routines), otherLibs = self.getOtherLibs(), fortranMangle = mangleFunc)
+    for baseName in routines:
+      if self.mangleBlas(baseName) in missing:
+        self.missingRoutines.append(baseName)
+        self.addDefine('MISSING_LAPACK_'+baseName.upper(), 1)
+    self.compilers.LIBS = oldLibs
 
   def checklsame(self):
     ''' Do the BLAS/LAPACK libraries have a valid lsame() function with correction binding. Lion and xcode 4.2 do not'''

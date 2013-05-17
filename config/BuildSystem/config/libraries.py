@@ -232,6 +232,24 @@ extern "C" {
     self.popLanguage()
     return found
 
+  def checkClassify(self, libName, funcs, libDir=None, otherLibs=[], prototype='', call='', fortranMangle=0, cxxMangle=0, cxxLink=0):
+    '''Recursive decompose to rapidly classify functions as found or missing'''
+    if self.check(libName, funcs, libDir, otherLibs, prototype, call, fortranMangle, cxxMangle, cxxLink):
+      return (funcs, [])
+    if len(funcs) == 1:
+      return ([], funcs)
+    found = []
+    missing = []
+    if len(funcs) <= 5:          # linear check
+      groups = [[f] for f in funcs]
+    else:                       # bisect
+      groups = [funcs[:len(funcs)/2], funcs[len(funcs)/2:]]
+    for grp in groups:
+      f, m = self.checkClassify(libName, grp, libDir, otherLibs, prototype, call, fortranMangle, cxxMangle, cxxLink)
+      found += f
+      missing += m
+    return found, missing
+
   def checkMath(self):
     '''Check for sin() in libm, the math library'''
     self.math = None
