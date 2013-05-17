@@ -95,8 +95,7 @@ class Configure(config.package.Package):
     found   = 1
     prototypes = ['','']
     calls      = ['','']
-    for routine in range(len(routines)):
-      routines[routine] = self.getPrefix()+routines[routine]
+    routines   = [self.getPrefix()+r for r in routines]
 
     if fortranMangle=='stdcall':
       if routines == ['dgetrs','dgeev']:
