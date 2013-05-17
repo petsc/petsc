@@ -389,7 +389,7 @@ static PetscErrorCode TaoSetFromOptions_IPM(TaoSolver tao)
   ierr = PetscOptionsHead("IPM method for constrained optimization"); CHKERRQ(ierr);
   ierr = PetscOptionsBool("-ipm_monitorkkt","monitor kkt status",PETSC_NULL,ipmP->monitorkkt,&ipmP->monitorkkt,&flg); CHKERRQ(ierr);
   ierr = PetscOptionsReal("-ipm_pushs","parameter to push initial slack variables away from bounds",PETSC_NULL,ipmP->pushs,&ipmP->pushs,&flg);
-  ierr = PetscOptionsReal("-ipm_pushlam","parameter to push initial dual variables away from bounds",PETSC_NULL,ipmP->pushlam,&ipmP->pushlam,&flg);
+  ierr = PetscOptionsReal("-ipm_pushnu","parameter to push initial (inequality) dual variables away from bounds",PETSC_NULL,ipmP->pushnu,&ipmP->pushnu,&flg);
   ierr = PetscOptionsTail(); CHKERRQ(ierr);
   ierr =KSPSetFromOptions(tao->ksp); CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -517,52 +517,22 @@ PetscErrorCode IPMPushInitialPoint(TaoSolver tao)
   TAO_IPM *ipmP = (TAO_IPM *)tao->data;
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  CHKMEMQ;
+
   ierr = TaoComputeVariableBounds(tao); CHKERRQ(ierr);
   if (tao->XL && tao->XU) {
     ierr = VecMedian(tao->XL, tao->solution, tao->XU, tao->solution); CHKERRQ(ierr);
   }
-  ierr = VecSet(ipmP->s,1.0); CHKERRQ(ierr);
+  ierr = VecSet(ipmP->s,ipmP->pushs); CHKERRQ(ierr);
   if (ipmP->nilb > 0) {
-    ierr = VecSet(ipmP->lamdai,1.0); CHKERRQ(ierr);
-    ierr = VecSet(tao->DI,1.0); CHKERRQ(ierr);
+    ierr = VecSet(ipmP->lamdai,ipmP->pushnu); CHKERRQ(ierr);
+    ierr = VecSet(tao->DI,ipmP->pushnu); CHKERRQ(ierr);
   }
   if (ipmP->me > 0) {
     ierr = VecSet(tao->DE,1.0); CHKERRQ(ierr);
     ierr = VecSet(ipmP->lamdae,1.0); CHKERRQ(ierr);
   }
-  CHKMEMQ;
-
-  ierr = IPMComputeKKT(tao); CHKERRQ(ierr);
-  ierr = IPMUpdateK(tao); CHKERRQ(ierr);
-  CHKMEMQ;
-
-  /* Compute affine scaling step */
-  ierr = VecCopy(ipmP->rd,ipmP->rhs_x); CHKERRQ(ierr);
-  ierr = VecCopy(ipmP->rpe,ipmP->rhs_lamdae); CHKERRQ(ierr);
-  ierr = VecCopy(ipmP->rpi,ipmP->rhs_s); CHKERRQ(ierr);
-  ierr = VecCopy(ipmP->complementarity,ipmP->rhs_lamdai); CHKERRQ(ierr);
-  ierr = IPMGatherRHS(tao,ipmP->bigrhs,ipmP->rhs_x,ipmP->rhs_lamdae,
-		      ipmP->rhs_s,ipmP->lamdai); CHKERRQ(ierr);
-  
-  ierr = KSPSetOperators(tao->ksp,ipmP->K,ipmP->K,DIFFERENT_NONZERO_PATTERN); CHKERRQ(ierr);
-  ierr = KSPSolve(tao->ksp,ipmP->bigrhs,ipmP->bigstep);CHKERRQ(ierr);
-  CHKMEMQ;
-  ierr = IPMScatterStep(tao,ipmP->bigstep,tao->stepdirection,ipmP->ds,
-			ipmP->dlamdae,ipmP->dlamdai); CHKERRQ(ierr);
-  CHKMEMQ;
-
-  /* Push initial step into feasible region */
-  ierr = VecSet(ipmP->rhs_s,ipmP->pushs); CHKERRQ(ierr);
-  ierr = VecAXPY(ipmP->s,1.0,ipmP->ds); CHKERRQ(ierr);
-  ierr = VecPointwiseMax(ipmP->s,ipmP->rhs_s,ipmP->s); CHKERRQ(ierr);
-  CHKMEMQ;
 
 
-  ierr = VecSet(ipmP->rhs_lamdai,ipmP->pushlam); CHKERRQ(ierr);
-  ierr = VecAXPY(ipmP->lamdai,1.0,ipmP->dlamdai); CHKERRQ(ierr);
-  ierr = VecPointwiseMax(ipmP->lamdai,ipmP->rhs_lamdai,ipmP->lamdai); CHKERRQ(ierr);
-  CHKMEMQ;
   PetscFunctionReturn(0);
 }
 
@@ -772,8 +742,8 @@ PetscErrorCode IPMUpdateK(TaoSolver tao)
     ierr = MatSetValues(ipmP->K,1,&i,ncols,cols,vals,INSERT_VALUES); CHKERRQ(ierr);
     /*Ae'*/
     for (j=0;j<ncols;j++) {
-      newcol = i + c2;
-      newrow = j;
+      newcol = i -r1 + c2;
+      newrow = cols[j];
       newval = vals[j];
       ierr = MatSetValues(ipmP->K,1,&newrow,1,&newcol,&newval,INSERT_VALUES); CHKERRQ(ierr);
     }
@@ -788,7 +758,7 @@ PetscErrorCode IPMUpdateK(TaoSolver tao)
     /*-Ai'*/
     for (j=0;j<ncols;j++) {
       newcol = i - r2 + c3;
-      newrow = j;
+      newrow = cols[j];
       newval = -vals[j];
       ierr = MatSetValues(ipmP->K,1,&newrow,1,&newcol,&newval,INSERT_VALUES); CHKERRQ(ierr);
     }
@@ -961,8 +931,8 @@ PetscErrorCode TaoCreate_IPM(TaoSolver tao)
   ipmP->dec = 10000; /* line search critera */
   ipmP->taumin = 0.995;
   ipmP->monitorkkt = PETSC_FALSE;
-  ipmP->pushs = 1000;
-  ipmP->pushlam = 1000;
+  ipmP->pushs = 100;
+  ipmP->pushnu = 100;
   /*
   ierr = TaoLineSearchCreate(((PetscObject)tao)->comm, &tao->linesearch); CHKERRQ(ierr);
   ierr = TaoLineSearchSetType(tao->linesearch, ipmls_type); CHKERRQ(ierr);

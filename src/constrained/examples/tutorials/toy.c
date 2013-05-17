@@ -295,7 +295,7 @@ PetscErrorCode FormEqualityJacobian(TaoSolver tao, Vec X, Mat *JE, Mat *JEpre, M
   PetscFunctionBegin;
   ierr = VecGetArray(X,&x); CHKERRQ(ierr);
   rows[0] = 0;       rows[1] = 1;
-  vals[0] = 2*x[0];  vals[1] = -1.0;
+  vals[0] = 2*x[0];  vals[1] = 1.0;
   ierr = VecRestoreArray(X,&x); CHKERRQ(ierr);
   ierr = MatSetValues(*JE,1,rows,2,rows,vals,INSERT_VALUES); CHKERRQ(ierr);
   ierr = MatAssemblyBegin(*JE,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);

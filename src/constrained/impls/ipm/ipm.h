@@ -43,7 +43,7 @@ typedef struct {
   Vec bigstep; /* [dx; dyi; dlamdae; dlamdai] */
   PetscBool monitorkkt;
   PetscScalar alpha1,alpha2;
-  PetscScalar pushs,pushlam;
+  PetscScalar pushs,pushnu;
   IS isxl,isxu,isil,isiu;
 } TAO_IPM;
 
