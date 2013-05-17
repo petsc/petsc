@@ -545,8 +545,6 @@ class Configure(script.Script):
         self.framework.log.write(' output: '+output)
         if status: self.framework.log.write('ret = '+str(status)+'\n')
         if error: self.framework.log.write('error message = {'+error+'}\n')
-        self.framework.log.write(' in '+self.getLinkerCmd()+'\n')
-        self.framework.log.write('Source:\n'+self.getCode(includes, body, codeBegin, codeEnd))
       return
     (out, err, ret) = Configure.executeShellCommand(cmd, checkCommand = report, log = self.framework.log)
     self.linkerObj = linkerObj
