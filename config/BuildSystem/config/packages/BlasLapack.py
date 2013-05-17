@@ -80,7 +80,7 @@ class Configure(config.package.Package):
     oldLibs = self.compilers.LIBS
     prototype = ''
     call      = ''
-    routine   = self.getPrefix()+routineIn
+    routine   = self.mangleBlas(routineIn)
     if fortranMangle=='stdcall':
       if routine=='ddot':
         prototype = 'double __stdcall DDOT(int*,double*,int*,double*,int*);'
@@ -95,7 +95,7 @@ class Configure(config.package.Package):
     found   = 1
     prototypes = ['','']
     calls      = ['','']
-    routines   = [self.getPrefix()+r for r in routines]
+    routines   = map(self.mangleBlas, routines)
 
     if fortranMangle=='stdcall':
       if routines == ['dgetrs','dgeev']:
@@ -510,11 +510,8 @@ class Configure(config.package.Package):
 
   def mangleBlas(self, baseName):
     prefix = self.getPrefix()
-    if self.f2c:
-      if self.mangling == 'underscore':
-        return prefix+baseName+'_'
-      else:
-        return prefix+baseName
+    if self.f2c and self.mangling == 'underscore':
+      return prefix+baseName+'_'
     else:
       return prefix+baseName
 
