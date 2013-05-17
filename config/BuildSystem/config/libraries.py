@@ -160,8 +160,12 @@ class Configure(config.base.Configure):
       else:
         # We use char because int might match the return type of a gcc2 builtin and its argument prototype would still apply.
         pre = 'char '+funcName+'();'
-      return pre
-    def genCall(f, funcName):
+      # Capture the function call in a static function so that any local variables are isolated from
+      # calls to other library functions.
+      return pre + '\nstatic void _check_%s() { %s }' % (funcName, genCall(f, funcName, pre=True))
+    def genCall(f, funcName, pre=False):
+      if self.language[-1] != 'FC' and not pre:
+        return '_check_' + fname + '();'
       # Construct function call
       if call:
         if isinstance(call, str):
@@ -173,62 +177,60 @@ class Configure(config.base.Configure):
       if self.language[-1] != 'FC':
         body += ';'
       return body
-    for f, funcName in enumerate(funcs):
-      # Handle Fortran mangling
-      if fortranMangle:
-        funcName = self.compilers.mangleFortranFunction(funcName)
-      self.framework.logPrint('Checking for function '+str(funcName)+' in library '+str(libName)+' '+str(otherLibs))
-      if self.language[-1] == 'FC':
-        includes = ''
-      else:
-        includes = '/* Override any gcc2 internal prototype to avoid an error. */\n'
-      # Handle C++ mangling
-      if self.language[-1] == 'Cxx' and not cxxMangle:
-        includes += '''
+    # Handle Fortran mangling
+    if fortranMangle:
+      funcs = map(self.compilers.mangleFortranFunction, funcs)
+    self.framework.logPrint('Checking for functions ['+' '.join(funcs)+'] in library '+str(libName)+' '+str(otherLibs))
+    if self.language[-1] == 'FC':
+      includes = ''
+    else:
+      includes = '/* Override any gcc2 internal prototype to avoid an error. */\n'
+    # Handle C++ mangling
+    if self.language[-1] == 'Cxx' and not cxxMangle:
+      includes += '''
 #ifdef __cplusplus
 extern "C" {
 #endif
 '''
-      includes += genPreamble(f, funcName)
-      # Handle C++ mangling
-      if self.language[-1] == 'Cxx' and not cxxMangle:
-        includes += '''
+    includes += '\n'.join([genPreamble(f, fname) for f, fname in enumerate(funcs)])
+    # Handle C++ mangling
+    if self.language[-1] == 'Cxx' and not cxxMangle:
+      includes += '''
 #ifdef __cplusplus
 }
 #endif
 '''
-      body = genCall(f, funcName)
-      # Setup link line
-      oldLibs = self.setCompilers.LIBS
-      if libDir:
-        if not isinstance(libDir, list): libDir = [libDir]
-        for dir in libDir:
-          self.setCompilers.LIBS += ' -L'+dir
-      # new libs may/will depend on system libs so list new libs first!
-      # Matt, do not change this without talking to me
-      if libName and otherLibs:
-        self.setCompilers.LIBS = ' '+self.toString(libName+otherLibs) +' '+ self.setCompilers.LIBS
-      elif otherLibs:
-        self.setCompilers.LIBS = ' '+self.toString(otherLibs) +' '+ self.setCompilers.LIBS
-      elif libName:
-        self.setCompilers.LIBS = ' '+self.toString(libName) +' '+ self.setCompilers.LIBS
-      if cxxMangle: compileLang = 'Cxx'
-      else:         compileLang = self.language[-1]
-      if cxxLink: linklang = 'Cxx'
-      else: linklang = self.language[-1]
-      self.pushLanguage(compileLang)
-      found = 0
-      if self.checkLink(includes, body, linkLanguage=linklang):
-        found = 1
-        # add to list of found libraries
-        if libName:
-          for lib in libName:
-            shortlib = self.getShortLibName(lib)
-            if shortlib: self.addDefine(self.getDefineName(shortlib), 1)
-      self.setCompilers.LIBS = oldLibs
-      self.popLanguage()
-      if not found: return 0
-    return 1
+    body = '\n'.join([genCall(f, fname) for f, fname in enumerate(funcs)])
+    # Setup link line
+    oldLibs = self.setCompilers.LIBS
+    if libDir:
+      if not isinstance(libDir, list): libDir = [libDir]
+      for dir in libDir:
+        self.setCompilers.LIBS += ' -L'+dir
+    # new libs may/will depend on system libs so list new libs first!
+    # Matt, do not change this without talking to me
+    if libName and otherLibs:
+      self.setCompilers.LIBS = ' '+self.toString(libName+otherLibs) +' '+ self.setCompilers.LIBS
+    elif otherLibs:
+      self.setCompilers.LIBS = ' '+self.toString(otherLibs) +' '+ self.setCompilers.LIBS
+    elif libName:
+      self.setCompilers.LIBS = ' '+self.toString(libName) +' '+ self.setCompilers.LIBS
+    if cxxMangle: compileLang = 'Cxx'
+    else:         compileLang = self.language[-1]
+    if cxxLink: linklang = 'Cxx'
+    else: linklang = self.language[-1]
+    self.pushLanguage(compileLang)
+    found = 0
+    if self.checkLink(includes, body, linkLanguage=linklang):
+      found = 1
+      # add to list of found libraries
+      if libName:
+        for lib in libName:
+          shortlib = self.getShortLibName(lib)
+          if shortlib: self.addDefine(self.getDefineName(shortlib), 1)
+    self.setCompilers.LIBS = oldLibs
+    self.popLanguage()
+    return found
 
   def checkMath(self):
     '''Check for sin() in libm, the math library'''
