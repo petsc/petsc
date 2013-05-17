@@ -135,7 +135,8 @@ class Configure(config.package.Package):
     else:
       self.framework.logPrint('Checking for no name mangling on BLAS/LAPACK')
       foundBlas = self.checkBlas(blasLibrary, self.getOtherLibs(foundBlas, blasLibrary), 0, 'dot')
-      foundLapack = self.checkLapack(lapackLibrary, self.getOtherLibs(foundBlas, blasLibrary), 0, ['getrs', 'geev'])
+      if foundBlas:
+        foundLapack = self.checkLapack(lapackLibrary, self.getOtherLibs(foundBlas, blasLibrary), 0, ['getrs', 'geev'])
       if foundBlas and foundLapack:
         self.framework.logPrint('Found no name mangling on BLAS/LAPACK')
         self.mangling = 'unchanged'
@@ -143,7 +144,8 @@ class Configure(config.package.Package):
       else:
         self.framework.logPrint('Checking for underscore name mangling on BLAS/LAPACK')
         foundBlas = self.checkBlas(blasLibrary, self.getOtherLibs(foundBlas, blasLibrary), 0, 'dot_')
-        foundLapack = self.checkLapack(lapackLibrary, self.getOtherLibs(foundBlas, blasLibrary), 0, ['getrs_', 'geev_'])
+        if foundBlas:
+          foundLapack = self.checkLapack(lapackLibrary, self.getOtherLibs(foundBlas, blasLibrary), 0, ['getrs_', 'geev_'])
         if foundBlas and foundLapack:
           self.framework.logPrint('Found underscore name mangling on BLAS/LAPACK')
           self.mangling = 'underscore'
