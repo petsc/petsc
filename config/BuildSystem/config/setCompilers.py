@@ -1101,18 +1101,14 @@ class Configure(config.base.Configure):
     arcWindows = os.path.join(self.tmpDir, 'libconf1.lib')
     def checkArchive(command, status, output, error):
       if error or status:
-        self.framework.logPrint('Possible ERROR while running archiver: '+output)
-        if status: self.framework.logPrint('ret = '+str(status))
-        if error: self.framework.logPrint('error message = {'+error+'}')
+        self.logError('archiver', status, output, error)
         if os.path.isfile(objName):
           os.remove(objName)
         raise RuntimeError('Archiver is not functional')
       return
     def checkRanlib(command, status, output, error):
       if error or status:
-        self.framework.logPrint('Possible ERROR while running ranlib: '+output)
-        if status: self.framework.logPrint('ret = '+str(status))
-        if error: self.framework.logPrint('error message = {'+error+'}')
+        self.logError('ranlib', status, output, error)
         if os.path.isfile(arcUnix):
           os.remove(arcUnix)
         raise RuntimeError('Ranlib is not functional with your archiver.  Try --with-ranlib=true if ranlib is unnecessary.')
