@@ -519,10 +519,11 @@ class Configure(script.Script):
   def filterLinkOutput(self, output):
     return self.framework.filterLinkOutput(output)
 
-  def outputLink(self, includes, body, cleanup = 1, codeBegin = None, codeEnd = None, shared = 0, linkLanguage=None):
+  def outputLink(self, includes, body, cleanup = 1, codeBegin = None, codeEnd = None, shared = 0, linkLanguage=None, examineOutput=lambda ret,out,err:None):
     import sys
 
     (out, err, ret) = self.outputCompile(includes, body, cleanup = 0, codeBegin = codeBegin, codeEnd = codeEnd)
+    examineOutput(ret, out, err)
     out = self.filterCompileOutput(out+'\n'+err)
     if ret or len(out):
       self.framework.logPrint('Compile failed inside link\n'+out)
@@ -546,6 +547,7 @@ class Configure(script.Script):
     def report(command, status, output, error):
       if error or status:
         self.logError('linker', status, output, error)
+        examineOutput(status, output, error)
       return
     (out, err, ret) = Configure.executeShellCommand(cmd, checkCommand = report, log = self.framework.log)
     self.linkerObj = linkerObj
@@ -556,8 +558,8 @@ class Configure(script.Script):
       if os.path.isfile(pdbfile): os.remove(pdbfile)
     return (out+err, ret)
 
-  def checkLink(self, includes = '', body = '', cleanup = 1, codeBegin = None, codeEnd = None, shared = 0, linkLanguage=None):
-    (output, returnCode) = self.outputLink(includes, body, cleanup, codeBegin, codeEnd, shared, linkLanguage)
+  def checkLink(self, includes = '', body = '', cleanup = 1, codeBegin = None, codeEnd = None, shared = 0, linkLanguage=None, examineOutput=lambda ret,out,err:None):
+    (output, returnCode) = self.outputLink(includes, body, cleanup, codeBegin, codeEnd, shared, linkLanguage, examineOutput)
     output = self.filterLinkOutput(output)
     return not (returnCode or len(output))
 
