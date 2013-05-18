@@ -34,12 +34,12 @@ class Configure(config.base.Configure):
     def genIncludes(funcName):
       return 'char %s();\n' % funcName
     def genBody(funcName):
+      # The GNU C library defines __stub_* for functions that it implements
+      # to always fail with ENOSYS.  Some functions are actually named
+      # something starting with __ and the normal name is an alias.
       return '''
-/* The GNU C library defines this for functions which it implements
-to always fail with ENOSYS.  Some functions are actually named
-something starting with __ and the normal name is an alias.  */
 #if defined (__stub_%(func)s) || defined (__stub___%(func)s)
-#error Function %(func)s is defined in library, but will always fail with ENOSYS
+%(func)s_will_always_fail_with_ENOSYS();
 #else
 %(func)s();
 #endif
