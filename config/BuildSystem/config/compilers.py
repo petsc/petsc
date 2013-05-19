@@ -107,7 +107,7 @@ class Configure(config.base.Configure):
     self.cStaticInlineKeyword = 'static'
     self.pushLanguage('C')
     for kw in ['static inline', 'static __inline']:
-      if self.checkCompile(kw+' int foo(int a) {return a;}','int i = foo(1);'):
+      if self.checkCompile(kw+' int foo(int a) {return a;}','foo(1);'):
         self.cStaticInlineKeyword = kw
         self.logPrint('Set C StaticInline keyword to '+self.cStaticInlineKeyword , 4, 'compilers')
         break
@@ -121,7 +121,7 @@ class Configure(config.base.Configure):
     self.cxxStaticInlineKeyword = 'static'
     self.pushLanguage('C++')
     for kw in ['static inline', 'static __inline']:
-      if self.checkCompile(kw+' int foo(int a) {return a;}','int i = foo(1);'):
+      if self.checkCompile(kw+' int foo(int a) {return a;}','foo(1);'):
         self.cxxStaticInlineKeyword = kw
         self.logPrint('Set Cxx StaticInline keyword to '+self.cxxStaticInlineKeyword , 4, 'compilers')
         break
