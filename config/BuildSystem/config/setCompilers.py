@@ -1,5 +1,6 @@
 from __future__ import generators
 import config.base
+import config
 
 import os
 
@@ -123,6 +124,8 @@ class Configure(config.base.Configure):
     return 0
   isNAG = staticmethod(isNAG)
 
+  @staticmethod
+  @config.memoize
   def isGNU(compiler):
     '''Returns true if the compiler is a GNU compiler'''
     try:
@@ -145,7 +148,6 @@ class Configure(config.base.Configure):
     except RuntimeError:
       pass
     return 0
-  isGNU = staticmethod(isGNU)
 
   def isClang(compiler):
     '''Returns true if the compiler is a Clang/LLVM compiler'''

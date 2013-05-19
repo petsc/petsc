@@ -57,3 +57,16 @@ class NamedInStderr:
     def examineStderr(self, ret, out, err):
         if ret:
             self.named += [i for i in self.items if i in err]
+
+
+class memoize(dict):
+    '''Memoizing decorator.  No support for keyword arguments.'''
+    def __init__(self, func):
+        self.func = func
+
+    def __call__(self, *args):
+        return self[args]
+
+    def __missing__(self, args):
+        ret = self[args] = self.func(*args)
+        return ret
