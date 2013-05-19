@@ -96,36 +96,14 @@ builtin and then its argument prototype would still apply. */
     optimization to increase the likelihood of a big-batch compile
     succeeding; we do not rely on the compiler naming missing functions.
     '''
-    funcs = list(funcs)         # In case a set or other iterable was passed in
-    class NamedInStderr:
-      '''Hepler class to log the functions that are written to stderr on
-      failure.  In the common case, all the missing functions are named
-      in the linker error and the rest of the functions can be confirmed
-      to work in a single batch.'''
-      def __init__(self):
-        self.named = []
-      def examineStderr(self, ret, out, err):
-        if ret:
-          self.named += [f for f in funcs if f in err]
-    named = NamedInStderr()
-    if self.check(funcs, libraries, named.examineStderr): # All succeeded
-      return (funcs, [])
-    if len(funcs) == 1:    # Single function failed
-      return ([], funcs)
-    if named.named:
-      funcs = [f for f in funcs if f not in named.named]
-    found = []
-    missing = []
-    if len(funcs) < 5:          # linear check
-      groups = [[f] for f in funcs]
-    else:                       # bisect
-      groups = [funcs[:len(funcs)/2], funcs[len(funcs)/2:]]
-    self.framework.log.write('Functions named in stderr to be processed individually: [' + ' '.join(named.named) + ']\n')
-    groups += [[f] for f in named.named]
-    for grp in groups:
-      f, m = self.checkClassify(grp, libraries)
-      found += f
-      missing += m
+    def functional(funcs):
+      named = config.NamedInStderr(funcs)
+      if self.check(funcs, libraries, named.examineStderr):
+        return True
+      else:
+        return named.named
+    import config
+    found, missing = config.classify(funcs, functional)
     return found, missing
 
   def checkMemcmp(self):

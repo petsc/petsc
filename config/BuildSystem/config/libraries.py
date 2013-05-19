@@ -142,7 +142,7 @@ class Configure(config.base.Configure):
     # no match - assuming the given name is already in short notation
     return lib
 
-  def check(self, libName, funcs, libDir = None, otherLibs = [], prototype = '', call = '', fortranMangle = 0, cxxMangle = 0, cxxLink = 0):
+  def check(self, libName, funcs, libDir = None, otherLibs = [], prototype = '', call = '', fortranMangle = 0, cxxMangle = 0, cxxLink = 0, examineOutput=lambda ret,out,err:None):
     '''Checks that the library "libName" contains "funcs", and if it does defines HAVE_LIB"libName"
        - libDir may be a list of directories
        - libName may be a list of library names'''
@@ -221,7 +221,7 @@ extern "C" {
     else: linklang = self.language[-1]
     self.pushLanguage(compileLang)
     found = 0
-    if self.checkLink(includes, body, linkLanguage=linklang):
+    if self.checkLink(includes, body, linkLanguage=linklang, examineOutput=examineOutput):
       found = 1
       # add to list of found libraries
       if libName:
@@ -234,20 +234,14 @@ extern "C" {
 
   def checkClassify(self, libName, funcs, libDir=None, otherLibs=[], prototype='', call='', fortranMangle=0, cxxMangle=0, cxxLink=0):
     '''Recursive decompose to rapidly classify functions as found or missing'''
-    if self.check(libName, funcs, libDir, otherLibs, prototype, call, fortranMangle, cxxMangle, cxxLink):
-      return (funcs, [])
-    if len(funcs) == 1:
-      return ([], funcs)
-    found = []
-    missing = []
-    if len(funcs) <= 5:          # linear check
-      groups = [[f] for f in funcs]
-    else:                       # bisect
-      groups = [funcs[:len(funcs)/2], funcs[len(funcs)/2:]]
-    for grp in groups:
-      f, m = self.checkClassify(libName, grp, libDir, otherLibs, prototype, call, fortranMangle, cxxMangle, cxxLink)
-      found += f
-      missing += m
+    import config
+    def functional(funcs):
+      named = config.NamedInStderr(funcs)
+      if self.check(libName, funcs, libDir, otherLibs, prototype, call, fortranMangle, cxxMangle, cxxLink):
+        return True
+      else:
+        return named.named
+    found, missing = config.classify(funcs, functional)
     return found, missing
 
   def checkMath(self):
