@@ -151,16 +151,14 @@ PetscErrorCode  PetscInitializeNoArguments(void)
 /*@
       PetscInitialized - Determine whether PETSc is initialized.
 
-7   Level: beginner
+   Level: beginner
 
 .seealso: PetscInitialize(), PetscInitializeNoArguments(), PetscInitializeFortran()
 @*/
-PetscErrorCode  PetscInitialized(PetscBool  *isInitialized)
+PetscErrorCode PetscInitialized(PetscBool  *isInitialized)
 {
-  PetscFunctionBegin;
-  PetscValidPointer(isInitialized, 1);
   *isInitialized = PetscInitializeCalled;
-  PetscFunctionReturn(0);
+  return 0;
 }
 
 #undef __FUNCT__
@@ -174,10 +172,8 @@ PetscErrorCode  PetscInitialized(PetscBool  *isInitialized)
 @*/
 PetscErrorCode  PetscFinalized(PetscBool  *isFinalized)
 {
-  PetscFunctionBegin;
-  PetscValidPointer(isFinalized, 1);
   *isFinalized = PetscFinalizeCalled;
-  PetscFunctionReturn(0);
+  return 0;
 }
 
 extern PetscErrorCode PetscOptionsCheckInitial_Private(void);
