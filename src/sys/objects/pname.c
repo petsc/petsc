@@ -108,12 +108,16 @@ PetscErrorCode  PetscObjectName(PetscObject obj)
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
   if (!obj->name) {
-    void *commp = 0;
+    union {MPI_Comm comm; void *ptr; char raw[sizeof(MPI_Comm)]; } ucomm;
     ierr = MPI_Attr_get(obj->comm,Petsc_Counter_keyval,(void*)&counter,&flg);CHKERRQ(ierr);
     if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"Bad MPI communicator supplied; must be a PETSc communicator");
-    ierr = PetscMemcpy(&commp,&obj->comm,PetscMin(sizeof(commp),sizeof(obj->comm)));CHKERRQ(ierr);
-    ierr = MPI_Bcast((PETSC_UINTPTR_T*)&commp,1,MPIU_SIZE_T,0,obj->comm);CHKERRQ(ierr);
-    ierr = PetscSNPrintf(name,64,"%s_%p_%D",obj->class_name,commp,counter->namecount++);CHKERRQ(ierr);
+    ucomm.ptr = NULL;
+    ucomm.comm = obj->comm;
+    ierr = MPI_Bcast(ucomm.raw,sizeof(MPI_Comm),MPI_BYTE,0,obj->comm);CHKERRQ(ierr);
+    /* If the union has extra bytes, their value is implementation-dependent, but they will normally be what we set last
+     * in 'ucomm.ptr = NULL'.  This output is always implementation-defined (and varies from run to run) so the union
+     * abuse acceptable. */
+    ierr = PetscSNPrintf(name,64,"%s_%p_%D",obj->class_name,ucomm.ptr,counter->namecount++);CHKERRQ(ierr);
     ierr = PetscStrallocpy(name,&obj->name);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
