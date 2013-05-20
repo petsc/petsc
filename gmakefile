@@ -99,7 +99,7 @@ $(OBJDIR)/%.o : %.cu | $$(@D)/.DIR
 	@$(PETSC_GENDEPS.cu) $< -o $(@:%.o=%.d) # Generate the dependencies for later
 
 $(OBJDIR)/%.o : %.F | $$(@D)/.DIR
-	$(PETSC_COMPILE.F) $< -o $@
+	$(PETSC_COMPILE.F) $< -o $@ $(FC_MODULE_OUTPUT_FLAG)$(PETSC_ARCH)/include
 
 %/.DIR :
 	@mkdir -p $(@D)
@@ -112,7 +112,7 @@ $(OBJDIR)/%.o : %.F | $$(@D)/.DIR
 .PHONY: clean all print
 
 clean:
-	rm -rf $(OBJDIR) $(libpetsc_shared) $(libpetscpkgs_shared) $(PETSC_ARCH)/conf/files
+	rm -rf $(OBJDIR) $(libpetsc_shared) $(libpetscpkgs_shared) ${PETSC_ARCH}/include/*.mod $(PETSC_ARCH)/conf/files
 
 # make print VAR=the-variable
 print:
