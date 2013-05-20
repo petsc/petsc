@@ -107,6 +107,8 @@ $(OBJDIR)/%.o : %.F | $$(@D)/.DIR
 
 .PRECIOUS: %/.DIR
 
+.SUFFIXES: # Clear .SUFFIXES because we don't use implicit rules
+
 .PHONY: clean all print
 
 clean:
