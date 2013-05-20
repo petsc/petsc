@@ -1351,9 +1351,10 @@ PETSC_COMM_WORLD = NewComm;
         <li>Run on one processor to see if the problem is only in parallel.</li>
 
         <li>
-          Run with <code>-snes_ls_monitor</code> to see if the line search is failing
-          (this is usually a sign of a bad Jacobian) use -info in PETSc 3.1 and
-          older versions and <code>-snes_linesearch_monitor</code> in PETSc-dev.
+          Run with <code>-snes_linesearch_monitor</code> to see if the line search
+          is failing (this is usually a sign of a bad Jacobian). Use -info in PETSc 3.1
+          and older versions, <code>-snes_ls_monitor</code> in PETSc 3.2
+          and <code>-snes_linesearch_monitor</code> in PETSc 3.3 and later.
         </li>
 
         <li>
