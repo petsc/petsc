@@ -1,5 +1,6 @@
 from __future__ import generators
 import config.base
+import config
 
 import os
 
@@ -123,6 +124,8 @@ class Configure(config.base.Configure):
     return 0
   isNAG = staticmethod(isNAG)
 
+  @staticmethod
+  @config.memoize
   def isGNU(compiler):
     '''Returns true if the compiler is a GNU compiler'''
     try:
@@ -145,7 +148,6 @@ class Configure(config.base.Configure):
     except RuntimeError:
       pass
     return 0
-  isGNU = staticmethod(isGNU)
 
   def isClang(compiler):
     '''Returns true if the compiler is a Clang/LLVM compiler'''
@@ -1101,18 +1103,14 @@ class Configure(config.base.Configure):
     arcWindows = os.path.join(self.tmpDir, 'libconf1.lib')
     def checkArchive(command, status, output, error):
       if error or status:
-        self.framework.logPrint('Possible ERROR while running archiver: '+output)
-        if status: self.framework.logPrint('ret = '+str(status))
-        if error: self.framework.logPrint('error message = {'+error+'}')
+        self.logError('archiver', status, output, error)
         if os.path.isfile(objName):
           os.remove(objName)
         raise RuntimeError('Archiver is not functional')
       return
     def checkRanlib(command, status, output, error):
       if error or status:
-        self.framework.logPrint('Possible ERROR while running ranlib: '+output)
-        if status: self.framework.logPrint('ret = '+str(status))
-        if error: self.framework.logPrint('error message = {'+error+'}')
+        self.logError('ranlib', status, output, error)
         if os.path.isfile(arcUnix):
           os.remove(arcUnix)
         raise RuntimeError('Ranlib is not functional with your archiver.  Try --with-ranlib=true if ranlib is unnecessary.')
