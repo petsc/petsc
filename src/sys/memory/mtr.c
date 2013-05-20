@@ -210,9 +210,11 @@ PetscErrorCode  PetscTrMallocDefault(size_t a,int lineno,const char function[],c
   TRfrags++;
 
 #if defined(PETSC_USE_DEBUG)
-  ierr = PetscStackCopy((PetscStack*)PetscThreadLocalGetValue(petscstack),&head->stack);CHKERRQ(ierr);
-  /* fix the line number to where the malloc() was called, not the PetscFunctionBegin; */
-  head->stack.line[head->stack.currentsize-2] = lineno;
+  if (PetscStackActive()) {
+    ierr = PetscStackCopy((PetscStack*)PetscThreadLocalGetValue(petscstack),&head->stack);CHKERRQ(ierr);
+    /* fix the line number to where the malloc() was called, not the PetscFunctionBegin; */
+    head->stack.line[head->stack.currentsize-2] = lineno;
+  }
 #endif
 
   /*
@@ -452,6 +454,15 @@ PetscErrorCode  PetscMallocGetStack(void *ptr,PetscStack **stack)
   PetscFunctionBegin;
   head   = (TRSPACE*) (((char*)ptr) - HEADER_BYTES);
   *stack = &head->stack;
+  PetscFunctionReturn(0);
+}
+#else
+#undef __FUNCT__
+#define __FUNCT__ "PetscMallocGetStack"
+PetscErrorCode  PetscMallocGetStack(void *ptr,void **stack)
+{
+  PetscFunctionBegin;
+  *stack = 0;
   PetscFunctionReturn(0);
 }
 #endif
