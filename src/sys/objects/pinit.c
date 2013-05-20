@@ -406,8 +406,7 @@ PETSC_EXTERN PetscMPIInt MPIAPI Petsc_DelComm_Outer(MPI_Comm comm,PetscMPIInt ke
 
   PetscFunctionBegin;
   if (keyval != Petsc_InnerComm_keyval) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"Unexpected keyval");
-  ierr = MPI_Attr_get(comm,Petsc_InnerComm_keyval,&icomm,&flg);CHKERRQ(ierr);
-  if (icomm.comm != *(MPI_Comm*)&attr_val) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"Unexpected attribute");
+  icomm.ptr = attr_val;
 
   ierr = MPI_Attr_get(icomm.comm,Petsc_OuterComm_keyval,&ocomm,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"Inner MPI_Comm does not have expected reference to outer comm");
