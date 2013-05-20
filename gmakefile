@@ -1,0 +1,83 @@
+# -*- mode: makefile-gmake -*-
+
+include $(PETSC_DIR)/conf/variables
+
+OBJDIR := $(PETSC_ARCH)/obj-gmake
+LIBDIR := $(PETSC_ARCH)/lib
+
+all : $(LIBDIR)/libpetsc.so
+
+.SECONDEXPANSION:		# to expand $$(@D)/.DIR
+
+ifeq ($(V),)
+  quiet_HELP := "Use \"$(MAKE) V=1\" to see the verbose compile lines.\n"
+  quiet = @printf $(quiet_HELP)$(eval quiet_HELP:=)"  $1$2 $@\n"; $($1)
+else ifeq ($(V),0)		# Same, but do not print any help
+  quiet = @printf "  $1$2 $@\n"; $($1)
+else				# Show the full command line
+  quiet = $($1)
+endif
+
+$(PETSC_ARCH)/conf/files :
+	$(PYTHON) conf/gmakegen.py PETSC_ARCH=$(PETSC_ARCH)
+
+-include $(PETSC_ARCH)/conf/files
+
+ifeq ($(PETSC_LANGUAGE),CXXONLY)
+  cc_name := CXX
+else
+  cc_name := CC
+endif
+
+PETSC_DEPFLAGS.c := -MMD -MP
+PETSC_DEPFLAGS.cxx := -MMD -MP
+PETSC_DEPFLAGS.F := -MMD -MP
+
+PETSC_COMPILE.c = $(call quiet,$(cc_name)) -c $(PCC_FLAGS) $(CFLAGS) $(CCPPFLAGS) $(PETSC_DEPFLAGS.c)
+PETSC_COMPILE.cxx = $(call quiet,CXX) -c $(PCC_FLAGS) $(CFLAGS) $(CCPPFLAGS) $(PETSC_DEPFLAGS.cxx)
+PETSC_COMPILE.cu = $(call quiet,CUDAC) -c $(CUDAC_FLAGS) --compiler-options="$(PCC_FLAGS) $(CXXFLAGS) $(CCPPFLAGS)"
+PETSC_GENDEPS.cu = $(call quiet,CUDAC,.dep) --generate-dependencies $(CUDAC_FLAGS) --compiler-options="$(PCC_FLAGS) $(CXXFLAGS) $(CCPPFLAGS)"
+PETSC_COMPILE.F = $(call quiet,FC) -c $(FC_FLAGS) $(FFLAGS) $(FCPPFLAGS) $(PETSC_DEPFLAGS.F)
+
+pkgs := sys vec mat dm ksp snes ts
+langs := c cu cxx F
+allobj := $(foreach pkg, $(pkgs), $(foreach lang, $(langs), $($(pkg)srcs.$(lang):%.$(lang)=$(OBJDIR)/%.o)))
+
+$(LIBDIR)/libpetsc.so : $(allobj) | $$(@D)/.DIR
+	$(call quiet,CLINKER) -shared -o $@ $^ $(PETSC_EXTERNAL_LIB_BASIC)
+
+$(OBJDIR)/%.o : %.c | $$(@D)/.DIR
+	$(PETSC_COMPILE.c) $< -o $@
+
+$(OBJDIR)/%.o : %.cxx | $$(@D)/.DIR
+	$(PETSC_COMPILE.cxx) $< -o $@
+
+$(OBJDIR)/%.o : %.cu | $$(@D)/.DIR
+	$(PETSC_COMPILE.cu) $< -o $@ # Compile first so that if there is an error, it comes from a normal compile
+	@$(PETSC_GENDEPS.cu) $< -o $(@:%.o=%.d) # Generate the dependencies for later
+
+$(OBJDIR)/%.o : %.F | $$(@D)/.DIR
+	$(PETSC_COMPILE.F) $< -o $@
+
+%/.DIR :
+	@mkdir -p $(@D)
+	@touch $@
+
+.PRECIOUS: %/.DIR
+
+.PHONY: clean all print
+
+clean:
+	rm -rf $(OBJDIR) $(LIBDIR)/libpetsc* $(PETSC_ARCH)/conf/files
+
+# make print VAR=the-variable
+print:
+	@echo $($(VAR))
+
+allobj.d := $(allobj:%.o=%.d)
+# Tell make that allobj.d are all up to date.  Without this, the include
+# below has quadratic complexity, taking more than one second for a
+# do-nothing build of PETSc (much worse for larger projects)
+$(allobj.d) : ;
+
+-include $(allobj.d)
