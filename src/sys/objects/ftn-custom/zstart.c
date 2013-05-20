@@ -130,7 +130,8 @@ extern MPI_Op PetscMaxSum_Op;
 
 PETSC_EXTERN void MPIAPI PetscMaxSum_Local(void*,void*,PetscMPIInt*,MPI_Datatype*);
 PETSC_EXTERN PetscMPIInt MPIAPI Petsc_DelCounter(MPI_Comm,PetscMPIInt,void*,void*);
-PETSC_EXTERN PetscMPIInt MPIAPI Petsc_DelComm(MPI_Comm,PetscMPIInt,void*,void*);
+PETSC_EXTERN PetscMPIInt MPIAPI Petsc_DelComm_Inner(MPI_Comm,PetscMPIInt,void*,void*);
+PETSC_EXTERN PetscMPIInt MPIAPI Petsc_DelComm_Outer(MPI_Comm,PetscMPIInt,void*,void*);
 
 extern PetscErrorCode  PetscOptionsCheckInitial_Private(void);
 extern PetscErrorCode  PetscOptionsCheckInitial_Components(void);
@@ -381,9 +382,9 @@ PETSC_EXTERN void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(l
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating MPI ops\n");return;}
   *ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,Petsc_DelCounter,&Petsc_Counter_keyval,(void*)0);
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating MPI keyvals\n");return;}
-  *ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,Petsc_DelComm,&Petsc_InnerComm_keyval,(void*)0);
+  *ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,Petsc_DelComm_Outer,&Petsc_InnerComm_keyval,(void*)0);
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating MPI keyvals\n");return;}
-  *ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,Petsc_DelComm,&Petsc_OuterComm_keyval,(void*)0);
+  *ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,Petsc_DelComm_Inner,&Petsc_OuterComm_keyval,(void*)0);
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating MPI keyvals\n");return;}
 
   /*
