@@ -3,7 +3,7 @@
    Defines a block Jacobi preconditioner.
 */
 #include <petsc-private/pcimpl.h>              /*I "petscpc.h" I*/
-#include <../src/ksp/pc/impls/bjacobi/bjacobi.h>        
+#include <../src/ksp/pc/impls/bjacobi/bjacobi.h>
 
 static PetscErrorCode PCSetUp_BJacobi_Singleblock(PC,Mat,Mat);
 static PetscErrorCode PCSetUp_BJacobi_Multiblock(PC,Mat,Mat);
@@ -1117,7 +1117,7 @@ static PetscErrorCode PCSetUp_BJacobi_Multiblock(PC pc,Mat mat,Mat pmat)
 /* ---------------------------------------------------------------------------------------------*/
 /*
       These are for a single block with multiple processes;
-*/ 
+*/
 #undef __FUNCT__
 #define __FUNCT__ "PCReset_BJacobi_Multiproc"
 static PetscErrorCode PCReset_BJacobi_Multiproc(PC pc)
