@@ -261,7 +261,6 @@ PetscErrorCode  MatNullSpaceCreate(MPI_Comm comm,PetscBool has_cnst,PetscInt n,c
   sp->n        = n;
   sp->vecs     = 0;
   sp->alpha    = 0;
-  sp->vec      = 0;
   sp->remove   = 0;
   sp->rmctx    = 0;
 
@@ -305,7 +304,6 @@ PetscErrorCode  MatNullSpaceDestroy(MatNullSpace *sp)
   PetscValidHeaderSpecific((*sp),MAT_NULLSPACE_CLASSID,1);
   if (--((PetscObject)(*sp))->refct > 0) {*sp = 0; PetscFunctionReturn(0);}
 
-  ierr = VecDestroy(&(*sp)->vec);CHKERRQ(ierr);
   ierr = VecDestroyVecs((*sp)->n,&(*sp)->vecs);CHKERRQ(ierr);
   ierr = PetscFree((*sp)->alpha);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(sp);CHKERRQ(ierr);
@@ -402,14 +400,11 @@ PetscErrorCode  MatNullSpaceTest(MatNullSpace sp,Mat mat,PetscBool  *isNull)
   ierr = PetscOptionsGetBool(NULL,"-mat_null_space_test_view",&flg1,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,"-mat_null_space_test_view_draw",&flg2,NULL);CHKERRQ(ierr);
 
-  if (!sp->vec) {
-    if (n) {
-      ierr = VecDuplicate(sp->vecs[0],&sp->vec);CHKERRQ(ierr);
-    } else {
-      ierr = MatGetVecs(mat,&sp->vec,NULL);CHKERRQ(ierr);
-    }
+  if (n) {
+    ierr = VecDuplicate(sp->vecs[0],&l);CHKERRQ(ierr);
+  } else {
+    ierr = MatGetVecs(mat,&l,NULL);CHKERRQ(ierr);
   }
-  l = sp->vec;
 
   ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)sp),&viewer);CHKERRQ(ierr);
   if (sp->has_cnst) {
@@ -451,6 +446,7 @@ PetscErrorCode  MatNullSpaceTest(MatNullSpace sp,Mat mat,PetscBool  *isNull)
   }
 
   if (sp->remove) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Cannot test a null space provided as a function with MatNullSpaceSetFunction()");
+  ierr = VecDestroy(&l);CHKERRQ(ierr);
   if (isNull) *isNull = consistent;
   PetscFunctionReturn(0);
 }
