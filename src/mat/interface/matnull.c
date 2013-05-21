@@ -333,7 +333,7 @@ PetscErrorCode  MatNullSpaceDestroy(MatNullSpace *sp)
 
 .seealso: MatNullSpaceCreate(), MatNullSpaceDestroy(), MatNullSpaceSetFunction()
 @*/
-PetscErrorCode  MatNullSpaceRemove(MatNullSpace sp,Vec vec,Vec *out)
+PetscErrorCode  MatNullSpaceRemove(MatNullSpace sp,Vec vec)
 {
   PetscScalar    sum;
   PetscInt       i,N;
@@ -342,16 +342,6 @@ PetscErrorCode  MatNullSpaceRemove(MatNullSpace sp,Vec vec,Vec *out)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp,MAT_NULLSPACE_CLASSID,1);
   PetscValidHeaderSpecific(vec,VEC_CLASSID,2);
-
-  if (out) {
-    PetscValidPointer(out,3);
-    if (!sp->vec) {
-      ierr = VecDuplicate(vec,&sp->vec);CHKERRQ(ierr);
-      ierr = PetscLogObjectParent(sp,sp->vec);CHKERRQ(ierr);
-    }
-    ierr = VecCopy(vec,sp->vec);CHKERRQ(ierr);
-    vec  = *out = sp->vec;
-  }
 
   if (sp->has_cnst) {
     ierr = VecGetSize(vec,&N);CHKERRQ(ierr);

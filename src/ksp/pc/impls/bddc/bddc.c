@@ -615,8 +615,8 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
     ierr = VecScatterBegin(pcis->global_to_B,pcis->vec2_B,rhs,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
     ierr = VecScatterEnd  (pcis->global_to_B,pcis->vec2_B,rhs,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
     if (ksp && pcbddc->NullSpace) {
-      ierr = MatNullSpaceRemove(pcbddc->NullSpace,used_vec,NULL);CHKERRQ(ierr);
-      ierr = MatNullSpaceRemove(pcbddc->NullSpace,rhs,NULL);CHKERRQ(ierr);
+      ierr = MatNullSpaceRemove(pcbddc->NullSpace,used_vec);CHKERRQ(ierr);
+      ierr = MatNullSpaceRemove(pcbddc->NullSpace,rhs);CHKERRQ(ierr);
     }
   }
   ierr = VecDestroy(&used_vec);CHKERRQ(ierr);
@@ -2334,11 +2334,11 @@ static PetscErrorCode  PCBDDCApplyInterfacePreconditioner(PC pc)
   ierr = PCBDDCScatterCoarseDataEnd(pc,pcbddc->vec1_P,pcbddc->coarse_rhs,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   if (pcbddc->coarse_rhs) {
     if (pcbddc->CoarseNullSpace) {
-      ierr = MatNullSpaceRemove(pcbddc->CoarseNullSpace,pcbddc->coarse_rhs,NULL);CHKERRQ(ierr);
+      ierr = MatNullSpaceRemove(pcbddc->CoarseNullSpace,pcbddc->coarse_rhs);CHKERRQ(ierr);
     }
     ierr = KSPSolve(pcbddc->coarse_ksp,pcbddc->coarse_rhs,pcbddc->coarse_vec);CHKERRQ(ierr);
     if (pcbddc->CoarseNullSpace) {
-      ierr = MatNullSpaceRemove(pcbddc->CoarseNullSpace,pcbddc->coarse_vec,NULL);CHKERRQ(ierr);
+      ierr = MatNullSpaceRemove(pcbddc->CoarseNullSpace,pcbddc->coarse_vec);CHKERRQ(ierr);
     }
   }
   ierr = PCBDDCScatterCoarseDataBegin(pc,pcbddc->coarse_vec,pcbddc->vec1_P,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
@@ -4803,11 +4803,11 @@ static PetscErrorCode PCBDDCSetupCoarseEnvironment(PC pc,PetscScalar* coarse_sub
     /* create random vec */
     ierr = VecDuplicate(pcbddc->coarse_vec,&check_vec);CHKERRQ(ierr);
     ierr = VecSetRandom(check_vec,NULL);CHKERRQ(ierr);
-    if (pcbddc->CoarseNullSpace) { ierr = MatNullSpaceRemove(pcbddc->CoarseNullSpace,check_vec,NULL);CHKERRQ(ierr); }
+    if (pcbddc->CoarseNullSpace) { ierr = MatNullSpaceRemove(pcbddc->CoarseNullSpace,check_vec);CHKERRQ(ierr); }
     ierr = MatMult(pcbddc->coarse_mat,check_vec,pcbddc->coarse_rhs);CHKERRQ(ierr);
     /* solve coarse problem */
     ierr = KSPSolve(check_ksp,pcbddc->coarse_rhs,pcbddc->coarse_vec);CHKERRQ(ierr);
-    if (pcbddc->CoarseNullSpace) { ierr = MatNullSpaceRemove(pcbddc->CoarseNullSpace,pcbddc->coarse_vec,NULL);CHKERRQ(ierr); }
+    if (pcbddc->CoarseNullSpace) { ierr = MatNullSpaceRemove(pcbddc->CoarseNullSpace,pcbddc->coarse_vec);CHKERRQ(ierr); }
     /* check coarse problem residual error */
     ierr = VecAXPY(check_vec,-1.0,pcbddc->coarse_vec);CHKERRQ(ierr);
     ierr = VecNorm(check_vec,NORM_INFINITY,&infty_error);CHKERRQ(ierr);
