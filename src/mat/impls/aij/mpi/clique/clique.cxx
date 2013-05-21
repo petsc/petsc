@@ -84,7 +84,6 @@ static PetscErrorCode MatMult_Clique(Mat A,Vec X,Vec Y)
   PetscErrorCode        ierr;
   PetscInt              i;
   const PetscCliqScalar *x;
-  PetscCliqScalar       *y;
   Mat_Clique            *cliq=(Mat_Clique*)A->spptr;
   cliq::DistSparseMatrix<PetscCliqScalar> *cmat=cliq->cmat;
   cliq::mpi::Comm cxxcomm(PetscObjectComm((PetscObject)A));
@@ -206,6 +205,7 @@ PetscErrorCode MatCholeskyFactorNumeric_Clique(Mat F,Mat A,const MatFactorInfo *
 {
   PetscErrorCode    ierr;
   Mat_Clique        *cliq=(Mat_Clique*)F->spptr;
+  PETSC_UNUSED
   cliq::DistSparseMatrix<PetscCliqScalar> *cmat;
 
   PetscFunctionBegin;
