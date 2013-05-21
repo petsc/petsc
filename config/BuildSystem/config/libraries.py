@@ -180,6 +180,9 @@ class Configure(config.base.Configure):
     # Handle Fortran mangling
     if fortranMangle:
       funcs = map(self.compilers.mangleFortranFunction, funcs)
+    if not funcs:
+      self.framework.logPrint('No functions to check for in library '+str(libName)+' '+str(otherLibs))
+      return True
     self.framework.logPrint('Checking for functions ['+' '.join(funcs)+'] in library '+str(libName)+' '+str(otherLibs))
     if self.language[-1] == 'FC':
       includes = ''
