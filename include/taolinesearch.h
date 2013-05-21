@@ -27,6 +27,7 @@ typedef enum {
 #define TAOLINESEARCH_OWARMIJO "owarmijo"
 
 PETSC_EXTERN PetscClassId TAOLINESEARCH_CLASSID;
+PETSC_EXTERN PetscFunctionList TaoLineSearchList;
 
 #include "taosolver.h"
 
@@ -64,8 +65,9 @@ PETSC_EXTERN PetscErrorCode TaoLineSearchComputeObjectiveAndGradient(TaoLineSear
 PETSC_EXTERN PetscErrorCode TaoLineSearchComputeObjectiveAndGTS(TaoLineSearch, Vec, PetscReal*, PetscReal*);
 PETSC_EXTERN PetscErrorCode TaoLineSearchSetVariableBounds(TaoLineSearch, Vec, Vec);
 
-PETSC_EXTERN PetscErrorCode TaoLineSearchInitializePackage(const char path[]); 
+PETSC_EXTERN PetscErrorCode TaoLineSearchInitializePackage();
+PETSC_EXTERN PetscErrorCode TaoLineSearchFinalizePackage();
 
-PETSC_EXTERN PetscErrorCode TaoLineSearchRegister(const char[], const char[], const char[], PetscErrorCode (*)(TaoLineSearch));
+PETSC_EXTERN PetscErrorCode TaoLineSearchRegister(const char[], PetscErrorCode (*)(TaoLineSearch));
 
 #endif

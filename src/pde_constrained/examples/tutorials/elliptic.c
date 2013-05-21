@@ -199,9 +199,9 @@ int main(int argc, char **argv)
   ierr = PetscLogStageRegister("Trials",&user.stages[1]); CHKERRQ(ierr);
   ierr = PetscLogStagePush(user.stages[1]); CHKERRQ(ierr);
   for (i=0; i<ntests; i++){
-    ierr = PetscGetTime(&v1); CHKERRQ(ierr);
+    ierr = PetscGetCPUTime(&v1); CHKERRQ(ierr);
     ierr = TaoSolve(tao);  CHKERRQ(ierr);
-    ierr = PetscGetTime(&v2); CHKERRQ(ierr);
+    ierr = PetscGetCPUTime(&v2); CHKERRQ(ierr);
     if (showtime) {
       PetscPrintf(PETSC_COMM_WORLD,"Elapsed time = %G\n",v2-v1); CHKERRQ(ierr);
     }

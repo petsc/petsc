@@ -6,6 +6,24 @@
 static PetscBool TaoPackageInitialized = PETSC_FALSE;
 
 #undef __FUNCT__
+#define __FUNCT__ "TaoFinalizePackage"
+/*@C
+  TaoFinalizePackage - This function destroys everything in the PETSc/TAO 
+  interface to the TaoSolver package. It is called from PetscFinalize().
+
+  Level: developer
+@*/
+PetscErrorCode TaoFinalizePackage(void)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscFunctionListDestroy(&TaoSolverList); CHKERRQ(ierr);
+  TaoPackageInitialized = PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "TaoInitializePackage"
 /*@C
   TaoInitializePackage - This function sets up PETSc to use the TaoSolver 
@@ -13,14 +31,11 @@ static PetscBool TaoPackageInitialized = PETSC_FALSE;
   first entry to TaoCreate(); when using shared libraries, it is called
   from PetscDLLibraryRegister()
 
-  Input parameter:
-. path - The dynamic library path or PETSC_NULL
-
   Level: developer
 
 .seealso: TaoCreate()
 @*/
-PetscErrorCode TaoInitializePackage(const char path[])
+PetscErrorCode TaoInitializePackage()
 {
   PetscErrorCode ierr;
 
@@ -32,7 +47,7 @@ PetscErrorCode TaoInitializePackage(const char path[])
   ierr = PetscClassIdRegister("TaoSolver",&TAOSOLVER_CLASSID); CHKERRQ(ierr);
   
   /* Tell PETSc what solvers are available */
-  ierr = TaoSolverRegisterAll(path); CHKERRQ(ierr);
+  ierr = TaoSolverRegisterAll(); CHKERRQ(ierr);
 
   /* Tell PETSc what events are associated with TaoSolver */
   ierr = PetscLogEventRegister("TaoSolve",TAOSOLVER_CLASSID,&TaoSolver_Solve); CHKERRQ(ierr);
@@ -42,12 +57,11 @@ PetscErrorCode TaoInitializePackage(const char path[])
   ierr = PetscLogEventRegister("TaoConstraintsEval",TAOSOLVER_CLASSID,&TaoSolver_ConstraintsEval); CHKERRQ(ierr);
   ierr = PetscLogEventRegister("TaoJacobianEval",TAOSOLVER_CLASSID,&TaoSolver_JacobianEval); CHKERRQ(ierr);
 
-
+  ierr = PetscRegisterFinalize(TaoFinalizePackage); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #ifdef PETSC_USE_DYNAMIC_LIBRARIES
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PetscDLLibraryRegister_tao"
 /*
@@ -61,16 +75,14 @@ EXTERN_C_BEGIN
 . path - library path
 */
 
-PetscErrorCode PetscDLLibraryRegister_tao(const char path[])
+PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_tao(void)
 {
     PetscErrorCode ierr;
 
-    ierr = PetscInitializeNoArguments();
-    if (ierr)
-	return 1;
     PetscFunctionBegin;
-    ierr = TaoInitializePackage(path); CHKERRQ(ierr);
+    ierr = TaoInitializePackage(); CHKERRQ(ierr);
+    ierr = TaoLineSearchInitializePackage(); CHKERRQ(ierr);
     PetscFunctionReturn(0);
 }
-EXTERN_C_END
+
 #endif /* PETSC_USE_DYNAMIC_LIBRARIES */

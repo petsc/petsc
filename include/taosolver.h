@@ -14,6 +14,7 @@
 typedef struct _p_TaoSolver*   TaoSolver;
 #define TaoSolverType char*
 PETSC_EXTERN PetscClassId TAOSOLVER_CLASSID;
+PETSC_EXTERN PetscFunctionList TaoSolverList;
 
 /*  Convergence flags.
     Be sure to check that these match the flags in
@@ -49,13 +50,8 @@ PETSC_EXTERN PetscErrorCode TaoInitialize(int*,char***,const char[], const char[
 PETSC_EXTERN PetscErrorCode TaoFinalize();
 
 
-PETSC_EXTERN PetscErrorCode TaoInitializePackage(const char []);
-
-#if defined PETSC_USE_DYNAMIC_LIBRARIES
-#define TaoSolverRegisterDynamic(a,b,c,d) TaoSolverRegister(a,b,c,0)
-#else
-#define TaoSolverRegisterDynamic(a,b,c,d) TaoSolverRegister(a,b,c,d)
-#endif
+PETSC_EXTERN PetscErrorCode TaoInitializePackage();
+PETSC_EXTERN PetscErrorCode TaoFinalizePackage();
 PETSC_EXTERN PetscErrorCode TaoCreate(MPI_Comm,TaoSolver*);
 PETSC_EXTERN PetscErrorCode TaoSetFromOptions(TaoSolver);
 PETSC_EXTERN PetscErrorCode TaoSetFiniteDifferencesOptions(TaoSolver);
@@ -71,8 +67,8 @@ PETSC_EXTERN PetscErrorCode TaoView(TaoSolver, PetscViewer);
 
 PETSC_EXTERN PetscErrorCode TaoSolve(TaoSolver);
 
-PETSC_EXTERN PetscErrorCode TaoSolverRegister(const char [], const char[], const char[],  PetscErrorCode (*)(TaoSolver));
-PETSC_EXTERN PetscErrorCode TaoSolverRegisterAll(const char[]);
+PETSC_EXTERN PetscErrorCode TaoSolverRegister(const char [],PetscErrorCode (*)(TaoSolver));
+PETSC_EXTERN PetscErrorCode TaoSolverRegisterAll();
 PETSC_EXTERN PetscErrorCode TaoSolverRegisterDestroy(void);
 
 PETSC_EXTERN PetscErrorCode TaoGetTerminationReason(TaoSolver,TaoSolverTerminationReason*);
