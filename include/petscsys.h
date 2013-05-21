@@ -2167,7 +2167,7 @@ PETSC_EXTERN PetscErrorCode PetscSharedWorkingDirectory(MPI_Comm,PetscBool  *);
 PETSC_EXTERN PetscErrorCode PetscGetTmp(MPI_Comm,char[],size_t);
 PETSC_EXTERN PetscErrorCode PetscFileRetrieve(MPI_Comm,const char[],char[],size_t,PetscBool *);
 PETSC_EXTERN PetscErrorCode PetscLs(MPI_Comm,const char[],char[],size_t,PetscBool *);
-PETSC_EXTERN PetscErrorCode PetscOpenSocket(char*,int,int*);
+PETSC_EXTERN PetscErrorCode PetscOpenSocket(const char[],int,int*);
 PETSC_EXTERN PetscErrorCode PetscWebServe(MPI_Comm,int);
 
 /*
