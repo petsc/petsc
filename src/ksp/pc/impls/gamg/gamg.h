@@ -51,6 +51,7 @@ PetscErrorCode PCReset_MG(PC);
 /* hooks create derivied classes */
 PetscErrorCode  PCCreateGAMG_GEO(PC pc);
 PetscErrorCode  PCCreateGAMG_AGG(PC pc);
+PetscErrorCode  PCCreateGAMG_Classical(PC pc);
 
 PetscErrorCode PCSetFromOptions_GAMG(PC pc);
 PetscErrorCode PCDestroy_GAMG(PC pc);
