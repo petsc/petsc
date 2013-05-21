@@ -92,7 +92,7 @@ PETSC_INTERN PetscErrorCode MatGetSubMatricesParallel_MPIAIJ (Mat,PetscInt,const
 
 PETSC_INTERN PetscErrorCode MatGetSubMatrix_MPIAIJ(Mat,IS,IS,MatReuse,Mat*);
 PETSC_INTERN PetscErrorCode MatGetSubMatrix_MPIAIJ_Private (Mat,IS,IS,PetscInt,MatReuse,Mat*);
-PETSC_EXTERN PetscErrorCode MatGetMultiProcBlock_MPIAIJ(Mat,MPI_Comm,MatReuse,Mat*);
+PETSC_INTERN PetscErrorCode MatGetMultiProcBlock_MPIAIJ(Mat,MPI_Comm,MatReuse,Mat*);
 
 PETSC_INTERN PetscErrorCode MatLoad_MPIAIJ(Mat,PetscViewer);
 PETSC_INTERN PetscErrorCode MatMatMult_MPIDense_MPIAIJ(Mat,Mat,MatReuse,PetscReal,Mat*);
