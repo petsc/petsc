@@ -647,8 +647,6 @@ PetscErrorCode SNESSetUpMatrices(SNES snes)
 @*/
 PetscErrorCode  SNESSetFromOptions(SNES snes)
 {
-  DM             dm;
-  DMSNES         sdm;
   PetscBool      flg,pcset;
   PetscInt       i,indx,lag,grids;
   MatStructure   matflag;
@@ -663,7 +661,6 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
-  ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
   if (!SNESRegisterAllCalled) {ierr = SNESRegisterAll();CHKERRQ(ierr);}
   ierr = PetscObjectOptionsBegin((PetscObject)snes);CHKERRQ(ierr);
   if (((PetscObject)snes)->type_name) deft = ((PetscObject)snes)->type_name;
@@ -808,6 +805,9 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
   flg  = PETSC_FALSE;
   ierr = PetscOptionsBool("-snes_fd_color","Use finite differences with coloring to compute Jacobian","SNESComputeJacobianDefaultColor",flg,&flg,NULL);CHKERRQ(ierr);
   if (flg) {
+    DM             dm;
+    DMSNES         sdm;
+    ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
     ierr = DMGetDMSNES(dm,&sdm);CHKERRQ(ierr);
     sdm->jacobianctx = NULL;
     ierr = SNESSetJacobian(snes,snes->jacobian,snes->jacobian_pre,SNESComputeJacobianDefaultColor,0);CHKERRQ(ierr);
