@@ -120,7 +120,7 @@ PetscErrorCode PCGAMGGraph_Classical(PC pc,Mat A,Mat *G)
 
     /* create the local and global sparsity patterns */
     for (c = 0; c < ncols; c++) {
-      if (PetscAbsScalar(rval[c]) > gamg->threshold*Amax[r]) {
+      if (PetscAbsScalar(rval[c]) > gamg->threshold*PetscRealPart(Amax[r])) {
         idx++;
       }
     }
@@ -130,7 +130,7 @@ PetscErrorCode PCGAMGGraph_Classical(PC pc,Mat A,Mat *G)
       idx = 0;
       ierr = MatGetRow(gA,r,&ncols,&rcol,&rval);CHKERRQ(ierr);
       for (c = 0; c < ncols; c++) {
-        if (PetscAbsScalar(rval[c]) > gamg->threshold*Amax[r]) {
+        if (PetscAbsScalar(rval[c]) > gamg->threshold*PetscRealPart(Amax[r])) {
           idx++;
         }
       }
@@ -152,7 +152,7 @@ PetscErrorCode PCGAMGGraph_Classical(PC pc,Mat A,Mat *G)
     idx = 0;
     for (c = 0; c < ncols; c++) {
       /* classical strength of connection */
-      if (PetscAbsScalar(rval[c]) > gamg->threshold*Amax[r-s]) {
+      if (PetscAbsScalar(rval[c]) > gamg->threshold*PetscRealPart(Amax[r-s])) {
         gcol[idx] = rcol[c];
         gval[idx] = rval[c];
         idx++;
