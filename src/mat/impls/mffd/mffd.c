@@ -407,7 +407,7 @@ PetscErrorCode MatMult_MFFD(Mat mat,Vec a,Vec y)
     ierr = VecAXPY(y,1.0,U);CHKERRQ(ierr);
   }
 
-  if (ctx->sp) {ierr = MatNullSpaceRemove(ctx->sp,y,NULL);CHKERRQ(ierr);}
+  if (ctx->sp) {ierr = MatNullSpaceRemove(ctx->sp,y);CHKERRQ(ierr);}
 
   ierr = PetscLogEventEnd(MATMFFD_Mult,a,y,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);

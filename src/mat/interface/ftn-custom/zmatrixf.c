@@ -375,10 +375,9 @@ PETSC_EXTERN void PETSC_STDCALL matsetoptionsprefix_(Mat *mat,CHAR prefix PETSC_
   FREECHAR(prefix,t);
 }
 
-PETSC_EXTERN void PETSC_STDCALL matnullspaceremove_(MatNullSpace *sp,Vec *vec,Vec *out,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL matnullspaceremove_(MatNullSpace *sp,Vec *vec,PetscErrorCode *ierr)
 {
-  CHKFORTRANNULLOBJECT(out);
-  *ierr = MatNullSpaceRemove(*sp,*vec,out);
+  *ierr = MatNullSpaceRemove(*sp,*vec);
 }
 
 PETSC_EXTERN void PETSC_STDCALL matgetinfo_(Mat *mat,MatInfoType *flag,MatInfo *info, int *__ierr)
