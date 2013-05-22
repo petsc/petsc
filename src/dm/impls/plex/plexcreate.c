@@ -687,7 +687,8 @@ PetscErrorCode DMPlexClone(DM dm, DM *newdm)
   (*newdm)->sf = dm->sf;
   mesh         = (DM_Plex*) dm->data;
   mesh->refct++;
-  (*newdm)->data = mesh;
+  (*newdm)->setupcalled = PETSC_TRUE;
+  (*newdm)->data        = mesh;
   ierr           = PetscObjectChangeTypeName((PetscObject) *newdm, DMPLEX);CHKERRQ(ierr);
   ierr           = DMInitialize_Plex(*newdm);CHKERRQ(ierr);
   ierr           = DMGetApplicationContext(dm, &ctx);CHKERRQ(ierr);
