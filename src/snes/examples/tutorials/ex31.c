@@ -1243,30 +1243,23 @@ int main(int argc, char **argv)
   }
 
   if (user.runType == RUN_FULL) {
-    PetscContainer c;
-    PetscSection   section;
-    Vec            sol;
-    PetscViewer    viewer;
-    const char     *name;
+    PetscViewer viewer;
+    Vec         uLocal;
+    const char *name;
 
     ierr = PetscViewerCreate(comm, &viewer);CHKERRQ(ierr);
     ierr = PetscViewerSetType(viewer, PETSCVIEWERVTK);CHKERRQ(ierr);
     ierr = PetscViewerFileSetName(viewer, "ex31_sol.vtk");CHKERRQ(ierr);
     ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
-    ierr = DMGetLocalVector(user.dm, &sol);CHKERRQ(ierr);
+
+    ierr = DMGetLocalVector(user.dm, &uLocal);CHKERRQ(ierr);
     ierr = PetscObjectGetName((PetscObject) u, &name);CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject) sol, name);CHKERRQ(ierr);
-    ierr = DMGlobalToLocalBegin(user.dm, u, INSERT_VALUES, sol);CHKERRQ(ierr);
-    ierr = DMGlobalToLocalEnd(user.dm, u, INSERT_VALUES, sol);CHKERRQ(ierr);
-    ierr = DMGetDefaultSection(user.dm, &section);CHKERRQ(ierr);
-    ierr = PetscObjectReference((PetscObject) user.dm);CHKERRQ(ierr); /* Needed because viewer destroys the DM */
-    ierr = PetscViewerVTKAddField(viewer, (PetscObject) user.dm, DMPlexVTKWriteAll, PETSC_VTK_POINT_FIELD, (PetscObject) sol);CHKERRQ(ierr);
-    ierr = PetscObjectReference((PetscObject) sol);CHKERRQ(ierr); /* Needed because viewer destroys the Vec */
-    ierr = PetscContainerCreate(comm, &c);CHKERRQ(ierr);
-    ierr = PetscContainerSetPointer(c, section);CHKERRQ(ierr);
-    ierr = PetscObjectCompose((PetscObject) sol, "section", (PetscObject) c);CHKERRQ(ierr);
-    ierr = PetscContainerDestroy(&c);CHKERRQ(ierr);
-    ierr = DMRestoreLocalVector(user.dm, &sol);CHKERRQ(ierr);
+    ierr = PetscObjectSetName((PetscObject) uLocal, name);CHKERRQ(ierr);
+    ierr = DMGlobalToLocalBegin(user.dm, u, INSERT_VALUES, uLocal);CHKERRQ(ierr);
+    ierr = DMGlobalToLocalEnd(user.dm, u, INSERT_VALUES, uLocal);CHKERRQ(ierr);
+    ierr = VecView(uLocal, viewer);CHKERRQ(ierr);
+    ierr = DMRestoreLocalVector(user.dm, &uLocal);CHKERRQ(ierr);
+
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   }
 
