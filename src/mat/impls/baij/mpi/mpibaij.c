@@ -2870,7 +2870,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIBAIJ,
                                        0,
                                        0,
                                        0,
-                                       0,
+                                       MatGetMultiProcBlock_MPIBAIJ,
                                 /*124*/0,
                                        0,
                                        MatInvertBlockDiagonal_MPIBAIJ,
@@ -3271,7 +3271,7 @@ M*/
 
    Input Parameters:
 +  A - the matrix
-.  bs   - size of blockk
+.  bs   - size of block
 .  d_nz  - number of block nonzeros per block row in diagonal portion of local
            submatrix  (same for all local rows)
 .  d_nnz - array containing the number of block nonzeros in the various block rows

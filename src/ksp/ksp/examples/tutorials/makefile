@@ -957,6 +957,15 @@ runex43_3:
 	   ${DIFF} output/ex43_3.out ex43_3.tmp || echo ${PWD} "\nPossible problem with with ex43_3, diffs above \n========================================="; \
 	   ${RM} -f ex43_3.tmp
 
+runex43_bjacobi:
+	-@${MPIEXEC} -n 4 ./ex43 -stokes_pc_type bjacobi -stokes_pc_bjacobi_blocks 2 -mat_type aij -stokes_ksp_converged_reason > ex43.tmp 2>&1;	  \
+	   ${DIFF} output/ex43_bjacobi.out ex43.tmp || echo ${PWD} "\nPossible problem with with ex43_bjacobi, diffs above \n========================================="; \
+	   ${RM} -f ex43.tmp
+runex43_bjacobi_baij:
+	-@${MPIEXEC} -n 4 ./ex43 -stokes_pc_type bjacobi -stokes_pc_bjacobi_blocks 2 -mat_type baij -stokes_ksp_converged_reason > ex43.tmp 2>&1;	  \
+	   ${DIFF} output/ex43_bjacobi.out ex43.tmp || echo ${PWD} "\nPossible problem with with ex43_bjacobi_baij, diffs above \n========================================="; \
+	   ${RM} -f ex43.tmp
+
 runex45:
 	-@${MPIEXEC} -n 4 ./ex45 -pc_type exotic -ksp_monitor_short -ksp_type fgmres -mg_levels_ksp_type gmres -mg_levels_ksp_max_it 1 -mg_levels_pc_type bjacobi > ex45_1.tmp 2>&1;	  \
 	   ${DIFF} output/ex45_1.out ex45_1.tmp || echo ${PWD} "\nPossible problem with with ex45_1, diffs above \n========================================="; \
