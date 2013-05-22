@@ -1181,7 +1181,7 @@ static PetscErrorCode PCApply_BJacobi_Multiproc(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN PetscErrorCode MatGetMultiProcBlock_MPIAIJ(Mat,MPI_Comm,MatReuse,Mat*);
+#include <petsc-private/matimpl.h>
 #undef __FUNCT__
 #define __FUNCT__ "PCSetUp_BJacobi_Multiproc"
 static PetscErrorCode PCSetUp_BJacobi_Multiproc(PC pc)
@@ -1215,7 +1215,8 @@ static PetscErrorCode PCSetUp_BJacobi_Multiproc(PC pc)
     subcomm         = mpjac->psubcomm->comm;
 
     /* Get matrix blocks of pmat */
-    ierr = MatGetMultiProcBlock_MPIAIJ(pc->pmat,subcomm,MAT_INITIAL_MATRIX,&mpjac->submats);CHKERRQ(ierr);
+    if (!pc->pmat->ops->getmultiprocblock) SETERRQ(PetscObjectComm((PetscObject)pc->pmat),PETSC_ERR_SUP,"No support for the requested operation");
+    ierr = (*pc->pmat->ops->getmultiprocblock)(pc->pmat,subcomm,MAT_INITIAL_MATRIX,&mpjac->submats);CHKERRQ(ierr);
 
     /* create a new PC that processors in each subcomm have copy of */
     ierr = PetscMalloc(sizeof(KSP),&jac->ksp);CHKERRQ(ierr);
@@ -1255,9 +1256,9 @@ static PetscErrorCode PCSetUp_BJacobi_Multiproc(PC pc)
     if (pc->flag == DIFFERENT_NONZERO_PATTERN) {
       /* destroy old matrix blocks, then get new matrix blocks */
       if (mpjac->submats) {ierr = MatDestroy(&mpjac->submats);CHKERRQ(ierr);}
-      ierr = MatGetMultiProcBlock_MPIAIJ(pc->pmat,subcomm,MAT_INITIAL_MATRIX,&mpjac->submats);CHKERRQ(ierr);
+      ierr = (*pc->pmat->ops->getmultiprocblock)(pc->pmat,subcomm,MAT_INITIAL_MATRIX,&mpjac->submats);CHKERRQ(ierr);
     } else {
-      ierr = MatGetMultiProcBlock_MPIAIJ(pc->pmat,subcomm,MAT_REUSE_MATRIX,&mpjac->submats);CHKERRQ(ierr);
+      ierr = (*pc->pmat->ops->getmultiprocblock)(pc->pmat,subcomm,MAT_REUSE_MATRIX,&mpjac->submats);CHKERRQ(ierr);
     }
     ierr = KSPSetOperators(jac->ksp[0],mpjac->submats,mpjac->submats,pc->flag);CHKERRQ(ierr);
   }
