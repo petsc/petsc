@@ -9,10 +9,9 @@ PetscErrorCode  MatGetMultiProcBlock_MPIBAIJ(Mat mat, MPI_Comm subComm, MatReuse
   Mat_SeqBAIJ    *aijB = (Mat_SeqBAIJ*)aij->B->data;
   PetscMPIInt    commRank,subCommSize,subCommRank;
   PetscMPIInt    *commRankMap,subRank,rank,commsize;
-  PetscInt       *garrayCMap,col,i,j,*nnz,newRow,newCol;
+  PetscInt       *garrayCMap,col,i,j,*nnz,newRow,newCol,*newbRow,*newbCol,k,k1;
   PetscInt       bs=mat->rmap->bs;
-  PetscScalar    vals[bs*bs];
-  PetscInt       newbRow[bs],newbCol[bs],k,k1,k2;
+  PetscScalar    *vals,*aijBvals;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)mat),&commsize);CHKERRQ(ierr);
@@ -48,7 +47,7 @@ PetscErrorCode  MatGetMultiProcBlock_MPIBAIJ(Mat mat, MPI_Comm subComm, MatReuse
     for (subRank=0; subRank<subCommSize; subRank++) {
       rank = commRankMap[subRank];
       if ((col >= mat->cmap->range[rank]/bs) && (col < mat->cmap->range[rank+1]/bs)) {
-        garrayCMap[i] = ((*subMat)->cmap->range[subRank]/bs + col - mat->cmap->range[rank]/bs+1);
+        garrayCMap[i] = (((*subMat)->cmap->range[subRank]- mat->cmap->range[rank])/bs + col + 1);
         break;
       }
     }
@@ -82,6 +81,7 @@ PetscErrorCode  MatGetMultiProcBlock_MPIBAIJ(Mat mat, MPI_Comm subComm, MatReuse
   }
 
   /* Now traverse aij->B and insert values into subMat */
+  ierr = PetscMalloc3(bs,PetscInt,&newbRow,bs,PetscInt,&newbCol,bs*bs,PetscScalar,&vals);CHKERRQ(ierr);
   for (i=0; i<aij->B->rmap->n/bs; i++) {
     newRow = (*subMat)->rmap->range[subCommRank] + i*bs;
     for (j=aijB->i[i]; j<aijB->i[i+1]; j++) {
@@ -94,22 +94,21 @@ PetscErrorCode  MatGetMultiProcBlock_MPIBAIJ(Mat mat, MPI_Comm subComm, MatReuse
           newbCol[k] = newCol + k;
         }
         /* copy column-oriented aijB->a into row-oriented vals */
-        k=0;
+        aijBvals = aijB->a + j*bs*bs;
         for (k1=0; k1<bs; k1++) { 
-          for (k2=0; k2<bs; k2++) { 
-            vals[k1+k2*bs] = *(aijB->a+j*bs*bs + k); k++; 
+          for (k=0; k<bs; k++) { 
+            vals[k1+k*bs] = *aijBvals++; 
           }
         }
         ierr = MatSetValues(*subMat,bs,newbRow,bs,newbCol,vals,INSERT_VALUES);CHKERRQ(ierr); 
       }
     }
   }
-
-  /* assemble the submat */
   ierr = MatAssemblyBegin(*subMat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*subMat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   /* deallocate temporary data */
+  ierr = PetscFree3(newbRow,newbCol,vals);CHKERRQ(ierr);
   ierr = PetscFree(commRankMap);CHKERRQ(ierr);
   ierr = PetscFree(garrayCMap);CHKERRQ(ierr);
   if (scall == MAT_INITIAL_MATRIX) {
