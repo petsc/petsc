@@ -210,7 +210,7 @@ static PetscErrorCode SNESCompositeApply_AdditiveOptimal(SNES snes,Vec X,Vec B,V
   tot = 0.;
   for (i=0; i<jac->n; i++) {
     if (PetscIsInfOrNanScalar(jac->beta[i])) SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_LIB,"SVD generated inconsistent output");
-    ierr = PetscInfo2(snes,"%d: %f\n",i,jac->beta[i]);CHKERRQ(ierr);
+    ierr = PetscInfo2(snes,"%d: %f\n",i,PetscRealPart(jac->beta[i]));CHKERRQ(ierr);
     tot += jac->beta[i];
   }
   ierr = VecScale(X,(1. - tot));CHKERRQ(ierr);
