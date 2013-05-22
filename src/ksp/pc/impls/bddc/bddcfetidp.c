@@ -171,7 +171,7 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx )
   ierr = VecScatterBegin(matis->ctx,pcis->vec1_N,pcis->vec1_global,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   ierr = VecScatterEnd  (matis->ctx,pcis->vec1_N,pcis->vec1_global,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   ierr = VecSum(pcis->vec1_global,&scalar_value);CHKERRQ(ierr);
-  fetidpmat_ctx->n_lambda = (PetscInt) scalar_value;
+  fetidpmat_ctx->n_lambda = (PetscInt)PetscRealPart(scalar_value);
 
   /* compute global ordering of lagrange multipliers and associate l2g map */
   ierr = PCBDDCSubsetNumbering(comm,matis->mapping,partial_sum,aux_local_numbering_1,aux_local_numbering_2,&i,&aux_global_numbering);CHKERRQ(ierr);
@@ -362,6 +362,8 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx )
 
   if (test_fetidp && !pcbddc->use_deluxe_scaling) {
 
+    PetscReal real_value;
+
     ierr = PetscViewerASCIIGetStdout(comm,&viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_TRUE);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"----------FETI_DP TESTS--------------\n");CHKERRQ(ierr);
@@ -385,9 +387,9 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx )
     ierr = VecScatterEnd  (fetidpmat_ctx->l2g_lambda,lambda_global,fetidpmat_ctx->lambda_local,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
     scalar_value = -1.0;
     ierr = VecAXPY(test_vec,scalar_value,fetidpmat_ctx->lambda_local);CHKERRQ(ierr);
-    ierr = VecNorm(test_vec,NORM_INFINITY,&scalar_value);CHKERRQ(ierr);
+    ierr = VecNorm(test_vec,NORM_INFINITY,&real_value);CHKERRQ(ierr);
     ierr = VecDestroy(&test_vec);CHKERRQ(ierr);
-    ierr = PetscViewerASCIISynchronizedPrintf(viewer,"A[%04d]: CHECK glob to loc: % 1.14e\n",rank,scalar_value);CHKERRQ(ierr);
+    ierr = PetscViewerASCIISynchronizedPrintf(viewer,"A[%04d]: CHECK glob to loc: % 1.14e\n",rank,real_value);CHKERRQ(ierr);
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
     if (fully_redundant) {
       ierr = VecSet(lambda_global,0.0);CHKERRQ(ierr);
@@ -395,7 +397,7 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx )
       ierr = VecScatterBegin(fetidpmat_ctx->l2g_lambda,fetidpmat_ctx->lambda_local,lambda_global,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
       ierr = VecScatterEnd  (fetidpmat_ctx->l2g_lambda,fetidpmat_ctx->lambda_local,lambda_global,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
       ierr = VecSum(lambda_global,&scalar_value);CHKERRQ(ierr);
-      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"B[%04d]: CHECK loc to glob: % 1.14e\n",rank,scalar_value-fetidpmat_ctx->n_lambda);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"B[%04d]: CHECK loc to glob: % 1.14e\n",rank,PetscRealPart(scalar_value)-fetidpmat_ctx->n_lambda);CHKERRQ(ierr);
       ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
     }
 
@@ -417,8 +419,8 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx )
     ierr = VecSet(lambda_global,0.0);CHKERRQ(ierr);
     ierr = VecScatterBegin(fetidpmat_ctx->l2g_lambda,fetidpmat_ctx->lambda_local,lambda_global,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterEnd  (fetidpmat_ctx->l2g_lambda,fetidpmat_ctx->lambda_local,lambda_global,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecNorm(lambda_global,NORM_INFINITY,&scalar_value);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"C[coll]: CHECK infty norm of B_delta*w (w continuous): % 1.14e\n",scalar_value);CHKERRQ(ierr);
+    ierr = VecNorm(lambda_global,NORM_INFINITY,&real_value);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"C[coll]: CHECK infty norm of B_delta*w (w continuous): % 1.14e\n",real_value);CHKERRQ(ierr);
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
 
     /******************************************************************/
@@ -465,9 +467,9 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx )
     ierr = VecAXPY(pcis->vec1_B,scalar_value,pcis->vec2_B);CHKERRQ(ierr);
     scalar_value = -1.0;
     ierr = VecAXPY(pcis->vec1_B,scalar_value,test_vec);CHKERRQ(ierr);
-    ierr = VecNorm(pcis->vec1_B,NORM_INFINITY,&scalar_value);CHKERRQ(ierr);
+    ierr = VecNorm(pcis->vec1_B,NORM_INFINITY,&real_value);CHKERRQ(ierr);
     ierr = VecDestroy(&test_vec);CHKERRQ(ierr);
-    ierr = PetscViewerASCIISynchronizedPrintf(viewer,"D[%04d] CHECK infty norm of E_D + P_D - I: % 1.14e\n",rank,scalar_value);CHKERRQ(ierr);
+    ierr = PetscViewerASCIISynchronizedPrintf(viewer,"D[%04d] CHECK infty norm of E_D + P_D - I: % 1.14e\n",rank,real_value);CHKERRQ(ierr);
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
 
     /******************************************************************/
@@ -496,8 +498,8 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx )
     ierr = MatMultTranspose(fetidpmat_ctx->B_Ddelta,fetidpmat_ctx->lambda_local,pcis->vec1_B);CHKERRQ(ierr);
     /* scaling */
     ierr = PCBDDCScalingExtension(fetidpmat_ctx->pc,pcis->vec1_B,pcis->vec1_global);CHKERRQ(ierr);
-    ierr = VecNorm(pcis->vec1_global,NORM_INFINITY,&scalar_value);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"E[coll]: CHECK infty norm of R^T_D P_D: % 1.14e\n",scalar_value);CHKERRQ(ierr);
+    ierr = VecNorm(pcis->vec1_global,NORM_INFINITY,&real_value);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"E[coll]: CHECK infty norm of R^T_D P_D: % 1.14e\n",real_value);CHKERRQ(ierr);
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
 
     if (!fully_redundant) {
@@ -518,8 +520,8 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx )
       ierr = VecScatterEnd  (fetidpmat_ctx->l2g_lambda,fetidpmat_ctx->lambda_local,test_vec,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
       scalar_value = -1.0;
       ierr = VecAXPY(lambda_global,scalar_value,test_vec);CHKERRQ(ierr);
-      ierr = VecNorm(lambda_global,NORM_INFINITY,&scalar_value);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"E[coll]: CHECK infty norm of P^T_D - I: % 1.14e\n",scalar_value);CHKERRQ(ierr);
+      ierr = VecNorm(lambda_global,NORM_INFINITY,&real_value);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"E[coll]: CHECK infty norm of P^T_D - I: % 1.14e\n",real_value);CHKERRQ(ierr);
       ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
       ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
       ierr = VecDestroy(&test_vec);CHKERRQ(ierr);

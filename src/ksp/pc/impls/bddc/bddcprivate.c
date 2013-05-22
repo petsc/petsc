@@ -269,7 +269,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
   PetscInt       *temp_indices,*temp_indices_to_constraint,*temp_indices_to_constraint_B,*local_to_B;
   PetscInt       local_primal_size,i,j,k,total_counts,max_size_of_constraint;
   PetscInt       n_vertices,size_of_constraint;
-  PetscScalar    quad_value;
+  PetscReal      real_value;
   PetscBool      nnsp_has_cnst=PETSC_FALSE,use_nnsp_true=pcbddc->use_nnsp_true;
   PetscInt       nnsp_size=0,nnsp_addone=0,temp_constraints,temp_start_ptr,n_ISForFaces,n_ISForEdges;
   IS             *used_IS,ISForVertices,*ISForFaces,*ISForEdges;
@@ -527,6 +527,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
       boolforchange = PETSC_FALSE;
     }
     if (nnsp_has_cnst) {
+      PetscScalar quad_value;
       temp_constraints++;
       quad_value = (PetscScalar)(1.0/PetscSqrtReal((PetscReal)size_of_constraint));
       for (j=0;j<size_of_constraint;j++) {
@@ -546,12 +547,12 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
         temp_quadrature_constraint[temp_indices[total_counts]+j]=array_vector[is_indices[j]];
       }
       ierr = VecRestoreArrayRead(localnearnullsp[k],(const PetscScalar**)&array_vector);CHKERRQ(ierr);
-      quad_value = 1.0;
+      real_value = 1.0;
       if (use_nnsp_true) { /* check if array is null on the connected component in case use_nnsp_true has been requested */
         ierr = PetscBLASIntCast(size_of_constraint,&Bs);CHKERRQ(ierr);
-        PetscStackCallBLAS("BLASasum",quad_value = BLASasum_(&Bs,&temp_quadrature_constraint[temp_indices[total_counts]],&Bone));
+        PetscStackCallBLAS("BLASasum",real_value = BLASasum_(&Bs,&temp_quadrature_constraint[temp_indices[total_counts]],&Bone));
       }
-      if (quad_value > 0.0) { /* keep indices and values */
+      if (real_value > 0.0) { /* keep indices and values */
         temp_constraints++;
         temp_indices[total_counts+1]=temp_indices[total_counts]+size_of_constraint;  /* store new starting point */
         change_basis[total_counts]=boolforchange;
@@ -569,7 +570,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
       /* Store upper triangular part of correlation matrix */
       for (j=0;j<temp_constraints;j++) {
         for (k=0;k<j+1;k++) {
-          PetscStackCallBLAS("BLASdot_",correlation_mat[j*temp_constraints+k]=BLASdot_(&Bs,&temp_quadrature_constraint[temp_indices[temp_start_ptr+j]],&Bone,&temp_quadrature_constraint[temp_indices[temp_start_ptr+k]],&Bone));
+          PetscStackCallBLAS("BLASdot",correlation_mat[j*temp_constraints+k]=BLASdot_(&Bs,&temp_quadrature_constraint[temp_indices[temp_start_ptr+j]],&Bone,&temp_quadrature_constraint[temp_indices[temp_start_ptr+k]],&Bone));
 
         }
       }
@@ -1147,9 +1148,9 @@ PetscErrorCode PCBDDCSubsetNumbering(MPI_Comm comm,ISLocalToGlobalMapping l2gmap
   ierr = VecRestoreArray(local_vec,&array);CHKERRQ(ierr);
   /* scatter into global vec and get total number of global dofs */
   ierr = VecScatterBegin(scatter_ctx,local_vec,global_vec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterEnd  (scatter_ctx,local_vec,global_vec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd(scatter_ctx,local_vec,global_vec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecSum(global_vec,&globalsum);CHKERRQ(ierr);
-  *n_global_subset = (PetscInt)globalsum;
+  *n_global_subset = (PetscInt)PetscRealPart(globalsum);
   /* Fill global_vec with cumulative function for global numbering */
   ierr = VecGetArray(global_vec,&array);CHKERRQ(ierr);
   ierr = VecGetLocalSize(global_vec,&s);CHKERRQ(ierr);
@@ -1157,11 +1158,11 @@ PetscErrorCode PCBDDCSubsetNumbering(MPI_Comm comm,ISLocalToGlobalMapping l2gmap
   first_index = -1;
   first_found = PETSC_FALSE;
   for (i=0;i<s;i++) {
-    if (!first_found && array[i] > 0.0) {
+    if (!first_found && PetscRealPart(array[i]) > 0.0) {
       first_found = PETSC_TRUE;
       first_index = i;
     }
-    nlocals += (PetscInt)array[i];
+    nlocals += (PetscInt)PetscRealPart(array[i]);
   }
   ierr = MPI_Gather(&nlocals,1,MPIU_INT,dof_sizes,1,MPIU_INT,0,comm);CHKERRQ(ierr);
   if (!rank_prec_comm) {
@@ -1175,7 +1176,7 @@ PetscErrorCode PCBDDCSubsetNumbering(MPI_Comm comm,ISLocalToGlobalMapping l2gmap
     array[first_index] += (PetscScalar)nlocals;
     old_index = first_index;
     for (i=first_index+1;i<s;i++) {
-      if (array[i] > 0.0) {
+      if (PetscRealPart(array[i]) > 0.0) {
         array[i] += array[old_index];
         old_index = i;
       }
@@ -1189,11 +1190,11 @@ PetscErrorCode PCBDDCSubsetNumbering(MPI_Comm comm,ISLocalToGlobalMapping l2gmap
   ierr = VecGetArray(local_vec,&array);CHKERRQ(ierr);
   if (local_dofs_mult) {
     for (i=0;i<n_local_dofs;i++) {
-      temp_global_dofs[i] = (PetscInt)array[local_dofs[i]]-local_dofs_mult[i];
+      temp_global_dofs[i] = (PetscInt)PetscRealPart(array[local_dofs[i]])-local_dofs_mult[i];
     }
   } else {
     for (i=0;i<n_local_dofs;i++) {
-      temp_global_dofs[i] = (PetscInt)array[local_dofs[i]]-1;
+      temp_global_dofs[i] = (PetscInt)PetscRealPart(array[local_dofs[i]])-1;
     }
   }
   ierr = VecRestoreArray(local_vec,&array);CHKERRQ(ierr);
