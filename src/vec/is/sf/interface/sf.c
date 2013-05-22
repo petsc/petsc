@@ -606,7 +606,7 @@ PetscErrorCode PetscSFView(PetscSF sf,PetscViewer viewer)
     PetscMPIInt rank;
     PetscInt    i,j;
 
-    ierr = PetscObjectPrintClassNamePrefixType((PetscObject)sf,viewer,"Star Forest Object");CHKERRQ(ierr);
+    ierr = PetscObjectPrintClassNamePrefixType((PetscObject)sf,viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
     if (sf->ops->View) {ierr = (*sf->ops->View)(sf,viewer);CHKERRQ(ierr);}
     ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)sf),&rank);CHKERRQ(ierr);

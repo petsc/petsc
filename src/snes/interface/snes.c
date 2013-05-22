@@ -245,7 +245,7 @@ PetscErrorCode  SNESView(SNES snes,PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERAMS,&isams);CHKERRQ(ierr);
 #endif
   if (iascii) {
-    ierr = PetscObjectPrintClassNamePrefixType((PetscObject)snes,viewer,"SNES Object");CHKERRQ(ierr);
+    ierr = PetscObjectPrintClassNamePrefixType((PetscObject)snes,viewer);CHKERRQ(ierr);
     if (snes->ops->view) {
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
       ierr = (*snes->ops->view)(snes,viewer);CHKERRQ(ierr);

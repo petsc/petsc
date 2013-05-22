@@ -674,22 +674,22 @@ runex1:
 	   ${RM} -f ex1_1.tmp
 
 runex2:
-	-@${MPIEXEC} -n 1 ./ex2 -mat_type seqaij -rectA | grep -v "Matrix Object" > ex2_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex2 -mat_type seqaij -rectA | grep -v "Mat Object" > ex2_1.tmp 2>&1; \
 	if (${DIFF} output/ex2_11_A.out ex2_1.tmp) then true; \
 	else echo ${PWD} ; echo "Possible problem with ex2_11_A for seqaij, diffs above \n========================================="; fi; \
 	${RM} -f ex2_1.tmp;
 
-	-@${MPIEXEC} -n 1 ./ex2 -mat_type seqdense -rectA | grep -v "Matrix Object" > ex2_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex2 -mat_type seqdense -rectA | grep -v "Mat Object" > ex2_1.tmp 2>&1; \
 	if (${DIFF} output/ex2_12_A.out ex2_1.tmp) then true; \
 	else echo ${PWD} ; echo "Possible problem with ex2_12_A for seqdense, diffs above \n========================================="; fi; \
 	${RM} -f ex2_1.tmp;
 
-	-@${MPIEXEC} -n 1 ./ex2 -mat_type seqaij -rectB | grep -v "Matrix Object" > ex2_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex2 -mat_type seqaij -rectB | grep -v "Mat Object" > ex2_1.tmp 2>&1; \
 	if (${DIFF} output/ex2_11_B.out ex2_1.tmp) then true; \
 	else echo ${PWD} ; echo "Possible problem with ex2_11_B for seqaij, diffs above \n========================================="; fi; \
 	${RM} -f ex2_1.tmp;
 
-	-@${MPIEXEC} -n 1 ./ex2 -mat_type seqdense -rectB | grep -v "Matrix Object" > ex2_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex2 -mat_type seqdense -rectB | grep -v "Mat Object" > ex2_1.tmp 2>&1; \
 	if (${DIFF} output/ex2_12_B.out ex2_1.tmp) then true; \
 	else echo ${PWD} ; echo "Possible problem with ex2_12_B for seqdense, diffs above \n========================================="; fi; \
 	${RM} -f ex2_1.tmp;

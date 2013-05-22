@@ -126,7 +126,7 @@ PetscErrorCode MatView_Clique(Mat A,PetscViewer viewer)
     } else if (format == PETSC_VIEWER_DEFAULT) { /* matrix A is factored matrix, remove this block */
       Mat Aaij;
       ierr = PetscViewerASCIIUseTabs(viewer,PETSC_FALSE);CHKERRQ(ierr);
-      ierr = PetscObjectPrintClassNamePrefixType((PetscObject)A,viewer,"Matrix Object");CHKERRQ(ierr);
+      ierr = PetscObjectPrintClassNamePrefixType((PetscObject)A,viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIUseTabs(viewer,PETSC_TRUE);CHKERRQ(ierr);
       ierr = PetscPrintf(PetscObjectComm((PetscObject)viewer),"Clique matrix\n");CHKERRQ(ierr);
       ierr = MatComputeExplicitOperator(A,&Aaij);CHKERRQ(ierr);

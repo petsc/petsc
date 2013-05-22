@@ -246,7 +246,7 @@ Label 'marker':
 [0]: 56 (1)
 [0]: 20 (-1)
 Local function
-Vector Object: 1 MPI processes
+Vec Object: 1 MPI processes
   type: seq
 0
 0.25
@@ -290,7 +290,7 @@ Vector Object: 1 MPI processes
 1.15625
 1.5625
 Initial guess
-Vector Object: 1 MPI processes
+Vec Object: 1 MPI processes
   type: seq
 0
 0.25
@@ -335,7 +335,7 @@ Vector Object: 1 MPI processes
 1.5625
 L_2 Error: 1.59536e-13
 Residual:
-Vector Object: 1 MPI processes
+Vec Object: 1 MPI processes
   type: seq
 0
 0
@@ -379,7 +379,7 @@ Vector Object: 1 MPI processes
 0
 0
 Initial Residual
-Vector Object: 1 MPI processes
+Vec Object: 1 MPI processes
   type: seq
 0
 0
@@ -424,7 +424,7 @@ Vector Object: 1 MPI processes
 0
 L_2 Residual: 0
 Jacobian:
-Matrix Object: 1 MPI processes
+Mat Object: 1 MPI processes
   type: seqaij
 row 0: (0, 1)  (1, 0)  (3, 0)  (9, 0.333333)  (13, -1.33333)  (14, 0)  (15, 0)  (34, 0)  (35, 0) 
 row 1: (0, 0)  (1, 2)  (2, 0)  (4, 0)  (9, 0.333333)  (11, 0.333333)  (13, 0)  (19, 0)  (21, 0)  (24, -1.33333)  (25, 0)  (33, 0)  (34, -1.33333)  (35, 0)  (38, 0) 
@@ -468,7 +468,7 @@ row 38: (1, 0)  (4, -1.33333)  (5, 0)  (11, -1.33333)  (23, 0)  (24, 0)  (30, -1
 row 39: (4, 0)  (7, -1.33333)  (8, 0)  (12, -1.33333)  (28, 0)  (29, 0)  (36, -1.33333)  (39, 5.33333)  (40, -1.33333) 
 row 40: (7, 0)  (8, 0)  (12, 0)  (28, -1.33333)  (39, -1.33333)  (40, 2.66667) 
 Residual:
-Vector Object: 1 MPI processes
+Vec Object: 1 MPI processes
   type: seq
 0
 0
@@ -512,7 +512,7 @@ Vector Object: 1 MPI processes
 0.166667
 -0.583333
 Au - b = Au + F(0)
-Vector Object: 1 MPI processes
+Vec Object: 1 MPI processes
   type: seq
 0
 0

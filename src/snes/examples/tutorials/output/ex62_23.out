@@ -39,7 +39,7 @@ SNES Object: 2 MPI processes
   PC Object:   2 MPI processes
     type: jacobi
     linear system matrix = precond matrix:
-    Matrix Object:     2 MPI processes
+    Mat Object:     2 MPI processes
       type: mpiaij
       rows=23, cols=23
       total: nonzeros=237, allocated nonzeros=237
@@ -48,7 +48,7 @@ SNES Object: 2 MPI processes
 Number of SNES iterations = 1
 L_2 Error: 0.54
 Solution
-Vector Object: 2 MPI processes
+Vec Object: 2 MPI processes
   type: mpi
 Process [0]
 0

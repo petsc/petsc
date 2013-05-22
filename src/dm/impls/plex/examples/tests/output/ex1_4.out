@@ -165,7 +165,7 @@ Label 'marker':
 [1]: 8 (-1)
 [1]: 15 (-1)
 [1]: 16 (-1)
-Star Forest Object: 2 MPI processes
+PetscSF Object: 2 MPI processes
   type: basic
     sort=rank-order
   [0] Number of roots=19, leaves=5, remote ranks=1
@@ -704,7 +704,7 @@ Label 'marker':
 [1]: 42 (-1)
 [1]: 43 (-1)
 [1]: 44 (-1)
-Star Forest Object: 2 MPI processes
+PetscSF Object: 2 MPI processes
   type not yet set
   [0] Number of roots=61, leaves=9, remote ranks=1
   [0] 16 <- (1,18)
