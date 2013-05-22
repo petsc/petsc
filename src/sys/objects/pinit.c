@@ -151,16 +151,14 @@ PetscErrorCode  PetscInitializeNoArguments(void)
 /*@
       PetscInitialized - Determine whether PETSc is initialized.
 
-7   Level: beginner
+   Level: beginner
 
 .seealso: PetscInitialize(), PetscInitializeNoArguments(), PetscInitializeFortran()
 @*/
-PetscErrorCode  PetscInitialized(PetscBool  *isInitialized)
+PetscErrorCode PetscInitialized(PetscBool  *isInitialized)
 {
-  PetscFunctionBegin;
-  PetscValidPointer(isInitialized, 1);
   *isInitialized = PetscInitializeCalled;
-  PetscFunctionReturn(0);
+  return 0;
 }
 
 #undef __FUNCT__
@@ -174,10 +172,8 @@ PetscErrorCode  PetscInitialized(PetscBool  *isInitialized)
 @*/
 PetscErrorCode  PetscFinalized(PetscBool  *isFinalized)
 {
-  PetscFunctionBegin;
-  PetscValidPointer(isFinalized, 1);
   *isFinalized = PetscFinalizeCalled;
-  PetscFunctionReturn(0);
+  return 0;
 }
 
 extern PetscErrorCode PetscOptionsCheckInitial_Private(void);
@@ -390,35 +386,47 @@ PETSC_EXTERN PetscMPIInt MPIAPI Petsc_DelCounter(MPI_Comm comm,PetscMPIInt keyva
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "Petsc_DelComm"
+#define __FUNCT__ "Petsc_DelComm_Outer"
 /*
-  This does not actually free anything, it simply marks when a reference count to an internal or external MPI_Comm reaches zero and the
-  the external MPI_Comm drops its reference to the internal or external MPI_Comm
+  This is invoked on the outer comm as a result of either PetscCommDestroy() (via MPI_Attr_delete) or when the user
+  calls MPI_Comm_free().
+
+  This is the only entry point for breaking the links between inner and outer comms.
 
   This is called by MPI, not by users. This is called when MPI_Comm_free() is called on the communicator.
 
   Note: this is declared extern "C" because it is passed to MPI_Keyval_create()
 
 */
-PETSC_EXTERN PetscMPIInt MPIAPI Petsc_DelComm(MPI_Comm comm,PetscMPIInt keyval,void *attr_val,void *extra_state)
+PETSC_EXTERN PetscMPIInt MPIAPI Petsc_DelComm_Outer(MPI_Comm comm,PetscMPIInt keyval,void *attr_val,void *extra_state)
 {
   PetscErrorCode ierr;
   PetscMPIInt    flg;
-  MPI_Comm       icomm;
-  void           *ptr;
+  union {MPI_Comm comm; void *ptr;} icomm,ocomm;
 
   PetscFunctionBegin;
-  ierr = MPI_Attr_get(comm,Petsc_InnerComm_keyval,&ptr,&flg);CHKERRQ(ierr);
-  if (flg) {
-    /*  Use PetscMemcpy() because casting from pointer to integer of different size is not allowed with some compilers  */
-    ierr = PetscMemcpy(&icomm,&ptr,sizeof(MPI_Comm));CHKERRQ(ierr);
-    ierr = MPI_Attr_get(icomm,Petsc_OuterComm_keyval,&ptr,&flg);CHKERRQ(ierr);
-    if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"Inner MPI_Comm does not have expected reference to outer comm");
-    ierr = MPI_Attr_delete(icomm,Petsc_OuterComm_keyval);CHKERRQ(ierr);
-    ierr = PetscInfo1(0,"User MPI_Comm m %ld is being freed, removing reference from inner PETSc comm to this outer comm\n",(long)comm);if (ierr) PetscFunctionReturn((PetscMPIInt)ierr);
-  } else {
-    ierr = PetscInfo1(0,"Removing reference to PETSc communicator imbedded in a user MPI_Comm m %ld\n",(long)comm);if (ierr) PetscFunctionReturn((PetscMPIInt)ierr);
-  }
+  if (keyval != Petsc_InnerComm_keyval) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"Unexpected keyval");
+  icomm.ptr = attr_val;
+
+  ierr = MPI_Attr_get(icomm.comm,Petsc_OuterComm_keyval,&ocomm,&flg);CHKERRQ(ierr);
+  if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"Inner MPI_Comm does not have expected reference to outer comm");
+  if (ocomm.comm != comm) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"Inner MPI_Comm has reference to non-matching outer comm");
+  ierr = MPI_Attr_delete(icomm.comm,Petsc_OuterComm_keyval);CHKERRQ(ierr); /* Calls Petsc_DelComm_Inner */
+  ierr = PetscInfo1(0,"User MPI_Comm %ld is being freed after removing reference from inner PETSc comm to this outer comm\n",(long)comm);if (ierr) PetscFunctionReturn((PetscMPIInt)ierr);
+  PetscFunctionReturn(MPI_SUCCESS);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "Petsc_DelComm_Inner"
+/*
+ * This is invoked on the inner comm when Petsc_DelComm_Outer calls MPI_Attr_delete.  It should not be reached any other way.
+ */
+PETSC_EXTERN PetscMPIInt MPIAPI Petsc_DelComm_Inner(MPI_Comm comm,PetscMPIInt keyval,void *attr_val,void *extra_state)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscInfo1(0,"Removing reference to PETSc communicator embedded in a user MPI_Comm %ld\n",(long)comm);if (ierr) PetscFunctionReturn((PetscMPIInt)ierr);
   PetscFunctionReturn(MPI_SUCCESS);
 }
 
@@ -752,8 +760,8 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
      Attributes to be set on PETSc communicators
   */
   ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,Petsc_DelCounter,&Petsc_Counter_keyval,(void*)0);CHKERRQ(ierr);
-  ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,Petsc_DelComm,&Petsc_InnerComm_keyval,(void*)0);CHKERRQ(ierr);
-  ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,Petsc_DelComm,&Petsc_OuterComm_keyval,(void*)0);CHKERRQ(ierr);
+  ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,Petsc_DelComm_Outer,&Petsc_InnerComm_keyval,(void*)0);CHKERRQ(ierr);
+  ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,Petsc_DelComm_Inner,&Petsc_OuterComm_keyval,(void*)0);CHKERRQ(ierr);
 
   /*
      Build the options database
@@ -1226,11 +1234,10 @@ PetscErrorCode  PetscFinalize(void)
     PetscCommCounter *counter;
     PetscMPIInt      flg;
     MPI_Comm         icomm;
-    void             *ptr;
-    ierr = MPI_Attr_get(PETSC_COMM_SELF,Petsc_InnerComm_keyval,&ptr,&flg);CHKERRQ(ierr);
+    union {MPI_Comm comm; void *ptr;} ucomm;
+    ierr = MPI_Attr_get(PETSC_COMM_SELF,Petsc_InnerComm_keyval,&ucomm,&flg);CHKERRQ(ierr);
     if (flg) {
-      /*  Use PetscMemcpy() because casting from pointer to integer of different size is not allowed with some compilers  */
-      ierr = PetscMemcpy(&icomm,&ptr,sizeof(MPI_Comm));CHKERRQ(ierr);
+      icomm = ucomm.comm;
       ierr = MPI_Attr_get(icomm,Petsc_Counter_keyval,&counter,&flg);CHKERRQ(ierr);
       if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"Inner MPI_Comm does not have expected tag/name counter, problem with corrupted memory");
 
@@ -1238,10 +1245,9 @@ PetscErrorCode  PetscFinalize(void)
       ierr = MPI_Attr_delete(icomm,Petsc_Counter_keyval);CHKERRQ(ierr);
       ierr = MPI_Comm_free(&icomm);CHKERRQ(ierr);
     }
-    ierr = MPI_Attr_get(PETSC_COMM_WORLD,Petsc_InnerComm_keyval,&ptr,&flg);CHKERRQ(ierr);
+    ierr = MPI_Attr_get(PETSC_COMM_WORLD,Petsc_InnerComm_keyval,&ucomm,&flg);CHKERRQ(ierr);
     if (flg) {
-      /*  Use PetscMemcpy() because casting from pointer to integer of different size is not allowed with some compilers  */
-      ierr = PetscMemcpy(&icomm,&ptr,sizeof(MPI_Comm));CHKERRQ(ierr);
+      icomm = ucomm.comm;
       ierr = MPI_Attr_get(icomm,Petsc_Counter_keyval,&counter,&flg);CHKERRQ(ierr);
       if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_CORRUPT,"Inner MPI_Comm does not have expected tag/name counter, problem with corrupted memory");
 
