@@ -779,7 +779,7 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
   ierr = VecScatterEnd(scatter_ctx,global_vec,local_vec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecGetArray(local_vec,&array);CHKERRQ(ierr);
   for (i=0;i<graph->nvtxs;i++) {
-    if (array[i] > 0.0) {
+    if (PetscRealPart(array[i]) > 0.0) {
       graph->which_dof[i] = NEUMANN_MARK;
     }
   }
@@ -794,7 +794,7 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
     for (i=0;i<is_size;i++){
       k = is_indices[i];
       if (graph->count[k] && !graph->touched[k]) {
-        if (array[k] > 0.0) {
+        if (PetscRealPart(array[k]) > 0.0) {
           SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"BDDC cannot have boundary nodes which are marked Neumann and Dirichlet at the same time! Local node %d is wrong!\n",k);
         }
         array2[k] = 1.0;
@@ -812,7 +812,7 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
   ierr = VecScatterEnd(scatter_ctx,global_vec,local_vec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecGetArray(local_vec,&array);CHKERRQ(ierr);
   for (i=0;i<graph->nvtxs;i++) {
-    if (array[i] > 0.0) {
+    if (PetscRealPart(array[i]) > 0.0) {
       graph->touched[i] = PETSC_TRUE;
       graph->subset[i] = 0; /* dirichlet nodes treated as internal -> is it ok? */
       graph->which_dof[i] = DIRICHLET_MARK;
