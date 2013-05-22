@@ -52,7 +52,7 @@ PetscErrorCode PCGAMGClassicalGraphSplitting_Private(Mat G,Mat *Gd, Mat *Go)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCGAMGGraph_Classical"
-PetscErrorCode PCGAMGGraph_Classical(PC pc,Mat A,Mat *G)
+PetscErrorCode PCGAMGGraph_Classical(PC pc,const Mat A,Mat *G)
 {
   PetscInt          s,f,idx;
   PetscInt          r,c,ncols;
@@ -232,7 +232,7 @@ PetscErrorCode PCGAMGClassicalGhost_Private(Mat G,Vec v,Vec gv)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCGAMGProlongator_Classical"
-PetscErrorCode PCGAMGProlongator_Classical(PC pc, Mat A, Mat G, PetscCoarsenData *agg_lists,Mat *P)
+PetscErrorCode PCGAMGProlongator_Classical(PC pc, const Mat A, const Mat G, PetscCoarsenData *agg_lists,Mat *P)
 {
   PetscErrorCode    ierr;
   MPI_Comm          comm;
@@ -387,13 +387,12 @@ PetscErrorCode PCGAMGProlongator_Classical(PC pc, Mat A, Mat G, PetscCoarsenData
       pij = 1.;
       ierr = MatSetValues(*P,1,&row_f,1,&row_c,&pij,INSERT_VALUES);CHKERRQ(ierr);
     } else {
+      PetscInt nstrong=0,ntotal=0;
       g_pos = 0.;
       g_neg = 0.;
       a_pos = 0.;
       a_neg = 0.;
       diag = 0.;
-
-      PetscInt nstrong=0,ntotal=0;
 
       /* local strong connections */
       ierr = MatGetRow(lG,i,&ncols,&rcol,&rval);CHKERRQ(ierr);
