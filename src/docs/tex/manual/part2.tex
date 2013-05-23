@@ -4199,6 +4199,7 @@ A code fragment that demonstrates this process is given below.
    \trl{*/}\\
    MatFDColoringCreate(J,iscoloring,\&fdcoloring);\\
    ISColoringDestroy(\&iscoloring);\\
+   MatFDColoringSetFunction(fdcoloring,(PetscErrorCode (*)(void))FormFunction,\&user);\\
    MatFDColoringSetFromOptions(fdcoloring);\\
 
    \trl{/*}\\
