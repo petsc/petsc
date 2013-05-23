@@ -1,5 +1,5 @@
-#undef  __FUNC__
-#define __FUNC__ "DMGetCoordinateDM"
+#undef  __FUNCT__
+#define __FUNCT__ "DMGetCoordinateDM"
 PetscErrorCode DMGetCoordinateDM(DM dm,DM *cdm)
 {
   PetscBool match;
@@ -13,8 +13,8 @@ PetscErrorCode DMGetCoordinateDM(DM dm,DM *cdm)
   PetscFunctionReturn(0);
 }
 
-#undef  __FUNC__
-#define __FUNC__ "DMSetCoordinates"
+#undef  __FUNCT__
+#define __FUNCT__ "DMSetCoordinates"
 PetscErrorCode DMSetCoordinates(DM dm,Vec c)
 {
   PetscBool match;
@@ -28,8 +28,8 @@ PetscErrorCode DMSetCoordinates(DM dm,Vec c)
   PetscFunctionReturn(0);
 }
 
-#undef  __FUNC__
-#define __FUNC__ "DMGetCoordinates"
+#undef  __FUNCT__
+#define __FUNCT__ "DMGetCoordinates"
 PetscErrorCode DMGetCoordinates(DM dm,Vec *c)
 {
   PetscBool match;
@@ -43,8 +43,8 @@ PetscErrorCode DMGetCoordinates(DM dm,Vec *c)
   PetscFunctionReturn(0);
 }
 
-#undef  __FUNC__
-#define __FUNC__ "DMSetCoordinatesLocal"
+#undef  __FUNCT__
+#define __FUNCT__ "DMSetCoordinatesLocal"
 PetscErrorCode DMSetCoordinatesLocal(DM dm,Vec c)
 {
   PetscBool match;
@@ -58,8 +58,8 @@ PetscErrorCode DMSetCoordinatesLocal(DM dm,Vec c)
   PetscFunctionReturn(0);
 }
 
-#undef  __FUNC__
-#define __FUNC__ "DMGetCoordinatesLocal"
+#undef  __FUNCT__
+#define __FUNCT__ "DMGetCoordinatesLocal"
 PetscErrorCode DMGetCoordinatesLocal(DM dm,Vec *c)
 {
   PetscBool match;
