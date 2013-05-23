@@ -1,5 +1,5 @@
 Local function
-Vector Object: 1 MPI processes
+Vec Object: 1 MPI processes
   type: seq
 0
 0
@@ -110,7 +110,7 @@ Vector Object: 1 MPI processes
 -0.5
 0
 Initial guess
-Vector Object: 1 MPI processes
+Vec Object: 1 MPI processes
   type: seq
 -1.5
 -0.5
@@ -144,7 +144,7 @@ Vector Object: 1 MPI processes
 0
 L_2 Error: 0.196403
 Residual:
-Vector Object: 1 MPI processes
+Vec Object: 1 MPI processes
   type: seq
 0
 0
@@ -255,7 +255,7 @@ Vector Object: 1 MPI processes
 -0.166667
 0
 Initial Residual
-Vector Object: 1 MPI processes
+Vec Object: 1 MPI processes
   type: seq
 0
 0
@@ -289,7 +289,7 @@ Vector Object: 1 MPI processes
 0
 L_2 Residual: 0.293151
 Jacobian:
-Matrix Object: 1 MPI processes
+Mat Object: 1 MPI processes
   type: seqaij
 row 0: (0, 0)  (12, 0)  (13, 0)  (16, 0)  (20, 0)  (23, 0)  (24, 0)  (26, -0.0208333)  (27, -0.0208333)  (28, -0.0208333)  (29, 0) 
 row 1: (1, 0)  (13, 0)  (15, 0)  (17, 0)  (20, 0)  (22, 0)  (24, 0)  (26, 0.0208333)  (27, -0.0208333)  (28, -0.0208333)  (29, 0) 
@@ -322,7 +322,7 @@ row 27: (0, 0.0208333)  (1, 0.0208333)  (2, -0.0208333)  (3, -0.0208333)  (4, 0.
 row 28: (0, 0.0208333)  (1, 0.0208333)  (2, 0.0208333)  (3, 0.0208333)  (4, -0.0208333)  (5, -0.0208333)  (6, -0.0208333)  (7, -0.0208333)  (8, 0.0208333)  (9, 0)  (10, 0)  (11, -0.0208333)  (12, 0)  (13, 0.0208333)  (14, -0.0208333)  (15, 0)  (16, 0.0208333)  (17, 0.0208333)  (18, -0.0208333)  (19, -0.0208333)  (20, 0)  (21, -0.0833333)  (22, 0)  (23, 0)  (24, 0.0833333)  (25, 0)  (26, 0)  (27, 0)  (28, 4)  (29, 0) 
 row 29: (0, 0)  (1, 0)  (2, 0)  (3, 0)  (4, 0)  (5, 0)  (6, 0)  (7, 0)  (8, 0)  (9, 0)  (10, 0)  (11, 0)  (12, 0)  (13, 0)  (14, 0)  (15, 0)  (16, 0)  (17, 0)  (18, 0)  (19, 0)  (20, 0)  (21, 0)  (22, 0)  (23, 0)  (24, 0)  (25, 0)  (26, 0)  (27, 0)  (28, 0)  (29, 0) 
 Residual:
-Vector Object: 1 MPI processes
+Vec Object: 1 MPI processes
   type: seq
 0
 0
@@ -433,7 +433,7 @@ Vector Object: 1 MPI processes
 2.08333
 0
 Au - b = Au + F(0)
-Vector Object: 1 MPI processes
+Vec Object: 1 MPI processes
   type: seq
 0
 0

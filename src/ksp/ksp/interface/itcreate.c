@@ -125,7 +125,7 @@ PetscErrorCode  KSPView(KSP ksp,PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERAMS,&isams);CHKERRQ(ierr);
 #endif
   if (iascii) {
-    ierr = PetscObjectPrintClassNamePrefixType((PetscObject)ksp,viewer,"KSP Object");CHKERRQ(ierr);
+    ierr = PetscObjectPrintClassNamePrefixType((PetscObject)ksp,viewer);CHKERRQ(ierr);
     if (ksp->ops->view) {
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
       ierr = (*ksp->ops->view)(ksp,viewer);CHKERRQ(ierr);

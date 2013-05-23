@@ -129,7 +129,7 @@ PC Object:(fc_) 1 MPI processes
           matrix ordering: nd
           factor fill ratio given 5, needed 4.40672
             Factored matrix follows:
-              Matrix Object:               1 MPI processes              
+              Mat Object:               1 MPI processes              
                 type: seqsbaij
                 rows=2046, cols=2046
                 package used to perform factorization: petsc
@@ -137,7 +137,7 @@ PC Object:(fc_) 1 MPI processes
                 total number of mallocs used during MatSetValues calls =0
                     block size is 1
         linear system matrix = precond matrix:
-        Matrix Object:        (a11_)         1 MPI processes        
+        Mat Object:        (a11_)         1 MPI processes        
           type: seqaij
           rows=2046, cols=2046
           total: nonzeros=34952, allocated nonzeros=34952
@@ -170,7 +170,7 @@ PC Object:(fc_) 1 MPI processes
               matrix ordering: natural
               factor fill ratio given 1, needed 1
                 Factored matrix follows:
-                  Matrix Object:                   1 MPI processes                  
+                  Mat Object:                   1 MPI processes                  
                     type: seqsbaij
                     rows=1024, cols=1024
                     package used to perform factorization: petsc
@@ -178,26 +178,26 @@ PC Object:(fc_) 1 MPI processes
                     total number of mallocs used during MatSetValues calls =0
                         block size is 1
             linear system matrix = precond matrix:
-            Matrix Object:             1 MPI processes            
+            Mat Object:             1 MPI processes            
               type: seqaij
               rows=1024, cols=1024
               total: nonzeros=8836, allocated nonzeros=8836
               total number of mallocs used during MatSetValues calls =0
                 not using I-node routines
         linear system matrix followed by preconditioner matrix:
-        Matrix Object:         1 MPI processes        
+        Mat Object:         1 MPI processes        
           type: schurcomplement
           rows=1024, cols=1024
             Schur complement A11 - A10 inv(A00) A01
             A11
-              Matrix Object:              (a22_)               1 MPI processes              
+              Mat Object:              (a22_)               1 MPI processes              
                 type: seqaij
                 rows=1024, cols=1024
                 total: nonzeros=1024, allocated nonzeros=1024
                 total number of mallocs used during MatSetValues calls =0
                   not using I-node routines
             A10
-              Matrix Object:               1 MPI processes              
+              Mat Object:               1 MPI processes              
                 type: seqaij
                 rows=1024, cols=2046
                 total: nonzeros=7936, allocated nonzeros=7936
@@ -217,7 +217,7 @@ PC Object:(fc_) 1 MPI processes
                   matrix ordering: nd
                   factor fill ratio given 5, needed 4.40672
                     Factored matrix follows:
-                      Matrix Object:                       1 MPI processes                      
+                      Mat Object:                       1 MPI processes                      
                         type: seqsbaij
                         rows=2046, cols=2046
                         package used to perform factorization: petsc
@@ -225,27 +225,27 @@ PC Object:(fc_) 1 MPI processes
                         total number of mallocs used during MatSetValues calls =0
                             block size is 1
                 linear system matrix = precond matrix:
-                Matrix Object:                (a11_)                 1 MPI processes                
+                Mat Object:                (a11_)                 1 MPI processes                
                   type: seqaij
                   rows=2046, cols=2046
                   total: nonzeros=34952, allocated nonzeros=34952
                   total number of mallocs used during MatSetValues calls =0
                     using I-node routines: found 1085 nodes, limit used is 5
             A01
-              Matrix Object:               1 MPI processes              
+              Mat Object:               1 MPI processes              
                 type: seqaij
                 rows=2046, cols=1024
                 total: nonzeros=7936, allocated nonzeros=7936
                 total number of mallocs used during MatSetValues calls =0
                   using I-node routines: found 1085 nodes, limit used is 5
-        Matrix Object:        (a22_)         1 MPI processes        
+        Mat Object:        (a22_)         1 MPI processes        
           type: seqaij
           rows=1024, cols=1024
           total: nonzeros=1024, allocated nonzeros=1024
           total number of mallocs used during MatSetValues calls =0
             not using I-node routines
   linear system matrix = precond matrix:
-  Matrix Object:   1 MPI processes  
+  Mat Object:   1 MPI processes  
     type: nest
     rows=3070, cols=3070
       Matrix object: 

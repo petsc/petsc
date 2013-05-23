@@ -1306,7 +1306,7 @@ PetscErrorCode  TSView(TS ts,PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERAMS,&isams);CHKERRQ(ierr);
 #endif
   if (iascii) {
-    ierr = PetscObjectPrintClassNamePrefixType((PetscObject)ts,viewer,"TS Object");CHKERRQ(ierr);
+    ierr = PetscObjectPrintClassNamePrefixType((PetscObject)ts,viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  maximum steps=%D\n",ts->max_steps);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  maximum time=%G\n",ts->max_time);CHKERRQ(ierr);
     if (ts->problem_type == TS_NONLINEAR) {

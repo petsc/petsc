@@ -324,7 +324,7 @@ PetscErrorCode  MatCoarsenView(MatCoarsen agg,PetscViewer viewer)
 
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
-    ierr = PetscObjectPrintClassNamePrefixType((PetscObject)agg,viewer,"MatCoarsen Object");CHKERRQ(ierr);
+    ierr = PetscObjectPrintClassNamePrefixType((PetscObject)agg,viewer);CHKERRQ(ierr);
   } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported for this MatCoarsen",((PetscObject)viewer)->type_name);
 
   if (agg->ops->view) {

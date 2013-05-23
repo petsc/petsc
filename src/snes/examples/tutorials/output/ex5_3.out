@@ -52,7 +52,7 @@ SNES Object: 2 MPI processes
             matrix ordering: nd
             factor fill ratio given 5, needed 1.875
               Factored matrix follows:
-                Matrix Object:                 1 MPI processes
+                Mat Object:                 1 MPI processes
                   type: seqaij
                   rows=16, cols=16
                   package used to perform factorization: petsc
@@ -60,14 +60,14 @@ SNES Object: 2 MPI processes
                   total number of mallocs used during MatSetValues calls =0
                     using I-node routines: found 12 nodes, limit used is 5
           linear system matrix = precond matrix:
-          Matrix Object:           1 MPI processes
+          Mat Object:           1 MPI processes
             type: seqaij
             rows=16, cols=16
             total: nonzeros=64, allocated nonzeros=80
             total number of mallocs used during MatSetValues calls =0
               not using I-node routines
         linear system matrix = precond matrix:
-        Matrix Object:         2 MPI processes
+        Mat Object:         2 MPI processes
           type: mpiaij
           rows=16, cols=16
           total: nonzeros=64, allocated nonzeros=64
@@ -90,7 +90,7 @@ SNES Object: 2 MPI processes
             type: sor
               SOR: type = local_symmetric, iterations = 1, local iterations = 1, omega = 1
             linear system matrix = precond matrix:
-            Matrix Object:             2 MPI processes
+            Mat Object:             2 MPI processes
               type: mpiaij
               rows=49, cols=49
               total: nonzeros=217, allocated nonzeros=217
@@ -104,7 +104,7 @@ SNES Object: 2 MPI processes
         type: sor
           SOR: type = local_symmetric, iterations = 1, local iterations = 1, omega = 1
         linear system matrix = precond matrix:
-        Matrix Object:         2 MPI processes
+        Mat Object:         2 MPI processes
           type: mpiaij
           rows=49, cols=49
           total: nonzeros=217, allocated nonzeros=217
@@ -128,14 +128,14 @@ SNES Object: 2 MPI processes
             type: sor
               SOR: type = local_symmetric, iterations = 1, local iterations = 1, omega = 1
             linear system matrix followed by preconditioner matrix:
-            Matrix Object:             2 MPI processes
+            Mat Object:             2 MPI processes
               type: mffd
               rows=169, cols=169
                 Matrix-free approximation:
                   err=1.49012e-08 (relative error in function evaluation)
                   Using wp compute h routine
                       Does not compute normU
-            Matrix Object:             2 MPI processes
+            Mat Object:             2 MPI processes
               type: mpiaij
               rows=169, cols=169
               total: nonzeros=793, allocated nonzeros=793
@@ -149,28 +149,28 @@ SNES Object: 2 MPI processes
         type: sor
           SOR: type = local_symmetric, iterations = 1, local iterations = 1, omega = 1
         linear system matrix followed by preconditioner matrix:
-        Matrix Object:         2 MPI processes
+        Mat Object:         2 MPI processes
           type: mffd
           rows=169, cols=169
             Matrix-free approximation:
               err=1.49012e-08 (relative error in function evaluation)
               Using wp compute h routine
                   Does not compute normU
-        Matrix Object:         2 MPI processes
+        Mat Object:         2 MPI processes
           type: mpiaij
           rows=169, cols=169
           total: nonzeros=793, allocated nonzeros=793
           total number of mallocs used during MatSetValues calls =0
     Up solver (post-smoother) same as down solver (pre-smoother)
     linear system matrix followed by preconditioner matrix:
-    Matrix Object:     2 MPI processes
+    Mat Object:     2 MPI processes
       type: mffd
       rows=169, cols=169
         Matrix-free approximation:
           err=1.49012e-08 (relative error in function evaluation)
           Using wp compute h routine
               Does not compute normU
-    Matrix Object:     2 MPI processes
+    Mat Object:     2 MPI processes
       type: mpiaij
       rows=169, cols=169
       total: nonzeros=793, allocated nonzeros=793
