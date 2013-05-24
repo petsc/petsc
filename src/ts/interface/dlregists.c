@@ -48,6 +48,7 @@ PetscErrorCode  TSInitializePackage(void)
   TSPackageInitialized = PETSC_TRUE;
   /* Inialize subpackages */
   ierr = TSGLInitializePackage();CHKERRQ(ierr);
+  ierr = TSRKInitializePackage();CHKERRQ(ierr);
   ierr = TSARKIMEXInitializePackage();CHKERRQ(ierr);
   ierr = TSRosWInitializePackage();CHKERRQ(ierr);
   ierr = TSSSPInitializePackage();CHKERRQ(ierr);

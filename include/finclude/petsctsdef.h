@@ -50,6 +50,13 @@
 #define TSADAPTNONE  'none'
 #define TSADAPTCFL   'cfl'
 
+#define TSRKType character*(80)
+#define TSRK1FE   '1fe'
+#define TSRK2     '2'
+#define TSRK3     '3'
+#define TSRK4     '4'
+#define TSRK5F    '5fehlberg'
+
 #define TSARKIMEXType character*(80)
 #define TSARKIMEX1BEE   '1bee'
 #define TSARKIMEXA2     'a2'
