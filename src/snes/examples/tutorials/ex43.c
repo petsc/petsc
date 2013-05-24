@@ -66,6 +66,7 @@ int main(int argc,char **argv)
   ierr = MatCreate(PETSC_COMM_WORLD,&J);CHKERRQ(ierr);
   ierr = MatSetSizes(J,PETSC_DECIDE,PETSC_DECIDE,2+ctx.p+ctx.n,2+ctx.p+ctx.n);CHKERRQ(ierr);
   ierr = MatSetFromOptions(J);CHKERRQ(ierr);
+  ierr = MatSetUp(J);CHKERRQ(ierr);
 
   /*
      Set function evaluation routine and vector.
