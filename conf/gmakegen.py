@@ -91,6 +91,13 @@ class Petsc(object):
     def relpath(self, root, src):
         return os.path.relpath(os.path.join(root, src), self.petsc_dir)
 
+    def get_sources(self, makevars):
+        """Return dict {lang: list_of_source_files}"""
+        source = dict()
+        for lang, sourcelang in LANGS.items():
+            source[lang] = [f for f in makevars.get(sourcelang,'').split() if f.endswith(lang)]
+        return source
+
     def gen_pkg(self, pkg):
         pkgsrcs = dict()
         for lang in LANGS:
@@ -111,14 +118,13 @@ class Petsc(object):
             self.mistakes.compareDirLists(root, mdirs, dirs) # diagnostic output to find unused directories
             candidates = set(mdirs).union(AUTODIRS).difference(SKIPDIRS)
             dirs[:] = list(candidates.intersection(dirs))
-            source = dict()
             allsource = []
             def mkrel(src):
                 return self.relpath(root, src)
-            for lang, sourcelang in LANGS.items():
-                source[lang] = [f for f in makevars.get(sourcelang,'').split() if f.endswith(lang)]
-                pkgsrcs[lang] += map(mkrel, source[lang])
-                allsource += source[lang]
+            source = self.get_sources(makevars)
+            for lang, s in source.items():
+                pkgsrcs[lang] += map(mkrel, s)
+                allsource += s
             self.mistakes.compareSourceLists(root, allsource, files) # Diagnostic output about unused source files
             self.gendeps.append(self.relpath(root, 'makefile'))
         return pkgsrcs
