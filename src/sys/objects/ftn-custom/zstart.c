@@ -431,6 +431,9 @@ PETSC_EXTERN void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(l
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:PetscStackCreate()\n");return;}
 #endif
 
+  *ierr = PetscCitationsInitialize();
+  if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:PetscCitationsInitialize()\n");return;}
+
   *ierr = PetscOptionsGetInt(NULL,"-hmpi_spawn_size",&nodesize,&flg);
   if (flg) {
 #if defined(PETSC_HAVE_MPI_COMM_SPAWN)

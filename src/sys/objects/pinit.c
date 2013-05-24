@@ -443,6 +443,19 @@ char **PetscGlobalArgs = 0;
 PetscSegBuffer PetscCitationsList; 
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscCitationsInitialize"
+PetscErrorCode PetscCitationsInitialize()
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscSegBufferCreate(1,10000,&PetscCitationsList);CHKERRQ(ierr);
+  ierr = PetscCitationsRegister("@TechReport{petsc-user-ref,\n  Author = {Satish Balay and Jed Brown and and Kris Buschelman and Victor Eijkhout\n            and William D.  Gropp and Dinesh Kaushik and Matthew G. Knepley\n            and Lois Curfman McInnes and Barry F. Smith and Hong Zhang},\n  Title = {{PETS}c Users Manual},\n  Number = {ANL-95/11 - Revision 3.4},\n  Institution = {Argonne National Laboratory},\n  Year = {2013}\n}\n",NULL);CHKERRQ(ierr);
+  ierr = PetscCitationsRegister("@InProceedings{petsc-efficient,\n  Author = {Satish Balay and William D. Gropp and Lois Curfman McInnes and Barry F. Smith},\n  Title = {Efficient Management of Parallelism in Object Oriented Numerical Software Libraries},\n  Booktitle = {Modern Software Tools in Scientific Computing},\n  Editor = {E. Arge and A. M. Bruaset and H. P. Langtangen},\n  Pages = {163--202},\n  Publisher = {Birkh{\\\"{a}}user Press},\n  Year = {1997}\n}\n",NULL);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscGetArgs"
 /*@C
    PetscGetArgs - Allows you to access the raw command line arguments anywhere
@@ -859,9 +872,7 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   ierr = PetscFPTCreate(10000);CHKERRQ(ierr);
 #endif
 
-  ierr = PetscSegBufferCreate(1,10000,&PetscCitationsList);CHKERRQ(ierr);
-  ierr = PetscCitationsRegister("@TechReport{petsc-user-ref,\n  Author = {Satish Balay and Jed Brown and and Kris Buschelman and Victor Eijkhout\n            and William D.  Gropp and Dinesh Kaushik and Matthew G. Knepley\n            and Lois Curfman McInnes and Barry F. Smith and Hong Zhang},\n  Title = {{PETS}c Users Manual},\n  Number = {ANL-95/11 - Revision 3.4},\n  Institution = {Argonne National Laboratory},\n  Year = {2013}\n}\n",NULL);CHKERRQ(ierr);
-  ierr = PetscCitationsRegister("@InProceedings{petsc-efficient,\n  Author = {Satish Balay and William D. Gropp and Lois Curfman McInnes and Barry F. Smith},\n  Title = {Efficient Management of Parallelism in Object Oriented Numerical Software Libraries},\n  Booktitle = {Modern Software Tools in Scientific Computing},\n  Editor = {E. Arge and A. M. Bruaset and H. P. Langtangen},\n  Pages = {163--202},\n  Publisher = {Birkh{\\\"{a}}user Press},\n  Year = {1997}\n}\n",NULL);CHKERRQ(ierr);
+  ierr = PetscCitationsInitialize();CHKERRQ(ierr);
 
   /*
       Once we are completedly initialized then we can set this variables
