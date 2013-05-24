@@ -318,6 +318,7 @@ PETSC_EXTERN PetscErrorCode SNESDMMeshComputeJacobian(SNES,Vec,Mat*,Mat*,MatStru
 PETSC_EXTERN PetscErrorCode SNESSetFunction(SNES,Vec,PetscErrorCode (*SNESFunction)(SNES,Vec,Vec,void*),void*);
 PETSC_EXTERN PetscErrorCode SNESGetFunction(SNES,Vec*,PetscErrorCode (**SNESFunction)(SNES,Vec,Vec,void*),void**);
 PETSC_EXTERN PetscErrorCode SNESComputeFunction(SNES,Vec,Vec);
+
 PETSC_EXTERN PetscErrorCode SNESSetJacobian(SNES,Mat,Mat,PetscErrorCode (*SNESJacobianFunction)(SNES,Vec,Mat*,Mat*,MatStructure*,void*),void*);
 PETSC_EXTERN PetscErrorCode SNESGetJacobian(SNES,Mat*,Mat*,PetscErrorCode (**SNESJacobianFunction)(SNES,Vec,Mat*,Mat*,MatStructure*,void*),void**);
 PETSC_EXTERN PetscErrorCode SNESObjectiveComputeFunctionDefaultFD(SNES,Vec,Vec,void*);
@@ -594,6 +595,7 @@ PETSC_EXTERN PetscErrorCode SNESSetDM(SNES,DM);
 PETSC_EXTERN PetscErrorCode SNESGetDM(SNES,DM*);
 PETSC_EXTERN PetscErrorCode SNESSetPC(SNES,SNES);
 PETSC_EXTERN PetscErrorCode SNESGetPC(SNES,SNES*);
+PETSC_EXTERN PetscErrorCode SNESApplyPC(SNES,Vec,Vec,PetscReal*,Vec);
 PETSC_EXTERN PetscErrorCode SNESSetPCSide(SNES,PCSide);
 PETSC_EXTERN PetscErrorCode SNESGetPCSide(SNES,PCSide*);
 PETSC_EXTERN PetscErrorCode SNESSetLineSearch(SNES,SNESLineSearch);

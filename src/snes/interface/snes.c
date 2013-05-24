@@ -2038,15 +2038,7 @@ PetscErrorCode  SNESComputeFunction(SNES snes,Vec x,Vec y)
 
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
   ierr = DMGetDMSNES(dm,&sdm);CHKERRQ(ierr);
-  if (snes->pc && snes->pcside == PC_LEFT) {
-    ierr = VecCopy(x,y);CHKERRQ(ierr);
-    ierr = PetscLogEventBegin(SNES_NPCSolve,snes->pc,x,y,0);CHKERRQ(ierr);
-    ierr = SNESSolve(snes->pc,snes->vec_rhs,y);CHKERRQ(ierr);
-    ierr = PetscLogEventEnd(SNES_NPCSolve,snes->pc,x,y,0);CHKERRQ(ierr);
-    ierr = VecAYPX(y,-1.0,x);CHKERRQ(ierr);
-    ierr = VecValidValues(y,3,PETSC_FALSE);CHKERRQ(ierr);
-    PetscFunctionReturn(0);
-  } else if (sdm->ops->computefunction) {
+  if (sdm->ops->computefunction) {
     ierr = PetscLogEventBegin(SNES_FunctionEval,snes,x,y,0);CHKERRQ(ierr);
     PetscStackPush("SNES user function");
     ierr = (*sdm->ops->computefunction)(snes,x,y,sdm->functionctx);CHKERRQ(ierr);
