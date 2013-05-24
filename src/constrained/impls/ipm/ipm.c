@@ -1,6 +1,7 @@
 #include "taolinesearch.h"
 #include "ipm.h" /*I "ipm.h" I*/
 //#define DEBUG_K
+//#define DEBUG_KKT
 /* 
    x,d in R^n
    f in R
@@ -23,6 +24,7 @@
 
 static PetscErrorCode IPMComputeKKT(TaoSolver tao);
 static PetscErrorCode IPMPushInitialPoint(TaoSolver tao);
+static PetscErrorCode IPMEvaluate(TaoSolver tao);
 static PetscErrorCode IPMUpdateK(TaoSolver tao);
 static PetscErrorCode IPMUpdateAi(TaoSolver tao);
 static PetscErrorCode IPMGatherRHS(TaoSolver tao,Vec,Vec,Vec,Vec,Vec);
@@ -41,43 +43,36 @@ static PetscErrorCode TaoSolve_IPM(TaoSolver tao)
   PetscInt iter = 0,its,i,j;
   PetscScalar stepsize=1.0;
   PetscScalar *li,*di;
-  PetscScalar step_y,step_l,alpha,tau,sigma,muaff,phi_target;
+  PetscScalar step_s,step_l,alpha,tau,sigma,phi_target;
   PetscFunctionBegin;
 
   /* Push initial point away from bounds */
   ierr = IPMInitializeBounds(tao); CHKERRQ(ierr);
   ierr = IPMPushInitialPoint(tao); CHKERRQ(ierr);
   ierr = VecCopy(tao->solution,ipmP->rhs_x); CHKERRQ(ierr);
+  ierr = IPMEvaluate(tao); CHKERRQ(ierr);
   ierr = IPMComputeKKT(tao); CHKERRQ(ierr);
   ierr = TaoMonitor(tao,iter++,ipmP->kkt_f,ipmP->phi,0.0,1.0,&reason);
 
 
   while (reason == TAO_CONTINUE_ITERATING) {
     ierr = IPMUpdateK(tao); CHKERRQ(ierr);
-    /* % compute affine scaling step 
-       rhs.lami = -iter.yi.*iter.lami;
-       rhs.x = -kkt.rd; 
-       rhs.lame = -kkt.rpe; 
-       rhs.yi = -kkt.rpi; 
-       step = feval(par.compute_step,par,iter,rhs);
-       dYaff = step.yi;
-       dLaff = step.lami; */
-    ierr = VecCopy(tao->solution,ipmP->rhs_x); CHKERRQ(ierr);
-    ierr = VecCopy(ipmP->lamdai,ipmP->rhs_lamdai); CHKERRQ(ierr);
-    ierr = VecCopy(ipmP->lamdae,ipmP->rhs_lamdae); CHKERRQ(ierr);
-    ierr = VecCopy(ipmP->s,ipmP->rhs_s); CHKERRQ(ierr);
+    /* 
+       rhs.x    = -rd
+       rhs.lame = -rpe
+       rhs.lami = -rpi
+       rhs.com  = -com 
+    */
 
-    ierr = VecPointwiseMult(ipmP->rhs_lamdai,ipmP->lamdai,ipmP->s); CHKERRQ(ierr);
-    ierr = VecScale(ipmP->rhs_lamdai,-1.0); CHKERRQ(ierr);
     ierr = VecCopy(ipmP->rd,ipmP->rhs_x); CHKERRQ(ierr);
-    ierr = VecScale(ipmP->rhs_x,-1.0); CHKERRQ(ierr);
     ierr = VecCopy(ipmP->rpe,ipmP->rhs_lamdae); CHKERRQ(ierr);
-    ierr = VecScale(ipmP->rhs_lamdae,-1.0); CHKERRQ(ierr);
-    ierr = VecCopy(ipmP->rpi,ipmP->rhs_s); CHKERRQ(ierr);
-    ierr = VecScale(ipmP->rhs_s,-1.0); CHKERRQ(ierr);
-
+    ierr = VecCopy(ipmP->rpi,ipmP->rhs_lamdai); CHKERRQ(ierr);
+    ierr = VecCopy(ipmP->complementarity,ipmP->rhs_s); CHKERRQ(ierr);
     ierr = IPMGatherRHS(tao,ipmP->bigrhs,ipmP->rhs_x,ipmP->rhs_lamdae,
-			ipmP->rhs_s,ipmP->rhs_lamdai); CHKERRQ(ierr);
+			ipmP->rhs_lamdai,ipmP->rhs_s); CHKERRQ(ierr);
+    ierr = VecScale(ipmP->bigrhs,-1.0); CHKERRQ(ierr);
+
+    /* solve K * step = rhs */
     ierr = KSPSetOperators(tao->ksp,ipmP->K,ipmP->K,DIFFERENT_NONZERO_PATTERN); CHKERRQ(ierr);
     ierr = KSPSolve(tao->ksp,ipmP->bigrhs,ipmP->bigstep);CHKERRQ(ierr);
 
@@ -85,106 +80,113 @@ static PetscErrorCode TaoSolve_IPM(TaoSolver tao)
 			  ipmP->dlamdae,ipmP->dlamdai); CHKERRQ(ierr);
     ierr = KSPGetIterationNumber(tao->ksp,&its); CHKERRQ(ierr);
     tao->ksp_its += its;
-    /* check result */
-    //printf("solution = \n");
-    //ierr = VecView(ipmP->bigstep,0); CHKERRQ(ierr);
-    
-    ierr = VecCopy(ipmP->ds,ipmP->dYaff); CHKERRQ(ierr);
-    ierr = VecCopy(ipmP->dlamdai,ipmP->dLaff); CHKERRQ(ierr);
-
-    /* get max stepsizes
-       [yaff,step.alp.y] = max_stepsize(iter.yi,step.yi);
-       [laff,step.alp.lam] = max_stepsize(iter.lami,step.lami);
-       alp = min(step.alp.y,step.alp.lam);
-       yaff = iter.yi + alp*step.yi;
-       laff = iter.lami + alp*step.lami;
-       muaff = yaff'*laff/mi;
-    */
+#if defined DEBUG_KKT
+    printf("first solve.\n");
+    printf("rhs_lamdai\n");
+    VecView(ipmP->rhs_lamdai,0);
+    ierr = VecView(ipmP->bigrhs,0);
+    ierr = VecView(ipmP->bigstep,0);
+#endif
      /* Find distance along step direction to closest bound */
-    
-    ierr = VecStepBoundInfo(ipmP->s,ipmP->Zero_nb,ipmP->Inf_nb,ipmP->ds,&step_y,PETSC_NULL,PETSC_NULL); CHKERRQ(ierr);
-    ierr = VecStepBoundInfo(ipmP->lamdai,ipmP->Zero_nb,ipmP->Inf_nb,ipmP->dlamdai,&step_l,PETSC_NULL,PETSC_NULL); CHKERRQ(ierr);
+    ierr = VecStepBoundInfo(ipmP->s,ipmP->Zero_nb,ipmP->Inf_nb,ipmP->ds,&step_s,PETSC_NULL,PETSC_NULL); CHKERRQ(ierr);
 
-    alpha = PetscMin(step_y,step_l);
+    ierr = VecStepBoundInfo(ipmP->lamdai,ipmP->Zero_nb,ipmP->Inf_nb,ipmP->dlamdai,&step_l,PETSC_NULL,PETSC_NULL); CHKERRQ(ierr);
+    alpha = PetscMin(step_s,step_l);
     alpha = PetscMin(alpha,1.0);
     ipmP->alpha1 = alpha;
-
-    ierr = VecCopy(ipmP->s,ipmP->Yaff); CHKERRQ(ierr);
-    ierr = VecAXPY(ipmP->Yaff,alpha,ipmP->ds); CHKERRQ(ierr);
-    ierr = VecCopy(ipmP->lamdai,ipmP->Laff); CHKERRQ(ierr);
-    ierr = VecAXPY(ipmP->Laff,alpha,ipmP->dlamdai); CHKERRQ(ierr);
-    ierr = VecDot(ipmP->Yaff,ipmP->Laff,&muaff); CHKERRQ(ierr);
-    muaff /= ipmP->nb; CHKERRQ(ierr);
-
-    sigma = (muaff/ipmP->mu);
-    sigma *= sigma*sigma;
-
-    /* Compute full step */
-    /* rhs.lami = rhs.lami - dYaff.*dLaff + sig*kkt.mu*e); */
-    ierr = VecAXPY(ipmP->rhs_lamdai,sigma*ipmP->mu,ipmP->One_nb); CHKERRQ(ierr);
-    ierr = VecPointwiseMult(ipmP->dYaff,ipmP->dLaff,ipmP->dYaff); CHKERRQ(ierr);
-    ierr = VecAXPY(ipmP->rhs_lamdai, -1.0, ipmP->dYaff); CHKERRQ(ierr);
-    /* step = feval(par.compute_step,par,iter,rhs); */
     
+    /* x_aff = x + alpha*d */
+    ierr = VecCopy(tao->solution,ipmP->save_x); CHKERRQ(ierr);
+    ierr = VecCopy(ipmP->lamdae,ipmP->save_lamdae); CHKERRQ(ierr);
+    ierr = VecCopy(ipmP->lamdai,ipmP->save_lamdai); CHKERRQ(ierr);
+    ierr = VecCopy(ipmP->s,ipmP->save_s); CHKERRQ(ierr);
+
+    ierr = VecAXPY(tao->solution,alpha,tao->stepdirection); CHKERRQ(ierr);
+    ierr = VecAXPY(ipmP->lamdae,alpha,ipmP->dlamdae); CHKERRQ(ierr);
+    ierr = VecAXPY(ipmP->lamdai,alpha,ipmP->dlamdai); CHKERRQ(ierr);
+    ierr = VecAXPY(ipmP->s,alpha,ipmP->ds); CHKERRQ(ierr);
+
+    /* Recompute kkt to find centering parameter sigma = (new_mu/old_mu)^3 */
+    sigma = 1.0/ipmP->mu;
+    ierr = IPMComputeKKT(tao); CHKERRQ(ierr);
+    sigma *= ipmP->mu;
+    sigma*=sigma*sigma;
     
-    ierr = IPMGatherRHS(tao,ipmP->bigrhs,ipmP->rhs_x,ipmP->rhs_lamdae,
-			ipmP->rhs_s,ipmP->rhs_lamdai); CHKERRQ(ierr);
-    ierr = PetscObjectStateIncrease((PetscObject)ipmP->K);CHKERRQ(ierr);
-    
+    /* revert kkt info */
+    ierr = VecCopy(ipmP->save_x,tao->solution); CHKERRQ(ierr);
+    ierr = VecCopy(ipmP->save_lamdae,ipmP->lamdae); CHKERRQ(ierr);
+    ierr = VecCopy(ipmP->save_lamdai,ipmP->lamdai); CHKERRQ(ierr);
+    ierr = VecCopy(ipmP->save_s,ipmP->s); CHKERRQ(ierr);
+    ierr = IPMComputeKKT(tao); CHKERRQ(ierr);
+
+    /* update rhs with new complementarity vector */
+    ierr = VecCopy(ipmP->complementarity,ipmP->rhs_s); CHKERRQ(ierr);
+    ierr = VecScale(ipmP->rhs_s,-1.0); CHKERRQ(ierr);
+    ierr = VecShift(ipmP->rhs_s,sigma*ipmP->mu); CHKERRQ(ierr);
+    ierr = IPMGatherRHS(tao,ipmP->bigrhs,PETSC_NULL,PETSC_NULL,
+			PETSC_NULL,ipmP->rhs_s); CHKERRQ(ierr);
+
+    /* solve K * step = rhs */
+    ierr = KSPSetOperators(tao->ksp,ipmP->K,ipmP->K,DIFFERENT_NONZERO_PATTERN); CHKERRQ(ierr);
     ierr = KSPSolve(tao->ksp,ipmP->bigrhs,ipmP->bigstep);CHKERRQ(ierr);
-    ierr = KSPGetIterationNumber(tao->ksp,&its); CHKERRQ(ierr);
-    tao->ksp_its += its;
+
     ierr = IPMScatterStep(tao,ipmP->bigstep,tao->stepdirection,ipmP->ds,
 			  ipmP->dlamdae,ipmP->dlamdai); CHKERRQ(ierr);
-
-
-
-    /* % get max stepsizes
-       tau = min(1,max(par.taumin,1-sig*kkt.mu));
-       [y,step.alp.y] = max_stepsize(iter.yi,step.yi);
-       [lam,step.alp.lam] = max_stepsize(iter.lami,step.lami);
-       alp = min(step.alp.y,step.alp.lam);
-       step.alp.y = alp;
-       step.alp.lam = alp;
-       % apply frac-to-boundary      
-       step.alp.y = tau*step.alp.y;
-       step.alp.lam = tau*step.alp.lam;
-    */
-
-    tau = PetscMax(ipmP->taumin,1.0-sigma*ipmP->mu);
-    tau = PetscMin(tau,1.0);
-    ierr = VecStepBoundInfo(ipmP->s,ipmP->Zero_nb,ipmP->Inf_nb,ipmP->ds,&step_y,PETSC_NULL,PETSC_NULL); CHKERRQ(ierr);
-    ierr = VecStepBoundInfo(ipmP->lamdai,ipmP->Zero_nb,ipmP->Inf_nb,ipmP->dlamdai,&step_l,PETSC_NULL,PETSC_NULL); CHKERRQ(ierr);
-
-    alpha = PetscMin(step_y,step_l);
-    alpha = PetscMin(alpha,1.0);
-    alpha *= tau;
-    ipmP->alpha2 = alpha;
+    ierr = KSPGetIterationNumber(tao->ksp,&its); CHKERRQ(ierr);
+#if defined DEBUG_KKT
+    printf("rhs_lamdai\n");
+    VecView(ipmP->rhs_lamdai,0);
+    ierr = VecView(ipmP->bigrhs,0);
+    ierr = VecView(ipmP->bigstep,0);
+#endif
+    tao->ksp_its += its;
     
 
-    /*
-    % line-search to achieve sufficient decrease
-    fr = 1;
-    for i = 1:11
-      step.alp.y = fr*step.alp.y;
-      step.alp.lam = fr*step.alp.lam;
-      iter_trial = update_iter(iter,step);
-      kkt_trial = feval(par.eval_kkt,par,iter_trial);
-      if kkt_trial.phi <= par.dec*kkt.phi
-        break
-      else
-        fr  = fr*(2^(-i));    <-- TODO: Check if this is right
-      end
-   end
-   iter.ls=i-1;
-    */
-
+    /* Get max step size and apply frac-to-boundary */
+    tau = PetscMax(ipmP->taumin,1.0-ipmP->mu);
+    tau = PetscMin(tau,1.0);
+    if (tau != 1.0) {
+      ierr = VecScale(ipmP->s,tau); CHKERRQ(ierr);
+      ierr = VecScale(ipmP->lamdai,tau); CHKERRQ(ierr);
+    }
+    ierr = VecStepBoundInfo(ipmP->s,ipmP->Zero_nb,ipmP->Inf_nb,ipmP->ds,&step_s,PETSC_NULL,PETSC_NULL); CHKERRQ(ierr);
+    ierr = VecStepBoundInfo(ipmP->lamdai,ipmP->Zero_nb,ipmP->Inf_nb,ipmP->dlamdai,&step_l,PETSC_NULL,PETSC_NULL); CHKERRQ(ierr);
+    if (tau != 1.0) {
+      ierr = VecCopy(ipmP->save_s,ipmP->s); CHKERRQ(ierr);
+      ierr = VecCopy(ipmP->save_lamdai,ipmP->lamdai); CHKERRQ(ierr);
+    }
+    alpha = PetscMin(step_s,step_l);
+    alpha = PetscMin(alpha,1.0);
+    ipmP->alpha2 = alpha;
+    /* TODO make phi_target meaningful */
     phi_target = ipmP->dec * ipmP->phi;
     for (i=0; i<11;i++) {
+#if defined DEBUG_KKT      
+    printf("alpha2=%g\n",alpha);
+      printf("old point:\n");
+      VecView(tao->solution,0);
+      VecView(ipmP->lamdae,0);
+      VecView(ipmP->s,0);
+      VecView(ipmP->lamdai,0);
+#endif
       ierr = VecAXPY(tao->solution,alpha,tao->stepdirection); CHKERRQ(ierr);
       ierr = VecAXPY(ipmP->lamdae,alpha,ipmP->dlamdae); CHKERRQ(ierr);
       ierr = VecAXPY(ipmP->s,alpha,ipmP->ds); CHKERRQ(ierr);
       ierr = VecAXPY(ipmP->lamdai,alpha,ipmP->dlamdai); CHKERRQ(ierr);
+#if defined DEBUG_KKT
+      printf("step direction:\n");
+      VecView(tao->stepdirection,0);
+      VecView(ipmP->dlamdae,0);
+      VecView(ipmP->ds,0);
+      VecView(ipmP->dlamdai,0);
+	
+      printf("New iterate:\n");
+      VecView(tao->solution,0);
+      VecView(ipmP->lamdae,0);
+      VecView(ipmP->s,0);
+      VecView(ipmP->lamdai,0);
+#endif      
+      /* update dual variables */
       ierr = VecCopy(ipmP->lamdae,tao->DE); CHKERRQ(ierr);
       ierr = VecGetArray(ipmP->lamdai,&li); CHKERRQ(ierr);
       ierr = VecGetArray(tao->DI,&di); CHKERRQ(ierr);
@@ -195,14 +197,14 @@ static PetscErrorCode TaoSolve_IPM(TaoSolver tao)
       ierr = VecRestoreArray(tao->DI,&di); CHKERRQ(ierr);
       
 
-      ierr = IPMComputeKKT(tao); CHKERRQ(ierr); CHKERRQ(ierr);
-      if (ipmP->phi <= phi_target) break;
+      ierr = IPMEvaluate(tao); CHKERRQ(ierr);
+      ierr = IPMComputeKKT(tao); CHKERRQ(ierr);
+      if (ipmP->phi <= phi_target) break; 
       alpha /= 2.0;
     }
 
-
-    iter++;
     ierr = TaoMonitor(tao,iter,ipmP->kkt_f,ipmP->phi,0.0,stepsize,&reason);
+    iter++;
     CHKERRQ(ierr);
 
   }
@@ -227,6 +229,7 @@ static PetscErrorCode TaoSetup_IPM(TaoSolver tao)
     ierr = VecDuplicate(tao->solution, &ipmP->rd); CHKERRQ(ierr);
     ierr = VecDuplicate(tao->solution, &ipmP->rhs_x); CHKERRQ(ierr);
     ierr = VecDuplicate(tao->solution, &ipmP->work); CHKERRQ(ierr);
+    ierr = VecDuplicate(tao->solution, &ipmP->save_x); CHKERRQ(ierr);
   }
   
   if (tao->constraints_equality) {
@@ -234,6 +237,7 @@ static PetscErrorCode TaoSetup_IPM(TaoSolver tao)
     ierr = VecDuplicate(tao->constraints_equality,&ipmP->lamdae); CHKERRQ(ierr);
     ierr = VecDuplicate(tao->constraints_equality,&ipmP->dlamdae); CHKERRQ(ierr);
     ierr = VecDuplicate(tao->constraints_equality,&ipmP->rhs_lamdae); CHKERRQ(ierr);
+    ierr = VecDuplicate(tao->constraints_equality,&ipmP->save_lamdae); CHKERRQ(ierr);
     ierr = VecDuplicate(tao->constraints_equality,&ipmP->rpe); CHKERRQ(ierr);
     ierr = VecDuplicate(tao->constraints_equality,&tao->DE); CHKERRQ(ierr);
   }
@@ -313,12 +317,10 @@ static PetscErrorCode IPMInitializeBounds(TaoSolver tao)
     ierr = VecDuplicate(ipmP->s,&ipmP->lamdai); CHKERRQ(ierr);
     ierr = VecDuplicate(ipmP->s,&ipmP->dlamdai); CHKERRQ(ierr);
     ierr = VecDuplicate(ipmP->s,&ipmP->rhs_lamdai); CHKERRQ(ierr);
+    ierr = VecDuplicate(ipmP->s,&ipmP->save_lamdai); CHKERRQ(ierr);
 
 
-    ierr = VecDuplicate(ipmP->s,&ipmP->Yaff); CHKERRQ(ierr);
-    ierr = VecDuplicate(ipmP->s,&ipmP->dYaff); CHKERRQ(ierr);
-    ierr = VecDuplicate(ipmP->s,&ipmP->Laff); CHKERRQ(ierr);
-    ierr = VecDuplicate(ipmP->s,&ipmP->dLaff); CHKERRQ(ierr);
+    ierr = VecDuplicate(ipmP->s,&ipmP->save_s); CHKERRQ(ierr);
     ierr = VecDuplicate(ipmP->s,&ipmP->rpi); CHKERRQ(ierr);
     ierr = VecDuplicate(ipmP->s,&ipmP->Zero_nb); CHKERRQ(ierr);
     ierr = VecSet(ipmP->Zero_nb,0.0); CHKERRQ(ierr);
@@ -354,15 +356,17 @@ static PetscErrorCode TaoDestroy_IPM(TaoSolver tao)
   ierr = VecDestroy(&ipmP->rhs_lamdai); CHKERRQ(ierr);
   ierr = VecDestroy(&ipmP->rhs_s); CHKERRQ(ierr);
 
+  ierr = VecDestroy(&ipmP->save_x); CHKERRQ(ierr);
+  ierr = VecDestroy(&ipmP->save_lamdae); CHKERRQ(ierr);
+  ierr = VecDestroy(&ipmP->save_lamdai); CHKERRQ(ierr);
+  ierr = VecDestroy(&ipmP->save_s); CHKERRQ(ierr);
+
+  
   ierr = VecDestroy(&ipmP->dlamdae); CHKERRQ(ierr);
   ierr = VecDestroy(&ipmP->dlamdai); CHKERRQ(ierr);
   ierr = VecDestroy(&ipmP->ds); CHKERRQ(ierr);
   ierr = VecDestroy(&ipmP->complementarity); CHKERRQ(ierr);
 
-  ierr = VecDestroy(&ipmP->Yaff); CHKERRQ(ierr);
-  ierr = VecDestroy(&ipmP->dYaff); CHKERRQ(ierr);
-  ierr = VecDestroy(&ipmP->Laff); CHKERRQ(ierr);
-  ierr = VecDestroy(&ipmP->dLaff); CHKERRQ(ierr);
   ierr = VecDestroy(&ipmP->Zero_nb); CHKERRQ(ierr);
   ierr = VecDestroy(&ipmP->One_nb); CHKERRQ(ierr);
   ierr = VecDestroy(&ipmP->Inf_nb); CHKERRQ(ierr);
@@ -448,16 +452,9 @@ static PetscErrorCode IPMComputeKKT(TaoSolver tao)
   TAO_IPM *ipmP = (TAO_IPM *)tao->data;
   PetscScalar norm;
   PetscErrorCode ierr;
-  
-  CHKMEMQ;
-  ierr = TaoComputeObjectiveAndGradient(tao,tao->solution,&ipmP->kkt_f,ipmP->rd); CHKERRQ(ierr);
-  ierr = TaoComputeHessian(tao,tao->solution,&tao->hessian,&tao->hessian_pre,&ipmP->Hflag); CHKERRQ(ierr);
-  
+  ierr = VecCopy(tao->gradient,ipmP->rd); CHKERRQ(ierr);
   if (ipmP->me > 0) {
-    ierr = TaoComputeEqualityConstraints(tao,tao->solution,tao->constraints_equality);
-    ierr = TaoComputeJacobianEquality(tao,tao->solution,&tao->jacobian_equality,&tao->jacobian_equality_pre,&ipmP->Aiflag); CHKERRQ(ierr);
-
-    /* rd = rd + Ae'*lamdae */
+    /* rd = gradient + Ae'*lamdae */
     ierr = MatMultTranspose(tao->jacobian_equality,ipmP->lamdae,ipmP->work); CHKERRQ(ierr);
     ierr = VecAXPY(ipmP->rd, 1.0, ipmP->work); CHKERRQ(ierr);
 
@@ -467,6 +464,71 @@ static PetscErrorCode IPMComputeKKT(TaoSolver tao)
 
   }
   if (ipmP->mi > 0) {
+    /* rd = rd - Ai'*lamdai */
+    ierr = MatMultTranspose(ipmP->Ai,ipmP->lamdai,ipmP->work); CHKERRQ(ierr);
+    ierr = VecAXPY(ipmP->rd, -1.0, ipmP->work); CHKERRQ(ierr);
+
+    /* rpi = cin - s */
+    ierr = VecCopy(ipmP->ci,ipmP->rpi); CHKERRQ(ierr);
+    ierr = VecAXPY(ipmP->rpi, -1.0, ipmP->s); CHKERRQ(ierr);
+
+    /* com = s .* lami */
+    ierr = VecPointwiseMult(ipmP->complementarity, ipmP->s,ipmP->lamdai); CHKERRQ(ierr);
+
+  }
+  /* phi = ||rd; rpe; rpi; com|| */
+  ierr = VecDot(ipmP->rd,ipmP->rd,&norm); CHKERRQ(ierr);
+  ipmP->phi = norm; 
+  if (ipmP->me > 0 ) {
+    ierr = VecDot(ipmP->rpe,ipmP->rpe,&norm); CHKERRQ(ierr);
+    ipmP->phi += norm; 
+  }
+  if (ipmP->nb > 0) {
+    ierr = VecDot(ipmP->rpi,ipmP->rpi,&norm); CHKERRQ(ierr);
+    ipmP->phi += norm; 
+    ierr = VecDot(ipmP->complementarity,ipmP->complementarity,&norm); CHKERRQ(ierr);
+    ipmP->phi += norm; 
+    /* mu = s'*lami/nb */
+    ierr = VecDot(ipmP->s,ipmP->lamdai,&ipmP->mu); CHKERRQ(ierr);
+    ipmP->mu /= ipmP->nb;
+  } else {
+    ipmP->mu = 1.0;
+  }
+
+  ipmP->phi = PetscSqrtScalar(ipmP->phi);
+  if (ipmP->monitorkkt) {
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"obj=%G,\tphi = %G,\tmu=%G\talpha1=%G\talpha2=%G\n",ipmP->kkt_f,ipmP->phi,ipmP->mu,ipmP->alpha1,ipmP->alpha2);
+  }
+  CHKMEMQ;
+#if defined DEBUG_KKT
+  PetscPrintf(PETSC_COMM_WORLD,"\nrd\n");
+  ierr = VecView(ipmP->rd,0);
+  PetscPrintf(PETSC_COMM_WORLD,"\nrpe\n");
+  ierr = VecView(ipmP->rpe,0);
+  PetscPrintf(PETSC_COMM_WORLD,"\nrpi\n");
+  ierr = VecView(ipmP->rpi,0);
+  PetscPrintf(PETSC_COMM_WORLD,"\ncomplementarity\n");
+  ierr = VecView(ipmP->complementarity,0);
+#endif  
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "IPMEvaluate"
+/* evaluate user info at current point */
+PetscErrorCode IPMEvaluate(TaoSolver tao)
+{
+  TAO_IPM *ipmP = (TAO_IPM *)tao->data;
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  ierr = TaoComputeObjectiveAndGradient(tao,tao->solution,&ipmP->kkt_f,tao->gradient); CHKERRQ(ierr);
+  ierr = TaoComputeHessian(tao,tao->solution,&tao->hessian,&tao->hessian_pre,&ipmP->Hflag); CHKERRQ(ierr);
+  
+  if (ipmP->me > 0) {
+    ierr = TaoComputeEqualityConstraints(tao,tao->solution,tao->constraints_equality);
+    ierr = TaoComputeJacobianEquality(tao,tao->solution,&tao->jacobian_equality,&tao->jacobian_equality_pre,&ipmP->Aiflag); CHKERRQ(ierr);
+  }
+  if (ipmP->mi > 0) {
     ierr = TaoComputeInequalityConstraints(tao,tao->solution,tao->constraints_inequality);
     ierr = TaoComputeJacobianInequality(tao,tao->solution,&tao->jacobian_inequality,&tao->jacobian_inequality_pre,&ipmP->Aeflag); CHKERRQ(ierr);
 
@@ -474,38 +536,7 @@ static PetscErrorCode IPMComputeKKT(TaoSolver tao)
     /* Ai' =   jac_ineq | I (w/lb) | -I (w/ub)  */
 
     ierr = IPMUpdateAi(tao); CHKERRQ(ierr);
-    ierr = MatMultTranspose(ipmP->Ai,ipmP->lamdai,ipmP->work); CHKERRQ(ierr);
-    ierr = VecAXPY(ipmP->rd, -1.0, ipmP->work); CHKERRQ(ierr);
-
-    /* rpi = cin - s TODO: Fix this */
-    ierr = MatMult(ipmP->Ai,tao->solution,ipmP->rpi); CHKERRQ(ierr);
-    ierr = VecAXPY(ipmP->rpi, -1.0, ipmP->s); CHKERRQ(ierr);
-    //  ierr = VecCopy(tao->constraints_inequality,ipmP->rpi); CHKERRQ(ierr);
-
-    /* com = s .* lami */
-    ierr = VecPointwiseMult(ipmP->complementarity, ipmP->s,ipmP->lamdai); CHKERRQ(ierr);
-
-    /* mu = s'*lami/nb */
-    ierr = VecDot(ipmP->s,ipmP->lamdai,&ipmP->mu); CHKERRQ(ierr);
-    ipmP->mu /= ipmP->nb;
   }
-  /* phi = ||rd|| + ||rpe|| + ||rpi|| + ||com|| */
-  ierr = VecNorm(ipmP->rd,NORM_2,&norm); CHKERRQ(ierr);
-  ipmP->phi = norm; 
-  if (ipmP->me > 0 ) {
-    ierr = VecNorm(ipmP->rpe,NORM_2,&norm); CHKERRQ(ierr);
-    ipmP->phi += norm; 
-  }
-  if (ipmP->mi > 0) {
-    ierr = VecNorm(ipmP->rpi,NORM_2,&norm); CHKERRQ(ierr);
-    ipmP->phi += norm; 
-    ierr = VecNorm(ipmP->complementarity,NORM_2,&norm); CHKERRQ(ierr);
-    ipmP->phi += norm; 
-  }
-  if (ipmP->monitorkkt) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"obj=%G,\tphi = %G,\tmu=%G\talpha1=%G\talpha2=%G\n",ipmP->kkt_f,ipmP->phi,ipmP->mu,ipmP->alpha1,ipmP->alpha2);
-  }
-  CHKMEMQ;
   PetscFunctionReturn(0);
 }
 
@@ -545,16 +576,18 @@ PetscErrorCode IPMUpdateAi(TaoSolver tao)
 	     -I (w/ub) */
 
   /* Ci =    user->ci
-             0 (w/lb)
-	     0 (w/ub)  */
+             LB (w/lb)
+	     -UB(w/ub)  */
 	     
   TAO_IPM *ipmP = (TAO_IPM *)tao->data;
   MPI_Comm comm;
   PetscInt i;
   PetscScalar newval;
   PetscInt newrow,newcol,ncols;
+  PetscScalar *xb;
   const PetscScalar *vals;
   const PetscInt *cols;
+  const PetscInt *ind;
   PetscInt *nonzeros;
   PetscInt r2,r3,r4;
   PetscScalar *ci,*userci;
@@ -628,12 +661,37 @@ PetscErrorCode IPMUpdateAi(TaoSolver tao)
 
   ierr = VecSet(ipmP->ci,0.0); CHKERRQ(ierr);
   ierr = VecGetArray(ipmP->ci,&ci); CHKERRQ(ierr);
-  ierr = VecGetArray(tao->constraints_inequality,&userci); CHKERRQ(ierr);
-  for (i=0;i<ipmP->nilb;i++) {
-    ci[i] = userci[i];
+
+  /* user ci */
+  if (ipmP->nilb > 0) {
+    ierr = VecGetArray(tao->constraints_inequality,&userci); CHKERRQ(ierr);
+    for (i=0;i<ipmP->nilb;i++) {
+      ci[i] = userci[i];
+    }
+    ierr = VecRestoreArray(tao->constraints_inequality,&userci); CHKERRQ(ierr);
   }
+  /* lower bounds */
+  if (ipmP->nxlb > 0) { 
+    ierr = VecGetArray(tao->XL,&xb); CHKERRQ(ierr);
+    ierr = ISGetIndices(ipmP->isxl,&ind); CHKERRQ(ierr);
+    for (i=0;i<ipmP->nxlb;i++) {
+      ci[i+ipmP->nilb] = -xb[ind[i]];
+    }
+    ierr = ISRestoreIndices(ipmP->isxl,&ind); CHKERRQ(ierr);
+    ierr = VecRestoreArray(tao->XL,&xb); CHKERRQ(ierr);
+  }
+  /* upper bounds */
+  if (ipmP->nxub > 0) {
+    ierr = VecGetArray(tao->XU,&xb); CHKERRQ(ierr);
+    ierr = ISGetIndices(ipmP->isxu,&ind); CHKERRQ(ierr);
+    for (i=0;i<ipmP->nxub;i++) {
+      ci[i+ipmP->nilb+ipmP->nxlb] = xb[ind[i]];
+    }
+    ierr = ISRestoreIndices(ipmP->isxu,&ind); CHKERRQ(ierr);
+    ierr = VecRestoreArray(tao->XU,&xb); CHKERRQ(ierr);
+  }
+
   ierr = VecRestoreArray(ipmP->ci,&ci); CHKERRQ(ierr);
-  ierr = VecRestoreArray(tao->constraints_inequality,&userci); CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -818,31 +876,36 @@ PetscErrorCode IPMGatherRHS(TaoSolver tao,Vec RHS,Vec X1,Vec X2,Vec X3,Vec X4)
 	    x3     (nb)
 	    x4     (nb)] */
   ierr = VecGetArray(RHS,&rhs); CHKERRQ(ierr);
-  ierr = VecGetArray(X1,&x); CHKERRQ(ierr);
-  for (i=0;i<ipmP->n;i++) {
-    rhs[i] = x[i];
+  if (X1) {
+    ierr = VecGetArray(X1,&x); CHKERRQ(ierr);
+    for (i=0;i<ipmP->n;i++) {
+      rhs[i] = x[i];
+    }
+    ierr = VecRestoreArray(X1,&x); CHKERRQ(ierr);
   }
-  ierr = VecRestoreArray(X1,&x); CHKERRQ(ierr);
 
 
-  ierr = VecGetArray(X2,&x); CHKERRQ(ierr);
-  for (i=0;i<ipmP->me;i++) {
-    rhs[i+ipmP->n] = x[i];
+  if (X2) {
+    ierr = VecGetArray(X2,&x); CHKERRQ(ierr);
+    for (i=0;i<ipmP->me;i++) {
+      rhs[i+ipmP->n] = x[i];
+    }
+    ierr = VecRestoreArray(X2,&x); CHKERRQ(ierr);
   }
-  ierr = VecRestoreArray(X2,&x); CHKERRQ(ierr);
-
-  ierr = VecGetArray(X3,&x); CHKERRQ(ierr);
-  for (i=0;i<ipmP->nb;i++) {
-    rhs[i+ipmP->n+ipmP->me] = x[i];
+  if (X3) {
+    ierr = VecGetArray(X3,&x); CHKERRQ(ierr);
+    for (i=0;i<ipmP->nb;i++) {
+      rhs[i+ipmP->n+ipmP->me] = x[i];
+    }
+    ierr = VecRestoreArray(X3,&x); CHKERRQ(ierr);
   }
-  ierr = VecRestoreArray(X3,&x); CHKERRQ(ierr);
-
-  /*lamdai*/
-  ierr = VecGetArray(X4,&x); CHKERRQ(ierr);
-  for (i=0;i<ipmP->nb;i++) {
-    rhs[i+ipmP->n+ipmP->me+ipmP->nb] = x[i];
+  if (X4) {
+    ierr = VecGetArray(X4,&x); CHKERRQ(ierr);
+    for (i=0;i<ipmP->nb;i++) {
+      rhs[i+ipmP->n+ipmP->me+ipmP->nb] = x[i];
+    }
+    ierr = VecRestoreArray(X4,&x); CHKERRQ(ierr);
   }
-  ierr = VecRestoreArray(X4,&x); CHKERRQ(ierr);
   ierr = VecRestoreArray(RHS,&rhs); CHKERRQ(ierr);
 
   PetscFunctionReturn(0);

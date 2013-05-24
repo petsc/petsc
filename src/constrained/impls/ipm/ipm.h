@@ -13,12 +13,11 @@ typedef struct {
   PetscScalar sig,mu,taumin,dec;
   PetscScalar muaff;
   TaoLineSearch lag_ls;
-  Vec work, dx, rhs_x; 
-  Vec lamdai, dlamdai, rhs_lamdai;
-  Vec lamdae, dlamdae, rhs_lamdae;
-  Vec s,ds,rhs_s; /* replaces yi */
+  Vec work, dx, rhs_x,save_x; 
+  Vec lamdai, dlamdai, rhs_lamdai, save_lamdai;
+  Vec lamdae, dlamdae, rhs_lamdae, save_lamdae;
+  Vec s,ds,rhs_s,save_s;
   Vec ci, di;
-  Vec Yaff,Laff,dYaff, dLaff;
   Vec Zero_nb, One_nb,Inf_nb,worknb;
   PetscScalar kkt_f; /* d'*x + (1/2)*x'*H*x; */
   Vec rd;            /* H*x + d + Ae'*lamdae - Ai'*lamdai */

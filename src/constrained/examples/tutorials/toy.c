@@ -211,7 +211,7 @@ PetscErrorCode FormHessian(TaoSolver tao, Vec x, Mat *H, Mat *Hpre, MatStructure
 
   ierr = VecGetArray(DE,&de); CHKERRQ(ierr);
   ierr = VecGetArray(DI,&di); CHKERRQ(ierr);
-  val=de[0] + di[0] - di[1];
+  val=2.0 * (1 + de[0] + di[0] - di[1]);
   ierr = VecRestoreArray(DE,&de); CHKERRQ(ierr);
   ierr = VecRestoreArray(DI,&di); CHKERRQ(ierr);
 
