@@ -16,7 +16,7 @@ else
   libpetscall_shared := $(libpetsc_shared)
 endif
 
-all : $(libpetscall_shared)
+all : $(PETSC_ARCH)/conf/files $(libpetscall_shared)
 
 .SECONDEXPANSION:		# to expand $$(@D)/.DIR
 

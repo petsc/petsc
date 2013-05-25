@@ -163,6 +163,9 @@ def WriteGnuMake(petsc):
     fd.write('%s : %s %s\n' % (os.path.relpath(arch_files, petsc.petsc_dir),
                                os.path.relpath(__file__, petsc.petsc_dir),
                                ' '.join(gendeps)))
+    fd.write('\n')
+    fd.write('# Dummy dependencies in case makefiles are removed\n')
+    fd.write(''.join([dep + ':\n' for dep in gendeps]))
     fd.close()
 
 def WriteNinja(petsc):
