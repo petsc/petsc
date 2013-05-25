@@ -8,6 +8,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(__file__)), 'con
 from cmakegen import Mistakes, stripsplit, AUTODIRS, SKIPDIRS
 from cmakegen import defaultdict # collections.defaultdict, with fallback for python-2.4
 
+PKGS = 'sys vec mat dm ksp snes ts'.split()
 LANGS = dict(c='SOURCEC', cxx='SOURCEC', cu='SOURCECU', F='SOURCEF')
 
 try:
@@ -130,17 +131,19 @@ class Petsc(object):
         return pkgsrcs
 
     def gen_gnumake(self, fd):
-        for pkg in 'sys vec mat dm ksp snes ts'.split():
-            srcs = self.gen_pkg(pkg)
-            fd.write('srcs-%s :=\n' % pkg)
+        def write(stem, srcs):
+            fd.write('%s :=\n' % stem)
             for lang in LANGS:
-                fd.write('srcs-%(pkg)s.%(lang)s := %(srcs)s\n' % dict(pkg=pkg, lang=lang, srcs=' '.join(srcs[lang])))
-                fd.write('srcs-%(pkg)s += $(srcs-%(pkg)s.%(lang)s)\n' % dict(pkg=pkg, lang=lang))
+                fd.write('%(stem)s.%(lang)s := %(srcs)s\n' % dict(stem=stem, lang=lang, srcs=' '.join(srcs[lang])))
+                fd.write('%(stem)s += $(%(stem)s.%(lang)s)\n' % dict(stem=stem, lang=lang))
+        for pkg in PKGS:
+            srcs = self.gen_pkg(pkg)
+            write('srcs-' + pkg, srcs)
         return self.gendeps
 
     def gen_ninja(self, fd):
         libobjs = []
-        for pkg in 'sys vec mat dm ksp snes ts'.split():
+        for pkg in PKGS:
             srcs = self.gen_pkg(pkg)
             for lang in LANGS:
                 for src in srcs[lang]:
