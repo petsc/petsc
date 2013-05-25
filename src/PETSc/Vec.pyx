@@ -710,6 +710,16 @@ cdef class Vec(Object):
 
     #
 
+    def getSubVector(self, IS iset not None):
+        cdef Vec subvec = Vec()
+        CHKERR( VecGetSubVector(self.vec, iset.iset, &subvec.vec) )
+        return subvec
+
+    def restoreSubVector(self, IS iset not None, Vec subvec not None):
+        CHKERR( VecRestoreSubVector(self.vec, iset.iset, &subvec.vec) )
+
+    #
+
     property sizes:
         def __get__(self):
             return self.getSizes()

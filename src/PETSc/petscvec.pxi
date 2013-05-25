@@ -140,6 +140,9 @@ cdef extern from * nogil:
     int VecGhostUpdateEnd(PetscVec,PetscInsertMode,PetscScatterMode)
     int VecMPISetGhost(PetscVec,PetscInt,const_PetscInt*)
 
+    int VecGetSubVector(PetscVec,PetscIS,PetscVec*)
+    int VecRestoreSubVector(PetscVec,PetscIS,PetscVec*)
+
 # --------------------------------------------------------------------
 
 cdef inline Vec ref_Vec(PetscVec vec):
