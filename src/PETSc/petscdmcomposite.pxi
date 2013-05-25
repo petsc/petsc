@@ -13,7 +13,7 @@ cdef extern from * nogil:
 
 
 cdef class _DMComposite_access:
-    cdef PetscDM dm
+    cdef PetscDM  dm
     cdef PetscVec gvec
     cdef PetscInt nlocs
     cdef PetscInt *locs
@@ -21,15 +21,15 @@ cdef class _DMComposite_access:
     cdef object locs_mem
     cdef object vecs_mem
 
-    def __cinit__(self, DM dm, Vec gvec not None, locs):
+    def __cinit__(self, DM dm, Vec gvec not None, locs=None):
         self.dm = dm.dm
         CHKERR( PetscINCREF(<PetscObject*>&self.dm) )
         self.gvec = gvec.vec
         CHKERR( PetscINCREF(<PetscObject*>&self.gvec) )
-        self.nlocs = asInt(len(locs))
-        self.locs_mem = oarray_i(empty_i(self.nlocs), NULL, &self.locs)
-        for i from 0 <= i < self.nlocs:
-            self.locs[i] = asInt(locs[i])
+        if locs is None:
+            CHKERR( DMCompositeGetNumberDM(self.dm, &self.nlocs) )
+            locs = arange(0, <long>self.nlocs, 1)
+        self.locs_mem = iarray_i(locs, &self.nlocs, &self.locs)
         self.vecs_mem = oarray_p(empty_p(self.nlocs), NULL, <void**>&self.vecs)
 
     def __dealloc__(self):

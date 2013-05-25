@@ -61,7 +61,7 @@ cdef class DMComposite(DM):
             clvecs[i] = (<Vec?>lvecs[i]).vec
         CHKERR( DMCompositeGatherArray(self.dm, gvec.vec, cimode, clvecs) )
 
-    def getAccess(self, Vec gvec not None, locs):
+    def getAccess(self, Vec gvec not None, locs=None):
         """Get access to specified parts of global vector.
 
         Use via 'with' context manager (PEP 343).
