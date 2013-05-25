@@ -132,10 +132,10 @@ class Petsc(object):
     def gen_gnumake(self, fd):
         for pkg in 'sys vec mat dm ksp snes ts'.split():
             srcs = self.gen_pkg(pkg)
-            fd.write('%ssrcs :=\n' % pkg)
+            fd.write('srcs-%s :=\n' % pkg)
             for lang in LANGS:
-                fd.write('%(pkg)ssrcs.%(lang)s := %(srcs)s\n' % dict(pkg=pkg, lang=lang, srcs=' '.join(srcs[lang])))
-                fd.write('%(pkg)ssrcs += $(%(pkg)ssrcs.%(lang)s)\n' % dict(pkg=pkg, lang=lang))
+                fd.write('srcs-%(pkg)s.%(lang)s := %(srcs)s\n' % dict(pkg=pkg, lang=lang, srcs=' '.join(srcs[lang])))
+                fd.write('srcs-%(pkg)s += $(srcs-%(pkg)s.%(lang)s)\n' % dict(pkg=pkg, lang=lang))
         return self.gendeps
 
     def gen_ninja(self, fd):

@@ -51,7 +51,7 @@ PETSC_GENDEPS.cu = $(call quiet,CUDAC,.dep) --generate-dependencies $(CUDAC_FLAG
 PETSC_COMPILE.F = $(call quiet,FC) -c $(FC_FLAGS) $(FFLAGS) $(FCPPFLAGS) $(PETSC_DEPFLAGS.F)
 
 langs := c cu cxx F
-concatlang = $(foreach lang, $(langs), $($(1)srcs.$(lang):%.$(lang)=$(OBJDIR)/%.o))
+concatlang = $(foreach lang, $(langs), $(srcs-$(1).$(lang):%.$(lang)=$(OBJDIR)/%.o))
 allobj := $(foreach pkg, $(pkgs), $(call concatlang,$(pkg)))
 
 # with-single-library=1 (default)
