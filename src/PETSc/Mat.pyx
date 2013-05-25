@@ -931,6 +931,10 @@ cdef class Mat(Object):
         PetscINCREF(submat.obj)
         return submat
 
+    def increaseOverlap(self, IS iset not None, overlap=1):
+        cdef PetscInt ival = asInt(overlap)
+        CHKERR( MatIncreaseOverlap(self.mat, 1, &iset.iset, ival) )
+
     def getSubMatrix(self, IS isrow not None, IS iscol=None, Mat submat=None):
         cdef PetscMatReuse reuse = MAT_INITIAL_MATRIX
         cdef PetscIS ciscol = NULL
@@ -941,9 +945,15 @@ cdef class Mat(Object):
                                 reuse, &submat.mat) )
         return submat
 
-    def increaseOverlap(self, IS iset not None, overlap=1):
-        cdef PetscInt ival = asInt(overlap)
-        CHKERR( MatIncreaseOverlap(self.mat, 1, &iset.iset, ival) )
+    def getLocalSubMatrix(self, IS isrow not None, IS iscol not None):
+        cdef Mat submat = Mat()
+        CHKERR( MatGetLocalSubMatrix(self.mat, isrow.iset, iscol.iset, &submat.mat) )
+        return submat
+
+    def restoreLocalSubMatrix(self, IS isrow not None, IS iscol not None):
+        cdef Mat submat = Mat()
+        CHKERR( MatRestoreLocalSubMatrix(self.mat, isrow.iset, iscol.iset, &submat.mat) )
+        return submat
 
     #
 
