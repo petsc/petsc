@@ -16,7 +16,7 @@ else
   libpetscall_shared := $(libpetsc_shared)
 endif
 
-all : $(libpetscall_shared)
+all : $(PETSC_ARCH)/conf/files $(libpetscall_shared)
 
 .SECONDEXPANSION:		# to expand $$(@D)/.DIR
 
@@ -108,6 +108,7 @@ $(OBJDIR)/%.o : %.F | $$(@D)/.DIR
 .PRECIOUS: %/.DIR
 
 .SUFFIXES: # Clear .SUFFIXES because we don't use implicit rules
+.DELETE_ON_ERROR:               # Delete likely-corrupt target file if rule fails
 
 .PHONY: clean all print
 
