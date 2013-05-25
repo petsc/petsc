@@ -9,7 +9,7 @@ from cmakegen import Mistakes, stripsplit, AUTODIRS, SKIPDIRS
 from cmakegen import defaultdict # collections.defaultdict, with fallback for python-2.4
 
 PKGS = 'sys vec mat dm ksp snes ts'.split()
-LANGS = dict(c='SOURCEC', cxx='SOURCEC', cu='SOURCECU', F='SOURCEF')
+LANGS = dict(c='C', cxx='C', cu='CU', F='F')
 
 try:
     all([True, True])
@@ -96,7 +96,7 @@ class Petsc(object):
         """Return dict {lang: list_of_source_files}"""
         source = dict()
         for lang, sourcelang in LANGS.items():
-            source[lang] = [f for f in makevars.get(sourcelang,'').split() if f.endswith(lang)]
+            source[lang] = [f for f in makevars.get('SOURCE'+sourcelang,'').split() if f.endswith(lang)]
         return source
 
     def gen_pkg(self, pkg):
