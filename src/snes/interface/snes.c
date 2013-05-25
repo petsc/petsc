@@ -2584,10 +2584,14 @@ PetscErrorCode  SNESSetUp(SNES snes)
   if (!snes->linesearch) {
     ierr = SNESGetLineSearch(snes, &snes->linesearch);CHKERRQ(ierr);
   }
+  ierr = SNESLineSearchSetFunction(snes->linesearch,SNESComputeFunction);CHKERRQ(ierr);
 
   if (snes->pc && (snes->pcside == PC_LEFT)) {
     snes->mf          = PETSC_TRUE;
     snes->mf_operator = PETSC_FALSE;
+    if (snes->functype == SNES_FUNCTION_PRECONDITIONED) {
+      ierr = SNESLineSearchSetFunction(snes->linesearch,SNESComputeFunctionDefaultPC);CHKERRQ(ierr);
+    }
   }
 
   if (snes->mf) {

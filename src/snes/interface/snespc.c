@@ -6,7 +6,7 @@
 #undef __FUNCT__
 #define __FUNCT__ "SNESApplyPC"
 /*@
-   SNESComputeFunction - Calls the function that has been set with SNESSetFunction().
+   SNESApplyPC - Calls the function that has been set with SNESSetFunction().
 
    Collective on SNES
 
@@ -59,7 +59,7 @@ PetscErrorCode  SNESApplyPC(SNES snes,Vec x,Vec f,PetscReal *fnorm,Vec y)
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESComputeFunctionDefaultPC"
-PetscErrorCode SNESComputeFunctionDefaultPC(SNES snes,Vec X,Vec F,void *ctx) {
+PetscErrorCode SNESComputeFunctionDefaultPC(SNES snes,Vec X,Vec F) {
 /* This is to be used as an argument to SNESMF -- NOT as a "function" */
   PetscErrorCode ierr;
   PetscFunctionBegin;

@@ -110,6 +110,7 @@ PetscErrorCode SNESLineSearchSetUp(SNESLineSearch linesearch)
     if (linesearch->ops->setup) {
       ierr = (*linesearch->ops->setup)(linesearch);CHKERRQ(ierr);
     }
+    if (!linesearch->ops->snesfunc) {ierr = SNESLineSearchSetFunction(linesearch,SNESComputeFunction);CHKERRQ(ierr);}
     linesearch->lambda      = linesearch->damping;
     linesearch->setupcalled = PETSC_TRUE;
   }
@@ -150,6 +151,32 @@ PetscErrorCode SNESLineSearchReset(SNESLineSearch linesearch)
   linesearch->setupcalled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "SNESLineSearchSetFunction"
+/*@C
+   SNESLineSearchSetPreCheck - Sets the function evaluation context on the
+
+   Input Parameters:
+.  linesearch - the SNESLineSearch context
+
+   Output Parameters:
++  func       - [optional] function evaluation routine
+
+   Level: developer
+
+.keywords: get, linesearch, pre-check
+
+.seealso: SNESLineSearchGetPostCheck(), SNESLineSearchSetPreCheck()
+@*/
+PetscErrorCode  SNESLineSearchSetFunction(SNESLineSearch linesearch, PetscErrorCode (*func)(SNES,Vec,Vec))
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(linesearch,SNESLINESEARCH_CLASSID,1);
+  linesearch->ops->snesfunc = func;
+  PetscFunctionReturn(0);
+}
+
 
 /*MC
     SNESLineSearchPreCheckFunction - functional form passed to check before line search is called
