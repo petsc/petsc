@@ -72,16 +72,6 @@ PetscErrorCode  PetscMemoryGetCurrentUsage(PetscLogDouble *mem)
   FILE       *file;
   char       proc[PETSC_MAX_PATH_LEN];
   int        mm,rss,err;
-#elif defined(PETSC_HAVE_TASK_INFO)
-  /*  task_basic_info_data_t ti;
-      unsigned int           count; */
-  /*
-     The next line defined variables that are not used; but if they
-     are not included the code crashes. Something must be wrong
-     with either the task_info() command or compiler corrupting the
-     stack.
-  */
-  /* kern_return_t          kerr; */
 #elif defined(PETSC_HAVE_GETRUSAGE)
   static struct rusage temp;
 #endif
@@ -107,19 +97,14 @@ PetscErrorCode  PetscMemoryGetCurrentUsage(PetscLogDouble *mem)
   err  = fclose(file);
   if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on file");
 
-#elif defined(PETSC_HAVE_TASK_INFO)
-  *mem = 0;
-  /* if ((kerr = task_info(mach_task_self(), TASK_BASIC_INFO, (task_info_t)&ti,&count)) != KERN_SUCCESS) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Mach system call failed: kern_return_t ",kerr);
-   *mem = (PetscLogDouble) ti.resident_size; */
-
 #elif defined(PETSC_HAVE_GETRUSAGE)
   getrusage(RUSAGE_SELF,&temp);
 #if defined(PETSC_USE_KBYTES_FOR_SIZE)
   *mem = 1024.0 * ((PetscLogDouble)temp.ru_maxrss);
-#elif defined(PETSC_HAVE_GETPAGESIZE)
+#elif defined(PETSC_USE_PAGES_FOR_SIZE) && defined(PETSC_HAVE_GETPAGESIZE)
   *mem = ((PetscLogDouble)getpagesize())*((PetscLogDouble)temp.ru_maxrss);
 #else
-  *mem = 0.0;
+  *mem = temp.ru_maxrss;
 #endif
 
 #else
