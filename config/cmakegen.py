@@ -86,7 +86,17 @@ def cmakeconditional(key,val):
   raise RuntimeError('Unhandled case: %r=%r'%(key,val))
 
 AUTODIRS = set('ftn-auto ftn-custom f90-custom'.split()) # Automatically recurse into these, if they exist
-SKIPDIRS = set('examples benchmarks'.split())            # Skip these during the build
+SKIPDIRS = set('benchmarks'.split())                     # Skip these during the build
+NOWARNDIRS = set('tests tutorials'.split())              # Do not warn about mismatch in these
+
+def pathsplit(path):
+    """Recursively split a path, returns a tuple"""
+    stem, basename = os.path.split(path)
+    if stem == '':
+        return (basename,)
+    if stem == path:            # fixed point, likely '/'
+        return (path,)
+    return pathsplit(stem) + (basename,)
 
 class Mistakes(object):
     def __init__(self, log, verbose=False):
@@ -95,6 +105,8 @@ class Mistakes(object):
         self.log = log
 
     def compareDirLists(self,root, mdirs, dirs):
+        if NOWARNDIRS.intersection(pathsplit(root)):
+            return
         smdirs = set(mdirs)
         sdirs  = set(dirs).difference(AUTODIRS)
         if not smdirs.issubset(sdirs):
@@ -109,6 +121,8 @@ class Mistakes(object):
                             'symmetric diff',sorted(smdirs.symmetric_difference(sdirs))))
 
     def compareSourceLists(self, root, msources, files):
+        if NOWARNDIRS.intersection(pathsplit(root)):
+            return
         smsources = set(msources)
         ssources  = set(f for f in files if os.path.splitext(f)[1] in ['.c', '.cxx', '.cc', '.cu', '.cpp', '.F'])
         if not smsources.issubset(ssources):
