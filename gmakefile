@@ -35,7 +35,7 @@ else				# Show the full command line
 endif
 
 $(PETSC_ARCH)/conf/files :
-	$(PYTHON) conf/gmakegen.py PETSC_ARCH=$(PETSC_ARCH)
+	$(PYTHON) conf/gmakegen.py --petsc-arch=$(PETSC_ARCH)
 
 -include $(PETSC_ARCH)/conf/files
 

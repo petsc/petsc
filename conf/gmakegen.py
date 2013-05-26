@@ -50,7 +50,7 @@ class debuglogger(object):
         self._log.debug(string)
 
 class Petsc(object):
-    def __init__(self, petsc_dir=None, petsc_arch=None):
+    def __init__(self, petsc_dir=None, petsc_arch=None, verbose=False):
         if petsc_dir is None:
             petsc_dir = os.environ['PETSC_DIR']
         if petsc_arch is None:
@@ -60,7 +60,7 @@ class Petsc(object):
         self.read_conf()
         logging.basicConfig(filename=self.arch_path('conf', 'gmake.log'), level=logging.DEBUG)
         self.log = logging.getLogger('gmakegen')
-        self.mistakes = Mistakes(debuglogger(self.log))
+        self.mistakes = Mistakes(debuglogger(self.log), verbose=verbose)
         self.gendeps = []
 
     def arch_path(self, *args):
@@ -223,21 +223,23 @@ def WriteNinja(petsc):
                                                        petsc.arch_path('conf', 'petscvariables'),
                                                        ' '.join(os.path.join(petsc.petsc_dir, dep) for dep in petsc.gendeps)))
 
-def main(petsc_dir=None, petsc_arch=None, output=None):
+def main(petsc_dir=None, petsc_arch=None, output=None, verbose=False):
     if output is None:
         output = 'gnumake'
     writer = dict(gnumake=WriteGnuMake, ninja=WriteNinja)
-    petsc = Petsc(petsc_dir=petsc_dir, petsc_arch=petsc_arch)
+    petsc = Petsc(petsc_dir=petsc_dir, petsc_arch=petsc_arch, verbose=verbose)
     writer[output](petsc)
     petsc.summary()
 
 if __name__ == '__main__':
-    petsc_arch = None
-    output = None
-    for arg in sys.argv[1:]:
-        if arg.startswith('PETSC_ARCH='):
-            # arg.partition is cleaner, but was introduced in python-2.5
-            petsc_arch = arg[len('PETSC_ARCH='):]
-        if arg.startswith('--output='):
-            output = arg[len('--output='):]
-    main(petsc_arch=petsc_arch, output=output)
+    import optparse
+    parser = optparse.OptionParser()
+    parser.add_option('--verbose', help='Show mismatches between makefiles and the filesystem', action='store_true', default=False)
+    parser.add_option('--petsc-arch', help='Set PETSC_ARCH different from environment', default=os.environ.get('PETSC_ARCH'))
+    parser.add_option('--output', help='Location to write output file', default=None)
+    opts, extra_args = parser.parse_args()
+    if extra_args:
+        import sys
+        sys.stderr.write('Unknown arguments: %s\n' % ' '.join(extra_args))
+        exit(1)
+    main(petsc_arch=opts.petsc_arch, output=opts.output, verbose=opts.verbose)
