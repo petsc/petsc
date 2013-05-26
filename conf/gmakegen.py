@@ -52,9 +52,21 @@ class debuglogger(object):
 class Petsc(object):
     def __init__(self, petsc_dir=None, petsc_arch=None, verbose=False):
         if petsc_dir is None:
-            petsc_dir = os.environ['PETSC_DIR']
+            petsc_dir = os.environ.get('PETSC_DIR')
+            if petsc_dir is None:
+                try:
+                    petsc_dir = parse_makefile(os.path.join('conf', 'petscvariables')).get('PETSC_DIR')
+                finally:
+                    if petsc_dir is None:
+                        raise RuntimeError('Could not determine PETSC_DIR, please set in environment')
         if petsc_arch is None:
-            petsc_arch = os.environ['PETSC_ARCH']
+            petsc_arch = os.environ.get('PETSC_ARCH')
+            if petsc_arch is None:
+                try:
+                    petsc_arch = parse_makefile(os.path.join(petsc_dir, 'conf', 'petscvariables')).get('PETSC_ARCH')
+                finally:
+                    if petsc_arch is None:
+                        raise RuntimeError('Could not determine PETSC_ARCH, please set in environment')
         self.petsc_dir = petsc_dir
         self.petsc_arch = petsc_arch
         self.read_conf()
