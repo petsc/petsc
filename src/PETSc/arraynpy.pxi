@@ -48,6 +48,9 @@ cdef extern from "petsc4py/numpy.h":
 
 cdef extern from "petsc4py/numpy.h":
 
+    enum: NPY_INT
+    enum: NPY_DOUBLE
+
     enum: NPY_PETSC_INT
     enum: NPY_PETSC_REAL
     enum: NPY_PETSC_SCALAR

@@ -132,5 +132,8 @@ PetscErrorCode DMPlexCreate(PETSC_UNUSED MPI_Comm comm,PETSC_UNUSED DM *dm){DMPl
 #undef  __FUNCT__
 #define __FUNCT__ "DMPlexClone"
 PetscErrorCode DMPlexClone(PETSC_UNUSED DM dm,...){DMPlexError;}
+#undef  __FUNCT__
+#define __FUNCT__ "DMPlexCreateFromCellList"
+PetscErrorCode DMPlexCreateFromCellList(PETSC_UNUSED MPI_Comm comm,...){DMPlexError;}
 
 #undef DMPlexError
