@@ -710,8 +710,9 @@ cdef class Vec(Object):
 
     #
 
-    def getSubVector(self, IS iset not None):
-        cdef Vec subvec = Vec()
+    def getSubVector(self, IS iset not None, Vec subvec=None):
+        if subvec is None: subvec = Vec()
+        else: CHKERR( VecDestroy(&subvec.vec) )
         CHKERR( VecGetSubVector(self.vec, iset.iset, &subvec.vec) )
         return subvec
 
