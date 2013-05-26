@@ -78,6 +78,20 @@ cdef extern from * nogil:
 
 # --------------------------------------------------------------------
 
+cdef inline IS ref_IS(PetscIS iset):
+    cdef IS ob = <IS> IS()
+    ob.iset = iset
+    PetscINCREF(ob.obj)
+    return ob
+
+cdef inline LGMap ref_LGMap(PetscLGMap lgm):
+    cdef LGMap ob = <LGMap> LGMap()
+    ob.lgm = lgm
+    PetscINCREF(ob.obj)
+    return ob
+
+# --------------------------------------------------------------------
+
 cdef extern from "pep3118.h":
     int  PyPetscBuffer_FillInfo(Py_buffer*,
                                 void*,PetscInt,char,

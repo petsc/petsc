@@ -26,9 +26,9 @@ cdef class DMComposite(DM):
 
     def getEntries(self):
         """Get tuple of sub-DMs contained in the DMComposite"""
-        cdef PetscInt n = 0
-        CHKERR( DMCompositeGetNumberDM(self.dm, &n) )
+        cdef PetscInt i, n = 0
         cdef PetscDM *cdms = NULL
+        CHKERR( DMCompositeGetNumberDM(self.dm, &n) )
         cdef object cdms_mem = oarray_p(empty_p(n), NULL, <void**>&cdms)
         CHKERR( DMCompositeGetEntriesArray(self.dm, cdms) )
         cdef DM entry = None
@@ -42,7 +42,7 @@ cdef class DMComposite(DM):
 
     def scatter(self, Vec gvec not None, lvecs):
         """Scatter coupled global vector into split local vectors"""
-        cdef PetscInt n = 0
+        cdef PetscInt i, n = 0
         CHKERR( DMCompositeGetNumberDM(self.dm, &n) )
         cdef PetscVec *clvecs = NULL
         cdef object clvecs_mem = oarray_p(empty_p(n), NULL, <void**>&clvecs)
@@ -53,13 +53,46 @@ cdef class DMComposite(DM):
     def gather(self, Vec gvec not None, imode, lvecs):
         """Gather split local vectors into coupled global vector"""
         cdef PetscInsertMode cimode = insertmode(imode)
-        cdef PetscInt n = 0
+        cdef PetscInt i, n = 0
         CHKERR( DMCompositeGetNumberDM(self.dm, &n) )
         cdef PetscVec *clvecs = NULL
         cdef object clvecs_mem = oarray_p(empty_p(n), NULL, <void**>&clvecs)
         for i from 0 <= i < n:
             clvecs[i] = (<Vec?>lvecs[i]).vec
         CHKERR( DMCompositeGatherArray(self.dm, gvec.vec, cimode, clvecs) )
+
+    def getGlobalISs(self):
+        cdef PetscInt i, n = 0
+        cdef PetscIS *cis = NULL
+        CHKERR( DMCompositeGetNumberDM(self.dm, &n) )
+        CHKERR( DMCompositeGetGlobalISs(self.dm, &cis) )
+        cdef object isets = [ref_IS(cis[i]) for i from 0 <= i < n]
+        for i from 0 <= i < n:
+            CHKERR( ISDestroy(&cis[i]) )
+        CHKERR( PetscFree(cis) )
+        return isets
+
+    def getLocalISs(self):
+        cdef PetscInt i, n = 0
+        cdef PetscIS *cis = NULL
+        CHKERR( DMCompositeGetNumberDM(self.dm, &n) )
+        CHKERR( DMCompositeGetLocalISs(self.dm, &cis) )
+        cdef object isets = [ref_IS(cis[i]) for i from 0 <= i < n]
+        for i from 0 <= i < n:
+            CHKERR( ISDestroy(&cis[i]) )
+        CHKERR( PetscFree(cis) )
+        return isets
+
+    def getLGMaps(self):
+        cdef PetscInt i, n = 0
+        cdef PetscLGMap *clgm = NULL
+        CHKERR( DMCompositeGetNumberDM(self.dm, &n) )
+        CHKERR( DMCompositeGetISLocalToGlobalMappings(self.dm, &clgm) )
+        cdef object lgms = [ref_LGMap(clgm[i]) for i from 0 <= i < n]
+        for i from 0 <= i < n:
+            CHKERR( ISLocalToGlobalMappingDestroy(&clgm[i]) )
+        CHKERR( PetscFree(clgm) )
+        return lgms
 
     def getAccess(self, Vec gvec not None, locs=None):
         """Get access to specified parts of global vector.

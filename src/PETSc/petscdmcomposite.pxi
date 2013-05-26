@@ -10,7 +10,9 @@ cdef extern from * nogil:
     int DMCompositeGetEntriesArray(PetscDM,PetscDM*)
     int DMCompositeGetAccessArray(PetscDM,PetscVec,PetscInt,const_PetscInt*,PetscVec*)
     int DMCompositeRestoreAccessArray(PetscDM,PetscVec,PetscInt,const_PetscInt*,PetscVec*)
-
+    int DMCompositeGetGlobalISs(PetscDM,PetscIS**)
+    int DMCompositeGetLocalISs(PetscDM,PetscIS**)
+    int DMCompositeGetISLocalToGlobalMappings(PetscDM,PetscLGMap**)
 
 cdef class _DMComposite_access:
     cdef PetscDM  dm
@@ -20,6 +22,7 @@ cdef class _DMComposite_access:
     cdef PetscVec *vecs
     cdef object locs_mem
     cdef object vecs_mem
+    cdef object access
 
     def __cinit__(self, DM dm, Vec gvec not None, locs=None):
         self.dm = dm.dm
@@ -31,26 +34,20 @@ cdef class _DMComposite_access:
             locs = arange(0, <long>self.nlocs, 1)
         self.locs_mem = iarray_i(locs, &self.nlocs, &self.locs)
         self.vecs_mem = oarray_p(empty_p(self.nlocs), NULL, <void**>&self.vecs)
+        self.access   = None
 
     def __dealloc__(self):
         CHKERR( DMDestroy(&self.dm) )
         CHKERR( VecDestroy(&self.gvec) )
 
     def __enter__(self):
+        cdef Py_ssize_t i, n = self.nlocs
         CHKERR( DMCompositeGetAccessArray(self.dm, self.gvec, self.nlocs, self.locs, self.vecs) )
-        cdef list access = []
-        cdef Vec x
-        for i from 0 <= i < self.nlocs:
-            x = Vec()
-            x.vec = self.vecs[i]
-            PetscINCREF(x.obj)
-            access.append(x)
-        return tuple(access)
+        self.access = [ref_Vec(self.vecs[i]) for i from 0 <= i < n]
+        return tuple(self.access)
 
     def __exit__(self, *exc):
+        cdef Py_ssize_t i, n = self.nlocs
+        for i from 0 <= i < n: (<Vec>self.access[i]).vec = NULL
         CHKERR( DMCompositeRestoreAccessArray(self.dm, self.gvec, self.nlocs, self.locs, self.vecs) )
-        self.nlocs = 0
-        self.locs = NULL
-        self.vecs = NULL
-        self.locs_mem = None
-        self.vecs_mem = None
+        self.access   = None
