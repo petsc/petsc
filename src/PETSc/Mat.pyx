@@ -945,15 +945,16 @@ cdef class Mat(Object):
                                 reuse, &submat.mat) )
         return submat
 
-    def getLocalSubMatrix(self, IS isrow not None, IS iscol not None):
-        cdef Mat submat = Mat()
+    #
+
+    def getLocalSubMatrix(self, IS isrow not None, IS iscol not None, Mat submat=None):
+        if submat is None: submat = Mat()
+        else: CHKERR( MatDestroy(&submat.mat) )
         CHKERR( MatGetLocalSubMatrix(self.mat, isrow.iset, iscol.iset, &submat.mat) )
         return submat
 
-    def restoreLocalSubMatrix(self, IS isrow not None, IS iscol not None):
-        cdef Mat submat = Mat()
+    def restoreLocalSubMatrix(self, IS isrow not None, IS iscol not None, Mat submat not None):
         CHKERR( MatRestoreLocalSubMatrix(self.mat, isrow.iset, iscol.iset, &submat.mat) )
-        return submat
 
     #
 
