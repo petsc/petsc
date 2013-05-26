@@ -90,15 +90,9 @@ PetscErrorCode DMSetUp_Moab(DM dm)
     totsize=dmmoab->vlocal->size();
     ierr = PetscMalloc(totsize*sizeof(PetscInt), &gsindices);CHKERRQ(ierr);
     /* first get the local indices */
-    for(iter = dmmoab->vowned->begin(); iter != dmmoab->vowned->end(); iter++) {
-      merr = dmmoab->mbiface->tag_get_data(dmmoab->ltog_tag,&(*iter),1,&dof);MBERRNM(merr);
-      gsindices[count++] = (dof);
-    }
-    /* now get the ghosted indices */
-    for(iter = dmmoab->vghost->begin(); iter != dmmoab->vghost->end(); iter++) {
-      merr = dmmoab->mbiface->tag_get_data(dmmoab->ltog_tag,&(*iter),1,&dof);MBERRNM(merr);
-      gsindices[count++] = (dof);
-    }
+    merr = dmmoab->mbiface->tag_get_data(dmmoab->ltog_tag,*dmmoab->vowned,&gsindices[0]);MBERRNM(merr);
+    /* next get the ghosted indices */
+    merr = dmmoab->mbiface->tag_get_data(dmmoab->ltog_tag,*dmmoab->vghost,&gsindices[dmmoab->nloc]);MBERRNM(merr);
     
     /* Create Global to Local Vector Scatter Context */
     ierr = DMCreateGlobalVector_Moab(dm, &global);CHKERRQ(ierr);
