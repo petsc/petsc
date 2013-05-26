@@ -57,13 +57,13 @@ PETSC_COMPILE.F = $(call quiet,FC) -c $(FC_FLAGS) $(FFLAGS) $(FCPPFLAGS) $(PETSC
 
 langs := c cu cxx F
 concatlang = $(foreach lang, $(langs), $(srcs-$(1).$(lang):%.$(lang)=$(OBJDIR)/%.o))
-allobj := $(foreach pkg, $(pkgs), $(call concatlang,$(pkg)))
+srcs.o := $(foreach pkg, $(pkgs), $(call concatlang,$(pkg)))
 
 # with-single-library=1 (default)
-$(libpetsc_shared) : $(allobj) | $$(@D)/.DIR
+$(libpetsc_shared) : $(srcs.o) | $$(@D)/.DIR
 	$(call quiet,CLINKER) -shared -o $@ $^ $(PETSC_EXTERNAL_LIB_BASIC)
 
-$(libpetsc_static) : obj := $(allobj)
+$(libpetsc_static) : obj := $(srcs.o)
 
 %.$(AR_LIB_SUFFIX) : $$(obj) | $$(@D)/.DIR
 	@$(RM) $@
@@ -138,7 +138,7 @@ clean:
 print:
 	@echo $($(VAR))
 
-allobj.d := $(allobj:%.o=%.d)
+allobj.d := $(srcs.o:%.o=%.d)
 # Tell make that allobj.d are all up to date.  Without this, the include
 # below has quadratic complexity, taking more than one second for a
 # do-nothing build of PETSc (much worse for larger projects)
