@@ -8,15 +8,20 @@ LIBDIR := $(abspath $(PETSC_ARCH)/lib)
 pkgs := sys vec mat dm ksp snes ts
 
 libpetsc_shared := $(LIBDIR)/libpetsc.so
+libpetsc_static := $(LIBDIR)/libpetsc.$(AR_LIB_SUFFIX)
 libpetscpkgs_shared := $(foreach pkg, $(pkgs), $(LIBDIR)/libpetsc$(pkg).so)
+libpetscpkgs_static := $(foreach pkg, $(pkgs), $(LIBDIR)/libpetsc$(pkg).$(AR_LIB_SUFFIX))
 
 ifeq ($(PETSC_WITH_EXTERNAL_LIB),)
   libpetscall_shared := $(libpetscpkgs_shared)
+  libpetscall_static := $(libpetscpkgs_static)
 else
   libpetscall_shared := $(libpetsc_shared)
+  libpetscall_static := $(libpetsc_static)
 endif
+libpetscall := $(if $(filter-out no,$(BUILDSHAREDLIB)),$(libpetscall_shared),$(libpetscall_static))
 
-all : $(PETSC_ARCH)/conf/files $(libpetscall_shared)
+all : $(PETSC_ARCH)/conf/files $(libpetscall)
 
 .SECONDEXPANSION:		# to expand $$(@D)/.DIR
 
@@ -58,6 +63,13 @@ allobj := $(foreach pkg, $(pkgs), $(call concatlang,$(pkg)))
 $(libpetsc_shared) : $(allobj) | $$(@D)/.DIR
 	$(call quiet,CLINKER) -shared -o $@ $^ $(PETSC_EXTERNAL_LIB_BASIC)
 
+$(libpetsc_static) : obj := $(allobj)
+
+%.$(AR_LIB_SUFFIX) : $$(obj) | $$(@D)/.DIR
+	@$(RM) $@
+	$(call quiet,AR) $(AR_FLAGS) $@ $^
+	$(call quiet,RANLIB) $@
+
 # with-single-library=0
 libpkg = $(foreach pkg, $1, $(LIBDIR)/libpetsc$(pkg).so)
 $(LIBDIR)/libpetscsys.so  : obj    := $(call concatlang,sys)
@@ -73,6 +85,13 @@ $(LIBDIR)/libpetscsnes.so : obj    := $(call concatlang,snes)
 $(LIBDIR)/libpetscsnes.so : libdep := $(call libpkg,ksp dm mat vec sys)
 $(LIBDIR)/libpetscts.so   : obj    := $(call concatlang,ts)
 $(LIBDIR)/libpetscts.so   : libdep := $(call libpkg,snes ksp dm mat vec sys)
+$(LIBDIR)/libpetscsys.$(AR_LIB_SUFFIX)  : $(call concatlang,sys)
+$(LIBDIR)/libpetscvec.$(AR_LIB_SUFFIX)  : $(call concatlang,vec)
+$(LIBDIR)/libpetscmat.$(AR_LIB_SUFFIX)  : $(call concatlang,mat)
+$(LIBDIR)/libpetscdm.$(AR_LIB_SUFFIX)   : $(call concatlang,dm)
+$(LIBDIR)/libpetscksp.$(AR_LIB_SUFFIX)  : $(call concatlang,ksp)
+$(LIBDIR)/libpetscsnes.$(AR_LIB_SUFFIX) : $(call concatlang,snes)
+$(LIBDIR)/libpetscts.$(AR_LIB_SUFFIX)   : $(call concatlang,ts)
 
 # The package libraries technically depend on each other (not just in an order-only way), but only
 # ABI changes like new or removed symbols requires relinking the dependent libraries.  ABI should
@@ -113,7 +132,7 @@ $(OBJDIR)/%.o : %.F | $$(@D)/.DIR
 .PHONY: clean all print
 
 clean:
-	rm -rf $(OBJDIR) $(libpetsc_shared) $(libpetscpkgs_shared) ${PETSC_ARCH}/include/*.mod $(PETSC_ARCH)/conf/files
+	rm -rf $(OBJDIR) $(LIBDIR)/libpetsc* ${PETSC_ARCH}/include/*.mod $(PETSC_ARCH)/conf/files
 
 # make print VAR=the-variable
 print:
