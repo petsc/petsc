@@ -602,8 +602,32 @@ SNESSetUseMFFD(SNES snes,PetscBool flag)
   PetscFunctionReturn(0);
 }
 
-#if PETSC_VERSION_(3,3,0) || PETSC_VERSION_(3,2,0)
-#define SNESComputeJacobianDefaultColor SNESDefaultComputeJacobianColor
+#if PETSC_VERSION_LE(3,3,0)
+#undef  __FUNCT__
+#define __FUNCT__ "SNESComputeJacobianDefaultColor"
+PETSC_EXTERN PetscErrorCode SNESComputeJacobianDefaultColor(SNES snes,Vec x,Mat *J,Mat *B,MatStructure *flag,void *ctx)
+{
+  Vec            f = NULL;
+  PetscErrorCode (*fun)(SNES,Vec,Vec,void*) = NULL;
+  void*          funP = NULL;
+  ISColoring     iscoloring = NULL;
+  MatFDColoring  color = NULL;
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  ierr = SNESGetFunction(snes,&f,&fun,&funP);CHKERRQ(ierr);
+  ierr = PetscObjectQuery((PetscObject)*B,"SNESMatFDColoring",(PetscObject*)&color);CHKERRQ(ierr);
+  if (!color) {
+    ierr = MatGetColoring(*B,MATCOLORINGSL,&iscoloring);CHKERRQ(ierr);
+    ierr = MatFDColoringCreate(*B,iscoloring,&color);CHKERRQ(ierr);
+    ierr = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);
+    ierr = MatFDColoringSetFunction(color,(PetscErrorCode(*)(void))fun,(void*)funP);CHKERRQ(ierr);
+    ierr = MatFDColoringSetFromOptions(color);CHKERRQ(ierr);
+    ierr = PetscObjectCompose((PetscObject)*B,"SNESMatFDColoring",(PetscObject)color);CHKERRQ(ierr);
+    ierr = PetscObjectDereference((PetscObject)color);CHKERRQ(ierr);
+  }
+  ierr = SNESDefaultComputeJacobianColor(snes,x,J,B,flag,(void*)color);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 #endif
 
 #undef __FUNCT__
@@ -627,16 +651,12 @@ SNESGetUseFDColoring(SNES snes,PetscBool *flag)
 static PetscErrorCode
 SNESSetUseFDColoring(SNES snes,PetscBool flag)
 {
-  const char*    prefix = PETSC_NULL;
   PetscBool      flg = PETSC_FALSE;
-  Vec            f = PETSC_NULL;
   PetscErrorCode (*fun)(SNES,Vec,Vec,void*) = PETSC_NULL;
   void*          funP = PETSC_NULL;
   Mat            A = PETSC_NULL,B = PETSC_NULL;
   PetscErrorCode (*jac)(SNES,Vec,Mat*,Mat*,MatStructure*,void*) = PETSC_NULL;
   void*          jacP = PETSC_NULL;
-  ISColoring     iscoloring = PETSC_NULL;
-  MatFDColoring  fdcoloring = PETSC_NULL;
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
@@ -650,27 +670,9 @@ SNESSetUseFDColoring(SNES snes,PetscBool flag)
     PetscFunctionReturn(PETSC_ERR_ARG_WRONGSTATE);
   }
 
-  ierr = SNESGetOptionsPrefix(snes,&prefix);CHKERRQ(ierr);
-  ierr = SNESGetFunction(snes,&f,&fun,&funP);CHKERRQ(ierr);
+  ierr = SNESGetFunction(snes,NULL,&fun,&funP);CHKERRQ(ierr);
   ierr = SNESGetJacobian(snes,&A,&B,&jac,&jacP);CHKERRQ(ierr);
-  if (!fun) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"SNESSetFunction() must be called first");
-    PetscFunctionReturn(PETSC_ERR_ARG_WRONGSTATE);
-  }
-  if (!A && !B) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"SNESSetJacobian() must be called first");
-    PetscFunctionReturn(PETSC_ERR_ARG_WRONGSTATE);
-  }
-
-  ierr = MatGetColoring((B?B:A),MATCOLORINGSL,&iscoloring);CHKERRQ(ierr);
-  ierr = MatFDColoringCreate((B?B:A),iscoloring,&fdcoloring);CHKERRQ(ierr);
-  ierr = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);
-  ierr = MatFDColoringSetFunction(fdcoloring,(PetscErrorCode (*)(void))fun,funP);
-  ierr = PetscObjectSetOptionsPrefix((PetscObject)fdcoloring,prefix);CHKERRQ(ierr);
-  ierr = MatFDColoringSetFromOptions(fdcoloring);CHKERRQ(ierr);
-  ierr = PetscObjectCompose((PetscObject)snes,"fdcoloring",(PetscObject)fdcoloring);CHKERRQ(ierr);
-  ierr = SNESSetJacobian(snes,A,B,SNESComputeJacobianDefaultColor,fdcoloring);CHKERRQ(ierr);
-  ierr = MatFDColoringDestroy(&fdcoloring);CHKERRQ(ierr);
+  ierr = SNESSetJacobian(snes,A,B,SNESComputeJacobianDefaultColor,0);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
