@@ -102,11 +102,11 @@ class Mistakes(object):
         if not self.verbose: return
         if smdirs != sdirs:
             from sys import stderr
-            print >>stderr, ('Directory mismatch at %s:\n\t%s: %r\n\t%s: %r\n\t%s: %r'
-                             % (root,
-                                'in makefile   ',sorted(smdirs),
-                                'on filesystem ',sorted(sdirs),
-                                'symmetric diff',sorted(smdirs.symmetric_difference(sdirs))))
+            stderr.write('Directory mismatch at %s:\n\t%s: %r\n\t%s: %r\n\t%s: %r\n'
+                         % (root,
+                            'in makefile   ',sorted(smdirs),
+                            'on filesystem ',sorted(sdirs),
+                            'symmetric diff',sorted(smdirs.symmetric_difference(sdirs))))
 
     def compareSourceLists(self, root, msources, files):
         smsources = set(msources)
@@ -116,11 +116,12 @@ class Mistakes(object):
         if not self.verbose: return
         if smsources != ssources:
             from sys import stderr
-            print >>stderr, ('Source mismatch at %s:\n\t%s: %r\n\t%s: %r\n\t%s: %r'
-                             % (root,
-                                'in makefile   ',sorted(smsources),
-                                'on filesystem ',sorted(ssources),
-                                'symmetric diff',sorted(smsources.symmetric_difference(ssources))))
+            stderr.write('Source mismatch at %s:\n\t%s: %r\n\t%s: %r\n\t%s: %r\n'
+                         % (root,
+                            'in makefile   ',sorted(smsources),
+                            'on filesystem ',sorted(ssources),
+                            'symmetric diff',sorted(smsources.symmetric_difference(ssources))))
+
     def summary(self):
         for m in self.mistakes:
             self.log.write(m + '\n')
@@ -128,7 +129,7 @@ class Mistakes(object):
             raise RuntimeError('PETSc makefiles contain mistakes or files are missing on filesystem.\n%s\nPossible reasons:\n\t1. Files were deleted locally, try "hg revert filename" or "git checkout filename".\n\t2. Files were deleted from repository, but were not removed from makefile. Send mail to petsc-maint@mcs.anl.gov.\n\t3. Someone forgot to "add" new files to the repository. Send mail to petsc-maint@mcs.anl.gov.' % ('\n'.join(self.mistakes)))
 
 def stripsplit(line):
-  return filter(lambda c: c!="'", line[len('#requires'):]).split()
+  return line[len('#requires'):].replace("'","").split()
 
 def pkgsources(pkg, mistakes):
   '''
