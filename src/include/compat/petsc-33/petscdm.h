@@ -73,6 +73,8 @@ PetscErrorCode DMGetCoordinatesLocal(DM dm,Vec *c)
   PetscFunctionReturn(0);
 }
 
+/* --- */
+
 #undef  __FUNCT__
 #define __FUNCT__ "DMCompositeScatterArray"
 PetscErrorCode DMCompositeScatterArray(DM dm,Vec g,Vec *lvecs)
@@ -116,3 +118,19 @@ PetscErrorCode DMCompositeRestoreAccessArray(DM dm,Vec g,PetscInt n,const PetscI
   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,__FUNCT__"() not supported in this PETSc version");
   PetscFunctionReturn(0);
 }
+
+/* --- */
+
+#define DMPlexError do {                                                \
+    PetscFunctionBegin;                                                 \
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,__FUNCT__"() not supported in this PETSc version"); \
+    PetscFunctionReturn(PETSC_ERR_SUP);} while (0)
+
+#undef  __FUNCT__
+#define __FUNCT__ "DMPlexCreate"
+PetscErrorCode DMPlexCreate(PETSC_UNUSED MPI_Comm comm,PETSC_UNUSED DM *dm){DMPlexError;}
+#undef  __FUNCT__
+#define __FUNCT__ "DMPlexClone"
+PetscErrorCode DMPlexClone(PETSC_UNUSED DM dm,...){DMPlexError;}
+
+#undef DMPlexError

@@ -126,6 +126,7 @@ include "petscts.pxi"
 include "petscao.pxi"
 include "petscdm.pxi"
 include "petscdmda.pxi"
+include "petscdmplex.pxi"
 include "petscdmcomposite.pxi"
 
 # --------------------------------------------------------------------
@@ -154,6 +155,7 @@ include "TS.pyx"
 include "AO.pyx"
 include "DM.pyx"
 include "DMDA.pyx"
+include "DMPlex.pyx"
 include "DMComposite.pyx"
 
 # --------------------------------------------------------------------
