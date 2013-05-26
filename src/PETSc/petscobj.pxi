@@ -118,21 +118,14 @@ cdef inline long Object_toFortran(PetscObject o) nogil:
 # --------------------------------------------------------------------
 
 cdef inline type subtype_DM(PetscDM dm):
-    cdef type klass = DM
     cdef PetscObject obj = <PetscObject> dm
-    if obj == NULL: return klass
+    if obj == NULL: return DM
     cdef PetscBool match = PETSC_FALSE
-    # -- DMDA --
     CHKERR( PetscObjectTypeCompare(obj, b"da", &match) )
-    if match == PETSC_TRUE:
-        klass = DMDA
-        return klass
+    if match == PETSC_TRUE: return DMDA
     CHKERR( PetscObjectTypeCompare(obj, b"composite", &match) )
-    if match == PETSC_TRUE:
-        klass = DMComposite
-        return klass
-    # --------
-    return klass
+    if match == PETSC_TRUE: return DMComposite
+    return DM
 
 cdef inline type subtype_Object(PetscObject obj):
     cdef type klass = Object
