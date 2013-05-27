@@ -80,6 +80,40 @@ regressionParameters = {'src/dm/impls/patch/examples/tests/ex1': [{'numProcs': 1
                                                                  ],
                         'src/dm/impls/plex/examples/tests/ex8': [{'numProcs': 1, 'args': '-dm_view ::ascii_info_detail'},
                                                                  {'numProcs': 1, 'args': '-transform'}],
+                        'src/dm/impls/plex/examples/tests/ex9': [# 2D Simplex P_1 scalar tests
+                                                                 {'numProcs': 1, 'args': '-num_dof 1,0,0 -iterations 10000 \
+                                                                  -max_cone_time 1.1e-8 -max_closure_time 1.3e-7 -max_vec_closure_time 3.6e-7'},
+                                                                 {'numProcs': 1, 'args': '-refinement_limit 1.0e-5 -num_dof 1,0,0 -iterations 100 \
+                                                                  -max_cone_time 2.1e-8 -max_closure_time 1.5e-7 -max_vec_closure_time 3.6e-7'},
+                                                                 {'numProcs': 1, 'args': '-num_fields 1 -num_components 1 -num_dof 1,0,0 -iterations 10000 \
+                                                                  -max_cone_time 1.1e-8 -max_closure_time 1.3e-7 -max_vec_closure_time 4.5e-7'},
+                                                                 {'numProcs': 1, 'args': '-refinement_limit 1.0e-5 -num_fields 1 -num_components 1 -num_dof 1,0,0 -iterations 100 \
+                                                                  -max_cone_time 2.1e-8 -max_closure_time 1.5e-7 -max_vec_closure_time 4.7e-7'},
+                                                                 {'numProcs': 1, 'args': '-interpolate -num_dof 1,0,0 -iterations 10000 \
+                                                                  -max_cone_time 1.1e-8 -max_closure_time 6.5e-7 -max_vec_closure_time 1.0e-6'},
+                                                                 {'numProcs': 1, 'args': '-interpolate -refinement_limit 1.0e-5 -num_dof 1,0,0 -iterations 100 \
+                                                                  -max_cone_time 2.1e-8 -max_closure_time 6.5e-7 -max_vec_closure_time 1.0e-6'},
+                                                                 {'numProcs': 1, 'args': '-interpolate -num_fields 1 -num_components 1 -num_dof 1,0,0 -iterations 10000 \
+                                                                  -max_cone_time 1.1e-8 -max_closure_time 6.5e-7 -max_vec_closure_time 1.1e-6'},
+                                                                 {'numProcs': 1, 'args': '-interpolate -refinement_limit 1.0e-5 -num_fields 1 -num_components 1 -num_dof 1,0,0 -iterations 100 \
+                                                                  -max_cone_time 2.1e-8 -max_closure_time 6.5e-7 -max_vec_closure_time 1.2e-6'},
+                                                                 # 2D Simplex P_1 vector tests
+                                                                 # 2D Simplex P_2 scalar tests
+                                                                 # 2D Simplex P_2 vector tests
+                                                                 # 2D Simplex P_2/P_1 vector/scalar tests
+                                                                 # 2D Quad P_1 scalar tests
+                                                                 # 2D Quad P_1 vector tests
+                                                                 # 2D Quad P_2 scalar tests
+                                                                 # 2D Quad P_2 vector tests
+                                                                 # 3D Simplex P_1 scalar tests
+                                                                 # 3D Simplex P_1 vector tests
+                                                                 # 3D Simplex P_2 scalar tests
+                                                                 # 3D Simplex P_2 vector tests
+                                                                 # 3D Hex P_1 scalar tests
+                                                                 # 3D Hex P_1 vector tests
+                                                                 # 3D Hex P_2 scalar tests
+                                                                 # 3D Hex P_2 vector tests
+                                                                 ],
                         'src/dm/impls/plex/examples/tests/ex1f90': [{'numProcs': 1, 'args': ''}],
                         'src/dm/impls/plex/examples/tests/ex2f90': [{'numProcs': 1, 'args': ''}],
                         'src/dm/impls/plex/examples/tutorials/ex1': [{'numProcs': 1, 'args': ''},
@@ -130,26 +164,29 @@ regressionParameters = {'src/dm/impls/patch/examples/tests/ex1': [{'numProcs': 1
                                                                             {'numProcs': 1, 'args': '-i src/dm/impls/mesh/examples/tests/meshes/Hex.gen'},
                                                                             {'numProcs': 1, 'args': '-i src/dm/impls/mesh/examples/tests/meshes/Tet.gen -interpolate'},
                                                                             {'numProcs': 1, 'args': '-i src/dm/impls/mesh/examples/tests/meshes/Hex.gen -interpolate'}],
-                        'src/snes/examples/tutorials/ex12':   [# 2D serial P1 test 0-6
+                        'src/snes/examples/tutorials/ex12':   [# 2D serial P1 test 0-4
                                                                {'numProcs': 1, 'args': '-run_type test -refinement_limit 0.0    -bc_type dirichlet -interpolate 0 -show_initial -dm_plex_print_fem 1',
                                                                 'setup': './bin/pythonscripts/PetscGenerateFEMQuadrature.py 2 1 1 1 laplacian 2 1 1 1 boundary src/snes/examples/tutorials/ex12.h'},
                                                                {'numProcs': 1, 'args': '-run_type test -refinement_limit 0.0    -bc_type dirichlet -interpolate 1 -show_initial -dm_plex_print_fem 1'},
                                                                {'numProcs': 1, 'args': '-run_type test -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -show_initial -dm_plex_print_fem 1'},
                                                                {'numProcs': 1, 'args': '-run_type test -refinement_limit 0.0    -bc_type neumann   -interpolate 1 -show_initial -dm_plex_print_fem 1 -dm_view ::ascii_info_detail'},
                                                                {'numProcs': 1, 'args': '-run_type test -refinement_limit 0.0625 -bc_type neumann   -interpolate 1 -show_initial -dm_plex_print_fem 1'},
-                                                               {'numProcs': 1, 'args': '-run_type test -refinement_limit 0.0    -bc_type neumann   -interpolate 1 -show_initial -dm_plex_print_fem 1 -dm_view ::ascii_info_detail',
+                                                               # 2D serial P2 test 5-8
+                                                               {'numProcs': 1, 'args': '-run_type test -refinement_limit 0.0    -bc_type dirichlet -interpolate 1 -show_initial -dm_plex_print_fem 1',
                                                                 'setup': './bin/pythonscripts/PetscGenerateFEMQuadrature.py 2 2 1 1 laplacian 2 2 1 1 boundary src/snes/examples/tutorials/ex12.h'},
+                                                               {'numProcs': 1, 'args': '-run_type test -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -show_initial -dm_plex_print_fem 1'},
+                                                               {'numProcs': 1, 'args': '-run_type test -refinement_limit 0.0    -bc_type neumann   -interpolate 1 -show_initial -dm_plex_print_fem 1 -dm_view ::ascii_info_detail'},
                                                                {'numProcs': 1, 'args': '-run_type test -refinement_limit 0.0625 -bc_type neumann   -interpolate 1 -show_initial -dm_plex_print_fem 1 -dm_view ::ascii_info_detail'},
-                                                               # 3D serial P1 test 7-
+                                                               # 3D serial P1 test 9-12
                                                                {'numProcs': 1, 'args': '-run_type test -dim 3 -refinement_limit 0.0    -bc_type dirichlet -interpolate 0 -show_initial -dm_plex_print_fem 1 -dm_view',
                                                                 'setup': './bin/pythonscripts/PetscGenerateFEMQuadrature.py 3 1 1 1 laplacian 3 1 1 1 boundary src/snes/examples/tutorials/ex12.h'},                                                                   {'numProcs': 1, 'args': '-run_type test -dim 3 -refinement_limit 0.0    -bc_type dirichlet -interpolate 1 -show_initial -dm_plex_print_fem 1 -dm_view'},
                                                                {'numProcs': 1, 'args': '-run_type test -dim 3 -refinement_limit 0.0125 -bc_type dirichlet -interpolate 1 -show_initial -dm_plex_print_fem 1 -dm_view'},
                                                                {'numProcs': 1, 'args': '-run_type test -dim 3 -refinement_limit 0.0    -bc_type neumann   -interpolate 1 -snes_fd -show_initial -dm_plex_print_fem 1 -dm_view'},
-                                                               # Using ExodusII mesh 10-11 BROKEN
+                                                               # Using ExodusII mesh 13-14 BROKEN
                                                                {'numProcs': 1, 'args': '-run_type test -f %(meshes)s/sevenside.exo -refinement_limit 0.0    -bc_type dirichlet -interpolate 1 -show_initial -dm_plex_print_fem 1 -dm_view',
-                                                                'setup': './bin/pythonscripts/PetscGenerateFEMQuadrature.py 2 1 1 1 laplacian src/snes/examples/tutorials/ex12.h'},
+                                                                'setup': './bin/pythonscripts/PetscGenerateFEMQuadrature.py 2 1 1 1 laplacian src/snes/examples/tutorials/ex12.h', 'requires': ['Exodus']},
                                                                {'numProcs': 1, 'args': '-run_type test -dim 3 -f /Users/knepley/Downloads/kis_modell_tet2.exo -refinement_limit 0.0    -bc_type dirichlet -interpolate 1 -show_initial -dm_plex_print_fem 1 -dm_view',
-                                                                'setup': './bin/pythonscripts/PetscGenerateFEMQuadrature.py 3 1 1 1 laplacian src/snes/examples/tutorials/ex12.h'},                     ],
+                                                                'setup': './bin/pythonscripts/PetscGenerateFEMQuadrature.py 3 1 1 1 laplacian src/snes/examples/tutorials/ex12.h', 'requires': ['Exodus']},                     ],
                         'src/snes/examples/tutorials/ex31':   [# Decoupled field Dirichlet tests 0-6
                                                                {'numProcs': 1, 'args': '-run_type test -refinement_limit 0.0     -forcing_type constant -bc_type dirichlet -interpolate 1 -show_initial -dm_plex_print_fem 1',
                                                                 'setup': './bin/pythonscripts/PetscGenerateFEMQuadrature.py 2 2 2 1 laplacian 2 1 1 1 gradient 2 1 1 1 identity src/snes/examples/tutorials/ex31.h'},
