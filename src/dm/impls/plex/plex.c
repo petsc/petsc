@@ -1079,14 +1079,6 @@ PetscErrorCode DMPlexGetTransitiveClosure(DM dm, PetscInt p, PetscBool useCone, 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   ierr    = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
-  maxSize = 2*PetscMax(PetscMax(PetscPowInt(mesh->maxConeSize,depth+1),PetscPowInt(mesh->maxSupportSize,depth+1)),depth+1);
-  ierr    = DMGetWorkArray(dm, maxSize, PETSC_INT, &fifo);CHKERRQ(ierr);
-  if (*points) {
-    closure = *points;
-  } else {
-    ierr = DMGetWorkArray(dm, maxSize, PETSC_INT, &closure);CHKERRQ(ierr);
-  }
-  closure[0] = p; closure[1] = 0;
   /* This is only 1-level */
   if (useCone) {
     ierr = DMPlexGetConeSize(dm, p, &tmpSize);CHKERRQ(ierr);
@@ -1096,6 +1088,30 @@ PetscErrorCode DMPlexGetTransitiveClosure(DM dm, PetscInt p, PetscBool useCone, 
     ierr = DMPlexGetSupportSize(dm, p, &tmpSize);CHKERRQ(ierr);
     ierr = DMPlexGetSupport(dm, p, &tmp);CHKERRQ(ierr);
   }
+  if (depth == 1) {
+    if (*points) {
+      closure = *points;
+    } else {
+      maxSize = 2*(PetscMax(mesh->maxConeSize, mesh->maxSupportSize)+1);
+      ierr = DMGetWorkArray(dm, maxSize, PETSC_INT, &closure);CHKERRQ(ierr);
+    }
+    closure[0] = p; closure[1] = 0;
+    for (t = 0; t < tmpSize; ++t, closureSize += 2) {
+      closure[closureSize]   = tmp[t];
+      closure[closureSize+1] = tmpO ? tmpO[t] : 0;
+    }
+    if (numPoints) *numPoints = closureSize/2;
+    if (points)    *points    = closure;
+    PetscFunctionReturn(0);
+  }
+  maxSize = 2*PetscMax(PetscMax(PetscPowInt(mesh->maxConeSize,depth+1),PetscPowInt(mesh->maxSupportSize,depth+1)),depth+1);
+  ierr    = DMGetWorkArray(dm, maxSize, PETSC_INT, &fifo);CHKERRQ(ierr);
+  if (*points) {
+    closure = *points;
+  } else {
+    ierr = DMGetWorkArray(dm, maxSize, PETSC_INT, &closure);CHKERRQ(ierr);
+  }
+  closure[0] = p; closure[1] = 0;
   for (t = 0; t < tmpSize; ++t, closureSize += 2, fifoSize += 2) {
     const PetscInt cp = tmp[t];
     const PetscInt co = tmpO ? tmpO[t] : 0;
@@ -1105,6 +1121,7 @@ PetscErrorCode DMPlexGetTransitiveClosure(DM dm, PetscInt p, PetscBool useCone, 
     fifo[fifoSize]         = cp;
     fifo[fifoSize+1]       = co;
   }
+  /* Should kick out early when depth is reached, rather than checking all vertices for empty cones */
   while (fifoSize - fifoStart) {
     const PetscInt q   = fifo[fifoStart];
     const PetscInt o   = fifo[fifoStart+1];
