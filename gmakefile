@@ -21,7 +21,9 @@ else
 endif
 libpetscall := $(if $(filter-out no,$(BUILDSHAREDLIB)),$(libpetscall_shared),$(libpetscall_static))
 
-all : $(PETSC_ARCH)/conf/files $(libpetscall)
+generated := $(PETSC_ARCH)/conf/files
+
+all : $(generated) $(libpetscall)
 
 .SECONDEXPANSION:		# to expand $$(@D)/.DIR
 
@@ -37,7 +39,7 @@ endif
 $(PETSC_ARCH)/conf/files :
 	$(PYTHON) conf/gmakegen.py --petsc-arch=$(PETSC_ARCH)
 
--include $(PETSC_ARCH)/conf/files
+-include $(generated)
 
 ifeq ($(PETSC_LANGUAGE),CXXONLY)
   cc_name := CXX
@@ -132,7 +134,7 @@ $(OBJDIR)/%.o : %.F | $$(@D)/.DIR
 .PHONY: clean all print
 
 clean:
-	rm -rf $(OBJDIR) $(LIBDIR)/libpetsc* ${PETSC_ARCH}/include/*.mod $(PETSC_ARCH)/conf/files
+	rm -rf $(OBJDIR) $(LIBDIR)/libpetsc* $(PETSC_ARCH)/include/*.mod $(generated)
 
 # make print VAR=the-variable
 print:
