@@ -9,6 +9,6 @@ MANIFEST
 __pycache__
 *.pyc
 *.pyo
-*~
+.tox
 #petsc4py.PETSc.c
 #petsc4py.PETSc*.h
