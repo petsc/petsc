@@ -27,6 +27,10 @@ all : $(generated) $(libpetscall)
 
 .SECONDEXPANSION:		# to expand $$(@D)/.DIR
 
+#workarround old cygwin versions
+ifeq ($(PETSC_CYGWIN_BROKEN_PIPE),1)
+  V ?=1
+endif
 ifeq ($(V),)
   quiet_HELP := "Use \"$(MAKE) V=1\" to see the verbose compile lines.\n"
   quiet = @printf $(quiet_HELP)$(eval quiet_HELP:=)"  %10s %s\n" "$1$2" "$@"; $($1)
