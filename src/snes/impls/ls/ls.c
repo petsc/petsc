@@ -158,26 +158,35 @@ PetscErrorCode SNESSolve_NEWTONLS(SNES snes)
   snes->norm = 0.0;
   ierr       = PetscObjectAMSGrantAccess((PetscObject)snes);CHKERRQ(ierr);
   ierr       = SNESGetLineSearch(snes, &linesearch);CHKERRQ(ierr);
-  if (!snes->vec_func_init_set) {
-    ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
-    ierr = SNESGetFunctionDomainError(snes, &domainerror);CHKERRQ(ierr);
-    if (domainerror) {
-      snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;
-      PetscFunctionReturn(0);
-    }
-  } else snes->vec_func_init_set = PETSC_FALSE;
 
-  if (!snes->norm_init_set) {
-    ierr = VecNormBegin(F,NORM_2,&fnorm);CHKERRQ(ierr);        /* fnorm <- ||F||  */
+  /* compute the preconditioned function first in the case of left preconditioning with preconditioned function */
+  if (snes->pc && snes->pcside == PC_LEFT && snes->functype == SNES_FUNCTION_PRECONDITIONED) {
+    ierr = SNESApplyPC(snes,X,PETSC_NULL,PETSC_NULL,F);CHKERRQ(ierr);
+    ierr = VecNormBegin(F,NORM_2,&fnorm);CHKERRQ(ierr);
     ierr = VecNormEnd(F,NORM_2,&fnorm);CHKERRQ(ierr);
-    if (PetscIsInfOrNanReal(fnorm)) {
-      snes->reason = SNES_DIVERGED_FNORM_NAN;
-      PetscFunctionReturn(0);
-    }
   } else {
-    fnorm               = snes->norm_init;
-    snes->norm_init_set = PETSC_FALSE;
+    if (!snes->vec_func_init_set) {
+      ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
+      ierr = SNESGetFunctionDomainError(snes, &domainerror);CHKERRQ(ierr);
+      if (domainerror) {
+        snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;
+        PetscFunctionReturn(0);
+      }
+    } else snes->vec_func_init_set = PETSC_FALSE;
+
+    if (!snes->norm_init_set) {
+      ierr = VecNormBegin(F,NORM_2,&fnorm);CHKERRQ(ierr);        /* fnorm <- ||F||  */
+      ierr = VecNormEnd(F,NORM_2,&fnorm);CHKERRQ(ierr);
+      if (PetscIsInfOrNanReal(fnorm)) {
+        snes->reason = SNES_DIVERGED_FNORM_NAN;
+        PetscFunctionReturn(0);
+      }
+    } else {
+      fnorm               = snes->norm_init;
+      snes->norm_init_set = PETSC_FALSE;
+    }
   }
+
   ierr       = PetscObjectAMSTakeAccess((PetscObject)snes);CHKERRQ(ierr);
   snes->norm = fnorm;
   ierr       = PetscObjectAMSGrantAccess((PetscObject)snes);CHKERRQ(ierr);
@@ -197,21 +206,25 @@ PetscErrorCode SNESSolve_NEWTONLS(SNES snes)
       ierr = (*snes->ops->update)(snes, snes->iter);CHKERRQ(ierr);
     }
 
-    /* apply the nonlinear preconditioner if it's right preconditioned */
-    if (snes->pc && snes->pcside == PC_RIGHT) {
-      ierr = SNESSetInitialFunction(snes->pc, F);CHKERRQ(ierr);
-      ierr = SNESSetInitialFunctionNorm(snes->pc, fnorm);CHKERRQ(ierr);
-      ierr = PetscLogEventBegin(SNES_NPCSolve,snes->pc,X,snes->vec_rhs,0);CHKERRQ(ierr);
-      ierr = SNESSolve(snes->pc, snes->vec_rhs, X);CHKERRQ(ierr);
-      ierr = PetscLogEventEnd(SNES_NPCSolve,snes->pc,X,snes->vec_rhs,0);CHKERRQ(ierr);
-      ierr = SNESGetConvergedReason(snes->pc,&reason);CHKERRQ(ierr);
-      if (reason < 0  && reason != SNES_DIVERGED_MAX_IT) {
-        snes->reason = SNES_DIVERGED_INNER;
-        PetscFunctionReturn(0);
+    /* apply the nonlinear preconditioner */
+    if (snes->pc) {
+      if (snes->pcside == PC_RIGHT) {
+        ierr = SNESSetInitialFunction(snes->pc, F);CHKERRQ(ierr);
+        ierr = SNESSetInitialFunctionNorm(snes->pc, fnorm);CHKERRQ(ierr);
+        ierr = PetscLogEventBegin(SNES_NPCSolve,snes->pc,X,snes->vec_rhs,0);CHKERRQ(ierr);
+        ierr = SNESSolve(snes->pc, snes->vec_rhs, X);CHKERRQ(ierr);
+        ierr = PetscLogEventEnd(SNES_NPCSolve,snes->pc,X,snes->vec_rhs,0);CHKERRQ(ierr);
+        ierr = SNESGetConvergedReason(snes->pc,&reason);CHKERRQ(ierr);
+        if (reason < 0  && reason != SNES_DIVERGED_MAX_IT) {
+          snes->reason = SNES_DIVERGED_INNER;
+          PetscFunctionReturn(0);
+        }
+        ierr = SNESGetFunction(snes->pc, &FPC, NULL, NULL);CHKERRQ(ierr);
+        ierr = VecCopy(FPC, F);CHKERRQ(ierr);
+        ierr = SNESGetFunctionNorm(snes->pc, &fnorm);CHKERRQ(ierr);
+      } else if (snes->pcside == PC_LEFT && snes->functype == SNES_FUNCTION_UNPRECONDITIONED) {
+        ierr = SNESApplyPC(snes,X,F,&fnorm,F);CHKERRQ(ierr);
       }
-      ierr = SNESGetFunction(snes->pc, &FPC, NULL, NULL);CHKERRQ(ierr);
-      ierr = VecCopy(FPC, F);CHKERRQ(ierr);
-      ierr = SNESGetFunctionNorm(snes->pc, &fnorm);CHKERRQ(ierr);
     }
 
     /* Solve J Y = F, where J is Jacobian matrix */

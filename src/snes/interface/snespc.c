@@ -64,7 +64,5 @@ PetscErrorCode SNESComputeFunctionDefaultPC(SNES snes,Vec X,Vec F) {
   PetscErrorCode ierr;
   PetscFunctionBegin;
   ierr = SNESApplyPC(snes,X,PETSC_NULL,PETSC_NULL,F);CHKERRQ(ierr);
-  ierr = VecAYPX(F,-1.0,X);CHKERRQ(ierr);CHKERRQ(ierr);
-
 PetscFunctionReturn(0);
 }
