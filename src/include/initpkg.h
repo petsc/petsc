@@ -26,6 +26,9 @@ static PetscErrorCode PetscInitializePackageAll(void)
   ierr = PetscViewerInitializePackage();CHKERRQ(ierr);
   ierr = PetscRandomInitializePackage();CHKERRQ(ierr);
   ierr = ISInitializePackage();CHKERRQ(ierr);
+#if PETSC_VERSION_LE(3,3,0)
+  ierr = PetscClassIdRegister("Section",&PETSC_SECTION_CLASSID);CHKERRQ(ierr);
+#endif
   ierr = VecInitializePackage();CHKERRQ(ierr);
   ierr = PFInitializePackage();CHKERRQ(ierr);
   ierr = MatInitializePackage();CHKERRQ(ierr);

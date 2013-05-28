@@ -29,6 +29,9 @@ cdef extern from "petsc.h":
     struct _p_VecScatter
     ctypedef _p_VecScatter* PetscScatter "VecScatter"
 
+    struct _p_PetscSection
+    ctypedef _p_PetscSection* PetscSection
+
     struct _p_Mat
     ctypedef _p_Mat* PetscMat "Mat"
 
@@ -110,6 +113,12 @@ ctypedef public api class Scatter(Object) [
     object PyPetscScatterObject,
     ]:
     cdef PetscScatter sct
+
+ctypedef public api class Section(Object) [
+    type   PyPetscSection_Type,
+    object PyPetscSectionObject,
+    ]:
+    cdef PetscSection sec
 
 ctypedef public api class Mat(Object) [
     type   PyPetscMat_Type,

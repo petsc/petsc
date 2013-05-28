@@ -118,6 +118,7 @@ include "petscrand.pxi"
 include "petscis.pxi"
 include "petscvec.pxi"
 include "petscsct.pxi"
+include "petscsec.pxi"
 include "petscmat.pxi"
 include "petscpc.pxi"
 include "petscksp.pxi"
@@ -147,6 +148,7 @@ include "Random.pyx"
 include "IS.pyx"
 include "Vec.pyx"
 include "Scatter.pyx"
+include "Section.pyx"
 include "Mat.pyx"
 include "PC.pyx"
 include "KSP.pyx"
@@ -333,6 +335,7 @@ cdef extern from *:
     PetscClassId PETSC_LGMAP_CLASSID     "IS_LTOGM_CLASSID"
     PetscClassId PETSC_VEC_CLASSID       "VEC_CLASSID"
     PetscClassId PETSC_SCATTER_CLASSID   "VEC_SCATTER_CLASSID"
+    PetscClassId PETSC_SECTION_CLASSID   "PETSC_SECTION_CLASSID"
     PetscClassId PETSC_MAT_CLASSID       "MAT_CLASSID"
     PetscClassId PETSC_NULLSPACE_CLASSID "MAT_NULLSPACE_CLASSID"
     PetscClassId PETSC_PC_CLASSID        "PC_CLASSID"
@@ -361,6 +364,7 @@ cdef int register() except -1:
     PyPetscType_Register(PETSC_LGMAP_CLASSID,     LGMap)
     PyPetscType_Register(PETSC_VEC_CLASSID,       Vec)
     PyPetscType_Register(PETSC_SCATTER_CLASSID,   Scatter)
+    PyPetscType_Register(PETSC_SECTION_CLASSID,   Section)
     PyPetscType_Register(PETSC_MAT_CLASSID,       Mat)
     PyPetscType_Register(PETSC_NULLSPACE_CLASSID, NullSpace)
     PyPetscType_Register(PETSC_PC_CLASSID,        PC)

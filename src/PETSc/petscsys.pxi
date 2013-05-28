@@ -8,6 +8,12 @@ cdef extern from * nogil:
     char* PETSC_VERSION_DATE
     char* PETSC_AUTHOR_INFO
 
+    bint PETSC_VERSION_LT(int,int,int)
+    bint PETSC_VERSION_LE(int,int,int)
+    bint PETSC_VERSION_EQ(int,int,int)
+    bint PETSC_VERSION_GE(int,int,int)
+    bint PETSC_VERSION_GT(int,int,int)
+
     int PetscInitialize(int*,char***,char[],char[])
     int PetscInitializeNoArguments()
     int PetscFinalize()
