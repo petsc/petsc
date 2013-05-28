@@ -326,6 +326,12 @@ PetscErrorCode  DMDestroy(DM *dm)
   if (!*dm) PetscFunctionReturn(0);
   PetscValidHeaderSpecific((*dm),DM_CLASSID,1);
 
+  /* I think it makes sense to dump all attached things when you are destroyed, which also eliminates circular references */
+  for (f = 0; f < (*dm)->numFields; ++f) {
+    ierr = PetscObjectCompose((*dm)->fields[f], "pmat", NULL);CHKERRQ(ierr);
+    ierr = PetscObjectCompose((*dm)->fields[f], "nullspace", NULL);CHKERRQ(ierr);
+    ierr = PetscObjectCompose((*dm)->fields[f], "nearnullspace", NULL);CHKERRQ(ierr);
+  }
   /* count all the circular references of DM and its contained Vecs */
   for (i=0; i<DM_MAX_WORK_VECTORS; i++) {
     if ((*dm)->localin[i])  cnt++;
