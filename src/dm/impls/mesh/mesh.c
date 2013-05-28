@@ -627,7 +627,7 @@ PetscErrorCode DMGetLocalToGlobalMapping_Mesh(DM dm)
     }
   }
   ierr = ISLocalToGlobalMappingCreate(PETSC_COMM_SELF, s->size(), ltog, PETSC_OWN_POINTER, &dm->ltogmap);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(dm, dm->ltogmap);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)dm, (PetscObject)dm->ltogmap);CHKERRQ(ierr);
   ierr = SectionRealDestroy(&section);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

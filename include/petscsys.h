@@ -820,7 +820,7 @@ M*/
   Concepts: memory allocation
 
 M*/
-#define PetscNewLog(o,A,b) (PetscNew(A,b) || ((o) ? PetscLogObjectMemory(o,sizeof(A)) : 0))
+#define PetscNewLog(o,A,b) (PetscNew(A,b) || ((o) ? PetscLogObjectMemory((PetscObject)o,sizeof(A)) : 0))
 
 /*MC
    PetscFree - Frees memory

@@ -97,7 +97,7 @@ static PetscErrorCode PCSetUp_Cholesky(PC pc)
     if (dir->col && (dir->row != dir->col)) {  /* only use row ordering for SBAIJ */
       ierr = ISDestroy(&dir->col);CHKERRQ(ierr);
     }
-    if (dir->row) {ierr = PetscLogObjectParent(pc,dir->row);CHKERRQ(ierr);}
+    if (dir->row) {ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)dir->row);CHKERRQ(ierr);}
     ierr = MatCholeskyFactor(pc->pmat,dir->row,&((PC_Factor*)dir)->info);CHKERRQ(ierr);
 
     ((PC_Factor*)dir)->fact = pc->pmat;
@@ -117,14 +117,14 @@ static PetscErrorCode PCSetUp_Cholesky(PC pc)
         ierr = PetscOptionsGetReal(((PetscObject)pc)->prefix,"-pc_factor_nonzeros_along_diagonal",&tol,NULL);CHKERRQ(ierr);
         ierr = MatReorderForNonzeroDiagonal(pc->pmat,tol,dir->row,dir->row);CHKERRQ(ierr);
       }
-      if (dir->row) {ierr = PetscLogObjectParent(pc,dir->row);CHKERRQ(ierr);}
+      if (dir->row) {ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)dir->row);CHKERRQ(ierr);}
       if (!((PC_Factor*)dir)->fact) {
         ierr = MatGetFactor(pc->pmat,((PC_Factor*)dir)->solvertype,MAT_FACTOR_CHOLESKY,&((PC_Factor*)dir)->fact);CHKERRQ(ierr);
       }
       ierr            = MatCholeskyFactorSymbolic(((PC_Factor*)dir)->fact,pc->pmat,dir->row,&((PC_Factor*)dir)->info);CHKERRQ(ierr);
       ierr            = MatGetInfo(((PC_Factor*)dir)->fact,MAT_LOCAL,&info);CHKERRQ(ierr);
       dir->actualfill = info.fill_ratio_needed;
-      ierr            = PetscLogObjectParent(pc,((PC_Factor*)dir)->fact);CHKERRQ(ierr);
+      ierr            = PetscLogObjectParent((PetscObject)pc,(PetscObject)((PC_Factor*)dir)->fact);CHKERRQ(ierr);
     } else if (pc->flag != SAME_NONZERO_PATTERN) {
       if (!dir->reuseordering) {
         ierr = ISDestroy(&dir->row);CHKERRQ(ierr);
@@ -138,14 +138,14 @@ static PetscErrorCode PCSetUp_Cholesky(PC pc)
           ierr = PetscOptionsGetReal(((PetscObject)pc)->prefix,"-pc_factor_nonzeros_along_diagonal",&tol,NULL);CHKERRQ(ierr);
           ierr = MatReorderForNonzeroDiagonal(pc->pmat,tol,dir->row,dir->row);CHKERRQ(ierr);
         }
-        if (dir->row) {ierr = PetscLogObjectParent(pc,dir->row);CHKERRQ(ierr);}
+        if (dir->row) {ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)dir->row);CHKERRQ(ierr);}
       }
       ierr            = MatDestroy(&((PC_Factor*)dir)->fact);CHKERRQ(ierr);
       ierr            = MatGetFactor(pc->pmat,((PC_Factor*)dir)->solvertype,MAT_FACTOR_CHOLESKY,&((PC_Factor*)dir)->fact);CHKERRQ(ierr);
       ierr            = MatCholeskyFactorSymbolic(((PC_Factor*)dir)->fact,pc->pmat,dir->row,&((PC_Factor*)dir)->info);CHKERRQ(ierr);
       ierr            = MatGetInfo(((PC_Factor*)dir)->fact,MAT_LOCAL,&info);CHKERRQ(ierr);
       dir->actualfill = info.fill_ratio_needed;
-      ierr            = PetscLogObjectParent(pc,((PC_Factor*)dir)->fact);CHKERRQ(ierr);
+      ierr            = PetscLogObjectParent((PetscObject)pc,(PetscObject)((PC_Factor*)dir)->fact);CHKERRQ(ierr);
     }
     ierr = MatCholeskyFactorNumeric(((PC_Factor*)dir)->fact,pc->pmat,&((PC_Factor*)dir)->info);CHKERRQ(ierr);
   }

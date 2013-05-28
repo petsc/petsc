@@ -195,7 +195,7 @@ PetscErrorCode  PCMGSetLevels(PC pc,PetscInt levels,MPI_Comm *comms)
   mg->nlevels = levels;
 
   ierr = PetscMalloc(levels*sizeof(PC_MG*),&mglevels);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(pc,levels*(sizeof(PC_MG*)));CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory((PetscObject)pc,levels*(sizeof(PC_MG*)));CHKERRQ(ierr);
 
   ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
 
@@ -248,7 +248,7 @@ PetscErrorCode  PCMGSetLevels(PC pc,PetscInt levels,MPI_Comm *comms)
       sprintf(tprefix,"mg_levels_%d_",(int)i);
       ierr = KSPAppendOptionsPrefix(mglevels[i]->smoothd,tprefix);CHKERRQ(ierr);
     }
-    ierr = PetscLogObjectParent(pc,mglevels[i]->smoothd);CHKERRQ(ierr);
+    ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)mglevels[i]->smoothd);CHKERRQ(ierr);
 
     mglevels[i]->smoothu = mglevels[i]->smoothd;
     mg->rtol             = 0.0;

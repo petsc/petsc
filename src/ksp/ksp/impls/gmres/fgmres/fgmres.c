@@ -44,7 +44,7 @@ PetscErrorCode    KSPSetUp_FGMRES(KSP ksp)
 
   ierr = PetscMalloc((VEC_OFFSET+2+max_k)*sizeof(void*),&fgmres->prevecs);CHKERRQ(ierr);
   ierr = PetscMalloc((VEC_OFFSET+2+max_k)*sizeof(void*),&fgmres->prevecs_user_work);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(ksp,(VEC_OFFSET+2+max_k)*(2*sizeof(void*)));CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory((PetscObject)ksp,(VEC_OFFSET+2+max_k)*(2*sizeof(void*)));CHKERRQ(ierr);
 
   ierr = KSPGetVecs(ksp,fgmres->vv_allocated,&fgmres->prevecs_user_work[0],0,NULL);CHKERRQ(ierr);
   ierr = PetscLogObjectParents(ksp,fgmres->vv_allocated,fgmres->prevecs_user_work[0]);CHKERRQ(ierr);
@@ -545,14 +545,14 @@ PetscErrorCode KSPBuildSolution_FGMRES(KSP ksp,Vec ptr,Vec *result)
   if (!ptr) {
     if (!fgmres->sol_temp) {
       ierr = VecDuplicate(ksp->vec_sol,&fgmres->sol_temp);CHKERRQ(ierr);
-      ierr = PetscLogObjectParent(ksp,fgmres->sol_temp);CHKERRQ(ierr);
+      ierr = PetscLogObjectParent((PetscObject)ksp,(PetscObject)fgmres->sol_temp);CHKERRQ(ierr);
     }
     ptr = fgmres->sol_temp;
   }
   if (!fgmres->nrs) {
     /* allocate the work area */
     ierr = PetscMalloc(fgmres->max_k*sizeof(PetscScalar),&fgmres->nrs);CHKERRQ(ierr);
-    ierr = PetscLogObjectMemory(ksp,fgmres->max_k*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscLogObjectMemory((PetscObject)ksp,fgmres->max_k*sizeof(PetscScalar));CHKERRQ(ierr);
   }
 
   ierr = KSPFGMRESBuildSoln(fgmres->nrs,ksp->vec_sol,ptr,ksp,fgmres->it);CHKERRQ(ierr);

@@ -519,14 +519,14 @@ PetscErrorCode KSPBuildSolution_DGMRES(KSP ksp,Vec ptr,Vec *result)
   if (!ptr) {
     if (!dgmres->sol_temp) {
       ierr = VecDuplicate(ksp->vec_sol,&dgmres->sol_temp);CHKERRQ(ierr);
-      ierr = PetscLogObjectParent(ksp,dgmres->sol_temp);CHKERRQ(ierr);
+      ierr = PetscLogObjectParent((PetscObject)ksp,(PetscObject)dgmres->sol_temp);CHKERRQ(ierr);
     }
     ptr = dgmres->sol_temp;
   }
   if (!dgmres->nrs) {
     /* allocate the work area */
     ierr = PetscMalloc(dgmres->max_k*sizeof(PetscScalar),&dgmres->nrs);CHKERRQ(ierr);
-    ierr = PetscLogObjectMemory(ksp,dgmres->max_k*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscLogObjectMemory((PetscObject)ksp,dgmres->max_k*sizeof(PetscScalar));CHKERRQ(ierr);
   }
 
   ierr = KSPDGMRESBuildSoln(dgmres->nrs,ksp->vec_sol,ptr,ksp,dgmres->it);CHKERRQ(ierr);

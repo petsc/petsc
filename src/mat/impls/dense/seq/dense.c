@@ -328,7 +328,7 @@ PetscErrorCode MatSolveAdd_SeqDense(Mat A,Vec xx,Vec zz,Vec yy)
   if (!A->rmap->n || !A->cmap->n) PetscFunctionReturn(0);
   if (yy == zz) {
     ierr = VecDuplicate(yy,&tmp);CHKERRQ(ierr);
-    ierr = PetscLogObjectParent(A,tmp);CHKERRQ(ierr);
+    ierr = PetscLogObjectParent((PetscObject)A,(PetscObject)tmp);CHKERRQ(ierr);
     ierr = VecCopy(yy,tmp);CHKERRQ(ierr);
   }
   ierr = PetscMemcpy(y,x,A->rmap->n*sizeof(PetscScalar));CHKERRQ(ierr);
@@ -377,7 +377,7 @@ PetscErrorCode MatSolveTransposeAdd_SeqDense(Mat A,Vec xx,Vec zz,Vec yy)
   ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
   if (yy == zz) {
     ierr = VecDuplicate(yy,&tmp);CHKERRQ(ierr);
-    ierr = PetscLogObjectParent(A,tmp);CHKERRQ(ierr);
+    ierr = PetscLogObjectParent((PetscObject)A,(PetscObject)tmp);CHKERRQ(ierr);
     ierr = VecCopy(yy,tmp);CHKERRQ(ierr);
   }
   ierr = PetscMemcpy(y,x,A->rmap->n*sizeof(PetscScalar));CHKERRQ(ierr);
@@ -429,7 +429,7 @@ PetscErrorCode MatLUFactor_SeqDense(Mat A,IS row,IS col,const MatFactorInfo *min
   ierr = PetscBLASIntCast(A->rmap->n,&m);CHKERRQ(ierr);
   if (!mat->pivots) {
     ierr = PetscMalloc((A->rmap->n+1)*sizeof(PetscBLASInt),&mat->pivots);CHKERRQ(ierr);
-    ierr = PetscLogObjectMemory(A,A->rmap->n*sizeof(PetscBLASInt));CHKERRQ(ierr);
+    ierr = PetscLogObjectMemory((PetscObject)A,A->rmap->n*sizeof(PetscBLASInt));CHKERRQ(ierr);
   }
   if (!A->rmap->n || !A->cmap->n) PetscFunctionReturn(0);
   ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
@@ -2196,7 +2196,7 @@ PetscErrorCode  MatSeqDenseSetPreallocation_SeqDense(Mat B,PetscScalar *data)
     if (!b->user_alloc) { ierr = PetscFree(b->v);CHKERRQ(ierr); }
     ierr = PetscMalloc(b->lda*b->Nmax*sizeof(PetscScalar),&b->v);CHKERRQ(ierr);
     ierr = PetscMemzero(b->v,b->lda*b->Nmax*sizeof(PetscScalar));CHKERRQ(ierr);
-    ierr = PetscLogObjectMemory(B,b->lda*b->Nmax*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscLogObjectMemory((PetscObject)B,b->lda*b->Nmax*sizeof(PetscScalar));CHKERRQ(ierr);
 
     b->user_alloc = PETSC_FALSE;
   } else { /* user-allocated storage */

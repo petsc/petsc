@@ -705,7 +705,7 @@ static PetscErrorCode MatView_MPIDense_ASCIIorDraworSocket(Mat mat,PetscViewer v
     /* Since this is a temporary matrix, MATMPIDENSE instead of ((PetscObject)A)->type_name here is probably acceptable. */
     ierr = MatSetType(A,MATMPIDENSE);CHKERRQ(ierr);
     ierr = MatMPIDenseSetPreallocation(A,NULL);CHKERRQ(ierr);
-    ierr = PetscLogObjectParent(mat,A);CHKERRQ(ierr);
+    ierr = PetscLogObjectParent((PetscObject)mat,(PetscObject)A);CHKERRQ(ierr);
 
     /* Copy the matrix ... This isn't the most efficient means,
        but it's quick for now */
@@ -1251,7 +1251,7 @@ PetscErrorCode  MatMPIDenseSetPreallocation_MPIDense(Mat mat,PetscScalar *data)
   ierr = MatSetSizes(a->A,mat->rmap->n,mat->cmap->N,mat->rmap->n,mat->cmap->N);CHKERRQ(ierr);
   ierr = MatSetType(a->A,MATSEQDENSE);CHKERRQ(ierr);
   ierr = MatSeqDenseSetPreallocation(a->A,data);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(mat,a->A);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)mat,(PetscObject)a->A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1429,7 +1429,7 @@ static PetscErrorCode MatDuplicate_MPIDense(Mat A,MatDuplicateOption cpvalues,Ma
 
   ierr = MatSetUpMultiply_MPIDense(mat);CHKERRQ(ierr);
   ierr = MatDuplicate(oldmat->A,cpvalues,&a->A);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(mat,a->A);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)mat,(PetscObject)a->A);CHKERRQ(ierr);
 
   *newmat = mat;
   PetscFunctionReturn(0);

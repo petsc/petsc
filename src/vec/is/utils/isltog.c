@@ -234,7 +234,7 @@ PetscErrorCode  ISLocalToGlobalMappingCreate(MPI_Comm cm,PetscInt n,const PetscI
   if (mode == PETSC_COPY_VALUES) {
     ierr = PetscMalloc(n*sizeof(PetscInt),&in);CHKERRQ(ierr);
     ierr = PetscMemcpy(in,indices,n*sizeof(PetscInt));CHKERRQ(ierr);
-    ierr = PetscLogObjectMemory(*mapping,n*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscLogObjectMemory((PetscObject)*mapping,n*sizeof(PetscInt));CHKERRQ(ierr);
     (*mapping)->indices = in;
   } else if (mode == PETSC_OWN_POINTER) (*mapping)->indices = (PetscInt*)indices;
   else SETERRQ(cm,PETSC_ERR_SUP,"Cannot currently use PETSC_USE_POINTER");
@@ -480,7 +480,7 @@ static PetscErrorCode ISGlobalToLocalMappingSetUp_Private(ISLocalToGlobalMapping
     globals[idx[i] - start] = i;
   }
 
-  ierr = PetscLogObjectMemory(mapping,(end-start+1)*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory((PetscObject)mapping,(end-start+1)*sizeof(PetscInt));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

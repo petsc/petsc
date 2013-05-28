@@ -304,7 +304,7 @@ PetscErrorCode  AOCreateMapping(MPI_Comm comm,PetscInt napp,const PetscInt myapp
 
   /* generate a list of application and PETSc node numbers */
   ierr = PetscMalloc4(N,PetscInt, &aomap->app,N,PetscInt,&aomap->appPerm,N,PetscInt,&aomap->petsc,N,PetscInt,&aomap->petscPerm);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(ao, 4*N * sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory((PetscObject)ao, 4*N * sizeof(PetscInt));CHKERRQ(ierr);
   for (i = 0; i < N; i++) {
     appPerm[i]   = i;
     petscPerm[i] = i;

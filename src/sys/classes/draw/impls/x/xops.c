@@ -822,7 +822,7 @@ PETSC_EXTERN PetscErrorCode PetscDrawCreate_X(PetscDraw draw)
 
   /* actually create and open the window */
   ierr = PetscNew(PetscDraw_X,&Xwin);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(draw,sizeof(PetscDraw_X));CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory((PetscObject)draw,sizeof(PetscDraw_X));CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)draw),&rank);CHKERRQ(ierr);
 
   if (!rank) {

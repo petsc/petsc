@@ -1862,7 +1862,7 @@ PetscErrorCode  TSGetSNES(TS ts,SNES *snes)
   if (!ts->snes) {
     ierr = SNESCreate(PetscObjectComm((PetscObject)ts),&ts->snes);CHKERRQ(ierr);
     ierr = SNESSetFunction(ts->snes,NULL,SNESTSFormFunction,ts);CHKERRQ(ierr);
-    ierr = PetscLogObjectParent(ts,ts->snes);CHKERRQ(ierr);
+    ierr = PetscLogObjectParent((PetscObject)ts,(PetscObject)ts->snes);CHKERRQ(ierr);
     ierr = PetscObjectIncrementTabLevel((PetscObject)ts->snes,(PetscObject)ts,1);CHKERRQ(ierr);
     if (ts->dm) {ierr = SNESSetDM(ts->snes,ts->dm);CHKERRQ(ierr);}
     if (ts->problem_type == TS_LINEAR) {
@@ -2698,7 +2698,7 @@ PetscErrorCode  TSMonitorLGCtxCreate(MPI_Comm comm,const char host[],const char 
   if (flg) {
     ierr = PetscDrawLGIndicateDataPoints((*ctx)->lg);CHKERRQ(ierr);
   }
-  ierr = PetscLogObjectParent((*ctx)->lg,win);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)(*ctx)->lg,(PetscObject)win);CHKERRQ(ierr);
   (*ctx)->howoften = howoften;
   PetscFunctionReturn(0);
 }
@@ -4025,7 +4025,7 @@ PetscErrorCode TSGetAdapt(TS ts,TSAdapt *adapt)
   PetscValidPointer(adapt,2);
   if (!ts->adapt) {
     ierr = TSAdaptCreate(PetscObjectComm((PetscObject)ts),&ts->adapt);CHKERRQ(ierr);
-    ierr = PetscLogObjectParent(ts,ts->adapt);CHKERRQ(ierr);
+    ierr = PetscLogObjectParent((PetscObject)ts,(PetscObject)ts->adapt);CHKERRQ(ierr);
     ierr = PetscObjectIncrementTabLevel((PetscObject)ts->adapt,(PetscObject)ts,1);CHKERRQ(ierr);
   }
   *adapt = ts->adapt;

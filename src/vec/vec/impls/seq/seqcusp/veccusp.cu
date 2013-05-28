@@ -34,7 +34,7 @@ PetscErrorCode VecCUSPAllocateCheckHost(Vec v)
     // ierr = cudaMallocHost((void **) &array, n*sizeof(PetscScalar));CHKERRCUSP(ierr);
     //#else
     ierr               = PetscMalloc(n*sizeof(PetscScalar),&array);CHKERRQ(ierr);
-    ierr               = PetscLogObjectMemory(v,n*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr               = PetscLogObjectMemory((PetscObject)v,n*sizeof(PetscScalar));CHKERRQ(ierr);
     s->array           = array;
     s->array_allocated = array;
   }

@@ -268,7 +268,7 @@ PetscErrorCode  MatNullSpaceCreate(MPI_Comm comm,PetscBool has_cnst,PetscInt n,c
   if (n) {
     ierr = PetscMalloc(n*sizeof(Vec),&sp->vecs);CHKERRQ(ierr);
     ierr = PetscMalloc(n*sizeof(PetscScalar),&sp->alpha);CHKERRQ(ierr);
-    ierr = PetscLogObjectMemory(sp,n*(sizeof(Vec)+sizeof(PetscScalar)));CHKERRQ(ierr);
+    ierr = PetscLogObjectMemory((PetscObject)sp,n*(sizeof(Vec)+sizeof(PetscScalar)));CHKERRQ(ierr);
     for (i=0; i<n; i++) {
       ierr        = PetscObjectReference((PetscObject)vecs[i]);CHKERRQ(ierr);
       sp->vecs[i] = vecs[i];
@@ -347,7 +347,7 @@ PetscErrorCode  MatNullSpaceRemove(MatNullSpace sp,Vec vec,Vec *out)
     PetscValidPointer(out,3);
     if (!sp->vec) {
       ierr = VecDuplicate(vec,&sp->vec);CHKERRQ(ierr);
-      ierr = PetscLogObjectParent(sp,sp->vec);CHKERRQ(ierr);
+      ierr = PetscLogObjectParent((PetscObject)sp,(PetscObject)sp->vec);CHKERRQ(ierr);
     }
     ierr = VecCopy(vec,sp->vec);CHKERRQ(ierr);
     vec  = *out = sp->vec;

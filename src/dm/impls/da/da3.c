@@ -444,7 +444,7 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
 
   ierr = ISCreateBlock(comm,dof,count,idx,PETSC_OWN_POINTER,&from);CHKERRQ(ierr);
   ierr = VecScatterCreate(local,from,global,to,&ltog);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(da,ltog);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)da,(PetscObject)ltog);CHKERRQ(ierr);
   ierr = ISDestroy(&from);CHKERRQ(ierr);
   ierr = ISDestroy(&to);CHKERRQ(ierr);
 
@@ -767,7 +767,7 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
   }
 
   ierr = PetscMalloc((Xe-Xs)*(Ye-Ys)*(Ze-Zs)*sizeof(PetscInt),&idx);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(da,(Xe-Xs)*(Ye-Ys)*(Ze-Zs)*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory((PetscObject)da,(Xe-Xs)*(Ye-Ys)*(Ze-Zs)*sizeof(PetscInt));CHKERRQ(ierr);
 
   nn = 0;
   /* Bottom Level */
@@ -1029,7 +1029,7 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
 
   ierr = ISCreateBlock(comm,dof,nn,idx,PETSC_COPY_VALUES,&from);CHKERRQ(ierr);
   ierr = VecScatterCreate(global,from,local,to,&gtol);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(da,gtol);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)da,(PetscObject)gtol);CHKERRQ(ierr);
   ierr = ISDestroy(&to);CHKERRQ(ierr);
   ierr = ISDestroy(&from);CHKERRQ(ierr);
 
@@ -1358,15 +1358,15 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
   */
   ierr = ISCreateBlock(comm,dof,nn,idx,PETSC_OWN_POINTER,&ltogis);CHKERRQ(ierr);
   ierr = PetscMalloc(nn*dof*sizeof(PetscInt),&idx_cpy);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(da,nn*dof*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory((PetscObject)da,nn*dof*sizeof(PetscInt));CHKERRQ(ierr);
   ierr = ISGetIndices(ltogis, &idx_full);CHKERRQ(ierr);
   ierr = PetscMemcpy(idx_cpy,idx_full,nn*dof*sizeof(PetscInt));CHKERRQ(ierr);
   ierr = ISRestoreIndices(ltogis, &idx_full);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingCreateIS(ltogis,&da->ltogmap);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(da,da->ltogmap);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)da,(PetscObject)da->ltogmap);CHKERRQ(ierr);
   ierr = ISDestroy(&ltogis);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingBlock(da->ltogmap,dd->w,&da->ltogmapb);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(da,da->ltogmap);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)da,(PetscObject)da->ltogmap);CHKERRQ(ierr);
 
   ierr  = PetscFree2(bases,ldims);CHKERRQ(ierr);
   dd->m = m;  dd->n  = n;  dd->p  = p;

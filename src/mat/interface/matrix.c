@@ -3422,7 +3422,7 @@ PetscErrorCode  MatSolveAdd(Mat mat,Vec b,Vec y,Vec x)
       ierr = VecAXPY(x,one,y);CHKERRQ(ierr);
     } else {
       ierr = VecDuplicate(x,&tmp);CHKERRQ(ierr);
-      ierr = PetscLogObjectParent(mat,tmp);CHKERRQ(ierr);
+      ierr = PetscLogObjectParent((PetscObject)mat,(PetscObject)tmp);CHKERRQ(ierr);
       ierr = VecCopy(x,tmp);CHKERRQ(ierr);
       ierr = MatSolve(mat,b,x);CHKERRQ(ierr);
       ierr = VecAXPY(x,one,tmp);CHKERRQ(ierr);
@@ -3549,7 +3549,7 @@ PetscErrorCode  MatSolveTransposeAdd(Mat mat,Vec b,Vec y,Vec x)
       ierr = VecAXPY(x,one,y);CHKERRQ(ierr);
     } else {
       ierr = VecDuplicate(x,&tmp);CHKERRQ(ierr);
-      ierr = PetscLogObjectParent(mat,tmp);CHKERRQ(ierr);
+      ierr = PetscLogObjectParent((PetscObject)mat,(PetscObject)tmp);CHKERRQ(ierr);
       ierr = VecCopy(x,tmp);CHKERRQ(ierr);
       ierr = MatSolveTranspose(mat,b,x);CHKERRQ(ierr);
       ierr = VecAXPY(x,one,tmp);CHKERRQ(ierr);

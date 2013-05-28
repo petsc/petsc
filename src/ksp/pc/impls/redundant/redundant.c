@@ -74,14 +74,14 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
       ierr = PetscSubcommCreate(comm,&red->psubcomm);CHKERRQ(ierr);
       ierr = PetscSubcommSetNumber(red->psubcomm,red->nsubcomm);CHKERRQ(ierr);
       ierr = PetscSubcommSetType(red->psubcomm,PETSC_SUBCOMM_INTERLACED);CHKERRQ(ierr);
-      ierr = PetscLogObjectMemory(pc,sizeof(PetscSubcomm));CHKERRQ(ierr);
+      ierr = PetscLogObjectMemory((PetscObject)pc,sizeof(PetscSubcomm));CHKERRQ(ierr);
 
       /* create a new PC that processors in each subcomm have copy of */
       subcomm = red->psubcomm->comm;
 
       ierr = KSPCreate(subcomm,&red->ksp);CHKERRQ(ierr);
       ierr = PetscObjectIncrementTabLevel((PetscObject)red->ksp,(PetscObject)pc,1);CHKERRQ(ierr);
-      ierr = PetscLogObjectParent(pc,red->ksp);CHKERRQ(ierr);
+      ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)red->ksp);CHKERRQ(ierr);
       ierr = KSPSetType(red->ksp,KSPPREONLY);CHKERRQ(ierr);
       ierr = KSPGetPC(red->ksp,&red->pc);CHKERRQ(ierr);
       ierr = PCSetType(red->pc,PCLU);CHKERRQ(ierr);
@@ -355,14 +355,14 @@ static PetscErrorCode  PCRedundantGetKSP_Redundant(PC pc,KSP *innerksp)
     ierr = PetscSubcommCreate(comm,&red->psubcomm);CHKERRQ(ierr);
     ierr = PetscSubcommSetNumber(red->psubcomm,red->nsubcomm);CHKERRQ(ierr);
     ierr = PetscSubcommSetType(red->psubcomm,PETSC_SUBCOMM_INTERLACED);CHKERRQ(ierr);
-    ierr = PetscLogObjectMemory(pc,sizeof(PetscSubcomm));CHKERRQ(ierr);
+    ierr = PetscLogObjectMemory((PetscObject)pc,sizeof(PetscSubcomm));CHKERRQ(ierr);
 
     /* create a new PC that processors in each subcomm have copy of */
     subcomm = red->psubcomm->comm;
 
     ierr = KSPCreate(subcomm,&red->ksp);CHKERRQ(ierr);
     ierr = PetscObjectIncrementTabLevel((PetscObject)red->ksp,(PetscObject)pc,1);CHKERRQ(ierr);
-    ierr = PetscLogObjectParent(pc,red->ksp);CHKERRQ(ierr);
+    ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)red->ksp);CHKERRQ(ierr);
     ierr = KSPSetType(red->ksp,KSPPREONLY);CHKERRQ(ierr);
     ierr = KSPGetPC(red->ksp,&red->pc);CHKERRQ(ierr);
     ierr = PCSetType(red->pc,PCLU);CHKERRQ(ierr);
