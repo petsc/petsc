@@ -44,6 +44,7 @@ PetscErrorCode SNESDestroy_NRichardson(SNES snes)
 PetscErrorCode SNESSetUp_NRichardson(SNES snes)
 {
   PetscFunctionBegin;
+  if (snes->pcside == PC_RIGHT) {SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"NRichardson only supports left preconditioning");}
   PetscFunctionReturn(0);
 }
 
@@ -166,10 +167,12 @@ PetscErrorCode SNESSolve_NRichardson(SNES snes)
     if (snes->ops->update) {
       ierr = (*snes->ops->update)(snes, snes->iter);CHKERRQ(ierr);
     }
-    if (snes->pc && snes->pcside == PC_RIGHT) {
+    if (snes->pc) {
       ierr = VecCopy(X,Y);CHKERRQ(ierr);
-      ierr = SNESSetInitialFunction(snes->pc, F);CHKERRQ(ierr);
-      ierr = SNESSetInitialFunctionNorm(snes->pc, fnorm);CHKERRQ(ierr);
+      if (snes->functype == SNES_FUNCTION_UNPRECONDITIONED) {
+        ierr = SNESSetInitialFunction(snes->pc, F);CHKERRQ(ierr);
+        ierr = SNESSetInitialFunctionNorm(snes->pc, fnorm);CHKERRQ(ierr);
+      }
       ierr = PetscLogEventBegin(SNES_NPCSolve,snes->pc,Y,snes->vec_rhs,0);CHKERRQ(ierr);
       ierr = SNESSolve(snes->pc, snes->vec_rhs, Y);CHKERRQ(ierr);
       ierr = PetscLogEventEnd(SNES_NPCSolve,snes->pc,Y,snes->vec_rhs,0);CHKERRQ(ierr);
@@ -256,6 +259,9 @@ PETSC_EXTERN PetscErrorCode SNESCreate_NRichardson(SNES snes)
 
   snes->usesksp = PETSC_FALSE;
   snes->usespc  = PETSC_TRUE;
+
+  snes->functype = SNES_FUNCTION_UNPRECONDITIONED;
+  snes->pcside = PC_LEFT;
 
   ierr       = PetscNewLog(snes, SNES_NRichardson, &neP);CHKERRQ(ierr);
   snes->data = (void*) neP;
