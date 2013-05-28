@@ -146,9 +146,7 @@ PetscErrorCode DMPlexVTKWriteCells_ASCII(DM dm, FILE *fp, PetscInt *totalCells)
       }
       corners[numCells++] = nC;
       ierr = PetscFPrintf(comm, fp, "%d ", nC);CHKERRQ(ierr);
-      tmp        = closure[0];
-      closure[0] = closure[1];
-      closure[1] = tmp;
+      ierr = DMPlexInvertCell(dim, nC, closure);CHKERRQ(ierr);
       for (v = 0; v < nC; ++v) {
         ierr = PetscFPrintf(comm, fp, " %d", closure[v]);CHKERRQ(ierr);
       }

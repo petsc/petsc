@@ -1376,10 +1376,18 @@ PetscErrorCode DMPlexGetFaceOrientation(DM dm, PetscInt cell, PetscInt numCorner
   ierr = DMPlexGetDimension(dm, &cellDim);CHKERRQ(ierr);
   if (debug) {PetscPrintf(comm, "cellDim: %d numCorners: %d\n", cellDim, numCorners);CHKERRQ(ierr);}
 
-  if (cellDim == numCorners-1) {
-    /* Simplices */
+  if (cellDim == 1 && numCorners == 2) {
+    /* Triangle */
     faceSize  = numCorners-1;
     posOrient = !(oppositeVertex%2) ? PETSC_TRUE : PETSC_FALSE;
+  } else if (cellDim == 2 && numCorners == 3) {
+    /* Triangle */
+    faceSize  = numCorners-1;
+    posOrient = !(oppositeVertex%2) ? PETSC_TRUE : PETSC_FALSE;
+  } else if (cellDim == 3 && numCorners == 4) {
+    /* Tetrahedron */
+    faceSize  = numCorners-1;
+    posOrient = (oppositeVertex%2) ? PETSC_TRUE : PETSC_FALSE;
   } else if (cellDim == 1 && numCorners == 3) {
     /* Quadratic line */
     faceSize  = 1;
@@ -1488,9 +1496,9 @@ PetscErrorCode DMPlexGetFaceOrientation(DM dm, PetscInt cell, PetscInt numCorner
           7---6
          /|  /|
         4---5 |
-        | 3-|-2
+        | 1-|-2
         |/  |/
-        0---1
+        0---3
 
         Faces are determined by the first 4 vertices (corners of faces) */
     const PetscInt faceSizeHex = 4;
@@ -1499,18 +1507,18 @@ PetscErrorCode DMPlexGetFaceOrientation(DM dm, PetscInt cell, PetscInt numCorner
     PetscInt       faceVerticesHexSorted[24] = {
       0, 1, 2, 3,  /* bottom */
       4, 5, 6, 7,  /* top */
-      0, 1, 4, 5,  /* front */
-      1, 2, 5, 6,  /* right */
-      2, 3, 6, 7,  /* back */
-      0, 3, 4, 7,  /* left */
+      0, 3, 4, 5,  /* front */
+      2, 3, 5, 6,  /* right */
+      1, 2, 6, 7,  /* back */
+      0, 1, 4, 7,  /* left */
     };
     PetscInt       faceVerticesHex[24] = {
-      3, 2, 1, 0,  /* bottom */
+      1, 2, 3, 0,  /* bottom */
       4, 5, 6, 7,  /* top */
-      0, 1, 5, 4,  /* front */
-      1, 2, 6, 5,  /* right */
-      2, 3, 7, 6,  /* back */
-      3, 0, 4, 7,  /* left */
+      0, 3, 5, 4,  /* front */
+      3, 2, 6, 5,  /* right */
+      2, 1, 7, 6,  /* back */
+      1, 0, 4, 7,  /* left */
     };
 
     faceSize = faceSizeHex;

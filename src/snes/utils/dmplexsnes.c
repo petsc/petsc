@@ -223,8 +223,8 @@ PetscErrorCode DMInterpolationRestoreVector(DMInterpolationInfo ctx, Vec *v)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMInterpolate_Simplex_Private"
-PETSC_STATIC_INLINE PetscErrorCode DMInterpolate_Simplex_Private(DMInterpolationInfo ctx, DM dm, Vec xLocal, Vec v)
+#define __FUNCT__ "DMInterpolate_Triangle_Private"
+PETSC_STATIC_INLINE PetscErrorCode DMInterpolate_Triangle_Private(DMInterpolationInfo ctx, DM dm, Vec xLocal, Vec v)
 {
   PetscReal      *v0, *J, *invJ, detJ;
   PetscScalar    *a, *coords;
@@ -250,6 +250,44 @@ PETSC_STATIC_INLINE PetscErrorCode DMInterpolate_Simplex_Private(DMInterpolation
       xi[d] = 0.0;
       for (f = 0; f < ctx->dim; ++f) xi[d] += invJ[d*ctx->dim+f]*0.5*PetscRealPart(coords[p*ctx->dim+f] - v0[f]);
       for (comp = 0; comp < ctx->dof; ++comp) a[p*ctx->dof+comp] += PetscRealPart(x[(d+1)*ctx->dof+comp] - x[0*ctx->dof+comp])*xi[d];
+    }
+    ierr = DMPlexVecRestoreClosure(dm, NULL, xLocal, c, NULL, &x);CHKERRQ(ierr);
+  }
+  ierr = VecRestoreArray(v, &a);CHKERRQ(ierr);
+  ierr = VecRestoreArray(ctx->coords, &coords);CHKERRQ(ierr);
+  ierr = PetscFree3(v0, J, invJ);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMInterpolate_Tetrahedron_Private"
+PETSC_STATIC_INLINE PetscErrorCode DMInterpolate_Tetrahedron_Private(DMInterpolationInfo ctx, DM dm, Vec xLocal, Vec v)
+{
+  PetscReal      *v0, *J, *invJ, detJ;
+  PetscScalar    *a, *coords;
+  PetscInt       p;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscMalloc3(ctx->dim,PetscReal,&v0,ctx->dim*ctx->dim,PetscReal,&J,ctx->dim*ctx->dim,PetscReal,&invJ);CHKERRQ(ierr);
+  ierr = VecGetArray(ctx->coords, &coords);CHKERRQ(ierr);
+  ierr = VecGetArray(v, &a);CHKERRQ(ierr);
+  for (p = 0; p < ctx->n; ++p) {
+    PetscInt       c = ctx->cells[p];
+    const PetscInt order[3] = {2, 1, 3};
+    PetscScalar   *x;
+    PetscReal      xi[4];
+    PetscInt       d, f, comp;
+
+    ierr = DMPlexComputeCellGeometry(dm, c, v0, J, invJ, &detJ);CHKERRQ(ierr);
+    if (detJ <= 0.0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJ, c);
+    ierr = DMPlexVecGetClosure(dm, NULL, xLocal, c, NULL, &x);CHKERRQ(ierr);
+    for (comp = 0; comp < ctx->dof; ++comp) a[p*ctx->dof+comp] = x[0*ctx->dof+comp];
+
+    for (d = 0; d < ctx->dim; ++d) {
+      xi[d] = 0.0;
+      for (f = 0; f < ctx->dim; ++f) xi[d] += invJ[d*ctx->dim+f]*0.5*PetscRealPart(coords[p*ctx->dim+f] - v0[f]);
+      for (comp = 0; comp < ctx->dof; ++comp) a[p*ctx->dof+comp] += PetscRealPart(x[order[d]*ctx->dof+comp] - x[0*ctx->dof+comp])*xi[d];
     }
     ierr = DMPlexVecRestoreClosure(dm, NULL, xLocal, c, NULL, &x);CHKERRQ(ierr);
   }
@@ -417,15 +455,15 @@ PETSC_STATIC_INLINE PetscErrorCode HexMap_Private(SNES snes, Vec Xref, Vec Xreal
   const PetscScalar x0        = vertices[0];
   const PetscScalar y0        = vertices[1];
   const PetscScalar z0        = vertices[2];
-  const PetscScalar x1        = vertices[3];
-  const PetscScalar y1        = vertices[4];
-  const PetscScalar z1        = vertices[5];
+  const PetscScalar x1        = vertices[9];
+  const PetscScalar y1        = vertices[10];
+  const PetscScalar z1        = vertices[11];
   const PetscScalar x2        = vertices[6];
   const PetscScalar y2        = vertices[7];
   const PetscScalar z2        = vertices[8];
-  const PetscScalar x3        = vertices[9];
-  const PetscScalar y3        = vertices[10];
-  const PetscScalar z3        = vertices[11];
+  const PetscScalar x3        = vertices[3];
+  const PetscScalar y3        = vertices[4];
+  const PetscScalar z3        = vertices[5];
   const PetscScalar x4        = vertices[12];
   const PetscScalar y4        = vertices[13];
   const PetscScalar z4        = vertices[14];
@@ -488,15 +526,15 @@ PETSC_STATIC_INLINE PetscErrorCode HexJacobian_Private(SNES snes, Vec Xref, Mat 
   const PetscScalar x0        = vertices[0];
   const PetscScalar y0        = vertices[1];
   const PetscScalar z0        = vertices[2];
-  const PetscScalar x1        = vertices[3];
-  const PetscScalar y1        = vertices[4];
-  const PetscScalar z1        = vertices[5];
+  const PetscScalar x1        = vertices[9];
+  const PetscScalar y1        = vertices[10];
+  const PetscScalar z1        = vertices[11];
   const PetscScalar x2        = vertices[6];
   const PetscScalar y2        = vertices[7];
   const PetscScalar z2        = vertices[8];
-  const PetscScalar x3        = vertices[9];
-  const PetscScalar y3        = vertices[10];
-  const PetscScalar z3        = vertices[11];
+  const PetscScalar x3        = vertices[3];
+  const PetscScalar y3        = vertices[4];
+  const PetscScalar z3        = vertices[5];
   const PetscScalar x4        = vertices[12];
   const PetscScalar y4        = vertices[13];
   const PetscScalar z4        = vertices[14];
@@ -615,9 +653,9 @@ PETSC_STATIC_INLINE PetscErrorCode DMInterpolate_Hex_Private(DMInterpolationInfo
     for (comp = 0; comp < ctx->dof; ++comp) {
       a[p*ctx->dof+comp] =
         x[0*ctx->dof+comp]*(1-xir[0])*(1-xir[1])*(1-xir[2]) +
-        x[1*ctx->dof+comp]*    xir[0]*(1-xir[1])*(1-xir[2]) +
+        x[3*ctx->dof+comp]*    xir[0]*(1-xir[1])*(1-xir[2]) +
         x[2*ctx->dof+comp]*    xir[0]*    xir[1]*(1-xir[2]) +
-        x[3*ctx->dof+comp]*(1-xir[0])*    xir[1]*(1-xir[2]) +
+        x[1*ctx->dof+comp]*(1-xir[0])*    xir[1]*(1-xir[2]) +
         x[4*ctx->dof+comp]*(1-xir[0])*(1-xir[1])*   xir[2] +
         x[5*ctx->dof+comp]*    xir[0]*(1-xir[1])*   xir[2] +
         x[6*ctx->dof+comp]*    xir[0]*    xir[1]*   xir[2] +
@@ -665,13 +703,13 @@ PetscErrorCode DMInterpolationEvaluate(DMInterpolationInfo ctx, DM dm, Vec x, Ve
     ierr = DMPlexGetConeSize(dm, ctx->cells[0], &coneSize);CHKERRQ(ierr);
     if (dim == 2) {
       if (coneSize == 3) {
-        ierr = DMInterpolate_Simplex_Private(ctx, dm, x, v);CHKERRQ(ierr);
+        ierr = DMInterpolate_Triangle_Private(ctx, dm, x, v);CHKERRQ(ierr);
       } else if (coneSize == 4) {
         ierr = DMInterpolate_Quad_Private(ctx, dm, x, v);CHKERRQ(ierr);
       } else SETERRQ1(ctx->comm, PETSC_ERR_ARG_OUTOFRANGE, "Unsupported dimension %d for point interpolation", dim);
     } else if (dim == 3) {
       if (coneSize == 4) {
-        ierr = DMInterpolate_Simplex_Private(ctx, dm, x, v);CHKERRQ(ierr);
+        ierr = DMInterpolate_Tetrahedron_Private(ctx, dm, x, v);CHKERRQ(ierr);
       } else {
         ierr = DMInterpolate_Hex_Private(ctx, dm, x, v);CHKERRQ(ierr);
       }

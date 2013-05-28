@@ -3115,20 +3115,54 @@ PetscErrorCode DMPlexDistribute(DM dm, const char partitioner[], PetscInt overla
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMPlexInvertCells_Internal"
-/* This is to fix the tetrahedron orientation from TetGen */
-PETSC_UNUSED static PetscErrorCode DMPlexInvertCells_Internal(PetscInt numCells, PetscInt numCorners, int cells[])
+#define __FUNCT__ "DMPlexInvertCell"
+/*@C
+  DMPlexInvertCell - This flips tetrahedron and hexahedron orientation since Plex stores them internally with outward normals. Other cells are left untouched.
+
+  Input Parameters:
++ numCorners - The number of vertices in a cell
+- cone - The incoming cone
+
+  Output Parameter:
+. cone - The inverted cone (in-place)
+
+  Level: developer
+
+.seealso: DMPlexGenerate()
+@*/
+PetscErrorCode DMPlexInvertCell(PetscInt dim, PetscInt numCorners, int cone[])
 {
-  PetscInt c;
+  int tmpc;
 
   PetscFunctionBegin;
-  if (numCorners != 4) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cannot invert cells with %d corners", numCorners);
-  for (c = 0; c < numCells; ++c) {
-    int *cone = &cells[c*4], tmpc;
-
+  if (dim != 3) PetscFunctionReturn(0);
+  switch (numCorners) {
+  case 4:
     tmpc    = cone[0];
     cone[0] = cone[1];
     cone[1] = tmpc;
+    break;
+  case 8:
+    tmpc    = cone[1];
+    cone[1] = cone[3];
+    cone[3] = tmpc;
+    break;
+  default: break;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexInvertCells_Internal"
+/* This is to fix the tetrahedron orientation from TetGen */
+PETSC_UNUSED static PetscErrorCode DMPlexInvertCells_Internal(PetscInt dim, PetscInt numCells, PetscInt numCorners, int cells[])
+{
+  PetscInt       bound = numCells*numCorners, coff;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  for (coff = 0; coff < bound; coff += numCorners) {
+    ierr = DMPlexInvertCell(dim, numCorners, &cells[coff]);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -3543,7 +3577,7 @@ PetscErrorCode DMPlexGenerate_Tetgen(DM boundary, PetscBool interpolate, DM *dm)
     const double   *meshCoords = out.pointlist;
     int            *cells      = out.tetrahedronlist;
 
-    ierr = DMPlexInvertCells_Internal(numCells, numCorners, cells);CHKERRQ(ierr);
+    ierr = DMPlexInvertCells_Internal(dim, numCells, numCorners, cells);CHKERRQ(ierr);
     ierr = DMPlexCreateFromCellList(comm, dim, numCells, numVertices, numCorners, interpolate, cells, dim, meshCoords, dm);CHKERRQ(ierr);
     /* Set labels */
     for (v = 0; v < numVertices; ++v) {
@@ -3665,7 +3699,7 @@ PetscErrorCode DMPlexRefine_Tetgen(DM dm, double *maxVolumes, DM *dmRefined)
 
     PetscBool      interpolate = depthGlobal > 1 ? PETSC_TRUE : PETSC_FALSE;
 
-    ierr = DMPlexInvertCells_Internal(numCells, numCorners, cells);CHKERRQ(ierr);
+    ierr = DMPlexInvertCells_Internal(dim, numCells, numCorners, cells);CHKERRQ(ierr);
     ierr = DMPlexCreateFromCellList(comm, dim, numCells, numVertices, numCorners, interpolate, cells, dim, meshCoords, dmRefined);CHKERRQ(ierr);
     /* Set labels */
     for (v = 0; v < numVertices; ++v) {
@@ -3811,7 +3845,7 @@ PetscErrorCode DMPlexGenerate_CTetgen(DM boundary, PetscBool interpolate, DM *dm
     const double   *meshCoords = out->pointlist;
     int            *cells      = out->tetrahedronlist;
 
-    ierr = DMPlexInvertCells_Internal(numCells, numCorners, cells);CHKERRQ(ierr);
+    ierr = DMPlexInvertCells_Internal(dim, numCells, numCorners, cells);CHKERRQ(ierr);
     ierr = DMPlexCreateFromCellList(comm, dim, numCells, numVertices, numCorners, interpolate, cells, dim, meshCoords, dm);CHKERRQ(ierr);
     /* Set labels */
     for (v = 0; v < numVertices; ++v) {
@@ -3946,7 +3980,7 @@ PetscErrorCode DMPlexRefine_CTetgen(DM dm, PetscReal *maxVolumes, DM *dmRefined)
     int            *cells      = out->tetrahedronlist;
     PetscBool      interpolate = depthGlobal > 1 ? PETSC_TRUE : PETSC_FALSE;
 
-    ierr = DMPlexInvertCells_Internal(numCells, numCorners, cells);CHKERRQ(ierr);
+    ierr = DMPlexInvertCells_Internal(dim, numCells, numCorners, cells);CHKERRQ(ierr);
     ierr = DMPlexCreateFromCellList(comm, dim, numCells, numVertices, numCorners, interpolate, cells, dim, meshCoords, dmRefined);CHKERRQ(ierr);
     /* Set labels */
     for (v = 0; v < numVertices; ++v) {
