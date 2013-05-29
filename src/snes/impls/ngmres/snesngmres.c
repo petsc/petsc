@@ -48,6 +48,9 @@ PetscErrorCode SNESSetUp_NGMRES(SNES snes)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (snes->pc && snes->pcside == PC_LEFT && snes->functype == SNES_FUNCTION_UNPRECONDITIONED) {
+    SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE,"SNESNGMRES does not support left preconditioning with unpreconditioned function");
+  }
   ierr = SNESSetWorkVecs(snes,5);CHKERRQ(ierr);
   if (!ngmres->Xdot) {ierr = VecDuplicateVecs(snes->vec_sol,ngmres->msize,&ngmres->Xdot);CHKERRQ(ierr);}
   if (!ngmres->Fdot) {ierr = VecDuplicateVecs(snes->vec_sol,ngmres->msize,&ngmres->Fdot);CHKERRQ(ierr);}
@@ -490,8 +493,10 @@ PETSC_EXTERN PetscErrorCode SNESCreate_NGMRES(SNES snes)
   snes->ops->solve          = SNESSolve_NGMRES;
   snes->ops->reset          = SNESReset_NGMRES;
 
-  snes->usespc  = PETSC_TRUE;
-  snes->usesksp = PETSC_FALSE;
+  snes->usespc   = PETSC_TRUE;
+  snes->usesksp  = PETSC_FALSE;
+  snes->pcside   = PC_RIGHT;
+  snes->functype = SNES_FUNCTION_PRECONDITIONED;
 
   ierr          = PetscNewLog(snes,SNES_NGMRES,&ngmres);CHKERRQ(ierr);
   snes->data    = (void*) ngmres;
