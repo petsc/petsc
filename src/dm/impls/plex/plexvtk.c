@@ -129,7 +129,7 @@ PetscErrorCode DMPlexVTKWriteCells_ASCII(DM dm, FILE *fp, PetscInt *totalCells)
 
     for (c = cStart, numCells = 0; c < cEnd; ++c) {
       PetscInt *closure = NULL;
-      PetscInt closureSize, nC = 0, tmp;
+      PetscInt closureSize, nC = 0;
 
       if (hasLabel) {
         PetscInt value;
