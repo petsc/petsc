@@ -297,7 +297,7 @@ runex13_2:
 	   ${DIFF} output/ex13_1.out ex13.tmp || echo  ${PWD} "\nPossible problem with ex13_2, diffs above \n========================================="; \
 	   ${RM} -f ex13.tmp
 runex13_3:
-	-@${MPIEXEC} -n 3 ./ex13 -ts_max_steps 5 -use_coloring  > ex13.tmp 2>&1; \
+	-@${MPIEXEC} -n 3 ./ex13 -ts_max_steps 5 -use_coloring  -ts_monitor > ex13.tmp 2>&1; \
 	   ${DIFF} output/ex13_1.out ex13.tmp || echo  ${PWD} "\nPossible problem with ex13_3, diffs above \n========================================="; \
 	   ${RM} -f ex13.tmp
 

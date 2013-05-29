@@ -573,6 +573,11 @@ runex14_2:
 	   if (${DIFF} output/ex14_2.out ex14_2.tmp) then true; \
 	   else  echo  ${PWD} "\nPossible problem with with ex14_2, diffs above \n========================================="; fi; \
 	   ${RM} -f ex14_2.tmp
+runex14_3:
+	-@${MPIEXEC} -n 4 ./ex14 -fdcoloring -snes_monitor_short -ksp_gmres_cgs_refinement_type refine_always  > ex14_3.tmp 2>&1; \
+	   if (${DIFF} output/ex14_3.out ex14_3.tmp) then true; \
+	   else  echo  ${PWD} "\nPossible problem with with ex14_3, diffs above \n========================================="; fi; \
+        ${RM} -f ex14_3.tmp
 runex15:
 	-@${MPIEXEC} -n 2 ./ex15 -snes_monitor_short -da_grid_x 20 -da_grid_y 20 -p 1.3 -lambda 1 -jtype NEWTON > ex15_1.tmp 2>&1; \
 	   ${DIFF} output/ex15_1.out ex15_1.tmp || echo  ${PWD} "\nPossible problem with with ex15_1, diffs above \n========================================="; \
@@ -997,7 +1002,7 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 ex1.rm ex2.PETSc runex2  rune
                                  runex5_5_fas runex5_5_ngmres_fas runex5_5_fas_additive \
                                  runex5_5_nasm runex5_5_newton_asm_dmda runex5_5_newton_gasm_dmda \
                                  runex5_6 ex5.rm ex7.PETSc runex7 ex7.rm\
-                                 ex14.PETSc runex14 runex14_2 ex14.rm ex15.PETSc runex15 runex15_3 runex15_4 ex15.rm ex18.PETSc runex18 ex18.rm \
+                                 ex14.PETSc runex14 runex14_2 runex14_3 ex14.rm ex15.PETSc runex15 runex15_3 runex15_4 ex15.rm ex18.PETSc runex18 ex18.rm \
                                  ex19.PETSc runex19 runex19_5 \
                                  runex19_6 runex19_fieldsplit_2 runex19_fieldsplit_3 runex19_fieldsplit_4 \
                                  runex19_composite_fieldsplit runex19_composite_fieldsplit_bjacobi runex19_composite_fieldsplit_bjacobi_2\
