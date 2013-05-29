@@ -342,6 +342,40 @@ PetscErrorCode DMTSSetIFunction(DM dm,TSIFunction func,void *ctx)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMTSSetDAESimpleIFunction"
+/*@C
+   DMTSSetDAESimpleIFunction - set the nonlinear algebraic function for the semi-explicit TS solver
+
+   Not Collective
+
+   Input Arguments:
++  dm - DM to be used with TS
+.  func - nonlinear algebraic function, see TSSetDAESimpleSetIFunction() for calling sequence
+-  ctx - context for residual evaluation
+
+   Level: advanced
+
+   Note:
+   TSSetDAESimpleIFunction() is normally used, but it calls this function internally because the user context is actually
+   associated with the DM.  This makes the interface consistent regardless of whether the user interacts with a DM or
+   not. If DM took a more central role at some later date, this could become the primary method of setting the residual.
+
+.seealso: DMTSSetContext(), TSSetFunction(), DMTSSetJacobian()
+@*/
+PetscErrorCode DMTSSetDAESimpleIFunction(DM dm,PetscErrorCode (*func)(PetscReal,Vec,Vec,Vec,void*),void *ctx)
+{
+  PetscErrorCode ierr;
+  DMTS           tsdm;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  ierr = DMGetDMTSWrite(dm,&tsdm);CHKERRQ(ierr);
+  if (func) tsdm->ops->daesimpleifunction = func;
+  if (ctx)  tsdm->daesimpleifunctionctx = ctx;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMTSGetIFunction"
 /*@C
    DMTSGetIFunction - get TS implicit residual evaluation function
@@ -376,6 +410,36 @@ PetscErrorCode DMTSGetIFunction(DM dm,TSIFunction *func,void **ctx)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "DMTSGetDAESimpleIFunction"
+/*@C
+   DMTSGetDAESimpleRHSFunction - gets nonlinear residual evaluation function for the algebraic part of the semi-explicit TS solver
+
+   Not Collective
+
+   Input Argument:
+.  dm - DM to be used with TS
+
+   Output Arguments:
++  func - residual evaluation function, see TSSetDAESimpleIFunction() for calling sequence
+-  ctx - context for residual evaluation
+
+   Level: advanced
+
+.seealso: DMTSSetContext(), DMTSSetFunction(), TSSetFunction()
+@*/
+PetscErrorCode DMTSGetDAESimpleIFunction(DM dm,PetscErrorCode (**func)(PetscReal,Vec,Vec,Vec,void*),void **ctx)
+{
+  PetscErrorCode ierr;
+  DMTS           tsdm;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  ierr = DMGetDMTS(dm,&tsdm);CHKERRQ(ierr);
+  if (func) *func = tsdm->ops->daesimpleifunction;
+  if (ctx)  *ctx = tsdm->daesimpleifunctionctx;
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "DMTSSetRHSFunction"
@@ -408,6 +472,40 @@ PetscErrorCode DMTSSetRHSFunction(DM dm,TSRHSFunction func,void *ctx)
   ierr = DMGetDMTSWrite(dm,&tsdm);CHKERRQ(ierr);
   if (func) tsdm->ops->rhsfunction = func;
   if (ctx)  tsdm->rhsfunctionctx = ctx;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMTSSetDAESimpleRHSFunction"
+/*@C
+   DMTSSetDAESimpleIFunction - set the ODE function for the semi-explicit TS solver
+
+   Not Collective
+
+   Input Arguments:
++  dm - DM to be used with TS
+.  func - ODE function for the semi-explicit solver, see TSSetDAESimpleSetRHSFunction() for calling sequence
+-  ctx - context for residual evaluation
+
+   Level: advanced
+
+   Note:
+   TSSetDAESimpleRHSFunction() is normally used, but it calls this function internally because the user context is actually
+   associated with the DM.  This makes the interface consistent regardless of whether the user interacts with a DM or
+   not. If DM took a more central role at some later date, this could become the primary method of setting the residual.
+
+.seealso: DMTSSetContext(), TSSetFunction(), DMTSSetJacobian()
+@*/
+PetscErrorCode DMTSSetDAESimpleRHSFunction(DM dm,PetscErrorCode (*func)(PetscReal,Vec,Vec,Vec,void*),void *ctx)
+{
+  PetscErrorCode ierr;
+  DMTS           tsdm;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  ierr = DMGetDMTSWrite(dm,&tsdm);CHKERRQ(ierr);
+  if (func) tsdm->ops->daesimplerhsfunction = func;
+  if (ctx)  tsdm->daesimplerhsfunctionctx = ctx;
   PetscFunctionReturn(0);
 }
 
@@ -579,6 +677,37 @@ PetscErrorCode DMTSGetRHSFunction(DM dm,TSRHSFunction *func,void **ctx)
   ierr = DMGetDMTS(dm,&tsdm);CHKERRQ(ierr);
   if (func) *func = tsdm->ops->rhsfunction;
   if (ctx)  *ctx = tsdm->rhsfunctionctx;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMTSGetDAESimpleRHSFunction"
+/*@C
+   DMTSGetDAESimpleRHSFunction - gets residual evaluation function for the ODE part of the semi-explicit TS solver
+
+   Not Collective
+
+   Input Argument:
+.  dm - DM to be used with TS
+
+   Output Arguments:
++  func - residual evaluation function, see TSSetDAESimpleRHSFunction() for calling sequence
+-  ctx - context for residual evaluation
+
+   Level: advanced
+
+.seealso: DMTSSetContext(), DMTSSetFunction(), TSSetFunction()
+@*/
+PetscErrorCode DMTSGetDAESimpleRHSFunction(DM dm,PetscErrorCode (**func)(PetscReal,Vec,Vec,Vec,void*),void **ctx)
+{
+  PetscErrorCode ierr;
+  DMTS           tsdm;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  ierr = DMGetDMTS(dm,&tsdm);CHKERRQ(ierr);
+  if (func) *func = tsdm->ops->daesimplerhsfunction;
+  if (ctx)  *ctx = tsdm->daesimplerhsfunctionctx;
   PetscFunctionReturn(0);
 }
 

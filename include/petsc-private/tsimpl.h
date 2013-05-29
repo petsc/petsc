@@ -171,6 +171,9 @@ struct _DMTSOps {
 
   PetscErrorCode (*destroy)(DMTS);
   PetscErrorCode (*duplicate)(DMTS,DMTS);
+
+  PetscErrorCode (*daesimplerhsfunction)(PetscReal,Vec,Vec,Vec,void*);
+  PetscErrorCode (*daesimpleifunction)(PetscReal,Vec,Vec,Vec,void*);
 };
 
 struct _p_DMTS {
@@ -183,6 +186,9 @@ struct _p_DMTS {
 
   void *solutionctx;
   void *forcingctx;
+
+  void *daesimplerhsfunctionctx;
+  void *daesimpleifunctionctx;
 
   void *data;
 
