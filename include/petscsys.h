@@ -516,7 +516,7 @@ PETSC_EXTERN PetscErrorCode PetscCommDestroy(MPI_Comm*);
   Concepts: memory allocation
 
 M*/
-#define PetscMalloc(a,b)  ((a != 0) ? (*PetscTrMalloc)((a),__LINE__,PETSC_FUNCTION_NAME,__FILE__,__SDIR__,(void**)(b)) : (*(b) = 0,0) )
+#define PetscMalloc(a,b)  ((a != 0) ? (*PetscTrMalloc)((a),__LINE__,PETSC_FUNCTION_NAME,__FILE__,(void**)(b)) : (*(b) = 0,0) )
 
 /*MC
    PetscAddrAlign - Rounds up an address to PETSC_MEMALIGN alignment
@@ -856,7 +856,7 @@ M*/
   Concepts: memory allocation
 
 M*/
-#define PetscFree(a)   ((a) && ((*PetscTrFree)((void*)(a),__LINE__,PETSC_FUNCTION_NAME,__FILE__,__SDIR__) || ((a) = 0,0)))
+#define PetscFree(a)   ((a) && ((*PetscTrFree)((void*)(a),__LINE__,PETSC_FUNCTION_NAME,__FILE__) || ((a) = 0,0)))
 
 /*MC
    PetscFreeVoid - Frees memory
@@ -879,7 +879,7 @@ M*/
   Concepts: memory allocation
 
 M*/
-#define PetscFreeVoid(a) ((*PetscTrFree)((a),__LINE__,PETSC_FUNCTION_NAME,__FILE__,__SDIR__),(a) = 0)
+#define PetscFreeVoid(a) ((*PetscTrFree)((a),__LINE__,PETSC_FUNCTION_NAME,__FILE__),(a) = 0)
 
 
 /*MC
@@ -1069,9 +1069,9 @@ M*/
 #define PetscFree7(m1,m2,m3,m4,m5,m6,m7)   ((m7)=0,(m6)=0,(m5)=0,(m4)=0,(m3)=0,(m2)=0,PetscFree(m1))
 #endif
 
-PETSC_EXTERN PetscErrorCode (*PetscTrMalloc)(size_t,int,const char[],const char[],const char[],void**);
-PETSC_EXTERN PetscErrorCode (*PetscTrFree)(void*,int,const char[],const char[],const char[]);
-PETSC_EXTERN PetscErrorCode PetscMallocSet(PetscErrorCode (*)(size_t,int,const char[],const char[],const char[],void**),PetscErrorCode (*)(void*,int,const char[],const char[],const char[]));
+PETSC_EXTERN PetscErrorCode (*PetscTrMalloc)(size_t,int,const char[],const char[],void**);
+PETSC_EXTERN PetscErrorCode (*PetscTrFree)(void*,int,const char[],const char[]);
+PETSC_EXTERN PetscErrorCode PetscMallocSet(PetscErrorCode (*)(size_t,int,const char[],const char[],void**),PetscErrorCode (*)(void*,int,const char[],const char[]));
 PETSC_EXTERN PetscErrorCode PetscMallocClear(void);
 
 /*
@@ -1091,7 +1091,7 @@ PETSC_EXTERN PetscErrorCode PetscMallocGetCurrentUsage(PetscLogDouble *);
 PETSC_EXTERN PetscErrorCode PetscMallocGetMaximumUsage(PetscLogDouble *);
 PETSC_EXTERN PetscErrorCode PetscMallocDebug(PetscBool);
 PETSC_EXTERN PetscErrorCode PetscMallocGetDebug(PetscBool*);
-PETSC_EXTERN PetscErrorCode PetscMallocValidate(int,const char[],const char[],const char[]);
+PETSC_EXTERN PetscErrorCode PetscMallocValidate(int,const char[],const char[]);
 PETSC_EXTERN PetscErrorCode PetscMallocSetDumpLog(void);
 PETSC_EXTERN PetscErrorCode PetscMallocSetDumpLogThreshold(PetscLogDouble);
 PETSC_EXTERN PetscErrorCode PetscMallocGetDumpLog(PetscBool*);

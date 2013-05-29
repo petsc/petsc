@@ -194,7 +194,7 @@ PetscBool  ADDAHCiterStartup(const PetscInt dim, const PetscInt *const lc, const
 
   ierr = PetscMemcpy(idx, lc, sizeof(PetscInt)*dim);
   if (ierr) {
-    PetscError(PETSC_COMM_SELF,__LINE__,__FUNCT__,__FILE__,__SDIR__,ierr,PETSC_ERROR_REPEAT," ");
+    PetscError(PETSC_COMM_SELF,__LINE__,__FUNCT__,__FILE__,ierr,PETSC_ERROR_REPEAT," ");
     return PETSC_FALSE;
   }
   for (i=0; i<dim; i++) {

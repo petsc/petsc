@@ -415,7 +415,6 @@ PetscErrorCode  PetscAttachDebugger(void)
 .  line - the line number of the error (indicated by __LINE__)
 .  fun - function where error occured (indicated by __FUNCT__)
 .  file - the file in which the error was detected (indicated by __FILE__)
-.  dir - the directory of the file (indicated by __SDIR__)
 .  message - an error text string, usually just printed to the screen
 .  number - the generic error number
 .  p - PETSC_ERROR_INITIAL if error just detected, otherwise PETSC_ERROR_REPEAT
@@ -450,16 +449,15 @@ $    PetscAbortErrorHandler()
 .seealso:  PetscPushErrorHandler(), PetscTraceBackErrorHandler(),
            PetscAbortErrorHandler()
 @*/
-PetscErrorCode  PetscAttachDebuggerErrorHandler(MPI_Comm comm,int line,const char *fun,const char *file,const char *dir,PetscErrorCode num,PetscErrorType p,const char *mess,void *ctx)
+PetscErrorCode  PetscAttachDebuggerErrorHandler(MPI_Comm comm,int line,const char *fun,const char *file,PetscErrorCode num,PetscErrorType p,const char *mess,void *ctx)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (!fun) fun = "User provided function";
-  if (!dir) dir = " ";
   if (!mess) mess = " ";
 
-  (*PetscErrorPrintf)("%s() line %d in %s%s %s\n",fun,line,dir,file,mess);
+  (*PetscErrorPrintf)("%s() line %d in %s %s\n",fun,line,file,mess);
 
   ierr = PetscAttachDebugger();
   if (ierr) abort(); /* call abort because don't want to kill other MPI processes that may successfully attach to debugger */    
