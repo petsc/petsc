@@ -164,6 +164,7 @@
         <li><tt>MatGetArray()/MatRestoreArray()</tt> have been remove d. Use <tt>MatDenseGetArray()/MatDenseRestoreArray()</tt> or <tt>MatSeqAIJGetArray()/MatSeqAIJRestoreArray()</tt></li>
         <li>PLAPACK interface has been removed.</li>
         <li>MatGetRowIJ() and MatGetColumnIJ() have been made const-correct; the index arrays have always been read-only.</li>
+        <li>MatRestoreRow() and MatRestoreRowIJ() now zero their arguments.  They should never have been accessed after restoring.</li>
         <li>MatPermute() can now be used for MPIAIJ, but contrary to prior documentation, the column IS should be parallel and contain only owned columns.</li>
       </ul>
 
