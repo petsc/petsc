@@ -163,7 +163,7 @@ static PetscErrorCode PCSetFromOptions_BJacobi(PC pc)
 {
   PC_BJacobi     *jac = (PC_BJacobi*)pc->data;
   PetscErrorCode ierr;
-  PetscInt       blocks;
+  PetscInt       blocks,i;
   PetscBool      flg;
 
   PetscFunctionBegin;
@@ -171,6 +171,13 @@ static PetscErrorCode PCSetFromOptions_BJacobi(PC pc)
   ierr = PetscOptionsInt("-pc_bjacobi_blocks","Total number of blocks","PCBJacobiSetTotalBlocks",jac->n,&blocks,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PCBJacobiSetTotalBlocks(pc,blocks,NULL);CHKERRQ(ierr);
+  }
+  if (jac->ksp) {
+    /* The sub-KSP has already been set up (e.g., PCSetUp_BJacobi_Singleblock), but KSPSetFromOptions was not called
+     * unless we had already been called. */
+    for (i=0; i<jac->n_local; i++) {
+      ierr = KSPSetFromOptions(jac->ksp[i]);CHKERRQ(ierr);
+    }
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -834,6 +841,7 @@ static PetscErrorCode PCSetUp_BJacobi_Singleblock(PC pc,Mat mat,Mat pmat)
     ierr = KSPSetOperators(ksp,pmat,pmat,pc->flag);CHKERRQ(ierr);
   }
   if (!wasSetup && pc->setfromoptionscalled) {
+    /* If PCSetFromOptions_BJacobi is called later, KSPSetFromOptions will be called at that time. */
     ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
