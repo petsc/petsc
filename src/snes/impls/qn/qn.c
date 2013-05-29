@@ -327,7 +327,7 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
   snes->norm = 0.;
   ierr       = PetscObjectAMSGrantAccess((PetscObject)snes);CHKERRQ(ierr);
 
-  if (snes->pc && snes->functype == SNES_FUNCTION_PRECONDITIONED) {
+  if (snes->pc && snes->pcside == PC_LEFT && snes->functype == SNES_FUNCTION_PRECONDITIONED) {
     ierr = SNESApplyPC(snes,X,NULL,NULL,F);CHKERRQ(ierr);
     ierr = SNESGetConvergedReason(snes->pc,&reason);CHKERRQ(ierr);
     if (reason < 0  && reason != SNES_DIVERGED_MAX_IT) {
@@ -335,6 +335,14 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
       PetscFunctionReturn(0);
     }
     ierr = VecNorm(F,NORM_2,&fnorm);CHKERRQ(ierr);
+  } else if (snes->pc && snes->pcside == PC_RIGHT) {
+    Vec FPC;
+    ierr = PetscLogEventBegin(SNES_NPCSolve,snes->pc,X,0,0);CHKERRQ(ierr);
+    ierr = SNESSolve(snes->pc,snes->vec_rhs,X);CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(SNES_NPCSolve,snes->pc,X,0,0);CHKERRQ(ierr);
+    ierr = SNESGetFunction(snes->pc,&FPC,NULL,NULL);CHKERRQ(ierr);
+    ierr = SNESGetFunctionNorm(snes->pc,&fnorm);CHKERRQ(ierr);
+    ierr = VecCopy(FPC,F);CHKERRQ(ierr);
   } else {
     if (!snes->vec_func_init_set) {
       ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
@@ -355,7 +363,7 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
       snes->norm_init_set = PETSC_FALSE;
     }
   }
-  if (snes->pc && snes->functype == SNES_FUNCTION_UNPRECONDITIONED) {
+  if (snes->pc && snes->pcside == PC_LEFT && snes->functype == SNES_FUNCTION_UNPRECONDITIONED) {
       ierr = SNESApplyPC(snes,X,F,&fnorm,D);CHKERRQ(ierr);
       ierr = SNESGetConvergedReason(snes->pc,&reason);CHKERRQ(ierr);
       if (reason < 0  && reason != SNES_DIVERGED_MAX_IT) {
@@ -365,6 +373,7 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
   } else {
     ierr = VecCopy(F,D);CHKERRQ(ierr);
   }
+
   ierr = VecCopy(D,Y);CHKERRQ(ierr);
 
 
@@ -423,6 +432,16 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
     /* convergence monitoring */
     ierr = PetscInfo4(snes,"fnorm=%18.16e, gnorm=%18.16e, ynorm=%18.16e, lssucceed=%d\n",(double)fnorm,(double)gnorm,(double)ynorm,(int)lssucceed);CHKERRQ(ierr);
 
+    if (snes->pc && snes->pcside == PC_RIGHT) {
+      Vec FPC;
+      ierr = PetscLogEventBegin(SNES_NPCSolve,snes->pc,X,0,0);CHKERRQ(ierr);
+      ierr = SNESSolve(snes->pc,snes->vec_rhs,X);CHKERRQ(ierr);
+      ierr = PetscLogEventEnd(SNES_NPCSolve,snes->pc,X,0,0);CHKERRQ(ierr);
+      ierr = SNESGetFunction(snes->pc,&FPC,NULL,NULL);CHKERRQ(ierr);
+      ierr = SNESGetFunctionNorm(snes->pc,&fnorm);CHKERRQ(ierr);
+      ierr = VecCopy(FPC,F);CHKERRQ(ierr);
+    }
+
     ierr = SNESSetIterationNumber(snes, i+1);CHKERRQ(ierr);
     ierr = SNESSetFunctionNorm(snes, fnorm);CHKERRQ(ierr);
 
@@ -431,7 +450,7 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
     /* set parameter for default relative tolerance convergence test */
     ierr = (*snes->ops->converged)(snes,snes->iter,xnorm,ynorm,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
     if (snes->reason) PetscFunctionReturn(0);
-    if (snes->pc && snes->functype == SNES_FUNCTION_UNPRECONDITIONED) {
+    if (snes->pc && snes->pcside == PC_LEFT && snes->functype == SNES_FUNCTION_UNPRECONDITIONED) {
       ierr = SNESApplyPC(snes,X,F,&fnorm,D);CHKERRQ(ierr);
       ierr = SNESGetConvergedReason(snes->pc,&reason);CHKERRQ(ierr);
       if (reason < 0  && reason != SNES_DIVERGED_MAX_IT) {
@@ -496,8 +515,6 @@ static PetscErrorCode SNESSetUp_QN(SNES snes)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (snes->pcside == PC_RIGHT) SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE, "SNESQN only supports left preconditioning");
-
   ierr = VecDuplicateVecs(snes->vec_sol, qn->m, &qn->U);CHKERRQ(ierr);
   ierr = VecDuplicateVecs(snes->vec_sol, qn->m, &qn->V);CHKERRQ(ierr);
   ierr = PetscMalloc3(qn->m, PetscScalar, &qn->alpha,
