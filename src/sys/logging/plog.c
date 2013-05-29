@@ -15,25 +15,26 @@
 
 PetscErrorCode PetscLogObjectParent(PetscObject p,PetscObject c)
 {
-  if (c && p) {
-    PetscObject pp = p;
-    while (!c->parent && pp) {
-      /* if not credited elsewhere credit all childs memory to all new ancestors */
-      pp->mem += c->mem;
-      pp      = pp->parent;
-    }
-    c->parent   = p;
-    c->parentid = p->id;
+  PetscObject pp = p;
+  if (!c || !p) return 0;
+  while (!c->parent && pp) {
+    /* if not credited elsewhere credit all childs memory to all new ancestors */
+    pp->memchildren += c->mem + c->memchildren;
+    pp               = pp->parent;
   }
+  c->parent   = p;
+  c->parentid = p->id;
   return 0;
 }
 
 PetscErrorCode PetscLogObjectMemory(PetscObject p,PetscLogDouble m)
 {
+  p->mem += m;
+  p       =  p->parent;
   while (p) {
     /* Create all ancestors with the memory */
-    p->mem += m;
-    p      =  p->parent;
+    p->memchildren += m;
+    p               =  p->parent;
   }
   return 0;
 }
