@@ -1296,7 +1296,7 @@ class Configure(config.base.Configure):
     for language in languages:
       self.generateDependencies[language] = 0
       self.setCompilers.pushLanguage(language)
-      for testFlag in ['-MMD', '-M']:
+      for testFlag in ['-MMD -MP', '-MMD','-M']:
         try:
           self.framework.logPrint('Trying '+language+' compiler flag '+testFlag)
           if not self.setCompilers.checkLinkerFlag(testFlag):
@@ -1308,6 +1308,7 @@ class Configure(config.base.Configure):
             if os.path.isfile(depFilename):
               os.remove(depFilename)
               #self.setCompilers.insertCompilerFlag(testFlag, compilerOnly = 1)
+              self.framework.addMakeMacro(language.upper()+'_DEPFLAGS',testFlag)
               self.dependenciesGenerationFlag[language] = testFlag
               self.generateDependencies[language]       = 1
               break
