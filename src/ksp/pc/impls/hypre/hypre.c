@@ -187,7 +187,7 @@ static PetscErrorCode PCDestroy_HYPRE(PC pc)
   if (jac->ij) PetscStackCallStandard(HYPRE_IJMatrixDestroy,(jac->ij));
   if (jac->b) PetscStackCallStandard(HYPRE_IJVectorDestroy,(jac->b));
   if (jac->x) PetscStackCallStandard(HYPRE_IJVectorDestroy,(jac->x));
-  if (jac->destroy) PetscStackCall("HYPRE_DistroyXXX",ierr = (*jac->destroy)(jac->hsolver);CHKERRQ(ierr););
+  if (jac->destroy) PetscStackCall("HYPRE_DestroyXXX",ierr = (*jac->destroy)(jac->hsolver);CHKERRQ(ierr););
   ierr = PetscFree(jac->hypre_type);CHKERRQ(ierr);
   if (jac->comm_hypre != MPI_COMM_NULL) { ierr = MPI_Comm_free(&(jac->comm_hypre));CHKERRQ(ierr);}
   ierr = PetscFree(pc->data);CHKERRQ(ierr);
