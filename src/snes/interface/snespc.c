@@ -61,8 +61,18 @@ PetscErrorCode  SNESApplyPC(SNES snes,Vec x,Vec f,PetscReal *fnorm,Vec y)
 #define __FUNCT__ "SNESComputeFunctionDefaultPC"
 PetscErrorCode SNESComputeFunctionDefaultPC(SNES snes,Vec X,Vec F) {
 /* This is to be used as an argument to SNESMF -- NOT as a "function" */
-  PetscErrorCode ierr;
+  SNESConvergedReason reason;
+  PetscErrorCode      ierr;
+
   PetscFunctionBegin;
-  ierr = SNESApplyPC(snes,X,PETSC_NULL,PETSC_NULL,F);CHKERRQ(ierr);
+  if (snes->pc) {
+    ierr = SNESApplyPC(snes,X,PETSC_NULL,PETSC_NULL,F);CHKERRQ(ierr);
+    ierr = SNESGetConvergedReason(snes->pc,&reason);CHKERRQ(ierr);
+    if (reason < 0  && reason != SNES_DIVERGED_MAX_IT) {
+      ierr = SNESSetFunctionDomainError(snes);CHKERRQ(ierr);
+    }
+  } else {
+    ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
+  }
 PetscFunctionReturn(0);
 }

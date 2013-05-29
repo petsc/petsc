@@ -305,6 +305,7 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
   PetscBool           lssucceed,powell,periodic;
   PetscScalar         DolddotD,DolddotDold,DdotD,YdotD;
   MatStructure        flg = DIFFERENT_NONZERO_PATTERN;
+  SNESConvergedReason reason;
 
   /* basically just a regular newton's method except for the application of the jacobian */
 
@@ -328,6 +329,11 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
 
   if (snes->pc && snes->functype == SNES_FUNCTION_PRECONDITIONED) {
     ierr = SNESApplyPC(snes,X,NULL,NULL,F);CHKERRQ(ierr);
+    ierr = SNESGetConvergedReason(snes->pc,&reason);CHKERRQ(ierr);
+    if (reason < 0  && reason != SNES_DIVERGED_MAX_IT) {
+      snes->reason = SNES_DIVERGED_INNER;
+      PetscFunctionReturn(0);
+    }
     ierr = VecNorm(F,NORM_2,&fnorm);CHKERRQ(ierr);
   } else {
     if (!snes->vec_func_init_set) {
@@ -351,6 +357,11 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
   }
   if (snes->pc && snes->functype == SNES_FUNCTION_UNPRECONDITIONED) {
       ierr = SNESApplyPC(snes,X,F,&fnorm,D);CHKERRQ(ierr);
+      ierr = SNESGetConvergedReason(snes->pc,&reason);CHKERRQ(ierr);
+      if (reason < 0  && reason != SNES_DIVERGED_MAX_IT) {
+        snes->reason = SNES_DIVERGED_INNER;
+        PetscFunctionReturn(0);
+      }
   } else {
     ierr = VecCopy(F,D);CHKERRQ(ierr);
   }
@@ -422,6 +433,11 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
     if (snes->reason) PetscFunctionReturn(0);
     if (snes->pc && snes->functype == SNES_FUNCTION_UNPRECONDITIONED) {
       ierr = SNESApplyPC(snes,X,F,&fnorm,D);CHKERRQ(ierr);
+      ierr = SNESGetConvergedReason(snes->pc,&reason);CHKERRQ(ierr);
+      if (reason < 0  && reason != SNES_DIVERGED_MAX_IT) {
+        snes->reason = SNES_DIVERGED_INNER;
+        PetscFunctionReturn(0);
+      }
     } else {
       ierr = VecCopy(F, D);CHKERRQ(ierr);
     }

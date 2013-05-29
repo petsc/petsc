@@ -268,6 +268,7 @@ PetscErrorCode SNESSolve_NCG(SNES snes)
   PetscErrorCode      ierr;
   PetscBool           lsSuccess = PETSC_TRUE;
   SNESLineSearch      linesearch;
+  SNESConvergedReason reason;
 
   PetscFunctionBegin;
   snes->reason = SNES_CONVERGED_ITERATING;
@@ -290,6 +291,11 @@ PetscErrorCode SNESSolve_NCG(SNES snes)
 
   if (snes->pc && snes->functype == SNES_FUNCTION_PRECONDITIONED) {
     ierr = SNESApplyPC(snes,X,NULL,NULL,dX);CHKERRQ(ierr);
+    ierr = SNESGetConvergedReason(snes->pc,&reason);CHKERRQ(ierr);
+    if (reason < 0  && reason != SNES_DIVERGED_MAX_IT) {
+      snes->reason = SNES_DIVERGED_INNER;
+      PetscFunctionReturn(0);
+    }
     ierr = VecCopy(dX,F);CHKERRQ(ierr);
     ierr = VecNorm(F,NORM_2,&fnorm);CHKERRQ(ierr);
   } else {
@@ -316,6 +322,11 @@ PetscErrorCode SNESSolve_NCG(SNES snes)
   if (snes->pc) {
     if (snes->functype == SNES_FUNCTION_UNPRECONDITIONED) {
       ierr = SNESApplyPC(snes,X,F,&fnorm,dX);CHKERRQ(ierr);
+      ierr = SNESGetConvergedReason(snes->pc,&reason);CHKERRQ(ierr);
+      if (reason < 0  && reason != SNES_DIVERGED_MAX_IT) {
+        snes->reason = SNES_DIVERGED_INNER;
+        PetscFunctionReturn(0);
+      }
     }
   }
   ierr = VecCopy(dX,lX);CHKERRQ(ierr);
@@ -383,9 +394,19 @@ PetscErrorCode SNESSolve_NCG(SNES snes)
     if (snes->pc) {
       if (snes->functype == SNES_FUNCTION_PRECONDITIONED) {
         ierr = SNESApplyPC(snes,X,NULL,NULL,dX);CHKERRQ(ierr);
+        ierr = SNESGetConvergedReason(snes->pc,&reason);CHKERRQ(ierr);
+        if (reason < 0  && reason != SNES_DIVERGED_MAX_IT) {
+          snes->reason = SNES_DIVERGED_INNER;
+          PetscFunctionReturn(0);
+        }
         ierr = VecCopy(dX,F);CHKERRQ(ierr);
       } else {
         ierr = SNESApplyPC(snes,X,F,&fnorm,dX);CHKERRQ(ierr);
+        ierr = SNESGetConvergedReason(snes->pc,&reason);CHKERRQ(ierr);
+        if (reason < 0  && reason != SNES_DIVERGED_MAX_IT) {
+          snes->reason = SNES_DIVERGED_INNER;
+          PetscFunctionReturn(0);
+        }
       }
     } else {
       ierr = VecCopy(F,dX);CHKERRQ(ierr);
