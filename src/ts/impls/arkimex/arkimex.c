@@ -696,7 +696,7 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
       PetscReal rtol;
       Vec       vrtol;
 
-      ierr = TSCreate(PETSC_COMM_WORLD,&ts_start);CHKERRQ(ierr);
+      ierr = TSCreate(PetscObjectComm((PetscObject)ts),&ts_start);CHKERRQ(ierr);
       ierr = TSGetSNES(ts,&snes_start);CHKERRQ(ierr);
       ierr = TSSetSNES(ts_start,snes_start);CHKERRQ(ierr);
       ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);

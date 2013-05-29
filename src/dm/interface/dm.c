@@ -181,7 +181,7 @@ PetscErrorCode VecSetDM(Vec v, DM dm)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
-  PetscValidHeaderSpecific(dm,DM_CLASSID,2);
+  if (dm) PetscValidHeaderSpecific(dm,DM_CLASSID,2);
   ierr = PetscObjectCompose((PetscObject) v, "__PETSc_dm", (PetscObject) dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
