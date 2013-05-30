@@ -83,6 +83,13 @@ cdef extern from * nogil:
     int PetscViewerDrawClear(PetscViewer)
     int PetscViewerDrawSetInfo(PetscViewer,char[],char[],int,int,int,int)
 
+    int PetscViewerHDF5GetTimestep(PetscViewer,PetscInt*)
+    int PetscViewerHDF5SetTimestep(PetscViewer,PetscInt)
+    int PetscViewerHDF5IncrementTimestep(PetscViewer)
+    int PetscViewerHDF5PushGroup(PetscViewer,char[])
+    int PetscViewerHDF5PopGroup(PetscViewer)
+    int PetscViewerHDF5GetGroup(PetscViewer,char*[])
+
     PetscViewer PETSC_VIEWER_STDOUT_(MPI_Comm) except? NULL
     PetscViewer PETSC_VIEWER_STDOUT_SELF
     PetscViewer PETSC_VIEWER_STDOUT_WORLD

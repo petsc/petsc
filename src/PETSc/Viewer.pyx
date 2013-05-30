@@ -301,12 +301,53 @@ cdef class Viewer(Object):
                 w, h = size
             except TypeError:
                 w = h = size
-        CHKERR( PetscViewerDrawSetInfo(self.vwr, 
+        CHKERR( PetscViewerDrawSetInfo(self.vwr,
                                        cdisplay, ctitle,
                                        x, y, w, h) )
 
     def clear(self):
         CHKERR( PetscViewerDrawClear(self.vwr) )
+
+# --------------------------------------------------------------------
+
+cdef class ViewerHDF5(Viewer):
+
+    def create(self, name, mode=None, comm=None):
+        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
+        cdef const_char *cname = NULL
+        name = str2bytes(name, &cname)
+        cdef PetscFileMode cmode = filemode(mode)
+        cdef PetscViewer newvwr = NULL
+        CHKERR( PetscViewerCreate(ccomm, &newvwr) )
+        PetscCLEAR(self.obj); self.vwr = newvwr
+        CHKERR( PetscViewerSetType(self.vwr, PETSCVIEWERHDF5) )
+        CHKERR( PetscViewerFileSetMode(self.vwr, cmode) )
+        CHKERR( PetscViewerFileSetName(self.vwr, cname) )
+        return self
+
+    def getTimestep(self):
+        cdef PetscInt ctimestep = 0
+        CHKERR( PetscViewerHDF5GetTimestep(self.vwr, &ctimestep) )
+        return toInt(ctimestep)
+
+    def setTimestep(self, timestep):
+        CHKERR( PetscViewerHDF5SetTimestep(self.vwr, asInt(timestep)) )
+
+    def incrementTimestep(self, timestep):
+        CHKERR( PetscViewerHDF5IncrementTimestep(self.vwr) )
+
+    def pushGroup(self, group):
+        cdef const_char *cgroup = NULL
+        group = str2bytes(group, &cgroup)
+        CHKERR( PetscViewerHDF5PushGroup(self.vwr, cgroup) )
+
+    def popGroup(self):
+        CHKERR( PetscViewerHDF5PopGroup(self.vwr) )
+
+    def getGroup(self):
+        cdef const_char *cgroup = NULL
+        CHKERR( PetscViewerHDF5GetGroup(self.vwr, &cgroup) )
+        return bytes2str(cgroup)
 
 # --------------------------------------------------------------------
 
