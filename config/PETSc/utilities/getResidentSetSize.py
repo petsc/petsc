@@ -26,7 +26,6 @@ class Configure(config.base.Configure):
     self.functions.functions.append('getrusage')
     self.functions.functions.append('sbreak')
     self.functions.functions.append('getpagesize')
-    self.functions.functions.append('task_info')
     return
 
   def configureMemorySize(self):
@@ -52,45 +51,6 @@ class Configure(config.base.Configure):
         except:
           pass
 
-    # task_info() is  used on Mach and darwin (MacOS X) systems
-    if self.functions.haveFunction('task_info') and not self.framework.argDB['with-batch']:
-      (output,status) = self.outputRun('#include <mach/mach.h>\n#include <stdlib.h>\n#include <stdio.h>\n','''#define  ARRAYSIZE 10000000
-          int *m,i;
-          unsigned int count;
-          task_basic_info_data_t ti1,ti2;
-          double ratio;
-
-          if (task_info(mach_task_self(), TASK_BASIC_INFO, (task_info_t)&ti1,&count) != KERN_SUCCESS) {
-            printf("failed calling task_info()");
-            return 1;
-          }
-          printf("original resident size %g \\n",(double)ti1.resident_size);
-          m = malloc(ARRAYSIZE*sizeof(int));
-          if (!m) {
-            printf("Error calling malloc()\\n");
-            return 2;
-          }
-          for (i=0; i<ARRAYSIZE; i++){
-            m[i] = i+1;
-          }
-          if (task_info(mach_task_self(), TASK_BASIC_INFO, (task_info_t)&ti2,&count) != KERN_SUCCESS) {
-            printf("failed calling task_info()");
-            return 3;
-          }
-          printf("final resident size %g \\n",(double)ti2.resident_size);
-          ratio = ((double)ti2.resident_size - ti1.resident_size)/(ARRAYSIZE*sizeof(int));
-          printf("Should be near 1.0 %g \\n",ratio);
-          if (ratio > .95 && ratio < 1.05) {
-            printf("task_info() returned a reasonable resident size\\n");
-            return 0;
-          }
-          return 4;''')
-      if status == 0:
-        self.framework.logPrint("Using task_info() for PetscMemoryGetCurrentUsage()")
-        return
-      self.delDefine('HAVE_TASK_INFO')
-      self.framework.logPrint("task_info() does not work\n"+output)
-
     # getrusage() is still used on BSD systems
     if self.functions.haveFunction('getrusage') and not self.framework.argDB['with-batch']:
       if self.functions.haveFunction('getpagesize'):
@@ -98,7 +58,7 @@ class Configure(config.base.Configure):
             #include <sys/stat.h>\n#include <sys/resource.h>\n#include <stdlib.h>''','''#define ARRAYSIZE 10000000
             int i,*m;
             struct   rusage temp1,temp2;
-            double f1,f2;
+            double f0,f1,f2;
 
             if (getrusage(RUSAGE_SELF,&temp1)) {
               printf("Error calling getrusage()\\n");
@@ -118,26 +78,34 @@ class Configure(config.base.Configure):
               return -1;
             }
 
+            f0 = ((double)(temp2.ru_maxrss-temp1.ru_maxrss))/(4.0*ARRAYSIZE);
             f1 = 1024.0 * ((double)(temp2.ru_maxrss-temp1.ru_maxrss))/(4.0*ARRAYSIZE);
             f2 = getpagesize() * ((double)(temp2.ru_maxrss-temp1.ru_maxrss))/(4.0*ARRAYSIZE);
-            printf("Final value %g Initial value %g 1K Scaled Increment %g pagesize scaled Increment %g\\n",(double)(temp2.ru_maxrss),(double)(temp1.ru_maxrss),f1,f2);
+            printf("Final value %g Initial value %g Increment %g 1K Scaled Increment %g pagesize scaled Increment %g\\n",(double)(temp2.ru_maxrss),(double)(temp1.ru_maxrss),f0,f1,f2);
 
             if (f1 == 0) {
               printf("getrusage() does not work\\n");
               return 0;
             }
+            if (f0 > .90 && f0 < 1.1) {
+              printf("uses bytes in getrusage()\\n");
+              return 1;
             if (f1 > .90 && f1 < 1.1) {
               printf("uses 1024 size chunks in getrusage()\\n");
-              return 1;
+              return 2;
             } else if (f2 > .9 && f2 < 1.1) {
               printf("uses getpagesize() chunks in getrusage()\\n");
-              return 2;
+              return 3;
             }
-            printf("unable to determine if uses 1024 or getpagesize() chunks in getrusage()\\n");
+            printf("unable to determine if uses bytes, 1024 or getpagesize() chunks in getrusage()\\n");
             return -2;''')
         if status > 0:
           if status == 1:
+            self.addDefine('USE_BYTES_FOR_SIZE',1)
+          if status == 2:
             self.addDefine('USE_KBYTES_FOR_SIZE',1)
+          if status == 3:
+            self.addDefine('USE_PAGES_FOR_SIZE',1)
         elif status == 0:
           self.delDefine('HAVE_GETRUSAGE')
           self.framework.logPrint("getrusage() does not work (returns 0)")
