@@ -335,14 +335,6 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
       PetscFunctionReturn(0);
     }
     ierr = VecNorm(F,NORM_2,&fnorm);CHKERRQ(ierr);
-  } else if (snes->pc && snes->pcside == PC_RIGHT) {
-    Vec FPC;
-    ierr = PetscLogEventBegin(SNES_NPCSolve,snes->pc,X,0,0);CHKERRQ(ierr);
-    ierr = SNESSolve(snes->pc,snes->vec_rhs,X);CHKERRQ(ierr);
-    ierr = PetscLogEventEnd(SNES_NPCSolve,snes->pc,X,0,0);CHKERRQ(ierr);
-    ierr = SNESGetFunction(snes->pc,&FPC,NULL,NULL);CHKERRQ(ierr);
-    ierr = SNESGetFunctionNorm(snes->pc,&fnorm);CHKERRQ(ierr);
-    ierr = VecCopy(FPC,F);CHKERRQ(ierr);
   } else {
     if (!snes->vec_func_init_set) {
       ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
@@ -374,9 +366,6 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
     ierr = VecCopy(F,D);CHKERRQ(ierr);
   }
 
-  ierr = VecCopy(D,Y);CHKERRQ(ierr);
-
-
   ierr       = PetscObjectAMSTakeAccess((PetscObject)snes);CHKERRQ(ierr);
   snes->norm = fnorm;
   ierr       = PetscObjectAMSGrantAccess((PetscObject)snes);CHKERRQ(ierr);
@@ -388,6 +377,17 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
   /* test convergence */
   ierr = (*snes->ops->converged)(snes,0,0.0,0.0,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
   if (snes->reason) PetscFunctionReturn(0);
+
+  if (snes->pc && snes->pcside == PC_RIGHT) {
+    Vec FPC;
+    ierr = PetscLogEventBegin(SNES_NPCSolve,snes->pc,X,0,0);CHKERRQ(ierr);
+    ierr = SNESSolve(snes->pc,snes->vec_rhs,X);CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(SNES_NPCSolve,snes->pc,X,0,0);CHKERRQ(ierr);
+    ierr = SNESGetFunction(snes->pc,&FPC,NULL,NULL);CHKERRQ(ierr);
+    ierr = SNESGetFunctionNorm(snes->pc,&fnorm);CHKERRQ(ierr);
+    ierr = VecCopy(FPC,F);CHKERRQ(ierr);
+    ierr = VecCopy(F,D);CHKERRQ(ierr);
+  }
 
   /* scale the initial update */
   if (qn->scale_type == SNES_QN_SCALE_JACOBIAN) {
