@@ -401,7 +401,7 @@ PetscErrorCode DMCreateMatrix_Plex(DM dm, MatType mtype, Mat *J)
   PetscSection   section, sectionGlobal;
   PetscInt       bs = -1;
   PetscInt       localSize;
-  PetscBool      isShell, isBlock, isSeqBlock, isMPIBlock, isSymBlock, isSymSeqBlock, isSymMPIBlock, isSymmetric;
+  PetscBool      isShell, isBlock, isSeqBlock, isMPIBlock, isSymBlock, isSymSeqBlock, isSymMPIBlock;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -424,11 +424,6 @@ PetscErrorCode DMCreateMatrix_Plex(DM dm, MatType mtype, Mat *J)
   ierr = PetscStrcmp(mtype, MATSBAIJ, &isSymBlock);CHKERRQ(ierr);
   ierr = PetscStrcmp(mtype, MATSEQSBAIJ, &isSymSeqBlock);CHKERRQ(ierr);
   ierr = PetscStrcmp(mtype, MATMPISBAIJ, &isSymMPIBlock);CHKERRQ(ierr);
-  /* Check for symmetric storage */
-  isSymmetric = (PetscBool) (isSymBlock || isSymSeqBlock || isSymMPIBlock);
-  if (isSymmetric) {
-    ierr = MatSetOption(*J, MAT_IGNORE_LOWER_TRIANGULAR, PETSC_TRUE);CHKERRQ(ierr);
-  }
   if (!isShell) {
     PetscBool fillMatrix = (PetscBool) !dm->prealloc_only;
     PetscInt *dnz, *onz, *dnzu, *onzu, bsLocal, bsMax, bsMin;
