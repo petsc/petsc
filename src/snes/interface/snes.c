@@ -246,6 +246,9 @@ PetscErrorCode  SNESView(SNES snes,PetscViewer viewer)
 #endif
   if (iascii) {
     ierr = PetscObjectPrintClassNamePrefixType((PetscObject)snes,viewer);CHKERRQ(ierr);
+    if (!snes->setupcalled) {
+      ierr = PetscViewerASCIIPrintf(viewer,"  SNES has not been set up so information may be incomplete\n");CHKERRQ(ierr);
+    }
     if (snes->ops->view) {
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
       ierr = (*snes->ops->view)(snes,viewer);CHKERRQ(ierr);
