@@ -66,7 +66,7 @@ PetscErrorCode SNESComputeFunctionDefaultPC(SNES snes,Vec X,Vec F) {
 
   PetscFunctionBegin;
   if (snes->pc) {
-    ierr = SNESApplyPC(snes,X,PETSC_NULL,PETSC_NULL,F);CHKERRQ(ierr);
+    ierr = SNESApplyPC(snes,X,NULL,NULL,F);CHKERRQ(ierr);
     ierr = SNESGetConvergedReason(snes->pc,&reason);CHKERRQ(ierr);
     if (reason < 0  && reason != SNES_DIVERGED_MAX_IT) {
       ierr = SNESSetFunctionDomainError(snes);CHKERRQ(ierr);
