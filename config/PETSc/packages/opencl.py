@@ -1,11 +1,14 @@
 import PETSc.package
-import os
+import sys
 
 class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
     PETSc.package.NewPackage.__init__(self, framework)
     self.functions        = ['clGetPlatformIDs']
-    self.includes         = ['CL/cl.h']    # Apple might require special care (OpenCL/cl.h)
+    if sys.platform.startswith('darwin'): # Apple requires special care (OpenCL/cl.h)
+      self.includes         = ['OpenCL/cl.h']
+    else:
+      self.includes         = ['CL/cl.h']
     self.liblist          = [['libOpenCL.a', '-framework opencl'], ['libOpenCL.lib']]
     self.double           = 0   # 1 means requires double precision
     self.cxx              = 0
