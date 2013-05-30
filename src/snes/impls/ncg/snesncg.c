@@ -261,9 +261,9 @@ PetscErrorCode SNESNCGSetType_NCG(SNES snes, SNESNCGType btype)
 PetscErrorCode SNESSolve_NCG(SNES snes)
 {
   SNES_NCG            *ncg = (SNES_NCG*)snes->data;
-  Vec                 X,dX,lX,F,Fold;
+  Vec                 X,dX,lX,F,dXold;
   PetscReal           fnorm, ynorm, xnorm, beta = 0.0;
-  PetscScalar         dXdotF, dXolddotFold, dXdotFold, lXdotF, lXdotFold;
+  PetscScalar         dXdotdX, dXolddotdXold, dXdotdXold, lXdotdX, lXdotdXold;
   PetscInt            maxits, i;
   PetscErrorCode      ierr;
   PetscBool           lsSuccess = PETSC_TRUE;
@@ -275,7 +275,7 @@ PetscErrorCode SNESSolve_NCG(SNES snes)
 
   maxits = snes->max_its;            /* maximum number of iterations */
   X      = snes->vec_sol;            /* X^n */
-  Fold   = snes->work[0];            /* The previous iterate of X */
+  dXold  = snes->work[0];            /* The previous iterate of X */
   dX     = snes->work[1];            /* the preconditioned direction */
   lX     = snes->vec_sol_update;     /* the conjugate direction */
   F      = snes->vec_func;           /* residual vector */
@@ -330,7 +330,7 @@ PetscErrorCode SNESSolve_NCG(SNES snes)
     }
   }
   ierr = VecCopy(dX,lX);CHKERRQ(ierr);
-  ierr = VecDot(dX, F, &dXdotF);CHKERRQ(ierr);
+  ierr = VecDot(dX, dX, &dXdotdX);CHKERRQ(ierr);
 
 
   ierr       = PetscObjectAMSTakeAccess((PetscObject)snes);CHKERRQ(ierr);
@@ -356,7 +356,7 @@ PetscErrorCode SNESSolve_NCG(SNES snes)
     lsSuccess = PETSC_TRUE;
     /* some update types require the old update direction or conjugate direction */
     if (ncg->type != SNES_NCG_FR) {
-      ierr = VecCopy(F, Fold);CHKERRQ(ierr);
+      ierr = VecCopy(dX, dXold);CHKERRQ(ierr);
     }
     ierr = SNESLineSearchApply(linesearch,X,F,&fnorm,lX);CHKERRQ(ierr);
     ierr = SNESLineSearchGetSuccess(linesearch, &lsSuccess);CHKERRQ(ierr);
@@ -415,45 +415,45 @@ PetscErrorCode SNESSolve_NCG(SNES snes)
     /* compute the conjugate direction lX = dX + beta*lX with beta = ((dX, dX) / (dX_old, dX_old) (Fletcher-Reeves update)*/
     switch (ncg->type) {
     case SNES_NCG_FR: /* Fletcher-Reeves */
-      dXolddotFold = dXdotF;
-      ierr         = VecDot(dX, F, &dXdotF);CHKERRQ(ierr);
-      beta         = PetscRealPart(dXdotF / dXolddotFold);
+      dXolddotdXold= dXdotdX;
+      ierr         = VecDot(dX, dX, &dXdotdX);CHKERRQ(ierr);
+      beta         = PetscRealPart(dXdotdX / dXolddotdXold);
       break;
     case SNES_NCG_PRP: /* Polak-Ribiere-Poylak */
-      dXolddotFold = dXdotF;
-      ierr         = VecDotBegin(F, dX, &dXdotF);CHKERRQ(ierr);
-      ierr         = VecDotBegin(Fold, dX, &dXdotFold);CHKERRQ(ierr);
-      ierr         = VecDotEnd(F, dX, &dXdotF);CHKERRQ(ierr);
-      ierr         = VecDotEnd(Fold, dX, &dXdotFold);CHKERRQ(ierr);
-      beta         = PetscRealPart(((dXdotF - dXdotFold) / dXolddotFold));
+      dXolddotdXold= dXdotdX;
+      ierr         = VecDotBegin(dX, dX, &dXdotdXold);CHKERRQ(ierr);
+      ierr         = VecDotBegin(dXold, dX, &dXdotdXold);CHKERRQ(ierr);
+      ierr         = VecDotEnd(dX, dX, &dXdotdX);CHKERRQ(ierr);
+      ierr         = VecDotEnd(dXold, dX, &dXdotdXold);CHKERRQ(ierr);
+      beta         = PetscRealPart(((dXdotdX - dXdotdXold) / dXolddotdXold));
       if (beta < 0.0) beta = 0.0; /* restart */
       break;
     case SNES_NCG_HS: /* Hestenes-Stiefel */
-      ierr = VecDotBegin(dX, F, &dXdotF);CHKERRQ(ierr);
-      ierr = VecDotBegin(dX, Fold, &dXdotFold);CHKERRQ(ierr);
-      ierr = VecDotBegin(lX, F, &lXdotF);CHKERRQ(ierr);
-      ierr = VecDotBegin(lX, Fold, &lXdotFold);CHKERRQ(ierr);
-      ierr = VecDotEnd(dX, F, &dXdotF);CHKERRQ(ierr);
-      ierr = VecDotEnd(dX, Fold, &dXdotFold);CHKERRQ(ierr);
-      ierr = VecDotEnd(lX, F, &lXdotF);CHKERRQ(ierr);
-      ierr = VecDotEnd(lX, Fold, &lXdotFold);CHKERRQ(ierr);
-      beta = PetscRealPart((dXdotF - dXdotFold) / (lXdotF - lXdotFold));
+      ierr = VecDotBegin(dX, dX, &dXdotdX);CHKERRQ(ierr);
+      ierr = VecDotBegin(dX, dXold, &dXdotdXold);CHKERRQ(ierr);
+      ierr = VecDotBegin(lX, dX, &lXdotdX);CHKERRQ(ierr);
+      ierr = VecDotBegin(lX, dXold, &lXdotdXold);CHKERRQ(ierr);
+      ierr = VecDotEnd(dX, dX, &dXdotdX);CHKERRQ(ierr);
+      ierr = VecDotEnd(dX, dXold, &dXdotdXold);CHKERRQ(ierr);
+      ierr = VecDotEnd(lX, dX, &lXdotdX);CHKERRQ(ierr);
+      ierr = VecDotEnd(lX, dXold, &lXdotdXold);CHKERRQ(ierr);
+      beta = PetscRealPart((dXdotdX - dXdotdXold) / (lXdotdX - lXdotdXold));
       break;
     case SNES_NCG_DY: /* Dai-Yuan */
-      ierr = VecDotBegin(dX, F, &dXdotF);CHKERRQ(ierr);
-      ierr = VecDotBegin(lX, F, &lXdotF);CHKERRQ(ierr);
-      ierr = VecDotBegin(lX, Fold, &lXdotFold);CHKERRQ(ierr);
-      ierr = VecDotEnd(dX, F, &dXdotF);CHKERRQ(ierr);
-      ierr = VecDotEnd(lX, F, &lXdotF);CHKERRQ(ierr);
-      ierr = VecDotEnd(lX, Fold, &lXdotFold);CHKERRQ(ierr);
-      beta = PetscRealPart(dXdotF / (lXdotFold - lXdotF));CHKERRQ(ierr);
+      ierr = VecDotBegin(dX, dX, &dXdotdX);CHKERRQ(ierr);
+      ierr = VecDotBegin(lX, dX, &lXdotdX);CHKERRQ(ierr);
+      ierr = VecDotBegin(lX, dXold, &lXdotdXold);CHKERRQ(ierr);
+      ierr = VecDotEnd(dX, dX, &dXdotdX);CHKERRQ(ierr);
+      ierr = VecDotEnd(lX, dX, &lXdotdX);CHKERRQ(ierr);
+      ierr = VecDotEnd(lX, dXold, &lXdotdXold);CHKERRQ(ierr);
+      beta = PetscRealPart(dXdotdX / (lXdotdXold - lXdotdX));CHKERRQ(ierr);
       break;
     case SNES_NCG_CD: /* Conjugate Descent */
-      ierr = VecDotBegin(dX, F, &dXdotF);CHKERRQ(ierr);
-      ierr = VecDotBegin(lX, Fold, &lXdotFold);CHKERRQ(ierr);
-      ierr = VecDotEnd(dX, F, &dXdotF);CHKERRQ(ierr);
-      ierr = VecDotEnd(lX, Fold, &lXdotFold);CHKERRQ(ierr);
-      beta = PetscRealPart(dXdotF / lXdotFold);CHKERRQ(ierr);
+      ierr = VecDotBegin(dX, dX, &dXdotdX);CHKERRQ(ierr);
+      ierr = VecDotBegin(lX, dXold, &lXdotdXold);CHKERRQ(ierr);
+      ierr = VecDotEnd(dX, dX, &dXdotdX);CHKERRQ(ierr);
+      ierr = VecDotEnd(lX, dXold, &lXdotdXold);CHKERRQ(ierr);
+      beta = PetscRealPart(dXdotdX / lXdotdXold);CHKERRQ(ierr);
       break;
     }
     if (ncg->monitor) {
