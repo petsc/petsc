@@ -1314,7 +1314,8 @@ PetscErrorCode SNESLineSearchSetComputeNorms(SNESLineSearch linesearch, PetscBoo
 .  W - Solution work vector
 -  G - Function work vector
 
-   Notes: At the beginning of a line search application, X should contain a
+   Notes:
+   At the beginning of a line search application, X should contain a
    solution and the vector F the function computed at X.  At the end of the
    line search application, X should contain the new solution, and F the
    function evaluated at the new solution.
