@@ -1308,11 +1308,17 @@ PetscErrorCode SNESLineSearchSetComputeNorms(SNESLineSearch linesearch, PetscBoo
 .  linesearch - linesearch context
 
    Output Parameters:
-+  X - The old solution
-.  F - The old function
-.  Y - The search direction
-.  W - The new solution
--  G - The new function
++  X - Solution vector
+.  F - Function vector
+.  Y - Search direction vector
+.  W - Solution work vector
+-  G - Function work vector
+
+   Notes:
+   At the beginning of a line search application, X should contain a
+   solution and the vector F the function computed at X.  At the end of the
+   line search application, X should contain the new solution, and F the
+   function evaluated at the new solution.
 
    Level: advanced
 
@@ -1352,11 +1358,11 @@ PetscErrorCode SNESLineSearchGetVecs(SNESLineSearch linesearch,Vec *X,Vec *F, Ve
 
    Input Parameters:
 +  linesearch - linesearch context
-.  X - The old solution
-.  F - The old function
-.  Y - The search direction
-.  W - The new solution
--  G - The new function
+.  X - Solution vector
+.  F - Function vector
+.  Y - Search direction vector
+.  W - Solution work vector
+-  G - Function work vector
 
    Level: advanced
 
