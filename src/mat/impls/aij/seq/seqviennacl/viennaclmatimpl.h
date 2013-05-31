@@ -10,7 +10,6 @@
 #include "viennacl/compressed_matrix.hpp"
 
 
-/* Old way */
 typedef viennacl::compressed_matrix<PetscScalar>   ViennaCLAIJMatrix;
 
 
