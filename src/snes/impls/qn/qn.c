@@ -379,13 +379,15 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
   if (snes->reason) PetscFunctionReturn(0);
 
   if (snes->pc && snes->pcside == PC_RIGHT) {
-    Vec FPC;
     ierr = PetscLogEventBegin(SNES_NPCSolve,snes->pc,X,0,0);CHKERRQ(ierr);
     ierr = SNESSolve(snes->pc,snes->vec_rhs,X);CHKERRQ(ierr);
     ierr = PetscLogEventEnd(SNES_NPCSolve,snes->pc,X,0,0);CHKERRQ(ierr);
-    ierr = SNESGetFunction(snes->pc,&FPC,NULL,NULL);CHKERRQ(ierr);
-    ierr = SNESGetFunctionNorm(snes->pc,&fnorm);CHKERRQ(ierr);
-    ierr = VecCopy(FPC,F);CHKERRQ(ierr);
+    ierr = SNESGetConvergedReason(snes->pc,&reason);CHKERRQ(ierr);
+    if (reason < 0 && reason != SNES_DIVERGED_MAX_IT) {
+      snes->reason = SNES_DIVERGED_INNER;
+      PetscFunctionReturn(0);
+    }
+    ierr = SNESGetPCFunction(snes,F,&fnorm);CHKERRQ(ierr);
     ierr = VecCopy(F,D);CHKERRQ(ierr);
   }
 
@@ -433,13 +435,15 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
     ierr = PetscInfo4(snes,"fnorm=%18.16e, gnorm=%18.16e, ynorm=%18.16e, lssucceed=%d\n",(double)fnorm,(double)gnorm,(double)ynorm,(int)lssucceed);CHKERRQ(ierr);
 
     if (snes->pc && snes->pcside == PC_RIGHT) {
-      Vec FPC;
       ierr = PetscLogEventBegin(SNES_NPCSolve,snes->pc,X,0,0);CHKERRQ(ierr);
       ierr = SNESSolve(snes->pc,snes->vec_rhs,X);CHKERRQ(ierr);
       ierr = PetscLogEventEnd(SNES_NPCSolve,snes->pc,X,0,0);CHKERRQ(ierr);
-      ierr = SNESGetFunction(snes->pc,&FPC,NULL,NULL);CHKERRQ(ierr);
-      ierr = SNESGetFunctionNorm(snes->pc,&fnorm);CHKERRQ(ierr);
-      ierr = VecCopy(FPC,F);CHKERRQ(ierr);
+      ierr = SNESGetConvergedReason(snes->pc,&reason);CHKERRQ(ierr);
+      if (reason < 0 && reason != SNES_DIVERGED_MAX_IT) {
+        snes->reason = SNES_DIVERGED_INNER;
+        PetscFunctionReturn(0);
+      }
+      ierr = SNESGetPCFunction(snes,F,&fnorm);CHKERRQ(ierr);
     }
 
     ierr = SNESSetIterationNumber(snes, i+1);CHKERRQ(ierr);

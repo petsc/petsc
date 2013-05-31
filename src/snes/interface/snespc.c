@@ -76,3 +76,62 @@ PetscErrorCode SNESComputeFunctionDefaultPC(SNES snes,Vec X,Vec F) {
   }
 PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "SNESGetPCFunction"
+/*@
+   SNESGetPCFunction - Gets the function from a preconditioner after SNESSolve() has been called.
+
+   Collective on SNES
+
+   Input Parameters:
+.  snes - the SNES context
+
+   Output Parameter:
+.  F - function vector
+.  fnorm - the norm of F
+
+   Level: developer
+
+.keywords: SNES, nonlinear, function
+
+.seealso: SNESGetPC(),SNESSetPC(),SNESComputeFunction(),SNESApplyPC(),SNESSolve()
+@*/
+PetscErrorCode SNESGetPCFunction(SNES snes,Vec F,PetscReal *fnorm)
+{
+  PetscErrorCode   ierr;
+  PCSide           npcside;
+  SNESFunctionType functype;
+  SNESNormSchedule normschedule;
+  Vec              FPC,XPC;
+
+  PetscFunctionBegin;
+  if (snes->pc) {
+    ierr = SNESGetPCSide(snes->pc,&npcside);CHKERRQ(ierr);
+    ierr = SNESGetFunctionType(snes->pc,&functype);CHKERRQ(ierr);
+    ierr = SNESGetNormSchedule(snes->pc,&normschedule);CHKERRQ(ierr);
+
+    /* check if the function is valid based upon how the inner solver is preconditioned */
+    if (normschedule != SNES_NORM_NONE && normschedule != SNES_NORM_INITIAL_ONLY && (npcside == PC_RIGHT || functype == SNES_FUNCTION_UNPRECONDITIONED)) {
+      if (FPC) {
+        ierr = SNESGetFunction(snes->pc,&FPC,NULL,NULL);CHKERRQ(ierr);
+        if (fnorm) {ierr = SNESGetFunctionNorm(snes->pc,fnorm);CHKERRQ(ierr);}
+        ierr = VecCopy(FPC,F);CHKERRQ(ierr);
+      } else {
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Preconditioner has no function");
+      }
+    } else {
+      ierr = SNESGetSolution(snes->pc,&XPC);CHKERRQ(ierr);
+      if (XPC) {
+        ierr = SNESComputeFunction(snes->pc,XPC,F);CHKERRQ(ierr);
+        if (fnorm) {ierr = VecNorm(F,NORM_2,fnorm);CHKERRQ(ierr);}
+      } else {
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Preconditioner has no solution");
+      }
+    }
+  } else {
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"No preconditioner set");
+  }
+
+  PetscFunctionReturn(0);
+}

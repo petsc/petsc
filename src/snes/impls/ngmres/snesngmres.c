@@ -166,7 +166,7 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
   Vec X,F,B,D,Y;
 
   /* candidate linear combination answers */
-  Vec XA,FA,XM,FM,FPC;
+  Vec XA,FA,XM,FM;
 
   /* coefficients and RHS to the minimization problem */
   PetscReal fnorm,fMnorm,fAnorm;
@@ -265,9 +265,7 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
         snes->reason = SNES_DIVERGED_INNER;
         PetscFunctionReturn(0);
       }
-      ierr = SNESGetFunction(snes->pc,&FPC,NULL,NULL);CHKERRQ(ierr);
-      ierr = VecCopy(FPC,FM);CHKERRQ(ierr);
-      ierr = SNESGetFunctionNorm(snes->pc,&fMnorm);CHKERRQ(ierr);
+      ierr = SNESGetPCFunction(snes,FM,&fMnorm);CHKERRQ(ierr);
     } else {
       /* no preconditioner -- just take gradient descent with line search */
       ierr = VecCopy(F,Y);CHKERRQ(ierr);

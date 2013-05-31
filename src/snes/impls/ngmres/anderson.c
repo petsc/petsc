@@ -46,7 +46,7 @@ PetscErrorCode SNESSolve_Anderson(SNES snes)
   Vec X,F,B,D;
 
   /* candidate linear combination answers */
-  Vec XA,FA,XM,FM,FPC;
+  Vec XA,FA,XM,FM;
 
   /* coefficients and RHS to the minimization problem */
   PetscReal fnorm,fMnorm;
@@ -139,9 +139,7 @@ PetscErrorCode SNESSolve_Anderson(SNES snes)
         snes->reason = SNES_DIVERGED_INNER;
         PetscFunctionReturn(0);
       }
-      ierr = SNESGetFunction(snes->pc,&FPC,NULL,NULL);CHKERRQ(ierr);
-      ierr = VecCopy(FPC,FM);CHKERRQ(ierr);
-      ierr = SNESGetFunctionNorm(snes->pc,&fMnorm);CHKERRQ(ierr);
+      ierr = SNESGetPCFunction(snes,FM,&fMnorm);CHKERRQ(ierr);
       if (ngmres->andersonBeta != 1.0) {
         VecAXPBY(XM,(1.0 - ngmres->andersonBeta),ngmres->andersonBeta,X);CHKERRQ(ierr);
       }

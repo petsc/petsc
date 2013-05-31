@@ -225,9 +225,7 @@ PetscErrorCode SNESSolve_NEWTONLS(SNES snes)
           snes->reason = SNES_DIVERGED_INNER;
           PetscFunctionReturn(0);
         }
-        ierr = SNESGetFunction(snes->pc, &FPC, NULL, NULL);CHKERRQ(ierr);
-        ierr = VecCopy(FPC, F);CHKERRQ(ierr);
-        ierr = SNESGetFunctionNorm(snes->pc, &fnorm);CHKERRQ(ierr);
+        ierr = SNESGetPCFunction(snes,F,&fnorm);CHKERRQ(ierr);
       } else if (snes->pcside == PC_LEFT && snes->functype == SNES_FUNCTION_UNPRECONDITIONED) {
         ierr = SNESApplyPC(snes,X,F,&fnorm,F);CHKERRQ(ierr);
         ierr = SNESGetConvergedReason(snes->pc,&reason);CHKERRQ(ierr);
