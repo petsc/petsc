@@ -119,6 +119,8 @@ typedef struct {
   PetscReal   t;
   IS          is_diff; /* indices for differential equations */
   IS          is_alg; /* indices for algebraic equations */
+  Vec         xl,xu; /* lower and upper bounds on variables */
+  PetscReal   VRmax,VRmin; /* upper and lower limits on VR for all generators */
 } Userctx;
 
 
@@ -789,6 +791,31 @@ PetscErrorCode IJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat *A,Mat
   PetscFunctionReturn(0);
 }
 
+/* Sets the bounds on the variables. We only set bounds on VR as an
+   example here
+*/
+#undef __FUNCT__
+#define __FUNCT__ "SetVariableBounds"
+PetscErrorCode SetVariableBounds(Vec xl,Vec xu,Userctx* user)
+{
+  PetscErrorCode ierr;
+  PetscScalar    *l,*u;
+  PetscInt       i;
+
+  PetscFunctionBegin;
+  ierr = VecSet(xl,-1.E8);CHKERRQ(ierr);
+  ierr = VecSet(xu,1.E8);CHKERRQ(ierr);
+  ierr = VecGetArray(xl,&l);CHKERRQ(ierr);
+  ierr = VecGetArray(xu,&u);CHKERRQ(ierr);
+  for (i=0; i < ngen; i++) {
+    l[9*i+8] = user->VRmin;
+    u[9*i+8] = user->VRmax;
+  }
+  ierr = VecRestoreArray(xl,&l);CHKERRQ(ierr);
+  ierr = VecRestoreArray(xu,&u);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
@@ -850,6 +877,11 @@ int main(int argc,char **argv)
     user.tmax      = 5.0;
     ierr           = PetscOptionsReal("-t0","","",user.t0,&user.t0,NULL);CHKERRQ(ierr);
     ierr           = PetscOptionsReal("-tmax","","",user.tmax,&user.tmax,NULL);CHKERRQ(ierr);
+    user.VRmax     = 20.0;
+    user.VRmin     = 0.0;
+    ierr           = PetscOptionsReal("-VRmax","","",user.VRmax,&user.VRmax,NULL);CHKERRQ(ierr);
+    ierr           = PetscOptionsReal("-VRmin","","",user.VRmin,&user.VRmin,NULL);CHKERRQ(ierr);
+
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
@@ -917,7 +949,12 @@ int main(int argc,char **argv)
   ierr = TSSetInitialTimeStep(ts,0.0,0.01);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
   ierr = TSSetPostStep(ts,SaveSolution);CHKERRQ(ierr);
+  ierr = TSSetSolution(ts,X);CHKERRQ(ierr);
 
+  ierr = VecDuplicate(X,&user.xl);CHKERRQ(ierr);
+  ierr = VecDuplicate(X,&user.xu);CHKERRQ(ierr);
+  ierr = SetVariableBounds(user.xl,user.xu,&user);CHKERRQ(ierr);
+  ierr = TSVISetVariableBounds(ts,user.xl,user.xu);CHKERRQ(ierr);
   user.alg_flg = PETSC_FALSE;
   /* Prefault period */
   ierr = TSSolve(ts,X);CHKERRQ(ierr);
@@ -1032,6 +1069,8 @@ int main(int argc,char **argv)
   ierr = MatDestroy(&user.Ybus);CHKERRQ(ierr);
   ierr = MatDestroy(&user.Sol);CHKERRQ(ierr);
   ierr = VecDestroy(&X);CHKERRQ(ierr);
+  ierr = VecDestroy(&user.xl);CHKERRQ(ierr);
+  ierr = VecDestroy(&user.xu);CHKERRQ(ierr);
   ierr = VecDestroy(&user.V0);CHKERRQ(ierr);
   ierr = DMDestroy(&user.dmgen);CHKERRQ(ierr);
   ierr = DMDestroy(&user.dmnet);CHKERRQ(ierr);

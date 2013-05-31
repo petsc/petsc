@@ -3,8 +3,8 @@
 -ts_exact_final_time MATCHSTEP
 -ts_theta_endpoint
 -ts_monitor
-#-snes_type ls
--snes_linesearch_type basic
+-snes_type vinewtonrsls
+-snes_linesearch_type bt
 -pc_type lu
 -pc_factor_mat_ordering_type qmd
 -snes_atol 1e-8
