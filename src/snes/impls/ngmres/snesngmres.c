@@ -180,7 +180,6 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
 
   SNESConvergedReason reason;
   PetscBool           lssucceed;
-  PCSide              npcside;
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
