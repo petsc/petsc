@@ -18,6 +18,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_MS(SNES);
 PETSC_EXTERN PetscErrorCode SNESCreate_NASM(SNES);
 PETSC_EXTERN PetscErrorCode SNESCreate_Anderson(SNES);
 PETSC_EXTERN PetscErrorCode SNESCreate_ASPIN(SNES);
+PETSC_EXTERN PetscErrorCode SNESCreate_Composite(SNES);
 
 const char *SNESConvergedReasons_Shifted[] = {" "," ","DIVERGED_LOCAL_MIN","DIVERGED_INNER","DIVERGED_LINE_SEARCH","DIVERGED_MAX_IT",
                                               "DIVERGED_FNORM_NAN","DIVERGED_LINEAR_SOLVE","DIVERGED_FUNCTION_COUNT","DIVERGED_FUNCTION_DOMAIN",
@@ -75,5 +76,6 @@ PetscErrorCode  SNESRegisterAll(void)
   ierr = SNESRegister(SNESNASM,         SNESCreate_NASM);CHKERRQ(ierr);
   ierr = SNESRegister(SNESANDERSON,     SNESCreate_Anderson);CHKERRQ(ierr);
   ierr = SNESRegister(SNESASPIN,        SNESCreate_ASPIN);CHKERRQ(ierr);
+  ierr = SNESRegister(SNESCOMPOSITE,    SNESCreate_Composite);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
