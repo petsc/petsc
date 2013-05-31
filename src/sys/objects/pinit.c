@@ -440,6 +440,20 @@ PETSC_EXTERN PetscMPIInt PetscDataRep_write_conv_fn(void*, MPI_Datatype,PetscMPI
 
 int  PetscGlobalArgc   = 0;
 char **PetscGlobalArgs = 0;
+PetscSegBuffer PetscCitationsList; 
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscCitationsInitialize"
+PetscErrorCode PetscCitationsInitialize()
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscSegBufferCreate(1,10000,&PetscCitationsList);CHKERRQ(ierr);
+  ierr = PetscCitationsRegister("@TechReport{petsc-user-ref,\n  Author = {Satish Balay and Jed Brown and and Kris Buschelman and Victor Eijkhout\n            and William D.  Gropp and Dinesh Kaushik and Matthew G. Knepley\n            and Lois Curfman McInnes and Barry F. Smith and Hong Zhang},\n  Title = {{PETS}c Users Manual},\n  Number = {ANL-95/11 - Revision 3.4},\n  Institution = {Argonne National Laboratory},\n  Year = {2013}\n}\n",NULL);CHKERRQ(ierr);
+  ierr = PetscCitationsRegister("@InProceedings{petsc-efficient,\n  Author = {Satish Balay and William D. Gropp and Lois Curfman McInnes and Barry F. Smith},\n  Title = {Efficient Management of Parallelism in Object Oriented Numerical Software Libraries},\n  Booktitle = {Modern Software Tools in Scientific Computing},\n  Editor = {E. Arge and A. M. Bruaset and H. P. Langtangen},\n  Pages = {163--202},\n  Publisher = {Birkh{\\\"{a}}user Press},\n  Year = {1997}\n}\n",NULL);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscGetArgs"
@@ -857,6 +871,8 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   ierr = PetscFPTCreate(10000);CHKERRQ(ierr);
 #endif
 
+  ierr = PetscCitationsInitialize();CHKERRQ(ierr);
+
   /*
       Once we are completedly initialized then we can set this variables
   */
@@ -898,9 +914,7 @@ PetscErrorCode  PetscFinalize(void)
   PetscMPIInt    rank;
   PetscInt       nopt;
   PetscBool      flg1 = PETSC_FALSE,flg2 = PETSC_FALSE,flg3 = PETSC_FALSE;
-#if defined(PETSC_HAVE_AMS)
-  PetscBool      flg = PETSC_FALSE;
-#endif
+  PetscBool      flg;
 #if defined(PETSC_USE_LOG)
   char           mname[PETSC_MAX_PATH_LEN];
 #endif
@@ -912,12 +926,36 @@ PetscErrorCode  PetscFinalize(void)
   }
   ierr = PetscInfo(NULL,"PetscFinalize() called\n");CHKERRQ(ierr);
 
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+
+  ierr = PetscOptionsHasName(NULL,"-citations",&flg);CHKERRQ(ierr);
+  if (flg) {
+    char  *cits, filename[PETSC_MAX_PATH_LEN];
+    FILE  *fd = PETSC_STDOUT;
+
+    ierr = PetscOptionsGetString(NULL,"-citations",filename,PETSC_MAX_PATH_LEN,NULL);CHKERRQ(ierr);
+    if (filename[0]) {
+      ierr = PetscFOpen(PETSC_COMM_WORLD,filename,"w",&fd);CHKERRQ(ierr);
+    }
+    ierr = PetscSegBufferGet(PetscCitationsList,1,&cits);CHKERRQ(ierr);
+    cits[0] = 0;
+    ierr = PetscSegBufferExtractAlloc(PetscCitationsList,&cits);CHKERRQ(ierr);
+    ierr = PetscFPrintf(PETSC_COMM_WORLD,fd,"If you publish results based on this computation please cite the following:\n");CHKERRQ(ierr);
+    ierr = PetscFPrintf(PETSC_COMM_WORLD,fd,"===========================================================================\n");CHKERRQ(ierr);
+    ierr = PetscFPrintf(PETSC_COMM_WORLD,fd,"%s",cits);CHKERRQ(ierr);
+    ierr = PetscFPrintf(PETSC_COMM_WORLD,fd,"===========================================================================\n");CHKERRQ(ierr);
+    ierr = PetscFClose(PETSC_COMM_WORLD,fd);CHKERRQ(ierr);
+    ierr = PetscFree(cits);CHKERRQ(ierr);
+  }
+  ierr = PetscSegBufferDestroy(&PetscCitationsList);CHKERRQ(ierr);
+
 #if defined(PETSC_SERIALIZE_FUNCTIONS)
   ierr = PetscFPTDestroy();CHKERRQ(ierr);
 #endif
 
 
 #if defined(PETSC_HAVE_AMS)
+  flg = PETSC_FALSE;
   ierr = PetscOptionsGetBool(NULL,"-options_gui",&flg,NULL);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscOptionsAMSDestroy();CHKERRQ(ierr);
@@ -935,7 +973,6 @@ PetscErrorCode  PetscFinalize(void)
 
   ierr = PetscHMPIFinalize();CHKERRQ(ierr);
 
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,"-malloc_info",&flg2,NULL);CHKERRQ(ierr);
   if (!flg2) {
     flg2 = PETSC_FALSE;
