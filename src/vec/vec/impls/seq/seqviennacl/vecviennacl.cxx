@@ -326,8 +326,8 @@ PetscErrorCode VecWAXPY_SeqViennaCL(Vec win,PetscScalar alpha,Vec xin, Vec yin)
 /*
  * Operation x = x + sum_i alpha_i * y_i for vectors x, y_i and scalars alpha_i
  *
- * ViennaCL supports a fast evaluation of x += alpha * y and x += alpha * y + beta * z.
- * Since there is no WAXPBY-function in PETSc, we use a fallback to an iterated application of x += alpha_i y_i for now.
+ * ViennaCL supports a fast evaluation of x += alpha * y and x += alpha * y + beta * z,
+ * hence there is an iterated application of these until the final result is obtained
  */
 #undef __FUNCT__
 #define __FUNCT__ "VecMAXPY_SeqViennaCL"
@@ -338,7 +338,12 @@ PetscErrorCode VecMAXPY_SeqViennaCL(Vec xin, PetscInt nv,const PetscScalar *alph
 
   PetscFunctionBegin;
   for (j = 0; j < nv; ++j) {
-    ierr = VecAXPY_SeqViennaCL(xin,alpha[j],y[j]);CHKERRQ(ierr);   /* Note: The extra GetArray/RestoreArray-overhead is acceptable because of the kernel launch overhead */
+    if (j+1 < nv) {
+      VecAXPBYPCZ_SeqViennaCL(xin,alpha[j],alpha[j+1],1.0,y[j],y[j+1]);
+      ++j;
+    } else {
+      ierr = VecAXPY_SeqViennaCL(xin,alpha[j],y[j]);CHKERRQ(ierr);
+    }
   }
   PetscFunctionReturn(0);
 }
@@ -648,7 +653,8 @@ PetscErrorCode VecAXPBYPCZ_SeqViennaCL(Vec zin,PetscScalar alpha,PetscScalar bet
   } else if (xin->map->n > 0) {
     try {
       /* Split operation into two steps. This is not completely ideal, but avoids temporaries (which are far worse) */
-      *zgpu *= gamma;
+      if (gamma != 1.0)
+        *zgpu *= gamma;
       *zgpu += alpha * *xgpu + beta * *ygpu;
     } catch(std::exception const & ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex.what());
