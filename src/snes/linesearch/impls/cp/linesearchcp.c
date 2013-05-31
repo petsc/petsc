@@ -40,7 +40,7 @@ static PetscErrorCode SNESLineSearchApply_CP(SNESLineSearch linesearch)
     if (linesearch->ops->viproject) {
       ierr = (*linesearch->ops->viproject)(snes, W);CHKERRQ(ierr);
     }
-    ierr = SNESComputeFunction(snes, W, F);CHKERRQ(ierr);
+    ierr = (*linesearch->ops->snesfunc)(snes,W,F);CHKERRQ(ierr);
 
     ierr = VecDot(F, Y, &fty);CHKERRQ(ierr);
 
@@ -65,7 +65,7 @@ static PetscErrorCode SNESLineSearchApply_CP(SNESLineSearch linesearch)
       if (linesearch->ops->viproject) {
         ierr = (*linesearch->ops->viproject)(snes, W);CHKERRQ(ierr);
       }
-      ierr = SNESComputeFunction(snes, W, F);CHKERRQ(ierr);
+      ierr = (*linesearch->ops->snesfunc)(snes,W,F);CHKERRQ(ierr);
       ierr = VecDot(F, Y, &fty_mid1);CHKERRQ(ierr);
       s    = (3.*fty - 4.*fty_mid1 + fty_old) / delLambda;
     } else {
@@ -74,14 +74,14 @@ static PetscErrorCode SNESLineSearchApply_CP(SNESLineSearch linesearch)
       if (linesearch->ops->viproject) {
         ierr = (*linesearch->ops->viproject)(snes, W);CHKERRQ(ierr);
       }
-      ierr = SNESComputeFunction(snes, W, F);CHKERRQ(ierr);
+      ierr = (*linesearch->ops->snesfunc)(snes,W,F);CHKERRQ(ierr);
       ierr = VecDot(F, Y, &fty_mid1);CHKERRQ(ierr);
       ierr = VecCopy(X, W);CHKERRQ(ierr);
       ierr = VecAXPY(W, -(lambda + 0.5*(lambda - lambda_old)), Y);CHKERRQ(ierr);
       if (linesearch->ops->viproject) {
         ierr = (*linesearch->ops->viproject)(snes, W);CHKERRQ(ierr);
       }
-      ierr = SNESComputeFunction(snes, W, F);CHKERRQ(ierr);
+      ierr = (*linesearch->ops->snesfunc)(snes, W, F);CHKERRQ(ierr);
       ierr = VecDot(F, Y, &fty_mid2);CHKERRQ(ierr);
       s    = (2.*fty_mid2 + 3.*fty - 6.*fty_mid1 + fty_old) / (3.*delLambda);
     }
@@ -116,7 +116,7 @@ static PetscErrorCode SNESLineSearchApply_CP(SNESLineSearch linesearch)
   } else {
     ierr = VecCopy(W, X);CHKERRQ(ierr);
   }
-  ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
+  ierr = (*linesearch->ops->snesfunc)(snes,X,F);CHKERRQ(ierr);
   ierr = SNESGetFunctionDomainError(snes, &domainerror);CHKERRQ(ierr);
   if (domainerror) {
     ierr = SNESLineSearchSetSuccess(linesearch, PETSC_FALSE);CHKERRQ(ierr);
