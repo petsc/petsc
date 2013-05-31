@@ -356,7 +356,7 @@ PetscErrorCode MatMult_SeqAIJCUSP(Mat A,Vec xx,Vec yy)
   static PetscBool cite = PETSC_FALSE;
 
   PetscFunctionBegin;
-  ierr = PetscCitationsRegister("@incollection{msk2013,\n  author = {Victor Minden and Barry F. Smith and Matthew G. Knepley},\n  title = {Preliminary Implementation of {PETSc} Using {GPUs}},\n  booktitle = {GPU Solutions to Multi-scale Problems in Science and Engineering},\n  series = {Lecture Notes in Earth System Sciences},\n  editor = {David A. Yuen and Long Wang and Xuebin Chi and Lennart Johnsson and Wei Ge and Yaolin Shi},\n  publisher = {Springer Berlin Heidelberg},\n  pages = {131--140},\n  year = {2013},\n}\n,&cite);CHKERRQ(ierr);
+  ierr = PetscCitationsRegister("@incollection{msk2013,\n  author = {Victor Minden and Barry F. Smith and Matthew G. Knepley},\n  title = {Preliminary Implementation of {PETSc} Using {GPUs}},\n  booktitle = {GPU Solutions to Multi-scale Problems in Science and Engineering},\n  series = {Lecture Notes in Earth System Sciences},\n  editor = {David A. Yuen and Long Wang and Xuebin Chi and Lennart Johnsson and Wei Ge and Yaolin Shi},\n  publisher = {Springer Berlin Heidelberg},\n  pages = {131--140},\n  year = {2013},\n}\n",&cite);CHKERRQ(ierr);
   /* The line below should not be necessary as it has been moved to MatAssemblyEnd_SeqAIJCUSP
      ierr = MatCUSPCopyToGPU(A);CHKERRQ(ierr); */
   ierr = VecCUSPGetArrayRead(xx,&xarray);CHKERRQ(ierr);
