@@ -1638,7 +1638,7 @@ PetscErrorCode  SNESSetInitialFunction(SNES snes, Vec f)
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   PetscValidHeaderSpecific(f,VEC_CLASSID,2);
   PetscCheckSameComm(snes,1,f,2);
-  if (snes->pcside != PC_RIGHT) {
+  if (snes->pcside == PC_LEFT && snes->functype == SNES_FUNCTION_PRECONDITIONED) {
     snes->vec_func_init_set = PETSC_FALSE;
     PetscFunctionReturn(0);
   }
@@ -1676,7 +1676,7 @@ PetscErrorCode  SNESSetInitialFunctionNorm(SNES snes, PetscReal fnorm)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
-  if (snes->pcside != PC_RIGHT) {
+  if (snes->pcside == PC_LEFT && snes->functype == SNES_FUNCTION_PRECONDITIONED) {
     snes->norm_init_set = PETSC_FALSE;
     PetscFunctionReturn(0);
   }
