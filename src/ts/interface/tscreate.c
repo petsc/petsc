@@ -67,7 +67,7 @@ PetscErrorCode  TSCreate(MPI_Comm comm, TS *ts)
   t->errorifstepfailed = PETSC_TRUE;
   t->rhsjacobian.time  = -1e20;
   t->rhsjacobian.scale = 1.;
-  t->ijacobian.time    = -1e20;
+  t->ijacobian.shift   = 1.;
   t->equation_type     = TS_EQ_UNSPECIFIED;
 
   t->atol             = 1e-4;
