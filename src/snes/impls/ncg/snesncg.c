@@ -53,6 +53,7 @@ PetscErrorCode SNESSetUp_NCG(SNES snes)
   ierr = SNESSetWorkVecs(snes,2);CHKERRQ(ierr);
   ierr = SNESSetUpMatrices(snes);CHKERRQ(ierr);
   if (snes->pcside == PC_RIGHT) SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE, "SNESNCG only supports left preconditioning");
+  if (snes->functype == SNES_FUNCTION_DEFAULT) snes->functype = SNES_FUNCTION_UNPRECONDITIONED;
   ierr = SNESLineSearchRegister(SNESLINESEARCHNCGLINEAR, SNESLineSearchCreate_NCGLinear);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -503,7 +504,6 @@ PETSC_EXTERN PetscErrorCode SNESCreate_NCG(SNES snes)
   snes->usesksp = PETSC_FALSE;
   snes->usespc  = PETSC_TRUE;
   snes->pcside  = PC_LEFT;
-  snes->functype = SNES_FUNCTION_PRECONDITIONED;
 
   if (!snes->tolerancesset) {
     snes->max_funcs = 30000;

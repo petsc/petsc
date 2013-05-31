@@ -239,6 +239,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_Anderson(SNES snes)
 
   snes->usespc  = PETSC_TRUE;
   snes->usesksp = PETSC_FALSE;
+  snes->pcside  = PC_RIGHT;
 
   ierr          = PetscNewLog(snes,SNES_NGMRES,&ngmres);CHKERRQ(ierr);
   snes->data    = (void*) ngmres;

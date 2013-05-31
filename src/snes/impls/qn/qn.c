@@ -536,6 +536,9 @@ static PetscErrorCode SNESSetUp_QN(SNES snes)
   if (qn->scale_type == SNES_QN_SCALE_JACOBIAN) {
     ierr = SNESSetUpMatrices(snes);CHKERRQ(ierr);
   }
+
+  if (snes->pcside == PC_LEFT && snes->functype == SNES_FUNCTION_DEFAULT) {snes->functype = SNES_FUNCTION_UNPRECONDITIONED;}
+
   PetscFunctionReturn(0);
 }
 
@@ -760,7 +763,6 @@ PETSC_EXTERN PetscErrorCode SNESCreate_QN(SNES snes)
   snes->ops->reset          = SNESReset_QN;
 
   snes->pcside = PC_LEFT;
-  snes->functype = SNES_FUNCTION_PRECONDITIONED;
 
   snes->usespc  = PETSC_TRUE;
   snes->usesksp = PETSC_FALSE;

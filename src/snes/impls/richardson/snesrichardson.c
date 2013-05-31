@@ -45,6 +45,7 @@ PetscErrorCode SNESSetUp_NRichardson(SNES snes)
 {
   PetscFunctionBegin;
   if (snes->pcside == PC_RIGHT) {SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"NRichardson only supports left preconditioning");}
+  if (snes->functype == SNES_FUNCTION_DEFAULT) snes->functype = SNES_FUNCTION_UNPRECONDITIONED;
   PetscFunctionReturn(0);
 }
 
@@ -294,7 +295,6 @@ PETSC_EXTERN PetscErrorCode SNESCreate_NRichardson(SNES snes)
   snes->usesksp = PETSC_FALSE;
   snes->usespc  = PETSC_TRUE;
 
-  snes->functype = SNES_FUNCTION_UNPRECONDITIONED;
   snes->pcside = PC_LEFT;
 
   ierr       = PetscNewLog(snes, SNES_NRichardson, &neP);CHKERRQ(ierr);

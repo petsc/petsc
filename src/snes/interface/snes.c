@@ -1431,7 +1431,7 @@ PetscErrorCode  SNESCreate(MPI_Comm comm,SNES *outsnes)
   snes->max_funcs         = 10000;
   snes->norm              = 0.0;
   snes->normschedule      = SNES_NORM_ALWAYS;
-  snes->functype          = SNES_FUNCTION_UNPRECONDITIONED;
+  snes->functype          = SNES_FUNCTION_DEFAULT;
   snes->rtol              = 1.e-8;
   snes->ttol              = 0.0;
   snes->abstol            = 1.e-50;
@@ -2586,14 +2586,6 @@ PetscErrorCode  SNESSetUp(SNES snes)
   }
   ierr = SNESLineSearchSetFunction(snes->linesearch,SNESComputeFunction);CHKERRQ(ierr);
 
-  if (snes->pc && (snes->pcside == PC_LEFT)) {
-    snes->mf          = PETSC_TRUE;
-    snes->mf_operator = PETSC_FALSE;
-    if (snes->functype == SNES_FUNCTION_PRECONDITIONED) {
-      ierr = SNESLineSearchSetFunction(snes->linesearch,SNESComputeFunctionDefaultPC);CHKERRQ(ierr);
-    }
-  }
-
   if (snes->mf) {
     ierr = SNESSetUpMatrixFree_Private(snes, snes->mf_operator, snes->mf_version);CHKERRQ(ierr);
   }
@@ -2640,6 +2632,14 @@ PetscErrorCode  SNESSetUp(SNES snes)
 
   if (snes->ops->setup) {
     ierr = (*snes->ops->setup)(snes);CHKERRQ(ierr);
+  }
+
+  if (snes->pc && (snes->pcside == PC_LEFT)) {
+    snes->mf          = PETSC_TRUE;
+    snes->mf_operator = PETSC_FALSE;
+    if (snes->functype == SNES_FUNCTION_PRECONDITIONED) {
+      ierr = SNESLineSearchSetFunction(snes->linesearch,SNESComputeFunctionDefaultPC);CHKERRQ(ierr);
+    }
   }
 
   snes->setupcalled = PETSC_TRUE;

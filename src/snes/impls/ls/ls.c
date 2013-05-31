@@ -135,7 +135,7 @@ PetscErrorCode SNESSolve_NEWTONLS(SNES snes)
   PetscBool           lssucceed;
   MatStructure        flg = DIFFERENT_NONZERO_PATTERN;
   PetscReal           fnorm,gnorm,xnorm,ynorm;
-  Vec                 Y,X,F,G,W,FPC;
+  Vec                 Y,X,F,G,W;
   KSPConvergedReason  kspreason;
   PetscBool           domainerror;
   SNESLineSearch      linesearch;
@@ -326,6 +326,7 @@ PetscErrorCode SNESSetUp_NEWTONLS(SNES snes)
   PetscFunctionBegin;
   ierr = SNESSetWorkVecs(snes,2);CHKERRQ(ierr);
   ierr = SNESSetUpMatrices(snes);CHKERRQ(ierr);
+  if (snes->pcside == PC_LEFT && snes->functype == SNES_FUNCTION_DEFAULT) snes->functype = SNES_FUNCTION_PRECONDITIONED;
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
@@ -447,6 +448,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_NEWTONLS(SNES snes)
   snes->ops->view           = SNESView_NEWTONLS;
   snes->ops->reset          = SNESReset_NEWTONLS;
 
+  snes->pcside  = PC_RIGHT;
   snes->usesksp = PETSC_TRUE;
   snes->usespc  = PETSC_TRUE;
   ierr          = PetscNewLog(snes,SNES_NEWTONLS,&neP);CHKERRQ(ierr);
