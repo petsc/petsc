@@ -140,6 +140,7 @@ PetscErrorCode SNESSolve_NEWTONLS(SNES snes)
   PetscBool           domainerror;
   SNESLineSearch      linesearch;
   SNESConvergedReason reason;
+  PCSide              npcside;
 
   PetscFunctionBegin;
   snes->numFailures            = 0;
