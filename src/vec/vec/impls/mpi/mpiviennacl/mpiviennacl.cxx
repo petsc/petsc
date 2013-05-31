@@ -170,7 +170,7 @@ PetscErrorCode VecDotNorm2_MPIViennaCL(Vec s,Vec t,PetscScalar *dp,PetscScalar *
 
   PetscFunctionBegin;
   ierr = VecDotNorm2_SeqViennaCL(s,t,work,work+1);CHKERRQ(ierr);
-  ierr = MPI_Allreduce(&work,&sum,2,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)s));CHKERRQ(ierr);
+  ierr = MPI_Allreduce((void*)&work,(void*)&sum,2,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)s));CHKERRQ(ierr);
   *dp  = sum[0];
   *nm  = sum[1];
   PetscFunctionReturn(0);
@@ -215,6 +215,7 @@ PETSC_EXTERN PetscErrorCode VecCreate_MPIViennaCL(Vec vv)
      reset array?
      get values?
   */
+  ierr = VecSetFromOptions_SeqViennaCL(vv);CHKERRQ(ierr); /* Allows to set device type before allocating any objects */
   ierr = VecViennaCLAllocateCheck(vv);CHKERRQ(ierr);
   vv->valid_GPU_array      = PETSC_VIENNACL_GPU;
   ierr = VecSet(vv,0.0);CHKERRQ(ierr);
