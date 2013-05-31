@@ -133,6 +133,7 @@ int main(int argc, char **argv)
   ierr = PetscViewerDestroy(&user.binv);CHKERRQ(ierr);
   ierr = DMDestroy(&user.da);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Corrected user->mu_delta = %f, user->mu_w = %f user->PM_min = %f,user->ddelta = %f\n",user.mu_delta,user.mu_w,user.PM_min,user.ddelta);CHKERRQ(ierr);
   PetscFinalize();
   return 0;
 }
@@ -200,7 +201,6 @@ PetscErrorCode ini_bou(Vec X,AppCtx* user)
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Original user->mu_delta = %f, user->mu_w = %f\n",user->mu_delta,user->mu_w);CHKERRQ(ierr);
   ierr = DMDAGetLogicalCoordinate(user->da,user->mu_delta,user->mu_w,0.0,&I,&J,NULL,&user->mu_delta,&user->mu_w,NULL);CHKERRQ(ierr);
   user->PM_min = user->Pmax*sin(user->mu_delta);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Corrected user->mu_delta = %f, user->mu_w = %f user->PM_min = %f,user->ddelta = %f\n",user->mu_delta,user->mu_w,user->PM_min,user->ddelta);CHKERRQ(ierr);
   if (I > -1 && J > -1) {
     p[J][I] = 1.0;
   }
@@ -418,7 +418,7 @@ PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec X,Vec F,void *ctx)
 
   PetscScalar diffuse1,gamma;
   gamma = user->D*1.0/(2*user->H);
-  diffuse1 = user->lambda*user->lambda*user->q/(user->lambda*gamma+1)*(1.0 - PetscExpScalar(-t*(gamma+1.0)/user->lambda));
+  diffuse1 = user->lambda*user->lambda*user->q/(user->lambda*gamma+1)*(1.0 - PetscExpScalar(-t*(gamma + 1.0/user->lambda)));
   user->disper_coe = 1.0/(4*user->H*user->H)*diffuse1;
 
   for (i=xs; i < xs+xm; i++) {

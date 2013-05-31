@@ -4,8 +4,10 @@
 -ts_type ssp
 -ts_final_time 5.0
 -ts_dt 0.001
+-howoften 100
 
--q 0.0
+-q 0.01
+-lambda 0.025
 -Inertia 5.0
 -D 5.0
 -PM_min 0.9
@@ -35,6 +37,6 @@
 
 -stencil_width 1
 
--tf 1.0
--tcl 1.05
+-tf 10000
+-tcl 10500
 
