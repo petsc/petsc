@@ -883,47 +883,6 @@ PetscErrorCode VecDestroy_SeqViennaCL(Vec v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecSetFromOptions_SeqViennaCL"
-PetscErrorCode VecSetFromOptions_SeqViennaCL(Vec v)
-{
-  PetscErrorCode       ierr;
-  PetscBool            flg;
-
-  PetscFunctionBegin;
-  ierr = PetscOptionsHead("SeqAIJCUSP options");CHKERRQ(ierr);
-  ierr = PetscObjectOptionsBegin((PetscObject)v);
-
-  ierr = PetscOptionsHasName(NULL,"-viennacl_device_cpu",&flg);CHKERRQ(ierr);
-  if (flg) {
-    try {
-      viennacl::ocl::set_context_device_type(0, CL_DEVICE_TYPE_CPU);
-    } catch (std::exception const & ex) {
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex.what());
-    }
-  }
-  ierr = PetscOptionsHasName(NULL,"-viennacl_device_gpu",&flg);CHKERRQ(ierr);
-  if (flg) {
-    try {
-      viennacl::ocl::set_context_device_type(0, CL_DEVICE_TYPE_GPU);
-    } catch (std::exception const & ex) {
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex.what());
-    }
-  }
-  ierr = PetscOptionsHasName(NULL,"-viennacl_device_accelerator",&flg);CHKERRQ(ierr);
-  if (flg) {
-    try {
-      viennacl::ocl::set_context_device_type(0, CL_DEVICE_TYPE_ACCELERATOR);
-    } catch (std::exception const & ex) {
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex.what());
-    }
-  }
-
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-
-}
-
 
 #undef __FUNCT__
 #define __FUNCT__ "VecCreate_SeqViennaCL"

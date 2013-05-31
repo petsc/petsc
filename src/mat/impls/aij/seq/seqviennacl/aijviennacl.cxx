@@ -358,6 +358,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJViennaCL(Mat B)
   B->ops->destroy        = MatDestroy_SeqAIJViennaCL;
   B->ops->getvecs        = MatGetVecs_SeqAIJViennaCL;
 
+  ierr = MatSetFromOptions_SeqViennaCL(B);CHKERRQ(ierr); /* Allows to set device type before allocating any objects */
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQAIJVIENNACL);CHKERRQ(ierr);
 
   B->valid_GPU_matrix = PETSC_VIENNACL_UNALLOCATED;

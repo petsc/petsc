@@ -1,5 +1,6 @@
 #include "petscconf.h"
 #include <../src/mat/impls/aij/mpi/mpiaij.h>   /*I "petscmat.h" I*/
+#include <../src/mat/impls/aij/seq/seqviennacl/viennaclmatimpl.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMPIAIJSetPreallocation_MPIAIJViennaCL"
@@ -76,6 +77,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJViennaCL(Mat A)
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatMPIAIJSetPreallocation_C",MatMPIAIJSetPreallocation_MPIAIJViennaCL);CHKERRQ(ierr);
   A->ops->getvecs        = MatGetVecs_MPIAIJViennaCL;
 
+  ierr = MatSetFromOptions_SeqViennaCL(A);CHKERRQ(ierr); /* Allows to set device type before allocating any objects */
   ierr = PetscObjectChangeTypeName((PetscObject)A,MATMPIAIJVIENNACL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
