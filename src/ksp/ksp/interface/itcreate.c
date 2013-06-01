@@ -803,9 +803,12 @@ PetscErrorCode  KSPCreate(MPI_Comm comm,KSP *inksp)
 
   Level: intermediate
 
+  Developer Note: KSPRegister() is used to add Krylov types to KSPList from which they
+  are accessed by KSPSetType().
+
 .keywords: KSP, set, method
 
-.seealso: PCSetType(), KSPType
+.seealso: PCSetType(), KSPType, KSPRegister(), KSPCreate()
 
 @*/
 PetscErrorCode  KSPSetType(KSP ksp, KSPType type)

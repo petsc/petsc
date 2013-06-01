@@ -2094,15 +2094,13 @@ PETSC_EXTERN PetscErrorCode PetscGetDisplay(char[],size_t);
 
 /*J
     PetscRandomType - String with the name of a PETSc randomizer
-       with an optional dynamic library name, for example
-       http://www.mcs.anl.gov/petsc/lib.a:myrandcreate()
 
    Level: beginner
 
    Notes: to use the SPRNG you must have ./configure PETSc
    with the option --download-sprng
 
-.seealso: PetscRandomSetType(), PetscRandom
+.seealso: PetscRandomSetType(), PetscRandom, PetscRandomCreate()
 J*/
 typedef const char* PetscRandomType;
 #define PETSCRAND       "rand"

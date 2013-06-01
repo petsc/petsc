@@ -15,7 +15,7 @@ PetscFunctionList PCList = 0;
 #undef __FUNCT__
 #define __FUNCT__ "PCSetType"
 /*@C
-   PCSetType - Builds PC for a particular preconditioner.
+   PCSetType - Builds PC for a particular preconditioner type
 
    Collective on PC
 
@@ -47,9 +47,12 @@ PetscFunctionList PCList = 0;
 
   Level: intermediate
 
+  Developer Note: PCRegister() is used to add preconditioner types to PCList from which they
+  are accessed by PCSetType().
+
 .keywords: PC, set, method, type
 
-.seealso: KSPSetType(), PCType
+.seealso: KSPSetType(), PCType, PCRegister(), PCCreate(), KSPGetPC()
 
 @*/
 PetscErrorCode  PCSetType(PC pc,PCType type)

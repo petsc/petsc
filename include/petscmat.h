@@ -6,24 +6,23 @@
 #include <petscvec.h>
 
 /*S
-     Mat - Abstract PETSc matrix object
+     Mat - Abstract PETSc matrix object used to manage all linear operators in PETSc, even those without
+           an explicit sparse representation (such as matrix-free operators)
 
    Level: beginner
 
   Concepts: matrix; linear operator
 
-.seealso:  MatCreate(), MatType, MatSetType()
+.seealso:  MatCreate(), MatType, MatSetType(), MatDestroy()
 S*/
 typedef struct _p_Mat*           Mat;
 
 /*J
-    MatType - String with the name of a PETSc matrix or the creation function
-       with an optional dynamic library name, for example
-       http://www.mcs.anl.gov/petsc/lib.a:mymatcreate()
+    MatType - String with the name of a PETSc matrix type
 
    Level: beginner
 
-.seealso: MatSetType(), Mat, MatSolverPackage
+.seealso: MatSetType(), Mat, MatSolverPackage, MatRegister()
 J*/
 typedef const char* MatType;
 #define MATSAME            "same"
@@ -906,13 +905,9 @@ PETSC_EXTERN PetscErrorCode MatFindNonzeroRows(Mat,IS*);
 */
 
 /*J
-    MatOrderingType - String with the name of a PETSc matrix ordering or the creation function
-       with an optional dynamic library name, for example
-       http://www.mcs.anl.gov/petsc/lib.a:orderingcreate()
+    MatOrderingType - String with the name of a PETSc matrix ordering
 
    Level: beginner
-
-   Cannot use const because the PC objects manipulate the string
 
 .seealso: MatGetOrdering()
 J*/
@@ -1020,13 +1015,11 @@ PETSC_EXTERN PetscErrorCode MatSOR(Mat,Vec,PetscReal,MatSORType,PetscReal,PetscI
 */
 
 /*J
-    MatColoringType - String with the name of a PETSc matrix coloring or the creation function
-       with an optional dynamic library name, for example
-       http://www.mcs.anl.gov/petsc/lib.a:coloringcreate()
+    MatColoringType - String with the name of a PETSc matrix coloring
 
    Level: beginner
 
-.seealso: MatGetColoring()
+.seealso: MatGetColoring(), MatColoring
 J*/
 typedef const char* MatColoringType;
 #define MATCOLORINGNATURAL "natural"
@@ -1098,9 +1091,7 @@ S*/
 typedef struct _p_MatPartitioning* MatPartitioning;
 
 /*J
-    MatPartitioningType - String with the name of a PETSc matrix partitioning or the creation function
-       with an optional dynamic library name, for example
-       http://www.mcs.anl.gov/petsc/lib.a:partitioningcreate()
+    MatPartitioningType - String with the name of a PETSc matrix partitioning
 
    Level: beginner
 dm
@@ -1197,12 +1188,10 @@ S*/
 typedef struct _p_MatCoarsen* MatCoarsen;
 
 /*J
-    MatCoarsenType - String with the name of a PETSc matrix coarsen or the creation function
-       with an optional dynamic library name, for example
-       http://www.mcs.anl.gov/petsc/lib.a:coarsencreate()
+    MatCoarsenType - String with the name of a PETSc matrix coarsen
 
    Level: beginner
-dm
+
 .seealso: MatCoarsenCreate(), MatCoarsen
 J*/
 typedef const char* MatCoarsenType;
