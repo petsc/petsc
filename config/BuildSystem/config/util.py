@@ -41,7 +41,7 @@ def classify(items, functional, args=(), kwargs=dict()):
         g, b = classify(grp, functional, args, kwargs)
         good += g
         bad += b
-    return g, b
+    return good, bad
 
 
 class NamedInStderr:
