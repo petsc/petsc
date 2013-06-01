@@ -14,18 +14,16 @@
 
   Concepts: nonlinear solvers
 
-.seealso:  SNESCreate(), SNESSetType(), SNESType, TS, KSP, KSP, PC
+.seealso:  SNESCreate(), SNESSetType(), SNESType, TS, KSP, KSP, PC, SNESDestroy()
 S*/
 typedef struct _p_SNES* SNES;
 
 /*J
-    SNESType - String with the name of a PETSc SNES method or the creation function
-       with an optional dynamic library name, for example
-       http://www.mcs.anl.gov/petsc/lib.a:mysnescreate()
+    SNESType - String with the name of a PETSc SNES method.
 
    Level: beginner
 
-.seealso: SNESSetType(), SNES
+.seealso: SNESSetType(), SNES, SNESCreate(), SNESDestroy(), SNESSetFromOptions()
 J*/
 typedef const char* SNESType;
 #define SNESNEWTONLS     "newtonls"

@@ -15,7 +15,7 @@ PETSC_EXTERN PetscErrorCode PCInitializePackage(void);
 PETSC_EXTERN PetscFunctionList PCList;
 
 /*S
-     PC - Abstract PETSc object that manages all preconditioners
+     PC - Abstract PETSc object that manages all preconditioners including direct solvers such as PCLU
 
    Level: beginner
 
@@ -26,15 +26,15 @@ S*/
 typedef struct _p_PC* PC;
 
 /*J
-    PCType - String with the name of a PETSc preconditioner method or the creation function
-       with an optional dynamic library name, for example
-       http://www.mcs.anl.gov/petsc/lib.a:mypccreate()
+    PCType - String with the name of a PETSc preconditioner method.
 
    Level: beginner
 
    Notes: Click on the links below to see details on a particular solver
 
-.seealso: PCSetType(), PC, PCCreate()
+          PCRegister() is used to register preconditioners that are then accessible via PCSetType()
+
+.seealso: PCSetType(), PC, PCCreate(), PCRegister(), PCSetFromOptions()
 J*/
 typedef const char* PCType;
 #define PCNONE            "none"

@@ -86,13 +86,11 @@ M*/
 M*/
 
 /*J
-    VecType - String with the name of a PETSc vector or the creation function
-       with an optional dynamic library name, for example
-       http://www.mcs.anl.gov/petsc/lib.a:myveccreate()
+    VecType - String with the name of a PETSc vector
 
    Level: beginner
 
-.seealso: VecSetType(), Vec
+.seealso: VecSetType(), Vec, VecCreate(), VecDestroy()
 J*/
 typedef const char* VecType;
 #define VECSEQ         "seq"

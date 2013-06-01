@@ -8,24 +8,26 @@
 PETSC_EXTERN PetscErrorCode KSPInitializePackage(void);
 
 /*S
-     KSP - Abstract PETSc object that manages all Krylov methods
+     KSP - Abstract PETSc object that manages all Krylov methods. This is the object that manages the 
+         linear solves in PETSc (even those such as direct solvers that do no use Krylov accelerators).
 
    Level: beginner
 
   Concepts: Krylov methods
 
-.seealso:  KSPCreate(), KSPSetType(), KSPType, SNES, TS, PC, KSP
+        Notes: When a direct solver is used but no Krylov solver is used the KSP object is still used by with a
+       KSPType of KSPPREONLY (meaning application of the preconditioner is only used as the linear solver).
+
+.seealso:  KSPCreate(), KSPSetType(), KSPType, SNES, TS, PC, KSP, KSPDestroy()
 S*/
 typedef struct _p_KSP*     KSP;
 
 /*J
-    KSPType - String with the name of a PETSc Krylov method or the creation function
-       with an optional dynamic library name, for example
-       http://www.mcs.anl.gov/petsc/lib.a:mykspcreate()
+    KSPType - String with the name of a PETSc Krylov method.
 
    Level: beginner
 
-.seealso: KSPSetType(), KSP
+.seealso: KSPSetType(), KSP, KSPRegister(), KSPCreate(), KSPSetFromOptions()
 J*/
 typedef const char* KSPType;
 #define KSPRICHARDSON "richardson"
