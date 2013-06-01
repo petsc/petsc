@@ -119,12 +119,12 @@ runex4_7:
 	   ${RM} -f ex4.tmp
 
 runex5:
-	-@${MPIEXEC} -n 1 ./ex5 -ts_max_steps 130 > ex5.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 1 ./ex5 -ts_max_steps 130 -monitor_interval 60 > ex5.tmp 2>&1;	  \
 	   ${DIFF} output/ex5.out ex5.tmp || echo  ${PWD} "\nPossible problem with ex5_1, diffs above \n========================================="; \
 	   ${RM} -f ex5.tmp
 
 runex5_2:
-	-@${MPIEXEC} -n 4 ./ex5 -ts_max_steps 130 > ex5.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 4 ./ex5 -ts_max_steps 130 -monitor_interval 60 > ex5.tmp 2>&1;	  \
 	   ${DIFF} output/ex5.out ex5.tmp || echo  ${PWD} "\nPossible problem with ex5_2, diffs above \n========================================="; \
 	   ${RM} -f ex5.tmp
 
