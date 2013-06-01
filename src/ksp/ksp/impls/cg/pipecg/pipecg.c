@@ -183,6 +183,10 @@ PetscErrorCode  KSPSolve_PIPECG(KSP ksp)
    Level:
    beginner
 
+   Notes:
+   MPI configuration may be necessary for reductions to make asynchronous progress, which is important for performance of pipelined methods.
+   See the FAQ on the PETSc website for details.
+
    Contributed by:
    Pieter Ghysels, Universiteit Antwerpen, Intel Exascience lab Flanders
 

@@ -475,6 +475,10 @@ PetscErrorCode KSPReset_PGMRES(KSP ksp)
 
    Level: beginner
 
+   Notes:
+   MPI configuration may be necessary for reductions to make asynchronous progress, which is important for performance of pipelined methods.
+   See the FAQ on the PETSc website for details.
+
    Reference:
    Ghysels, Ashby, Meerbergen, Vanroose, Hiding global communication latencies in the GMRES algorithm on massively parallel machines, 2012.
 
