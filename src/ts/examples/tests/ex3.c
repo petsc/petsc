@@ -135,6 +135,11 @@ int main(int argc,char **argv)
 
   if (appctx.useAlhs) {
     /* set the left hand side matrix of Amat*U_t = rhs(U,t) */
+
+    /* Note: this approach is incompatible with the finite differenced Jacobian set below because we can't restore the
+     * Alhs matrix without making a copy.  Either finite difference the entire thing or use analytic Jacobians in both
+     * places.
+     */
     ierr = TSSetIFunction(ts,NULL,TSComputeIFunctionLinear,&appctx);CHKERRQ(ierr);
     ierr = TSSetIJacobian(ts,appctx.Amat,appctx.Amat,TSComputeIJacobianConstant,&appctx);
   }
