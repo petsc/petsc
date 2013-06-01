@@ -11,9 +11,7 @@ PETSC_EXTERN PetscErrorCode DMInitializePackage(void);
 PETSC_EXTERN PetscClassId DM_CLASSID;
 
 /*J
-    DMType - String with the name of a PETSc DM or the creation function
-       with an optional dynamic library name, for example
-       http://www.mcs.anl.gov/petsc/lib.a:mydmcreate()
+    DMType - String with the name of a PETSc DM
 
    Level: beginner
 

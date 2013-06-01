@@ -3915,11 +3915,14 @@ PetscErrorCode  SNESSolve(SNES snes,Vec b,Vec x)
   and the user's application is taking responsibility for choosing the
   appropriate method.
 
+    Developer Notes: SNESRegister() adds a constructor for a new SNESType to SNESList, SNESSetType() locates
+    the constructor in that list and calls it to create the spexific object.
+
   Level: intermediate
 
 .keywords: SNES, set, type
 
-.seealso: SNESType, SNESCreate()
+.seealso: SNESType, SNESCreate(), SNESDestroy(), SNESGetType(), SNESSetFromOptions()
 
 @*/
 PetscErrorCode  SNESSetType(SNES snes,SNESType type)

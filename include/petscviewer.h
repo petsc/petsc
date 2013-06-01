@@ -15,7 +15,7 @@ PETSC_EXTERN PetscClassId PETSC_VIEWER_CLASSID;
 
    Level: beginner
 
-.seealso: PetscViewerSetType(), PetscViewer
+.seealso: PetscViewerSetType(), PetscViewer, PetscViewerRegister(), PetscViewerCreate()
 J*/
 typedef const char* PetscViewerType;
 #define PETSCVIEWERSOCKET       "socket"

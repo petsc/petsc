@@ -21,9 +21,7 @@ S*/
 typedef struct _p_Characteristic *Characteristic;
 
 /*J
-    CharacteristicType - String with the name of a characteristics method or the creation function
-       with an optional dynamic library name, for example
-       http://www.mcs.anl.gov/petsc/lib.a:mymoccreate()
+    CharacteristicType - String with the name of a characteristics method.
 
    Level: beginner
 

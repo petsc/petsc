@@ -13,7 +13,7 @@ PETSC_EXTERN PetscClassId PETSC_DRAW_CLASSID;
 
    Level: beginner
 
-.seealso: PetscDrawSetType(), PetscDraw, PetscViewer
+.seealso: PetscDrawSetType(), PetscDraw, PetscViewer, PetscDrawCreate()
 J*/
 typedef const char* PetscDrawType;
 #define PETSC_DRAW_X          "x"
