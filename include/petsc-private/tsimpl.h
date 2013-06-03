@@ -70,7 +70,7 @@ struct _p_TS {
     /* Flag to unshift Jacobian before calling the IJacobian or RHSJacobian functions.  This is useful
      * if the user would like to reuse (part of) the Jacobian from the last evaluation. */
     PetscBool reuse;
-    PetscScalar scale,shift;
+    PetscReal scale,shift;
   } rhsjacobian;
 
   struct {
