@@ -132,6 +132,7 @@
         <li><a href="#datafiles">Where do I get the input matrices for the examples?</a></li>
         <li><a href="#info">When I dump some matrices and vectors to binary, I seem to be generating some empty files with .info extensions. What's the deal with these?</a></li>
         <li><a href="#slowerparallel">Why is my parallel <b>solver slower</b> than the sequential solver, or I have poor speed-up?</a></li>
+        <li><a href="#pipelined">What steps are necessary to make the pipelined solvers execute efficiently?</a></li>
         <li><a href="#singleprecision">When using PETSc in single precision mode (--with-precision=single when running ./configure) are the operations done in single or double precision?</a></li>
         <li><a href="#newton">Why is Newton's method (SNES) not converging, or converges slowly?</a></li>
         <li><a href="#kspdiverged">Why is the linear solver (KSP) not converging, or converges slowly?</a></li>
@@ -1268,6 +1269,29 @@ PETSC_COMM_WORLD = NewComm;
           or BoomerAMG in <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/PC/PCHYPRE.html">PCHYPRE</a>.
         </li>
       </ul>
+
+      <h3><a name="pipelined">What steps are necessary to make the pipelined solvers execute efficiently?</a></h3>
+
+      Pipelined solvers like
+      <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPPGMRES.html">KSPPGMRES</a>,
+      <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPPIPECG.html">KSPPIPECG</a>,
+      <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPPIPECR.html">KSPPIPECR</a>, and
+      <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPGROPPCG.html">KSPGROPPCG</a>
+      may require special MPI configuration to effectively overlap reductions with computation.
+      In general, this requires an MPI-3 implementation, an implementation that supports multiple threads, and use of a "progress thread".
+      Consult the documentation from your vendor or computing facility for more.
+
+      <dl>
+        <dt>MPICH</dt>
+        <dd>
+          MPICH version 3.0 and later implements the MPI-3 standard and the default configuration supports use of threads.
+          Use of a progress thread is configured by setting the environment variable <tt>MPICH_ASYNC_PROGRESS=1</tt>.
+        </dd>
+        <dt>Cray MPI</dt>
+        <dd>
+          Cray MPT-5.6 supports MPI-3, but requires the environment variable <tt>MPICH_MAX_THREAD_SAFETY=multiple</tt> for threads, plus either <tt>MPICH_ASYNC_PROGRESS=1</tt> or <tt>MPICH_NEMESIS_ASYNC_PROGRESS=1</tt>.
+        </dd>
+      </dl>
 
       <h3><a name="singleprecision">When using PETSc in single precision mode (--with-precision=single when running ./configure) are the operations done in single or double precision?</a></h3>
 
