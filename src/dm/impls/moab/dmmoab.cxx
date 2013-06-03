@@ -286,6 +286,7 @@ PetscErrorCode DMMoabSetInterface(DM dm,moab::Interface *mbiface)
 @*/
 PetscErrorCode DMMoabGetInterface(DM dm,moab::Interface **mbiface)
 {
+  PetscErrorCode   ierr;
   static PetscBool cite = PETSC_FALSE;
 
   PetscFunctionBegin;
