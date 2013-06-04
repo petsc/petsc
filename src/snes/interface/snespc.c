@@ -113,8 +113,8 @@ PetscErrorCode SNESGetPCFunction(SNES snes,Vec F,PetscReal *fnorm)
 
     /* check if the function is valid based upon how the inner solver is preconditioned */
     if (normschedule != SNES_NORM_NONE && normschedule != SNES_NORM_INITIAL_ONLY && (npcside == PC_RIGHT || functype == SNES_FUNCTION_UNPRECONDITIONED)) {
+      ierr = SNESGetFunction(snes->pc,&FPC,NULL,NULL);CHKERRQ(ierr);
       if (FPC) {
-        ierr = SNESGetFunction(snes->pc,&FPC,NULL,NULL);CHKERRQ(ierr);
         if (fnorm) {ierr = SNESGetFunctionNorm(snes->pc,fnorm);CHKERRQ(ierr);}
         ierr = VecCopy(FPC,F);CHKERRQ(ierr);
       } else {
