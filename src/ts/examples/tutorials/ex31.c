@@ -1,6 +1,7 @@
 static char help[] = "Solves the Hull IVPs using explicit and implicit time-integration methods.\n";
 
 /*
+
   Concepts:   TS
   Reference:  Hull, T.E., Enright, W.H., Fellen, B.M., and Sedgwick, A.E.,
               "Comparing Numerical Methods for Ordinary Differential
@@ -8,6 +9,12 @@ static char help[] = "Solves the Hull IVPs using explicit and implicit time-inte
   Useful command line parameters:
   -hull_problem <a1>: choose which Hull problem to solve (see reference
                       for complete listing of problems).
+  -ts_type <euler>: specify time-integrator
+  -ts_adapt_type <basic>: specify time-step adapting (none,basic,advanced)
+  -refinement_levels <1>: number of refinement levels for convergence analysis
+  -refinement_factoe <2.0>: factor to refine time step size by for convergence analysis
+  -dt <0.01>: specify time step (initial time step for convergence analysis)
+
 */
 
 #include <petscts.h>
