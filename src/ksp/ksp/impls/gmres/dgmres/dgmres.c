@@ -949,7 +949,7 @@ static PetscErrorCode  KSPDGMRESApplyDeflation_DGMRES(KSP ksp, Vec x, Vec y)
   PetscReal      alpha    = 1.0;
   PetscInt       max_neig = dgmres->max_neig;
   PetscBLASInt   br,bmax;
-  PetscInt       lambda = dgmres->lambdaN;
+  PetscReal      lambda = dgmres->lambdaN;
 #if !defined(PETSC_MISSING_LAPACK_GERFS)
   PetscReal    berr, ferr;
   PetscBLASInt info;
