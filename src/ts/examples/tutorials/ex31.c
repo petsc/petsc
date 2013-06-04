@@ -30,7 +30,7 @@ PetscErrorCode  ExactSolution (Vec,void*,PetscReal,PetscBool*);
 #define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
-  PetscErrorCode  ierr;               /* Error code                       */
+  PetscErrorCode  ierr;               /* Error code                                           */
   char            ptype[3] = "a1";    /* Problem specification                                */
   PetscInt        n_refine = 1;       /* Number of refinement levels for convergence analysis */
   PetscReal       refine_fac = 2.0;   /* Refinement factor for dt                             */
