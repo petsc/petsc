@@ -13,29 +13,81 @@ static char help[] = "Solves the Hull IVPs using explicit and implicit time-inte
 #include <petscts.h>
 
 /* Function declarations  */
-PetscInt        GetSize     (char);
-PetscErrorCode  Initialize  (Vec,void*);
-PetscErrorCode  RHSFunction (TS,PetscReal,Vec,Vec,void*);
+PetscErrorCode  HullODE       (char*,PetscReal,PetscReal,PetscInt,PetscReal*,PetscBool*);
+PetscInt        GetSize       (char);
+PetscErrorCode  Initialize    (Vec,void*);
+PetscErrorCode  RHSFunction   (TS,PetscReal,Vec,Vec,void*);
+PetscErrorCode  ExactSolution (Vec,void*,PetscReal,PetscBool*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
-  PetscErrorCode  ierr;     /* Error code                       */
-  TS              ts;       /* time-integrator                  */
-  Vec             Y;        /* Solution vector                  */
-//  Vec             Yex;      /* Exact solution                   */
-  char            ptype[3]; /* Problem specification            */
-  PetscInt        N;        /* Size of the system of equations  */
-  PetscInt        nproc;    /* No of processors                 */
+  PetscErrorCode  ierr;               /* Error code                       */
+  char            ptype[3] = "a1";    /* Problem specification                                */
+  PetscInt        n_refine = 1;       /* Number of refinement levels for convergence analysis */
+  PetscReal       refine_fac = 2.0;   /* Refinement factor for dt                             */
+  PetscReal       dt_initial = 0.01;  /* Initial default value of dt                          */
+  PetscReal       tfinal     = 20.0;  /* Final time for the time-integration                  */
+  PetscInt        maxiter    = 100000;/* Maximum number of time-integration iterations        */
+  PetscReal      *error;              /* Array to store the errors for convergence analysis   */
+  PetscInt        nproc;              /* No of processors                                     */
+  PetscBool       flag;               /* Flag denoting availability of exact solution         */
+  PetscInt        r;              
 
-  /* Initialize program and read options */
+  /* Initialize program */
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
+
+  /* Check if running with only 1 proc */
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&nproc);    CHKERRQ(ierr);
   if (nproc>1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Only for sequential runs");
+
   ierr = PetscOptionsString("-hull_problem","Problem specification","<a1>",
                             ptype,ptype,sizeof(ptype),PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-refinement_levels","Number of refinement levels for convergence analysis",
+                         "<1>",n_refine,&n_refine,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-refinement_factor","Refinement factor for dt","<2.0>",
+                          refine_fac,&refine_fac,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-dt","Time step size (for convergence analysis, initial time step)",
+                          "<0.01>",dt_initial,&dt_initial,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-final_time","Final time for the time-integration","<20.0>",
+                          tfinal,&tfinal,PETSC_NULL);CHKERRQ(ierr);
 
+  error = (PetscReal*) calloc(n_refine,sizeof(PetscReal));
+  for (r = 0; r < n_refine; r++) {
+    PetscReal dt;
+    if (!r) dt = dt_initial;
+    else    dt /= refine_fac;
+    
+    printf("Solving Hull ODE %s with dt %f and final time %f.\n",ptype,dt,tfinal);
+    ierr = HullODE(&ptype[0],dt,tfinal,maxiter,&error[r],&flag);
+    if (flag) {
+      if (r > 0) {
+        PetscReal conv_rate = (log(error[r]) - log(error[r-1])) / (-log(refine_fac));
+        printf("Error = %E,\tConvergence rate = %f\n",error[r],conv_rate);
+      } else {
+        printf("Error = %E,\n",error[r]);
+      }
+    }
+  }
+  free(error);
+
+  /* Exit */
+  ierr = PetscFinalize(); CHKERRQ(ierr);
+  return(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "HullODE"
+PetscErrorCode HullODE(char* ptype, PetscReal dt, PetscReal tfinal, PetscInt maxiter, PetscReal *error, PetscBool *exact_flag)
+{
+  PetscErrorCode  ierr;             /* Error code                       */
+  TS              ts;               /* time-integrator                  */
+  Vec             Y;                /* Solution vector                  */
+  Vec             Yex;              /* Exact solution                   */
+  PetscInt        N;                /* Size of the system of equations  */
+
+  PetscFunctionBegin;
   N = GetSize(ptype[0]);
   if (N < 0) {
     printf("Error: Illegal problem specification.\n");
@@ -43,17 +95,18 @@ int main(int argc, char **argv)
   }
   ierr = VecCreate(PETSC_COMM_WORLD,&Y);CHKERRQ(ierr);
   ierr = VecSetSizes(Y,N,PETSC_DECIDE); CHKERRQ(ierr);
-  ierr = VecZeroEntries(Y);CHKERRQ(ierr);
+  ierr = VecSetUp(Y);                   CHKERRQ(ierr);
+  ierr = VecSet(Y,0);                   CHKERRQ(ierr);
 
   /* Initialize the problem */
   ierr = Initialize(Y,&ptype[0]);
 
   /* Create and initialize the time-integrator                             */
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);                       CHKERRQ(ierr);
-  ierr = TSSetType(ts,TSRK);                                   CHKERRQ(ierr);
-  /* Default duration, number of iterations and time-step size             */
-  ierr = TSSetDuration(ts,1000,20.0);                          CHKERRQ(ierr);
-  ierr = TSSetInitialTimeStep(ts,0.0,0.02);                    CHKERRQ(ierr);
+  /* Default time integration options                                      */
+  ierr = TSSetType(ts,TSEULER);                                CHKERRQ(ierr);
+  ierr = TSSetDuration(ts,maxiter,tfinal);                     CHKERRQ(ierr);
+  ierr = TSSetInitialTimeStep(ts,0.0,dt);                      CHKERRQ(ierr);
   /* Read command line options for time integration                        */
   ierr = TSSetFromOptions(ts);                                 CHKERRQ(ierr);
   /* Set solution vector                                                   */
@@ -64,11 +117,21 @@ int main(int argc, char **argv)
   /* Solve */
   ierr = TSSolve(ts,Y);CHKERRQ(ierr);
 
+  /* Exact solution */
+  ierr = VecDuplicate(Y,&Yex); CHKERRQ(ierr);
+  ierr = ExactSolution(Yex,&ptype[0],tfinal,exact_flag);
+
+  /* Calculate Error */
+  ierr = VecAYPX(Yex,-1.0,Y);       CHKERRQ(ierr);
+  ierr = VecNorm(Yex,NORM_2,error); CHKERRQ(ierr);
+  *error = sqrt(((*error)*(*error))/N);
+
   /* Clean up and finalize */
   ierr = TSDestroy(&ts);  CHKERRQ(ierr);
+  ierr = VecDestroy(&Yex);CHKERRQ(ierr);
   ierr = VecDestroy(&Y);  CHKERRQ(ierr);
-  ierr = PetscFinalize(); CHKERRQ(ierr);
-  return(0);
+
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
@@ -220,3 +283,40 @@ PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec Y, Vec F, void *s)
   ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "ExactSolution"
+PetscErrorCode ExactSolution(Vec Y, void* s, PetscReal t, PetscBool *flag)
+{
+  PetscErrorCode ierr;
+  char          *p = (char*) s;
+  PetscScalar   *y;
+
+  PetscFunctionBegin;
+  if (p[0] == 'a') {
+    /* Problem class A: Single equations. */
+    ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
+    if (p[1] == '1') {
+      y[0] = exp(-t);
+      *flag = PETSC_TRUE;
+    } else if (p[1] == '2') {
+      y[0] = 1.0/sqrt(t+1);
+      *flag = PETSC_TRUE;
+    } else if (p[1] == '3') {
+      y[0] = exp(sin(t));
+      *flag = PETSC_TRUE;
+    } else if (p[1] == '4') {
+      y[0] = 20.0/(1+19.0*exp(-t/4.0));
+      *flag = PETSC_TRUE;
+    } else {
+      y[0] = 0.0;
+      *flag = PETSC_FALSE;
+    }
+    ierr = VecRestoreArray(Y,&y);CHKERRQ(ierr);
+  } else {
+    ierr = VecSet(Y,0);CHKERRQ(ierr);
+    *flag = PETSC_FALSE;
+  }
+  PetscFunctionReturn(0);
+}
+
