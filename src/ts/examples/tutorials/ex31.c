@@ -73,12 +73,12 @@ int main(int argc, char **argv)
 
 #undef __FUNCT__
 #define __FUNCT__ "GetSize"
-PetscInt GetSize(char x)
+PetscInt GetSize(char p)
 {
   PetscFunctionBegin;
-  if      (x == 'a')  return(1);
-  else if (x == 'b')  return(3);
-  else if (x == 'c')  return(10);
+  if      (p == 'a')  return(1);
+  else if (p == 'b')  return(3);
+  else if (p == 'c')  return(10);
   else                return(-1);
   PetscFunctionReturn(0);
 }
@@ -94,16 +94,58 @@ PetscErrorCode Initialize(Vec Y, void* s)
   PetscFunctionBegin;
   ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
   if (p[0] == 'a') {
+    /* Problem class A: Single equations. */
     if (p[1] == '5') {
       y[0] = 4.0;
     } else {
       y[0] = 1.0;
     }
-    ierr = PetscOptionsReal("-y0","Initial value of y(t)",
+    /* User-provided initial condition, if available */
+    ierr = PetscOptionsReal("-yinit","Initial value of y(t)",
                             "<1.0> (<4.0> for a5)",
                             y[0],&y[0],PETSC_NULL);CHKERRQ(ierr);
   } else if (p[0] == 'b') {
+    /* Problem class B: Small systems.    */
+    if (p[1] == '1') {
+      /* Problem B1 */
+      y[0] = 1.0;
+      y[1] = 3.0;
+      y[2] = 0.0;
+    } else if (p[1] == '2') {
+      /* Problem B2 */
+      y[0] = 2.0;
+      y[1] = 0.0;
+      y[2] = 1.0;
+    } else if (p[1] == '3') {
+      /* Problem B3 */
+      y[0] = 1.0;
+      y[1] = 0.0;
+      y[2] = 0.0;
+    } else if (p[1] == '4') {
+      /* Problem B4 */
+      y[0] = 3.0;
+      y[1] = 0.0;
+      y[2] = 0.0;
+    } else if (p[1] == '5') {
+      /* Problem B5 */
+      y[0] = 0.0;
+      y[1] = 1.0;
+      y[2] = 1.0;
+    } else {
+      /* Invalid problem */
+      y[0] = 0.0;
+      y[1] = 0.0;
+      y[2] = 0.0;
+    }
+    /* User-provided initial condition, if available */
+    ierr = PetscOptionsReal("-yinit1","Initial value of y1(t)","",
+                            y[0],&y[0],PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-yinit2","Initial value of y2(t)","",
+                            y[1],&y[1],PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-yinit3","Initial value of y3(t)","",
+                            y[2],&y[2],PETSC_NULL);CHKERRQ(ierr);
   } else if (p[0] == 'c') {
+    /* Problem class C: Moderate systems. */
   }
   ierr = VecRestoreArray(Y,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -139,6 +181,37 @@ PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec Y, Vec F, void *s)
     }
   } else if (p[0] == 'b') {
     /* Problem class B: Small systems.    */
+    if (p[1] == '1') {
+      /* Problem B1 */
+      f[0] = 2.0*(y[0] - y[0]*y[1]);
+      f[1] = -(y[1]-y[0]*y[1]);
+      f[2] = 0.0;
+    } else if (p[1] == '2') {
+      /* Problem B2 */
+      f[0] = -y[0] + y[1];
+      f[1] = y[0] - 2*y[1] + y[2];
+      f[2] = y[1] - y[2];
+    } else if (p[1] == '3') {
+      /* Problem B3 */
+      f[0] = -y[0];
+      f[1] = y[0]-y[1]*y[1];
+      f[2] = y[1]*y[1];
+    } else if (p[1] == '4') {
+      /* Problem B4 */
+      f[0] = -y[1] - y[0]*y[2]/sqrt(y[0]*y[0]+y[1]*y[1]);
+      f[1] =  y[0] - y[1]*y[2]/sqrt(y[0]*y[0]+y[1]*y[1]);
+      f[2] = y[0]/sqrt(y[0]*y[0]+y[1]*y[1]);
+    } else if (p[1] == '5') {
+      /* Problem B5 */
+      f[0] = y[1]*y[2];
+      f[1] = -y[0]*y[2];
+      f[2] = -0.51*y[0]*y[1];
+    } else {
+      /* Invalid Problem */
+      f[0] = 0.0;
+      f[1] = 0.0;
+      f[2] = 0.0;
+    }
   } else if (p[0] == 'c') {
     /* Problem class C: Moderate systems. */
   } else {
