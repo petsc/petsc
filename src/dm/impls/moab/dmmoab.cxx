@@ -288,6 +288,7 @@ PetscErrorCode DMMoabGetInterface(DM dm,moab::Interface **mbiface)
 {
   PetscErrorCode   ierr;
   static PetscBool cite = PETSC_FALSE;
+  PetscErrorCode   ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
