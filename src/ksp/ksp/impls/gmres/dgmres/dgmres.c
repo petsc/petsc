@@ -285,6 +285,7 @@ PetscErrorCode KSPSolve_DGMRES(KSP ksp)
   PetscInt       its,itcount;
   KSP_DGMRES     *dgmres    = (KSP_DGMRES*) ksp->data;
   PetscBool      guess_zero = ksp->guess_zero;
+  PetscBool      flag;
 
   PetscFunctionBegin;
   if (ksp->calc_sings && !dgmres->Rsvd) SETERRQ(PetscObjectComm((PetscObject)ksp), PETSC_ERR_ORDER,"Must call KSPSetComputeSingularValues() before KSPSetUp() is called");
@@ -315,6 +316,15 @@ PetscErrorCode KSPSolve_DGMRES(KSP ksp)
     ksp->guess_zero = PETSC_FALSE; /* every future call to KSPInitialResidual() will have nonzero guess */
   }
   ksp->guess_zero = guess_zero; /* restore if user provided nonzero initial guess */
+
+  ierr = PetscOptionsHasName(((PetscObject)ksp)->prefix,"-ksp_dgmres_view_deflation_vecs",&flag);CHKERRQ(ierr);
+  if (flag) {
+    PetscInt i;
+
+    for (i = 0; i < dgmres->r; i++) {
+      ierr = VecViewFromOptions(UU[i],((PetscObject)ksp)->prefix,"-ksp_dgmres_view_deflation_vecs");CHKERRQ(ierr);
+    }
+  }
   PetscFunctionReturn(0);
 }
 
