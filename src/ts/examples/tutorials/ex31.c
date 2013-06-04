@@ -62,6 +62,7 @@ int main(int argc, char **argv)
     printf("Solving Hull ODE %s with dt %f and final time %f.\n",ptype,dt,tfinal);
     ierr = HullODE(&ptype[0],dt,tfinal,maxiter,&error[r],&flag);
     if (flag) {
+      /* If exact solution available for the specified Hull ODE */
       if (r > 0) {
         PetscReal conv_rate = (log(error[r]) - log(error[r-1])) / (-log(refine_fac));
         printf("Error = %E,\tConvergence rate = %f\n",error[r],conv_rate);
