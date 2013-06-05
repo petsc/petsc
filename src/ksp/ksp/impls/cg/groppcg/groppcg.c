@@ -1,14 +1,3 @@
-/*
- author: Pieter Ghysels, Universiteit Antwerpen, Intel Exascience lab Flanders
-
- This file implements a CG method due to B. Gropp that can overlap one reduction
- with application of the preconditioner and the other reduction can be
- overlapped with the matrix-vector product.
-
- see:
- http://www.cs.uiuc.edu/~wgropp/bib/talks/tdata/2012/icerm.pdf
- */
-
 #include <petsc-private/kspimpl.h>
 
 /*
@@ -158,6 +147,30 @@ PetscErrorCode  KSPSolve_GROPPCG(KSP ksp)
   if (i >= ksp->max_it) ksp->reason = KSP_DIVERGED_ITS;
   PetscFunctionReturn(0);
 }
+
+/*MC
+   KSPGROPPCG - A pipelined conjugate gradient method from Bill Gropp
+
+   There method has two reductions, one of which is overlapped with the matrix-vector product and one of which is
+   overlapped with the preconditioner.
+
+   See also KSPPIPECG, which has only a single reduction that overlaps both the matrix-vector product and the preconditioner.
+
+   Level:
+   beginner
+
+   Notes:
+   MPI configuration may be necessary for reductions to make asynchronous progress, which is important for performance of pipelined methods.
+   See the FAQ on the PETSc website for details.
+
+   Contributed by:
+   Pieter Ghysels, Universiteit Antwerpen, Intel Exascience lab Flanders
+
+   Reference:
+   http://www.cs.uiuc.edu/~wgropp/bib/talks/tdata/2012/icerm.pdf
+
+.seealso: KSPCreate(), KSPSetType(), KSPPIPECG, KSPPIPECR, KSPPGMRES, KSPCG, KSPCGUseSingleReduction()
+M*/
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPCreate_GROPPCG"
