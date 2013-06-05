@@ -1,18 +1,3 @@
-/*
- author: Pieter Ghysels, Universiteit Antwerpen, Intel Exascience lab Flanders
-
- This file implements a preconditioned pipelined CG. There is only a single
- non-blocking reduction per iteration, compared to 2 blocking for standard CG.
- The non-blocking reduction is overlapped by the matrix-vector product.
-
- See "Hiding global synchronization latency in the
- preconditioned Conjugate Gradient algorithm", P. Ghysels and W. Vanroose.
- Submitted to Parallel Computing, 2012
-
- See also pipecr.c, where the reduction is only overlapped with
- the matrix-vector product.
-
- */
 
 #include <petsc-private/kspimpl.h>
 
@@ -187,6 +172,30 @@ PetscErrorCode  KSPSolve_PIPECG(KSP ksp)
 }
 
 
+/*MC
+   KSPPIPECG - Pipelined conjugate gradient method.
+
+   There method has only a single non-blocking reduction per iteration, compared to 2 blocking for standard CG.  The
+   non-blocking reduction is overlapped by the matrix-vector product and preconditioner application.
+
+   See also KSPPIPECR, where the reduction is only overlapped with the matrix-vector product.
+
+   Level:
+   beginner
+
+   Notes:
+   MPI configuration may be necessary for reductions to make asynchronous progress, which is important for performance of pipelined methods.
+   See the FAQ on the PETSc website for details.
+
+   Contributed by:
+   Pieter Ghysels, Universiteit Antwerpen, Intel Exascience lab Flanders
+
+   Reference:
+   P. Ghysels and W. Vanroose, "Hiding global synchronization latency in the preconditioned Conjugate Gradient algorithm",
+   Submitted to Parallel Computing, 2012.
+
+.seealso: KSPCreate(), KSPSetType(), KSPPIPECR, KSPGROPPCG, KSPPGMRES, KSPCG, KSPCGUseSingleReduction()
+M*/
 #undef __FUNCT__
 #define __FUNCT__ "KSPCreate_PIPECG"
 PETSC_EXTERN PetscErrorCode KSPCreate_PIPECG(KSP ksp)
