@@ -6,21 +6,23 @@
 PetscClassId IS_LTOGM_CLASSID;
 
 #undef __FUNCT__
-#define __FUNCT__ "ISL2GMapApply"
+#define __FUNCT__ "ISG2LMapApply"
 PetscErrorCode ISG2LMapApply(ISLocalToGlobalMapping mapping,PetscInt n,const PetscInt in[],PetscInt out[])
 {
   PetscErrorCode ierr;
-  PetscInt       i,*globals = mapping->globals,start = mapping->globalstart,end = mapping->globalend;
+  PetscInt       i,start,end;
 
   PetscFunctionBegin;
   if (!mapping->globals) {
     ierr = ISGlobalToLocalMappingApply(mapping,IS_GTOLM_MASK,0,0,0,0);CHKERRQ(ierr);
   }
+  start = mapping->globalstart;
+  end = mapping->globalend;
   for (i=0; i<n; i++) {
     if (in[i] < 0)          out[i] = in[i];
     else if (in[i] < start) out[i] = -1;
     else if (in[i] > end)   out[i] = -1;
-    else                    out[i] = globals[in[i] - start];
+    else                    out[i] = mapping->globals[in[i] - start];
   }
   PetscFunctionReturn(0);
 }

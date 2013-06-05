@@ -15,6 +15,34 @@
 #include <../src/mat/impls/is/matis.h>      /*I "petscmat.h" I*/
 
 #undef __FUNCT__
+#define __FUNCT__ "MatIsHermitian_IS"
+PetscErrorCode MatIsHermitian_IS(Mat A,PetscReal tol,PetscBool  *flg)
+{
+  PetscErrorCode ierr;
+  Mat_IS         *matis = (Mat_IS*)A->data;
+  PetscBool      local_sym;
+
+  PetscFunctionBegin;
+  ierr = MatIsHermitian(matis->A,tol,&local_sym);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&local_sym,flg,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)A));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatIsSymmetric_IS"
+PetscErrorCode MatIsSymmetric_IS(Mat A,PetscReal tol,PetscBool  *flg)
+{
+  PetscErrorCode ierr;
+  Mat_IS         *matis = (Mat_IS*)A->data;
+  PetscBool      local_sym;
+
+  PetscFunctionBegin;
+  ierr = MatIsSymmetric(matis->A,tol,&local_sym);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&local_sym,flg,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)A));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MatDestroy_IS"
 PetscErrorCode MatDestroy_IS(Mat A)
 {
@@ -565,6 +593,8 @@ PETSC_EXTERN PetscErrorCode MatCreate_IS(Mat A)
   A->ops->scale                   = MatScale_IS;
   A->ops->getdiagonal             = MatGetDiagonal_IS;
   A->ops->setoption               = MatSetOption_IS;
+  A->ops->ishermitian             = MatIsHermitian_IS;
+  A->ops->issymmetric             = MatIsSymmetric_IS;
 
   ierr = PetscLayoutSetUp(A->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(A->cmap);CHKERRQ(ierr);

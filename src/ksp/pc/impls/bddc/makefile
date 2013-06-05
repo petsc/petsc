@@ -2,11 +2,11 @@
 
 ALL: lib
 
-CFLAGS   =
+CFLAGS   = 
 FFLAGS   =
-SOURCEC  = bddc.c
+SOURCEC  = bddc.c bddcprivate.c bddcgraph.c bddcscalingbasic.c bddcnullspace.c bddcfetidp.c 
 SOURCEF  =
-SOURCEH  = bddc.h
+SOURCEH  = bddc.h bddcstructs.h bddcprivate.h 
 LIBBASE  = libpetscksp
 DIRS     =
 MANSEC   = PC

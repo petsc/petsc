@@ -333,7 +333,9 @@ PetscErrorCode PCNNCreateCoarseMatrix(PC pc)
     ierr = MatSetSizes(pcnn->coarse_mat,1,1,size,size);CHKERRQ(ierr);
     ierr = MatSetType(pcnn->coarse_mat,MATAIJ);CHKERRQ(ierr);
     ierr = MatSeqAIJSetPreallocation(pcnn->coarse_mat,1,NULL);CHKERRQ(ierr);
-    ierr = MatMPIAIJSetPreallocation(pcnn->coarse_mat,1,NULL,1,NULL);CHKERRQ(ierr);
+    ierr = MatMPIAIJSetPreallocation(pcnn->coarse_mat,1,NULL,n_neigh,NULL);CHKERRQ(ierr);
+    ierr = MatSetOption(pcnn->coarse_mat,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = MatSetOption(pcnn->coarse_mat,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
     ierr = MatSetValues(pcnn->coarse_mat,n_neigh,neigh,n_neigh,neigh,mat,ADD_VALUES);CHKERRQ(ierr);
     ierr = MatAssemblyBegin(pcnn->coarse_mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd  (pcnn->coarse_mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
