@@ -418,14 +418,22 @@ PetscErrorCode SNESView_FAS(SNES snes, PetscViewer viewer)
           ierr = PetscViewerASCIIPrintf(viewer,"Down solver (pre-smoother) on level %D -------------------------------\n",i);CHKERRQ(ierr);
         }
         ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-        ierr = SNESView(smoothd,viewer);CHKERRQ(ierr);
+        if (smoothd) {
+          ierr = SNESView(smoothd,viewer);CHKERRQ(ierr);
+        } else {
+          ierr = PetscViewerASCIIPrintf(viewer,"Not yet available\n");CHKERRQ(ierr);
+        }
         ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
         if (i && (smoothd == smoothu)) {
           ierr = PetscViewerASCIIPrintf(viewer,"Up solver (post-smoother) same as down solver (pre-smoother)\n");CHKERRQ(ierr);
         } else if (i) {
           ierr = PetscViewerASCIIPrintf(viewer,"Up solver (post-smoother) on level %D -------------------------------\n",i);CHKERRQ(ierr);
           ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-          ierr = SNESView(smoothu,viewer);CHKERRQ(ierr);
+          if (smoothu) {
+            ierr = SNESView(smoothu,viewer);CHKERRQ(ierr);
+          } else {
+            ierr = PetscViewerASCIIPrintf(viewer,"Not yet available\n");CHKERRQ(ierr);
+          }
           ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
         }
       }
