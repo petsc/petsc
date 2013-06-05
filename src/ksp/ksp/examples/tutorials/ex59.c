@@ -15,26 +15,8 @@ In the latter case, in order to avoid runtime errors during factorization, pleas
 
 #include <petscksp.h>
 #include <petscpc.h>
+#include <petscblaslapack.h>
 #define DEBUG 0
-
-/* lapack functions needed by gll computations */
-/* All PETSC configurations not yet completely covered! */
-#if !defined(PETSC_USE_COMPLEX)
-# if defined(PETSC_USE_REAL_SINGLE)
-#  define LAPACKsterf_ ssterf_
-# elif defined(PETSC_USE_REAL_DOUBLE)
-#  define LAPACKsterf_ dsterf_
-# else
-#  define LAPACKsterf_ qsterf_
-# endif
-#else
-# if defined(PETSC_USE_REAL_SINGLE)
-#  define LAPACKsterf_ steqrf_
-# else
-#  define LAPACKsterf_ zsterf_
-# endif
-#endif
-PETSC_EXTERN void LAPACKsterf_(PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*);
 
 /* structure holding domain data */
 typedef struct {
@@ -69,7 +51,7 @@ typedef struct {
 /* structure holding GLL data */
 typedef struct {
   /* GLL nodes */
-  PetscScalar *zGL;
+  PetscReal   *zGL;
   /* GLL weights */
   PetscScalar *rhoGL;
   /* aux_mat */
@@ -472,30 +454,30 @@ static PetscErrorCode ComputeSubdomainMatrix(DomainData dd, GLLData glldata, Mat
 static PetscErrorCode GLLStuffs(DomainData dd, GLLData *glldata)
 {
   PetscErrorCode ierr;
-  PetscScalar    *M;
-  PetscScalar    si,x,z0,z1,z2,Lpj,Lpr,rhoGLj,rhoGLk;
+  PetscReal      *M,si;
+  PetscScalar    x,z0,z1,z2,Lpj,Lpr,rhoGLj,rhoGLk;
   PetscBLASInt   pm1,lierr;
   PetscInt       i,j,n,k,s,r,q,ii,jj,p=dd.p;
   PetscInt       xloc,yloc,zloc,xyloc,xyzloc;
 
   PetscFunctionBeginUser;
   /* Gauss-Lobatto-Legendre nodes zGL on [-1,1] */
-  ierr = PetscMalloc((p+1)*sizeof(PetscScalar),&glldata->zGL);CHKERRQ(ierr);
-  ierr = PetscMemzero(glldata->zGL,(p+1)*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = PetscMalloc((p+1)*sizeof(*glldata->zGL),&glldata->zGL);CHKERRQ(ierr);
+  ierr = PetscMemzero(glldata->zGL,(p+1)*sizeof(*glldata->zGL));CHKERRQ(ierr);
 
   glldata->zGL[0]=-1.0;
   glldata->zGL[p]= 1.0;
   if (p > 1) {
     if (p == 2) glldata->zGL[1]=0.0;
     else {
-      ierr = PetscMalloc((p-1)*sizeof(PetscScalar),&M);CHKERRQ(ierr);
+      ierr = PetscMalloc((p-1)*sizeof(*M),&M);CHKERRQ(ierr);
       for (i=0; i<p-1; i++) {
-        si  = (PetscScalar)(i+1.0);
-        M[i]=0.5*PetscSqrtReal((PetscReal)(si*(si+2.0)/((si+0.5)*(si+1.5))));
+        si  = (PetscReal)(i+1.0);
+        M[i]=0.5*PetscSqrtReal(si*(si+2.0)/((si+0.5)*(si+1.5)));
       }
       pm1  = p-1;
       ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
-      LAPACKsterf_(&pm1,&glldata->zGL[1],M,&lierr);
+      PetscStackCallBLAS("LAPACKsteqr",LAPACKsteqr_("N",&pm1,&glldata->zGL[1],M,&x,&pm1,M,&lierr));
       if (lierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in STERF Lapack routine %d",(int)lierr);
       ierr = PetscFPTrapPop();CHKERRQ(ierr);
       ierr = PetscFree(M);CHKERRQ(ierr);
@@ -503,7 +485,7 @@ static PetscErrorCode GLLStuffs(DomainData dd, GLLData *glldata)
   }
 
   /* Weights for 1D quadrature */
-  ierr = PetscMalloc((p+1)*sizeof(PetscScalar),&glldata->rhoGL);CHKERRQ(ierr);
+  ierr = PetscMalloc((p+1)*sizeof(*glldata->rhoGL),&glldata->rhoGL);CHKERRQ(ierr);
 
   glldata->rhoGL[0]=2.0/(PetscScalar)(p*(p+1.0));
   glldata->rhoGL[p]=glldata->rhoGL[0];
@@ -512,7 +494,7 @@ static PetscErrorCode GLLStuffs(DomainData dd, GLLData *glldata)
     z0 = 1.0;
     z1 = x;
     for (n=1; n<p; n++) {
-      z2 = x*z1*(2.0*n+1.0)/(n+1.0)-z0*n/(n+1.0);
+      z2 = x*z1*(2.0*n+1.0)/(n+1.0)-z0*(PetscScalar)(n/(n+1.0));
       z0 = z1;
       z1 = z2;
     }
@@ -520,8 +502,8 @@ static PetscErrorCode GLLStuffs(DomainData dd, GLLData *glldata)
   }
 
   /* Auxiliary mat for laplacian */
-  ierr = PetscMalloc((p+1)*sizeof(PetscScalar*),&glldata->A);CHKERRQ(ierr);
-  ierr = PetscMalloc((p+1)*(p+1)*sizeof(PetscScalar),&glldata->A[0]);CHKERRQ(ierr);
+  ierr = PetscMalloc((p+1)*sizeof(*glldata->A),&glldata->A);CHKERRQ(ierr);
+  ierr = PetscMalloc((p+1)*(p+1)*sizeof(**glldata->A),&glldata->A[0]);CHKERRQ(ierr);
   for (i=1; i<p+1; i++) glldata->A[i]=glldata->A[i-1]+p+1;
 
   for (j=1; j<p; j++) {
@@ -529,7 +511,7 @@ static PetscErrorCode GLLStuffs(DomainData dd, GLLData *glldata)
     z0=1.0;
     z1=x;
     for (n=1; n<p; n++) {
-      z2=x*z1*(2.0*n+1.0)/(n+1.0)-z0*n/(n+1.0);
+      z2=x*z1*(2.0*n+1.0)/(n+1.0)-z0*(PetscScalar)(n/(n+1.0));
       z0=z1;
       z1=z2;
     }
@@ -542,7 +524,7 @@ static PetscErrorCode GLLStuffs(DomainData dd, GLLData *glldata)
         z0 = 1.0;
         z1 = x;
         for (n=1; n<p; n++) {
-          z2=x*z1*(2.0*n+1.0)/(n+1.0)-z0*n/(n+1.0);
+          z2=x*z1*(2.0*n+1.0)/(n+1.0)-z0*(PetscScalar)(n/(n+1.0));
           z0=z1;
           z1=z2;
         }
@@ -556,7 +538,7 @@ static PetscErrorCode GLLStuffs(DomainData dd, GLLData *glldata)
     z0 = 1.0;
     z1 = x;
     for (n=1; n<p; n++) {
-      z2=x*z1*(2.0*n+1.0)/(n+1.0)-z0*n/(n+1.0);
+      z2=x*z1*(2.0*n+1.0)/(n+1.0)-z0*(PetscScalar)(n/(n+1.0));
       z0=z1;
       z1=z2;
     }
@@ -569,7 +551,7 @@ static PetscErrorCode GLLStuffs(DomainData dd, GLLData *glldata)
     z0 = 1.0;
     z1 = x;
     for (n=1; n<p; n++) {
-      z2=x*z1*(2.0*n+1.0)/(n+1.0)-z0*n/(n+1.0);
+      z2=x*z1*(2.0*n+1.0)/(n+1.0)-z0*(PetscScalar)(n/(n+1.0));
       z0=z1;
       z1=z2;
     }
@@ -945,7 +927,7 @@ static PetscErrorCode InitializeDomainData(DomainData *dd)
   factor = 0.0;
   ierr   = PetscOptionsGetInt(NULL,"-jump",&factor,NULL);CHKERRQ(ierr);
   /* checkerboard pattern */
-  dd->scalingfactor = PetscPowScalar(10,(PetscScalar)factor*PetscPowScalar(-1.0,(PetscScalar)rank));
+  dd->scalingfactor = PetscPowScalar(10.0,(PetscScalar)factor*PetscPowScalar(-1.0,(PetscScalar)rank));
   /* test data passed in */
   if (dd->dim==1) {
     if (nprocs!=dd->npx) SETERRQ(dd->gcomm,PETSC_ERR_USER,"Number of mpi procs in 1D must be equal to npx");
@@ -967,6 +949,7 @@ int main(int argc,char **args)
   PetscErrorCode ierr;
   DomainData     dd;
   PetscReal      norm,maxeig,mineig;
+  PetscScalar    scalar_value;
   PetscInt       ndofs,its;
   Mat            A                  =0,F=0;
   KSP            KSPwithBDDC        =0,KSPwithFETIDP=0;
@@ -1005,9 +988,9 @@ int main(int argc,char **args)
   ierr = VecScale(exact_solution,100.0);CHKERRQ(ierr);
   ierr = VecGetSize(exact_solution,&ndofs);
   if (dd.pure_neumann) {
-    ierr = VecSum(exact_solution,&norm);CHKERRQ(ierr);
-    norm = -norm/(PetscScalar)ndofs;
-    ierr = VecShift(exact_solution,norm);CHKERRQ(ierr);
+    ierr = VecSum(exact_solution,&scalar_value);CHKERRQ(ierr);
+    scalar_value = -scalar_value/(PetscScalar)ndofs;
+    ierr = VecShift(exact_solution,scalar_value);CHKERRQ(ierr);
   }
   /* assemble BDDC rhs */
   ierr = MatMult(A,exact_solution,bddc_rhs);CHKERRQ(ierr);
@@ -1017,9 +1000,9 @@ int main(int argc,char **args)
   ierr = KSPGetIterationNumber(KSPwithBDDC,&its);CHKERRQ(ierr);
   ierr = KSPComputeExtremeSingularValues(KSPwithBDDC,&maxeig,&mineig);CHKERRQ(ierr);
   if (dd.pure_neumann) {
-    ierr = VecSum(bddc_solution,&norm);CHKERRQ(ierr);
-    norm = -norm/(PetscScalar)ndofs;
-    ierr = VecShift(bddc_solution,norm);CHKERRQ(ierr);
+    ierr = VecSum(bddc_solution,&scalar_value);CHKERRQ(ierr);
+    scalar_value = -scalar_value/(PetscScalar)ndofs;
+    ierr = VecShift(bddc_solution,scalar_value);CHKERRQ(ierr);
   }
   /* check exact_solution and BDDC solultion */
   ierr = VecAXPY(bddc_solution,-1.0,exact_solution);CHKERRQ(ierr);
@@ -1043,9 +1026,9 @@ int main(int argc,char **args)
   ierr = PCBDDCMatFETIDPGetSolution(F,fetidp_solution,fetidp_solution_all);CHKERRQ(ierr);
   /* check FETIDP sol */
   if (dd.pure_neumann) {
-    ierr = VecSum(fetidp_solution_all,&norm);CHKERRQ(ierr);
-    norm = -norm/(PetscScalar)ndofs;
-    ierr = VecShift(fetidp_solution_all,norm);CHKERRQ(ierr);
+    ierr = VecSum(fetidp_solution_all,&scalar_value);CHKERRQ(ierr);
+    scalar_value = -scalar_value/(PetscScalar)ndofs;
+    ierr = VecShift(fetidp_solution_all,scalar_value);CHKERRQ(ierr);
   }
   ierr = VecAXPY(fetidp_solution_all,-1.0,exact_solution);CHKERRQ(ierr);
   ierr = VecNorm(fetidp_solution_all,NORM_INFINITY,&norm);CHKERRQ(ierr);
