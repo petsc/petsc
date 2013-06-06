@@ -1296,18 +1296,21 @@ class Configure(config.base.Configure):
     for language in languages:
       self.generateDependencies[language] = 0
       self.setCompilers.pushLanguage(language)
-      for testFlag in ['-MMD', '-M']:
+      for testFlag in ['-MMD -MP', # GCC, Intel, Clang, Pathscale
+                       '-MMD',     # PGI
+                       '-xMMD',    # Sun
+                       '-qmakedep=gcc', # xlc
+                       '-MD',
+                       # Cray only supports -M, which writes to stdout
+                     ]:
         try:
           self.framework.logPrint('Trying '+language+' compiler flag '+testFlag)
-          if not self.setCompilers.checkLinkerFlag(testFlag):
-            self.framework.logPrint('Rejected '+language+' compiler flag '+testFlag+' because linker cannot handle it')
-            continue
-          self.framework.logPrint('Testing '+language+' compiler flag '+testFlag)
           if self.setCompilers.checkCompilerFlag(testFlag, compilerOnly = 1):
             depFilename = os.path.splitext(self.setCompilers.compilerObj)[0]+'.d'
             if os.path.isfile(depFilename):
               os.remove(depFilename)
               #self.setCompilers.insertCompilerFlag(testFlag, compilerOnly = 1)
+              self.framework.addMakeMacro(language.upper()+'_DEPFLAGS',testFlag)
               self.dependenciesGenerationFlag[language] = testFlag
               self.generateDependencies[language]       = 1
               break
