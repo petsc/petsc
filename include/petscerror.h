@@ -5,18 +5,6 @@
 #define __PETSCERROR_H
 
 /*
-   Defines the directory where the compiled source is located; used
-   in printing error messages. Each makefile has an entry
-   LOCDIR  =  thedirectory
-   and bmake/common_variables includes in CCPPFLAGS -D__SDIR__=${LOCDIR}
-   which is a flag passed to the C/C++ compilers. This declaration below
-   is only needed if some code is compiled without the -D__SDIR__
-*/
-#if !defined(__INSDIR__)
-#define __INSDIR__ "unknowndirectory/"
-#endif
-
-/*
    Defines the function where the compiled source is located; used
    in printing error messages. This is defined here in case the user
    does not declare it.
@@ -80,7 +68,7 @@
 
 #define PetscStringizeArg(a) #a
 #define PetscStringize(a) PetscStringizeArg(a)
-#define __SDIR__ PetscStringize(__INSDIR__)
+#define __SDIR__ NULL
 
 #if defined(PETSC_USE_ERRORCHECKING)
 
