@@ -135,9 +135,9 @@ echo Using PETSC_VERSION_GIT: ${version_git}
 echo Using PETSC_VERSION_DATE_GIT: ${version_date_git}
 /bin/mv include/petscversion.h include/petscversion.h.bak
 cat include/petscversion.h.bak | \
-  sed -e "s/#define PETSC_VERSION_DATE.*/#define PETSC_VERSION_DATE       \"${version_date}\"/" | \
-  sed -e "s/#define PETSC_VERSION_GIT.*/#define PETSC_VERSION_GIT        \"${version_git}\"/" | \
-  sed -e "s/#define PETSC_VERSION_DATE_GIT.*/#define PETSC_VERSION_DATE_GIT         \"${version_date_git}\"/" \
+  sed -e "s/#define PETSC_VERSION_DATE\ .*/#define PETSC_VERSION_DATE       \"${version_date}\"/" | \
+  sed -e "s/#define PETSC_VERSION_GIT\ .*/#define PETSC_VERSION_GIT        \"${version_git}\"/" | \
+  sed -e "s/#define PETSC_VERSION_DATE_GIT\ .*/#define PETSC_VERSION_DATE_GIT   \"${version_date_git}\"/" \
   > include/petscversion.h
 /bin/rm -f include/petscversion.h.bak
 
