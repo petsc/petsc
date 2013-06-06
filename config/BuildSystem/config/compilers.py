@@ -1296,7 +1296,13 @@ class Configure(config.base.Configure):
     for language in languages:
       self.generateDependencies[language] = 0
       self.setCompilers.pushLanguage(language)
-      for testFlag in ['-MMD -MP', '-MMD','-M']:
+      for testFlag in ['-MMD -MP', # GCC, Intel, Clang, Pathscale
+                       '-MMD',     # PGI
+                       '-xMMD',    # Sun
+                       '-qmakedep=gcc', # xlc
+                       '-MD',
+                       # Cray only supports -M, which writes to stdout
+                     ]:
         try:
           self.framework.logPrint('Trying '+language+' compiler flag '+testFlag)
           if not self.setCompilers.checkLinkerFlag(testFlag):
