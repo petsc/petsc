@@ -1,6 +1,8 @@
 # -*- mode: makefile-gmake -*-
 
-include $(PETSC_DIR)/conf/variables
+# If $(PETSC_ARCH) is empty, this defines it and PETSC_DIR
+include ./$(PETSC_ARCH)/conf/petscvariables
+include ./conf/variables
 
 OBJDIR := $(PETSC_ARCH)/obj-gmake
 LIBDIR := $(abspath $(PETSC_ARCH)/lib)
@@ -29,7 +31,9 @@ all : $(generated) $(libpetscall)
 
 #workarround old cygwin versions
 ifeq ($(PETSC_CYGWIN_BROKEN_PIPE),1)
+ifeq ($(shell basename $(AR)),ar)
   V ?=1
+endif
 endif
 ifeq ($(V),)
   quiet_HELP := "Use \"$(MAKE) V=1\" to see the verbose compile lines.\n"
@@ -67,10 +71,21 @@ $(libpetsc_shared) : $(srcs.o) | $$(@D)/.DIR
 
 $(libpetsc_static) : obj := $(srcs.o)
 
+define ARCHIVE_RECIPE_WIN32FE_LIB
+  @$(RM) $@ $@.args
+  @cygpath -w $^ > $@.args
+  $(call quiet,AR) $(AR_FLAGS) $@ @$@.args
+  @$(RM) $@.args
+endef
+
+define ARCHIVE_RECIPE_DEFAULT
+  @$(RM) $@
+  $(call quiet,AR) $(AR_FLAGS) $@ $^
+  $(call quiet,RANLIB) $@
+endef
+
 %.$(AR_LIB_SUFFIX) : $$(obj) | $$(@D)/.DIR
-	@$(RM) $@
-	$(call quiet,AR) $(AR_FLAGS) $@ $^
-	$(call quiet,RANLIB) $@
+	$(if $(findstring win32fe lib,$(AR)),$(ARCHIVE_RECIPE_WIN32FE_LIB),$(ARCHIVE_RECIPE_DEFAULT))
 
 # with-single-library=0
 libpkg = $(foreach pkg, $1, $(LIBDIR)/libpetsc$(pkg).so)
