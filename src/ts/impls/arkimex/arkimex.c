@@ -799,6 +799,14 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
         }
       }
     }
+    /* Save the Y, YdotI, YdotRHS for extrapolation initial guess */
+    if (ark->init_guess_extrp) {
+      for (i = 0; i<s; i++) {
+        ierr = VecCopy(Y[i],ark->Y_prev[i]);CHKERRQ(ierr);
+        ierr = VecCopy(YdotRHS[i],ark->YdotRHS_prev[i]);CHKERRQ(ierr);
+        ierr = VecCopy(YdotI[i],ark->YdotI_prev[i]);CHKERRQ(ierr);
+      }
+    }
     ierr = TSEvaluateStep(ts,tab->order,ts->vec_sol,NULL);CHKERRQ(ierr);
     ark->status = TS_STEP_PENDING;
 
