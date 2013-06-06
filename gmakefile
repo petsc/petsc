@@ -1,6 +1,8 @@
 # -*- mode: makefile-gmake -*-
 
-include $(PETSC_DIR)/conf/variables
+# If $(PETSC_ARCH) is empty, this defines it and PETSC_DIR
+include ./$(PETSC_ARCH)/conf/petscvariables
+include ./conf/variables
 
 OBJDIR := $(PETSC_ARCH)/obj-gmake
 LIBDIR := $(abspath $(PETSC_ARCH)/lib)
