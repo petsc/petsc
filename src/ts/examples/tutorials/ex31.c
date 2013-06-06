@@ -21,7 +21,7 @@ static char help[] = "Solves the Hull IVPs using explicit and implicit time-inte
 
 /* Function declarations  */
 PetscErrorCode  HullODE       (char*,PetscReal,PetscReal,PetscInt,PetscReal*,PetscBool*);
-PetscInt        GetSize       (char);
+PetscInt        GetSize       (char*);
 PetscErrorCode  Initialize    (Vec,void*);
 PetscErrorCode  RHSFunction   (TS,PetscReal,Vec,Vec,void*);
 PetscErrorCode  ExactSolution (Vec,void*,PetscReal,PetscBool*);
@@ -66,15 +66,15 @@ int main(int argc, char **argv)
     if (!r) dt = dt_initial;
     else    dt /= refine_fac;
     
-    printf("Solving Hull ODE %s with dt %f and final time %f.\n",ptype,dt,tfinal);
+    printf("Solving Hull ODE %s with dt %f, final time %f and system size %d.\n",ptype,dt,tfinal,GetSize(&ptype[0]));
     ierr = HullODE(&ptype[0],dt,tfinal,maxiter,&error[r],&flag);
     if (flag) {
       /* If exact solution available for the specified Hull ODE */
       if (r > 0) {
         PetscReal conv_rate = (log(error[r]) - log(error[r-1])) / (-log(refine_fac));
-        printf("Error = %E,\tConvergence rate = %f\n",error[r],conv_rate);
+        printf("Error = %E,\tConvergence rate = %f\n.",error[r],conv_rate);
       } else {
-        printf("Error = %E,\n",error[r]);
+        printf("Error = %E.\n",error[r]);
       }
     }
   }
@@ -96,7 +96,7 @@ PetscErrorCode HullODE(char* ptype, PetscReal dt, PetscReal tfinal, PetscInt max
   PetscInt        N;                /* Size of the system of equations  */
 
   PetscFunctionBegin;
-  N = GetSize(ptype[0]);
+  N = GetSize(&ptype[0]);
   if (N < 0) {
     printf("Error: Illegal problem specification.\n");
     return(0);
@@ -144,13 +144,32 @@ PetscErrorCode HullODE(char* ptype, PetscReal dt, PetscReal tfinal, PetscInt max
 
 #undef __FUNCT__
 #define __FUNCT__ "GetSize"
-PetscInt GetSize(char p)
+PetscInt GetSize(char *p)
 {
   PetscFunctionBegin;
-  if      (p == 'a')  return(1);
-  else if (p == 'b')  return(3);
-  else if (p == 'c')  return(10);
-  else                return(-1);
+  if (p[1] < '1') PetscFunctionReturn(-1);
+  if      (p[0] == 'a') {
+    if (p[1] < '6') PetscFunctionReturn(1);
+    else            PetscFunctionReturn(-1);
+  } else if (p[0] == 'b') {
+    if (p[1] == '1') {
+      PetscFunctionReturn(2);
+    } else if (p[1] < '6') {
+      PetscFunctionReturn(3);
+    } else {
+      PetscFunctionReturn(-1);
+    }
+  } else if (p[0] == 'c') {
+    if (p[1] < '4') {
+      PetscFunctionReturn(10);
+    } else if (p[1] ==  '4') {
+      PetscFunctionReturn(51);
+    } else {
+      PetscFunctionReturn(-1);
+    }
+  } else {
+    PetscFunctionReturn(-1);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -163,6 +182,7 @@ PetscErrorCode Initialize(Vec Y, void* s)
   PetscScalar   *y;
 
   PetscFunctionBegin;
+  VecZeroEntries(Y);
   ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
   if (p[0] == 'a') {
     /* Problem class A: Single equations. */
@@ -171,7 +191,7 @@ PetscErrorCode Initialize(Vec Y, void* s)
     } else {
       y[0] = 1.0;
     }
-    /* User-provided initial condition, if available */
+    /* User-provided initial value, if available */
     ierr = PetscOptionsReal("-yinit","Initial value of y(t)",
                             "<1.0> (<4.0> for a5)",
                             y[0],&y[0],PETSC_NULL);CHKERRQ(ierr);
@@ -181,7 +201,6 @@ PetscErrorCode Initialize(Vec Y, void* s)
       /* Problem B1 */
       y[0] = 1.0;
       y[1] = 3.0;
-      y[2] = 0.0;
     } else if (p[1] == '2') {
       /* Problem B2 */
       y[0] = 2.0;
@@ -208,15 +227,24 @@ PetscErrorCode Initialize(Vec Y, void* s)
       y[1] = 0.0;
       y[2] = 0.0;
     }
-    /* User-provided initial condition, if available */
-    ierr = PetscOptionsReal("-yinit1","Initial value of y1(t)","",
-                            y[0],&y[0],PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-yinit2","Initial value of y2(t)","",
-                            y[1],&y[1],PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-yinit3","Initial value of y3(t)","",
-                            y[2],&y[2],PETSC_NULL);CHKERRQ(ierr);
+    /* User-provided initial value, if available */
+    PetscInt N = GetSize(s);
+    PetscBool flg;
+    ierr = PetscOptionsGetRealArray(PETSC_NULL,"-yinit",y,&N,&flg);CHKERRQ(ierr);
+    if ((N != GetSize(s)) && flg) { 
+      printf("Error: number of initial values %d does not match problem size %d.\n",N,GetSize(s));
+    }
   } else if (p[0] == 'c') {
     /* Problem class C: Moderate systems. */
+    if ((p[1] == '1') || (p[1] == '2') || (p[1] == '3') || (p[1] == '4')) {
+      y[0] = 1.0;
+    }
+    PetscInt N = GetSize(s);
+    PetscBool flg;
+    ierr = PetscOptionsGetRealArray(PETSC_NULL,"-yinit",y,&N,&flg);CHKERRQ(ierr);
+    if ((N != GetSize(s)) && flg) { 
+      printf("Error: number of initial values %d does not match problem size %d.\n",N,GetSize(s));
+    }
   }
   ierr = VecRestoreArray(Y,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -256,7 +284,6 @@ PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec Y, Vec F, void *s)
       /* Problem B1 */
       f[0] = 2.0*(y[0] - y[0]*y[1]);
       f[1] = -(y[1]-y[0]*y[1]);
-      f[2] = 0.0;
     } else if (p[1] == '2') {
       /* Problem B2 */
       f[0] = -y[0] + y[1];
@@ -285,6 +312,28 @@ PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec Y, Vec F, void *s)
     }
   } else if (p[0] == 'c') {
     /* Problem class C: Moderate systems. */
+    if (p[1] == '1') {
+      PetscInt i;
+      f[0] = -y[0];
+      for (i = 1; i < N-1; i++) {
+        f[i] = y[i-1] - y[i];
+      }
+      f[N-1] = y[N-2];
+    } else if (p[1] == '2') {
+      PetscInt i;
+      f[0] = -y[0];
+      for (i = 1; i < N-1; i++) {
+        f[i] = (PetscReal)i*y[i-1] - (PetscReal)(i+1)*y[i];
+      }
+      f[N-1] = (PetscReal)(N-1)*y[N-2];
+    } else if ((p[1] == '3') || (p[1] == '4')){
+      PetscInt i;
+      f[0] = -2.0*y[0] + y[1];
+      for (i = 1; i < N-1; i++) {
+        f[i] = y[i-1] - 2*y[i] + y[i+1];
+      }
+      f[N-1] = y[N-2] - 2*y[N-1];
+    }
   } else {
   }
   ierr = VecRestoreArray(Y,&y);CHKERRQ(ierr);
