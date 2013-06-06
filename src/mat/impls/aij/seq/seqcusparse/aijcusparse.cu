@@ -77,6 +77,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_cusparse(Mat A,MatFactorType fty
 
   PetscFunctionBegin;
   ierr = MatCreate(PetscObjectComm((PetscObject)A),B);CHKERRQ(ierr);
+  (*B)->factortype = ftype;
   ierr = MatSetSizes(*B,n,n,n,n);CHKERRQ(ierr);
   ierr = MatSetType(*B,MATSEQAIJCUSPARSE);CHKERRQ(ierr);
 
@@ -91,7 +92,6 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_cusparse(Mat A,MatFactorType fty
 
   ierr = MatSeqAIJSetPreallocation(*B,MAT_SKIP_ALLOCATION,NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)(*B),"MatFactorGetSolverPackage_C",MatFactorGetSolverPackage_seqaij_cusparse);CHKERRQ(ierr);
-  (*B)->factortype = ftype;
   PetscFunctionReturn(0);
 }
 
