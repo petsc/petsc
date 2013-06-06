@@ -1246,6 +1246,35 @@ PetscErrorCode MatTransposeMatMultNumeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
   PetscFunctionReturn(0);
 }
 
+/*------------------------------ */
+#undef __FUNCT__
+#define __FUNCT__ "MatTransposeMatMult_SeqAIJ_SeqDense"
+PetscErrorCode MatTransposeMatMult_SeqAIJ_SeqDense(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  printf("MatTransposeMatMult_SeqAIJ_SeqDense...\n");
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatTransposeMatMultSymbolic_SeqAIJ_SeqDense"
+PetscErrorCode MatTransposeMatMultSymbolic_SeqAIJ_SeqDense(Mat A,Mat B,PetscReal fill,Mat *C)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatTransposeMatMultNumeric_SeqAIJ_SeqDense"
+PetscErrorCode MatTransposeMatMultNumeric_SeqAIJ_SeqDense(Mat A,Mat B,Mat C)
+{
+}
+/*-------------------------------*/
+
 #undef __FUNCT__
 #define __FUNCT__ "MatMatMult_SeqAIJ_SeqDense"
 PetscErrorCode MatMatMult_SeqAIJ_SeqDense(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C)
