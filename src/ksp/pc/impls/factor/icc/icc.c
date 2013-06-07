@@ -216,6 +216,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_ICC(PC pc)
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetShiftType_C",PCFactorSetShiftType_Factor);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetShiftAmount_C",PCFactorSetShiftAmount_Factor);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetLevels_C",PCFactorSetLevels_Factor);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorGetLevels_C",PCFactorGetLevels_Factor);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetFill_C",PCFactorSetFill_Factor);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetMatOrderingType_C",PCFactorSetMatOrderingType_Factor);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetMatSolverPackage_C",PCFactorSetMatSolverPackage_Factor);CHKERRQ(ierr);
