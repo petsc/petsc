@@ -692,7 +692,7 @@
         <p>
           <span class="def">Remove Cygwin link.exe: </span>Cygwin link.exe can
           conflict with Intel ifort and Comapq F90 compilers. If you are using
-          these compilers - please do [from cygwin/bash shell]:
+          these compilers - please do [from cygwin terminal/bash-shell]:
         </p>
 
         <ul>
@@ -700,7 +700,7 @@
         </ul>
 
         <p>
-          <span class="def">Setup cygwin bash shell with Working Compilers:
+          <span class="def">Setup cygwin terminal/bash-shell with Working Compilers:
           </span>We require the compilers to be setup properly in a cygwin bash
           command shell, so that "<code>cl foo.c</code>" or "<code>ifort
             foo.f</code>" works from this shell. For example - if using VS2005
@@ -716,11 +716,11 @@
           </li>
 
           <li>
-            Within this shell - run cygwin bash.exe as:
-            <code>c:\cygwin\bin\bash.exe --login</code>
+            Within this shell - run cygwin terminal/bash-shell mintty.exe as:
+            <code>c:\cygwin\bin\mintty.exe</code>
           </li>
 
-          <li>verify if the compilers are useable [by running cl, ifort in this shell]</li>
+          <li>verify if the compilers are useable [by running cl, ifort in this cygwin terminal/bash-shell]</li>
 
           <li>Now run configure with win32fe and then build the libraries with make [as per the usual instructions]</li>
         </ul>

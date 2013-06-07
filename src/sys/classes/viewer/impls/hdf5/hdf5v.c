@@ -225,7 +225,7 @@ PetscErrorCode  PetscViewerHDF5PushGroup(PetscViewer viewer, const char *name)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerHDF5PopGroup"
-/*@C
+/*@
   PetscViewerHDF5PopGroup - Return the current HDF5 group for output to the previous value
 
   Not collective
@@ -284,7 +284,7 @@ PetscErrorCode  PetscViewerHDF5GetGroup(PetscViewer viewer, const char **name)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerHDF5IncrementTimestep"
-/*@C
+/*@
   PetscViewerHDF5IncrementTimestep - Increments the current timestep for the HDF5 output. Fields are stacked in time.
 
   Not collective
@@ -308,7 +308,7 @@ PetscErrorCode PetscViewerHDF5IncrementTimestep(PetscViewer viewer)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerHDF5SetTimestep"
-/*@C
+/*@
   PetscViewerHDF5SetTimestep - Set the current timestep for the HDF5 output. Fields are stacked in time. A timestep
   of -1 disables blocking with timesteps.
 
@@ -334,7 +334,7 @@ PetscErrorCode  PetscViewerHDF5SetTimestep(PetscViewer viewer, PetscInt timestep
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerHDF5GetTimestep"
-/*@C
+/*@
   PetscViewerHDF5GetTimestep - Get the current timestep for the HDF5 output. Fields are stacked in time.
 
   Not collective
