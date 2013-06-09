@@ -766,7 +766,7 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
         for (j=0; j<i; j++) w[j] = h*At[i*s+j];
         ierr = VecMAXPY(Z,i,w,YdotI);CHKERRQ(ierr);
 
-        if (init_guess_extrp) {
+        if (init_guess_extrp && ts->steps) {
           /* Initial guess extrapolated from previous time step stage values */
           ierr        = TSExtrapolate_ARKIMEX(ts,c[i],Y[i]);CHKERRQ(ierr);
         } else {
