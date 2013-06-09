@@ -89,6 +89,7 @@ int main(int argc, char **argv)
 
 #undef __FUNCT__
 #define __FUNCT__ "HullODE"
+/* Solves the specified Hull ODE and computes the error if exact solution is available */
 PetscErrorCode HullODE(char* ptype, PetscReal dt, PetscReal tfinal, PetscInt maxiter, PetscReal *error, PetscBool *exact_flag)
 {
   PetscErrorCode  ierr;             /* Error code                             */
@@ -127,11 +128,11 @@ PetscErrorCode HullODE(char* ptype, PetscReal dt, PetscReal tfinal, PetscInt max
   /* Specify left/right-hand side functions                                */
   ierr = TSGetType(ts,&time_scheme);                           CHKERRQ(ierr);
   if ((!strcmp(time_scheme,TSEULER)) || (!strcmp(time_scheme,TSRK)) || (!strcmp(time_scheme,TSSSP))) {
-    /* Explicit time-integration -> specify right-hand side function y_t = f(y) */
+    /* Explicit time-integration -> specify right-hand side function ydot = f(y) */
     impl_flg = PETSC_FALSE;
     ierr = TSSetRHSFunction(ts,PETSC_NULL,RHSFunction,&ptype[0]);CHKERRQ(ierr);
   } else if ((!strcmp(time_scheme,TSBEULER)) || (!strcmp(time_scheme,TSARKIMEX))) {
-    /* Implicit time-integration -> specify left-hand side function y_t-f(y) = 0 */
+    /* Implicit time-integration -> specify left-hand side function ydot-f(y) = 0 */
     /* and its Jacobian function                                                 */
     impl_flg = PETSC_TRUE;
     ierr = TSSetIFunction(ts,PETSC_NULL,IFunction,&ptype[0]); CHKERRQ(ierr);
@@ -165,6 +166,7 @@ PetscErrorCode HullODE(char* ptype, PetscReal dt, PetscReal tfinal, PetscInt max
 
 #undef __FUNCT__
 #define __FUNCT__ "GetSize"
+/* Returns the size of the system of equations depending on problem specification */
 PetscInt GetSize(char *p)
 {
   PetscFunctionBegin;
@@ -196,6 +198,7 @@ PetscInt GetSize(char *p)
 
 #undef __FUNCT__
 #define __FUNCT__ "Initialize"
+/* Sets the initial solution for the IVP */
 PetscErrorCode Initialize(Vec Y, void* s)
 {
   PetscErrorCode ierr;
@@ -273,6 +276,7 @@ PetscErrorCode Initialize(Vec Y, void* s)
 
 #undef __FUNCT__
 #define __FUNCT__ "RHSFunction"
+/* Calculates F = f(y) in ydot = f(y) for explicit time-integration */
 PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec Y, Vec F, void *s)
 {
   PetscErrorCode  ierr;
@@ -366,6 +370,7 @@ PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec Y, Vec F, void *s)
 
 #undef __FUNCT__
 #define __FUNCT__ "IFunction"
+/* Calculates F = ydot - f(y) for implicit time-integration */
 PetscErrorCode IFunction(TS ts, PetscReal t, Vec Y, Vec Ydot, Vec F, void *s)
 {
   PetscErrorCode  ierr;
@@ -461,6 +466,7 @@ PetscErrorCode IFunction(TS ts, PetscReal t, Vec Y, Vec Ydot, Vec F, void *s)
 
 #undef __FUNCT__
 #define __FUNCT__ "IJacobian"
+/* Calculates the Jacobian A = [a{dF/d(ydot)} - dF/dy] where F = ydot - f(y) for implicit time integration*/
 PetscErrorCode IJacobian(TS ts, PetscReal t, Vec Y, Vec Ydot, PetscReal a, Mat *A, Mat *B, MatStructure *flag, void *s)
 {
   PetscErrorCode  ierr;
@@ -566,6 +572,7 @@ PetscErrorCode IJacobian(TS ts, PetscReal t, Vec Y, Vec Ydot, PetscReal a, Mat *
 
 #undef __FUNCT__
 #define __FUNCT__ "ExactSolution"
+/* Calculates the exact solution to problems that have one */
 PetscErrorCode ExactSolution(Vec Y, void* s, PetscReal t, PetscBool *flag)
 {
   PetscErrorCode ierr;
