@@ -24,6 +24,8 @@ PetscErrorCode  HullODE       (char*,PetscReal,PetscReal,PetscInt,PetscReal*,Pet
 PetscInt        GetSize       (char*);
 PetscErrorCode  Initialize    (Vec,void*);
 PetscErrorCode  RHSFunction   (TS,PetscReal,Vec,Vec,void*);
+PetscErrorCode  IFunction     (TS,PetscReal,Vec,Vec,Vec,void*);
+PetscErrorCode  IJacobian     (TS,PetscReal,Vec,Vec,PetscReal,Mat*,Mat*,MatStructure*,void*);
 PetscErrorCode  ExactSolution (Vec,void*,PetscReal,PetscBool*);
 
 #undef __FUNCT__
@@ -89,11 +91,14 @@ int main(int argc, char **argv)
 #define __FUNCT__ "HullODE"
 PetscErrorCode HullODE(char* ptype, PetscReal dt, PetscReal tfinal, PetscInt maxiter, PetscReal *error, PetscBool *exact_flag)
 {
-  PetscErrorCode  ierr;             /* Error code                       */
-  TS              ts;               /* time-integrator                  */
-  Vec             Y;                /* Solution vector                  */
-  Vec             Yex;              /* Exact solution                   */
-  PetscInt        N;                /* Size of the system of equations  */
+  PetscErrorCode  ierr;             /* Error code                             */
+  TS              ts;               /* time-integrator                        */
+  Vec             Y;                /* Solution vector                        */
+  Vec             Yex;              /* Exact solution                         */
+  PetscInt        N;                /* Size of the system of equations        */
+  TSType          time_scheme;      /* Type of time-integration scheme        */
+  PetscBool       impl_flg;         /* Flag whether implicit time-integration */
+  Mat             Jac;              /* Jacobian matrix                        */
 
   PetscFunctionBegin;
   N = GetSize(&ptype[0]);
@@ -119,8 +124,23 @@ PetscErrorCode HullODE(char* ptype, PetscReal dt, PetscReal tfinal, PetscInt max
   ierr = TSSetFromOptions(ts);                                 CHKERRQ(ierr);
   /* Set solution vector                                                   */
   ierr = TSSetSolution(ts,Y);                                  CHKERRQ(ierr);
-  /* Specify right-hand side function                                      */
-  ierr = TSSetRHSFunction(ts,PETSC_NULL,RHSFunction,&ptype[0]);CHKERRQ(ierr);
+  /* Specify left/right-hand side functions                                */
+  ierr = TSGetType(ts,&time_scheme);                           CHKERRQ(ierr);
+  if ((!strcmp(time_scheme,TSEULER)) || (!strcmp(time_scheme,TSRK)) || (!strcmp(time_scheme,TSSSP))) {
+    /* Explicit time-integration -> specify right-hand side function y_t = f(y) */
+    impl_flg = PETSC_FALSE;
+    ierr = TSSetRHSFunction(ts,PETSC_NULL,RHSFunction,&ptype[0]);CHKERRQ(ierr);
+  } else if ((!strcmp(time_scheme,TSBEULER)) || (!strcmp(time_scheme,TSARKIMEX))) {
+    /* Implicit time-integration -> specify left-hand side function y_t-f(y) = 0 */
+    /* and its Jacobian function                                                 */
+    impl_flg = PETSC_TRUE;
+    ierr = TSSetIFunction(ts,PETSC_NULL,IFunction,&ptype[0]); CHKERRQ(ierr);
+    ierr = MatCreate(PETSC_COMM_WORLD,&Jac);                  CHKERRQ(ierr);
+    ierr = MatSetSizes(Jac,PETSC_DECIDE,PETSC_DECIDE,N,N);    CHKERRQ(ierr);
+    ierr = MatSetFromOptions(Jac);                            CHKERRQ(ierr);
+    ierr = MatSetUp(Jac);                                     CHKERRQ(ierr);
+    ierr = TSSetIJacobian(ts,Jac,Jac,IJacobian,&ptype[0]);    CHKERRQ(ierr);
+  }
 
   /* Solve */
   ierr = TSSolve(ts,Y);CHKERRQ(ierr);
@@ -135,9 +155,10 @@ PetscErrorCode HullODE(char* ptype, PetscReal dt, PetscReal tfinal, PetscInt max
   *error = sqrt(((*error)*(*error))/N);
 
   /* Clean up and finalize */
-  ierr = TSDestroy(&ts);  CHKERRQ(ierr);
-  ierr = VecDestroy(&Yex);CHKERRQ(ierr);
-  ierr = VecDestroy(&Y);  CHKERRQ(ierr);
+  if (impl_flg) ierr = MatDestroy(&Jac);  CHKERRQ(ierr);
+  ierr = TSDestroy(&ts);                  CHKERRQ(ierr);
+  ierr = VecDestroy(&Yex);                CHKERRQ(ierr);
+  ierr = VecDestroy(&Y);                  CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -335,9 +356,211 @@ PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec Y, Vec F, void *s)
       f[N-1] = y[N-2] - 2*y[N-1];
     }
   } else {
+    /* Invalid problem specifications */
+    VecZeroEntries(F);
   }
   ierr = VecRestoreArray(Y,&y);CHKERRQ(ierr);
   ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "IFunction"
+PetscErrorCode IFunction(TS ts, PetscReal t, Vec Y, Vec Ydot, Vec F, void *s)
+{
+  PetscErrorCode  ierr;
+  char           *p = (char*) s;
+  PetscScalar    *y,*f;
+  PetscInt        N;
+
+  PetscFunctionBegin;
+  ierr = VecGetSize (Y,&N);CHKERRQ(ierr);
+  ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
+  ierr = VecGetArray(F,&f);CHKERRQ(ierr);
+  if (p[0] == 'a') {
+    /* Problem class A: Single equations. */
+    if        (p[1] == '1') {
+      f[0] = -y[0];                         /* Problem A1 */
+    } else if (p[1] == '2') {
+      f[0] = -0.5*y[0]*y[0]*y[0];           /* Problem A2 */
+    } else if (p[1] == '3') {
+      f[0] = y[0]*cos(t);                   /* Problem A3 */
+    } else if (p[1] == '4') {
+      f[0] = (0.25*y[0])*(1.0-0.05*y[0]);   /* Problem A4 */
+    } else if (p[1] == '5') {
+      f[0] = (y[0]-t)/(y[0]+t);             /* Problem A5 */
+    } else {
+      f[0] = 0.0;                           /* Invalid problem */
+    }
+  } else if (p[0] == 'b') {
+    /* Problem class B: Small systems.    */
+    if (p[1] == '1') {
+      /* Problem B1 */
+      f[0] = 2.0*(y[0] - y[0]*y[1]);
+      f[1] = -(y[1]-y[0]*y[1]);
+    } else if (p[1] == '2') {
+      /* Problem B2 */
+      f[0] = -y[0] + y[1];
+      f[1] = y[0] - 2*y[1] + y[2];
+      f[2] = y[1] - y[2];
+    } else if (p[1] == '3') {
+      /* Problem B3 */
+      f[0] = -y[0];
+      f[1] = y[0]-y[1]*y[1];
+      f[2] = y[1]*y[1];
+    } else if (p[1] == '4') {
+      /* Problem B4 */
+      f[0] = -y[1] - y[0]*y[2]/sqrt(y[0]*y[0]+y[1]*y[1]);
+      f[1] =  y[0] - y[1]*y[2]/sqrt(y[0]*y[0]+y[1]*y[1]);
+      f[2] = y[0]/sqrt(y[0]*y[0]+y[1]*y[1]);
+    } else if (p[1] == '5') {
+      /* Problem B5 */
+      f[0] = y[1]*y[2];
+      f[1] = -y[0]*y[2];
+      f[2] = -0.51*y[0]*y[1];
+    } else {
+      /* Invalid Problem */
+      f[0] = 0.0;
+      f[1] = 0.0;
+      f[2] = 0.0;
+    }
+  } else if (p[0] == 'c') {
+    /* Problem class C: Moderate systems. */
+    if (p[1] == '1') {
+      PetscInt i;
+      f[0] = -y[0];
+      for (i = 1; i < N-1; i++) {
+        f[i] = y[i-1] - y[i];
+      }
+      f[N-1] = y[N-2];
+    } else if (p[1] == '2') {
+      PetscInt i;
+      f[0] = -y[0];
+      for (i = 1; i < N-1; i++) {
+        f[i] = (PetscReal)i*y[i-1] - (PetscReal)(i+1)*y[i];
+      }
+      f[N-1] = (PetscReal)(N-1)*y[N-2];
+    } else if ((p[1] == '3') || (p[1] == '4')){
+      PetscInt i;
+      f[0] = -2.0*y[0] + y[1];
+      for (i = 1; i < N-1; i++) {
+        f[i] = y[i-1] - 2*y[i] + y[i+1];
+      }
+      f[N-1] = y[N-2] - 2*y[N-1];
+    }
+  } else {
+    /* Invalid problem type */
+    VecZeroEntries(F);
+  }
+  ierr = VecRestoreArray(Y,&y);CHKERRQ(ierr);
+  ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
+  /* Left hand side = ydot - f(y) */
+  ierr = VecAYPX(F,-1.0,Ydot);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "IJacobian"
+PetscErrorCode IJacobian(TS ts, PetscReal t, Vec Y, Vec Ydot, PetscReal a, Mat *A, Mat *B, MatStructure *flag, void *s)
+{
+  PetscErrorCode  ierr;
+  char           *p = (char*) s;
+  PetscScalar    *y;
+  PetscInt        N;
+
+  PetscFunctionBegin;
+  ierr = VecGetSize (Y,&N);CHKERRQ(ierr);
+  ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
+  if (p[0] == 'a') {
+    /* Problem class A: Single equations. */
+    PetscReal value;
+    PetscInt  row = 0;
+    PetscInt  col = 0;
+    if        (p[1] == '1') {
+      value = a - 1.0;                        /* Problem A1 */
+    } else if (p[1] == '2') {
+      value = a - -0.5*3.0*y[0]*y[0];         /* Problem A2 */
+    } else if (p[1] == '3') {
+      value = a - cos(t);                     /* Problem A3 */
+    } else if (p[1] == '4') {
+      value = a - 0.25*(1.0-0.05*y[0])
+              + (0.25*y[0])*0.05;             /* Problem A4 */
+    } else if (p[1] == '5') {
+      value = a - 2*t/((t+y[0])*(t+y[0]));    /* Problem A5 */
+    } else {
+      value = 0.0;                            /* Invalid problem */
+    }
+    ierr = MatSetValues(*A,1,&row,1,&col,&value,INSERT_VALUES);CHKERRQ(ierr);
+  } else if (p[0] == 'b') {
+    /* Problem class B: Small systems.    */
+  } else if (p[0] == 'c') {
+    /* Problem class C: Moderate systems. */
+    if (p[1] == '1') {
+      PetscInt  i;
+      PetscInt  col[2];
+      PetscReal value[2];
+      for (i = 0; i < N; i++) {
+        if (i == 0) {
+          value[0] = a-1; col[0] = i;
+          value[1] =  0;  col[1] = i+1;
+        } else if (i == N-1) {
+          value[0] = -1;  col[0] = i-1;
+          value[1] =  a;  col[1] = i;
+        } else { 
+          value[0] =  -1; col[0] = i-1;
+          value[1] = a+1; col[1] = i;
+        }
+        ierr = MatSetValues(*A,1,&i,2,col,value,INSERT_VALUES);CHKERRQ(ierr);
+      }
+    } else if (p[1] == '2') {
+      PetscInt  i;
+      PetscInt  col[2];
+      PetscReal value[2];
+      for (i = 0; i < N; i++) {
+        if (i == 0) {
+          value[0] = a-(PetscReal)(-i-1); col[0] = i;
+          value[1] = 0;                   col[1] = i+1;
+        } else if (i == N-1) {
+          value[0] = -(PetscReal) i;      col[0] = i-1;
+          value[1] = a;                   col[1] = i;
+        } else { 
+          value[0] = -(PetscReal) i;      col[0] = i-1;
+          value[1] = a-(PetscReal)(-1-1); col[1] = i;
+        }
+        ierr = MatSetValues(*A,1,&i,2,col,value,INSERT_VALUES);CHKERRQ(ierr);
+      }
+    } else if ((p[1] == '3') || (p[1] == '4')){
+      PetscInt  i;
+      PetscInt  col[3];
+      PetscReal value[3];
+      for (i = 0; i < N; i++) {
+        if (i == 0) {
+          value[0] = a+2;  col[0] = i;
+          value[1] =  -1;  col[1] = i+1;
+          value[2] =  0;   col[2] = i+2;
+        } else if (i == N-1) {
+          value[0] =  0;   col[0] = i-2;
+          value[1] =  -1;  col[1] = i-1;
+          value[2] = a+2;  col[2] = i;
+        } else { 
+          value[0] = -1;   col[0] = i-1;
+          value[1] = a+2;  col[1] = i;
+          value[2] = -1;   col[2] = i+1;
+        }
+        ierr = MatSetValues(*A,1,&i,3,col,value,INSERT_VALUES);CHKERRQ(ierr);
+      }
+    } else {
+      /* Invalid problem type */
+      /* Do nothing           */
+    }
+  } else {
+    /* Invalid problem type */
+    /* Do nothing           */
+  }
+  ierr = MatAssemblyBegin(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd  (*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+
+  ierr = VecRestoreArray(Y,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
