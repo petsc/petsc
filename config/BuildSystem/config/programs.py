@@ -207,7 +207,7 @@ class Configure(config.base.Configure):
 
   def configure(self):
     if not self.framework.argDB['with-make'] == '0':
-      self.executeTest(self.configureMake)
+      #self.executeTest(self.configureMake)
       self.executeTest(self.configureMkdir)
       self.executeTest(self.configurePrograms)
     return
