@@ -1267,7 +1267,7 @@ static PetscErrorCode DMPlexMarkSubmesh_Interpolated(DM dm, DMLabel vertexLabel,
 static PetscErrorCode DMPlexMarkCohesiveSubmesh_Uninterpolated(DM dm, PetscBool hasLagrange, DMLabel subpointMap, PetscInt *numFaces, PetscInt *nFV, PetscInt *subCells[], DM subdm)
 {
   const PetscInt *cone;
-  PetscInt        dim, cMax, cEnd, c, p, coneSize;
+  PetscInt        dim, cMax, cEnd, c, subc = 0, p, coneSize;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
@@ -1292,10 +1292,11 @@ static PetscErrorCode DMPlexMarkCohesiveSubmesh_Uninterpolated(DM dm, PetscBool 
     }
     /* Negative face */
     ierr = DMPlexGetJoin(dm, *nFV, cone, &numCells, &cells);CHKERRQ(ierr);
-    if (numCells != 2) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cohesive cells should separate two cells");
+    /* Not true in parallel
+    if (numCells != 2) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cohesive cells should separate two cells"); */
     for (p = 0; p < numCells; ++p) {
       ierr = DMLabelSetValue(subpointMap, cells[p], 2);CHKERRQ(ierr);
-      (*subCells)[(c-cMax)*2+p] = cells[p];
+      (*subCells)[subc++] = cells[p];
     }
     ierr = DMPlexRestoreJoin(dm, *nFV, cone, &numCells, &cells);CHKERRQ(ierr);
     /* Positive face is not included */
@@ -2167,7 +2168,8 @@ static PetscErrorCode DMPlexCreateCohesiveSubmesh_Uninterpolated(DM dm, PetscBoo
     ierr = DMPlexSetCone(subdm, newFacePoint, subface);CHKERRQ(ierr);
     ierr = DMPlexSetCone(subdm, subcell, &newFacePoint);CHKERRQ(ierr);
     ierr = DMPlexGetJoin(dm, nFV, cone, &numCells, &cells);CHKERRQ(ierr);
-    if (numCells != 2) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cohesive cells should separate two cells");
+    /* Not true in parallel
+    if (numCells != 2) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cohesive cells should separate two cells"); */
     for (p = 0; p < numCells; ++p) {
       PetscInt negsubcell;
 
