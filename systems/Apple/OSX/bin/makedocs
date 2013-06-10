@@ -1,0 +1,50 @@
+#!/bin/sh
+#
+# This script adds documentation to the Apple Mac OS X framework for PETSc created with makeframework
+#
+#After running makeframework and generating the PETSc documention then just run this script
+#    3) you can also use the framework inside Xcode by simply indicating the targets dependence on the PETSc framework
+#
+#
+cd ${PETSC_DIR}/${PETSC_ARCH}/PETSc.framework/Versions/A
+rm -rf PETSc.docset ${PETSC_DIR}/${PETSC_ARCH}/PETSc.framework/PETSc.docset
+mkdir PETSc.docset
+mkdir PETSc.docset/Contents
+mkdir PETSc.docset/Contents/Resources
+mkdir PETSc.docset/Contents/Resources/Documents
+cat <<EOF > PETSc.docset/Contents/Info.plist
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+        <key>CFBundleName</key>
+        <string>PETSc Documentation</string>
+	<key>CFBundleIdentifier</key>
+	<string>gov.anl.mcs.PETSc.docset</string>
+        <key>DocSetPublisherIdentifier</key>
+        <string>gov.anl.mcs.PETSc.documentation</string>
+        <key>DocSetPublisherName</key>
+        <string>PETSc</string>
+</dict>
+</plist>
+EOF
+
+cat <<EOF > PETSc.docset/Contents/Nodes.xml
+<?xml version="1.0" encoding="UTF-8"?>
+<DocSetNodes version="1.0">
+    <TOC>
+        <Node type="folder">
+            <Name>All PETSc manual pages</Name>
+            <Path>singleindex.html</Path>
+        </Node>
+    </TOC>
+</DocSetNodes>
+EOF
+
+cp -r ${LOC}/docs/manualpages PETSc.docset/Contents/Resources/Documents
+
+/Applications/Xcode.app/Contents/Developer/usr/bin/docsetutil index PETSc.docset
+
+cd  ${PETSC_DIR}/${PETSC_ARCH}/PETSc.framework
+ln -s Versions/Current/PETSc.docset PETSc.docset
+
