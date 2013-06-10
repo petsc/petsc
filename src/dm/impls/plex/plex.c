@@ -2729,52 +2729,6 @@ PetscErrorCode DMPlexDistributeField(DM dm, PetscSF pointSF, PetscSection origin
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMPlexComputeHybridBounds"
-/* This is a stopgap while I determine how to make distributed meshes propagate the hybrid bounds */
-static PetscErrorCode DMPlexComputeHybridBounds_Internal(DM dm)
-{
-  PetscInt       depth, cStart, cEnd, cMax = -1, c, coneSize = 0, vMax = -1;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
-  if (depth > 1) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Does not work for interpolated meshes");
-  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
-  /* First determine hybrid cells */
-  if (cEnd > cStart) {ierr = DMPlexGetConeSize(dm, cStart, &coneSize);CHKERRQ(ierr);}
-  for (c = cStart; c < cEnd; ++c) {
-    PetscInt cS;
-
-    /* Assume that hybrid cells have a different cone size */
-    ierr = DMPlexGetConeSize(dm, c, &cS);CHKERRQ(ierr);
-    if (cS != coneSize) {
-      cMax = c;
-      break;
-    }
-  }
-  /* Then determine hybrid vertices */
-  if (cMax >= 0) {
-    const PetscInt *cone;
-
-    /* Right now assumes that the first hybrid cell has the first hybrid vertex */
-    ierr = DMPlexGetConeSize(dm, cMax, &coneSize);CHKERRQ(ierr);
-    ierr = DMPlexGetCone(dm, cMax, &cone);CHKERRQ(ierr);
-    for (c = 0; c < coneSize; ++c) {
-      const PetscInt v = cone[c], *support;
-      PetscInt       supportSize, s;
-
-      ierr = DMPlexGetSupportSize(dm, v, &supportSize);CHKERRQ(ierr);
-      ierr = DMPlexGetSupport(dm, v, &support);CHKERRQ(ierr);
-      for (s = 0; s < supportSize; ++s) if (support[s] < cMax) break;
-      if (s >= supportSize) vMax = PetscMin(v, vMax < 0 ? v : vMax);
-    }
-  }
-  ierr = DMPlexSetHybridBounds(dm, cMax, PETSC_DETERMINE, PETSC_DETERMINE, vMax);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "DMPlexDistribute"
 /*@C
   DMPlexDistribute - Distributes the mesh and any associated sections.
@@ -3061,6 +3015,34 @@ PetscErrorCode DMPlexDistribute(DM dm, const char partitioner[], PetscInt overla
       if (!rank) next = next->next;
     }
   }
+  /* Setup hybrid structure */
+  {
+    const PetscInt *gpoints;
+    PetscInt        depth, n, d;
+
+    for (d = 0; d <= dim; ++d) {pmesh->hybridPointMax[d] = mesh->hybridPointMax[d];}
+    ierr = MPI_Bcast(pmesh->hybridPointMax, dim+1, MPIU_INT, 0, comm);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingGetSize(renumbering, &n);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingGetIndices(renumbering, &gpoints);CHKERRQ(ierr);
+    ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
+    for (d = 0; d <= dim; ++d) {
+      PetscInt pmax = pmesh->hybridPointMax[d], newmax = 0, pEnd, stratum[2], p;
+
+      if (pmax < 0) continue;
+      ierr = DMPlexGetDepthStratum(dm, d > depth ? depth : d, &stratum[0], &stratum[1]);CHKERRQ(ierr);
+      /* This mesh is not interpolated, so there is still a problem here */
+      ierr = DMPlexGetDepthStratum(*dmParallel, d > 0 ? 1 : d, NULL, &pEnd);CHKERRQ(ierr);
+      ierr = MPI_Bcast(stratum, 2, MPIU_INT, 0, comm);CHKERRQ(ierr);
+      for (p = 0; p < n; ++p) {
+        const PetscInt point = gpoints[p];
+
+        if ((point >= stratum[0]) && (point < stratum[1]) && (point >= pmax)) ++newmax;
+      }
+      if (newmax > 0) pmesh->hybridPointMax[d] = pEnd - newmax;
+      else            pmesh->hybridPointMax[d] = -1;
+    }
+    ierr = ISLocalToGlobalMappingRestoreIndices(renumbering, &gpoints);CHKERRQ(ierr);
+  }
   /* Cleanup Partition */
   ierr = ISLocalToGlobalMappingDestroy(&renumbering);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&partSF);CHKERRQ(ierr);
@@ -3135,13 +3117,6 @@ PetscErrorCode DMPlexDistribute(DM dm, const char partitioner[], PetscInt overla
     ierr = PetscFree2(rowners,lowners);CHKERRQ(ierr);
     ierr = PetscSFSetGraph((*dmParallel)->sf, pEnd - pStart, numGhostPoints, ghostPoints, PETSC_OWN_POINTER, remotePoints, PETSC_OWN_POINTER);CHKERRQ(ierr);
     ierr = PetscSFSetFromOptions((*dmParallel)->sf);CHKERRQ(ierr);
-  }
-  /* Setup hybrid structure */
-  {
-    PetscInt cMax;
-
-    ierr = DMPlexGetHybridBounds(dm, &cMax, NULL, NULL, NULL);CHKERRQ(ierr);
-    if (cMax >= 0) {ierr = DMPlexComputeHybridBounds_Internal(*dmParallel);CHKERRQ(ierr);}
   }
   /* Cleanup */
   ierr = PetscSFDestroy(&pointSF);CHKERRQ(ierr);
