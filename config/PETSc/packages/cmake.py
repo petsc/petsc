@@ -34,8 +34,7 @@ class Configure(PETSc.package.NewPackage):
         output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+' && make && make install && make clean', timeout=2500, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running make; make install on cmake: '+str(e))
-      output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cp -f '+os.path.join(self.packageDir,'cmake.args')+' '+self.confDir+'/cmake', timeout=5, log = self.framework.log)
-      self.framework.actions.addArgument('CMAKE', 'Install', 'Installed cmake into '+self.installDir)
+      self.postInstall(output+err,'cmake.args')
     self.binDir = os.path.join(self.installDir, 'bin')
     self.cmake = os.path.join(self.binDir, 'cmake')
     self.addMakeMacro('CMAKE',self.cmake)
