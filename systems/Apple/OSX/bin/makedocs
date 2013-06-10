@@ -6,8 +6,8 @@
 #    3) you can also use the framework inside Xcode by simply indicating the targets dependence on the PETSc framework
 #
 #
-cd ${PETSC_DIR}/${PETSC_ARCH}/PETSc.framework/Versions/A
-rm -rf PETSc.docset ${PETSC_DIR}/${PETSC_ARCH}/PETSc.framework/PETSc.docset
+cd ${PETSC_DIR}/${PETSC_ARCH}
+rm -rf PETSc.docset
 mkdir PETSc.docset
 mkdir PETSc.docset/Contents
 mkdir PETSc.docset/Contents/Resources
@@ -46,6 +46,4 @@ cp -r ${LOC}/docs/manualpages PETSc.docset/Contents/Resources/Documents
 
 /Applications/Xcode.app/Contents/Developer/usr/bin/docsetutil index -debug -verbose -skip-api  PETSc.docset
 
-cd  ${PETSC_DIR}/${PETSC_ARCH}/PETSc.framework
-ln -s Versions/Current/PETSc.docset PETSc.docset
 
