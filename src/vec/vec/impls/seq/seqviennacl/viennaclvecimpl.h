@@ -12,6 +12,8 @@
 
 #include "viennacl/vector.hpp"
 
+#define ViennaCLWaitForGPU() if (PetscViennaCLSynchronize) viennacl::backend::finish();
+
 typedef viennacl::vector<PetscScalar>    ViennaCLVector;
 
 
@@ -114,6 +116,7 @@ PETSC_STATIC_INLINE PetscErrorCode VecViennaCLGetArrayReadWrite(Vec v, ViennaCLV
   *a   = 0;
   ierr = VecViennaCLCopyToGPU(v);CHKERRQ(ierr);
   *a   = ((Vec_ViennaCL*)v->spptr)->GPUarray;
+  ViennaCLWaitForGPU();
   PetscFunctionReturn(0);
 }
 
@@ -140,6 +143,7 @@ PETSC_STATIC_INLINE PetscErrorCode VecViennaCLGetArrayRead(Vec v, const ViennaCL
   *a   = 0;
   ierr = VecViennaCLCopyToGPU(v);CHKERRQ(ierr);
   *a   = ((Vec_ViennaCL*)v->spptr)->GPUarray;
+  ViennaCLWaitForGPU();
   PetscFunctionReturn(0);
 }
 
@@ -161,6 +165,7 @@ PETSC_STATIC_INLINE PetscErrorCode VecViennaCLGetArrayWrite(Vec v, ViennaCLVecto
   *a   = 0;
   ierr = VecViennaCLAllocateCheck(v);CHKERRQ(ierr);
   *a   = ((Vec_ViennaCL*)v->spptr)->GPUarray;
+  ViennaCLWaitForGPU();
   PetscFunctionReturn(0);
 }
 
