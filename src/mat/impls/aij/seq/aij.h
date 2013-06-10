@@ -46,6 +46,12 @@ typedef struct {
   PetscErrorCode (*destroy)(Mat);
 } Mat_MatMatTransMult;
 
+typedef struct { /* for MatTransposeMatMult_SeqAIJ_SeqDense() */
+  Mat          mA;           /* maij matrix of A */
+  Vec          bt,ct;        /* vectors to hold locally transposed arrays of B and C */
+  PetscErrorCode (*destroy)(Mat);
+} Mat_MatTransMatMult;
+
 typedef struct {
   PetscInt    *api,*apj;       /* symbolic structure of A*P */
   PetscScalar *apa;            /* temporary array for storing one row of A*P */

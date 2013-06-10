@@ -1,6 +1,6 @@
 
 /*
-  Defines matrix-matrix product routines for pairs of SeqAIJ matrices
+  Defines matrix-matrix product routines 
           C = A^T * B
 */
 

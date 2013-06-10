@@ -12,7 +12,7 @@ int main(int argc,char **args)
   PetscViewer    fd;              /* viewer */
   char           file[PETSC_MAX_PATH_LEN]; /* input file name */
   PetscBool      flg,viewmats=PETSC_FALSE;
-  PetscMPIInt    rank;
+  PetscMPIInt    rank,size;
   PetscReal      fill=1.0;
   PetscInt       m,n,i,j,BN=10;
 
@@ -80,11 +80,66 @@ int main(int argc,char **args)
 
   /* Test MatTransposeMatMult_aij_dense() */
   ierr = MatTransposeMatMult(A,Bdense,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr);
+  if (viewmats) {
+    if (!rank) printf("\nC=A^T*Bdense:\n");
+    ierr = MatView(C,0);CHKERRQ(ierr);
+  }
+
+  /* Check accuracy */
+  PetscScalar *Barray,*Carray;
+  Vec         x,y;
+  Mat         Cdense;
+
+  ierr = MatCreate(PETSC_COMM_WORLD,&Cdense);CHKERRQ(ierr);
+  ierr = MatSetSizes(Cdense,n,BN,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
+  ierr = MatSetType(Cdense,MATDENSE);CHKERRQ(ierr);
+  ierr = MatSetFromOptions(Cdense);CHKERRQ(ierr);
+  ierr = MatSetUp(Cdense);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(Cdense,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(Cdense,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
+  if (size == 1) {
+    ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,m,NULL,&x);CHKERRQ(ierr);
+    ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,n,NULL,&y);CHKERRQ(ierr);
+  } else {
+    ierr = VecCreateMPIWithArray(PETSC_COMM_WORLD,1,m,PETSC_DECIDE,NULL,&x);CHKERRQ(ierr);
+    ierr = VecCreateMPIWithArray(PETSC_COMM_WORLD,1,n,PETSC_DECIDE,NULL,&y);CHKERRQ(ierr);
+  }
+
+  /* Cdense[:,j] = A^T * Bdense[:,j] */
+  ierr = MatDenseGetArray(Bdense,&Barray);CHKERRQ(ierr);
+  ierr = MatDenseGetArray(Cdense,&Carray);CHKERRQ(ierr);
+  for (j=0; j<BN; j++) {
+    ierr = VecPlaceArray(x,Barray);CHKERRQ(ierr);
+    ierr = VecPlaceArray(y,Carray);CHKERRQ(ierr);
+
+    ierr = MatMultTranspose(A,x,y);CHKERRQ(ierr);
+    
+    ierr = VecResetArray(x);CHKERRQ(ierr);
+    ierr = VecResetArray(y);CHKERRQ(ierr);
+    Barray += m;
+    Carray += n;
+  }
+  ierr = MatDenseRestoreArray(Bdense,&Barray);CHKERRQ(ierr);
+  ierr = MatDenseRestoreArray(Cdense,&Carray);CHKERRQ(ierr);
+  if (viewmats) {
+    if (!rank) printf("\nCdense:\n");
+    ierr = MatView(Cdense,0);CHKERRQ(ierr);
+  }
+
+  ierr = MatEqual(C,Cdense,&flg);CHKERRQ(ierr);
+  if (!flg) {
+    if (!rank) printf(" C != Cdense\n");
+  }
 
   /* Free data structures */
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = MatDestroy(&C);CHKERRQ(ierr);
   ierr = MatDestroy(&Bdense);CHKERRQ(ierr);
+  ierr = MatDestroy(&Cdense);CHKERRQ(ierr);
+  ierr = VecDestroy(&x);CHKERRQ(ierr);
+  ierr = VecDestroy(&y);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
   return 0;
