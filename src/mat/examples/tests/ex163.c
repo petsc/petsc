@@ -7,14 +7,17 @@ static char help[] = "Tests MatTransposeMatMult() on MatLoad() matrix \n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat            A,C,Bdense;
+  Mat            A,C,Bdense,Cdense;
   PetscErrorCode ierr;
   PetscViewer    fd;              /* viewer */
   char           file[PETSC_MAX_PATH_LEN]; /* input file name */
   PetscBool      flg,viewmats=PETSC_FALSE;
   PetscMPIInt    rank,size;
   PetscReal      fill=1.0;
-  PetscInt       m,n,i,j,BN=10;
+  PetscInt       m,n,i,j,BN=10,rstart,rend,*rows,*cols;
+  PetscScalar    *Barray,*Carray,rval,*array;
+  Vec            x,y;
+  PetscRandom    rand;
 
   PetscInitialize(&argc,&args,(char*)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
@@ -46,7 +49,6 @@ int main(int argc,char **args)
   ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
   
   /* create a dense matrix Bdense */
-  PetscInt rstart,rend;
   ierr = MatCreate(PETSC_COMM_WORLD,&Bdense);CHKERRQ(ierr);
   ierr = MatSetSizes(Bdense,m,BN,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = MatSetType(Bdense,MATDENSE);CHKERRQ(ierr);
@@ -55,10 +57,7 @@ int main(int argc,char **args)
   ierr = MatGetOwnershipRange(Bdense,&rstart,&rend);CHKERRQ(ierr);
   printf("[%d] rstart/end %d %d\n",rank,rstart,rend);
 
-  PetscRandom    rand;
-  PetscScalar    array[m*BN],rval;
-  PetscInt       rows[m],cols[BN];
-
+  ierr = PetscMalloc3(m,PetscInt,&rows,BN,PetscInt,&cols,m*BN,PetscScalar,&array);CHKERRQ(ierr);
   for (i=0; i<m; i++) rows[i] = rstart + i;
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rand);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rand);CHKERRQ(ierr);
@@ -73,6 +72,7 @@ int main(int argc,char **args)
   ierr = MatAssemblyBegin(Bdense,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(Bdense,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = PetscRandomDestroy(&rand);CHKERRQ(ierr);
+  ierr = PetscFree3(rows,cols,array);CHKERRQ(ierr);
   if (viewmats) {
     if (!rank) printf("\nBdense:\n");
     ierr = MatView(Bdense,0);CHKERRQ(ierr);
@@ -80,16 +80,13 @@ int main(int argc,char **args)
 
   /* Test MatTransposeMatMult_aij_dense() */
   ierr = MatTransposeMatMult(A,Bdense,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr);
+  ierr = MatTransposeMatMult(A,Bdense,MAT_REUSE_MATRIX,fill,&C);CHKERRQ(ierr);
   if (viewmats) {
     if (!rank) printf("\nC=A^T*Bdense:\n");
     ierr = MatView(C,0);CHKERRQ(ierr);
   }
 
   /* Check accuracy */
-  PetscScalar *Barray,*Carray;
-  Vec         x,y;
-  Mat         Cdense;
-
   ierr = MatCreate(PETSC_COMM_WORLD,&Cdense);CHKERRQ(ierr);
   ierr = MatSetSizes(Cdense,n,BN,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = MatSetType(Cdense,MATDENSE);CHKERRQ(ierr);
@@ -140,7 +137,6 @@ int main(int argc,char **args)
   ierr = MatDestroy(&Cdense);CHKERRQ(ierr);
   ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = VecDestroy(&y);CHKERRQ(ierr);
-
   ierr = PetscFinalize();
   return 0;
 }
