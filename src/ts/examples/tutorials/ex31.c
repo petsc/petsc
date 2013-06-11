@@ -3,9 +3,6 @@ static char help[] = "Solves the ordinary differential equations (IVPs) using ex
 /*
 
   Concepts:   TS
-  References:  Hull, T.E., Enright, W.H., Fellen, B.M., and Sedgwick, A.E.,
-              "Comparing Numerical Methods for Ordinary Differential
-               Equations", SIAM J. Numer. Anal., 9(4), 1972, pp. 603 - 635
   Useful command line parameters:
   -problem <hull1972a1>: choose which problem to solve (see references
                       for complete listing of problems).
@@ -15,6 +12,27 @@ static char help[] = "Solves the ordinary differential equations (IVPs) using ex
   -refinement_factor <2.0>: factor to refine time step size by for convergence analysis
   -dt <0.01>: specify time step (initial time step for convergence analysis)
 
+*/
+
+/*
+List of cases and their names in the code:-
+  From Hull, T.E., Enright, W.H., Fellen, B.M., and Sedgwick, A.E.,
+      "Comparing Numerical Methods for Ordinary Differential
+       Equations", SIAM J. Numer. Anal., 9(4), 1972, pp. 603 - 635
+    A1 -> "hull1972a1" (exact solution available)
+    A2 -> "hull1972a2" (exact solution available)
+    A3 -> "hull1972a3" (exact solution available)
+    A4 -> "hull1972a4" (exact solution available)
+    A5 -> "hull1972a5"
+    B1 -> "hull1972b1"
+    B2 -> "hull1972b2"
+    B3 -> "hull1972b3"
+    B4 -> "hull1972b4"
+    B5 -> "hull1972b5"
+    C1 -> "hull1972c1"
+    C2 -> "hull1972c2"
+    C3 -> "hull1972c3"
+    C4 -> "hull1972c4"
 */
 
 #include <petscts.h>
