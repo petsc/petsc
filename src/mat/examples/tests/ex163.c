@@ -50,12 +50,12 @@ int main(int argc,char **args)
   
   /* create a dense matrix Bdense */
   ierr = MatCreate(PETSC_COMM_WORLD,&Bdense);CHKERRQ(ierr);
-  ierr = MatSetSizes(Bdense,m,BN,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
+  ierr = MatSetSizes(Bdense,m,PETSC_DECIDE,PETSC_DECIDE,BN);CHKERRQ(ierr);
   ierr = MatSetType(Bdense,MATDENSE);CHKERRQ(ierr);
   ierr = MatSetFromOptions(Bdense);CHKERRQ(ierr);
   ierr = MatSetUp(Bdense);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(Bdense,&rstart,&rend);CHKERRQ(ierr);
-  printf("[%d] rstart/end %d %d\n",rank,rstart,rend);
+  //printf("[%d] rstart/end %d %d; local size %d %d\n",rank,rstart,rend,m,n);
 
   ierr = PetscMalloc3(m,PetscInt,&rows,BN,PetscInt,&cols,m*BN,PetscScalar,&array);CHKERRQ(ierr);
   for (i=0; i<m; i++) rows[i] = rstart + i;
@@ -88,7 +88,7 @@ int main(int argc,char **args)
 
   /* Check accuracy */
   ierr = MatCreate(PETSC_COMM_WORLD,&Cdense);CHKERRQ(ierr);
-  ierr = MatSetSizes(Cdense,n,BN,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
+  ierr = MatSetSizes(Cdense,n,PETSC_DECIDE,PETSC_DECIDE,BN);CHKERRQ(ierr);
   ierr = MatSetType(Cdense,MATDENSE);CHKERRQ(ierr);
   ierr = MatSetFromOptions(Cdense);CHKERRQ(ierr);
   ierr = MatSetUp(Cdense);CHKERRQ(ierr);
