@@ -20,13 +20,14 @@ static PetscInt      explicit_stage_time_id;
 typedef struct _RKTableau *RKTableau;
 struct _RKTableau {
   char      *name;
-  PetscInt   order;               /* Classical approximation order of the method */
-  PetscInt   s;                   /* Number of stages */
-  PetscInt   pinterp;             /* Interpolation order */
-  PetscReal *A,*b,*c;             /* Tableau */
-  PetscReal *bembed;              /* Embedded formula of order one less (order-1) */
-  PetscReal *binterp;             /* Dense output formula */
-  PetscReal  ccfl;                /* Placeholder for CFL coefficient relative to forward Euler */
+  PetscInt   order;               /* Classical approximation order of the method i              */
+  PetscInt   s;                   /* Number of stages                                           */
+  PetscBool  FSAL;                /* flag to indicate if tableau is FSAL                        */
+  PetscInt   pinterp;             /* Interpolation order                                        */
+  PetscReal *A,*b,*c;             /* Tableau                                                    */
+  PetscReal *bembed;              /* Embedded formula of order one less (order-1)               */
+  PetscReal *binterp;             /* Dense output formula                                       */
+  PetscReal  ccfl;                /* Placeholder for CFL coefficient relative to forward Euler  */
 };
 typedef struct _RKTableauLink *RKTableauLink;
 struct _RKTableauLink {
@@ -307,7 +308,8 @@ PetscErrorCode TSRKRegister(TSRKType name,PetscInt order,PetscInt s,
   else for (i=0; i<s; i++) t->b[i] = A[(s-1)*s+i];
   if (c)  { ierr = PetscMemcpy(t->c,c,s*sizeof(c[0]));CHKERRQ(ierr); }
   else for (i=0; i<s; i++) for (j=0,t->c[i]=0; j<s; j++) t->c[i] += A[i*s+j];
-
+  t->FSAL = PETSC_TRUE;
+  for (i=0; i<s; i++) if (t->A[(s-1)*s+i] != t->b[i]) t->FSAL = PETSC_FALSE;
   if (bembed) {
     ierr = PetscMalloc(s*sizeof(PetscReal),&t->bembed);CHKERRQ(ierr);
     ierr = PetscMemcpy(t->bembed,bembed,s*sizeof(bembed[0]));CHKERRQ(ierr);
@@ -650,6 +652,7 @@ static PetscErrorCode TSView_RK(TS ts,PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer,"  RK %s\n",rktype);CHKERRQ(ierr);
     ierr = PetscFormatRealArray(buf,sizeof(buf),"% 8.6f",tab->s,tab->c);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Abscissa     c = %s\n",buf);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"FSAL: %s\n",tab->FSAL ? "yes" : "no");CHKERRQ(ierr);
   }
   ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
   ierr = TSAdaptView(adapt,viewer);CHKERRQ(ierr);
