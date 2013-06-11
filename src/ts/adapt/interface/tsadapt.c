@@ -371,6 +371,8 @@ PetscErrorCode  TSAdaptSetFromOptions(TSAdapt adapt)
   ierr = PetscOptionsReal("-ts_adapt_dt_max","Maximum time step considered","TSAdaptSetStepLimits",adapt->dt_max,&adapt->dt_max,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-ts_adapt_scale_solve_failed","Scale step by this factor if solve fails","",adapt->scale_solve_failed,&adapt->scale_solve_failed,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-ts_adapt_monitor","Print choices made by adaptive controller","TSAdaptSetMonitor",adapt->monitor ? PETSC_TRUE : PETSC_FALSE,&flg,&set);CHKERRQ(ierr);
+  ierr = PetscOptionsEnum("-ts_adapt_wnormtype","Type of norm computed for error estimation","",NormTypes,(PetscEnum)adapt->wnormtype,(PetscEnum*)&adapt->wnormtype,NULL);CHKERRQ(ierr);
+  if (adapt->wnormtype != NORM_2 && adapt->wnormtype != NORM_INFINITY) SETERRQ(PetscObjectComm((PetscObject)adapt),PETSC_ERR_SUP,"Only 2-norm and infinite norm supported");
   if (set) {ierr = TSAdaptSetMonitor(adapt,flg);CHKERRQ(ierr);}
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -633,6 +635,7 @@ PetscErrorCode  TSAdaptCreate(MPI_Comm comm,TSAdapt *inadapt)
   adapt->dt_min             = 1e-20;
   adapt->dt_max             = 1e50;
   adapt->scale_solve_failed = 0.25;
+  adapt->wnormtype          = NORM_2;
 
   *inadapt = adapt;
   PetscFunctionReturn(0);
