@@ -799,14 +799,6 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
         }
       }
     }
-    /* Save the Y, YdotI, YdotRHS for extrapolation initial guess */
-    if (ark->init_guess_extrp) {
-      for (i = 0; i<s; i++) {
-        ierr = VecCopy(Y[i],ark->Y_prev[i]);CHKERRQ(ierr);
-        ierr = VecCopy(YdotRHS[i],ark->YdotRHS_prev[i]);CHKERRQ(ierr);
-        ierr = VecCopy(YdotI[i],ark->YdotI_prev[i]);CHKERRQ(ierr);
-      }
-    }
     ierr = TSEvaluateStep(ts,tab->order,ts->vec_sol,NULL);CHKERRQ(ierr);
     ark->status = TS_STEP_PENDING;
 
@@ -827,7 +819,14 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
       if (tab->explicit_first_stage) {
         ierr = PetscObjectComposedDataSetReal((PetscObject)ts->vec_sol,explicit_stage_time_id,ts->ptime);CHKERRQ(ierr);
       }
-
+      /* Save the Y, YdotI, YdotRHS for extrapolation initial guess */
+      if (ark->init_guess_extrp) {
+        for (i = 0; i<s; i++) {
+          ierr = VecCopy(Y[i],ark->Y_prev[i]);CHKERRQ(ierr);
+          ierr = VecCopy(YdotRHS[i],ark->YdotRHS_prev[i]);CHKERRQ(ierr);
+          ierr = VecCopy(YdotI[i],ark->YdotI_prev[i]);CHKERRQ(ierr);
+        }
+      }
       break;
     } else {                    /* Roll back the current step */
       for (j=0; j<s; j++) w[j] = -h*bt[j];
