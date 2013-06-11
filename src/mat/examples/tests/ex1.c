@@ -11,7 +11,7 @@ int main(int argc,char **argv)
   Mat            mat,F,RHS,SOLU;
   MatInfo        info;
   PetscErrorCode ierr;
-  PetscInt       m     = 10,n = 10,i,j,rstart,rend,nrhs=2;
+  PetscInt       m = 10,n = 10,i,j,rstart,rend,nrhs=2;
   PetscScalar    value = 1.0;
   Vec            x,y,b,ytmp;
   PetscReal      norm,tol=1.e-15;

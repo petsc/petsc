@@ -5,6 +5,7 @@
 
 
 #include <../src/mat/impls/dense/mpi/mpidense.h>    /*I   "petscmat.h"  I*/
+#include <../src/mat/impls/aij/mpi/mpiaij.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "MatDenseGetLocalMatrix"
@@ -1289,6 +1290,10 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIDense(Mat mat)
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMatMult_mpiaij_mpidense_C",MatMatMult_MPIAIJ_MPIDense);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMatMultSymbolic_mpiaij_mpidense_C",MatMatMultSymbolic_MPIAIJ_MPIDense);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMatMultNumeric_mpiaij_mpidense_C",MatMatMultNumeric_MPIAIJ_MPIDense);CHKERRQ(ierr);
+
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatTransposeMatMult_mpiaij_mpidense_C",MatTransposeMatMult_MPIAIJ_MPIDense);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatTransposeMatMultSymbolic_mpiaij_mpidense_C",MatTransposeMatMultSymbolic_MPIAIJ_MPIDense);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatTransposeMatMultNumeric_mpiaij_mpidense_C",MatTransposeMatMultNumeric_MPIAIJ_MPIDense);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)mat,MATMPIDENSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
