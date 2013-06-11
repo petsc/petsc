@@ -1371,9 +1371,6 @@ PetscErrorCode PCGAMGKKTProl_AGG(PC pc,const Mat Prol11,const Mat A21,Mat *a_P22
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)pc,&comm);CHKERRQ(ierr);
-#if defined PETSC_USE_LOG
-  ierr = PetscLogEventBegin(PC_GAMGKKTProl_AGG,0,0,0,0);CHKERRQ(ierr);
-#endif
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
 
@@ -1453,9 +1450,6 @@ PetscErrorCode PCGAMGKKTProl_AGG(PC pc,const Mat Prol11,const Mat A21,Mat *a_P22
   /* clean up */
   ierr = MatDestroy(&Gmat);CHKERRQ(ierr);
   ierr = PetscCDDestroy(agg_lists);CHKERRQ(ierr);
-#if defined PETSC_USE_LOG
-  ierr = PetscLogEventEnd(PC_GAMGKKTProl_AGG,0,0,0,0);CHKERRQ(ierr);
-#endif
   *a_P22 = Prol22;
   PetscFunctionReturn(0);
 }
@@ -1490,7 +1484,6 @@ PetscErrorCode  PCCreateGAMG_AGG(PC pc)
   pc_gamg->ops->coarsen     = PCGAMGCoarsen_AGG;
   pc_gamg->ops->prolongator = PCGAMGProlongator_AGG;
   pc_gamg->ops->optprol     = PCGAMGOptprol_AGG;
-  pc_gamg->ops->formkktprol = PCGAMGKKTProl_AGG;
 
   pc_gamg->ops->createdefaultdata = PCSetData_AGG;
 
