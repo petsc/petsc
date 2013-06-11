@@ -515,10 +515,12 @@ PETSC_EXTERN PetscErrorCode TSEIMEXSetOrdAdapt(TS,PetscBool);
 J*/
 typedef const char* TSRKType;
 #define TSRK1FE   "1fe"
-#define TSRK2     "2"
+#define TSRK2A    "2a"
 #define TSRK3     "3"
+#define TSRK3BS   "3bs"
 #define TSRK4     "4"
-#define TSRK5F    "5fehlberg"
+#define TSRK5F    "5f"
+#define TSRK5DP   "5dp"
 PETSC_EXTERN PetscErrorCode TSRKGetType(TS ts,TSRKType*);
 PETSC_EXTERN PetscErrorCode TSRKSetType(TS ts,TSRKType);
 PETSC_EXTERN PetscErrorCode TSRKSetFullyImplicit(TS,PetscBool);
