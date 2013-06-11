@@ -15,7 +15,7 @@ PETSC_EXTERN PetscErrorCode PCInitializePackage(void);
 PETSC_EXTERN PetscFunctionList PCList;
 
 /*S
-     PC - Abstract PETSc object that manages all preconditioners
+     PC - Abstract PETSc object that manages all preconditioners including direct solvers such as PCLU
 
    Level: beginner
 
@@ -26,15 +26,15 @@ S*/
 typedef struct _p_PC* PC;
 
 /*J
-    PCType - String with the name of a PETSc preconditioner method or the creation function
-       with an optional dynamic library name, for example
-       http://www.mcs.anl.gov/petsc/lib.a:mypccreate()
+    PCType - String with the name of a PETSc preconditioner method.
 
    Level: beginner
 
    Notes: Click on the links below to see details on a particular solver
 
-.seealso: PCSetType(), PC, PCCreate()
+          PCRegister() is used to register preconditioners that are then accessible via PCSetType()
+
+.seealso: PCSetType(), PC, PCCreate(), PCRegister(), PCSetFromOptions()
 J*/
 typedef const char* PCType;
 #define PCNONE            "none"
@@ -132,7 +132,6 @@ PETSC_EXTERN PetscErrorCode PCSetInitialGuessNonzero(PC,PetscBool );
 PETSC_EXTERN PetscErrorCode PCSetUseAmat(PC,PetscBool);
 PETSC_EXTERN PetscErrorCode PCGetUseAmat(PC,PetscBool*);
 
-PETSC_EXTERN PetscErrorCode PCRegisterDestroy(void);
 PETSC_EXTERN PetscErrorCode PCRegisterAll(void);
 PETSC_EXTERN PetscBool PCRegisterAllCalled;
 
@@ -443,10 +442,13 @@ PETSC_EXTERN PetscErrorCode PCGAMGSetNSmooths(PC pc, PetscInt n);
 PETSC_EXTERN PetscErrorCode PCGAMGSetSymGraph(PC pc, PetscBool n);
 PETSC_EXTERN PetscErrorCode PCGAMGSetSquareGraph(PC,PetscBool);
 PETSC_EXTERN PetscErrorCode PCGAMGSetReuseProl(PC,PetscBool);
+PETSC_EXTERN PetscErrorCode PCGAMGFinalizePackage(void);
+PETSC_EXTERN PetscErrorCode PCGAMGInitializePackage(void);
 
 #if defined(PETSC_HAVE_PCBDDC)
 /* Enum defining how to treat the coarse problem */
 typedef enum {SEQUENTIAL_BDDC,REPLICATED_BDDC,PARALLEL_BDDC,MULTILEVEL_BDDC} CoarseProblemType;
+PETSC_EXTERN PetscErrorCode PCBDDCSetPrimalVerticesLocalIS(PC,IS);
 PETSC_EXTERN PetscErrorCode PCBDDCSetCoarseningRatio(PC,PetscInt);
 PETSC_EXTERN PetscErrorCode PCBDDCSetMaxLevels(PC,PetscInt);
 PETSC_EXTERN PetscErrorCode PCBDDCSetNullSpace(PC,MatNullSpace);

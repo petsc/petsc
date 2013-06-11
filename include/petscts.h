@@ -13,18 +13,16 @@
 
   Concepts: ODE solvers
 
-.seealso:  TSCreate(), TSSetType(), TSType, SNES, KSP, PC
+.seealso:  TSCreate(), TSSetType(), TSType, SNES, KSP, PC, TSDestroy()
 S*/
 typedef struct _p_TS* TS;
 
 /*J
-    TSType - String with the name of a PETSc TS method or the creation function
-       with an optional dynamic library name, for example
-       http://www.mcs.anl.gov/petsc/lib.a:mytscreate()
+    TSType - String with the name of a PETSc TS method.
 
    Level: beginner
 
-.seealso: TSSetType(), TS
+.seealso: TSSetType(), TS, TSRegister()
 J*/
 typedef const char* TSType;
 #define TSEULER           "euler"
@@ -106,7 +104,7 @@ PETSC_EXTERN const char *const*TSConvergedReasons;
 
    Level: beginner
 
-.seealso: TSSolve(), TSGetConvergedReason(), TSGetTSAdapt()
+.seealso: TSSolve(), TSGetConvergedReason(), TSGetAdapt()
 M*/
 
 /*MC
@@ -114,7 +112,7 @@ M*/
 
    Level: beginner
 
-.seealso: TSSolve(), TSGetConvergedReason(), TSGetTSAdapt(), TSSetDuration(), TSGetSolveTime()
+.seealso: TSSolve(), TSGetConvergedReason(), TSGetAdapt(), TSSetDuration(), TSGetSolveTime()
 M*/
 
 /*MC
@@ -122,7 +120,7 @@ M*/
 
    Level: beginner
 
-.seealso: TSSolve(), TSGetConvergedReason(), TSGetTSAdapt(), TSSetDuration()
+.seealso: TSSolve(), TSGetConvergedReason(), TSGetAdapt(), TSSetDuration()
 M*/
 /*MC
    TS_CONVERGED_USER - user requested termination
@@ -137,7 +135,7 @@ M*/
 
    Level: beginner
 
-.seealso: TSSolve(), TSGetConvergedReason(), TSGetTSAdapt(), TSGetSNES(), SNESGetConvergedReason()
+.seealso: TSSolve(), TSGetConvergedReason(), TSGetAdapt(), TSGetSNES(), SNESGetConvergedReason()
 M*/
 
 /*MC
@@ -145,7 +143,7 @@ M*/
 
    Level: beginner
 
-.seealso: TSSolve(), TSGetConvergedReason(), TSGetTSAdapt()
+.seealso: TSSolve(), TSGetConvergedReason(), TSGetAdapt()
 M*/
 
 /*E
@@ -236,6 +234,7 @@ PETSC_EXTERN PetscErrorCode TSSetRHSFunction(TS,Vec,TSRHSFunction,void*);
 PETSC_EXTERN PetscErrorCode TSGetRHSFunction(TS,Vec*,TSRHSFunction*,void**);
 PETSC_EXTERN PetscErrorCode TSSetRHSJacobian(TS,Mat,Mat,TSRHSJacobian,void*);
 PETSC_EXTERN PetscErrorCode TSGetRHSJacobian(TS,Mat*,Mat*,TSRHSJacobian*,void**);
+PETSC_EXTERN PetscErrorCode TSRHSJacobianSetReuse(TS,PetscBool);
 
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*TSSolutionFunction)(TS,PetscReal,Vec,void*);
 PETSC_EXTERN PetscErrorCode TSSetSolutionFunction(TS,TSSolutionFunction,void*);
@@ -332,7 +331,6 @@ PETSC_EXTERN PetscErrorCode TSGetType(TS,TSType*);
 PETSC_EXTERN PetscErrorCode TSSetType(TS,TSType);
 PETSC_EXTERN PetscErrorCode TSRegister(const char[], PetscErrorCode (*)(TS));
 PETSC_EXTERN PetscErrorCode TSRegisterAll(void);
-PETSC_EXTERN PetscErrorCode TSRegisterDestroy(void);
 
 PETSC_EXTERN PetscErrorCode TSGetSNES(TS,SNES*);
 PETSC_EXTERN PetscErrorCode TSSetSNES(TS,SNES);
@@ -376,6 +374,8 @@ PETSC_EXTERN PetscErrorCode TSSSPSetType(TS,TSSSPType);
 PETSC_EXTERN PetscErrorCode TSSSPGetType(TS,TSSSPType*);
 PETSC_EXTERN PetscErrorCode TSSSPSetNumStages(TS,PetscInt);
 PETSC_EXTERN PetscErrorCode TSSSPGetNumStages(TS,PetscInt*);
+PETSC_EXTERN PetscErrorCode TSSSPFinalizePackage(void);
+PETSC_EXTERN PetscErrorCode TSSSPInitializePackage(void);
 
 /*S
    TSAdapt - Abstract object that manages time-step adaptivity
@@ -387,9 +387,7 @@ S*/
 typedef struct _p_TSAdapt *TSAdapt;
 
 /*E
-    TSAdaptType - String with the name of TSAdapt scheme or the creation function
-       with an optional dynamic library name, for example
-       http://www.mcs.anl.gov/petsc/lib.a:mytsgladaptcreate()
+    TSAdaptType - String with the name of TSAdapt scheme.
 
    Level: beginner
 
@@ -400,10 +398,9 @@ typedef const char *TSAdaptType;
 #define TSADAPTNONE  "none"
 #define TSADAPTCFL   "cfl"
 
-PETSC_EXTERN PetscErrorCode TSGetTSAdapt(TS,TSAdapt*);
+PETSC_EXTERN PetscErrorCode TSGetAdapt(TS,TSAdapt*);
 PETSC_EXTERN PetscErrorCode TSAdaptRegister(const char[],PetscErrorCode (*)(TSAdapt));
 PETSC_EXTERN PetscErrorCode TSAdaptRegisterAll(void);
-PETSC_EXTERN PetscErrorCode TSAdaptRegisterDestroy(void);
 PETSC_EXTERN PetscErrorCode TSAdaptInitializePackage(void);
 PETSC_EXTERN PetscErrorCode TSAdaptFinalizePackage(void);
 PETSC_EXTERN PetscErrorCode TSAdaptCreate(MPI_Comm,TSAdapt*);
@@ -435,9 +432,7 @@ S*/
 typedef struct _p_TSGLAdapt *TSGLAdapt;
 
 /*J
-    TSGLAdaptType - String with the name of TSGLAdapt scheme or the creation function
-       with an optional dynamic library name, for example
-       http://www.mcs.anl.gov/petsc/lib.a:mytsgladaptcreate()
+    TSGLAdaptType - String with the name of TSGLAdapt scheme
 
    Level: beginner
 
@@ -450,7 +445,6 @@ typedef const char *TSGLAdaptType;
 
 PETSC_EXTERN PetscErrorCode TSGLAdaptRegister(const char[],PetscErrorCode (*)(TSGLAdapt));
 PETSC_EXTERN PetscErrorCode TSGLAdaptRegisterAll(void);
-PETSC_EXTERN PetscErrorCode TSGLAdaptRegisterDestroy(void);
 PETSC_EXTERN PetscErrorCode TSGLAdaptInitializePackage(void);
 PETSC_EXTERN PetscErrorCode TSGLAdaptFinalizePackage(void);
 PETSC_EXTERN PetscErrorCode TSGLAdaptCreate(MPI_Comm,TSGLAdapt*);
@@ -462,9 +456,7 @@ PETSC_EXTERN PetscErrorCode TSGLAdaptSetFromOptions(TSGLAdapt);
 PETSC_EXTERN PetscErrorCode TSGLAdaptDestroy(TSGLAdapt*);
 
 /*J
-    TSGLAcceptType - String with the name of TSGLAccept scheme or the function
-       with an optional dynamic library name, for example
-       http://www.mcs.anl.gov/petsc/lib.a:mytsglaccept()
+    TSGLAcceptType - String with the name of TSGLAccept scheme
 
    Level: beginner
 
@@ -488,7 +480,6 @@ typedef const char* TSGLType;
 
 PETSC_EXTERN PetscErrorCode TSGLRegister(const char[],PetscErrorCode(*)(TS));
 PETSC_EXTERN PetscErrorCode TSGLRegisterAll(void);
-PETSC_EXTERN PetscErrorCode TSGLRegisterDestroy(void);
 PETSC_EXTERN PetscErrorCode TSGLInitializePackage(void);
 PETSC_EXTERN PetscErrorCode TSGLFinalizePackage(void);
 PETSC_EXTERN PetscErrorCode TSGLSetType(TS,TSGLType);

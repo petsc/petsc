@@ -25,10 +25,9 @@ PetscErrorCode  MatMFFDFinalizePackage(void)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscFunctionListDestroy(&MatMFFDList);CHKERRQ(ierr);
   MatMFFDPackageInitialized = PETSC_FALSE;
   MatMFFDRegisterAllCalled  = PETSC_FALSE;
-  ierr = MatMFFDRegisterDestroy();CHKERRQ(ierr);
-  MatMFFDList               = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -204,32 +203,6 @@ PetscErrorCode  MatMFFDRegister(const char sname[],PetscErrorCode (*function)(Ma
 
   PetscFunctionBegin;
   ierr = PetscFunctionListAdd(&MatMFFDList,sname,function);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-
-#undef __FUNCT__
-#define __FUNCT__ "MatMFFDRegisterDestroy"
-/*@C
-   MatMFFDRegisterDestroy - Frees the list of MatMFFD methods that were
-   registered by MatMFFDRegister().
-
-   Not Collective
-
-   Level: developer
-
-.keywords: MatMFFD, register, destroy
-
-.seealso: MatMFFDRegister(), MatMFFDRegisterAll()
-@*/
-PetscErrorCode  MatMFFDRegisterDestroy(void)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscFunctionListDestroy(&MatMFFDList);CHKERRQ(ierr);
-
-  MatMFFDRegisterAllCalled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -434,7 +407,7 @@ PetscErrorCode MatMult_MFFD(Mat mat,Vec a,Vec y)
     ierr = VecAXPY(y,1.0,U);CHKERRQ(ierr);
   }
 
-  if (ctx->sp) {ierr = MatNullSpaceRemove(ctx->sp,y,NULL);CHKERRQ(ierr);}
+  if (ctx->sp) {ierr = MatNullSpaceRemove(ctx->sp,y);CHKERRQ(ierr);}
 
   ierr = PetscLogEventEnd(MATMFFD_Mult,a,y,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);

@@ -21,9 +21,11 @@ static PetscBool PetscDrawPackageInitialized = PETSC_FALSE;
 @*/
 PetscErrorCode  PetscDrawFinalizePackage(void)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
+  ierr = PetscFunctionListDestroy(&PetscDrawList);CHKERRQ(ierr);
   PetscDrawPackageInitialized = PETSC_FALSE;
-  PetscDrawList               = 0;
   PetscFunctionReturn(0);
 }
 

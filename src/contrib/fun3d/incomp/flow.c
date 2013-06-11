@@ -89,8 +89,10 @@ int main(int argc,char **args)
   PetscInt    maxfails                       = 10000;
   char        pvtu_fname[PETSC_MAX_PATH_LEN] = "incomp";
 
-  ierr = PetscInitialize(&argc,&args,"petsc.opt",help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&args,NULL,help);CHKERRQ(ierr);
   ierr = PetscInitializeFortran();CHKERRQ(ierr);
+  ierr = PetscOptionsInsertFile(PETSC_COMM_WORLD,"petsc.opt",PETSC_FALSE);CHKERRQ(ierr);
+
   comm = PETSC_COMM_WORLD;
   f77FORLINK();                               /* Link FORTRAN and C COMMONS */
 
@@ -167,7 +169,7 @@ int main(int argc,char **args)
   /* Create nonlinear solver */
   ierr = SetPetscDS(&f_pntr,&tsCtx);CHKERRQ(ierr);
   ierr = SNESCreate(comm,&snes);CHKERRQ(ierr);
-  ierr = SNESSetType(snes,"ls");CHKERRQ(ierr);
+  ierr = SNESSetType(snes,"newtonls");CHKERRQ(ierr);
 
 
   /* Set various routines and options */
@@ -1874,16 +1876,16 @@ static PetscErrorCode PetscFWrite_FUN3D(MPI_Comm comm,FILE *fp,void *data,PetscI
       size_t        b64alloc = 9 + (n*size*4) / 3 + (n*size*4) % 3;
       ierr = PetscMalloc(b64alloc,&buf);CHKERRQ(ierr);
       ptr  = buf;
-      ptr  = base64_encodeblock(ptr,&bytes,3);
-      ptr  = base64_encodeblock(ptr,((char*)&bytes)+3,1);
+      ptr  = (unsigned char*)base64_encodeblock(ptr,&bytes,3);
+      ptr  = (unsigned char*)base64_encodeblock(ptr,((char*)&bytes)+3,1);
       for (i=0; i<bytes; i+=3) {
         int left = bytes - i;
-        ptr = base64_encodeblock(ptr,((char*)data)+i,left);
+        ptr = (unsigned char*)base64_encodeblock(ptr,((char*)data)+i,left);
       }
       *ptr++ = '\n';
-      printf("encoded 4+%d raw bytes in %zd base64 chars, allocated for %zd\n",bytes,ptr-buf,b64alloc);
+      /* printf("encoded 4+%d raw bytes in %zd base64 chars, allocated for %zd\n",bytes,ptr-buf,b64alloc); */
       count = fwrite(buf,1,ptr-buf,fp);
-      if (count < (ptr-buf)) {
+      if (count < (size_t)(ptr-buf)) {
         perror("");
         SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_WRITE,"Wrote %D of %D bytes",(PetscInt)count,(PetscInt)(ptr-buf));
       }
@@ -2218,7 +2220,7 @@ static PetscErrorCode WritePVTU(AppCtx *user,const char *fname,PetscBool base64)
   char              pvtu_fname[PETSC_MAX_PATH_LEN],vtu_fname[PETSC_MAX_PATH_LEN];
   MPI_Comm          comm;
   PetscMPIInt       rank,size;
-  PetscInt          i,nvertices,nedgeLoc,ncells,bs,nloc,boffset,*eptr;
+  PetscInt          i,nvertices = 0,nedgeLoc = 0,ncells,bs,nloc,boffset,*eptr = NULL;
   PetscErrorCode    ierr;
   Vec               Xloc,Xploc,Xuloc;
   unsigned char     *celltype;
@@ -2490,8 +2492,8 @@ int SetPetscDS(GRID *grid,TstepCtx *tsCtx)
     val_offd[i] = nbrs_offd;
   }
   ierr = MatCreateBAIJ(comm,bs,bs*nnodesLoc,bs*nnodesLoc,
-                       bs*nnodes,bs*nnodes,NULL,val_diag,
-                       NULL,val_offd,&grid->A);CHKERRQ(ierr);
+                       bs*nnodes,bs*nnodes,PETSC_DEFAULT,val_diag,
+                       PETSC_DEFAULT,val_offd,&grid->A);CHKERRQ(ierr);
 #else
   ICALLOC(nnodesLoc*4,&val_diag);
   ICALLOC(nnodesLoc*4,&val_offd);
@@ -2813,7 +2815,7 @@ int write_fine_grid(GRID *grid)
   if (!(output = fopen("frame.out","a"))) SETERRQ(PETSC_COMM_SELF,1,"can't open frame.out");
   fprintf(output,"information for fine grid\n");
   fprintf(output,"\n");
-  fprintf(output," address of fine grid = %p\n",grid);
+  fprintf(output," address of fine grid = %p\n",(void*)grid);
 
   fprintf(output,"grid.nnodes  = %d\n",grid->nnodes);
   fprintf(output,"grid.ncell   = %d\n",grid->ncell);
@@ -2824,7 +2826,7 @@ int write_fine_grid(GRID *grid)
   fprintf(output,"grid.nsnode  = %d\n",grid->nsnode);
   fprintf(output,"grid.nvnode  = %d\n",grid->nvnode);
   fprintf(output,"grid.nfnode  = %d\n",grid->nfnode);
-
+  /*
   fprintf(output,"grid.eptr    = %p\n",grid->eptr);
   fprintf(output,"grid.isface  = %p\n",grid->isface);
   fprintf(output,"grid.ivface  = %p\n",grid->ivface);
@@ -2835,15 +2837,19 @@ int write_fine_grid(GRID *grid)
   fprintf(output,"grid.c2n     = %p\n",grid->c2n);
   fprintf(output,"grid.c2e     = %p\n",grid->c2e);
   fprintf(output,"grid.xyz     = %p\n",grid->xyz);
+   */
   /*fprintf(output,"grid.y       = %p\n",grid->xyz);
     fprintf(output,"grid.z       = %p\n",grid->z);*/
+  /*
   fprintf(output,"grid.area    = %p\n",grid->area);
   fprintf(output,"grid.qnode   = %p\n",grid->qnode);
+   */
 /*
   fprintf(output,"grid.gradx   = %p\n",grid->gradx);
   fprintf(output,"grid.grady   = %p\n",grid->grady);
   fprintf(output,"grid.gradz   = %p\n",grid->gradz);
 */
+  /*
   fprintf(output,"grid.cdt     = %p\n",grid->cdt);
   fprintf(output,"grid.sxn     = %p\n",grid->sxn);
   fprintf(output,"grid.syn     = %p\n",grid->syn);
@@ -2855,6 +2861,7 @@ int write_fine_grid(GRID *grid)
   fprintf(output,"grid.fyn     = %p\n",grid->fyn);
   fprintf(output,"grid.fzn     = %p\n",grid->fzn);
   fprintf(output,"grid.xyzn    = %p\n",grid->xyzn);
+   */
   /*fprintf(output,"grid.yn      = %p\n",grid->yn);
   fprintf(output,"grid.zn      = %p\n",grid->zn);
   fprintf(output,"grid.rl      = %p\n",grid->rl);*/

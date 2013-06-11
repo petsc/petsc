@@ -18,9 +18,11 @@ static PetscBool ISPackageInitialized = PETSC_FALSE;
 @*/
 PetscErrorCode  ISFinalizePackage(void)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
+  ierr = PetscFunctionListDestroy(&ISList);CHKERRQ(ierr);
   ISPackageInitialized = PETSC_FALSE;
-  ISList               = NULL;
   ISRegisterAllCalled  = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
@@ -231,11 +233,11 @@ PetscErrorCode  VecFinalizePackage(void)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscFunctionListDestroy(&VecList);CHKERRQ(ierr);
   ierr = MPI_Op_free(&PetscSplitReduction_Op);CHKERRQ(ierr);
   ierr = MPI_Op_free(&VecMax_Local_Op);CHKERRQ(ierr);
   ierr = MPI_Op_free(&VecMin_Local_Op);CHKERRQ(ierr);
   VecPackageInitialized = PETSC_FALSE;
-  VecList               = NULL;
   VecRegisterAllCalled  = PETSC_FALSE;
   PetscFunctionReturn(0);
 }

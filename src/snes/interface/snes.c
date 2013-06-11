@@ -246,6 +246,9 @@ PetscErrorCode  SNESView(SNES snes,PetscViewer viewer)
 #endif
   if (iascii) {
     ierr = PetscObjectPrintClassNamePrefixType((PetscObject)snes,viewer,"SNES Object");CHKERRQ(ierr);
+    if (!snes->setupcalled) {
+      ierr = PetscViewerASCIIPrintf(viewer,"  SNES has not been set up so information may be incomplete\n");CHKERRQ(ierr);
+    }
     if (snes->ops->view) {
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
       ierr = (*snes->ops->view)(snes,viewer);CHKERRQ(ierr);
@@ -327,7 +330,7 @@ PetscErrorCode  SNESView(SNES snes,PetscViewer viewer)
   }
   if (snes->linesearch) {
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-    ierr = SNESGetSNESLineSearch(snes, &linesearch);CHKERRQ(ierr);
+    ierr = SNESGetLineSearch(snes, &linesearch);CHKERRQ(ierr);
     ierr = SNESLineSearchView(linesearch, viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
   }
@@ -661,7 +664,6 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
-
   if (!SNESRegisterAllCalled) {ierr = SNESRegisterAll();CHKERRQ(ierr);}
   ierr = PetscObjectOptionsBegin((PetscObject)snes);CHKERRQ(ierr);
   if (((PetscObject)snes)->type_name) deft = ((PetscObject)snes)->type_name;
@@ -806,8 +808,11 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
   flg  = PETSC_FALSE;
   ierr = PetscOptionsBool("-snes_fd_color","Use finite differences with coloring to compute Jacobian","SNESComputeJacobianDefaultColor",flg,&flg,NULL);CHKERRQ(ierr);
   if (flg) {
-    void *functx;
-    ierr = SNESGetFunction(snes,NULL,NULL,&functx);CHKERRQ(ierr);
+    DM             dm;
+    DMSNES         sdm;
+    ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
+    ierr = DMGetDMSNES(dm,&sdm);CHKERRQ(ierr);
+    sdm->jacobianctx = NULL;
     ierr = SNESSetJacobian(snes,snes->jacobian,snes->jacobian_pre,SNESComputeJacobianDefaultColor,0);CHKERRQ(ierr);
     ierr = PetscInfo(snes,"Setting default finite difference coloring Jacobian matrix\n");CHKERRQ(ierr);
   }
@@ -857,7 +862,7 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
   ierr = KSPSetFromOptions(snes->ksp);CHKERRQ(ierr);
 
   if (!snes->linesearch) {
-    ierr = SNESGetSNESLineSearch(snes, &snes->linesearch);CHKERRQ(ierr);
+    ierr = SNESGetLineSearch(snes, &snes->linesearch);CHKERRQ(ierr);
   }
   ierr = SNESLineSearchSetFromOptions(snes->linesearch);CHKERRQ(ierr);
 
@@ -1739,7 +1744,7 @@ PetscErrorCode SNESSetGS(SNES snes,PetscErrorCode (*SNESGSFunction)(SNES,Vec,Vec
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESPicardComputeFunction"
-PetscErrorCode  SNESPicardComputeFunction(SNES snes,Vec x,Vec f,void *ctx)
+PETSC_EXTERN PetscErrorCode SNESPicardComputeFunction(SNES snes,Vec x,Vec f,void *ctx)
 {
   PetscErrorCode ierr;
   DM             dm;
@@ -1763,7 +1768,7 @@ PetscErrorCode  SNESPicardComputeFunction(SNES snes,Vec x,Vec f,void *ctx)
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESPicardComputeJacobian"
-PetscErrorCode  SNESPicardComputeJacobian(SNES snes,Vec x1,Mat *J,Mat *B,MatStructure *flag,void *ctx)
+PETSC_EXTERN PetscErrorCode SNESPicardComputeJacobian(SNES snes,Vec x1,Mat *J,Mat *B,MatStructure *flag,void *ctx)
 {
   PetscFunctionBegin;
   /* the jacobian matrix should be pre-filled in SNESPicardComputeFunction */
@@ -1975,6 +1980,8 @@ PetscErrorCode  SNESComputeFunction(SNES snes,Vec x,Vec y)
     ierr = SNESSolve(snes->pc,snes->vec_rhs,y);CHKERRQ(ierr);
     ierr = PetscLogEventEnd(SNES_NPCSolve,snes->pc,x,y,0);CHKERRQ(ierr);
     ierr = VecAYPX(y,-1.0,x);CHKERRQ(ierr);
+    ierr = VecValidValues(y,3,PETSC_FALSE);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
   } else if (sdm->ops->computefunction) {
     ierr = PetscLogEventBegin(SNES_FunctionEval,snes,x,y,0);CHKERRQ(ierr);
     PetscStackPush("SNES user function");
@@ -2519,7 +2526,7 @@ PetscErrorCode  SNESSetUp(SNES snes)
   }
 
   if (!snes->linesearch) {
-    ierr = SNESGetSNESLineSearch(snes, &snes->linesearch);CHKERRQ(ierr);
+    ierr = SNESGetLineSearch(snes, &snes->linesearch);CHKERRQ(ierr);
   }
 
   if (snes->pc && (snes->pcside == PC_LEFT)) {
@@ -2562,8 +2569,8 @@ PetscErrorCode  SNESSetUp(SNES snes)
     ierr = SNESSetFromOptions(snes->pc);CHKERRQ(ierr);
 
     /* copy the line search context over */
-    ierr = SNESGetSNESLineSearch(snes,&linesearch);CHKERRQ(ierr);
-    ierr = SNESGetSNESLineSearch(snes->pc,&pclinesearch);CHKERRQ(ierr);
+    ierr = SNESGetLineSearch(snes,&linesearch);CHKERRQ(ierr);
+    ierr = SNESGetLineSearch(snes->pc,&pclinesearch);CHKERRQ(ierr);
     ierr = SNESLineSearchGetPreCheck(linesearch,&precheck,&lsprectx);CHKERRQ(ierr);
     ierr = SNESLineSearchGetPostCheck(linesearch,&postcheck,&lspostctx);CHKERRQ(ierr);
     ierr = SNESLineSearchSetPreCheck(pclinesearch,precheck,lsprectx);CHKERRQ(ierr);
@@ -3676,7 +3683,7 @@ PetscErrorCode  SNESSolve(SNES snes,Vec b,Vec x)
     ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   }
-  ierr = VecViewFromOptions(snes->vec_sol,"-snes_view_solution");CHKERRQ(ierr);
+  ierr = VecViewFromOptions(snes->vec_sol,((PetscObject)snes)->prefix,"-snes_view_solution");CHKERRQ(ierr);
 
   ierr = VecDestroy(&xcreated);CHKERRQ(ierr);
   ierr = PetscObjectAMSBlock((PetscObject)snes);CHKERRQ(ierr);
@@ -3718,11 +3725,14 @@ PetscErrorCode  SNESSolve(SNES snes,Vec b,Vec x)
   and the user's application is taking responsibility for choosing the
   appropriate method.
 
+    Developer Notes: SNESRegister() adds a constructor for a new SNESType to SNESList, SNESSetType() locates
+    the constructor in that list and calls it to create the spexific object.
+
   Level: intermediate
 
 .keywords: SNES, set, type
 
-.seealso: SNESType, SNESCreate()
+.seealso: SNESType, SNESCreate(), SNESDestroy(), SNESGetType(), SNESSetFromOptions()
 
 @*/
 PetscErrorCode  SNESSetType(SNES snes,SNESType type)
@@ -3755,32 +3765,6 @@ PetscErrorCode  SNESSetType(SNES snes,SNESType type)
 
   ierr = PetscObjectChangeTypeName((PetscObject)snes,type);CHKERRQ(ierr);
   ierr = (*r)(snes);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-/* --------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "SNESRegisterDestroy"
-/*@
-   SNESRegisterDestroy - Frees the list of nonlinear solvers that were
-   registered by SNESRegister().
-
-   Not Collective
-
-   Level: advanced
-
-.keywords: SNES, nonlinear, register, destroy
-
-.seealso: SNESRegisterAll()
-@*/
-PetscErrorCode  SNESRegisterDestroy(void)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscFunctionListDestroy(&SNESList);CHKERRQ(ierr);
-
-  SNESRegisterAllCalled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -3975,7 +3959,7 @@ PetscErrorCode  SNESSetOptionsPrefix(SNES snes,const char prefix[])
   ierr = PetscObjectSetOptionsPrefix((PetscObject)snes,prefix);CHKERRQ(ierr);
   if (!snes->ksp) {ierr = SNESGetKSP(snes,&snes->ksp);CHKERRQ(ierr);}
   if (snes->linesearch) {
-    ierr = SNESGetSNESLineSearch(snes,&snes->linesearch);CHKERRQ(ierr);
+    ierr = SNESGetLineSearch(snes,&snes->linesearch);CHKERRQ(ierr);
     ierr = PetscObjectSetOptionsPrefix((PetscObject)snes->linesearch,prefix);CHKERRQ(ierr);
   }
   ierr = KSPSetOptionsPrefix(snes->ksp,prefix);CHKERRQ(ierr);
@@ -4013,7 +3997,7 @@ PetscErrorCode  SNESAppendOptionsPrefix(SNES snes,const char prefix[])
   ierr = PetscObjectAppendOptionsPrefix((PetscObject)snes,prefix);CHKERRQ(ierr);
   if (!snes->ksp) {ierr = SNESGetKSP(snes,&snes->ksp);CHKERRQ(ierr);}
   if (snes->linesearch) {
-    ierr = SNESGetSNESLineSearch(snes,&snes->linesearch);CHKERRQ(ierr);
+    ierr = SNESGetLineSearch(snes,&snes->linesearch);CHKERRQ(ierr);
     ierr = PetscObjectAppendOptionsPrefix((PetscObject)snes->linesearch,prefix);CHKERRQ(ierr);
   }
   ierr = KSPAppendOptionsPrefix(snes->ksp,prefix);CHKERRQ(ierr);
@@ -4671,9 +4655,9 @@ PetscErrorCode  SNESGetPCSide(SNES snes,PCSide *side)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "SNESSetSNESLineSearch"
+#define __FUNCT__ "SNESSetLineSearch"
 /*@
-  SNESSetSNESLineSearch - Sets the linesearch on the SNES instance.
+  SNESSetLineSearch - Sets the linesearch on the SNES instance.
 
   Collective on SNES
 
@@ -4682,15 +4666,15 @@ PetscErrorCode  SNESGetPCSide(SNES snes,PCSide *side)
 - linesearch   - the linesearch object
 
   Notes:
-  Use SNESGetSNESLineSearch() to retrieve the preconditioner context (for example,
+  Use SNESGetLineSearch() to retrieve the preconditioner context (for example,
   to configure it using the API).
 
   Level: developer
 
 .keywords: SNES, set, linesearch
-.seealso: SNESGetSNESLineSearch()
+.seealso: SNESGetLineSearch()
 @*/
-PetscErrorCode SNESSetSNESLineSearch(SNES snes, SNESLineSearch linesearch)
+PetscErrorCode SNESSetLineSearch(SNES snes, SNESLineSearch linesearch)
 {
   PetscErrorCode ierr;
 
@@ -4708,9 +4692,9 @@ PetscErrorCode SNESSetSNESLineSearch(SNES snes, SNESLineSearch linesearch)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "SNESGetSNESLineSearch"
-/*@C
-  SNESGetSNESLineSearch - Returns a pointer to the line search context set with SNESSetLineSearch()
+#define __FUNCT__ "SNESGetLineSearch"
+/*@
+  SNESGetLineSearch - Returns a pointer to the line search context set with SNESSetLineSearch()
   or creates a default line search instance associated with the SNES and returns it.
 
   Not Collective
@@ -4724,9 +4708,9 @@ PetscErrorCode SNESSetSNESLineSearch(SNES snes, SNESLineSearch linesearch)
   Level: developer
 
 .keywords: SNES, get, linesearch
-.seealso: SNESSetSNESLineSearch()
+.seealso: SNESSetLineSearch()
 @*/
-PetscErrorCode SNESGetSNESLineSearch(SNES snes, SNESLineSearch *linesearch)
+PetscErrorCode SNESGetLineSearch(SNES snes, SNESLineSearch *linesearch)
 {
   PetscErrorCode ierr;
   const char     *optionsprefix;

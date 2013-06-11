@@ -669,13 +669,13 @@ PetscErrorCode  KSPSetPreSolve(KSP ksp,PetscErrorCode (*presolve)(KSP,Vec,Vec,vo
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetPostSolve"
 /*@C
-   KSPSetPostSolve - Sets a function that is called before every KSPSolve() is started
+   KSPSetPostSolve - Sets a function that is called after every KSPSolve() completes (whether it converges or not)
 
    Logically Collective on KSP
 
    Input Parameters:
 +   ksp - the solver object
-.   postsolve - the function to call before the solve
+.   postsolve - the function to call after the solve
 -   postctx - any context needed by the function
 
    Level: developer
@@ -803,9 +803,12 @@ PetscErrorCode  KSPCreate(MPI_Comm comm,KSP *inksp)
 
   Level: intermediate
 
+  Developer Note: KSPRegister() is used to add Krylov types to KSPList from which they
+  are accessed by KSPSetType().
+
 .keywords: KSP, set, method
 
-.seealso: PCSetType(), KSPType
+.seealso: PCSetType(), KSPType, KSPRegister(), KSPCreate()
 
 @*/
 PetscErrorCode  KSPSetType(KSP ksp, KSPType type)
@@ -836,30 +839,6 @@ PetscErrorCode  KSPSetType(KSP ksp, KSPType type)
   ksp->setupstage = KSP_SETUP_NEW;
   ierr            = PetscObjectChangeTypeName((PetscObject)ksp,type);CHKERRQ(ierr);
   ierr            = (*r)(ksp);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "KSPRegisterDestroy"
-/*@
-   KSPRegisterDestroy - Frees the list of KSP methods that were
-   registered by KSPRegister().
-
-   Not Collective
-
-   Level: advanced
-
-.keywords: KSP, register, destroy
-
-.seealso: KSPRegister(), KSPRegisterAll()
-@*/
-PetscErrorCode  KSPRegisterDestroy(void)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr                 = PetscFunctionListDestroy(&KSPList);CHKERRQ(ierr);
-  KSPRegisterAllCalled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 

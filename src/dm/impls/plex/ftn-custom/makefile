@@ -3,7 +3,7 @@
 ALL: lib
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = zplex.c
+SOURCEC  = zplex.c zplexsubmesh.c
 SOURCEF  =
 SOURCEH  =
 DIRS     =

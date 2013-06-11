@@ -127,6 +127,8 @@ int main(int argc,char **args)
   return 0;
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "PCShellApply_Matinv"
 PetscErrorCode PCShellApply_Matinv(PC pc,Vec xin,Vec xout)
 {
   PetscErrorCode ierr;

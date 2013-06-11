@@ -6,24 +6,23 @@
 #include <petscvec.h>
 
 /*S
-     Mat - Abstract PETSc matrix object
+     Mat - Abstract PETSc matrix object used to manage all linear operators in PETSc, even those without
+           an explicit sparse representation (such as matrix-free operators)
 
    Level: beginner
 
   Concepts: matrix; linear operator
 
-.seealso:  MatCreate(), MatType, MatSetType()
+.seealso:  MatCreate(), MatType, MatSetType(), MatDestroy()
 S*/
 typedef struct _p_Mat*           Mat;
 
 /*J
-    MatType - String with the name of a PETSc matrix or the creation function
-       with an optional dynamic library name, for example
-       http://www.mcs.anl.gov/petsc/lib.a:mymatcreate()
+    MatType - String with the name of a PETSc matrix type
 
    Level: beginner
 
-.seealso: MatSetType(), Mat, MatSolverPackage
+.seealso: MatSetType(), Mat, MatSolverPackage, MatRegister()
 J*/
 typedef const char* MatType;
 #define MATSAME            "same"
@@ -170,7 +169,7 @@ PETSC_EXTERN PetscErrorCode MatCreate(MPI_Comm,Mat*);
 PETSC_EXTERN PetscErrorCode MatSetSizes(Mat,PetscInt,PetscInt,PetscInt,PetscInt);
 PETSC_EXTERN PetscErrorCode MatSetType(Mat,MatType);
 PETSC_EXTERN PetscErrorCode MatSetFromOptions(Mat);
-PETSC_EXTERN PetscErrorCode MatViewFromOptions(Mat,const char[]);
+PETSC_EXTERN PetscErrorCode MatViewFromOptions(Mat,const char[],const char[]);
 PETSC_EXTERN PetscErrorCode MatRegisterAll(void);
 PETSC_EXTERN PetscErrorCode MatRegister(const char[],PetscErrorCode(*)(Mat));
 PETSC_EXTERN PetscErrorCode MatRegisterBaseName(const char[],const char[],const char[]);
@@ -906,13 +905,9 @@ PETSC_EXTERN PetscErrorCode MatFindNonzeroRows(Mat,IS*);
 */
 
 /*J
-    MatOrderingType - String with the name of a PETSc matrix ordering or the creation function
-       with an optional dynamic library name, for example
-       http://www.mcs.anl.gov/petsc/lib.a:orderingcreate()
+    MatOrderingType - String with the name of a PETSc matrix ordering
 
    Level: beginner
-
-   Cannot use const because the PC objects manipulate the string
 
 .seealso: MatGetOrdering()
 J*/
@@ -928,8 +923,6 @@ typedef const char* MatOrderingType;
 PETSC_EXTERN PetscErrorCode MatGetOrdering(Mat,MatOrderingType,IS*,IS*);
 PETSC_EXTERN PetscErrorCode MatGetOrderingList(PetscFunctionList*);
 PETSC_EXTERN PetscErrorCode MatOrderingRegister(const char[],PetscErrorCode(*)(Mat,MatOrderingType,IS*,IS*));
-
-PETSC_EXTERN PetscErrorCode MatOrderingRegisterDestroy(void);
 PETSC_EXTERN PetscErrorCode MatOrderingRegisterAll(void);
 PETSC_EXTERN PetscBool         MatOrderingRegisterAllCalled;
 PETSC_EXTERN PetscFunctionList MatOrderingList;
@@ -1022,13 +1015,11 @@ PETSC_EXTERN PetscErrorCode MatSOR(Mat,Vec,PetscReal,MatSORType,PetscReal,PetscI
 */
 
 /*J
-    MatColoringType - String with the name of a PETSc matrix coloring or the creation function
-       with an optional dynamic library name, for example
-       http://www.mcs.anl.gov/petsc/lib.a:coloringcreate()
+    MatColoringType - String with the name of a PETSc matrix coloring
 
    Level: beginner
 
-.seealso: MatGetColoring()
+.seealso: MatGetColoring(), MatColoring
 J*/
 typedef const char* MatColoringType;
 #define MATCOLORINGNATURAL "natural"
@@ -1042,7 +1033,6 @@ PETSC_EXTERN PetscErrorCode MatColoringRegister(const char[],PetscErrorCode(*)(M
 PETSC_EXTERN PetscBool MatColoringRegisterAllCalled;
 
 PETSC_EXTERN PetscErrorCode MatColoringRegisterAll(void);
-PETSC_EXTERN PetscErrorCode MatColoringRegisterDestroy(void);
 PETSC_EXTERN PetscErrorCode MatColoringPatch(Mat,PetscInt,PetscInt,ISColoringValue[],ISColoring*);
 
 /*S
@@ -1101,9 +1091,7 @@ S*/
 typedef struct _p_MatPartitioning* MatPartitioning;
 
 /*J
-    MatPartitioningType - String with the name of a PETSc matrix partitioning or the creation function
-       with an optional dynamic library name, for example
-       http://www.mcs.anl.gov/petsc/lib.a:partitioningcreate()
+    MatPartitioningType - String with the name of a PETSc matrix partitioning
 
    Level: beginner
 dm
@@ -1132,7 +1120,6 @@ PETSC_EXTERN PetscErrorCode MatPartitioningRegister(const char[],PetscErrorCode 
 PETSC_EXTERN PetscBool MatPartitioningRegisterAllCalled;
 
 PETSC_EXTERN PetscErrorCode MatPartitioningRegisterAll(void);
-PETSC_EXTERN PetscErrorCode MatPartitioningRegisterDestroy(void);
 
 PETSC_EXTERN PetscErrorCode MatPartitioningView(MatPartitioning,PetscViewer);
 PETSC_EXTERN PetscErrorCode MatPartitioningSetFromOptions(MatPartitioning);
@@ -1201,12 +1188,10 @@ S*/
 typedef struct _p_MatCoarsen* MatCoarsen;
 
 /*J
-    MatCoarsenType - String with the name of a PETSc matrix coarsen or the creation function
-       with an optional dynamic library name, for example
-       http://www.mcs.anl.gov/petsc/lib.a:coarsencreate()
+    MatCoarsenType - String with the name of a PETSc matrix coarsen
 
    Level: beginner
-dm
+
 .seealso: MatCoarsenCreate(), MatCoarsen
 J*/
 typedef const char* MatCoarsenType;
@@ -1251,7 +1236,6 @@ PETSC_EXTERN PetscErrorCode MatCoarsenRegister(const char[],PetscErrorCode (*)(M
 PETSC_EXTERN PetscBool MatCoarsenRegisterAllCalled;
 
 PETSC_EXTERN PetscErrorCode MatCoarsenRegisterAll(void);
-PETSC_EXTERN PetscErrorCode MatCoarsenRegisterDestroy(void);
 
 PETSC_EXTERN PetscErrorCode MatCoarsenView(MatCoarsen,PetscViewer);
 PETSC_EXTERN PetscErrorCode MatCoarsenSetFromOptions(MatCoarsen);
@@ -1439,7 +1423,7 @@ typedef struct _p_MatNullSpace* MatNullSpace;
 PETSC_EXTERN PetscErrorCode MatNullSpaceCreate(MPI_Comm,PetscBool ,PetscInt,const Vec[],MatNullSpace*);
 PETSC_EXTERN PetscErrorCode MatNullSpaceSetFunction(MatNullSpace,PetscErrorCode (*)(MatNullSpace,Vec,void*),void*);
 PETSC_EXTERN PetscErrorCode MatNullSpaceDestroy(MatNullSpace*);
-PETSC_EXTERN PetscErrorCode MatNullSpaceRemove(MatNullSpace,Vec,Vec*);
+PETSC_EXTERN PetscErrorCode MatNullSpaceRemove(MatNullSpace,Vec);
 PETSC_EXTERN PetscErrorCode MatGetNullSpace(Mat, MatNullSpace *);
 PETSC_EXTERN PetscErrorCode MatSetNullSpace(Mat,MatNullSpace);
 PETSC_EXTERN PetscErrorCode MatSetNearNullSpace(Mat,MatNullSpace);
@@ -1506,7 +1490,6 @@ PETSC_EXTERN PetscErrorCode MatMFFDSetType(Mat,MatMFFDType);
 PETSC_EXTERN PetscErrorCode MatMFFDRegister(const char[],PetscErrorCode (*)(MatMFFD));
 
 PETSC_EXTERN PetscErrorCode MatMFFDRegisterAll(void);
-PETSC_EXTERN PetscErrorCode MatMFFDRegisterDestroy(void);
 PETSC_EXTERN PetscErrorCode MatMFFDDSSetUmin(Mat,PetscReal);
 PETSC_EXTERN PetscErrorCode MatMFFDWPSetComputeNormU(Mat,PetscBool );
 

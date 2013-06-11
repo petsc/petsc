@@ -11,9 +11,7 @@ PETSC_EXTERN PetscErrorCode DMInitializePackage(void);
 PETSC_EXTERN PetscClassId DM_CLASSID;
 
 /*J
-    DMType - String with the name of a PETSc DM or the creation function
-       with an optional dynamic library name, for example
-       http://www.mcs.anl.gov/petsc/lib.a:mydmcreate()
+    DMType - String with the name of a PETSc DM
 
    Level: beginner
 
@@ -29,7 +27,6 @@ typedef const char* DMType;
 #define DMPLEX      "plex"
 #define DMCARTESIAN "cartesian"
 #define DMREDUNDANT "redundant"
-#define DMAKKT      "akkt"
 #define DMPATCH     "patch"
 #define DMMOAB      "moab"
 
@@ -76,7 +73,7 @@ PETSC_EXTERN PetscErrorCode DMRefineHookAdd(DM,PetscErrorCode (*)(DM,DM,void*),P
 PETSC_EXTERN PetscErrorCode DMRestrict(DM,Mat,Vec,Mat,DM);
 PETSC_EXTERN PetscErrorCode DMInterpolate(DM,Mat,DM);
 PETSC_EXTERN PetscErrorCode DMSetFromOptions(DM);
-PETSC_EXTERN PetscErrorCode DMViewFromOptions(DM,const char[]);
+PETSC_EXTERN PetscErrorCode DMViewFromOptions(DM,const char[], const char[]);
 
 PETSC_EXTERN PetscErrorCode DMSetUp(DM);
 PETSC_EXTERN PetscErrorCode DMCreateInterpolationScale(DM,DM,Mat,Vec*);
@@ -164,7 +161,10 @@ typedef struct {
   void (**g1Funcs)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]); /* The g_1 functions for each field pair */
   void (**g2Funcs)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]); /* The g_2 functions for each field pair */
   void (**g3Funcs)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]); /* The g_3 functions for each field pair */
-  PetscScalar (**bcFuncs)(const PetscReal x[]); /* The boundary condition function for each field component */
+  void (**bcFuncs)(const PetscReal[], PetscScalar *); /* The boundary condition function for each field component */
+  PetscQuadrature *quadBd;
+  void (**f0BdFuncs)(const PetscScalar[], const PetscScalar[], const PetscReal[], const PetscReal[], PetscScalar[]); /* The f_0 functions for each field */
+  void (**f1BdFuncs)(const PetscScalar[], const PetscScalar[], const PetscReal[], const PetscReal[], PetscScalar[]); /* The f_1 functions for each field */
 } PetscFEM;
 
 typedef enum {PETSC_UNIT_LENGTH, PETSC_UNIT_MASS, PETSC_UNIT_TIME, PETSC_UNIT_CURRENT, PETSC_UNIT_TEMPERATURE, PETSC_UNIT_AMOUNT, PETSC_UNIT_LUMINOSITY, NUM_PETSC_UNITS} PetscUnit;

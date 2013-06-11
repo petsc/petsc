@@ -15,9 +15,11 @@ static PetscBool PetscRandomPackageInitialized = PETSC_FALSE;
 @*/
 PetscErrorCode  PetscRandomFinalizePackage(void)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
+  ierr = PetscFunctionListDestroy(&PetscRandomList);CHKERRQ(ierr);
   PetscRandomPackageInitialized = PETSC_FALSE;
-  PetscRandomList               = NULL;
   PetscRandomRegisterAllCalled  = PETSC_FALSE;
   PetscFunctionReturn(0);
 }

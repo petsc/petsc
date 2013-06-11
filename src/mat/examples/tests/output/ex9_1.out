@@ -45,6 +45,6 @@ row 9: (5, -1)  (8, -1)  (9, 4)  (10, -1)
 row 10: (6, -1)  (9, -1)  (10, 4)  (11, -1) 
 row 11: (7, -1)  (10, -1)  (11, 4) 
 matrix information (global sums):
-     nonzeros = 48, allocated nonzeros = 84
+     nonzeros = 48, allocated nonzeros = 120
 matrix information (global max):
-     nonzeros = 25, allocated nonzeros = 42
+     nonzeros = 25, allocated nonzeros = 60

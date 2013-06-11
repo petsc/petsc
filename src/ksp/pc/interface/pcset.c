@@ -15,7 +15,7 @@ PetscFunctionList PCList = 0;
 #undef __FUNCT__
 #define __FUNCT__ "PCSetType"
 /*@C
-   PCSetType - Builds PC for a particular preconditioner.
+   PCSetType - Builds PC for a particular preconditioner type
 
    Collective on PC
 
@@ -47,9 +47,12 @@ PetscFunctionList PCList = 0;
 
   Level: intermediate
 
+  Developer Note: PCRegister() is used to add preconditioner types to PCList from which they
+  are accessed by PCSetType().
+
 .keywords: PC, set, method, type
 
-.seealso: KSPSetType(), PCType
+.seealso: KSPSetType(), PCType, PCRegister(), PCCreate(), KSPGetPC()
 
 @*/
 PetscErrorCode  PCSetType(PC pc,PCType type)
@@ -83,32 +86,6 @@ PetscErrorCode  PCSetType(PC pc,PCType type)
 
   ierr = PetscObjectChangeTypeName((PetscObject)pc,type);CHKERRQ(ierr);
   ierr = (*r)(pc);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "PCRegisterDestroy"
-/*@
-   PCRegisterDestroy - Frees the list of preconditioners that were
-   registered by PCRegister().
-
-   Not Collective
-
-   Level: advanced
-
-.keywords: PC, register, destroy
-
-.seealso: PCRegisterAll(), PCRegisterAll()
-
-@*/
-PetscErrorCode  PCRegisterDestroy(void)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscFunctionListDestroy(&PCList);CHKERRQ(ierr);
-
-  PCRegisterAllCalled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 

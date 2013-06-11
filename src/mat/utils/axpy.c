@@ -429,7 +429,7 @@ PetscErrorCode MatChop(Mat A, PetscReal tol)
   for (r = rStart; r < rStart+maxRows; ++r) {
     const PetscScalar *vals;
     const PetscInt    *cols;
-    PetscInt          ncols, c;
+    PetscInt           ncols, newcols, c;
 
     if (r < rEnd) {
       ierr = MatGetRow(A, r, &ncols, &cols, &vals);CHKERRQ(ierr);
@@ -437,8 +437,9 @@ PetscErrorCode MatChop(Mat A, PetscReal tol)
         newCols[c] = cols[c];
         newVals[c] = PetscAbsScalar(vals[c]) < tol ? 0.0 : vals[c];
       }
+      newcols = ncols;
       ierr = MatRestoreRow(A, r, &ncols, &cols, &vals);CHKERRQ(ierr);
-      ierr = MatSetValues(A, 1, &r, ncols, newCols, newVals, INSERT_VALUES);CHKERRQ(ierr);
+      ierr = MatSetValues(A, 1, &r, newcols, newCols, newVals, INSERT_VALUES);CHKERRQ(ierr);
     }
     ierr = MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

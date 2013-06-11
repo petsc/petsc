@@ -14,7 +14,7 @@
       Mat            A, fact
       PetscInt       i,j,II,JJ,m
       PetscInt       Istart, Iend
-      PetscInt       ione
+      PetscInt       ione, ifive
       PetscBool      wmumps
       PetscBool      flg
       PetscScalar    one, v
@@ -25,6 +25,7 @@
       m    = 10
       one  = 1.0
       ione = 1
+      ifive = 5
 
       wmumps = PETSC_FALSE
 
@@ -36,8 +37,8 @@
       call MatSetSizes(A, PETSC_DECIDE, PETSC_DECIDE, m*m, m*m, ierr)
       call MatSetType(A, MATAIJ, ierr)
       call MatSetFromOptions(A, ierr)
-      call MatSeqAIJSetPreallocation(A,5, PETSC_NULL_INTEGER, ierr)
-      call MatMPIAIJSetPreallocation(A,5,PETSC_NULL_INTEGER,5,                          &
+      call MatSeqAIJSetPreallocation(A,ifive, PETSC_NULL_INTEGER, ierr)
+      call MatMPIAIJSetPreallocation(A,ifive,PETSC_NULL_INTEGER,ifive,  &
      &     PETSC_NULL_INTEGER,ierr)
 
       call MatGetOwnershipRange(A,Istart,Iend,ierr)

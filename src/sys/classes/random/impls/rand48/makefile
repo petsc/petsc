@@ -9,7 +9,7 @@ SOURCEF  =
 SOURCEH  =
 LIBBASE  = libpetscsys
 DIRS     =
-LOCDIR   = src/sys/random/impls/rand48/
+LOCDIR   = src/sys/classes/random/impls/rand48/
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

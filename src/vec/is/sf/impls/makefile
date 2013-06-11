@@ -2,7 +2,7 @@ ALL: lib
 
 SOURCEH	 =
 SOURCEC  =
-LIBBASE	 = libpetscsys
+LIBBASE	 = libpetscvec
 DIRS	 = window basic
 LOCDIR   = src/vec/is/sf/impls/
 MANSEC   = PetscSF

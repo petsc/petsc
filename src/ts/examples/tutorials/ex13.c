@@ -1,4 +1,5 @@
 
+
 static char help[] = "Time-dependent PDE in 2d. Simplified from ex7.c for illustrating how to use TS on a structured domain. \n";
 /*
    u_t = uxx + uyy
@@ -38,7 +39,6 @@ int main(int argc,char **argv)
   DM             da;
   PetscReal      ftime,dt;
   AppCtx         user;              /* user-defined work context */
-  PetscBool      coloring=PETSC_FALSE;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -67,14 +67,6 @@ int main(int argc,char **argv)
   /* Set Jacobian */
   ierr = DMCreateMatrix(da,MATAIJ,&J);CHKERRQ(ierr);
   ierr = TSSetRHSJacobian(ts,J,J,RHSJacobian,NULL);CHKERRQ(ierr);
-
-  /* Use coloring to compute Jacobian efficiently */
-  ierr = PetscOptionsGetBool(NULL,"-use_coloring",&coloring,NULL);CHKERRQ(ierr);
-  if (coloring) {
-    SNES snes;
-    ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
-    ierr = SNESSetJacobian(snes,NULL,NULL,SNESComputeJacobianDefaultColor,NULL);CHKERRQ(ierr);
-  }
 
   ftime = 1.0;
   ierr  = TSSetDuration(ts,maxsteps,ftime);CHKERRQ(ierr);

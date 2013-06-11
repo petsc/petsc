@@ -230,15 +230,14 @@ PetscErrorCode  PetscFunctionListDestroy(PetscFunctionList *fl)
 
   PetscFunctionBegin;
   if (!*fl) PetscFunctionReturn(0);
-  if (!dlallhead) PetscFunctionReturn(0);
 
   /*
        Remove this entry from the master DL list (if it is in it)
   */
   if (dlallhead == *fl) {
     if (dlallhead->next_list) dlallhead = dlallhead->next_list;
-    else dlallhead = 0;
-  } else {
+    else dlallhead = NULL;
+  } else if (tmp) {
     while (tmp->next_list != *fl) {
       tmp = tmp->next_list;
       if (!tmp->next_list) break;
@@ -259,22 +258,23 @@ PetscErrorCode  PetscFunctionListDestroy(PetscFunctionList *fl)
 }
 
 /*
-   Destroys all the function lists that anyone has every registered, such as KSPList, VecList, etc.
+   Print any PetscFunctionLists that have not be destroyed
 */
 #undef __FUNCT__
-#define __FUNCT__ "PetscFunctionListDestroyAll"
-PetscErrorCode  PetscFunctionListDestroyAll(void)
+#define __FUNCT__ "PetscFunctionListPrintAll"
+PetscErrorCode  PetscFunctionListPrintAll(void)
 {
-  PetscFunctionList tmp2,tmp1 = dlallhead;
+  PetscFunctionList tmp = dlallhead;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  while (tmp1) {
-    tmp2 = tmp1->next_list;
-    ierr = PetscFunctionListDestroy(&tmp1);CHKERRQ(ierr);
-    tmp1 = tmp2;
+  if (tmp) {
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"The following PetscFunctionLists were not destroyed\n");CHKERRQ(ierr);
   }
-  dlallhead = 0;
+  while (tmp) {
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"%s \n",tmp->name);CHKERRQ(ierr);
+    tmp = tmp->next_list;
+  }
   PetscFunctionReturn(0);
 }
 

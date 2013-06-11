@@ -8,7 +8,7 @@ static char help[] = "Demonstrates using PetscWebServe().\nRun with -random_view
 T*/
 
 #include <petscsys.h>
-#include <petscksp.h>
+
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;

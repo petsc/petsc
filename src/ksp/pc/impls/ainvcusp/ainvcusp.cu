@@ -370,7 +370,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_AINVCUSP(PC pc)
 
   ierr = PetscObjectComposeFunction((PetscObject)pc, "PCAINVCUSPSetDropTolerance_C", PCAINVCUSPSetDropTolerance_AINVCUSP);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc, "PCAINVCUSPUseScaling_C",  PCAINVCUSPUseScaling_AINVCUSP);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc, "PCAINVCUSPSetLinParameter_C" PCAINVCUSPSetLinParameter_AINVCUSP);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc, "PCAINVCUSPSetLinParameter_C", PCAINVCUSPSetLinParameter_AINVCUSP);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc, "PCAINVCUSPSetNonzeros_C",  PCAINVCUSPSetNonzeros_AINVCUSP);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -61,7 +61,7 @@ runex1f90:
 	   ${RM} -f ex1f90.tmp
 
 runex2:
-	-@${MPIEXEC} -n 1d  ./ex2  > ex2.tmp 2>&1;\
+	-@${MPIEXEC} -n 1 ./ex2  > ex2.tmp 2>&1;\
 	   if (${DIFF} output/ex2.out ex2.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex2, diffs above \n========================================="; fi ;\
 	   ${RM} -f ex2.tmp

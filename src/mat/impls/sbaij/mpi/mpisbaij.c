@@ -1388,11 +1388,11 @@ PetscErrorCode MatAXPY_MPISBAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
     xa   = (Mat_SeqSBAIJ*)xx->A->data;
     ya   = (Mat_SeqSBAIJ*)yy->A->data;
     ierr = PetscBLASIntCast(xa->nz,&bnz);CHKERRQ(ierr);
-    PetscStackCall("BLASaxpy",BLASaxpy_(&bnz,&alpha,xa->a,&one,ya->a,&one));
+    PetscStackCallBLAS("BLASaxpy",BLASaxpy_(&bnz,&alpha,xa->a,&one,ya->a,&one));
     xb   = (Mat_SeqBAIJ*)xx->B->data;
     yb   = (Mat_SeqBAIJ*)yy->B->data;
     ierr = PetscBLASIntCast(xb->nz,&bnz);CHKERRQ(ierr);
-    PetscStackCall("BLASaxpy",BLASaxpy_(&bnz,&alpha,xb->a,&one,yb->a,&one));
+    PetscStackCallBLAS("BLASaxpy",BLASaxpy_(&bnz,&alpha,xb->a,&one,yb->a,&one));
   } else {
     ierr = MatGetRowUpperTriangular(X);CHKERRQ(ierr);
     ierr = MatAXPY_Basic(Y,a,X,str);CHKERRQ(ierr);
@@ -1890,11 +1890,11 @@ M*/
 
 .vb
            0 1 2 3 4 5 6 7 8 9 10 11
-          -------------------
-   row 3  |  . . . d d d o o o o o o
-   row 4  |  . . . d d d o o o o o o
-   row 5  |  . . . d d d o o o o o o
-          -------------------
+          --------------------------
+   row 3  |. . . d d d o o o o  o  o
+   row 4  |. . . d d d o o o o  o  o
+   row 5  |. . . d d d o o o o  o  o
+          --------------------------
 .ve
 
    Thus, any entries in the d locations are stored in the d (diagonal)
@@ -2007,11 +2007,11 @@ PetscErrorCode  MatMPISBAIJSetPreallocation(Mat B,PetscInt bs,PetscInt d_nz,cons
 
 .vb
            0 1 2 3 4 5 6 7 8 9 10 11
-          -------------------
-   row 3  |  . . . d d d o o o o o o
-   row 4  |  . . . d d d o o o o o o
-   row 5  |  . . . d d d o o o o o o
-          -------------------
+          --------------------------
+   row 3  |. . . d d d o o o o  o  o
+   row 4  |. . . d d d o o o o  o  o
+   row 5  |. . . d d d o o o o  o  o
+          --------------------------
 .ve
 
    Thus, any entries in the d locations are stored in the d (diagonal)

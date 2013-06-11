@@ -1,7 +1,7 @@
 
 ALL:
 
-LOCDIR   = src/sys/random/examples/
+LOCDIR   = src/sys/classes/random/examples/
 DIRS	 = tests tutorials
 
 include ${PETSC_DIR}/conf/variables

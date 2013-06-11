@@ -162,7 +162,7 @@ Vector Object: 1 MPI processes
 0.3125
 1.15625
 -0.3125
-L_2 Error: 4.03488e-13
+L_2 Error: 4.06001e-13
 Residual:
 Vector Object: 1 MPI processes
   type: seq

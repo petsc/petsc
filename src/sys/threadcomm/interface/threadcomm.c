@@ -9,7 +9,7 @@ PetscBool               PetscThreadCommRegisterAllCalled = PETSC_FALSE;
 PetscFunctionList       PetscThreadCommList              = NULL;
 PetscMPIInt             Petsc_ThreadComm_keyval          = MPI_KEYVAL_INVALID;
 PetscThreadCommJobQueue PetscJobQueue                    = NULL;
-PetscThreadComm         PETSC_THREAD_COMM_WORLD             = NULL;
+PetscThreadComm         PETSC_THREAD_COMM_WORLD          = NULL;
 
 /* Logging support */
 PetscLogEvent ThreadComm_RunKernel, ThreadComm_Barrier;
@@ -220,6 +220,7 @@ PetscErrorCode  PetscThreadCommStackCreate(void)
 PetscErrorCode  PetscThreadCommStackDestroy(void)
 {
   PetscFunctionBegin;
+  PETSC_THREAD_COMM_WORLD = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -552,33 +553,9 @@ PetscErrorCode PetscThreadCommBarrier(MPI_Comm comm)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscThreadCommRegisterDestroy"
-/*@C
-   PetscThreadCommRegisterDestroy - Frees the list of thread communicator models that were
-   registered by PetscThreadCommRegister().
-
-   Not Collective
-
-   Level: advanced
-
-.keywords: PetscThreadComm, register, destroy
-
-.seealso: PetscThreadCommRegisterAll()
-@*/
-PetscErrorCode  PetscThreadCommRegisterDestroy(void)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscFunctionListDestroy(&PetscThreadCommList);CHKERRQ(ierr);
-  PetscThreadCommRegisterAllCalled = PETSC_FALSE;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "PetscThreadCommRegister"
 /*@C
-  PetscThreadCommRegister - 
+  PetscThreadCommRegister -
 
   Level: advanced
 @*/

@@ -6,10 +6,10 @@ FFLAGS   =
 SOURCEC  = aomemscalable.c
 SOURCEF  =
 SOURCEH  =
-LIBBASE  = libpetscdm
+LIBBASE  = libpetscvec
 DIRS     =
 MANSEC   = AO
-LOCDIR   = src/vec/is/aoimpls/memscalable/
+LOCDIR   = src/vec/is/ao/impls/memscalable/
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

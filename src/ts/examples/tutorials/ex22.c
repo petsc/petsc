@@ -90,7 +90,7 @@ int main(int argc,char **argv)
    * this problem is linear, we deactivate the line search. For a linear problem, it is usually recommended to also use
    * SNESSetType(snes,SNESKSPONLY). */
   ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
-  ierr = SNESGetSNESLineSearch(snes,&linesearch);CHKERRQ(ierr);
+  ierr = SNESGetLineSearch(snes,&linesearch);CHKERRQ(ierr);
   ierr = SNESLineSearchSetType(linesearch,SNESLINESEARCHBASIC);CHKERRQ(ierr);
 
   ftime    = 1.0;

@@ -187,7 +187,7 @@
       Mat     A
       Vec     b,x
       KSP    ksp
-      PetscInt Ntot
+      PetscInt Ntot,five,one
 
 
 !  Here we assume use of a grid of size m x n, with all points on the
@@ -199,16 +199,19 @@
       hy2 = (n+1)*(n+1)
       Ntot = m*n
 
+      five = 5
+      one = 1
+
 !  Create the sparse matrix. Preallocate 5 nonzeros per row.
 
-      call MatCreateSeqAIJ(PETSC_COMM_SELF,Ntot,Ntot,5,                  &
+      call MatCreateSeqAIJ(PETSC_COMM_SELF,Ntot,Ntot,five,              &
      &     PETSC_NULL_INTEGER,A,ierr)
 !
 !  Create vectors. Here we create vectors with no memory allocated.
 !  This way, we can use the data structures already in the program
 !  by using VecPlaceArray() subroutine at a later stage.
 !
-      call VecCreateSeqWithArray(PETSC_COMM_SELF,1,Ntot,                  &
+      call VecCreateSeqWithArray(PETSC_COMM_SELF,one,Ntot,              &
      &     PETSC_NULL_SCALAR,b,ierr)
       call VecDuplicate(b,x,ierr)
 

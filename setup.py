@@ -17,7 +17,7 @@ all message-passing communication.
     $ pip install petsc==dev
 
   .. _petsc-dev: https://bitbucket.org/petsc/
-                 petsc-dev/get/tip.tar.gz#egg=petsc-dev
+                 petsc/get/master.tar.gz#egg=petsc-dev
 """
 
 import sys, os
@@ -249,8 +249,8 @@ def version():
         v = "%d.%d" % (major, minor)
         if micro > 0:
             v += ".%d" % micro
-        if patch > 0:
-            v += ".%d" % patch
+        #if patch > 0:
+        #    v += ".post%d" % patch
     else:
         v = "%d.%d.dev%d" % (major, minor+1, 0)
     return v
@@ -261,7 +261,7 @@ def tarball():
         return None
     bits = VERSION.split('.')
     if len(bits) == 2: bits.append('0')
-    PETSC_VERSION = '.'.join(bits[:-1]) + '-p' + bits[-1]
+    PETSC_VERSION = '.'.join(bits[:3])
     return ('http://ftp.mcs.anl.gov/pub/petsc/release-snapshots/'
             'petsc-lite-%s.tar.gz#egg=petsc-%s' % (PETSC_VERSION, VERSION))
 

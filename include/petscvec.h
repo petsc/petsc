@@ -86,13 +86,11 @@ M*/
 M*/
 
 /*J
-    VecType - String with the name of a PETSc vector or the creation function
-       with an optional dynamic library name, for example
-       http://www.mcs.anl.gov/petsc/lib.a:myveccreate()
+    VecType - String with the name of a PETSc vector
 
    Level: beginner
 
-.seealso: VecSetType(), Vec
+.seealso: VecSetType(), Vec, VecCreate(), VecDestroy()
 J*/
 typedef const char* VecType;
 #define VECSEQ         "seq"
@@ -125,7 +123,7 @@ PETSC_EXTERN PetscErrorCode VecCreateSeqWithArray(MPI_Comm,PetscInt,PetscInt,con
 PETSC_EXTERN PetscErrorCode VecCreateMPIWithArray(MPI_Comm,PetscInt,PetscInt,PetscInt,const PetscScalar[],Vec*);
 PETSC_EXTERN PetscErrorCode VecCreateShared(MPI_Comm,PetscInt,PetscInt,Vec*);
 PETSC_EXTERN PetscErrorCode VecSetFromOptions(Vec);
-PETSC_EXTERN PetscErrorCode VecViewFromOptions(Vec,const char[]);
+PETSC_EXTERN PetscErrorCode VecViewFromOptions(Vec,const char[],const char[]);
 
 PETSC_EXTERN PetscErrorCode VecSetUp(Vec);
 PETSC_EXTERN PetscErrorCode VecDestroy(Vec*);
@@ -313,7 +311,6 @@ PETSC_EXTERN PetscErrorCode VecSetType(Vec, VecType);
 PETSC_EXTERN PetscErrorCode VecGetType(Vec, VecType *);
 PETSC_EXTERN PetscErrorCode VecRegister(const char[],PetscErrorCode (*)(Vec));
 PETSC_EXTERN PetscErrorCode VecRegisterAll(void);
-PETSC_EXTERN PetscErrorCode VecRegisterDestroy(void);
 
 PETSC_EXTERN PetscErrorCode VecScatterCreate(Vec,IS,Vec,IS,VecScatter *);
 PETSC_EXTERN PetscErrorCode VecScatterCreateEmpty(MPI_Comm,VecScatter *);

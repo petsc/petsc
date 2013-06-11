@@ -25,13 +25,11 @@ S*/
 typedef struct _p_IS* IS;
 
 /*J
-    ISType - String with the name of a PETSc vector or the creation function
-       with an optional dynamic library name, for example
-       http://www.mcs.anl.gov/petsc/lib.a:myveccreate()
+    ISType - String with the name of a PETSc index set type
 
    Level: beginner
 
-.seealso: ISSetType(), IS
+.seealso: ISSetType(), IS, ISCreate(), ISRegister()
 J*/
 typedef const char* ISType;
 #define ISGENERAL      "general"
@@ -45,7 +43,6 @@ PETSC_EXTERN PetscErrorCode ISSetType(IS, ISType);
 PETSC_EXTERN PetscErrorCode ISGetType(IS, ISType *);
 PETSC_EXTERN PetscErrorCode ISRegister(const char[],PetscErrorCode (*)(IS));
 PETSC_EXTERN PetscErrorCode ISRegisterAll(void);
-PETSC_EXTERN PetscErrorCode ISRegisterDestroy(void);
 PETSC_EXTERN PetscErrorCode ISCreate(MPI_Comm,IS*);
 
 /*

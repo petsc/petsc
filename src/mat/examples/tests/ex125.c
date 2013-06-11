@@ -67,20 +67,20 @@ int main(int argc,char **args)
 
   ierr = PetscOptionsGetInt(NULL,"-mat_solver_package",&ipack,NULL);CHKERRQ(ierr);
   switch (ipack) {
-  case 0:
 #if defined(PETSC_HAVE_SUPERLU)
+  case 0:
     if (!rank) printf(" SUPERLU LU:\n");
     ierr = MatGetFactor(A,MATSOLVERSUPERLU,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
     break;
 #endif
-  case 1:
 #if defined(PETSC_HAVE_SUPERLU_DIST)
+  case 1:
     if (!rank) printf(" SUPERLU_DIST LU:\n");
     ierr = MatGetFactor(A,MATSOLVERSUPERLU_DIST,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
     break;
 #endif
-  case 2:
 #if defined(PETSC_HAVE_MUMPS)
+  case 2:
     if (!rank) printf(" MUMPS LU:\n");
     ierr = MatGetFactor(A,MATSOLVERMUMPS,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
     {
@@ -96,6 +96,7 @@ int main(int argc,char **args)
   }
 
   info.fill = 5.0;
+  info.shifttype = (PetscReal) MAT_SHIFT_NONE;
   ierr      = MatLUFactorSymbolic(F,A,perm,iperm,&info);CHKERRQ(ierr);
 
   for (nfact = 0; nfact < 2; nfact++) {

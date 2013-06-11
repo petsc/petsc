@@ -7,11 +7,21 @@ PetscLogEvent DM_Convert, DM_GlobalToLocal, DM_LocalToGlobal;
 #undef __FUNCT__
 #define __FUNCT__ "DMViewFromOptions"
 /*
-  Processes command line options to determine if/how a dm
-  is to be viewed.
+  DMViewFromOptions - Processes command line options to determine if/how a DM is to be viewed.
 
+  Collective on Vec
+
+  Input Parameters:
++ dm   - the DM
+. prefix - prefix to use for viewing, or NULL to use prefix of 'rnd'
+- optionname - option to activate viewing
+
+  Level: intermediate
+
+.keywords: DM, view, options, database
+.seealso: VecViewFromOptions(), MatViewFromOptions()
 */
-PetscErrorCode  DMViewFromOptions(DM dm,const char optionname[])
+PetscErrorCode  DMViewFromOptions(DM dm,const char prefix[],const char optionname[])
 {
   PetscErrorCode    ierr;
   PetscBool         flg;
@@ -19,7 +29,11 @@ PetscErrorCode  DMViewFromOptions(DM dm,const char optionname[])
   PetscViewerFormat format;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject)dm),((PetscObject)dm)->prefix,optionname,&viewer,&format,&flg);CHKERRQ(ierr);
+  if (prefix) {
+    ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject)dm),prefix,optionname,&viewer,&format,&flg);CHKERRQ(ierr);
+  } else {
+    ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject)dm),((PetscObject)dm)->prefix,optionname,&viewer,&format,&flg);CHKERRQ(ierr);
+  }
   if (flg) {
     ierr = PetscViewerPushFormat(viewer,format);CHKERRQ(ierr);
     ierr = DMView(dm,viewer);CHKERRQ(ierr);
@@ -167,7 +181,7 @@ PetscErrorCode VecSetDM(Vec v, DM dm)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
-  PetscValidHeaderSpecific(dm,DM_CLASSID,2);
+  if (dm) PetscValidHeaderSpecific(dm,DM_CLASSID,2);
   ierr = PetscObjectCompose((PetscObject) v, "__PETSc_dm", (PetscObject) dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -518,7 +532,7 @@ PetscErrorCode  DMSetFromOptions(DM dm)
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
   ierr = PetscObjectProcessOptionsHandlers((PetscObject) dm);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
-  ierr = DMViewFromOptions(dm,"-dm_view");CHKERRQ(ierr);
+  ierr = DMViewFromOptions(dm,NULL,"-dm_view");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1356,9 +1370,6 @@ PetscErrorCode DMCreateDomainDecompositionScatters(DM dm,PetscInt n,DM *subdms,V
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidPointer(subdms,3);
-  PetscValidPointer(iscat,4);
-  PetscValidPointer(oscat,5);
-  PetscValidPointer(gscat,6);
   if (dm->ops->createddscatters) {
     ierr = (*dm->ops->createddscatters)(dm,n,subdms,iscat,oscat,gscat);CHKERRQ(ierr);
   } else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "This type has no DMCreateDomainDecompositionLocalScatter implementation defined");
@@ -1548,22 +1559,12 @@ $    beginhook(DM fine,VecScatter out,VecScatter in,DM coarse,void *ctx)
 
 
    Calling sequence for endhook:
-$    beginhook(DM fine,VecScatter out,VecScatter in,DM coarse,void *ctx)
+$    endhook(DM fine,VecScatter out,VecScatter in,DM coarse,void *ctx)
 
 +  global - global DM
 -  ctx - optional user-defined function context
 
    Level: advanced
-
-   Notes:
-   This function is only needed if auxiliary data needs to be set up on coarse grids.
-
-   If this function is called multiple times, the hooks will be run in the order they are added.
-
-   In order to compose with nonlinear preconditioning without duplicating storage, the hook should be implemented to
-   extract the finest level information from its context (instead of from the SNES).
-
-   This function is currently not available from Fortran.
 
 .seealso: DMRefineHookAdd(), SNESFASGetInterpolation(), SNESFASGetInjection(), PetscObjectCompose(), PetscContainerCreate()
 @*/
@@ -1716,11 +1717,7 @@ PetscErrorCode  DMLocalToGlobalBegin(DM dm,Vec l,InsertMode mode,Vec g)
     switch (mode) {
     case INSERT_VALUES:
     case INSERT_ALL_VALUES:
-#if defined(PETSC_HAVE_MPI_REPLACE)
-      op = MPI_REPLACE; break;
-#else
-      SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"No support for INSERT_VALUES without an MPI-2 implementation");
-#endif
+      op = MPIU_REPLACE; break;
     case ADD_VALUES:
     case ADD_ALL_VALUES:
       op = MPI_SUM; break;
@@ -1772,11 +1769,7 @@ PetscErrorCode  DMLocalToGlobalEnd(DM dm,Vec l,InsertMode mode,Vec g)
     switch (mode) {
     case INSERT_VALUES:
     case INSERT_ALL_VALUES:
-#if defined(PETSC_HAVE_MPI_REPLACE)
-      op = MPI_REPLACE; break;
-#else
-      SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"No support for INSERT_VALUES without an MPI-2 implementation");
-#endif
+      op = MPIU_REPLACE; break;
     case ADD_VALUES:
     case ADD_ALL_VALUES:
       op = MPI_SUM; break;
@@ -1934,27 +1927,36 @@ PetscErrorCode DMRestrict(DM fine,Mat restrct,Vec rscale,Mat inject,DM coarse)
 
    Input Arguments:
 +  global - global DM
+.  ddhook - function to run to pass data to the decomposition DM upon its creation
 .  restricthook - function to run to update data on block solve (at the beginning of the block solve)
 -  ctx - [optional] user-defined context for provide data for the hooks (may be NULL)
 
+
+   Calling sequence for ddhook:
+$    ddhook(DM global,DM block,void *ctx)
+
++  global - global DM
+.  block  - block DM
+-  ctx - optional user-defined function context
+
    Calling sequence for restricthook:
-$    restricthook(DM fine,VecScatter out,VecScatter in,DM coarse,void *ctx)
+$    restricthook(DM global,VecScatter out,VecScatter in,DM block,void *ctx)
 
 +  global - global DM
 .  out    - scatter to the outer (with ghost and overlap points) block vector
 .  in     - scatter to block vector values only owned locally
-.  block  - block DM (may just be a shell if the global DM is passed in correctly)
+.  block  - block DM
 -  ctx - optional user-defined function context
 
    Level: advanced
 
    Notes:
-   This function is only needed if auxiliary data needs to be set up on coarse grids.
+   This function is only needed if auxiliary data needs to be set up on subdomain DMs.
 
    If this function is called multiple times, the hooks will be run in the order they are added.
 
    In order to compose with nonlinear preconditioning without duplicating storage, the hook should be implemented to
-   extract the finest level information from its context (instead of from the SNES).
+   extract the global information from its context (instead of from the SNES).
 
    This function is currently not available from Fortran.
 
@@ -2586,30 +2588,6 @@ PetscErrorCode  DMRegister(const char sname[],PetscErrorCode (*function)(DM))
   PetscFunctionReturn(0);
 }
 
-
-/*--------------------------------------------------------------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "DMRegisterDestroy"
-/*@C
-   DMRegisterDestroy - Frees the list of DM methods that were registered by DMRegister().
-
-   Not Collective
-
-   Level: advanced
-
-.keywords: DM, register, destroy
-.seealso: DMRegister(), DMRegisterAll()
-@*/
-PetscErrorCode  DMRegisterDestroy(void)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr                = PetscFunctionListDestroy(&DMList);CHKERRQ(ierr);
-  DMRegisterAllCalled = PETSC_FALSE;
-  PetscFunctionReturn(0);
-}
-
 #undef __FUNCT__
 #define __FUNCT__ "DMLoad"
 /*@C
@@ -2795,6 +2773,7 @@ PetscErrorCode DMGetDefaultGlobalSection(DM dm, PetscSection *section)
   if (!dm->defaultGlobalSection) {
     if (!dm->defaultSection || !dm->sf) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "DM must have a default PetscSection and PetscSF in order to create a global PetscSection");
     ierr = PetscSectionCreateGlobalSection(dm->defaultSection, dm->sf, PETSC_FALSE, &dm->defaultGlobalSection);CHKERRQ(ierr);
+    ierr = PetscLayoutDestroy(&dm->map);CHKERRQ(ierr);
     ierr = PetscSectionGetValueLayout(PetscObjectComm((PetscObject)dm),dm->defaultGlobalSection,&dm->map);CHKERRQ(ierr);
   }
   *section = dm->defaultGlobalSection;

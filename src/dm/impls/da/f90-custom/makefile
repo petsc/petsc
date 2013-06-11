@@ -8,7 +8,7 @@ SOURCEC  = zdaindexf90.c zda1f90.c
 SOURCEF  =
 SOURCEH  =
 LIBBASE  = libpetscdm
-LOCDIR   = src/dm/da/src/f90-custom/
+LOCDIR   = src/dm/impls/da/f90-custom/
 
 
 include ${PETSC_DIR}/conf/variables

@@ -489,7 +489,7 @@ PetscErrorCode VecSwap_kernel(PetscInt thread_id,Vec xin,Vec yin)
   end   = trstarts[thread_id+1];
   n     = end-start;
   ierr  = PetscBLASIntCast(n,&bn);CHKERRQ(ierr);
-  PetscStackCall("BLASswap",BLASswap_(&bn,xa+start,&one,ya+start,&one));
+  PetscStackCallBLAS("BLASswap",BLASswap_(&bn,xa+start,&one,ya+start,&one));
   ierr = VecRestoreArray(xin,&xa);CHKERRQ(ierr);
   ierr = VecRestoreArray(yin,&ya);CHKERRQ(ierr);
   return 0;
@@ -522,7 +522,7 @@ PetscErrorCode VecSwap_Seq(Vec xin,Vec yin)
     ierr = PetscBLASIntCast(xin->map->n,&bn);CHKERRQ(ierr);
     ierr = VecGetArray(xin,&xa);CHKERRQ(ierr);
     ierr = VecGetArray(yin,&ya);CHKERRQ(ierr);
-    PetscStackCall("BLASswap",BLASswap_(&bn,xa,&one,ya,&one));
+    PetscStackCallBLAS("BLASswap",BLASswap_(&bn,xa,&one,ya,&one));
     ierr = VecRestoreArray(xin,&xa);CHKERRQ(ierr);
     ierr = VecRestoreArray(yin,&ya);CHKERRQ(ierr);
   }
@@ -560,7 +560,7 @@ PetscErrorCode VecNorm_kernel(PetscInt thread_id,Vec xin,NormType* type_p,PetscT
     }
     ierr = PetscThreadReductionKernelPost(thread_id,red,(void*)&max);CHKERRQ(ierr);
   } else if (type == NORM_1) {
-    PetscStackCall("BLASasum",z_loc = BLASasum_(&bn,xx+start,&one));
+    PetscStackCallBLAS("BLASasum",z_loc = BLASasum_(&bn,xx+start,&one));
     ierr  = PetscThreadReductionKernelPost(thread_id,red,(void*)&z_loc);CHKERRQ(ierr);
   }
   ierr = VecRestoreArrayRead(xin,&xx);CHKERRQ(ierr);
@@ -628,7 +628,7 @@ PetscErrorCode VecNorm_Seq(Vec xin,NormType type,PetscReal *z)
     *z   = max;
   } else if (type == NORM_1) {
     ierr = VecGetArrayRead(xin,&xx);CHKERRQ(ierr);
-    PetscStackCall("BLASasum",*z   = BLASasum_(&bn,xx,&one));
+    PetscStackCallBLAS("BLASasum",*z   = BLASasum_(&bn,xx,&one));
     ierr = VecRestoreArrayRead(xin,&xx);CHKERRQ(ierr);
     ierr = PetscLogFlops(PetscMax(n-1.0,0.0));CHKERRQ(ierr);
   } else if (type == NORM_1_AND_2) {
@@ -925,22 +925,16 @@ PetscErrorCode VecView_Seq_Binary(Vec xin,PetscViewer viewer)
   } else {
     MPI_Offset   off;
     MPI_File     mfdes;
-    PetscMPIInt  gsizes[1],lsizes[1],lstarts[1];
-    MPI_Datatype view;
+    PetscMPIInt  lsize;
 
-    ierr       = PetscMPIIntCast(n,lsizes);CHKERRQ(ierr);
-    ierr       = PetscMPIIntCast(n,gsizes);CHKERRQ(ierr);
-    lstarts[0] = 0;
-    ierr = MPI_Type_create_subarray(1,gsizes,lsizes,lstarts,MPI_ORDER_FORTRAN,MPIU_SCALAR,&view);CHKERRQ(ierr);
-    ierr = MPI_Type_commit(&view);CHKERRQ(ierr);
-
+    ierr = PetscMPIIntCast(n,&lsize);CHKERRQ(ierr);
     ierr = PetscViewerBinaryGetMPIIODescriptor(viewer,&mfdes);CHKERRQ(ierr);
     ierr = PetscViewerBinaryGetMPIIOOffset(viewer,&off);CHKERRQ(ierr);
+    ierr = MPI_File_set_view(mfdes,off,MPIU_SCALAR,MPIU_SCALAR,(char*)"native",MPI_INFO_NULL);CHKERRQ(ierr);
     ierr = VecGetArrayRead(xin,&xv);CHKERRQ(ierr);
-    ierr = MPIU_File_write_all(mfdes,(void*)xv,lsizes[0],MPIU_SCALAR,MPI_STATUS_IGNORE);CHKERRQ(ierr);
+    ierr = MPIU_File_write_all(mfdes,(void*)xv,lsize,MPIU_SCALAR,MPI_STATUS_IGNORE);CHKERRQ(ierr);
     ierr = VecRestoreArrayRead(xin,&xv);CHKERRQ(ierr);
     ierr = PetscViewerBinaryAddMPIIOOffset(viewer,n*sizeof(PetscScalar));CHKERRQ(ierr);
-    ierr = MPI_Type_free(&view);CHKERRQ(ierr);
   }
 #endif
 

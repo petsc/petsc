@@ -370,6 +370,6 @@ PetscErrorCode  DMDACreate1d(MPI_Comm comm, DMDABoundaryType bx, PetscInt M, Pet
   /* This violates the behavior for other classes, but right now users expect negative dimensions to be handled this way */
   ierr = DMSetFromOptions(*da);CHKERRQ(ierr);
   ierr = DMSetUp(*da);CHKERRQ(ierr);
-  ierr = DMViewFromOptions(*da,"-dm_view");CHKERRQ(ierr);
+  ierr = DMViewFromOptions(*da,NULL,"-dm_view");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

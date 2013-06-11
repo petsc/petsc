@@ -109,6 +109,7 @@ PetscErrorCode  PetscHeaderDestroy_Private(PetscObject h)
 
     ierr = (*python_destroy)(python_context);CHKERRQ(ierr);
   }
+  ierr = PetscObjectDestroyOptionsHandlers(h);CHKERRQ(ierr);
   ierr = PetscObjectListDestroy(&h->olist);CHKERRQ(ierr);
   ierr = PetscCommDestroy(&h->comm);CHKERRQ(ierr);
   /* next destroy other things */
@@ -483,7 +484,7 @@ PetscErrorCode  PetscObjectProcessOptionsHandlers(PetscObject obj)
 #undef __FUNCT__
 #define __FUNCT__ "PetscObjectDestroyOptionsHandlers"
 /*@C
-    PetscObjectDestroyOptionsHandlers - Destroys all the option handlers attached to an objeft
+    PetscObjectDestroyOptionsHandlers - Destroys all the option handlers attached to an object
 
     Not Collective
 
@@ -504,7 +505,9 @@ PetscErrorCode  PetscObjectDestroyOptionsHandlers(PetscObject obj)
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
   for (i=0; i<obj->noptionhandler; i++) {
-    ierr = (*obj->optiondestroy[i])(obj,obj->optionctx[i]);CHKERRQ(ierr);
+    if (obj->optiondestroy[i]) {
+      ierr = (*obj->optiondestroy[i])(obj,obj->optionctx[i]);CHKERRQ(ierr);
+    }
   }
   obj->noptionhandler = 0;
   PetscFunctionReturn(0);

@@ -98,10 +98,12 @@ PetscErrorCode  TSGLAdaptRegisterAll(void)
 @*/
 PetscErrorCode  TSGLAdaptFinalizePackage(void)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
+  ierr = PetscFunctionListDestroy(&TSGLAdaptList);CHKERRQ(ierr);
   TSGLAdaptPackageInitialized = PETSC_FALSE;
   TSGLAdaptRegisterAllCalled  = PETSC_FALSE;
-  TSGLAdaptList               = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -129,29 +131,6 @@ PetscErrorCode  TSGLAdaptInitializePackage(void)
   ierr = PetscRegisterFinalize(TSGLAdaptFinalizePackage);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-#undef __FUNCT__
-#define __FUNCT__ "TSGLAdaptRegisterDestroy"
-/*@C
-   TSGLAdaptRegisterDestroy - Frees the list of adaptivity schemes that were registered by TSGLAdaptRegister()
-
-   Not Collective
-
-   Level: advanced
-
-.keywords: TSGLAdapt, register, destroy
-.seealso: TSGLAdaptRegister(), TSGLAdaptRegisterAll()
-@*/
-PetscErrorCode  TSGLAdaptRegisterDestroy(void)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscFunctionListDestroy(&TSGLAdaptList);CHKERRQ(ierr);
-  TSGLAdaptRegisterAllCalled = PETSC_FALSE;
-  PetscFunctionReturn(0);
-}
-
 
 #undef __FUNCT__
 #define __FUNCT__ "TSGLAdaptSetType"

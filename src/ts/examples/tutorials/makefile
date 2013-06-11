@@ -184,6 +184,18 @@ runex3_2:
 	-@${MPIEXEC} -n 1 ./ex3 -nox -ts_type ssp -ts_dt 0.0005 -time_dependent_rhs 1 > ex3_2.tmp 2>&1;	  \
 	   ${DIFF} output/ex3_1.out ex3_2.tmp || echo  ${PWD} "\nPossible problem with ex3_2, diffs above \n========================================="; \
 	   ${RM} -f ex3_2.tmp
+runex3_3:                       # IMEX IJacobian for constant RHS Jacobian
+	-@${MPIEXEC} -n 1 ./ex3 -nox -ts_type rosw -ts_max_steps 3 -ksp_converged_reason > ex3_3.tmp 2>&1;	  \
+	   ${DIFF} output/ex3_3.out ex3_3.tmp || echo  ${PWD} "\nPossible problem with ex3_3, diffs above \n========================================="; \
+	   ${RM} -f ex3_3.tmp
+runex3_4:                       # non-IMEX IJacobian with constant RHS Jacobian
+	-@${MPIEXEC} -n 1 ./ex3 -nox -ts_type beuler -ts_max_steps 3 -ksp_converged_reason > ex3_4.tmp 2>&1;	  \
+	   ${DIFF} output/ex3_4.out ex3_4.tmp || echo  ${PWD} "\nPossible problem with ex3_4, diffs above \n========================================="; \
+	   ${RM} -f ex3_4.tmp
+runex3_5:
+	-@${MPIEXEC} -n 1 ./ex3 -nox -ts_type beuler -ts_max_steps 3 -ksp_converged_reason -time_dependent_rhs > ex3_5.tmp 2>&1;	  \
+	   ${DIFF} output/ex3_5.out ex3_5.tmp || echo  ${PWD} "\nPossible problem with ex3_5, diffs above \n========================================="; \
+	   ${RM} -f ex3_5.tmp
 
 runex4:
 	-@${MPIEXEC} -n 1 ./ex4 -ts_view -nox > ex4_1.tmp 2>&1;	  \
@@ -250,14 +262,14 @@ runex9_3:
 
 runex10:
 	-@${MPIEXEC} -n 1 ./ex10 -da_grid_x 20 -rd_initial 1 -rd_discretization fd \
-	   -rd_jacobian fd_coloring -rd_endpoint -ts_final_time 3 -ts_dt 1e-1 -ts_theta_extrapolate 0 \
+	   -rd_jacobian fd_coloring -rd_endpoint -ts_final_time 1 -ts_dt 2e-1 -ts_theta_extrapolate 0 \
 	   -ts_monitor -snes_monitor_short -ksp_monitor_short > ex10_1.tmp 2>&1; \
 	   ${DIFF} output/ex10_1.out ex10_1.tmp || echo  ${PWD} "\nPossible problem with ex10_1, diffs above \n========================================="; \
 	   ${RM} -f ex10_1.tmp
 
 runex10_2:
 	-@${MPIEXEC} -n 1 ./ex10 -da_grid_x 20 -rd_initial 1 -rd_discretization fe -rd_quadrature lobatto2 \
-	   -rd_jacobian fd_coloring -rd_endpoint -ts_final_time 3 -ts_dt 1e-1 -ts_theta_extrapolate 0 \
+	   -rd_jacobian fd_coloring -rd_endpoint -ts_final_time 1 -ts_dt 2e-1 -ts_theta_extrapolate 0 \
 	   -ts_monitor -snes_monitor_short -ksp_monitor_short > ex10_2.tmp 2>&1; \
 	   ${DIFF} output/ex10_2.out ex10_2.tmp || echo  ${PWD} "\nPossible problem with ex10_2, diffs above \n========================================="; \
 	   ${RM} -f ex10_2.tmp
@@ -297,7 +309,7 @@ runex13_2:
 	   ${DIFF} output/ex13_1.out ex13.tmp || echo  ${PWD} "\nPossible problem with ex13_2, diffs above \n========================================="; \
 	   ${RM} -f ex13.tmp
 runex13_3:
-	-@${MPIEXEC} -n 3 ./ex13 -ts_max_steps 5 -use_coloring  > ex13.tmp 2>&1; \
+	-@${MPIEXEC} -n 3 ./ex13 -ts_max_steps 5 -use_coloring  -ts_monitor > ex13.tmp 2>&1; \
 	   ${DIFF} output/ex13_1.out ex13.tmp || echo  ${PWD} "\nPossible problem with ex13_3, diffs above \n========================================="; \
 	   ${RM} -f ex13.tmp
 
@@ -395,18 +407,23 @@ runex29:
 
 runex30:
 	-@${MPIEXEC} -n 1 ./ex30 > ex30_1.tmp 2>&1;	  \
-	   ${DIFF} output/ex30_1.out ex30_1.tmp || echo  ${PWD} "\nPossible problem with ex30_1, diffs above \n========================================="; \
+	   ${DIFF} output/ex30_1.out ex30_1.tmp || printf "${PWD}\nPossible problem with ex30_1, diffs above \n=========================================\n"; \
 	   ${RM} -f ex30_1.tmp
+
+runex30_2:
+	-@${MPIEXEC} -n 2 ./ex30 > ex30_2.tmp 2>&1;	  \
+	   ${DIFF} output/ex30_2.out ex30_2.tmp || printf "${PWD}\nPossible problem with ex30_2, diffs above \n=========================================\n"; \
+	   ${RM} -f ex30_2.tmp
 
 TESTEXAMPLES_C		  = ex1.PETSc runex1 runex1_2 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 runex3_2 ex3.rm \
                             ex4.PETSc runex4 runex4_2 runex4_3 runex4_4 ex4.rm ex5.PETSc ex5.rm \
                             ex6.PETSc runex6 ex6.rm ex7.PETSc runex7 runex7_2 runex7_3 ex7.rm \
                             ex8.PETSc ex8.rm \
-                            ex9.PETSc runex9 runex9_2 runex9_3 ex9.rm \
                             ex10.PETSc runex10 runex10_2 runex10_3  ex10.rm \
                             ex12.PETSc ex12.rm ex13.PETSc runex13 runex13_2 runex13_3 ex13.rm\
                             ex15.PETSc runex15 runex15_2 runex15_3 runex15_4 runex15_5 ex15.rm \
                             ex17.PETSc runex17 runex17_2 ex17.rm ex22.PETSc ex22.rm
+TESTEXAMPLES_C_NOCOMPLEX  = ex9.PETSc runex9 runex9_2 runex9_3 ex9.rm
 TESTEXAMPLES_C_X	  =
 TESTEXAMPLES_FORTRAN	  = ex1f.PETSc runex1f ex1f.rm ex2f.PETSc runex2f ex2f.rm ex22f.PETSc ex22f.rm # ex22f_mf.PETSc ex22f_mf.rm
 TESTEXAMPLES_C_X_MPIUNI =

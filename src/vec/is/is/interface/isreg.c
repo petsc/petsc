@@ -174,26 +174,3 @@ PetscErrorCode  ISRegister(const char sname[], PetscErrorCode (*function)(IS))
 }
 
 
-/*--------------------------------------------------------------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "ISRegisterDestroy"
-/*@C
-   ISRegisterDestroy - Frees the list of IS methods that were registered by ISRegister().
-
-   Not Collective
-
-   Level: advanced
-
-.keywords: IS, register, destroy
-.seealso: ISRegister(), ISRegisterAll()
-@*/
-PetscErrorCode  ISRegisterDestroy(void)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscFunctionListDestroy(&ISList);CHKERRQ(ierr);
-  ISRegisterAllCalled = PETSC_FALSE;
-  PetscFunctionReturn(0);
-}
-

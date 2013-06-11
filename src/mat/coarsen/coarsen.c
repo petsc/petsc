@@ -44,30 +44,6 @@ PetscErrorCode  MatCoarsenRegister(const char sname[],PetscErrorCode (*function)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatCoarsenRegisterDestroy"
-/*@C
-   MatCoarsenRegisterDestroy - Frees the list of coarsen routines.
-
-  Not Collective
-
-  Level: developer
-
-.keywords: matrix, register, destroy
-
-.seealso: MatCoarsenRegister(), MatCoarsenRegisterAll()
-@*/
-PetscErrorCode  MatCoarsenRegisterDestroy(void)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  MatCoarsenRegisterAllCalled = PETSC_FALSE;
-
-  ierr = PetscFunctionListDestroy(&MatCoarsenList);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "MatCoarsenGetType"
 /*@C
    MatCoarsenGetType - Gets the Coarsen method type and name (as a string)

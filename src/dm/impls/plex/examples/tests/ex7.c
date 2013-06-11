@@ -4,6 +4,10 @@ static char help[] = "Tests for mesh interpolation\n\n";
 */
 
 #include <petscdmplex.h>
+#if defined(PETSC_HAVE_EXODUSII)
+#include <exodusII.h>
+#endif
+
 /* List of test meshes
 
 Triangle
@@ -53,16 +57,17 @@ should become
  cell   5 _______    cell
  0    / | \      \       1
      /  |  \      \
-   18   |   19 13  22
-   / 9 17 10 \      \
+   17   |   18 13  22
+   / 8 19 10 \      \
   /     |     \      \
  2---14-|------4--20--6
   \     |     /      /
-   \ 8  | 7  /      /
+   \ 9  | 7  /      /
    16   |   15 11  21
      \  |  /      /
       \ | /      /
         3-------
+
 
 Quadrilateral
 -------------
@@ -141,10 +146,12 @@ cell   9-----31------8-----42------13 cell
 
 typedef struct {
   DM        dm;
-  PetscInt  debug;       /* The debugging level */
-  PetscInt  testNum;     /* Indicates the mesh to create */
-  PetscInt  dim;         /* The topological mesh dimension */
-  PetscBool cellSimplex; /* Use simplices or hexes */
+  PetscInt  debug;                        /* The debugging level */
+  PetscInt  testNum;                      /* Indicates the mesh to create */
+  PetscInt  dim;                          /* The topological mesh dimension */
+  PetscBool cellSimplex;                  /* Use simplices or hexes */
+  PetscBool useGenerator;                 /* Construct mesh with a mesh generator */
+  char      filename[PETSC_MAX_PATH_LEN]; /* Import mesh from file */
 } AppCtx;
 
 #undef __FUNCT__
@@ -154,16 +161,20 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  options->debug       = 0;
-  options->testNum     = 0;
-  options->dim         = 2;
-  options->cellSimplex = PETSC_TRUE;
+  options->debug        = 0;
+  options->testNum      = 0;
+  options->dim          = 2;
+  options->cellSimplex  = PETSC_TRUE;
+  options->useGenerator = PETSC_FALSE;
+  options->filename[0]  = '\0';
 
-  ierr = PetscOptionsBegin(comm, "", "Meshing Problem Options", "DMPLEX");CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(comm, "", "Meshing Interpolation Test Options", "DMPLEX");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-debug", "The debugging level", "ex7.c", options->debug, &options->debug, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-testnum", "The mesh to create", "ex7.c", options->testNum, &options->testNum, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex7.c", options->dim, &options->dim, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-cell_simplex", "Use simplices if true, otherwise hexes", "ex7.c", options->cellSimplex, &options->cellSimplex, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-use_generator", "Use a mesh generator to build the mesh", "ex7.c", options->useGenerator, &options->useGenerator, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsString("-filename", "The mesh file", "ex7.c", options->filename, options->filename, PETSC_MAX_PATH_LEN, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
   PetscFunctionReturn(0);
 };
@@ -222,7 +233,7 @@ PetscErrorCode CreateSimplex_3D(MPI_Comm comm, DM dm)
     {
       PetscInt    numPoints[2]        = {5, 2};
       PetscInt    coneSize[23]        = {4, 4, 0, 0, 0, 0, 0};
-      PetscInt    cones[8]            = {2, 3, 4, 5,  3, 6, 4, 5};
+      PetscInt    cones[8]            = {2, 4, 3, 5,  3, 4, 6, 5};
       PetscInt    coneOrientations[8] = {0, 0, 0, 0,  0, 0, 0, 0};
       PetscScalar vertexCoords[15]    = {0.0, 0.0, -0.5,  0.0, -0.5, 0.0,  1.0, 0.0, 0.0,  0.0, 0.5, 0.0,  0.0, 0.0, 0.5};
       PetscInt    markerPoints[8]     = {2, 1, 3, 1, 4, 1, 5, 1};
@@ -313,8 +324,8 @@ PetscErrorCode CreateHex_3D(MPI_Comm comm, DM dm)
     {
       PetscInt    numPoints[2]         = {12, 2};
       PetscInt    coneSize[14]         = {8, 8, 0,0,0,0,0,0,0,0,0,0,0,0};
-      PetscInt    cones[16]            = {2,3,4,5,6,7,8,9,  3,10,11,4,7,12,13,8};
-      PetscInt    coneOrientations[16] = {0,0,0,0,0,0,0,0,  0, 0, 0,0,0, 0, 0,0};
+      PetscInt    cones[16]            = {2,5,4,3,6,7,8,9,  3,4,11,10,7,12,13,8};
+      PetscInt    coneOrientations[16] = {0,0,0,0,0,0,0,0,  0,0, 0, 0,0, 0, 0,0};
       PetscScalar vertexCoords[36]     = {-0.5,0.0,0.0, 0.0,0.0,0.0, 0.0,1.0,0.0, -0.5,1.0,0.0,
                                           -0.5,0.0,1.0, 0.0,0.0,1.0, 0.0,1.0,1.0, -0.5,1.0,1.0,
                                            0.5,0.0,0.0, 0.5,1.0,0.0, 0.5,0.0,1.0,  0.5,1.0,1.0};
@@ -338,43 +349,119 @@ PetscErrorCode CreateHex_3D(MPI_Comm comm, DM dm)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "CheckMesh"
+PetscErrorCode CheckMesh(DM dm)
+{
+  PetscReal      detJ, J[9];
+  PetscInt       cStart, cEnd, c;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  for (c = cStart; c < cEnd; ++c) {
+    ierr = DMPlexComputeCellGeometry(dm, c, NULL, J, NULL, &detJ);CHKERRQ(ierr);
+    if (detJ <= 0.0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Mesh cell %d is inverted, |J| = %g", c, detJ);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "CompareCones"
+PetscErrorCode CompareCones(DM dm, DM idm)
+{
+  PetscInt       cStart, cEnd, c, vStart, vEnd, v;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
+  for (c = cStart; c < cEnd; ++c) {
+    const PetscInt *cone;
+    PetscInt       *points = NULL, numPoints, p, numVertices = 0, coneSize;
+
+    ierr = DMPlexGetCone(dm, c, &cone);CHKERRQ(ierr);
+    ierr = DMPlexGetConeSize(dm, c, &coneSize);CHKERRQ(ierr);
+    ierr = DMPlexGetTransitiveClosure(idm, c, PETSC_TRUE, &numPoints, &points);CHKERRQ(ierr);
+    for (p = 0; p < numPoints*2; p += 2) {
+      const PetscInt point = points[p];
+      if ((point >= vStart) && (point < vEnd)) points[numVertices++] = point;
+    }
+    if (numVertices != coneSize) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "In cell %d, cone size %d != %d vertices in closure", c, coneSize, numVertices);
+    for (v = 0; v < numVertices; ++v) {
+      if (cone[v] != points[v]) SETERRQ4(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "In cell %d, cone point %d is %d != %d vertex in closure", c, v, cone[v], points[v]);
+    }
+    ierr = DMPlexRestoreTransitiveClosure(idm, c, PETSC_TRUE, &numPoints, &points);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "CreateMesh"
 PetscErrorCode CreateMesh(MPI_Comm comm, PetscInt testNum, AppCtx *user, DM *dm)
 {
-  PetscInt       dim         = user->dim;
-  PetscBool      cellSimplex = user->cellSimplex;
-  const char    *partitioner = "chaco";
+  PetscInt       dim          = user->dim;
+  PetscBool      cellSimplex  = user->cellSimplex;
+  PetscBool      useGenerator = user->useGenerator;
+  const char    *filename     = user->filename;
+  const char    *partitioner  = "chaco";
+  size_t         len;
   PetscMPIInt    rank;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-  ierr = DMCreate(comm, dm);CHKERRQ(ierr);
-  ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
-  ierr = DMPlexSetDimension(*dm, dim);CHKERRQ(ierr);
-  switch (dim) {
-  case 2:
-    if (cellSimplex) {
-      ierr = CreateSimplex_2D(comm, *dm);CHKERRQ(ierr);
-    } else {
-      ierr = CreateQuad_2D(comm, testNum, *dm);CHKERRQ(ierr);
+  ierr = PetscStrlen(filename, &len);CHKERRQ(ierr);
+  if (len) {
+#if defined(PETSC_HAVE_EXODUSII)
+    int   CPU_word_size = 0, IO_word_size = 0, exoid = -1;
+    float version;
+
+    if (!rank) {
+      exoid = ex_open(filename, EX_READ, &CPU_word_size, &IO_word_size, &version);
+      if (exoid <= 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_LIB, "ex_open(\"%s\",...) did not return a valid file ID", filename);
     }
-    break;
-  case 3:
+    ierr = DMPlexCreateExodus(comm, exoid, PETSC_FALSE, dm);CHKERRQ(ierr);
+    if (!rank) {ierr = ex_close(exoid);CHKERRQ(ierr);}
+    ierr = DMPlexGetDimension(*dm, &dim);CHKERRQ(ierr);
+#else
+    SETERRQ(comm, PETSC_ERR_SUP, "Loading meshes requires ExodusII support. Reconfigure using --download-exodusii");
+#endif
+  } else if (useGenerator) {
     if (cellSimplex) {
-      ierr = CreateSimplex_3D(comm, *dm);CHKERRQ(ierr);
+      ierr = DMPlexCreateBoxMesh(comm, dim, PETSC_FALSE, dm);CHKERRQ(ierr);
     } else {
-      ierr = CreateHex_3D(comm, *dm);CHKERRQ(ierr);
+      ierr = DMPlexCreateHexBoxMesh(comm, dim, PETSC_FALSE, dm);CHKERRQ(ierr);
     }
-    break;
-  default:
-    SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "Cannot make meshes for dimension %d", dim);
+  } else {
+    ierr = DMCreate(comm, dm);CHKERRQ(ierr);
+    ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
+    ierr = DMPlexSetDimension(*dm, dim);CHKERRQ(ierr);
+    switch (dim) {
+    case 2:
+      if (cellSimplex) {
+        ierr = CreateSimplex_2D(comm, *dm);CHKERRQ(ierr);
+      } else {
+        ierr = CreateQuad_2D(comm, testNum, *dm);CHKERRQ(ierr);
+      }
+      break;
+    case 3:
+      if (cellSimplex) {
+        ierr = CreateSimplex_3D(comm, *dm);CHKERRQ(ierr);
+      } else {
+        ierr = CreateHex_3D(comm, *dm);CHKERRQ(ierr);
+      }
+      break;
+    default:
+      SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "Cannot make meshes for dimension %d", dim);
+    }
   }
   {
     DM interpolatedMesh = NULL;
 
+    ierr = CheckMesh(*dm);CHKERRQ(ierr);
     ierr = DMPlexInterpolate(*dm, &interpolatedMesh);CHKERRQ(ierr);
     ierr = DMPlexCopyCoordinates(*dm, interpolatedMesh);CHKERRQ(ierr);
+    ierr = CompareCones(*dm, interpolatedMesh);CHKERRQ(ierr);
     ierr = DMDestroy(dm);CHKERRQ(ierr);
     *dm  = interpolatedMesh;
   }
@@ -404,6 +491,7 @@ int main(int argc, char **argv)
   ierr = PetscInitialize(&argc, &argv, NULL, help);CHKERRQ(ierr);
   ierr = ProcessOptions(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);
   ierr = CreateMesh(PETSC_COMM_WORLD, user.testNum, &user, &user.dm);CHKERRQ(ierr);
+  ierr = CheckMesh(user.dm);CHKERRQ(ierr);
   ierr = DMDestroy(&user.dm);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;

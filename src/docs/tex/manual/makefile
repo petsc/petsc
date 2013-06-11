@@ -45,6 +45,8 @@ developers.pdf: chk_loc developers.tex
 	-@PYTHONPATH=../../../../maint;export PYTHONPATH;cat developers.tex | \
 	  ${PYTHON} ../../../../bin/maint/mapnameslatex.py ${PETSC_DIR} ${LOC}/docs/manualpages/htmlmap > developerstmp.tex
 	${PDFLATEX} developerstmp.tex
+	bibtex developerstmp ${GONULL}
+	${PDFLATEX} developerstmp.tex
 	${PDFLATEX} developerstmp.tex
 	${MV} developerstmp.pdf ${LOC}/docs/developers.pdf
 

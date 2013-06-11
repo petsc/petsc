@@ -17,9 +17,11 @@ static PetscBool PetscViewerPackageInitialized = PETSC_FALSE;
 @*/
 PetscErrorCode  PetscViewerFinalizePackage(void)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
+  ierr = PetscFunctionListDestroy(&PetscViewerList);CHKERRQ(ierr);
   PetscViewerPackageInitialized = PETSC_FALSE;
-  PetscViewerList               = 0;
   PetscFunctionReturn(0);
 }
 

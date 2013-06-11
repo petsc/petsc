@@ -71,6 +71,11 @@ Process 1:
   (   4) dim  2 offset   4 -0.2 1
   (   5) dim  2 offset   6 0.2 0
   (   6) dim  2 offset   8 0.2 1
+Label 'marker':
+[0]: 4 (1)
+[0]: 5 (1)
+[1]: 7 (1)
+[1]: 9 (1)
 Star Forest Object: 2 MPI processes
   type: basic
     sort=rank-order
@@ -266,6 +271,19 @@ Process 1:
   (  12) dim  2 offset  12 -0.2 0.5
   (  13) dim  2 offset  14 -0.35 0.75
   (  14) dim  2 offset  16 0.2 0.5
+Label 'marker':
+[0]: 7 (1)
+[0]: 8 (1)
+[0]: 10 (1)
+[0]: 11 (1)
+[0]: 12 (1)
+[0]: 13 (1)
+[1]: 11 (1)
+[1]: 13 (1)
+[1]: 15 (1)
+[1]: 16 (1)
+[1]: 19 (1)
+[1]: 20 (1)
 Star Forest Object: 2 MPI processes
   type not yet set
   [0] Number of roots=19, leaves=5, remote ranks=1

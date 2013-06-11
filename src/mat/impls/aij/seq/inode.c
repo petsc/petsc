@@ -186,7 +186,7 @@ static PetscErrorCode MatGetRowIJ_SeqAIJ_Inode_Nonsymmetric(Mat A,const PetscInt
     while (nz-- > 0) {           /* off-diagonal elemets */
       ia[i1+1]++;
       i2++;                     /* Start col of next node */
-      while (((col = *j++ + ishift) < tns[i2]) && nz > 0) nz--;
+      while (nz > 0 && ((col = *j++ + ishift) < tns[i2])) nz--;
       if (nz > 0) i2 = tvc[col];
     }
   }
@@ -212,7 +212,7 @@ static PetscErrorCode MatGetRowIJ_SeqAIJ_Inode_Nonsymmetric(Mat A,const PetscInt
     while (nz-- > 0) {
       ja[work[i1]++] = i2 + oshift;
       ++i2;
-      while (((col = *j++ + ishift) < tns[i2]) && nz > 0) nz--;
+      while (nz > 0 && ((col = *j++ + ishift) < tns[i2])) nz--;
       if (nz > 0) i2 = tvc[col];
     }
   }
@@ -305,7 +305,7 @@ static PetscErrorCode MatGetColumnIJ_SeqAIJ_Inode_Nonsymmetric(Mat A,const Petsc
       /* ia[i1+1]++; */
       ia[i2+1]++;
       i2++;
-      while (((col = *j++ + ishift) < tns[i2]) && nz > 0) nz--;
+      while (nz > 0 && ((col = *j++ + ishift) < tns[i2])) nz--;
       if (nz > 0) i2 = tvc[col];
     }
   }
@@ -332,7 +332,7 @@ static PetscErrorCode MatGetColumnIJ_SeqAIJ_Inode_Nonsymmetric(Mat A,const Petsc
       /* ja[work[i1]++] = i2 + oshift; */
       ja[work[i2]++] = i1 + oshift;
       i2++;
-      while (((col = *j++ + ishift) < tns[i2]) && nz > 0) nz--;
+      while (nz > 0 && ((col = *j++ + ishift) < tns[i2])) nz--;
       if (nz > 0) i2 = tvc[col];
     }
   }

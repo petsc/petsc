@@ -84,8 +84,12 @@
     with all PETSc users. Users who want to use the MPI C++ bindings can include
     mpicxx.h directly in their code
 */
-#define MPICH_SKIP_MPICXX 1
-#define OMPI_SKIP_MPICXX 1
+#if !defined(MPICH_SKIP_MPICXX)
+#  define MPICH_SKIP_MPICXX 1
+#endif
+#if !defined(OMPI_SKIP_MPICXX)
+#  define OMPI_SKIP_MPICXX 1
+#endif
 #include <mpi.h>
 
 /*
@@ -1369,9 +1373,9 @@ PETSC_EXTERN PetscErrorCode PetscStackAMSViewOff(void);
 
 typedef void* PetscDLHandle;
 typedef enum {PETSC_DL_DECIDE=0,PETSC_DL_NOW=1,PETSC_DL_LOCAL=2} PetscDLMode;
-extern PetscErrorCode  PetscDLOpen(const char[],PetscDLMode,PetscDLHandle *);
-extern PetscErrorCode  PetscDLClose(PetscDLHandle *);
-extern PetscErrorCode  PetscDLSym(PetscDLHandle,const char[],void **);
+PETSC_EXTERN PetscErrorCode PetscDLOpen(const char[],PetscDLMode,PetscDLHandle *);
+PETSC_EXTERN PetscErrorCode PetscDLClose(PetscDLHandle *);
+PETSC_EXTERN PetscErrorCode PetscDLSym(PetscDLHandle,const char[],void **);
 
 
 #if defined(PETSC_USE_DEBUG)
@@ -1517,7 +1521,7 @@ PETSC_EXTERN PetscErrorCode PetscHelpPrintfDefault(MPI_Comm,const char [],...);
 
 #if defined(PETSC_HAVE_POPEN)
 PETSC_EXTERN PetscErrorCode PetscPOpen(MPI_Comm,const char[],const char[],const char[],FILE **);
-PETSC_EXTERN PetscErrorCode PetscPClose(MPI_Comm,FILE*,PetscInt*);
+PETSC_EXTERN PetscErrorCode PetscPClose(MPI_Comm,FILE*,int*);
 #endif
 
 PETSC_EXTERN PetscErrorCode PetscSynchronizedPrintf(MPI_Comm,const char[],...);
@@ -1630,7 +1634,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscMemcpy(void *a,const void *b,size_t n)
       PetscBLASInt   one = 1,blen;
       PetscErrorCode ierr;
       ierr = PetscBLASIntCast(len,&blen);CHKERRQ(ierr);
-      PetscStackCall("BLAScopy",BLAScopy_(&blen,(PetscScalar *)b,&one,(PetscScalar *)a,&one));
+      PetscStackCallBLAS("BLAScopy",BLAScopy_(&blen,(PetscScalar *)b,&one,(PetscScalar *)a,&one));
 #elif defined(PETSC_PREFER_FORTRAN_FORMEMCPY)
       fortrancopy_(&len,(PetscScalar*)b,(PetscScalar*)a);
 #else
@@ -2090,15 +2094,13 @@ PETSC_EXTERN PetscErrorCode PetscGetDisplay(char[],size_t);
 
 /*J
     PetscRandomType - String with the name of a PETSc randomizer
-       with an optional dynamic library name, for example
-       http://www.mcs.anl.gov/petsc/lib.a:myrandcreate()
 
    Level: beginner
 
    Notes: to use the SPRNG you must have ./configure PETSc
    with the option --download-sprng
 
-.seealso: PetscRandomSetType(), PetscRandom
+.seealso: PetscRandomSetType(), PetscRandom, PetscRandomCreate()
 J*/
 typedef const char* PetscRandomType;
 #define PETSCRAND       "rand"
@@ -2127,11 +2129,10 @@ PETSC_EXTERN PetscBool         PetscRandomRegisterAllCalled;
 
 PETSC_EXTERN PetscErrorCode PetscRandomRegisterAll(void);
 PETSC_EXTERN PetscErrorCode PetscRandomRegister(const char[],PetscErrorCode (*)(PetscRandom));
-PETSC_EXTERN PetscErrorCode PetscRandomRegisterDestroy(void);
 PETSC_EXTERN PetscErrorCode PetscRandomSetType(PetscRandom, PetscRandomType);
 PETSC_EXTERN PetscErrorCode PetscRandomSetFromOptions(PetscRandom);
 PETSC_EXTERN PetscErrorCode PetscRandomGetType(PetscRandom, PetscRandomType*);
-PETSC_EXTERN PetscErrorCode PetscRandomViewFromOptions(PetscRandom,const char[]);
+ PETSC_EXTERN PetscErrorCode PetscRandomViewFromOptions(PetscRandom,const char[],const char[]);
 PETSC_EXTERN PetscErrorCode PetscRandomView(PetscRandom,PetscViewer);
 
 PETSC_EXTERN PetscErrorCode PetscRandomCreate(MPI_Comm,PetscRandom*);
@@ -2163,7 +2164,7 @@ PETSC_EXTERN PetscErrorCode PetscSharedWorkingDirectory(MPI_Comm,PetscBool  *);
 PETSC_EXTERN PetscErrorCode PetscGetTmp(MPI_Comm,char[],size_t);
 PETSC_EXTERN PetscErrorCode PetscFileRetrieve(MPI_Comm,const char[],char[],size_t,PetscBool *);
 PETSC_EXTERN PetscErrorCode PetscLs(MPI_Comm,const char[],char[],size_t,PetscBool *);
-PETSC_EXTERN PetscErrorCode PetscOpenSocket(char*,int,int*);
+PETSC_EXTERN PetscErrorCode PetscOpenSocket(const char[],int,int*);
 PETSC_EXTERN PetscErrorCode PetscWebServe(MPI_Comm,int);
 
 /*
@@ -2309,12 +2310,50 @@ PETSC_EXTERN PetscErrorCode PetscSubcommSetTypeGeneral(PetscSubcomm,PetscMPIInt,
 .seealso: PetscSegBufferCreate(), PetscSegBufferGet(), PetscSegBufferExtract(), PetscSegBufferDestroy()
 S*/
 typedef struct _n_PetscSegBuffer *PetscSegBuffer;
-PETSC_EXTERN PetscErrorCode PetscSegBufferCreate(PetscInt,PetscInt,PetscSegBuffer*);
+PETSC_EXTERN PetscErrorCode PetscSegBufferCreate(size_t,size_t,PetscSegBuffer*);
 PETSC_EXTERN PetscErrorCode PetscSegBufferDestroy(PetscSegBuffer*);
-PETSC_EXTERN PetscErrorCode PetscSegBufferGet(PetscSegBuffer*,PetscInt,void*);
-PETSC_EXTERN PetscErrorCode PetscSegBufferExtractAlloc(PetscSegBuffer*,void*);
-PETSC_EXTERN PetscErrorCode PetscSegBufferExtractTo(PetscSegBuffer*,void*);
-PETSC_EXTERN PetscErrorCode PetscSegBufferExtractInPlace(PetscSegBuffer*,void*);
+PETSC_EXTERN PetscErrorCode PetscSegBufferGet(PetscSegBuffer,size_t,void*);
+PETSC_EXTERN PetscErrorCode PetscSegBufferExtractAlloc(PetscSegBuffer,void*);
+PETSC_EXTERN PetscErrorCode PetscSegBufferExtractTo(PetscSegBuffer,void*);
+PETSC_EXTERN PetscErrorCode PetscSegBufferExtractInPlace(PetscSegBuffer,void*);
+PETSC_EXTERN PetscErrorCode PetscSegBufferGetSize(PetscSegBuffer,size_t*);
+PETSC_EXTERN PetscErrorCode PetscSegBufferUnuse(PetscSegBuffer,size_t);
+
+/* Type-safe wrapper to encourage use of PETSC_RESTRICT. Does not use PetscFunctionBegin because the error handling
+ * prevents the compiler from completely erasing the stub. This is called in inner loops so it has to be as fast as
+ * possible. */
+PETSC_STATIC_INLINE PetscErrorCode PetscSegBufferGetInts(PetscSegBuffer seg,PetscInt count,PetscInt *PETSC_RESTRICT *slot) {return PetscSegBufferGet(seg,count,(void**)slot);}
+
+extern PetscSegBuffer PetscCitationsList;
+#undef __FUNCT__
+#define __FUNCT__ "PetscCitationsRegister"
+/*@C
+      PetscCitationsRegister - Register a bibtex item to obtain credit for an implemented algorithm used in the code.
+
+     Not Collective - only what is registered on rank 0 of PETSC_COMM_WORLD will be printed
+
+     Input Parameters:
++      cite - the bibtex item, formated to displayed on multiple lines nicely
+-      set - a boolean variable initially set to PETSC_FALSE; this is used to insure only a single registration of the citation
+
+     Options Database:
+.     -citations [filenmae]   - print out the bibtex entries for the given computation
+@*/
+PETSC_STATIC_INLINE PetscErrorCode PetscCitationsRegister(const char cit[],PetscBool *set)
+{
+  size_t         len;
+  char           *vstring;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (set && *set) PetscFunctionReturn(0);
+  ierr = PetscStrlen(cit,&len);CHKERRQ(ierr);
+  ierr = PetscSegBufferGet(PetscCitationsList,(PetscInt)len,&vstring);CHKERRQ(ierr);
+  ierr = PetscMemcpy(vstring,cit,len);CHKERRQ(ierr);
+  if (set) *set = PETSC_TRUE;
+  PetscFunctionReturn(0);
+}
+
 
 /* Reset __FUNCT__ in case the user does not define it themselves */
 #undef __FUNCT__

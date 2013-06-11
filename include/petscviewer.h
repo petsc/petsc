@@ -15,7 +15,7 @@ PETSC_EXTERN PetscClassId PETSC_VIEWER_CLASSID;
 
    Level: beginner
 
-.seealso: PetscViewerSetType(), PetscViewer
+.seealso: PetscViewerSetType(), PetscViewer, PetscViewerRegister(), PetscViewerCreate()
 J*/
 typedef const char* PetscViewerType;
 #define PETSCVIEWERSOCKET       "socket"
@@ -33,7 +33,6 @@ typedef const char* PetscViewerType;
 
 PETSC_EXTERN PetscFunctionList PetscViewerList;
 PETSC_EXTERN PetscErrorCode PetscViewerRegisterAll(void);
-PETSC_EXTERN PetscErrorCode PetscViewerRegisterDestroy(void);
 PETSC_EXTERN PetscErrorCode PetscViewerInitializePackage(void);
 
 PETSC_EXTERN PetscErrorCode PetscViewerRegister(const char[],PetscErrorCode (*)(PetscViewer));

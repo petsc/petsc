@@ -3,7 +3,7 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC	 = mpibaij.c mmbaij.c baijov.c
+SOURCEC	 = mpibaij.c mmbaij.c baijov.c mpb_baij.c
 SOURCEF	 =
 SOURCEH	 = mpibaij.h
 LIBBASE	 = libpetscmat

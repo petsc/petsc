@@ -92,7 +92,7 @@ extern PetscErrorCode CreateNullSpace(DM, Vec*);
 extern PetscErrorCode FormInitialGuess(SNES,Vec,void*);
 extern PetscErrorCode FormFunctionLocal(DMDALocalInfo*,Field**,Field**,AppCtx*);
 extern PetscErrorCode FormJacobianLocal(DMDALocalInfo*,Field**,Mat,Mat,MatStructure*,AppCtx*);
-extern PetscErrorCode L_2Error(DM, Vec, double*, AppCtx*);
+extern PetscErrorCode L_2Error(DM, Vec, PetscReal*, AppCtx*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -103,6 +103,7 @@ int main(int argc,char **argv)
   AppCtx              *user;                   /* user-defined work context */
   PetscBag            bag;
   PetscInt            its;                     /* iterations for convergence */
+  PetscMPIInt         size;
   SNESConvergedReason reason;
   PetscErrorCode      ierr;
   PetscReal           lambda_max = 6.81, lambda_min = 0.0, error;
@@ -112,6 +113,8 @@ int main(int argc,char **argv)
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
+  if (size != 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Example only works for one process.");
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize problem parameters
@@ -161,7 +164,7 @@ int main(int argc,char **argv)
   ierr = SNESGetDM(snes,&da);CHKERRQ(ierr);
   ierr = SNESGetSolution(snes,&x);CHKERRQ(ierr);
   ierr = L_2Error(da, x, &error, user);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"L_2 error in the solution: %G\n", error);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"L_2 error in the solution: %g\n", (double)error);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they
@@ -224,7 +227,8 @@ PetscErrorCode FormInitialGuess(SNES snes,Vec X,void *ctx)
   AppCtx         *user;
   PetscInt       i,j,Mx,My,xs,ys,xm,ym;
   PetscErrorCode ierr;
-  PetscReal      lambda,temp1,temp,hx,hy;
+  PetscReal      lambda,hx,hy;
+  PETSC_UNUSED PetscReal temp1;
   Field          **x;
   DM             da;
 
@@ -260,7 +264,6 @@ PetscErrorCode FormInitialGuess(SNES snes,Vec X,void *ctx)
      Compute initial guess over the locally owned part of the grid
   */
   for (j=ys; j<ys+ym; j++) {
-    temp = (PetscReal)(PetscMin(j,My-j-1))*hy;
     for (i=xs; i<xs+xm; i++) {
 #define CHECK_SOLUTION
 #if defined(CHECK_SOLUTION)
@@ -270,6 +273,7 @@ PetscErrorCode FormInitialGuess(SNES snes,Vec X,void *ctx)
         /* Boundary conditions are usually zero Dirichlet */
         ierr = ExactSolution(i*hx, j*hy, &x[j][i]);CHKERRQ(ierr);
       } else {
+        PetscReal temp = (PetscReal)(PetscMin(j,My-j-1))*hy;
         x[j][i].u = temp1*sqrt(PetscMin((PetscReal)(PetscMin(i,Mx-i-1))*hx,temp));
         x[j][i].v = temp1*sqrt(PetscMin((PetscReal)(PetscMin(i,Mx-i-1))*hx,temp));
         x[j][i].p = 1.0;
@@ -291,21 +295,22 @@ PetscErrorCode constantResidual(PetscReal lambda, PetscBool isLower, int i, int 
 {
   Field       rLocal[3] = {{0.0, 0.0}, {0.0, 0.0}, {0.0, 0.0}};
   PetscScalar phi[3]    = {0.0, 0.0, 0.0};
-  PetscReal   xI = i*hx, yI = j*hy, hxhy = hx*hy, x, y;
+  PetscReal   xI = i*hx, yI = j*hy, hxhy = hx*hy;
   Field       res;
   PetscInt    q, k;
 
   PetscFunctionBeginUser;
   for (q = 0; q < 4; q++) {
+    PETSC_UNUSED PetscReal x, y;
     phi[0] = 1.0 - quadPoints[q*2] - quadPoints[q*2+1];
     phi[1] = quadPoints[q*2];
     phi[2] = quadPoints[q*2+1];
     if (isLower) {
-      x = xI + quadPoints[q*2]*hx;
-      y = yI + quadPoints[q*2+1]*hy;
+      x = xI + PetscAbsScalar(quadPoints[q*2])*hx;
+      y = yI + PetscAbsScalar(quadPoints[q*2+1])*hy;
     } else {
-      x = xI + 1.0 - quadPoints[q*2]*hx;
-      y = yI + 1.0 - quadPoints[q*2+1]*hy;
+      x = xI + 1.0 - PetscAbsScalar(quadPoints[q*2])*hx;
+      y = yI + 1.0 - PetscAbsScalar(quadPoints[q*2+1])*hy;
     }
     res.u = quadWeights[q]*(0.0);
     res.v = quadWeights[q]*(0.0);
@@ -832,7 +837,7 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info, Field **x, Mat A,Mat jac, 
         }
       }
 
-      ierr = nonlinearJacobian(-1.0*sc, uLocal, JLocal);CHKERRQ(ierr);
+      ierr = nonlinearJacobian(-1.0*PetscAbsScalar(sc), uLocal, JLocal);CHKERRQ(ierr);
       /* printf("Element matrix for (%d, %d)\n", i, j);*/
       /* printf("   col         ");*/
       for (l = 0; l < 4*3; l++) {
@@ -881,7 +886,7 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info, Field **x, Mat A,Mat jac, 
 /*
   L_2Error - Integrate the L_2 error of our solution over each face
 */
-PetscErrorCode L_2Error(DM da, Vec fVec, double *error, AppCtx *user)
+PetscErrorCode L_2Error(DM da, Vec fVec, PetscReal *error, AppCtx *user)
 {
   DMDALocalInfo  info;
   Vec            fLocalVec;
@@ -916,10 +921,10 @@ PetscErrorCode L_2Error(DM da, Vec fVec, double *error, AppCtx *user)
         u.u     = uLocal[0].u*phi[0]+ uLocal[1].u*phi[1] + uLocal[3].u*phi[2];
         u.v     = uLocal[0].v*phi[0]+ uLocal[1].v*phi[1] + uLocal[3].v*phi[2];
         u.p     = uLocal[0].p*phi[0]+ uLocal[1].p*phi[1] + uLocal[3].p*phi[2];
-        x       = (quadPoints[q*2] + i)*hx;
-        y       = (quadPoints[q*2+1] + j)*hy;
-        ierr    = ExactSolution(x, y, &uExact);CHKERRQ(ierr);
-        *error += hxhy*quadWeights[q]*((u.u - uExact.u)*(u.u - uExact.u) + (u.v - uExact.v)*(u.v - uExact.v) + (u.p - uExact.p)*(u.p - uExact.p));
+        x       = (quadPoints[q*2] + (PetscReal)i)*hx;
+        y       = (quadPoints[q*2+1] + (PetscReal)j)*hy;
+        ierr    = ExactSolution(PetscAbsScalar(x), PetscAbsScalar(y), &uExact);CHKERRQ(ierr);
+        *error += PetscAbsScalar(hxhy*quadWeights[q]*((u.u - uExact.u)*(u.u - uExact.u) + (u.v - uExact.v)*(u.v - uExact.v) + (u.p - uExact.p)*(u.p - uExact.p)));
       }
       /* Upper element */
       /*
@@ -935,10 +940,10 @@ PetscErrorCode L_2Error(DM da, Vec fVec, double *error, AppCtx *user)
         u.u     = uLocal[2].u*phi[0]+ uLocal[3].u*phi[1] + uLocal[1].u*phi[2];
         u.v     = uLocal[2].v*phi[0]+ uLocal[3].v*phi[1] + uLocal[1].v*phi[2];
         u.p     = uLocal[0].p*phi[0]+ uLocal[1].p*phi[1] + uLocal[3].p*phi[2];
-        x       = (1.0 - quadPoints[q*2] + i)*hx;
-        y       = (1.0 - quadPoints[q*2+1] + j)*hy;
-        ierr    = ExactSolution(x, y, &uExact);CHKERRQ(ierr);
-        *error += hxhy*quadWeights[q]*((u.u - uExact.u)*(u.u - uExact.u) + (u.v - uExact.v)*(u.v - uExact.v) + (u.p - uExact.p)*(u.p - uExact.p));
+        x       = (1.0 - quadPoints[q*2] + (PetscReal)i)*hx;
+        y       = (1.0 - quadPoints[q*2+1] + (PetscReal)j)*hy;
+        ierr    = ExactSolution(PetscAbsScalar(x), PetscAbsScalar(y), &uExact);CHKERRQ(ierr);
+        *error += PetscAbsScalar(hxhy*quadWeights[q]*((u.u - uExact.u)*(u.u - uExact.u) + (u.v - uExact.v)*(u.v - uExact.v) + (u.p - uExact.p)*(u.p - uExact.p)));
       }
     }
   }

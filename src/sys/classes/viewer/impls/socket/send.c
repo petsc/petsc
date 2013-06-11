@@ -85,7 +85,7 @@ static PetscErrorCode PetscViewerDestroy_Socket(PetscViewer viewer)
 
 .seealso:   PetscSocketListen(), PetscSocketEstablish()
 */
-PetscErrorCode  PetscOpenSocket(char *hostname,int portnum,int *t)
+PetscErrorCode  PetscOpenSocket(const char hostname[],int portnum,int *t)
 {
   struct sockaddr_in sa;
   struct hostent     *hp;

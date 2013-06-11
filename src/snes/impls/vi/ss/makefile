@@ -8,7 +8,7 @@ SOURCEF  =
 SOURCEH  = vissimpl.h
 LIBBASE  = libpetscsnes
 MANSEC   = SNES
-LOCDIR   = src/snes/impls/vi/ss
+LOCDIR   = src/snes/impls/vi/ss/
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

@@ -44,10 +44,11 @@ PetscErrorCode PetscSFInitializePackage(void)
 @*/
 PetscErrorCode PetscSFFinalizePackage(void)
 {
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscFunctionListDestroy(&PetscSFList);CHKERRQ(ierr);
   PetscSFPackageInitialized = PETSC_FALSE;
-  PetscSFRegisterAllCalled  = PETSC_TRUE;
-  PetscSFList               = NULL;
+  PetscSFRegisterAllCalled  = PETSC_FALSE;
   PetscFunctionReturn(0);
 }

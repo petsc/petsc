@@ -129,7 +129,7 @@ PetscErrorCode DMPlexVTKWriteCells_ASCII(DM dm, FILE *fp, PetscInt *totalCells)
 
     for (c = cStart, numCells = 0; c < cEnd; ++c) {
       PetscInt *closure = NULL;
-      PetscInt closureSize, nC = 0;
+      PetscInt closureSize, nC = 0, tmp;
 
       if (hasLabel) {
         PetscInt value;
@@ -146,6 +146,9 @@ PetscErrorCode DMPlexVTKWriteCells_ASCII(DM dm, FILE *fp, PetscInt *totalCells)
       }
       corners[numCells++] = nC;
       ierr = PetscFPrintf(comm, fp, "%d ", nC);CHKERRQ(ierr);
+      tmp        = closure[0];
+      closure[0] = closure[1];
+      closure[1] = tmp;
       for (v = 0; v < nC; ++v) {
         ierr = PetscFPrintf(comm, fp, " %d", closure[v]);CHKERRQ(ierr);
       }

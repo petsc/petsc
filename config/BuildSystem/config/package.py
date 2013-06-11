@@ -35,7 +35,7 @@ class Package(config.base.Configure):
     self.download         = []   # list of URLs where repository or tarballs may be found
     self.deps             = []   # other packages whose dlib or include we depend on, usually we also use self.framework.require()
     self.defaultLanguage  = 'C'  # The language in which to run tests
-    self.liblist          = [[]] # list of libraries we wish to check for (override with your own generateLibraryList())
+    self.liblist          = [[]] # list of libraries we wish to check for (override with your own generateLibList())
     self.extraLib         = []   # additional libraries needed to link
     self.includes         = []   # headers to check for
     self.functions        = []   # functions we wish to check for in the libraries

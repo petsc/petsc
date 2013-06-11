@@ -20,7 +20,7 @@ PETSC_EXTERN PetscErrorCode MatGetOrdering_1WD(Mat mat,MatOrderingType type,IS *
 
   ierr = PetscMalloc5(nrow,PetscInt,&mask,nrow+1,PetscInt,&xls,nrow,PetscInt,&ls,nrow+1,PetscInt,&xblk,nrow,PetscInt,&perm);CHKERRQ(ierr);
   SPARSEPACKgen1wd(&nrow,ia,ja,mask,&nblks,xblk,perm,xls,ls);
-  ierr = MatRestoreRowIJ(mat,1,PETSC_TRUE,PETSC_TRUE,&nrow,&ia,&ja,&done);CHKERRQ(ierr);
+  ierr = MatRestoreRowIJ(mat,1,PETSC_TRUE,PETSC_TRUE,NULL,&ia,&ja,&done);CHKERRQ(ierr);
 
   for (i=0; i<nrow; i++) perm[i]--;
 

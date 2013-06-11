@@ -20,39 +20,39 @@ typedef struct {
   PetscInt order;                  /* Order of polynomials to test */
 } AppCtx;
 
-PetscScalar constant(const PetscReal coords[])
+void constant(const PetscReal coords[], PetscScalar *u)
 {
-  return 1.0;
+  *u = 1.0;
 }
 
-PetscScalar linear_x(const PetscReal coords[])
+void linear_x(const PetscReal coords[], PetscScalar *u)
 {
-  return coords[0];
+  *u = coords[0];
 }
-PetscScalar linear_y(const PetscReal coords[])
+void linear_y(const PetscReal coords[], PetscScalar *u)
 {
-  return coords[1];
+  *u = coords[1];
 }
-PetscScalar linear_z(const PetscReal coords[])
+void linear_z(const PetscReal coords[], PetscScalar *u)
 {
-  return coords[2];
+  *u = coords[2];
 }
 
-PetscScalar quadratic_xx(const PetscReal coords[])
+void quadratic_xx(const PetscReal coords[], PetscScalar *u)
 {
-  return coords[0]*coords[0];
+  *u = coords[0]*coords[0];
 }
-PetscScalar quadratic_xy(const PetscReal coords[])
+void quadratic_xy(const PetscReal coords[], PetscScalar *u)
 {
-  return coords[0]*coords[1];
+  *u = coords[0]*coords[1];
 }
-PetscScalar quadratic_yz(const PetscReal coords[])
+void quadratic_yz(const PetscReal coords[], PetscScalar *u)
 {
-  return coords[1]*coords[2];
+  *u = coords[1]*coords[2];
 }
-PetscScalar quadratic_zx(const PetscReal coords[])
+void quadratic_zx(const PetscReal coords[], PetscScalar *u)
 {
-  return coords[2]*coords[0];
+  *u = coords[2]*coords[0];
 }
 
 #undef __FUNCT__
@@ -68,7 +68,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->refinementLimit = 0.0;
   options->order           = 0;
 
-  ierr = PetscOptionsBegin(comm, "", "Bratu Problem Options", "DMMESH");CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(comm, "", "Projection Test Options", "DMPlex");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-debug", "The debugging level", "ex3.c", options->debug, &options->debug, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex3.c", options->dim, &options->dim, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-interpolate", "Generate intermediate mesh elements", "ex3.c", options->interpolate, &options->interpolate, NULL);CHKERRQ(ierr);

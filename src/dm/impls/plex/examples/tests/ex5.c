@@ -399,7 +399,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     DM      hybridMesh = NULL, faultMesh = NULL;
     DMLabel subpointMap, label;
 
-    ierr = DMPlexCreateSubmesh(*dm, "fault", &faultMesh);CHKERRQ(ierr);
+    ierr = DMPlexCreateSubmesh(*dm, "fault", 1, &faultMesh);CHKERRQ(ierr);
     ierr = DMPlexGetSubpointMap(faultMesh, &subpointMap);CHKERRQ(ierr);
     ierr = DMLabelDuplicate(subpointMap, &label);CHKERRQ(ierr);
     ierr = DMLabelClearStratum(label, dim);CHKERRQ(ierr);

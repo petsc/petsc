@@ -39,28 +39,21 @@ static PetscErrorCode PetscViewerBinaryReadVecHeader_Private(PetscViewer viewer,
 static PetscErrorCode VecLoad_Binary_MPIIO(Vec vec, PetscViewer viewer)
 {
   PetscErrorCode ierr;
-  PetscMPIInt    gsizes[1],lsizes[1],lstarts[1];
+  PetscMPIInt    lsize;
   PetscScalar    *avec;
-  MPI_Datatype   view;
   MPI_File       mfdes;
-  MPI_Aint       ub,ul;
   MPI_Offset     off;
 
   PetscFunctionBegin;
   ierr = VecGetArray(vec,&avec);CHKERRQ(ierr);
-  ierr = PetscMPIIntCast(vec->map->N,gsizes);CHKERRQ(ierr);
-  ierr = PetscMPIIntCast(vec->map->n,lsizes);CHKERRQ(ierr);
-  ierr = PetscMPIIntCast(vec->map->rstart,lstarts);CHKERRQ(ierr);
-  ierr = MPI_Type_create_subarray(1,gsizes,lsizes,lstarts,MPI_ORDER_FORTRAN,MPIU_SCALAR,&view);CHKERRQ(ierr);
-  ierr = MPI_Type_commit(&view);CHKERRQ(ierr);
+  ierr = PetscMPIIntCast(vec->map->n,&lsize);CHKERRQ(ierr);
 
   ierr = PetscViewerBinaryGetMPIIODescriptor(viewer,&mfdes);CHKERRQ(ierr);
   ierr = PetscViewerBinaryGetMPIIOOffset(viewer,&off);CHKERRQ(ierr);
-  ierr = MPI_File_set_view(mfdes,off,MPIU_SCALAR,view,(char*)"native",MPI_INFO_NULL);CHKERRQ(ierr);
-  ierr = MPIU_File_read_all(mfdes,avec,lsizes[0],MPIU_SCALAR,MPI_STATUS_IGNORE);CHKERRQ(ierr);
-  ierr = MPI_Type_get_extent(view,&ul,&ub);CHKERRQ(ierr);
-  ierr = PetscViewerBinaryAddMPIIOOffset(viewer,ub);CHKERRQ(ierr);
-  ierr = MPI_Type_free(&view);CHKERRQ(ierr);
+  off += vec->map->rstart*sizeof(PetscScalar);
+  ierr = MPI_File_set_view(mfdes,off,MPIU_SCALAR,MPIU_SCALAR,(char*)"native",MPI_INFO_NULL);CHKERRQ(ierr);
+  ierr = MPIU_File_read_all(mfdes,avec,lsize,MPIU_SCALAR,MPI_STATUS_IGNORE);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryAddMPIIOOffset(viewer,vec->map->N*sizeof(PetscScalar));CHKERRQ(ierr);
 
   ierr = VecRestoreArray(vec,&avec);CHKERRQ(ierr);
   ierr = VecAssemblyBegin(vec);CHKERRQ(ierr);
@@ -232,7 +225,7 @@ PetscErrorCode VecLoad_HDF5(Vec xin, PetscViewer viewer)
 #endif
   lenInd = timestep >= 0 ? 1 : 0;
   if (rdim != dim) {
-    if (rdim == dim+1 && bs == 1) bs = dims[bsInd];
+    if (rdim == dim+1 && bs == -1) bs = dims[bsInd];
     else SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Dimension of array in file %d not %d as expected",rdim,dim);
   } else if (bs >= 1 && bs != (PetscInt) dims[bsInd]) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "Block size %d specified for vector does not match blocksize in file %d",bs,dims[bsInd]);
 

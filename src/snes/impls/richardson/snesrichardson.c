@@ -66,7 +66,7 @@ static PetscErrorCode SNESSetFromOptions_NRichardson(SNES snes)
   ierr = PetscOptionsHead("SNES Richardson options");CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   if (!snes->linesearch) {
-    ierr = SNESGetSNESLineSearch(snes, &linesearch);CHKERRQ(ierr);
+    ierr = SNESGetLineSearch(snes, &linesearch);CHKERRQ(ierr);
     ierr = SNESLineSearchSetType(linesearch, SNESLINESEARCHL2);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

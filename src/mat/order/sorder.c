@@ -34,7 +34,7 @@ PETSC_EXTERN PetscErrorCode MatGetOrdering_Natural(Mat mat,MatOrderingType type,
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
   ierr = MatGetRowIJ(mat,0,PETSC_FALSE,PETSC_TRUE,&n,NULL,NULL,&done);CHKERRQ(ierr);
-  ierr = MatRestoreRowIJ(mat,0,PETSC_FALSE,PETSC_TRUE,&n,NULL,NULL,&done);CHKERRQ(ierr);
+  ierr = MatRestoreRowIJ(mat,0,PETSC_FALSE,PETSC_TRUE,NULL,NULL,NULL,&done);CHKERRQ(ierr);
   if (done) { /* matrix may be "compressed" in symbolic factorization, due to i-nodes or block storage */
     /*
       We actually create general index sets because this avoids mallocs to
@@ -81,7 +81,7 @@ PETSC_EXTERN PetscErrorCode MatGetOrdering_RowLength(Mat mat,MatOrderingType typ
     lens[i]  = ia[i+1] - ia[i];
     permr[i] = i;
   }
-  ierr = MatRestoreRowIJ(mat,0,PETSC_FALSE,PETSC_TRUE,&n,&ia,&ja,&done);CHKERRQ(ierr);
+  ierr = MatRestoreRowIJ(mat,0,PETSC_FALSE,PETSC_TRUE,NULL,&ia,&ja,&done);CHKERRQ(ierr);
 
   ierr = PetscSortIntWithPermutation(n,lens,permr);CHKERRQ(ierr);
 
@@ -124,29 +124,6 @@ PetscErrorCode  MatOrderingRegister(const char sname[],PetscErrorCode (*function
 
   PetscFunctionBegin;
   ierr = PetscFunctionListAdd(&MatOrderingList,sname,function);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "MatOrderingRegisterDestroy"
-/*@
-   MatOrderingRegisterDestroy - Frees the list of ordering routines.
-
-   Not collective
-
-   Level: developer
-
-.keywords: matrix, register, destroy
-
-.seealso: MatOrderingRegister(), MatOrderingRegisterAll()
-@*/
-PetscErrorCode  MatOrderingRegisterDestroy(void)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr                         = PetscFunctionListDestroy(&MatOrderingList);CHKERRQ(ierr);
-  MatOrderingRegisterAllCalled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -297,7 +274,7 @@ PetscErrorCode  MatGetOrdering(Mat mat,MatOrderingType type,IS *rperm,IS *cperm)
   if (flg) {
     Mat tmat;
     ierr = MatPermute(mat,*rperm,*cperm,&tmat);CHKERRQ(ierr);
-    ierr = MatViewFromOptions(tmat,"-mat_view_ordering");CHKERRQ(ierr);
+    ierr = MatViewFromOptions(tmat,((PetscObject)mat)->prefix,"-mat_view_ordering");CHKERRQ(ierr);
     ierr = MatDestroy(&tmat);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

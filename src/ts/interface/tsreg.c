@@ -6,7 +6,7 @@ PetscBool         TSRegisterAllCalled = PETSC_FALSE;
 #undef __FUNCT__
 #define __FUNCT__ "TSSetType"
 /*@C
-  TSSetType - Sets the method for the timestepping solver.
+  TSSetType - Sets the method to be used as the timestepping solver.
 
   Collective on TS
 
@@ -39,6 +39,8 @@ PetscBool         TSRegisterAllCalled = PETSC_FALSE;
    Level: intermediate
 
 .keywords: TS, set, type
+
+.seealso: TS, TSSolve(), TSCreate(), TSSetFromOptions(), TSDestroy(), TSType
 
 @*/
 PetscErrorCode  TSSetType(TS ts,TSType type)
@@ -142,25 +144,3 @@ PetscErrorCode  TSRegister(const char sname[], PetscErrorCode (*function)(TS))
   PetscFunctionReturn(0);
 }
 
-/*-------------------------------------------------------------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "TSRegisterDestroy"
-/*@C
-   TSRegisterDestroy - Frees the list of timestepping routines that were registered by TSRegister()
-
-   Not Collective
-
-   Level: advanced
-
-.keywords: TS, timestepper, register, destroy
-.seealso: TSRegister(), TSRegisterAll()
-@*/
-PetscErrorCode  TSRegisterDestroy(void)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscFunctionListDestroy(&TSList);CHKERRQ(ierr);
-  TSRegisterAllCalled = PETSC_FALSE;
-  PetscFunctionReturn(0);
-}

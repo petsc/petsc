@@ -11,7 +11,7 @@ SOURCEH  = agmresimpl.h
 OBJSF    =
 LIBBASE  = libpetscksp
 MANSEC   = KSP
-LOCDIR   = src/ksp/ksp/impls/gmres/agmres
+LOCDIR   = src/ksp/ksp/impls/gmres/agmres/
 DIRS     =
 
 include ${PETSC_DIR}/conf/variables

@@ -28,7 +28,6 @@
 #define snesmonitorlgresidualnorm_       SNESMONITORLGRESIDUALNORM
 #define snesmonitorsolutionupdate_       SNESMONITORSOLUTIONUPDATE
 #define snesmonitorset_                  SNESMONITORSET
-#define snesgetsneslinesearch_           SNESGETSNESLINESEARCH
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define matmffdcomputejacobian_          matmffdcomputejacobian
 #define snessolve_                       snessolve
@@ -55,7 +54,6 @@
 #define snesmonitorsolution_             snesmonitorsolution
 #define snesmonitorsolutionupdate_       snesmonitorsolutionupdate
 #define snesmonitorset_                  snesmonitorset
-#define snesgetsneslinesearch_           snesgetsneslinesearch
 #endif
 
 static struct {
@@ -360,10 +358,5 @@ PETSC_EXTERN void PETSC_STDCALL snesmonitorset_(SNES *snes,void (PETSC_STDCALL *
       if (!*ierr) *ierr = SNESMonitorSet(*snes,oursnesmonitor,*snes,ourmondestroy);
     }
   }
-}
-
-PETSC_EXTERN void PETSC_STDCALL snesgetsneslinesearch_(SNES *snes,SNESLineSearch *linesearch, int *__ierr)
-{
-  *__ierr = SNESGetSNESLineSearch(*snes, linesearch);
 }
 

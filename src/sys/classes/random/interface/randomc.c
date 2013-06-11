@@ -200,7 +200,7 @@ PetscErrorCode  PetscRandomSetFromOptions(PetscRandom rnd)
     ierr = PetscRandomSeed(rnd);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
-  ierr = PetscRandomViewFromOptions(rnd, "-random_view");CHKERRQ(ierr);
+  ierr = PetscRandomViewFromOptions(rnd,NULL, "-random_view");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -273,21 +273,22 @@ PetscErrorCode  PetscRandomView(PetscRandom rnd,PetscViewer viewer)
 
 #undef  __FUNCT__
 #define __FUNCT__ "PetscRandomViewFromOptions"
-/*@
+/*
   PetscRandomViewFromOptions - This function visualizes the type and the seed of the generated random numbers based upon user options.
 
   Collective on PetscRandom
 
   Input Parameters:
-. rnd   - The random number generator context
-. title - The title
++ rnd   - The random number generator context
+. prefix - prefix to use for viewing, or NULL to use prefix of 'rnd'
+- optionname - option to activate viewing
 
   Level: intermediate
 
 .keywords: PetscRandom, view, options, database
 .seealso: PetscRandomSetFromOptions()
-@*/
-PetscErrorCode  PetscRandomViewFromOptions(PetscRandom rnd, const char optionname[])
+*/
+PetscErrorCode  PetscRandomViewFromOptions(PetscRandom rnd, const char prefix[], const char optionname[])
 {
   PetscBool         flg;
   PetscViewer       viewer;
@@ -295,7 +296,11 @@ PetscErrorCode  PetscRandomViewFromOptions(PetscRandom rnd, const char optionnam
   PetscViewerFormat format;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject)rnd),((PetscObject)rnd)->prefix,optionname,&viewer,&format,&flg);CHKERRQ(ierr);
+  if (prefix) {
+    ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject)rnd),prefix,optionname,&viewer,&format,&flg);CHKERRQ(ierr);
+  } else {
+    ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject)rnd),((PetscObject)rnd)->prefix,optionname,&viewer,&format,&flg);CHKERRQ(ierr);
+  }
   if (flg) {
     ierr = PetscViewerPushFormat(viewer,format);CHKERRQ(ierr);
     ierr = PetscRandomView(rnd,viewer);CHKERRQ(ierr);

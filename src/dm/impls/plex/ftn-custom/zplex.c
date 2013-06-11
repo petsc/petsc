@@ -11,7 +11,6 @@
 #define dmplexgetstratumsize_      DMPLEXGETSTRATUMSIZE
 #define dmplexgetstratumis_        DMPLEXGETSTRATUMIS
 #define dmplexcreatefromcelllist_  DMPLEXCREATEFROMCELLLIST
-#define dmplexcreatesection_       DMPLEXCREATESECTION
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
 #define dmplexdistribute_          dmplexdistribute
 #define dmplexhaslabel_            dmplexhaslabel
@@ -22,7 +21,6 @@
 #define dmplexgetstratumsize_      dmplexgetstratumsize
 #define dmplexgetstratumis_        dmplexgetstratumis
 #define dmplexcreatefromcelllist_  dmplexcreatefromcelllist
-#define dmplexcreatesection_       dmplexcreatesection
 #endif
 
 /* Definitions of Fortran Wrapper routines */
@@ -103,9 +101,3 @@ PETSC_EXTERN void PETSC_STDCALL dmplexcreatefromcelllist_(MPI_Comm *comm, PetscI
 {
   *ierr = DMPlexCreateFromCellList(*comm, *dim, *numCells, *numVertices, *numCorners, *interpolate, cells, *spaceDim, vertexCoords, dm);
 }
-
-PETSC_EXTERN void PETSC_STDCALL dmplexcreatesection_(DM *dm, PetscInt *dim, PetscInt *numFields, PetscInt *numComp, PetscInt *numDof, PetscInt *numBC, PetscInt *bcField, IS *bcPoints, PetscSection *section, int *ierr)
-{
-  *ierr = DMPlexCreateSection(*dm, *dim, *numFields, numComp, numDof, *numBC, bcField, bcPoints, section);
-}
-

@@ -24,10 +24,12 @@ static PetscBool PCPackageInitialized = PETSC_FALSE;
 @*/
 PetscErrorCode  PCFinalizePackage(void)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
+  ierr = PetscFunctionListDestroy(&PCList);CHKERRQ(ierr);
   PCPackageInitialized = PETSC_FALSE;
   PCRegisterAllCalled  = PETSC_FALSE;
-  PCList               = 0;
   PetscFunctionReturn(0);
 }
 
@@ -53,6 +55,8 @@ PetscErrorCode  PCInitializePackage(void)
   PetscFunctionBegin;
   if (PCPackageInitialized) PetscFunctionReturn(0);
   PCPackageInitialized = PETSC_TRUE;
+  /* Initialize subpackages */
+  ierr = PCGAMGInitializePackage();CHKERRQ(ierr);
   /* Register Classes */
   ierr = PetscClassIdRegister("Preconditioner",&PC_CLASSID);CHKERRQ(ierr);
   /* Register Constructors */
@@ -114,9 +118,11 @@ static PetscBool KSPPackageInitialized = PETSC_FALSE;
 @*/
 PetscErrorCode  KSPFinalizePackage(void)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
+  ierr = PetscFunctionListDestroy(&KSPList);CHKERRQ(ierr);
   KSPPackageInitialized = PETSC_FALSE;
-  KSPList               = 0;
   KSPRegisterAllCalled  = PETSC_FALSE;
   PetscFunctionReturn(0);
 }

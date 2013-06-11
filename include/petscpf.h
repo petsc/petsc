@@ -6,10 +6,10 @@
 #include <petscvec.h>
 
 /*
-    PFunctionList contains the list of preconditioners currently registered
+    PFList contains the list of mathematical functions currently registered
    These are added with PFRegister()
 */
-PETSC_EXTERN PetscFunctionList PFunctionList;
+PETSC_EXTERN PetscFunctionList PFList;
 
 /*J
     PFType - Type of PETSc mathematical function, a string name
@@ -45,7 +45,6 @@ PETSC_EXTERN PetscErrorCode PFSet(PF,PetscErrorCode(*)(void*,PetscInt,const Pets
 PETSC_EXTERN PetscErrorCode PFApply(PF,PetscInt,const PetscScalar*,PetscScalar*);
 PETSC_EXTERN PetscErrorCode PFApplyVec(PF,Vec,Vec);
 
-PETSC_EXTERN PetscErrorCode PFRegisterDestroy(void);
 PETSC_EXTERN PetscErrorCode PFRegisterAll(void);
 PETSC_EXTERN PetscErrorCode PFInitializePackage(void);
 PETSC_EXTERN PetscBool PFRegisterAllCalled;

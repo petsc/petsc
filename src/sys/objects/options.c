@@ -363,21 +363,19 @@ PetscErrorCode  PetscOptionsInsertFile(MPI_Comm comm,const char file[],PetscBool
 {
   char           *string,fname[PETSC_MAX_PATH_LEN],*first,*second,*third,*vstring = 0,*astring = 0;
   PetscErrorCode ierr;
-  size_t         i,len;
+  size_t         i,len,bytes;
   FILE           *fd;
   PetscToken     token;
   int            err;
   char           cmt[1]={'#'},*cmatch;
   PetscMPIInt    rank,cnt=0,acnt=0;
+  PetscSegBuffer vseg,aseg;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   if (!rank) {
-    /* Warning: assume a maximum size for all options in a string */
-    ierr = PetscMalloc(128000*sizeof(char),&vstring);CHKERRQ(ierr);
-    vstring[0] = 0;
-    ierr = PetscMalloc(64000*sizeof(char),&astring);CHKERRQ(ierr);
-    astring[0] = 0;
+    ierr = PetscSegBufferCreate(1,4000,&vseg);CHKERRQ(ierr);
+    ierr = PetscSegBufferCreate(1,2000,&aseg);CHKERRQ(ierr);
     cnt        = 0;
     acnt       = 0;
 
@@ -386,6 +384,7 @@ PetscErrorCode  PetscOptionsInsertFile(MPI_Comm comm,const char file[],PetscBool
     if (fd) {
       /* the following line will not work when opening initial files (like .petscrc) since info is not yet set */
       ierr = PetscInfo1(0,"Opened options file %s\n",file);CHKERRQ(ierr);
+
       while ((string = Petscgetline(fd))) {
         /* eliminate comments from each line */
         for (i=0; i<1; i++) {
@@ -411,16 +410,18 @@ PetscErrorCode  PetscOptionsInsertFile(MPI_Comm comm,const char file[],PetscBool
         if (!first) {
           goto destroy;
         } else if (first[0] == '-') {
-          /* warning: should be making sure we do not overfill vstring */
-          ierr = PetscStrcat(vstring,first);CHKERRQ(ierr);
-          ierr = PetscStrcat(vstring," ");CHKERRQ(ierr);
+          ierr = PetscStrlen(first,&len);CHKERRQ(ierr);
+          ierr = PetscSegBufferGet(vseg,len+1,&vstring);CHKERRQ(ierr);
+          ierr = PetscMemcpy(vstring,first,len);CHKERRQ(ierr);
+          vstring[len] = ' ';
           if (second) {
-            /* protect second with quotes in case it contains strings */
-            ierr = PetscStrcat(vstring,"\"");CHKERRQ(ierr);
-            ierr = PetscStrcat(vstring,second);CHKERRQ(ierr);
-            ierr = PetscStrcat(vstring,"\"");CHKERRQ(ierr);
+            ierr = PetscStrlen(second,&len);CHKERRQ(ierr);
+            ierr = PetscSegBufferGet(vseg,len+3,&vstring);CHKERRQ(ierr);
+            vstring[0] = '"';
+            ierr = PetscMemcpy(vstring+1,second,len);CHKERRQ(ierr);
+            vstring[len+1] = '"';
+            vstring[len+2] = ' ';
           }
-          ierr = PetscStrcat(vstring," ");CHKERRQ(ierr);
         } else {
           PetscBool match;
 
@@ -428,10 +429,15 @@ PetscErrorCode  PetscOptionsInsertFile(MPI_Comm comm,const char file[],PetscBool
           if (match) {
             ierr = PetscTokenFind(token,&third);CHKERRQ(ierr);
             if (!third) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Error in options file:alias missing (%s)",second);
-            ierr = PetscStrcat(astring,second);CHKERRQ(ierr);
-            ierr = PetscStrcat(astring," ");CHKERRQ(ierr);
-            ierr = PetscStrcat(astring,third);CHKERRQ(ierr);
-            ierr = PetscStrcat(astring," ");CHKERRQ(ierr);
+            ierr = PetscStrlen(second,&len);CHKERRQ(ierr);
+            ierr = PetscSegBufferGet(aseg,len+1,&astring);CHKERRQ(ierr);
+            ierr = PetscMemcpy(astring,second,len);CHKERRQ(ierr);
+            astring[len] = ' ';
+
+            ierr = PetscStrlen(third,&len);CHKERRQ(ierr);
+            ierr = PetscSegBufferGet(aseg,len+1,&astring);CHKERRQ(ierr);
+            ierr = PetscMemcpy(astring,third,len);CHKERRQ(ierr);
+            astring[len] = ' ';
           } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Unknown statement in options file: (%s)",string);
         }
 destroy:
@@ -439,10 +445,16 @@ destroy:
       }
       err = fclose(fd);
       if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on file");
-      ierr = PetscStrlen(astring,&len);CHKERRQ(ierr);
-      ierr = PetscMPIIntCast(len,&acnt);CHKERRQ(ierr);
-      ierr = PetscStrlen(vstring,&len);CHKERRQ(ierr);
-      ierr = PetscMPIIntCast(len,&cnt);CHKERRQ(ierr);
+      ierr = PetscSegBufferGetSize(aseg,&bytes);CHKERRQ(ierr); /* size without null termination */
+      ierr = PetscMPIIntCast(bytes,&acnt);CHKERRQ(ierr);
+      ierr = PetscSegBufferGet(aseg,1,&astring);CHKERRQ(ierr);
+      astring[0] = 0;
+      ierr = PetscSegBufferExtractInPlace(aseg,&astring);CHKERRQ(ierr);
+      ierr = PetscSegBufferGetSize(vseg,&bytes);CHKERRQ(ierr); /* size without null termination */
+      ierr = PetscMPIIntCast(bytes,&cnt);CHKERRQ(ierr);
+      ierr = PetscSegBufferGet(vseg,1,&vstring);CHKERRQ(ierr);
+      vstring[0] = 0;
+      ierr = PetscSegBufferExtractInPlace(vseg,&vstring);CHKERRQ(ierr);
     } else if (require) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Unable to open Options File %s",fname);
   }
 
@@ -454,8 +466,7 @@ destroy:
     if (rank) {
       ierr = PetscMalloc((acnt+1)*sizeof(char),&astring);CHKERRQ(ierr);
     }
-    ierr = MPI_Bcast(astring,acnt,MPI_CHAR,0,comm);CHKERRQ(ierr);
-    astring[acnt] = 0;
+    ierr = MPI_Bcast(astring,acnt+1,MPI_CHAR,0,comm);CHKERRQ(ierr);
     ierr = PetscTokenCreate(astring,' ',&token);CHKERRQ(ierr);
     ierr = PetscTokenFind(token,&first);CHKERRQ(ierr);
     while (first) {
@@ -471,12 +482,16 @@ destroy:
     if (rank) {
       ierr = PetscMalloc((cnt+1)*sizeof(char),&vstring);CHKERRQ(ierr);
     }
-    ierr = MPI_Bcast(vstring,cnt,MPI_CHAR,0,comm);CHKERRQ(ierr);
-    vstring[cnt] = 0;
+    ierr = MPI_Bcast(vstring,cnt+1,MPI_CHAR,0,comm);CHKERRQ(ierr);
     ierr = PetscOptionsInsertString(vstring);CHKERRQ(ierr);
   }
-  ierr = PetscFree(astring);CHKERRQ(ierr);
-  ierr = PetscFree(vstring);CHKERRQ(ierr);
+  if (!rank) {
+    ierr = PetscSegBufferDestroy(&aseg);CHKERRQ(ierr);
+    ierr = PetscSegBufferDestroy(&vseg);CHKERRQ(ierr);
+  } else {
+    ierr = PetscFree(astring);CHKERRQ(ierr);
+    ierr = PetscFree(vstring);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -589,7 +604,10 @@ PetscErrorCode  PetscOptionsInsert(int *argc,char ***args,const char file[])
   options->args = (args) ? *args : NULL;
 
   if (file && file[0]) {
-    ierr = PetscOptionsInsertFile(PETSC_COMM_WORLD,file,PETSC_TRUE);CHKERRQ(ierr);
+    char fullpath[PETSC_MAX_PATH_LEN];
+
+    ierr = PetscStrreplace(PETSC_COMM_WORLD,file,fullpath,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
+    ierr = PetscOptionsInsertFile(PETSC_COMM_WORLD,fullpath,PETSC_TRUE);CHKERRQ(ierr);
   }
   /*
      We want to be able to give -skip_petscrc on the command line, but need to parse it first.  Since the command line

@@ -1,4 +1,5 @@
 #include <petscsys.h>
+#include <petscao.h>
 #include <petsc-private/fortranimpl.h>
 
 #define max_colors  200

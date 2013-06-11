@@ -495,6 +495,9 @@ PetscErrorCode  MatRestoreRow(Mat mat,PetscInt row,PetscInt *ncols,const PetscIn
   if (!mat->assembled) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (!mat->ops->restorerow) PetscFunctionReturn(0);
   ierr = (*mat->ops->restorerow)(mat,row,ncols,(PetscInt **)cols,(PetscScalar **)vals);CHKERRQ(ierr);
+  if (ncols) *ncols = 0;
+  if (cols)  *cols = NULL;
+  if (vals)  *vals = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -4837,10 +4840,21 @@ PetscErrorCode  MatAssembled(Mat mat,PetscBool  *assembled)
 #undef __FUNCT__
 #define __FUNCT__ "MatViewFromOptions"
 /*
-    Processes command line options to determine if/how a matrix
-  is to be viewed. Called by MatAssemblyEnd() and MatLoad().
+  MatViewFromOptions - Processes command line options to determine if/how a matrix is to be viewed. Called from higher level packages.
+
+  Collective on Vec
+
+  Input Parameters:
++ mat   - the matrix
+. prefix - prefix to use for viewing, or NULL to use prefix of 'rnd'
+- optionname - option to activate viewing
+
+  Level: intermediate
+
+.keywords: Mat, view, options, database
+.seealso: MatViewFromOptions()
 */
-PetscErrorCode MatViewFromOptions(Mat mat,const char optionname[])
+PetscErrorCode MatViewFromOptions(Mat mat,const char prefix[],const char optionname[])
 {
   PetscErrorCode    ierr;
   PetscViewer       viewer;
@@ -4851,7 +4865,11 @@ PetscErrorCode MatViewFromOptions(Mat mat,const char optionname[])
   PetscFunctionBegin;
   if (incall) PetscFunctionReturn(0);
   incall = PETSC_TRUE;
-  ierr   = PetscOptionsGetViewer(PetscObjectComm((PetscObject)mat),((PetscObject)mat)->prefix,optionname,&viewer,&format,&flg);CHKERRQ(ierr);
+  if (prefix) {
+    ierr   = PetscOptionsGetViewer(PetscObjectComm((PetscObject)mat),prefix,optionname,&viewer,&format,&flg);CHKERRQ(ierr);
+  } else {
+    ierr   = PetscOptionsGetViewer(PetscObjectComm((PetscObject)mat),((PetscObject)mat)->prefix,optionname,&viewer,&format,&flg);CHKERRQ(ierr);
+  }
   if (flg) {
     ierr = PetscViewerPushFormat(viewer,format);CHKERRQ(ierr);
     ierr = MatView(mat,viewer);CHKERRQ(ierr);
@@ -6870,6 +6888,9 @@ PetscErrorCode MatRestoreRowIJ(Mat mat,PetscInt shift,PetscBool symmetric,PetscB
   else {
     *done = PETSC_TRUE;
     ierr  = (*mat->ops->restorerowij)(mat,shift,symmetric,inodecompressed,n,ia,ja,done);CHKERRQ(ierr);
+    if (n)  *n = 0;
+    if (ia) *ia = NULL;
+    if (ja) *ja = NULL;
   }
   PetscFunctionReturn(0);
 }
@@ -6917,6 +6938,9 @@ PetscErrorCode MatRestoreColumnIJ(Mat mat,PetscInt shift,PetscBool symmetric,Pet
   else {
     *done = PETSC_TRUE;
     ierr  = (*mat->ops->restorecolumnij)(mat,shift,symmetric,inodecompressed,n,ia,ja,done);CHKERRQ(ierr);
+    if (n)  *n = 0;
+    if (ia) *ia = NULL;
+    if (ja) *ja = NULL;
   }
   PetscFunctionReturn(0);
 }
@@ -8542,9 +8566,11 @@ PetscErrorCode  MatMatMult(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C)
   if (scall == MAT_REUSE_MATRIX) {
     PetscValidPointer(*C,5);
     PetscValidHeaderSpecific(*C,MAT_CLASSID,5);
+    ierr = PetscLogEventBegin(MAT_MatMult,A,B,0,0);CHKERRQ(ierr);
     ierr = PetscLogEventBegin(MAT_MatMultNumeric,A,B,0,0);CHKERRQ(ierr);
     ierr = (*(*C)->ops->matmultnumeric)(A,B,*C);CHKERRQ(ierr);
     ierr = PetscLogEventEnd(MAT_MatMultNumeric,A,B,0,0);CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(MAT_MatMult,A,B,0,0);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
   if (fill == PETSC_DEFAULT || fill == PETSC_DECIDE) fill = 2.0;
@@ -8747,6 +8773,7 @@ PetscErrorCode  MatMatTransposeMult(Mat A,Mat B,MatReuse scall,PetscReal fill,Ma
   if (!fB) SETERRQ1(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"MatMatTransposeMult not supported for B of type %s",((PetscObject)B)->type_name);
   if (fB!=fA) SETERRQ2(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_INCOMP,"MatMatTransposeMult requires A, %s, to be compatible with B, %s",((PetscObject)A)->type_name,((PetscObject)B)->type_name);
 
+  ierr = PetscLogEventBegin(MAT_MatTransposeMult,A,B,0,0);CHKERRQ(ierr);
   if (scall == MAT_INITIAL_MATRIX) {
     ierr = PetscLogEventBegin(MAT_MatTransposeMultSymbolic,A,B,0,0);CHKERRQ(ierr);
     ierr = (*A->ops->mattransposemultsymbolic)(A,B,fill,C);CHKERRQ(ierr);
@@ -8755,6 +8782,7 @@ PetscErrorCode  MatMatTransposeMult(Mat A,Mat B,MatReuse scall,PetscReal fill,Ma
   ierr = PetscLogEventBegin(MAT_MatTransposeMultNumeric,A,B,0,0);CHKERRQ(ierr);
   ierr = (*A->ops->mattransposemultnumeric)(A,B,*C);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_MatTransposeMultNumeric,A,B,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_MatTransposeMult,A,B,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -8994,9 +9022,9 @@ PetscErrorCode  MatGetRedundantMatrix(Mat mat,PetscInt nsubcomm,MPI_Comm subcomm
 .  subMat - 'parallel submatrices each spans a given subcomm
 
   Notes:
-  The submatrix partition across processors is dicated by 'subComm' a
+  The submatrix partition across processors is dictated by 'subComm' a
   communicator obtained by com_split(comm). The comm_split
-  is not restriced to be grouped with consequitive original ranks.
+  is not restriced to be grouped with consecutive original ranks.
 
   Due the comm_split() usage, the parallel layout of the submatrices
   map directly to the layout of the original matrix [wrt the local

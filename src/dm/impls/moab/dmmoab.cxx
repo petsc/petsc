@@ -286,8 +286,12 @@ PetscErrorCode DMMoabSetInterface(DM dm,moab::Interface *mbiface)
 @*/
 PetscErrorCode DMMoabGetInterface(DM dm,moab::Interface **mbiface)
 {
+  PetscErrorCode   ierr;
+  static PetscBool cite = PETSC_FALSE;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  ierr = PetscCitationsRegister("@techreport{tautges_moab:_2004,\n  type = {{SAND2004-1592}},\n  title = {{MOAB:} A Mesh-Oriented Database},  institution = {Sandia National Laboratories},\n  author = {Tautges, T. J. and Meyers, R. and Merkley, K. and Stimpson, C. and Ernst, C.},\n  year = {2004},  note = {Report}\n}\n",&cite);CHKERRQ(ierr);
   *mbiface = ((DM_Moab*)dm->data)->mbiface;
   PetscFunctionReturn(0);
 }

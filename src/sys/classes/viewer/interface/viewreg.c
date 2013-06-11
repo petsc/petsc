@@ -185,7 +185,7 @@ PetscErrorCode  PetscViewerCreate(MPI_Comm comm,PetscViewer *inviewer)
 
    Input Parameter:
 +  viewer      - the PetscViewer context
--  type        - for example, "ASCII"
+-  type        - for example, PETSCVIEWERASCII
 
    Options Database Command:
 .  -draw_type  <type> - Sets the type; use -help for a list
@@ -195,9 +195,9 @@ PetscErrorCode  PetscViewerCreate(MPI_Comm comm,PetscViewer *inviewer)
 
    Notes:
    See "include/petscviewer.h" for available methods (for instance,
-   PETSC_VIEWER_SOCKET)
+   PETSCVIEWERSOCKET)
 
-.seealso: PetscViewerCreate(), PetscViewerGetType(), PetscViewerType
+.seealso: PetscViewerCreate(), PetscViewerGetType(), PetscViewerType, PetscViewerSetFormat()
 @*/
 PetscErrorCode  PetscViewerSetType(PetscViewer viewer,PetscViewerType type)
 {
@@ -224,27 +224,6 @@ PetscErrorCode  PetscViewerSetType(PetscViewer viewer,PetscViewerType type)
 
   ierr = PetscObjectChangeTypeName((PetscObject)viewer,type);CHKERRQ(ierr);
   ierr = (*r)(viewer);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "PetscViewerRegisterDestroy"
-/*@C
-   PetscViewerRegisterDestroy - Frees the list of PetscViewer methods that were
-   registered by PetscViewerRegister().
-
-   Not Collective
-
-   Level: developer
-
-.seealso: PetscViewerRegister(), PetscViewerRegisterAll()
-@*/
-PetscErrorCode  PetscViewerRegisterDestroy(void)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscFunctionListDestroy(&PetscViewerList);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

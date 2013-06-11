@@ -27,7 +27,7 @@ MANSEC    = Viewer
 LIBBASE   = libpetscsys
 DIRS      =
 # LOCDIR is set to 0 because the string version is not passed properly down to MATLAB's mex program
-LOCDIR    = 0
+LOCDIR    = src/sys/classes/viewer/impls/socket/matlab/
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

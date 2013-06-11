@@ -119,9 +119,6 @@ PetscErrorCode PCSetFromOptions_GEO(PC pc)
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
 
-  /* call base class */
-  ierr = PCSetFromOptions_GAMG(pc);CHKERRQ(ierr);
-
   if (pc_gamg->verbose) {
     PetscPrintf(PetscObjectComm((PetscObject)pc),"[%d]%s done\n",0,__FUNCT__);
   }
@@ -354,7 +351,7 @@ static PetscErrorCode triangulateAndFormProl(IS  selected_2, /* list of selected
               for (tt=0; tt<3; tt++) alpha[tt] = (PetscScalar)fcoord[tt];
 
               /* SUBROUTINE DGESV(N, NRHS, A, LDA, IPIV, B, LDB, INFO) */
-              PetscStackCall("LAPACKgesv",LAPACKgesv_(&N, &NRHS, (PetscScalar*)AA, &LDA, IPIV, alpha, &LDB, &INFO));
+              PetscStackCallBLAS("LAPACKgesv",LAPACKgesv_(&N, &NRHS, (PetscScalar*)AA, &LDA, IPIV, alpha, &LDB, &INFO));
               {
                 PetscBool have=PETSC_TRUE;  PetscReal lowest=1.e10;
                 for (tt = 0, idx = 0; tt < 3; tt++) {
@@ -380,7 +377,7 @@ static PetscErrorCode triangulateAndFormProl(IS  selected_2, /* list of selected
                 }
                 for (tt=0; tt<3; tt++) alpha[tt] = fcoord[tt];
                 /* SUBROUTINE DGESV(N, NRHS, A, LDA, IPIV, B, LDB, INFO) */
-                PetscStackCall("LAPACKgesv",LAPACKgesv_(&N, &NRHS, (PetscScalar*)AA, &LDA, IPIV, alpha, &LDB, &INFO));
+                PetscStackCallBLAS("LAPACKgesv",LAPACKgesv_(&N, &NRHS, (PetscScalar*)AA, &LDA, IPIV, alpha, &LDB, &INFO));
                 {
                   PetscBool have=PETSC_TRUE;  PetscReal worst=0.0, v;
                   for (tt=0; tt<3 && have; tt++) {
@@ -405,7 +402,7 @@ static PetscErrorCode triangulateAndFormProl(IS  selected_2, /* list of selected
               }
               for (tt=0; tt<3; tt++) alpha[tt] = fcoord[tt];
               /* SUBROUTINE DGESV(N, NRHS, A, LDA, IPIV, B, LDB, INFO) */
-              PetscStackCall("LAPACKgesv",LAPACKgesv_(&N, &NRHS, (PetscScalar*)AA, &LDA, IPIV, alpha, &LDB, &INFO));
+              PetscStackCallBLAS("LAPACKgesv",LAPACKgesv_(&N, &NRHS, (PetscScalar*)AA, &LDA, IPIV, alpha, &LDB, &INFO));
             }
 
             /* put in row of P */
@@ -844,6 +841,17 @@ PetscErrorCode PCGAMGProlongator_GEO(PC pc,const Mat Amat,const Mat Gmat,PetscCo
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "PCDestroy_GAMG_GEO"
+static PetscErrorCode PCDestroy_GAMG_GEO(PC pc)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCSetCoordinates_C",NULL);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /* -------------------------------------------------------------------------- */
 /*
  PCCreateGAMG_GEO
@@ -860,18 +868,17 @@ PetscErrorCode  PCCreateGAMG_GEO(PC pc)
   PC_GAMG        *pc_gamg = (PC_GAMG*)mg->innerctx;
 
   PetscFunctionBegin;
-  pc->ops->setfromoptions = PCSetFromOptions_GEO;
-  /* pc->ops->destroy        = PCDestroy_GEO; */
+  pc_gamg->ops->setfromoptions = PCSetFromOptions_GEO;
+  pc_gamg->ops->destroy        = PCDestroy_GAMG_GEO;
   /* reset does not do anything; setup not virtual */
 
   /* set internal function pointers */
-  pc_gamg->graph       = PCGAMGgraph_GEO;
-  pc_gamg->coarsen     = PCGAMGcoarsen_GEO;
-  pc_gamg->prolongator = PCGAMGProlongator_GEO;
-  pc_gamg->optprol     = 0;
-  pc_gamg->formkktprol = 0;
-
-  pc_gamg->createdefaultdata = PCSetData_GEO;
+  pc_gamg->ops->graph       = PCGAMGgraph_GEO;
+  pc_gamg->ops->coarsen     = PCGAMGcoarsen_GEO;
+  pc_gamg->ops->prolongator = PCGAMGProlongator_GEO;
+  pc_gamg->ops->optprol     = 0;
+  pc_gamg->ops->formkktprol = 0;
+  pc_gamg->ops->createdefaultdata = PCSetData_GEO;
 
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCSetCoordinates_C",PCSetCoordinates_GEO);CHKERRQ(ierr);
   PetscFunctionReturn(0);

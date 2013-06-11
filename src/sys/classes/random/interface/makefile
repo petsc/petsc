@@ -9,7 +9,7 @@ SOURCEH	  =
 MANSEC	  = Sys
 LIBBASE	  = libpetscsys
 DIRS	  =
-LOCDIR	  = src/sys/random/interface/
+LOCDIR	  = src/sys/classes/random/interface/
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

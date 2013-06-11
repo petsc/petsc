@@ -27,7 +27,7 @@ int main(int argc,char **args)
   ierr = MatGetOwnershipRange(A,&Istart,&Iend);CHKERRQ(ierr);
 
   for (Ii=Istart; Ii<Iend; Ii++) {
-    v = (PetscScalar)Ii+1;
+    v = (PetscReal)Ii+1;
     ierr = MatSetValues(A,1,&Ii,1,&Ii,&v,INSERT_VALUES);CHKERRQ(ierr);
   }
   /* Make A sigular */

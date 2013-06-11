@@ -57,6 +57,9 @@ int main(int argc,char **args)
   printf("Dnnz %d %d\n",Dnnz,Onnz);
   ierr = MatSeqAIJSetPreallocation(Asp,Dnnz,NULL);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(Asp,Dnnz,NULL,Onnz,NULL);CHKERRQ(ierr);
+  /* The allocation above is approximate so we must set this option to be permissive.
+   * Real code should preallocate exactly. */
+  ierr = MatSetOption(Asp,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
 
   /* Check zero rows */
   ierr  = MatGetOwnershipRange(A,&rstart,&rend);CHKERRQ(ierr);

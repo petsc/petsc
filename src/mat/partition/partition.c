@@ -123,30 +123,6 @@ PetscErrorCode  MatPartitioningRegister(const char sname[],PetscErrorCode (*func
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatPartitioningRegisterDestroy"
-/*@C
-   MatPartitioningRegisterDestroy - Frees the list of partitioning routines.
-
-  Not Collective
-
-  Level: developer
-
-.keywords: matrix, register, destroy
-
-.seealso: MatPartitioningRegister(), MatPartitioningRegisterAll()
-@*/
-PetscErrorCode  MatPartitioningRegisterDestroy(void)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  MatPartitioningRegisterAllCalled = PETSC_FALSE;
-
-  ierr = PetscFunctionListDestroy(&MatPartitioningList);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "MatPartitioningGetType"
 /*@C
    MatPartitioningGetType - Gets the Partitioning method type and name (as a string)

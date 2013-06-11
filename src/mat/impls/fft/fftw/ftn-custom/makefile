@@ -8,7 +8,7 @@ SOURCEF  =
 SOURCEH  =
 DIRS     =
 LIBBASE  = libpetscmat
-LOCDIR   = src/mat/impls/fftw/ftn-custom/
+LOCDIR   = src/mat/impls/fft/fftw/ftn-custom/
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

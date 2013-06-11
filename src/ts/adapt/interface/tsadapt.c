@@ -86,10 +86,12 @@ PetscErrorCode  TSAdaptRegisterAll(void)
 @*/
 PetscErrorCode  TSAdaptFinalizePackage(void)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
+  ierr = PetscFunctionListDestroy(&TSAdaptList);CHKERRQ(ierr);
   TSAdaptPackageInitialized = PETSC_FALSE;
   TSAdaptRegisterAllCalled  = PETSC_FALSE;
-  TSAdaptList               = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -117,29 +119,6 @@ PetscErrorCode  TSAdaptInitializePackage(void)
   ierr = PetscRegisterFinalize(TSAdaptFinalizePackage);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-#undef __FUNCT__
-#define __FUNCT__ "TSAdaptRegisterDestroy"
-/*@C
-   TSAdaptRegisterDestroy - Frees the list of adaptivity schemes that were registered by TSAdaptRegister()
-
-   Not Collective
-
-   Level: advanced
-
-.keywords: TSAdapt, register, destroy
-.seealso: TSAdaptRegister(), TSAdaptRegisterAll()
-@*/
-PetscErrorCode  TSAdaptRegisterDestroy(void)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscFunctionListDestroy(&TSAdaptList);CHKERRQ(ierr);
-  TSAdaptRegisterAllCalled = PETSC_FALSE;
-  PetscFunctionReturn(0);
-}
-
 
 #undef __FUNCT__
 #define __FUNCT__ "TSAdaptSetType"
@@ -329,7 +308,7 @@ PetscErrorCode TSAdaptSetCheckStage(TSAdapt adapt,PetscErrorCode (*func)(TSAdapt
    Logically Collective
 
    Input Arguments:
-+  adapt - time step adaptivity context, usually gotten with TSGetTSAdapt()
++  adapt - time step adaptivity context, usually gotten with TSGetAdapt()
 .  hmin - minimum time step
 -  hmax - maximum time step
 
@@ -368,7 +347,7 @@ PetscErrorCode TSAdaptSetStepLimits(TSAdapt adapt,PetscReal hmin,PetscReal hmax)
    Notes:
    This function is automatically called by TSSetFromOptions()
 
-.keywords: TS, TSGetTSAdapt(), TSAdaptSetType()
+.keywords: TS, TSGetAdapt(), TSAdaptSetType()
 
 .seealso: TSGetType()
 @*/
@@ -428,7 +407,7 @@ PetscErrorCode TSAdaptCandidatesClear(TSAdapt adapt)
    Logically Collective
 
    Input Arguments:
-+  adapt - time step adaptivity context, obtained with TSGetTSAdapt() or TSAdaptCreate()
++  adapt - time step adaptivity context, obtained with TSGetAdapt() or TSAdaptCreate()
 .  name - name of the candidate scheme to add
 .  order - order of the candidate scheme
 .  stageorder - stage order of the candidate scheme
@@ -640,7 +619,7 @@ PetscErrorCode TSAdaptCheckStage(TSAdapt adapt,TS ts,PetscBool *accept)
   TSAdapt creation is handled by TS, so users should not need to call this function.
 
 .keywords: TSAdapt, create
-.seealso: TSGetTSAdapt(), TSAdaptSetType(), TSAdaptDestroy()
+.seealso: TSGetAdapt(), TSAdaptSetType(), TSAdaptDestroy()
 @*/
 PetscErrorCode  TSAdaptCreate(MPI_Comm comm,TSAdapt *inadapt)
 {

@@ -566,23 +566,26 @@ extern PetscErrorCode PCReset_MG(PC);
 #define __FUNCT__ "PCSetUp_ML"
 PetscErrorCode PCSetUp_ML(PC pc)
 {
-  PetscErrorCode ierr;
-  PetscMPIInt    size;
-  FineGridCtx    *PetscMLdata;
-  ML             *ml_object;
-  ML_Aggregate   *agg_object;
-  ML_Operator    *mlmat;
-  PetscInt       nlocal_allcols,Nlevels,mllevel,level,level1,m,fine_level,bs;
-  Mat            A,Aloc;
-  GridCtx        *gridctx;
-  PC_MG          *mg    = (PC_MG*)pc->data;
-  PC_ML          *pc_ml = (PC_ML*)mg->innerctx;
-  PetscBool      isSeq, isMPI;
-  KSP            smoother;
-  PC             subpc;
-  PetscInt       mesh_level, old_mesh_level;
+  PetscErrorCode   ierr;
+  PetscMPIInt      size;
+  FineGridCtx      *PetscMLdata;
+  ML               *ml_object;
+  ML_Aggregate     *agg_object;
+  ML_Operator      *mlmat;
+  PetscInt         nlocal_allcols,Nlevels,mllevel,level,level1,m,fine_level,bs;
+  Mat              A,Aloc;
+  GridCtx          *gridctx;
+  PC_MG            *mg    = (PC_MG*)pc->data;
+  PC_ML            *pc_ml = (PC_ML*)mg->innerctx;
+  PetscBool        isSeq, isMPI;
+  KSP              smoother;
+  PC               subpc;
+  PetscInt         mesh_level, old_mesh_level;
+  MatInfo          info;
+  static PetscBool cite = PETSC_FALSE;
 
   PetscFunctionBegin;
+  ierr = PetscCitationsRegister("@TechReport{ml_users_guide,\n  author = {M. Sala and J.J. Hu and R.S. Tuminaro},\n  title = {{ML}3.1 {S}moothed {A}ggregation {U}ser's {G}uide},\n  institution =  {Sandia National Laboratories},\n  number = {SAND2004-4821},\n  year = 2004\n}\n",&cite);CHKERRQ(ierr);
   A    = pc->pmat;
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRQ(ierr);
 
@@ -797,6 +800,9 @@ PetscErrorCode PCSetUp_ML(PC pc)
     ml_object->Amat[0].aux_data->max_level = 10;
     ml_object->Amat[0].num_PDEs            = bs;
   }
+
+  ierr = MatGetInfo(A,MAT_LOCAL,&info);CHKERRQ(ierr);
+  ml_object->Amat[0].N_nonzeros = (int) info.nz_used;
 
   if (pc_ml->dim) {
     PetscInt               i,dim = pc_ml->dim;
