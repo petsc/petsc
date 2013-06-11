@@ -52,9 +52,6 @@ class Configure(PETSc.package.NewPackage):
 
     if (self.framework.argDB['download-cmake']):
       PETSc.package.NewPackage.configure(self)
-    else:
-      self.getExecutable(self.framework.argDB['with-cmake'], getFullPath = 1,resultName='cmake')
-      if hasattr(self, 'cmake'):
-        self.addMakeMacro('CMAKE ', self.cmake)
-        self.found = 1
+    elif self.getExecutable(self.framework.argDB['with-cmake'], getFullPath = 1,resultName='cmake'):
+      self.found = 1
     return
