@@ -8,6 +8,7 @@ typedef struct  {
   Mat        A;
   VecScatter gtol;
   VecScatter ltog;
+  VecScatter ltol;
 } DM_Shell;
 
 #undef __FUNCT__
