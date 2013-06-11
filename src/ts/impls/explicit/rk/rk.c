@@ -55,7 +55,7 @@ typedef struct {
 .seealso: TSRK
 M*/
 /*MC
-     TSRK2 - Second order RK scheme.
+     TSRK2A - Second order RK scheme.
 
      This method has two stages.
 
@@ -67,6 +67,15 @@ M*/
      TSRK3 - Third order RK scheme.
 
      This method has three stages.
+
+     Level: advanced
+
+.seealso: TSRK
+M*/
+/*MC
+     TSRK3BS - Third order RK scheme of Bogacki-Shampine with 2nd order embedded method.
+
+     This method has four stages.
 
      Level: advanced
 
@@ -85,6 +94,15 @@ M*/
      TSRK5F - Fifth order Fehlberg RK scheme with 4th order embedded method.
 
      This method has six stages.
+
+     Level: advanced
+
+.seealso: TSRK
+M*/
+/*MC
+     TSRK5DP - Fifth order Dormand-Prince RK scheme with 4th order embedded method.
+
+     This method has seven stages.
 
      Level: advanced
 
