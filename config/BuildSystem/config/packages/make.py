@@ -11,11 +11,14 @@ class Configure(config.package.Package):
     self.worksonWindows    = 1
     self.downloadonWindows = 1
     self.useddirectly      = 0
+
+    self.flags             = ''
+    self.haveGNUMake       = 0
     return
 
   def setupHelp(self, help):
     import nargs
-    help.addArgument('Make', '-with-make=<prog>',                            nargs.Arg(None, 'make', 'Specify GNU make'))
+    help.addArgument('Make', '-with-make=<prog>',                            nargs.Arg(None, 'gmake', 'Specify GNU make'))
     help.addArgument('Make', '-with-make-np=<np>',                           nargs.ArgInt(None, None, min=1, help='Default number of threads to use for parallel builds'))
     help.addArgument('Make', '-download-make=<no,yes,filename>',             nargs.ArgDownload(None, 0, 'Download and install GNU make'))
     help.addArgument('Make', '-download-make-cc=<prog>',                     nargs.Arg(None, None, 'C compiler for GNU make configure'))
@@ -42,7 +45,7 @@ class Configure(config.package.Package):
         raise RuntimeError('Error running configure on GNU make (install manually): '+str(e))
       try:
         self.logPrintBox('Compiling GNU Make; this may take several minutes')
-        if self.getExecutable('make', getFullPath = 1,resultName='make'):
+        if self.getExecutable('make', getFullPath = 1,resultName='make',setMakeMacro = 0):
           output,err,ret  = config.package.Package.executeShellCommand('cd '+self.packageDir+' && '+self.make+' &&  '+self.make+' install && '+self.make+' clean', timeout=2500, log = self.framework.log)
         else:
           output,err,ret  = config.package.Package.executeShellCommand('cd '+self.packageDir+' && ./build.sh && ./make install && ./make clean', timeout=2500, log = self.framework.log)
@@ -50,64 +53,71 @@ class Configure(config.package.Package):
         raise RuntimeError('Error running make; make install on GNU Make (install manually): '+str(e))
       self.postInstall(output+err,'make.args')
     self.binDir = os.path.join(self.installDir, 'bin')
-    self.gmake = os.path.join(self.binDir, 'gmake')
-    self.addMakeMacro('OMAKE',self.gmake)
+    self.make = os.path.join(self.binDir, 'gmake')
+    self.addMakeMacro('MAKE',self.make)
     return self.installDir
 
   def configureMake(self):
-    '''Check various things about make'''
-    self.getExecutable(self.framework.argDB['with-make'], getFullPath = 1,resultName = 'make')
-
-    if not hasattr(self,'make'):
+    '''Check for user specified make - or gmake, make'''
+    if self.framework.clArgDB.has_key('with-make'):
+      if not self.getExecutable(self.framework.argDB['with-make'],getFullPath = 1,resultName = 'make'):
+        raise RuntimeError('Error! User provided make not found :'+self.framework.argDB['with-make'])
+      self.found = 1
+      return
+    if not self.getExecutable('gmake', getFullPath = 1,resultName = 'make') and not self.getExecutable('make', getFullPath = 1,resultName = 'make'):
       import os
       if os.path.exists('/usr/bin/cygcheck.exe') and not os.path.exists('/usr/bin/make'):
         raise RuntimeError('''\
 *** Incomplete cygwin install detected . /usr/bin/make is missing. **************
 *** Please rerun cygwin-setup and select module "make" for install.**************''')
       else:
-        raise RuntimeError('Could not locate the make utility on your system, make sure\n it is in your path or use --with-make=/fullpathnameofmake\n and run ./configure again')
-    # Check for GNU make
-    haveGNUMake = 0
-    self.getExecutable('strings', getFullPath = 1)
+        raise RuntimeError('Could not locate the make utility on your system, try --download-make')
+    self.found = 1
+    return
+
+  def configureCheckGNUMake(self):
+    '''Check for GNU make'''
+    self.getExecutable('strings', getFullPath = 1,setMakeMacro = 0)
     if hasattr(self, 'strings'):
       try:
         (output, error, status) = config.base.Configure.executeShellCommand(self.strings+' '+self.make, log = self.framework.log)
         if not status and output.find('GNU Make') >= 0:
-          haveGNUMake = 1
+          self.haveGNUMake = 1
       except RuntimeError, e:
         self.framework.log.write('Make check failed: '+str(e)+'\n')
-      if not haveGNUMake:
+      if not self.haveGNUMake:
         try:
           (output, error, status) = config.base.Configure.executeShellCommand(self.strings+' '+self.make+'.exe', log = self.framework.log)
           if not status and output.find('GNU Make') >= 0:
-            haveGNUMake = 1
+            self.haveGNUMake = 1
         except RuntimeError, e:
           self.framework.log.write('Make check failed: '+str(e)+'\n')
     # mac has fat binaries where 'string' check fails
-    if not haveGNUMake:
+    if not self.haveGNUMake:
       try:
         (output, error, status) = config.base.Configure.executeShellCommand(self.make+' -v dummy-foobar', log = self.framework.log)
         if not status and output.find('GNU Make') >= 0:
-          haveGNUMake = 1
+          self.haveGNUMake = 1
       except RuntimeError, e:
         self.framework.log.write('Make check failed: '+str(e)+'\n')
 
     # Setup make flags
-    self.flags = ''
-    if haveGNUMake:
+    if self.haveGNUMake:
       self.flags += ' --no-print-directory'
-    self.addMakeMacro('OMAKE ', self.make+' '+self.flags)
+      self.addMakeMacro('PETSC_BUILD_USING_GNUMAKE',1)
 
     # Check to see if make allows rules which look inside archives
-    if haveGNUMake:
+    if self.haveGNUMake:
       self.addMakeRule('libc','${LIBNAME}(${OBJSC})')
       self.addMakeRule('libcu','${LIBNAME}(${OBJSCU})')
     else:
       self.addMakeRule('libc','${OBJSC}','-${AR} ${AR_FLAGS} ${LIBNAME} ${OBJSC}')
       self.addMakeRule('libcu','${OBJSCU}','-${AR} ${AR_FLAGS} ${LIBNAME} ${OBJSCU}')
     self.addMakeRule('libf','${OBJSF}','-${AR} ${AR_FLAGS} ${LIBNAME} ${OBJSF}')
+    return
 
-    # check no of cores on the build machine [perhaps to do make '-j ncores']
+  def configureMakeNP(self):
+    '''check no of cores on the build machine [perhaps to do make '-j ncores']'''
     make_np = self.framework.argDB.get('with-make-np')
     if make_np is not None:
       self.framework.logPrint('using user-provided make_np = %d' % make_np)
@@ -139,19 +149,19 @@ class Configure(config.package.Package):
         pass
     self.make_np = make_np
     self.addMakeMacro('MAKE_NP',str(make_np))
+    self.make_jnp = self.make + ' -j ' + str(self.make_np)
     return
 
   def configure(self):
-    '''Determine whether the GNU make exist or not'''
+    '''Determine whether (GNU) make exist or not'''
 
-    if not self.framework.argDB['with-make'] == '0':
-      print 'configuring make'
-      self.executeTest(self.configureMake)
+    if self.framework.argDB['with-make'] == '0':
+      return
     if (self.framework.argDB['download-make']):
       config.package.Package.configure(self)
     else:
-      self.getExecutable('gmake', getFullPath = 1,resultName='gmake')
-      if hasattr(self, 'gmake'):
-        self.addMakeMacro('OMAKE ', self.gmake)
-        self.found = 1
+      self.executeTest(self.configureMake)
+    self.executeTest(self.configureCheckGNUMake)
+    self.executeTest(self.configureMakeNP)
+    self.addMakeMacro('OMAKE ', self.make+' '+self.flags)
     return
