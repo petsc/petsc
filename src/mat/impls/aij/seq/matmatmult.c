@@ -831,14 +831,14 @@ PetscErrorCode MatDestroy_SeqAIJ_MatMatMultTrans(Mat A)
 {
   PetscErrorCode      ierr;
   Mat_SeqAIJ          *a=(Mat_SeqAIJ*)A->data; 
-  Mat_MatMatTransMult *multtrans=a->art; 
+  Mat_MatMatTransMult *abt=a->abt; 
 
   PetscFunctionBegin;
-  ierr = (multtrans->destroy)(A);CHKERRQ(ierr);
-  ierr = MatTransposeColoringDestroy(&multtrans->matcoloring);CHKERRQ(ierr);
-  ierr = MatDestroy(&multtrans->Bt_den);CHKERRQ(ierr);
-  ierr = MatDestroy(&multtrans->ABt_den);CHKERRQ(ierr);
-  ierr = PetscFree(multtrans);CHKERRQ(ierr);
+  ierr = (abt->destroy)(A);CHKERRQ(ierr);
+  ierr = MatTransposeColoringDestroy(&abt->matcoloring);CHKERRQ(ierr);
+  ierr = MatDestroy(&abt->Bt_den);CHKERRQ(ierr);
+  ierr = MatDestroy(&abt->ABt_den);CHKERRQ(ierr);
+  ierr = PetscFree(abt);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -849,7 +849,7 @@ PetscErrorCode MatMatTransposeMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal f
   PetscErrorCode      ierr;
   Mat                 Bt;
   PetscInt            *bti,*btj;
-  Mat_MatMatTransMult *multtrans;
+  Mat_MatMatTransMult *abt;
   Mat_SeqAIJ          *c; 
 
   PetscFunctionBegin;
@@ -864,16 +864,16 @@ PetscErrorCode MatMatTransposeMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal f
   ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ(A,Bt,fill,C);CHKERRQ(ierr);
 
   /* create a supporting struct for reuse intermidiate dense matrices with matcoloring */
-  ierr = PetscNew(Mat_MatMatTransMult,&multtrans);CHKERRQ(ierr);
+  ierr   = PetscNew(Mat_MatMatTransMult,&abt);CHKERRQ(ierr);
   c      = (Mat_SeqAIJ*)(*C)->data;
-  c->art = multtrans;
+  c->abt = abt;
 
-  multtrans->usecoloring = PETSC_FALSE;
-  multtrans->destroy     = (*C)->ops->destroy;
+  abt->usecoloring = PETSC_FALSE;
+  abt->destroy     = (*C)->ops->destroy;
   (*C)->ops->destroy     = MatDestroy_SeqAIJ_MatMatMultTrans;
 
-  ierr = PetscOptionsGetBool(NULL,"-matmattransmult_color",&multtrans->usecoloring,NULL);CHKERRQ(ierr);
-  if (multtrans->usecoloring) {
+  ierr = PetscOptionsGetBool(NULL,"-matmattransmult_color",&abt->usecoloring,NULL);CHKERRQ(ierr);
+  if (abt->usecoloring) {
     /* Create MatTransposeColoring from symbolic C=A*B^T */
     MatTransposeColoring matcoloring;
     ISColoring           iscoloring;
@@ -885,7 +885,7 @@ PetscErrorCode MatMatTransposeMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal f
     ierr = MatGetColoring(*C,MATCOLORINGLF,&iscoloring);CHKERRQ(ierr);
     ierr = MatTransposeColoringCreate(*C,iscoloring,&matcoloring);CHKERRQ(ierr);
 
-    multtrans->matcoloring = matcoloring;
+    abt->matcoloring = matcoloring;
 
     ierr = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);
 
@@ -896,7 +896,7 @@ PetscErrorCode MatMatTransposeMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal f
     ierr = MatSeqDenseSetPreallocation(Bt_dense,NULL);CHKERRQ(ierr);
 
     Bt_dense->assembled = PETSC_TRUE;
-    multtrans->Bt_den   = Bt_dense;
+    abt->Bt_den   = Bt_dense;
 
     ierr = MatCreate(PETSC_COMM_SELF,&C_dense);CHKERRQ(ierr);
     ierr = MatSetSizes(C_dense,A->rmap->n,matcoloring->ncolors,A->rmap->n,matcoloring->ncolors);CHKERRQ(ierr);
@@ -904,7 +904,7 @@ PetscErrorCode MatMatTransposeMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal f
     ierr = MatSeqDenseSetPreallocation(C_dense,NULL);CHKERRQ(ierr);
 
     Bt_dense->assembled = PETSC_TRUE;
-    multtrans->ABt_den  = C_dense;
+    abt->ABt_den  = C_dense;
 
 #if defined(PETSC_USE_INFO)
     {
@@ -929,7 +929,7 @@ PetscErrorCode MatMatTransposeMultNumeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
   PetscInt            cm   =C->rmap->n,*ci=c->i,*cj=c->j,i,j,cnzi,*ccol;
   PetscLogDouble      flops=0.0;
   MatScalar           *aa  =a->a,*aval,*ba=b->a,*bval,*ca,*cval;
-  Mat_MatMatTransMult *multtrans = c->art;
+  Mat_MatMatTransMult *abt = c->abt;
   
   PetscFunctionBegin;
   /* clear old values in C */
@@ -942,12 +942,12 @@ PetscErrorCode MatMatTransposeMultNumeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
   }
   ierr = PetscMemzero(ca,ci[cm]*sizeof(MatScalar));CHKERRQ(ierr);
 
-  if (multtrans->usecoloring) {
-    MatTransposeColoring matcoloring = multtrans->matcoloring;
-    Mat                  Bt_dense,C_dense = multtrans->ABt_den;
+  if (abt->usecoloring) {
+    MatTransposeColoring matcoloring = abt->matcoloring;
+    Mat                  Bt_dense,C_dense = abt->ABt_den;
 
     /* Get Bt_dense by Apply MatTransposeColoring to B */
-    Bt_dense = multtrans->Bt_den;
+    Bt_dense = abt->Bt_den;
     ierr = MatTransColoringApplySpToDen(matcoloring,B,Bt_dense);CHKERRQ(ierr);
 
     /* C_dense = A*Bt_dense */
