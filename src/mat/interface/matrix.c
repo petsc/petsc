@@ -8279,9 +8279,11 @@ PetscErrorCode  MatPtAP(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C)
       }
       ierr = MatDestroy(&Pt);CHKERRQ(ierr);
     } else {
+      ierr = PetscLogEventBegin(MAT_PtAP,A,P,0,0);CHKERRQ(ierr);
       ierr = PetscLogEventBegin(MAT_PtAPNumeric,A,P,0,0);CHKERRQ(ierr);
       ierr = (*(*C)->ops->ptapnumeric)(A,P,*C);CHKERRQ(ierr);
       ierr = PetscLogEventEnd(MAT_PtAPNumeric,A,P,0,0);CHKERRQ(ierr);
+      ierr = PetscLogEventEnd(MAT_PtAP,A,P,0,0);CHKERRQ(ierr);
     }
     PetscFunctionReturn(0);
   }
@@ -9332,12 +9334,14 @@ PetscErrorCode  MatTransposeColoringDestroy(MatTransposeColoring *c)
   if (!matcolor) PetscFunctionReturn(0);
   if (--((PetscObject)matcolor)->refct > 0) {matcolor = 0; PetscFunctionReturn(0);}
 
-  ierr = PetscFree(matcolor->ncolumns);CHKERRQ(ierr);
-  ierr = PetscFree(matcolor->nrows);CHKERRQ(ierr);
-  ierr = PetscFree(matcolor->colorforrow);CHKERRQ(ierr);
-  ierr = PetscFree2(matcolor->rows,matcolor->columnsforspidx);CHKERRQ(ierr);
+  ierr = PetscFree3(matcolor->ncolumns,matcolor->nrows,matcolor->colorforrow);CHKERRQ(ierr);
+  ierr = PetscFree(matcolor->rows);CHKERRQ(ierr);
+  ierr = PetscFree(matcolor->den2sp);CHKERRQ(ierr);
   ierr = PetscFree(matcolor->colorforcol);CHKERRQ(ierr);
   ierr = PetscFree(matcolor->columns);CHKERRQ(ierr);
+  if (matcolor->brows>0) {
+    ierr = PetscFree(matcolor->lstart);CHKERRQ(ierr);
+  }
   ierr = PetscHeaderDestroy(c);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

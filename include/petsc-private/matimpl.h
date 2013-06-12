@@ -480,9 +480,11 @@ struct  _p_MatTransposeColoring{
   ISColoringType ctype;            /* IS_COLORING_GLOBAL or IS_COLORING_GHOSTED */
 
   PetscInt       *colorforrow,*colorforcol;  /* pointer to rows and columns */
-  PetscInt       *rows;                  /* lists the local rows for each color (using the local row numbering) */
-  PetscInt       *columnsforspidx;       /* maps (row,color) in the dense matrix to index of sparse matrix arrays a->j and a->a */
-  PetscInt       *columns;               /* lists the local columns of each color (using global column numbering) */
+  PetscInt       *rows;                      /* lists the local rows for each color (using the local row numbering) */
+  PetscInt       *den2sp;                    /* maps (row,color) in the dense matrix to index of sparse matrix array a->a */
+  PetscInt       *columns;                   /* lists the local columns of each color (using global column numbering) */
+  PetscInt       brows;                      /* number of rows for efficient implementation of MatTransColoringApplyDenToSp() */
+  PetscInt       *lstart;                    /* array used for loop over row blocks of Csparse */
 };
 
 /*
