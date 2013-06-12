@@ -106,6 +106,7 @@ int main(int argc,char **argv)
 
   /* Test C = RARt */
   ierr = MatRARt(A,R,MAT_INITIAL_MATRIX,2.0,&C);CHKERRQ(ierr);
+  ierr = MatRARt(A,R,MAT_REUSE_MATRIX,2.0,&C);CHKERRQ(ierr);
   ierr = MatEqual(C,PtAP,&equal);CHKERRQ(ierr);
   if (!equal) {
     ierr = PetscPrintf(PETSC_COMM_SELF,"Error: PtAP != RARt");CHKERRQ(ierr);
