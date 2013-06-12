@@ -62,6 +62,7 @@ PetscErrorCode MatViennaCLCopyToGPU(Mat A)
 
           viennaclstruct->mat->set(row_buffer.get(), col_buffer.get(), a->a, A->rmap->n, A->cmap->n, a->nz);
         }
+        ViennaCLWaitForGPU();
       } catch(std::exception const & ex) {
         SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex.what());
       }
@@ -131,6 +132,7 @@ PetscErrorCode MatViennaCLCopyFromGPU(Mat A, const ViennaCLAIJMatrix *Agpu)
         // copy nonzero entries directly to destination (no conversion required)
         viennacl::backend::memory_read(Agpu->handle(), 0, sizeof(PetscScalar)*Agpu->nnz(), a->a);
 
+        ViennaCLWaitForGPU();
         /* TODO: Once a->diag is moved out of MatAssemblyEnd(), invalidate it here. */
       }
     } catch(std::exception const & ex) {
@@ -188,6 +190,7 @@ PetscErrorCode MatMult_SeqAIJViennaCL(Mat A,Vec xx,Vec yy)
     ierr = VecViennaCLGetArrayWrite(yy,&ygpu);CHKERRQ(ierr);
     try {
       *ygpu = viennacl::linalg::prod(*viennaclstruct->mat,*xgpu);
+      ViennaCLWaitForGPU();
     } catch (std::exception const & ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ViennaCL error: %s", ex.what());
     }
@@ -223,9 +226,11 @@ PetscErrorCode MatMultAdd_SeqAIJViennaCL(Mat A,Vec xx,Vec yy,Vec zz)
         if (zz == xx || zz == yy) { //temporary required
           ViennaCLVector temp = viennacl::linalg::prod(*viennaclstruct->mat, *xgpu);
           *zgpu = *ygpu + temp;
+          ViennaCLWaitForGPU();
         } else {
           *zgpu = viennacl::linalg::prod(*viennaclstruct->mat, *xgpu);
           *zgpu += *ygpu;
+          ViennaCLWaitForGPU();
         }
       }
 
