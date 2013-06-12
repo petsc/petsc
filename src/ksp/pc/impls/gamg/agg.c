@@ -985,15 +985,9 @@ PetscErrorCode PCGAMGCoarsen_AGG(PC a_pc,Mat *a_Gmat1,PetscCoarsenData **agg_lis
   nloc = n/bs;
 
   if (pc_gamg_agg->square_graph) {
-    PetscBool       rart=PETSC_FALSE;
-    
     if (verbose > 1) PetscPrintf(comm,"[%d]%s square graph\n",rank,__FUNCT__);
-    ierr = PetscOptionsGetBool(NULL,"-Guse_rart",&rart,NULL);CHKERRQ(ierr);
-    if (rart) { /* Gmat2 = Gmat1*Gmat1^T - via inner products */
-      ierr = MatMatTransposeMult(Gmat1, Gmat1, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &Gmat2);CHKERRQ(ierr);
-    } else {    /* Gmat2 = Gmat1^T*Gmat1 - via outer products */
-      ierr = MatTransposeMatMult(Gmat1, Gmat1, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &Gmat2);CHKERRQ(ierr); 
-    }
+    /* ierr = MatMatTransposeMult(Gmat1, Gmat1, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &Gmat2); */
+    ierr = MatTransposeMatMult(Gmat1, Gmat1, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &Gmat2);CHKERRQ(ierr);
     if (verbose > 2) {
       ierr = PetscPrintf(comm,"[%d]%s square graph done\n",rank,__FUNCT__);CHKERRQ(ierr);
       /* check for symetry */

@@ -141,23 +141,13 @@ static PetscErrorCode createLevel(const PC pc,const Mat Amat_fine,const PetscInt
   PetscMPIInt     rank,size,new_size,nactive=*a_nactive_proc;
   PetscInt        ncrs_eq,ncrs_prim,f_bs;
 
-  PetscBool       rart=PETSC_FALSE;
-
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)Amat_fine,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
   ierr = MatGetBlockSize(Amat_fine, &f_bs);CHKERRQ(ierr);
   /* RAP */
-  ierr = PetscOptionsGetBool(NULL,"-use_rart",&rart,NULL);CHKERRQ(ierr);
-  if (!rart) {
-    ierr = MatPtAP(Amat_fine, Pold, MAT_INITIAL_MATRIX, 2.0, &Cmat);CHKERRQ(ierr);
-  } else { /* Use RARt */
-    Mat R;
-    ierr = MatTranspose(Pold,MAT_INITIAL_MATRIX,&R);CHKERRQ(ierr);
-    ierr = MatRARt(Amat_fine, R, MAT_INITIAL_MATRIX, 2.0, &Cmat);CHKERRQ(ierr);
-    ierr = MatDestroy(&R);CHKERRQ(ierr);
-  }
+  ierr = MatPtAP(Amat_fine, Pold, MAT_INITIAL_MATRIX, 2.0, &Cmat);CHKERRQ(ierr);
 
   /* set 'ncrs_prim' (nodes), 'ncrs_eq' (equations)*/
   ncrs_prim = pc_gamg->data_sz/pc_gamg->data_cell_cols/pc_gamg->data_cell_rows;
@@ -551,13 +541,11 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
   PetscLogDouble nnz0=0.,nnztot=0.;
   MatInfo        info;
   PetscBool      stokes = PETSC_FALSE, redo_mesh_setup = (PetscBool)(!pc_gamg->reuse_prol);
-  PetscBool      rart=PETSC_FALSE;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)pc,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,"-use_rart",&rart,NULL);CHKERRQ(ierr);
 
   if (pc_gamg->verbose>2) PetscPrintf(comm,"[%d]%s pc_gamg->setup_count=%d pc->setupcalled=%d\n",rank,__FUNCT__,pc_gamg->setup_count,pc->setupcalled);
 
@@ -581,27 +569,13 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
         for (level=pc_gamg->Nlevels-2; level>=0; level--) {
           /* the first time through the matrix structure has changed from repartitioning */
           if (pc_gamg->setup_count==2 && (pc_gamg->repart || level==0)) {
-            if (!rart) {
-              ierr = MatPtAP(dB,mglevels[level+1]->interpolate,MAT_INITIAL_MATRIX,1.0,&B);CHKERRQ(ierr);
-            } else { /* Use RARt */
-              Mat R;
-              ierr = MatTranspose(mglevels[level+1]->interpolate,MAT_INITIAL_MATRIX,&R);CHKERRQ(ierr);
-              ierr = MatRARt(dB, R, MAT_INITIAL_MATRIX, 2.0, &B);CHKERRQ(ierr);
-              ierr = MatDestroy(&R);CHKERRQ(ierr);
-            }
+            ierr = MatPtAP(dB,mglevels[level+1]->interpolate,MAT_INITIAL_MATRIX,1.0,&B);CHKERRQ(ierr);
             ierr = MatDestroy(&mglevels[level]->A);CHKERRQ(ierr);
 
             mglevels[level]->A = B;
           } else {
             ierr = KSPGetOperators(mglevels[level]->smoothd,NULL,&B,NULL);CHKERRQ(ierr);
-            if (!rart) {
-              ierr = MatPtAP(dB,mglevels[level+1]->interpolate,MAT_REUSE_MATRIX,1.0,&B);CHKERRQ(ierr);
-             } else { /* Use RARt */
-              Mat R;
-              ierr = MatTranspose(mglevels[level+1]->interpolate,MAT_INITIAL_MATRIX,&R);CHKERRQ(ierr);
-              ierr = MatRARt(dB, R, MAT_REUSE_MATRIX, 1.0, &B);CHKERRQ(ierr);
-              ierr = MatDestroy(&R);CHKERRQ(ierr);
-            } 
+            ierr = MatPtAP(dB,mglevels[level+1]->interpolate,MAT_REUSE_MATRIX,1.0,&B);CHKERRQ(ierr);
           }
           ierr = KSPSetOperators(mglevels[level]->smoothd,B,B,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
           dB   = B;
