@@ -933,7 +933,7 @@ PetscErrorCode MatMatTransposeMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal f
 #if defined(PETSC_USE_INFO)
     {
       Mat_SeqAIJ *c = (Mat_SeqAIJ*)(*C)->data;
-      ierr = PetscInfo7(*C,"B: %D %D, Bt_dense: %D,%D; Cnz %D / (cm*ncolors %D) = %g\n",B->rmap->n,B->cmap->n,A->cmap->n,matcoloring->ncolors,c->nz,A->rmap->n*matcoloring->ncolors,(PetscReal)(c->nz)/(A->rmap->n*matcoloring->ncolors));CHKERRQ(ierr);
+      ierr = PetscInfo7(*C,"Use coloring of C=A*B^T; B^T: %D %D, Bt_dense: %D,%D; Cnz %D / (cm*ncolors %D) = %g\n",B->cmap->n,B->rmap->n,Bt_dense->rmap->n,Bt_dense->cmap->n,c->nz,A->rmap->n*matcoloring->ncolors,(PetscReal)(c->nz)/(A->rmap->n*matcoloring->ncolors));CHKERRQ(ierr);
     }
 #endif
   }
@@ -943,7 +943,6 @@ PetscErrorCode MatMatTransposeMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal f
   PetscFunctionReturn(0);
 }
 
-/* #define USE_ARRAY - for sparse dot product. Slower than !USE_ARRAY */
 #undef __FUNCT__
 #define __FUNCT__ "MatMatTransposeMultNumeric_SeqAIJ_SeqAIJ"
 PetscErrorCode MatMatTransposeMultNumeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
@@ -956,9 +955,6 @@ PetscErrorCode MatMatTransposeMultNumeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
   MatScalar           *aa  =a->a,*aval,*ba=b->a,*bval,*ca,*cval;
   Mat_MatMatTransMult *multtrans;
   PetscContainer      container;
-#if defined(USE_ARRAY)
-  MatScalar *spdot;
-#endif
 
   PetscFunctionBegin;
   /* clear old values in C */
@@ -976,40 +972,19 @@ PetscErrorCode MatMatTransposeMultNumeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
   ierr = PetscContainerGetPointer(container,(void**)&multtrans);CHKERRQ(ierr);
   if (multtrans->usecoloring) {
     MatTransposeColoring matcoloring = multtrans->matcoloring;
-    Mat                  Bt_dense;
-    PetscInt             m,n;
-    Mat                  C_dense = multtrans->ABt_den;
-    PetscLogDouble       t0,t1,t2,t3,Bt_den,C_den,C_sp;
+    Mat                  Bt_dense,C_dense = multtrans->ABt_den;
 
     /* Get Bt_dense by Apply MatTransposeColoring to B */
-    ierr = PetscTime(&t0);CHKERRQ(ierr);
     Bt_dense = multtrans->Bt_den;
     ierr = MatTransColoringApplySpToDen(matcoloring,B,Bt_dense);CHKERRQ(ierr);
-    ierr = PetscTime(&t1);CHKERRQ(ierr);
-    Bt_den = t1 - t0;
 
     /* C_dense = A*Bt_dense */
     ierr = MatMatMultNumeric_SeqAIJ_SeqDense(A,Bt_dense,C_dense);CHKERRQ(ierr);
-    ierr = PetscTime(&t2);CHKERRQ(ierr);
-    C_den = t2 - t1;
-
+   
     /* Recover C from C_dense */
     ierr = MatTransColoringApplyDenToSp(matcoloring,C_dense,C);CHKERRQ(ierr);
-    ierr = PetscTime(&t3);CHKERRQ(ierr);
-    C_sp = t3 - t2;
-#if defined(PETSC_USE_INFO)
-    ierr = PetscInfo4(C,"Coloring A*B^T = Bt_den %g + C_den %g + C_sp %g = %g;\n",Bt_den,C_den,C_sp,Bt_den+C_den+C_sp);CHKERRQ(ierr);
-    ierr     = MatGetLocalSize(Bt_dense,&m,&n);CHKERRQ(ierr);
-    ierr = PetscInfo4(C,"Bt_den: %d x %d, B: %d x %d\n",m,n,m,C->cmap->n);CHKERRQ(ierr);
-#endif
     PetscFunctionReturn(0);
   }
-
-#if defined(USE_ARRAY)
-  /* allocate an array for implementing sparse inner-product */
-  ierr = PetscMalloc((A->cmap->n+1)*sizeof(MatScalar),&spdot);CHKERRQ(ierr);
-  ierr = PetscMemzero(spdot,(A->cmap->n+1)*sizeof(MatScalar));CHKERRQ(ierr);
-#endif
 
   for (i=0; i<cm; i++) {
     anzi = ai[i+1] - ai[i];
@@ -1025,16 +1000,6 @@ PetscErrorCode MatMatTransposeMultNumeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
       bval = ba + bi[brow];
 
       /* perform sparse inner-product c(i,j)=A[i,:]*B[j,:]^T */
-#if defined(USE_ARRAY)
-      /* put ba to spdot array */
-      for (nextb=0; nextb<bnzj; nextb++) spdot[bcol[nextb]] = bval[nextb];
-      /* c(i,j)=A[i,:]*B[j,:]^T */
-      for (nexta=0; nexta<anzi; nexta++) {
-        cval[j] += spdot[acol[nexta]]*aval[nexta];
-      }
-      /* zero spdot array */
-      for (nextb=0; nextb<bnzj; nextb++) spdot[bcol[nextb]] = 0.0;
-#else
       nexta = 0; nextb = 0;
       while (nexta<anzi && nextb<bnzj) {
         while (nexta < anzi && acol[nexta] < bcol[nextb]) nexta++;
@@ -1047,15 +1012,11 @@ PetscErrorCode MatMatTransposeMultNumeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
           flops += 2;
         }
       }
-#endif
     }
   }
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = PetscLogFlops(flops);CHKERRQ(ierr);
-#if defined(USE_ARRAY)
-  ierr = PetscFree(spdot);
-#endif
   PetscFunctionReturn(0);
 }
 
