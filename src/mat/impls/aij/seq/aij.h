@@ -114,6 +114,7 @@ typedef struct {
   Mat_PtAP          *ptap;               /* used by MatPtAP() */
   Mat_MatMatMatMult *matmatmatmult;      /* used by MatMatMatMult() */
   Mat_RARt          *rart;               /* used by MatRARt() */
+  Mat_MatMatTransMult *art;              /* used by MatMatTransposeMult() */
 } Mat_SeqAIJ;
 
 /*
