@@ -78,6 +78,8 @@ Notes:
 
 #include <petscts.h>
 
+const PetscReal mu = 1.0e6;
+
 typedef struct _n_User *User;
 struct _n_User {
   PetscBool imex;
@@ -98,7 +100,7 @@ static PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec X,Vec F,void *ctx)
   PetscFunctionBeginUser;
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
-  f[0] = (user->imex ? -1.*x[1] : 0.0);
+  f[0] = (user->imex ? x[1] : 0.0);
   f[1] = 0.0;
   ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
@@ -135,8 +137,8 @@ static PetscErrorCode IFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ctx
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
   ierr = VecGetArray(Xdot,&xdot);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
-  f[0] = xdot[0] + (user->imex ? 0 : x[1]);
-  f[1] = xdot[1] + x[1]/(x[1]*x[1]-1);
+  f[0] = xdot[0] - (user->imex ? 0 : x[1]);
+  f[1] = xdot[1] - (mu*(1-x[0]*x[0])*x[1] - x[0]);
   ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(Xdot,&xdot);CHKERRQ(ierr);
   ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
@@ -174,8 +176,8 @@ static PetscErrorCode IJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat
 
   PetscFunctionBeginUser;
   ierr    = VecGetArray(X,&x);CHKERRQ(ierr);
-  J[0][0] = a;     J[0][1] = (user->imex ? 0 : -1.);
-  J[1][0] = 0.0;   J[1][1] = a - 1./(x[1]*x[1]-1)+x[1]*x[1]/(x[1]*x[1]-1)/(x[1]*x[1]-1)*2;
+  J[0][0] = a;     J[0][1] = (user->imex ? 0 : -1.0);
+  J[1][0] = 1.0 + 2.0*mu*x[0]*x[1];   J[1][1] = a - mu*(1-x[0]*x[0]);
   ierr    = MatSetValues(*B,2,rowcol,2,rowcol,&J[0][0],INSERT_VALUES);CHKERRQ(ierr);
   ierr    = VecRestoreArray(X,&x);CHKERRQ(ierr);
 
@@ -212,26 +214,6 @@ static PetscErrorCode IJacobian2(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Ma
     ierr = MatAssemblyEnd(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
   *flag = SAME_NONZERO_PATTERN;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "RegisterMyARK2"
-static PetscErrorCode RegisterMyARK2(void)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBeginUser;
-  {
-    const PetscReal
-      A[3][3] = {{0,0,0},
-                 {0.41421356237309504880,0,0},
-                 {0.75,0.25,0}},
-      At[3][3] = {{0,0,0},
-                  {0.12132034355964257320,0.29289321881345247560,0},
-                  {0.20710678118654752440,0.50000000000000000000,0.29289321881345247560}};
-    ierr = TSARKIMEXRegister("myark2",2,3,&At[0][0],NULL,NULL,&A[0][0],NULL,NULL,NULL,NULL,0,NULL,NULL);CHKERRQ(ierr);
-  }
   PetscFunctionReturn(0);
 }
 
@@ -285,8 +267,6 @@ int main(int argc,char **argv)
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size != 1) SETERRQ(PETSC_COMM_SELF,1,"This is a uniprocessor example only!");
 
-  ierr = RegisterMyARK2();CHKERRQ(ierr);
-
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Set runtime options
     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -330,7 +310,7 @@ int main(int argc,char **argv)
      Set initial conditions
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = VecGetArray(x,&x_ptr);CHKERRQ(ierr);
-  x_ptr[0] = -2;   x_ptr[1] = -2.355301397608119909925287735864250951918;
+  x_ptr[0] = 2.0;   x_ptr[1] = -6.666665432100101e-01;
   ierr = VecRestoreArray(x,&x_ptr);CHKERRQ(ierr);
   ierr = TSSetInitialTimeStep(ts,0.0,.001);CHKERRQ(ierr);
 
