@@ -746,6 +746,12 @@ runex19_bjacobi: #test hierarchical pc
 	   else  echo  ${PWD} "\nPossible problem with with ex19_bjacobi, diffs above \n========================================="; fi; \
 	   ${RM} -f ex19_1.tmp
 
+runex19_composite_gs_newton: #test additive composite SNES
+	-@${MPIEXEC} -n 2 ./ex19 -da_refine 3 -grashof 4e4 -lidvelocity 100 -snes_monitor_short \
+        -snes_type composite -snes_composite_type additiveoptimal -snes_composite_sneses gs,newtonls -sub_0_snes_max_it 20 -sub_1_pc_type mg > ex19_composite_gs_newton.tmp 2>&1; \
+	${DIFF} output/ex19_composite_gs_newton.out ex19_composite_gs_newton.tmp || echo  ${PWD} "\nPossible problem with ex19_composite_gs_newton, diffs above \n========================================="; \
+        ${RM} -f ex19_composite_gs_newton.tmp
+
 runex19_draw:
 	-@${MPIEXEC} -n 1 ./ex19 -pc_type fieldsplit -snes_view draw -fieldsplit_x_velocity_pc_type mg -fieldsplit_x_velocity_pc_mg_levels 2 -da_refine 1 -fieldsplit_x_velocity_mg_coarse_pc_type svd
 
