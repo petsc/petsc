@@ -54,8 +54,9 @@ typedef struct {
 
 typedef struct {
   MatTransposeColoring matcoloring;
-  Mat                  Rt;    /* dense matrix of R^T */
+  Mat                  Rt;    /* sparse or dense matrix of R^T */
   Mat                  RARt;  /* dense matrix of R*A*R^T */
+  Mat                  ARt;   /* A*R^T used for the case -matrart_color_art */
   MatScalar            *work; /* work array to store columns of A*R^T used in MatMatMatMultNumeric_SeqAIJ_SeqAIJ_SeqDense() */
   PetscErrorCode (*destroy)(Mat);
 } Mat_RARt;
@@ -112,6 +113,8 @@ typedef struct {
   PetscScalar       *matmult_abdense;    /* used by MatMatMult() */
   Mat_PtAP          *ptap;               /* used by MatPtAP() */
   Mat_MatMatMatMult *matmatmatmult;      /* used by MatMatMatMult() */
+  Mat_RARt          *rart;               /* used by MatRARt() */
+  Mat_MatMatTransMult *abt;              /* used by MatMatTransposeMult() */
 } Mat_SeqAIJ;
 
 /*
@@ -201,6 +204,7 @@ PETSC_INTERN PetscErrorCode MatGetSymbolicTranspose_SeqAIJ(Mat,PetscInt *[],Pets
 PETSC_INTERN PetscErrorCode MatGetSymbolicTransposeReduced_SeqAIJ(Mat,PetscInt,PetscInt,PetscInt *[],PetscInt *[]);
 PETSC_INTERN PetscErrorCode MatRestoreSymbolicTranspose_SeqAIJ(Mat,PetscInt *[],PetscInt *[]);
 PETSC_INTERN PetscErrorCode MatTransposeSymbolic_SeqAIJ(Mat,Mat*);
+PETSC_INTERN PetscErrorCode MatTranspose_SeqAIJ(Mat,MatReuse,Mat*);
 PETSC_INTERN PetscErrorCode MatToSymmetricIJ_SeqAIJ(PetscInt,PetscInt*,PetscInt*,PetscInt,PetscInt,PetscInt**,PetscInt**);
 PETSC_INTERN PetscErrorCode MatLUFactorSymbolic_SeqAIJ_inplace(Mat,Mat,IS,IS,const MatFactorInfo*);
 PETSC_INTERN PetscErrorCode MatLUFactorSymbolic_SeqAIJ(Mat,Mat,IS,IS,const MatFactorInfo*);
@@ -244,7 +248,11 @@ PETSC_INTERN PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqAIJ(Mat,Mat,Mat);
 PETSC_INTERN PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqAIJ_SparseAxpy(Mat,Mat,Mat);
 
 PETSC_INTERN PetscErrorCode MatRARtSymbolic_SeqAIJ_SeqAIJ(Mat,Mat,PetscReal,Mat*);
+PETSC_INTERN PetscErrorCode MatRARtSymbolic_SeqAIJ_SeqAIJ_matmattransposemult(Mat,Mat,PetscReal,Mat*);
+PETSC_INTERN PetscErrorCode MatRARtSymbolic_SeqAIJ_SeqAIJ_colorrart(Mat,Mat,PetscReal,Mat*);
 PETSC_INTERN PetscErrorCode MatRARtNumeric_SeqAIJ_SeqAIJ(Mat,Mat,Mat);
+PETSC_INTERN PetscErrorCode MatRARtNumeric_SeqAIJ_SeqAIJ_matmattransposemult(Mat,Mat,Mat);
+PETSC_INTERN PetscErrorCode MatRARtNumeric_SeqAIJ_SeqAIJ_colorrart(Mat,Mat,Mat);
 
 PETSC_INTERN PetscErrorCode MatTransposeMatMult_SeqAIJ_SeqAIJ(Mat,Mat,MatReuse,PetscReal,Mat*);
 PETSC_INTERN PetscErrorCode MatTransposeMatMultSymbolic_SeqAIJ_SeqAIJ(Mat,Mat,PetscReal,Mat*);
