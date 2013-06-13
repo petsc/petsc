@@ -271,16 +271,16 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   MatScalar      *ca;
   Mat_PtAP       *ptap;
   Mat            Pt,AP;
-  PetscBool      sparse_axpy=PETSC_TRUE;
+  PetscBool      scalable=PETSC_TRUE;
 
   PetscFunctionBegin;
   ierr = PetscObjectOptionsBegin((PetscObject)A);CHKERRQ(ierr);
-  /* flag 'sparse_axpy' determines which implementations to be used:
+  /* flag 'scalable' determines which implementations to be used:
        0: do dense axpy in MatPtAPNumeric() - fastest, but requires storage of struct A*P;
-       1: do two sparse axpy in MatPtAPNumeric() - slowest, does not store structure of A*P. */
-  ierr = PetscOptionsBool("-matptap_scalable","Use sparse axpy but slower MatPtAPNumeric()","",sparse_axpy,&sparse_axpy,NULL);CHKERRQ(ierr);
+       1: do two sparse axpy in MatPtAPNumeric() - might slow, does not store structure of A*P. */
+  ierr = PetscOptionsBool("-matptap_scalable","Use sparse axpy but might slower MatPtAPNumeric()","",scalable,&scalable,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
-  if (sparse_axpy) {
+  if (scalable) {
     ierr = MatPtAPSymbolic_SeqAIJ_SeqAIJ_SparseAxpy(A,P,fill,C);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
@@ -326,7 +326,7 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   ierr = MatDestroy(&Pt);CHKERRQ(ierr);
   ierr = MatDestroy(&AP);CHKERRQ(ierr);
 #if defined(PETSC_USE_INFO)
-  ierr = PetscInfo2((*C),"given fill %G, use scalable %d\n",fill,sparse_axpy);CHKERRQ(ierr);
+  ierr = PetscInfo2((*C),"given fill %G, use scalable %d\n",fill,scalable);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
 }
