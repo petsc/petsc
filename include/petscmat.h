@@ -44,6 +44,9 @@ typedef const char* MatType;
 #define MATAIJCUSPARSE     "aijcusparse"
 #define MATSEQAIJCUSPARSE  "seqaijcusparse"
 #define MATMPIAIJCUSPARSE  "mpiaijcusparse"
+#define MATAIJVIENNACL     "aijviennacl"
+#define MATSEQAIJVIENNACL  "seqaijviennacl"
+#define MATMPIAIJVIENNACL  "mpiaijviennacl"
 #define MATAIJPERM         "aijperm"
 #define MATSEQAIJPERM      "seqaijperm"
 #define MATMPIAIJPERM      "mpiaijperm"
@@ -1611,6 +1614,11 @@ E*/
 typedef enum {MAT_CUSP_MULT_DIAG, MAT_CUSP_MULT_OFFDIAG, MAT_CUSP_MULT, MAT_CUSP_SOLVE, MAT_CUSP_ALL} MatCUSPFormatOperation;
 
 PETSC_EXTERN PetscErrorCode MatCUSPSetFormat(Mat,MatCUSPFormatOperation,MatCUSPStorageFormat);
+#endif
+
+#if defined(PETSC_HAVE_VIENNACL)
+PETSC_EXTERN PetscErrorCode MatCreateSeqAIJViennaCL(MPI_Comm,PetscInt,PetscInt,PetscInt,const PetscInt[],Mat*);
+PETSC_EXTERN PetscErrorCode MatCreateAIJViennaCL(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],PetscInt,const PetscInt[],Mat*);
 #endif
 
 /*

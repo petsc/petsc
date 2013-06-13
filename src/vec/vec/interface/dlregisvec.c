@@ -164,6 +164,10 @@ PetscErrorCode  VecInitializePackage(void)
   ierr = PetscLogEventRegister("VecCopyToSome",     VEC_CLASSID,&VEC_CUSPCopyToGPUSome);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("VecCopyFromSome",   VEC_CLASSID,&VEC_CUSPCopyFromGPUSome);CHKERRQ(ierr);
 #endif
+#if defined(PETSC_HAVE_VIENNACL)
+  ierr = PetscLogEventRegister("VecViennaCLCopyTo",     VEC_CLASSID,&VEC_ViennaCLCopyToGPU);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("VecViennaCLCopyFrom",   VEC_CLASSID,&VEC_ViennaCLCopyFromGPU);CHKERRQ(ierr);
+#endif
   /* Turn off high traffic events by default */
   ierr = PetscLogEventSetActiveAll(VEC_DotBarrier, PETSC_FALSE);CHKERRQ(ierr);
   ierr = PetscLogEventSetActiveAll(VEC_DotNormBarrier, PETSC_FALSE);CHKERRQ(ierr);

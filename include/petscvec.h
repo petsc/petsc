@@ -101,6 +101,9 @@ typedef const char* VecType;
 #define VECSEQCUSP     "seqcusp"
 #define VECMPICUSP     "mpicusp"
 #define VECCUSP        "cusp"       /* seqcusp on one process and mpicusp on several */
+#define VECSEQVIENNACL "seqviennacl"
+#define VECMPIVIENNACL "mpiviennacl"
+#define VECVIENNACL    "viennacl"   /* seqviennacl on one process and mpiviennacl on several */
 #define VECNEST        "nest"
 #define VECSEQPTHREAD  "seqpthread"
 #define VECMPIPTHREAD  "mpipthread"
@@ -480,6 +483,16 @@ PETSC_EXTERN PetscErrorCode VecScatterFinalizeForGPU(VecScatter);
 
 PETSC_EXTERN PetscErrorCode VecCreateSeqCUSP(MPI_Comm,PetscInt,Vec*);
 PETSC_EXTERN PetscErrorCode VecCreateMPICUSP(MPI_Comm,PetscInt,PetscInt,Vec*);
+#endif
+
+#if defined(PETSC_HAVE_VIENNACL)
+typedef struct _p_PetscViennaCLIndices* PetscViennaCLIndices;
+PETSC_EXTERN PetscErrorCode PetscViennaCLIndicesCreate(PetscInt, PetscInt*,PetscInt, PetscInt*,PetscViennaCLIndices*);
+PETSC_EXTERN PetscErrorCode PetscViennaCLIndicesDestroy(PetscViennaCLIndices*);
+PETSC_EXTERN PetscErrorCode VecViennaCLCopyToGPUSome_Public(Vec,PetscViennaCLIndices);
+PETSC_EXTERN PetscErrorCode VecViennaCLCopyFromGPUSome_Public(Vec,PetscViennaCLIndices);
+PETSC_EXTERN PetscErrorCode VecCreateSeqViennaCL(MPI_Comm,PetscInt,Vec*);
+PETSC_EXTERN PetscErrorCode VecCreateMPIViennaCL(MPI_Comm,PetscInt,PetscInt,Vec*);
 #endif
 
 PETSC_EXTERN PetscErrorCode VecNestGetSubVecs(Vec,PetscInt*,Vec**);

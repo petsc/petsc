@@ -780,4 +780,18 @@ E*/
 typedef enum {PETSC_CUSP_UNALLOCATED,PETSC_CUSP_GPU,PETSC_CUSP_CPU,PETSC_CUSP_BOTH} PetscCUSPFlag;
 #endif
 
+#if defined(PETSC_HAVE_VIENNACL)
+/*E
+    PetscViennaCLFlag - indicates which memory (CPU, GPU, or none contains valid vector
+
+   PETSC_VIENNACL_UNALLOCATED  - no memory contains valid matrix entries; NEVER used for vectors
+   PETSC_VIENNACL_GPU - GPU has valid vector/matrix entries
+   PETSC_VIENNACL_CPU - CPU has valid vector/matrix entries
+   PETSC_VIENNACL_BOTH - Both GPU and CPU have valid vector/matrix entries and they match
+
+   Level: developer
+E*/
+typedef enum {PETSC_VIENNACL_UNALLOCATED,PETSC_VIENNACL_GPU,PETSC_VIENNACL_CPU,PETSC_VIENNACL_BOTH} PetscViennaCLFlag;
+#endif
+
 #endif /* _PETSCHEAD_H */
