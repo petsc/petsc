@@ -872,7 +872,7 @@ static PetscErrorCode TSInterpolate_ARKIMEX(TS ts,PetscReal itime,Vec X)
   for (i=0; i<s; i++) bt[i] = b[i] = 0;
   for (j=0,tt=t; j<pinterp; j++,tt*=t) {
     for (i=0; i<s; i++) {
-      bt[i] += h * Bt[i*pinterp+j] * tt * -1.0;
+      bt[i] += h * Bt[i*pinterp+j] * tt;
       b[i]  += h * B[i*pinterp+j] * tt;
     }
   }
