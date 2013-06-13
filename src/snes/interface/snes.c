@@ -2639,6 +2639,11 @@ PetscErrorCode  SNESSetUp(SNES snes)
   }
   ierr = SNESLineSearchSetFunction(snes->linesearch,SNESComputeFunction);CHKERRQ(ierr);
 
+  if (snes->pc && (snes->pcside == PC_LEFT)) {
+    snes->mf          = PETSC_TRUE;
+    snes->mf_operator = PETSC_FALSE;
+  }
+
   if (snes->mf) {
     ierr = SNESSetUpMatrixFree_Private(snes, snes->mf_operator, snes->mf_version);CHKERRQ(ierr);
   }
@@ -2691,10 +2696,9 @@ PetscErrorCode  SNESSetUp(SNES snes)
   }
 
   if (snes->pc && (snes->pcside == PC_LEFT)) {
-    snes->mf          = PETSC_TRUE;
-    snes->mf_operator = PETSC_FALSE;
     if (snes->functype == SNES_FUNCTION_PRECONDITIONED) {
-      ierr = SNESLineSearchSetFunction(snes->linesearch,SNESComputeFunctionDefaultPC);CHKERRQ(ierr);
+      ierr = SNESGetLineSearch(snes,&linesearch);CHKERRQ(ierr);
+      ierr = SNESLineSearchSetFunction(linesearch,SNESComputeFunctionDefaultPC);CHKERRQ(ierr);
     }
   }
 
