@@ -122,31 +122,26 @@ class Configure(config.package.Package):
     if make_np is not None:
       self.framework.logPrint('using user-provided make_np = %d' % make_np)
     else:
+      def compute_make_np(i):
+        f16 = .80
+        f32 = .65
+        f64 = .50
+        f99 = .30
+        if (i<=2):    return 2
+        elif (i<=4):  return i
+        elif (i<=16): return int(4+(i-4)*f16)
+        elif (i<=32): return int(4+12*f16+(i-16)*f32)
+        elif (i<=64): return int(4+12*f16+16*f32+(i-32)*f64)
+        else:         return int(4+12*f16+16*f32+32*f64+(i-64)*f99)
+        return
       try:
-        import multiprocessing
+        import multiprocessing # python-2.6 feature
         cores = multiprocessing.cpu_count()
-        make_np = max(min(cores+1,5),cores/3)
+        make_np = compute_make_np(cores)
         self.framework.logPrint('module multiprocessing found %d cores: using make_np = %d' % (cores,make_np))
       except (ImportError), e:
         make_np = 2
         self.framework.logPrint('module multiprocessing *not* found: using default make_np = %d' % make_np)
-      try:
-        import os
-        import pwd
-        if 'barrysmith' == pwd.getpwuid(os.getuid()).pw_name:
-          # Barry wants to use exactly the number of physical cores (not logical cores) because it breaks otherwise.
-          # Since this works for everyone else who uses a Mac, something must be wrong with their systems. ;-)
-          try:
-            (output, error, status) = config.base.Configure.executeShellCommand('/usr/sbin/system_profiler -detailLevel full SPHardwareDataType', log = self.framework.log)
-            import re
-            match = re.search(r'.*Total Number Of Cores: (\d+)', output)
-            if match:
-              make_np = int(match.groups()[0])
-              self.framework.logPrint('Found number of cores using system_profiler: make_np = %d' % (make_np,))
-          except:
-            pass
-      except:
-        pass
     self.make_np = make_np
     self.addMakeMacro('MAKE_NP',str(make_np))
     self.make_jnp = self.make + ' -j ' + str(self.make_np)
