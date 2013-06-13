@@ -899,11 +899,12 @@ static PetscErrorCode TSExtrapolate_ARKIMEX(TS ts,PetscReal c,Vec X)
   PetscFunctionBegin;
   if (!Bt || !B) SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"TSARKIMEX %s does not have an interpolation formula",ark->tableau->name);
   t = 1.0 + (ts->time_step/ts->time_step_prev)*c;
+  h = ts->time_step;
   ierr = PetscMalloc2(s,PetscScalar,&bt,s,PetscScalar,&b);CHKERRQ(ierr);
   for (i=0; i<s; i++) bt[i] = b[i] = 0;
   for (j=0,tt=t; j<pinterp; j++,tt*=t) {
     for (i=0; i<s; i++) {
-      bt[i] += h * Bt[i*pinterp+j] * tt * -1.0;
+      bt[i] += h * Bt[i*pinterp+j] * tt;
       b[i]  += h * B[i*pinterp+j] * tt;
     }
   }
