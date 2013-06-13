@@ -418,7 +418,7 @@ PETSC_EXTERN PetscErrorCode PetscFPTrapPop(void);
     or __USE_GNU is not set (see /usr/include/sched.h and /usr/include/features.h), hence
     set these first.
 */
-#if defined(PETSC_HAVE_PTHREADCLASSES)
+#if defined(PETSC_HAVE_PTHREADCLASSES) || defined (PETSC_HAVE_OPENMP)
 #if defined(PETSC_HAVE_SCHED_H)
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
