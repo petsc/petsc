@@ -92,7 +92,7 @@ int main(int argc, char **argv)
     if (flag) {
       /* If exact solution available for the specified ODE */
       if (r > 0) {
-        PetscReal conv_rate = (log(error[r]) - log(error[r-1])) / (-log(refine_fac));
+        PetscReal conv_rate = (PetscLogReal(error[r]) - PetscLogReal(error[r-1])) / (-PetscLogReal(refine_fac));
         printf("Error = %E,\tConvergence rate = %f\n.",error[r],conv_rate);
       } else {
         printf("Error = %E.\n",error[r]);
@@ -173,7 +173,7 @@ PetscErrorCode SolveODE(char* ptype, PetscReal dt, PetscReal tfinal, PetscInt ma
   /* Calculate Error */
   ierr = VecAYPX(Yex,-1.0,Y);       CHKERRQ(ierr);
   ierr = VecNorm(Yex,NORM_2,error); CHKERRQ(ierr);
-  *error = sqrt(((*error)*(*error))/N);
+  *error = PetscSqrtReal(((*error)*(*error))/N);
 
   /* Clean up and finalize */
   if (impl_flg) ierr = MatDestroy(&Jac);  CHKERRQ(ierr);
@@ -280,7 +280,7 @@ PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec Y, Vec F, void *s)
   } else if (!strcmp(p,"hull1972a2")) {
     f[0] = -0.5*y[0]*y[0]*y[0];
   } else if (!strcmp(p,"hull1972a3")) {
-    f[0] = y[0]*cos(t);
+    f[0] = y[0]*PetscCosReal(t);
   } else if (!strcmp(p,"hull1972a4")) {
     f[0] = (0.25*y[0])*(1.0-0.05*y[0]); 
   } else if (!strcmp(p,"hull1972a5")) {
@@ -297,9 +297,9 @@ PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec Y, Vec F, void *s)
     f[1] = y[0]-y[1]*y[1];
     f[2] = y[1]*y[1];
   } else if (!strcmp(p,"hull1972b4")) {
-    f[0] = -y[1] - y[0]*y[2]/sqrt(y[0]*y[0]+y[1]*y[1]);
-    f[1] =  y[0] - y[1]*y[2]/sqrt(y[0]*y[0]+y[1]*y[1]);
-    f[2] = y[0]/sqrt(y[0]*y[0]+y[1]*y[1]);
+    f[0] = -y[1] - y[0]*y[2]/PetscSqrtReal(y[0]*y[0]+y[1]*y[1]);
+    f[1] =  y[0] - y[1]*y[2]/PetscSqrtReal(y[0]*y[0]+y[1]*y[1]);
+    f[2] = y[0]/PetscSqrtReal(y[0]*y[0]+y[1]*y[1]);
   } else if (!strcmp(p,"hull1972b5")) {
     f[0] = y[1]*y[2];
     f[1] = -y[0]*y[2];
@@ -354,7 +354,7 @@ PetscErrorCode IFunction(TS ts, PetscReal t, Vec Y, Vec Ydot, Vec F, void *s)
   } else if (!strcmp(p,"hull1972a2")) {
     f[0] = -0.5*y[0]*y[0]*y[0];
   } else if (!strcmp(p,"hull1972a3")) {
-    f[0] = y[0]*cos(t);
+    f[0] = y[0]*PetscCosReal(t);
   } else if (!strcmp(p,"hull1972a4")) {
     f[0] = (0.25*y[0])*(1.0-0.05*y[0]); 
   } else if (!strcmp(p,"hull1972a5")) {
@@ -371,9 +371,9 @@ PetscErrorCode IFunction(TS ts, PetscReal t, Vec Y, Vec Ydot, Vec F, void *s)
     f[1] = y[0]-y[1]*y[1];
     f[2] = y[1]*y[1];
   } else if (!strcmp(p,"hull1972b4")) {
-    f[0] = -y[1] - y[0]*y[2]/sqrt(y[0]*y[0]+y[1]*y[1]);
-    f[1] =  y[0] - y[1]*y[2]/sqrt(y[0]*y[0]+y[1]*y[1]);
-    f[2] = y[0]/sqrt(y[0]*y[0]+y[1]*y[1]);
+    f[0] = -y[1] - y[0]*y[2]/PetscSqrtReal(y[0]*y[0]+y[1]*y[1]);
+    f[1] =  y[0] - y[1]*y[2]/PetscSqrtReal(y[0]*y[0]+y[1]*y[1]);
+    f[2] = y[0]/PetscSqrtReal(y[0]*y[0]+y[1]*y[1]);
   } else if (!strcmp(p,"hull1972b5")) {
     f[0] = y[1]*y[2];
     f[1] = -y[0]*y[2];
@@ -437,7 +437,7 @@ PetscErrorCode IJacobian(TS ts, PetscReal t, Vec Y, Vec Ydot, PetscReal a, Mat *
   } else if (!strcmp(p,"hull1972a3")) {
     PetscInt  row   = 0;
     PetscInt  col   = 0;
-    PetscReal value = a - cos(t);
+    PetscReal value = a - PetscCosReal(t);
     ierr = MatSetValues(*A,1,&row,1,&col,&value,INSERT_VALUES);CHKERRQ(ierr);
   } else if (!strcmp(p,"hull1972a4")) {
     PetscInt  row   = 0;
@@ -566,22 +566,22 @@ PetscErrorCode ExactSolution(Vec Y, void* s, PetscReal t, PetscBool *flag)
   PetscFunctionBegin;
   if (!strcmp(p,"hull1972a1")) {
     ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
-    y[0] = exp(-t);
+    y[0] = PetscExpReal(-t);
     *flag = PETSC_TRUE;
     ierr = VecRestoreArray(Y,&y);CHKERRQ(ierr);
   } else if (!strcmp(p,"hull1972a2")) {
     ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
-    y[0] = 1.0/sqrt(t+1);
+    y[0] = 1.0/PetscSqrtReal(t+1);
     *flag = PETSC_TRUE;
     ierr = VecRestoreArray(Y,&y);CHKERRQ(ierr);
   } else if (!strcmp(p,"hull1972a3")) {
     ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
-    y[0] = exp(sin(t));
+    y[0] = PetscExpReal(sin(t));
     *flag = PETSC_TRUE;
     ierr = VecRestoreArray(Y,&y);CHKERRQ(ierr);
   } else if (!strcmp(p,"hull1972a4")) {
     ierr = VecGetArray(Y,&y);CHKERRQ(ierr);
-    y[0] = 20.0/(1+19.0*exp(-t/4.0));
+    y[0] = 20.0/(1+19.0*PetscExpReal(-t/4.0));
     *flag = PETSC_TRUE;
     ierr = VecRestoreArray(Y,&y);CHKERRQ(ierr);
   } else {
