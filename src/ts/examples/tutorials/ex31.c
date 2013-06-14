@@ -80,9 +80,10 @@ int main(int argc, char **argv)
   ierr = PetscOptionsReal("-final_time","Final time for the time-integration","<20.0>",
                           tfinal,&tfinal,PETSC_NULL);CHKERRQ(ierr);
 
-  error = (PetscReal*) calloc(n_refine,sizeof(PetscReal));
+  ierr = PetscMalloc(n_refine*sizeof(PetscReal),&error);CHKERRQ(ierr);
   for (r = 0; r < n_refine; r++) {
     PetscReal dt;
+    error[r] = 0;
     if (!r) dt = dt_initial;
     else    dt /= refine_fac;
     
@@ -98,7 +99,7 @@ int main(int argc, char **argv)
       }
     }
   }
-  free(error);
+  PetscFree(error);CHKERRQ(ierr);
 
   /* Exit */
   ierr = PetscFinalize(); CHKERRQ(ierr);
@@ -133,18 +134,19 @@ PetscErrorCode SolveODE(char* ptype, PetscReal dt, PetscReal tfinal, PetscInt ma
   /* Initialize the problem */
   ierr = Initialize(Y,&ptype[0]);
 
-  /* Create and initialize the time-integrator          */
-  ierr = TSCreate(PETSC_COMM_WORLD,&ts);    CHKERRQ(ierr);
-  /* Default time integration options                   */
-  ierr = TSSetType(ts,TSEULER);             CHKERRQ(ierr);
-  ierr = TSSetDuration(ts,maxiter,tfinal);  CHKERRQ(ierr);
-  ierr = TSSetInitialTimeStep(ts,0.0,dt);   CHKERRQ(ierr);
-  /* Read command line options for time integration     */
-  ierr = TSSetFromOptions(ts);              CHKERRQ(ierr);
-  /* Set solution vector                                */
-  ierr = TSSetSolution(ts,Y);               CHKERRQ(ierr);
-  /* Specify left/right-hand side functions             */
-  ierr = TSGetType(ts,&time_scheme);        CHKERRQ(ierr);
+  /* Create and initialize the time-integrator                            */
+  ierr = TSCreate(PETSC_COMM_WORLD,&ts);                      CHKERRQ(ierr);
+  /* Default time integration options                                     */
+  ierr = TSSetType(ts,TSEULER);                               CHKERRQ(ierr);
+  ierr = TSSetDuration(ts,maxiter,tfinal);                    CHKERRQ(ierr);
+  ierr = TSSetInitialTimeStep(ts,0.0,dt);                     CHKERRQ(ierr);
+  ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_MATCHSTEP); CHKERRQ(ierr);
+  /* Read command line options for time integration                       */
+  ierr = TSSetFromOptions(ts);                                CHKERRQ(ierr);
+  /* Set solution vector                                                  */
+  ierr = TSSetSolution(ts,Y);                                 CHKERRQ(ierr);
+  /* Specify left/right-hand side functions                               */
+  ierr = TSGetType(ts,&time_scheme);                          CHKERRQ(ierr);
   if ((!strcmp(time_scheme,TSEULER)) || (!strcmp(time_scheme,TSRK)) || (!strcmp(time_scheme,TSSSP))) {
     /* Explicit time-integration -> specify right-hand side function ydot = f(y) */
     impl_flg = PETSC_FALSE;
@@ -447,6 +449,48 @@ PetscErrorCode IJacobian(TS ts, PetscReal t, Vec Y, Vec Ydot, PetscReal a, Mat *
     PetscInt  col = 0;
     PetscReal value = a - 2*t/((t+y[0])*(t+y[0]));
     ierr = MatSetValues(*A,1,&row,1,&col,&value,INSERT_VALUES);CHKERRQ(ierr);
+  } else if (!strcmp(p,"hull1972b1")) {
+    PetscInt  row[2] = {0,1};
+    PetscReal value[2][2];
+    value[0][0] = a - 2.0*(1.0-y[1]);    value[0][1] = 2.0*y[0];
+    value[1][0] = -y[1];                 value[1][1] = a + 1.0 - y[0];
+    ierr = MatSetValues(*A,2,&row[0],2,&row[0],&value[0][0],INSERT_VALUES);CHKERRQ(ierr);
+  } else if (!strcmp(p,"hull1972b2")) {
+    PetscInt  row[3] = {0,1,2};
+    PetscReal value[3][3];
+    value[0][0] = a + 1.0;  value[0][1] = -1.0;     value[0][2] = 0;
+    value[1][0] = -1.0;     value[1][1] = a + 2.0;  value[1][2] = -1.0;
+    value[2][0] = 0;        value[2][1] = -1.0;     value[2][2] = a + 1.0;
+    ierr = MatSetValues(*A,3,&row[0],3,&row[0],&value[0][0],INSERT_VALUES);CHKERRQ(ierr);
+  } else if (!strcmp(p,"hull1972b3")) {
+    PetscInt  row[3] = {0,1,2};
+    PetscReal value[3][3];
+    value[0][0] = a + 1.0; value[0][1] = 0;             value[0][2] = 0;
+    value[1][0] = -1.0;    value[1][1] = a + 2.0*y[1];  value[1][2] = 0;
+    value[2][0] = 0;       value[2][1] = -2.0*y[1];     value[2][2] = a;
+    ierr = MatSetValues(*A,3,&row[0],3,&row[0],&value[0][0],INSERT_VALUES);CHKERRQ(ierr);
+  } else if (!strcmp(p,"hull1972b4")) {
+    PetscInt  row[3] = {0,1,2};
+    PetscReal value[3][3];
+    PetscReal fac  = PetscPowReal(y[0]*y[0]+y[1]*y[1],-1.5);
+    PetscReal fac2 = PetscPowReal(y[0]*y[0]+y[1]*y[1],-0.5);
+    value[0][0] = a + (y[1]*y[1]*y[2])*fac; 
+    value[0][1] = 1.0 - (y[0]*y[1]*y[2])*fac; 
+    value[0][2] = y[0]*fac2;
+    value[1][0] = -1.0 - y[0]*y[1]*y[2]*fac; 
+    value[1][1] = a + y[0]*y[0]*y[2]*fac; 
+    value[1][2] = y[1]*fac2;
+    value[2][0] = -y[1]*y[1]*fac; 
+    value[2][1] = y[0]*y[1]*fac; 
+    value[2][2] = a;
+    ierr = MatSetValues(*A,3,&row[0],3,&row[0],&value[0][0],INSERT_VALUES);CHKERRQ(ierr);
+  } else if (!strcmp(p,"hull1972b5")) {
+    PetscInt  row[3] = {0,1,2};
+    PetscReal value[3][3];
+    value[0][0] = a;          value[0][1] = -y[2];      value[0][2] = -y[1];
+    value[1][0] = y[2];       value[1][1] = a;          value[1][2] = y[0];
+    value[2][0] = 0.51*y[1];  value[2][1] = 0.51*y[0];  value[2][2] = a;
+    ierr = MatSetValues(*A,3,&row[0],3,&row[0],&value[0][0],INSERT_VALUES);CHKERRQ(ierr);
   } else if (!strcmp(p,"hull1972c1")) {
     PetscInt  i;
     PetscInt  col[2];
