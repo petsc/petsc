@@ -721,11 +721,10 @@ prepend-path PATH %s
     '''Get a generic inline keyword, depending on the language'''
     if self.languages.clanguage == 'C':
       self.addDefine('STATIC_INLINE', self.compilers.cStaticInlineKeyword)
-      self.addDefine('RESTRICT', self.compilers.cRestrict)
     elif self.languages.clanguage == 'Cxx':
       self.addDefine('STATIC_INLINE', self.compilers.cxxStaticInlineKeyword)
-      self.addDefine('RESTRICT', self.compilers.cxxRestrict)
 
+    self.addDefine('RESTRICT', self.compilers.cRestrict + '[C/CXX-SPLIT]' + self.compilers.cxxRestrict)
     if self.checkCompile('#include <dlfcn.h>\n void *ptr =  RTLD_DEFAULT;'):
       self.addDefine('RTLD_DEFAULT','1')
     return
