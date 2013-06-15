@@ -2110,6 +2110,17 @@ PetscErrorCode DMPlexCreateSubmesh(DM dm, const char vertexLabel[], PetscInt val
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMPlexFilterPoint_Internal"
+PETSC_STATIC_INLINE PetscInt DMPlexFilterPoint_Internal(PetscInt point, PetscInt firstSubPoint, PetscInt numSubPoints, const PetscInt subPoints[])
+{
+  PetscInt       subPoint;
+  PetscErrorCode ierr;
+
+  ierr = PetscFindInt(point, numSubPoints, subPoints, &subPoint); if (ierr < 0) return ierr;
+  return subPoint < 0 ? subPoint : firstSubPoint+subPoint;
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMPlexCreateCohesiveSubmesh_Uninterpolated"
 static PetscErrorCode DMPlexCreateCohesiveSubmesh_Uninterpolated(DM dm, PetscBool hasLagrange, DM subdm)
 {
@@ -2234,6 +2245,52 @@ static PetscErrorCode DMPlexCreateCohesiveSubmesh_Uninterpolated(DM dm, PetscBoo
     ierr = DMSetCoordinatesLocal(subdm, subCoordinates);CHKERRQ(ierr);
     ierr = VecDestroy(&subCoordinates);CHKERRQ(ierr);
   }
+  /* Build SF */
+  CHKMEMQ;
+  {
+    PetscSF            sfPoint, sfPointSub;
+    const PetscSFNode *remotePoints;
+    PetscSFNode       *sremotePoints;
+    const PetscInt    *localPoints;
+    PetscInt          *slocalPoints, *newLocation, *newRemoteLocation;
+    PetscInt           numRoots, numLeaves, numSubRoots = numSubCells+numSubFaces+numSubVertices, numSubLeaves = 0, l, sl, pStart, pEnd, vStart, vEnd;
+
+    ierr = DMGetPointSF(dm, &sfPoint);CHKERRQ(ierr);
+    ierr = DMGetPointSF(subdm, &sfPointSub);CHKERRQ(ierr);
+    ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
+    ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
+    ierr = PetscSFGetGraph(sfPoint, &numRoots, &numLeaves, &localPoints, &remotePoints);CHKERRQ(ierr);
+    if (numRoots >= 0) {
+      ierr = PetscMalloc2(numRoots,PetscInt,&newLocation,pEnd-pStart,PetscInt,&newRemoteLocation);CHKERRQ(ierr);
+      /* Only vertices should be shared */
+      for (l=0; l<numRoots; l++) newLocation[l] = DMPlexFilterPoint_Internal(l, firstSubVertex, numSubVertices, subVertices);
+      ierr = PetscSFBcastBegin(sfPoint, MPIU_INT, newLocation, newRemoteLocation);CHKERRQ(ierr);
+      ierr = PetscSFBcastEnd(sfPoint, MPIU_INT, newLocation, newRemoteLocation);CHKERRQ(ierr);
+      for (l = 0; l < numLeaves; ++l) {
+        const PetscInt point    = localPoints[l];
+        const PetscInt subPoint = DMPlexFilterPoint_Internal(localPoints[l], firstSubVertex, numSubVertices, subVertices);
+
+        if ((point < vStart) && (point >= vEnd)) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Should not be mapping anything but vertices, %d", point);
+        if (subPoint >= 0) ++numSubLeaves;
+      }
+      ierr = PetscMalloc(numSubLeaves * sizeof(PetscInt),    &slocalPoints);CHKERRQ(ierr);
+      ierr = PetscMalloc(numSubLeaves * sizeof(PetscSFNode), &sremotePoints);CHKERRQ(ierr);
+      for (l = 0, sl = 0; l < numLeaves; ++l) {
+        const PetscInt subPoint = DMPlexFilterPoint_Internal(localPoints[l], firstSubVertex, numSubVertices, subVertices);
+
+        if (subPoint < 0) continue;
+        slocalPoints[sl]        = subPoint;
+        sremotePoints[sl].rank  = remotePoints[l].rank;
+        sremotePoints[sl].index = newRemoteLocation[localPoints[l]];
+        if (sremotePoints[sl].index < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid remote subpoint for local point %d", localPoints[l]);
+        ++sl;
+      }
+      ierr = PetscFree2(newLocation,newRemoteLocation);CHKERRQ(ierr);
+      if (sl != numSubLeaves) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Mismatch in number of subleaves %d != %d", sl, numSubLeaves);
+      ierr = PetscSFSetGraph(sfPointSub, numSubRoots, numSubLeaves, slocalPoints, PETSC_OWN_POINTER, sremotePoints, PETSC_OWN_POINTER);CHKERRQ(ierr);
+    }
+  }
+  CHKMEMQ;
   /* Cleanup */
   if (subvertexIS) {ierr = ISRestoreIndices(subvertexIS, &subVertices);CHKERRQ(ierr);}
   ierr = ISDestroy(&subvertexIS);CHKERRQ(ierr);
