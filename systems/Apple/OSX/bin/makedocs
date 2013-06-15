@@ -1,9 +1,6 @@
 #!/bin/sh
 #
-# This script adds documentation to the Apple Mac OS X framework for PETSc created with makeframework
-#
-#After running makeframework and generating the PETSc documention then just run this script
-#    3) you can also use the framework inside Xcode by simply indicating the targets dependence on the PETSc framework
+# This script makes a Apple Mac OS X docset for PETSc see ./makeall
 #
 #
 cd ${PETSC_DIR}/${PETSC_ARCH}
