@@ -249,7 +249,6 @@ static PetscErrorCode DMPlexShiftSF_Internal(DM dm, PetscInt depthShift[], DM dm
   const PetscInt    *localPoints;
   PetscInt          *glocalPoints, *newLocation, *newRemoteLocation;
   PetscInt           numRoots, numLeaves, l, pStart, pEnd, totShift = 0;
-  PetscMPIInt        numProcs;
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
@@ -260,7 +259,6 @@ static PetscErrorCode DMPlexShiftSF_Internal(DM dm, PetscInt depthShift[], DM dm
     ierr      = DMPlexGetDepthStratum(dm, d, NULL, &depthEnd[d]);CHKERRQ(ierr);
   }
   /* Step 9: Convert pointSF */
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)dm), &numProcs);CHKERRQ(ierr);
   ierr = DMGetPointSF(dm, &sfPoint);CHKERRQ(ierr);
   ierr = DMGetPointSF(dmNew, &sfPointNew);CHKERRQ(ierr);
   ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
