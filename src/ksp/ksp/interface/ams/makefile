@@ -1,16 +1,16 @@
+#requirespackage  'PETSC_HAVE_AMS'
 
 ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = itcl.c itfunc.c iguess.c itcreate.c iterativ.c itres.c itregis.c \
-           xmon.c eige.c dlregisksp.c dmksp.c
+SOURCEC  = kspams.c
 SOURCEF  =
 SOURCEH  =
 LIBBASE  = libpetscksp
-DIRS     = ams
+DIRS     =
+LOCDIR   = src/ksp/ksp/interface/ams/
 MANSEC   = KSP
-LOCDIR   = src/ksp/ksp/interface/
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules
