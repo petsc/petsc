@@ -129,7 +129,6 @@ void PETSC_STDCALL petscbagregisterboolarray_(PetscBag *bag,void *ptr,PetscInt *
                                               CHAR s2 PETSC_MIXED_LEN(l2),PetscErrorCode *ierr PETSC_END_LEN(l1) PETSC_END_LEN(l2))
 {
   char       *t1,*t2;
-  PetscBool  flg = PETSC_FALSE;
 
   /* some Fortran compilers use -1 as boolean */
   FIXCHAR(s1,l1,t1);
