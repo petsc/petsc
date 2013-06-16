@@ -6453,7 +6453,7 @@ PetscErrorCode DMPlexVecGetClosure(DM dm, PetscSection section, Vec v, PetscInt 
   PetscScalar   *array, *vArray;
   PetscInt      *points = NULL;
   PetscInt       offsets[32];
-  PetscInt       numFields, size, numPoints, pStart, pEnd, p, q, f;
+  PetscInt       depth, numFields, size, numPoints, pStart, pEnd, p, q, f;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -6462,9 +6462,50 @@ PetscErrorCode DMPlexVecGetClosure(DM dm, PetscSection section, Vec v, PetscInt 
   if (!section) {
     ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
   }
+  ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
   ierr = PetscSectionGetNumFields(section, &numFields);CHKERRQ(ierr);
   if (numFields > 31) SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Number of fields %D limited to 31", numFields);
   ierr = PetscMemzero(offsets, 32 * sizeof(PetscInt));CHKERRQ(ierr);
+  if (depth == 1 && numFields < 2) {
+    const PetscInt *cone, *coneO;
+
+    ierr = DMPlexGetConeSize(dm, point, &numPoints);CHKERRQ(ierr);
+    ierr = DMPlexGetCone(dm, point, &cone);CHKERRQ(ierr);
+    ierr = DMPlexGetConeOrientation(dm, point, &coneO);CHKERRQ(ierr);
+    for (p = 0, size = 0; p <= numPoints; ++p) {
+      const PetscInt cp  = !p ? point : cone[p-1];
+      PetscInt       dof = 0;
+
+      if ((cp < pStart) || (cp >= pEnd)) continue;
+      ierr = PetscSectionGetDof(section, cone[p], &dof);CHKERRQ(ierr);
+      size += dof;
+    }
+    ierr = DMGetWorkArray(dm, size, PETSC_SCALAR, &array);CHKERRQ(ierr);
+    ierr = VecGetArray(v, &vArray);CHKERRQ(ierr);
+    for (p = 0; p <= numPoints; ++p) {
+      const PetscInt cp = !p ? point : cone[p-1];
+      PetscInt       o  = !p ? 0     : coneO[p-1];
+      PetscInt       dof, off, d;
+      PetscScalar   *varr;
+
+      ierr = PetscSectionGetDof(section, cp, &dof);CHKERRQ(ierr);
+      ierr = PetscSectionGetOffset(section, cp, &off);CHKERRQ(ierr);
+      varr = &vArray[off];
+      if (o >= 0) {
+        for (d = 0; d < dof; ++d, ++offsets[0]) {
+          array[offsets[0]] = varr[d];
+        }
+      } else {
+        for (d = dof-1; d >= 0; --d, ++offsets[0]) {
+          array[offsets[0]] = varr[d];
+        }
+      }
+    }
+    ierr = VecRestoreArray(v, &vArray);CHKERRQ(ierr);
+    if (csize) *csize = size;
+    *values = array;
+    PetscFunctionReturn(0);
+  }
   ierr = DMPlexGetTransitiveClosure(dm, point, PETSC_TRUE, &numPoints, &points);CHKERRQ(ierr);
   /* Compress out points not in the section */
   ierr = PetscSectionGetChart(section, &pStart, &pEnd);CHKERRQ(ierr);
