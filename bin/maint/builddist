@@ -86,7 +86,7 @@ if  [ ${version_release} = 0 ]; then
   if [ "$branch" = "master" ]; then
     version=-dev
   else
-    version=-$branch
+    version=-`echo ${branch} | sed s~/~-~g`
   fi
 elif [ ${version_release} = 1 ]; then
   version=-${version_major}.${version_minor}.${version_subminor}
