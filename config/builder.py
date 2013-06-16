@@ -837,12 +837,13 @@ class DependencyBuilder(logger.Logger):
     '''
     with file(depFile) as f:
       try:
-        target, deps = f.read().split(':')
+        target, deps = f.read().split(':', 1)
       except ValueError as e:
         self.logPrint('ERROR in dependency file %s: %s' % (depFile, str(e)))
     target = target.split()[0]
     if (target != self.sourceManager.getObjectName(source)): print target, self.sourceManager.getObjectName(source)
     assert(target == self.sourceManager.getObjectName(source))
+    deps = deps.split('\n\n')[0]
     deps = [d for d in deps.replace('\\','').split() if not os.path.splitext(d)[1] == '.mod']
     if not os.path.basename(deps[0]) == source:
       raise RuntimeError('ERROR: first dependency %s should be %s' % (deps[0], source))
