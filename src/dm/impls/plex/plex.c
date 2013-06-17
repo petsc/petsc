@@ -6489,6 +6489,7 @@ PetscErrorCode DMPlexVecGetClosure(DM dm, PetscSection section, Vec v, PetscInt 
       PetscInt       dof, off, d;
       PetscScalar   *varr;
 
+      if ((cp < pStart) || (cp >= pEnd)) continue;
       ierr = PetscSectionGetDof(section, cp, &dof);CHKERRQ(ierr);
       ierr = PetscSectionGetOffset(section, cp, &off);CHKERRQ(ierr);
       varr = &vArray[off];
