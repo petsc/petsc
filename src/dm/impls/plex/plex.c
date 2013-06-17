@@ -6464,6 +6464,7 @@ PetscErrorCode DMPlexVecGetClosure(DM dm, PetscSection section, Vec v, PetscInt 
   }
   ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
   ierr = PetscSectionGetNumFields(section, &numFields);CHKERRQ(ierr);
+  ierr = PetscSectionGetChart(section, &pStart, &pEnd);CHKERRQ(ierr);
   if (numFields > 31) SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Number of fields %D limited to 31", numFields);
   ierr = PetscMemzero(offsets, 32 * sizeof(PetscInt));CHKERRQ(ierr);
   if (depth == 1 && numFields < 2) {
@@ -6473,11 +6474,11 @@ PetscErrorCode DMPlexVecGetClosure(DM dm, PetscSection section, Vec v, PetscInt 
     ierr = DMPlexGetCone(dm, point, &cone);CHKERRQ(ierr);
     ierr = DMPlexGetConeOrientation(dm, point, &coneO);CHKERRQ(ierr);
     for (p = 0, size = 0; p <= numPoints; ++p) {
-      const PetscInt cp  = !p ? point : cone[p-1];
-      PetscInt       dof = 0;
+      const PetscInt cp = !p ? point : cone[p-1];
+      PetscInt       dof;
 
       if ((cp < pStart) || (cp >= pEnd)) continue;
-      ierr = PetscSectionGetDof(section, cone[p], &dof);CHKERRQ(ierr);
+      ierr = PetscSectionGetDof(section, cp, &dof);CHKERRQ(ierr);
       size += dof;
     }
     ierr = DMGetWorkArray(dm, size, PETSC_SCALAR, &array);CHKERRQ(ierr);
@@ -6508,7 +6509,6 @@ PetscErrorCode DMPlexVecGetClosure(DM dm, PetscSection section, Vec v, PetscInt 
   }
   ierr = DMPlexGetTransitiveClosure(dm, point, PETSC_TRUE, &numPoints, &points);CHKERRQ(ierr);
   /* Compress out points not in the section */
-  ierr = PetscSectionGetChart(section, &pStart, &pEnd);CHKERRQ(ierr);
   for (p = 0, q = 0; p < numPoints*2; p += 2) {
     if ((points[p] >= pStart) && (points[p] < pEnd)) {
       points[q*2]   = points[p];
