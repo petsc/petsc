@@ -1645,23 +1645,23 @@ runex136:
 	   ${RM} -f ex136_1.tmp
 runex136_2:
 	-@${MPIEXEC} -n 5 ./ex136 -f  ${DATAFILESPATH}/matrices/cfd.2.100 -mat_view ascii::ascii_info -aij > ex136_2.tmp 2>&1; \
-	   ${DIFF} output/ex136_2.out ex136_2.tmp || echo ${PWD} "\nPossible problem with ex136, diffs above \n========================================="; \
+	   ${DIFF} output/ex136_2.out ex136_2.tmp || echo ${PWD} "\nPossible problem with ex136_2, diffs above \n========================================="; \
 	   ${RM} -f ex136_2.tmp
 runex136_3:
 	-@${MPIEXEC} -n 7 ./ex136 -f  ${DATAFILESPATH}/matrices/cfd.2.100 -mat_view ascii::ascii_info -aij > ex136_3.tmp 2>&1; \
-	   ${DIFF} output/ex136_3.out ex136_3.tmp || echo ${PWD} "\nPossible problem with ex136, diffs above \n========================================="; \
+	   ${DIFF} output/ex136_3.out ex136_3.tmp || echo ${PWD} "\nPossible problem with ex136_3, diffs above \n========================================="; \
 	   ${RM} -f ex136_3.tmp
 runex136_4:
 	-@${MPIEXEC} -n 3 ./ex136 -f  ${DATAFILESPATH}/matrices/cfd.2.100 -mat_view ascii::ascii_info  > ex136_4.tmp 2>&1; \
-	   ${DIFF} output/ex136_4.out ex136_4.tmp || echo ${PWD} "\nPossible problem with ex136, diffs above \n========================================="; \
+	   ${DIFF} output/ex136_4.out ex136_4.tmp || echo ${PWD} "\nPossible problem with ex136_4, diffs above \n========================================="; \
 	   ${RM} -f ex136_4.tmp
 runex136_5:
 	-@${MPIEXEC} -n 5 ./ex136 -f  ${DATAFILESPATH}/matrices/cfd.2.100 -mat_view ascii::ascii_info > ex136_5.tmp 2>&1; \
-	   ${DIFF} output/ex136_5.out ex136_5.tmp || echo ${PWD} "\nPossible problem with ex136, diffs above \n========================================="; \
+	   ${DIFF} output/ex136_5.out ex136_5.tmp || echo ${PWD} "\nPossible problem with ex136_5, diffs above \n========================================="; \
 	   ${RM} -f ex136_5.tmp
 runex136_6:
 	-@${MPIEXEC} -n 7 ./ex136 -f  ${DATAFILESPATH}/matrices/cfd.2.100 -mat_view ascii::ascii_info > ex136_6.tmp 2>&1; \
-	   ${DIFF} output/ex136_6.out ex136_6.tmp || echo ${PWD} "\nPossible problem with ex136, diffs above \n========================================="; \
+	   ${DIFF} output/ex136_6.out ex136_6.tmp || echo ${PWD} "\nPossible problem with ex136_6, diffs above \n========================================="; \
 	   ${RM} -f ex136_6.tmp
 runex137:
 	-@${MPIEXEC} -n 2 ./ex137  > ex137_1.tmp 2>&1; \
