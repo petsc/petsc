@@ -1312,8 +1312,8 @@ PetscErrorCode PetscSectionCreateSubsection(PetscSection s, PetscInt numFields, 
 #define __FUNCT__ "PetscSectionCreateSubmeshSection"
 PetscErrorCode PetscSectionCreateSubmeshSection(PetscSection s, IS subpointMap, PetscSection *subs)
 {
-  const PetscInt *points, *indices = NULL;
-  PetscInt       numFields, f, numSubpoints, pStart, pEnd, p, subp;
+  const PetscInt *points = NULL, *indices = NULL;
+  PetscInt       numFields, f, numSubpoints = 0, pStart, pEnd, p, subp;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -1330,8 +1330,10 @@ PetscErrorCode PetscSectionCreateSubmeshSection(PetscSection s, IS subpointMap, 
     ierr = PetscSectionSetFieldComponents(*subs, f, numComp);CHKERRQ(ierr);
   }
   /* For right now, we do not try to squeeze the subchart */
-  ierr = ISGetSize(subpointMap, &numSubpoints);CHKERRQ(ierr);
-  ierr = ISGetIndices(subpointMap, &points);CHKERRQ(ierr);
+  if (subpointMap) {
+    ierr = ISGetSize(subpointMap, &numSubpoints);CHKERRQ(ierr);
+    ierr = ISGetIndices(subpointMap, &points);CHKERRQ(ierr);
+  }
   ierr = PetscSectionGetChart(s, &pStart, &pEnd);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(*subs, 0, numSubpoints);CHKERRQ(ierr);
   for (p = pStart; p < pEnd; ++p) {
@@ -1378,7 +1380,7 @@ PetscErrorCode PetscSectionCreateSubmeshSection(PetscSection s, IS subpointMap, 
       ierr = PetscSectionSetConstraintIndices(*subs, subp, indices);CHKERRQ(ierr);
     }
   }
-  ierr = ISRestoreIndices(subpointMap, &points);CHKERRQ(ierr);
+  if (subpointMap) {ierr = ISRestoreIndices(subpointMap, &points);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 

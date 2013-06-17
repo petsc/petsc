@@ -2080,7 +2080,7 @@ PetscErrorCode DMPlexOrient(DM dm)
   ierr = PetscMalloc((fEnd - fStart) * sizeof(PetscInt), &faceFIFO);CHKERRQ(ierr);
   fTop = fBottom = 0;
   /* Initialize FIFO with first cell */
-  {
+  if (cEnd > cStart) {
     const PetscInt *cone;
     PetscInt        coneSize;
 
