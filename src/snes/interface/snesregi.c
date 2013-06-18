@@ -18,6 +18,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_MS(SNES);
 PETSC_EXTERN PetscErrorCode SNESCreate_NASM(SNES);
 PETSC_EXTERN PetscErrorCode SNESCreate_Anderson(SNES);
 PETSC_EXTERN PetscErrorCode SNESCreate_ASPIN(SNES);
+PETSC_EXTERN PetscErrorCode SNESCreate_Composite(SNES);
 
 const char *SNESConvergedReasons_Shifted[] = {" "," ","DIVERGED_LOCAL_MIN","DIVERGED_INNER","DIVERGED_LINE_SEARCH","DIVERGED_MAX_IT",
                                               "DIVERGED_FNORM_NAN","DIVERGED_LINEAR_SOLVE","DIVERGED_FUNCTION_COUNT","DIVERGED_FUNCTION_DOMAIN",
@@ -25,8 +26,11 @@ const char *SNESConvergedReasons_Shifted[] = {" "," ","DIVERGED_LOCAL_MIN","DIVE
                                               "CONVERGED_SNORM_RELATIVE","CONVERGED_ITS"," ","CONVERGED_TR_DELTA","SNESConvergedReason","",0};
 const char *const *SNESConvergedReasons = SNESConvergedReasons_Shifted + 10;
 
-const char *SNESNormTypes_Shifted[]    = {"DEFAULT","NONE","FUNCTION","INITIALONLY","FINALONLY","INITIALFINALONLY","SNESNormType","SNES_NORM_",0};
-const char *const *const SNESNormTypes = SNESNormTypes_Shifted + 1;
+const char *SNESNormSchedules_Shifted[]    = {"DEFAULT","NONE","ALWAYS","INITIALONLY","FINALONLY","INITIALFINALONLY","SNESNormSchedule","SNES_NORM_",0};
+const char *const *const SNESNormSchedules = SNESNormSchedules_Shifted + 1;
+
+const char *SNESFunctionTypes_Shifted[]    = {"DEFAULT","UNPRECONDITIONED","PRECONDITIONED","SNESFunctionType","SNES_FUNCTION_",0};
+const char *const *const SNESFunctionTypes = SNESFunctionTypes_Shifted + 1;
 
 /*
       This is used by SNESSetType() to make sure that at least one
@@ -72,5 +76,6 @@ PetscErrorCode  SNESRegisterAll(void)
   ierr = SNESRegister(SNESNASM,         SNESCreate_NASM);CHKERRQ(ierr);
   ierr = SNESRegister(SNESANDERSON,     SNESCreate_Anderson);CHKERRQ(ierr);
   ierr = SNESRegister(SNESASPIN,        SNESCreate_ASPIN);CHKERRQ(ierr);
+  ierr = SNESRegister(SNESCOMPOSITE,    SNESCreate_Composite);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

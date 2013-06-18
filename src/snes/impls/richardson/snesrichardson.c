@@ -44,6 +44,8 @@ PetscErrorCode SNESDestroy_NRichardson(SNES snes)
 PetscErrorCode SNESSetUp_NRichardson(SNES snes)
 {
   PetscFunctionBegin;
+  if (snes->pcside == PC_RIGHT) {SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"NRichardson only supports left preconditioning");}
+  if (snes->functype == SNES_FUNCTION_DEFAULT) snes->functype = SNES_FUNCTION_UNPRECONDITIONED;
   PetscFunctionReturn(0);
 }
 
@@ -129,23 +131,44 @@ PetscErrorCode SNESSolve_NRichardson(SNES snes)
   snes->iter = 0;
   snes->norm = 0.;
   ierr       = PetscObjectAMSGrantAccess((PetscObject)snes);CHKERRQ(ierr);
-  if (!snes->vec_func_init_set) {
-    ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
-    if (snes->domainerror) {
-      snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;
-      PetscFunctionReturn(0);
-    }
-  } else snes->vec_func_init_set = PETSC_FALSE;
 
-  if (!snes->norm_init_set) {
-    ierr = VecNorm(F,NORM_2,&fnorm);CHKERRQ(ierr); /* fnorm <- ||F||  */
-    if (PetscIsInfOrNanReal(fnorm)) {
-      snes->reason = SNES_DIVERGED_FNORM_NAN;
+  if (snes->pc && snes->functype == SNES_FUNCTION_PRECONDITIONED) {
+    ierr = SNESApplyPC(snes,X,NULL,NULL,F);CHKERRQ(ierr);
+    ierr = SNESGetConvergedReason(snes->pc,&reason);CHKERRQ(ierr);
+    if (reason < 0  && reason != SNES_DIVERGED_MAX_IT) {
+      snes->reason = SNES_DIVERGED_INNER;
       PetscFunctionReturn(0);
     }
+    ierr = VecNorm(F,NORM_2,&fnorm);CHKERRQ(ierr);
   } else {
-    fnorm               = snes->norm_init;
-    snes->norm_init_set = PETSC_FALSE;
+    if (!snes->vec_func_init_set) {
+      ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
+      if (snes->domainerror) {
+        snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;
+        PetscFunctionReturn(0);
+      }
+    } else snes->vec_func_init_set = PETSC_FALSE;
+    if (!snes->norm_init_set) {
+      /* convergence test */
+      ierr = VecNorm(F,NORM_2,&fnorm);CHKERRQ(ierr);
+      if (PetscIsInfOrNanReal(fnorm)) {
+        snes->reason = SNES_DIVERGED_FNORM_NAN;
+        PetscFunctionReturn(0);
+      }
+    } else {
+      fnorm               = snes->norm_init;
+      snes->norm_init_set = PETSC_FALSE;
+    }
+  }
+  if (snes->pc && snes->functype == SNES_FUNCTION_UNPRECONDITIONED) {
+      ierr = SNESApplyPC(snes,X,F,&fnorm,Y);CHKERRQ(ierr);
+      ierr = SNESGetConvergedReason(snes->pc,&reason);CHKERRQ(ierr);
+      if (reason < 0  && reason != SNES_DIVERGED_MAX_IT) {
+        snes->reason = SNES_DIVERGED_INNER;
+        PetscFunctionReturn(0);
+      }
+  } else {
+    ierr = VecCopy(F,Y);CHKERRQ(ierr);
   }
 
   ierr       = PetscObjectAMSTakeAccess((PetscObject)snes);CHKERRQ(ierr);
@@ -160,28 +183,20 @@ PetscErrorCode SNESSolve_NRichardson(SNES snes)
   ierr = (*snes->ops->converged)(snes,0,0.0,0.0,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
   if (snes->reason) PetscFunctionReturn(0);
 
-  for (i = 0; i < maxits; i++) {
+  /* Call general purpose update function */
+  if (snes->ops->update) {
+    ierr = (*snes->ops->update)(snes, snes->iter);CHKERRQ(ierr);
+  }
+
+  /* set parameter for default relative tolerance convergence test */
+  snes->ttol = fnorm*snes->rtol;
+  /* test convergence */
+  ierr = (*snes->ops->converged)(snes,0,0.0,0.0,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
+  if (snes->reason) PetscFunctionReturn(0);
+
+  for (i = 1; i < maxits+1; i++) {
     lsSuccess = PETSC_TRUE;
-    /* Call general purpose update function */
-    if (snes->ops->update) {
-      ierr = (*snes->ops->update)(snes, snes->iter);CHKERRQ(ierr);
-    }
-    if (snes->pc && snes->pcside == PC_RIGHT) {
-      ierr = VecCopy(X,Y);CHKERRQ(ierr);
-      ierr = SNESSetInitialFunction(snes->pc, F);CHKERRQ(ierr);
-      ierr = SNESSetInitialFunctionNorm(snes->pc, fnorm);CHKERRQ(ierr);
-      ierr = PetscLogEventBegin(SNES_NPCSolve,snes->pc,Y,snes->vec_rhs,0);CHKERRQ(ierr);
-      ierr = SNESSolve(snes->pc, snes->vec_rhs, Y);CHKERRQ(ierr);
-      ierr = PetscLogEventEnd(SNES_NPCSolve,snes->pc,Y,snes->vec_rhs,0);CHKERRQ(ierr);
-      ierr = SNESGetConvergedReason(snes->pc,&reason);CHKERRQ(ierr);
-      if (reason < 0  && reason != SNES_DIVERGED_MAX_IT) {
-        snes->reason = SNES_DIVERGED_INNER;
-        PetscFunctionReturn(0);
-      }
-      ierr = VecAYPX(Y,-1.0,X);CHKERRQ(ierr);
-    } else {
-      ierr = VecCopy(F,Y);CHKERRQ(ierr);
-    }
+
     ierr = SNESLineSearchApply(snes->linesearch, X, F, &fnorm, Y);CHKERRQ(ierr);
     ierr = SNESLineSearchGetNorms(snes->linesearch, &xnorm, &fnorm, &ynorm);CHKERRQ(ierr);
     ierr = SNESLineSearchGetSuccess(snes->linesearch, &lsSuccess);CHKERRQ(ierr);
@@ -199,9 +214,10 @@ PetscErrorCode SNESSolve_NRichardson(SNES snes)
       snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;
       PetscFunctionReturn(0);
     }
+
     /* Monitor convergence */
     ierr       = PetscObjectAMSTakeAccess((PetscObject)snes);CHKERRQ(ierr);
-    snes->iter = i+1;
+    snes->iter = i;
     snes->norm = fnorm;
     ierr       = PetscObjectAMSGrantAccess((PetscObject)snes);CHKERRQ(ierr);
     ierr       = SNESLogConvergenceHistory(snes,snes->norm,0);CHKERRQ(ierr);
@@ -209,8 +225,30 @@ PetscErrorCode SNESSolve_NRichardson(SNES snes)
     /* Test for convergence */
     ierr = (*snes->ops->converged)(snes,snes->iter,xnorm,ynorm,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
     if (snes->reason) break;
+
+    /* Call general purpose update function */
+    if (snes->ops->update) {
+      ierr = (*snes->ops->update)(snes, snes->iter);CHKERRQ(ierr);
+    }
+
+    if (snes->pc) {
+      if (snes->functype == SNES_FUNCTION_PRECONDITIONED) {
+        ierr = SNESApplyPC(snes,X,NULL,NULL,Y);CHKERRQ(ierr);
+        ierr = VecNorm(F,NORM_2,&fnorm);CHKERRQ(ierr);
+        ierr = VecCopy(Y,F);CHKERRQ(ierr);
+      } else {
+        ierr = SNESApplyPC(snes,X,F,&fnorm,Y);CHKERRQ(ierr);
+      }
+      ierr = SNESGetConvergedReason(snes->pc,&reason);CHKERRQ(ierr);
+      if (reason < 0  && reason != SNES_DIVERGED_MAX_IT) {
+        snes->reason = SNES_DIVERGED_INNER;
+        PetscFunctionReturn(0);
+      }
+    } else {
+      ierr = VecCopy(F,Y);CHKERRQ(ierr);
+    }
   }
-  if (i == maxits) {
+  if (i == maxits+1) {
     ierr = PetscInfo1(snes, "Maximum number of iterations has been reached: %D\n", maxits);CHKERRQ(ierr);
     if (!snes->reason) snes->reason = SNES_DIVERGED_MAX_IT;
   }
@@ -256,6 +294,8 @@ PETSC_EXTERN PetscErrorCode SNESCreate_NRichardson(SNES snes)
 
   snes->usesksp = PETSC_FALSE;
   snes->usespc  = PETSC_TRUE;
+
+  snes->pcside = PC_LEFT;
 
   ierr       = PetscNewLog(snes, SNES_NRichardson, &neP);CHKERRQ(ierr);
   snes->data = (void*) neP;
