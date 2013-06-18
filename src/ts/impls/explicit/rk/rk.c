@@ -1,21 +1,19 @@
 /*
-  Code for timestepping with Runge-Kutta method
+  Code for time stepping with the Runge-Kutta method
 
   Notes:
   The general system is written as
 
-  F(t,U,Udot) = G(t,U)
-
-  where F represents the stiff part of the physics and G represents the non-stiff part.
+  Udot = F(t,U)
 
 */
 #include <petsc-private/tsimpl.h>                /*I   "petscts.h"   I*/
 #include <petscdm.h>
 
-static TSRKType TSRKDefault = TSRK3;
-static PetscBool     TSRKRegisterAllCalled;
-static PetscBool     TSRKPackageInitialized;
-static PetscInt      explicit_stage_time_id;
+static TSRKType  TSRKDefault = TSRK3;
+static PetscBool TSRKRegisterAllCalled;
+static PetscBool TSRKPackageInitialized;
+static PetscInt  explicit_stage_time_id;
 
 typedef struct _RKTableau *RKTableau;
 struct _RKTableau {
@@ -84,14 +82,14 @@ M*/
 /*MC
      TSRK4 - Fourth order RK scheme.
 
-     This method has four stages.
+     This is the classical Runge-Kutta method with four stages.
 
      Level: advanced
 
 .seealso: TSRK
 M*/
 /*MC
-     TSRK5F - Fifth order Fehlberg RK scheme with 4th order embedded method.
+     TSRK5F - Fifth order Fehlberg RK scheme with a 4th order embedded method.
 
      This method has six stages.
 
@@ -100,7 +98,7 @@ M*/
 .seealso: TSRK
 M*/
 /*MC
-     TSRK5DP - Fifth order Dormand-Prince RK scheme with 4th order embedded method.
+     TSRK5DP - Fifth order Dormand-Prince RK scheme with the 4th order embedded method.
 
      This method has seven stages.
 
@@ -456,7 +454,6 @@ static PetscErrorCode TSStep_RK(TS ts)
       ts->steps++;
       rk->status = TS_STEP_COMPLETE;
       ierr = PetscObjectComposedDataSetReal((PetscObject)ts->vec_sol,explicit_stage_time_id,ts->ptime);CHKERRQ(ierr);
-
       break;
     } else {                    /* Roll back the current step */
       for (j=0; j<s; j++) w[j] = -h*b[j];
