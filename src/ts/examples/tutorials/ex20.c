@@ -78,6 +78,7 @@ const PetscReal mu = 1.0e6;
 
 typedef struct _n_User *User;
 struct _n_User {
+  PetscReal mu;
   PetscBool imex;
   PetscReal next_output;
 };
@@ -116,7 +117,7 @@ static PetscErrorCode IFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ctx
   ierr = VecGetArray(Xdot,&xdot);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
   f[0] = xdot[0] - (user->imex ? 0 : x[1]);
-  f[1] = xdot[1] - mu*((1-x[0]*x[0])*x[1] - x[0]);
+  f[1] = xdot[1] - user->mu*((1-x[0]*x[0])*x[1] - x[0]);
   ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(Xdot,&xdot);CHKERRQ(ierr);
   ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
@@ -135,7 +136,7 @@ static PetscErrorCode IJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat
   PetscFunctionBeginUser;
   ierr    = VecGetArray(X,&x);CHKERRQ(ierr);
   J[0][0] = a;     J[0][1] = (user->imex ? 0 : -1.0);
-  J[1][0] = mu*(1.0 + 2.0*x[0]*x[1]);   J[1][1] = a - mu*(1-x[0]*x[0]);
+  J[1][0] = user->mu*(1.0 + 2.0*x[0]*x[1]);   J[1][1] = a - user->mu*(1-x[0]*x[0]);
   ierr    = MatSetValues(*B,2,rowcol,2,rowcol,&J[0][0],INSERT_VALUES);CHKERRQ(ierr);
   ierr    = VecRestoreArray(X,&x);CHKERRQ(ierr);
 
@@ -146,6 +147,27 @@ static PetscErrorCode IJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat
     ierr = MatAssemblyEnd(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
   *flag = SAME_NONZERO_PATTERN;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "RegisterMyARK2"
+/* This is an example of registering an user-provided ARKIMEX scheme */
+static PetscErrorCode RegisterMyARK2(void)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBeginUser;
+  {
+    const PetscReal
+      A[3][3] = {{0,0,0},
+                 {0.41421356237309504880,0,0},
+                 {0.75,0.25,0}},
+      At[3][3] = {{0,0,0},
+                  {0.12132034355964257320,0.29289321881345247560,0},
+                  {0.20710678118654752440,0.50000000000000000000,0.29289321881345247560}};
+    ierr = TSARKIMEXRegister("myark2",2,3,&At[0][0],NULL,NULL,&A[0][0],NULL,NULL,NULL,NULL,0,NULL,NULL);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -187,7 +209,7 @@ int main(int argc,char **argv)
   Mat            A;             /* Jacobian matrix */
   PetscInt       steps;
   PetscReal      ftime   = 0.5;
-  PetscBool      monitor = PETSC_FALSE,rhs2 = PETSC_FALSE;
+  PetscBool      monitor = PETSC_FALSE;
   PetscScalar    *x_ptr;
   PetscMPIInt    size;
   struct _n_User user;
@@ -201,14 +223,18 @@ int main(int argc,char **argv)
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size != 1) SETERRQ(PETSC_COMM_SELF,1,"This is a uniprocessor example only!");
 
+  /* Register user-specified ARKIMEX method */
+  ierr = RegisterMyARK2();CHKERRQ(ierr);
+
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Set runtime options
     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   user.imex        = PETSC_TRUE;
   user.next_output = 0.0;
+  user.mu          = 1.0e6;
   ierr = PetscOptionsGetBool(NULL,"-imex",&user.imex,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,"-monitor",&monitor,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,"-rhs2",&rhs2,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-mu","Stiffness parameter","<1.0e6>",user.mu,&user.mu,PETSC_NULL);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Create necessary matrix and vectors, solve same ODE on every process
