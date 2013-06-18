@@ -835,6 +835,7 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
       break;
     } else {                    /* Roll back the current step */
       ts->ptime += next_time_step; /* This will be undone in rollback */
+      ark->status = TS_STEP_INCOMPLETE;
       ierr = TSRollBack(ts);CHKERRQ(ierr);
     }
 reject_step: continue;

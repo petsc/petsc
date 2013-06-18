@@ -1088,6 +1088,7 @@ static PetscErrorCode TSStep_RosW(TS ts)
       break;
     } else {                    /* Roll back the current step */
       ts->ptime += next_time_step; /* This will be undone in rollback */
+      ros->status = TS_STEP_INCOMPLETE;
       ierr = TSRollBack(ts);CHKERRQ(ierr);
     }
 reject_step: continue;

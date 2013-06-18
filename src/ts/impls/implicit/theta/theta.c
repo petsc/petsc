@@ -216,6 +216,7 @@ static PetscErrorCode TSStep_Theta(TS ts)
       th->status = TS_STEP_COMPLETE;
     } else {                    /* Roll back the current step */
       ts->ptime += next_time_step; /* This will be undone in rollback */
+      th->status = TS_STEP_INCOMPLETE;
       ierr = TSRollBack(ts);CHKERRQ(ierr);
     }
   }
