@@ -220,6 +220,7 @@ PETSC_EXTERN PetscErrorCode TSSetMaxStepRejections(TS,PetscInt);
 PETSC_EXTERN PetscErrorCode TSGetSNESFailures(TS,PetscInt*);
 PETSC_EXTERN PetscErrorCode TSSetMaxSNESFailures(TS,PetscInt);
 PETSC_EXTERN PetscErrorCode TSSetErrorIfStepFails(TS,PetscBool);
+PETSC_EXTERN PetscErrorCode TSRollBack(TS);
 
 PETSC_EXTERN PetscErrorCode TSSetInitialTimeStep(TS,PetscReal,PetscReal);
 PETSC_EXTERN PetscErrorCode TSGetTimeStep(TS,PetscReal*);

@@ -34,6 +34,7 @@ struct _TSOps {
   PetscErrorCode (*reset)(TS);
   PetscErrorCode (*linearstability)(TS,PetscReal,PetscReal,PetscReal*,PetscReal*);
   PetscErrorCode (*load)(TS,PetscViewer);
+  PetscErrorCode (*rollback)(TS);
 };
 
 struct _p_TS {
@@ -101,6 +102,7 @@ struct _p_TS {
 
   PetscInt  steps;                  /* steps taken so far */
   PetscReal ptime;                  /* time at the start of the current step (stage time is internal if it exists) */
+  PetscReal ptime_prev;             /* time at the start of the previous step */
   PetscReal solvetime;              /* time at the conclusion of TSSolve() */
   PetscInt  ksp_its;                /* total number of linear solver iterations */
   PetscInt  snes_its;               /* total number of nonlinear solver iterations */

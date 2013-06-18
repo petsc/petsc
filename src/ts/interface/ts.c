@@ -2493,7 +2493,6 @@ PetscErrorCode TSInterpolate(TS ts,PetscReal t,Vec U)
 @*/
 PetscErrorCode  TSStep(TS ts)
 {
-  PetscReal      ptime_prev;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -2501,13 +2500,13 @@ PetscErrorCode  TSStep(TS ts)
   ierr = TSSetUp(ts);CHKERRQ(ierr);
 
   ts->reason = TS_CONVERGED_ITERATING;
-  ptime_prev = ts->ptime;
+  ts->ptime_prev = ts->ptime;
 
   ierr = PetscLogEventBegin(TS_Step,ts,0,0,0);CHKERRQ(ierr);
   ierr = (*ts->ops->step)(ts);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(TS_Step,ts,0,0,0);CHKERRQ(ierr);
 
-  ts->time_step_prev = ts->ptime - ptime_prev;
+  ts->time_step_prev = ts->ptime - ts->ptime_prev;
 
   if (ts->reason < 0) {
     if (ts->errorifstepfailed) {
@@ -4851,5 +4850,35 @@ PetscErrorCode TSComputeLinearStability(TS ts,PetscReal xr,PetscReal xi,PetscRea
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   if (!ts->ops->linearstability) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"Linearized stability function not provided for this method");
   ierr = (*ts->ops->linearstability)(ts,xr,xi,yr,yi);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSRollBack"
+/*@
+   TSRollBack - Rolls back one time step
+
+   Collective on TS
+
+   Input Parameter:
+.  ts - the TS context obtained from TSCreate()
+
+   Level: advanced
+
+.keywords: TS, timestep, rollback
+
+.seealso: TSCreate(), TSSetUp(), TSDestroy(), TSSolve(), TSSetPreStep(), TSSetPreStage(), TSInterpolate()
+@*/
+PetscErrorCode  TSRollBack(TS ts)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts, TS_CLASSID,1);
+
+  if (!ts->ops->rollback) SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"TSRollBack not implemented for type '%s'",((PetscObject)ts)->type_name);
+  ierr = (*ts->ops->rollback)(ts);CHKERRQ(ierr);
+  ts->time_step = ts->ptime - ts->ptime_prev;
+  ts->ptime = ts->ptime_prev;
   PetscFunctionReturn(0);
 }
