@@ -1821,11 +1821,11 @@ runex161_5:
 runex163:
 	-@${MPIEXEC} -n 1 ./ex163 -f ${DATAFILESPATH}/matrices/small > ex163.tmp 2>&1; \
 	   ${DIFF} output/ex163.out ex163.tmp || echo ${PWD} "\nPossible problem with ex163, diffs above \n========================================="; \
-	   ${RM} -f ex161.tmp
+	   ${RM} -f ex163.tmp
 runex163_2:
 	-@${MPIEXEC} -n 3 ./ex163 -f ${DATAFILESPATH}/matrices/small > ex163.tmp 2>&1; \
 	   ${DIFF} output/ex163.out ex163.tmp || echo ${PWD} "\nPossible problem with ex163_2, diffs above \n========================================="; \
-	   ${RM} -f ex161.tmp
+	   ${RM} -f ex163.tmp
 
 runex164:
 	-@${MPIEXEC} -n 1 ./ex164  > ex164.tmp 2>&1; \
