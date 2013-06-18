@@ -27,6 +27,11 @@ PETSC_EXTERN PetscErrorCode DMMoabGetLocalToGlobalTag(DM dm,moab::Tag *ltog_tag)
 PETSC_EXTERN PetscErrorCode DMMoabSetBlockSize(DM dm,PetscInt bs);
 PETSC_EXTERN PetscErrorCode DMMoabGetBlockSize(DM dm,PetscInt *bs);
 
+PETSC_EXTERN PetscErrorCode DMMoabVecGetArrayRead(DM,Vec,void*);
+PETSC_EXTERN PetscErrorCode DMMoabVecRestoreArrayRead(DM,Vec,void*);
+PETSC_EXTERN PetscErrorCode DMMoabVecGetArray(DM,Vec,void*);
+PETSC_EXTERN PetscErrorCode DMMoabVecRestoreArray(DM,Vec,void*);
+
 PETSC_EXTERN PetscErrorCode DMMoabCreateVector(DM dm, moab::Tag tag,PetscInt tag_size,moab::Range *range,PetscBool serial, PetscBool destroy_tag,Vec *X);
 PETSC_EXTERN PetscErrorCode DMMoabCreateMatrix(DM dm, MatType mtype,Mat *J);
 PETSC_EXTERN PetscErrorCode DMMoabGetVecTag(Vec vec,moab::Tag *tag);
