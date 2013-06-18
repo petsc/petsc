@@ -40,6 +40,8 @@ typedef struct {
   PetscBLASInt       lwork;          /* the size of the work vector */
   PetscBLASInt       info;           /* the output condition */
 
+  PetscReal          rtol;           /* restart tolerance for accepting the combination */
+  PetscReal          stol;           /* restart tolerance for the combination */
 } SNES_Composite;
 
 #undef __FUNCT__
@@ -147,7 +149,9 @@ static PetscErrorCode SNESCompositeApply_AdditiveOptimal(SNES snes,Vec X,Vec B,V
   SNES_CompositeLink next = jac->head;
   Vec                *Xes = jac->Xes,*Fes = jac->Fes;
   PetscInt           i,j;
-  PetscScalar        tot,ftf;
+  PetscScalar        tot,total,ftf;
+  PetscReal          min_fnorm;
+  PetscInt           min_i;
 
   PetscFunctionBegin;
   if (!next) SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE,"No composite SNESes supplied via SNESCompositeAddSNES() or -snes_composite_sneses");
@@ -169,6 +173,7 @@ static PetscErrorCode SNESCompositeApply_AdditiveOptimal(SNES snes,Vec X,Vec B,V
     }
     ierr = VecDotBegin(Fes[i],F,&jac->g[i]);CHKERRQ(ierr);
   }
+
   for (i=0;i<jac->n;i++) {
     for (j=0;j<i+1;j++) {
       ierr = VecDotEnd(Fes[i],Fes[j],&jac->h[i + j*jac->n]);CHKERRQ(ierr);
@@ -208,23 +213,33 @@ static PetscErrorCode SNESCompositeApply_AdditiveOptimal(SNES snes,Vec X,Vec B,V
   if (jac->info > 0) SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_LIB,"SVD failed to converge");
 #endif
   tot = 0.;
+  total = 0.;
   for (i=0; i<jac->n; i++) {
     if (PetscIsInfOrNanScalar(jac->beta[i])) SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_LIB,"SVD generated inconsistent output");
     ierr = PetscInfo2(snes,"%d: %f\n",i,PetscRealPart(jac->beta[i]));CHKERRQ(ierr);
     tot += jac->beta[i];
+    total += PetscAbsScalar(jac->beta[i]);
   }
   ierr = VecScale(X,(1. - tot));CHKERRQ(ierr);
   ierr = VecMAXPY(X,jac->n,jac->beta,Xes);CHKERRQ(ierr);
   ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
   ierr = VecNorm(F,NORM_2,fnorm);CHKERRQ(ierr);
 
-  /* take the minimum-normed candidate if it beats the combination */
+  /* take the minimum-normed candidate if it beats the combination by a factor of rtol or the combination has stagnated */
+  min_fnorm = jac->fnorms[0];
+  min_i     = 0;
   for (i=0; i<jac->n; i++) {
-    if (jac->fnorms[i] < *fnorm) {
-      ierr = VecCopy(Xes[i],X);CHKERRQ(ierr);
-      ierr = VecCopy(Fes[i],F);CHKERRQ(ierr);
-      *fnorm = jac->fnorms[i];
+    if (jac->fnorms[i] < min_fnorm) {
+      min_fnorm = jac->fnorms[i];
+      min_i     = i;
     }
+  }
+
+  /* stagnation or divergence restart to the solution of the solver that failed the least */
+  if (PetscRealPart(total) < jac->stol || min_fnorm*jac->rtol < *fnorm) {
+    ierr = VecCopy(X,jac->Xes[min_i]);CHKERRQ(ierr);
+    ierr = VecCopy(F,jac->Fes[min_i]);CHKERRQ(ierr);
+    *fnorm = min_fnorm;
   }
   PetscFunctionReturn(0);
 }
@@ -358,6 +373,8 @@ static PetscErrorCode SNESSetFromOptions_Composite(SNES snes)
       ierr = SNESCompositeSetDamping(snes,i,dmps[i]);CHKERRQ(ierr);
     }
   }
+  ierr = PetscOptionsReal("-snes_composite_stol","Step tolerance for restart on the additive composite solvers","",jac->stol,&jac->stol,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-snes_composite_rtol","Residual tolerance for the additive composite solvers","",jac->rtol,&jac->rtol,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
 
   next = jac->head;
@@ -430,7 +447,7 @@ static PetscErrorCode  SNESCompositeAddSNES_Composite(SNES snes,SNESType type)
   ierr        = PetscLogObjectParent((PetscObject)snes,(PetscObject)ilink->snes);CHKERRQ(ierr);
   ierr        = SNESGetDM(snes,&dm);CHKERRQ(ierr);
   ierr        = SNESSetDM(ilink->snes,dm);CHKERRQ(ierr);
-
+  ierr        = SNESSetTolerances(ilink->snes,ilink->snes->abstol,ilink->snes->rtol,ilink->snes->stol,1,ilink->snes->max_funcs);CHKERRQ(ierr);
   jac  = (SNES_Composite*)snes->data;
   next = jac->head;
   if (!next) {
@@ -763,6 +780,8 @@ PETSC_EXTERN PetscErrorCode SNESCreate_Composite(SNES snes)
   jac->fnorms = NULL;
   jac->nsnes = 0;
   jac->head  = 0;
+  jac->stol  = 0.1;
+  jac->rtol  = 1.1;
 
   jac->h     = NULL;
   jac->s     = NULL;

@@ -1,0 +1,13 @@
+lid velocity = 100, prandtl # = 1, grashof # = 40000
+  0 SNES Function norm 1667.67 
+  1 SNES Function norm 785.497 
+  2 SNES Function norm 763.89 
+  3 SNES Function norm 449.623 
+  4 SNES Function norm 315.829 
+  5 SNES Function norm 253.432 
+  6 SNES Function norm 136.964 
+  7 SNES Function norm 107.878 
+  8 SNES Function norm 19.6557 
+  9 SNES Function norm 0.157495 
+ 10 SNES Function norm 6.03141e-06 
+Number of SNES iterations = 10
