@@ -238,16 +238,18 @@ PetscErrorCode DMMoabCreateMoab(MPI_Comm comm, moab::Interface *mbiface, moab::P
     ierr = DMMoabSetParallelComm(*dmb, pcomm);CHKERRQ(ierr);
   }
 
+  /* do the remaining initializations for DMMoab */
+  dmmoab->bs       = 1;
+
+  /* set global ID tag handle */
   if (!ltog_tag) {
-    merr = dmmoab->mbiface->tag_get_handle(GLOBAL_ID_TAG_NAME, *ltog_tag);MBERRNM(merr);
+    merr = dmmoab->mbiface->tag_get_handle(GLOBAL_ID_TAG_NAME, dmmoab->ltog_tag);MBERRNM(merr);
   }
   else {
     ierr = DMMoabSetLocalToGlobalTag(*dmb, *ltog_tag);CHKERRQ(ierr);
   }
 
-  /* do the initialization of other DM data */
-  dmmoab->bs       = 1;
-  dmmoab->ltog_tag = *ltog_tag;  
+  /* set the local range of entities (vertices) of interest */
   if (range) {
     ierr = DMMoabSetRange(*dmb, range);CHKERRQ(ierr);
   }
