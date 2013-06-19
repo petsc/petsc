@@ -12,9 +12,10 @@ static char help[] = "Bouncing ball example to test TS event feature.\n";
 #define MAXTSEVENTS 5
 
 typedef struct {
-  PetscScalar    fvalue;      /* value of event function */
-  PetscScalar    fvalue_prev; /* value of event function at previous step */
-  PetscReal      ptime_prev;  /* Start time of step */
+  PetscScalar    fvalue;      /* value of event function at the end of the step*/
+  PetscScalar    fvalue_prev; /* value of event function at start of the step */
+  PetscReal      ptime;       /* time after step completion */
+  PetscReal      ptime_prev;  /* time at step start */
   PetscErrorCode (*monitor)(TS,PetscReal,Vec,PetscScalar*,PetscInt*,PetscBool*,void*);
   PetscBool      terminate; /* Terminate Integration */
   PetscInt       direction; /* Zero crossing direction: 1 -> Going positive, -1 -> Going negative, 0 -> Both */ 
@@ -48,10 +49,6 @@ PetscErrorCode EventFunction(TS ts,PetscReal t,Vec U,PetscScalar *fvalue,PetscIn
   *fvalue = u[0];
   if (terminate) *terminate = PETSC_TRUE;
   if (direction) *direction = -1;
-  if (u[0] < 0) {
-    ierr = PetscPrintf(PETSC_COMM_SELF,"Ball height = %f\n",u[0]);CHKERRQ(ierr);
-    ierr = TSSetConvergedReason(ts,TS_CONVERGED_USER);CHKERRQ(ierr);
-  }
   ierr = VecRestoreArray(U,&u);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -83,12 +80,61 @@ PetscErrorCode PostStep(TS ts)
   PetscReal      t;
   Vec            U;
   PetscInt       i;
+  PetscReal      tstepstart,tstepend;
+  PetscScalar    fvaluestart,fvalueend;
 
   PetscFunctionBegin;
   ierr = TSGetTime(ts,&t);CHKERRQ(ierr);
   ierr = TSGetSolution(ts,&U);CHKERRQ(ierr);
+
+  tstepend = event[i].ptime = t;
+  tstepstart = event[i].ptime_prev;
+
   for (i=0; i < nevents; i++) {
     ierr = (*event[i].monitor)(ts,t,U,&event[i].fvalue,&event[i].direction,&event[i].terminate,NULL);CHKERRQ(ierr);
+    fvaluestart = event[i].fvalue_prev;
+    fvalueend   = event[i].fvalue;
+
+    if (event[i].direction < 0 && PetscSign(event[i].fvalue) < 0 && PetscSign(event[i].fvalue_prev) > 0) { /* Negative zero crossing */
+
+      while (PetscAbs(event[i].fvalue) > 1e-6) {
+	if (PetscSign(event[i].fvalue) == PetscSign(event[i].fvalue_prev)) {
+	  event[i].fvalue_prev = event[i].fvalue;
+	  event[i].fvalue = fvalueend;
+	  event[i].ptime_prev = t;
+	  event[i].ptime      = tstepend;
+	} else {
+	  event[i].fvalue_prev = fvaluestart;
+	  event[i].ptime =  t;
+	  event[i].ptime_prev = tstepstart;
+	  ierr = TSRollBack(ts);CHKERRQ(ierr);
+	}
+	/* Compute linearly interpolated new time step */
+	PetscReal dt;
+	PetscInt  stepnum;
+	dt = -event[i].fvalue_prev*(event[i].ptime - event[i].ptime_prev)/(event[i].fvalue - event[i].fvalue_prev);
+	/* Set new time step */
+	ierr = TSSetTimeStep(ts,dt);CHKERRQ(ierr);
+	/* Take a step with the modified time step */
+	ierr = TSStep(ts);CHKERRQ(ierr);
+
+	/* Get the current time and solution */
+	ierr = TSGetTime(ts,&t);CHKERRQ(ierr);
+	ierr = TSGetSolution(ts,&U);CHKERRQ(ierr);
+	ierr = TSGetTimeStepNumber(ts,&stepnum);CHKERRQ(ierr);
+	ierr = TSMonitor(ts,stepnum,t,U);CHKERRQ(ierr);
+	
+	/* Check for event zero */
+	ierr = (*event[i].monitor)(ts,t,U,&event[i].fvalue,&event[i].direction,&event[i].terminate,NULL);CHKERRQ(ierr);
+      }
+      if (event[i].terminate) {
+	ierr = PetscPrintf(PETSC_COMM_SELF,"Ball height = %f\n",event[i].fvalue);CHKERRQ(ierr);
+	ierr = TSSetConvergedReason(ts,TS_CONVERGED_USER);CHKERRQ(ierr);
+      }
+    }
+    event[i].fvalue_prev = event[i].fvalue;
+    event[i].ptime_prev  = t;
+
   }
   PetscFunctionReturn(0);
 }
