@@ -15,9 +15,10 @@ typedef struct {
   PetscReal       ptime_prev;  /* time at step start */
   PetscErrorCode  (*monitor)(TS,PetscReal,Vec,PetscScalar*,PetscInt*,PetscBool*,void*);
   PetscBool      *terminate;   /* 1 -> Terminate time stepping, 0 -> continue */
-  PetscInt       *direction; /* Zero crossing direction: 1 -> Going positive, -1 -> Going negative, 0 -> Both */ 
+  PetscInt       *direction;   /* Zero crossing direction: 1 -> Going positive, -1 -> Going negative, 0 -> Any */ 
   PetscInt        nevents;
   void           *monitorcontext;
+  PetscReal       tol;
 } EventCtx;
 
 EventCtx *event;
@@ -29,7 +30,6 @@ PetscErrorCode EventMonitorSet(TS ts,PetscInt nevents,PetscErrorCode (*eventmoni
   PetscErrorCode ierr;
   PetscReal      t;
   Vec            U;
-  PetscInt       i;
 
   PetscFunctionBegin;
   ierr = PetscMalloc(sizeof(EventCtx),&event);CHKERRQ(ierr);
@@ -45,7 +45,12 @@ PetscErrorCode EventMonitorSet(TS ts,PetscInt nevents,PetscErrorCode (*eventmoni
   ierr = TSGetSolution(ts,&U);CHKERRQ(ierr);
   event->ptime_prev = t;
   ierr = (*event->monitor)(ts,t,U,event->fvalue_prev,NULL,NULL,NULL);CHKERRQ(ierr);
-
+  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"TS Event options","");CHKERRQ(ierr);
+  {
+    event->tol = 1.0e-6;
+    ierr = PetscOptionsReal("-event_tol","","",event->tol,&event->tol,NULL);CHKERRQ(ierr);
+  }
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -89,9 +94,11 @@ PetscErrorCode PostStep(TS ts)
     fvaluestart = event->fvalue_prev[i];
     fvalueend   = event->fvalue[i];
 
-    if (event->direction[i] < 0 && PetscSign(event->fvalue[i]) < 0 && PetscSign(event->fvalue_prev[i]) > 0) { /* Negative zero crossing */
+    if ((event->direction[i] < 0 && PetscSign(event->fvalue[i]) < 0 && PetscSign(event->fvalue_prev[i]) > 0) || \
+        (event->direction[i] > 0 && PetscSign(event->fvalue[i]) > 0 && PetscSign(event->fvalue_prev[i]) < 0) || \
+        (event->direction[i] == 0 && PetscSign(event->fvalue[i])*PetscSign(event->fvalue_prev[i]) <= 0)) {
 
-      while (PetscAbs(event->fvalue[i]) > 1e-6) {
+      while (PetscAbs(event->fvalue[i]) > event->tol) {
 	if (PetscSign(event->fvalue[i]) == PetscSign(event->fvalue_prev[i])) {
 	  event->fvalue_prev[i] = event->fvalue[i];
 	  event->fvalue[i]      = fvalueend;
