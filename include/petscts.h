@@ -95,6 +95,7 @@ typedef enum {
   TS_CONVERGED_TIME           = 1,
   TS_CONVERGED_ITS            = 2,
   TS_CONVERGED_USER           = 3,
+  TS_CONVERGED_EVENT          = 4,
   TS_DIVERGED_NONLINEAR_SOLVE = -1,
   TS_DIVERGED_STEP_REJECTED   = -2
 } TSConvergedReason;
