@@ -2,38 +2,50 @@
 static char help[] = "Bouncing ball example to test TS event feature.\n";
 
 /*
-
         u1_t = u2
         u2_t = -9.8
 */
 
 #include <petscts.h>
 
-#define MAXTSEVENTS 5
-
 typedef struct {
-  PetscScalar    fvalue;      /* value of event function at the end of the step*/
-  PetscScalar    fvalue_prev; /* value of event function at start of the step */
-  PetscReal      ptime;       /* time after step completion */
-  PetscReal      ptime_prev;  /* time at step start */
-  PetscErrorCode (*monitor)(TS,PetscReal,Vec,PetscScalar*,PetscInt*,PetscBool*,void*);
-  PetscBool      terminate; /* Terminate Integration */
-  PetscInt       direction; /* Zero crossing direction: 1 -> Going positive, -1 -> Going negative, 0 -> Both */ 
-  void*          monitorcontext;
+  PetscScalar    *fvalue;      /* value of event functions at the end of the step*/
+  PetscScalar    *fvalue_prev; /* value of event function at start of the step */
+  PetscReal       ptime;       /* time after step completion */
+  PetscReal       ptime_prev;  /* time at step start */
+  PetscErrorCode  (*monitor)(TS,PetscReal,Vec,PetscScalar*,PetscInt*,PetscBool*,void*);
+  PetscBool      *terminate;   /* 1 -> Terminate time stepping, 0 -> continue */
+  PetscInt       *direction; /* Zero crossing direction: 1 -> Going positive, -1 -> Going negative, 0 -> Both */ 
+  PetscInt        nevents;
+  void           *monitorcontext;
 } EventCtx;
 
-EventCtx event[5];
-
-PetscInt nevents=0;
+EventCtx *event;
 
 #undef __FUNCT__
 #define __FUNCT__ "EventMonitorSet"
-PetscErrorCode EventMonitorSet(TS ts,PetscErrorCode (*eventmonitor)(TS,PetscReal,Vec,PetscScalar*,PetscInt*,PetscBool*,void*),void *mectx)
+PetscErrorCode EventMonitorSet(TS ts,PetscInt nevents,PetscErrorCode (*eventmonitor)(TS,PetscReal,Vec,PetscScalar*,PetscInt*,PetscBool*,void*),void *mectx)
 {
+  PetscErrorCode ierr;
+  PetscReal      t;
+  Vec            U;
+  PetscInt       i;
+
   PetscFunctionBegin;
-  if (nevents > MAXTSEVENTS) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many events set");
-  event[nevents].monitor = eventmonitor;
-  event[nevents++].monitorcontext = (void*)mectx;
+  ierr = PetscMalloc(sizeof(EventCtx),&event);CHKERRQ(ierr);
+  ierr = PetscMalloc(nevents*sizeof(PetscScalar),&event->fvalue);CHKERRQ(ierr);
+  ierr = PetscMalloc(nevents*sizeof(PetscScalar),&event->fvalue_prev);CHKERRQ(ierr);
+  ierr = PetscMalloc(nevents*sizeof(PetscBool),&event->terminate);CHKERRQ(ierr);
+  ierr = PetscMalloc(nevents*sizeof(PetscInt),&event->direction);CHKERRQ(ierr);
+  event->monitor = eventmonitor;
+  event->monitorcontext = (void*)mectx;
+  event->nevents = nevents;
+
+  ierr = TSGetTime(ts,&t);CHKERRQ(ierr);
+  ierr = TSGetSolution(ts,&U);CHKERRQ(ierr);
+  event->ptime_prev = t;
+  ierr = (*event->monitor)(ts,t,U,event->fvalue_prev,NULL,NULL,NULL);CHKERRQ(ierr);
+
   PetscFunctionReturn(0);
 }
 
@@ -46,29 +58,10 @@ PetscErrorCode EventFunction(TS ts,PetscReal t,Vec U,PetscScalar *fvalue,PetscIn
 
   PetscFunctionBegin;
   ierr = VecGetArray(U,&u);CHKERRQ(ierr);
-  *fvalue = u[0];
-  if (terminate) *terminate = PETSC_TRUE;
-  if (direction) *direction = -1;
+  fvalue[0] = u[0];
+  if (terminate) terminate[0] = PETSC_TRUE;
+  if (direction) direction[0] = -1;
   ierr = VecRestoreArray(U,&u);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "EventMonitorInitialize"
-PetscErrorCode EventMonitorInitialize(TS ts)
-{
-  PetscErrorCode ierr;
-  PetscReal      t;
-  Vec            U;
-  PetscInt       i;
-
-  PetscFunctionBegin;
-  ierr = TSGetTime(ts,&t);CHKERRQ(ierr);
-  ierr = TSGetSolution(ts,&U);CHKERRQ(ierr);
-  for (i=0; i < nevents; i++) {
-    ierr = (*event[i].monitor)(ts,t,U,&event[i].fvalue_prev,NULL,NULL,NULL);CHKERRQ(ierr);
-    event[i].ptime_prev = t;
-  }
   PetscFunctionReturn(0);
 }
 
@@ -87,32 +80,33 @@ PetscErrorCode PostStep(TS ts)
   ierr = TSGetTime(ts,&t);CHKERRQ(ierr);
   ierr = TSGetSolution(ts,&U);CHKERRQ(ierr);
 
-  tstepend = event[i].ptime = t;
-  tstepstart = event[i].ptime_prev;
+  tstepend = event->ptime = t;
+  tstepstart = event->ptime_prev;
 
-  for (i=0; i < nevents; i++) {
-    ierr = (*event[i].monitor)(ts,t,U,&event[i].fvalue,&event[i].direction,&event[i].terminate,NULL);CHKERRQ(ierr);
-    fvaluestart = event[i].fvalue_prev;
-    fvalueend   = event[i].fvalue;
+  ierr = (*event->monitor)(ts,t,U,event->fvalue,event->direction,event->terminate,NULL);CHKERRQ(ierr);
+  for (i=0; i < event->nevents; i++) {
 
-    if (event[i].direction < 0 && PetscSign(event[i].fvalue) < 0 && PetscSign(event[i].fvalue_prev) > 0) { /* Negative zero crossing */
+    fvaluestart = event->fvalue_prev[i];
+    fvalueend   = event->fvalue[i];
 
-      while (PetscAbs(event[i].fvalue) > 1e-6) {
-	if (PetscSign(event[i].fvalue) == PetscSign(event[i].fvalue_prev)) {
-	  event[i].fvalue_prev = event[i].fvalue;
-	  event[i].fvalue = fvalueend;
-	  event[i].ptime_prev = t;
-	  event[i].ptime      = tstepend;
+    if (event->direction[i] < 0 && PetscSign(event->fvalue[i]) < 0 && PetscSign(event->fvalue_prev[i]) > 0) { /* Negative zero crossing */
+
+      while (PetscAbs(event->fvalue[i]) > 1e-6) {
+	if (PetscSign(event->fvalue[i]) == PetscSign(event->fvalue_prev[i])) {
+	  event->fvalue_prev[i] = event->fvalue[i];
+	  event->fvalue[i]      = fvalueend;
+	  event->ptime_prev     = t;
+	  event->ptime          = tstepend;
 	} else {
-	  event[i].fvalue_prev = fvaluestart;
-	  event[i].ptime =  t;
-	  event[i].ptime_prev = tstepstart;
+	  event->fvalue_prev[i] = fvaluestart;
+	  event->ptime =  t;
+	  event->ptime_prev = tstepstart;
 	  ierr = TSRollBack(ts);CHKERRQ(ierr);
 	}
 	/* Compute linearly interpolated new time step */
 	PetscReal dt;
 	PetscInt  stepnum;
-	dt = -event[i].fvalue_prev*(event[i].ptime - event[i].ptime_prev)/(event[i].fvalue - event[i].fvalue_prev);
+	dt = -event->fvalue_prev[i]*(event->ptime - event->ptime_prev)/(event->fvalue[i] - event->fvalue_prev[i]);
 	/* Set new time step */
 	ierr = TSSetTimeStep(ts,dt);CHKERRQ(ierr);
 	/* Take a step with the modified time step */
@@ -125,15 +119,15 @@ PetscErrorCode PostStep(TS ts)
 	ierr = TSMonitor(ts,stepnum,t,U);CHKERRQ(ierr);
 	
 	/* Check for event zero */
-	ierr = (*event[i].monitor)(ts,t,U,&event[i].fvalue,&event[i].direction,&event[i].terminate,NULL);CHKERRQ(ierr);
+	ierr = (*event->monitor)(ts,t,U,event->fvalue,event->direction,event->terminate,NULL);CHKERRQ(ierr);
       }
-      if (event[i].terminate) {
-	ierr = PetscPrintf(PETSC_COMM_SELF,"Ball height = %f\n",event[i].fvalue);CHKERRQ(ierr);
+      if (event->terminate[i]) {
+	ierr = PetscPrintf(PETSC_COMM_SELF,"Ball height = %f\n",event->fvalue[i]);CHKERRQ(ierr);
 	ierr = TSSetConvergedReason(ts,TS_CONVERGED_USER);CHKERRQ(ierr);
       }
     }
-    event[i].fvalue_prev = event[i].fvalue;
-    event[i].ptime_prev  = t;
+    event->fvalue_prev[i] = event->fvalue[i];
+    event->ptime_prev  = t;
 
   }
   PetscFunctionReturn(0);
@@ -253,9 +247,8 @@ int main(int argc,char **argv)
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
   ierr = TSSetPostStep(ts,PostStep);CHKERRQ(ierr);
   
-  ierr = EventMonitorSet(ts,EventFunction,NULL);CHKERRQ(ierr);
+  ierr = EventMonitorSet(ts,1,EventFunction,NULL);CHKERRQ(ierr);
 
-  ierr = EventMonitorInitialize(ts);CHKERRQ(ierr);
   for (i=0; i < nruns; i++) {
     PetscReal t;
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
