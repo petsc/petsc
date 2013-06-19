@@ -1331,7 +1331,7 @@ PETSC_EXTERN PetscErrorCode PetscObjectsGetGlobalNumbering(MPI_Comm,PetscInt,Pet
 #include <petscoptions.h>
 
 PETSC_EXTERN PetscErrorCode PetscMemoryShowUsage(PetscViewer,const char[]);
-PETSC_EXTERN PetscErrorCode PetscObjectPrintClassNamePrefixType(PetscObject,PetscViewer,const char[]);
+PETSC_EXTERN PetscErrorCode PetscObjectPrintClassNamePrefixType(PetscObject,PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscObjectView(PetscObject,PetscViewer);
 #define PetscObjectQueryFunction(obj,name,fptr) PetscObjectQueryFunction_Private((obj),(name),(PetscVoidFunction*)(fptr))
 PETSC_EXTERN PetscErrorCode PetscObjectQueryFunction_Private(PetscObject,const char[],void (**)(void));

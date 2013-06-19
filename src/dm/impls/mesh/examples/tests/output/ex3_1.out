@@ -82,7 +82,7 @@ Process 1:
 [0] 6 2
 [0] 7 4
 [1] Number of indices in set 0
-Star Forest Object: 2 MPI processes
+PetscSF Object: 2 MPI processes
   type not yet set
   synchronization=FENCE sort=rank-order
   [0] Number of roots=1, leaves=2, remote ranks=2
@@ -119,7 +119,7 @@ Process 1:
 [0] 18 12
 [0] 19 14
 [1] Number of indices in set 0
-Star Forest Object: 2 MPI processes
+PetscSF Object: 2 MPI processes
   type not yet set
   synchronization=FENCE sort=rank-order
   [0] Number of roots=17, leaves=10, remote ranks=1
@@ -210,7 +210,7 @@ Process 1:
   (   7) dim  0 offset  12
   (   8) dim  0 offset  12
   (   9) dim  0 offset  12
-Star Forest Object: 2 MPI processes
+PetscSF Object: 2 MPI processes
   type not yet set
   synchronization=FENCE sort=rank-order
   [0] Number of roots=-1, leaves=12, remote ranks=1

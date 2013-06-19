@@ -1,5 +1,5 @@
 Local function
-Vector Object: 1 MPI processes
+Vec Object: 1 MPI processes
   type: seq
 0
 0
@@ -34,7 +34,7 @@ Vector Object: 1 MPI processes
 -2
 1.5
 Initial guess
-Vector Object: 1 MPI processes
+Vec Object: 1 MPI processes
   type: seq
 -1.5
 -0.5
@@ -46,7 +46,7 @@ Vector Object: 1 MPI processes
 1.5
 L_2 Error: 0.597303
 Residual:
-Vector Object: 1 MPI processes
+Vec Object: 1 MPI processes
   type: seq
 0
 0
@@ -81,7 +81,7 @@ Vector Object: 1 MPI processes
 0
 0
 Initial Residual
-Vector Object: 1 MPI processes
+Vec Object: 1 MPI processes
   type: seq
 0
 0.0833333
@@ -93,7 +93,7 @@ Vector Object: 1 MPI processes
 0
 L_2 Residual: 0.288675
 Jacobian:
-Matrix Object: 1 MPI processes
+Mat Object: 1 MPI processes
   type: seqaij
 row 0: (0, 0)  (1, 0)  (2, 0)  (3, 0)  (4, 0)  (5, 0)  (6, 0)  (7, 0) 
 row 1: (0, 0)  (1, 0)  (3, 0)  (5, 0)  (7, 0) 
@@ -104,7 +104,7 @@ row 5: (0, 0)  (1, 0)  (4, 0)  (5, 0)  (7, 0)
 row 6: (0, 0)  (2, 0)  (4, 0)  (6, 0)  (7, 0) 
 row 7: (0, 0)  (1, 0)  (2, 0)  (3, 0)  (4, 0)  (5, 0)  (6, 0)  (7, 0) 
 Residual:
-Vector Object: 1 MPI processes
+Vec Object: 1 MPI processes
   type: seq
 0
 0
@@ -139,7 +139,7 @@ Vector Object: 1 MPI processes
 0
 0
 Au - b = Au + F(0)
-Vector Object: 1 MPI processes
+Vec Object: 1 MPI processes
   type: seq
 0
 0.0833333

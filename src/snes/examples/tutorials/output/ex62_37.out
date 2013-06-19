@@ -781,10 +781,10 @@ SNES Object: 1 MPI processes
   PC Object:   1 MPI processes
     type: jacobi
     linear system matrix followed by preconditioner matrix:
-    Matrix Object:     1 MPI processes
+    Mat Object:     1 MPI processes
       type: shell
       rows=1107, cols=1107
-    Matrix Object:     1 MPI processes
+    Mat Object:     1 MPI processes
       type: seqaij
       rows=1107, cols=1107
       total: nonzeros=29785, allocated nonzeros=29785
