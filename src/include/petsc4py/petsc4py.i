@@ -457,7 +457,7 @@ SWIG_From_dec(Type)(Type v) {
 %define SWIG_TYPECHECK_PETSC_DM            541 %enddef
 
 
-%define %petsc4py_objt(Pkg, PyType, Type, CODE, OBJECT_NULL)
+%define %petsc4py_objt(Pkg, PyType, Type, CODE)
 
 /* pointer type */
 %types(Type*); /* XXX find better way */
@@ -466,7 +466,7 @@ SWIG_From_dec(Type)(Type v) {
 { /* XXX implement this better*/
 %define_as(Py##Pkg##PyType##_GetPtr(ob), (Type *)PyPetscObject_GetPtr(ob))
 }
-%petsc4py_fragments(Pkg, PyType, Type, OBJECT_NULL)
+%petsc4py_fragments(Pkg, PyType, Type, NULL)
 /* base typemaps */
 %typemaps_asptrfromn(%checkcode(CODE), Type);
 
@@ -474,18 +474,14 @@ SWIG_From_dec(Type)(Type v) {
 /* Custom Typemaps */
 /* --------------- */
 
-/*  check */
-%typemap(check,noblock=1) Type {
-  if ($1 == OBJECT_NULL)
-    %argument_nullref("$type", $symname, $argnum);
-}
-%typemap(check,noblock=1) Type*, Type& {
-  if ($1 == NULL || (*$1) == OBJECT_NULL)
-    %argument_nullref("$type", $symname, $argnum);
-}
-
 /* freearg */
 %typemap(freearg) Type, Type*, Type& "";
+
+/* check */
+%typemap(check,noblock=1) Type INPUT {
+  if ($1 == NULL)
+    %argument_nullref("$type", $symname, $argnum);
+}
 
 /* input pointer */
 %typemap(in,fragment=SWIG_AsPtr_frag(Type)) Type *INPUT (int res = SWIG_OLDOBJ) {
@@ -495,7 +491,7 @@ SWIG_From_dec(Type)(Type v) {
   $1 = ptr;
 }
 %typemap(check,noblock=1) Type *INPUT {
-  if ($1 == NULL || (*$1) == OBJECT_NULL)
+  if ($1 == NULL || (*$1) == NULL)
     %argument_nullref("$type", $symname, $argnum);
 }
 
@@ -503,16 +499,12 @@ SWIG_From_dec(Type)(Type v) {
 %apply Type *INPUT { Type& }
 
 /* optional value */
-%typemap(arginit) Type OPTIONAL "$1 = OBJECT_NULL;"
+%typemap(arginit) Type OPTIONAL "$1 = NULL;"
 %typemap(in,fragment=SWIG_AsPtr_frag(Type)) Type OPTIONAL (int res = 0) {
   Type *ptr = (Type *)0;
   res = SWIG_AsPtr(Type)($input, &ptr);
   if (!SWIG_IsOK(res)) { %argument_fail(res, "$type", $symname, $argnum); }
   if (ptr) $1 = *ptr;
-}
-%typemap(check,noblock=1) Type OPTIONAL {
-  if ($1 != OBJECT_NULL && !(1)) /* XXX check */
-    %argument_nullref("$type", $symname, $argnum);
 }
 
 /* optional reference */
@@ -524,13 +516,9 @@ SWIG_From_dec(Type)(Type v) {
   $1 = ptr;
   if (SWIG_IsNewObj(res)) %delete(ptr);
 }
-%typemap(check,noblock=1) Type& OPTIONAL {
-  if ((*$1) != OBJECT_NULL && !(1)) /* XXX check */
-    %argument_nullref("$type",$symname,$argnum);
-}
 
 %typemap(in,numinputs=0) Type* OUTREF, Type* OUTNEW
-($*ltype temp = OBJECT_NULL) "$1 = &temp;";
+($*ltype temp = NULL) "$1 = &temp;";
 %typemap(freearg) Type* OUTREF, Type* OUTNEW  "";
 %typemap(check) Type* OUTREF, Type* OUTNEW  "";
 %typemap(argout) Type* OUTREF {
@@ -565,21 +553,21 @@ SWIG_From_dec(Type)(Type v) {
 
 %petsc4py_comm( Petsc, Comm , MPI_Comm , MPI_COMM , MPI_COMM_NULL )
 
-%petsc4py_objt( Petsc , Object    , PetscObject            , PETSC_OBJECT        , PETSC_NULL )
-%petsc4py_objt( Petsc , Viewer    , PetscViewer            , PETSC_VIEWER        , PETSC_NULL )
-%petsc4py_objt( Petsc , Random    , PetscRandom            , PETSC_RANDOM        , PETSC_NULL )
-%petsc4py_objt( Petsc , IS        , IS                     , PETSC_IS            , PETSC_NULL )
-%petsc4py_objt( Petsc , LGMap     , ISLocalToGlobalMapping , PETSC_IS_LTOGM      , PETSC_NULL )
-%petsc4py_objt( Petsc , Vec       , Vec                    , PETSC_VEC           , PETSC_NULL )
-%petsc4py_objt( Petsc , Scatter   , VecScatter             , PETSC_VEC_SCATTER   , PETSC_NULL )
-%petsc4py_objt( Petsc , Mat       , Mat                    , PETSC_MAT           , PETSC_NULL )
-%petsc4py_objt( Petsc , NullSpace , MatNullSpace           , PETSC_MAT_NULLSPACE , PETSC_NULL )
-%petsc4py_objt( Petsc , KSP       , KSP                    , PETSC_KSP           , PETSC_NULL )
-%petsc4py_objt( Petsc , PC        , PC                     , PETSC_PC            , PETSC_NULL )
-%petsc4py_objt( Petsc , SNES      , SNES                   , PETSC_SNES          , PETSC_NULL )
-%petsc4py_objt( Petsc , TS        , TS                     , PETSC_TS            , PETSC_NULL )
-%petsc4py_objt( Petsc , AO        , AO                     , PETSC_AO            , PETSC_NULL )
-%petsc4py_objt( Petsc , DM        , DM                     , PETSC_DM            , PETSC_NULL )
+%petsc4py_objt( Petsc , Object    , PetscObject            , PETSC_OBJECT        )
+%petsc4py_objt( Petsc , Viewer    , PetscViewer            , PETSC_VIEWER        )
+%petsc4py_objt( Petsc , Random    , PetscRandom            , PETSC_RANDOM        )
+%petsc4py_objt( Petsc , IS        , IS                     , PETSC_IS            )
+%petsc4py_objt( Petsc , LGMap     , ISLocalToGlobalMapping , PETSC_IS_LTOGM      )
+%petsc4py_objt( Petsc , Vec       , Vec                    , PETSC_VEC           )
+%petsc4py_objt( Petsc , Scatter   , VecScatter             , PETSC_VEC_SCATTER   )
+%petsc4py_objt( Petsc , Mat       , Mat                    , PETSC_MAT           )
+%petsc4py_objt( Petsc , NullSpace , MatNullSpace           , PETSC_MAT_NULLSPACE )
+%petsc4py_objt( Petsc , KSP       , KSP                    , PETSC_KSP           )
+%petsc4py_objt( Petsc , PC        , PC                     , PETSC_PC            )
+%petsc4py_objt( Petsc , SNES      , SNES                   , PETSC_SNES          )
+%petsc4py_objt( Petsc , TS        , TS                     , PETSC_TS            )
+%petsc4py_objt( Petsc , AO        , AO                     , PETSC_AO            )
+%petsc4py_objt( Petsc , DM        , DM                     , PETSC_DM            )
 
 /* ---------------------------------------------------------------- */
 
