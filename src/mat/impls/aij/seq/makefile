@@ -4,7 +4,8 @@ ALL: lib
 CFLAGS   =
 FFLAGS   =
 SOURCEC  = aij.c aijfact.c ij.c fdaij.c \
-	   matmatmult.c symtranspose.c matptap.c matrart.c inode.c inode2.c matmatmatmult.c
+	   matmatmult.c symtranspose.c matptap.c matrart.c inode.c inode2.c matmatmatmult.c \
+           mattransposematmult.c
 SOURCEF  =
 SOURCEH  = aij.h
 LIBBASE  = libpetscmat

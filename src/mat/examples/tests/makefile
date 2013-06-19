@@ -1818,6 +1818,15 @@ runex161_5:
 	   ${DIFF} output/ex161.out ex161.tmp || echo ${PWD} "\nPossible problem with ex161_5, diffs above \n========================================="; \
 	   ${RM} -f ex161.tmp
 
+runex163:
+	-@${MPIEXEC} -n 1 ./ex163 -f ${DATAFILESPATH}/matrices/small > ex163.tmp 2>&1; \
+	   ${DIFF} output/ex163.out ex163.tmp || echo ${PWD} "\nPossible problem with ex163, diffs above \n========================================="; \
+	   ${RM} -f ex163.tmp
+runex163_2:
+	-@${MPIEXEC} -n 3 ./ex163 -f ${DATAFILESPATH}/matrices/small > ex163.tmp 2>&1; \
+	   ${DIFF} output/ex163.out ex163.tmp || echo ${PWD} "\nPossible problem with ex163_2, diffs above \n========================================="; \
+	   ${RM} -f ex163.tmp
+
 runex164:
 	-@${MPIEXEC} -n 1 ./ex164  > ex164.tmp 2>&1; \
 	   ${DIFF} output/ex164_1.out ex164.tmp || echo ${PWD} "\nPossible problem with ex164, diffs above \n========================================="; \
@@ -1846,7 +1855,7 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex3.PETSc runex3 ex3.rm ex4.PET
                                  ex151.PETSc runex151 ex151.rm \
                                  ex159.PETSc runex159 runex159_nest ex159.rm \
                                  ex160.PETSc runex160 ex160.rm  ex161.PETSc runex161 runex161_2 runex161_3 runex161_4 runex161_5 ex161.rm \
-                                 ex164.PETSc runex164 ex164.rm
+                                 ex163.PETSc runex163 runex163_2 ex163.rm ex164.PETSc runex164 ex164.rm
 TESTEXAMPLES_C_X	       = ex2.PETSc runex2 ex2.rm ex7.PETSc runex7 ex7.rm \
                                  ex12.PETSc runex12 runex12_2 runex12_3 runex12_4 ex12.rm ex13.PETSc runex13 ex13.rm \
                                  ex17.PETSc runex17 ex17.rm ex19.PETSc runex19 ex19.rm ex24.PETSc ex24.rm ex25.PETSc \
