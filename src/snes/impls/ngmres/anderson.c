@@ -49,7 +49,8 @@ PetscErrorCode SNESSolve_Anderson(SNES snes)
   Vec XA,FA,XM,FM;
 
   /* coefficients and RHS to the minimization problem */
-  PetscReal fnorm,fMnorm;
+  PetscReal fnorm,fMnorm,fAnorm;
+  PetscReal  xnorm,ynorm;
   PetscReal dnorm,dminnorm=0.0,fminnorm;
   PetscInt  restart_count=0;
   PetscInt  k,k_restart,l,ivec;
@@ -122,9 +123,9 @@ PetscErrorCode SNESSolve_Anderson(SNES snes)
 
   k_restart = 0;
   l         = 0;
+  ivec      = 0;
   for (k=1; k < snes->max_its+1; k++) {
     /* select which vector of the stored subspace will be updated */
-    ivec = k_restart % ngmres->msize;
     if (snes->pc && snes->pcside == PC_RIGHT) {
       ierr = VecCopy(X,XM);CHKERRQ(ierr);
       ierr = SNESSetInitialFunction(snes->pc,F);CHKERRQ(ierr);
@@ -150,18 +151,22 @@ PetscErrorCode SNESSolve_Anderson(SNES snes)
       fMnorm = fnorm;
     }
 
-    ierr = SNESNGMRESFormCombinedSolution_Private(snes,l,XM,FM,fMnorm,X,XA,FA);CHKERRQ(ierr);
+    ierr = SNESNGMRESFormCombinedSolution_Private(snes,ivec,l,XM,FM,fMnorm,X,XA,FA);CHKERRQ(ierr);
+    ivec = k_restart % ngmres->msize;
     if (ngmres->restart_type == SNES_NGMRES_RESTART_DIFFERENCE) {
-      ierr = SNESNGMRESCalculateDifferences_Private(snes,l,X,F,XM,FM,XA,FA,D,&dnorm,&dminnorm,NULL);CHKERRQ(ierr);
+      ierr = SNESNGMRESNorms_Private(snes,l,X,F,XM,FM,XA,FA,D,&dnorm,&dminnorm,NULL,NULL,NULL,&xnorm,&fAnorm,&ynorm);CHKERRQ(ierr);
       ierr = SNESNGMRESSelectRestart_Private(snes,l,fnorm,dnorm,fminnorm,dminnorm,&selectRestart);CHKERRQ(ierr);
       /* if the restart conditions persist for more than restart_it iterations, restart. */
       if (selectRestart) restart_count++;
       else restart_count = 0;
     } else if (ngmres->restart_type == SNES_NGMRES_RESTART_PERIODIC) {
+      ierr = SNESNGMRESNorms_Private(snes,l,X,F,XM,FM,XA,FA,D,NULL,NULL,NULL,NULL,NULL,&xnorm,&fAnorm,&ynorm);CHKERRQ(ierr);
       if (k_restart > ngmres->restart_periodic) {
         if (ngmres->monitor) ierr = PetscViewerASCIIPrintf(ngmres->monitor,"periodic restart after %D iterations\n",k_restart);CHKERRQ(ierr);
         restart_count = ngmres->restart_it;
       }
+    } else {
+      ierr = SNESNGMRESNorms_Private(snes,l,X,F,XM,FM,XA,FA,D,NULL,NULL,NULL,NULL,NULL,&xnorm,&fAnorm,&ynorm);CHKERRQ(ierr);
     }
     /* restart after restart conditions have persisted for a fixed number of iterations */
     if (restart_count >= ngmres->restart_it) {
@@ -171,13 +176,14 @@ PetscErrorCode SNESSolve_Anderson(SNES snes)
       restart_count = 0;
       k_restart     = 0;
       l             = 0;
+      ivec          = 0;
     } else {
       if (l < ngmres->msize) l++;
       k_restart++;
       ierr = SNESNGMRESUpdateSubspace_Private(snes,ivec,l,FM,fnorm,XM);CHKERRQ(ierr);
     }
 
-    ierr = VecNorm(FA,NORM_2,&fnorm);CHKERRQ(ierr);
+    fnorm = fAnorm;
     if (fminnorm > fnorm) fminnorm = fnorm;
 
     ierr = VecCopy(XA,X);CHKERRQ(ierr);
@@ -189,7 +195,7 @@ PetscErrorCode SNESSolve_Anderson(SNES snes)
     ierr       = PetscObjectAMSGrantAccess((PetscObject)snes);CHKERRQ(ierr);
     ierr       = SNESLogConvergenceHistory(snes,snes->norm,snes->iter);CHKERRQ(ierr);
     ierr       = SNESMonitor(snes,snes->iter,snes->norm);CHKERRQ(ierr);
-    ierr       = (*snes->ops->converged)(snes,snes->iter,0.0,0.0,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
+    ierr       = (*snes->ops->converged)(snes,snes->iter,xnorm,ynorm,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
     if (snes->reason) PetscFunctionReturn(0);
   }
   snes->reason = SNES_DIVERGED_MAX_IT;
