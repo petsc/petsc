@@ -719,19 +719,19 @@ PetscErrorCode IJacobian_Hull1972C1(TS ts, PetscReal t, Vec Y, Vec Ydot, PetscRe
   PetscInt  i;
   PetscInt  col[2];
   PetscReal value[2];
+  i = 0;
+  value[0] = a+1; col[0] = 0;
+  value[1] =  0;  col[1] = 1;
+  ierr = MatSetValues(*A,1,&i,2,col,value,INSERT_VALUES);CHKERRQ(ierr);
   for (i = 0; i < N; i++) {
-    if (i == 0) {
-      value[0] = a-1; col[0] = i;
-      value[1] =  0;  col[1] = i+1;
-    } else if (i == N-1) {
-      value[0] = -1;  col[0] = i-1;
-      value[1] =  a;  col[1] = i;
-    } else { 
-      value[0] =  -1; col[0] = i-1;
-      value[1] = a+1; col[1] = i;
-    }
+    value[0] =  -1; col[0] = i-1;
+    value[1] = a+1; col[1] = i;
     ierr = MatSetValues(*A,1,&i,2,col,value,INSERT_VALUES);CHKERRQ(ierr);
   }
+  i = N-1;
+  value[0] = -1;  col[0] = N-2;
+  value[1] = a;   col[1] = N-1;
+  ierr = MatSetValues(*A,1,&i,2,col,value,INSERT_VALUES);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd  (*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = VecRestoreArray(Y,&y);CHKERRQ(ierr);
@@ -802,19 +802,19 @@ PetscErrorCode IJacobian_Hull1972C2(TS ts, PetscReal t, Vec Y, Vec Ydot, PetscRe
   PetscInt  i;
   PetscInt  col[2];
   PetscReal value[2];
+  i = 0;
+  value[0] = a+1;                 col[0] = 0;
+  value[1] = 0;                   col[1] = 1;
+  ierr = MatSetValues(*A,1,&i,2,col,value,INSERT_VALUES);CHKERRQ(ierr);
   for (i = 0; i < N; i++) {
-    if (i == 0) {
-      value[0] = a-(PetscReal)(-i-1); col[0] = i;
-      value[1] = 0;                   col[1] = i+1;
-    } else if (i == N-1) {
-      value[0] = -(PetscReal) i;      col[0] = i-1;
-      value[1] = a;                   col[1] = i;
-    } else { 
-      value[0] = -(PetscReal) i;      col[0] = i-1;
-      value[1] = a-(PetscReal)(-1-1); col[1] = i;
-    }
+    value[0] = -(PetscReal) i;      col[0] = i-1;
+    value[1] = a+(PetscReal)(i+1);  col[1] = i;
     ierr = MatSetValues(*A,1,&i,2,col,value,INSERT_VALUES);CHKERRQ(ierr);
   }
+  i = N-1;
+  value[0] = -(PetscReal) (N-1);  col[0] = N-2;
+  value[1] = a;                   col[1] = N-1;
+  ierr = MatSetValues(*A,1,&i,2,col,value,INSERT_VALUES);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd  (*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = VecRestoreArray(Y,&y);CHKERRQ(ierr);
