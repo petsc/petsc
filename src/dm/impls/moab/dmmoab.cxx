@@ -40,7 +40,7 @@ PetscErrorCode DMSetUp_Moab(DM dm)
   moab::Range::iterator   iter;
   PetscInt                bs, *gsindices,gsiz,lsiz;
   DM_Moab                *dmmoab = (DM_Moab*)dm->data;
-  PetscInt                count,dof,totsize;
+  PetscInt                totsize;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
@@ -86,7 +86,6 @@ PetscErrorCode DMSetUp_Moab(DM dm)
   }
 
   {
-    count=0;
     totsize=dmmoab->vlocal->size();
     ierr = PetscMalloc(totsize*sizeof(PetscInt), &gsindices);CHKERRQ(ierr);
     /* first get the local indices */
@@ -213,7 +212,7 @@ PetscErrorCode DMMoabCreateMoab(MPI_Comm comm, moab::Interface *mbiface, moab::P
   dmmoab = (DM_Moab*)(*dmb)->data;
 
   if (!mbiface) {
-    mbiface = new moab::Core();
+    dmmoab->mbiface = new moab::Core();
     dmmoab->icreatedinstance = PETSC_TRUE;
   }
   else
@@ -227,25 +226,27 @@ PetscErrorCode DMMoabCreateMoab(MPI_Comm comm, moab::Interface *mbiface, moab::P
 
     /* Create root sets for each mesh.  Then pass these
        to the load_file functions to be populated. */
-    merr = mbiface->create_meshset(moab::MESHSET_SET, rootset);
+    merr = dmmoab->mbiface->create_meshset(moab::MESHSET_SET, rootset);
     MBERR("Creating root set failed", merr);
-    merr = mbiface->create_meshset(moab::MESHSET_SET, partnset);
+    merr = dmmoab->mbiface->create_meshset(moab::MESHSET_SET, partnset);
     MBERR("Creating partition set failed", merr);
 
     /* Create the parallel communicator object with the partition handle associated with MOAB */
-    pcomm = moab::ParallelComm::get_pcomm(mbiface, partnset, &comm);
+    dmmoab->pcomm = moab::ParallelComm::get_pcomm(dmmoab->mbiface, partnset, &comm);
+  }
+  else {
+    ierr = DMMoabSetParallelComm(*dmb, pcomm);CHKERRQ(ierr);
   }
 
   if (!ltog_tag) {
-    merr = mbiface->tag_get_handle(GLOBAL_ID_TAG_NAME, *ltog_tag);MBERRNM(merr);
+    merr = dmmoab->mbiface->tag_get_handle(GLOBAL_ID_TAG_NAME, *ltog_tag);MBERRNM(merr);
   }
   else {
     ierr = DMMoabSetLocalToGlobalTag(*dmb, *ltog_tag);CHKERRQ(ierr);
   }
 
-  /* do the initialization of the DM */
+  /* do the initialization of other DM data */
   dmmoab->bs       = 1;
-  ierr = DMMoabSetParallelComm(*dmb, pcomm);CHKERRQ(ierr);
   dmmoab->ltog_tag = *ltog_tag;  
   if (range) {
     ierr = DMMoabSetRange(*dmb, range);CHKERRQ(ierr);
