@@ -5,6 +5,7 @@
 #include <petscmat.h>
 #include <petscdm.h>
 
+#include <string>
 #include <moab/Core.hpp>
 #include <moab/ParallelComm.hpp>
 
@@ -13,6 +14,8 @@
  * also be passed in. */
 #define MBERR(msg,rval) do{if(rval != moab::MB_SUCCESS) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB,"MOAB ERROR (%i): %s",(PetscErrorCode)rval,msg);} while(0)
 #define MBERRNM(rval) do{if(rval != moab::MB_SUCCESS) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"MOAB ERROR (%i)",rval);} while(0)
+#define MBERRV(mbif,rval) do{if(rval != moab::MB_SUCCESS) { std::string emsg; mbif->get_last_error(emsg); SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB,"MOAB ERROR (%i): %s",(PetscErrorCode)rval,emsg.c_str());} } while(0)
+#define MBERRVM(mbif,msg,rval) do{if(rval != moab::MB_SUCCESS) { std::string emsg; mbif->get_last_error(emsg); SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB,"MOAB ERROR (%i): %s :: %s",(PetscErrorCode)rval,msg,emsg.c_str());} } while(0)
 
 PETSC_EXTERN PetscErrorCode DMMoabCreate(MPI_Comm comm, DM *moab);
 PETSC_EXTERN PetscErrorCode DMMoabCreateMoab(MPI_Comm comm, moab::Interface *mbiface, moab::ParallelComm *pcomm, moab::Tag *ltog_tag, moab::Range *range, DM *moab);
