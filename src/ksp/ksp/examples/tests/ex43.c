@@ -6,11 +6,8 @@ format on the GPU using the MatCUSPARSESetFormat method. Input parameters are:\n
 /*
   This code can be used to test PETSc interface to other packages.\n\
   Examples of command line options:       \n\
-   ./ex43-aijcusparse -f DATAFILESPATH/matrices/cfd.2.10 -mat_cusparse_mult_storage_format ell  \n\
-  In a second example, one can read a symmetric matrix stored in upper triangular form.\n\
-  Then one can invoke the ICC preconditioner, however one has to indicate explicitly \n\
-  that the matrix is symmetric.
-   ./ex43-aijcusparse -f DATAFILESPATH/matrices/shallow_water1 -ksp_type cgs -pc_type icc -mat_symmetric -mat_cusparse_mult_storage_format ell  \n\
+   ./ex43 -f DATAFILESPATH/matrices/cfd.2.10 -mat_cusparse_mult_storage_format ell  \n\
+   ./ex43 -f DATAFILESPATH/matrices/shallow_water1 -ksp_type cgs -pc_type icc -mat_cusparse_mult_storage_format ell  \n\
    \n\n";
 */
 
@@ -41,20 +38,16 @@ int main(int argc,char **argv)
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = MatSetType(A,MATSEQAIJCUSPARSE);CHKERRQ(ierr);
   ierr = MatCUSPARSESetFormat(A,MAT_CUSPARSE_MULT,MAT_CUSPARSE_ELL);CHKERRQ(ierr);
-
-  /* inform the matrix that it is symmetric */
-  ierr = PetscOptionsHasName(NULL, "-mat_symmetric", &flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr=MatSetOption(A,MAT_SYMMETRIC,PETSC_TRUE);
-  }
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
   ierr = MatLoad(A,fd);CHKERRQ(ierr);
 
   /* Build the vectors */
   ierr = MatGetLocalSize(A,&m,PETSC_NULL);CHKERRQ(ierr);
-  ierr = VecCreateSeqCUSP(PETSC_COMM_WORLD,m,&B);CHKERRQ(ierr);
+  ierr = VecCreateSeq(PETSC_COMM_WORLD,m,&B);CHKERRQ(ierr);
+  ierr = VecCreateSeq(PETSC_COMM_WORLD,m,&X);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(B);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(X);CHKERRQ(ierr);
   ierr = VecSet(B,1.0);CHKERRQ(ierr);
-  ierr = VecDuplicate(B,&X);CHKERRQ(ierr);
 
   /* Build the KSP */
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);

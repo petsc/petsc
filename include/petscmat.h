@@ -1514,8 +1514,7 @@ PETSC_EXTERN PetscErrorCode MatMumpsSetCntl(Mat,PetscInt,PetscReal);
 PETSC_EXTERN PetscErrorCode MatSuperluSetILUDropTol(Mat,PetscReal);
 #endif
 
-#if defined PETSC_HAVE_TXPETSCGPU
-
+#ifdef PETSC_HAVE_CUDA
 /*E
     MatCUSPARSEStorageFormat - indicates the storage format for CUSPARSE (GPU)
     matrices. Requires the txpetscgpu package to use. Configure with 
@@ -1562,7 +1561,6 @@ typedef enum {MAT_CUSPARSE_MULT_DIAG, MAT_CUSPARSE_MULT_OFFDIAG, MAT_CUSPARSE_MU
 PETSC_EXTERN PetscErrorCode MatCreateSeqAIJCUSPARSE(MPI_Comm,PetscInt,PetscInt,PetscInt,const PetscInt[],Mat*);
 PETSC_EXTERN PetscErrorCode MatCreateAIJCUSPARSE(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],PetscInt,const PetscInt[],Mat*);
 PETSC_EXTERN PetscErrorCode MatCUSPARSESetFormat(Mat,MatCUSPARSEFormatOperation,MatCUSPARSEStorageFormat);
-
 #endif
 
 #if defined(PETSC_HAVE_CUSP)
