@@ -2268,6 +2268,7 @@ static PetscErrorCode DMPlexCreateCohesiveSubmesh_Uninterpolated(DM dm, PetscBoo
     ierr = PetscSFGetGraph(sfPoint, &numRoots, &numLeaves, &localPoints, &remotePoints);CHKERRQ(ierr);
     if (numRoots >= 0) {
       ierr = PetscMalloc2(numRoots,PetscInt,&newLocation,pEnd-pStart,PetscInt,&newRemoteLocation);CHKERRQ(ierr);
+      ierr = PetscMemzero(newRemoteLocation, (pEnd-pStart) * sizeof(PetscInt));CHKERRQ(ierr);
       /* Only vertices should be shared */
       for (l=0; l<numRoots; l++) newLocation[l] = DMPlexFilterPoint_Internal(l, firstSubVertex, numSubVertices, subVertices);
       ierr = PetscSFBcastBegin(sfPoint, MPIU_INT, newLocation, newRemoteLocation);CHKERRQ(ierr);
