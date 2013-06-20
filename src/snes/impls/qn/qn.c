@@ -193,15 +193,20 @@ PetscErrorCode SNESQNApply_LBFGS(SNES snes,PetscInt it,Vec Y,Vec X,Vec Xold,Vec 
 
   PetscFunctionBegin;
   if (it < m) l = it;
+  ierr = VecCopy(D,Y);CHKERRQ(ierr);
   if (it > 0) {
     k    = (it - 1) % l;
-    ierr = VecCopy(D, dF[k]);CHKERRQ(ierr);
+    ierr = VecCopy(D,dF[k]);CHKERRQ(ierr);
     ierr = VecAXPY(dF[k], -1.0, Dold);CHKERRQ(ierr);
     ierr = VecCopy(X, dX[k]);CHKERRQ(ierr);
     ierr = VecAXPY(dX[k], -1.0, Xold);CHKERRQ(ierr);
     if (qn->singlereduction) {
-      ierr = VecMDot(dF[k], l, dX, dXtdF);CHKERRQ(ierr);
-      ierr = VecMDot(dX[k], l, dF, dFtdX);CHKERRQ(ierr);
+      ierr = VecMDotBegin(dF[k],l,dX,dXtdF);CHKERRQ(ierr);
+      ierr = VecMDotBegin(dX[k],l,dF,dFtdX);CHKERRQ(ierr);
+      ierr = VecMDotBegin(Y,l,dX,YtdX);CHKERRQ(ierr);
+      ierr = VecMDotEnd(dF[k],l,dX,dXtdF);CHKERRQ(ierr);
+      ierr = VecMDotEnd(dX[k],l,dF,dFtdX);CHKERRQ(ierr);
+      ierr = VecMDotEnd(Y,l,dX,YtdX);CHKERRQ(ierr);
       for (j = 0; j < l; j++) {
         H(k, j) = dFtdX[j];
         H(j, k) = dXtdF[j];
@@ -220,11 +225,6 @@ PetscErrorCode SNESQNApply_LBFGS(SNES snes,PetscInt it,Vec Y,Vec X,Vec Xold,Vec 
     }
   }
 
-  ierr = VecCopy(D,Y);CHKERRQ(ierr);
-
-  if (qn->singlereduction) {
-    ierr = VecMDot(Y,l,dX,YtdX);CHKERRQ(ierr);
-  }
   /* outward recursion starting at iteration k's update and working back */
   for (i=0; i<l; i++) {
     k = (it-i-1)%l;
@@ -303,7 +303,7 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
   PetscInt            i, i_r;
   PetscReal           fnorm,xnorm,ynorm,gnorm;
   PetscBool           lssucceed,powell,periodic;
-  PetscScalar         DolddotD,DolddotDold,DdotD,YdotD;
+  PetscScalar         DolddotD,DolddotDold;
   MatStructure        flg = DIFFERENT_NONZERO_PATTERN;
   SNESConvergedReason reason;
 
@@ -470,12 +470,8 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
       /* check restart by Powell's Criterion: |F^T H_0 Fold| > 0.2 * |Fold^T H_0 Fold| */
       ierr = VecDotBegin(Dold, Dold, &DolddotDold);CHKERRQ(ierr);
       ierr = VecDotBegin(Dold, D, &DolddotD);CHKERRQ(ierr);
-      ierr = VecDotBegin(D, D, &DdotD);CHKERRQ(ierr);
-      ierr = VecDotBegin(Y, D, &YdotD);CHKERRQ(ierr);
       ierr = VecDotEnd(Dold, Dold, &DolddotDold);CHKERRQ(ierr);
       ierr = VecDotEnd(Dold, D, &DolddotD);CHKERRQ(ierr);
-      ierr = VecDotEnd(D, D, &DdotD);CHKERRQ(ierr);
-      ierr = VecDotEnd(Y, D, &YdotD);CHKERRQ(ierr);
       if (PetscAbs(PetscRealPart(DolddotD)) > qn->powell_gamma*PetscAbs(PetscRealPart(DolddotDold))) powell = PETSC_TRUE;
     }
     periodic = PETSC_FALSE;
@@ -782,7 +778,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_QN(SNES snes)
   qn->dFtdX           = NULL;
   qn->dXdFmat         = NULL;
   qn->monitor         = NULL;
-  qn->singlereduction = PETSC_FALSE;
+  qn->singlereduction = PETSC_TRUE;
   qn->powell_gamma    = 0.9999;
   qn->scale_type      = SNES_QN_SCALE_SHANNO;
   qn->restart_type    = SNES_QN_RESTART_POWELL;
