@@ -201,12 +201,18 @@ PetscErrorCode SNESQNApply_LBFGS(SNES snes,PetscInt it,Vec Y,Vec X,Vec Xold,Vec 
     ierr = VecCopy(X, dX[k]);CHKERRQ(ierr);
     ierr = VecAXPY(dX[k], -1.0, Xold);CHKERRQ(ierr);
     if (qn->singlereduction) {
+      PetscScalar dFtdF;
       ierr = VecMDotBegin(dF[k],l,dX,dXtdF);CHKERRQ(ierr);
       ierr = VecMDotBegin(dX[k],l,dF,dFtdX);CHKERRQ(ierr);
       ierr = VecMDotBegin(Y,l,dX,YtdX);CHKERRQ(ierr);
+      if (qn->scale_type == SNES_QN_SCALE_SHANNO) {ierr = VecDotBegin(dF[k],dF[k],&dFtdF);CHKERRQ(ierr);}
       ierr = VecMDotEnd(dF[k],l,dX,dXtdF);CHKERRQ(ierr);
       ierr = VecMDotEnd(dX[k],l,dF,dFtdX);CHKERRQ(ierr);
       ierr = VecMDotEnd(Y,l,dX,YtdX);CHKERRQ(ierr);
+      if (qn->scale_type == SNES_QN_SCALE_SHANNO) {
+        ierr = VecDotEnd(dF[k],dF[k],&dFtdF);CHKERRQ(ierr);
+        qn->scaling = PetscRealPart(dXtdF[k]) / PetscRealPart(dFtdF);
+      }
       for (j = 0; j < l; j++) {
         H(k, j) = dFtdX[j];
         H(j, k) = dXtdF[j];
@@ -215,12 +221,13 @@ PetscErrorCode SNESQNApply_LBFGS(SNES snes,PetscInt it,Vec Y,Vec X,Vec Xold,Vec 
       for (j = 0; j < l; j++) dXtdF[j] = H(j, j);
     } else {
       ierr = VecDot(dX[k], dF[k], &dXtdF[k]);CHKERRQ(ierr);
+      if (qn->scale_type == SNES_QN_SCALE_SHANNO) {
+        PetscReal dFtdF;
+        ierr        = VecDotRealPart(dF[k],dF[k],&dFtdF);CHKERRQ(ierr);
+        qn->scaling = PetscRealPart(dXtdF[k])/dFtdF;
+      }
     }
-    if (qn->scale_type == SNES_QN_SCALE_SHANNO) {
-      PetscReal dFtdF;
-      ierr        = VecDotRealPart(dF[k],dF[k],&dFtdF);CHKERRQ(ierr);
-      qn->scaling = PetscRealPart(dXtdF[k])/dFtdF;
-    } else if (qn->scale_type == SNES_QN_SCALE_LINESEARCH) {
+    if (qn->scale_type == SNES_QN_SCALE_LINESEARCH) {
       ierr = SNESLineSearchGetLambda(snes->linesearch,&qn->scaling);CHKERRQ(ierr);
     }
   }
