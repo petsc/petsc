@@ -107,7 +107,6 @@ PetscErrorCode  PetscOpenHistoryFile(const char filename[],FILE **fd)
   if (!rank) {
     char        arch[10];
     int         err;
-    PetscViewer viewer;
 
     ierr = PetscGetArchType(arch,10);CHKERRQ(ierr);
     ierr = PetscGetDate(date,64);CHKERRQ(ierr);
@@ -128,9 +127,6 @@ PetscErrorCode  PetscOpenHistoryFile(const char filename[],FILE **fd)
     ierr = PetscFPrintf(PETSC_COMM_SELF,*fd,"%s %s\n",version,date);CHKERRQ(ierr);
     ierr = PetscGetProgramName(pname,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
     ierr = PetscFPrintf(PETSC_COMM_SELF,*fd,"%s on a %s, %d proc. with options:\n",pname,arch,size);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIOpenWithFILE(PETSC_COMM_WORLD,*fd,&viewer);CHKERRQ(ierr);
-    ierr = PetscOptionsView(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
     ierr = PetscFPrintf(PETSC_COMM_SELF,*fd,"---------------------------------------------------------\n");CHKERRQ(ierr);
 
     err = fflush(*fd);
@@ -476,7 +472,7 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
     if (mname[0]) {
       ierr = PetscOpenHistoryFile(mname,&petsc_history);CHKERRQ(ierr);
     } else {
-      ierr = PetscOpenHistoryFile(0,&petsc_history);CHKERRQ(ierr);
+      ierr = PetscOpenHistoryFile(NULL,&petsc_history);CHKERRQ(ierr);
     }
   }
 #if defined(PETSC_HAVE_MPE)
