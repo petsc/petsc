@@ -240,7 +240,7 @@ PetscErrorCode SNESQNApply_LBFGS(SNES snes,PetscInt it,Vec Y,Vec X,Vec Xold,Vec 
       t = YtdX[k];
       for (j=0; j<i; j++) {
         g  = (it-j-1)%l;
-        t += -alpha[g]*H(g, k);
+        t -= alpha[g]*H(k, g);
       }
       alpha[k] = t/H(k,k);
     } else {
@@ -281,7 +281,7 @@ PetscErrorCode SNESQNApply_LBFGS(SNES snes,PetscInt it,Vec Y,Vec X,Vec Xold,Vec 
       t = YtdX[k];
       for (j = 0; j < i; j++) {
         g  = (it + j - l) % l;
-        t += (alpha[g] - beta[g])*H(k, g);
+        t += (alpha[g] - beta[g])*H(g, k);
       }
       beta[k] = t / H(k, k);
     } else {
