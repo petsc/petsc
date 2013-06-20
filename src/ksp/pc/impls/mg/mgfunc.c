@@ -2,9 +2,9 @@
 #include <../src/ksp/pc/impls/mg/mgimpl.h>       /*I "petscksp.h" I*/
 
 #undef __FUNCT__
-#define __FUNCT__ "PCMGResidual_Default"
+#define __FUNCT__ "PCMGResidualDefault"
 /*@C
-   PCMGResidual_Default - Default routine to calculate the residual.
+   PCMGResidualDefault - Default routine to calculate the residual.
 
    Collective on Mat and Vec
 
@@ -22,7 +22,7 @@
 
 .seealso: PCMGSetResidual()
 @*/
-PetscErrorCode  PCMGResidual_Default(Mat mat,Vec b,Vec x,Vec r)
+PetscErrorCode  PCMGResidualDefault(Mat mat,Vec b,Vec x,Vec r)
 {
   PetscErrorCode ierr;
 
@@ -81,7 +81,7 @@ PetscErrorCode  PCMGGetCoarseSolve(PC pc,KSP *ksp)
 
 .keywords:  MG, set, multigrid, residual, level
 
-.seealso: PCMGResidual_Default()
+.seealso: PCMGResidualDefault()
 @*/
 PetscErrorCode  PCMGSetResidual(PC pc,PetscInt l,PetscErrorCode (*residual)(Mat,Vec,Vec,Vec),Mat mat)
 {
@@ -93,7 +93,7 @@ PetscErrorCode  PCMGSetResidual(PC pc,PetscInt l,PetscErrorCode (*residual)(Mat,
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   if (!mglevels) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
   if (residual) mglevels[l]->residual = residual;
-  if (!mglevels[l]->residual) mglevels[l]->residual = PCMGResidual_Default;
+  if (!mglevels[l]->residual) mglevels[l]->residual = PCMGResidualDefault;
   if (mat) {ierr = PetscObjectReference((PetscObject)mat);CHKERRQ(ierr);}
   ierr = MatDestroy(&mglevels[l]->A);CHKERRQ(ierr);
 
