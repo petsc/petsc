@@ -893,6 +893,18 @@ PetscErrorCode  DMCompositeGetGlobalISs(DM dm,IS *is[])
     ierr = PetscMalloc(next->n*sizeof(PetscInt),&idx);CHKERRQ(ierr);
     for (i=0; i<next->n; i++) idx[i] = next->grstart + i;
     ierr = ISCreateGeneral(PetscObjectComm((PetscObject)dm),next->n,idx,PETSC_OWN_POINTER,&(*is)[cnt]);CHKERRQ(ierr);
+    if (dm->fields) {
+      MatNullSpace space;
+      Mat          pmat;
+
+      if (cnt >= dm->numFields) continue;
+      ierr = PetscObjectQuery(dm->fields[cnt], "nullspace", (PetscObject*) &space);CHKERRQ(ierr);
+      if (space) {ierr = PetscObjectCompose((PetscObject) (*is)[cnt], "nullspace", (PetscObject) space);CHKERRQ(ierr);}
+      ierr = PetscObjectQuery(dm->fields[cnt], "nearnullspace", (PetscObject*) &space);CHKERRQ(ierr);
+      if (space) {ierr = PetscObjectCompose((PetscObject) (*is)[cnt], "nearnullspace", (PetscObject) space);CHKERRQ(ierr);}
+      ierr = PetscObjectQuery(dm->fields[cnt], "pmat", (PetscObject*) &pmat);CHKERRQ(ierr);
+      if (pmat) {ierr = PetscObjectCompose((PetscObject) (*is)[cnt], "pmat", (PetscObject) pmat);CHKERRQ(ierr);}
+    }
     cnt++;
     next = next->next;
   }
