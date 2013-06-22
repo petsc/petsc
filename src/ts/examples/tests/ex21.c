@@ -10,7 +10,7 @@ static char help[] = "Serial bouncing ball example to test TS event feature.\n";
 
 #define MAXACTIVEEVENTS 2
 
-typedef enum {EVENT_NONE,EVENT_DETECTED,EVENT_PROCESSING,EVENT_OVER,EVENT_RESET_NEXTSTEP} EventStatus;
+typedef enum {EVENT_NONE,EVENT_LOCATED_INTERVAL,EVENT_PROCESSING,EVENT_ZERO,EVENT_RESET_NEXTSTEP} EventStatus;
 typedef struct {
   PetscScalar    *fvalue;      /* value of event functions at the end of the step*/
   PetscScalar    *fvalue_prev; /* value of event function at start of the step */
@@ -180,7 +180,6 @@ PetscErrorCode PostStep(TS ts)
     event->status = EVENT_NONE;
   }
 
-  /* Save the original time step before the event is detected */
   if (event->status == EVENT_NONE) {
     event->tstepend   = t;
   }
@@ -190,12 +189,12 @@ PetscErrorCode PostStep(TS ts)
   ierr = (*event->monitor)(ts,t,U,event->fvalue,event->direction,event->terminate,event->monitorcontext);CHKERRQ(ierr);
   for (i=0; i < event->nevents; i++) {
     if (PetscAbs(event->fvalue[i]) < event->tol) {
-      event->status = EVENT_OVER;
+      event->status = EVENT_ZERO;
       if (event->nevents_active >= MAXACTIVEEVENTS) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Cannot handle %d simultaneous events",event->nevents_active);
       event->active_event_list[event->nevents_active++] = i;
     }
   }
-  if (event->status == EVENT_OVER) {
+  if (event->status == EVENT_ZERO) {
     ierr = TSSetTimeStep(ts,event->tstepend-t);CHKERRQ(ierr);
     ierr = PostEvent(ts,event->nevents_active,event->active_event_list,t,U,event->monitorcontext);CHKERRQ(ierr);
     for (i = 0; i < event->nevents; i++) {
@@ -210,13 +209,13 @@ PetscErrorCode PostStep(TS ts)
         (event->direction[i] > 0 && PetscSign(event->fvalue[i]) >= 0 && PetscSign(event->fvalue_prev[i]) <= 0) || \
         (event->direction[i] == 0 && PetscSign(event->fvalue[i])*PetscSign(event->fvalue_prev[i]) <= 0)) {
 
-      event->status = EVENT_DETECTED;
+      event->status = EVENT_LOCATED_INTERVAL;
       
       /* Compute linearly interpolated new time step */
       dt = PetscMin(dt,-event->fvalue_prev[i]*(t - event->ptime_prev)/(event->fvalue[i] - event->fvalue_prev[i]));
     }
   }
-  if (event->status == EVENT_DETECTED) {
+  if (event->status == EVENT_LOCATED_INTERVAL) {
     ierr = TSRollBack(ts);CHKERRQ(ierr);
     event->status = EVENT_PROCESSING;
   } else {
