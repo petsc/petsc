@@ -356,6 +356,13 @@ int main(int argc,char **argv)
   
   ierr = EventMonitorSet(ts,2,EventFunction,PostEventFunction,(void*)&app);CHKERRQ(ierr);
 
+  TSAdapt adapt;
+  ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
+  /* The adapative time step controller could take very large timesteps resulting in 
+     the same event occuring multiple times in the same interval. A max. step 
+     limit is enforced here to avoid this issue. 
+  */
+  ierr = TSAdaptSetStepLimits(adapt,0.0,0.5);CHKERRQ(ierr);
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Run timestepping solver
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
