@@ -132,6 +132,14 @@ M*/
 M*/
 
 /*MC
+   TS_CONVERGED_EVENT - user requested termination on event detection
+
+   Level: beginner
+
+.seealso: TSSolve(), TSGetConvergedReason(), TSSetConvergedReason(), TSSetDuration()
+M*/
+
+/*MC
    TS_DIVERGED_NONLINEAR_SOLVE - too many nonlinear solves failed
 
    Level: beginner
