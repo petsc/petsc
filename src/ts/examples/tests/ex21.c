@@ -10,7 +10,7 @@ static char help[] = "Serial bouncing ball example to test TS event feature.\n";
 
 #define MAXACTIVEEVENTS 2
 
-typedef enum {EVENT_NONE,EVENT_DETECTED,EVENT_PROCESSING,EVENT_OVER,EVENT_RESYNCHRONIZE} EventStatus;
+typedef enum {EVENT_NONE,EVENT_DETECTED,EVENT_PROCESSING,EVENT_OVER,EVENT_RESET_NEXTSTEP} EventStatus;
 typedef struct {
   PetscScalar    *fvalue;      /* value of event functions at the end of the step*/
   PetscScalar    *fvalue_prev; /* value of event function at start of the step */
@@ -152,7 +152,7 @@ PetscErrorCode PostEvent(TS ts,PetscInt nevents,PetscInt event_list[],PetscReal 
     ierr = TSSetConvergedReason(ts,TS_CONVERGED_EVENT);CHKERRQ(ierr);
     event->status = EVENT_NONE;
   } else {
-    event->status = EVENT_RESYNCHRONIZE;
+    event->status = EVENT_RESET_NEXTSTEP;
   }
   PetscFunctionReturn(0);
 }
@@ -173,7 +173,7 @@ PetscErrorCode PostStep(TS ts)
   ierr = TSGetSolution(ts,&U);CHKERRQ(ierr);
 
   ierr = TSGetTimeStep(ts,&dt);CHKERRQ(ierr);
-  if (event->status == EVENT_RESYNCHRONIZE) {
+  if (event->status == EVENT_RESET_NEXTSTEP) {
     /* Take initial time step */
     dt = event->initial_timestep;
     ierr = TSSetTimeStep(ts,dt);CHKERRQ(ierr);
