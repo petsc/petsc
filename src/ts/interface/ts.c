@@ -1867,6 +1867,9 @@ PetscErrorCode  TSDestroy(TS *ts)
   if ((*ts)->ops->destroy) {ierr = (*(*ts)->ops->destroy)((*ts));CHKERRQ(ierr);}
 
   ierr = TSAdaptDestroy(&(*ts)->adapt);CHKERRQ(ierr);
+  if ((*ts)->event) {
+    ierr = TSEventMonitorDestroy(&(*ts)->event);CHKERRQ(ierr);
+  }
   ierr = SNESDestroy(&(*ts)->snes);CHKERRQ(ierr);
   ierr = DMDestroy(&(*ts)->dm);CHKERRQ(ierr);
   ierr = TSMonitorCancel((*ts));CHKERRQ(ierr);
@@ -2630,6 +2633,9 @@ PetscErrorCode TSSolve(TS ts,Vec u)
       ierr = TSMonitor(ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
       ierr = TSStep(ts);CHKERRQ(ierr);
       ierr = TSPostStep(ts);CHKERRQ(ierr);
+      if (ts->event) {
+	ierr = TSEventMonitor(ts);CHKERRQ(ierr);
+      }
     }
     if (ts->exact_final_time == TS_EXACTFINALTIME_INTERPOLATE && ts->ptime > ts->max_time) {
       ierr = TSInterpolate(ts,ts->max_time,u);CHKERRQ(ierr);
@@ -4880,5 +4886,202 @@ PetscErrorCode  TSRollBack(TS ts)
   ierr = (*ts->ops->rollback)(ts);CHKERRQ(ierr);
   ts->time_step = ts->ptime - ts->ptime_prev;
   ts->ptime = ts->ptime_prev;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSSetEventMonitor"
+/*@C
+   TSSetEventMonitor - Sets a monitoring function used for detecting events
+
+   Logically Collective on TS
+
+   Input Parameters:
++  ts - the TS context obtained from TSCreate()
+.  nevents - number of events
+.  eventmonitor - event monitoring routine
+.  postevent - [optional] post-event function
+-  mectx - [optional] user-defined context for private data for the
+              event monitor and post event routine (use NULL if no
+              context is desired)
+
+   Calling sequence of eventmonitor:
+   PetscErrorCode EventMonitor(TS ts,PetscReal t,Vec U,PetscScalar *fvalue,PetscInt *direction,PetscBool *terminate,void* mectx)
+
+   Input Parameters:
++  ts  - the TS context
+.  t   - current time
+.  U   - current iterate
+-  ctx - [optional] context passed with eventmonitor
+
+   Output parameters:
++  fvalue    - function value of events at time t
+.  direction - direction of zero crossing to be detected. -1 => Zero crossing in negative direction,
+               +1 => Zero crossing in positive direction, 0 => both ways
+-  terminate - terminate time stepping after event is detected.
+               
+   Calling sequence of postevent:
+   PetscErrorCode PostEvent(TS ts,PetscInt nevents_zero, PetscInt events_zero, PetscReal t,Vec U,void* ctx)
+
+   Input Parameters:
++  ts - the TS context
+.  nevents_zero - number of events whose event function is zero
+.  events_zero  - indices of events which have reached zero
+.  t            - current time
+.  U            - current solution
+-  ctx          - the context passed with eventmonitor
+
+   Level: intermediate
+
+.keywords: TS, event, set, monitor
+
+.seealso: TSCreate(), TSSetTimeStep(), TSSetConvergedReason()
+@*/
+PetscErrorCode TSSetEventMonitor(TS ts,PetscInt nevents,PetscErrorCode (*eventmonitor)(TS,PetscReal,Vec,PetscScalar*,PetscInt*,PetscBool*,void*),PetscErrorCode (*postevent)(TS,PetscInt,PetscInt[],PetscReal,Vec,void*),void *mectx)
+{
+  PetscErrorCode ierr;
+  PetscReal      t;
+  Vec            U;
+  TSEvent        event;
+
+  PetscFunctionBegin;
+  ierr = PetscNew(struct _p_TSEvent,&ts->event);CHKERRQ(ierr);
+  event = ts->event;
+  ierr = PetscMalloc(nevents*sizeof(PetscScalar),&event->fvalue);CHKERRQ(ierr);
+  ierr = PetscMalloc(nevents*sizeof(PetscScalar),&event->fvalue_prev);CHKERRQ(ierr);
+  ierr = PetscMalloc(nevents*sizeof(PetscBool),&event->terminate);CHKERRQ(ierr);
+  ierr = PetscMalloc(nevents*sizeof(PetscInt),&event->direction);CHKERRQ(ierr);
+  event->monitor = eventmonitor;
+  event->postevent = postevent;
+  event->monitorcontext = (void*)mectx;
+  event->nevents = nevents;
+
+  ierr = TSGetTime(ts,&t);CHKERRQ(ierr);
+  ierr = TSGetTimeStep(ts,&event->initial_timestep);CHKERRQ(ierr);
+  ierr = TSGetSolution(ts,&U);CHKERRQ(ierr);
+  event->ptime_prev = t;
+  ierr = (*event->monitor)(ts,t,U,event->fvalue_prev,NULL,NULL,mectx);CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"TS Event options","");CHKERRQ(ierr);
+  {
+    event->tol = 1.0e-6;
+    ierr = PetscOptionsReal("-event_tol","","",event->tol,&event->tol,NULL);CHKERRQ(ierr);
+  }
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PostEvent"
+PetscErrorCode PostEvent(TS ts,PetscInt nevents_zero,PetscInt events_zero[],PetscReal t,Vec U,void *ctx)
+{
+  PetscErrorCode ierr;
+  TSEvent        event=ts->event;
+  PetscBool      terminate=PETSC_TRUE;
+  PetscInt       i;
+
+  PetscFunctionBegin;
+  if (event->postevent) {
+    ierr = (*event->postevent)(ts,nevents_zero,events_zero,t,U,ctx);CHKERRQ(ierr);
+  }
+  for(i = 0; i < nevents_zero;i++) {
+    terminate = terminate && event->terminate[events_zero[i]];
+  }
+  if (terminate) {
+    ierr = TSSetConvergedReason(ts,TS_CONVERGED_EVENT);CHKERRQ(ierr);
+    event->status = TSEVENT_NONE;
+  } else {
+    event->status = TSEVENT_RESET_NEXTSTEP;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSEventMonitorDestroy"
+PetscErrorCode TSEventMonitorDestroy(TSEvent *event)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscFree((*event)->fvalue);CHKERRQ(ierr);
+  ierr = PetscFree((*event)->fvalue_prev);CHKERRQ(ierr);
+  ierr = PetscFree((*event)->terminate);CHKERRQ(ierr);
+  ierr = PetscFree((*event)->direction);CHKERRQ(ierr);
+  ierr = PetscFree(*event);CHKERRQ(ierr);
+  *event = NULL;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSEventMonitor"
+PetscErrorCode TSEventMonitor(TS ts)
+{
+  PetscErrorCode ierr;
+  TSEvent        event=ts->event;
+  PetscReal      t;
+  Vec            U;
+  PetscInt       i;
+  PetscReal      dt;
+
+  PetscFunctionBegin;
+
+  ierr = TSGetTime(ts,&t);CHKERRQ(ierr);
+  ierr = TSGetSolution(ts,&U);CHKERRQ(ierr);
+
+  ierr = TSGetTimeStep(ts,&dt);CHKERRQ(ierr);
+  if (event->status == TSEVENT_RESET_NEXTSTEP) {
+    /* Take initial time step */
+    dt = event->initial_timestep;
+    ierr = TSSetTimeStep(ts,dt);CHKERRQ(ierr);
+    event->status = TSEVENT_NONE;
+  }
+
+  if (event->status == TSEVENT_NONE) {
+    event->tstepend   = t;
+  }
+
+  event->nevents_zero = 0;
+
+  ierr = (*event->monitor)(ts,t,U,event->fvalue,event->direction,event->terminate,event->monitorcontext);CHKERRQ(ierr);
+  for (i=0; i < event->nevents; i++) {
+    if (PetscAbs(event->fvalue[i]) < event->tol) {
+      event->status = TSEVENT_ZERO;
+      if (event->nevents_zero >= TSEVENTSZEROMAX) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Cannot handle %d simultaneous events",event->nevents_zero);
+      event->events_zero[event->nevents_zero++] = i;
+    }
+  }
+  if (event->status == TSEVENT_ZERO) {
+    ierr = TSSetTimeStep(ts,event->tstepend-t);CHKERRQ(ierr);
+    ierr = PostEvent(ts,event->nevents_zero,event->events_zero,t,U,event->monitorcontext);CHKERRQ(ierr);
+    for (i = 0; i < event->nevents; i++) {
+      event->fvalue_prev[i] = event->fvalue[i];
+    }
+    event->ptime_prev  = t;
+    PetscFunctionReturn(0);
+  }
+
+  for (i = 0; i < event->nevents; i++) {
+    if ((event->direction[i] < 0 && PetscSign(event->fvalue[i]) <= 0 && PetscSign(event->fvalue_prev[i]) >= 0) || \
+        (event->direction[i] > 0 && PetscSign(event->fvalue[i]) >= 0 && PetscSign(event->fvalue_prev[i]) <= 0) || \
+        (event->direction[i] == 0 && PetscSign(event->fvalue[i])*PetscSign(event->fvalue_prev[i]) <= 0)) {
+
+      event->status = TSEVENT_LOCATED_INTERVAL;
+      
+      /* Compute linearly interpolated new time step */
+      dt = PetscMin(dt,-event->fvalue_prev[i]*(t - event->ptime_prev)/(event->fvalue[i] - event->fvalue_prev[i]));
+    }
+  }
+  if (event->status == TSEVENT_LOCATED_INTERVAL) {
+    ierr = TSRollBack(ts);CHKERRQ(ierr);
+    event->status = TSEVENT_PROCESSING;
+  } else {
+    for (i = 0; i < event->nevents; i++) {
+      event->fvalue_prev[i] = event->fvalue[i];
+    }
+    event->ptime_prev  = t;
+    if (event->status == TSEVENT_PROCESSING) {
+      dt = event->tstepend - event->ptime_prev;
+    }
+  }
+  ierr = TSSetTimeStep(ts,dt);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

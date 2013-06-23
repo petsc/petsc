@@ -37,12 +37,18 @@ struct _TSOps {
   PetscErrorCode (*rollback)(TS);
 };
 
+/* 
+   TSEvent - Abstract object to handle event monitoring
+*/
+typedef struct _p_TSEvent *TSEvent;
+
 struct _p_TS {
   PETSCHEADER(struct _TSOps);
   DM            dm;
   TSProblemType problem_type;
   Vec           vec_sol;
   TSAdapt       adapt;
+  TSEvent       event;
 
   /* ---------------- User (or PETSc) Provided stuff ---------------------*/
   PetscErrorCode (*monitor[MAXTSMONITORS])(TS,PetscInt,PetscReal,Vec,void*); /* returns control to user after */
@@ -201,6 +207,34 @@ PETSC_EXTERN PetscErrorCode DMCopyDMTS(DM,DM);
 PETSC_EXTERN PetscErrorCode DMTSView(DMTS,PetscViewer);
 PETSC_EXTERN PetscErrorCode DMTSLoad(DMTS,PetscViewer);
 
+
+#define TSEVENTSZEROMAX 2
+
+typedef enum {TSEVENT_NONE,TSEVENT_LOCATED_INTERVAL,TSEVENT_PROCESSING,TSEVENT_ZERO,TSEVENT_RESET_NEXTSTEP} TSEventStatus;
+
+//typedef struct _p_TSEvent *TSEvent;
+
+struct _p_TSEvent {
+  PetscScalar    *fvalue;          /* value of event function at the end of the step*/
+  PetscScalar    *fvalue_prev;     /* value of event function at start of the step */
+  PetscReal       ptime;           /* time at step end */
+  PetscReal       ptime_prev;      /* time at step start */
+  PetscErrorCode  (*monitor)(TS,PetscReal,Vec,PetscScalar*,PetscInt*,PetscBool*,void*); /* User event monitor function */
+  PetscErrorCode  (*postevent)(TS,PetscInt,PetscInt[],PetscReal,Vec,void*); /* User post event function */
+  PetscBool      *terminate;        /* 1 -> Terminate time stepping, 0 -> continue */
+  PetscInt       *direction;        /* Zero crossing direction: 1 -> Going positive, -1 -> Going negative, 0 -> Any */ 
+  PetscInt        nevents;          /* Number of events to handle */
+  PetscInt        nevents_zero;     /* Number of event zero detected */
+  PetscInt        events_zero[TSEVENTSZEROMAX]; /* List of events that have reached zero */
+  void           *monitorcontext;
+  PetscReal       tol;              /* Tolerance for event zero check */
+  TSEventStatus   status;           /* Event status */
+  PetscReal       tstepend;         /* End time of step */
+  PetscReal       initial_timestep; /* Initial time step */
+};
+
+PETSC_EXTERN PetscErrorCode TSEventMonitor(TS);
+PETSC_EXTERN PetscErrorCode TSEventMonitorDestroy(TSEvent*);
 
 PETSC_EXTERN PetscLogEvent TS_Step, TS_PseudoComputeTimeStep, TS_FunctionEval, TS_JacobianEval;
 
