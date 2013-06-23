@@ -207,12 +207,7 @@ PETSC_EXTERN PetscErrorCode DMCopyDMTS(DM,DM);
 PETSC_EXTERN PetscErrorCode DMTSView(DMTS,PetscViewer);
 PETSC_EXTERN PetscErrorCode DMTSLoad(DMTS,PetscViewer);
 
-
-#define TSEVENTSZEROMAX 2
-
 typedef enum {TSEVENT_NONE,TSEVENT_LOCATED_INTERVAL,TSEVENT_PROCESSING,TSEVENT_ZERO,TSEVENT_RESET_NEXTSTEP} TSEventStatus;
-
-//typedef struct _p_TSEvent *TSEvent;
 
 struct _p_TSEvent {
   PetscScalar    *fvalue;          /* value of event function at the end of the step*/
@@ -225,7 +220,7 @@ struct _p_TSEvent {
   PetscInt       *direction;        /* Zero crossing direction: 1 -> Going positive, -1 -> Going negative, 0 -> Any */ 
   PetscInt        nevents;          /* Number of events to handle */
   PetscInt        nevents_zero;     /* Number of event zero detected */
-  PetscInt        events_zero[TSEVENTSZEROMAX]; /* List of events that have reached zero */
+  PetscInt        *events_zero;      /* List of events that have reached zero */
   void           *monitorcontext;
   PetscReal       tol;              /* Tolerance for event zero check */
   TSEventStatus   status;           /* Event status */

@@ -4951,6 +4951,7 @@ PetscErrorCode TSSetEventMonitor(TS ts,PetscInt nevents,PetscErrorCode (*eventmo
   ierr = PetscMalloc(nevents*sizeof(PetscScalar),&event->fvalue_prev);CHKERRQ(ierr);
   ierr = PetscMalloc(nevents*sizeof(PetscBool),&event->terminate);CHKERRQ(ierr);
   ierr = PetscMalloc(nevents*sizeof(PetscInt),&event->direction);CHKERRQ(ierr);
+  ierr = PetscMalloc(nevents*sizeof(PetscInt),&event->events_zero);CHKERRQ(ierr);
   event->monitor = eventmonitor;
   event->postevent = postevent;
   event->monitorcontext = (void*)mectx;
@@ -4960,7 +4961,7 @@ PetscErrorCode TSSetEventMonitor(TS ts,PetscInt nevents,PetscErrorCode (*eventmo
   ierr = TSGetTimeStep(ts,&event->initial_timestep);CHKERRQ(ierr);
   ierr = TSGetSolution(ts,&U);CHKERRQ(ierr);
   event->ptime_prev = t;
-  ierr = (*event->monitor)(ts,t,U,event->fvalue_prev,NULL,NULL,mectx);CHKERRQ(ierr);
+  ierr = (*event->monitor)(ts,t,U,event->fvalue_prev,event->direction,event->terminate,mectx);CHKERRQ(ierr);
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"TS Event options","");CHKERRQ(ierr);
   {
     event->tol = 1.0e-6;
@@ -5006,6 +5007,7 @@ PetscErrorCode TSEventMonitorDestroy(TSEvent *event)
   ierr = PetscFree((*event)->fvalue_prev);CHKERRQ(ierr);
   ierr = PetscFree((*event)->terminate);CHKERRQ(ierr);
   ierr = PetscFree((*event)->direction);CHKERRQ(ierr);
+  ierr = PetscFree((*event)->events_zero);CHKERRQ(ierr);
   ierr = PetscFree(*event);CHKERRQ(ierr);
   *event = NULL;
   PetscFunctionReturn(0);
@@ -5045,7 +5047,6 @@ PetscErrorCode TSEventMonitor(TS ts)
   for (i=0; i < event->nevents; i++) {
     if (PetscAbs(event->fvalue[i]) < event->tol) {
       event->status = TSEVENT_ZERO;
-      if (event->nevents_zero >= TSEVENTSZEROMAX) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Cannot handle %d simultaneous events",event->nevents_zero);
       event->events_zero[event->nevents_zero++] = i;
     }
   }
