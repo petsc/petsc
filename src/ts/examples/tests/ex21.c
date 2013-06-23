@@ -2,89 +2,21 @@
 static char help[] = "Serial bouncing ball example to test TS event feature.\n";
 
 /*
-        u1_t = u2
-        u2_t = -9.8
+  The dynamics of the bouncing ball is described by the ODE
+                  u1_t = u2
+                  u2_t = -9.8
+
+  There are two events set in this example. The first one checks for the ball hitting the
+  ground (u1 = 0). Every time the ball hits the ground, its velocity u2 is attenuated by
+  a factor of 0.9. The second event sets a limit on the number of ball bounces.
 */
 
 #include <petscts.h>
-
-#define MAXACTIVEEVENTS 2
-
-typedef enum {EVENT_NONE,EVENT_LOCATED_INTERVAL,EVENT_PROCESSING,EVENT_ZERO,EVENT_RESET_NEXTSTEP} EventStatus;
-typedef struct {
-  PetscScalar    *fvalue;      /* value of event functions at the end of the step*/
-  PetscScalar    *fvalue_prev; /* value of event function at start of the step */
-  PetscReal       ptime;       /* time after step completion */
-  PetscReal       ptime_prev;  /* time at step start */
-  PetscErrorCode  (*monitor)(TS,PetscReal,Vec,PetscScalar*,PetscInt*,PetscBool*,void*);
-  PetscErrorCode  (*postevent)(TS,PetscInt,PetscInt[],PetscReal,Vec,void*);
-  PetscBool      *terminate;   /* 1 -> Terminate time stepping, 0 -> continue */
-  PetscInt       *direction;   /* Zero crossing direction: 1 -> Going positive, -1 -> Going negative, 0 -> Any */ 
-  PetscInt        nevents;     
-  PetscInt        nevents_active; /* Number of active events */
-  PetscInt        active_event_list[MAXACTIVEEVENTS];
-  void           *monitorcontext;
-  PetscReal       tol;
-  EventStatus     status;        /* Event status */
-  PetscReal       tstepend;      /* End time of step */
-  PetscReal       initial_timestep; /* Initial time step */
-} EventCtx;
-
-EventCtx *event;
 
 typedef struct {
   PetscInt maxbounces;
   PetscInt nbounces;
 } AppCtx;
-
-#undef __FUNCT__
-#define __FUNCT__ "EventMonitorSet"
-PetscErrorCode EventMonitorSet(TS ts,PetscInt nevents,PetscErrorCode (*eventmonitor)(TS,PetscReal,Vec,PetscScalar*,PetscInt*,PetscBool*,void*),PetscErrorCode (*postevent)(TS,PetscInt,PetscInt[],PetscReal,Vec,void*),void *mectx)
-{
-  PetscErrorCode ierr;
-  PetscReal      t;
-  Vec            U;
-
-  PetscFunctionBegin;
-  ierr = PetscMalloc(sizeof(EventCtx),&event);CHKERRQ(ierr);
-  ierr = PetscMalloc(nevents*sizeof(PetscScalar),&event->fvalue);CHKERRQ(ierr);
-  ierr = PetscMalloc(nevents*sizeof(PetscScalar),&event->fvalue_prev);CHKERRQ(ierr);
-  ierr = PetscMalloc(nevents*sizeof(PetscBool),&event->terminate);CHKERRQ(ierr);
-  ierr = PetscMalloc(nevents*sizeof(PetscInt),&event->direction);CHKERRQ(ierr);
-  event->monitor = eventmonitor;
-  event->postevent = postevent;
-  event->monitorcontext = (void*)mectx;
-  event->nevents = nevents;
-
-  ierr = TSGetTime(ts,&t);CHKERRQ(ierr);
-  ierr = TSGetTimeStep(ts,&event->initial_timestep);CHKERRQ(ierr);
-  ierr = TSGetSolution(ts,&U);CHKERRQ(ierr);
-  event->ptime_prev = t;
-  ierr = (*event->monitor)(ts,t,U,event->fvalue_prev,NULL,NULL,mectx);CHKERRQ(ierr);
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"TS Event options","");CHKERRQ(ierr);
-  {
-    event->tol = 1.0e-6;
-    ierr = PetscOptionsReal("-event_tol","","",event->tol,&event->tol,NULL);CHKERRQ(ierr);
-  }
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "EventMonitorDestroy"
-PetscErrorCode EventMonitorDestroy(EventCtx **event)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscFree((*event)->fvalue);CHKERRQ(ierr);
-  ierr = PetscFree((*event)->fvalue_prev);CHKERRQ(ierr);
-  ierr = PetscFree((*event)->terminate);CHKERRQ(ierr);
-  ierr = PetscFree((*event)->direction);CHKERRQ(ierr);
-  ierr = PetscFree(*event);CHKERRQ(ierr);
-  *event = NULL;
-  PetscFunctionReturn(0);
-}
 
 #undef __FUNCT__
 #define __FUNCT__ "EventFunction"
@@ -129,105 +61,6 @@ PetscErrorCode PostEventFunction(TS ts,PetscInt nevents,PetscInt event_list[],Pe
     ierr = PetscPrintf(PETSC_COMM_SELF,"Ball bounced %d times\n",app->nbounces);CHKERRQ(ierr);
   } 
   app->nbounces++;
-  PetscFunctionReturn(0);
-}
-
-
-#undef __FUNCT__
-#define __FUNCT__ "PostEvent"
-PetscErrorCode PostEvent(TS ts,PetscInt nevents,PetscInt event_list[],PetscReal t,Vec U,void *ctx)
-{
-  PetscErrorCode ierr;
-  PetscBool      terminate=PETSC_TRUE;
-  PetscInt       i;
-
-  PetscFunctionBegin;
-  if (event->postevent) {
-    ierr = (*event->postevent)(ts,nevents,event_list,t,U,ctx);CHKERRQ(ierr);
-  }
-  for(i = 0; i < nevents;i++) {
-    terminate = terminate && event->terminate[event_list[i]];
-  }
-  if (terminate) {
-    ierr = TSSetConvergedReason(ts,TS_CONVERGED_EVENT);CHKERRQ(ierr);
-    event->status = EVENT_NONE;
-  } else {
-    event->status = EVENT_RESET_NEXTSTEP;
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "PostStep"
-PetscErrorCode PostStep(TS ts)
-{
-  PetscErrorCode ierr;
-  PetscReal      t;
-  Vec            U;
-  PetscInt       i;
-  PetscReal      dt;
-
-  PetscFunctionBegin;
-
-  ierr = TSGetTime(ts,&t);CHKERRQ(ierr);
-  ierr = TSGetSolution(ts,&U);CHKERRQ(ierr);
-
-  ierr = TSGetTimeStep(ts,&dt);CHKERRQ(ierr);
-  if (event->status == EVENT_RESET_NEXTSTEP) {
-    /* Take initial time step */
-    dt = event->initial_timestep;
-    ierr = TSSetTimeStep(ts,dt);CHKERRQ(ierr);
-    event->status = EVENT_NONE;
-  }
-
-  if (event->status == EVENT_NONE) {
-    event->tstepend   = t;
-  }
-
-  event->nevents_active = 0;
-
-  ierr = (*event->monitor)(ts,t,U,event->fvalue,event->direction,event->terminate,event->monitorcontext);CHKERRQ(ierr);
-  for (i=0; i < event->nevents; i++) {
-    if (PetscAbs(event->fvalue[i]) < event->tol) {
-      event->status = EVENT_ZERO;
-      if (event->nevents_active >= MAXACTIVEEVENTS) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Cannot handle %d simultaneous events",event->nevents_active);
-      event->active_event_list[event->nevents_active++] = i;
-    }
-  }
-  if (event->status == EVENT_ZERO) {
-    ierr = TSSetTimeStep(ts,event->tstepend-t);CHKERRQ(ierr);
-    ierr = PostEvent(ts,event->nevents_active,event->active_event_list,t,U,event->monitorcontext);CHKERRQ(ierr);
-    for (i = 0; i < event->nevents; i++) {
-      event->fvalue_prev[i] = event->fvalue[i];
-    }
-    event->ptime_prev  = t;
-    PetscFunctionReturn(0);
-  }
-
-  for (i = 0; i < event->nevents; i++) {
-    if ((event->direction[i] < 0 && PetscSign(event->fvalue[i]) <= 0 && PetscSign(event->fvalue_prev[i]) >= 0) || \
-        (event->direction[i] > 0 && PetscSign(event->fvalue[i]) >= 0 && PetscSign(event->fvalue_prev[i]) <= 0) || \
-        (event->direction[i] == 0 && PetscSign(event->fvalue[i])*PetscSign(event->fvalue_prev[i]) <= 0)) {
-
-      event->status = EVENT_LOCATED_INTERVAL;
-      
-      /* Compute linearly interpolated new time step */
-      dt = PetscMin(dt,-event->fvalue_prev[i]*(t - event->ptime_prev)/(event->fvalue[i] - event->fvalue_prev[i]));
-    }
-  }
-  if (event->status == EVENT_LOCATED_INTERVAL) {
-    ierr = TSRollBack(ts);CHKERRQ(ierr);
-    event->status = EVENT_PROCESSING;
-  } else {
-    for (i = 0; i < event->nevents; i++) {
-      event->fvalue_prev[i] = event->fvalue[i];
-    }
-    event->ptime_prev  = t;
-    if (event->status == EVENT_PROCESSING) {
-      dt = event->tstepend - event->ptime_prev;
-    }
-  }
-  ierr = TSSetTimeStep(ts,dt);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -352,9 +185,8 @@ int main(int argc,char **argv)
   ierr = TSSetDuration(ts,1000,30.0);CHKERRQ(ierr);
   ierr = TSSetInitialTimeStep(ts,0.0,0.1);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
-  ierr = TSSetPostStep(ts,PostStep);CHKERRQ(ierr);
   
-  ierr = EventMonitorSet(ts,2,EventFunction,PostEventFunction,(void*)&app);CHKERRQ(ierr);
+  ierr = TSSetEventMonitor(ts,2,EventFunction,PostEventFunction,(void*)&app);CHKERRQ(ierr);
 
   TSAdapt adapt;
   ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
@@ -374,7 +206,6 @@ int main(int argc,char **argv)
    
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = VecDestroy(&U);CHKERRQ(ierr);
-  ierr = EventMonitorDestroy(&event);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
   
   ierr = PetscFinalize();
