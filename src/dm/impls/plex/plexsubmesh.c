@@ -2248,43 +2248,58 @@ static PetscErrorCode DMPlexCreateCohesiveSubmesh_Uninterpolated(DM dm, PetscBoo
   {
     PetscSF            sfPoint, sfPointSub;
     const PetscSFNode *remotePoints;
-    PetscSFNode       *sremotePoints;
+    PetscSFNode       *sremotePoints, *newLocalPoints, *newOwners;
     const PetscInt    *localPoints;
-    PetscInt          *slocalPoints, *newLocation, *newRemoteLocation;
-    PetscInt           numRoots, numLeaves, numSubRoots = numSubCells+numSubFaces+numSubVertices, numSubLeaves = 0, l, sl, pStart, pEnd, vStart, vEnd;
+    PetscInt          *slocalPoints;
+    PetscInt           numRoots, numLeaves, numSubRoots = numSubCells+numSubFaces+numSubVertices, numSubLeaves = 0, l, sl, pStart, pEnd, p, vStart, vEnd;
+    PetscMPIInt        rank;
 
+    ierr = MPI_Comm_rank(PetscObjectComm((PetscObject) dm), &rank);CHKERRQ(ierr);
     ierr = DMGetPointSF(dm, &sfPoint);CHKERRQ(ierr);
     ierr = DMGetPointSF(subdm, &sfPointSub);CHKERRQ(ierr);
     ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
     ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
     ierr = PetscSFGetGraph(sfPoint, &numRoots, &numLeaves, &localPoints, &remotePoints);CHKERRQ(ierr);
     if (numRoots >= 0) {
-      ierr = PetscMalloc2(numRoots,PetscInt,&newLocation,pEnd-pStart,PetscInt,&newRemoteLocation);CHKERRQ(ierr);
-      ierr = PetscMemzero(newRemoteLocation, (pEnd-pStart) * sizeof(PetscInt));CHKERRQ(ierr);
       /* Only vertices should be shared */
-      for (l=0; l<numRoots; l++) newLocation[l] = DMPlexFilterPoint_Internal(l, firstSubVertex, numSubVertices, subVertices);
-      ierr = PetscSFBcastBegin(sfPoint, MPIU_INT, newLocation, newRemoteLocation);CHKERRQ(ierr);
-      ierr = PetscSFBcastEnd(sfPoint, MPIU_INT, newLocation, newRemoteLocation);CHKERRQ(ierr);
+      ierr = PetscMalloc2(pEnd-pStart,PetscSFNode,&newLocalPoints,numRoots,PetscSFNode,&newOwners);CHKERRQ(ierr);
+      for (p = 0; p < pEnd-pStart; ++p) {
+        newLocalPoints[p].rank  = -2;
+        newLocalPoints[p].index = -2;
+      }
       for (l = 0; l < numLeaves; ++l) {
         const PetscInt point    = localPoints[l];
-        const PetscInt subPoint = DMPlexFilterPoint_Internal(localPoints[l], firstSubVertex, numSubVertices, subVertices);
+        const PetscInt subPoint = DMPlexFilterPoint_Internal(point, firstSubVertex, numSubVertices, subVertices);
 
         if ((point < vStart) && (point >= vEnd)) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Should not be mapping anything but vertices, %d", point);
-        if (subPoint >= 0) ++numSubLeaves;
+        if (subPoint < 0) continue;
+        newLocalPoints[point-pStart].rank  = rank;
+        newLocalPoints[point-pStart].index = subPoint;
+        ++numSubLeaves;
       }
+      for (p = 0; p < numRoots; ++p) {
+        newOwners[p].rank  = -3;
+        newOwners[p].index = -3;
+      }
+      ierr = PetscSFReduceBegin(sfPoint, MPIU_2INT, newLocalPoints, newOwners, MPI_MAXLOC);CHKERRQ(ierr);
+      ierr = PetscSFReduceEnd(sfPoint, MPIU_2INT, newLocalPoints, newOwners, MPI_MAXLOC);CHKERRQ(ierr);
+      ierr = PetscSFBcastBegin(sfPoint, MPIU_2INT, newOwners, newLocalPoints);CHKERRQ(ierr);
+      ierr = PetscSFBcastEnd(sfPoint, MPIU_2INT, newOwners, newLocalPoints);CHKERRQ(ierr);
       ierr = PetscMalloc(numSubLeaves * sizeof(PetscInt),    &slocalPoints);CHKERRQ(ierr);
       ierr = PetscMalloc(numSubLeaves * sizeof(PetscSFNode), &sremotePoints);CHKERRQ(ierr);
       for (l = 0, sl = 0; l < numLeaves; ++l) {
-        const PetscInt subPoint = DMPlexFilterPoint_Internal(localPoints[l], firstSubVertex, numSubVertices, subVertices);
+        const PetscInt point    = localPoints[l];
+        const PetscInt subPoint = DMPlexFilterPoint_Internal(point, firstSubVertex, numSubVertices, subVertices);
 
         if (subPoint < 0) continue;
         slocalPoints[sl]        = subPoint;
-        sremotePoints[sl].rank  = remotePoints[l].rank;
-        sremotePoints[sl].index = newRemoteLocation[localPoints[l]];
-        if (sremotePoints[sl].index < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid remote subpoint for local point %d", localPoints[l]);
+        sremotePoints[sl].rank  = newLocalPoints[point].rank;
+        sremotePoints[sl].index = newLocalPoints[point].index;
+        if (sremotePoints[sl].rank  < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid remote rank for local point %d", point);
+        if (sremotePoints[sl].index < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid remote subpoint for local point %d", point);
         ++sl;
       }
-      ierr = PetscFree2(newLocation,newRemoteLocation);CHKERRQ(ierr);
+      ierr = PetscFree2(newLocalPoints,newOwners);CHKERRQ(ierr);
       if (sl != numSubLeaves) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Mismatch in number of subleaves %d != %d", sl, numSubLeaves);
       ierr = PetscSFSetGraph(sfPointSub, numSubRoots, numSubLeaves, slocalPoints, PETSC_OWN_POINTER, sremotePoints, PETSC_OWN_POINTER);CHKERRQ(ierr);
     }
