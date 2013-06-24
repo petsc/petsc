@@ -6481,7 +6481,12 @@ PetscErrorCode DMPlexVecGetClosure(DM dm, PetscSection section, Vec v, PetscInt 
       ierr = PetscSectionGetDof(section, cp, &dof);CHKERRQ(ierr);
       size += dof;
     }
-    ierr = DMGetWorkArray(dm, size, PETSC_SCALAR, &array);CHKERRQ(ierr);
+    if (!*values) {
+      ierr = DMGetWorkArray(dm, size, PETSC_SCALAR, &array);CHKERRQ(ierr);
+    } else {
+      if (size > *csize) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Size of input array %d < actual size %d", *csize, size);
+      array = *values;
+    }
     ierr = VecGetArray(v, &vArray);CHKERRQ(ierr);
     for (p = 0; p <= numPoints; ++p) {
       const PetscInt cp = !p ? point : cone[p-1];
