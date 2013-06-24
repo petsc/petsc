@@ -79,7 +79,11 @@ regressionParameters = {'src/dm/impls/patch/examples/tests/ex1': [{'numProcs': 1
                                                                  #{'numProcs': 1, 'args': '-dim 3 -filename /PETSc3/petsc/blockcylinder-20.exo'},
                                                                  ],
                         'src/dm/impls/plex/examples/tests/ex8': [{'numProcs': 1, 'args': '-dm_view ::ascii_info_detail'},
-                                                                 {'numProcs': 1, 'args': '-transform'}],
+                                                                 {'numProcs': 1, 'args': '-interpolate -dm_view ::ascii_info_detail'},
+                                                                 {'numProcs': 1, 'args': '-transform'},
+                                                                 {'numProcs': 1, 'args': '-interpolate -transform'},
+                                                                 {'numProcs': 1, 'args': '-run_type file -filename %(meshes)s/simpleblock-100.exo -dm_view ::ascii_info_detail -v0 -1.5,-0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5 -J 0.0,0.0,0.5,0.0,0.5,0.0,-0.5,0.0,0.0,0.0,0.0,0.5,0.0,0.5,0.0,-0.5,0.0,0.0,0.0,0.0,0.5,0.0,0.5,0.0,-0.5,0.0,0.0 -invJ 0.0,0.0,-2.0,0.0,2.0,0.0,2.0,0.0,0.0,0.0,0.0,-2.0,0.0,2.0,0.0,2.0,0.0,0.0,0.0,0.0,-2.0,0.0,2.0,0.0,2.0,0.0,0.0 -detJ 0.125,0.125,0.125', 'requires': ['exodusii']},
+                                                                 {'numProcs': 1, 'args': '-interpolate -run_type file -filename %(meshes)s/simpleblock-100.exo -dm_view ::ascii_info_detail -v0 -1.5,-0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5 -J 0.0,0.0,0.5,0.0,0.5,0.0,-0.5,0.0,0.0,0.0,0.0,0.5,0.0,0.5,0.0,-0.5,0.0,0.0,0.0,0.0,0.5,0.0,0.5,0.0,-0.5,0.0,0.0 -invJ 0.0,0.0,-2.0,0.0,2.0,0.0,2.0,0.0,0.0,0.0,0.0,-2.0,0.0,2.0,0.0,2.0,0.0,0.0,0.0,0.0,-2.0,0.0,2.0,0.0,2.0,0.0,0.0 -detJ 0.125,0.125,0.125 -centroid -1.0,0.0,0.0,0.0,0.0,0.0,1.0,0.0,0.0 -normal 0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0 -vol 1.0,1.0,1.0', 'requires': ['exodusii']}],
                         'src/dm/impls/plex/examples/tests/ex9': [# 2D Simplex P_1 scalar tests
                                                                  {'numProcs': 1, 'args': '-num_dof 1,0,0 -iterations 10000 \
                                                                   -max_cone_time 1.1e-8 -max_closure_time 1.3e-7 -max_vec_closure_time 3.6e-7'},
