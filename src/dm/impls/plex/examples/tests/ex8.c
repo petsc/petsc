@@ -1,9 +1,9 @@
 static char help[] = "Tests for cell geometry\n\n";
 
-/* TODO
-*/
-
 #include <petscdmplex.h>
+#if defined(PETSC_HAVE_EXODUSII)
+#include <exodusII.h>
+#endif
 
 typedef enum {RUN_REFERENCE, RUN_FILE} RunType;
 
@@ -13,13 +13,50 @@ typedef struct {
   char      filename[PETSC_MAX_PATH_LEN]; /* Import mesh from file */
   PetscBool interpolate;                  /* Interpolate the mesh */
   PetscBool transform;                    /* Use random coordinate transformations */
+  /* Data for input meshes */
+  PetscReal *v0, *J, *invJ, *detJ;        /* FEM data */
+  PetscReal *centroid, *normal, *vol;     /* FVM data */
 } AppCtx;
+
+#undef __FUNCT__
+#define __FUNCT__ "ReadMesh"
+PetscErrorCode ReadMesh(MPI_Comm comm, const char *filename, AppCtx *user, DM *dm)
+{
+  int            CPU_word_size = 0, IO_word_size = 0, exoid = -1;
+  float          version;
+  PetscMPIInt    rank;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_EXODUSII)
+  if (!rank) {
+    exoid = ex_open(filename, EX_READ, &CPU_word_size, &IO_word_size, &version);
+    if (exoid <= 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_LIB, "ex_open(\"%s\",...) did not return a valid file ID", filename);
+  }
+  ierr = DMPlexCreateExodus(comm, exoid, PETSC_FALSE, dm);CHKERRQ(ierr);
+  if (!rank) {ierr = ex_close(exoid);CHKERRQ(ierr);}
+#else
+  SETERRQ(comm, PETSC_ERR_SUP, "Loading meshes requires ExodusII support. Reconfigure using --download-exodusii");
+#endif
+  if (user->interpolate) {
+    DM interpolatedMesh = NULL;
+
+    ierr = DMPlexInterpolate(*dm, &interpolatedMesh);CHKERRQ(ierr);
+    ierr = DMPlexCopyCoordinates(*dm, interpolatedMesh);CHKERRQ(ierr);
+    ierr = DMDestroy(dm);CHKERRQ(ierr);
+    *dm  = interpolatedMesh;
+  }
+  ierr = PetscObjectSetName((PetscObject) *dm, "Input Mesh");CHKERRQ(ierr);
+  ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "ProcessOptions"
 PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
-  const char    *runTypes[2] = {"full", "test"};
+  const char    *runTypes[2] = {"reference", "file"};
   PetscInt       run;
   PetscErrorCode ierr;
 
@@ -36,6 +73,39 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsString("-filename", "The mesh file", "ex8.c", options->filename, options->filename, PETSC_MAX_PATH_LEN, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-interpolate", "Interpolate the mesh", "ex8.c", options->interpolate, &options->interpolate, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-transform", "Use random transforms", "ex8.c", options->transform, &options->transform, NULL);CHKERRQ(ierr);
+
+  if (options->runType == RUN_FILE) {
+    PetscInt  dim, cStart, cEnd, numCells, n;
+    PetscBool flag;
+
+    ierr = ReadMesh(PETSC_COMM_WORLD, options->filename, options, &options->dm);CHKERRQ(ierr);
+    ierr = DMPlexGetDimension(options->dm, &dim);CHKERRQ(ierr);
+    ierr = DMPlexGetHeightStratum(options->dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+    numCells = cEnd-cStart;
+    ierr = PetscMalloc7(numCells*dim,PetscReal,&options->v0,numCells*dim*dim,PetscReal,&options->J,numCells*dim*dim,PetscReal,&options->invJ,numCells,PetscReal,&options->detJ,
+                        numCells*dim,PetscReal,&options->centroid,numCells*dim,PetscReal,&options->normal,numCells,PetscReal,&options->vol);CHKERRQ(ierr);
+    n    = numCells*dim;
+    ierr = PetscOptionsRealArray("-v0", "Input v0 for each cell", "ex8.c", options->v0, &n, &flag);CHKERRQ(ierr);
+    if (flag && n != numCells*dim) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Invalid size of v0 %d should be %d", n, numCells*dim);
+    n    = numCells*dim*dim;
+    ierr = PetscOptionsRealArray("-J", "Input Jacobian for each cell", "ex8.c", options->J, &n, &flag);CHKERRQ(ierr);
+    if (flag && n != numCells*dim*dim) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Invalid size of J %d should be %d", n, numCells*dim*dim);
+    n    = numCells*dim*dim;
+    ierr = PetscOptionsRealArray("-invJ", "Input inverse Jacobian for each cell", "ex8.c", options->invJ, &n, &flag);CHKERRQ(ierr);
+    if (flag && n != numCells*dim*dim) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Invalid size of invJ %d should be %d", n, numCells*dim*dim);
+    n    = numCells;
+    ierr = PetscOptionsRealArray("-detJ", "Input Jacobian determinant for each cell", "ex8.c", options->detJ, &n, &flag);CHKERRQ(ierr);
+    if (flag && n != numCells) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Invalid size of detJ %d should be %d", n, numCells);
+    n    = numCells*dim;
+    ierr = PetscOptionsRealArray("-centroid", "Input centroid for each cell", "ex8.c", options->centroid, &n, &flag);CHKERRQ(ierr);
+    if (flag && n != numCells*dim) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Invalid size of centroid %d should be %d", n, numCells*dim);
+    n    = numCells*dim;
+    ierr = PetscOptionsRealArray("-normal", "Input normal for each cell", "ex8.c", options->normal, &n, &flag);CHKERRQ(ierr);
+    if (flag && n != numCells*dim) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Invalid size of normal %d should be %d", n, numCells*dim);
+    n    = numCells;
+    ierr = PetscOptionsRealArray("-vol", "Input volume for each cell", "ex8.c", options->vol, &n, &flag);CHKERRQ(ierr);
+    if (flag && n != numCells) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Invalid size of vol %d should be %d", n, numCells);
+  }
   ierr = PetscOptionsEnd();
 
   if (options->transform) {ierr = PetscPrintf(comm, "Using random transforms");CHKERRQ(ierr);}
@@ -950,6 +1020,16 @@ int main(int argc, char **argv)
     ierr = TestQuadrilateral(PETSC_COMM_SELF, user.interpolate, user.transform);CHKERRQ(ierr);
     ierr = TestTetrahedron(PETSC_COMM_SELF, user.interpolate, user.transform);CHKERRQ(ierr);
     ierr = TestHexahedron(PETSC_COMM_SELF, user.interpolate, user.transform);CHKERRQ(ierr);
+  } else if (user.runType == RUN_FILE) {
+    PetscInt dim, cStart, cEnd, c;
+
+    ierr = DMPlexGetDimension(user.dm, &dim);CHKERRQ(ierr);
+    ierr = DMPlexGetHeightStratum(user.dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+    for (c = 0; c < cEnd-cStart; ++c) {
+      ierr = CheckFEMGeometry(user.dm, c+cStart, dim, &user.v0[c*dim], &user.J[c*dim*dim], &user.invJ[c*dim*dim], user.detJ[c]);CHKERRQ(ierr);
+      if (user.interpolate) {ierr = CheckFVMGeometry(user.dm, c+cStart, dim, &user.centroid[c*dim], &user.normal[c*dim], user.vol[c]);CHKERRQ(ierr);}
+    }
+    ierr = PetscFree7(user.v0,user.J,user.invJ,user.detJ,user.centroid,user.normal,user.vol);CHKERRQ(ierr);
   }
   ierr = PetscFinalize();
   return 0;
