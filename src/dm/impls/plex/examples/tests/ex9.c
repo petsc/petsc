@@ -10,6 +10,7 @@ typedef struct {
   PetscInt  numFields;       /* The number of section fields */
   PetscInt *numComponents;   /* The number of field components */
   PetscInt *numDof;          /* The dof signature for the section */
+  PetscBool reuseArray;      /* Pass in user allocated array to VecGetClosure() */
   /* Test data */
   PetscBool errors;            /* Treat failures as errors */
   PetscInt  iterations;        /* The number of iterations for a query */
@@ -34,6 +35,7 @@ PetscErrorCode ProcessOptions(AppCtx *options)
   options->numFields         = 0;
   options->numComponents     = NULL;
   options->numDof            = NULL;
+  options->reuseArray        = PETSC_FALSE;
   options->errors            = PETSC_FALSE;
   options->iterations        = 1;
   options->maxConeTime       = 0.0;
@@ -57,6 +59,7 @@ PetscErrorCode ProcessOptions(AppCtx *options)
   ierr = PetscOptionsIntArray("-num_dof", "The dof signature for the section", "ex9.c", options->numDof, &len, &flg);CHKERRQ(ierr);
   if (flg && (len != (options->dim+1) * PetscMax(1, options->numFields))) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Length of dof array is %d should be %d", len, (options->dim+1) * PetscMax(1, options->numFields));
 
+  ierr = PetscOptionsBool("-reuse_array", "Pass in user allocated array to VecGetClosure()", "ex9.c", options->reuseArray, &options->reuseArray, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-errors", "Treat failures as errors", "ex9.c", options->errors, &options->errors, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-iterations", "The number of iterations for a query", "ex9.c", options->iterations, &options->iterations, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-max_cone_time", "The maximum time per run for DMPlexGetCone()", "ex9.c", options->maxConeTime, &options->maxConeTime, NULL);CHKERRQ(ierr);
@@ -208,10 +211,10 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *newdm)
     const char *name;
 
     ierr = DMPlexSetRefinementUniform(*newdm, PETSC_FALSE);CHKERRQ(ierr);
+    ierr = DMPlexSetRefinementLimit(*newdm, user->refinementLimit);CHKERRQ(ierr);
     ierr = DMRefine(*newdm, PETSC_COMM_SELF, &rdm);CHKERRQ(ierr);
     ierr = PetscObjectGetName((PetscObject) *newdm, &name);CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject)    rdm,  name);CHKERRQ(ierr);
-    ierr = DMPlexCopyCoordinates(*newdm, rdm);CHKERRQ(ierr);
     ierr = DMDestroy(newdm);CHKERRQ(ierr);
     *newdm = rdm;
   }
@@ -322,6 +325,8 @@ PetscErrorCode TestVecClosure(DM dm, AppCtx *user)
   PetscSection       s;
   Vec                v;
   PetscInt           numRuns, cStart, cEnd, c, i;
+  PetscScalar        tmpArray[64];
+  PetscScalar       *userArray     = user->reuseArray ? tmpArray : NULL;
   PetscReal          maxTimePerRun = user->maxVecClosureTime;
   PetscStageLog      stageLog;
   PetscEventPerfLog  eventLog;
@@ -341,11 +346,11 @@ PetscErrorCode TestVecClosure(DM dm, AppCtx *user)
   ierr = PetscLogEventBegin(event,0,0,0,0);CHKERRQ(ierr);
   for (i = 0; i < user->iterations; ++i) {
     for (c = cStart; c < cEnd; ++c) {
-      PetscScalar *closure = NULL;
-      PetscInt     closureSize;
+      PetscScalar *closure     = userArray;
+      PetscInt     closureSize = 64;;
 
       ierr = DMPlexVecGetClosure(dm, s, v, c, &closureSize, &closure);CHKERRQ(ierr);
-      ierr = DMPlexVecRestoreClosure(dm, s, v, c, &closureSize, &closure);CHKERRQ(ierr);
+      if (!user->reuseArray) {ierr = DMPlexVecRestoreClosure(dm, s, v, c, &closureSize, &closure);CHKERRQ(ierr);}
     }
   }
   ierr = PetscLogEventEnd(event,0,0,0,0);CHKERRQ(ierr);
