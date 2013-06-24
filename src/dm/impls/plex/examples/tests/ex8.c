@@ -5,6 +5,43 @@ static char help[] = "Tests for cell geometry\n\n";
 
 #include <petscdmplex.h>
 
+typedef enum {RUN_REFERENCE, RUN_FILE} RunType;
+
+typedef struct {
+  DM        dm;
+  RunType   runType;                      /* Type of mesh to use */
+  char      filename[PETSC_MAX_PATH_LEN]; /* Import mesh from file */
+  PetscBool interpolate;                  /* Interpolate the mesh */
+  PetscBool transform;                    /* Use random coordinate transformations */
+} AppCtx;
+
+#undef __FUNCT__
+#define __FUNCT__ "ProcessOptions"
+PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
+{
+  const char    *runTypes[2] = {"full", "test"};
+  PetscInt       run;
+  PetscErrorCode ierr;
+
+  PetscFunctionBeginUser;
+  options->runType     = RUN_REFERENCE;
+  options->filename[0] = '\0';
+  options->interpolate = PETSC_FALSE;
+  options->transform   = PETSC_FALSE;
+
+  ierr = PetscOptionsBegin(comm, "", "Geometry Test Options", "DMPLEX");CHKERRQ(ierr);
+  run  = options->runType;
+  ierr = PetscOptionsEList("-run_type", "The run type", "ex8.c", runTypes, 2, runTypes[options->runType], &run, NULL);CHKERRQ(ierr);
+  options->runType = (RunType) run;
+  ierr = PetscOptionsString("-filename", "The mesh file", "ex8.c", options->filename, options->filename, PETSC_MAX_PATH_LEN, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-interpolate", "Interpolate the mesh", "ex8.c", options->interpolate, &options->interpolate, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-transform", "Use random transforms", "ex8.c", options->transform, &options->transform, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();
+
+  if (options->transform) {ierr = PetscPrintf(comm, "Using random transforms");CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+};
+
 #undef __FUNCT__
 #define __FUNCT__ "ChangeCoordinates"
 PetscErrorCode ChangeCoordinates(DM dm, PetscInt spaceDim, PetscScalar vertexCoords[])
@@ -903,20 +940,17 @@ PetscErrorCode TestHexahedron(MPI_Comm comm, PetscBool interpolate, PetscBool tr
 #define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
-  PetscBool      transform = PETSC_FALSE;
+  AppCtx         user;
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc, &argv, NULL, help);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL, "-transform", &transform, NULL);CHKERRQ(ierr);
-  if (transform) {ierr = PetscPrintf(PETSC_COMM_WORLD, "Using random transforms");CHKERRQ(ierr);}
-  ierr = TestTriangle(PETSC_COMM_SELF, PETSC_FALSE, transform);CHKERRQ(ierr);
-  ierr = TestTriangle(PETSC_COMM_SELF, PETSC_TRUE,  transform);CHKERRQ(ierr);
-  ierr = TestQuadrilateral(PETSC_COMM_SELF, PETSC_FALSE, transform);CHKERRQ(ierr);
-  ierr = TestQuadrilateral(PETSC_COMM_SELF, PETSC_TRUE,  transform);CHKERRQ(ierr);
-  ierr = TestTetrahedron(PETSC_COMM_SELF, PETSC_FALSE, transform);CHKERRQ(ierr);
-  ierr = TestTetrahedron(PETSC_COMM_SELF, PETSC_TRUE,  transform);CHKERRQ(ierr);
-  ierr = TestHexahedron(PETSC_COMM_SELF, PETSC_FALSE, transform);CHKERRQ(ierr);
-  ierr = TestHexahedron(PETSC_COMM_SELF, PETSC_TRUE, transform);CHKERRQ(ierr);
+  ierr = ProcessOptions(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);
+  if (user.runType == RUN_REFERENCE) {
+    ierr = TestTriangle(PETSC_COMM_SELF, user.interpolate, user.transform);CHKERRQ(ierr);
+    ierr = TestQuadrilateral(PETSC_COMM_SELF, user.interpolate, user.transform);CHKERRQ(ierr);
+    ierr = TestTetrahedron(PETSC_COMM_SELF, user.interpolate, user.transform);CHKERRQ(ierr);
+    ierr = TestHexahedron(PETSC_COMM_SELF, user.interpolate, user.transform);CHKERRQ(ierr);
+  }
   ierr = PetscFinalize();
   return 0;
 }
