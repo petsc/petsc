@@ -36,7 +36,6 @@ class Configure(config.package.Package):
     config.package.Package.configureLibrary(self)
 
   def Install(self):
-    self.logPrintBox('Compiling ExodusII; this may take several minutes')
     import os
     import shutil
     configOpts     = []
@@ -55,16 +54,15 @@ class Configure(config.package.Package):
       configOpts.append('F77OPTIONS="'+self.setCompilers.getCompilerFlags()+'"')
       self.setCompilers.popLanguage()
 
-    mkfile = 'make.inc'
-    g = open(os.path.join(self.packageDir, mkfile), 'w')
     self.framework.log.write(repr(dir(self.setCompilers)))
 
     args = ' '.join(configOpts)
-    fd = file(os.path.join(self.packageDir,'exodusii'), 'w')
+    cfgfile = 'exodusii'
+    fd = file(os.path.join(self.packageDir,cfgfile), 'w')
     fd.write(args)
     fd.close()
 
-    if self.installNeeded('exodusii'):
+    if self.installNeeded(cfgfile):
       cincludes  = ['exodusII.h','exodusII_cfg.h','exodusII_int.h','exodusII_par.h']
       fincludes  = ['exodusII.inc','exodusII_int.inc']
       try:
@@ -82,5 +80,5 @@ class Configure(config.package.Package):
         output,err,ret = config.base.Configure.executeShellCommand('cd '+builddir+' && make -f Makefile.standalone clean', timeout=250, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running make on ExodusII: '+str(e))
-      self.postInstall(output+err, mkfile)
+      self.postInstall(output+err, cfgfile)
     return self.installDir
