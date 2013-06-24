@@ -1,0 +1,464 @@
+#include <petscsys.h>
+#include <stdlib.h>
+
+#ifdef __APPLE__
+#include <OpenCL/cl.h>
+#else
+#include <CL/cl.h>
+#endif
+
+#define SPATIAL_DIM_0 2
+
+/* Put the OpenCL program into a source string.
+ * This allows to generate all the code at runtime, no need for external Python magic as for CUDA
+ */
+const char * const opencl_program_source =
+"float2 f1_laplacian(float u[], float2 gradU[], int comp)\n"
+"{\n"
+"  return gradU[comp];\n"
+"}\n"
+"\n"
+"\n"
+"// dim     Number of spatial dimensions:          2\n"
+"// N_b     Number of basis functions:             generated\n"
+"// N_{bt}  Number of total basis functions:       N_b * N_{comp}\n"
+"// N_q     Number of quadrature points:           generated\n"
+"// N_{bs}  Number of block cells                  LCM(N_b, N_q)\n"
+"// N_{bst} Number of block cell components        LCM(N_{bt}, N_q)\n"
+"// N_{bl}  Number of concurrent blocks            generated\n"
+"// N_t     Number of threads:                     N_{bl} * N_{bs}\n"
+"// N_{cbc} Number of concurrent basis      cells: N_{bl} * N_q\n"
+"// N_{cqc} Number of concurrent quadrature cells: N_{bl} * N_b\n"
+"// N_{sbc} Number of serial     basis      cells: N_{bs} / N_q\n"
+"// N_{sqc} Number of serial     quadrature cells: N_{bs} / N_b\n"
+"// N_{cb}  Number of serial cell batches:         input\n"
+"// N_c     Number of total cells:                 N_{cb}*N_{t}/N_{comp}\n"
+"\n"
+"__kernel void integrateElementQuadrature(int N_cb, __global float *coefficients, __global float *jacobianInverses, __global float *jacobianDeterminants, __global float *elemVec)\n"
+"{\n"
+"  const int numQuadraturePoints_0 = 1;\n"
+"\n"
+"  /* Quadrature points\n"
+"   - (x1,y1,x2,y2,...) */\n"
+"  const float points_0[2] = {\n"
+"    -0.333333333333,\n"
+"    -0.333333333333};\n"
+"\n"
+"  /* Quadrature weights\n"
+"   - (v1,v2,...) */\n"
+"  const float weights_0[1] = {2.0};\n"
+"\n"
+"  const int numBasisFunctions_0 = 3;\n"
+"  const int numBasisComponents_0 = 1;\n"
+"\n"
+"  /* Nodal basis function evaluations\n"
+"    - basis function is fastest varying, then point */\n"
+"  const float Basis_0[3] = {\n"
+"    0.333333333333,\n"
+"    0.333333333333,\n"
+"    0.333333333333};\n"
+"\n"
+"  /* Nodal basis function derivative evaluations,\n"
+"      - derivative direction fastest varying, then basis function, then point */\n"
+"  const float2 BasisDerivatives_0[3] = {\n"
+"    -0.5, -0.5,\n"
+"    0.5, 0.0,\n"
+"    0.0, 0.5};\n"
+"\n"
+"  /* Number of concurrent blocks */\n"
+"  const int N_bl = 1;\n"
+"\n"
+#if SPATIAL_DIM_0 == 2
+"  const int dim    = 2;\n"
+#elif  SPATIAL_DIM_0 == 3
+"  const int dim    = 3;\n"
+#endif
+"  const int N_b    = numBasisFunctions_0;           // The number of basis functions\n"
+"  const int N_comp = numBasisComponents_0;          // The number of basis function components\n"
+"  const int N_bt   = N_b*N_comp;                    // The total number of scalar basis functions\n"
+"  const int N_q    = numQuadraturePoints_0;         // The number of quadrature points\n"
+"  const int N_bst  = N_bt*N_q;                      // The block size, LCM(N_b*N_comp, N_q), Notice that a block is not processed simultaneously\n"
+"  const int N_t    = N_bst*N_bl;                    // The number of threads, N_bst * N_bl\n"
+"  const int N_bc   = N_t/N_comp;                    // The number of cells per batch (N_b*N_q*N_bl)\n"
+"  const int N_c    = N_cb * N_bc;\n"
+"  const int N_sbc  = N_bst / (N_q * N_comp);\n"
+"  const int N_sqc  = N_bst / N_bt;\n"
+"\n"
+"  /* Calculated indices */\n"
+"  const int tidx    = get_local_id(0) + get_group_id(0)*get_local_id(1);\n"
+"  const int blidx   = tidx / N_bst;                  // Block number for this thread\n"
+"  const int bidx    = tidx % N_bt;                   // Basis function mapped to this thread\n"
+"  const int cidx    = tidx % N_comp;                 // Basis component mapped to this thread\n"
+"  const int qidx    = tidx % N_q;                    // Quadrature point mapped to this thread\n"
+"  const int blbidx  = tidx % N_q + blidx*N_q;        // Cell mapped to this thread in the basis phase\n"
+"  const int blqidx  = tidx % N_b + blidx*N_b;        // Cell mapped to this thread in the quadrature phase\n"
+"  const int gidx    = get_group_id(1)*get_num_groups(0) + get_group_id(0);\n"
+"  const int Goffset = gidx*N_c;\n"
+"  const int Coffset = gidx*N_c*N_bt;\n"
+"  const int Eoffset = gidx*N_c*N_bt;\n"
+"\n"
+"  /* Quadrature data */\n"
+"  float                w;                   // $w_q$, Quadrature weight at $x_q$\n"
+"  __local float2       phiDer_i[3*1]; //[N_bt*N_q];  // $\\frac{\\partial\\phi_i(x_q)}{\\partial x_d}$, Value of the derivative of basis function $i$ in direction $x_d$ at $x_q$\n"
+"  /* Geometric data */\n"
+"  __local float        detJ[3]; //[N_t];           // $|J(x_q)|$, Jacobian determinant at $x_q$\n"
+"  __local float        invJ[3*2*2];//[N_t*dim*dim];   // $J^{-1}(x_q)$, Jacobian inverse at $x_q$\n"
+"  /* FEM data */\n"
+"  __local float        u_i[3*3]; //[N_t*N_bt];       // Coefficients $u_i$ of the field $u|_{\\mathcal{T}} = \\sum_i u_i \\phi_i$\n"
+"  /* Intermediate calculations */\n"
+"  __local float2       f_1[3*3]; //[N_t*N_sqc];      // $f_1(u(x_q), \\nabla u(x_q)) |J(x_q)| w_q$\n"
+"  /* Output data */\n"
+"  float                e_i;                 // Coefficient $e_i$ of the residual\n"
+"\n"
+"  /* These should be generated inline */\n"
+"  /* Load quadrature weights */\n"
+"  w = weights_0[qidx];\n"
+"  /* Load basis tabulation \\phi_i for this cell */\n"
+"  if (tidx < N_bt*N_q) {\n"
+" // phi_i[tidx]    = Basis_0[tidx];\n"
+"    phiDer_i[tidx] = BasisDerivatives_0[tidx];\n"
+"  }\n"
+"\n"
+"  for (int batch = 0; batch < N_cb; ++batch) {\n"
+"    /* Load geometry */\n"
+"    detJ[tidx] = jacobianDeterminants[Goffset+batch*N_bc+tidx];\n"
+"    for (int n = 0; n < dim*dim; ++n) {\n"
+"      const int offset = n*N_t;\n"
+"      invJ[offset+tidx] = jacobianInverses[(Goffset+batch*N_bc)*dim*dim+offset+tidx];\n"
+"    }\n"
+"    /* Load coefficients u_i for this cell */\n"
+"    for (int n = 0; n < N_bt; ++n) {\n"
+"      const int offset = n*N_t;\n"
+"      u_i[offset+tidx] = coefficients[Coffset+batch*N_t*N_b+offset+tidx];\n"
+"    }\n"
+"\n"
+"    /* Map coefficients to values at quadrature points */\n"
+"    for (int c = 0; c < N_sqc; ++c) {\n"
+"      float  u[1]; //[N_comp];     // $u(x_q)$, Value of the field at $x_q$\n"
+"      float2   gradU[1]; //[N_comp]; // $\\nabla u(x_q)$, Value of the field gradient at $x_q$\n"
+"      const int cell          = c*N_bl*N_b + blqidx;\n"
+"      const int fidx          = (cell*N_q + qidx)*N_comp + cidx;\n"
+"\n"
+"      for (int comp = 0; comp < N_comp; ++comp) {\n"
+#if SPATIAL_DIM_0 == 2
+"        gradU[comp].x = 0.0; gradU[comp].y = 0.0;\n"
+#elif  SPATIAL_DIM_0 == 3
+"        gradU[comp].x = 0.0; gradU[comp].y = 0.0; gradU[comp].z = 0.0;\n"
+#endif
+"      }\n"
+"      /* Get field and derivatives at this quadrature point */\n"
+"      for (int i = 0; i < N_b; ++i) {\n"
+"        for (int comp = 0; comp < N_comp; ++comp) {\n"
+"          const int b    = i*N_comp+comp;\n"
+"          const int pidx = qidx*N_bt + b;\n"
+"          const int uidx = cell*N_bt + b;\n"
+"          float2   realSpaceDer;\n"
+"\n"
+#if SPATIAL_DIM_0 == 2
+"          realSpaceDer.x = invJ[cell*dim*dim+0*dim+0]*phiDer_i[pidx].x + invJ[cell*dim*dim+1*dim+0]*phiDer_i[pidx].y;\n"
+"          gradU[comp].x += u_i[uidx]*realSpaceDer.x;\n"
+"          realSpaceDer.y = invJ[cell*dim*dim+0*dim+1]*phiDer_i[pidx].x + invJ[cell*dim*dim+1*dim+1]*phiDer_i[pidx].y;\n"
+"          gradU[comp].y += u_i[uidx]*realSpaceDer.y;\n"
+#elif  SPATIAL_DIM_0 == 3
+"          realSpaceDer.x = invJ[cell*dim*dim+0*dim+0]*phiDer_i[pidx].x + invJ[cell*dim*dim+1*dim+0]*phiDer_i[pidx].y + invJ[cell*dim*dim+2*dim+0]*phiDer_i[pidx].z;\n"
+"          gradU[comp].x += u_i[uidx]*realSpaceDer.x;\n"
+"          realSpaceDer.y = invJ[cell*dim*dim+0*dim+1]*phiDer_i[pidx].x + invJ[cell*dim*dim+1*dim+1]*phiDer_i[pidx].y + invJ[cell*dim*dim+2*dim+1]*phiDer_i[pidx].z;\n"
+"          gradU[comp].y += u_i[uidx]*realSpaceDer.y;\n"
+"          realSpaceDer.z = invJ[cell*dim*dim+0*dim+2]*phiDer_i[pidx].x + invJ[cell*dim*dim+1*dim+2]*phiDer_i[pidx].y + invJ[cell*dim*dim+2*dim+2]*phiDer_i[pidx].z;\n"
+"          gradU[comp].z += u_i[uidx]*realSpaceDer.z;\n"
+#endif
+"        }\n"
+"      }\n"
+"      /* Process values at quadrature points */\n"
+"      f_1[fidx] = gradU[cidx];    /* TODO: This depends on the problem formulation, cf. CUDA version */\n"
+#if SPATIAL_DIM_0 == 2
+"      f_1[fidx].x *= detJ[cell]*w; f_1[fidx].y *= detJ[cell]*w;\n"
+#elif  SPATIAL_DIM_0 == 3
+"      f_1[fidx].x *= detJ[cell]*w; f_1[fidx].y *= detJ[cell]*w; f_1[fidx].z *= detJ[cell]*w;\n"
+#endif
+"    }\n"
+"\n"
+"    /* ==== TRANSPOSE THREADS ==== */\n"
+"    barrier(CLK_GLOBAL_MEM_FENCE);\n"
+"\n"
+"    /* Map values at quadrature points to coefficients */\n"
+"    for (int c = 0; c < N_sbc; ++c) {\n"
+"      const int cell = c*N_bl*N_q + blbidx;\n"
+"\n"
+"      e_i = 0.0;\n"
+"      for (int q = 0; q < N_q; ++q) {\n"
+"        const int pidx = q*N_bt + bidx;\n"
+"        const int fidx = (cell*N_q + q)*N_comp + cidx;\n"
+"        float2   realSpaceDer;\n"
+"\n"
+"        // e_i += phi_i[pidx]*f_0[fidx];\n"
+#if SPATIAL_DIM_0 == 2
+"        realSpaceDer.x = invJ[cell*dim*dim+0*dim+0]*phiDer_i[pidx].x + invJ[cell*dim*dim+1*dim+0]*phiDer_i[pidx].y;\n"
+"        e_i           += realSpaceDer.x*f_1[fidx].x;\n"
+"        realSpaceDer.y = invJ[cell*dim*dim+0*dim+1]*phiDer_i[pidx].x + invJ[cell*dim*dim+1*dim+1]*phiDer_i[pidx].y;\n"
+"        e_i           += realSpaceDer.y*f_1[fidx].y;\n"
+#elif  SPATIAL_DIM_0 == 3
+"        realSpaceDer.x = invJ[cell*dim*dim+0*dim+0]*phiDer_i[pidx].x + invJ[cell*dim*dim+1*dim+0]*phiDer_i[pidx].y + invJ[cell*dim*dim+2*dim+0]*phiDer_i[pidx].z;\n"
+"        e_i           += realSpaceDer.x*f_1[fidx].x;\n"
+"        realSpaceDer.y = invJ[cell*dim*dim+0*dim+1]*phiDer_i[pidx].x + invJ[cell*dim*dim+1*dim+1]*phiDer_i[pidx].y + invJ[cell*dim*dim+2*dim+1]*phiDer_i[pidx].z;\n"
+"        e_i           += realSpaceDer.y*f_1[fidx].y;\n"
+"        realSpaceDer.z = invJ[cell*dim*dim+0*dim+2]*phiDer_i[pidx].x + invJ[cell*dim*dim+1*dim+2]*phiDer_i[pidx].y + invJ[cell*dim*dim+2*dim+2]*phiDer_i[pidx].z;\n"
+"        e_i           += realSpaceDer.z*f_1[fidx].z;\n"
+#endif
+"      }\n"
+"      /* Write element vector for N_{cbc} cells at a time */\n"
+"      elemVec[Eoffset+(batch*N_sbc+c)*N_t+tidx] = e_i;\n"
+"    }\n"
+"    /* ==== Could do one write per batch ==== */\n"
+"  }\n"
+"  return;\n"
+"}\n"
+"  ";
+
+/* Struct collecting information for a typical OpenCL environment (one platform, one device, one context, one queue) */
+typedef struct OpenCLEnvironment_s
+{
+  cl_platform_id    pf_id;
+  cl_device_id      dev_id;
+  cl_context        ctx_id;
+  cl_command_queue  queue_id;
+} OpenCLEnvironment;
+
+// Calculate a conforming thread grid for N kernels
+#undef __FUNCT__
+#define __FUNCT__ "initializeOpenCL"
+PetscErrorCode initializeOpenCL(OpenCLEnvironment * ocl_env)
+{
+  cl_uint            num_platforms;
+  cl_platform_id     platform_ids[42];
+  cl_uint            num_devices;
+  cl_device_id       device_ids[42];
+  cl_int             ierr;
+
+  PetscFunctionBegin;
+  /* Init Platform */
+  ierr = clGetPlatformIDs(42, platform_ids, &num_platforms);CHKERRQ(ierr);
+  if (num_platforms == 0) {
+    SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "No OpenCL platform found.");
+  }
+  ocl_env->pf_id = platform_ids[0];
+
+  /* Init Device */
+  ierr = clGetDeviceIDs(ocl_env->pf_id, CL_DEVICE_TYPE_ALL, 42, device_ids, &num_devices);CHKERRQ(ierr);
+  if (num_platforms == 0) {
+    SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "No OpenCL device found.");
+  }
+  ocl_env->dev_id = device_ids[0];
+
+  /* Create context with one command queue */
+  ocl_env->ctx_id   = clCreateContext(0, 1, &(device_ids[0]), NULL, NULL, &ierr);CHKERRQ(ierr);
+  ocl_env->queue_id = clCreateCommandQueue(ocl_env->ctx_id, ocl_env->dev_id, 0, &ierr);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "destroyOpenCL"
+PetscErrorCode destroyOpenCL(OpenCLEnvironment * ocl_env)
+{
+  cl_int             ierr;
+
+  PetscFunctionBegin;
+  ierr = clReleaseCommandQueue(ocl_env->queue_id);CHKERRQ(ierr);
+  ocl_env->queue_id = 0;
+
+  ierr = clReleaseContext(ocl_env->ctx_id);CHKERRQ(ierr);
+  ocl_env->ctx_id = 0;
+  PetscFunctionReturn(0);
+}
+
+// Calculate a conforming thread grid for N kernels
+#undef __FUNCT__
+#define __FUNCT__ "calculateGridOpenCL"
+PetscErrorCode calculateGridOpenCL(const int N, const int blockSize, unsigned int * x, unsigned int * y, unsigned int * z)
+{
+  PetscFunctionBegin;
+  *z = 1;
+  if (N % blockSize) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Invalid block size %d for %d elements", blockSize, N);
+  const int Nblocks = N/blockSize;
+  for (*x = (int) (sqrt(Nblocks) + 0.5); *x > 0; --*x) {
+    *y = Nblocks / *x;
+    if (*x * *y == Nblocks) break;
+  }
+  if (*x * *y != Nblocks) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Could not find partition for %d with block size %d", N, blockSize);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "IntegrateElementBatchOpenCL"
+/*
+  IntegrateElementBatchOpenCL - Produces element vectors from input element solution and geometric information via quadrature
+
+  Input Parameters:
++ Ne - The total number of cells, Nchunk * Ncb * Nbc
+. Ncb - The number of serial cell batches
+. Nbc - The number of cells per batch
+. Nbl - The number of concurrent cells blocks per thread block
+. coefficients - An array of the solution vector for each cell
+. jacobianInverses - An array of the inverse Jacobian for each cell
+. jacobianDeterminants - An array of the Jacobian determinant for each cell
+. event - A PetscEvent, used to log flops
+- debug - A flag for debugging information
+
+  Output Parameter:
+. elemVec - An array of the element vectors for each cell
+*/
+PETSC_EXTERN PetscErrorCode IntegrateElementBatchOpenCL(PetscInt Ne, PetscInt Ncb, PetscInt Nbc, PetscInt Nbl, const PetscScalar coefficients[],
+                                        const PetscReal jacobianInverses[], const PetscReal jacobianDeterminants[], PetscScalar elemVec[],
+                                        PetscLogEvent event, PetscInt debug)
+{
+  const cl_int numQuadraturePoints_0 = 1;
+
+  const cl_int numBasisFunctions_0 = 3;
+  const cl_int numBasisComponents_0 = 1;
+
+  /* Number of concurrent blocks */
+  const cl_int N_bl = 1;
+
+  const cl_int dim    = SPATIAL_DIM_0;
+  const cl_int N_b    = numBasisFunctions_0;   /* The number of basis functions */
+  const cl_int N_comp = numBasisComponents_0;  /* The number of basis function components */
+  const cl_int N_bt   = N_b*N_comp;            /* The total number of scalar basis functions */
+  const cl_int N_q    = numQuadraturePoints_0; /* The number of quadrature points */
+  const cl_int N_bst  = N_bt*N_q;              /* The block size, LCM(N_bt, N_q), Notice that a block is not process simultaneously */
+  const cl_int N_t    = N_bst*N_bl;            /* The number of threads, N_bst * N_bl */
+
+  char            build_buffer[8192];
+  cl_build_status status;
+
+  float             msElapsedTime = 1; /* TODO: Add timing */
+
+  cl_mem            d_coefficients;
+  cl_mem            d_jacobianInverses;
+  cl_mem            d_jacobianDeterminants;
+  cl_mem            d_elemVec;
+
+  OpenCLEnvironment ocl_env;
+  cl_program        ocl_prog;
+  cl_kernel         ocl_kernel;
+  size_t            ocl_source_length;
+  size_t            local_work_size[3];
+  size_t            global_work_size[3];
+  size_t            i;
+  unsigned int      x, y, z;
+  PetscErrorCode    ierr;
+  cl_int            ierr2;
+
+
+  PetscFunctionBegin;
+  ierr = initializeOpenCL(&ocl_env);CHKERRQ(ierr);
+  ocl_source_length = strlen(opencl_program_source) - 2;
+  ocl_prog = clCreateProgramWithSource(ocl_env.ctx_id, 1, (const char**)&opencl_program_source, &ocl_source_length, &ierr2);CHKERRQ(ierr2);
+  ierr = clBuildProgram(ocl_prog, 0, NULL, NULL, NULL, NULL);
+  if (ierr != CL_SUCCESS) {
+    clGetProgramBuildInfo(ocl_prog, ocl_env.dev_id, CL_PROGRAM_BUILD_LOG, sizeof(char)*8192, &build_buffer, NULL);
+    printf("Build failed! Log:\n %s", build_buffer);
+  }
+  CHKERRQ(ierr);
+
+  ocl_kernel = clCreateKernel(ocl_prog, "integrateElementQuadrature", &ierr);CHKERRQ(ierr);
+
+  if (Nbl != N_bl) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Inconsistent block size %d should be %d", Nbl, N_bl);
+  if (Nbc*N_comp != N_t) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of threads %d should be %d * %d", N_t, Nbc, N_comp);
+  if (!Ne) {
+    PetscStageLog     stageLog;
+    PetscEventPerfLog eventLog = NULL;
+    PetscInt          stage;
+
+    ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
+    ierr = PetscStageLogGetCurrent(stageLog, &stage);CHKERRQ(ierr);
+    ierr = PetscStageLogGetEventPerfLog(stageLog, stage, &eventLog);CHKERRQ(ierr);
+    /* Log performance info */
+    eventLog->eventInfo[event].count++;
+    eventLog->eventInfo[event].time  += 0.0;
+    eventLog->eventInfo[event].flops += 0;
+    PetscFunctionReturn(0);
+  }
+  /* Marshalling */
+  if (sizeof(PetscReal) == sizeof(float)) {
+    d_coefficients         = clCreateBuffer(ocl_env.ctx_id, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, Ne*N_bt * sizeof(float),    (void*)coefficients,         &ierr);CHKERRQ(ierr);
+    d_jacobianInverses     = clCreateBuffer(ocl_env.ctx_id, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, Ne*dim*dim * sizeof(float), (void*)jacobianInverses,     &ierr);CHKERRQ(ierr);
+    d_jacobianDeterminants = clCreateBuffer(ocl_env.ctx_id, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, Ne * sizeof(float),         (void*)jacobianDeterminants, &ierr);CHKERRQ(ierr);
+    d_elemVec              = clCreateBuffer(ocl_env.ctx_id, CL_MEM_READ_WRITE,                        Ne*N_bt * sizeof(float),    NULL,                        &ierr);CHKERRQ(ierr);
+  } else {
+    float *c, *jI, *jD;
+    PetscInt i;
+
+    ierr = PetscMalloc3(Ne*N_bt,float,&c,Ne*dim*dim,float,&jI,Ne,float,&jD);CHKERRQ(ierr);
+    for (i = 0; i < Ne*N_bt;    ++i) c[i]  = coefficients[i];
+    for (i = 0; i < Ne*dim*dim; ++i) jI[i] = jacobianInverses[i];
+    for (i = 0; i < Ne;         ++i) jD[i] = jacobianDeterminants[i];
+    d_coefficients         = clCreateBuffer(ocl_env.ctx_id, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, Ne*N_bt * sizeof(float),    (void*)c,  &ierr);CHKERRQ(ierr);
+    d_jacobianInverses     = clCreateBuffer(ocl_env.ctx_id, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, Ne*dim*dim * sizeof(float), (void*)jI, &ierr);CHKERRQ(ierr);
+    d_jacobianDeterminants = clCreateBuffer(ocl_env.ctx_id, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, Ne * sizeof(float),         (void*)jD, &ierr);CHKERRQ(ierr);
+    d_elemVec              = clCreateBuffer(ocl_env.ctx_id, CL_MEM_READ_WRITE,                        Ne*N_bt * sizeof(float),    NULL,      &ierr);CHKERRQ(ierr);
+    ierr = PetscFree3(c,jI,jD);CHKERRQ(ierr);
+  }
+
+  /* Work size preparations */
+  ierr = calculateGridOpenCL(Ne, Ncb*Nbc, &x, &y, &z);CHKERRQ(ierr);
+  local_work_size[0] = Nbc*N_comp;
+  local_work_size[1] = 1;
+  local_work_size[2] = 1;
+  global_work_size[0] = x * local_work_size[0];
+  global_work_size[1] = y * local_work_size[1];
+  global_work_size[2] = z * local_work_size[2];
+
+  /* if (debug) { */
+  ierr = PetscPrintf(PETSC_COMM_SELF, "GPU layout grid(%d,%d,%d) block(%d,%d,%d) with %d batches\n",
+                     x, y, z,
+                     local_work_size[0], local_work_size[1], local_work_size[2], Ncb);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF, " N_t: %d, N_cb: %d\n", N_t, Ncb);
+  /* } */
+
+  /* Kernel launch */
+  /* integrateElementQuadrature<<<grid, block>>>(Ncb, d_coefficients, d_jacobianInverses, d_jacobianDeterminants, d_elemVec); */
+  ierr = clSetKernelArg(ocl_kernel, 0, sizeof(cl_int), (void*)&Ncb);CHKERRQ(ierr);
+  ierr = clSetKernelArg(ocl_kernel, 1, sizeof(cl_mem), (void*)&d_coefficients);CHKERRQ(ierr);
+  ierr = clSetKernelArg(ocl_kernel, 2, sizeof(cl_mem), (void*)&d_jacobianInverses);CHKERRQ(ierr);
+  ierr = clSetKernelArg(ocl_kernel, 3, sizeof(cl_mem), (void*)&d_jacobianDeterminants);CHKERRQ(ierr);
+  ierr = clSetKernelArg(ocl_kernel, 4, sizeof(cl_mem), (void*)&d_elemVec);CHKERRQ(ierr);
+  ierr = clEnqueueNDRangeKernel(ocl_env.queue_id, ocl_kernel, 3, NULL, global_work_size, local_work_size, 0, NULL, NULL);CHKERRQ(ierr);
+
+
+  /* Read data back to device, including marshalling */
+  if (sizeof(PetscReal) == sizeof(float)) {
+    ierr = clEnqueueReadBuffer(ocl_env.queue_id, d_elemVec, CL_TRUE, 0, Ne*N_bt * sizeof(float), elemVec, 0, NULL, NULL);CHKERRQ(ierr);
+  } else {
+    float *eV;
+    PetscInt i;
+
+    ierr = PetscMalloc(Ne*N_bt * sizeof(float), &eV);CHKERRQ(ierr);
+    ierr = clEnqueueReadBuffer(ocl_env.queue_id, d_elemVec, CL_TRUE, 0, Ne*N_bt * sizeof(float), eV, 0, NULL, NULL);CHKERRQ(ierr);
+    for (i = 0; i < Ne*N_bt; ++i) elemVec[i] = eV[i];
+    ierr = PetscFree(eV);CHKERRQ(ierr);
+  }
+
+  {
+    PetscStageLog     stageLog;
+    PetscEventPerfLog eventLog = NULL;
+    PetscInt          stage;
+
+    ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
+    ierr = PetscStageLogGetCurrent(stageLog, &stage);CHKERRQ(ierr);
+    ierr = PetscStageLogGetEventPerfLog(stageLog, stage, &eventLog);CHKERRQ(ierr);
+    /* Log performance info */
+    eventLog->eventInfo[event].count++;
+    eventLog->eventInfo[event].time  += msElapsedTime*1.0e-3;
+    eventLog->eventInfo[event].flops += (((2+(2+2*dim)*dim)*N_comp*N_b+(2+2)*dim*N_comp)*N_q + (2+2*dim)*dim*N_q*N_comp*N_b)*Ne;
+  }
+
+  /* We are done, clean up */
+  ierr = clReleaseMemObject(d_coefficients);CHKERRQ(ierr);
+  ierr = clReleaseMemObject(d_jacobianInverses);CHKERRQ(ierr);
+  ierr = clReleaseMemObject(d_jacobianDeterminants);CHKERRQ(ierr);
+  ierr = clReleaseMemObject(d_elemVec);CHKERRQ(ierr);
+  ierr = clReleaseKernel(ocl_kernel);CHKERRQ(ierr);
+  ierr = clReleaseProgram(ocl_prog);CHKERRQ(ierr);
+  ierr = destroyOpenCL(&ocl_env);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}

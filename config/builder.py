@@ -168,9 +168,9 @@ regressionParameters = {'src/dm/impls/patch/examples/tests/ex1': [{'numProcs': 1
                         'src/snes/examples/tutorials/ex52':   [# 2D Laplacian 0-3
                                                                {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0 -compute_function',
                                                                 'setup': './bin/pythonscripts/PetscGenerateFEMQuadrature.py 2 1 1 1 laplacian src/snes/examples/tutorials/ex52.h',
-                                                                'source': ['src/snes/examples/tutorials/ex52_integrateElement.cu'], 'requires': ['cuda']},
+                                                                'source': ['src/snes/examples/tutorials/ex52_integrateElement.cu', 'src/snes/examples/tutorials/ex52_integrateElementOpenCL.c'], 'requires': ['cuda']},
                                                                {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0 -compute_function -batch', 'requires': ['cuda']},
-                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0 -compute_function -batch -gpu', 'requires': ['cuda']},
+                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0 -compute_function -batch -gpu -opencl', 'requires': ['cuda']},
                                                                {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0 -compute_function -batch -gpu -gpu_batches 2', 'requires': ['cuda']},
                                                                # 2D Laplacian refined 4-8
                                                                {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0625 -compute_function', 'requires': ['cuda']},

@@ -38,6 +38,7 @@ typedef struct {
   PetscBool     computeJacobian;   /* The flag for computing a Jacobian */
   PetscBool     batch;             /* The flag for batch assembly */
   PetscBool     gpu;               /* The flag for GPU integration */
+  PetscBool     opencl;            /* The flag for GPU integration using OpenCL instead of CUDA*/
   OpType        op;                /* The type of PDE operator (should use FFC/Ignition here) */
   PetscBool     showResidual, showJacobian;
   PetscLogEvent createMeshEvent, residualEvent, residualBatchEvent, jacobianEvent, jacobianBatchEvent, integrateBatchCPUEvent, integrateBatchGPUEvent, integrateGPUOnlyEvent;
@@ -81,6 +82,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->computeJacobian = PETSC_FALSE;
   options->batch           = PETSC_FALSE;
   options->gpu             = PETSC_FALSE;
+  options->opencl          = PETSC_FALSE;
   options->numBatches      = 1;
   options->numBlocks       = 1;
   options->op              = LAPLACIAN;
@@ -100,6 +102,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsBool("-compute_jacobian", "Compute the Jacobian", "ex52.c", options->computeJacobian, &options->computeJacobian, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-batch", "Use the batch assembly method", "ex52.c", options->batch, &options->batch, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-gpu", "Use the GPU for integration method", "ex52.c", options->gpu, &options->gpu, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-opencl", "Use the GPU with OpenCL for integration method", "ex52.c", options->opencl, &options->opencl, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-gpu_batches", "The number of cell batches per kernel", "ex52.c", options->numBatches, &options->numBatches, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-gpu_blocks", "The number of concurrent blocks per kernel", "ex52.c", options->numBlocks, &options->numBlocks, NULL);CHKERRQ(ierr);
 
@@ -447,6 +450,8 @@ PetscErrorCode FormFunctionLocalElasticity(DM dm, Vec X, Vec F, AppCtx *user)
 
 PETSC_EXTERN PetscErrorCode IntegrateElementBatchGPU(PetscInt Ne, PetscInt Nbatch, PetscInt Nbc, PetscInt Nbl, const PetscScalar coefficients[], const PetscReal jacobianInverses[], const PetscReal jacobianDeterminants[], PetscScalar elemVec[], PetscLogEvent event, PetscInt debug);
 
+PETSC_EXTERN PetscErrorCode IntegrateElementBatchOpenCL(PetscInt Ne, PetscInt Nbatch, PetscInt Nbc, PetscInt Nbl, const PetscScalar coefficients[], const PetscReal jacobianInverses[], const PetscReal jacobianDeterminants[], PetscScalar elemVec[], PetscLogEvent event, PetscInt debug);
+
 void f1_laplacian(PetscScalar u, const PetscScalar gradU[], PetscScalar f1[])
 {
   const PetscInt dim = SPATIAL_DIM_0;
@@ -677,7 +682,11 @@ PetscErrorCode FormFunctionLocalBatch(DM dm, Vec X, Vec F, AppCtx *user)
   PetscInt numChunks  = numCells / (numBatches*batchSize);
   if (user->gpu) {
     ierr = PetscLogEventBegin(user->integrateBatchGPUEvent,0,0,0,0);CHKERRQ(ierr);
-    ierr = IntegrateElementBatchGPU(numChunks*numBatches*batchSize, numBatches, batchSize, numBlocks, u, invJ, detJ, elemVec, user->integrateGPUOnlyEvent, user->debug);CHKERRQ(ierr);
+    if (user->opencl) {
+      ierr = IntegrateElementBatchOpenCL(numChunks*numBatches*batchSize, numBatches, batchSize, numBlocks, u, invJ, detJ, elemVec, user->integrateGPUOnlyEvent, user->debug);CHKERRQ(ierr);
+    } else {
+      ierr = IntegrateElementBatchGPU(numChunks*numBatches*batchSize, numBatches, batchSize, numBlocks, u, invJ, detJ, elemVec, user->integrateGPUOnlyEvent, user->debug);CHKERRQ(ierr);
+    }
     ierr = PetscLogFlops((((2+(2+2*dim)*dim)*numBasisComps*numBasisFuncs+(2+2)*dim*numBasisComps)*numQuadPoints + (2+2*dim)*dim*numQuadPoints*numBasisComps*numBasisFuncs)*numChunks*numBatches*batchSize);CHKERRQ(ierr);
     ierr = PetscLogEventEnd(user->integrateBatchGPUEvent,0,0,0,0);CHKERRQ(ierr);
   } else {
