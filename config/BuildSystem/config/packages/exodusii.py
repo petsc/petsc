@@ -70,7 +70,7 @@ class Configure(config.package.Package):
       try:
         self.logPrintBox('Compiling ExodusII; this may take several minutes')
         builddir = os.path.join(self.packageDir, 'exodus')
-        output,err,ret = config.base.Configure.executeShellCommand('cd '+builddir+' && make -f Makefile.standalone libexodus.a '+args, timeout=2500, log = self.framework.log)
+        output,err,ret = config.base.Configure.executeShellCommand('cd '+builddir+' && make -f Makefile.standalone clean libexodus.a '+args, timeout=2500, log = self.framework.log)
         shutil.copy(os.path.join(builddir,'libexodus.a'),os.path.join(self.installDir,'lib'))
         for i in cincludes:
           shutil.copy(os.path.join(builddir,'cbind','include',i),os.path.join(self.installDir,'include'))
@@ -79,6 +79,7 @@ class Configure(config.package.Package):
           shutil.copy(os.path.join(builddir,'libexoIIv2for.a'),os.path.join(self.installDir,'lib'))
           for i in fincludes:
             shutil.copy(os.path.join(builddir,'forbind','include',i),os.path.join(self.installDir,'include'))
+        output,err,ret = config.base.Configure.executeShellCommand('cd '+builddir+' && make -f Makefile.standalone clean', timeout=250, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running make on ExodusII: '+str(e))
       self.postInstall(output+err, mkfile)
