@@ -1277,46 +1277,48 @@ PetscErrorCode DMCreateSubDM_Plex(DM dm, PetscInt numFields, PetscInt fields[], 
   if (!sectionGlobal) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Must set default global section for DMPlex before splitting fields");
   ierr = PetscSectionGetNumFields(section, &nF);CHKERRQ(ierr);
   if (numFields > nF) SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Number of requested fields %d greater than number of DM fields %d", numFields, nF);
-  ierr = PetscSectionGetChart(sectionGlobal, &pStart, &pEnd);CHKERRQ(ierr);
-  for (p = pStart; p < pEnd; ++p) {
-    PetscInt gdof;
+  if (is) {
+    ierr = PetscSectionGetChart(sectionGlobal, &pStart, &pEnd);CHKERRQ(ierr);
+    for (p = pStart; p < pEnd; ++p) {
+      PetscInt gdof;
 
-    ierr = PetscSectionGetDof(sectionGlobal, p, &gdof);CHKERRQ(ierr);
-    if (gdof > 0) {
-      for (f = 0; f < numFields; ++f) {
-        PetscInt fdof, fcdof;
+      ierr = PetscSectionGetDof(sectionGlobal, p, &gdof);CHKERRQ(ierr);
+      if (gdof > 0) {
+        for (f = 0; f < numFields; ++f) {
+          PetscInt fdof, fcdof;
 
-        ierr     = PetscSectionGetFieldDof(section, p, fields[f], &fdof);CHKERRQ(ierr);
-        ierr     = PetscSectionGetFieldConstraintDof(section, p, fields[f], &fcdof);CHKERRQ(ierr);
-        subSize += fdof-fcdof;
-      }
-    }
-  }
-  ierr = PetscMalloc(subSize * sizeof(PetscInt), &subIndices);CHKERRQ(ierr);
-  for (p = pStart; p < pEnd; ++p) {
-    PetscInt gdof, goff;
-
-    ierr = PetscSectionGetDof(sectionGlobal, p, &gdof);CHKERRQ(ierr);
-    if (gdof > 0) {
-      ierr = PetscSectionGetOffset(sectionGlobal, p, &goff);CHKERRQ(ierr);
-      for (f = 0; f < numFields; ++f) {
-        PetscInt fdof, fcdof, fc, f2, poff = 0;
-
-        /* Can get rid of this loop by storing field information in the global section */
-        for (f2 = 0; f2 < fields[f]; ++f2) {
-          ierr  = PetscSectionGetFieldDof(section, p, f2, &fdof);CHKERRQ(ierr);
-          ierr  = PetscSectionGetFieldConstraintDof(section, p, f2, &fcdof);CHKERRQ(ierr);
-          poff += fdof-fcdof;
-        }
-        ierr = PetscSectionGetFieldDof(section, p, fields[f], &fdof);CHKERRQ(ierr);
-        ierr = PetscSectionGetFieldConstraintDof(section, p, fields[f], &fcdof);CHKERRQ(ierr);
-        for (fc = 0; fc < fdof-fcdof; ++fc, ++subOff) {
-          subIndices[subOff] = goff+poff+fc;
+          ierr     = PetscSectionGetFieldDof(section, p, fields[f], &fdof);CHKERRQ(ierr);
+          ierr     = PetscSectionGetFieldConstraintDof(section, p, fields[f], &fcdof);CHKERRQ(ierr);
+          subSize += fdof-fcdof;
         }
       }
     }
+    ierr = PetscMalloc(subSize * sizeof(PetscInt), &subIndices);CHKERRQ(ierr);
+    for (p = pStart; p < pEnd; ++p) {
+      PetscInt gdof, goff;
+
+      ierr = PetscSectionGetDof(sectionGlobal, p, &gdof);CHKERRQ(ierr);
+      if (gdof > 0) {
+        ierr = PetscSectionGetOffset(sectionGlobal, p, &goff);CHKERRQ(ierr);
+        for (f = 0; f < numFields; ++f) {
+          PetscInt fdof, fcdof, fc, f2, poff = 0;
+
+          /* Can get rid of this loop by storing field information in the global section */
+          for (f2 = 0; f2 < fields[f]; ++f2) {
+            ierr  = PetscSectionGetFieldDof(section, p, f2, &fdof);CHKERRQ(ierr);
+            ierr  = PetscSectionGetFieldConstraintDof(section, p, f2, &fcdof);CHKERRQ(ierr);
+            poff += fdof-fcdof;
+          }
+          ierr = PetscSectionGetFieldDof(section, p, fields[f], &fdof);CHKERRQ(ierr);
+          ierr = PetscSectionGetFieldConstraintDof(section, p, fields[f], &fcdof);CHKERRQ(ierr);
+          for (fc = 0; fc < fdof-fcdof; ++fc, ++subOff) {
+            subIndices[subOff] = goff+poff+fc;
+          }
+        }
+      }
+    }
+    ierr = ISCreateGeneral(PetscObjectComm((PetscObject)dm), subSize, subIndices, PETSC_OWN_POINTER, is);CHKERRQ(ierr);
   }
-  if (is) {ierr = ISCreateGeneral(PetscObjectComm((PetscObject)dm), subSize, subIndices, PETSC_OWN_POINTER, is);CHKERRQ(ierr);}
   if (subdm) {
     PetscSection subsection;
     PetscBool    haveNull = PETSC_FALSE;
