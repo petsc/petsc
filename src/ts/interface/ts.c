@@ -4227,6 +4227,7 @@ PetscErrorCode TSErrorWeightedNorm(TS ts,Vec Y,PetscReal *norm)
   Vec               U;
   PetscReal         sum,gsum;
   PetscReal         max,gmax;
+  PetscReal         tol;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
@@ -4248,7 +4249,7 @@ PetscErrorCode TSErrorWeightedNorm(TS ts,Vec Y,PetscReal *norm)
     ierr = VecGetArrayRead(ts->vatol,&atol);CHKERRQ(ierr);
     ierr = VecGetArrayRead(ts->vrtol,&rtol);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
-      PetscReal tol = PetscRealPart(atol[i]) + PetscRealPart(rtol[i]) * PetscMax(PetscAbsScalar(u[i]),PetscAbsScalar(y[i]));
+      tol = PetscRealPart(atol[i]) + PetscRealPart(rtol[i]) * PetscMax(PetscAbsScalar(u[i]),PetscAbsScalar(y[i]));
       sum += PetscSqr(PetscAbsScalar(y[i] - u[i]) / tol);
     }
     ierr = VecRestoreArrayRead(ts->vatol,&atol);CHKERRQ(ierr);
@@ -4257,7 +4258,7 @@ PetscErrorCode TSErrorWeightedNorm(TS ts,Vec Y,PetscReal *norm)
     const PetscScalar *atol;
     ierr = VecGetArrayRead(ts->vatol,&atol);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
-      PetscReal tol = PetscRealPart(atol[i]) + ts->rtol * PetscMax(PetscAbsScalar(u[i]),PetscAbsScalar(y[i]));
+      tol = PetscRealPart(atol[i]) + ts->rtol * PetscMax(PetscAbsScalar(u[i]),PetscAbsScalar(y[i]));
       sum += PetscSqr(PetscAbsScalar(y[i] - u[i]) / tol);
     }
     ierr = VecRestoreArrayRead(ts->vatol,&atol);CHKERRQ(ierr);
@@ -4265,7 +4266,7 @@ PetscErrorCode TSErrorWeightedNorm(TS ts,Vec Y,PetscReal *norm)
     const PetscScalar *rtol;
     ierr = VecGetArrayRead(ts->vrtol,&rtol);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
-      PetscReal tol = ts->atol + PetscRealPart(rtol[i]) * PetscMax(PetscAbsScalar(u[i]),PetscAbsScalar(y[i]));
+      tol = ts->atol + PetscRealPart(rtol[i]) * PetscMax(PetscAbsScalar(u[i]),PetscAbsScalar(y[i]));
       sum += PetscSqr(PetscAbsScalar(y[i] - u[i]) / tol);
     }
     ierr = VecRestoreArrayRead(ts->vrtol,&rtol);CHKERRQ(ierr);
@@ -4278,25 +4279,25 @@ PetscErrorCode TSErrorWeightedNorm(TS ts,Vec Y,PetscReal *norm)
       if (ts->adapt->wnormtype == NORM_2) {
 	for (i=0; i<n; i++) {
 	  k = idx[i] - rstart;
-	  PetscReal tol = ts->atol + ts->rtol * PetscMax(PetscAbsScalar(u[k]),PetscAbsScalar(y[k]));
+	  tol = ts->atol + ts->rtol * PetscMax(PetscAbsScalar(u[k]),PetscAbsScalar(y[k]));
 	  sum += PetscSqr(PetscAbsScalar(y[k] - u[k]) / tol);
 	}
       } else {
 	for (i=0; i<n; i++) {
 	  k = idx[i] - rstart;
-	  PetscReal tol = ts->atol + ts->rtol * PetscMax(PetscAbsScalar(u[k]),PetscAbsScalar(y[k]));
+	  tol = ts->atol + ts->rtol * PetscMax(PetscAbsScalar(u[k]),PetscAbsScalar(y[k]));
 	  max = PetscMax(max,PetscAbsScalar(y[k] - u[k]) / tol);
 	}
       }
     } else {
       if (ts->adapt->wnormtype == NORM_2) {
 	for (i=0; i<n; i++) {
-	  PetscReal tol = ts->atol + ts->rtol * PetscMax(PetscAbsScalar(u[i]),PetscAbsScalar(y[i]));
+	  tol = ts->atol + ts->rtol * PetscMax(PetscAbsScalar(u[i]),PetscAbsScalar(y[i]));
 	  sum += PetscSqr(PetscAbsScalar(y[i] - u[i]) / tol);
 	}
       } else {
 	for (i=0; i<n; i++) {
-	  PetscReal tol = ts->atol + ts->rtol * PetscMax(PetscAbsScalar(u[i]),PetscAbsScalar(y[i]));
+	  tol = ts->atol + ts->rtol * PetscMax(PetscAbsScalar(u[i]),PetscAbsScalar(y[i]));
 	  max = PetscMax(max,PetscAbsScalar(y[i] - u[i]) / tol);
 	}
       }	
