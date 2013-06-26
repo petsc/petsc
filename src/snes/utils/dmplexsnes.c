@@ -237,7 +237,7 @@ PETSC_STATIC_INLINE PetscErrorCode DMInterpolate_Simplex_Private(DMInterpolation
   ierr = VecGetArray(v, &a);CHKERRQ(ierr);
   for (p = 0; p < ctx->n; ++p) {
     PetscInt     c = ctx->cells[p];
-    PetscScalar *x;
+    PetscScalar *x = NULL;
     PetscReal    xi[4];
     PetscInt     d, f, comp;
 
@@ -372,7 +372,7 @@ PETSC_STATIC_INLINE PetscErrorCode DMInterpolate_Quad_Private(DMInterpolationInf
   ierr = VecGetArray(ctx->coords, &coords);CHKERRQ(ierr);
   ierr = VecGetArray(v, &a);CHKERRQ(ierr);
   for (p = 0; p < ctx->n; ++p) {
-    PetscScalar *x, *vertices;
+    PetscScalar *x = NULL, *vertices = NULL;
     PetscScalar *xi;
     PetscReal    xir[2];
     PetscInt     c = ctx->cells[p], comp, coordSize, xSize;
@@ -590,7 +590,7 @@ PETSC_STATIC_INLINE PetscErrorCode DMInterpolate_Hex_Private(DMInterpolationInfo
   ierr = VecGetArray(ctx->coords, &coords);CHKERRQ(ierr);
   ierr = VecGetArray(v, &a);CHKERRQ(ierr);
   for (p = 0; p < ctx->n; ++p) {
-    PetscScalar *x, *vertices;
+    PetscScalar *x = NULL, *vertices = NULL;
     PetscScalar *xi;
     PetscReal    xir[3];
     PetscInt     c = ctx->cells[p], comp, coordSize, xSize;
