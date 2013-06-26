@@ -1070,9 +1070,8 @@ static struct _MatOps MatOps_Values = {
    MATELEMENTAL = "elemental" - A matrix type for dense matrices using the Elemental package
 
    Options Database Keys:
-. -mat_type elemental - sets the matrix type to "elemental" during a call to MatSetFromOptions()
-. -mat_elemental_grid_height - sets Grid Height
-. -mat_elemental_grid_width - sets Grid Width
++ -mat_type elemental - sets the matrix type to "elemental" during a call to MatSetFromOptions()
+- -mat_elemental_grid_height - sets Grid Height for 2D cyclic ordering of internal matrix
 
   Level: beginner
 
