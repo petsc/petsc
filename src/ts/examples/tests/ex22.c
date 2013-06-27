@@ -61,8 +61,7 @@ PetscErrorCode InitialConditions(Vec U,DM da,AppCtx *app)
     else if (x[i] > 0.1 && x[i] < 0.25) u[i] = (x[i] - 0.1)/0.15;
     else u[i] = 1.0;
     
-    if (u[i] <= app->uc) app->sw[i] = 0;
-    else app->sw[i] = 1;
+    app->sw[i] = 1;
   }
   ierr = VecRestoreArray(U,&u);CHKERRQ(ierr);
   ierr = VecRestoreArray(xcoord,&x);CHKERRQ(ierr);
@@ -83,7 +82,7 @@ PetscErrorCode EventFunction(TS ts,PetscReal t,Vec U,PetscScalar *fvalue,PetscIn
   ierr = VecGetArray(U,&u);CHKERRQ(ierr);
   for(i=0; i < lsize;i++) {
     fvalue[i] = u[i] - app->uc;
-    direction[i] = 0;
+    direction[i] = -1;
     terminate[i] = PETSC_FALSE;
   }
   ierr = VecRestoreArray(U,&u);CHKERRQ(ierr);
@@ -100,8 +99,7 @@ PetscErrorCode PostEventFunction(TS ts,PetscInt nevents_zero,PetscInt events_zer
   PetscFunctionBegin;
   for (i=0; i < nevents_zero; i ++) {
     idx = events_zero[i];
-    if (app->sw[idx] == 1) app->sw[idx] = 0;
-    else app->sw[idx] = 1;
+    app->sw[idx] = 0;
   }
   PetscFunctionReturn(0);
 }
@@ -142,7 +140,7 @@ static PetscErrorCode IFunction(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,void *ctx
     } else if (i == M - 1) {
       f[i] = (u[i] - u[i-1])/h;
     } else {
-      f[i] = (u[i+1] - 2*u[i] - u[i-1])/h2 + (1-app->sw[i-xs])*(-app->A*u[i]) - udot[i];
+      f[i] = (u[i+1] - 2*u[i] + u[i-1])/h2 + app->sw[i-xs]*(-app->A*u[i]) - udot[i];
     }
   }
       
@@ -188,7 +186,7 @@ static PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat
       ierr = MatSetValuesStencil(jac,1,&row,2,col,v,INSERT_VALUES);CHKERRQ(ierr);
     } else {
       col[0].i = i+1; v[0] = 1/h2;
-      col[1].i = i;   v[1] = -2/h2 + (1-app->sw[i-xs])*(-app->A) - a;
+      col[1].i = i;   v[1] = -2/h2 + app->sw[i-xs]*(-app->A) - a;
       col[2].i = i-1; v[2] = 1/h2;
       ierr = MatSetValuesStencil(jac,1,&row,3,col,v,INSERT_VALUES);CHKERRQ(ierr);
     }
