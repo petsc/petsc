@@ -18,30 +18,34 @@ static PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_LLCondensed(Mat,Mat,Petsc
 PetscErrorCode MatMatMult_SeqAIJ_SeqAIJ(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C)
 {
   PetscErrorCode ierr;
-  PetscBool      scalable=PETSC_FALSE,scalable_fast=PETSC_FALSE,heap = PETSC_FALSE,btheap = PETSC_FALSE,llcondensed = PETSC_FALSE;
+  const char     *algTypes[6] = {"sorted","scalable","scalable_fast","heap","btheap","llcondensed"};
+  PetscInt       alg=0; /* set default algorithm */
 
   PetscFunctionBegin;
   if (scall == MAT_INITIAL_MATRIX) {
     ierr = PetscObjectOptionsBegin((PetscObject)A);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-matmatmult_scalable","Use a scalable but slower C=A*B","",scalable,&scalable,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-matmatmult_scalable_fast","Use a scalable but slower C=A*B","",scalable_fast,&scalable_fast,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-matmatmult_heap","Use heap implementation of symbolic factorization C=A*B","",heap,&heap,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-matmatmult_btheap","Use btheap implementation of symbolic factorization C=A*B","",btheap,&btheap,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-matmatmult_llcondensed","Use LLCondensed to for symbolic C=A*B","",llcondensed,&llcondensed,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsEList("-matmatmult_via","Algorithmic approach","MatMatMult",algTypes,6,algTypes[0],&alg,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsEnd();CHKERRQ(ierr);
     ierr = PetscLogEventBegin(MAT_MatMultSymbolic,A,B,0,0);CHKERRQ(ierr);
-    if (scalable_fast) {
-      ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ_Scalable_fast(A,B,fill,C);CHKERRQ(ierr);
-    } else if (scalable) {
+    switch (alg) {
+    case 1:
       ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ_Scalable(A,B,fill,C);CHKERRQ(ierr);
-    } else if (heap) {
+      break;
+    case 2:
+      ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ_Scalable_fast(A,B,fill,C);CHKERRQ(ierr);
+      break;
+    case 3:
       ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ_Heap(A,B,fill,C);CHKERRQ(ierr);
-    } else if (btheap) {
+      break;
+    case 4:
       ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ_BTHeap(A,B,fill,C);CHKERRQ(ierr);
-    } else if (llcondensed) {
+      break;
+    case 5:
       ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ_LLCondensed(A,B,fill,C);CHKERRQ(ierr);
-    } else {
+      break;
+    default:
       ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ(A,B,fill,C);CHKERRQ(ierr);
+     break;
     }
     ierr = PetscLogEventEnd(MAT_MatMultSymbolic,A,B,0,0);CHKERRQ(ierr);
   }

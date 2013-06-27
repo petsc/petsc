@@ -55,8 +55,8 @@ PetscErrorCode MatMatMatMultSymbolic_MPIAIJ_MPIAIJ_MPIAIJ(Mat A,Mat B,Mat C,Pets
     ierr = MatMatMultSymbolic_MPIAIJ_MPIAIJ_Scalable(B,C,fill,&BC);CHKERRQ(ierr);
     ierr = MatMatMultSymbolic_MPIAIJ_MPIAIJ_Scalable(A,BC,fill,D);CHKERRQ(ierr);
   } else {
-    ierr = MatMatMultSymbolic_MPIAIJ_MPIAIJ(B,C,fill,&BC);CHKERRQ(ierr);
-    ierr = MatMatMultSymbolic_MPIAIJ_MPIAIJ(A,BC,fill,D);CHKERRQ(ierr);
+    ierr = MatMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(B,C,fill,&BC);CHKERRQ(ierr);
+    ierr = MatMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(A,BC,fill,D);CHKERRQ(ierr);
   }
 
   /* create struct Mat_MatMatMatMult and attached it to *D */
