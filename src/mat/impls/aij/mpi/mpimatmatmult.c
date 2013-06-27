@@ -15,11 +15,24 @@
 PetscErrorCode MatMatMult_MPIAIJ_MPIAIJ(Mat A,Mat B,MatReuse scall,PetscReal fill, Mat *C)
 {
   PetscErrorCode ierr;
+  const char     *algTypes[2] = {"scalable","nonscalable"};
+  PetscInt       alg=0; /* set default algorithm */
 
   PetscFunctionBegin;
   if (scall == MAT_INITIAL_MATRIX) {
+    ierr = PetscObjectOptionsBegin((PetscObject)A);CHKERRQ(ierr);
+    ierr = PetscOptionsEList("-matmatmult_via","Algorithmic approach","MatMatMult",algTypes,2,algTypes[0],&alg,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsEnd();CHKERRQ(ierr);
+
     ierr = PetscLogEventBegin(MAT_MatMultSymbolic,A,B,0,0);CHKERRQ(ierr);
-    ierr = MatMatMultSymbolic_MPIAIJ_MPIAIJ(A,B,fill,C);CHKERRQ(ierr);
+    switch (alg) {
+    case 1:
+      ierr = MatMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(A,B,fill,C);CHKERRQ(ierr);
+      break;
+    default:
+      ierr = MatMatMultSymbolic_MPIAIJ_MPIAIJ_Scalable(A,B,fill,C);CHKERRQ(ierr);
+      break;
+    }
     ierr = PetscLogEventEnd(MAT_MatMultSymbolic,A,B,0,0);CHKERRQ(ierr);
   }
   ierr = PetscLogEventBegin(MAT_MatMultNumeric,A,B,0,0);CHKERRQ(ierr);
@@ -179,8 +192,8 @@ PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatMatMultSymbolic_MPIAIJ_MPIAIJ"
-PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
+#define __FUNCT__ "MatMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable"
+PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat A,Mat P,PetscReal fill,Mat *C)
 {
   PetscErrorCode     ierr;
   MPI_Comm           comm;
@@ -196,7 +209,6 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *
   PetscBT            lnkbt;
   PetscScalar        *apa;
   PetscReal          afill;
-  PetscBool          scalable=PETSC_TRUE;
   PetscInt           nlnk_max,armax,prmax;
 
   PetscFunctionBegin;
@@ -204,15 +216,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *
   if (A->cmap->rstart != P->rmap->rstart || A->cmap->rend != P->rmap->rend) {
     SETERRQ4(comm,PETSC_ERR_ARG_SIZ,"Matrix local dimensions are incompatible, (%D, %D) != (%D,%D)",A->cmap->rstart,A->cmap->rend,P->rmap->rstart,P->rmap->rend);
   }
-
-  ierr = PetscObjectOptionsBegin((PetscObject)A);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-matmatmult_scalable","Use a scalable but slower C=A*B","",scalable,&scalable,NULL);CHKERRQ(ierr);
-  if (scalable) {
-    ierr = MatMatMultSymbolic_MPIAIJ_MPIAIJ_Scalable(A,P,fill,C);CHKERRQ(ierr);
-    PetscFunctionReturn(0);
-  }
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
-
+  
   /* create struct Mat_PtAPMPI and attached it to C later */
   ierr = PetscNew(Mat_PtAPMPI,&ptap);CHKERRQ(ierr);
 
@@ -645,7 +649,7 @@ PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ_Scalable(Mat A,Mat P,Mat C)
   PetscFunctionReturn(0);
 }
 
-/* same as MatMatMultSymbolic_MPIAIJ_MPIAIJ(), except using LLCondensed to avoid O(BN) memory requirement */
+/* same as MatMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(), except using LLCondensed to avoid O(BN) memory requirement */
 #undef __FUNCT__
 #define __FUNCT__ "MatMatMultSymbolic_MPIAIJ_MPIAIJ_Scalable"
 PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_Scalable(Mat A,Mat P,PetscReal fill,Mat *C)

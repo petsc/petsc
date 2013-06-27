@@ -1404,12 +1404,12 @@ runex93_llcondensed:
 	   else echo ${PWD} ; echo "Possible problem with ex93_llcondensed, diffs above \n========================================="; fi; \
 	   ${RM} -f ex93_1.tmp
 runex93_2:
-	-@${MPIEXEC} -n 2 ./ex93 -matmatmult_scalable 0 -C_matmatmult_scalable 0 > ex93_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ./ex93 -matmatmult_via nonscalable > ex93_1.tmp 2>&1; \
 	   if (${DIFF} output/ex93_2.out ex93_1.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with ex93_2, diffs above \n========================================="; fi; \
 	   ${RM} -f ex93_1.tmp
 runex93_3:
-	-@${MPIEXEC} -n 2 ./ex93 -matmatmult_scalable 1 -C_matmatmult_scalable 1 > ex93_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ./ex93 > ex93_1.tmp 2>&1; \
 	   if (${DIFF} output/ex93_2.out ex93_1.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with ex93_3, diffs above \n========================================="; fi; \
 	   ${RM} -f ex93_1.tmp
