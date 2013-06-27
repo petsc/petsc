@@ -11,8 +11,20 @@
 
 /* Put the OpenCL program into a source string.
  * This allows to generate all the code at runtime, no need for external Python magic as for CUDA
+ *
+ * The code uses snprintf() to concatenate strings, as this is safer than strcat().
+ * TODO: a custom-built string-concatenation is more efficient and would eliminate redundant copies via snprintf()
  */
-const char * const opencl_program_source =
+#undef __FUNCT__
+#define __FUNCT__ "generateOpenCLSource"
+PetscErrorCode generateOpenCLSource(char **string_buffer, PetscInt buffer_length, PetscInt spatial_dim)
+{
+  PetscInt        string_length = 0;
+  char            *string_tail   = *string_buffer;
+  char            *end_of_buffer = *string_buffer + buffer_length;
+
+  PetscFunctionBegin;
+  string_tail += snprintf(string_tail, end_of_buffer - string_tail,
 "float2 f1_laplacian(float u[], float2 gradU[], int comp)\n"
 "{\n"
 "  return gradU[comp];\n"
@@ -68,11 +80,9 @@ const char * const opencl_program_source =
 "  /* Number of concurrent blocks */\n"
 "  const int N_bl = 1;\n"
 "\n"
-#if SPATIAL_DIM_0 == 2
-"  const int dim    = 2;\n"
-#elif  SPATIAL_DIM_0 == 3
-"  const int dim    = 3;\n"
-#endif
+/* Argument */
+"  const int dim    = %d;\n"
+/* Argument */
 "  const int N_b    = numBasisFunctions_0;           // The number of basis functions\n"
 "  const int N_comp = numBasisComponents_0;          // The number of basis function components\n"
 "  const int N_bt   = N_b*N_comp;                    // The total number of scalar basis functions\n"
@@ -140,11 +150,22 @@ const char * const opencl_program_source =
 "      const int fidx          = (cell*N_q + qidx)*N_comp + cidx;\n"
 "\n"
 "      for (int comp = 0; comp < N_comp; ++comp) {\n"
-#if SPATIAL_DIM_0 == 2
-"        gradU[comp].x = 0.0; gradU[comp].y = 0.0;\n"
-#elif  SPATIAL_DIM_0 == 3
-"        gradU[comp].x = 0.0; gradU[comp].y = 0.0; gradU[comp].z = 0.0;\n"
-#endif
+"        gradU[comp].x = 0.0; gradU[comp].y = 0.0;", spatial_dim);
+
+  if (string_tail == end_of_buffer) {
+    SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "String too short!");
+  }
+
+  if (spatial_dim == 3)
+  {
+    string_tail += snprintf(string_tail, end_of_buffer - string_tail, " gradU[comp].z = 0.0;");
+    if (string_tail == end_of_buffer) {
+      SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "String too short!");
+    }
+  }
+
+  string_tail += snprintf(string_tail, end_of_buffer - string_tail,
+"\n"
 "      }\n"
 "      /* Get field and derivatives at this quadrature point */\n"
 "      for (int i = 0; i < N_b; ++i) {\n"
@@ -153,29 +174,53 @@ const char * const opencl_program_source =
 "          const int pidx = qidx*N_bt + b;\n"
 "          const int uidx = cell*N_bt + b;\n"
 "          float2   realSpaceDer;\n"
-"\n"
-#if SPATIAL_DIM_0 == 2
+"\n");
+
+  if (string_tail == end_of_buffer) {
+    SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "String too short!");
+  }
+
+  if (spatial_dim == 2)
+    string_tail += snprintf(string_tail, end_of_buffer - string_tail,
 "          realSpaceDer.x = invJ[cell*dim*dim+0*dim+0]*phiDer_i[pidx].x + invJ[cell*dim*dim+1*dim+0]*phiDer_i[pidx].y;\n"
 "          gradU[comp].x += u_i[uidx]*realSpaceDer.x;\n"
 "          realSpaceDer.y = invJ[cell*dim*dim+0*dim+1]*phiDer_i[pidx].x + invJ[cell*dim*dim+1*dim+1]*phiDer_i[pidx].y;\n"
-"          gradU[comp].y += u_i[uidx]*realSpaceDer.y;\n"
-#elif  SPATIAL_DIM_0 == 3
+"          gradU[comp].y += u_i[uidx]*realSpaceDer.y;\n");
+  else
+  string_tail += snprintf(string_tail, end_of_buffer - string_tail,
 "          realSpaceDer.x = invJ[cell*dim*dim+0*dim+0]*phiDer_i[pidx].x + invJ[cell*dim*dim+1*dim+0]*phiDer_i[pidx].y + invJ[cell*dim*dim+2*dim+0]*phiDer_i[pidx].z;\n"
 "          gradU[comp].x += u_i[uidx]*realSpaceDer.x;\n"
 "          realSpaceDer.y = invJ[cell*dim*dim+0*dim+1]*phiDer_i[pidx].x + invJ[cell*dim*dim+1*dim+1]*phiDer_i[pidx].y + invJ[cell*dim*dim+2*dim+1]*phiDer_i[pidx].z;\n"
 "          gradU[comp].y += u_i[uidx]*realSpaceDer.y;\n"
 "          realSpaceDer.z = invJ[cell*dim*dim+0*dim+2]*phiDer_i[pidx].x + invJ[cell*dim*dim+1*dim+2]*phiDer_i[pidx].y + invJ[cell*dim*dim+2*dim+2]*phiDer_i[pidx].z;\n"
-"          gradU[comp].z += u_i[uidx]*realSpaceDer.z;\n"
-#endif
+"          gradU[comp].z += u_i[uidx]*realSpaceDer.z;\n");
+
+  if (string_tail == end_of_buffer) {
+    SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "String too short!");
+  }
+
+  string_tail += snprintf(string_tail, end_of_buffer - string_tail,
 "        }\n"
 "      }\n"
 "      /* Process values at quadrature points */\n"
 "      f_1[fidx] = gradU[cidx];    /* TODO: This depends on the problem formulation, cf. CUDA version */\n"
-#if SPATIAL_DIM_0 == 2
-"      f_1[fidx].x *= detJ[cell]*w; f_1[fidx].y *= detJ[cell]*w;\n"
-#elif  SPATIAL_DIM_0 == 3
-"      f_1[fidx].x *= detJ[cell]*w; f_1[fidx].y *= detJ[cell]*w; f_1[fidx].z *= detJ[cell]*w;\n"
-#endif
+"      f_1[fidx].x *= detJ[cell]*w; f_1[fidx].y *= detJ[cell]*w;");
+
+  if (string_tail == end_of_buffer) {
+    SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "String too short!");
+  }
+
+  if (spatial_dim == 3)
+  {
+    string_tail += snprintf(string_tail, end_of_buffer - string_tail, " f_1[fidx].z *= detJ[cell]*w;");
+
+    if (string_tail == end_of_buffer) {
+      SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "String too short!");
+    }
+  }
+
+  string_tail += snprintf(string_tail, end_of_buffer - string_tail,
+"\n"
 "    }\n"
 "\n"
 "    /* ==== TRANSPOSE THREADS ==== */\n"
@@ -191,20 +236,33 @@ const char * const opencl_program_source =
 "        const int fidx = (cell*N_q + q)*N_comp + cidx;\n"
 "        float2   realSpaceDer;\n"
 "\n"
-"        // e_i += phi_i[pidx]*f_0[fidx];\n"
-#if SPATIAL_DIM_0 == 2
+"        // e_i += phi_i[pidx]*f_0[fidx];\n");
+
+  if (string_tail == end_of_buffer) {
+    SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "String too short!");
+  }
+
+  if (spatial_dim == 2) {
+    string_tail += snprintf(string_tail, end_of_buffer - string_tail,
 "        realSpaceDer.x = invJ[cell*dim*dim+0*dim+0]*phiDer_i[pidx].x + invJ[cell*dim*dim+1*dim+0]*phiDer_i[pidx].y;\n"
 "        e_i           += realSpaceDer.x*f_1[fidx].x;\n"
 "        realSpaceDer.y = invJ[cell*dim*dim+0*dim+1]*phiDer_i[pidx].x + invJ[cell*dim*dim+1*dim+1]*phiDer_i[pidx].y;\n"
-"        e_i           += realSpaceDer.y*f_1[fidx].y;\n"
-#elif  SPATIAL_DIM_0 == 3
+"        e_i           += realSpaceDer.y*f_1[fidx].y;\n");
+  } else {
+    string_tail += snprintf(string_tail, end_of_buffer - string_tail,
 "        realSpaceDer.x = invJ[cell*dim*dim+0*dim+0]*phiDer_i[pidx].x + invJ[cell*dim*dim+1*dim+0]*phiDer_i[pidx].y + invJ[cell*dim*dim+2*dim+0]*phiDer_i[pidx].z;\n"
 "        e_i           += realSpaceDer.x*f_1[fidx].x;\n"
 "        realSpaceDer.y = invJ[cell*dim*dim+0*dim+1]*phiDer_i[pidx].x + invJ[cell*dim*dim+1*dim+1]*phiDer_i[pidx].y + invJ[cell*dim*dim+2*dim+1]*phiDer_i[pidx].z;\n"
 "        e_i           += realSpaceDer.y*f_1[fidx].y;\n"
 "        realSpaceDer.z = invJ[cell*dim*dim+0*dim+2]*phiDer_i[pidx].x + invJ[cell*dim*dim+1*dim+2]*phiDer_i[pidx].y + invJ[cell*dim*dim+2*dim+2]*phiDer_i[pidx].z;\n"
-"        e_i           += realSpaceDer.z*f_1[fidx].z;\n"
-#endif
+"        e_i           += realSpaceDer.z*f_1[fidx].z;\n");
+  }
+
+  if (string_tail == end_of_buffer) {
+    SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "String too short!");
+  }
+
+  string_tail += snprintf(string_tail, end_of_buffer - string_tail,
 "      }\n"
 "      /* Write element vector for N_{cbc} cells at a time */\n"
 "      elemVec[Eoffset+(batch*N_sbc+c)*N_t+tidx] = e_i;\n"
@@ -213,7 +271,15 @@ const char * const opencl_program_source =
 "  }\n"
 "  return;\n"
 "}\n"
-"  ";
+"  ");
+
+  if (string_tail == end_of_buffer) {
+    SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "String too short!");
+  }
+
+  PetscFunctionReturn(0);
+}
+
 
 /* Struct collecting information for a typical OpenCL environment (one platform, one device, one context, one queue) */
 typedef struct OpenCLEnvironment_s
@@ -307,7 +373,7 @@ PetscErrorCode calculateGridOpenCL(const int N, const int blockSize, unsigned in
   Output Parameter:
 . elemVec - An array of the element vectors for each cell
 */
-PETSC_EXTERN PetscErrorCode IntegrateElementBatchOpenCL(PetscInt Ne, PetscInt Ncb, PetscInt Nbc, PetscInt Nbl, const PetscScalar coefficients[],
+PETSC_EXTERN PetscErrorCode IntegrateElementBatchOpenCL(PetscInt spatial_dim, PetscInt Ne, PetscInt Ncb, PetscInt Nbc, PetscInt Nbl, const PetscScalar coefficients[],
                                         const PetscReal jacobianInverses[], const PetscReal jacobianDeterminants[], PetscScalar elemVec[],
                                         PetscLogEvent event, PetscInt debug)
 {
@@ -319,7 +385,7 @@ PETSC_EXTERN PetscErrorCode IntegrateElementBatchOpenCL(PetscInt Ne, PetscInt Nc
   /* Number of concurrent blocks */
   const cl_int N_bl = 1;
 
-  const cl_int dim    = SPATIAL_DIM_0;
+  const cl_int dim    = spatial_dim;
   const cl_int N_b    = numBasisFunctions_0;   /* The number of basis functions */
   const cl_int N_comp = numBasisComponents_0;  /* The number of basis function components */
   const cl_int N_bt   = N_b*N_comp;            /* The total number of scalar basis functions */
@@ -327,6 +393,7 @@ PETSC_EXTERN PetscErrorCode IntegrateElementBatchOpenCL(PetscInt Ne, PetscInt Nc
   const cl_int N_bst  = N_bt*N_q;              /* The block size, LCM(N_bt, N_q), Notice that a block is not process simultaneously */
   const cl_int N_t    = N_bst*N_bl;            /* The number of threads, N_bst * N_bl */
 
+  char            *program_buffer;
   char            build_buffer[8192];
   cl_build_status status;
 
@@ -351,14 +418,17 @@ PETSC_EXTERN PetscErrorCode IntegrateElementBatchOpenCL(PetscInt Ne, PetscInt Nc
 
   PetscFunctionBegin;
   ierr = initializeOpenCL(&ocl_env);CHKERRQ(ierr);
-  ocl_source_length = strlen(opencl_program_source) - 2;
-  ocl_prog = clCreateProgramWithSource(ocl_env.ctx_id, 1, (const char**)&opencl_program_source, &ocl_source_length, &ierr2);CHKERRQ(ierr2);
+  ierr = PetscMalloc(8192 * sizeof(char), &program_buffer);CHKERRQ(ierr);
+  ierr = generateOpenCLSource(&program_buffer, 8192, dim);CHKERRQ(ierr);
+  ocl_source_length = strlen(program_buffer);
+  ocl_prog = clCreateProgramWithSource(ocl_env.ctx_id, 1, (const char**)&program_buffer, &ocl_source_length, &ierr2);CHKERRQ(ierr2);
   ierr = clBuildProgram(ocl_prog, 0, NULL, NULL, NULL, NULL);
   if (ierr != CL_SUCCESS) {
     clGetProgramBuildInfo(ocl_prog, ocl_env.dev_id, CL_PROGRAM_BUILD_LOG, sizeof(char)*8192, &build_buffer, NULL);
     printf("Build failed! Log:\n %s", build_buffer);
   }
   CHKERRQ(ierr);
+  ierr = PetscFree(program_buffer);CHKERRQ(ierr);
 
   ocl_kernel = clCreateKernel(ocl_prog, "integrateElementQuadrature", &ierr);CHKERRQ(ierr);
 
