@@ -1610,6 +1610,7 @@ PetscErrorCode PCGAMGInitializePackage(void)
   PCGAMGPackageInitialized = PETSC_TRUE;
   ierr = PetscFunctionListAdd(&GAMGList,PCGAMGGEO,PCCreateGAMG_GEO);CHKERRQ(ierr);
   ierr = PetscFunctionListAdd(&GAMGList,PCGAMGAGG,PCCreateGAMG_AGG);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&GAMGList,PCGAMGCLASSICAL,PCCreateGAMG_Classical);CHKERRQ(ierr);
   ierr = PetscRegisterFinalize(PCGAMGFinalizePackage);CHKERRQ(ierr);
 
   /* general events */

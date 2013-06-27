@@ -430,6 +430,7 @@ PETSC_EXTERN PetscErrorCode PCPARMSSetFill(PC pc,PetscInt lfil0,PetscInt lfil1,P
 typedef const char *PCGAMGType;
 #define PCGAMGAGG         "agg"
 #define PCGAMGGEO         "geo"
+#define PCGAMGCLASSICAL   "classical"
 PETSC_EXTERN PetscErrorCode PCGAMGSetProcEqLim(PC,PetscInt);
 PETSC_EXTERN PetscErrorCode PCGAMGSetRepartitioning(PC,PetscBool);
 PETSC_EXTERN PetscErrorCode PCGAMGSetUseASMAggs(PC,PetscBool);
