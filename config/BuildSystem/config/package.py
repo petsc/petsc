@@ -390,6 +390,14 @@ class Package(config.base.Configure):
         os.mkdir(os.path.join(packages, Dir, self.arch))
     return os.path.join(packages, Dir)
 
+  def gitPreReqCheck(self):
+    '''Check for git prerequisites. This is intended to be overwritten by a subclass'''
+    return 1
+
+  def gitPreInstallCheck(self):
+    '''Perhaps configure need to be built before install. This is intended to be overwritten by a subclass'''
+    return
+
   def downLoad(self):
     '''Downloads a package; using hg or ftp; opens it in the with-external-packages-dir directory'''
     import retrieval
@@ -405,7 +413,7 @@ class Package(config.base.Configure):
         download_urls.append(url.replace('http://','ftp://'))
     # now attempt to download each url until any one succeeds.
     err =''
-    if hasattr(self.sourceControl, 'git') and self.gitcommit:
+    if hasattr(self.sourceControl, 'git') and self.gitcommit and self.gitPreReqCheck():
       for giturl in self.giturls: # First try to fetch using Git
         try:
           gitrepo = os.path.join(self.externalPackagesDir, self.downloadname)
@@ -1008,6 +1016,7 @@ class GNUPackage(Package):
     if not self.installNeeded(conffile):
       return self.installDir
     ### Configure and Build package
+    self.gitPreInstallCheck()
     try:
       self.logPrintBox('Running configure on ' +self.PACKAGE+'; this may take several minutes')
       output1,err1,ret1  = config.base.Configure.executeShellCommand('cd '+self.packageDir+' && ./configure '+args, timeout=2000, log = self.framework.log)
