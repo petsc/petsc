@@ -44,9 +44,6 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJCUSP(Mat);
 
 #if defined PETSC_HAVE_CUDA
 PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJCUSPARSE(Mat);
-#endif
-
-#if defined PETSC_HAVE_TXPETSCGPU
 PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJCUSPARSE(Mat);
 #endif
 
@@ -144,9 +141,6 @@ PetscErrorCode  MatRegisterAll(void)
 #if defined PETSC_HAVE_CUDA
   ierr = MatRegisterBaseName(MATAIJCUSPARSE,MATSEQAIJCUSPARSE,MATMPIAIJCUSPARSE);CHKERRQ(ierr);
   ierr = MatRegister(MATSEQAIJCUSPARSE, MatCreate_SeqAIJCUSPARSE);CHKERRQ(ierr);
-#endif
-
-#if defined PETSC_HAVE_TXPETSCGPU
   ierr = MatRegister(MATMPIAIJCUSPARSE, MatCreate_MPIAIJCUSPARSE);CHKERRQ(ierr);
 #endif
 

@@ -1,13 +1,12 @@
 static char help[] = "Reads a PETSc matrix from a file and solves a linear system \n\
-using the aijcusparse class. This example also demonstrates how to set the storage \n\
-format on the GPU using the MatCUSPARSESetFormat method. Input parameters are:\n\
+using the aijcusparse class. Input parameters are:\n\
   -f <input_file> : the file to load\n\n";
 
 /*
   This code can be used to test PETSc interface to other packages.\n\
   Examples of command line options:       \n\
    ./ex43 -f DATAFILESPATH/matrices/cfd.2.10 -mat_cusparse_mult_storage_format ell  \n\
-   ./ex43 -f DATAFILESPATH/matrices/shallow_water1 -ksp_type cgs -pc_type icc -mat_cusparse_mult_storage_format ell  \n\
+   ./ex43 -f DATAFILESPATH/matrices/shallow_water1 -ksp_type cg -pc_type icc -mat_cusparse_mult_storage_format ell  \n\
    \n\n";
 */
 
@@ -36,15 +35,15 @@ int main(int argc,char **argv)
 
   /* Build the matrix */
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-  ierr = MatSetType(A,MATSEQAIJCUSPARSE);CHKERRQ(ierr);
-  ierr = MatCUSPARSESetFormat(A,MAT_CUSPARSE_MULT,MAT_CUSPARSE_ELL);CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
   ierr = MatLoad(A,fd);CHKERRQ(ierr);
 
   /* Build the vectors */
   ierr = MatGetLocalSize(A,&m,PETSC_NULL);CHKERRQ(ierr);
-  ierr = VecCreateSeq(PETSC_COMM_WORLD,m,&B);CHKERRQ(ierr);
-  ierr = VecCreateSeq(PETSC_COMM_WORLD,m,&X);CHKERRQ(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,&B);CHKERRQ(ierr);
+  ierr = VecSetSizes(B,m,PETSC_DECIDE);CHKERRQ(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,&X);CHKERRQ(ierr);
+  ierr = VecSetSizes(X,m,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = VecSetFromOptions(B);CHKERRQ(ierr);
   ierr = VecSetFromOptions(X);CHKERRQ(ierr);
   ierr = VecSet(B,1.0);CHKERRQ(ierr);
@@ -63,7 +62,7 @@ int main(int argc,char **argv)
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
   ierr = KSPGetResidualNorm(ksp,&norm);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3D\n",its);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm %G\n",norm);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm %1.5G\n",norm);CHKERRQ(ierr);
 
   /* Cleanup */
   ierr = VecDestroy(&X);CHKERRQ(ierr);

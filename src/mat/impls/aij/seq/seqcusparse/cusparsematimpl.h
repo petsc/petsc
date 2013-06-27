@@ -85,9 +85,11 @@ struct Mat_SeqAIJCUSPARSETriFactorStruct {
 
 /* This is struct holding the relevant data needed to a MatMult */
 struct Mat_SeqAIJCUSPARSEMultStruct {
-  void               *mat;   /* opaque pointer to a matrix. This could be either a cusparseHybMat_t or a CsrMatrix */
-  cusparseMatDescr_t descr;   /* Data needed to describe the matrix for a multiply */
+  void               *mat;  /* opaque pointer to a matrix. This could be either a cusparseHybMat_t or a CsrMatrix */
+  cusparseMatDescr_t descr; /* Data needed to describe the matrix for a multiply */
   THRUSTINTARRAY     *cprowIndices;   /* compressed row indices used in the parallel SpMV */
+  PetscScalar        *alpha; /* pointer to a device "scalar" storing the alpha parameter in the SpMV */
+  PetscScalar        *beta; /* pointer to a device "scalar" storing the beta parameter in the SpMV */
 };
 
 /* This is a larger struct holding all the triangular factors for a solve, transpose solve, and
@@ -117,4 +119,7 @@ struct Mat_SeqAIJCUSPARSE {
 };
 
 PETSC_INTERN PetscErrorCode MatCUSPARSECopyToGPU(Mat);
+PETSC_INTERN PetscErrorCode MatCUSPARSESetStream(Mat, const cudaStream_t stream);
+PETSC_INTERN PetscErrorCode MatCUSPARSESetHandle(Mat, const cusparseHandle_t handle);
+PETSC_INTERN PetscErrorCode MatCUSPARSEClearHandle(Mat);
 #endif
