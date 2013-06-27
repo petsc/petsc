@@ -598,7 +598,6 @@ PetscErrorCode  PCCreateGAMG_Classical(PC pc)
   pc_gamg->ops->coarsen     = PCGAMGCoarsen_Classical;
   pc_gamg->ops->prolongator = PCGAMGProlongator_Classical;
   pc_gamg->ops->optprol     = NULL;
-  pc_gamg->ops->formkktprol = NULL;
 
   pc_gamg->ops->createdefaultdata = PCGAMGSetData_Classical;
   PetscFunctionReturn(0);
