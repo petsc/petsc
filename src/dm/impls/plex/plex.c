@@ -5924,13 +5924,17 @@ PetscErrorCode DMRefine_Plex(DM dm, MPI_Comm comm, DM *dmRefined)
 @*/
 PetscErrorCode DMPlexGetDepth(DM dm, PetscInt *depth)
 {
-  PetscInt       d;
+  DM_Plex       *mesh = (DM_Plex*) dm->data;
+  PetscInt       d    = 0;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(depth, 2);
-  ierr   = DMPlexGetLabelSize(dm, "depth", &d);CHKERRQ(ierr);
+  if (!mesh->depthLabel) {
+    ierr = DMPlexGetLabel(dm, "depth", &mesh->depthLabel);CHKERRQ(ierr);
+    if (mesh->depthLabel) {ierr = DMLabelGetNumValues(mesh->depthLabel, &d);CHKERRQ(ierr);}
+  } else {ierr = DMLabelGetNumValues(mesh->depthLabel, &d);CHKERRQ(ierr);}
   *depth = d-1;
   PetscFunctionReturn(0);
 }
