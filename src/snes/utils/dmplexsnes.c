@@ -275,7 +275,7 @@ PETSC_STATIC_INLINE PetscErrorCode DMInterpolate_Tetrahedron_Private(DMInterpola
   for (p = 0; p < ctx->n; ++p) {
     PetscInt       c = ctx->cells[p];
     const PetscInt order[3] = {2, 1, 3};
-    PetscScalar   *x;
+    PetscScalar   *x = NULL;
     PetscReal      xi[4];
     PetscInt       d, f, comp;
 
