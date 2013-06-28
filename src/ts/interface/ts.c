@@ -5044,12 +5044,15 @@ PetscErrorCode TSEventMonitor(TS ts)
   event->nevents_zero = 0;
 
   ierr = (*event->monitor)(ts,t,U,event->fvalue,event->direction,event->terminate,event->monitorcontext);CHKERRQ(ierr);
-  for (i=0; i < event->nevents; i++) {
-    if (PetscAbs(event->fvalue[i]) < event->tol) {
-      event->status = TSEVENT_ZERO;
-      event->events_zero[event->nevents_zero++] = i;
+  if (event->status != TSEVENT_NONE) {
+    for (i=0; i < event->nevents; i++) {
+      if (PetscAbs(event->fvalue[i]) < event->tol) {
+	event->status = TSEVENT_ZERO;
+	event->events_zero[event->nevents_zero++] = i;
+      }
     }
   }
+
   if (event->status == TSEVENT_ZERO) {
     ierr = TSSetTimeStep(ts,event->tstepend-t);CHKERRQ(ierr);
     ierr = PostEvent(ts,event->nevents_zero,event->events_zero,t,U,event->monitorcontext);CHKERRQ(ierr);
