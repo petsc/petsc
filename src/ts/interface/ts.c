@@ -4965,15 +4965,15 @@ PetscErrorCode TSSetEventMonitor(TS ts,PetscInt nevents,PetscErrorCode (*eventmo
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"TS Event options","");CHKERRQ(ierr);
   {
     event->tol = 1.0e-6;
-    ierr = PetscOptionsReal("-event_tol","","",event->tol,&event->tol,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-ts_event_tol","","",event->tol,&event->tol,NULL);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PostEvent"
-PetscErrorCode PostEvent(TS ts,PetscInt nevents_zero,PetscInt events_zero[],PetscReal t,Vec U,void *ctx)
+#define __FUNCT__ "TSPostEvent"
+PetscErrorCode TSPostEvent(TS ts,PetscInt nevents_zero,PetscInt events_zero[],PetscReal t,Vec U,void *ctx)
 {
   PetscErrorCode ierr;
   TSEvent        event=ts->event;
