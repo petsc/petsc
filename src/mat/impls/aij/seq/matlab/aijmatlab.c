@@ -20,7 +20,7 @@ PETSC_EXTERN mxArray *MatSeqAIJToMatlab(Mat B)
 
   PetscFunctionBegin;
   mat  = mxCreateSparse(B->cmap->n,B->rmap->n,aij->nz,mxREAL);
-  ierr = PetscMemcpy(mxGetPr(mat),aij->a,aij->nz*sizeof(PetscScalar));
+  ierr = PetscMemcpy(mxGetPr(mat),aij->a,aij->nz*sizeof(PetscScalar));CHKERRQ(ierr);
   /* MATLAB stores by column, not row so we pass in the transpose of the matrix */
   jj = mxGetIr(mat);
   for (i=0; i<aij->nz; i++) jj[i] = aij->j[i];
