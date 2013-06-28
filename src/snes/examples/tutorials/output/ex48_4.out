@@ -91,7 +91,7 @@ SNES Object: 6 MPI processes
           type: lu
             LU: out-of-place factorization
             tolerance for zero pivot 2.22045e-14
-            using diagonal shift on blocks to prevent zero pivot
+            using diagonal shift on blocks to prevent zero pivot [INBLOCKS]
             matrix ordering: nd
             factor fill ratio given 5, needed 1.41667
               Factored matrix follows:
@@ -187,7 +187,7 @@ SNES Object: 6 MPI processes
           type: icc
             0 levels of fill
             tolerance for zero pivot 2.22045e-14
-            using Manteuffel shift
+            using Manteuffel shift [POSITIVE_DEFINITE]
             matrix ordering: natural
             factor fill ratio given 1, needed 1.00133
               Factored matrix follows:
@@ -236,7 +236,7 @@ SNES Object: 6 MPI processes
           type: icc
             0 levels of fill
             tolerance for zero pivot 2.22045e-14
-            using Manteuffel shift
+            using Manteuffel shift [POSITIVE_DEFINITE]
             matrix ordering: natural
             factor fill ratio given 1, needed 1.00054
               Factored matrix follows:
