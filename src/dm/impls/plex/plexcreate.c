@@ -609,6 +609,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Plex(DM dm)
   for (unit = 0; unit < NUM_PETSC_UNITS; ++unit) mesh->scale[unit] = 1.0;
 
   mesh->labels              = NULL;
+  mesh->depthLabel          = NULL;
   mesh->globalVertexNumbers = NULL;
   mesh->globalCellNumbers   = NULL;
   for (d = 0; d < 8; ++d) mesh->hybridPointMax[d] = PETSC_DETERMINE;
