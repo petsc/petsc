@@ -877,7 +877,6 @@ PetscErrorCode  PCCreateGAMG_GEO(PC pc)
   pc_gamg->ops->coarsen     = PCGAMGcoarsen_GEO;
   pc_gamg->ops->prolongator = PCGAMGProlongator_GEO;
   pc_gamg->ops->optprol     = 0;
-  pc_gamg->ops->formkktprol = 0;
   pc_gamg->ops->createdefaultdata = PCSetData_GEO;
 
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCSetCoordinates_C",PCSetCoordinates_GEO);CHKERRQ(ierr);

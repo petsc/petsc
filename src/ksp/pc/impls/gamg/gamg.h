@@ -10,7 +10,6 @@ struct _PCGAMGOps {
   PetscErrorCode (*coarsen)(PC, Mat*, PetscCoarsenData**);
   PetscErrorCode (*prolongator)(PC, const Mat, const Mat, PetscCoarsenData*, Mat*);
   PetscErrorCode (*optprol)(PC, const Mat, Mat*);
-  PetscErrorCode (*formkktprol)(PC, const Mat, const Mat, Mat*);
   PetscErrorCode (*createdefaultdata)(PC, Mat); /* for data methods that have a default (SA) */
   PetscErrorCode (*setfromoptions)(PC);
   PetscErrorCode (*destroy)(PC);
@@ -74,7 +73,6 @@ PETSC_INTERN PetscLogEvent PC_GAMGCoarsen_GEO;
 PETSC_INTERN PetscLogEvent PC_GAMGProlongator_AGG;
 PETSC_INTERN PetscLogEvent PC_GAMGProlongator_GEO;
 PETSC_INTERN PetscLogEvent PC_GAMGOptprol_AGG;
-PETSC_INTERN PetscLogEvent PC_GAMGKKTProl_AGG;
 #endif
 
 typedef struct _GAMGHashTable {
