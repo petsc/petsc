@@ -732,7 +732,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
     if (!mglevels[i]->residual) {
       Mat mat;
       ierr = KSPGetOperators(mglevels[i]->smoothd,NULL,&mat,NULL);CHKERRQ(ierr);
-      ierr = PCMGSetResidual(pc,i,PCMGResidual_Default,mat);CHKERRQ(ierr);
+      ierr = PCMGSetResidual(pc,i,PCMGResidualDefault,mat);CHKERRQ(ierr);
     }
   }
   for (i=1; i<n; i++) {
