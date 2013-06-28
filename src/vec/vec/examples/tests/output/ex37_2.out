@@ -1,4 +1,5 @@
 
+
 ============== test_view ==============
 (max-b) = 7.200320 : index = 3 
 (min-b) = 0.100223 : index = 5 
@@ -47,6 +48,8 @@ Vec Object:
         0.61794
         Process [1]
         0.100223
+
+
 ============== test_axpy_dot_max ==============
 VecAXPY 
 (1) y1 = 
