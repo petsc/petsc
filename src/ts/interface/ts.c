@@ -5055,7 +5055,7 @@ PetscErrorCode TSEventMonitor(TS ts)
 
   if (event->status == TSEVENT_ZERO) {
     ierr = TSSetTimeStep(ts,event->tstepend-t);CHKERRQ(ierr);
-    ierr = PostEvent(ts,event->nevents_zero,event->events_zero,t,U,event->monitorcontext);CHKERRQ(ierr);
+    ierr = TSPostEvent(ts,event->nevents_zero,event->events_zero,t,U,event->monitorcontext);CHKERRQ(ierr);
     for (i = 0; i < event->nevents; i++) {
       event->fvalue_prev[i] = event->fvalue[i];
     }
