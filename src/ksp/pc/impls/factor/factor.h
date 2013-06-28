@@ -22,6 +22,7 @@ PETSC_INTERN PetscErrorCode PCFactorSetShiftAmount_Factor(PC,PetscReal);
 PETSC_INTERN PetscErrorCode PCFactorSetDropTolerance_Factor(PC,PetscReal,PetscReal,PetscInt);
 PETSC_INTERN PetscErrorCode PCFactorSetFill_Factor(PC,PetscReal);
 PETSC_INTERN PetscErrorCode PCFactorSetMatOrderingType_Factor(PC,MatOrderingType);
+PETSC_INTERN PetscErrorCode PCFactorGetLevels_Factor(PC,PetscInt*);
 PETSC_INTERN PetscErrorCode PCFactorSetLevels_Factor(PC,PetscInt);
 PETSC_INTERN PetscErrorCode PCFactorSetAllowDiagonalFill_Factor(PC);
 PETSC_INTERN PetscErrorCode PCFactorSetPivotInBlocks_Factor(PC,PetscBool);

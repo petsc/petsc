@@ -107,6 +107,17 @@ PetscErrorCode  PCFactorSetMatOrderingType_Factor(PC pc,MatOrderingType ordering
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PCFactorGetLevels_Factor"
+PetscErrorCode  PCFactorGetLevels_Factor(PC pc,PetscInt *levels)
+{
+  PC_Factor      *ilu = (PC_Factor*)pc->data;
+
+  PetscFunctionBegin;
+  *levels = ilu->info.levels;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PCFactorSetLevels_Factor"
 PetscErrorCode  PCFactorSetLevels_Factor(PC pc,PetscInt levels)
 {
