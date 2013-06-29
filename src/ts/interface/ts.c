@@ -5037,7 +5037,7 @@ PetscErrorCode TSEventMonitor(TS ts)
   if (event->status == TSEVENT_RESET_NEXTSTEP) {
     /* Take initial time step */
     dt = event->initial_timestep;
-    ierr = TSSetTimeStep(ts,dt);CHKERRQ(ierr);
+    ts->time_step = dt;
     event->status = TSEVENT_NONE;
   }
 
@@ -5061,7 +5061,8 @@ PetscErrorCode TSEventMonitor(TS ts)
   ierr = MPI_Allreduce(&status,&event->status,1,MPIU_INT,MPI_MAX,((PetscObject)ts)->comm);CHKERRQ(ierr);
 
   if (event->status == TSEVENT_ZERO) {
-    ierr = TSSetTimeStep(ts,event->tstepend-t);CHKERRQ(ierr);
+    dt = event->tstepend-t;
+    ts->time_step = dt;
     ierr = TSPostEvent(ts,event->nevents_zero,event->events_zero,t,U,event->monitorcontext);CHKERRQ(ierr);
     for (i = 0; i < event->nevents; i++) {
       event->fvalue_prev[i] = event->fvalue[i];
@@ -5104,7 +5105,7 @@ PetscErrorCode TSEventMonitor(TS ts)
   }
   PetscReal time_step;
   ierr = MPI_Allreduce(&dt,&time_step,1,MPIU_REAL,MPI_MIN,((PetscObject)ts)->comm);CHKERRQ(ierr);
-  ierr = TSSetTimeStep(ts,time_step);CHKERRQ(ierr);
+  ts->time_step = time_step;
   PetscFunctionReturn(0);
 }
 
