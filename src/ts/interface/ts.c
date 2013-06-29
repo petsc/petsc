@@ -4977,16 +4977,18 @@ PetscErrorCode TSPostEvent(TS ts,PetscInt nevents_zero,PetscInt events_zero[],Pe
 {
   PetscErrorCode ierr;
   TSEvent        event=ts->event;
-  PetscBool      terminate=PETSC_TRUE;
+  PetscBool      terminate=PETSC_FALSE;
   PetscInt       i;
+  PetscBool      ts_terminate;
 
   PetscFunctionBegin;
   if (event->postevent) {
     ierr = (*event->postevent)(ts,nevents_zero,events_zero,t,U,ctx);CHKERRQ(ierr);
   }
   for(i = 0; i < nevents_zero;i++) {
-    terminate = terminate && event->terminate[events_zero[i]];
+    terminate = terminate || event->terminate[events_zero[i]];
   }
+  ierr = MPI_Allreduce(&terminate,&ts_terminate,1,MPIU_INT,MPI_MAX,((PetscObject)ts)->comm);CHKERRQ(ierr);
   if (terminate) {
     ierr = TSSetConvergedReason(ts,TS_CONVERGED_EVENT);CHKERRQ(ierr);
     event->status = TSEVENT_NONE;
@@ -5023,6 +5025,8 @@ PetscErrorCode TSEventMonitor(TS ts)
   Vec            U;
   PetscInt       i;
   PetscReal      dt;
+  PetscInt       status=event->status;
+  PetscInt       rollback=0,in[2],out[2];
 
   PetscFunctionBegin;
 
@@ -5053,6 +5057,9 @@ PetscErrorCode TSEventMonitor(TS ts)
     }
   }
 
+  status = event->status;
+  ierr = MPI_Allreduce(&status,&event->status,1,MPIU_INT,MPI_MAX,((PetscObject)ts)->comm);CHKERRQ(ierr);
+
   if (event->status == TSEVENT_ZERO) {
     ierr = TSSetTimeStep(ts,event->tstepend-t);CHKERRQ(ierr);
     ierr = TSPostEvent(ts,event->nevents_zero,event->events_zero,t,U,event->monitorcontext);CHKERRQ(ierr);
@@ -5069,11 +5076,20 @@ PetscErrorCode TSEventMonitor(TS ts)
         (event->direction[i] == 0 && PetscSign(event->fvalue[i])*PetscSign(event->fvalue_prev[i]) <= 0)) {
 
       event->status = TSEVENT_LOCATED_INTERVAL;
-      
+      rollback = 1;
       /* Compute linearly interpolated new time step */
       dt = PetscMin(dt,-event->fvalue_prev[i]*(t - event->ptime_prev)/(event->fvalue[i] - event->fvalue_prev[i]));
     }
   }
+  in[0] = event->status;
+  in[1] = rollback;
+  ierr = MPI_Allreduce(in,out,2,MPIU_INT,MPI_MAX,((PetscObject)ts)->comm);CHKERRQ(ierr);
+  
+  rollback = out[1];
+  if (rollback) {
+    event->status = TSEVENT_LOCATED_INTERVAL;
+  }
+
   if (event->status == TSEVENT_LOCATED_INTERVAL) {
     ierr = TSRollBack(ts);CHKERRQ(ierr);
     event->status = TSEVENT_PROCESSING;
@@ -5086,6 +5102,9 @@ PetscErrorCode TSEventMonitor(TS ts)
       dt = event->tstepend - event->ptime_prev;
     }
   }
-  ierr = TSSetTimeStep(ts,dt);CHKERRQ(ierr);
+  PetscReal time_step;
+  ierr = MPI_Allreduce(&dt,&time_step,1,MPIU_REAL,MPI_MIN,((PetscObject)ts)->comm);CHKERRQ(ierr);
+  ierr = TSSetTimeStep(ts,time_step);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
