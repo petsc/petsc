@@ -4,7 +4,8 @@ class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
     self.downloadpath      = 'http://ftp.mcs.anl.gov/pub/fathom/'
-    self.gitcommit         = 'master'
+    # To track MOAB.git, update gitcommit to 'git describe --always' or 'git rev-parse HEAD'
+    self.gitcommit         = '23ce6f7956f8a9e233edd17ac82e20726d3be500' # master 2013-06-25
     self.giturls           = ['https://bitbucket.org/fathomteam/moab.git']
     self.downloadname      = 'moab'
     self.downloadfilename  = 'moab'
