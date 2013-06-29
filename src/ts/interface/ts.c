@@ -4898,7 +4898,7 @@ PetscErrorCode  TSRollBack(TS ts)
 
    Input Parameters:
 +  ts - the TS context obtained from TSCreate()
-.  nevents - number of events
+.  nevents - number of local events
 .  eventmonitor - event monitoring routine
 .  postevent - [optional] post-event function
 -  mectx - [optional] user-defined context for private data for the
@@ -4925,8 +4925,8 @@ PetscErrorCode  TSRollBack(TS ts)
 
    Input Parameters:
 +  ts - the TS context
-.  nevents_zero - number of events whose event function is zero
-.  events_zero  - indices of events which have reached zero
+.  nevents_zero - number of local events whose event function is zero
+.  events_zero  - indices of local events which have reached zero
 .  t            - current time
 .  U            - current solution
 -  ctx          - the context passed with eventmonitor
