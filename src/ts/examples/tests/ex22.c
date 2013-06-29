@@ -46,12 +46,12 @@ PetscErrorCode InitialConditions(Vec U,DM da,AppCtx *app)
 
   PetscFunctionBegin;
   ierr = DMGetCoordinates(da,&xcoord);CHKERRQ(ierr);
-  ierr = VecGetArray(xcoord,&x);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da,xcoord,&x);CHKERRQ(ierr);
 
   ierr = VecGetLocalSize(U,&lsize);CHKERRQ(ierr);
   ierr = PetscMalloc(lsize*sizeof(PetscInt),&app->sw);CHKERRQ(ierr);
 
-  ierr = VecGetArray(U,&u);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da,U,&u);CHKERRQ(ierr);
 
   ierr = DMDAGetInfo(da,0,&M,0,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   ierr = DMDAGetCorners(da,&xs,0,0,&xm,0,0);CHKERRQ(ierr);
@@ -61,10 +61,10 @@ PetscErrorCode InitialConditions(Vec U,DM da,AppCtx *app)
     else if (x[i] > 0.1 && x[i] < 0.25) u[i] = (x[i] - 0.1)/0.15;
     else u[i] = 1.0;
     
-    app->sw[i] = 1;
+    app->sw[i-xs] = 1;
   }
-  ierr = VecRestoreArray(U,&u);CHKERRQ(ierr);
-  ierr = VecRestoreArray(xcoord,&x);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(da,U,&u);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(da,xcoord,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -205,7 +205,6 @@ int main(int argc,char **argv)
   Vec            U;             /* solution will be stored here */
   Mat            J;             /* Jacobian matrix */
   PetscErrorCode ierr;
-  PetscMPIInt    size;
   PetscInt       n = 16;
   AppCtx         app;
   DM             da;
@@ -214,8 +213,6 @@ int main(int argc,char **argv)
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  if (size > 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Only for sequential runs");
 
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"ex22 options","");CHKERRQ(ierr);
   {
