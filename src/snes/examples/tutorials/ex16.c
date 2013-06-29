@@ -61,7 +61,7 @@ int main(int argc,char **argv)
   SNES           snes;
   DM             da;
   Vec            x;
-  PetscBool      youngflg,poissonflg,view=PETSC_FALSE;
+  PetscBool      youngflg,poissonflg,view=PETSC_FALSE,viewline=PETSC_FALSE;
   PetscReal      poisson=1.0,young=1.0;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return(1);
@@ -97,6 +97,7 @@ int main(int argc,char **argv)
     user.mu     = young/(2.*(1. + poisson));
   }
   ierr = PetscOptionsGetBool(NULL,"-view",&view,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-view_line",&viewline,NULL);CHKERRQ(ierr);
 
   ierr = DMDASetFieldName(da,0,"x_disp");CHKERRQ(ierr);
   ierr = DMDASetFieldName(da,1,"y_disp");CHKERRQ(ierr);
@@ -110,9 +111,20 @@ int main(int argc,char **argv)
 
   ierr = DMCreateGlobalVector(da,&x);CHKERRQ(ierr);
   ierr = InitialGuess(da,&user,x);CHKERRQ(ierr);
+
+  /* show a cross-section of the initial state */
+  if (viewline) {
+    ierr = DisplayLine(da,x);CHKERRQ(ierr);
+  }
+
   ierr = SNESSolve(snes,NULL,x);CHKERRQ(ierr);
   ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
   ierr = PetscPrintf(comm,"Number of SNES iterations = %D\n", its);CHKERRQ(ierr);
+
+  /* show a cross-section of the final state */
+  if (viewline) {
+    ierr = DisplayLine(da,x);CHKERRQ(ierr);
+  }
 
   ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = DMDestroy(&da);CHKERRQ(ierr);
@@ -259,7 +271,7 @@ void SaintVenantKirchoff(PetscReal lambda,PetscReal mu,PetscScalar *F,PetscScala
 void SaintVenantKirchoffJacobian(PetscReal lambda,PetscReal mu,PetscScalar *F,PetscScalar *dF,PetscScalar *dS) {
   PetscScalar FtdF[9],dE[9];
   PetscInt i,j;
-  PetscScalar dtrE;
+  PetscScalar dtrE=0.;
   TensorTransposeTensor(dF,F,dE);
   TensorTransposeTensor(F,dF,FtdF);
   for (i=0;i<9;i++) dE[i] += FtdF[i];
@@ -402,7 +414,7 @@ void FormElementJacobian(Field *ex,CoordField *ec,PetscScalar *ej,AppCtx *user) 
                 SaintVenantKirchoffJacobian(user->lambda,user->mu,F,dF,dS);
                 TensorTensor(dF,S,dFS);
                 TensorTensor(F,dS,FdS);
-                //for (m=0;m<9;m++) dFS[m] += FdS[m];
+                for (m=0;m<9;m++) dFS[m] += FdS[m];
                 /* loop over testfunctions */
                 for (kk=0;kk<2;kk++){
                   for (jj=0;jj<2;jj++) {
@@ -414,7 +426,7 @@ void FormElementJacobian(Field *ex,CoordField *ec,PetscScalar *ej,AppCtx *user) 
                       for (ll=0; ll<3;ll++) {
                         PetscInt teidx = ll + 3*(ii + jj*2 + kk*4);
                         ej[teidx + 24*tridx] += scl*
-                          (lgrad[ll]*dFS[3*ll + 0] + lgrad[ll]*dFS[3*ll + 1] + lgrad[ll]*dFS[3*ll+2]);
+                          (lgrad[0]*dFS[3*ll + 0] + lgrad[1]*dFS[3*ll + 1] + lgrad[2]*dFS[3*ll+2]);
                       }
                     }
                   }
