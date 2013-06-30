@@ -1868,6 +1868,9 @@ PetscErrorCode  TSDestroy(TS *ts)
   if ((*ts)->ops->destroy) {ierr = (*(*ts)->ops->destroy)((*ts));CHKERRQ(ierr);}
 
   ierr = TSAdaptDestroy(&(*ts)->adapt);CHKERRQ(ierr);
+  if ((*ts)->event) {
+    ierr = TSEventMonitorDestroy(&(*ts)->event);CHKERRQ(ierr);
+  }
   ierr = SNESDestroy(&(*ts)->snes);CHKERRQ(ierr);
   ierr = DMDestroy(&(*ts)->dm);CHKERRQ(ierr);
   ierr = TSMonitorCancel((*ts));CHKERRQ(ierr);
@@ -2494,7 +2497,6 @@ PetscErrorCode TSInterpolate(TS ts,PetscReal t,Vec U)
 @*/
 PetscErrorCode  TSStep(TS ts)
 {
-  PetscReal      ptime_prev;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -2502,13 +2504,13 @@ PetscErrorCode  TSStep(TS ts)
   ierr = TSSetUp(ts);CHKERRQ(ierr);
 
   ts->reason = TS_CONVERGED_ITERATING;
-  ptime_prev = ts->ptime;
+  ts->ptime_prev = ts->ptime;
 
   ierr = PetscLogEventBegin(TS_Step,ts,0,0,0);CHKERRQ(ierr);
   ierr = (*ts->ops->step)(ts);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(TS_Step,ts,0,0,0);CHKERRQ(ierr);
 
-  ts->time_step_prev = ts->ptime - ptime_prev;
+  ts->time_step_prev = ts->ptime - ts->ptime_prev;
 
   if (ts->reason < 0) {
     if (ts->errorifstepfailed) {
@@ -2632,6 +2634,9 @@ PetscErrorCode TSSolve(TS ts,Vec u)
       ierr = TSMonitor(ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
       ierr = TSStep(ts);CHKERRQ(ierr);
       ierr = TSPostStep(ts);CHKERRQ(ierr);
+      if (ts->event) {
+	ierr = TSEventMonitor(ts);CHKERRQ(ierr);
+      }
     }
     if (ts->exact_final_time == TS_EXACTFINALTIME_INTERPOLATE && ts->ptime > ts->max_time) {
       ierr = TSInterpolate(ts,ts->max_time,u);CHKERRQ(ierr);
@@ -4922,3 +4927,34 @@ PetscErrorCode TSComputeLinearStability(TS ts,PetscReal xr,PetscReal xi,PetscRea
   ierr = (*ts->ops->linearstability)(ts,xr,xi,yr,yi);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "TSRollBack"
+/*@
+   TSRollBack - Rolls back one time step
+
+   Collective on TS
+
+   Input Parameter:
+.  ts - the TS context obtained from TSCreate()
+
+   Level: advanced
+
+.keywords: TS, timestep, rollback
+
+.seealso: TSCreate(), TSSetUp(), TSDestroy(), TSSolve(), TSSetPreStep(), TSSetPreStage(), TSInterpolate()
+@*/
+PetscErrorCode  TSRollBack(TS ts)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts, TS_CLASSID,1);
+
+  if (!ts->ops->rollback) SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"TSRollBack not implemented for type '%s'",((PetscObject)ts)->type_name);
+  ierr = (*ts->ops->rollback)(ts);CHKERRQ(ierr);
+  ts->time_step = ts->ptime - ts->ptime_prev;
+  ts->ptime = ts->ptime_prev;
+  PetscFunctionReturn(0);
+}
+
