@@ -4,7 +4,7 @@
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define petsclogview_             PETSCLOGVIEW
-#define petsclogprintDetailed_    PETSCLOGPRINTDETAILED
+#define petsclogprintdetailed_    PETSCLOGPRINTDETAILED
 #define petsclogallbegin_         PETSCLOGALLBEGIN
 #define petsclogdestroy_          PETSCLOGDESTROY
 #define petsclogbegin_            PETSCLOGBEGIN
@@ -21,7 +21,7 @@
 #define petsclogflops_            PETSCLOGFLOPS
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define petsclogview_             petsclogview
-#define petsclogprintDetailed_    petsclogprintDetailed
+#define petsclogprintdetailed_    petsclogprintdetailed
 #define petsclogallbegin_         petsclogallbegin
 #define petsclogdestroy_          petsclogdestroy
 #define petsclogbegin_            petsclogbegin
@@ -60,7 +60,7 @@ PETSC_EXTERN void PETSC_STDCALL petsclogview_(PetscViewer *viewer,PetscErrorCode
   *ierr = PetscLogView(v);
 }
 
-PETSC_EXTERN void PETSC_STDCALL petsclogprintDetailed_(MPI_Comm *comm,CHAR filename PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+PETSC_EXTERN void PETSC_STDCALL petsclogprintdetailed_(MPI_Comm *comm,CHAR filename PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
 #if defined(PETSC_USE_LOG)
   char *t;
