@@ -567,7 +567,7 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,Field ***x,Field ***f,void 
   CoordField ec[8];
 
   PetscErrorCode ierr;
-  PetscInt xs,ys,zs,xm,ym,zm;
+  PetscInt xs,ys,zs,xm,ym,zm,xes,yes,zes,xee,yee,zee;
   DM          cda;
   CoordField  ***c;
   Vec         C;
@@ -589,9 +589,22 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,Field ***x,Field ***f,void 
       }
     }
   }
-  for (k=zs; k<zs+zm-1; k++) {
-    for (j=ys; j<ys+ym-1; j++) {
-      for (i=xs; i<xs+xm-1; i++) {
+  /* element starts and ends */
+  xes = xs;
+  yes = ys;
+  zes = zs;
+  xee = xs+xm;
+  yee = ys+ym;
+  zee = zs+zm;
+  if (xs > 0) xes = xs - 1;
+  if (ys > 0) yes = ys - 1;
+  if (zs > 0) zes = zs - 1;
+  if (xs+xm == mx) xee = xs+xm-1;
+  if (ys+ym == my) yee = ys+ym-1;
+  if (zs+zm == mz) zee = zs+zm-1;
+  for (k=zes; k<zee; k++) {
+    for (j=yes; j<yee; j++) {
+      for (i=xes; i<xee; i++) {
         /* gather the data -- loop over element unknowns */
         for (kk=0;kk<2;kk++){
           for (jj=0;jj<2;jj++) {
@@ -627,7 +640,8 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,Field ***x,Field ***f,void 
               if ((i == 0 && ii == 0) || (i == mx-2 && ii == 1)) {
               } else {
                 for (l=0;l<3;l++) {
-                  f[k+kk][j+jj][i+ii][l] += ef[idx][l];
+                  if (k+kk >= zs && j+jj >= ys && i+ii >= xs && k+kk < zs+zm && j+jj < ys+ym && i+ii < xs+xm)
+                    f[k+kk][j+jj][i+ii][l] += ef[idx][l];
                 }
               }
             }
@@ -636,7 +650,7 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,Field ***x,Field ***f,void 
       }
     }
   }
-ierr = DMDAVecRestoreArray(cda,C,&c);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(cda,C,&c);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -644,7 +658,7 @@ ierr = DMDAVecRestoreArray(cda,C,&c);CHKERRQ(ierr);
 #define __FUNCT__ "FormCoordinates"
 PetscErrorCode FormCoordinates(DM da,AppCtx *user) {
   PetscErrorCode ierr;
-  Vec coords,lcoords;
+  Vec coords;
   DM cda;
   PetscInt       mx,my,mz;
   PetscInt       i,j,k,xs,ys,zs,xm,ym,zm;
@@ -652,7 +666,6 @@ PetscErrorCode FormCoordinates(DM da,AppCtx *user) {
   PetscFunctionBegin;
   ierr = DMGetCoordinateDM(da,&cda);
   ierr = DMCreateGlobalVector(cda,&coords);
-  ierr = DMCreateLocalVector(cda,&lcoords);
   ierr = DMDAGetInfo(da,0,&mx,&my,&mz,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   ierr = DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da,coords,&x);CHKERRQ(ierr);
@@ -667,12 +680,8 @@ PetscErrorCode FormCoordinates(DM da,AppCtx *user) {
     }
   }
   ierr = DMDAVecRestoreArray(da,coords,&x);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalBegin(cda,coords,INSERT_VALUES,lcoords);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalEnd(cda,coords,INSERT_VALUES,lcoords);CHKERRQ(ierr);
   ierr = DMSetCoordinates(da,coords);CHKERRQ(ierr);
-  ierr = DMSetCoordinatesLocal(da,lcoords);CHKERRQ(ierr);
   ierr = VecDestroy(&coords);CHKERRQ(ierr);
-  ierr = VecDestroy(&lcoords);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
