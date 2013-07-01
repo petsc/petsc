@@ -215,9 +215,7 @@ PetscErrorCode TSEventMonitor(TS ts)
       dt = event->tstepend - event->ptime_prev;
     }
   }
-  PetscReal time_step;
-  ierr = MPI_Allreduce(&dt,&time_step,1,MPIU_REAL,MPI_MIN,((PetscObject)ts)->comm);CHKERRQ(ierr);
-  ts->time_step = time_step;
+  ierr = MPI_Allreduce(&dt,&(ts->time_step),1,MPIU_REAL,MPI_MIN,((PetscObject)ts)->comm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
