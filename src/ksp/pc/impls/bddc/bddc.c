@@ -452,6 +452,7 @@ static PetscErrorCode PCBDDCSetLocalAdjacencyGraph_BDDC(PC pc, PetscInt nvtxs,co
   PetscFunctionBegin;
   /* free old CSR */
   ierr = PCBDDCGraphResetCSR(mat_graph);CHKERRQ(ierr);
+  /* TODO: PCBDDCGraphSetAdjacency */
   /* get CSR into graph structure */
   if (copymode == PETSC_COPY_VALUES) {
     ierr = PetscMalloc((nvtxs+1)*sizeof(PetscInt),&mat_graph->xadj);CHKERRQ(ierr);
@@ -699,15 +700,11 @@ static PetscErrorCode PCPostSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
   Mat            temp_mat;
 
   PetscFunctionBegin;
-  if (pcbddc->use_change_of_basis) {
+  if (pcbddc->use_change_of_basis && x) {
     /* swap pointers for local matrices */
     temp_mat = matis->A;
     matis->A = pcbddc->local_mat;
     pcbddc->local_mat = temp_mat;
-    /* restore rhs to its original state */
-    if (rhs) {
-      ierr = VecCopy(pcbddc->original_rhs,rhs);CHKERRQ(ierr);
-    }
     /* Get Local boundary and apply transformation of basis to solution vector */
     ierr = VecScatterBegin(pcis->global_to_B,x,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterEnd  (pcis->global_to_B,x,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
@@ -720,6 +717,10 @@ static PetscErrorCode PCPostSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
   /* add solution removed in presolve */
   if (x) {
     ierr = VecAXPY(x,1.0,pcbddc->temp_solution);CHKERRQ(ierr);
+  }
+  /* restore rhs to its original state */
+  if (rhs) {
+    ierr = VecCopy(pcbddc->original_rhs,rhs);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -936,7 +937,8 @@ static PetscErrorCode PCBDDCMatFETIDPGetRHS_BDDC(Mat fetidp_mat, Vec standard_rh
   /* store vectors for computation of fetidp final solution */
   ierr = VecScatterBegin(pcis->global_to_D,standard_rhs,mat_ctx->temp_solution_D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(pcis->global_to_D,standard_rhs,mat_ctx->temp_solution_D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  /* scale rhs since it should be unassembled : TODO use counter scaling? (also below) */
+  /* scale rhs since it should be unassembled */
+  /* TODO use counter scaling? (also below) */
   ierr = VecScatterBegin(pcis->global_to_B,standard_rhs,mat_ctx->temp_solution_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(pcis->global_to_B,standard_rhs,mat_ctx->temp_solution_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   /* Apply partition of unity */
