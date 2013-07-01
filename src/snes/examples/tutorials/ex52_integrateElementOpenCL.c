@@ -369,7 +369,7 @@ PetscErrorCode initializeOpenCL(OpenCLEnvironment * ocl_env)
 
   /* Create context with one command queue */
   ocl_env->ctx_id   = clCreateContext(0, 1, &(device_ids[0]), NULL, NULL, &ierr);CHKERRQ(ierr);
-  ocl_env->queue_id = clCreateCommandQueue(ocl_env->ctx_id, ocl_env->dev_id, 0, &ierr);CHKERRQ(ierr);
+  ocl_env->queue_id = clCreateCommandQueue(ocl_env->ctx_id, ocl_env->dev_id, CL_QUEUE_PROFILING_ENABLE, &ierr);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -448,7 +448,9 @@ PETSC_EXTERN PetscErrorCode IntegrateElementBatchOpenCL(PetscInt spatial_dim, Pe
   char            build_buffer[8192];
   cl_build_status status;
 
-  float             msElapsedTime = 1; /* TODO: Add timing */
+  cl_event          ocl_ev;         /* The event for tracking kernel execution */
+  cl_ulong          ns_start;       /* Nanoseconds counter on GPU at kernel start */
+  cl_ulong          ns_end;         /* Nanoseconds counter on GPU at kernel stop */
 
   cl_mem            d_coefficients;
   cl_mem            d_jacobianInverses;
@@ -543,8 +545,8 @@ PETSC_EXTERN PetscErrorCode IntegrateElementBatchOpenCL(PetscInt spatial_dim, Pe
   ierr = clSetKernelArg(ocl_kernel, 2, sizeof(cl_mem), (void*)&d_jacobianInverses);CHKERRQ(ierr);
   ierr = clSetKernelArg(ocl_kernel, 3, sizeof(cl_mem), (void*)&d_jacobianDeterminants);CHKERRQ(ierr);
   ierr = clSetKernelArg(ocl_kernel, 4, sizeof(cl_mem), (void*)&d_elemVec);CHKERRQ(ierr);
-  ierr = clEnqueueNDRangeKernel(ocl_env.queue_id, ocl_kernel, 3, NULL, global_work_size, local_work_size, 0, NULL, NULL);CHKERRQ(ierr);
 
+  ierr = clEnqueueNDRangeKernel(ocl_env.queue_id, ocl_kernel, 3, NULL, global_work_size, local_work_size, 0, NULL, &ocl_ev);CHKERRQ(ierr);
 
   /* Read data back to device, including marshalling */
   if (sizeof(PetscReal) == sizeof(float)) {
@@ -568,8 +570,10 @@ PETSC_EXTERN PetscErrorCode IntegrateElementBatchOpenCL(PetscInt spatial_dim, Pe
     ierr = PetscStageLogGetCurrent(stageLog, &stage);CHKERRQ(ierr);
     ierr = PetscStageLogGetEventPerfLog(stageLog, stage, &eventLog);CHKERRQ(ierr);
     /* Log performance info */
+    ierr = clGetEventProfilingInfo(ocl_ev, CL_PROFILING_COMMAND_START, sizeof(cl_ulong), &ns_start, NULL);CHKERRQ(ierr);
+    ierr = clGetEventProfilingInfo(ocl_ev, CL_PROFILING_COMMAND_END,   sizeof(cl_ulong), &ns_end,   NULL);CHKERRQ(ierr);
     eventLog->eventInfo[event].count++;
-    eventLog->eventInfo[event].time  += msElapsedTime*1.0e-3;
+    eventLog->eventInfo[event].time  += (ns_end - ns_start)*1.0e-9;
     eventLog->eventInfo[event].flops += (((2+(2+2*dim)*dim)*N_comp*N_b+(2+2)*dim*N_comp)*N_q + (2+2*dim)*dim*N_q*N_comp*N_b)*Ne;
   }
 
