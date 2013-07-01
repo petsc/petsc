@@ -424,9 +424,9 @@ PetscErrorCode calculateGridOpenCL(const int N, const int blockSize, unsigned in
   Output Parameter:
 . elemVec - An array of the element vectors for each cell
 */
-PETSC_EXTERN PetscErrorCode IntegrateElementBatchOpenCL(PetscInt spatial_dim, PetscInt Ne, PetscInt Ncb, PetscInt Nbc, PetscInt Nbl, const PetscScalar coefficients[],
-                                        const PetscReal jacobianInverses[], const PetscReal jacobianDeterminants[], PetscScalar elemVec[],
-                                        PetscLogEvent event, PetscInt debug, PetscInt pde_op)
+PETSC_EXTERN PetscErrorCode IntegrateElementBatchGPU(PetscInt spatial_dim, PetscInt Ne, PetscInt Ncb, PetscInt Nbc, PetscInt Nbl, const PetscScalar coefficients[],
+                                                     const PetscReal jacobianInverses[], const PetscReal jacobianDeterminants[], PetscScalar elemVec[],
+                                                     PetscLogEvent event, PetscInt debug, PetscInt pde_op)
 {
   const cl_int numQuadraturePoints_0 = 1;
 
