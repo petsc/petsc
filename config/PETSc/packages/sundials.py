@@ -69,7 +69,8 @@ class Configure(PETSc.package.NewPackage):
     args.append('--disable-cvodes')
     args.append('--disable-ida')
     args.append('--disable-kinsol')
-    args.append('--disable-f77')
+    args.append('--disable-f77') #does not work? Use 'F77=no' instead
+    args.append('F77=no')
     args.append('--disable-libtool-lock')
 
     args = ' '.join(args)

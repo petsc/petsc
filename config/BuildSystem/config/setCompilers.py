@@ -1477,7 +1477,7 @@ if (dlclose(handle)) {
     '''Check if --with-mpi-dir is used along with CC CXX or FC compiler options.
     This usually prevents mpi compilers from being used - so issue a warning'''
 
-    if 'with-mpi-dir' in self.argDB:
+    if 'with-mpi-dir' in self.argDB and self.argDB['with-mpi-compilers']:
       optcplrs = [(['with-cc','CC'],['mpicc','mpcc','hcc','mpcc_r']),
               (['with-fc','FC'],['mpif90','mpif77','mpxlf95_r','mpxlf90_r','mpxlf_r','mpf90','mpf77']),
               (['with-cxx','CXX'],['mpicxx','hcp','mpic++','mpiCC','mpCC_r'])]
