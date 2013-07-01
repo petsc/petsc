@@ -98,7 +98,7 @@ PetscErrorCode TSPostEvent(TS ts,PetscInt nevents_zero,PetscInt events_zero[],Pe
     ierr = (*event->postevent)(ts,nevents_zero,events_zero,t,U,ctx);CHKERRQ(ierr);
   }
   for(i = 0; i < nevents_zero;i++) {
-    terminate = terminate || event->terminate[events_zero[i]];
+    terminate = (PetscBool)(terminate || event->terminate[events_zero[i]]);
   }
   ierr = MPI_Allreduce(&terminate,&ts_terminate,1,MPIU_INT,MPI_MAX,((PetscObject)ts)->comm);CHKERRQ(ierr);
   if (terminate) {
@@ -162,7 +162,7 @@ PetscErrorCode TSEventMonitor(TS ts)
   ierr = (*event->monitor)(ts,t,U,event->fvalue,event->direction,event->terminate,event->monitorcontext);CHKERRQ(ierr);
   if (event->status != TSEVENT_NONE) {
     for (i=0; i < event->nevents; i++) {
-      if (PetscAbs(event->fvalue[i]) < event->tol) {
+      if (PetscAbsScalar(event->fvalue[i]) < event->tol) {
 	event->status = TSEVENT_ZERO;
 	event->events_zero[event->nevents_zero++] = i;
       }
@@ -184,14 +184,14 @@ PetscErrorCode TSEventMonitor(TS ts)
   }
 
   for (i = 0; i < event->nevents; i++) {
-    if ((event->direction[i] < 0 && PetscSign(event->fvalue[i]) <= 0 && PetscSign(event->fvalue_prev[i]) >= 0) || \
-        (event->direction[i] > 0 && PetscSign(event->fvalue[i]) >= 0 && PetscSign(event->fvalue_prev[i]) <= 0) || \
-        (event->direction[i] == 0 && PetscSign(event->fvalue[i])*PetscSign(event->fvalue_prev[i]) <= 0)) {
+    if ((event->direction[i] < 0 && PetscSign(PetscRealPart(event->fvalue[i])) <= 0 && PetscSign(PetscRealPart(event->fvalue_prev[i])) >= 0) || \
+        (event->direction[i] > 0 && PetscSign(PetscRealPart(event->fvalue[i])) >= 0 && PetscSign(PetscRealPart(event->fvalue_prev[i])) <= 0) || \
+        (event->direction[i] == 0 && PetscSign(PetscRealPart(event->fvalue[i]))*PetscSign(PetscRealPart(event->fvalue_prev[i])) <= 0)) {
 
       event->status = TSEVENT_LOCATED_INTERVAL;
       rollback = 1;
       /* Compute linearly interpolated new time step */
-      dt = PetscMin(dt,-event->fvalue_prev[i]*(t - event->ptime_prev)/(event->fvalue[i] - event->fvalue_prev[i]));
+      dt = PetscMin(dt,PetscRealPart(-event->fvalue_prev[i]*(t - event->ptime_prev)/(event->fvalue[i] - event->fvalue_prev[i])));
     }
   }
   in[0] = event->status;
