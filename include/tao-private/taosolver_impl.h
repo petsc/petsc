@@ -3,6 +3,7 @@
 
 #include "taosolver.h"
 #include "taolinesearch.h"
+#include "petsc-private/petscimpl.h"
 #include "petscksp.h"
 
 typedef struct _TaoSolverOps *TaoSolverOps;

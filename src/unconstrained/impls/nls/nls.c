@@ -647,7 +647,7 @@ static PetscErrorCode TaoSolve_NLS(TaoSolver tao)
     else {
       /* Computed Newton step is descent */
       switch (ksp_reason) {
-      case KSP_DIVERGED_NAN:
+      case KSP_DIVERGED_NANORINF:
       case KSP_DIVERGED_BREAKDOWN:
       case KSP_DIVERGED_INDEFINITE_MAT:
       case KSP_DIVERGED_INDEFINITE_PC:

@@ -429,7 +429,7 @@ PetscErrorCode VecGetSubVec(Vec vfull, IS is, PetscInt reduced_type, PetscReal m
     PetscReal *fv,*rv;
     const PetscInt *s;
     IS ident;
-    const VecType vtype;
+    VecType vtype;
     VecScatter scatter;
     MPI_Comm comm;
     

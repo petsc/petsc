@@ -11,6 +11,8 @@ extern PetscErrorCode TaoCreate_NTL(TaoSolver);
 extern PetscErrorCode TaoCreate_NM(TaoSolver);
 extern PetscErrorCode TaoCreate_CG(TaoSolver);
 extern PetscErrorCode TaoCreate_TRON(TaoSolver);
+extern PetscErrorCode TaoCreate_OWLQN(TaoSolver);
+extern PetscErrorCode TaoCreate_BMRM(TaoSolver);
 
 extern PetscErrorCode TaoCreate_BLMVM(TaoSolver);
 extern PetscErrorCode TaoCreate_GPCG(TaoSolver);
@@ -28,7 +30,6 @@ extern PetscErrorCode TaoCreate_SSILS(TaoSolver);
 extern PetscErrorCode TaoCreate_SSFLS(TaoSolver);
 extern PetscErrorCode TaoCreate_ASILS(TaoSolver);
 extern PetscErrorCode TaoCreate_ASFLS(TaoSolver);
-
 EXTERN_C_END
 
 /* 
@@ -64,7 +65,7 @@ extern PetscBool TaoSolverRegisterAllCalled;
 #undef __FUNCT__
 #define __FUNCT__ "TaoSolverRegisterAll"
 /*@C
-  TaoSolverRegisterAll - Registersall of the minimization methods in the TAO
+  TaoSolverRegisterAll - Registers all of the minimization methods in the TAO
   package.
 
   Not Collective
@@ -86,6 +87,8 @@ PetscErrorCode TaoSolverRegisterAll(const char path[])
   ierr = TaoSolverRegisterDynamic("tao_ntl",path,"TaoCreate_NTL",TaoCreate_NTL); CHKERRQ(ierr);
   ierr = TaoSolverRegisterDynamic("tao_cg",path,"TaoCreate_CG",TaoCreate_CG); CHKERRQ(ierr);
   ierr = TaoSolverRegisterDynamic("tao_tron",path,"TaoCreate_TRON",TaoCreate_TRON); CHKERRQ(ierr);
+  ierr = TaoSolverRegisterDynamic("tao_owlqn",path,"TaoCreate_OWLQN",TaoCreate_OWLQN); CHKERRQ(ierr);
+  ierr = TaoSolverRegisterDynamic("tao_bmrm",path,"TaoCreate_BMRM",TaoCreate_BMRM); CHKERRQ(ierr);
 
   ierr = TaoSolverRegisterDynamic("tao_blmvm",path,"TaoCreate_BLMVM",TaoCreate_BLMVM); CHKERRQ(ierr);
   ierr = TaoSolverRegisterDynamic("tao_bqpip",path,"TaoCreate_BQPIP",TaoCreate_BQPIP); CHKERRQ(ierr);

@@ -4,7 +4,7 @@
 
 
 /* 
-   For finited difference computations of the Hessian, we use PETSc's SNESDefaultComputeJacobian 
+   For finited difference computations of the Hessian, we use PETSc's SNESComputeJacobianDefault
 */
 
 #undef __FUNCT__  
@@ -122,7 +122,7 @@ PetscErrorCode TaoDefaultComputeGradient(TaoSolver tao,Vec X,Vec G,void *dummy)
 
 
 
-.seealso: TaoSetHessianRoutine(), TaoDefaultComputeHessianColor(), SNESDefaultComputeJacobian(), TaoSetGradientRoutine(), TaoDefaultComputeGradient()
+.seealso: TaoSetHessianRoutine(), TaoDefaultComputeHessianColor(), SNESComputeJacobianDefault(), TaoSetGradientRoutine(), TaoDefaultComputeGradient()
 
 @*/
 PetscErrorCode TaoDefaultComputeHessian(TaoSolver tao,Vec V,Mat *H,Mat *B,
@@ -144,7 +144,7 @@ PetscErrorCode TaoDefaultComputeHessian(TaoSolver tao,Vec V,Mat *H,Mat *B,
   ierr = SNESCreate(comm,&snes);CHKERRQ(ierr);
 
   ierr = SNESSetFunction(snes,G,Fsnes,tao);CHKERRQ(ierr);
-  ierr = SNESDefaultComputeJacobian(snes,V,H,B,flag,tao);CHKERRQ(ierr);
+  ierr = SNESComputeJacobianDefault(snes,V,H,B,flag,tao);CHKERRQ(ierr);
 
   ierr = SNESDestroy(&snes);CHKERRQ(ierr);
   
@@ -176,7 +176,7 @@ PetscErrorCode TaoDefaultComputeHessian(TaoSolver tao,Vec V,Mat *H,Mat *B,
    Level: advanced
 
 
-.seealso: TaoSetHessianRoutine(), TaoDefaultComputeHessian(),SNESDefaultComputeJacobianColor(), TaoSetGradientRoutine()
+.seealso: TaoSetHessianRoutine(), TaoDefaultComputeHessian(),SNESComputeJacobianDefaultColor(), TaoSetGradientRoutine()
 
 @*/
 PetscErrorCode TaoDefaultComputeHessianColor(TaoSolver tao, Vec V, Mat *H,Mat *B,MatStructure *flag,void *ctx){

@@ -3,7 +3,7 @@
 #include "tao-private/taolinesearch_impl.h"
 
 PetscBool TaoLineSearchInitialized = PETSC_FALSE;
-PetscFList TaoLineSearchList              = PETSC_NULL;
+PetscFunctionList TaoLineSearchList              = PETSC_NULL;
 
 PetscClassId TAOLINESEARCH_CLASSID=0;
 PetscLogEvent TaoLineSearch_ApplyEvent = 0, TaoLineSearch_EvalEvent=0;
@@ -136,7 +136,7 @@ PetscErrorCode TaoLineSearchCreate(MPI_Comm comm, TaoLineSearch *newls)
  #endif 
 
      ierr = PetscHeaderCreate(ls,_p_TaoLineSearch,struct _TaoLineSearchOps,
-			      TAOLINESEARCH_CLASSID, 0, "TaoLineSearch",0,0,
+			      TAOLINESEARCH_CLASSID, "TaoLineSearch",0,0,
 			      comm,TaoLineSearchDestroy, TaoLineSearchView);
      CHKERRQ(ierr);
      ls->bounded = 0;
@@ -487,7 +487,7 @@ PetscErrorCode TaoLineSearchSetType(TaoLineSearch ls, const TaoLineSearchType ty
      ierr = PetscObjectTypeCompare((PetscObject)ls, type, &flg); CHKERRQ(ierr);
      if (flg) PetscFunctionReturn(0);
 
-     ierr = PetscFListFind(TaoLineSearchList, ((PetscObject)ls)->comm,type, PETSC_TRUE, (void (**)(void)) &r); CHKERRQ(ierr);
+     ierr = PetscFunctionListFind(((PetscObject)ls)->comm, TaoLineSearchList,type, PETSC_TRUE, (void (**)(void)) &r); CHKERRQ(ierr);
      if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested TaoLineSearch type %s",type);
      if (ls->ops->destroy) {
 	 ierr = (*(ls)->ops->destroy)(ls); CHKERRQ(ierr);
@@ -1377,8 +1377,8 @@ PetscErrorCode TaoLineSearchRegister(const char sname[], const char path[], cons
     char full[PETSC_MAX_PATH_LEN];
     PetscErrorCode ierr;
     PetscFunctionBegin;
-    ierr = PetscFListConcat(path,cname,full); CHKERRQ(ierr);
-    ierr = PetscFListAdd(&TaoLineSearchList, sname, full, (void (*)(void))func); CHKERRQ(ierr);
+    ierr = PetscFunctionListConcat(path,cname,full); CHKERRQ(ierr);
+    ierr = PetscFunctionListAdd(PETSC_COMM_WORLD, &TaoLineSearchList, sname, full, (void (*)(void))func); CHKERRQ(ierr);
     PetscFunctionReturn(0);
 }
 
@@ -1398,7 +1398,7 @@ PetscErrorCode TaoLineSearchRegisterDestroy(void)
 {
     PetscErrorCode ierr;
     PetscFunctionBegin;
-    ierr = PetscFListDestroy(&TaoLineSearchList); CHKERRQ(ierr);
+    ierr = PetscFunctionListDestroy(&TaoLineSearchList); CHKERRQ(ierr);
     TaoLineSearchInitialized = PETSC_FALSE;
     PetscFunctionReturn(0);
 }

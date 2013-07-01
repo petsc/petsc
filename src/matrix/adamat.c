@@ -357,7 +357,7 @@ PetscErrorCode MatGetSubMatrix_ADA(Mat mat,IS isrow,IS iscol,MatReuse cll,
   PetscInt          n,nlocal,i;
   const PetscInt          *iptr;
   PetscReal       *dptr,*ddptr,zero=0.0;
-  const VecType type_name;
+  VecType      type_name;
   IS           ISrow;
   Vec          D1,D2;
   Mat          Atemp;
