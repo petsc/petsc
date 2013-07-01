@@ -7,48 +7,56 @@
 #include <CL/cl.h>
 #endif
 
-#define SPATIAL_DIM_0 2
+//#define SPATIAL_DIM_0 2
+
+typedef enum {LAPLACIAN = 0, ELASTICITY} OpType;
 
 /* Put the OpenCL program into a source string.
  * This allows to generate all the code at runtime, no need for external Python magic as for CUDA
  *
  * The code uses snprintf() to concatenate strings, as this is safer than strcat().
- * TODO: a custom-built string-concatenation is more efficient and would eliminate redundant copies via snprintf()
  */
 #undef __FUNCT__
 #define __FUNCT__ "generateOpenCLSource"
-PetscErrorCode generateOpenCLSource(char **string_buffer, PetscInt buffer_length, PetscInt spatial_dim)
+PetscErrorCode generateOpenCLSource(char **string_buffer, PetscInt buffer_length, PetscInt spatial_dim, PetscInt pde_op)
 {
-  PetscInt        string_length = 0;
   char            *string_tail   = *string_buffer;
   char            *end_of_buffer = *string_buffer + buffer_length;
+  PetscInt        num_blocks = 1;
+  PetscInt        num_quadrature_points = 1;
+  PetscInt        num_basis_components = (pde_op == LAPLACIAN) ? 1 : spatial_dim;
+  PetscInt        num_basis_functions = 3;
+  PetscInt        num_threads = num_basis_functions * num_basis_components * num_quadrature_points * num_blocks;
+
+/* dim     Number of spatial dimensions:          2                   */
+/* N_b     Number of basis functions:             generated           */
+/* N_{bt}  Number of total basis functions:       N_b * N_{comp}      */
+/* N_q     Number of quadrature points:           generated           */
+/* N_{bs}  Number of block cells                  LCM(N_b, N_q)       */
+/* N_{bst} Number of block cell components        LCM(N_{bt}, N_q)    */
+/* N_{bl}  Number of concurrent blocks            generated           */
+/* N_t     Number of threads:                     N_{bl} * N_{bs}     */
+/* N_{cbc} Number of concurrent basis      cells: N_{bl} * N_q        */
+/* N_{cqc} Number of concurrent quadrature cells: N_{bl} * N_b        */
+/* N_{sbc} Number of serial     basis      cells: N_{bs} / N_q        */
+/* N_{sqc} Number of serial     quadrature cells: N_{bs} / N_b        */
+/* N_{cb}  Number of serial cell batches:         input               */
+/* N_c     Number of total cells:                 N_{cb}*N_{t}/N_{comp} */
+
+#define STRING_ERROR_CHECK(MSG) \
+  if (string_tail == end_of_buffer) {\
+    SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, MSG);\
+  }
 
   PetscFunctionBegin;
   string_tail += snprintf(string_tail, end_of_buffer - string_tail,
-"float2 f1_laplacian(float u[], float2 gradU[], int comp)\n"
-"{\n"
-"  return gradU[comp];\n"
-"}\n"
-"\n"
-"\n"
-"// dim     Number of spatial dimensions:          2\n"
-"// N_b     Number of basis functions:             generated\n"
-"// N_{bt}  Number of total basis functions:       N_b * N_{comp}\n"
-"// N_q     Number of quadrature points:           generated\n"
-"// N_{bs}  Number of block cells                  LCM(N_b, N_q)\n"
-"// N_{bst} Number of block cell components        LCM(N_{bt}, N_q)\n"
-"// N_{bl}  Number of concurrent blocks            generated\n"
-"// N_t     Number of threads:                     N_{bl} * N_{bs}\n"
-"// N_{cbc} Number of concurrent basis      cells: N_{bl} * N_q\n"
-"// N_{cqc} Number of concurrent quadrature cells: N_{bl} * N_b\n"
-"// N_{sbc} Number of serial     basis      cells: N_{bs} / N_q\n"
-"// N_{sqc} Number of serial     quadrature cells: N_{bs} / N_b\n"
-"// N_{cb}  Number of serial cell batches:         input\n"
-"// N_c     Number of total cells:                 N_{cb}*N_{t}/N_{comp}\n"
 "\n"
 "__kernel void integrateElementQuadrature(int N_cb, __global float *coefficients, __global float *jacobianInverses, __global float *jacobianDeterminants, __global float *elemVec)\n"
-"{\n"
-"  const int numQuadraturePoints_0 = 1;\n"
+"{\n");STRING_ERROR_CHECK("Message to short");
+
+  if (spatial_dim == 2) {
+    string_tail += snprintf(string_tail, end_of_buffer - string_tail,
+"  const int numQuadraturePoints_0 = %d;\n"
 "\n"
 "  /* Quadrature points\n"
 "   - (x1,y1,x2,y2,...) */\n"
@@ -60,8 +68,11 @@ PetscErrorCode generateOpenCLSource(char **string_buffer, PetscInt buffer_length
 "   - (v1,v2,...) */\n"
 "  const float weights_0[1] = {2.0};\n"
 "\n"
-"  const int numBasisFunctions_0 = 3;\n"
-"  const int numBasisComponents_0 = 1;\n"
+"  const int numBasisFunctions_0 = %d;\n"
+"  const int numBasisComponents_0 = %d;\n", num_quadrature_points, num_basis_functions, num_basis_components);STRING_ERROR_CHECK("Message to short");
+
+    if (pde_op == LAPLACIAN) {
+      string_tail += snprintf(string_tail, end_of_buffer - string_tail,
 "\n"
 "  /* Nodal basis function evaluations\n"
 "    - basis function is fastest varying, then point */\n"
@@ -76,7 +87,35 @@ PetscErrorCode generateOpenCLSource(char **string_buffer, PetscInt buffer_length
 "    -0.5, -0.5,\n"
 "    0.5, 0.0,\n"
 "    0.0, 0.5};\n"
+"\n");STRING_ERROR_CHECK("Message to short");
+    } else if (pde_op == ELASTICITY) {
+      string_tail += snprintf(string_tail, end_of_buffer - string_tail,
 "\n"
+"  /* Nodal basis function evaluations\n"
+"    - basis function is fastest varying, then point */\n"
+"  const float Basis_0[6] = {\n"
+"    0.333333333333,\n"
+"    0.333333333333,\n"
+"    0.333333333333,\n"
+"    0.333333333333,\n"
+"    0.333333333333,\n"
+"    0.333333333333};\n"
+"\n"
+"  /* Nodal basis function derivative evaluations,\n"
+"      - derivative direction fastest varying, then basis function, then point */\n"
+"  const float2 BasisDerivatives_0[6] = {\n"
+"    -0.5, -0.5,\n"
+"    -0.5, -0.5,\n"
+"    0.5, 0.0,\n"
+"    0.5, 0.0,\n"
+"    0.0, 0.5,\n"
+"    0.0, 0.5};\n"
+"\n");STRING_ERROR_CHECK("Message to short");
+    }
+  } else if (spatial_dim == 3) {
+  }
+
+  string_tail += snprintf(string_tail, end_of_buffer - string_tail,
 "  /* Number of concurrent blocks */\n"
 "  const int N_bl = 1;\n"
 "\n"
@@ -95,31 +134,41 @@ PetscErrorCode generateOpenCLSource(char **string_buffer, PetscInt buffer_length
 "  const int N_sqc  = N_bst / N_bt;\n"
 "\n"
 "  /* Calculated indices */\n"
-"  const int tidx    = get_local_id(0) + get_group_id(0)*get_local_id(1);\n"
+"  const int tidx    = get_local_id(0) + get_local_size(0)*get_local_id(1);\n"
 "  const int blidx   = tidx / N_bst;                  // Block number for this thread\n"
-"  const int bidx    = tidx % N_bt;                   // Basis function mapped to this thread\n"
-"  const int cidx    = tidx % N_comp;                 // Basis component mapped to this thread\n"
-"  const int qidx    = tidx % N_q;                    // Quadrature point mapped to this thread\n"
-"  const int blbidx  = tidx % N_q + blidx*N_q;        // Cell mapped to this thread in the basis phase\n"
-"  const int blqidx  = tidx % N_b + blidx*N_b;        // Cell mapped to this thread in the quadrature phase\n"
+"  const int bidx    = tidx %% N_bt;                   // Basis function mapped to this thread\n"
+"  const int cidx    = tidx %% N_comp;                 // Basis component mapped to this thread\n"
+"  const int qidx    = tidx %% N_q;                    // Quadrature point mapped to this thread\n"
+"  const int blbidx  = tidx %% N_q + blidx*N_q;        // Cell mapped to this thread in the basis phase\n"
+"  const int blqidx  = tidx %% N_b + blidx*N_b;        // Cell mapped to this thread in the quadrature phase\n"
 "  const int gidx    = get_group_id(1)*get_num_groups(0) + get_group_id(0);\n"
 "  const int Goffset = gidx*N_c;\n"
 "  const int Coffset = gidx*N_c*N_bt;\n"
-"  const int Eoffset = gidx*N_c*N_bt;\n"
+"  const int Eoffset = gidx*N_c*N_bt;\n", spatial_dim);STRING_ERROR_CHECK("Message to short");
+
+  string_tail += snprintf(string_tail, end_of_buffer - string_tail,
 "\n"
 "  /* Quadrature data */\n"
 "  float                w;                   // $w_q$, Quadrature weight at $x_q$\n"
-"  __local float2       phiDer_i[3*1]; //[N_bt*N_q];  // $\\frac{\\partial\\phi_i(x_q)}{\\partial x_d}$, Value of the derivative of basis function $i$ in direction $x_d$ at $x_q$\n"
+"  __local float%d       phiDer_i[%d]; //[N_bt*N_q];  // $\\frac{\\partial\\phi_i(x_q)}{\\partial x_d}$, Value of the derivative of basis function $i$ in direction $x_d$ at $x_q$\n"
 "  /* Geometric data */\n"
-"  __local float        detJ[3]; //[N_t];           // $|J(x_q)|$, Jacobian determinant at $x_q$\n"
-"  __local float        invJ[3*2*2];//[N_t*dim*dim];   // $J^{-1}(x_q)$, Jacobian inverse at $x_q$\n"
+"  __local float        detJ[%d]; //[N_t];           // $|J(x_q)|$, Jacobian determinant at $x_q$\n"
+"  __local float        invJ[%d];//[N_t*dim*dim];   // $J^{-1}(x_q)$, Jacobian inverse at $x_q$\n"
 "  /* FEM data */\n"
-"  __local float        u_i[3*3]; //[N_t*N_bt];       // Coefficients $u_i$ of the field $u|_{\\mathcal{T}} = \\sum_i u_i \\phi_i$\n"
+"  __local float        u_i[%d]; //[N_t*N_bt];       // Coefficients $u_i$ of the field $u|_{\\mathcal{T}} = \\sum_i u_i \\phi_i$\n"
 "  /* Intermediate calculations */\n"
-"  __local float2       f_1[3*3]; //[N_t*N_sqc];      // $f_1(u(x_q), \\nabla u(x_q)) |J(x_q)| w_q$\n"
+"  __local float%d       f_1[%d]; //[N_t*N_sqc];      // $f_1(u(x_q), \\nabla u(x_q)) |J(x_q)| w_q$\n"
 "  /* Output data */\n"
 "  float                e_i;                 // Coefficient $e_i$ of the residual\n"
-"\n"
+"\n", spatial_dim,
+      num_basis_functions * num_basis_components * num_quadrature_points,     /* size of PhiDer_i */
+      num_threads, /* size of detJ */
+      num_threads * spatial_dim * spatial_dim, /* size of invJ */
+      num_threads * num_basis_functions * num_basis_components, /* size of u_i */
+      spatial_dim,
+      num_threads * num_quadrature_points /* size of f_1 */);STRING_ERROR_CHECK("Message to short");
+
+  string_tail += snprintf(string_tail, end_of_buffer - string_tail,
 "  /* These should be generated inline */\n"
 "  /* Load quadrature weights */\n"
 "  w = weights_0[qidx];\n"
@@ -144,20 +193,15 @@ PetscErrorCode generateOpenCLSource(char **string_buffer, PetscInt buffer_length
 "\n"
 "    /* Map coefficients to values at quadrature points */\n"
 "    for (int c = 0; c < N_sqc; ++c) {\n"
-"      float  u[1]; //[N_comp];     // $u(x_q)$, Value of the field at $x_q$\n"
-"      float2   gradU[1]; //[N_comp]; // $\\nabla u(x_q)$, Value of the field gradient at $x_q$\n"
+"      float  u[%d]; //[N_comp];     // $u(x_q)$, Value of the field at $x_q$\n"
+"      float%d   gradU[%d]; //[N_comp]; // $\\nabla u(x_q)$, Value of the field gradient at $x_q$\n"
 "      const int cell          = c*N_bl*N_b + blqidx;\n"
 "      const int fidx          = (cell*N_q + qidx)*N_comp + cidx;\n"
 "\n"
 "      for (int comp = 0; comp < N_comp; ++comp) {\n"
-"        gradU[comp].x = 0.0; gradU[comp].y = 0.0;", spatial_dim);
+"        gradU[comp].x = 0.0; gradU[comp].y = 0.0;", num_basis_components, spatial_dim, num_basis_components);STRING_ERROR_CHECK("Message to short");
 
-  if (string_tail == end_of_buffer) {
-    SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "String too short!");
-  }
-
-  if (spatial_dim == 3)
-  {
+  if (spatial_dim == 3) {
     string_tail += snprintf(string_tail, end_of_buffer - string_tail, " gradU[comp].z = 0.0;");
     if (string_tail == end_of_buffer) {
       SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "String too short!");
@@ -173,50 +217,70 @@ PetscErrorCode generateOpenCLSource(char **string_buffer, PetscInt buffer_length
 "          const int b    = i*N_comp+comp;\n"
 "          const int pidx = qidx*N_bt + b;\n"
 "          const int uidx = cell*N_bt + b;\n"
-"          float2   realSpaceDer;\n"
-"\n");
+"          float%d   realSpaceDer;\n"
+"\n", spatial_dim);STRING_ERROR_CHECK("Message to short");
 
-  if (string_tail == end_of_buffer) {
-    SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "String too short!");
-  }
-
-  if (spatial_dim == 2)
+  if (spatial_dim == 2) {
     string_tail += snprintf(string_tail, end_of_buffer - string_tail,
 "          realSpaceDer.x = invJ[cell*dim*dim+0*dim+0]*phiDer_i[pidx].x + invJ[cell*dim*dim+1*dim+0]*phiDer_i[pidx].y;\n"
 "          gradU[comp].x += u_i[uidx]*realSpaceDer.x;\n"
 "          realSpaceDer.y = invJ[cell*dim*dim+0*dim+1]*phiDer_i[pidx].x + invJ[cell*dim*dim+1*dim+1]*phiDer_i[pidx].y;\n"
-"          gradU[comp].y += u_i[uidx]*realSpaceDer.y;\n");
-  else
-  string_tail += snprintf(string_tail, end_of_buffer - string_tail,
+"          gradU[comp].y += u_i[uidx]*realSpaceDer.y;\n");STRING_ERROR_CHECK("Message to short");
+  } else {
+    string_tail += snprintf(string_tail, end_of_buffer - string_tail,
 "          realSpaceDer.x = invJ[cell*dim*dim+0*dim+0]*phiDer_i[pidx].x + invJ[cell*dim*dim+1*dim+0]*phiDer_i[pidx].y + invJ[cell*dim*dim+2*dim+0]*phiDer_i[pidx].z;\n"
 "          gradU[comp].x += u_i[uidx]*realSpaceDer.x;\n"
 "          realSpaceDer.y = invJ[cell*dim*dim+0*dim+1]*phiDer_i[pidx].x + invJ[cell*dim*dim+1*dim+1]*phiDer_i[pidx].y + invJ[cell*dim*dim+2*dim+1]*phiDer_i[pidx].z;\n"
 "          gradU[comp].y += u_i[uidx]*realSpaceDer.y;\n"
 "          realSpaceDer.z = invJ[cell*dim*dim+0*dim+2]*phiDer_i[pidx].x + invJ[cell*dim*dim+1*dim+2]*phiDer_i[pidx].y + invJ[cell*dim*dim+2*dim+2]*phiDer_i[pidx].z;\n"
-"          gradU[comp].z += u_i[uidx]*realSpaceDer.z;\n");
-
-  if (string_tail == end_of_buffer) {
-    SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "String too short!");
+"          gradU[comp].z += u_i[uidx]*realSpaceDer.z;\n");STRING_ERROR_CHECK("Message to short");
   }
 
   string_tail += snprintf(string_tail, end_of_buffer - string_tail,
 "        }\n"
 "      }\n"
-"      /* Process values at quadrature points */\n"
-"      f_1[fidx] = gradU[cidx];    /* TODO: This depends on the problem formulation, cf. CUDA version */\n"
-"      f_1[fidx].x *= detJ[cell]*w; f_1[fidx].y *= detJ[cell]*w;");
+"      /* Process values at quadrature points */\n");STRING_ERROR_CHECK("Message to short");
 
-  if (string_tail == end_of_buffer) {
-    SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "String too short!");
+  /* Process values at quadrature points as induced by the PDE operator */
+  if (pde_op == LAPLACIAN) {
+    string_tail += snprintf(string_tail, end_of_buffer - string_tail, "      f_1[fidx] = gradU[cidx];\n");STRING_ERROR_CHECK("Message to short");
+  } else if (spatial_dim == 2 && pde_op == ELASTICITY) {
+    string_tail += snprintf(string_tail, end_of_buffer - string_tail,
+"      switch (cidx) {\n"
+"      case 0:\n"
+"        f_1[fidx].x = 0.5*(gradU[0].x + gradU[0].x);\n"
+"        f_1[fidx].y = 0.5*(gradU[0].y + gradU[1].x);\n"
+"        break;\n"
+"      case 1:\n"
+"        f_1[fidx].x = 0.5*(gradU[1].x + gradU[0].y);\n"
+"        f_1[fidx].y = 0.5*(gradU[1].y + gradU[1].y);\n"
+"      }\n");STRING_ERROR_CHECK("Message to short");
+  } else if (spatial_dim == 3 && pde_op == ELASTICITY) {
+    string_tail += snprintf(string_tail, end_of_buffer - string_tail,
+"      switch (cidx) {\n"
+"      case 0:\n"
+"        f_1[fidx].x = 0.5*(gradU[0].x + gradU[0].x);\n"
+"        f_1[fidx].y = 0.5*(gradU[0].y + gradU[1].x);\n"
+"        f_1[fidx].z = 0.5*(gradU[0].z + gradU[2].x);\n"
+"        break;\n"
+"      case 1:\n"
+"        f_1[fidx].x = 0.5*(gradU[1].x + gradU[0].y);\n"
+"        f_1[fidx].y = 0.5*(gradU[1].y + gradU[1].y);\n"
+"        f_1[fidx].z = 0.5*(gradU[1].y + gradU[2].y);\n"
+"        break;\n"
+"      case 2:\n"
+"        f_1[fidx].x = 0.5*(gradU[2].x + gradU[0].z);\n"
+"        f_1[fidx].y = 0.5*(gradU[2].y + gradU[1].z);\n"
+"        f_1[fidx].z = 0.5*(gradU[2].y + gradU[2].z);\n"
+"      }\n");STRING_ERROR_CHECK("Message to short");
+  } else {
+    SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "Combination of spatial dimension and PDE operator invalid");
   }
 
-  if (spatial_dim == 3)
-  {
-    string_tail += snprintf(string_tail, end_of_buffer - string_tail, " f_1[fidx].z *= detJ[cell]*w;");
-
-    if (string_tail == end_of_buffer) {
-      SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "String too short!");
-    }
+  if (spatial_dim == 2) {
+    string_tail += snprintf(string_tail, end_of_buffer - string_tail, "      f_1[fidx].x *= detJ[cell]*w; f_1[fidx].y *= detJ[cell]*w; \n");STRING_ERROR_CHECK("Message to short");
+  } else if (spatial_dim == 2) {
+    string_tail += snprintf(string_tail, end_of_buffer - string_tail, "      f_1[fidx].x *= detJ[cell]*w; f_1[fidx].y *= detJ[cell]*w; f_1[fidx].z *= detJ[cell]*w;\n");STRING_ERROR_CHECK("Message to short");
   }
 
   string_tail += snprintf(string_tail, end_of_buffer - string_tail,
@@ -234,20 +298,16 @@ PetscErrorCode generateOpenCLSource(char **string_buffer, PetscInt buffer_length
 "      for (int q = 0; q < N_q; ++q) {\n"
 "        const int pidx = q*N_bt + bidx;\n"
 "        const int fidx = (cell*N_q + q)*N_comp + cidx;\n"
-"        float2   realSpaceDer;\n"
+"        float%d   realSpaceDer;\n"
 "\n"
-"        // e_i += phi_i[pidx]*f_0[fidx];\n");
-
-  if (string_tail == end_of_buffer) {
-    SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "String too short!");
-  }
+"        // e_i += phi_i[pidx]*f_0[fidx];\n", spatial_dim);STRING_ERROR_CHECK("Message to short");
 
   if (spatial_dim == 2) {
     string_tail += snprintf(string_tail, end_of_buffer - string_tail,
 "        realSpaceDer.x = invJ[cell*dim*dim+0*dim+0]*phiDer_i[pidx].x + invJ[cell*dim*dim+1*dim+0]*phiDer_i[pidx].y;\n"
 "        e_i           += realSpaceDer.x*f_1[fidx].x;\n"
 "        realSpaceDer.y = invJ[cell*dim*dim+0*dim+1]*phiDer_i[pidx].x + invJ[cell*dim*dim+1*dim+1]*phiDer_i[pidx].y;\n"
-"        e_i           += realSpaceDer.y*f_1[fidx].y;\n");
+"        e_i           += realSpaceDer.y*f_1[fidx].y;\n");STRING_ERROR_CHECK("Message to short");
   } else {
     string_tail += snprintf(string_tail, end_of_buffer - string_tail,
 "        realSpaceDer.x = invJ[cell*dim*dim+0*dim+0]*phiDer_i[pidx].x + invJ[cell*dim*dim+1*dim+0]*phiDer_i[pidx].y + invJ[cell*dim*dim+2*dim+0]*phiDer_i[pidx].z;\n"
@@ -255,11 +315,7 @@ PetscErrorCode generateOpenCLSource(char **string_buffer, PetscInt buffer_length
 "        realSpaceDer.y = invJ[cell*dim*dim+0*dim+1]*phiDer_i[pidx].x + invJ[cell*dim*dim+1*dim+1]*phiDer_i[pidx].y + invJ[cell*dim*dim+2*dim+1]*phiDer_i[pidx].z;\n"
 "        e_i           += realSpaceDer.y*f_1[fidx].y;\n"
 "        realSpaceDer.z = invJ[cell*dim*dim+0*dim+2]*phiDer_i[pidx].x + invJ[cell*dim*dim+1*dim+2]*phiDer_i[pidx].y + invJ[cell*dim*dim+2*dim+2]*phiDer_i[pidx].z;\n"
-"        e_i           += realSpaceDer.z*f_1[fidx].z;\n");
-  }
-
-  if (string_tail == end_of_buffer) {
-    SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "String too short!");
+"        e_i           += realSpaceDer.z*f_1[fidx].z;\n");STRING_ERROR_CHECK("Message to short");
   }
 
   string_tail += snprintf(string_tail, end_of_buffer - string_tail,
@@ -270,12 +326,7 @@ PetscErrorCode generateOpenCLSource(char **string_buffer, PetscInt buffer_length
 "    /* ==== Could do one write per batch ==== */\n"
 "  }\n"
 "  return;\n"
-"}\n"
-"  ");
-
-  if (string_tail == end_of_buffer) {
-    SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "String too short!");
-  }
+"}  \n");STRING_ERROR_CHECK("Message to short");
 
   PetscFunctionReturn(0);
 }
@@ -375,12 +426,12 @@ PetscErrorCode calculateGridOpenCL(const int N, const int blockSize, unsigned in
 */
 PETSC_EXTERN PetscErrorCode IntegrateElementBatchOpenCL(PetscInt spatial_dim, PetscInt Ne, PetscInt Ncb, PetscInt Nbc, PetscInt Nbl, const PetscScalar coefficients[],
                                         const PetscReal jacobianInverses[], const PetscReal jacobianDeterminants[], PetscScalar elemVec[],
-                                        PetscLogEvent event, PetscInt debug)
+                                        PetscLogEvent event, PetscInt debug, PetscInt pde_op)
 {
   const cl_int numQuadraturePoints_0 = 1;
 
   const cl_int numBasisFunctions_0 = 3;
-  const cl_int numBasisComponents_0 = 1;
+  const cl_int numBasisComponents_0 = (pde_op == LAPLACIAN) ? 1 : spatial_dim;
 
   /* Number of concurrent blocks */
   const cl_int N_bl = 1;
@@ -419,7 +470,7 @@ PETSC_EXTERN PetscErrorCode IntegrateElementBatchOpenCL(PetscInt spatial_dim, Pe
   PetscFunctionBegin;
   ierr = initializeOpenCL(&ocl_env);CHKERRQ(ierr);
   ierr = PetscMalloc(8192 * sizeof(char), &program_buffer);CHKERRQ(ierr);
-  ierr = generateOpenCLSource(&program_buffer, 8192, dim);CHKERRQ(ierr);
+  ierr = generateOpenCLSource(&program_buffer, 8192, dim, pde_op);CHKERRQ(ierr);
   ocl_source_length = strlen(program_buffer);
   ocl_prog = clCreateProgramWithSource(ocl_env.ctx_id, 1, (const char**)&program_buffer, &ocl_source_length, &ierr2);CHKERRQ(ierr2);
   ierr = clBuildProgram(ocl_prog, 0, NULL, NULL, NULL, NULL);

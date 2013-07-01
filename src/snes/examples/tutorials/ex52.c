@@ -23,7 +23,7 @@ MUST CHECK WITH:
 #include<petscdmplex.h>
 #include<petscsnes.h>
 
-typedef enum {LAPLACIAN, ELASTICITY} OpType;
+typedef enum {LAPLACIAN = 0, ELASTICITY} OpType;
 
 typedef struct {
   DM            dm;                /* REQUIRED in order to use SNES evaluation functions */
@@ -450,7 +450,7 @@ PetscErrorCode FormFunctionLocalElasticity(DM dm, Vec X, Vec F, AppCtx *user)
 
 PETSC_EXTERN PetscErrorCode IntegrateElementBatchGPU(PetscInt Ne, PetscInt Nbatch, PetscInt Nbc, PetscInt Nbl, const PetscScalar coefficients[], const PetscReal jacobianInverses[], const PetscReal jacobianDeterminants[], PetscScalar elemVec[], PetscLogEvent event, PetscInt debug);
 
-PETSC_EXTERN PetscErrorCode IntegrateElementBatchOpenCL(PetscInt spatial_dim, PetscInt Ne, PetscInt Nbatch, PetscInt Nbc, PetscInt Nbl, const PetscScalar coefficients[], const PetscReal jacobianInverses[], const PetscReal jacobianDeterminants[], PetscScalar elemVec[], PetscLogEvent event, PetscInt debug);
+PETSC_EXTERN PetscErrorCode IntegrateElementBatchOpenCL(PetscInt spatial_dim, PetscInt Ne, PetscInt Nbatch, PetscInt Nbc, PetscInt Nbl, const PetscScalar coefficients[], const PetscReal jacobianInverses[], const PetscReal jacobianDeterminants[], PetscScalar elemVec[], PetscLogEvent event, PetscInt debug, PetscInt pde_op);
 
 void f1_laplacian(PetscScalar u, const PetscScalar gradU[], PetscScalar f1[])
 {
@@ -683,7 +683,7 @@ PetscErrorCode FormFunctionLocalBatch(DM dm, Vec X, Vec F, AppCtx *user)
   if (user->gpu) {
     ierr = PetscLogEventBegin(user->integrateBatchGPUEvent,0,0,0,0);CHKERRQ(ierr);
     if (user->opencl) {
-      ierr = IntegrateElementBatchOpenCL(dim, numChunks*numBatches*batchSize, numBatches, batchSize, numBlocks, u, invJ, detJ, elemVec, user->integrateGPUOnlyEvent, user->debug);CHKERRQ(ierr);
+      ierr = IntegrateElementBatchOpenCL(dim, numChunks*numBatches*batchSize, numBatches, batchSize, numBlocks, u, invJ, detJ, elemVec, user->integrateGPUOnlyEvent, user->debug, user->op);CHKERRQ(ierr);
     } else {
       ierr = IntegrateElementBatchGPU(numChunks*numBatches*batchSize, numBatches, batchSize, numBlocks, u, invJ, detJ, elemVec, user->integrateGPUOnlyEvent, user->debug);CHKERRQ(ierr);
     }
