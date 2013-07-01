@@ -3066,6 +3066,31 @@ PetscErrorCode DMGetField(DM dm, PetscInt f, PetscObject *field)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMRestrictHook_Coordinates"
+PetscErrorCode DMRestrictHook_Coordinates(DM dm,DM dmc,void *ctx)
+{
+  DM dm_coord,dmc_coord;
+  PetscErrorCode ierr;
+  Vec coords,ccoords;
+  VecScatter scat;
+  PetscFunctionBegin;
+  ierr = DMGetCoordinateDM(dm,&dm_coord);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDM(dmc,&dmc_coord);CHKERRQ(ierr);
+  ierr = DMGetCoordinates(dm,&coords);CHKERRQ(ierr);
+  ierr = DMGetCoordinates(dmc,&ccoords);CHKERRQ(ierr);
+  if (coords && !ccoords) {
+    ierr = DMCreateGlobalVector(dmc_coord,&ccoords);CHKERRQ(ierr);
+    ierr = DMCreateInjection(dmc_coord,dm_coord,&scat);CHKERRQ(ierr);
+    ierr = VecScatterBegin(scat,coords,ccoords,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterEnd(scat,coords,ccoords,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = DMSetCoordinates(dmc,ccoords);CHKERRQ(ierr);
+    ierr = VecScatterDestroy(&scat);CHKERRQ(ierr);
+    ierr = VecDestroy(&ccoords);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMSetCoordinates"
 /*@
   DMSetCoordinates - Sets into the DM a global vector that holds the coordinates
@@ -3095,6 +3120,7 @@ PetscErrorCode DMSetCoordinates(DM dm, Vec c)
   ierr            = VecDestroy(&dm->coordinates);CHKERRQ(ierr);
   dm->coordinates = c;
   ierr            = VecDestroy(&dm->coordinatesLocal);CHKERRQ(ierr);
+  ierr            = DMCoarsenHookAdd(dm,DMRestrictHook_Coordinates,NULL,NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
