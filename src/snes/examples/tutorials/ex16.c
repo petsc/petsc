@@ -487,7 +487,7 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,Field ***x,Mat jacpre,Mat j
   CoordField ec[8];
 
   PetscErrorCode ierr;
-  PetscInt xs,ys,zs,xm,ym,zm;
+  PetscInt xs,ys,zs,xm,ym,zm,xes,yes,zes,xee,yee,zee;
   DM          cda;
   CoordField  ***c;
   Vec         C;
@@ -501,15 +501,26 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,Field ***x,Mat jacpre,Mat j
   ierr = DMDAGetCorners(info->da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
   ierr = MatScale(jac,0.0);CHKERRQ(ierr);
 
-  for (k=zs; k<zs+zm-1; k++) {
-    for (j=ys; j<ys+ym-1; j++) {
-      for (i=xs; i<xs+xm-1; i++) {
+  xes = xs;
+  yes = ys;
+  zes = zs;
+  xee = xs+xm-1;
+  yee = ys+ym-1;
+  zee = zs+zm-1;
+  if (xs > 0) xes = xs - 1;
+  if (ys > 0) yes = ys - 1;
+  if (zs > 0) zes = zs - 1;
+  if (xs+xm == mx) xee = xs+xm-1;
+  if (ys+ym == my) yee = ys+ym-1;
+  if (zs+zm == mz) zee = zs+zm-1;
+  for (k=zes; k<zee; k++) {
+    for (j=yes; j<yee; j++) {
+      for (i=xes; i<xee; i++) {
         /* gather the data -- loop over element unknowns */
         for (kk=0;kk<2;kk++){
           for (jj=0;jj<2;jj++) {
             for (ii=0;ii<2;ii++) {
               PetscInt idx = ii + jj*2 + kk*4;
-
               /* decouple the boundary nodes for the displacement variables */
               if ((i == 0 && ii == 0)) {
                 ex[idx][0] = user->squeeze/2;
