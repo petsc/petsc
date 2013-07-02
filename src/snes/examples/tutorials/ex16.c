@@ -22,8 +22,8 @@ T*/
 const PetscReal pts[NQP] = {QP0,QP1};
 const PetscReal wts[NQP] = {0.5,0.5};
 
-PetscReal vals[NVALS];
-PetscReal grad[3*NVALS];
+PetscScalar vals[NVALS];
+PetscScalar grad[3*NVALS];
 
 typedef PetscScalar Field[3];
 typedef PetscScalar CoordField[3];
@@ -144,7 +144,7 @@ void InvertTensor(PetscScalar *t, PetscScalar *ti,PetscReal *dett)
   const PetscScalar g = t[6];
   const PetscScalar h = t[7];
   const PetscScalar i = t[8];
-  const PetscReal   det = a*(e*i - f*h) - b*(i*d - f*g) + c*(d*h - e*g);
+  const PetscReal   det = PetscRealPart(a*(e*i - f*h) - b*(i*d - f*g) + c*(d*h - e*g));
   if (dett) *dett = det;
   const PetscReal   di = 1. / det;
   const PetscScalar A = (e*i - f*h);
@@ -254,7 +254,7 @@ void SaintVenantKirchoff(PetscReal lambda,PetscReal mu,PetscScalar *F,PetscScala
   int i,j;
   PetscScalar E[9];
   LagrangeGreenStrain(F,E);
-  PetscReal trE=0;
+  PetscScalar trE=0;
   for (i=0;i<3;i++) {
     trE += E[i+3*i];
   }
@@ -348,7 +348,7 @@ void QuadraturePointGeometricJacobian(CoordField *ec,PetscInt qi,PetscInt qj,Pet
 }
 
 void FormElementFunction(Field *ex, CoordField *ec, Field *ef,AppCtx *user) {
-  PetscScalar vol;
+  PetscReal vol;
   PetscScalar J[9];
   PetscScalar invJ[9];
   PetscScalar F[9];
@@ -388,7 +388,7 @@ void FormElementFunction(Field *ex, CoordField *ec, Field *ef,AppCtx *user) {
 }
 
 void FormElementJacobian(Field *ex,CoordField *ec,PetscScalar *ej,AppCtx *user) {
-  PetscScalar vol;
+  PetscReal   vol;
   PetscScalar J[9];
   PetscScalar invJ[9];
   PetscScalar F[9],S[9],dF[9],dS[9],dFS[9],FdS[9];
@@ -454,10 +454,9 @@ void ApplyBCsElement(PetscInt mx,PetscInt i, PetscInt j, PetscInt k,PetscScalar 
                   if ((i + ii == 0) || (i + ii == mx - 1) || (i + ei == 0) || (i + ei == mx - 1)) {
                     PetscInt teidx = el + 3*(ei + ej*2 + ek*4);
                     if (teidx == tridx) {
-                      jacobian[tridx + 24*teidx] = 1.;
+                      jacobian[tridx + 24*teidx] = 0.;
                     } else {
                       jacobian[tridx + 24*teidx] = 0.;
-
                     }
                   }
                 }
@@ -478,38 +477,40 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,Field ***x,Mat jacpre,Mat j
   /* values for each basis function at each quadrature point */
   AppCtx      *user = (AppCtx*)ptr;
 
-  PetscInt i,j,k,m;
+  PetscInt i,j,k,m,l;
   PetscInt ii,jj,kk;
-  PetscInt mx,my,mz;
 
   PetscScalar ej[8*3*8*3];
+  PetscScalar vals[8*3*8*3];
   Field ex[8];
   CoordField ec[8];
 
   PetscErrorCode ierr;
-  PetscInt xs,ys,zs,xm,ym,zm,xes,yes,zes,xee,yee,zee;
+  PetscInt xs=info->xs,ys=info->ys,zs=info->zs;
+  PetscInt xm=info->xm,ym=info->ym,zm=info->zm;
+  PetscInt xes,yes,zes,xee,yee,zee;
+  PetscInt mx=info->mx,my=info->my,mz=info->mz;
   DM          cda;
   CoordField  ***c;
   Vec         C;
-  MatStencil  col[24];
+  PetscInt    nrows;
+  MatStencil  col[24],row[24];
 
   PetscFunctionBegin;
   ierr = DMGetCoordinateDM(info->da,&cda);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(info->da,&C);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(cda,C,&c);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(info->da,0,&mx,&my,&mz,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
-  ierr = DMDAGetCorners(info->da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
   ierr = MatScale(jac,0.0);CHKERRQ(ierr);
 
   xes = xs;
   yes = ys;
   zes = zs;
-  xee = xs+xm-1;
-  yee = ys+ym-1;
-  zee = zs+zm-1;
-  if (xs > 0) xes = xs - 1;
-  if (ys > 0) yes = ys - 1;
-  if (zs > 0) zes = zs - 1;
+  xee = xs+xm;
+  yee = ys+ym;
+  zee = zs+zm;
+  if (xs > 0) xes = xs-1;
+  if (ys > 0) yes = ys-1;
+  if (zs > 0) zes = zs-1;
   if (xs+xm == mx) xee = xs+xm-1;
   if (ys+ym == my) yee = ys+ym-1;
   if (zs+zm == mz) zee = zs+zm-1;
@@ -522,11 +523,11 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,Field ***x,Mat jacpre,Mat j
             for (ii=0;ii<2;ii++) {
               PetscInt idx = ii + jj*2 + kk*4;
               /* decouple the boundary nodes for the displacement variables */
-              if ((i == 0 && ii == 0)) {
+              if ((i + ii == 0)) {
                 ex[idx][0] = user->squeeze/2;
                 ex[idx][1] = 0.;
                 ex[idx][2] = 0.;
-              } else if ((i == mx-2 && ii == 1)) {
+              } else if ((i+ii == mx-1)) {
                 ex[idx][0] = -user->squeeze/2;
                 ex[idx][1] = 0.;
                 ex[idx][2] = 0.;
@@ -538,18 +539,52 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,Field ***x,Mat jacpre,Mat j
               for (m=0;m<3;m++) {
                 ec[idx][m] = c[k+kk][j+jj][i+ii][m];
               }
-              for (m=0;m<3;m++) {
-                col[3*idx+m].i = i+ii;
-                col[3*idx+m].j = j+jj;
-                col[3*idx+m].k = k+kk;
-                col[3*idx+m].c = m;
-              }
             }
           }
         }
         FormElementJacobian(ex,ec,ej,user);
         ApplyBCsElement(mx,i,j,k,ej);
-        ierr = MatSetValuesStencil(jac,24,col,24,col,ej,ADD_VALUES);CHKERRQ(ierr);
+        nrows = 0.;
+        for (kk=0;kk<2;kk++){
+          for (jj=0;jj<2;jj++) {
+            for (ii=0;ii<2;ii++) {
+              PetscInt idx = ii + jj*2 + kk*4;
+              for (m=0;m<3;m++) {
+                col[3*idx+m].i = i+ii;
+                col[3*idx+m].j = j+jj;
+                col[3*idx+m].k = k+kk;
+                col[3*idx+m].c = m;
+                if (i+ii >= xs && i+ii < xm+xs && j+jj >= ys && j+jj < ys+ym && k+kk >= zs && k+kk < zs+zm) {
+                  row[nrows].i = i+ii;
+                  row[nrows].j = j+jj;
+                  row[nrows].k = k+kk;
+                  row[nrows].c = m;
+                  for (l=0;l<24;l++) vals[24*nrows + l] = ej[24*(3*idx+m) + l];
+                  nrows++;
+                }
+              }
+            }
+          }
+        }
+        ierr = MatSetValuesStencil(jac,nrows,row,24,col,vals,ADD_VALUES);CHKERRQ(ierr);
+      }
+    }
+  }
+  /* set the diagonal */
+  PetscScalar v[9];
+  v[0] = 1.;v[1] = 0.;v[2] = 0.;v[3] = 0.;v[4] = 1.;v[5] = 0.;v[6] = 0.;v[7] = 0.;v[8] = 1.;
+  for (k=zs; k<zs+zm; k++) {
+    for (j=ys; j<ys+ym; j++) {
+      for (i=xs; i<xs+xm; i++) {
+        if ((i == 0) || (i == mx-1)) {
+          for (m=0; m<3;m++) {
+            col[m].i = i;
+            col[m].j = j;
+            col[m].k = k;
+            col[m].c = m;
+          }
+          ierr = MatSetValuesStencil(jac,3,col,3,col,v,ADD_VALUES);CHKERRQ(ierr);
+        }
       }
     }
   }
@@ -571,14 +606,16 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,Field ***x,Field ***f,void 
 
   PetscInt i,j,k,l;
   PetscInt ii,jj,kk;
-  PetscInt mx,my,mz;
 
   Field ef[8];
   Field ex[8];
   CoordField ec[8];
 
   PetscErrorCode ierr;
-  PetscInt xs,ys,zs,xm,ym,zm,xes,yes,zes,xee,yee,zee;
+  PetscInt xs=info->xs,ys=info->ys,zs=info->zs;
+  PetscInt xm=info->xm,ym=info->ym,zm=info->zm;
+  PetscInt xes,yes,zes,xee,yee,zee;
+  PetscInt mx=info->mx,my=info->my,mz=info->mz;
   DM          cda;
   CoordField  ***c;
   Vec         C;
@@ -622,11 +659,11 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,Field ***x,Field ***f,void 
             for (ii=0;ii<2;ii++) {
               PetscInt idx = ii + jj*2 + kk*4;
               /* decouple the boundary nodes for the displacement variables */
-              if ((i == 0 && ii == 0)) {
+              if ((i + ii == 0)) {
                 ex[idx][0] = user->squeeze/2;
                 ex[idx][1] = 0.;
                 ex[idx][2] = 0.;
-              } else if ((i == mx-2 && ii == 1)) {
+              } else if (i+ii==mx-1) {
                 ex[idx][0] = -user->squeeze/2;
                 ex[idx][1] = 0.;
                 ex[idx][2] = 0.;
@@ -648,10 +685,15 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,Field ***x,Field ***f,void 
           for (jj=0;jj<2;jj++) {
             for (ii=0;ii<2;ii++) {
               PetscInt idx = ii + jj*2 + kk*4;
-              if ((i == 0 && ii == 0) || (i == mx-2 && ii == 1)) {
-              } else {
-                for (l=0;l<3;l++) {
-                  if (k+kk >= zs && j+jj >= ys && i+ii >= xs && k+kk < zs+zm && j+jj < ys+ym && i+ii < xs+xm)
+              if (k+kk >= zs && j+jj >= ys && i+ii >= xs && k+kk < zs+zm && j+jj < ys+ym && i+ii < xs+xm) {
+                if ((i + ii == 0)) {
+                  for (l=0;l<3;l++)
+                    f[k+kk][j+jj][i+ii][l] = x[k+kk][j+jj][i+ii][l] - ex[idx][l];
+                } else if (i+ii==mx-1) {
+                  for (l=0;l<3;l++)
+                    f[k+kk][j+jj][i+ii][l] = x[k+kk][j+jj][i+ii][l] - ex[idx][l];
+                } else {
+                  for (l=0;l<3;l++)
                     f[k+kk][j+jj][i+ii][l] += ef[idx][l];
                 }
               }
