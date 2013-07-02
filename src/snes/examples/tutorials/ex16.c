@@ -73,6 +73,8 @@ int main(int argc,char **argv)
   ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,-4,-4,-4,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,3,1,NULL,NULL,NULL,&da);CHKERRQ(ierr);
   ierr = SNESSetDM(snes,(DM)da);CHKERRQ(ierr);
 
+  ierr = SNESSetGS(snes,NonlinearGS,&user);CHKERRQ(ierr);
+
   ierr = DMDAGetInfo(da,0,&mx,&my,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
                      PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
   user.loading     = -0.1;
@@ -672,6 +674,121 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,Field ***x,Field ***f,void 
         }
       }
     }
+  }
+  ierr = DMDAVecRestoreArray(cda,C,&c);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "NonlinearGS"
+PetscErrorCode NonlinearGS(SNES snes,Vec X,Vec B,void *ptr)
+{
+  /* values for each basis function at each quadrature point */
+  AppCtx      *user = (AppCtx*)ptr;
+
+  PetscInt       i,j,k,l,m,n;
+  PetscInt       ii,jj,kk;
+  PetscInt       pi,pj,pk;
+  Field          ef[8];
+  Field          ex[8];
+  PetscScalar    ej[24*24];
+  CoordField     ec[8];
+  PetscScalar    pjac[9],pjinv[9];
+  PetscScalar    pf[3],py[3];
+  PetscErrorCode ierr;
+  PetscInt       xs,ys,zs;
+  PetscInt       xm,ym,zm;
+  PetscInt       xes,yes,zes,xee,yee,zee;
+  PetscInt       mx,my,mz;
+  DM             cda;
+  CoordField     ***c;
+  Vec            C;
+  DM             da;
+  Vec            Xl,Bl;
+  Field          ***x,***b;
+
+  PetscFunctionBegin;
+  ierr = SNESGetDM(snes,&da);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(da,&Xl);CHKERRQ(ierr);
+  if (B) {
+    ierr = DMGetLocalVector(da,&Bl);CHKERRQ(ierr);
+  }
+  ierr = DMGlobalToLocalBegin(da,X,INSERT_VALUES,Xl);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(da,X,INSERT_VALUES,Xl);CHKERRQ(ierr);
+  if (B) {
+    ierr = DMGlobalToLocalBegin(da,B,INSERT_VALUES,Bl);CHKERRQ(ierr);
+    ierr = DMGlobalToLocalEnd(da,B,INSERT_VALUES,Bl);CHKERRQ(ierr);
+  }
+  ierr = DMDAVecGetArray(da,Xl,&x);CHKERRQ(ierr);
+  if (B) ierr = DMDAVecGetArray(da,Bl,&b);CHKERRQ(ierr);
+
+  ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
+  ierr = DMGetCoordinatesLocal(da,&C);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(cda,C,&c);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,0,&mx,&my,&mz,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
+
+  for (k=zs; k<zs+zm; k++) {
+    for (j=ys; j<ys+ym; j++) {
+      for (i=xs; i<xs+xm; i++) {
+        if ((i == 0)) {
+            x[k][j][i][0] = user->squeeze/2;
+            x[k][j][i][1] = 0.;
+            x[k][j][i][2] = 0.;
+        } else if (i==mx-1) {
+            x[k][j][i][0] = -user->squeeze/2;
+            x[k][j][i][1] = 0.;
+            x[k][j][i][2] = 0.;
+        } else {
+          for (n=0;n<1;n++) {
+            PetscInt nelements=0;
+            for (m=0;m<9;m++) pjac[m] = 0.;
+            for (m=0;m<3;m++) pf[m] = 0.;
+            /* gather the elements for this point */
+            for (pk=-1; pk<1; pk++) {
+              for (pj=-1; pj<1; pj++) {
+                for (pi=-1; pi<1; pi++) {
+                  /* check that this element exists */
+                  if (i+pi >= 0 && i+pi < mx-1 && j+pj >= 0 && j+pj < my-1 && k+pk >= 0 && k+pk < mz-1) {
+                    nelements++;
+                    PetscInt idx = -pi + -pj*2 + -pk*4;
+                    /* create the element function and jacobian */
+                    GatherElementData(mx,x,c,i+pi,j+pj,k+pk,ex,ec,user);
+                    FormElementJacobian(ex,ec,ef,ej,user);
+                    /* extract the point named by i,j,k from the whole element jacobian and function */
+                    for (l=0;l<3;l++) {
+                      pf[l] += ef[idx][l];
+                      for (m=0;m<3;m++) {
+                        pjac[3*m+l] += ej[24*(3*idx + m) + (3*idx + l)];
+                      }
+                    }
+                  }
+                }
+              }
+            }
+            /* invert */
+            InvertTensor(pjac,pjinv,NULL);
+            /* apply */
+            if (B) for (m=0;m<3;m++) {
+                pf[m] -= b[k][j][i][m];
+              }
+            TensorVector(pjinv,pf,py);
+            for (m=0;m<3;m++) {
+              x[k][j][i][m] -= py[m];
+            }
+          }
+          /* PetscPrintf(PETSC_COMM_WORLD,"%d %d %d, (%f %f %f),(%f %f %f) -- %d\n\n",i,j,k,pf[0],pf[1],pf[2],py[0],py[1],py[2],nelements); */
+        }
+      }
+    }
+  }
+  ierr = DMDAVecRestoreArray(da,Xl,&x);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalBegin(da,Xl,INSERT_VALUES,X);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalEnd(da,Xl,INSERT_VALUES,X);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(da,&Xl);CHKERRQ(ierr);
+  if (B) {
+    ierr = DMDAVecRestoreArray(da,Bl,&b);CHKERRQ(ierr);
+    ierr = DMRestoreLocalVector(da,&Bl);CHKERRQ(ierr);
   }
   ierr = DMDAVecRestoreArray(cda,C,&c);CHKERRQ(ierr);
   PetscFunctionReturn(0);
