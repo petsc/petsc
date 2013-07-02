@@ -820,7 +820,7 @@ PetscErrorCode MatTransposeMatMult_MPIAIJ_MPIAIJ(Mat P,Mat A,MatReuse scall,Pets
     ierr = PetscLogEventBegin(MAT_TransposeMatMultSymbolic,P,A,0,0);CHKERRQ(ierr);
     switch (alg) {
     case 1:
-      ierr = MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(P,A,fill,C);CHKERRQ(ierr);
+      ierr = MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(P,A,fill,C);CHKERRQ(ierr);
       break;
     case 2:
       Mat         Pt;
@@ -852,15 +852,11 @@ PetscErrorCode MatTransposeMatMult_MPIAIJ_MPIAIJ(Mat P,Mat A,MatReuse scall,Pets
 PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ_matmatmult(Mat P,Mat A,Mat C)
 {
   PetscErrorCode ierr;
-  Mat            Pt;
-  Mat_PtAPMPI    *ptap;
-  Mat_MPIAIJ     *c;
+  Mat_MPIAIJ     *c=(Mat_MPIAIJ*)C->data;
+  Mat_PtAPMPI    *ptap= c->ptap;
+  Mat            Pt=ptap->Pt;
 
   PetscFunctionBegin;
-  printf("MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ_matmatmult ...\n");
-  c    = (Mat_MPIAIJ*)C->data;
-  ptap = c->ptap;
-  Pt   = ptap->Pt;
   ierr = MatTranspose(P,MAT_REUSE_MATRIX,&Pt);CHKERRQ(ierr);
   ierr = MatMatMultNumeric(Pt,A,C);CHKERRQ(ierr); 
   PetscFunctionReturn(0);
@@ -1041,8 +1037,8 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ(Mat P,Mat A,Mat C)
 
 /* This routine is modified from MatPtAPSymbolic_MPIAIJ_MPIAIJ() */
 #undef __FUNCT__
-#define __FUNCT__ "MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ"
-PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(Mat P,Mat A,PetscReal fill,Mat *C)
+#define __FUNCT__ "MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable"
+PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat P,Mat A,PetscReal fill,Mat *C)
 {
   PetscErrorCode      ierr;
   Mat                 Cmpi,A_loc,POt,PDt;
@@ -1550,7 +1546,8 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ_Scalable(Mat P,Mat A,Mat
   PetscFunctionReturn(0);
 }
 
-/* This routine is modified from MatPtAPSymbolic_MPIAIJ_MPIAIJ() */
+/* This routine is modified from MatPtAPSymbolic_MPIAIJ_MPIAIJ();
+   differ from MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable in using LLCondensedCreate_Scalable() */
 #undef __FUNCT__
 #define __FUNCT__ "MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_Scalable"
 PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_Scalable(Mat P,Mat A,PetscReal fill,Mat *C)
