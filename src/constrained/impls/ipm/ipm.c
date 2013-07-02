@@ -681,7 +681,7 @@ PetscErrorCode IPMUpdateAi(TaoSolver tao)
     ierr = MatSetType(ipmP->Ai,MATSEQAIJ); CHKERRQ(ierr);
     ierr = MatSetSizes(ipmP->Ai,PETSC_DECIDE,PETSC_DECIDE,ipmP->nb,ipmP->n);CHKERRQ(ierr);
     ierr = MatSetFromOptions(ipmP->Ai); CHKERRQ(ierr);
-    ierr = MatSeqAIJSetPreallocation(ipmP->Ai,PETSC_NULL,nonzeros);CHKERRQ(ierr);
+    ierr = MatSeqAIJSetPreallocation(ipmP->Ai,PETSC_DEFAULT,nonzeros);CHKERRQ(ierr);
     ierr = PetscFree(nonzeros);CHKERRQ(ierr);
   }
   ierr = MatZeroEntries(ipmP->Ai); CHKERRQ(ierr);
@@ -838,7 +838,7 @@ PetscErrorCode IPMUpdateK(TaoSolver tao)
     ierr = MatSetSizes(ipmP->K,PETSC_DECIDE,PETSC_DECIDE,bigsize,bigsize);CHKERRQ(ierr);
     ierr = MatSetFromOptions(ipmP->K); CHKERRQ(ierr);
 
-    ierr = MatSeqAIJSetPreallocation(ipmP->K,PETSC_NULL,nonzeros); CHKERRQ(ierr);
+    ierr = MatSeqAIJSetPreallocation(ipmP->K,PETSC_DEFAULT,nonzeros); CHKERRQ(ierr);
 
     ierr = VecCreate(comm,&ipmP->bigrhs); CHKERRQ(ierr);
     ierr = VecSetType(ipmP->bigrhs,VECSEQ); CHKERRQ(ierr);
