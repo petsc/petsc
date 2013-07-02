@@ -405,6 +405,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_ILU(PC pc)
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetReuseOrdering_C",PCFactorSetReuseOrdering_ILU);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetReuseFill_C",PCFactorSetReuseFill_ILU);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetLevels_C",PCFactorSetLevels_Factor);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorGetLevels_C",PCFactorGetLevels_Factor);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetUseInPlace_C",PCFactorSetUseInPlace_ILU);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetAllowDiagonalFill_C",PCFactorSetAllowDiagonalFill_Factor);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCFactorSetPivotInBlocks_C",PCFactorSetPivotInBlocks_Factor);CHKERRQ(ierr);

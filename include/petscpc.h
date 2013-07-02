@@ -215,6 +215,7 @@ PETSC_EXTERN PetscErrorCode PCFactorSetUseInPlace(PC);
 PETSC_EXTERN PetscErrorCode PCFactorSetAllowDiagonalFill(PC);
 PETSC_EXTERN PetscErrorCode PCFactorSetPivotInBlocks(PC,PetscBool );
 
+PETSC_EXTERN PetscErrorCode PCFactorGetLevels(PC,PetscInt*);
 PETSC_EXTERN PetscErrorCode PCFactorSetLevels(PC,PetscInt);
 PETSC_EXTERN PetscErrorCode PCFactorSetDropTolerance(PC,PetscReal,PetscReal,PetscInt);
 
@@ -430,6 +431,7 @@ PETSC_EXTERN PetscErrorCode PCPARMSSetFill(PC pc,PetscInt lfil0,PetscInt lfil1,P
 typedef const char *PCGAMGType;
 #define PCGAMGAGG         "agg"
 #define PCGAMGGEO         "geo"
+#define PCGAMGCLASSICAL   "classical"
 PETSC_EXTERN PetscErrorCode PCGAMGSetProcEqLim(PC,PetscInt);
 PETSC_EXTERN PetscErrorCode PCGAMGSetRepartitioning(PC,PetscBool);
 PETSC_EXTERN PetscErrorCode PCGAMGSetUseASMAggs(PC,PetscBool);
@@ -533,6 +535,7 @@ PETSC_EXTERN PetscErrorCode PCMGGetInterpolation(PC,PetscInt,Mat*);
 PETSC_EXTERN PetscErrorCode PCMGSetRScale(PC,PetscInt,Vec);
 PETSC_EXTERN PetscErrorCode PCMGGetRScale(PC,PetscInt,Vec*);
 PETSC_EXTERN PetscErrorCode PCMGSetResidual(PC,PetscInt,PetscErrorCode (*)(Mat,Vec,Vec,Vec),Mat);
+PETSC_EXTERN PetscErrorCode PCMGResidualDefault(Mat,Vec,Vec,Vec);
 
 /*E
     PCExoticType - Face based or wirebasket based coarse grid space

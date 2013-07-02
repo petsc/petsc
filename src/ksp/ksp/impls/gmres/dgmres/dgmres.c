@@ -285,6 +285,7 @@ PetscErrorCode KSPSolve_DGMRES(KSP ksp)
   PetscInt       its,itcount;
   KSP_DGMRES     *dgmres    = (KSP_DGMRES*) ksp->data;
   PetscBool      guess_zero = ksp->guess_zero;
+  PetscBool      flag;
 
   PetscFunctionBegin;
   if (ksp->calc_sings && !dgmres->Rsvd) SETERRQ(PetscObjectComm((PetscObject)ksp), PETSC_ERR_ORDER,"Must call KSPSetComputeSingularValues() before KSPSetUp() is called");
@@ -315,6 +316,15 @@ PetscErrorCode KSPSolve_DGMRES(KSP ksp)
     ksp->guess_zero = PETSC_FALSE; /* every future call to KSPInitialResidual() will have nonzero guess */
   }
   ksp->guess_zero = guess_zero; /* restore if user provided nonzero initial guess */
+
+  ierr = PetscOptionsHasName(((PetscObject)ksp)->prefix,"-ksp_dgmres_view_deflation_vecs",&flag);CHKERRQ(ierr);
+  if (flag) {
+    PetscInt i;
+
+    for (i = 0; i < dgmres->r; i++) {
+      ierr = VecViewFromOptions(UU[i],((PetscObject)ksp)->prefix,"-ksp_dgmres_view_deflation_vecs");CHKERRQ(ierr);
+    }
+  }
   PetscFunctionReturn(0);
 }
 
@@ -949,7 +959,7 @@ static PetscErrorCode  KSPDGMRESApplyDeflation_DGMRES(KSP ksp, Vec x, Vec y)
   PetscReal      alpha    = 1.0;
   PetscInt       max_neig = dgmres->max_neig;
   PetscBLASInt   br,bmax;
-  PetscInt       lambda = dgmres->lambdaN;
+  PetscReal      lambda = dgmres->lambdaN;
 #if !defined(PETSC_MISSING_LAPACK_GERFS)
   PetscReal    berr, ferr;
   PetscBLASInt info;
@@ -1185,21 +1195,36 @@ static PetscErrorCode  KSPDGMRESImproveEig_DGMRES(KSP ksp, PetscInt neig)
 /* end new DGMRES functions */
 
 /*MC
- KSPDGMRES - Implements the deflated GMRES as defined in [1,2]; In this implementation, the adaptive strategy allows to switch to the deflated GMRES when the stagnation occurs.
- GMRES Options Database Keys:
- +   -ksp_gmres_restart <restart> - the number of Krylov directions to orthogonalize against
- .   -ksp_gmres_haptol <tol> - sets the tolerance for "happy ending" (exact convergence)
- .   -ksp_gmres_preallocate - preallocate all the Krylov search directions initially (otherwise groups of
- vectors are allocated as needed)
- .   -ksp_gmres_classicalgramschmidt - use classical (unmodified) Gram-Schmidt to orthogonalize against the Krylov space (fast) (the default)
- .   -ksp_gmres_modifiedgramschmidt - use modified Gram-Schmidt in the orthogonalization (more stable, but slower)
- .   -ksp_gmres_cgs_refinement_type <never,ifneeded,always> - determine if iterative refinement is used to increase the
- stability of the classical Gram-Schmidt  orthogonalization.
- -   -ksp_gmres_krylov_monitor - plot the Krylov space generated
- DGMRES Options Database Keys:
- -ksp_dgmres_eigen <neig> - Number of smallest eigenvalues to extract at each restart
- -ksp_dgmres_max_eigen <max_neig> - Maximum number of eigenvalues that can be extracted during the iterative process
- -ksp_dgmres_force <0, 1> - Use the deflation at each restart; switch off the adaptive strategy.
+     KSPDGMRES - Implements the deflated GMRES as defined in [1,2].
+                 In this implementation, the adaptive strategy allows to switch to the deflated GMRES when the
+                 stagnation occurs.
+
+   Options Database Keys:
+   GMRES Options (inherited):
++   -ksp_gmres_restart <restart> - the number of Krylov directions to orthogonalize against
+.   -ksp_gmres_haptol <tol> - sets the tolerance for "happy ending" (exact convergence)
+.   -ksp_gmres_preallocate - preallocate all the Krylov search directions initially (otherwise groups of
+                             vectors are allocated as needed)
+.   -ksp_gmres_classicalgramschmidt - use classical (unmodified) Gram-Schmidt to orthogonalize against the Krylov space (fast) (the default)
+.   -ksp_gmres_modifiedgramschmidt - use modified Gram-Schmidt in the orthogonalization (more stable, but slower)
+.   -ksp_gmres_cgs_refinement_type <never,ifneeded,always> - determine if iterative refinement is used to increase the
+                                   stability of the classical Gram-Schmidt  orthogonalization.
+-   -ksp_gmres_krylov_monitor - plot the Krylov space generated
+
+   DGMRES Options Database Keys:
++   -ksp_dgmres_eigen <neig> - number of smallest eigenvalues to extract at each restart
+.   -ksp_dgmres_max_eigen <max_neig> - maximum number of eigenvalues that can be extracted during the iterative
+                                       process
+.   -ksp_dgmres_force - use the deflation at each restart; switch off the adaptive strategy.
+-   -ksp_dgmres_view_deflation_vecs <viewerspec> - View the deflation vectors, where viewerspec is a key that can be
+                                                   parsed by PetscOptionsGetViewer().  If neig > 1, viewerspec should
+                                                   end with ":append".  No vectors will be viewed if the adaptive
+                                                   strategy chooses not to deflate, so -ksp_dgmres_force should also
+                                                   be given.
+                                                   The deflation vectors span a subspace that may be a good
+                                                   approximation of the subspace of smallest eigenvectors of the
+                                                   preconditioned operator, so this option can aid in understanding
+                                                   the performance of a preconditioner.
 
  Level: beginner
 

@@ -110,7 +110,7 @@ PetscErrorCode DMDACreatePatchIS(DM da,MatStencil *lower,MatStencil *upper,IS *i
         xm = me - ms;
         ym = ne - ns;
         zm = pe - ps;
-        base = ms*ym*zm + ns*M + ps*M*N;
+        base = ms*ym*zm + ns*M*zm + ps*M*N;
         /* compute the local coordinates on owning processor */
         si = ii - ms;
         sj = jj - ns;
