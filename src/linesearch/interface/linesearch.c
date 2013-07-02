@@ -487,7 +487,7 @@ PetscErrorCode TaoLineSearchSetType(TaoLineSearch ls, const TaoLineSearchType ty
      ierr = PetscObjectTypeCompare((PetscObject)ls, type, &flg); CHKERRQ(ierr);
      if (flg) PetscFunctionReturn(0);
 
-     ierr = PetscFunctionListFind(((PetscObject)ls)->comm, TaoLineSearchList,type, PETSC_TRUE, (void (**)(void)) &r); CHKERRQ(ierr);
+     ierr = PetscFunctionListFind(TaoLineSearchList,type, (void (**)(void)) &r); CHKERRQ(ierr);
      if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested TaoLineSearch type %s",type);
      if (ls->ops->destroy) {
 	 ierr = (*(ls)->ops->destroy)(ls); CHKERRQ(ierr);
@@ -1343,42 +1343,30 @@ PetscErrorCode TaoLineSearchGetStepLength(TaoLineSearch ls,PetscReal *s)
 
    Input Parameters:
 +  sname - name of a new user-defined solver
-.  path - path (either absolute or relative) the library containing this solver
-.  cname - name of routine to Create method context
 -  func - routine to Create method context
 
    Notes:
    TaoLineSearchRegister() may be called multiple times to add several user-defined solvers.
 
-   If dynamic libraries are used, then the fourth input argument (func)
-   is ignored.
-
-   Environmental variables such as ${TAO_DIR}, ${PETSC_ARCH}, ${PETSC_DIR}, 
-   and others of the form ${any_environmental_variable} occuring in pathname will be 
-   replaced with the appropriate values used when PETSc and TAO were compiled.
-
    Sample usage:
 .vb
-   TaoLineSearchRegister("my_linesearch","/home/username/mylibraries/${PETSC_ARCH}/mylib.a",
-                "MyLinesearchCreate",MyLinesearchCreate);
+   TaoLineSearchRegister("my_linesearch",MyLinesearchCreate);
 .ve
 
    Then, your solver can be chosen with the procedural interface via
 $     TaoLineSearchSetType(ls,"my_linesearch")
    or at runtime via the option
-$     -tao_ls_type my_algorithm
+$     -tao_ls_type my_linesearch
 
    Level: developer
 
 .seealso: TaoLineSearchRegisterDestroy()
 M*/
-PetscErrorCode TaoLineSearchRegister(const char sname[], const char path[], const char cname[], PetscErrorCode (*func)(TaoLineSearch))
+PetscErrorCode TaoLineSearchRegister(const char sname[], PetscErrorCode (*func)(TaoLineSearch))
 {
-    char full[PETSC_MAX_PATH_LEN];
     PetscErrorCode ierr;
     PetscFunctionBegin;
-    ierr = PetscFunctionListConcat(path,cname,full); CHKERRQ(ierr);
-    ierr = PetscFunctionListAdd(PETSC_COMM_WORLD, &TaoLineSearchList, sname, full, (void (*)(void))func); CHKERRQ(ierr);
+    ierr = PetscFunctionListAdd(&TaoLineSearchList, sname, (void (*)(void))func); CHKERRQ(ierr);
     PetscFunctionReturn(0);
 }
 
@@ -1386,13 +1374,13 @@ PetscErrorCode TaoLineSearchRegister(const char sname[], const char path[], cons
 #define __FUNCT__ "TaoLineSearchRegisterDestroy"
 /*@C
    TaoLineSearchRegisterDestroy - Frees the list of line-search algorithms that were
-   registered by TaoLineSearchRegisterDynamic().
+   registered by TaoLineSearchRegister().
 
    Not Collective
 
    Level: developer
 
-.seealso: TaoLineSearchRegisterDynamic()
+.seealso: TaoLineSearchRegister()
 @*/
 PetscErrorCode TaoLineSearchRegisterDestroy(void)
 {

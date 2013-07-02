@@ -1,26 +1,37 @@
 #define TAOLINESEARCH_DLL
 #include "tao-private/taolinesearch_impl.h"
 
-EXTERN_C_BEGIN
-extern PetscErrorCode TaoLineSearchCreate_Unit(TaoLineSearch);
-extern PetscErrorCode TaoLineSearchCreate_MT(TaoLineSearch);
-extern PetscErrorCode TaoLineSearchCreate_GPCG(TaoLineSearch);
-extern PetscErrorCode TaoLineSearchCreate_Armijo(TaoLineSearch);
-extern PetscErrorCode TaoLineSearchCreate_OWArmijo(TaoLineSearch);
-EXTERN_C_END
+
+PETSC_EXTERN PetscErrorCode TaoLineSearchCreate_Unit(TaoLineSearch);
+PETSC_EXTERN PetscErrorCode TaoLineSearchCreate_MT(TaoLineSearch);
+PETSC_EXTERN PetscErrorCode TaoLineSearchCreate_GPCG(TaoLineSearch);
+PETSC_EXTERN PetscErrorCode TaoLineSearchCreate_Armijo(TaoLineSearch);
+PETSC_EXTERN PetscErrorCode TaoLineSearchCreate_OWArmijo(TaoLineSearch);
 
 
-extern PetscBool TaoLineSearchInitialized;
+static PetscBool TaoLineSearchPackageInitialized = PETSC_FALSE;
 
-
-#ifdef PETSC_USE_DYNAMIC_LIBRARIES
-#define TaoLineSearchRegisterDynamic(a,b,c,d) TaoLineSearchRegister(a,b,c,0)
-#else
-#define TaoLineSearchRegisterDynamic(a,b,c,d) TaoLineSearchRegister(a,b,c,d)
-#endif
 
     
 
+
+#undef __FUNCT__
+#define __FUNCT__ "TaoLineSearchFinalizePackage"
+/*@C
+  TaoLineSearchFinalizePackage - This function destroys everything in the PETSc/TAO 
+  interface to the TaoLineSearch package. It is called from PetscFinalize().
+
+  Level: developer
+@*/
+PetscErrorCode TaoLineSearchFinalizePackage(void)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscFunctionListDestroy(&TaoLineSearchList); CHKERRQ(ierr);
+  TaoLineSearchPackageInitialized = PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
 
 
 #undef __FUNCT__
@@ -44,24 +55,23 @@ PetscErrorCode TaoLineSearchInitializePackage(const char path[])
     PetscErrorCode ierr;
 
     PetscFunctionBegin;
-    if (TaoLineSearchInitialized) PetscFunctionReturn(0);
-    TaoLineSearchInitialized=PETSC_TRUE;
+    if (TaoLineSearchPackageInitialized) PetscFunctionReturn(0);
+    TaoLineSearchPackageInitialized=PETSC_TRUE;
 
     ierr = PetscClassIdRegister("TaoLineSearch",&TAOLINESEARCH_CLASSID); CHKERRQ(ierr);
 
 
-    ierr = TaoLineSearchRegisterDynamic("unit",path,"TaoLineSearchCreate_Unit",TaoLineSearchCreate_Unit); CHKERRQ(ierr);
-    ierr = TaoLineSearchRegisterDynamic("more-thuente",path,"TaoLineSearchCreate_MT",TaoLineSearchCreate_MT); CHKERRQ(ierr);
-    ierr = TaoLineSearchRegisterDynamic("gpcg",path,"TaoLineSearchCreate_GPCG",TaoLineSearchCreate_GPCG); CHKERRQ(ierr);
-    ierr = TaoLineSearchRegisterDynamic("armijo",path,"TaoLineSearchCreate_Armijo",TaoLineSearchCreate_Armijo); CHKERRQ(ierr);
-    ierr = TaoLineSearchRegisterDynamic("owarmijo",path,"TaoLineSearchCreate_OWArmijo",TaoLineSearchCreate_OWArmijo); CHKERRQ(ierr);
+    ierr = TaoLineSearchRegister("unit",TaoLineSearchCreate_Unit); CHKERRQ(ierr);
+    ierr = TaoLineSearchRegister("more-thuente",TaoLineSearchCreate_MT); CHKERRQ(ierr);
+    ierr = TaoLineSearchRegister("gpcg",TaoLineSearchCreate_GPCG); CHKERRQ(ierr);
+    ierr = TaoLineSearchRegister("armijo",TaoLineSearchCreate_Armijo); CHKERRQ(ierr);
+    ierr = TaoLineSearchRegister("owarmijo",TaoLineSearchCreate_OWArmijo); CHKERRQ(ierr);
 
     ierr = PetscLogEventRegister(  "TaoLineSearchApply",TAOLINESEARCH_CLASSID,&TaoLineSearch_ApplyEvent); CHKERRQ(ierr);
     ierr = PetscLogEventRegister("TaoLineSearchComputeObjective[Gradient]",TAOLINESEARCH_CLASSID,&TaoLineSearch_EvalEvent); CHKERRQ(ierr);
+    ierr = PetscRegisterFinalize(TaoLineSearchFinalizePackage); CHKERRQ(ierr);
     PetscFunctionReturn(0);
 }
 
 
-
-    
 

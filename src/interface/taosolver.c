@@ -2168,7 +2168,7 @@ PetscErrorCode TaoSetType(TaoSolver tao, const TaoSolverType type)
     ierr = PetscObjectTypeCompare((PetscObject)tao,type,&issame); CHKERRQ(ierr);
     if (issame) PetscFunctionReturn(0);
 
-    ierr = PetscFunctionListFind(((PetscObject)tao)->comm, TaoSolverList, type, PETSC_TRUE, (void(**)(void))&create_xxx); CHKERRQ(ierr);
+    ierr = PetscFunctionListFind(TaoSolverList, type, (void(**)(void))&create_xxx); CHKERRQ(ierr);
     if (!create_xxx) {
 	SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested TaoSolver type %s",type);
     }
@@ -2209,24 +2209,14 @@ PetscErrorCode TaoSetType(TaoSolver tao, const TaoSolverType type)
 
    Input Parameters:
 +  sname - name of a new user-defined solver
-.  path - path (either absolute or relative) the library containing this solver
-.  cname - name of routine to Create method context
 -  func - routine to Create method context
 
    Notes:
    TaoSolverRegister() may be called multiple times to add several user-defined solvers.
 
-   If dynamic libraries are used, then the fourth input argument (func)
-   is ignored.
-
-   Environmental variables such as ${TAO_DIR}, ${PETSC_ARCH}, ${PETSC_DIR}, 
-   and others of the form ${any_environmental_variable} occuring in pathname will be 
-   replaced with the appropriate values used when PETSc and TAO were compiled.
-
    Sample usage:
 .vb
-   TaoSolverRegister("my_solver","/home/username/mylibraries/${PETSC_ARCH}/mylib.a",
-                "MySolverCreate",MySolverCreate);
+   TaoSolverRegister("my_solver",MySolverCreate);
 .ve
 
    Then, your solver can be chosen with the procedural interface via
@@ -2238,14 +2228,12 @@ $     -tao_method my_solver
 
 .seealso: TaoSolverRegisterAll(), TaoSolverRegisterDestroy()
 M*/
-PetscErrorCode TaoSolverRegister(const char sname[], const char path[], const char cname[], PetscErrorCode (*func)(TaoSolver))
+PetscErrorCode TaoSolverRegister(const char sname[], PetscErrorCode (*func)(TaoSolver))
 {
-    char fullname[PETSC_MAX_PATH_LEN];
     PetscErrorCode ierr;
 
     PetscFunctionBegin;
-    ierr = PetscFunctionListConcat(path,cname,fullname); CHKERRQ(ierr);
-    ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&TaoSolverList,sname, fullname,(void (*)(void))func); CHKERRQ(ierr);
+    ierr = PetscFunctionListAdd(&TaoSolverList,sname, (void (*)(void))func); CHKERRQ(ierr);
     PetscFunctionReturn(0);
 }
 
