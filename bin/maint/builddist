@@ -2,8 +2,13 @@
 #
 # This script builds the PETSc tar file distribution
 #
-# Usage: builddist petscrepo branch
-# example usage: builddist /sandbox/petsc/petsc.clone maint
+# Usage: builddist petscrepo [branch] [name]
+# example usages:
+#   builddist /sandbox/petsc/petsc.clone balay/foo [petsc-dev-balay-foo.tar.bz]
+#   builddist /sandbox/petsc/petsc.clone master [petsc-dev.tar.bz]
+#   builddist /sandbox/petsc/petsc.clone maint [petsc-3.4.1.tar.bz]
+#   builddist /sandbox/petsc/petsc.clone maint release-snapshot [petsc-release-snapshot.tar.bz]
+#
 # Notes: version info is automatically obtained from include/petscversion.h
 #
 #echo "------- Have you done ALL of the following?? -----------------------------"
@@ -19,7 +24,11 @@
 # If version specified on the commandline, set the version
 echo "Starting date: `date`"
 
-if [ $# = 2 ]; then
+if [ $# = 3 ]; then
+  petscrepo=$1
+  branch=$2
+  version=-$3
+elif [ $# = 2 ]; then
   petscrepo=$1
   branch=$2
 elif [ $# = 1 ]; then
@@ -82,17 +91,19 @@ version_subminor=`grep '^#define PETSC_VERSION_SUBMINOR ' include/petscversion.h
 version_date=`date +"%b, %d, %Y"`
 version_git=`git log -1 --pretty=format:%H`
 version_date_git=`git log -1 --pretty=format:%ci`
-if  [ ${version_release} = 0 ]; then
-  if [ "$branch" = "master" ]; then
-    version=-dev
+if [ ${version}foo = foo ]; then
+  if  [ ${version_release} = 0 ]; then
+    if [ "$branch" = "master" ]; then
+      version=-dev
+    else
+      version=-`echo ${branch} | sed s~/~-~g`
+    fi
+  elif [ ${version_release} = 1 ]; then
+    version=-${version_major}.${version_minor}.${version_subminor}
   else
-    version=-`echo ${branch} | sed s~/~-~g`
+    echo "Unknown PETSC_VERSION_RELEASE: ${version_release}"
+    exit
   fi
-elif [ ${version_release} = 1 ]; then
-  version=-${version_major}.${version_minor}.${version_subminor}
-else
-  echo "Unknown PETSC_VERSION_RELEASE: ${version_release}"
-  exit
 fi
 echo "Building ~/petsc$version.tar.gz and ~/petsc-lite$version.tar.gz"
 

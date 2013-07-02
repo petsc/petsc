@@ -75,14 +75,14 @@
 
       <h2><a name="obtaining">Obtaining the development version of PETSc:</a></h2>
 
-      You have four options
+      You have three options:
 
       <ol>
         <li><a href="#using-git">download and install via <b>Git</b> (recommended)</a></li>
-        <li><a href="#using-mercurial">download and install via mercurial</a></li>
         <li><a href="#master-tarball">access tarballs directly from 'master' branch.</a></li>
         <li><a href="#nightly-tarball">access the nightly tarball snapshot</a> at <a href="http://ftp.mcs.anl.gov/pub/petsc/petsc-dev.tar.gz">http://ftp.mcs.anl.gov/pub/petsc/petsc-dev.tar.gz</a></li>
       </ol>
+      (If you prefer <a href="http://www.selenic.com/mercurial">Mercurial</a> over Git, there is also a <a href=" https://bitbucket.org/petsc/petsc-hg">Mercurial mirror of the PETSc master branch</a> available.)
 
       <a name="using-git"><h3>1. Using Git</h3></a><a href="http://git-scm.com/downloads">Install Git</a> if it is not already installed on your machine.
 
@@ -116,86 +116,8 @@
         <li><a href="http://git-scm.com/book/en/">[Pro Git book]</a></li>
       </ul>
 
-      <a name="using-mercurial"><h3>2. Using Mercurial</h3></a> To use <a href="http://www.selenic.com/mercurial">mercurial</a> - first install the software
-
-      <ul>
-        <li>
-          Linux:
-          <ul>
-            <li>Debian and Ubuntu: <code>apt-get install mercurial</code></li>
-            <li>Fedora: <code>yum install mercurial</code></li>
-            <li>Gentoo: <code>emerge mercurial</code></li>
-          </ul>
-        </li>
-
-        <li>
-          MacOS:
-          <ul>
-            <li>
-              <a href="http://mercurial.selenic.com/downloads/">Download </a> prebuilt binaries.
-            </li>
-
-            <li>Macports: <code>port install mercurial</code></li>
-          </ul>
-        </li>
-
-        <li>
-          Windows:
-          <ul>
-            <li>
-              <a href="http://mercurial.selenic.com/downloads/">Download </a> prebuilt binaries.
-            </li>
-
-            <li>Cygwin: via cygwin installer <a href="http://cygwin.com/setup.exe"> setup.exe </a></li>
-          </ul>
-        </li>
-
-        <li>
-          Source:
-          <ul>
-            <li>
-              <a href="http://mercurial.selenic.com/downloads/">Download </a> source tarball.
-              Install with <a href="http://hgbook.red-bean.com/read/installing-mercurial-from-source.html">instructions.</a>
-            </li>
-            On Linux this requires that python be built with zlib and include
-            the python C include files. You may need to ask your sysadmin to
-            install python-devel, zlib-devel [or equivalnet] packages before
-            building Mercurial.
-          </ul>
-        </li>
-      </ul>
-
-      Once Mercurial is installed obtain petsc-dev with the following:
-
-      <ul>
-        <li><code>hg clone https://bitbucket.org/petsc/petsc-hg</code></li>
-        <li><code>cd petsc-hg</code></li>
-      </ul>
-
-      PETSc can now be configured in the usual way, specified on the
-      <a href="../documentation/installation.html">Installation page</a>.
-
-      To update your copy of petsc-dev
-      <ul>
-        <li><code>hg pull -u</code></li>
-      </ul>
-
-      Once updated, you will usually want to rebuild completely
-
-      <ul>
-        <li><code>./$PETSC_ARCH/conf/reconfigure-$PETSC_ARCH.py</code></li>
-        <li><code>make</code></li>
-      </ul>
-
-      The Mercurial download always has the latest version of petsc-dev. For additional help use
-      <ul>
-        <li>hg help [or]</li>
-        <li>man hg</li>
-        <li><a href="http://hginit.com">http://hginit.com</a> [mercurial tutorial]</li>
-      </ul>
-
       <p>
-        <a name="master-tarball"><h3>3. Tarball of 'master'</h3></a> One can obtain the current petsc-dev repositories as
+        <a name="master-tarball"><h3>2. Tarball of 'master'</h3></a> One can obtain the current petsc-dev repositories as
         tarball from the git server using the following URL:
       </p>
 
@@ -224,7 +146,7 @@
       </p>
 
       <p>
-        <a name="nightly-tarball"><h3>4. Nightly tarball</h3></a> The nightly tarball will be equivalent to the release
+        <a name="nightly-tarball"><h3>3. Nightly tarball</h3></a> The nightly tarball will be equivalent to the release
         tarball - with all the doumentation built. To use the <b>nightly tarball</b>
         snapshot, simply download
         <a href="http://ftp.mcs.anl.gov/pub/petsc/petsc-dev.tar.gz">http://ftp.mcs.anl.gov/pub/petsc/petsc-dev.tar.gz</a>
@@ -334,27 +256,12 @@
       </p>
 
       <p>
-        One can send us changes to PETSc [perhaps bug fixes or new feature
-        additions] via e-mail. One easy way to do this [if no new files get
-        created] is:
-      </p>
-
-      <ul>
-        <li>[get the latest version of petsc-dev using mercurial as descrbed above]</li>
-        <li>[make edits]</li>
-        <li><code>hg diff &gt; patchfile</code></li>
-        <li>[email patchfile to petsc-maint@mcs.anl.gov]</li>
-      </ul>
-
-      <p>
-        To undo the changes, one can do 'hg revert' so that subsequent 'hg pull'
-        or 'make pull' will continue to work.
-      </p>
-
-      <p>
-        Alternatively, one can send us patches using <code>hg bundle</code> as
-        described at
-        <a href="http://www.selenic.com/mercurial/wiki/index.cgi/CommunicatingChanges">CommunicatingChanges</a>
+        One can send us changes to PETSc such as bug fixes or new feature
+        additions via e-mail. Please refer to the
+        <a href="https://bitbucket.org/petsc/petsc/wiki/Home">PETSc developer wiki</a>
+        for detailed instructions on
+        <a href="https://bitbucket.org/petsc/petsc/wiki/patch-instructions-git">
+        how to create a patch for PETSc using Git</a> or Mercurial.
       </p>
 
       <p>
