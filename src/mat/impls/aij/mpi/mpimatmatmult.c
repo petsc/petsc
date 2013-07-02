@@ -808,48 +808,64 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *
 PetscErrorCode MatTransposeMatMult_MPIAIJ_MPIAIJ(Mat P,Mat A,MatReuse scall,PetscReal fill,Mat *C)
 {
   PetscErrorCode ierr;
-  PetscBool      scalable=PETSC_TRUE,viamatmatmult=PETSC_FALSE;
+  const char     *algTypes[3] = {"scalable","nonscalable","matmatmult"};
+  PetscInt       alg=0; /* set default algorithm */
 
   PetscFunctionBegin;
-  ierr = PetscOptionsBool("-mattransposematmult_viamatmatmult","Use R=Pt and C=R*A","",viamatmatmult,&viamatmatmult,NULL);CHKERRQ(ierr);
-  if (viamatmatmult) {
-    Mat         Pt;
-    Mat_PtAPMPI *ptap;
-    Mat_MPIAIJ  *c;
-    if (scall == MAT_INITIAL_MATRIX) {
+  if (scall == MAT_INITIAL_MATRIX) {
+    ierr = PetscObjectOptionsBegin((PetscObject)A);CHKERRQ(ierr);
+    ierr = PetscOptionsEList("-mattransposematmult_via","Algorithmic approach","MatTransposeMatMult",algTypes,3,algTypes[0],&alg,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsEnd();CHKERRQ(ierr);
+
+    ierr = PetscLogEventBegin(MAT_TransposeMatMultSymbolic,P,A,0,0);CHKERRQ(ierr);
+    switch (alg) {
+    case 1:
+      ierr = MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(P,A,fill,C);CHKERRQ(ierr);
+      break;
+    case 2:
+      Mat         Pt;
+      Mat_PtAPMPI *ptap;
+      Mat_MPIAIJ  *c;
       ierr = MatTranspose(P,MAT_INITIAL_MATRIX,&Pt);CHKERRQ(ierr);
       ierr = MatMatMult(Pt,A,MAT_INITIAL_MATRIX,fill,C);CHKERRQ(ierr);
-
       c        = (Mat_MPIAIJ*)(*C)->data;
       ptap     = c->ptap;
       ptap->Pt = Pt;
-    } else if (scall == MAT_REUSE_MATRIX) {
-      c    = (Mat_MPIAIJ*)(*C)->data;
-      ptap = c->ptap;
-      Pt   = ptap->Pt;
-      ierr = MatTranspose(P,scall,&Pt);CHKERRQ(ierr);
-      ierr = MatMatMult(Pt,A,scall,fill,C);CHKERRQ(ierr);
-    } else SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Not supported");
-    PetscFunctionReturn(0);
-  }
-
-  if (scall == MAT_INITIAL_MATRIX) {
-    ierr = PetscObjectOptionsBegin((PetscObject)A);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-mattransposematmult_scalable","Use a scalable but slower C=Pt*A","",scalable,&scalable,NULL);CHKERRQ(ierr);
-    if  (scalable) {
-      ierr = MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_Scalable(P,A,fill,C);CHKERRQ(ierr);
-    } else {
+      (*C)->ops->mattransposemultnumeric = MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ_matmatmult;
+      PetscFunctionReturn(0);
+      break;
+    default:
       ierr = MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(P,A,fill,C);CHKERRQ(ierr);
+      break;
     }
-    ierr = PetscOptionsEnd();CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(MAT_TransposeMatMultSymbolic,P,A,0,0);CHKERRQ(ierr);
   }
+  ierr = PetscLogEventBegin(MAT_TransposeMatMultNumeric,P,A,0,0);CHKERRQ(ierr);
   ierr = (*(*C)->ops->mattransposemultnumeric)(P,A,*C);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_TransposeMatMultNumeric,P,A,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
+/* This routine only works when scall=MAT_REUSE_MATRIX! */
 #undef __FUNCT__
-#define __FUNCT__ "MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ"
-PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ(Mat P,Mat A,Mat C)
+#define __FUNCT__ "MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ_matmatmult"
+PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ_matmatmult(Mat P,Mat A,Mat C)
+{
+  PetscErrorCode ierr;
+  Mat_MPIAIJ     *c=(Mat_MPIAIJ*)C->data;
+  Mat_PtAPMPI    *ptap= c->ptap;
+  Mat            Pt=ptap->Pt;
+
+  PetscFunctionBegin;
+  ierr = MatTranspose(P,MAT_REUSE_MATRIX,&Pt);CHKERRQ(ierr);
+  ierr = MatMatMultNumeric(Pt,A,C);CHKERRQ(ierr); 
+  PetscFunctionReturn(0);
+}
+
+/* Non-scalable version, use dense axpy */
+#undef __FUNCT__
+#define __FUNCT__ "MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ_nonscalable"
+PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ_nonscalable(Mat P,Mat A,Mat C)  
 {
   PetscErrorCode      ierr;
   Mat_Merge_SeqsToMPI *merge;
@@ -1022,8 +1038,8 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ(Mat P,Mat A,Mat C)
 
 /* This routine is modified from MatPtAPSymbolic_MPIAIJ_MPIAIJ() */
 #undef __FUNCT__
-#define __FUNCT__ "MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ"
-PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(Mat P,Mat A,PetscReal fill,Mat *C)
+#define __FUNCT__ "MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable"
+PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat P,Mat A,PetscReal fill,Mat *C)
 {
   PetscErrorCode      ierr;
   Mat                 Cmpi,A_loc,POt,PDt;
@@ -1342,7 +1358,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(Mat P,Mat A,PetscReal f
   merge->destroy   = Cmpi->ops->destroy;
   merge->duplicate = Cmpi->ops->duplicate;
 
-  Cmpi->ops->mattransposemultnumeric = MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ;
+  Cmpi->ops->mattransposemultnumeric = MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ_nonscalable;
   Cmpi->ops->destroy                 = MatDestroy_MPIAIJ_PtAP;
 
   /* attach the supporting struct to Cmpi for reuse */
@@ -1366,8 +1382,8 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(Mat P,Mat A,PetscReal f
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ_Scalable"
-PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ_Scalable(Mat P,Mat A,Mat C)
+#define __FUNCT__ "MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ"
+PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ(Mat P,Mat A,Mat C)
 {
   PetscErrorCode      ierr;
   Mat_Merge_SeqsToMPI *merge;
@@ -1531,10 +1547,11 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ_Scalable(Mat P,Mat A,Mat
   PetscFunctionReturn(0);
 }
 
-/* This routine is modified from MatPtAPSymbolic_MPIAIJ_MPIAIJ() */
+/* This routine is modified from MatPtAPSymbolic_MPIAIJ_MPIAIJ();
+   differ from MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable in using LLCondensedCreate_Scalable() */
 #undef __FUNCT__
-#define __FUNCT__ "MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_Scalable"
-PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_Scalable(Mat P,Mat A,PetscReal fill,Mat *C)
+#define __FUNCT__ "MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ"
+PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(Mat P,Mat A,PetscReal fill,Mat *C)
 {
   PetscErrorCode      ierr;
   Mat                 Cmpi,A_loc,POt,PDt;
@@ -1851,7 +1868,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_Scalable(Mat P,Mat A,Pe
   merge->destroy   = Cmpi->ops->destroy;
   merge->duplicate = Cmpi->ops->duplicate;
 
-  Cmpi->ops->mattransposemultnumeric = MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ_Scalable;
+  Cmpi->ops->mattransposemultnumeric = MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ;
   Cmpi->ops->destroy                 = MatDestroy_MPIAIJ_PtAP;
 
   /* attach the supporting struct to Cmpi for reuse */
