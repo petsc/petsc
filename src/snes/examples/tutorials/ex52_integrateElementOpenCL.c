@@ -84,9 +84,9 @@ PetscErrorCode generateOpenCLSource(char **string_buffer, PetscInt buffer_length
 "  /* Nodal basis function derivative evaluations,\n"
 "      - derivative direction fastest varying, then basis function, then point */\n"
 "  const float2 BasisDerivatives_0[3] = {\n"
-"    -0.5, -0.5,\n"
-"    0.5, 0.0,\n"
-"    0.0, 0.5};\n"
+"    (float2)(-0.5, -0.5),\n"
+"    (float2)(0.5, 0.0),\n"
+"    (float2)(0.0, 0.5)};\n"
 "\n");STRING_ERROR_CHECK("Message to short");
     } else if (pde_op == ELASTICITY) {
       string_tail += snprintf(string_tail, end_of_buffer - string_tail,
