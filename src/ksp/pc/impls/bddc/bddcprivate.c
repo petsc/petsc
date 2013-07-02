@@ -753,9 +753,10 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
     /* Klawonn and Widlund, Dual-primal FETI-DP methods for linear elasticity, (see Sect 6.2.1) */
     /* Change of basis matrix T computed via QR decomposition of constraints */
     if (qr_needed) {
+      /* dual and primal dofs on a single cc */
       PetscInt     dual_dofs,primal_dofs;
-      PetscInt     start_constraint,aux_primal_ptr;
-      PetscBool    compute_submatrix;
+      /* iterator on aux_primal_minloc (ordered as read from nearnullspace: vertices, edges and then constraints) */
+      PetscInt     primal_counter;
       /* working stuff for GEQRF */
       PetscScalar  *qr_basis,*qr_tau,*qr_work,lqr_work_t;
       PetscBLASInt lqr_work;
@@ -802,123 +803,117 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
         ierr = PetscMalloc(max_size_of_constraint*(max_constraints+max_size_of_constraint)*sizeof(*work),&work);CHKERRQ(ierr);
       }
 
-      /* init quantities for loop */
-      temp_constraints = 0;
-      temp_start_ptr = temp_indices_to_constraint_B[temp_indices[pcbddc->n_vertices]];
-      aux_primal_ptr = pcbddc->n_vertices;
-      for (i=pcbddc->n_vertices;i<pcbddc->local_primal_size;i++) {
-        if (change_basis[i]) {
-          compute_submatrix = PETSC_FALSE;
-          if (temp_start_ptr == temp_indices_to_constraint_B[temp_indices[i]]) {
-            temp_constraints++;
-            if (i == pcbddc->local_primal_size -1 ||  temp_start_ptr != temp_indices_to_constraint_B[temp_indices[i+1]]) {
-              compute_submatrix = PETSC_TRUE;
+      /* loop on constraints and see whether or not they need a change of basis */
+      /* -> using implicit ordering contained in temp_indices data */
+      total_counts = pcbddc->n_vertices;
+      primal_counter = total_counts;
+      while (total_counts<pcbddc->local_primal_size) {
+        primal_dofs = 1;
+        if (change_basis[total_counts]) {
+          /* get all constraints with same support: if more then one constraint is present on the cc then surely indices are stored contiguosly */
+          while (total_counts+primal_dofs < pcbddc->local_primal_size && temp_indices_to_constraint_B[temp_indices[total_counts]] == temp_indices_to_constraint_B[temp_indices[total_counts+primal_dofs]]) {
+            primal_dofs++;
+          }
+          /* get constraint info */
+          size_of_constraint = temp_indices[total_counts+1]-temp_indices[total_counts];
+          dual_dofs = size_of_constraint-primal_dofs;
+          /* get BLAS dims */
+          ierr = PetscBLASIntCast(size_of_constraint,&Bs);CHKERRQ(ierr);
+          ierr = PetscBLASIntCast(primal_dofs,&Bt);CHKERRQ(ierr);
+
+          /* copy quadrature constraints for change of basis check */
+          if (pcbddc->dbg_flag) {
+            ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Constraint %d to %d need a change of basis (size %d)\n",total_counts,total_counts+primal_dofs,size_of_constraint);CHKERRQ(ierr);
+            ierr = PetscMemcpy(work,&temp_quadrature_constraint[temp_indices[total_counts]],size_of_constraint*primal_dofs*sizeof(PetscScalar));CHKERRQ(ierr);
+          } 
+ 
+          /* copy temporary constraints into larger work vector (in order to store all columns of Q) */
+          ierr = PetscMemcpy(qr_basis,&temp_quadrature_constraint[temp_indices[total_counts]],size_of_constraint*primal_dofs*sizeof(PetscScalar));CHKERRQ(ierr);
+     
+          /* compute QR decomposition of constraints */
+          ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
+          PetscStackCallBLAS("LAPACKgeqrf",LAPACKgeqrf_(&Bs,&Bt,qr_basis,&Bs,qr_tau,qr_work,&lqr_work,&lierr));
+          if (lierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in GEQRF Lapack routine %d",(int)lierr);
+          ierr = PetscFPTrapPop();CHKERRQ(ierr);
+  
+          /* explictly compute R^-T */
+          ierr = PetscMemzero(trs_rhs,primal_dofs*primal_dofs*sizeof(*trs_rhs));CHKERRQ(ierr);
+          for (j=0;j<primal_dofs;j++) trs_rhs[j*(primal_dofs+1)] = 1.0;
+          ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
+          PetscStackCallBLAS("LAPACKtrtrs",LAPACKtrtrs_("U","T","N",&Bt,&Bt,qr_basis,&Bs,trs_rhs,&Bt,&lierr)); 
+          if (lierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in TRTRS Lapack routine %d",(int)lierr);
+          ierr = PetscFPTrapPop();CHKERRQ(ierr);
+  
+          /* explcitly compute all columns of Q (Q = [Q1 | Q2] ) overwriting QR factorization in qr_basis */
+          ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
+          PetscStackCallBLAS("LAPACKungqr",LAPACKungqr_(&Bs,&Bs,&Bt,qr_basis,&Bs,qr_tau,gqr_work,&lgqr_work,&lierr));
+          if (lierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in UNGQR Lapack routine %d",(int)lierr);
+          ierr = PetscFPTrapPop();CHKERRQ(ierr);
+  
+          /* first primal_dofs columns of Q need to be re-scaled in order to be unitary w.r.t constraints
+             i.e. C_{pxn}*Q_{nxn} should be equal to [I_pxp | 0_pxd] (see check below)
+             where n=size_of_constraint, p=primal_dofs, d=dual_dofs (n=p+d), I and 0 identity and null matrix resp. */
+          ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
+          PetscStackCallBLAS("BLASgemm",BLASgemm_("N","N",&Bs,&Bt,&Bt,&one,qr_basis,&Bs,trs_rhs,&Bt,&zero,&temp_quadrature_constraint[temp_indices[total_counts]],&Bs));
+          ierr = PetscFPTrapPop();CHKERRQ(ierr);
+          ierr = PetscMemcpy(qr_basis,&temp_quadrature_constraint[temp_indices[total_counts]],size_of_constraint*primal_dofs*sizeof(PetscScalar));CHKERRQ(ierr);
+
+          /* insert values in change of basis matrix respecting global ordering of new primal dofs */ 
+          start_rows = &temp_indices_to_constraint_B[temp_indices[total_counts]];
+          /* insert cols for primal dofs */
+          for (j=0;j<primal_dofs;j++) {
+            start_vals = &qr_basis[j*size_of_constraint];
+            start_cols = &temp_indices_to_constraint_B[temp_indices[total_counts]+aux_primal_minloc[primal_counter+j]];
+            ierr = MatSetValues(pcbddc->ChangeOfBasisMatrix,size_of_constraint,start_rows,1,start_cols,start_vals,INSERT_VALUES);CHKERRQ(ierr);
+          }
+          /* insert cols for dual dofs */
+          for (j=0,k=0;j<dual_dofs;k++) {
+            if (!is_primal[temp_indices_to_constraint_B[temp_indices[total_counts]+k]]) {
+              start_vals = &qr_basis[(primal_dofs+j)*size_of_constraint];
+              start_cols = &temp_indices_to_constraint_B[temp_indices[total_counts]+k];
+              ierr = MatSetValues(pcbddc->ChangeOfBasisMatrix,size_of_constraint,start_rows,1,start_cols,start_vals,INSERT_VALUES);CHKERRQ(ierr);
+              j++;
             }
           }
-          if (compute_submatrix) {
-            /* get constraint info */
-            size_of_constraint = temp_indices[i+1]-temp_indices[i];
-            primal_dofs = temp_constraints;
-            dual_dofs = size_of_constraint-primal_dofs;
-            start_constraint = i+1-primal_dofs; /* starting index in temp_indices array */
-            /* get BLAS dims */
-            ierr = PetscBLASIntCast(size_of_constraint,&Bs);CHKERRQ(ierr);
-            ierr = PetscBLASIntCast(primal_dofs,&Bt);CHKERRQ(ierr);
 
-            /* copy quadrature constraints for change of basis check */
-            if (pcbddc->dbg_flag) {
-              ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Constraint %d to %d need a change of basis (size %d)\n",start_constraint,start_constraint+primal_dofs,size_of_constraint);CHKERRQ(ierr);
-              ierr = PetscMemcpy(work,&temp_quadrature_constraint[temp_indices[start_constraint]],size_of_constraint*primal_dofs*sizeof(PetscScalar));CHKERRQ(ierr);
-            } 
- 
-            /* copy temporary constraints into larger work vector (in order to store all columns of Q) */
-            ierr = PetscMemcpy(qr_basis,&temp_quadrature_constraint[temp_indices[start_constraint]],size_of_constraint*primal_dofs*sizeof(PetscScalar));CHKERRQ(ierr);
-     
-            /* compute QR decomposition of constraints */
+          /* check change of basis */
+          if (pcbddc->dbg_flag) {
+            PetscInt   ii,jj;
+            PetscBool valid_qr=PETSC_TRUE;
             ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
-            PetscStackCallBLAS("LAPACKgeqrf",LAPACKgeqrf_(&Bs,&Bt,qr_basis,&Bs,qr_tau,qr_work,&lqr_work,&lierr));
-            if (lierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in GEQRF Lapack routine %d",(int)lierr);
+            PetscStackCallBLAS("BLASgemm",BLASgemm_("T","N",&Bt,&Bs,&Bs,&one,work,&Bs,qr_basis,&Bs,&zero,&work[size_of_constraint*primal_dofs],&Bt));
             ierr = PetscFPTrapPop();CHKERRQ(ierr);
-  
-            /* explictly compute R^-T */
-            ierr = PetscMemzero(trs_rhs,primal_dofs*primal_dofs*sizeof(*trs_rhs));CHKERRQ(ierr);
-            for (j=0;j<primal_dofs;j++) trs_rhs[j*(primal_dofs+1)] = 1.0;
-            ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
-            PetscStackCallBLAS("LAPACKtrtrs",LAPACKtrtrs_("U","T","N",&Bt,&Bt,qr_basis,&Bs,trs_rhs,&Bt,&lierr)); 
-            if (lierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in TRTRS Lapack routine %d",(int)lierr);
-            ierr = PetscFPTrapPop();CHKERRQ(ierr);
-  
-            /* explcitly compute all columns of Q (Q = [Q1 | Q2] ) overwriting QR factorization in qr_basis */
-            ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
-            PetscStackCallBLAS("LAPACKungqr",LAPACKungqr_(&Bs,&Bs,&Bt,qr_basis,&Bs,qr_tau,gqr_work,&lgqr_work,&lierr));
-            if (lierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in UNGQR Lapack routine %d",(int)lierr);
-            ierr = PetscFPTrapPop();CHKERRQ(ierr);
-  
-            /* first primal_dofs columns of Q need to be re-scaled in order to be unitary w.r.t constraints
-               i.e. C_{pxn}*Q_{nxn} should be equal to [I_pxp | 0_pxd] (see check below)
-               where n=size_of_constraint, p=primal_dofs, d=dual_dofs (n=p+d), I and 0 identity and null matrix resp. */
-            ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
-            PetscStackCallBLAS("BLASgemm",BLASgemm_("N","N",&Bs,&Bt,&Bt,&one,qr_basis,&Bs,trs_rhs,&Bt,&zero,&temp_quadrature_constraint[temp_indices[start_constraint]],&Bs));
-            ierr = PetscFPTrapPop();CHKERRQ(ierr);
-            ierr = PetscMemcpy(qr_basis,&temp_quadrature_constraint[temp_indices[start_constraint]],size_of_constraint*primal_dofs*sizeof(PetscScalar));CHKERRQ(ierr);
-
-            /* insert values in change of basis matrix respecting global ordering of new primal dofs */ 
-            start_rows = &temp_indices_to_constraint_B[temp_indices[start_constraint]];
-            /* insert cols for primal dofs */
-            for (j=0;j<primal_dofs;j++) {
-              start_vals = &qr_basis[j*size_of_constraint];
-              start_cols = &temp_indices_to_constraint_B[temp_indices[start_constraint]+aux_primal_minloc[aux_primal_ptr+j]];
-              ierr = MatSetValues(pcbddc->ChangeOfBasisMatrix,size_of_constraint,start_rows,1,start_cols,start_vals,INSERT_VALUES);CHKERRQ(ierr);
-            }
-            /* insert cols for dual dofs */
-            for (j=0,k=0;j<dual_dofs;k++) {
-              if (!is_primal[temp_indices_to_constraint_B[temp_indices[start_constraint]+k]]) {
-                start_vals = &qr_basis[(primal_dofs+j)*size_of_constraint];
-                start_cols = &temp_indices_to_constraint_B[temp_indices[start_constraint]+k];
-                ierr = MatSetValues(pcbddc->ChangeOfBasisMatrix,size_of_constraint,start_rows,1,start_cols,start_vals,INSERT_VALUES);CHKERRQ(ierr);
-                j++;
+            for (jj=0;jj<size_of_constraint;jj++) {
+              for (ii=0;ii<primal_dofs;ii++) {
+                if (ii != jj && PetscAbsScalar(work[size_of_constraint*primal_dofs+jj*primal_dofs+ii]) > 1.e-12) valid_qr = PETSC_FALSE;
+                if (ii == jj && PetscAbsScalar(work[size_of_constraint*primal_dofs+jj*primal_dofs+ii]-1.0) > 1.e-12) valid_qr = PETSC_FALSE;
               }
             }
-
-            /* check change of basis */
-            if (pcbddc->dbg_flag) {
-              PetscInt   ii,jj;
-              PetscBool valid_qr=PETSC_TRUE;
-              ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
-              PetscStackCallBLAS("BLASgemm",BLASgemm_("T","N",&Bt,&Bs,&Bs,&one,work,&Bs,qr_basis,&Bs,&zero,&work[size_of_constraint*primal_dofs],&Bt));
-              ierr = PetscFPTrapPop();CHKERRQ(ierr);
+            if (!valid_qr) {
+              ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"\t-> wrong change of basis!\n",PetscGlobalRank);CHKERRQ(ierr);
               for (jj=0;jj<size_of_constraint;jj++) {
                 for (ii=0;ii<primal_dofs;ii++) {
-                  if (ii != jj && PetscAbsScalar(work[size_of_constraint*primal_dofs+jj*primal_dofs+ii]) > 1.e-12) valid_qr = PETSC_FALSE;
-                  if (ii == jj && PetscAbsScalar(work[size_of_constraint*primal_dofs+jj*primal_dofs+ii]-1.0) > 1.e-12) valid_qr = PETSC_FALSE;
-                }
-              }
-              if (!valid_qr) {
-                ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"\t-> wrong change of basis!\n",PetscGlobalRank);CHKERRQ(ierr);
-                for (jj=0;jj<size_of_constraint;jj++) {
-                  for (ii=0;ii<primal_dofs;ii++) {
-                    if (ii != jj && PetscAbsScalar(work[size_of_constraint*primal_dofs+jj*primal_dofs+ii]) > 1.e-12) {
-                      PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"\tQr basis function %d is not orthogonal to constraint %d (%1.14e)!\n",jj,ii,PetscAbsScalar(work[size_of_constraint*primal_dofs+jj*primal_dofs+ii]));
-                    }
-                    if (ii == jj && PetscAbsScalar(work[size_of_constraint*primal_dofs+jj*primal_dofs+ii]-1.0) > 1.e-12) {
-                      PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"\tQr basis function %d is not unitary w.r.t constraint %d (%1.14e)!\n",jj,ii,PetscAbsScalar(work[size_of_constraint*primal_dofs+jj*primal_dofs+ii]));
-                    }
+                  if (ii != jj && PetscAbsScalar(work[size_of_constraint*primal_dofs+jj*primal_dofs+ii]) > 1.e-12) {
+                    PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"\tQr basis function %d is not orthogonal to constraint %d (%1.14e)!\n",jj,ii,PetscAbsScalar(work[size_of_constraint*primal_dofs+jj*primal_dofs+ii]));
+                  }
+                  if (ii == jj && PetscAbsScalar(work[size_of_constraint*primal_dofs+jj*primal_dofs+ii]-1.0) > 1.e-12) {
+                    PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"\tQr basis function %d is not unitary w.r.t constraint %d (%1.14e)!\n",jj,ii,PetscAbsScalar(work[size_of_constraint*primal_dofs+jj*primal_dofs+ii]));
                   }
                 }
-              } else {
-                ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"\t-> right change of basis!\n",PetscGlobalRank);CHKERRQ(ierr);
               }
+            } else {
+              ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"\t-> right change of basis!\n",PetscGlobalRank);CHKERRQ(ierr);
             }
-            /* prepare for the next cycle */
-            temp_constraints = 0;
-            if (i != pcbddc->local_primal_size-1) temp_start_ptr = temp_indices_to_constraint_B[temp_indices[i+1]];
-            aux_primal_ptr += primal_dofs;
           }
+          /* increment primal counter */
+          primal_counter += primal_dofs;
         } else {
           if (pcbddc->dbg_flag) {
-            ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Constraint %d does not need a change of basis (size %d)\n",i,temp_indices[i+1]-temp_indices[i]);CHKERRQ(ierr);
+            ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Constraint %d does not need a change of basis (size %d)\n",total_counts,temp_indices[total_counts+1]-temp_indices[total_counts]);CHKERRQ(ierr);
           }
         }
+        /* increment constraint counter total_counts */
+        total_counts += primal_dofs;
       }
       if (pcbddc->dbg_flag) {
         ierr = PetscViewerFlush(pcbddc->dbg_viewer);CHKERRQ(ierr);
