@@ -457,6 +457,59 @@ void FormElementJacobian(Field *ex,CoordField *ec,Field *ef,PetscScalar *ej,AppC
   } /* end of quadrature points */
 }
 
+void FormPBJacobian(PetscInt i,PetscInt j,PetscInt k,Field *ex,CoordField *ec,Field *ef,PetscScalar *ej,AppCtx *user) {
+  PetscReal   vol;
+  PetscScalar J[9];
+  PetscScalar invJ[9];
+  PetscScalar F[9],S[9],dF[9],dS[9],dFS[9],FdS[9],FS[9];
+  PetscReal   scl;
+  PetscInt    l,ll,qi,qj,qk,m;
+  if (ej) for (l = 0; l < 9; l++) ej[l] = 0.;
+  if (ef) for (l = 0; l < 1; l++) {ef[l][0] = 0.;ef[l][1] = 0.;ef[l][2] = 0.;}
+  PetscInt idx = i + j*2 + k*4;
+  /* loop over quadrature */
+  for (qk = 0; qk < NQP; qk++) {
+    for (qj = 0; qj < NQP; qj++) {
+      for (qi = 0; qi < NQP; qi++) {
+        PetscInt bidx = 8*idx + qi + 2*qj + 4*qk;
+        QuadraturePointGeometricJacobian(ec,qi,qj,qk,J);
+        InvertTensor(J,invJ,&vol);
+        scl = vol*wts[qi]*wts[qj]*wts[qk];
+        DeformationGradient(ex,qi,qj,qk,invJ,F);
+        SaintVenantKirchoff(user->lambda,user->mu,F,S);
+        /* form the function */
+        if (ef) {
+          TensorTensor(F,S,FS);
+          PetscScalar lgrad[3];
+          TensorVector(invJ,&grad[3*bidx],lgrad);
+          /* mu*F : grad phi_{u,v,w} */
+          for (m=0;m<3;m++) {
+            ef[0][m] += scl*
+              (lgrad[0]*FS[3*m + 0] + lgrad[1]*FS[3*m + 1] + lgrad[2]*FS[3*m + 2]);
+          }
+          ef[0][1] -= scl*user->loading*vals[bidx];
+        }
+        /* form the jacobian */
+        if (ej) {
+          for (l=0;l<3;l++) {
+            DeformationGradientJacobian(qi,qj,qk,i,j,k,l,invJ,dF);
+            SaintVenantKirchoffJacobian(user->lambda,user->mu,F,dF,dS);
+            PetscScalar lgrad[3];
+            TensorVector(invJ,&grad[3*bidx],lgrad);
+            TensorTensor(dF,S,dFS);
+            TensorTensor(F,dS,FdS);
+            for (m=0;m<9;m++) dFS[m] += FdS[m];
+            for (ll=0; ll<3;ll++) {
+              ej[ll + 3*l] += scl*
+                (lgrad[0]*dFS[3*ll + 0] + lgrad[1]*dFS[3*ll + 1] + lgrad[2]*dFS[3*ll+2]);
+            }
+          }
+        }
+      }
+    } /* end of quadrature points */
+  }
+}
+
 void ApplyBCsElement(PetscInt mx,PetscInt i, PetscInt j, PetscInt k,PetscScalar *jacobian) {
   PetscInt ii,jj,kk,ll,ei,ej,ek,el;
   for (kk=0;kk<2;kk++){
@@ -686,19 +739,17 @@ PetscErrorCode NonlinearGS(SNES snes,Vec X,Vec B,void *ptr)
   /* values for each basis function at each quadrature point */
   AppCtx      *user = (AppCtx*)ptr;
 
-  PetscInt       i,j,k,l,m,n;
-  PetscInt       ii,jj,kk;
+  PetscInt       i,j,k,l,m,n,s;
   PetscInt       pi,pj,pk;
-  Field          ef[8];
+  Field          ef[1];
   Field          ex[8];
-  PetscScalar    ej[24*24];
+  PetscScalar    ej[9];
   CoordField     ec[8];
   PetscScalar    pjac[9],pjinv[9];
   PetscScalar    pf[3],py[3];
   PetscErrorCode ierr;
   PetscInt       xs,ys,zs;
   PetscInt       xm,ym,zm;
-  PetscInt       xes,yes,zes,xee,yee,zee;
   PetscInt       mx,my,mz;
   DM             cda;
   CoordField     ***c;
@@ -706,8 +757,14 @@ PetscErrorCode NonlinearGS(SNES snes,Vec X,Vec B,void *ptr)
   DM             da;
   Vec            Xl,Bl;
   Field          ***x,***b;
+  PetscInt       sweeps,its;
+  PetscReal      atol,rtol,stol;
+  PetscReal      fnorm0,fnorm,ynorm,xnorm;
 
   PetscFunctionBegin;
+  ierr    = SNESGSGetSweeps(snes,&sweeps);CHKERRQ(ierr);
+  ierr    = SNESGSGetTolerances(snes,&atol,&rtol,&stol,&its);CHKERRQ(ierr);
+
   ierr = SNESGetDM(snes,&da);CHKERRQ(ierr);
   ierr = DMGetLocalVector(da,&Xl);CHKERRQ(ierr);
   if (B) {
@@ -728,56 +785,59 @@ PetscErrorCode NonlinearGS(SNES snes,Vec X,Vec B,void *ptr)
   ierr = DMDAGetInfo(da,0,&mx,&my,&mz,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   ierr = DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
 
-  for (k=zs; k<zs+zm; k++) {
-    for (j=ys; j<ys+ym; j++) {
-      for (i=xs; i<xs+xm; i++) {
-        if ((i == 0)) {
+  for (s=0;s<sweeps;s++) {
+    for (k=zs; k<zs+zm; k++) {
+      for (j=ys; j<ys+ym; j++) {
+        for (i=xs; i<xs+xm; i++) {
+          if ((i == 0)) {
             x[k][j][i][0] = user->squeeze/2;
             x[k][j][i][1] = 0.;
             x[k][j][i][2] = 0.;
-        } else if (i==mx-1) {
+          } else if (i==mx-1) {
             x[k][j][i][0] = -user->squeeze/2;
             x[k][j][i][1] = 0.;
             x[k][j][i][2] = 0.;
-        } else {
-          for (n=0;n<1;n++) {
-            PetscInt nelements=0;
-            for (m=0;m<9;m++) pjac[m] = 0.;
-            for (m=0;m<3;m++) pf[m] = 0.;
-            /* gather the elements for this point */
-            for (pk=-1; pk<1; pk++) {
-              for (pj=-1; pj<1; pj++) {
-                for (pi=-1; pi<1; pi++) {
-                  /* check that this element exists */
-                  if (i+pi >= 0 && i+pi < mx-1 && j+pj >= 0 && j+pj < my-1 && k+pk >= 0 && k+pk < mz-1) {
-                    nelements++;
-                    PetscInt idx = -pi + -pj*2 + -pk*4;
-                    /* create the element function and jacobian */
-                    GatherElementData(mx,x,c,i+pi,j+pj,k+pk,ex,ec,user);
-                    FormElementJacobian(ex,ec,ef,ej,user);
-                    /* extract the point named by i,j,k from the whole element jacobian and function */
-                    for (l=0;l<3;l++) {
-                      pf[l] += ef[idx][l];
-                      for (m=0;m<3;m++) {
-                        pjac[3*m+l] += ej[24*(3*idx + m) + (3*idx + l)];
+          } else {
+            for (n=0;n<its;n++) {
+              for (m=0;m<9;m++) pjac[m] = 0.;
+              for (m=0;m<3;m++) pf[m] = 0.;
+              /* gather the elements for this point */
+              for (pk=-1; pk<1; pk++) {
+                for (pj=-1; pj<1; pj++) {
+                  for (pi=-1; pi<1; pi++) {
+                    /* check that this element exists */
+                    if (i+pi >= 0 && i+pi < mx-1 && j+pj >= 0 && j+pj < my-1 && k+pk >= 0 && k+pk < mz-1) {
+                      /* create the element function and jacobian */
+                      GatherElementData(mx,x,c,i+pi,j+pj,k+pk,ex,ec,user);
+                      FormPBJacobian(-pi,-pj,-pk,ex,ec,ef,ej,user);
+                      /* extract the point named by i,j,k from the whole element jacobian and function */
+                      for (l=0;l<3;l++) {
+                        pf[l] += ef[0][l];
+                        for (m=0;m<3;m++) {
+                          pjac[3*m+l] += ej[3*m+l];
+                        }
                       }
                     }
                   }
                 }
               }
-            }
-            /* invert */
-            InvertTensor(pjac,pjinv,NULL);
-            /* apply */
-            if (B) for (m=0;m<3;m++) {
-                pf[m] -= b[k][j][i][m];
+              /* invert */
+              InvertTensor(pjac,pjinv,NULL);
+              /* apply */
+              if (B) for (m=0;m<3;m++) {
+                  pf[m] -= b[k][j][i][m];
+                }
+              TensorVector(pjinv,pf,py);
+              for (m=0;m<3;m++) {
+                x[k][j][i][m] -= py[m];
+                xnorm += x[k][j][i][m]*x[k][j][i][m];
               }
-            TensorVector(pjinv,pf,py);
-            for (m=0;m<3;m++) {
-              x[k][j][i][m] -= py[m];
+              fnorm = PetscRealPart(pf[0]*pf[0]+pf[1]*pf[1]+pf[2]*pf[2]);
+              if (n==0) fnorm0 = fnorm;
+              ynorm = PetscRealPart(py[0]*py[0]+py[1]*py[1]+py[2]*py[2]);
+              if (fnorm < atol*atol || fnorm < rtol*rtol*fnorm0 || ynorm < stol*stol*xnorm) break;
             }
           }
-          /* PetscPrintf(PETSC_COMM_WORLD,"%d %d %d, (%f %f %f),(%f %f %f) -- %d\n\n",i,j,k,pf[0],pf[1],pf[2],py[0],py[1],py[2],nelements); */
         }
       }
     }
