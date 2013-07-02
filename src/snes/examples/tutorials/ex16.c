@@ -62,7 +62,7 @@ int main(int argc,char **argv)
   DM             da;
   Vec            x;
   PetscBool      youngflg,poissonflg,view=PETSC_FALSE,viewline=PETSC_FALSE;
-  PetscReal      poisson=1.0,young=1.0;
+  PetscReal      poisson=0.2,young=1.0;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return(1);
 
