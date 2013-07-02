@@ -406,7 +406,7 @@ PetscErrorCode calculateGridOpenCL(const int N, const int blockSize, unsigned in
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "IntegrateElementBatchOpenCL"
+#define __FUNCT__ "IntegrateElementBatchGPU"
 /*
   IntegrateElementBatchOpenCL - Produces element vectors from input element solution and geometric information via quadrature
 
