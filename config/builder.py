@@ -377,7 +377,7 @@ class MakeParser(object):
     '''Parses a PETSc action
     - Return a dictionary for the portions of a run'''
     import re
-    m = re.match('-@\$\{MPIEXEC\} -n (?P<numProcs>\d+) ./(?P<ex>ex\w+)(?P<args>[-.,\w ]+)>', lines[0])
+    m = re.match('-@\$\{MPIEXEC\} -n (?P<numProcs>\d+) ./(?P<ex>ex\w+)(?P<args>[\'%-.,\w ]+)>', lines[0])
     if not m:
       raise RuntimeError('Could not parse launch sequence:\n'+lines[0])
     comparison = 'Not present'
