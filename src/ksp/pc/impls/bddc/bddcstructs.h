@@ -16,6 +16,7 @@ struct _PCBDDCGraph {
   PetscInt               **neighbours_set;
   PetscInt               *subset;
   PetscInt               *which_dof;
+  PetscInt               *special_dof;
   PetscInt               *cptr;
   PetscInt               *queue;
   PetscInt               *count;
