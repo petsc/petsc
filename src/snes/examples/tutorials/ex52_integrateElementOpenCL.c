@@ -18,15 +18,14 @@ typedef enum {LAPLACIAN = 0, ELASTICITY} OpType;
  */
 #undef __FUNCT__
 #define __FUNCT__ "generateOpenCLSource"
-PetscErrorCode generateOpenCLSource(char **string_buffer, PetscInt buffer_length, PetscInt spatial_dim, PetscInt pde_op)
+PetscErrorCode generateOpenCLSource(char **string_buffer, PetscInt buffer_length, PetscInt spatial_dim, PetscInt N_bl, PetscInt pde_op)
 {
   char            *string_tail   = *string_buffer;
   char            *end_of_buffer = *string_buffer + buffer_length;
-  PetscInt        num_blocks = 1;
   PetscInt        num_quadrature_points = 1;
   PetscInt        num_basis_components = (pde_op == LAPLACIAN) ? 1 : spatial_dim;
   PetscInt        num_basis_functions = 3;
-  PetscInt        num_threads = num_basis_functions * num_basis_components * num_quadrature_points * num_blocks;
+  PetscInt        num_threads = num_basis_functions * num_basis_components * num_quadrature_points * N_bl; /* N_t */
 
 /* dim     Number of spatial dimensions:          2                   */
 /* N_b     Number of basis functions:             generated           */
@@ -117,7 +116,7 @@ PetscErrorCode generateOpenCLSource(char **string_buffer, PetscInt buffer_length
 
   string_tail += snprintf(string_tail, end_of_buffer - string_tail,
 "  /* Number of concurrent blocks */\n"
-"  const int N_bl = 1;\n"
+"  const int N_bl = %d;\n"
 "\n"
 /* Argument */
 "  const int dim    = %d;\n"
@@ -144,7 +143,7 @@ PetscErrorCode generateOpenCLSource(char **string_buffer, PetscInt buffer_length
 "  const int gidx    = get_group_id(1)*get_num_groups(0) + get_group_id(0);\n"
 "  const int Goffset = gidx*N_c;\n"
 "  const int Coffset = gidx*N_c*N_bt;\n"
-"  const int Eoffset = gidx*N_c*N_bt;\n", spatial_dim);STRING_ERROR_CHECK("Message to short");
+"  const int Eoffset = gidx*N_c*N_bt;\n", N_bl, spatial_dim);STRING_ERROR_CHECK("Message to short");
 
   string_tail += snprintf(string_tail, end_of_buffer - string_tail,
 "\n"
@@ -424,7 +423,7 @@ PetscErrorCode calculateGridOpenCL(const int N, const int blockSize, unsigned in
   Output Parameter:
 . elemVec - An array of the element vectors for each cell
 */
-PETSC_EXTERN PetscErrorCode IntegrateElementBatchGPU(PetscInt spatial_dim, PetscInt Ne, PetscInt Ncb, PetscInt Nbc, PetscInt Nbl, const PetscScalar coefficients[],
+PETSC_EXTERN PetscErrorCode IntegrateElementBatchGPU(PetscInt spatial_dim, PetscInt Ne, PetscInt Ncb, PetscInt Nbc, PetscInt N_bl, const PetscScalar coefficients[],
                                                      const PetscReal jacobianInverses[], const PetscReal jacobianDeterminants[], PetscScalar elemVec[],
                                                      PetscLogEvent event, PetscInt debug, PetscInt pde_op)
 {
@@ -432,9 +431,6 @@ PETSC_EXTERN PetscErrorCode IntegrateElementBatchGPU(PetscInt spatial_dim, Petsc
 
   const cl_int numBasisFunctions_0 = 3;
   const cl_int numBasisComponents_0 = (pde_op == LAPLACIAN) ? 1 : spatial_dim;
-
-  /* Number of concurrent blocks */
-  const cl_int N_bl = 1;
 
   const cl_int dim    = spatial_dim;
   const cl_int N_b    = numBasisFunctions_0;   /* The number of basis functions */
@@ -472,7 +468,7 @@ PETSC_EXTERN PetscErrorCode IntegrateElementBatchGPU(PetscInt spatial_dim, Petsc
   PetscFunctionBegin;
   ierr = initializeOpenCL(&ocl_env);CHKERRQ(ierr);
   ierr = PetscMalloc(8192 * sizeof(char), &program_buffer);CHKERRQ(ierr);
-  ierr = generateOpenCLSource(&program_buffer, 8192, dim, pde_op);CHKERRQ(ierr);
+  ierr = generateOpenCLSource(&program_buffer, 8192, dim, N_bl, pde_op);CHKERRQ(ierr);
   ocl_source_length = strlen(program_buffer);
   ocl_prog = clCreateProgramWithSource(ocl_env.ctx_id, 1, (const char**)&program_buffer, &ocl_source_length, &ierr2);CHKERRQ(ierr2);
   ierr = clBuildProgram(ocl_prog, 0, NULL, NULL, NULL, NULL);
@@ -485,7 +481,6 @@ PETSC_EXTERN PetscErrorCode IntegrateElementBatchGPU(PetscInt spatial_dim, Petsc
 
   ocl_kernel = clCreateKernel(ocl_prog, "integrateElementQuadrature", &ierr);CHKERRQ(ierr);
 
-  if (Nbl != N_bl) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Inconsistent block size %d should be %d", Nbl, N_bl);
   if (Nbc*N_comp != N_t) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of threads %d should be %d * %d", N_t, Nbc, N_comp);
   if (!Ne) {
     PetscStageLog     stageLog;
