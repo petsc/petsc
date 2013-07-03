@@ -1002,8 +1002,8 @@ PetscErrorCode SplitFaces(DM *dmSplit, const char labelName[], User user)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "IsExteriorGhostFace"
-static PetscErrorCode IsExteriorGhostFace(DM dm,PetscInt face,PetscBool *isghost)
+#define __FUNCT__ "IsExteriorOrGhostFace"
+static PetscErrorCode IsExteriorOrGhostFace(DM dm,PetscInt face,PetscBool *isghost)
 {
   PetscErrorCode ierr;
   PetscInt       ghost,boundary;
@@ -1157,7 +1157,7 @@ static PetscErrorCode BuildLeastSquares(DM dm,PetscInt cEndInterior,DM dmFace,Pe
       PetscInt       ncell,side;
       FaceGeom       *fg;
       const CellGeom *cg1;
-      ierr = IsExteriorGhostFace(dm,faces[f],&ghost);CHKERRQ(ierr);
+      ierr = IsExteriorOrGhostFace(dm,faces[f],&ghost);CHKERRQ(ierr);
       if (ghost) continue;
       ierr  = DMPlexGetSupport(dm,faces[f],&fcells);CHKERRQ(ierr);
       side  = (c != fcells[0]); /* c is on left=0 or right=1 of face */
@@ -1175,7 +1175,7 @@ static PetscErrorCode BuildLeastSquares(DM dm,PetscInt cEndInterior,DM dmFace,Pe
       ierr = PseudoInverseSVD(usedFaces,numFaces,DIM,B,Binv,tau,worksize,work);CHKERRQ(ierr);
     }
     for (f=0,i=0; f<numFaces; f++) {
-      ierr = IsExteriorGhostFace(dm,faces[f],&ghost);CHKERRQ(ierr);
+      ierr = IsExteriorOrGhostFace(dm,faces[f],&ghost);CHKERRQ(ierr);
       if (ghost) continue;
       for (j=0; j<DIM; j++) gref[i][j] = Binv[j*numFaces+i];
       i++;
@@ -1879,7 +1879,7 @@ static PetscErrorCode RHSFunctionLocal_LS(DM dm,DM dmFace,DM dmCell,PetscReal ti
       PetscInt          i,j;
       PetscBool         ghost;
 
-      ierr = IsExteriorGhostFace(dm,face,&ghost);CHKERRQ(ierr);
+      ierr = IsExteriorOrGhostFace(dm,face,&ghost);CHKERRQ(ierr);
       if (ghost) continue;
       ierr = DMPlexGetSupport(dm,face,&cells);CHKERRQ(ierr);
       ierr = DMPlexPointLocalRead(dmFace,face,facegeom,&fg);CHKERRQ(ierr);
@@ -1919,7 +1919,7 @@ static PetscErrorCode RHSFunctionLocal_LS(DM dm,DM dmFace,DM dmCell,PetscReal ti
         PetscInt          face = faces[f],ncell;
         PetscScalar       v[DIM];
         PetscBool         ghost;
-        ierr = IsExteriorGhostFace(dm,face,&ghost);CHKERRQ(ierr);
+        ierr = IsExteriorOrGhostFace(dm,face,&ghost);CHKERRQ(ierr);
         if (ghost) continue;
         ierr  = DMPlexGetSupport(dm,face,&fcells);CHKERRQ(ierr);
         ncell = cell == fcells[0] ? fcells[1] : fcells[0];
