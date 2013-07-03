@@ -1,26 +1,25 @@
 
 static char help[] = "Large-deformation Elasticity Buckling Example";
 /*T
-   Concepts: SNES^solving a system of nonlinear equations (parallel multicomponent example);
+   Concepts: SNES^solving a system of nonlinear equations;
    Concepts: DMDA^using distributed arrays;
-   Concepts: multicomponent
    Processors: n
 T*/
-
-/*F-----------------------------------------------------------------------
-
- ------------------------------------------------------------------------F*/
 
 #include <petscsnes.h>
 #include <petscdmda.h>
 
 #define QP0 0.2113248654051871
 #define QP1 0.7886751345948129
-#define NQP 2
+#define NQ  2
 #define NB  2
-#define NVALS NQP*NQP*NQP*NB*NB*NB
-const PetscReal pts[NQP] = {QP0,QP1};
-const PetscReal wts[NQP] = {0.5,0.5};
+#define NEB 8
+#define NEQ 8
+#define NPB 24
+
+#define NVALS NEB*NEQ
+const PetscReal pts[NQ] = {QP0,QP1};
+const PetscReal wts[NQ] = {0.5,0.5};
 
 PetscScalar vals[NVALS];
 PetscScalar grad[3*NVALS];
@@ -34,7 +33,7 @@ typedef PetscScalar JacField[9];
 
 PetscErrorCode FormFunctionLocal(DMDALocalInfo*,Field***,Field***,void*);
 PetscErrorCode FormJacobianLocal(DMDALocalInfo *,Field ***,Mat,Mat,MatStructure *,void *);
-PetscErrorCode DisplayLine(DM,Vec);
+PetscErrorCode DisplayLine(SNES,Vec);
 PetscErrorCode FormElements();
 
 typedef struct {
@@ -60,7 +59,7 @@ int main(int argc,char **argv)
   MPI_Comm       comm;
   SNES           snes;
   DM             da;
-  Vec            x;
+  Vec            x,X;
   PetscBool      youngflg,poissonflg,view=PETSC_FALSE,viewline=PETSC_FALSE;
   PetscReal      poisson=0.2,young=1.0;
 
@@ -116,16 +115,16 @@ int main(int argc,char **argv)
 
   /* show a cross-section of the initial state */
   if (viewline) {
-    ierr = DisplayLine(da,x);CHKERRQ(ierr);
+    ierr = DisplayLine(snes,x);CHKERRQ(ierr);
   }
 
   ierr = SNESSolve(snes,NULL,x);CHKERRQ(ierr);
   ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
   ierr = PetscPrintf(comm,"Number of SNES iterations = %D\n", its);CHKERRQ(ierr);
-
+  ierr = SNESGetSolution(snes,&X);CHKERRQ(ierr);
   /* show a cross-section of the final state */
   if (viewline) {
-    ierr = DisplayLine(da,x);CHKERRQ(ierr);
+    ierr = DisplayLine(snes,X);CHKERRQ(ierr);
   }
 
   ierr = VecDestroy(&x);CHKERRQ(ierr);
@@ -200,7 +199,8 @@ void TensorVector(PetscScalar *rot, PetscScalar *vec, PetscScalar *tvec)
   tvec[2] = rot[6]*vec[0] + rot[7]*vec[1] + rot[8]*vec[2];
 }
 
-void DeformationGradient(Field *ex,PetscInt qi,PetscInt qj,PetscInt qk,PetscScalar *invJ,PetscScalar *F) {
+void DeformationGradient(Field *ex,PetscInt qi,PetscInt qj,PetscInt qk,PetscScalar *invJ,PetscScalar *F)
+{
   int ii,jj,kk,l;
   for (l = 0; l < 9; l++) {
     F[l] = 0.;
@@ -209,11 +209,11 @@ void DeformationGradient(Field *ex,PetscInt qi,PetscInt qj,PetscInt qk,PetscScal
   F[4] = 1.;
   F[8] = 1.;
   /* form the deformation gradient at this basis function -- loop over element unknowns */
-  for (kk=0;kk<2;kk++){
-    for (jj=0;jj<2;jj++) {
-      for (ii=0;ii<2;ii++) {
-        PetscInt idx = ii + jj*2 + kk*4;
-        PetscInt bidx = 8*idx + qi + 2*qj + 4*qk;
+  for (kk=0;kk<NB;kk++){
+    for (jj=0;jj<NB;jj++) {
+      for (ii=0;ii<NB;ii++) {
+        PetscInt idx = ii + jj*NB + kk*NB*NB;
+        PetscInt bidx = NEB*idx + qi + NQ*qj + NQ*NQ*qk;
         PetscScalar lgrad[3];
         TensorVector(invJ,&grad[3*bidx],lgrad);
         F[0] += lgrad[0]*ex[idx][0]; F[1] += lgrad[1]*ex[idx][0]; F[2] += lgrad[2]*ex[idx][0];
@@ -224,15 +224,16 @@ void DeformationGradient(Field *ex,PetscInt qi,PetscInt qj,PetscInt qk,PetscScal
   }
 }
 
-void DeformationGradientJacobian(PetscInt qi,PetscInt qj,PetscInt qk,PetscInt ii,PetscInt jj,PetscInt kk,PetscInt fld,PetscScalar *invJ,PetscScalar *dF) {
+void DeformationGradientJacobian(PetscInt qi,PetscInt qj,PetscInt qk,PetscInt ii,PetscInt jj,PetscInt kk,PetscInt fld,PetscScalar *invJ,PetscScalar *dF)
+{
   int l;
   for (l = 0; l < 9; l++) {
     dF[l] = 0.;
   }
   /* form the deformation gradient at this basis function -- loop over element unknowns */
   PetscScalar lgrad[3];
-  PetscInt idx = ii + jj*2 + kk*4;
-  PetscInt bidx = 8*idx + qi + 2*qj + 4*qk;
+  PetscInt idx = ii + jj*NB + kk*NB*NB;
+  PetscInt bidx = NEB*idx + qi + NQ*qj + NQ*NQ*qk;
   TensorVector(invJ,&grad[3*bidx],lgrad);
   dF[3*fld] = lgrad[0]; dF[3*fld + 1] = lgrad[1]; dF[3*fld + 2] = lgrad[2];
 }
@@ -252,7 +253,8 @@ void LagrangeGreenStrain(PetscScalar *F,PetscScalar *E)
   }
 }
 
-void SaintVenantKirchoff(PetscReal lambda,PetscReal mu,PetscScalar *F,PetscScalar *S) {
+void SaintVenantKirchoff(PetscReal lambda,PetscReal mu,PetscScalar *F,PetscScalar *S)
+{
   int i,j;
   PetscScalar E[9];
   LagrangeGreenStrain(F,E);
@@ -270,7 +272,8 @@ void SaintVenantKirchoff(PetscReal lambda,PetscReal mu,PetscScalar *F,PetscScala
   }
 }
 
-void SaintVenantKirchoffJacobian(PetscReal lambda,PetscReal mu,PetscScalar *F,PetscScalar *dF,PetscScalar *dS) {
+void SaintVenantKirchoffJacobian(PetscReal lambda,PetscReal mu,PetscScalar *F,PetscScalar *dF,PetscScalar *dS)
+{
   PetscScalar FtdF[9],dE[9];
   PetscInt i,j;
   PetscScalar dtrE=0.;
@@ -299,14 +302,14 @@ PetscErrorCode FormElements()
   PetscReal bx,by,bz,dbx,dby,dbz;
   PetscFunctionBegin;
   /* construct the basis function values and derivatives */
-  for (k = 0; k < 2; k++) {
-    for (j = 0; j < 2; j++) {
-      for (i = 0; i < 2; i++) {
+  for (k = 0; k < NB; k++) {
+    for (j = 0; j < NB; j++) {
+      for (i = 0; i < NB; i++) {
         /* loop over the quadrature points */
-        for (kk = 0; kk < 2; kk++) {
-          for (jj = 0; jj < 2; jj++) {
-            for (ii = 0; ii < 2; ii++) {
-              PetscInt idx = ii + 2*jj + 4*kk + 8*i + 16*j + 32*k;
+        for (kk = 0; kk < NQ; kk++) {
+          for (jj = 0; jj < NQ; jj++) {
+            for (ii = 0; ii < NQ; ii++) {
+              PetscInt idx = ii + NQ*jj + NQ*NQ*kk + NEQ*i + NEQ*NB*j + NEQ*NB*NB*k;
               bx = pts[ii];
               by = pts[jj];
               bz = pts[kk];
@@ -334,10 +337,10 @@ void GatherElementData(PetscInt mx,Field ***x,CoordField ***c,PetscInt i,PetscIn
   PetscInt m;
   PetscInt ii,jj,kk;
   /* gather the data -- loop over element unknowns */
-  for (kk=0;kk<2;kk++){
-    for (jj=0;jj<2;jj++) {
-      for (ii=0;ii<2;ii++) {
-        PetscInt idx = ii + jj*2 + kk*4;
+  for (kk=0;kk<NB;kk++){
+    for (jj=0;jj<NB;jj++) {
+      for (ii=0;ii<NB;ii++) {
+        PetscInt idx = ii + jj*NB + kk*NB*NB;
         /* decouple the boundary nodes for the displacement variables */
         if ((i + ii == 0)) {
           ex[idx][0] = user->squeeze/2;
@@ -361,7 +364,8 @@ void GatherElementData(PetscInt mx,Field ***x,CoordField ***c,PetscInt i,PetscIn
 }
 
 
-void QuadraturePointGeometricJacobian(CoordField *ec,PetscInt qi,PetscInt qj,PetscInt qk, PetscScalar *J) {
+void QuadraturePointGeometricJacobian(CoordField *ec,PetscInt qi,PetscInt qj,PetscInt qk, PetscScalar *J)
+{
   PetscInt ii,jj,kk;
   /* construct the gradient at the given quadrature point named by i,j,k */
   for (ii = 0; ii < 9; ii++) {
@@ -370,8 +374,8 @@ void QuadraturePointGeometricJacobian(CoordField *ec,PetscInt qi,PetscInt qj,Pet
   for (kk = 0; kk < NB; kk++) {
     for (jj = 0; jj < NB; jj++) {
       for (ii = 0; ii < NB; ii++) {
-        PetscInt idx = ii + jj*2 + kk*4;
-        PetscInt bidx = 8*idx + qi + 2*qj + 4*qk;
+        PetscInt idx = ii + jj*NB + kk*NB*NB;
+        PetscInt bidx = NEB*idx + qi + NQ*qj + NQ*NQ*qk;
         J[0] += grad[3*bidx + 0]*ec[idx][0]; J[1] += grad[3*bidx + 1]*ec[idx][0]; J[2] += grad[3*bidx + 2]*ec[idx][0];
         J[3] += grad[3*bidx + 0]*ec[idx][1]; J[4] += grad[3*bidx + 1]*ec[idx][1]; J[5] += grad[3*bidx + 2]*ec[idx][1];
         J[6] += grad[3*bidx + 0]*ec[idx][2]; J[7] += grad[3*bidx + 1]*ec[idx][2]; J[8] += grad[3*bidx + 2]*ec[idx][2];
@@ -380,19 +384,20 @@ void QuadraturePointGeometricJacobian(CoordField *ec,PetscInt qi,PetscInt qj,Pet
   }
 }
 
-void FormElementJacobian(Field *ex,CoordField *ec,Field *ef,PetscScalar *ej,AppCtx *user) {
+void FormElementJacobian(Field *ex,CoordField *ec,Field *ef,PetscScalar *ej,AppCtx *user)
+{
   PetscReal   vol;
   PetscScalar J[9];
   PetscScalar invJ[9];
   PetscScalar F[9],S[9],dF[9],dS[9],dFS[9],FdS[9],FS[9];
   PetscReal   scl;
   PetscInt    i,j,k,l,ii,jj,kk,ll,qi,qj,qk,m;
-  if (ej) for (i = 0; i < 8*8*3*3; i++) ej[i] = 0.;
-  if (ef) for (i = 0; i < 8; i++) {ef[i][0] = 0.;ef[i][1] = 0.;ef[i][2] = 0.;}
+  if (ej) for (i = 0; i < NPB*NPB; i++) ej[i] = 0.;
+  if (ef) for (i = 0; i < NEB; i++) {ef[i][0] = 0.;ef[i][1] = 0.;ef[i][2] = 0.;}
   /* loop over quadrature */
-  for (qk = 0; qk < NQP; qk++) {
-    for (qj = 0; qj < NQP; qj++) {
-      for (qi = 0; qi < NQP; qi++) {
+  for (qk = 0; qk < NQ; qk++) {
+    for (qj = 0; qj < NQ; qj++) {
+      for (qi = 0; qi < NQ; qi++) {
         QuadraturePointGeometricJacobian(ec,qi,qj,qk,J);
         InvertTensor(J,invJ,&vol);
         scl = vol*wts[qi]*wts[qj]*wts[qk];
@@ -401,11 +406,11 @@ void FormElementJacobian(Field *ex,CoordField *ec,Field *ef,PetscScalar *ej,AppC
         /* form the function */
         if (ef) {
           TensorTensor(F,S,FS);
-          for (kk=0;kk<2;kk++){
-            for (jj=0;jj<2;jj++) {
-              for (ii=0;ii<2;ii++) {
-                PetscInt idx = ii + jj*2 + kk*4;
-                PetscInt bidx = 8*idx + qi + 2*qj + 4*qk;
+          for (kk=0;kk<NB;kk++){
+            for (jj=0;jj<NB;jj++) {
+              for (ii=0;ii<NB;ii++) {
+                PetscInt idx = ii + jj*NB + kk*NB*NB;
+                PetscInt bidx = NEB*idx + qi + NQ*qj + NQ*NQ*qk;
                 PetscScalar lgrad[3];
                 TensorVector(invJ,&grad[3*bidx],lgrad);
                 /* mu*F : grad phi_{u,v,w} */
@@ -421,27 +426,27 @@ void FormElementJacobian(Field *ex,CoordField *ec,Field *ef,PetscScalar *ej,AppC
         /* form the jacobian */
         if (ej) {
           /* loop over trialfunctions */
-          for (k=0;k<2;k++){
-            for (j=0;j<2;j++) {
-              for (i=0;i<2;i++) {
+          for (k=0;k<NB;k++){
+            for (j=0;j<NB;j++) {
+              for (i=0;i<NB;i++) {
                 for (l=0;l<3;l++) {
-                  PetscInt tridx = l + 3*(i + j*2 + k*4);
+                  PetscInt tridx = l + 3*(i + j*NB + k*NB*NB);
                   DeformationGradientJacobian(qi,qj,qk,i,j,k,l,invJ,dF);
                   SaintVenantKirchoffJacobian(user->lambda,user->mu,F,dF,dS);
                   TensorTensor(dF,S,dFS);
                   TensorTensor(F,dS,FdS);
                   for (m=0;m<9;m++) dFS[m] += FdS[m];
                   /* loop over testfunctions */
-                  for (kk=0;kk<2;kk++){
-                    for (jj=0;jj<2;jj++) {
-                      for (ii=0;ii<2;ii++) {
-                        PetscInt idx = ii + jj*2 + kk*4;
-                        PetscInt bidx = 8*idx + qi + 2*qj + 4*qk;
+                  for (kk=0;kk<NB;kk++){
+                    for (jj=0;jj<NB;jj++) {
+                      for (ii=0;ii<NB;ii++) {
+                        PetscInt idx = ii + jj*NB + kk*NB*NB;
+                        PetscInt bidx = 8*idx + qi + NQ*qj + NQ*NQ*qk;
                         PetscScalar lgrad[3];
                         TensorVector(invJ,&grad[3*bidx],lgrad);
                         for (ll=0; ll<3;ll++) {
-                          PetscInt teidx = ll + 3*(ii + jj*2 + kk*4);
-                          ej[teidx + 24*tridx] += scl*
+                          PetscInt teidx = ll + 3*(ii + jj*NB + kk*NB*NB);
+                          ej[teidx + NPB*tridx] += scl*
                             (lgrad[0]*dFS[3*ll + 0] + lgrad[1]*dFS[3*ll + 1] + lgrad[2]*dFS[3*ll+2]);
                         }
                       }
@@ -457,7 +462,8 @@ void FormElementJacobian(Field *ex,CoordField *ec,Field *ef,PetscScalar *ej,AppC
   } /* end of quadrature points */
 }
 
-void FormPBJacobian(PetscInt i,PetscInt j,PetscInt k,Field *ex,CoordField *ec,Field *ef,PetscScalar *ej,AppCtx *user) {
+void FormPBJacobian(PetscInt i,PetscInt j,PetscInt k,Field *ex,CoordField *ec,Field *ef,PetscScalar *ej,AppCtx *user)
+{
   PetscReal   vol;
   PetscScalar J[9];
   PetscScalar invJ[9];
@@ -466,23 +472,22 @@ void FormPBJacobian(PetscInt i,PetscInt j,PetscInt k,Field *ex,CoordField *ec,Fi
   PetscInt    l,ll,qi,qj,qk,m;
   if (ej) for (l = 0; l < 9; l++) ej[l] = 0.;
   if (ef) for (l = 0; l < 1; l++) {ef[l][0] = 0.;ef[l][1] = 0.;ef[l][2] = 0.;}
-  PetscInt idx = i + j*2 + k*4;
+  PetscInt idx = i + j*NB + k*NB*NB;
   /* loop over quadrature */
-  for (qk = 0; qk < NQP; qk++) {
-    for (qj = 0; qj < NQP; qj++) {
-      for (qi = 0; qi < NQP; qi++) {
-        PetscInt bidx = 8*idx + qi + 2*qj + 4*qk;
+  for (qk = 0; qk < NQ; qk++) {
+    for (qj = 0; qj < NQ; qj++) {
+      for (qi = 0; qi < NQ; qi++) {
+        PetscInt bidx = NEB*idx + qi + NQ*qj + NQ*NQ*qk;
         QuadraturePointGeometricJacobian(ec,qi,qj,qk,J);
         InvertTensor(J,invJ,&vol);
+        PetscScalar lgrad[3];
+        TensorVector(invJ,&grad[3*bidx],lgrad);
         scl = vol*wts[qi]*wts[qj]*wts[qk];
         DeformationGradient(ex,qi,qj,qk,invJ,F);
         SaintVenantKirchoff(user->lambda,user->mu,F,S);
         /* form the function */
         if (ef) {
           TensorTensor(F,S,FS);
-          PetscScalar lgrad[3];
-          TensorVector(invJ,&grad[3*bidx],lgrad);
-          /* mu*F : grad phi_{u,v,w} */
           for (m=0;m<3;m++) {
             ef[0][m] += scl*
               (lgrad[0]*FS[3*m + 0] + lgrad[1]*FS[3*m + 1] + lgrad[2]*FS[3*m + 2]);
@@ -494,8 +499,6 @@ void FormPBJacobian(PetscInt i,PetscInt j,PetscInt k,Field *ex,CoordField *ec,Fi
           for (l=0;l<3;l++) {
             DeformationGradientJacobian(qi,qj,qk,i,j,k,l,invJ,dF);
             SaintVenantKirchoffJacobian(user->lambda,user->mu,F,dF,dS);
-            PetscScalar lgrad[3];
-            TensorVector(invJ,&grad[3*bidx],lgrad);
             TensorTensor(dF,S,dFS);
             TensorTensor(F,dS,FdS);
             for (m=0;m<9;m++) dFS[m] += FdS[m];
@@ -510,23 +513,24 @@ void FormPBJacobian(PetscInt i,PetscInt j,PetscInt k,Field *ex,CoordField *ec,Fi
   }
 }
 
-void ApplyBCsElement(PetscInt mx,PetscInt i, PetscInt j, PetscInt k,PetscScalar *jacobian) {
+void ApplyBCsElement(PetscInt mx,PetscInt i, PetscInt j, PetscInt k,PetscScalar *jacobian)
+{
   PetscInt ii,jj,kk,ll,ei,ej,ek,el;
-  for (kk=0;kk<2;kk++){
-    for (jj=0;jj<2;jj++) {
-      for (ii=0;ii<2;ii++) {
+  for (kk=0;kk<NB;kk++){
+    for (jj=0;jj<NB;jj++) {
+      for (ii=0;ii<NB;ii++) {
         for(ll = 0;ll<3;ll++) {
-          PetscInt tridx = ll + 3*(ii + jj*2 + kk*4);
-          for (ek=0;ek<2;ek++){
-            for (ej=0;ej<2;ej++) {
-              for (ei=0;ei<2;ei++) {
+          PetscInt tridx = ll + 3*(ii + jj*NB + kk*NB*NB);
+          for (ek=0;ek<NB;ek++){
+            for (ej=0;ej<NB;ej++) {
+              for (ei=0;ei<NB;ei++) {
                 for (el=0;el<3;el++) {
                   if ((i + ii == 0) || (i + ii == mx - 1) || (i + ei == 0) || (i + ei == mx - 1)) {
-                    PetscInt teidx = el + 3*(ei + ej*2 + ek*4);
+                    PetscInt teidx = el + 3*(ei + ej*NB + ek*NB*NB);
                     if (teidx == tridx) {
-                      jacobian[tridx + 24*teidx] = 1.;
+                      jacobian[tridx + NPB*teidx] = 1.;
                     } else {
-                      jacobian[tridx + 24*teidx] = 0.;
+                      jacobian[tridx + NPB*teidx] = 0.;
                     }
                   }
                 }
@@ -550,10 +554,10 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,Field ***x,Mat jacpre,Mat j
   PetscInt i,j,k,m,l;
   PetscInt ii,jj,kk;
 
-  PetscScalar ej[8*3*8*3];
-  PetscScalar vals[8*3*8*3];
-  Field ex[8];
-  CoordField ec[8];
+  PetscScalar ej[NPB*NPB];
+  PetscScalar vals[NPB*NPB];
+  Field ex[NEB];
+  CoordField ec[NEB];
 
   PetscErrorCode ierr;
   PetscInt xs=info->xs,ys=info->ys,zs=info->zs;
@@ -564,7 +568,7 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,Field ***x,Mat jacpre,Mat j
   CoordField  ***c;
   Vec         C;
   PetscInt    nrows;
-  MatStencil  col[24],row[24];
+  MatStencil  col[NPB],row[NPB];
 
   PetscFunctionBegin;
   ierr = DMGetCoordinateDM(info->da,&cda);CHKERRQ(ierr);
@@ -591,9 +595,9 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,Field ***x,Mat jacpre,Mat j
         FormElementJacobian(ex,ec,NULL,ej,user);
         ApplyBCsElement(mx,i,j,k,ej);
         nrows = 0.;
-        for (kk=0;kk<2;kk++){
-          for (jj=0;jj<2;jj++) {
-            for (ii=0;ii<2;ii++) {
+        for (kk=0;kk<NB;kk++){
+          for (jj=0;jj<NB;jj++) {
+            for (ii=0;ii<NB;ii++) {
               PetscInt idx = ii + jj*2 + kk*4;
               for (m=0;m<3;m++) {
                 col[3*idx+m].i = i+ii;
@@ -605,14 +609,14 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,Field ***x,Mat jacpre,Mat j
                   row[nrows].j = j+jj;
                   row[nrows].k = k+kk;
                   row[nrows].c = m;
-                  for (l=0;l<24;l++) vals[24*nrows + l] = ej[24*(3*idx+m) + l];
+                  for (l=0;l<NPB;l++) vals[NPB*nrows + l] = ej[NPB*(3*idx+m) + l];
                   nrows++;
                 }
               }
             }
           }
         }
-        ierr = MatSetValuesStencil(jac,nrows,row,24,col,vals,ADD_VALUES);CHKERRQ(ierr);
+        ierr = MatSetValuesStencil(jac,nrows,row,NPB,col,vals,ADD_VALUES);CHKERRQ(ierr);
       }
     }
   }
@@ -657,9 +661,9 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,Field ***x,Field ***f,void 
   PetscInt i,j,k,l;
   PetscInt ii,jj,kk;
 
-  Field ef[8];
-  Field ex[8];
-  CoordField ec[8];
+  Field ef[NEB];
+  Field ex[NEB];
+  CoordField ec[NEB];
 
   PetscErrorCode ierr;
   PetscInt xs=info->xs,ys=info->ys,zs=info->zs;
@@ -706,10 +710,10 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,Field ***x,Field ***f,void 
         GatherElementData(mx,x,c,i,j,k,ex,ec,user);
         FormElementJacobian(ex,ec,ef,NULL,user);
         /* put this element's additions into the residuals */
-        for (kk=0;kk<2;kk++){
-          for (jj=0;jj<2;jj++) {
-            for (ii=0;ii<2;ii++) {
-              PetscInt idx = ii + jj*2 + kk*4;
+        for (kk=0;kk<NB;kk++){
+          for (jj=0;jj<NB;jj++) {
+            for (ii=0;ii<NB;ii++) {
+              PetscInt idx = ii + jj*NB + kk*NB*NB;
               if (k+kk >= zs && j+jj >= ys && i+ii >= xs && k+kk < zs+zm && j+jj < ys+ym && i+ii < xs+xm) {
                 if ((i + ii == 0)) {
                   for (l=0;l<3;l++)
@@ -922,18 +926,19 @@ PetscErrorCode InitialGuess(DM da,AppCtx *user,Vec X)
 
 #undef __FUNCT__
 #define __FUNCT__ "DisplayLine"
-PetscErrorCode DisplayLine(DM da,Vec X)
+PetscErrorCode DisplayLine(SNES snes,Vec X)
 {
   PetscInt       r,i,j=0,k=0,xs,xm,ys,ym,zs,zm,mx,my,mz;
   PetscErrorCode ierr;
   Field          ***x;
   CoordField     ***c;
-  DM             cda;
+  DM             da,cda;
   Vec            C;
   PetscMPIInt    size,rank;
   PetscFunctionBegin;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+  ierr = SNESGetDM(snes,&da);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,0,&mx,&my,&mz,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
   ierr = DMGetCoordinates(da,&C);CHKERRQ(ierr);
