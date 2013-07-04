@@ -25,8 +25,8 @@
 PetscErrorCode  PetscObjectAMSTakeAccess(PetscObject obj)
 {
   PetscFunctionBegin;
-  if (obj->amsmem != -1) {
-    PetscStackCallAMS(AMS_Memory_take_access,(obj->amsmem));
+  if (obj->amsmem) {
+    PetscStackCallAMS(AMS_Lock_Memory,(obj->amsmem));
   }
   PetscFunctionReturn(0);
 }
@@ -53,8 +53,8 @@ PetscErrorCode  PetscObjectAMSTakeAccess(PetscObject obj)
 PetscErrorCode  PetscObjectAMSGrantAccess(PetscObject obj)
 {
   PetscFunctionBegin;
-  if (obj->amsmem != -1) {
-    PetscStackCallAMS(AMS_Memory_grant_access,(obj->amsmem));
+  if (obj->amsmem) {
+    PetscStackCallAMS(AMS_Unlock_Memory,(obj->amsmem));
   }
   PetscFunctionReturn(0);
 }
@@ -137,9 +137,9 @@ PetscErrorCode PetscObjectAMSViewOff(PetscObject obj)
 
   PetscFunctionBegin;
   if (obj->classid == PETSC_VIEWER_CLASSID) PetscFunctionReturn(0);
-  if (obj->amsmem == -1) PetscFunctionReturn(0);
-  ierr        = AMS_Memory_destroy(obj->amsmem);CHKERRQ(ierr);
-  obj->amsmem = -1;
+  if (!obj->amsmem) PetscFunctionReturn(0);
+  ierr = AMS_Memory_Destroy(obj->amsmem);CHKERRQ(ierr);
+  obj->amsmem = NULL;
   PetscFunctionReturn(0);
 }
 

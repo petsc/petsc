@@ -186,15 +186,13 @@ PetscErrorCode  KSPView(KSP ksp,PetscViewer viewer)
     ierr = PetscDrawPushCurrentPoint(draw,x,bottom);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_AMS)
   } else if (isams) {
-    if (((PetscObject)ksp)->amsmem == -1) {
+    if (!((PetscObject)ksp)->amsmem) {
       ierr = PetscObjectViewAMS((PetscObject)ksp,viewer);CHKERRQ(ierr);
-      PetscStackCallAMS(AMS_Memory_take_access,(((PetscObject)ksp)->amsmem));
-      PetscStackCallAMS(AMS_Memory_add_field,(((PetscObject)ksp)->amsmem,"its",&ksp->its,1,AMS_INT,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF));
+      PetscStackCallAMS(AMS_New_Field,(((PetscObject)ksp)->amsmem,"its",&ksp->its,1,AMS_READ,AMS_INT));
       if (!ksp->res_hist) {
         ierr = KSPSetResidualHistory(ksp,NULL,PETSC_DECIDE,PETSC_FALSE);CHKERRQ(ierr);
       }
-      PetscStackCallAMS(AMS_Memory_add_field,(((PetscObject)ksp)->amsmem,"res_hist",ksp->res_hist,10,AMS_DOUBLE,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF));
-      PetscStackCallAMS(AMS_Memory_grant_access,(((PetscObject)ksp)->amsmem));
+      PetscStackCallAMS(AMS_New_Field,(((PetscObject)ksp)->amsmem,"res_hist",ksp->res_hist,10,AMS_READ,AMS_DOUBLE));
     }
 #endif
   } else if (ksp->ops->view) {

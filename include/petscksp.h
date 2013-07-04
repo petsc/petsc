@@ -249,7 +249,7 @@ PETSC_EXTERN PetscErrorCode KSPMonitorTrueResidualMaxNorm(KSP,PetscInt,PetscReal
 PETSC_EXTERN PetscErrorCode KSPMonitorDefaultShort(KSP,PetscInt,PetscReal,void *);
 PETSC_EXTERN PetscErrorCode KSPMonitorSolution(KSP,PetscInt,PetscReal,void *);
 PETSC_EXTERN PetscErrorCode KSPMonitorAMS(KSP,PetscInt,PetscReal,void*);
-PETSC_EXTERN PetscErrorCode KSPMonitorAMSCreate(KSP,const char*,void**);
+PETSC_EXTERN PetscErrorCode KSPMonitorAMSCreate(KSP,void**);
 PETSC_EXTERN PetscErrorCode KSPMonitorAMSDestroy(void**);
 PETSC_EXTERN PetscErrorCode KSPGMRESMonitorKrylov(KSP,PetscInt,PetscReal,void *);
 

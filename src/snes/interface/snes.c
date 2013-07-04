@@ -316,15 +316,13 @@ PetscErrorCode  SNESView(SNES snes,PetscViewer viewer)
     }
 #if defined(PETSC_HAVE_AMS)
   } else if (isams) {
-    if (((PetscObject)snes)->amsmem == -1) {
+    if (!((PetscObject)snes)->amsmem) {
       ierr = PetscObjectViewAMS((PetscObject)snes,viewer);CHKERRQ(ierr);
-      PetscStackCallAMS(AMS_Memory_take_access,(((PetscObject)snes)->amsmem));
-      PetscStackCallAMS(AMS_Memory_add_field,(((PetscObject)snes)->amsmem,"its",&snes->iter,1,AMS_INT,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF));
+      PetscStackCallAMS(AMS_New_Field,(((PetscObject)snes)->amsmem,"its",&snes->iter,1,AMS_READ,AMS_INT));
       if (!snes->conv_hist) {
         ierr = SNESSetConvergenceHistory(snes,NULL,NULL,PETSC_DECIDE,PETSC_FALSE);CHKERRQ(ierr);
       }
-      PetscStackCallAMS(AMS_Memory_add_field,(((PetscObject)snes)->amsmem,"conv_hist",snes->conv_hist,10,AMS_DOUBLE,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF));
-      PetscStackCallAMS(AMS_Memory_grant_access,(((PetscObject)snes)->amsmem));
+      PetscStackCallAMS(AMS_New_Field,(((PetscObject)snes)->amsmem,"conv_hist",snes->conv_hist,10,AMS_READ,AMS_DOUBLE));
     }
 #endif
   }

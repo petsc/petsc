@@ -579,7 +579,7 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
   ierr = PetscOptionsBool("-ksp_monitor_ams","Publish KSP progress using AMS","KSPMonitorSet",flg,&flg,NULL);CHKERRQ(ierr);
   if (flg) {
     void *ctx;
-    ierr = KSPMonitorAMSCreate(ksp,NULL,&ctx);CHKERRQ(ierr);
+    ierr = KSPMonitorAMSCreate(ksp,&ctx);CHKERRQ(ierr);
     ierr = KSPMonitorSet(ksp,KSPMonitorAMS,ctx,KSPMonitorAMSDestroy);CHKERRQ(ierr);
     ierr = KSPSetComputeSingularValues(ksp,PETSC_TRUE);CHKERRQ(ierr);
   }

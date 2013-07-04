@@ -770,6 +770,10 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   ierr = MPI_Type_commit(&MPIU_2INT);CHKERRQ(ierr);
 #endif
 
+#if defined(PETSC_HAVE_AMS)
+  ierr = AMS_Initialize();CHKERRQ(ierr);
+#endif
+
   /*
      Attributes to be set on PETSc communicators
   */
@@ -1113,6 +1117,10 @@ PetscErrorCode  PetscFinalize(void)
       ierr = PetscOptionsLeft();CHKERRQ(ierr);
     }
   }
+
+#if defined(PETSC_HAVE_AMS)
+  AMS_Finalize();CHKERRQ(ierr);
+#endif
 
   {
     PetscThreadComm tcomm_world;

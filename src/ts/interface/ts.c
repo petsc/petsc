@@ -1393,12 +1393,10 @@ PetscErrorCode  TSView(TS ts,PetscViewer viewer)
     ierr = PetscDrawPopCurrentPoint(draw);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_AMS)
   } else if (isams) {
-    if (((PetscObject)ts)->amsmem == -1) {
+    if (!((PetscObject)ts)->amsmem) {
       ierr = PetscObjectViewAMS((PetscObject)ts,viewer);CHKERRQ(ierr);
-      PetscStackCallAMS(AMS_Memory_take_access,(((PetscObject)ts)->amsmem));
-      PetscStackCallAMS(AMS_Memory_add_field,(((PetscObject)ts)->amsmem,"time step",&ts->steps,1,AMS_INT,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF));
-      PetscStackCallAMS(AMS_Memory_add_field,(((PetscObject)ts)->amsmem,"time",&ts->ptime,1,AMS_DOUBLE,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF));
-      PetscStackCallAMS(AMS_Memory_grant_access,(((PetscObject)ts)->amsmem));
+      PetscStackCallAMS(AMS_New_Field,(((PetscObject)ts)->amsmem,"time step",&ts->steps,1,AMS_READ,AMS_INT));
+      PetscStackCallAMS(AMS_New_Field,(((PetscObject)ts)->amsmem,"time",&ts->ptime,1,AMS_READ,AMS_DOUBLE));
     }
     if (ts->ops->view) {
       ierr = (*ts->ops->view)(ts,viewer);CHKERRQ(ierr);

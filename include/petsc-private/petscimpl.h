@@ -55,6 +55,10 @@ typedef struct {
   void *ctx;
 } PetscFortranCallback;
 
+#if defined(PETSC_HAVE_AMS)
+#include <ams.h>
+#endif
+
 /*
    All PETSc objects begin with the fields defined in PETSCHEADER.
    The PetscObject is a way of examining these fields regardless of
@@ -107,7 +111,7 @@ typedef struct _p_PetscObject {
   PetscPrecision       precision;
   PetscBool            optionsprinted;
 #if defined(PETSC_HAVE_AMS)
-  PetscInt             amsmem;
+  AMS_Memory           amsmem;
   PetscBool            amspublishblock; /* if PETSC_TRUE and publishing objects then will block at PetscObjectAMSBlock() */
   PetscBool            amsblock;
 #endif

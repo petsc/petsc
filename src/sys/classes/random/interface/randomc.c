@@ -262,9 +262,9 @@ PetscErrorCode  PetscRandomView(PetscRandom rnd,PetscViewer viewer)
     ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_FALSE);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_AMS)
   } else if (isams) {
-    if (((PetscObject)rnd)->amsmem == -1) {
+    if (!((PetscObject)rnd)->amsmem) {
       ierr = PetscObjectViewAMS((PetscObject)rnd,viewer);CHKERRQ(ierr);
-      PetscStackCallAMS(AMS_Memory_add_field,(((PetscObject)rnd)->amsmem,"Low",&rnd->low,1,AMS_DOUBLE,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF));
+      PetscStackCallAMS(AMS_New_Field,(((PetscObject)rnd)->amsmem,"Low",&rnd->low,1,AMS_READ,AMS_DOUBLE));
     }
 #endif
   }

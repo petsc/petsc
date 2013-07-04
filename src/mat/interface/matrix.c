@@ -859,7 +859,7 @@ PetscErrorCode  MatView(Mat mat,PetscViewer viewer)
     }
 #if defined(PETSC_HAVE_AMS)
   } else if (isams) {
-    if (((PetscObject)mat)->amsmem == -1) {
+    if (!((PetscObject)mat)->amsmem) {
       ierr = PetscObjectViewAMS((PetscObject)mat,viewer);CHKERRQ(ierr);
     }
 #endif

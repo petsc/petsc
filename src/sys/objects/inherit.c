@@ -37,7 +37,7 @@ PetscErrorCode  PetscHeaderCreate_Private(PetscObject h,PetscClassId classid,con
   h->prefix                = 0;
   h->refct                 = 1;
 #if defined(PETSC_HAVE_AMS)
-  h->amsmem                = -1;
+  h->amsmem                = NULL;
 #endif
   h->id                    = idcnt++;
   h->parentid              = 0;
@@ -92,7 +92,6 @@ PetscErrorCode  PetscHeaderDestroy_Private(PetscObject h)
 
   PetscFunctionBegin;
   PetscValidHeader(h,1);
-  ierr = PetscObjectAMSViewOff(h);CHKERRQ(ierr);
   ierr = PetscLogObjectDestroy(h);CHKERRQ(ierr);
   ierr = PetscComposedQuantitiesDestroy(h);
   if (PetscMemoryCollectMaximumUsage) {

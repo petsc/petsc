@@ -1671,7 +1671,7 @@ PetscErrorCode  PCView(PC pc,PetscViewer viewer)
     ierr = PetscDrawPopCurrentPoint(draw);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_AMS)
   } else if (isams) {
-    if (((PetscObject)pc)->amsmem == -1) {
+    if (!((PetscObject)pc)->amsmem) {
       ierr = PetscObjectViewAMS((PetscObject)pc,viewer);CHKERRQ(ierr);
     }
     if (pc->mat) {ierr = MatView(pc->mat,viewer);CHKERRQ(ierr);}
