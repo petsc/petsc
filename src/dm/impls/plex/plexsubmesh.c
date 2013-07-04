@@ -2259,7 +2259,7 @@ static PetscErrorCode DMPlexCreateCohesiveSubmesh_Uninterpolated(DM dm, PetscBoo
     PetscSFNode       *sremotePoints, *newLocalPoints, *newOwners;
     const PetscInt    *localPoints;
     PetscInt          *slocalPoints;
-    PetscInt           numRoots, numLeaves, numSubRoots = numSubCells+numSubFaces+numSubVertices, numSubLeaves = 0, l, sl, pStart, pEnd, p, vStart, vEnd;
+    PetscInt           numRoots, numLeaves, numSubRoots = numSubCells+numSubFaces+numSubVertices, numSubLeaves = 0, l, sl, ll, pStart, pEnd, p, vStart, vEnd;
     PetscMPIInt        rank;
 
     ierr = MPI_Comm_rank(PetscObjectComm((PetscObject) dm), &rank);CHKERRQ(ierr);
@@ -2304,11 +2304,12 @@ static PetscErrorCode DMPlexCreateCohesiveSubmesh_Uninterpolated(DM dm, PetscBoo
       ierr = PetscSFBcastEnd(sfPoint, MPIU_2INT, newOwners, newLocalPoints);CHKERRQ(ierr);
       ierr = PetscMalloc(numSubLeaves * sizeof(PetscInt),    &slocalPoints);CHKERRQ(ierr);
       ierr = PetscMalloc(numSubLeaves * sizeof(PetscSFNode), &sremotePoints);CHKERRQ(ierr);
-      for (l = 0, sl = 0; l < numLeaves; ++l) {
+      for (l = 0, sl = 0, ll = 0; l < numLeaves; ++l) {
         const PetscInt point    = localPoints[l];
         const PetscInt subPoint = DMPlexFilterPoint_Internal(point, firstSubVertex, numSubVertices, subVertices);
 
         if (subPoint < 0) continue;
+        if (newLocalPoints[point].rank == rank) {++ll; continue;}
         slocalPoints[sl]        = subPoint;
         sremotePoints[sl].rank  = newLocalPoints[point].rank;
         sremotePoints[sl].index = newLocalPoints[point].index;
@@ -2317,8 +2318,8 @@ static PetscErrorCode DMPlexCreateCohesiveSubmesh_Uninterpolated(DM dm, PetscBoo
         ++sl;
       }
       ierr = PetscFree2(newLocalPoints,newOwners);CHKERRQ(ierr);
-      if (sl != numSubLeaves) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Mismatch in number of subleaves %d != %d", sl, numSubLeaves);
-      ierr = PetscSFSetGraph(sfPointSub, numSubRoots, numSubLeaves, slocalPoints, PETSC_OWN_POINTER, sremotePoints, PETSC_OWN_POINTER);CHKERRQ(ierr);
+      if (sl + ll != numSubLeaves) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Mismatch in number of subleaves %d + %d != %d", sl, ll, numSubLeaves);
+      ierr = PetscSFSetGraph(sfPointSub, numSubRoots, sl, slocalPoints, PETSC_OWN_POINTER, sremotePoints, PETSC_OWN_POINTER);CHKERRQ(ierr);
     }
   }
   CHKMEMQ;
