@@ -249,14 +249,17 @@ static PetscErrorCode SNESCompositeApply_AdditiveOptimal(SNES snes,Vec X,Vec B,V
 static PetscErrorCode SNESSetUp_Composite(SNES snes)
 {
   PetscErrorCode     ierr;
+  DM                 dm;
   SNES_Composite     *jac = (SNES_Composite*)snes->data;
   SNES_CompositeLink next = jac->head;
   PetscInt           n=0,i;
   Vec                F;
 
   PetscFunctionBegin;
+  ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
   while (next) {
     n++;
+    ierr = SNESSetDM(next->snes,dm);CHKERRQ(ierr);
     ierr = SNESSetFromOptions(next->snes);CHKERRQ(ierr);
     next = next->next;
   }
