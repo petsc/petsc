@@ -10,8 +10,8 @@
 PetscErrorCode DMCreateCoordinateDM_DA(DM dm, DM *cdm)
 {
   PetscErrorCode ierr;
-  PetscFunctionBegin;
   DM_DA          *da = (DM_DA*) dm->data;
+  PetscFunctionBegin;
   ierr = DMDAGetReducedDMDA(dm,da->dim,cdm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
