@@ -100,7 +100,7 @@ PetscErrorCode TSPostEvent(TS ts,PetscInt nevents_zero,PetscInt events_zero[],Pe
   for(i = 0; i < nevents_zero;i++) {
     terminate = (PetscBool)(terminate || event->terminate[events_zero[i]]);
   }
-  ierr = MPI_Allreduce(&terminate,&ts_terminate,1,MPIU_INT,MPI_MAX,((PetscObject)ts)->comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&terminate,&ts_terminate,1,MPIU_BOOL,MPI_LOR,((PetscObject)ts)->comm);CHKERRQ(ierr);
   if (terminate) {
     ierr = TSSetConvergedReason(ts,TS_CONVERGED_EVENT);CHKERRQ(ierr);
     event->status = TSEVENT_NONE;
@@ -137,7 +137,7 @@ PetscErrorCode TSEventMonitor(TS ts)
   Vec            U;
   PetscInt       i;
   PetscReal      dt;
-  PetscInt       status=event->status;
+  TSEventStatus  status = event->status;
   PetscInt       rollback=0,in[2],out[2];
 
   PetscFunctionBegin;
@@ -170,7 +170,7 @@ PetscErrorCode TSEventMonitor(TS ts)
   }
 
   status = event->status;
-  ierr = MPI_Allreduce(&status,&event->status,1,MPIU_INT,MPI_MAX,((PetscObject)ts)->comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce((PetscEnum*)&status,(PetscEnum*)&event->status,1,MPIU_ENUM,MPI_MAX,((PetscObject)ts)->comm);CHKERRQ(ierr);
 
   if (event->status == TSEVENT_ZERO) {
     dt = event->tstepend-t;
