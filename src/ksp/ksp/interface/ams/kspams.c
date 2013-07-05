@@ -64,7 +64,7 @@ PetscErrorCode KSPMonitorAMSDestroy(void **ctx)
     PetscStackCallAMS(AMS_Memory_Destroy,(mon->amem));
     mon->amem = NULL;
   }
-  ierr      = PetscViewerDestroy(&mon->viewer);CHKERRQ(ierr);
+  /* ierr      = PetscViewerDestroy(&mon->viewer);CHKERRQ(ierr);*/
   ierr      = PetscFree(mon->eigr);CHKERRQ(ierr);
   mon->eigi = NULL;
   ierr      = PetscFree(*ctx);CHKERRQ(ierr);
@@ -118,7 +118,7 @@ PetscErrorCode KSPMonitorAMS(KSP ksp,PetscInt n,PetscReal rnorm,void *ctx)
     PetscStackCallAMS(AMS_New_Field,(mon->amem,"eigr",&mon->eigr,mon->neigs,AMS_READ,AMS_DOUBLE));
     PetscStackCallAMS(AMS_New_Field,(mon->amem,"eigi",&mon->eigr,mon->neigs,AMS_READ,AMS_DOUBLE));
   }
-
+  ierr = PetscObjectAMSBlock((PetscObject)ksp);CHKERRQ(ierr);
   ierr = PetscInfo2(ksp,"KSP extreme singular values min=%G max=%G\n",emin,emax);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

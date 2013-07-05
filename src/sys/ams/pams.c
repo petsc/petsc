@@ -86,7 +86,7 @@ PetscErrorCode  PetscObjectAMSBlock(PetscObject obj)
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
 
-  if (!obj->amspublishblock) PetscFunctionReturn(0);
+  if (!obj->amspublishblock || !obj->amsmem) PetscFunctionReturn(0);
   ierr = PetscObjectAMSTakeAccess(obj);CHKERRQ(ierr);
   while (obj->amsblock) {
     ierr = PetscInfo(NULL,"Blocking on AMS\n");
