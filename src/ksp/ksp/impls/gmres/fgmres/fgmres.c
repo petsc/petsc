@@ -130,6 +130,7 @@ PetscErrorCode KSPFGMRESCycle(PetscInt *itcount,KSP ksp)
 
   ksp->rnorm = res_norm;
   ierr       = KSPLogResidualHistory(ksp,res_norm);CHKERRQ(ierr);
+  ierr       = KSPMonitor(ksp,ksp->its,res_norm);CHKERRQ(ierr);
 
   /* check for the convergence - maybe the current guess is good enough */
   ierr = (*ksp->converged)(ksp,ksp->its,res_norm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
@@ -145,9 +146,11 @@ PetscErrorCode KSPFGMRESCycle(PetscInt *itcount,KSP ksp)
   /* keep iterating until we have converged OR generated the max number
      of directions OR reached the max number of iterations for the method */
   while (!ksp->reason && loc_it < max_k && ksp->its < ksp->max_it) {
-    if (loc_it) {ierr = KSPLogResidualHistory(ksp,res_norm);CHKERRQ(ierr);}
+    if (loc_it) {
+      ierr = KSPLogResidualHistory(ksp,res_norm);CHKERRQ(ierr);
+      ierr = KSPMonitor(ksp,ksp->its,res_norm);CHKERRQ(ierr);
+    }
     fgmres->it = (loc_it - 1);
-    ierr       = KSPMonitor(ksp,ksp->its,res_norm);CHKERRQ(ierr);
 
     /* see if more space is needed for work vectors */
     if (fgmres->vv_allocated <= loc_it + VEC_OFFSET + 1) {
@@ -233,7 +236,7 @@ PetscErrorCode KSPFGMRESCycle(PetscInt *itcount,KSP ksp)
 
   /*
      Monitor if we know that we will not return for a restart */
-  if (ksp->reason || ksp->its >= ksp->max_it) {
+  if (loc_it && (ksp->reason || ksp->its >= ksp->max_it)) {
     ierr = KSPMonitor(ksp,ksp->its,res_norm);CHKERRQ(ierr);
   }
 
