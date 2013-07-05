@@ -328,15 +328,12 @@ PetscErrorCode MatPartitioningChacoSetLocal_Chaco(MatPartitioning part,MPChacoLo
   MatPartitioning_Chaco *chaco = (MatPartitioning_Chaco*)part->data;
 
   PetscFunctionBegin;
-  if (method==PETSC_DEFAULT) chaco->local_method = MP_CHACO_KERNIGHAN;
-  else {
-    switch (method) {
-    case MP_CHACO_KERNIGHAN:
-    case MP_CHACO_NONE:
-      chaco->local_method = method; break;
-    default:
-      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Chaco: Unknown or unsupported option");
-    }
+  switch (method) {
+  case MP_CHACO_KERNIGHAN:
+  case MP_CHACO_NONE:
+    chaco->local_method = method; break;
+  default:
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Chaco: Unknown or unsupported option");
   }
   PetscFunctionReturn(0);
 }
