@@ -6453,7 +6453,7 @@ PetscErrorCode DMPlexVecGetClosure(DM dm, PetscSection section, Vec v, PetscInt 
   PetscScalar   *array, *vArray;
   PetscInt      *points = NULL;
   PetscInt       offsets[32];
-  PetscInt       depth, numFields, size, numPoints, pStart, pEnd, p, q, f;
+  PetscInt       depth, numFields, size = 0, numPoints, pStart, pEnd, p, q, f;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -6473,24 +6473,40 @@ PetscErrorCode DMPlexVecGetClosure(DM dm, PetscSection section, Vec v, PetscInt 
     ierr = DMPlexGetConeSize(dm, point, &numPoints);CHKERRQ(ierr);
     ierr = DMPlexGetCone(dm, point, &cone);CHKERRQ(ierr);
     ierr = DMPlexGetConeOrientation(dm, point, &coneO);CHKERRQ(ierr);
-    for (p = 0, size = 0; p <= numPoints; ++p) {
-      const PetscInt cp = !p ? point : cone[p-1];
-      PetscInt       dof;
-
-      if ((cp < pStart) || (cp >= pEnd)) continue;
-      ierr = PetscSectionGetDof(section, cp, &dof);CHKERRQ(ierr);
-      size += dof;
-    }
     if (!*values) {
+      if ((point >= pStart) && (point < pEnd)) {
+        PetscInt dof;
+        ierr = PetscSectionGetDof(section, point, &dof);CHKERRQ(ierr);
+        size += dof;
+      }
+      for (p = 0; p < numPoints; ++p) {
+        const PetscInt cp = cone[p];
+        PetscInt       dof;
+
+        if ((cp < pStart) || (cp >= pEnd)) continue;
+        ierr = PetscSectionGetDof(section, cp, &dof);CHKERRQ(ierr);
+        size += dof;
+      }
       ierr = DMGetWorkArray(dm, size, PETSC_SCALAR, &array);CHKERRQ(ierr);
     } else {
-      if (size > *csize) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Size of input array %d < actual size %d", *csize, size);
       array = *values;
     }
+    size = 0;
     ierr = VecGetArray(v, &vArray);CHKERRQ(ierr);
-    for (p = 0; p <= numPoints; ++p) {
-      const PetscInt cp = !p ? point : cone[p-1];
-      PetscInt       o  = !p ? 0     : coneO[p-1];
+    if ((point >= pStart) && (point < pEnd)) {
+      PetscInt     dof, off, d;
+      PetscScalar *varr;
+      ierr = PetscSectionGetDof(section, point, &dof);CHKERRQ(ierr);
+      ierr = PetscSectionGetOffset(section, point, &off);CHKERRQ(ierr);
+      varr = &vArray[off];
+      for (d = 0; d < dof; ++d, ++offsets[0]) {
+        array[offsets[0]] = varr[d];
+      }
+      size += dof;
+    }
+    for (p = 0; p < numPoints; ++p) {
+      const PetscInt cp = cone[p];
+      PetscInt       o  = coneO[p];
       PetscInt       dof, off, d;
       PetscScalar   *varr;
 
@@ -6507,10 +6523,15 @@ PetscErrorCode DMPlexVecGetClosure(DM dm, PetscSection section, Vec v, PetscInt 
           array[offsets[0]] = varr[d];
         }
       }
+      size += dof;
     }
     ierr = VecRestoreArray(v, &vArray);CHKERRQ(ierr);
-    if (csize) *csize = size;
-    *values = array;
+    if (!*values) {
+      if (csize) *csize = size;
+      *values = array;
+    } else {
+      if (size > *csize) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Size of input array %d < actual size %d", *csize, size);
+    }
     PetscFunctionReturn(0);
   }
   ierr = DMPlexGetTransitiveClosure(dm, point, PETSC_TRUE, &numPoints, &points);CHKERRQ(ierr);
