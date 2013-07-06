@@ -33,28 +33,18 @@ class Configure(PETSc.package.NewPackage):
       g.write('LINKSHARED   = ${CC} -dynamiclib -single_module -multiply_defined suppress -undefined dynamic_lookup\n')
     else:
       g.write('LINKSHARED   = ${CC} -dynamiclib\n')
-    if hasattr(self.java,'javac'):
-      if self.setCompilers.isDarwin():
-        g.write('JAVA_INCLUDES   =  -I/System/Library/Frameworks/JavaVM.framework/Headers/../../CurrentJDK/Headers\n')
-      else:
-        g.write('JAVA_INCLUDES   =  \n')
-      g.write('JAVAC           = '+getattr(self.java, 'javac'))
     g.close()
     self.setCompilers.popLanguage()
 
     if self.installNeeded('makeinc'):
       try:
         self.logPrintBox('Compiling ams; this may take several minutes')
-        if not os.path.isdir(os.path.join(self.installDir,'java')):
-          os.mkdir(os.path.join(self.installDir,'java'))
         output,err,ret = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+' &&  make all && cp lib/* '+os.path.join(self.installDir,'lib')+' && cp -r java/gov '+os.path.join(self.installDir,'java')+' &&  cp -f include/*.h '+os.path.join(self.installDir,self.includedir)+'/.', timeout=2500, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running make on ams: '+str(e))
       self.postInstall(output+err,'makeinc')
     return self.installDir
 
-
   def configureLibrary(self):
     PETSc.package.NewPackage.configureLibrary(self)
-    self.addDefine('UAMS_DIR', '"'+os.path.dirname(self.include[0])+'"')
-    self.addMakeMacro('UAMS_DIR', '"'+os.path.dirname(self.include[0])+'"')
+
