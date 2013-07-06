@@ -19,6 +19,7 @@ class Configure(config.base.Configure):
     import nargs
     help.addArgument('PETSc', '-with-make=<prog>', nargs.Arg(None, 'make', 'Specify make'))
     help.addArgument('PETSc', '-with-make-np=<np>', nargs.ArgInt(None, None, min=1, help='Default number of threads to use for parallel builds'))
+    help.addArgument('PETSc', '-with-autoreconf=<prog>', nargs.Arg(None, 'autoreconf', 'Specify autoreconf'))
     return
 
   def configureMake(self):
@@ -130,6 +131,27 @@ class Configure(config.base.Configure):
       if os.path.exists(confDir):    os.rmdir(confDir)
     return
 
+  def configureAutoreconf(self):
+    '''Check for autoreconf'''
+    self.autoreconf_flg = False
+    if self.getExecutable(self.framework.argDB['with-autoreconf'], getFullPath = 1,resultName = 'autoreconf',setMakeMacro = 0):
+      import shutil,os
+      testdir = os.path.join(self.tmpDir, 'autoconfdir')
+      acfile  = os.path.join(testdir,'configure.ac')
+      if not os.path.isdir(testdir):
+        os.mkdir(testdir)
+      accode='AC_INIT(petscconftest, version-0.1)'
+      fd = open(acfile,'w')
+      fd.write(accode)
+      fd.close()
+      try:
+        output,err,ret  = config.base.Configure.executeShellCommand('cd '+testdir+'&&'+self.autoreconf)
+        self.autoreconf_flg = True
+      except RuntimeError, e:
+        pass
+      shutil.rmtree(testdir)
+    return
+
   def configurePrograms(self):
     '''Check for the programs needed to build and run PETSc'''
     self.getExecutable('sh',   getFullPath = 1, resultName = 'SHELL')
@@ -209,5 +231,6 @@ class Configure(config.base.Configure):
     if not self.framework.argDB['with-make'] == '0':
       self.executeTest(self.configureMake)
       self.executeTest(self.configureMkdir)
+      self.executeTest(self.configureAutoreconf)
       self.executeTest(self.configurePrograms)
     return
