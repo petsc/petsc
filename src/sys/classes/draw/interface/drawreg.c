@@ -242,7 +242,8 @@ PetscErrorCode  PetscDrawRegister(const char *sname,PetscErrorCode (*function)(P
 .   -draw_pause <pause amount> -- -1 indicates wait for mouse input, -2 indicates pause when window is to be destroyed
 .   -draw_save [optional filename] - (X windows only) saves each image before it is cleared to a file
 .   -draw_save_movie - converts image files to a movie  at the end of the run. See PetscDrawSetSave()
--   -draw_save_on_flush - saves an image on each flush in addition to each clear
+.   -draw_save_on_flush - saves an image on each flush in addition to each clear
+-   -draw_save_single_file - saves each new image in the same file, normally each new image is saved in a new file with filename_%d
 
    Level: intermediate
 
@@ -303,6 +304,7 @@ PetscErrorCode  PetscDrawSetFromOptions(PetscDraw draw)
     char      filename[PETSC_MAX_PATH_LEN];
     PetscBool save,movie = PETSC_FALSE;
     ierr = PetscOptionsBool("-draw_save_movie","Make a movie from the images saved (X Windows only)","PetscDrawSetSave",movie,&movie,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-draw_save_single_file","Each new image replaces previous image in file","PetscDrawSetSave",draw->savesinglefile,&draw->savesinglefile,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsString("-draw_save","Save graphics to file (X Windows only)","PetscDrawSetSave",filename,filename,PETSC_MAX_PATH_LEN,&save);CHKERRQ(ierr);
     if (save) {
       ierr = PetscDrawSetSave(draw,filename,movie);CHKERRQ(ierr);
