@@ -607,7 +607,7 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
   flg1 = PETSC_FALSE;
   ierr = PetscOptionsGetBool(NULL,"-x_virtual",&flg1,NULL);CHKERRQ(ierr);
   if (flg1) {
-    ierr = PetscPOpen(PETSC_COMM_WORLD,NULL,"Xvfb :11","r",NULL);CHKERRQ(ierr);
+    ierr = PetscPOpen(PETSC_COMM_WORLD,NULL,"Xvfb :11 -screen 0 1600x1200x24","r",NULL);CHKERRQ(ierr);
     ierr = PetscSleep(5);CHKERRQ(ierr);
   }
 #endif
