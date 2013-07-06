@@ -18,7 +18,7 @@ class CompilerOptions(config.base.Configure):
     # GNU gcc
     if config.setCompilers.Configure.isGNU(compiler) or config.setCompilers.Configure.isClang(compiler):
       if bopt == '':
-        flags.extend(['-Wall', '-Wwrite-strings', '-Wno-strict-aliasing','-Wno-unknown-pragmas','-Wdeclaration-after-statement']
+        flags.extend(['-Wall', '-Wwrite-strings', '-Wno-strict-aliasing','-Wno-unknown-pragmas'])
         if self.framework.argDB['with-visibility']:
           flags.extend(['-fvisibility=hidden'])
       elif bopt == 'g':
