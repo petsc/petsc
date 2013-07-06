@@ -79,7 +79,45 @@ regressionParameters = {'src/dm/impls/patch/examples/tests/ex1': [{'numProcs': 1
                                                                  #{'numProcs': 1, 'args': '-dim 3 -filename /PETSc3/petsc/blockcylinder-20.exo'},
                                                                  ],
                         'src/dm/impls/plex/examples/tests/ex8': [{'numProcs': 1, 'args': '-dm_view ::ascii_info_detail'},
-                                                                 {'numProcs': 1, 'args': '-transform'}],
+                                                                 {'numProcs': 1, 'args': '-interpolate -dm_view ::ascii_info_detail'},
+                                                                 {'numProcs': 1, 'args': '-transform'},
+                                                                 {'numProcs': 1, 'args': '-interpolate -transform'},
+                                                                 {'numProcs': 1, 'args': '-run_type file -filename %(meshes)s/simpleblock-100.exo -dm_view ::ascii_info_detail -v0 -1.5,-0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5 -J 0.0,0.0,0.5,0.0,0.5,0.0,-0.5,0.0,0.0,0.0,0.0,0.5,0.0,0.5,0.0,-0.5,0.0,0.0,0.0,0.0,0.5,0.0,0.5,0.0,-0.5,0.0,0.0 -invJ 0.0,0.0,-2.0,0.0,2.0,0.0,2.0,0.0,0.0,0.0,0.0,-2.0,0.0,2.0,0.0,2.0,0.0,0.0,0.0,0.0,-2.0,0.0,2.0,0.0,2.0,0.0,0.0 -detJ 0.125,0.125,0.125', 'requires': ['exodusii']},
+                                                                 {'numProcs': 1, 'args': '-interpolate -run_type file -filename %(meshes)s/simpleblock-100.exo -dm_view ::ascii_info_detail -v0 -1.5,-0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5 -J 0.0,0.0,0.5,0.0,0.5,0.0,-0.5,0.0,0.0,0.0,0.0,0.5,0.0,0.5,0.0,-0.5,0.0,0.0,0.0,0.0,0.5,0.0,0.5,0.0,-0.5,0.0,0.0 -invJ 0.0,0.0,-2.0,0.0,2.0,0.0,2.0,0.0,0.0,0.0,0.0,-2.0,0.0,2.0,0.0,2.0,0.0,0.0,0.0,0.0,-2.0,0.0,2.0,0.0,2.0,0.0,0.0 -detJ 0.125,0.125,0.125 -centroid -1.0,0.0,0.0,0.0,0.0,0.0,1.0,0.0,0.0 -normal 0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0 -vol 1.0,1.0,1.0', 'requires': ['exodusii']}],
+                        'src/dm/impls/plex/examples/tests/ex9': [# 2D Simplex P_1 scalar tests
+                                                                 {'numProcs': 1, 'args': '-num_dof 1,0,0 -iterations 10000 \
+                                                                  -max_cone_time 1.1e-8 -max_closure_time 1.3e-7 -max_vec_closure_time 3.6e-7'},
+                                                                 {'numProcs': 1, 'args': '-refinement_limit 1.0e-5 -num_dof 1,0,0 -iterations 10 \
+                                                                  -max_cone_time 2.1e-8 -max_closure_time 1.5e-7 -max_vec_closure_time 3.6e-7'},
+                                                                 {'numProcs': 1, 'args': '-num_fields 1 -num_components 1 -num_dof 1,0,0 -iterations 10000 \
+                                                                  -max_cone_time 1.1e-8 -max_closure_time 1.3e-7 -max_vec_closure_time 4.5e-7'},
+                                                                 {'numProcs': 1, 'args': '-refinement_limit 1.0e-5 -num_fields 1 -num_components 1 -num_dof 1,0,0 -iterations 10 \
+                                                                  -max_cone_time 2.1e-8 -max_closure_time 1.5e-7 -max_vec_closure_time 4.7e-7'},
+                                                                 {'numProcs': 1, 'args': '-interpolate -num_dof 1,0,0 -iterations 10000 \
+                                                                  -max_cone_time 1.1e-8 -max_closure_time 6.5e-7 -max_vec_closure_time 1.0e-6'},
+                                                                 {'numProcs': 1, 'args': '-interpolate -refinement_limit 1.0e-5 -num_dof 1,0,0 -iterations 10 \
+                                                                  -max_cone_time 2.1e-8 -max_closure_time 6.5e-7 -max_vec_closure_time 1.0e-6'},
+                                                                 {'numProcs': 1, 'args': '-interpolate -num_fields 1 -num_components 1 -num_dof 1,0,0 -iterations 10000 \
+                                                                  -max_cone_time 1.1e-8 -max_closure_time 6.5e-7 -max_vec_closure_time 1.1e-6'},
+                                                                 {'numProcs': 1, 'args': '-interpolate -refinement_limit 1.0e-5 -num_fields 1 -num_components 1 -num_dof 1,0,0 -iterations 10 \
+                                                                  -max_cone_time 2.1e-8 -max_closure_time 6.5e-7 -max_vec_closure_time 1.2e-6'},
+                                                                 # 2D Simplex P_1 vector tests
+                                                                 # 2D Simplex P_2 scalar tests
+                                                                 # 2D Simplex P_2 vector tests
+                                                                 # 2D Simplex P_2/P_1 vector/scalar tests
+                                                                 # 2D Quad P_1 scalar tests
+                                                                 # 2D Quad P_1 vector tests
+                                                                 # 2D Quad P_2 scalar tests
+                                                                 # 2D Quad P_2 vector tests
+                                                                 # 3D Simplex P_1 scalar tests
+                                                                 # 3D Simplex P_1 vector tests
+                                                                 # 3D Simplex P_2 scalar tests
+                                                                 # 3D Simplex P_2 vector tests
+                                                                 # 3D Hex P_1 scalar tests
+                                                                 # 3D Hex P_1 vector tests
+                                                                 # 3D Hex P_2 scalar tests
+                                                                 # 3D Hex P_2 vector tests
+                                                                 ],
                         'src/dm/impls/plex/examples/tests/ex1f90': [{'numProcs': 1, 'args': ''}],
                         'src/dm/impls/plex/examples/tests/ex2f90': [{'numProcs': 1, 'args': ''}],
                         'src/dm/impls/plex/examples/tutorials/ex1': [{'numProcs': 1, 'args': ''},
@@ -194,7 +232,7 @@ regressionParameters = {'src/dm/impls/patch/examples/tests/ex1': [{'numProcs': 1
                                                                # 3D Laplacian 18-20
                                                                {'numProcs': 1, 'args': '-dim 3 -dm_view -refinement_limit 0.0 -compute_function',
                                                                 'setup': './bin/pythonscripts/PetscGenerateFEMQuadrature.py 3 1 1 1 laplacian src/snes/examples/tutorials/ex52.h',
-                                                                'requires': ['cuda']},
+                                                                'source': ['src/snes/examples/tutorials/ex52_integrateElement.cu'], 'requires': ['cuda']},
                                                                {'numProcs': 1, 'args': '-dim 3 -dm_view -refinement_limit 0.0 -compute_function -batch', 'requires': ['cuda']},
                                                                {'numProcs': 1, 'args': '-dim 3 -dm_view -refinement_limit 0.0 -compute_function -batch -gpu', 'requires': ['cuda']},
                                                                # 3D Laplacian refined 21-24
