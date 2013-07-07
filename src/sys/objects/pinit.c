@@ -770,9 +770,6 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   ierr = MPI_Type_commit(&MPIU_2INT);CHKERRQ(ierr);
 #endif
 
-#if defined(PETSC_HAVE_AMS)
-  ierr = AMS_Initialize();CHKERRQ(ierr);
-#endif
 
   /*
      Attributes to be set on PETSc communicators
@@ -795,6 +792,10 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
     ierr = PetscPrintf(PETSC_COMM_WORLD,help);CHKERRQ(ierr);
   }
   ierr = PetscOptionsCheckInitial_Private();CHKERRQ(ierr);
+
+#if defined(PETSC_HAVE_AMS)
+  ierr = AMS_Initialize();CHKERRQ(ierr);
+#endif
 
   /* SHOULD PUT IN GUARDS: Make sure logging is initialized, even if we do not print it out */
 #if defined(PETSC_USE_LOG)
@@ -1128,7 +1129,7 @@ PetscErrorCode  PetscFinalize(void)
   }
 
 #if defined(PETSC_HAVE_AMS)
-  AMS_Finalize();CHKERRQ(ierr);
+    AMS_Finalize();CHKERRQ(ierr);
 #endif
 
   {
