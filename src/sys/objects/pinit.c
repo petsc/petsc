@@ -975,6 +975,15 @@ PetscErrorCode  PetscFinalize(void)
   }
 #endif
 
+#if defined(PETSC_HAVE_X)
+  flg1 = PETSC_FALSE;
+  ierr = PetscOptionsGetBool(NULL,"-x_virtual",&flg1,NULL);CHKERRQ(ierr);
+  if (flg1) {
+    /*  this is a crude hack, but better than nothing */
+    ierr = PetscPOpen(PETSC_COMM_WORLD,NULL,"pkill -9 Xvfb","r",NULL);CHKERRQ(ierr);
+  }
+#endif
+
   ierr = PetscHMPIFinalize();CHKERRQ(ierr);
 
   ierr = PetscOptionsGetBool(NULL,"-malloc_info",&flg2,NULL);CHKERRQ(ierr);

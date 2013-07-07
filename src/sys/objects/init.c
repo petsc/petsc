@@ -603,6 +603,15 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
   }
 #endif
 
+#if defined(PETSC_HAVE_X)
+  flg1 = PETSC_FALSE;
+  ierr = PetscOptionsGetBool(NULL,"-x_virtual",&flg1,NULL);CHKERRQ(ierr);
+  if (flg1) {
+    ierr = PetscPOpen(PETSC_COMM_WORLD,NULL,"Xvfb :11 -screen 0 1600x1200x24","r",NULL);CHKERRQ(ierr);
+    ierr = PetscSleep(5);CHKERRQ(ierr);
+  }
+#endif
+
   ierr = PetscOptionsGetReal(NULL,"-petsc_sleep",&si,&flg1);CHKERRQ(ierr);
   if (flg1) {
     ierr = PetscSleep(si);CHKERRQ(ierr);

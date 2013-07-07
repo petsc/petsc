@@ -150,12 +150,21 @@ PetscErrorCode  PetscSetDisplay(void)
   Output Parameters:
 .   display - the display string
 
+  Options Database:
++  -display <display> - sets the display to use
+-  -x_virtual - forces use of a X virtual display Xvfb that will not display anything but -draw_save will still work
+
 */
 PetscErrorCode  PetscGetDisplay(char display[],size_t n)
 {
   PetscErrorCode ierr;
+  PetscBool      flg = PETSC_FALSE;
 
   PetscFunctionBegin;
   ierr = PetscStrncpy(display,PetscDisplay,n);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-x_virtual",&flg,NULL);CHKERRQ(ierr);
+  if (flg) {
+    ierr = PetscStrncpy(display,":11",4);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }

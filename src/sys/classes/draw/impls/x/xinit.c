@@ -300,13 +300,14 @@ PetscErrorCode  PetscDrawSetSave_X(PetscDraw draw,const char *filename)
 #define __FUNCT__ "PetscDrawSave_X"
 PetscErrorCode PetscDrawSave_X(PetscDraw draw)
 {
-  PetscDraw_X             *drawx = (PetscDraw_X*)draw->data;
-  XImage                  *image;
-  ASImage                 *asimage;
-  static struct  ASVisual *asv = 0;
-  char                    filename[PETSC_MAX_PATH_LEN];
-  PetscErrorCode          ierr;
-  PetscMPIInt             rank;
+  PetscDraw_X      *drawx = (PetscDraw_X*)draw->data;
+  XImage           *image;
+  ASImage          *asimage;
+  struct  ASVisual *asv;
+  char             filename[PETSC_MAX_PATH_LEN];
+  PetscErrorCode   ierr;
+  PetscMPIInt      rank;
+  int              depth;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)draw),&rank);CHKERRQ(ierr);
@@ -317,17 +318,22 @@ PetscErrorCode PetscDrawSave_X(PetscDraw draw)
     draw->savefilecount++;
     PetscFunctionReturn(0);
   }
+  XSynchronize(drawx->disp, True);
+  depth = DefaultDepth( drawx->disp, drawx->screen );
+  asv   = create_asvisual(drawx->disp, drawx->screen, depth, NULL);if (!asv) SETERRQ(PetscObjectComm((PetscObject)draw),PETSC_ERR_PLIB,"Cannot create AfterImage ASVisual");
 
-  if (!asv) {
-    asv = create_asvisual(drawx->disp, 0, 0, 0);if (!asv) SETERRQ(PetscObjectComm((PetscObject)draw),PETSC_ERR_PLIB,"Cannot create AfterImage ASVisual");
-  }
   image   = XGetImage(drawx->disp, drawx->drw ? drawx->drw : drawx->win, 0, 0, drawx->w, drawx->h, AllPlanes, ZPixmap);
   if (!image) SETERRQ(PetscObjectComm((PetscObject)draw),PETSC_ERR_PLIB,"Cannot XGetImage()");\
   asimage = picture_ximage2asimage (asv,image,0,0);if (!asimage) SETERRQ(PetscObjectComm((PetscObject)draw),PETSC_ERR_PLIB,"Cannot create AfterImage ASImage");
-  ierr    = PetscSNPrintf(filename,PETSC_MAX_PATH_LEN,"%s/%s_%d.Gif",draw->savefilename,draw->savefilename,draw->savefilecount++);CHKERRQ(ierr);
+  if (draw->savesinglefile) {
+    ierr    = PetscSNPrintf(filename,PETSC_MAX_PATH_LEN,"%s/%s.Gif",draw->savefilename,draw->savefilename);CHKERRQ(ierr);
+  } else {
+    ierr    = PetscSNPrintf(filename,PETSC_MAX_PATH_LEN,"%s/%s_%d.Gif",draw->savefilename,draw->savefilename,draw->savefilecount++);CHKERRQ(ierr);
+  }
   ASImage2file(asimage, 0, filename,ASIT_Gif,0);
 
   XDestroyImage(image);
+  destroy_asvisual(asv,0);
   PetscFunctionReturn(0);
 }
 /*
