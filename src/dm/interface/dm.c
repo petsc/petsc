@@ -1789,22 +1789,31 @@ PetscErrorCode  DMLocalToGlobalEnd(DM dm,Vec l,InsertMode mode,Vec g)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMLocalToLocalBegin"
-/* TODO: Fix this documentation!  Still a copy of DMGlobalToLocalEnd. */
 /*@
-    DMLocalToLocalBegin - Begins updating local vectors from global vector
+   DMLocalToLocalBegin - Maps from a local vector (including ghost points
+   that contain irrelevant values) to another local vector where the ghost
+   points in the second are set correctly. Must be followed by DMDALocalToLocalEnd().
 
-    Neighbor-wise Collective on DM
+   Neighbor-wise Collective on DM and Vec
 
-    Input Parameters:
-+   dm - the DM object
-.   g - the global vector
-.   mode - INSERT_VALUES or ADD_VALUES
--   l - the local vector
+   Input Parameters:
++  dm - the DM object
+.  g - the original local vector
+-  mode - one of INSERT_VALUES or ADD_VALUES
 
+   Output Parameter:
+.  l  - the local vector with correct ghost values
 
-    Level: intermediate
+   Level: intermediate
 
-.seealso DMCoarsen(), DMDestroy(), DMView(), DMCreateGlobalVector(), DMCreateInterpolation(), DMGlobalToLocalEnd(), DMLocalToGlobalBegin()
+   Notes:
+   The local vectors used here need not be the same as those
+   obtained from DMCreateLocalVector(), BUT they
+   must have the same parallel data layout; they could, for example, be
+   obtained with VecDuplicate() from the DM originating vectors.
+
+.keywords: DM, local-to-local, begin
+.seealso DMCoarsen(), DMDestroy(), DMView(), DMCreateLocalVector(), DMCreateGlobalVector(), DMCreateInterpolation(), DMLocalToLocalEnd(), DMGlobalToLocalEnd(), DMLocalToGlobalBegin()
 
 @*/
 PetscErrorCode  DMLocalToLocalBegin(DM dm,Vec g,InsertMode mode,Vec l)
@@ -1832,22 +1841,31 @@ PetscErrorCode  DMLocalToLocalBegin(DM dm,Vec g,InsertMode mode,Vec l)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMLocalToLocalEnd"
-/* TODO: Fix this documentation!  Still a copy of DMGlobalToLocalEnd. */
 /*@
-    DMLocalToLocalEnd - Ends updating local vectors from global vector
+   DMLocalToLocalEnd - Maps from a local vector (including ghost points
+   that contain irrelevant values) to another local vector where the ghost
+   points in the second are set correctly. Must be preceded by DMDALocalToLocalBegin().
 
-    Neighbor-wise Collective on DM
+   Neighbor-wise Collective on DM and Vec
 
-    Input Parameters:
-+   dm - the DM object
-.   g - the global vector
-.   mode - INSERT_VALUES or ADD_VALUES
--   l - the local vector
+   Input Parameters:
++  da - the DM object
+.  g - the original local vector
+-  mode - one of INSERT_VALUES or ADD_VALUES
 
+   Output Parameter:
+.  l  - the local vector with correct ghost values
 
-    Level: intermediate
+   Level: intermediate
 
-.seealso DMCoarsen(), DMDestroy(), DMView(), DMCreateGlobalVector(), DMCreateInterpolation(), DMGlobalToLocalEnd(), DMLocalToGlobalBegin()
+   Notes:
+   The local vectors used here need not be the same as those
+   obtained from DMCreateLocalVector(), BUT they
+   must have the same parallel data layout; they could, for example, be
+   obtained with VecDuplicate() from the DM originating vectors.
+
+.keywords: DM, local-to-local, end
+.seealso DMCoarsen(), DMDestroy(), DMView(), DMCreateLocalVector(), DMCreateGlobalVector(), DMCreateInterpolation(), DMLocalToLocalBegin(), DMGlobalToLocalEnd(), DMLocalToGlobalBegin()
 
 @*/
 PetscErrorCode  DMLocalToLocalEnd(DM dm,Vec g,InsertMode mode,Vec l)
