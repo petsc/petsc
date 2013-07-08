@@ -6,6 +6,47 @@ static char help[] = "Large-deformation Elasticity Buckling Example";
    Processors: n
 T*/
 
+/*F-----------------------------------------------------------------------
+
+    This example solves the 3D large deformation elasticity problem
+
+\begin{equation}
+ \int_{\Omega}F \cdot S : \nabla v d\Omega + \int_{\Omega} (loading)\mathbf{e}_y \cdot v d\Omega = 0
+\end{equation}
+
+    F is the deformation gradient, and S is the second Piola-Kirchhoff tensor
+    from the Saint Venant-Kirchhoff model of hyperelasticity.  \Omega is a
+    (length) x 1 x 1 domain deformed by a parabola of height (arch).  The
+    problem is discretized using Q1 finite elements on a logically structured
+    grid.  Dirichlet boundary conditions are applied on the ends of the domain in the x
+    direction, and a constant loading in the y direction is applied.  The
+    dirichlet conditions on the offsets may be "squeezed" in the x direction.
+
+    This example is tunable with the following options:
+    -length : set the length of the domain
+    -arch : set the height of the arch
+    -loading : set the constant loading of the arch in the y direction
+    -squeeze : set the displacement boundary conditions in the x direction
+               to squeeze or relax the arch
+    -view_line : print initial and final offsets of the centerline of the
+                 beam along the x direction
+
+    The material properties may be modified using either:
+    -mu      : the first lame' parameter
+    -lambda  : the second lame' parameter
+
+    Or:
+    -young   : the Young's modulus
+    -poisson : the poisson ratio
+
+    This example is meant to show the strain placed upon the nonlinear solvers
+    when trying to "snap through" the arch using the loading.  Under certain
+    parameter regimes, the arch will invert under the load, and the number
+    of Newton steps will jump considerably.  Composed nonlinear solvers
+    may be used to mitigate this difficulty.
+
+  ------------------------------------------------------------------------F*/
+
 #include <petscsnes.h>
 #include <petscdmda.h>
 
@@ -88,7 +129,7 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetReal(NULL,"-mu",&user.mu,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(NULL,"-lambda",&user.lambda,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(NULL,"-squeeze",&user.squeeze,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(NULL,"-len",&user.len,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,"-length",&user.len,NULL);CHKERRQ(ierr);
 
   ierr = PetscOptionsGetReal(NULL,"-poisson",&poisson,&poissonflg);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(NULL,"-young",&young,&youngflg);CHKERRQ(ierr);
@@ -834,7 +875,7 @@ PetscErrorCode NonlinearGS(SNES snes,Vec X,Vec B,void *ptr)
               TensorVector(pjinv,pf,py);
               for (m=0;m<3;m++) {
                 x[k][j][i][m] -= py[m];
-                xnorm += x[k][j][i][m]*x[k][j][i][m];
+                xnorm += PetscRealPart(x[k][j][i][m]*x[k][j][i][m]);
               }
               fnorm = PetscRealPart(pf[0]*pf[0]+pf[1]*pf[1]+pf[2]*pf[2]);
               if (n==0) fnorm0 = fnorm;
