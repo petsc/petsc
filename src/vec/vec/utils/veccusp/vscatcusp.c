@@ -27,7 +27,6 @@
 PetscErrorCode  VecScatterInitializeForGPU(VecScatter inctx,Vec x,ScatterMode mode)
 {
   VecScatter_MPI_General *to,*from;
-  PetscScalar            *xv;
   PetscErrorCode         ierr;
   PetscInt               i,*indices,*sstartsSends,*sstartsRecvs,nrecvs,nsends,bs;
 

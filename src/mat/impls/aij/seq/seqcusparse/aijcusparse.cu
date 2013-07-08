@@ -132,6 +132,7 @@ PETSC_INTERN PetscErrorCode MatCUSPARSESetFormat_SeqAIJCUSPARSE(Mat A,MatCUSPARS
   Mat_SeqAIJCUSPARSE *cusparsestruct = (Mat_SeqAIJCUSPARSE*)A->spptr;
 
   PetscFunctionBegin;
+#if CUDA_VERSION>=4020
   switch (op) {
   case MAT_CUSPARSE_MULT:
     cusparsestruct->format = format;
@@ -146,6 +147,10 @@ PETSC_INTERN PetscErrorCode MatCUSPARSESetFormat_SeqAIJCUSPARSE(Mat A,MatCUSPARS
   default:
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"unsupported operation %d for MatCUSPARSEFormatOperation. MAT_CUSPARSE_MULT, MAT_CUSPARSE_SOLVE, and MAT_CUSPARSE_ALL are currently supported.",op);
   }
+#else
+  if (format==MAT_CUSPARSE_ELL || format==MAT_CUSPARSE_HYB) 
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"ELL (Ellpack) and HYB (Hybrid) storage format require CUDA 4.2 or later.");
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -158,7 +163,7 @@ PETSC_INTERN PetscErrorCode MatCUSPARSESetFormat_SeqAIJCUSPARSE(Mat A,MatCUSPARS
    Input Parameters:
 +  A - Matrix of type SEQAIJCUSPARSE
 .  op - MatCUSPARSEFormatOperation. SEQAIJCUSPARSE matrices support MAT_CUSPARSE_MULT, MAT_CUSPARSE_SOLVE, and MAT_CUSPARSE_ALL. MPIAIJCUSPARSE matrices support MAT_CUSPARSE_MULT_DIAG, MAT_CUSPARSE_MULT_OFFDIAG, and MAT_CUSPARSE_ALL.
--  format - MatCUSPARSEStorageFormat (one of MAT_CUSPARSE_CSR, MAT_CUSPARSE_ELL, MAT_CUSPARSE_HYB)
+-  format - MatCUSPARSEStorageFormat (one of MAT_CUSPARSE_CSR, MAT_CUSPARSE_ELL, MAT_CUSPARSE_HYB. The latter two require CUDA 4.2)
 
    Output Parameter:
 
@@ -906,7 +911,7 @@ static PetscErrorCode MatSeqAIJCUSPARSEGenerateTransposeForMult(Mat A)
     matrixT->num_entries = a->nz;
     matrixT->row_offsets = new THRUSTINTARRAY32(A->rmap->n+1);
     matrixT->column_indices = new THRUSTINTARRAY32(a->nz);
-    matrixT->values = new THRUSTARRAY(a->nz);    
+    matrixT->values = new THRUSTARRAY(a->nz);
 
     /* compute the transpose of the upper triangular factor, i.e. the CSC */
     indexBase = cusparseGetMatIndexBase(matstruct->descr);
@@ -924,7 +929,7 @@ static PetscErrorCode MatSeqAIJCUSPARSEGenerateTransposeForMult(Mat A)
     matstructT->mat = matrixT;
 
   } else if (cusparsestruct->format==MAT_CUSPARSE_ELL || cusparsestruct->format==MAT_CUSPARSE_HYB) {
-
+#if CUDA_VERSION>=5000
     /* First convert HYB to CSR */
     CsrMatrix *temp= new CsrMatrix;
     temp->num_rows = A->rmap->n;
@@ -933,6 +938,7 @@ static PetscErrorCode MatSeqAIJCUSPARSEGenerateTransposeForMult(Mat A)
     temp->row_offsets = new THRUSTINTARRAY32(A->rmap->n+1);
     temp->column_indices = new THRUSTINTARRAY32(a->nz);
     temp->values = new THRUSTARRAY(a->nz);
+
 
     stat = cusparse_hyb2csr(cusparsestruct->handle,
                             matstruct->descr, (cusparseHybMat_t)matstruct->mat,
@@ -986,6 +992,9 @@ static PetscErrorCode MatSeqAIJCUSPARSEGenerateTransposeForMult(Mat A)
       if (temp->row_offsets) delete (THRUSTINTARRAY32*) temp->row_offsets;
       delete (CsrMatrix*) temp;
     }
+#else
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"ELL (Ellpack) and HYB (Hybrid) storage format for the Matrix Transpose (in MatMultTranspose) require CUDA 5.0 or later.");
+#endif
   }
   /* assign the compressed row indices */
   matstructT->cprowIndices = new THRUSTINTARRAY;
@@ -1282,7 +1291,7 @@ static PetscErrorCode MatSeqAIJCUSPARSECopyToGPU(Mat A)
         matstruct->mat = matrix;
 
       } else if (cusparsestruct->format==MAT_CUSPARSE_ELL || cusparsestruct->format==MAT_CUSPARSE_HYB) {
-
+#if CUDA_VERSION>=4020
 	CsrMatrix *matrix= new CsrMatrix;
 	matrix->num_rows = A->rmap->n;
 	matrix->num_cols = A->cmap->n;
@@ -1314,6 +1323,7 @@ static PetscErrorCode MatSeqAIJCUSPARSECopyToGPU(Mat A)
 	  if (matrix->row_offsets) delete (THRUSTINTARRAY32*)matrix->row_offsets;
 	  delete (CsrMatrix*)matrix;
 	}
+#endif
       }
 
       /* assign the compressed row indices */
@@ -1399,11 +1409,13 @@ static PetscErrorCode MatMult_SeqAIJCUSPARSE(Mat A,Vec xx,Vec yy)
                              mat->column_indices->data().get(), xarray->data().get(), matstruct->beta,
                              yarray->data().get());CHKERRCUSP(stat);
   } else {
+#if CUDA_VERSION>=4020
     cusparseHybMat_t hybMat = (cusparseHybMat_t)matstruct->mat;
     stat = cusparse_hyb_spmv(cusparsestruct->handle, CUSPARSE_OPERATION_NON_TRANSPOSE,
                              matstruct->alpha, matstruct->descr, hybMat,
                              xarray->data().get(), matstruct->beta,
                              yarray->data().get());CHKERRCUSP(stat);
+#endif
   }
   ierr = VecCUSPRestoreArrayRead(xx,&xarray);CHKERRQ(ierr);
   ierr = VecCUSPRestoreArrayWrite(yy,&yarray);CHKERRQ(ierr);
@@ -1444,11 +1456,13 @@ static PetscErrorCode MatMultTranspose_SeqAIJCUSPARSE(Mat A,Vec xx,Vec yy)
                              mat->column_indices->data().get(), xarray->data().get(), matstructT->beta,
                              yarray->data().get());CHKERRCUSP(stat);
   } else {
+#if CUDA_VERSION>=4020
     cusparseHybMat_t hybMat = (cusparseHybMat_t)matstructT->mat;
     stat = cusparse_hyb_spmv(cusparsestruct->handle, CUSPARSE_OPERATION_NON_TRANSPOSE,
                              matstructT->alpha, matstructT->descr, hybMat,
                              xarray->data().get(), matstructT->beta,
                              yarray->data().get());CHKERRCUSP(stat);
+#endif
   }
   ierr = VecCUSPRestoreArrayRead(xx,&xarray);CHKERRQ(ierr);
   ierr = VecCUSPRestoreArrayWrite(yy,&yarray);CHKERRQ(ierr);
@@ -1484,7 +1498,7 @@ static PetscErrorCode MatMultAdd_SeqAIJCUSPARSE(Mat A,Vec xx,Vec yy,Vec zz)
     if (cusparsestruct->format==MAT_CUSPARSE_CSR) {
       CsrMatrix *mat = (CsrMatrix*)matstruct->mat;
       /* here we need to be careful to set the number of rows in the multiply to the
-	 number of compressed rows in the matrix ... which is equivalent to the 
+	 number of compressed rows in the matrix ... which is equivalent to the
 	 size of the workVector */
       stat = cusparse_csr_spmv(cusparsestruct->handle, CUSPARSE_OPERATION_NON_TRANSPOSE,
                                cusparsestruct->workVector->size(), mat->num_cols,
@@ -1493,11 +1507,13 @@ static PetscErrorCode MatMultAdd_SeqAIJCUSPARSE(Mat A,Vec xx,Vec yy,Vec zz)
                                mat->column_indices->data().get(), xarray->data().get(), matstruct->beta,
                                cusparsestruct->workVector->data().get());CHKERRCUSP(stat);
     } else {
+#if CUDA_VERSION>=4020
       cusparseHybMat_t hybMat = (cusparseHybMat_t)matstruct->mat;
       stat = cusparse_hyb_spmv(cusparsestruct->handle, CUSPARSE_OPERATION_NON_TRANSPOSE,
 			       matstruct->alpha, matstruct->descr, hybMat,
 			       xarray->data().get(), matstruct->beta,
 			       cusparsestruct->workVector->data().get());CHKERRCUSP(stat);
+#endif
     }
 
     /* scatter the data from the temporary into the full vector with a += operation */
@@ -1545,20 +1561,22 @@ static PetscErrorCode MatMultTransposeAdd_SeqAIJCUSPARSE(Mat A,Vec xx,Vec yy,Vec
     if (cusparsestruct->format==MAT_CUSPARSE_CSR) {
       CsrMatrix *mat = (CsrMatrix*)matstructT->mat;
       /* here we need to be careful to set the number of rows in the multiply to the
-	 number of compressed rows in the matrix ... which is equivalent to the 
+	 number of compressed rows in the matrix ... which is equivalent to the
 	 size of the workVector */
       stat = cusparse_csr_spmv(cusparsestruct->handle, CUSPARSE_OPERATION_NON_TRANSPOSE,
-                               cusparsestruct->workVector->size(), mat->num_cols, 
+                               cusparsestruct->workVector->size(), mat->num_cols,
 			       mat->num_entries, matstructT->alpha, matstructT->descr,
                                mat->values->data().get(), mat->row_offsets->data().get(),
                                mat->column_indices->data().get(), xarray->data().get(), matstructT->beta,
                                cusparsestruct->workVector->data().get());CHKERRCUSP(stat);
     } else {
+#if CUDA_VERSION>=4020
       cusparseHybMat_t hybMat = (cusparseHybMat_t)matstructT->mat;
       stat = cusparse_hyb_spmv(cusparsestruct->handle, CUSPARSE_OPERATION_NON_TRANSPOSE,
 			       matstructT->alpha, matstructT->descr, hybMat,
 			       xarray->data().get(), matstructT->beta,
 			       cusparsestruct->workVector->data().get());CHKERRCUSP(stat);
+#endif
     }
 
     /* scatter the data from the temporary into the full vector with a += operation */
@@ -1679,8 +1697,10 @@ static PetscErrorCode MatDestroy_SeqAIJCUSPARSE(Mat A)
           if (matstruct->descr) { stat = cusparseDestroyMatDescr(matstruct->descr);CHKERRCUSP(stat); }
           if (matstruct->mat) {
             if (cusparsestruct->format==MAT_CUSPARSE_ELL || cusparsestruct->format==MAT_CUSPARSE_HYB) {
+#if CUDA_VERSION>=4020
               cusparseHybMat_t hybMat = (cusparseHybMat_t) matstruct->mat;
               stat = cusparseDestroyHybMat(hybMat);CHKERRCUSP(stat);
+#endif
             } else {
 	      CsrMatrix* mat = (CsrMatrix*)matstruct->mat;
 	      if (mat->values) delete (THRUSTARRAY*)mat->values;
@@ -1698,8 +1718,10 @@ static PetscErrorCode MatDestroy_SeqAIJCUSPARSE(Mat A)
           if (matstructT->descr) { stat = cusparseDestroyMatDescr(matstructT->descr);CHKERRCUSP(stat); }
           if (matstructT->mat) {
             if (cusparsestruct->format==MAT_CUSPARSE_ELL || cusparsestruct->format==MAT_CUSPARSE_HYB) {
+#if CUDA_VERSION>=4020
               cusparseHybMat_t hybMat = (cusparseHybMat_t) matstructT->mat;
               stat = cusparseDestroyHybMat(hybMat);CHKERRCUSP(stat);
+#endif
             } else {
 	      CsrMatrix* matT = (CsrMatrix*)matstructT->mat;
 	      if (matT->values) delete (THRUSTARRAY*)matT->values;
@@ -1864,8 +1886,8 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJCUSPARSE(Mat B)
    MATSEQAIJCUSPARSE - MATAIJCUSPARSE = "(seq)aijcusparse" - A matrix type to be used for sparse matrices.
 
    A matrix type type whose data resides on Nvidia GPUs. These matrices can be in either
-   CSR, ELL, or Hybrid format. All matrix calculations are performed on Nvidia GPUs using
-   the CUSPARSE library.
+   CSR, ELL, or Hybrid format. The ELL and HYB formats require CUDA 4.2 or later.
+   All matrix calculations are performed on Nvidia GPUs using the CUSPARSE library.
 
    Options Database Keys:
 +  -mat_type aijcusparse - sets the matrix type to "seqaijcusparse" during a call to MatSetFromOptions()

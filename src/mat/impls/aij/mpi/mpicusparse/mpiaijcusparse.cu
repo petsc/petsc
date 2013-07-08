@@ -332,8 +332,9 @@ PetscErrorCode  MatCreateAIJCUSPARSE(MPI_Comm comm,PetscInt m,PetscInt n,PetscIn
 /*M
    MATAIJCUSPARSE - MATMPIAIJCUSPARSE = "aijcusparse" = "mpiaijcusparse" - A matrix type to be used for sparse matrices.
 
-   A matrix type type whose data resides on Nvidia GPUs. These matrices can be in CSR format.
-   All matrix calculations are performed using the Nvidia CUSPARSE library. 
+   A matrix type type whose data resides on Nvidia GPUs. These matrices can be in either
+   CSR, ELL, or Hybrid format. The ELL and HYB formats require CUDA 4.2 or later.
+   All matrix calculations are performed on Nvidia GPUs using the CUSPARSE library.
 
    This matrix type is identical to MATSEQAIJCUSPARSE when constructed with a single process communicator,
    and MATMPIAIJCUSPARSE otherwise.  As a result, for single process communicators,

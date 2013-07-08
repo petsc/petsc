@@ -21,6 +21,7 @@ PETSC_CUDA_EXTERN_C_END
 PetscErrorCode VecCUSPAllocateCheckHost(Vec v)
 {
   PetscErrorCode ierr;
+  cudaError_t    err;
   PetscScalar    *array;
   Vec_Seq        *s;
   PetscInt       n = v->map->n;
@@ -33,7 +34,9 @@ PetscErrorCode VecCUSPAllocateCheckHost(Vec v)
     ierr               = PetscLogObjectMemory(v,n*sizeof(PetscScalar));CHKERRQ(ierr);
     s->array           = array;
     s->array_allocated = array;
-  } 
+    err = cudaHostRegister(s->array, n*sizeof(PetscScalar),cudaHostRegisterMapped);CHKERRCUSP(err);
+    ((Vec_CUSP*)v->spptr)->hostDataRegisteredAsPageLocked = PETSC_TRUE;
+  }
   PetscFunctionReturn(0);
 }
 
@@ -48,10 +51,9 @@ PetscErrorCode VecCUSPAllocateCheckHost(Vec v)
  */
 PetscErrorCode VecCUSPAllocateCheck(Vec v)
 {
-  PetscErrorCode ierr;
+  cudaError_t    err;
   cudaStream_t   stream;
   Vec_Seq        *s = (Vec_Seq*)v->data;
-  cudaError_t    err;
 
   PetscFunctionBegin;
   // First allocate memory on the GPU if needed
@@ -59,12 +61,12 @@ PetscErrorCode VecCUSPAllocateCheck(Vec v)
     try {
       v->spptr                        = new Vec_CUSP;
       ((Vec_CUSP*)v->spptr)->GPUarray = new CUSPARRAY;
-      ((Vec_CUSP*)v->spptr)->GPUarray->resize((PetscBLASInt)v->map->n);      
-      ierr = cudaStreamCreateWithFlags(&stream,cudaStreamNonBlocking);CHKERRCUSP(ierr);
-      ((Vec_CUSP*)v->spptr)->stream = stream;      
+      ((Vec_CUSP*)v->spptr)->GPUarray->resize((PetscBLASInt)v->map->n);
+      err = cudaStreamCreate(&stream);CHKERRCUSP(err);
+      ((Vec_CUSP*)v->spptr)->stream = stream;
 
       ((Vec_CUSP*)v->spptr)->hostDataRegisteredAsPageLocked = PETSC_FALSE;
-      /* If the array is already allocated, one can register it as (page-locked) mapped. 
+      /* If the array is already allocated, one can register it as (page-locked) mapped.
 	 This can substantially accelerate data transfer across the PCI Express */
       if (s->array) {
 	err = cudaHostRegister(s->array, v->map->n*sizeof(PetscScalar),cudaHostRegisterMapped);CHKERRCUSP(err);
@@ -85,6 +87,7 @@ PetscErrorCode VecCUSPAllocateCheck(Vec v)
 PetscErrorCode VecCUSPCopyToGPU(Vec v)
 {
   PetscErrorCode ierr;
+  cudaError_t    err;
   Vec_CUSP       *veccusp;
   CUSPARRAY      *varray;
   cudaStream_t   stream;
@@ -97,9 +100,9 @@ PetscErrorCode VecCUSPCopyToGPU(Vec v)
       veccusp=(Vec_CUSP*)v->spptr;
       varray=veccusp->GPUarray;
       stream=veccusp->stream;
-      ierr = cudaMemcpyAsync(varray->data().get(), *(PetscScalar**)v->data, v->map->n*sizeof(PetscScalar), 
-                             cudaMemcpyHostToDevice, stream);CHKERRCUSP(ierr);
-      ierr = cudaStreamSynchronize(stream);CHKERRCUSP(ierr);
+      err = cudaMemcpyAsync(varray->data().get(), *(PetscScalar**)v->data, v->map->n*sizeof(PetscScalar),
+                             cudaMemcpyHostToDevice, stream);CHKERRCUSP(err);
+      err = cudaStreamSynchronize(stream);CHKERRCUSP(err);
     } catch(char *ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSP error: %s", ex);
     }
@@ -115,6 +118,7 @@ static PetscErrorCode VecCUSPCopyToGPUSome(Vec v, PetscCUSPIndices ci)
 {
   CUSPARRAY      *varray;
   PetscErrorCode ierr;
+  cudaError_t    err;
   PetscScalar    *cpuPtr, *gpuPtr;
   cudaStream_t   stream;
   Vec_Seq        *s;
@@ -130,9 +134,11 @@ static PetscErrorCode VecCUSPCopyToGPUSome(Vec v, PetscCUSPIndices ci)
     gpuPtr = varray->data().get() + ci->recvLowestIndex;
     cpuPtr = s->array + ci->recvLowestIndex;
 
-    ierr = cudaMemcpyAsync(gpuPtr, cpuPtr, ci->nr*sizeof(PetscScalar),
-                           cudaMemcpyHostToDevice, stream);CHKERRCUSP(ierr);
-    ierr = cudaStreamSynchronize(stream);CHKERRCUSP(ierr);
+    /* Note : this code copies the smallest contiguous chunk of data
+       containing ALL of the indices */
+    err = cudaMemcpyAsync(gpuPtr, cpuPtr, ci->nr*sizeof(PetscScalar),
+                           cudaMemcpyHostToDevice, stream);CHKERRCUSP(err);
+    err = cudaStreamSynchronize(stream);CHKERRCUSP(err);
 
 #if 0
     Vec_Seq *s;
@@ -161,6 +167,7 @@ static PetscErrorCode VecCUSPCopyToGPUSome(Vec v, PetscCUSPIndices ci)
 PetscErrorCode VecCUSPCopyFromGPU(Vec v)
 {
   PetscErrorCode ierr;
+  cudaError_t    err;
   Vec_CUSP       *veccusp;
   CUSPARRAY      *varray;
   cudaStream_t   stream;
@@ -174,9 +181,9 @@ PetscErrorCode VecCUSPCopyFromGPU(Vec v)
       varray=veccusp->GPUarray;
       stream=veccusp->stream;
 
-      ierr = cudaMemcpyAsync(*(PetscScalar**)v->data, varray->data().get(), v->map->n*sizeof(PetscScalar), 
-                             cudaMemcpyDeviceToHost, stream);CHKERRCUSP(ierr);
-      ierr = cudaStreamSynchronize(stream);CHKERRCUSP(ierr);
+      err = cudaMemcpyAsync(*(PetscScalar**)v->data, varray->data().get(), v->map->n*sizeof(PetscScalar),
+                             cudaMemcpyDeviceToHost, stream);CHKERRCUSP(err);
+      err = cudaStreamSynchronize(stream);CHKERRCUSP(err);
     } catch(char *ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSP error: %s", ex);
     }
@@ -197,6 +204,7 @@ PetscErrorCode VecCUSPCopyFromGPUSome(Vec v, PetscCUSPIndices ci)
 {
   CUSPARRAY      *varray;
   PetscErrorCode ierr;
+  cudaError_t    err;
   PetscScalar    *cpuPtr, *gpuPtr;
   cudaStream_t   stream;
   Vec_Seq        *s;
@@ -212,9 +220,11 @@ PetscErrorCode VecCUSPCopyFromGPUSome(Vec v, PetscCUSPIndices ci)
     gpuPtr = varray->data().get() + ci->sendLowestIndex;
     cpuPtr = s->array + ci->sendLowestIndex;
 
-    ierr = cudaMemcpyAsync(cpuPtr, gpuPtr, ci->ns*sizeof(PetscScalar),
-			   cudaMemcpyDeviceToHost, stream);CHKERRCUSP(ierr);
-    ierr = cudaStreamSynchronize(stream);CHKERRCUSP(ierr);
+    /* Note : this code copies the smallest contiguous chunk of data
+       containing ALL of the indices */
+    err = cudaMemcpyAsync(cpuPtr, gpuPtr, ci->ns*sizeof(PetscScalar),
+			   cudaMemcpyDeviceToHost, stream);CHKERRCUSP(err);
+    err = cudaStreamSynchronize(stream);CHKERRCUSP(err);
 
 #if 0
     Vec_Seq *s;
@@ -243,6 +253,8 @@ static PetscErrorCode VecCopy_SeqCUSP_Private(Vec xin,Vec yin)
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
+  ierr = VecCUSPAllocateCheckHost(xin);
+  ierr = VecCUSPAllocateCheckHost(yin);
   if (xin != yin) {
     ierr = VecGetArrayRead(xin,&xa);CHKERRQ(ierr);
     ierr = VecGetArray(yin,&ya);CHKERRQ(ierr);

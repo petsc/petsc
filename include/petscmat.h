@@ -1517,14 +1517,13 @@ PETSC_EXTERN PetscErrorCode MatSuperluSetILUDropTol(Mat,PetscReal);
 #ifdef PETSC_HAVE_CUDA
 /*E
     MatCUSPARSEStorageFormat - indicates the storage format for CUSPARSE (GPU)
-    matrices. Requires the txpetscgpu package to use. Configure with 
-    --download-txpetscgpu to build/install petsc with the txpetscgpu library.
+    matrices. 
 
     Not Collective
 
 +   MAT_CUSPARSE_CSR - Compressed Sparse Row
-.   MAT_CUSPARSE_ELL - Ellpack
--   MAT_CUSPARSE_HYB - Hybrid, a combination of Ellpack and Coordinate format.
+.   MAT_CUSPARSE_ELL - Ellpack (requires CUDA 4.2 or later).
+-   MAT_CUSPARSE_HYB - Hybrid, a combination of Ellpack and Coordinate format (requires CUDA 4.2 or later).
 
     Level: intermediate
 
@@ -1540,9 +1539,7 @@ PETSC_EXTERN const char *const MatCUSPARSEStorageFormats[];
 
 /*E
     MatCUSPARSEFormatOperation - indicates the operation of CUSPARSE (GPU)
-    matrices whose operation should use a particular storage format. Requires
-    the txpetscgpu package to use. Configure with --download-txpetscgpu to 
-    build/install petsc with the txpetscgpu library.
+    matrices whose operation should use a particular storage format. 
 
     Not Collective
 

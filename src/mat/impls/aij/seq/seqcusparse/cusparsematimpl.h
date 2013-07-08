@@ -3,13 +3,14 @@
 
 #include <../src/vec/vec/impls/seq/seqcusp/cuspvecimpl.h>
 
+#if CUDA_VERSION>=4020
 #include <cusparse_v2.h>
+#else
+#include <cusparse.h>
+#endif
 
 #include <algorithm>
 #include <vector>
-#include <thrust/sort.h>
-#include <thrust/fill.h>
-#include <cusp/csr_matrix.h>
 
 /* Single instance of the cusparse handle for the class. */
 MatCUSPARSEStorageFormat cusparseMatSolveStorageFormat=MAT_CUSPARSE_CSR;
