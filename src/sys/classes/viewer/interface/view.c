@@ -301,6 +301,9 @@ PetscErrorCode  PetscViewerView(PetscViewer v,PetscViewer viewer)
   PetscErrorCode    ierr;
   PetscBool         iascii;
   PetscViewerFormat format;
+#if defined(PETSC_HAVE_AMS)
+  PetscBool         isams;
+#endif
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,PETSC_VIEWER_CLASSID,1);
@@ -312,6 +315,9 @@ PetscErrorCode  PetscViewerView(PetscViewer v,PetscViewer viewer)
   PetscCheckSameComm(v,1,viewer,2);
 
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_AMS)
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERAMS,&isams);CHKERRQ(ierr);
+#endif
   if (iascii) {
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
     if (format == PETSC_VIEWER_DEFAULT || format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
@@ -325,6 +331,15 @@ PetscErrorCode  PetscViewerView(PetscViewer v,PetscViewer viewer)
       }
       ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
     }
+#if defined(PETSC_HAVE_AMS)
+  } else if (isams) {
+    if (!((PetscObject)v)->amsmem) {
+      ierr = PetscObjectViewAMS((PetscObject)v,viewer);CHKERRQ(ierr);
+      if (v->ops->view) {
+        ierr = (*v->ops->view)(v,viewer);CHKERRQ(ierr);
+      }
+    }
+#endif
   }
   PetscFunctionReturn(0);
 }

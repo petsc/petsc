@@ -124,6 +124,15 @@ PetscErrorCode  PetscSetDisplay(void)
 
   str = getenv("DISPLAY");
   if (!str) str = ":0.0";
+#if defined(PETSC_HAVE_X)
+  flag = PETSC_FALSE;
+  ierr = PetscOptionsGetBool(NULL,"-x_virtual",&flag,NULL);CHKERRQ(ierr);
+  if (flag) {
+    ierr = PetscPOpen(PETSC_COMM_WORLD,NULL,"Xvfb :15 -screen 0 1600x1200x24","r",NULL);CHKERRQ(ierr);
+    ierr = PetscSleep(5);CHKERRQ(ierr);
+    str  = ":15";
+  }
+#endif
   if (str[0] != ':' || singlehost) {
     ierr = PetscStrncpy(display,str,sizeof(display));CHKERRQ(ierr);
   } else if (!rank) {
@@ -152,19 +161,15 @@ PetscErrorCode  PetscSetDisplay(void)
 
   Options Database:
 +  -display <display> - sets the display to use
--  -x_virtual - forces use of a X virtual display Xvfb that will not display anything but -draw_save will still work
+-  -x_virtual - forces use of a X virtual display Xvfb that will not display anything but -draw_save will still work. Xvfb is automatically
+                started up in PetscSetDisplay() with this option
 
 */
 PetscErrorCode  PetscGetDisplay(char display[],size_t n)
 {
   PetscErrorCode ierr;
-  PetscBool      flg = PETSC_FALSE;
 
   PetscFunctionBegin;
   ierr = PetscStrncpy(display,PetscDisplay,n);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,"-x_virtual",&flg,NULL);CHKERRQ(ierr);
-  if (flg) {
-    ierr = PetscStrncpy(display,":11",4);CHKERRQ(ierr);
-  }
   PetscFunctionReturn(0);
 }

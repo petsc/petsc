@@ -78,7 +78,6 @@ PetscErrorCode  PetscObjectViewAMS(PetscObject obj,PetscViewer viewer)
 
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
-  if (obj->classid == PETSC_VIEWER_CLASSID) PetscFunctionReturn(0);
   if (obj->amsmem) PetscFunctionReturn(0);
   ierr = PetscObjectName(obj);CHKERRQ(ierr);
 
