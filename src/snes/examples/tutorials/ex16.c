@@ -187,7 +187,6 @@ void InvertTensor(PetscScalar *t, PetscScalar *ti,PetscReal *dett)
   const PetscScalar h = t[7];
   const PetscScalar i = t[8];
   const PetscReal   det = PetscRealPart(a*(e*i - f*h) - b*(i*d - f*g) + c*(d*h - e*g));
-  if (dett) *dett = det;
   const PetscReal   di = 1. / det;
   const PetscScalar A = (e*i - f*h);
   const PetscScalar B = -(d*i - f*g);
@@ -207,6 +206,7 @@ void InvertTensor(PetscScalar *t, PetscScalar *ti,PetscReal *dett)
   ti[6] = di*C;
   ti[7] = di*F;
   ti[8] = di*I;
+  if (dett) *dett = det;
 }
 
 void TensorTensor(PetscScalar *a,PetscScalar *b,PetscScalar *c)
@@ -268,13 +268,13 @@ void DeformationGradient(Field *ex,PetscInt qi,PetscInt qj,PetscInt qk,PetscScal
 void DeformationGradientJacobian(PetscInt qi,PetscInt qj,PetscInt qk,PetscInt ii,PetscInt jj,PetscInt kk,PetscInt fld,PetscScalar *invJ,PetscScalar *dF)
 {
   int l;
+  PetscScalar lgrad[3];
+  PetscInt idx = ii + jj*NB + kk*NB*NB;
+  PetscInt bidx = NEB*idx + qi + NQ*qj + NQ*NQ*qk;
   for (l = 0; l < 9; l++) {
     dF[l] = 0.;
   }
   /* form the deformation gradient at this basis function -- loop over element unknowns */
-  PetscScalar lgrad[3];
-  PetscInt idx = ii + jj*NB + kk*NB*NB;
-  PetscInt bidx = NEB*idx + qi + NQ*qj + NQ*NQ*qk;
   TensorVector(invJ,&grad[3*bidx],lgrad);
   dF[3*fld] = lgrad[0]; dF[3*fld + 1] = lgrad[1]; dF[3*fld + 2] = lgrad[2];
 }
@@ -298,8 +298,8 @@ void SaintVenantKirchoff(PetscReal lambda,PetscReal mu,PetscScalar *F,PetscScala
 {
   int i,j;
   PetscScalar E[9];
-  LagrangeGreenStrain(F,E);
   PetscScalar trE=0;
+  LagrangeGreenStrain(F,E);
   for (i=0;i<3;i++) {
     trE += E[i+3*i];
   }
@@ -511,9 +511,10 @@ void FormPBJacobian(PetscInt i,PetscInt j,PetscInt k,Field *ex,CoordField *ec,Fi
   PetscScalar F[9],S[9],dF[9],dS[9],dFS[9],FdS[9],FS[9];
   PetscReal   scl;
   PetscInt    l,ll,qi,qj,qk,m;
+  PetscInt idx = i + j*NB + k*NB*NB;
+  PetscScalar lgrad[3];
   if (ej) for (l = 0; l < 9; l++) ej[l] = 0.;
   if (ef) for (l = 0; l < 1; l++) {ef[l][0] = 0.;ef[l][1] = 0.;ef[l][2] = 0.;}
-  PetscInt idx = i + j*NB + k*NB*NB;
   /* loop over quadrature */
   for (qk = 0; qk < NQ; qk++) {
     for (qj = 0; qj < NQ; qj++) {
@@ -521,7 +522,6 @@ void FormPBJacobian(PetscInt i,PetscInt j,PetscInt k,Field *ex,CoordField *ec,Fi
         PetscInt bidx = NEB*idx + qi + NQ*qj + NQ*NQ*qk;
         QuadraturePointGeometricJacobian(ec,qi,qj,qk,J);
         InvertTensor(J,invJ,&vol);
-        PetscScalar lgrad[3];
         TensorVector(invJ,&grad[3*bidx],lgrad);
         scl = vol*wts[qi]*wts[qj]*wts[qk];
         DeformationGradient(ex,qi,qj,qk,invJ,F);
@@ -588,7 +588,6 @@ void ApplyBCsElement(PetscInt mx,PetscInt i, PetscInt j, PetscInt k,PetscScalar 
 #define __FUNCT__ "FormJacobianLocal"
 PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,Field ***x,Mat jacpre,Mat jac,MatStructure *flg,void *ptr)
 {
-  PetscFunctionBegin;
   /* values for each basis function at each quadrature point */
   AppCtx      *user = (AppCtx*)ptr;
 
@@ -610,7 +609,7 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,Field ***x,Mat jacpre,Mat j
   Vec         C;
   PetscInt    nrows;
   MatStencil  col[NPB],row[NPB];
-
+  PetscScalar v[9];
   PetscFunctionBegin;
   ierr = DMGetCoordinateDM(info->da,&cda);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(info->da,&C);CHKERRQ(ierr);
@@ -666,7 +665,6 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,Field ***x,Mat jacpre,Mat j
   ierr = MatAssemblyEnd(jac,MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
 
   /* set the diagonal */
-  PetscScalar v[9];
   v[0] = 1.;v[1] = 0.;v[2] = 0.;v[3] = 0.;v[4] = 1.;v[5] = 0.;v[6] = 0.;v[7] = 0.;v[8] = 1.;
   for (k=zs; k<zs+zm; k++) {
     for (j=ys; j<ys+ym; j++) {
@@ -992,7 +990,7 @@ PetscErrorCode DisplayLine(SNES snes,Vec X)
     if (rank == r) {
       if (j >= ys && j < ys+ym && k >= zs && k < zs+zm) {
         for (i=xs; i<xs+xm; i++) {
-          PetscPrintf(PETSC_COMM_SELF,"%d %d %d: %f %f %f\n",i,0,0,c[k][j][i][0] + x[k][j][i][0],c[k][j][i][1] + x[k][j][i][1],c[k][j][i][2] + x[k][j][i][2]);
+          PetscPrintf(PETSC_COMM_SELF,"%d %d %d: %f %f %f\n",i,0,0,PetscRealPart(c[k][j][i][0] + x[k][j][i][0]),PetscRealPart(c[k][j][i][1] + x[k][j][i][1]),PetscRealPart(c[k][j][i][2] + x[k][j][i][2]));
         }
       }
     }
