@@ -348,10 +348,12 @@ PetscErrorCode FormFunctionLocalLaplacian(DM dm, Vec X, Vec F, AppCtx *user)
   ierr = PetscFree3(realSpaceDer,fieldGrad,elemVec);CHKERRQ(ierr);
   ierr = PetscFree4(coords,v0,J,invJ);CHKERRQ(ierr);
 
-  ierr = PetscPrintf(PETSC_COMM_WORLD, "Residual:\n");CHKERRQ(ierr);
-  for (p = 0; p < user->numProcs; ++p) {
-    if (p == user->rank) {ierr = VecView(F, PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);}
-    ierr = PetscBarrier((PetscObject) dm);CHKERRQ(ierr);
+  if (user->showResidual) {
+    ierr = PetscPrintf(PETSC_COMM_WORLD, "Residual:\n");CHKERRQ(ierr);
+    for (p = 0; p < user->numProcs; ++p) {
+      if (p == user->rank) {ierr = VecView(F, PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);}
+      ierr = PetscBarrier((PetscObject) dm);CHKERRQ(ierr);
+    }
   }
   ierr = PetscLogEventEnd(user->residualEvent,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -457,10 +459,12 @@ PetscErrorCode FormFunctionLocalElasticity(DM dm, Vec X, Vec F, AppCtx *user)
   ierr = PetscFree3(realSpaceDer,fieldGrad,elemVec);CHKERRQ(ierr);
   ierr = PetscFree4(coords,v0,J,invJ);CHKERRQ(ierr);
 
-  ierr = PetscPrintf(PETSC_COMM_WORLD, "Residual:\n");CHKERRQ(ierr);
-  for (p = 0; p < user->numProcs; ++p) {
-    if (p == user->rank) {ierr = VecView(F, PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);}
-    ierr = PetscBarrier((PetscObject) dm);CHKERRQ(ierr);
+  if (user->showResidual) {
+    ierr = PetscPrintf(PETSC_COMM_WORLD, "Residual:\n");CHKERRQ(ierr);
+    for (p = 0; p < user->numProcs; ++p) {
+      if (p == user->rank) {ierr = VecView(F, PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);}
+      ierr = PetscBarrier((PetscObject) dm);CHKERRQ(ierr);
+    }
   }
   ierr = PetscLogEventEnd(user->residualEvent,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
