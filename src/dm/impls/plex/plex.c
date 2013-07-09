@@ -6531,6 +6531,7 @@ PetscErrorCode DMPlexVecGetClosure(DM dm, PetscSection section, Vec v, PetscInt 
       *values = array;
     } else {
       if (size > *csize) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Size of input array %d < actual size %d", *csize, size);
+      *csize = size;
     }
     PetscFunctionReturn(0);
   }
