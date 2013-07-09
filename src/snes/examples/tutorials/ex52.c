@@ -34,6 +34,7 @@ typedef struct {
   PetscBool     interpolate;       /* Generate intermediate mesh elements */
   PetscReal     refinementLimit;   /* The largest allowable cell volume */
   PetscBool     refinementUniform; /* Uniformly refine the mesh */
+  PetscInt      refinementRounds;  /* The number of uniform refinements */
   char          partitioner[2048]; /* The graph partitioner */
   PetscBool     computeFunction;   /* The flag for computing a residual */
   PetscBool     computeJacobian;   /* The flag for computing a Jacobian */
@@ -79,6 +80,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->interpolate       = PETSC_FALSE;
   options->refinementLimit   = 0.0;
   options->refinementUniform = PETSC_FALSE;
+  options->refinementRounds  = 1;
   options->computeFunction   = PETSC_FALSE;
   options->computeJacobian   = PETSC_FALSE;
   options->batch             = PETSC_FALSE;
@@ -97,6 +99,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsBool("-interpolate", "Generate intermediate mesh elements", "ex52.c", options->interpolate, &options->interpolate, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-refinement_limit", "The largest allowable cell volume", "ex52.c", options->refinementLimit, &options->refinementLimit, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-refinement_uniform", "Uniformly refine the mesh", "ex52.c", options->refinementUniform, &options->refinementUniform, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-refinement_rounds", "The number of uniform refinements", "ex52.c", options->refinementRounds, &options->refinementRounds, NULL);CHKERRQ(ierr);
   ierr = PetscStrcpy(options->partitioner, "chaco");CHKERRQ(ierr);
   ierr = PetscOptionsString("-partitioner", "The graph partitioner", "ex52.c", options->partitioner, options->partitioner, 2048, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-compute_function", "Compute the residual", "ex52.c", options->computeFunction, &options->computeFunction, NULL);CHKERRQ(ierr);
@@ -135,6 +138,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscBool      interpolate       = user->interpolate;
   PetscReal      refinementLimit   = user->refinementLimit;
   PetscBool      refinementUniform = user->refinementUniform;
+  PetscInt       refinementRounds  = user->refinementRounds;
   const char     *partitioner      = user->partitioner;
   PetscErrorCode ierr;
 
@@ -158,13 +162,17 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       ierr = DMDestroy(dm);CHKERRQ(ierr);
       *dm  = distributedMesh;
     }
-    /* Use regualr refinement in parallel */
+    /* Use regular refinement in parallel */
     if (refinementUniform) {
+      PetscInt r;
+
       ierr = DMPlexSetRefinementUniform(*dm, refinementUniform);CHKERRQ(ierr);
-      ierr = DMRefine(*dm, comm, &refinedMesh);CHKERRQ(ierr);
-      if (refinedMesh) {
-        ierr = DMDestroy(dm);CHKERRQ(ierr);
-        *dm  = refinedMesh;
+      for (r = 0; r < refinementRounds; ++r) {
+        ierr = DMRefine(*dm, comm, &refinedMesh);CHKERRQ(ierr);
+        if (refinedMesh) {
+          ierr = DMDestroy(dm);CHKERRQ(ierr);
+          *dm  = refinedMesh;
+        }
       }
     }
   }
