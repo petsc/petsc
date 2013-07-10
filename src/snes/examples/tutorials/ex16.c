@@ -16,7 +16,7 @@ T*/
 
     F is the deformation gradient, and S is the second Piola-Kirchhoff tensor
     from the Saint Venant-Kirchhoff model of hyperelasticity.  \Omega is a
-    (length) x 1 x 1 domain deformed by a parabola of height (arch).  The
+    (length) x 1 x 1 domain deformed by a sinusoid of height (arch).  The
     problem is discretized using Q1 finite elements on a logically structured
     grid.  Dirichlet boundary conditions are applied on the ends of the domain in the x
     direction, and a constant loading in the y direction is applied.  The
@@ -917,7 +917,7 @@ PetscErrorCode FormCoordinates(DM da,AppCtx *user) {
       for (i=xs; i<xs+xm; i++) {
         PetscReal cx = ((PetscReal)i) / (((PetscReal)(mx-1)));
         x[k][j][i][0] = user->len*((PetscReal)i) / (((PetscReal)(mx-1)));
-        x[k][j][i][1] = ((PetscReal)j) / (((PetscReal)(my-1))) + 4.*cx*(1.-cx)*user->arch;
+        x[k][j][i][1] = ((PetscReal)j) / (((PetscReal)(my-1))) + 0.5*user->arch*(1. - PetscCosScalar(2.*PETSC_PI*cx));
         x[k][j][i][2] = ((PetscReal)k) / (((PetscReal)(mz-1)));
       }
     }
