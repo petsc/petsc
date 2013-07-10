@@ -691,7 +691,21 @@ M*/
   do {                                                                \
     PetscStackPopNoCheck;                                             \
     return;} while (0)
+
 #else
+
+#if defined(PETSC_HAVE_PTHREADCLASSES)
+#if defined(PETSC_PTHREAD_LOCAL)
+PETSC_EXTERN PETSC_PTHREAD_LOCAL void *petscstack;
+#else
+PETSC_EXTERN PetscThreadKey petscstack;
+#endif
+#elif defined(PETSC_HAVE_OPENMP)
+PETSC_EXTERN void *petscstack;
+#pragma omp threadprivate(petscstack)
+#else
+PETSC_EXTERN void *petscstack;
+#endif
 
 #define PetscStackPushNoCheck(funct,petsc_routine) do {} while (0)
 #define PetscStackPopNoCheck                       do {} while (0)
