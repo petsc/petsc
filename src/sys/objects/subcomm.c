@@ -220,6 +220,7 @@ PetscErrorCode PetscSubcommCreate_contiguous(PetscSubcomm psubcomm)
   ierr = MPI_Comm_free(&subcomm);CHKERRQ(ierr);
 
   psubcomm->color = color;
+  psubcomm->type  = PETSC_SUBCOMM_CONTIGUOUS;
   PetscFunctionReturn(0);
 }
 
@@ -303,6 +304,7 @@ PetscErrorCode PetscSubcommCreate_interlaced(PetscSubcomm psubcomm)
   ierr = MPI_Comm_free(&subcomm);CHKERRQ(ierr);
 
   psubcomm->color = color;
+  psubcomm->type  = PETSC_SUBCOMM_INTERLACED;
   PetscFunctionReturn(0);
 }
 
