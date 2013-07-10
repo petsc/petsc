@@ -2292,6 +2292,7 @@ struct _n_PetscSubcomm {
   MPI_Comm   comm;        /* this communicator */
   PetscInt   n;           /* num of subcommunicators under the parent communicator */
   PetscInt   color;       /* color of processors belong to this communicator */
+  PetscInt   type;
 };
 
 typedef enum {PETSC_SUBCOMM_GENERAL=0,PETSC_SUBCOMM_CONTIGUOUS=1,PETSC_SUBCOMM_INTERLACED=2} PetscSubcommType;

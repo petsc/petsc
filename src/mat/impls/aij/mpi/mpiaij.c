@@ -2590,6 +2590,7 @@ PetscErrorCode MatGetRedundantMatrix_MPIAIJ_interlaced(Mat mat,PetscSubcomm psub
   PetscInt       rstart_sub,rend_sub,mloc_sub;
   
   PetscFunctionBegin;
+  if (psubcomm->type != PETSC_SUBCOMM_INTERLACED) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"Input psubcomm must be PETSC_SUBCOMM_INTERLACED type");
   ierr = MatGetSize(mat,&M,&N);CHKERRQ(ierr);
   if (M != N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for non-square matrix yet, rows %D columns %D",M,N);
 
@@ -2911,9 +2912,9 @@ PetscErrorCode MatGetRedundantMatrix_MPIAIJ_interlaced(Mat mat,PetscSubcomm psub
 #define __FUNCT__ "MatGetRedundantMatrix_MPIAIJ"
 PetscErrorCode MatGetRedundantMatrix_MPIAIJ(Mat mat,PetscInt nsubcomm,MPI_Comm subcomm,PetscInt mlocal_sub,MatReuse reuse,Mat *matredundant)
 {
+  PetscErrorCode ierr;
   PetscMPIInt    rank,size;
   MPI_Comm       comm;
-  PetscErrorCode ierr;
   PetscInt       nsends    = 0,nrecvs=0,i,rownz_max=0;
   PetscMPIInt    *send_rank= NULL,*recv_rank=NULL;
   PetscInt       *rowrange = mat->rmap->range;
@@ -2938,6 +2939,12 @@ PetscErrorCode MatGetRedundantMatrix_MPIAIJ(Mat mat,PetscInt nsubcomm,MPI_Comm s
   PetscContainer container;
 
   PetscFunctionBegin;
+  /* Only MatGetRedundantMatrix_MPIAIJ_interlaced() is written now */
+  /*
+  ierr = MatGetRedundantMatrix_MPIAIJ_interlaced(mat,psubcomm,reuse,matredundant);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+   */
+
   ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
