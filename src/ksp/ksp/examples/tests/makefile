@@ -486,7 +486,7 @@ runex28_2:
 	   ${RM} -f ex28.tmp
 runex28_3:
 	-@${MPIEXEC} -n 5 ./ex28 -procedural -pc_redundant_number 3 -redundant_ksp_type gmres -redundant_pc_type bjacobi > ex28.tmp 2>&1; \
-	if (${DIFF} output/ex28_3.out ex28.tmp) then true; \
+	if (${DIFF} output/ex28.out ex28.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex28_3, diffs above \n========================================="; fi; \
 	   ${RM} -f ex28.tmp
 runex29:
