@@ -77,7 +77,7 @@ typedef struct { /* used by MatGetRedundantMatrix() for reusing matredundant */
   PetscMPIInt *send_rank,*recv_rank;
   PetscInt    *sbuf_nz,*rbuf_nz,*sbuf_j,**rbuf_j;
   PetscScalar *sbuf_a,**rbuf_a;
-  PetscSubcomm *psubcomm;
+  PetscSubcomm psubcomm;
   PetscErrorCode (*Destroy)(Mat);
 } Mat_Redundant;
 
