@@ -2507,54 +2507,35 @@ PetscErrorCode MatSolve_MPIAIJ(Mat A, Vec b, Vec x)
 }
 #endif
 
-typedef struct { /* used by MatGetRedundantMatrix() for reusing matredundant */
-  PetscInt    nzlocal,nsends,nrecvs;
-  PetscMPIInt *send_rank,*recv_rank;
-  PetscInt    *sbuf_nz,*rbuf_nz,*sbuf_j,**rbuf_j;
-  PetscScalar *sbuf_a,**rbuf_a;
-  PetscSubcomm *psubcomm;
-  PetscErrorCode (*Destroy)(Mat);
-} Mat_Redundant;
-
-#undef __FUNCT__
-#define __FUNCT__ "PetscContainerDestroy_MatRedundant"
-PetscErrorCode PetscContainerDestroy_MatRedundant(void *ptr)
-{
-  PetscErrorCode ierr;
-  Mat_Redundant  *redund=(Mat_Redundant*)ptr;
-  PetscInt       i;
-
-  PetscFunctionBegin;
-  ierr = PetscFree2(redund->send_rank,redund->recv_rank);CHKERRQ(ierr);
-  ierr = PetscFree(redund->sbuf_j);CHKERRQ(ierr);
-  ierr = PetscFree(redund->sbuf_a);CHKERRQ(ierr);
-  for (i=0; i<redund->nrecvs; i++) {
-    ierr = PetscFree(redund->rbuf_j[i]);CHKERRQ(ierr);
-    ierr = PetscFree(redund->rbuf_a[i]);CHKERRQ(ierr);
-  }
-  ierr = PetscFree4(redund->sbuf_nz,redund->rbuf_nz,redund->rbuf_j,redund->rbuf_a);CHKERRQ(ierr);
-  ierr = PetscFree(redund);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
 #undef __FUNCT__
 #define __FUNCT__ "MatDestroy_MatRedundant"
 PetscErrorCode MatDestroy_MatRedundant(Mat A)
 {
   PetscErrorCode ierr;
-  PetscContainer container;
-  Mat_Redundant  *redund=NULL;
+  Mat_Redundant  *redund; 
+  PetscInt       i;
+  PetscMPIInt    size;
 
   PetscFunctionBegin;
-  ierr = PetscObjectQuery((PetscObject)A,"Mat_Redundant",(PetscObject*)&container);CHKERRQ(ierr);
-  if (!container) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Container does not exit");
-  ierr = PetscContainerGetPointer(container,(void**)&redund);CHKERRQ(ierr);
-
-  A->ops->destroy = redund->Destroy;
-
-  ierr = PetscObjectCompose((PetscObject)A,"Mat_Redundant",0);CHKERRQ(ierr);
-  if (A->ops->destroy) {
-    ierr = (*A->ops->destroy)(A);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(((PetscObject)A)->comm,&size);CHKERRQ(ierr);
+  if (size == 1) {
+    Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data;
+    redund = a->redundant;
+  } else {
+    Mat_MPIAIJ *a = (Mat_MPIAIJ*)A->data;
+    redund = a->redundant;
+  }
+  if (redund){
+    ierr = PetscFree2(redund->send_rank,redund->recv_rank);CHKERRQ(ierr);
+    ierr = PetscFree(redund->sbuf_j);CHKERRQ(ierr);
+    ierr = PetscFree(redund->sbuf_a);CHKERRQ(ierr);
+    for (i=0; i<redund->nrecvs; i++) {
+      ierr = PetscFree(redund->rbuf_j[i]);CHKERRQ(ierr);
+      ierr = PetscFree(redund->rbuf_a[i]);CHKERRQ(ierr);
+    }
+    ierr = PetscFree4(redund->sbuf_nz,redund->rbuf_nz,redund->rbuf_j,redund->rbuf_a);CHKERRQ(ierr);
+    ierr = redund->Destroy(A);CHKERRQ(ierr);
+    ierr = PetscFree(redund);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -2567,7 +2548,7 @@ PetscErrorCode MatGetRedundantMatrix_MPIAIJ_interlaced(Mat mat,PetscInt nsubcomm
   MPI_Comm       comm,subcomm=psubcomm->comm;
   PetscErrorCode ierr;
   PetscInt       nsends=0,nrecvs=0,i,rownz_max=0;
-  PetscMPIInt    *send_rank= NULL,*recv_rank=NULL;
+  PetscMPIInt    *send_rank= NULL,*recv_rank=NULL,subrank,subsize;
   PetscInt       *rowrange = mat->rmap->range;
   Mat_MPIAIJ     *aij = (Mat_MPIAIJ*)mat->data;
   Mat            A = aij->A,B=aij->B,C=*matredundant;
@@ -2587,7 +2568,6 @@ PetscErrorCode MatGetRedundantMatrix_MPIAIJ_interlaced(Mat mat,PetscInt nsubcomm
   PetscInt       **rbuf_j=NULL;
   PetscScalar    **rbuf_a=NULL;
   Mat_Redundant  *redund =NULL;
-  PetscContainer container;
   PetscInt       rstart_sub,rend_sub,mloc_sub;
   
   PetscFunctionBegin;
@@ -2598,14 +2578,18 @@ PetscErrorCode MatGetRedundantMatrix_MPIAIJ_interlaced(Mat mat,PetscInt nsubcomm
   ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-
-  /* printf("[%d] MatGetRedundantMatrix_MPIAIJ_interlaced...\n",rank); */
+  ierr = MPI_Comm_rank(subcomm,&subrank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(subcomm,&subsize);CHKERRQ(ierr);
 
   if (reuse == MAT_REUSE_MATRIX) {
     if (M != mat->rmap->N || N != mat->cmap->N) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Cannot reuse matrix. Wrong global size");
-    ierr = PetscObjectQuery((PetscObject)C,"Mat_Redundant",(PetscObject*)&container);CHKERRQ(ierr);
-    if (!container) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Container does not exit");
-    ierr = PetscContainerGetPointer(container,(void**)&redund);CHKERRQ(ierr);
+    if (subsize == 1) {
+      Mat_SeqAIJ *c = (Mat_SeqAIJ*)C->data;
+      redund = c->redundant;
+    } else {
+      Mat_MPIAIJ *c = (Mat_MPIAIJ*)C->data;
+      redund = c->redundant;
+    }
     if (nzlocal != redund->nzlocal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Cannot reuse matrix. Wrong nzlocal");
 
     nsends    = redund->nsends;
@@ -2621,11 +2605,7 @@ PetscErrorCode MatGetRedundantMatrix_MPIAIJ_interlaced(Mat mat,PetscInt nsubcomm
   }
 
   if (reuse == MAT_INITIAL_MATRIX) {
-    PetscMPIInt subrank,subsize;
     PetscInt    nleftover,np_subcomm;
-   
-    ierr = MPI_Comm_rank(subcomm,&subrank);CHKERRQ(ierr);
-    ierr = MPI_Comm_size(subcomm,&subsize);CHKERRQ(ierr);
 
     /* get local size of redundant matrix */
     const PetscInt *range;
@@ -2636,9 +2616,7 @@ PetscErrorCode MatGetRedundantMatrix_MPIAIJ_interlaced(Mat mat,PetscInt nsubcomm
     } else {
       rend_sub = mat->rmap->N;
     }
-    
     mloc_sub = rend_sub - rstart_sub;
-    /* printf("[%d] rstart_sub %d %d, mloc_sub %d\n",rank,rstart_sub,rend_sub, mloc_sub); */
 
     /* get the destination processors' id send_rank, nsends and nrecvs */
     ierr = PetscMalloc2(size,PetscMPIInt,&send_rank,size,PetscMPIInt,&recv_rank);CHKERRQ(ierr);
@@ -2881,15 +2859,17 @@ PetscErrorCode MatGetRedundantMatrix_MPIAIJ_interlaced(Mat mat,PetscInt nsubcomm
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   if (reuse == MAT_INITIAL_MATRIX) {
-    PetscContainer container;
     *matredundant = C;
+
     /* create a supporting struct and attach it to C for reuse */
     ierr = PetscNewLog(C,Mat_Redundant,&redund);CHKERRQ(ierr);
-    ierr = PetscContainerCreate(PETSC_COMM_SELF,&container);CHKERRQ(ierr);
-    ierr = PetscContainerSetPointer(container,redund);CHKERRQ(ierr);
-    ierr = PetscContainerSetUserDestroy(container,PetscContainerDestroy_MatRedundant);CHKERRQ(ierr);
-    ierr = PetscObjectCompose((PetscObject)C,"Mat_Redundant",(PetscObject)container);CHKERRQ(ierr);
-    ierr = PetscContainerDestroy(&container);CHKERRQ(ierr);
+    if (subsize == 1) {
+      Mat_SeqAIJ *c = (Mat_SeqAIJ*)C->data;
+      c->redundant = redund;
+    } else {
+      Mat_MPIAIJ *c = (Mat_MPIAIJ*)C->data;
+      c->redundant = redund;
+    }
 
     redund->nzlocal   = nzlocal;
     redund->nsends    = nsends;
