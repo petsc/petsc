@@ -48,6 +48,8 @@ static PetscErrorCode PCView_Redundant(PC pc,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
+extern PetscErrorCode MatGetRedundantMatrix_MPIAIJ_interlaced(Mat,PetscInt,PetscSubcomm,MatReuse,Mat*); /* rm later! */
+
 #undef __FUNCT__
 #define __FUNCT__ "PCSetUp_Redundant"
 static PetscErrorCode PCSetUp_Redundant(PC pc)
@@ -158,7 +160,7 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
     /* grab the parallel matrix and put it into processors of a subcomminicator */
     /*--------------------------------------------------------------------------*/
     ierr = VecGetLocalSize(red->ysub,&mlocal_sub);CHKERRQ(ierr);
-    ierr = MatGetRedundantMatrix(pc->pmat,red->psubcomm->n,red->psubcomm->comm,mlocal_sub,reuse,&red->pmats);CHKERRQ(ierr);
+    ierr = MatGetRedundantMatrix_MPIAIJ_interlaced(pc->pmat,red->psubcomm->n,red->psubcomm,reuse,&red->pmats);CHKERRQ(ierr);
     /* tell PC of the subcommunicator its operators */
     ierr = KSPSetOperators(red->ksp,red->pmats,red->pmats,str);CHKERRQ(ierr);
   } else {
