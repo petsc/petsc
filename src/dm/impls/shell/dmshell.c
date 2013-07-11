@@ -677,6 +677,8 @@ PETSC_EXTERN PetscErrorCode DMCreate_Shell(DM dm)
   dm->ops->globaltolocalend   = DMGlobalToLocalEndDefaultShell;
   dm->ops->localtoglobalbegin = DMLocalToGlobalBeginDefaultShell;
   dm->ops->localtoglobalend   = DMLocalToGlobalEndDefaultShell;
+  dm->ops->localtolocalbegin  = DMLocalToLocalBeginDefaultShell;
+  dm->ops->localtolocalend    = DMLocalToLocalEndDefaultShell;
   PetscFunctionReturn(0);
 }
 
