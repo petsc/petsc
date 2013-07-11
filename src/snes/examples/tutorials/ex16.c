@@ -14,20 +14,18 @@ T*/
  \int_{\Omega}F \cdot S : \nabla v d\Omega + \int_{\Omega} (loading)\mathbf{e}_y \cdot v d\Omega = 0
 \end{equation}
 
-    F is the deformation gradient, and S is the second Piola-Kirchhoff tensor
-    from the Saint Venant-Kirchhoff model of hyperelasticity.  \Omega is a
-    (length) x 1 x 1 domain deformed by a sinusoid of height (arch).  The
-    problem is discretized using Q1 finite elements on a logically structured
-    grid.  Dirichlet boundary conditions are applied on the ends of the domain in the x
-    direction, and a constant loading in the y direction is applied.  The
-    dirichlet conditions on the offsets may be "squeezed" in the x direction.
+    F is the deformation gradient, and S is the second Piola-Kirchhoff tensor from the Saint Venant-Kirchhoff model of
+    hyperelasticity.  \Omega is a (arc) angle subsection of a cylindrical shell of thickness (height), inner radius
+    (rad) and width (width).  The problem is discretized using Q1 finite elements on a logically structured grid.
+    Homogenous Dirichlet boundary conditions are applied at the centers of the ends of the sphere.
 
     This example is tunable with the following options:
-    -length : set the length of the domain
-    -arch : set the height of the arch
-    -loading : set the constant loading of the arch in the y direction
-    -squeeze : set the displacement boundary conditions in the x direction
-               to squeeze or relax the arch
+    -rad : the radius of the circle
+    -arc : set the angle of the arch represented
+    -loading : set the bulk loading (the mass)
+    -ploading : set the point loading at the top
+    -height : set the height of the arch
+    -width : set the width of the arch
     -view_line : print initial and final offsets of the centerline of the
                  beam along the x direction
 
@@ -39,11 +37,12 @@ T*/
     -young   : the Young's modulus
     -poisson : the poisson ratio
 
-    This example is meant to show the strain placed upon the nonlinear solvers
-    when trying to "snap through" the arch using the loading.  Under certain
-    parameter regimes, the arch will invert under the load, and the number
-    of Newton steps will jump considerably.  Composed nonlinear solvers
-    may be used to mitigate this difficulty.
+    This example is meant to show the strain placed upon the nonlinear solvers when trying to "snap through" the arch
+    using the loading.  Under certain parameter regimes, the arch will invert under the load, and the number of Newton
+    steps will jump considerably.  Composed nonlinear solvers may be used to mitigate this difficulty.
+
+    The initial setup follows the example in pg. 268 of "Nonlinear Finite Element Methods" by Peter Wriggers, but is a
+    3D extension.
 
   ------------------------------------------------------------------------F*/
 
@@ -81,12 +80,15 @@ typedef struct {
   PetscReal loading;
   PetscReal mu;
   PetscReal lambda;
-  PetscReal squeeze;
-  PetscReal len;
-  PetscReal arch;
+  PetscReal rad;
+  PetscReal height;
+  PetscReal width;
+  PetscReal arc;
+  PetscReal ploading;
 } AppCtx;
 
 PetscErrorCode InitialGuess(DM,AppCtx *,Vec);
+PetscErrorCode FormRHS(DM,AppCtx *,Vec);
 PetscErrorCode FormCoordinates(DM,AppCtx *);
 extern PetscErrorCode NonlinearGS(SNES,Vec,Vec,void*);
 
@@ -100,9 +102,9 @@ int main(int argc,char **argv)
   MPI_Comm       comm;
   SNES           snes;
   DM             da;
-  Vec            x,X;
-  PetscBool      youngflg,poissonflg,view=PETSC_FALSE,viewline=PETSC_FALSE;
-  PetscReal      poisson=0.2,young=1.0;
+  Vec            x,X,b;
+  PetscBool      youngflg,poissonflg,muflg,lambdaflg,view=PETSC_FALSE,viewline=PETSC_FALSE;
+  PetscReal      poisson=0.2,young=4e4;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return(1);
 
@@ -110,30 +112,33 @@ int main(int argc,char **argv)
   ierr = FormElements();CHKERRQ(ierr);
   comm = PETSC_COMM_WORLD;
   ierr = SNESCreate(comm,&snes);CHKERRQ(ierr);
-  ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,-4,-4,-4,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,3,1,NULL,NULL,NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,-21,-3,-3,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,3,1,NULL,NULL,NULL,&da);CHKERRQ(ierr);
   ierr = SNESSetDM(snes,(DM)da);CHKERRQ(ierr);
 
   ierr = SNESSetGS(snes,NonlinearGS,&user);CHKERRQ(ierr);
 
   ierr = DMDAGetInfo(da,0,&mx,&my,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
                      PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
-  user.loading     = -0.1;
-  user.arch        = 0.5;
+  user.loading     = 0.0;
+  user.arc         = PETSC_PI/3.;
   user.mu          = 4.0;
   user.lambda      = 1.0;
-  user.squeeze     = 0.0;
-  user.len         = 5.0;
+  user.rad         = 100.0;
+  user.height      = 3.;
+  user.width       = 1.;
+  user.ploading    = -5e3;
 
+  ierr = PetscOptionsGetReal(NULL,"-arc",&user.arc,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,"-mu",&user.mu,&muflg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,"-lambda",&user.lambda,&lambdaflg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,"-rad",&user.rad,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,"-height",&user.height,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,"-width",&user.width,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(NULL,"-loading",&user.loading,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(NULL,"-arch",&user.arch,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(NULL,"-mu",&user.mu,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(NULL,"-lambda",&user.lambda,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(NULL,"-squeeze",&user.squeeze,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(NULL,"-length",&user.len,NULL);CHKERRQ(ierr);
-
+  ierr = PetscOptionsGetReal(NULL,"-ploading",&user.ploading,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(NULL,"-poisson",&poisson,&poissonflg);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(NULL,"-young",&young,&youngflg);CHKERRQ(ierr);
-  if (youngflg || poissonflg) {
+  if ((youngflg || poissonflg) || !(muflg || lambdaflg)) {
     /* set the lame' parameters based upon the poisson ratio and young's modulus */
     user.lambda = poisson*young / ((1. + poisson)*(1. - 2.*poisson));
     user.mu     = young/(2.*(1. + poisson));
@@ -152,14 +157,20 @@ int main(int argc,char **argv)
   ierr = FormCoordinates(da,&user);CHKERRQ(ierr);
 
   ierr = DMCreateGlobalVector(da,&x);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(da,&b);CHKERRQ(ierr);
   ierr = InitialGuess(da,&user,x);CHKERRQ(ierr);
+  ierr = FormRHS(da,&user,b);CHKERRQ(ierr);
+
+  ierr = PetscPrintf(comm,"lambda: %f mu: %f\n",user.lambda,user.mu);CHKERRQ(ierr);
 
   /* show a cross-section of the initial state */
   if (viewline) {
     ierr = DisplayLine(snes,x);CHKERRQ(ierr);
   }
 
-  ierr = SNESSolve(snes,NULL,x);CHKERRQ(ierr);
+  /* get the loaded configuration */
+  ierr = SNESSolve(snes,b,x);CHKERRQ(ierr);
+
   ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
   ierr = PetscPrintf(comm,"Number of SNES iterations = %D\n", its);CHKERRQ(ierr);
   ierr = SNESGetSolution(snes,&X);CHKERRQ(ierr);
@@ -169,10 +180,32 @@ int main(int argc,char **argv)
   }
 
   ierr = VecDestroy(&x);CHKERRQ(ierr);
+  ierr = VecDestroy(&b);CHKERRQ(ierr);
   ierr = DMDestroy(&da);CHKERRQ(ierr);
   ierr = SNESDestroy(&snes);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
+}
+
+
+PetscInt OnBoundary(PetscInt i,PetscInt j,PetscInt k,PetscInt mx,PetscInt my,PetscInt mz)
+{
+  if ((i == 0 || i == mx-1) && j == my/2) return 1;
+  return 0;
+}
+
+void BoundaryValue(PetscInt i,PetscInt j,PetscInt k,PetscInt mx,PetscInt my,PetscInt mz,PetscScalar *val,AppCtx *user)
+{
+  /* reference coordinates */
+  PetscReal p_x = ((PetscReal)i) / (((PetscReal)(mx-1)));
+  PetscReal p_y = ((PetscReal)j) / (((PetscReal)(my-1)));
+  PetscReal p_z = ((PetscReal)k) / (((PetscReal)(mz-1)));
+  PetscReal o_x = p_x;
+  PetscReal o_y = p_y;
+  PetscReal o_z = p_z;
+  val[0] = o_x - p_x;
+  val[1] = o_y - p_y;
+  val[2] = o_z - p_z;
 }
 
 void InvertTensor(PetscScalar *t, PetscScalar *ti,PetscReal *dett)
@@ -188,24 +221,26 @@ void InvertTensor(PetscScalar *t, PetscScalar *ti,PetscReal *dett)
   const PetscScalar i = t[8];
   const PetscReal   det = PetscRealPart(a*(e*i - f*h) - b*(i*d - f*g) + c*(d*h - e*g));
   const PetscReal   di = 1. / det;
-  const PetscScalar A = (e*i - f*h);
-  const PetscScalar B = -(d*i - f*g);
-  const PetscScalar C = (d*h - e*g);
-  const PetscScalar D = -(b*i - c*h);
-  const PetscScalar E = (a*i - c*g);
-  const PetscScalar F = -(a*h - b*g);
-  const PetscScalar G = (b*f - c*e);
-  const PetscScalar H = -(a*f - c*d);
-  const PetscScalar I = (a*e - b*d);
-  ti[0] = di*A;
-  ti[1] = di*D;
-  ti[2] = di*G;
-  ti[3] = di*B;
-  ti[4] = di*E;
-  ti[5] = di*H;
-  ti[6] = di*C;
-  ti[7] = di*F;
-  ti[8] = di*I;
+  if (ti) {
+    const PetscScalar A = (e*i - f*h);
+    const PetscScalar B = -(d*i - f*g);
+    const PetscScalar C = (d*h - e*g);
+    const PetscScalar D = -(b*i - c*h);
+    const PetscScalar E = (a*i - c*g);
+    const PetscScalar F = -(a*h - b*g);
+    const PetscScalar G = (b*f - c*e);
+    const PetscScalar H = -(a*f - c*d);
+    const PetscScalar I = (a*e - b*d);
+    ti[0] = di*A;
+    ti[1] = di*D;
+    ti[2] = di*G;
+    ti[3] = di*B;
+    ti[4] = di*E;
+    ti[5] = di*H;
+    ti[6] = di*C;
+    ti[7] = di*F;
+    ti[8] = di*I;
+  }
   if (dett) *dett = det;
 }
 
@@ -373,7 +408,7 @@ PetscErrorCode FormElements()
   PetscFunctionReturn(0);
 }
 
-void GatherElementData(PetscInt mx,Field ***x,CoordField ***c,PetscInt i,PetscInt j,PetscInt k,Field *ex,CoordField *ec,AppCtx *user)
+void GatherElementData(PetscInt mx,PetscInt my,PetscInt mz,Field ***x,CoordField ***c,PetscInt i,PetscInt j,PetscInt k,Field *ex,CoordField *ec,AppCtx *user)
 {
   PetscInt m;
   PetscInt ii,jj,kk;
@@ -383,14 +418,8 @@ void GatherElementData(PetscInt mx,Field ***x,CoordField ***c,PetscInt i,PetscIn
       for (ii=0;ii<NB;ii++) {
         PetscInt idx = ii + jj*NB + kk*NB*NB;
         /* decouple the boundary nodes for the displacement variables */
-        if ((i + ii == 0)) {
-          ex[idx][0] = user->squeeze/2;
-          ex[idx][1] = 0.;
-          ex[idx][2] = 0.;
-        } else if ((i+ii == mx-1)) {
-          ex[idx][0] = -user->squeeze/2;
-          ex[idx][1] = 0.;
-          ex[idx][2] = 0.;
+        if (OnBoundary(i+ii,j+jj,k+kk,mx,my,mz)) {
+          BoundaryValue(i+ii,j+jj,k+kk,mx,my,mz,ex[idx],user);
         } else {
           for (m=0;m<3;m++) {
             ex[idx][m] = x[k+kk][j+jj][i+ii][m];
@@ -403,7 +432,6 @@ void GatherElementData(PetscInt mx,Field ***x,CoordField ***c,PetscInt i,PetscIn
     }
   }
 }
-
 
 void QuadraturePointGeometricJacobian(CoordField *ec,PetscInt qi,PetscInt qj,PetscInt qk, PetscScalar *J)
 {
@@ -554,7 +582,7 @@ void FormPBJacobian(PetscInt i,PetscInt j,PetscInt k,Field *ex,CoordField *ec,Fi
   }
 }
 
-void ApplyBCsElement(PetscInt mx,PetscInt i, PetscInt j, PetscInt k,PetscScalar *jacobian)
+void ApplyBCsElement(PetscInt mx,PetscInt my, PetscInt mz, PetscInt i, PetscInt j, PetscInt k,PetscScalar *jacobian)
 {
   PetscInt ii,jj,kk,ll,ei,ej,ek,el;
   for (kk=0;kk<NB;kk++){
@@ -566,7 +594,7 @@ void ApplyBCsElement(PetscInt mx,PetscInt i, PetscInt j, PetscInt k,PetscScalar 
             for (ej=0;ej<NB;ej++) {
               for (ei=0;ei<NB;ei++) {
                 for (el=0;el<3;el++) {
-                  if ((i + ii == 0) || (i + ii == mx - 1) || (i + ei == 0) || (i + ei == mx - 1)) {
+                  if (OnBoundary(i+ii,j+jj,k+kk,mx,my,mz) || OnBoundary(i+ei,j+ej,k+ek,mx,my,mz)) {
                     PetscInt teidx = el + 3*(ei + ej*NB + ek*NB*NB);
                     if (teidx == tridx) {
                       jacobian[tridx + NPB*teidx] = 1.;
@@ -631,9 +659,9 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,Field ***x,Mat jacpre,Mat j
   for (k=zes; k<zee; k++) {
     for (j=yes; j<yee; j++) {
       for (i=xes; i<xee; i++) {
-        GatherElementData(mx,x,c,i,j,k,ex,ec,user);
+        GatherElementData(mx,my,mz,x,c,i,j,k,ex,ec,user);
         FormElementJacobian(ex,ec,NULL,ej,user);
-        ApplyBCsElement(mx,i,j,k,ej);
+        ApplyBCsElement(mx,my,mz,i,j,k,ej);
         nrows = 0.;
         for (kk=0;kk<NB;kk++){
           for (jj=0;jj<NB;jj++) {
@@ -669,7 +697,7 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,Field ***x,Mat jacpre,Mat j
   for (k=zs; k<zs+zm; k++) {
     for (j=ys; j<ys+ym; j++) {
       for (i=xs; i<xs+xm; i++) {
-        if ((i == 0) || (i == mx-1)) {
+        if (OnBoundary(i,j,k,mx,my,mz)) {
           for (m=0; m<3;m++) {
             col[m].i = i;
             col[m].j = j;
@@ -746,7 +774,7 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,Field ***x,Field ***f,void 
   for (k=zes; k<zee; k++) {
     for (j=yes; j<yee; j++) {
       for (i=xes; i<xee; i++) {
-        GatherElementData(mx,x,c,i,j,k,ex,ec,user);
+        GatherElementData(mx,my,mz,x,c,i,j,k,ex,ec,user);
         FormElementJacobian(ex,ec,ef,NULL,user);
         /* put this element's additions into the residuals */
         for (kk=0;kk<NB;kk++){
@@ -754,10 +782,7 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,Field ***x,Field ***f,void 
             for (ii=0;ii<NB;ii++) {
               PetscInt idx = ii + jj*NB + kk*NB*NB;
               if (k+kk >= zs && j+jj >= ys && i+ii >= xs && k+kk < zs+zm && j+jj < ys+ym && i+ii < xs+xm) {
-                if ((i + ii == 0)) {
-                  for (l=0;l<3;l++)
-                    f[k+kk][j+jj][i+ii][l] = x[k+kk][j+jj][i+ii][l] - ex[idx][l];
-                } else if (i+ii==mx-1) {
+                if (OnBoundary(i+ii,j+jj,k+kk,mx,my,mz)) {
                   for (l=0;l<3;l++)
                     f[k+kk][j+jj][i+ii][l] = x[k+kk][j+jj][i+ii][l] - ex[idx][l];
                 } else {
@@ -832,14 +857,8 @@ PetscErrorCode NonlinearGS(SNES snes,Vec X,Vec B,void *ptr)
     for (k=zs; k<zs+zm; k++) {
       for (j=ys; j<ys+ym; j++) {
         for (i=xs; i<xs+xm; i++) {
-          if ((i == 0)) {
-            x[k][j][i][0] = user->squeeze/2;
-            x[k][j][i][1] = 0.;
-            x[k][j][i][2] = 0.;
-          } else if (i==mx-1) {
-            x[k][j][i][0] = -user->squeeze/2;
-            x[k][j][i][1] = 0.;
-            x[k][j][i][2] = 0.;
+          if (OnBoundary(i,j,k,mx,my,mz)) {
+            BoundaryValue(i,j,k,mx,my,mz,x[k][j][i],user);
           } else {
             for (n=0;n<its;n++) {
               for (m=0;m<9;m++) pjac[m] = 0.;
@@ -851,7 +870,7 @@ PetscErrorCode NonlinearGS(SNES snes,Vec X,Vec B,void *ptr)
                     /* check that this element exists */
                     if (i+pi >= 0 && i+pi < mx-1 && j+pj >= 0 && j+pj < my-1 && k+pk >= 0 && k+pk < mz-1) {
                       /* create the element function and jacobian */
-                      GatherElementData(mx,x,c,i+pi,j+pj,k+pk,ex,ec,user);
+                      GatherElementData(mx,my,mz,x,c,i+pi,j+pj,k+pk,ex,ec,user);
                       FormPBJacobian(-pi,-pj,-pk,ex,ec,ef,ej,user);
                       /* extract the point named by i,j,k from the whole element jacobian and function */
                       for (l=0;l<3;l++) {
@@ -916,9 +935,13 @@ PetscErrorCode FormCoordinates(DM da,AppCtx *user) {
     for (j=ys; j<ys+ym; j++) {
       for (i=xs; i<xs+xm; i++) {
         PetscReal cx = ((PetscReal)i) / (((PetscReal)(mx-1)));
-        x[k][j][i][0] = user->len*((PetscReal)i) / (((PetscReal)(mx-1)));
-        x[k][j][i][1] = ((PetscReal)j) / (((PetscReal)(my-1))) + 0.5*user->arch*(1. - PetscCosScalar(2.*PETSC_PI*cx));
-        x[k][j][i][2] = ((PetscReal)k) / (((PetscReal)(mz-1)));
+        PetscReal cy = ((PetscReal)j) / (((PetscReal)(my-1)));
+        PetscReal cz = ((PetscReal)k) / (((PetscReal)(mz-1)));
+        PetscReal rad = user->rad + cy*user->height;
+        PetscReal ang = (cx - 0.5)*user->arc;
+        x[k][j][i][0] = rad*PetscSinReal(ang);
+        x[k][j][i][1] = rad*PetscCosReal(ang) - rad*PetscCosReal(-0.5*user->arc);
+        x[k][j][i][2] = user->width*(cz - 0.5);
       }
     }
   }
@@ -946,11 +969,10 @@ PetscErrorCode InitialGuess(DM da,AppCtx *user,Vec X)
     for (j=ys; j<ys+ym; j++) {
       for (i=xs; i<xs+xm; i++) {
         /* reference coordinates */
-        PetscReal p_x = user->len*((PetscReal)i) / (((PetscReal)(mx-1)));
+        PetscReal p_x = ((PetscReal)i) / (((PetscReal)(mx-1)));
         PetscReal p_y = ((PetscReal)j) / (((PetscReal)(my-1)));
         PetscReal p_z = ((PetscReal)k) / (((PetscReal)(mz-1)));
-        PetscReal sqz = -((PetscReal)i - ((PetscReal)(mx-1))/2)*(user->squeeze/2) / (((PetscReal)(mx-1))/2);
-        PetscReal o_x = p_x + sqz;
+        PetscReal o_x = p_x;
         PetscReal o_y = p_y;
         PetscReal o_z = p_z;
         x[k][j][i][0] = o_x - p_x;
@@ -962,6 +984,35 @@ PetscErrorCode InitialGuess(DM da,AppCtx *user,Vec X)
   ierr = DMDAVecRestoreArray(da,X,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "FormRHS"
+PetscErrorCode FormRHS(DM da,AppCtx *user,Vec X)
+{
+  PetscInt       i,j,k,xs,ys,zs,xm,ym,zm;
+  PetscInt       mx,my,mz;
+  PetscErrorCode ierr;
+  Field          ***x;
+  PetscFunctionBegin;
+
+  ierr = DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,0,&mx,&my,&mz,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da,X,&x);CHKERRQ(ierr);
+
+  for (k=zs; k<zs+zm; k++) {
+    for (j=ys; j<ys+ym; j++) {
+      for (i=xs; i<xs+xm; i++) {
+        x[k][j][i][0] = 0.;
+        x[k][j][i][1] = 0.;
+        x[k][j][i][2] = 0.;
+        if (i == (mx-1)/2 && j == (my-1) && k == (mz-1)/2) x[k][j][i][1] = user->ploading;
+      }
+    }
+  }
+  ierr = DMDAVecRestoreArray(da,X,&x);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 
 #undef __FUNCT__
 #define __FUNCT__ "DisplayLine"
