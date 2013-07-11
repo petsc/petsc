@@ -159,11 +159,20 @@ PetscErrorCode  PetscSubcommDestroy(PetscSubcomm *psubcomm)
 PetscErrorCode  PetscSubcommCreate(MPI_Comm comm,PetscSubcomm *psubcomm)
 {
   PetscErrorCode ierr;
+  PetscMPIInt    rank,size;
 
   PetscFunctionBegin;
   ierr = PetscNew(struct _n_PetscSubcomm,psubcomm);CHKERRQ(ierr);
 
-  (*psubcomm)->parent = comm;
+  /* set defaults */
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  (*psubcomm)->parent    = comm;
+  (*psubcomm)->dupparent = comm;
+  (*psubcomm)->comm      = PETSC_COMM_SELF;
+  (*psubcomm)->n         = size;
+  (*psubcomm)->color     = rank;
+  (*psubcomm)->type      = PETSC_SUBCOMM_INTERLACED; 
   PetscFunctionReturn(0);
 }
 
