@@ -1792,7 +1792,7 @@ PetscErrorCode  DMLocalToGlobalEnd(DM dm,Vec l,InsertMode mode,Vec g)
 /*@
    DMLocalToLocalBegin - Maps from a local vector (including ghost points
    that contain irrelevant values) to another local vector where the ghost
-   points in the second are set correctly. Must be followed by DMDALocalToLocalEnd().
+   points in the second are set correctly. Must be followed by DMLocalToLocalEnd().
 
    Neighbor-wise Collective on DM and Vec
 
@@ -1832,7 +1832,7 @@ PetscErrorCode  DMLocalToLocalBegin(DM dm,Vec g,InsertMode mode,Vec l)
 /*@
    DMLocalToLocalEnd - Maps from a local vector (including ghost points
    that contain irrelevant values) to another local vector where the ghost
-   points in the second are set correctly. Must be preceded by DMDALocalToLocalBegin().
+   points in the second are set correctly. Must be preceded by DMLocalToLocalBegin().
 
    Neighbor-wise Collective on DM and Vec
 
