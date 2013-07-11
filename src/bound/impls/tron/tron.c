@@ -6,7 +6,6 @@
 
 /* TRON Routines */
 static PetscErrorCode TronGradientProjections(TaoSolver,TAO_TRON*);
-
 /*------------------------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "TaoDestroy_TRON"
@@ -125,7 +124,7 @@ static PetscErrorCode TaoSolve_TRON(TaoSolver tao){
 
   tron->pgstepsize=1.0;
 
-
+  tao->trust = tao->trust0;
   /*   Project the current point onto the feasible set */
   ierr = TaoComputeVariableBounds(tao); CHKERRQ(ierr);
   ierr = VecMedian(tao->XL,tao->solution,tao->XU,tao->solution); CHKERRQ(ierr);
@@ -157,7 +156,6 @@ static PetscErrorCode TaoSolve_TRON(TaoSolver tao){
 
     ierr = TronGradientProjections(tao,tron); CHKERRQ(ierr);
     f=tron->f; delta=tao->trust; 
-    
     tron->n_free_last = tron->n_free;
     ierr = TaoComputeHessian(tao,tao->solution,&tao->hessian, &tao->hessian_pre, &tron->matflag);CHKERRQ(ierr);
 
@@ -191,6 +189,7 @@ static PetscErrorCode TaoSolve_TRON(TaoSolver tao){
     while (1) {
 
       /* Approximately solve the reduced linear system */
+      ierr = KSPSTCGSetRadius(tao->ksp,delta); CHKERRQ(ierr);
       ierr = KSPSolve(tao->ksp, tron->R, tron->DXFree); CHKERRQ(ierr);
       ierr = KSPGetIterationNumber(tao->ksp,&its); CHKERRQ(ierr);
       tao->ksp_its+=its;
@@ -329,7 +328,6 @@ static PetscErrorCode TronGradientProjections(TaoSolver tao,TAO_TRON *tron)
   PetscFunctionReturn(0);
 }
 
-
 #undef __FUNCT__  
 #define __FUNCT__ "TaoComputeDual_TRON" 
 static PetscErrorCode TaoComputeDual_TRON(TaoSolver tao, Vec DXL, Vec DXU) {
@@ -386,7 +384,7 @@ PetscErrorCode TaoCreate_TRON(TaoSolver tao)
   tao->frtol = 1e-10;
   tao->data = (void*)tron;
   tao->steptol = 1e-12;
-  tao->trust        = 1.0;
+  tao->trust0       = 1.0;
 
   /* Initialize pointers and variables */
   tron->n            = 0;
@@ -422,7 +420,7 @@ PetscErrorCode TaoCreate_TRON(TaoSolver tao)
   ierr = TaoLineSearchUseTaoSolverRoutines(tao->linesearch,tao); CHKERRQ(ierr);
 
   ierr = KSPCreate(((PetscObject)tao)->comm, &tao->ksp); CHKERRQ(ierr);
-
+  ierr = KSPSetType(tao->ksp,KSPSTCG); CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
