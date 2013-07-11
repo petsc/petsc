@@ -2534,6 +2534,11 @@ PetscErrorCode MatDestroy_MatRedundant(Mat A)
       ierr = PetscFree(redund->rbuf_a[i]);CHKERRQ(ierr);
     }
     ierr = PetscFree4(redund->sbuf_nz,redund->rbuf_nz,redund->rbuf_j,redund->rbuf_a);CHKERRQ(ierr);
+
+    if (redund->psubcomm) {
+      ierr = PetscSubcommDestroy(&redund->psubcomm);CHKERRQ(ierr);
+    }
+
     ierr = redund->Destroy(A);CHKERRQ(ierr);
     ierr = PetscFree(redund);CHKERRQ(ierr);
   }
@@ -2882,6 +2887,7 @@ PetscErrorCode MatGetRedundantMatrix_MPIAIJ_interlaced(Mat mat,PetscInt nsubcomm
     redund->sbuf_a    = sbuf_a;
     redund->rbuf_j    = rbuf_j;
     redund->rbuf_a    = rbuf_a;
+    redund->psubcomm  = NULL;
 
     redund->Destroy = C->ops->destroy;
     C->ops->destroy = MatDestroy_MatRedundant;
@@ -2894,20 +2900,30 @@ PetscErrorCode MatGetRedundantMatrix_MPIAIJ_interlaced(Mat mat,PetscInt nsubcomm
 PetscErrorCode MatGetRedundantMatrix_MPIAIJ(Mat mat,PetscInt nsubcomm,MPI_Comm subcomm,MatReuse reuse,Mat *matredundant)
 {
   PetscErrorCode ierr;
-  MPI_Comm       comm;
-  PetscMPIInt    size;
-
+ 
   PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   /* Only MatGetRedundantMatrix_MPIAIJ_interlaced() is written now */
-  if (!subcomm || nsubcomm == size) { /* create psubcomm */
-    PetscSubcomm psubcomm;
+  if (!subcomm || subcomm == PETSC_COMM_SELF) { /* create psubcomm */
+    MPI_Comm       comm;
+    PetscSubcomm   psubcomm;
+    PetscMPIInt    size,subsize;
+    ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
+    ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
     ierr = PetscSubcommCreate(comm,&psubcomm);CHKERRQ(ierr);
     ierr = PetscSubcommSetNumber(psubcomm,nsubcomm);CHKERRQ(ierr);
     ierr = PetscSubcommSetType(psubcomm,PETSC_SUBCOMM_INTERLACED);CHKERRQ(ierr);
     ierr = MatGetRedundantMatrix_MPIAIJ_interlaced(mat,nsubcomm,psubcomm,reuse,matredundant);CHKERRQ(ierr);
-    /* destroy psubcomm? */
+
+    /* free psubcomm in MatDestroy_MatRedundant() */
+    ierr = MPI_Comm_size(psubcomm->comm,&subsize);CHKERRQ(ierr);
+    Mat C = *matredundant;
+    if (subsize == 1) {
+      Mat_SeqAIJ *c = (Mat_SeqAIJ*)C->data;
+      c->redundant->psubcomm = psubcomm;
+    } else {
+      Mat_MPIAIJ *c = (Mat_MPIAIJ*)C->data;
+      c->redundant->psubcomm = psubcomm ;
+    }
   } else {
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support yet");
   }
