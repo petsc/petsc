@@ -56,20 +56,24 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
 {
   PC_Redundant   *red = (PC_Redundant*)pc->data;
   PetscErrorCode ierr;
-  PetscInt       mstart,mend,mlocal,m,mlocal_sub,rstart_sub,rend_sub,mloc_sub;
+  PetscInt       mstart,mend,mlocal,M,mlocal_sub,rstart_sub,rend_sub,mloc_sub;
   PetscMPIInt    size;
   MatReuse       reuse = MAT_INITIAL_MATRIX;
   MatStructure   str   = DIFFERENT_NONZERO_PATTERN;
   MPI_Comm       comm,subcomm;
-  Vec            vec;
+  Vec            x;
   PetscMPIInt    subsize,subrank;
   const char     *prefix;
   const PetscInt *range;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)pc,&comm);CHKERRQ(ierr);
-  ierr = MatGetVecs(pc->pmat,&vec,0);CHKERRQ(ierr);
-  ierr = VecGetSize(vec,&m);CHKERRQ(ierr);
+  ierr = MatGetVecs(pc->pmat,&x,0);CHKERRQ(ierr);
+  ierr = VecGetSize(x,&M);CHKERRQ(ierr);
+
+  /* if pmatrix set by user is sequential then we do not need to gather the parallel matrix */
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  if (size == 1) red->useparallelmat = PETSC_FALSE;
 
   if (!pc->setupcalled) {
     if (!red->psubcomm) {
@@ -94,8 +98,8 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
     } else subcomm = red->psubcomm->comm;
 
     /* create working vectors xsub/ysub and xdup/ydup */
-    ierr = VecGetLocalSize(vec,&mlocal);CHKERRQ(ierr);
-    ierr = VecGetOwnershipRange(vec,&mstart,&mend);CHKERRQ(ierr);
+    ierr = VecGetLocalSize(x,&mlocal);CHKERRQ(ierr);
+    ierr = VecGetOwnershipRange(x,&mstart,&mend);CHKERRQ(ierr);
 
     /* get local size of xsub/ysub */
     ierr = MPI_Comm_size(subcomm,&subsize);CHKERRQ(ierr);
@@ -103,7 +107,7 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
     ierr = MatGetOwnershipRanges(pc->pmat,&range);CHKERRQ(ierr);
     rstart_sub = range[red->psubcomm->n*subrank]; /* rstart in xsub/ysub */
     if (subrank+1 < subsize) rend_sub = range[red->psubcomm->n*(subrank+1)];
-    else rend_sub = m;
+    else rend_sub = M;
 
     mloc_sub = rend_sub - rstart_sub;
     ierr     = VecCreateMPI(subcomm,mloc_sub,PETSC_DECIDE,&red->ysub);CHKERRQ(ierr);
@@ -125,28 +129,24 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
       for (k=0; k<red->psubcomm->n; k++) {
         for (i=mstart; i<mend; i++) {
           idx1[j]   = i;
-          idx2[j++] = i + m*k;
+          idx2[j++] = i + M*k;
         }
       }
       ierr = ISCreateGeneral(comm,red->psubcomm->n*mlocal,idx1,PETSC_COPY_VALUES,&is1);CHKERRQ(ierr);
       ierr = ISCreateGeneral(comm,red->psubcomm->n*mlocal,idx2,PETSC_COPY_VALUES,&is2);CHKERRQ(ierr);
-      ierr = VecScatterCreate(vec,is1,red->xdup,is2,&red->scatterin);CHKERRQ(ierr);
+      ierr = VecScatterCreate(x,is1,red->xdup,is2,&red->scatterin);CHKERRQ(ierr);
       ierr = ISDestroy(&is1);CHKERRQ(ierr);
       ierr = ISDestroy(&is2);CHKERRQ(ierr);
 
-      ierr = ISCreateStride(comm,mlocal,mstart+ red->psubcomm->color*m,1,&is1);CHKERRQ(ierr);
+      ierr = ISCreateStride(comm,mlocal,mstart+ red->psubcomm->color*M,1,&is1);CHKERRQ(ierr);
       ierr = ISCreateStride(comm,mlocal,mstart,1,&is2);CHKERRQ(ierr);
-      ierr = VecScatterCreate(red->xdup,is1,vec,is2,&red->scatterout);CHKERRQ(ierr);
+      ierr = VecScatterCreate(red->xdup,is1,x,is2,&red->scatterout);CHKERRQ(ierr);
       ierr = ISDestroy(&is1);CHKERRQ(ierr);
       ierr = ISDestroy(&is2);CHKERRQ(ierr);
       ierr = PetscFree2(idx1,idx2);CHKERRQ(ierr);
     }
   }
-  ierr = VecDestroy(&vec);CHKERRQ(ierr);
-
-  /* if pmatrix set by user is sequential then we do not need to gather the parallel matrix */
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  if (size == 1) red->useparallelmat = PETSC_FALSE;
+  ierr = VecDestroy(&x);CHKERRQ(ierr);
 
   if (red->useparallelmat) {
     if (pc->setupcalled == 1 && pc->flag == DIFFERENT_NONZERO_PATTERN) {
@@ -182,6 +182,11 @@ static PetscErrorCode PCApply_Redundant(PC pc,Vec x,Vec y)
   PetscScalar    *array;
 
   PetscFunctionBegin;
+  if (!red->useparallelmat) {
+    ierr = KSPSolve(red->ksp,x,y);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
+
   /* scatter x to xdup */
   ierr = VecScatterBegin(red->scatterin,x,red->xdup,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(red->scatterin,x,red->xdup,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
