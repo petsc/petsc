@@ -75,6 +75,160 @@ PetscErrorCode PCBDDCResetSolvers(PC pc)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PCBDDCSetUseExactDirichlet"
+PetscErrorCode PCBDDCSetUseExactDirichlet(PC pc,PetscBool use)
+{
+  PC_BDDC  *pcbddc = (PC_BDDC*)pc->data;
+
+  PetscFunctionBegin;
+  pcbddc->use_exact_dirichlet=use;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PCBDDCSetUpLocalSolvers"
+PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc, IS is_I_local, IS is_R_local)
+{
+  PC_BDDC        *pcbddc = (PC_BDDC*)pc->data;
+  PC_IS          *pcis = (PC_IS*)pc->data;
+  Mat_IS         *matis = (Mat_IS*)pc->pmat->data;
+  PC             pc_temp;
+  Mat            A_RR;
+  Vec            vec1,vec2,vec3;
+  MatStructure   matstruct;
+  PetscScalar    m_one = -1.0;
+  PetscReal      value;
+  PetscInt       n_D,n_R,use_exact,use_exact_reduced;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  /* Creating PC contexts for local Dirichlet and Neumann problems */
+  ierr = PCGetOperators(pc,NULL,NULL,&matstruct);CHKERRQ(ierr);
+
+  /* when matstruct is SAME_PRECONDITIONER, we shouldn't be here */
+
+  /* DIRICHLET PROBLEM */
+  /* Matrix for Dirichlet problem is A_II */
+  /* HACK: A_II can be changed between nonlinear iterations */
+  if (pc->setupcalled) { /* we dont need to rebuild dirichlet problem the first time we build BDDC */
+    if (matstruct == SAME_PRECONDITIONER) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_PLIB,"This should not happen");
+    if (matstruct == SAME_NONZERO_PATTERN) {
+      ierr = MatGetSubMatrix(matis->A,is_I_local,is_I_local,MAT_REUSE_MATRIX,&pcis->A_II);CHKERRQ(ierr);
+    } else {
+      ierr = MatDestroy(&pcis->A_II);CHKERRQ(ierr);
+      ierr = MatGetSubMatrix(matis->A,is_I_local,is_I_local,MAT_INITIAL_MATRIX,&pcis->A_II);CHKERRQ(ierr);
+    }
+  }
+  ierr = ISGetSize(is_I_local,&n_D);CHKERRQ(ierr);
+  if (!pcbddc->ksp_D) { /* create object if not yet build */
+    ierr = KSPCreate(PETSC_COMM_SELF,&pcbddc->ksp_D);CHKERRQ(ierr);
+    ierr = PetscObjectIncrementTabLevel((PetscObject)pcbddc->ksp_D,(PetscObject)pc,1);CHKERRQ(ierr);
+    /* default */
+    ierr = KSPSetType(pcbddc->ksp_D,KSPPREONLY);CHKERRQ(ierr);
+    ierr = KSPSetOptionsPrefix(pcbddc->ksp_D,"dirichlet_");CHKERRQ(ierr);
+    ierr = KSPGetPC(pcbddc->ksp_D,&pc_temp);CHKERRQ(ierr);
+    ierr = PCSetType(pc_temp,PCLU);CHKERRQ(ierr);
+    ierr = PCFactorSetReuseFill(pc_temp,PETSC_TRUE);CHKERRQ(ierr);
+  }
+  ierr = KSPSetOperators(pcbddc->ksp_D,pcis->A_II,pcis->A_II,matstruct);CHKERRQ(ierr);
+  /* Allow user's customization */
+  ierr = KSPSetFromOptions(pcbddc->ksp_D);CHKERRQ(ierr);
+  /* umfpack interface has a bug when matrix dimension is zero. TODO solve from umfpack interface */
+  if (!n_D) {
+    ierr = KSPGetPC(pcbddc->ksp_D,&pc_temp);CHKERRQ(ierr);
+    ierr = PCSetType(pc_temp,PCNONE);CHKERRQ(ierr);
+  }
+  /* Set Up KSP for Dirichlet problem of BDDC */
+  ierr = KSPSetUp(pcbddc->ksp_D);CHKERRQ(ierr);
+  /* set ksp_D into pcis data */
+  ierr = KSPDestroy(&pcis->ksp_D);CHKERRQ(ierr);
+  ierr = PetscObjectReference((PetscObject)pcbddc->ksp_D);CHKERRQ(ierr);
+  pcis->ksp_D = pcbddc->ksp_D;
+
+  /* NEUMANN PROBLEM */
+  /* Matrix for Neumann problem is A_RR -> we need to create it */
+  ierr = ISGetSize(is_R_local,&n_R);CHKERRQ(ierr);
+  ierr = MatGetSubMatrix(pcbddc->local_mat,is_R_local,is_R_local,MAT_INITIAL_MATRIX,&A_RR);CHKERRQ(ierr);
+  if (!pcbddc->ksp_R) { /* create object if not yet build */
+    ierr = KSPCreate(PETSC_COMM_SELF,&pcbddc->ksp_R);CHKERRQ(ierr);
+    ierr = PetscObjectIncrementTabLevel((PetscObject)pcbddc->ksp_R,(PetscObject)pc,1);CHKERRQ(ierr);
+    /* default */
+    ierr = KSPSetType(pcbddc->ksp_R,KSPPREONLY);CHKERRQ(ierr);
+    ierr = KSPSetOptionsPrefix(pcbddc->ksp_R,"neumann_");CHKERRQ(ierr);
+    ierr = KSPGetPC(pcbddc->ksp_R,&pc_temp);CHKERRQ(ierr);
+    ierr = PCSetType(pc_temp,PCLU);CHKERRQ(ierr);
+    ierr = PCFactorSetReuseFill(pc_temp,PETSC_TRUE);CHKERRQ(ierr);
+  }
+  ierr = KSPSetOperators(pcbddc->ksp_R,A_RR,A_RR,matstruct);CHKERRQ(ierr);
+  /* Allow user's customization */
+  ierr = KSPSetFromOptions(pcbddc->ksp_R);CHKERRQ(ierr);
+  /* umfpack interface has a bug when matrix dimension is zero. TODO solve from umfpack interface */
+  if (!n_R) {
+    ierr = KSPGetPC(pcbddc->ksp_R,&pc_temp);CHKERRQ(ierr);
+    ierr = PCSetType(pc_temp,PCNONE);CHKERRQ(ierr);
+  }
+  /* Set Up KSP for Neumann problem of BDDC */
+  ierr = KSPSetUp(pcbddc->ksp_R);CHKERRQ(ierr);
+
+  /* check Dirichlet and Neumann solvers and adapt them if a nullspace correction is needed */
+  
+  /* Dirichlet */
+  ierr = MatGetVecs(pcis->A_II,&vec1,&vec2);CHKERRQ(ierr);
+  ierr = VecDuplicate(vec1,&vec3);CHKERRQ(ierr);
+  ierr = VecSetRandom(vec1,NULL);CHKERRQ(ierr);
+  ierr = MatMult(pcis->A_II,vec1,vec2);CHKERRQ(ierr);
+  ierr = KSPSolve(pcbddc->ksp_D,vec2,vec3);CHKERRQ(ierr);
+  ierr = VecAXPY(vec3,m_one,vec1);CHKERRQ(ierr);
+  ierr = VecNorm(vec3,NORM_INFINITY,&value);CHKERRQ(ierr);
+  ierr = VecDestroy(&vec1);CHKERRQ(ierr);
+  ierr = VecDestroy(&vec2);CHKERRQ(ierr);
+  ierr = VecDestroy(&vec3);CHKERRQ(ierr);
+  /* need to be adapted? */
+  use_exact = (PetscAbsReal(value) > 1.e-4 ? 0 : 1);
+  ierr = MPI_Allreduce(&use_exact,&use_exact_reduced,1,MPIU_INT,MPI_LAND,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
+  ierr = PCBDDCSetUseExactDirichlet(pc,(PetscBool)use_exact_reduced);CHKERRQ(ierr);
+  /* print info */
+  if (pcbddc->dbg_flag) {
+    ierr = PetscViewerFlush(pcbddc->dbg_viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(pcbddc->dbg_viewer,"--------------------------------------------------\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(pcbddc->dbg_viewer,"Checking solution of Dirichlet and Neumann problems\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Subdomain %04d infinity error for Dirichlet solve = % 1.14e \n",PetscGlobalRank,value);CHKERRQ(ierr);
+    ierr = PetscViewerFlush(pcbddc->dbg_viewer);CHKERRQ(ierr);
+  }
+  if (n_D && pcbddc->NullSpace && !use_exact_reduced && !pcbddc->inexact_prec_type) {
+    ierr = PCBDDCNullSpaceAssembleCorrection(pc,is_I_local);CHKERRQ(ierr);
+  }
+
+  /* Neumann */
+  ierr = MatGetVecs(A_RR,&vec1,&vec2);CHKERRQ(ierr);
+  ierr = VecDuplicate(vec1,&vec3);CHKERRQ(ierr);
+  ierr = VecSetRandom(vec1,NULL);CHKERRQ(ierr);
+  ierr = MatMult(A_RR,vec1,vec2);CHKERRQ(ierr);
+  ierr = KSPSolve(pcbddc->ksp_R,vec2,vec3);CHKERRQ(ierr);
+  ierr = VecAXPY(vec3,m_one,vec1);CHKERRQ(ierr);
+  ierr = VecNorm(vec3,NORM_INFINITY,&value);CHKERRQ(ierr);
+  ierr = VecDestroy(&vec1);CHKERRQ(ierr);
+  ierr = VecDestroy(&vec2);CHKERRQ(ierr);
+  ierr = VecDestroy(&vec3);CHKERRQ(ierr);
+  /* need to be adapted? */
+  use_exact = (PetscAbsReal(value) > 1.e-4 ? 0 : 1);
+  if (PetscAbsReal(value) > 1.e-4) use_exact = 0;
+  ierr = MPI_Allreduce(&use_exact,&use_exact_reduced,1,MPIU_INT,MPI_LAND,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
+  /* print info */
+  if (pcbddc->dbg_flag) {
+    ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Subdomain %04d infinity error for  Neumann  solve = % 1.14e \n",PetscGlobalRank,value);CHKERRQ(ierr);
+    ierr = PetscViewerFlush(pcbddc->dbg_viewer);CHKERRQ(ierr);
+  }
+  if (n_R && pcbddc->NullSpace && !use_exact_reduced) { /* is it the right logic? */
+    ierr = PCBDDCNullSpaceAssembleCorrection(pc,is_R_local);CHKERRQ(ierr);
+  }
+
+  /* free Neumann problem's matrix */
+  ierr = MatDestroy(&A_RR);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PCBDDCSolveSaddlePoint"
 static PetscErrorCode  PCBDDCSolveSaddlePoint(PC pc)
 {

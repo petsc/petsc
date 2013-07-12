@@ -41,6 +41,8 @@ PetscErrorCode PCBDDCNullSpaceAdaptGlobal(PC);
 PetscErrorCode PCBDDCNullSpaceAssembleCoarse(PC,MatNullSpace*);
 
 /* utils */
+PetscErrorCode PCBDDCSetUseExactDirichlet(PC,PetscBool);
+PetscErrorCode PCBDDCSetUpLocalSolvers(PC,IS,IS);
 PetscErrorCode PCBDDCSubsetNumbering(MPI_Comm,ISLocalToGlobalMapping,PetscInt,PetscInt[],PetscInt[],PetscInt*,PetscInt*[]);
 PetscErrorCode PCBDDCGetPrimalVerticesLocalIdx(PC,PetscInt*,PetscInt*[]);
 PetscErrorCode PCBDDCGetPrimalConstraintsLocalIdx(PC,PetscInt*,PetscInt*[]);
