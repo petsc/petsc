@@ -47,7 +47,6 @@ PetscErrorCode PCBDDCResetSolvers(PC pc)
   PetscFunctionBegin;
   ierr = VecDestroy(&pcbddc->temp_solution);CHKERRQ(ierr);
   ierr = VecDestroy(&pcbddc->original_rhs);CHKERRQ(ierr);
-  ierr = MatDestroy(&pcbddc->local_mat);CHKERRQ(ierr);
   ierr = VecDestroy(&pcbddc->coarse_vec);CHKERRQ(ierr);
   ierr = VecDestroy(&pcbddc->coarse_rhs);CHKERRQ(ierr);
   ierr = KSPDestroy(&pcbddc->coarse_ksp);CHKERRQ(ierr);
@@ -91,7 +90,6 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc, IS is_I_local, IS is_R_local)
 {
   PC_BDDC        *pcbddc = (PC_BDDC*)pc->data;
   PC_IS          *pcis = (PC_IS*)pc->data;
-  Mat_IS         *matis = (Mat_IS*)pc->pmat->data;
   PC             pc_temp;
   Mat            A_RR;
   Vec            vec1,vec2,vec3;
@@ -105,20 +103,8 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc, IS is_I_local, IS is_R_local)
   /* Creating PC contexts for local Dirichlet and Neumann problems */
   ierr = PCGetOperators(pc,NULL,NULL,&matstruct);CHKERRQ(ierr);
 
-  /* when matstruct is SAME_PRECONDITIONER, we shouldn't be here */
-
   /* DIRICHLET PROBLEM */
-  /* Matrix for Dirichlet problem is A_II */
-  /* HACK: A_II can be changed between nonlinear iterations */
-  if (pc->setupcalled) { /* we dont need to rebuild dirichlet problem the first time we build BDDC */
-    if (matstruct == SAME_PRECONDITIONER) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_PLIB,"This should not happen");
-    if (matstruct == SAME_NONZERO_PATTERN) {
-      ierr = MatGetSubMatrix(matis->A,is_I_local,is_I_local,MAT_REUSE_MATRIX,&pcis->A_II);CHKERRQ(ierr);
-    } else {
-      ierr = MatDestroy(&pcis->A_II);CHKERRQ(ierr);
-      ierr = MatGetSubMatrix(matis->A,is_I_local,is_I_local,MAT_INITIAL_MATRIX,&pcis->A_II);CHKERRQ(ierr);
-    }
-  }
+  /* Matrix for Dirichlet problem is pcis->A_II */
   ierr = ISGetSize(is_I_local,&n_D);CHKERRQ(ierr);
   if (!pcbddc->ksp_D) { /* create object if not yet build */
     ierr = KSPCreate(PETSC_COMM_SELF,&pcbddc->ksp_D);CHKERRQ(ierr);

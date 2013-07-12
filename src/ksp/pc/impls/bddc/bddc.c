@@ -896,6 +896,7 @@ PetscErrorCode PCDestroy_BDDC(PC pc)
   ierr = PCBDDCResetSolvers(pc);CHKERRQ(ierr);
   ierr = KSPDestroy(&pcbddc->ksp_D);CHKERRQ(ierr);
   ierr = KSPDestroy(&pcbddc->ksp_R);CHKERRQ(ierr);
+  ierr = MatDestroy(&pcbddc->local_mat);CHKERRQ(ierr);
   /* remove functions */
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetPrimalVerticesLocalIS_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetCoarseningRatio_C",NULL);CHKERRQ(ierr);
@@ -1317,10 +1318,33 @@ static PetscErrorCode PCBDDCCoarseSetUp(PC pc)
   PetscInt          *row_cmat_indices;
   PetscScalar       *row_cmat_values;
   PetscInt          *vertices;
+  /* manage repeated solves */
+  MatReuse          reuse;
+  MatStructure      matstruct;
 
   PetscFunctionBegin;
   /* Set Non-overlapping dimensions */
   n_B = pcis->n_B; n_D = pcis->n - n_B;
+
+  /* get mat flags */
+  ierr = PCGetOperators(pc,NULL,NULL,&matstruct);CHKERRQ(ierr);
+  reuse = MAT_INITIAL_MATRIX;
+  if (pc->setupcalled) {
+    /* when matstruct is SAME_PRECONDITIONER, we shouldn't be here */
+    if (matstruct == SAME_PRECONDITIONER) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_PLIB,"This should not happen");
+    if (matstruct == SAME_NONZERO_PATTERN) {
+      reuse = MAT_REUSE_MATRIX;
+    } else {
+      reuse = MAT_INITIAL_MATRIX;
+    }
+  }
+  if (reuse == MAT_INITIAL_MATRIX) {
+    ierr = MatDestroy(&pcis->A_II);CHKERRQ(ierr);
+    ierr = MatDestroy(&pcis->A_IB);CHKERRQ(ierr);
+    ierr = MatDestroy(&pcis->A_BI);CHKERRQ(ierr);
+    ierr = MatDestroy(&pcis->A_BB);CHKERRQ(ierr);
+    ierr = MatDestroy(&pcbddc->local_mat);CHKERRQ(ierr);
+  }
 
   /* transform local matrices if needed */
   if (pcbddc->use_change_of_basis) {
@@ -1363,11 +1387,11 @@ static PetscErrorCode PCBDDCCoarseSetUp(PC pc)
     /* TODO: HOW TO WORK WITH BAIJ? PtAP not provided */
     ierr = MatGetBlockSize(matis->A,&i);CHKERRQ(ierr);
     if (i==1) {
-      ierr = MatPtAP(matis->A,change_mat_all,MAT_INITIAL_MATRIX,1.0,&pcbddc->local_mat);CHKERRQ(ierr);
+      ierr = MatPtAP(matis->A,change_mat_all,reuse,2.0,&pcbddc->local_mat);CHKERRQ(ierr);
     } else {
       Mat work_mat;
       ierr = MatConvert(matis->A,MATSEQAIJ,MAT_INITIAL_MATRIX,&work_mat);CHKERRQ(ierr);
-      ierr = MatPtAP(work_mat,change_mat_all,MAT_INITIAL_MATRIX,1.0,&pcbddc->local_mat);CHKERRQ(ierr);
+      ierr = MatPtAP(work_mat,change_mat_all,reuse,2.0,&pcbddc->local_mat);CHKERRQ(ierr);
       ierr = MatDestroy(&work_mat);CHKERRQ(ierr);
     }
     ierr = MatDestroy(&change_mat_all);CHKERRQ(ierr);
@@ -1375,16 +1399,18 @@ static PetscErrorCode PCBDDCCoarseSetUp(PC pc)
     ierr = PetscFree(temp_indices);CHKERRQ(ierr);
   } else {
     /* without change of basis, the local matrix is unchanged */
-    ierr = PetscObjectReference((PetscObject)matis->A);CHKERRQ(ierr);
-    pcbddc->local_mat = matis->A;
+    if (!pcbddc->local_mat) {
+      ierr = PetscObjectReference((PetscObject)matis->A);CHKERRQ(ierr);
+      pcbddc->local_mat = matis->A;
+    }
   }
-  /* need to rebuild PCIS matrices during SNES or TS -> TODO move this to PCIS code */
-  ierr = MatDestroy(&pcis->A_IB);CHKERRQ(ierr);
-  ierr = MatDestroy(&pcis->A_BI);CHKERRQ(ierr);
-  ierr = MatDestroy(&pcis->A_BB);CHKERRQ(ierr);
-  ierr = MatGetSubMatrix(pcbddc->local_mat,pcis->is_I_local,pcis->is_B_local,MAT_INITIAL_MATRIX,&pcis->A_IB);CHKERRQ(ierr);
-  ierr = MatGetSubMatrix(pcbddc->local_mat,pcis->is_B_local,pcis->is_I_local,MAT_INITIAL_MATRIX,&pcis->A_BI);CHKERRQ(ierr);
-  ierr = MatGetSubMatrix(pcbddc->local_mat,pcis->is_B_local,pcis->is_B_local,MAT_INITIAL_MATRIX,&pcis->A_BB);CHKERRQ(ierr);
+
+  /* get submatrices */
+  ierr = MatGetSubMatrix(pcbddc->local_mat,pcis->is_I_local,pcis->is_I_local,reuse,&pcis->A_II);CHKERRQ(ierr);
+  ierr = MatGetSubMatrix(pcbddc->local_mat,pcis->is_I_local,pcis->is_B_local,reuse,&pcis->A_IB);CHKERRQ(ierr);
+  ierr = MatGetSubMatrix(pcbddc->local_mat,pcis->is_B_local,pcis->is_I_local,reuse,&pcis->A_BI);CHKERRQ(ierr);
+  ierr = MatGetSubMatrix(pcbddc->local_mat,pcis->is_B_local,pcis->is_B_local,reuse,&pcis->A_BB);CHKERRQ(ierr);
+
   /* Change global null space passed in by the user if change of basis has been requested */
   if (pcbddc->NullSpace && pcbddc->use_change_of_basis) {
     ierr = PCBDDCNullSpaceAdaptGlobal(pc);CHKERRQ(ierr);
