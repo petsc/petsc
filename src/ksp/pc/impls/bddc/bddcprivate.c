@@ -66,8 +66,6 @@ PetscErrorCode PCBDDCResetSolvers(PC pc)
   ierr = VecScatterDestroy(&pcbddc->R_to_B);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&pcbddc->R_to_D);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&pcbddc->coarse_loc_to_glob);CHKERRQ(ierr);
-  ierr = KSPDestroy(&pcbddc->ksp_D);CHKERRQ(ierr);
-  ierr = KSPDestroy(&pcbddc->ksp_R);CHKERRQ(ierr);
   ierr = PetscFree(pcbddc->local_primal_indices);CHKERRQ(ierr);
   ierr = PetscFree(pcbddc->replicated_local_primal_indices);CHKERRQ(ierr);
   ierr = PetscFree(pcbddc->replicated_local_primal_values);CHKERRQ(ierr);
