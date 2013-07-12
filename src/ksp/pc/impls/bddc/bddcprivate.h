@@ -47,6 +47,7 @@ PetscErrorCode PCBDDCGetPrimalConstraintsLocalIdx(PC,PetscInt*,PetscInt*[]);
 PetscErrorCode PCBDDCScatterCoarseDataBegin(PC,Vec,Vec,InsertMode,ScatterMode);
 PetscErrorCode PCBDDCScatterCoarseDataEnd(PC,Vec,Vec,InsertMode,ScatterMode);
 PetscErrorCode PCBDDCApplyInterfacePreconditioner(PC);
+PetscErrorCode PCBDDCOrthonormalizeVecs(PetscInt,Vec[]);
 
 /* feti-dp */
 PetscErrorCode PCBDDCCreateFETIDPMatContext(PC,FETIDPMat_ctx*);
