@@ -1293,7 +1293,6 @@ static PetscErrorCode PCBDDCCoarseSetUp(PC pc)
 
   PC_IS*            pcis = (PC_IS*)(pc->data);
   PC_BDDC*          pcbddc = (PC_BDDC*)pc->data;
-  Mat_IS            *matis = (Mat_IS*)pc->pmat->data;
   IS                is_R_local;
   VecType           impVecType;
   MatType           impMatType;
@@ -1308,7 +1307,7 @@ static PetscErrorCode PCBDDCCoarseSetUp(PC pc)
   PetscInt          *idx_R_local;
   PetscReal         *coarsefunctions_errors,*constraints_errors;
   /* auxiliary indices */
-  PetscInt          i,j,k;
+  PetscInt          i,j;
   /* for verbose output of bddc */
   PetscViewer       viewer=pcbddc->dbg_viewer;
   PetscInt          dbg_flag=pcbddc->dbg_flag;
@@ -1318,98 +1317,13 @@ static PetscErrorCode PCBDDCCoarseSetUp(PC pc)
   PetscInt          *row_cmat_indices;
   PetscScalar       *row_cmat_values;
   PetscInt          *vertices;
-  /* manage repeated solves */
-  MatReuse          reuse;
-  MatStructure      matstruct;
 
   PetscFunctionBegin;
   /* Set Non-overlapping dimensions */
   n_B = pcis->n_B; n_D = pcis->n - n_B;
 
-  /* get mat flags */
-  ierr = PCGetOperators(pc,NULL,NULL,&matstruct);CHKERRQ(ierr);
-  reuse = MAT_INITIAL_MATRIX;
-  if (pc->setupcalled) {
-    /* when matstruct is SAME_PRECONDITIONER, we shouldn't be here */
-    if (matstruct == SAME_PRECONDITIONER) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_PLIB,"This should not happen");
-    if (matstruct == SAME_NONZERO_PATTERN) {
-      reuse = MAT_REUSE_MATRIX;
-    } else {
-      reuse = MAT_INITIAL_MATRIX;
-    }
-  }
-  if (reuse == MAT_INITIAL_MATRIX) {
-    ierr = MatDestroy(&pcis->A_II);CHKERRQ(ierr);
-    ierr = MatDestroy(&pcis->A_IB);CHKERRQ(ierr);
-    ierr = MatDestroy(&pcis->A_BI);CHKERRQ(ierr);
-    ierr = MatDestroy(&pcis->A_BB);CHKERRQ(ierr);
-    ierr = MatDestroy(&pcbddc->local_mat);CHKERRQ(ierr);
-  }
-
-  /* transform local matrices if needed */
-  if (pcbddc->use_change_of_basis) {
-    Mat      change_mat_all;
-    PetscInt *nnz,*is_indices,*temp_indices;
-
-    ierr = PetscMalloc(pcis->n*sizeof(PetscInt),&nnz);CHKERRQ(ierr);
-    ierr = ISGetIndices(pcis->is_I_local,(const PetscInt**)&is_indices);CHKERRQ(ierr);
-    for (i=0;i<n_D;i++) nnz[is_indices[i]] = 1;
-    ierr = ISRestoreIndices(pcis->is_I_local,(const PetscInt**)&is_indices);CHKERRQ(ierr);
-    ierr = ISGetIndices(pcis->is_B_local,(const PetscInt**)&is_indices);CHKERRQ(ierr);
-    k=1;
-    for (i=0;i<n_B;i++) {
-      ierr = MatGetRow(pcbddc->ChangeOfBasisMatrix,i,&j,NULL,NULL);CHKERRQ(ierr);
-      nnz[is_indices[i]]=j;
-      if (k < j) k = j;
-      ierr = MatRestoreRow(pcbddc->ChangeOfBasisMatrix,i,&j,NULL,NULL);CHKERRQ(ierr);
-    }
-    ierr = ISRestoreIndices(pcis->is_B_local,(const PetscInt**)&is_indices);CHKERRQ(ierr);
-    /* assemble change of basis matrix on the whole set of local dofs */
-    ierr = PetscMalloc(k*sizeof(PetscInt),&temp_indices);CHKERRQ(ierr);
-    ierr = MatCreate(PETSC_COMM_SELF,&change_mat_all);CHKERRQ(ierr);
-    ierr = MatSetSizes(change_mat_all,pcis->n,pcis->n,pcis->n,pcis->n);CHKERRQ(ierr);
-    ierr = MatSetType(change_mat_all,MATSEQAIJ);CHKERRQ(ierr);
-    ierr = MatSeqAIJSetPreallocation(change_mat_all,0,nnz);CHKERRQ(ierr);
-    ierr = ISGetIndices(pcis->is_I_local,(const PetscInt**)&is_indices);CHKERRQ(ierr);
-    for (i=0;i<n_D;i++) {
-      ierr = MatSetValue(change_mat_all,is_indices[i],is_indices[i],1.0,INSERT_VALUES);CHKERRQ(ierr);
-    }
-    ierr = ISRestoreIndices(pcis->is_I_local,(const PetscInt**)&is_indices);CHKERRQ(ierr);
-    ierr = ISGetIndices(pcis->is_B_local,(const PetscInt**)&is_indices);CHKERRQ(ierr);
-    for (i=0;i<n_B;i++) {
-      ierr = MatGetRow(pcbddc->ChangeOfBasisMatrix,i,&j,(const PetscInt**)&row_cmat_indices,(const PetscScalar**)&row_cmat_values);CHKERRQ(ierr);
-      for (k=0; k<j; k++) temp_indices[k]=is_indices[row_cmat_indices[k]];
-      ierr = MatSetValues(change_mat_all,1,&is_indices[i],j,temp_indices,row_cmat_values,INSERT_VALUES);CHKERRQ(ierr);
-      ierr = MatRestoreRow(pcbddc->ChangeOfBasisMatrix,i,&j,(const PetscInt**)&row_cmat_indices,(const PetscScalar**)&row_cmat_values);CHKERRQ(ierr);
-    }
-    ierr = MatAssemblyBegin(change_mat_all,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(change_mat_all,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    /* TODO: HOW TO WORK WITH BAIJ? PtAP not provided */
-    ierr = MatGetBlockSize(matis->A,&i);CHKERRQ(ierr);
-    if (i==1) {
-      ierr = MatPtAP(matis->A,change_mat_all,reuse,2.0,&pcbddc->local_mat);CHKERRQ(ierr);
-    } else {
-      Mat work_mat;
-      ierr = MatConvert(matis->A,MATSEQAIJ,MAT_INITIAL_MATRIX,&work_mat);CHKERRQ(ierr);
-      ierr = MatPtAP(work_mat,change_mat_all,reuse,2.0,&pcbddc->local_mat);CHKERRQ(ierr);
-      ierr = MatDestroy(&work_mat);CHKERRQ(ierr);
-    }
-    ierr = MatDestroy(&change_mat_all);CHKERRQ(ierr);
-    ierr = PetscFree(nnz);CHKERRQ(ierr);
-    ierr = PetscFree(temp_indices);CHKERRQ(ierr);
-  } else {
-    /* without change of basis, the local matrix is unchanged */
-    if (!pcbddc->local_mat) {
-      ierr = PetscObjectReference((PetscObject)matis->A);CHKERRQ(ierr);
-      pcbddc->local_mat = matis->A;
-    }
-  }
-
-  /* get submatrices */
-  ierr = MatGetSubMatrix(pcbddc->local_mat,pcis->is_I_local,pcis->is_I_local,reuse,&pcis->A_II);CHKERRQ(ierr);
-  ierr = MatGetSubMatrix(pcbddc->local_mat,pcis->is_I_local,pcis->is_B_local,reuse,&pcis->A_IB);CHKERRQ(ierr);
-  ierr = MatGetSubMatrix(pcbddc->local_mat,pcis->is_B_local,pcis->is_I_local,reuse,&pcis->A_BI);CHKERRQ(ierr);
-  ierr = MatGetSubMatrix(pcbddc->local_mat,pcis->is_B_local,pcis->is_B_local,reuse,&pcis->A_BB);CHKERRQ(ierr);
+  /* compute matrix after change of basis and extract local submatrices */
+  ierr = PCBDDCSetUpLocalMatrices(pc);CHKERRQ(ierr);
 
   /* Change global null space passed in by the user if change of basis has been requested */
   if (pcbddc->NullSpace && pcbddc->use_change_of_basis) {
