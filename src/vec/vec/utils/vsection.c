@@ -145,7 +145,7 @@ PetscErrorCode VecSetValuesSection(Vec v, PetscSection s, PetscInt point, PetscS
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  ierr  = PetscSectionGetConstraintDof(s, p, &cDim);CHKERRQ(ierr);
+  ierr  = PetscSectionGetConstraintDof(s, point, &cDim);CHKERRQ(ierr);
   ierr  = VecGetArray(v, &baseArray);CHKERRQ(ierr);
   array = &baseArray[s->atlasOff[p]];
   if (!cDim && doInterior) {
