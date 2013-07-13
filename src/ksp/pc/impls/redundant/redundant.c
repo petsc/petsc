@@ -56,26 +56,23 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
 {
   PC_Redundant   *red = (PC_Redundant*)pc->data;
   PetscErrorCode ierr;
-  PetscInt       mstart,mend,mlocal,M,mlocal_sub,rstart_sub,rend_sub,mloc_sub;
+  PetscInt       mstart,mend,mlocal,M;
   PetscMPIInt    size;
   MatReuse       reuse = MAT_INITIAL_MATRIX;
   MatStructure   str   = DIFFERENT_NONZERO_PATTERN;
   MPI_Comm       comm,subcomm;
   Vec            x;
-  PetscMPIInt    subsize,subrank;
   const char     *prefix;
-  const PetscInt *range;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)pc,&comm);CHKERRQ(ierr);
-  ierr = MatGetVecs(pc->pmat,&x,0);CHKERRQ(ierr);
-  ierr = VecGetSize(x,&M);CHKERRQ(ierr);
-
+  
   /* if pmatrix set by user is sequential then we do not need to gather the parallel matrix */
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   if (size == 1) red->useparallelmat = PETSC_FALSE;
 
   if (!pc->setupcalled) {
+    PetscInt mloc_sub;
     if (!red->psubcomm) {
       ierr = PetscSubcommCreate(comm,&red->psubcomm);CHKERRQ(ierr);
       ierr = PetscSubcommSetNumber(red->psubcomm,red->nsubcomm);CHKERRQ(ierr);
@@ -95,60 +92,61 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
       ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
       ierr = KSPSetOptionsPrefix(red->ksp,prefix);CHKERRQ(ierr);
       ierr = KSPAppendOptionsPrefix(red->ksp,"redundant_");CHKERRQ(ierr);
-    } else subcomm = red->psubcomm->comm;
-
-    /* create working vectors xsub/ysub and xdup/ydup */
-    ierr = VecGetLocalSize(x,&mlocal);CHKERRQ(ierr);
-    ierr = VecGetOwnershipRange(x,&mstart,&mend);CHKERRQ(ierr);
-
-    /* get local size of xsub/ysub */
-    ierr = MPI_Comm_size(subcomm,&subsize);CHKERRQ(ierr);
-    ierr = MPI_Comm_rank(subcomm,&subrank);CHKERRQ(ierr);
-    ierr = MatGetOwnershipRanges(pc->pmat,&range);CHKERRQ(ierr);
-    rstart_sub = range[red->psubcomm->n*subrank]; /* rstart in xsub/ysub */
-    if (subrank+1 < subsize) rend_sub = range[red->psubcomm->n*(subrank+1)];
-    else rend_sub = M;
-
-    mloc_sub = rend_sub - rstart_sub;
-    ierr     = VecCreateMPI(subcomm,mloc_sub,PETSC_DECIDE,&red->ysub);CHKERRQ(ierr);
-    /* create xsub with empty local arrays, because xdup's arrays will be placed into it */
-    ierr = VecCreateMPIWithArray(subcomm,1,mloc_sub,PETSC_DECIDE,NULL,&red->xsub);CHKERRQ(ierr);
-
-    /* create xdup and ydup. ydup has empty local arrays because ysub's arrays will be place into it.
-       Note: we use communicator dupcomm, not PetscObjectComm((PetscObject)pc)! */
-    ierr = VecCreateMPI(red->psubcomm->dupparent,mloc_sub,PETSC_DECIDE,&red->xdup);CHKERRQ(ierr);
-    ierr = VecCreateMPIWithArray(red->psubcomm->dupparent,1,mloc_sub,PETSC_DECIDE,NULL,&red->ydup);CHKERRQ(ierr);
-
-    /* create vec scatters */
-    if (!red->scatterin) {
-      IS       is1,is2;
-      PetscInt *idx1,*idx2,i,j,k;
-
-      ierr = PetscMalloc2(red->psubcomm->n*mlocal,PetscInt,&idx1,red->psubcomm->n*mlocal,PetscInt,&idx2);CHKERRQ(ierr);
-      j    = 0;
-      for (k=0; k<red->psubcomm->n; k++) {
-        for (i=mstart; i<mend; i++) {
-          idx1[j]   = i;
-          idx2[j++] = i + M*k;
-        }
-      }
-      ierr = ISCreateGeneral(comm,red->psubcomm->n*mlocal,idx1,PETSC_COPY_VALUES,&is1);CHKERRQ(ierr);
-      ierr = ISCreateGeneral(comm,red->psubcomm->n*mlocal,idx2,PETSC_COPY_VALUES,&is2);CHKERRQ(ierr);
-      ierr = VecScatterCreate(x,is1,red->xdup,is2,&red->scatterin);CHKERRQ(ierr);
-      ierr = ISDestroy(&is1);CHKERRQ(ierr);
-      ierr = ISDestroy(&is2);CHKERRQ(ierr);
-
-      ierr = ISCreateStride(comm,mlocal,mstart+ red->psubcomm->color*M,1,&is1);CHKERRQ(ierr);
-      ierr = ISCreateStride(comm,mlocal,mstart,1,&is2);CHKERRQ(ierr);
-      ierr = VecScatterCreate(red->xdup,is1,x,is2,&red->scatterout);CHKERRQ(ierr);
-      ierr = ISDestroy(&is1);CHKERRQ(ierr);
-      ierr = ISDestroy(&is2);CHKERRQ(ierr);
-      ierr = PetscFree2(idx1,idx2);CHKERRQ(ierr);
+    } else {
+      subcomm = red->psubcomm->comm;
     }
-  }
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
+
+    if (red->useparallelmat) {
+      /* grab the parallel matrix and put it into processors of a subcomminicator */
+      ierr = MatGetRedundantMatrix_MPIAIJ_interlaced(pc->pmat,red->psubcomm->n,red->psubcomm,MAT_INITIAL_MATRIX,&red->pmats);CHKERRQ(ierr);
+      ierr = KSPSetOperators(red->ksp,red->pmats,red->pmats,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+       
+      /* get working vectors xsub and ysub */
+      ierr = MatGetVecs(red->pmats,&red->xsub,&red->ysub);CHKERRQ(ierr);
+
+      /* create  working vectors xdup and ydup. ydup has empty local arrays because ysub's arrays will be place into it.
+       Note: we use communicator dupcomm, not PetscObjectComm((PetscObject)pc)! */
+      ierr = MatGetLocalSize(red->pmats,&mloc_sub,NULL);CHKERRQ(ierr);
+      ierr = VecCreateMPI(red->psubcomm->dupparent,mloc_sub,PETSC_DECIDE,&red->xdup);CHKERRQ(ierr);
+      ierr = VecCreateMPIWithArray(red->psubcomm->dupparent,1,mloc_sub,PETSC_DECIDE,NULL,&red->ydup);CHKERRQ(ierr);
+
+      /* create vecscatters */
+      if (!red->scatterin) {
+        IS       is1,is2;
+        PetscInt *idx1,*idx2,i,j,k;
+
+        ierr = MatGetVecs(pc->pmat,&x,0);CHKERRQ(ierr);
+        ierr = VecGetSize(x,&M);CHKERRQ(ierr);
+        ierr = PetscMalloc2(red->psubcomm->n*mlocal,PetscInt,&idx1,red->psubcomm->n*mlocal,PetscInt,&idx2);CHKERRQ(ierr);
+        ierr = VecGetOwnershipRange(x,&mstart,&mend);CHKERRQ(ierr);
+        mlocal = mend - mstart;
+        j    = 0;
+        for (k=0; k<red->psubcomm->n; k++) {
+          for (i=mstart; i<mend; i++) {
+            idx1[j]   = i;
+            idx2[j++] = i + M*k;
+          }
+        }
+        ierr = ISCreateGeneral(comm,red->psubcomm->n*mlocal,idx1,PETSC_COPY_VALUES,&is1);CHKERRQ(ierr);
+        ierr = ISCreateGeneral(comm,red->psubcomm->n*mlocal,idx2,PETSC_COPY_VALUES,&is2);CHKERRQ(ierr);
+        ierr = VecScatterCreate(x,is1,red->xdup,is2,&red->scatterin);CHKERRQ(ierr);
+        ierr = ISDestroy(&is1);CHKERRQ(ierr);
+        ierr = ISDestroy(&is2);CHKERRQ(ierr);
+
+        ierr = ISCreateStride(comm,mlocal,mstart+ red->psubcomm->color*M,1,&is1);CHKERRQ(ierr);
+        ierr = ISCreateStride(comm,mlocal,mstart,1,&is2);CHKERRQ(ierr);
+        ierr = VecScatterCreate(red->xdup,is1,x,is2,&red->scatterout);CHKERRQ(ierr);
+        ierr = ISDestroy(&is1);CHKERRQ(ierr);
+        ierr = ISDestroy(&is2);CHKERRQ(ierr);
+        ierr = PetscFree2(idx1,idx2);CHKERRQ(ierr);
+        ierr = VecDestroy(&x);CHKERRQ(ierr);
+      }
+    }
+  } /* endof (!pc->setupcalled) */
 
   if (red->useparallelmat) {
+    /* grab the parallel matrix and put it into processors of a subcomminicator */
+    /*--------------------------------------------------------------------------*/
     if (pc->setupcalled == 1 && pc->flag == DIFFERENT_NONZERO_PATTERN) {
       /* destroy old matrices */
       ierr = MatDestroy(&red->pmats);CHKERRQ(ierr);
@@ -156,16 +154,14 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
       reuse = MAT_REUSE_MATRIX;
       str   = SAME_NONZERO_PATTERN;
     }
-
-    /* grab the parallel matrix and put it into processors of a subcomminicator */
-    /*--------------------------------------------------------------------------*/
-    ierr = VecGetLocalSize(red->ysub,&mlocal_sub);CHKERRQ(ierr);
-    ierr = MatGetRedundantMatrix_MPIAIJ_interlaced(pc->pmat,red->psubcomm->n,red->psubcomm,reuse,&red->pmats);CHKERRQ(ierr);
-    /* tell PC of the subcommunicator its operators */
-    ierr = KSPSetOperators(red->ksp,red->pmats,red->pmats,str);CHKERRQ(ierr);
+    if (pc->setupcalled) {
+      ierr = MatGetRedundantMatrix_MPIAIJ_interlaced(pc->pmat,red->psubcomm->n,red->psubcomm,reuse,&red->pmats);CHKERRQ(ierr);
+      ierr = KSPSetOperators(red->ksp,red->pmats,red->pmats,str);CHKERRQ(ierr);
+    }
   } else {
     ierr = KSPSetOperators(red->ksp,pc->mat,pc->pmat,pc->flag);CHKERRQ(ierr);
   }
+
   if (pc->setfromoptionscalled) {
     ierr = KSPSetFromOptions(red->ksp);CHKERRQ(ierr);
   }
@@ -220,14 +216,16 @@ static PetscErrorCode PCReset_Redundant(PC pc)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = VecScatterDestroy(&red->scatterin);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(&red->scatterout);CHKERRQ(ierr);
-  ierr = VecDestroy(&red->ysub);CHKERRQ(ierr);
-  ierr = VecDestroy(&red->xsub);CHKERRQ(ierr);
-  ierr = VecDestroy(&red->xdup);CHKERRQ(ierr);
-  ierr = VecDestroy(&red->ydup);CHKERRQ(ierr);
+  if (red->useparallelmat) {
+    ierr = VecScatterDestroy(&red->scatterin);CHKERRQ(ierr);
+    ierr = VecScatterDestroy(&red->scatterout);CHKERRQ(ierr);
+    ierr = VecDestroy(&red->ysub);CHKERRQ(ierr);
+    ierr = VecDestroy(&red->xsub);CHKERRQ(ierr);
+    ierr = VecDestroy(&red->xdup);CHKERRQ(ierr);
+    ierr = VecDestroy(&red->ydup);CHKERRQ(ierr);
+  }
   ierr = MatDestroy(&red->pmats);CHKERRQ(ierr);
-  if (red->ksp) {ierr = KSPReset(red->ksp);CHKERRQ(ierr);}
+  ierr = KSPReset(red->ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
