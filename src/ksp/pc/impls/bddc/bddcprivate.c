@@ -1212,3 +1212,25 @@ PetscErrorCode PCBDDCSubsetNumbering(MPI_Comm comm,ISLocalToGlobalMapping l2gmap
   *global_numbering_subset = temp_global_dofs;
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "PCBDDCOrthonormalizeVecs"
+PetscErrorCode PCBDDCOrthonormalizeVecs(PetscInt n, Vec vecs[])
+{
+  PetscInt       i,j;
+  PetscScalar    *alphas;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  /* this implements stabilized Gram-Schmidt */
+  ierr = PetscMalloc(n*sizeof(PetscScalar),&alphas);CHKERRQ(ierr);
+  for (i=0;i<n;i++) {
+    ierr = VecNormalize(vecs[i],NULL);CHKERRQ(ierr);
+    if (i<n) { ierr = VecMDot(vecs[i],n-i-1,&vecs[i+1],&alphas[i+1]);CHKERRQ(ierr); }
+    for (j=i+1;j<n;j++) { ierr = VecAXPY(vecs[j],PetscConj(-alphas[j]),vecs[i]);CHKERRQ(ierr); }
+  }
+  ierr = PetscFree(alphas);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+
