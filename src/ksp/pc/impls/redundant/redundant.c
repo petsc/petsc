@@ -58,8 +58,6 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
   PetscErrorCode ierr;
   PetscInt       mstart,mend,mlocal,M;
   PetscMPIInt    size;
-  MatReuse       reuse = MAT_INITIAL_MATRIX;
-  MatStructure   str   = DIFFERENT_NONZERO_PATTERN;
   MPI_Comm       comm,subcomm;
   Vec            x;
   const char     *prefix;
@@ -110,7 +108,7 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
       ierr = VecCreateMPI(red->psubcomm->dupparent,mloc_sub,PETSC_DECIDE,&red->xdup);CHKERRQ(ierr);
       ierr = VecCreateMPIWithArray(red->psubcomm->dupparent,1,mloc_sub,PETSC_DECIDE,NULL,&red->ydup);CHKERRQ(ierr);
 
-      /* create vecscatters */
+      /* create vecscatters for PETSC_SUBCOMM_INTERLACED! */
       if (!red->scatterin) {
         IS       is1,is2;
         PetscInt *idx1,*idx2,i,j,k;
@@ -141,25 +139,26 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
         ierr = PetscFree2(idx1,idx2);CHKERRQ(ierr);
         ierr = VecDestroy(&x);CHKERRQ(ierr);
       }
+    } else { /* !red->useparallelmat */
+      ierr = KSPSetOperators(red->ksp,pc->mat,pc->pmat,pc->flag);CHKERRQ(ierr);
     }
-  } /* endof (!pc->setupcalled) */
-
-  if (red->useparallelmat) {
-    /* grab the parallel matrix and put it into processors of a subcomminicator */
-    /*--------------------------------------------------------------------------*/
-    if (pc->setupcalled == 1 && pc->flag == DIFFERENT_NONZERO_PATTERN) {
-      /* destroy old matrices */
-      ierr = MatDestroy(&red->pmats);CHKERRQ(ierr);
-    } else if (pc->setupcalled == 1) {
-      reuse = MAT_REUSE_MATRIX;
-      str   = SAME_NONZERO_PATTERN;
-    }
-    if (pc->setupcalled) {
+  } else { /* pc->setupcalled */
+    if (red->useparallelmat) {
+      MatReuse       reuse;
+      /* grab the parallel matrix and put it into processors of a subcomminicator */
+      /*--------------------------------------------------------------------------*/
+      if (pc->flag == DIFFERENT_NONZERO_PATTERN) {
+        /* destroy old matrices */
+        ierr  = MatDestroy(&red->pmats);CHKERRQ(ierr);
+        reuse = MAT_INITIAL_MATRIX;
+      } else {
+        reuse = MAT_REUSE_MATRIX;
+      }
       ierr = MatGetRedundantMatrix_MPIAIJ_interlaced(pc->pmat,red->psubcomm->n,red->psubcomm,reuse,&red->pmats);CHKERRQ(ierr);
-      ierr = KSPSetOperators(red->ksp,red->pmats,red->pmats,str);CHKERRQ(ierr);
+      ierr = KSPSetOperators(red->ksp,red->pmats,red->pmats,pc->flag);CHKERRQ(ierr);
+    } else { /* !red->useparallelmat */
+      ierr = KSPSetOperators(red->ksp,pc->mat,pc->pmat,pc->flag);CHKERRQ(ierr);
     }
-  } else {
-    ierr = KSPSetOperators(red->ksp,pc->mat,pc->pmat,pc->flag);CHKERRQ(ierr);
   }
 
   if (pc->setfromoptionscalled) {
