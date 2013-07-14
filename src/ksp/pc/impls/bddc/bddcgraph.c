@@ -654,13 +654,14 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
   ierr = VecScatterCreate(global_vec,from,local_vec,to,&scatter_ctx);CHKERRQ(ierr);
 
   /* get local periodic nodes */
-  mirrors_found=PETSC_FALSE;
-  for (i=0;i<n_shared[0];i++)
-    graph->count[shared[0][i]] += 1;
-  for (i=0;i<n_shared[0];i++) {
-    if (graph->count[shared[0][i]] > 1) {
-      mirrors_found=PETSC_TRUE;
-      break;
+  mirrors_found = PETSC_FALSE;
+  if (graph->nvtxs) {
+    for (i=0; i<n_shared[0]; i++) graph->count[shared[0][i]] += 1;
+    for (i=0; i<n_shared[0]; i++) {
+      if (graph->count[shared[0][i]] > 1) {
+        mirrors_found = PETSC_TRUE;
+        break;
+      }
     }
   }
   /* compute local mirrors (if any) */
