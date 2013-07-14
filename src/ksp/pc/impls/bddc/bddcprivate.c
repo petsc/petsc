@@ -289,6 +289,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
   /* BLAS integers */
   PetscBLASInt      Bs,Bt,lwork,lierr,Bone=1;
   /* LAPACK working arrays for SVD or POD */
+  PetscBool         skip_lapack;
   PetscScalar       *work;
   PetscReal         *singular_vals;
 #if defined(PETSC_USE_COMPLEX)
@@ -401,8 +402,12 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
     ierr = VecScatterEnd(matis->ctx,nearnullvecs[k],localnearnullsp[k],INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   }
 
+  /* whether or not to skip lapack calls */
+  skip_lapack = PETSC_TRUE;
+  if (n_ISForFaces+n_ISForEdges) skip_lapack = PETSC_FALSE;
+
   /* First we issue queries to allocate optimal workspace for LAPACKgesvd (or LAPACKsyev if SVD is missing) */
-  if (!pcbddc->use_nnsp_true) {
+  if (!pcbddc->use_nnsp_true && !skip_lapack) {
     PetscScalar temp_work;
 #if defined(PETSC_MISSING_LAPACK_GESVD)
     /* Proper Orthogonal Decomposition (POD) using the snapshot method */
@@ -617,7 +622,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
   ierr = ISDestroy(&ISForVertices);CHKERRQ(ierr);
 
   /* free workspace */
-  if (!pcbddc->use_nnsp_true) {
+  if (!pcbddc->use_nnsp_true && !skip_lapack) {
     ierr = PetscFree(work);CHKERRQ(ierr);
 #if defined(PETSC_USE_COMPLEX)
     ierr = PetscFree(rwork);CHKERRQ(ierr);
