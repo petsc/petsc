@@ -74,6 +74,37 @@ PetscErrorCode PCBDDCResetSolvers(PC pc)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PCBDDCCreateWorkVectors"
+PetscErrorCode PCBDDCCreateWorkVectors(PC pc)
+{
+  PC_BDDC        *pcbddc = (PC_BDDC*)pc->data;
+  PC_IS          *pcis = (PC_IS*)pc->data;
+  VecType        impVecType;
+  PetscInt       n_vertices,n_constraints,local_primal_size,n_R;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PCBDDCGetPrimalVerticesLocalIdx(pc,&n_vertices,NULL);CHKERRQ(ierr);
+  ierr = PCBDDCGetPrimalConstraintsLocalIdx(pc,&n_constraints,NULL);CHKERRQ(ierr);
+  local_primal_size = n_constraints+n_vertices;
+  n_R = pcis->n-n_vertices;
+  /* parallel work vectors used in presolve */
+  ierr = VecDuplicate(pcis->vec1_global,&pcbddc->original_rhs);CHKERRQ(ierr);
+  ierr = VecDuplicate(pcis->vec1_global,&pcbddc->temp_solution);CHKERRQ(ierr);
+  /* local work vectors */
+  ierr = VecGetType(pcis->vec1_N,&impVecType);CHKERRQ(ierr);
+  ierr = VecDuplicate(pcis->vec1_D,&pcbddc->vec4_D);CHKERRQ(ierr);
+  ierr = VecCreate(PetscObjectComm((PetscObject)pcis->vec1_N),&pcbddc->vec1_R);CHKERRQ(ierr);
+  ierr = VecSetSizes(pcbddc->vec1_R,PETSC_DECIDE,n_R);CHKERRQ(ierr);
+  ierr = VecSetType(pcbddc->vec1_R,impVecType);CHKERRQ(ierr);
+  ierr = VecDuplicate(pcbddc->vec1_R,&pcbddc->vec2_R);CHKERRQ(ierr);
+  ierr = VecCreate(PETSC_COMM_SELF,&pcbddc->vec1_P);CHKERRQ(ierr);
+  ierr = VecSetSizes(pcbddc->vec1_P,PETSC_DECIDE,local_primal_size);CHKERRQ(ierr);
+  ierr = VecSetType(pcbddc->vec1_P,impVecType);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PCBDDCSetUpLocalMatrices"
 PetscErrorCode PCBDDCSetUpLocalMatrices(PC pc)
 {

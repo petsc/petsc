@@ -1340,18 +1340,9 @@ static PetscErrorCode PCBDDCCoarseSetUp(PC pc)
   impVecType = VECSEQ;
 
   /* Allocate needed vectors */
-  ierr = VecDuplicate(pcis->vec1_global,&pcbddc->original_rhs);CHKERRQ(ierr);
-  ierr = VecDuplicate(pcis->vec1_global,&pcbddc->temp_solution);CHKERRQ(ierr);
-  ierr = VecDuplicate(pcis->vec1_D,&pcbddc->vec4_D);CHKERRQ(ierr);
-  ierr = VecCreate(PETSC_COMM_SELF,&pcbddc->vec1_R);CHKERRQ(ierr);
-  ierr = VecSetSizes(pcbddc->vec1_R,n_R,n_R);CHKERRQ(ierr);
-  ierr = VecSetType(pcbddc->vec1_R,impVecType);CHKERRQ(ierr);
-  ierr = VecDuplicate(pcbddc->vec1_R,&pcbddc->vec2_R);CHKERRQ(ierr);
-  ierr = VecCreate(PETSC_COMM_SELF,&pcbddc->vec1_P);CHKERRQ(ierr);
-  ierr = VecSetSizes(pcbddc->vec1_P,pcbddc->local_primal_size,pcbddc->local_primal_size);CHKERRQ(ierr);
-  ierr = VecSetType(pcbddc->vec1_P,impVecType);CHKERRQ(ierr);
+  ierr = PCBDDCCreateWorkVectors(pc);CHKERRQ(ierr);
 
-  /* setup local scatters R_to_B and (optionally) R_to_D */
+  /* setup local scatters R_to_B and (optionally) R_to_D : PCBDDCCreateWorkVectors should be called first! */
   ierr = PCBDDCSetUpLocalScatters(pc,&is_R_local);CHKERRQ(ierr);
   ierr = ISGetIndices(is_R_local,(const PetscInt**)&idx_R_local);CHKERRQ(ierr);
 

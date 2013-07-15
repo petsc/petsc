@@ -41,6 +41,7 @@ PetscErrorCode PCBDDCNullSpaceAdaptGlobal(PC);
 PetscErrorCode PCBDDCNullSpaceAssembleCoarse(PC,MatNullSpace*);
 
 /* utils */
+PetscErrorCode PCBDDCCreateWorkVectors(PC);
 PetscErrorCode PCBDDCSetUpLocalScatters(PC,IS*);
 PetscErrorCode PCBDDCSetUpLocalMatrices(PC);
 PetscErrorCode PCBDDCSetUseExactDirichlet(PC,PetscBool);
