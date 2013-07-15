@@ -1331,9 +1331,8 @@ static PetscErrorCode PCBDDCCoarseSetUp(PC pc)
   }
 
   /* get number of vertices */
-  ierr = PCBDDCGetPrimalVerticesLocalIdx(pc,&n_vertices,&vertices);CHKERRQ(ierr);
+  ierr = PCBDDCGetPrimalVerticesLocalIdx(pc,&n_vertices,NULL);CHKERRQ(ierr);
   n_constraints = pcbddc->local_primal_size-n_vertices;
-  ierr = PetscFree(vertices);CHKERRQ(ierr);
   n_R = pcis->n-n_vertices;
 
   /* Set types for local objects needed by BDDC precondtioner */

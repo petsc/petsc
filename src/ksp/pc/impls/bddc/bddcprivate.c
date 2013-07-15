@@ -1298,18 +1298,20 @@ PetscErrorCode  PCBDDCGetPrimalVerticesLocalIdx(PC pc, PetscInt *n_vertices, Pet
       if (size_of_constraint == 1) n++;
       ierr = MatRestoreRow(pcbddc->ConstraintMatrix,i,&size_of_constraint,NULL,NULL);CHKERRQ(ierr);
     }
-    ierr = PetscMalloc(n*sizeof(PetscInt),&vertices);CHKERRQ(ierr);
-    n = 0;
-    for (i=0;i<local_primal_size;i++) {
-      ierr = MatGetRow(pcbddc->ConstraintMatrix,i,&size_of_constraint,(const PetscInt**)&row_cmat_indices,NULL);CHKERRQ(ierr);
-      if (size_of_constraint == 1) {
-        vertices[n++]=row_cmat_indices[0];
+    if (vertices_idx) {
+      ierr = PetscMalloc(n*sizeof(PetscInt),&vertices);CHKERRQ(ierr);
+      n = 0;
+      for (i=0;i<local_primal_size;i++) {
+        ierr = MatGetRow(pcbddc->ConstraintMatrix,i,&size_of_constraint,(const PetscInt**)&row_cmat_indices,NULL);CHKERRQ(ierr);
+        if (size_of_constraint == 1) {
+          vertices[n++]=row_cmat_indices[0];
+        }
+        ierr = MatRestoreRow(pcbddc->ConstraintMatrix,i,&size_of_constraint,(const PetscInt**)&row_cmat_indices,NULL);CHKERRQ(ierr);
       }
-      ierr = MatRestoreRow(pcbddc->ConstraintMatrix,i,&size_of_constraint,(const PetscInt**)&row_cmat_indices,NULL);CHKERRQ(ierr);
     }
   }
   *n_vertices = n;
-  *vertices_idx = vertices;
+  if (vertices_idx) *vertices_idx = vertices;
   PetscFunctionReturn(0);
 }
 
@@ -1337,38 +1339,40 @@ PetscErrorCode  PCBDDCGetPrimalConstraintsLocalIdx(PC pc, PetscInt *n_constraint
       max_size_of_constraint = PetscMax(size_of_constraint,max_size_of_constraint);
       ierr = MatRestoreRow(pcbddc->ConstraintMatrix,i,&size_of_constraint,NULL,NULL);CHKERRQ(ierr);
     }
-    ierr = PetscMalloc(n*sizeof(PetscInt),&constraints_index);CHKERRQ(ierr);
-    ierr = PetscMalloc(max_size_of_constraint*sizeof(PetscInt),&row_cmat_global_indices);CHKERRQ(ierr);
-    ierr = PetscMalloc(local_size*sizeof(PetscBool),&touched);CHKERRQ(ierr);
-    ierr = PetscMemzero(touched,local_size*sizeof(PetscBool));CHKERRQ(ierr);
-    n = 0;
-    for (i=0;i<local_primal_size;i++) {
-      ierr = MatGetRow(pcbddc->ConstraintMatrix,i,&size_of_constraint,(const PetscInt**)&row_cmat_indices,NULL);CHKERRQ(ierr);
-      if (size_of_constraint > 1) {
-        ierr = ISLocalToGlobalMappingApply(pcbddc->mat_graph->l2gmap,size_of_constraint,row_cmat_indices,row_cmat_global_indices);CHKERRQ(ierr);
-        /* find first untouched local node */
-        j = 0;
-        while(touched[row_cmat_indices[j]]) j++;
-        min_index = row_cmat_global_indices[j];
-        min_loc = j;
-        /* search the minimum among nodes not yet touched on the connected component
-           since there can be more than one constraint on a single cc */
-        for (j=1;j<size_of_constraint;j++) {
-          if (min_index > row_cmat_global_indices[j] && !touched[row_cmat_indices[j]]) {
-            min_index = row_cmat_global_indices[j];
-            min_loc = j;
+    if (constraints_idx) {
+      ierr = PetscMalloc(n*sizeof(PetscInt),&constraints_index);CHKERRQ(ierr);
+      ierr = PetscMalloc(max_size_of_constraint*sizeof(PetscInt),&row_cmat_global_indices);CHKERRQ(ierr);
+      ierr = PetscMalloc(local_size*sizeof(PetscBool),&touched);CHKERRQ(ierr);
+      ierr = PetscMemzero(touched,local_size*sizeof(PetscBool));CHKERRQ(ierr);
+      n = 0;
+      for (i=0;i<local_primal_size;i++) {
+        ierr = MatGetRow(pcbddc->ConstraintMatrix,i,&size_of_constraint,(const PetscInt**)&row_cmat_indices,NULL);CHKERRQ(ierr);
+        if (size_of_constraint > 1) {
+          ierr = ISLocalToGlobalMappingApply(pcbddc->mat_graph->l2gmap,size_of_constraint,row_cmat_indices,row_cmat_global_indices);CHKERRQ(ierr);
+          /* find first untouched local node */
+          j = 0;
+          while(touched[row_cmat_indices[j]]) j++;
+          min_index = row_cmat_global_indices[j];
+          min_loc = j;
+          /* search the minimum among nodes not yet touched on the connected component
+             since there can be more than one constraint on a single cc */
+          for (j=1;j<size_of_constraint;j++) {
+            if (min_index > row_cmat_global_indices[j] && !touched[row_cmat_indices[j]]) {
+              min_index = row_cmat_global_indices[j];
+              min_loc = j;
+            }
           }
+          touched[row_cmat_indices[min_loc]] = PETSC_TRUE;
+          constraints_index[n++] = row_cmat_indices[min_loc];
         }
-        touched[row_cmat_indices[min_loc]] = PETSC_TRUE;
-        constraints_index[n++] = row_cmat_indices[min_loc];
+        ierr = MatRestoreRow(pcbddc->ConstraintMatrix,i,&size_of_constraint,(const PetscInt**)&row_cmat_indices,NULL);CHKERRQ(ierr);
       }
-      ierr = MatRestoreRow(pcbddc->ConstraintMatrix,i,&size_of_constraint,(const PetscInt**)&row_cmat_indices,NULL);CHKERRQ(ierr);
+      ierr = PetscFree(touched);CHKERRQ(ierr);
+      ierr = PetscFree(row_cmat_global_indices);CHKERRQ(ierr);
     }
   }
-  ierr = PetscFree(touched);CHKERRQ(ierr);
-  ierr = PetscFree(row_cmat_global_indices);CHKERRQ(ierr);
   *n_constraints = n;
-  *constraints_idx = constraints_index;
+  if (constraints_idx) *constraints_idx = constraints_index;
   PetscFunctionReturn(0);
 }
 
