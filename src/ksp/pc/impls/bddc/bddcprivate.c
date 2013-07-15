@@ -1346,10 +1346,14 @@ PetscErrorCode  PCBDDCGetPrimalConstraintsLocalIdx(PC pc, PetscInt *n_constraint
       ierr = MatGetRow(pcbddc->ConstraintMatrix,i,&size_of_constraint,(const PetscInt**)&row_cmat_indices,NULL);CHKERRQ(ierr);
       if (size_of_constraint > 1) {
         ierr = ISLocalToGlobalMappingApply(pcbddc->mat_graph->l2gmap,size_of_constraint,row_cmat_indices,row_cmat_global_indices);CHKERRQ(ierr);
-        min_index = row_cmat_global_indices[0];
-        min_loc = 0;
+        /* find first untouched local node */
+        j = 0;
+        while(touched[row_cmat_indices[j]]) j++;
+        min_index = row_cmat_global_indices[j];
+        min_loc = j;
+        /* search the minimum among nodes not yet touched on the connected component
+           since there can be more than one constraint on a single cc */
         for (j=1;j<size_of_constraint;j++) {
-          /* there can be more than one constraint on a single connected component */
           if (min_index > row_cmat_global_indices[j] && !touched[row_cmat_indices[j]]) {
             min_index = row_cmat_global_indices[j];
             min_loc = j;
