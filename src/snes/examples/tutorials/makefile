@@ -607,11 +607,11 @@ runex15_lag_pc:
 	   ${DIFF} output/ex15_lag_pc.out ex15_lag_pc.tmp || echo  ${PWD} "\nPossible problem with with ex15_lag_pc, diffs above \n========================================="; \
            ${RM} -f ex15_lag_pc.tmp
 runex16:
-	-@${MPIEXEC} -n 2 ./ex16 -da_refine 2 -da_grid_x 7 -arch 0.5 -young 10.0 -poisson 0.35 -loading -1.0 -pc_type mg -snes_monitor_short -ksp_monitor_short -view_line \
+	-@${MPIEXEC} -n 2 ./ex16 -da_refine 2 -pc_type mg -rad 10.0 -young 10. -ploading 0.0 -loading -1. -mg_levels_ksp_max_it 10 -snes_monitor_short -ksp_monitor_short \
 	   > ex16_1.tmp 2>&1; ${DIFF} output/ex16_1.out ex16_1.tmp || echo  ${PWD} "\nPossible problem with with ex16, diffs above \n========================================="; \
            ${RM} -f ex16_1.tmp
 runex16_2:
-	-@${MPIEXEC} -n 2 ./ex16 -da_refine 2 -da_grid_x 7 -arch 0.5 -young 10.0 -poisson 0.35 -loading -1.0 -pc_type mg -snes_monitor_short -ksp_monitor_short -view_line \
+	-@${MPIEXEC} ./ex16 -da_refine 2 -pc_type mg -rad 10.0 -young 10. -ploading 0.0 -loading -1. -mg_levels_ksp_max_it 10 -snes_monitor_short -ksp_monitor_short \
            -npc_snes_type fas -npc_fas_levels_snes_type ncg -npc_fas_levels_snes_max_it 3 -npc_snes_monitor_short \
 	   > ex16_2.tmp 2>&1; ${DIFF} output/ex16_2.out ex16_2.tmp || echo  ${PWD} "\nPossible problem with with ex16_2, diffs above \n========================================="; \
            ${RM} -f ex16_2.tmp
