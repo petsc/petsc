@@ -105,6 +105,8 @@ int main(int argc,char **argv)
   Vec            x,X,b;
   PetscBool      youngflg,poissonflg,muflg,lambdaflg,view=PETSC_FALSE,viewline=PETSC_FALSE;
   PetscReal      poisson=0.2,young=4e4;
+  char           filename[PETSC_MAX_PATH_LEN] = "ex16.vts";
+  char           filename_def[PETSC_MAX_PATH_LEN] = "ex16_def.vts";
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return(1);
 
@@ -148,7 +150,7 @@ int main(int argc,char **argv)
 
   ierr = DMDASetFieldName(da,0,"x_disp");CHKERRQ(ierr);
   ierr = DMDASetFieldName(da,1,"y_disp");CHKERRQ(ierr);
-  ierr = DMDASetFieldName(da,2,"y_disp");CHKERRQ(ierr);
+  ierr = DMDASetFieldName(da,2,"z_disp");CHKERRQ(ierr);
 
   ierr = DMSetApplicationContext(da,&user);CHKERRQ(ierr);
   ierr = DMDASNESSetFunctionLocal(da,INSERT_VALUES,(PetscErrorCode (*)(DMDALocalInfo*,void*,void*,void*))FormFunctionLocal,&user);CHKERRQ(ierr);
@@ -179,6 +181,19 @@ int main(int argc,char **argv)
     ierr = DisplayLine(snes,X);CHKERRQ(ierr);
   }
 
+  if (view) {
+    PetscViewer viewer;
+    Vec coords;
+    ierr = PetscViewerVTKOpen(PETSC_COMM_WORLD,filename,FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
+    ierr = VecView(x,viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+    ierr = DMGetCoordinates(da,&coords);CHKERRQ(ierr);
+    ierr = VecAXPY(coords,1.0,x);CHKERRQ(ierr);
+    ierr = PetscViewerVTKOpen(PETSC_COMM_WORLD,filename_def,FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
+    ierr = VecView(x,viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+  }
+
   ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = VecDestroy(&b);CHKERRQ(ierr);
   ierr = DMDestroy(&da);CHKERRQ(ierr);
@@ -190,7 +205,7 @@ int main(int argc,char **argv)
 
 PetscInt OnBoundary(PetscInt i,PetscInt j,PetscInt k,PetscInt mx,PetscInt my,PetscInt mz)
 {
-  if ((i == 0 || i == mx-1) && j == my/2) return 1;
+  if ((i == 0 || i == mx-1) && j == my-1) return 1;
   return 0;
 }
 
@@ -940,7 +955,7 @@ PetscErrorCode FormCoordinates(DM da,AppCtx *user) {
         PetscReal rad = user->rad + cy*user->height;
         PetscReal ang = (cx - 0.5)*user->arc;
         x[k][j][i][0] = rad*PetscSinReal(ang);
-        x[k][j][i][1] = rad*PetscCosReal(ang) - rad*PetscCosReal(-0.5*user->arc);
+        x[k][j][i][1] = rad*PetscCosReal(ang) - (user->rad + 0.5*user->height)*PetscCosReal(-0.5*user->arc);
         x[k][j][i][2] = user->width*(cz - 0.5);
       }
     }
@@ -1005,7 +1020,7 @@ PetscErrorCode FormRHS(DM da,AppCtx *user,Vec X)
         x[k][j][i][0] = 0.;
         x[k][j][i][1] = 0.;
         x[k][j][i][2] = 0.;
-        if (i == (mx-1)/2 && j == (my-1) && k == (mz-1)/2) x[k][j][i][1] = user->ploading;
+        if (i == (mx-1)/2 && j == (my-1)) x[k][j][i][1] = user->ploading/(mz-1);
       }
     }
   }
