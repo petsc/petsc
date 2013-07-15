@@ -298,6 +298,10 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
 #if defined(PETSC_MISSING_LAPACK_GESVD)
   PetscBLASInt      Blas_N,Blas_LDA;
   PetscScalar       *temp_basis,*correlation_mat;
+#else
+  PetscBLASInt      Blas_LDA;
+  PetscBLASInt      dummy_int_1=1,dummy_int_2=1;
+  PetscScalar       dummy_scalar_1=0.0,dummy_scalar_2=0.0;
 #endif
   /* change of basis */
   PetscInt          *aux_primal_numbering,*aux_primal_minloc,*global_indices;
@@ -447,11 +451,12 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
     lwork = -1;
     ierr = PetscBLASIntCast(max_n,&Bs);CHKERRQ(ierr);
     ierr = PetscBLASIntCast(min_n,&Bt);CHKERRQ(ierr);
+    ierr = PetscBLASIntCast(max_n,&Blas_LDA);CHKERRQ(ierr);
     ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
 #if !defined(PETSC_USE_COMPLEX)
-    PetscStackCallBLAS("LAPACKgesvd",LAPACKgesvd_("O","N",&Bs,&Bt,&temp_quadrature_constraint[0],&Bs,singular_vals,work,&Bt,work,&Bt,&temp_work,&lwork,&lierr));
+    PetscStackCallBLAS("LAPACKgesvd",LAPACKgesvd_("O","N",&Bs,&Bt,&temp_quadrature_constraint[0],&Blas_LDA,singular_vals,&dummy_scalar_1,&dummy_int_1,&dummy_scalar_2,&dummy_int_2,&temp_work,&lwork,&lierr));
 #else
-    PetscStackCallBLAS("LAPACKgesvd",LAPACKgesvd_("O","N",&Bs,&Bt,&temp_quadrature_constraint[0],&Bs,singular_vals,work,&Bt,work,&Bt,&temp_work,&lwork,rwork,&lierr));
+    PetscStackCallBLAS("LAPACKgesvd",LAPACKgesvd_("O","N",&Bs,&Bt,&temp_quadrature_constraint[0],&Blas_LDA,singular_vals,&dummy_scalar_1,&dummy_int_1,&dummy_scalar_2,&dummy_int_2,&temp_work,&lwork,rwork,&lierr));
 #endif
     ierr = PetscFPTrapPop();CHKERRQ(ierr);
     if (lierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in query to GESVD Lapack routine %d",(int)lierr);
@@ -597,17 +602,18 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
         }
       }
 #else  /* on missing GESVD */
-      PetscInt min_n = temp_constraints;
-      if (min_n > size_of_constraint) min_n = size_of_constraint;
+      ierr = PetscBLASIntCast(size_of_constraint,&Blas_LDA);CHKERRQ(ierr);
       ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
 #if !defined(PETSC_USE_COMPLEX)
-      PetscStackCallBLAS("LAPACKgesvd",LAPACKgesvd_("O","N",&Bs,&Bt,&temp_quadrature_constraint[temp_indices[temp_start_ptr]],&Bs,singular_vals,work,&Bt,work,&Bt,work,&lwork,&lierr));
+      PetscStackCallBLAS("LAPACKgesvd",LAPACKgesvd_("O","N",&Bs,&Bt,&temp_quadrature_constraint[temp_indices[temp_start_ptr]],&Blas_LDA,singular_vals,&dummy_scalar_1,&dummy_int_1,&dummy_scalar_2,&dummy_int_2,work,&lwork,&lierr));
 #else
-      PetscStackCallBLAS("LAPACKgesvd",LAPACKgesvd_("O","N",&Bs,&Bt,&temp_quadrature_constraint[temp_indices[temp_start_ptr]],&Bs,singular_vals,work,&Bt,work,&Bt,work,&lwork,rwork,&lierr));
+      PetscStackCallBLAS("LAPACKgesvd",LAPACKgesvd_("O","N",&Bs,&Bt,&temp_quadrature_constraint[temp_indices[temp_start_ptr]],&Blas_LDA,singular_vals,&dummy_scalar_1,&dummy_int_1,&dummy_scalar_2,&dummy_int_2,work,&lwork,rwork,&lierr));
 #endif
       if (lierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in GESVD Lapack routine %d",(int)lierr);
       ierr = PetscFPTrapPop();CHKERRQ(ierr);
       /* retain eigenvalues greater than tol: note that LAPACKgesvd gives eigs in descending order */
+      PetscInt min_n = temp_constraints;
+      if (min_n > size_of_constraint) min_n = size_of_constraint;
       j = 0;
       while (j < min_n && singular_vals[min_n-j-1] < tol) j++;
       total_counts = total_counts-temp_constraints+min_n-j;
