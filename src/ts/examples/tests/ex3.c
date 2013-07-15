@@ -60,8 +60,6 @@ int main(int argc,char **argv)
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size != 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"This is a uniprocessor example only");
 
-  ierr = PetscOptionsHasName(NULL,"-debug",&appctx.debug);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(NULL,"-useAlhs",&appctx.useAlhs);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,"-nphase",&nphase,NULL);CHKERRQ(ierr);
   if (nphase > 3) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"nphase must be an integer between 1 and 3");
 
@@ -79,6 +77,9 @@ int main(int argc,char **argv)
   appctx.debug      = PETSC_FALSE;
   appctx.useAlhs    = PETSC_FALSE;
 
+  ierr = PetscOptionsHasName(NULL,"-debug",&appctx.debug);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,"-useAlhs",&appctx.useAlhs);CHKERRQ(ierr);
+
   /* create vector to hold ts solution */
   /*-----------------------------------*/
   ierr = VecCreate(PETSC_COMM_WORLD, &init_sol);CHKERRQ(ierr);
@@ -91,7 +92,8 @@ int main(int argc,char **argv)
   /* create LHS matrix Amat */
   /*------------------------*/
   ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD, m, m, 3, NULL, &appctx.Amat);
-  ierr = MatSetFromOptions(appctx.Amat);
+  ierr = MatSetFromOptions(appctx.Amat);CHKERRQ(ierr);
+  ierr = MatSetUp(appctx.Amat);CHKERRQ(ierr);
   /* set space grid points - interio points only! */
   ierr = PetscMalloc((nz+1)*sizeof(PetscScalar),&z);CHKERRQ(ierr);
   for (i=0; i<nz; i++) z[i]=(i)*((zFinal-zInitial)/(nz-1));
@@ -103,6 +105,7 @@ int main(int argc,char **argv)
   ierr = MatCreate(PETSC_COMM_WORLD, &Jmat);CHKERRQ(ierr);
   ierr = MatSetSizes(Jmat,PETSC_DECIDE,PETSC_DECIDE,m,m);CHKERRQ(ierr);
   ierr = MatSetFromOptions(Jmat);CHKERRQ(ierr);
+  ierr = MatSetUp(Jmat);CHKERRQ(ierr);
 
   /* create working vectors for formulating rhs=inv(Alhs)*(Arhs*U + g) */
   ierr = VecDuplicate(init_sol,&appctx.ksp_rhs);CHKERRQ(ierr);
@@ -132,6 +135,11 @@ int main(int argc,char **argv)
 
   if (appctx.useAlhs) {
     /* set the left hand side matrix of Amat*U_t = rhs(U,t) */
+
+    /* Note: this approach is incompatible with the finite differenced Jacobian set below because we can't restore the
+     * Alhs matrix without making a copy.  Either finite difference the entire thing or use analytic Jacobians in both
+     * places.
+     */
     ierr = TSSetIFunction(ts,NULL,TSComputeIFunctionLinear,&appctx);CHKERRQ(ierr);
     ierr = TSSetIJacobian(ts,appctx.Amat,appctx.Amat,TSComputeIJacobianConstant,&appctx);
   }

@@ -184,6 +184,18 @@ runex3_2:
 	-@${MPIEXEC} -n 1 ./ex3 -nox -ts_type ssp -ts_dt 0.0005 -time_dependent_rhs 1 > ex3_2.tmp 2>&1;	  \
 	   ${DIFF} output/ex3_1.out ex3_2.tmp || echo  ${PWD} "\nPossible problem with ex3_2, diffs above \n========================================="; \
 	   ${RM} -f ex3_2.tmp
+runex3_3:                       # IMEX IJacobian for constant RHS Jacobian
+	-@${MPIEXEC} -n 1 ./ex3 -nox -ts_type rosw -ts_max_steps 3 -ksp_converged_reason > ex3_3.tmp 2>&1;	  \
+	   ${DIFF} output/ex3_3.out ex3_3.tmp || echo  ${PWD} "\nPossible problem with ex3_3, diffs above \n========================================="; \
+	   ${RM} -f ex3_3.tmp
+runex3_4:                       # non-IMEX IJacobian with constant RHS Jacobian
+	-@${MPIEXEC} -n 1 ./ex3 -nox -ts_type beuler -ts_max_steps 3 -ksp_converged_reason > ex3_4.tmp 2>&1;	  \
+	   ${DIFF} output/ex3_4.out ex3_4.tmp || echo  ${PWD} "\nPossible problem with ex3_4, diffs above \n========================================="; \
+	   ${RM} -f ex3_4.tmp
+runex3_5:
+	-@${MPIEXEC} -n 1 ./ex3 -nox -ts_type beuler -ts_max_steps 3 -ksp_converged_reason -time_dependent_rhs > ex3_5.tmp 2>&1;	  \
+	   ${DIFF} output/ex3_5.out ex3_5.tmp || echo  ${PWD} "\nPossible problem with ex3_5, diffs above \n========================================="; \
+	   ${RM} -f ex3_5.tmp
 
 runex4:
 	-@${MPIEXEC} -n 1 ./ex4 -ts_view -nox > ex4_1.tmp 2>&1;	  \

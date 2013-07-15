@@ -104,6 +104,7 @@ typedef struct {
 typedef struct {
   PetscBool   drawcontours;   /* flag - 1 indicates drawing contours */
   PetscViewer drawviewer;
+  PetscInt    interval;
 } MonitorCtx;
 
 
@@ -251,6 +252,8 @@ int main(int argc,char **argv)
     ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,0,0,0,0,300,300,&usermonitor.drawviewer);CHKERRQ(ierr);
     ierr = PetscViewerDrawSetBounds(usermonitor.drawviewer,dof,bounds);CHKERRQ(ierr);
   }
+  usermonitor.interval = 1;
+  ierr = PetscOptionsGetInt(NULL,"-monitor_interval",&usermonitor.interval,NULL);CHKERRQ(ierr);
 
   /*  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Extract global vectors from DA;
@@ -739,9 +742,11 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec T,void *ctx)
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)ts),&rank);CHKERRQ(ierr);
   ierr = VecNorm(T,NORM_INFINITY,&norm);CHKERRQ(ierr);
 
-  ierr = VecGetArray(T,&array);CHKERRQ(ierr);
-  if (!rank) printf("step %4d, time %8.1f,  %6.4f, %6.4f, %6.4f, %6.4f, %6.4f, %6.4f\n",step,time,(((array[0]-273)*9)/5 + 32),(((array[1]-273)*9)/5 + 32),array[2],array[3],array[4],array[5]);
-  ierr = VecRestoreArray(T,&array);CHKERRQ(ierr);
+  if (step%user->interval == 0) {
+    ierr = VecGetArray(T,&array);CHKERRQ(ierr);
+    if (!rank) printf("step %4d, time %8.1f,  %6.4f, %6.4f, %6.4f, %6.4f, %6.4f, %6.4f\n",step,time,(((array[0]-273)*9)/5 + 32),(((array[1]-273)*9)/5 + 32),array[2],array[3],array[4],array[5]);
+    ierr = VecRestoreArray(T,&array);CHKERRQ(ierr);
+  }
 
   if (user->drawcontours) {
     ierr = VecView(T,viewer);CHKERRQ(ierr);
