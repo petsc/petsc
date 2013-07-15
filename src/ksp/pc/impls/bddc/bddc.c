@@ -1289,39 +1289,12 @@ static PetscErrorCode PCBDDCSetLevel(PC pc,PetscInt level)
 #define __FUNCT__ "PCBDDCCoarseSetUp"
 static PetscErrorCode PCBDDCCoarseSetUp(PC pc)
 {
-  PetscErrorCode  ierr;
-
   PC_IS*            pcis = (PC_IS*)(pc->data);
   PC_BDDC*          pcbddc = (PC_BDDC*)pc->data;
   IS                is_R_local;
-  VecType           impVecType;
-  MatType           impMatType;
-  PetscInt          n_R=0;
-  PetscInt          n_D=0;
-  PetscInt          n_B=0;
-  PetscScalar       zero=0.0;
-  PetscScalar       one=1.0;
-  PetscScalar       m_one=-1.0;
-  PetscScalar*      array;
-  PetscScalar       *coarse_submat_vals;
-  PetscInt          *idx_R_local;
-  PetscReal         *coarsefunctions_errors,*constraints_errors;
-  /* auxiliary indices */
-  PetscInt          i,j;
-  /* for verbose output of bddc */
-  PetscViewer       viewer=pcbddc->dbg_viewer;
-  PetscInt          dbg_flag=pcbddc->dbg_flag;
-  /* for counting coarse dofs */
-  PetscInt          n_vertices,n_constraints;
-  PetscInt          size_of_constraint;
-  PetscInt          *row_cmat_indices;
-  PetscScalar       *row_cmat_values;
-  PetscInt          *vertices;
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  /* Set Non-overlapping dimensions */
-  n_B = pcis->n_B; n_D = pcis->n - n_B;
-
   /* compute matrix after change of basis and extract local submatrices */
   ierr = PCBDDCSetUpLocalMatrices(pc);CHKERRQ(ierr);
 
@@ -1330,21 +1303,11 @@ static PetscErrorCode PCBDDCCoarseSetUp(PC pc)
     ierr = PCBDDCNullSpaceAdaptGlobal(pc);CHKERRQ(ierr);
   }
 
-  /* get number of vertices */
-  ierr = PCBDDCGetPrimalVerticesLocalIdx(pc,&n_vertices,NULL);CHKERRQ(ierr);
-  n_constraints = pcbddc->local_primal_size-n_vertices;
-  n_R = pcis->n-n_vertices;
-
-  /* Set types for local objects needed by BDDC precondtioner */
-  impMatType = MATSEQDENSE;
-  impVecType = VECSEQ;
-
   /* Allocate needed vectors */
   ierr = PCBDDCCreateWorkVectors(pc);CHKERRQ(ierr);
 
   /* setup local scatters R_to_B and (optionally) R_to_D : PCBDDCCreateWorkVectors should be called first! */
   ierr = PCBDDCSetUpLocalScatters(pc,&is_R_local);CHKERRQ(ierr);
-  ierr = ISGetIndices(is_R_local,(const PetscInt**)&idx_R_local);CHKERRQ(ierr);
 
   /* setup local solvers ksp_D and ksp_R */
   ierr = PCBDDCSetUpLocalSolvers(pc,pcis->is_I_local,is_R_local);CHKERRQ(ierr);
@@ -1368,6 +1331,41 @@ static PetscErrorCode PCBDDCCoarseSetUp(PC pc)
     PetscScalar* array2;
     MatFactorInfo matinfo;
     PetscBool    setsym=PETSC_FALSE,issym=PETSC_FALSE;
+    /* old variables */
+    VecType           impVecType;
+    MatType           impMatType;
+    PetscInt          n_R=0;
+    PetscInt          n_D=0;
+    PetscInt          n_B=0;
+    PetscScalar       zero=0.0;
+    PetscScalar       one=1.0;
+    PetscScalar       m_one=-1.0;
+    PetscScalar*      array;
+    PetscScalar       *coarse_submat_vals;
+    PetscInt          *idx_R_local;
+    PetscReal         *coarsefunctions_errors,*constraints_errors;
+    /* auxiliary indices */
+    PetscInt          i,j;
+    /* for verbose output of bddc */
+    PetscViewer       viewer=pcbddc->dbg_viewer;
+    PetscInt          dbg_flag=pcbddc->dbg_flag;
+    /* for counting coarse dofs */
+    PetscInt          n_vertices,n_constraints;
+    PetscInt          size_of_constraint;
+    PetscInt          *row_cmat_indices;
+    PetscScalar       *row_cmat_values;
+    PetscInt          *vertices;
+
+    /* get number of vertices */
+    ierr = PCBDDCGetPrimalVerticesLocalIdx(pc,&n_vertices,NULL);CHKERRQ(ierr);
+    n_constraints = pcbddc->local_primal_size-n_vertices;
+    /* Set Non-overlapping dimensions */
+    n_B = pcis->n_B; n_D = pcis->n - n_B;
+    n_R = pcis->n-n_vertices;
+
+    /* Set types for local objects needed by BDDC precondtioner */
+    impMatType = MATSEQDENSE;
+    impVecType = VECSEQ;
 
     /* Allocating some extra storage just to be safe */
     ierr = PetscMalloc (pcis->n*sizeof(PetscInt),&nnz);CHKERRQ(ierr);
@@ -1484,6 +1482,7 @@ static PetscErrorCode PCBDDCCoarseSetUp(PC pc)
     }
 
     if (dbg_flag) {
+      ierr = ISGetIndices(is_R_local,(const PetscInt**)&idx_R_local);CHKERRQ(ierr);
       ierr = PetscMalloc(2*pcbddc->local_primal_size*sizeof(*coarsefunctions_errors),&coarsefunctions_errors);CHKERRQ(ierr);
       ierr = PetscMalloc(2*pcbddc->local_primal_size*sizeof(*constraints_errors),&constraints_errors);CHKERRQ(ierr);
     }
@@ -1820,6 +1819,7 @@ static PetscErrorCode PCBDDCCoarseSetUp(PC pc)
         ierr = MatDestroy(&coarse_psi_B);CHKERRQ(ierr);
       }
       ierr = MatDestroy(&coarse_sub_mat);CHKERRQ(ierr);
+      ierr = ISRestoreIndices(is_R_local,(const PetscInt**)&idx_R_local);CHKERRQ(ierr);
       ierr = PetscFree(coarsefunctions_errors);CHKERRQ(ierr);
       ierr = PetscFree(constraints_errors);CHKERRQ(ierr);
     }
@@ -1845,7 +1845,6 @@ static PetscErrorCode PCBDDCCoarseSetUp(PC pc)
     ierr = PetscFree(coarse_submat_vals);CHKERRQ(ierr);
   }
   /* free memory */
-  ierr = ISRestoreIndices(is_R_local,(const PetscInt**)&idx_R_local);CHKERRQ(ierr);
   ierr = ISDestroy(&is_R_local);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
