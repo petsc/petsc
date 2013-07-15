@@ -296,6 +296,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
   PetscReal         *rwork;
 #endif
 #if defined(PETSC_MISSING_LAPACK_GESVD)
+  PetscBLASInt      Blas_N,Blas_LDA;
   PetscScalar       *temp_basis,*correlation_mat;
 #endif
   /* change of basis */
@@ -418,13 +419,14 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
     ierr = PetscMalloc(3*max_constraints*sizeof(PetscReal),&rwork);CHKERRQ(ierr);
 #endif
     /* now we evaluate the optimal workspace using query with lwork=-1 */
-    ierr = PetscBLASIntCast(max_constraints,&Bt);CHKERRQ(ierr);
+    ierr = PetscBLASIntCast(max_constraints,&Blas_N);CHKERRQ(ierr);
+    ierr = PetscBLASIntCast(max_constraints,&Blas_LDA);CHKERRQ(ierr);
     lwork = -1;
     ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
 #if !defined(PETSC_USE_COMPLEX)
-    PetscStackCallBLAS("LAPACKsyev",LAPACKsyev_("V","U",&Bt,correlation_mat,&Bt,singular_vals,&temp_work,&lwork,&lierr));
+    PetscStackCallBLAS("LAPACKsyev",LAPACKsyev_("V","U",&Blas_N,correlation_mat,&Blas_LDA,singular_vals,&temp_work,&lwork,&lierr));
 #else
-    PetscStackCallBLAS("LAPACKsyev",LAPACKsyev_("V","U",&Bt,correlation_mat,&Bt,singular_vals,&temp_work,&lwork,rwork,&lierr));
+    PetscStackCallBLAS("LAPACKsyev",LAPACKsyev_("V","U",&Blas_N,correlation_mat,&Blas_LDA,singular_vals,&temp_work,&lwork,rwork,&lierr));
 #endif
     ierr = PetscFPTrapPop();CHKERRQ(ierr);
     if (lierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in query to SYEV Lapack routine %d",(int)lierr);
@@ -560,6 +562,8 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
             from that computed using LAPACKgesvd
          -> This is due to a different computation of eigenvectors in LAPACKheev 
          -> The quality of the POD-computed basis will be the same */
+      ierr = PetscBLASIntCast(temp_constraints,&Blas_N);CHKERRQ(ierr);
+      ierr = PetscBLASIntCast(temp_constraints,&Blas_LDA);CHKERRQ(ierr);
       ierr = PetscMemzero(correlation_mat,temp_constraints*temp_constraints*sizeof(PetscScalar));CHKERRQ(ierr);
       /* Store upper triangular part of correlation matrix */
       ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
@@ -569,9 +573,9 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
         }
       }
 #if !defined(PETSC_USE_COMPLEX)
-      PetscStackCallBLAS("LAPACKsyev",LAPACKsyev_("V","U",&Bt,correlation_mat,&Bt,singular_vals,work,&lwork,&lierr));
+      PetscStackCallBLAS("LAPACKsyev",LAPACKsyev_("V","U",&Blas_N,correlation_mat,&Blas_LDA,singular_vals,work,&lwork,&lierr));
 #else
-      PetscStackCallBLAS("LAPACKsyev",LAPACKsyev_("V","U",&Bt,correlation_mat,&Bt,singular_vals,work,&lwork,rwork,&lierr));
+      PetscStackCallBLAS("LAPACKsyev",LAPACKsyev_("V","U",&Blas_N,correlation_mat,&Blas_LDA,singular_vals,work,&lwork,rwork,&lierr));
 #endif
       ierr = PetscFPTrapPop();CHKERRQ(ierr);
       if (lierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in SYEV Lapack routine %d",(int)lierr);
