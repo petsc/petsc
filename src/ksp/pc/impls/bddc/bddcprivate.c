@@ -787,6 +787,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
       PetscBLASInt lgqr_work;
       /* working stuff for TRTRS */
       PetscScalar  *trs_rhs;
+      PetscBLASInt Blas_NRHS;
       /* pointers for values insertion into change of basis matrix */
       PetscInt     *start_rows,*start_cols;
       PetscScalar  *start_vals;
@@ -796,16 +797,21 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
       /* space to store Q */ 
       ierr = PetscMalloc((max_size_of_constraint)*(max_size_of_constraint)*sizeof(PetscScalar),&qr_basis);CHKERRQ(ierr);
       /* first we issue queries for optimal work */
-      ierr = PetscBLASIntCast(max_size_of_constraint,&Bs);CHKERRQ(ierr);
-      ierr = PetscBLASIntCast(max_constraints,&Bt);CHKERRQ(ierr);
+      ierr = PetscBLASIntCast(max_size_of_constraint,&Blas_M);CHKERRQ(ierr);
+      ierr = PetscBLASIntCast(max_constraints,&Blas_N);CHKERRQ(ierr);
+      ierr = PetscBLASIntCast(max_size_of_constraint,&Blas_LDA);CHKERRQ(ierr);
       lqr_work = -1;
-      PetscStackCallBLAS("LAPACKgeqrf",LAPACKgeqrf_(&Bs,&Bt,qr_basis,&Bs,qr_tau,&lqr_work_t,&lqr_work,&lierr));
+      PetscStackCallBLAS("LAPACKgeqrf",LAPACKgeqrf_(&Blas_M,&Blas_N,qr_basis,&Blas_LDA,qr_tau,&lqr_work_t,&lqr_work,&lierr));
       if (lierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in query to GEQRF Lapack routine %d",(int)lierr);
       ierr = PetscBLASIntCast((PetscInt)PetscRealPart(lqr_work_t),&lqr_work);CHKERRQ(ierr);
       ierr = PetscMalloc((PetscInt)PetscRealPart(lqr_work_t)*sizeof(*qr_work),&qr_work);CHKERRQ(ierr);
       lgqr_work = -1;
-      if (Bt>Bs) Bt=Bs; /* adjust Bt just for computing optimal work */
-      PetscStackCallBLAS("LAPACKungqr",LAPACKungqr_(&Bs,&Bs,&Bt,qr_basis,&Bs,qr_tau,&lgqr_work_t,&lgqr_work,&lierr));
+      ierr = PetscBLASIntCast(max_size_of_constraint,&Blas_M);CHKERRQ(ierr);
+      ierr = PetscBLASIntCast(max_size_of_constraint,&Blas_N);CHKERRQ(ierr);
+      ierr = PetscBLASIntCast(max_constraints,&Blas_K);CHKERRQ(ierr);
+      ierr = PetscBLASIntCast(max_size_of_constraint,&Blas_LDA);CHKERRQ(ierr);
+      if (Blas_K>Blas_M) Blas_K=Blas_M; /* adjust just for computing optimal work */
+      PetscStackCallBLAS("LAPACKungqr",LAPACKungqr_(&Blas_M,&Blas_N,&Blas_K,qr_basis,&Blas_LDA,qr_tau,&lgqr_work_t,&lgqr_work,&lierr));
       if (lierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in query to UNGQR Lapack routine %d",(int)lierr);
       ierr = PetscBLASIntCast((PetscInt)PetscRealPart(lgqr_work_t),&lgqr_work);CHKERRQ(ierr);
       ierr = PetscMalloc((PetscInt)PetscRealPart(lgqr_work_t)*sizeof(*gqr_work),&gqr_work);CHKERRQ(ierr);
@@ -839,15 +845,6 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
           /* get constraint info */
           size_of_constraint = temp_indices[total_counts+1]-temp_indices[total_counts];
           dual_dofs = size_of_constraint-primal_dofs;
-          /* get BLAS dims */
-          ierr = PetscBLASIntCast(size_of_constraint,&Bs);CHKERRQ(ierr);
-          ierr = PetscBLASIntCast(primal_dofs,&Bt);CHKERRQ(ierr);
-          ierr = PetscBLASIntCast(size_of_constraint,&Blas_M);CHKERRQ(ierr);
-          ierr = PetscBLASIntCast(primal_dofs,&Blas_N);CHKERRQ(ierr);
-          ierr = PetscBLASIntCast(primal_dofs,&Blas_K);CHKERRQ(ierr);
-          ierr = PetscBLASIntCast(size_of_constraint,&Blas_LDA);CHKERRQ(ierr);
-          ierr = PetscBLASIntCast(primal_dofs,&Blas_LDB);CHKERRQ(ierr);
-          ierr = PetscBLASIntCast(size_of_constraint,&Blas_LDC);CHKERRQ(ierr);
 
           /* copy quadrature constraints for change of basis check */
           if (pcbddc->dbg_flag) {
@@ -859,28 +856,45 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
           ierr = PetscMemcpy(qr_basis,&temp_quadrature_constraint[temp_indices[total_counts]],size_of_constraint*primal_dofs*sizeof(PetscScalar));CHKERRQ(ierr);
      
           /* compute QR decomposition of constraints */
+          ierr = PetscBLASIntCast(size_of_constraint,&Blas_M);CHKERRQ(ierr);
+          ierr = PetscBLASIntCast(primal_dofs,&Blas_N);CHKERRQ(ierr);
+          ierr = PetscBLASIntCast(size_of_constraint,&Blas_LDA);CHKERRQ(ierr);
           ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
-          PetscStackCallBLAS("LAPACKgeqrf",LAPACKgeqrf_(&Bs,&Bt,qr_basis,&Bs,qr_tau,qr_work,&lqr_work,&lierr));
+          PetscStackCallBLAS("LAPACKgeqrf",LAPACKgeqrf_(&Blas_M,&Blas_N,qr_basis,&Blas_LDA,qr_tau,qr_work,&lqr_work,&lierr));
           if (lierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in GEQRF Lapack routine %d",(int)lierr);
           ierr = PetscFPTrapPop();CHKERRQ(ierr);
   
           /* explictly compute R^-T */
           ierr = PetscMemzero(trs_rhs,primal_dofs*primal_dofs*sizeof(*trs_rhs));CHKERRQ(ierr);
           for (j=0;j<primal_dofs;j++) trs_rhs[j*(primal_dofs+1)] = 1.0;
+          ierr = PetscBLASIntCast(primal_dofs,&Blas_N);CHKERRQ(ierr);
+          ierr = PetscBLASIntCast(primal_dofs,&Blas_NRHS);CHKERRQ(ierr);
+          ierr = PetscBLASIntCast(size_of_constraint,&Blas_LDA);CHKERRQ(ierr);
+          ierr = PetscBLASIntCast(primal_dofs,&Blas_LDB);CHKERRQ(ierr);
           ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
-          PetscStackCallBLAS("LAPACKtrtrs",LAPACKtrtrs_("U","T","N",&Bt,&Bt,qr_basis,&Bs,trs_rhs,&Bt,&lierr)); 
+          PetscStackCallBLAS("LAPACKtrtrs",LAPACKtrtrs_("U","T","N",&Blas_N,&Blas_NRHS,qr_basis,&Blas_LDA,trs_rhs,&Blas_LDB,&lierr)); 
           if (lierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in TRTRS Lapack routine %d",(int)lierr);
           ierr = PetscFPTrapPop();CHKERRQ(ierr);
   
           /* explcitly compute all columns of Q (Q = [Q1 | Q2] ) overwriting QR factorization in qr_basis */
+          ierr = PetscBLASIntCast(size_of_constraint,&Blas_M);CHKERRQ(ierr);
+          ierr = PetscBLASIntCast(size_of_constraint,&Blas_N);CHKERRQ(ierr);
+          ierr = PetscBLASIntCast(primal_dofs,&Blas_K);CHKERRQ(ierr);
+          ierr = PetscBLASIntCast(size_of_constraint,&Blas_LDA);CHKERRQ(ierr);
           ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
-          PetscStackCallBLAS("LAPACKungqr",LAPACKungqr_(&Bs,&Bs,&Bt,qr_basis,&Bs,qr_tau,gqr_work,&lgqr_work,&lierr));
+          PetscStackCallBLAS("LAPACKungqr",LAPACKungqr_(&Blas_M,&Blas_N,&Blas_K,qr_basis,&Blas_LDA,qr_tau,gqr_work,&lgqr_work,&lierr));
           if (lierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in UNGQR Lapack routine %d",(int)lierr);
           ierr = PetscFPTrapPop();CHKERRQ(ierr);
   
           /* first primal_dofs columns of Q need to be re-scaled in order to be unitary w.r.t constraints
              i.e. C_{pxn}*Q_{nxn} should be equal to [I_pxp | 0_pxd] (see check below)
              where n=size_of_constraint, p=primal_dofs, d=dual_dofs (n=p+d), I and 0 identity and null matrix resp. */
+          ierr = PetscBLASIntCast(size_of_constraint,&Blas_M);CHKERRQ(ierr);
+          ierr = PetscBLASIntCast(primal_dofs,&Blas_N);CHKERRQ(ierr);
+          ierr = PetscBLASIntCast(primal_dofs,&Blas_K);CHKERRQ(ierr);
+          ierr = PetscBLASIntCast(size_of_constraint,&Blas_LDA);CHKERRQ(ierr);
+          ierr = PetscBLASIntCast(primal_dofs,&Blas_LDB);CHKERRQ(ierr);
+          ierr = PetscBLASIntCast(size_of_constraint,&Blas_LDC);CHKERRQ(ierr);
           ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
           PetscStackCallBLAS("BLASgemm",BLASgemm_("N","N",&Blas_M,&Blas_N,&Blas_K,&one,qr_basis,&Blas_LDA,trs_rhs,&Blas_LDB,&zero,&temp_quadrature_constraint[temp_indices[total_counts]],&Blas_LDC));
           ierr = PetscFPTrapPop();CHKERRQ(ierr);
