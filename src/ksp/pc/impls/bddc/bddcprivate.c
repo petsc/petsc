@@ -298,6 +298,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
   PetscReal         *rwork;
 #endif
 #if defined(PETSC_MISSING_LAPACK_GESVD)
+  PetscBLASInt      Bone_2=1;
   PetscScalar       *temp_basis,*correlation_mat;
 #else
   PetscBLASInt      dummy_int_1=1,dummy_int_2=1;
@@ -574,7 +575,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
       ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
       for (j=0;j<temp_constraints;j++) {
         for (k=0;k<j+1;k++) {
-          PetscStackCallBLAS("BLASdot",correlation_mat[j*temp_constraints+k]=BLASdot_(&Bs,&temp_quadrature_constraint[temp_indices[temp_start_ptr+k]],&Bone,&temp_quadrature_constraint[temp_indices[temp_start_ptr+j]],&Bone));
+          PetscStackCallBLAS("BLASdot",correlation_mat[j*temp_constraints+k]=BLASdot_(&Bs,&temp_quadrature_constraint[temp_indices[temp_start_ptr+k]],&Bone,&temp_quadrature_constraint[temp_indices[temp_start_ptr+j]],&Bone_2));
         }
       }
 #if !defined(PETSC_USE_COMPLEX)
