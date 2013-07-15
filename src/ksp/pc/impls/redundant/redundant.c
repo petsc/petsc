@@ -115,9 +115,9 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
 
         ierr = MatGetVecs(pc->pmat,&x,0);CHKERRQ(ierr);
         ierr = VecGetSize(x,&M);CHKERRQ(ierr);
-        ierr = PetscMalloc2(red->psubcomm->n*mlocal,PetscInt,&idx1,red->psubcomm->n*mlocal,PetscInt,&idx2);CHKERRQ(ierr);
         ierr = VecGetOwnershipRange(x,&mstart,&mend);CHKERRQ(ierr);
         mlocal = mend - mstart;
+        ierr = PetscMalloc2(red->psubcomm->n*mlocal,PetscInt,&idx1,red->psubcomm->n*mlocal,PetscInt,&idx2);CHKERRQ(ierr);
         j    = 0;
         for (k=0; k<red->psubcomm->n; k++) {
           for (i=mstart; i<mend; i++) {
