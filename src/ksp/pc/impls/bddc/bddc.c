@@ -1390,11 +1390,8 @@ static PetscErrorCode PCBDDCCoarseSetUp(PC pc)
       ierr = VecDuplicate(vec1_V,&vec2_V);CHKERRQ(ierr);
     }
     if (n_constraints) {
-      ierr = VecCreate(PETSC_COMM_SELF,&vec1_C);CHKERRQ(ierr);
-      ierr = VecSetSizes(vec1_C,n_constraints,n_constraints);CHKERRQ(ierr);
-      ierr = VecSetType(vec1_C,impVecType);CHKERRQ(ierr);
-      ierr = VecDuplicate(vec1_C,&vec2_C);CHKERRQ(ierr);
-      ierr = VecDuplicate(vec1_C,&pcbddc->vec1_C);CHKERRQ(ierr);
+      ierr = VecDuplicate(pcbddc->vec1_C,&vec1_C);CHKERRQ(ierr);
+      ierr = VecDuplicate(pcbddc->vec1_C,&vec2_C);CHKERRQ(ierr);
     }
     /* Precompute stuffs needed for preprocessing and application of BDDC*/
     if (n_constraints) {
