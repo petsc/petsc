@@ -288,6 +288,8 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
   PetscScalar       *array;
   /* BLAS integers */
   PetscBLASInt      Bs,Bt,lwork,lierr,Bone=1;
+  PetscBLASInt      Blas_N,Blas_M,Blas_K;
+  PetscBLASInt      Blas_LDA,Blas_LDB,Blas_LDC;
   /* LAPACK working arrays for SVD or POD */
   PetscBool         skip_lapack;
   PetscScalar       *work;
@@ -296,10 +298,8 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
   PetscReal         *rwork;
 #endif
 #if defined(PETSC_MISSING_LAPACK_GESVD)
-  PetscBLASInt      Blas_N,Blas_LDA;
   PetscScalar       *temp_basis,*correlation_mat;
 #else
-  PetscBLASInt      Blas_LDA;
   PetscBLASInt      dummy_int_1=1,dummy_int_2=1;
   PetscScalar       dummy_scalar_1=0.0,dummy_scalar_2=0.0;
 #endif
@@ -588,11 +588,17 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
       j=0;
       while (j < temp_constraints && singular_vals[j] < tol) j++;
       total_counts=total_counts-j;
+      ierr = PetscBLASIntCast(size_of_constraint,&Blas_M);CHKERRQ(ierr);
+      ierr = PetscBLASIntCast(temp_constraints,&Blas_N);CHKERRQ(ierr);
+      ierr = PetscBLASIntCast(temp_constraints,&Blas_K);CHKERRQ(ierr);
+      ierr = PetscBLASIntCast(size_of_constraint,&Blas_LDA);CHKERRQ(ierr);
+      ierr = PetscBLASIntCast(temp_constraints,&Blas_LDB);CHKERRQ(ierr);
+      ierr = PetscBLASIntCast(size_of_constraint,&Blas_LDC);CHKERRQ(ierr);
       if (j<temp_constraints) {
         PetscInt ii;
         for (k=j;k<temp_constraints;k++) singular_vals[k]=1.0/PetscSqrtReal(singular_vals[k]);
         ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
-        PetscStackCallBLAS("BLASgemm",BLASgemm_("N","N",&Bs,&Bt,&Bt,&one,&temp_quadrature_constraint[temp_indices[temp_start_ptr]],&Bs,correlation_mat,&Bt,&zero,temp_basis,&Bs));
+        PetscStackCallBLAS("BLASgemm",BLASgemm_("N","N",&Blas_M,&Blas_N,&Blas_K,&one,&temp_quadrature_constraint[temp_indices[temp_start_ptr]],&Blas_LDA,correlation_mat,&Blas_LDB,&zero,temp_basis,&Blas_LDC));
         ierr = PetscFPTrapPop();CHKERRQ(ierr);
         /* scale and copy POD basis into used quadrature memory */
         for (k=0;k<temp_constraints-j;k++) {
@@ -835,6 +841,12 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
           /* get BLAS dims */
           ierr = PetscBLASIntCast(size_of_constraint,&Bs);CHKERRQ(ierr);
           ierr = PetscBLASIntCast(primal_dofs,&Bt);CHKERRQ(ierr);
+          ierr = PetscBLASIntCast(size_of_constraint,&Blas_M);CHKERRQ(ierr);
+          ierr = PetscBLASIntCast(primal_dofs,&Blas_N);CHKERRQ(ierr);
+          ierr = PetscBLASIntCast(primal_dofs,&Blas_K);CHKERRQ(ierr);
+          ierr = PetscBLASIntCast(size_of_constraint,&Blas_LDA);CHKERRQ(ierr);
+          ierr = PetscBLASIntCast(primal_dofs,&Blas_LDB);CHKERRQ(ierr);
+          ierr = PetscBLASIntCast(size_of_constraint,&Blas_LDC);CHKERRQ(ierr);
 
           /* copy quadrature constraints for change of basis check */
           if (pcbddc->dbg_flag) {
@@ -869,7 +881,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
              i.e. C_{pxn}*Q_{nxn} should be equal to [I_pxp | 0_pxd] (see check below)
              where n=size_of_constraint, p=primal_dofs, d=dual_dofs (n=p+d), I and 0 identity and null matrix resp. */
           ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
-          PetscStackCallBLAS("BLASgemm",BLASgemm_("N","N",&Bs,&Bt,&Bt,&one,qr_basis,&Bs,trs_rhs,&Bt,&zero,&temp_quadrature_constraint[temp_indices[total_counts]],&Bs));
+          PetscStackCallBLAS("BLASgemm",BLASgemm_("N","N",&Blas_M,&Blas_N,&Blas_K,&one,qr_basis,&Blas_LDA,trs_rhs,&Blas_LDB,&zero,&temp_quadrature_constraint[temp_indices[total_counts]],&Blas_LDC));
           ierr = PetscFPTrapPop();CHKERRQ(ierr);
           ierr = PetscMemcpy(qr_basis,&temp_quadrature_constraint[temp_indices[total_counts]],size_of_constraint*primal_dofs*sizeof(PetscScalar));CHKERRQ(ierr);
 
@@ -895,8 +907,14 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
           if (pcbddc->dbg_flag) {
             PetscInt   ii,jj;
             PetscBool valid_qr=PETSC_TRUE;
+            ierr = PetscBLASIntCast(primal_dofs,&Blas_M);CHKERRQ(ierr);
+            ierr = PetscBLASIntCast(size_of_constraint,&Blas_N);CHKERRQ(ierr);
+            ierr = PetscBLASIntCast(size_of_constraint,&Blas_K);CHKERRQ(ierr);
+            ierr = PetscBLASIntCast(size_of_constraint,&Blas_LDA);CHKERRQ(ierr);
+            ierr = PetscBLASIntCast(size_of_constraint,&Blas_LDB);CHKERRQ(ierr);
+            ierr = PetscBLASIntCast(primal_dofs,&Blas_LDC);CHKERRQ(ierr);
             ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
-            PetscStackCallBLAS("BLASgemm",BLASgemm_("T","N",&Bt,&Bs,&Bs,&one,work,&Bs,qr_basis,&Bs,&zero,&work[size_of_constraint*primal_dofs],&Bt));
+            PetscStackCallBLAS("BLASgemm",BLASgemm_("T","N",&Blas_M,&Blas_N,&Blas_K,&one,work,&Blas_LDA,qr_basis,&Blas_LDB,&zero,&work[size_of_constraint*primal_dofs],&Blas_LDC));
             ierr = PetscFPTrapPop();CHKERRQ(ierr);
             for (jj=0;jj<size_of_constraint;jj++) {
               for (ii=0;ii<primal_dofs;ii++) {
