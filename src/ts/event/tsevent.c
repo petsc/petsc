@@ -184,9 +184,9 @@ PetscErrorCode TSEventMonitor(TS ts)
   }
 
   for (i = 0; i < event->nevents; i++) {
-    if ((event->direction[i] < 0 && PetscSign(PetscRealPart(event->fvalue[i])) <= 0 && PetscSign(PetscRealPart(event->fvalue_prev[i])) >= 0) || \
-        (event->direction[i] > 0 && PetscSign(PetscRealPart(event->fvalue[i])) >= 0 && PetscSign(PetscRealPart(event->fvalue_prev[i])) <= 0) || \
-        (event->direction[i] == 0 && PetscSign(PetscRealPart(event->fvalue[i]))*PetscSign(PetscRealPart(event->fvalue_prev[i])) <= 0)) {
+    if ((event->direction[i] < 0 && PetscSign(PetscRealPart(event->fvalue[i])) < 0 && (PetscSign(PetscRealPart(event->fvalue[i])) != PetscSign(PetscRealPart(event->fvalue_prev[i])))) || \
+	(event->direction[i] > 0 && PetscSign(PetscRealPart(event->fvalue[i])) > 0 && (PetscSign(PetscRealPart(event->fvalue[i])) != PetscSign(PetscRealPart(event->fvalue_prev[i])))) || \
+	(event->direction[i] = 0 && (PetscSign(PetscRealPart(event->fvalue[i])) != PetscSign(PetscRealPart(event->fvalue_prev[i]))))) {
 
       event->status = TSEVENT_LOCATED_INTERVAL;
       rollback = 1;
