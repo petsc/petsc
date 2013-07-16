@@ -77,13 +77,7 @@ int main(int argc,char **args)
 
   ierr = PetscOptionsHasName(NULL, "-subcomm_view", &flg);CHKERRQ(ierr);
   if (flg) {
-    PetscMPIInt subsize,subrank,duprank;
-    ierr = MPI_Comm_size((MPI_Comm)subcomm,&subsize);CHKERRQ(ierr);
-    ierr = MPI_Comm_rank((MPI_Comm)subcomm,&subrank);CHKERRQ(ierr);
-    ierr = MPI_Comm_rank((MPI_Comm)psubcomm->dupparent,&duprank);CHKERRQ(ierr);
-
-    ierr = PetscSynchronizedPrintf(comm,"[%D], color %D, sub-size %D, sub-rank %D, duprank %D\n",rank,psubcomm->color,subsize,subrank,duprank);
-    ierr = PetscSynchronizedFlush(comm);CHKERRQ(ierr);
+    ierr = PetscSubcommView(psubcomm,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
 
   /* Create subA */
