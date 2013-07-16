@@ -567,7 +567,7 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
 
         for (level=pc_gamg->Nlevels-2; level>=0; level--) {
           /* the first time through the matrix structure has changed from repartitioning */
-          if (pc_gamg->setup_count==2 && (pc_gamg->repart || level==0)) {
+          if (pc_gamg->setup_count==2) {
             ierr = MatPtAP(dB,mglevels[level+1]->interpolate,MAT_INITIAL_MATRIX,1.0,&B);CHKERRQ(ierr);
             ierr = MatDestroy(&mglevels[level]->A);CHKERRQ(ierr);
 
