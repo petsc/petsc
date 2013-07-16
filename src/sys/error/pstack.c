@@ -84,8 +84,7 @@ PetscErrorCode PetscStackAMSViewOff(void)
 
   PetscFunctionBegin;
   if (!amsmemstack) PetscFunctionReturn(0);
-  ierr        = AMS_Memory_Destroy(amsmemstack);CHKERRQ(ierr);
-  amsmemstack = NULL;
+  ierr        = AMS_Memory_Destroy(&amsmemstack);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

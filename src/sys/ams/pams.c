@@ -138,8 +138,7 @@ PetscErrorCode PetscObjectAMSViewOff(PetscObject obj)
   PetscFunctionBegin;
   if (obj->classid == PETSC_VIEWER_CLASSID) PetscFunctionReturn(0);
   if (!obj->amsmem) PetscFunctionReturn(0);
-  ierr = AMS_Memory_Destroy(obj->amsmem);CHKERRQ(ierr);
-  obj->amsmem = NULL;
+  ierr = AMS_Memory_Destroy(&obj->amsmem);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

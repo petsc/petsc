@@ -61,8 +61,7 @@ PetscErrorCode KSPMonitorAMSDestroy(void **ctx)
 
   PetscFunctionBegin;
   if (mon->amem) {
-    PetscStackCallAMS(AMS_Memory_Destroy,(mon->amem));
-    mon->amem = NULL;
+    PetscStackCallAMS(AMS_Memory_Destroy,(&mon->amem));
   }
   /* ierr      = PetscViewerDestroy(&mon->viewer);CHKERRQ(ierr);*/
   ierr      = PetscFree(mon->eigr);CHKERRQ(ierr);
@@ -103,8 +102,7 @@ PetscErrorCode KSPMonitorAMS(KSP ksp,PetscInt n,PetscReal rnorm,void *ctx)
   ierr = KSPComputeExtremeSingularValues(ksp,&emax,&emin);CHKERRQ(ierr);
 
   /* UnPublish  */
-  if (mon->amem) PetscStackCallAMS(AMS_Memory_Destroy,(mon->amem));
-  mon->amem = NULL;
+  if (mon->amem) PetscStackCallAMS(AMS_Memory_Destroy,(&mon->amem));
 
   ierr      = PetscFree(mon->eigr);CHKERRQ(ierr);
   ierr      = PetscMalloc(2*n*sizeof(PetscReal),&mon->eigr);CHKERRQ(ierr);

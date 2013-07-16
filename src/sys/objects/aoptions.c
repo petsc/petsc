@@ -342,7 +342,7 @@ PetscErrorCode PetscOptionsAMSDestroy(void)
   PetscStackCallAMS(AMS_Lock_Memory,(amem));
   PetscStackCallAMS(AMS_Unlock_Memory,(amem));
   /* wait until accessor has unlocked the memory */
-  PetscStackCallAMS(AMS_Memory_Destroy,(amem));
+  PetscStackCallAMS(AMS_Memory_Destroy,(&amem));
   PetscFunctionReturn(0);
 }
 
@@ -444,7 +444,7 @@ PetscErrorCode PetscOptionsAMSInput()
   if (changedmethod) PetscOptionsPublishCount = -2;
 
   PetscStackCallAMS(AMS_Unlock_Memory,(amem));
-  PetscStackCallAMS(AMS_Memory_Destroy,(amem));
+  PetscStackCallAMS(AMS_Memory_Destroy,(&amem));
   PetscFunctionReturn(0);
 }
 #endif

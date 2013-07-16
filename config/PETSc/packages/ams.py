@@ -10,8 +10,8 @@ class Configure(PETSc.package.NewPackage):
     self.functions = ['AMS_Memory_Create']
     self.includes  = ['ams.h']
     self.liblist   = [['libams.a']]
-    self.libdir           = '' # location of libraries in the package directory tree
-    self.includedir       = '' # location of includes in the package directory tree    return
+    self.libdir           = 'lib' # location of libraries in the package directory tree
+    self.includedir       = 'include' # location of includes in the package directory tree    return
 
   def setupDependencies(self, framework):
     PETSc.package.NewPackage.setupDependencies(self, framework)
