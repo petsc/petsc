@@ -155,6 +155,18 @@ static PetscErrorCode SNESCompositeApply_AdditiveOptimal(SNES snes,Vec X,Vec B,V
 
   PetscFunctionBegin;
   if (!next) SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE,"No composite SNESes supplied via SNESCompositeAddSNES() or -snes_composite_sneses");
+
+  if (snes->normschedule == SNES_NORM_ALWAYS) {
+    next = jac->head;
+    ierr = SNESSetInitialFunction(next->snes,F);CHKERRQ(ierr);
+    if (fnorm) {ierr = SNESSetInitialFunctionNorm(next->snes,*fnorm);CHKERRQ(ierr);}
+    while (next->next) {
+      next = next->next;
+      ierr = SNESSetInitialFunction(next->snes,F);CHKERRQ(ierr);
+      if (fnorm) {ierr = SNESSetInitialFunctionNorm(next->snes,*fnorm);CHKERRQ(ierr);}
+    }
+  }
+
   next = jac->head;
   i = 0;
   ierr = VecCopy(X,Xes[i]);CHKERRQ(ierr);
@@ -237,8 +249,8 @@ static PetscErrorCode SNESCompositeApply_AdditiveOptimal(SNES snes,Vec X,Vec B,V
 
   /* stagnation or divergence restart to the solution of the solver that failed the least */
   if (PetscRealPart(total) < jac->stol || min_fnorm*jac->rtol < *fnorm) {
-    ierr = VecCopy(X,jac->Xes[min_i]);CHKERRQ(ierr);
-    ierr = VecCopy(F,jac->Fes[min_i]);CHKERRQ(ierr);
+    ierr = VecCopy(jac->Xes[min_i],X);CHKERRQ(ierr);
+    ierr = VecCopy(jac->Fes[min_i],F);CHKERRQ(ierr);
     *fnorm = min_fnorm;
   }
   PetscFunctionReturn(0);
