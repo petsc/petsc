@@ -104,6 +104,51 @@ PetscErrorCode  DMCreate(MPI_Comm comm,DM *dm)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMClone"
+/*@
+  DMClone - Creates a DM object with the same topology as the original.
+
+  Collective on MPI_Comm
+
+  Input Parameter:
+. dm - The original DM object
+
+  Output Parameter:
+. newdm  - The new DM object
+
+  Level: beginner
+
+.keywords: DM, topology, create
+@*/
+PetscErrorCode DMClone(DM dm, DM *newdm)
+{
+  PetscSF        sf;
+  Vec            coords;
+  void          *ctx;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(newdm,2);
+  ierr = DMCreate(PetscObjectComm((PetscObject)dm), newdm);CHKERRQ(ierr);
+  if (dm->ops->clone) {
+    ierr = (*dm->ops->clone)(dm, newdm);CHKERRQ(ierr);
+  }
+  ierr = DMGetPointSF(dm, &sf);CHKERRQ(ierr);
+  ierr = DMSetPointSF(*newdm, sf);CHKERRQ(ierr);
+  ierr = DMGetApplicationContext(dm, &ctx);CHKERRQ(ierr);
+  ierr = DMSetApplicationContext(*newdm, ctx);CHKERRQ(ierr);
+  ierr = DMGetCoordinatesLocal(dm, &coords);CHKERRQ(ierr);
+  if (coords) {
+    ierr = DMSetCoordinatesLocal(*newdm, coords);CHKERRQ(ierr);
+  } else {
+    ierr = DMGetCoordinates(dm, &coords);CHKERRQ(ierr);
+    if (coords) {ierr = DMSetCoordinates(*newdm, coords);CHKERRQ(ierr);}
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMSetVecType"
 /*@C
        DMSetVecType - Sets the type of vector created with DMCreateLocalVector() and DMCreateGlobalVector()
