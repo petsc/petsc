@@ -4,11 +4,41 @@
 */
 #include <petscsys.h>    /*I   "petscsys.h"    I*/
 #include <petsc-private/threadcommimpl.h> /* Petsc_ThreadComm_keyval */
+#include <petscviewer.h>
 
 const char *const PetscSubcommTypes[] = {"GENERAL","CONTIGUOUS","INTERLACED","PetscSubcommType","PETSC_SUBCOMM_",0};
 
 extern PetscErrorCode PetscSubcommCreate_contiguous(PetscSubcomm);
 extern PetscErrorCode PetscSubcommCreate_interlaced(PetscSubcomm);
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSubcommView"
+PetscErrorCode PetscSubcommView(PetscSubcomm psubcomm,PetscViewer viewer)
+{
+  PetscErrorCode    ierr;
+  PetscBool         iascii;
+  PetscViewerFormat format;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
+  if (iascii) {
+    ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
+    if (format == PETSC_VIEWER_DEFAULT) {
+      MPI_Comm    comm=psubcomm->parent;
+      PetscMPIInt rank,size,subsize,subrank,duprank;
+
+      ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"PetscSubcomm type %s with total %D MPI processes:\n",PetscSubcommTypes[psubcomm->type],size);CHKERRQ(ierr);
+      ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+      ierr = MPI_Comm_size(psubcomm->comm,&subsize);CHKERRQ(ierr);
+      ierr = MPI_Comm_rank(psubcomm->comm,&subrank);CHKERRQ(ierr);
+      ierr = MPI_Comm_rank(psubcomm->dupparent,&duprank);CHKERRQ(ierr);
+      ierr = PetscSynchronizedPrintf(comm,"  [%D], color %D, sub-size %D, sub-rank %D, duprank %D\n",rank,psubcomm->color,subsize,subrank,duprank);
+      ierr = PetscSynchronizedFlush(comm);CHKERRQ(ierr);
+    }
+  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not supported yet");
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSubcommSetNumber"
