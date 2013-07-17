@@ -1310,7 +1310,7 @@ PetscErrorCode DMCreateSubDM_Plex(DM dm, PetscInt numFields, PetscInt fields[], 
     PetscBool    haveNull = PETSC_FALSE;
     PetscInt     f, nf = 0;
 
-    ierr = DMPlexClone(dm, subdm);CHKERRQ(ierr);
+    ierr = DMClone(dm, subdm);CHKERRQ(ierr);
     ierr = PetscSectionCreateSubsection(section, numFields, fields, &subsection);CHKERRQ(ierr);
     ierr = DMSetDefaultSection(*subdm, subsection);CHKERRQ(ierr);
     ierr = PetscSectionDestroy(&subsection);CHKERRQ(ierr);
@@ -6299,7 +6299,7 @@ PetscErrorCode DMCreateCoordinateDM_Plex(DM dm, DM *cdm)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMPlexClone(dm, cdm);CHKERRQ(ierr);
+  ierr = DMClone(dm, cdm);CHKERRQ(ierr);
   ierr = PetscSectionCreate(PetscObjectComm((PetscObject)dm), &section);CHKERRQ(ierr);
   ierr = DMSetDefaultSection(*cdm, section);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&section);CHKERRQ(ierr);

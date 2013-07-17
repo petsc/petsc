@@ -1227,7 +1227,7 @@ PetscErrorCode ConstructGeometry(DM dm, Vec *facegeom, Vec *cellgeom, User user)
   ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
 
   /* Make cell centroids and volumes */
-  ierr = DMPlexClone(dm, &dmCell);CHKERRQ(ierr);
+  ierr = DMClone(dm, &dmCell);CHKERRQ(ierr);
   ierr = DMPlexSetCoordinateSection(dmCell, coordSection);CHKERRQ(ierr);
   ierr = DMSetCoordinatesLocal(dmCell, coordinates);CHKERRQ(ierr);
   ierr = PetscSectionCreate(PetscObjectComm((PetscObject)dm), &sectionCell);CHKERRQ(ierr);
@@ -1250,7 +1250,7 @@ PetscErrorCode ConstructGeometry(DM dm, Vec *facegeom, Vec *cellgeom, User user)
     ierr = DMPlexComputeCellGeometryFVM(dmCell, c, &cg->volume, cg->centroid, NULL);CHKERRQ(ierr);
   }
   /* Compute face normals and minimum cell radius */
-  ierr = DMPlexClone(dm, &dmFace);CHKERRQ(ierr);
+  ierr = DMClone(dm, &dmFace);CHKERRQ(ierr);
   ierr = PetscSectionCreate(PetscObjectComm((PetscObject)dm), &sectionFace);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 1, &fStart, &fEnd);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(sectionFace, fStart, fEnd);CHKERRQ(ierr);
@@ -1339,7 +1339,7 @@ PetscErrorCode ConstructGeometry(DM dm, Vec *facegeom, Vec *cellgeom, User user)
   if (user->reconstruct) {
     PetscSection sectionGrad;
     ierr = BuildLeastSquares(dm,user->cEndInterior,dmFace,fgeom,dmCell,cgeom);CHKERRQ(ierr);
-    ierr = DMPlexClone(dm,&user->dmGrad);CHKERRQ(ierr);
+    ierr = DMClone(dm,&user->dmGrad);CHKERRQ(ierr);
     ierr = PetscSectionCreate(PetscObjectComm((PetscObject)dm),&sectionGrad);CHKERRQ(ierr);
     ierr = PetscSectionSetChart(sectionGrad,cStart,cEnd);CHKERRQ(ierr);
     for (c=cStart; c<cEnd; c++) {
@@ -1373,7 +1373,7 @@ PetscErrorCode CreatePartitionVec(DM dm, DM *dmCell, Vec *partition)
   PetscFunctionBeginUser;
   ierr = DMPlexGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
-  ierr = DMPlexClone(dm, dmCell);CHKERRQ(ierr);
+  ierr = DMClone(dm, dmCell);CHKERRQ(ierr);
   ierr = DMGetPointSF(dm, &sfPoint);CHKERRQ(ierr);
   ierr = DMSetPointSF(*dmCell, sfPoint);CHKERRQ(ierr);
   ierr = DMPlexSetCoordinateSection(*dmCell, coordSection);CHKERRQ(ierr);
@@ -1417,7 +1417,7 @@ PetscErrorCode CreateMassMatrix(DM dm, Vec *massMatrix, User user)
   PetscFunctionBeginUser;
   ierr = DMPlexGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
-  ierr = DMPlexClone(dm, &dmMass);CHKERRQ(ierr);
+  ierr = DMClone(dm, &dmMass);CHKERRQ(ierr);
   ierr = DMPlexSetCoordinateSection(dmMass, coordSection);CHKERRQ(ierr);
   ierr = DMSetCoordinatesLocal(dmMass, coordinates);CHKERRQ(ierr);
   ierr = PetscSectionCreate(PetscObjectComm((PetscObject)dm), &sectionMass);CHKERRQ(ierr);

@@ -185,20 +185,21 @@ PetscErrorCode DMCreateSubDM_DA(DM dm, PetscInt numFields, PetscInt fields[], IS
   DM_DA          *da = (DM_DA*)dm->data;
 
   PetscFunctionBegin;
-  if (da->dim != 2) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Support only implemented for 2d");
   if (subdm) {
-    ierr = DMDACreate2d(PetscObjectComm((PetscObject)dm),da->bx,da->by,da->stencil_type,da->M,da->N,da->m,da->n,numFields,da->s,da->lx,da->ly,subdm);CHKERRQ(ierr);
+    ierr = DMClone(dm, subdm);CHKERRQ(ierr);
+    ierr = DMDASetDof(*subdm, numFields);CHKERRQ(ierr);
   }
   if (is) {
-    PetscInt *indices,cnt = 0, dof = da->w,i,j;
-    ierr = PetscMalloc(sizeof(PetscInt)*da->Nlocal*numFields/dof,&indices);CHKERRQ(ierr);
-    for (i=da->base/dof; i<(da->base+da->Nlocal)/dof; i++) {
-      for (j=0; j<numFields; j++) {
+    PetscInt *indices, cnt = 0, dof = da->w, i, j;
+
+    ierr = PetscMalloc(da->Nlocal*numFields/dof * sizeof(PetscInt), &indices);CHKERRQ(ierr);
+    for (i = da->base/dof; i < (da->base+da->Nlocal)/dof; ++i) {
+      for (j = 0; j < numFields; ++j) {
         indices[cnt++] = dof*i + fields[j];
       }
     }
-    if (cnt != da->Nlocal*numFields/dof) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Count does not equal expected value");
-    ierr = ISCreateGeneral(PetscObjectComm((PetscObject)dm),da->Nlocal*numFields/dof,indices,PETSC_OWN_POINTER,is);CHKERRQ(ierr);
+    if (cnt != da->Nlocal*numFields/dof) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Count %d does not equal expected value %d", cnt, da->Nlocal*numFields/dof);
+    ierr = ISCreateGeneral(PetscObjectComm((PetscObject) dm), cnt, indices, PETSC_OWN_POINTER, is);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -250,6 +251,24 @@ PetscErrorCode DMCreateFieldDecomposition_DA(DM dm, PetscInt *len,char ***nameli
     ierr = PetscMalloc(dof*sizeof(DM),dmlist);CHKERRQ(ierr);
     for (i=0; i<dof-1; i++) {ierr = PetscObjectReference((PetscObject)da);CHKERRQ(ierr);}
     for (i=0; i<dof; i++) (*dmlist)[i] = da;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMClone_DA"
+PetscErrorCode DMClone_DA(DM dm, DM *newdm)
+{
+  DM_DA         *da = (DM_DA *) dm->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  switch (da->dim) {
+  case 2:
+    ierr = DMDACreate2d(PetscObjectComm((PetscObject) dm), da->bx, da->by, da->stencil_type, da->M, da->N, da->m, da->n, da->w, da->s, da->lx, da->ly, newdm);CHKERRQ(ierr);
+    break;
+  default:
+    SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_OUTOFRANGE, "Cannot clone DA of dimension %d", da->dim);
   }
   PetscFunctionReturn(0);
 }
@@ -354,6 +373,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_DA(DM da)
   da->ops->view                        = 0;
   da->ops->setfromoptions              = DMSetFromOptions_DA;
   da->ops->setup                       = DMSetUp_DA;
+  da->ops->clone                       = DMClone_DA;
   da->ops->load                        = DMLoad_DA;
   da->ops->createcoordinatedm          = DMCreateCoordinateDM_DA;
   da->ops->createsubdm                 = DMCreateSubDM_DA;
