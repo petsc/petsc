@@ -181,25 +181,31 @@ PetscErrorCode DMLoad_DA(DM da,PetscViewer viewer)
 #define __FUNCT__ "DMCreateSubDM_DA"
 PetscErrorCode DMCreateSubDM_DA(DM dm, PetscInt numFields, PetscInt fields[], IS *is, DM *subdm)
 {
+  DM_DA         *da = (DM_DA*) dm->data;
+  PetscSection   section;
   PetscErrorCode ierr;
-  DM_DA          *da = (DM_DA*)dm->data;
 
   PetscFunctionBegin;
   if (subdm) {
     ierr = DMClone(dm, subdm);CHKERRQ(ierr);
     ierr = DMDASetDof(*subdm, numFields);CHKERRQ(ierr);
   }
-  if (is) {
-    PetscInt *indices, cnt = 0, dof = da->w, i, j;
+  ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
+  if (section) {
+    ierr = DMCreateSubDM_Section_Private(dm, numFields, fields, is, subdm);CHKERRQ(ierr);
+  } else {
+    if (is) {
+      PetscInt *indices, cnt = 0, dof = da->w, i, j;
 
-    ierr = PetscMalloc(da->Nlocal*numFields/dof * sizeof(PetscInt), &indices);CHKERRQ(ierr);
-    for (i = da->base/dof; i < (da->base+da->Nlocal)/dof; ++i) {
-      for (j = 0; j < numFields; ++j) {
-        indices[cnt++] = dof*i + fields[j];
+      ierr = PetscMalloc(da->Nlocal*numFields/dof * sizeof(PetscInt), &indices);CHKERRQ(ierr);
+      for (i = da->base/dof; i < (da->base+da->Nlocal)/dof; ++i) {
+        for (j = 0; j < numFields; ++j) {
+          indices[cnt++] = dof*i + fields[j];
+        }
       }
+      if (cnt != da->Nlocal*numFields/dof) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Count %d does not equal expected value %d", cnt, da->Nlocal*numFields/dof);
+      ierr = ISCreateGeneral(PetscObjectComm((PetscObject) dm), cnt, indices, PETSC_OWN_POINTER, is);CHKERRQ(ierr);
     }
-    if (cnt != da->Nlocal*numFields/dof) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Count %d does not equal expected value %d", cnt, da->Nlocal*numFields/dof);
-    ierr = ISCreateGeneral(PetscObjectComm((PetscObject) dm), cnt, indices, PETSC_OWN_POINTER, is);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
