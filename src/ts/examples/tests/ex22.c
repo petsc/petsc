@@ -70,7 +70,7 @@ PetscErrorCode InitialConditions(Vec U,DM da,AppCtx *app)
 
 #undef __FUNCT__
 #define __FUNCT__ "EventFunction"
-PetscErrorCode EventFunction(TS ts,PetscReal t,Vec U,PetscScalar *fvalue,PetscInt *direction,PetscBool *terminate,void *ctx)
+PetscErrorCode EventFunction(TS ts,PetscReal t,Vec U,PetscScalar *fvalue,void *ctx)
 {
   AppCtx         *app=(AppCtx*)ctx;
   PetscErrorCode ierr;
@@ -80,11 +80,7 @@ PetscErrorCode EventFunction(TS ts,PetscReal t,Vec U,PetscScalar *fvalue,PetscIn
   PetscFunctionBegin;
   ierr = VecGetLocalSize(U,&lsize);CHKERRQ(ierr);
   ierr = VecGetArray(U,&u);CHKERRQ(ierr);
-  for(i=0; i < lsize;i++) {
-    fvalue[i] = u[i] - app->uc;
-    direction[i] = -1;
-    terminate[i] = PETSC_FALSE;
-  }
+  for(i=0; i < lsize;i++) fvalue[i] = u[i] - app->uc;
   ierr = VecRestoreArray(U,&u);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -256,7 +252,16 @@ int main(int argc,char **argv)
   
   PetscInt lsize;
   ierr = VecGetLocalSize(U,&lsize);CHKERRQ(ierr);
-  ierr = TSSetEventMonitor(ts,lsize,EventFunction,PostEventFunction,(void*)&app);CHKERRQ(ierr);
+  PetscInt *direction;
+  PetscBool *terminate;
+  PetscInt  i;
+  ierr = PetscMalloc(lsize*sizeof(PetscInt),&direction);CHKERRQ(ierr);
+  ierr = PetscMalloc(lsize*sizeof(PetscBool),&terminate);CHKERRQ(ierr);
+  for (i=0; i < lsize; i++) {
+    direction[i] = -1;
+    terminate[i] = PETSC_FALSE;
+  }
+  ierr = TSSetEventMonitor(ts,lsize,direction,terminate,EventFunction,PostEventFunction,(void*)&app);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Run timestepping solver
@@ -271,6 +276,8 @@ int main(int argc,char **argv)
   ierr = VecDestroy(&U);CHKERRQ(ierr);
   ierr = DMDestroy(&da);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
+  ierr = PetscFree(direction);CHKERRQ(ierr);
+  ierr = PetscFree(terminate);CHKERRQ(ierr);
   
   ierr = PetscFree(app.sw);CHKERRQ(ierr);
   ierr = PetscFinalize();
