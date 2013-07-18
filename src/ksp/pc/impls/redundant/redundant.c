@@ -48,7 +48,7 @@ static PetscErrorCode PCView_Redundant(PC pc,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-extern PetscErrorCode MatGetRedundantMatrix_MPIAIJ_interlaced(Mat,PetscInt,PetscSubcomm,MatReuse,Mat*); /* rm later! */
+extern PetscErrorCode MatGetRedundantMatrix_MPIAIJ_psubcomm(Mat,PetscInt,PetscSubcomm,MatReuse,Mat*); /* rm later! */
 
 #undef __FUNCT__
 #define __FUNCT__ "PCSetUp_Redundant"
@@ -96,7 +96,7 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
 
     if (red->useparallelmat) {
       /* grab the parallel matrix and put it into processors of a subcomminicator */
-      ierr = MatGetRedundantMatrix_MPIAIJ_interlaced(pc->pmat,red->psubcomm->n,red->psubcomm,MAT_INITIAL_MATRIX,&red->pmats);CHKERRQ(ierr);
+      ierr = MatGetRedundantMatrix_MPIAIJ_psubcomm(pc->pmat,red->psubcomm->n,red->psubcomm,MAT_INITIAL_MATRIX,&red->pmats);CHKERRQ(ierr);
       ierr = KSPSetOperators(red->ksp,red->pmats,red->pmats,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
        
       /* get working vectors xsub and ysub */
@@ -156,7 +156,7 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
       } else {
         reuse = MAT_REUSE_MATRIX;
       }
-      ierr = MatGetRedundantMatrix_MPIAIJ_interlaced(pc->pmat,red->psubcomm->n,red->psubcomm,reuse,&red->pmats);CHKERRQ(ierr);
+      ierr = MatGetRedundantMatrix_MPIAIJ_psubcomm(pc->pmat,red->psubcomm->n,red->psubcomm,reuse,&red->pmats);CHKERRQ(ierr);
       ierr = KSPSetOperators(red->ksp,red->pmats,red->pmats,pc->flag);CHKERRQ(ierr);
     } else { /* !red->useparallelmat */
       ierr = KSPSetOperators(red->ksp,pc->mat,pc->pmat,pc->flag);CHKERRQ(ierr);

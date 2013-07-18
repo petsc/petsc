@@ -163,6 +163,7 @@ PetscErrorCode  PetscSubcommDestroy(PetscSubcomm *psubcomm)
   if (!*psubcomm) PetscFunctionReturn(0);
   ierr = PetscCommDestroy(&(*psubcomm)->dupparent);CHKERRQ(ierr);
   ierr = PetscCommDestroy(&(*psubcomm)->comm);CHKERRQ(ierr);
+  ierr = PetscFree((*psubcomm)->subsize);CHKERRQ(ierr);
   ierr = PetscFree((*psubcomm));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -202,6 +203,7 @@ PetscErrorCode  PetscSubcommCreate(MPI_Comm comm,PetscSubcomm *psubcomm)
   (*psubcomm)->comm      = PETSC_COMM_SELF;
   (*psubcomm)->n         = size;
   (*psubcomm)->color     = rank;
+  (*psubcomm)->subsize   = NULL;
   (*psubcomm)->type      = PETSC_SUBCOMM_INTERLACED; 
   PetscFunctionReturn(0);
 }
@@ -239,7 +241,6 @@ PetscErrorCode PetscSubcommCreate_contiguous(PetscSubcomm psubcomm)
       break;
     } else rankstart += subsize[i];
   }
-  ierr = PetscFree(subsize);CHKERRQ(ierr);
 
   ierr = MPI_Comm_split(comm,color,subrank,&subcomm);CHKERRQ(ierr);
 
@@ -258,8 +259,9 @@ PetscErrorCode PetscSubcommCreate_contiguous(PetscSubcomm psubcomm)
   ierr = MPI_Comm_free(&dupcomm);CHKERRQ(ierr);
   ierr = MPI_Comm_free(&subcomm);CHKERRQ(ierr);
 
-  psubcomm->color = color;
-  psubcomm->type  = PETSC_SUBCOMM_CONTIGUOUS;
+  psubcomm->color   = color;
+  psubcomm->subsize = subsize;
+  psubcomm->type    = PETSC_SUBCOMM_CONTIGUOUS;
   PetscFunctionReturn(0);
 }
 
@@ -325,7 +327,6 @@ PetscErrorCode PetscSubcommCreate_interlaced(PetscSubcomm psubcomm)
     }
     duprank += subsize[i]; j++;
   }
-  ierr = PetscFree(subsize);CHKERRQ(ierr);
 
   /* create dupcomm with same size as comm, but its rank, duprank, maps subcomm's contiguously into dupcomm */
   ierr = MPI_Comm_split(comm,0,duprank,&dupcomm);CHKERRQ(ierr);
@@ -342,8 +343,9 @@ PetscErrorCode PetscSubcommCreate_interlaced(PetscSubcomm psubcomm)
   ierr = MPI_Comm_free(&dupcomm);CHKERRQ(ierr);
   ierr = MPI_Comm_free(&subcomm);CHKERRQ(ierr);
 
-  psubcomm->color = color;
-  psubcomm->type  = PETSC_SUBCOMM_INTERLACED;
+  psubcomm->color   = color;
+  psubcomm->subsize = subsize;
+  psubcomm->type    = PETSC_SUBCOMM_INTERLACED;
   PetscFunctionReturn(0);
 }
 
