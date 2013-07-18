@@ -263,13 +263,15 @@ PetscErrorCode DMClone_DA(DM dm, DM *newdm)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  switch (da->dim) {
-  case 2:
-    ierr = DMDACreate2d(PetscObjectComm((PetscObject) dm), da->bx, da->by, da->stencil_type, da->M, da->N, da->m, da->n, da->w, da->s, da->lx, da->ly, newdm);CHKERRQ(ierr);
-    break;
-  default:
-    SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_OUTOFRANGE, "Cannot clone DA of dimension %d", da->dim);
-  }
+  ierr = DMSetType(*newdm, DMDA);CHKERRQ(ierr);
+  ierr = DMDASetDim(*newdm, da->dim);CHKERRQ(ierr);
+  ierr = DMDASetSizes(*newdm, da->M, da->N, da->P);CHKERRQ(ierr);
+  ierr = DMDASetNumProcs(*newdm, da->m, da->n, da->p);CHKERRQ(ierr);
+  ierr = DMDASetBoundaryType(*newdm, da->bx, da->by, da->bz);CHKERRQ(ierr);
+  ierr = DMDASetDof(*newdm, da->w);CHKERRQ(ierr);
+  ierr = DMDASetStencilType(*newdm, da->stencil_type);CHKERRQ(ierr);
+  ierr = DMDASetStencilWidth(*newdm, da->s);CHKERRQ(ierr);
+  ierr = DMDASetOwnershipRanges(*newdm, da->lx, da->ly, da->lz);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
