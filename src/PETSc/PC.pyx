@@ -323,6 +323,14 @@ cdef class PC(Object):
             CHKERR( PetscFree(p) )
         return subksp
 
+    # --- KSP ---
+
+    def getKSP(self):
+        cdef KSP ksp = KSP()
+        CHKERR( PCKSPGetKSP(self.pc, &ksp.ksp) )
+        PetscINCREF(ksp.obj)
+        return ksp
+
 # --------------------------------------------------------------------
 
 del PCType

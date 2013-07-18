@@ -138,6 +138,8 @@ cdef extern from * nogil:
     #int PCFieldSplitSchurPrecondition(PetscPC,PCFieldSplitSchurPreType,PetscMat)
     #int PCFieldSplitGetSchurBlocks(PetscPC,PetscMat*,PetscMat*,PetscMat*,PetscMat*)
 
+    int PCKSPGetKSP(PetscPC,PetscKSP*)
+
 # --------------------------------------------------------------------
 
 cdef extern from "libpetsc4py.h":
