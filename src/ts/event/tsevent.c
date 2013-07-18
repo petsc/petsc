@@ -11,6 +11,10 @@
    Input Parameters:
 +  ts - the TS context obtained from TSCreate()
 .  nevents - number of local events
+.  direction - direction of zero crossing to be detected. -1 => Zero crossing in negative direction,
+               +1 => Zero crossing in positive direction, 0 => both ways (one for each event)
+.  terminate - flag to indicate whether time stepping should be terminated after
+               event is detected (one for each event)
 .  eventmonitor - event monitoring routine
 .  postevent - [optional] post-event function
 -  mectx - [optional] user-defined context for private data for the
@@ -18,7 +22,7 @@
               context is desired)
 
    Calling sequence of eventmonitor:
-   PetscErrorCode EventMonitor(TS ts,PetscReal t,Vec U,PetscScalar *fvalue,PetscInt *direction,PetscBool *terminate,void* mectx)
+   PetscErrorCode EventMonitor(TS ts,PetscReal t,Vec U,PetscScalar *fvalue,void* mectx)
 
    Input Parameters:
 +  ts  - the TS context
@@ -27,10 +31,7 @@
 -  ctx - [optional] context passed with eventmonitor
 
    Output parameters:
-+  fvalue    - function value of events at time t
-.  direction - direction of zero crossing to be detected. -1 => Zero crossing in negative direction,
-               +1 => Zero crossing in positive direction, 0 => both ways
--  terminate - terminate time stepping after event is detected.
+.  fvalue    - function value of events at time t
                
    Calling sequence of postevent:
    PetscErrorCode PostEvent(TS ts,PetscInt nevents_zero, PetscInt events_zero, PetscReal t,Vec U,void* ctx)
@@ -49,20 +50,24 @@
 
 .seealso: TSCreate(), TSSetTimeStep(), TSSetConvergedReason()
 @*/
-PetscErrorCode TSSetEventMonitor(TS ts,PetscInt nevents,PetscErrorCode (*eventmonitor)(TS,PetscReal,Vec,PetscScalar*,PetscInt*,PetscBool*,void*),PetscErrorCode (*postevent)(TS,PetscInt,PetscInt[],PetscReal,Vec,void*),void *mectx)
+PetscErrorCode TSSetEventMonitor(TS ts,PetscInt nevents,PetscInt *direction,PetscBool *terminate,PetscErrorCode (*eventmonitor)(TS,PetscReal,Vec,PetscScalar*,void*),PetscErrorCode (*postevent)(TS,PetscInt,PetscInt[],PetscReal,Vec,void*),void *mectx)
 {
   PetscErrorCode ierr;
   PetscReal      t;
   Vec            U;
   TSEvent        event;
+  PetscInt       i;
 
   PetscFunctionBegin;
-  ierr = PetscNew(struct _p_TSEvent,&ts->event);CHKERRQ(ierr);
-  event = ts->event;
+  ierr = PetscNew(struct _p_TSEvent,&event);CHKERRQ(ierr);
   ierr = PetscMalloc(nevents*sizeof(PetscScalar),&event->fvalue);CHKERRQ(ierr);
   ierr = PetscMalloc(nevents*sizeof(PetscScalar),&event->fvalue_prev);CHKERRQ(ierr);
-  ierr = PetscMalloc(nevents*sizeof(PetscBool),&event->terminate);CHKERRQ(ierr);
   ierr = PetscMalloc(nevents*sizeof(PetscInt),&event->direction);CHKERRQ(ierr);
+  ierr = PetscMalloc(nevents*sizeof(PetscInt),&event->terminate);CHKERRQ(ierr);
+  for (i=0; i < nevents; i++) {
+    event->direction[i] = direction[i];
+    event->terminate[i] = terminate[i];
+  }
   ierr = PetscMalloc(nevents*sizeof(PetscInt),&event->events_zero);CHKERRQ(ierr);
   event->monitor = eventmonitor;
   event->postevent = postevent;
@@ -73,13 +78,14 @@ PetscErrorCode TSSetEventMonitor(TS ts,PetscInt nevents,PetscErrorCode (*eventmo
   ierr = TSGetTimeStep(ts,&event->initial_timestep);CHKERRQ(ierr);
   ierr = TSGetSolution(ts,&U);CHKERRQ(ierr);
   event->ptime_prev = t;
-  ierr = (*event->monitor)(ts,t,U,event->fvalue_prev,event->direction,event->terminate,mectx);CHKERRQ(ierr);
+  ierr = (*event->monitor)(ts,t,U,event->fvalue_prev,mectx);CHKERRQ(ierr);
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"TS Event options","");CHKERRQ(ierr);
   {
     event->tol = 1.0e-6;
     ierr = PetscOptionsReal("-ts_event_tol","","",event->tol,&event->tol,NULL);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  ts->event = event;
   PetscFunctionReturn(0);
 }
 
@@ -119,8 +125,8 @@ PetscErrorCode TSEventMonitorDestroy(TSEvent *event)
   PetscFunctionBegin;
   ierr = PetscFree((*event)->fvalue);CHKERRQ(ierr);
   ierr = PetscFree((*event)->fvalue_prev);CHKERRQ(ierr);
-  ierr = PetscFree((*event)->terminate);CHKERRQ(ierr);
   ierr = PetscFree((*event)->direction);CHKERRQ(ierr);
+  ierr = PetscFree((*event)->terminate);CHKERRQ(ierr);
   ierr = PetscFree((*event)->events_zero);CHKERRQ(ierr);
   ierr = PetscFree(*event);CHKERRQ(ierr);
   *event = NULL;
@@ -159,7 +165,7 @@ PetscErrorCode TSEventMonitor(TS ts)
 
   event->nevents_zero = 0;
 
-  ierr = (*event->monitor)(ts,t,U,event->fvalue,event->direction,event->terminate,event->monitorcontext);CHKERRQ(ierr);
+  ierr = (*event->monitor)(ts,t,U,event->fvalue,event->monitorcontext);CHKERRQ(ierr);
   if (event->status != TSEVENT_NONE) {
     for (i=0; i < event->nevents; i++) {
       if (PetscAbsScalar(event->fvalue[i]) < event->tol) {
@@ -184,16 +190,35 @@ PetscErrorCode TSEventMonitor(TS ts)
   }
 
   for (i = 0; i < event->nevents; i++) {
-    if ((event->direction[i] < 0 && PetscSign(PetscRealPart(event->fvalue[i])) < 0 && (PetscSign(PetscRealPart(event->fvalue[i])) != PetscSign(PetscRealPart(event->fvalue_prev[i])))) || \
-	(event->direction[i] > 0 && PetscSign(PetscRealPart(event->fvalue[i])) > 0 && (PetscSign(PetscRealPart(event->fvalue[i])) != PetscSign(PetscRealPart(event->fvalue_prev[i])))) || \
-	(event->direction[i] = 0 && (PetscSign(PetscRealPart(event->fvalue[i])) != PetscSign(PetscRealPart(event->fvalue_prev[i]))))) {
-
-      event->status = TSEVENT_LOCATED_INTERVAL;
-      rollback = 1;
-      /* Compute linearly interpolated new time step */
-      dt = PetscMin(dt,PetscRealPart(-event->fvalue_prev[i]*(t - event->ptime_prev)/(event->fvalue[i] - event->fvalue_prev[i])));
+    PetscInt fvalue_sign,fvalueprev_sign;
+    fvalue_sign = PetscSign(PetscRealPart(event->fvalue[i]));
+    fvalueprev_sign = PetscSign(PetscRealPart(event->fvalue_prev[i]));
+    if (fvalue_sign != fvalueprev_sign) {
+      switch (event->direction[i]) {
+      case -1:
+	if (fvalue_sign < 0) {
+	  rollback = 1;
+	  /* Compute linearly interpolated new time step */
+	  dt = PetscMin(dt,PetscRealPart(-event->fvalue_prev[i]*(t - event->ptime_prev)/(event->fvalue[i] - event->fvalue_prev[i])));
+	}
+	break;
+      case 1:
+	if (fvalue_sign > 0) { 
+	  rollback = 1;
+	  /* Compute linearly interpolated new time step */
+	  dt = PetscMin(dt,PetscRealPart(-event->fvalue_prev[i]*(t - event->ptime_prev)/(event->fvalue[i] - event->fvalue_prev[i])));
+	}
+	break;
+      case 0: 
+	rollback = 1; 
+	/* Compute linearly interpolated new time step */
+	dt = PetscMin(dt,PetscRealPart(-event->fvalue_prev[i]*(t - event->ptime_prev)/(event->fvalue[i] - event->fvalue_prev[i])));
+	break;
+      }
     }
   }
+  if (rollback) event->status = TSEVENT_LOCATED_INTERVAL;
+  
   in[0] = event->status;
   in[1] = rollback;
   ierr = MPI_Allreduce(in,out,2,MPIU_INT,MPI_MAX,((PetscObject)ts)->comm);CHKERRQ(ierr);

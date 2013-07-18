@@ -20,7 +20,7 @@ typedef struct {
 
 #undef __FUNCT__
 #define __FUNCT__ "EventFunction"
-PetscErrorCode EventFunction(TS ts,PetscReal t,Vec U,PetscScalar *fvalue,PetscInt *direction,PetscBool *terminate,void *ctx)
+PetscErrorCode EventFunction(TS ts,PetscReal t,Vec U,PetscScalar *fvalue,void *ctx)
 {
   AppCtx         *app=(AppCtx*)ctx;
   PetscErrorCode ierr;
@@ -30,12 +30,8 @@ PetscErrorCode EventFunction(TS ts,PetscReal t,Vec U,PetscScalar *fvalue,PetscIn
   /* Event for ball height */
   ierr = VecGetArray(U,&u);CHKERRQ(ierr);
   fvalue[0] = u[0];
-  if (terminate) terminate[0] = PETSC_FALSE;
-  if (direction) direction[0] = -1;
   /* Event for number of bounces */
   fvalue[1] = app->maxbounces - app->nbounces;
-  if (direction) direction[1] = -1;
-  if (terminate) terminate[1] = PETSC_TRUE;
   ierr = VecRestoreArray(U,&u);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -133,6 +129,8 @@ int main(int argc,char **argv)
   PetscInt       n = 2;
   PetscScalar    *u;
   AppCtx         app;
+  PetscInt       direction[2];
+  PetscBool      terminate[2];
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
@@ -186,7 +184,10 @@ int main(int argc,char **argv)
   ierr = TSSetInitialTimeStep(ts,0.0,0.1);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
   
-  ierr = TSSetEventMonitor(ts,2,EventFunction,PostEventFunction,(void*)&app);CHKERRQ(ierr);
+  /* Set directions and terminate flags for the two events */
+  direction[0] = -1;            direction[1] = -1;
+  terminate[0] = PETSC_FALSE;   terminate[1] = PETSC_TRUE;
+  ierr = TSSetEventMonitor(ts,2,direction,terminate,EventFunction,PostEventFunction,(void*)&app);CHKERRQ(ierr);
 
   TSAdapt adapt;
   ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);

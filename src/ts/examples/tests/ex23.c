@@ -17,7 +17,7 @@ static char help[] = "Parallel bouncing ball example to test TS event feature.\n
 
 #undef __FUNCT__
 #define __FUNCT__ "EventFunction"
-PetscErrorCode EventFunction(TS ts,PetscReal t,Vec U,PetscScalar *fvalue,PetscInt *direction,PetscBool *terminate,void *ctx)
+PetscErrorCode EventFunction(TS ts,PetscReal t,Vec U,PetscScalar *fvalue,void *ctx)
 {
   PetscErrorCode ierr;
   PetscScalar    *u;
@@ -26,8 +26,6 @@ PetscErrorCode EventFunction(TS ts,PetscReal t,Vec U,PetscScalar *fvalue,PetscIn
   /* Event for ball height */
   ierr = VecGetArray(U,&u);CHKERRQ(ierr);
   fvalue[0] = u[0];
-  terminate[0] = PETSC_FALSE;
-  direction[0] = -1;
   ierr = VecRestoreArray(U,&u);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -124,8 +122,9 @@ int main(int argc,char **argv)
   Mat            A;             /* Jacobian matrix */
   PetscErrorCode ierr;
   PetscMPIInt    rank;
-  PetscInt       n = 2;
+  PetscInt       n = 2,direction=-1;
   PetscScalar    *u;
+  PetscBool      terminate=PETSC_FALSE;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
@@ -170,7 +169,7 @@ int main(int argc,char **argv)
   ierr = TSSetInitialTimeStep(ts,0.0,0.1);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
   
-  ierr = TSSetEventMonitor(ts,1,EventFunction,PostEventFunction,NULL);CHKERRQ(ierr);
+  ierr = TSSetEventMonitor(ts,1,&direction,&terminate,EventFunction,PostEventFunction,NULL);CHKERRQ(ierr);
 
   TSAdapt adapt;
   ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
