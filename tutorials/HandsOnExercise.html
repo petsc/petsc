@@ -1,0 +1,67 @@
+<html><head><title>PETSc Hands On</title></head><body>
+
+<center>
+<h2> PETSc Hands On</h2>
+</center>
+<p>
+PETSc comes with a large number of example codes to illustrate usage. There three main sets are in
+
+<ul>
+<li> ODEs - <a href="../src/ts/examples/tutorials/index.html">src/ts/examples/tutorials</a>,</li>
+<li> Nonlinear problems - <a href="../src/snes/examples/tutorials/index.html">src/snes/examples/tutorials</a></li>
+<li> Linear problems - <a href="../src/ksp/ksp/examples/tutorials/index.html">src/ksp/ksp/examples/tutorials</a></li>
+</ul>
+
+Below, we provide a walkthrough of a few of them to demonstrate different
+aspects of the library.  
+</p>
+
+<p>
+Command-line
+help is also available for most of the examples through the '-help' option. </p>
+
+<p>
+The numerical results from most of the example codes can be examined using
+the <a href="http://glvis.googlecode.com">GLVis</a> visualization tool.  This is
+done to illustrate one possible way to use the linear system solution provided
+by hypre.  In practice, users may do any number of things with the solution,
+including visualizing it with other packages or simply passing it along to
+another component of the simulation code.
+</p>
+
+<!--------------------------------------------------------------------------->
+
+<h2>Example 1: Nonlinear ODE arising from a time-dependent one dimensional PDE</h2>
+
+<p>WHAT THIS EXAMPLE DEMONSTRATES:</p>
+<ul>
+<li>Handing a simple structured grid</li>
+<li>Providing an ODE to the solver</li>
+</ul>
+
+<p>FURTHER DETAILS:</p>
+<ul>
+<li><a href="../src/ts/examples/tutorials/ex2.c.html">Mathematical discription of the problem</a></li>
+<li><a href="../src/ts/examples/tutorials/ex2.c.html#line41">the source code</a></li>
+</ul>
+
+<p>DO THE FOLLOWING:</p>
+<ul>
+
+<li>
+Run a 16 processor example on a 132x132 grid and a 4x4 processor grid (33x33
+grid on each processor) with the SMG multigrid solver
+<pre>
+     mpirun -np 16 ex3 -n 33 -solver 0 -v 1 1 -vis
+</pre>
+<a href="ex3out-16.html">[Expected output]</a><br><br>
+</li>
+
+
+</ul>
+
+
+<!--------------------------------------------------------------------------->
+
+
+</body></html>
