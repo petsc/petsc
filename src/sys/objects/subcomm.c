@@ -38,6 +38,11 @@ PetscErrorCode PetscSubcommSetFromOptions(PetscSubcomm psubcomm)
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"PetscSubcommType %D is not supported yet",type);
     }
   }
+
+  ierr = PetscOptionsHasName(NULL, "-psubcomm_view", &flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = PetscSubcommView(psubcomm,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
