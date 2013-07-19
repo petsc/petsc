@@ -6781,8 +6781,6 @@ PetscErrorCode DMPlexVecSetClosure(DM dm, PetscSection section, Vec v, PetscInt 
   if (numFields > 31) SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Number of fields %D limited to 31", numFields);
   ierr = PetscMemzero(offsets, 32 * sizeof(PetscInt));CHKERRQ(ierr);
   if (depth == 1 && numFields < 2 && mode == ADD_VALUES) {
-    void          (*comb)(PetscScalar *, PetscScalar);
-    PetscBool       hasBC;
     const PetscInt *cone, *coneO;
 
     ierr = DMPlexGetConeSize(dm, point, &numPoints);CHKERRQ(ierr);
