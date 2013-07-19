@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import os,sys
 sys.path.append(os.path.join(os.environ['PETSC_DIR'], 'config'))
+sys.path.append(os.getcwd())
 from builder2 import buildExample
 from benchmarkBatch import generateBatchScript
 
@@ -72,11 +73,14 @@ class PETScExample(object):
     return ' '.join(a)
 
   def run(self, numProcs = 1, log = True, **opts):
-    if self.petsc.mpiexec() is None:
-      cmd = self.petsc.example(self.num)
-    else:
-      cmd = ' '.join([self.petsc.mpiexec(), '-n', str(numProcs), self.petsc.example(self.num)])
-    cmd += ' '+self.optionsToString(**self.opts)+' '+self.optionsToString(**opts)
+    cmd = ''
+    if self.petsc.mpiexec() is not None:
+      cmd += self.petsc.mpiexec() + ' '
+      numProcs = os.environ.get('NUM_RANKS', numProcs)
+      cmd += ' -n ' + str(numProcs) + ' '
+      if os.environ.has_key('PE_HOSTFILE'):
+        cmd += ' -hostfile hostfile '
+    cmd += ' '.join([self.petsc.example(self.num), self.optionsToString(**self.opts), self.optionsToString(**opts)])
     if 'batch' in opts and opts['batch']:
       del opts['batch']
       filename = generateBatchScript(self.num, numProcs, 120, ' '+self.optionsToString(**self.opts)+' '+self.optionsToString(**opts))
@@ -109,9 +113,9 @@ def processSummary(moduleName, defaultStage, eventNames, times, events):
       if not name in events:
         events[name] = []
       try:
-        events[name].append((stage.event[name].Time[0], stage.event[name].Flops[0]/(stage.event[name].Time[0] * 1e6)))
+        events[name].append((max(stage.event[name].Time), sum(stage.event[name].Flops)/(max(stage.event[name].Time) * 1e6)))
       except ZeroDivisionError:
-        events[name].append((stage.event[name].Time[0], 0))
+        events[name].append((max(stage.event[name].Time), 0))
   return
 
 def plotTime(library, num, eventNames, sizes, times, events):
@@ -181,6 +185,34 @@ def plotEventFlop(library, num, eventNames, sizes, times, events, filename = Non
   semilogy(*data)
   title('Performance on '+library+' Example '+str(num))
   xlabel('Number of Dof')
+  ylabel('Computation Rate (GF/s)')
+  legend(names, 'upper left', shadow = True)
+  if filename is None:
+    show()
+  else:
+    savefig(filename)
+  return
+
+def plotEventScaling(library, num, eventNames, procs, events, filename = None):
+  from pylab import legend, plot, savefig, semilogy, show, title, xlabel, ylabel
+  import numpy as np
+
+  arches = procs.keys()
+  bs     = events[arches[0]].keys()[0]
+  data   = []
+  names  = []
+  for arch, style in zip(arches, ['-', ':']):
+    for event, color in zip(eventNames, ['b', 'g', 'r', 'y']):
+      if event in events[arch][bs]:
+        names.append(arch+'-'+str(bs)+' '+event)
+        data.append(procs[arch][bs])
+        data.append(1e-3*np.array(events[arch][bs][event])[:,1])
+        data.append(color+style)
+      else:
+        print 'Could not find %s in %s-%d events' % (event, arch, bs)
+  plot(*data)
+  title('Performance on '+library+' Example '+str(num))
+  xlabel('Number of Processors')
   ylabel('Computation Rate (GF/s)')
   legend(names, 'upper left', shadow = True)
   if filename is None:
@@ -286,11 +318,12 @@ def plotSummaryBar(library, num, eventNames, sizes, times, events):
   return
 
 def getDMComplexSize(dim, out):
-  '''Retrieves the number of cells from '''
+  '''Retrieves the number of cells from -dm_view output'''
   size = 0
   for line in out.split('\n'):
     if line.strip().startswith(str(dim)+'-cells: '):
-      size = int(line.strip()[9:])
+      sizes = line.strip()[9:].split()
+      size  = sum(map(int, sizes))
       break
   return size
 
@@ -313,7 +346,8 @@ def run_DMComplex(ex, name, opts, args, sizes, times, events, log=True):
   for numBlock in [2**i for i in map(int, args.blockExp)]:
     opts['gpu_blocks'] = numBlock
     # Generate new block size
-    cmd = './bin/pythonscripts/PetscGenerateFEMQuadrature.py %d %d %d %d %s %s.h' % (args.dim, args.order, numComp, numBlock, args.operator, os.path.splitext(source[0])[0])
+    cmd = os.environ.get('PETSC_DIR', '.')
+    cmd += '/bin/pythonscripts/PetscGenerateFEMQuadrature.py %d %d %d %d %s %s.h' % (args.dim, args.order, numComp, numBlock, args.operator, os.path.splitext(source[0])[0])
     print(cmd)
     ret = os.system('python '+cmd)
     args.files = ['['+','.join(source)+']']
