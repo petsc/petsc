@@ -11,7 +11,7 @@
 #endif
 
 #if defined(PETSC_HAVE_FORTRAN_UNDERSCORE_UNDERSCORE)
-#  defined pcmgresidual_default_       pcmgresidual_default__
+#  define pcmgresidual_default_       pcmgresidual_default__
 #endif
 
 typedef PetscErrorCode (*MVVVV)(Mat,Vec,Vec,Vec);
