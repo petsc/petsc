@@ -2305,6 +2305,7 @@ PETSC_EXTERN PetscErrorCode PetscSubcommSetNumber(PetscSubcomm,PetscInt);
 PETSC_EXTERN PetscErrorCode PetscSubcommSetType(PetscSubcomm,PetscSubcommType);
 PETSC_EXTERN PetscErrorCode PetscSubcommSetTypeGeneral(PetscSubcomm,PetscMPIInt,PetscMPIInt,PetscMPIInt);
 PETSC_EXTERN PetscErrorCode PetscSubcommView(PetscSubcomm,PetscViewer);
+PETSC_EXTERN PetscErrorCode PetscSubcommSetFromOptions(PetscSubcomm);
 
 /*S
    PetscSegBuffer - a segmented extendable buffer

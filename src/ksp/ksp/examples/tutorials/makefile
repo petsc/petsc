@@ -443,6 +443,11 @@ runex5_redundant_3:
 	   if (${DIFF} output/ex5_redundant.out ex5.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex5_redundant_3, diffs above \n========================================="; fi; \
 	   ${RM} -f ex5.tmp
+runex5_redundant_4:
+	-@${MPIEXEC} -n 5 ./ex5 -pc_type redundant -pc_redundant_number 3 -redundant_ksp_type gmres -redundant_pc_type jacobi -ksp_monitor_short -ksp_rtol 1.e-4 -psubcomm_type contiguous > ex5.tmp 2>&1;   \
+	   if (${DIFF} output/ex5_redundant.out ex5.tmp) then true; \
+	   else echo ${PWD} ; echo "Possible problem with with ex5_redundant_4, diffs above \n========================================="; fi; \
+	   ${RM} -f ex5.tmp
 runex6f:
 	-@${MPIEXEC} -n 1 ./ex6f -pc_type jacobi -mat_view -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex6f_1.tmp 2>&1; \
 	   if (${DIFF} output/ex6f_1.out ex6f_1.tmp) then true; \
@@ -1119,7 +1124,7 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PETSc run
                                  runex2_4 runex2_bjacobi runex2_bjacobi_2 runex2_bjacobi_3 runex2_specest_1 runex2_specest_2 \
                                  runex2_chebyest_1 runex2_chebyest_2 runex2_chebyest_3 runex2_chebyest_4 runex2_fbcgs runex2_fbcgs_2 ex2.rm \
                                  ex7.PETSc runex7 ex7.rm ex5.PETSc runex5 runex5_2 \
-                                 runex5_redundant_0 runex5_redundant_1 runex5_redundant_2 runex5_redundant_3 ex5.rm \
+                                 runex5_redundant_0 runex5_redundant_1 runex5_redundant_2 runex5_redundant_3 runex5_redundant_4 ex5.rm \
                                  ex8g.PETSc runex8g_1 runex8g_2 runex8g_3 ex8g.rm \
                                  ex9.PETSc runex9 ex9.rm ex12.PETSc runex12 ex12.rm ex13.PETSc runex13 ex13.rm \
                                  ex15.PETSc runex15 ex15.rm ex16.PETSc runex16 ex16.rm \
