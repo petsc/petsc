@@ -315,11 +315,12 @@ def plotSummaryBar(library, num, eventNames, sizes, times, events):
   return
 
 def getDMComplexSize(dim, out):
-  '''Retrieves the number of cells from '''
+  '''Retrieves the number of cells from -dm_view output'''
   size = 0
   for line in out.split('\n'):
     if line.strip().startswith(str(dim)+'-cells: '):
-      size = int(line.strip()[9:])
+      sizes = line.strip()[9:].split()
+      size  = sum(map(int, sizes))
       break
   return size
 
