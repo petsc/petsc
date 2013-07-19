@@ -48,7 +48,7 @@ static PetscErrorCode PCView_Redundant(PC pc,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-extern PetscErrorCode MatGetRedundantMatrix_MPIAIJ_interlaced(Mat,PetscInt,PetscSubcomm,MatReuse,Mat*); /* rm later! */
+extern PetscErrorCode MatGetRedundantMatrix_MPIAIJ_psubcomm(Mat,PetscInt,PetscSubcomm,MatReuse,Mat*); /* rm later! */
 
 #undef __FUNCT__
 #define __FUNCT__ "PCSetUp_Redundant"
@@ -75,6 +75,9 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
       ierr = PetscSubcommCreate(comm,&red->psubcomm);CHKERRQ(ierr);
       ierr = PetscSubcommSetNumber(red->psubcomm,red->nsubcomm);CHKERRQ(ierr);
       ierr = PetscSubcommSetType(red->psubcomm,PETSC_SUBCOMM_INTERLACED);CHKERRQ(ierr);
+      /* enable runtime switch of psubcomm type, e.g., '-psubcomm_type contiguous */
+      ierr = PetscSubcommSetFromOptions(red->psubcomm);CHKERRQ(ierr);
+
       ierr = PetscLogObjectMemory(pc,sizeof(PetscSubcomm));CHKERRQ(ierr);
 
       /* create a new PC that processors in each subcomm have copy of */
@@ -96,20 +99,22 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
 
     if (red->useparallelmat) {
       /* grab the parallel matrix and put it into processors of a subcomminicator */
-      ierr = MatGetRedundantMatrix_MPIAIJ_interlaced(pc->pmat,red->psubcomm->n,red->psubcomm,MAT_INITIAL_MATRIX,&red->pmats);CHKERRQ(ierr);
+      ierr = MatGetRedundantMatrix_MPIAIJ_psubcomm(pc->pmat,red->psubcomm->n,red->psubcomm,MAT_INITIAL_MATRIX,&red->pmats);CHKERRQ(ierr);
       ierr = KSPSetOperators(red->ksp,red->pmats,red->pmats,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
        
       /* get working vectors xsub and ysub */
       ierr = MatGetVecs(red->pmats,&red->xsub,&red->ysub);CHKERRQ(ierr);
 
-      /* create  working vectors xdup and ydup. ydup has empty local arrays because ysub's arrays will be place into it.
+      /* create working vectors xdup and ydup.
+       xdup concatenates all xsub's contigously to form a mpi vector over dupcomm  (see PetscSubcommCreate_interlaced())
+       ydup concatenates all ysub and has empty local arrays because ysub's arrays will be place into it.
        Note: we use communicator dupcomm, not PetscObjectComm((PetscObject)pc)! */
       ierr = MatGetLocalSize(red->pmats,&mloc_sub,NULL);CHKERRQ(ierr);
       ierr = VecCreateMPI(red->psubcomm->dupparent,mloc_sub,PETSC_DECIDE,&red->xdup);CHKERRQ(ierr);
       ierr = VecCreateMPIWithArray(red->psubcomm->dupparent,1,mloc_sub,PETSC_DECIDE,NULL,&red->ydup);CHKERRQ(ierr);
 
-      /* create vecscatters for PETSC_SUBCOMM_INTERLACED! */
-      if (!red->scatterin) {
+      /* create vecscatters */
+      if (!red->scatterin) { /* efficiency of scatterin is independent from psubcomm_type! */
         IS       is1,is2;
         PetscInt *idx1,*idx2,i,j,k;
 
@@ -131,6 +136,7 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
         ierr = ISDestroy(&is1);CHKERRQ(ierr);
         ierr = ISDestroy(&is2);CHKERRQ(ierr);
 
+        /* efficiency of scatterout depends on psubcomm_type! Impl below is good for PETSC_SUBCOMM_INTERLACED */
         ierr = ISCreateStride(comm,mlocal,mstart+ red->psubcomm->color*M,1,&is1);CHKERRQ(ierr);
         ierr = ISCreateStride(comm,mlocal,mstart,1,&is2);CHKERRQ(ierr);
         ierr = VecScatterCreate(red->xdup,is1,x,is2,&red->scatterout);CHKERRQ(ierr);
@@ -154,7 +160,7 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
       } else {
         reuse = MAT_REUSE_MATRIX;
       }
-      ierr = MatGetRedundantMatrix_MPIAIJ_interlaced(pc->pmat,red->psubcomm->n,red->psubcomm,reuse,&red->pmats);CHKERRQ(ierr);
+      ierr = MatGetRedundantMatrix_MPIAIJ_psubcomm(pc->pmat,red->psubcomm->n,red->psubcomm,reuse,&red->pmats);CHKERRQ(ierr);
       ierr = KSPSetOperators(red->ksp,red->pmats,red->pmats,pc->flag);CHKERRQ(ierr);
     } else { /* !red->useparallelmat */
       ierr = KSPSetOperators(red->ksp,pc->mat,pc->pmat,pc->flag);CHKERRQ(ierr);
