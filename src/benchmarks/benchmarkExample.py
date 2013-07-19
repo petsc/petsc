@@ -189,6 +189,34 @@ def plotEventFlop(library, num, eventNames, sizes, times, events, filename = Non
     savefig(filename)
   return
 
+def plotEventScaling(library, num, eventNames, procs, events, filename = None):
+  from pylab import legend, plot, savefig, semilogy, show, title, xlabel, ylabel
+  import numpy as np
+
+  arches = procs.keys()
+  bs     = events[arches[0]].keys()[0]
+  data   = []
+  names  = []
+  for arch, style in zip(arches, ['-', ':']):
+    for event, color in zip(eventNames, ['b', 'g', 'r', 'y']):
+      if event in events[arch][bs]:
+        names.append(arch+'-'+str(bs)+' '+event)
+        data.append(procs[arch][bs])
+        data.append(1e-3*np.array(events[arch][bs][event])[:,1])
+        data.append(color+style)
+      else:
+        print 'Could not find %s in %s-%d events' % (event, arch, bs)
+  plot(*data)
+  title('Performance on '+library+' Example '+str(num))
+  xlabel('Number of Processors')
+  ylabel('Computation Rate (GF/s)')
+  legend(names, 'upper left', shadow = True)
+  if filename is None:
+    show()
+  else:
+    savefig(filename)
+  return
+
 def plotSummaryLine(library, num, eventNames, sizes, times, events):
   from pylab import legend, plot, show, title, xlabel, ylabel
   import numpy as np
