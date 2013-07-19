@@ -73,11 +73,14 @@ class PETScExample(object):
     return ' '.join(a)
 
   def run(self, numProcs = 1, log = True, **opts):
-    if self.petsc.mpiexec() is None:
-      cmd = self.petsc.example(self.num)
-    else:
-      cmd = ' '.join([self.petsc.mpiexec(), '-n', str(numProcs), self.petsc.example(self.num)])
-    cmd += ' '+self.optionsToString(**self.opts)+' '+self.optionsToString(**opts)
+    cmd = ''
+    if self.petsc.mpiexec() is not None:
+      cmd += self.petsc.mpiexec() + ' '
+      numProcs = os.environ.get('NUM_RANKS', numProcs)
+      cmd += ' -n ' + str(numProcs) + ' '
+      if os.environ.has_key('PE_HOSTFILE'):
+        cmd += ' -hostfile hostfile '
+    cmd += ' '.join([self.petsc.example(self.num), self.optionsToString(**self.opts), self.optionsToString(**opts)])
     if 'batch' in opts and opts['batch']:
       del opts['batch']
       filename = generateBatchScript(self.num, numProcs, 120, ' '+self.optionsToString(**self.opts)+' '+self.optionsToString(**opts))
