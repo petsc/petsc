@@ -1264,9 +1264,6 @@ PetscErrorCode DMSetUp_Plex(DM dm)
 #define __FUNCT__ "DMCreateSubDM_Plex"
 PetscErrorCode DMCreateSubDM_Plex(DM dm, PetscInt numFields, PetscInt fields[], IS *is, DM *subdm)
 {
-  PetscSection   section, sectionGlobal;
-  PetscInt      *subIndices;
-  PetscInt       subSize = 0, subOff = 0, nF, f, pStart, pEnd, p;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
