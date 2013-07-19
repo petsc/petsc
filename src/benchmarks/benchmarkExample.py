@@ -113,9 +113,9 @@ def processSummary(moduleName, defaultStage, eventNames, times, events):
       if not name in events:
         events[name] = []
       try:
-        events[name].append((stage.event[name].Time[0], stage.event[name].Flops[0]/(stage.event[name].Time[0] * 1e6)))
+        events[name].append((max(stage.event[name].Time), sum(stage.event[name].Flops)/(max(stage.event[name].Time) * 1e6)))
       except ZeroDivisionError:
-        events[name].append((stage.event[name].Time[0], 0))
+        events[name].append((max(stage.event[name].Time), 0))
   return
 
 def plotTime(library, num, eventNames, sizes, times, events):
