@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import os,sys
 sys.path.append(os.path.join(os.environ['PETSC_DIR'], 'config'))
+sys.path.append(os.getcwd())
 from builder2 import buildExample
 from benchmarkBatch import generateBatchScript
 
