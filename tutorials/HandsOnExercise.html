@@ -12,56 +12,118 @@ PETSc comes with a large number of example codes to illustrate usage. There thre
 <li> Linear problems - <a href="../src/ksp/ksp/examples/tutorials/index.html">src/ksp/ksp/examples/tutorials</a></li>
 </ul>
 
-Below, we provide a walkthrough of a few of them to demonstrate different
-aspects of the library.  
-</p>
-
-<p>
-Command-line
-help is also available for most of the examples through the '-help' option. </p>
-
-<p>
-The numerical results from most of the example codes can be examined using
-the <a href="http://glvis.googlecode.com">GLVis</a> visualization tool.  This is
-done to illustrate one possible way to use the linear system solution provided
-by hypre.  In practice, users may do any number of things with the solution,
-including visualizing it with other packages or simply passing it along to
-another component of the simulation code.
-</p>
-
 <!--------------------------------------------------------------------------->
 
 <h2>Example 1: Nonlinear ODE arising from a time-dependent one dimensional PDE</h2>
 
 <p>WHAT THIS EXAMPLE DEMONSTRATES:</p>
 <ul>
-<li>Handing a simple structured grid</li>
-<li>Providing an ODE to the solver</li>
+  <li>Using command line options</li>
+  <li>Handling a simple structured grid</li>
+  <li>Using the ODE integrator</li>
+  <li>Using call-back functions</li>
+  <li>Using call-back functions</li>
 </ul>
 
 <p>FURTHER DETAILS:</p>
 <ul>
-<li><a href="../src/ts/examples/tutorials/ex2.c.html">Mathematical discription of the problem</a></li>
-<li><a href="../src/ts/examples/tutorials/ex2.c.html#line41">the source code</a></li>
+  <li><a href="../src/ts/examples/tutorials/ex2.c.html">Mathematical discription of the problem</a></li>
+  <li><a href="../src/ts/examples/tutorials/ex2.c.html#line41">the source code</a></li>
 </ul>
 
 <p>DO THE FOLLOWING:</p>
 <ul>
-
-<li>
-Run a 16 processor example on a 132x132 grid and a 4x4 processor grid (33x33
+  <li> Run a 16 processor example on a 132x132 grid and a 4x4 processor grid (33x33
 grid on each processor) with the SMG multigrid solver
 <pre>
-     mpirun -np 16 ex3 -n 33 -solver 0 -v 1 1 -vis
+     mpirun -np 16 ex1
 </pre>
-<a href="ex3out-16.html">[Expected output]</a><br><br>
-</li>
-
-
+<a href="ex3out-16.html">[Expected output]</a><br><br></li>
 </ul>
 
 
 <!--------------------------------------------------------------------------->
 
+<h2>Example 2: Nonlinear PDE on a structured grid</h2>
+
+<p>WHAT THIS EXAMPLE DEMONSTRATES:</p>
+<ul>
+  <li>Handling a 2d structured grid</li>
+  <li>Using the nonlinear solvers</li>
+</ul>
+
+<p>FURTHER DETAILS:</p>
+<ul>
+  <li><a href="../src/snes/examples/tutorials/ex19.c.html#line24">Mathematical description of the problem</a></li>
+  <li><a href="../src/snes/examples/tutorials/ex19.c.html#line91">main program source code</a></li>
+  <li><a href="../src/snes/examples/tutorials/ex19.c.html#line243">physics source code</a></li>
+</ul>
+
+<p>DO THE FOLLOWING:</p>
+<ul>
+  <li> Run a 16 processor example on a 132x132 grid and a 4x4 processor grid (33x33
+grid on each processor) with the SMG multigrid solver
+<pre>
+     mpirun -np 16 ex19
+</pre>
+<a href="ex3out-16.html">[Expected output]</a><br><br></li>
+</ul>
+
+<!--------------------------------------------------------------------------->
+
+<h2>Example 3: Linear PDE on a structured grid</h2>
+
+<p>WHAT THIS EXAMPLE DEMONSTRATES:</p>
+<ul>
+  <li>Handling a 3d structured grid</li>
+  <li>Controling linear solver options</li>
+  <li>Selecting composible preconditioners</li>
+  <li>Solving a Stokes problem</li>
+</ul>
+
+<p>FURTHER DETAILS:</p>
+<ul>
+  <li><a href="../src/ksp/ksp/examples/tutorials/ex42.c.html">Mathematical discription of the problem</a></li>
+  <li><a href="../src/ksp/ksp/examples/tutorials/ex42.c.html#line2043">main program source code</a></li>
+  <li><a href="../src/ksp/ksp/examples/tutorials/ex42.c.html#line516">physics source code</a></li>
+</ul>
+
+<p>DO THE FOLLOWING:</p>
+<ul>
+  <li> Run a 16 processor example on a 132x132 grid and a 4x4 processor grid (33x33
+grid on each processor) with the SMG multigrid solver
+<pre>
+     mpirun -np 16 ex19
+</pre>
+<a href="ex3out-16.html">[Expected output]</a><br><br></li>
+</ul>
+
+<!--------------------------------------------------------------------------->
+
+<h2>Example 4: Nonlinear time dependent PDE on Unstructured Grid</h2>
+
+<p>WHAT THIS EXAMPLE DEMONSTRATES:</p>
+<ul>
+  <li>Handling unstructured grids</li>
+  <li>Registering your own interchangable physics and algorithm modules</li>
+</ul>
+
+<p>FURTHER DETAILS:</p>
+<ul>
+  <li><a href="../src/ts/examples/tutorials/ex11.c.html">Mathematical discription of the problem</a></li>
+  <li><a href="../src/ts/examples/tutorials/ex11.c.html#line2140">main program source code</a></li>
+  <li><a href="../src/ts/examples/tutorials/ex11.c.html#line242">source code of physics modules</a></li>
+  <li><a href="../src/ts/examples/tutorials/ex11.c.html#line166">source code of limitor algorithm modules</a></li>
+</ul>
+
+<p>DO THE FOLLOWING:</p>
+<ul>
+  <li> Run a 16 processor example on a 132x132 grid and a 4x4 processor grid (33x33
+grid on each processor) with the SMG multigrid solver
+<pre>
+     mpirun -np 16 ex11
+</pre>
+<a href="ex3out-16.html">[Expected output]</a><br><br></li>
+</ul>
 
 </body></html>
