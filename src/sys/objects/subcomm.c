@@ -10,6 +10,36 @@ const char *const PetscSubcommTypes[] = {"GENERAL","CONTIGUOUS","INTERLACED","Pe
 
 extern PetscErrorCode PetscSubcommCreate_contiguous(PetscSubcomm);
 extern PetscErrorCode PetscSubcommCreate_interlaced(PetscSubcomm);
+#undef __FUNCT__
+#define __FUNCT__ "PetscSubcommSetFromOptions"
+PetscErrorCode PetscSubcommSetFromOptions(PetscSubcomm psubcomm)
+{
+  PetscErrorCode ierr;
+  PetscInt       type;
+  const char     *psubcommTypes[3] = {"general","contiguous","interlaced"};
+  PetscBool      flg;
+  
+  PetscFunctionBegin;
+  if (!psubcomm) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Must call PetscSubcommCreate firt");
+  ierr = PetscOptionsEList("-psubcomm_type","PETSc subcommunicator","PetscSubcommSetType",psubcommTypes,3,psubcommTypes[2],&type,&flg);CHKERRQ(ierr);
+  if (flg && psubcomm->type != type) {
+    /* free old structures */
+    ierr = PetscCommDestroy(&(psubcomm)->dupparent);CHKERRQ(ierr);
+    ierr = PetscCommDestroy(&(psubcomm)->comm);CHKERRQ(ierr);
+    ierr = PetscFree((psubcomm)->subsize);CHKERRQ(ierr);
+    switch (type) {
+    case 1:
+      ierr = PetscSubcommCreate_contiguous(psubcomm);CHKERRQ(ierr);
+      break;
+    case 2:
+      ierr = PetscSubcommCreate_interlaced(psubcomm);CHKERRQ(ierr);
+      break;
+    default:
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"PetscSubcommType %D is not supported yet",type);
+    }
+  }
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSubcommView"
@@ -198,6 +228,7 @@ PetscErrorCode  PetscSubcommCreate(MPI_Comm comm,PetscSubcomm *psubcomm)
   /* set defaults */
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+
   (*psubcomm)->parent    = comm;
   (*psubcomm)->dupparent = comm;
   (*psubcomm)->comm      = PETSC_COMM_SELF;

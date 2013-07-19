@@ -75,6 +75,9 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
       ierr = PetscSubcommCreate(comm,&red->psubcomm);CHKERRQ(ierr);
       ierr = PetscSubcommSetNumber(red->psubcomm,red->nsubcomm);CHKERRQ(ierr);
       ierr = PetscSubcommSetType(red->psubcomm,PETSC_SUBCOMM_INTERLACED);CHKERRQ(ierr);
+      /* enable runtime switch of psubcomm type, e.g., '-psubcomm_type contiguous */
+      ierr = PetscSubcommSetFromOptions(red->psubcomm);CHKERRQ(ierr);
+
       ierr = PetscLogObjectMemory(pc,sizeof(PetscSubcomm));CHKERRQ(ierr);
 
       /* create a new PC that processors in each subcomm have copy of */
@@ -110,8 +113,8 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
       ierr = VecCreateMPI(red->psubcomm->dupparent,mloc_sub,PETSC_DECIDE,&red->xdup);CHKERRQ(ierr);
       ierr = VecCreateMPIWithArray(red->psubcomm->dupparent,1,mloc_sub,PETSC_DECIDE,NULL,&red->ydup);CHKERRQ(ierr);
 
-      /* create vecscatters for PETSC_SUBCOMM_INTERLACED! */
-      if (!red->scatterin) {
+      /* create vecscatters */
+      if (!red->scatterin) { /* efficiency of scatterin is independent from psubcomm_type! */
         IS       is1,is2;
         PetscInt *idx1,*idx2,i,j,k;
 
@@ -133,6 +136,7 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
         ierr = ISDestroy(&is1);CHKERRQ(ierr);
         ierr = ISDestroy(&is2);CHKERRQ(ierr);
 
+        /* efficiency of scatterout depends on psubcomm_type! Impl below is good for PETSC_SUBCOMM_INTERLACED */
         ierr = ISCreateStride(comm,mlocal,mstart+ red->psubcomm->color*M,1,&is1);CHKERRQ(ierr);
         ierr = ISCreateStride(comm,mlocal,mstart,1,&is2);CHKERRQ(ierr);
         ierr = VecScatterCreate(red->xdup,is1,x,is2,&red->scatterout);CHKERRQ(ierr);
