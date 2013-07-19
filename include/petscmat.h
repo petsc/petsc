@@ -1515,18 +1515,16 @@ PETSC_EXTERN PetscErrorCode MatMumpsSetCntl(Mat,PetscInt,PetscReal);
 PETSC_EXTERN PetscErrorCode MatSuperluSetILUDropTol(Mat,PetscReal);
 #endif
 
-#if defined PETSC_HAVE_TXPETSCGPU
-
+#ifdef PETSC_HAVE_CUDA
 /*E
     MatCUSPARSEStorageFormat - indicates the storage format for CUSPARSE (GPU)
-    matrices. Requires the txpetscgpu package to use. Configure with 
-    --download-txpetscgpu to build/install petsc with the txpetscgpu library.
+    matrices. 
 
     Not Collective
 
 +   MAT_CUSPARSE_CSR - Compressed Sparse Row
-.   MAT_CUSPARSE_ELL - Ellpack
--   MAT_CUSPARSE_HYB - Hybrid, a combination of Ellpack and Coordinate format.
+.   MAT_CUSPARSE_ELL - Ellpack (requires CUDA 4.2 or later).
+-   MAT_CUSPARSE_HYB - Hybrid, a combination of Ellpack and Coordinate format (requires CUDA 4.2 or later).
 
     Level: intermediate
 
@@ -1542,9 +1540,7 @@ PETSC_EXTERN const char *const MatCUSPARSEStorageFormats[];
 
 /*E
     MatCUSPARSEFormatOperation - indicates the operation of CUSPARSE (GPU)
-    matrices whose operation should use a particular storage format. Requires
-    the txpetscgpu package to use. Configure with --download-txpetscgpu to 
-    build/install petsc with the txpetscgpu library.
+    matrices whose operation should use a particular storage format. 
 
     Not Collective
 
@@ -1563,7 +1559,6 @@ typedef enum {MAT_CUSPARSE_MULT_DIAG, MAT_CUSPARSE_MULT_OFFDIAG, MAT_CUSPARSE_MU
 PETSC_EXTERN PetscErrorCode MatCreateSeqAIJCUSPARSE(MPI_Comm,PetscInt,PetscInt,PetscInt,const PetscInt[],Mat*);
 PETSC_EXTERN PetscErrorCode MatCreateAIJCUSPARSE(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],PetscInt,const PetscInt[],Mat*);
 PETSC_EXTERN PetscErrorCode MatCUSPARSESetFormat(Mat,MatCUSPARSEFormatOperation,MatCUSPARSEStorageFormat);
-
 #endif
 
 #if defined(PETSC_HAVE_CUSP)

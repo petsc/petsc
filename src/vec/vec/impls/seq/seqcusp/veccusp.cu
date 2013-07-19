@@ -21,6 +21,7 @@ PETSC_CUDA_EXTERN_C_END
 PetscErrorCode VecCUSPAllocateCheckHost(Vec v)
 {
   PetscErrorCode ierr;
+  cudaError_t    err;
   PetscScalar    *array;
   Vec_Seq        *s;
   PetscInt       n = v->map->n;
@@ -29,14 +30,12 @@ PetscErrorCode VecCUSPAllocateCheckHost(Vec v)
   s    = (Vec_Seq*)v->data;
   ierr = VecCUSPAllocateCheck(v);CHKERRQ(ierr);
   if (s->array == 0) {
-    //#if defined(PETSC_HAVE_TXPETSCGPU)
-    //if (n>0)
-    // ierr = cudaMallocHost((void **) &array, n*sizeof(PetscScalar));CHKERRCUSP(ierr);
-    //#else
     ierr               = PetscMalloc(n*sizeof(PetscScalar),&array);CHKERRQ(ierr);
     ierr               = PetscLogObjectMemory(v,n*sizeof(PetscScalar));CHKERRQ(ierr);
     s->array           = array;
     s->array_allocated = array;
+    err = cudaHostRegister(s->array, n*sizeof(PetscScalar),cudaHostRegisterMapped);CHKERRCUSP(err);
+    ((Vec_CUSP*)v->spptr)->hostDataRegisteredAsPageLocked = PETSC_TRUE;
   }
   PetscFunctionReturn(0);
 }
@@ -52,51 +51,28 @@ PetscErrorCode VecCUSPAllocateCheckHost(Vec v)
  */
 PetscErrorCode VecCUSPAllocateCheck(Vec v)
 {
-  PetscErrorCode ierr;
-  int            rank;
+  cudaError_t    err;
+  cudaStream_t   stream;
+  Vec_Seq        *s = (Vec_Seq*)v->data;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   // First allocate memory on the GPU if needed
   if (!v->spptr) {
     try {
       v->spptr                        = new Vec_CUSP;
       ((Vec_CUSP*)v->spptr)->GPUarray = new CUSPARRAY;
       ((Vec_CUSP*)v->spptr)->GPUarray->resize((PetscBLASInt)v->map->n);
+      err = cudaStreamCreate(&stream);CHKERRCUSP(err);
+      ((Vec_CUSP*)v->spptr)->stream = stream;
 
-#if defined(PETSC_HAVE_TXPETSCGPU)
-      PetscErrorCode ierr;
-      ((Vec_CUSP*)v->spptr)->GPUvector = new GPU_Vector<PetscInt, PetscScalar>(((Vec_CUSP*)v->spptr)->GPUarray, rank);
-      ierr = ((Vec_CUSP*)v->spptr)->GPUvector->buildStreamsAndEvents();CHKERRCUSP(ierr);
-
-      Vec_Seq *s;
-      s = (Vec_Seq*)v->data;
-      if (v->map->n>0) {
-        if (s->array==0) {
-          // In this branch, GPUvector owns the ptr and manages the memory
-          ierr = ((Vec_CUSP*)v->spptr)->GPUvector->allocateHostMemory();CHKERRCUSP(ierr);
-
-          s->array           = ((Vec_CUSP*)v->spptr)->GPUvector->getHostMemoryPtr();
-          s->array_allocated = ((Vec_CUSP*)v->spptr)->GPUvector->getHostMemoryPtr();
-        } else {
-          // In this branch, Petsc owns the ptr to start, however we want to use
-          // page locked host memory for faster data transfers. So, a new
-          // page-locked buffer is allocated. Then, the old Petsc memory
-          // is copied in to the new buffer. Then the old Petsc memory is freed.
-          // GPUvector owns the new ptr.
-          ierr = ((Vec_CUSP*)v->spptr)->GPUvector->allocateHostMemory();CHKERRCUSP(ierr);
-          PetscScalar * temp = ((Vec_CUSP*)v->spptr)->GPUvector->getHostMemoryPtr();
-
-          ierr = PetscMemcpy(temp,s->array,v->map->n*sizeof(PetscScalar));CHKERRQ(ierr);
-          ierr = PetscFree(s->array);CHKERRQ(ierr);
-
-          s->array           = temp;
-          s->array_allocated = temp;
-        }
-        ierr = WaitForGPU();CHKERRCUSP(ierr);
+      ((Vec_CUSP*)v->spptr)->hostDataRegisteredAsPageLocked = PETSC_FALSE;
+      /* If the array is already allocated, one can register it as (page-locked) mapped.
+	 This can substantially accelerate data transfer across the PCI Express */
+      if (s->array) {
+	err = cudaHostRegister(s->array, v->map->n*sizeof(PetscScalar),cudaHostRegisterMapped);CHKERRCUSP(err);
+	((Vec_CUSP*)v->spptr)->hostDataRegisteredAsPageLocked = PETSC_TRUE;
       }
       v->ops->destroy = VecDestroy_SeqCUSP;
-#endif
     } catch(char *ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSP error: %s", ex);
     }
@@ -111,21 +87,22 @@ PetscErrorCode VecCUSPAllocateCheck(Vec v)
 PetscErrorCode VecCUSPCopyToGPU(Vec v)
 {
   PetscErrorCode ierr;
+  cudaError_t    err;
+  Vec_CUSP       *veccusp;
+  CUSPARRAY      *varray;
+  cudaStream_t   stream;
 
   PetscFunctionBegin;
   ierr = VecCUSPAllocateCheck(v);CHKERRQ(ierr);
   if (v->valid_GPU_array == PETSC_CUSP_CPU) {
     ierr = PetscLogEventBegin(VEC_CUSPCopyToGPU,v,0,0,0);CHKERRQ(ierr);
     try {
-#if defined(PETSC_HAVE_TXPETSCGPU)
-      ierr = ((Vec_CUSP*)v->spptr)->GPUvector->copyToGPUAll();CHKERRCUSP(ierr);
-#else
-      CUSPARRAY *varray;
-      varray = ((Vec_CUSP*)v->spptr)->GPUarray;
-      varray->assign(*(PetscScalar**)v->data,*(PetscScalar**)v->data + v->map->n);
-      ierr = WaitForGPU();CHKERRCUSP(ierr);
-#endif
-
+      veccusp=(Vec_CUSP*)v->spptr;
+      varray=veccusp->GPUarray;
+      stream=veccusp->stream;
+      err = cudaMemcpyAsync(varray->data().get(), *(PetscScalar**)v->data, v->map->n*sizeof(PetscScalar),
+                             cudaMemcpyHostToDevice, stream);CHKERRCUSP(err);
+      err = cudaStreamSynchronize(stream);CHKERRCUSP(err);
     } catch(char *ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSP error: %s", ex);
     }
@@ -139,17 +116,31 @@ PetscErrorCode VecCUSPCopyToGPU(Vec v)
 #define __FUNCT__ "VecCUSPCopyToGPUSome"
 static PetscErrorCode VecCUSPCopyToGPUSome(Vec v, PetscCUSPIndices ci)
 {
-  PetscErrorCode ierr;
   CUSPARRAY      *varray;
+  PetscErrorCode ierr;
+  cudaError_t    err;
+  PetscScalar    *cpuPtr, *gpuPtr;
+  cudaStream_t   stream;
+  Vec_Seq        *s;
 
   PetscFunctionBegin;
   ierr = VecCUSPAllocateCheck(v);CHKERRQ(ierr);
   if (v->valid_GPU_array == PETSC_CUSP_CPU) {
+    stream=((Vec_CUSP*)v->spptr)->stream;
+    s = (Vec_Seq*)v->data;
+
     ierr   = PetscLogEventBegin(VEC_CUSPCopyToGPUSome,v,0,0,0);CHKERRQ(ierr);
     varray = ((Vec_CUSP*)v->spptr)->GPUarray;
-#if defined(PETSC_HAVE_TXPETSCGPU)
-    ierr = ((Vec_CUSP*)v->spptr)->GPUvector->copyToGPUSome(varray, ci->recvIndices);CHKERRCUSP(ierr);
-#else
+    gpuPtr = varray->data().get() + ci->recvLowestIndex;
+    cpuPtr = s->array + ci->recvLowestIndex;
+
+    /* Note : this code copies the smallest contiguous chunk of data
+       containing ALL of the indices */
+    err = cudaMemcpyAsync(gpuPtr, cpuPtr, ci->nr*sizeof(PetscScalar),
+                           cudaMemcpyHostToDevice, stream);CHKERRCUSP(err);
+    err = cudaStreamSynchronize(stream);CHKERRCUSP(err);
+
+#if 0
     Vec_Seq *s;
     s = (Vec_Seq*)v->data;
 
@@ -176,20 +167,23 @@ static PetscErrorCode VecCUSPCopyToGPUSome(Vec v, PetscCUSPIndices ci)
 PetscErrorCode VecCUSPCopyFromGPU(Vec v)
 {
   PetscErrorCode ierr;
+  cudaError_t    err;
+  Vec_CUSP       *veccusp;
+  CUSPARRAY      *varray;
+  cudaStream_t   stream;
 
   PetscFunctionBegin;
   ierr = VecCUSPAllocateCheckHost(v);CHKERRQ(ierr);
   if (v->valid_GPU_array == PETSC_CUSP_GPU) {
     ierr = PetscLogEventBegin(VEC_CUSPCopyFromGPU,v,0,0,0);CHKERRQ(ierr);
     try {
-#if defined(PETSC_HAVE_TXPETSCGPU)
-      ierr = ((Vec_CUSP*)v->spptr)->GPUvector->copyFromGPUAll();CHKERRCUSP(ierr);
-#else
-      CUSPARRAY *varray;
-      varray = ((Vec_CUSP*)v->spptr)->GPUarray;
-      thrust::copy(varray->begin(),varray->end(),*(PetscScalar**)v->data);
-      ierr = WaitForGPU();CHKERRCUSP(ierr);
-#endif
+      veccusp=(Vec_CUSP*)v->spptr;
+      varray=veccusp->GPUarray;
+      stream=veccusp->stream;
+
+      err = cudaMemcpyAsync(*(PetscScalar**)v->data, varray->data().get(), v->map->n*sizeof(PetscScalar),
+                             cudaMemcpyDeviceToHost, stream);CHKERRCUSP(err);
+      err = cudaStreamSynchronize(stream);CHKERRCUSP(err);
     } catch(char *ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSP error: %s", ex);
     }
@@ -210,16 +204,29 @@ PetscErrorCode VecCUSPCopyFromGPUSome(Vec v, PetscCUSPIndices ci)
 {
   CUSPARRAY      *varray;
   PetscErrorCode ierr;
+  cudaError_t    err;
+  PetscScalar    *cpuPtr, *gpuPtr;
+  cudaStream_t   stream;
+  Vec_Seq        *s;
 
   PetscFunctionBegin;
-  ierr = VecCUSPAllocateCheck(v);CHKERRQ(ierr);
   ierr = VecCUSPAllocateCheckHost(v);CHKERRQ(ierr);
   if (v->valid_GPU_array == PETSC_CUSP_GPU) {
     ierr   = PetscLogEventBegin(VEC_CUSPCopyFromGPUSome,v,0,0,0);CHKERRQ(ierr);
-    varray = ((Vec_CUSP*)v->spptr)->GPUarray;
-#if defined(PETSC_HAVE_TXPETSCGPU)
-    ierr = ((Vec_CUSP*)v->spptr)->GPUvector->copyFromGPUSome(varray, ci->sendIndices);CHKERRCUSP(ierr);
-#else
+
+    stream=((Vec_CUSP*)v->spptr)->stream;
+    varray=((Vec_CUSP*)v->spptr)->GPUarray;
+    s = (Vec_Seq*)v->data;
+    gpuPtr = varray->data().get() + ci->sendLowestIndex;
+    cpuPtr = s->array + ci->sendLowestIndex;
+
+    /* Note : this code copies the smallest contiguous chunk of data
+       containing ALL of the indices */
+    err = cudaMemcpyAsync(cpuPtr, gpuPtr, ci->ns*sizeof(PetscScalar),
+			   cudaMemcpyDeviceToHost, stream);CHKERRCUSP(err);
+    err = cudaStreamSynchronize(stream);CHKERRCUSP(err);
+
+#if 0
     Vec_Seq *s;
     s = (Vec_Seq*)v->data;
     CUSPINTARRAYCPU *indicesCPU=&ci->sendIndicesCPU;
@@ -246,6 +253,8 @@ static PetscErrorCode VecCopy_SeqCUSP_Private(Vec xin,Vec yin)
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
+  ierr = VecCUSPAllocateCheckHost(xin);
+  ierr = VecCUSPAllocateCheckHost(yin);
   if (xin != yin) {
     ierr = VecGetArrayRead(xin,&xa);CHKERRQ(ierr);
     ierr = VecGetArray(yin,&ya);CHKERRQ(ierr);
@@ -323,6 +332,7 @@ PetscErrorCode VecCUSPCopyToGPU_Public(Vec v)
   PetscFunctionReturn(0);
 }
 
+
 #undef __FUNCT__
 #define __FUNCT__ "PetscCUSPIndicesCreate"
 /*
@@ -340,21 +350,13 @@ PetscErrorCode VecCUSPCopyToGPU_Public(Vec v)
 PetscErrorCode PetscCUSPIndicesCreate(PetscInt ns,PetscInt *sendIndices,PetscInt nr,PetscInt *recvIndices,PetscCUSPIndices *ci)
 {
   PetscCUSPIndices cci;
-
   PetscFunctionBegin;
   cci = new struct _p_PetscCUSPIndices;
-#if defined(PETSC_HAVE_TXPETSCGPU)
-  cci->sendIndices = new GPU_Indices<PetscInt, PetscScalar>();
-  cci->sendIndices->buildIndices(sendIndices, ns);
-  cci->recvIndices = new GPU_Indices<PetscInt, PetscScalar>();
-  cci->recvIndices->buildIndices(recvIndices, nr);
-#else
-  cci->sendIndicesCPU.assign(sendIndices,sendIndices+ns);
-  cci->sendIndicesGPU.assign(sendIndices,sendIndices+ns);
-
-  cci->recvIndicesCPU.assign(recvIndices,recvIndices+nr);
-  cci->recvIndicesGPU.assign(recvIndices,recvIndices+nr);
-#endif
+  /* this calculation assumes that the input indices are sorted */
+  cci->ns = sendIndices[ns-1]-sendIndices[0]+1;
+  cci->sendLowestIndex = sendIndices[0];
+  cci->nr = recvIndices[nr-1]-recvIndices[0]+1;
+  cci->recvLowestIndex = recvIndices[0];
   *ci = cci;
   PetscFunctionReturn(0);
 }
@@ -374,10 +376,6 @@ PetscErrorCode PetscCUSPIndicesDestroy(PetscCUSPIndices *ci)
   PetscFunctionBegin;
   if (!(*ci)) PetscFunctionReturn(0);
   try {
-#if defined(PETSC_HAVE_TXPETSCGPU)
-    if ((*ci)->sendIndices) delete (*ci)->sendIndices;
-    if ((*ci)->recvIndices) delete (*ci)->recvIndices;
-#endif
     if (ci) delete *ci;
   } catch(char *ex) {
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSP error: %s", ex);
@@ -385,21 +383,6 @@ PetscErrorCode PetscCUSPIndicesDestroy(PetscCUSPIndices *ci)
   *ci = 0;
   PetscFunctionReturn(0);
 }
-
-#if defined(PETSC_HAVE_TXPETSCGPU)
-#undef __FUNCT__
-#define __FUNCT__ "VecCUSPResetIndexBuffersFlagsGPU_Public"
-/*
- *VecCUSPResetIndexBuffersFlagsGPU_Public resets indexing flags ... only called in VecScatterFinalizeForGPU
- */
-PetscErrorCode VecCUSPResetIndexBuffersFlagsGPU_Public(PetscCUSPIndices ci)
-{
-  PetscFunctionBegin;
-  if (ci->sendIndices) ci->sendIndices->resetStatusFlag();
-  if (ci->recvIndices) ci->recvIndices->resetStatusFlag();
-  PetscFunctionReturn(0);
-}
-#endif
 
 
 #undef __FUNCT__
@@ -438,92 +421,6 @@ PetscErrorCode VecCUSPCopyFromGPUSome_Public(Vec v, PetscCUSPIndices ci)
   ierr = VecCUSPCopyFromGPUSome(v,ci);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-#if defined(PETSC_HAVE_TXPETSCGPU)
-#undef __FUNCT__
-#define __FUNCT__ "VecCUSPCopySomeToContiguousBufferGPU"
-/* Note that this function only moves *some* of the data from a GPU vector to a contiguous buffer on the GPU.
-   Afterwords, this buffer can be messaged to the host easily with asynchronous memory transfers.
-   which means that we need recombine the data at some point before using any of the standard functions.
-   We could add another few flag-types to keep track of this, or treat things like VecGetArray VecRestoreArray
-   where you have to always call in pairs
-*/
-PetscErrorCode VecCUSPCopySomeToContiguousBufferGPU(Vec v, PetscCUSPIndices ci)
-{
-  CUSPARRAY      *varray;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = VecCUSPAllocateCheck(v);CHKERRQ(ierr);
-  if (v->valid_GPU_array == PETSC_CUSP_GPU || v->valid_GPU_array == PETSC_CUSP_BOTH) {
-    ierr = VecCUSPGetArrayRead(v,&varray);CHKERRQ(ierr);
-    ierr = ((Vec_CUSP*)v->spptr)->GPUvector->copySomeToContiguousBuffer(varray, ci->sendIndices);CHKERRCUSP(ierr);
-    ierr = VecCUSPRestoreArrayRead(v,&varray);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
-
-
-#undef __FUNCT__
-#define __FUNCT__ "VecCUSPCopySomeToContiguousBufferGPU_Public"
-/*
-  VecCUSPCopySomeToContiguousBufferGPU_Public - Copies certain entries to a contiguous buffer on the GPU from the GPU of a vector
-
-  Input Parameters:
- +    v - the vector
- -    indices - the requested indices, this should be created with CUSPIndicesCreate()
-*/
-PetscErrorCode VecCUSPCopySomeToContiguousBufferGPU_Public(Vec v, PetscCUSPIndices ci)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = VecCUSPCopySomeToContiguousBufferGPU(v,ci);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-/* Note that this function only moves *some* of the data from a contiguous buffer on the GPU to arbitrary locations
-   in a GPU vector. This function will typically be called after an asynchronous memory transfer from the host to the device.
-   which means that we need recombine the data at some point before using any of the standard functions.
-   We could add another few flag-types to keep track of this, or treat things like VecGetArray VecRestoreArray
-   where you have to always call in pairs
-*/
-PetscErrorCode VecCUSPCopySomeFromContiguousBufferGPU(Vec v, PetscCUSPIndices ci)
-{
-  CUSPARRAY      *varray;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = VecCUSPAllocateCheck(v);CHKERRQ(ierr);
-  if (v->valid_GPU_array == PETSC_CUSP_CPU  || v->valid_GPU_array == PETSC_CUSP_BOTH) {
-    ierr = VecCUSPGetArrayRead(v,&varray);CHKERRQ(ierr);
-    ierr = ((Vec_CUSP*)v->spptr)->GPUvector->copySomeFromContiguousBuffer(varray, ci->recvIndices);CHKERRCUSP(ierr);
-    ierr = VecCUSPRestoreArrayRead(v,&varray);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "VecCUSPCopySomeFromContiguousBufferGPU_Public"
-/*
-  VecCUSPCopySomeToContiguousBufferGPU_Public - Copies certain entries to a contiguous buffer on the GPU from the GPU of a vector
-
-  Input Parameters:
- +    v - the vector
- -    indices - the requested indices, this should be created with CUSPIndicesCreate()
-*/
-PetscErrorCode VecCUSPCopySomeFromContiguousBufferGPU_Public(Vec v, PetscCUSPIndices ci)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = VecCUSPCopySomeFromContiguousBufferGPU(v,ci);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#endif
-
 
 /*MC
    VECSEQCUSP - VECSEQCUSP = "seqcusp" - The basic sequential vector, modified to use CUSP
@@ -975,7 +872,6 @@ PetscErrorCode VecDot_SeqCUSP(Vec xin,Vec yin,PetscScalar *z)
   }
   ierr = VecCUSPRestoreArrayRead(xin,&xarray);CHKERRQ(ierr);
   ierr = VecCUSPRestoreArrayRead(yin,&yarray);CHKERRQ(ierr);
-  //printf("VecDot_SeqCUSP=%1.5g,%1.5g\n",PetscRealPart(*z),PetscImaginaryPart(*z));
   PetscFunctionReturn(0);
 }
 
@@ -1804,7 +1700,6 @@ PetscErrorCode VecNorm_SeqCUSP(Vec xin,NormType type,PetscReal *z)
     ierr = VecNorm_SeqCUSP(xin,NORM_1,z);CHKERRQ(ierr);
     ierr = VecNorm_SeqCUSP(xin,NORM_2,z+1);CHKERRQ(ierr);
   }
-  //printf("VecNorm_SeqCUSP=%1.5g\n",*z);
   PetscFunctionReturn(0);
 }
 
@@ -1991,18 +1886,19 @@ PetscErrorCode VecDuplicate_SeqCUSP(Vec win,Vec *V)
 PetscErrorCode VecDestroy_SeqCUSP(Vec v)
 {
   PetscErrorCode ierr;
-
+  Vec_Seq        *s = (Vec_Seq*)v->data;
+  cudaError_t    err;
   PetscFunctionBegin;
   try {
     if (v->spptr) {
-#if defined(PETSC_HAVE_TXPETSCGPU)
-      if (((Vec_CUSP*)v->spptr)->GPUvector) delete ((Vec_CUSP*)v->spptr)->GPUvector;
-      Vec_Seq *s;
-      s                  = (Vec_Seq*)v->data;
-      s->array           = NULL;
-      s->array_allocated = NULL;
-#endif
       delete ((Vec_CUSP*)v->spptr)->GPUarray;
+      err = cudaStreamDestroy(((Vec_CUSP*)v->spptr)->stream);CHKERRCUSP(err);
+
+      /* If the host array has been registered as (page-locked) mapped,
+	 one must unregister the buffer */
+      if (((Vec_CUSP*)v->spptr)->hostDataRegisteredAsPageLocked) {
+	err = cudaHostUnregister(s->array);CHKERRCUSP(err);
+      }
       delete (Vec_CUSP*) v->spptr;
     }
   } catch(char *ex) {

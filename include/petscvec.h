@@ -472,15 +472,8 @@ PETSC_EXTERN PetscErrorCode PetscCUSPIndicesCreate(PetscInt, PetscInt*,PetscInt,
 PETSC_EXTERN PetscErrorCode PetscCUSPIndicesDestroy(PetscCUSPIndices*);
 PETSC_EXTERN PetscErrorCode VecCUSPCopyToGPUSome_Public(Vec,PetscCUSPIndices);
 PETSC_EXTERN PetscErrorCode VecCUSPCopyFromGPUSome_Public(Vec,PetscCUSPIndices);
-
-#if defined(PETSC_HAVE_TXPETSCGPU)
-PETSC_EXTERN PetscErrorCode VecCUSPResetIndexBuffersFlagsGPU_Public(PetscCUSPIndices);
-PETSC_EXTERN PetscErrorCode VecCUSPCopySomeToContiguousBufferGPU_Public(Vec,PetscCUSPIndices);
-PETSC_EXTERN PetscErrorCode VecCUSPCopySomeFromContiguousBufferGPU_Public(Vec,PetscCUSPIndices);
 PETSC_EXTERN PetscErrorCode VecScatterInitializeForGPU(VecScatter,Vec,ScatterMode);
 PETSC_EXTERN PetscErrorCode VecScatterFinalizeForGPU(VecScatter);
-#endif
-
 PETSC_EXTERN PetscErrorCode VecCreateSeqCUSP(MPI_Comm,PetscInt,Vec*);
 PETSC_EXTERN PetscErrorCode VecCreateMPICUSP(MPI_Comm,PetscInt,PetscInt,Vec*);
 #endif
