@@ -851,16 +851,22 @@ static PetscErrorCode DMPlexConstructCohesiveCells_Internal(DM dm, DMLabel label
         DMLabel     mlabel;
         const char *lname;
         PetscInt    val;
+        PetscBool   isDepth;
 
         ierr = DMPlexGetLabelName(sdm, l, &lname);CHKERRQ(ierr);
+        ierr = PetscStrcmp(lname, "depth", &isDepth);CHKERRQ(ierr);
+        if (isDepth) continue;
         ierr = DMPlexGetLabel(sdm, lname, &mlabel);CHKERRQ(ierr);
         ierr = DMLabelGetValue(mlabel, newp, &val);CHKERRQ(ierr);
         if (val >= 0) {
           ierr = DMLabelSetValue(mlabel, splitp, val);CHKERRQ(ierr);
+#if 0
+          /* Do not put cohesive edges into the label */
           if (dep == 0) {
             const PetscInt cedge = pMaxNew[1] + (depthShift[1] - depthShift[0]) + p;
             ierr = DMLabelSetValue(mlabel, cedge, val);CHKERRQ(ierr);
           }
+#endif
         }
       }
     }
