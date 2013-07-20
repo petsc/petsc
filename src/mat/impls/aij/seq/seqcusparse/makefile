@@ -1,4 +1,4 @@
-#requirespackage 'PETSC_HAVE_CUDA'
+#requirespackage 'PETSC_HAVE_CUSP'
 ALL: lib
 
 CFLAGS    =
