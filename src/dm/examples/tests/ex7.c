@@ -1,5 +1,5 @@
 
-static char help[] = "Tests DMDALocalToLocalxxx().\n\n";
+static char help[] = "Tests DMLocalToLocalxxx() for DMDA.\n\n";
 
 #include <petscdmda.h>
 
@@ -69,8 +69,8 @@ int main(int argc,char **argv)
   ierr = DMGlobalToLocalEnd(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
 
 
-  ierr = DMDALocalToLocalBegin(da,local,INSERT_VALUES,local_copy);CHKERRQ(ierr);
-  ierr = DMDALocalToLocalEnd(da,local,INSERT_VALUES,local_copy);CHKERRQ(ierr);
+  ierr = DMLocalToLocalBegin(da,local,INSERT_VALUES,local_copy);CHKERRQ(ierr);
+  ierr = DMLocalToLocalEnd(da,local,INSERT_VALUES,local_copy);CHKERRQ(ierr);
 
 
   ierr = PetscOptionsGetBool(NULL,"-save",&flg,NULL);CHKERRQ(ierr);
