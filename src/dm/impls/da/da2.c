@@ -863,7 +863,7 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
 .keywords: distributed array, create, two-dimensional
 
 .seealso: DMDestroy(), DMView(), DMDACreate1d(), DMDACreate3d(), DMGlobalToLocalBegin(), DMDAGetRefinementFactor(),
-          DMGlobalToLocalEnd(), DMLocalToGlobalBegin(), DMDALocalToLocalBegin(), DMDALocalToLocalEnd(), DMDASetRefinementFactor(),
+          DMGlobalToLocalEnd(), DMLocalToGlobalBegin(), DMLocalToLocalBegin(), DMLocalToLocalEnd(), DMDASetRefinementFactor(),
           DMDAGetInfo(), DMCreateGlobalVector(), DMCreateLocalVector(), DMDACreateNaturalVector(), DMLoad(), DMDAGetOwnershipRanges()
 
 @*/

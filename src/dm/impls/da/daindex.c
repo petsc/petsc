@@ -48,8 +48,8 @@
 .keywords: distributed array, get, global, indices, local-to-global
 
 .seealso: DMDACreate2d(), DMDAGetGhostCorners(), DMDAGetCorners(), DMLocalToGlobalBegin()
-          DMGlobalToLocalBegin(), DMGlobalToLocalEnd(), DMDALocalToLocalBegin(), DMDAGetAO(), DMDAGetGlobalIndicesF90()
-          DMDAGetISLocalToGlobalMapping(), DMDACreate3d(), DMDACreate1d(), DMDALocalToLocalEnd(), DMDAGetOwnershipRanges()
+          DMGlobalToLocalBegin(), DMGlobalToLocalEnd(), DMLocalToLocalBegin(), DMDAGetAO(), DMDAGetGlobalIndicesF90()
+          DMDAGetISLocalToGlobalMapping(), DMDACreate3d(), DMDACreate1d(), DMLocalToLocalEnd(), DMDAGetOwnershipRanges()
 @*/
 PetscErrorCode  DMDAGetGlobalIndices(DM da,PetscInt *n,PetscInt **idx)
 {
@@ -133,7 +133,7 @@ PetscErrorCode DMDAGetNatural_Private(DM da,PetscInt *outNlocal,IS *isnatural)
 .keywords: distributed array, get, global, indices, local-to-global
 
 .seealso: DMDACreate2d(), DMDAGetGhostCorners(), DMDAGetCorners(), DMDALocalToGlocal()
-          DMGlobalToLocalBegin(), DMGlobalToLocalEnd(), DMDALocalToLocalBegin(), DMDALocalToLocalEnd(), DMDAGetGlobalIndices(), DMDAGetOwnershipRanges(),
+          DMGlobalToLocalBegin(), DMGlobalToLocalEnd(), DMLocalToLocalBegin(), DMLocalToLocalEnd(), DMDAGetGlobalIndices(), DMDAGetOwnershipRanges(),
           AO, AOPetscToApplication(), AOApplicationToPetsc()
 @*/
 PetscErrorCode  DMDAGetAO(DM da,AO *ao)
