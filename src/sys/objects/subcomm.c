@@ -28,6 +28,8 @@ PetscErrorCode PetscSubcommSetFromOptions(PetscSubcomm psubcomm)
     ierr = PetscCommDestroy(&(psubcomm)->comm);CHKERRQ(ierr);
     ierr = PetscFree((psubcomm)->subsize);CHKERRQ(ierr);
     switch (type) {
+    case 0: 
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Runtime option PETSC_SUBCOMM_GENERAL is not supported, use PetscSubcommSetTypeGeneral()");
     case 1:
       ierr = PetscSubcommCreate_contiguous(psubcomm);CHKERRQ(ierr);
       break;
