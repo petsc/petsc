@@ -65,8 +65,8 @@ class memoize(dict):
         self.func = func
 
     def __call__(self, *args):
-        return self[args]
-
-    def __missing__(self, args):
-        ret = self[args] = self.func(*args)
-        return ret
+        try:
+            return self[args]
+        except KeyError:
+            ret = self[args] = self.func(*args)
+            return ret
