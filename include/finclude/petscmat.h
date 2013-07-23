@@ -552,7 +552,7 @@
 !
 !     CUSPARSE enumerated types
 !
-#if defined(PETSC_HAVE_TXPETSCGPU)
+#if defined(PETSC_HAVE_CUDA)
       PetscEnum MAT_CUSPARSE_CSR
       PetscEnum MAT_CUSPARSE_ELL
       PetscEnum MAT_CUSPARSE_HYB
