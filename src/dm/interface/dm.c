@@ -1869,7 +1869,6 @@ PetscErrorCode  DMLocalToGlobalEnd(DM dm,Vec l,InsertMode mode,Vec g)
 @*/
 PetscErrorCode  DMLocalToLocalBegin(DM dm,Vec g,InsertMode mode,Vec l)
 {
-  PetscSF                 sf;
   PetscErrorCode          ierr;
 
   PetscFunctionBegin;
@@ -1909,10 +1908,7 @@ PetscErrorCode  DMLocalToLocalBegin(DM dm,Vec g,InsertMode mode,Vec l)
 @*/
 PetscErrorCode  DMLocalToLocalEnd(DM dm,Vec g,InsertMode mode,Vec l)
 {
-  PetscSF                 sf;
   PetscErrorCode          ierr;
-  PetscScalar             *lArray, *gArray;
-  DMGlobalToLocalHookLink link;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
