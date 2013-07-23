@@ -2677,7 +2677,7 @@ PetscErrorCode MatGetRedundantMatrix_MPIAIJ_psubcomm(Mat mat,PetscInt nsubcomm,P
           }
         }
       }
-    } /* endof (psubcomm->type == PETSC_SUBCOMM_INTERLACED) */
+    } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for PetscSubcomm type %D",psubcomm->type);
 
     /* allocate sbuf_j, sbuf_a */
     i    = nzlocal + rowrange[rank+1] - rowrange[rank] + 2;
@@ -2969,12 +2969,11 @@ PetscErrorCode MatGetRedundantMatrix_MPIAIJ(Mat mat,PetscInt nsubcomm,MPI_Comm s
 
     /* free psubcomm in MatDestroy_MatRedundant() */
     ierr = MPI_Comm_size(psubcomm->comm,&subsize);CHKERRQ(ierr);
-    Mat C = *matredundant;
     if (subsize == 1) {
-      Mat_SeqAIJ *c = (Mat_SeqAIJ*)C->data;
+      Mat_SeqAIJ *c = (Mat_SeqAIJ*)(*matredundant)->data;
       c->redundant->psubcomm = psubcomm;
     } else {
-      Mat_MPIAIJ *c = (Mat_MPIAIJ*)C->data;
+      Mat_MPIAIJ *c = (Mat_MPIAIJ*)(*matredundant)->data;
       c->redundant->psubcomm = psubcomm ;
     }
   } else {
