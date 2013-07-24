@@ -448,8 +448,8 @@ PetscErrorCode  DMDestroy(DM *dm)
     ierr = PetscObjectDestroy(&(*dm)->fields[f]);CHKERRQ(ierr);
   }
   ierr = PetscFree((*dm)->fields);CHKERRQ(ierr);
-  /* if memory was published with AMS then destroy it */
-  ierr = PetscObjectAMSViewOff((PetscObject)*dm);CHKERRQ(ierr);
+  /* if memory was published with SAWs then destroy it */
+  ierr = PetscObjectSAWsViewOff((PetscObject)*dm);CHKERRQ(ierr);
 
   ierr = (*(*dm)->ops->destroy)(*dm);CHKERRQ(ierr);
   /* We do not destroy (*dm)->data here so that we can reference count backend objects */

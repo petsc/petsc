@@ -100,7 +100,7 @@ PetscErrorCode  PetscViewerDestroy(PetscViewer *viewer)
   ierr = PetscViewerFlush(*viewer);CHKERRQ(ierr);
   if (--((PetscObject)(*viewer))->refct > 0) {*viewer = 0; PetscFunctionReturn(0);}
 
-  ierr = PetscObjectAMSViewOff((PetscObject)*viewer);CHKERRQ(ierr);
+  ierr = PetscObjectSAWsViewOff((PetscObject)*viewer);CHKERRQ(ierr);
   if ((*viewer)->ops->destroy) {
     ierr = (*(*viewer)->ops->destroy)(*viewer);CHKERRQ(ierr);
   }
@@ -301,7 +301,7 @@ PetscErrorCode  PetscViewerView(PetscViewer v,PetscViewer viewer)
   PetscErrorCode    ierr;
   PetscBool         iascii;
   PetscViewerFormat format;
-#if defined(PETSC_HAVE_AMS)
+#if defined(PETSC_HAVE_SAWS)
   PetscBool         isams;
 #endif
 
@@ -315,8 +315,8 @@ PetscErrorCode  PetscViewerView(PetscViewer v,PetscViewer viewer)
   PetscCheckSameComm(v,1,viewer,2);
 
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_AMS)
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERAMS,&isams);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_SAWS)
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSAWS,&isams);CHKERRQ(ierr);
 #endif
   if (iascii) {
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
@@ -331,10 +331,10 @@ PetscErrorCode  PetscViewerView(PetscViewer v,PetscViewer viewer)
       }
       ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
     }
-#if defined(PETSC_HAVE_AMS)
+#if defined(PETSC_HAVE_SAWS)
   } else if (isams) {
     if (!((PetscObject)v)->amsmem) {
-      ierr = PetscObjectViewAMS((PetscObject)v,viewer);CHKERRQ(ierr);
+      ierr = PetscObjectViewSAWs((PetscObject)v,viewer);CHKERRQ(ierr);
       if (v->ops->view) {
         ierr = (*v->ops->view)(v,viewer);CHKERRQ(ierr);
       }

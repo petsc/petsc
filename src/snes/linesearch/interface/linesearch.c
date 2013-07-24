@@ -581,7 +581,7 @@ PetscErrorCode SNESLineSearchDestroy(SNESLineSearch * linesearch)
   if (!*linesearch) PetscFunctionReturn(0);
   PetscValidHeaderSpecific((*linesearch),SNESLINESEARCH_CLASSID,1);
   if (--((PetscObject)(*linesearch))->refct > 0) {*linesearch = 0; PetscFunctionReturn(0);}
-  ierr = PetscObjectAMSViewOff((PetscObject)*linesearch);CHKERRQ(ierr);
+  ierr = PetscObjectSAWsViewOff((PetscObject)*linesearch);CHKERRQ(ierr);
   ierr = SNESLineSearchReset(*linesearch);CHKERRQ(ierr);
   if ((*linesearch)->ops->destroy) (*linesearch)->ops->destroy(*linesearch);
   ierr = PetscViewerDestroy(&(*linesearch)->monitor);CHKERRQ(ierr);

@@ -1276,8 +1276,8 @@ PetscErrorCode  TSLoad(TS ts, PetscViewer viewer)
 }
 
 #include <petscdraw.h>
-#if defined(PETSC_HAVE_AMS)
-#include <petscviewerams.h>
+#if defined(PETSC_HAVE_SAWS)
+#include <petscviewersaws.h>
 #endif
 #undef __FUNCT__
 #define __FUNCT__ "TSView"
@@ -1316,7 +1316,7 @@ PetscErrorCode  TSView(TS ts,PetscViewer viewer)
   TSType         type;
   PetscBool      iascii,isstring,isundials,isbinary,isdraw;
   DMTS           sdm;
-#if defined(PETSC_HAVE_AMS)
+#if defined(PETSC_HAVE_SAWS)
   PetscBool      isams;
 #endif
 
@@ -1332,8 +1332,8 @@ PetscErrorCode  TSView(TS ts,PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_AMS)
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERAMS,&isams);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_SAWS)
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSAWS,&isams);CHKERRQ(ierr);
 #endif
   if (iascii) {
     ierr = PetscObjectPrintClassNamePrefixType((PetscObject)ts,viewer);CHKERRQ(ierr);
@@ -1391,12 +1391,12 @@ PetscErrorCode  TSView(TS ts,PetscViewer viewer)
       ierr = (*ts->ops->view)(ts,viewer);CHKERRQ(ierr);
     }
     ierr = PetscDrawPopCurrentPoint(draw);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_AMS)
+#if defined(PETSC_HAVE_SAWS)
   } else if (isams) {
     if (!((PetscObject)ts)->amsmem) {
-      ierr = PetscObjectViewAMS((PetscObject)ts,viewer);CHKERRQ(ierr);
-      PetscStackCallAMS(AMS_New_Field,(((PetscObject)ts)->amsmem,"time step",&ts->steps,1,AMS_READ,AMS_INT));
-      PetscStackCallAMS(AMS_New_Field,(((PetscObject)ts)->amsmem,"time",&ts->ptime,1,AMS_READ,AMS_DOUBLE));
+      ierr = PetscObjectViewSAWs((PetscObject)ts,viewer);CHKERRQ(ierr);
+      PetscStackCallSAWs(SAWS_New_Variable,(((PetscObject)ts)->amsmem,"time step",&ts->steps,1,SAWS_READ,SAWS_INT));
+      PetscStackCallSAWs(SAWS_New_Variable,(((PetscObject)ts)->amsmem,"time",&ts->ptime,1,SAWS_READ,SAWS_DOUBLE));
     }
     if (ts->ops->view) {
       ierr = (*ts->ops->view)(ts,viewer);CHKERRQ(ierr);
@@ -1860,8 +1860,8 @@ PetscErrorCode  TSDestroy(TS *ts)
 
   ierr = TSReset((*ts));CHKERRQ(ierr);
 
-  /* if memory was published with AMS then destroy it */
-  ierr = PetscObjectAMSViewOff((PetscObject)*ts);CHKERRQ(ierr);
+  /* if memory was published with SAWs then destroy it */
+  ierr = PetscObjectSAWsViewOff((PetscObject)*ts);CHKERRQ(ierr);
   if ((*ts)->ops->destroy) {ierr = (*(*ts)->ops->destroy)((*ts));CHKERRQ(ierr);}
 
   ierr = TSAdaptDestroy(&(*ts)->adapt);CHKERRQ(ierr);

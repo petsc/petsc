@@ -1,11 +1,11 @@
 
 #include <petsc-private/viewerimpl.h>   /*I  "petscsys.h"  */
-#include <petscviewerams.h>
+#include <petscviewersaws.h>
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscViewerAMSOpen"
+#define __FUNCT__ "PetscViewerSAWsOpen"
 /*@C
-    PetscViewerAMSOpen - Opens an AMS memory snooper PetscViewer.
+    PetscViewerSAWsOpen - Opens an SAWs memory snooper PetscViewer.
 
     Collective on MPI_Comm
 
@@ -16,9 +16,9 @@
 .   lab - the PetscViewer
 
     Options Database Keys:
-+   -ams_port <port number> - port number where you are running AMS client
++   -ams_port <port number> - port number where you are running SAWs client
 .   -xxx_view ams - publish the object xxx
--   -xxx_ams_block - blocks the program at the end of a critical point (for KSP and SNES it is the end of a solve) until
+-   -xxx_saws_block - blocks the program at the end of a critical point (for KSP and SNES it is the end of a solve) until
                     the user unblocks the the problem with an external tool that access the object with the AMS
 
     Level: advanced
@@ -28,34 +28,34 @@
 
 
     Notes:
-    Unlike other viewers that only access the object being viewed on the call to XXXView(object,viewer) the AMS viewer allows
-    one to view the object asynchronously as the program continues to run. One can remove AMS access to the object with a call to
-    PetscObjectAMSViewOff().
+    Unlike other viewers that only access the object being viewed on the call to XXXView(object,viewer) the SAWs viewer allows
+    one to view the object asynchronously as the program continues to run. One can remove SAWs access to the object with a call to
+    PetscObjectSAWsViewOff().
 
-    Information about the AMS is available via http://www.mcs.anl.gov/ams.
+    Information about the SAWs is available via http://www.mcs.anl.gov/SAWs.
 
    Concepts: AMS
    Concepts: Argonne Memory Snooper
    Concepts: Asynchronous Memory Snooper
 
-.seealso: PetscViewerDestroy(), PetscViewerStringSPrintf(), PETSC_VIEWER_AMS_(), PetscObjectAMSBlock(),
-          PetscObjectAMSViewOff(), PetscObjectAMSTakeAccess(), PetscObjectAMSGrantAccess()
+.seealso: PetscViewerDestroy(), PetscViewerStringSPrintf(), PETSC_VIEWER_SAWS_(), PetscObjectSAWsBlock(),
+          PetscObjectSAWsViewOff(), PetscObjectSAWsTakeAccess(), PetscObjectSAWsGrantAccess()
 
 @*/
-PetscErrorCode PetscViewerAMSOpen(MPI_Comm comm,PetscViewer *lab)
+PetscErrorCode PetscViewerSAWsOpen(MPI_Comm comm,PetscViewer *lab)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscViewerCreate(comm,lab);CHKERRQ(ierr);
-  ierr = PetscViewerSetType(*lab,PETSCVIEWERAMS);CHKERRQ(ierr);
+  ierr = PetscViewerSetType(*lab,PETSCVIEWERSAWS);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscObjectViewAMS"
+#define __FUNCT__ "PetscObjectViewSAWs"
 /*@C
-   PetscObjectViewAMS - View the base portion of any object with an AMS viewer
+   PetscObjectViewSAWs - View the base portion of any object with an SAWs viewer
 
    Collective on PetscObject
 
@@ -63,16 +63,16 @@ PetscErrorCode PetscViewerAMSOpen(MPI_Comm comm,PetscViewer *lab)
 +  obj - the Petsc variable
          Thus must be cast with a (PetscObject), for example,
          PetscObjectSetName((PetscObject)mat,name);
--  viewer - the AMS viewer
+-  viewer - the SAWs viewer
 
    Level: advanced
 
    Concepts: publishing object
 
-.seealso: PetscObjectSetName(), PetscObjectAMSViewOff()
+.seealso: PetscObjectSetName(), PetscObjectSAWsViewOff()
 
 @*/
-PetscErrorCode  PetscObjectViewAMS(PetscObject obj,PetscViewer viewer)
+PetscErrorCode  PetscObjectViewSAWs(PetscObject obj,PetscViewer viewer)
 {
   PetscErrorCode ierr;
 
@@ -81,13 +81,13 @@ PetscErrorCode  PetscObjectViewAMS(PetscObject obj,PetscViewer viewer)
   if (obj->amsmem) PetscFunctionReturn(0);
   ierr = PetscObjectName(obj);CHKERRQ(ierr);
 
-  PetscStackCallAMS(AMS_Memory_Create,(obj->name,&obj->amsmem));
-  PetscStackCallAMS(AMS_New_Field,(obj->amsmem,"Class",&obj->class_name,1,AMS_READ,AMS_STRING));
-  PetscStackCallAMS(AMS_New_Field,(obj->amsmem,"Type",&obj->type_name,1,AMS_READ,AMS_STRING));
-  PetscStackCallAMS(AMS_New_Field,(obj->amsmem,"Id",&obj->id,1,AMS_READ,AMS_INT));
-  PetscStackCallAMS(AMS_New_Field,(obj->amsmem,"ParentId",&obj->parentid,1,AMS_READ,AMS_INT));
-  PetscStackCallAMS(AMS_New_Field,(obj->amsmem,"Name",&obj->name,1,AMS_READ,AMS_STRING));
-  PetscStackCallAMS(AMS_New_Field,(obj->amsmem,"Publish Block",&obj->amspublishblock,1,AMS_READ,AMS_BOOLEAN));
-  PetscStackCallAMS(AMS_New_Field,(obj->amsmem,"Block",&obj->amsblock,1,AMS_WRITE,AMS_BOOLEAN));
+  PetscStackCallSAWs(SAWS_Directory_Create,(obj->name,&obj->amsmem));
+  PetscStackCallSAWs(SAWS_New_Variable,(obj->amsmem,"Class",&obj->class_name,1,SAWS_READ,SAWS_STRING));
+  PetscStackCallSAWs(SAWS_New_Variable,(obj->amsmem,"Type",&obj->type_name,1,SAWS_READ,SAWS_STRING));
+  PetscStackCallSAWs(SAWS_New_Variable,(obj->amsmem,"Id",&obj->id,1,SAWS_READ,SAWS_INT));
+  PetscStackCallSAWs(SAWS_New_Variable,(obj->amsmem,"ParentId",&obj->parentid,1,SAWS_READ,SAWS_INT));
+  PetscStackCallSAWs(SAWS_New_Variable,(obj->amsmem,"Name",&obj->name,1,SAWS_READ,SAWS_STRING));
+  PetscStackCallSAWs(SAWS_New_Variable,(obj->amsmem,"Publish Block",&obj->amspublishblock,1,SAWS_READ,SAWS_BOOLEAN));
+  PetscStackCallSAWs(SAWS_New_Variable,(obj->amsmem,"Block",&obj->amsblock,1,SAWS_WRITE,SAWS_BOOLEAN));
   PetscFunctionReturn(0);
 }

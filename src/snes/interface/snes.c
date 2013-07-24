@@ -183,8 +183,8 @@ PetscErrorCode  SNESLoad(SNES snes, PetscViewer viewer)
 }
 
 #include <petscdraw.h>
-#if defined(PETSC_HAVE_AMS)
-#include <petscviewerams.h>
+#if defined(PETSC_HAVE_SAWS)
+#include <petscviewersaws.h>
 #endif
 #undef __FUNCT__
 #define __FUNCT__ "SNESView"
@@ -225,7 +225,7 @@ PetscErrorCode  SNESView(SNES snes,PetscViewer viewer)
   SNESLineSearch linesearch;
   PetscBool      iascii,isstring,isbinary,isdraw;
   DMSNES         dmsnes;
-#if defined(PETSC_HAVE_AMS)
+#if defined(PETSC_HAVE_SAWS)
   PetscBool      isams;
 #endif
 
@@ -241,8 +241,8 @@ PetscErrorCode  SNESView(SNES snes,PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_AMS)
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERAMS,&isams);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_SAWS)
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSAWS,&isams);CHKERRQ(ierr);
 #endif
   if (iascii) {
     ierr = PetscObjectPrintClassNamePrefixType((PetscObject)snes,viewer);CHKERRQ(ierr);
@@ -314,15 +314,15 @@ PetscErrorCode  SNESView(SNES snes,PetscViewer viewer)
     if (snes->ops->view) {
       ierr = (*snes->ops->view)(snes,viewer);CHKERRQ(ierr);
     }
-#if defined(PETSC_HAVE_AMS)
+#if defined(PETSC_HAVE_SAWS)
   } else if (isams) {
     if (!((PetscObject)snes)->amsmem) {
-      ierr = PetscObjectViewAMS((PetscObject)snes,viewer);CHKERRQ(ierr);
-      PetscStackCallAMS(AMS_New_Field,(((PetscObject)snes)->amsmem,"its",&snes->iter,1,AMS_READ,AMS_INT));
+      ierr = PetscObjectViewSAWs((PetscObject)snes,viewer);CHKERRQ(ierr);
+      PetscStackCallSAWs(SAWS_New_Variable,(((PetscObject)snes)->amsmem,"its",&snes->iter,1,SAWS_READ,SAWS_INT));
       if (!snes->conv_hist) {
         ierr = SNESSetConvergenceHistory(snes,NULL,NULL,PETSC_DECIDE,PETSC_FALSE);CHKERRQ(ierr);
       }
-      PetscStackCallAMS(AMS_New_Field,(((PetscObject)snes)->amsmem,"conv_hist",snes->conv_hist,10,AMS_READ,AMS_DOUBLE));
+      PetscStackCallSAWs(SAWS_New_Variable,(((PetscObject)snes)->amsmem,"conv_hist",snes->conv_hist,10,SAWS_READ,SAWS_DOUBLE));
     }
 #endif
   }
@@ -843,13 +843,13 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
   ierr = PetscOptionsEnum("-snes_npc_side","SNES nonlinear preconditioner side","SNESSetPCSide",PCSides,(PetscEnum)pcside,(PetscEnum*)&pcside,&flg);CHKERRQ(ierr);
   if (flg) {ierr = SNESSetPCSide(snes,pcside);CHKERRQ(ierr);}
 
-#if defined(PETSC_HAVE_AMS)
+#if defined(PETSC_HAVE_SAWS)
   {
   PetscBool set;
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsBool("-snes_ams_block","Block for AMS memory snooper at end of SNESSolve","PetscObjectAMSBlock",((PetscObject)snes)->amspublishblock,&flg,&set);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-snes_saws_block","Block for SAWs memory snooper at end of SNESSolve","PetscObjectSAWsBlock",((PetscObject)snes)->amspublishblock,&flg,&set);CHKERRQ(ierr);
   if (set) {
-    ierr = PetscObjectAMSSetBlock((PetscObject)snes,flg);CHKERRQ(ierr);
+    ierr = PetscObjectSAWsSetBlock((PetscObject)snes,flg);CHKERRQ(ierr);
   }
   }
 #endif
@@ -1041,9 +1041,9 @@ PetscErrorCode  SNESSetIterationNumber(SNES snes,PetscInt iter)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
-  ierr       = PetscObjectAMSTakeAccess((PetscObject)snes);CHKERRQ(ierr);
+  ierr       = PetscObjectSAWsTakeAccess((PetscObject)snes);CHKERRQ(ierr);
   snes->iter = iter;
-  ierr       = PetscObjectAMSGrantAccess((PetscObject)snes);CHKERRQ(ierr);
+  ierr       = PetscObjectSAWsGrantAccess((PetscObject)snes);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1101,9 +1101,9 @@ PetscErrorCode  SNESSetFunctionNorm(SNES snes,PetscReal fnorm)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
-  ierr       = PetscObjectAMSTakeAccess((PetscObject)snes);CHKERRQ(ierr);
+  ierr       = PetscObjectSAWsTakeAccess((PetscObject)snes);CHKERRQ(ierr);
   snes->norm = fnorm;
-  ierr       = PetscObjectAMSGrantAccess((PetscObject)snes);CHKERRQ(ierr);
+  ierr       = PetscObjectSAWsGrantAccess((PetscObject)snes);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2793,8 +2793,8 @@ PetscErrorCode  SNESDestroy(SNES *snes)
   ierr = SNESReset((*snes));CHKERRQ(ierr);
   ierr = SNESDestroy(&(*snes)->pc);CHKERRQ(ierr);
 
-  /* if memory was published with AMS then destroy it */
-  ierr = PetscObjectAMSViewOff((PetscObject)*snes);CHKERRQ(ierr);
+  /* if memory was published with SAWs then destroy it */
+  ierr = PetscObjectSAWsViewOff((PetscObject)*snes);CHKERRQ(ierr);
   if ((*snes)->ops->destroy) {ierr = (*((*snes))->ops->destroy)((*snes));CHKERRQ(ierr);}
 
   ierr = DMDestroy(&(*snes)->dm);CHKERRQ(ierr);
@@ -3878,7 +3878,7 @@ PetscErrorCode  SNESSolve(SNES snes,Vec b,Vec x)
   ierr = VecViewFromOptions(snes->vec_sol,((PetscObject)snes)->prefix,"-snes_view_solution");CHKERRQ(ierr);
 
   ierr = VecDestroy(&xcreated);CHKERRQ(ierr);
-  ierr = PetscObjectAMSBlock((PetscObject)snes);CHKERRQ(ierr);
+  ierr = PetscObjectSAWsBlock((PetscObject)snes);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

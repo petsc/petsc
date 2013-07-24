@@ -725,8 +725,8 @@ PetscErrorCode  MatSetUp(Mat A)
   PetscFunctionReturn(0);
 }
 
-#if defined(PETSC_HAVE_AMS)
-#include <petscviewerams.h>
+#if defined(PETSC_HAVE_SAWS)
+#include <petscviewersaws.h>
 #endif
 #undef __FUNCT__
 #define __FUNCT__ "MatView"
@@ -813,7 +813,7 @@ PetscErrorCode  MatView(Mat mat,PetscViewer viewer)
   PetscInt          rows,cols,bs;
   PetscBool         iascii;
   PetscViewerFormat format;
-#if defined(PETSC_HAVE_AMS)
+#if defined(PETSC_HAVE_SAWS)
   PetscBool      isams;
 #endif
 
@@ -830,8 +830,8 @@ PetscErrorCode  MatView(Mat mat,PetscViewer viewer)
 
   ierr = PetscLogEventBegin(MAT_View,mat,viewer,0,0);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_AMS)
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERAMS,&isams);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_SAWS)
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSAWS,&isams);CHKERRQ(ierr);
 #endif
   if (iascii) {
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
@@ -857,10 +857,10 @@ PetscErrorCode  MatView(Mat mat,PetscViewer viewer)
         ierr = PetscViewerASCIIPrintf(viewer,"total number of mallocs used during MatSetValues calls =%D\n",(PetscInt)info.mallocs);CHKERRQ(ierr);
       }
     }
-#if defined(PETSC_HAVE_AMS)
+#if defined(PETSC_HAVE_SAWS)
   } else if (isams) {
     if (!((PetscObject)mat)->amsmem) {
-      ierr = PetscObjectViewAMS((PetscObject)mat,viewer);CHKERRQ(ierr);
+      ierr = PetscObjectViewSAWs((PetscObject)mat,viewer);CHKERRQ(ierr);
     }
 #endif
   }
@@ -1017,8 +1017,8 @@ PetscErrorCode  MatDestroy(Mat *A)
   if (--((PetscObject)(*A))->refct > 0) {*A = NULL; PetscFunctionReturn(0);}
 
   ierr = PetscViewerDestroy(&(*A)->viewonassembly);CHKERRQ(ierr);
-  /* if memory was published with AMS then destroy it */
-  ierr = PetscObjectAMSViewOff((PetscObject)*A);CHKERRQ(ierr);
+  /* if memory was published with SAWs then destroy it */
+  ierr = PetscObjectSAWsViewOff((PetscObject)*A);CHKERRQ(ierr);
   if ((*A)->ops->destroy) {
     ierr = (*(*A)->ops->destroy)(*A);CHKERRQ(ierr);
   }

@@ -12,15 +12,15 @@ PetscStack *petscstack = 0;
 #endif
 
 
-#if defined(PETSC_HAVE_AMS)
-#include <petscviewerams.h>
+#if defined(PETSC_HAVE_SAWS)
+#include <petscviewersaws.h>
 
-static AMS_Memory amsmemstack = NULL;
+static SAWS_Directory amsmemstack = NULL;
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscStackAMSGrantAccess"
+#define __FUNCT__ "PetscStackSAWsGrantAccess"
 /*@C
-   PetscStackAMSGrantAccess - Grants access of the PETSc stack frames to the AMS publisher
+   PetscStackSAWsGrantAccess - Grants access of the PETSc stack frames to the SAWs publisher
 
    Collective on PETSC_COMM_WORLD?
 
@@ -28,22 +28,22 @@ static AMS_Memory amsmemstack = NULL;
 
    Concepts: publishing object
 
-   Developers Note: Cannot use PetscFunctionBegin/Return() or PetscStackCallAMS() since it may be used within those routines
+   Developers Note: Cannot use PetscFunctionBegin/Return() or PetscStackCallSAWs() since it may be used within those routines
 
-.seealso: PetscObjectSetName(), PetscObjectAMSViewOff(), PetscObjectAMSTakeAccess()
+.seealso: PetscObjectSetName(), PetscObjectSAWsViewOff(), PetscObjectSAWsTakeAccess()
 
 @*/
-void  PetscStackAMSGrantAccess(void)
+void  PetscStackSAWsGrantAccess(void)
 {
   if (amsmemstack) {
-    AMS_Unlock_Memory(amsmemstack);
+    SAWS_Unlock_Directory(amsmemstack);
   }
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscStackAMSTakeAccess"
+#define __FUNCT__ "PetscStackSAWsTakeAccess"
 /*@C
-   PetscStackAMSTakeAccess - Takes access of the PETSc stack frames to the AMS publisher
+   PetscStackSAWsTakeAccess - Takes access of the PETSc stack frames to the SAWs publisher
 
    Collective on PETSC_COMM_WORLD?
 
@@ -51,40 +51,40 @@ void  PetscStackAMSGrantAccess(void)
 
    Concepts: publishing object
 
-   Developers Note: Cannot use PetscFunctionBegin/Return() or PetscStackCallAMS() since it may be used within those routines
+   Developers Note: Cannot use PetscFunctionBegin/Return() or PetscStackCallSAWs() since it may be used within those routines
 
-.seealso: PetscObjectSetName(), PetscObjectAMSViewOff(), PetscObjectAMSTakeAccess()
+.seealso: PetscObjectSetName(), PetscObjectSAWsViewOff(), PetscObjectSAWsTakeAccess()
 
 @*/
-void  PetscStackAMSTakeAccess(void)
+void  PetscStackSAWsTakeAccess(void)
 {
   if (amsmemstack) {
-    AMS_Lock_Memory(amsmemstack);
+    SAWS_Lock_Directory(amsmemstack);
   }
 }
 
-PetscErrorCode PetscStackViewAMS(void)
+PetscErrorCode PetscStackViewSAWs(void)
 {
-  AMS_Memory     mem;
+  SAWS_Directory    mem;
   PetscStack*    petscstackp;
 
   petscstackp = (PetscStack*)PetscThreadLocalGetValue(petscstack);
-  PetscStackCallAMS(AMS_Memory_Create,("Stack",&mem));
-  PetscStackCallAMS(AMS_New_Field,(mem,"functions",petscstackp->function,10,AMS_READ,AMS_STRING));
-  PetscStackCallAMS(AMS_New_Field,(mem,"current size",&petscstackp->currentsize,1,AMS_READ,AMS_INT));
+  PetscStackCallSAWs(SAWS_Directory_Create,("Stack",&mem));
+  PetscStackCallSAWs(SAWS_New_Variable,(mem,"functions",petscstackp->function,10,SAWS_READ,SAWS_STRING));
+  PetscStackCallSAWs(SAWS_New_Variable,(mem,"current size",&petscstackp->currentsize,1,SAWS_READ,SAWS_INT));
   amsmemstack = mem;
   return 0;
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscStackAMSViewOff"
-PetscErrorCode PetscStackAMSViewOff(void)
+#define __FUNCT__ "PetscStackSAWsViewOff"
+PetscErrorCode PetscStackSAWsViewOff(void)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (!amsmemstack) PetscFunctionReturn(0);
-  ierr        = AMS_Memory_Destroy(&amsmemstack);CHKERRQ(ierr);
+  ierr        = SAWS_Directory_Destroy(&amsmemstack);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -99,11 +99,11 @@ PetscErrorCode PetscStackCreate(void)
   petscstack_in->currentsize = 0;
   PetscThreadLocalSetValue((PetscThreadKey*)&petscstack,petscstack_in);
 
-#if defined(PETSC_HAVE_AMS)
+#if defined(PETSC_HAVE_SAWS)
   {
   PetscBool flg = PETSC_FALSE;
   PetscOptionsHasName(NULL,"-stack_view",&flg);
-  if (flg) PetscStackViewAMS();
+  if (flg) PetscStackViewSAWs();
   }
 #endif
   return 0;
@@ -203,18 +203,18 @@ PetscErrorCode  PetscStackDestroy(void)
   PetscFunctionReturn(0);
 }
 
-#if defined(PETSC_HAVE_AMS)     /* AMS stack functions do nothing in optimized mode */
-void PetscStackAMSGrantAccess(void) {}
-void PetscStackAMSTakeAccess(void) {}
+#if defined(PETSC_HAVE_SAWS)     /* SAWs stack functions do nothing in optimized mode */
+void PetscStackSAWsGrantAccess(void) {}
+void PetscStackSAWsTakeAccess(void) {}
 
-PetscErrorCode PetscStackViewAMS(void)
+PetscErrorCode PetscStackViewSAWs(void)
 {
   return 0;
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscStackAMSViewOff"
-PetscErrorCode  PetscStackAMSViewOff(void)
+#define __FUNCT__ "PetscStackSAWsViewOff"
+PetscErrorCode  PetscStackSAWsViewOff(void)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);

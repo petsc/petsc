@@ -217,7 +217,7 @@ PETSC_EXTERN PetscErrorCode PetscOptionsBoolArray(const char[],const char[],cons
 
 
 PETSC_EXTERN PetscErrorCode PetscOptionsSetFromOptions(void);
-PETSC_EXTERN PetscErrorCode PetscOptionsAMSDestroy(void);
+PETSC_EXTERN PetscErrorCode PetscOptionsSAWsDestroy(void);
 
 /*
     See manual page for PetscOptionsBegin()

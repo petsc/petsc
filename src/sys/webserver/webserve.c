@@ -13,7 +13,7 @@ PETSC_INTERN PetscErrorCode PetscSocketListen(int,int*);
 /*
       Implements a crude webserver allowing the snooping on running application codes.
 
-     Developer Notes: Most of this code, including the webserver, perhaps, belongs properly in the AMS with perhaps a few hooks
+     Developer Notes: Most of this code, including the webserver, perhaps, belongs properly in the SAWs with perhaps a few hooks
       for application/libraries like PETSc to interact with it.
 */
 #include <pthread.h>
@@ -66,11 +66,11 @@ PetscErrorCode PetscWebSendError(FILE *f, int status, const char *title, const c
   PetscFunctionReturn(0);
 }
 
-#include <petscviewerams.h>
+#include <petscviewersaws.h>
 #undef __FUNCT__
 #define __FUNCT__ "PetscAMSObjectsDisplayList"
 /*
-    Displays all the PETSc objects published with AMS in a simple HTML list
+    Displays all the PETSc objects published with SAWs in a simple HTML list
 
     Does NOT use Javascript or JSON-RPC
 */
@@ -132,7 +132,7 @@ static PetscErrorCode PetscAMSObjectsDisplayList(FILE *fd)
 #undef __FUNCT__
 #define __FUNCT__ "PetscAMSObjectsDisplayTree"
 /*
-    Displays all the PETSc objects published with AMS in very crude HTML 5 graphics
+    Displays all the PETSc objects published with SAWs in very crude HTML 5 graphics
 
     Does NOT use Javascript or JSON-RPC
 */
@@ -393,7 +393,7 @@ PETSC_UNUSED static PetscErrorCode YAML_echo(PetscInt argc,char **args,PetscInt 
 }
 
 /* -------------------------------------------------------------------------------------------
-     The following set of functions are wrapper functions for AMS functions that
+     The following set of functions are wrapper functions for SAWs functions that
 
     1)  convert from string arguments to appropriate AMS arguments (int, double, char*, etc)
     2)  call the AMS function

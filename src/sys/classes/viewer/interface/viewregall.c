@@ -11,7 +11,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_Mathematica(PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscViewerCreate_Netcdf(PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscViewerCreate_HDF5(PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscViewerCreate_Matlab(PetscViewer);
-PETSC_EXTERN PetscErrorCode PetscViewerCreate_AMS(PetscViewer);
+PETSC_EXTERN PetscErrorCode PetscViewerCreate_SAWs(PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscViewerCreate_VTK(PetscViewer);
 
 #undef __FUNCT__
@@ -47,8 +47,8 @@ PetscErrorCode  PetscViewerRegisterAll(void)
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
   ierr = PetscViewerRegister(PETSCVIEWERMATLAB,     PetscViewerCreate_Matlab);CHKERRQ(ierr);
 #endif
-#if defined(PETSC_HAVE_AMS)
-  ierr = PetscViewerRegister(PETSCVIEWERAMS,        PetscViewerCreate_AMS);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_SAWS)
+  ierr = PetscViewerRegister(PETSCVIEWERSAWS,        PetscViewerCreate_SAWs);CHKERRQ(ierr);
 #endif
   ierr = PetscViewerRegister(PETSCVIEWERVTK,        PetscViewerCreate_VTK);CHKERRQ(ierr);
   PetscFunctionReturn(0);

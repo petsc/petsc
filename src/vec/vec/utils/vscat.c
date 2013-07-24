@@ -1718,8 +1718,8 @@ PetscErrorCode  VecScatterDestroy(VecScatter *ctx)
   if ((*ctx)->inuse) SETERRQ(((PetscObject)(*ctx))->comm,PETSC_ERR_ARG_WRONGSTATE,"Scatter context is in use");
   if (--((PetscObject)(*ctx))->refct > 0) {*ctx = 0; PetscFunctionReturn(0);}
 
-  /* if memory was published with AMS then destroy it */
-  ierr = PetscObjectAMSViewOff((PetscObject)(*ctx));CHKERRQ(ierr);
+  /* if memory was published with SAWs then destroy it */
+  ierr = PetscObjectSAWsViewOff((PetscObject)(*ctx));CHKERRQ(ierr);
   ierr = (*(*ctx)->destroy)(*ctx);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);

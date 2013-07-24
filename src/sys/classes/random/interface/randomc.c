@@ -204,8 +204,8 @@ PetscErrorCode  PetscRandomSetFromOptions(PetscRandom rnd)
   PetscFunctionReturn(0);
 }
 
-#if defined(PETSC_HAVE_AMS)
-#include <petscviewerams.h>
+#if defined(PETSC_HAVE_SAWS)
+#include <petscviewersaws.h>
 #endif
 #undef __FUNCT__
 #define __FUNCT__ "PetscRandomView"
@@ -237,7 +237,7 @@ PetscErrorCode  PetscRandomView(PetscRandom rnd,PetscViewer viewer)
 {
   PetscErrorCode ierr;
   PetscBool      iascii;
-#if defined(PETSC_HAVE_AMS)
+#if defined(PETSC_HAVE_SAWS)
   PetscBool      isams;
 #endif
 
@@ -250,8 +250,8 @@ PetscErrorCode  PetscRandomView(PetscRandom rnd,PetscViewer viewer)
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
   PetscCheckSameComm(rnd,1,viewer,2);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_AMS)
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERAMS,&isams);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_SAWS)
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSAWS,&isams);CHKERRQ(ierr);
 #endif
   if (iascii) {
     PetscMPIInt rank;
@@ -260,11 +260,11 @@ PetscErrorCode  PetscRandomView(PetscRandom rnd,PetscViewer viewer)
     ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%D] Random type %s, seed %D\n",rank,((PetscObject)rnd)->type_name,rnd->seed);CHKERRQ(ierr);
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_FALSE);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_AMS)
+#if defined(PETSC_HAVE_SAWS)
   } else if (isams) {
     if (!((PetscObject)rnd)->amsmem) {
-      ierr = PetscObjectViewAMS((PetscObject)rnd,viewer);CHKERRQ(ierr);
-      PetscStackCallAMS(AMS_New_Field,(((PetscObject)rnd)->amsmem,"Low",&rnd->low,1,AMS_READ,AMS_DOUBLE));
+      ierr = PetscObjectViewSAWs((PetscObject)rnd,viewer);CHKERRQ(ierr);
+      PetscStackCallSAWs(SAWS_New_Variable,(((PetscObject)rnd)->amsmem,"Low",&rnd->low,1,SAWS_READ,SAWS_DOUBLE));
     }
 #endif
   }

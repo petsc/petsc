@@ -36,7 +36,7 @@ PetscErrorCode  PetscHeaderCreate_Private(PetscObject h,PetscClassId classid,con
   h->mansec                = (char*)mansec;
   h->prefix                = 0;
   h->refct                 = 1;
-#if defined(PETSC_HAVE_AMS)
+#if defined(PETSC_HAVE_SAWS)
   h->amsmem                = NULL;
 #endif
   h->id                    = idcnt++;

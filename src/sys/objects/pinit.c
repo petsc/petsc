@@ -793,8 +793,8 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   }
   ierr = PetscOptionsCheckInitial_Private();CHKERRQ(ierr);
 
-#if defined(PETSC_HAVE_AMS)
-  ierr = AMS_Initialize();CHKERRQ(ierr);
+#if defined(PETSC_HAVE_SAWS)
+  ierr = SAWS_Initialize();CHKERRQ(ierr);
 #endif
 
   /* SHOULD PUT IN GUARDS: Make sure logging is initialized, even if we do not print it out */
@@ -959,11 +959,11 @@ PetscErrorCode  PetscFinalize(void)
 #endif
 
 
-#if defined(PETSC_HAVE_AMS)
+#if defined(PETSC_HAVE_SAWS)
   flg = PETSC_FALSE;
   ierr = PetscOptionsGetBool(NULL,"-options_gui",&flg,NULL);CHKERRQ(ierr);
   if (flg) {
-    ierr = PetscOptionsAMSDestroy();CHKERRQ(ierr);
+    ierr = PetscOptionsSAWsDestroy();CHKERRQ(ierr);
   }
 #endif
 
@@ -1128,8 +1128,8 @@ PetscErrorCode  PetscFinalize(void)
     }
   }
 
-#if defined(PETSC_HAVE_AMS)
-    AMS_Finalize();CHKERRQ(ierr);
+#if defined(PETSC_HAVE_SAWS)
+    SAWS_Finalize();CHKERRQ(ierr);
 #endif
 
   {

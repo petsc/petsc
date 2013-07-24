@@ -9,8 +9,8 @@
 */
 PetscFunctionList PetscDrawList = 0;
 
-#if defined(PETSC_HAVE_AMS)
-#include <petscviewerams.h>
+#if defined(PETSC_HAVE_SAWS)
+#include <petscviewersaws.h>
 #endif
 
 #undef __FUNCT__
@@ -48,7 +48,7 @@ PetscErrorCode  PetscDrawView(PetscDraw indraw,PetscViewer viewer)
 {
   PetscErrorCode ierr;
   PetscBool      isdraw;
-#if defined(PETSC_HAVE_AMS)
+#if defined(PETSC_HAVE_SAWS)
   PetscBool      isams;
 #endif
 
@@ -59,8 +59,8 @@ PetscErrorCode  PetscDrawView(PetscDraw indraw,PetscViewer viewer)
   PetscCheckSameComm(indraw,1,viewer,2);
 
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_AMS)
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERAMS,&isams);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_SAWS)
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSAWS,&isams);CHKERRQ(ierr);
 #endif
   if (isdraw) {
     PetscDraw draw;
@@ -74,10 +74,10 @@ PetscErrorCode  PetscDrawView(PetscDraw indraw,PetscViewer viewer)
     ierr   = PetscDrawBoxedString(draw,x,y,PETSC_DRAW_RED,PETSC_DRAW_BLACK,str,NULL,&h);CHKERRQ(ierr);
     bottom = y - h;
     ierr = PetscDrawPushCurrentPoint(draw,x,bottom);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_AMS)
+#if defined(PETSC_HAVE_SAWS)
   } else if (isams) {
     if (!((PetscObject)indraw)->amsmem) {
-      ierr = PetscObjectViewAMS((PetscObject)indraw,viewer);CHKERRQ(ierr);
+      ierr = PetscObjectViewSAWs((PetscObject)indraw,viewer);CHKERRQ(ierr);
     }
 #endif
   } else if (indraw->ops->view) {

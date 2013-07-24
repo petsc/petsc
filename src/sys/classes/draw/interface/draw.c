@@ -274,7 +274,7 @@ PetscErrorCode  PetscDrawDestroy(PetscDraw *draw)
   }
 
   /* if memory was published then destroy it */
-  ierr = PetscObjectAMSViewOff((PetscObject)*draw);CHKERRQ(ierr);
+  ierr = PetscObjectSAWsViewOff((PetscObject)*draw);CHKERRQ(ierr);
 
   if ((*draw)->ops->destroy) {
     ierr = (*(*draw)->ops->destroy)(*draw);CHKERRQ(ierr);

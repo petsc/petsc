@@ -53,10 +53,10 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
 
   ierr = (*ksp->converged)(ksp, 0, zeta0, &ksp->reason, ksp->cnvP);CHKERRQ(ierr);
   if (ksp->reason) {
-    ierr       = PetscObjectAMSTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
+    ierr       = PetscObjectSAWsTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
     ksp->its   = 0;
     ksp->rnorm = zeta0;
-    ierr       = PetscObjectAMSGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
+    ierr       = PetscObjectSAWsGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
 
@@ -135,12 +135,12 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
       /* NEW: check for early exit */
       ierr = (*ksp->converged)(ksp, k+j, nrm0, &ksp->reason, ksp->cnvP);CHKERRQ(ierr);
       if (ksp->reason) {
-        ierr = PetscObjectAMSTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
+        ierr = PetscObjectSAWsTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
 
         ksp->its   = k+j;
         ksp->rnorm = nrm0;
 
-        ierr = PetscObjectAMSGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
+        ierr = PetscObjectSAWsGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
         if (ksp->reason < 0) PetscFunctionReturn(0);
       }
     }
