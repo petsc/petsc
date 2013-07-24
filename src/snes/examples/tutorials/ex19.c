@@ -94,6 +94,8 @@ int main(int argc,char **argv)
 {
   AppCtx         user;                /* user-defined work context */
   PetscInt       mx,my,its;
+  char           filename[PETSC_MAX_PATH_LEN] = "ex19.vts";
+  PetscBool      vtkoutput;
   PetscErrorCode ierr;
   MPI_Comm       comm;
   SNES           snes;
@@ -127,6 +129,7 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetReal(NULL,"-prandtl",&user.prandtl,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(NULL,"-grashof",&user.grashof,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(NULL,"-contours",&user.draw_contours);CHKERRQ(ierr);
+  ierr = PetscOptionsString("-vtkoutput","Output solution in vts format","",filename,filename,sizeof(filename),&vtkoutput);CHKERRQ(ierr);
 
   ierr = DMDASetFieldName(da,0,"x_velocity");CHKERRQ(ierr);
   ierr = DMDASetFieldName(da,1,"y_velocity");CHKERRQ(ierr);
@@ -164,6 +167,13 @@ int main(int argc,char **argv)
   */
   if (user.draw_contours) {
     ierr = VecView(x,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
+  }
+
+  if (vtkoutput) {
+    PetscViewer viewer;
+    ierr = PetscViewerVTKOpen(PETSC_COMM_WORLD,filename,FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
+    ierr = VecView(x,viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
