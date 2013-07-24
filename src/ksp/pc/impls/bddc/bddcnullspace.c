@@ -59,11 +59,8 @@ PetscErrorCode PCBDDCNullSpaceAssembleCoarse(PC pc, MatNullSpace* CoarseNullSpac
     }
   }
   if (coarse_nsp_size > 0) {
-    /* TODO orthonormalize vecs when new_nsp_size > 0! */
-    MPI_Comm coarse_comm;
-    ierr = PetscObjectGetComm((PetscObject)(pcbddc->coarse_mat),&coarse_comm);CHKERRQ(ierr);
-    ierr = VecNormalize(coarse_nsp_vecs[0],NULL);CHKERRQ(ierr);
-    ierr = MatNullSpaceCreate(coarse_comm,PETSC_FALSE,coarse_nsp_size,coarse_nsp_vecs,&tempCoarseNullSpace);CHKERRQ(ierr);
+    ierr = PCBDDCOrthonormalizeVecs(coarse_nsp_size,coarse_nsp_vecs);CHKERRQ(ierr);
+    ierr = MatNullSpaceCreate(PetscObjectComm((PetscObject)(pcbddc->coarse_mat)),PETSC_FALSE,coarse_nsp_size,coarse_nsp_vecs,&tempCoarseNullSpace);CHKERRQ(ierr);
     for (i=0;i<nsp_size+1;i++) {
       ierr = VecDestroy(&coarse_nsp_vecs[i]);CHKERRQ(ierr);
     }
@@ -374,8 +371,7 @@ PetscErrorCode PCBDDCNullSpaceAdaptGlobal(PC pc)
     ierr = VecScatterBegin(pcis->global_to_B,pcis->vec1_B,new_nsp_vecs[i+start_new],INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
     ierr = VecScatterEnd  (pcis->global_to_B,pcis->vec1_B,new_nsp_vecs[i+start_new],INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   }
-  ierr = VecNormalize(new_nsp_vecs[0],NULL);CHKERRQ(ierr);
-  /* TODO : Orthonormalize vecs when new_nsp_size > 0! */
+  ierr = PCBDDCOrthonormalizeVecs(new_nsp_size,new_nsp_vecs);CHKERRQ(ierr);
 #if 0
   PetscBool nsp_t=PETSC_FALSE;
   ierr = MatNullSpaceTest(pcbddc->NullSpace,pc->pmat,&nsp_t);CHKERRQ(ierr);
