@@ -73,11 +73,13 @@ typedef struct {
 } Mat_MatMatMatMult;
 
 typedef struct { /* used by MatGetRedundantMatrix() for reusing matredundant */
-  PetscInt    nzlocal,nsends,nrecvs;
-  PetscMPIInt *send_rank,*recv_rank;
-  PetscInt    *sbuf_nz,*rbuf_nz,*sbuf_j,**rbuf_j;
-  PetscScalar *sbuf_a,**rbuf_a;
+  PetscInt     nzlocal,nsends,nrecvs;
+  PetscMPIInt  *send_rank,*recv_rank;
+  PetscInt     *sbuf_nz,*rbuf_nz,*sbuf_j,**rbuf_j;
+  PetscScalar  *sbuf_a,**rbuf_a;
   PetscSubcomm psubcomm;
+  IS           isrow,iscol;
+  Mat          *matseq;
   PetscErrorCode (*Destroy)(Mat);
 } Mat_Redundant;
 
