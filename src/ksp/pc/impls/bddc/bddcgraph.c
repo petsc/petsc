@@ -2,6 +2,7 @@
 #include "bddcprivate.h"
 #include "bddcstructs.h"
 
+/* special marks */
 #define NEUMANN_MARK -1
 #define DIRICHLET_MARK -2
 #define LOCAL_PERIODIC_MARK -3
@@ -26,6 +27,7 @@ PetscErrorCode PCBDDCGraphASCIIView(PCBDDCGraph graph, PetscInt verbosity_level,
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"%d:\n",i);CHKERRQ(ierr);
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"   touched: %d\n",graph->touched[i]);CHKERRQ(ierr);
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"   which_dof: %d\n",graph->which_dof[i]);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"   special_dof: %d\n",graph->special_dof[i]);CHKERRQ(ierr);
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"   neighbours: %d\n",graph->count[i]);CHKERRQ(ierr);
       if (graph->count[i]) {
         ierr = PetscViewerASCIISynchronizedPrintf(viewer,"     set of neighbours:");CHKERRQ(ierr);
@@ -99,7 +101,7 @@ PetscErrorCode PCBDDCGraphGetCandidatesIS(PCBDDCGraph graph, PetscBool use_faces
   twodim_flag = PETSC_FALSE;
   for (i=0;i<graph->ncc;i++) {
     if (graph->cptr[i+1]-graph->cptr[i] > graph->custom_minimal_size) {
-      if (graph->count[graph->queue[graph->cptr[i]]] == 1) {
+      if (graph->count[graph->queue[graph->cptr[i]]] == 1 && graph->special_dof[graph->queue[graph->cptr[i]]] != NEUMANN_MARK) {
         nfc++;
       } else { /* note that nec will be zero in 2d */
         nec++;
@@ -132,7 +134,7 @@ PetscErrorCode PCBDDCGraphGetCandidatesIS(PCBDDCGraph graph, PetscBool use_faces
   nvc = 0;
   for (i=0;i<graph->ncc;i++) {
     if (graph->cptr[i+1]-graph->cptr[i] > graph->custom_minimal_size) {
-      if (graph->count[graph->queue[graph->cptr[i]]] == 1) {
+      if (graph->count[graph->queue[graph->cptr[i]]] == 1 && graph->special_dof[graph->queue[graph->cptr[i]]] != NEUMANN_MARK) {
         if (twodim_flag) {
           if (use_edges) {
             ierr = ISCreateGeneral(PETSC_COMM_SELF,graph->cptr[i+1]-graph->cptr[i],&graph->queue[graph->cptr[i]],PETSC_COPY_VALUES,&ISForEdges[nec]);CHKERRQ(ierr);
@@ -540,7 +542,7 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponentsLocal(PCBDDCGraph graph)
   ierr = PetscMemzero(graph->touched,graph->nvtxs*sizeof(*graph->touched));CHKERRQ(ierr);
   graph->n_subsets = 0;
   for (i=0;i<graph->nvtxs;i++) {
-    if (graph->which_dof[i] == DIRICHLET_MARK || !graph->count[i]) {
+    if (graph->special_dof[i] == DIRICHLET_MARK || !graph->count[i]) {
       graph->touched[i] = PETSC_TRUE;
       graph->subset[i] = 0;
     }
@@ -780,7 +782,7 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
   ierr = VecGetArray(local_vec,&array);CHKERRQ(ierr);
   for (i=0;i<graph->nvtxs;i++) {
     if (PetscRealPart(array[i]) > 0.0) {
-      graph->which_dof[i] = NEUMANN_MARK;
+      graph->special_dof[i] = NEUMANN_MARK;
     }
   }
   ierr = VecRestoreArray(local_vec,&array);CHKERRQ(ierr);
@@ -815,7 +817,7 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
     if (PetscRealPart(array[i]) > 0.0) {
       graph->touched[i] = PETSC_TRUE;
       graph->subset[i] = 0; /* dirichlet nodes treated as internal -> is it ok? */
-      graph->which_dof[i] = DIRICHLET_MARK;
+      graph->special_dof[i] = DIRICHLET_MARK;
     }
   }
   ierr = VecRestoreArray(local_vec,&array);CHKERRQ(ierr);
@@ -826,7 +828,7 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
 
     for (i=0;i<graph->nvtxs;i++)
       if (graph->mirrors[i])
-        graph->which_dof[i] = LOCAL_PERIODIC_MARK;
+        graph->special_dof[i] = LOCAL_PERIODIC_MARK;
 
     /* sort CSR graph */
     for (i=0;i<graph->nvtxs;i++)
@@ -866,7 +868,7 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
     ierr = ISGetSize(custom_primal_vertices,&is_size);CHKERRQ(ierr);
     ierr = ISGetIndices(custom_primal_vertices,(const PetscInt**)&is_indices);CHKERRQ(ierr);
     for (i=0;i<is_size;i++) {
-      graph->which_dof[is_indices[i]] = SPECIAL_MARK-i;
+      graph->special_dof[is_indices[i]] = SPECIAL_MARK-i;
     }
     ierr = ISRestoreIndices(custom_primal_vertices,(const PetscInt**)&is_indices);CHKERRQ(ierr);
   }
@@ -900,8 +902,8 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
     nodes_touched++;
     /* now find all other nodes having the same set of sharing subdomains */
     for (j=i+1;j<graph->nvtxs;j++){
-      /* check for same number of sharing subdomains and dof number */
-      if (!graph->touched[j] && graph->count[i]==graph->count[j] && graph->which_dof[i] == graph->which_dof[j] ){
+      /* check for same number of sharing subdomains, dof number and same special mark */
+      if (!graph->touched[j] && graph->count[i]==graph->count[j] && graph->which_dof[i] == graph->which_dof[j] && graph->special_dof[i] == graph->special_dof[j]){
         /* check for same set of sharing subdomains */
         same_set=PETSC_TRUE;
         for (k=0;k<graph->count[j];k++){
@@ -971,6 +973,7 @@ PetscErrorCode PCBDDCGraphReset(PCBDDCGraph graph)
                     graph->which_dof,
                     graph->cptr,
                     graph->queue);CHKERRQ(ierr);
+  ierr = PetscFree(graph->special_dof);CHKERRQ(ierr);
   if (graph->mirrors) {
     ierr = PetscFree(graph->mirrors_set[0]);CHKERRQ(ierr);
   }
@@ -1008,6 +1011,7 @@ PetscErrorCode PCBDDCGraphInit(PCBDDCGraph graph, ISLocalToGlobalMapping l2gmap)
                       graph->nvtxs,PetscInt,&graph->which_dof,
                       graph->nvtxs+1,PetscInt,&graph->cptr,
                       graph->nvtxs,PetscInt,&graph->queue);CHKERRQ(ierr);
+  ierr = PetscMalloc(graph->nvtxs*sizeof(PetscInt),&graph->special_dof);CHKERRQ(ierr);
   /* zeroes memory */
   ierr = PetscMemzero(graph->touched,graph->nvtxs*sizeof(PetscBool));CHKERRQ(ierr);
   ierr = PetscMemzero(graph->count,graph->nvtxs*sizeof(PetscInt));CHKERRQ(ierr);
@@ -1015,6 +1019,7 @@ PetscErrorCode PCBDDCGraphInit(PCBDDCGraph graph, ISLocalToGlobalMapping l2gmap)
   ierr = PetscMemzero(graph->which_dof,graph->nvtxs*sizeof(PetscInt));CHKERRQ(ierr);
   ierr = PetscMemzero(graph->cptr,(graph->nvtxs+1)*sizeof(PetscInt));CHKERRQ(ierr);
   ierr = PetscMemzero(graph->queue,graph->nvtxs*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscMemzero(graph->special_dof,graph->nvtxs*sizeof(PetscInt));CHKERRQ(ierr);
   /* zeroes first pointer to neighbour set */
   if (graph->nvtxs) {
     graph->neighbours_set[0] = 0;
@@ -1057,6 +1062,7 @@ PetscErrorCode PCBDDCGraphCreate(PCBDDCGraph *graph)
   new_graph->neighbours_set = 0;
   new_graph->subset = 0;
   new_graph->which_dof = 0;
+  new_graph->special_dof = 0;
   new_graph->cptr = 0;
   new_graph->queue = 0;
   new_graph->count = 0;
