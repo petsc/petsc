@@ -4,6 +4,7 @@ PETSC_CUDA_EXTERN_C_BEGIN
 PETSC_CUDA_EXTERN_C_END
 #include "mpicusparsematimpl.h"
 
+
 #undef __FUNCT__
 #define __FUNCT__ "MatMPIAIJSetPreallocation_MPIAIJCUSPARSE"
 PetscErrorCode  MatMPIAIJSetPreallocation_MPIAIJCUSPARSE(Mat B,PetscInt d_nz,const PetscInt d_nnz[],PetscInt o_nz,const PetscInt o_nnz[])
@@ -19,8 +20,6 @@ PetscErrorCode  MatMPIAIJSetPreallocation_MPIAIJCUSPARSE(Mat B,PetscInt d_nz,con
   if (d_nz < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"d_nz cannot be less than 0: value %D",d_nz);
   if (o_nz < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"o_nz cannot be less than 0: value %D",o_nz);
 
-  ierr = PetscLayoutSetBlockSize(B->rmap,1);CHKERRQ(ierr);
-  ierr = PetscLayoutSetBlockSize(B->cmap,1);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(B->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(B->cmap);CHKERRQ(ierr);
   if (d_nnz) {
@@ -48,6 +47,10 @@ PetscErrorCode  MatMPIAIJSetPreallocation_MPIAIJCUSPARSE(Mat B,PetscInt d_nz,con
   ierr = MatSeqAIJSetPreallocation(b->B,o_nz,o_nnz);CHKERRQ(ierr);
   ierr = MatCUSPARSESetFormat(b->A,MAT_CUSPARSE_MULT,cusparseStruct->diagGPUMatFormat);CHKERRQ(ierr);
   ierr = MatCUSPARSESetFormat(b->B,MAT_CUSPARSE_MULT,cusparseStruct->offdiagGPUMatFormat);CHKERRQ(ierr);
+  ierr = MatCUSPARSESetHandle(b->A,cusparseStruct->handle);CHKERRQ(ierr);
+  ierr = MatCUSPARSESetHandle(b->B,cusparseStruct->handle);CHKERRQ(ierr);
+  ierr = MatCUSPARSESetStream(b->A,cusparseStruct->stream);CHKERRQ(ierr);
+  ierr = MatCUSPARSESetStream(b->B,cusparseStruct->stream);CHKERRQ(ierr);
 
   B->preallocated = PETSC_TRUE;
   PetscFunctionReturn(0);
@@ -206,9 +209,15 @@ PetscErrorCode MatDestroy_MPIAIJCUSPARSE(Mat A)
   PetscErrorCode     ierr;
   Mat_MPIAIJ         *a              = (Mat_MPIAIJ*)A->data;
   Mat_MPIAIJCUSPARSE *cusparseStruct = (Mat_MPIAIJCUSPARSE*)a->spptr;
+  cudaError_t        err;
+  cusparseStatus_t   stat;
 
   PetscFunctionBegin;
   try {
+    ierr = MatCUSPARSEClearHandle(a->A);CHKERRQ(ierr);
+    ierr = MatCUSPARSEClearHandle(a->B);CHKERRQ(ierr);
+    stat = cusparseDestroy(cusparseStruct->handle);CHKERRCUSP(stat);
+    err = cudaStreamDestroy(cusparseStruct->stream);CHKERRCUSP(err);
     delete cusparseStruct;
   } catch(char *ex) {
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Mat_MPIAIJCUSPARSE error: %s", ex);
@@ -226,6 +235,8 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJCUSPARSE(Mat A)
   PetscErrorCode     ierr;
   Mat_MPIAIJ         *a;
   Mat_MPIAIJCUSPARSE * cusparseStruct;
+  cudaError_t        err;
+  cusparseStatus_t   stat;
 
   PetscFunctionBegin;
   ierr = MatCreate_MPIAIJ(A);CHKERRQ(ierr);
@@ -236,6 +247,8 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJCUSPARSE(Mat A)
   cusparseStruct                      = (Mat_MPIAIJCUSPARSE*)a->spptr;
   cusparseStruct->diagGPUMatFormat    = MAT_CUSPARSE_CSR;
   cusparseStruct->offdiagGPUMatFormat = MAT_CUSPARSE_CSR;
+  stat = cusparseCreate(&(cusparseStruct->handle));CHKERRCUSP(stat);
+  err = cudaStreamCreate(&(cusparseStruct->stream));CHKERRCUSP(err);
 
   A->ops->getvecs        = MatGetVecs_MPIAIJCUSPARSE;
   A->ops->mult           = MatMult_MPIAIJCUSPARSE;
@@ -255,8 +268,6 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJCUSPARSE(Mat A)
    assembly performance the user should preallocate the matrix storage by setting
    the parameter nz (or the array nnz).  By setting these parameters accurately,
    performance during matrix assembly can be increased by more than a factor of 50.
-   This type is only available when using the 'txpetscgpu' package. Use --download-txpetscgpu
-   to build/install PETSc to use different CUSPARSE base matrix types.
 
    Collective on MPI_Comm
 
@@ -321,11 +332,9 @@ PetscErrorCode  MatCreateAIJCUSPARSE(MPI_Comm comm,PetscInt m,PetscInt n,PetscIn
 /*M
    MATAIJCUSPARSE - MATMPIAIJCUSPARSE = "aijcusparse" = "mpiaijcusparse" - A matrix type to be used for sparse matrices.
 
-   A matrix type type whose data resides on Nvidia GPUs. These matrices can be in CSR format.
-   All matrix calculations are performed using the Nvidia CUSPARSE library. Use of the
-   CUSPARSE library REQUIRES the 'txpetscgpu' package. ELL and HYB formats are also available
-   in the txpetscgpu package. Use --download-txpetscgpu to build/install PETSc to use different
-   GPU storage formats with CUSPARSE matrix types.
+   A matrix type type whose data resides on Nvidia GPUs. These matrices can be in either
+   CSR, ELL, or Hybrid format. The ELL and HYB formats require CUDA 4.2 or later.
+   All matrix calculations are performed on Nvidia GPUs using the CUSPARSE library.
 
    This matrix type is identical to MATSEQAIJCUSPARSE when constructed with a single process communicator,
    and MATMPIAIJCUSPARSE otherwise.  As a result, for single process communicators,
