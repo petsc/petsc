@@ -10,4 +10,5 @@ if [ $# == 1 ]; then
   else export mem="*";
 fi
 
-curl --silent --show-error "${SAWS_HOST}:${SAWS_PORT}/ams/directory/${mem}"
+echo curl --silent --show-error "${SAWS_HOST}:${SAWS_PORT}/SAWs/directory/${mem}"
+curl --silent --show-error "${SAWS_HOST}:${SAWS_PORT}/SAWs/directory/${mem}"
