@@ -330,7 +330,6 @@ PETSC_EXTERN PetscErrorCode SNESSetComputeInitialGuess(SNES,PetscErrorCode (*)(S
 PETSC_EXTERN PetscErrorCode SNESSetPicard(SNES,Vec,PetscErrorCode (*SNESFunction)(SNES,Vec,Vec,void*),Mat,Mat,PetscErrorCode (*SNESJacobianFunction)(SNES,Vec,Mat*,Mat*,MatStructure*,void*),void*);
 PETSC_EXTERN PetscErrorCode SNESGetPicard(SNES,Vec*,PetscErrorCode (**SNESFunction)(SNES,Vec,Vec,void*),Mat*,Mat*,PetscErrorCode (**SNESJacobianFunction)(SNES,Vec,Mat*,Mat*,MatStructure*,void*),void**);
 PETSC_EXTERN PetscErrorCode SNESSetInitialFunction(SNES,Vec);
-PETSC_EXTERN PetscErrorCode SNESSetInitialFunctionNorm(SNES,PetscReal);
 
 PETSC_EXTERN PetscErrorCode SNESSetObjective(SNES,PetscErrorCode (*SNESObjectiveFunction)(SNES,Vec,PetscReal *,void*),void*);
 PETSC_EXTERN PetscErrorCode SNESGetObjective(SNES,PetscErrorCode (**SNESObjectiveFunction)(SNES,Vec,PetscReal *,void*),void**);
