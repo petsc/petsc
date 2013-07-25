@@ -12,9 +12,6 @@
 #include <algorithm>
 #include <vector>
 
-/* Single instance of the cusparse handle for the class. */
-MatCUSPARSEStorageFormat cusparseMatSolveStorageFormat=MAT_CUSPARSE_CSR;
-
 #if defined(PETSC_USE_COMPLEX)
 #if defined(PETSC_USE_REAL_SINGLE)  
 #define cusparse_solve    cusparseCcsrsv_solve
@@ -103,7 +100,6 @@ struct Mat_SeqAIJCUSPARSETriFactors {
   THRUSTINTARRAY                    *rpermIndices;  /* indices used for any reordering */
   THRUSTINTARRAY                    *cpermIndices;  /* indices used for any reordering */
   THRUSTARRAY                       *workVector;
-  MatCUSPARSEStorageFormat          format;   /* the storage format for the matrix on the device */
   cusparseHandle_t                  handle;   /* a handle to the cusparse library */
   PetscInt                          nnz;      /* number of nonzeros ... need this for accurate logging between ICC and ILU */
 };
