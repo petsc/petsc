@@ -148,16 +148,11 @@ PetscErrorCode SNESSolve_NRichardson(SNES snes)
         PetscFunctionReturn(0);
       }
     } else snes->vec_func_init_set = PETSC_FALSE;
-    if (!snes->norm_init_set) {
-      /* convergence test */
-      ierr = VecNorm(F,NORM_2,&fnorm);CHKERRQ(ierr);
-      if (PetscIsInfOrNanReal(fnorm)) {
-        snes->reason = SNES_DIVERGED_FNORM_NAN;
-        PetscFunctionReturn(0);
-      }
-    } else {
-      fnorm               = snes->norm_init;
-      snes->norm_init_set = PETSC_FALSE;
+
+    ierr = VecNorm(F,NORM_2,&fnorm);CHKERRQ(ierr);
+    if (PetscIsInfOrNanReal(fnorm)) {
+      snes->reason = SNES_DIVERGED_FNORM_NAN;
+      PetscFunctionReturn(0);
     }
   }
   if (snes->pc && snes->functype == SNES_FUNCTION_UNPRECONDITIONED) {

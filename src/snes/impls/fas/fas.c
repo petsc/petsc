@@ -485,7 +485,6 @@ PetscErrorCode SNESFASDownSmooth_Private(SNES snes, Vec B, Vec X, Vec F, PetscRe
   PetscFunctionBegin;
   ierr = SNESFASCycleGetSmootherDown(snes, &smoothd);CHKERRQ(ierr);
   ierr = SNESSetInitialFunction(smoothd, F);CHKERRQ(ierr);
-  ierr = SNESSetInitialFunctionNorm(smoothd, *fnorm);CHKERRQ(ierr);
   if (fas->eventsmoothsolve) {ierr = PetscLogEventBegin(fas->eventsmoothsolve,0,0,0,0);CHKERRQ(ierr);}
   ierr = SNESSolve(smoothd, B, X);CHKERRQ(ierr);
   if (fas->eventsmoothsolve) {ierr = PetscLogEventEnd(fas->eventsmoothsolve,0,0,0,0);CHKERRQ(ierr);}
@@ -832,15 +831,10 @@ PetscErrorCode SNESSolve_FAS(SNES snes)
     }
   } else snes->vec_func_init_set = PETSC_FALSE;
 
-  if (!snes->norm_init_set) {
-    ierr = VecNorm(F, NORM_2, &fnorm);CHKERRQ(ierr); /* fnorm <- ||F||  */
-    if (PetscIsInfOrNanReal(fnorm)) {
-      snes->reason = SNES_DIVERGED_FNORM_NAN;
-      PetscFunctionReturn(0);
-    }
-  } else {
-    fnorm               = snes->norm_init;
-    snes->norm_init_set = PETSC_FALSE;
+  ierr = VecNorm(F, NORM_2, &fnorm);CHKERRQ(ierr); /* fnorm <- ||F||  */
+  if (PetscIsInfOrNanReal(fnorm)) {
+    snes->reason = SNES_DIVERGED_FNORM_NAN;
+    PetscFunctionReturn(0);
   }
 
   ierr       = PetscObjectAMSTakeAccess((PetscObject)snes);CHKERRQ(ierr);

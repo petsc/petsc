@@ -1506,8 +1506,6 @@ PetscErrorCode  SNESCreate(MPI_Comm comm,SNES *outsnes)
   snes->conv_hist_reset   = PETSC_TRUE;
   snes->counters_reset    = PETSC_TRUE;
   snes->vec_func_init_set = PETSC_FALSE;
-  snes->norm_init         = 0.;
-  snes->norm_init_set     = PETSC_FALSE;
   snes->reason            = SNES_CONVERGED_ITERATING;
   snes->pcside            = PC_RIGHT;
 
@@ -1649,42 +1647,6 @@ PetscErrorCode  SNESSetInitialFunction(SNES snes, Vec f)
   ierr = VecCopy(f, vec_func);CHKERRQ(ierr);
 
   snes->vec_func_init_set = PETSC_TRUE;
-  PetscFunctionReturn(0);
-}
-
-
-#undef __FUNCT__
-#define __FUNCT__ "SNESSetInitialFunctionNorm"
-/*@C
-   SNESSetInitialFunctionNorm - Sets the function norm to be used as the function norm
-   at the initialization of the  method.  In some instances, the user has precomputed
-   the function and its norm before calling SNESSolve.  This function allows one to
-   avoid a redundant call to SNESComputeFunction() and VecNorm() in that case.
-
-   Logically Collective on SNES
-
-   Input Parameters:
-+  snes - the SNES context
--  fnorm - the norm of F as set by SNESSetInitialFunction()
-
-   This is used extensively in the SNESFAS hierarchy and in nonlinear preconditioning.
-
-   Level: developer
-
-.keywords: SNES, nonlinear, set, function, norm
-
-.seealso: SNESSetFunction(), SNESComputeFunction(), SNESSetInitialFunction()
-@*/
-PetscErrorCode  SNESSetInitialFunctionNorm(SNES snes, PetscReal fnorm)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
-  if (snes->pcside == PC_LEFT && snes->functype == SNES_FUNCTION_PRECONDITIONED) {
-    snes->norm_init_set = PETSC_FALSE;
-    PetscFunctionReturn(0);
-  }
-  snes->norm_init     = fnorm;
-  snes->norm_init_set = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
