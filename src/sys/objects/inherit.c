@@ -291,23 +291,24 @@ PetscErrorCode  PetscObjectsDump(FILE *fd,PetscBool all)
         ierr = PetscObjectName(h);CHKERRQ(ierr);
         {
 #if defined(PETSC_USE_DEBUG)
-        PetscStack *stack;
+        PetscStack *stack = 0;
         char       *create,*rclass;
 
         /* if the PETSc function the user calls is not a create then this object was NOT directly created by them */
         ierr = PetscMallocGetStack(h,&stack);CHKERRQ(ierr);
-        k    = stack->currentsize-2;
-        if (!all) {
-          k = 0;
-          while (!stack->petscroutine[k]) k++;
-          ierr = PetscStrstr(stack->function[k],"Create",&create);CHKERRQ(ierr);
-          if (!create) {
-            ierr = PetscStrstr(stack->function[k],"Get",&create);CHKERRQ(ierr);
+        if (stack) {
+          k = stack->currentsize-2;
+          if (!all) {
+            k = 0;
+            while (!stack->petscroutine[k]) k++;
+            ierr = PetscStrstr(stack->function[k],"Create",&create);CHKERRQ(ierr);
+            if (!create) {
+              ierr = PetscStrstr(stack->function[k],"Get",&create);CHKERRQ(ierr);
+            }
+            ierr = PetscStrstr(stack->function[k],h->class_name,&rclass);CHKERRQ(ierr);
+            if (!create) continue;
+            if (!rclass) continue;
           }
-          ierr = PetscStrstr(stack->function[k],h->class_name,&rclass);CHKERRQ(ierr);
-
-          if (!create) continue;
-          if (!rclass) continue;
         }
 #endif
 
@@ -315,8 +316,10 @@ PetscErrorCode  PetscObjectsDump(FILE *fd,PetscBool all)
 
 #if defined(PETSC_USE_DEBUG)
         ierr = PetscMallocGetStack(h,&stack);CHKERRQ(ierr);
-        for (j=k; j>=0; j--) {
-          fprintf(fd,"      [%d]  %s() in %s%s\n",PetscGlobalRank,stack->function[j],stack->directory[j],stack->file[j]);
+        if (stack) {
+          for (j=k; j>=0; j--) {
+            fprintf(fd,"      [%d]  %s() in %s%s\n",PetscGlobalRank,stack->function[j],stack->directory[j],stack->file[j]);
+          }
         }
 #endif
         }

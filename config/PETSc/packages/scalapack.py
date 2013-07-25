@@ -3,7 +3,8 @@ import PETSc.package
 class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
     PETSc.package.NewPackage.__init__(self, framework)
-    self.download         = ['http://www.netlib.org/scalapack/scalapack-2.0.2.tgz']
+    self.download         = ['http://www.netlib.org/scalapack/scalapack-2.0.2.tgz',
+                             'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/scalapack-2.0.2.tgz']
     self.includes         = []
     self.liblist          = [[],['libscalapack.a']]
     self.functions        = ['pssytrd']

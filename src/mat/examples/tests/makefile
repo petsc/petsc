@@ -1378,13 +1378,38 @@ runex93:
 	   if (${DIFF} output/ex93_1.out ex93_1.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with ex93_1, diffs above \n========================================="; fi; \
 	   ${RM} -f ex93_1.tmp
+runex93_scalable:
+	-@${MPIEXEC} -n 1 ./ex93 -matmatmult_via scalable > ex93_1.tmp 2>&1; \
+	   if (${DIFF} output/ex93_1.out ex93_1.tmp) then true; \
+	   else echo ${PWD} ; echo "Possible problem with ex93_scalable, diffs above \n========================================="; fi; \
+	   ${RM} -f ex93_1.tmp
+runex93_scalable_fast:
+	-@${MPIEXEC} -n 1 ./ex93 -matmatmult_via scalable_fast > ex93_1.tmp 2>&1; \
+	   if (${DIFF} output/ex93_1.out ex93_1.tmp) then true; \
+	   else echo ${PWD} ; echo "Possible problem with ex93_scalable_fast, diffs above \n========================================="; fi; \
+	   ${RM} -f ex93_1.tmp
+runex93_heap:
+	-@${MPIEXEC} -n 1 ./ex93 -matmatmult_via heap> ex93_1.tmp 2>&1; \
+	   if (${DIFF} output/ex93_1.out ex93_1.tmp) then true; \
+	   else echo ${PWD} ; echo "Possible problem with ex93_heap, diffs above \n========================================="; fi; \
+	   ${RM} -f ex93_1.tmp
+runex93_btheap:
+	-@${MPIEXEC} -n 1 ./ex93 -matmatmult_via btheap> ex93_1.tmp 2>&1; \
+	   if (${DIFF} output/ex93_1.out ex93_1.tmp) then true; \
+	   else echo ${PWD} ; echo "Possible problem with ex93_btheap, diffs above \n========================================="; fi; \
+	   ${RM} -f ex93_1.tmp
+runex93_llcondensed:
+	-@${MPIEXEC} -n 1 ./ex93 -matmatmult_via llcondensed > ex93_1.tmp 2>&1; \
+	   if (${DIFF} output/ex93_1.out ex93_1.tmp) then true; \
+	   else echo ${PWD} ; echo "Possible problem with ex93_llcondensed, diffs above \n========================================="; fi; \
+	   ${RM} -f ex93_1.tmp
 runex93_2:
-	-@${MPIEXEC} -n 2 ./ex93 -matmatmult_scalable 0 -C_matmatmult_scalable 0 > ex93_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ./ex93 -matmatmult_via nonscalable > ex93_1.tmp 2>&1; \
 	   if (${DIFF} output/ex93_2.out ex93_1.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with ex93_2, diffs above \n========================================="; fi; \
 	   ${RM} -f ex93_1.tmp
 runex93_3:
-	-@${MPIEXEC} -n 2 ./ex93 -matmatmult_scalable 1 -C_matmatmult_scalable 1 > ex93_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ./ex93 > ex93_1.tmp 2>&1; \
 	   if (${DIFF} output/ex93_2.out ex93_1.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with ex93_3, diffs above \n========================================="; fi; \
 	   ${RM} -f ex93_1.tmp
@@ -1396,27 +1421,27 @@ runex94_matmatmult:
 	   else echo ${PWD} ; echo "Possible problem with ex94_matmatmult, diffs above \n========================================="; fi; \
 	   ${RM} -f ex94_1.tmp
 runex94_matmatmult_2:
-	-@${MPIEXEC} -n 1 ./ex94 -f0 ${DATAFILESPATH}/matrices/arco1 -f1 ${DATAFILESPATH}/matrices/arco1 -viewer_binary_skip_info -matmatmult_scalable > ex94_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex94 -f0 ${DATAFILESPATH}/matrices/arco1 -f1 ${DATAFILESPATH}/matrices/arco1 -viewer_binary_skip_info > ex94_1.tmp 2>&1; \
 	   if (${DIFF} output/ex94_1.out ex94_1.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with ex94_matmatmult_2, diffs above \n========================================="; fi; \
 	   ${RM} -f ex94_1.tmp
 runex94_scalable0:
-	-@${MPIEXEC} -n 1 ./ex94 -f0 ${DATAFILESPATH}/matrices/arco1 -f1 ${DATAFILESPATH}/matrices/arco1 -viewer_binary_skip_info -matptap_scalable 0> ex94_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex94 -f0 ${DATAFILESPATH}/matrices/arco1 -f1 ${DATAFILESPATH}/matrices/arco1 -viewer_binary_skip_info -matptap_via nonscalable > ex94_1.tmp 2>&1; \
 	   if (${DIFF} output/ex94_1.out ex94_1.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with ex94_scalable0, diffs above \n========================================="; fi; \
 	   ${RM} -f ex94_1.tmp
 runex94_scalable1:
-	-@${MPIEXEC} -n 1 ./ex94 -f0 ${DATAFILESPATH}/matrices/arco1 -f1 ${DATAFILESPATH}/matrices/arco1 -viewer_binary_skip_info -matptap_scalable 1> ex94_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex94 -f0 ${DATAFILESPATH}/matrices/arco1 -f1 ${DATAFILESPATH}/matrices/arco1 -viewer_binary_skip_info > ex94_1.tmp 2>&1; \
 	   if (${DIFF} output/ex94_1.out ex94_1.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with ex94_scalable1, diffs above \n========================================="; fi; \
 	   ${RM} -f ex94_1.tmp
-runex94_2_matmatmult:
-	-@${MPIEXEC} -n 3 ./ex94 -f0 ${DATAFILESPATH}/matrices/medium -f1 ${DATAFILESPATH}/matrices/medium -matptap_scalable 0 -matmatmult_scalable> ex94_2.tmp 2>&1; \
+runex94_2_mattransposematmult_nonscalable:
+	-@${MPIEXEC} -n 3 ./ex94 -f0 ${DATAFILESPATH}/matrices/medium -f1 ${DATAFILESPATH}/matrices/medium -mattransposematmult_via nonscalable> ex94_2.tmp 2>&1; \
 	   if (${DIFF} output/ex94_1.out ex94_2.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with ex94_2_matmatmult, diffs above \n========================================="; fi; \
+	   else echo ${PWD} ; echo "Possible problem with ex94_2_mattransposematmult, diffs above \n========================================="; fi; \
 	   ${RM} -f ex94_2.tmp
-runex94_2_mattransposematmult:
-	-@${MPIEXEC} -n 3 ./ex94 -f0 ${DATAFILESPATH}/matrices/medium -f1 ${DATAFILESPATH}/matrices/medium -mattransposematmult_scalable> ex94_2.tmp 2>&1; \
+runex94_2_mattransposematmult_matmatmult:
+	-@${MPIEXEC} -n 3 ./ex94 -f0 ${DATAFILESPATH}/matrices/medium -f1 ${DATAFILESPATH}/matrices/medium -mattransposematmult_via matmatmult> ex94_2.tmp 2>&1; \
 	   if (${DIFF} output/ex94_1.out ex94_2.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with ex94_2_mattransposematmult, diffs above \n========================================="; fi; \
 	   ${RM} -f ex94_2.tmp
@@ -1844,7 +1869,8 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex3.PETSc runex3 ex3.rm ex4.PET
                                  ex52.PETSc runex52_1 runex52_2 runex52_3 runex52_4 ex52.rm \
                                  ex86.PETSc runex86 ex86.rm \
                                  ex88.PETSc runex88 ex88.rm ex92.PETSc runex92 runex92_2 runex92_3 runex92_4 ex92.rm \
-                                 ex93.PETSc runex93 runex93_2 runex93_3 ex93.rm \
+                                 ex93.PETSc runex93 runex93_scalable runex93_scalable_fast runex93_heap runex93_btheap runex93_llcondensed \
+                                 runex93_2 runex93_3 ex93.rm \
                                  ex97.PETSc runex97 ex97.rm ex104.PETSc runex104 ex104.rm \
                                  ex109.PETSc runex109 runex109_1 runex109_2 ex109.rm ex110.PETSc runex110 ex110.rm ex122.PETSc runex122 ex122.rm \
                                  ex114.PETSc runex114 runex114_2 runex114_3 ex114.rm ex117.PETSc ex117.rm ex118.PETSc ex118.rm ex119.PETSc ex119.rm \
@@ -1855,7 +1881,7 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex3.PETSc runex3 ex3.rm ex4.PET
                                  ex151.PETSc runex151 ex151.rm \
                                  ex159.PETSc runex159 runex159_nest ex159.rm \
                                  ex160.PETSc runex160 ex160.rm  ex161.PETSc runex161 runex161_2 runex161_3 runex161_4 runex161_5 ex161.rm \
-                                 ex163.PETSc runex163 runex163_2 ex163.rm ex164.PETSc runex164 ex164.rm
+                                 ex164.PETSc runex164 ex164.rm
 TESTEXAMPLES_C_X	       = ex2.PETSc runex2 ex2.rm ex7.PETSc runex7 ex7.rm \
                                  ex12.PETSc runex12 runex12_2 runex12_3 runex12_4 ex12.rm ex13.PETSc runex13 ex13.rm \
                                  ex17.PETSc runex17 ex17.rm ex19.PETSc runex19 ex19.rm ex24.PETSc ex24.rm ex25.PETSc \
@@ -1881,10 +1907,11 @@ TESTEXAMPLES_C_NOCOMPLEX       = ex32.PETSc ex32.rm ex41.PETSc runex41 ex41.rm  
 TESTEXAMPLES_DATAFILESPATH     = ex40.PETSc runex40 ex40.rm ex42.PETSc runex42 \
                                  ex42.rm  ex41.PETSc ex41.rm ex47.PETSc ex47.rm ex53.PETSc runex53 ex53.rm \
                                  ex94.PETSc runex94_matmatmult runex94_matmatmult_2 runex94_scalable0 runex94_scalable1 \
-                                 runex94_2_matmatmult runex94_2_mattransposematmult ex94.rm \
+                                 runex94_2_mattransposematmult_nonscalable runex94_2_mattransposematmult_matmatmult ex94.rm \
                                  ex136.PETSc runex136 runex136_2 runex136_3 \
                                  runex136_4 runex136_5 runex136_6 ex136.rm  ex140.PETSc runex140 runex140_2 runex140_3 runex140_4 ex140.rm \
-                                 ex100.PETSc runex100 ex100.rm ex125.PETSc runex125 ex125.rm
+                                 ex100.PETSc runex100 ex100.rm ex125.PETSc runex125 ex125.rm \
+                                 ex163.PETSc runex163 runex163_2 ex163.rm
 TESTEXAMPLES_FORTRAN_NOCOMPLEX = ex67f.PETSc runex67f ex67f.rm ex79f.PETSc runex79f ex79f.rm
 TESTEXAMPLES_F90	       = ex16f90.PETSc runex16f90 ex16f90.rm
 TESTEXAMPLES_13		       = ex58f.PETSc ex58f.rm ex70.PETSc ex70.rm ex72.PETSc ex72.rm

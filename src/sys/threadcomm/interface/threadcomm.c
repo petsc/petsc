@@ -156,14 +156,14 @@ PetscErrorCode PetscThreadCommCreate(PetscThreadComm *tcomm)
 
 #if defined(PETSC_USE_DEBUG)
 
-PetscErrorCode PetscThreadCommStackCreate_kernel(PetscInt trank)
+static PetscErrorCode PetscThreadCommStackCreate_kernel(PetscInt trank)
 {
-  PetscStack *petscstack_in;
-  if (!trank && PetscStackActive()) return 0;
-
-  petscstack_in              = (PetscStack*)malloc(sizeof(PetscStack));
-  petscstack_in->currentsize = 0;
-  PetscThreadLocalSetValue((PetscThreadKey*)&petscstack,petscstack_in);
+  if (trank && !PetscStackActive()) {
+    PetscStack *petscstack_in;
+    petscstack_in = (PetscStack*)malloc(sizeof(PetscStack));
+    petscstack_in->currentsize = 0;
+    PetscThreadLocalSetValue((PetscThreadKey*)&petscstack,petscstack_in);
+  }
   return 0;
 }
 
@@ -173,13 +173,12 @@ PetscErrorCode PetscThreadCommStackCreate_kernel(PetscInt trank)
 PetscErrorCode  PetscThreadCommStackCreate(void)
 {
   PetscErrorCode ierr;
-
   ierr = PetscThreadCommRunKernel0(PETSC_COMM_SELF,(PetscThreadKernel)PetscThreadCommStackCreate_kernel);CHKERRQ(ierr);
   ierr = PetscThreadCommBarrier(PETSC_COMM_SELF);CHKERRQ(ierr);
   return 0;
 }
 
-PetscErrorCode PetscThreadCommStackDestroy_kernel(PetscInt trank)
+static PetscErrorCode PetscThreadCommStackDestroy_kernel(PetscInt trank)
 {
   if (trank && PetscStackActive()) {
     PetscStack *petscstack_in;

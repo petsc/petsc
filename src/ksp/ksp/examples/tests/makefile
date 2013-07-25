@@ -8,7 +8,7 @@ EXAMPLESC       = ex1.c ex3.c ex4.c ex6.c ex7.c ex10.c ex11.c ex14.c \
                 ex15.c ex17.c ex18.c ex19.c ex20.c ex21.c ex22.c ex24.c \
                 ex25.c ex26.c ex27.c ex28.c ex29.c ex30.c ex31.c ex32.c \
                 ex33.c ex34.c ex35.c ex36.c ex37.c ex38.c ex39.c ex40.c ex41.c ex42.c \
-                ex43-aijcusparse.c ex44.c
+                ex43.c ex44.c
 EXAMPLESCH      =
 EXAMPLESF       = ex5f.F ex12f.F ex16f.F
 
@@ -164,9 +164,9 @@ ex41: ex41.o chkopts
 ex42: ex42.o chkopts
 	-${CLINKER} -o ex42 ex42.o ${PETSC_KSP_LIB}
 	${RM} ex42.o
-ex43-aijcusparse: ex43-aijcusparse.o chkopts
-	-${CLINKER} -o ex43-aijcusparse ex43-aijcusparse.o ${PETSC_KSP_LIB}
-	${RM} ex43-aijcusparse.o
+ex43: ex43.o chkopts
+	-${CLINKER} -o ex43 ex43.o ${PETSC_KSP_LIB}
+	${RM} ex43.o
 ex44: ex44.o chkopts
 	-${CLINKER} -o ex44 ex44.o ${PETSC_KSP_LIB}
 	${RM} ex44.o
@@ -474,6 +474,21 @@ runex27:
 	if (${DIFF} output/ex27.out ex27.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex27, diffs above \n========================================="; fi; \
 	   ${RM} -f ex27.tmp
+runex28:
+	-@${MPIEXEC} -n 3 ./ex28 > ex28.tmp 2>&1; \
+	if (${DIFF} output/ex28.out ex28.tmp) then true; \
+	   else echo ${PWD} ; echo "Possible problem with with ex28, diffs above \n========================================="; fi; \
+	   ${RM} -f ex28.tmp
+runex28_2:
+	-@${MPIEXEC} -n 3 ./ex28 -procedural -pc_redundant_number 3 -redundant_ksp_type gmres -redundant_pc_type bjacobi > ex28.tmp 2>&1; \
+	if (${DIFF} output/ex28_2.out ex28.tmp) then true; \
+	   else echo ${PWD} ; echo "Possible problem with with ex28_2, diffs above \n========================================="; fi; \
+	   ${RM} -f ex28.tmp
+runex28_3:
+	-@${MPIEXEC} -n 5 ./ex28 -procedural -pc_redundant_number 3 -redundant_ksp_type gmres -redundant_pc_type bjacobi > ex28.tmp 2>&1; \
+	if (${DIFF} output/ex28.out ex28.tmp) then true; \
+	   else echo ${PWD} ; echo "Possible problem with with ex28_3, diffs above \n========================================="; fi; \
+	   ${RM} -f ex28.tmp
 runex29:
 	-@${MPIEXEC} -n 1 ./ex29 -ksp_monitor_short -mat_no_inode > ex29.tmp 2>&1; \
 	if (${DIFF} output/ex29.out ex29.tmp) then true; \
@@ -846,17 +861,36 @@ runex42_2:
 	   else echo ${PWD} ; echo "Possible problem with with ex42_2, diffs above \n========================================="; fi; \
 	   ${RM} -f ex42.tmp
 
-runex43-aijcusparse:
-	-@${MPIEXEC} -n 1 ./ex43-aijcusparse -f ${DATAFILESPATH}/matrices/cfd.2.10 > ex43-aijcusparse.tmp 2>&1;\
-	if (${DIFF} output/ex43-aijcusparse.out ex43-aijcusparse.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex43-aijcusparse, diffs above \n========================================="; fi; \
-	   ${RM} -f ex43-aijcusparse.tmp
+runex43:
+	-@${MPIEXEC} -n 1 ./ex43 -f ${DATAFILESPATH}/matrices/cfd.2.10 -mat_type seqaijcusparse -mat_cusparse_storage_format ell -vec_type seqcusp -pc_type ilu > ex43.tmp 2>&1;\
+	if (${DIFF} output/ex43.out ex43.tmp) then true; \
+	   else echo ${PWD} ; echo "Possible problem with with ex43, diffs above \n========================================="; fi; \
+	   ${RM} -f ex43.tmp
 
-runex43-aijcusparse_2:
-	-@${MPIEXEC} -n 1 ./ex43-aijcusparse -f ${DATAFILESPATH}/matrices/shallow_water1 -ksp_type cg -pc_type icc -mat_symmetric > ex43-aijcusparse_2.tmp 2>&1;\
-	if (${DIFF} output/ex43-aijcusparse_2.out ex43-aijcusparse_2.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex43-aijcusparse_2, diffs above \n========================================="; fi; \
-	   ${RM} -f ex43-aijcusparse_2.tmp
+runex43_2:
+	-@${MPIEXEC} -n 1 ./ex43 -f ${DATAFILESPATH}/matrices/shallow_water1 -mat_type seqaijcusparse -mat_cusparse_storage_format hyb -vec_type seqcusp -ksp_type cg -pc_type icc > ex43_2.tmp 2>&1;\
+	if (${DIFF} output/ex43_2.out ex43_2.tmp) then true; \
+	   else echo ${PWD} ; echo "Possible problem with with ex43_2, diffs above \n========================================="; fi; \
+	   ${RM} -f ex43_2.tmp
+
+runex43_3:
+	-@${MPIEXEC} -n 1 ./ex43 -f ${DATAFILESPATH}/matrices/cfd.2.10 -mat_type seqaijcusparse -mat_cusparse_storage_format csr -vec_type seqcusp -ksp_type bicg -pc_type ilu > ex43_3.tmp 2>&1;\
+	if (${DIFF} output/ex43_3.out ex43_3.tmp) then true; \
+	   else echo ${PWD} ; echo "Possible problem with with ex43_3, diffs above \n========================================="; fi; \
+	   ${RM} -f ex43_3.tmp
+
+runex43_4:
+	-@${MPIEXEC} -n 1 ./ex43 -f ${DATAFILESPATH}/matrices/cfd.2.10 -mat_type seqaijcusparse -mat_cusparse_storage_format csr -vec_type seqcusp -ksp_type bicg -pc_type ilu -pc_factor_mat_ordering_type nd > ex43_4.tmp 2>&1;\
+	if (${DIFF} output/ex43_4.out ex43_4.tmp) then true; \
+	   else echo ${PWD} ; echo "Possible problem with with ex43_4, diffs above \n========================================="; fi; \
+	   ${RM} -f ex43_4.tmp
+
+runex43_5:
+	-@${MPIEXEC} -n 2 ./ex43 -f ${DATAFILESPATH}/matrices/shallow_water1 -mat_type mpiaijcusparse -mat_cusparse_mult_diag_storage_format hyb -pc_type none -vec_type mpicusp > ex43_5.tmp 2>&1;\
+	if (${DIFF} output/ex43_5.out ex43_5.tmp) then true; \
+	   else echo ${PWD} ; echo "Possible problem with with ex43_5, diffs above \n========================================="; fi; \
+	   ${RM} -f ex43_5.tmp
+
 
 EX44RICH=-ksp_type richardson -ksp_max_it 1 -ksp_final_residual -pc_type sor
 EX44RICHNONZ=${EX44RICH} -ksp_initial_guess_nonzero
@@ -886,6 +920,7 @@ TESTEXAMPLES_C		       = ex1.PETSc ex1.rm ex3.PETSc runex3 runex3_2 ex3.rm ex4.P
                                  ex22.PETSc runex22 runex22_2 ex22.rm \
                                  ex24.PETSc runex24 runex24_2 runex24_3 runex24_4 ex24.rm \
                                  ex26.PETSc runex26 runex26_2 ex26.rm ex27.PETSc ex27.rm \
+                                 ex28.PETSc runex28 runex28_2 runex28_3 ex28.rm \
                                  ex32.PETSc runex32_testset1 runex32_testset2 runex32_testset3 runex32_testset4 runex32_testset5 \
                                  runex32_aij_sbaij_icc runex32_aij_sbaij_icc_lev1 runex32_aij_sbaij_icc_lev10 runex32_aij_sbaij_cholesky \
                                  runex32_inode2 runex32_inode2_nd runex32_inode3 runex32_inode3_nd runex32_inode4 runex32_inode4_nd \
@@ -910,5 +945,5 @@ TESTEXAMPLES_FORTRAN_NOCOMPLEX =
 TESTEXAMPLES_13		       = ex18.PETSc ex18.rm ex20.PETSc runex20 ex20.rm ex5f.PETSc ex5f.rm
 TESTEXAMPLES_ML                = ex26.PETSc runex26_ml runex26_ml_2 runex26_ml_3 ex26.rm ex29.PETSc runex29 runex29_2 ex29.rm
 TESTEXAMPLES_ELEMENTAL         = ex40.PETSc runex40 runex40_2 ex40.rm
-TESTEXAMPLES_TXPETSCGPU        = ex43-aijcusparse.PETSc runex43-aijcusparse runex43-aijcusparse_2 ex43-aijcusparse.rm 
+TESTEXAMPLES_CUDA              = ex43.PETSc runex43 runex43_2 runex43_3 runex43_4 ex43.rm
 include ${PETSC_DIR}/conf/test
