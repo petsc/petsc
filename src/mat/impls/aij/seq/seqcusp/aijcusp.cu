@@ -1,7 +1,5 @@
-
-
 /*
-    Defines the basic matrix operations for the AIJ (compressed row)
+  Defines the basic matrix operations for the AIJ (compressed row)
   matrix storage format.
 */
 
@@ -15,33 +13,26 @@ PETSC_CUDA_EXTERN_C_END
 #undef VecType
 #include "../src/mat/impls/aij/seq/seqcusp/cuspmatimpl.h"
 
-#if defined(PETSC_HAVE_TXPETSCGPU)
 const char *const MatCUSPStorageFormats[] = {"CSR","DIA","ELL","MatCUSPStorageFormat","MAT_CUSP_",0};
 
-/* this is such a hack ... but I haven't written another way to pass this variable
-   from one GPU_Matrix_Ifc class to another. This is necessary for the parallel
-   SpMV. Essentially, I need to use the same stream variable in two different
-   data structures. I do this by creating a single instance of that stream
-   and reuse it.*/
-cudaStream_t theCUSPBodyStream=0;
-#endif
+#undef __FUNCT__
+#define __FUNCT__ "MatCUSPSetStream"
+PetscErrorCode MatCUSPSetStream(Mat A,const cudaStream_t stream)
+{
+  Mat_SeqAIJCUSP *cuspstruct = (Mat_SeqAIJCUSP*)A->spptr;
 
-#include <algorithm>
-#include <vector>
-#include <string>
-#include <thrust/sort.h>
-#include <thrust/fill.h>
+  PetscFunctionBegin;
+  cuspstruct->stream = stream;
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "MatCUSPSetFormat_SeqAIJCUSP"
 PetscErrorCode MatCUSPSetFormat_SeqAIJCUSP(Mat A,MatCUSPFormatOperation op,MatCUSPStorageFormat format)
 {
-#if defined PETSC_HAVE_TXPETSCGPU
   Mat_SeqAIJCUSP *cuspMat = (Mat_SeqAIJCUSP*)A->spptr;
-#endif
 
   PetscFunctionBegin;
-#if defined PETSC_HAVE_TXPETSCGPU
   switch (op) {
   case MAT_CUSP_MULT:
     cuspMat->format = format;
@@ -52,17 +43,13 @@ PetscErrorCode MatCUSPSetFormat_SeqAIJCUSP(Mat A,MatCUSPFormatOperation op,MatCU
   default:
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"unsupported operation %d for MatCUSPFormatOperation. Only MAT_CUSP_MULT and MAT_CUSP_ALL are currently supported.",op);
   }
-#endif
   PetscFunctionReturn(0);
 }
 
 /*@
    MatCUSPSetFormat - Sets the storage format of CUSP matrices for a particular
    operation. Only the MatMult operation can use different GPU storage formats
-   for AIJCUSP matrices. This requires the txpetscgpu package. Use --download-txpetscgpu
-   to build/install PETSc to use these capabilities. If txpetscgpu is not enabled,
-   this function simply passes through leaving the matrix in the original CSR format
-   for usage on the GPU.
+   for AIJCUSP matrices. 
 
    Not Collective
 
@@ -81,19 +68,14 @@ PetscErrorCode MatCUSPSetFormat_SeqAIJCUSP(Mat A,MatCUSPFormatOperation op,MatCU
 #define __FUNCT__ "MatCUSPSetFormat"
 PetscErrorCode MatCUSPSetFormat(Mat A,MatCUSPFormatOperation op,MatCUSPStorageFormat format)
 {
-#if defined PETSC_HAVE_TXPETSCGPU
   PetscErrorCode ierr;
-#endif
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID,1);
-#if defined PETSC_HAVE_TXPETSCGPU
   ierr = PetscTryMethod(A, "MatCUSPSetFormat_C",(Mat,MatCUSPFormatOperation,MatCUSPStorageFormat),(A,op,format));CHKERRQ(ierr);
-#endif
   PetscFunctionReturn(0);
 }
 
-#if defined PETSC_HAVE_TXPETSCGPU
 #undef __FUNCT__
 #define __FUNCT__ "MatSetFromOptions_SeqAIJCUSP"
 PetscErrorCode MatSetFromOptions_SeqAIJCUSP(Mat A)
@@ -119,7 +101,7 @@ PetscErrorCode MatSetFromOptions_SeqAIJCUSP(Mat A)
   PetscFunctionReturn(0);
 
 }
-#endif
+
 
 #undef __FUNCT__
 #define __FUNCT__ "MatCUSPCopyToGPU"
@@ -129,8 +111,8 @@ PetscErrorCode MatCUSPCopyToGPU(Mat A)
   Mat_SeqAIJCUSP *cuspstruct = (Mat_SeqAIJCUSP*)A->spptr;
   Mat_SeqAIJ     *a          = (Mat_SeqAIJ*)A->data;
   PetscInt       m           = A->rmap->n,*ii,*ridx;
+  CUSPMATRIX     *mat;
   PetscErrorCode ierr;
-
 
   PetscFunctionBegin;
   if (A->valid_GPU_matrix == PETSC_CUSP_UNALLOCATED || A->valid_GPU_matrix == PETSC_CUSP_CPU) {
@@ -142,7 +124,12 @@ PetscErrorCode MatCUSPCopyToGPU(Mat A)
     */
     if (cuspstruct->mat) {
       try {
-        delete cuspstruct->mat;
+	if (cuspstruct->format==MAT_CUSP_ELL)
+	  delete (CUSPMATRIXELL *) cuspstruct->mat;
+	else if (cuspstruct->format==MAT_CUSP_DIA)
+	  delete (CUSPMATRIXDIA *) cuspstruct->mat;
+	else
+	  delete (CUSPMATRIX *) cuspstruct->mat;
         if (cuspstruct->tempvec) delete cuspstruct->tempvec;
 
       } catch(char *ex) {
@@ -153,89 +140,38 @@ PetscErrorCode MatCUSPCopyToGPU(Mat A)
       cuspstruct->nonzerorow=0;
       for (int j = 0; j<m; j++) cuspstruct->nonzerorow += ((a->i[j+1]-a->i[j])>0);
 
-#if defined(PETSC_HAVE_TXPETSCGPU)
+      mat = new CUSPMATRIX;
       if (a->compressedrow.use) {
         m    = a->compressedrow.nrows;
         ii   = a->compressedrow.i;
         ridx = a->compressedrow.rindex;
-      } else {
-        /* Forcing compressed row on the GPU ... only relevant for CSR storage */
-        int k=0;
-        ierr = PetscMalloc((cuspstruct->nonzerorow+1)*sizeof(PetscInt), &ii);CHKERRQ(ierr);
-        ierr = PetscMalloc((cuspstruct->nonzerorow)*sizeof(PetscInt), &ridx);CHKERRQ(ierr);
-        ii[0]=0;
-        for (int j = 0; j<m; j++) {
-          if ((a->i[j+1]-a->i[j])>0) {
-            ii[k]  = a->i[j];
-            ridx[k]= j;
-            k++;
-          }
-        }
-        ii[cuspstruct->nonzerorow] = a->nz;
-
-        m = cuspstruct->nonzerorow;
-      }
-
-      /* Build our matrix ... first determine the GPU storage type */
-      cuspstruct->mat = GPU_Matrix_Factory::getNew(MatCUSPStorageFormats[cuspstruct->format]);
-
-      /* Create the streams and events (if desired). */
-      PetscMPIInt size;
-      ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-      ierr = cuspstruct->mat->buildStreamsAndEvents(size, &theCUSPBodyStream);CHKERRCUSP(ierr);
-
-      /* lastly, build the matrix */
-      ierr = cuspstruct->mat->setMatrix(m, A->cmap->n, a->nz, ii, a->j, a->a);;CHKERRCUSP(ierr);
-      cuspstruct->mat->setCPRowIndices(ridx, m);
-
-      /*
-        INODES : Determine the inode data structure for the GPU.
-        This only really matters for the CSR format.
-      */
-      if (a->inode.use) {
-        PetscInt * temp;
-        ierr   = PetscMalloc((a->inode.node_count+1)*sizeof(PetscInt), &temp);CHKERRQ(ierr);
-        temp[0]=0;
-        PetscInt nodeMax=0, nnzPerRowMax=0;
-        for (int i = 0; i<a->inode.node_count; i++) {
-          temp[i+1]= a->inode.size[i]+temp[i];
-          if (a->inode.size[i] > nodeMax) nodeMax = a->inode.size[i];
-        }
-        /* Determine the maximum number of nonzeros in a row. */
-        cuspstruct->nonzerorow = 0;
-        for (int j = 0; j<A->rmap->n; j++) {
-          cuspstruct->nonzerorow += ((a->i[j+1]-a->i[j])>0);
-          if (a->i[j+1]-a->i[j] > nnzPerRowMax) nnzPerRowMax = a->i[j+1]-a->i[j];
-        }
-        /* Set the Inode data ... only relevant for CSR really */
-        cuspstruct->mat->setInodeData(temp, a->inode.node_count+1, nnzPerRowMax, nodeMax, a->inode.node_count);
-        ierr = PetscFree(temp);CHKERRQ(ierr);
-      }
-      if (!a->compressedrow.use) {
-        ierr = PetscFree(ii);CHKERRQ(ierr);
-        ierr = PetscFree(ridx);CHKERRQ(ierr);
-      }
-
-#else
-
-      cuspstruct->mat = new CUSPMATRIX;
-      if (a->compressedrow.use) {
-        m    = a->compressedrow.nrows;
-        ii   = a->compressedrow.i;
-        ridx = a->compressedrow.rindex;
-        cuspstruct->mat->resize(m,A->cmap->n,a->nz);
-        cuspstruct->mat->row_offsets.assign(ii,ii+m+1);
-        cuspstruct->mat->column_indices.assign(a->j,a->j+a->nz);
-        cuspstruct->mat->values.assign(a->a,a->a+a->nz);
+        mat->resize(m,A->cmap->n,a->nz);
+        mat->row_offsets.assign(ii,ii+m+1);
+        mat->column_indices.assign(a->j,a->j+a->nz);
+        mat->values.assign(a->a,a->a+a->nz);
         cuspstruct->indices = new CUSPINTARRAYGPU;
         cuspstruct->indices->assign(ridx,ridx+m);
+	cuspstruct->mat = mat;
+	cuspstruct->format = MAT_CUSP_CSR;
       } else {
-        cuspstruct->mat->resize(m,A->cmap->n,a->nz);
-        cuspstruct->mat->row_offsets.assign(a->i,a->i+m+1);
-        cuspstruct->mat->column_indices.assign(a->j,a->j+a->nz);
-        cuspstruct->mat->values.assign(a->a,a->a+a->nz);
+        mat->resize(m,A->cmap->n,a->nz);
+        mat->row_offsets.assign(a->i,a->i+m+1);
+        mat->column_indices.assign(a->j,a->j+a->nz);
+        mat->values.assign(a->a,a->a+a->nz);
+
+	/* convert to other formats if selected */
+	if (cuspstruct->format!=MAT_CUSP_CSR) {
+	  if (cuspstruct->format==MAT_CUSP_ELL) {
+	    CUSPMATRIXELL *ellMat = new CUSPMATRIXELL(*mat);
+	    cuspstruct->mat = ellMat;
+	  } else {
+	    CUSPMATRIXDIA *diaMat = new CUSPMATRIXDIA(*mat);
+	    cuspstruct->mat = diaMat;
+	  }
+	  delete (CUSPMATRIX *) mat;
+	} else 
+	  cuspstruct->mat = mat;
       }
-#endif
       cuspstruct->tempvec = new CUSPARRAY;
       cuspstruct->tempvec->resize(m);
     } catch(char *ex) {
@@ -257,16 +193,19 @@ PetscErrorCode MatCUSPCopyFromGPU(Mat A, CUSPMATRIX *Agpu)
   Mat_SeqAIJCUSP *cuspstruct = (Mat_SeqAIJCUSP*) A->spptr;
   Mat_SeqAIJ     *a          = (Mat_SeqAIJ*) A->data;
   PetscInt       m           = A->rmap->n;
+  CUSPMATRIX *mat;
   PetscErrorCode ierr;
 
-#if defined(PETSC_HAVE_TXPETSCGPU)
-  CUSPMATRIX *mat;
-  ierr = cuspstruct->mat->getCsrMatrix(&mat);CHKERRCUSP(ierr);
-#else
-  CUSPMATRIX *mat = (CUSPMATRIX*)cuspstruct->mat;
-#endif
-
   PetscFunctionBegin;
+  /* if the data is stored in non-CSR format, create a temporary */
+  if (cuspstruct->format==MAT_CUSP_ELL) {
+    mat = new CUSPMATRIX(*((CUSPMATRIXELL*)cuspstruct->mat));
+  } else if (cuspstruct->format==MAT_CUSP_DIA) {
+    mat = new CUSPMATRIX(*((CUSPMATRIXDIA*)cuspstruct->mat));
+  } else {
+    mat = (CUSPMATRIX*) cuspstruct->mat;
+  }
+
   if (A->valid_GPU_matrix == PETSC_CUSP_UNALLOCATED) {
     if (A->valid_GPU_matrix == PETSC_CUSP_UNALLOCATED) {
       try {
@@ -312,6 +251,10 @@ PetscErrorCode MatCUSPCopyFromGPU(Mat A, CUSPMATRIX *Agpu)
     ierr = MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
     A->valid_GPU_matrix = PETSC_CUSP_BOTH;
+
+    /* delete the temporary */
+    if (cuspstruct->format==MAT_CUSP_ELL || cuspstruct->format==MAT_CUSP_DIA)
+      delete (CUSPMATRIX*) mat;
   } else {
     SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Only valid for unallocated GPU matrices");
   }
@@ -349,9 +292,7 @@ PetscErrorCode MatMult_SeqAIJCUSP(Mat A,Vec xx,Vec yy)
   Mat_SeqAIJ       *a = (Mat_SeqAIJ*)A->data;
   PetscErrorCode   ierr;
   Mat_SeqAIJCUSP   *cuspstruct = (Mat_SeqAIJCUSP*)A->spptr;
-#if !defined(PETSC_HAVE_TXPETSCGPU)
   PetscBool        usecprow = a->compressedrow.use;
-#endif
   CUSPARRAY        *xarray=NULL,*yarray=NULL;
   static PetscBool cite = PETSC_FALSE;
 
@@ -362,30 +303,34 @@ PetscErrorCode MatMult_SeqAIJCUSP(Mat A,Vec xx,Vec yy)
   ierr = VecCUSPGetArrayRead(xx,&xarray);CHKERRQ(ierr);
   ierr = VecCUSPGetArrayWrite(yy,&yarray);CHKERRQ(ierr);
   try {
-#if defined(PETSC_HAVE_TXPETSCGPU)
-    ierr = cuspstruct->mat->multiply(xarray, yarray);CHKERRCUSP(ierr);
-#else
-    if (usecprow) { /* use compressed row format */
-      cusp::multiply(*cuspstruct->mat,*xarray,*cuspstruct->tempvec);
+    if (usecprow) { 
+      /* use compressed row format */
+      CUSPMATRIX *mat = (CUSPMATRIX*)cuspstruct->mat;
+      cusp::multiply(*mat,*xarray,*cuspstruct->tempvec);
       ierr = VecSet_SeqCUSP(yy,0.0);CHKERRQ(ierr);
       thrust::copy(cuspstruct->tempvec->begin(),cuspstruct->tempvec->end(),thrust::make_permutation_iterator(yarray->begin(),cuspstruct->indices->begin()));
-    } else { /* do not use compressed row format */
-      cusp::multiply(*cuspstruct->mat,*xarray,*yarray);
+    } else { 
+      /* do not use compressed row format */
+      if (cuspstruct->format==MAT_CUSP_ELL) {
+	CUSPMATRIXELL *mat = (CUSPMATRIXELL*)cuspstruct->mat;
+	cusp::multiply(*mat,*xarray,*yarray);
+      } else if (cuspstruct->format==MAT_CUSP_DIA) {
+	CUSPMATRIXDIA *mat = (CUSPMATRIXDIA*)cuspstruct->mat;
+	cusp::multiply(*mat,*xarray,*yarray);
+      } else {
+	CUSPMATRIX *mat = (CUSPMATRIX*)cuspstruct->mat;
+	cusp::multiply(*mat,*xarray,*yarray);
+      }
     }
-#endif
 
   } catch (char *ex) {
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSP error: %s", ex);
   }
   ierr = VecCUSPRestoreArrayRead(xx,&xarray);CHKERRQ(ierr);
   ierr = VecCUSPRestoreArrayWrite(yy,&yarray);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_TXPETSCGPU)
-  if (!cuspstruct->mat->hasNonZeroStream()) {
+  if (!cuspstruct->stream) {
     ierr = WaitForGPU();CHKERRCUSP(ierr);
   }
-#else
-  ierr = WaitForGPU();CHKERRCUSP(ierr);
-#endif
   ierr = PetscLogFlops(2.0*a->nz - cuspstruct->nonzerorow);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -418,11 +363,10 @@ PetscErrorCode MatMultAdd_SeqAIJCUSP(Mat A,Vec xx,Vec yy,Vec zz)
     ierr = VecCUSPGetArrayRead(xx,&xarray);CHKERRQ(ierr);
     ierr = VecCUSPGetArrayRead(yy,&yarray);CHKERRQ(ierr);
     ierr = VecCUSPGetArrayWrite(zz,&zarray);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_TXPETSCGPU)
-    ierr = cuspstruct->mat->multiplyAdd(xarray, zarray);CHKERRCUSP(ierr);
-#else
+
     if (a->compressedrow.use) {
-      cusp::multiply(*cuspstruct->mat,*xarray, *cuspstruct->tempvec);
+      CUSPMATRIX *mat = (CUSPMATRIX*)cuspstruct->mat;
+      cusp::multiply(*mat,*xarray, *cuspstruct->tempvec);
       thrust::for_each(
         thrust::make_zip_iterator(
           thrust::make_tuple(cuspstruct->tempvec->begin(),
@@ -432,7 +376,16 @@ PetscErrorCode MatMultAdd_SeqAIJCUSP(Mat A,Vec xx,Vec yy,Vec zz)
                              thrust::make_permutation_iterator(zarray->begin(),cuspstruct->indices->begin()))) + cuspstruct->tempvec->size(),
         VecCUSPPlusEquals());
     } else {
-      cusp::multiply(*cuspstruct->mat,*xarray,*cuspstruct->tempvec);
+      if (cuspstruct->format==MAT_CUSP_ELL) {
+	CUSPMATRIXELL *mat = (CUSPMATRIXELL*)cuspstruct->mat;
+	cusp::multiply(*mat,*xarray,*cuspstruct->tempvec);
+      } else if (cuspstruct->format==MAT_CUSP_DIA) {
+	CUSPMATRIXDIA *mat = (CUSPMATRIXDIA*)cuspstruct->mat;
+	cusp::multiply(*mat,*xarray,*cuspstruct->tempvec);
+      } else {
+	CUSPMATRIX *mat = (CUSPMATRIX*)cuspstruct->mat;
+	cusp::multiply(*mat,*xarray,*cuspstruct->tempvec);
+      }
       thrust::for_each(
         thrust::make_zip_iterator(thrust::make_tuple(
                                     cuspstruct->tempvec->begin(),
@@ -442,7 +395,6 @@ PetscErrorCode MatMultAdd_SeqAIJCUSP(Mat A,Vec xx,Vec yy,Vec zz)
                                     zarray->end())),
         VecCUSPPlusEquals());
     }
-#endif
     ierr = VecCUSPRestoreArrayRead(xx,&xarray);CHKERRQ(ierr);
     ierr = VecCUSPRestoreArrayRead(yy,&yarray);CHKERRQ(ierr);
     ierr = VecCUSPRestoreArrayWrite(zz,&zarray);CHKERRQ(ierr);
@@ -534,38 +486,6 @@ PetscErrorCode  MatCreateSeqAIJCUSP(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt
   PetscFunctionReturn(0);
 }
 
-#if defined(PETSC_HAVE_TXPETSCGPU)
-
-#undef __FUNCT__
-#define __FUNCT__ "MatDestroy_SeqAIJCUSP"
-PetscErrorCode MatDestroy_SeqAIJCUSP(Mat A)
-{
-  PetscErrorCode ierr;
-  Mat_SeqAIJCUSP *cuspstruct = (Mat_SeqAIJCUSP*)A->spptr;
-
-  PetscFunctionBegin;
-  if (A->factortype==MAT_FACTOR_NONE) {
-    try {
-      if (A->valid_GPU_matrix != PETSC_CUSP_UNALLOCATED) {
-        delete (GPU_Matrix_Ifc*)(cuspstruct->mat);
-      }
-      if (cuspstruct->tempvec!=0) delete cuspstruct->tempvec;
-      delete cuspstruct;
-      A->valid_GPU_matrix = PETSC_CUSP_UNALLOCATED;
-    } catch(char *ex) {
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSP error: %s", ex);
-    }
-  }
-
-  /*this next line is because MatDestroy tries to PetscFree spptr if it is not zero, and PetscFree only works if the memory was allocated with PetscNew or PetscMalloc, which don't call the constructor */
-  A->spptr = 0;
-
-  ierr = MatDestroy_SeqAIJ(A);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#else
-
 #undef __FUNCT__
 #define __FUNCT__ "MatDestroy_SeqAIJCUSP"
 PetscErrorCode MatDestroy_SeqAIJCUSP(Mat A)
@@ -575,7 +495,14 @@ PetscErrorCode MatDestroy_SeqAIJCUSP(Mat A)
 
   PetscFunctionBegin;
   try {
-    if (A->valid_GPU_matrix != PETSC_CUSP_UNALLOCATED) delete (CUSPMATRIX*)(cuspcontainer->mat);
+    if (A->valid_GPU_matrix != PETSC_CUSP_UNALLOCATED) {
+      if (cuspcontainer->format==MAT_CUSP_ELL)
+	delete (CUSPMATRIXELL*)(cuspcontainer->mat);
+      else if (cuspcontainer->format==MAT_CUSP_DIA)
+	delete (CUSPMATRIXDIA*)(cuspcontainer->mat);
+      else
+	delete (CUSPMATRIX*)(cuspcontainer->mat);
+    }
     delete cuspcontainer;
     A->valid_GPU_matrix = PETSC_CUSP_UNALLOCATED;
   } catch(char *ex) {
@@ -586,8 +513,6 @@ PetscErrorCode MatDestroy_SeqAIJCUSP(Mat A)
   ierr     = MatDestroy_SeqAIJ(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-#endif
 
 /*
 #undef __FUNCT__
@@ -605,50 +530,8 @@ PetscErrorCode MatCreateSeqAIJCUSPFromTriple(MPI_Comm comm, PetscInt m, PetscInt
 
 extern PetscErrorCode MatSetValuesBatch_SeqAIJCUSP(Mat, PetscInt, PetscInt, PetscInt*,const PetscScalar*);
 
-#if defined(PETSC_HAVE_TXPETSCGPU)
 PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_cusparse(Mat,MatFactorType,Mat*);
-extern PetscErrorCode MatFactorGetSolverPackage_seqaij_cusparse(Mat,const MatSolverPackage*);
-#endif
-
-#if defined(PETSC_HAVE_TXPETSCGPU)
-
-#undef __FUNCT__
-#define __FUNCT__ "MatCreate_SeqAIJCUSP"
-PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJCUSP(Mat B)
-{
-  PetscErrorCode       ierr;
-  MatCUSPStorageFormat format = MAT_CUSP_CSR;
-
-  PetscFunctionBegin;
-  ierr            = MatCreate_SeqAIJ(B);CHKERRQ(ierr);
-  B->ops->mult    = MatMult_SeqAIJCUSP;
-  B->ops->multadd = MatMultAdd_SeqAIJCUSP;
-
-  if (B->factortype==MAT_FACTOR_NONE) {
-    /* you cannot check the inode.use flag here since the matrix was just created.*/
-    B->spptr                             = new Mat_SeqAIJCUSP;
-    ((Mat_SeqAIJCUSP*)B->spptr)->mat     = 0;
-    ((Mat_SeqAIJCUSP*)B->spptr)->tempvec = 0;
-    ((Mat_SeqAIJCUSP*)B->spptr)->format  = format;
-  }
-  B->ops->assemblyend    = MatAssemblyEnd_SeqAIJCUSP;
-  B->ops->destroy        = MatDestroy_SeqAIJCUSP;
-  B->ops->getvecs        = MatGetVecs_SeqAIJCUSP;
-  B->ops->setvaluesbatch = MatSetValuesBatch_SeqAIJCUSP;
-  B->ops->setfromoptions = MatSetFromOptions_SeqAIJCUSP;
-
-  ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQAIJCUSP);CHKERRQ(ierr);
-
-  B->valid_GPU_matrix = PETSC_CUSP_UNALLOCATED;
-  /* Here we overload MatGetFactor_cusparse_C which enables -pc_factor_mat_solver_package cusparse to work with
-     -mat_type aijcusp. That is, an aijcusp matrix can call the cusparse tri solve.
-     Note the difference with the implementation in MatCreate_SeqAIJCUSPARSE in ../seqcusparse/aijcusparse.cu */
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatGetFactor_cusparse_C",MatGetFactor_seqaij_cusparse);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatCUSPSetFormat_C", MatCUSPSetFormat_SeqAIJCUSP);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#else
+PETSC_EXTERN PetscErrorCode MatFactorGetSolverPackage_seqaij_cusparse(Mat,const MatSolverPackage*);
 
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_SeqAIJCUSP"
@@ -665,15 +548,25 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJCUSP(Mat B)
   B->ops->multadd = MatMultAdd_SeqAIJCUSP;
   B->spptr        = new Mat_SeqAIJCUSP;
 
-  ((Mat_SeqAIJCUSP*)B->spptr)->mat     = 0;
-  ((Mat_SeqAIJCUSP*)B->spptr)->tempvec = 0;
-  ((Mat_SeqAIJCUSP*)B->spptr)->indices = 0;
+  if (B->factortype==MAT_FACTOR_NONE) {
+    ((Mat_SeqAIJCUSP*)B->spptr)->mat     = 0;
+    ((Mat_SeqAIJCUSP*)B->spptr)->tempvec = 0;
+    ((Mat_SeqAIJCUSP*)B->spptr)->indices = 0;
+    ((Mat_SeqAIJCUSP*)B->spptr)->nonzerorow = 0;
+    ((Mat_SeqAIJCUSP*)B->spptr)->stream = 0;
+    ((Mat_SeqAIJCUSP*)B->spptr)->format = MAT_CUSP_CSR;
+  }
 
   B->ops->assemblyend    = MatAssemblyEnd_SeqAIJCUSP;
   B->ops->destroy        = MatDestroy_SeqAIJCUSP;
   B->ops->getvecs        = MatGetVecs_SeqAIJCUSP;
   B->ops->setvaluesbatch = MatSetValuesBatch_SeqAIJCUSP;
+  B->ops->setfromoptions = MatSetFromOptions_SeqAIJCUSP;
 
+  /* Here we overload MatGetFactor_cusparse_C which enables -pc_factor_mat_solver_package cusparse to work with
+     -mat_type aijcusp. That is, an aijcusp matrix can call the cusparse tri solve.
+     Note the difference with the implementation in MatCreate_SeqAIJCUSPARSE in ../seqcusparse/aijcusparse.cu */
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatGetFactor_cusparse_C",MatGetFactor_seqaij_cusparse);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatCUSPSetFormat_C", MatCUSPSetFormat_SeqAIJCUSP);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQAIJCUSP);CHKERRQ(ierr);
 
@@ -681,21 +574,17 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJCUSP(Mat B)
   PetscFunctionReturn(0);
 }
 
-#endif
-
 /*M
    MATSEQAIJCUSP - MATAIJCUSP = "aijcusp" = "seqaijcusp" - A matrix type to be used for sparse matrices.
 
    A matrix type type whose data resides on Nvidia GPUs. These matrices are in CSR format by
-   default. All matrix calculations are performed using the CUSP library.
-   DIA and ELL formats are ONLY available when using the 'txpetscgpu' package.
-   Use --download-txpetscgpu to build/install PETSc to use different GPU storage formats
-   with CUSP matrix types.
+   default. All matrix calculations are performed using the CUSP library. DIA and ELL formats are 
+   also available.
 
    Options Database Keys:
 +  -mat_type aijcusp - sets the matrix type to "seqaijcusp" during a call to MatSetFromOptions()
-.  -mat_cusp_storage_format csr - sets the storage format of matrices for MatMult during a call to MatSetFromOptions(). Other options include dia (diagonal) or ell (ellpack). dia and ell only available with 'txpetscgpu' package.
--  -mat_cusp_mult_storage_format csr - sets the storage format of matrices for MatMult during a call to MatSetFromOptions(). Other options include dia (diagonal) or ell (ellpack). dia and ell only available with 'txpetscgpu' package.
+.  -mat_cusp_storage_format csr - sets the storage format of matrices for MatMult during a call to MatSetFromOptions(). Other options include dia (diagonal) or ell (ellpack).
+-  -mat_cusp_mult_storage_format csr - sets the storage format of matrices for MatMult during a call to MatSetFromOptions(). Other options include dia (diagonal) or ell (ellpack).
 
   Level: beginner
 
