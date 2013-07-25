@@ -4516,8 +4516,8 @@ PetscErrorCode  SNESKSPGetParametersEW(SNES snes,PetscInt *version,PetscReal *rt
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "SNESKSPEW_PreSolve"
- PetscErrorCode SNESKSPEW_PreSolve(KSP ksp, Vec b, Vec x, SNES snes)
+#define __FUNCT__ "KSPPreSolve_SNESEW"
+ PetscErrorCode KSPPreSolve_SNESEW(KSP ksp, Vec b, Vec x, SNES snes)
 {
   PetscErrorCode ierr;
   SNESKSPEW      *kctx = (SNESKSPEW*)snes->kspconvctx;
@@ -4556,8 +4556,8 @@ PetscErrorCode  SNESKSPGetParametersEW(SNES snes,PetscInt *version,PetscReal *rt
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "SNESKSPEW_PostSolve"
-PetscErrorCode SNESKSPEW_PostSolve(KSP ksp, Vec b, Vec x, SNES snes)
+#define __FUNCT__ "KSPPostSolve_SNESEW"
+PetscErrorCode KSPPostSolve_SNESEW(KSP ksp, Vec b, Vec x, SNES snes)
 {
   PetscErrorCode ierr;
   SNESKSPEW      *kctx = (SNESKSPEW*)snes->kspconvctx;
@@ -4623,8 +4623,8 @@ PetscErrorCode  SNESGetKSP(SNES snes,KSP *ksp)
     ierr = PetscObjectIncrementTabLevel((PetscObject)snes->ksp,(PetscObject)snes,1);CHKERRQ(ierr);
     ierr = PetscLogObjectParent(snes,snes->ksp);CHKERRQ(ierr);
 
-    ierr = KSPSetPreSolve(snes->ksp,(PetscErrorCode (*)(KSP,Vec,Vec,void*))SNESKSPEW_PreSolve,snes);CHKERRQ(ierr);
-    ierr = KSPSetPostSolve(snes->ksp,(PetscErrorCode (*)(KSP,Vec,Vec,void*))SNESKSPEW_PostSolve,snes);CHKERRQ(ierr);
+    ierr = KSPSetPreSolve(snes->ksp,(PetscErrorCode (*)(KSP,Vec,Vec,void*))KSPPreSolve_SNESEW,snes);CHKERRQ(ierr);
+    ierr = KSPSetPostSolve(snes->ksp,(PetscErrorCode (*)(KSP,Vec,Vec,void*))KSPPostSolve_SNESEW,snes);CHKERRQ(ierr);
   }
   *ksp = snes->ksp;
   PetscFunctionReturn(0);
