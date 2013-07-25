@@ -486,9 +486,9 @@ PetscErrorCode  SNESConvergedDefault(SNES snes,PetscInt it,PetscReal xnorm,Petsc
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "SNESSkipConverged"
+#define __FUNCT__ "SNESConvergedSkip"
 /*@C
-   SNESSkipConverged - Convergence test for SNES that NEVER returns as
+   SNESConvergedSkip - Convergence test for SNES that NEVER returns as
    converged, UNLESS the maximum number of iteration have been reached.
 
    Logically Collective on SNES
@@ -513,7 +513,7 @@ PetscErrorCode  SNESConvergedDefault(SNES snes,PetscInt it,PetscReal xnorm,Petsc
 
 .seealso: SNESSetConvergenceTest()
 @*/
-PetscErrorCode  SNESSkipConverged(SNES snes,PetscInt it,PetscReal xnorm,PetscReal snorm,PetscReal fnorm,SNESConvergedReason *reason,void *dummy)
+PetscErrorCode  SNESConvergedSkip(SNES snes,PetscInt it,PetscReal xnorm,PetscReal snorm,PetscReal fnorm,SNESConvergedReason *reason,void *dummy)
 {
   PetscErrorCode ierr;
 

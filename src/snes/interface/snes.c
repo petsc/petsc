@@ -712,7 +712,7 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
   if (flg) {
     switch (indx) {
     case 0: ierr = SNESSetConvergenceTest(snes,SNESConvergedDefault,NULL,NULL);CHKERRQ(ierr); break;
-    case 1: ierr = SNESSetConvergenceTest(snes,SNESSkipConverged,NULL,NULL);CHKERRQ(ierr);    break;
+    case 1: ierr = SNESSetConvergenceTest(snes,SNESConvergedSkip,NULL,NULL);CHKERRQ(ierr);    break;
     }
   }
 
@@ -3495,7 +3495,7 @@ M*/
 
 .keywords: SNES, nonlinear, set, convergence, test
 
-.seealso: SNESConvergedDefault(), SNESSkipConverged(), SNESConvergenceTestFunction
+.seealso: SNESConvergedDefault(), SNESConvergedSkip(), SNESConvergenceTestFunction
 @*/
 PetscErrorCode  SNESSetConvergenceTest(SNES snes,PetscErrorCode (*SNESConvergenceTestFunction)(SNES,PetscInt,PetscReal,PetscReal,PetscReal,SNESConvergedReason*,void*),void *cctx,PetscErrorCode (*destroy)(void*))
 {
@@ -3503,7 +3503,7 @@ PetscErrorCode  SNESSetConvergenceTest(SNES snes,PetscErrorCode (*SNESConvergenc
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
-  if (!SNESConvergenceTestFunction) SNESConvergenceTestFunction = SNESSkipConverged;
+  if (!SNESConvergenceTestFunction) SNESConvergenceTestFunction = SNESConvergedSkip;
   if (snes->ops->convergeddestroy) {
     ierr = (*snes->ops->convergeddestroy)(snes->cnvP);CHKERRQ(ierr);
   }
