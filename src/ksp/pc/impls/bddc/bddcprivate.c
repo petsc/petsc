@@ -1014,10 +1014,14 @@ PetscErrorCode  PCBDDCGetPrimalConstraintsLocalIdx(PC pc, PetscInt *n_constraint
       ierr = MatGetRow(pcbddc->ConstraintMatrix,i,&size_of_constraint,(const PetscInt**)&row_cmat_indices,NULL);CHKERRQ(ierr);
       if (size_of_constraint > 1) {
         ierr = ISLocalToGlobalMappingApply(pcbddc->mat_graph->l2gmap,size_of_constraint,row_cmat_indices,row_cmat_global_indices);CHKERRQ(ierr);
-        min_index = row_cmat_global_indices[0];
-        min_loc = 0;
+        /* find first untouched local node */
+        j = 0;
+        while(touched[row_cmat_indices[j]]) j++;
+        min_index = row_cmat_global_indices[j];
+        min_loc = j;
+        /* search the minimum among nodes not yet touched on the connected component
+           since there can be more than one constraint on a single cc */
         for (j=1;j<size_of_constraint;j++) {
-          /* there can be more than one constraint on a single connected component */
           if (min_index > row_cmat_global_indices[j] && !touched[row_cmat_indices[j]]) {
             min_index = row_cmat_global_indices[j];
             min_loc = j;
@@ -1208,3 +1212,25 @@ PetscErrorCode PCBDDCSubsetNumbering(MPI_Comm comm,ISLocalToGlobalMapping l2gmap
   *global_numbering_subset = temp_global_dofs;
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "PCBDDCOrthonormalizeVecs"
+PetscErrorCode PCBDDCOrthonormalizeVecs(PetscInt n, Vec vecs[])
+{
+  PetscInt       i,j;
+  PetscScalar    *alphas;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  /* this implements stabilized Gram-Schmidt */
+  ierr = PetscMalloc(n*sizeof(PetscScalar),&alphas);CHKERRQ(ierr);
+  for (i=0;i<n;i++) {
+    ierr = VecNormalize(vecs[i],NULL);CHKERRQ(ierr);
+    if (i<n) { ierr = VecMDot(vecs[i],n-i-1,&vecs[i+1],&alphas[i+1]);CHKERRQ(ierr); }
+    for (j=i+1;j<n;j++) { ierr = VecAXPY(vecs[j],PetscConj(-alphas[j]),vecs[i]);CHKERRQ(ierr); }
+  }
+  ierr = PetscFree(alphas);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+

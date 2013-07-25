@@ -1141,6 +1141,6 @@ TESTEXAMPLES_MUMPS             = ex10.PETSc runex10_mumps_lu_1 runex10_mumps_lu_
 TESTEXAMPLES_SUPERLU           = ex10.PETSc runex10_superlu_lu_1 ex10.rm ex52.PETSc runex52_superlu ex52.rm
 TESTEXAMPLES_FFTW              =
 TESTEXAMPLES_SUPERLU_DIST      = ex10.PETSc runex10_superlu_dist_lu_1 runex10_superlu_dist_lu_2 runex10_superlu_dist_redundant ex10.rm
-TESTEXAMPLES_TXPETSCGPU        = ex10.PETSc runex10_aijcusparse ex10.rm 
+TESTEXAMPLES_CUDA              = ex10.PETSc runex10_aijcusparse ex10.rm 
 
 include ${PETSC_DIR}/conf/test
