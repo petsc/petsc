@@ -2598,17 +2598,10 @@ PetscErrorCode MatGetRedundantMatrix_MPIAIJ_psubcomm(Mat mat,PetscInt nsubcomm,P
 
     if (reuse == MAT_INITIAL_MATRIX) {
       /* create a local sequential matrix matseq[0] */
-      ierr = MatCreate(subcomm,&C);CHKERRQ(ierr);
-      ierr = MatSetSizes(C,PETSC_DECIDE,PETSC_DECIDE,M,N);CHKERRQ(ierr); 
-      ierr = MatSetUp(C);CHKERRQ(ierr); 
-      ierr = MatSetFromOptions(C);CHKERRQ(ierr);
-      ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-      ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-
-      ierr = MatGetOwnershipRange(C,&rstart,&rend);CHKERRQ(ierr);
-      ierr = MatDestroy(&C);CHKERRQ(ierr);
-      mloc_sub = rend - rstart;
-
+      mloc_sub = PETSC_DECIDE;
+      ierr = PetscSplitOwnership(subcomm,&mloc_sub,&M);CHKERRQ(ierr); 
+      ierr = MPI_Scan(&mloc_sub,&rend,1,MPIU_INT,MPI_SUM,subcomm);CHKERRQ(ierr);
+      rstart = rend - mloc_sub;
       /* printf("[%d] Use MatGetSubMatrices()...rows %d - %d, mloc_sub %d\n",rank,rstart,rend,mloc_sub); */
       ierr = ISCreateStride(PETSC_COMM_SELF,mloc_sub,rstart,1,&isrow);CHKERRQ(ierr);
       ierr = ISCreateStride(PETSC_COMM_SELF,N,0,1,&iscol);CHKERRQ(ierr);
@@ -2732,57 +2725,6 @@ PetscErrorCode MatGetRedundantMatrix_MPIAIJ_psubcomm(Mat mat,PetscInt nsubcomm,P
       }
     } else if (psubcomm->type == PETSC_SUBCOMM_CONTIGUOUS) {
       /* --------------------------------------------------*/
-      /* ---------- new imples: use MatGetSubMatrices() ------------*/
-      PetscBool flg=PETSC_FALSE;
-      ierr = PetscOptionsGetBool(NULL,"-new",&flg,NULL);CHKERRQ(ierr);
-      if (flg) {
-        Mat        *matseq;
-        IS         isrow,iscol;
-        PetscInt   mloc_sub,rstart,rend;
-
-        /* create redundant matrix */
-        ierr = MatCreate(subcomm,&C);CHKERRQ(ierr);
-        ierr = MatSetSizes(C,PETSC_DECIDE,PETSC_DECIDE,M,N);CHKERRQ(ierr); 
-        ierr = MatSetUp(C);CHKERRQ(ierr); 
-        ierr = MatSetFromOptions(C);CHKERRQ(ierr);
-        ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-        ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-
-        ierr = MatGetOwnershipRange(C,&rstart,&rend);CHKERRQ(ierr);
-        mloc_sub = rend - rstart;
-
-        printf("[%d] Use MatGetSubMatrices()...rows %d - %d, mloc_sub %d\n",rank,rstart,rend,mloc_sub);
-        ierr = ISCreateStride(PETSC_COMM_SELF,mloc_sub,rstart,1,&isrow);CHKERRQ(ierr);
-        ierr = ISCreateStride(PETSC_COMM_SELF,N,0,1,&iscol);CHKERRQ(ierr);
-
-        ierr = MatGetSubMatrices(mat,1,&isrow,&iscol,MAT_INITIAL_MATRIX,&matseq);CHKERRQ(ierr);
-        if (rank==1) {
-          printf("[%d] matsub:\n",rank);
-          ierr = MatView(matseq[0],PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-        }
-
-        /* Create redundant matrix by concatenating local sequential
-                 matrices from processors in this subcomm */
-        ierr = MatDestroy(&C);CHKERRQ(ierr);
-
-        ierr = MatCreateMPIAIJConcatenateSeqAIJ(subcomm,matseq[0],PETSC_DECIDE,MAT_INITIAL_MATRIX,&C);CHKERRQ(ierr);
-        *matredundant = C;
-
-        if (nsubcomm == 1) {
-          if (!rank) printf( "C\n");
-          ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);   
-        }
-
-        ierr = MatDestroy(&matseq[0]);CHKERRQ(ierr);
-        ierr = PetscFree(matseq);CHKERRQ(ierr);
-        ierr = ISDestroy(&isrow);CHKERRQ(ierr);
-        ierr = ISDestroy(&iscol);CHKERRQ(ierr);
-        //ierr = MPI_Barrier(comm);CHKERRQ(ierr);
-        //SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No done yet");
-        PetscFunctionReturn(0);
-      }
-      
-      /*---------------------------------- */
       PetscInt color,subcommstart;  
       subcommstart=0;
       for (color=0; color<nsubcomm; color++) {
