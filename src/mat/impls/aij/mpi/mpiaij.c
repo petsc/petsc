@@ -2526,17 +2526,24 @@ PetscErrorCode MatDestroy_MatRedundant(Mat A)
     redund = a->redundant;
   }
   if (redund){
-    ierr = PetscFree2(redund->send_rank,redund->recv_rank);CHKERRQ(ierr);
-    ierr = PetscFree(redund->sbuf_j);CHKERRQ(ierr);
-    ierr = PetscFree(redund->sbuf_a);CHKERRQ(ierr);
-    for (i=0; i<redund->nrecvs; i++) {
-      ierr = PetscFree(redund->rbuf_j[i]);CHKERRQ(ierr);
-      ierr = PetscFree(redund->rbuf_a[i]);CHKERRQ(ierr);
-    }
-    ierr = PetscFree4(redund->sbuf_nz,redund->rbuf_nz,redund->rbuf_j,redund->rbuf_a);CHKERRQ(ierr);
+    if (redund->matseq) { /* '-new' option */
+      ierr = ISDestroy(&redund->isrow);CHKERRQ(ierr);
+      ierr = ISDestroy(&redund->iscol);CHKERRQ(ierr);
+      ierr = MatDestroy(&redund->matseq[0]);CHKERRQ(ierr);
+      ierr = PetscFree(redund->matseq);CHKERRQ(ierr);
+    } else {
+      ierr = PetscFree2(redund->send_rank,redund->recv_rank);CHKERRQ(ierr);
+      ierr = PetscFree(redund->sbuf_j);CHKERRQ(ierr);
+      ierr = PetscFree(redund->sbuf_a);CHKERRQ(ierr);
+      for (i=0; i<redund->nrecvs; i++) {
+        ierr = PetscFree(redund->rbuf_j[i]);CHKERRQ(ierr);
+        ierr = PetscFree(redund->rbuf_a[i]);CHKERRQ(ierr);
+      }
+      ierr = PetscFree4(redund->sbuf_nz,redund->rbuf_nz,redund->rbuf_j,redund->rbuf_a);CHKERRQ(ierr);
 
-    if (redund->psubcomm) {
-      ierr = PetscSubcommDestroy(&redund->psubcomm);CHKERRQ(ierr);
+      if (redund->psubcomm) {
+        ierr = PetscSubcommDestroy(&redund->psubcomm);CHKERRQ(ierr);
+      }
     }
 
     ierr = redund->Destroy(A);CHKERRQ(ierr);
@@ -2602,7 +2609,7 @@ PetscErrorCode MatGetRedundantMatrix_MPIAIJ_psubcomm(Mat mat,PetscInt nsubcomm,P
       ierr = MatDestroy(&C);CHKERRQ(ierr);
       mloc_sub = rend - rstart;
 
-      printf("[%d] Use MatGetSubMatrices()...rows %d - %d, mloc_sub %d\n",rank,rstart,rend,mloc_sub);
+      /* printf("[%d] Use MatGetSubMatrices()...rows %d - %d, mloc_sub %d\n",rank,rstart,rend,mloc_sub); */
       ierr = ISCreateStride(PETSC_COMM_SELF,mloc_sub,rstart,1,&isrow);CHKERRQ(ierr);
       ierr = ISCreateStride(PETSC_COMM_SELF,N,0,1,&iscol);CHKERRQ(ierr);
     } else { /* reuse == MAT_REUSE_MATRIX */
@@ -2620,30 +2627,28 @@ PetscErrorCode MatGetRedundantMatrix_MPIAIJ_psubcomm(Mat mat,PetscInt nsubcomm,P
     }
 
     ierr = MatGetSubMatrices(mat,1,&isrow,&iscol,reuse,&matseq);CHKERRQ(ierr);
+    /*
     if (rank==0) {
       printf("[%d] matsub:\n",rank);
       ierr = MatView(matseq[0],PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
     }
     ierr = MPI_Barrier(comm);CHKERRQ(ierr);
+     */
     
     /* Create matredundant by concatenating matseq[0] from processors in this subcomm */
+    /*
     if (reuse == MAT_REUSE_MATRIX) {
       if (!rank) printf("matredundant:\n");
       ierr = MatView(*matredundant,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     }
+     */
     ierr = MatCreateMPIAIJConcatenateSeqAIJ(subcomm,matseq[0],PETSC_DECIDE,reuse,matredundant);CHKERRQ(ierr);
-
+    /*
     if (nsubcomm == 1) {
       if (!rank) printf( "matredundant\n");
       ierr = MatView(*matredundant,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);   
-    }
-    /*
-    ierr = MatDestroy(&matseq[0]);CHKERRQ(ierr);
-    ierr = PetscFree(matseq);CHKERRQ(ierr);
-    ierr = ISDestroy(&isrow);CHKERRQ(ierr);
-    ierr = ISDestroy(&iscol);CHKERRQ(ierr);
-     */
-
+     } */
+    
     if (reuse == MAT_INITIAL_MATRIX) {
       /* create a supporting struct and attach it to C for reuse */
       ierr = PetscNewLog(*matredundant,Mat_Redundant,&redund);CHKERRQ(ierr);
@@ -2655,9 +2660,9 @@ PetscErrorCode MatGetRedundantMatrix_MPIAIJ_psubcomm(Mat mat,PetscInt nsubcomm,P
         c->redundant = redund;
       }
 
-      redund->isrow = isrow;
-      redund->iscol = iscol;
-      redund->matseq = matseq;
+      redund->isrow     = isrow;
+      redund->iscol     = iscol;
+      redund->matseq    = matseq;
       redund->psubcomm  = NULL;
 
       redund->Destroy               = (*matredundant)->ops->destroy;
