@@ -45,8 +45,6 @@ PetscErrorCode PCBDDCResetSolvers(PC pc)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = VecDestroy(&pcbddc->temp_solution);CHKERRQ(ierr);
-  ierr = VecDestroy(&pcbddc->original_rhs);CHKERRQ(ierr);
   ierr = VecDestroy(&pcbddc->coarse_vec);CHKERRQ(ierr);
   ierr = VecDestroy(&pcbddc->coarse_rhs);CHKERRQ(ierr);
   ierr = KSPDestroy(&pcbddc->coarse_ksp);CHKERRQ(ierr);
@@ -88,9 +86,6 @@ PetscErrorCode PCBDDCCreateWorkVectors(PC pc)
   ierr = PCBDDCGetPrimalConstraintsLocalIdx(pc,&n_constraints,NULL);CHKERRQ(ierr);
   local_primal_size = n_constraints+n_vertices;
   n_R = pcis->n-n_vertices;
-  /* parallel work vectors used in presolve. TODO: move outside */
-  ierr = VecDuplicate(pcis->vec1_global,&pcbddc->original_rhs);CHKERRQ(ierr);
-  ierr = VecDuplicate(pcis->vec1_global,&pcbddc->temp_solution);CHKERRQ(ierr);
   /* local work vectors */
   ierr = VecGetType(pcis->vec1_N,&impVecType);CHKERRQ(ierr);
   ierr = VecDuplicate(pcis->vec1_D,&pcbddc->vec4_D);CHKERRQ(ierr);

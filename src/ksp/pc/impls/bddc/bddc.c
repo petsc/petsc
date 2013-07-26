@@ -591,6 +591,13 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
   PetscBool      guess_nonzero;
 
   PetscFunctionBegin;
+  /* Creates parallel work vectors used in presolve. */
+  if (!pcbddc->original_rhs) {
+    ierr = VecDuplicate(pcis->vec1_global,&pcbddc->original_rhs);CHKERRQ(ierr);
+  }
+  if (!pcbddc->temp_solution) {
+    ierr = VecDuplicate(pcis->vec1_global,&pcbddc->temp_solution);CHKERRQ(ierr);
+  }
   if (x) {
     ierr = PetscObjectReference((PetscObject)x);CHKERRQ(ierr);
     used_vec = x;
@@ -607,7 +614,7 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
     }
   }
 
-  if (rhs) {
+  if (rhs) { /* TODO: wiser handling of rhs removal, which is only needed in case of zeroed rows */
     /* store the original rhs */
     ierr = VecCopy(rhs,pcbddc->original_rhs);CHKERRQ(ierr);
 
@@ -904,6 +911,9 @@ PetscErrorCode PCDestroy_BDDC(PC pc)
   ierr = KSPDestroy(&pcbddc->ksp_D);CHKERRQ(ierr);
   ierr = KSPDestroy(&pcbddc->ksp_R);CHKERRQ(ierr);
   ierr = MatDestroy(&pcbddc->local_mat);CHKERRQ(ierr);
+  /* free global vectors needed in presolve */
+  ierr = VecDestroy(&pcbddc->temp_solution);CHKERRQ(ierr);
+  ierr = VecDestroy(&pcbddc->original_rhs);CHKERRQ(ierr);
   /* remove functions */
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetPrimalVerticesLocalIS_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetCoarseningRatio_C",NULL);CHKERRQ(ierr);
