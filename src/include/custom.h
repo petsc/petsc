@@ -673,7 +673,15 @@ SNESSetUseFDColoring(SNES snes,PetscBool flag)
   ierr = SNESGetFunction(snes,NULL,&fun,&funP);CHKERRQ(ierr);
   ierr = SNESGetJacobian(snes,&A,&B,&jac,&jacP);CHKERRQ(ierr);
   ierr = SNESSetJacobian(snes,A,B,SNESComputeJacobianDefaultColor,0);CHKERRQ(ierr);
-
+#if PETSC_VERSION_GE(3,4,0)
+  {
+    DM     dm;
+    DMSNES sdm;
+    ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
+    ierr = DMGetDMSNES(dm,&sdm);CHKERRQ(ierr);
+    sdm->jacobianctx = NULL;
+  }
+#endif
   PetscFunctionReturn(0);
 }
 
