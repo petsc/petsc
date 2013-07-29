@@ -107,6 +107,7 @@ cdef extern from * nogil:
         MAT_IGNORE_LOWER_TRIANGULAR
         MAT_ERROR_LOWER_TRIANGULAR
         MAT_GETROW_UPPERTRIANGULAR
+        MAT_SPD
 
     int MatView(PetscMat,PetscViewer)
     int MatDestroy(PetscMat*)
