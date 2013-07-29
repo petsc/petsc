@@ -74,6 +74,7 @@ class MatOption(object):
     IGNORE_LOWER_TRIANGULAR    = MAT_IGNORE_LOWER_TRIANGULAR
     ERROR_LOWER_TRIANGULAR     = MAT_ERROR_LOWER_TRIANGULAR
     GETROW_UPPERTRIANGULAR     = MAT_GETROW_UPPERTRIANGULAR
+    SPD                        = MAT_SPD
 
 class MatAssemblyType(object):
     # native
