@@ -24,7 +24,6 @@
 #include <petscblaslapack.h>
 
 /* prototypes for static functions contained in bddc.c */
-static PetscErrorCode PCBDDCSetLevel(PC,PetscInt);
 static PetscErrorCode PCBDDCCoarseSetUp(PC);
 
 /* -------------------------------------------------------------------------- */
@@ -1288,17 +1287,6 @@ PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC pc)
 /* -------------------------------------------------------------------------- */
 /* All static functions from now on                                           */
 /* -------------------------------------------------------------------------- */
-
-#undef __FUNCT__
-#define __FUNCT__ "PCBDDCSetLevel"
-static PetscErrorCode PCBDDCSetLevel(PC pc,PetscInt level)
-{
-  PC_BDDC  *pcbddc = (PC_BDDC*)pc->data;
-
-  PetscFunctionBegin;
-  pcbddc->current_level=level;
-  PetscFunctionReturn(0);
-}
 
 /* -------------------------------------------------------------------------- */
 #undef __FUNCT__

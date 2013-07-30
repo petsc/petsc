@@ -3,6 +3,17 @@
 #include <petscblaslapack.h>
 
 #undef __FUNCT__
+#define __FUNCT__ "PCBDDCSetLevel"
+PetscErrorCode PCBDDCSetLevel(PC pc,PetscInt level)
+{
+  PC_BDDC  *pcbddc = (PC_BDDC*)pc->data;
+
+  PetscFunctionBegin;
+  pcbddc->current_level=level;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PCBDDCResetCustomization"
 PetscErrorCode PCBDDCResetCustomization(PC pc)
 {
