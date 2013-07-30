@@ -24,7 +24,7 @@
 #include <petscblaslapack.h>
 
 /* prototypes for static functions contained in bddc.c */
-static PetscErrorCode PCBDDCCoarseSetUp(PC);
+static PetscErrorCode PCBDDCSetUpSolvers(PC);
 
 /* -------------------------------------------------------------------------- */
 #undef __FUNCT__
@@ -804,8 +804,8 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
     /* reset data */
     ierr = PCBDDCResetSolvers(pc);CHKERRQ(ierr);
     ierr = PCBDDCScalingDestroy(pc);CHKERRQ(ierr);
-    /* Create coarse and local stuffs used for evaluating action of preconditioner */
-    ierr = PCBDDCCoarseSetUp(pc);CHKERRQ(ierr);
+    /* Create coarse and local stuffs */
+    ierr = PCBDDCSetUpSolvers(pc);CHKERRQ(ierr);
     ierr = PCBDDCScalingSetUp(pc);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -1290,29 +1290,29 @@ PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC pc)
 
 /* -------------------------------------------------------------------------- */
 #undef __FUNCT__
-#define __FUNCT__ "PCBDDCCoarseSetUp"
-static PetscErrorCode PCBDDCCoarseSetUp(PC pc)
+#define __FUNCT__ "PCBDDCSetUpSolvers"
+static PetscErrorCode PCBDDCSetUpSolvers(PC pc)
 {
   PC_BDDC*          pcbddc = (PC_BDDC*)pc->data;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  /* compute matrix after change of basis and extract local submatrices */
+  /* Compute matrix after change of basis and extract local submatrices */
   ierr = PCBDDCSetUpLocalMatrices(pc);CHKERRQ(ierr);
+
+  /* Allocate needed vectors */
+  ierr = PCBDDCCreateWorkVectors(pc);CHKERRQ(ierr);
+
+  /* Setup local scatters R_to_B and (optionally) R_to_D : PCBDDCCreateWorkVectors should be called first! */
+  ierr = PCBDDCSetUpLocalScatters(pc);CHKERRQ(ierr);
+
+  /* Setup local solvers ksp_D and ksp_R */
+  ierr = PCBDDCSetUpLocalSolvers(pc);CHKERRQ(ierr);
 
   /* Change global null space passed in by the user if change of basis has been requested */
   if (pcbddc->NullSpace && pcbddc->use_change_of_basis) {
     ierr = PCBDDCNullSpaceAdaptGlobal(pc);CHKERRQ(ierr);
   }
-
-  /* Allocate needed vectors */
-  ierr = PCBDDCCreateWorkVectors(pc);CHKERRQ(ierr);
-
-  /* setup local scatters R_to_B and (optionally) R_to_D : PCBDDCCreateWorkVectors should be called first! */
-  ierr = PCBDDCSetUpLocalScatters(pc);CHKERRQ(ierr);
-
-  /* setup local solvers ksp_D and ksp_R */
-  ierr = PCBDDCSetUpLocalSolvers(pc);CHKERRQ(ierr);
 
   /* setup local correction and local part of coarse basis */
   ierr = PCBDDCSetUpCoarseLocal(pc);CHKERRQ(ierr);
