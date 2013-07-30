@@ -2288,13 +2288,13 @@ PetscErrorCode PCBDDCOrthonormalizeVecs(PetscInt n, Vec vecs[])
 #define __FUNCT__ "PCBDDCSetUpCoarseEnvironment"
 PetscErrorCode PCBDDCSetUpCoarseEnvironment(PC pc,PetscScalar* coarse_submat_vals)
 {
-
-
   Mat_IS    *matis    = (Mat_IS*)pc->pmat->data;
   PC_BDDC   *pcbddc   = (PC_BDDC*)pc->data;
   PC_IS     *pcis     = (PC_IS*)pc->data;
   MPI_Comm  prec_comm;
   MPI_Comm  coarse_comm;
+
+  PetscInt  coarse_size;
 
   MatNullSpace CoarseNullSpace;
 
@@ -2372,8 +2372,7 @@ PetscErrorCode PCBDDCSetUpCoarseEnvironment(PC pc,PetscScalar* coarse_submat_val
       pcbddc->replicated_primal_size += pcbddc->local_primal_sizes[i];
     }
 
-    /* First let's count coarse dofs.
-       This code fragment assumes that the number of local constraints per connected component
+    /* This code fragment assumes that the number of local constraints per connected component
        is not greater than the number of nodes defined for the connected component
        (otherwise we will surely have linear dependence between constraints and thus a singular coarse problem) */
     ierr = PetscMalloc(pcbddc->local_primal_size*sizeof(PetscInt),&auxlocal_primal);CHKERRQ(ierr);
@@ -2384,7 +2383,7 @@ PetscErrorCode PCBDDCSetUpCoarseEnvironment(PC pc,PetscScalar* coarse_submat_val
     ierr = PetscMemcpy(&auxlocal_primal[i],aux_idx,j*sizeof(PetscInt));CHKERRQ(ierr);
     ierr = PetscFree(aux_idx);CHKERRQ(ierr);
     /* Compute number of coarse dofs */
-    ierr = PCBDDCSubsetNumbering(prec_comm,matis->mapping,pcbddc->local_primal_size,auxlocal_primal,NULL,&pcbddc->coarse_size,&pcbddc->local_primal_indices);CHKERRQ(ierr);
+    ierr = PCBDDCSubsetNumbering(prec_comm,matis->mapping,pcbddc->local_primal_size,auxlocal_primal,NULL,&coarse_size,&pcbddc->local_primal_indices);CHKERRQ(ierr);
 
     if (dbg_flag) {
       ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
@@ -2422,7 +2421,7 @@ PetscErrorCode PCBDDCSetUpCoarseEnvironment(PC pc,PetscScalar* coarse_submat_val
   }
 
   if (dbg_flag) {
-    ierr = PetscViewerASCIIPrintf(viewer,"Size of coarse problem is %d\n",pcbddc->coarse_size);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"Size of coarse problem is %d\n",coarse_size);CHKERRQ(ierr);
     if (dbg_flag > 1) {
       ierr = PetscViewerASCIIPrintf(viewer,"Distribution of local primal indices\n");CHKERRQ(ierr);
       ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
@@ -2807,8 +2806,8 @@ PetscErrorCode PCBDDCSetUpCoarseEnvironment(PC pc,PetscScalar* coarse_submat_val
             ierr = PetscMalloc(j*sizeof(PetscMPIInt),&pcbddc->replicated_local_primal_indices);CHKERRQ(ierr);
             /* allocate auxiliary space */
             ierr = PetscMalloc(count_recv*sizeof(PetscMPIInt),&localsizes2);CHKERRQ(ierr);
-            ierr = PetscMalloc(pcbddc->coarse_size*sizeof(PetscInt),&aux_ins_indices);CHKERRQ(ierr);
-            ierr = PetscMemzero(aux_ins_indices,pcbddc->coarse_size*sizeof(PetscInt));CHKERRQ(ierr);
+            ierr = PetscMalloc(coarse_size*sizeof(PetscInt),&aux_ins_indices);CHKERRQ(ierr);
+            ierr = PetscMemzero(aux_ins_indices,coarse_size*sizeof(PetscInt));CHKERRQ(ierr);
             /* allocate stuffs for message massing */
             ierr = PetscMalloc((count_recv+1)*sizeof(MPI_Request),&requests);CHKERRQ(ierr);
             for (i=0;i<count_recv+1;i++) { requests[i]=MPI_REQUEST_NULL; }
@@ -2845,7 +2844,7 @@ PetscErrorCode PCBDDCSetUpCoarseEnvironment(PC pc,PetscScalar* coarse_submat_val
             ierr = PetscMalloc(j*sizeof(PetscScalar),&temp_coarse_mat_vals);CHKERRQ(ierr);
             /* evaluate how many values I will insert in coarse mat */
             ins_local_primal_size = 0;
-            for (i=0;i<pcbddc->coarse_size;i++) {
+            for (i=0;i<coarse_size;i++) {
               if (aux_ins_indices[i]) {
                 ins_local_primal_size++;
               }
@@ -2853,7 +2852,7 @@ PetscErrorCode PCBDDCSetUpCoarseEnvironment(PC pc,PetscScalar* coarse_submat_val
             /* evaluate indices I will insert in coarse mat */
             ierr = PetscMalloc(ins_local_primal_size*sizeof(PetscInt),&ins_local_primal_indices);CHKERRQ(ierr);
             j = 0;
-            for(i=0;i<pcbddc->coarse_size;i++) {
+            for(i=0;i<coarse_size;i++) {
               if(aux_ins_indices[i]) {
                 ins_local_primal_indices[j] = i;
                 j++;
@@ -2873,7 +2872,7 @@ PetscErrorCode PCBDDCSetUpCoarseEnvironment(PC pc,PetscScalar* coarse_submat_val
             ierr = PetscMemzero(dnz,ins_local_primal_size*sizeof(PetscInt));CHKERRQ(ierr);
             /* use aux_ins_indices to realize a global to local mapping */
             j=0;
-            for(i=0;i<pcbddc->coarse_size;i++){
+            for(i=0;i<coarse_size;i++){
               if(aux_ins_indices[i]==0){
                 aux_ins_indices[i]=-1;
               } else {
@@ -2964,7 +2963,7 @@ PetscErrorCode PCBDDCSetUpCoarseEnvironment(PC pc,PetscScalar* coarse_submat_val
 
     if (pcbddc->coarse_problem_type != MULTILEVEL_BDDC) {
       ierr = MatCreate(coarse_comm,&pcbddc->coarse_mat);CHKERRQ(ierr);
-      ierr = MatSetSizes(pcbddc->coarse_mat,PETSC_DECIDE,PETSC_DECIDE,pcbddc->coarse_size,pcbddc->coarse_size);CHKERRQ(ierr);
+      ierr = MatSetSizes(pcbddc->coarse_mat,PETSC_DECIDE,PETSC_DECIDE,coarse_size,coarse_size);CHKERRQ(ierr);
       ierr = MatSetType(pcbddc->coarse_mat,coarse_mat_type);CHKERRQ(ierr);
       ierr = MatSetOptionsPrefix(pcbddc->coarse_mat,"coarse_");CHKERRQ(ierr);
       ierr = MatSetFromOptions(pcbddc->coarse_mat);CHKERRQ(ierr);
@@ -2972,7 +2971,7 @@ PetscErrorCode PCBDDCSetUpCoarseEnvironment(PC pc,PetscScalar* coarse_submat_val
       ierr = MatSetOption(pcbddc->coarse_mat,MAT_ROW_ORIENTED,PETSC_FALSE);CHKERRQ(ierr); /* local values stored in column major */
       ierr = MatSetOption(pcbddc->coarse_mat,MAT_IGNORE_ZERO_ENTRIES,PETSC_TRUE);CHKERRQ(ierr);
     } else {
-      ierr = MatCreateIS(coarse_comm,1,PETSC_DECIDE,PETSC_DECIDE,pcbddc->coarse_size,pcbddc->coarse_size,coarse_ISLG,&pcbddc->coarse_mat);CHKERRQ(ierr);
+      ierr = MatCreateIS(coarse_comm,1,PETSC_DECIDE,PETSC_DECIDE,coarse_size,coarse_size,coarse_ISLG,&pcbddc->coarse_mat);CHKERRQ(ierr);
       ierr = MatSetUp(pcbddc->coarse_mat);CHKERRQ(ierr);
       ierr = MatISGetLocalMat(pcbddc->coarse_mat,&matis_coarse_local_mat);CHKERRQ(ierr);
       ierr = MatSetOptionsPrefix(pcbddc->coarse_mat,"coarse_");CHKERRQ(ierr);
@@ -2999,7 +2998,7 @@ PetscErrorCode PCBDDCSetUpCoarseEnvironment(PC pc,PetscScalar* coarse_submat_val
 
         ierr = VecCreate(prec_comm,&vec_dnz);CHKERRQ(ierr);
         ierr = VecSetBlockSize(vec_dnz,bs);CHKERRQ(ierr);
-        ierr = VecSetSizes(vec_dnz,PETSC_DECIDE,pcbddc->coarse_size);CHKERRQ(ierr);
+        ierr = VecSetSizes(vec_dnz,PETSC_DECIDE,coarse_size);CHKERRQ(ierr);
         ierr = VecSetType(vec_dnz,VECMPI);CHKERRQ(ierr);
         ierr = VecDuplicate(vec_dnz,&vec_onz);CHKERRQ(ierr);
 
@@ -3008,7 +3007,7 @@ PetscErrorCode PCBDDCSetUpCoarseEnvironment(PC pc,PetscScalar* coarse_submat_val
         ierr = PetscMemzero(my_dnz,pcbddc->local_primal_size*sizeof(PetscScalar));CHKERRQ(ierr);
         ierr = PetscMemzero(my_onz,pcbddc->local_primal_size*sizeof(PetscScalar));CHKERRQ(ierr);
 
-        ierr = PetscMalloc(pcbddc->coarse_size*sizeof(PetscInt),&row_ownership);CHKERRQ(ierr);
+        ierr = PetscMalloc(coarse_size*sizeof(PetscInt),&row_ownership);CHKERRQ(ierr);
         ierr = MatGetOwnershipRanges(pcbddc->coarse_mat,(const PetscInt**)&mat_ranges);CHKERRQ(ierr);
         for (i=0;i<size_prec_comm;i++) {
           for (j=mat_ranges[i];j<mat_ranges[i+1];j++) {
@@ -3080,7 +3079,7 @@ PetscErrorCode PCBDDCSetUpCoarseEnvironment(PC pc,PetscScalar* coarse_submat_val
       /* check */
       for (i=0;i<lrows;i++) {
         if (dnz[i]>lcols) dnz[i]=lcols;
-        if (onz[i]>pcbddc->coarse_size-lcols) onz[i]=pcbddc->coarse_size-lcols;
+        if (onz[i]>coarse_size-lcols) onz[i]=coarse_size-lcols;
       }
       ierr = MatSeqAIJSetPreallocation(pcbddc->coarse_mat,0,dnz);CHKERRQ(ierr);
       ierr = MatMPIAIJSetPreallocation(pcbddc->coarse_mat,0,dnz,0,onz);CHKERRQ(ierr);
@@ -3218,7 +3217,7 @@ PetscErrorCode PCBDDCSetUpCoarseEnvironment(PC pc,PetscScalar* coarse_submat_val
     /* Create ksp object suitable for extreme eigenvalues' estimation */
     ierr = KSPCreate(coarse_comm,&check_ksp);CHKERRQ(ierr);
     ierr = KSPSetOperators(check_ksp,pcbddc->coarse_mat,pcbddc->coarse_mat,SAME_PRECONDITIONER);CHKERRQ(ierr);
-    ierr = KSPSetTolerances(check_ksp,1.e-12,1.e-12,PETSC_DEFAULT,pcbddc->coarse_size);CHKERRQ(ierr);
+    ierr = KSPSetTolerances(check_ksp,1.e-12,1.e-12,PETSC_DEFAULT,coarse_size);CHKERRQ(ierr);
     if (pcbddc->coarse_problem_type == MULTILEVEL_BDDC) {
       if (issym) check_ksp_type = KSPCG;
       else check_ksp_type = KSPGMRES;
