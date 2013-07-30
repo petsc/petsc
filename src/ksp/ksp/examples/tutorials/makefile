@@ -444,7 +444,7 @@ runex5_redundant_3:
 	   else echo ${PWD} ; echo "Possible problem with with ex5_redundant_3, diffs above \n========================================="; fi; \
 	   ${RM} -f ex5.tmp
 runex5_redundant_4:
-	-@${MPIEXEC} -n 5 ./ex5 -pc_type redundant -pc_redundant_number 3 -redundant_ksp_type gmres -redundant_pc_type jacobi -ksp_monitor_short -ksp_rtol 1.e-4 -psubcomm_type contiguous > ex5.tmp 2>&1;   \
+	-@${MPIEXEC} -n 5 ./ex5 -pc_type redundant -pc_redundant_number 3 -redundant_ksp_type gmres -redundant_pc_type jacobi -ksp_monitor_short -ksp_rtol 1.e-4 -psubcomm_type interlaced > ex5.tmp 2>&1;   \
 	   if (${DIFF} output/ex5_redundant.out ex5.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex5_redundant_4, diffs above \n========================================="; fi; \
 	   ${RM} -f ex5.tmp
