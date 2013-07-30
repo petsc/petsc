@@ -2,9 +2,9 @@ static char help[] = "Second Order TVD Finite Volume Example.\n";
 /*F
 
 We use a second order TVD finite volume method to evolve a system of PDEs. Our simple upwinded residual evaluation loops
-over all mesh faces, use the Riemann solver to produce a flux given the face geometry and cell values,
+over all mesh faces and uses a Riemann solver to produce the flux given the face geometry and cell values,
 \begin{equation}
-  f_i = \mathrm{riemann}(\mathrm{phys}, \mathrm{centroid}, \hat n, x^L, x^R)
+  f_i = \mathrm{riemann}(\mathrm{phys}, p_\mathrm{centroid}, \hat n, x^L, x^R)
 \end{equation}
 and then update the cell values given the cell volume.
 \begin{eqnarray}
@@ -12,7 +12,14 @@ and then update the cell values given the cell volume.
     f^R_i &+=& \frac{f_i}{vol^R}
 \end{eqnarray}
 
-A representative Riemann solver for the shallow water equations is given in the PhysicsRiemann_SW function,
+As an example, we can consider the shallow water wave equation,
+\begin{eqnarray}
+     h_t + \nabla\cdot \left( uh                              \right) &=& 0 \\
+  (uh)_t + \nabla\cdot \left( u\otimes uh + \frac{g h^2}{2} I \right) &=& 0
+\end{eqnarray}
+where $h$ is wave height, $u$ is wave velocity, and $g$ is the acceleration due to gravity.
+
+A representative Riemann solver for the shallow water equations is given in the PhysicsRiemann_SW() function,
 \begin{eqnarray}
   f^{L,R}_h    &=& uh^{L,R} \cdot \hat n \\
   f^{L,R}_{uh} &=& \frac{f^{L,R}_h}{h^{L,R}} uh^{L,R} + g (h^{L,R})^2 \hat n \\
@@ -20,6 +27,7 @@ A representative Riemann solver for the shallow water equations is given in the 
   s            &=& \max\left( \left|\frac{uh^L \cdot \hat n}{h^L}\right| + c^L, \left|\frac{uh^R \cdot \hat n}{h^R}\right| + c^R \right) \\
   f_i          &=& \frac{A_\mathrm{face}}{2} \left( f^L_i + f^R_i + s \left( x^L_i - x^R_i \right) \right)
 \end{eqnarray}
+where $c$ is the local gravity wave speed and $f_i$ is a Rusanov flux.
 
 The more sophisticated residual evaluation in RHSFunctionLocal_LS() uses a least-squares fit to a quadratic polynomial
 over a neighborhood of the given element.
