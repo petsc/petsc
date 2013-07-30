@@ -2961,11 +2961,12 @@ PetscErrorCode MatGetRedundantMatrix_MPIAIJ(Mat mat,PetscInt nsubcomm,MPI_Comm s
   PetscMPIInt    size,subsize;
   PetscInt       mloc_sub,rstart,rend,M=mat->rmap->N,N=mat->cmap->N;
   Mat_Redundant  *redund =NULL;
+  PetscSubcomm   psubcomm_in=psubcomm;
  
   PetscFunctionBegin;
   if (subcomm == MPI_COMM_NULL) { /* use psubcomm */
     if (reuse ==  MAT_INITIAL_MATRIX) {
-      if (psubcomm == NULL) { /* create psubcomm */
+      if (psubcomm_in == NULL) { /* user does not provide psubcomm, create it here */
         ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
         ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
         ierr = PetscSubcommCreate(comm,&psubcomm);CHKERRQ(ierr);
@@ -2976,14 +2977,19 @@ PetscErrorCode MatGetRedundantMatrix_MPIAIJ(Mat mat,PetscInt nsubcomm,MPI_Comm s
       subcomm = psubcomm->comm;
       ierr = MPI_Comm_size(subcomm,&subsize);CHKERRQ(ierr);
     } else { /* retrieve psubcomm */
-      ierr = PetscObjectGetComm((PetscObject)(*matredundant),&subcomm);CHKERRQ(ierr);
-      ierr = MPI_Comm_size(subcomm,&subsize);CHKERRQ(ierr);
-      if (subsize == 1) {
-        Mat_SeqAIJ *c = (Mat_SeqAIJ*)(*matredundant)->data;
-        psubcomm = c->redundant->psubcomm;
-      } else {
-        Mat_MPIAIJ *c = (Mat_MPIAIJ*)(*matredundant)->data;
-        psubcomm = c->redundant->psubcomm;
+      if (psubcomm_in == NULL) { /* user does not provide psubcomm */
+        ierr = PetscObjectGetComm((PetscObject)(*matredundant),&subcomm);CHKERRQ(ierr);
+        ierr = MPI_Comm_size(subcomm,&subsize);CHKERRQ(ierr);
+        if (subsize == 1) {
+          Mat_SeqAIJ *c = (Mat_SeqAIJ*)(*matredundant)->data;
+          psubcomm = c->redundant->psubcomm;
+        } else {
+          Mat_MPIAIJ *c = (Mat_MPIAIJ*)(*matredundant)->data;
+          psubcomm = c->redundant->psubcomm;
+        }
+      } else { /* use psubcomm_in */
+        subcomm = psubcomm_in->comm;
+        ierr = MPI_Comm_size(subcomm,&subsize);CHKERRQ(ierr);
       }
     }
   }
@@ -3039,7 +3045,8 @@ PetscErrorCode MatGetRedundantMatrix_MPIAIJ(Mat mat,PetscInt nsubcomm,MPI_Comm s
     }
   }
 
-  if (psubcomm) {  /* free psubcomm in MatDestroy_MatRedundant() */
+  if (psubcomm && psubcomm_in==NULL) {  
+    /* if psubcomm is created in this routine, free it in MatDestroy_MatRedundant() */
     ierr = MPI_Comm_size(psubcomm->comm,&subsize);CHKERRQ(ierr);
     if (subsize == 1) {
       Mat_SeqAIJ *c = (Mat_SeqAIJ*)(*matredundant)->data;
