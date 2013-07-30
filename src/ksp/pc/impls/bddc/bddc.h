@@ -35,6 +35,7 @@ typedef struct {
   Mat           local_auxmat2;
   Vec           vec1_R;
   Vec           vec2_R;
+  IS            is_R_local;
   VecScatter    R_to_B;
   VecScatter    R_to_D;
   KSP           ksp_R;

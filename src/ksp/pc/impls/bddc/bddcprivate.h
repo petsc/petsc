@@ -42,11 +42,10 @@ PetscErrorCode PCBDDCNullSpaceAssembleCoarse(PC,MatNullSpace*);
 
 /* utils */
 PetscErrorCode PCBDDCCreateWorkVectors(PC);
-PetscErrorCode PCBDDCSetUpLocalScatters(PC,IS*);
+PetscErrorCode PCBDDCSetUpLocalScatters(PC);
 PetscErrorCode PCBDDCSetUpLocalMatrices(PC);
-PetscErrorCode PCBDDCSetUseExactDirichlet(PC,PetscBool);
-PetscErrorCode PCBDDCSetUpLocalSolvers(PC,IS,IS);
-PetscErrorCode PCBDDCSetUpCoarseLocal(PC,IS);
+PetscErrorCode PCBDDCSetUpLocalSolvers(PC);
+PetscErrorCode PCBDDCSetUpCoarseLocal(PC);
 PetscErrorCode PCBDDCSetUpCoarseEnvironment(PC,PetscScalar*);
 PetscErrorCode PCBDDCSubsetNumbering(MPI_Comm,ISLocalToGlobalMapping,PetscInt,PetscInt[],PetscInt[],PetscInt*,PetscInt*[]);
 PetscErrorCode PCBDDCGetPrimalVerticesLocalIdx(PC,PetscInt*,PetscInt*[]);
@@ -55,6 +54,7 @@ PetscErrorCode PCBDDCScatterCoarseDataBegin(PC,Vec,Vec,InsertMode,ScatterMode);
 PetscErrorCode PCBDDCScatterCoarseDataEnd(PC,Vec,Vec,InsertMode,ScatterMode);
 PetscErrorCode PCBDDCApplyInterfacePreconditioner(PC);
 PetscErrorCode PCBDDCOrthonormalizeVecs(PetscInt,Vec[]);
+PetscErrorCode PCBDDCSetUseExactDirichlet(PC,PetscBool);
 
 /* feti-dp */
 PetscErrorCode PCBDDCCreateFETIDPMatContext(PC,FETIDPMat_ctx*);

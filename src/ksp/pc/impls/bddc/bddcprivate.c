@@ -60,6 +60,7 @@ PetscErrorCode PCBDDCResetSolvers(PC pc)
   ierr = VecDestroy(&pcbddc->vec1_R);CHKERRQ(ierr);
   ierr = VecDestroy(&pcbddc->vec2_R);CHKERRQ(ierr);
   ierr = VecDestroy(&pcbddc->vec4_D);CHKERRQ(ierr);
+  ierr = ISDestroy(&pcbddc->is_R_local);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&pcbddc->R_to_B);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&pcbddc->R_to_D);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&pcbddc->coarse_loc_to_glob);CHKERRQ(ierr);
@@ -106,7 +107,7 @@ PetscErrorCode PCBDDCCreateWorkVectors(PC pc)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCSetUpCoarseLocal"
-PetscErrorCode PCBDDCSetUpCoarseLocal(PC pc, IS is_R_local)
+PetscErrorCode PCBDDCSetUpCoarseLocal(PC pc)
 {
   PetscErrorCode         ierr;
   /* pointers to pcis and pcbddc */
@@ -182,7 +183,7 @@ PetscErrorCode PCBDDCSetUpCoarseLocal(PC pc, IS is_R_local)
 
     /* Extract constraints on R nodes: C_{CR}  */
     ierr = ISCreateStride(PETSC_COMM_SELF,n_constraints,n_vertices,1,&is_aux);CHKERRQ(ierr);
-    ierr = MatGetSubMatrix(pcbddc->ConstraintMatrix,is_aux,is_R_local,MAT_INITIAL_MATRIX,&C_CR);CHKERRQ(ierr);
+    ierr = MatGetSubMatrix(pcbddc->ConstraintMatrix,is_aux,pcbddc->is_R_local,MAT_INITIAL_MATRIX,&C_CR);CHKERRQ(ierr);
     ierr = ISDestroy(&is_aux);CHKERRQ(ierr);
 
     /* Assemble local_auxmat2 = - A_{RR}^{-1} C^T_{CR} needed by BDDC application */
@@ -226,8 +227,8 @@ PetscErrorCode PCBDDCSetUpCoarseLocal(PC pc, IS is_R_local)
   /* Get submatrices from subdomain matrix */
   if (n_vertices) {
     ierr = ISCreateGeneral(PETSC_COMM_SELF,n_vertices,vertices,PETSC_COPY_VALUES,&is_aux);CHKERRQ(ierr);
-    ierr = MatGetSubMatrix(pcbddc->local_mat,is_R_local,is_aux,MAT_INITIAL_MATRIX,&A_RV);CHKERRQ(ierr);
-    ierr = MatGetSubMatrix(pcbddc->local_mat,is_aux,is_R_local,MAT_INITIAL_MATRIX,&A_VR);CHKERRQ(ierr);
+    ierr = MatGetSubMatrix(pcbddc->local_mat,pcbddc->is_R_local,is_aux,MAT_INITIAL_MATRIX,&A_RV);CHKERRQ(ierr);
+    ierr = MatGetSubMatrix(pcbddc->local_mat,is_aux,pcbddc->is_R_local,MAT_INITIAL_MATRIX,&A_VR);CHKERRQ(ierr);
     ierr = MatGetSubMatrix(pcbddc->local_mat,is_aux,is_aux,MAT_INITIAL_MATRIX,&A_VV);CHKERRQ(ierr);
     ierr = ISDestroy(&is_aux);CHKERRQ(ierr);
   }
@@ -245,7 +246,7 @@ PetscErrorCode PCBDDCSetUpCoarseLocal(PC pc, IS is_R_local)
   }
 
   if (pcbddc->dbg_flag) {
-    ierr = ISGetIndices(is_R_local,&idx_R_local);CHKERRQ(ierr);
+    ierr = ISGetIndices(pcbddc->is_R_local,&idx_R_local);CHKERRQ(ierr);
     ierr = PetscMalloc(2*pcbddc->local_primal_size*sizeof(*coarsefunctions_errors),&coarsefunctions_errors);CHKERRQ(ierr);
     ierr = PetscMalloc(2*pcbddc->local_primal_size*sizeof(*constraints_errors),&constraints_errors);CHKERRQ(ierr);
   }
@@ -596,7 +597,7 @@ PetscErrorCode PCBDDCSetUpCoarseLocal(PC pc, IS is_R_local)
       ierr = MatDestroy(&coarse_psi_B);CHKERRQ(ierr);
     }
     ierr = MatDestroy(&coarse_sub_mat);CHKERRQ(ierr);
-    ierr = ISRestoreIndices(is_R_local,&idx_R_local);CHKERRQ(ierr);
+    ierr = ISRestoreIndices(pcbddc->is_R_local,&idx_R_local);CHKERRQ(ierr);
     ierr = PetscFree(coarsefunctions_errors);CHKERRQ(ierr);
     ierr = PetscFree(constraints_errors);CHKERRQ(ierr);
   }
@@ -732,11 +733,11 @@ PetscErrorCode PCBDDCSetUpLocalMatrices(PC pc)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCSetUpLocalScatters"
-PetscErrorCode PCBDDCSetUpLocalScatters(PC pc,IS* is_R_local_n)
+PetscErrorCode PCBDDCSetUpLocalScatters(PC pc)
 {
   PC_IS*         pcis = (PC_IS*)(pc->data);
   PC_BDDC*       pcbddc = (PC_BDDC*)pc->data;
-  IS             is_R_local,is_aux1,is_aux2;
+  IS             is_aux1,is_aux2;
   PetscInt       *vertices,*aux_array1,*aux_array2,*is_indices,*idx_R_local;
   PetscInt       n_vertices,n_constraints,i,j,n_R,n_D,n_B;
   PetscBool      *array_bool;
@@ -761,7 +762,7 @@ PetscErrorCode PCBDDCSetUpLocalScatters(PC pc,IS* is_R_local_n)
     }
   }
   ierr = PetscFree(vertices);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,n_R,idx_R_local,PETSC_OWN_POINTER,&is_R_local);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,n_R,idx_R_local,PETSC_OWN_POINTER,&pcbddc->is_R_local);CHKERRQ(ierr);
 
   /* print some info if requested */
   if (pcbddc->dbg_flag) {
@@ -812,7 +813,6 @@ PetscErrorCode PCBDDCSetUpLocalScatters(PC pc,IS* is_R_local_n)
     ierr = ISDestroy(&is_aux1);CHKERRQ(ierr);
   }
   ierr = PetscFree(array_bool);CHKERRQ(ierr);
-  *is_R_local_n = is_R_local;
   PetscFunctionReturn(0);
 }
 
@@ -829,7 +829,7 @@ PetscErrorCode PCBDDCSetUseExactDirichlet(PC pc,PetscBool use)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCSetUpLocalSolvers"
-PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc, IS is_I_local, IS is_R_local)
+PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc)
 {
   PC_BDDC        *pcbddc = (PC_BDDC*)pc->data;
   PC_IS          *pcis = (PC_IS*)pc->data;
@@ -848,7 +848,7 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc, IS is_I_local, IS is_R_local)
 
   /* DIRICHLET PROBLEM */
   /* Matrix for Dirichlet problem is pcis->A_II */
-  ierr = ISGetSize(is_I_local,&n_D);CHKERRQ(ierr);
+  ierr = ISGetSize(pcis->is_I_local,&n_D);CHKERRQ(ierr);
   if (!pcbddc->ksp_D) { /* create object if not yet build */
     ierr = KSPCreate(PETSC_COMM_SELF,&pcbddc->ksp_D);CHKERRQ(ierr);
     ierr = PetscObjectIncrementTabLevel((PetscObject)pcbddc->ksp_D,(PetscObject)pc,1);CHKERRQ(ierr);
@@ -876,8 +876,8 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc, IS is_I_local, IS is_R_local)
 
   /* NEUMANN PROBLEM */
   /* Matrix for Neumann problem is A_RR -> we need to create it */
-  ierr = ISGetSize(is_R_local,&n_R);CHKERRQ(ierr);
-  ierr = MatGetSubMatrix(pcbddc->local_mat,is_R_local,is_R_local,MAT_INITIAL_MATRIX,&A_RR);CHKERRQ(ierr);
+  ierr = ISGetSize(pcbddc->is_R_local,&n_R);CHKERRQ(ierr);
+  ierr = MatGetSubMatrix(pcbddc->local_mat,pcbddc->is_R_local,pcbddc->is_R_local,MAT_INITIAL_MATRIX,&A_RR);CHKERRQ(ierr);
   if (!pcbddc->ksp_R) { /* create object if not yet build */
     ierr = KSPCreate(PETSC_COMM_SELF,&pcbddc->ksp_R);CHKERRQ(ierr);
     ierr = PetscObjectIncrementTabLevel((PetscObject)pcbddc->ksp_R,(PetscObject)pc,1);CHKERRQ(ierr);
@@ -925,7 +925,7 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc, IS is_I_local, IS is_R_local)
     ierr = PetscViewerFlush(pcbddc->dbg_viewer);CHKERRQ(ierr);
   }
   if (n_D && pcbddc->NullSpace && !use_exact_reduced && !pcbddc->inexact_prec_type) {
-    ierr = PCBDDCNullSpaceAssembleCorrection(pc,is_I_local);CHKERRQ(ierr);
+    ierr = PCBDDCNullSpaceAssembleCorrection(pc,pcis->is_I_local);CHKERRQ(ierr);
   }
 
   /* Neumann */
@@ -949,7 +949,7 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc, IS is_I_local, IS is_R_local)
     ierr = PetscViewerFlush(pcbddc->dbg_viewer);CHKERRQ(ierr);
   }
   if (n_R && pcbddc->NullSpace && !use_exact_reduced) { /* is it the right logic? */
-    ierr = PCBDDCNullSpaceAssembleCorrection(pc,is_R_local);CHKERRQ(ierr);
+    ierr = PCBDDCNullSpaceAssembleCorrection(pc,pcbddc->is_R_local);CHKERRQ(ierr);
   }
 
   /* free Neumann problem's matrix */

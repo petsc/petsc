@@ -1305,9 +1305,7 @@ static PetscErrorCode PCBDDCSetLevel(PC pc,PetscInt level)
 #define __FUNCT__ "PCBDDCCoarseSetUp"
 static PetscErrorCode PCBDDCCoarseSetUp(PC pc)
 {
-  PC_IS*            pcis = (PC_IS*)(pc->data);
   PC_BDDC*          pcbddc = (PC_BDDC*)pc->data;
-  IS                is_R_local;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
@@ -1323,16 +1321,13 @@ static PetscErrorCode PCBDDCCoarseSetUp(PC pc)
   ierr = PCBDDCCreateWorkVectors(pc);CHKERRQ(ierr);
 
   /* setup local scatters R_to_B and (optionally) R_to_D : PCBDDCCreateWorkVectors should be called first! */
-  ierr = PCBDDCSetUpLocalScatters(pc,&is_R_local);CHKERRQ(ierr);
+  ierr = PCBDDCSetUpLocalScatters(pc);CHKERRQ(ierr);
 
   /* setup local solvers ksp_D and ksp_R */
-  ierr = PCBDDCSetUpLocalSolvers(pc,pcis->is_I_local,is_R_local);CHKERRQ(ierr);
+  ierr = PCBDDCSetUpLocalSolvers(pc);CHKERRQ(ierr);
 
   /* setup local correction and local part of coarse basis */
-  ierr = PCBDDCSetUpCoarseLocal(pc,is_R_local);CHKERRQ(ierr);
-
-  /* free memory */
-  ierr = ISDestroy(&is_R_local);CHKERRQ(ierr);
+  ierr = PCBDDCSetUpCoarseLocal(pc);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
