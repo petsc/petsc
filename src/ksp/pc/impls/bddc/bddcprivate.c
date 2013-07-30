@@ -105,8 +105,8 @@ PetscErrorCode PCBDDCCreateWorkVectors(PC pc)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PCBDDCSetUpCorrectionAndBasis"
-PetscErrorCode PCBDDCSetUpCorrectionAndBasis(PC pc, IS is_R_local)
+#define __FUNCT__ "PCBDDCSetUpCoarseLocal"
+PetscErrorCode PCBDDCSetUpCoarseLocal(PC pc, IS is_R_local)
 {
   PetscErrorCode         ierr;
   /* pointers to pcis and pcbddc */

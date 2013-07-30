@@ -1329,7 +1329,7 @@ static PetscErrorCode PCBDDCCoarseSetUp(PC pc)
   ierr = PCBDDCSetUpLocalSolvers(pc,pcis->is_I_local,is_R_local);CHKERRQ(ierr);
 
   /* setup local correction and local part of coarse basis */
-  ierr = PCBDDCSetUpCorrectionAndBasis(pc,is_R_local);CHKERRQ(ierr);
+  ierr = PCBDDCSetUpCoarseLocal(pc,is_R_local);CHKERRQ(ierr);
 
   /* free memory */
   ierr = ISDestroy(&is_R_local);CHKERRQ(ierr);
