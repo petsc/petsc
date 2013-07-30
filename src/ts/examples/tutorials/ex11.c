@@ -2,17 +2,17 @@ static char help[] = "Second Order TVD Finite Volume Example.\n";
 /*F
 
 We use a second order TVD finite volume method to evolve a system of PDEs. Our simple upwinded residual evaluation loops
-over all mesh faces, use the Riemann solver to produce a flux given the face geometry and cell values, and then update
-the cell values given the cell volume.
-\begin{lstlisting}
-  (*phys->riemann)(phys, fg->centroid, fg->normal, xL, xR, flux);
-  for (i = 0; i < phys->dof; ++i) {
-    if (fL) fL[i] -= flux[i] / cgL->volume;
-    if (fR) fR[i] += flux[i] / cgR->volume;
-  }
-\end{lstlisting}
+over all mesh faces, use the Riemann solver to produce a flux given the face geometry and cell values,
+\begin{equation}
+  f_i = \mathrm{riemann}(\mathrm{phys}, \mathrm{centroid}, \hat n, x^L, x^R)
+\end{equation}
+and then update the cell values given the cell volume.
+\begin{eqnarray}
+    f^L_i &-=& \frac{f_i}{vol^L} \\
+    f^R_i &+=& \frac{f_i}{vol^R}
+\end{eqnarray}
 
-A representative Riemann solver for the shallow water equations is given in PhysicsRiemann_SW()
+A representative Riemann solver for the shallow water equations is given in the PhysicsRiemann_SW function,
 \begin{eqnarray}
   f^{L,R}_h    &=& uh^{L,R} \cdot \hat n \\
   f^{L,R}_{uh} &=& \frac{f^{L,R}_h}{h^{L,R}} uh^{L,R} + g (h^{L,R})^2 \hat n \\
