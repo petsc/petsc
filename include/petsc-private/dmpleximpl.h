@@ -6,7 +6,7 @@
 #include <petscbt.h>
 #include "petsc-private/dmimpl.h"
 
-PETSC_EXTERN PetscLogEvent DMPLEX_Distribute, DMPLEX_Stratify;
+PETSC_EXTERN PetscLogEvent DMPLEX_Partition, DMPLEX_Distribute, DMPLEX_DistributeLabels, DMPLEX_DistributeSF, DMPLEX_Stratify;
 
 /* This is an integer map, in addition it is also a container class
    Design points:
