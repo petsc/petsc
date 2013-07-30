@@ -36,6 +36,8 @@ struct _DMOps {
   PetscErrorCode (*globaltolocalend)(DM,Vec,InsertMode,Vec);
   PetscErrorCode (*localtoglobalbegin)(DM,Vec,InsertMode,Vec);
   PetscErrorCode (*localtoglobalend)(DM,Vec,InsertMode,Vec);
+  PetscErrorCode (*localtolocalbegin)(DM,Vec,InsertMode,Vec);
+  PetscErrorCode (*localtolocalend)(DM,Vec,InsertMode,Vec);
 
   PetscErrorCode (*destroy)(DM);
 

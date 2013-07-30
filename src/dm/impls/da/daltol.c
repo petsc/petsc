@@ -6,9 +6,9 @@
 #include <petsc-private/dmdaimpl.h>    /*I   "petscdmda.h"   I*/
 
 #undef __FUNCT__
-#define __FUNCT__ "DMDALocalToLocalCreate"
+#define __FUNCT__ "DMLocalToLocalCreate_DA"
 /*
-   DMDALocalToLocalCreate - Creates the local to local scatter
+   DMLocalToLocalCreate_DA - Creates the local to local scatter
 
    Collective on DMDA
 
@@ -16,7 +16,7 @@
 .  da - the distributed array
 
 */
-PetscErrorCode  DMDALocalToLocalCreate(DM da)
+PetscErrorCode  DMLocalToLocalCreate_DA(DM da)
 {
   PetscErrorCode ierr;
   PetscInt       *idx,left,j,count,up,down,i,bottom,top,k;
@@ -68,11 +68,11 @@ PetscErrorCode  DMDALocalToLocalCreate(DM da)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMDALocalToLocalBegin"
-/*@
-   DMDALocalToLocalBegin - Maps from a local vector (including ghost points
+#define __FUNCT__ "DMLocalToLocalBegin_DA"
+/*
+   DMLocalToLocalBegin_DA - Maps from a local vector (including ghost points
    that contain irrelevant values) to another local vector where the ghost
-   points in the second are set correctly. Must be followed by DMDALocalToLocalEnd().
+   points in the second are set correctly. Must be followed by DMLocalToLocalEnd_DA().
 
    Neighbor-wise Collective on DMDA and Vec
 
@@ -83,8 +83,6 @@ PetscErrorCode  DMDALocalToLocalCreate(DM da)
 
    Output Parameter:
 .  l  - the local vector with correct ghost values
-
-   Level: intermediate
 
    Notes:
    The local vectors used here need not be the same as those
@@ -92,11 +90,8 @@ PetscErrorCode  DMDALocalToLocalCreate(DM da)
    must have the same parallel data layout; they could, for example, be
    obtained with VecDuplicate() from the DMDA originating vectors.
 
-.keywords: distributed array, local-to-local, begin
-
-.seealso: DMDALocalToLocalEnd(), DMLocalToGlobalBegin()
-@*/
-PetscErrorCode  DMDALocalToLocalBegin(DM da,Vec g,InsertMode mode,Vec l)
+*/
+PetscErrorCode  DMLocalToLocalBegin_DA(DM da,Vec g,InsertMode mode,Vec l)
 {
   PetscErrorCode ierr;
   DM_DA          *dd = (DM_DA*)da->data;
@@ -104,19 +99,19 @@ PetscErrorCode  DMDALocalToLocalBegin(DM da,Vec g,InsertMode mode,Vec l)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   if (!dd->ltol) {
-    ierr = DMDALocalToLocalCreate(da);CHKERRQ(ierr);
+    ierr = DMLocalToLocalCreate_DA(da);CHKERRQ(ierr);
   }
   ierr = VecScatterBegin(dd->ltol,g,l,mode,SCATTER_FORWARD);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMDALocalToLocalEnd"
-/*@
-   DMDALocalToLocalEnd - Maps from a local vector (including ghost points
+#define __FUNCT__ "DMLocalToLocalEnd_DA"
+/*
+   DMLocalToLocalEnd_DA - Maps from a local vector (including ghost points
    that contain irrelevant values) to another local vector where the ghost
    points in the second are set correctly.  Must be preceeded by
-   DMDALocalToLocalBegin().
+   DMLocalToLocalBegin_DA().
 
    Neighbor-wise Collective on DMDA and Vec
 
@@ -128,19 +123,14 @@ PetscErrorCode  DMDALocalToLocalBegin(DM da,Vec g,InsertMode mode,Vec l)
    Output Parameter:
 .  l  - the local vector with correct ghost values
 
-   Level: intermediate
-
    Note:
    The local vectors used here need not be the same as those
    obtained from DMCreateLocalVector(), BUT they
    must have the same parallel data layout; they could, for example, be
    obtained with VecDuplicate() from the DMDA originating vectors.
 
-.keywords: distributed array, local-to-local, end
-
-.seealso: DMDALocalToLocalBegin(), DMLocalToGlobalBegin()
-@*/
-PetscErrorCode  DMDALocalToLocalEnd(DM da,Vec g,InsertMode mode,Vec l)
+*/
+PetscErrorCode  DMLocalToLocalEnd_DA(DM da,Vec g,InsertMode mode,Vec l)
 {
   PetscErrorCode ierr;
   DM_DA          *dd = (DM_DA*)da->data;
