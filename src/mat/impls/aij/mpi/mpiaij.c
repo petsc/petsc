@@ -2962,9 +2962,10 @@ PetscErrorCode MatGetRedundantMatrix_MPIAIJ(Mat mat,PetscInt nsubcomm,MPI_Comm s
   PetscInt       mloc_sub,rstart,rend,M=mat->rmap->N,N=mat->cmap->N;
   Mat_Redundant  *redund =NULL;
   PetscSubcomm   psubcomm_in=psubcomm;
+  MPI_Comm       subcomm_in=subcomm;
  
   PetscFunctionBegin;
-  if (subcomm == MPI_COMM_NULL) { /* use psubcomm */
+  if (subcomm_in == MPI_COMM_NULL) { /* use psubcomm */
     if (reuse ==  MAT_INITIAL_MATRIX) {
       if (psubcomm_in == NULL) { /* user does not provide psubcomm, create it here */
         ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
@@ -2994,7 +2995,7 @@ PetscErrorCode MatGetRedundantMatrix_MPIAIJ(Mat mat,PetscInt nsubcomm,MPI_Comm s
     }
   }
 
-  if (psubcomm->type == PETSC_SUBCOMM_INTERLACED) {
+  if (subcomm_in==NULL && psubcomm->type == PETSC_SUBCOMM_INTERLACED) {
      ierr = MatGetRedundantMatrix_MPIAIJ_psubcomm(mat,nsubcomm,psubcomm,reuse,matredundant);CHKERRQ(ierr);
   } else {
     /* via MatGetSubMatrices() */
