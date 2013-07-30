@@ -119,6 +119,21 @@ grid on each processor) with the SMG multigrid solver
 
 <p>DO THE FOLLOWING:</p>
 <ul>
+  <li>Run shallow water flow through a tiny hybrid mesh
+    <pre>
+      ex11 -f ${PETSC_DIR}/share/petsc/datafiles/meshes/sevenside.exo
+    </pre>
+  </li>
+  <li>Run shallow water flow through a larger quadrilateral mesh
+    <pre>
+      ex11 -f ${PETSC_DIR}/share/petsc/datafiles/meshes/sevenside-quad-15.exo
+    </pre>
+  </li>
+  <li>Run shallow water flow through a small mesh with a Rosenbrock-W solver
+    <pre>
+      ex11 -f ${PETSC_DIR}/share/petsc/datafiles/meshes/sevenside.exo -ts_type rosw
+    </pre>
+  </li>
   <li> Run a 16 processor example on a 132x132 grid and a 4x4 processor grid (33x33
 grid on each processor) with the SMG multigrid solver
 <pre>
