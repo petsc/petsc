@@ -22,7 +22,6 @@ PETSc comes with a large number of example codes to illustrate usage. There thre
   <li>Handling a simple structured grid</li>
   <li>Using the ODE integrator</li>
   <li>Using call-back functions</li>
-  <li>Using call-back functions</li>
 </ul>
 
 <p>FURTHER DETAILS:</p>
@@ -33,12 +32,31 @@ PETSc comes with a large number of example codes to illustrate usage. There thre
 
 <p>DO THE FOLLOWING:</p>
 <ul>
+  <li> Compile src/ts/examples/tutorials/ex2.c
+    <pre>
+      cd petsc/src/ts/examples/tutorials
+      make ex2
+  </pre>
+  </li>
   <li> Run a 16 processor example on a 132x132 grid and a 4x4 processor grid (33x33
 grid on each processor) with the SMG multigrid solver
-<pre>
-     mpirun -np 16 ex1
-</pre>
-<a href="ex3out-16.html">[Expected output]</a><br><br></li>
+    <pre>
+     mpiexec -n 1 ex2 -ts_max_steps 10 -ts_monitor
+     <a href="../src/ts/examples/tutorials/output/ex2_tut_1.out">[Expected output]</a>
+    </pre>
+  </li>
+  <li>
+    <pre>
+      mpiexec -n 4 ex2 -ts_max_steps 10 -ts_monitor -snes_monitor -ksp_monitor
+     <a href="../src/ts/examples/tutorials/output/ex2_tut_2.out">[Expected output]</a>
+    </pre>
+  </li>
+  <li>
+    <pre>
+     mpiexec -n 16 ex2 -ts_max_steps 10 -ts_monitor -da_grid_x 64
+     <a href="../src/ts/examples/tutorials/output/ex2_tut_3.out">[Expected output]</a>
+    </pre>
+  </li>
 </ul>
 
 
@@ -50,6 +68,7 @@ grid on each processor) with the SMG multigrid solver
 <ul>
   <li>Handling a 2d structured grid</li>
   <li>Using the nonlinear solvers</li>
+  <li>Changing the default linear solver</li>
 </ul>
 
 <p>FURTHER DETAILS:</p>
@@ -61,12 +80,25 @@ grid on each processor) with the SMG multigrid solver
 
 <p>DO THE FOLLOWING:</p>
 <ul>
+  <li> Compile src/snes/examples/tutorials/ex19.c
+    <pre>
+      cd petsc/src/snes/examples/tutorials/
+      make ex19
+  </pre>
+  </li>
   <li> Run a 16 processor example on a 132x132 grid and a 4x4 processor grid (33x33
 grid on each processor) with the SMG multigrid solver
-<pre>
-     mpirun -np 16 ex19
-</pre>
-<a href="ex3out-16.html">[Expected output]</a><br><br></li>
+    <pre>
+      mpiexec -n 16 ex19 -da_grid_x 64 -da_grid_y 128 -snes_monitor -ksp_monitor -snes_view
+     <a href="../src/snes/examples/tutorials/output/ex19_tut_1.out">[Expected output]</a>
+    </pre>
+  </li>
+  <li>
+    <pre>
+      mpiexec -n 16 ex19 -da_grid_x 64 -da_grid_y 128 -snes_monitor -ksp_monitor -snes_view -pc_type hypre
+     <a href="../src/snes/examples/tutorials/output/ex19_tut_2.out">[Expected output]</a>
+    </pre>
+  </li>
 </ul>
 
 <!--------------------------------------------------------------------------->
@@ -91,12 +123,19 @@ grid on each processor) with the SMG multigrid solver
 
 <p>DO THE FOLLOWING:</p>
 <ul>
+  <li> Compile src/ksp/ksp/examples/tutorials/ex42.c
+    <pre>
+      cd petsc/src/ksp/ksp/examples/tutorials
+      make ex42
+  </pre>
+  </li>
   <li> Run a 16 processor example on a 132x132 grid and a 4x4 processor grid (33x33
 grid on each processor) with the SMG multigrid solver
-<pre>
-     mpirun -np 16 ex19
-</pre>
-<a href="ex3out-16.html">[Expected output]</a><br><br></li>
+    <pre>
+     mpiexec -n 1 ex42
+     <a href="../src/ksp/ksp/examples/tutorials/output/ex42_tut_1.out">[Expected output]</a>
+    </pre>
+  </li>
 </ul>
 
 <!--------------------------------------------------------------------------->
@@ -105,6 +144,7 @@ grid on each processor) with the SMG multigrid solver
 
 <p>WHAT THIS EXAMPLE DEMONSTRATES:</p>
 <ul>
+  <li>Changing the default ODE integrator</li>
   <li>Handling unstructured grids</li>
   <li>Registering your own interchangable physics and algorithm modules</li>
 </ul>
@@ -119,27 +159,29 @@ grid on each processor) with the SMG multigrid solver
 
 <p>DO THE FOLLOWING:</p>
 <ul>
+  <li> Compile src/ts/examples/tutorials/ex11.c
+    <pre>
+      cd petsc/src/ts/examples/tutorials
+      make ex11
+  </pre>
   <li>Run shallow water flow through a tiny hybrid mesh
     <pre>
-      ex11 -f ${PETSC_DIR}/share/petsc/datafiles/meshes/sevenside.exo
-    </pre>
-  </li>
-  <li>Run shallow water flow through a larger quadrilateral mesh
-    <pre>
-      ex11 -f ${PETSC_DIR}/share/petsc/datafiles/meshes/sevenside-quad-15.exo
+      mpiexec -n 1 ex11 -f ${PETSC_DIR}/share/petsc/datafiles/meshes/sevenside.exo
+      <a href="../src/ts/examples/tutorials/output/ex11_tut_1.out">[Expected output]</a>
     </pre>
   </li>
   <li>Run shallow water flow through a small mesh with a Rosenbrock-W solver
     <pre>
-      ex11 -f ${PETSC_DIR}/share/petsc/datafiles/meshes/sevenside.exo -ts_type rosw
+      mpiexec -n 1 ex11 -f ${PETSC_DIR}/share/petsc/datafiles/meshes/sevenside.exo -ts_type rosw
+      <a href="../src/ts/examples/tutorials/output/ex11_tut_2.out">[Expected output]</a>
     </pre>
   </li>
-  <li> Run a 16 processor example on a 132x132 grid and a 4x4 processor grid (33x33
-grid on each processor) with the SMG multigrid solver
-<pre>
-     mpirun -np 16 ex11
-</pre>
-<a href="ex3out-16.html">[Expected output]</a><br><br></li>
+  <li>Run shallow water flow through a larger quadrilateral mesh
+    <pre>
+      mpiexec -n 16 ex11 -f ${PETSC_DIR}/share/petsc/datafiles/meshes/sevenside-quad-15.exo
+      <a href="../src/ts/examples/tutorials/output/ex11_tut_3.out">[Expected output]</a>
+    </pre>
+  </li>
 </ul>
 
 </body></html>
