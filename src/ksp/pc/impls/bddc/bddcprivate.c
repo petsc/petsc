@@ -289,7 +289,7 @@ PetscErrorCode PCBDDCSetUpCoarseLocal(PC pc, PetscScalar **coarse_submat_vals_n)
   ierr = MatSetSizes(pcbddc->coarse_phi_B,n_B,pcbddc->local_primal_size,n_B,pcbddc->local_primal_size);CHKERRQ(ierr);
   ierr = MatSetType(pcbddc->coarse_phi_B,impMatType);CHKERRQ(ierr);
   ierr = MatSetUp(pcbddc->coarse_phi_B);CHKERRQ(ierr);
-  if (pcbddc->inexact_prec_type || pcbddc->dbg_flag) {
+  if (pcbddc->switch_static || pcbddc->dbg_flag) {
     ierr = MatCreate(PETSC_COMM_SELF,&pcbddc->coarse_phi_D);CHKERRQ(ierr);
     ierr = MatSetSizes(pcbddc->coarse_phi_D,n_D,pcbddc->local_primal_size,n_D,pcbddc->local_primal_size);CHKERRQ(ierr);
     ierr = MatSetType(pcbddc->coarse_phi_D,impMatType);CHKERRQ(ierr);
@@ -333,7 +333,7 @@ PetscErrorCode PCBDDCSetUpCoarseLocal(PC pc, PetscScalar **coarse_submat_vals_n)
     ierr = MatSetValues(pcbddc->coarse_phi_B,n_B,auxindices,1,&i,array,INSERT_VALUES);CHKERRQ(ierr);
     ierr = VecRestoreArrayRead(pcis->vec1_B,&array);CHKERRQ(ierr);
     ierr = MatSetValue(pcbddc->coarse_phi_B,idx_V_B[i],i,one,INSERT_VALUES);CHKERRQ(ierr);
-    if (pcbddc->inexact_prec_type || pcbddc->dbg_flag) {
+    if (pcbddc->switch_static || pcbddc->dbg_flag) {
       ierr = VecScatterBegin(pcbddc->R_to_D,pcbddc->vec1_R,pcis->vec1_D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
       ierr = VecScatterEnd(pcbddc->R_to_D,pcbddc->vec1_R,pcis->vec1_D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
       ierr = VecGetArrayRead(pcis->vec1_D,&array);CHKERRQ(ierr);
@@ -408,7 +408,7 @@ PetscErrorCode PCBDDCSetUpCoarseLocal(PC pc, PetscScalar **coarse_submat_vals_n)
     ierr = VecGetArrayRead(pcis->vec1_B,&array);CHKERRQ(ierr);
     ierr = MatSetValues(pcbddc->coarse_phi_B,n_B,auxindices,1,&j,array,INSERT_VALUES);CHKERRQ(ierr);
     ierr = VecRestoreArrayRead(pcis->vec1_B,&array);CHKERRQ(ierr);
-    if (pcbddc->inexact_prec_type || pcbddc->dbg_flag) {
+    if (pcbddc->switch_static || pcbddc->dbg_flag) {
       ierr = VecScatterBegin(pcbddc->R_to_D,pcbddc->vec1_R,pcis->vec1_D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
       ierr = VecScatterEnd(pcbddc->R_to_D,pcbddc->vec1_R,pcis->vec1_D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
       ierr = VecGetArrayRead(pcis->vec1_D,&array);CHKERRQ(ierr);
@@ -461,7 +461,7 @@ PetscErrorCode PCBDDCSetUpCoarseLocal(PC pc, PetscScalar **coarse_submat_vals_n)
   /* call assembling routines for local coarse basis */
   ierr = MatAssemblyBegin(pcbddc->coarse_phi_B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(pcbddc->coarse_phi_B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  if (pcbddc->inexact_prec_type || pcbddc->dbg_flag) {
+  if (pcbddc->switch_static || pcbddc->dbg_flag) {
     ierr = MatAssemblyBegin(pcbddc->coarse_phi_D,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(pcbddc->coarse_phi_D,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
@@ -473,7 +473,7 @@ PetscErrorCode PCBDDCSetUpCoarseLocal(PC pc, PetscScalar **coarse_submat_vals_n)
     ierr = MatSetSizes(pcbddc->coarse_psi_B,n_B,pcbddc->local_primal_size,n_B,pcbddc->local_primal_size);CHKERRQ(ierr);
     ierr = MatSetType(pcbddc->coarse_psi_B,impMatType);CHKERRQ(ierr);
     ierr = MatSetUp(pcbddc->coarse_psi_B);CHKERRQ(ierr);
-    if (pcbddc->inexact_prec_type || pcbddc->dbg_flag ) {
+    if (pcbddc->switch_static || pcbddc->dbg_flag) {
       ierr = MatCreate(PETSC_COMM_SELF,&pcbddc->coarse_psi_D);CHKERRQ(ierr);
       ierr = MatSetSizes(pcbddc->coarse_psi_D,n_D,pcbddc->local_primal_size,n_D,pcbddc->local_primal_size);CHKERRQ(ierr);
       ierr = MatSetType(pcbddc->coarse_psi_D,impMatType);CHKERRQ(ierr);
@@ -510,7 +510,7 @@ PetscErrorCode PCBDDCSetUpCoarseLocal(PC pc, PetscScalar **coarse_submat_vals_n)
       if (i<n_vertices) {
         ierr = MatSetValue(pcbddc->coarse_psi_B,idx_V_B[i],i,one,INSERT_VALUES);CHKERRQ(ierr);
       }
-      if (pcbddc->inexact_prec_type || pcbddc->dbg_flag) {
+      if (pcbddc->switch_static || pcbddc->dbg_flag) {
         ierr = VecScatterBegin(pcbddc->R_to_D,pcbddc->vec1_R,pcis->vec1_D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
         ierr = VecScatterEnd(pcbddc->R_to_D,pcbddc->vec1_R,pcis->vec1_D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
         ierr = VecGetArrayRead(pcis->vec1_D,&array);CHKERRQ(ierr);
@@ -549,7 +549,7 @@ PetscErrorCode PCBDDCSetUpCoarseLocal(PC pc, PetscScalar **coarse_submat_vals_n)
     }
     ierr = MatAssemblyBegin(pcbddc->coarse_psi_B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(pcbddc->coarse_psi_B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    if ( pcbddc->inexact_prec_type || pcbddc->dbg_flag ) {
+    if (pcbddc->switch_static || pcbddc->dbg_flag) {
       ierr = MatAssemblyBegin(pcbddc->coarse_psi_D,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
       ierr = MatAssemblyEnd(pcbddc->coarse_psi_D,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     }
@@ -853,7 +853,7 @@ PetscErrorCode PCBDDCSetUpLocalScatters(PC pc)
   ierr = ISDestroy(&is_aux1);CHKERRQ(ierr);
   ierr = ISDestroy(&is_aux2);CHKERRQ(ierr);
 
-  if (pcbddc->inexact_prec_type || pcbddc->dbg_flag ) {
+  if (pcbddc->switch_static || pcbddc->dbg_flag) {
     ierr = PetscMalloc(n_D*sizeof(PetscInt),&aux_array1);CHKERRQ(ierr);
     for (i=0, j=0; i<n_R; i++) {
       if (PetscBTLookup(bitmask,idx_R_local[i])) {
@@ -976,7 +976,7 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc)
     ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Subdomain %04d infinity error for Dirichlet solve = % 1.14e \n",PetscGlobalRank,value);CHKERRQ(ierr);
     ierr = PetscViewerFlush(pcbddc->dbg_viewer);CHKERRQ(ierr);
   }
-  if (n_D && pcbddc->NullSpace && !use_exact_reduced && !pcbddc->inexact_prec_type) {
+  if (n_D && pcbddc->NullSpace && !use_exact_reduced && !pcbddc->switch_static) {
     ierr = PCBDDCNullSpaceAssembleCorrection(pc,pcis->is_I_local);CHKERRQ(ierr);
   }
 
@@ -1038,10 +1038,10 @@ PetscErrorCode  PCBDDCApplyInterfacePreconditioner(PC pc)
   /* Application of PHI^T (or PSI^T)  */
   if (pcbddc->coarse_psi_B) {
     ierr = MatMultTranspose(pcbddc->coarse_psi_B,pcis->vec1_B,pcbddc->vec1_P);CHKERRQ(ierr);
-    if (pcbddc->inexact_prec_type) { ierr = MatMultTransposeAdd(pcbddc->coarse_psi_D,pcis->vec1_D,pcbddc->vec1_P,pcbddc->vec1_P);CHKERRQ(ierr); }
+    if (pcbddc->switch_static) { ierr = MatMultTransposeAdd(pcbddc->coarse_psi_D,pcis->vec1_D,pcbddc->vec1_P,pcbddc->vec1_P);CHKERRQ(ierr); }
   } else {
     ierr = MatMultTranspose(pcbddc->coarse_phi_B,pcis->vec1_B,pcbddc->vec1_P);CHKERRQ(ierr);
-    if (pcbddc->inexact_prec_type) { ierr = MatMultTransposeAdd(pcbddc->coarse_phi_D,pcis->vec1_D,pcbddc->vec1_P,pcbddc->vec1_P);CHKERRQ(ierr); }
+    if (pcbddc->switch_static) { ierr = MatMultTransposeAdd(pcbddc->coarse_phi_D,pcis->vec1_D,pcbddc->vec1_P,pcbddc->vec1_P);CHKERRQ(ierr); }
   }
   /* Scatter data of coarse_rhs */
   if (pcbddc->coarse_rhs) { ierr = VecSet(pcbddc->coarse_rhs,zero);CHKERRQ(ierr); }
@@ -1051,7 +1051,7 @@ PetscErrorCode  PCBDDCApplyInterfacePreconditioner(PC pc)
   ierr = VecSet(pcbddc->vec1_R,zero);CHKERRQ(ierr);
   ierr = VecScatterBegin(pcbddc->R_to_B,pcis->vec1_B,pcbddc->vec1_R,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   ierr = VecScatterEnd  (pcbddc->R_to_B,pcis->vec1_B,pcbddc->vec1_R,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-  if (pcbddc->inexact_prec_type) {
+  if (pcbddc->switch_static) {
     ierr = VecScatterBegin(pcbddc->R_to_D,pcis->vec1_D,pcbddc->vec1_R,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
     ierr = VecScatterEnd  (pcbddc->R_to_D,pcis->vec1_D,pcbddc->vec1_R,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   }
@@ -1059,7 +1059,7 @@ PetscErrorCode  PCBDDCApplyInterfacePreconditioner(PC pc)
   ierr = VecSet(pcis->vec1_B,zero);CHKERRQ(ierr);
   ierr = VecScatterBegin(pcbddc->R_to_B,pcbddc->vec2_R,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd  (pcbddc->R_to_B,pcbddc->vec2_R,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  if (pcbddc->inexact_prec_type) {
+  if (pcbddc->switch_static) {
     ierr = VecScatterBegin(pcbddc->R_to_D,pcbddc->vec2_R,pcis->vec1_D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterEnd  (pcbddc->R_to_D,pcbddc->vec2_R,pcis->vec1_D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   }
@@ -1074,7 +1074,7 @@ PetscErrorCode  PCBDDCApplyInterfacePreconditioner(PC pc)
 
   /* Sum contributions from two levels */
   ierr = MatMultAdd(pcbddc->coarse_phi_B,pcbddc->vec1_P,pcis->vec1_B,pcis->vec1_B);CHKERRQ(ierr);
-  if (pcbddc->inexact_prec_type) { ierr = MatMultAdd(pcbddc->coarse_phi_D,pcbddc->vec1_P,pcis->vec1_D,pcis->vec1_D);CHKERRQ(ierr); }
+  if (pcbddc->switch_static) { ierr = MatMultAdd(pcbddc->coarse_phi_D,pcbddc->vec1_P,pcis->vec1_D,pcis->vec1_D);CHKERRQ(ierr); }
   PetscFunctionReturn(0);
 }
 
@@ -1211,7 +1211,6 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
   /* stuff to store connected components stored in pcbddc->mat_graph */
   IS                ISForVertices,*ISForFaces,*ISForEdges,*used_IS;
   PetscInt          n_ISForFaces,n_ISForEdges;
-  PetscBool         get_faces,get_edges,get_vertices;
   /* near null space stuff */
   MatNullSpace      nearnullsp;
   const Vec         *nearnullvecs;
@@ -1250,27 +1249,10 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
 
   PetscFunctionBegin;
   /* Get index sets for faces, edges and vertices from graph */
-  get_faces = PETSC_TRUE;
-  get_edges = PETSC_TRUE;
-  get_vertices = PETSC_TRUE;
-  if (pcbddc->vertices_flag) {
-    get_faces = PETSC_FALSE;
-    get_edges = PETSC_FALSE;
+  if (!pcbddc->use_faces && !pcbddc->use_edges && !pcbddc->use_vertices) {
+    pcbddc->use_vertices = PETSC_TRUE;
   }
-  if (pcbddc->constraints_flag) {
-    get_vertices = PETSC_FALSE;
-  }
-  if (pcbddc->faces_flag) {
-    get_edges = PETSC_FALSE;
-  }
-  if (pcbddc->edges_flag) {
-    get_faces = PETSC_FALSE;
-  }
-  /* default */
-  if (!get_faces && !get_edges && !get_vertices) {
-    get_vertices = PETSC_TRUE;
-  }
-  ierr = PCBDDCGraphGetCandidatesIS(pcbddc->mat_graph,get_faces,get_edges,get_vertices,&n_ISForFaces,&ISForFaces,&n_ISForEdges,&ISForEdges,&ISForVertices);
+  ierr = PCBDDCGraphGetCandidatesIS(pcbddc->mat_graph,pcbddc->use_faces,pcbddc->use_edges,pcbddc->use_vertices,&n_ISForFaces,&ISForFaces,&n_ISForEdges,&ISForEdges,&ISForVertices);
   /* print some info */
   if (pcbddc->dbg_flag) {
     ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"--------------------------------------------------------------\n");CHKERRQ(ierr);

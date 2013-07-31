@@ -53,10 +53,9 @@ typedef struct {
   Mat           local_mat;
   PetscBool     use_exact_dirichlet;
   /* Some defaults on selecting vertices and constraints*/
-  PetscBool     vertices_flag;
-  PetscBool     constraints_flag;
-  PetscBool     faces_flag;
-  PetscBool     edges_flag;
+  PetscBool     use_vertices;
+  PetscBool     use_faces;
+  PetscBool     use_edges;
   /* Some customization is possible */
   PCBDDCGraph                mat_graph;
   MatNullSpace               NullSpace;
@@ -66,7 +65,7 @@ typedef struct {
   IS                         *ISForDofs;
   IS                         NeumannBoundaries;
   IS                         DirichletBoundaries;
-  PetscBool                  inexact_prec_type;
+  PetscBool                  switch_static;
   CoarseProblemType          coarse_problem_type;
   CoarseCommunicationsType   coarse_communications_type;
   PetscInt                   coarsening_ratio;

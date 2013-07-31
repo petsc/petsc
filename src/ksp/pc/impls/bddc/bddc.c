@@ -33,23 +33,23 @@ PetscErrorCode PCSetFromOptions_BDDC(PC pc)
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("BDDC options");CHKERRQ(ierr);
-  /* Verbose debugging of main data structures */
-  ierr = PetscOptionsInt("-pc_bddc_check_level"       ,"Verbose (debugging) output for PCBDDC"                       ,"none",pcbddc->dbg_flag      ,&pcbddc->dbg_flag      ,NULL);CHKERRQ(ierr);
-  /* Some customization for default primal space */
-  ierr = PetscOptionsBool("-pc_bddc_vertices_only"   ,"Use only vertices in coarse space (i.e. discard constraints)","none",pcbddc->vertices_flag   ,&pcbddc->vertices_flag   ,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-pc_bddc_constraints_only","Use only constraints in coarse space (i.e. discard vertices)","none",pcbddc->constraints_flag,&pcbddc->constraints_flag,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-pc_bddc_faces_only"      ,"Use only faces among constraints of coarse space (i.e. discard edges)"         ,"none",pcbddc->faces_flag      ,&pcbddc->faces_flag      ,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-pc_bddc_edges_only"      ,"Use only edges among constraints of coarse space (i.e. discard faces)"         ,"none",pcbddc->edges_flag      ,&pcbddc->edges_flag      ,NULL);CHKERRQ(ierr);
-  /* Coarse solver context */
-  static const char * const avail_coarse_problems[] = {"sequential","replicated","parallel","multilevel","CoarseProblemType","PC_BDDC_",0}; /*order of choiches depends on ENUM defined in bddc.h */
-  ierr = PetscOptionsEnum("-pc_bddc_coarse_problem_type","Set coarse problem type","none",avail_coarse_problems,(PetscEnum)pcbddc->coarse_problem_type,(PetscEnum*)&pcbddc->coarse_problem_type,NULL);CHKERRQ(ierr);
-  /* Two different application of BDDC to the whole set of dofs, internal and interface */
-  ierr = PetscOptionsBool("-pc_bddc_switch_preconditioning_type","Switch between M_2 (default) and M_3 preconditioners (as defined by Dohrmann)","none",pcbddc->inexact_prec_type,&pcbddc->inexact_prec_type,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-pc_bddc_use_change_of_basis","Use change of basis approach for primal space","none",pcbddc->use_change_of_basis,&pcbddc->use_change_of_basis,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-pc_bddc_use_change_on_faces","Use change of basis approach for face constraints","none",pcbddc->use_change_on_faces,&pcbddc->use_change_on_faces,NULL);CHKERRQ(ierr);
+  /* Verbose debugging */
+  ierr = PetscOptionsInt("-pc_bddc_check_level","Verbose output for PCBDDC (intended for debug)","none",pcbddc->dbg_flag,&pcbddc->dbg_flag,NULL);CHKERRQ(ierr);
+  /* Primal space cumstomization */
+  ierr = PetscOptionsBool("-pc_bddc_use_vertices","Use or not corner dofs in coarse space","none",pcbddc->use_vertices,&pcbddc->use_vertices,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-pc_bddc_use_edges","Use or not edge constraints in coarse space","none",pcbddc->use_edges,&pcbddc->use_edges,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-pc_bddc_use_faces","Use or not face constraints in coarse space","none",pcbddc->use_faces,&pcbddc->use_faces,NULL);CHKERRQ(ierr);
+  /* Change of basis */
+  ierr = PetscOptionsBool("-pc_bddc_use_change_of_basis","Use or not change of basis on local edge nodes","none",pcbddc->use_change_of_basis,&pcbddc->use_change_of_basis,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-pc_bddc_use_change_on_faces","Use or not change of basis on local face nodes","none",pcbddc->use_change_on_faces,&pcbddc->use_change_on_faces,NULL);CHKERRQ(ierr);
   if (!pcbddc->use_change_of_basis) {
     pcbddc->use_change_on_faces = PETSC_FALSE;
   }
+  /* Switch between M_2 (default) and M_3 preconditioners (as defined by C. Dohrmann in the ref. article) */
+  ierr = PetscOptionsBool("-pc_bddc_switch_static","Switch on static condensation ops around the interface preconditioner","none",pcbddc->switch_static,&pcbddc->switch_static,NULL);CHKERRQ(ierr);
+  /* Coarse solver context */
+  static const char * const avail_coarse_problems[] = {"sequential","replicated","parallel","multilevel","CoarseProblemType","PC_BDDC_",0}; /*order of choiches depends on ENUM defined in bddc.h */
+  ierr = PetscOptionsEnum("-pc_bddc_coarse_problem_type","Set coarse problem type","none",avail_coarse_problems,(PetscEnum)pcbddc->coarse_problem_type,(PetscEnum*)&pcbddc->coarse_problem_type,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-pc_bddc_coarsening_ratio","Set coarsening ratio used in multilevel coarsening","none",pcbddc->coarsening_ratio,&pcbddc->coarsening_ratio,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-pc_bddc_max_levels","Set maximum number of levels for multilevel","none",pcbddc->max_levels,&pcbddc->max_levels,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_bddc_use_deluxe_scaling","Use deluxe scaling for BDDC","none",pcbddc->use_deluxe_scaling,&pcbddc->use_deluxe_scaling,NULL);CHKERRQ(ierr);
@@ -834,7 +834,7 @@ PetscErrorCode PCApply_BDDC(PC pc,Vec r,Vec z)
 
 /* This code is similar to that provided in nn.c for PCNN
    NN interface preconditioner changed to BDDC
-   Added support for M_3 preconditioner in the reference article (code is active if pcbddc->inexact_prec_type = PETSC_TRUE) */
+   Added support for M_3 preconditioner in the reference article (code is active if pcbddc->switch_static = PETSC_TRUE) */
 
   PetscFunctionBegin;
   if (!pcbddc->use_exact_dirichlet || pcbddc->coarse_psi_B) {
@@ -849,7 +849,7 @@ PetscErrorCode PCApply_BDDC(PC pc,Vec r,Vec z)
     */
     ierr = VecScale(pcis->vec2_D,m_one);CHKERRQ(ierr);
     ierr = MatMult(pcis->A_BI,pcis->vec2_D,pcis->vec1_B);CHKERRQ(ierr);
-    if (pcbddc->inexact_prec_type) { ierr = MatMultAdd(pcis->A_II,pcis->vec2_D,pcis->vec1_D,pcis->vec1_D);CHKERRQ(ierr); }
+    if (pcbddc->switch_static) { ierr = MatMultAdd(pcis->A_II,pcis->vec2_D,pcis->vec1_D,pcis->vec1_D);CHKERRQ(ierr); }
     ierr = VecScale(pcis->vec2_D,m_one);CHKERRQ(ierr);
     ierr = VecCopy(r,z);CHKERRQ(ierr);
     ierr = VecScatterBegin(pcis->global_to_B,pcis->vec1_B,z,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
@@ -872,10 +872,10 @@ PetscErrorCode PCApply_BDDC(PC pc,Vec r,Vec z)
   ierr = VecScatterBegin(pcis->global_to_B,z,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd  (pcis->global_to_B,z,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = MatMult(pcis->A_IB,pcis->vec1_B,pcis->vec3_D);CHKERRQ(ierr);
-  if (pcbddc->inexact_prec_type) { ierr = MatMultAdd(pcis->A_II,pcis->vec1_D,pcis->vec3_D,pcis->vec3_D);CHKERRQ(ierr); }
+  if (pcbddc->switch_static) { ierr = MatMultAdd(pcis->A_II,pcis->vec1_D,pcis->vec3_D,pcis->vec3_D);CHKERRQ(ierr); }
   ierr = KSPSolve(pcbddc->ksp_D,pcis->vec3_D,pcbddc->vec4_D);CHKERRQ(ierr);
   ierr = VecScale(pcbddc->vec4_D,m_one);CHKERRQ(ierr);
-  if (pcbddc->inexact_prec_type) { ierr = VecAXPY (pcbddc->vec4_D,one,pcis->vec1_D);CHKERRQ(ierr); }
+  if (pcbddc->switch_static) { ierr = VecAXPY (pcbddc->vec4_D,one,pcis->vec1_D);CHKERRQ(ierr); }
   ierr = VecAXPY (pcis->vec2_D,one,pcbddc->vec4_D);CHKERRQ(ierr);
   ierr = VecScatterBegin(pcis->global_to_D,pcis->vec2_D,z,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   ierr = VecScatterEnd  (pcis->global_to_D,pcis->vec2_D,z,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
@@ -957,7 +957,7 @@ static PetscErrorCode PCBDDCMatFETIDPGetRHS_BDDC(Mat fetidp_mat, Vec standard_rh
   /* Apply partition of unity */
   ierr = VecPointwiseMult(mat_ctx->temp_solution_B,pcis->D,mat_ctx->temp_solution_B);CHKERRQ(ierr);
   /* ierr = PCBDDCScalingRestriction(mat_ctx->pc,standard_rhs,mat_ctx->temp_solution_B);CHKERRQ(ierr); */
-  if (!pcbddc->inexact_prec_type) {
+  if (!pcbddc->switch_static) {
     /* compute partially subassembled Schur complement right-hand side */
     ierr = KSPSolve(pcbddc->ksp_D,mat_ctx->temp_solution_D,pcis->vec1_D);CHKERRQ(ierr);
     ierr = MatMult(pcis->A_BI,pcis->vec1_D,pcis->vec1_B);CHKERRQ(ierr);
@@ -972,7 +972,7 @@ static PetscErrorCode PCBDDCMatFETIDPGetRHS_BDDC(Mat fetidp_mat, Vec standard_rh
   }
   /* BDDC rhs */
   ierr = VecCopy(mat_ctx->temp_solution_B,pcis->vec1_B);CHKERRQ(ierr);
-  if (pcbddc->inexact_prec_type) {
+  if (pcbddc->switch_static) {
     ierr = VecCopy(mat_ctx->temp_solution_D,pcis->vec1_D);CHKERRQ(ierr);
   }
   /* apply BDDC */
@@ -1039,7 +1039,7 @@ static PetscErrorCode PCBDDCMatFETIDPGetSolution_BDDC(Mat fetidp_mat, Vec fetidp
   ierr = MatMultTranspose(mat_ctx->B_delta,mat_ctx->lambda_local,pcis->vec1_B);CHKERRQ(ierr);
   /* compute rhs for BDDC application */
   ierr = VecAYPX(pcis->vec1_B,-1.0,mat_ctx->temp_solution_B);CHKERRQ(ierr);
-  if (pcbddc->inexact_prec_type) {
+  if (pcbddc->switch_static) {
     ierr = VecCopy(mat_ctx->temp_solution_D,pcis->vec1_D);CHKERRQ(ierr);
   }
   /* apply BDDC */
@@ -1047,7 +1047,7 @@ static PetscErrorCode PCBDDCMatFETIDPGetSolution_BDDC(Mat fetidp_mat, Vec fetidp
   /* put values into standard global vector */
   ierr = VecScatterBegin(pcis->global_to_B,pcis->vec1_B,standard_sol,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   ierr = VecScatterEnd  (pcis->global_to_B,pcis->vec1_B,standard_sol,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-  if (!pcbddc->inexact_prec_type) {
+  if (!pcbddc->switch_static) {
     /* compute values into the interior if solved for the partially subassembled Schur complement */
     ierr = MatMult(pcis->A_IB,pcis->vec1_B,pcis->vec1_D);CHKERRQ(ierr);
     ierr = VecAXPY(mat_ctx->temp_solution_D,-1.0,pcis->vec1_D);CHKERRQ(ierr);
@@ -1227,7 +1227,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC pc)
   pcbddc->ksp_D                      = 0;
   pcbddc->ksp_R                      = 0;
   pcbddc->local_primal_indices       = 0;
-  pcbddc->inexact_prec_type          = PETSC_FALSE;
+  pcbddc->switch_static              = PETSC_FALSE;
   pcbddc->NeumannBoundaries          = 0;
   pcbddc->ISForDofs                  = 0;
   pcbddc->ConstraintMatrix           = 0;
