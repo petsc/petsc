@@ -1201,15 +1201,22 @@ PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC pc)
   /* create PCIS data structure */
   ierr = PCISCreate(pc);CHKERRQ(ierr);
 
-  /* BDDC specific */
+  /* BDDC customization */
+  pcbddc->use_vertices        = PETSC_TRUE;
+  pcbddc->use_edges           = PETSC_TRUE;
+  pcbddc->use_faces           = PETSC_FALSE;
+  pcbddc->use_change_of_basis = PETSC_FALSE;
+  pcbddc->use_change_on_faces = PETSC_FALSE;
+  pcbddc->switch_static       = PETSC_FALSE;
+  pcbddc->use_nnsp_true       = PETSC_FALSE; /* not yet exposed */
+  pcbddc->dbg_flag            = 0;
+
   pcbddc->user_primal_vertices       = 0;
   pcbddc->NullSpace                  = 0;
   pcbddc->temp_solution              = 0;
   pcbddc->original_rhs               = 0;
   pcbddc->local_mat                  = 0;
   pcbddc->ChangeOfBasisMatrix        = 0;
-  pcbddc->use_change_of_basis        = PETSC_TRUE;
-  pcbddc->use_change_on_faces        = PETSC_FALSE;
   pcbddc->coarse_vec                 = 0;
   pcbddc->coarse_rhs                 = 0;
   pcbddc->coarse_ksp                 = 0;
@@ -1227,17 +1234,14 @@ PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC pc)
   pcbddc->ksp_D                      = 0;
   pcbddc->ksp_R                      = 0;
   pcbddc->local_primal_indices       = 0;
-  pcbddc->switch_static              = PETSC_FALSE;
   pcbddc->NeumannBoundaries          = 0;
   pcbddc->ISForDofs                  = 0;
   pcbddc->ConstraintMatrix           = 0;
-  pcbddc->use_nnsp_true              = PETSC_FALSE;
   pcbddc->local_primal_sizes         = 0;
   pcbddc->local_primal_displacements = 0;
-  pcbddc->coarse_loc_to_glob         = 0;
-  pcbddc->dbg_flag                   = 0;
-  pcbddc->coarsening_ratio           = 8;
   pcbddc->use_exact_dirichlet        = PETSC_TRUE;
+  pcbddc->coarse_loc_to_glob         = 0;
+  pcbddc->coarsening_ratio           = 8;
   pcbddc->current_level              = 0;
   pcbddc->max_levels                 = 1;
   pcbddc->replicated_local_primal_indices = 0;
