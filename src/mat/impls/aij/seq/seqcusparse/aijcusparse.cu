@@ -87,12 +87,6 @@ PetscErrorCode MatFactorGetSolverPackage_seqaij_cusparse(Mat A,const MatSolverPa
   CUSPARSE triangular solve algorithm. However, the performance can be quite poor and thus these
   algorithms are not recommended. This class does NOT support direct solver operations.
 
-  Consult CUSPARSE documentation for more information about the matrix storage formats
-  which correspond to the options database keys below.
-
-   Options Database Keys:
-.  -mat_cusparse_solve_storage_format csr - sets the storage format matrices (for factors in MatSolve) during a call to MatSetFromOptions(). Other options include ell (ellpack) or hyb (hybrid).
-
   Level: beginner
 
 .seealso: PCFactorSetMatSolverPackage(), MatSolverPackage, MatCreateSeqAIJCUSPARSE(), MATAIJCUSPARSE, MatCreateAIJCUSPARSE(), MatCUSPARSESetFormat(), MatCUSPARSEStorageFormat, MatCUSPARSEFormatOperation
@@ -137,15 +131,11 @@ PETSC_INTERN PetscErrorCode MatCUSPARSESetFormat_SeqAIJCUSPARSE(Mat A,MatCUSPARS
   case MAT_CUSPARSE_MULT:
     cusparsestruct->format = format;
     break;
-  case MAT_CUSPARSE_SOLVE:
-    cusparseMatSolveStorageFormat = format;
-    break;
   case MAT_CUSPARSE_ALL:
     cusparsestruct->format = format;
-    cusparseMatSolveStorageFormat = format;
     break;
   default:
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"unsupported operation %d for MatCUSPARSEFormatOperation. MAT_CUSPARSE_MULT, MAT_CUSPARSE_SOLVE, and MAT_CUSPARSE_ALL are currently supported.",op);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"unsupported operation %d for MatCUSPARSEFormatOperation. MAT_CUSPARSE_MULT and MAT_CUSPARSE_ALL are currently supported.",op);
   }
 #else
   if (format==MAT_CUSPARSE_ELL || format==MAT_CUSPARSE_HYB) 
@@ -162,7 +152,7 @@ PETSC_INTERN PetscErrorCode MatCUSPARSESetFormat_SeqAIJCUSPARSE(Mat A,MatCUSPARS
 
    Input Parameters:
 +  A - Matrix of type SEQAIJCUSPARSE
-.  op - MatCUSPARSEFormatOperation. SEQAIJCUSPARSE matrices support MAT_CUSPARSE_MULT, MAT_CUSPARSE_SOLVE, and MAT_CUSPARSE_ALL. MPIAIJCUSPARSE matrices support MAT_CUSPARSE_MULT_DIAG, MAT_CUSPARSE_MULT_OFFDIAG, and MAT_CUSPARSE_ALL.
+.  op - MatCUSPARSEFormatOperation. SEQAIJCUSPARSE matrices support MAT_CUSPARSE_MULT and MAT_CUSPARSE_ALL. MPIAIJCUSPARSE matrices support MAT_CUSPARSE_MULT_DIAG, MAT_CUSPARSE_MULT_OFFDIAG, and MAT_CUSPARSE_ALL.
 -  format - MatCUSPARSEStorageFormat (one of MAT_CUSPARSE_CSR, MAT_CUSPARSE_ELL, MAT_CUSPARSE_HYB. The latter two require CUDA 4.2)
 
    Output Parameter:
@@ -200,13 +190,7 @@ static PetscErrorCode MatSetFromOptions_SeqAIJCUSPARSE(Mat A)
     if (flg) {
       ierr = MatCUSPARSESetFormat(A,MAT_CUSPARSE_MULT,format);CHKERRQ(ierr);
     }
-  } else {
-    ierr = PetscOptionsEnum("-mat_cusparse_solve_storage_format","sets storage format of (seq)aijcusparse gpu matrices for TriSolve",
-                            "MatCUSPARSESetFormat",MatCUSPARSEStorageFormats,(PetscEnum)MAT_CUSPARSE_CSR,(PetscEnum*)&format,&flg);CHKERRQ(ierr);
-    if (flg) {
-      ierr = MatCUSPARSESetFormat(A,MAT_CUSPARSE_SOLVE,format);CHKERRQ(ierr);
-    }
-  }
+  } 
   ierr = PetscOptionsEnum("-mat_cusparse_storage_format","sets storage format of (seq)aijcusparse gpu matrices for SpMV and TriSolve",
                           "MatCUSPARSESetFormat",MatCUSPARSEStorageFormats,(PetscEnum)MAT_CUSPARSE_CSR,(PetscEnum*)&format,&flg);CHKERRQ(ierr);
   if (flg) {
@@ -1853,7 +1837,6 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJCUSPARSE(Mat B)
     ((Mat_SeqAIJCUSPARSETriFactors*)B->spptr)->rpermIndices            = 0;
     ((Mat_SeqAIJCUSPARSETriFactors*)B->spptr)->cpermIndices            = 0;
     ((Mat_SeqAIJCUSPARSETriFactors*)B->spptr)->workVector              = 0;
-    ((Mat_SeqAIJCUSPARSETriFactors*)B->spptr)->format                  = cusparseMatSolveStorageFormat;
     ((Mat_SeqAIJCUSPARSETriFactors*)B->spptr)->handle                  = 0;
     stat = cusparseCreate(&handle);CHKERRCUSP(stat);
     ((Mat_SeqAIJCUSPARSETriFactors*)B->spptr)->handle                  = handle;
@@ -1893,7 +1876,6 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJCUSPARSE(Mat B)
 +  -mat_type aijcusparse - sets the matrix type to "seqaijcusparse" during a call to MatSetFromOptions()
 .  -mat_cusparse_storage_format csr - sets the storage format of matrices (for MatMult and factors in MatSolve) during a call to MatSetFromOptions(). Other options include ell (ellpack) or hyb (hybrid).
 .  -mat_cusparse_mult_storage_format csr - sets the storage format of matrices (for MatMult) during a call to MatSetFromOptions(). Other options include ell (ellpack) or hyb (hybrid).
--  -mat_cusparse_solve_storage_format csr - sets the storage format matrices (for factors in MatSolve) during a call to MatSetFromOptions(). Other options include ell (ellpack) or hyb (hybrid).
 
   Level: beginner
 

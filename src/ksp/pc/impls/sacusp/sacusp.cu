@@ -60,7 +60,6 @@ static PetscErrorCode PCSetUp_SACUSP(PC pc)
   // protect these in order to avoid compiler warnings. This preconditioner does
   // not work for complex types.
   Mat_SeqAIJCUSP *gpustruct;
-  CUSPMATRIX     *mat;
 #endif
 
   PetscFunctionBegin;
@@ -79,12 +78,17 @@ static PetscErrorCode PCSetUp_SACUSP(PC pc)
 #else
     ierr      = MatCUSPCopyToGPU(pc->pmat);CHKERRQ(ierr);
     gpustruct = (Mat_SeqAIJCUSP*)(pc->pmat->spptr);
-#if defined(PETSC_HAVE_TXPETSCGPU)
-    ierr = gpustruct->mat->getCsrMatrix(&mat);CHKERRCUSP(ierr);
-#else
-    mat = (CUSPMATRIX*)gpustruct->mat;
-#endif
-    sa->SACUSP = new cuspsaprecond(*mat);
+    
+    if (gpustruct->format==MAT_CUSP_ELL) {
+      CUSPMATRIXELL *mat = (CUSPMATRIXELL*)gpustruct->mat;
+      sa->SACUSP = new cuspsaprecond(*mat);
+    } else if (gpustruct->format==MAT_CUSP_DIA) {
+      CUSPMATRIXDIA *mat = (CUSPMATRIXDIA*)gpustruct->mat;
+      sa->SACUSP = new cuspsaprecond(*mat);
+    } else {
+      CUSPMATRIX *mat = (CUSPMATRIX*)gpustruct->mat;
+      sa->SACUSP = new cuspsaprecond(*mat);
+    }
 #endif
 
   } catch(char *ex) {

@@ -896,6 +896,24 @@ runex43_5:
 	   else echo ${PWD} ; echo "Possible problem with with ex43_5, diffs above \n========================================="; fi; \
 	   ${RM} -f ex43_5.tmp
 
+runex43_6:
+	-@${MPIEXEC} -n 1 ./ex43 -f ${DATAFILESPATH}/matrices/shallow_water1 -mat_type seqaijcusp -pc_type none -vec_type seqcusp > ex43_6.tmp 2>&1;\
+	if (${DIFF} output/ex43_6.out ex43_6.tmp) then true; \
+	   else echo ${PWD} ; echo "Possible problem with with ex43_6, diffs above \n========================================="; fi; \
+	   ${RM} -f ex43_6.tmp
+
+runex43_7:
+	-@${MPIEXEC} -n 1 ./ex43 -f ${DATAFILESPATH}/matrices/shallow_water1 -mat_type seqaijcusp -mat_cusp_mult_storage_format ell -pc_type none -vec_type seqcusp > ex43_7.tmp 2>&1;\
+	if (${DIFF} output/ex43_7.out ex43_7.tmp) then true; \
+	   else echo ${PWD} ; echo "Possible problem with with ex43_7, diffs above \n========================================="; fi; \
+	   ${RM} -f ex43_7.tmp
+
+runex43_8:
+	-@${MPIEXEC} -n 2 ./ex43 -f ${DATAFILESPATH}/matrices/shallow_water1 -mat_type mpiaijcusp -pc_type none -vec_type mpicusp > ex43_8.tmp 2>&1;\
+	if (${DIFF} output/ex43_8.out ex43_8.tmp) then true; \
+	   else echo ${PWD} ; echo "Possible problem with with ex43_8, diffs above \n========================================="; fi; \
+	   ${RM} -f ex43_8.tmp
+
 
 EX44RICH=-ksp_type richardson -ksp_max_it 1 -ksp_final_residual -pc_type sor
 EX44RICHNONZ=${EX44RICH} -ksp_initial_guess_nonzero
