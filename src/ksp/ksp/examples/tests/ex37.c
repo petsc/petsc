@@ -1,5 +1,5 @@
 
-static char help[] = "Test MatGetMultiProcBlock() \n\
+static char help[] = "Test MatGetMultiProcBlock() and MatGetRedundantMatrix() \n\
 Reads a PETSc matrix and vector from a file and solves a linear system.\n\n";
 /*
   Example:
@@ -75,6 +75,19 @@ int main(int argc,char **args)
   } else SETERRQ1(psubcomm->parent,PETSC_ERR_SUP,"PetscSubcommType %D is not supported yet",type);
   ierr = PetscSubcommSetFromOptions(psubcomm);CHKERRQ(ierr);
   subcomm = psubcomm->comm;
+
+  /* Test MatGetRedundantMatrix() */
+  if (size > 1) {
+    /* user provides a petsc subomm */
+    ierr = MatGetRedundantMatrix(A,nsubcomm,MPI_COMM_NULL,psubcomm,MAT_INITIAL_MATRIX,&subA);CHKERRQ(ierr);
+    ierr = MatGetRedundantMatrix(A,nsubcomm,MPI_COMM_NULL,psubcomm,MAT_REUSE_MATRIX,&subA);CHKERRQ(ierr);
+    ierr = MatDestroy(&subA);CHKERRQ(ierr);
+
+    /* user provides a mpi subcomm */
+    ierr = MatGetRedundantMatrix(A,nsubcomm,subcomm,NULL,MAT_INITIAL_MATRIX,&subA);CHKERRQ(ierr);
+    ierr = MatGetRedundantMatrix(A,nsubcomm,subcomm,NULL,MAT_REUSE_MATRIX,&subA);CHKERRQ(ierr);
+    ierr = MatDestroy(&subA);CHKERRQ(ierr);
+  }
 
   /* Create subA */
   ierr = MatGetMultiProcBlock(A,subcomm,MAT_INITIAL_MATRIX,&subA);CHKERRQ(ierr);
