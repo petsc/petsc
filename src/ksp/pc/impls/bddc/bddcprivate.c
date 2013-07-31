@@ -781,7 +781,7 @@ PetscErrorCode PCBDDCSetUpLocalScatters(PC pc)
   IS             is_aux1,is_aux2;
   PetscInt       *vertices,*aux_array1,*aux_array2,*is_indices,*idx_R_local;
   PetscInt       n_vertices,n_constraints,i,j,n_R,n_D,n_B;
-  PetscBool      *array_bool;
+  PetscBT        bitmask;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -791,13 +791,15 @@ PetscErrorCode PCBDDCSetUpLocalScatters(PC pc)
   ierr = PCBDDCGetPrimalVerticesLocalIdx(pc,&n_vertices,&vertices);CHKERRQ(ierr);
   /* Set number of constraints */
   n_constraints = pcbddc->local_primal_size-n_vertices;
+  /* create auxiliary bitmask */
+  ierr = PetscBTCreate(pcis->n,&bitmask);CHKERRQ(ierr);
+  for (i=0;i<n_vertices;i++) {
+    ierr = PetscBTSet(bitmask,vertices[i]);CHKERRQ(ierr);
+  }
   /* Dohrmann's notation: dofs splitted in R (Remaining: all dofs but the vertices) and V (Vertices) */
-  ierr = PetscMalloc(pcis->n*sizeof(PetscInt),&array_bool);CHKERRQ(ierr);
-  for (i=0;i<pcis->n;i++) array_bool[i] = PETSC_TRUE;
-  for (i=0;i<n_vertices;i++) array_bool[vertices[i]] = PETSC_FALSE;
   ierr = PetscMalloc((pcis->n-n_vertices)*sizeof(PetscInt),&idx_R_local);CHKERRQ(ierr);
   for (i=0, n_R=0; i<pcis->n; i++) {
-    if (array_bool[i]) {
+    if (!PetscBTLookup(bitmask,i)) {
       idx_R_local[n_R] = i;
       n_R++;
     }
@@ -820,19 +822,20 @@ PetscErrorCode PCBDDCSetUpLocalScatters(PC pc)
   ierr = PetscMalloc((pcis->n_B-n_vertices)*sizeof(PetscInt),&aux_array1);CHKERRQ(ierr);
   ierr = PetscMalloc((pcis->n_B-n_vertices)*sizeof(PetscInt),&aux_array2);CHKERRQ(ierr);
   ierr = ISGetIndices(pcis->is_I_local,(const PetscInt**)&is_indices);CHKERRQ(ierr);
-  for (i=0; i<n_D; i++) array_bool[is_indices[i]] = PETSC_FALSE;
+  for (i=0; i<n_D; i++) {
+    ierr = PetscBTSet(bitmask,is_indices[i]);CHKERRQ(ierr);
+  }
   ierr = ISRestoreIndices(pcis->is_I_local,(const PetscInt**)&is_indices);CHKERRQ(ierr);
   for (i=0, j=0; i<n_R; i++) {
-    if (array_bool[idx_R_local[i]]) {
-      aux_array1[j] = i;
-      j++;
+    if (!PetscBTLookup(bitmask,idx_R_local[i])) {
+      aux_array1[j++] = i;
     }
   }
   ierr = ISCreateGeneral(PETSC_COMM_SELF,j,aux_array1,PETSC_OWN_POINTER,&is_aux1);CHKERRQ(ierr);
   ierr = ISGetIndices(pcis->is_B_local,(const PetscInt**)&is_indices);CHKERRQ(ierr);
   for (i=0, j=0; i<n_B; i++) {
-    if (array_bool[is_indices[i]]) {
-      aux_array2[j] = i; j++;
+    if (!PetscBTLookup(bitmask,is_indices[i])) {
+      aux_array2[j++] = i;
     }
   }
   ierr = ISRestoreIndices(pcis->is_B_local,(const PetscInt**)&is_indices);CHKERRQ(ierr);
@@ -844,16 +847,15 @@ PetscErrorCode PCBDDCSetUpLocalScatters(PC pc)
   if (pcbddc->inexact_prec_type || pcbddc->dbg_flag ) {
     ierr = PetscMalloc(n_D*sizeof(PetscInt),&aux_array1);CHKERRQ(ierr);
     for (i=0, j=0; i<n_R; i++) {
-      if (!array_bool[idx_R_local[i]]) {
-        aux_array1[j] = i;
-        j++;
+      if (PetscBTLookup(bitmask,idx_R_local[i])) {
+        aux_array1[j++] = i;
       }
     }
     ierr = ISCreateGeneral(PETSC_COMM_SELF,j,aux_array1,PETSC_OWN_POINTER,&is_aux1);CHKERRQ(ierr);
     ierr = VecScatterCreate(pcbddc->vec1_R,is_aux1,pcis->vec1_D,(IS)0,&pcbddc->R_to_D);CHKERRQ(ierr);
     ierr = ISDestroy(&is_aux1);CHKERRQ(ierr);
   }
-  ierr = PetscFree(array_bool);CHKERRQ(ierr);
+  ierr = PetscBTDestroy(&bitmask);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1228,7 +1230,8 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
 #endif
   /* change of basis */
   PetscInt          *aux_primal_numbering,*aux_primal_minloc,*global_indices;
-  PetscBool         boolforchange,*change_basis,*touched;
+  PetscBool         boolforchange;
+  PetscBT           touched,change_basis;
   /* auxiliary stuff */
   PetscInt          *nnz,*is_indices,*local_to_B;
   /* some quantities */
@@ -1298,7 +1301,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
   }
   total_counts += n_vertices;
   ierr = PetscMalloc((total_counts+1)*sizeof(PetscInt),&temp_indices);CHKERRQ(ierr);
-  ierr = PetscMalloc((total_counts+1)*sizeof(PetscBool),&change_basis);CHKERRQ(ierr);
+  ierr = PetscBTCreate(total_counts,&change_basis);CHKERRQ(ierr);
   total_counts = 0;
   max_size_of_constraint = 0;
   for (i=0;i<n_ISForEdges+n_ISForFaces;i++) {
@@ -1400,7 +1403,6 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
         temp_indices_to_constraint_B[temp_indices[total_counts]]=local_to_B[is_indices[i]];
         temp_quadrature_constraint[temp_indices[total_counts]]=1.0;
         temp_indices[total_counts+1]=temp_indices[total_counts]+1;
-        change_basis[total_counts]=PETSC_FALSE;
         total_counts++;
       }
     } else { /* consider vertices for which exist at least a localnearnullsp which is not null there */
@@ -1415,7 +1417,6 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
             temp_indices_to_constraint_B[temp_indices[total_counts]]=local_to_B[is_indices[i]];
             temp_quadrature_constraint[temp_indices[total_counts]]=1.0;
             temp_indices[total_counts+1]=temp_indices[total_counts]+1;
-            change_basis[total_counts]=PETSC_FALSE;
             total_counts++;
             used_vertex = PETSC_TRUE;
           }
@@ -1453,7 +1454,9 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
         temp_quadrature_constraint[temp_indices[total_counts]+j]=quad_value;
       }
       temp_indices[total_counts+1]=temp_indices[total_counts]+size_of_constraint;  /* store new starting point */
-      change_basis[total_counts]=boolforchange;
+      if (boolforchange) {
+        ierr = PetscBTSet(change_basis,total_counts);CHKERRQ(ierr);
+      }
       total_counts++;
     }
     for (k=0;k<nnsp_size;k++) {
@@ -1471,7 +1474,9 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
       if (real_value > 0.0) { /* keep indices and values */
         temp_constraints++;
         temp_indices[total_counts+1]=temp_indices[total_counts]+size_of_constraint;  /* store new starting point */
-        change_basis[total_counts]=boolforchange;
+        if (boolforchange) {
+          ierr = PetscBTSet(change_basis,total_counts);CHKERRQ(ierr);
+        }
         total_counts++;
       }
     }
@@ -1599,35 +1604,34 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
   ierr = PetscMalloc(pcbddc->local_primal_size*sizeof(PetscInt),&aux_primal_minloc);CHKERRQ(ierr);
   /* auxiliary stuff for basis change */
   ierr = PetscMalloc(max_size_of_constraint*sizeof(PetscInt),&global_indices);CHKERRQ(ierr);
-  ierr = PetscMalloc(pcis->n_B*sizeof(PetscBool),&touched);CHKERRQ(ierr);
-  ierr = PetscMemzero(touched,pcis->n_B*sizeof(PetscBool));CHKERRQ(ierr);
+  ierr = PetscBTCreate(pcis->n_B,&touched);CHKERRQ(ierr);
 
   /* find primal_dofs: subdomain corners plus dofs selected as primal after change of basis */
   total_primal_vertices=0;
   for (i=0;i<pcbddc->local_primal_size;i++) {
     size_of_constraint=temp_indices[i+1]-temp_indices[i];
     if (size_of_constraint == 1) {
-      touched[temp_indices_to_constraint_B[temp_indices[i]]]=PETSC_TRUE;
+      ierr = PetscBTSet(touched,temp_indices_to_constraint_B[temp_indices[i]]);CHKERRQ(ierr);
       aux_primal_numbering[total_primal_vertices]=temp_indices_to_constraint[temp_indices[i]];
       aux_primal_minloc[total_primal_vertices]=0;
       total_primal_vertices++;
-    } else if (change_basis[i]) { /* Same procedure used in PCBDDCGetPrimalConstraintsLocalIdx */
+    } else if (PetscBTLookup(change_basis,i)) { /* Same procedure used in PCBDDCGetPrimalConstraintsLocalIdx */
       PetscInt min_loc,min_index;
       ierr = ISLocalToGlobalMappingApply(pcbddc->mat_graph->l2gmap,size_of_constraint,&temp_indices_to_constraint[temp_indices[i]],global_indices);CHKERRQ(ierr);
       /* find first untouched local node */
       k = 0;
-      while (touched[temp_indices_to_constraint_B[temp_indices[i]+k]]) k++;
+      while (PetscBTLookup(touched,temp_indices_to_constraint_B[temp_indices[i]+k])) k++;
       min_index = global_indices[k];
       min_loc = k;
       /* search the minimum among global nodes already untouched on the cc */
       for (k=1;k<size_of_constraint;k++) {
         /* there can be more than one constraint on a single connected component */
-        if (min_index > global_indices[k] && !touched[temp_indices_to_constraint_B[temp_indices[i]+k]]) {
+        if (!PetscBTLookup(touched,temp_indices_to_constraint_B[temp_indices[i]+k]) && min_index > global_indices[k]) {
           min_index = global_indices[k];
           min_loc = k;
         }
       }
-      touched[temp_indices_to_constraint_B[temp_indices[i]+min_loc]] = PETSC_TRUE;
+      ierr = PetscBTSet(touched,temp_indices_to_constraint_B[temp_indices[i]+min_loc]);CHKERRQ(ierr);
       aux_primal_numbering[total_primal_vertices]=temp_indices_to_constraint[temp_indices[i]+min_loc];
       aux_primal_minloc[total_primal_vertices]=min_loc;
       total_primal_vertices++;
@@ -1635,7 +1639,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
   }
   /* free workspace */
   ierr = PetscFree(global_indices);CHKERRQ(ierr);
-  ierr = PetscFree(touched);CHKERRQ(ierr);
+  ierr = PetscBTDestroy(&touched);CHKERRQ(ierr);
   /* permute indices in order to have a sorted set of vertices */
   ierr = PetscSortInt(total_primal_vertices,aux_primal_numbering);
 
@@ -1644,7 +1648,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
   for (i=0;i<total_primal_vertices;i++) nnz[i]=1;
   j=total_primal_vertices;
   for (i=pcbddc->n_vertices;i<pcbddc->local_primal_size;i++) {
-    if (!change_basis[i]) {
+    if (!PetscBTLookup(change_basis,i)) {
       nnz[j]=temp_indices[i+1]-temp_indices[i];
       j++;
     }
@@ -1657,7 +1661,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
   }
   total_counts = total_primal_vertices;
   for (i=pcbddc->n_vertices;i<pcbddc->local_primal_size;i++) {
-    if (!change_basis[i]) {
+    if (!PetscBTLookup(change_basis,i)) {
       size_of_constraint=temp_indices[i+1]-temp_indices[i];
       ierr = MatSetValues(pcbddc->ConstraintMatrix,1,&total_counts,size_of_constraint,&temp_indices_to_constraint[temp_indices[i]],&temp_quadrature_constraint[temp_indices[i]],INSERT_VALUES);CHKERRQ(ierr);
       total_counts++;
@@ -1681,7 +1685,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
     for (i=0;i<pcis->n_B;i++) nnz[i]=1;
     /* nonzeros per row */
     for (i=pcbddc->n_vertices;i<pcbddc->local_primal_size;i++) {
-      if (change_basis[i]) {
+      if (PetscBTLookup(change_basis,i)) {
         qr_needed = PETSC_TRUE;
         size_of_constraint = temp_indices[i+1]-temp_indices[i];
         for (j=0;j<size_of_constraint;j++) nnz[temp_indices_to_constraint_B[temp_indices[i]+j]] = size_of_constraint;
@@ -1716,7 +1720,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
       PetscInt     *start_rows,*start_cols;
       PetscScalar  *start_vals;
       /* working stuff for values insertion */
-      PetscBool    *is_primal;
+      PetscBT      is_primal;
  
       /* space to store Q */ 
       ierr = PetscMalloc((max_size_of_constraint)*(max_size_of_constraint)*sizeof(PetscScalar),&qr_basis);CHKERRQ(ierr);
@@ -1744,9 +1748,10 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
       /* array to store rhs and solution of triangular solver */
       ierr = PetscMalloc(max_constraints*max_constraints*sizeof(*trs_rhs),&trs_rhs);CHKERRQ(ierr);
       /* array to store whether a node is primal or not */
-      ierr = PetscMalloc(pcis->n_B*sizeof(*is_primal),&is_primal);CHKERRQ(ierr);
-      ierr = PetscMemzero(is_primal,pcis->n_B*sizeof(*is_primal));CHKERRQ(ierr);
-      for (i=0;i<total_primal_vertices;i++) is_primal[local_to_B[aux_primal_numbering[i]]] = PETSC_TRUE;
+      ierr = PetscBTCreate(pcis->n_B,&is_primal);CHKERRQ(ierr);
+      for (i=0;i<total_primal_vertices;i++) {
+        ierr = PetscBTSet(is_primal,local_to_B[aux_primal_numbering[i]]);CHKERRQ(ierr);
+      }
 
       /* allocating workspace for check */
       if (pcbddc->dbg_flag) {
@@ -1761,7 +1766,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
       primal_counter = total_counts;
       while (total_counts<pcbddc->local_primal_size) {
         primal_dofs = 1;
-        if (change_basis[total_counts]) {
+        if (PetscBTLookup(change_basis,total_counts)) {
           /* get all constraints with same support: if more then one constraint is present on the cc then surely indices are stored contiguosly */
           while (total_counts+primal_dofs < pcbddc->local_primal_size && temp_indices_to_constraint_B[temp_indices[total_counts]] == temp_indices_to_constraint_B[temp_indices[total_counts+primal_dofs]]) {
             primal_dofs++;
@@ -1834,7 +1839,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
           }
           /* insert cols for dual dofs */
           for (j=0,k=0;j<dual_dofs;k++) {
-            if (!is_primal[temp_indices_to_constraint_B[temp_indices[total_counts]+k]]) {
+            if (!PetscBTLookup(is_primal,temp_indices_to_constraint_B[temp_indices[total_counts]+k])) {
               start_vals = &qr_basis[(primal_dofs+j)*size_of_constraint];
               start_cols = &temp_indices_to_constraint_B[temp_indices[total_counts]+k];
               ierr = MatSetValues(pcbddc->ChangeOfBasisMatrix,size_of_constraint,start_rows,1,start_cols,start_vals,INSERT_VALUES);CHKERRQ(ierr);
@@ -1896,7 +1901,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
       ierr = PetscFree(qr_tau);CHKERRQ(ierr);
       ierr = PetscFree(qr_work);CHKERRQ(ierr);
       ierr = PetscFree(gqr_work);CHKERRQ(ierr);
-      ierr = PetscFree(is_primal);CHKERRQ(ierr);
+      ierr = PetscBTDestroy(&is_primal);CHKERRQ(ierr);
       ierr = PetscFree(qr_basis);CHKERRQ(ierr);
     }
     /* assembling */
@@ -1910,7 +1915,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
   ierr = PetscFree(aux_primal_numbering);CHKERRQ(ierr);
   ierr = PetscFree(aux_primal_minloc);CHKERRQ(ierr);
   ierr = PetscFree(temp_indices);CHKERRQ(ierr);
-  ierr = PetscFree(change_basis);CHKERRQ(ierr);
+  ierr = PetscBTDestroy(&change_basis);CHKERRQ(ierr);
   ierr = PetscFree(temp_indices_to_constraint);CHKERRQ(ierr);
   ierr = PetscFree(temp_indices_to_constraint_B);CHKERRQ(ierr);
   ierr = PetscFree(local_to_B);CHKERRQ(ierr);
@@ -2030,7 +2035,7 @@ PetscErrorCode  PCBDDCGetPrimalConstraintsLocalIdx(PC pc, PetscInt *n_constraint
   PC_BDDC        *pcbddc = (PC_BDDC*)(pc->data);
   PetscInt       *constraints_index,*row_cmat_indices,*row_cmat_global_indices;
   PetscInt       n,i,j,size_of_constraint,local_primal_size,local_size,max_size_of_constraint,min_index,min_loc;
-  PetscBool      *touched;
+  PetscBT        touched;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -2050,8 +2055,7 @@ PetscErrorCode  PCBDDCGetPrimalConstraintsLocalIdx(PC pc, PetscInt *n_constraint
     if (constraints_idx) {
       ierr = PetscMalloc(n*sizeof(PetscInt),&constraints_index);CHKERRQ(ierr);
       ierr = PetscMalloc(max_size_of_constraint*sizeof(PetscInt),&row_cmat_global_indices);CHKERRQ(ierr);
-      ierr = PetscMalloc(local_size*sizeof(PetscBool),&touched);CHKERRQ(ierr);
-      ierr = PetscMemzero(touched,local_size*sizeof(PetscBool));CHKERRQ(ierr);
+      ierr = PetscBTCreate(local_size,&touched);CHKERRQ(ierr);
       n = 0;
       for (i=0;i<local_primal_size;i++) {
         ierr = MatGetRow(pcbddc->ConstraintMatrix,i,&size_of_constraint,(const PetscInt**)&row_cmat_indices,NULL);CHKERRQ(ierr);
@@ -2059,23 +2063,23 @@ PetscErrorCode  PCBDDCGetPrimalConstraintsLocalIdx(PC pc, PetscInt *n_constraint
           ierr = ISLocalToGlobalMappingApply(pcbddc->mat_graph->l2gmap,size_of_constraint,row_cmat_indices,row_cmat_global_indices);CHKERRQ(ierr);
           /* find first untouched local node */
           j = 0;
-          while(touched[row_cmat_indices[j]]) j++;
+          while (PetscBTLookup(touched,row_cmat_indices[j])) j++;
           min_index = row_cmat_global_indices[j];
           min_loc = j;
           /* search the minimum among nodes not yet touched on the connected component
              since there can be more than one constraint on a single cc */
           for (j=1;j<size_of_constraint;j++) {
-            if (min_index > row_cmat_global_indices[j] && !touched[row_cmat_indices[j]]) {
+            if (!PetscBTLookup(touched,row_cmat_indices[j]) && min_index > row_cmat_global_indices[j]) {
               min_index = row_cmat_global_indices[j];
               min_loc = j;
             }
           }
-          touched[row_cmat_indices[min_loc]] = PETSC_TRUE;
+          ierr = PetscBTSet(touched,row_cmat_indices[min_loc]);CHKERRQ(ierr);
           constraints_index[n++] = row_cmat_indices[min_loc];
         }
         ierr = MatRestoreRow(pcbddc->ConstraintMatrix,i,&size_of_constraint,(const PetscInt**)&row_cmat_indices,NULL);CHKERRQ(ierr);
       }
-      ierr = PetscFree(touched);CHKERRQ(ierr);
+      ierr = PetscBTDestroy(&touched);CHKERRQ(ierr);
       ierr = PetscFree(row_cmat_global_indices);CHKERRQ(ierr);
     }
   }
