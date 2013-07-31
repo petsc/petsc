@@ -3023,7 +3023,6 @@ PetscErrorCode MatGetRedundantMatrix_MPIAIJ(Mat mat,PetscInt nsubcomm,MPI_Comm s
       iscol  = redund->iscol;
       matseq = redund->matseq;
     }
-
     ierr = MatGetSubMatrices(mat,1,&isrow,&iscol,reuse,&matseq);CHKERRQ(ierr);
     ierr = MatCreateMPIAIJConcatenateSeqAIJ(subcomm,matseq[0],PETSC_DECIDE,reuse,matredundant);CHKERRQ(ierr);
     
@@ -4624,13 +4623,23 @@ PetscErrorCode  MatCreateMPIAIJConcatenateSeqAIJNumeric(MPI_Comm comm,Mat inmat,
 PetscErrorCode  MatCreateMPIAIJConcatenateSeqAIJ(MPI_Comm comm,Mat inmat,PetscInt n,MatReuse scall,Mat *outmat)
 {
   PetscErrorCode ierr;
+  PetscMPIInt    size;
 
   PetscFunctionBegin;
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(MAT_Merge,inmat,0,0,0);CHKERRQ(ierr);
-  if (scall == MAT_INITIAL_MATRIX) {
-    ierr = MatCreateMPIAIJConcatenateSeqAIJSymbolic(comm,inmat,n,outmat);CHKERRQ(ierr);
-  } 
-  ierr = MatCreateMPIAIJConcatenateSeqAIJNumeric(comm,inmat,n,*outmat);CHKERRQ(ierr);
+  if (size == 1) {
+    if (scall == MAT_INITIAL_MATRIX) {
+      ierr = MatDuplicate(inmat,MAT_COPY_VALUES,outmat);CHKERRQ(ierr);
+    } else {
+      ierr = MatCopy(inmat,*outmat,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+    }
+  } else {
+    if (scall == MAT_INITIAL_MATRIX) {
+      ierr = MatCreateMPIAIJConcatenateSeqAIJSymbolic(comm,inmat,n,outmat);CHKERRQ(ierr);
+    } 
+    ierr = MatCreateMPIAIJConcatenateSeqAIJNumeric(comm,inmat,n,*outmat);CHKERRQ(ierr);
+  }
   ierr = PetscLogEventEnd(MAT_Merge,inmat,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
