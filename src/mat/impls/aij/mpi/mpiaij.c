@@ -2552,8 +2552,8 @@ PetscErrorCode MatDestroy_MatRedundant(Mat A)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatGetRedundantMatrix_MPIAIJ_psubcomm"
-PetscErrorCode MatGetRedundantMatrix_MPIAIJ_psubcomm(Mat mat,PetscInt nsubcomm,PetscSubcomm psubcomm,MatReuse reuse,Mat *matredundant)
+#define __FUNCT__ "MatGetRedundantMatrix_MPIAIJ_interlaced"
+PetscErrorCode MatGetRedundantMatrix_MPIAIJ_interlaced(Mat mat,PetscInt nsubcomm,PetscSubcomm psubcomm,MatReuse reuse,Mat *matredundant)
 {
   PetscMPIInt    rank,size;
   MPI_Comm       comm,subcomm=psubcomm->comm;
@@ -2619,71 +2619,30 @@ PetscErrorCode MatGetRedundantMatrix_MPIAIJ_psubcomm(Mat mat,PetscInt nsubcomm,P
     np_subcomm = size/nsubcomm;
     nleftover  = size - nsubcomm*np_subcomm;
 
+    /* block of codes below is specific for INTERLACED */
+    /* ------------------------------------------------*/
     nsends = 0; nrecvs = 0;
-    if (psubcomm->type == PETSC_SUBCOMM_INTERLACED) {
-      /* -------------------------------------------*/
-      for (i=0; i<size; i++) { 
-        if (subrank == i/nsubcomm && i != rank) { /* my_subrank == other's subrank */
-          send_rank[nsends]   = i; nsends++;
-          recv_rank[nrecvs++] = i;
-          /* printf("[%d] send to and recv from [%d]\n",rank,i); */
-        }
+    for (i=0; i<size; i++) { 
+      if (subrank == i/nsubcomm && i != rank) { /* my_subrank == other's subrank */
+        send_rank[nsends++] = i; 
+        recv_rank[nrecvs++] = i;
       }
-      if (rank >= size - nleftover) { /* this proc is a leftover processor */
-        i = size-nleftover-1;
-        j = 0;
-        while (j < nsubcomm - nleftover) {
-          send_rank[nsends++] = i;
-          i--; j++;
-          /* printf("[%d] send to [%d]\n",rank,i); */
-        }
+    }
+    if (rank >= size - nleftover) { /* this proc is a leftover processor */
+      i = size-nleftover-1;
+      j = 0;
+      while (j < nsubcomm - nleftover) {
+        send_rank[nsends++] = i;
+        i--; j++;
       }
+    }
 
-      if (nleftover && subsize == size/nsubcomm && subrank==subsize-1) { /* this proc recvs from leftover processors */
-        for (i=0; i<nleftover; i++) {
-          recv_rank[nrecvs++] = size-nleftover+i;
-          /* printf("[%d] recv from [%d]\n",rank,i); */
-        }
+    if (nleftover && subsize == size/nsubcomm && subrank==subsize-1) { /* this proc recvs from leftover processors */
+      for (i=0; i<nleftover; i++) {
+        recv_rank[nrecvs++] = size-nleftover+i;
       }
-    } else if (psubcomm->type == PETSC_SUBCOMM_CONTIGUOUS) {
-      /* --------------------------------------------------*/
-      PetscInt color,subcommstart;  
-      subcommstart=0;
-      for (color=0; color<nsubcomm; color++) {
-        if (psubcomm->color != color) {
-          for (i=0; i<psubcomm->subsize[color]; i++) {
-            if (subrank == i) { /* my_subrank == other's subrank */
-              send_rank[nsends++] = subcommstart+i; 
-              recv_rank[nrecvs++] = subcommstart+i;
-              /* printf("[%d] send to and recv from [%d]\n",rank,subcommstart+i); */
-            }
-          }
-        }
-        subcommstart += psubcomm->subsize[color];
-      }
-      if (nleftover && subrank == size/nsubcomm) { /* this proc is a leftover proc, send to subcomm that does not have leftover proc */
-        subcommstart=0;     
-        for (color=0; color<nsubcomm; color++) {
-          subcommstart += psubcomm->subsize[color];
-          if (psubcomm->color == color) continue;
-          if (psubcomm->subsize[color] == size/nsubcomm) { /* subcomm does not have leftover proc */
-            send_rank[nsends++] = subcommstart -1; /* send to the last proc of subcomm[color] */
-            /* printf("[%d] leftover send to [%d] \n",rank,subcommstart -1); */
-          }
-        }
-      }
-
-      if (nleftover && subsize == size/nsubcomm && subrank==subsize-1) { /* this proc recvs from leftover processors */
-        subcommstart=0;     
-        for (color=0; color<nsubcomm; color++) {
-          subcommstart += psubcomm->subsize[color];
-          if (psubcomm->subsize[color] > size/nsubcomm) { /* subcomm has leftover proc */
-            recv_rank[nrecvs++] = subcommstart -1; /* recv from the last proc of subcomm[color] */
-            /* printf("[%d] recv from [%d]\n",rank,subcommstart -1); */
-          }
-        }
-      }
-    } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for PetscSubcomm type %D",psubcomm->type);
+    }
+    /*----------------------------------------------*/
 
     /* allocate sbuf_j, sbuf_a */
     i    = nzlocal + rowrange[rank+1] - rowrange[rank] + 2;
@@ -2996,7 +2955,7 @@ PetscErrorCode MatGetRedundantMatrix_MPIAIJ(Mat mat,PetscInt nsubcomm,MPI_Comm s
   }
 
   if (subcomm_in == MPI_COMM_NULL && psubcomm->type == PETSC_SUBCOMM_INTERLACED) {
-     ierr = MatGetRedundantMatrix_MPIAIJ_psubcomm(mat,nsubcomm,psubcomm,reuse,matredundant);CHKERRQ(ierr);
+     ierr = MatGetRedundantMatrix_MPIAIJ_interlaced(mat,nsubcomm,psubcomm,reuse,matredundant);CHKERRQ(ierr);
   } else {
     /* via MatGetSubMatrices() */
     Mat  *matseq;
