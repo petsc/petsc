@@ -93,31 +93,37 @@ grid on each processor) with the SMG multigrid solver
      <a href="../src/snes/examples/tutorials/output/ex19_tut_1.out">[Expected output]</a>
     </pre>
   </li>
+  <li>
     <pre>
       mpiexec -n 16 ex19 -dm_refine 6 -snes_monitor -ksp_monitor -snes_view -pc_type mg
      <a href="../src/snes/examples/tutorials/output/ex19_tut_2.out">[Expected output]</a>
     </pre>
   </li>
+  <li>
     <pre>
       mpiexec -n 16 ex19 -dm_refine 6 -snes_monitor -ksp_monitor -snes_view -pc_type hypre
      <a href="../src/snes/examples/tutorials/output/ex19_tut_3.out">[Expected output]</a>
     </pre>
   </li>
+  <li>
     <pre>
       mpiexec -n 4 ex19 -dm_refine 6 -log_summary
      <a href="../src/snes/examples/tutorials/output/ex19_tut_4.out">[Expected output]</a>
     </pre>
   </li>
+  <li>
     <pre>
       mpiexec -n 4 ex19 -dm_refine 6 -log_summary -pc_type mg
      <a href="../src/snes/examples/tutorials/output/ex19_tut_5.out">[Expected output]</a>
     </pre>
   </li>
+  <li>
     <pre>
       mpiexec -n 16 ex19 -dm_refine 6 -log_summary
      <a href="../src/snes/examples/tutorials/output/ex19_tut_6.out">[Expected output]</a>
     </pre>
   </li>
+  <li>
     <pre>
       mpiexec -n 16 ex19 -dm_refine 6 -log_summary -pc_type mg
      <a href="../src/snes/examples/tutorials/output/ex19_tut_7.out">[Expected output]</a>
