@@ -2995,7 +2995,7 @@ PetscErrorCode MatGetRedundantMatrix_MPIAIJ(Mat mat,PetscInt nsubcomm,MPI_Comm s
     }
   }
 
-  if (subcomm_in==NULL && psubcomm->type == PETSC_SUBCOMM_INTERLACED) {
+  if (subcomm_in == MPI_COMM_NULL && psubcomm->type == PETSC_SUBCOMM_INTERLACED) {
      ierr = MatGetRedundantMatrix_MPIAIJ_psubcomm(mat,nsubcomm,psubcomm,reuse,matredundant);CHKERRQ(ierr);
   } else {
     /* via MatGetSubMatrices() */
