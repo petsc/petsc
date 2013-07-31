@@ -6,8 +6,9 @@
 #define __FUNCT__ "PCBDDCSetUpSolvers"
 PetscErrorCode PCBDDCSetUpSolvers(PC pc)
 {
-  PC_BDDC*          pcbddc = (PC_BDDC*)pc->data;
-  PetscErrorCode    ierr;
+  PC_BDDC*       pcbddc = (PC_BDDC*)pc->data;
+  PetscScalar    *coarse_submat_vals;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   /* Compute matrix after change of basis and extract local submatrices */
@@ -27,8 +28,17 @@ PetscErrorCode PCBDDCSetUpSolvers(PC pc)
     ierr = PCBDDCNullSpaceAdaptGlobal(pc);CHKERRQ(ierr);
   }
 
-  /* setup local correction and local part of coarse basis */
-  ierr = PCBDDCSetUpCoarseLocal(pc);CHKERRQ(ierr);
+  /*
+     Setup local correction and local part of coarse basis.
+     Gives back the dense local part of the coarse matrix in column major ordering
+  */
+  ierr = PCBDDCSetUpCoarseLocal(pc,&coarse_submat_vals);CHKERRQ(ierr);
+
+  /* Compute total number of coarse nodes and setup coarse solver */
+  ierr = PCBDDCSetUpCoarseSolver(pc,coarse_submat_vals);CHKERRQ(ierr);
+
+  /* free */
+  ierr = PetscFree(coarse_submat_vals);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -148,7 +158,7 @@ PetscErrorCode PCBDDCCreateWorkVectors(PC pc)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCSetUpCoarseLocal"
-PetscErrorCode PCBDDCSetUpCoarseLocal(PC pc)
+PetscErrorCode PCBDDCSetUpCoarseLocal(PC pc, PetscScalar **coarse_submat_vals_n)
 {
   PetscErrorCode         ierr;
   /* pointers to pcis and pcbddc */
@@ -658,9 +668,8 @@ PetscErrorCode PCBDDCSetUpCoarseLocal(PC pc)
     ierr = MatDestroy(&C_CR);CHKERRQ(ierr);
   }
   ierr = PetscFree(auxindices);CHKERRQ(ierr);
-  /* create coarse matrix and data structures for message passing associated actual choice of coarse problem type */
-  ierr = PCBDDCSetUpCoarseEnvironment(pc,coarse_submat_vals);CHKERRQ(ierr);
-  ierr = PetscFree(coarse_submat_vals);CHKERRQ(ierr);
+  /* get back data */
+  *coarse_submat_vals_n = coarse_submat_vals;
   PetscFunctionReturn(0);
 }
 
@@ -2289,8 +2298,8 @@ PetscErrorCode PCBDDCOrthonormalizeVecs(PetscInt n, Vec vecs[])
 #endif
 
 #undef __FUNCT__
-#define __FUNCT__ "PCBDDCSetUpCoarseEnvironment"
-PetscErrorCode PCBDDCSetUpCoarseEnvironment(PC pc,PetscScalar* coarse_submat_vals)
+#define __FUNCT__ "PCBDDCSetUpCoarseSolver"
+PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
 {
   Mat_IS    *matis    = (Mat_IS*)pc->pmat->data;
   PC_BDDC   *pcbddc   = (PC_BDDC*)pc->data;
