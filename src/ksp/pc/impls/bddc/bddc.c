@@ -1233,19 +1233,14 @@ PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC pc)
   pcbddc->R_to_D                     = 0;
   pcbddc->ksp_D                      = 0;
   pcbddc->ksp_R                      = 0;
-  pcbddc->local_primal_indices       = 0;
   pcbddc->NeumannBoundaries          = 0;
   pcbddc->ISForDofs                  = 0;
   pcbddc->ConstraintMatrix           = 0;
-  pcbddc->local_primal_sizes         = 0;
-  pcbddc->local_primal_displacements = 0;
   pcbddc->use_exact_dirichlet        = PETSC_TRUE;
   pcbddc->coarse_loc_to_glob         = 0;
   pcbddc->coarsening_ratio           = 8;
   pcbddc->current_level              = 0;
   pcbddc->max_levels                 = 1;
-  pcbddc->replicated_local_primal_indices = 0;
-  pcbddc->replicated_local_primal_values  = 0;
 
   /* create local graph structure */
   ierr = PCBDDCGraphCreate(&pcbddc->mat_graph);CHKERRQ(ierr);
