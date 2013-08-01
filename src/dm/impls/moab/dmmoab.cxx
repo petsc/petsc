@@ -43,7 +43,7 @@ PetscErrorCode DMSetUp_Moab(DM dm)
   moab::Range::iterator   iter;
   PetscInt                i,j,bs,gsiz,lsiz,*gsindices;
   DM_Moab                *dmmoab = (DM_Moab*)dm->data;
-  PetscInt                totsize;
+  PetscInt                totsize,local_min,global_min;
   PetscSection            section;
 
   PetscFunctionBegin;
@@ -98,6 +98,14 @@ PetscErrorCode DMSetUp_Moab(DM dm)
     if (dmmoab->vghost->size()) {
       merr = dmmoab->mbiface->tag_get_data(dmmoab->ltog_tag,*dmmoab->vghost,&gsindices[dmmoab->nloc]);MBERRNM(merr);
     }
+
+    /* find out the local and global minima of GLOBAL_ID */
+    local_min=gsindices[0];
+    for (i=1; i<totsize; ++i)
+      if(local_min>gsindices[i]) local_min=gsindices[i];
+
+    ierr = MPI_Allreduce(&local_min, &global_min, 1, MPI_INT, MPI_MIN, ((PetscObject)dm)->comm);CHKERRQ(ierr);
+    PetscInfo2(dm, "GLOBAL_ID: Local minima - %D, Global minima - %D.\n", local_min, global_min);
   }
     
   {
@@ -105,17 +113,16 @@ PetscErrorCode DMSetUp_Moab(DM dm)
     ierr = PetscSectionSetNumFields(section, dmmoab->nfields);CHKERRQ(ierr);
     ierr = PetscSectionSetChart(section, gsindices[0], gsindices[dmmoab->nloc-1]+1);CHKERRQ(ierr);
     for (j=gsindices[0]; j<=gsindices[dmmoab->nloc-1]; ++j) {
+      PetscInt locgid = j-global_min;
       for (i=0; i < dmmoab->nfields; ++i) {
         ierr = PetscSectionSetFieldName(section, i, dmmoab->fields[i]);CHKERRQ(ierr);
         if (bs>1) {
-          ierr = PetscSectionSetFieldDof(section, j, i, j*dmmoab->nfields+i-1);CHKERRQ(ierr);
+          ierr = PetscSectionSetFieldDof(section, j, i, locgid*dmmoab->nfields+i);CHKERRQ(ierr);
           ierr = PetscSectionSetFieldOffset(section, j, i, dmmoab->nfields);
-//          PetscPrintf(PETSC_COMM_WORLD, "Point %D, Field %D, DOF %D, OFFSET = %D\n", j, i, j*dmmoab->nfields+i, dmmoab->nfields);
         }
         else {
-          ierr = PetscSectionSetFieldDof(section, j, i, totsize*i+j-1);CHKERRQ(ierr);
+          ierr = PetscSectionSetFieldDof(section, j, i, totsize*i+locgid);CHKERRQ(ierr);
           ierr = PetscSectionSetFieldOffset(section, j, i, totsize);
-//          PetscPrintf(PETSC_COMM_WORLD, "Point %D, Field %D, DOF %D, OFFSET = %D\n", j, i, totsize*i+j, totsize);
         }
       }
       ierr = PetscSectionSetDof(section, j, dmmoab->nfields);CHKERRQ(ierr);
@@ -129,9 +136,8 @@ PetscErrorCode DMSetUp_Moab(DM dm)
     ierr = DMCreateGlobalVector_Moab(dm, &global);CHKERRQ(ierr);
     ierr = DMCreateLocalVector_Moab(dm, &local);CHKERRQ(ierr);
 
-    for (i=0; i<totsize; ++i) {
-      gsindices[i]--;   /* zero based index needed for IS */
-    }
+    for (i=0; i<totsize; ++i)
+      gsindices[i]-=global_min;   /* zero based index needed for IS */
 
     /* global to local must retrieve ghost points */
     ierr = ISCreateBlock(((PetscObject)dm)->comm,bs,totsize,&gsindices[0],PETSC_COPY_VALUES,&from);CHKERRQ(ierr);
@@ -156,7 +162,7 @@ PetscErrorCode DMSetUp_Moab(DM dm)
     dmmoab->bndyfaces = new moab::Range();
     merr = skinner.find_skin(dmmoab->fileset, *dmmoab->elocal, true, *dmmoab->bndyvtx);MBERRNM(merr); // 'true' param indicates we want vertices back, not faces
     merr = skinner.find_skin(dmmoab->fileset, *dmmoab->elocal, false, *dmmoab->bndyfaces);MBERRNM(merr); // 'false' param indicates we want faces back, not vertices
-    PetscPrintf(PETSC_COMM_WORLD, "\nFound %D boundary vertices and %D faces.\n", dmmoab->bndyvtx->size(), dmmoab->bndyvtx->size());
+    PetscInfo2(dm, "Found %D boundary vertices and %D faces.\n", dmmoab->bndyvtx->size(), dmmoab->bndyvtx->size());
   }
 
   ierr = PetscFree(gsindices);CHKERRQ(ierr);
