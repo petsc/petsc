@@ -78,12 +78,6 @@ int main(int argc,char **args)
 
   /* Test MatGetRedundantMatrix() */
   if (size > 1) {
-    /* user provides a petsc subomm */
-    ierr = MatGetRedundantMatrix(A,nsubcomm,MPI_COMM_NULL,psubcomm,MAT_INITIAL_MATRIX,&subA);CHKERRQ(ierr);
-    ierr = MatGetRedundantMatrix(A,nsubcomm,MPI_COMM_NULL,psubcomm,MAT_REUSE_MATRIX,&subA);CHKERRQ(ierr);
-    ierr = MatDestroy(&subA);CHKERRQ(ierr);
-
-    /* user provides a mpi subcomm */
     ierr = MatGetRedundantMatrix(A,nsubcomm,subcomm,NULL,MAT_INITIAL_MATRIX,&subA);CHKERRQ(ierr);
     ierr = MatGetRedundantMatrix(A,nsubcomm,subcomm,NULL,MAT_REUSE_MATRIX,&subA);CHKERRQ(ierr);
     ierr = MatDestroy(&subA);CHKERRQ(ierr);
