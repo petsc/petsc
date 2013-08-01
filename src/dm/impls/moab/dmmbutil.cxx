@@ -296,6 +296,9 @@ PetscErrorCode DMMoabLoadFromFile(MPI_Comm comm,PetscInt dim,const char* filenam
   /* Load the mesh from a file. */
   merr = mbiface->load_file(filename, &dmmoab->fileset, ""/*readopts*/);MBERRVM(mbiface,"Reading MOAB file failed.", merr);
 
+  /* Reassign global IDs on all entities. */
+  merr = pcomm->assign_global_ids(dmmoab->fileset,dim,1,false,true);MBERRNM(merr);
+
   merr = pcomm->collective_sync_partition();MBERR("Collective sync failed", merr);
 
   /* load the local vertices */
