@@ -168,7 +168,7 @@ PETSc comes with a large number of example codes to illustrate usage. There thre
   </li>
   <li> Solve with a finer mesh
     <pre>
-     mpiexec -n 16 ex42  -mx 40 -stokes_ksp_monitor   <a href="../src/ksp/ksp/examples/tutorials/output/ex42_tut_3.out.html">[Expected output]</a>
+     mpiexec -n 16 ex42  -mx 40 -stokes_ksp_monitor  -stokes_pc_type fieldsplit -stokes_pc_fieldsplit_type schur  <a href="../src/ksp/ksp/examples/tutorials/output/ex42_tut_3.out.html">[Expected output]</a>
     </pre>
   </li>
 </ul>
