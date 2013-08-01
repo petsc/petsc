@@ -2,9 +2,11 @@
 #include "bddcprivate.h"
 
 /* prototypes for deluxe public functions */
+#if 0
 extern PetscErrorCode PCBDDCScalingCreateDeluxe(PC);
 extern PetscErrorCode PCBDDCScalingDestroyDeluxe(PC);
 extern PetscErrorCode PCBDDCScalingSetUpDeluxe(PC);
+#endif
 
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCScalingExtension_Basic"
@@ -23,6 +25,7 @@ static PetscErrorCode PCBDDCScalingExtension_Basic(PC pc, Vec local_interface_ve
   PetscFunctionReturn(0);
 }
 
+#if 0
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCScalingExtension_Deluxe"
 static PetscErrorCode PCBDDCScalingExtension_Deluxe(PC pc, Vec x, Vec y)
@@ -88,6 +91,7 @@ static PetscErrorCode PCBDDCScalingExtension_Deluxe(PC pc, Vec x, Vec y)
   ierr = VecScatterEnd  (pcis->global_to_B,pcbddc->work_scaling,y,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+#endif
 
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCScalingExtension"
@@ -122,6 +126,7 @@ static PetscErrorCode PCBDDCScalingRestriction_Basic(PC pc, Vec global_vector, V
   PetscFunctionReturn(0);
 }
 
+#if 0
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCScalingRestriction_Deluxe"
 static PetscErrorCode PCBDDCScalingRestriction_Deluxe(PC pc, Vec x, Vec y)
@@ -173,6 +178,7 @@ static PetscErrorCode PCBDDCScalingRestriction_Deluxe(PC pc, Vec x, Vec y)
   }
   PetscFunctionReturn(0);
 }
+#endif
 
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCScalingRestriction"
@@ -218,16 +224,19 @@ PetscErrorCode PCBDDCScalingSetUp(PC pc)
   ierr = VecScatterEnd(pcis->global_to_B,pcis->vec1_global,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecPointwiseDivide(pcis->D,pcis->D,pcis->vec1_B);CHKERRQ(ierr);
   /* now setup */
-  /* if (pcbddc->use_deluxe_scaling) { */
-  if (PETSC_FALSE) {
+#if 0
+  if (pcbddc->use_deluxe_scaling) {
     ierr = PCBDDCScalingCreateDeluxe(pc);CHKERRQ(ierr);
     ierr = PCBDDCScalingSetUpDeluxe(pc);CHKERRQ(ierr);
     ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCScalingRestriction_C",PCBDDCScalingRestriction_Deluxe);CHKERRQ(ierr);
     ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCScalingExtension_C",PCBDDCScalingExtension_Deluxe);CHKERRQ(ierr);
   } else {
+#endif
     ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCScalingRestriction_C",PCBDDCScalingRestriction_Basic);CHKERRQ(ierr);
     ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCScalingExtension_C",PCBDDCScalingExtension_Basic);CHKERRQ(ierr);
+#if 0
   }
+#endif
   /* test */
   if (pcbddc->dbg_flag) {
     PetscViewer viewer=pcbddc->dbg_viewer;
@@ -284,10 +293,11 @@ PetscErrorCode PCBDDCScalingDestroy(PC pc)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  /* if (pcbddc->use_deluxe_scaling) { */
-  if (PETSC_FALSE) {
+#if 0
+  if (pcbddc->use_deluxe_scaling) {
     ierr = PCBDDCScalingDestroyDeluxe(pc);CHKERRQ(ierr);
   }
+#endif
   ierr = VecDestroy(&pcbddc->work_scaling);CHKERRQ(ierr);
   /* remove functions */
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCScalingRestriction_C",NULL);CHKERRQ(ierr);
