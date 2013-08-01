@@ -199,17 +199,17 @@ PETSc comes with a large number of example codes to illustrate usage. There thre
       cd petsc/src/ts/examples/tutorials
       make ex11
   </pre>
-  <li>Run shallow water flow through a tiny hybrid mesh
+  <li>Run simple advection through a tiny hybrid mesh
     <pre>
       mpiexec -n 1 ex11 -f ${PETSC_DIR}/share/petsc/datafiles/meshes/sevenside.exo      <a href="../src/ts/examples/tutorials/output/ex11_tut_1.out.html">[Expected output]</a>
     </pre>
   </li>
-  <li>Run shallow water flow through a small mesh with a Rosenbrock-W solver
+  <li>Run simple advection through a small mesh with a Rosenbrock-W solver
     <pre>
       mpiexec -n 1 ex11 -f ${PETSC_DIR}/share/petsc/datafiles/meshes/sevenside.exo -ts_type rosw      <a href="../src/ts/examples/tutorials/output/ex11_tut_2.out.html">[Expected output]</a>
     </pre>
   </li>
-  <li>Run shallow water flow through a larger quadrilateral mesh
+  <li>Run simple advection through a larger quadrilateral mesh
     <pre>
       mpiexec -n 16 ex11 -f ${PETSC_DIR}/share/petsc/datafiles/meshes/sevenside-quad-15.exo      <a href="../src/ts/examples/tutorials/output/ex11_tut_3.out.html">[Expected output]</a>
     </pre>
