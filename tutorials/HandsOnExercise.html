@@ -143,8 +143,8 @@ PETSc comes with a large number of example codes to illustrate usage. There thre
 <p>FURTHER DETAILS:</p>
 <ul>
   <li><a href="../src/ksp/ksp/examples/tutorials/ex42.c.html">Mathematical discription of the problem</a></li>
-  <li><a href="../src/ksp/ksp/examples/tutorials/ex42.c.html#line2043">main program source code</a></li>
-  <li><a href="../src/ksp/ksp/examples/tutorials/ex42.c.html#line516">physics source code</a></li>
+  <li><a href="../src/ksp/ksp/examples/tutorials/ex42.c.html#line2065">main program source code</a></li>
+  <li><a href="../src/ksp/ksp/examples/tutorials/ex42.c.html#line820">physics source code</a></li>
 </ul>
 
 <p>DO THE FOLLOWING:</p>
@@ -163,12 +163,12 @@ PETSc comes with a large number of example codes to illustrate usage. There thre
   </li>
   <li> Solve with a solver appropriate for Stoke's problems -stokes_pc_type fieldsplit -stokes_pc_fieldsplit_type schur
     <pre>
-     mpiexec -n 4 ex42  -stokes_ksp_monitor   <a href="../src/ksp/ksp/examples/tutorials/output/ex42_tut_2.out.html">[Expected output]</a>
+     mpiexec -n 4 ex42  -stokes_ksp_monitor -stokes_pc_type fieldsplit -stokes_pc_fieldsplit_type schur  <a href="../src/ksp/ksp/examples/tutorials/output/ex42_tut_2.out.html">[Expected output]</a>
     </pre>
   </li>
   <li> Solve with a finer mesh
     <pre>
-     mpiexec -n 4 ex42  -mx 40 -stokes_ksp_monitor   <a href="../src/ksp/ksp/examples/tutorials/output/ex42_tut_3.out.html">[Expected output]</a>
+     mpiexec -n 16 ex42  -mx 40 -stokes_ksp_monitor   <a href="../src/ksp/ksp/examples/tutorials/output/ex42_tut_3.out.html">[Expected output]</a>
     </pre>
   </li>
 </ul>
