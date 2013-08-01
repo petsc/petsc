@@ -11,7 +11,6 @@ typedef struct {
   /* First MUST come the folowing line, for the stuff that is common to FETI and Neumann-Neumann. */
   PC_IS         pcis;
   /* Coarse stuffs needed by BDDC application in KSP */
-  Mat           coarse_mat;
   Vec           coarse_vec;
   Vec           coarse_rhs;
   KSP           coarse_ksp;
