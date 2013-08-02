@@ -4,7 +4,7 @@
 #include <../src/ksp/pc/impls/is/pcis.h>
 #include "bddcstructs.h"
 
-typedef enum {SCATTERS_BDDC,GATHERS_BDDC} CoarseCommunicationsType;
+//typedef enum {SCATTERS_BDDC,GATHERS_BDDC} CoarseCommunicationsType;
 
 /* Private context (data structure) for the BDDC preconditioner.  */
 typedef struct {
@@ -66,7 +66,7 @@ typedef struct {
   IS                         DirichletBoundaries;
   PetscBool                  switch_static;
   CoarseProblemType          coarse_problem_type;
-  CoarseCommunicationsType   coarse_communications_type;
+  //CoarseCommunicationsType   coarse_communications_type;
   PetscInt                   coarsening_ratio;
   PetscInt                   current_level;
   PetscInt                   max_levels;
