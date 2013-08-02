@@ -93,13 +93,8 @@ int main(int argc,char **args)
     ierr = PetscOptionsGetInt(NULL,"-nsubcomms",&nsubcomms,NULL);CHKERRQ(ierr);
     if (nsubcomms > size) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"nsubcomms %d cannot > ncomms %d",nsubcomms,size);
 
-<<<<<<< HEAD
-    ierr = MatGetRedundantMatrix(C,nsubcomms,MPI_COMM_NULL,NULL,MAT_INITIAL_MATRIX,&Credundant);CHKERRQ(ierr);
-    ierr = MatGetRedundantMatrix(C,nsubcomms,MPI_COMM_NULL,NULL,MAT_REUSE_MATRIX,&Credundant);CHKERRQ(ierr);
-=======
     ierr = MatGetRedundantMatrix(C,nsubcomms,MPI_COMM_NULL,MAT_INITIAL_MATRIX,&Credundant);CHKERRQ(ierr);
     ierr = MatGetRedundantMatrix(C,nsubcomms,MPI_COMM_NULL,MAT_REUSE_MATRIX,&Credundant);CHKERRQ(ierr);
->>>>>>> hzhang/mat-redundant
 
     ierr = PetscObjectGetComm((PetscObject)Credundant,&subcomm);CHKERRQ(ierr);
     ierr = MPI_Comm_size(subcomm,&subsize);CHKERRQ(ierr);

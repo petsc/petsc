@@ -826,11 +826,6 @@ runex37_5:
 	if (${DIFF} output/ex37.out ex37.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with with ex37_5, diffs above \n========================================="; fi; \
 	   ${RM} -f ex37.tmp
-runex37_4:
-	-@${MPIEXEC} -n 4 ./ex37 -f ${DATAFILESPATH}/matrices/small -nsubcomm 2 -subcomm_type 0 > ex37.tmp 2>&1;\
-	if (${DIFF} output/ex37.out ex37.tmp) then true; \
-	   else echo ${PWD} ; echo "Possible problem with with ex37_4, diffs above \n========================================="; fi; \
-	   ${RM} -f ex37.tmp
 
 runex38:
 	-@${MPIEXEC} -n 8 ./ex38 -ksp_type fbcgs -ksp_rtol 1.e-6 -sub_ksp_type bcgs -sub_ksp_rtol 1.e-3 -pc_type bjacobi -ksp_converged_reason -n1 64 -n2 64 > ex38.tmp 2>&1;\
@@ -971,18 +966,14 @@ TESTEXAMPLES_C_X	       = ex10.PETSc runex10 ex10.rm ex15.PETSc ex15.rm
 TESTEXAMPLES_C_NOCOMPLEX       = ex33.PETSc runex33 ex33.rm
 TESTEXAMPLES_FORTRAN	       = ex5f.PETSc runex5f ex5f.rm ex12f.PETSc ex12f.rm
 TESTEXAMPLES_FORTRAN_MPIUNI    = ex12f.PETSc ex12f.rm ex16f.PETSc ex16f.rm
-TESTEXAMPLES_C_X_MPIUNI      = ex3.PETSc runex3 ex3.rm ex4.PETSc runex4 ex4.rm
+TESTEXAMPLES_C_X_MPIUNI        = ex3.PETSc runex3 ex3.rm ex4.PETSc runex4 ex4.rm
 TESTEXAMPLES_C_COMPLEX	       = ex17.PETSc runex17 ex17.rm
 TESTEXAMPLES_C_COMPLEX_MPIUNI  = ex17.PETSc runex17 ex17.rm
 TESTEXAMPLES_DATAFILESPATH     = ex6.PETSc runex6 runex6_2 ex6.rm ex11.PETSc runex11 runex11_2 ex11.rm \
                                  ex25.PETSc runex25 runex25_2 ex25.rm ex27.PETSc runex27 ex25.rm \
                                  ex30.PETSc runex30 runex30_2 runex30_shift runex30_shift_cholesky_aij runex30_shift_cholesky_sbaij ex30.rm \
                                  ex31.PETSc runex31 ex31.rm \
-<<<<<<< HEAD
-                                 ex34.PETSc runex34 ex34.rm ex37.PETSc runex37 runex37_2 runex37_3 runex37_4 ex37.rm \
-=======
                                  ex34.PETSc runex34 ex34.rm ex37.PETSc runex37 runex37_2 runex37_3 runex37_4 runex37_5 ex37.rm \
->>>>>>> hzhang/mat-redundant
                                  ex12f.PETSc runex12f ex12f.rm ex16f.PETSc runex16f ex16f.rm
 TESTEXAMPLES_FORTRAN_NOCOMPLEX =
 TESTEXAMPLES_13		       = ex18.PETSc ex18.rm ex20.PETSc runex20 ex20.rm ex5f.PETSc ex5f.rm
