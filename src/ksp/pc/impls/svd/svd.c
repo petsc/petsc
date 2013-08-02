@@ -51,7 +51,11 @@ static PetscErrorCode PCSetUp_SVD(PC pc)
   ierr = MPI_Comm_size(((PetscObject)pc->pmat)->comm,&size);CHKERRQ(ierr);
   if (size > 1) {
     Mat          redmat;
+<<<<<<< HEAD
     ierr = MatGetRedundantMatrix(pc->pmat,size,PETSC_COMM_SELF,NULL,MAT_INITIAL_MATRIX,&redmat);CHKERRQ(ierr);
+=======
+    ierr = MatGetRedundantMatrix(pc->pmat,size,PETSC_COMM_SELF,MAT_INITIAL_MATRIX,&redmat);CHKERRQ(ierr);
+>>>>>>> hzhang/mat-redundant
     ierr = MatConvert(redmat,MATSEQDENSE,MAT_INITIAL_MATRIX,&jac->A);CHKERRQ(ierr);
     ierr = MatDestroy(&redmat);CHKERRQ(ierr);
   } else {

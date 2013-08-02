@@ -149,7 +149,11 @@ struct _MatOps {
   PetscErrorCode (*restorerowuppertriangular)(Mat);
   /*109*/
   PetscErrorCode (*matsolve)(Mat,Mat,Mat);
+<<<<<<< HEAD
   PetscErrorCode (*getredundantmatrix)(Mat,PetscInt,MPI_Comm,PetscSubcomm,MatReuse,Mat*);
+=======
+  PetscErrorCode (*getredundantmatrix)(Mat,PetscInt,MPI_Comm,MatReuse,Mat*);
+>>>>>>> hzhang/mat-redundant
   PetscErrorCode (*getrowmin)(Mat,Vec,PetscInt[]);
   PetscErrorCode (*getcolumnvector)(Mat,Vec,PetscInt);
   PetscErrorCode (*missingdiagonal)(Mat,PetscBool *,PetscInt*);
