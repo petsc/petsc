@@ -1901,7 +1901,7 @@ PetscErrorCode PCBDDCAnalyzeInterface(PC pc)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCGetPrimalVerticesLocalIdx"
-PetscErrorCode  PCBDDCGetPrimalVerticesLocalIdx(PC pc, PetscInt *n_vertices, PetscInt *vertices_idx[])
+PetscErrorCode  PCBDDCGetPrimalVerticesLocalIdx(PC pc, PetscInt *n_vertices, PetscInt **vertices_idx)
 {
   PC_BDDC        *pcbddc = (PC_BDDC*)(pc->data);
   PetscInt       *vertices,*row_cmat_indices,n,i,size_of_constraint,local_primal_size;
@@ -1936,7 +1936,7 @@ PetscErrorCode  PCBDDCGetPrimalVerticesLocalIdx(PC pc, PetscInt *n_vertices, Pet
 
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCGetPrimalConstraintsLocalIdx"
-PetscErrorCode  PCBDDCGetPrimalConstraintsLocalIdx(PC pc, PetscInt *n_constraints, PetscInt *constraints_idx[])
+PetscErrorCode  PCBDDCGetPrimalConstraintsLocalIdx(PC pc, PetscInt *n_constraints, PetscInt **constraints_idx)
 {
   PC_BDDC        *pcbddc = (PC_BDDC*)(pc->data);
   PetscInt       *constraints_index,*row_cmat_indices,*row_cmat_global_indices;
@@ -1944,6 +1944,9 @@ PetscErrorCode  PCBDDCGetPrimalConstraintsLocalIdx(PC pc, PetscInt *n_constraint
   PetscBT        touched;
   PetscErrorCode ierr;
 
+    /* This function assumes that the number of local constraints per connected component
+       is not greater than the number of nodes defined for the connected component
+       (otherwise we will surely have linear dependence between constraints and thus a singular coarse problem) */
   PetscFunctionBegin;
   n = 0;
   constraints_index = 0;
@@ -2198,7 +2201,6 @@ PetscErrorCode PCBDDCOrthonormalizeVecs(PetscInt n, Vec vecs[])
 #define __FUNCT__ "PCBDDCSetUpCoarseSolver"
 PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
 {
-  Mat_IS    *matis    = (Mat_IS*)pc->pmat->data;
   PC_BDDC   *pcbddc   = (PC_BDDC*)pc->data;
   PC_IS     *pcis     = (PC_IS*)pc->data;
   MPI_Comm  prec_comm;
@@ -2265,66 +2267,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
   }
 
   /* Assign global numbering to coarse dofs */
-  {
-    /* This code fragment assumes that the number of local constraints per connected component
-       is not greater than the number of nodes defined for the connected component
-       (otherwise we will surely have linear dependence between constraints and thus a singular coarse problem) */
-    PetscScalar  coarsesum,*array;
-    PetscInt     *auxlocal_primal,*aux_idx;
-    ierr = PetscMalloc(pcbddc->local_primal_size*sizeof(PetscInt),&auxlocal_primal);CHKERRQ(ierr);
-    ierr = PCBDDCGetPrimalVerticesLocalIdx(pc,&i,&aux_idx);CHKERRQ(ierr);
-    ierr = PetscMemcpy(auxlocal_primal,aux_idx,i*sizeof(PetscInt));CHKERRQ(ierr);
-    ierr = PetscFree(aux_idx);CHKERRQ(ierr);
-    ierr = PCBDDCGetPrimalConstraintsLocalIdx(pc,&j,&aux_idx);CHKERRQ(ierr);
-    ierr = PetscMemcpy(&auxlocal_primal[i],aux_idx,j*sizeof(PetscInt));CHKERRQ(ierr);
-    ierr = PetscFree(aux_idx);CHKERRQ(ierr);
-    /* Compute number of coarse dofs */
-    ierr = PCBDDCSubsetNumbering(prec_comm,matis->mapping,pcbddc->local_primal_size,auxlocal_primal,NULL,&coarse_size,&local_primal_indices);CHKERRQ(ierr);
-
-    if (dbg_flag) {
-      ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"--------------------------------------------------\n");CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"Check coarse indices\n");CHKERRQ(ierr);
-      ierr = VecSet(pcis->vec1_N,0.0);CHKERRQ(ierr);
-      ierr = VecGetArray(pcis->vec1_N,&array);CHKERRQ(ierr);
-      for (i=0;i<pcbddc->local_primal_size;i++) array[auxlocal_primal[i]]=1.0;
-      ierr = VecRestoreArray(pcis->vec1_N,&array);CHKERRQ(ierr);
-      ierr = VecSet(pcis->vec1_global,0.0);CHKERRQ(ierr);
-      ierr = VecScatterBegin(matis->ctx,pcis->vec1_N,pcis->vec1_global,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-      ierr = VecScatterEnd  (matis->ctx,pcis->vec1_N,pcis->vec1_global,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-      ierr = VecScatterBegin(matis->ctx,pcis->vec1_global,pcis->vec1_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-      ierr = VecScatterEnd  (matis->ctx,pcis->vec1_global,pcis->vec1_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-      ierr = VecGetArray(pcis->vec1_N,&array);CHKERRQ(ierr);
-      for (i=0;i<pcis->n;i++) {
-        if (array[i] == 1.0) {
-          ierr = ISLocalToGlobalMappingApply(matis->mapping,1,&i,&j);CHKERRQ(ierr);
-          ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Subdomain %04d: WRONG COARSE INDEX %d (local %d)\n",PetscGlobalRank,j,i);CHKERRQ(ierr);
-        }
-      }
-      ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
-      for (i=0;i<pcis->n;i++) {
-        if (PetscRealPart(array[i]) > 0.0) array[i] = 1.0/PetscRealPart(array[i]);
-      }
-      ierr = VecRestoreArray(pcis->vec1_N,&array);CHKERRQ(ierr);
-      ierr = VecSet(pcis->vec1_global,0.0);CHKERRQ(ierr);
-      ierr = VecScatterBegin(matis->ctx,pcis->vec1_N,pcis->vec1_global,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-      ierr = VecScatterEnd  (matis->ctx,pcis->vec1_N,pcis->vec1_global,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-      ierr = VecSum(pcis->vec1_global,&coarsesum);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"Size of coarse problem SHOULD be %lf\n",coarsesum);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"Size of coarse problem is %d\n",coarse_size);CHKERRQ(ierr);
-      if (dbg_flag > 1) {
-        ierr = PetscViewerASCIIPrintf(viewer,"Distribution of local primal indices\n");CHKERRQ(ierr);
-        ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
-        ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Subdomain %04d\n",PetscGlobalRank);CHKERRQ(ierr);
-        for (i=0;i<pcbddc->local_primal_size;i++) {
-          ierr = PetscViewerASCIISynchronizedPrintf(viewer,"local_primal_indices[%d]=%d \n",i,local_primal_indices[i]);
-        }
-        ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
-      }
-      ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
-    }
-    ierr = PetscFree(auxlocal_primal);CHKERRQ(ierr);
-  }
+  ierr = PCBDDCComputePrimalNumbering(pc,&coarse_size,&local_primal_indices);CHKERRQ(ierr);
 
   im_active = 0;
   if (pcis->n) im_active = 1;
@@ -2352,6 +2295,9 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
 #else
   pcbddc->coarse_problem_type = PARALLEL_BDDC;
 #endif
+
+  /* OLD version from here */
+
   /* Construct needed data structures for message passing */
   j = 0;
   if (rank_prec_comm == 0 || pcbddc->coarse_problem_type == MULTILEVEL_BDDC) {
@@ -3097,6 +3043,82 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
   }
   ierr = MatNullSpaceDestroy(&CoarseNullSpace);CHKERRQ(ierr);
   ierr = MatDestroy(&coarse_mat);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PCBDDCComputePrimalNumbering"
+PetscErrorCode PCBDDCComputePrimalNumbering(PC pc,PetscInt* coarse_size_n,PetscInt** local_primal_indices_n)
+{
+  PC_BDDC*       pcbddc = (PC_BDDC*)pc->data;
+  PC_IS*         pcis = (PC_IS*)pc->data;
+  Mat_IS*        matis = (Mat_IS*)pc->pmat->data;
+  PetscInt       i,j,coarse_size;
+  PetscInt       *local_primal_indices,*auxlocal_primal,*aux_idx;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  /* get indices in local ordering for vertices and constraints */
+  ierr = PetscMalloc(pcbddc->local_primal_size*sizeof(PetscInt),&auxlocal_primal);CHKERRQ(ierr);
+  ierr = PCBDDCGetPrimalVerticesLocalIdx(pc,&i,&aux_idx);CHKERRQ(ierr);
+  ierr = PetscMemcpy(auxlocal_primal,aux_idx,i*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscFree(aux_idx);CHKERRQ(ierr);
+  ierr = PCBDDCGetPrimalConstraintsLocalIdx(pc,&j,&aux_idx);CHKERRQ(ierr);
+  ierr = PetscMemcpy(&auxlocal_primal[i],aux_idx,j*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscFree(aux_idx);CHKERRQ(ierr);
+
+  /* Compute global number of coarse dofs */
+  ierr = PCBDDCSubsetNumbering(PetscObjectComm((PetscObject)(pc->pmat)),matis->mapping,pcbddc->local_primal_size,auxlocal_primal,NULL,&coarse_size,&local_primal_indices);CHKERRQ(ierr);
+
+  /* check numbering */
+  if (pcbddc->dbg_flag) {
+    PetscScalar coarsesum,*array;
+
+    ierr = PetscViewerFlush(pcbddc->dbg_viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(pcbddc->dbg_viewer,"--------------------------------------------------\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(pcbddc->dbg_viewer,"Check coarse indices\n");CHKERRQ(ierr);
+    ierr = VecSet(pcis->vec1_N,0.0);CHKERRQ(ierr);
+    for (i=0;i<pcbddc->local_primal_size;i++) {
+      ierr = VecSetValue(pcis->vec1_N,auxlocal_primal[i],1.0,INSERT_VALUES);CHKERRQ(ierr);
+    }
+    ierr = VecAssemblyBegin(pcis->vec1_N);CHKERRQ(ierr);
+    ierr = VecAssemblyEnd(pcis->vec1_N);CHKERRQ(ierr);
+    ierr = VecSet(pcis->vec1_global,0.0);CHKERRQ(ierr);
+    ierr = VecScatterBegin(matis->ctx,pcis->vec1_N,pcis->vec1_global,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    ierr = VecScatterEnd(matis->ctx,pcis->vec1_N,pcis->vec1_global,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    ierr = VecScatterBegin(matis->ctx,pcis->vec1_global,pcis->vec1_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterEnd(matis->ctx,pcis->vec1_global,pcis->vec1_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecGetArray(pcis->vec1_N,&array);CHKERRQ(ierr);
+    for (i=0;i<pcis->n;i++) {
+      if (array[i] == 1.0) {
+        ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Subdomain %04d: local index %d owned by a single process!\n",PetscGlobalRank,i);CHKERRQ(ierr);
+      }
+    }
+    ierr = PetscViewerFlush(pcbddc->dbg_viewer);CHKERRQ(ierr);
+    for (i=0;i<pcis->n;i++) {
+      if (PetscRealPart(array[i]) > 0.0) array[i] = 1.0/PetscRealPart(array[i]);
+    }
+    ierr = VecRestoreArray(pcis->vec1_N,&array);CHKERRQ(ierr);
+    ierr = VecSet(pcis->vec1_global,0.0);CHKERRQ(ierr);
+    ierr = VecScatterBegin(matis->ctx,pcis->vec1_N,pcis->vec1_global,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    ierr = VecScatterEnd(matis->ctx,pcis->vec1_N,pcis->vec1_global,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    ierr = VecSum(pcis->vec1_global,&coarsesum);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(pcbddc->dbg_viewer,"Size of coarse problem is %d (%lf)\n",coarse_size,PetscRealPart(coarsesum));CHKERRQ(ierr);
+    if (pcbddc->dbg_flag > 1) {
+      ierr = PetscViewerASCIIPrintf(pcbddc->dbg_viewer,"Distribution of local primal indices\n");CHKERRQ(ierr);
+      ierr = PetscViewerFlush(pcbddc->dbg_viewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Subdomain %04d\n",PetscGlobalRank);CHKERRQ(ierr);
+      for (i=0;i<pcbddc->local_primal_size;i++) {
+        ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"local_primal_indices[%d]=%d \n",i,local_primal_indices[i]);
+      }
+      ierr = PetscViewerFlush(pcbddc->dbg_viewer);CHKERRQ(ierr);
+    }
+    ierr = PetscViewerFlush(pcbddc->dbg_viewer);CHKERRQ(ierr);
+  }
+  ierr = PetscFree(auxlocal_primal);CHKERRQ(ierr);
+  /* get back data */
+  *coarse_size_n = coarse_size;
+  *local_primal_indices_n = local_primal_indices;
   PetscFunctionReturn(0);
 }
 
