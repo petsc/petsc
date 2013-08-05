@@ -101,7 +101,11 @@
       <h4>VecScatter:</h4>
       <h4>Mat:</h4>
       <ul>
-        <li>Removed third argument to MatNullSpaceRemove().  Use VecDuplicate() and VecCopy() if the original Vec must be kept.</li>
+        <li>Removed third argument to MatNullSpaceRemove().  Use
+      VecDuplicate() and VecCopy() if the original Vec must be kept.</li>
+        <li>MatGetRedundantMatrix(Mat mat,PetscInt nsubcomm,MPI_Comm
+      subcomm,PetscInt mlocal_red,MatReuse reuse,Mat *matredundant) is
+      replaced by MatRedundantMatrix(Mat mat,PetscInt nsubcomm,MPI_Comm subcomm,MatReuse reuse,Mat *matredundant).</li>
       </ul>
       <h4>PC:</h4>
       <ul>
