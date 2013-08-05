@@ -140,37 +140,57 @@ PetscErrorCode MatCUSPCopyToGPU(Mat A)
       cuspstruct->nonzerorow=0;
       for (int j = 0; j<m; j++) cuspstruct->nonzerorow += ((a->i[j+1]-a->i[j])>0);
 
-      mat = new CUSPMATRIX;
       if (a->compressedrow.use) {
         m    = a->compressedrow.nrows;
         ii   = a->compressedrow.i;
         ridx = a->compressedrow.rindex;
-        mat->resize(m,A->cmap->n,a->nz);
-        mat->row_offsets.assign(ii,ii+m+1);
-        mat->column_indices.assign(a->j,a->j+a->nz);
-        mat->values.assign(a->a,a->a+a->nz);
-        cuspstruct->indices = new CUSPINTARRAYGPU;
-        cuspstruct->indices->assign(ridx,ridx+m);
+      } else {
+        /* Forcing compressed row on the GPU */
+        int k=0;
+        ierr = PetscMalloc((cuspstruct->nonzerorow+1)*sizeof(PetscInt), &ii);CHKERRQ(ierr);
+        ierr = PetscMalloc((cuspstruct->nonzerorow)*sizeof(PetscInt), &ridx);CHKERRQ(ierr);
+        ii[0]=0;
+        for (int j = 0; j<m; j++) {
+          if ((a->i[j+1]-a->i[j])>0) {
+            ii[k]  = a->i[j];
+            ridx[k]= j;
+            k++;
+          }
+        }
+        ii[cuspstruct->nonzerorow] = a->nz;
+        m = cuspstruct->nonzerorow;
+      }
+
+      /* now build matrix */
+      mat = new CUSPMATRIX;
+      mat->resize(m,A->cmap->n,a->nz);
+      mat->row_offsets.assign(ii,ii+m+1);
+      mat->column_indices.assign(a->j,a->j+a->nz);
+      mat->values.assign(a->a,a->a+a->nz);
+
+      /* convert to other formats if selected */
+      if (a->compressedrow.use || cuspstruct->format==MAT_CUSP_CSR) {
 	cuspstruct->mat = mat;
 	cuspstruct->format = MAT_CUSP_CSR;
       } else {
-        mat->resize(m,A->cmap->n,a->nz);
-        mat->row_offsets.assign(a->i,a->i+m+1);
-        mat->column_indices.assign(a->j,a->j+a->nz);
-        mat->values.assign(a->a,a->a+a->nz);
+	if (cuspstruct->format==MAT_CUSP_ELL) {
+	  CUSPMATRIXELL *ellMat = new CUSPMATRIXELL(*mat);
+	  cuspstruct->mat = ellMat;
+	} else {
+	  CUSPMATRIXDIA *diaMat = new CUSPMATRIXDIA(*mat);
+	  cuspstruct->mat = diaMat;
+	}
+	delete (CUSPMATRIX*) mat;
+      }
 
-	/* convert to other formats if selected */
-	if (cuspstruct->format!=MAT_CUSP_CSR) {
-	  if (cuspstruct->format==MAT_CUSP_ELL) {
-	    CUSPMATRIXELL *ellMat = new CUSPMATRIXELL(*mat);
-	    cuspstruct->mat = ellMat;
-	  } else {
-	    CUSPMATRIXDIA *diaMat = new CUSPMATRIXDIA(*mat);
-	    cuspstruct->mat = diaMat;
-	  }
-	  delete (CUSPMATRIX *) mat;
-	} else 
-	  cuspstruct->mat = mat;
+      /* assign the compressed row indices */
+      cuspstruct->indices = new CUSPINTARRAYGPU;
+      cuspstruct->indices->assign(ridx,ridx+m);
+
+      /* free the temporaries */
+      if (!a->compressedrow.use) {
+        ierr = PetscFree(ii);CHKERRQ(ierr);
+        ierr = PetscFree(ridx);CHKERRQ(ierr);
       }
       cuspstruct->tempvec = new CUSPARRAY;
       cuspstruct->tempvec->resize(m);
@@ -352,6 +372,7 @@ PetscErrorCode MatMultAdd_SeqAIJCUSP(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
   PetscErrorCode ierr;
+  PetscBool      usecprow = a->compressedrow.use;
   Mat_SeqAIJCUSP *cuspstruct = (Mat_SeqAIJCUSP*)A->spptr;
   CUSPARRAY      *xarray     = NULL,*yarray=NULL,*zarray=NULL;
 
@@ -364,18 +385,14 @@ PetscErrorCode MatMultAdd_SeqAIJCUSP(Mat A,Vec xx,Vec yy,Vec zz)
     ierr = VecCUSPGetArrayRead(yy,&yarray);CHKERRQ(ierr);
     ierr = VecCUSPGetArrayWrite(zz,&zarray);CHKERRQ(ierr);
 
-    if (a->compressedrow.use) {
+    if (usecprow) { 
+      /* use compressed row format */
       CUSPMATRIX *mat = (CUSPMATRIX*)cuspstruct->mat;
-      cusp::multiply(*mat,*xarray, *cuspstruct->tempvec);
-      thrust::for_each(
-        thrust::make_zip_iterator(
-          thrust::make_tuple(cuspstruct->tempvec->begin(),
-                             thrust::make_permutation_iterator(zarray->begin(), cuspstruct->indices->begin()))),
-        thrust::make_zip_iterator(
-          thrust::make_tuple(cuspstruct->tempvec->begin(),
-                             thrust::make_permutation_iterator(zarray->begin(),cuspstruct->indices->begin()))) + cuspstruct->tempvec->size(),
-        VecCUSPPlusEquals());
-    } else {
+      cusp::multiply(*mat,*xarray,*cuspstruct->tempvec);
+      ierr = VecSet_SeqCUSP(yy,0.0);CHKERRQ(ierr);
+      thrust::copy(cuspstruct->tempvec->begin(),cuspstruct->tempvec->end(),thrust::make_permutation_iterator(yarray->begin(),cuspstruct->indices->begin()));
+    } else { 
+
       if (cuspstruct->format==MAT_CUSP_ELL) {
 	CUSPMATRIXELL *mat = (CUSPMATRIXELL*)cuspstruct->mat;
 	cusp::multiply(*mat,*xarray,*cuspstruct->tempvec);
@@ -386,14 +403,18 @@ PetscErrorCode MatMultAdd_SeqAIJCUSP(Mat A,Vec xx,Vec yy,Vec zz)
 	CUSPMATRIX *mat = (CUSPMATRIX*)cuspstruct->mat;
 	cusp::multiply(*mat,*xarray,*cuspstruct->tempvec);
       }
-      thrust::for_each(
-        thrust::make_zip_iterator(thrust::make_tuple(
-                                    cuspstruct->tempvec->begin(),
-                                    zarray->begin())),
-        thrust::make_zip_iterator(thrust::make_tuple(
-                                    cuspstruct->tempvec->end(),
-                                    zarray->end())),
-        VecCUSPPlusEquals());
+
+      if (zarray->size() == cuspstruct->indices->size()) {
+	thrust::for_each(thrust::make_zip_iterator(thrust::make_tuple(cuspstruct->tempvec->begin(),zarray->begin())),
+			 thrust::make_zip_iterator(thrust::make_tuple(cuspstruct->tempvec->end(),zarray->end())),
+			 VecCUSPPlusEquals());
+      } else {
+	thrust::for_each(thrust::make_zip_iterator(thrust::make_tuple(cuspstruct->tempvec->begin(),
+                             thrust::make_permutation_iterator(zarray->begin(), cuspstruct->indices->begin()))),
+			 thrust::make_zip_iterator(thrust::make_tuple(cuspstruct->tempvec->end(),
+                             thrust::make_permutation_iterator(zarray->end(),cuspstruct->indices->end()))),
+			 VecCUSPPlusEquals());
+      }
     }
     ierr = VecCUSPRestoreArrayRead(xx,&xarray);CHKERRQ(ierr);
     ierr = VecCUSPRestoreArrayRead(yy,&yarray);CHKERRQ(ierr);
