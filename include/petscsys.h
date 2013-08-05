@@ -2292,6 +2292,8 @@ struct _n_PetscSubcomm {
   MPI_Comm   comm;        /* this communicator */
   PetscInt   n;           /* num of subcommunicators under the parent communicator */
   PetscInt   color;       /* color of processors belong to this communicator */
+  PetscInt   *subsize;    /* size of subcommunicator[color] */
+  PetscInt   type;
 };
 
 typedef enum {PETSC_SUBCOMM_GENERAL=0,PETSC_SUBCOMM_CONTIGUOUS=1,PETSC_SUBCOMM_INTERLACED=2} PetscSubcommType;
@@ -2301,7 +2303,9 @@ PETSC_EXTERN PetscErrorCode PetscSubcommCreate(MPI_Comm,PetscSubcomm*);
 PETSC_EXTERN PetscErrorCode PetscSubcommDestroy(PetscSubcomm*);
 PETSC_EXTERN PetscErrorCode PetscSubcommSetNumber(PetscSubcomm,PetscInt);
 PETSC_EXTERN PetscErrorCode PetscSubcommSetType(PetscSubcomm,PetscSubcommType);
-PETSC_EXTERN PetscErrorCode PetscSubcommSetTypeGeneral(PetscSubcomm,PetscMPIInt,PetscMPIInt,PetscMPIInt);
+PETSC_EXTERN PetscErrorCode PetscSubcommSetTypeGeneral(PetscSubcomm,PetscMPIInt,PetscMPIInt);
+PETSC_EXTERN PetscErrorCode PetscSubcommView(PetscSubcomm,PetscViewer);
+PETSC_EXTERN PetscErrorCode PetscSubcommSetFromOptions(PetscSubcomm);
 
 /*S
    PetscSegBuffer - a segmented extendable buffer

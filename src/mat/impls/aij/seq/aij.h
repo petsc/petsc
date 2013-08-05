@@ -72,6 +72,17 @@ typedef struct {
   PetscErrorCode (*destroy)(Mat);
 } Mat_MatMatMatMult;
 
+typedef struct { /* used by MatGetRedundantMatrix() for reusing matredundant */
+  PetscInt     nzlocal,nsends,nrecvs;
+  PetscMPIInt  *send_rank,*recv_rank;
+  PetscInt     *sbuf_nz,*rbuf_nz,*sbuf_j,**rbuf_j;
+  PetscScalar  *sbuf_a,**rbuf_a;
+  PetscSubcomm psubcomm;
+  IS           isrow,iscol;
+  Mat          *matseq;
+  PetscErrorCode (*Destroy)(Mat);
+} Mat_Redundant;
+
 /*
   MATSEQAIJ format - Compressed row storage (also called Yale sparse matrix
   format) or compressed sparse row (CSR).  The i[] and j[] arrays start at 0. For example,
@@ -121,6 +132,7 @@ typedef struct {
   Mat_MatMatMatMult *matmatmatmult;      /* used by MatMatMatMult() */
   Mat_RARt          *rart;               /* used by MatRARt() */
   Mat_MatMatTransMult *abt;              /* used by MatMatTransposeMult() */
+  Mat_Redundant       *redundant;        /* used by MatGetRedundantMatrix() */
 } Mat_SeqAIJ;
 
 /*

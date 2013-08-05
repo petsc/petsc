@@ -9062,8 +9062,7 @@ PetscErrorCode  MatMatMatMult(Mat A,Mat B,Mat C,MatReuse scall,PetscReal fill,Ma
    Input Parameters:
 +  mat - the matrix
 .  nsubcomm - the number of subcommunicators (= number of redundant parallel or sequential matrices)
-.  subcomm - MPI communicator split from the communicator where mat resides in
-.  mlocal_red - number of local rows of the redundant matrix
+.  subcomm - MPI communicator split from the communicator where mat resides in (or MPI_COMM_NULL if nsubcomm is used)
 -  reuse - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX
 
    Output Parameter:
@@ -9085,15 +9084,15 @@ PetscErrorCode  MatMatMatMult(Mat A,Mat B,Mat C,MatReuse scall,PetscReal fill,Ma
 
 .seealso: MatDestroy()
 @*/
-PetscErrorCode  MatGetRedundantMatrix(Mat mat,PetscInt nsubcomm,MPI_Comm subcomm,PetscInt mlocal_red,MatReuse reuse,Mat *matredundant)
+PetscErrorCode  MatGetRedundantMatrix(Mat mat,PetscInt nsubcomm,MPI_Comm subcomm,MatReuse reuse,Mat *matredundant)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   if (nsubcomm && reuse == MAT_REUSE_MATRIX) {
-    PetscValidPointer(*matredundant,6);
-    PetscValidHeaderSpecific(*matredundant,MAT_CLASSID,6);
+    PetscValidPointer(*matredundant,5);
+    PetscValidHeaderSpecific(*matredundant,MAT_CLASSID,5);
   }
   if (!mat->ops->getredundantmatrix) SETERRQ1(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
   if (!mat->assembled) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
@@ -9101,7 +9100,7 @@ PetscErrorCode  MatGetRedundantMatrix(Mat mat,PetscInt nsubcomm,MPI_Comm subcomm
   MatCheckPreallocated(mat,1);
 
   ierr = PetscLogEventBegin(MAT_GetRedundantMatrix,mat,0,0,0);CHKERRQ(ierr);
-  ierr = (*mat->ops->getredundantmatrix)(mat,nsubcomm,subcomm,mlocal_red,reuse,matredundant);CHKERRQ(ierr);
+  ierr = (*mat->ops->getredundantmatrix)(mat,nsubcomm,subcomm,reuse,matredundant);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_GetRedundantMatrix,mat,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
