@@ -81,7 +81,7 @@ PetscErrorCode  PetscObjectViewSAWs(PetscObject obj,PetscViewer viewer)
   if (obj->amsmem) PetscFunctionReturn(0);
   ierr = PetscObjectName(obj);CHKERRQ(ierr);
 
-  PetscStackCallSAWs(SAWs_Add_Directory,(SAWs_ROOT_DIRECTORY,obj->name,&obj->amsmem));
+  PetscStackCallSAWs(SAWs_Add_Directory,(PETSC_OBJECTS_SAWs_ROOT_DIRECTORY,obj->name,&obj->amsmem));
   PetscStackCallSAWs(SAWs_Add_Variable,(obj->amsmem,"Class",&obj->class_name,1,SAWs_READ,SAWs_STRING));
   PetscStackCallSAWs(SAWs_Add_Variable,(obj->amsmem,"Type",&obj->type_name,1,SAWs_READ,SAWs_STRING));
   PetscStackCallSAWs(SAWs_Add_Variable,(obj->amsmem,"Id",&obj->id,1,SAWs_READ,SAWs_INT));

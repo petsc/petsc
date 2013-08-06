@@ -336,7 +336,7 @@ PetscErrorCode PetscOptionsSAWsDestroy(void)
 
   /* the next line is a bug, this will only work if all processors are here, the comm passed in is ignored!!! */
   sprintf(options,"Options_%d",count++);
-  PetscStackCallSAWs(SAWs_Add_Directory,(SAWs_ROOT_DIRECTORY,options,&amem));
+  PetscStackCallSAWs(SAWs_Add_Directory,(PETSC_SAWs_ROOT_DIRECTORY,options,&amem));
   PetscStackCallSAWs(SAWs_Add_Variable,(amem,"Exit",&string,1,SAWs_READ,SAWs_STRING));
 
   PetscStackCallSAWs(SAWs_Lock_Directory,(amem));
@@ -370,7 +370,7 @@ PetscErrorCode PetscOptionsAMSInput()
 
   /* the next line is a bug, this will only work if all processors are here, the comm passed in is ignored!!! */
   sprintf(options,"Options_%d",count++);
-  PetscStackCallSAWs(SAWs_Add_Directory,(SAWs_ROOT_DIRECTORY,options,&amem));
+  PetscStackCallSAWs(SAWs_Add_Directory,(PETSC_SAWs_ROOT_DIRECTORY,options,&amem));
 
   PetscOptionsObject.pprefix = PetscOptionsObject.prefix; /* SAWs will change this, so cannot pass prefix directly */
 

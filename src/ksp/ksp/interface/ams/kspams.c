@@ -109,7 +109,7 @@ PetscErrorCode KSPMonitorSAWs(KSP ksp,PetscInt n,PetscReal rnorm,void *ctx)
   mon->eigi = mon->eigr + n;
   if (n) {ierr = KSPComputeEigenvalues(ksp,n,mon->eigr,mon->eigi,&mon->neigs);CHKERRQ(ierr);}
 
-  PetscStackCallSAWs(SAWs_Add_Directory,(SAWs_ROOT_DIRECTORY,"ksp_monitor_saws",&mon->amem));
+  PetscStackCallSAWs(SAWs_Add_Directory,(PETSC_SAWs_ROOT_DIRECTORY,"ksp_monitor_saws",&mon->amem));
   PetscStackCallSAWs(SAWs_Add_Variable,(mon->amem,"rnorm",&ksp->rnorm,1,SAWs_READ,SAWs_DOUBLE));
   PetscStackCallSAWs(SAWs_Add_Variable,(mon->amem,"neigs",&mon->neigs,1,SAWs_READ,SAWs_INT));
   if (mon->neigs > 0) {
