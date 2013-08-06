@@ -1051,6 +1051,7 @@ static PetscErrorCode TSStep_RosW(TS ts)
         ierr = VecScale(Y[i],h);
         ts->ksp_its += 1;
       }
+      ierr = TSPostStage(ts,ros->stage_time,i,Y);CHKERRQ(ierr);
     }
     ierr = TSEvaluateStep(ts,tab->order,ts->vec_sol,NULL);CHKERRQ(ierr);
     ros->status = TS_STEP_PENDING;

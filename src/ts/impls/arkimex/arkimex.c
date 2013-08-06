@@ -739,6 +739,7 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
     PetscReal h = ts->time_step;
     ierr = TSPreStep(ts);CHKERRQ(ierr);
     for (i=0; i<s; i++) {
+      ark->stage_time = t + h*ct[i];
       if (At[i*s+i] == 0) {           /* This stage is explicit */
         ierr = VecCopy(ts->vec_sol,Y[i]);CHKERRQ(ierr);
         for (j=0; j<i; j++) w[j] = h*At[i*s+j];
@@ -746,7 +747,6 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
         for (j=0; j<i; j++) w[j] = h*A[i*s+j];
         ierr = VecMAXPY(Y[i],i,w,YdotRHS);CHKERRQ(ierr);
       } else {
-        ark->stage_time = t + h*ct[i];
         ark->scoeff     = 1./At[i*s+i];
         ierr            = TSPreStage(ts,ark->stage_time);CHKERRQ(ierr);
         /* Affine part */
@@ -771,6 +771,7 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
         ierr          = TSAdaptCheckStage(adapt,ts,&accept);CHKERRQ(ierr);
         if (!accept) goto reject_step;
       }
+      ierr = TSPostStage(ts,ark->stage_time,i,Y); CHKERRQ(ierr);
       if (ts->equation_type>=TS_EQ_IMPLICIT) {
         if (i==0 && tab->explicit_first_stage) {
           ierr = VecCopy(Ydot0,YdotI[0]);CHKERRQ(ierr);

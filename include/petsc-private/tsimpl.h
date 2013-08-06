@@ -51,6 +51,7 @@ struct _p_TS {
 
   PetscErrorCode (*prestep)(TS);
   PetscErrorCode (*prestage)(TS,PetscReal);
+  PetscErrorCode (*poststage)(TS,PetscReal,PetscInt,Vec*);
   PetscErrorCode (*poststep)(TS);
 
   /* ---------------------- IMEX support ---------------------------------*/
