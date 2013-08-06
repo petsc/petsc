@@ -26,7 +26,7 @@ PetscErrorCode  PetscObjectSAWsTakeAccess(PetscObject obj)
 {
   PetscFunctionBegin;
   if (obj->amsmem) {
-    PetscStackCallSAWs(SAWS_Lock_Directory,(obj->amsmem));
+    PetscStackCallSAWs(SAWs_Lock_Directory,(obj->amsmem));
   }
   PetscFunctionReturn(0);
 }
@@ -54,7 +54,7 @@ PetscErrorCode  PetscObjectSAWsGrantAccess(PetscObject obj)
 {
   PetscFunctionBegin;
   if (obj->amsmem) {
-    PetscStackCallSAWs(SAWS_Unlock_Directory,(obj->amsmem));
+    PetscStackCallSAWs(SAWs_Unlock_Directory,(obj->amsmem));
   }
   PetscFunctionReturn(0);
 }
@@ -138,7 +138,7 @@ PetscErrorCode PetscObjectSAWsViewOff(PetscObject obj)
   PetscFunctionBegin;
   if (obj->classid == PETSC_VIEWER_CLASSID) PetscFunctionReturn(0);
   if (!obj->amsmem) PetscFunctionReturn(0);
-  ierr = SAWS_Directory_Destroy(&obj->amsmem);CHKERRQ(ierr);
+  ierr = SAWs_Destroy_Directory(&obj->amsmem);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

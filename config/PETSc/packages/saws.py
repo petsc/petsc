@@ -4,10 +4,10 @@ import os
 class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
     PETSc.package.NewPackage.__init__(self, framework)
-    self.gitcommit = '3c24ac8df967279c3ceafa5c39fc230af30c63c4'
+#    self.gitcommit = '3c24ac8df967279c3ceafa5c39fc230af30c63c4'
     self.giturls   = ['https://bitbucket.org/saws/saws.git']
     self.download  = ['https://bitbucket.org/saws/saws/get/master.tar.gz']
-    self.functions = ['SAWS_Directory_Create']
+    self.functions = ['SAWs_Add_Directory']
     self.includes  = ['SAWs.h']
     self.liblist   = [['libSAWs.a']]
     self.libdir           = 'lib' # location of libraries in the package directory tree

@@ -318,11 +318,11 @@ PetscErrorCode  SNESView(SNES snes,PetscViewer viewer)
   } else if (isams) {
     if (!((PetscObject)snes)->amsmem) {
       ierr = PetscObjectViewSAWs((PetscObject)snes,viewer);CHKERRQ(ierr);
-      PetscStackCallSAWs(SAWS_New_Variable,(((PetscObject)snes)->amsmem,"its",&snes->iter,1,SAWS_READ,SAWS_INT));
+      PetscStackCallSAWs(SAWs_Add_Variable,(((PetscObject)snes)->amsmem,"its",&snes->iter,1,SAWs_READ,SAWs_INT));
       if (!snes->conv_hist) {
         ierr = SNESSetConvergenceHistory(snes,NULL,NULL,PETSC_DECIDE,PETSC_FALSE);CHKERRQ(ierr);
       }
-      PetscStackCallSAWs(SAWS_New_Variable,(((PetscObject)snes)->amsmem,"conv_hist",snes->conv_hist,10,SAWS_READ,SAWS_DOUBLE));
+      PetscStackCallSAWs(SAWs_Add_Variable,(((PetscObject)snes)->amsmem,"conv_hist",snes->conv_hist,10,SAWs_READ,SAWs_DOUBLE));
     }
 #endif
   }

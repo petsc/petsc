@@ -1395,8 +1395,8 @@ PetscErrorCode  TSView(TS ts,PetscViewer viewer)
   } else if (isams) {
     if (!((PetscObject)ts)->amsmem) {
       ierr = PetscObjectViewSAWs((PetscObject)ts,viewer);CHKERRQ(ierr);
-      PetscStackCallSAWs(SAWS_New_Variable,(((PetscObject)ts)->amsmem,"time step",&ts->steps,1,SAWS_READ,SAWS_INT));
-      PetscStackCallSAWs(SAWS_New_Variable,(((PetscObject)ts)->amsmem,"time",&ts->ptime,1,SAWS_READ,SAWS_DOUBLE));
+      PetscStackCallSAWs(SAWs_Add_Variable,(((PetscObject)ts)->amsmem,"time step",&ts->steps,1,SAWs_READ,SAWs_INT));
+      PetscStackCallSAWs(SAWs_Add_Variable,(((PetscObject)ts)->amsmem,"time",&ts->ptime,1,SAWs_READ,SAWs_DOUBLE));
     }
     if (ts->ops->view) {
       ierr = (*ts->ops->view)(ts,viewer);CHKERRQ(ierr);

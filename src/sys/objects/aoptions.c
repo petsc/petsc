@@ -330,19 +330,19 @@ static int count = 0;
 #define __FUNCT__ "PetscOptionsSAWsDestroy"
 PetscErrorCode PetscOptionsSAWsDestroy(void)
 {
-  SAWS_Directory    amem  = NULL;
+  SAWs_Directory amem  = NULL;
   char           options[16];
   const char     *string = "Exit";
 
   /* the next line is a bug, this will only work if all processors are here, the comm passed in is ignored!!! */
   sprintf(options,"Options_%d",count++);
-  PetscStackCallSAWs(SAWS_Directory_Create,(options,&amem));
-  PetscStackCallSAWs(SAWS_New_Variable,(amem,"Exit",&string,1,SAWS_READ,SAWS_STRING));
+  PetscStackCallSAWs(SAWs_Add_Directory,(SAWs_ROOT_DIRECTORY,options,&amem));
+  PetscStackCallSAWs(SAWs_Add_Variable,(amem,"Exit",&string,1,SAWs_READ,SAWs_STRING));
 
-  PetscStackCallSAWs(SAWS_Lock_Directory,(amem));
-  PetscStackCallSAWs(SAWS_Unlock_Directory,(amem));
+  PetscStackCallSAWs(SAWs_Lock_Directory,(amem));
+  PetscStackCallSAWs(SAWs_Unlock_Directory,(amem));
   /* wait until accessor has unlocked the memory */
-  PetscStackCallSAWs(SAWS_Directory_Destroy,(&amem));
+  PetscStackCallSAWs(SAWs_Destroy_Directory,(&amem));
   PetscFunctionReturn(0);
 }
 
@@ -364,72 +364,72 @@ PetscErrorCode PetscOptionsAMSInput()
   PetscOptions   next     = PetscOptionsObject.next;
   static int     mancount = 0;
   char           options[16];
-  SAWS_Directory amem          = NULL;
+  SAWs_Directory amem = NULL;
   PetscBool      changedmethod = PETSC_FALSE;
   char           manname[16];
 
   /* the next line is a bug, this will only work if all processors are here, the comm passed in is ignored!!! */
   sprintf(options,"Options_%d",count++);
-  PetscStackCallSAWs(SAWS_Directory_Create,(options,&amem));
+  PetscStackCallSAWs(SAWs_Add_Directory,(SAWs_ROOT_DIRECTORY,options,&amem));
 
   PetscOptionsObject.pprefix = PetscOptionsObject.prefix; /* SAWs will change this, so cannot pass prefix directly */
 
-  PetscStackCallSAWs(SAWS_New_Variable,(amem,PetscOptionsObject.title,&PetscOptionsObject.pprefix,1,SAWS_READ,SAWS_STRING));
-  PetscStackCallSAWs(SAWS_New_Variable,(amem,"ChangedMethod",&changedmethod,1,SAWS_WRITE,SAWS_BOOLEAN));
+  PetscStackCallSAWs(SAWs_Add_Variable,(amem,PetscOptionsObject.title,&PetscOptionsObject.pprefix,1,SAWs_READ,SAWs_STRING));
+  PetscStackCallSAWs(SAWs_Add_Variable,(amem,"ChangedMethod",&changedmethod,1,SAWs_WRITE,SAWs_BOOLEAN));
 
   while (next) {
-    PetscStackCallSAWs(SAWS_New_Variable,(amem,next->option,&next->set,1,SAWS_WRITE,SAWS_INT));
+    PetscStackCallSAWs(SAWs_Add_Variable,(amem,next->option,&next->set,1,SAWs_WRITE,SAWs_INT));
     ierr =  PetscMalloc(sizeof(char*),&next->pman);CHKERRQ(ierr);
 
     *(char**)next->pman = next->man;
     sprintf(manname,"man_%d",mancount++);
-    PetscStackCallSAWs(SAWS_New_Variable,(amem,manname,next->pman,1,SAWS_READ,SAWS_STRING));
+    PetscStackCallSAWs(SAWs_Add_Variable,(amem,manname,next->pman,1,SAWs_READ,SAWs_STRING));
 
     switch (next->type) {
     case OPTION_HEAD:
       break;
     case OPTION_INT_ARRAY:
-      PetscStackCallSAWs(SAWS_New_Variable,(amem,next->text,next->data,next->arraylength,SAWS_WRITE,SAWS_INT));
+      PetscStackCallSAWs(SAWs_Add_Variable,(amem,next->text,next->data,next->arraylength,SAWs_WRITE,SAWs_INT));
       break;
     case OPTION_REAL_ARRAY:
-      PetscStackCallSAWs(SAWS_New_Variable,(amem,next->text,next->data,next->arraylength,SAWS_WRITE,SAWS_DOUBLE));
+      PetscStackCallSAWs(SAWs_Add_Variable,(amem,next->text,next->data,next->arraylength,SAWs_WRITE,SAWs_DOUBLE));
       break;
     case OPTION_INT:
-      PetscStackCallSAWs(SAWS_New_Variable,(amem,next->text,next->data,1,SAWS_WRITE,SAWS_INT));
+      PetscStackCallSAWs(SAWs_Add_Variable,(amem,next->text,next->data,1,SAWs_WRITE,SAWs_INT));
       break;
     case OPTION_REAL:
-      PetscStackCallSAWs(SAWS_New_Variable,(amem,next->text,next->data,1,SAWS_WRITE,SAWS_DOUBLE));
+      PetscStackCallSAWs(SAWs_Add_Variable,(amem,next->text,next->data,1,SAWs_WRITE,SAWs_DOUBLE));
       break;
     case OPTION_LOGICAL:
-      PetscStackCallSAWs(SAWS_New_Variable,(amem,next->text,next->data,1,SAWS_WRITE,SAWS_BOOLEAN));
+      PetscStackCallSAWs(SAWs_Add_Variable,(amem,next->text,next->data,1,SAWs_WRITE,SAWs_BOOLEAN));
       break;
     case OPTION_LOGICAL_ARRAY:
-      PetscStackCallSAWs(SAWS_New_Variable,(amem,next->text,next->data,next->arraylength,SAWS_WRITE,SAWS_BOOLEAN));
+      PetscStackCallSAWs(SAWs_Add_Variable,(amem,next->text,next->data,next->arraylength,SAWs_WRITE,SAWs_BOOLEAN));
       break;
     case OPTION_STRING:
-      PetscStackCallSAWs(SAWS_New_Variable,(amem,next->text,next->data,1,SAWS_WRITE,SAWS_STRING));
+      PetscStackCallSAWs(SAWs_Add_Variable,(amem,next->text,next->data,1,SAWs_WRITE,SAWs_STRING));
       break;
     case OPTION_STRING_ARRAY:
-      PetscStackCallSAWs(SAWS_New_Variable,(amem,next->text,next->data,next->arraylength,SAWS_WRITE,SAWS_STRING));
+      PetscStackCallSAWs(SAWs_Add_Variable,(amem,next->text,next->data,next->arraylength,SAWs_WRITE,SAWs_STRING));
       break;
     case OPTION_LIST:
       {PetscInt ntext;
       char      ldefault[128];
       ierr = PetscStrcpy(ldefault,"DEFAULT:");CHKERRQ(ierr);
       ierr = PetscStrcat(ldefault,next->text);CHKERRQ(ierr);
-      PetscStackCallSAWs(SAWS_New_Variable,(amem,ldefault,next->data,1,SAWS_WRITE,SAWS_STRING));
+      PetscStackCallSAWs(SAWs_Add_Variable,(amem,ldefault,next->data,1,SAWs_WRITE,SAWs_STRING));
       ierr = PetscFunctionListGet(next->flist,(const char***)&next->edata,&ntext);CHKERRQ(ierr);
-      PetscStackCallSAWs(SAWS_New_Variable,(amem,next->text,next->edata,ntext-1,SAWS_WRITE,SAWS_STRING));
+      PetscStackCallSAWs(SAWs_Add_Variable,(amem,next->text,next->edata,ntext-1,SAWs_WRITE,SAWs_STRING));
       break;}
     case OPTION_ELIST:
       {PetscInt ntext = next->nlist;
       char      ldefault[128];
       ierr = PetscStrcpy(ldefault,"DEFAULT:");CHKERRQ(ierr);
       ierr = PetscStrcat(ldefault,next->text);CHKERRQ(ierr);
-      PetscStackCallSAWs(SAWS_New_Variable,(amem,ldefault,next->data,1,SAWS_WRITE,SAWS_STRING));
+      PetscStackCallSAWs(SAWs_Add_Variable,(amem,ldefault,next->data,1,SAWs_WRITE,SAWs_STRING));
       ierr = PetscMalloc((ntext+1)*sizeof(char**),&next->edata);CHKERRQ(ierr);
       ierr = PetscMemcpy(next->edata,next->list,ntext*sizeof(char*));CHKERRQ(ierr);
-      PetscStackCallSAWs(SAWS_New_Variable,(amem,next->text,next->edata,ntext,SAWS_WRITE,SAWS_STRING));
+      PetscStackCallSAWs(SAWs_Add_Variable,(amem,next->text,next->edata,ntext,SAWs_WRITE,SAWs_STRING));
       break;}
     default:
       break;
@@ -438,13 +438,13 @@ PetscErrorCode PetscOptionsAMSInput()
   }
 
   /* wait until accessor has unlocked the memory */
-  PetscStackCallSAWs(SAWS_Lock_Directory,(amem));
+  PetscStackCallSAWs(SAWs_Lock_Directory,(amem));
 
   /* reset counter to -2; this updates the screen with the new options for the selected method */
   if (changedmethod) PetscOptionsPublishCount = -2;
 
-  PetscStackCallSAWs(SAWS_Unlock_Directory,(amem));
-  PetscStackCallSAWs(SAWS_Directory_Destroy,(&amem));
+  PetscStackCallSAWs(SAWs_Unlock_Directory,(amem));
+  PetscStackCallSAWs(SAWs_Destroy_Directory,(&amem));
   PetscFunctionReturn(0);
 }
 #endif

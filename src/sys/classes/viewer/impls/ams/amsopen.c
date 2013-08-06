@@ -81,13 +81,13 @@ PetscErrorCode  PetscObjectViewSAWs(PetscObject obj,PetscViewer viewer)
   if (obj->amsmem) PetscFunctionReturn(0);
   ierr = PetscObjectName(obj);CHKERRQ(ierr);
 
-  PetscStackCallSAWs(SAWS_Directory_Create,(obj->name,&obj->amsmem));
-  PetscStackCallSAWs(SAWS_New_Variable,(obj->amsmem,"Class",&obj->class_name,1,SAWS_READ,SAWS_STRING));
-  PetscStackCallSAWs(SAWS_New_Variable,(obj->amsmem,"Type",&obj->type_name,1,SAWS_READ,SAWS_STRING));
-  PetscStackCallSAWs(SAWS_New_Variable,(obj->amsmem,"Id",&obj->id,1,SAWS_READ,SAWS_INT));
-  PetscStackCallSAWs(SAWS_New_Variable,(obj->amsmem,"ParentId",&obj->parentid,1,SAWS_READ,SAWS_INT));
-  PetscStackCallSAWs(SAWS_New_Variable,(obj->amsmem,"Name",&obj->name,1,SAWS_READ,SAWS_STRING));
-  PetscStackCallSAWs(SAWS_New_Variable,(obj->amsmem,"Publish Block",&obj->amspublishblock,1,SAWS_READ,SAWS_BOOLEAN));
-  PetscStackCallSAWs(SAWS_New_Variable,(obj->amsmem,"Block",&obj->amsblock,1,SAWS_WRITE,SAWS_BOOLEAN));
+  PetscStackCallSAWs(SAWs_Add_Directory,(SAWs_ROOT_DIRECTORY,obj->name,&obj->amsmem));
+  PetscStackCallSAWs(SAWs_Add_Variable,(obj->amsmem,"Class",&obj->class_name,1,SAWs_READ,SAWs_STRING));
+  PetscStackCallSAWs(SAWs_Add_Variable,(obj->amsmem,"Type",&obj->type_name,1,SAWs_READ,SAWs_STRING));
+  PetscStackCallSAWs(SAWs_Add_Variable,(obj->amsmem,"Id",&obj->id,1,SAWs_READ,SAWs_INT));
+  PetscStackCallSAWs(SAWs_Add_Variable,(obj->amsmem,"ParentId",&obj->parentid,1,SAWs_READ,SAWs_INT));
+  PetscStackCallSAWs(SAWs_Add_Variable,(obj->amsmem,"Name",&obj->name,1,SAWs_READ,SAWs_STRING));
+  PetscStackCallSAWs(SAWs_Add_Variable,(obj->amsmem,"Publish Block",&obj->amspublishblock,1,SAWs_READ,SAWs_BOOLEAN));
+  PetscStackCallSAWs(SAWs_Add_Variable,(obj->amsmem,"Block",&obj->amsblock,1,SAWs_WRITE,SAWs_BOOLEAN));
   PetscFunctionReturn(0);
 }

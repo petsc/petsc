@@ -804,6 +804,9 @@ PETSC_EXTERN PetscErrorCode MatCreate_MFFD(Mat A)
      umin = minimum iterate parameter
 .ve
 
+   You can call SNESSetJacobian() with MatMFFDComputeJacobian() if you are using matrix and not a different
+   preconditioner matrix
+
    The user can set the error_rel via MatMFFDSetFunctionError() and
    umin via MatMFFDDSSetUmin(); see the <A href="../../docs/manual.pdf#nameddest=ch_snes">SNES chapter of the users manual</A> for details.
 

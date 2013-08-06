@@ -15,7 +15,7 @@ PetscStack *petscstack = 0;
 #if defined(PETSC_HAVE_SAWS)
 #include <petscviewersaws.h>
 
-static SAWS_Directory amsmemstack = NULL;
+static SAWs_Directory amsmemstack = NULL;
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscStackSAWsGrantAccess"
@@ -36,7 +36,7 @@ static SAWS_Directory amsmemstack = NULL;
 void  PetscStackSAWsGrantAccess(void)
 {
   if (amsmemstack) {
-    SAWS_Unlock_Directory(amsmemstack);
+    SAWs_Unlock_Directory(amsmemstack);
   }
 }
 
@@ -59,19 +59,19 @@ void  PetscStackSAWsGrantAccess(void)
 void  PetscStackSAWsTakeAccess(void)
 {
   if (amsmemstack) {
-    SAWS_Lock_Directory(amsmemstack);
+    SAWs_Lock_Directory(amsmemstack);
   }
 }
 
 PetscErrorCode PetscStackViewSAWs(void)
 {
-  SAWS_Directory    mem;
+  SAWs_Directory mem;
   PetscStack*    petscstackp;
 
   petscstackp = (PetscStack*)PetscThreadLocalGetValue(petscstack);
-  PetscStackCallSAWs(SAWS_Directory_Create,("Stack",&mem));
-  PetscStackCallSAWs(SAWS_New_Variable,(mem,"functions",petscstackp->function,10,SAWS_READ,SAWS_STRING));
-  PetscStackCallSAWs(SAWS_New_Variable,(mem,"current size",&petscstackp->currentsize,1,SAWS_READ,SAWS_INT));
+  PetscStackCallSAWs(SAWs_Add_Directory,(SAWs_ROOT_DIRECTORY,"Stack",&mem));
+  PetscStackCallSAWs(SAWs_Add_Variable,(mem,"functions",petscstackp->function,10,SAWs_READ,SAWs_STRING));
+  PetscStackCallSAWs(SAWs_Add_Variable,(mem,"current size",&petscstackp->currentsize,1,SAWs_READ,SAWs_INT));
   amsmemstack = mem;
   return 0;
 }
@@ -84,7 +84,7 @@ PetscErrorCode PetscStackSAWsViewOff(void)
 
   PetscFunctionBegin;
   if (!amsmemstack) PetscFunctionReturn(0);
-  ierr        = SAWS_Directory_Destroy(&amsmemstack);CHKERRQ(ierr);
+  ierr        = SAWs_Destroy_Directory(&amsmemstack);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

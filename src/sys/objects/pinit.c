@@ -794,7 +794,7 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   ierr = PetscOptionsCheckInitial_Private();CHKERRQ(ierr);
 
 #if defined(PETSC_HAVE_SAWS)
-  ierr = SAWS_Initialize();CHKERRQ(ierr);
+  ierr = SAWs_Initialize();CHKERRQ(ierr);
 #endif
 
   /* SHOULD PUT IN GUARDS: Make sure logging is initialized, even if we do not print it out */
@@ -1129,7 +1129,7 @@ PetscErrorCode  PetscFinalize(void)
   }
 
 #if defined(PETSC_HAVE_SAWS)
-    SAWS_Finalize();CHKERRQ(ierr);
+    SAWs_Finalize();CHKERRQ(ierr);
 #endif
 
   {

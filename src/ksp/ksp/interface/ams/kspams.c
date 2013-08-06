@@ -2,11 +2,11 @@
 #include <petscviewersaws.h>
 
 typedef struct {
-  PetscViewer viewer;
-  PetscInt    neigs;
-  PetscReal   *eigi;
-  PetscReal   *eigr;
-  SAWS_Directory amem;
+  PetscViewer    viewer;
+  PetscInt       neigs;
+  PetscReal      *eigi;
+  PetscReal      *eigr;
+  SAWs_Directory amem;
 } KSPMonitor_SAWs;
 
 #undef __FUNCT__
@@ -61,7 +61,7 @@ PetscErrorCode KSPMonitorSAWsDestroy(void **ctx)
 
   PetscFunctionBegin;
   if (mon->amem) {
-    PetscStackCallSAWs(SAWS_Directory_Destroy,(&mon->amem));
+    PetscStackCallSAWs(SAWs_Destroy_Directory,(&mon->amem));
   }
   /* ierr      = PetscViewerDestroy(&mon->viewer);CHKERRQ(ierr);*/
   ierr      = PetscFree(mon->eigr);CHKERRQ(ierr);
@@ -102,19 +102,19 @@ PetscErrorCode KSPMonitorSAWs(KSP ksp,PetscInt n,PetscReal rnorm,void *ctx)
   ierr = KSPComputeExtremeSingularValues(ksp,&emax,&emin);CHKERRQ(ierr);
 
   /* UnPublish  */
-  if (mon->amem) PetscStackCallSAWs(SAWS_Directory_Destroy,(&mon->amem));
+  if (mon->amem) PetscStackCallSAWs(SAWs_Destroy_Directory,(&mon->amem));
 
   ierr      = PetscFree(mon->eigr);CHKERRQ(ierr);
   ierr      = PetscMalloc(2*n*sizeof(PetscReal),&mon->eigr);CHKERRQ(ierr);
   mon->eigi = mon->eigr + n;
   if (n) {ierr = KSPComputeEigenvalues(ksp,n,mon->eigr,mon->eigi,&mon->neigs);CHKERRQ(ierr);}
 
-  PetscStackCallSAWs(SAWS_Directory_Create,("ksp_monitor_saws",&mon->amem));
-  PetscStackCallSAWs(SAWS_New_Variable,(mon->amem,"rnorm",&ksp->rnorm,1,SAWS_READ,SAWS_DOUBLE));
-  PetscStackCallSAWs(SAWS_New_Variable,(mon->amem,"neigs",&mon->neigs,1,SAWS_READ,SAWS_INT));
+  PetscStackCallSAWs(SAWs_Add_Directory,(SAWs_ROOT_DIRECTORY,"ksp_monitor_saws",&mon->amem));
+  PetscStackCallSAWs(SAWs_Add_Variable,(mon->amem,"rnorm",&ksp->rnorm,1,SAWs_READ,SAWs_DOUBLE));
+  PetscStackCallSAWs(SAWs_Add_Variable,(mon->amem,"neigs",&mon->neigs,1,SAWs_READ,SAWs_INT));
   if (mon->neigs > 0) {
-    PetscStackCallSAWs(SAWS_New_Variable,(mon->amem,"eigr",&mon->eigr,mon->neigs,SAWS_READ,SAWS_DOUBLE));
-    PetscStackCallSAWs(SAWS_New_Variable,(mon->amem,"eigi",&mon->eigr,mon->neigs,SAWS_READ,SAWS_DOUBLE));
+    PetscStackCallSAWs(SAWs_Add_Variable,(mon->amem,"eigr",&mon->eigr,mon->neigs,SAWs_READ,SAWs_DOUBLE));
+    PetscStackCallSAWs(SAWs_Add_Variable,(mon->amem,"eigi",&mon->eigr,mon->neigs,SAWs_READ,SAWs_DOUBLE));
   }
   ierr = PetscObjectSAWsBlock((PetscObject)ksp);CHKERRQ(ierr);
   ierr = PetscInfo2(ksp,"KSP extreme singular values min=%G max=%G\n",emin,emax);CHKERRQ(ierr);

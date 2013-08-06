@@ -264,7 +264,7 @@ PetscErrorCode  PetscRandomView(PetscRandom rnd,PetscViewer viewer)
   } else if (isams) {
     if (!((PetscObject)rnd)->amsmem) {
       ierr = PetscObjectViewSAWs((PetscObject)rnd,viewer);CHKERRQ(ierr);
-      PetscStackCallSAWs(SAWS_New_Variable,(((PetscObject)rnd)->amsmem,"Low",&rnd->low,1,SAWS_READ,SAWS_DOUBLE));
+      PetscStackCallSAWs(SAWs_Add_Variable,(((PetscObject)rnd)->amsmem,"Low",&rnd->low,1,SAWs_READ,SAWs_DOUBLE));
     }
 #endif
   }

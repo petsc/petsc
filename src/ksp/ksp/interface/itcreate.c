@@ -188,11 +188,11 @@ PetscErrorCode  KSPView(KSP ksp,PetscViewer viewer)
   } else if (isams) {
     if (!((PetscObject)ksp)->amsmem) {
       ierr = PetscObjectViewSAWs((PetscObject)ksp,viewer);CHKERRQ(ierr);
-      PetscStackCallSAWs(SAWS_New_Variable,(((PetscObject)ksp)->amsmem,"its",&ksp->its,1,SAWS_READ,SAWS_INT));
+      PetscStackCallSAWs(SAWs_Add_Variable,(((PetscObject)ksp)->amsmem,"its",&ksp->its,1,SAWs_READ,SAWs_INT));
       if (!ksp->res_hist) {
         ierr = KSPSetResidualHistory(ksp,NULL,PETSC_DECIDE,PETSC_FALSE);CHKERRQ(ierr);
       }
-      PetscStackCallSAWs(SAWS_New_Variable,(((PetscObject)ksp)->amsmem,"res_hist",ksp->res_hist,10,SAWS_READ,SAWS_DOUBLE));
+      PetscStackCallSAWs(SAWs_Add_Variable,(((PetscObject)ksp)->amsmem,"res_hist",ksp->res_hist,10,SAWs_READ,SAWs_DOUBLE));
     }
 #endif
   } else if (ksp->ops->view) {
