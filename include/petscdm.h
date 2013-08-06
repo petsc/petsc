@@ -195,4 +195,7 @@ PetscErrorCode DMInterpolationGetVector(DMInterpolationInfo, Vec *);
 PetscErrorCode DMInterpolationRestoreVector(DMInterpolationInfo, Vec *);
 PetscErrorCode DMInterpolationEvaluate(DMInterpolationInfo, DM, Vec, Vec);
 PetscErrorCode DMInterpolationDestroy(DMInterpolationInfo *);
+
+/* DT */
+PetscErrorCode PetscDTGaussJacobiQuadrature(PetscInt,PetscInt,PetscReal,PetscReal,PetscReal*[], PetscReal*[]);
 #endif
