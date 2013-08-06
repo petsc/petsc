@@ -20,6 +20,7 @@
 #  define LAPACKgeqrf_ SGEQRF
 #  define LAPACKungqr_ SORGQR
 #  define LAPACKgetrf_ SGETRF
+#  define LAPACKgetri_ SGETRI
 #  define BLASdot_     SDOT
 #  define BLASdotu_    SDOT
 #  define BLASnrm2_    SNRM2
@@ -82,6 +83,7 @@ PETSC_EXTERN void PETSC_STDCALL SHSEQR(const char*,int,const char*,int,PetscBLAS
 #  define LAPACKgeqrf_ DGEQRF
 #  define LAPACKungqr_ DORGQR
 #  define LAPACKgetrf_ DGETRF
+#  define LAPACKgetri_ DGETRI
 #  define BLASdot_     DDOT
 #  define BLASdotu_    DDOT
 #  define BLASnrm2_    DNRM2
@@ -144,6 +146,7 @@ PETSC_EXTERN void PETSC_STDCALL DHSEQR(const char*,int,const char*,int,PetscBLAS
 #  define LAPACKgeqrf_ CGEQRF
 #  define LAPACKungqr_ CUNGQR
 #  define LAPACKgetrf_ CGETRF
+#  define LAPACKgetri_ CGETRI
 /* #  define BLASdot_     CDOTC */
 /* #  define BLASdotu_    CDOTU */
 #  define BLASnrm2_    SCNRM2
@@ -202,6 +205,7 @@ PETSC_EXTERN void PETSC_STDCALL CHSEQR(const char*,int,const char*,int,PetscBLAS
 #  define LAPACKgeqrf_ ZGEQRF
 #  define LAPACKungqr_ ZUNGQR
 #  define LAPACKgetrf_ ZGETRF
+#  define LAPACKgetri_ ZGETRI
 /* #  define BLASdot_     ZDOTC */
 /* #  define BLASdotu_    ZDOTU */
 #  define BLASnrm2_    DZNRM2
@@ -259,6 +263,7 @@ PETSC_EXTERN void PETSC_STDCALL ZHSEQR(const char*,int,const char*,int,PetscBLAS
 #endif
 
 PETSC_EXTERN void PETSC_STDCALL LAPACKgetrf_(PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*,PetscBLASInt*);
+PETSC_EXTERN void PETSC_STDCALL LAPACKgetri_(PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
 PETSC_EXTERN void PETSC_STDCALL LAPACKgeqrf_(PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
 PETSC_EXTERN void PETSC_STDCALL LAPACKungqr_(PetscBLASInt*,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
 PETSC_EXTERN void PETSC_STDCALL LAPACKpttrf_(PetscBLASInt*,PetscReal*,PetscScalar*,PetscBLASInt*);

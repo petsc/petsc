@@ -53,4 +53,60 @@ PetscErrorCode  DMRegisterAll()
 #endif
   PetscFunctionReturn(0);
 }
+#include <petscfe.h>     /*I  "petscfe.h"  I*/
 
+PETSC_EXTERN PetscErrorCode PetscSpaceCreate_Polynomial(PetscSpace);
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSpaceRegisterAll"
+/*@C
+  PetscSpaceRegisterAll - Registers all of the PetscSpace components in the PetscFE package.
+
+  Not Collective
+
+  Input parameter:
+. path - The dynamic library path
+
+  Level: advanced
+
+.keywords: PetscSpace, register, all
+.seealso:  PetscSpaceRegister(), PetscSpaceRegisterDestroy()
+@*/
+PetscErrorCode PetscSpaceRegisterAll()
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscSpaceRegisterAllCalled = PETSC_TRUE;
+
+  ierr = PetscSpaceRegister(PETSCSPACEPOLYNOMIAL, PetscSpaceCreate_Polynomial);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PETSC_EXTERN PetscErrorCode PetscDualSpaceCreate_Lagrange(PetscDualSpace);
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscDualSpaceRegisterAll"
+/*@C
+  PetscDualSpaceRegisterAll - Registers all of the PetscDualSpace components in the PetscFE package.
+
+  Not Collective
+
+  Input parameter:
+. path - The dynamic library path
+
+  Level: advanced
+
+.keywords: PetscDualSpace, register, all
+.seealso:  PetscDualSpaceRegister(), PetscDualSpaceRegisterDestroy()
+@*/
+PetscErrorCode PetscDualSpaceRegisterAll()
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscDualSpaceRegisterAllCalled = PETSC_TRUE;
+
+  ierr = PetscDualSpaceRegister(PETSCDUALSPACELAGRANGE, PetscDualSpaceCreate_Lagrange);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
