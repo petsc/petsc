@@ -1992,7 +1992,7 @@ static PetscErrorCode DMPlexCreateSubmesh_Interpolated(DM dm, const char vertexL
   DMLabel          subpointMap, vertexLabel;
   IS              *subpointIS;
   const PetscInt **subpoints;
-  PetscInt        *numSubPoints, *firstSubPoint, *coneNew;
+  PetscInt        *numSubPoints, *firstSubPoint, *coneNew, *coneONew;
   PetscInt         totSubPoints = 0, maxConeSize, dim, p, d, v;
   PetscErrorCode   ierr;
 
@@ -2044,7 +2044,7 @@ static PetscErrorCode DMPlexCreateSubmesh_Interpolated(DM dm, const char vertexL
   ierr = DMSetUp(subdm);CHKERRQ(ierr);
   /* Set cones */
   ierr = DMPlexGetMaxSizes(dm, &maxConeSize, NULL);CHKERRQ(ierr);
-  ierr = PetscMalloc(maxConeSize * sizeof(PetscInt), &coneNew);CHKERRQ(ierr);
+  ierr = PetscMalloc2(maxConeSize,PetscInt,&coneNew,maxConeSize,PetscInt,&coneONew);CHKERRQ(ierr);
   for (d = 0; d <= dim; ++d) {
     for (p = 0; p < numSubPoints[d]; ++p) {
       const PetscInt  point    = subpoints[d][p];
@@ -2058,14 +2058,18 @@ static PetscErrorCode DMPlexCreateSubmesh_Interpolated(DM dm, const char vertexL
       ierr = DMPlexGetConeOrientation(dm, point, &ornt);CHKERRQ(ierr);
       for (c = 0, coneSizeNew = 0; c < coneSize; ++c) {
         ierr = PetscFindInt(cone[c], numSubPoints[d-1], subpoints[d-1], &subc);CHKERRQ(ierr);
-        if (subc >= 0) coneNew[coneSizeNew++] = firstSubPoint[d-1] + subc;
+        if (subc >= 0) {
+          coneNew[coneSizeNew]  = firstSubPoint[d-1] + subc;
+          coneONew[coneSizeNew] = ornt[c];
+          ++coneSizeNew;
+        }
       }
       if (coneSizeNew != subconeSize) SETERRQ2(comm, PETSC_ERR_PLIB, "Number of cone points located %d does not match subcone size %d", coneSizeNew, subconeSize);
       ierr = DMPlexSetCone(subdm, subpoint, coneNew);CHKERRQ(ierr);
-      ierr = DMPlexSetConeOrientation(subdm, subpoint, ornt);CHKERRQ(ierr);
+      ierr = DMPlexSetConeOrientation(subdm, subpoint, coneONew);CHKERRQ(ierr);
     }
   }
-  ierr = PetscFree(coneNew);CHKERRQ(ierr);
+  ierr = PetscFree2(coneNew,coneONew);CHKERRQ(ierr);
   ierr = DMPlexSymmetrize(subdm);CHKERRQ(ierr);
   ierr = DMPlexStratify(subdm);CHKERRQ(ierr);
   /* Build coordinates */
