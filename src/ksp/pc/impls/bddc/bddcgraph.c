@@ -656,7 +656,7 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
 
   /* get local periodic nodes */
   mirrors_found=PETSC_FALSE;
-  if (graph->nvtxs) { 
+  if (graph->nvtxs && n_neigh) { 
     for (i=0;i<n_shared[0];i++)
       graph->count[shared[0][i]] += 1;
     for (i=0;i<n_shared[0];i++) {

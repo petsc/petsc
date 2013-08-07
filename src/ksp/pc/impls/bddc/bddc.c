@@ -905,6 +905,7 @@ PetscErrorCode PCDestroy_BDDC(PC pc)
   ierr = PCBDDCResetSolvers(pc);CHKERRQ(ierr);
   ierr = KSPDestroy(&pcbddc->ksp_D);CHKERRQ(ierr);
   ierr = KSPDestroy(&pcbddc->ksp_R);CHKERRQ(ierr);
+  ierr = KSPDestroy(&pcbddc->coarse_ksp);CHKERRQ(ierr);
   ierr = MatDestroy(&pcbddc->local_mat);CHKERRQ(ierr);
   /* free global vectors needed in presolve */
   ierr = VecDestroy(&pcbddc->temp_solution);CHKERRQ(ierr);
