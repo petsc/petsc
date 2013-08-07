@@ -541,12 +541,13 @@ static PetscErrorCode DMPlexConstructCohesiveCells_Internal(DM dm, DMLabel label
   Vec             coordinates;
   PetscScalar    *coords;
   PetscInt       *depthShift, *depthOffset, *pMaxNew, *numSplitPoints, *coneNew, *coneONew, *supportNew;
-  PetscInt        shift = 100, depth = 0, dep, dim, d, numSP = 0, sp, maxConeSize, maxSupportSize, numLabels, pEnd, p, v;
+  PetscInt        shift = 100, depth = 0, dep, dim, d, numSP = 0, sp, maxConeSize, maxSupportSize, numLabels, vStart, vEnd, pEnd, p, v;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);
   ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
   /* Count split points and add cohesive cells */
   if (label) {
     ierr = DMLabelGetValueIS(label, &valueIS);CHKERRQ(ierr);
@@ -715,11 +716,29 @@ static PetscErrorCode DMPlexConstructCohesiveCells_Internal(DM dm, DMLabel label
           }
         }
         /* Cohesive cell:    Old and new split face, then new cohesive edges */
-        coneNew[0] = newp;   /* Extracted negative side orentation above */
+        coneNew[0] = newp;   /* Extracted negative side orientation above */
         coneNew[1] = splitp; coneONew[1] = coneONew[0];
-        for (q = 0; q < coneSize; ++q) {
-          coneNew[2+q]  = (pMaxNew[1] - pMaxNew[dim-2]) + (depthShift[1] - depthShift[0]) + coneNew[2+q];
-          coneONew[2+q] = 0;
+        if (dim > 2) {
+          PetscInt *closure = NULL, closureSize, cl;
+
+          ierr = DMPlexGetTransitiveClosure(dm, oldp, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+          for (cl = 0, q = 0; cl < closureSize*2; cl += 2) {
+            const PetscInt clp = closure[cl];
+
+            if ((clp >= vStart) && (clp < vEnd)) {
+              ierr = PetscFindInt(clp, numSplitPoints[0], splitPoints[0], &v);CHKERRQ(ierr);
+              coneNew[2+q]  = pMaxNew[1] + (depthShift[1] - depthShift[0]) + v;
+              coneONew[2+q] = 0;
+              ++q;
+            }
+          }
+          ierr = DMPlexRestoreTransitiveClosure(dm, oldp, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+          if (q != coneSize) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid number of split face vertices %d should be %d", q, coneSize);
+        } else {
+          for (q = 0; q < coneSize; ++q) {
+            coneNew[2+q]  = (pMaxNew[1] - pMaxNew[dim-2]) + (depthShift[1] - depthShift[0]) + coneNew[2+q];
+            coneONew[2+q] = 0;
+          }
         }
         ierr = DMPlexSetCone(sdm, ccell, coneNew);CHKERRQ(ierr);
         ierr = DMPlexSetConeOrientation(sdm, ccell, coneONew);CHKERRQ(ierr);
