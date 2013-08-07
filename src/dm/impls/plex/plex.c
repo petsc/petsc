@@ -2065,8 +2065,8 @@ PetscErrorCode DMPlexOrient(DM dm)
   ierr = DMGetWorkArray(dm, maxConeSize, PETSC_INT, &revcone);CHKERRQ(ierr);
   ierr = DMGetWorkArray(dm, maxConeSize, PETSC_INT, &revconeO);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; ++c) {
-    const PetscInt *cone, *coneO;
-    PetscInt        coneSize, faceSize, cp;
+    const PetscInt *cone, *coneO, *support;
+    PetscInt        coneSize, supportSize, faceSize, cp, sp;
 
     if (!PetscBTLookup(flippedCells, c-cStart)) continue;
     ierr = DMPlexGetConeSize(dm, c, &coneSize);CHKERRQ(ierr);
@@ -2081,6 +2081,19 @@ PetscErrorCode DMPlexOrient(DM dm)
     }
     ierr = DMPlexSetCone(dm, c, revcone);CHKERRQ(ierr);
     ierr = DMPlexSetConeOrientation(dm, c, revconeO);CHKERRQ(ierr);
+    /* Reverse orientations of support */
+    faceSize = coneSize;
+    ierr = DMPlexGetSupportSize(dm, c, &supportSize);CHKERRQ(ierr);
+    ierr = DMPlexGetSupport(dm, c, &support);CHKERRQ(ierr);
+    for (sp = 0; sp < supportSize; ++sp) {
+      ierr = DMPlexGetConeSize(dm, support[sp], &coneSize);CHKERRQ(ierr);
+      ierr = DMPlexGetCone(dm, support[sp], &cone);CHKERRQ(ierr);
+      ierr = DMPlexGetConeOrientation(dm, support[sp], &coneO);CHKERRQ(ierr);
+      for (cp = 0; cp < coneSize; ++cp) {
+        if (cone[cp] != c) continue;
+        ierr = DMPlexInsertConeOrientation(dm, support[sp], cp, coneO[cp] >= 0 ? -(faceSize-coneO[cp]) : faceSize+coneO[cp]);CHKERRQ(ierr);
+      }
+    }
   }
   ierr = DMRestoreWorkArray(dm, maxConeSize, PETSC_INT, &revcone);CHKERRQ(ierr);
   ierr = DMRestoreWorkArray(dm, maxConeSize, PETSC_INT, &revconeO);CHKERRQ(ierr);

@@ -683,8 +683,37 @@ static PetscErrorCode DMPlexConstructCohesiveCells_Internal(DM dm, DMLabel label
         }
         ierr = DMPlexSetCone(sdm, splitp, &coneNew[2]);CHKERRQ(ierr);
         ierr = DMPlexSetConeOrientation(sdm, splitp, ornt);CHKERRQ(ierr);
+        /* Face support */
+        for (s = 0; s < supportSize; ++s) {
+          PetscInt val;
+
+          ierr = DMLabelGetValue(label, support[s], &val);CHKERRQ(ierr);
+          if (val < 0) {
+            /* Split old face:   Replace negative side cell with cohesive cell */
+             ierr = DMPlexInsertSupport(sdm, newp, s, ccell);CHKERRQ(ierr);
+          } else {
+            /* Split new face:   Replace positive side cell with cohesive cell */
+            ierr = DMPlexInsertSupport(sdm, splitp, s, ccell);CHKERRQ(ierr);
+            /* Get orientation for cohesive face */
+            {
+              const PetscInt *ncone, *nconeO;
+              PetscInt        nconeSize, nc;
+
+              ierr = DMPlexGetConeSize(dm, support[s], &nconeSize);CHKERRQ(ierr);
+              ierr = DMPlexGetCone(dm, support[s], &ncone);CHKERRQ(ierr);
+              ierr = DMPlexGetConeOrientation(dm, support[s], &nconeO);CHKERRQ(ierr);
+              for (nc = 0; nc < nconeSize; ++nc) {
+                if (ncone[nc] == oldp) {
+                  coneONew[0] = nconeO[nc];
+                  break;
+                }
+              }
+              if (nc >= nconeSize) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Could not locate face %d in neighboring cell %d", oldp, support[s]);
+            }
+          }
+        }
         /* Cohesive cell:    Old and new split face, then new cohesive edges */
-        coneNew[0] = newp;   coneONew[0] = -coneSize; /* We know it has to be negative to be on the negative side */
+        coneNew[0] = newp;   /* Extracted negative side orentation above */
         coneNew[1] = splitp; coneONew[1] = coneONew[0];
         for (q = 0; q < coneSize; ++q) {
           coneNew[2+q]  = (pMaxNew[1] - pMaxNew[dim-2]) + (depthShift[1] - depthShift[0]) + coneNew[2+q];
@@ -692,19 +721,6 @@ static PetscErrorCode DMPlexConstructCohesiveCells_Internal(DM dm, DMLabel label
         }
         ierr = DMPlexSetCone(sdm, ccell, coneNew);CHKERRQ(ierr);
         ierr = DMPlexSetConeOrientation(sdm, ccell, coneONew);CHKERRQ(ierr);
-
-        for (s = 0; s < supportSize; ++s) {
-          PetscInt val;
-
-          ierr = DMLabelGetValue(label, support[s], &val);CHKERRQ(ierr);
-          if (val < 0) {
-            /* Split old face:   Replace negative side cell with cohesive cell */
-            ierr = DMPlexInsertSupport(sdm, newp, s, ccell);CHKERRQ(ierr);
-          } else {
-            /* Split new face:   Replace positive side cell with cohesive cell */
-            ierr = DMPlexInsertSupport(sdm, splitp, s, ccell);CHKERRQ(ierr);
-          }
-        }
       } else if (dep == 0) {
         const PetscInt cedge = pMaxNew[1] + (depthShift[1] - depthShift[0]) + p;
 
@@ -942,7 +958,8 @@ PetscErrorCode DMPlexConstructCohesiveCells(DM dm, DMLabel label, DM *dmSplit)
 
   Input Parameters:
 + dm - The DM
-- label - A DMLabel marking the surface vertices
+. label - A DMLabel marking the surface vertices
+- subdm - The subDM associated with the label, or NULL
 
   Output Parameter:
 . label - A DMLabel marking all surface points
@@ -951,15 +968,22 @@ PetscErrorCode DMPlexConstructCohesiveCells(DM dm, DMLabel label, DM *dmSplit)
 
 .seealso: DMPlexConstructCohesiveCells(), DMPlexLabelComplete()
 @*/
-PetscErrorCode DMPlexLabelCohesiveComplete(DM dm, DMLabel label)
+PetscErrorCode DMPlexLabelCohesiveComplete(DM dm, DMLabel label, DM subdm)
 {
-  IS              dimIS;
-  const PetscInt *points;
-  PetscInt        shift = 100, dim, dep, cStart, cEnd, numPoints, p, val;
+  IS              dimIS, subpointIS;
+  const PetscInt *points, *subpoints;
+  PetscInt        shift = 100, dim, dep, cStart, cEnd, numPoints, numSubpoints, p, val;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
+  if (subdm) {
+    ierr = DMPlexCreateSubpointIS(subdm, &subpointIS);CHKERRQ(ierr);
+    if (subpointIS) {
+      ierr = ISGetLocalSize(subpointIS, &numSubpoints);CHKERRQ(ierr);
+      ierr = ISGetIndices(subpointIS, &subpoints);CHKERRQ(ierr);
+    }
+  }
   /* Cell orientation for face gives the side of the fault */
   ierr = DMLabelGetStratumIS(label, dim-1, &dimIS);CHKERRQ(ierr);
   if (!dimIS) PetscFunctionReturn(0);
@@ -982,7 +1006,30 @@ PetscErrorCode DMPlexLabelCohesiveComplete(DM dm, DMLabel label)
       ierr = DMPlexGetConeOrientation(dm, support[s], &ornt);CHKERRQ(ierr);
       for (c = 0; c < coneSize; ++c) {
         if (cone[c] == points[p]) {
-          if (ornt[c] >= 0) {
+          PetscInt o = ornt[c];
+
+          if (subdm) {
+            const PetscInt *subcone, *subornt;
+            PetscInt        subpoint, subface, subconeSize, sc;
+
+            ierr = PetscFindInt(support[s], numSubpoints, subpoints, &subpoint);CHKERRQ(ierr);
+            ierr = PetscFindInt(points[p],  numSubpoints, subpoints, &subface);CHKERRQ(ierr);
+            ierr = DMPlexGetConeSize(subdm, subpoint, &subconeSize);CHKERRQ(ierr);
+            ierr = DMPlexGetCone(subdm, subpoint, &subcone);CHKERRQ(ierr);
+            ierr = DMPlexGetConeOrientation(subdm, subpoint, &subornt);CHKERRQ(ierr);
+            for (sc = 0; sc < subconeSize; ++sc) {
+              if (subcone[sc] == subface) {
+                o = subornt[0];
+                break;
+              }
+            }
+            if (sc >= subconeSize) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Could not find point %d in cone for subpoint %d", points[p], subpoint);
+          }
+#if 1
+          if (o >= 0) {
+#else
+          if (o < 0) {
+#endif
             ierr = DMLabelSetValue(label, support[s],   shift+dim);CHKERRQ(ierr);
           } else {
             ierr = DMLabelSetValue(label, support[s], -(shift+dim));CHKERRQ(ierr);
@@ -1015,6 +1062,10 @@ PetscErrorCode DMPlexLabelCohesiveComplete(DM dm, DMLabel label)
         }
       }
     }
+  }
+  if (subdm) {
+    if (subpointIS) {ierr = ISRestoreIndices(subpointIS, &subpoints);CHKERRQ(ierr);}
+    ierr = ISDestroy(&subpointIS);CHKERRQ(ierr);
   }
   ierr = ISRestoreIndices(dimIS, &points);CHKERRQ(ierr);
   ierr = ISDestroy(&dimIS);CHKERRQ(ierr);
@@ -1985,7 +2036,7 @@ static PetscErrorCode DMPlexCreateSubmesh_Interpolated(DM dm, const char vertexL
   DMLabel          subpointMap, vertexLabel;
   IS              *subpointIS;
   const PetscInt **subpoints;
-  PetscInt        *numSubPoints, *firstSubPoint, *coneNew;
+  PetscInt        *numSubPoints, *firstSubPoint, *coneNew, *coneONew;
   PetscInt         totSubPoints = 0, maxConeSize, dim, p, d, v;
   PetscErrorCode   ierr;
 
@@ -2039,7 +2090,7 @@ static PetscErrorCode DMPlexCreateSubmesh_Interpolated(DM dm, const char vertexL
   ierr = DMSetUp(subdm);CHKERRQ(ierr);
   /* Set cones */
   ierr = DMPlexGetMaxSizes(dm, &maxConeSize, NULL);CHKERRQ(ierr);
-  ierr = PetscMalloc(maxConeSize * sizeof(PetscInt), &coneNew);CHKERRQ(ierr);
+  ierr = PetscMalloc2(maxConeSize,PetscInt,&coneNew,maxConeSize,PetscInt,&coneONew);CHKERRQ(ierr);
   for (d = 0; d <= dim; ++d) {
     for (p = 0; p < numSubPoints[d]; ++p) {
       const PetscInt  point    = subpoints[d][p];
@@ -2053,14 +2104,18 @@ static PetscErrorCode DMPlexCreateSubmesh_Interpolated(DM dm, const char vertexL
       ierr = DMPlexGetConeOrientation(dm, point, &ornt);CHKERRQ(ierr);
       for (c = 0, coneSizeNew = 0; c < coneSize; ++c) {
         ierr = PetscFindInt(cone[c], numSubPoints[d-1], subpoints[d-1], &subc);CHKERRQ(ierr);
-        if (subc >= 0) coneNew[coneSizeNew++] = firstSubPoint[d-1] + subc;
+        if (subc >= 0) {
+          coneNew[coneSizeNew]  = firstSubPoint[d-1] + subc;
+          coneONew[coneSizeNew] = ornt[c];
+          ++coneSizeNew;
+        }
       }
       if (coneSizeNew != subconeSize) SETERRQ2(comm, PETSC_ERR_PLIB, "Number of cone points located %d does not match subcone size %d", coneSizeNew, subconeSize);
       ierr = DMPlexSetCone(subdm, subpoint, coneNew);CHKERRQ(ierr);
-      ierr = DMPlexSetConeOrientation(subdm, subpoint, ornt);CHKERRQ(ierr);
+      ierr = DMPlexSetConeOrientation(subdm, subpoint, coneONew);CHKERRQ(ierr);
     }
   }
-  ierr = PetscFree(coneNew);CHKERRQ(ierr);
+  ierr = PetscFree2(coneNew,coneONew);CHKERRQ(ierr);
   ierr = DMPlexSymmetrize(subdm);CHKERRQ(ierr);
   ierr = DMPlexStratify(subdm);CHKERRQ(ierr);
   /* Build coordinates */
