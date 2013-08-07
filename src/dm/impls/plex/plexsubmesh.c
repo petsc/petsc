@@ -539,12 +539,13 @@ static PetscErrorCode DMPlexConstructCohesiveCells_Internal(DM dm, DMLabel label
   Vec             coordinates;
   PetscScalar    *coords;
   PetscInt       *depthShift, *depthOffset, *pMaxNew, *numSplitPoints, *coneNew, *coneONew, *supportNew;
-  PetscInt        shift = 100, depth = 0, dep, dim, d, numSP = 0, sp, maxConeSize, maxSupportSize, numLabels, pEnd, p, v;
+  PetscInt        shift = 100, depth = 0, dep, dim, d, numSP = 0, sp, maxConeSize, maxSupportSize, numLabels, vStart, vEnd, pEnd, p, v;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);
   ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
   /* Count split points and add cohesive cells */
   if (label) {
     ierr = DMLabelGetValueIS(label, &valueIS);CHKERRQ(ierr);
@@ -713,11 +714,29 @@ static PetscErrorCode DMPlexConstructCohesiveCells_Internal(DM dm, DMLabel label
           }
         }
         /* Cohesive cell:    Old and new split face, then new cohesive edges */
-        coneNew[0] = newp;   /* Extracted negative side orentation above */
+        coneNew[0] = newp;   /* Extracted negative side orientation above */
         coneNew[1] = splitp; coneONew[1] = coneONew[0];
-        for (q = 0; q < coneSize; ++q) {
-          coneNew[2+q]  = (pMaxNew[1] - pMaxNew[dim-2]) + (depthShift[1] - depthShift[0]) + coneNew[2+q];
-          coneONew[2+q] = 0;
+        if (dim > 2) {
+          PetscInt *closure = NULL, closureSize, cl;
+
+          ierr = DMPlexGetTransitiveClosure(dm, oldp, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+          for (cl = 0, q = 0; cl < closureSize*2; cl += 2) {
+            const PetscInt clp = closure[cl];
+
+            if ((clp >= vStart) && (clp < vEnd)) {
+              ierr = PetscFindInt(clp, numSplitPoints[0], splitPoints[0], &v);CHKERRQ(ierr);
+              coneNew[2+q]  = pMaxNew[1] + (depthShift[1] - depthShift[0]) + v;
+              coneONew[2+q] = 0;
+              ++q;
+            }
+          }
+          ierr = DMPlexRestoreTransitiveClosure(dm, oldp, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+          if (q != coneSize) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid number of split face vertices %d should be %d", q, coneSize);
+        } else {
+          for (q = 0; q < coneSize; ++q) {
+            coneNew[2+q]  = (pMaxNew[1] - pMaxNew[dim-2]) + (depthShift[1] - depthShift[0]) + coneNew[2+q];
+            coneONew[2+q] = 0;
+          }
         }
         ierr = DMPlexSetCone(sdm, ccell, coneNew);CHKERRQ(ierr);
         ierr = DMPlexSetConeOrientation(sdm, ccell, coneONew);CHKERRQ(ierr);
@@ -828,7 +847,8 @@ static PetscErrorCode DMPlexConstructCohesiveCells_Internal(DM dm, DMLabel label
           replaced = PETSC_TRUE;
         }
       }
-      if (!replaced) SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "The cone of point %d does not contain split points", oldp);
+      /* Cells with only a vertex or edge on the submesh have no replacement */
+      /* if (!replaced) SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "The cone of point %d does not contain split points", oldp); */
     }
     ierr = ISRestoreIndices(pIS, &points);CHKERRQ(ierr);
     ierr = ISDestroy(&pIS);CHKERRQ(ierr);
@@ -971,6 +991,7 @@ PetscErrorCode DMPlexConstructCohesiveCells(DM dm, DMLabel label, DM *dmSplit)
 @*/
 PetscErrorCode DMPlexLabelCohesiveComplete(DM dm, DMLabel label, PetscBool flip, DM subdm)
 {
+  DMLabel         depthLabel;
   IS              dimIS, subpointIS;
   const PetscInt *points, *subpoints;
   const PetscInt  rev   = flip ? -1 : 1;
@@ -978,6 +999,7 @@ PetscErrorCode DMPlexLabelCohesiveComplete(DM dm, DMLabel label, PetscBool flip,
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
+  ierr = DMPlexGetDepthLabel(dm, &depthLabel);CHKERRQ(ierr);
   ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
   if (subdm) {
     ierr = DMPlexCreateSubpointIS(subdm, &subpointIS);CHKERRQ(ierr);
@@ -1029,9 +1051,10 @@ PetscErrorCode DMPlexLabelCohesiveComplete(DM dm, DMLabel label, PetscBool flip,
           }
           if (o >= 0) {
             ierr = DMLabelSetValue(label, support[s],  rev*(shift+dim));CHKERRQ(ierr);
+            pos  = rev > 0 ? PETSC_TRUE : PETSC_FALSE;
           } else {
             ierr = DMLabelSetValue(label, support[s], -rev*(shift+dim));CHKERRQ(ierr);
-            pos  = PETSC_FALSE;
+            pos  = rev > 0 ? PETSC_FALSE : PETSC_TRUE;
           }
           break;
         }
@@ -1126,7 +1149,7 @@ PetscErrorCode DMPlexLabelCohesiveComplete(DM dm, DMLabel label, PetscBool flip,
           if ((spoint < cStart) || (spoint >= cEnd)) continue;
           ierr = DMLabelGetValue(label, spoint, &val);CHKERRQ(ierr);
           if (val == -1) SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Cell %d in star of %d does not have a valid label", spoint, point);
-          ierr = DMPlexGetLabelValue(dm, "depth", point, &dep);CHKERRQ(ierr);
+          ierr = DMLabelGetValue(depthLabel, point, &dep);CHKERRQ(ierr);
           if (val > 0) {
             ierr = DMLabelSetValue(label, point,   shift+dep);CHKERRQ(ierr);
           } else {
