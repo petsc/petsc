@@ -131,7 +131,7 @@ PetscErrorCode PCISSetSubdomainScalingFactor(PC pc, PetscScalar scal)
 PetscErrorCode  PCISSetUp(PC pc)
 {
   PC_IS          *pcis  = (PC_IS*)(pc->data);
-  Mat_IS         *matis = (Mat_IS*)pc->mat->data;
+  Mat_IS         *matis;
   PetscErrorCode ierr;
   PetscBool      flg;
   Vec            counter;
@@ -139,11 +139,13 @@ PetscErrorCode  PCISSetUp(PC pc)
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompare((PetscObject)pc->mat,MATIS,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONG,"Preconditioner type of Neumann Neumman requires matrix of type MATIS");
+  matis = (Mat_IS*)pc->mat->data;
 
   pcis->pure_neumann = matis->pure_neumann;
 
   /* get info on mapping */
-  ierr = ISLocalToGlobalMappingGetInfo(((Mat_IS*)(pc->mat->data))->mapping,&(pcis->n_neigh),&(pcis->neigh),&(pcis->n_shared),&(pcis->shared));CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingGetSize(matis->mapping,&pcis->n);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingGetInfo(matis->mapping,&(pcis->n_neigh),&(pcis->neigh),&(pcis->n_shared),&(pcis->shared));CHKERRQ(ierr);
   pcis->ISLocalToGlobalMappingGetInfoWasCalled = PETSC_TRUE;
 
   /* Creating local and global index sets for interior and inteface nodes. */
@@ -154,7 +156,6 @@ PetscErrorCode  PCISSetUp(PC pc)
     PetscInt    i,j;
 
     /* Identifying interior and interface nodes, in local numbering */
-    ierr = VecGetSize(matis->x,&pcis->n);CHKERRQ(ierr);
     ierr = PetscMalloc(pcis->n*sizeof(PetscInt),&array);CHKERRQ(ierr);
     ierr = PetscMemzero(array,pcis->n*sizeof(PetscInt));CHKERRQ(ierr);
     for (i=0;i<pcis->n_neigh;i++)
