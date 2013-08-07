@@ -987,6 +987,7 @@ PetscErrorCode DMPlexConstructCohesiveCells(DM dm, DMLabel label, DM *dmSplit)
 @*/
 PetscErrorCode DMPlexLabelCohesiveComplete(DM dm, DMLabel label, PetscBool flip, DM subdm)
 {
+  DMLabel         depthLabel;
   IS              dimIS, subpointIS;
   const PetscInt *points, *subpoints;
   const PetscInt  rev   = flip ? -1 : 1;
@@ -994,6 +995,7 @@ PetscErrorCode DMPlexLabelCohesiveComplete(DM dm, DMLabel label, PetscBool flip,
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
+  ierr = DMPlexGetDepthLabel(dm, &depthLabel);CHKERRQ(ierr);
   ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
   if (subdm) {
     ierr = DMPlexCreateSubpointIS(subdm, &subpointIS);CHKERRQ(ierr);
@@ -1143,7 +1145,7 @@ PetscErrorCode DMPlexLabelCohesiveComplete(DM dm, DMLabel label, PetscBool flip,
           if ((spoint < cStart) || (spoint >= cEnd)) continue;
           ierr = DMLabelGetValue(label, spoint, &val);CHKERRQ(ierr);
           if (val == -1) SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Cell %d in star of %d does not have a valid label", spoint, point);
-          ierr = DMPlexGetLabelValue(dm, "depth", point, &dep);CHKERRQ(ierr);
+          ierr = DMLabelGetValue(depthLabel, point, &dep);CHKERRQ(ierr);
           if (val > 0) {
             ierr = DMLabelSetValue(label, point,   shift+dep);CHKERRQ(ierr);
           } else {
