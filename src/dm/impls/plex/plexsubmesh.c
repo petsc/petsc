@@ -685,8 +685,37 @@ static PetscErrorCode DMPlexConstructCohesiveCells_Internal(DM dm, DMLabel label
         }
         ierr = DMPlexSetCone(sdm, splitp, &coneNew[2]);CHKERRQ(ierr);
         ierr = DMPlexSetConeOrientation(sdm, splitp, ornt);CHKERRQ(ierr);
+        /* Face support */
+        for (s = 0; s < supportSize; ++s) {
+          PetscInt val;
+
+          ierr = DMLabelGetValue(label, support[s], &val);CHKERRQ(ierr);
+          if (val < 0) {
+            /* Split old face:   Replace negative side cell with cohesive cell */
+             ierr = DMPlexInsertSupport(sdm, newp, s, ccell);CHKERRQ(ierr);
+          } else {
+            /* Split new face:   Replace positive side cell with cohesive cell */
+            ierr = DMPlexInsertSupport(sdm, splitp, s, ccell);CHKERRQ(ierr);
+            /* Get orientation for cohesive face */
+            {
+              const PetscInt *ncone, *nconeO;
+              PetscInt        nconeSize, nc;
+
+              ierr = DMPlexGetConeSize(dm, support[s], &nconeSize);CHKERRQ(ierr);
+              ierr = DMPlexGetCone(dm, support[s], &ncone);CHKERRQ(ierr);
+              ierr = DMPlexGetConeOrientation(dm, support[s], &nconeO);CHKERRQ(ierr);
+              for (nc = 0; nc < nconeSize; ++nc) {
+                if (ncone[nc] == oldp) {
+                  coneONew[0] = nconeO[nc];
+                  break;
+                }
+              }
+              if (nc >= nconeSize) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Could not locate face %d in neighboring cell %d", oldp, support[s]);
+            }
+          }
+        }
         /* Cohesive cell:    Old and new split face, then new cohesive edges */
-        coneNew[0] = newp;   coneONew[0] = -coneSize; /* We know it has to be negative to be on the negative side */
+        coneNew[0] = newp;   /* Extracted negative side orentation above */
         coneNew[1] = splitp; coneONew[1] = coneONew[0];
         for (q = 0; q < coneSize; ++q) {
           coneNew[2+q]  = (pMaxNew[1] - pMaxNew[dim-2]) + (depthShift[1] - depthShift[0]) + coneNew[2+q];
@@ -694,19 +723,6 @@ static PetscErrorCode DMPlexConstructCohesiveCells_Internal(DM dm, DMLabel label
         }
         ierr = DMPlexSetCone(sdm, ccell, coneNew);CHKERRQ(ierr);
         ierr = DMPlexSetConeOrientation(sdm, ccell, coneONew);CHKERRQ(ierr);
-
-        for (s = 0; s < supportSize; ++s) {
-          PetscInt val;
-
-          ierr = DMLabelGetValue(label, support[s], &val);CHKERRQ(ierr);
-          if (val < 0) {
-            /* Split old face:   Replace negative side cell with cohesive cell */
-            ierr = DMPlexInsertSupport(sdm, newp, s, ccell);CHKERRQ(ierr);
-          } else {
-            /* Split new face:   Replace positive side cell with cohesive cell */
-            ierr = DMPlexInsertSupport(sdm, splitp, s, ccell);CHKERRQ(ierr);
-          }
-        }
       } else if (dep == 0) {
         const PetscInt cedge = pMaxNew[1] + (depthShift[1] - depthShift[0]) + p;
 
