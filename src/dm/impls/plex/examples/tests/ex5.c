@@ -149,6 +149,9 @@ In parallel,
         3----23----6      2------
          cell 1
 
+Test 1:
+Four tets sharing two faces
+
 Quadrilateral
 -------------
 Test 0:
@@ -319,9 +322,9 @@ PetscErrorCode CreateSimplex_2D(MPI_Comm comm, AppCtx *user, DM dm)
 
 #undef __FUNCT__
 #define __FUNCT__ "CreateSimplex_3D"
-PetscErrorCode CreateSimplex_3D(MPI_Comm comm, DM dm)
+PetscErrorCode CreateSimplex_3D(MPI_Comm comm, AppCtx *user, DM dm)
 {
-  PetscInt       depth = 3, testNum  = 0, p;
+  PetscInt       depth = 3, testNum  = user->testNum, p;
   PetscMPIInt    rank;
   PetscErrorCode ierr;
 
@@ -344,6 +347,25 @@ PetscErrorCode CreateSimplex_3D(MPI_Comm comm, DM dm)
         ierr = DMPlexSetLabelValue(dm, "marker", markerPoints[p*2], markerPoints[p*2+1]);CHKERRQ(ierr);
       }
       for(p = 0; p < 3; ++p) {
+        ierr = DMPlexSetLabelValue(dm, "fault", faultPoints[p], 1);CHKERRQ(ierr);
+      }
+    }
+    break;
+    case 1:
+    {
+      PetscInt    numPoints[4]         = {6, 13, 12, 4};
+      PetscInt    coneSize[35]         = {4, 4, 4, 4, 0, 0, 0, 0, 0, 0, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2};
+      PetscInt    cones[78]            = {10, 11, 12, 13,  10, 14, 15, 16,  17, 18, 14, 19,  20, 13, 19, 21,  22, 23, 24,  25, 26, 22,  24, 27, 25,  23, 26, 27,  28, 29, 23,  24, 30, 28,  22, 29, 30,   31, 32, 28,  29, 33, 31,  32, 33, 23,  26, 34, 33,  34, 27, 32,  6, 5,  5, 7,  7, 6,  6, 4,  4, 5,  7, 4,  7, 9,  9, 5,  6, 9,  9, 8,  8, 7,  5, 8,  4, 8};
+      PetscInt    coneOrientations[78] = { 0,  0,  0,  0,  -3,  0,  0,  0,   0,  0, -2,  0,   0, -2, -3,  0,   0,  0,  0,   0,  0, -2,  -2,  0, -2,  -2, -2, -2,   0,  0,  0,   0,  0, -2,   0, -2, -2,    0,  0,  0,   0,  0, -2,  -2, -2,  0,  -2,  0, -2,  -2, -2, -2,  0, 0,  0, 0,  0, 0,  0, 0,  0, 0,  0, 0,  0, 0,  0, 0,  0, 0,  0, 0,  0, 0,  0, 0,  0, 0};
+      PetscScalar vertexCoords[18]     = {-1.0, 0.0, 0.0,  0.0, -1.0, 0.0,  0.0, 0.0, 1.0,  0.0, 1.0, 0.0,  0.0, 0.0, -1.0,  1.0, 0.0, 0.0};
+      PetscInt    markerPoints[14]     = {5, 1, 6, 1, 7, 1, 10, 1, 22, 1, 23, 1, 24, 1};
+      PetscInt    faultPoints[4]       = {5, 6, 7, 8};
+
+      ierr = DMPlexCreateFromDAG(dm, depth, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
+      for (p = 0; p < 7; ++p) {
+        ierr = DMPlexSetLabelValue(dm, "marker", markerPoints[p*2], markerPoints[p*2+1]);CHKERRQ(ierr);
+      }
+      for(p = 0; p < 4; ++p) {
         ierr = DMPlexSetLabelValue(dm, "fault", faultPoints[p], 1);CHKERRQ(ierr);
       }
     }
@@ -479,7 +501,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     break;
   case 3:
     if (cellSimplex) {
-      ierr = CreateSimplex_3D(comm, *dm);CHKERRQ(ierr);
+      ierr = CreateSimplex_3D(comm, user, *dm);CHKERRQ(ierr);
     } else {
       ierr = CreateHex_3D(comm, *dm);CHKERRQ(ierr);
     }
