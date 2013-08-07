@@ -19,12 +19,6 @@ typedef struct {
   Mat           coarse_psi_B;
   Mat           coarse_psi_D;
   PetscInt      local_primal_size;
-  //PetscInt      *local_primal_indices;
-  //PetscMPIInt   *local_primal_displacements;
-  //PetscMPIInt   *local_primal_sizes;
-  //PetscMPIInt   replicated_primal_size;
-  //PetscMPIInt   *replicated_local_primal_indices;
-  //PetscScalar   *replicated_local_primal_values;
   VecScatter    coarse_loc_to_glob;
   /* Local stuffs needed by BDDC application in KSP */
   Vec           vec1_P;
@@ -65,8 +59,6 @@ typedef struct {
   IS                         NeumannBoundaries;
   IS                         DirichletBoundaries;
   PetscBool                  switch_static;
-  CoarseProblemType          coarse_problem_type;
-  //CoarseCommunicationsType   coarse_communications_type;
   PetscInt                   coarsening_ratio;
   PetscInt                   current_level;
   PetscInt                   max_levels;
