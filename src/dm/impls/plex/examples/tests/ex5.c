@@ -496,7 +496,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     ierr = DMPlexGetSubpointMap(faultMesh, &subpointMap);CHKERRQ(ierr);
     ierr = DMLabelDuplicate(subpointMap, &label);CHKERRQ(ierr);
     ierr = DMLabelClearStratum(label, dim);CHKERRQ(ierr);
-    ierr = DMPlexLabelCohesiveComplete(*dm, label, faultMesh);CHKERRQ(ierr);
+    ierr = DMPlexLabelCohesiveComplete(*dm, label, PETSC_FALSE, faultMesh);CHKERRQ(ierr);
     ierr = PetscViewerASCIISynchronizedAllow(PETSC_VIEWER_STDOUT_WORLD, PETSC_TRUE);CHKERRQ(ierr);
     ierr = DMLabelView(label, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     ierr = DMPlexConstructCohesiveCells(*dm, label, &hybridMesh);CHKERRQ(ierr);

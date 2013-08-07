@@ -959,6 +959,7 @@ PetscErrorCode DMPlexConstructCohesiveCells(DM dm, DMLabel label, DM *dmSplit)
   Input Parameters:
 + dm - The DM
 . label - A DMLabel marking the surface vertices
+. flip  - Flag to flip the submesh normal and replace points on the other side
 - subdm - The subDM associated with the label, or NULL
 
   Output Parameter:
@@ -968,10 +969,11 @@ PetscErrorCode DMPlexConstructCohesiveCells(DM dm, DMLabel label, DM *dmSplit)
 
 .seealso: DMPlexConstructCohesiveCells(), DMPlexLabelComplete()
 @*/
-PetscErrorCode DMPlexLabelCohesiveComplete(DM dm, DMLabel label, DM subdm)
+PetscErrorCode DMPlexLabelCohesiveComplete(DM dm, DMLabel label, PetscBool flip, DM subdm)
 {
   IS              dimIS, subpointIS;
   const PetscInt *points, *subpoints;
+  const PetscInt  rev   = flip ? -1 : 1;
   PetscInt        shift = 100, dim, dep, cStart, cEnd, numPoints, numSubpoints, p, val;
   PetscErrorCode  ierr;
 
@@ -1025,14 +1027,10 @@ PetscErrorCode DMPlexLabelCohesiveComplete(DM dm, DMLabel label, DM subdm)
             }
             if (sc >= subconeSize) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Could not find point %d in cone for subpoint %d", points[p], subpoint);
           }
-#if 1
           if (o >= 0) {
-#else
-          if (o < 0) {
-#endif
-            ierr = DMLabelSetValue(label, support[s],   shift+dim);CHKERRQ(ierr);
+            ierr = DMLabelSetValue(label, support[s],  rev*(shift+dim));CHKERRQ(ierr);
           } else {
-            ierr = DMLabelSetValue(label, support[s], -(shift+dim));CHKERRQ(ierr);
+            ierr = DMLabelSetValue(label, support[s], -rev*(shift+dim));CHKERRQ(ierr);
             pos  = PETSC_FALSE;
           }
           break;
