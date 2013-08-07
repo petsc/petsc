@@ -1128,12 +1128,13 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqDense(Mat A,Mat B,PetscReal fill,Mat
 #define __FUNCT__ "MatMatMultNumeric_SeqAIJ_SeqDense"
 PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqDense(Mat A,Mat B,Mat C)
 {
-  Mat_SeqAIJ     *a=(Mat_SeqAIJ*)A->data;
-  PetscErrorCode ierr;
-  PetscScalar    *b,*c,r1,r2,r3,r4,*b1,*b2,*b3,*b4,*c1,*c2,*c3,*c4;
-  MatScalar      *aa,aatmp;
-  PetscInt       cm=C->rmap->n,cn=B->cmap->n,bm=B->rmap->n,col,i,j,n,*aj,ajtmp,am=A->rmap->n;
-  PetscInt       am4=4*am,bm4=4*bm;
+  Mat_SeqAIJ        *a=(Mat_SeqAIJ*)A->data;
+  PetscErrorCode    ierr;
+  PetscScalar       *c,*b,r1,r2,r3,r4,*c1,*c2,*c3,*c4,aatmp;
+  const PetscScalar *aa,*b1,*b2,*b3,*b4;
+  const PetscInt    *aj;
+  PetscInt          cm=C->rmap->n,cn=B->cmap->n,bm=B->rmap->n,am=A->rmap->n;
+  PetscInt          am4=4*am,bm4=4*bm,col,i,j,n,ajtmp;
 
   PetscFunctionBegin;
   if (!cm || !cn) PetscFunctionReturn(0);
