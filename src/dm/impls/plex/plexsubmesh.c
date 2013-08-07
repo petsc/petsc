@@ -1045,9 +1045,10 @@ PetscErrorCode DMPlexLabelCohesiveComplete(DM dm, DMLabel label, PetscBool flip,
           }
           if (o >= 0) {
             ierr = DMLabelSetValue(label, support[s],  rev*(shift+dim));CHKERRQ(ierr);
+            pos  = rev > 0 ? PETSC_TRUE : PETSC_FALSE;
           } else {
             ierr = DMLabelSetValue(label, support[s], -rev*(shift+dim));CHKERRQ(ierr);
-            pos  = PETSC_FALSE;
+            pos  = rev > 0 ? PETSC_FALSE : PETSC_TRUE;
           }
           break;
         }
