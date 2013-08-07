@@ -938,7 +938,8 @@ PetscErrorCode DMPlexConstructCohesiveCells(DM dm, DMLabel label, DM *dmSplit)
 
   Input Parameters:
 + dm - The DM
-- label - A DMLabel marking the surface vertices
+. label - A DMLabel marking the surface vertices
+- subdm - The subDM associated with the label, or NULL
 
   Output Parameter:
 . label - A DMLabel marking all surface points
@@ -947,15 +948,22 @@ PetscErrorCode DMPlexConstructCohesiveCells(DM dm, DMLabel label, DM *dmSplit)
 
 .seealso: DMPlexConstructCohesiveCells(), DMPlexLabelComplete()
 @*/
-PetscErrorCode DMPlexLabelCohesiveComplete(DM dm, DMLabel label)
+PetscErrorCode DMPlexLabelCohesiveComplete(DM dm, DMLabel label, DM subdm)
 {
-  IS              dimIS;
-  const PetscInt *points;
-  PetscInt        shift = 100, dim, dep, cStart, cEnd, numPoints, p, val;
+  IS              dimIS, subpointIS;
+  const PetscInt *points, *subpoints;
+  PetscInt        shift = 100, dim, dep, cStart, cEnd, numPoints, numSubpoints, p, val;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
+  if (subdm) {
+    ierr = DMPlexCreateSubpointIS(subdm, &subpointIS);CHKERRQ(ierr);
+    if (subpointIS) {
+      ierr = ISGetLocalSize(subpointIS, &numSubpoints);CHKERRQ(ierr);
+      ierr = ISGetIndices(subpointIS, &subpoints);CHKERRQ(ierr);
+    }
+  }
   /* Cell orientation for face gives the side of the fault */
   ierr = DMLabelGetStratumIS(label, dim-1, &dimIS);CHKERRQ(ierr);
   if (!dimIS) PetscFunctionReturn(0);
@@ -978,7 +986,30 @@ PetscErrorCode DMPlexLabelCohesiveComplete(DM dm, DMLabel label)
       ierr = DMPlexGetConeOrientation(dm, support[s], &ornt);CHKERRQ(ierr);
       for (c = 0; c < coneSize; ++c) {
         if (cone[c] == points[p]) {
-          if (ornt[c] >= 0) {
+          PetscInt o = ornt[c];
+
+          if (subdm) {
+            const PetscInt *subcone, *subornt;
+            PetscInt        subpoint, subface, subconeSize, sc;
+
+            ierr = PetscFindInt(support[s], numSubpoints, subpoints, &subpoint);CHKERRQ(ierr);
+            ierr = PetscFindInt(points[p],  numSubpoints, subpoints, &subface);CHKERRQ(ierr);
+            ierr = DMPlexGetConeSize(subdm, subpoint, &subconeSize);CHKERRQ(ierr);
+            ierr = DMPlexGetCone(subdm, subpoint, &subcone);CHKERRQ(ierr);
+            ierr = DMPlexGetConeOrientation(subdm, subpoint, &subornt);CHKERRQ(ierr);
+            for (sc = 0; sc < subconeSize; ++sc) {
+              if (subcone[sc] == subface) {
+                o = subornt[0];
+                break;
+              }
+            }
+            if (sc >= subconeSize) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Could not find point %d in cone for subpoint %d", points[p], subpoint);
+          }
+#if 1
+          if (o >= 0) {
+#else
+          if (o < 0) {
+#endif
             ierr = DMLabelSetValue(label, support[s],   shift+dim);CHKERRQ(ierr);
           } else {
             ierr = DMLabelSetValue(label, support[s], -(shift+dim));CHKERRQ(ierr);
@@ -1011,6 +1042,10 @@ PetscErrorCode DMPlexLabelCohesiveComplete(DM dm, DMLabel label)
         }
       }
     }
+  }
+  if (subdm) {
+    if (subpointIS) {ierr = ISRestoreIndices(subpointIS, &subpoints);CHKERRQ(ierr);}
+    ierr = ISDestroy(&subpointIS);CHKERRQ(ierr);
   }
   ierr = ISRestoreIndices(dimIS, &points);CHKERRQ(ierr);
   ierr = ISDestroy(&dimIS);CHKERRQ(ierr);
