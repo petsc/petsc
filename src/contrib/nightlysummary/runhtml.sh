@@ -112,7 +112,7 @@ generate_section()
   do
     echo "Processing file $f..."
     echo "<tr><td class=\"desc\">" >> $OUTFILE
-    echo "<a href=\"$f\">${f#$LOGDIR/}</a>" >> $OUTFILE
+    echo "<a href=\"${f#$LOGDIR/}\">${f#$LOGDIR/}</a>" >> $OUTFILE
 
     # Write number of warnings:
     numwarnings=`grep "[Ww]arning[: ]" $f | wc -l`
