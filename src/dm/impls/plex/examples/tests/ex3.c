@@ -18,6 +18,7 @@ typedef struct {
   PetscReal refinementLimit;   /* The largest allowable cell volume */
   /* Element definition */
   PetscInt  qorder;            /* Order of the quadrature */
+  PetscInt  numComponents;     /* Number of field components */
   /* Testing space */
   PetscInt  porder;            /* Order of polynomials to test */
 } AppCtx;
@@ -69,6 +70,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->interpolate     = PETSC_FALSE;
   options->refinementLimit = 0.0;
   options->qorder          = 0;
+  options->numComponents   = 1;
   options->porder          = 0;
 
   ierr = PetscOptionsBegin(comm, "", "Projection Test Options", "DMPlex");CHKERRQ(ierr);
@@ -77,6 +79,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsBool("-interpolate", "Generate intermediate mesh elements", "ex3.c", options->interpolate, &options->interpolate, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-refinement_limit", "The largest allowable cell volume", "ex3.c", options->refinementLimit, &options->refinementLimit, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-qorder", "The quadrature order", "ex3.c", options->qorder, &options->qorder, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-num_comp", "The number of field components", "ex3.c", options->numComponents, &options->numComponents, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-porder", "The order of polynomials to test", "ex3.c", options->porder, &options->porder, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
   PetscFunctionReturn(0);
@@ -205,11 +208,14 @@ PetscErrorCode SetupElement(DM dm, AppCtx *user)
   ierr = PetscFECreate(PetscObjectComm((PetscObject) dm), &fem);CHKERRQ(ierr);
   ierr = PetscFESetBasisSpace(fem, P);CHKERRQ(ierr);
   ierr = PetscFESetDualSpace(fem, Q);CHKERRQ(ierr);
+  ierr = PetscFESetNumComponents(fem, user->numComponents);CHKERRQ(ierr);
   ierr = PetscFEGetDimension(fem, &numBasisFunc);CHKERRQ(ierr);
   ierr = PetscFEGetNumComponents(fem, &numBasisComp);CHKERRQ(ierr);
   ierr = PetscFEGetTabulation(fem, numPoints, x, &B, NULL, NULL);CHKERRQ(ierr);
   /* Compare numDof */
   /* Functions are (- x - y)/2, (x+1)/2,  and (y+1)/2 */
+  if (numBasisFunc != NUM_BASIS_FUNCTIONS_0) SETERRQ2(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Invalid number of basis functions %d != %d", numBasisFunc, NUM_BASIS_FUNCTIONS_0);
+  if (numBasisComp != NUM_BASIS_COMPONENTS_0) SETERRQ2(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Invalid number of basis components %d != %d", numBasisComp, NUM_BASIS_COMPONENTS_0);
   for (p = 0; p < numPoints; ++p) {
     for (b = 0; b < numBasisFunc; ++b) {
       for (c = 0; c < numBasisComp; ++c) {
