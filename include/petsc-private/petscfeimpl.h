@@ -61,9 +61,10 @@ struct _PetscFEOps {
 
 struct _p_PetscFE {
   PETSCHEADER(struct _PetscFEOps);
-  void          *data;       /* Implementation object */
-  PetscSpace     basisSpace; /* The basis space P */
-  PetscDualSpace dualSpace;  /* The dual space P' */
+  void          *data;          /* Implementation object */
+  PetscSpace     basisSpace;    /* The basis space P */
+  PetscDualSpace dualSpace;     /* The dual space P' */
+  PetscInt       numComponents; /* The number of field components */
 };
 
 #endif

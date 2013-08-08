@@ -1666,14 +1666,13 @@ PetscErrorCode PetscDualSpaceGetDimension(PetscDualSpace sp, PetscInt *dim)
 #define __FUNCT__ "PetscDualSpaceSetUp_Lagrange"
 PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
 {
-  DM                 dm    = sp->dm;
-  PetscInt           order = sp->order;
-  PetscSection       csection;
-  Vec                coordinates;
-  const PetscScalar *coords;
-  PetscReal         *qpoints, *qweights;
-  PetscInt           depth, dim, pdim, *pStart, *pEnd, coneSize, d, n, f = 0;
-  PetscErrorCode     ierr;
+  DM             dm    = sp->dm;
+  PetscInt       order = sp->order;
+  PetscSection   csection;
+  Vec            coordinates;
+  PetscReal     *qpoints, *qweights;
+  PetscInt       depth, dim, pdim, *pStart, *pEnd, coneSize, d, n, f = 0;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscDualSpaceGetDimension(sp, &pdim);CHKERRQ(ierr);
@@ -1698,7 +1697,8 @@ PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
 
       if ((p >= pStart[0]) && (p < pEnd[0])) {
         /* Vertices */
-        PetscInt dof, off, d;
+        const PetscScalar *coords;
+        PetscInt           dof, off, d;
 
         if (order < 1) continue;
         sp->functional[f].numQuadPoints = 1;
@@ -1716,7 +1716,8 @@ PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
         ierr = VecRestoreArrayRead(coordinates, &coords);CHKERRQ(ierr);
       } else if ((p >= pStart[1]) && (p < pEnd[1])) {
         /* Edges */
-        PetscInt k;
+        PetscScalar *coords;
+        PetscInt     k;
 
         if (order < 2) continue;
         coords = NULL;
@@ -1907,8 +1908,9 @@ PetscErrorCode PetscFECreate(MPI_Comm comm, PetscFE *fem)
   ierr = PetscHeaderCreate(f, _p_PetscFE, struct _PetscFEOps, PETSCFE_CLASSID, "PetscFE", "Finite Element", "PetscFE", comm, PetscFEDestroy, PetscFEView);CHKERRQ(ierr);
   ierr = PetscMemzero(f->ops, sizeof(struct _PetscFEOps));CHKERRQ(ierr);
 
-  f->basisSpace = NULL;
-  f->dualSpace  = NULL;
+  f->basisSpace    = NULL;
+  f->dualSpace     = NULL;
+  f->numComponents = 1;
 
   *fem = f;
   PetscFunctionReturn(0);
@@ -1928,13 +1930,23 @@ PetscErrorCode PetscFEGetDimension(PetscFE fem, PetscInt *dim)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscFESetNumComponents"
+PetscErrorCode PetscFESetNumComponents(PetscFE fem, PetscInt comp)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);
+  fem->numComponents = comp;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscFEGetNumComponents"
 PetscErrorCode PetscFEGetNumComponents(PetscFE fem, PetscInt *comp)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);
   PetscValidPointer(comp, 2);
-  *comp = 1;
+  *comp = fem->numComponents;
   PetscFunctionReturn(0);
 }
 
@@ -1990,6 +2002,7 @@ PetscErrorCode PetscFEGetTabulation(PetscFE fem, PetscInt npoints, const PetscRe
   PetscReal     *tmpB, *invV;
   PetscInt       pdim; /* Dimension of FE space P */
   PetscInt       dim;  /* Spatial dimension */
+  PetscInt       comp; /* Field components */
   PetscInt       p, j, k;
   PetscErrorCode ierr;
 
@@ -2003,10 +2016,11 @@ PetscErrorCode PetscFEGetTabulation(PetscFE fem, PetscInt npoints, const PetscRe
 
   ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = PetscSpaceGetDimension(fem->basisSpace, &pdim);CHKERRQ(ierr);
+  ierr = PetscFEGetNumComponents(fem, &comp);CHKERRQ(ierr);
   /* if (nvalues%dim) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "The number of coordinate values %d must be divisible by the spatial dimension %d", nvalues, dim); */
 
   if (B) {
-    ierr = DMGetWorkArray(dm, npoints*pdim, PETSC_REAL, B);CHKERRQ(ierr);
+    ierr = DMGetWorkArray(dm, npoints*pdim*comp, PETSC_REAL, B);CHKERRQ(ierr);
     ierr = DMGetWorkArray(dm, npoints*pdim, PETSC_REAL, &tmpB);CHKERRQ(ierr);
   }
   if (D) {ierr = DMGetWorkArray(dm, npoints*pdim*dim, PETSC_REAL, D);CHKERRQ(ierr);}
@@ -2047,11 +2061,15 @@ PetscErrorCode PetscFEGetTabulation(PetscFE fem, PetscInt npoints, const PetscRe
     if (B) {
       /* Multiply by V^{-1} (pdim x pdim) */
       for (j = 0; j < pdim; ++j) {
-        const PetscInt i = p*pdim + j;
+        const PetscInt i = (p*pdim + j)*comp;
+        PetscInt       c;
 
         (*B)[i] = 0.0;
         for (k = 0; k < pdim; ++k) {
           (*B)[i] += invV[k*pdim+j] * tmpB[p*pdim + k];
+        }
+        for (c = 1; c < comp; ++c) {
+          (*B)[i+c] = (*B)[i];
         }
       }
     }
