@@ -588,7 +588,7 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
   PetscInt       dirsize,i,*is_indices;
   PetscScalar    *array_x,*array_diagonal;
   Vec            used_vec;
-  PetscBool      guess_nonzero;
+  PetscBool      guess_nonzero,flg,bddc_has_dirichlet_boundaries;
 
   PetscFunctionBegin;
   /* Creates parallel work vectors used in presolve. */
@@ -609,23 +609,28 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
   /* hack into ksp data structure PCPreSolve comes earlier in src/ksp/ksp/interface/itfunc.c */
   if (ksp) {
     ierr = KSPGetInitialGuessNonzero(ksp,&guess_nonzero);CHKERRQ(ierr);
-    if ( !guess_nonzero ) {
+    if (!guess_nonzero) {
       ierr = VecSet(used_vec,0.0);CHKERRQ(ierr);
     }
   }
 
-  if (rhs) { /* TODO: wiser handling of rhs removal, which is only needed in case of zeroed rows */
-    /* store the original rhs */
-    ierr = VecCopy(rhs,pcbddc->original_rhs);CHKERRQ(ierr);
+  /* TODO: remove when Dirichlet boundaries will be shared */
+  ierr = PCBDDCGetDirichletBoundaries(pc,&dirIS);CHKERRQ(ierr);
+  flg = PETSC_FALSE;
+  if (dirIS) flg = PETSC_TRUE;
+  ierr = MPI_Allreduce(&flg,&bddc_has_dirichlet_boundaries,1,MPIU_BOOL,MPI_LOR,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
+  
+  /* store the original rhs */
+  ierr = VecCopy(rhs,pcbddc->original_rhs);CHKERRQ(ierr);
 
-    /* Take into account zeroed rows -> change rhs and store solution removed */
+  /* Take into account zeroed rows -> change rhs and store solution removed */
+  if (rhs && bddc_has_dirichlet_boundaries) {
     ierr = MatGetDiagonal(pc->pmat,pcis->vec1_global);CHKERRQ(ierr);
     ierr = VecPointwiseDivide(pcis->vec1_global,rhs,pcis->vec1_global);CHKERRQ(ierr);
     ierr = VecScatterBegin(matis->ctx,pcis->vec1_global,pcis->vec2_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterEnd(matis->ctx,pcis->vec1_global,pcis->vec2_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterBegin(matis->ctx,used_vec,pcis->vec1_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterEnd(matis->ctx,used_vec,pcis->vec1_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = PCBDDCGetDirichletBoundaries(pc,&dirIS);CHKERRQ(ierr);
     if (dirIS) {
       ierr = ISGetSize(dirIS,&dirsize);CHKERRQ(ierr);
       ierr = VecGetArray(pcis->vec1_N,&array_x);CHKERRQ(ierr);
@@ -661,22 +666,25 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
     }
   }
 
+  /* prepare MatMult and rhs for solver */
   if (pcbddc->use_change_of_basis) {
     /* swap pointers for local matrices */
     temp_mat = matis->A;
     matis->A = pcbddc->local_mat;
     pcbddc->local_mat = temp_mat;
+    if (rhs) {
+      /* Get local rhs and apply transformation of basis */
+      ierr = VecScatterBegin(pcis->global_to_B,rhs,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = VecScatterEnd  (pcis->global_to_B,rhs,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      /* from original basis to modified basis */
+      ierr = MatMultTranspose(pcbddc->ChangeOfBasisMatrix,pcis->vec1_B,pcis->vec2_B);CHKERRQ(ierr);
+      /* put back modified values into the global vec using INSERT_VALUES copy mode */
+      ierr = VecScatterBegin(pcis->global_to_B,pcis->vec2_B,rhs,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+      ierr = VecScatterEnd  (pcis->global_to_B,pcis->vec2_B,rhs,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    }
   }
-  if (pcbddc->use_change_of_basis && rhs) {
-    /* Get local rhs and apply transformation of basis */
-    ierr = VecScatterBegin(pcis->global_to_B,rhs,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecScatterEnd  (pcis->global_to_B,rhs,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    /* from original basis to modified basis */
-    ierr = MatMultTranspose(pcbddc->ChangeOfBasisMatrix,pcis->vec1_B,pcis->vec2_B);CHKERRQ(ierr);
-    /* put back modified values into the global vec using INSERT_VALUES copy mode */
-    ierr = VecScatterBegin(pcis->global_to_B,pcis->vec2_B,rhs,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-    ierr = VecScatterEnd  (pcis->global_to_B,pcis->vec2_B,rhs,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-  }
+
+  /* remove nullspace if present */
   if (ksp && pcbddc->NullSpace) {
     ierr = MatNullSpaceRemove(pcbddc->NullSpace,used_vec);CHKERRQ(ierr);
     ierr = MatNullSpaceRemove(pcbddc->NullSpace,rhs);CHKERRQ(ierr);
