@@ -2832,7 +2832,9 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
     ierr = KSPSetOptionsPrefix(pcbddc->coarse_ksp,prefix);CHKERRQ(ierr);
   }
   /* allow user customization */
+  /* ierr = PetscPrintf(PETSC_COMM_WORLD,"Type of %s before setting from options %s\n",((PetscObject)pcbddc->coarse_ksp)->prefix,((PetscObject)pcbddc->coarse_ksp)->type_name);CHKERRQ(ierr); */
   ierr = KSPSetFromOptions(pcbddc->coarse_ksp);CHKERRQ(ierr);
+  /* ierr = PetscPrintf(PETSC_COMM_WORLD,"Type of %s after setting from options %s\n",((PetscObject)pcbddc->coarse_ksp)->prefix,((PetscObject)pcbddc->coarse_ksp)->type_name);CHKERRQ(ierr); */
 
   /* get some info after set from options */
   ierr = KSPGetPC(pcbddc->coarse_ksp,&pc_temp);CHKERRQ(ierr);
@@ -2922,9 +2924,6 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
     ierr = KSPView(pcbddc->coarse_ksp,pcbddc->dbg_viewer);CHKERRQ(ierr);
     ierr = PetscViewerFlush(pcbddc->dbg_viewer);CHKERRQ(ierr);
   }
-
-  /* HACK: TODO see if it could be avoided */
-  ierr = PCBDDCSetUseExactDirichlet(pc_temp,PETSC_FALSE);CHKERRQ(ierr);
 
   /* Check coarse problem if requested */
   if (pcbddc->dbg_flag) {

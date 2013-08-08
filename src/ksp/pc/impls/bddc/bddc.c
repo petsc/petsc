@@ -1,5 +1,8 @@
 /* TODOLIST
-   Remove PetscOptionsSetValue for pcis!
+   Dont use qr when number of primal dof per cc is 1 
+   Provide PCApplyTranpose
+   why options for "pc_bddc_coarse" solver gets propagated to "pc_bddc_coarse_1" solver?
+   Is it possible working with PCBDDCGraph on boundary indices only?
    DofSplitting and DM attached to pc?
    Change SetNeumannBoundaries to SetNeumannBoundariesLocal and provide new SetNeumannBoundaries (same Dirichlet)
    BDDC with MG framework?
@@ -137,7 +140,7 @@ static PetscErrorCode PCBDDCSetUseExactDirichlet_BDDC(PC pc,PetscBool flg)
   PC_BDDC  *pcbddc = (PC_BDDC*)pc->data;
 
   PetscFunctionBegin;
-  pcbddc->use_exact_dirichlet = flg;
+  pcbddc->use_exact_dirichlet_trick = flg;
   PetscFunctionReturn(0);
 }
 
@@ -591,7 +594,15 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
   PetscBool      guess_nonzero,flg,bddc_has_dirichlet_boundaries;
 
   PetscFunctionBegin;
-  /* Creates parallel work vectors used in presolve. */
+  /* if we are working with cg, one dirichlet solve can be avoided during Krylov iterations */
+  if (ksp) {
+    PetscBool iscg;
+    ierr = PetscObjectTypeCompare((PetscObject)ksp,KSPCG,&iscg);CHKERRQ(ierr);
+    if (!iscg) {
+      ierr = PCBDDCSetUseExactDirichlet(pc,PETSC_FALSE);CHKERRQ(ierr);
+    }
+  }
+  /* Creates parallel work vectors used in presolve */
   if (!pcbddc->original_rhs) {
     ierr = VecDuplicate(pcis->vec1_global,&pcbddc->original_rhs);CHKERRQ(ierr);
   }
@@ -654,7 +665,7 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
   if (x) {
     ierr = VecCopy(used_vec,pcbddc->temp_solution);CHKERRQ(ierr);
     ierr = VecSet(used_vec,0.0);CHKERRQ(ierr);
-    if (pcbddc->use_exact_dirichlet && !pcbddc->coarse_psi_B) {
+    if (pcbddc->use_exact_dirichlet_trick) {
       ierr = VecScatterBegin(pcis->global_to_D,rhs,pcis->vec1_D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
       ierr = VecScatterEnd  (pcis->global_to_D,rhs,pcis->vec1_D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
       ierr = KSPSolve(pcbddc->ksp_D,pcis->vec1_D,pcis->vec2_D);CHKERRQ(ierr);
@@ -857,7 +868,7 @@ PetscErrorCode PCApply_BDDC(PC pc,Vec r,Vec z)
    Added support for M_3 preconditioner in the reference article (code is active if pcbddc->switch_static = PETSC_TRUE) */
 
   PetscFunctionBegin;
-  if (!pcbddc->use_exact_dirichlet || pcbddc->coarse_psi_B) {
+  if (!pcbddc->use_exact_dirichlet_trick) {
     /* First Dirichlet solve */
     ierr = VecScatterBegin(pcis->global_to_D,r,pcis->vec1_D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterEnd  (pcis->global_to_D,r,pcis->vec1_D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
@@ -1258,7 +1269,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC pc)
   pcbddc->NeumannBoundaries          = 0;
   pcbddc->ISForDofs                  = 0;
   pcbddc->ConstraintMatrix           = 0;
-  pcbddc->use_exact_dirichlet        = PETSC_TRUE;
+  pcbddc->use_exact_dirichlet_trick  = PETSC_TRUE;
   pcbddc->coarse_loc_to_glob         = 0;
   pcbddc->coarsening_ratio           = 8;
   pcbddc->current_level              = 0;
