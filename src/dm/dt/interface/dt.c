@@ -1742,6 +1742,18 @@ PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscDualSpaceDestroy_Lagrange"
+PetscErrorCode PetscDualSpaceDestroy_Lagrange(PetscDualSpace sp)
+{
+  PetscDualSpace_Lag *lag = (PetscDualSpace_Lag *) sp->data;
+  PetscErrorCode      ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscFree(lag);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscDualSpaceGetDimension_Lagrange"
 PetscErrorCode PetscDualSpaceGetDimension_Lagrange(PetscDualSpace sp, PetscInt *dim)
 {
@@ -1768,7 +1780,7 @@ PetscErrorCode PetscDualSpaceInitialize_Lagrange(PetscDualSpace sp)
   sp->ops->setfromoptions = NULL;
   sp->ops->setup          = PetscDualSpaceSetUp_Lagrange;
   sp->ops->view           = NULL;
-  sp->ops->destroy        = NULL;
+  sp->ops->destroy        = PetscDualSpaceDestroy_Lagrange;
   sp->ops->getdimension   = PetscDualSpaceGetDimension_Lagrange;
   PetscFunctionReturn(0);
 }
