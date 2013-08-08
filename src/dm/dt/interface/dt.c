@@ -989,21 +989,12 @@ PetscErrorCode PetscSpaceSetUp_Polynomial(PetscSpace sp)
 {
   PetscSpace_Poly *poly    = (PetscSpace_Poly *) sp->data;
   PetscInt         ndegree = sp->order+1;
-  PetscInt         dim     = poly->numVariables;
-  PetscInt         pdim, deg;
+  PetscInt         deg;
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
   ierr = PetscMalloc(ndegree * sizeof(PetscInt), &poly->degrees);CHKERRQ(ierr);
   for (deg = 0; deg < ndegree; ++deg) poly->degrees[deg] = deg;
-  ierr = PetscSpaceGetDimension(sp, &pdim);CHKERRQ(ierr);
-  /* Create A (pdim x ndegree * dim) */
-  ierr = PetscMalloc(pdim*ndegree*dim * sizeof(PetscReal), &poly->A);CHKERRQ(ierr);
-  ierr = PetscMemzero(poly->A, pdim*ndegree*dim * sizeof(PetscReal));CHKERRQ(ierr);
-  /* Hardcode P_1: Here we need a way to iterate through the basis */
-  poly->A[(0*ndegree + 0)*dim + 0] = 1.0; /* 1 */
-  poly->A[(1*ndegree + 1)*dim + 0] = 1.0; /* x */
-  poly->A[(2*ndegree + 1)*dim + 1] = 1.0; /* y */
   PetscFunctionReturn(0);
 }
 
@@ -1015,7 +1006,6 @@ PetscErrorCode PetscSpaceDestroy_Polynomial(PetscSpace sp)
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFree(poly->A);CHKERRQ(ierr);
   ierr = PetscFree(poly->degrees);CHKERRQ(ierr);
   ierr = PetscFree(poly);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1087,7 +1077,6 @@ PetscErrorCode PetscSpaceEvaluate_Polynomial(PetscSpace sp, PetscInt npoints, co
   PetscInt         ndegree = sp->order+1;
   PetscInt        *degrees = poly->degrees;
   PetscInt         dim     = poly->numVariables;
-  PetscReal       *A       = poly->A;
   PetscReal       *lpoints, *tmp, *LB, *LD, *LH;
   PetscInt        *ind, *tup;
   PetscInt         pdim, d, i, p, deg, o;
@@ -1181,7 +1170,6 @@ PETSC_EXTERN PetscErrorCode PetscSpaceCreate_Polynomial(PetscSpace sp)
   poly->numVariables = 0;
   poly->symmetric    = PETSC_FALSE;
   poly->degrees      = NULL;
-  poly->A            = NULL;
 
   ierr = PetscSpaceInitialize_Polynomial(sp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
