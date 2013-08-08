@@ -9,17 +9,17 @@ static char help[] = "Check that a particular FIAT-style header gives accurate f
 #include "ex3.h"
 
 typedef struct {
-  DM            dm;                /* REQUIRED in order to use SNES evaluation functions */
-  PetscFEM      fem;               /* REQUIRED to use DMPlexComputeResidualFEM() */
-  PetscInt      debug;             /* The debugging level */
+  DM        dm;                /* REQUIRED in order to use SNES evaluation functions */
+  PetscFEM  fem;               /* REQUIRED to use DMPlexComputeResidualFEM() */
+  PetscInt  debug;             /* The debugging level */
   /* Domain and mesh definition */
-  PetscInt  dim;                   /* The topological mesh dimension */
-  PetscBool interpolate;           /* Generate intermediate mesh elements */
-  PetscReal refinementLimit;       /* The largest allowable cell volume */
+  PetscInt  dim;               /* The topological mesh dimension */
+  PetscBool interpolate;       /* Generate intermediate mesh elements */
+  PetscReal refinementLimit;   /* The largest allowable cell volume */
   /* Element definition */
-  PetscInt qorder;                 /* Order of the quadrature */
+  PetscInt  qorder;            /* Order of the quadrature */
   /* Testing space */
-  PetscInt porder;                 /* Order of polynomials to test */
+  PetscInt  porder;            /* Order of polynomials to test */
 } AppCtx;
 
 void constant(const PetscReal coords[], PetscScalar *u)
@@ -119,6 +119,49 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "CreateReferenceCell"
+PetscErrorCode CreateReferenceCell(MPI_Comm comm, PetscInt dim, PetscBool simplex, DM *refdm)
+{
+  DM             rdm;
+  PetscErrorCode ierr;
+
+  PetscFunctionBeginUser;
+  ierr = DMCreate(comm, &rdm);CHKERRQ(ierr);
+  ierr = DMSetType(rdm, DMPLEX);CHKERRQ(ierr);
+  ierr = DMPlexSetDimension(rdm, dim);CHKERRQ(ierr);
+  switch (dim) {
+  case 2:
+  {
+    PetscInt    numPoints[2]        = {3, 1};
+    PetscInt    coneSize[4]         = {3, 0, 0, 0};
+    PetscInt    cones[3]            = {1, 2, 3};
+    PetscInt    coneOrientations[3] = {0, 0, 0};
+    PetscScalar vertexCoords[6]     = {-1.0, -1.0,  1.0, -1.0,  -1.0, 1.0};
+
+    ierr = DMPlexCreateFromDAG(rdm, 1, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
+  }
+  break;
+  case 3:
+  {
+    PetscInt    numPoints[2]        = {4, 1};
+    PetscInt    coneSize[5]         = {4, 0, 0, 0, 0};
+    PetscInt    cones[4]            = {1, 2, 3, 4};
+    PetscInt    coneOrientations[4] = {0, 0, 0, 0};
+    PetscScalar vertexCoords[12]    = {-1.0, -1.0, -1.0,  1.0, -1.0, -1.0,  -1.0, 1.0, -1.0,  -1.0, -1.0, 1.0};
+
+    ierr = DMPlexCreateFromDAG(rdm, 1, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
+  }
+  break;
+  default:
+    SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "Cannot create reference cell for dimension %d", dim);
+  }
+  ierr = DMPlexInterpolate(rdm, refdm);CHKERRQ(ierr);
+  ierr = DMPlexCopyCoordinates(rdm, *refdm);CHKERRQ(ierr);
+  ierr = DMDestroy(&rdm);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "SetupElement"
 PetscErrorCode SetupElement(DM dm, AppCtx *user)
 {
@@ -139,26 +182,11 @@ PetscErrorCode SetupElement(DM dm, AppCtx *user)
   ierr = PetscSpacePolynomialSetNumVariables(P, dim);CHKERRQ(ierr);
   ierr = PetscSpaceSetUp(P);CHKERRQ(ierr);
   ierr = PetscSpaceGetOrder(P, &order);CHKERRQ(ierr);
-  /* Create reference element */
-  {
-    DM          rdm;
-    PetscInt    numPoints[2]        = {3, 1};
-    PetscInt    coneSize[4]         = {3, 0, 0, 0};
-    PetscInt    cones[3]            = {1, 2, 3};
-    PetscInt    coneOrientations[3] = {0, 0, 0};
-    PetscScalar vertexCoords[6]     = {-1.0, -1.0,  1.0, -1.0,  -1.0, 1.0};
-
-    ierr = DMCreate(PetscObjectComm((PetscObject) dm), &rdm);CHKERRQ(ierr);
-    ierr = DMSetType(rdm, DMPLEX);CHKERRQ(ierr);
-    ierr = DMPlexSetDimension(rdm, dim);CHKERRQ(ierr);
-    ierr = DMPlexCreateFromDAG(rdm, 1, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
-    ierr = DMPlexInterpolate(rdm, &K);CHKERRQ(ierr);
-    ierr = DMPlexCopyCoordinates(rdm, K);CHKERRQ(ierr);
-    ierr = DMDestroy(&rdm);CHKERRQ(ierr);
-  }
   /* Create dual space */
   ierr = PetscDualSpaceCreate(PetscObjectComm((PetscObject) dm), &Q);CHKERRQ(ierr);
+  ierr = CreateReferenceCell(PetscObjectComm((PetscObject) dm), user->dim, PETSC_TRUE, &K);CHKERRQ(ierr);
   ierr = PetscDualSpaceSetDM(Q, K);CHKERRQ(ierr);
+  ierr = DMDestroy(&K);CHKERRQ(ierr);
   ierr = PetscDualSpaceSetOrder(Q, order);CHKERRQ(ierr);
   ierr = PetscDualSpaceSetFromOptions(Q);CHKERRQ(ierr);
   ierr = PetscDualSpaceSetUp(Q);CHKERRQ(ierr);
