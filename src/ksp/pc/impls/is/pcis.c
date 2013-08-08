@@ -253,7 +253,7 @@ PetscErrorCode  PCISSetUp(PC pc)
   /*
     Creating the KSP contexts for the local Dirichlet and Neumann problems.
   */
-  {
+  if (pcis->computesolvers) {
     PC pc_ctx;
     /* Dirichlet */
     ierr = KSPCreate(PETSC_COMM_SELF,&pcis->ksp_D);CHKERRQ(ierr);
@@ -398,7 +398,7 @@ PetscErrorCode  PCISCreate(PC pc)
   pcis->A_BB        = 0;
   pcis->D           = 0;
   pcis->ksp_N       = 0;
-  pcis->ksp_D      = 0;
+  pcis->ksp_D       = 0;
   pcis->vec1_N      = 0;
   pcis->vec2_N      = 0;
   pcis->vec1_D      = 0;
@@ -412,6 +412,7 @@ PetscErrorCode  PCISCreate(PC pc)
   pcis->global_to_D = 0;
   pcis->N_to_B      = 0;
   pcis->global_to_B = 0;
+  pcis->computesolvers = PETSC_TRUE;
 
   pcis->ISLocalToGlobalMappingGetInfoWasCalled = PETSC_FALSE;
 

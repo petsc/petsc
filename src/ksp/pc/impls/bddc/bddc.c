@@ -762,11 +762,9 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
 
   PetscFunctionBegin;
   /* the following lines of code should be replaced by a better logic between PCIS, PCNN, PCBDDC and other nonoverlapping preconditioners */
+  /* PCIS does not support MatStructures different from SAME_PRECONDITIONER */
   /* For BDDC we need to define a local "Neumann" problem different to that defined in PCISSetup
-     So, we set to pcnone the Neumann problem of pcis in order to avoid unneeded computation
-     Also, we decide to directly build the (same) Dirichlet problem */
-  ierr = PetscOptionsSetValue("-is_localN_pc_type","none");CHKERRQ(ierr);
-  ierr = PetscOptionsSetValue("-is_localD_pc_type","none");CHKERRQ(ierr);
+     Also, BDDC directly build the Dirichlet problem */
   /* Get stdout for dbg */
   if (pcbddc->dbg_flag && !pcbddc->dbg_viewer) {
     ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)pc),&pcbddc->dbg_viewer);CHKERRQ(ierr);
@@ -794,8 +792,11 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
     computetopography = PETSC_TRUE;
     computesolvers = PETSC_TRUE;
   }
-  /* Set up all the "iterative substructuring" common block */
+  /* Set up all the "iterative substructuring" common block without computing solvers */
   if (computeis) {
+    /* HACK INTO PCIS */
+    PC_IS* pcis = (PC_IS*)pc->data;
+    pcis->computesolvers = PETSC_FALSE;
     ierr = PCISSetUp(pc);CHKERRQ(ierr);
   }
   /* Analyze interface and set up local constraint and change of basis matrices */
