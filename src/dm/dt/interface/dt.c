@@ -1037,6 +1037,46 @@ PetscErrorCode PetscSpaceGetDimension_Polynomial(PetscSpace sp, PetscInt *dim)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "LatticePoint_Internal"
+/*
+  LatticePoint_Internal - Returns all tuples of size 'len' with nonnegative integers that sum up to 'sum'.
+
+  Input Parameters:
++ len - The length of the tuple
+. sum - The sum of all entries in the tuple
+- ind - The current multi-index of the tuple, initialized to the 0 tuple
+
+  Output Parameter:
++ ind - The multi-index of the tuple, -1 indicates the iteration has terminated
+. tup - A tuple of len integers addig to sum
+
+  Level: developer
+
+.seealso: 
+*/
+static PetscErrorCode LatticePoint_Internal(PetscInt len, PetscInt sum, PetscInt ind[], PetscInt tup[])
+{
+  PetscInt       i;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (len == 1) {
+    ind[0] = -1;
+    tup[0] = sum;
+  } else if (sum == 0) {
+    for (i = 0; i < len; ++i) {ind[0] = -1; tup[i] = 0;}
+  } else {
+    tup[0] = sum - ind[0];
+    ierr = LatticePoint_Internal(len-1, ind[0], &ind[1], &tup[1]);CHKERRQ(ierr);
+    if (ind[1] < 0) {
+      if (ind[0] == sum) {ind[0] = -1;}
+      else               {ind[1] = 0; ++ind[0];}
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscSpaceEvaluate_Polynomial"
 PetscErrorCode PetscSpaceEvaluate_Polynomial(PetscSpace sp, PetscInt npoints, const PetscReal points[], PetscReal B[], PetscReal D[], PetscReal H[])
 {
@@ -1047,7 +1087,8 @@ PetscErrorCode PetscSpaceEvaluate_Polynomial(PetscSpace sp, PetscInt npoints, co
   PetscInt         dim     = poly->numVariables;
   PetscReal       *A       = poly->A;
   PetscReal       *lpoints, *tmp, *LB, *LD, *LH;
-  PetscInt         pdim, d, i, p, deg;
+  PetscInt        *ind, *tup;
+  PetscInt         pdim, d, i, p, deg, o;
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
@@ -1072,18 +1113,25 @@ PetscErrorCode PetscSpaceEvaluate_Polynomial(PetscSpace sp, PetscInt npoints, co
     }
   }
   /* Multiply by A (pdim x ndegree * dim) */
+  ierr = PetscMalloc2(dim,PetscInt,&ind,dim,PetscInt,&tup);CHKERRQ(ierr);
   if (B) {
-    for (p = 0; p < npoints; ++p) {
-      for (i = 0; i < pdim; ++i) {
-        B[p*pdim + i] = 0.0;
-        for (deg = 0; deg < ndegree; ++deg) {
+    /* B (npoints x pdim) */
+    i = 0;
+    for (o = 0; o <= sp->order; ++o) {
+      ierr = PetscMemzero(ind, dim * sizeof(PetscInt));CHKERRQ(ierr);
+      while (ind[0] >= 0) {
+        ierr = LatticePoint_Internal(dim, o, ind, tup);CHKERRQ(ierr);
+        for (p = 0; p < npoints; ++p) {
+          B[p*pdim + i] = 1.0;
           for (d = 0; d < dim; ++d) {
-            B[p*pdim + i] += A[(i*ndegree + deg)*dim + d] * LB[(deg*dim + d)*npoints + p];
+            B[p*pdim + i] *= LB[(tup[d]*dim + d)*npoints + p];
           }
         }
+        ++i;
       }
     }
   }
+  ierr = PetscFree2(ind,tup);CHKERRQ(ierr);
   if (D) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Too lazy to code first derivatives");
   if (H) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Too lazy to code second derivatives");
   if (B) {ierr = DMRestoreWorkArray(dm, npoints*dim*ndegree, PETSC_REAL, &LB);CHKERRQ(ierr);}
