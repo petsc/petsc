@@ -1532,6 +1532,7 @@ PetscErrorCode PetscDualSpaceDestroy(PetscDualSpace *sp)
   /* if memory was published with AMS then destroy it */
   ierr = PetscObjectAMSViewOff((PetscObject) *sp);CHKERRQ(ierr);
 
+  ierr = DMDestroy(&(*sp)->dm);CHKERRQ(ierr);
   ierr = PetscDualSpaceGetDimension(*sp, &dim);CHKERRQ(ierr);
   for (f = 0; f < dim; ++f) {
     /* ierr = PetscQuadratureDestroy((*sp)->functional[f]);CHKERRQ(ierr); */
@@ -1596,9 +1597,13 @@ PetscErrorCode PetscDualSpaceGetDM(PetscDualSpace sp, DM *dm)
 #define __FUNCT__ "PetscDualSpaceSetDM"
 PetscErrorCode PetscDualSpaceSetDM(PetscDualSpace sp, DM dm)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
   PetscValidHeaderSpecific(dm, DM_CLASSID, 2);
+  ierr = DMDestroy(&sp->dm);CHKERRQ(ierr);
+  ierr = PetscObjectReference((PetscObject) dm);CHKERRQ(ierr);
   sp->dm = dm;
   PetscFunctionReturn(0);
 }
