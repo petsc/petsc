@@ -866,10 +866,36 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc)
   PetscInt       n_D,n_R;
   PetscBool      use_exact,use_exact_reduced;
   PetscErrorCode ierr;
+  /* prefixes stuff */
+  char           dir_prefix[256],neu_prefix[256],str_level[3];
+  size_t         len;
 
   PetscFunctionBegin;
-  /* Creating PC contexts for local Dirichlet and Neumann problems */
   ierr = PCGetOperators(pc,NULL,NULL,&matstruct);CHKERRQ(ierr);
+
+  /* compute prefixes */
+  ierr = PetscStrcpy(dir_prefix,"");CHKERRQ(ierr);
+  ierr = PetscStrcpy(neu_prefix,"");CHKERRQ(ierr);
+  if (!pcbddc->current_level) {
+    ierr = PetscStrcpy(dir_prefix,((PetscObject)pc)->prefix);CHKERRQ(ierr);
+    ierr = PetscStrcpy(neu_prefix,((PetscObject)pc)->prefix);CHKERRQ(ierr);
+    ierr = PetscStrcat(dir_prefix,"pc_bddc_dirichlet_");CHKERRQ(ierr);
+    ierr = PetscStrcat(neu_prefix,"pc_bddc_neumann_");CHKERRQ(ierr);
+  } else {
+    ierr = PetscStrcpy(str_level,"");CHKERRQ(ierr);
+    sprintf(str_level,"%d_",(int)(pcbddc->current_level));
+    ierr = PetscStrlen(((PetscObject)pc)->prefix,&len);CHKERRQ(ierr);
+    len -= 15; /* remove "pc_bddc_coarse_" */
+    if (pcbddc->current_level>1) len -= 2; /* remove "X_" with X level number (works with 9 levels max) */
+    ierr = PetscStrncpy(dir_prefix,((PetscObject)pc)->prefix,len);CHKERRQ(ierr);
+    ierr = PetscStrncpy(neu_prefix,((PetscObject)pc)->prefix,len);CHKERRQ(ierr);
+    *(dir_prefix+len)='\0';
+    *(neu_prefix+len)='\0';
+    ierr = PetscStrcat(dir_prefix,"pc_bddc_dirichlet_");CHKERRQ(ierr);
+    ierr = PetscStrcat(neu_prefix,"pc_bddc_neumann_");CHKERRQ(ierr);
+    ierr = PetscStrcat(dir_prefix,str_level);CHKERRQ(ierr);
+    ierr = PetscStrcat(neu_prefix,str_level);CHKERRQ(ierr);
+  }
 
   /* DIRICHLET PROBLEM */
   /* Matrix for Dirichlet problem is pcis->A_II */
@@ -879,7 +905,7 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc)
     ierr = PetscObjectIncrementTabLevel((PetscObject)pcbddc->ksp_D,(PetscObject)pc,1);CHKERRQ(ierr);
     /* default */
     ierr = KSPSetType(pcbddc->ksp_D,KSPPREONLY);CHKERRQ(ierr);
-    ierr = KSPSetOptionsPrefix(pcbddc->ksp_D,"dirichlet_");CHKERRQ(ierr);
+    ierr = KSPSetOptionsPrefix(pcbddc->ksp_D,dir_prefix);CHKERRQ(ierr);
     ierr = KSPGetPC(pcbddc->ksp_D,&pc_temp);CHKERRQ(ierr);
     ierr = PCSetType(pc_temp,PCLU);CHKERRQ(ierr);
     ierr = PCFactorSetReuseFill(pc_temp,PETSC_TRUE);CHKERRQ(ierr);
@@ -908,7 +934,7 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc)
     ierr = PetscObjectIncrementTabLevel((PetscObject)pcbddc->ksp_R,(PetscObject)pc,1);CHKERRQ(ierr);
     /* default */
     ierr = KSPSetType(pcbddc->ksp_R,KSPPREONLY);CHKERRQ(ierr);
-    ierr = KSPSetOptionsPrefix(pcbddc->ksp_R,"neumann_");CHKERRQ(ierr);
+    ierr = KSPSetOptionsPrefix(pcbddc->ksp_R,neu_prefix);CHKERRQ(ierr);
     ierr = KSPGetPC(pcbddc->ksp_R,&pc_temp);CHKERRQ(ierr);
     ierr = PCSetType(pc_temp,PCLU);CHKERRQ(ierr);
     ierr = PCFactorSetReuseFill(pc_temp,PETSC_TRUE);CHKERRQ(ierr);
@@ -946,7 +972,7 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc)
     ierr = PetscViewerFlush(pcbddc->dbg_viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(pcbddc->dbg_viewer,"--------------------------------------------------\n");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(pcbddc->dbg_viewer,"Checking solution of Dirichlet and Neumann problems\n");CHKERRQ(ierr);
-    ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Subdomain %04d infinity error for Dirichlet solve = % 1.14e \n",PetscGlobalRank,value);CHKERRQ(ierr);
+    ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Subdomain %04d infinity error for Dirichlet solve (%s) = % 1.14e \n",PetscGlobalRank,((PetscObject)(pcbddc->ksp_D))->prefix,value);CHKERRQ(ierr);
     ierr = PetscViewerFlush(pcbddc->dbg_viewer);CHKERRQ(ierr);
   }
   if (pcbddc->NullSpace && !use_exact_reduced && !pcbddc->switch_static) {
@@ -969,13 +995,12 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc)
   ierr = MPI_Allreduce(&use_exact,&use_exact_reduced,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
   /* print info */
   if (pcbddc->dbg_flag) {
-    ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Subdomain %04d infinity error for  Neumann  solve = % 1.14e \n",PetscGlobalRank,value);CHKERRQ(ierr);
+    ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Subdomain %04d infinity error for Neumann solve (%s) = % 1.14e \n",PetscGlobalRank,((PetscObject)(pcbddc->ksp_R))->prefix,value);CHKERRQ(ierr);
     ierr = PetscViewerFlush(pcbddc->dbg_viewer);CHKERRQ(ierr);
   }
   if (pcbddc->NullSpace && !use_exact_reduced) { /* is it the right logic? */
     ierr = PCBDDCNullSpaceAssembleCorrection(pc,pcbddc->is_R_local);CHKERRQ(ierr);
   }
-
   /* free Neumann problem's matrix */
   ierr = MatDestroy(&A_RR);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -2782,13 +2807,29 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
 
   /* create the coarse KSP object only once with defaults */
   if (!pcbddc->coarse_ksp) {
+    char prefix[256],str_level[3];
+    size_t len;
     ierr = KSPCreate(PetscObjectComm((PetscObject)pc),&pcbddc->coarse_ksp);CHKERRQ(ierr);
     ierr = PetscObjectIncrementTabLevel((PetscObject)pcbddc->coarse_ksp,(PetscObject)pc,1);CHKERRQ(ierr);
     ierr = KSPSetTolerances(pcbddc->coarse_ksp,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,1);CHKERRQ(ierr);
     ierr = KSPSetType(pcbddc->coarse_ksp,coarse_ksp_type);CHKERRQ(ierr);
     ierr = KSPGetPC(pcbddc->coarse_ksp,&pc_temp);CHKERRQ(ierr);
     ierr = PCSetType(pc_temp,coarse_pc_type);CHKERRQ(ierr);
-    ierr = KSPSetOptionsPrefix(pcbddc->coarse_ksp,"coarse_");CHKERRQ(ierr);
+    /* prefix */
+    ierr = PetscStrcpy(prefix,"");CHKERRQ(ierr);
+    ierr = PetscStrcpy(str_level,"");CHKERRQ(ierr);
+    if (!pcbddc->current_level) {
+      ierr = PetscStrcpy(prefix,((PetscObject)pc)->prefix);CHKERRQ(ierr);
+      ierr = PetscStrcat(prefix,"pc_bddc_coarse_");CHKERRQ(ierr);
+    } else {
+      ierr = PetscStrlen(((PetscObject)pc)->prefix,&len);CHKERRQ(ierr);
+      if (pcbddc->current_level>1) len -= 2;
+      ierr = PetscStrncpy(prefix,((PetscObject)pc)->prefix,len);CHKERRQ(ierr);
+      *(prefix+len)='\0';
+      sprintf(str_level,"%d_",(int)(pcbddc->current_level));
+      ierr = PetscStrcat(prefix,str_level);CHKERRQ(ierr);
+    }
+    ierr = KSPSetOptionsPrefix(pcbddc->coarse_ksp,prefix);CHKERRQ(ierr);
   }
   /* allow user customization */
   ierr = KSPSetFromOptions(pcbddc->coarse_ksp);CHKERRQ(ierr);
@@ -2869,7 +2910,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
         ierr = PetscViewerASCIIPrintf(pcbddc->dbg_viewer,"Maximum number of requested levels reached (%d)\n",pcbddc->max_levels);CHKERRQ(ierr);
       }
     }
-    ierr = PetscViewerASCIIPrintf(pcbddc->dbg_viewer,"Calling %s/%s setup at level %d for coarse solver\n",coarse_ksp_type,coarse_pc_type,pcbddc->current_level);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(pcbddc->dbg_viewer,"Calling %s/%s setup at level %d for coarse solver (%s)\n",coarse_ksp_type,coarse_pc_type,pcbddc->current_level,((PetscObject)pcbddc->coarse_ksp)->prefix);CHKERRQ(ierr);
     ierr = PetscViewerFlush(pcbddc->dbg_viewer);CHKERRQ(ierr);
   }
 
@@ -2931,14 +2972,15 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
     ierr = MatMult(coarse_mat,check_vec,pcbddc->coarse_rhs);CHKERRQ(ierr);
     ierr = VecNorm(pcbddc->coarse_rhs,NORM_INFINITY,&abs_infty_error);CHKERRQ(ierr);
     ierr = VecDestroy(&check_vec);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(pcbddc->dbg_viewer,"Coarse problem (%s) details\n",((PetscObject)(pcbddc->coarse_ksp))->prefix);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(pcbddc->dbg_viewer,"Coarse problem exact infty_error   : %1.6e\n",infty_error);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(pcbddc->dbg_viewer,"Coarse problem residual infty_error: %1.6e\n",abs_infty_error);CHKERRQ(ierr);
     /* get eigenvalue estimation if preonly has not been requested */
     if (!ispreonly) {
       ierr = KSPComputeExtremeSingularValues(check_ksp,&lambda_max,&lambda_min);CHKERRQ(ierr);
       ierr = KSPGetIterationNumber(check_ksp,&its);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(pcbddc->dbg_viewer,"Coarse problem eigenvalues (estimated with %d iterations of %s): %1.6e %1.6e\n",its,check_ksp_type,lambda_min,lambda_max);CHKERRQ(ierr);
     }
-    ierr = PetscViewerASCIIPrintf(pcbddc->dbg_viewer,"Coarse problem exact infty_error   : %1.6e\n",infty_error);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(pcbddc->dbg_viewer,"Coarse problem residual infty_error: %1.6e\n",abs_infty_error);CHKERRQ(ierr);
     ierr = PetscViewerFlush(pcbddc->dbg_viewer);CHKERRQ(ierr);
     ierr = KSPDestroy(&check_ksp);CHKERRQ(ierr);
   }
