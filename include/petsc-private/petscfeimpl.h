@@ -60,10 +60,11 @@ struct _PetscFEOps {
 
 struct _p_PetscFE {
   PETSCHEADER(struct _PetscFEOps);
-  void          *data;          /* Implementation object */
-  PetscSpace     basisSpace;    /* The basis space P */
-  PetscDualSpace dualSpace;     /* The dual space P' */
-  PetscInt       numComponents; /* The number of field components */
+  void           *data;          /* Implementation object */
+  PetscSpace      basisSpace;    /* The basis space P */
+  PetscDualSpace  dualSpace;     /* The dual space P' */
+  PetscInt        numComponents; /* The number of field components */
+  PetscQuadrature quadrature;    /* Suitable quadrature on K */
 };
 
 #endif
