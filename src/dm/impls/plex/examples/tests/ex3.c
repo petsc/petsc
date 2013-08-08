@@ -19,6 +19,7 @@ typedef struct {
   /* Element definition */
   PetscInt  qorder;            /* Order of the quadrature */
   PetscInt  numComponents;     /* Number of field components */
+  PetscFE   fe;                /* The finite element */
   /* Testing space */
   PetscInt  porder;            /* Order of polynomials to test */
 } AppCtx;
@@ -239,7 +240,7 @@ PetscErrorCode SetupElement(DM dm, AppCtx *user)
   /* Create quadrature */
   order = PetscMax(user->qorder, order);
   q.numQuadPoints = dim > 1 ? dim > 2 ? order*PetscSqr(order) : PetscSqr(order) : order;
-  ierr = PetscDTGaussJacobiQuadrature(dim, order, -1.0, 1.0, (PetscReal *) &q.quadPoints, (PetscReal *) &q.quadWeights);CHKERRQ(ierr);
+  ierr = PetscDTGaussJacobiQuadrature(dim, order, -1.0, 1.0, (PetscReal **) &q.quadPoints, (PetscReal **) &q.quadWeights);CHKERRQ(ierr);
   ierr = CheckQuadrature(dim, q.numQuadPoints, q.quadPoints, q.quadWeights);CHKERRQ(ierr);
   /* Create element */
   ierr = PetscFECreate(PetscObjectComm((PetscObject) dm), &fem);CHKERRQ(ierr);
@@ -254,7 +255,7 @@ PetscErrorCode SetupElement(DM dm, AppCtx *user)
   ierr = PetscFEGetTabulation(fem, &B, NULL, NULL);CHKERRQ(ierr);
   ierr = CheckBasis(dim, q.numQuadPoints, numBasisFunc, numBasisComp, B, D);CHKERRQ(ierr);
   ierr = PetscFERestoreTabulation(fem, &B, NULL, NULL);CHKERRQ(ierr);
-  ierr = PetscFEDestroy(&fem);CHKERRQ(ierr);
+  user->fe = fem;
   PetscFunctionReturn(0);
 }
 
@@ -297,19 +298,20 @@ PetscErrorCode CheckFunctions(DM dm, PetscInt order, Vec u, AppCtx *user)
   void          (*exactFuncs[NUM_BASIS_COMPONENTS_TOTAL]) (const PetscReal x[], PetscScalar *u);
   MPI_Comm        comm;
   PetscInt        dim  = user->dim;
-  PetscQuadrature q[NUM_FIELDS];
+  PetscQuadrature q[NUM_FIELDS], fq;
   PetscReal       error, tol = 1.0e-10;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);
+  ierr = PetscFEGetQuadrature(user->fe, &fq);CHKERRQ(ierr);
   /* Setup quadrature and basis tabulation */
-  q[0].numQuadPoints = NUM_QUADRATURE_POINTS_0;
-  q[0].quadPoints    = points_0;
-  q[0].quadWeights   = weights_0;
-  q[0].numBasisFuncs = NUM_BASIS_FUNCTIONS_0;
-  q[0].numComponents = NUM_BASIS_COMPONENTS_0;
-  q[0].basis         = Basis_0;
+  q[0].numQuadPoints = fq.numQuadPoints;
+  q[0].quadPoints    = fq.quadPoints;
+  q[0].quadWeights   = fq.quadWeights;
+  ierr = PetscFEGetDimension(user->fe, &q[0].numBasisFuncs);CHKERRQ(ierr);
+  ierr = PetscFEGetNumComponents(user->fe, &q[0].numComponents);CHKERRQ(ierr);
+  ierr = PetscFEGetTabulation(user->fe, &q[0].basis, NULL, NULL);CHKERRQ(ierr);
   q[0].basisDer      = BasisDerivatives_0;
   user->fem.quad     = (PetscQuadrature*) &q;
   /* Setup functions to approximate */
@@ -366,6 +368,7 @@ PetscErrorCode CheckFunctions(DM dm, PetscInt order, Vec u, AppCtx *user)
   } else {
     ierr = PetscPrintf(comm, "Tests pass for order %d at tolerance %g\n", order, tol);CHKERRQ(ierr);
   }
+  ierr = PetscFERestoreTabulation(user->fe, &q[0].basis, NULL, NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -385,6 +388,7 @@ int main(int argc, char **argv)
   ierr = DMGetGlobalVector(user.dm, &u);CHKERRQ(ierr);
   ierr = CheckFunctions(user.dm, user.porder, u, &user);CHKERRQ(ierr);
   ierr = DMRestoreGlobalVector(user.dm, &u);CHKERRQ(ierr);
+  ierr = PetscFEDestroy(&user.fe);CHKERRQ(ierr);
   ierr = DMDestroy(&user.dm);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
