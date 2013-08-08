@@ -1,16 +1,9 @@
 /* TODOLIST
+   Remove PetscOptionsSetValue for pcis!
    DofSplitting and DM attached to pc?
    Change SetNeumannBoundaries to SetNeumannBoundariesLocal and provide new SetNeumannBoundaries (same Dirichlet)
-   change how to deal with the coarse problem (PCBDDCSetCoarseEnvironment):
-     - simplify coarse problem structure -> PCBDDC or PCREDUDANT, nothing else -> same comm for all levels?
-     - remove coarse enums and allow use of PCBDDCGetCoarseKSP
-     - remove metis dependency -> use MatPartitioning for multilevel -> Assemble serial adjacency in PCBDDCAnalyzeInterface?
-   code refactoring:
-     - pick up better names for static functions
-   change options structure:
-     - insert BDDC into MG framework?
+   BDDC with MG framework?
    provide other ops? Ask to developers
-   remove all unused printf
    man pages
 */
 
@@ -136,17 +129,28 @@ PetscErrorCode PCBDDCSetCoarseningRatio(PC pc,PetscInt k)
   PetscFunctionReturn(0);
 }
 
-/* Set level is not a public function */
+/* The following functions (PCBDDCSetUseExactDirichlet PCBDDCSetLevel) are not public */
 #undef __FUNCT__
-#define __FUNCT__ "PCBDDCSetLevel"
-PetscErrorCode PCBDDCSetLevel(PC pc,PetscInt level)
+#define __FUNCT__ "PCBDDCSetUseExactDirichlet_BDDC"
+static PetscErrorCode PCBDDCSetUseExactDirichlet_BDDC(PC pc,PetscBool flg)
+{
+  PC_BDDC  *pcbddc = (PC_BDDC*)pc->data;
+
+  PetscFunctionBegin;
+  pcbddc->use_exact_dirichlet = flg;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PCBDDCSetUseExactDirichlet"
+PetscErrorCode PCBDDCSetUseExactDirichlet(PC pc,PetscBool flg)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscValidLogicalCollectiveInt(pc,level,2);
-  ierr = PetscTryMethod(pc,"PCBDDCSetLevel_C",(PC,PetscInt),(pc,level));CHKERRQ(ierr);
+  PetscValidLogicalCollectiveBool(pc,flg,2);
+  ierr = PetscTryMethod(pc,"PCBDDCSetUseExactDirichlet_C",(PC,PetscBool),(pc,flg));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -157,7 +161,20 @@ static PetscErrorCode PCBDDCSetLevel_BDDC(PC pc,PetscInt level)
   PC_BDDC  *pcbddc = (PC_BDDC*)pc->data;
 
   PetscFunctionBegin;
-  pcbddc->current_level=level;
+  pcbddc->current_level = level;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PCBDDCSetLevel"
+PetscErrorCode PCBDDCSetLevel(PC pc,PetscInt level)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  PetscValidLogicalCollectiveInt(pc,level,2);
+  ierr = PetscTryMethod(pc,"PCBDDCSetLevel_C",(PC,PetscInt),(pc,level));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -908,6 +925,7 @@ PetscErrorCode PCDestroy_BDDC(PC pc)
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetPrimalVerticesLocalIS_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetCoarseningRatio_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetLevel_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetUseExactDirichlet_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetLevels_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetNullSpace_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetDirichletBoundaries_C",NULL);CHKERRQ(ierr);
@@ -1261,6 +1279,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC pc)
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetPrimalVerticesLocalIS_C",PCBDDCSetPrimalVerticesLocalIS_BDDC);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetCoarseningRatio_C",PCBDDCSetCoarseningRatio_BDDC);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetLevel_C",PCBDDCSetLevel_BDDC);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetUseExactDirichlet_C",PCBDDCSetUseExactDirichlet_BDDC);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetLevels_C",PCBDDCSetLevels_BDDC);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetNullSpace_C",PCBDDCSetNullSpace_BDDC);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetDirichletBoundaries_C",PCBDDCSetDirichletBoundaries_BDDC);CHKERRQ(ierr);

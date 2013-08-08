@@ -850,16 +850,6 @@ PetscErrorCode PCBDDCSetUpLocalScatters(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCBDDCSetUseExactDirichlet"
-PetscErrorCode PCBDDCSetUseExactDirichlet(PC pc,PetscBool use)
-{
-  PC_BDDC  *pcbddc = (PC_BDDC*)pc->data;
-
-  PetscFunctionBegin;
-  pcbddc->use_exact_dirichlet=use;
-  PetscFunctionReturn(0);
-}
 
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCSetUpLocalSolvers"
@@ -873,7 +863,8 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc)
   MatStructure   matstruct;
   PetscScalar    m_one = -1.0;
   PetscReal      value;
-  PetscInt       n_D,n_R,use_exact,use_exact_reduced;
+  PetscInt       n_D,n_R;
+  PetscBool      use_exact,use_exact_reduced;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -947,9 +938,9 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc)
   ierr = VecDestroy(&vec2);CHKERRQ(ierr);
   ierr = VecDestroy(&vec3);CHKERRQ(ierr);
   /* need to be adapted? */
-  use_exact = (PetscAbsReal(value) > 1.e-4 ? 0 : 1);
-  ierr = MPI_Allreduce(&use_exact,&use_exact_reduced,1,MPIU_INT,MPI_LAND,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
-  ierr = PCBDDCSetUseExactDirichlet(pc,(PetscBool)use_exact_reduced);CHKERRQ(ierr);
+  use_exact = (PetscAbsReal(value) > 1.e-4 ? PETSC_FALSE : PETSC_TRUE);
+  ierr = MPI_Allreduce(&use_exact,&use_exact_reduced,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
+  ierr = PCBDDCSetUseExactDirichlet(pc,use_exact_reduced);CHKERRQ(ierr);
   /* print info */
   if (pcbddc->dbg_flag) {
     ierr = PetscViewerFlush(pcbddc->dbg_viewer);CHKERRQ(ierr);
@@ -958,7 +949,7 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc)
     ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Subdomain %04d infinity error for Dirichlet solve = % 1.14e \n",PetscGlobalRank,value);CHKERRQ(ierr);
     ierr = PetscViewerFlush(pcbddc->dbg_viewer);CHKERRQ(ierr);
   }
-  if (n_D && pcbddc->NullSpace && !use_exact_reduced && !pcbddc->switch_static) {
+  if (pcbddc->NullSpace && !use_exact_reduced && !pcbddc->switch_static) {
     ierr = PCBDDCNullSpaceAssembleCorrection(pc,pcis->is_I_local);CHKERRQ(ierr);
   }
 
@@ -974,15 +965,14 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc)
   ierr = VecDestroy(&vec2);CHKERRQ(ierr);
   ierr = VecDestroy(&vec3);CHKERRQ(ierr);
   /* need to be adapted? */
-  use_exact = (PetscAbsReal(value) > 1.e-4 ? 0 : 1);
-  if (PetscAbsReal(value) > 1.e-4) use_exact = 0;
-  ierr = MPI_Allreduce(&use_exact,&use_exact_reduced,1,MPIU_INT,MPI_LAND,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
+  use_exact = (PetscAbsReal(value) > 1.e-4 ? PETSC_FALSE : PETSC_TRUE);
+  ierr = MPI_Allreduce(&use_exact,&use_exact_reduced,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
   /* print info */
   if (pcbddc->dbg_flag) {
     ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Subdomain %04d infinity error for  Neumann  solve = % 1.14e \n",PetscGlobalRank,value);CHKERRQ(ierr);
     ierr = PetscViewerFlush(pcbddc->dbg_viewer);CHKERRQ(ierr);
   }
-  if (n_R && pcbddc->NullSpace && !use_exact_reduced) { /* is it the right logic? */
+  if (pcbddc->NullSpace && !use_exact_reduced) { /* is it the right logic? */
     ierr = PCBDDCNullSpaceAssembleCorrection(pc,pcbddc->is_R_local);CHKERRQ(ierr);
   }
 
@@ -1148,6 +1138,11 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
     pcbddc->use_vertices = PETSC_TRUE;
   }
   ierr = PCBDDCGraphGetCandidatesIS(pcbddc->mat_graph,pcbddc->use_faces,pcbddc->use_edges,pcbddc->use_vertices,&n_ISForFaces,&ISForFaces,&n_ISForEdges,&ISForEdges,&ISForVertices);
+  /* HACK: provide functions to set change of basis */
+  if (!ISForVertices && pcbddc->NullSpace) {
+    pcbddc->use_change_of_basis = PETSC_TRUE;
+    pcbddc->use_change_on_faces = PETSC_FALSE;
+  }
   /* print some info */
   if (pcbddc->dbg_flag) {
     ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"--------------------------------------------------------------\n");CHKERRQ(ierr);
@@ -1779,7 +1774,6 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
         total_counts += primal_dofs;
       }
       if (pcbddc->dbg_flag) {
-        ierr = PetscViewerFlush(pcbddc->dbg_viewer);CHKERRQ(ierr);
         ierr = PetscFree(work);CHKERRQ(ierr);
       }
       /* free workspace */
@@ -1796,6 +1790,9 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
     /*
     ierr = MatView(pcbddc->ChangeOfBasisMatrix,(PetscViewer)0);CHKERRQ(ierr);
     */
+  }
+  if (pcbddc->dbg_flag) {
+    ierr = PetscViewerFlush(pcbddc->dbg_viewer);CHKERRQ(ierr);
   }
   /* free workspace */
   ierr = PetscFree(aux_primal_numbering);CHKERRQ(ierr);
@@ -2811,16 +2808,6 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
   ierr = PCBDDCSetCoarseningRatio(pc_temp,pcbddc->coarsening_ratio);CHKERRQ(ierr);
   ierr = PCBDDCSetLevels(pc_temp,pcbddc->max_levels);CHKERRQ(ierr);
 
-  /* Compute coarse null space (special handling by BDDC only) */
-  if (pcbddc->NullSpace) {
-    ierr = PCBDDCNullSpaceAssembleCoarse(pc,coarse_mat,&CoarseNullSpace);CHKERRQ(ierr);
-    if (isbddc) {
-      ierr = PCBDDCSetNullSpace(pc_temp,CoarseNullSpace);CHKERRQ(ierr);
-    } else {
-      ierr = KSPSetNullSpace(pcbddc->coarse_ksp,CoarseNullSpace);CHKERRQ(ierr);
-    }
-  }
-
   /* creates temporary MATIS object for coarse matrix */
   ierr = ISCreateGeneral(PetscObjectComm((PetscObject)pc),pcbddc->local_primal_size,local_primal_indices,PETSC_COPY_VALUES,&coarse_is);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingCreateIS(coarse_is,&coarse_islg);CHKERRQ(ierr);
@@ -2849,6 +2836,16 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
   /* propagate symmetry info to coarse matrix */
   ierr = MatSetOption(coarse_mat,MAT_SYMMETRIC,issym);CHKERRQ(ierr);
 
+  /* Compute coarse null space (special handling by BDDC only) */
+  if (pcbddc->NullSpace) {
+    ierr = PCBDDCNullSpaceAssembleCoarse(pc,coarse_mat,&CoarseNullSpace);CHKERRQ(ierr);
+    if (isbddc) {
+      ierr = PCBDDCSetNullSpace(pc_temp,CoarseNullSpace);CHKERRQ(ierr);
+    } else {
+      ierr = KSPSetNullSpace(pcbddc->coarse_ksp,CoarseNullSpace);CHKERRQ(ierr);
+    }
+  }
+
   /* set operators */ 
   ierr = PCGetOperators(pc,NULL,NULL,&matstruct);CHKERRQ(ierr);
   ierr = KSPSetOperators(pcbddc->coarse_ksp,coarse_mat,coarse_mat,matstruct);CHKERRQ(ierr);
@@ -2858,7 +2855,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
   if (max_it < 5) {
     ierr = KSPSetNormType(pcbddc->coarse_ksp,KSP_NORM_NONE);CHKERRQ(ierr);
   }
-  //ierr = KSPChebyshevSetEstimateEigenvalues(pcbddc->coarse_ksp,1.0,0.0,0.0,1.1);CHKERRQ(ierr);
+  /* ierr = KSPChebyshevSetEstimateEigenvalues(pcbddc->coarse_ksp,1.0,0.0,0.0,1.1);CHKERRQ(ierr); */
 
 
   /* print some info if requested */
@@ -2886,9 +2883,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
   }
 
   /* HACK: TODO see if it could be avoided */
-  if (isbddc) {
-    ierr = PCBDDCSetUseExactDirichlet(pc_temp,PETSC_FALSE);CHKERRQ(ierr);
-  }
+  ierr = PCBDDCSetUseExactDirichlet(pc_temp,PETSC_FALSE);CHKERRQ(ierr);
 
   /* Check coarse problem if requested */
   if (pcbddc->dbg_flag) {

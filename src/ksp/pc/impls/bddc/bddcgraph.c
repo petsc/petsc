@@ -131,19 +131,18 @@ PetscErrorCode PCBDDCGraphGetCandidatesIS(PCBDDCGraph graph, PetscBool use_faces
   ISForFaces = 0;
   ISForEdges = 0;
   ISForVertices = 0;
-  if (use_faces) {
+  if (use_faces & nfc) {
     ierr = PetscMalloc(nfc*sizeof(IS),&ISForFaces);CHKERRQ(ierr);
   }
-  if (use_edges) {
+  if (use_edges && nec) {
     ierr = PetscMalloc(nec*sizeof(IS),&ISForEdges);CHKERRQ(ierr);
   }
-  if (use_vertices) {
+  if (use_vertices && nvc) {
     ierr = PetscMalloc(nvc*sizeof(PetscInt),&idx);CHKERRQ(ierr);
   }
   /* loop on ccs to compute index sets for faces and edges */
   nfc = 0;
   nec = 0;
-  nvc = 0;
   for (i=0;i<graph->ncc;i++) {
     if (graph->cptr[i+1]-graph->cptr[i] > graph->custom_minimal_size) {
       if (graph->count[graph->queue[graph->cptr[i]]] == 1 && graph->special_dof[graph->queue[graph->cptr[i]]] != NEUMANN_MARK) {
@@ -167,7 +166,8 @@ PetscErrorCode PCBDDCGraphGetCandidatesIS(PCBDDCGraph graph, PetscBool use_faces
     }
   }
   /* index set for vertices */
-  if (use_vertices) {
+  if (use_vertices && nvc) {
+    nvc = 0;
     for (i=0;i<graph->ncc;i++) {
       if (graph->cptr[i+1]-graph->cptr[i] <= graph->custom_minimal_size) {
         for (j=graph->cptr[i];j<graph->cptr[i+1];j++) {
