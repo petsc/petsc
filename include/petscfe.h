@@ -26,10 +26,18 @@ PETSC_EXTERN PetscErrorCode PetscSpaceCreate(MPI_Comm, PetscSpace *);
 PETSC_EXTERN PetscErrorCode PetscSpaceDestroy(PetscSpace *);
 PETSC_EXTERN PetscErrorCode PetscSpaceSetType(PetscSpace, PetscSpaceType);
 PETSC_EXTERN PetscErrorCode PetscSpaceGetType(PetscSpace, PetscSpaceType *);
+PETSC_EXTERN PetscErrorCode PetscSpaceSetUp(PetscSpace);
 PETSC_EXTERN PetscErrorCode PetscSpaceSetFromOptions(PetscSpace);
 PETSC_EXTERN PetscErrorCode PetscSpaceRegister(const char [], PetscErrorCode (*)(PetscSpace));
 PETSC_EXTERN PetscErrorCode PetscSpaceRegisterAll(void);
 PETSC_EXTERN PetscErrorCode PetscSpaceRegisterDestroy(void);
+
+PETSC_EXTERN PetscErrorCode PetscSpaceGetDimension(PetscSpace, PetscInt *);
+PETSC_EXTERN PetscErrorCode PetscSpaceSetOrder(PetscSpace, PetscInt);
+PETSC_EXTERN PetscErrorCode PetscSpaceGetOrder(PetscSpace, PetscInt *);
+
+PETSC_EXTERN PetscErrorCode PetscSpacePolynomialSetNumVariables(PetscSpace, PetscInt);
+PETSC_EXTERN PetscErrorCode PetscSpacePolynomialGetNumVariables(PetscSpace, PetscInt *);
 
 PETSC_EXTERN PetscClassId PETSCDUALSPACE_CLASSID;
 
@@ -49,16 +57,29 @@ PETSC_EXTERN PetscErrorCode PetscDualSpaceCreate(MPI_Comm, PetscDualSpace *);
 PETSC_EXTERN PetscErrorCode PetscDualSpaceDestroy(PetscDualSpace *);
 PETSC_EXTERN PetscErrorCode PetscDualSpaceSetType(PetscDualSpace, PetscDualSpaceType);
 PETSC_EXTERN PetscErrorCode PetscDualSpaceGetType(PetscDualSpace, PetscDualSpaceType *);
+PETSC_EXTERN PetscErrorCode PetscDualSpaceSetUp(PetscDualSpace);
 PETSC_EXTERN PetscErrorCode PetscDualSpaceSetFromOptions(PetscDualSpace);
 PETSC_EXTERN PetscErrorCode PetscDualSpaceRegister(const char [], PetscErrorCode (*)(PetscDualSpace));
 PETSC_EXTERN PetscErrorCode PetscDualSpaceRegisterAll(void);
 PETSC_EXTERN PetscErrorCode PetscDualSpaceRegisterDestroy(void);
 
 PETSC_EXTERN PetscErrorCode PetscDualSpaceGetDimension(PetscDualSpace, PetscInt *);
+PETSC_EXTERN PetscErrorCode PetscDualSpaceSetOrder(PetscDualSpace, PetscInt);
+PETSC_EXTERN PetscErrorCode PetscDualSpaceGetOrder(PetscDualSpace, PetscInt *);
+PETSC_EXTERN PetscErrorCode PetscDualSpaceSetDM(PetscDualSpace, DM);
+PETSC_EXTERN PetscErrorCode PetscDualSpaceGetDM(PetscDualSpace, DM *);
 
 PETSC_EXTERN PetscClassId PETSCFE_CLASSID;
 
 PETSC_EXTERN PetscErrorCode PetscFECreate(MPI_Comm, PetscFE *);
 PETSC_EXTERN PetscErrorCode PetscFEDestroy(PetscFE *);
+
+PETSC_EXTERN PetscErrorCode PetscFEGetDimension(PetscFE, PetscInt *);
+PETSC_EXTERN PetscErrorCode PetscFESetNumComponents(PetscFE, PetscInt);
+PETSC_EXTERN PetscErrorCode PetscFEGetNumComponents(PetscFE, PetscInt *);
+PETSC_EXTERN PetscErrorCode PetscFESetBasisSpace(PetscFE, PetscSpace);
+PETSC_EXTERN PetscErrorCode PetscFEGetBasisSpace(PetscFE, PetscSpace *);
+PETSC_EXTERN PetscErrorCode PetscFESetDualSpace(PetscFE, PetscDualSpace);
+PETSC_EXTERN PetscErrorCode PetscFEGetDualSpace(PetscFE, PetscDualSpace *);
 PETSC_EXTERN PetscErrorCode PetscFEGetTabulation(PetscFE, PetscInt, const PetscReal [], PetscReal **, PetscReal **, PetscReal **);
 #endif
