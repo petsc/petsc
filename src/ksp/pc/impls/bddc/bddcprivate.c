@@ -2652,7 +2652,7 @@ PetscErrorCode MatISSubassemble(Mat mat, IS is_sends, PetscInt coarsening_ratio,
   new_local_type_private = MATAIJ_PRIVATE;
   new_local_type = MATSEQAIJ; 
   if (n_recvs) {
-    new_local_type_private = send_buffer_idxs[0];
+    new_local_type_private = (MatTypePrivate)send_buffer_idxs[0];
     ptr_idxs = recv_buffer_idxs;
     for (i=0;i<n_recvs;i++) {
       if ((PetscInt)new_local_type_private != *ptr_idxs) {

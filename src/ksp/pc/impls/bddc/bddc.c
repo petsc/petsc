@@ -1,13 +1,18 @@
 /* TODOLIST
-   Dont use qr when number of primal dof per cc is 1 
+   Don't use qr when number of primal dof per cc is 1 
+   A_RR problem with bs>1!
    Provide PCApplyTranpose
-   why options for "pc_bddc_coarse" solver gets propagated to "pc_bddc_coarse_1" solver?
+   Man pages
+   Move FETIDP code
+   Provide general case for subassembling
+   Preallocation routines in MatConvert_IS_AIJ
+   Allow different customizations between solves
+   Why options for "pc_bddc_coarse" solver gets propagated to "pc_bddc_coarse_1" solver?
+   Better management in PCIS code
    Is it possible working with PCBDDCGraph on boundary indices only?
    DofSplitting and DM attached to pc?
    Change SetNeumannBoundaries to SetNeumannBoundariesLocal and provide new SetNeumannBoundaries (same Dirichlet)
    BDDC with MG framework?
-   provide other ops? Ask to developers
-   man pages
 */
 
 /* ----------------------------------------------------------------------------------------------------------------------------------------------
