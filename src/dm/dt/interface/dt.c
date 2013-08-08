@@ -13,6 +13,18 @@
 #include <petscdmshell.h>
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscQuadratureDestroy"
+PetscErrorCode PetscQuadratureDestroy(PetscQuadrature *q)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscFree(q->quadPoints);CHKERRQ(ierr);
+  ierr = PetscFree(q->quadWeights);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscDTLegendreEval"
 /*@
    PetscDTLegendreEval - evaluate Legendre polynomial at points
@@ -989,21 +1001,12 @@ PetscErrorCode PetscSpaceSetUp_Polynomial(PetscSpace sp)
 {
   PetscSpace_Poly *poly    = (PetscSpace_Poly *) sp->data;
   PetscInt         ndegree = sp->order+1;
-  PetscInt         dim     = poly->numVariables;
-  PetscInt         pdim, deg;
+  PetscInt         deg;
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
   ierr = PetscMalloc(ndegree * sizeof(PetscInt), &poly->degrees);CHKERRQ(ierr);
   for (deg = 0; deg < ndegree; ++deg) poly->degrees[deg] = deg;
-  ierr = PetscSpaceGetDimension(sp, &pdim);CHKERRQ(ierr);
-  /* Create A (pdim x ndegree * dim) */
-  ierr = PetscMalloc(pdim*ndegree*dim * sizeof(PetscReal), &poly->A);CHKERRQ(ierr);
-  ierr = PetscMemzero(poly->A, pdim*ndegree*dim * sizeof(PetscReal));CHKERRQ(ierr);
-  /* Hardcode P_1: Here we need a way to iterate through the basis */
-  poly->A[(0*ndegree + 0)*dim + 0] = 1.0; /* 1 */
-  poly->A[(1*ndegree + 1)*dim + 0] = 1.0; /* x */
-  poly->A[(2*ndegree + 1)*dim + 1] = 1.0; /* y */
   PetscFunctionReturn(0);
 }
 
@@ -1015,7 +1018,6 @@ PetscErrorCode PetscSpaceDestroy_Polynomial(PetscSpace sp)
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFree(poly->A);CHKERRQ(ierr);
   ierr = PetscFree(poly->degrees);CHKERRQ(ierr);
   ierr = PetscFree(poly);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1087,7 +1089,6 @@ PetscErrorCode PetscSpaceEvaluate_Polynomial(PetscSpace sp, PetscInt npoints, co
   PetscInt         ndegree = sp->order+1;
   PetscInt        *degrees = poly->degrees;
   PetscInt         dim     = poly->numVariables;
-  PetscReal       *A       = poly->A;
   PetscReal       *lpoints, *tmp, *LB, *LD, *LH;
   PetscInt        *ind, *tup;
   PetscInt         pdim, d, i, p, deg, o;
@@ -1181,7 +1182,6 @@ PETSC_EXTERN PetscErrorCode PetscSpaceCreate_Polynomial(PetscSpace sp)
   poly->numVariables = 0;
   poly->symmetric    = PETSC_FALSE;
   poly->degrees      = NULL;
-  poly->A            = NULL;
 
   ierr = PetscSpaceInitialize_Polynomial(sp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1534,14 +1534,14 @@ PetscErrorCode PetscDualSpaceDestroy(PetscDualSpace *sp)
   /* if memory was published with AMS then destroy it */
   ierr = PetscObjectAMSViewOff((PetscObject) *sp);CHKERRQ(ierr);
 
-  ierr = DMDestroy(&(*sp)->dm);CHKERRQ(ierr);
   ierr = PetscDualSpaceGetDimension(*sp, &dim);CHKERRQ(ierr);
   for (f = 0; f < dim; ++f) {
-    /* ierr = PetscQuadratureDestroy((*sp)->functional[f]);CHKERRQ(ierr); */
+    ierr = PetscQuadratureDestroy(&(*sp)->functional[f]);CHKERRQ(ierr);
   }
   ierr = PetscFree((*sp)->functional);CHKERRQ(ierr);
+  ierr = DMDestroy(&(*sp)->dm);CHKERRQ(ierr);
 
-  ierr = (*(*sp)->ops->destroy)(*sp);CHKERRQ(ierr);
+  if ((*sp)->ops->destroy) {ierr = (*(*sp)->ops->destroy)(*sp);CHKERRQ(ierr);}
   ierr = PetscHeaderDestroy(sp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1754,6 +1754,18 @@ PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscDualSpaceDestroy_Lagrange"
+PetscErrorCode PetscDualSpaceDestroy_Lagrange(PetscDualSpace sp)
+{
+  PetscDualSpace_Lag *lag = (PetscDualSpace_Lag *) sp->data;
+  PetscErrorCode      ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscFree(lag);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscDualSpaceGetDimension_Lagrange"
 PetscErrorCode PetscDualSpaceGetDimension_Lagrange(PetscDualSpace sp, PetscInt *dim)
 {
@@ -1780,7 +1792,7 @@ PetscErrorCode PetscDualSpaceInitialize_Lagrange(PetscDualSpace sp)
   sp->ops->setfromoptions = NULL;
   sp->ops->setup          = PetscDualSpaceSetUp_Lagrange;
   sp->ops->view           = NULL;
-  sp->ops->destroy        = NULL;
+  sp->ops->destroy        = PetscDualSpaceDestroy_Lagrange;
   sp->ops->getdimension   = PetscDualSpaceGetDimension_Lagrange;
   PetscFunctionReturn(0);
 }
@@ -1871,7 +1883,11 @@ PetscErrorCode PetscFEDestroy(PetscFE *fem)
   /* if memory was published with AMS then destroy it */
   ierr = PetscObjectAMSViewOff((PetscObject) *fem);CHKERRQ(ierr);
 
-  ierr = (*(*fem)->ops->destroy)(*fem);CHKERRQ(ierr);
+  ierr = PetscSpaceDestroy(&(*fem)->basisSpace);CHKERRQ(ierr);
+  ierr = PetscDualSpaceDestroy(&(*fem)->dualSpace);CHKERRQ(ierr);
+  ierr = PetscQuadratureDestroy(&(*fem)->quadrature);CHKERRQ(ierr);
+
+  if ((*fem)->ops->destroy) {ierr = (*(*fem)->ops->destroy)(*fem);CHKERRQ(ierr);}
   ierr = PetscHeaderDestroy(fem);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1911,6 +1927,7 @@ PetscErrorCode PetscFECreate(MPI_Comm comm, PetscFE *fem)
   f->basisSpace    = NULL;
   f->dualSpace     = NULL;
   f->numComponents = 1;
+  ierr = PetscMemzero(&f->quadrature, sizeof(PetscQuadrature));CHKERRQ(ierr);
 
   *fem = f;
   PetscFunctionReturn(0);
@@ -1965,10 +1982,14 @@ PetscErrorCode PetscFEGetBasisSpace(PetscFE fem, PetscSpace *sp)
 #define __FUNCT__ "PetscFESetBasisSpace"
 PetscErrorCode PetscFESetBasisSpace(PetscFE fem, PetscSpace sp)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 2);
+  ierr = PetscSpaceDestroy(&fem->basisSpace);CHKERRQ(ierr);
   fem->basisSpace = sp;
+  ierr = PetscObjectReference((PetscObject) fem->basisSpace);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1987,24 +2008,54 @@ PetscErrorCode PetscFEGetDualSpace(PetscFE fem, PetscDualSpace *sp)
 #define __FUNCT__ "PetscFESetDualSpace"
 PetscErrorCode PetscFESetDualSpace(PetscFE fem, PetscDualSpace sp)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 2);
+  ierr = PetscDualSpaceDestroy(&fem->dualSpace);CHKERRQ(ierr);
   fem->dualSpace = sp;
+  ierr = PetscObjectReference((PetscObject) fem->dualSpace);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscFEGetQuadrature"
+PetscErrorCode PetscFEGetQuadrature(PetscFE fem, PetscQuadrature *q)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);
+  PetscValidPointer(q, 2);
+  *q = fem->quadrature;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscFESetQuadrature"
+PetscErrorCode PetscFESetQuadrature(PetscFE fem, PetscQuadrature q)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);
+  ierr = PetscQuadratureDestroy(&fem->quadrature);CHKERRQ(ierr);
+  fem->quadrature = q;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscFEGetTabulation"
-PetscErrorCode PetscFEGetTabulation(PetscFE fem, PetscInt npoints, const PetscReal points[], PetscReal **B, PetscReal **D, PetscReal **H)
+PetscErrorCode PetscFEGetTabulation(PetscFE fem, PetscReal **B, PetscReal **D, PetscReal **H)
 {
-  DM             dm;
-  PetscReal     *tmpB, *invV;
-  PetscInt       pdim; /* Dimension of FE space P */
-  PetscInt       dim;  /* Spatial dimension */
-  PetscInt       comp; /* Field components */
-  PetscInt       p, j, k;
-  PetscErrorCode ierr;
+  DM              dm;
+  PetscInt        pdim; /* Dimension of FE space P */
+  PetscInt        dim;  /* Spatial dimension */
+  PetscInt        comp; /* Field components */
+  PetscInt        npoints = fem->quadrature.numQuadPoints;
+  PetscReal      *points  = fem->quadrature.quadPoints;
+  PetscReal      *tmpB, *invV;
+  PetscInt        p, j, k;
+  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);
@@ -2083,7 +2134,7 @@ PetscErrorCode PetscFEGetTabulation(PetscFE fem, PetscInt npoints, const PetscRe
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscFERestoreTabulation"
-PetscErrorCode PetscFERestoreTabulation(PetscFE fem, PetscInt npoints, const PetscReal points[], PetscReal **B, PetscReal **D, PetscReal **D2)
+PetscErrorCode PetscFERestoreTabulation(PetscFE fem, PetscReal **B, PetscReal **D, PetscReal **D2)
 {
   DM             dm;
   PetscErrorCode ierr;

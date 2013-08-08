@@ -165,18 +165,61 @@ PetscErrorCode CreateReferenceCell(MPI_Comm comm, PetscInt dim, PetscBool simple
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "CheckQuadrature"
+PetscErrorCode CheckQuadrature(PetscInt dim, PetscInt numPoints, const PetscReal x[], const PetscReal w[])
+{
+  PetscInt p, d;
+
+  PetscFunctionBegin;
+  if (numPoints != NUM_QUADRATURE_POINTS_0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid number of quadrature points: %d != %d", numPoints, NUM_QUADRATURE_POINTS_0);
+  for (p = 0; p < numPoints; ++p) {
+    for (d = 0; d < dim; ++d) {
+      if (fabs(x[p*dim+d] - points_0[p*dim+d]) > 1.0e-10) SETERRQ4(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid point %d, component %d: %g != %g", p, d, x[p*dim+d], points_0[p*dim+d]);
+    }
+    if (fabs(w[p] - weights_0[p]) > 1.0e-10) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid weight %d: %g != %g", p, w[p], weights_0[p]);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "CheckBasis"
+PetscErrorCode CheckBasis(PetscInt dim, PetscInt numPoints, PetscInt numBasisFunc, PetscInt numBasisComp, PetscReal B[], PetscReal D[])
+{
+  PetscInt p, b, d, c;
+
+  PetscFunctionBegin;
+  if (numBasisFunc != NUM_BASIS_FUNCTIONS_0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid number of basis functions %d != %d", numBasisFunc, NUM_BASIS_FUNCTIONS_0);
+  if (numBasisComp != NUM_BASIS_COMPONENTS_0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid number of basis components %d != %d", numBasisComp, NUM_BASIS_COMPONENTS_0);
+  for (p = 0; p < numPoints; ++p) {
+    for (b = 0; b < numBasisFunc; ++b) {
+      for (c = 0; c < numBasisComp; ++c) {
+        const PetscInt i = (p*numBasisFunc + b)*numBasisComp + c;
+        if (fabs(B[i] - Basis_0[i]) > 1.0e-10) SETERRQ5(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid basis tab for point %d, function %d, component %d: %g != %g", p, b, c, B[i], Basis_0[i]);
+#if 0
+        for (d = 0; d < dim; ++d) {
+          const PetscInt j = ((p*numBasisFunc + b)*dim + d)*numBasisComp + c;
+          if (fabs(D[j] - BasisDerivatives_0[j]) > 1.0e-10) SETERRQ6(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid basis der tab for point %d, function %d, dim %d, component %d: %g != %g", p, b, d, c, D[i], BasisDerivatives_0[i]);
+        }
+#endif
+      }
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "SetupElement"
 PetscErrorCode SetupElement(DM dm, AppCtx *user)
 {
-  PetscFE        fem;
-  DM             K;
-  PetscSpace     P;
-  PetscDualSpace Q;
-  PetscReal     *B, *D;
-  PetscReal     *x, *w;
-  const PetscInt dim   = user->dim;
-  PetscInt       order, numPoints, numBasisFunc, numBasisComp, p, b, c, d;
-  PetscErrorCode ierr;
+  PetscFE         fem;
+  DM              K;
+  PetscSpace      P;
+  PetscDualSpace  Q;
+  PetscReal      *B, *D;
+  PetscQuadrature q;
+  const PetscInt  dim   = user->dim;
+  PetscInt        order, numBasisFunc, numBasisComp;
+  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   /* Create space */
@@ -195,41 +238,23 @@ PetscErrorCode SetupElement(DM dm, AppCtx *user)
   ierr = PetscDualSpaceSetUp(Q);CHKERRQ(ierr);
   /* Create quadrature */
   order = PetscMax(user->qorder, order);
-  numPoints = dim > 1 ? dim > 2 ? order*PetscSqr(order) : PetscSqr(order) : order;
-  if (numPoints != NUM_QUADRATURE_POINTS_0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid number of quadrature points: %d != %d", numPoints, NUM_QUADRATURE_POINTS_0);
-  ierr = PetscDTGaussJacobiQuadrature(dim, order, -1.0, 1.0, &x, &w);CHKERRQ(ierr);
-  for (p = 0; p < numPoints; ++p) {
-    for (d = 0; d < dim; ++d) {
-      if (fabs(x[p*dim+d] - points_0[p*dim+d]) > 1.0e-10) SETERRQ4(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid point %d, component %d: %g != %g", p, d, x[p*dim+d], points_0[p*dim+d]);
-    }
-    if (fabs(w[p] - weights_0[p]) > 1.0e-10) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid weight %d: %g != %g", p, w[p], weights_0[p]);
-  }
+  q.numQuadPoints = dim > 1 ? dim > 2 ? order*PetscSqr(order) : PetscSqr(order) : order;
+  ierr = PetscDTGaussJacobiQuadrature(dim, order, -1.0, 1.0, (PetscReal *) &q.quadPoints, (PetscReal *) &q.quadWeights);CHKERRQ(ierr);
+  ierr = CheckQuadrature(dim, q.numQuadPoints, q.quadPoints, q.quadWeights);CHKERRQ(ierr);
   /* Create element */
   ierr = PetscFECreate(PetscObjectComm((PetscObject) dm), &fem);CHKERRQ(ierr);
   ierr = PetscFESetBasisSpace(fem, P);CHKERRQ(ierr);
   ierr = PetscFESetDualSpace(fem, Q);CHKERRQ(ierr);
   ierr = PetscFESetNumComponents(fem, user->numComponents);CHKERRQ(ierr);
+  ierr = PetscFESetQuadrature(fem, q);CHKERRQ(ierr);
+  ierr = PetscSpaceDestroy(&P);CHKERRQ(ierr);
+  ierr = PetscDualSpaceDestroy(&Q);CHKERRQ(ierr);
   ierr = PetscFEGetDimension(fem, &numBasisFunc);CHKERRQ(ierr);
   ierr = PetscFEGetNumComponents(fem, &numBasisComp);CHKERRQ(ierr);
-  ierr = PetscFEGetTabulation(fem, numPoints, x, &B, NULL, NULL);CHKERRQ(ierr);
-  /* Compare numDof */
-  /* Functions are (- x - y)/2, (x+1)/2,  and (y+1)/2 */
-  if (numBasisFunc != NUM_BASIS_FUNCTIONS_0) SETERRQ2(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Invalid number of basis functions %d != %d", numBasisFunc, NUM_BASIS_FUNCTIONS_0);
-  if (numBasisComp != NUM_BASIS_COMPONENTS_0) SETERRQ2(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Invalid number of basis components %d != %d", numBasisComp, NUM_BASIS_COMPONENTS_0);
-  for (p = 0; p < numPoints; ++p) {
-    for (b = 0; b < numBasisFunc; ++b) {
-      for (c = 0; c < numBasisComp; ++c) {
-        const PetscInt i = (p*numBasisFunc + b)*numBasisComp + c;
-        if (fabs(B[i] - Basis_0[i]) > 1.0e-10) SETERRQ5(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid basis tab for point %d, function %d, component %d: %g != %g", p, b, c, B[i], Basis_0[i]);
-#if 0
-        for (d = 0; d < dim; ++d) {
-          const PetscInt j = ((p*numBasisFunc + b)*dim + d)*numBasisComp + c;
-          if (fabs(D[j] - BasisDerivatives_0[j]) > 1.0e-10) SETERRQ6(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid basis der tab for point %d, function %d, dim %d, component %d: %g != %g", p, b, d, c, D[i], BasisDerivatives_0[i]);
-        }
-#endif
-      }
-    }
-  }
+  ierr = PetscFEGetTabulation(fem, &B, NULL, NULL);CHKERRQ(ierr);
+  ierr = CheckBasis(dim, q.numQuadPoints, numBasisFunc, numBasisComp, B, D);CHKERRQ(ierr);
+  ierr = PetscFERestoreTabulation(fem, &B, NULL, NULL);CHKERRQ(ierr);
+  ierr = PetscFEDestroy(&fem);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
