@@ -1091,7 +1091,7 @@ PetscErrorCode PetscSpaceEvaluate_Polynomial(PetscSpace sp, PetscInt npoints, co
   PetscInt         dim     = poly->numVariables;
   PetscReal       *lpoints, *tmp, *LB, *LD, *LH;
   PetscInt        *ind, *tup;
-  PetscInt         pdim, d, i, p, deg, o;
+  PetscInt         pdim, d, der, i, p, deg, o;
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
@@ -1134,9 +1134,31 @@ PetscErrorCode PetscSpaceEvaluate_Polynomial(PetscSpace sp, PetscInt npoints, co
       }
     }
   }
-  ierr = PetscFree2(ind,tup);CHKERRQ(ierr);
-  if (D) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Too lazy to code first derivatives");
+  if (D) {
+    /* D (npoints x pdim x dim) */
+    i = 0;
+    for (o = 0; o <= sp->order; ++o) {
+      ierr = PetscMemzero(ind, dim * sizeof(PetscInt));CHKERRQ(ierr);
+      while (ind[0] >= 0) {
+        ierr = LatticePoint_Internal(dim, o, ind, tup);CHKERRQ(ierr);
+        for (p = 0; p < npoints; ++p) {
+          for (der = 0; der < dim; ++der) {
+            D[(p*pdim + i)*dim + der] = 1.0;
+            for (d = 0; d < dim; ++d) {
+              if (d == der) {
+                D[(p*pdim + i)*dim + der] *= LD[(tup[d]*dim + d)*npoints + p];
+              } else {
+                D[(p*pdim + i)*dim + der] *= LB[(tup[d]*dim + d)*npoints + p];
+              }
+            }
+          }
+        }
+        ++i;
+      }
+    }
+  }
   if (H) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Too lazy to code second derivatives");
+  ierr = PetscFree2(ind,tup);CHKERRQ(ierr);
   if (B) {ierr = DMRestoreWorkArray(dm, npoints*dim*ndegree, PETSC_REAL, &LB);CHKERRQ(ierr);}
   if (D) {ierr = DMRestoreWorkArray(dm, npoints*dim*ndegree, PETSC_REAL, &LD);CHKERRQ(ierr);}
   if (H) {ierr = DMRestoreWorkArray(dm, npoints*dim*ndegree, PETSC_REAL, &LH);CHKERRQ(ierr);}
@@ -2047,15 +2069,15 @@ PetscErrorCode PetscFESetQuadrature(PetscFE fem, PetscQuadrature q)
 #define __FUNCT__ "PetscFEGetTabulation"
 PetscErrorCode PetscFEGetTabulation(PetscFE fem, PetscReal **B, PetscReal **D, PetscReal **H)
 {
-  DM              dm;
-  PetscInt        pdim; /* Dimension of FE space P */
-  PetscInt        dim;  /* Spatial dimension */
-  PetscInt        comp; /* Field components */
-  PetscInt        npoints = fem->quadrature.numQuadPoints;
-  PetscReal      *points  = fem->quadrature.quadPoints;
-  PetscReal      *tmpB, *invV;
-  PetscInt        p, j, k;
-  PetscErrorCode  ierr;
+  DM               dm;
+  PetscInt         pdim; /* Dimension of FE space P */
+  PetscInt         dim;  /* Spatial dimension */
+  PetscInt         comp; /* Field components */
+  PetscInt         npoints = fem->quadrature.numQuadPoints;
+  const PetscReal *points  = fem->quadrature.quadPoints;
+  PetscReal       *tmpB, *tmpD, *invV;
+  PetscInt         p, d, j, k;
+  PetscErrorCode   ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);
@@ -2074,9 +2096,12 @@ PetscErrorCode PetscFEGetTabulation(PetscFE fem, PetscReal **B, PetscReal **D, P
     ierr = DMGetWorkArray(dm, npoints*pdim*comp, PETSC_REAL, B);CHKERRQ(ierr);
     ierr = DMGetWorkArray(dm, npoints*pdim, PETSC_REAL, &tmpB);CHKERRQ(ierr);
   }
-  if (D) {ierr = DMGetWorkArray(dm, npoints*pdim*dim, PETSC_REAL, D);CHKERRQ(ierr);}
+  if (D) {
+    ierr = DMGetWorkArray(dm, npoints*pdim*comp*dim, PETSC_REAL, D);CHKERRQ(ierr);
+    ierr = DMGetWorkArray(dm, npoints*pdim*dim, PETSC_REAL, &tmpD);CHKERRQ(ierr);
+  }
   if (H) {ierr = DMGetWorkArray(dm, npoints*pdim*dim*dim, PETSC_REAL, H);CHKERRQ(ierr);}
-  ierr = PetscSpaceEvaluate(fem->basisSpace, npoints, points, B ? tmpB : NULL, D ? *D : NULL, H ? *H : NULL);CHKERRQ(ierr);
+  ierr = PetscSpaceEvaluate(fem->basisSpace, npoints, points, B ? tmpB : NULL, D ? tmpD : NULL, H ? *H : NULL);CHKERRQ(ierr);
 
   ierr = DMGetWorkArray(dm, pdim*pdim, PETSC_REAL, &invV);CHKERRQ(ierr);
   for (j = 0; j < pdim; ++j) {
@@ -2124,17 +2149,33 @@ PetscErrorCode PetscFEGetTabulation(PetscFE fem, PetscReal **B, PetscReal **D, P
         }
       }
     }
+    if (D) {
+      /* Multiply by V^{-1} (pdim x pdim) */
+      for (j = 0; j < pdim; ++j) {
+        for (d = 0; d < dim; ++d) {
+          const PetscInt i = ((p*pdim + j)*comp + 0)*dim + d;
+          PetscInt       c;
+
+          (*D)[i] = 0.0;
+          for (k = 0; k < pdim; ++k) {
+            (*D)[i] += invV[k*pdim+j] * tmpD[(p*pdim + k)*dim + d];
+          }
+          for (c = 1; c < comp; ++c) {
+            (*D)[((p*pdim + j)*comp + c)*dim + d] = (*D)[i];
+          }
+        }
+      }
+    }
   }
   ierr = DMRestoreWorkArray(dm, pdim*pdim, PETSC_REAL, &invV);CHKERRQ(ierr);
-  if (B) {
-    ierr = DMRestoreWorkArray(dm, npoints*pdim, PETSC_REAL, &tmpB);CHKERRQ(ierr);
-  }
+  if (B) {ierr = DMRestoreWorkArray(dm, npoints*pdim, PETSC_REAL, &tmpB);CHKERRQ(ierr);}
+  if (D) {ierr = DMRestoreWorkArray(dm, npoints*pdim*dim, PETSC_REAL, &tmpD);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscFERestoreTabulation"
-PetscErrorCode PetscFERestoreTabulation(PetscFE fem, PetscReal **B, PetscReal **D, PetscReal **D2)
+PetscErrorCode PetscFERestoreTabulation(PetscFE fem, PetscReal **B, PetscReal **D, PetscReal **H)
 {
   DM             dm;
   PetscErrorCode ierr;
@@ -2142,8 +2183,8 @@ PetscErrorCode PetscFERestoreTabulation(PetscFE fem, PetscReal **B, PetscReal **
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);
   ierr = PetscDualSpaceGetDM(fem->dualSpace, &dm);CHKERRQ(ierr);
-  if (B)  {ierr = DMRestoreWorkArray(dm, 0, PETSC_REAL, B);CHKERRQ(ierr);}
-  if (D)  {ierr = DMRestoreWorkArray(dm, 0, PETSC_REAL, D);CHKERRQ(ierr);}
-  if (D2) {ierr = DMRestoreWorkArray(dm, 0, PETSC_REAL, D2);CHKERRQ(ierr);}
+  if (B) {ierr = DMRestoreWorkArray(dm, 0, PETSC_REAL, B);CHKERRQ(ierr);}
+  if (D) {ierr = DMRestoreWorkArray(dm, 0, PETSC_REAL, D);CHKERRQ(ierr);}
+  if (H) {ierr = DMRestoreWorkArray(dm, 0, PETSC_REAL, H);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
