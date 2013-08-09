@@ -284,19 +284,18 @@ PetscErrorCode SetupElement(DM dm, AppCtx *user)
 PetscErrorCode SetupSection(DM dm, AppCtx *user)
 {
   PetscSection   section;
-  const PetscInt numFields           = NUM_FIELDS;
-  PetscInt       dim                 = user->dim;
-  PetscInt       numBC               = 0;
-  PetscInt       numComp[NUM_FIELDS] = {NUM_BASIS_COMPONENTS_0};
-  PetscInt       bcFields[1]         = {0};
-  IS             bcPoints[1]         = {NULL};
-  PetscInt       numDof[NUM_FIELDS*(SPATIAL_DIM_0+1)];
+  const PetscInt numFields   = 1;
+  PetscInt       dim         = user->dim;
+  PetscInt       numBC       = 0;
+  PetscInt       bcFields[1] = {0};
+  IS             bcPoints[1] = {NULL};
+  PetscInt       numDof[3+1];
+  PetscInt       numComp[1];
   PetscInt       f, d;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (1   != NUM_FIELDS)    SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Number of finite element fields %d must be 1", NUM_FIELDS);
-  if (dim != SPATIAL_DIM_0) SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_SIZ, "Spatial dimension %d should be %d", dim, SPATIAL_DIM_0);
+  numComp[0] = user->numComponents;
   for (d = 0; d <= dim; ++d) {
     numDof[0*(dim+1)+d] = numDof_0[d];
   }
@@ -315,10 +314,10 @@ PetscErrorCode SetupSection(DM dm, AppCtx *user)
 #define __FUNCT__ "CheckFunctions"
 PetscErrorCode CheckFunctions(DM dm, PetscInt order, Vec u, AppCtx *user)
 {
-  void          (*exactFuncs[NUM_BASIS_COMPONENTS_TOTAL]) (const PetscReal x[], PetscScalar *u);
+  void          (*exactFuncs[3]) (const PetscReal x[], PetscScalar *u);
   MPI_Comm        comm;
   PetscInt        dim  = user->dim;
-  PetscQuadrature q[NUM_FIELDS], fq;
+  PetscQuadrature q[1], fq;
   PetscReal       error, tol = 1.0e-10;
   PetscErrorCode  ierr;
 
