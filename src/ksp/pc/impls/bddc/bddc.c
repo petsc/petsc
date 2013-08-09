@@ -3,10 +3,11 @@
    Provide PCApplyTranpose
    make runexe59
    Man pages
+   Propagate nearnullspace info among levels
    Move FETIDP code
    Provide general case for subassembling
    Preallocation routines in MatConvert_IS_AIJ
-   Allow different customizations between solves
+   Allow different customizations among different linear solves (requires also reset/destroy of ksp_R and coarse_ksp)
    Why options for "pc_bddc_coarse" solver gets propagated to "pc_bddc_coarse_1" solver?
    Better management in PCIS code
    Is it possible working with PCBDDCGraph on boundary indices only?
@@ -71,13 +72,13 @@ static PetscErrorCode PCBDDCSetPrimalVerticesLocalIS_BDDC(PC pc, IS PrimalVertic
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCSetPrimalVerticesLocalIS"
 /*@
- PCBDDCSetPrimalVerticesLocalIS - Set user defined primal vertices in PCBDDC.
+ PCBDDCSetPrimalVerticesLocalIS - Set additional user defined primal vertices in PCBDDC
 
    Not collective
 
    Input Parameters:
 +  pc - the preconditioning context
--  PrimalVertices - index sets of primal vertices in local numbering
+-  PrimalVertices - index set of primal vertices in local numbering
 
    Level: intermediate
 
@@ -110,15 +111,15 @@ static PetscErrorCode PCBDDCSetCoarseningRatio_BDDC(PC pc,PetscInt k)
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCSetCoarseningRatio"
 /*@
- PCBDDCSetCoarseningRatio - Set coarsening ratio used in multilevel coarsening
+ PCBDDCSetCoarseningRatio - Set coarsening ratio used in multilevel
 
    Logically collective on PC
 
    Input Parameters:
 +  pc - the preconditioning context
--  k - coarsening ratio
+-  k - coarsening ratio (H/h at the coarser level)
 
-   Approximatively k subdomains at the finer level will be aggregated into a single subdomain at the coarser level.
+   Approximatively k subdomains at the finer level will be aggregated into a single subdomain at the coarser level
 
    Level: intermediate
 
@@ -200,15 +201,15 @@ static PetscErrorCode PCBDDCSetLevels_BDDC(PC pc,PetscInt levels)
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCSetLevels"
 /*@
- PCBDDCSetLevels - Sets the maximum number of levels within the multilevel approach.
+ PCBDDCSetLevels - Sets the maximum number of levels for multilevel
 
    Logically collective on PC
 
    Input Parameters:
 +  pc - the preconditioning context
--  levels - the maximum number of levels
+-  levels - the maximum number of levels (max 9)
 
-   Default value is 0, i.e. coarse problem will be solved exactly
+   Default value is 0, i.e. traditional one-level BDDC
 
    Level: intermediate
 
@@ -245,13 +246,13 @@ static PetscErrorCode PCBDDCSetNullSpace_BDDC(PC pc,MatNullSpace NullSpace)
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCSetNullSpace"
 /*@
- PCBDDCSetNullSpace - Set NullSpace of global operator of BDDC preconditioned mat.
+ PCBDDCSetNullSpace - Set nullspace for BDDC operator
 
    Logically collective on PC and MatNullSpace
 
    Input Parameters:
 +  pc - the preconditioning context
--  NullSpace - Null space of the linear operator to be preconditioned.
+-  NullSpace - Null space of the linear operator to be preconditioned (Pmat)
 
    Level: intermediate
 
@@ -289,14 +290,13 @@ static PetscErrorCode PCBDDCSetDirichletBoundaries_BDDC(PC pc,IS DirichletBounda
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCSetDirichletBoundaries"
 /*@
- PCBDDCSetDirichletBoundaries - Set index set defining subdomain part (in local ordering)
-                              of Dirichlet boundaries for the global problem.
+ PCBDDCSetDirichletBoundaries - Set IS defining Dirichlet boundaries for the global problem.
 
    Not collective
 
    Input Parameters:
 +  pc - the preconditioning context
--  DirichletBoundaries - sequential index set defining the subdomain part of Dirichlet boundaries (can be NULL)
+-  DirichletBoundaries - sequential IS defining the subdomain part of Dirichlet boundaries (in local ordering)
 
    Level: intermediate
 
@@ -333,14 +333,13 @@ static PetscErrorCode PCBDDCSetNeumannBoundaries_BDDC(PC pc,IS NeumannBoundaries
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCSetNeumannBoundaries"
 /*@
- PCBDDCSetNeumannBoundaries - Set index set defining subdomain part (in local ordering)
-                              of Neumann boundaries for the global problem.
+ PCBDDCSetNeumannBoundaries - Set IS defining Neumann boundaries for the global problem.
 
    Not collective
 
    Input Parameters:
 +  pc - the preconditioning context
--  NeumannBoundaries - sequential index set defining the subdomain part of Neumann boundaries (can be NULL)
+-  NeumannBoundaries - sequential IS defining the subdomain part of Neumann boundaries (in local ordering)
 
    Level: intermediate
 
@@ -374,16 +373,15 @@ static PetscErrorCode PCBDDCGetDirichletBoundaries_BDDC(PC pc,IS *DirichletBound
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCGetDirichletBoundaries"
 /*@
- PCBDDCGetDirichletBoundaries - Get index set defining subdomain part (in local ordering)
-                                of Dirichlet boundaries for the global problem.
+ PCBDDCGetDirichletBoundaries - Get IS for local Dirichlet boundaries
 
    Not collective
 
    Input Parameters:
-+  pc - the preconditioning context
+.  pc - the preconditioning context
 
    Output Parameters:
-+  DirichletBoundaries - index set defining the subdomain part of Dirichlet boundaries
+.  DirichletBoundaries - index set defining the subdomain part of Dirichlet boundaries
 
    Level: intermediate
 
@@ -416,16 +414,15 @@ static PetscErrorCode PCBDDCGetNeumannBoundaries_BDDC(PC pc,IS *NeumannBoundarie
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCGetNeumannBoundaries"
 /*@
- PCBDDCGetNeumannBoundaries - Get index set defining subdomain part (in local ordering)
-                              of Neumann boundaries for the global problem.
+ PCBDDCGetNeumannBoundaries - Get IS for local Neumann boundaries
 
    Not collective
 
    Input Parameters:
-+  pc - the preconditioning context
+.  pc - the preconditioning context
 
    Output Parameters:
-+  NeumannBoundaries - index set defining the subdomain part of Neumann boundaries
+.  NeumannBoundaries - index set defining the subdomain part of Neumann boundaries
 
    Level: intermediate
 
@@ -473,22 +470,21 @@ static PetscErrorCode PCBDDCSetLocalAdjacencyGraph_BDDC(PC pc, PetscInt nvtxs,co
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCSetLocalAdjacencyGraph"
 /*@
- PCBDDCSetLocalAdjacencyGraph - Set CSR graph of local matrix for use of PCBDDC.
+ PCBDDCSetLocalAdjacencyGraph - Set adjacency structure (CSR graph) of the local Neumann matrix
 
    Not collective
 
    Input Parameters:
 +  pc - the preconditioning context
--  nvtxs - number of local vertices of the graph
--  xadj, adjncy - the CSR graph
--  copymode - either PETSC_COPY_VALUES or PETSC_OWN_POINTER. In the former case the user must free the array passed in;
-                                                             in the latter case, memory must be obtained with PetscMalloc.
+.  nvtxs - number of local vertices of the graph (i.e., the local size of your problem)
+.  xadj, adjncy - the CSR graph
+-  copymode - either PETSC_COPY_VALUES or PETSC_OWN_POINTER.
 
    Level: intermediate
 
    Notes:
 
-.seealso: PCBDDC
+.seealso: PCBDDC,PetscCopyMode
 @*/
 PetscErrorCode PCBDDCSetLocalAdjacencyGraph(PC pc,PetscInt nvtxs,const PetscInt xadj[],const PetscInt adjncy[], PetscCopyMode copymode)
 {
@@ -540,14 +536,14 @@ static PetscErrorCode PCBDDCSetDofsSplitting_BDDC(PC pc,PetscInt n_is, IS ISForD
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCSetDofsSplitting"
 /*@
- PCBDDCSetDofsSplitting - Set index sets defining fields of local mat.
+ PCBDDCSetDofsSplitting - Set index sets defining fields of the local Neumann matrix
 
    Not collective
 
    Input Parameters:
 +  pc - the preconditioning context
--  n - number of index sets defining the fields
--  IS[] - array of IS describing the fields
+-  n_is - number of index sets defining the fields
+.  ISForDofs - array of IS describing the fields
 
    Level: intermediate
 
@@ -1028,22 +1024,22 @@ static PetscErrorCode PCBDDCMatFETIDPGetRHS_BDDC(Mat fetidp_mat, Vec standard_rh
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCMatFETIDPGetRHS"
 /*@
- PCBDDCMatFETIDPGetRHS - Get rhs for FETIDP linear system.
+ PCBDDCMatFETIDPGetRHS - Compute the right-hand side for FETIDP linear system
 
    Collective
 
    Input Parameters:
-+  fetidp_mat   - the FETIDP mat obtained by a call to PCBDDCCreateFETIDPOperators
-+  standard_rhs - the rhs of your linear system
++  fetidp_mat   - the FETIDP matrix object obtained by calling PCBDDCCreateFETIDPOperators
+.  standard_rhs - the right-hand side for your linear system
 
    Output Parameters:
-+  fetidp_flux_rhs   - the rhs of the FETIDP linear system
+-  fetidp_flux_rhs   - the right-hand side for the FETIDP linear system
 
    Level: developer
 
    Notes:
 
-.seealso: PCBDDC
+.seealso: PCBDDC,PCBDDCCreateFETIDPOperators
 @*/
 PetscErrorCode PCBDDCMatFETIDPGetRHS(Mat fetidp_mat, Vec standard_rhs, Vec fetidp_flux_rhs)
 {
@@ -1102,22 +1098,22 @@ static PetscErrorCode PCBDDCMatFETIDPGetSolution_BDDC(Mat fetidp_mat, Vec fetidp
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCMatFETIDPGetSolution"
 /*@
- PCBDDCMatFETIDPGetSolution - Get Solution for FETIDP linear system.
+ PCBDDCMatFETIDPGetSolution - Compute the physical solution from the solution of the FETIDP linear system
 
    Collective
 
    Input Parameters:
-+  fetidp_mat        - the FETIDP mat obtained by a call to PCBDDCCreateFETIDPOperators
-+  fetidp_flux_sol - the solution of the FETIDP linear system
++  fetidp_mat        - the FETIDP matrix obtained by calling PCBDDCCreateFETIDPOperators
+.  fetidp_flux_sol - the solution of the FETIDP linear system
 
    Output Parameters:
-+  standard_sol      - the solution on the global domain
+-  standard_sol      - the solution defined on the physical domain
 
    Level: developer
 
    Notes:
 
-.seealso: PCBDDC
+.seealso: PCBDDC,PCBDDCCreateFETIDPOperators
 @*/
 PetscErrorCode PCBDDCMatFETIDPGetSolution(Mat fetidp_mat, Vec fetidp_flux_sol, Vec standard_sol)
 {
@@ -1176,16 +1172,24 @@ static PetscErrorCode PCBDDCCreateFETIDPOperators_BDDC(PC pc, Mat *fetidp_mat, P
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCCreateFETIDPOperators"
 /*@
- PCBDDCCreateFETIDPOperators - Create operators for FETIDP.
+ PCBDDCCreateFETIDPOperators - Create operators for FETIDP
 
    Collective
 
    Input Parameters:
-+  pc - the BDDC preconditioning context (setup must be already called)
++  pc - the BDDC preconditioning context already setup
+
+   Output Parameters:
+.  fetidp_mat - shell FETIDP matrix object 
+.  fetidp_pc  - shell Dirichlet preconditioner for FETIDP matrix  
+
+   Options Database Keys:
+-    -fetidp_fullyredundant: use or not a fully redundant set of Lagrange multipliers
 
    Level: developer
 
    Notes:
+     Currently the only operation provided for FETIDP matrix is MatMult
 
 .seealso: PCBDDC
 @*/
@@ -1204,20 +1208,66 @@ PetscErrorCode PCBDDCCreateFETIDPOperators(PC pc, Mat *fetidp_mat, PC *fetidp_pc
 /*MC
    PCBDDC - Balancing Domain Decomposition by Constraints.
 
+   An implementation of the BDDC preconditioner based on 
+
+.vb   
+   [1] C. R. Dohrmann. "An approximate BDDC preconditioner", Numerical Linear Algebra with Applications Volume 14, Issue 2, pages 149-168, March 2007
+   [2] A. Klawonn and O. B. Widlund. "Dual-Primal FETI Methods for Linear Elasticity", http://cs.nyu.edu/csweb/Research/TechReports/TR2004-855/TR2004-855.pdf 
+   [3] J. Mandel, B. Sousedik, C. R. Dohrmann. "Multispace and Multilevel BDDC", http://arxiv.org/abs/0712.3977
+.ve
+
+   The matrix to be preconditioned (Pmat) must be of type MATIS.
+
+   Currently works with MATIS matrices with local Neumann matrices of type MATSEQAIJ or MATSEQBAIJ, either with real or complex numbers.
+
+   Unlike 'conventional' interface preconditioners, PCBDDC iterates over all degrees of freedom, not just those on the interface. This allows the use of approximate solvers on the subdomains.
+
+   It also works with unsymmetric and indefinite problems. 
+
+   Approximate local solvers are automatically adapted for singular linear problems (see [1]) if the user has provided the nullspace using PCBDDCSetNullSpace
+
+   Boundary nodes are split in vertices, edges and faces using information from the local to global mapping of dofs and the local connectivity graph of nodes. The latter can be customized by using PCBDDCSetLocalAdjacencyGraph
+
+   Constraints can be customized by attaching a MatNullSpace object to the MATIS matrix via MatSetNearNullSpace.
+
+   Change of basis is performed similarly to [2]. When more the one constraint is present on a single connected component (i.e. an edge or a face), a robust method based on local QR factorizations is used.
+
+   The PETSc implementation also supports multilevel BDDC [3]. Coarse grids are partitioned using MatPartitioning object.
+
    Options Database Keys:
-.    -pcbddc ??? -
+
+.    -pc_bddc_use_vertices <1> - use or not vertices in primal space
+.    -pc_bddc_use_edges <1> - use or not edges in primal space
+.    -pc_bddc_use_faces <1> - use or not faces in primal space
+.    -pc_bddc_use_change_of_basis <0> - use change of basis approach (on edges only)
+.    -pc_bddc_use_change_on_faces <0> - use change of basis approach on faces if change of basis has been requested
+.    -pc_bddc_switch_static <0> - switches from M_2 to M_3 operator (see reference article [1])
+.    -pc_bddc_levels <0> - maximum number of levels for multilevel
+.    -pc_bddc_coarsening_ratio - H/h ratio at the coarser level  
+-    -pc_bddc_check_level <0> - set verbosity level of debugging output
+
+   Options for Dirichlet, Neumann or coarse solver can be set with
+.vb
+      -pc_bddc_dirichlet_
+      -pc_bddc_neumann_
+      -pc_bddc_coarse_
+.ve
+   e.g -pc_bddc_dirichlet_ksp_type richardson -pc_bddc_dirichlet_pc_type gamg
+
+   When using a multilevel approach, solvers' options at the N-th level can be specified as
+.vb
+      -pc_bddc_dirichlet_N_
+      -pc_bddc_neumann_N_
+      -pc_bddc_coarse_N_
+.ve
+   Note that level number ranges from the finest 0 to the coarsest N
 
    Level: intermediate
 
-   Notes: The matrix used with this preconditioner must be of type MATIS
+   Notes:
+     Currently does not work with KSPBCGS and other KSPs requiring the specialization of PCApplyTranspose
 
-          Unlike more 'conventional' interface preconditioners, this iterates over ALL the
-          degrees of freedom, NOT just those on the interface (this allows the use of approximate solvers
-          on the subdomains).
-
-          Options for the coarse grid preconditioner can be set with -
-          Options for the Dirichlet subproblem can be set with -
-          Options for the Neumann subproblem can be set with -
+     New deluxe scaling operator will be available soon.
 
    Contributed by Stefano Zampini
 

@@ -117,8 +117,10 @@ static PetscErrorCode PCBDDCDestroyNullSpaceCorrectionPC(PC pc)
   PetscFunctionReturn(0);
 }
 
-/*PETSC_EXTERN PetscErrorCode PCBDDCApplyNullSpaceCorrectionPC(PC,Vec,Vec);
-PETSC_EXTERN PetscErrorCode PCBDDCDestroyNullSpaceCorrectionPC(PC);*/
+/*
+PETSC_EXTERN PetscErrorCode PCBDDCApplyNullSpaceCorrectionPC(PC,Vec,Vec);
+PETSC_EXTERN PetscErrorCode PCBDDCDestroyNullSpaceCorrectionPC(PC);
+*/
 
 #undef __FUNCT__
 #define __FUNCT__ "PCBDDCNullSpaceAssembleCorrection"
