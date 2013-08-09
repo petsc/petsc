@@ -1,7 +1,8 @@
 /* TODOLIST
    Don't use qr when number of primal dof per cc is 1 
-   A_RR problem with bs>1!
+   Better management for BAIJ local mats. How to deal with SBAIJ?
    Provide PCApplyTranpose
+   make runexe59
    Man pages
    Move FETIDP code
    Provide general case for subassembling
