@@ -1,17 +1,18 @@
 /* TODOLIST
+   Better management for BAIJ local mats. How to deal with SBAIJ?
+   Provide PCApplyTranpose
+   make runexe59
+   Man pages
+   Move FETIDP code
+   Provide general case for subassembling
+   Preallocation routines in MatConvert_IS_AIJ
+   Allow different customizations between solves
+   Why options for "pc_bddc_coarse" solver gets propagated to "pc_bddc_coarse_1" solver?
+   Better management in PCIS code
+   Is it possible working with PCBDDCGraph on boundary indices only?
    DofSplitting and DM attached to pc?
    Change SetNeumannBoundaries to SetNeumannBoundariesLocal and provide new SetNeumannBoundaries (same Dirichlet)
-   change how to deal with the coarse problem (PCBDDCSetCoarseEnvironment):
-     - simplify coarse problem structure -> PCBDDC or PCREDUDANT, nothing else -> same comm for all levels?
-     - remove coarse enums and allow use of PCBDDCGetCoarseKSP
-     - remove metis dependency -> use MatPartitioning for multilevel -> Assemble serial adjacency in PCBDDCAnalyzeInterface?
-   code refactoring:
-     - pick up better names for static functions
-   change options structure:
-     - insert BDDC into MG framework?
-   provide other ops? Ask to developers
-   remove all unused printf
-   man pages
+   BDDC with MG framework?
 */
 
 /* ----------------------------------------------------------------------------------------------------------------------------------------------
@@ -47,11 +48,8 @@ PetscErrorCode PCSetFromOptions_BDDC(PC pc)
   }
   /* Switch between M_2 (default) and M_3 preconditioners (as defined by C. Dohrmann in the ref. article) */
   ierr = PetscOptionsBool("-pc_bddc_switch_static","Switch on static condensation ops around the interface preconditioner","none",pcbddc->switch_static,&pcbddc->switch_static,NULL);CHKERRQ(ierr);
-  /* Coarse solver context */
-  static const char * const avail_coarse_problems[] = {"sequential","replicated","parallel","multilevel","CoarseProblemType","PC_BDDC_",0}; /*order of choiches depends on ENUM defined in bddc.h */
-  ierr = PetscOptionsEnum("-pc_bddc_coarse_problem_type","Set coarse problem type","none",avail_coarse_problems,(PetscEnum)pcbddc->coarse_problem_type,(PetscEnum*)&pcbddc->coarse_problem_type,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-pc_bddc_coarsening_ratio","Set coarsening ratio used in multilevel coarsening","none",pcbddc->coarsening_ratio,&pcbddc->coarsening_ratio,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-pc_bddc_max_levels","Set maximum number of levels for multilevel","none",pcbddc->max_levels,&pcbddc->max_levels,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-pc_bddc_levels","Set maximum number of levels for multilevel","none",pcbddc->max_levels,&pcbddc->max_levels,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_bddc_use_deluxe_scaling","Use deluxe scaling for BDDC","none",pcbddc->use_deluxe_scaling,&pcbddc->use_deluxe_scaling,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -99,52 +97,13 @@ PetscErrorCode PCBDDCSetPrimalVerticesLocalIS(PC pc, IS PrimalVertices)
 }
 /* -------------------------------------------------------------------------- */
 #undef __FUNCT__
-#define __FUNCT__ "PCBDDCSetCoarseProblemType_BDDC"
-static PetscErrorCode PCBDDCSetCoarseProblemType_BDDC(PC pc, CoarseProblemType CPT)
-{
-  PC_BDDC  *pcbddc = (PC_BDDC*)pc->data;
-
-  PetscFunctionBegin;
-  pcbddc->coarse_problem_type = CPT;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "PCBDDCSetCoarseProblemType"
-/*@
- PCBDDCSetCoarseProblemType - Set coarse problem type in PCBDDC.
-
-   Not collective
-
-   Input Parameters:
-+  pc - the preconditioning context
--  CoarseProblemType - pick a better name and explain what this is
-
-   Level: intermediate
-
-   Notes:
-   Not collective but all procs must call with same arguments.
-
-.seealso: PCBDDC
-@*/
-PetscErrorCode PCBDDCSetCoarseProblemType(PC pc, CoarseProblemType CPT)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  ierr = PetscTryMethod(pc,"PCBDDCSetCoarseProblemType_C",(PC,CoarseProblemType),(pc,CPT));CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-/* -------------------------------------------------------------------------- */
-#undef __FUNCT__
 #define __FUNCT__ "PCBDDCSetCoarseningRatio_BDDC"
 static PetscErrorCode PCBDDCSetCoarseningRatio_BDDC(PC pc,PetscInt k)
 {
   PC_BDDC  *pcbddc = (PC_BDDC*)pc->data;
 
   PetscFunctionBegin;
-  pcbddc->coarsening_ratio=k;
+  pcbddc->coarsening_ratio = k;
   PetscFunctionReturn(0);
 }
 
@@ -173,35 +132,83 @@ PetscErrorCode PCBDDCSetCoarseningRatio(PC pc,PetscInt k)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  PetscValidLogicalCollectiveInt(pc,k,2);
   ierr = PetscTryMethod(pc,"PCBDDCSetCoarseningRatio_C",(PC,PetscInt),(pc,k));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-/* -------------------------------------------------------------------------- */
 
+/* The following functions (PCBDDCSetUseExactDirichlet PCBDDCSetLevel) are not public */
 #undef __FUNCT__
-#define __FUNCT__ "PCBDDCSetMaxLevels_BDDC"
-static PetscErrorCode PCBDDCSetMaxLevels_BDDC(PC pc,PetscInt max_levels)
+#define __FUNCT__ "PCBDDCSetUseExactDirichlet_BDDC"
+static PetscErrorCode PCBDDCSetUseExactDirichlet_BDDC(PC pc,PetscBool flg)
 {
   PC_BDDC  *pcbddc = (PC_BDDC*)pc->data;
 
   PetscFunctionBegin;
-  pcbddc->max_levels=max_levels;
+  pcbddc->use_exact_dirichlet_trick = flg;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PCBDDCSetMaxLevels"
+#define __FUNCT__ "PCBDDCSetUseExactDirichlet"
+PetscErrorCode PCBDDCSetUseExactDirichlet(PC pc,PetscBool flg)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  PetscValidLogicalCollectiveBool(pc,flg,2);
+  ierr = PetscTryMethod(pc,"PCBDDCSetUseExactDirichlet_C",(PC,PetscBool),(pc,flg));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PCBDDCSetLevel_BDDC"
+static PetscErrorCode PCBDDCSetLevel_BDDC(PC pc,PetscInt level)
+{
+  PC_BDDC  *pcbddc = (PC_BDDC*)pc->data;
+
+  PetscFunctionBegin;
+  pcbddc->current_level = level;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PCBDDCSetLevel"
+PetscErrorCode PCBDDCSetLevel(PC pc,PetscInt level)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  PetscValidLogicalCollectiveInt(pc,level,2);
+  ierr = PetscTryMethod(pc,"PCBDDCSetLevel_C",(PC,PetscInt),(pc,level));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PCBDDCSetLevels_BDDC"
+static PetscErrorCode PCBDDCSetLevels_BDDC(PC pc,PetscInt levels)
+{
+  PC_BDDC  *pcbddc = (PC_BDDC*)pc->data;
+
+  PetscFunctionBegin;
+  pcbddc->max_levels = levels;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PCBDDCSetLevels"
 /*@
- PCBDDCSetMaxLevels - Sets the maximum number of levels within the multilevel approach.
+ PCBDDCSetLevels - Sets the maximum number of levels within the multilevel approach.
 
    Logically collective on PC
 
    Input Parameters:
 +  pc - the preconditioning context
--  max_levels - the maximum number of levels
+-  levels - the maximum number of levels
 
-   Default value is 1, i.e. coarse problem will be solved inexactly with one application
-   of PCBDDC preconditioner if the multilevel approach is requested.
+   Default value is 0, i.e. coarse problem will be solved exactly
 
    Level: intermediate
 
@@ -209,13 +216,14 @@ static PetscErrorCode PCBDDCSetMaxLevels_BDDC(PC pc,PetscInt max_levels)
 
 .seealso: PCBDDC
 @*/
-PetscErrorCode PCBDDCSetMaxLevels(PC pc,PetscInt max_levels)
+PetscErrorCode PCBDDCSetLevels(PC pc,PetscInt levels)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  ierr = PetscTryMethod(pc,"PCBDDCSetMaxLevels_C",(PC,PetscInt),(pc,max_levels));CHKERRQ(ierr);
+  PetscValidLogicalCollectiveInt(pc,levels,2);
+  ierr = PetscTryMethod(pc,"PCBDDCSetLevels_C",(PC,PetscInt),(pc,levels));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
@@ -230,7 +238,7 @@ static PetscErrorCode PCBDDCSetNullSpace_BDDC(PC pc,MatNullSpace NullSpace)
   PetscFunctionBegin;
   ierr = PetscObjectReference((PetscObject)NullSpace);CHKERRQ(ierr);
   ierr = MatNullSpaceDestroy(&pcbddc->NullSpace);CHKERRQ(ierr);
-  pcbddc->NullSpace=NullSpace;
+  pcbddc->NullSpace = NullSpace;
   PetscFunctionReturn(0);
 }
 
@@ -258,6 +266,7 @@ PetscErrorCode PCBDDCSetNullSpace(PC pc,MatNullSpace NullSpace)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidHeaderSpecific(NullSpace,MAT_NULLSPACE_CLASSID,2);
+  PetscCheckSameComm(pc,1,NullSpace,2);
   ierr = PetscTryMethod(pc,"PCBDDCSetNullSpace_C",(PC,MatNullSpace),(pc,NullSpace));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -548,10 +557,14 @@ static PetscErrorCode PCBDDCSetDofsSplitting_BDDC(PC pc,PetscInt n_is, IS ISForD
 @*/
 PetscErrorCode PCBDDCSetDofsSplitting(PC pc,PetscInt n_is, IS ISForDofs[])
 {
+  PetscInt       i;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  for (i=0;i<n_is;i++) {
+    PetscValidHeaderSpecific(ISForDofs[i],IS_CLASSID,2);
+  }
   ierr = PetscTryMethod(pc,"PCBDDCSetDofsSplitting_C",(PC,PetscInt,IS[]),(pc,n_is,ISForDofs));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -583,10 +596,18 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
   PetscInt       dirsize,i,*is_indices;
   PetscScalar    *array_x,*array_diagonal;
   Vec            used_vec;
-  PetscBool      guess_nonzero;
+  PetscBool      guess_nonzero,flg,bddc_has_dirichlet_boundaries;
 
   PetscFunctionBegin;
-  /* Creates parallel work vectors used in presolve. */
+  /* if we are working with cg, one dirichlet solve can be avoided during Krylov iterations */
+  if (ksp) {
+    PetscBool iscg;
+    ierr = PetscObjectTypeCompare((PetscObject)ksp,KSPCG,&iscg);CHKERRQ(ierr);
+    if (!iscg) {
+      ierr = PCBDDCSetUseExactDirichlet(pc,PETSC_FALSE);CHKERRQ(ierr);
+    }
+  }
+  /* Creates parallel work vectors used in presolve */
   if (!pcbddc->original_rhs) {
     ierr = VecDuplicate(pcis->vec1_global,&pcbddc->original_rhs);CHKERRQ(ierr);
   }
@@ -604,23 +625,28 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
   /* hack into ksp data structure PCPreSolve comes earlier in src/ksp/ksp/interface/itfunc.c */
   if (ksp) {
     ierr = KSPGetInitialGuessNonzero(ksp,&guess_nonzero);CHKERRQ(ierr);
-    if ( !guess_nonzero ) {
+    if (!guess_nonzero) {
       ierr = VecSet(used_vec,0.0);CHKERRQ(ierr);
     }
   }
 
-  if (rhs) { /* TODO: wiser handling of rhs removal, which is only needed in case of zeroed rows */
-    /* store the original rhs */
-    ierr = VecCopy(rhs,pcbddc->original_rhs);CHKERRQ(ierr);
+  /* TODO: remove when Dirichlet boundaries will be shared */
+  ierr = PCBDDCGetDirichletBoundaries(pc,&dirIS);CHKERRQ(ierr);
+  flg = PETSC_FALSE;
+  if (dirIS) flg = PETSC_TRUE;
+  ierr = MPI_Allreduce(&flg,&bddc_has_dirichlet_boundaries,1,MPIU_BOOL,MPI_LOR,PetscObjectComm((PetscObject)pc));CHKERRQ(ierr);
+  
+  /* store the original rhs */
+  ierr = VecCopy(rhs,pcbddc->original_rhs);CHKERRQ(ierr);
 
-    /* Take into account zeroed rows -> change rhs and store solution removed */
+  /* Take into account zeroed rows -> change rhs and store solution removed */
+  if (rhs && bddc_has_dirichlet_boundaries) {
     ierr = MatGetDiagonal(pc->pmat,pcis->vec1_global);CHKERRQ(ierr);
     ierr = VecPointwiseDivide(pcis->vec1_global,rhs,pcis->vec1_global);CHKERRQ(ierr);
     ierr = VecScatterBegin(matis->ctx,pcis->vec1_global,pcis->vec2_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterEnd(matis->ctx,pcis->vec1_global,pcis->vec2_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterBegin(matis->ctx,used_vec,pcis->vec1_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterEnd(matis->ctx,used_vec,pcis->vec1_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = PCBDDCGetDirichletBoundaries(pc,&dirIS);CHKERRQ(ierr);
     if (dirIS) {
       ierr = ISGetSize(dirIS,&dirsize);CHKERRQ(ierr);
       ierr = VecGetArray(pcis->vec1_N,&array_x);CHKERRQ(ierr);
@@ -644,7 +670,7 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
   if (x) {
     ierr = VecCopy(used_vec,pcbddc->temp_solution);CHKERRQ(ierr);
     ierr = VecSet(used_vec,0.0);CHKERRQ(ierr);
-    if (pcbddc->use_exact_dirichlet && !pcbddc->coarse_psi_B) {
+    if (pcbddc->use_exact_dirichlet_trick) {
       ierr = VecScatterBegin(pcis->global_to_D,rhs,pcis->vec1_D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
       ierr = VecScatterEnd  (pcis->global_to_D,rhs,pcis->vec1_D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
       ierr = KSPSolve(pcbddc->ksp_D,pcis->vec1_D,pcis->vec2_D);CHKERRQ(ierr);
@@ -656,22 +682,25 @@ static PetscErrorCode PCPreSolve_BDDC(PC pc, KSP ksp, Vec rhs, Vec x)
     }
   }
 
+  /* prepare MatMult and rhs for solver */
   if (pcbddc->use_change_of_basis) {
     /* swap pointers for local matrices */
     temp_mat = matis->A;
     matis->A = pcbddc->local_mat;
     pcbddc->local_mat = temp_mat;
+    if (rhs) {
+      /* Get local rhs and apply transformation of basis */
+      ierr = VecScatterBegin(pcis->global_to_B,rhs,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = VecScatterEnd  (pcis->global_to_B,rhs,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      /* from original basis to modified basis */
+      ierr = MatMultTranspose(pcbddc->ChangeOfBasisMatrix,pcis->vec1_B,pcis->vec2_B);CHKERRQ(ierr);
+      /* put back modified values into the global vec using INSERT_VALUES copy mode */
+      ierr = VecScatterBegin(pcis->global_to_B,pcis->vec2_B,rhs,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+      ierr = VecScatterEnd  (pcis->global_to_B,pcis->vec2_B,rhs,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    }
   }
-  if (pcbddc->use_change_of_basis && rhs) {
-    /* Get local rhs and apply transformation of basis */
-    ierr = VecScatterBegin(pcis->global_to_B,rhs,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecScatterEnd  (pcis->global_to_B,rhs,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    /* from original basis to modified basis */
-    ierr = MatMultTranspose(pcbddc->ChangeOfBasisMatrix,pcis->vec1_B,pcis->vec2_B);CHKERRQ(ierr);
-    /* put back modified values into the global vec using INSERT_VALUES copy mode */
-    ierr = VecScatterBegin(pcis->global_to_B,pcis->vec2_B,rhs,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-    ierr = VecScatterEnd  (pcis->global_to_B,pcis->vec2_B,rhs,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-  }
+
+  /* remove nullspace if present */
   if (ksp && pcbddc->NullSpace) {
     ierr = MatNullSpaceRemove(pcbddc->NullSpace,used_vec);CHKERRQ(ierr);
     ierr = MatNullSpaceRemove(pcbddc->NullSpace,rhs);CHKERRQ(ierr);
@@ -757,15 +786,16 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
 
   PetscFunctionBegin;
   /* the following lines of code should be replaced by a better logic between PCIS, PCNN, PCBDDC and other nonoverlapping preconditioners */
+  /* PCIS does not support MatStructures different from SAME_PRECONDITIONER */
   /* For BDDC we need to define a local "Neumann" problem different to that defined in PCISSetup
-     So, we set to pcnone the Neumann problem of pcis in order to avoid unneeded computation
-     Also, we decide to directly build the (same) Dirichlet problem */
-  ierr = PetscOptionsSetValue("-is_localN_pc_type","none");CHKERRQ(ierr);
-  ierr = PetscOptionsSetValue("-is_localD_pc_type","none");CHKERRQ(ierr);
+     Also, BDDC directly build the Dirichlet problem */
   /* Get stdout for dbg */
   if (pcbddc->dbg_flag && !pcbddc->dbg_viewer) {
     ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)pc),&pcbddc->dbg_viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIISynchronizedAllow(pcbddc->dbg_viewer,PETSC_TRUE);CHKERRQ(ierr);
+    if (pcbddc->current_level) {
+      ierr = PetscViewerASCIIAddTab(pcbddc->dbg_viewer,2);CHKERRQ(ierr);
+    }
   }
   /* first attempt to split work */
   if (pc->setupcalled) {
@@ -786,8 +816,11 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
     computetopography = PETSC_TRUE;
     computesolvers = PETSC_TRUE;
   }
-  /* Set up all the "iterative substructuring" common block */
+  /* Set up all the "iterative substructuring" common block without computing solvers */
   if (computeis) {
+    /* HACK INTO PCIS */
+    PC_IS* pcis = (PC_IS*)pc->data;
+    pcis->computesolvers = PETSC_FALSE;
     ierr = PCISSetUp(pc);CHKERRQ(ierr);
   }
   /* Analyze interface and set up local constraint and change of basis matrices */
@@ -804,6 +837,9 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
     /* Create coarse and local stuffs */
     ierr = PCBDDCSetUpSolvers(pc);CHKERRQ(ierr);
     ierr = PCBDDCScalingSetUp(pc);CHKERRQ(ierr);
+  }
+  if (pcbddc->dbg_flag && pcbddc->current_level) {
+    ierr = PetscViewerASCIISubtractTab(pcbddc->dbg_viewer,2);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -837,7 +873,7 @@ PetscErrorCode PCApply_BDDC(PC pc,Vec r,Vec z)
    Added support for M_3 preconditioner in the reference article (code is active if pcbddc->switch_static = PETSC_TRUE) */
 
   PetscFunctionBegin;
-  if (!pcbddc->use_exact_dirichlet || pcbddc->coarse_psi_B) {
+  if (!pcbddc->use_exact_dirichlet_trick) {
     /* First Dirichlet solve */
     ierr = VecScatterBegin(pcis->global_to_D,r,pcis->vec1_D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterEnd  (pcis->global_to_D,r,pcis->vec1_D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
@@ -905,6 +941,7 @@ PetscErrorCode PCDestroy_BDDC(PC pc)
   ierr = PCBDDCResetSolvers(pc);CHKERRQ(ierr);
   ierr = KSPDestroy(&pcbddc->ksp_D);CHKERRQ(ierr);
   ierr = KSPDestroy(&pcbddc->ksp_R);CHKERRQ(ierr);
+  ierr = KSPDestroy(&pcbddc->coarse_ksp);CHKERRQ(ierr);
   ierr = MatDestroy(&pcbddc->local_mat);CHKERRQ(ierr);
   /* free global vectors needed in presolve */
   ierr = VecDestroy(&pcbddc->temp_solution);CHKERRQ(ierr);
@@ -912,13 +949,14 @@ PetscErrorCode PCDestroy_BDDC(PC pc)
   /* remove functions */
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetPrimalVerticesLocalIS_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetCoarseningRatio_C",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetMaxLevels_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetLevel_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetUseExactDirichlet_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetLevels_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetNullSpace_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetDirichletBoundaries_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetNeumannBoundaries_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCGetDirichletBoundaries_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCGetNeumannBoundaries_C",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetCoarseProblemType_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetDofsSplitting_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetLocalAdjacencyGraph_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCCreateFETIDPOperators_C",NULL);CHKERRQ(ierr);
@@ -1233,19 +1271,14 @@ PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC pc)
   pcbddc->R_to_D                     = 0;
   pcbddc->ksp_D                      = 0;
   pcbddc->ksp_R                      = 0;
-  pcbddc->local_primal_indices       = 0;
   pcbddc->NeumannBoundaries          = 0;
   pcbddc->ISForDofs                  = 0;
   pcbddc->ConstraintMatrix           = 0;
-  pcbddc->local_primal_sizes         = 0;
-  pcbddc->local_primal_displacements = 0;
-  pcbddc->use_exact_dirichlet        = PETSC_TRUE;
+  pcbddc->use_exact_dirichlet_trick  = PETSC_TRUE;
   pcbddc->coarse_loc_to_glob         = 0;
   pcbddc->coarsening_ratio           = 8;
   pcbddc->current_level              = 0;
-  pcbddc->max_levels                 = 1;
-  pcbddc->replicated_local_primal_indices = 0;
-  pcbddc->replicated_local_primal_values  = 0;
+  pcbddc->max_levels                 = 0;
 
   /* create local graph structure */
   ierr = PCBDDCGraphCreate(&pcbddc->mat_graph);CHKERRQ(ierr);
@@ -1270,13 +1303,14 @@ PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC pc)
   /* composing function */
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetPrimalVerticesLocalIS_C",PCBDDCSetPrimalVerticesLocalIS_BDDC);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetCoarseningRatio_C",PCBDDCSetCoarseningRatio_BDDC);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetMaxLevels_C",PCBDDCSetMaxLevels_BDDC);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetLevel_C",PCBDDCSetLevel_BDDC);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetUseExactDirichlet_C",PCBDDCSetUseExactDirichlet_BDDC);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetLevels_C",PCBDDCSetLevels_BDDC);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetNullSpace_C",PCBDDCSetNullSpace_BDDC);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetDirichletBoundaries_C",PCBDDCSetDirichletBoundaries_BDDC);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetNeumannBoundaries_C",PCBDDCSetNeumannBoundaries_BDDC);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCGetDirichletBoundaries_C",PCBDDCGetDirichletBoundaries_BDDC);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCGetNeumannBoundaries_C",PCBDDCGetNeumannBoundaries_BDDC);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetCoarseProblemType_C",PCBDDCSetCoarseProblemType_BDDC);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetDofsSplitting_C",PCBDDCSetDofsSplitting_BDDC);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCSetLocalAdjacencyGraph_C",PCBDDCSetLocalAdjacencyGraph_BDDC);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCBDDCCreateFETIDPOperators_C",PCBDDCCreateFETIDPOperators_BDDC);CHKERRQ(ierr);
