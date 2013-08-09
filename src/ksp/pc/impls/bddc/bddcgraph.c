@@ -131,7 +131,7 @@ PetscErrorCode PCBDDCGraphGetCandidatesIS(PCBDDCGraph graph, PetscBool use_faces
   ISForFaces = 0;
   ISForEdges = 0;
   ISForVertices = 0;
-  if (use_faces & nfc) {
+  if (use_faces && nfc) {
     ierr = PetscMalloc(nfc*sizeof(IS),&ISForFaces);CHKERRQ(ierr);
   }
   if (use_edges && nec) {
