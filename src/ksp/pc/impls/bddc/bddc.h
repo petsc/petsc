@@ -11,7 +11,6 @@ typedef struct {
   /* First MUST come the folowing line, for the stuff that is common to FETI and Neumann-Neumann. */
   PC_IS         pcis;
   /* Coarse stuffs needed by BDDC application in KSP */
-  PetscInt      coarse_size;
   Mat           coarse_mat;
   Vec           coarse_vec;
   Vec           coarse_rhs;
@@ -35,6 +34,7 @@ typedef struct {
   Mat           local_auxmat2;
   Vec           vec1_R;
   Vec           vec2_R;
+  IS            is_R_local;
   VecScatter    R_to_B;
   VecScatter    R_to_D;
   KSP           ksp_R;
@@ -53,10 +53,9 @@ typedef struct {
   Mat           local_mat;
   PetscBool     use_exact_dirichlet;
   /* Some defaults on selecting vertices and constraints*/
-  PetscBool     vertices_flag;
-  PetscBool     constraints_flag;
-  PetscBool     faces_flag;
-  PetscBool     edges_flag;
+  PetscBool     use_vertices;
+  PetscBool     use_faces;
+  PetscBool     use_edges;
   /* Some customization is possible */
   PCBDDCGraph                mat_graph;
   MatNullSpace               NullSpace;
@@ -66,7 +65,7 @@ typedef struct {
   IS                         *ISForDofs;
   IS                         NeumannBoundaries;
   IS                         DirichletBoundaries;
-  PetscBool                  inexact_prec_type;
+  PetscBool                  switch_static;
   CoarseProblemType          coarse_problem_type;
   CoarseCommunicationsType   coarse_communications_type;
   PetscInt                   coarsening_ratio;
