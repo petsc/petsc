@@ -32,7 +32,7 @@ PetscErrorCode PCBDDCSetUpSolvers(PC pc)
      Setup local correction and local part of coarse basis.
      Gives back the dense local part of the coarse matrix in column major ordering
   */
-  ierr = PCBDDCSetUpCoarseLocal(pc,&coarse_submat_vals);CHKERRQ(ierr);
+  ierr = PCBDDCSetUpCorrection(pc,&coarse_submat_vals);CHKERRQ(ierr);
 
   /* Compute total number of coarse nodes and setup coarse solver */
   ierr = PCBDDCSetUpCoarseSolver(pc,coarse_submat_vals);CHKERRQ(ierr);
@@ -139,8 +139,8 @@ PetscErrorCode PCBDDCCreateWorkVectors(PC pc)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PCBDDCSetUpCoarseLocal"
-PetscErrorCode PCBDDCSetUpCoarseLocal(PC pc, PetscScalar **coarse_submat_vals_n)
+#define __FUNCT__ "PCBDDCSetUpCorrection"
+PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
 {
   PetscErrorCode         ierr;
   /* pointers to pcis and pcbddc */
