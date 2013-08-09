@@ -1,5 +1,4 @@
 /* TODOLIST
-   Don't use qr when number of primal dof per cc is 1 
    Better management for BAIJ local mats. How to deal with SBAIJ?
    Provide PCApplyTranpose
    make runexe59
