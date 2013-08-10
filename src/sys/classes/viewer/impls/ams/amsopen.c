@@ -75,19 +75,27 @@ PetscErrorCode PetscViewerSAWsOpen(MPI_Comm comm,PetscViewer *lab)
 PetscErrorCode  PetscObjectViewSAWs(PetscObject obj,PetscViewer viewer)
 {
   PetscErrorCode ierr;
+  char           dir[1024];
 
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
   if (obj->amsmem) PetscFunctionReturn(0);
+  obj->amsmem = PETSC_TRUE;
   ierr = PetscObjectName(obj);CHKERRQ(ierr);
 
-  PetscStackCallSAWs(SAWs_Add_Directory,(PETSC_OBJECTS_SAWs_ROOT_DIRECTORY,obj->name,&obj->amsmem));
-  PetscStackCallSAWs(SAWs_Add_Variable,(obj->amsmem,"Class",&obj->class_name,1,SAWs_READ,SAWs_STRING));
-  PetscStackCallSAWs(SAWs_Add_Variable,(obj->amsmem,"Type",&obj->type_name,1,SAWs_READ,SAWs_STRING));
-  PetscStackCallSAWs(SAWs_Add_Variable,(obj->amsmem,"Id",&obj->id,1,SAWs_READ,SAWs_INT));
-  PetscStackCallSAWs(SAWs_Add_Variable,(obj->amsmem,"ParentId",&obj->parentid,1,SAWs_READ,SAWs_INT));
-  PetscStackCallSAWs(SAWs_Add_Variable,(obj->amsmem,"Name",&obj->name,1,SAWs_READ,SAWs_STRING));
-  PetscStackCallSAWs(SAWs_Add_Variable,(obj->amsmem,"Publish Block",&obj->amspublishblock,1,SAWs_READ,SAWs_BOOLEAN));
-  PetscStackCallSAWs(SAWs_Add_Variable,(obj->amsmem,"Block",&obj->amsblock,1,SAWs_WRITE,SAWs_BOOLEAN));
+  ierr = PetscSNPrintf(dir,1024,"/PETSc/Objects/%s/Class",obj->name);CHKERRQ(ierr);
+  PetscStackCallSAWs(SAWs_Register,(dir,&obj->class_name,1,SAWs_READ,SAWs_STRING));
+  ierr = PetscSNPrintf(dir,1024,"/PETSc/Objects/%s/Type",obj->name);CHKERRQ(ierr);
+  PetscStackCallSAWs(SAWs_Register,(dir,&obj->type_name,1,SAWs_READ,SAWs_STRING));
+  ierr = PetscSNPrintf(dir,1024,"/PETSc/Objects/%s/Id",obj->name);CHKERRQ(ierr);
+  PetscStackCallSAWs(SAWs_Register,(dir,&obj->id,1,SAWs_READ,SAWs_INT));
+  ierr = PetscSNPrintf(dir,1024,"/PETSc/Objects/%s/ParentID",obj->name);CHKERRQ(ierr);
+  PetscStackCallSAWs(SAWs_Register,(dir,&obj->parentid,1,SAWs_READ,SAWs_INT));
+  ierr = PetscSNPrintf(dir,1024,"/PETSc/Objects/%s/Name",obj->name);CHKERRQ(ierr);
+  PetscStackCallSAWs(SAWs_Register,(dir,&obj->name,1,SAWs_READ,SAWs_STRING));
+  ierr = PetscSNPrintf(dir,1024,"/PETSc/Objects/%s/Publish Block",obj->name);CHKERRQ(ierr);
+  PetscStackCallSAWs(SAWs_Register,(dir,&obj->amspublishblock,1,SAWs_READ,SAWs_BOOLEAN));
+  ierr = PetscSNPrintf(dir,1024,"/PETSc/Objects/%s/Block",obj->name);CHKERRQ(ierr);
+  PetscStackCallSAWs(SAWs_Register,(dir,&obj->amsblock,1,SAWs_WRITE,SAWs_BOOLEAN));
   PetscFunctionReturn(0);
 }

@@ -111,7 +111,7 @@ typedef struct _p_PetscObject {
   PetscPrecision       precision;
   PetscBool            optionsprinted;
 #if defined(PETSC_HAVE_SAWS)
-  SAWs_Directory       amsmem;
+  PetscBool            amsmem;
   PetscBool            amspublishblock; /* if PETSC_TRUE and publishing objects then will block at PetscObjectSAWsBlock() */
   PetscBool            amsblock;
 #endif

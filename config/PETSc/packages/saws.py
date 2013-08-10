@@ -7,7 +7,7 @@ class Configure(PETSc.package.NewPackage):
 #    self.gitcommit = '3c24ac8df967279c3ceafa5c39fc230af30c63c4'
     self.giturls   = ['https://bitbucket.org/saws/saws.git']
     self.download  = ['https://bitbucket.org/saws/saws/get/master.tar.gz']
-    self.functions = ['SAWs_Add_Directory']
+    self.functions = ['SAWs_Register']
     self.includes  = ['SAWs.h']
     self.liblist   = [['libSAWs.a']]
     self.libdir           = 'lib' # location of libraries in the package directory tree

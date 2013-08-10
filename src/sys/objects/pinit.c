@@ -799,8 +799,6 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
 
 #if defined(PETSC_HAVE_SAWS)
   ierr = SAWs_Initialize();CHKERRQ(ierr);
-  ierr = SAWs_Add_Directory(SAWs_ROOT_DIRECTORY,"PETSc",&PETSC_SAWs_ROOT_DIRECTORY);CHKERRQ(ierr);
-  ierr = SAWs_Add_Directory(PETSC_SAWs_ROOT_DIRECTORY,"Objects",&PETSC_OBJECTS_SAWs_ROOT_DIRECTORY);CHKERRQ(ierr);
 #endif
 
   /* SHOULD PUT IN GUARDS: Make sure logging is initialized, even if we do not print it out */
@@ -1135,8 +1133,6 @@ PetscErrorCode  PetscFinalize(void)
   }
 
 #if defined(PETSC_HAVE_SAWS)
-  ierr = SAWs_Destroy_Directory(&PETSC_OBJECTS_SAWs_ROOT_DIRECTORY);CHKERRQ(ierr);
-  ierr = SAWs_Destroy_Directory(&PETSC_SAWs_ROOT_DIRECTORY);CHKERRQ(ierr);
   ierr = SAWs_Finalize();CHKERRQ(ierr);
 #endif
 

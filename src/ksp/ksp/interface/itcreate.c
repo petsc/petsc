@@ -187,12 +187,18 @@ PetscErrorCode  KSPView(KSP ksp,PetscViewer viewer)
 #if defined(PETSC_HAVE_SAWS)
   } else if (isams) {
     if (!((PetscObject)ksp)->amsmem) {
+      char       dir[1024];
+      const char *name;
+
+      ierr = PetscObjectGetName((PetscObject)ksp,&name);CHKERRQ(ierr);
       ierr = PetscObjectViewSAWs((PetscObject)ksp,viewer);CHKERRQ(ierr);
-      PetscStackCallSAWs(SAWs_Add_Variable,(((PetscObject)ksp)->amsmem,"its",&ksp->its,1,SAWs_READ,SAWs_INT));
+      ierr = PetscSNPrintf(dir,1024,"/PETSc/Objects/%s/its",name);CHKERRQ(ierr);
+      PetscStackCallSAWs(SAWs_Register,(dir,&ksp->its,1,SAWs_READ,SAWs_INT));
       if (!ksp->res_hist) {
         ierr = KSPSetResidualHistory(ksp,NULL,PETSC_DECIDE,PETSC_FALSE);CHKERRQ(ierr);
       }
-      PetscStackCallSAWs(SAWs_Add_Variable,(((PetscObject)ksp)->amsmem,"res_hist",ksp->res_hist,10,SAWs_READ,SAWs_DOUBLE));
+      ierr = PetscSNPrintf(dir,1024,"/PETSc/Objects/%s/res_hist",name);CHKERRQ(ierr);
+      PetscStackCallSAWs(SAWs_Register,(dir,ksp->res_hist,10,SAWs_READ,SAWs_DOUBLE));
     }
 #endif
   } else if (ksp->ops->view) {

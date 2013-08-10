@@ -1394,9 +1394,15 @@ PetscErrorCode  TSView(TS ts,PetscViewer viewer)
 #if defined(PETSC_HAVE_SAWS)
   } else if (isams) {
     if (!((PetscObject)ts)->amsmem) {
+      char       dir[1024];
+      const char *name;
+
+      ierr = PetscObjectGetName((PetscObject)ts,&name);CHKERRQ(ierr);
       ierr = PetscObjectViewSAWs((PetscObject)ts,viewer);CHKERRQ(ierr);
-      PetscStackCallSAWs(SAWs_Add_Variable,(((PetscObject)ts)->amsmem,"time step",&ts->steps,1,SAWs_READ,SAWs_INT));
-      PetscStackCallSAWs(SAWs_Add_Variable,(((PetscObject)ts)->amsmem,"time",&ts->ptime,1,SAWs_READ,SAWs_DOUBLE));
+      ierr = PetscSNPrintf(dir,1024,"/PETSc/Objects/%s/time step",name);CHKERRQ(ierr);
+      PetscStackCallSAWs(SAWs_Register,(dir,&ts->steps,1,SAWs_READ,SAWs_INT));
+      ierr = PetscSNPrintf(dir,1024,"/PETSc/Objects/%s/time",name);CHKERRQ(ierr);
+      PetscStackCallSAWs(SAWs_Register,(dir,&ts->ptime,1,SAWs_READ,SAWs_DOUBLE));
     }
     if (ts->ops->view) {
       ierr = (*ts->ops->view)(ts,viewer);CHKERRQ(ierr);
