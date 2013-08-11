@@ -4,6 +4,7 @@
 #if !defined(__PETSCFE_H)
 #define __PETSCFE_H
 #include <petscdm.h>
+#include <petscdt.h>
 #include <petscfetypes.h>
 
 PETSC_EXTERN PetscErrorCode PetscFEInitializePackage(void);
@@ -68,6 +69,7 @@ PETSC_EXTERN PetscErrorCode PetscDualSpaceSetOrder(PetscDualSpace, PetscInt);
 PETSC_EXTERN PetscErrorCode PetscDualSpaceGetOrder(PetscDualSpace, PetscInt *);
 PETSC_EXTERN PetscErrorCode PetscDualSpaceSetDM(PetscDualSpace, DM);
 PETSC_EXTERN PetscErrorCode PetscDualSpaceGetDM(PetscDualSpace, DM *);
+PETSC_EXTERN PetscErrorCode PetscDualSpaceCreateReferenceCell(PetscDualSpace, PetscInt, PetscBool, DM *);
 
 PETSC_EXTERN PetscClassId PETSCFE_CLASSID;
 
@@ -75,6 +77,7 @@ PETSC_EXTERN PetscErrorCode PetscFECreate(MPI_Comm, PetscFE *);
 PETSC_EXTERN PetscErrorCode PetscFEDestroy(PetscFE *);
 
 PETSC_EXTERN PetscErrorCode PetscFEGetDimension(PetscFE, PetscInt *);
+PETSC_EXTERN PetscErrorCode PetscFEGetSpatialDimension(PetscFE, PetscInt *);
 PETSC_EXTERN PetscErrorCode PetscFESetNumComponents(PetscFE, PetscInt);
 PETSC_EXTERN PetscErrorCode PetscFEGetNumComponents(PetscFE, PetscInt *);
 PETSC_EXTERN PetscErrorCode PetscFESetBasisSpace(PetscFE, PetscSpace);
@@ -83,6 +86,7 @@ PETSC_EXTERN PetscErrorCode PetscFESetDualSpace(PetscFE, PetscDualSpace);
 PETSC_EXTERN PetscErrorCode PetscFEGetDualSpace(PetscFE, PetscDualSpace *);
 PETSC_EXTERN PetscErrorCode PetscFESetQuadrature(PetscFE, PetscQuadrature);
 PETSC_EXTERN PetscErrorCode PetscFEGetQuadrature(PetscFE, PetscQuadrature *);
+PETSC_EXTERN PetscErrorCode PetscFEGetNumDof(PetscFE, const PetscInt **);
 PETSC_EXTERN PetscErrorCode PetscFEGetTabulation(PetscFE, PetscReal **, PetscReal **, PetscReal **);
 PETSC_EXTERN PetscErrorCode PetscFERestoreTabulation(PetscFE, PetscReal **, PetscReal **, PetscReal **);
 #endif
