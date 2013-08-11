@@ -447,27 +447,6 @@ PetscErrorCode DMPlexComputeL2Diff(DM dm, PetscQuadrature quad[], void (**funcs)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexComputeResidualFEM"
-/*@
-  DMPlexComputeResidualFEM - Form the local residual F from the local input X using pointwise functions specified by the user
-
-  Input Parameters:
-+ dm - The mesh
-. X  - Local input vector
-- user - The user context
-
-  Output Parameter:
-. F  - Local output vector
-
-  Note:
-  The second member of the user context must be an FEMContext.
-
-  We form the residual one batch of elements at a time. This allows us to offload work onto an accelerator,
-  like a GPU, or vectorize on a multicore machine.
-
-  Level: developer
-
-.seealso: DMPlexComputeJacobianActionFEM()
-@*/
 PetscErrorCode DMPlexComputeResidualFEM(DM dm, Vec X, Vec F, void *user)
 {
   DM_Plex         *mesh   = (DM_Plex*) dm->data;
@@ -483,61 +462,6 @@ PetscErrorCode DMPlexComputeResidualFEM(DM dm, Vec X, Vec F, void *user)
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
-  /* ierr = PetscLogEventBegin(ResidualFEMEvent,0,0,0,0);CHKERRQ(ierr); */
-  ierr     = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
-  ierr     = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
-  ierr     = PetscSectionGetNumFields(section, &numFields);CHKERRQ(ierr);
-  ierr     = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
-  numCells = cEnd - cStart;
-  for (field = 0, cellDof = 0, numComponents = 0; field < numFields; ++field) {
-    cellDof       += quad[field].numBasisFuncs*quad[field].numComponents;
-    numComponents += quad[field].numComponents;
-  }
-  ierr = DMPlexProjectFunctionLocal(dm, numComponents, fem->bcFuncs, INSERT_BC_VALUES, X);CHKERRQ(ierr);
-  ierr = VecSet(F, 0.0);CHKERRQ(ierr);
-  ierr = PetscMalloc6(numCells*cellDof,PetscScalar,&u,numCells*dim,PetscReal,&v0,numCells*dim*dim,PetscReal,&J,numCells*dim*dim,PetscReal,&invJ,numCells,PetscReal,&detJ,numCells*cellDof,PetscScalar,&elemVec);CHKERRQ(ierr);
-  for (c = cStart; c < cEnd; ++c) {
-    PetscScalar *x = NULL;
-    PetscInt     i;
-
-    ierr = DMPlexComputeCellGeometry(dm, c, &v0[c*dim], &J[c*dim*dim], &invJ[c*dim*dim], &detJ[c]);CHKERRQ(ierr);
-    if (detJ[c] <= 0.0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJ[c], c);
-    ierr = DMPlexVecGetClosure(dm, NULL, X, c, NULL, &x);CHKERRQ(ierr);
-
-    for (i = 0; i < cellDof; ++i) u[c*cellDof+i] = x[i];
-    ierr = DMPlexVecRestoreClosure(dm, NULL, X, c, NULL, &x);CHKERRQ(ierr);
-  }
-  for (field = 0; field < numFields; ++field) {
-    const PetscInt numQuadPoints = quad[field].numQuadPoints;
-    const PetscInt numBasisFuncs = quad[field].numBasisFuncs;
-    void           (*f0)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]) = fem->f0Funcs[field];
-    void           (*f1)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]) = fem->f1Funcs[field];
-    /* Conforming batches */
-    PetscInt blockSize  = numBasisFuncs*numQuadPoints;
-    PetscInt numBlocks  = 1;
-    PetscInt batchSize  = numBlocks * blockSize;
-    PetscInt numBatches = numBatchesTmp;
-    PetscInt numChunks  = numCells / (numBatches*batchSize);
-    /* Remainder */
-    PetscInt numRemainder = numCells % (numBatches * batchSize);
-    PetscInt offset       = numCells - numRemainder;
-
-    ierr = (*mesh->integrateResidualFEM)(numChunks*numBatches*batchSize, numFields, field, quad, u, v0, J, invJ, detJ, f0, f1, elemVec);CHKERRQ(ierr);
-    ierr = (*mesh->integrateResidualFEM)(numRemainder, numFields, field, quad, &u[offset*cellDof], &v0[offset*dim], &J[offset*dim*dim], &invJ[offset*dim*dim], &detJ[offset],
-                                         f0, f1, &elemVec[offset*cellDof]);CHKERRQ(ierr);
-  }
-  for (c = cStart; c < cEnd; ++c) {
-    if (mesh->printFEM > 1) {ierr = DMPrintCellVector(c, "Residual", cellDof, &elemVec[c*cellDof]);CHKERRQ(ierr);}
-    ierr = DMPlexVecSetClosure(dm, NULL, F, c, &elemVec[c*cellDof], ADD_VALUES);CHKERRQ(ierr);
-  }
-  ierr = PetscFree6(u,v0,J,invJ,detJ,elemVec);CHKERRQ(ierr);
-  /* Integration over the boundary:
-     - This can probably be generalized to integration over a set of labels, however
-       the idea here is to do integration where we need the cell normal
-     - We can replace hardcoding with a registration process, and this is how we hook
-       up the system to something like FEniCS
-  */
-  ierr = DMPlexHasLabel(dm, "boundary", &has);CHKERRQ(ierr);
   if (has && quadBd) {
     DMLabel         label;
     IS              pointIS;
@@ -595,28 +519,6 @@ PetscErrorCode DMPlexComputeResidualFEM(DM dm, Vec X, Vec F, void *user)
     ierr = ISDestroy(&pointIS);CHKERRQ(ierr);
     ierr = PetscFree7(u,v0,n,J,invJ,detJ,elemVec);CHKERRQ(ierr);
   }
-  if (mesh->printFEM) {
-    PetscMPIInt rank, numProcs;
-    PetscInt    p;
-
-    ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm), &rank);CHKERRQ(ierr);
-    ierr = MPI_Comm_size(PetscObjectComm((PetscObject)dm), &numProcs);CHKERRQ(ierr);
-    ierr = PetscPrintf(PetscObjectComm((PetscObject)dm), "Residual:\n");CHKERRQ(ierr);
-    for (p = 0; p < numProcs; ++p) {
-      if (p == rank) {
-        Vec f;
-
-        ierr = VecDuplicate(F, &f);CHKERRQ(ierr);
-        ierr = VecCopy(F, f);CHKERRQ(ierr);
-        ierr = VecChop(f, 1.0e-10);CHKERRQ(ierr);
-        ierr = VecView(f, PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-        ierr = VecDestroy(&f);CHKERRQ(ierr);
-        ierr = PetscViewerFlush(PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-      }
-      ierr = PetscBarrier((PetscObject) dm);CHKERRQ(ierr);
-    }
-  }
-  /* ierr = PetscLogEventEnd(ResidualFEMEvent,0,0,0,0);CHKERRQ(ierr); */
   PetscFunctionReturn(0);
 }
 
