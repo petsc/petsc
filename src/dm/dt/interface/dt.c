@@ -767,7 +767,7 @@ PetscErrorCode PetscSpaceViewFromOptions(PetscSpace sp, const char prefix[], con
 PetscErrorCode PetscSpaceSetFromOptions(PetscSpace sp)
 {
   const char    *defaultType;
-  char           typename[256];
+  char           name[256];
   PetscBool      flg;
   PetscErrorCode ierr;
 
@@ -781,9 +781,9 @@ PetscErrorCode PetscSpaceSetFromOptions(PetscSpace sp)
   if (!PetscSpaceRegisterAllCalled) {ierr = PetscSpaceRegisterAll();CHKERRQ(ierr);}
 
   ierr = PetscObjectOptionsBegin((PetscObject) sp);CHKERRQ(ierr);
-  ierr = PetscOptionsList("-petscspace_type", "Linear space", "PetscSpaceSetType", PetscSpaceList, defaultType, typename, 256, &flg);CHKERRQ(ierr);
+  ierr = PetscOptionsList("-petscspace_type", "Linear space", "PetscSpaceSetType", PetscSpaceList, defaultType, name, 256, &flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = PetscSpaceSetType(sp, typename);CHKERRQ(ierr);
+    ierr = PetscSpaceSetType(sp, name);CHKERRQ(ierr);
   } else if (!((PetscObject) sp)->type_name) {
     ierr = PetscSpaceSetType(sp, defaultType);CHKERRQ(ierr);
   }
@@ -1473,7 +1473,7 @@ PetscErrorCode PetscDualSpaceViewFromOptions(PetscDualSpace sp, const char prefi
 PetscErrorCode PetscDualSpaceSetFromOptions(PetscDualSpace sp)
 {
   const char    *defaultType;
-  char           typename[256];
+  char           name[256];
   PetscBool      flg;
   PetscErrorCode ierr;
 
@@ -1487,9 +1487,9 @@ PetscErrorCode PetscDualSpaceSetFromOptions(PetscDualSpace sp)
   if (!PetscSpaceRegisterAllCalled) {ierr = PetscSpaceRegisterAll();CHKERRQ(ierr);}
 
   ierr = PetscObjectOptionsBegin((PetscObject) sp);CHKERRQ(ierr);
-  ierr = PetscOptionsList("-petscdualspace_type", "Dual space", "PetscDualSpaceSetType", PetscDualSpaceList, defaultType, typename, 256, &flg);CHKERRQ(ierr);
+  ierr = PetscOptionsList("-petscdualspace_type", "Dual space", "PetscDualSpaceSetType", PetscDualSpaceList, defaultType, name, 256, &flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = PetscDualSpaceSetType(sp, typename);CHKERRQ(ierr);
+    ierr = PetscDualSpaceSetType(sp, name);CHKERRQ(ierr);
   } else if (!((PetscObject) sp)->type_name) {
     ierr = PetscDualSpaceSetType(sp, defaultType);CHKERRQ(ierr);
   }
