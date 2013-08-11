@@ -130,6 +130,7 @@ typedef struct NLF_DAAD* NLF;
 /* FEM support */
 PETSC_EXTERN PetscErrorCode DMPrintCellVector(PetscInt, const char [], PetscInt, const PetscScalar []);
 PETSC_EXTERN PetscErrorCode DMPrintCellMatrix(PetscInt, const char [], PetscInt, PetscInt, const PetscScalar []);
+PETSC_EXTERN PetscErrorCode DMPrintLocalVec(DM, const char [], Vec);
 
 PETSC_EXTERN PetscErrorCode DMGetDefaultSection(DM, PetscSection *);
 PETSC_EXTERN PetscErrorCode DMSetDefaultSection(DM, PetscSection);
