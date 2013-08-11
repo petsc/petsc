@@ -1,5 +1,7 @@
 #include <petsc-private/dmpleximpl.h>   /*I      "petscdmplex.h"   I*/
 
+#include <petscfe.h>
+
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexGetScale"
 PetscErrorCode DMPlexGetScale(DM dm, PetscUnit unit, PetscReal *scale)
@@ -184,26 +186,26 @@ it out yet, so I am stuffing things here while I experiment.
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexSetFEMIntegration"
 PetscErrorCode DMPlexSetFEMIntegration(DM dm,
-                                          PetscErrorCode (*integrateResidualFEM)(PetscInt, PetscInt, PetscInt, PetscQuadrature[], const PetscScalar[],
-                                                                                 const PetscReal[], const PetscReal[], const PetscReal[], const PetscReal[],
-                                                                                 void (*)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
-                                                                                 void (*)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]), PetscScalar[]),
+                                          PetscErrorCode (*integrateResidualFEM)(PetscInt, PetscInt, PetscFE[], PetscInt, PetscCellGeometry, const PetscScalar[],
+                                                                                 void (*)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
+                                                                                 void (*)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
+                                                                                 PetscScalar[]),
                                           PetscErrorCode (*integrateBdResidualFEM)(PetscInt, PetscInt, PetscInt, PetscQuadrature[], const PetscScalar[],
                                                                                    const PetscReal[], const PetscReal[], const PetscReal[], const PetscReal[], const PetscReal[],
-                                                                                   void (*)(const PetscScalar[], const PetscScalar[], const PetscReal[], const PetscReal[], PetscScalar[]),
-                                                                                   void (*)(const PetscScalar[], const PetscScalar[], const PetscReal[], const PetscReal[], PetscScalar[]), PetscScalar[]),
+                                                                                   void (*)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], const PetscReal[], PetscScalar[]),
+                                                                                   void (*)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], const PetscReal[], PetscScalar[]), PetscScalar[]),
                                           PetscErrorCode (*integrateJacobianActionFEM)(PetscInt, PetscInt, PetscInt, PetscQuadrature[], const PetscScalar[], const PetscScalar[],
                                                                                        const PetscReal[], const PetscReal[], const PetscReal[], const PetscReal[],
-                                                                                       void (**)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
-                                                                                       void (**)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
-                                                                                       void (**)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
-                                                                                       void (**)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]), PetscScalar[]),
+                                                                                       void (**)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
+                                                                                       void (**)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
+                                                                                       void (**)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
+                                                                                       void (**)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]), PetscScalar[]),
                                           PetscErrorCode (*integrateJacobianFEM)(PetscInt, PetscInt, PetscInt, PetscInt, PetscQuadrature[], const PetscScalar[],
                                                                                  const PetscReal[], const PetscReal[], const PetscReal[], const PetscReal[],
-                                                                                 void (*)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
-                                                                                 void (*)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
-                                                                                 void (*)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
-                                                                                 void (*)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]), PetscScalar[]))
+                                                                                 void (*)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
+                                                                                 void (*)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
+                                                                                 void (*)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
+                                                                                 void (*)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]), PetscScalar[]))
 {
   DM_Plex *mesh = (DM_Plex*) dm->data;
 
@@ -441,6 +443,8 @@ PetscErrorCode DMPlexComputeL2Diff(DM dm, PetscQuadrature quad[], void (**funcs)
   PetscFunctionReturn(0);
 }
 
+#if 0
+
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexComputeResidualFEM"
 /*@
@@ -616,6 +620,116 @@ PetscErrorCode DMPlexComputeResidualFEM(DM dm, Vec X, Vec F, void *user)
   PetscFunctionReturn(0);
 }
 
+#else
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexComputeResidualFEM"
+/*@
+  DMPlexComputeResidualFEM - Form the local residual F from the local input X using pointwise functions specified by the user
+
+  Input Parameters:
++ dm - The mesh
+. X  - Local input vector
+- user - The user context
+
+  Output Parameter:
+. F  - Local output vector
+
+  Note:
+  The second member of the user context must be an FEMContext.
+
+  We form the residual one batch of elements at a time. This allows us to offload work onto an accelerator,
+  like a GPU, or vectorize on a multicore machine.
+
+  Level: developer
+
+.seealso: DMPlexComputeJacobianActionFEM()
+@*/
+PetscErrorCode DMPlexComputeResidualFEM(DM dm, Vec X, Vec F, void *user)
+{
+  DM_Plex         *mesh = (DM_Plex*) dm->data;
+  PetscFEM        *fem  = (PetscFEM*) &((DM*) user)[1];
+  PetscFE         *fe   = fem->fe;
+  const char      *name = "Residual";
+  PetscQuadrature  q;
+  PetscCellGeometry geom;
+  PetscSection     section;
+  PetscReal       *v0, *J, *invJ, *detJ;
+  PetscScalar     *elemVec, *u;
+  PetscInt         dim, numFields, f, numCells, cStart, cEnd, c;
+  PetscInt         cellDof = 0, numComponents = 0;
+  PetscErrorCode   ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscLogEventBegin(DMPLEX_ResidualFEM,dm,0,0,0);CHKERRQ(ierr);
+  ierr     = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr     = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
+  ierr     = PetscSectionGetNumFields(section, &numFields);CHKERRQ(ierr);
+  ierr     = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  numCells = cEnd - cStart;
+  for (f = 0; f < numFields; ++f) {
+    PetscInt Nb, Nc;
+
+    ierr = PetscFEGetDimension(fe[f], &Nb);CHKERRQ(ierr);
+    ierr = PetscFEGetNumComponents(fe[f], &Nc);CHKERRQ(ierr);
+    cellDof       += Nb*Nc;
+    numComponents += Nc;
+  }
+  ierr = DMPlexProjectFunctionLocal(dm, numComponents, fem->bcFuncs, INSERT_BC_VALUES, X);CHKERRQ(ierr);
+  ierr = VecSet(F, 0.0);CHKERRQ(ierr);
+  ierr = PetscMalloc6(numCells*cellDof,PetscScalar,&u,numCells*dim,PetscReal,&v0,numCells*dim*dim,PetscReal,&J,numCells*dim*dim,PetscReal,&invJ,numCells,PetscReal,&detJ,numCells*cellDof,PetscScalar,&elemVec);CHKERRQ(ierr);
+  for (c = cStart; c < cEnd; ++c) {
+    PetscScalar *x = NULL;
+    PetscInt     i;
+
+    ierr = DMPlexComputeCellGeometry(dm, c, &v0[c*dim], &J[c*dim*dim], &invJ[c*dim*dim], &detJ[c]);CHKERRQ(ierr);
+    if (detJ[c] <= 0.0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJ[c], c);
+    ierr = DMPlexVecGetClosure(dm, section, X, c, NULL, &x);CHKERRQ(ierr);
+    for (i = 0; i < cellDof; ++i) u[c*cellDof+i] = x[i];
+    ierr = DMPlexVecRestoreClosure(dm, section, X, c, NULL, &x);CHKERRQ(ierr);
+  }
+  for (f = 0; f < numFields; ++f) {
+    void   (*f0)(const PetscScalar[], const PetscScalar[], const PetscReal[], const PetscScalar[], const PetscScalar[], PetscScalar[]) = fem->f0Funcs[f];
+    void   (*f1)(const PetscScalar[], const PetscScalar[], const PetscReal[], const PetscScalar[], const PetscScalar[], PetscScalar[]) = fem->f1Funcs[f];
+    PetscInt Nb;
+    /* Conforming batches */
+    PetscInt numBlocks  = 1;
+    PetscInt numBatches = 1;
+    PetscInt numChunks, Ne, blockSize, batchSize;
+    /* Remainder */
+    PetscInt Nr, offset;
+
+    ierr = PetscFEGetQuadrature(fe[f], &q);CHKERRQ(ierr);
+    ierr = PetscFEGetDimension(fe[f], &Nb);CHKERRQ(ierr);
+    blockSize = Nb*q.numQuadPoints;
+    batchSize = numBlocks * blockSize;
+    numChunks = numCells / (numBatches*batchSize);
+    Ne        = numChunks*numBatches*batchSize;
+    Nr        = numCells % (numBatches*batchSize);
+    offset    = numCells - Nr;
+    geom.v0   = v0;
+    geom.J    = J;
+    geom.invJ = invJ;
+    geom.detJ = detJ;
+    ierr = (*mesh->integrateResidualFEM)(Ne, numFields, fe, f, geom, u, f0, f1, elemVec);CHKERRQ(ierr);
+    geom.v0   = &v0[offset*dim];
+    geom.J    = &J[offset*dim*dim];
+    geom.invJ = &invJ[offset*dim*dim];
+    geom.detJ = &detJ[offset];
+    ierr = (*mesh->integrateResidualFEM)(Nr, numFields, fe, f, geom, &u[offset*cellDof], f0, f1, &elemVec[offset*cellDof]);CHKERRQ(ierr);
+  }
+  for (c = cStart; c < cEnd; ++c) {
+    if (mesh->printFEM > 1) {ierr = DMPrintCellVector(c, name, cellDof, &elemVec[c*cellDof]);CHKERRQ(ierr);}
+    ierr = DMPlexVecSetClosure(dm, section, F, c, &elemVec[c*cellDof], ADD_VALUES);CHKERRQ(ierr);
+  }
+  ierr = PetscFree6(u,v0,J,invJ,detJ,elemVec);CHKERRQ(ierr);
+  if (mesh->printFEM) {ierr = DMPrintLocalVec(dm, name, F);CHKERRQ(ierr);}
+  ierr = PetscLogEventEnd(DMPLEX_ResidualFEM,dm,0,0,0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#endif
+
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexComputeJacobianActionFEM"
 /*@C
@@ -785,10 +899,10 @@ PetscErrorCode DMPlexComputeJacobianFEM(DM dm, Vec X, Mat Jac, Mat JacP, MatStru
     PetscInt       fieldJ;
 
     for (fieldJ = 0; fieldJ < numFields; ++fieldJ) {
-      void (*g0)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]) = fem->g0Funcs[fieldI*numFields+fieldJ];
-      void (*g1)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]) = fem->g1Funcs[fieldI*numFields+fieldJ];
-      void (*g2)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]) = fem->g2Funcs[fieldI*numFields+fieldJ];
-      void (*g3)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]) = fem->g3Funcs[fieldI*numFields+fieldJ];
+      void (*g0)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]) = fem->g0Funcs[fieldI*numFields+fieldJ];
+      void (*g1)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]) = fem->g1Funcs[fieldI*numFields+fieldJ];
+      void (*g2)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]) = fem->g2Funcs[fieldI*numFields+fieldJ];
+      void (*g3)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]) = fem->g3Funcs[fieldI*numFields+fieldJ];
       /* Conforming batches */
       PetscInt blockSize  = numBasisFuncs*numQuadPoints;
       PetscInt numBlocks  = 1;

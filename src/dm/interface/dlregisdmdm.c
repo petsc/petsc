@@ -80,6 +80,7 @@ PetscErrorCode  DMInitializePackage(void)
 
   ierr = PetscLogEventRegister("DMPlexDistribute",    DM_CLASSID,&DMPLEX_Distribute);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("DMPlexStratify",      DM_CLASSID,&DMPLEX_Stratify);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("DMPlexResidualFEM",      DM_CLASSID,&DMPLEX_ResidualFEM);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_SIEVE)
   ierr = PetscLogEventRegister("DMMeshView",             DM_CLASSID,&DMMesh_View);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("DMMeshGetGlobalScatter", DM_CLASSID,&DMMesh_GetGlobalScatter);CHKERRQ(ierr);

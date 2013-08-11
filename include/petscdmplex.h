@@ -6,6 +6,8 @@
 
 #include <petscsftypes.h>
 #include <petscdm.h>
+#include <petscdt.h>
+#include <petscfe.h>
 
 PETSC_EXTERN PetscErrorCode DMPlexCreate(MPI_Comm, DM*);
 PETSC_EXTERN PetscErrorCode DMPlexCreateSubmesh(DM, const char[], PetscInt, DM*);
@@ -175,24 +177,24 @@ PETSC_EXTERN PetscErrorCode DMPlexComputeResidualFEM(DM, Vec, Vec, void *);
 PETSC_EXTERN PetscErrorCode DMPlexComputeJacobianActionFEM(DM, Mat, Vec, Vec, void *);
 PETSC_EXTERN PetscErrorCode DMPlexComputeJacobianFEM(DM, Vec, Mat, Mat, MatStructure*,void *);
 PETSC_EXTERN PetscErrorCode DMPlexSetFEMIntegration(DM,
-                                                       PetscErrorCode (*)(PetscInt, PetscInt, PetscInt, PetscQuadrature[], const PetscScalar[],
-                                                                          const PetscReal[], const PetscReal[], const PetscReal[], const PetscReal[],
-                                                                          void (*)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
-                                                                          void (*)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]), PetscScalar[]),
+                                                       PetscErrorCode (*)(PetscInt, PetscInt, PetscFE[], PetscInt, PetscCellGeometry, const PetscScalar[],
+                                                                          void (*)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
+                                                                          void (*)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
+                                                                          PetscScalar[]),
                                                        PetscErrorCode (*)(PetscInt, PetscInt, PetscInt, PetscQuadrature[], const PetscScalar[],
                                                                           const PetscReal[], const PetscReal[], const PetscReal[], const PetscReal[], const PetscReal[],
-                                                                          void (*)(const PetscScalar[], const PetscScalar[], const PetscReal[], const PetscReal[], PetscScalar[]),
-                                                                          void (*)(const PetscScalar[], const PetscScalar[], const PetscReal[], const PetscReal[], PetscScalar[]), PetscScalar[]),
+                                                                          void (*)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], const PetscReal[], PetscScalar[]),
+                                                                          void (*)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], const PetscReal[], PetscScalar[]), PetscScalar[]),
                                                        PetscErrorCode (*)(PetscInt, PetscInt, PetscInt, PetscQuadrature[], const PetscScalar[], const PetscScalar[],
                                                                           const PetscReal[], const PetscReal[], const PetscReal[], const PetscReal[],
-                                                                          void (**)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
-                                                                          void (**)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
-                                                                          void (**)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
-                                                                          void (**)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]), PetscScalar[]),
+                                                                          void (**)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
+                                                                          void (**)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
+                                                                          void (**)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
+                                                                          void (**)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]), PetscScalar[]),
                                                        PetscErrorCode (*)(PetscInt, PetscInt, PetscInt, PetscInt, PetscQuadrature[], const PetscScalar[],
                                                                           const PetscReal[], const PetscReal[], const PetscReal[], const PetscReal[],
-                                                                          void (*)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
-                                                                          void (*)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
-                                                                          void (*)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
-                                                                          void (*)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]), PetscScalar[]));
+                                                                          void (*)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
+                                                                          void (*)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
+                                                                          void (*)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
+                                                                          void (*)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]), PetscScalar[]));
 #endif

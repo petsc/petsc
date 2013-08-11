@@ -4,7 +4,7 @@
 #include <petscsf.h>
 
 /* Logging support */
-PetscLogEvent DMPLEX_Distribute, DMPLEX_Stratify;
+PetscLogEvent DMPLEX_Distribute, DMPLEX_Stratify, DMPLEX_ResidualFEM;
 
 PETSC_EXTERN PetscErrorCode VecView_Seq(Vec, PetscViewer);
 PETSC_EXTERN PetscErrorCode VecView_MPI(Vec, PetscViewer);

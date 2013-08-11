@@ -89,4 +89,25 @@ PETSC_EXTERN PetscErrorCode PetscFEGetQuadrature(PetscFE, PetscQuadrature *);
 PETSC_EXTERN PetscErrorCode PetscFEGetNumDof(PetscFE, const PetscInt **);
 PETSC_EXTERN PetscErrorCode PetscFEGetTabulation(PetscFE, PetscReal **, PetscReal **, PetscReal **);
 PETSC_EXTERN PetscErrorCode PetscFERestoreTabulation(PetscFE, PetscReal **, PetscReal **, PetscReal **);
+
+
+typedef struct {
+  PetscFE         *fe;
+  PetscQuadrature *quad;
+  void (**f0Funcs)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]); /* The f_0 functions for each field */
+  void (**f1Funcs)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]); /* The f_1 functions for each field */
+  void (**g0Funcs)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]); /* The g_0 functions for each field pair */
+  void (**g1Funcs)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]); /* The g_1 functions for each field pair */
+  void (**g2Funcs)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]); /* The g_2 functions for each field pair */
+  void (**g3Funcs)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]); /* The g_3 functions for each field pair */
+  void (**bcFuncs)(const PetscReal[], PetscScalar *); /* The boundary condition function for each field component */
+  PetscQuadrature *quadBd;
+  void (**f0BdFuncs)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], const PetscReal[], PetscScalar[]); /* The f_0 functions for each field */
+  void (**f1BdFuncs)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], const PetscReal[], PetscScalar[]); /* The f_1 functions for each field */
+} PetscFEM;
+
+PETSC_EXTERN PetscErrorCode PetscFEIntegrateResidualChunk(PetscInt, PetscInt, PetscFE[], PetscInt, PetscCellGeometry, const PetscScalar[],
+                                                          void (*)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
+                                                          void (*)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
+                                                          PetscScalar[]);
 #endif
