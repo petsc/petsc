@@ -227,9 +227,8 @@ PetscErrorCode SetupElement(DM dm, AppCtx *user)
   ierr = PetscDualSpaceDestroy(&Q);CHKERRQ(ierr);
   ierr = PetscFEGetDimension(fem, &numBasisFunc);CHKERRQ(ierr);
   ierr = PetscFEGetNumComponents(fem, &numBasisComp);CHKERRQ(ierr);
-  ierr = PetscFEGetTabulation(fem, &B, &D, NULL);CHKERRQ(ierr);
+  ierr = PetscFEGetDefaultTabulation(fem, &B, &D, NULL);CHKERRQ(ierr);
   ierr = CheckBasis(dim, q.numQuadPoints, numBasisFunc, numBasisComp, B, D);CHKERRQ(ierr);
-  ierr = PetscFERestoreTabulation(fem, &B, &D, NULL);CHKERRQ(ierr);
   user->fe = fem;
   PetscFunctionReturn(0);
 }
@@ -285,7 +284,7 @@ PetscErrorCode CheckFunctions(DM dm, PetscInt order, Vec u, AppCtx *user)
   q[0].quadWeights   = fq.quadWeights;
   ierr = PetscFEGetDimension(user->fe, &q[0].numBasisFuncs);CHKERRQ(ierr);
   ierr = PetscFEGetNumComponents(user->fe, &q[0].numComponents);CHKERRQ(ierr);
-  ierr = PetscFEGetTabulation(user->fe, &q[0].basis, &q[0].basisDer, NULL);CHKERRQ(ierr);
+  ierr = PetscFEGetDefaultTabulation(user->fe, &q[0].basis, &q[0].basisDer, NULL);CHKERRQ(ierr);
   user->fem.quad     = (PetscQuadrature*) &q;
   /* Setup functions to approximate */
   switch (dim) {
@@ -341,7 +340,6 @@ PetscErrorCode CheckFunctions(DM dm, PetscInt order, Vec u, AppCtx *user)
   } else {
     ierr = PetscPrintf(comm, "Tests pass for order %d at tolerance %g\n", order, tol);CHKERRQ(ierr);
   }
-  ierr = PetscFERestoreTabulation(user->fe, &q[0].basis, &q[0].basisDer, NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
