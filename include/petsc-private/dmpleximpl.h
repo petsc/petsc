@@ -6,7 +6,7 @@
 #include <petscbt.h>
 #include "petsc-private/dmimpl.h"
 
-PETSC_EXTERN PetscLogEvent DMPLEX_Distribute, DMPLEX_Stratify, DMPLEX_ResidualFEM;
+PETSC_EXTERN PetscLogEvent DMPLEX_Distribute, DMPLEX_Stratify, DMPLEX_ResidualFEM, DMPLEX_JacobianFEM;
 
 /* This is an integer map, in addition it is also a container class
    Design points:
@@ -75,12 +75,12 @@ typedef struct {
                                                void (**)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
                                                void (**)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
                                                void (**)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]), PetscScalar[]);
-  PetscErrorCode (*integrateJacobianFEM)(PetscInt, PetscInt, PetscInt, PetscInt, PetscQuadrature[], const PetscScalar[],
-                                         const PetscReal[], const PetscReal[], const PetscReal[], const PetscReal[],
+  PetscErrorCode (*integrateJacobianFEM)(PetscInt, PetscInt, PetscFE[], PetscInt, PetscInt, PetscCellGeometry, const PetscScalar[],
                                          void (*)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
                                          void (*)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
                                          void (*)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
-                                         void (*)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]), PetscScalar[]);
+                                         void (*)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
+                                         PetscScalar[]);
 
   /* Debugging */
   PetscBool            printSetValues;

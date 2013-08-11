@@ -68,6 +68,7 @@ struct _p_PetscFE {
   PetscInt        numComponents; /* The number of field components */
   PetscQuadrature quadrature;    /* Suitable quadrature on K */
   PetscInt       *numDof;        /* The number of dof on mesh points of each depth */
+  PetscReal      *B, *D, *H;     /* Tabulation of basis and derivatives at quadrature points */
 };
 
 #endif
