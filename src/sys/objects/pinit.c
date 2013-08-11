@@ -17,11 +17,6 @@ extern PetscErrorCode PetscLogBegin_Private(void);
 #endif
 extern PetscBool PetscHMPIWorker;
 
-#if defined(PETSC_HAVE_SAWS)
-SAWs_Directory PETSC_SAWs_ROOT_DIRECTORY         = 0;
-SAWs_Directory PETSC_OBJECTS_SAWs_ROOT_DIRECTORY = 0;
-#endif
-
 #if defined(PETSC_SERIALIZE_FUNCTIONS)
 PetscFPT PetscFPTData = 0;
 #endif
@@ -799,6 +794,18 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
 
 #if defined(PETSC_HAVE_SAWS)
   ierr = SAWs_Initialize();CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,"-saws_log",&flg);CHKERRQ(ierr);
+  if (flg) {
+    char  sawslog[PETSC_MAX_PATH_LEN];
+
+    ierr = PetscOptionsGetString(NULL,"-saws_log",sawslog,PETSC_MAX_PATH_LEN,NULL);CHKERRQ(ierr);
+    if (sawslog[0]) {
+      ierr = SAWs_Set_Use_Logfile(sawslog);CHKERRQ(ierr);
+    } else {
+      ierr = SAWs_Set_Use_Logfile(NULL);CHKERRQ(ierr);
+    }
+  }
+
 #endif
 
   /* SHOULD PUT IN GUARDS: Make sure logging is initialized, even if we do not print it out */
