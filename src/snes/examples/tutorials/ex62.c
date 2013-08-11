@@ -451,7 +451,7 @@ PetscErrorCode SetupQuadrature(AppCtx *user)
   user->fem.quad[0].quadWeights   = q.quadWeights;
   ierr = PetscFEGetDimension(user->fe[0], &user->fem.quad[0].numBasisFuncs);CHKERRQ(ierr);
   ierr = PetscFEGetNumComponents(user->fe[0], &user->fem.quad[0].numComponents);CHKERRQ(ierr);
-  ierr = PetscFEGetTabulation(user->fe[0], (PetscReal **) &user->fem.quad[0].basis, (PetscReal **) &user->fem.quad[0].basisDer, NULL);CHKERRQ(ierr);
+  ierr = PetscFEGetDefaultTabulation(user->fe[0], (PetscReal **) &user->fem.quad[0].basis, (PetscReal **) &user->fem.quad[0].basisDer, NULL);CHKERRQ(ierr);
   /* Pressure discretization */
   ierr = PetscFEGetQuadrature(user->fe[1], &q);CHKERRQ(ierr);
 #ifdef PETSC_HAVE_GENERATOR
@@ -468,7 +468,7 @@ PetscErrorCode SetupQuadrature(AppCtx *user)
   user->fem.quad[1].quadWeights   = q.quadWeights;
   ierr = PetscFEGetDimension(user->fe[1], &user->fem.quad[1].numBasisFuncs);CHKERRQ(ierr);
   ierr = PetscFEGetNumComponents(user->fe[1], &user->fem.quad[1].numComponents);CHKERRQ(ierr);
-  ierr = PetscFEGetTabulation(user->fe[1], (PetscReal **) &user->fem.quad[1].basis, (PetscReal **) &user->fem.quad[1].basisDer, NULL);CHKERRQ(ierr);
+  ierr = PetscFEGetDefaultTabulation(user->fe[1], (PetscReal **) &user->fem.quad[1].basis, (PetscReal **) &user->fem.quad[1].basisDer, NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -481,9 +481,6 @@ PetscErrorCode DestroyQuadrature(AppCtx *user)
   PetscFunctionBeginUser;
   ierr = PetscQuadratureDestroy(&user->fem.quad[0]);CHKERRQ(ierr);
   ierr = PetscQuadratureDestroy(&user->fem.quad[1]);CHKERRQ(ierr);
-
-  ierr = PetscFERestoreTabulation(user->fe[0], (PetscReal **) &user->fem.quad[0].basis, (PetscReal **) &user->fem.quad[0].basisDer, NULL);CHKERRQ(ierr);
-  ierr = PetscFERestoreTabulation(user->fe[1], (PetscReal **) &user->fem.quad[1].basis, (PetscReal **) &user->fem.quad[1].basisDer, NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
