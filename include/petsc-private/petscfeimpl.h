@@ -36,6 +36,7 @@ struct _PetscDualSpaceOps {
   PetscErrorCode (*destroy)(PetscDualSpace);
 
   PetscErrorCode (*getdimension)(PetscDualSpace,PetscInt*);
+  PetscErrorCode (*getnumdof)(PetscDualSpace,const PetscInt**);
 };
 
 struct _p_PetscDualSpace {
@@ -47,7 +48,8 @@ struct _p_PetscDualSpace {
 };
 
 typedef struct {
-  PetscInt cellType;
+  PetscInt  cellType;
+  PetscInt *numDof;
 } PetscDualSpace_Lag;
 
 typedef struct _PetscFEOps *PetscFEOps;
@@ -65,6 +67,7 @@ struct _p_PetscFE {
   PetscDualSpace  dualSpace;     /* The dual space P' */
   PetscInt        numComponents; /* The number of field components */
   PetscQuadrature quadrature;    /* Suitable quadrature on K */
+  PetscInt       *numDof;        /* The number of dof on mesh points of each depth */
 };
 
 #endif

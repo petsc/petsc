@@ -124,49 +124,6 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CreateReferenceCell"
-PetscErrorCode CreateReferenceCell(MPI_Comm comm, PetscInt dim, PetscBool simplex, DM *refdm)
-{
-  DM             rdm;
-  PetscErrorCode ierr;
-
-  PetscFunctionBeginUser;
-  ierr = DMCreate(comm, &rdm);CHKERRQ(ierr);
-  ierr = DMSetType(rdm, DMPLEX);CHKERRQ(ierr);
-  ierr = DMPlexSetDimension(rdm, dim);CHKERRQ(ierr);
-  switch (dim) {
-  case 2:
-  {
-    PetscInt    numPoints[2]        = {3, 1};
-    PetscInt    coneSize[4]         = {3, 0, 0, 0};
-    PetscInt    cones[3]            = {1, 2, 3};
-    PetscInt    coneOrientations[3] = {0, 0, 0};
-    PetscScalar vertexCoords[6]     = {-1.0, -1.0,  1.0, -1.0,  -1.0, 1.0};
-
-    ierr = DMPlexCreateFromDAG(rdm, 1, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
-  }
-  break;
-  case 3:
-  {
-    PetscInt    numPoints[2]        = {4, 1};
-    PetscInt    coneSize[5]         = {4, 0, 0, 0, 0};
-    PetscInt    cones[4]            = {1, 2, 3, 4};
-    PetscInt    coneOrientations[4] = {0, 0, 0, 0};
-    PetscScalar vertexCoords[12]    = {-1.0, -1.0, -1.0,  1.0, -1.0, -1.0,  -1.0, 1.0, -1.0,  -1.0, -1.0, 1.0};
-
-    ierr = DMPlexCreateFromDAG(rdm, 1, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
-  }
-  break;
-  default:
-    SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "Cannot create reference cell for dimension %d", dim);
-  }
-  ierr = DMPlexInterpolate(rdm, refdm);CHKERRQ(ierr);
-  ierr = DMPlexCopyCoordinates(rdm, *refdm);CHKERRQ(ierr);
-  ierr = DMDestroy(&rdm);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
 #ifdef PETSC_HAVE_GENERATOR
 #undef __FUNCT__
 #define __FUNCT__ "CheckQuadrature"
@@ -251,16 +208,14 @@ PetscErrorCode SetupElement(DM dm, AppCtx *user)
   ierr = PetscSpaceGetOrder(P, &order);CHKERRQ(ierr);
   /* Create dual space */
   ierr = PetscDualSpaceCreate(PetscObjectComm((PetscObject) dm), &Q);CHKERRQ(ierr);
-  ierr = CreateReferenceCell(PetscObjectComm((PetscObject) dm), user->dim, PETSC_TRUE, &K);CHKERRQ(ierr);
+  ierr = PetscDualSpaceCreateReferenceCell(Q, dim, PETSC_TRUE, &K);CHKERRQ(ierr);
   ierr = PetscDualSpaceSetDM(Q, K);CHKERRQ(ierr);
   ierr = DMDestroy(&K);CHKERRQ(ierr);
   ierr = PetscDualSpaceSetOrder(Q, order);CHKERRQ(ierr);
   ierr = PetscDualSpaceSetFromOptions(Q);CHKERRQ(ierr);
   ierr = PetscDualSpaceSetUp(Q);CHKERRQ(ierr);
   /* Create quadrature */
-  order = PetscMax(user->qorder, order);
-  q.numQuadPoints = dim > 1 ? dim > 2 ? order*PetscSqr(order) : PetscSqr(order) : order;
-  ierr = PetscDTGaussJacobiQuadrature(dim, order, -1.0, 1.0, (PetscReal **) &q.quadPoints, (PetscReal **) &q.quadWeights);CHKERRQ(ierr);
+  ierr = PetscDTGaussJacobiQuadrature(dim, PetscMax(user->qorder, order), -1.0, 1.0, &q);CHKERRQ(ierr);
   ierr = CheckQuadrature(dim, q.numQuadPoints, q.quadPoints, q.quadWeights);CHKERRQ(ierr);
   /* Create element */
   ierr = PetscFECreate(PetscObjectComm((PetscObject) dm), &fem);CHKERRQ(ierr);
