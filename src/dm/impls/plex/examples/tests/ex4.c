@@ -33,7 +33,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 
 #undef __FUNCT__
 #define __FUNCT__ "CreateSimplexHybrid_2D"
-/* Two triangles separated by a zero-volume cell with 6 vertices
+/* Two triangles separated by a zero-volume cell with 4 vertices/2 edges
         5--16--8
       / |      | \
     11  |      |  12
@@ -184,6 +184,47 @@ PetscErrorCode CreateSimplexHybrid_2D(MPI_Comm comm, DM dm)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "CreateSimplexHybrid_3D"
+/* Two tetrahedrons separated by a zero-volume cell with 6 vertices
+
+ cell   6 ___33___10______    cell
+ 0    / | \        |\      \     1
+    21  |  23      | 29     27
+    /12 24 14\    30  \      \
+   3-20-|----5--32-|---9--26--7
+    \ 13| 11/      |18 /      /
+    19  |  22      | 28     25
+      \ | /        |/      /
+        4----31----8------
+         cell 2
+*/
+PetscErrorCode CreateSimplexHybrid_3D(MPI_Comm comm, DM dm)
+{
+  PetscInt       depth = 3;
+  PetscMPIInt    rank;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  if (!rank) {
+    PetscInt    numPoints[4]         = {4+4, 6+6+3, 4+4, 3};
+    PetscInt    coneSize[34]         = {4, 4, 5, 0, 0, 0, 0, 0, 0, 0, 0, 3, 3, 3, 3, 3, 3, 3, 3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2};
+    PetscInt    cones[67]            = {11, 12, 13, 14,  15, 16, 17, 18,  14, 18, 31, 32, 33,  20, 22, 19,  21, 23, 20,  19, 24, 21,  22, 23, 24,  28, 26, 25,  29, 27, 26,  27, 30, 25,  28, 29, 30,  3, 4,  3, 5,  3, 6,  4, 5,  5, 6,  6, 4,  8, 7,  9, 7,  10, 7,  8, 9,  9, 10,  10, 8,  4, 8,  5, 9,  6, 10};
+    PetscInt    coneOrientations[67] = { 0,  0,  0,  0,   0,  0,  0, -3,   0,  0,  0,  0,  0,   0, -2, -2,   0, -2, -2,   0, -2, -2,   0,  0,  0,   0,  0, -2,   0,  0, -2,  -2,  0,  0,   0,  0,  0,  0, 0,  0, 0,  0, 0,  0, 0,  0, 0,  0, 0,  0, 0,  0, 0,   0, 0,  0, 0,  0,  0,   0, 0,  0, 0,  0, 0,  0,  0};
+    PetscScalar vertexCoords[24]     = {0.0, 0.0, -0.5,  0.0, -0.5, 0.0,  1.0, 0.0, 0.0,  0.0, 0.5, 0.0,  0.0, 0.0, 0.5,  0.0, -0.5, 0.0,  1.0, 0.0, 0.0,  0.0, 0.5, 0.0};
+    PetscInt    cMax = 2, eMax = 31;
+
+    ierr = DMPlexCreateFromDAG(dm, depth, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
+    ierr = DMPlexSetHybridBounds(dm, cMax, PETSC_DETERMINE, eMax, PETSC_DETERMINE);CHKERRQ(ierr); /* Indicate a hybrid mesh */
+  } else {
+    PetscInt numPoints[4] = {0, 0, 0, 0};
+
+    ierr = DMPlexCreateFromDAG(dm, depth, numPoints, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "CreateMesh"
 PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
@@ -204,6 +245,11 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     if (cellSimplex) {
       ierr = CreateSimplexHybrid_2D(comm, *dm);CHKERRQ(ierr);
     } else SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "Cannot make hybrid meshes for quadrilaterals");
+    break;
+  case 3:
+    if (cellSimplex) {
+      ierr = CreateSimplexHybrid_3D(comm, *dm);CHKERRQ(ierr);
+    } else SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "Cannot make hybrid meshes for hexhedrals");
     break;
   default:
     SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "Cannot make hybrid meshes for dimension %d", dim);
