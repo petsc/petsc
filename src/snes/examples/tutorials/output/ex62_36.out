@@ -1,4 +1,4 @@
-  0 SNES Function norm 27.5941 
+0 SNES Function norm 27.5941 
     0 KSP Residual norm 27.5941 
     1 KSP Residual norm < 1.e-11
   1 SNES Function norm < 1.e-11
@@ -144,4 +144,4 @@ SNES Object: 1 MPI processes
       total number of mallocs used during MatSetValues calls =0
         using I-node routines: found 513 nodes, limit used is 5
 Number of SNES iterations = 1
-L_2 Error: 4.16e-11
+L_2 Error: 3.79e-11
