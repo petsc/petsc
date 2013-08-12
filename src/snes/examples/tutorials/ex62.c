@@ -472,14 +472,16 @@ PetscErrorCode SetupQuadrature(AppCtx *user)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DestroyQuadrature"
-PetscErrorCode DestroyQuadrature(AppCtx *user)
+#define __FUNCT__ "DestroyElement"
+PetscErrorCode DestroyElement(AppCtx *user)
 {
+  PetscInt       numFields = 2, f;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = PetscQuadratureDestroy(&user->fem.quad[0]);CHKERRQ(ierr);
-  ierr = PetscQuadratureDestroy(&user->fem.quad[1]);CHKERRQ(ierr);
+  for (f = 0; f < numFields; ++f) {
+    ierr = PetscFEDestroy(&user->fe[f]);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -527,6 +529,7 @@ PetscErrorCode SetupSection(DM dm, AppCtx *user)
   ierr = PetscSectionSetFieldName(section, 0, "velocity");CHKERRQ(ierr);
   ierr = PetscSectionSetFieldName(section, 1, "pressure");CHKERRQ(ierr);
   ierr = DMSetDefaultSection(dm, section);CHKERRQ(ierr);
+  ierr = PetscSectionDestroy(&section);CHKERRQ(ierr);
   if (user->bcType == DIRICHLET) {
     ierr = ISDestroy(&bcPoints[0]);CHKERRQ(ierr);
   }
@@ -870,7 +873,7 @@ int main(int argc, char **argv)
   }
 
   ierr = PetscFree(user.exactFuncs);CHKERRQ(ierr);
-  ierr = DestroyQuadrature(&user);CHKERRQ(ierr);
+  ierr = DestroyElement(&user);CHKERRQ(ierr);
   ierr = MatNullSpaceDestroy(&nullSpace);CHKERRQ(ierr);
   if (user.jacobianMF) {
     ierr = VecDestroy(&userJ.u);CHKERRQ(ierr);
