@@ -604,6 +604,15 @@ runex15_lag_pc:
         -npc_snes_type newtonls -npc_snes_lag_preconditioner 5 -npc_pc_type asm -npc_ksp_converged_reason -npc_snes_lag_preconditioner_persists > ex15_lag_pc.tmp 2>&1; \
 	   ${DIFF} output/ex15_lag_pc.out ex15_lag_pc.tmp || echo  ${PWD} "\nPossible problem with with ex15_lag_pc, diffs above \n========================================="; \
            ${RM} -f ex15_lag_pc.tmp
+runex16:
+	-@${MPIEXEC} -n 2 ./ex16 -da_refine 2 -pc_type mg -rad 10.0 -young 10. -ploading 0.0 -loading -1. -mg_levels_ksp_max_it 10 -snes_monitor_short -ksp_monitor_short \
+	   > ex16_1.tmp 2>&1; ${DIFF} output/ex16_1.out ex16_1.tmp || echo  ${PWD} "\nPossible problem with with ex16, diffs above \n========================================="; \
+           ${RM} -f ex16_1.tmp
+runex16_2:
+	-@${MPIEXEC} ./ex16 -da_refine 2 -pc_type mg -rad 10.0 -young 10. -ploading 0.0 -loading -1. -mg_levels_ksp_max_it 10 -snes_monitor_short -ksp_monitor_short \
+           -npc_snes_type fas -npc_fas_levels_snes_type ncg -npc_fas_levels_snes_max_it 3 -npc_snes_monitor_short \
+	   > ex16_2.tmp 2>&1; ${DIFF} output/ex16_2.out ex16_2.tmp || echo  ${PWD} "\nPossible problem with with ex16_2, diffs above \n========================================="; \
+           ${RM} -f ex16_2.tmp
 runex19:
 	-@${MPIEXEC} -n 2 ./ex19 -da_refine 3 -snes_monitor_short -pc_type mg -ksp_type fgmres -pc_mg_type full > ex19_1.tmp 2>&1; \
 	   if (${DIFF} output/ex19_1.out ex19_1.tmp) then true; \
