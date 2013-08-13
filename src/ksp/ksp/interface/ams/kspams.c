@@ -6,7 +6,6 @@ typedef struct {
   PetscInt       neigs;
   PetscReal      *eigi;
   PetscReal      *eigr;
-  SAWs_Directory amem;
 } KSPMonitor_SAWs;
 
 #undef __FUNCT__
@@ -35,7 +34,6 @@ PetscErrorCode KSPMonitorSAWsCreate(KSP ksp,void **ctx)
   ierr      = PetscNewLog(ksp,KSPMonitor_SAWs,&mon);CHKERRQ(ierr);
   mon->viewer = PETSC_VIEWER_SAWS_(PetscObjectComm((PetscObject)ksp));
   if (!mon->viewer) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"Cannot create SAWs default viewer");CHKERRQ(ierr);
-  mon->amem = NULL;
   *ctx = (void*)mon;
   PetscFunctionReturn(0);
 }
@@ -61,7 +59,6 @@ PetscErrorCode KSPMonitorSAWsDestroy(void **ctx)
 
   PetscFunctionBegin;
   ierr      = PetscFree(mon->eigr);CHKERRQ(ierr);
-  mon->eigi = NULL;
   ierr      = PetscFree(*ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

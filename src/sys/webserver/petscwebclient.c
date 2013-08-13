@@ -25,7 +25,7 @@ int main(int argc,char **argv)
   PetscStackCallSAWs(SAWs_Register,("/astring",astring,2,SAWs_WRITE,SAWs_STRING));
   ierr = PetscSleep(20);CHKERRQ(ierr);
 
-  /* PetscStackCallSAWs(SAWs_Lock,()); */
+  PetscStackCallSAWs(SAWs_Lock,());
   ierr = PetscPrintf(PETSC_COMM_WORLD,"anint %d\n",(int)anint[0]);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"areal %g\n",(double)areal[1]);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"abool %d\n",(int)abool[2]);CHKERRQ(ierr);

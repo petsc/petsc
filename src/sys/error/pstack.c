@@ -36,7 +36,7 @@ static PetscBool amsmemstack = PETSC_FALSE;
 void  PetscStackSAWsGrantAccess(void)
 {
   if (amsmemstack) {
-    /* SAWs_Unlock(); */
+    SAWs_Unlock();
   }
 }
 
@@ -59,7 +59,7 @@ void  PetscStackSAWsGrantAccess(void)
 void  PetscStackSAWsTakeAccess(void)
 {
   if (amsmemstack) {
-    /* SAWs_Lock(); */
+    SAWs_Lock();
   }
 }
 
@@ -79,7 +79,7 @@ PetscErrorCode PetscStackViewSAWs(void)
 PetscErrorCode PetscStackSAWsViewOff(void)
 {
   PetscFunctionBegin;
-  /* SAWs_Delete("/PETSc/Stack"); */
+  SAWs_Delete("/PETSc/Stack");
   amsmemstack = PETSC_FALSE;
   PetscFunctionReturn(0);
 }

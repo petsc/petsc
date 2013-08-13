@@ -440,13 +440,13 @@ PetscErrorCode PetscOptionsAMSInput()
   }
 
   /* wait until accessor has unlocked the memory */
-  /* PetscStackCallSAWs(SAWs_Lock,()); */
+  PetscStackCallSAWs(SAWs_Lock,());
 
   /* reset counter to -2; this updates the screen with the new options for the selected method */
   if (changedmethod) PetscOptionsPublishCount = -2;
 
-  /* PetscStackCallSAWs(SAWs_Unlock,()); */
-  /* PetscStackCallSAWs(SAWs_Delete,("/PETSc/Options")); */
+  PetscStackCallSAWs(SAWs_Unlock,());
+  PetscStackCallSAWs(SAWs_Delete,("/PETSc/Options"));
   PetscFunctionReturn(0);
 }
 #endif

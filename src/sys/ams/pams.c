@@ -26,7 +26,7 @@ PetscErrorCode  PetscObjectSAWsTakeAccess(PetscObject obj)
 {
   PetscFunctionBegin;
   if (obj->amsmem) {
-    /* PetscStackCallSAWs(SAWs_Lock,()); */
+    SAWs_Lock();
   }
   PetscFunctionReturn(0);
 }
@@ -54,7 +54,7 @@ PetscErrorCode  PetscObjectSAWsGrantAccess(PetscObject obj)
 {
   PetscFunctionBegin;
   if (obj->amsmem) {
-    /* PetscStackCallSAWs(SAWs_Unlock,()); */
+    SAWs_Unlock();
   }
   PetscFunctionReturn(0);
 }
@@ -133,8 +133,13 @@ PetscErrorCode  PetscObjectSAWsSetBlock(PetscObject obj,PetscBool flg)
 #define __FUNCT__ "PetscObjectSAWsViewOff"
 PetscErrorCode PetscObjectSAWsViewOff(PetscObject obj)
 {
+  char           dir[1024];
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
   if (obj->classid == PETSC_VIEWER_CLASSID) PetscFunctionReturn(0);
+  ierr = PetscSNPrintf(dir,1024,"/PETSc/Objects/%s",obj->name);CHKERRQ(ierr);
+  SAWs_Delete(dir);
   PetscFunctionReturn(0);
 }
 
