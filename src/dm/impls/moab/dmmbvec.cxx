@@ -445,7 +445,7 @@ PetscErrorCode  DMMoabVecRestoreArray(DM dm,Vec v,void* array)
   /* reduce the tags correctly -> should probably let the user choose how to reduce in the future
      For all FEM residual based assembly calculations, MPI_SUM should serve well
   */
-  merr = moab->pcomm->reduce_tags(vtag,MPI_SUM,*moab->vghost);MBERRNM(merr);
+  merr = moab->pcomm->reduce_tags(vtag,MPI_SUM,*moab->vlocal);MBERRNM(merr);
   PetscFunctionReturn(0);
 }
 
