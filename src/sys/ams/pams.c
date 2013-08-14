@@ -24,11 +24,10 @@
 @*/
 PetscErrorCode  PetscObjectSAWsTakeAccess(PetscObject obj)
 {
-  PetscFunctionBegin;
   if (obj->amsmem) {
     SAWs_Lock();
   }
-  PetscFunctionReturn(0);
+  return 0;
 }
 
 #undef __FUNCT__
@@ -52,11 +51,10 @@ PetscErrorCode  PetscObjectSAWsTakeAccess(PetscObject obj)
 @*/
 PetscErrorCode  PetscObjectSAWsGrantAccess(PetscObject obj)
 {
-  PetscFunctionBegin;
   if (obj->amsmem) {
     SAWs_Unlock();
   }
-  PetscFunctionReturn(0);
+  return 0;
 }
 
 #undef __FUNCT__
