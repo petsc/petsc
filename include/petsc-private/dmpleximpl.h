@@ -50,6 +50,7 @@ typedef struct {
 
   /* Labels and numbering */
   DMLabel              labels;            /* Linked list of labels */
+  DMLabel              depthLabel;
   IS                   globalVertexNumbers;
   IS                   globalCellNumbers;
 
