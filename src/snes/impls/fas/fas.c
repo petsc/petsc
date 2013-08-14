@@ -1,7 +1,7 @@
 /* Defines the basic SNES object */
 #include <../src/snes/impls/fas/fasimpls.h>    /*I  "petscsnesfas.h"  I*/
 
-const char *const SNESFASTypes[] = {"MULTIPLICATIVE","ADDITIVE","SNESFASType","SNES_FAS",0};
+const char *const SNESFASTypes[] = {"MULTIPLICATIVE","ADDITIVE","FULL","SNESFASType","SNES_FAS",0};
 
 extern PetscErrorCode SNESDestroy_FAS(SNES snes);
 extern PetscErrorCode SNESSetUp_FAS(SNES snes);
@@ -797,6 +797,73 @@ PetscErrorCode SNESFASCycle_Multiplicative(SNES snes, Vec X)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "SNESFASCycleSetupPhase_Full"
+PetscErrorCode SNESFASCycleSetupPhase_Full(SNES snes)
+{
+  SNES           next;
+  SNES_FAS       *fas = (SNES_FAS*)snes->data;
+  PetscBool      isFine;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  /* pre-smooth -- just update using the pre-smoother */
+  ierr = SNESFASCycleIsFine(snes,&isFine);CHKERRQ(ierr);
+  ierr = SNESFASCycleGetCorrection(snes,&next);CHKERRQ(ierr);
+  fas->full_stage = 0;
+  if (next) {ierr = SNESFASCycleSetupPhase_Full(next);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "SNESFASCycle_Full"
+PetscErrorCode SNESFASCycle_Full(SNES snes, Vec X)
+{
+  PetscErrorCode ierr;
+  Vec            F,B;
+  SNES_FAS       *fas = (SNES_FAS*)snes->data;
+  PetscBool      isFine;
+  SNES           next;
+
+  PetscFunctionBegin;
+  F = snes->vec_func;
+  B = snes->vec_rhs;
+  ierr = SNESFASCycleIsFine(snes,&isFine);CHKERRQ(ierr);
+  ierr = SNESFASCycleGetCorrection(snes,&next);CHKERRQ(ierr);
+
+  if (isFine) {
+    ierr = SNESFASCycleSetupPhase_Full(snes);CHKERRQ(ierr);
+  }
+
+  if (fas->full_stage == 0) {
+    /* upsweep */
+    if (next) {
+      if (fas->level != 1) next->max_its += 1;
+      ierr = SNESFASCoarseCorrection(snes,X,F,X);CHKERRQ(ierr);
+      ierr = SNESFASUpSmooth_Private(snes,B,X,F,&snes->norm);CHKERRQ(ierr);
+      if (fas->level != 1) next->max_its -= 1;
+    } else {
+      ierr = SNESFASDownSmooth_Private(snes,B,X,F,&snes->norm);CHKERRQ(ierr);
+    }
+    fas->full_stage = 1;
+  } else if (fas->full_stage == 1) {
+    if (snes->iter == 0) {ierr = SNESFASDownSmooth_Private(snes,B,X,F,&snes->norm);CHKERRQ(ierr);}
+    if (next) {
+      ierr = SNESFASCoarseCorrection(snes,X,F,X);CHKERRQ(ierr);
+      ierr = SNESFASUpSmooth_Private(snes,B,X,F,&snes->norm);CHKERRQ(ierr);
+    }
+  }
+  /* final v-cycle */
+  if (isFine) {
+    if (next) {
+      ierr = SNESFASDownSmooth_Private(snes,B,X,F,&snes->norm);CHKERRQ(ierr);
+      ierr = SNESFASCoarseCorrection(snes,X,F,X);CHKERRQ(ierr);
+      ierr = SNESFASUpSmooth_Private(snes,B,X,F,&snes->norm);CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "SNESSolve_FAS"
 
 PetscErrorCode SNESSolve_FAS(SNES snes)
@@ -867,8 +934,12 @@ PetscErrorCode SNESSolve_FAS(SNES snes)
     }
     if (fas->fastype == SNES_FAS_MULTIPLICATIVE) {
       ierr = SNESFASCycle_Multiplicative(snes, X);CHKERRQ(ierr);
-    } else {
+    } else if (fas->fastype == SNES_FAS_ADDITIVE) {
       ierr = SNESFASCycle_Additive(snes, X);CHKERRQ(ierr);
+    } else if (fas->fastype == SNES_FAS_FULL) {
+      ierr = SNESFASCycle_Full(snes, X);CHKERRQ(ierr);
+    } else {
+      SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE,"Unsupported FAS type");CHKERRQ(ierr);
     }
 
     /* check for FAS cycle divergence */

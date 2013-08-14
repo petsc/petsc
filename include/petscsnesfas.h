@@ -10,12 +10,12 @@
 
    Values:
 +  SNES_FAS_MULTIPLICATIVE (default) - traditional V or W cycle as determined by SNESFASSetCycles()
--  SNES_FAS_ADDITIVE - the additive multigrid preconditioner where all levels are
-
+.  SNES_FAS_ADDITIVE - the additive multigrid preconditioner where all levels are
+-  SNES_FAS_FULL - full FAS cycle
 .seealso: PCMGSetType(), PCMGType
 
 E*/
-typedef enum { SNES_FAS_MULTIPLICATIVE, SNES_FAS_ADDITIVE } SNESFASType;
+typedef enum { SNES_FAS_MULTIPLICATIVE, SNES_FAS_ADDITIVE, SNES_FAS_FULL } SNESFASType;
 PETSC_EXTERN const char *const  SNESFASTypes[];
 
 /* called on the finest level FAS instance*/
