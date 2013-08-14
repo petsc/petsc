@@ -793,17 +793,30 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   ierr = PetscOptionsCheckInitial_Private();CHKERRQ(ierr);
 
 #if defined(PETSC_HAVE_SAWS)
-  ierr = SAWs_Initialize();CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(NULL,"-saws_log",&flg);CHKERRQ(ierr);
-  if (flg) {
-    char  sawslog[PETSC_MAX_PATH_LEN];
+  {
+    char cert[PETSC_MAX_PATH_LEN];
+    int  port;
 
-    ierr = PetscOptionsGetString(NULL,"-saws_log",sawslog,PETSC_MAX_PATH_LEN,NULL);CHKERRQ(ierr);
-    if (sawslog[0]) {
-      ierr = SAWs_Set_Use_Logfile(sawslog);CHKERRQ(ierr);
-    } else {
-      ierr = SAWs_Set_Use_Logfile(NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsHasName(NULL,"-saws_log",&flg);CHKERRQ(ierr);
+    if (flg) {
+      char  sawslog[PETSC_MAX_PATH_LEN];
+
+      ierr = PetscOptionsGetString(NULL,"-saws_log",sawslog,PETSC_MAX_PATH_LEN,NULL);CHKERRQ(ierr);
+      if (sawslog[0]) {
+        ierr = SAWs_Set_Use_Logfile(sawslog);CHKERRQ(ierr);
+      } else {
+        ierr = SAWs_Set_Use_Logfile(NULL);CHKERRQ(ierr);
+      }
     }
+    ierr = PetscOptionsGetString(NULL,"-saws_https",cert,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = SAWs_Set_Use_HTTPS(cert);CHKERRQ(ierr);
+    }
+    ierr = PetscOptionsGetInt(NULL,"-saws_port",&port,&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = SAWs_Set_Port(port);CHKERRQ(ierr);
+    }
+    ierr = SAWs_Initialize();CHKERRQ(ierr);
   }
 
 #endif
