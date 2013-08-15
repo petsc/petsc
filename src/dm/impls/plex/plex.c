@@ -1965,6 +1965,73 @@ PetscErrorCode DMPlexGetFullMeet(DM dm, PetscInt numPoints, const PetscInt point
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMPlexEqual"
+/*@C
+  DMPlexEqual - Determine if two DMs have the same topology
+
+  Not Collective
+
+  Input Parameters:
++ dmA - A DMPlex object
+- dmB - A DMPlex object
+
+  Output Parameters:
+. equal - PETSC_TRUE if the topologies are identical
+
+  Level: intermediate
+
+  Notes:
+  We are not solving graph isomorphism, so we do not permutation.
+
+.keywords: mesh
+.seealso: DMPlexGetCone()
+@*/
+PetscErrorCode DMPlexEqual(DM dmA, DM dmB, PetscBool *equal)
+{
+  PetscInt       depth, depthB, pStart, pEnd, pStartB, pEndB, p;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dmA, DM_CLASSID, 1);
+  PetscValidHeaderSpecific(dmB, DM_CLASSID, 2);
+  PetscValidPointer(equal, 3);
+
+  *equal = PETSC_FALSE;
+  ierr = DMPlexGetDepth(dmA, &depth);CHKERRQ(ierr);
+  ierr = DMPlexGetDepth(dmB, &depthB);CHKERRQ(ierr);
+  if (depth != depthB) PetscFunctionReturn(0);
+  ierr = DMPlexGetChart(dmA, &pStart,  &pEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetChart(dmB, &pStartB, &pEndB);CHKERRQ(ierr);
+  if ((pStart != pStartB) || (pEnd != pEndB)) PetscFunctionReturn(0);
+  for (p = pStart; p < pEnd; ++p) {
+    const PetscInt *cone, *coneB, *ornt, *orntB, *support, *supportB;
+    PetscInt        coneSize, coneSizeB, c, supportSize, supportSizeB, s;
+
+    ierr = DMPlexGetConeSize(dmA, p, &coneSize);CHKERRQ(ierr);
+    ierr = DMPlexGetCone(dmA, p, &cone);CHKERRQ(ierr);
+    ierr = DMPlexGetConeOrientation(dmA, p, &ornt);CHKERRQ(ierr);
+    ierr = DMPlexGetConeSize(dmB, p, &coneSizeB);CHKERRQ(ierr);
+    ierr = DMPlexGetCone(dmB, p, &coneB);CHKERRQ(ierr);
+    ierr = DMPlexGetConeOrientation(dmB, p, &orntB);CHKERRQ(ierr);
+    if (coneSize != coneSizeB) PetscFunctionReturn(0);
+    for (c = 0; c < coneSize; ++c) {
+      if (cone[c] != coneB[c]) PetscFunctionReturn(0);
+      if (ornt[c] != orntB[c]) PetscFunctionReturn(0);
+    }
+    ierr = DMPlexGetSupportSize(dmA, p, &supportSize);CHKERRQ(ierr);
+    ierr = DMPlexGetSupport(dmA, p, &support);CHKERRQ(ierr);
+    ierr = DMPlexGetSupportSize(dmB, p, &supportSizeB);CHKERRQ(ierr);
+    ierr = DMPlexGetSupport(dmB, p, &supportB);CHKERRQ(ierr);
+    if (supportSize != supportSizeB) PetscFunctionReturn(0);
+    for (s = 0; s < supportSize; ++s) {
+      if (support[s] != supportB[s]) PetscFunctionReturn(0);
+    }
+  }
+  *equal = PETSC_TRUE;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMPlexGetNumFaceVertices"
 PetscErrorCode DMPlexGetNumFaceVertices(DM dm, PetscInt cellDim, PetscInt numCorners, PetscInt *numFaceVertices)
 {

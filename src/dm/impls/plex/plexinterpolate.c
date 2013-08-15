@@ -273,15 +273,15 @@ static PetscErrorCode DMPlexInterpolateFaces_Internal(DM dm, PetscInt cellDepth,
   Collective on DM
 
   Input Parameter:
-. dmA - The DMPlex object with only cells and vertices
+. dm - The DMPlex object with only cells and vertices
 
   Output Parameter:
-. dmB - The complete DMPlex object
+. dmInt - The complete DMPlex object
 
   Level: intermediate
 
 .keywords: mesh
-.seealso: DMPlexCreateFromCellList()
+.seealso: DMPlexUninterpolate(), DMPlexCreateFromCellList()
 @*/
 PetscErrorCode DMPlexInterpolate(DM dm, DM *dmInt)
 {
@@ -370,5 +370,75 @@ PetscErrorCode DMPlexCopyCoordinates(DM dmA, DM dmB)
   ierr = VecRestoreArray(coordinatesB, &coordsB);CHKERRQ(ierr);
   ierr = DMSetCoordinatesLocal(dmB, coordinatesB);CHKERRQ(ierr);
   ierr = VecDestroy(&coordinatesB);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexUninterpolate"
+/*@
+  DMPlexUninterpolate - Take in a mesh with all intermediate faces, edges, etc. and return a cell-vertex mesh
+
+  Collective on DM
+
+  Input Parameter:
+. dm - The complete DMPlex object
+
+  Output Parameter:
+. dmUnint - The DMPlex object with only cells and vertices
+
+  Level: intermediate
+
+.keywords: mesh
+.seealso: DMPlexInterpolate(), DMPlexCreateFromCellList()
+@*/
+PetscErrorCode DMPlexUninterpolate(DM dm, DM *dmUnint)
+{
+  DM             udm;
+  PetscInt       dim, vStart, vEnd, cStart, cEnd, c, maxConeSize, *cone;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
+  if (dim <= 1) {
+    ierr = PetscObjectReference((PetscObject) dm);CHKERRQ(ierr);
+    udm  = dm;
+  }
+  ierr = DMPlexGetMaxSizes(dm, &maxConeSize, NULL);CHKERRQ(ierr);
+  ierr = DMPlexGetDepthStratum(udm, 0, &vStart, &vEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(udm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  ierr = DMCreate(PetscObjectComm((PetscObject) dm), &udm);CHKERRQ(ierr);
+  ierr = DMSetType(udm, DMPLEX);CHKERRQ(ierr);
+  ierr = DMPlexSetDimension(udm, dim);CHKERRQ(ierr);
+  ierr = DMPlexSetChart(udm, cStart, vEnd);CHKERRQ(ierr);
+  for (c = cStart; c < cEnd; ++c) {
+    PetscInt *closure, closureSize, cl, coneSize = 0;
+
+    ierr = DMPlexGetTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+    for (cl = 0; cl < closureSize*2; cl += 2) {
+      const PetscInt p = closure[cl];
+
+      if ((p >= vStart) && (p < vEnd)) ++coneSize;
+    }
+    ierr = DMPlexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+    ierr = DMPlexSetConeSize(udm, c, coneSize);CHKERRQ(ierr);
+  }
+  ierr = DMSetUp(udm);CHKERRQ(ierr);
+  ierr = PetscMalloc(maxConeSize * sizeof(PetscInt), &cone);CHKERRQ(ierr);
+  for (c = cStart; c < cEnd; ++c) {
+    PetscInt *closure, closureSize, cl, coneSize = 0;
+
+    ierr = DMPlexGetTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+    for (cl = 0; cl < closureSize*2; cl += 2) {
+      const PetscInt p = closure[cl];
+
+      if ((p >= vStart) && (p < vEnd)) cone[coneSize++] = p;
+    }
+    ierr = DMPlexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+    ierr = DMPlexSetCone(udm, c, cone);CHKERRQ(ierr);
+  }
+  ierr = PetscFree(cone);CHKERRQ(ierr);
+  ierr = DMPlexSymmetrize(udm);CHKERRQ(ierr);
+  ierr = DMPlexStratify(udm);CHKERRQ(ierr);
+  *dmUnint = udm;
   PetscFunctionReturn(0);
 }
