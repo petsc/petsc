@@ -23,5 +23,19 @@ print r.content
 
 j = json.loads(r.content)
 
-print j['directories']
+j = j['directories'][0]['directories']
+
+for i in j:
+  if i['name'] == 'PETSc':
+    j = i
+    break
+j = j['directories']
+
+for i in j:
+  if i['name'] == 'Stack':
+    j = i
+    break
+
+print j
+
 

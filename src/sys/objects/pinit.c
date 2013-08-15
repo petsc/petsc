@@ -1153,6 +1153,7 @@ PetscErrorCode  PetscFinalize(void)
   }
 
 #if defined(PETSC_HAVE_SAWS)
+  ierr = PetscStackSAWsViewOff();CHKERRQ(ierr);
   ierr = SAWs_Finalize();CHKERRQ(ierr);
 #endif
 
