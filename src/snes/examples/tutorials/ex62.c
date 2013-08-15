@@ -405,6 +405,7 @@ PetscErrorCode SetupElement(DM dm, AppCtx *user)
     /* Create element */
     ierr = PetscFECreate(PetscObjectComm((PetscObject) dm), &fem);CHKERRQ(ierr);
     ierr = PetscObjectSetOptionsPrefix((PetscObject) fem, prefix[f]);CHKERRQ(ierr);
+    ierr = PetscFESetFromOptions(fem);CHKERRQ(ierr);
     ierr = PetscFESetBasisSpace(fem, P);CHKERRQ(ierr);
     ierr = PetscFESetDualSpace(fem, Q);CHKERRQ(ierr);
     ierr = PetscFESetNumComponents(fem, f ? 1 : dim);CHKERRQ(ierr);
@@ -429,8 +430,10 @@ PetscErrorCode SetupElement(DM dm, AppCtx *user)
 PetscErrorCode SetupQuadrature(AppCtx *user)
 {
   PetscQuadrature q;
+#ifdef PETSC_HAVE_GENERATOR
   const PetscInt  dim = user->dim;
   PetscInt        p, d;
+#endif
   PetscErrorCode  ierr;
 
   PetscFunctionBeginUser;
@@ -580,7 +583,6 @@ PetscErrorCode SetupExactSolution(DM dm, AppCtx *user)
   default:
     SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension %d", user->dim);
   }
-  ierr = DMPlexSetFEMIntegration(dm, PetscFEIntegrateResidualChunk, NULL, /*FEMIntegrateJacobianActionBatch*/NULL, PetscFEIntegrateJacobianChunk);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
