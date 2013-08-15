@@ -58,6 +58,27 @@ struct _PetscFEOps {
   PetscErrorCode (*setup)(PetscFE);
   PetscErrorCode (*view)(PetscFE,PetscViewer);
   PetscErrorCode (*destroy)(PetscFE);
+  /* Element integration */
+  PetscErrorCode (*integrateresidual)(PetscFE, PetscInt, PetscInt, PetscFE[], PetscInt, PetscCellGeometry, const PetscScalar[],
+                                      void (*)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
+                                      void (*)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
+                                      PetscScalar[]);
+  PetscErrorCode (*integratebdresidual)(PetscFE, PetscInt, PetscInt, PetscFE[], PetscInt, PetscCellGeometry, const PetscScalar[],
+                                        void (*)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], const PetscReal[], PetscScalar[]),
+                                        void (*)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], const PetscReal[], PetscScalar[]),
+                                        PetscScalar[]);
+  PetscErrorCode (*integratejacobianaction)(PetscFE, PetscInt, PetscInt, PetscFE[], PetscInt, PetscCellGeometry, const PetscScalar[], const PetscScalar[],
+                                            void (**)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
+                                            void (**)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
+                                            void (**)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
+                                            void (**)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
+                                            PetscScalar[]);
+  PetscErrorCode (*integratejacobian)(PetscFE, PetscInt, PetscInt, PetscFE[], PetscInt, PetscInt, PetscCellGeometry, const PetscScalar[],
+                                      void (*)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
+                                      void (*)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
+                                      void (*)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
+                                      void (*)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
+                                      PetscScalar[]);
 };
 
 struct _p_PetscFE {
@@ -70,5 +91,9 @@ struct _p_PetscFE {
   PetscInt       *numDof;        /* The number of dof on mesh points of each depth */
   PetscReal      *B, *D, *H;     /* Tabulation of basis and derivatives at quadrature points */
 };
+
+typedef struct {
+  PetscInt cellType;
+} PetscFE_Basic;
 
 #endif

@@ -110,3 +110,31 @@ PetscErrorCode PetscDualSpaceRegisterAll()
   ierr = PetscDualSpaceRegister(PETSCDUALSPACELAGRANGE, PetscDualSpaceCreate_Lagrange);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+PETSC_EXTERN PetscErrorCode PetscFECreate_Basic(PetscFE);
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscFERegisterAll"
+/*@C
+  PetscFERegisterAll - Registers all of the PetscFE components in the PetscFE package.
+
+  Not Collective
+
+  Input parameter:
+. path - The dynamic library path
+
+  Level: advanced
+
+.keywords: PetscFE, register, all
+.seealso:  PetscFERegister(), PetscFERegisterDestroy()
+@*/
+PetscErrorCode PetscFERegisterAll()
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscFERegisterAllCalled = PETSC_TRUE;
+
+  ierr = PetscFERegister(PETSCFEBASIC, PetscFECreate_Basic);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}

@@ -615,10 +615,6 @@ PETSC_EXTERN PetscErrorCode DMCreate_Plex(DM dm)
   mesh->vtkCellHeight     = 0;
   mesh->preallocCenterDim = -1;
 
-  mesh->integrateResidualFEM       = NULL;
-  mesh->integrateJacobianActionFEM = NULL;
-  mesh->integrateJacobianFEM       = NULL;
-
   mesh->printSetValues = PETSC_FALSE;
   mesh->printFEM       = 0;
 
