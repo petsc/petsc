@@ -156,9 +156,11 @@ PetscErrorCode PetscFEFinalizePackage(void)
   PetscFunctionBegin;
   ierr = PetscFunctionListDestroy(&PetscSpaceList);CHKERRQ(ierr);
   ierr = PetscFunctionListDestroy(&PetscDualSpaceList);CHKERRQ(ierr);
+  ierr = PetscFunctionListDestroy(&PetscFEList);CHKERRQ(ierr);
   PetscFEPackageInitialized       = PETSC_FALSE;
   PetscSpaceRegisterAllCalled     = PETSC_FALSE;
   PetscDualSpaceRegisterAllCalled = PETSC_FALSE;
+  PetscFERegisterAllCalled        = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -192,6 +194,8 @@ PetscErrorCode PetscFEInitializePackage(void)
 
   /* Register Constructors */
   ierr = PetscSpaceRegisterAll();CHKERRQ(ierr);
+  ierr = PetscDualSpaceRegisterAll();CHKERRQ(ierr);
+  ierr = PetscFERegisterAll();CHKERRQ(ierr);
   /* Register Events */
   /* Process info exclusions */
   ierr = PetscOptionsGetString(NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);

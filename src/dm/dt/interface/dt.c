@@ -1922,6 +1922,128 @@ PETSC_EXTERN PetscErrorCode PetscDualSpaceCreate_Lagrange(PetscDualSpace sp)
 
 PetscInt PETSCFE_CLASSID = 0;
 
+PetscFunctionList PetscFEList              = NULL;
+PetscBool         PetscFERegisterAllCalled = PETSC_FALSE;
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscFERegister"
+/*@C
+  PetscFERegister - Adds a new PetscFE implementation
+
+  Not Collective
+
+  Input Parameters:
++ name        - The name of a new user-defined creation routine
+- create_func - The creation routine itself
+
+  Notes:
+  PetscFERegister() may be called multiple times to add several user-defined PetscFEs
+
+  Sample usage:
+.vb
+    PetscFERegister("my_fe", MyPetscFECreate);
+.ve
+
+  Then, your PetscFE type can be chosen with the procedural interface via
+.vb
+    PetscFECreate(MPI_Comm, PetscFE *);
+    PetscFESetType(PetscFE, "my_fe");
+.ve
+   or at runtime via the option
+.vb
+    -petscfe_type my_fe
+.ve
+
+  Level: advanced
+
+.keywords: PetscFE, register
+.seealso: PetscFERegisterAll(), PetscFERegisterDestroy()
+
+@*/
+PetscErrorCode PetscFERegister(const char sname[], PetscErrorCode (*function)(PetscFE))
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscFunctionListAdd(&PetscFEList, sname, function);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscFESetType"
+/*@C
+  PetscFESetType - Builds a particular PetscFE
+
+  Collective on PetscFE
+
+  Input Parameters:
++ fem  - The PetscFE object
+- name - The kind of FEM space
+
+  Options Database Key:
+. -petscfe_type <type> - Sets the PetscFE type; use -help for a list of available types
+
+  Level: intermediate
+
+.keywords: PetscFE, set, type
+.seealso: PetscFEGetType(), PetscFECreate()
+@*/
+PetscErrorCode PetscFESetType(PetscFE fem, PetscFEType name)
+{
+  PetscErrorCode (*r)(PetscFE);
+  PetscBool      match;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);
+  ierr = PetscObjectTypeCompare((PetscObject) fem, name, &match);CHKERRQ(ierr);
+  if (match) PetscFunctionReturn(0);
+
+  if (!PetscFERegisterAllCalled) {ierr = PetscFERegisterAll();CHKERRQ(ierr);}
+  ierr = PetscFunctionListFind(PetscFEList, name, &r);CHKERRQ(ierr);
+  if (!r) SETERRQ1(PetscObjectComm((PetscObject) fem), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown PetscFE type: %s", name);
+
+  if (fem->ops->destroy) {
+    ierr              = (*fem->ops->destroy)(fem);CHKERRQ(ierr);
+    fem->ops->destroy = NULL;
+  }
+  ierr = (*r)(fem);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject) fem, name);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscFEGetType"
+/*@C
+  PetscFEGetType - Gets the PetscFE type name (as a string) from the object.
+
+  Not Collective
+
+  Input Parameter:
+. dm  - The PetscFE
+
+  Output Parameter:
+. name - The PetscFE type name
+
+  Level: intermediate
+
+.keywords: PetscFE, get, type, name
+.seealso: PetscFESetType(), PetscFECreate()
+@*/
+PetscErrorCode PetscFEGetType(PetscFE fem, PetscFEType *name)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);
+  PetscValidCharPointer(name, 2);
+  if (!PetscFERegisterAllCalled) {
+    ierr = PetscFERegisterAll();CHKERRQ(ierr);
+  }
+  *name = ((PetscObject) fem)->type_name;
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__
 #define __FUNCT__ "PetscFEView"
 /*@C
@@ -1930,8 +2052,8 @@ PetscInt PETSCFE_CLASSID = 0;
   Collective on PetscFE
 
   Input Parameter:
-+ sp - the PetscFE object to view
-- v  - the viewer
++ fem - the PetscFE object to view
+- v   - the viewer
 
   Level: developer
 
@@ -1949,6 +2071,116 @@ PetscErrorCode PetscFEView(PetscFE fem, PetscViewer v)
   if (fem->ops->view) {
     ierr = (*fem->ops->view)(fem, v);CHKERRQ(ierr);
   }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscFEViewFromOptions"
+/*
+  PetscFEViewFromOptions - Processes command line options to determine if/how a PetscFE is to be viewed.
+
+  Collective on PetscFE
+
+  Input Parameters:
++ fem    - the PetscFE
+. prefix - prefix to use for viewing, or NULL to use prefix of 'rnd'
+- optionname - option to activate viewing
+
+  Level: intermediate
+
+.keywords: PetscFE, view, options, database
+.seealso: VecViewFromOptions(), MatViewFromOptions()
+*/
+PetscErrorCode PetscFEViewFromOptions(PetscFE fem, const char prefix[], const char optionname[])
+{
+  PetscViewer       viewer;
+  PetscViewerFormat format;
+  PetscBool         flg;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  if (prefix) {
+    ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject) fem), prefix, optionname, &viewer, &format, &flg);CHKERRQ(ierr);
+  } else {
+    ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject) fem), ((PetscObject) fem)->prefix, optionname, &viewer, &format, &flg);CHKERRQ(ierr);
+  }
+  if (flg) {
+    ierr = PetscViewerPushFormat(viewer, format);CHKERRQ(ierr);
+    ierr = PetscFEView(fem, viewer);CHKERRQ(ierr);
+    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscFESetFromOptions"
+/*@
+  PetscFESetFromOptions - sets parameters in a PetscFE from the options database
+
+  Collective on PetscFE
+
+  Input Parameter:
+. fem - the PetscFE object to set options for
+
+  Level: developer
+
+.seealso PetscFEView()
+@*/
+PetscErrorCode PetscFESetFromOptions(PetscFE fem)
+{
+  const char    *defaultType;
+  char           name[256];
+  PetscBool      flg;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);
+  if (!((PetscObject) fem)->type_name) {
+    defaultType = PETSCFEBASIC;
+  } else {
+    defaultType = ((PetscObject) fem)->type_name;
+  }
+  if (!PetscFERegisterAllCalled) {ierr = PetscFERegisterAll();CHKERRQ(ierr);}
+
+  ierr = PetscObjectOptionsBegin((PetscObject) fem);CHKERRQ(ierr);
+  ierr = PetscOptionsList("-petscfe_type", "Finite element space", "PetscFESetType", PetscFEList, defaultType, name, 256, &flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = PetscFESetType(fem, name);CHKERRQ(ierr);
+  } else if (!((PetscObject) fem)->type_name) {
+    ierr = PetscFESetType(fem, defaultType);CHKERRQ(ierr);
+  }
+  if (fem->ops->setfromoptions) {
+    ierr = (*fem->ops->setfromoptions)(fem);CHKERRQ(ierr);
+  }
+  /* process any options handlers added with PetscObjectAddOptionsHandler() */
+  ierr = PetscObjectProcessOptionsHandlers((PetscObject) fem);CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  ierr = PetscFEViewFromOptions(fem, NULL, "-petscfe_view");CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscFESetUp"
+/*@C
+  PetscFESetUp - Construct data structures for the PetscFE
+
+  Collective on PetscFE
+
+  Input Parameter:
+. fem - the PetscFE object to setup
+
+  Level: developer
+
+.seealso PetscFEView(), PetscFEDestroy()
+@*/
+PetscErrorCode PetscFESetUp(PetscFE fem)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);
+  if (fem->ops->setup) {ierr = (*fem->ops->setup)(fem);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -2328,128 +2560,24 @@ PetscErrorCode PetscFERestoreTabulation(PetscFE fem, PetscInt npoints, const Pet
   PetscFunctionReturn(0);
 }
 
-/*
-Purpose: Compute element vector for chunk of elements
+#undef __FUNCT__
+#define __FUNCT__ "PetscFEDestroy_Basic"
+PetscErrorCode PetscFEDestroy_Basic(PetscFE fem)
+{
+  PetscFE_Basic *b = (PetscFE_Basic *) fem->data;
+  PetscErrorCode ierr;
 
-Input:
-  Sizes:
-     Ne:  number of elements
-     Nf:  number of fields
-     PetscFE
-       dim: spatial dimension
-       Nb:  number of basis functions
-       Nc:  number of field components
-       PetscQuadrature
-         Nq:  number of quadrature points
-
-  Geometry:
-     PetscCellGeometry
-       PetscReal v0s[Ne*dim]
-       PetscReal jacobians[Ne*dim*dim]        possibly *Nq
-       PetscReal jacobianInverses[Ne*dim*dim] possibly *Nq
-       PetscReal jacobianDeterminants[Ne]     possibly *Nq
-  FEM:
-     PetscFE
-       PetscQuadrature
-         PetscReal   quadPoints[Nq*dim]
-         PetscReal   quadWeights[Nq]
-       PetscReal   basis[Nq*Nb*Nc]
-       PetscReal   basisDer[Nq*Nb*Nc*dim]
-     PetscScalar coefficients[Ne*Nb*Nc]
-     PetscScalar elemVec[Ne*Nb*Nc]
-
-  Problem:
-     PetscInt f: the active field
-     f0, f1
-
-  Work Space:
-     PetscFE
-       PetscScalar f0[Nq*dim];
-       PetscScalar f1[Nq*dim*dim];
-       PetscScalar u[Nc];
-       PetscScalar gradU[Nc*dim];
-       PetscReal   x[dim];
-       PetscScalar realSpaceDer[dim];
-
-Purpose: Compute element vector for N_cb batches of elements
-
-Input:
-  Sizes:
-     N_cb: Number of serial cell batches
-
-  Geometry:
-     PetscReal v0s[Ne*dim]
-     PetscReal jacobians[Ne*dim*dim]        possibly *Nq
-     PetscReal jacobianInverses[Ne*dim*dim] possibly *Nq
-     PetscReal jacobianDeterminants[Ne]     possibly *Nq
-  FEM:
-     static PetscReal   quadPoints[Nq*dim]
-     static PetscReal   quadWeights[Nq]
-     static PetscReal   basis[Nq*Nb*Nc]
-     static PetscReal   basisDer[Nq*Nb*Nc*dim]
-     PetscScalar coefficients[Ne*Nb*Nc]
-     PetscScalar elemVec[Ne*Nb*Nc]
-
-ex62.c:
-  PetscErrorCode PetscFEIntegrateResidualBatch(PetscInt Ne, PetscInt numFields, PetscInt field, PetscQuadrature quad[], const PetscScalar coefficients[],
-                                               const PetscReal v0s[], const PetscReal jacobians[], const PetscReal jacobianInverses[], const PetscReal jacobianDeterminants[],
-                                               void (*f0_func)(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[], PetscScalar f0[]),
-                                               void (*f1_func)(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[], PetscScalar f1[]), PetscScalar elemVec[])
-
-ex52.c:
-  PetscErrorCode IntegrateLaplacianBatchCPU(PetscInt Ne, PetscInt Nb, const PetscScalar coefficients[], const PetscReal jacobianInverses[], const PetscReal jacobianDeterminants[], PetscInt Nq, const PetscReal quadPoints[], const PetscReal quadWeights[], const PetscReal basisTabulation[], const PetscReal basisDerTabulation[], PetscScalar elemVec[], AppCtx *user)
-  PetscErrorCode IntegrateElasticityBatchCPU(PetscInt Ne, PetscInt Nb, PetscInt Ncomp, const PetscScalar coefficients[], const PetscReal jacobianInverses[], const PetscReal jacobianDeterminants[], PetscInt Nq, const PetscReal quadPoints[], const PetscReal quadWeights[], const PetscReal basisTabulation[], const PetscReal basisDerTabulation[], PetscScalar elemVec[], AppCtx *user)
-
-ex52_integrateElement.cu
-__global__ void integrateElementQuadrature(int N_cb, realType *coefficients, realType *jacobianInverses, realType *jacobianDeterminants, realType *elemVec)
-
-PETSC_EXTERN PetscErrorCode IntegrateElementBatchGPU(PetscInt spatial_dim, PetscInt Ne, PetscInt Ncb, PetscInt Nbc, PetscInt Nbl, const PetscScalar coefficients[],
-                                                     const PetscReal jacobianInverses[], const PetscReal jacobianDeterminants[], PetscScalar elemVec[],
-                                                     PetscLogEvent event, PetscInt debug, PetscInt pde_op)
-
-ex52_integrateElementOpenCL.c:
-PETSC_EXTERN PetscErrorCode IntegrateElementBatchGPU(PetscInt spatial_dim, PetscInt Ne, PetscInt Ncb, PetscInt Nbc, PetscInt N_bl, const PetscScalar coefficients[],
-                                                     const PetscReal jacobianInverses[], const PetscReal jacobianDeterminants[], PetscScalar elemVec[],
-                                                     PetscLogEvent event, PetscInt debug, PetscInt pde_op)
-
-__kernel void integrateElementQuadrature(int N_cb, __global float *coefficients, __global float *jacobianInverses, __global float *jacobianDeterminants, __global float *elemVec)
-*/
+  PetscFunctionBegin;
+  ierr = PetscFree(b);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscFEIntegrateResidualChunk"
-/*C
-  PetscFEIntegrateResidualChunk - Produce the element residual vector for a chunk of elements by quadrature integration
-
-  Not collective
-
-  Input Parameters:
-+ Ne                   - The number of elements in the chunk
-. Nf                   - The number of physical fields
-. fe                   - The PetscFE objects for each field
-. field                - The field being integrated
-. geom                 - The cell geometry for each cell in the chunk
-. coefficients         - The array of FEM basis coefficients for the elements
-. f0_func              - f_0 function from the first order FEM model
-- f1_func              - f_1 function from the first order FEM model
-
-  Output Parameter
-. elemVec              - the element residual vectors from each element
-
-   Calling sequence of f0_func and f1_func:
-$    void f0(const PetscScalar u[], const PetscScalar gradU[], const PetscScalar a[], const PetscScalar gradA[], const PetscReal x[], PetscScalar f0[])
-
-  Note:
-$ Loop over batch of elements (e):
-$   Loop over quadrature points (q):
-$     Make u_q and gradU_q (loops over fields,Nb,Ncomp) and x_q
-$     Call f_0 and f_1
-$   Loop over element vector entries (f,fc --> i):
-$     elemVec[i] += \psi^{fc}_f(q) f0_{fc}(u, \nabla u) + \nabla\psi^{fc}_f(q) \cdot f1_{fc,df}(u, \nabla u)
-*/
-PetscErrorCode PetscFEIntegrateResidualChunk(PetscInt Ne, PetscInt Nf, PetscFE fe[], PetscInt field, PetscCellGeometry geom, const PetscScalar coefficients[],
-                                             void (*f0_func)(const PetscScalar u[], const PetscScalar gradU[], const PetscScalar a[], const PetscScalar gradA[], const PetscReal x[], PetscScalar f0[]),
-                                             void (*f1_func)(const PetscScalar u[], const PetscScalar gradU[], const PetscScalar a[], const PetscScalar gradA[], const PetscReal x[], PetscScalar f1[]),
-                                             PetscScalar elemVec[])
+#define __FUNCT__ "PetscFEIntegrateResidual_Basic"
+PetscErrorCode PetscFEIntegrateResidual_Basic(PetscFE fem, PetscInt Ne, PetscInt Nf, PetscFE fe[], PetscInt field, PetscCellGeometry geom, const PetscScalar coefficients[],
+                                              void (*f0_func)(const PetscScalar u[], const PetscScalar gradU[], const PetscScalar a[], const PetscScalar gradA[], const PetscReal x[], PetscScalar f0[]),
+                                              void (*f1_func)(const PetscScalar u[], const PetscScalar gradU[], const PetscScalar a[], const PetscScalar gradA[], const PetscReal x[], PetscScalar f1[]),
+                                              PetscScalar elemVec[])
 {
   const PetscInt  debug = 0;
   PetscQuadrature quad;
@@ -2600,47 +2728,14 @@ PetscErrorCode PetscFEIntegrateResidualChunk(PetscInt Ne, PetscInt Nf, PetscFE f
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscFEIntegrateJacobianChunk"
-/*C
-  PetscFEIntegrateJacobianChunk - Produce the element Jacobian for a chunk of elements by quadrature integration
-
-  Not collective
-
-  Input Parameters:
-+ Ne                   - The number of elements in the chunk
-. Nf                   - The number of physical fields
-. fe                   - The PetscFE objects for each field
-. fieldI               - The test field being integrated
-. fieldJ               - The basis field being integrated
-. geom                 - The cell geometry for each cell in the chunk
-. coefficients         - The array of FEM basis coefficients for the elements for the Jacobian evaluation point
-. g0_func              - g_0 function from the first order FEM model
-. g1_func              - g_1 function from the first order FEM model
-. g2_func              - g_2 function from the first order FEM model
-- g3_func              - g_3 function from the first order FEM model
-
-  Output Parameter
-. elemMat              - the element matrices for the Jacobian from each element
-
-   Calling sequence of g0_func, g1_func, g2_func and g3_func:
-$    void g0(PetscScalar u[], const PetscScalar gradU[], PetscScalar a[], const PetscScalar gradA[], PetscScalar x[], PetscScalar g0[])
-
-  Note:
-$ Loop over batch of elements (e):
-$   Loop over element matrix entries (f,fc,g,gc --> i,j):
-$     Loop over quadrature points (q):
-$       Make u_q and gradU_q (loops over fields,Nb,Ncomp)
-$         elemMat[i,j] += \psi^{fc}_f(q) g0_{fc,gc}(u, \nabla u) \phi^{gc}_g(q)
-$                      + \psi^{fc}_f(q) \cdot g1_{fc,gc,dg}(u, \nabla u) \nabla\phi^{gc}_g(q)
-$                      + \nabla\psi^{fc}_f(q) \cdot g2_{fc,gc,df}(u, \nabla u) \phi^{gc}_g(q)
-$                      + \nabla\psi^{fc}_f(q) \cdot g3_{fc,gc,df,dg}(u, \nabla u) \nabla\phi^{gc}_g(q)
-*/
-PetscErrorCode PetscFEIntegrateJacobianChunk(PetscInt Ne, PetscInt Nf, PetscFE fe[], PetscInt fieldI, PetscInt fieldJ, PetscCellGeometry geom, const PetscScalar coefficients[],
-                                             void (*g0_func)(const PetscScalar u[], const PetscScalar gradU[], const PetscScalar a[], const PetscScalar gradA[], const PetscReal x[], PetscScalar g0[]),
-                                             void (*g1_func)(const PetscScalar u[], const PetscScalar gradU[], const PetscScalar a[], const PetscScalar gradA[], const PetscReal x[], PetscScalar g1[]),
-                                             void (*g2_func)(const PetscScalar u[], const PetscScalar gradU[], const PetscScalar a[], const PetscScalar gradA[], const PetscReal x[], PetscScalar g2[]),
-                                             void (*g3_func)(const PetscScalar u[], const PetscScalar gradU[], const PetscScalar a[], const PetscScalar gradA[], const PetscReal x[], PetscScalar g3[]),
-                                             PetscScalar elemMat[]) {
+#define __FUNCT__ "PetscFEIntegrateJacobian_Basic"
+PetscErrorCode PetscFEIntegrateJacobian_Basic(PetscFE fem, PetscInt Ne, PetscInt Nf, PetscFE fe[], PetscInt fieldI, PetscInt fieldJ, PetscCellGeometry geom, const PetscScalar coefficients[],
+                                              void (*g0_func)(const PetscScalar u[], const PetscScalar gradU[], const PetscScalar a[], const PetscScalar gradA[], const PetscReal x[], PetscScalar g0[]),
+                                              void (*g1_func)(const PetscScalar u[], const PetscScalar gradU[], const PetscScalar a[], const PetscScalar gradA[], const PetscReal x[], PetscScalar g1[]),
+                                              void (*g2_func)(const PetscScalar u[], const PetscScalar gradU[], const PetscScalar a[], const PetscScalar gradA[], const PetscReal x[], PetscScalar g2[]),
+                                              void (*g3_func)(const PetscScalar u[], const PetscScalar gradU[], const PetscScalar a[], const PetscScalar gradA[], const PetscReal x[], PetscScalar g3[]),
+                                              PetscScalar elemMat[])
+{
   const PetscInt  debug   = 0;
   PetscInt        cellDof = 0; /* Total number of dof on a cell */
   PetscInt        cOffset = 0; /* Offset into coefficients[] for element e */
@@ -2806,5 +2901,281 @@ PetscErrorCode PetscFEIntegrateJacobianChunk(PetscInt Ne, PetscInt Nf, PetscFE f
   }
   ierr = PetscFree4(g0,g1,g2,g3);
   ierr = PetscFree5(u,gradU,x,realSpaceDerI,realSpaceDerJ);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscFEInitialize_Basic"
+PetscErrorCode PetscFEInitialize_Basic(PetscFE fem)
+{
+  PetscFunctionBegin;
+  fem->ops->setfromoptions          = NULL;
+  fem->ops->setup                   = NULL;
+  fem->ops->view                    = NULL;
+  fem->ops->destroy                 = PetscFEDestroy_Basic;
+  fem->ops->integrateresidual       = PetscFEIntegrateResidual_Basic;
+  fem->ops->integratebdresidual     = NULL/* PetscFEIntegrateBdResidual_Basic */;
+  fem->ops->integratejacobianaction = NULL/* PetscFEIntegrateJacobianAction_Basic */;
+  fem->ops->integratejacobian       = PetscFEIntegrateJacobian_Basic;
+  PetscFunctionReturn(0);
+}
+
+/*MC
+  PETSCFEBASIC = "basic" - A PetscFE object that integrates with basic tiling and no vectorization
+
+  Level: intermediate
+
+.seealso: PetscFEType, PetscFECreate(), PetscFESetType()
+M*/
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscFECreate_Basic"
+PETSC_EXTERN PetscErrorCode PetscFECreate_Basic(PetscFE fem)
+{
+  PetscFE_Basic *b;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);
+  ierr      = PetscNewLog(fem, PetscFE_Basic, &b);CHKERRQ(ierr);
+  fem->data = b;
+
+  ierr = PetscFEInitialize_Basic(fem);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*
+Purpose: Compute element vector for chunk of elements
+
+Input:
+  Sizes:
+     Ne:  number of elements
+     Nf:  number of fields
+     PetscFE
+       dim: spatial dimension
+       Nb:  number of basis functions
+       Nc:  number of field components
+       PetscQuadrature
+         Nq:  number of quadrature points
+
+  Geometry:
+     PetscCellGeometry
+       PetscReal v0s[Ne*dim]
+       PetscReal jacobians[Ne*dim*dim]        possibly *Nq
+       PetscReal jacobianInverses[Ne*dim*dim] possibly *Nq
+       PetscReal jacobianDeterminants[Ne]     possibly *Nq
+  FEM:
+     PetscFE
+       PetscQuadrature
+         PetscReal   quadPoints[Nq*dim]
+         PetscReal   quadWeights[Nq]
+       PetscReal   basis[Nq*Nb*Nc]
+       PetscReal   basisDer[Nq*Nb*Nc*dim]
+     PetscScalar coefficients[Ne*Nb*Nc]
+     PetscScalar elemVec[Ne*Nb*Nc]
+
+  Problem:
+     PetscInt f: the active field
+     f0, f1
+
+  Work Space:
+     PetscFE
+       PetscScalar f0[Nq*dim];
+       PetscScalar f1[Nq*dim*dim];
+       PetscScalar u[Nc];
+       PetscScalar gradU[Nc*dim];
+       PetscReal   x[dim];
+       PetscScalar realSpaceDer[dim];
+
+Purpose: Compute element vector for N_cb batches of elements
+
+Input:
+  Sizes:
+     N_cb: Number of serial cell batches
+
+  Geometry:
+     PetscReal v0s[Ne*dim]
+     PetscReal jacobians[Ne*dim*dim]        possibly *Nq
+     PetscReal jacobianInverses[Ne*dim*dim] possibly *Nq
+     PetscReal jacobianDeterminants[Ne]     possibly *Nq
+  FEM:
+     static PetscReal   quadPoints[Nq*dim]
+     static PetscReal   quadWeights[Nq]
+     static PetscReal   basis[Nq*Nb*Nc]
+     static PetscReal   basisDer[Nq*Nb*Nc*dim]
+     PetscScalar coefficients[Ne*Nb*Nc]
+     PetscScalar elemVec[Ne*Nb*Nc]
+
+ex62.c:
+  PetscErrorCode PetscFEIntegrateResidualBatch(PetscInt Ne, PetscInt numFields, PetscInt field, PetscQuadrature quad[], const PetscScalar coefficients[],
+                                               const PetscReal v0s[], const PetscReal jacobians[], const PetscReal jacobianInverses[], const PetscReal jacobianDeterminants[],
+                                               void (*f0_func)(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[], PetscScalar f0[]),
+                                               void (*f1_func)(const PetscScalar u[], const PetscScalar gradU[], const PetscReal x[], PetscScalar f1[]), PetscScalar elemVec[])
+
+ex52.c:
+  PetscErrorCode IntegrateLaplacianBatchCPU(PetscInt Ne, PetscInt Nb, const PetscScalar coefficients[], const PetscReal jacobianInverses[], const PetscReal jacobianDeterminants[], PetscInt Nq, const PetscReal quadPoints[], const PetscReal quadWeights[], const PetscReal basisTabulation[], const PetscReal basisDerTabulation[], PetscScalar elemVec[], AppCtx *user)
+  PetscErrorCode IntegrateElasticityBatchCPU(PetscInt Ne, PetscInt Nb, PetscInt Ncomp, const PetscScalar coefficients[], const PetscReal jacobianInverses[], const PetscReal jacobianDeterminants[], PetscInt Nq, const PetscReal quadPoints[], const PetscReal quadWeights[], const PetscReal basisTabulation[], const PetscReal basisDerTabulation[], PetscScalar elemVec[], AppCtx *user)
+
+ex52_integrateElement.cu
+__global__ void integrateElementQuadrature(int N_cb, realType *coefficients, realType *jacobianInverses, realType *jacobianDeterminants, realType *elemVec)
+
+PETSC_EXTERN PetscErrorCode IntegrateElementBatchGPU(PetscInt spatial_dim, PetscInt Ne, PetscInt Ncb, PetscInt Nbc, PetscInt Nbl, const PetscScalar coefficients[],
+                                                     const PetscReal jacobianInverses[], const PetscReal jacobianDeterminants[], PetscScalar elemVec[],
+                                                     PetscLogEvent event, PetscInt debug, PetscInt pde_op)
+
+ex52_integrateElementOpenCL.c:
+PETSC_EXTERN PetscErrorCode IntegrateElementBatchGPU(PetscInt spatial_dim, PetscInt Ne, PetscInt Ncb, PetscInt Nbc, PetscInt N_bl, const PetscScalar coefficients[],
+                                                     const PetscReal jacobianInverses[], const PetscReal jacobianDeterminants[], PetscScalar elemVec[],
+                                                     PetscLogEvent event, PetscInt debug, PetscInt pde_op)
+
+__kernel void integrateElementQuadrature(int N_cb, __global float *coefficients, __global float *jacobianInverses, __global float *jacobianDeterminants, __global float *elemVec)
+*/
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscFEIntegrateResidual"
+/*C
+  PetscFEIntegrateResidual - Produce the element residual vector for a chunk of elements by quadrature integration
+
+  Not collective
+
+  Input Parameters:
++ fem          - The PetscFE object for the field being integrated
+. Ne           - The number of elements in the chunk
+. Nf           - The number of physical fields
+. fe           - The PetscFE objects for each field
+. field        - The field being integrated
+. geom         - The cell geometry for each cell in the chunk
+. coefficients - The array of FEM basis coefficients for the elements
+. f0_func      - f_0 function from the first order FEM model
+- f1_func      - f_1 function from the first order FEM model
+
+  Output Parameter
+. elemVec      - the element residual vectors from each element
+
+   Calling sequence of f0_func and f1_func:
+$    void f0(const PetscScalar u[], const PetscScalar gradU[], const PetscScalar a[], const PetscScalar gradA[], const PetscReal x[], PetscScalar f0[])
+
+  Note:
+$ Loop over batch of elements (e):
+$   Loop over quadrature points (q):
+$     Make u_q and gradU_q (loops over fields,Nb,Ncomp) and x_q
+$     Call f_0 and f_1
+$   Loop over element vector entries (f,fc --> i):
+$     elemVec[i] += \psi^{fc}_f(q) f0_{fc}(u, \nabla u) + \nabla\psi^{fc}_f(q) \cdot f1_{fc,df}(u, \nabla u)
+*/
+PetscErrorCode PetscFEIntegrateResidual(PetscFE fem, PetscInt Ne, PetscInt Nf, PetscFE fe[], PetscInt field, PetscCellGeometry geom, const PetscScalar coefficients[],
+                                        void (*f0_func)(const PetscScalar u[], const PetscScalar gradU[], const PetscScalar a[], const PetscScalar gradA[], const PetscReal x[], PetscScalar f0[]),
+                                        void (*f1_func)(const PetscScalar u[], const PetscScalar gradU[], const PetscScalar a[], const PetscScalar gradA[], const PetscReal x[], PetscScalar f1[]),
+                                        PetscScalar elemVec[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);
+  if (fem->ops->integrateresidual) {ierr = (*fem->ops->integrateresidual)(fem, Ne, Nf, fe, field, geom, coefficients, f0_func, f1_func, elemVec);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscFEIntegrateJacobianAction"
+/*C
+  PetscFEIntegrateJacobianAction - Produce the action of the element Jacobian on an element vector for a chunk of elements by quadrature integration
+
+  Not collective
+
+  Input Parameters:
++ fem          = The PetscFE object for the field being integrated
+. Ne           - The number of elements in the chunk
+. Nf           - The number of physical fields
+. fe           - The PetscFE objects for each field
+. field        - The test field being integrated
+. geom         - The cell geometry for each cell in the chunk
+. coefficients - The array of FEM basis coefficients for the elements for the Jacobian evaluation point
+. input        - The array of FEM basis coefficients for the elements for the input vector
+. g0_func      - g_0 function from the first order FEM model
+. g1_func      - g_1 function from the first order FEM model
+. g2_func      - g_2 function from the first order FEM model
+- g3_func      - g_3 function from the first order FEM model
+
+  Output Parameter
+. elemVec      - the element vector for the action from each element
+
+   Calling sequence of g0_func, g1_func, g2_func and g3_func:
+$    void g0(PetscScalar u[], const PetscScalar gradU[], PetscScalar a[], const PetscScalar gradA[], PetscScalar x[], PetscScalar g0[])
+
+  Note:
+$ Loop over batch of elements (e):
+$   Loop over element matrix entries (f,fc,g,gc --> i,j):
+$     Loop over quadrature points (q):
+$       Make u_q and gradU_q (loops over fields,Nb,Ncomp)
+$         elemMat[i,j] += \psi^{fc}_f(q) g0_{fc,gc}(u, \nabla u) \phi^{gc}_g(q)
+$                      + \psi^{fc}_f(q) \cdot g1_{fc,gc,dg}(u, \nabla u) \nabla\phi^{gc}_g(q)
+$                      + \nabla\psi^{fc}_f(q) \cdot g2_{fc,gc,df}(u, \nabla u) \phi^{gc}_g(q)
+$                      + \nabla\psi^{fc}_f(q) \cdot g3_{fc,gc,df,dg}(u, \nabla u) \nabla\phi^{gc}_g(q)
+*/
+PetscErrorCode PetscFEIntegrateJacobianAction(PetscFE fem, PetscInt Ne, PetscInt Nf, PetscFE fe[], PetscInt field, PetscCellGeometry geom, const PetscScalar coefficients[], const PetscScalar input[],
+                                              void (**g0_func)(const PetscScalar u[], const PetscScalar gradU[], const PetscScalar a[], const PetscScalar gradA[], const PetscReal x[], PetscScalar g0[]),
+                                              void (**g1_func)(const PetscScalar u[], const PetscScalar gradU[], const PetscScalar a[], const PetscScalar gradA[], const PetscReal x[], PetscScalar g1[]),
+                                              void (**g2_func)(const PetscScalar u[], const PetscScalar gradU[], const PetscScalar a[], const PetscScalar gradA[], const PetscReal x[], PetscScalar g2[]),
+                                              void (**g3_func)(const PetscScalar u[], const PetscScalar gradU[], const PetscScalar a[], const PetscScalar gradA[], const PetscReal x[], PetscScalar g3[]),
+                                              PetscScalar elemVec[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);
+  if (fem->ops->integratejacobianaction) {ierr = (*fem->ops->integratejacobianaction)(fem, Ne, Nf, fe, field, geom, coefficients, input, g0_func, g1_func, g2_func, g3_func, elemVec);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscFEIntegrateJacobian"
+/*C
+  PetscFEIntegrateJacobian - Produce the element Jacobian for a chunk of elements by quadrature integration
+
+  Not collective
+
+  Input Parameters:
++ fem          = The PetscFE object for the field being integrated
+. Ne           - The number of elements in the chunk
+. Nf           - The number of physical fields
+. fe           - The PetscFE objects for each field
+. fieldI       - The test field being integrated
+. fieldJ       - The basis field being integrated
+. geom         - The cell geometry for each cell in the chunk
+. coefficients - The array of FEM basis coefficients for the elements for the Jacobian evaluation point
+. g0_func      - g_0 function from the first order FEM model
+. g1_func      - g_1 function from the first order FEM model
+. g2_func      - g_2 function from the first order FEM model
+- g3_func      - g_3 function from the first order FEM model
+
+  Output Parameter
+. elemMat              - the element matrices for the Jacobian from each element
+
+   Calling sequence of g0_func, g1_func, g2_func and g3_func:
+$    void g0(PetscScalar u[], const PetscScalar gradU[], PetscScalar a[], const PetscScalar gradA[], PetscScalar x[], PetscScalar g0[])
+
+  Note:
+$ Loop over batch of elements (e):
+$   Loop over element matrix entries (f,fc,g,gc --> i,j):
+$     Loop over quadrature points (q):
+$       Make u_q and gradU_q (loops over fields,Nb,Ncomp)
+$         elemMat[i,j] += \psi^{fc}_f(q) g0_{fc,gc}(u, \nabla u) \phi^{gc}_g(q)
+$                      + \psi^{fc}_f(q) \cdot g1_{fc,gc,dg}(u, \nabla u) \nabla\phi^{gc}_g(q)
+$                      + \nabla\psi^{fc}_f(q) \cdot g2_{fc,gc,df}(u, \nabla u) \phi^{gc}_g(q)
+$                      + \nabla\psi^{fc}_f(q) \cdot g3_{fc,gc,df,dg}(u, \nabla u) \nabla\phi^{gc}_g(q)
+*/
+PetscErrorCode PetscFEIntegrateJacobian(PetscFE fem, PetscInt Ne, PetscInt Nf, PetscFE fe[], PetscInt fieldI, PetscInt fieldJ, PetscCellGeometry geom, const PetscScalar coefficients[],
+                                        void (*g0_func)(const PetscScalar u[], const PetscScalar gradU[], const PetscScalar a[], const PetscScalar gradA[], const PetscReal x[], PetscScalar g0[]),
+                                        void (*g1_func)(const PetscScalar u[], const PetscScalar gradU[], const PetscScalar a[], const PetscScalar gradA[], const PetscReal x[], PetscScalar g1[]),
+                                        void (*g2_func)(const PetscScalar u[], const PetscScalar gradU[], const PetscScalar a[], const PetscScalar gradA[], const PetscReal x[], PetscScalar g2[]),
+                                        void (*g3_func)(const PetscScalar u[], const PetscScalar gradU[], const PetscScalar a[], const PetscScalar gradA[], const PetscReal x[], PetscScalar g3[]),
+                                        PetscScalar elemMat[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);
+  if (fem->ops->integratejacobian) {ierr = (*fem->ops->integratejacobian)(fem, Ne, Nf, fe, fieldI, fieldJ, geom, coefficients, g0_func, g1_func, g2_func, g3_func, elemMat);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
