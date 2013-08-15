@@ -633,8 +633,6 @@ PetscErrorCode KSPSetFromOptions_DGMRES(KSP ksp)
   PetscInt       max_neig;
   KSP_DGMRES     *dgmres = (KSP_DGMRES*) ksp->data;
   PetscBool      flg;
-  PetscReal      smv;
-  PetscBool      input;
 
   PetscFunctionBegin;
   ierr = KSPSetFromOptions_GMRES(ksp);CHKERRQ(ierr);
@@ -647,12 +645,9 @@ PetscErrorCode KSPSetFromOptions_DGMRES(KSP ksp)
   if (flg) {
     ierr = KSPDGMRESSetMaxEigen(ksp, max_neig);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsReal("-ksp_dgmres_ratio", "Relaxation parameter for the smaller number of matrix-vectors product allowed", "KSPDGMRESSetRatio", dgmres->smv, &smv, &flg);CHKERRQ(ierr);
-  if (flg) dgmres->smv = smv;
-  ierr = PetscOptionsBool("-ksp_dgmres_improve", "Improve the computation of eigenvalues by solving a new generalized eigenvalue problem (experimental - not stable at this time)", NULL, dgmres->improve, &input, &flg);CHKERRQ(ierr);
-  if (flg) dgmres->improve = input;
-  ierr = PetscOptionsBool("-ksp_dgmres_force", "Sets DGMRES always at restart active, i.e do not use the adaptive strategy", "KSPDGMRESForce", dgmres->force, &input, &flg);CHKERRQ(ierr);
-  if (flg) dgmres->force = input;
+  ierr = PetscOptionsReal("-ksp_dgmres_ratio","Relaxation parameter for the smaller number of matrix-vectors product allowed","KSPDGMRESSetRatio",dgmres->smv,&dgmres->smv,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-ksp_dgmres_improve","Improve the computation of eigenvalues by solving a new generalized eigenvalue problem (experimental - not stable at this time)",NULL,dgmres->improve,&dgmres->improve,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-ksp_dgmres_force","Sets DGMRES always at restart active, i.e do not use the adaptive strategy","KSPDGMRESForce",dgmres->force,&dgmres->force,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
