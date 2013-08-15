@@ -46,7 +46,7 @@ PetscErrorCode CellRefinerGetSizes(CellRefiner refiner, DM dm, PetscInt depthSiz
     depthSize[2] = 4*(cEnd - cStart);                     /* Every cell split into 4 cells */
     break;
   case 3:
-    /* Hybrid 2D */
+    /* Hybrid Simplicial 2D */
     if (cMax < 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "No cell maximum specified in hybrid mesh");
     cMax = PetscMin(cEnd, cMax);
     if (fMax < 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "No face maximum specified in hybrid mesh");
@@ -184,7 +184,7 @@ PetscErrorCode CellRefinerSetConeSizes(CellRefiner refiner, DM dm, PetscInt dept
     }
     break;
   case 3:
-    /* Hybrid 2D */
+    /* Hybrid Simplicial 2D */
     if (cMax < 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "No cell maximum specified in hybrid mesh");
     cMax = PetscMin(cEnd, cMax);
     if (fMax < 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "No face maximum specified in hybrid mesh");
@@ -1247,7 +1247,7 @@ PetscErrorCode CellRefinerCreateSF(CellRefiner refiner, DM dm, PetscInt depthSiz
         ++numLeavesNew;
       } else if ((p >= fStart) && (p < fEnd)) {
         /* Old faces add new faces and vertex */
-        numLeavesNew += 1 + 2;
+        numLeavesNew += 2 + 1;
       } else if ((p >= cStart) && (p < cEnd)) {
         /* Old cells add new cells and interior faces */
         numLeavesNew += 4 + 3;
@@ -1260,7 +1260,7 @@ PetscErrorCode CellRefinerCreateSF(CellRefiner refiner, DM dm, PetscInt depthSiz
         ++numLeavesNew;
       } else if ((p >= fStart) && (p < fEnd)) {
         /* Old faces add new faces and vertex */
-        numLeavesNew += 1 + 2;
+        numLeavesNew += 2 + 1;
       } else if ((p >= cStart) && (p < cEnd)) {
         /* Old cells add new cells and interior faces */
         numLeavesNew += 4 + 4;
@@ -1455,11 +1455,8 @@ PetscErrorCode CellRefinerCreateLabels(CellRefiner refiner, DM dm, PetscInt dept
   ierr = DMPlexGetDepthStratum(dm, 1, &eStart, &eEnd);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 1, &fStart, &fEnd);CHKERRQ(ierr);
-
-  cStartNew = 0;
-  vStartNew = depthSize[2];
-  fStartNew = depthSize[2] + depthSize[0];
-
+  ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
+  ierr = GetDepthStart_Private(depth, depthSize, &cStartNew, &fStartNew, &eStartNew, &vStartNew);CHKERRQ(ierr);
   ierr = DMPlexGetNumLabels(dm, &numLabels);CHKERRQ(ierr);
   ierr = DMPlexGetHybridBounds(dm, &cMax, &fMax, &eMax, &vMax);CHKERRQ(ierr);
   switch (refiner) {
