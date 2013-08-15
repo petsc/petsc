@@ -19,22 +19,11 @@ print url
 
 r = requests.get(url)
 
-print r.content
 
 j = json.loads(r.content)
 
-j = j['directories'][0]['directories']
 
-for i in j:
-  if i['name'] == 'PETSc':
-    j = i
-    break
-j = j['directories']
-
-for i in j:
-  if i['name'] == 'Stack':
-    j = i
-    break
+j = j['directories']['SAWs_ROOT_DIRECTORY']['directories']['PETSc']['directories']['Stack']['variable']['functions']['data']
 
 print j
 
