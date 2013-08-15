@@ -4124,8 +4124,8 @@ PetscErrorCode DMRefine_Plex(DM dm, MPI_Comm comm, DM *dmRefined)
   if (isUniform) {
     CellRefiner cellRefiner;
 
-    ierr = DMPlexGetCellRefiner_Private(dm, &cellRefiner);CHKERRQ(ierr);
-    ierr = DMPlexRefine_Uniform(dm, cellRefiner, dmRefined);CHKERRQ(ierr);
+    ierr = DMPlexGetCellRefiner_Internal(dm, &cellRefiner);CHKERRQ(ierr);
+    ierr = DMPlexRefineUniform_Internal(dm, cellRefiner, dmRefined);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
   ierr = DMPlexGetRefinementLimit(dm, &refinementLimit);CHKERRQ(ierr);

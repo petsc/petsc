@@ -92,4 +92,7 @@ PETSC_EXTERN PetscErrorCode DMPlexVTKGetCellType(DM,PetscInt,PetscInt,PetscInt*)
 PETSC_EXTERN PetscErrorCode VecView_Plex_Local(Vec,PetscViewer);
 PETSC_EXTERN PetscErrorCode VecView_Plex(Vec,PetscViewer);
 
+PETSC_EXTERN PetscErrorCode DMPlexRefineUniform_Internal(DM,CellRefiner,DM*);
+PETSC_EXTERN PetscErrorCode DMPlexGetCellRefiner_Internal(DM,CellRefiner*);
+
 #endif /* _PLEXIMPL_H */

@@ -1608,9 +1608,9 @@ PetscErrorCode CellRefinerCreateLabels(CellRefiner refiner, DM dm, PetscInt dept
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMPlexRefine_Uniform"
+#define __FUNCT__ "DMPlexRefineUniform_Internal"
 /* This will only work for interpolated meshes */
-PetscErrorCode DMPlexRefine_Uniform(DM dm, CellRefiner cellRefiner, DM *dmRefined)
+PetscErrorCode DMPlexRefineUniform_Internal(DM dm, CellRefiner cellRefiner, DM *dmRefined)
 {
   DM             rdm;
   PetscInt      *depthSize;
@@ -1702,8 +1702,8 @@ PetscErrorCode DMPlexGetRefinementLimit(DM dm, PetscReal *refinementLimit)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMPlexGetCellRefiner_Private"
-PetscErrorCode DMPlexGetCellRefiner_Private(DM dm, CellRefiner *cellRefiner)
+#define __FUNCT__ "DMPlexGetCellRefiner_Internal"
+PetscErrorCode DMPlexGetCellRefiner_Internal(DM dm, CellRefiner *cellRefiner)
 {
   PetscInt       dim, cStart, coneSize, cMax;
   PetscErrorCode ierr;
