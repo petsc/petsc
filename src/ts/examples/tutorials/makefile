@@ -335,7 +335,7 @@ runex15_5:
 	   ${RM} -f ex15.tmp
 
 runex16:
-	-@${MPIEXEC} -n 1 ./ex16 -ts_type arkimex -ts_arkimex_type myark2 > ex16_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex16 -ts_type arkimex -ts_arkimex_type myark2 -ts_adapt_type none > ex16_1.tmp 2>&1; \
 	   ${DIFF} output/ex16_1.out ex16_1.tmp || echo  ${PWD} "\nPossible problem with ex16_1, diffs above \n========================================="; \
 	   ${RM} -f ex16_1.tmp
 
