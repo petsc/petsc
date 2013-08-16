@@ -315,7 +315,7 @@ PetscErrorCode DMPlexProjectFunction(DM dm, PetscInt numComp, void (**funcs)(con
 
   Input Parameters:
 + dm    - The DM
-. quad  - The PetscQuadrature object for each field
+. fe    - The PetscFE object for each field
 . funcs - The functions to evaluate for each field component
 - X     - The coefficient vector u_h
 
@@ -326,15 +326,16 @@ PetscErrorCode DMPlexProjectFunction(DM dm, PetscInt numComp, void (**funcs)(con
 
 .seealso: DMPlexProjectFunction()
 @*/
-PetscErrorCode DMPlexComputeL2Diff(DM dm, PetscQuadrature quad[], void (**funcs)(const PetscReal [], PetscScalar *), Vec X, PetscReal *diff)
+PetscErrorCode DMPlexComputeL2Diff(DM dm, PetscFE fe[], void (**funcs)(const PetscReal [], PetscScalar *), Vec X, PetscReal *diff)
 {
-  const PetscInt debug = 0;
-  PetscSection   section;
-  Vec            localX;
-  PetscReal     *coords, *v0, *J, *invJ, detJ;
-  PetscReal      localDiff = 0.0;
-  PetscInt       dim, numFields, numComponents = 0, cStart, cEnd, c, field, fieldOffset, comp;
-  PetscErrorCode ierr;
+  const PetscInt  debug = 0;
+  PetscSection    section;
+  PetscQuadrature quad;
+  Vec             localX;
+  PetscReal      *coords, *v0, *J, *invJ, detJ;
+  PetscReal       localDiff = 0.0;
+  PetscInt        dim, numFields, numComponents = 0, cStart, cEnd, c, field, fieldOffset, comp;
+  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
@@ -344,11 +345,15 @@ PetscErrorCode DMPlexComputeL2Diff(DM dm, PetscQuadrature quad[], void (**funcs)
   ierr = DMGlobalToLocalBegin(dm, X, INSERT_VALUES, localX);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(dm, X, INSERT_VALUES, localX);CHKERRQ(ierr);
   for (field = 0; field < numFields; ++field) {
-    numComponents += quad[field].numComponents;
+    PetscInt Nc;
+
+    ierr = PetscFEGetNumComponents(fe[field], &Nc);CHKERRQ(ierr);
+    numComponents += Nc;
   }
   ierr = DMPlexProjectFunctionLocal(dm, numComponents, funcs, INSERT_BC_VALUES, localX);CHKERRQ(ierr);
   ierr = PetscMalloc4(dim,PetscReal,&coords,dim,PetscReal,&v0,dim*dim,PetscReal,&J,dim*dim,PetscReal,&invJ);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  ierr = PetscFEGetQuadrature(fe[0], &quad);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; ++c) {
     PetscScalar *x = NULL;
     PetscReal    elemDiff = 0.0;
@@ -358,14 +363,15 @@ PetscErrorCode DMPlexComputeL2Diff(DM dm, PetscQuadrature quad[], void (**funcs)
     ierr = DMPlexVecGetClosure(dm, NULL, localX, c, NULL, &x);CHKERRQ(ierr);
 
     for (field = 0, comp = 0, fieldOffset = 0; field < numFields; ++field) {
-      const PetscInt   numQuadPoints = quad[field].numQuadPoints;
-      const PetscReal *quadPoints    = quad[field].quadPoints;
-      const PetscReal *quadWeights   = quad[field].quadWeights;
-      const PetscInt   numBasisFuncs = quad[field].numBasisFuncs;
-      const PetscInt   numBasisComps = quad[field].numComponents;
-      const PetscReal *basis         = quad[field].basis;
-      PetscInt         q, d, e, fc, f;
+      const PetscInt   numQuadPoints = quad.numQuadPoints;
+      const PetscReal *quadPoints    = quad.quadPoints;
+      const PetscReal *quadWeights   = quad.quadWeights;
+      PetscReal       *basis;
+      PetscInt         numBasisFuncs, numBasisComps, q, d, e, fc, f;
 
+      ierr = PetscFEGetDimension(fe[field], &numBasisFuncs);CHKERRQ(ierr);
+      ierr = PetscFEGetNumComponents(fe[field], &numBasisComps);CHKERRQ(ierr);
+      ierr = PetscFEGetDefaultTabulation(fe[field], &basis, NULL, NULL);CHKERRQ(ierr);
       if (debug) {
         char title[1024];
         ierr = PetscSNPrintf(title, 1023, "Solution for Field %d", field);CHKERRQ(ierr);

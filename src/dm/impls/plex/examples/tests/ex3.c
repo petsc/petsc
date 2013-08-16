@@ -237,21 +237,24 @@ PetscErrorCode SetupElement(DM dm, AppCtx *user)
 #define __FUNCT__ "SetupSection"
 PetscErrorCode SetupSection(DM dm, AppCtx *user)
 {
-  PetscSection   section;
-  const PetscInt numFields   = 1;
-  PetscInt       dim         = user->dim;
-  PetscInt       numBC       = 0;
-  PetscInt       bcFields[1] = {0};
-  IS             bcPoints[1] = {NULL};
-  PetscInt       numDof[3+1];
-  PetscInt       numComp[1];
-  PetscInt       f, d;
-  PetscErrorCode ierr;
+  PetscSection    section;
+  const PetscInt  numFields   = 1;
+  PetscInt        dim         = user->dim;
+  PetscInt        numBC       = 0;
+  PetscInt        bcFields[1] = {0};
+  IS              bcPoints[1] = {NULL};
+  const PetscInt *numFieldDof[1];
+  PetscInt        numComp[1];
+  PetscInt       *numDof;
+  PetscInt        f, d;
+  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  numComp[0] = user->numComponents;
+  ierr = PetscFEGetNumComponents(user->fe, &numComp[0]);CHKERRQ(ierr);
+  ierr = PetscFEGetNumDof(user->fe, &numFieldDof[0]);CHKERRQ(ierr);
+  ierr = PetscMalloc(1*(dim+1) * sizeof(PetscInt), &numDof);CHKERRQ(ierr);
   for (d = 0; d <= dim; ++d) {
-    numDof[0*(dim+1)+d] = numDof_0[d];
+    numDof[0*(dim+1)+d] = numFieldDof[0][d];
   }
   for (f = 0; f < numFields; ++f) {
     for (d = 1; d < dim; ++d) {
@@ -261,6 +264,7 @@ PetscErrorCode SetupSection(DM dm, AppCtx *user)
   ierr = DMPlexCreateSection(dm, dim, numFields, numComp, numDof, numBC, bcFields, bcPoints, &section);CHKERRQ(ierr);
   ierr = DMSetDefaultSection(dm, section);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&section);CHKERRQ(ierr);
+  ierr = PetscFree(numDof);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -270,22 +274,15 @@ PetscErrorCode CheckFunctions(DM dm, PetscInt order, Vec u, AppCtx *user)
 {
   void          (*exactFuncs[3]) (const PetscReal x[], PetscScalar *u);
   MPI_Comm        comm;
-  PetscInt        dim  = user->dim;
-  PetscQuadrature q[1], fq;
+  PetscInt        dim  = user->dim, Nc;
+  PetscQuadrature fq;
   PetscReal       error, tol = 1.0e-10;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);
   ierr = PetscFEGetQuadrature(user->fe, &fq);CHKERRQ(ierr);
-  /* Setup quadrature and basis tabulation */
-  q[0].numQuadPoints = fq.numQuadPoints;
-  q[0].quadPoints    = fq.quadPoints;
-  q[0].quadWeights   = fq.quadWeights;
-  ierr = PetscFEGetDimension(user->fe, &q[0].numBasisFuncs);CHKERRQ(ierr);
-  ierr = PetscFEGetNumComponents(user->fe, &q[0].numComponents);CHKERRQ(ierr);
-  ierr = PetscFEGetDefaultTabulation(user->fe, &q[0].basis, &q[0].basisDer, NULL);CHKERRQ(ierr);
-  user->fem.quad     = (PetscQuadrature*) &q;
+  ierr = PetscFEGetNumComponents(user->fe, &Nc);CHKERRQ(ierr);
   /* Setup functions to approximate */
   switch (dim) {
   case 2:
@@ -331,9 +328,9 @@ PetscErrorCode CheckFunctions(DM dm, PetscInt order, Vec u, AppCtx *user)
     SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "Could not determine functions to test for dimension %d", dim);
   }
   /* Project function into FE function space */
-  ierr = DMPlexProjectFunction(dm, q[0].numComponents, exactFuncs, INSERT_ALL_VALUES, u);CHKERRQ(ierr);
+  ierr = DMPlexProjectFunction(dm, Nc, exactFuncs, INSERT_ALL_VALUES, u);CHKERRQ(ierr);
   /* Compare approximation to exact in L_2 */
-  ierr = DMPlexComputeL2Diff(dm, q, exactFuncs, u, &error);CHKERRQ(ierr);
+  ierr = DMPlexComputeL2Diff(dm, &user->fe, exactFuncs, u, &error);CHKERRQ(ierr);
   if (error > tol) {
     ierr = PetscPrintf(comm, "Tests FAIL for order %d at tolerance %g error %g\n", order, tol, error);CHKERRQ(ierr);
     /* SETERRQ3(comm, PETSC_ERR_ARG_WRONG, "Input FIAT tabulation cannot resolve functions of order %d, error %g > %g", order, error, tol); */
