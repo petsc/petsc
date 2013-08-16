@@ -426,55 +426,6 @@ PetscErrorCode SetupElement(DM dm, AppCtx *user)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "SetupQuadrature"
-PetscErrorCode SetupQuadrature(AppCtx *user)
-{
-  PetscQuadrature q;
-#ifdef PETSC_HAVE_GENERATOR
-  const PetscInt  dim = user->dim;
-  PetscInt        p, d;
-#endif
-  PetscErrorCode  ierr;
-
-  PetscFunctionBeginUser;
-  /* Velocity discretization */
-  ierr = PetscFEGetQuadrature(user->fe[0], &q);CHKERRQ(ierr);
-#ifdef PETSC_HAVE_GENERATOR
-  if (q.numQuadPoints != NUM_QUADRATURE_POINTS_0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid number of quadrature points: %d != %d", q.numQuadPoints, NUM_QUADRATURE_POINTS_0);
-  for (p = 0; p < q.numQuadPoints; ++p) {
-    for (d = 0; d < dim; ++d) {
-      if (fabs(q.quadPoints[p*dim+d] - points_0[p*dim+d]) > 1.0e-10) SETERRQ4(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid point %d, component %d: %g != %g", p, d, q.quadPoints[p*dim+d], points_0[p*dim+d]);
-    }
-    if (fabs(q.quadWeights[p] - weights_0[p]) > 1.0e-10) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid weight %d: %g != %g", p, q.quadWeights[p], weights_0[p]);
-  }
-#endif
-  user->fem.quad[0].numQuadPoints = q.numQuadPoints;
-  user->fem.quad[0].quadPoints    = q.quadPoints;
-  user->fem.quad[0].quadWeights   = q.quadWeights;
-  ierr = PetscFEGetDimension(user->fe[0], &user->fem.quad[0].numBasisFuncs);CHKERRQ(ierr);
-  ierr = PetscFEGetNumComponents(user->fe[0], &user->fem.quad[0].numComponents);CHKERRQ(ierr);
-  ierr = PetscFEGetDefaultTabulation(user->fe[0], (PetscReal **) &user->fem.quad[0].basis, (PetscReal **) &user->fem.quad[0].basisDer, NULL);CHKERRQ(ierr);
-  /* Pressure discretization */
-  ierr = PetscFEGetQuadrature(user->fe[1], &q);CHKERRQ(ierr);
-#ifdef PETSC_HAVE_GENERATOR
-  if (q.numQuadPoints != NUM_QUADRATURE_POINTS_1) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid number of quadrature points: %d != %d", q.numQuadPoints, NUM_QUADRATURE_POINTS_1);
-  for (p = 0; p < q.numQuadPoints; ++p) {
-    for (d = 0; d < dim; ++d) {
-      if (fabs(q.quadPoints[p*dim+d] - points_1[p*dim+d]) > 1.0e-10) SETERRQ4(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid point %d, component %d: %g != %g", p, d, q.quadPoints[p*dim+d], points_1[p*dim+d]);
-    }
-    if (fabs(q.quadWeights[p] - weights_1[p]) > 1.0e-10) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid weight %d: %g != %g", p, q.quadWeights[p], weights_1[p]);
-  }
-#endif
-  user->fem.quad[1].numQuadPoints = q.numQuadPoints;
-  user->fem.quad[1].quadPoints    = q.quadPoints;
-  user->fem.quad[1].quadWeights   = q.quadWeights;
-  ierr = PetscFEGetDimension(user->fe[1], &user->fem.quad[1].numBasisFuncs);CHKERRQ(ierr);
-  ierr = PetscFEGetNumComponents(user->fe[1], &user->fem.quad[1].numComponents);CHKERRQ(ierr);
-  ierr = PetscFEGetDefaultTabulation(user->fe[1], (PetscReal **) &user->fem.quad[1].basis, (PetscReal **) &user->fem.quad[1].basisDer, NULL);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "DestroyElement"
 PetscErrorCode DestroyElement(AppCtx *user)
 {
@@ -749,7 +700,6 @@ int main(int argc, char **argv)
   ierr = PetscMalloc(numComponents * sizeof(void (*)(const PetscReal[], PetscScalar *)), &user.exactFuncs);CHKERRQ(ierr);
   user.fem.bcFuncs = (void (**)(const PetscReal[], PetscScalar *)) user.exactFuncs;
   ierr = SetupExactSolution(user.dm, &user);CHKERRQ(ierr);
-  ierr = SetupQuadrature(&user);CHKERRQ(ierr);
   ierr = SetupSection(user.dm, &user);CHKERRQ(ierr);
 
   ierr = DMCreateGlobalVector(user.dm, &u);CHKERRQ(ierr);
