@@ -42,9 +42,6 @@ PetscErrorCode  SNESApplyPC(SNES snes,Vec x,Vec f,PetscReal *fnorm,Vec y)
     if (f) {
       ierr = SNESSetInitialFunction(snes->pc,f);CHKERRQ(ierr);
     }
-    if (fnorm) {
-      ierr = SNESSetInitialFunctionNorm(snes->pc,*fnorm);CHKERRQ(ierr);
-    }
     ierr = VecCopy(x,y);CHKERRQ(ierr);
     ierr = PetscLogEventBegin(SNES_NPCSolve,snes->pc,x,y,0);CHKERRQ(ierr);
     ierr = SNESSolve(snes->pc,snes->vec_rhs,y);CHKERRQ(ierr);
