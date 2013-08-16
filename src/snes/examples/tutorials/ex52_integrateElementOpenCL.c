@@ -48,10 +48,25 @@ PetscErrorCode generateOpenCLSource(char **string_buffer, PetscInt buffer_length
   }
 
   PetscFunctionBegin;
+  char float_str[] = "float";
+  char double_str[] = "double";
+  char *numeric_str = &(float_str[0]);
+
+  /* Enable device extension for double precision */
+  if (sizeof(PetscReal) == sizeof(double)) {
+    string_tail += snprintf(string_tail, end_of_buffer - string_tail,
+"#if defined(cl_khr_fp64)\n"
+"#  pragma OPENCL EXTENSION cl_khr_fp64: enable\n"
+"#elif defined(cl_amd_fp64)\n"
+"#  pragma OPENCL EXTENSION cl_amd_fp64: enable\n"
+"#endif\n");
+    numeric_str = &(double_str[0]);
+  }
+
   string_tail += snprintf(string_tail, end_of_buffer - string_tail,
 "\n"
-"__kernel void integrateElementQuadrature(int N_cb, __global float *coefficients, __global float *jacobianInverses, __global float *jacobianDeterminants, __global float *elemVec)\n"
-"{\n");STRING_ERROR_CHECK("Message to short");
+"__kernel void integrateElementQuadrature(int N_cb, __global %s *coefficients, __global %s *jacobianInverses, __global %s *jacobianDeterminants, __global %s *elemVec)\n"
+"{\n", numeric_str, numeric_str, numeric_str, numeric_str);STRING_ERROR_CHECK("Message to short");
 
   if (spatial_dim == 2) {
     string_tail += snprintf(string_tail, end_of_buffer - string_tail,
@@ -59,40 +74,40 @@ PetscErrorCode generateOpenCLSource(char **string_buffer, PetscInt buffer_length
 "\n"
 "  /* Quadrature points\n"
 "   - (x1,y1,x2,y2,...) */\n"
-"  const float points_0[2] = {\n"
+"  const %s points_0[2] = {\n"
 "    -0.333333333333,\n"
 "    -0.333333333333};\n"
 "\n"
 "  /* Quadrature weights\n"
 "   - (v1,v2,...) */\n"
-"  const float weights_0[1] = {2.0};\n"
+"  const %s weights_0[1] = {2.0};\n"
 "\n"
 "  const int numBasisFunctions_0 = %d;\n"
-"  const int numBasisComponents_0 = %d;\n", num_quadrature_points, num_basis_functions, num_basis_components);STRING_ERROR_CHECK("Message to short");
+"  const int numBasisComponents_0 = %d;\n", num_quadrature_points, numeric_str, numeric_str, num_basis_functions, num_basis_components);STRING_ERROR_CHECK("Message to short");
 
     if (pde_op == LAPLACIAN) {
       string_tail += snprintf(string_tail, end_of_buffer - string_tail,
 "\n"
 "  /* Nodal basis function evaluations\n"
 "    - basis function is fastest varying, then point */\n"
-"  const float Basis_0[3] = {\n"
+"  const %s Basis_0[3] = {\n"
 "    0.333333333333,\n"
 "    0.333333333333,\n"
 "    0.333333333333};\n"
 "\n"
 "  /* Nodal basis function derivative evaluations,\n"
 "      - derivative direction fastest varying, then basis function, then point */\n"
-"  const float2 BasisDerivatives_0[3] = {\n"
-"    (float2)(-0.5, -0.5),\n"
-"    (float2)(0.5, 0.0),\n"
-"    (float2)(0.0, 0.5)};\n"
-"\n");STRING_ERROR_CHECK("Message to short");
+"  const %s2 BasisDerivatives_0[3] = {\n"
+"    (%s2)(-0.5, -0.5),\n"
+"    (%s2)(0.5, 0.0),\n"
+"    (%s2)(0.0, 0.5)};\n"
+"\n", numeric_str, numeric_str, numeric_str, numeric_str, numeric_str);STRING_ERROR_CHECK("Message to short");
     } else if (pde_op == ELASTICITY) {
       string_tail += snprintf(string_tail, end_of_buffer - string_tail,
 "\n"
 "  /* Nodal basis function evaluations\n"
 "    - basis function is fastest varying, then point */\n"
-"  const float Basis_0[6] = {\n"
+"  const %s Basis_0[6] = {\n"
 "    0.333333333333,\n"
 "    0.333333333333,\n"
 "    0.333333333333,\n"
@@ -102,14 +117,14 @@ PetscErrorCode generateOpenCLSource(char **string_buffer, PetscInt buffer_length
 "\n"
 "  /* Nodal basis function derivative evaluations,\n"
 "      - derivative direction fastest varying, then basis function, then point */\n"
-"  const float2 BasisDerivatives_0[6] = {\n"
-"    (float2)(-0.5, -0.5),\n"
-"    (float2)(-0.5, -0.5),\n"
-"    (float2)(0.5, 0.0),\n"
-"    (float2)(0.5, 0.0),\n"
-"    (float2)(0.0, 0.5),\n"
-"    (float2)(0.0, 0.5)};\n"
-"\n");STRING_ERROR_CHECK("Message to short");
+"  const %s2 BasisDerivatives_0[6] = {\n"
+"    (%s2)(-0.5, -0.5),\n"
+"    (%s2)(-0.5, -0.5),\n"
+"    (%s2)(0.5, 0.0),\n"
+"    (%s2)(0.5, 0.0),\n"
+"    (%s2)(0.0, 0.5),\n"
+"    (%s2)(0.0, 0.5)};\n"
+"\n", numeric_str, numeric_str, numeric_str, numeric_str, numeric_str, numeric_str, numeric_str, numeric_str);STRING_ERROR_CHECK("Message to short");
     }
   } else if (spatial_dim == 3) {
   }
@@ -148,24 +163,25 @@ PetscErrorCode generateOpenCLSource(char **string_buffer, PetscInt buffer_length
   string_tail += snprintf(string_tail, end_of_buffer - string_tail,
 "\n"
 "  /* Quadrature data */\n"
-"  float                w;                   // $w_q$, Quadrature weight at $x_q$\n"
-"  __local float%d       phiDer_i[%d]; //[N_bt*N_q];  // $\\frac{\\partial\\phi_i(x_q)}{\\partial x_d}$, Value of the derivative of basis function $i$ in direction $x_d$ at $x_q$\n"
+"  %s                w;                   // $w_q$, Quadrature weight at $x_q$\n"
+"  __local %s%d       phiDer_i[%d]; //[N_bt*N_q];  // $\\frac{\\partial\\phi_i(x_q)}{\\partial x_d}$, Value of the derivative of basis function $i$ in direction $x_d$ at $x_q$\n"
 "  /* Geometric data */\n"
-"  __local float        detJ[%d]; //[N_t];           // $|J(x_q)|$, Jacobian determinant at $x_q$\n"
-"  __local float        invJ[%d];//[N_t*dim*dim];   // $J^{-1}(x_q)$, Jacobian inverse at $x_q$\n"
+"  __local %s        detJ[%d]; //[N_t];           // $|J(x_q)|$, Jacobian determinant at $x_q$\n"
+"  __local %s        invJ[%d];//[N_t*dim*dim];   // $J^{-1}(x_q)$, Jacobian inverse at $x_q$\n"
 "  /* FEM data */\n"
-"  __local float        u_i[%d]; //[N_t*N_bt];       // Coefficients $u_i$ of the field $u|_{\\mathcal{T}} = \\sum_i u_i \\phi_i$\n"
+"  __local %s        u_i[%d]; //[N_t*N_bt];       // Coefficients $u_i$ of the field $u|_{\\mathcal{T}} = \\sum_i u_i \\phi_i$\n"
 "  /* Intermediate calculations */\n"
-"  __local float%d       f_1[%d]; //[N_t*N_sqc];      // $f_1(u(x_q), \\nabla u(x_q)) |J(x_q)| w_q$\n"
+"  __local %s%d       f_1[%d]; //[N_t*N_sqc];      // $f_1(u(x_q), \\nabla u(x_q)) |J(x_q)| w_q$\n"
 "  /* Output data */\n"
-"  float                e_i;                 // Coefficient $e_i$ of the residual\n"
-"\n", spatial_dim,
+"  %s                e_i;                 // Coefficient $e_i$ of the residual\n"
+"\n", numeric_str,
+      numeric_str, spatial_dim,
       num_basis_functions * num_basis_components * num_quadrature_points,     /* size of PhiDer_i */
-      num_threads, /* size of detJ */
-      num_threads * spatial_dim * spatial_dim, /* size of invJ */
-      num_threads * num_basis_functions * num_basis_components, /* size of u_i */
-      spatial_dim,
-      num_threads * num_quadrature_points /* size of f_1 */);STRING_ERROR_CHECK("Message to short");
+      numeric_str, num_threads, /* size of detJ */
+      numeric_str, num_threads * spatial_dim * spatial_dim, /* size of invJ */
+      numeric_str, num_threads * num_basis_functions * num_basis_components, /* size of u_i */
+      numeric_str, spatial_dim, num_threads * num_quadrature_points /* size of f_1 */,
+      numeric_str);STRING_ERROR_CHECK("Message to short");
 
   string_tail += snprintf(string_tail, end_of_buffer - string_tail,
 "  /* These should be generated inline */\n"
@@ -192,13 +208,13 @@ PetscErrorCode generateOpenCLSource(char **string_buffer, PetscInt buffer_length
 "\n"
 "    /* Map coefficients to values at quadrature points */\n"
 "    for (int c = 0; c < N_sqc; ++c) {\n"
-"      float  u[%d]; //[N_comp];     // $u(x_q)$, Value of the field at $x_q$\n"
-"      float%d   gradU[%d]; //[N_comp]; // $\\nabla u(x_q)$, Value of the field gradient at $x_q$\n"
+"      %s  u[%d]; //[N_comp];     // $u(x_q)$, Value of the field at $x_q$\n"
+"      %s%d   gradU[%d]; //[N_comp]; // $\\nabla u(x_q)$, Value of the field gradient at $x_q$\n"
 "      const int cell          = c*N_bl*N_b + blqidx;\n"
 "      const int fidx          = (cell*N_q + qidx)*N_comp + cidx;\n"
 "\n"
 "      for (int comp = 0; comp < N_comp; ++comp) {\n"
-"        gradU[comp].x = 0.0; gradU[comp].y = 0.0;", num_basis_components, spatial_dim, num_basis_components);STRING_ERROR_CHECK("Message to short");
+"        gradU[comp].x = 0.0; gradU[comp].y = 0.0;", numeric_str, num_basis_components, numeric_str, spatial_dim, num_basis_components);STRING_ERROR_CHECK("Message to short");
 
   if (spatial_dim == 3) {
     string_tail += snprintf(string_tail, end_of_buffer - string_tail, " gradU[comp].z = 0.0;");
@@ -216,8 +232,8 @@ PetscErrorCode generateOpenCLSource(char **string_buffer, PetscInt buffer_length
 "          const int b    = i*N_comp+comp;\n"
 "          const int pidx = qidx*N_bt + b;\n"
 "          const int uidx = cell*N_bt + b;\n"
-"          float%d   realSpaceDer;\n"
-"\n", spatial_dim);STRING_ERROR_CHECK("Message to short");
+"          %s%d   realSpaceDer;\n"
+"\n", numeric_str, spatial_dim);STRING_ERROR_CHECK("Message to short");
 
   if (spatial_dim == 2) {
     string_tail += snprintf(string_tail, end_of_buffer - string_tail,
@@ -297,9 +313,9 @@ PetscErrorCode generateOpenCLSource(char **string_buffer, PetscInt buffer_length
 "      for (int q = 0; q < N_q; ++q) {\n"
 "        const int pidx = q*N_bt + bidx;\n"
 "        const int fidx = (cell*N_q + q)*N_comp + cidx;\n"
-"        float%d   realSpaceDer;\n"
+"        %s%d   realSpaceDer;\n"
 "\n"
-"        // e_i += phi_i[pidx]*f_0[fidx];\n", spatial_dim);STRING_ERROR_CHECK("Message to short");
+"        // e_i += phi_i[pidx]*f_0[fidx];\n", numeric_str, spatial_dim);STRING_ERROR_CHECK("Message to short");
 
   if (spatial_dim == 2) {
     string_tail += snprintf(string_tail, end_of_buffer - string_tail,
@@ -496,26 +512,12 @@ PETSC_EXTERN PetscErrorCode IntegrateElementBatchGPU(PetscInt spatial_dim, Petsc
     eventLog->eventInfo[event].flops += 0;
     PetscFunctionReturn(0);
   }
-  /* Marshalling */
-  if (sizeof(PetscReal) == sizeof(float)) {
-    d_coefficients         = clCreateBuffer(ocl_env.ctx_id, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, Ne*N_bt * sizeof(float),    (void*)coefficients,         &ierr);CHKERRQ(ierr);
-    d_jacobianInverses     = clCreateBuffer(ocl_env.ctx_id, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, Ne*dim*dim * sizeof(float), (void*)jacobianInverses,     &ierr);CHKERRQ(ierr);
-    d_jacobianDeterminants = clCreateBuffer(ocl_env.ctx_id, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, Ne * sizeof(float),         (void*)jacobianDeterminants, &ierr);CHKERRQ(ierr);
-    d_elemVec              = clCreateBuffer(ocl_env.ctx_id, CL_MEM_READ_WRITE,                        Ne*N_bt * sizeof(float),    NULL,                        &ierr);CHKERRQ(ierr);
-  } else {
-    float *c, *jI, *jD;
-    PetscInt i;
 
-    ierr = PetscMalloc3(Ne*N_bt,float,&c,Ne*dim*dim,float,&jI,Ne,float,&jD);CHKERRQ(ierr);
-    for (i = 0; i < Ne*N_bt;    ++i) c[i]  = coefficients[i];
-    for (i = 0; i < Ne*dim*dim; ++i) jI[i] = jacobianInverses[i];
-    for (i = 0; i < Ne;         ++i) jD[i] = jacobianDeterminants[i];
-    d_coefficients         = clCreateBuffer(ocl_env.ctx_id, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, Ne*N_bt * sizeof(float),    (void*)c,  &ierr);CHKERRQ(ierr);
-    d_jacobianInverses     = clCreateBuffer(ocl_env.ctx_id, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, Ne*dim*dim * sizeof(float), (void*)jI, &ierr);CHKERRQ(ierr);
-    d_jacobianDeterminants = clCreateBuffer(ocl_env.ctx_id, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, Ne * sizeof(float),         (void*)jD, &ierr);CHKERRQ(ierr);
-    d_elemVec              = clCreateBuffer(ocl_env.ctx_id, CL_MEM_READ_WRITE,                        Ne*N_bt * sizeof(float),    NULL,      &ierr);CHKERRQ(ierr);
-    ierr = PetscFree3(c,jI,jD);CHKERRQ(ierr);
-  }
+  /* Create buffers on the device and send data over */
+  d_coefficients         = clCreateBuffer(ocl_env.ctx_id, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, Ne*N_bt    * sizeof(PetscReal), (void*)coefficients,         &ierr);CHKERRQ(ierr);
+  d_jacobianInverses     = clCreateBuffer(ocl_env.ctx_id, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, Ne*dim*dim * sizeof(PetscReal), (void*)jacobianInverses,     &ierr);CHKERRQ(ierr);
+  d_jacobianDeterminants = clCreateBuffer(ocl_env.ctx_id, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, Ne         * sizeof(PetscReal), (void*)jacobianDeterminants, &ierr);CHKERRQ(ierr);
+  d_elemVec              = clCreateBuffer(ocl_env.ctx_id, CL_MEM_READ_WRITE,                        Ne*N_bt    * sizeof(PetscReal), NULL,                        &ierr);CHKERRQ(ierr);
 
   /* Work size preparations */
   ierr = calculateGridOpenCL(Ne, Ncb*Nbc, &x, &y, &z);CHKERRQ(ierr);
@@ -543,18 +545,8 @@ PETSC_EXTERN PetscErrorCode IntegrateElementBatchGPU(PetscInt spatial_dim, Petsc
 
   ierr = clEnqueueNDRangeKernel(ocl_env.queue_id, ocl_kernel, 3, NULL, global_work_size, local_work_size, 0, NULL, &ocl_ev);CHKERRQ(ierr);
 
-  /* Read data back to device, including marshalling */
-  if (sizeof(PetscReal) == sizeof(float)) {
-    ierr = clEnqueueReadBuffer(ocl_env.queue_id, d_elemVec, CL_TRUE, 0, Ne*N_bt * sizeof(float), elemVec, 0, NULL, NULL);CHKERRQ(ierr);
-  } else {
-    float *eV;
-    PetscInt i;
-
-    ierr = PetscMalloc(Ne*N_bt * sizeof(float), &eV);CHKERRQ(ierr);
-    ierr = clEnqueueReadBuffer(ocl_env.queue_id, d_elemVec, CL_TRUE, 0, Ne*N_bt * sizeof(float), eV, 0, NULL, NULL);CHKERRQ(ierr);
-    for (i = 0; i < Ne*N_bt; ++i) elemVec[i] = eV[i];
-    ierr = PetscFree(eV);CHKERRQ(ierr);
-  }
+  /* Read data back from device */
+  ierr = clEnqueueReadBuffer(ocl_env.queue_id, d_elemVec, CL_TRUE, 0, Ne*N_bt * sizeof(PetscReal), elemVec, 0, NULL, NULL);CHKERRQ(ierr);
 
   {
     PetscStageLog     stageLog;
