@@ -1904,9 +1904,12 @@ PetscErrorCode MatAssemblyEnd_SeqBAIJ(Mat A,MatAssemblyType mode)
     fshift += imax[mbs-1] - ailen[mbs-1];
     ai[mbs] = ai[mbs-1] + ailen[mbs-1];
   }
+
   /* reset ilen and imax for each row */
+  a->nonzerorowcnt = 0;
   for (i=0; i<mbs; i++) {
     ailen[i] = imax[i] = ai[i+1] - ai[i];
+    a->nonzerorowcnt += ((ai[i+1] - ai[i]) > 0);
   }
   a->nz = ai[mbs];
 
