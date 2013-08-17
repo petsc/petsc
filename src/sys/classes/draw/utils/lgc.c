@@ -180,14 +180,14 @@ PetscErrorCode  PetscDrawLGCreate(PetscDraw draw,PetscInt dim,PetscDrawLG *outct
   lg->ymax    = -1.e20;
 
   ierr = PetscMalloc2(dim*CHUNCKSIZE,PetscReal,&lg->x,dim*CHUNCKSIZE,PetscReal,&lg->y);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(lg,2*dim*CHUNCKSIZE*sizeof(PetscReal));CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory((PetscObject)lg,2*dim*CHUNCKSIZE*sizeof(PetscReal));CHKERRQ(ierr);
 
   lg->len     = dim*CHUNCKSIZE;
   lg->loc     = 0;
   lg->use_dots= PETSC_FALSE;
 
   ierr = PetscDrawAxisCreate(draw,&lg->axis);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(lg,lg->axis);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)lg,(PetscObject)lg->axis);CHKERRQ(ierr);
 
   *outctx = lg;
   PetscFunctionReturn(0);
@@ -327,7 +327,7 @@ PetscErrorCode  PetscDrawLGSetDimension(PetscDrawLG lg,PetscInt dim)
   ierr    = PetscFree(lg->colors);CHKERRQ(ierr);
   lg->dim = dim;
   ierr    = PetscMalloc2(dim*CHUNCKSIZE,PetscReal,&lg->x,dim*CHUNCKSIZE,PetscReal,&lg->y);CHKERRQ(ierr);
-  ierr    = PetscLogObjectMemory(lg,2*dim*CHUNCKSIZE*sizeof(PetscReal));CHKERRQ(ierr);
+  ierr    = PetscLogObjectMemory((PetscObject)lg,2*dim*CHUNCKSIZE*sizeof(PetscReal));CHKERRQ(ierr);
   lg->len = dim*CHUNCKSIZE;
   PetscFunctionReturn(0);
 }

@@ -32,7 +32,7 @@ PetscErrorCode  DMLocalToLocalCreate_DA(DM da)
      rather then from the plain array.
   */
   ierr = VecScatterCopy(dd->gtol,&dd->ltol);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(da,dd->ltol);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)da,(PetscObject)dd->ltol);CHKERRQ(ierr);
   if (dd->dim == 1) {
     left = dd->xs - dd->Xs;
     ierr = PetscMalloc((dd->xe-dd->xs)*sizeof(PetscInt),&idx);CHKERRQ(ierr);

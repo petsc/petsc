@@ -316,7 +316,7 @@ PetscErrorCode  ISBlockSetIndices_Block(IS is,PetscInt bs,PetscInt n,const Petsc
   }
   if (mode == PETSC_COPY_VALUES) {
     ierr = PetscMalloc(n*sizeof(PetscInt),&sub->idx);CHKERRQ(ierr);
-    ierr = PetscLogObjectMemory(is,n*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscLogObjectMemory((PetscObject)is,n*sizeof(PetscInt));CHKERRQ(ierr);
     ierr = PetscMemcpy(sub->idx,idx,n*sizeof(PetscInt));CHKERRQ(ierr);
   } else if (mode == PETSC_OWN_POINTER) sub->idx = (PetscInt*) idx;
   else SETERRQ(PetscObjectComm((PetscObject)is),PETSC_ERR_SUP,"Only supports PETSC_COPY_VALUES and PETSC_OWN_POINTER");

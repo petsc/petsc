@@ -555,7 +555,7 @@ PetscErrorCode  VecView_MPI_Draw(Vec xin,PetscViewer viewer)
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)xin),&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)xin),&rank);CHKERRQ(ierr);
   ierr = PetscDrawAxisCreate(draw,&axis);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(draw,axis);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)draw,(PetscObject)axis);CHKERRQ(ierr);
   if (!rank) {
     ierr = PetscDrawClear(draw);CHKERRQ(ierr);
     ierr = PetscDrawFlush(draw);CHKERRQ(ierr);

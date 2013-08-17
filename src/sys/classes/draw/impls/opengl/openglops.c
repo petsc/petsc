@@ -1170,7 +1170,7 @@ PETSC_EXTERN PetscErrorCode PetscDrawCreate_GLUT(PetscDraw draw)
 
   /* actually create and open the window */
   ierr = PetscNew(PetscDraw_OpenGL,&win);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(draw,sizeof(PetscDraw_OpenGL));CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory((PetscObject)draw,sizeof(PetscDraw_OpenGL));CHKERRQ(ierr);
 
   if (x < 0 || y < 0)   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative corner of window");
   if (w <= 0 || h <= 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative window width or height");
@@ -1288,7 +1288,7 @@ PETSC_EXTERN PetscErrorCode PetscDrawCreate_OpenGLES(PetscDraw draw)
 
   ierr = PetscMemcpy(draw->ops,&DvOps,sizeof(DvOps));CHKERRQ(ierr);
   ierr = PetscNew(PetscDraw_OpenGL,&win);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(draw,sizeof(PetscDraw_OpenGL));CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory((PetscObject)draw,sizeof(PetscDraw_OpenGL));CHKERRQ(ierr);
 
   draw->data = win;
   for (i=0; i<10; i++) {

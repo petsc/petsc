@@ -1394,7 +1394,7 @@ PetscErrorCode  KSPSetPC(KSP ksp,PC pc)
   ierr    = PetscObjectReference((PetscObject)pc);CHKERRQ(ierr);
   ierr    = PCDestroy(&ksp->pc);CHKERRQ(ierr);
   ksp->pc = pc;
-  ierr    = PetscLogObjectParent(ksp,ksp->pc);CHKERRQ(ierr);
+  ierr    = PetscLogObjectParent((PetscObject)ksp,(PetscObject)ksp->pc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1428,7 +1428,7 @@ PetscErrorCode  KSPGetPC(KSP ksp,PC *pc)
   if (!ksp->pc) {
     ierr = PCCreate(PetscObjectComm((PetscObject)ksp),&ksp->pc);CHKERRQ(ierr);
     ierr = PetscObjectIncrementTabLevel((PetscObject)ksp->pc,(PetscObject)ksp,0);CHKERRQ(ierr);
-    ierr = PetscLogObjectParent(ksp,ksp->pc);CHKERRQ(ierr);
+    ierr = PetscLogObjectParent((PetscObject)ksp,(PetscObject)ksp->pc);CHKERRQ(ierr);
   }
   *pc = ksp->pc;
   PetscFunctionReturn(0);
@@ -1877,11 +1877,11 @@ PetscErrorCode  KSPBuildResidual(KSP ksp,Vec t,Vec v,Vec *V)
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   if (!w) {
     ierr = VecDuplicate(ksp->vec_rhs,&w);CHKERRQ(ierr);
-    ierr = PetscLogObjectParent((PetscObject)ksp,w);CHKERRQ(ierr);
+    ierr = PetscLogObjectParent((PetscObject)ksp,(PetscObject)w);CHKERRQ(ierr);
   }
   if (!tt) {
     ierr = VecDuplicate(ksp->vec_sol,&tt);CHKERRQ(ierr); flag = PETSC_TRUE;
-    ierr = PetscLogObjectParent((PetscObject)ksp,tt);CHKERRQ(ierr);
+    ierr = PetscLogObjectParent((PetscObject)ksp,(PetscObject)tt);CHKERRQ(ierr);
   }
   ierr = (*ksp->ops->buildresidual)(ksp,tt,w,V);CHKERRQ(ierr);
   if (flag) {ierr = VecDestroy(&tt);CHKERRQ(ierr);}

@@ -13,6 +13,32 @@
 #include <petscviewer.h>
 #include <petscthreadcomm.h>
 
+PetscErrorCode PetscLogObjectParent(PetscObject p,PetscObject c)
+{
+  PetscObject pp = p;
+  if (!c || !p) return 0;
+  while (!c->parent && pp) {
+    /* if not credited elsewhere credit all childs memory to all new ancestors */
+    pp->memchildren += c->mem + c->memchildren;
+    pp               = pp->parent;
+  }
+  c->parent   = p;
+  c->parentid = p->id;
+  return 0;
+}
+
+PetscErrorCode PetscLogObjectMemory(PetscObject p,PetscLogDouble m)
+{
+  p->mem += m;
+  p       =  p->parent;
+  while (p) {
+    /* Create all ancestors with the memory */
+    p->memchildren += m;
+    p               =  p->parent;
+  }
+  return 0;
+}
+
 PetscLogEvent PETSC_LARGEST_EVENT = PETSC_EVENT;
 
 #if defined(PETSC_CLANGUAGE_CXX)
