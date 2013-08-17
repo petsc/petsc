@@ -10,7 +10,7 @@ class Configure(config.package.Package):
     self.includes  = ['hdf5.h']
     self.liblist   = [['libhdf5_hl.a', 'libhdf5.a']]
     self.needsMath = 1
-    self.needsCompression = 1
+    self.needsCompression = 0
     self.complex   = 1
     self.worksonWindows = 1
     return
@@ -19,6 +19,15 @@ class Configure(config.package.Package):
     config.package.Package.setupDependencies(self, framework)
     self.deps = [self.mpi]
     return
+
+  def generateLibList(self, framework):
+    '''First try library list without compression libraries (zlib) then try with'''
+    list = []
+    for l in self.liblist:
+      list.append(l)
+    for l in self.liblist:
+      list.append(l + self.libraries.compression)
+    return list
 
   def Install(self):
     import os
@@ -63,7 +72,6 @@ class Configure(config.package.Package):
     return self.installDir
 
   def configureLibrary(self):
-    self.extraLib = self.libraries.compression
     if hasattr(self.compilers, 'FC'):
       # PETSc does not need the Fortran interface, but some users will call the Fortran interface
       # and expect our standard linking to be sufficient.  Thus we try to link the Fortran
