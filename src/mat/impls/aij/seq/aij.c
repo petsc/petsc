@@ -872,7 +872,7 @@ PetscErrorCode MatAssemblyEnd_SeqAIJ(Mat A,MatAssemblyType mode)
   A->info.nz_unneeded = (double)fshift;
   a->rmax             = rmax;
 
-  ierr = MatCheckCompressedRow(A,&a->compressedrow,a->i,m,ratio);CHKERRQ(ierr);
+  ierr = MatCheckCompressedRow(A,a->nonzerorowcnt,&a->compressedrow,a->i,m,ratio);CHKERRQ(ierr);
 
   A->same_nonzero = PETSC_TRUE;
 
@@ -1026,9 +1026,6 @@ PetscErrorCode MatSetOption_SeqAIJ(Mat A,MatOption op,PetscBool flg)
     break;
   case MAT_IGNORE_ZERO_ENTRIES:
     a->ignorezeroentries = flg;
-    break;
-  case MAT_CHECK_COMPRESSED_ROW:
-    a->compressedrow.check = flg;
     break;
   case MAT_SPD:
   case MAT_SYMMETRIC:
@@ -4065,7 +4062,6 @@ PetscErrorCode MatDuplicateNoCreate_SeqAIJ(Mat C,Mat A,MatDuplicateOption cpvalu
 
   c->compressedrow.use   = a->compressedrow.use;
   c->compressedrow.nrows = a->compressedrow.nrows;
-  c->compressedrow.check = a->compressedrow.check;
   if (a->compressedrow.use) {
     i    = a->compressedrow.nrows;
     ierr = PetscMalloc2(i+1,PetscInt,&c->compressedrow.i,i,PetscInt,&c->compressedrow.rindex);CHKERRQ(ierr);

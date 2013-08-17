@@ -290,13 +290,12 @@ typedef struct {
 
 /* Info about using compressed row format */
 typedef struct {
-  PetscBool  check;                         /* indicates that at MatAssembly() it should check if compressed rows will be efficient */
   PetscBool  use;                           /* indicates compressed rows have been checked and will be used */
   PetscInt   nrows;                         /* number of non-zero rows */
   PetscInt   *i;                            /* compressed row pointer  */
   PetscInt   *rindex;                       /* compressed row index               */
 } Mat_CompressedRow;
-PETSC_EXTERN PetscErrorCode MatCheckCompressedRow(Mat,Mat_CompressedRow*,PetscInt*,PetscInt,PetscReal);
+PETSC_EXTERN PetscErrorCode MatCheckCompressedRow(Mat,PetscInt,Mat_CompressedRow*,PetscInt*,PetscInt,PetscReal);
 
 struct _p_Mat {
   PETSCHEADER(struct _MatOps);

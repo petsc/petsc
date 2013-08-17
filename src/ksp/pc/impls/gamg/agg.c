@@ -358,9 +358,7 @@ static PetscErrorCode smoothAggs(const Mat Gmat_2, /* base (squared) graph */
     matB_2   = (Mat_SeqAIJ*)mpimat_2->B->data;
 
     /* force compressed row storage for B matrix in AuxMat */
-    matB_1->compressedrow.check = PETSC_TRUE;
-
-    ierr = MatCheckCompressedRow(mpimat_1->B,&matB_1->compressedrow,matB_1->i,Gmat_1->rmap->n,-1.0);CHKERRQ(ierr);
+    ierr = MatCheckCompressedRow(mpimat_1->B,matB_1->nonzerorowcnt,&matB_1->compressedrow,matB_1->i,Gmat_1->rmap->n,-1.0);CHKERRQ(ierr);
 
     ierr = PetscMalloc(nloc*sizeof(PetscInt), &lid_cprowID_1);CHKERRQ(ierr);
     for (lid = 0; lid < nloc; lid++) lid_cprowID_1[lid] = -1;
