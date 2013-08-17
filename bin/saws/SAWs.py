@@ -1,7 +1,11 @@
 #!/usr/bin/env python
 import os, sys
-import requests
 import json
+try:
+  import requests
+except:
+  raise RuntimeError('Run "sudo easy_install requests" before running this script')
+
 
 #
 #  If requests does not exist use sudo easy_install requests to install it.
@@ -12,18 +16,14 @@ if not host:
 port = os.getenv('SAWS_PORT')
 if not port:
   port = '8080'
-
 url = 'http://'+host+':'+port+'/SAWs'
 
-print url
 
 r = requests.get(url)
-
-
 j = json.loads(r.content)
 
-
-j = j['directories']['SAWs_ROOT_DIRECTORY']['directories']['PETSc']['directories']['Stack']['variable']['functions']['data']
+#  Example that access the functions in the stack
+j = j['directories']['SAWs_ROOT_DIRECTORY']['directories']['PETSc']['directories']['Stack']['variables']['functions']['data']
 
 print j
 
