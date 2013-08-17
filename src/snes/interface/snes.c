@@ -2581,7 +2581,7 @@ PetscErrorCode  SNESSetUp(SNES snes)
 
   if (!snes->vec_sol_update /* && snes->vec_sol */) {
     ierr = VecDuplicate(snes->vec_sol,&snes->vec_sol_update);CHKERRQ(ierr);
-    ierr = PetscLogObjectParent(snes,snes->vec_sol_update);CHKERRQ(ierr);
+    ierr = PetscLogObjectParent((PetscObject)snes,(PetscObject)snes->vec_sol_update);CHKERRQ(ierr);
   }
 
   ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
@@ -4583,7 +4583,7 @@ PetscErrorCode  SNESGetKSP(SNES snes,KSP *ksp)
   if (!snes->ksp) {
     ierr = KSPCreate(PetscObjectComm((PetscObject)snes),&snes->ksp);CHKERRQ(ierr);
     ierr = PetscObjectIncrementTabLevel((PetscObject)snes->ksp,(PetscObject)snes,1);CHKERRQ(ierr);
-    ierr = PetscLogObjectParent(snes,snes->ksp);CHKERRQ(ierr);
+    ierr = PetscLogObjectParent((PetscObject)snes,(PetscObject)snes->ksp);CHKERRQ(ierr);
 
     ierr = KSPSetPreSolve(snes->ksp,(PetscErrorCode (*)(KSP,Vec,Vec,void*))SNESKSPEW_PreSolve,snes);CHKERRQ(ierr);
     ierr = KSPSetPostSolve(snes->ksp,(PetscErrorCode (*)(KSP,Vec,Vec,void*))SNESKSPEW_PostSolve,snes);CHKERRQ(ierr);
@@ -4701,7 +4701,7 @@ PetscErrorCode SNESSetPC(SNES snes, SNES pc)
   ierr     = PetscObjectReference((PetscObject) pc);CHKERRQ(ierr);
   ierr     = SNESDestroy(&snes->pc);CHKERRQ(ierr);
   snes->pc = pc;
-  ierr     = PetscLogObjectParent(snes, snes->pc);CHKERRQ(ierr);
+  ierr     = PetscLogObjectParent((PetscObject)snes, (PetscObject)snes->pc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -4734,7 +4734,7 @@ PetscErrorCode SNESGetPC(SNES snes, SNES *pc)
   if (!snes->pc) {
     ierr = SNESCreate(PetscObjectComm((PetscObject)snes),&snes->pc);CHKERRQ(ierr);
     ierr = PetscObjectIncrementTabLevel((PetscObject)snes->pc,(PetscObject)snes,1);CHKERRQ(ierr);
-    ierr = PetscLogObjectParent(snes,snes->pc);CHKERRQ(ierr);
+    ierr = PetscLogObjectParent((PetscObject)snes,(PetscObject)snes->pc);CHKERRQ(ierr);
     ierr = SNESGetOptionsPrefix(snes,&optionsprefix);CHKERRQ(ierr);
     ierr = SNESSetOptionsPrefix(snes->pc,optionsprefix);CHKERRQ(ierr);
     ierr = SNESAppendOptionsPrefix(snes->pc,"npc_");CHKERRQ(ierr);
@@ -4844,7 +4844,7 @@ PetscErrorCode SNESSetLineSearch(SNES snes, SNESLineSearch linesearch)
 
   snes->linesearch = linesearch;
 
-  ierr = PetscLogObjectParent(snes, snes->linesearch);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)snes, (PetscObject)snes->linesearch);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -4881,7 +4881,7 @@ PetscErrorCode SNESGetLineSearch(SNES snes, SNESLineSearch *linesearch)
     ierr = SNESLineSearchSetSNES(snes->linesearch, snes);CHKERRQ(ierr);
     ierr = SNESLineSearchAppendOptionsPrefix(snes->linesearch, optionsprefix);CHKERRQ(ierr);
     ierr = PetscObjectIncrementTabLevel((PetscObject) snes->linesearch, (PetscObject) snes, 1);CHKERRQ(ierr);
-    ierr = PetscLogObjectParent(snes, snes->linesearch);CHKERRQ(ierr);
+    ierr = PetscLogObjectParent((PetscObject)snes, (PetscObject)snes->linesearch);CHKERRQ(ierr);
   }
   *linesearch = snes->linesearch;
   PetscFunctionReturn(0);

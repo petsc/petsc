@@ -1561,8 +1561,8 @@ PetscErrorCode MatCreateMPIAIJFromSeqMatrices_Private(MPI_Comm comm, Mat A, Mat 
   aij    = (Mat_MPIAIJ*)((*C)->data);
   aij->A = A;
   aij->B = B;
-  ierr   = PetscLogObjectParent(*C,A);CHKERRQ(ierr);
-  ierr   = PetscLogObjectParent(*C,B);CHKERRQ(ierr);
+  ierr   = PetscLogObjectParent((PetscObject)*C,(PetscObject)A);CHKERRQ(ierr);
+  ierr   = PetscLogObjectParent((PetscObject)*C,(PetscObject)B);CHKERRQ(ierr);
 
   (*C)->preallocated = (PetscBool)(A->preallocated && B->preallocated);
   (*C)->assembled    = (PetscBool)(A->assembled && B->assembled);

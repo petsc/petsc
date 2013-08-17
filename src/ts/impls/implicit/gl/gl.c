@@ -829,7 +829,7 @@ PetscErrorCode  TSGLGetAdapt_GL(TS ts,TSGLAdapt *adapt)
   if (!gl->adapt) {
     ierr = TSGLAdaptCreate(PetscObjectComm((PetscObject)ts),&gl->adapt);CHKERRQ(ierr);
     ierr = PetscObjectIncrementTabLevel((PetscObject)gl->adapt,(PetscObject)ts,1);CHKERRQ(ierr);
-    ierr = PetscLogObjectParent(ts,gl->adapt);CHKERRQ(ierr);
+    ierr = PetscLogObjectParent((PetscObject)ts,(PetscObject)gl->adapt);CHKERRQ(ierr);
   }
   *adapt = gl->adapt;
   PetscFunctionReturn(0);

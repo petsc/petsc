@@ -172,6 +172,9 @@ PETSC_EXTERN PetscErrorCode PetscLogGetStageLog(PetscStageLog*);
 PETSC_EXTERN PetscErrorCode PetscStageLogGetCurrent(PetscStageLog,int*);
 PETSC_EXTERN PetscErrorCode PetscStageLogGetEventPerfLog(PetscStageLog,int,PetscEventPerfLog*);
 
+PETSC_EXTERN PetscErrorCode PetscLogObjectParent(PetscObject,PetscObject);
+PETSC_EXTERN PetscErrorCode PetscLogObjectMemory(PetscObject,PetscLogDouble);
+
 
 #if defined(PETSC_USE_LOG)  /* --- Logging is turned on --------------------------------*/
 PETSC_EXTERN PetscStageLog petsc_stageLog;
@@ -217,13 +220,9 @@ PETSC_EXTERN PetscErrorCode (*PetscLogPLE)(PetscLogEvent,int,PetscObject,PetscOb
 PETSC_EXTERN PetscErrorCode (*PetscLogPHC)(PetscObject);
 PETSC_EXTERN PetscErrorCode (*PetscLogPHD)(PetscObject);
 
-#define PetscLogObjectParent(p,c) \
-  (c && p && (((PetscObject)(c))->parent = (PetscObject)(p),((PetscObject)(c))->parentid = ((PetscObject)p)->id,0))
-
-#define PetscLogObjectParents(p,n,d)  0;{int _i; for (_i=0; _i<n; _i++) {ierr = PetscLogObjectParent(p,(d)[_i]);CHKERRQ(ierr);}}
+#define PetscLogObjectParents(p,n,d)  0;{int _i; for (_i=0; _i<n; _i++) {ierr = PetscLogObjectParent((PetscObject)p,(PetscObject)(d)[_i]);CHKERRQ(ierr);}}
 #define PetscLogObjectCreate(h)      ((PetscLogPHC) ? (*PetscLogPHC)((PetscObject)h) : 0)
 #define PetscLogObjectDestroy(h)     ((PetscLogPHD) ? (*PetscLogPHD)((PetscObject)h) : 0)
-#define PetscLogObjectMemory(p,m)    (((PetscObject)(p))->mem += (m),0)
 /* Initialization functions */
 PETSC_EXTERN PetscErrorCode PetscLogBegin(void);
 PETSC_EXTERN PetscErrorCode PetscLogAllBegin(void);
@@ -420,11 +419,9 @@ PETSC_STATIC_INLINE PetscErrorCode PetscMPITypeSizeComm(MPI_Comm comm, PetscLogD
 #define PetscLogEventEnd(e,o1,o2,o3,o4)     0
 #define PetscLogEventBarrierBegin(e,o1,o2,o3,o4,cm) 0
 #define PetscLogEventBarrierEnd(e,o1,o2,o3,o4,cm)   0
-#define PetscLogObjectParent(p,c)           0
 #define PetscLogObjectParents(p,n,c)        0
 #define PetscLogObjectCreate(h)             0
 #define PetscLogObjectDestroy(h)            0
-#define PetscLogObjectMemory(p,m)           0
 #define PetscLogDestroy()                   0
 #define PetscLogStagePush(a)                0
 #define PetscLogStagePop()                  0
