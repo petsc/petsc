@@ -13,6 +13,7 @@
 
    Input Parameters:
 +  A             - the matrix
+.  nrows         - number of rows with nonzero entries
 .  compressedrow - pointer to the struct Mat_CompressedRow
 .  ai            - row pointer used by seqaij and seqbaij
 .  mbs           - number of (block) rows represented by ai
@@ -28,14 +29,12 @@
 
    Level: developer
 @*/
-PETSC_EXTERN PetscErrorCode MatCheckCompressedRow(Mat A,Mat_CompressedRow *compressedrow,PetscInt *ai,PetscInt mbs,PetscReal ratio)
+PETSC_EXTERN PetscErrorCode MatCheckCompressedRow(Mat A,PetscInt nrows,Mat_CompressedRow *compressedrow,PetscInt *ai,PetscInt mbs,PetscReal ratio)
 {
   PetscErrorCode ierr;
-  PetscInt       nrows,*cpi=NULL,*ridx=NULL,nz,i,row;
+  PetscInt       *cpi=NULL,*ridx=NULL,nz,i,row;
 
   PetscFunctionBegin;
-  if (!compressedrow->check) PetscFunctionReturn(0);
-
   /* in case this is being reused, delete old space */
   ierr = PetscFree2(compressedrow->i,compressedrow->rindex);CHKERRQ(ierr);
 
@@ -44,11 +43,7 @@ PETSC_EXTERN PetscErrorCode MatCheckCompressedRow(Mat A,Mat_CompressedRow *compr
 
 
   /* compute number of zero rows */
-  nrows = 0;
-  for (i=0; i<mbs; i++) {        /* for each row */
-    nz = ai[i+1] - ai[i];       /* number of nonzeros */
-    if (nz == 0) nrows++;
-  }
+  nrows = mbs - nrows;
 
   /* if a large number of zero rows is found, use compressedrow data structure */
   if (nrows < ratio*mbs) {

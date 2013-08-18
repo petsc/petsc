@@ -30,6 +30,7 @@
   PetscInt          *i;               /* pointer to beginning of each row */               \
   PetscInt          *j;               /* column values: j + i[k] - 1 is start of row k */  \
   PetscInt          *diag;            /* pointers to diagonal elements */                  \
+  PetscInt          nonzerorowcnt;    /* how many rows have nonzero entries */             \
   PetscBool         free_diag;         \
   datatype          *a;               /* nonzero elements */                               \
   PetscScalar       *solve_work;      /* work space used in MatSolve */                    \
