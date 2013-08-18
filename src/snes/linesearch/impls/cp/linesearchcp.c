@@ -30,12 +30,10 @@ static PetscErrorCode SNESLineSearchApply_CP(SNESLineSearch linesearch)
   ierr       = SNESLineSearchPreCheck(linesearch,X,Y,&changed_y);CHKERRQ(ierr);
   lambda_old = 0.0;
 
+  ierr = VecDot(F,Y,&fty_old);CHKERRQ(ierr);
+  fty_init = fty_old;
 
   for (i = 0; i < max_its; i++) {
-    if (i == 0) {
-      ierr = VecDot(F,Y,&fty_old);CHKERRQ(ierr);
-      fty_init = fty_old;
-    }
     /* compute the norm at lambda */
     ierr = VecCopy(X, W);CHKERRQ(ierr);
     ierr = VecAXPY(W, -lambda, Y);CHKERRQ(ierr);
