@@ -1872,7 +1872,11 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode(Mat B,Mat A,const MatFactorInfo *
   ierr = ISRestoreIndices(isicol,&ic);CHKERRQ(ierr);
   ierr = ISRestoreIndices(isrow,&r);CHKERRQ(ierr);
 
-  C->ops->solve             = MatSolve_SeqAIJ;
+  if (b->inode.size) {
+    C->ops->solve           = MatSolve_SeqAIJ_Inode;
+  } else {
+    C->ops->solve           = MatSolve_SeqAIJ;
+  }
   C->ops->solveadd          = MatSolveAdd_SeqAIJ;
   C->ops->solvetranspose    = MatSolveTranspose_SeqAIJ;
   C->ops->solvetransposeadd = MatSolveTransposeAdd_SeqAIJ;
@@ -1892,7 +1896,6 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode(Mat B,Mat A,const MatFactorInfo *
       ierr = PetscInfo2(A,"number of shift_inblocks applied %D, each shift_amount %G\n",sctx.nshift,info->shiftamount);CHKERRQ(ierr);
     }
   }
-  ierr = Mat_CheckInode_FactorLU(C,PETSC_FALSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -4107,13 +4110,12 @@ PETSC_STATIC_INLINE PetscErrorCode MatGetRow_FactoredLU(PetscInt *cols,PetscInt 
    Modified from Mat_CheckInode().
 
    Input Parameters:
-+  Mat A - ILU or LU matrix factor
--  samestructure - TRUE indicates that the matrix has not changed its nonzero structure so we
-    do not need to recompute the inodes
+.  Mat A - ILU or LU matrix factor
+
 */
 #undef __FUNCT__
 #define __FUNCT__ "Mat_CheckInode_FactorLU"
-PetscErrorCode Mat_CheckInode_FactorLU(Mat A,PetscBool samestructure)
+PetscErrorCode Mat_CheckInode_FactorLU(Mat A)
 {
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
   PetscErrorCode ierr;
@@ -4123,8 +4125,8 @@ PetscErrorCode Mat_CheckInode_FactorLU(Mat A,PetscBool samestructure)
   PetscBool      flag;
 
   PetscFunctionBegin;
-  if (!a->inode.use)                     PetscFunctionReturn(0);
-  if (a->inode.checked && samestructure) PetscFunctionReturn(0);
+  if (!a->inode.use)    PetscFunctionReturn(0);
+  if (a->inode.checked) PetscFunctionReturn(0);
 
   m = A->rmap->n;
   if (a->inode.size) ns = a->inode.size;
@@ -4174,7 +4176,6 @@ PetscErrorCode Mat_CheckInode_FactorLU(Mat A,PetscBool samestructure)
     A->ops->restorecolumnij   = 0;
     A->ops->coloringpatch     = 0;
     A->ops->multdiagonalblock = 0;
-    A->ops->solve             = MatSolve_SeqAIJ_Inode;
     a->inode.node_count       = node_count;
     a->inode.size             = ns;
 
