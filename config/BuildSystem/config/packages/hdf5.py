@@ -27,7 +27,8 @@ class Configure(config.package.Package):
       list.append(l)
     for l in self.liblist:
       list.append(l + self.libraries.compression)
-    return list
+    self.liblist = list
+    return config.package.Package.generateLibList(self,framework)
 
   def Install(self):
     import os
