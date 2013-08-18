@@ -2512,15 +2512,15 @@ PetscErrorCode MatSeqAIJRestoreArray_SeqAIJ(Mat A,PetscScalar *array[])
 #define __FUNCT__ "MatFDColoringApply_SeqAIJ"
 PetscErrorCode MatFDColoringApply_SeqAIJ(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,void *sctx)
 {
-  PetscErrorCode (*f)(void*,Vec,Vec,void*) = (PetscErrorCode (*)(void*,Vec,Vec,void*))coloring->f;
-  PetscErrorCode ierr;
-  PetscInt       k,N,start,end,l,row,col,srow,**vscaleforrow;
-  PetscScalar    dx,*y,*xx,*w3_array;
-  PetscScalar    *vscale_array;
-  PetscReal      epsilon = coloring->error_rel,umin = coloring->umin;
-  Vec            w1,w2,w3;
-  void           *fctx = coloring->fctx;
-  PetscBool      flg   = PETSC_FALSE;
+  PetscErrorCode     (*f)(void*,Vec,Vec,void*) = (PetscErrorCode (*)(void*,Vec,Vec,void*))coloring->f;
+  PetscErrorCode     ierr;
+  PetscInt           k,N,start,end,l,row,col,srow,**vscaleforrow;
+  PetscScalar        dx,*y,*w3_array,*vscale_array;
+  const PetscScalar  *xx,*vscale_arrayread;
+  PetscReal          epsilon = coloring->error_rel,umin = coloring->umin;
+  Vec                w1,w2,w3;
+  void               *fctx = coloring->fctx;
+  PetscBool          flg   = PETSC_FALSE;
 
   PetscFunctionBegin;
   if (!coloring->w1) {
@@ -2559,7 +2559,7 @@ PetscErrorCode MatFDColoringApply_SeqAIJ(Mat J,MatFDColoring coloring,Vec x1,Mat
   /*
       Compute all the scale factors and share with other processors
   */
-  ierr = VecGetArray(x1,&xx);CHKERRQ(ierr);xx = xx - start;
+  ierr = VecGetArrayRead(x1,&xx);CHKERRQ(ierr);xx = xx - start;
   ierr = VecGetArray(coloring->vscale,&vscale_array);CHKERRQ(ierr);vscale_array = vscale_array - start;
   for (k=0; k<coloring->ncolors; k++) {
     /*
@@ -2588,7 +2588,7 @@ PetscErrorCode MatFDColoringApply_SeqAIJ(Mat J,MatFDColoring coloring,Vec x1,Mat
   if (coloring->vscaleforrow) vscaleforrow = coloring->vscaleforrow;
   else                        vscaleforrow = coloring->columnsforrow;
 
-  ierr = VecGetArray(coloring->vscale,&vscale_array);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(coloring->vscale,&vscale_arrayread);CHKERRQ(ierr);
   /*
       Loop over each color
   */
@@ -2629,7 +2629,7 @@ PetscErrorCode MatFDColoringApply_SeqAIJ(Mat J,MatFDColoring coloring,Vec x1,Mat
     for (l=0; l<coloring->nrows[k]; l++) {
       row     = coloring->rows[k][l];
       col     = coloring->columnsforrow[k][l];
-      y[row] *= vscale_array[vscaleforrow[k][l]];
+      y[row] *= vscale_arrayread[vscaleforrow[k][l]];
       srow    = row + start;
       ierr    = MatSetValues_SeqAIJ(J,1,&srow,1,&col,y+row,INSERT_VALUES);CHKERRQ(ierr);
     }
@@ -2637,9 +2637,9 @@ PetscErrorCode MatFDColoringApply_SeqAIJ(Mat J,MatFDColoring coloring,Vec x1,Mat
   }
   coloring->currentcolor = k;
 
-  ierr = VecRestoreArray(coloring->vscale,&vscale_array);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(coloring->vscale,&vscale_arrayread);CHKERRQ(ierr);
   xx   = xx + start;
-  ierr = VecRestoreArray(x1,&xx);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(x1,&xx);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);

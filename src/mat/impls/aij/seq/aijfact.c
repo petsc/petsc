@@ -288,9 +288,9 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJ(Mat B,Mat A,IS isrow,IS iscol,const Ma
   Mat_SeqAIJ         *a = (Mat_SeqAIJ*)A->data,*b;
   IS                 isicol;
   PetscErrorCode     ierr;
-  const PetscInt     *r,*ic;
-  PetscInt           i,n=A->rmap->n,*ai=a->i,*aj=a->j;
-  PetscInt           *bi,*bj,*ajtmp;
+  const PetscInt     *r,*ic,*ai=a->i,*aj=a->j,*ajtmp;
+  PetscInt           i,n=A->rmap->n;
+  PetscInt           *bi,*bj;
   PetscInt           *bdiag,row,nnz,nzi,reallocs=0,nzbd,*im;
   PetscReal          f;
   PetscInt           nlnk,*lnk,k,**bi_ptr;
