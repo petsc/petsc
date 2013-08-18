@@ -2277,6 +2277,9 @@ M*/
 
 PETSC_EXTERN MPI_Comm PetscObjectComm(PetscObject);
 
+typedef enum {PETSC_SUBCOMM_GENERAL=0,PETSC_SUBCOMM_CONTIGUOUS=1,PETSC_SUBCOMM_INTERLACED=2} PetscSubcommType;
+PETSC_EXTERN const char *const PetscSubcommTypes[];
+
 /*S
    PetscSubcomm - Context of MPI subcommunicators, used by PCREDUNDANT
 
@@ -2287,17 +2290,14 @@ S*/
 typedef struct _n_PetscSubcomm* PetscSubcomm;
 
 struct _n_PetscSubcomm {
-  MPI_Comm   parent;      /* parent communicator */
-  MPI_Comm   dupparent;   /* duplicate parent communicator, under which the processors of this subcomm have contiguous rank */
-  MPI_Comm   comm;        /* this communicator */
-  PetscInt   n;           /* num of subcommunicators under the parent communicator */
-  PetscInt   color;       /* color of processors belong to this communicator */
-  PetscMPIInt *subsize;    /* size of subcommunicator[color] */
-  PetscInt   type;
+  MPI_Comm    parent;           /* parent communicator */
+  MPI_Comm    dupparent;        /* duplicate parent communicator, under which the processors of this subcomm have contiguous rank */
+  MPI_Comm    comm;             /* this communicator */
+  PetscMPIInt n;                /* num of subcommunicators under the parent communicator */
+  PetscMPIInt color;            /* color of processors belong to this communicator */
+  PetscMPIInt *subsize;         /* size of subcommunicator[color] */
+  PetscSubcommType type;
 };
-
-typedef enum {PETSC_SUBCOMM_GENERAL=0,PETSC_SUBCOMM_CONTIGUOUS=1,PETSC_SUBCOMM_INTERLACED=2} PetscSubcommType;
-PETSC_EXTERN const char *const PetscSubcommTypes[];
 
 PETSC_EXTERN PetscErrorCode PetscSubcommCreate(MPI_Comm,PetscSubcomm*);
 PETSC_EXTERN PetscErrorCode PetscSubcommDestroy(PetscSubcomm*);
