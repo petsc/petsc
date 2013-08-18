@@ -551,7 +551,7 @@ We will have three objects:
 */
 #include <petsc-private/petscfeimpl.h>
 
-PetscInt PETSCSPACE_CLASSID = 0;
+PetscClassId PETSCSPACE_CLASSID = 0;
 
 PetscFunctionList PetscSpaceList              = NULL;
 PetscBool         PetscSpaceRegisterAllCalled = PETSC_FALSE;
@@ -1257,7 +1257,7 @@ PetscErrorCode PetscSpacePolynomialGetNumVariables(PetscSpace sp, PetscInt *n)
 }
 
 
-PetscInt PETSCDUALSPACE_CLASSID = 0;
+PetscClassId PETSCDUALSPACE_CLASSID = 0;
 
 PetscFunctionList PetscDualSpaceList              = NULL;
 PetscBool         PetscDualSpaceRegisterAllCalled = PETSC_FALSE;
@@ -1920,7 +1920,7 @@ PETSC_EXTERN PetscErrorCode PetscDualSpaceCreate_Lagrange(PetscDualSpace sp)
 }
 
 
-PetscInt PETSCFE_CLASSID = 0;
+PetscClassId PETSCFE_CLASSID = 0;
 
 PetscFunctionList PetscFEList              = NULL;
 PetscBool         PetscFERegisterAllCalled = PETSC_FALSE;
