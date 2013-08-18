@@ -39,12 +39,12 @@ PetscErrorCode  KSPDGMRESSetMaxEigen(KSP ksp,PetscInt max_neig)
 }
 #undef __FUNCT__
 #define __FUNCT__  "KSPDGMRESForce"
-PetscErrorCode  KSPDGMRESForce(KSP ksp,PetscInt force)
+PetscErrorCode  KSPDGMRESForce(KSP ksp,PetscBool force)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscTryMethod((ksp),"KSPDGMRESForce_C",(KSP,PetscInt),(ksp,force));CHKERRQ(ierr);
+  ierr = PetscTryMethod((ksp),"KSPDGMRESForce_C",(KSP,PetscBool),(ksp,force));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 #undef __FUNCT__
@@ -612,13 +612,12 @@ static PetscErrorCode  KSPDGMRESSetRatio_DGMRES(KSP ksp,PetscReal ratio)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPDGMRESForce_DGMRES"
-static PetscErrorCode  KSPDGMRESForce_DGMRES(KSP ksp,PetscInt force)
+static PetscErrorCode  KSPDGMRESForce_DGMRES(KSP ksp,PetscBool force)
 {
   KSP_DGMRES *dgmres = (KSP_DGMRES*) ksp->data;
 
   PetscFunctionBegin;
-  if (force != 0 && force != 1) SETERRQ(PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_OUTOFRANGE,"Value must be 0 or 1");
-  dgmres->force = 1;
+  dgmres->force = force;
   PetscFunctionReturn(0);
 }
 
@@ -1298,9 +1297,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_DGMRES(KSP ksp)
   dgmres->max_neig    = DGMRES_DEFAULT_MAXEIG-1;
   dgmres->lambdaN     = 0.0;
   dgmres->smv         = SMV;
-  dgmres->force       = 0;
   dgmres->matvecs     = 0;
-  dgmres->improve     = 0;
   dgmres->GreatestEig = PETSC_FALSE; /* experimental */
   dgmres->HasSchur    = PETSC_FALSE;
   PetscFunctionReturn(0);
