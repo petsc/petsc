@@ -33,7 +33,7 @@ MUST CHECK WITH:
 #define NUM_FIELDS 1
 PetscInt spatialDim = 0;
 
-typedef enum {LAPLACIAN, ELASTICITY} OpType;
+typedef enum {LAPLACIAN = 0, ELASTICITY} OpType;
 
 typedef struct {
   DM            dm;                /* REQUIRED in order to use SNES evaluation functions */
@@ -44,6 +44,8 @@ typedef struct {
   PetscInt      dim;               /* The topological mesh dimension */
   PetscBool     interpolate;       /* Generate intermediate mesh elements */
   PetscReal     refinementLimit;   /* The largest allowable cell volume */
+  PetscBool     refinementUniform; /* Uniformly refine the mesh */
+  PetscInt      refinementRounds;  /* The number of uniform refinements */
   char          partitioner[2048]; /* The graph partitioner */
   PetscBool     computeFunction;   /* The flag for computing a residual */
   PetscBool     computeJacobian;   /* The flag for computing a Jacobian */
@@ -144,19 +146,21 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  options->debug           = 0;
-  options->dim             = 2;
-  options->interpolate     = PETSC_FALSE;
-  options->refinementLimit = 0.0;
-  options->computeFunction = PETSC_FALSE;
-  options->computeJacobian = PETSC_FALSE;
-  options->batch           = PETSC_FALSE;
-  options->gpu             = PETSC_FALSE;
-  options->numBatches      = 1;
-  options->numBlocks       = 1;
-  options->op              = LAPLACIAN;
-  options->showResidual    = PETSC_TRUE;
-  options->showJacobian    = PETSC_TRUE;
+  options->debug             = 0;
+  options->dim               = 2;
+  options->interpolate       = PETSC_FALSE;
+  options->refinementLimit   = 0.0;
+  options->refinementUniform = PETSC_FALSE;
+  options->refinementRounds  = 1;
+  options->computeFunction   = PETSC_FALSE;
+  options->computeJacobian   = PETSC_FALSE;
+  options->batch             = PETSC_FALSE;
+  options->gpu               = PETSC_FALSE;
+  options->numBatches        = 1;
+  options->numBlocks         = 1;
+  options->op                = LAPLACIAN;
+  options->showResidual      = PETSC_TRUE;
+  options->showJacobian      = PETSC_TRUE;
 
   ierr = MPI_Comm_size(comm, &options->numProcs);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &options->rank);CHKERRQ(ierr);
@@ -166,6 +170,8 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   spatialDim = options->dim;
   ierr = PetscOptionsBool("-interpolate", "Generate intermediate mesh elements", "ex52.c", options->interpolate, &options->interpolate, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-refinement_limit", "The largest allowable cell volume", "ex52.c", options->refinementLimit, &options->refinementLimit, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-refinement_uniform", "Uniformly refine the mesh", "ex52.c", options->refinementUniform, &options->refinementUniform, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-refinement_rounds", "The number of uniform refinements", "ex52.c", options->refinementRounds, &options->refinementRounds, NULL);CHKERRQ(ierr);
   ierr = PetscStrcpy(options->partitioner, "chaco");CHKERRQ(ierr);
   ierr = PetscOptionsString("-partitioner", "The graph partitioner", "ex52.c", options->partitioner, options->partitioner, 2048, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-compute_function", "Compute the residual", "ex52.c", options->computeFunction, &options->computeFunction, NULL);CHKERRQ(ierr);
@@ -199,10 +205,12 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 #define __FUNCT__ "CreateMesh"
 PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
-  PetscInt       dim             = user->dim;
-  PetscBool      interpolate     = user->interpolate;
-  PetscReal      refinementLimit = user->refinementLimit;
-  const char     *partitioner    = user->partitioner;
+  PetscInt       dim               = user->dim;
+  PetscBool      interpolate       = user->interpolate;
+  PetscReal      refinementLimit   = user->refinementLimit;
+  PetscBool      refinementUniform = user->refinementUniform;
+  PetscInt       refinementRounds  = user->refinementRounds;
+  const char     *partitioner      = user->partitioner;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
@@ -224,6 +232,19 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     if (distributedMesh) {
       ierr = DMDestroy(dm);CHKERRQ(ierr);
       *dm  = distributedMesh;
+    }
+    /* Use regular refinement in parallel */
+    if (refinementUniform) {
+      PetscInt r;
+
+      ierr = DMPlexSetRefinementUniform(*dm, refinementUniform);CHKERRQ(ierr);
+      for (r = 0; r < refinementRounds; ++r) {
+        ierr = DMRefine(*dm, comm, &refinedMesh);CHKERRQ(ierr);
+        if (refinedMesh) {
+          ierr = DMDestroy(dm);CHKERRQ(ierr);
+          *dm  = refinedMesh;
+        }
+      }
     }
   }
   ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
@@ -530,7 +551,7 @@ PetscErrorCode FormFunctionLocalBatch(DM dm, Vec X, Vec F, AppCtx *user)
 {
   if (user->gpu) {
     ierr = PetscLogEventBegin(user->integrateBatchGPUEvent,0,0,0,0);CHKERRQ(ierr);
-    ierr = IntegrateElementBatchGPU(numChunks*numBatches*batchSize, numBatches, batchSize, numBlocks, u, invJ, detJ, elemVec, user->integrateGPUOnlyEvent, user->debug);CHKERRQ(ierr);
+    ierr = IntegrateElementBatchGPU(dim, numChunks*numBatches*batchSize, numBatches, batchSize, numBlocks, u, invJ, detJ, elemVec, user->integrateGPUOnlyEvent, user->debug, user->op);CHKERRQ(ierr);
     ierr = PetscLogFlops((((2+(2+2*dim)*dim)*numBasisComps*numBasisFuncs+(2+2)*dim*numBasisComps)*numQuadPoints + (2+2*dim)*dim*numQuadPoints*numBasisComps*numBasisFuncs)*numChunks*numBatches*batchSize);CHKERRQ(ierr);
     ierr = PetscLogEventEnd(user->integrateBatchGPUEvent,0,0,0,0);CHKERRQ(ierr);
   } else {
@@ -557,8 +578,8 @@ int main(int argc, char **argv)
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc, &argv, NULL, help);CHKERRQ(ierr);
-#if !defined(PETSC_HAVE_CUDA)
-  SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "This example requires CUDA support.");
+#if !defined(PETSC_HAVE_CUDA) && !defined(PETSC_HAVE_OPENCL)
+  SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "This example requires CUDA or OpenCL support.");
 #endif
   ierr = ProcessOptions(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);
   ierr = SNESCreate(PETSC_COMM_WORLD, &snes);CHKERRQ(ierr);
