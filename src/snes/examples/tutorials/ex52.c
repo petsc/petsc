@@ -1,34 +1,7 @@
 static const char help[] = "Testbed for FEM operations on the GPU.\n\n";
 
-/*
-#if 0
- - Automate testing of different:
-   - elements, batches, blocks, operators
- - Process log_summary with Python (use existing tools)
- - Put results in PyTables
-
-PYLITH:
- - Redo setup/cleanup in PyLith
- - Test with examples/3d/hex8/step01.cfg (Brad is making a flag)
- - Code up Jacobian (looks like original code)
- - Consider taking in coordinates rather than J^{-T}/|J|
-
-MUST CHECK WITH:
- - 3D elements
- - Different quadrature (1pt and 3pt)
- - Different basis (linear and quadratic)
-#endif
-*/
-
 #include<petscdmplex.h>
 #include<petscsnes.h>
-
-#ifdef PETSC_HAVE_GENERATOR
-/*------------------------------------------------------------------------------
-  This code can be generated using 'bin/pythonscripts/PetscGenerateFEMQuadrature.py dim 1 numComp 1 laplacian src/snes/examples/tutorials/ex52.h'
- -----------------------------------------------------------------------------*/
-#include "ex52.h"
-#endif
 
 #define NUM_FIELDS 1
 PetscInt spatialDim = 0;
@@ -53,9 +26,6 @@ typedef struct {
   OpType        op;                /* The type of PDE operator (should use FFC/Ignition here) */
   PetscBool     showResidual, showJacobian;
   PetscLogEvent createMeshEvent, residualEvent, residualBatchEvent, jacobianEvent, jacobianBatchEvent, integrateBatchCPUEvent, integrateBatchGPUEvent, integrateGPUOnlyEvent;
-  /* GPU partitioning */
-  PetscInt      numBatches;        /* The number of cell batches per kernel */
-  PetscInt      numBlocks;         /* The number of concurrent blocks per kernel */
   /* Element definition */
   PetscFE       fe[NUM_FIELDS];
   void (*f0Funcs[NUM_FIELDS])(const PetscScalar u[], const PetscScalar gradU[], const PetscScalar a[], const PetscScalar gradA[], const PetscReal x[], PetscScalar f0[]);
@@ -156,8 +126,6 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->computeJacobian   = PETSC_FALSE;
   options->batch             = PETSC_FALSE;
   options->gpu               = PETSC_FALSE;
-  options->numBatches        = 1;
-  options->numBlocks         = 1;
   options->op                = LAPLACIAN;
   options->showResidual      = PETSC_TRUE;
   options->showJacobian      = PETSC_TRUE;
@@ -177,13 +145,9 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsBool("-compute_function", "Compute the residual", "ex52.c", options->computeFunction, &options->computeFunction, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-compute_jacobian", "Compute the Jacobian", "ex52.c", options->computeJacobian, &options->computeJacobian, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-gpu", "Use the GPU for integration method", "ex52.c", options->gpu, &options->gpu, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-gpu_batches", "The number of cell batches per kernel", "ex52.c", options->numBatches, &options->numBatches, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-gpu_blocks", "The number of concurrent blocks per kernel", "ex52.c", options->numBlocks, &options->numBlocks, NULL);CHKERRQ(ierr);
 
   op = options->op;
-
   ierr = PetscOptionsEList("-op_type","Type of PDE operator","ex52.c",opTypes,2,opTypes[options->op],&op,NULL);CHKERRQ(ierr);
-
   options->op = (OpType) op;
 
   ierr = PetscOptionsBool("-show_residual", "Output the residual for verification", "ex52.c", options->showResidual, &options->showResidual, NULL);CHKERRQ(ierr);
@@ -329,245 +293,6 @@ PetscErrorCode SetupSection(DM dm, AppCtx *user)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "FormInitialGuess"
-/*
-  FormInitialGuess - Forms initial approximation.
-
-  Input Parameters:
-+ user - user-defined application context
-- guessFunc - The coordinate function to use for the guess
-
-  Output Parameter:
-. X - vector
-*/
-PetscErrorCode FormInitialGuess(Vec X, void (*guessFunc)(const PetscReal [], PetscScalar []), InsertMode mode, AppCtx *user)
-{
-  Vec            localX, coordinates;
-  PetscSection   section, cSection;
-  PetscInt       vStart, vEnd, v;
-  PetscErrorCode ierr;
-
-  PetscFunctionBeginUser;
-  ierr = DMGetLocalVector(user->dm, &localX);CHKERRQ(ierr);
-  ierr = DMPlexGetDepthStratum(user->dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
-  ierr = DMGetDefaultSection(user->dm, &section);CHKERRQ(ierr);
-  ierr = DMPlexGetCoordinateSection(user->dm, &cSection);CHKERRQ(ierr);
-  ierr = DMGetCoordinatesLocal(user->dm, &coordinates);CHKERRQ(ierr);
-  for (v = vStart; v < vEnd; ++v) {
-    PetscScalar values[3];
-    PetscScalar *coords;
-
-    ierr = VecGetValuesSection(coordinates, cSection, v, &coords);CHKERRQ(ierr);
-    (*guessFunc)(coords, values);
-    ierr = VecSetValuesSection(localX, section, v, values, mode);CHKERRQ(ierr);
-  }
-
-  ierr = DMLocalToGlobalBegin(user->dm, localX, INSERT_VALUES, X);CHKERRQ(ierr);
-  ierr = DMLocalToGlobalEnd(user->dm, localX, INSERT_VALUES, X);CHKERRQ(ierr);
-  ierr = DMRestoreLocalVector(user->dm, &localX);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-PETSC_EXTERN PetscErrorCode IntegrateElementBatchGPU(PetscInt spatial_dim, PetscInt Ne, PetscInt Nbatch, PetscInt Nbc, PetscInt Nbl, const PetscScalar coefficients[], const PetscReal jacobianInverses[], const PetscReal jacobianDeterminants[], PetscScalar elemVec[], PetscLogEvent event, PetscInt debug, PetscInt pde_op);
-
-void f1_laplacian(PetscScalar u, const PetscScalar gradU[], PetscScalar f1[])
-{
-  const PetscInt dim = spatialDim;
-  PetscInt       d;
-
-  for (d = 0; d < dim; ++d) f1[d] = gradU[d];
-  return;
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "IntegrateLaplacianBatchCPU"
-PetscErrorCode IntegrateLaplacianBatchCPU(PetscInt Ne, PetscInt Nb, const PetscScalar coefficients[], const PetscReal jacobianInverses[], const PetscReal jacobianDeterminants[], PetscInt Nq, const PetscReal quadPoints[], const PetscReal quadWeights[], const PetscReal basisTabulation[], const PetscReal basisDerTabulation[], PetscScalar elemVec[], AppCtx *user)
-{
-  const PetscInt debug = user->debug;
-  const PetscInt dim   = spatialDim;
-  PetscInt       e;
-  PetscErrorCode ierr;
-
-  PetscFunctionBeginUser;
-  ierr = PetscLogEventBegin(user->integrateBatchCPUEvent,0,0,0,0);CHKERRQ(ierr);
-  for (e = 0; e < Ne; ++e) {
-    const PetscReal detJ  = jacobianDeterminants[e];
-    const PetscReal *invJ = &jacobianInverses[e*dim*dim];
-    PetscScalar     f1[spatialDim /*1*/]; /* Nq = 1 */
-    PetscInt        q, b, d, f;
-
-    if (debug > 1) {
-      ierr = PetscPrintf(PETSC_COMM_SELF, "  detJ: %g\n", detJ);CHKERRQ(ierr);
-      ierr = PetscPrintf(PETSC_COMM_SELF, "  invJ: %g %g %g %g\n", invJ[0], invJ[1], invJ[2], invJ[3]);CHKERRQ(ierr);
-    }
-    for (q = 0; q < Nq; ++q) {
-      if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "  quad point %d\n", q);CHKERRQ(ierr);}
-      PetscScalar u = 0.0;
-      PetscScalar gradU[spatialDim];
-
-      for (d = 0; d < dim; ++d) gradU[d] = 0.0;
-      for (b = 0; b < Nb; ++b) {
-        PetscScalar realSpaceDer[spatialDim];
-
-        u += coefficients[e*Nb+b]*basisTabulation[q*Nb+b];
-        for (d = 0; d < dim; ++d) {
-          realSpaceDer[d] = 0.0;
-          for (f = 0; f < dim; ++f) {
-            realSpaceDer[d] += invJ[f*dim+d]*basisDerTabulation[(q*Nb+b)*dim+f];
-          }
-          gradU[d] += coefficients[e*Nb+b]*realSpaceDer[d];
-        }
-      }
-      f1_laplacian(u, gradU, &f1[q*dim]);
-      f1[q*dim+0] *= detJ*quadWeights[q];
-      f1[q*dim+1] *= detJ*quadWeights[q];
-      if (debug > 1) {
-        ierr = PetscPrintf(PETSC_COMM_SELF, "    f1[%d]: %g\n", 0, f1[q*dim+0]);CHKERRQ(ierr);
-        ierr = PetscPrintf(PETSC_COMM_SELF, "    f1[%d]: %g\n", 1, f1[q*dim+1]);CHKERRQ(ierr);
-      }
-    }
-    for (b = 0; b < Nb; ++b) {
-      elemVec[e*Nb+b] = 0.0;
-      for (q = 0; q < Nq; ++q) {
-        PetscScalar realSpaceDer[spatialDim];
-
-        for (d = 0; d < dim; ++d) {
-          realSpaceDer[d] = 0.0;
-          for (f = 0; f < dim; ++f) {
-            realSpaceDer[d] += invJ[f*dim+d]*basisDerTabulation[(q*Nb+b)*dim+f];
-          }
-          elemVec[e*Nb+b] += realSpaceDer[d]*f1[q*dim+d];
-        }
-      }
-    }
-  }
-  ierr = PetscLogFlops((((2+(2+2*dim)*dim)*Nb+2*dim)*Nq + (2+2*dim)*dim*Nq*Nb)*Ne);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(user->integrateBatchCPUEvent,0,0,0,0);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-};
-
-void f1_elasticity(PetscScalar u[], const PetscScalar gradU[], PetscScalar f1[])
-{
-  const PetscInt dim   = spatialDim;
-  const PetscInt Ncomp = dim;
-  PetscInt       comp, d;
-
-  for (comp = 0; comp < Ncomp; ++comp) {
-    for (d = 0; d < dim; ++d) {
-      f1[comp*dim+d] = 0.5*(gradU[comp*dim+d] + gradU[d*dim+comp]);
-    }
-  }
-  return;
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "IntegrateElasticityBatchCPU"
-PetscErrorCode IntegrateElasticityBatchCPU(PetscInt Ne, PetscInt Nb, PetscInt Ncomp, const PetscScalar coefficients[], const PetscReal jacobianInverses[], const PetscReal jacobianDeterminants[], PetscInt Nq, const PetscReal quadPoints[], const PetscReal quadWeights[], const PetscReal basisTabulation[], const PetscReal basisDerTabulation[], PetscScalar elemVec[], AppCtx *user)
-{
-  const PetscInt debug = user->debug;
-  const PetscInt dim   = spatialDim;
-  PetscInt       e;
-  PetscErrorCode ierr;
-
-  PetscFunctionBeginUser;
-  ierr = PetscLogEventBegin(user->integrateBatchCPUEvent,0,0,0,0);CHKERRQ(ierr);
-  for (e = 0; e < Ne; ++e) {
-    const PetscReal detJ  = jacobianDeterminants[e];
-    const PetscReal *invJ = &jacobianInverses[e*dim*dim];
-    PetscScalar     f1[spatialDim*spatialDim /*1*/]; /* Nq = 1 */
-    PetscInt        q, b, comp, i;
-
-    if (debug > 1) {
-      ierr = PetscPrintf(PETSC_COMM_SELF, "  detJ: %g\n", detJ);CHKERRQ(ierr);
-      ierr = PetscPrintf(PETSC_COMM_SELF, "  invJ:");CHKERRQ(ierr);
-      for (i = 0; i < dim*dim; ++i) {
-        ierr = PetscPrintf(PETSC_COMM_SELF, " %g", invJ[i]);CHKERRQ(ierr);
-      }
-      ierr = PetscPrintf(PETSC_COMM_SELF, "\n");CHKERRQ(ierr);
-    }
-    for (q = 0; q < Nq; ++q) {
-      if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "  quad point %d\n", q);CHKERRQ(ierr);}
-      PetscScalar u[spatialDim];
-      PetscScalar gradU[spatialDim*spatialDim];
-
-      for (i = 0; i < dim; ++i) u[i] = 0.0;
-      for (i = 0; i < dim*dim; ++i) gradU[i] = 0.0;
-      for (b = 0; b < Nb; ++b) {
-        for (comp = 0; comp < Ncomp; ++comp) {
-          const PetscInt cidx = b*Ncomp+comp;
-          PetscScalar    realSpaceDer[spatialDim];
-          PetscInt       d, f;
-
-          u[comp] += coefficients[e*Nb*Ncomp+cidx]*basisTabulation[q*Nb*Ncomp+cidx];
-          for (d = 0; d < dim; ++d) {
-            realSpaceDer[d] = 0.0;
-            for (f = 0; f < dim; ++f) {
-              realSpaceDer[d] += invJ[f*dim+d]*basisDerTabulation[(q*Nb*Ncomp+cidx)*dim+f];
-            }
-            gradU[comp*dim+d] += coefficients[e*Nb*Ncomp+cidx]*realSpaceDer[d];
-          }
-        }
-      }
-      f1_elasticity(u, gradU, &f1[q*Ncomp*dim]);
-      for (i = 0; i < Ncomp*dim; ++i) {
-        f1[q*Ncomp*dim+i] *= detJ*quadWeights[q];
-      }
-      if (debug > 1) {
-        PetscInt c, d;
-        for (c = 0; c < Ncomp; ++c) {
-          for (d = 0; d < dim; ++d) {
-            ierr = PetscPrintf(PETSC_COMM_SELF, "    gradU[%d]_%c: %g f1[%d]_%c: %g\n", c, 'x'+d, gradU[c*dim+d], c, 'x'+d, f1[(q*Ncomp + c)*dim+d]);CHKERRQ(ierr);
-          }
-        }
-      }
-    }
-    for (b = 0; b < Nb; ++b) {
-      for (comp = 0; comp < Ncomp; ++comp) {
-        const PetscInt cidx = b*Ncomp+comp;
-        PetscInt       q, d, f;
-
-        elemVec[e*Nb*Ncomp+cidx] = 0.0;
-        for (q = 0; q < Nq; ++q) {
-          PetscScalar realSpaceDer[spatialDim];
-
-          for (d = 0; d < dim; ++d) {
-            realSpaceDer[d] = 0.0;
-            for (f = 0; f < dim; ++f) {
-              realSpaceDer[d] += invJ[f*dim+d]*basisDerTabulation[(q*Nb*Ncomp+cidx)*dim+f];
-            }
-            elemVec[e*Nb*Ncomp+cidx] += realSpaceDer[d]*f1[(q*Ncomp+comp)*dim+d];
-          }
-        }
-      }
-    }
-  }
-  ierr = PetscLogFlops((((2+(2+2*dim)*dim)*Ncomp*Nb+(2+2)*dim*Ncomp)*Nq + (2+2*dim)*dim*Nq*Ncomp*Nb)*Ne);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(user->integrateBatchCPUEvent,0,0,0,0);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-};
-
-#if 0
-PetscErrorCode FormFunctionLocalBatch(DM dm, Vec X, Vec F, AppCtx *user)
-{
-  if (user->gpu) {
-    ierr = PetscLogEventBegin(user->integrateBatchGPUEvent,0,0,0,0);CHKERRQ(ierr);
-    ierr = IntegrateElementBatchGPU(dim, numChunks*numBatches*batchSize, numBatches, batchSize, numBlocks, u, invJ, detJ, elemVec, user->integrateGPUOnlyEvent, user->debug, user->op);CHKERRQ(ierr);
-    ierr = PetscLogFlops((((2+(2+2*dim)*dim)*numBasisComps*numBasisFuncs+(2+2)*dim*numBasisComps)*numQuadPoints + (2+2*dim)*dim*numQuadPoints*numBasisComps*numBasisFuncs)*numChunks*numBatches*batchSize);CHKERRQ(ierr);
-    ierr = PetscLogEventEnd(user->integrateBatchGPUEvent,0,0,0,0);CHKERRQ(ierr);
-  } else {
-    switch (user->op) {
-    case LAPLACIAN:
-      ierr = IntegrateLaplacianBatchCPU(numChunks*numBatches*batchSize, numBasisFuncs, u, invJ, detJ, numQuadPoints, quadPoints, quadWeights, basis, basisDer, elemVec, user);CHKERRQ(ierr);break;
-    case ELASTICITY:
-      ierr = IntegrateElasticityBatchCPU(numChunks*numBatches*batchSize, numBasisFuncs, numBasisComps, u, invJ, detJ, numQuadPoints, quadPoints, quadWeights, basis, basisDer, elemVec, user);CHKERRQ(ierr);break;
-    default:
-      SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid PDE operator %d", user->op);
-    }
-  }
-}
-#endif
-
-#undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
@@ -627,7 +352,7 @@ int main(int argc, char **argv)
 
     ierr = DMGetGlobalVector(dm, &X);CHKERRQ(ierr);
     ierr = DMGetGlobalVector(dm, &F);CHKERRQ(ierr);
-    ierr = FormInitialGuess(X, user.exactFuncs[0], INSERT_VALUES, &user);CHKERRQ(ierr);
+    ierr = DMPlexProjectFunction(dm, numComp, user.exactFuncs, INSERT_VALUES, X);CHKERRQ(ierr);
     ierr = SNESComputeFunction(snes, X, F);CHKERRQ(ierr);
     ierr = DMRestoreGlobalVector(dm, &X);CHKERRQ(ierr);
     ierr = DMRestoreGlobalVector(dm, &F);CHKERRQ(ierr);

@@ -257,7 +257,7 @@ regressionParameters = {'src/dm/impls/patch/examples/tests/ex1': [{'numProcs': 1
                                                                {'numProcs': 1, 'args': '-dim 3 -dm_view -refinement_limit 0.0125 -compute_function -op_type elasticity -batch -gpu', 'requires': ['cuda']},
                                                                {'numProcs': 1, 'args': '-dim 3 -dm_view -refinement_limit 0.0125 -compute_function -op_type elasticity -batch -gpu -gpu_batches 2', 'requires': ['cuda']},
                                                                # 2D Laplacian OpenCL 32-35
-                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0 -compute_function',
+                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0 -compute_function -petscspace_order 1 -petscfe_type opencl -dm_plex_print_fem 1',
                                                                 'setup': './bin/pythonscripts/PetscGenerateFEMQuadrature.py 2 1 1 1 laplacian src/snes/examples/tutorials/ex52.h',
                                                                 'source': ['src/snes/examples/tutorials/ex52_integrateElementOpenCL.c'], 'requires': ['opencl']},
                                                                {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0 -compute_function -batch',
