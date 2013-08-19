@@ -31,16 +31,13 @@ regressionParameters = {'src/dm/impls/patch/examples/tests/ex1': [{'numProcs': 1
                                                                  # CGNS tests 10-11 (need to find smaller test meshes)
                                                                  {'numProcs': 1, 'args': '-filename %(meshes)s/tut21.cgns -interpolate 1 -dm_view', 'requires': ['CGNS']},
                                                                  {'numProcs': 1, 'args': '-filename %(meshes)s/StaticMixer.cgns -interpolate 1 -dm_view', 'requires': ['CGNS']}],
-                        'src/dm/impls/plex/examples/tests/ex3': [{'numProcs': 1, 'args': '-petscspace_order 1 -num_comp 2 -qorder 1',
-                                                                  'setup': './bin/pythonscripts/PetscGenerateFEMQuadrature.py 2 1 2 1 identity src/dm/impls/plex/examples/tests/ex3.h'},
+                        'src/dm/impls/plex/examples/tests/ex3': [{'numProcs': 1, 'args': '-petscspace_order 1 -num_comp 2 -qorder 1'},
                                                                  {'numProcs': 1, 'args': '-petscspace_order 1 -num_comp 2 -qorder 1 -porder 1'},
                                                                  {'numProcs': 1, 'args': '-petscspace_order 1 -num_comp 2 -qorder 1 -porder 2'},
-                                                                 {'numProcs': 1, 'args': '-dim 3 -petscspace_order 1 -num_comp 3 -qorder 1',
-                                                                  'setup': './bin/pythonscripts/PetscGenerateFEMQuadrature.py 3 1 3 1 identity src/dm/impls/plex/examples/tests/ex3.h'},
+                                                                 {'numProcs': 1, 'args': '-dim 3 -petscspace_order 1 -num_comp 3 -qorder 1'},
                                                                  {'numProcs': 1, 'args': '-dim 3 -petscspace_order 1 -num_comp 3 -qorder 1 -porder 1'},
                                                                  {'numProcs': 1, 'args': '-dim 3 -petscspace_order 1 -num_comp 3 -qorder 1 -porder 2'},
-                                                                 {'numProcs': 1, 'args': '-interpolate 1 -petscspace_order 2 -num_comp 2 -qorder 2',
-                                                                  'setup': './bin/pythonscripts/PetscGenerateFEMQuadrature.py 2 2 2 1 identity src/dm/impls/plex/examples/tests/ex3.h'},
+                                                                 {'numProcs': 1, 'args': '-interpolate 1 -petscspace_order 2 -num_comp 2 -qorder 2'},
                                                                  {'numProcs': 1, 'args': '-interpolate 1 -petscspace_order 2 -num_comp 2 -qorder 2 -porder 1'},
                                                                  {'numProcs': 1, 'args': '-interpolate 1 -petscspace_order 2 -num_comp 2 -qorder 2 -porder 2'}],
                         'src/dm/impls/plex/examples/tests/ex4': [{'numProcs': 1, 'args': '-dim 2 -dm_view ::ascii_info_detail'},
@@ -281,14 +278,12 @@ regressionParameters = {'src/dm/impls/patch/examples/tests/ex1': [{'numProcs': 1
                                                                 'source': ['src/snes/examples/tutorials/ex52_integrateElement.cu'], 'requires': ['cuda']},
                                                                ],
                         'src/snes/examples/tutorials/ex62':   [# 2D serial P1 tests 0-3
-                                                               {'numProcs': 1, 'args': '-run_type test -refinement_limit 0.0    -bc_type dirichlet -interpolate 0 -vel_petscspace_order 1 -pres_petscspace_order 1 -show_initial -dm_plex_print_fem 1',
-                                                                'setup': './bin/pythonscripts/PetscGenerateFEMQuadrature.py 2 1 2 1 laplacian 2 1 1 1 gradient src/snes/examples/tutorials/ex62.h'},
+                                                               {'numProcs': 1, 'args': '-run_type test -refinement_limit 0.0    -bc_type dirichlet -interpolate 0 -vel_petscspace_order 1 -pres_petscspace_order 1 -show_initial -dm_plex_print_fem 1'},
                                                                {'numProcs': 1, 'args': '-run_type test -refinement_limit 0.0    -bc_type dirichlet -interpolate 1 -vel_petscspace_order 1 -pres_petscspace_order 1 -show_initial -dm_plex_print_fem 1'},
                                                                {'numProcs': 1, 'args': '-run_type test -refinement_limit 0.0625 -bc_type dirichlet -interpolate 0 -vel_petscspace_order 1 -pres_petscspace_order 1 -show_initial -dm_plex_print_fem 1'},
                                                                {'numProcs': 1, 'args': '-run_type test -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 1 -pres_petscspace_order 1 -show_initial -dm_plex_print_fem 1'},
                                                                # 2D serial P2 tests 4-5
-                                                               {'numProcs': 1, 'args': '-run_type test -refinement_limit 0.0    -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -show_initial -dm_plex_print_fem 1',
-                                                                'setup': './bin/pythonscripts/PetscGenerateFEMQuadrature.py 2 2 2 1 laplacian 2 1 1 1 gradient src/snes/examples/tutorials/ex62.h'},
+                                                               {'numProcs': 1, 'args': '-run_type test -refinement_limit 0.0    -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -show_initial -dm_plex_print_fem 1'},
 
                                                                {'numProcs': 1, 'args': '-run_type test -refinement_limit 0.0625 -bc_type dirichlet -interpolate 1 -vel_petscspace_order 2 -pres_petscspace_order 1 -show_initial -dm_plex_print_fem 1'},
                                                                # Parallel tests 6-17
