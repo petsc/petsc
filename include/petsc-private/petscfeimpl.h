@@ -98,4 +98,22 @@ typedef struct {
   PetscInt cellType;
 } PetscFE_Basic;
 
+#ifdef PETSC_HAVE_OPENCL
+
+#ifdef __APPLE__
+#include <OpenCL/cl.h>
+#else
+#include <CL/cl.h>
+#endif
+
+typedef struct {
+  cl_platform_id   pf_id;
+  cl_device_id     dev_id;
+  cl_context       ctx_id;
+  cl_command_queue queue_id;
+  PetscLogEvent    residualEvent;
+  PetscInt         op; /* ANDY: Stand-in for real equation code generation */
+} PetscFE_OpenCL;
+#endif
+
 #endif
