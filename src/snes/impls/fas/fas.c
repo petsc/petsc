@@ -490,7 +490,7 @@ PetscErrorCode SNESFASDownSmooth_Private(SNES snes, Vec B, Vec X, Vec F, PetscRe
   if (fas->eventsmoothsolve) {ierr = PetscLogEventEnd(fas->eventsmoothsolve,0,0,0,0);CHKERRQ(ierr);}
   /* check convergence reason for the smoother */
   ierr = SNESGetConvergedReason(smoothd,&reason);CHKERRQ(ierr);
-  if (reason < 0 && !(reason == SNES_DIVERGED_MAX_IT || reason == SNES_DIVERGED_LOCAL_MIN)) {
+  if (reason < 0 && !(reason == SNES_DIVERGED_MAX_IT || reason == SNES_DIVERGED_LOCAL_MIN || reason == SNES_DIVERGED_LINE_SEARCH)) {
     snes->reason = SNES_DIVERGED_INNER;
     PetscFunctionReturn(0);
   }
@@ -521,7 +521,7 @@ PetscErrorCode SNESFASUpSmooth_Private(SNES snes, Vec B, Vec X, Vec F, PetscReal
   if (fas->eventsmoothsolve) {ierr = PetscLogEventEnd(fas->eventsmoothsolve,0,0,0,0);CHKERRQ(ierr);}
   /* check convergence reason for the smoother */
   ierr = SNESGetConvergedReason(smoothu,&reason);CHKERRQ(ierr);
-  if (reason < 0 && reason != SNES_DIVERGED_MAX_IT) {
+  if (reason < 0 && !(reason == SNES_DIVERGED_MAX_IT || reason == SNES_DIVERGED_LOCAL_MIN || reason == SNES_DIVERGED_LINE_SEARCH)) {
     snes->reason = SNES_DIVERGED_INNER;
     PetscFunctionReturn(0);
   }
