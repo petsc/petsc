@@ -1070,10 +1070,14 @@ PetscErrorCode  KSPGetConvergedReason(KSP ksp,KSPConvergedReason *reason)
 +  ksp - the preconditioner context
 -  dm - the dm
 
+   Notes: If this is used then the KSP will attempt to use the DM to create the matrix and use the routine
+          set with DMKSPSetComputeOperators(). Use KSPSetDMActive(dm,PETSC_FALSE) to instead use the matrix
+          you've provided with KSPSetOperators().
+
    Level: intermediate
 
 
-.seealso: KSPGetDM(), KSPSetDM(), KSPGetDM()
+.seealso: KSPGetDM(), KSPSetDMActive(), DMKSPSetComputeOperators()
 @*/
 PetscErrorCode  KSPSetDM(KSP ksp,DM dm)
 {
@@ -1116,7 +1120,7 @@ PetscErrorCode  KSPSetDM(KSP ksp,DM dm)
    Notes:
    By default KSPSetDM() sets the DM as active, call KSPSetDMActive(dm,PETSC_FALSE); after KSPSetDM(dm) to not have the KSP object use the DM to generate the matrices
 
-.seealso: KSPGetDM(), KSPSetDM(), KSPGetDM()
+.seealso: KSPGetDM(), KSPSetDM(), SNESSetDM()
 @*/
 PetscErrorCode  KSPSetDMActive(KSP ksp,PetscBool flg)
 {
@@ -1143,7 +1147,7 @@ PetscErrorCode  KSPSetDMActive(KSP ksp,PetscBool flg)
    Level: intermediate
 
 
-.seealso: KSPSetDM(), KSPSetDM(), KSPGetDM()
+.seealso: KSPSetDM(), KSPGetDM()
 @*/
 PetscErrorCode  KSPGetDM(KSP ksp,DM *dm)
 {
