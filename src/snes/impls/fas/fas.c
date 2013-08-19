@@ -856,7 +856,6 @@ PetscErrorCode SNESFASCycle_Full(SNES snes, Vec X)
   /* final v-cycle */
   if (isFine) {
     if (next) {
-      ierr = SNESFASDownSmooth_Private(snes,B,X,F,&snes->norm);CHKERRQ(ierr);
       ierr = SNESFASCoarseCorrection(snes,X,F,X);CHKERRQ(ierr);
       ierr = SNESFASUpSmooth_Private(snes,B,X,F,&snes->norm);CHKERRQ(ierr);
     }
