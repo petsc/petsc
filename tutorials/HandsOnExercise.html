@@ -41,19 +41,19 @@ PETSc comes with a large number of example codes to illustrate usage. There thre
   <li> Run a 1 processor example on the default grid with all the default solver options
     <pre>
      mpiexec -n 1 ex2 -ts_max_steps 10 -ts_monitor
-     <a href="../src/ts/examples/tutorials/output/ex2_tut_1.out">[Expected output]</a>
+     <a href="../src/ts/examples/tutorials/output/ex2_tut_1.out.html">[Expected output]</a>
     </pre>
   </li>
   <li> Run with the same options on 4 processors plus monitor convergence of the nonlinear and linear solvers
     <pre>
       mpiexec -n 4 ex2 -ts_max_steps 10 -ts_monitor -snes_monitor -ksp_monitor
-     <a href="../src/ts/examples/tutorials/output/ex2_tut_2.out">[Expected output]</a>
+     <a href="../src/ts/examples/tutorials/output/ex2_tut_2.out.html">[Expected output]</a>
     </pre>
   </li>
   <li> Run with the same options on 16 processors with 64 grid points
     <pre>
      mpiexec -n 16 ex2 -ts_max_steps 10 -ts_monitor -da_grid_x 64
-     <a href="../src/ts/examples/tutorials/output/ex2_tut_3.out">[Expected output]</a>
+     <a href="../src/ts/examples/tutorials/output/ex2_tut_3.out.html">[Expected output]</a>
     </pre>
   </li>
 </ul>
@@ -89,45 +89,45 @@ PETSc comes with a large number of example codes to illustrate usage. There thre
       and examine the exact solver used
     <pre>
       mpiexec -n 16 ex19 -da_refine 6 -snes_monitor -ksp_monitor -snes_view
-     <a href="../src/snes/examples/tutorials/output/ex19_tut_1.out">[Expected output]</a>
+     <a href="../src/snes/examples/tutorials/output/ex19_tut_1.out.html">[Expected output]</a>
     </pre>
   </li>
   <li> Run with the same options but use geometric multigrid as the linear solver
     <pre>
       mpiexec -n 16 ex19 -da_refine 6 -snes_monitor -ksp_monitor -snes_view -pc_type mg
-     <a href="../src/snes/examples/tutorials/output/ex19_tut_2.out">[Expected output]</a>
+     <a href="../src/snes/examples/tutorials/output/ex19_tut_2.out.html">[Expected output]</a>
     </pre>
   </li>
   <li> Run with the same options but use algebraic multigrid (hypre's BoomerAMG) as the linear solver
     <pre>
       mpiexec -n 16 ex19 -da_refine 6 -snes_monitor -ksp_monitor -snes_view -pc_type hypre
-     <a href="../src/snes/examples/tutorials/output/ex19_tut_3.out">[Expected output]</a>
+     <a href="../src/snes/examples/tutorials/output/ex19_tut_3.out.html">[Expected output]</a>
     </pre>
   </li>
   <li> Run on 4 processors with the default linear solver and profile the run
     <pre>
       mpiexec -n 4 ex19 -da_refine 6 -log_summary
-     <a href="../src/snes/examples/tutorials/output/ex19_tut_4.out">[Expected output]</a>
+     <a href="../src/snes/examples/tutorials/output/ex19_tut_4.out.html">[Expected output]</a>
     </pre>
     Compare the runtime for SNESSolve to the case with the default solver
   </li>
   <li> Run on 4 processors with the geometric multigrid linear solver and profile the run
     <pre>
       mpiexec -n 4 ex19 -da_refine 6 -log_summary -pc_type mg
-     <a href="../src/snes/examples/tutorials/output/ex19_tut_5.out">[Expected output]</a>
+     <a href="../src/snes/examples/tutorials/output/ex19_tut_5.out.html">[Expected output]</a>
     </pre>
   </li>
   <li> Run on 16 processors with the default linear solver and profile the run
     <pre>
       mpiexec -n 16 ex19 -da_refine 6 -log_summary
-     <a href="../src/snes/examples/tutorials/output/ex19_tut_6.out">[Expected output]</a>
+     <a href="../src/snes/examples/tutorials/output/ex19_tut_6.out.html">[Expected output]</a>
     </pre>
     Compare the runtime for SNESSolve to the 4 processor case with the default solver, what is the speedup?
   </li>
   <li> Run on 16 processors with the geometric multigrid linear solver and profile the run
     <pre>
       mpiexec -n 16 ex19 -da_refine 6 -log_summary -pc_type mg
-     <a href="../src/snes/examples/tutorials/output/ex19_tut_7.out">[Expected output]</a>
+     <a href="../src/snes/examples/tutorials/output/ex19_tut_7.out.html">[Expected output]</a>
     </pre>
     Compare the runtime for the SNESSolve to the 4 processor case with multigrid, what is the speedup? 
     Why is the speedup for multigrid lower than the speedup for the default solver? 
@@ -166,7 +166,7 @@ PETSc comes with a large number of example codes to illustrate usage. There thre
 grid on each processor) with the SMG multigrid solver
     <pre>
      mpiexec -n 1 ex42
-     <a href="../src/ksp/ksp/examples/tutorials/output/ex42_tut_1.out">[Expected output]</a>
+     <a href="../src/ksp/ksp/examples/tutorials/output/ex42_tut_1.out.html">[Expected output]</a>
     </pre>
   </li>
 </ul>
@@ -200,19 +200,19 @@ grid on each processor) with the SMG multigrid solver
   <li>Run shallow water flow through a tiny hybrid mesh
     <pre>
       mpiexec -n 1 ex11 -f ${PETSC_DIR}/share/petsc/datafiles/meshes/sevenside.exo
-      <a href="../src/ts/examples/tutorials/output/ex11_tut_1.out">[Expected output]</a>
+      <a href="../src/ts/examples/tutorials/output/ex11_tut_1.out.html">[Expected output]</a>
     </pre>
   </li>
   <li>Run shallow water flow through a small mesh with a Rosenbrock-W solver
     <pre>
       mpiexec -n 1 ex11 -f ${PETSC_DIR}/share/petsc/datafiles/meshes/sevenside.exo -ts_type rosw
-      <a href="../src/ts/examples/tutorials/output/ex11_tut_2.out">[Expected output]</a>
+      <a href="../src/ts/examples/tutorials/output/ex11_tut_2.out.html">[Expected output]</a>
     </pre>
   </li>
   <li>Run shallow water flow through a larger quadrilateral mesh
     <pre>
       mpiexec -n 16 ex11 -f ${PETSC_DIR}/share/petsc/datafiles/meshes/sevenside-quad-15.exo
-      <a href="../src/ts/examples/tutorials/output/ex11_tut_3.out">[Expected output]</a>
+      <a href="../src/ts/examples/tutorials/output/ex11_tut_3.out.html">[Expected output]</a>
     </pre>
   </li>
 </ul>
