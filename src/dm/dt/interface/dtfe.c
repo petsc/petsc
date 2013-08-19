@@ -2234,7 +2234,7 @@ PetscErrorCode PetscFEIntegrateJacobian_Basic(PetscFE fem, PetscInt Ne, PetscInt
   PetscScalar    *g0, *g1, *g2, *g3, *u, *gradU;
   PetscReal      *x, *realSpaceDerI, *realSpaceDerJ;
   PetscReal      *basisI, *basisDerI, *basisJ, *basisDerJ;
-  PetscInt        NbI, NcI, NbJ, NcJ, numComponents = 0;
+  PetscInt        NbI = 0, NcI = 0, NbJ = 0, NcJ = 0, numComponents = 0;
   PetscInt        dim, f, e;
   PetscErrorCode  ierr;
 
