@@ -209,10 +209,15 @@ PETSc comes with a large number of example codes to illustrate usage. There thre
       mpiexec -n 1 ./ex11 -f ${PETSC_DIR}/share/petsc/datafiles/meshes/sevenside.exo -ts_type rosw      <a href="../src/ts/examples/tutorials/output/ex11_tut_2.out.html">[Expected output]</a>
     </pre>
   </li>
-  <li>Run simple advection through a larger quadrilateral mesh
+  <li>Run simple advection through a larger quadrilateral mesh of an annulus with least squares reconstruction and no limiting, monitoring the error
     <pre>
-      mpiexec -n 16 ./ex11 -f ${PETSC_DIR}/share/petsc/datafiles/meshes/sevenside-quad-15.exo      <a href="../src/ts/examples/tutorials/output/ex11_tut_3.out.html">[Expected output]</a>
+      mpiexec -n 16 ./ex11 -f ${PETSC_DIR}/share/petsc/datafiles/meshes/annulus-20.exo -monitor Error -advect_sol_type bump -ufv_reconstruct -ufv_limit none <a href="../src/ts/examples/tutorials/output/ex11_tut_4.out.html">[Expected output]</a>
     </pre>
+    Compare turning to the error after turning off reconstruction.
+  </li>
+  <li>Run shallow water on the larger mesh with least squares reconstruction and minmod limiting, monitoring water Height (integral is conserved) and Energy (not conserved)
+    <pre>
+      mpiexec -n 4 ./ex11 -f ${PETSC_DIR}/share/petsc/datafiles/meshes/annulus-20.exo physics sw -monitor Height,Energy -ufv_reconstruct -ufv_limit minmod <a href="../src/ts/examples/tutorials/output/ex11_tut_5.out.html">[Expected output]</a>
   </li>
 </ul>
 
