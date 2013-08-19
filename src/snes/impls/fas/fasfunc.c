@@ -14,7 +14,7 @@ extern PetscErrorCode SNESFASCycleCreateSmoother_Private(SNES, SNES*);
 
 Input Parameters:
 + snes  - FAS context
-- fastype  - SNES_FAS_ADDITIVE or SNES_FAS_MULTIPLICATIVE
+- fastype  - SNES_FAS_ADDITIVE, SNES_FAS_MULTIPLICATIVE, SNES_FAS_FULL, or SNES_FAS_KASKADE
 
 Level: intermediate
 
