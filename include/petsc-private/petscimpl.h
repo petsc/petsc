@@ -55,10 +55,6 @@ typedef struct {
   void *ctx;
 } PetscFortranCallback;
 
-#if defined(PETSC_HAVE_SAWS)
-#include <SAWs.h>
-#endif
-
 /*
    All PETSc objects begin with the fields defined in PETSCHEADER.
    The PetscObject is a way of examining these fields regardless of
