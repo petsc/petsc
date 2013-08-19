@@ -1750,6 +1750,10 @@ PetscErrorCode PetscFECreate(MPI_Comm comm, PetscFE *fem)
   f->D             = NULL;
   f->H             = NULL;
   ierr = PetscMemzero(&f->quadrature, sizeof(PetscQuadrature));CHKERRQ(ierr);
+  f->blockSize     = 0;
+  f->numBlocks     = 1;
+  f->batchSize     = 0;
+  f->numBatches    = 1;
 
   *fem = f;
   PetscFunctionReturn(0);
@@ -1801,6 +1805,36 @@ PetscErrorCode PetscFEGetNumComponents(PetscFE fem, PetscInt *comp)
   PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);
   PetscValidPointer(comp, 2);
   *comp = fem->numComponents;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscFESetTileSizes"
+PetscErrorCode PetscFESetTileSizes(PetscFE fem, PetscInt blockSize, PetscInt numBlocks, PetscInt batchSize, PetscInt numBatches)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);
+  fem->blockSize  = blockSize;
+  fem->numBlocks  = numBlocks;
+  fem->batchSize  = batchSize;
+  fem->numBatches = numBatches;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscFEGetTileSizes"
+PetscErrorCode PetscFEGetTileSizes(PetscFE fem, PetscInt *blockSize, PetscInt *numBlocks, PetscInt *batchSize, PetscInt *numBatches)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);
+  if (blockSize)  PetscValidPointer(blockSize,  2);
+  if (numBlocks)  PetscValidPointer(numBlocks,  3);
+  if (batchSize)  PetscValidPointer(batchSize,  4);
+  if (numBatches) PetscValidPointer(numBatches, 5);
+  if (blockSize)  *blockSize  = fem->blockSize;
+  if (numBlocks)  *numBlocks  = fem->numBlocks;
+  if (batchSize)  *batchSize  = fem->batchSize;
+  if (numBatches) *numBatches = fem->numBatches;
   PetscFunctionReturn(0);
 }
 

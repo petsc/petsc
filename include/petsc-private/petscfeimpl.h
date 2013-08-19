@@ -90,6 +90,8 @@ struct _p_PetscFE {
   PetscQuadrature quadrature;    /* Suitable quadrature on K */
   PetscInt       *numDof;        /* The number of dof on mesh points of each depth */
   PetscReal      *B, *D, *H;     /* Tabulation of basis and derivatives at quadrature points */
+  PetscInt        blockSize, numBlocks;  /* Blocks are processed concurrently */
+  PetscInt        batchSize, numBatches; /* A batch is made up of blocks, Batches are processed in serial */
 };
 
 typedef struct {
