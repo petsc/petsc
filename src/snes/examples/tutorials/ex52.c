@@ -124,7 +124,6 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->refinementRounds  = 1;
   options->computeFunction   = PETSC_FALSE;
   options->computeJacobian   = PETSC_FALSE;
-  options->batch             = PETSC_FALSE;
   options->gpu               = PETSC_FALSE;
   options->op                = LAPLACIAN;
   options->showResidual      = PETSC_TRUE;
