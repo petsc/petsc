@@ -921,6 +921,9 @@ PetscErrorCode  KSPRegister(const char sname[],PetscErrorCode (*function)(KSP))
 +  ksp - the Krylov space object
 -  nullsp - the null space of the operator
 
+  Notes: If the Mat provided to KSP has a nullspace added to it with MatSetNullSpace() then
+         KSP will automatically use the MatNullSpace and you don't need to call KSPSetNullSpace().
+
   Level: advanced
 
 .seealso: KSPSetOperators(), MatNullSpaceCreate(), KSPGetNullSpace(), MatSetNullSpace()

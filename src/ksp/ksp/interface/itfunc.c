@@ -223,11 +223,11 @@ PetscErrorCode  KSPSetUp(KSP ksp)
     }
 
     if (ksp->setupstage != KSP_SETUP_NEWRHS) {
-      ierr = KSPGetOperators(ksp,&A,&B,NULL);CHKERRQ(ierr);
       if (kdm->ops->computeoperators) {
+        ierr = KSPGetOperators(ksp,&A,&B,NULL);CHKERRQ(ierr);
         ierr = (*kdm->ops->computeoperators)(ksp,A,B,&stflg,kdm->operatorsctx);CHKERRQ(ierr);
-      }
-      ierr = KSPSetOperators(ksp,A,B,stflg);CHKERRQ(ierr);
+        ierr = KSPSetOperators(ksp,A,B,stflg);CHKERRQ(ierr);
+      } else SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_WRONGSTATE,"You called KSPSetDM() but did not use DMKSPSetComputeOperators() or KSPSetDMActive(dm,PETSC_FALSE);");
     }
   }
 
