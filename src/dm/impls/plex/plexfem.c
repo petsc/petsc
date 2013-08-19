@@ -563,16 +563,16 @@ PetscErrorCode DMPlexComputeResidualFEM(DM dm, Vec X, Vec F, void *user)
     void   (*f1)(const PetscScalar[], const PetscScalar[], const PetscReal[], const PetscScalar[], const PetscScalar[], PetscScalar[]) = fem->f1Funcs[f];
     PetscInt Nb;
     /* Conforming batches */
-    PetscInt numBlocks  = 1;
-    PetscInt numBatches = 1;
-    PetscInt numChunks, Ne, blockSize, batchSize;
+    PetscInt numChunks, numBatches, numBlocks, Ne, blockSize, batchSize;
     /* Remainder */
     PetscInt Nr, offset;
 
     ierr = PetscFEGetQuadrature(fe[f], &q);CHKERRQ(ierr);
     ierr = PetscFEGetDimension(fe[f], &Nb);CHKERRQ(ierr);
+    ierr = PetscFEGetTileSizes(fe[f], NULL, &numBlocks, NULL, &numBatches);CHKERRQ(ierr);
     blockSize = Nb*q.numQuadPoints;
     batchSize = numBlocks * blockSize;
+    ierr =  PetscFESetTileSizes(fe[f], blockSize, numBlocks, batchSize, numBatches);CHKERRQ(ierr);
     numChunks = numCells / (numBatches*batchSize);
     Ne        = numChunks*numBatches*batchSize;
     Nr        = numCells % (numBatches*batchSize);

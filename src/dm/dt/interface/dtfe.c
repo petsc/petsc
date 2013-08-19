@@ -1611,6 +1611,10 @@ PetscErrorCode PetscFEViewFromOptions(PetscFE fem, const char prefix[], const ch
   Input Parameter:
 . fem - the PetscFE object to set options for
 
+  Options Database:
+. -petscfe_num_blocks  the number of cell blocks to integrate concurrently
+. -petscfe_num_batches the number of cell batches to integrate serially
+
   Level: developer
 
 .seealso PetscFEView()
@@ -1638,6 +1642,8 @@ PetscErrorCode PetscFESetFromOptions(PetscFE fem)
   } else if (!((PetscObject) fem)->type_name) {
     ierr = PetscFESetType(fem, defaultType);CHKERRQ(ierr);
   }
+  ierr = PetscOptionsInt("-petscfe_num_blocks", "The number of cell blocks to integrate concurrently", "PetscSpaceSetTileSizes", fem->numBlocks, &fem->numBlocks, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-petscfe_num_batches", "The number of cell batches to integrate serially", "PetscSpaceSetTileSizes", fem->numBatches, &fem->numBatches, NULL);CHKERRQ(ierr);
   if (fem->ops->setfromoptions) {
     ierr = (*fem->ops->setfromoptions)(fem);CHKERRQ(ierr);
   }
