@@ -192,16 +192,16 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx )
     partial_sum += pcis->n_shared[i];
     ptrs_buffer[i] = ptrs_buffer[i-1]+pcis->n_shared[i];
   }
-  ierr = PetscMalloc( partial_sum*sizeof(PetscScalar),&send_buffer);CHKERRQ(ierr);
-  ierr = PetscMalloc( partial_sum*sizeof(PetscScalar),&recv_buffer);CHKERRQ(ierr);
-  ierr = PetscMalloc( partial_sum*sizeof(PetscScalar),&all_factors[0]);CHKERRQ(ierr);
+  ierr = PetscMalloc(partial_sum*sizeof(PetscScalar),&send_buffer);CHKERRQ(ierr);
+  ierr = PetscMalloc(partial_sum*sizeof(PetscScalar),&recv_buffer);CHKERRQ(ierr);
+  ierr = PetscMalloc(partial_sum*sizeof(PetscScalar),&all_factors[0]);CHKERRQ(ierr);
   for (i=0;i<pcis->n-1;i++) {
     j = mat_graph->count[i];
     all_factors[i+1]=all_factors[i]+j;
   }
   /* scatter B scaling to N vec */
   ierr = VecScatterBegin(pcis->N_to_B,pcis->D,pcis->vec1_N,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-  ierr = VecScatterEnd  (pcis->N_to_B,pcis->D,pcis->vec1_N,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  ierr = VecScatterEnd(pcis->N_to_B,pcis->D,pcis->vec1_N,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   /* communications */
   ierr = VecGetArray(pcis->vec1_N,&array);CHKERRQ(ierr);
   for (i=1;i<pcis->n_neigh;i++) {

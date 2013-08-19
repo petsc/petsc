@@ -934,7 +934,7 @@ PetscErrorCode MatMatTransposeMultNumeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
   PetscLogDouble      flops=0.0;
   MatScalar           *aa  =a->a,*aval,*ba=b->a,*bval,*ca,*cval;
   Mat_MatMatTransMult *abt = c->abt;
-  
+
   PetscFunctionBegin;
   /* clear old values in C */
   if (!c->a) {
@@ -956,7 +956,7 @@ PetscErrorCode MatMatTransposeMultNumeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
 
     /* C_dense = A*Bt_dense */
     ierr = MatMatMultNumeric_SeqAIJ_SeqDense(A,Bt_dense,C_dense);CHKERRQ(ierr);
-   
+
     /* Recover C from C_dense */
     ierr = MatTransColoringApplyDenToSp(matcoloring,C_dense,C);CHKERRQ(ierr);
     PetscFunctionReturn(0);
@@ -1484,7 +1484,7 @@ PetscErrorCode MatTransposeColoringCreate_SeqAIJ(Mat mat,ISColoring iscoloring,M
   Nbs       = mat->cmap->N/bs;
   c->M      = mat->rmap->N/bs;  /* set total rows, columns and local rows */
   c->N      = Nbs;
-  c->m      = c->M; 
+  c->m      = c->M;
   c->rstart = 0;
   c->brows  = 100;
 
@@ -1499,7 +1499,7 @@ PetscErrorCode MatTransposeColoringCreate_SeqAIJ(Mat mat,ISColoring iscoloring,M
   if (brows > 0) {
     ierr = PetscMalloc((nis+1)*sizeof(PetscInt),&c->lstart);CHKERRQ(ierr);
   }
-  
+
   colorforrow[0] = 0;
   rows_i         = rows;
   den2sp_i       = den2sp;

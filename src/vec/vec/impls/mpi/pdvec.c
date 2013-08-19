@@ -474,12 +474,11 @@ PetscErrorCode VecView_MPI_Draw_LG(Vec xin,PetscViewer viewer)
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)xin),&size);CHKERRQ(ierr);
   if (!rank) {
     ierr = PetscDrawLGReset(lg);CHKERRQ(ierr);
-    ierr = PetscMalloc(2*(N+1)*sizeof(PetscReal),&xx);CHKERRQ(ierr);
+    ierr = PetscMalloc2(N,PetscReal,&xx,N,PetscReal,&yy);CHKERRQ(ierr);
     for (i=0; i<N; i++) xx[i] = (PetscReal) i;
-    yy   = xx + N;
     ierr = PetscMalloc(size*sizeof(PetscInt),&lens);CHKERRQ(ierr);
     for (i=0; i<size; i++) lens[i] = xin->map->range[i+1] - xin->map->range[i];
-    
+
 #if !defined(PETSC_USE_COMPLEX)
     ierr = MPI_Gatherv((void*)xarray,xin->map->n,MPIU_REAL,yy,lens,xin->map->range,MPIU_REAL,0,PetscObjectComm((PetscObject)xin));CHKERRQ(ierr);
 #else
@@ -494,7 +493,7 @@ PetscErrorCode VecView_MPI_Draw_LG(Vec xin,PetscViewer viewer)
 #endif
     ierr = PetscFree(lens);CHKERRQ(ierr);
     ierr = PetscDrawLGAddPoints(lg,N,&xx,&yy);CHKERRQ(ierr);
-    ierr = PetscFree(xx);CHKERRQ(ierr);
+    ierr = PetscFree2(xx,yy);CHKERRQ(ierr);
   } else {
 #if !defined(PETSC_USE_COMPLEX)
     ierr = MPI_Gatherv((void*)xarray,xin->map->n,MPIU_REAL,0,0,0,MPIU_REAL,0,PetscObjectComm((PetscObject)xin));CHKERRQ(ierr);

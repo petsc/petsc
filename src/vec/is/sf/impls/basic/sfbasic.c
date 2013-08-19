@@ -335,9 +335,7 @@ static PetscErrorCode PetscSFSetUp_Basic(PetscSF sf)
   /* Send leaf identities to roots */
   for (i=0,bas->itotal=0; i<bas->niranks; i++) bas->itotal += ilengths[i];
   ierr = PetscMalloc2(bas->niranks+1,PetscInt,&bas->ioffset,bas->itotal,PetscInt,&bas->irootloc);CHKERRQ(ierr);
-  ierr = PetscMalloc((bas->niranks+sf->nranks)*sizeof(MPI_Request),&rootreqs);CHKERRQ(ierr);
-
-  leafreqs = rootreqs + bas->niranks;
+  ierr = PetscMalloc2(bas->niranks,MPI_Request,&rootreqs,sf->nranks,MPI_Request,&leafreqs);CHKERRQ(ierr);
   bas->ioffset[0] = 0;
   for (i=0; i<bas->niranks; i++) {
     bas->ioffset[i+1] = bas->ioffset[i] + ilengths[i];
@@ -348,9 +346,10 @@ static PetscErrorCode PetscSFSetUp_Basic(PetscSF sf)
     ierr = PetscMPIIntCast(sf->roffset[i+1] - sf->roffset[i],&npoints);CHKERRQ(ierr);
     ierr = MPI_Isend(sf->rremote+sf->roffset[i],npoints,MPIU_INT,sf->ranks[i],bas->tag,comm,&leafreqs[i]);CHKERRQ(ierr);
   }
-  ierr = MPI_Waitall(sf->nranks+bas->niranks,rootreqs,MPI_STATUSES_IGNORE);CHKERRQ(ierr);
+  ierr = MPI_Waitall(bas->niranks,rootreqs,MPI_STATUSES_IGNORE);CHKERRQ(ierr);
+  ierr = MPI_Waitall(sf->nranks,leafreqs,MPI_STATUSES_IGNORE);CHKERRQ(ierr);
   ierr = PetscFree(ilengths);CHKERRQ(ierr);
-  ierr = PetscFree(rootreqs);CHKERRQ(ierr);
+  ierr = PetscFree2(rootreqs,leafreqs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
