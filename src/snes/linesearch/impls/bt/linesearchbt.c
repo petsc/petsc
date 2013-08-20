@@ -226,8 +226,8 @@ static PetscErrorCode  SNESLineSearchApply_BT(SNESLineSearch linesearch)
         ierr = (*linesearch->ops->vinorm)(snes, G, W, &gnorm);CHKERRQ(ierr);
       } else {
         ierr = VecNorm(G,NORM_2,&gnorm);CHKERRQ(ierr);
-        g    = gnorm*gnorm;
       }
+      g = PetscSqr(gnorm);
     }
     if (PetscIsInfOrNanReal(g)) {
       ierr = SNESLineSearchSetSuccess(linesearch, PETSC_FALSE);CHKERRQ(ierr);
@@ -316,8 +316,8 @@ static PetscErrorCode  SNESLineSearchApply_BT(SNESLineSearch linesearch)
             ierr  = (*linesearch->ops->vinorm)(snes, G, W, &gnorm);CHKERRQ(ierr);
           } else {
             ierr = VecNorm(G,NORM_2,&gnorm);CHKERRQ(ierr);
-            g    = gnorm*gnorm;
           }
+          g = PetscSqr(gnorm);
         }
         if (PetscIsInfOrNanReal(gnorm)) {
           ierr = SNESLineSearchSetSuccess(linesearch, PETSC_FALSE);CHKERRQ(ierr);
