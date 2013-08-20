@@ -2528,7 +2528,7 @@ PetscErrorCode MatISSubassemble_Private(Mat mat, PetscInt coarsening_ratio, IS* 
   ierr = PetscSubcommSetNumber(subcomm,2);CHKERRQ(ierr); /* 2 groups, active process and not active processes */ 
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)mat),&rank);CHKERRQ(ierr);
   ierr = PetscMPIIntCast(!local_size,&color);CHKERRQ(ierr);
-  ierr = PetscSubcommSetTypeGeneral(subcomm,color,rank,rank);CHKERRQ(ierr);
+  ierr = PetscSubcommSetTypeGeneral(subcomm,color,rank);CHKERRQ(ierr);
   if (color) {
     ierr = PetscFree(xadj);CHKERRQ(ierr);
     ierr = PetscFree(adjncy);CHKERRQ(ierr);
