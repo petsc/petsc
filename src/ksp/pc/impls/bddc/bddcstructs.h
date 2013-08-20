@@ -2,28 +2,29 @@
 #define __pcbddc_structs_h
 
 #include <petscksp.h>
+#include <petscbt.h>
 
 /* Structure for local graph partitioning */
 struct _PCBDDCGraph {
   ISLocalToGlobalMapping l2gmap;
   PetscInt               nvtxs;
+  PetscBT                touched;
+  PetscInt               *count;
+  PetscInt               **neighbours_set;
+  PetscInt               *subset;
+  PetscInt               *which_dof;
+  PetscInt               *cptr;
+  PetscInt               *queue;
+  PetscInt               *special_dof;
+  PetscInt               *subset_ncc;
+  PetscInt               *mirrors;
+  PetscInt               **mirrors_set;
   PetscInt               ncc;
   PetscInt               n_subsets;
   PetscInt               custom_minimal_size;
   PetscInt               nvtxs_csr;
   PetscInt               *xadj;
   PetscInt               *adjncy;
-  PetscInt               **neighbours_set;
-  PetscInt               *subset;
-  PetscInt               *which_dof;
-  PetscInt               *special_dof;
-  PetscInt               *cptr;
-  PetscInt               *queue;
-  PetscInt               *count;
-  PetscInt               *subset_ncc;
-  PetscBool              *touched;
-  PetscInt               *mirrors;
-  PetscInt               **mirrors_set;
 };
 typedef struct _PCBDDCGraph *PCBDDCGraph;
 
