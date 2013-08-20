@@ -2065,7 +2065,7 @@ $  func(KSP ksp,Mat *A,Mat *B,MatStructure *mstruct,void *ctx)
 
    Level: beginner
 
-.seealso: KSPSetOperators()
+.seealso: KSPSetOperators(), DMKSPSetComputeOperators()
 @*/
 PetscErrorCode KSPSetComputeOperators(KSP ksp,PetscErrorCode (*func)(KSP,Mat,Mat,MatStructure*,void*),void *ctx)
 {
@@ -2101,7 +2101,7 @@ $  func(KSP ksp,Vec b,void *ctx)
 
    Level: beginner
 
-.seealso: KSPSolve()
+.seealso: KSPSolve(), DMKSPSetComputeRHS()
 @*/
 PetscErrorCode KSPSetComputeRHS(KSP ksp,PetscErrorCode (*func)(KSP,Vec,void*),void *ctx)
 {
@@ -2136,7 +2136,7 @@ $  func(KSP ksp,Vec x,void *ctx)
 
    Level: beginner
 
-.seealso: KSPSolve()
+.seealso: KSPSolve(), DMKSPSetComputeInitialGuess()
 @*/
 PetscErrorCode KSPSetComputeInitialGuess(KSP ksp,PetscErrorCode (*func)(KSP,Vec,void*),void *ctx)
 {
