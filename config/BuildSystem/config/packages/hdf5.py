@@ -25,8 +25,9 @@ class Configure(config.package.Package):
     list = []
     for l in self.liblist:
       list.append(l)
-    for l in self.liblist:
-      list.append(l + self.libraries.compression)
+    if self.libraries.compression:
+      for l in self.liblist:
+        list.append(l + self.libraries.compression)
     self.liblist = list
     return config.package.Package.generateLibList(self,framework)
 
