@@ -94,6 +94,11 @@ extern PetscErrorCode MatDuplicate_MUMPS(Mat,MatDuplicateOption,Mat*);
   output:
     nnz     - dim of r, c, and v (number of local nonzero entries of A)
     r, c, v - row and col index, matrix values (matrix triples)
+
+  The returned values r, c, and sometimes v are obtained in a single PetscMalloc(). Then in MatDestroy_MUMPS() it is
+  freed with PetscFree((mumps->irn);  This is not ideal code, the fact that v is ONLY sometimes part of mumps->irn means
+  that the PetscMalloc() cannot easily be replaced with a PetscMalloc3(). 
+
  */
 
 #undef __FUNCT__

@@ -2115,8 +2115,7 @@ PetscErrorCode MatGetSubMatrix_MPIBAIJ_Private(Mat mat,IS isrow,IS iscol,PetscIn
     if (rank == size - 1 && rend != n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local column sizes %D do not add up to total number of columns %D",rend,n);
 
     /* next, compute all the lengths */
-    ierr  = PetscMalloc((2*m+1)*sizeof(PetscInt),&dlens);CHKERRQ(ierr);
-    olens = dlens + m;
+    ierr  = PetscMalloc2(m+1,PetscInt,&dlens,m+1,PetscInt,&olens);CHKERRQ(ierr);
     for (i=0; i<m; i++) {
       jend = ii[i+1] - ii[i];
       olen = 0;
@@ -2133,7 +2132,7 @@ PetscErrorCode MatGetSubMatrix_MPIBAIJ_Private(Mat mat,IS isrow,IS iscol,PetscIn
     ierr = MatSetSizes(M,bs*m,bs*nlocal,PETSC_DECIDE,bs*n);CHKERRQ(ierr);
     ierr = MatSetType(M,((PetscObject)mat)->type_name);CHKERRQ(ierr);
     ierr = MatMPIBAIJSetPreallocation(M,bs,0,dlens,0,olens);CHKERRQ(ierr);
-    ierr = PetscFree(dlens);CHKERRQ(ierr);
+    ierr = PetscFree2(dlens,olens);CHKERRQ(ierr);
   } else {
     PetscInt ml,nl;
 

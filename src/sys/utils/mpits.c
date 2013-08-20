@@ -166,8 +166,7 @@ static PetscErrorCode PetscCommBuildTwoSided_Allreduce(MPI_Comm comm,PetscMPIInt
   ierr     = MPI_Type_size(dtype,&unitbytes);CHKERRQ(ierr);
   ierr     = PetscMalloc(nrecvs*count*unitbytes,&fdata);CHKERRQ(ierr);
   tdata    = (char*)todata;
-  ierr     = PetscMalloc2(nto+nrecvs,MPI_Request,&reqs,nto+nrecvs,MPI_Status,&statuses);CHKERRQ(ierr);
-  sendreqs = reqs + nrecvs;
+  ierr     = PetscMalloc3(nrecvs,MPI_Request,&reqs,nto,MPI_Request,&sendreqs,nto+nrecvs,MPI_Status,&statuses);CHKERRQ(ierr);
   for (i=0; i<nrecvs; i++) {
     ierr = MPI_Irecv((void*)(fdata+count*unitbytes*i),count,dtype,MPI_ANY_SOURCE,tag,comm,reqs+i);CHKERRQ(ierr);
   }
@@ -177,7 +176,7 @@ static PetscErrorCode PetscCommBuildTwoSided_Allreduce(MPI_Comm comm,PetscMPIInt
   ierr = MPI_Waitall(nto+nrecvs,reqs,statuses);CHKERRQ(ierr);
   ierr = PetscMalloc(nrecvs*sizeof(PetscMPIInt),&franks);CHKERRQ(ierr);
   for (i=0; i<nrecvs; i++) franks[i] = statuses[i].MPI_SOURCE;
-  ierr = PetscFree2(reqs,statuses);CHKERRQ(ierr);
+  ierr = PetscFree3(reqs,sendreqs,statuses);CHKERRQ(ierr);
 
   *nfrom            = nrecvs;
   *fromranks        = franks;

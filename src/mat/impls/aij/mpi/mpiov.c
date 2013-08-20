@@ -1143,10 +1143,10 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ_Local(Mat C,PetscInt ismax,const IS isro
       ierr = MPI_Isend(sbuf_aa_i,req_size[i],MPIU_SCALAR,req_source[i],tag3,comm,s_waits4+i);CHKERRQ(ierr);
     }
   }
-  ierr = PetscMalloc((nrqs+1)*sizeof(MPI_Status),&r_status4);CHKERRQ(ierr);
-  ierr = PetscMalloc((nrqr+1)*sizeof(MPI_Status),&s_status4);CHKERRQ(ierr);
   ierr = PetscFree(rbuf1[0]);CHKERRQ(ierr);
   ierr = PetscFree(rbuf1);CHKERRQ(ierr);
+  ierr = PetscMalloc((nrqs+1)*sizeof(MPI_Status),&r_status4);CHKERRQ(ierr);
+  ierr = PetscMalloc((nrqr+1)*sizeof(MPI_Status),&s_status4);CHKERRQ(ierr);
 
   /* Form the matrix */
   /* create col map: global col of C -> local col of submatrices */

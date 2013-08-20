@@ -550,7 +550,7 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
 
   /* get basic dims */
   ierr = MatGetBlockSize(Pmat, &bs);CHKERRQ(ierr);
-  
+
   ierr = MatGetSize(Pmat, &M, &qq);CHKERRQ(ierr);
   if (pc_gamg->verbose) {
     PetscInt NN = M;
