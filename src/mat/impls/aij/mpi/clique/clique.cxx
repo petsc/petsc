@@ -84,7 +84,6 @@ static PetscErrorCode MatMult_Clique(Mat A,Vec X,Vec Y)
   PetscErrorCode        ierr;
   PetscInt              i;
   const PetscCliqScalar *x;
-  PetscCliqScalar       *y;
   Mat_Clique            *cliq=(Mat_Clique*)A->spptr;
   cliq::DistSparseMatrix<PetscCliqScalar> *cmat=cliq->cmat;
   cliq::mpi::Comm cxxcomm(PetscObjectComm((PetscObject)A));
@@ -93,16 +92,16 @@ static PetscErrorCode MatMult_Clique(Mat A,Vec X,Vec Y)
   if (!cmat) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Clique matrix cmat is not created yet");
   ierr = VecGetArrayRead(X,(const PetscScalar **)&x);CHKERRQ(ierr);
 
-  cliq::DistVector<PetscCliqScalar> xc(A->cmap->N,cxxcomm);
-  cliq::DistVector<PetscCliqScalar> yc(A->rmap->N,cxxcomm);
+  cliq::DistMultiVec<PetscCliqScalar> xc(A->cmap->N,1,cxxcomm);
+  cliq::DistMultiVec<PetscCliqScalar> yc(A->rmap->N,1,cxxcomm);
   for (i=0; i<A->cmap->n; i++) {
-    xc.SetLocal(i,x[i]);
+    xc.SetLocal(i,0,x[i]);
   }
   cliq::Multiply(1.0,*cmat,xc,0.0,yc);
   ierr = VecRestoreArrayRead(X,(const PetscScalar **)&x);CHKERRQ(ierr);
 
   for (i=0; i<A->cmap->n; i++) {
-    ierr = VecSetValueLocal(Y,i,yc.GetLocal(i),INSERT_VALUES);CHKERRQ(ierr);
+    ierr = VecSetValueLocal(Y,i,yc.GetLocal(i,0),INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = VecAssemblyBegin(Y);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(Y);CHKERRQ(ierr);
@@ -177,23 +176,23 @@ PetscErrorCode MatSolve_Clique(Mat A,Vec B,Vec X)
   PetscInt              i,rank;
   const PetscCliqScalar *b;
   Mat_Clique            *cliq=(Mat_Clique*)A->spptr;
-  cliq::DistVector<PetscCliqScalar> *bc=cliq->rhs;
-  cliq::DistNodalVector<PetscCliqScalar> *xNodal=cliq->xNodal;
+  cliq::DistMultiVec<PetscCliqScalar> *bc=cliq->rhs;
+  cliq::DistNodalMultiVec<PetscCliqScalar> *xNodal=cliq->xNodal;
 
   PetscFunctionBegin;
   ierr = VecGetArrayRead(B,(const PetscScalar **)&b);CHKERRQ(ierr);
   for (i=0; i<A->rmap->n; i++) {
-    bc->SetLocal(i,b[i]);
+    bc->SetLocal(i,0,b[i]);
   }
   ierr = VecRestoreArrayRead(B,(const PetscScalar **)&b);CHKERRQ(ierr);
 
   xNodal->Pull( *cliq->inverseMap, *cliq->info, *bc );
-  cliq::Solve( *cliq->info, *cliq->frontTree, xNodal->localVec );
+  cliq::Solve( *cliq->info, *cliq->frontTree, *xNodal);
   xNodal->Push( *cliq->inverseMap, *cliq->info, *bc );
 
   ierr = MPI_Comm_rank(cliq->cliq_comm,&rank);CHKERRQ(ierr);
   for (i=0; i<bc->LocalHeight(); i++) {
-    ierr = VecSetValue(X,rank*bc->Blocksize()+i,bc->GetLocal(i),INSERT_VALUES);CHKERRQ(ierr);
+    ierr = VecSetValue(X,rank*bc->Blocksize()+i,bc->GetLocal(i,0),INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = VecAssemblyBegin(X);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(X);CHKERRQ(ierr);
@@ -206,6 +205,7 @@ PetscErrorCode MatCholeskyFactorNumeric_Clique(Mat F,Mat A,const MatFactorInfo *
 {
   PetscErrorCode    ierr;
   Mat_Clique        *cliq=(Mat_Clique*)F->spptr;
+  PETSC_UNUSED
   cliq::DistSparseMatrix<PetscCliqScalar> *cmat;
 
   PetscFunctionBegin;
@@ -244,7 +244,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_Clique(Mat F,Mat A,IS r,const MatFactor
   ierr = MatConvertToClique(A,MAT_INITIAL_MATRIX,Acliq);CHKERRQ(ierr);
   cmat = Acliq->cmat;
 
-  cliq::NestedDissection( cmat->Graph(), map, sepTree, *Acliq->info, PETSC_TRUE, Acliq->numDistSeps, Acliq->numSeqSeps, Acliq->cutoff);
+  cliq::NestedDissection( cmat->DistGraph(), map, sepTree, *Acliq->info, PETSC_TRUE, Acliq->numDistSeps, Acliq->numSeqSeps, Acliq->cutoff);
   map.FormInverse( *Acliq->inverseMap );
   Acliq->frontTree = new cliq::DistSymmFrontTree<PetscCliqScalar>( cliq::TRANSPOSE, *cmat, map, sepTree, *Acliq->info );
 
@@ -302,8 +302,8 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_aij_clique(Mat A,MatFactorType ftype,Ma
   B->spptr            = (void*)cliq;
   cliq::mpi::Comm cxxcomm(PetscObjectComm((PetscObject)A));
   ierr = PetscCommDuplicate(cxxcomm,&(cliq->cliq_comm),NULL);CHKERRQ(ierr);
-  cliq->rhs           = new cliq::DistVector<PetscCliqScalar>(A->rmap->N,cliq->cliq_comm);
-  cliq->xNodal        = new cliq::DistNodalVector<PetscCliqScalar>();
+  cliq->rhs           = new cliq::DistMultiVec<PetscCliqScalar>(A->rmap->N,1,cliq->cliq_comm);
+  cliq->xNodal        = new cliq::DistNodalMultiVec<PetscCliqScalar>();
   cliq->info          = new cliq::DistSymmInfo;
   cliq->inverseMap    = new cliq::DistMap;
   cliq->CleanUpClique = PETSC_FALSE;
