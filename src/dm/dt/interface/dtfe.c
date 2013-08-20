@@ -2535,7 +2535,7 @@ PetscErrorCode PetscFEOpenCLGenerateIntegrationCode(PetscFE fem, char **string_b
   N_q  = q.numQuadPoints;
   N_t  = N_b * N_c * N_q * N_bl;
   /* Enable device extension for double precision */
-#if 0
+#if 1
   if (sizeof(PetscReal) == sizeof(double)) {
     ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail,
 "#if defined(cl_khr_fp64)\n"
@@ -2963,14 +2963,11 @@ PetscErrorCode PetscFEIntegrateResidual_OpenCL(PetscFE fem, PetscInt Ne, PetscIn
   N_bst = N_bt*N_q;
   N_t   = N_bst*N_bl;
   if (N_bc*N_comp != N_t) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of threads %d should be %d * %d", N_t, N_bc, N_comp);
-  /* Generate code */
-  ierr = PetscFEOpenCLGetIntegrationKernel(fem, &ocl_prog, &ocl_kernel);CHKERRQ(ierr);
-  /* Create buffers on the device and send data over */
-  d_coefficients         = clCreateBuffer(ocl->ctx_id, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, Ne*N_bt    * sizeof(PetscReal), (void*) coefficients, &ierr);CHKERRQ(ierr);
-  d_jacobianInverses     = clCreateBuffer(ocl->ctx_id, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, Ne*dim*dim * sizeof(PetscReal), (void*) geom.invJ,    &ierr);CHKERRQ(ierr);
-  d_jacobianDeterminants = clCreateBuffer(ocl->ctx_id, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, Ne         * sizeof(PetscReal), (void*) geom.detJ,    &ierr);CHKERRQ(ierr);
-  d_elemVec              = clCreateBuffer(ocl->ctx_id, CL_MEM_READ_WRITE,                        Ne*N_bt    * sizeof(PetscReal), NULL,                 &ierr);CHKERRQ(ierr);
   /* Calculate layout */
+  if (Ne % (N_cb*N_bc)) { /* Remainder cells */
+    ierr = PetscFEIntegrateResidual_Basic(fem, Ne, Nf, fe, field, geom, coefficients, f0_func, f1_func, elemVec);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
   ierr = PetscFEOpenCLCalculateGrid(fem, Ne, N_cb*N_bc, &x, &y, &z);CHKERRQ(ierr);
   local_work_size[0]  = N_bc*N_comp;
   local_work_size[1]  = 1;
@@ -2980,6 +2977,13 @@ PetscErrorCode PetscFEIntegrateResidual_OpenCL(PetscFE fem, PetscInt Ne, PetscIn
   global_work_size[2] = z * local_work_size[2];
   ierr = PetscInfo7(fem, "GPU layout grid(%d,%d,%d) block(%d,%d,%d) with %d batches\n", x, y, z, local_work_size[0], local_work_size[1], local_work_size[2], N_cb);CHKERRQ(ierr);
   ierr = PetscInfo2(fem, " N_t: %d, N_cb: %d\n", N_t, N_cb);
+  /* Generate code */
+  ierr = PetscFEOpenCLGetIntegrationKernel(fem, &ocl_prog, &ocl_kernel);CHKERRQ(ierr);
+  /* Create buffers on the device and send data over */
+  d_coefficients         = clCreateBuffer(ocl->ctx_id, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, Ne*N_bt    * sizeof(PetscReal), (void*) coefficients, &ierr);CHKERRQ(ierr);
+  d_jacobianInverses     = clCreateBuffer(ocl->ctx_id, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, Ne*dim*dim * sizeof(PetscReal), (void*) geom.invJ,    &ierr);CHKERRQ(ierr);
+  d_jacobianDeterminants = clCreateBuffer(ocl->ctx_id, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, Ne         * sizeof(PetscReal), (void*) geom.detJ,    &ierr);CHKERRQ(ierr);
+  d_elemVec              = clCreateBuffer(ocl->ctx_id, CL_MEM_READ_WRITE,                        Ne*N_bt    * sizeof(PetscReal), NULL,                 &ierr);CHKERRQ(ierr);
   /* Kernel launch */
   ierr = clSetKernelArg(ocl_kernel, 0, sizeof(cl_int), (void*) &N_cb);CHKERRQ(ierr);
   ierr = clSetKernelArg(ocl_kernel, 1, sizeof(cl_mem), (void*) &d_coefficients);CHKERRQ(ierr);
