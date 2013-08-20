@@ -501,8 +501,7 @@ PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
     if (!nits) {
       ierr = PetscPrintf(PetscObjectComm((PetscObject)ksp),"Zero iterations in solver, cannot approximate any eigenvalues\n");CHKERRQ(ierr);
     } else {
-      ierr = PetscMalloc(2*n*sizeof(PetscReal),&r);CHKERRQ(ierr);
-      c    = r + n;
+      ierr = PetscMalloc2(n,PetscReal,&r,n,PetscReal,&c);CHKERRQ(ierr);
       ierr = KSPComputeEigenvalues(ksp,n,r,c,&neig);CHKERRQ(ierr);
       if (flag1) {
         ierr = PetscPrintf(PetscObjectComm((PetscObject)ksp),"Iteratively computed eigenvalues\n");CHKERRQ(ierr);
@@ -533,7 +532,7 @@ PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
       if (flag3 && !rank) {
         ierr = KSPPlotEigenContours_Private(ksp,neig,r,c);CHKERRQ(ierr);
       }
-      ierr = PetscFree(r);CHKERRQ(ierr);
+      ierr = PetscFree2(r,c);CHKERRQ(ierr);
     }
   }
 

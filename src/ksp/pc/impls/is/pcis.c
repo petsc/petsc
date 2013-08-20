@@ -161,7 +161,7 @@ PetscErrorCode  PCISSetUp(PC pc)
     for (i=0;i<pcis->n_neigh;i++)
       for (j=0;j<pcis->n_shared[i];j++)
           array[pcis->shared[i][j]] += 1;
- 
+
     ierr = PetscMalloc(pcis->n*sizeof(PetscInt),&idx_I_local);CHKERRQ(ierr);
     ierr = PetscMalloc(pcis->n*sizeof(PetscInt),&idx_B_local);CHKERRQ(ierr);
     for (i=0, pcis->n_B=0, n_I=0; i<pcis->n; i++) {

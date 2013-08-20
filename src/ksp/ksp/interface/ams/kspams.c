@@ -70,8 +70,7 @@ PetscErrorCode KSPMonitorAMSDestroy(void **ctx)
     mon->amem = -1;
   }
   ierr      = PetscViewerDestroy(&mon->viewer);CHKERRQ(ierr);
-  ierr      = PetscFree(mon->eigr);CHKERRQ(ierr);
-  mon->eigi = NULL;
+  ierr      = PetscFree2(mon->eigr,mon->eigi);CHKERRQ(ierr);
   ierr      = PetscFree(*ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -113,8 +112,7 @@ PetscErrorCode KSPMonitorAMS(KSP ksp,PetscInt n,PetscReal rnorm,void *ctx)
   mon->amem = -1;
 
   ierr      = PetscFree(mon->eigr);CHKERRQ(ierr);
-  ierr      = PetscMalloc(2*n*sizeof(PetscReal),&mon->eigr);CHKERRQ(ierr);
-  mon->eigi = mon->eigr + n;
+  ierr      = PetscMalloc2(n,PetscReal,&mon->eigr,n,PetscReal,&mon->eigi);CHKERRQ(ierr);
   if (n) {ierr = KSPComputeEigenvalues(ksp,n,mon->eigr,mon->eigi,&mon->neigs);CHKERRQ(ierr);}
 
   ierr = PetscViewerAMSGetAMSComm(viewer,&acomm);CHKERRQ(ierr);

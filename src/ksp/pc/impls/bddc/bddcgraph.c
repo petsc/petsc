@@ -875,7 +875,7 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
     graph->xadj = new_xadj;
     graph->adjncy = new_adjncy;
   }
-    
+
   /* mark special nodes -> each will become a single node equivalence class */
   if (custom_primal_vertices) {
     ierr = ISGetSize(custom_primal_vertices,&is_size);CHKERRQ(ierr);
