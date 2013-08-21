@@ -15,7 +15,7 @@ PetscErrorCode DMCreateMatrix_Moab(DM dm, MatType mtype,Mat *J)
   PetscInt        i,nloc,count,dof,innz,ionz,nsize;
   DM_Moab         *dmmoab = (DM_Moab*)dm->data;
   moab::Range     *range=dmmoab->vowned;
-  PetscInt        *gindices,*nnz,*onz;
+  PetscInt        *nnz,*onz;
   char            *tmp=0;
   moab::ErrorCode merr;
 
@@ -46,20 +46,11 @@ PetscErrorCode DMCreateMatrix_Moab(DM dm, MatType mtype,Mat *J)
 
   if (dmmoab->bs > 1 && tmp) {
     /* Block matrix created, now set local to global mapping */
-    ierr = PetscMalloc(sizeof(PetscInt)*range->size()*dmmoab->bs, &gindices);CHKERRQ(ierr);
-    moab::Range::iterator  iter;
-    for(iter = range->begin(),count=0; iter != range->end(); iter++,count+=dmmoab->bs) {
-      merr = dmmoab->mbiface->tag_get_data(dmmoab->ltog_tag,&(*iter),1,&dof);MBERRNM(merr);
-      for(i=0; i<dmmoab->bs; ++i)
-        gindices[count+i] = (dof)*dmmoab->bs+i;
-    }
-
-    ierr = ISLocalToGlobalMappingCreate(PETSC_COMM_SELF,range->size(),gindices,PETSC_COPY_VALUES,&ltog);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingCreate(PETSC_COMM_SELF,range->size(),dmmoab->gsindices,PETSC_COPY_VALUES,&ltog);CHKERRQ(ierr);
     ierr = MatSetLocalToGlobalMappingBlock(*J,ltog,ltog);CHKERRQ(ierr);
 
     /* Clean up */
     ierr = ISLocalToGlobalMappingDestroy(&ltog);CHKERRQ(ierr);
-    ierr = PetscFree(gindices);CHKERRQ(ierr);
     
   } else {
     ierr = MatSetBlockSize(*J, dmmoab->bs);CHKERRQ(ierr);
@@ -123,19 +114,30 @@ PetscErrorCode DMMoab_Compute_NNZ_From_Connectivity(DM dm,PetscInt* innz,PetscIn
       visited.insert(connect[j]);
       */
 
-      merr = dmmoab->mbiface->get_adjacencies(&connect[j],1,1,true,adjs,moab::Interface::INTERSECT);
+    /* loop over vertices and update the number of connectivity */
+    for(jter = adjs.begin(); jter != adjs.end(); jter++) {
+      
+      /* Get connectivity information in canonical ordering for the local element */
+      merr = dmmoab->mbiface->get_connectivity(*jter,connect,vpere,false,&storage);MBERRNM(merr);
 
-      merr = dmmoab->mbiface->tag_get_data(id_tag,&connect[j],1,&dof);MBERRNM(merr);
-      ierr = PetscSectionGetDof(section, connect[j], &ndofs);
-
+      for (i=0; i<vpere; ++i) {
+        if (connect[i] == vtx || found.find(connect[i]) != found.end()) continue;
+        if (dmmoab->vghost->find(connect[i]) != dmmoab->vghost->end()) n_onz++;
+        else n_nnz++;
+        found.insert(connect[i]);
+      }
+    }
+    
+    merr = dmmoab->mbiface->tag_get_data(id_tag,&vtx,1,&gid);MBERRNM(merr);
+ 
+    if (isbaij) {
+      nnz[ivtx]=n_nnz;      /* leave out self to avoid repeats -> node shared by multiple elements */
+      if (onz) onz[ivtx]=n_onz;  /* add ghost non-owned nodes */
+    }
+    else {
       for (f=0;f<dmmoab->nfields;f++) {
-        ierr = PetscSectionGetFieldOffset(section, connect[j], f, &doff);
-
-//        nnz[doff]+=(vpere-nghost_found-1);      /* leave out self to avoid repeats -> node shared by multiple elements */
-        nnz[doff]+=adjs.size();      /* leave out self to avoid repeats -> node shared by multiple elements */
-        onz[doff]+=nghost_found;  /* add ghost non-owned nodes */
-
-        adjs.clear();
+        nnz[dmmoab->nfields*ivtx+f]=n_nnz;      /* leave out self to avoid repeats -> node shared by multiple elements */
+        if (onz) onz[dmmoab->nfields*ivtx+f]=n_onz;  /* add ghost non-owned nodes */
       }
     }
   }
