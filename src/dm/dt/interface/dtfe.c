@@ -2882,6 +2882,7 @@ PetscErrorCode PetscFEOpenCLGetIntegrationKernel(PetscFE fem, cl_program *ocl_pr
   *ocl_kernel = clCreateKernel(*ocl_prog, "integrateElementQuadrature", &ierr);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
 #undef __FUNCT__
 #define __FUNCT__ "PetscFEOpenCLCalculateGrid"
 PetscErrorCode PetscFEOpenCLCalculateGrid(PetscFE fem, PetscInt N, PetscInt blockSize, size_t *x, size_t *y, size_t *z)
@@ -3065,6 +3066,31 @@ PETSC_EXTERN PetscErrorCode PetscFECreate_OpenCL(PetscFE fem)
   ocl->op = LAPLACIAN;
 
   ierr = PetscFEInitialize_OpenCL(fem);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscFEOpenCLSetRealType"
+PetscErrorCode PetscFEOpenCLSetRealType(PetscFE fem, PetscDataType realType)
+{
+  PetscFE_OpenCL *ocl = (PetscFE_OpenCL *) fem->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);
+  ocl->realType = realType;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscFEOpenCLGetRealType"
+PetscErrorCode PetscFEOpenCLGetRealType(PetscFE fem, PetscDataType *realType)
+{
+  PetscFE_OpenCL *ocl = (PetscFE_OpenCL *) fem->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);
+  PetscValidPointer(realType, 2);
+  *realType = ocl->realType;
   PetscFunctionReturn(0);
 }
 
