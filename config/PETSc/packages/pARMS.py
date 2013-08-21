@@ -3,7 +3,7 @@ import PETSc.package
 class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
     PETSc.package.NewPackage.__init__(self, framework)
-    self.download  = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/pARMS_3.2.tar.gz']
+    self.download  = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/pARMS_3.2p2.tar.gz']
     self.functions = ['parms_PCCreate']
     self.includes  = ['parms.h']
     self.liblist   = [['libparms.a']]
