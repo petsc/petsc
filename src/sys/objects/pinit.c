@@ -21,6 +21,9 @@ extern PetscBool PetscHMPIWorker;
 PetscFPT PetscFPTData = 0;
 #endif
 
+#if defined(PETSC_HAVE_SAWS)
+#include <SAWs.h>
+#endif
 /* -----------------------------------------------------------------------------------------*/
 
 extern FILE *petsc_history;
@@ -794,7 +797,7 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
 
 #if defined(PETSC_HAVE_SAWS)
   {
-    char cert[PETSC_MAX_PATH_LEN];
+    char cert[PETSC_MAX_PATH_LEN],root[PETSC_MAX_PATH_LEN];
     int  port;
 
     ierr = PetscOptionsHasName(NULL,"-saws_log",&flg);CHKERRQ(ierr);
@@ -815,6 +818,10 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
     ierr = PetscOptionsGetInt(NULL,"-saws_port",&port,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = SAWs_Set_Port(port);CHKERRQ(ierr);
+    }
+    ierr = PetscOptionsGetString(NULL,"-saws_root",root,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = SAWs_Set_Document_Root(root);CHKERRQ(ierr);
     }
     ierr = SAWs_Initialize();CHKERRQ(ierr);
   }
