@@ -511,10 +511,10 @@ PetscErrorCode  PetscViewerBinaryGetInfoPointer_Binary(PetscViewer viewer,FILE *
   if (viewer->format == PETSC_VIEWER_BINARY_MATLAB && !vbinary->matlabheaderwritten) {
     vbinary->matlabheaderwritten = PETSC_TRUE;
     ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
-    ierr = PetscFPrintf(comm,*file,"%%--- begin code written by PetscViewerBinary for MATLAB format ---%\n");CHKERRQ(ierr);
-    ierr = PetscFPrintf(comm,*file,"%%$$ Set.filename = '%s';\n",vbinary->filename);CHKERRQ(ierr);
-    ierr = PetscFPrintf(comm,*file,"%%$$ fd = PetscOpenFile(Set.filename);\n");CHKERRQ(ierr);
-    ierr = PetscFPrintf(comm,*file,"%%--- end code written by PetscViewerBinary for MATLAB format ---%\n\n");CHKERRQ(ierr);
+    ierr = PetscFPrintf(comm,*file,"#--- begin code written by PetscViewerBinary for MATLAB format ---#\n");CHKERRQ(ierr);
+    ierr = PetscFPrintf(comm,*file,"#$$ Set.filename = '%s';\n",vbinary->filename);CHKERRQ(ierr);
+    ierr = PetscFPrintf(comm,*file,"#$$ fd = PetscOpenFile(Set.filename);\n");CHKERRQ(ierr);
+    ierr = PetscFPrintf(comm,*file,"#--- end code written by PetscViewerBinary for MATLAB format ---#\n\n");CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -606,9 +606,9 @@ PetscErrorCode PetscViewerDestroy_Binary(PetscViewer v)
 
     ierr = PetscObjectGetComm((PetscObject)v,&comm);CHKERRQ(ierr);
     ierr = PetscViewerBinaryGetInfoPointer(v,&info);CHKERRQ(ierr);
-    ierr = PetscFPrintf(comm,info,"%%--- begin code written by PetscViewerBinary for MATLAB format ---%\n");CHKERRQ(ierr);
-    ierr = PetscFPrintf(comm,info,"%%$$ close(fd);\n");CHKERRQ(ierr);
-    ierr = PetscFPrintf(comm,info,"%%--- end code written by PetscViewerBinary for MATLAB format ---%\n\n");CHKERRQ(ierr);
+    ierr = PetscFPrintf(comm,info,"#--- begin code written by PetscViewerBinary for MATLAB format ---#\n");CHKERRQ(ierr);
+    ierr = PetscFPrintf(comm,info,"#$$ close(fd);\n");CHKERRQ(ierr);
+    ierr = PetscFPrintf(comm,info,"#--- end code written by PetscViewerBinary for MATLAB format ---#\n\n");CHKERRQ(ierr);
   }
   ierr = PetscViewerFileClose_Binary(v);CHKERRQ(ierr);
   ierr = PetscFree(vbinary);CHKERRQ(ierr);
