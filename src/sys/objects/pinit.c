@@ -797,7 +797,7 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
 
 #if defined(PETSC_HAVE_SAWS)
   {
-    char cert[PETSC_MAX_PATH_LEN],root[PETSC_MAX_PATH_LEN];
+    char cert[PETSC_MAX_PATH_LEN],root[PETSC_MAX_PATH_LEN],intro[4024],programname[64];
     int  port;
 
     ierr = PetscOptionsHasName(NULL,"-saws_log",&flg);CHKERRQ(ierr);
@@ -823,6 +823,17 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
     if (flg) {
       ierr = SAWs_Set_Document_Root(root);CHKERRQ(ierr);
     }
+    ierr = PetscGetProgramName(programname,64);CHKERRQ(ierr);
+    ierr = PetscSNPrintf(intro,4024,"<head>"
+                                    "<script type=\"text/javascript\" src=\"js/jquery-1.9.1.js\"></script>"
+                                    "<script type=\"text/javascript\" src=\"js/jsMemoryPage.js\"></script>"
+                                    "<script type=\"text/javascript\" src=\"js/jsSAWs.js\"></script>"
+                                    "</head>"
+                                    "<body>"
+                                    "<center><h2> %s PETSc Application Web server powered by <a href=\"https://bitbucket.org/saws/saws\">SAWs</a> </h2></center>"
+                                    "This is the default PETSc application dashboard, from it you can access any published PETSc objects or logging data"
+                                    "</body>",programname);
+    ierr = SAWs_Set_Default_Introduction(intro);
     ierr = SAWs_Initialize();CHKERRQ(ierr);
   }
 
