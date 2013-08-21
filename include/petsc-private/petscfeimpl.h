@@ -111,6 +111,7 @@ typedef struct {
   cl_device_id     dev_id;
   cl_context       ctx_id;
   cl_command_queue queue_id;
+  PetscDataType    realType;
   PetscLogEvent    residualEvent;
   PetscInt         op; /* ANDY: Stand-in for real equation code generation */
 } PetscFE_OpenCL;
