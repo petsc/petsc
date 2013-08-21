@@ -14,19 +14,13 @@ of test problems is developed.
 
 Discretization:
 
-We use a Python script to generate a tabulation of the finite element basis
-functions at quadrature points, which we put in a C header file. The generic
-command would be:
-
-    bin/pythonscripts/PetscGenerateFEMQuadrature.py dim order dim 1 laplacian dim order 1 1 gradient src/snes/examples/tutorials/ex62.h
-
-We can currently generate an arbitrary order Lagrange element. The underlying
-FIAT code is capable of handling more exotic elements, but these have not been
-tested with this code.
+We use PetscFE to generate a tabulation of the finite element basis functions
+at quadrature points. We can currently generate an arbitrary order Lagrange
+element.
 
 Field Data:
 
-  Sieve data is organized by point, and the closure operation just stacks up the
+  DMPLEX data is organized by point, and the closure operation just stacks up the
 data from each sieve point in the closure. Thus, for a P_2-P_1 Stokes element, we
 have
 
