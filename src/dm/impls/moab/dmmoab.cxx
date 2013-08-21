@@ -754,6 +754,33 @@ PetscErrorCode DMMoabGetLocalSize(DM dm,PetscInt *nl,PetscInt *ng)
 
 
 #undef __FUNCT__
+#define __FUNCT__ "DMMoabGetDimension"
+/*@
+  DMMoabGetDimension - Get the dimension of the DM Mesh
+
+  Collective on MPI_Comm
+
+  Input Parameter:
+. dm - The DMMoab object being set
+
+  Output Parameter:
+. dim - The dimension of DM
+
+  Level: beginner
+
+.keywords: DMMoab, create
+@*/
+PetscErrorCode DMMoabGetDimension(DM dm,PetscInt *dim)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  *dim = ((DM_Moab*)dm->data)->dim;
+  PetscFunctionReturn(0);
+}
+
+
+
+#undef __FUNCT__
 #define __FUNCT__ "DMMoabSetFieldVector"
 PetscErrorCode DMMoabSetFieldVector(DM dm, PetscInt ifield, Vec fvec)
 {
