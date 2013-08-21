@@ -223,6 +223,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Moab(DM dm)
   ierr = PetscNewLog(dm,&dm->data);CHKERRQ(ierr);
 
   ((DM_Moab*)dm->data)->bs = 1;
+  ((DM_Moab*)dm->data)->nfields = 1;
   ((DM_Moab*)dm->data)->n = 0;
   ((DM_Moab*)dm->data)->nloc = 0;
   ((DM_Moab*)dm->data)->nele = 0;
@@ -341,7 +342,8 @@ PetscErrorCode DMMoabCreateMoab(MPI_Comm comm, moab::Interface *mbiface, moab::P
   }
 
   /* do the remaining initializations for DMMoab */
-  dmmoab->bs       = 1;
+  dmmoab->bs = 1;
+  dmmoab->nfields = 1;
 
   /* set global ID tag handle */
   if (!ltog_tag) {
@@ -1054,6 +1056,7 @@ PetscErrorCode DMMoabGetFieldDofs(DM dm,PetscInt npoints,const moab::EntityHandl
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidPointer(points,2);
   dmmoab = (DM_Moab*)(dm)->data;
 
   ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
@@ -1082,6 +1085,7 @@ PetscErrorCode DMMoabGetFieldDofsLocal(DM dm,PetscInt npoints,const moab::Entity
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidPointer(points,2);
   dmmoab = (DM_Moab*)(dm)->data;
 
   if (!dof) {
@@ -1113,6 +1117,7 @@ PetscErrorCode DMMoabGetDofs(DM dm,PetscInt npoints,const moab::EntityHandle* po
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidPointer(points,2);
   dmmoab = (DM_Moab*)(dm)->data;
 
   ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
@@ -1143,6 +1148,7 @@ PetscErrorCode DMMoabGetDofsLocal(DM dm,PetscInt npoints,const moab::EntityHandl
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidPointer(points,2);
   dmmoab = (DM_Moab*)(dm)->data;
 
   if (!dof) {
@@ -1177,6 +1183,7 @@ PetscErrorCode DMMoabGetDofsBlocked(DM dm,PetscInt npoints,const moab::EntityHan
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidPointer(points,2);
   dmmoab = (DM_Moab*)(dm)->data;
 
   ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
@@ -1192,7 +1199,6 @@ PetscErrorCode DMMoabGetDofsBlocked(DM dm,PetscInt npoints,const moab::EntityHan
     ierr = PetscSectionGetFieldDof(section, gid, 0, &dofindx);CHKERRQ(ierr);
     if (dmmoab->bs > 1)  dof[i]=dofindx/dmmoab->bs;
     else dof[i]=dofindx;
-//    PetscPrintf(PETSC_COMM_SELF, "I=%D, GID=%D, DOFINDX=%D, DOF=%D\n", i, gid, dofindx, dof[i]);
   }
   PetscFunctionReturn(0);
 }
@@ -1207,6 +1213,7 @@ PetscErrorCode DMMoabGetDofsBlockedLocal(DM dm,PetscInt npoints,const moab::Enti
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidPointer(points,2);
 
   if (!dof) {
     ierr = PetscMalloc(sizeof(PetscScalar)*npoints, &dof);CHKERRQ(ierr);
