@@ -2535,8 +2535,7 @@ PetscErrorCode PetscFEOpenCLGenerateIntegrationCode(PetscFE fem, char **string_b
   N_q  = q.numQuadPoints;
   N_t  = N_b * N_c * N_q * N_bl;
   /* Enable device extension for double precision */
-#if 1
-  if (sizeof(PetscReal) == sizeof(double)) {
+  if (ocl->realType == PETSC_DOUBLE) {
     ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail,
 "#if defined(cl_khr_fp64)\n"
 "#  pragma OPENCL EXTENSION cl_khr_fp64: enable\n"
@@ -2546,7 +2545,6 @@ PetscErrorCode PetscFEOpenCLGenerateIntegrationCode(PetscFE fem, char **string_b
                               &count);STRING_ERROR_CHECK("Message to short");
     numeric_str  = &(double_str[0]);
   }
-#endif
   /* Kernel API */
   ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail,
 "\n"
@@ -2634,7 +2632,8 @@ PetscErrorCode PetscFEOpenCLGenerateIntegrationCode(PetscFE fem, char **string_b
 "  const int N_sqc  = N_bst / N_bt;\n"
 "\n"
 "  /* Calculated indices */\n"
-"  const int tidx    = get_local_id(0) + get_local_size(0)*get_local_id(1);\n"
+"  /*const int tidx    = get_local_id(0) + get_local_size(0)*get_local_id(1);*/\n"
+"  const int tidx    = get_local_id(0);\n"
 "  const int blidx   = tidx / N_bst;                  // Block number for this thread\n"
 "  const int bidx    = tidx %% N_bt;                   // Basis function mapped to this thread\n"
 "  const int cidx    = tidx %% N_comp;                 // Basis component mapped to this thread\n"
@@ -2947,16 +2946,20 @@ PetscErrorCode PetscFEIntegrateResidual_OpenCL(PetscFE fem, PetscInt Ne, PetscIn
   cl_event          ocl_ev;         /* The event for tracking kernel execution */
   cl_ulong          ns_start;       /* Nanoseconds counter on GPU at kernel start */
   cl_ulong          ns_end;         /* Nanoseconds counter on GPU at kernel stop */
-  cl_mem            d_jacobianInverses, d_jacobianDeterminants;
-  cl_mem            d_coefficients, d_elemVec;
+  cl_mem            o_jacobianInverses, o_jacobianDeterminants;
+  cl_mem            o_coefficients, o_elemVec;
+  float            *f_coeff, *f_invJ, *f_detJ;
+  double           *d_coeff, *d_invJ, *d_detJ;
+  void             *oclCoeff, *oclInvJ, *oclDetJ;
   size_t            local_work_size[3], global_work_size[3];
-  size_t            x, y, z;
+  size_t            realSize, x, y, z;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   if (!Ne) {ierr = PetscFEOpenCLLogResidual(fem, 0.0, 0.0);CHKERRQ(ierr); PetscFunctionReturn(0);}
   ierr = PetscFEGetSpatialDimension(fem, &dim);CHKERRQ(ierr);
   ierr = PetscFEGetDimension(fem, &N_b);CHKERRQ(ierr);
+  ierr = PetscFEGetNumComponents(fem, &N_comp);CHKERRQ(ierr);
   ierr = PetscFEGetQuadrature(fem, &q);CHKERRQ(ierr);
   ierr = PetscFEGetTileSizes(fem, NULL, &N_bl, &N_bc, &N_cb);CHKERRQ(ierr);
   N_bt  = N_b*N_comp;
@@ -2981,28 +2984,116 @@ PetscErrorCode PetscFEIntegrateResidual_OpenCL(PetscFE fem, PetscInt Ne, PetscIn
   /* Generate code */
   ierr = PetscFEOpenCLGetIntegrationKernel(fem, &ocl_prog, &ocl_kernel);CHKERRQ(ierr);
   /* Create buffers on the device and send data over */
-  d_coefficients         = clCreateBuffer(ocl->ctx_id, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, Ne*N_bt    * sizeof(PetscReal), (void*) coefficients, &ierr);CHKERRQ(ierr);
-  d_jacobianInverses     = clCreateBuffer(ocl->ctx_id, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, Ne*dim*dim * sizeof(PetscReal), (void*) geom.invJ,    &ierr);CHKERRQ(ierr);
-  d_jacobianDeterminants = clCreateBuffer(ocl->ctx_id, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, Ne         * sizeof(PetscReal), (void*) geom.detJ,    &ierr);CHKERRQ(ierr);
-  d_elemVec              = clCreateBuffer(ocl->ctx_id, CL_MEM_READ_WRITE,                        Ne*N_bt    * sizeof(PetscReal), NULL,                 &ierr);CHKERRQ(ierr);
+  ierr = PetscDataTypeGetSize(ocl->realType, &realSize);CHKERRQ(ierr);
+  if (sizeof(PetscReal) != realSize) {
+    switch (ocl->realType) {
+    case PETSC_FLOAT:
+    {
+      PetscInt c, b, d;
+
+      ierr = PetscMalloc3(Ne*N_bt,double,&f_coeff,Ne*dim*dim,double,&f_invJ,Ne,double,&f_detJ);CHKERRQ(ierr);
+      for (c = 0; c < Ne; ++c) {
+        f_detJ[c] = (float) geom.detJ[c];
+        for (d = 0; d < dim*dim; ++d) {
+          f_invJ[c*dim*dim+d] = (float) geom.invJ[c*dim*dim+d];
+        }
+        for (b = 0; b < N_bt; ++b) {
+          f_coeff[c*N_bt+b] = (float) coefficients[c*N_bt+b];
+        }
+      }
+      oclCoeff = (void *) f_coeff;
+      oclInvJ  = (void *) f_invJ;
+      oclDetJ  = (void *) f_detJ;
+    }
+    break;
+    case PETSC_DOUBLE:
+    {
+      PetscInt c, b, d;
+
+      ierr = PetscMalloc3(Ne*N_bt,double,&d_coeff,Ne*dim*dim,double,&d_invJ,Ne,double,&d_detJ);CHKERRQ(ierr);
+      for (c = 0; c < Ne; ++c) {
+        d_detJ[c] = (double) geom.detJ[c];
+        for (d = 0; d < dim*dim; ++d) {
+          d_invJ[c*dim*dim+d] = (double) geom.invJ[c*dim*dim+d];
+        }
+        for (b = 0; b < N_bt; ++b) {
+          d_coeff[c*N_bt+b] = (double) coefficients[c*N_bt+b];
+        }
+      }
+      oclCoeff = (void *) d_coeff;
+      oclInvJ  = (void *) d_invJ;
+      oclDetJ  = (void *) d_detJ;
+    }
+    break;
+    default:
+      SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unsupported PETSc type %d", ocl->realType);
+    }
+  } else {
+    oclCoeff = (void *) coefficients;
+    oclInvJ  = (void *) geom.invJ;
+    oclDetJ  = (void *) geom.detJ;
+  }
+  o_coefficients         = clCreateBuffer(ocl->ctx_id, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, Ne*N_bt    * realSize, oclCoeff, &ierr);CHKERRQ(ierr);
+  o_jacobianInverses     = clCreateBuffer(ocl->ctx_id, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, Ne*dim*dim * realSize, oclInvJ,  &ierr);CHKERRQ(ierr);
+  o_jacobianDeterminants = clCreateBuffer(ocl->ctx_id, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, Ne         * realSize, oclDetJ,  &ierr);CHKERRQ(ierr);
+  o_elemVec              = clCreateBuffer(ocl->ctx_id, CL_MEM_READ_WRITE,                        Ne*N_bt    * realSize, NULL,     &ierr);CHKERRQ(ierr);
   /* Kernel launch */
   ierr = clSetKernelArg(ocl_kernel, 0, sizeof(cl_int), (void*) &N_cb);CHKERRQ(ierr);
-  ierr = clSetKernelArg(ocl_kernel, 1, sizeof(cl_mem), (void*) &d_coefficients);CHKERRQ(ierr);
-  ierr = clSetKernelArg(ocl_kernel, 2, sizeof(cl_mem), (void*) &d_jacobianInverses);CHKERRQ(ierr);
-  ierr = clSetKernelArg(ocl_kernel, 3, sizeof(cl_mem), (void*) &d_jacobianDeterminants);CHKERRQ(ierr);
-  ierr = clSetKernelArg(ocl_kernel, 4, sizeof(cl_mem), (void*) &d_elemVec);CHKERRQ(ierr);
+  ierr = clSetKernelArg(ocl_kernel, 1, sizeof(cl_mem), (void*) &o_coefficients);CHKERRQ(ierr);
+  ierr = clSetKernelArg(ocl_kernel, 2, sizeof(cl_mem), (void*) &o_jacobianInverses);CHKERRQ(ierr);
+  ierr = clSetKernelArg(ocl_kernel, 3, sizeof(cl_mem), (void*) &o_jacobianDeterminants);CHKERRQ(ierr);
+  ierr = clSetKernelArg(ocl_kernel, 4, sizeof(cl_mem), (void*) &o_elemVec);CHKERRQ(ierr);
   ierr = clEnqueueNDRangeKernel(ocl->queue_id, ocl_kernel, 3, NULL, global_work_size, local_work_size, 0, NULL, &ocl_ev);CHKERRQ(ierr);
   /* Read data back from device */
-  ierr = clEnqueueReadBuffer(ocl->queue_id, d_elemVec, CL_TRUE, 0, Ne*N_bt * sizeof(PetscReal), elemVec, 0, NULL, NULL);CHKERRQ(ierr);
+  if (sizeof(PetscReal) != realSize) {
+    switch (ocl->realType) {
+    case PETSC_FLOAT:
+    {
+      float   *elem;
+      PetscInt c, b;
+
+      ierr = PetscFree3(f_coeff,f_invJ,f_detJ);CHKERRQ(ierr);
+      ierr = PetscMalloc(Ne*N_bt * sizeof(float), &elem);CHKERRQ(ierr);
+      ierr = clEnqueueReadBuffer(ocl->queue_id, o_elemVec, CL_TRUE, 0, Ne*N_bt * realSize, elem, 0, NULL, NULL);CHKERRQ(ierr);
+      for (c = 0; c < Ne; ++c) {
+        for (b = 0; b < N_bt; ++b) {
+          elemVec[c*N_bt+b] = (PetscScalar) elem[c*N_bt+b];
+        }
+      }
+      ierr = PetscFree(elem);CHKERRQ(ierr);
+    }
+    break;
+    case PETSC_DOUBLE:
+    {
+      double  *elem;
+      PetscInt c, b;
+
+      ierr = PetscFree3(d_coeff,d_invJ,d_detJ);CHKERRQ(ierr);
+      ierr = PetscMalloc(Ne*N_bt * sizeof(double), &elem);CHKERRQ(ierr);
+      ierr = clEnqueueReadBuffer(ocl->queue_id, o_elemVec, CL_TRUE, 0, Ne*N_bt * realSize, elem, 0, NULL, NULL);CHKERRQ(ierr);
+      for (c = 0; c < Ne; ++c) {
+        for (b = 0; b < N_bt; ++b) {
+          elemVec[c*N_bt+b] = (PetscScalar) elem[c*N_bt+b];
+        }
+      }
+      ierr = PetscFree(elem);CHKERRQ(ierr);
+    }
+    break;
+    default:
+      SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unsupported PETSc type %d", ocl->realType);
+    }
+  } else {
+    ierr = clEnqueueReadBuffer(ocl->queue_id, o_elemVec, CL_TRUE, 0, Ne*N_bt * realSize, elemVec, 0, NULL, NULL);CHKERRQ(ierr);
+  }
   /* Log performance */
   ierr = clGetEventProfilingInfo(ocl_ev, CL_PROFILING_COMMAND_START, sizeof(cl_ulong), &ns_start, NULL);CHKERRQ(ierr);
   ierr = clGetEventProfilingInfo(ocl_ev, CL_PROFILING_COMMAND_END,   sizeof(cl_ulong), &ns_end,   NULL);CHKERRQ(ierr);
   ierr = PetscFEOpenCLLogResidual(fem, (ns_end - ns_start)*1.0e-9, (((2+(2+2*dim)*dim)*N_comp*N_b+(2+2)*dim*N_comp)*N_q + (2+2*dim)*dim*N_q*N_comp*N_b)*Ne);CHKERRQ(ierr);
   /* Cleanup */
-  ierr = clReleaseMemObject(d_coefficients);CHKERRQ(ierr);
-  ierr = clReleaseMemObject(d_jacobianInverses);CHKERRQ(ierr);
-  ierr = clReleaseMemObject(d_jacobianDeterminants);CHKERRQ(ierr);
-  ierr = clReleaseMemObject(d_elemVec);CHKERRQ(ierr);
+  ierr = clReleaseMemObject(o_coefficients);CHKERRQ(ierr);
+  ierr = clReleaseMemObject(o_jacobianInverses);CHKERRQ(ierr);
+  ierr = clReleaseMemObject(o_jacobianDeterminants);CHKERRQ(ierr);
+  ierr = clReleaseMemObject(o_elemVec);CHKERRQ(ierr);
   ierr = clReleaseKernel(ocl_kernel);CHKERRQ(ierr);
   ierr = clReleaseProgram(ocl_prog);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -3055,11 +3146,13 @@ PETSC_EXTERN PetscErrorCode PetscFECreate_OpenCL(PetscFE fem)
   ocl->pf_id = platform_ids[0];
   /* Init Device */
   ierr = clGetDeviceIDs(ocl->pf_id, CL_DEVICE_TYPE_ALL, 42, device_ids, &num_devices);CHKERRQ(ierr);
-  if (!num_platforms) SETERRQ(PetscObjectComm((PetscObject) fem), PETSC_ERR_SUP, "No OpenCL device found.");
+  if (!num_devices) SETERRQ(PetscObjectComm((PetscObject) fem), PETSC_ERR_SUP, "No OpenCL device found.");
   ocl->dev_id = device_ids[0];
   /* Create context with one command queue */
-  ocl->ctx_id   = clCreateContext(0, 1, &(device_ids[0]), NULL, NULL, &ierr2);CHKERRQ(ierr2);
+  ocl->ctx_id   = clCreateContext(0, 1, &(ocl->dev_id), NULL, NULL, &ierr2);CHKERRQ(ierr2);
   ocl->queue_id = clCreateCommandQueue(ocl->ctx_id, ocl->dev_id, CL_QUEUE_PROFILING_ENABLE, &ierr2);CHKERRQ(ierr2);
+  /* Types */
+  ocl->realType = PETSC_FLOAT;
   /* Register events */
   ierr = PetscLogEventRegister("OpenCL FEResidual", PETSCFE_CLASSID, &ocl->residualEvent);CHKERRQ(ierr);
   /* Equation handling */
