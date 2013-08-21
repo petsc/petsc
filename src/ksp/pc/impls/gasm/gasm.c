@@ -435,7 +435,7 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
     ierr = PetscMalloc(osm->n*sizeof(KSP*),&osm->ksp);CHKERRQ(ierr);
     for (i=0; i<osm->n; i++) { /* KSPs are local */
       ierr        = KSPCreate(((PetscObject)(osm->ois[i]))->comm,&ksp);CHKERRQ(ierr);
-      ierr        = PetscLogObjectParent(pc,ksp);CHKERRQ(ierr);
+      ierr        = PetscLogObjectParent((PetscObject)pc,(PetscObject)ksp);CHKERRQ(ierr);
       ierr        = PetscObjectIncrementTabLevel((PetscObject)ksp,(PetscObject)pc,1);CHKERRQ(ierr);
       ierr        = KSPSetType(ksp,KSPPREONLY);CHKERRQ(ierr);
       ierr        = KSPGetPC(ksp,&subpc);CHKERRQ(ierr);
@@ -467,7 +467,7 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
   if (scall == MAT_INITIAL_MATRIX) {
     ierr = PetscObjectGetOptionsPrefix((PetscObject)pc->pmat,&pprefix);CHKERRQ(ierr);
     for (i=0; i<osm->n; i++) {
-      ierr = PetscLogObjectParent(pc,osm->pmat[i]);CHKERRQ(ierr);
+      ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)osm->pmat[i]);CHKERRQ(ierr);
       ierr = PetscObjectSetOptionsPrefix((PetscObject)osm->pmat[i],pprefix);CHKERRQ(ierr);
     }
   }

@@ -3473,7 +3473,7 @@ PetscErrorCode  MatSolveAdd(Mat mat,Vec b,Vec y,Vec x)
       ierr = VecAXPY(x,one,y);CHKERRQ(ierr);
     } else {
       ierr = VecDuplicate(x,&tmp);CHKERRQ(ierr);
-      ierr = PetscLogObjectParent(mat,tmp);CHKERRQ(ierr);
+      ierr = PetscLogObjectParent((PetscObject)mat,(PetscObject)tmp);CHKERRQ(ierr);
       ierr = VecCopy(x,tmp);CHKERRQ(ierr);
       ierr = MatSolve(mat,b,x);CHKERRQ(ierr);
       ierr = VecAXPY(x,one,tmp);CHKERRQ(ierr);
@@ -3600,7 +3600,7 @@ PetscErrorCode  MatSolveTransposeAdd(Mat mat,Vec b,Vec y,Vec x)
       ierr = VecAXPY(x,one,y);CHKERRQ(ierr);
     } else {
       ierr = VecDuplicate(x,&tmp);CHKERRQ(ierr);
-      ierr = PetscLogObjectParent(mat,tmp);CHKERRQ(ierr);
+      ierr = PetscLogObjectParent((PetscObject)mat,(PetscObject)tmp);CHKERRQ(ierr);
       ierr = VecCopy(x,tmp);CHKERRQ(ierr);
       ierr = MatSolveTranspose(mat,b,x);CHKERRQ(ierr);
       ierr = VecAXPY(x,one,tmp);CHKERRQ(ierr);
@@ -5170,8 +5170,10 @@ PetscErrorCode  MatSetOption(Mat mat,MatOption op,PetscBool flg)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidType(mat,1);
-  if (op > 0) PetscValidLogicalCollectiveEnum(mat,op,2);
-  PetscValidLogicalCollectiveBool(mat,flg,3);
+  if (op > 0) {
+    PetscValidLogicalCollectiveEnum(mat,op,2);
+    PetscValidLogicalCollectiveBool(mat,flg,3);
+  }
 
   if (((int) op) <= MAT_OPTION_MIN || ((int) op) >= MAT_OPTION_MAX) SETERRQ1(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_OUTOFRANGE,"Options %d is out of range",(int)op);
   if (!((PetscObject)mat)->type_name) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_TYPENOTSET,"Cannot set options until type and size have been set, see MatSetType() and MatSetSizes()");

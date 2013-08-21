@@ -67,7 +67,7 @@ typedef struct _p_PetscObject {
   PetscOps             *bops;
   MPI_Comm             comm;
   PetscInt             type;
-  PetscLogDouble       flops,time,mem;
+  PetscLogDouble       flops,time,mem,memchildren;
   PetscInt             id;
   PetscInt             refct;
   PetscMPIInt          tag;
@@ -150,7 +150,7 @@ PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*PetscObjectViewerFunction)(PetscOb
    PetscNew(pops,&((h)->ops)) ||                                                \
    PetscHeaderCreate_Private((PetscObject)h,classid,class_name,descr,mansec,com,(PetscObjectFunction)des,(PetscObjectViewerFunction)vie) || \
    PetscLogObjectCreate(h) ||                                                   \
-   PetscLogObjectMemory(h, sizeof(struct tp) + sizeof(PetscOps) + sizeof(pops)))
+   PetscLogObjectMemory((PetscObject)h, sizeof(struct tp) + sizeof(PetscOps) + sizeof(pops)))
 
 PETSC_EXTERN PetscErrorCode PetscComposedQuantitiesDestroy(PetscObject obj);
 PETSC_EXTERN PetscErrorCode PetscHeaderCreate_Private(PetscObject,PetscClassId,const char[],const char[],const char[],MPI_Comm,PetscErrorCode (*)(PetscObject*),PetscErrorCode (*)(PetscObject,PetscViewer));

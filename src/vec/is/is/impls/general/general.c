@@ -484,7 +484,7 @@ PetscErrorCode  ISGeneralSetIndices_General(IS is,PetscInt n,const PetscInt idx[
   sub->n = n;
   if (mode == PETSC_COPY_VALUES) {
     ierr           = PetscMalloc(n*sizeof(PetscInt),&sub->idx);CHKERRQ(ierr);
-    ierr           = PetscLogObjectMemory(is,n*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr           = PetscLogObjectMemory((PetscObject)is,n*sizeof(PetscInt));CHKERRQ(ierr);
     ierr           = PetscMemcpy(sub->idx,idx,n*sizeof(PetscInt));CHKERRQ(ierr);
     sub->allocated = PETSC_TRUE;
   } else if (mode == PETSC_OWN_POINTER) {

@@ -46,7 +46,7 @@ class Configure(PETSc.package.NewPackage):
       self.setCompilers.pushLanguage('FC')
       self.setCompilers.addCompilerFlag(ompflag)
       self.setCompilers.popLanguage()
-    if self.languages.clanguage == 'Cxx':
+    if hasattr(self.compilers, 'CXX'):
       self.setCompilers.pushLanguage('Cxx')
       self.setCompilers.addCompilerFlag(ompflag)
       if self.setCompilers.checkLinkerFlag(ompflag):

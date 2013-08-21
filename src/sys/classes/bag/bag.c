@@ -722,9 +722,9 @@ PetscErrorCode  PetscBagView(PetscBag bag,PetscViewer view)
       FILE     *info;
       ierr = PetscObjectGetComm((PetscObject)view,&comm);CHKERRQ(ierr);
       ierr = PetscViewerBinaryGetInfoPointer(view,&info);CHKERRQ(ierr);
-      ierr = PetscFPrintf(comm,info,"%%--- begin code written by PetscViewerBinary for MATLAB format ---%\n");CHKERRQ(ierr);
-      ierr = PetscFPrintf(comm,info,"%%$$ Set.%s = PetscBinaryRead(fd);\n",bag->bagname);CHKERRQ(ierr);
-      ierr = PetscFPrintf(comm,info,"%%--- end code written by PetscViewerBinary for MATLAB format ---%\n\n");CHKERRQ(ierr);
+      ierr = PetscFPrintf(comm,info,"#--- begin code written by PetscViewerBinary for MATLAB format ---#\n");CHKERRQ(ierr);
+      ierr = PetscFPrintf(comm,info,"#$$ Set.%s = PetscBinaryRead(fd);\n",bag->bagname);CHKERRQ(ierr);
+      ierr = PetscFPrintf(comm,info,"#--- end code written by PetscViewerBinary for MATLAB format ---#\n\n");CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);

@@ -44,7 +44,7 @@ PetscErrorCode    KSPSetUp_FGMRES(KSP ksp)
 
   ierr = PetscMalloc((VEC_OFFSET+2+max_k)*sizeof(void*),&fgmres->prevecs);CHKERRQ(ierr);
   ierr = PetscMalloc((VEC_OFFSET+2+max_k)*sizeof(void*),&fgmres->prevecs_user_work);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(ksp,(VEC_OFFSET+2+max_k)*(2*sizeof(void*)));CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory((PetscObject)ksp,(VEC_OFFSET+2+max_k)*(2*sizeof(void*)));CHKERRQ(ierr);
 
   ierr = KSPGetVecs(ksp,fgmres->vv_allocated,&fgmres->prevecs_user_work[0],0,NULL);CHKERRQ(ierr);
   ierr = PetscLogObjectParents(ksp,fgmres->vv_allocated,fgmres->prevecs_user_work[0]);CHKERRQ(ierr);
@@ -130,6 +130,7 @@ PetscErrorCode KSPFGMRESCycle(PetscInt *itcount,KSP ksp)
 
   ksp->rnorm = res_norm;
   ierr       = KSPLogResidualHistory(ksp,res_norm);CHKERRQ(ierr);
+  ierr       = KSPMonitor(ksp,ksp->its,res_norm);CHKERRQ(ierr);
 
   /* check for the convergence - maybe the current guess is good enough */
   ierr = (*ksp->converged)(ksp,ksp->its,res_norm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
@@ -145,9 +146,11 @@ PetscErrorCode KSPFGMRESCycle(PetscInt *itcount,KSP ksp)
   /* keep iterating until we have converged OR generated the max number
      of directions OR reached the max number of iterations for the method */
   while (!ksp->reason && loc_it < max_k && ksp->its < ksp->max_it) {
-    if (loc_it) {ierr = KSPLogResidualHistory(ksp,res_norm);CHKERRQ(ierr);}
+    if (loc_it) {
+      ierr = KSPLogResidualHistory(ksp,res_norm);CHKERRQ(ierr);
+      ierr = KSPMonitor(ksp,ksp->its,res_norm);CHKERRQ(ierr);
+    }
     fgmres->it = (loc_it - 1);
-    ierr       = KSPMonitor(ksp,ksp->its,res_norm);CHKERRQ(ierr);
 
     /* see if more space is needed for work vectors */
     if (fgmres->vv_allocated <= loc_it + VEC_OFFSET + 1) {
@@ -233,7 +236,7 @@ PetscErrorCode KSPFGMRESCycle(PetscInt *itcount,KSP ksp)
 
   /*
      Monitor if we know that we will not return for a restart */
-  if (ksp->reason || ksp->its >= ksp->max_it) {
+  if (loc_it && (ksp->reason || ksp->its >= ksp->max_it)) {
     ierr = KSPMonitor(ksp,ksp->its,res_norm);CHKERRQ(ierr);
   }
 
@@ -545,14 +548,14 @@ PetscErrorCode KSPBuildSolution_FGMRES(KSP ksp,Vec ptr,Vec *result)
   if (!ptr) {
     if (!fgmres->sol_temp) {
       ierr = VecDuplicate(ksp->vec_sol,&fgmres->sol_temp);CHKERRQ(ierr);
-      ierr = PetscLogObjectParent(ksp,fgmres->sol_temp);CHKERRQ(ierr);
+      ierr = PetscLogObjectParent((PetscObject)ksp,(PetscObject)fgmres->sol_temp);CHKERRQ(ierr);
     }
     ptr = fgmres->sol_temp;
   }
   if (!fgmres->nrs) {
     /* allocate the work area */
     ierr = PetscMalloc(fgmres->max_k*sizeof(PetscScalar),&fgmres->nrs);CHKERRQ(ierr);
-    ierr = PetscLogObjectMemory(ksp,fgmres->max_k*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscLogObjectMemory((PetscObject)ksp,fgmres->max_k*sizeof(PetscScalar));CHKERRQ(ierr);
   }
 
   ierr = KSPFGMRESBuildSoln(fgmres->nrs,ksp->vec_sol,ptr,ksp,fgmres->it);CHKERRQ(ierr);

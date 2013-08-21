@@ -13,6 +13,20 @@
 #include <petscviewer.h>
 #include <petscthreadcomm.h>
 
+PetscErrorCode PetscLogObjectParent(PetscObject p,PetscObject c)
+{
+  if (!c || !p) return 0;
+  c->parent   = p;
+  c->parentid = p->id;
+  return 0;
+}
+
+PetscErrorCode PetscLogObjectMemory(PetscObject p,PetscLogDouble m)
+{
+  p->mem += m;
+  return 0;
+}
+
 PetscLogEvent PETSC_LARGEST_EVENT = PETSC_EVENT;
 
 #if defined(PETSC_CLANGUAGE_CXX)
