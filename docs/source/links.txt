@@ -14,13 +14,13 @@
 
 .. _NumPy:        http://numpy.scipy.org
 
-.. _mpi4py:       http://mpi4py.googlecode.com
+.. _mpi4py:       http://bitbucket.org/mpi4py/mpi4py
 
-.. _petsc4py:     http://petsc4py.googlecode.com
+.. _petsc4py:     http://bitbucket.org/petsc/petsc4py
 
-.. _slepc4py:     http://slepc4py.googlecode.com
+.. _slepc4py:     http://bitbucket.org/slepc/slepc4py
 
-.. _tao4py:       http://tao4py.googlecode.com
+.. _tao4py:       http://bitbucket.org/dalcinl/tao4py
 
 .. _CIMEC:        http://www.cimec.org.ar
 

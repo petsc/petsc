@@ -12,7 +12,7 @@ Python bindings for PETSc libraries.
 
     $ pip install petsc==dev petsc4py==dev 
 
-  .. _petsc4py-dev: hg+https://code.google.com/p/petsc4py/#egg=petsc4py-dev
+  .. _petsc4py-dev: git+https://bitbucket.org/petsc/petsc4py.git#egg=petsc4py-dev
 """
 
 ## try:
@@ -42,8 +42,8 @@ def version():
 name     = name()
 version  = version()
 
-url      = 'http://%(name)s.googlecode.com/' % vars()
-download = url + 'files/%(name)s-%(version)s.tar.gz' % vars()
+url      = 'https://bitbucket.org/petsc/' % vars()
+download = url + '%(name)s/%(name)s-%(version)s.tar.gz' % vars()
 
 descr    = __doc__.strip().split('\n'); del descr[1:3]
 devstat  = ['Development Status :: 5 - Production/Stable']

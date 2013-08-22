@@ -6,7 +6,7 @@ PETSc for Python
 :Contact:      dalcinl@gmail.com
 :Organization: CIMEC_
 :Address:      CCT CONICET, 3000 Santa Fe, Argentina
-:Web Site:     http://petsc4py.googlecode.com
+:Web Site:     https://bitbucket.org/petsc/petsc4py
 :Date:         |today|
 
 .. include:: abstract.txt

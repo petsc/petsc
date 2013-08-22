@@ -58,10 +58,10 @@ Downloading
 ^^^^^^^^^^^
 
 The *PETSc for Python* package is available for download at the
-project website generously hosted by Google Code. You can use
+project website generously hosted by Bitbucket. You can use
 :program:`wget` to get a release tarball::
 
-   $ wget http://petsc4py.googlecode.com/files/petsc4py-X.X.X.tar.gz
+   $ wget https://bitbucket.org/petsc/petsc4py/petsc4py-X.X.X.tar.gz
 
 Building
 ^^^^^^^^
