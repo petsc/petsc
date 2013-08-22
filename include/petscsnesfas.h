@@ -62,6 +62,8 @@ PETSC_EXTERN PetscErrorCode SNESFASGetSmootherUp(SNES,   PetscInt, SNES*);
 PETSC_EXTERN PetscErrorCode SNESFASGetSmootherDown(SNES, PetscInt, SNES*);
 PETSC_EXTERN PetscErrorCode SNESFASGetCoarseSolve(SNES, SNES*);
 
+/* parameters for full FAS */
+PETSC_EXTERN PetscErrorCode SNESFASFullSetDownSweep(SNES,PetscBool);
 PETSC_EXTERN PetscErrorCode SNESFASCreateCoarseVec(SNES,Vec*);
 PETSC_EXTERN PetscErrorCode SNESFASRestrict(SNES,Vec,Vec);
 

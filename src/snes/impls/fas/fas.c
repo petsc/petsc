@@ -23,11 +23,12 @@ SNESFAS - Full Approximation Scheme nonlinear multigrid solver.
 Options Database:
 +   -snes_fas_levels -  The number of levels
 .   -snes_fas_cycles<1> -  The number of cycles -- 1 for V, 2 for W
-.   -snes_fas_type<additive, multiplicative>  -  Additive or multiplicative cycle
+.   -snes_fas_type<additive,multiplicative,full,kaskade>  -  Additive or multiplicative cycle
 .   -snes_fas_galerkin<PETSC_FALSE> -  Form coarse problems by projection back upon the fine problem
 .   -snes_fas_smoothup<1> -  The number of iterations of the post-smoother
 .   -snes_fas_smoothdown<1> -  The number of iterations of the pre-smoother
 .   -snes_fas_monitor -  Monitor progress of all of the levels
+.   -snes_fas_full_downsweepsmooth<PETSC_FALSE> - call the downsmooth on the initial downsweep of full FAS
 .   -fas_levels_snes_ -  SNES options for all smoothers
 .   -fas_levels_cycle_snes_ -  SNES options for all cycles
 .   -fas_levels_i_snes_ -  SNES options for the smoothers on level i
@@ -86,6 +87,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_FAS(SNES snes)
   fas->monitor                = NULL;
   fas->usedmfornumberoflevels = PETSC_FALSE;
   fas->fastype                = SNES_FAS_MULTIPLICATIVE;
+  fas->full_downsweep         = PETSC_FALSE;
 
   fas->eventsmoothsetup    = 0;
   fas->eventsmoothsolve    = 0;
@@ -347,6 +349,11 @@ PetscErrorCode SNESSetFromOptions_FAS(SNES snes)
     ierr = PetscOptionsBool("-snes_fas_galerkin", "Form coarse problems with Galerkin","SNESFASSetGalerkin",fas->galerkin,&galerkinflg,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = SNESFASSetGalerkin(snes, galerkinflg);CHKERRQ(ierr);
+    }
+
+    if (fas->fastype == SNES_FAS_FULL) {
+      ierr   = PetscOptionsBool("-snes_fas_full_downsweep","Smooth on the initial upsweep for full FAS cycles","SNESFASFullSetDownSweep",fas->full_downsweep,&fas->full_downsweep,&flg);CHKERRQ(ierr);
+      if (flg) {SNESFASFullSetDownSweep(snes,fas->full_downsweep);CHKERRQ(ierr);}
     }
 
     ierr = PetscOptionsInt("-snes_fas_smoothup","Number of post-smoothing steps","SNESFASSetNumberSmoothUp",fas->max_up_it,&n_up,&upflg);CHKERRQ(ierr);
@@ -836,9 +843,10 @@ PetscErrorCode SNESFASCycle_Full(SNES snes, Vec X)
   }
 
   if (fas->full_stage == 0) {
-    /* upsweep */
+    /* downsweep */
     if (next) {
       if (fas->level != 1) next->max_its += 1;
+      if (fas->full_downsweep||isFine) {ierr = SNESFASDownSmooth_Private(snes,B,X,F,&snes->norm);CHKERRQ(ierr);}
       ierr = SNESFASCoarseCorrection(snes,X,F,X);CHKERRQ(ierr);
       ierr = SNESFASUpSmooth_Private(snes,B,X,F,&snes->norm);CHKERRQ(ierr);
       if (fas->level != 1) next->max_its -= 1;
