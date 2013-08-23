@@ -132,7 +132,10 @@ PETSC_EXTERN PetscErrorCode PetscFEIntegrateJacobian(PetscFE, PetscInt, PetscInt
                                                      void (*)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
                                                      PetscScalar[]);
 
-/* TODO: Should be moved inside PetscFE */
+PETSC_EXTERN PetscErrorCode PetscFEOpenCLSetRealType(PetscFE, PetscDataType);
+PETSC_EXTERN PetscErrorCode PetscFEOpenCLGetRealType(PetscFE, PetscDataType *);
+
+/* TODO: Should be moved inside DM */
 typedef struct {
   PetscFE         *fe;
   PetscQuadrature *quad;
