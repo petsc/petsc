@@ -1121,6 +1121,7 @@ PETSC_EXTERN const char *const PetscDataTypes[];
 PETSC_EXTERN PetscErrorCode PetscDataTypeToMPIDataType(PetscDataType,MPI_Datatype*);
 PETSC_EXTERN PetscErrorCode PetscMPIDataTypeToPetscDataType(MPI_Datatype,PetscDataType*);
 PETSC_EXTERN PetscErrorCode PetscDataTypeGetSize(PetscDataType,size_t*);
+PETSC_EXTERN PetscErrorCode PetscDataTypeFromString(const char*,PetscDataType*,PetscBool*);
 
 /*
     Basic memory and string operations. These are usually simple wrappers
