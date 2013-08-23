@@ -2874,7 +2874,7 @@ PetscErrorCode PetscFEOpenCLGetIntegrationKernel(PetscFE fem, cl_program *ocl_pr
   PetscFunctionBegin;
   ierr = PetscFEGetSpatialDimension(fem, &dim);CHKERRQ(ierr);
   ierr = PetscMalloc(8192 * sizeof(char), &buffer);CHKERRQ(ierr);
-  ierr = PetscFEGetTileSizes(fem, &N_bl, NULL, NULL, NULL);CHKERRQ(ierr);
+  ierr = PetscFEGetTileSizes(fem, NULL, &N_bl, NULL, NULL);CHKERRQ(ierr);
   ierr = PetscFEOpenCLGenerateIntegrationCode(fem, &buffer, 8192, N_bl);CHKERRQ(ierr);
   len  = strlen(buffer);
   *ocl_prog = clCreateProgramWithSource(ocl->ctx_id, 1, (const char **) &buffer, &len, &ierr2);CHKERRQ(ierr2);
