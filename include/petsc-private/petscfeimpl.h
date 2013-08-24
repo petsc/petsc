@@ -60,6 +60,7 @@ struct _PetscFEOps {
   PetscErrorCode (*destroy)(PetscFE);
   /* Element integration */
   PetscErrorCode (*integrateresidual)(PetscFE, PetscInt, PetscInt, PetscFE[], PetscInt, PetscCellGeometry, const PetscScalar[],
+                                      PetscInt, PetscFE[], const PetscScalar[],
                                       void (*)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
                                       void (*)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]),
                                       PetscScalar[]);
