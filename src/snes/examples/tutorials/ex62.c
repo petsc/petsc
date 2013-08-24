@@ -64,8 +64,8 @@ typedef enum {NEUMANN, DIRICHLET} BCType;
 typedef enum {RUN_FULL, RUN_TEST} RunType;
 
 typedef struct {
-  DM            dm;                /* REQUIRED in order to use SNES evaluation functions */
   PetscFEM      fem;               /* REQUIRED to use DMPlexComputeResidualFEM() */
+  DM            dm;                /* The solution DM */
   PetscInt      debug;             /* The debugging level */
   PetscMPIInt   rank;              /* The process rank */
   PetscMPIInt   numProcs;          /* The number of processes */
@@ -415,7 +415,8 @@ PetscErrorCode SetupElement(DM dm, AppCtx *user)
     ierr = PetscDTGaussJacobiQuadrature(dim, qorder, -1.0, 1.0, &q);CHKERRQ(ierr);
     ierr = PetscFESetQuadrature(user->fe[f], q);CHKERRQ(ierr);
   }
-  user->fem.fe = user->fe;
+  user->fem.fe    = user->fe;
+  user->fem.feAux = NULL;
   PetscFunctionReturn(0);
 }
 
