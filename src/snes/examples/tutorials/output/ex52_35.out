@@ -4,17 +4,15 @@ Mesh in 2 dimensions:
 Labels:
   marker: 2 strata of sizes (8, 1)
   depth: 2 strata of sizes (9, 8)
-GPU layout grid(1,1,1) block(3,1,1) with 2 batches
- N_t: 3, N_cb: 2
 Residual:
 Vec Object: 1 MPI processes
   type: seq
--0.25
--0.5
-0.25
--0.5
--1
-0.5
-0.25
-0.5
-0.75
+-0.0833333
+0
+0.583333
+0
+0
+1
+0.583333
+1
+0.916667
