@@ -2757,7 +2757,7 @@ PetscErrorCode DMPrintCellMatrix(PetscInt c, const char name[], PetscInt rows, P
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPrintLocalVec"
-PetscErrorCode DMPrintLocalVec(DM dm, const char name[], Vec X)
+PetscErrorCode DMPrintLocalVec(DM dm, const char name[], PetscReal tol, Vec X)
 {
   PetscMPIInt    rank, numProcs;
   PetscInt       p;
@@ -2773,7 +2773,7 @@ PetscErrorCode DMPrintLocalVec(DM dm, const char name[], Vec X)
 
       ierr = VecDuplicate(X, &x);CHKERRQ(ierr);
       ierr = VecCopy(X, x);CHKERRQ(ierr);
-      ierr = VecChop(x, 1.0e-10);CHKERRQ(ierr);
+      ierr = VecChop(x, tol);CHKERRQ(ierr);
       ierr = VecView(x, PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
       ierr = VecDestroy(&x);CHKERRQ(ierr);
       ierr = PetscViewerFlush(PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
