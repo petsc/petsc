@@ -1,5 +1,5 @@
 
-static char help[] = "Pattern Formation with Reaction-Diffusion Equations.\n";
+static char help[] = "Demonstrates Pattern Formation with Reaction-Diffusion Equations.\n";
 
 /*
      Page 21, Pattern Formation with Reaction-Diffusion Equations

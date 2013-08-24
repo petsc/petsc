@@ -797,8 +797,9 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
 
 #if defined(PETSC_HAVE_SAWS)
   {
-    char cert[PETSC_MAX_PATH_LEN],root[PETSC_MAX_PATH_LEN],intro[4024],programname[64];
-    int  port;
+    char      cert[PETSC_MAX_PATH_LEN],root[PETSC_MAX_PATH_LEN],intro[4024],programname[64],appline[256];
+    int       port;
+    PetscBool rootlocal = PETSC_FALSE;
 
     ierr = PetscOptionsHasName(NULL,"-saws_log",&flg);CHKERRQ(ierr);
     if (flg) {
@@ -822,18 +823,32 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
     ierr = PetscOptionsGetString(NULL,"-saws_root",root,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = SAWs_Set_Document_Root(root);CHKERRQ(ierr);
+      ierr = PetscStrcmp(root,".",&rootlocal);CHKERRQ(ierr);
     }
     ierr = PetscGetProgramName(programname,64);CHKERRQ(ierr);
-    ierr = PetscSNPrintf(intro,4024,"<head>"
-                                    "<script type=\"text/javascript\" src=\"js/jquery-1.9.1.js\"></script>"
-                                    "<script type=\"text/javascript\" src=\"js/jsMemoryPage.js\"></script>"
-                                    "<script type=\"text/javascript\" src=\"js/jsSAWs.js\"></script>"
-                                    "</head>"
-                                    "<body>"
-                                    "<center><h2> %s PETSc Application Web server powered by <a href=\"https://bitbucket.org/saws/saws\">SAWs</a> </h2></center>"
-                                    "This is the default PETSc application dashboard, from it you can access any published PETSc objects or logging data"
-                                    "</body>",programname);
-    ierr = SAWs_Set_Default_Introduction(intro);
+    if (rootlocal) {
+      ierr = PetscSNPrintf(appline,256,"%s.c.html",programname);CHKERRQ(ierr);
+      ierr = PetscTestFile(appline,'r',&rootlocal);CHKERRQ(ierr);
+    }
+    if (rootlocal && help) {
+      ierr = PetscSNPrintf(appline,256,"<center> Running <a href=\"%s.c.html\">%s</a> which %s </center><br>\n",programname,programname,help);
+    } else if (help) {
+      ierr = PetscSNPrintf(appline,256,"<center> Running %s which %s </center><br>\n",programname,help);
+    } else {
+      ierr = PetscSNPrintf(appline,256,"<center> Running %s</center><br>\n",programname);
+    }
+
+    ierr = PetscSNPrintf(intro,4024,"<body>\n"
+                                    "<center><h2> PETSc Application Web server powered by <a href=\"https://bitbucket.org/saws/saws\">SAWs</a> </h2></center>\n"
+                                    "<center>This is the default PETSc application dashboard, from it you can access any published PETSc objects or logging data</center><br>\n"
+                                    "%s\n"
+                                    "<center> <input type=\"button\" value=\"Update all variables from server\" id=\"allDirectories\">\n"
+                                    "<input type=\"button\" value=\"Update server with changes below\" id=\"postData\"></center> \n"
+                                    "<br>\n"
+                                    "<div id=\"variablesInfo\" style=\"float:left\"></div>\n"
+                                    "<br>\n"
+                                    "</body>",appline);
+    ierr = SAWs_Set_Default_Body(intro);
     ierr = SAWs_Initialize();CHKERRQ(ierr);
   }
 
