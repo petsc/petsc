@@ -36,6 +36,7 @@ PETSC_EXTERN PetscErrorCode DMMoabGetParallelComm(DM dm,moab::ParallelComm **pco
 PETSC_EXTERN PetscErrorCode DMMoabSetInterface(DM dm,moab::Interface *iface);
 PETSC_EXTERN PetscErrorCode DMMoabGetInterface(DM dm,moab::Interface **iface);
 PETSC_EXTERN PetscErrorCode DMMoabSetLocalVertices(DM dm,moab::Range *range);
+PETSC_EXTERN PetscErrorCode DMMoabGetAllVertices(DM dm,moab::Range *local);
 PETSC_EXTERN PetscErrorCode DMMoabGetLocalVertices(DM dm,moab::Range *owned,moab::Range *ghost);
 PETSC_EXTERN PetscErrorCode DMMoabSetLocalElements(DM dm,moab::Range *range);
 PETSC_EXTERN PetscErrorCode DMMoabGetLocalElements(DM dm,moab::Range *range);
@@ -71,8 +72,13 @@ PETSC_EXTERN PetscErrorCode DMMoabGetDofsLocal(DM dm,PetscInt npoints,const moab
 PETSC_EXTERN PetscErrorCode DMMoabGetDofsBlocked(DM dm,PetscInt npoints,const moab::EntityHandle* points,PetscInt* dof);
 PETSC_EXTERN PetscErrorCode DMMoabGetDofsBlockedLocal(DM dm,PetscInt npoints,const moab::EntityHandle* points,PetscInt* dof);
 
+PETSC_EXTERN PetscErrorCode DMMoabGetVertexDofsBlocked(DM dm,PetscInt** dof);
+PETSC_EXTERN PetscErrorCode DMMoabGetVertexDofsBlockedLocal(DM dm,PetscInt** dof);
+
 /* discretization and assembly specific DMMoab interface functions */
 PETSC_EXTERN PetscErrorCode DMMoabGetElementConnectivity(DM dm,moab::EntityHandle ehandle,PetscInt* nconn,const moab::EntityHandle **conn);
+PETSC_EXTERN PetscErrorCode DMMoabGetVertexConnectivity(DM dm,moab::EntityHandle ehandle,PetscInt* nconn, moab::EntityHandle **conn);
+PETSC_EXTERN PetscErrorCode DMMoabRestoreVertexConnectivity(DM dm,moab::EntityHandle ehandle,PetscInt* nconn, moab::EntityHandle **conn);
 PETSC_EXTERN PetscErrorCode DMMoabGetVertexCoordinates(DM dm,PetscInt nconn,const moab::EntityHandle *conn,PetscScalar *vpos);
 PETSC_EXTERN PetscErrorCode DMMoabIsEntityOnBoundary(DM dm,const moab::EntityHandle ent,PetscBool* ent_on_boundary);
 PETSC_EXTERN PetscErrorCode DMMoabCheckBoundaryVertices(DM dm,PetscInt nconn,const moab::EntityHandle *cnt,PetscBool* isbdvtx);
