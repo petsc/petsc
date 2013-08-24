@@ -381,7 +381,7 @@ PetscErrorCode DMMoab_VecUserDestroy(void *user)
 @*/
 PetscErrorCode  DMMoabVecGetArray(DM dm,Vec vec,void* array)
 {
-  DM_Moab        *moab;
+  DM_Moab        *dmmoab;
   moab::ErrorCode merr;
   PetscErrorCode  ierr;
   PetscInt        count;
@@ -391,7 +391,8 @@ PetscErrorCode  DMMoabVecGetArray(DM dm,Vec vec,void* array)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidHeaderSpecific(vec,VEC_CLASSID,2);
-  moab=(DM_Moab*)dm->data;
+  PetscValidPointer(array,3);
+  dmmoab=(DM_Moab*)dm->data;
 
   /* Get the MOAB private data */
   ierr = DMMoabGetVecTag(vec,&vtag);CHKERRQ(ierr);
@@ -399,11 +400,13 @@ PetscErrorCode  DMMoabVecGetArray(DM dm,Vec vec,void* array)
   /* Get the real scalar array handle */
   varray = reinterpret_cast<PetscScalar**>(array);
 
-  /* Get the array data for local entities */
-  merr = moab->mbiface->tag_iterate(vtag,moab->vlocal->begin(),moab->vlocal->end(),count,reinterpret_cast<void*&>(*varray),true);MBERRNM(merr);
-  if (count!=(PetscInt)moab->vlocal->size()) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Mismatch between local vertices and tag partition for Vec. %D != %D.",count,moab->vlocal->size());
+  /* exchange the data into ghost cells first */
+  merr = dmmoab->pcomm->exchange_tags(vtag,*dmmoab->vlocal);MBERRNM(merr);
 
-  merr = moab->pcomm->exchange_tags(vtag,*moab->vlocal);MBERRNM(merr);
+  /* Get the array data for local entities */
+  merr = dmmoab->mbiface->tag_iterate(vtag,dmmoab->vlocal->begin(),dmmoab->vlocal->end(),count,reinterpret_cast<void*&>(*varray),true);MBERRNM(merr);
+  if (count!=(PetscInt)dmmoab->vlocal->size()) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Mismatch between local vertices and tag partition for Vec. %D != %D.",count,dmmoab->vlocal->size());
+
   PetscFunctionReturn(0);
 }
 
@@ -432,18 +435,23 @@ PetscErrorCode  DMMoabVecRestoreArray(DM dm,Vec v,void* array)
   moab::ErrorCode merr;
   PetscErrorCode  ierr;
   moab::Tag       vtag;
+  PetscScalar    **varray;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidHeaderSpecific(v,VEC_CLASSID,2);
+  PetscValidPointer(array,3);
   moab=(DM_Moab*)dm->data;
 
   /* Get the MOAB private data */
   ierr = DMMoabGetVecTag(v,&vtag);CHKERRQ(ierr);
 
+  /* Get the real scalar array handle */
+  varray = reinterpret_cast<PetscScalar**>(array);
+  merr = moab->mbiface->tag_set_data(vtag,*moab->vlocal,reinterpret_cast<void*&>(*varray));MBERRNM(merr);
+
   /* reduce the tags correctly -> should probably let the user choose how to reduce in the future
-     For all FEM residual based assembly calculations, MPI_SUM should serve well
-  */
+     For all FEM residual based assembly calculations, MPI_SUM should serve well */
   merr = moab->pcomm->reduce_tags(vtag,MPI_SUM,*moab->vlocal);MBERRNM(merr);
   PetscFunctionReturn(0);
 }
@@ -488,11 +496,13 @@ PetscErrorCode  DMMoabVecGetArrayRead(DM dm,Vec vec,void* array)
   /* Get the real scalar array handle */
   varray = reinterpret_cast<PetscScalar**>(array);
 
+  /* exchange the data into ghost cells first */
+  merr = moab->pcomm->exchange_tags(vtag,*moab->vlocal);MBERRNM(merr);
+
   /* Get the array data for local entities */
   merr = moab->mbiface->tag_iterate(vtag,moab->vlocal->begin(),moab->vlocal->end(),count,reinterpret_cast<void*&>(*varray),true);MBERRNM(merr);
   if (count!=(PetscInt)moab->vlocal->size()) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Mismatch between local vertices and tag partition for Vec. %D != %D.",count,moab->vlocal->size());
 
-  merr = moab->pcomm->exchange_tags(vtag,*moab->vlocal);MBERRNM(merr);
   PetscFunctionReturn(0);
 }
 
