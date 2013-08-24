@@ -27,6 +27,10 @@ PetscErrorCode DMDestroy_Moab(DM dm)
   delete dmmoab->vghost;
   delete dmmoab->elocal;
   delete dmmoab->eghost;
+
+  ierr = PetscFree(dmmoab->isbndyvtx);CHKERRQ(ierr);
+  ierr = PetscFree(dmmoab->isbndyfaces);CHKERRQ(ierr);
+  ierr = PetscFree(dmmoab->isbndyelems);CHKERRQ(ierr);
   delete dmmoab->bndyvtx;
   delete dmmoab->bndyfaces;
   delete dmmoab->bndyelems;
@@ -207,6 +211,25 @@ PetscErrorCode DMSetUp_Moab(DM dm)
     merr = dmmoab->mbiface->get_connectivity(*dmmoab->bndyfaces, *dmmoab->bndyvtx, false);MBERRNM(ierr);
     merr = dmmoab->mbiface->get_adjacencies(*dmmoab->bndyfaces, dmmoab->dim, false, *dmmoab->bndyelems, moab::Interface::UNION);MBERRNM(ierr);
     PetscInfo3(dm, "Found %D boundary vertices, %D boundary faces and %D boundary elements.\n", dmmoab->bndyvtx->size(), dmmoab->bndyvtx->size(), dmmoab->bndyelems->size());
+
+    /* cache a bit-vector for easy query */
+    ierr = PetscMalloc(sizeof(PetscBool)*(dmmoab->nloc+dmmoab->nghost),&dmmoab->isbndyvtx);CHKERRQ(ierr);
+    ierr = PetscMemzero(dmmoab->isbndyvtx,sizeof(PetscBool)*(dmmoab->nloc+dmmoab->nghost));CHKERRQ(ierr);
+    for(moab::Range::iterator iter = dmmoab->bndyvtx->begin(); iter != dmmoab->bndyvtx->end(); iter++) {
+      dmmoab->isbndyvtx[(PetscInt)*iter-1]=PETSC_TRUE;
+    }
+
+    ierr = PetscMalloc(sizeof(PetscBool)*dmmoab->neleloc,&dmmoab->isbndyelems);CHKERRQ(ierr);
+    ierr = PetscMemzero(dmmoab->isbndyelems,sizeof(PetscBool)*dmmoab->neleloc);CHKERRQ(ierr);
+    for(moab::Range::iterator iter = dmmoab->bndyelems->begin(); iter != dmmoab->bndyelems->end(); iter++) {
+      dmmoab->isbndyelems[(PetscInt)*iter-1]=PETSC_TRUE;
+    }
+
+    ierr = PetscMalloc(sizeof(PetscBool)*dmmoab->bndyfaces->size(),&dmmoab->isbndyfaces);CHKERRQ(ierr);
+    ierr = PetscMemzero(dmmoab->isbndyfaces,sizeof(PetscBool)*dmmoab->bndyfaces->size());CHKERRQ(ierr);
+    for(moab::Range::iterator iter = dmmoab->bndyfaces->begin(); iter != dmmoab->bndyfaces->end(); iter++) {
+      dmmoab->isbndyfaces[(PetscInt)*iter-1]=PETSC_TRUE;
+    }
   }
   PetscFunctionReturn(0);
 }
@@ -508,6 +531,33 @@ PetscErrorCode DMMoabSetLocalVertices(DM dm,moab::Range *range)
   ierr = MPI_Allreduce(&dmmoab->nloc, &dmmoab->n, 1, MPI_INTEGER, MPI_SUM, ((PetscObject)dm)->comm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+
+#undef __FUNCT__
+#define __FUNCT__ "DMMoabGetAllVertices"
+/*@
+  DMMoabGetAllVertices - Get the entities having DOFs on this DMMoab
+
+  Collective on MPI_Comm
+
+  Input Parameter:
+. dm    - The DMMoab object being set
+
+  Output Parameter:
+. owned - The local vertex entities in this DMMoab = (owned+ghosted)
+
+  Level: beginner
+
+.keywords: DMMoab, create
+@*/
+PetscErrorCode DMMoabGetAllVertices(DM dm,moab::Range *local)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  if (local) *local = *((DM_Moab*)dm->data)->vlocal;
+  PetscFunctionReturn(0);
+}
+
 
 
 #undef __FUNCT__
@@ -931,6 +981,58 @@ PetscErrorCode DMMoabGetVertexCoordinates(DM dm,PetscInt nconn,const moab::Entit
 
 
 #undef __FUNCT__
+#define __FUNCT__ "DMMoabGetVertexConnectivity"
+PetscErrorCode DMMoabGetVertexConnectivity(DM dm,moab::EntityHandle ehandle,PetscInt* nconn, moab::EntityHandle **conn)
+{
+  DM_Moab        *dmmoab;
+  std::vector<moab::EntityHandle> adj_entities,connect;
+  PetscErrorCode  ierr;
+  moab::ErrorCode merr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidPointer(conn,4);
+  dmmoab = (DM_Moab*)(dm)->data;
+
+  /* Get connectivity information in MOAB canonical ordering */
+  merr = dmmoab->mbiface->get_adjacencies(&ehandle, 1, 1, true, adj_entities, moab::Interface::UNION);MBERRNM(merr);
+  merr = dmmoab->mbiface->get_connectivity(&adj_entities[0],adj_entities.size(),connect);MBERRNM(merr);
+
+#if 0
+  for(unsigned int jter = 0; jter < connect.size(); jter++) {
+    PetscPrintf(PETSC_COMM_SELF,"Handle=%D\tAdj_Size=%D\tAdj_Entity=%D\n",ehandle,connect.size(),connect[jter]);
+  }
+#endif
+
+  if (conn) {
+    ierr = PetscMalloc(sizeof(moab::EntityHandle)*connect.size(), conn);CHKERRQ(ierr);
+    ierr = PetscMemcpy(*conn, &connect[0], sizeof(moab::EntityHandle)*connect.size());CHKERRQ(ierr);
+  }
+  if (nconn) *nconn=connect.size();
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
+#define __FUNCT__ "DMMoabRestoreVertexConnectivity"
+PetscErrorCode DMMoabRestoreVertexConnectivity(DM dm,moab::EntityHandle ehandle,PetscInt* nconn, moab::EntityHandle **conn)
+{
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidPointer(conn,4);
+
+  if (conn) {
+    ierr = PetscFree(*conn);CHKERRQ(ierr);
+  }
+  if (nconn) *nconn=0;
+  PetscFunctionReturn(0);
+}
+
+
+
+#undef __FUNCT__
 #define __FUNCT__ "DMMoabGetElementConnectivity"
 PetscErrorCode DMMoabGetElementConnectivity(DM dm,moab::EntityHandle ehandle,PetscInt* nconn,const moab::EntityHandle **conn)
 {
@@ -974,13 +1076,13 @@ PetscErrorCode DMMoabIsEntityOnBoundary(DM dm,const moab::EntityHandle ent,Petsc
 
   *ent_on_boundary=PETSC_FALSE;
   if(etype == moab::MBVERTEX && edim == 0) {
-    moab::Range::const_iterator giter = dmmoab->bndyvtx->find(ent);
-    if (giter != dmmoab->bndyvtx->end()) *ent_on_boundary=PETSC_TRUE;
+    if (ent < (*dmmoab->vlocal)[0] || ent > (*dmmoab->vlocal)[dmmoab->nloc-1]) SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid boundary vertex entity handle: %D\n",ent);
+    *ent_on_boundary=dmmoab->isbndyvtx[(PetscInt)ent-1];
   }
   else {
     if (edim == dmmoab->dim) {  /* check the higher-dimensional elements first */
-      moab::Range::const_iterator geiter = dmmoab->bndyelems->find(ent);
-      if (geiter != dmmoab->bndyelems->end()) *ent_on_boundary=PETSC_TRUE;
+      if (ent < (*dmmoab->elocal)[0] || ent > (*dmmoab->elocal)[dmmoab->neleloc-1]) SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid boundary element entity handle: %D\n",ent);
+      *ent_on_boundary=dmmoab->isbndyelems[(PetscInt)ent-1];
     }
     else {                      /* next check the lower-dimensional faces */
       moab::Range::const_iterator gfiter = dmmoab->bndyfaces->find(ent);
@@ -1088,7 +1190,7 @@ PetscErrorCode DMMoabGetFieldDofs(DM dm,PetscInt npoints,const moab::EntityHandl
 
   ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
   if (!dof) {
-    ierr = PetscMalloc(sizeof(PetscScalar)*npoints, &dof);CHKERRQ(ierr);
+    ierr = PetscMalloc(sizeof(PetscInt)*npoints, &dof);CHKERRQ(ierr);
   }
 
   /* first get the local indices */
@@ -1116,7 +1218,7 @@ PetscErrorCode DMMoabGetFieldDofsLocal(DM dm,PetscInt npoints,const moab::Entity
   dmmoab = (DM_Moab*)(dm)->data;
 
   if (!dof) {
-    ierr = PetscMalloc(sizeof(PetscScalar)*npoints, &dof);CHKERRQ(ierr);
+    ierr = PetscMalloc(sizeof(PetscInt)*npoints, &dof);CHKERRQ(ierr);
   }
 
   if (dmmoab->bs > 1) {
@@ -1149,7 +1251,7 @@ PetscErrorCode DMMoabGetDofs(DM dm,PetscInt npoints,const moab::EntityHandle* po
 
   ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
   if (!dof) {
-    ierr = PetscMalloc(sizeof(PetscScalar)*dmmoab->nfields*npoints, &dof);CHKERRQ(ierr);
+    ierr = PetscMalloc(sizeof(PetscInt)*dmmoab->nfields*npoints, &dof);CHKERRQ(ierr);
   }
 
   /* first get the local indices */
@@ -1179,7 +1281,7 @@ PetscErrorCode DMMoabGetDofsLocal(DM dm,PetscInt npoints,const moab::EntityHandl
   dmmoab = (DM_Moab*)(dm)->data;
 
   if (!dof) {
-    ierr = PetscMalloc(sizeof(PetscScalar)*dmmoab->nfields*npoints, &dof);CHKERRQ(ierr);
+    ierr = PetscMalloc(sizeof(PetscInt)*dmmoab->nfields*npoints, &dof);CHKERRQ(ierr);
   }
 
   if (dmmoab->bs > 1) {
@@ -1215,7 +1317,7 @@ PetscErrorCode DMMoabGetDofsBlocked(DM dm,PetscInt npoints,const moab::EntityHan
 
   ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
   if (!dof) {
-    ierr = PetscMalloc(sizeof(PetscScalar)*npoints, &dof);CHKERRQ(ierr);
+    ierr = PetscMalloc(sizeof(PetscInt)*npoints, &dof);CHKERRQ(ierr);
   }
 
   /* first get the local indices */
@@ -1243,13 +1345,79 @@ PetscErrorCode DMMoabGetDofsBlockedLocal(DM dm,PetscInt npoints,const moab::Enti
   PetscValidPointer(points,2);
 
   if (!dof) {
-    ierr = PetscMalloc(sizeof(PetscScalar)*npoints, &dof);CHKERRQ(ierr);
+    ierr = PetscMalloc(sizeof(PetscInt)*npoints, &dof);CHKERRQ(ierr);
   }
 
   for (i=0; i<npoints; ++i)
     dof[i] = points[i]-1;
   PetscFunctionReturn(0);
 }
+
+
+#undef __FUNCT__
+#define __FUNCT__ "DMMoabGetVertexDofsBlocked"
+PetscErrorCode DMMoabGetVertexDofsBlocked(DM dm,PetscInt** dof)
+{
+  PetscInt        i,gid;
+  DM_Moab        *dmmoab;
+  PetscSection section;
+  PetscErrorCode  ierr;
+  moab::ErrorCode merr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  dmmoab = (DM_Moab*)(dm)->data;
+
+  *dof = dmmoab->gsindices;
+
+  if (false) {
+    if (!dof) {
+      ierr = PetscMalloc(sizeof(PetscInt)*(dmmoab->nloc+dmmoab->nghost), dof);CHKERRQ(ierr);
+    }
+
+    /* first get the local indices */
+    merr = dmmoab->mbiface->tag_get_data(dmmoab->ltog_tag,*dmmoab->vlocal,*dof);MBERRNM(merr);
+
+    ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
+
+    /* Compute function over the locally owned part of the grid */
+    for(i=0; i<dmmoab->nloc+dmmoab->nghost; i++) {
+      gid=(*dof)[i];
+      ierr = PetscSectionGetFieldDof(section, gid, 0, &(*dof)[i]);CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
+#define __FUNCT__ "DMMoabGetVertexDofsBlockedLocal"
+PetscErrorCode DMMoabGetVertexDofsBlockedLocal(DM dm,PetscInt** dof)
+{
+  PetscInt        i;
+  DM_Moab        *dmmoab;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidPointer(dof,2);
+  dmmoab = (DM_Moab*)(dm)->data;
+
+  if (!(*dof)) {
+    ierr = PetscMalloc(sizeof(PetscInt)*(dmmoab->nloc+dmmoab->nghost), dof);CHKERRQ(ierr);
+  }
+
+  i=0;
+  /* Compute function over the locally owned part of the grid */
+  for(moab::Range::iterator iter = dmmoab->vowned->begin(); iter != dmmoab->vowned->end(); iter++,i++) {
+    (*dof)[i] = (*iter)-1;
+  }
+  for(moab::Range::iterator iter = dmmoab->vghost->begin(); iter != dmmoab->vghost->end(); iter++,i++) {
+    (*dof)[i] = (*iter)-1;
+  }
+  PetscFunctionReturn(0);
+}
+
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMoab_GetWriteOptions_Private"
