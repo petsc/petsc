@@ -9,8 +9,8 @@ PetscInt spatialDim = 0;
 typedef enum {LAPLACIAN = 0, ELASTICITY} OpType;
 
 typedef struct {
-  DM            dm;                /* REQUIRED in order to use SNES evaluation functions */
   PetscFEM      fem;               /* REQUIRED to use DMPlexComputeResidualFEM() */
+  DM            dm;                /* The solution DM */
   PetscInt      debug;             /* The debugging level */
   PetscMPIInt   rank;              /* The process rank */
   PetscMPIInt   numProcs;          /* The number of processes */
@@ -28,6 +28,7 @@ typedef struct {
   PetscLogEvent createMeshEvent, residualEvent, residualBatchEvent, jacobianEvent, jacobianBatchEvent, integrateBatchCPUEvent, integrateBatchGPUEvent, integrateGPUOnlyEvent;
   /* Element definition */
   PetscFE       fe[NUM_FIELDS];
+  PetscFE       feAux[1];
   void (*f0Funcs[NUM_FIELDS])(const PetscScalar u[], const PetscScalar gradU[], const PetscScalar a[], const PetscScalar gradA[], const PetscReal x[], PetscScalar f0[]);
   void (*f1Funcs[NUM_FIELDS])(const PetscScalar u[], const PetscScalar gradU[], const PetscScalar a[], const PetscScalar gradA[], const PetscReal x[], PetscScalar f1[]);
   void (*g0Funcs[NUM_FIELDS*NUM_FIELDS])(const PetscScalar u[], const PetscScalar gradU[], const PetscScalar a[], const PetscScalar gradA[], const PetscReal x[], PetscScalar g0[]);
@@ -57,7 +58,7 @@ void f0_lap(const PetscScalar u[], const PetscScalar gradU[], const PetscScalar 
 void f1_lap(const PetscScalar u[], const PetscScalar gradU[], const PetscScalar a[], const PetscScalar gradA[], const PetscReal x[], PetscScalar f1[])
 {
   PetscInt d;
-  for (d = 0; d < spatialDim; ++d) {f1[d] = gradU[d];}
+  for (d = 0; d < spatialDim; ++d) {f1[d] = a[0]*gradU[d];}
 }
 
 /* < \nabla v, \nabla u + {\nabla u}^T >
@@ -262,6 +263,54 @@ PetscErrorCode SetupElement(DM dm, AppCtx *user)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "SetupMaterialElement"
+PetscErrorCode SetupMaterialElement(DM dm, AppCtx *user)
+{
+  const PetscInt  dim = user->dim;
+  const char     *prefix = "mat_";
+  PetscFE         fem;
+  PetscQuadrature q;
+  DM              K;
+  PetscSpace      P;
+  PetscDualSpace  Q;
+  PetscInt        order;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  /* Create space */
+  ierr = PetscSpaceCreate(PetscObjectComm((PetscObject) dm), &P);CHKERRQ(ierr);
+  ierr = PetscObjectSetOptionsPrefix((PetscObject) P, prefix);CHKERRQ(ierr);
+  ierr = PetscSpaceSetFromOptions(P);CHKERRQ(ierr);
+  ierr = PetscSpacePolynomialSetNumVariables(P, dim);CHKERRQ(ierr);
+  ierr = PetscSpaceSetUp(P);CHKERRQ(ierr);
+  ierr = PetscSpaceGetOrder(P, &order);CHKERRQ(ierr);
+  /* Create dual space */
+  ierr = PetscDualSpaceCreate(PetscObjectComm((PetscObject) dm), &Q);CHKERRQ(ierr);
+  ierr = PetscObjectSetOptionsPrefix((PetscObject) Q, prefix);CHKERRQ(ierr);
+  ierr = PetscDualSpaceCreateReferenceCell(Q, dim, PETSC_TRUE, &K);CHKERRQ(ierr);
+  ierr = PetscDualSpaceSetDM(Q, K);CHKERRQ(ierr);
+  ierr = DMDestroy(&K);CHKERRQ(ierr);
+  ierr = PetscDualSpaceSetOrder(Q, order);CHKERRQ(ierr);
+  ierr = PetscDualSpaceSetFromOptions(Q);CHKERRQ(ierr);
+  ierr = PetscDualSpaceSetUp(Q);CHKERRQ(ierr);
+  /* Create element */
+  ierr = PetscFECreate(PetscObjectComm((PetscObject) dm), &fem);CHKERRQ(ierr);
+  ierr = PetscObjectSetOptionsPrefix((PetscObject) fem, prefix);CHKERRQ(ierr);
+  ierr = PetscFESetFromOptions(fem);CHKERRQ(ierr);
+  ierr = PetscFESetBasisSpace(fem, P);CHKERRQ(ierr);
+  ierr = PetscFESetDualSpace(fem, Q);CHKERRQ(ierr);
+  ierr = PetscFESetNumComponents(fem, 1);CHKERRQ(ierr);
+  ierr = PetscSpaceDestroy(&P);CHKERRQ(ierr);
+  ierr = PetscDualSpaceDestroy(&Q);CHKERRQ(ierr);
+  /* Create quadrature */
+  ierr = PetscDTGaussJacobiQuadrature(dim, PetscMax(order, 1), -1.0, 1.0, &q);CHKERRQ(ierr);
+  ierr = PetscFESetQuadrature(fem, q);CHKERRQ(ierr);
+  user->feAux[0]  = fem;
+  user->fem.feAux = user->feAux;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DestroyElement"
 PetscErrorCode DestroyElement(AppCtx *user)
 {
@@ -269,6 +318,7 @@ PetscErrorCode DestroyElement(AppCtx *user)
 
   PetscFunctionBeginUser;
   ierr = PetscFEDestroy(&user->fe[0]);CHKERRQ(ierr);
+  ierr = PetscFEDestroy(&user->feAux[0]);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -288,6 +338,21 @@ PetscErrorCode SetupSection(DM dm, AppCtx *user)
   ierr = PetscFEGetNumDof(user->fe[0], &numDof);CHKERRQ(ierr);
   ierr = DMPlexCreateSection(dm, dim, 1, numComp, numDof, numBC, NULL, NULL, &section);CHKERRQ(ierr);
   ierr = DMSetDefaultSection(dm, section);CHKERRQ(ierr);
+  ierr = PetscSectionDestroy(&section);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "SetupMaterial"
+PetscErrorCode SetupMaterial(DM dm, DM dmAux, AppCtx *user)
+{
+  Vec            epsilon;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMGetLocalVector(dmAux, &epsilon);CHKERRQ(ierr);
+  ierr = VecSet(epsilon, 1.0);CHKERRQ(ierr);
+  ierr = PetscObjectCompose((PetscObject) dm, "A", (PetscObject) epsilon);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -295,7 +360,7 @@ PetscErrorCode SetupSection(DM dm, AppCtx *user)
 #define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
-  DM             dm;
+  DM             dm, dmAux;
   SNES           snes;
   AppCtx         user;
   PetscInt       numComp;
@@ -311,6 +376,9 @@ int main(int argc, char **argv)
   ierr = SNESSetDM(snes, dm);CHKERRQ(ierr);
 
   ierr = SetupElement(user.dm, &user);CHKERRQ(ierr);
+  ierr = DMClone(user.dm, &dmAux);CHKERRQ(ierr);
+  ierr = PetscObjectCompose((PetscObject) dm, "dmAux", (PetscObject) dmAux);CHKERRQ(ierr);
+  ierr = SetupMaterialElement(dmAux, &user);CHKERRQ(ierr);
   ierr = PetscFEGetNumComponents(user.fe[0], &numComp);CHKERRQ(ierr);
   ierr = PetscMalloc(numComp * sizeof(void (*)(const PetscReal[], PetscScalar *)), &user.exactFuncs);CHKERRQ(ierr);
   switch (user.op) {
@@ -343,6 +411,8 @@ int main(int argc, char **argv)
   user.fem.g3Funcs = user.g3Funcs;
   user.fem.bcFuncs = (void (**)(const PetscReal[], PetscScalar *)) user.exactFuncs;
   ierr = SetupSection(dm, &user);CHKERRQ(ierr);
+  ierr = SetupSection(dmAux, &user);CHKERRQ(ierr);
+  ierr = SetupMaterial(dm, dmAux, &user);CHKERRQ(ierr);
 
   ierr = DMSNESSetFunctionLocal(user.dm,  (PetscErrorCode (*)(DM,Vec,Vec,void*))DMPlexComputeResidualFEM,&user);CHKERRQ(ierr);
   ierr = DMSNESSetJacobianLocal(user.dm,  (PetscErrorCode (*)(DM,Vec,Mat,Mat,MatStructure*,void*))DMPlexComputeJacobianFEM,&user);CHKERRQ(ierr);
@@ -370,6 +440,7 @@ int main(int argc, char **argv)
   ierr = PetscFree(user.exactFuncs);CHKERRQ(ierr);
   ierr = DestroyElement(&user);CHKERRQ(ierr);
   ierr = SNESDestroy(&snes);CHKERRQ(ierr);
+  ierr = DMDestroy(&dmAux);CHKERRQ(ierr);
   ierr = DMDestroy(&dm);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
