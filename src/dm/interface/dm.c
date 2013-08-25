@@ -13,7 +13,7 @@ PetscLogEvent DM_Convert, DM_GlobalToLocal, DM_LocalToGlobal, DM_LocalToLocal;
 
   Input Parameters:
 + dm   - the DM
-. prefix - prefix to use for viewing, or NULL to use prefix of 'rnd'
+. prefix - prefix to use for viewing, or NULL to use prefix of 'dm'
 - optionname - option to activate viewing
 
   Level: intermediate
