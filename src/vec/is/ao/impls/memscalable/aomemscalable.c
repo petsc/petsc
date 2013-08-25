@@ -567,6 +567,7 @@ PetscErrorCode  AOCreateMemoryScalableIS(IS isapp,IS ispetsc,AO *aoout)
   ierr   = AOCreate(comm,&ao);CHKERRQ(ierr);
   ierr   = AOSetIS(ao,isapp,ispetsc);CHKERRQ(ierr);
   ierr   = AOSetType(ao,AOMEMORYSCALABLE);CHKERRQ(ierr);
+  ierr   = AOViewFromOptions(ao,NULL,"-ao_view");CHKERRQ(ierr);
   *aoout = ao;
   PetscFunctionReturn(0);
 }
