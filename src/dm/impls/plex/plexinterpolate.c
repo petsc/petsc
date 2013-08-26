@@ -394,24 +394,24 @@ PetscErrorCode DMPlexCopyCoordinates(DM dmA, DM dmB)
 PetscErrorCode DMPlexUninterpolate(DM dm, DM *dmUnint)
 {
   DM             udm;
-  PetscInt       dim, vStart, vEnd, cStart, cEnd, c, maxConeSize, *cone;
+  PetscInt       dim, vStart, vEnd, cStart, cEnd, c, maxConeSize = 0, *cone;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
   if (dim <= 1) {
     ierr = PetscObjectReference((PetscObject) dm);CHKERRQ(ierr);
-    udm  = dm;
+    *dmUnint = dm;
+    PetscFunctionReturn(0);
   }
-  ierr = DMPlexGetMaxSizes(dm, &maxConeSize, NULL);CHKERRQ(ierr);
-  ierr = DMPlexGetDepthStratum(udm, 0, &vStart, &vEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetHeightStratum(udm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = DMCreate(PetscObjectComm((PetscObject) dm), &udm);CHKERRQ(ierr);
   ierr = DMSetType(udm, DMPLEX);CHKERRQ(ierr);
   ierr = DMPlexSetDimension(udm, dim);CHKERRQ(ierr);
   ierr = DMPlexSetChart(udm, cStart, vEnd);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; ++c) {
-    PetscInt *closure, closureSize, cl, coneSize = 0;
+    PetscInt *closure = NULL, closureSize, cl, coneSize = 0;
 
     ierr = DMPlexGetTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
     for (cl = 0; cl < closureSize*2; cl += 2) {
@@ -421,11 +421,12 @@ PetscErrorCode DMPlexUninterpolate(DM dm, DM *dmUnint)
     }
     ierr = DMPlexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
     ierr = DMPlexSetConeSize(udm, c, coneSize);CHKERRQ(ierr);
+    maxConeSize = PetscMax(maxConeSize, coneSize);
   }
   ierr = DMSetUp(udm);CHKERRQ(ierr);
   ierr = PetscMalloc(maxConeSize * sizeof(PetscInt), &cone);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; ++c) {
-    PetscInt *closure, closureSize, cl, coneSize = 0;
+    PetscInt *closure = NULL, closureSize, cl, coneSize = 0;
 
     ierr = DMPlexGetTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
     for (cl = 0; cl < closureSize*2; cl += 2) {
