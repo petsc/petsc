@@ -31,6 +31,7 @@ PETSC_EXTERN PetscErrorCode DMPlexGetSupport(DM, PetscInt, const PetscInt *[]);
 PETSC_EXTERN PetscErrorCode DMPlexSetSupport(DM, PetscInt, const PetscInt[]);
 PETSC_EXTERN PetscErrorCode DMPlexInsertSupport(DM, PetscInt, PetscInt, PetscInt);
 PETSC_EXTERN PetscErrorCode DMPlexGetConeSection(DM, PetscSection *);
+PETSC_EXTERN PetscErrorCode DMPlexGetSupportSection(DM, PetscSection *);
 PETSC_EXTERN PetscErrorCode DMPlexGetCones(DM, PetscInt *[]);
 PETSC_EXTERN PetscErrorCode DMPlexGetConeOrientations(DM, PetscInt *[]);
 PETSC_EXTERN PetscErrorCode DMPlexGetMaxSizes(DM, PetscInt *, PetscInt *);

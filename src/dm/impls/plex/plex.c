@@ -4711,6 +4711,18 @@ PetscErrorCode DMPlexGetConeSection(DM dm, PetscSection *section)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMPlexGetSupportSection"
+PetscErrorCode DMPlexGetSupportSection(DM dm, PetscSection *section)
+{
+  DM_Plex *mesh = (DM_Plex*) dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  if (section) *section = mesh->supportSection;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMPlexGetCones"
 PetscErrorCode DMPlexGetCones(DM dm, PetscInt *cones[])
 {
