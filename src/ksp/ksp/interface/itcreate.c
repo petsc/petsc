@@ -195,7 +195,7 @@ PetscErrorCode  KSPView(KSP ksp,PetscViewer viewer)
       ierr = PetscSNPrintf(dir,1024,"/PETSc/Objects/%s/its",name);CHKERRQ(ierr);
       PetscStackCallSAWs(SAWs_Register,(dir,&ksp->its,1,SAWs_READ,SAWs_INT));
       if (!ksp->res_hist) {
-        ierr = KSPSetResidualHistory(ksp,NULL,PETSC_DECIDE,PETSC_FALSE);CHKERRQ(ierr);
+        ierr = KSPSetResidualHistory(ksp,NULL,PETSC_DECIDE,PETSC_TRUE);CHKERRQ(ierr);
       }
       ierr = PetscSNPrintf(dir,1024,"/PETSc/Objects/%s/res_hist",name);CHKERRQ(ierr);
       PetscStackCallSAWs(SAWs_Register,(dir,ksp->res_hist,10,SAWs_READ,SAWs_DOUBLE));

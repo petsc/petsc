@@ -69,7 +69,7 @@ PetscErrorCode PetscStackViewSAWs(void)
 
   petscstackp = (PetscStack*)PetscThreadLocalGetValue(petscstack);
   PetscStackCallSAWs(SAWs_Register,("/PETSc/Stack/functions",petscstackp->function,20,SAWs_READ,SAWs_STRING));
-  PetscStackCallSAWs(SAWs_Register,("/PETSc/Stack/current size",&petscstackp->currentsize,1,SAWs_READ,SAWs_INT));
+  PetscStackCallSAWs(SAWs_Register,("/PETSc/Stack/current_size",&petscstackp->currentsize,1,SAWs_READ,SAWs_INT));
   amsmemstack = PETSC_TRUE;
   return 0;
 }

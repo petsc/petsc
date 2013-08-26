@@ -91,9 +91,7 @@ PetscErrorCode  PetscObjectViewSAWs(PetscObject obj,PetscViewer viewer)
   PetscStackCallSAWs(SAWs_Register,(dir,&obj->id,1,SAWs_READ,SAWs_INT));
   ierr = PetscSNPrintf(dir,1024,"/PETSc/Objects/%s/ParentID",obj->name);CHKERRQ(ierr);
   PetscStackCallSAWs(SAWs_Register,(dir,&obj->parentid,1,SAWs_READ,SAWs_INT));
-  ierr = PetscSNPrintf(dir,1024,"/PETSc/Objects/%s/Name",obj->name);CHKERRQ(ierr);
-  PetscStackCallSAWs(SAWs_Register,(dir,&obj->name,1,SAWs_READ,SAWs_STRING));
-  ierr = PetscSNPrintf(dir,1024,"/PETSc/Objects/%s/Publish Block",obj->name);CHKERRQ(ierr);
+  ierr = PetscSNPrintf(dir,1024,"/PETSc/Objects/%s/Publish_Block",obj->name);CHKERRQ(ierr);
   PetscStackCallSAWs(SAWs_Register,(dir,&obj->amspublishblock,1,SAWs_READ,SAWs_BOOLEAN));
   ierr = PetscSNPrintf(dir,1024,"/PETSc/Objects/%s/Block",obj->name);CHKERRQ(ierr);
   PetscStackCallSAWs(SAWs_Register,(dir,&obj->amsblock,1,SAWs_WRITE,SAWs_BOOLEAN));

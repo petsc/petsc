@@ -324,7 +324,7 @@ PetscErrorCode  SNESView(SNES snes,PetscViewer viewer)
       ierr = PetscSNPrintf(dir,1024,"/PETSc/Objects/%s/its",name);CHKERRQ(ierr);
       PetscStackCallSAWs(SAWs_Register,(dir,&snes->iter,1,SAWs_READ,SAWs_INT));
       if (!snes->conv_hist) {
-        ierr = SNESSetConvergenceHistory(snes,NULL,NULL,PETSC_DECIDE,PETSC_FALSE);CHKERRQ(ierr);
+        ierr = SNESSetConvergenceHistory(snes,NULL,NULL,PETSC_DECIDE,PETSC_TRUE);CHKERRQ(ierr);
       }
       ierr = PetscSNPrintf(dir,1024,"/PETSc/Objects/%s/conv_hist",name);CHKERRQ(ierr);
       PetscStackCallSAWs(SAWs_Register,(dir,snes->conv_hist,10,SAWs_READ,SAWs_DOUBLE));
