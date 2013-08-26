@@ -1,4 +1,4 @@
-static char help[] = "Tests for uniform refinement of hybrid meshes\n\n";
+static char help[] = "Tests for uniform refinement\n\n";
 
 #include <petscdmplex.h>
 
@@ -7,6 +7,7 @@ typedef struct {
   PetscInt  debug;             /* The debugging level */
   PetscInt  dim;               /* The topological mesh dimension */
   PetscBool refinementUniform; /* Uniformly refine the mesh */
+  PetscBool cellHybrid;        /* Use a hybrid mesh */
   PetscBool cellSimplex;       /* Use simplices or hexes */
 } AppCtx;
 
@@ -20,12 +21,14 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->debug             = 0;
   options->dim               = 2;
   options->refinementUniform = PETSC_FALSE;
+  options->cellHybrid        = PETSC_TRUE;
   options->cellSimplex       = PETSC_TRUE;
 
   ierr = PetscOptionsBegin(comm, "", "Meshing Problem Options", "DMPLEX");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-debug", "The debugging level", "ex4.c", options->debug, &options->debug, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex4.c", options->dim, &options->dim, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-refinement_uniform", "Uniformly refine the mesh", "ex4.c", options->refinementUniform, &options->refinementUniform, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-cell_hybrid", "Use a hyrbid mesh", "ex4.c", options->cellHybrid, &options->cellHybrid, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-cell_simplex", "Use simplices if true, otherwise hexes", "ex4.c", options->cellSimplex, &options->cellSimplex, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
   PetscFunctionReturn(0);
@@ -184,6 +187,44 @@ PetscErrorCode CreateSimplexHybrid_2D(MPI_Comm comm, DM dm)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "CreateSimplex_3D"
+/* Two tetrahedrons
+
+ cell   5          5______    cell
+ 0    / | \        |\      \     1
+    17  |  18      | 18 13  21
+    /8 19 10\     19  \      \
+   2-14-|----4     |   4--22--6
+    \ 9 | 7 /      |10 /      /
+    16  |  15      | 15  12 20
+      \ | /        |/      /
+        3          3------
+*/
+PetscErrorCode CreateSimplex_3D(MPI_Comm comm, DM dm)
+{
+  PetscInt       depth = 3;
+  PetscMPIInt    rank;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  if (!rank) {
+    PetscInt    numPoints[4]         = {5, 9, 7, 2};
+    PetscInt    coneSize[23]         = {4, 4, 0, 0, 0, 0, 0, 3, 3, 3, 3, 3, 3, 3, 2, 2, 2, 2, 2, 2, 2, 2, 2};
+    PetscInt    cones[47]            = { 7,  8,  9, 10,  10, 11, 12, 13,  14, 15, 16,  17, 18, 14,  16, 19, 17,  15, 18, 19,  20, 21, 19,  15, 22, 20,  18, 21, 22,  2, 4,  4, 3,  3, 2,  2, 5,  5, 4,  3, 5,  3, 6,  6, 5,  4, 6};
+    PetscInt    coneOrientations[47] = { 0,  0,  0,  0,  -3,  0,  0,  0,   0,  0,  0,   0,  0, -2,  -2,  0, -2,  -2, -2, -2,   0,  0, -2,  -2,  0, -2,  -2, -2, -2,  0, 0,  0, 0,  0, 0,  0, 0,  0, 0,  0, 0,  0, 0,  0, 0,  0, 0};
+    PetscScalar vertexCoords[18]     = {0.0, 0.0, -0.5,  0.0, -0.5, 0.0,  1.0, 0.0, 0.0,  0.0, 0.5, 0.0,  0.0, 0.0, 0.5};
+
+    ierr = DMPlexCreateFromDAG(dm, depth, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
+  } else {
+    PetscInt numPoints[4] = {0, 0, 0, 0};
+
+    ierr = DMPlexCreateFromDAG(dm, depth, numPoints, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "CreateSimplexHybrid_3D"
 /* Two tetrahedrons separated by a zero-volume cell with 6 vertices
 
@@ -230,6 +271,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
   PetscInt       dim               = user->dim;
   PetscBool      refinementUniform = user->refinementUniform;
+  PetscBool      cellHybrid        = user->cellHybrid;
   PetscBool      cellSimplex       = user->cellSimplex;
   const char     *partitioner      = "chaco";
   PetscMPIInt    rank;
@@ -243,13 +285,19 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   switch (dim) {
   case 2:
     if (cellSimplex) {
-      ierr = CreateSimplexHybrid_2D(comm, *dm);CHKERRQ(ierr);
-    } else SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "Cannot make hybrid meshes for quadrilaterals");
+      if (cellHybrid) {
+        ierr = CreateSimplexHybrid_2D(comm, *dm);CHKERRQ(ierr);
+      } else SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "Cannot make non-hybrid meshes for triangles");
+    } else SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "Cannot make meshes for quadrilaterals");
     break;
   case 3:
     if (cellSimplex) {
-      ierr = CreateSimplexHybrid_3D(comm, *dm);CHKERRQ(ierr);
-    } else SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "Cannot make hybrid meshes for hexhedrals");
+      if (cellHybrid) {
+        ierr = CreateSimplexHybrid_3D(comm, *dm);CHKERRQ(ierr);
+      } else {
+        ierr = CreateSimplex_3D(comm, *dm);CHKERRQ(ierr);
+      }
+    } else SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "Cannot make meshes for hexhedrals");
     break;
   default:
     SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "Cannot make hybrid meshes for dimension %d", dim);
