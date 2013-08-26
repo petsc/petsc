@@ -38,6 +38,7 @@ cdef extern from * nogil:
     int VecCreateGhostBlock(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt[],PetscVec*)
     int VecCreateGhostBlockWithArray(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt[],PetscScalar[],PetscVec*)
     int VecCreateShared(MPI_Comm,PetscInt,PetscInt,PetscVec*)
+    int VecCreateNest(MPI_Comm,PetscInt,PetscIS[],PetscVec[],PetscVec*)
     int VecGetType(PetscVec,PetscVecType*)
     int VecSetType(PetscVec,PetscVecType)
     int VecSetOption(PetscVec,PetscVecOption,PetscBool)

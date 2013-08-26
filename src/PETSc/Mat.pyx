@@ -355,6 +355,42 @@ cdef class Mat(Object):
         PetscCLEAR(self.obj); self.mat = newmat
         return self
 
+    def createNest(self, mats, isrows=None, iscols=None, comm=None):
+        mats = [list(mat) for mat in mats]
+        if isrows:
+            isrows = list(isrows)
+            assert len(isrows) == len(mats)
+        else:
+            isrows = None
+        if iscols is not None:
+            iscols = list(iscols)
+            assert len(iscols) == len(mats[0])
+        else:
+            iscols = None
+        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
+        cdef Py_ssize_t i, mr = len(mats)
+        cdef Py_ssize_t j, mc = len(mats[0])
+        cdef PetscInt nr = <PetscInt>mr
+        cdef PetscInt nc = <PetscInt>mc
+        cdef PetscMat *cmats   = NULL
+        cdef PetscIS  *cisrows = NULL
+        cdef PetscIS  *ciscols = NULL
+        cdef object tmp1, tmp2, tmp3
+        tmp1 = oarray_p(empty_p(nr*nc), NULL, <void**>&cmats)
+        for i from 0 <= i < mr: 
+            for j from 0 <= j < mc:
+                cmats[i*mc+j] = (<Mat?>mats[i][j]).mat
+        if isrows is not None:
+            tmp2 = oarray_p(empty_p(nr), NULL, <void**>&cisrows)
+            for i from 0 <= i < mr: cisrows[i] = (<IS?>isrows[i]).iset
+        if iscols is not None:
+            tmp3 = oarray_p(empty_p(nc), NULL, <void**>&ciscols)
+            for j from 0 <= j < mc: ciscols[j] = (<IS?>iscols[j]).iset
+        cdef PetscMat newmat = NULL
+        CHKERR( MatCreateNest(ccomm, nr, cisrows, nc, ciscols, cmats, &newmat) )
+        PetscCLEAR(self.obj); self.mat = newmat
+        return self
+
     ##def createIS(self, size, LGMap lgmap not None, comm=None):
     ##    # communicator and sizes
     ##    if comm is None: comm = lgmap.getComm()

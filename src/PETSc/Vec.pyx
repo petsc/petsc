@@ -265,6 +265,29 @@ cdef class Vec(Object):
             CHKERR( VecSetBlockSize(self.vec, bs) )
         return self
 
+    def createNest(self, vecs, isets=None, comm=None):
+        vecs = list(vecs)
+        if isets:
+            isets = list(isets)
+            assert len(isets) == len(vecs)
+        else:
+            isets = None
+        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
+        cdef Py_ssize_t i, m = len(vecs)
+        cdef PetscInt n = <PetscInt>m
+        cdef PetscVec *cvecs  = NULL
+        cdef PetscIS  *cisets = NULL
+        cdef object tmp1, tmp2
+        tmp1 = oarray_p(empty_p(n), NULL, <void**>&cvecs)
+        for i from 0 <= i < m: cvecs[i] = (<Vec?>vecs[i]).vec
+        if isets is not None:
+            tmp2 = oarray_p(empty_p(n), NULL, <void**>&cisets)
+            for i from 0 <= i < m: cisets[i] = (<IS?>isets[i]).iset
+        cdef PetscVec newvec = NULL
+        CHKERR( VecCreateNest(ccomm, n, cisets, cvecs,&newvec) )
+        PetscCLEAR(self.obj); self.vec = newvec
+        return self
+
     #
 
     def setOptionsPrefix(self, prefix):
