@@ -1,4 +1,4 @@
-Local function
+Local function:
 Vec Object: 1 MPI processes
   type: seq
 0
@@ -70,7 +70,7 @@ Vec Object: 1 MPI processes
 0.53125
 0.53125
 1.15625
-L_2 Error: 1.59536e-13
+L_2 Error: < 1.0e-11
 Residual:
 Vec Object: 1 MPI processes
   type: seq
