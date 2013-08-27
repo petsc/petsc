@@ -7,21 +7,17 @@ Requirements
 You need to have the following software properly installed in order to
 build *PETSc for Python*:
 
-* Any MPI_ implementation [#]_ (e.g., MPICH_ or `Open MPI`_), 
-  built with **shared libraries**.
+* Any MPI_ implementation [#]_ (e.g., MPICH_ or `Open MPI`_),
+  built with shared libraries.
 
-* PETSc_  3.4 or 3.3 built with **shared libraries** [#]_.
+* PETSc_ 3.4 or 3.3 built with shared libraries.
 
-* Python_ 2.4 to 2.7 and 3.1 to 3.3 [#]_.
+* Python_ 2.4 to 2.7 or 3.1 to 3.3 [#]_.
 
 * NumPy_ package.
 
 .. [#] Unless you have appropiatelly configured and built PETSc
        PETSc without MPI (configure option :option:`--with-mpi=0`).
-
-.. [#] In order to build PETSc with shared libraries, you have to pass
-       :option:`--with-shared-libraries` option to PETSc's
-       :program:`configure` script.
 
 .. [#] You may need to use a parallelized version of the Python
        interpreter with some MPI-1 implementations (e.g. MPICH1).
@@ -59,19 +55,23 @@ Downloading
 
 The *PETSc for Python* package is available for download at the
 project website generously hosted by Bitbucket. You can use
-:program:`curl` or :program:`wget` to get a release tarball::
+:program:`curl` or :program:`wget` to get a release tarball.
 
-   $ curl -O https://bitbucket.org/petsc/petsc4py/petsc4py-X.X.X.tar.gz
+* Using :program:`curl`::
 
-   $ wget https://bitbucket.org/petsc/petsc4py/petsc4py-X.X.X.tar.gz
+   $ curl -O https://bitbucket.org/petsc/petsc4py/petsc4py-X.Y.tar.gz
+
+* Using :program:`wget`::
+
+   $ wget https://bitbucket.org/petsc/petsc4py/petsc4py-X.Y.tar.gz
 
 Building
 ^^^^^^^^
 
 After unpacking the release tarball::
 
-   $ tar -zxf petsc4py-X.X.X.tar.gz
-   $ cd petsc4py-X.X.X
+   $ tar -zxf petsc4py-X.Y.tar.gz
+   $ cd petsc4py-X.Y
 
 the distribution is ready for building.
 
@@ -88,21 +88,21 @@ the distribution is ready for building.
       $ export SDKROOT=/
       $ export ARCHFLAGS='-arch x86_64'
 
-Some environmental configuration is needed to inform the location of
+Some environment configuration is needed to inform the location of
 PETSc. You can set (using :command:`setenv`, :command:`export` or what
-applies to you shell or system) the environmental variables
+applies to you shell or system) the environment variables
 :envvar:`PETSC_DIR`, and :envvar:`PETSC_ARCH` indicating where you
 have built/installed PETSc::
 
    $ export PETSC_DIR=/usr/local/petsc
-   $ export PETSC_ARCH=arch-linux2-c-debug
+   $ export PETSC_ARCH=arch-linux2-c-opt
 
 Alternatively, you can edit the file :file:`setup.cfg` and provide the
 required information below the ``[config]`` section::
 
    [config]
    petsc_dir  = /usr/local/petsc
-   petsc_arch = arch-linux2-c-debug
+   petsc_arch = arch-linux2-c-opt
    ...
 
 Finally, you can build the distribution by typing::
@@ -112,7 +112,7 @@ Finally, you can build the distribution by typing::
 Installing
 ^^^^^^^^^^
 
-After building, the distribution is ready for install.
+After building, the distribution is ready for installation.
 
 If you have root privileges (either by log-in as the root user of by
 using :command:`sudo`) and you want to install *PETSc for Python* in
