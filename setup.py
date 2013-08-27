@@ -42,8 +42,8 @@ def version():
 name     = name()
 version  = version()
 
-url      = 'https://bitbucket.org/petsc/' % vars()
-download = url + '%(name)s/%(name)s-%(version)s.tar.gz' % vars()
+url      = 'https://bitbucket.org/petsc/%(name)s/' % vars()
+download = url + '%(name)s-%(version)s.tar.gz' % vars()
 
 descr    = __doc__.strip().split('\n'); del descr[1:3]
 devstat  = ['Development Status :: 5 - Production/Stable']

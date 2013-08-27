@@ -28,7 +28,7 @@ updates.
 
 .. _PETSc:  http://www.mcs.anl.gov/petsc/
 .. _Python: http://www.python.org
-.. _NumPy:  http://numpy.scipy.org
+.. _NumPy:  http://www.numpy.org
 
 
 - This package uses standard distutils_. For detailed instructions

@@ -12,7 +12,7 @@
 
 .. _Python:       http://www.python.org
 
-.. _NumPy:        http://numpy.scipy.org
+.. _NumPy:        http://www.numpy.org
 
 .. _mpi4py:       http://bitbucket.org/mpi4py/mpi4py
 
