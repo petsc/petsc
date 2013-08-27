@@ -110,7 +110,7 @@ PetscErrorCode  PetscViewerFileSetName_VTK(PetscViewer viewer,const char name[])
     if (viewer->format != PETSC_VIEWER_VTK_VTS) SETERRQ2(PetscObjectComm((PetscObject)viewer),PETSC_ERR_ARG_INCOMP,"Cannot use file '%s' with format %s, should have '.vts' extension",name,PetscViewerFormats[viewer->format]);
   } else if (isvtu) {
     if (viewer->format == PETSC_VIEWER_DEFAULT) {ierr = PetscViewerSetFormat(viewer,PETSC_VIEWER_VTK_VTU);CHKERRQ(ierr);}
-    if (viewer->format != PETSC_VIEWER_VTK_VTU) SETERRQ2(PetscObjectComm((PetscObject)viewer),PETSC_ERR_ARG_INCOMP,"Cannot use file '%s' with format %s, should have '.vts' extension",name,PetscViewerFormats[viewer->format]);
+    if (viewer->format != PETSC_VIEWER_VTK_VTU) SETERRQ2(PetscObjectComm((PetscObject)viewer),PETSC_ERR_ARG_INCOMP,"Cannot use file '%s' with format %s, should have '.vtu' extension",name,PetscViewerFormats[viewer->format]);
   } else SETERRQ1(PetscObjectComm((PetscObject)viewer),PETSC_ERR_ARG_UNKNOWN_TYPE,"File '%s' has unrecognized extension",name);
   ierr = PetscStrallocpy(name,&vtk->filename);CHKERRQ(ierr);
   PetscFunctionReturn(0);
