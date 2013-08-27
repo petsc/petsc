@@ -295,6 +295,10 @@ PetscErrorCode  PetscDrawSetSave_X(PetscDraw draw,const char *filename)
   PetscFunctionReturn(0);
 }
 
+#if defined(PETSC_HAVE_SAWS)
+#include <SAWs.h>
+#endif
+
 #if defined(PETSC_HAVE_AFTERIMAGE)
 #include <afterimage.h>
 #undef __FUNCT__
@@ -332,6 +336,13 @@ PetscErrorCode PetscDrawSave_X(PetscDraw draw)
     ierr    = PetscSNPrintf(filename,PETSC_MAX_PATH_LEN,"%s/%s_%d.Gif",draw->savefilename,draw->savefilename,draw->savefilecount++);CHKERRQ(ierr);
   }
   ASImage2file(asimage, 0, filename,ASIT_Gif,0);
+#if defined(PETSC_HAVE_SAWS)
+  {
+    char body[1024];
+    ierr = PetscSNPrintf(body,1024,"<img src=\"%s/%s.Gif\" alt=\"None\">",draw->savefilename,draw->savefilename);CHKERRQ(ierr);
+    ierr = SAWs_Set_Default_Body(1,body);CHKERRQ(ierr);
+  }
+#endif
 
   XDestroyImage(image);
   destroy_asvisual(asv,0);

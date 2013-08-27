@@ -840,15 +840,9 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
 
     ierr = PetscSNPrintf(intro,4024,"<body>\n"
                                     "<center><h2> PETSc Application Web server powered by <a href=\"https://bitbucket.org/saws/saws\">SAWs</a> </h2></center>\n"
-                                    "<center>This is the default PETSc application dashboard, from it you can access any published PETSc objects or logging data</center><br>\n"
-                                    "%s\n"
-                                    "<center> <input type=\"button\" value=\"Update all variables from server\" id=\"allDirectories\">\n"
-                                    "<input type=\"button\" value=\"Update server with changes below\" id=\"postData\"></center> \n"
-                                    "<br>\n"
-                                    "<div id=\"variablesInfo\" style=\"float:left\"></div>\n"
-                                    "<br>\n"
-                                    "</body>",appline);
-    ierr = SAWs_Set_Default_Body(intro);
+                                    "%s"
+                                    "<center>This is the default PETSc application dashboard, from it you can access any published PETSc objects or logging data</center><br>\n",appline);
+    ierr = SAWs_Set_Default_Body(0,intro);
     ierr = SAWs_Initialize();CHKERRQ(ierr);
   }
 
