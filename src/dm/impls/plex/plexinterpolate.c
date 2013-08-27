@@ -9,14 +9,12 @@
 PetscErrorCode DMPlexGetFaces_Internal(DM dm, PetscInt dim, PetscInt p, PetscInt *numFaces, PetscInt *faceSize, const PetscInt *faces[])
 {
   const PetscInt *cone = NULL;
-  PetscInt       *facesTmp;
   PetscInt        maxConeSize, maxSupportSize, coneSize;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   ierr = DMPlexGetMaxSizes(dm, &maxConeSize, &maxSupportSize);CHKERRQ(ierr);
-  ierr = DMGetWorkArray(dm, PetscSqr(PetscMax(maxConeSize, maxSupportSize)), PETSC_INT, &facesTmp);CHKERRQ(ierr);
   ierr = DMPlexGetConeSize(dm, p, &coneSize);CHKERRQ(ierr);
   ierr = DMPlexGetCone(dm, p, &cone);CHKERRQ(ierr);
   ierr = DMPlexGetRawFaces_Internal(dm, dim, coneSize, cone, numFaces, faceSize, faces);CHKERRQ(ierr);
@@ -51,7 +49,7 @@ PetscErrorCode DMPlexGetRawFaces_Internal(DM dm, PetscInt dim, PetscInt coneSize
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   ierr = DMPlexGetMaxSizes(dm, &maxConeSize, &maxSupportSize);CHKERRQ(ierr);
-  ierr = DMGetWorkArray(dm, PetscSqr(PetscMax(maxConeSize, maxSupportSize)), PETSC_INT, &facesTmp);CHKERRQ(ierr);
+  if (faces) {ierr = DMGetWorkArray(dm, PetscSqr(PetscMax(maxConeSize, maxSupportSize)), PETSC_INT, &facesTmp);CHKERRQ(ierr);}
   switch (dim) {
   case 2:
     switch (coneSize) {
@@ -76,7 +74,6 @@ PetscErrorCode DMPlexGetRawFaces_Internal(DM dm, PetscInt dim, PetscInt coneSize
       }
       if (numFaces) *numFaces         = 4;
       if (faceSize) *faceSize         = 2;
-      if (faces)    *faces            = facesTmp;
       break;
     default:
       SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Cone size %D not supported for dimension %D", coneSize, dim);
@@ -93,7 +90,6 @@ PetscErrorCode DMPlexGetRawFaces_Internal(DM dm, PetscInt dim, PetscInt coneSize
       }
       if (numFaces) *numFaces         = 3;
       if (faceSize) *faceSize         = 2;
-      if (faces)    *faces            = facesTmp;
       break;
     case 4:
       /* Vertices of first face follow right hand rule and normal points away from last vertex */
@@ -106,7 +102,6 @@ PetscErrorCode DMPlexGetRawFaces_Internal(DM dm, PetscInt dim, PetscInt coneSize
       }
       if (numFaces) *numFaces         = 4;
       if (faceSize) *faceSize         = 3;
-      if (faces)    *faces            = facesTmp;
       break;
     case 8:
       if (faces) {
