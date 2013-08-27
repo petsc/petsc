@@ -8,6 +8,16 @@ HISTORY: PETSc for Python
 :Address:      CCT CONICET, 3000 Santa Fe, Argentina
 
 
+Release 3.4
+===========
+
+- Update to PETSc 3.4 release.
+
+- Add support for ``DMComposite`` and ``DMPlex``.
+
+- Change ``Mat.getSizes()`` to return ``((m,M),(n,N))``.
+
+
 Release 3.3.1
 =============
 
@@ -30,7 +40,7 @@ Release 3.3
   ``LGMap.unblock()``
 
 - Add ``Object.handle`` property (C pointer as a Python integer). Can
-  be used with ``ctypes`` to pass a PETSc handle. 
+  be used with ``ctypes`` to pass a PETSc handle.
 
 - Add ``Comm.tompi4py()`` to get a ``mpi4py`` communicator instance.
 
