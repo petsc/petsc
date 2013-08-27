@@ -280,6 +280,56 @@ cdef class Mat(Object):
             CHKERR( Mat_AllocAIJ_DEFAULT(self.mat, bs) )
         return self
 
+    def createAIJWithArrays(self, size, csr, bsize=None, comm=None):
+        # communicator and sizes
+        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
+        cdef PetscInt bs = 0, m = 0, n = 0, M = 0, N = 0
+        Mat_Sizes(size, bsize, &bs, &m, &n, &M, &N)
+        Sys_Layout(ccomm, bs, &m, &M)
+        Sys_Layout(ccomm, bs, &n, &N)
+        if bs == PETSC_DECIDE: bs = 1
+        # unpack CSR argument
+        cdef object pi, pj, pv, poi, poj, pov
+        try:
+            (pi, pj, pv), (poi, poj, pov) = csr
+        except (TypeError, ValueError):
+            pi, pj, pv = csr
+            poi = poj = pov = None
+        # rows, cols, and values
+        cdef PetscInt ni=0, noi=0, *i=NULL, *oi=NULL
+        cdef PetscInt nj=0, noj=0, *j=NULL, *oj=NULL
+        pi = iarray_i(pi, &ni, &i) # Row pointers (diagonal)
+        pj = iarray_i(pj, &nj, &j) # Column indices (diagonal)
+        if ni != m+1:  raise ValueError(
+            "A matrix with %d rows requires a row pointer of length %d (given: %d)" %
+            (toInt(m), toInt(m+1), toInt(ni)))
+        if poi is not None and poj is not None:
+            poi = iarray_i(poi, &noi, &oi) # Row pointers (off-diagonal)
+            poj = iarray_i(poj, &noj, &oj) # Column indices (off-diagonal)
+        cdef PetscInt nv=0, nov=0
+        cdef PetscScalar *v=NULL, *ov=NULL
+        pv = iarray_s(pv, &nv, &v) # Non-zero values (diagonal)
+        if nj != nv:  raise ValueError(
+            "Given %d column indices but %d non-zero values" %
+            (toInt(nj), toInt(nv)))
+        if pov is not None:
+            pov = iarray_s(pov, &nov, &ov) # Non-zero values (off-diagonal)
+        # create matrix
+        cdef PetscMat newmat = NULL
+        if comm_size(ccomm) == 1:
+            if bs == 1:
+                CHKERR( MatCreateSeqAIJWithArrays(
+                    ccomm, m, n, i, j, v, &newmat) )
+            else:
+                CHKERR( MatCreateSeqBAIJWithArrays(
+                    ccomm, bs, m, n, i, j, v, &newmat) )
+        else:
+            CHKERR( MatCreateMPIAIJWithSplitArrays(
+                ccomm, m, n, M, N, i, j, v, oi, oj, ov, &newmat) )
+        PetscCLEAR(self.obj); self.mat = newmat
+        self.set_attr('__csr__', ((pi, pj, pv), (poi, poj, pov)))
+        return self
+
     def createDense(self, size, bsize=None, array=None, comm=None):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscInt bs = 0, m = 0, n = 0, M = 0, N = 0
@@ -377,7 +427,7 @@ cdef class Mat(Object):
         cdef PetscIS  *ciscols = NULL
         cdef object tmp1, tmp2, tmp3
         tmp1 = oarray_p(empty_p(nr*nc), NULL, <void**>&cmats)
-        for i from 0 <= i < mr: 
+        for i from 0 <= i < mr:
             for j from 0 <= j < mc:
                 cmats[i*mc+j] = (<Mat?>mats[i][j]).mat
         if isrows is not None:

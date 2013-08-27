@@ -127,6 +127,10 @@ cdef extern from * nogil:
     int MatCreateNest(MPI_Comm,PetscInt,PetscIS[],PetscInt,PetscIS[],PetscMat[],PetscMat*)
     int MatCreateShell(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,void*,PetscMat*)
 
+    int MatCreateSeqAIJWithArrays(MPI_Comm,PetscInt,PetscInt,PetscInt[],PetscInt[],PetscScalar[],PetscMat*)
+    int MatCreateSeqBAIJWithArrays(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt[],PetscInt[],PetscScalar[],PetscMat*)
+    int MatCreateMPIAIJWithSplitArrays(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt[],PetscInt[],PetscScalar[],PetscInt[],PetscInt[],PetscScalar[],PetscMat*)
+
     int MatSetSizes(PetscMat,PetscInt,PetscInt,PetscInt,PetscInt)
     int MatSetBlockSize(PetscMat,PetscInt)
     int MatSetType(PetscMat,PetscMatType)
