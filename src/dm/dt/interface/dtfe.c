@@ -1195,6 +1195,17 @@ PetscErrorCode PetscDualSpaceCreateReferenceCell(PetscDualSpace sp, PetscInt dim
   ierr = DMSetType(rdm, DMPLEX);CHKERRQ(ierr);
   ierr = DMPlexSetDimension(rdm, dim);CHKERRQ(ierr);
   switch (dim) {
+  case 1:
+  {
+    PetscInt    numPoints[2]        = {2, 1};
+    PetscInt    coneSize[3]         = {2, 0, 0};
+    PetscInt    cones[2]            = {1, 2};
+    PetscInt    coneOrientations[2] = {0, 0};
+    PetscScalar vertexCoords[2]     = {-1.0,  1.0};
+
+    ierr = DMPlexCreateFromDAG(rdm, 1, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
+  }
+  break;
   case 2:
   {
     PetscInt    numPoints[2]        = {3, 1};
