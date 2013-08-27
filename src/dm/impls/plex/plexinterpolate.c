@@ -6,19 +6,50 @@
 /*
   DMPlexGetFaces_Internal - Gets groups of vertices that correspond to faces for the given cell
 */
-static PetscErrorCode DMPlexGetFaces_Internal(DM dm, PetscInt dim, PetscInt p, PetscInt *numFaces, PetscInt *faceSize, const PetscInt *faces[])
+PetscErrorCode DMPlexGetFaces_Internal(DM dm, PetscInt dim, PetscInt p, PetscInt *numFaces, PetscInt *faceSize, const PetscInt *faces[])
 {
   const PetscInt *cone = NULL;
-  PetscInt       *facesTmp;
   PetscInt        maxConeSize, maxSupportSize, coneSize;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   ierr = DMPlexGetMaxSizes(dm, &maxConeSize, &maxSupportSize);CHKERRQ(ierr);
-  ierr = DMGetWorkArray(dm, PetscSqr(PetscMax(maxConeSize, maxSupportSize)), PETSC_INT, &facesTmp);CHKERRQ(ierr);
   ierr = DMPlexGetConeSize(dm, p, &coneSize);CHKERRQ(ierr);
   ierr = DMPlexGetCone(dm, p, &cone);CHKERRQ(ierr);
+  ierr = DMPlexGetRawFaces_Internal(dm, dim, coneSize, cone, numFaces, faceSize, faces);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexRestoreFaces_Internal"
+/*
+  DMPlexRestoreFaces_Internal - Restores the array
+*/
+PetscErrorCode DMPlexRestoreFaces_Internal(DM dm, PetscInt dim, PetscInt p, PetscInt *numFaces, PetscInt *faceSize, const PetscInt *faces[])
+{
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  ierr = DMRestoreWorkArray(dm, 0, PETSC_INT, faces);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexGetRawFaces_Internal"
+/*
+  DMPlexGetRawFaces_Internal - Gets groups of vertices that correspond to faces for the given cone
+*/
+PetscErrorCode DMPlexGetRawFaces_Internal(DM dm, PetscInt dim, PetscInt coneSize, const PetscInt cone[], PetscInt *numFaces, PetscInt *faceSize, const PetscInt *faces[])
+{
+  PetscInt       *facesTmp;
+  PetscInt        maxConeSize, maxSupportSize;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  ierr = DMPlexGetMaxSizes(dm, &maxConeSize, &maxSupportSize);CHKERRQ(ierr);
+  if (faces) {ierr = DMGetWorkArray(dm, PetscSqr(PetscMax(maxConeSize, maxSupportSize)), PETSC_INT, &facesTmp);CHKERRQ(ierr);}
   switch (dim) {
   case 2:
     switch (coneSize) {
@@ -43,7 +74,6 @@ static PetscErrorCode DMPlexGetFaces_Internal(DM dm, PetscInt dim, PetscInt p, P
       }
       if (numFaces) *numFaces         = 4;
       if (faceSize) *faceSize         = 2;
-      if (faces)    *faces            = facesTmp;
       break;
     default:
       SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Cone size %D not supported for dimension %D", coneSize, dim);
@@ -60,7 +90,6 @@ static PetscErrorCode DMPlexGetFaces_Internal(DM dm, PetscInt dim, PetscInt p, P
       }
       if (numFaces) *numFaces         = 3;
       if (faceSize) *faceSize         = 2;
-      if (faces)    *faces            = facesTmp;
       break;
     case 4:
       /* Vertices of first face follow right hand rule and normal points away from last vertex */
@@ -73,7 +102,6 @@ static PetscErrorCode DMPlexGetFaces_Internal(DM dm, PetscInt dim, PetscInt p, P
       }
       if (numFaces) *numFaces         = 4;
       if (faceSize) *faceSize         = 3;
-      if (faces)    *faces            = facesTmp;
       break;
     case 8:
       if (faces) {
@@ -95,7 +123,6 @@ static PetscErrorCode DMPlexGetFaces_Internal(DM dm, PetscInt dim, PetscInt p, P
   default:
     SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Dimension %D not supported", dim);
   }
-  ierr = DMRestoreWorkArray(dm, 0, PETSC_INT, &facesTmp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -157,6 +184,7 @@ static PetscErrorCode DMPlexInterpolateFaces_Internal(DM dm, PetscInt cellDepth,
         f    = face++;
       }
     }
+    ierr = DMPlexRestoreFaces_Internal(dm, cellDim, c, &numCellFaces, &faceSize, &cellFaces);CHKERRQ(ierr);
   }
   pEnd[faceDepth] = face;
   ierr = PetscHashIJKLDestroy(&faceTable);CHKERRQ(ierr);
@@ -255,6 +283,7 @@ static PetscErrorCode DMPlexInterpolateFaces_Internal(DM dm, PetscInt cellDepth,
         ierr = DMPlexInsertConeOrientation(idm, c, cf, ornt);CHKERRQ(ierr);
       }
     }
+    ierr = DMPlexRestoreFaces_Internal(dm, cellDim, c, &numCellFaces, &faceSize, &cellFaces);CHKERRQ(ierr);
   }
   if (face != pEnd[faceDepth]) SETERRQ2(PetscObjectComm((PetscObject) dm), PETSC_ERR_PLIB, "Invalid number of faces %D should be %D", face-pStart[faceDepth], pEnd[faceDepth]-pStart[faceDepth]);
   ierr = PetscFree2(pStart,pEnd);CHKERRQ(ierr);
@@ -273,15 +302,15 @@ static PetscErrorCode DMPlexInterpolateFaces_Internal(DM dm, PetscInt cellDepth,
   Collective on DM
 
   Input Parameter:
-. dmA - The DMPlex object with only cells and vertices
+. dm - The DMPlex object with only cells and vertices
 
   Output Parameter:
-. dmB - The complete DMPlex object
+. dmInt - The complete DMPlex object
 
   Level: intermediate
 
 .keywords: mesh
-.seealso: DMPlexCreateFromCellList()
+.seealso: DMPlexUninterpolate(), DMPlexCreateFromCellList()
 @*/
 PetscErrorCode DMPlexInterpolate(DM dm, DM *dmInt)
 {
@@ -370,5 +399,76 @@ PetscErrorCode DMPlexCopyCoordinates(DM dmA, DM dmB)
   ierr = VecRestoreArray(coordinatesB, &coordsB);CHKERRQ(ierr);
   ierr = DMSetCoordinatesLocal(dmB, coordinatesB);CHKERRQ(ierr);
   ierr = VecDestroy(&coordinatesB);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexUninterpolate"
+/*@
+  DMPlexUninterpolate - Take in a mesh with all intermediate faces, edges, etc. and return a cell-vertex mesh
+
+  Collective on DM
+
+  Input Parameter:
+. dm - The complete DMPlex object
+
+  Output Parameter:
+. dmUnint - The DMPlex object with only cells and vertices
+
+  Level: intermediate
+
+.keywords: mesh
+.seealso: DMPlexInterpolate(), DMPlexCreateFromCellList()
+@*/
+PetscErrorCode DMPlexUninterpolate(DM dm, DM *dmUnint)
+{
+  DM             udm;
+  PetscInt       dim, vStart, vEnd, cStart, cEnd, c, maxConeSize = 0, *cone;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
+  if (dim <= 1) {
+    ierr = PetscObjectReference((PetscObject) dm);CHKERRQ(ierr);
+    *dmUnint = dm;
+    PetscFunctionReturn(0);
+  }
+  ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  ierr = DMCreate(PetscObjectComm((PetscObject) dm), &udm);CHKERRQ(ierr);
+  ierr = DMSetType(udm, DMPLEX);CHKERRQ(ierr);
+  ierr = DMPlexSetDimension(udm, dim);CHKERRQ(ierr);
+  ierr = DMPlexSetChart(udm, cStart, vEnd);CHKERRQ(ierr);
+  for (c = cStart; c < cEnd; ++c) {
+    PetscInt *closure = NULL, closureSize, cl, coneSize = 0;
+
+    ierr = DMPlexGetTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+    for (cl = 0; cl < closureSize*2; cl += 2) {
+      const PetscInt p = closure[cl];
+
+      if ((p >= vStart) && (p < vEnd)) ++coneSize;
+    }
+    ierr = DMPlexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+    ierr = DMPlexSetConeSize(udm, c, coneSize);CHKERRQ(ierr);
+    maxConeSize = PetscMax(maxConeSize, coneSize);
+  }
+  ierr = DMSetUp(udm);CHKERRQ(ierr);
+  ierr = PetscMalloc(maxConeSize * sizeof(PetscInt), &cone);CHKERRQ(ierr);
+  for (c = cStart; c < cEnd; ++c) {
+    PetscInt *closure = NULL, closureSize, cl, coneSize = 0;
+
+    ierr = DMPlexGetTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+    for (cl = 0; cl < closureSize*2; cl += 2) {
+      const PetscInt p = closure[cl];
+
+      if ((p >= vStart) && (p < vEnd)) cone[coneSize++] = p;
+    }
+    ierr = DMPlexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+    ierr = DMPlexSetCone(udm, c, cone);CHKERRQ(ierr);
+  }
+  ierr = PetscFree(cone);CHKERRQ(ierr);
+  ierr = DMPlexSymmetrize(udm);CHKERRQ(ierr);
+  ierr = DMPlexStratify(udm);CHKERRQ(ierr);
+  *dmUnint = udm;
   PetscFunctionReturn(0);
 }
