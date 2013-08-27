@@ -412,7 +412,7 @@ cdef class Mat(Object):
             assert len(isrows) == len(mats)
         else:
             isrows = None
-        if iscols is not None:
+        if iscols:
             iscols = list(iscols)
             assert len(iscols) == len(mats[0])
         else:
