@@ -10,9 +10,9 @@ build *PETSc for Python*:
 * Any MPI_ implementation [#]_ (e.g., MPICH_ or `Open MPI`_), 
   built with **shared libraries**.
 
-* PETSc_  3.3 or 3.2 built with **shared libraries** [#]_.
+* PETSc_  3.4 or 3.3 built with **shared libraries** [#]_.
 
-* Python_ 2.4 to 2.7 and 3.1 to 3.2 [#]_.
+* Python_ 2.4 to 2.7 and 3.1 to 3.3 [#]_.
 
 * NumPy_ package.
 
@@ -59,7 +59,9 @@ Downloading
 
 The *PETSc for Python* package is available for download at the
 project website generously hosted by Bitbucket. You can use
-:program:`wget` to get a release tarball::
+:program:`curl` or :program:`wget` to get a release tarball::
+
+   $ curl -O https://bitbucket.org/petsc/petsc4py/petsc4py-X.X.X.tar.gz
 
    $ wget https://bitbucket.org/petsc/petsc4py/petsc4py-X.X.X.tar.gz
 
@@ -93,14 +95,14 @@ applies to you shell or system) the environmental variables
 have built/installed PETSc::
 
    $ export PETSC_DIR=/usr/local/petsc
-   $ export PETSC_ARCH=linux-gnu
+   $ export PETSC_ARCH=arch-linux2-c-debug
 
 Alternatively, you can edit the file :file:`setup.cfg` and provide the
 required information below the ``[config]`` section::
 
    [config]
    petsc_dir  = /usr/local/petsc
-   petsc_arch = linux-gnu
+   petsc_arch = arch-linux2-c-debug
    ...
 
 Finally, you can build the distribution by typing::
@@ -110,21 +112,20 @@ Finally, you can build the distribution by typing::
 Installing
 ^^^^^^^^^^
 
-After building, the distribution is ready for installation. 
+After building, the distribution is ready for install.
 
-You can do a site-install type::
+If you have root privileges (either by log-in as the root user of by
+using :command:`sudo`) and you want to install *PETSc for Python* in
+your system for all users, just do::
 
-   $ python setup.py install
+    $ python setup.py install
 
-or, in case you need root privileges::
+The previous steps will install the :mod:`petsc4py` package at standard
+location :file:`{prefix}/lib/python{X}.{X}/site-packages`.
 
-   $ su -c 'python setup.py install'
-
-This will install the :mod:`petsc4py` package in the standard location
-:file:`{prefix}/lib/python{X}.{X}/site-packages`.
-
-You can also do a user-install type. Threre are two options depending
-on the target Python version.
+If you do not have root privileges or you want to install *PETSc for
+Python* for your private use, you have two options depending on the
+target Python version.
 
 * For Python 2.6 and up::
 
@@ -135,5 +136,5 @@ on the target Python version.
 
       $ python setup.py install --home=$HOME
 
-  and then add :file:`$HOME/lib/python` or :file:`$HOME/lib64/python`
+  Finally, add :file:`$HOME/lib/python` or :file:`$HOME/lib64/python`
   to your :envvar:`PYTHONPATH` environment variable.

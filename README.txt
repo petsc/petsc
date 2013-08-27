@@ -12,7 +12,7 @@ this is a work in progress, please check the `project website`_ for
 updates.
 
 .. _CIMEC:            http://www.cimec.org.ar/
-.. _project website:  http://petsc4py.googlecode.com/
+.. _project website:  https://bitbucket.org/petsc/petsc4py/
 
 
 - To build and install this package, you must meet the following
@@ -31,6 +31,8 @@ updates.
 .. _NumPy:  http://numpy.scipy.org
 
 
-- This package uses standard `distutils`. For detailed instructions
+- This package uses standard distutils_. For detailed instructions
   about requirements and the building/install process, read the file
   ``docs/srouce/install.rst``.
+
+.. distutils: http://docs.python.org/distutils/
