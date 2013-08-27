@@ -371,7 +371,8 @@ PetscErrorCode CellRefinerSetConeSizes(CellRefiner refiner, DM dm, PetscInt dept
           ierr = DMPlexGetCone(dm, support[s], &cone);CHKERRQ(ierr);
           ierr = DMPlexGetConeOrientation(dm, support[s], &ornt);CHKERRQ(ierr);
           for (c = 0; c < coneSize; ++c) {if (cone[c] == f) break;}
-WRONG          er = ornt[c] < 0 ? (-(ornt[c]+1) + r)%3 : (ornt[c] + r)%3;
+          /* Here we want to determine whether edge newp contains a vertex which is part of the cross-tet edge */
+          er = ornt[c] < 0 ? (-(ornt[c]+1) + 2-r)%3 : (ornt[c] + r)%3;
           if (er == eint[c]) {
             intFaces += 1;
           } else {
@@ -1699,7 +1700,7 @@ PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt depthSiz
 #endif
       }
     }
-    /* Face Edges have 2 vertices and 2+cells*(1/2) faces */
+    /* Face edges have 2 vertices and 2+cells*(1/2) faces */
     for (f = fStart; f < fEnd; ++f) {
       const PetscInt *cone, *ornt, *support;
       PetscInt        coneSize, supportSize, s;
@@ -1731,7 +1732,8 @@ PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt depthSiz
           ierr = DMPlexGetCone(dm, support[s], &cone);CHKERRQ(ierr);
           ierr = DMPlexGetConeOrientation(dm, support[s], &ornt);CHKERRQ(ierr);
           for (c = 0; c < coneSize; ++c) {if (cone[c] == f) break;}
-          er   = ornt[c] < 0 ? (-(ornt[c]+1) + r)%3 : (ornt[c] + r)%3;
+          /* Here we want to determine whether edge newp contains a vertex which is part of the cross-tet edge */
+          er   = ornt[c] < 0 ? (-(ornt[c]+1) + 2-r)%3 : (ornt[c] + r)%3;
           if (er == eint[c]) {
             supportRef[2+intFaces++] = fStartNew + (fEnd - fStart)*4 + (support[s] - cStart)*8 + (c + 2)%4;
           } else {
