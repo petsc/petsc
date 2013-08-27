@@ -135,5 +135,59 @@ PetscErrorCode DMPlexClone(PETSC_UNUSED DM dm,...){DMPlexError;}
 #undef  __FUNCT__
 #define __FUNCT__ "DMPlexCreateFromCellList"
 PetscErrorCode DMPlexCreateFromCellList(PETSC_UNUSED MPI_Comm comm,...){DMPlexError;}
+#undef  __FUNCT__
+#define __FUNCT__ "DMPlexGetDimension"
+PetscErrorCode DMPlexGetDimension(PETSC_UNUSED DM dm,...) {DMPlexError;}
+#undef  __FUNCT__
+#define __FUNCT__ "DMPlexSetDimension"
+PetscErrorCode DMPlexSetDimension(PETSC_UNUSED DM dm,...) {DMPlexError;}
+#undef  __FUNCT__
+#define __FUNCT__ "DMPlexGetChart"
+PetscErrorCode DMPlexGetChart(PETSC_UNUSED DM dm,...) {DMPlexError;}
+#undef  __FUNCT__
+#define __FUNCT__ "DMPlexSetChart"
+PetscErrorCode DMPlexSetChart(PETSC_UNUSED DM dm,...) {DMPlexError;}
+#undef  __FUNCT__
+#define __FUNCT__ "DMPlexGetConeSize"
+PetscErrorCode DMPlexGetConeSize(PETSC_UNUSED DM dm,...) {DMPlexError;}
+#undef  __FUNCT__
+#define __FUNCT__ "DMPlexSetConeSize"
+PetscErrorCode DMPlexSetConeSize(PETSC_UNUSED DM dm,...) {DMPlexError;}
+#undef  __FUNCT__
+#define __FUNCT__ "DMPlexGetCone"
+PetscErrorCode DMPlexGetCone(PETSC_UNUSED DM dm,...) {DMPlexError;}
+#undef  __FUNCT__
+#define __FUNCT__ "DMPlexSetCone"
+PetscErrorCode DMPlexSetCone(PETSC_UNUSED DM dm,...) {DMPlexError;}
+#undef  __FUNCT__
+#define __FUNCT__ "DMPlexSetConeOrientation"
+PetscErrorCode DMPlexSetConeOrientation(PETSC_UNUSED DM dm,...) {DMPlexError;}
+#undef  __FUNCT__
+#define __FUNCT__ "DMPlexGetConeOrientation"
+PetscErrorCode DMPlexGetConeOrientation(PETSC_UNUSED DM dm,...) {DMPlexError;}
+#undef  __FUNCT__
+#define __FUNCT__ "DMPlexGetSupportSize"
+PetscErrorCode DMPlexGetSupportSize(PETSC_UNUSED DM dm,...) {DMPlexError;}
+#undef  __FUNCT__
+#define __FUNCT__ "DMPlexSetSupportSize"
+PetscErrorCode DMPlexSetSupportSize(PETSC_UNUSED DM dm,...) {DMPlexError;}
+#undef  __FUNCT__
+#define __FUNCT__ "DMPlexGetSupport"
+PetscErrorCode DMPlexGetSupport(PETSC_UNUSED DM dm,...) {DMPlexError;}
+#undef  __FUNCT__
+#define __FUNCT__ "DMPlexSetSupport"
+PetscErrorCode DMPlexSetSupport(PETSC_UNUSED DM dm,...) {DMPlexError;}
+#undef  __FUNCT__
+#define __FUNCT__ "DMPlexGetMaxSizes"
+PetscErrorCode DMPlexGetMaxSizes(PETSC_UNUSED DM dm,...) {DMPlexError;}
+#undef  __FUNCT__
+#define __FUNCT__ "DMPlexSymmetrize"
+PetscErrorCode DMPlexSymmetrize(PETSC_UNUSED DM dm,...) {DMPlexError;}
+#undef  __FUNCT__
+#define __FUNCT__ "DMPlexStratify"
+PetscErrorCode DMPlexStratify(PETSC_UNUSED DM dm,...) {DMPlexError;}
+#undef  __FUNCT__
+#define __FUNCT__ "DMPlexOrient"
+PetscErrorCode DMPlexOrient(PETSC_UNUSED DM dm,...) {DMPlexError;}
 
 #undef DMPlexError

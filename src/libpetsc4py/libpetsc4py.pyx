@@ -447,7 +447,7 @@ cdef extern from * nogil:
         PetscErrorCode (*copy)(PetscMat,PetscMat,MatStructure) except IERR
         PetscErrorCode (*getsubmatrix)(PetscMat,PetscIS,PetscIS,MatReuse,PetscMat*) except IERR
         PetscErrorCode (*setoption)(PetscMat,MatOption,PetscBool) except IERR
-        PetscErrorCode (*setup"_MatOps_setup")(PetscMat) except IERR
+        PetscErrorCode (*setup)(PetscMat) except IERR
         PetscErrorCode (*assemblybegin)(PetscMat,MatAssemblyType) except IERR
         PetscErrorCode (*assemblyend)(PetscMat,MatAssemblyType) except IERR
         PetscErrorCode (*zeroentries)(PetscMat) except IERR
@@ -2009,8 +2009,8 @@ cdef extern from * nogil:
         TSOps ops
         TSUserOps userops
         TSProblemType problem_type
-        PetscInt  snes_its "_TSOps_snes_its"
-        PetscInt  ksp_its  "_TSOps_ksp_its"
+        PetscInt  snes_its
+        PetscInt  ksp_its
         PetscInt  reject
         PetscInt  max_reject
         PetscInt  steps

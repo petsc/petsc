@@ -3,12 +3,6 @@
 
 #include <petsc.h>
 
-#if PETSC_VERSION_(3,1,0)
-#include <petscvec.h>
-#include <petscmat.h>
-#include <petscda.h>
-#endif
-
 typedef struct Params {
   double lambda_;
 } Params;

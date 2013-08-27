@@ -4,21 +4,6 @@
 #include <petsc.h>
 #include "compat/mpi.h"
 
-#ifndef PETSC_VERSION_EQ
-#define PETSC_VERSION_EQ(MAJOR,MINOR,SUBMINOR) \
-  (PETSC_VERSION_(MAJOR,MINOR,SUBMINOR))
-#endif
-#ifndef PETSC_VERSION_LT
-#define PETSC_VERSION_LT(MAJOR,MINOR,SUBMINOR) \
-  (PETSC_VERSION_MAJOR < (MAJOR) ||            \
-   (PETSC_VERSION_MAJOR == (MAJOR) &&          \
-    (PETSC_VERSION_MINOR < (MINOR) ||          \
-     (PETSC_VERSION_MINOR == (MINOR) &&        \
-      (PETSC_VERSION_SUBMINOR < (SUBMINOR))))))
-#define PETSC_VERSION_LE(MAJOR,MINOR,SUBMINOR) \
-  (PETSC_VERSION_LT(MAJOR,MINOR,SUBMINOR) ||   \
-   PETSC_VERSION_EQ(MAJOR,MINOR,SUBMINOR))
-#endif
 #ifndef PETSC_VERSION_GT
 #define PETSC_VERSION_GT(MAJOR,MINOR,SUBMINOR) \
   (!PETSC_VERSION_LE(MAJOR,MINOR,SUBMINOR))
@@ -26,12 +11,12 @@
   (!PETSC_VERSION_LT(MAJOR,MINOR,SUBMINOR))
 #endif
 
-#if PETSC_VERSION_(3,3,0)
+#if PETSC_VERSION_LE(3,3,0)
 #include "compat/petsc-33.h"
 #endif
 
-#if PETSC_VERSION_(3,2,0)
-#include "compat/petsc-32.h"
+#if PETSC_VERSION_GE(3,4,0)
+#include <petscviewerhdf5.h>
 #endif
 
 #if !defined(PETSC_HAVE_HDF5)

@@ -4,21 +4,12 @@
 #undef  __FUNCT__
 #define __FUNCT__ "<petsc4py.PETSc>"
 
-#if PETSC_VERSION_(3,2,0)
-#include "private/vecimpl.h"
-#include "private/matimpl.h"
-#include "private/kspimpl.h"
-#include "private/pcimpl.h"
-#include "private/snesimpl.h"
-#include "private/tsimpl.h"
-#else
 #include "petsc-private/vecimpl.h"
 #include "petsc-private/matimpl.h"
 #include "petsc-private/kspimpl.h"
 #include "petsc-private/pcimpl.h"
 #include "petsc-private/snesimpl.h"
 #include "petsc-private/tsimpl.h"
-#endif
 
 /* ---------------------------------------------------------------- */
 
@@ -27,10 +18,6 @@
 #endif
 
 /* ---------------------------------------------------------------- */
-
-#if PETSC_VERSION_(3,2,0)
-#define petsc_stageLog _stageLog
-#endif
 
 #define PetscCLASSID(stageLog,index) \
         ((stageLog)->classLog->classInfo[(index)].classid)
@@ -309,9 +296,6 @@ MatAnyAIJSetPreallocation(Mat A,PetscInt bs,
   ierr = MatIsPreallocated(A,&flag);CHKERRQ(ierr);
   if (flag) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,
                     "matrix is already preallocated");
-#if PETSC_VERSION_(3,2,0)
-  {PetscInt bsize = A->rmap->bs;
-#endif
   if (bs == PETSC_DECIDE) {
     ierr = MatSeqAIJSetPreallocation(A,d_nz,d_nnz);CHKERRQ(ierr);
     ierr = MatMPIAIJSetPreallocation(A,d_nz,d_nnz,o_nz,o_nnz);CHKERRQ(ierr);
@@ -319,13 +303,6 @@ MatAnyAIJSetPreallocation(Mat A,PetscInt bs,
     ierr = MatSeqBAIJSetPreallocation(A,bs,d_nz,d_nnz);CHKERRQ(ierr);
     ierr = MatMPIBAIJSetPreallocation(A,bs,d_nz,d_nnz,o_nz,o_nnz);CHKERRQ(ierr);
   }
-#if PETSC_VERSION_(3,2,0)
-  ierr = MatSetUp(A);CHKERRQ(ierr);
-  if (bsize > 1) {
-    A->rmap->bs = A->cmap->bs = -1;
-    ierr = MatSetBlockSize(A,bsize);CHKERRQ(ierr);
-  }}
-#endif
   PetscFunctionReturn(0);
 }
 
@@ -346,9 +323,6 @@ MatAnyAIJSetPreallocationCSR(Mat A,PetscInt bs, const PetscInt Ii[],
   ierr = MatIsPreallocated(A,&flag);CHKERRQ(ierr);
   if (flag) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,
                     "matrix is already preallocated");
-#if PETSC_VERSION_(3,2,0)
-  {PetscInt bsize = A->rmap->bs;
-#endif
   if (bs == PETSC_DECIDE) {
     ierr = MatSeqAIJSetPreallocationCSR(A,Ii,Jj,V);CHKERRQ(ierr);
     ierr = MatMPIAIJSetPreallocationCSR(A,Ii,Jj,V);CHKERRQ(ierr);
@@ -356,13 +330,6 @@ MatAnyAIJSetPreallocationCSR(Mat A,PetscInt bs, const PetscInt Ii[],
     ierr = MatSeqBAIJSetPreallocationCSR(A,bs,Ii,Jj,V);CHKERRQ(ierr);
     ierr = MatMPIBAIJSetPreallocationCSR(A,bs,Ii,Jj,V);CHKERRQ(ierr);
   }
-#if PETSC_VERSION_(3,2,0)
-  ierr = MatSetUp(A);CHKERRQ(ierr);
-  if (bsize > 1) {
-    A->rmap->bs = A->cmap->bs = -1;
-    ierr = MatSetBlockSize(A,bsize);CHKERRQ(ierr);
-  }}
-#endif
   PetscFunctionReturn(0);
 }
 
@@ -380,17 +347,8 @@ MatAnyDenseSetPreallocation(Mat mat, PetscScalar *data)
   ierr = MatIsPreallocated(mat,&flag);CHKERRQ(ierr);
   if (flag) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,
                     "matrix is already preallocated");
-#if PETSC_VERSION_(3,2,0)
-  {PetscInt bsize = mat->rmap->bs;
-#endif
   ierr = MatSeqDenseSetPreallocation(mat,data);CHKERRQ(ierr);
   ierr = MatMPIDenseSetPreallocation(mat,data);CHKERRQ(ierr);
-#if PETSC_VERSION_(3,2,0)
-  if (bsize > 1) {
-    mat->rmap->bs = mat->cmap->bs = -1;
-    ierr = MatSetBlockSize(mat,bsize);CHKERRQ(ierr);
-  }}
-#endif
   PetscFunctionReturn(0);
 }
 

@@ -23,26 +23,11 @@
 #undef  CHKERRQ
 #define CHKERRQ(n) if ((n) .ne. 0) return;
 
-#if PETSC_VERSION_(3,1,0)
-#include "finclude/petscvecdef.h"
-#include "finclude/petscmatdef.h"
-#include "finclude/petscdadef.h"
-#define DMDAGetCorners      DAGetCorners         
-#define DMDAGetGhostCorners DAGetGhostCorners    
-#define DMDAVecGetArray     DAVecGetArray        
-#define DMDAVecRestoreArray DAVecRestoreArray    
-#endif
-
 ! --------------------------------------------------------------------
 
 module Bratu2D
 
   use petsc
-#if PETSC_VERSION_(3,1,0)
-  use petscvec
-  use petscmat
-  use petscda
-#endif
 
   type gridinfo
      PetscInt mx,xs,xe,xm,gxs,gxe,gxm
@@ -57,21 +42,12 @@ contains
     type(gridinfo) grd
     PetscErrorCode ierr
     !
-#if PETSC_VERSION_(3,1,0)
-    call DAGetInfo(da, PETSC_NULL_INTEGER, &
-         &         grd%mx, grd%my, PETSC_NULL_INTEGER, &
-         &         PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER, &
-         &         PETSC_NULL_INTEGER,PETSC_NULL_INTEGER, &
-         &         PETSC_NULL_INTEGER, &
-         &         PETSC_NULL_INTEGER,ierr); CHKERRQ(ierr)
-#else
     call DMDAGetInfo(da, PETSC_NULL_INTEGER, &
          &           grd%mx, grd%my, PETSC_NULL_INTEGER, &
          &           PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER, &
          &           PETSC_NULL_INTEGER,PETSC_NULL_INTEGER, &
          &           PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER, &
          &           PETSC_NULL_INTEGER,ierr); CHKERRQ(ierr)
-#endif
     call DMDAGetCorners(da, &
          &              grd%xs,grd%ys,PETSC_NULL_INTEGER, &
          &              grd%xm,grd%ym,PETSC_NULL_INTEGER,ierr); CHKERRQ(ierr)
