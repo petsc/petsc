@@ -403,6 +403,83 @@ PetscErrorCode CheckSymmetry(DM dm)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMPlexEqualReordered"
+/*@C
+  DMPlexEqualReordered - Determine if two DMs have the same topology, perhaps with a renumbering of the points
+
+  Not Collective
+
+  Input Parameters:
++ dmA - A DMPlex object
+- dmB - A DMPlex object
+
+  Output Parameters:
+. equal - PETSC_TRUE if the topologies are identical
+
+  Level: intermediate
+
+  Notes:
+  I know that this is graph isomorphism, so of course this is only a partial solution.
+
+.keywords: mesh
+.seealso: DMPlexGetCone(), DMPlexEqual()
+@*/
+PetscErrorCode DMPlexEqualReordered(DM dmA, DM dmB, PetscBool *equal)
+{
+  PetscInt      *perm;
+  PetscInt       depth, depthB, pStart, pEnd, pStartB, pEndB, p;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  //PetscValidHeaderSpecific(dmA, DM_CLASSID, 1);
+  //PetscValidHeaderSpecific(dmB, DM_CLASSID, 2);
+  //PetscValidPointer(equal, 3);
+
+  *equal = PETSC_FALSE;
+  ierr = DMPlexGetDepth(dmA, &depth);CHKERRQ(ierr);
+  ierr = DMPlexGetDepth(dmB, &depthB);CHKERRQ(ierr);
+  if (depth != depthB) PetscFunctionReturn(0);
+  ierr = DMPlexGetChart(dmA, &pStart,  &pEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetChart(dmB, &pStartB, &pEndB);CHKERRQ(ierr);
+  if ((pStart != pStartB) || (pEnd != pEndB)) PetscFunctionReturn(0);
+  ierr = PetscMalloc((pEnd - pStart) * sizeof(PetscInt), &perm);CHKERRQ(ierr);
+  perm -= pStart;
+  for (p = pStart; p < pEnd; ++p) perm[p] = -1;
+  for (p = pStart; p < pEnd; ++p) {
+    const PetscInt *cone, *coneB, *ornt, *orntB, *support, *supportB;
+    PetscInt        coneSize, coneSizeB, c, supportSize, supportSizeB, s;
+
+    perm[p] = p;
+    ierr = DMPlexGetConeSize(dmA, p, &coneSize);CHKERRQ(ierr);
+    ierr = DMPlexGetCone(dmA, p, &cone);CHKERRQ(ierr);
+    ierr = DMPlexGetConeOrientation(dmA, p, &ornt);CHKERRQ(ierr);
+    ierr = DMPlexGetConeSize(dmB, perm[p], &coneSizeB);CHKERRQ(ierr);
+    ierr = DMPlexGetCone(dmB, perm[p], &coneB);CHKERRQ(ierr);
+    ierr = DMPlexGetConeOrientation(dmB, perm[p], &orntB);CHKERRQ(ierr);
+    if (coneSize != coneSizeB) {ierr = PetscPrintf(PETSC_COMM_SELF, "Invalid cone size %d != %d for point %d (%d)", coneSize, coneSizeB, p, perm[p]);CHKERRQ(ierr); goto end;}
+    for (c = 0; c < coneSize; ++c) {
+      if (perm[coneB[c]] < 0) perm[coneB[c]] = cone[c];
+      if (cone[c] != perm[coneB[c]]) {ierr = PetscPrintf(PETSC_COMM_SELF, "Invalid cone %d point %d != %d (%d) for point %d (%d)", c, cone[c], coneB[c], perm[coneB[c]], p, perm[p]);CHKERRQ(ierr); goto end;}
+      if (ornt[c] != orntB[c])       {ierr = PetscPrintf(PETSC_COMM_SELF, "Invalid cone %d orientation %d != %d for point %d (%d)", c, ornt[c], orntB[c], p, perm[p]);CHKERRQ(ierr); goto end;}
+    }
+    ierr = DMPlexGetSupportSize(dmA, p, &supportSize);CHKERRQ(ierr);
+    ierr = DMPlexGetSupport(dmA, p, &support);CHKERRQ(ierr);
+    ierr = DMPlexGetSupportSize(dmB, perm[p], &supportSizeB);CHKERRQ(ierr);
+    ierr = DMPlexGetSupport(dmB, perm[p], &supportB);CHKERRQ(ierr);
+    if (supportSize != supportSizeB) {ierr = PetscPrintf(PETSC_COMM_SELF, "Invalid support size %d != %d for point %d (%d)", supportSize, supportSizeB, p, perm[p]);CHKERRQ(ierr); goto end;}
+    for (s = 0; s < supportSize; ++s) {
+      if (perm[supportB[s]] < 0) perm[supportB[s]] = support[s];
+      if (support[s] != perm[supportB[s]]) goto end;
+    }
+  }
+  *equal = PETSC_TRUE;
+  end:
+  perm += pStart;
+  ierr = PetscFree(perm);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "CheckOrientation"
 PetscErrorCode CheckOrientation(DM dm)
 {
@@ -414,8 +491,9 @@ PetscErrorCode CheckOrientation(DM dm)
   ierr = DMPlexUninterpolate(dm, &udm);CHKERRQ(ierr);
   ierr = DMSetFromOptions(udm);CHKERRQ(ierr);
   ierr = DMPlexInterpolate(udm, &idm);CHKERRQ(ierr);
+  ierr = DMSetFromOptions(idm);CHKERRQ(ierr);
   ierr = DMDestroy(&udm);CHKERRQ(ierr);
-  ierr = DMPlexEqual(dm, idm, &equal);CHKERRQ(ierr);
+  ierr = DMPlexEqualReordered(dm, idm, &equal);CHKERRQ(ierr);
   ierr = DMDestroy(&idm);CHKERRQ(ierr);
   if (!equal) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid orientation in refined mesh");
   PetscFunctionReturn(0);
@@ -432,7 +510,9 @@ int main(int argc, char **argv)
   ierr = ProcessOptions(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);
   ierr = CreateMesh(PETSC_COMM_WORLD, &user, &user.dm);CHKERRQ(ierr);
   ierr = CheckSymmetry(user.dm);CHKERRQ(ierr);
+#if 0
   ierr = CheckOrientation(user.dm);CHKERRQ(ierr);
+#endif
   ierr = DMDestroy(&user.dm);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
