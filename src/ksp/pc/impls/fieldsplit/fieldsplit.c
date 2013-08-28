@@ -707,6 +707,15 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
       }
       ierr = KSPGetOptionsPrefix(jac->head->next->ksp, &Dprefix);CHKERRQ(ierr);
       ierr = KSPSetOptionsPrefix(jac->kspschur,         Dprefix);CHKERRQ(ierr);
+      /* propogate DM */
+      {
+        DM sdm;
+        ierr = KSPGetDM(jac->head->next->ksp, &sdm);CHKERRQ(ierr);
+        if (sdm) {
+          ierr = KSPSetDM(jac->kspschur, sdm);CHKERRQ(ierr);
+          ierr = KSPSetDMActive(jac->kspschur, PETSC_FALSE);CHKERRQ(ierr);
+        }
+      }
       /* really want setfromoptions called in PCSetFromOptions_FieldSplit(), but it is not ready yet */
       /* need to call this every time, since the jac->kspschur is freshly created, otherwise its options never get set */
       ierr = KSPSetFromOptions(jac->kspschur);CHKERRQ(ierr);

@@ -1344,7 +1344,7 @@ PetscErrorCode KSPSetUp_GLTR(KSP ksp)
   ierr = PetscMemzero(cg->alpha, max_its*sizeof(PetscReal));CHKERRQ(ierr);
   ierr = PetscMemzero(cg->beta, max_its*sizeof(PetscReal));CHKERRQ(ierr);
   ierr = PetscMemzero(cg->norm_r, max_its*sizeof(PetscReal));CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(ksp, 5*max_its*sizeof(PetscReal));CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory((PetscObject)ksp, 5*max_its*sizeof(PetscReal));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

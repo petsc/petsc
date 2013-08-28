@@ -350,17 +350,29 @@ PetscErrorCode CreateHex_3D(MPI_Comm comm, DM dm)
 
 #undef __FUNCT__
 #define __FUNCT__ "CheckMesh"
-PetscErrorCode CheckMesh(DM dm)
+PetscErrorCode CheckMesh(DM dm, AppCtx *user)
 {
-  PetscReal      detJ, J[9];
-  PetscInt       cStart, cEnd, c;
+  PetscReal      detJ, J[9], refVol = 1.0;
+  PetscReal      vol;
+  PetscInt       dim, depth, d, cStart, cEnd, c;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
+  for (d = 0; d < dim; ++d) {
+    refVol *= 2.0;
+  }
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; ++c) {
     ierr = DMPlexComputeCellGeometry(dm, c, NULL, J, NULL, &detJ);CHKERRQ(ierr);
     if (detJ <= 0.0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Mesh cell %d is inverted, |J| = %g", c, detJ);
+    if (user->debug) {PetscPrintf(PETSC_COMM_SELF, "FEM Volume: %g\n", detJ*refVol);CHKERRQ(ierr);}
+    if (depth > 1) {
+      ierr = DMPlexComputeCellGeometryFVM(dm, c, &vol, NULL, NULL);CHKERRQ(ierr);
+      if (vol <= 0.0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Mesh cell %d is inverted, vol = %g", c, vol);
+      if (user->debug) {PetscPrintf(PETSC_COMM_SELF, "FVM Volume: %g\n", vol);CHKERRQ(ierr);}
+    }
   }
   PetscFunctionReturn(0);
 }
@@ -458,7 +470,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, PetscInt testNum, AppCtx *user, DM *dm)
   {
     DM interpolatedMesh = NULL;
 
-    ierr = CheckMesh(*dm);CHKERRQ(ierr);
+    ierr = CheckMesh(*dm, user);CHKERRQ(ierr);
     ierr = DMPlexInterpolate(*dm, &interpolatedMesh);CHKERRQ(ierr);
     ierr = DMPlexCopyCoordinates(*dm, interpolatedMesh);CHKERRQ(ierr);
     ierr = CompareCones(*dm, interpolatedMesh);CHKERRQ(ierr);
@@ -491,7 +503,7 @@ int main(int argc, char **argv)
   ierr = PetscInitialize(&argc, &argv, NULL, help);CHKERRQ(ierr);
   ierr = ProcessOptions(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);
   ierr = CreateMesh(PETSC_COMM_WORLD, user.testNum, &user, &user.dm);CHKERRQ(ierr);
-  ierr = CheckMesh(user.dm);CHKERRQ(ierr);
+  ierr = CheckMesh(user.dm, &user);CHKERRQ(ierr);
   ierr = DMDestroy(&user.dm);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;

@@ -13,7 +13,7 @@ PetscLogEvent DM_Convert, DM_GlobalToLocal, DM_LocalToGlobal, DM_LocalToLocal;
 
   Input Parameters:
 + dm   - the DM
-. prefix - prefix to use for viewing, or NULL to use prefix of 'rnd'
+. prefix - prefix to use for viewing, or NULL to use prefix of 'dm'
 - optionname - option to activate viewing
 
   Level: intermediate
@@ -100,6 +100,51 @@ PetscErrorCode  DMCreate(MPI_Comm comm,DM *dm)
   v->fields    = NULL;
 
   *dm = v;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMClone"
+/*@
+  DMClone - Creates a DM object with the same topology as the original.
+
+  Collective on MPI_Comm
+
+  Input Parameter:
+. dm - The original DM object
+
+  Output Parameter:
+. newdm  - The new DM object
+
+  Level: beginner
+
+.keywords: DM, topology, create
+@*/
+PetscErrorCode DMClone(DM dm, DM *newdm)
+{
+  PetscSF        sf;
+  Vec            coords;
+  void          *ctx;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(newdm,2);
+  ierr = DMCreate(PetscObjectComm((PetscObject)dm), newdm);CHKERRQ(ierr);
+  if (dm->ops->clone) {
+    ierr = (*dm->ops->clone)(dm, newdm);CHKERRQ(ierr);
+  }
+  ierr = DMGetPointSF(dm, &sf);CHKERRQ(ierr);
+  ierr = DMSetPointSF(*newdm, sf);CHKERRQ(ierr);
+  ierr = DMGetApplicationContext(dm, &ctx);CHKERRQ(ierr);
+  ierr = DMSetApplicationContext(*newdm, ctx);CHKERRQ(ierr);
+  ierr = DMGetCoordinatesLocal(dm, &coords);CHKERRQ(ierr);
+  if (coords) {
+    ierr = DMSetCoordinatesLocal(*newdm, coords);CHKERRQ(ierr);
+  } else {
+    ierr = DMGetCoordinates(dm, &coords);CHKERRQ(ierr);
+    if (coords) {ierr = DMSetCoordinates(*newdm, coords);CHKERRQ(ierr);}
+  }
   PetscFunctionReturn(0);
 }
 
@@ -684,7 +729,7 @@ PetscErrorCode  DMGetLocalToGlobalMapping(DM dm,ISLocalToGlobalMapping *ltog)
         }
       }
       ierr = ISLocalToGlobalMappingCreate(PETSC_COMM_SELF, size, ltog, PETSC_OWN_POINTER, &dm->ltogmap);CHKERRQ(ierr);
-      ierr = PetscLogObjectParent(dm, dm->ltogmap);CHKERRQ(ierr);
+      ierr = PetscLogObjectParent((PetscObject)dm, (PetscObject)dm->ltogmap);CHKERRQ(ierr);
     } else {
       if (!dm->ops->getlocaltoglobalmapping) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"DM can not create LocalToGlobalMapping");
       ierr = (*dm->ops->getlocaltoglobalmapping)(dm);CHKERRQ(ierr);

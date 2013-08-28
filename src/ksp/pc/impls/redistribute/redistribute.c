@@ -353,7 +353,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_Redistribute(PC pc)
 
   ierr = KSPCreate(PetscObjectComm((PetscObject)pc),&red->ksp);CHKERRQ(ierr);
   ierr = PetscObjectIncrementTabLevel((PetscObject)red->ksp,(PetscObject)pc,1);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(pc,red->ksp);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)red->ksp);CHKERRQ(ierr);
   ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
   ierr = KSPSetOptionsPrefix(red->ksp,prefix);CHKERRQ(ierr);
   ierr = KSPAppendOptionsPrefix(red->ksp,"redistribute_");CHKERRQ(ierr);

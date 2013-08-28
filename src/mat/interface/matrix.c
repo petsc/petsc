@@ -856,6 +856,8 @@ PetscErrorCode  MatView(Mat mat,PetscViewer viewer)
         ierr = PetscViewerASCIIPrintf(viewer,"total: nonzeros=%lld, allocated nonzeros=%lld\n",(Petsc64bitInt)info.nz_used,(Petsc64bitInt)info.nz_allocated);CHKERRQ(ierr);
         ierr = PetscViewerASCIIPrintf(viewer,"total number of mallocs used during MatSetValues calls =%D\n",(PetscInt)info.mallocs);CHKERRQ(ierr);
       }
+      if (mat->nullsp) {ierr = PetscViewerASCIIPrintf(viewer,"  has attached null space\n");CHKERRQ(ierr);}
+      if (mat->nearnullsp) {ierr = PetscViewerASCIIPrintf(viewer,"  has attached near null space\n");CHKERRQ(ierr);}
     }
 #if defined(PETSC_HAVE_AMS)
   } else if (isams) {
@@ -3473,7 +3475,7 @@ PetscErrorCode  MatSolveAdd(Mat mat,Vec b,Vec y,Vec x)
       ierr = VecAXPY(x,one,y);CHKERRQ(ierr);
     } else {
       ierr = VecDuplicate(x,&tmp);CHKERRQ(ierr);
-      ierr = PetscLogObjectParent(mat,tmp);CHKERRQ(ierr);
+      ierr = PetscLogObjectParent((PetscObject)mat,(PetscObject)tmp);CHKERRQ(ierr);
       ierr = VecCopy(x,tmp);CHKERRQ(ierr);
       ierr = MatSolve(mat,b,x);CHKERRQ(ierr);
       ierr = VecAXPY(x,one,tmp);CHKERRQ(ierr);
@@ -3600,7 +3602,7 @@ PetscErrorCode  MatSolveTransposeAdd(Mat mat,Vec b,Vec y,Vec x)
       ierr = VecAXPY(x,one,y);CHKERRQ(ierr);
     } else {
       ierr = VecDuplicate(x,&tmp);CHKERRQ(ierr);
-      ierr = PetscLogObjectParent(mat,tmp);CHKERRQ(ierr);
+      ierr = PetscLogObjectParent((PetscObject)mat,(PetscObject)tmp);CHKERRQ(ierr);
       ierr = VecCopy(x,tmp);CHKERRQ(ierr);
       ierr = MatSolveTranspose(mat,b,x);CHKERRQ(ierr);
       ierr = VecAXPY(x,one,tmp);CHKERRQ(ierr);
@@ -4907,7 +4909,7 @@ PetscErrorCode  MatAssembled(Mat mat,PetscBool  *assembled)
 
   Input Parameters:
 + mat   - the matrix
-. prefix - prefix to use for viewing, or NULL to use prefix of 'rnd'
+. prefix - prefix to use for viewing, or NULL to use prefix of 'mat'
 - optionname - option to activate viewing
 
   Level: intermediate
@@ -5170,8 +5172,10 @@ PetscErrorCode  MatSetOption(Mat mat,MatOption op,PetscBool flg)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidType(mat,1);
-  if (op > 0) PetscValidLogicalCollectiveEnum(mat,op,2);
-  PetscValidLogicalCollectiveBool(mat,flg,3);
+  if (op > 0) {
+    PetscValidLogicalCollectiveEnum(mat,op,2);
+    PetscValidLogicalCollectiveBool(mat,flg,3);
+  }
 
   if (((int) op) <= MAT_OPTION_MIN || ((int) op) >= MAT_OPTION_MAX) SETERRQ1(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_OUTOFRANGE,"Options %d is out of range",(int)op);
   if (!((PetscObject)mat)->type_name) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_TYPENOTSET,"Cannot set options until type and size have been set, see MatSetType() and MatSetSizes()");

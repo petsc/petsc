@@ -17,7 +17,7 @@
   PetscInt     max_neig;   /* Maximum number of eigenvalues to deflate */ \
   PetscReal    lambdaN;    /* modulus of the largest eigenvalue of A */ \
   PetscReal    smv;        /* smaller multiple of the remaining allowed number of steps -- used for the adaptive strategy */ \
-  PetscInt     force;      /* Force the use of the deflation at the restart */ \
+  PetscBool    force;      /* Force the use of the deflation at the restart */ \
   PetscInt     matvecs;    /* Total number of matrix-vectors */ \
   PetscInt     GreatestEig;   /* Extract the greatest eigenvalues instead */ \
   PetscReal    *wr, *wi, *modul;  /* Real and complex part and modulus of eigenvalues */ \
@@ -40,7 +40,7 @@
   PetscBLASInt *iwork;  /* work space for LAPACK functions */ \
   PetscReal    *orth;   /* Coefficients for the orthogonalization */ \
   PetscBool    HasSchur;   /* Indicate if the Schur form had already been computed in this cycle */ \
-  PetscInt     improve;    /* 0 = do not improve the eigenvalues; This is an experimental option */
+  PetscBool    improve;    /* 0 = do not improve the eigenvalues; This is an experimental option */
 
 typedef struct {
   KSPGMRESHEADER

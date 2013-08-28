@@ -75,7 +75,7 @@ static PetscErrorCode VecDuplicate_MPI(Vec win,Vec *v)
     ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,win->map->bs,win->map->n+w->nghost,array,&vw->localrep);CHKERRQ(ierr);
     ierr = PetscMemcpy(vw->localrep->ops,w->localrep->ops,sizeof(struct _VecOps));CHKERRQ(ierr);
     ierr = VecRestoreArray(*v,&array);CHKERRQ(ierr);
-    ierr = PetscLogObjectParent(*v,vw->localrep);CHKERRQ(ierr);
+    ierr = PetscLogObjectParent((PetscObject)*v,(PetscObject)vw->localrep);CHKERRQ(ierr);
 
     vw->localupdate = w->localupdate;
     if (vw->localupdate) {
@@ -195,7 +195,7 @@ PetscErrorCode VecCreate_MPI_Private(Vec v,PetscBool alloc,PetscInt nghost,const
   if (alloc && !array) {
     PetscInt n = v->map->n+nghost;
     ierr               = PetscMalloc(n*sizeof(PetscScalar),&s->array);CHKERRQ(ierr);
-    ierr               = PetscLogObjectMemory(v,n*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr               = PetscLogObjectMemory((PetscObject)v,n*sizeof(PetscScalar));CHKERRQ(ierr);
     ierr               = PetscMemzero(s->array,v->map->n*sizeof(PetscScalar));CHKERRQ(ierr);
     s->array_allocated = s->array;
   }
@@ -378,7 +378,7 @@ PetscErrorCode  VecCreateGhostWithArray(MPI_Comm comm,PetscInt n,PetscInt N,Pets
   /* Create local representation */
   ierr = VecGetArray(*vv,&larray);CHKERRQ(ierr);
   ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,n+nghost,larray,&w->localrep);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(*vv,w->localrep);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)*vv,(PetscObject)w->localrep);CHKERRQ(ierr);
   ierr = VecRestoreArray(*vv,&larray);CHKERRQ(ierr);
 
   /*
@@ -387,7 +387,7 @@ PetscErrorCode  VecCreateGhostWithArray(MPI_Comm comm,PetscInt n,PetscInt N,Pets
   ierr = ISCreateGeneral(comm,nghost,ghosts,PETSC_COPY_VALUES,&from);CHKERRQ(ierr);
   ierr = ISCreateStride(PETSC_COMM_SELF,nghost,n,1,&to);CHKERRQ(ierr);
   ierr = VecScatterCreate(*vv,from,w->localrep,to,&w->localupdate);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(*vv,w->localupdate);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)*vv,(PetscObject)w->localupdate);CHKERRQ(ierr);
   ierr = ISDestroy(&to);CHKERRQ(ierr);
   ierr = ISDestroy(&from);CHKERRQ(ierr);
 
@@ -506,7 +506,7 @@ PetscErrorCode  VecMPISetGhost(Vec vv,PetscInt nghost,const PetscInt ghosts[])
     /* Create local representation */
     ierr = VecGetArray(vv,&larray);CHKERRQ(ierr);
     ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,n+nghost,larray,&w->localrep);CHKERRQ(ierr);
-    ierr = PetscLogObjectParent(vv,w->localrep);CHKERRQ(ierr);
+    ierr = PetscLogObjectParent((PetscObject)vv,(PetscObject)w->localrep);CHKERRQ(ierr);
     ierr = VecRestoreArray(vv,&larray);CHKERRQ(ierr);
 
     /*
@@ -515,7 +515,7 @@ PetscErrorCode  VecMPISetGhost(Vec vv,PetscInt nghost,const PetscInt ghosts[])
     ierr = ISCreateGeneral(comm,nghost,ghosts,PETSC_COPY_VALUES,&from);CHKERRQ(ierr);
     ierr = ISCreateStride(PETSC_COMM_SELF,nghost,n,1,&to);CHKERRQ(ierr);
     ierr = VecScatterCreate(vv,from,w->localrep,to,&w->localupdate);CHKERRQ(ierr);
-    ierr = PetscLogObjectParent(vv,w->localupdate);CHKERRQ(ierr);
+    ierr = PetscLogObjectParent((PetscObject)vv,(PetscObject)w->localupdate);CHKERRQ(ierr);
     ierr = ISDestroy(&to);CHKERRQ(ierr);
     ierr = ISDestroy(&from);CHKERRQ(ierr);
 
@@ -600,7 +600,7 @@ PetscErrorCode  VecCreateGhostBlockWithArray(MPI_Comm comm,PetscInt bs,PetscInt 
   /* Create local representation */
   ierr = VecGetArray(*vv,&larray);CHKERRQ(ierr);
   ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,bs,n+bs*nghost,larray,&w->localrep);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(*vv,w->localrep);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)*vv,(PetscObject)w->localrep);CHKERRQ(ierr);
   ierr = VecRestoreArray(*vv,&larray);CHKERRQ(ierr);
 
   /*
@@ -609,7 +609,7 @@ PetscErrorCode  VecCreateGhostBlockWithArray(MPI_Comm comm,PetscInt bs,PetscInt 
   ierr = ISCreateBlock(comm,bs,nghost,ghosts,PETSC_COPY_VALUES,&from);CHKERRQ(ierr);
   ierr = ISCreateStride(PETSC_COMM_SELF,bs*nghost,n,1,&to);CHKERRQ(ierr);
   ierr = VecScatterCreate(*vv,from,w->localrep,to,&w->localupdate);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(*vv,w->localupdate);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)*vv,(PetscObject)w->localupdate);CHKERRQ(ierr);
   ierr = ISDestroy(&to);CHKERRQ(ierr);
   ierr = ISDestroy(&from);CHKERRQ(ierr);
 

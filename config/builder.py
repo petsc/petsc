@@ -16,6 +16,11 @@ regressionParameters = {'src/dm/impls/patch/examples/tests/ex1': [{'numProcs': 1
                                                                   {'numProcs': 4, 'args': '-patch_size 2 -grid_size 4 -comm_size 1'},
                                                                   {'numProcs': 4, 'args': '-patch_size 2 -grid_size 4 -comm_size 2'},
                                                                   {'numProcs': 16, 'args': '-patch_size 2 -grid_size 8 -comm_size 2'}],
+                        'src/mat/examples/tests/ex170':          [{'numProcs': 1, 'args': ''},
+                                                                  {'numProcs': 1, 'args': '-testnum 1'},
+                                                                  {'numProcs': 2, 'args': '-testnum 1'},
+                                                                  {'numProcs': 1, 'args': '-testnum 2'},
+                                                                  {'numProcs': 2, 'args': '-testnum 2'}],
                         'src/dm/impls/plex/examples/tests/ex1': [# CTetGen tests 0-1
                                                                  {'numProcs': 1, 'args': '-dim 3 -ctetgen_verbose 4 -dm_view ::ascii_info_detail -info -info_exclude null'},
                                                                  {'numProcs': 1, 'args': '-dim 3 -ctetgen_verbose 4 -refinement_limit 0.0625 -dm_view ::ascii_info_detail -info -info_exclude null'},
@@ -430,7 +435,7 @@ class MakeParser(object):
     '''Parses a PETSc action
     - Return a dictionary for the portions of a run'''
     import re
-    m = re.match('-@\$\{MPIEXEC\} -n (?P<numProcs>\d+) ./(?P<ex>ex\w+)(?P<args>[-.,\w ]+)>', lines[0])
+    m = re.match('-@\$\{MPIEXEC\} -n (?P<numProcs>\d+) ./(?P<ex>ex\w+)(?P<args>[\'%-.,\w ]+)>', lines[0])
     if not m:
       raise RuntimeError('Could not parse launch sequence:\n'+lines[0])
     comparison = 'Not present'
@@ -853,12 +858,13 @@ class DependencyBuilder(logger.Logger):
     '''
     with file(depFile) as f:
       try:
-        target, deps = f.read().split(':')
+        target, deps = f.read().split(':', 1)
       except ValueError as e:
         self.logPrint('ERROR in dependency file %s: %s' % (depFile, str(e)))
     target = target.split()[0]
     if (target != self.sourceManager.getObjectName(source)): print target, self.sourceManager.getObjectName(source)
     assert(target == self.sourceManager.getObjectName(source))
+    deps = deps.split('\n\n')[0]
     deps = [d for d in deps.replace('\\','').split() if not os.path.splitext(d)[1] == '.mod']
     if not os.path.basename(deps[0]) == source:
       raise RuntimeError('ERROR: first dependency %s should be %s' % (deps[0], source))
@@ -1503,7 +1509,7 @@ class PETScMaker(script.Script):
        self.logPrint("MISCONFIGURATION: Regression output file %s (test %s) is missing" % (outputName, testNum), debugSection='screen')
    else:
      with file(outputName) as f:
-       validOutput = f.read()
+       validOutput = f.read().strip() # Jed is now stripping output it appears
        if not validOutput.replace("\r", "") == output:
          if replace:
            with file(outputName, 'w') as f:
@@ -1525,7 +1531,10 @@ class PETScMaker(script.Script):
 
  def getTestCommand(self, executable, **params):
    numProcs = params.get('numProcs', 1)
-   args     = params.get('args', '') % dict(meshes=os.path.join(self.petscDir,'share','petsc','datafiles','meshes'))
+   try:
+     args   = params.get('args', '') % dict(meshes=os.path.join(self.petscDir,'share','petsc','datafiles','meshes'))
+   except ValueError:
+     args   = params.get('args', '')
    hosts    = ','.join(['localhost']*int(numProcs))
    return ' '.join([self.configInfo.mpi.mpiexec, '-hosts', hosts, '-n', str(numProcs), os.path.abspath(executable), args])
 

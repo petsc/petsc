@@ -580,6 +580,7 @@ PetscErrorCode VecNorm_Seq(Vec xin,NormType type,PetscReal *z)
     ierr = PetscThreadCommRunKernel3(PetscObjectComm((PetscObject)xin),(PetscThreadKernel)VecNorm_kernel,xin,(void*)&type,red);CHKERRQ(ierr);
     ierr = PetscThreadReductionEnd(red,z);CHKERRQ(ierr);
     *z   = PetscSqrtReal(*z);
+    ierr = PetscLogFlops(PetscMax(2*xin->map->n-1.0,0.0));
   } else if (type == NORM_INFINITY) {
     ierr = PetscThreadReductionBegin(PetscObjectComm((PetscObject)xin),THREADCOMM_MAX,PETSC_REAL,1,&red);CHKERRQ(ierr);
     ierr = PetscThreadCommRunKernel3(PetscObjectComm((PetscObject)xin),(PetscThreadKernel)VecNorm_kernel,xin,(void*)&type,red);CHKERRQ(ierr);
@@ -588,6 +589,7 @@ PetscErrorCode VecNorm_Seq(Vec xin,NormType type,PetscReal *z)
     ierr = PetscThreadReductionBegin(PetscObjectComm((PetscObject)xin),THREADCOMM_SUM,PETSC_REAL,1,&red);CHKERRQ(ierr);
     ierr = PetscThreadCommRunKernel3(PetscObjectComm((PetscObject)xin),(PetscThreadKernel)VecNorm_kernel,xin,(void*)&type,red);CHKERRQ(ierr);
     ierr = PetscThreadReductionEnd(red,z);CHKERRQ(ierr);
+    ierr = PetscLogFlops(PetscMax(xin->map->n-1.0,0.0));
   } else if (type == NORM_1_AND_2) {
     ierr = VecNorm_Seq(xin,NORM_1,z);CHKERRQ(ierr);
     ierr = VecNorm_Seq(xin,NORM_2,z+1);CHKERRQ(ierr);
@@ -917,9 +919,9 @@ PetscErrorCode VecView_Seq_Binary(Vec xin,PetscViewer viewer)
       ierr = PetscObjectGetName((PetscObject)xin,&name);CHKERRQ(ierr);
       ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
       ierr = PetscViewerBinaryGetInfoPointer(viewer,&info);CHKERRQ(ierr);
-      ierr = PetscFPrintf(comm,info,"%%--- begin code written by PetscViewerBinary for MATLAB format ---%\n");CHKERRQ(ierr);
-      ierr = PetscFPrintf(comm,info,"%%$$ Set.%s = PetscBinaryRead(fd);\n",name);CHKERRQ(ierr);
-      ierr = PetscFPrintf(comm,info,"%%--- end code written by PetscViewerBinary for MATLAB format ---%\n\n");CHKERRQ(ierr);
+      ierr = PetscFPrintf(comm,info,"#--- begin code written by PetscViewerBinary for MATLAB format ---#\n");CHKERRQ(ierr);
+      ierr = PetscFPrintf(comm,info,"#$$ Set.%s = PetscBinaryRead(fd);\n",name);CHKERRQ(ierr);
+      ierr = PetscFPrintf(comm,info,"#--- end code written by PetscViewerBinary for MATLAB format ---#\n\n");CHKERRQ(ierr);
     }
 #if defined(PETSC_HAVE_MPIIO)
   } else {

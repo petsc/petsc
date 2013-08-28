@@ -179,18 +179,12 @@ PetscErrorCode SNESSolve_NEWTONLS(SNES snes)
         PetscFunctionReturn(0);
       }
     } else snes->vec_func_init_set = PETSC_FALSE;
+  }
 
-    if (!snes->norm_init_set) {
-      ierr = VecNormBegin(F,NORM_2,&fnorm);CHKERRQ(ierr);        /* fnorm <- ||F||  */
-      ierr = VecNormEnd(F,NORM_2,&fnorm);CHKERRQ(ierr);
-      if (PetscIsInfOrNanReal(fnorm)) {
-        snes->reason = SNES_DIVERGED_FNORM_NAN;
-        PetscFunctionReturn(0);
-      }
-    } else {
-      fnorm               = snes->norm_init;
-      snes->norm_init_set = PETSC_FALSE;
-    }
+  ierr = VecNorm(F,NORM_2,&fnorm);CHKERRQ(ierr);        /* fnorm <- ||F||  */
+  if (PetscIsInfOrNanReal(fnorm)) {
+    snes->reason = SNES_DIVERGED_FNORM_NAN;
+    PetscFunctionReturn(0);
   }
 
   ierr       = PetscObjectAMSTakeAccess((PetscObject)snes);CHKERRQ(ierr);
@@ -216,7 +210,6 @@ PetscErrorCode SNESSolve_NEWTONLS(SNES snes)
     if (snes->pc) {
       if (snes->pcside == PC_RIGHT) {
         ierr = SNESSetInitialFunction(snes->pc, F);CHKERRQ(ierr);
-        ierr = SNESSetInitialFunctionNorm(snes->pc, fnorm);CHKERRQ(ierr);
         ierr = PetscLogEventBegin(SNES_NPCSolve,snes->pc,X,snes->vec_rhs,0);CHKERRQ(ierr);
         ierr = SNESSolve(snes->pc, snes->vec_rhs, X);CHKERRQ(ierr);
         ierr = PetscLogEventEnd(SNES_NPCSolve,snes->pc,X,snes->vec_rhs,0);CHKERRQ(ierr);
