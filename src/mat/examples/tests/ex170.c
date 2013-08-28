@@ -8,6 +8,18 @@ PETSC_EXTERN PetscErrorCode MatMultAddMax_SeqAIJ(Mat,Vec,Vec,Vec);
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
 
 /*
+  Paper with Ananth: Frbenius norm of band was good proxy, but really want to know the rank outside
+
+  LU for diagonal blocks must do shifting instead of pivoting, preferably shifting individual rows (like Pardiso)
+
+  Draw picture of flow of reordering
+
+  Measure Forbenius norm of the blocks being dropped by Truncated SPIKE (might be contaminated by pivoting in LU)
+
+  Report on using Florida matrices (Maxim, Murat)
+*/
+
+/*
 I have thought about how to do this. Here is a prototype algorithm. Let A be
 the adjacency matrix (0 or 1), and let each component be identified by the
 lowest numbered vertex in it. We initialize a vector c so that each vertex is
@@ -28,6 +40,7 @@ bounded by p. In practice, this should be very fast.
 
 #undef __FUNCT__
 #define __FUNCT__ "CreateGraph"
+/* Only isolated vertices get a 1 on the diagonal */
 PetscErrorCode CreateGraph(MPI_Comm comm, PetscInt testnum, Mat *A)
 {
   Mat            G;
