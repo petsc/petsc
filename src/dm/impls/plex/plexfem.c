@@ -584,8 +584,8 @@ PetscErrorCode DMPlexComputeResidualFEM(DM dm, Vec X, Vec F, void *user)
     }
   }
   for (f = 0; f < Nf; ++f) {
-    void   (*f0)(const PetscScalar[], const PetscScalar[], const PetscReal[], const PetscScalar[], const PetscScalar[], PetscScalar[]) = fem->f0Funcs[f];
-    void   (*f1)(const PetscScalar[], const PetscScalar[], const PetscReal[], const PetscScalar[], const PetscScalar[], PetscScalar[]) = fem->f1Funcs[f];
+    void   (*f0)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]) = fem->f0Funcs[f];
+    void   (*f1)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]) = fem->f1Funcs[f];
     PetscInt Nb;
     /* Conforming batches */
     PetscInt numChunks, numBatches, numBlocks, Ne, blockSize, batchSize;

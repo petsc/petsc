@@ -82,7 +82,7 @@ static PetscErrorCode DMPlexLocatePoint_Simplex_3D_Internal(DM dm, const PetscSc
 #define __FUNCT__ "DMPlexLocatePoint_General_3D_Internal"
 static PetscErrorCode DMPlexLocatePoint_General_3D_Internal(DM dm, const PetscScalar point[], PetscInt c, PetscInt *cell)
 {
-  PetscSection       coordSection;
+  PetscSection   coordSection;
   Vec            coordsLocal;
   PetscScalar   *coords = NULL;
   const PetscInt faces[24] = {0, 3, 2, 1,  5, 4, 7, 6,  3, 0, 4, 5,
