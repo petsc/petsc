@@ -74,7 +74,7 @@ static PetscErrorCode DMPlexGetVTKConnectivity(DM dm,PieceInfo *piece,PetscVTKIn
   countconn = 0;
   for (c = cStart; c < cEnd; ++c) {
     PetscInt *closure = NULL;
-    PetscInt  closureSize,nverts,celltype,startoffset;
+    PetscInt  closureSize,nverts,celltype,startoffset,nC=0;
 
     if (hasLabel) {
       PetscInt value;
@@ -87,9 +87,11 @@ static PetscErrorCode DMPlexGetVTKConnectivity(DM dm,PieceInfo *piece,PetscVTKIn
     for (v = 0; v < closureSize*2; v += 2) {
       if ((closure[v] >= vStart) && (closure[v] < vEnd)) {
         conn[countconn++] = closure[v] - vStart;
+        ++nC;
       }
     }
     ierr = DMPlexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+    ierr = DMPlexInvertCell(dim, nC, &conn[countconn-nC]);CHKERRQ(ierr);
 
     offsets[countcell] = countconn;
 
