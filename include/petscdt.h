@@ -17,7 +17,7 @@ typedef struct {
 } PetscQuadrature;
 
 typedef struct {
-  PetscReal *v0, *J, *invJ, *detJ;
+  PetscReal *v0, *n, *J, *invJ, *detJ;
 } PetscCellGeometry;
 
 PETSC_EXTERN PetscErrorCode PetscDTLegendreEval(PetscInt,const PetscReal*,PetscInt,const PetscInt*,PetscReal*,PetscReal*,PetscReal*);
