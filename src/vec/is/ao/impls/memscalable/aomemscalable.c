@@ -464,7 +464,7 @@ PETSC_EXTERN PetscErrorCode AOCreate_MemoryScalable(AO ao)
   /* create distributed indices app_loc: petsc->app and petsc_loc: app->petsc */
   n_local = map->n;
   ierr    = PetscMalloc2(n_local,PetscInt, &aomems->app_loc,n_local,PetscInt,&aomems->petsc_loc);CHKERRQ(ierr);
-  ierr    = PetscLogObjectMemory(ao,2*n_local*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr    = PetscLogObjectMemory((PetscObject)ao,2*n_local*sizeof(PetscInt));CHKERRQ(ierr);
   ierr    = PetscMemzero(aomems->app_loc,n_local*sizeof(PetscInt));CHKERRQ(ierr);
   ierr    = PetscMemzero(aomems->petsc_loc,n_local*sizeof(PetscInt));CHKERRQ(ierr);
   ierr    = ISGetIndices(isapp,&myapp);CHKERRQ(ierr);
@@ -567,6 +567,7 @@ PetscErrorCode  AOCreateMemoryScalableIS(IS isapp,IS ispetsc,AO *aoout)
   ierr   = AOCreate(comm,&ao);CHKERRQ(ierr);
   ierr   = AOSetIS(ao,isapp,ispetsc);CHKERRQ(ierr);
   ierr   = AOSetType(ao,AOMEMORYSCALABLE);CHKERRQ(ierr);
+  ierr   = AOViewFromOptions(ao,NULL,"-ao_view");CHKERRQ(ierr);
   *aoout = ao;
   PetscFunctionReturn(0);
 }

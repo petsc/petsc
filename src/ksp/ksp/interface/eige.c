@@ -153,7 +153,7 @@ PetscErrorCode  KSPComputeEigenvaluesExplicitly(KSP ksp,PetscInt nmax,PetscReal 
     }
     ierr = MatSetType(A,MATMPIDENSE);CHKERRQ(ierr);
     ierr = MatMPIDenseSetPreallocation(A,NULL);CHKERRQ(ierr);
-    ierr = PetscLogObjectParent(BA,A);CHKERRQ(ierr);
+    ierr = PetscLogObjectParent((PetscObject)BA,(PetscObject)A);CHKERRQ(ierr);
 
     ierr = MatGetOwnershipRange(BA,&row,&dummy);CHKERRQ(ierr);
     ierr = MatGetLocalSize(BA,&m,&dummy);CHKERRQ(ierr);
@@ -233,8 +233,7 @@ PetscErrorCode  KSPComputeEigenvaluesExplicitly(KSP ksp,PetscInt nmax,PetscReal 
 
     idummy   = n;
     lwork    = 5*n;
-    ierr     = PetscMalloc(2*n*sizeof(PetscReal),&realpart);CHKERRQ(ierr);
-    imagpart = realpart + n;
+    ierr     = PetscMalloc2(n,PetscReal,&realpart,n,PetscReal,&imagpart);CHKERRQ(ierr);
     ierr     = PetscMalloc(5*n*sizeof(PetscReal),&work);CHKERRQ(ierr);
 #if defined(PETSC_MISSING_LAPACK_GEEV)
     SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"GEEV - Lapack routine is unavailable\nNot able to provide eigen values.");
@@ -261,7 +260,7 @@ PetscErrorCode  KSPComputeEigenvaluesExplicitly(KSP ksp,PetscInt nmax,PetscReal 
       c[i] = imagpart[perm[i]];
     }
     ierr = PetscFree(perm);CHKERRQ(ierr);
-    ierr = PetscFree(realpart);CHKERRQ(ierr);
+    ierr = PetscFree2(realpart,imagpart);CHKERRQ(ierr);
   }
 #else
   if (!rank) {

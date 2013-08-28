@@ -268,8 +268,7 @@ PetscErrorCode PCNNCreateCoarseMatrix(PC pc)
   {
     PetscMPIInt tag;
     ierr         = PetscObjectGetNewTag((PetscObject)pc,&tag);CHKERRQ(ierr);
-    ierr         = PetscMalloc((2*(n_neigh)+1)*sizeof(MPI_Request),&send_request);CHKERRQ(ierr);
-    recv_request = send_request + (n_neigh);
+    ierr         = PetscMalloc2(n_neigh+1,MPI_Request,&send_request,n_neigh+1,MPI_Request,&recv_request);CHKERRQ(ierr);
     for (i=1; i<n_neigh; i++) {
       ierr = MPI_Isend((void*)(DZ_OUT[i]),n_shared[i],MPIU_SCALAR,neigh[i],tag,PetscObjectComm((PetscObject)pc),&(send_request[i]));CHKERRQ(ierr);
       ierr = MPI_Irecv((void*)(DZ_IN [i]),n_shared[i],MPIU_SCALAR,neigh[i],tag,PetscObjectComm((PetscObject)pc),&(recv_request[i]));CHKERRQ(ierr);
@@ -314,7 +313,7 @@ PetscErrorCode PCNNCreateCoarseMatrix(PC pc)
   }
 
   /* Free the memory for the MPI requests */
-  ierr = PetscFree(send_request);CHKERRQ(ierr);
+  ierr = PetscFree2(send_request,recv_request);CHKERRQ(ierr);
 
   /* Free the memory for DZ_OUT */
   if (DZ_OUT) {

@@ -28,13 +28,13 @@ PetscErrorCode  KSPFischerGuessCreate_Method1(KSP ksp,int maxl,KSPFischerGuess_M
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   ierr = PetscMalloc(sizeof(KSPFischerGuess_Method1),&itg);CHKERRQ(ierr);
   ierr = PetscMalloc(maxl * sizeof(PetscScalar),&itg->alpha);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(ksp,sizeof(KSPFischerGuess_Method1) + maxl*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory((PetscObject)ksp,sizeof(KSPFischerGuess_Method1) + maxl*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr = KSPGetVecs(ksp,maxl,&itg->xtilde,0,NULL);CHKERRQ(ierr);
   ierr = PetscLogObjectParents(ksp,maxl,itg->xtilde);CHKERRQ(ierr);
   ierr = KSPGetVecs(ksp,maxl,&itg->btilde,0,NULL);CHKERRQ(ierr);
   ierr = PetscLogObjectParents(ksp,maxl,itg->btilde);CHKERRQ(ierr);
   ierr = VecDuplicate(itg->xtilde[0],&itg->guess);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(ksp,itg->guess);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)ksp,(PetscObject)itg->guess);CHKERRQ(ierr);
   *ITG = itg;
   PetscFunctionReturn(0);
 }
@@ -151,13 +151,13 @@ PetscErrorCode  KSPFischerGuessCreate_Method2(KSP ksp,int maxl,KSPFischerGuess_M
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   ierr = PetscMalloc(sizeof(KSPFischerGuess_Method2),&itg);CHKERRQ(ierr);
   ierr = PetscMalloc(maxl * sizeof(PetscScalar),&itg->alpha);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(ksp,sizeof(KSPFischerGuess_Method2) + maxl*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory((PetscObject)ksp,sizeof(KSPFischerGuess_Method2) + maxl*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr = KSPGetVecs(ksp,maxl,&itg->xtilde,0,NULL);CHKERRQ(ierr);
   ierr = PetscLogObjectParents(ksp,maxl,itg->xtilde);CHKERRQ(ierr);
   ierr = VecDuplicate(itg->xtilde[0],&itg->Ax);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(ksp,itg->Ax);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)ksp,(PetscObject)itg->Ax);CHKERRQ(ierr);
   ierr = VecDuplicate(itg->xtilde[0],&itg->guess);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(ksp,itg->guess);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)ksp,(PetscObject)itg->guess);CHKERRQ(ierr);
   *ITG = itg;
   PetscFunctionReturn(0);
 }

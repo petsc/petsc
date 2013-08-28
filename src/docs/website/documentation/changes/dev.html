@@ -101,7 +101,11 @@
       <h4>VecScatter:</h4>
       <h4>Mat:</h4>
       <ul>
-        <li>Removed third argument to MatNullSpaceRemove().  Use VecDuplicate() and VecCopy() if the original Vec must be kept.</li>
+        <li>Removed third argument to MatNullSpaceRemove().  Use
+      VecDuplicate() and VecCopy() if the original Vec must be kept.</li>
+        <li>MatGetRedundantMatrix(Mat mat,PetscInt nsubcomm,MPI_Comm
+      subcomm,PetscInt mlocal_red,MatReuse reuse,Mat *matredundant) is
+      replaced by MatRedundantMatrix(Mat mat,PetscInt nsubcomm,MPI_Comm subcomm,MatReuse reuse,Mat *matredundant).</li>
       </ul>
       <h4>PC:</h4>
       <ul>
@@ -109,6 +113,9 @@
       </ul>
       <h4>KSP:</h4>
       <h4>SNES:</h4>
+      <ul>
+        <li><tt>SNESSetInitialFunctionNorm()</tt> is removed as it's not necessary given that the norm is cached on the Vec.  Use only <tt>SNESSetInitialFunction()</tt>.</li>
+      </ul>
       <h4>SNESLineSearch:</h4>
       <h4>TS:</h4>
       <h4>DM/DA:</h4>

@@ -378,9 +378,9 @@ PetscErrorCode  MatFDColoringCreate(Mat mat,ISColoring iscoloring,MatFDColoring 
   } else SETERRQ1(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Code not yet written for matrix type %s",((PetscObject)mat)->type_name);
 
   ierr = MatGetVecs(mat,NULL,&c->w1);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(c,c->w1);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)c,(PetscObject)c->w1);CHKERRQ(ierr);
   ierr = VecDuplicate(c->w1,&c->w2);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(c,c->w2);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)c,(PetscObject)c->w2);CHKERRQ(ierr);
 
   c->error_rel    = PETSC_SQRT_MACHINE_EPSILON;
   c->umin         = 100.0*PETSC_SQRT_MACHINE_EPSILON;
@@ -567,7 +567,7 @@ PetscErrorCode  MatFDColoringApply_AIJ(Mat J,MatFDColoring coloring,Vec x1,MatSt
 
   if (!coloring->w3) {
     ierr = VecDuplicate(x1_tmp,&coloring->w3);CHKERRQ(ierr);
-    ierr = PetscLogObjectParent(coloring,coloring->w3);CHKERRQ(ierr);
+    ierr = PetscLogObjectParent((PetscObject)coloring,(PetscObject)coloring->w3);CHKERRQ(ierr);
   }
   w3 = coloring->w3;
 

@@ -267,7 +267,7 @@ PETSC_EXTERN PetscErrorCode AOCreate_Basic(AO ao)
 
   /* generate a list of application and PETSc node numbers */
   ierr = PetscMalloc2(N,PetscInt, &aobasic->app,N,PetscInt,&aobasic->petsc);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(ao,2*N*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory((PetscObject)ao,2*N*sizeof(PetscInt));CHKERRQ(ierr);
   ierr = PetscMemzero(aobasic->app, N*sizeof(PetscInt));CHKERRQ(ierr);
   ierr = PetscMemzero(aobasic->petsc, N*sizeof(PetscInt));CHKERRQ(ierr);
   for (i = 0; i < N; i++) {
@@ -382,6 +382,7 @@ PetscErrorCode AOCreateBasicIS(IS isapp,IS ispetsc,AO *aoout)
   ierr   = AOCreate(comm,&ao);CHKERRQ(ierr);
   ierr   = AOSetIS(ao,isapp,ispetsc);CHKERRQ(ierr);
   ierr   = AOSetType(ao,AOBASIC);CHKERRQ(ierr);
+  ierr   = AOViewFromOptions(ao,NULL,"-ao_view");CHKERRQ(ierr);
   *aoout = ao;
   PetscFunctionReturn(0);
 }

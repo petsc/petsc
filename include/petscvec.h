@@ -251,6 +251,7 @@ PETSC_EXTERN PetscErrorCode VecStrideNormAll(Vec,NormType,PetscReal[]);
 PETSC_EXTERN PetscErrorCode VecStrideMaxAll(Vec,PetscInt [],PetscReal []);
 PETSC_EXTERN PetscErrorCode VecStrideMinAll(Vec,PetscInt [],PetscReal []);
 PETSC_EXTERN PetscErrorCode VecStrideScaleAll(Vec,const PetscScalar[]);
+PETSC_EXTERN PetscErrorCode VecUniqueEntries(Vec,PetscInt*,PetscScalar**);
 
 PETSC_EXTERN PetscErrorCode VecStrideNorm(Vec,PetscInt,NormType,PetscReal*);
 PETSC_EXTERN PetscErrorCode VecStrideMax(Vec,PetscInt,PetscInt *,PetscReal *);

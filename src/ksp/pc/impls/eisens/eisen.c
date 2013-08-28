@@ -68,7 +68,7 @@ static PetscErrorCode PCPreSolve_Eisenstat(PC pc,KSP ksp,Vec b,Vec x)
 
   if (!eis->b[pc->presolvedone-1]) {
     ierr = VecDuplicate(b,&eis->b[pc->presolvedone-1]);CHKERRQ(ierr);
-    ierr = PetscLogObjectParent(pc,eis->b[pc->presolvedone-1]);CHKERRQ(ierr);
+    ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)eis->b[pc->presolvedone-1]);CHKERRQ(ierr);
   }
 
   /* if nonzero initial guess, modify x */
@@ -188,13 +188,13 @@ static PetscErrorCode PCSetUp_Eisenstat(PC pc)
     ierr = MatSetType(eis->shell,MATSHELL);CHKERRQ(ierr);
     ierr = MatSetUp(eis->shell);CHKERRQ(ierr);
     ierr = MatShellSetContext(eis->shell,(void*)pc);CHKERRQ(ierr);
-    ierr = PetscLogObjectParent(pc,eis->shell);CHKERRQ(ierr);
+    ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)eis->shell);CHKERRQ(ierr);
     ierr = MatShellSetOperation(eis->shell,MATOP_MULT,(void (*)(void))PCMult_Eisenstat);CHKERRQ(ierr);
   }
   if (!eis->usediag) PetscFunctionReturn(0);
   if (!pc->setupcalled) {
     ierr = MatGetVecs(pc->pmat,&eis->diag,0);CHKERRQ(ierr);
-    ierr = PetscLogObjectParent(pc,eis->diag);CHKERRQ(ierr);
+    ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)eis->diag);CHKERRQ(ierr);
   }
   ierr = MatGetDiagonal(pc->pmat,eis->diag);CHKERRQ(ierr);
   PetscFunctionReturn(0);

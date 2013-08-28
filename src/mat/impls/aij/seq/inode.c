@@ -1218,11 +1218,11 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode(Mat B,Mat A,const MatFactorInfo *
   ierr = ISGetIndices(isrow,&r);CHKERRQ(ierr);
   ierr = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
 
-  ierr  = PetscMalloc((4*n+1)*sizeof(PetscScalar),&rtmp1);CHKERRQ(ierr);
-  ierr  = PetscMemzero(rtmp1,(4*n+1)*sizeof(PetscScalar));CHKERRQ(ierr);
-  rtmp2 = rtmp1 + n;
-  rtmp3 = rtmp2 + n;
-  rtmp4 = rtmp3 + n;
+  ierr  = PetscMalloc4(n,PetscScalar,&rtmp1,n,PetscScalar,&rtmp2,n,PetscScalar,&rtmp3,n,PetscScalar,&rtmp4);CHKERRQ(ierr);
+  ierr  = PetscMemzero(rtmp1,n*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr  = PetscMemzero(rtmp2,n*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr  = PetscMemzero(rtmp3,n*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr  = PetscMemzero(rtmp4,n*sizeof(PetscScalar));CHKERRQ(ierr);
   ics   = ic;
 
   node_max = a->inode.node_count;
@@ -1861,7 +1861,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode(Mat B,Mat A,const MatFactorInfo *
     }
   } while (sctx.newshift);
 
-  ierr = PetscFree(rtmp1);CHKERRQ(ierr);
+  ierr = PetscFree4(rtmp1,rtmp2,rtmp3,rtmp4);CHKERRQ(ierr);
   ierr = PetscFree(tmp_vec2);CHKERRQ(ierr);
   ierr = ISRestoreIndices(isicol,&ic);CHKERRQ(ierr);
   ierr = ISRestoreIndices(isrow,&r);CHKERRQ(ierr);
@@ -1947,11 +1947,11 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode_inplace(Mat B,Mat A,const MatFact
   ierr   = ISGetIndices(isrow,&r);CHKERRQ(ierr);
   ierr   = ISGetIndices(iscol,&c);CHKERRQ(ierr);
   ierr   = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
-  ierr   = PetscMalloc((3*n+1)*sizeof(PetscScalar),&rtmp11);CHKERRQ(ierr);
-  ierr   = PetscMemzero(rtmp11,(3*n+1)*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr   = PetscMalloc3(n,PetscScalar,&rtmp11,n,PetscScalar,&rtmp22,n,PetscScalar,&rtmp33);CHKERRQ(ierr);
+  ierr   = PetscMemzero(rtmp11,n*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr   = PetscMemzero(rtmp22,n*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr   = PetscMemzero(rtmp33,n*sizeof(PetscScalar));CHKERRQ(ierr);
   ics    = ic;
-  rtmp22 = rtmp11 + n;
-  rtmp33 = rtmp22 + n;
 
   node_max = a->inode.node_count;
   ns       = a->inode.size;
@@ -2294,7 +2294,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode_inplace(Mat B,Mat A,const MatFact
     }
 endofwhile:;
   } while (sctx.newshift);
-  ierr = PetscFree(rtmp11);CHKERRQ(ierr);
+  ierr = PetscFree3(rtmp11,rtmp22,rtmp33);CHKERRQ(ierr);
   ierr = PetscFree(tmp_vec2);CHKERRQ(ierr);
   ierr = ISRestoreIndices(isicol,&ic);CHKERRQ(ierr);
   ierr = ISRestoreIndices(isrow,&r);CHKERRQ(ierr);

@@ -99,16 +99,11 @@ PetscErrorCode SNESSolve_Anderson(SNES snes)
         PetscFunctionReturn(0);
       }
     } else snes->vec_func_init_set = PETSC_FALSE;
-    if (!snes->norm_init_set) {
-      /* convergence test */
-      ierr = VecNorm(F,NORM_2,&fnorm);CHKERRQ(ierr);
-      if (PetscIsInfOrNanReal(fnorm)) {
-        snes->reason = SNES_DIVERGED_FNORM_NAN;
-        PetscFunctionReturn(0);
-      }
-    } else {
-      fnorm               = snes->norm_init;
-      snes->norm_init_set = PETSC_FALSE;
+
+    ierr = VecNorm(F,NORM_2,&fnorm);CHKERRQ(ierr);
+    if (PetscIsInfOrNanReal(fnorm)) {
+      snes->reason = SNES_DIVERGED_FNORM_NAN;
+      PetscFunctionReturn(0);
     }
   }
   fminnorm = fnorm;
@@ -129,7 +124,6 @@ PetscErrorCode SNESSolve_Anderson(SNES snes)
     if (snes->pc && snes->pcside == PC_RIGHT) {
       ierr = VecCopy(X,XM);CHKERRQ(ierr);
       ierr = SNESSetInitialFunction(snes->pc,F);CHKERRQ(ierr);
-      ierr = SNESSetInitialFunctionNorm(snes->pc,fnorm);CHKERRQ(ierr);
 
       ierr = PetscLogEventBegin(SNES_NPCSolve,snes->pc,XM,B,0);CHKERRQ(ierr);
       ierr = SNESSolve(snes->pc,B,XM);CHKERRQ(ierr);

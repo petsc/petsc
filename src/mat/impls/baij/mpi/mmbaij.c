@@ -121,14 +121,14 @@ PetscErrorCode MatSetUpMultiply_MPIBAIJ(Mat mat)
 
   ierr = VecScatterCreate(gvec,from,baij->lvec,to,&baij->Mvctx);CHKERRQ(ierr);
 
-  ierr = PetscLogObjectParent(mat,baij->Mvctx);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(mat,baij->lvec);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(mat,from);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(mat,to);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)mat,(PetscObject)baij->Mvctx);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)mat,(PetscObject)baij->lvec);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)mat,(PetscObject)from);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)mat,(PetscObject)to);CHKERRQ(ierr);
 
   baij->garray = garray;
 
-  ierr = PetscLogObjectMemory(mat,(ec+1)*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory((PetscObject)mat,(ec+1)*sizeof(PetscInt));CHKERRQ(ierr);
   ierr = ISDestroy(&from);CHKERRQ(ierr);
   ierr = ISDestroy(&to);CHKERRQ(ierr);
   ierr = VecDestroy(&gvec);CHKERRQ(ierr);
@@ -168,7 +168,7 @@ PetscErrorCode MatDisAssemble_MPIBAIJ(Mat A)
     ierr = PetscTableDestroy(&baij->colmap);CHKERRQ(ierr);
 #else
     ierr = PetscFree(baij->colmap);CHKERRQ(ierr);
-    ierr = PetscLogObjectMemory(A,-Bbaij->nbs*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscLogObjectMemory((PetscObject)A,-Bbaij->nbs*sizeof(PetscInt));CHKERRQ(ierr);
 #endif
   }
 
@@ -201,9 +201,9 @@ PetscErrorCode MatDisAssemble_MPIBAIJ(Mat A)
 
   ierr = PetscFree(nz);CHKERRQ(ierr);
   ierr = PetscFree(baij->garray);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(A,-ec*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory((PetscObject)A,-ec*sizeof(PetscInt));CHKERRQ(ierr);
   ierr = MatDestroy(&B);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(A,Bnew);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)A,(PetscObject)Bnew);CHKERRQ(ierr);
 
   baij->B          = Bnew;
   A->was_assembled = PETSC_FALSE;

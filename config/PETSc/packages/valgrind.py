@@ -21,6 +21,12 @@ class Configure(PETSc.package.NewPackage):
     self.deps = []
     return
 
+  def setup(self):
+    PETSc.package.NewPackage.setup(self)
+    if 'with-'+self.package+'-lib' in self.framework.argDB:
+      raise RuntimeError('It is incorrect to specify library for valgrind, please remove --with-valgrind-lib')
+    return
+
   def getSearchDirectories(self):
     '''By default, do not search any particular directories'''
     yield ''

@@ -720,7 +720,7 @@ PetscErrorCode MatLUFactor_SeqBAIJ(Mat A,IS row,IS col,const MatFactorInfo *info
   A->ops->solvetranspose = C->ops->solvetranspose;
 
   ierr = MatHeaderMerge(A,C);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(A,((Mat_SeqBAIJ*)(A->data))->icol);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)A,(PetscObject)((Mat_SeqBAIJ*)(A->data))->icol);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1173,7 +1173,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqBAIJ(Mat fact,Mat A,IS perm,const MatFact
 
   ierr    = PetscObjectReference((PetscObject)perm);CHKERRQ(ierr);
   ierr    = PetscMalloc((am+1)*sizeof(PetscScalar),&b->solve_work);CHKERRQ(ierr);
-  ierr    = PetscLogObjectMemory(B,(ui[am]-am)*(sizeof(PetscInt)+sizeof(MatScalar)));CHKERRQ(ierr);
+  ierr    = PetscLogObjectMemory((PetscObject)B,(ui[am]-am)*(sizeof(PetscInt)+sizeof(MatScalar)));CHKERRQ(ierr);
 
   b->maxnz = b->nz = ui[am];
 
@@ -1352,7 +1352,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqBAIJ(Mat fact,Mat A,IS perm,const Ma
   b->icol  = perm;
   ierr     = PetscObjectReference((PetscObject)perm);CHKERRQ(ierr);
   ierr     = PetscMalloc((mbs+1)*sizeof(PetscScalar),&b->solve_work);CHKERRQ(ierr);
-  ierr     = PetscLogObjectMemory(B,(ui[mbs]-mbs)*(sizeof(PetscInt)+sizeof(MatScalar)));CHKERRQ(ierr);
+  ierr     = PetscLogObjectMemory((PetscObject)B,(ui[mbs]-mbs)*(sizeof(PetscInt)+sizeof(MatScalar)));CHKERRQ(ierr);
   b->maxnz = b->nz = ui[mbs];
 
   B->info.factor_mallocs   = reallocs;
@@ -1565,7 +1565,7 @@ PetscErrorCode MatILUDTFactor_SeqBAIJ(Mat A,IS isrow,IS iscol,const MatFactorInf
 
   /* put together the new matrix */
   ierr = MatSeqBAIJSetPreallocation_SeqBAIJ(B,bs,MAT_SKIP_ALLOCATION,NULL);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(B,isicol);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)B,(PetscObject)isicol);CHKERRQ(ierr);
 
   b               = (Mat_SeqBAIJ*)(B)->data;
   b->free_a       = PETSC_TRUE;
@@ -1586,7 +1586,7 @@ PetscErrorCode MatILUDTFactor_SeqBAIJ(Mat A,IS isrow,IS iscol,const MatFactorInf
 
   b->icol  = isicol;
   ierr     = PetscMalloc((bs*(mbs+1))*sizeof(PetscScalar),&b->solve_work);CHKERRQ(ierr);
-  ierr     = PetscLogObjectMemory(B,nnz_max*(sizeof(PetscInt)+sizeof(MatScalar)));CHKERRQ(ierr);
+  ierr     = PetscLogObjectMemory((PetscObject)B,nnz_max*(sizeof(PetscInt)+sizeof(MatScalar)));CHKERRQ(ierr);
   b->maxnz = nnz_max/bs2;
 
   (B)->factortype            = MAT_FACTOR_ILUDT;

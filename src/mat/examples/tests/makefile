@@ -832,10 +832,20 @@ runex8:
 	   else echo ${PWD} ; echo "Possible problem with ex8_1, diffs above \n========================================="; fi; \
 	   ${RM} -f ex8_1.tmp
 runex9:
-	-@${MPIEXEC}  -n 2 ./ex9 > ex9_1.tmp 2>&1;   \
-	   if (${DIFF} output/ex9_1.out ex9_1.tmp) then true; \
+	-@${MPIEXEC} -n 3 ./ex9 -view_info > ex9.tmp 2>&1;   \
+	   if (${DIFF} output/ex9_1.out ex9.tmp) then true; \
 	   else echo ${PWD} ; echo "Possible problem with ex9_1, diffs above \n========================================="; fi; \
-	   ${RM} -f ex9_1.tmp
+	   ${RM} -f ex9.tmp
+runex9_2:
+	-@${MPIEXEC} -n 3 ./ex9 -nsubcomms 2 -view_mat -psubcomm_type interlaced > ex9.tmp 2>&1;   \
+	   if (${DIFF} output/ex9_2.out ex9.tmp) then true; \
+	   else echo ${PWD} ; echo "Possible problem with ex9_2, diffs above \n========================================="; fi; \
+	   ${RM} -f ex9.tmp
+runex9_3:
+	-@${MPIEXEC} -n 3 ./ex9 -nsubcomms 2 -view_mat -psubcomm_type contiguous > ex9.tmp 2>&1;   \
+	   if (${DIFF} output/ex9_3.out ex9.tmp) then true; \
+	   else echo ${PWD} ; echo "Possible problem with ex9_2, diffs above \n========================================="; fi; \
+	   ${RM} -f ex9.tmp
 runex10:
 	-@${MPIEXEC} -n 1  ./ex10 > ex10_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex10_1.out ex10_1.tmp) then true; \
@@ -1858,7 +1868,7 @@ runex164:
 	   ${RM} -f ex164.tmp
 
 TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex3.PETSc runex3 ex3.rm ex4.PETSc ex4.rm  ex5.PETSc runex5 runex5_2 ex5.rm \
-                                 ex6.PETSc runex6 ex6.rm ex8.PETSc runex8 ex8.rm ex9.PETSc runex9 ex9.rm ex10.PETSc \
+                                 ex6.PETSc runex6 ex6.rm ex8.PETSc runex8 ex8.rm ex9.PETSc runex9 runex9_2 runex9_3 ex9.rm ex10.PETSc \
                                  runex10 ex10.rm ex11.PETSc runex11 runex11_2 runex11_3 runex11_4 ex11.rm ex14.PETSc \
                                  runex14 ex14.rm ex15.PETSc runex15 ex15.rm ex19.PETSc ex19.rm ex20.PETSc runex20 \
                                  ex20.rm ex21.PETSc runex21 ex21.rm ex22.PETSc runex22 ex22.rm ex16.PETSc runex16 ex16.rm \

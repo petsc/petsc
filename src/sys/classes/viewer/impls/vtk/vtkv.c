@@ -92,7 +92,7 @@ PetscErrorCode  PetscViewerFileSetName_VTK(PetscViewer viewer,const char name[])
 {
   PetscViewer_VTK *vtk = (PetscViewer_VTK*)viewer->data;
   PetscErrorCode  ierr;
-  PetscBool       isvtk,isvts,isvtu;
+  PetscBool       isvtk,isvts,isvtu,isvtr;
   size_t          len;
 
   PetscFunctionBegin;
@@ -102,6 +102,7 @@ PetscErrorCode  PetscViewerFileSetName_VTK(PetscViewer viewer,const char name[])
   ierr = PetscStrcasecmp(name+len-4,".vtk",&isvtk);CHKERRQ(ierr);
   ierr = PetscStrcasecmp(name+len-4,".vts",&isvts);CHKERRQ(ierr);
   ierr = PetscStrcasecmp(name+len-4,".vtu",&isvtu);CHKERRQ(ierr);
+  ierr = PetscStrcasecmp(name+len-4,".vtr",&isvtr);CHKERRQ(ierr);
   if (isvtk) {
     if (viewer->format == PETSC_VIEWER_DEFAULT) {ierr = PetscViewerSetFormat(viewer,PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);}
     if (viewer->format != PETSC_VIEWER_ASCII_VTK) SETERRQ2(PetscObjectComm((PetscObject)viewer),PETSC_ERR_ARG_INCOMP,"Cannot use file '%s' with format %s, should have '.vtk' extension",name,PetscViewerFormats[viewer->format]);
@@ -110,7 +111,10 @@ PetscErrorCode  PetscViewerFileSetName_VTK(PetscViewer viewer,const char name[])
     if (viewer->format != PETSC_VIEWER_VTK_VTS) SETERRQ2(PetscObjectComm((PetscObject)viewer),PETSC_ERR_ARG_INCOMP,"Cannot use file '%s' with format %s, should have '.vts' extension",name,PetscViewerFormats[viewer->format]);
   } else if (isvtu) {
     if (viewer->format == PETSC_VIEWER_DEFAULT) {ierr = PetscViewerSetFormat(viewer,PETSC_VIEWER_VTK_VTU);CHKERRQ(ierr);}
-    if (viewer->format != PETSC_VIEWER_VTK_VTU) SETERRQ2(PetscObjectComm((PetscObject)viewer),PETSC_ERR_ARG_INCOMP,"Cannot use file '%s' with format %s, should have '.vts' extension",name,PetscViewerFormats[viewer->format]);
+    if (viewer->format != PETSC_VIEWER_VTK_VTU) SETERRQ2(PetscObjectComm((PetscObject)viewer),PETSC_ERR_ARG_INCOMP,"Cannot use file '%s' with format %s, should have '.vtu' extension",name,PetscViewerFormats[viewer->format]);
+  } else if (isvtr) {
+    if (viewer->format == PETSC_VIEWER_DEFAULT) {ierr = PetscViewerSetFormat(viewer,PETSC_VIEWER_VTK_VTR);CHKERRQ(ierr);}
+    if (viewer->format != PETSC_VIEWER_VTK_VTR) SETERRQ2(PetscObjectComm((PetscObject)viewer),PETSC_ERR_ARG_INCOMP,"Cannot use file '%s' with format %s, should have '.vtr' extension",name,PetscViewerFormats[viewer->format]);
   } else SETERRQ1(PetscObjectComm((PetscObject)viewer),PETSC_ERR_ARG_UNKNOWN_TYPE,"File '%s' has unrecognized extension",name);
   ierr = PetscStrallocpy(name,&vtk->filename);CHKERRQ(ierr);
   PetscFunctionReturn(0);

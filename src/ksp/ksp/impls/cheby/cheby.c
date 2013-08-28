@@ -523,9 +523,7 @@ PetscErrorCode KSPSolve_Chebyshev(KSP ksp)
     }
 
     /* y^{k+1} = omega(y^{k} - y^{k-1} + Gamma*r^{k}) + y^{k-1} */
-    ierr = VecScale(p[kp1],omega*Gamma*scale);CHKERRQ(ierr);
-    ierr = VecAXPY(p[kp1],1.0-omega,p[km1]);CHKERRQ(ierr);
-    ierr = VecAXPY(p[kp1],omega,p[k]);CHKERRQ(ierr);
+    ierr = VecAXPBYPCZ(p[kp1],1.0-omega,omega,omega*Gamma*scale,p[km1],p[k]);CHKERRQ(ierr);
 
     ktmp = km1;
     km1  = k;

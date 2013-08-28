@@ -12,6 +12,7 @@ typedef struct _DMOps *DMOps;
 struct _DMOps {
   PetscErrorCode (*view)(DM,PetscViewer);
   PetscErrorCode (*load)(DM,PetscViewer);
+  PetscErrorCode (*clone)(DM,DM*);
   PetscErrorCode (*setfromoptions)(DM);
   PetscErrorCode (*setup)(DM);
   PetscErrorCode (*createglobalvector)(DM,Vec*);
@@ -36,6 +37,8 @@ struct _DMOps {
   PetscErrorCode (*globaltolocalend)(DM,Vec,InsertMode,Vec);
   PetscErrorCode (*localtoglobalbegin)(DM,Vec,InsertMode,Vec);
   PetscErrorCode (*localtoglobalend)(DM,Vec,InsertMode,Vec);
+  PetscErrorCode (*localtolocalbegin)(DM,Vec,InsertMode,Vec);
+  PetscErrorCode (*localtolocalend)(DM,Vec,InsertMode,Vec);
 
   PetscErrorCode (*destroy)(DM);
 
@@ -148,6 +151,7 @@ PETSC_EXTERN PetscLogEvent DM_Convert, DM_GlobalToLocal, DM_LocalToGlobal;
 
 PETSC_EXTERN PetscErrorCode DMCreateGlobalVector_Section_Private(DM,Vec*);
 PETSC_EXTERN PetscErrorCode DMCreateLocalVector_Section_Private(DM,Vec*);
+PETSC_EXTERN PetscErrorCode DMCreateSubDM_Section_Private(DM,PetscInt,PetscInt[],IS*,DM*);
 
 /*
 

@@ -85,12 +85,12 @@ PetscErrorCode  PetscDrawHGCreate(PetscDraw draw, int bins, PetscDrawHG *hist)
   h->integerBins = PETSC_FALSE;
 
   ierr = PetscMalloc(h->maxValues * sizeof(PetscReal), &h->values);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(h, (h->maxBins + h->maxValues)*sizeof(PetscReal));CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory((PetscObject)h, (h->maxBins + h->maxValues)*sizeof(PetscReal));CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject) draw, PETSC_DRAW_NULL, &isnull);CHKERRQ(ierr);
 
   if (!isnull) {
     ierr = PetscDrawAxisCreate(draw, &h->axis);CHKERRQ(ierr);
-    ierr = PetscLogObjectParent(h, h->axis);CHKERRQ(ierr);
+    ierr = PetscLogObjectParent((PetscObject)h, (PetscObject)h->axis);CHKERRQ(ierr);
   } else h->axis = NULL;
   *hist = h;
   PetscFunctionReturn(0);
@@ -121,7 +121,7 @@ PetscErrorCode  PetscDrawHGSetNumberBins(PetscDrawHG hist, int bins)
   if (hist->maxBins < bins) {
     ierr = PetscFree(hist->bins);CHKERRQ(ierr);
     ierr = PetscMalloc(bins * sizeof(PetscReal), &hist->bins);CHKERRQ(ierr);
-    ierr = PetscLogObjectMemory(hist, (bins - hist->maxBins) * sizeof(PetscReal));CHKERRQ(ierr);
+    ierr = PetscLogObjectMemory((PetscObject)hist, (bins - hist->maxBins) * sizeof(PetscReal));CHKERRQ(ierr);
 
     hist->maxBins = bins;
   }
@@ -213,7 +213,7 @@ PetscErrorCode  PetscDrawHGAddValue(PetscDrawHG hist, PetscReal value)
     PetscErrorCode ierr;
 
     ierr = PetscMalloc((hist->maxValues+CHUNKSIZE) * sizeof(PetscReal), &tmp);CHKERRQ(ierr);
-    ierr = PetscLogObjectMemory(hist, CHUNKSIZE * sizeof(PetscReal));CHKERRQ(ierr);
+    ierr = PetscLogObjectMemory((PetscObject)hist, CHUNKSIZE * sizeof(PetscReal));CHKERRQ(ierr);
     ierr = PetscMemcpy(tmp, hist->values, hist->maxValues * sizeof(PetscReal));CHKERRQ(ierr);
     ierr = PetscFree(hist->values);CHKERRQ(ierr);
 
