@@ -40,7 +40,7 @@ Initial guess
 Vec Object: 1 MPI processes
   type: seq
 0.75
-L_2 Error: 0.156
+L_2 Error: 0.15625
 Residual:
 Vec Object: 1 MPI processes
   type: seq
