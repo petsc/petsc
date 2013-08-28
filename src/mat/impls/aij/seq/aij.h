@@ -431,6 +431,6 @@ PETSC_INTERN PetscErrorCode MatDestroy_SeqAIJ(Mat);
 */
 #define PetscSparseDenseMaxDot(max,r,xv,xi,nnz) { \
     PetscInt __i; \
-    for (__i=0; __i<nnz; __i++) max = PetscMax(max, xv[__i] * r[xi[__i]]);}
+    for (__i=0; __i<nnz; __i++) max = PetscMax(PetscRealPart(max), PetscRealPart(xv[__i] * r[xi[__i]]));}
 
 #endif
