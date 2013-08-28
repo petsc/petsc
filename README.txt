@@ -33,6 +33,6 @@ updates.
 
 - This package uses standard distutils_. For detailed instructions
   about requirements and the building/install process, read the file
-  ``docs/srouce/install.rst``.
+  ``docs/source/install.rst``.
 
 .. _distutils: http://docs.python.org/distutils/
