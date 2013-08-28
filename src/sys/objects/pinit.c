@@ -598,6 +598,7 @@ PetscErrorCode  PetscFreeArguments(char **args)
 .  -malloc - Indicates use of PETSc error-checking malloc (on by default for debug version of libraries)
 .  -malloc no - Indicates not to use error-checking malloc
 .  -malloc_debug - check for memory corruption at EVERY malloc or free
+.  -malloc_dump - prints a list of all unfreed memory at the end of the run
 .  -malloc_test - like -malloc_dump -malloc_debug, but only active for debugging builds
 .  -fp_trap - Stops on floating point exceptions (Note that on the
               IBM RS6000 this slows code by at least a factor of 10.)
