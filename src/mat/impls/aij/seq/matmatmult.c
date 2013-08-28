@@ -178,13 +178,14 @@ PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
     ierr      = PetscMalloc((ci[cm]+1)*sizeof(MatScalar),&ca);CHKERRQ(ierr);
     c->a      = ca;
     c->free_a = PETSC_TRUE;
-
+  } else {
+    ca        = c->a;
+  }
+  if (!c->matmult_abdense) {
     ierr = PetscMalloc(B->cmap->N*sizeof(PetscScalar),&ab_dense);CHKERRQ(ierr);
     ierr = PetscMemzero(ab_dense,B->cmap->N*sizeof(PetscScalar));CHKERRQ(ierr);
-
     c->matmult_abdense = ab_dense;
   } else {
-    ca       = c->a;
     ab_dense = c->matmult_abdense;
   }
 
