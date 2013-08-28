@@ -1754,7 +1754,7 @@ PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt depthSiz
     for (c = cStart; c < cEnd; ++c) {
       const PetscInt  newp = eStartNew + (eEnd - eStart)*2 + (fEnd - fStart)*3 + (c - cStart);
       const PetscInt *cone, *ornt, *fcone;
-      PetscInt        coneNew[2], supportNew[2], find;
+      PetscInt        coneNew[2], supportNew[4], find;
 
       ierr = DMPlexGetCone(dm, c, &cone);CHKERRQ(ierr);
       ierr = DMPlexGetConeOrientation(dm, c, &ornt);CHKERRQ(ierr);
