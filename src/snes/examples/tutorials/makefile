@@ -595,13 +595,11 @@ runex15_4:
 	   ${DIFF} output/ex15_4.out ex15_4.tmp || echo  ${PWD} "\nPossible problem with with ex15_4, diffs above \n========================================="; \
         ${RM} -f ex15_4.tmp
 runex15_lag_jac:
-	-@${MPIEXEC} -n 4 ./ex15 -snes_monitor_short -da_grid_x 20 -da_grid_y 20 -p 6.0 -lambda 0 -jtype NEWTON -snes_type ngmres \
-        -npc_snes_type newtonls -npc_snes_lag_jacobian 5 -npc_pc_type asm -npc_ksp_converged_reason -npc_snes_lag_jacobian_persists > ex15_lag_jac.tmp 2>&1; \
+	-@${MPIEXEC} -n 4 ./ex15 -snes_monitor_short -da_grid_x 20 -da_grid_y 20 -p 6.0 -lambda 0 -jtype NEWTON -snes_type ngmres -npc_snes_type newtonls -npc_snes_lag_jacobian 5 -npc_pc_type asm -npc_ksp_converged_reason -npc_snes_lag_jacobian_persists > ex15_lag_jac.tmp 2>&1; \
 	   ${DIFF} output/ex15_lag_jac.out ex15_lag_jac.tmp || echo  ${PWD} "\nPossible problem with with ex15_lag_jac, diffs above \n========================================="; \
            ${RM} -f ex15_lag_jac.tmp
 runex15_lag_pc:
-	-@${MPIEXEC} -n 4 ./ex15 -snes_monitor_short -da_grid_x 20 -da_grid_y 20 -p 6.0 -lambda 0 -jtype NEWTON -snes_type ngmres \
-        -npc_snes_type newtonls -npc_snes_lag_preconditioner 5 -npc_pc_type asm -npc_ksp_converged_reason -npc_snes_lag_preconditioner_persists > ex15_lag_pc.tmp 2>&1; \
+	-@${MPIEXEC} -n 4 ./ex15 -snes_monitor_short -da_grid_x 20 -da_grid_y 20 -p 6.0 -lambda 0 -jtype NEWTON -snes_type ngmres -npc_snes_type newtonls -npc_snes_lag_preconditioner 5 -npc_pc_type asm -npc_ksp_converged_reason -npc_snes_lag_preconditioner_persists > ex15_lag_pc.tmp 2>&1; \
 	   ${DIFF} output/ex15_lag_pc.out ex15_lag_pc.tmp || echo  ${PWD} "\nPossible problem with with ex15_lag_pc, diffs above \n========================================="; \
            ${RM} -f ex15_lag_pc.tmp
 runex16:
