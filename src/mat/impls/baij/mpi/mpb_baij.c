@@ -36,7 +36,7 @@ PetscErrorCode  MatGetMultiProcBlock_MPIBAIJ(Mat mat, MPI_Comm subComm, MatReuse
   ierr = MPI_Comm_rank(subComm,&subCommRank);CHKERRQ(ierr);
   ierr = PetscMalloc(subCommSize*sizeof(PetscMPIInt),&commRankMap);CHKERRQ(ierr);
   ierr = MPI_Allgather(&commRank,1,MPI_INT,commRankMap,1,MPI_INT,subComm);CHKERRQ(ierr);
-  
+
   /* Traverse garray and identify blocked column indices [of offdiag mat] that
    should be discarded. For the ones not discarded, store the newCol+1
    value in garrayCMap */

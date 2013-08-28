@@ -2,7 +2,7 @@
 #include <petscsf.h>
 
 PetscClassId  DM_CLASSID;
-PetscLogEvent DM_Convert, DM_GlobalToLocal, DM_LocalToGlobal;
+PetscLogEvent DM_Convert, DM_GlobalToLocal, DM_LocalToGlobal, DM_LocalToLocal;
 
 #undef __FUNCT__
 #define __FUNCT__ "DMViewFromOptions"
@@ -13,7 +13,7 @@ PetscLogEvent DM_Convert, DM_GlobalToLocal, DM_LocalToGlobal;
 
   Input Parameters:
 + dm   - the DM
-. prefix - prefix to use for viewing, or NULL to use prefix of 'rnd'
+. prefix - prefix to use for viewing, or NULL to use prefix of 'dm'
 - optionname - option to activate viewing
 
   Level: intermediate
@@ -100,6 +100,51 @@ PetscErrorCode  DMCreate(MPI_Comm comm,DM *dm)
   v->fields    = NULL;
 
   *dm = v;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMClone"
+/*@
+  DMClone - Creates a DM object with the same topology as the original.
+
+  Collective on MPI_Comm
+
+  Input Parameter:
+. dm - The original DM object
+
+  Output Parameter:
+. newdm  - The new DM object
+
+  Level: beginner
+
+.keywords: DM, topology, create
+@*/
+PetscErrorCode DMClone(DM dm, DM *newdm)
+{
+  PetscSF        sf;
+  Vec            coords;
+  void          *ctx;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(newdm,2);
+  ierr = DMCreate(PetscObjectComm((PetscObject)dm), newdm);CHKERRQ(ierr);
+  if (dm->ops->clone) {
+    ierr = (*dm->ops->clone)(dm, newdm);CHKERRQ(ierr);
+  }
+  ierr = DMGetPointSF(dm, &sf);CHKERRQ(ierr);
+  ierr = DMSetPointSF(*newdm, sf);CHKERRQ(ierr);
+  ierr = DMGetApplicationContext(dm, &ctx);CHKERRQ(ierr);
+  ierr = DMSetApplicationContext(*newdm, ctx);CHKERRQ(ierr);
+  ierr = DMGetCoordinatesLocal(dm, &coords);CHKERRQ(ierr);
+  if (coords) {
+    ierr = DMSetCoordinatesLocal(*newdm, coords);CHKERRQ(ierr);
+  } else {
+    ierr = DMGetCoordinates(dm, &coords);CHKERRQ(ierr);
+    if (coords) {ierr = DMSetCoordinates(*newdm, coords);CHKERRQ(ierr);}
+  }
   PetscFunctionReturn(0);
 }
 
@@ -684,7 +729,7 @@ PetscErrorCode  DMGetLocalToGlobalMapping(DM dm,ISLocalToGlobalMapping *ltog)
         }
       }
       ierr = ISLocalToGlobalMappingCreate(PETSC_COMM_SELF, size, ltog, PETSC_OWN_POINTER, &dm->ltogmap);CHKERRQ(ierr);
-      ierr = PetscLogObjectParent(dm, dm->ltogmap);CHKERRQ(ierr);
+      ierr = PetscLogObjectParent((PetscObject)dm, (PetscObject)dm->ltogmap);CHKERRQ(ierr);
     } else {
       if (!dm->ops->getlocaltoglobalmapping) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"DM can not create LocalToGlobalMapping");
       ierr = (*dm->ops->getlocaltoglobalmapping)(dm);CHKERRQ(ierr);
@@ -1786,6 +1831,85 @@ PetscErrorCode  DMLocalToGlobalEnd(DM dm,Vec l,InsertMode mode,Vec g)
   }
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "DMLocalToLocalBegin"
+/*@
+   DMLocalToLocalBegin - Maps from a local vector (including ghost points
+   that contain irrelevant values) to another local vector where the ghost
+   points in the second are set correctly. Must be followed by DMLocalToLocalEnd().
+
+   Neighbor-wise Collective on DM and Vec
+
+   Input Parameters:
++  dm - the DM object
+.  g - the original local vector
+-  mode - one of INSERT_VALUES or ADD_VALUES
+
+   Output Parameter:
+.  l  - the local vector with correct ghost values
+
+   Level: intermediate
+
+   Notes:
+   The local vectors used here need not be the same as those
+   obtained from DMCreateLocalVector(), BUT they
+   must have the same parallel data layout; they could, for example, be
+   obtained with VecDuplicate() from the DM originating vectors.
+
+.keywords: DM, local-to-local, begin
+.seealso DMCoarsen(), DMDestroy(), DMView(), DMCreateLocalVector(), DMCreateGlobalVector(), DMCreateInterpolation(), DMLocalToLocalEnd(), DMGlobalToLocalEnd(), DMLocalToGlobalBegin()
+
+@*/
+PetscErrorCode  DMLocalToLocalBegin(DM dm,Vec g,InsertMode mode,Vec l)
+{
+  PetscErrorCode          ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  ierr = (*dm->ops->localtolocalbegin)(dm,g,mode == INSERT_ALL_VALUES ? INSERT_VALUES : (mode == ADD_ALL_VALUES ? ADD_VALUES : mode),l);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMLocalToLocalEnd"
+/*@
+   DMLocalToLocalEnd - Maps from a local vector (including ghost points
+   that contain irrelevant values) to another local vector where the ghost
+   points in the second are set correctly. Must be preceded by DMLocalToLocalBegin().
+
+   Neighbor-wise Collective on DM and Vec
+
+   Input Parameters:
++  da - the DM object
+.  g - the original local vector
+-  mode - one of INSERT_VALUES or ADD_VALUES
+
+   Output Parameter:
+.  l  - the local vector with correct ghost values
+
+   Level: intermediate
+
+   Notes:
+   The local vectors used here need not be the same as those
+   obtained from DMCreateLocalVector(), BUT they
+   must have the same parallel data layout; they could, for example, be
+   obtained with VecDuplicate() from the DM originating vectors.
+
+.keywords: DM, local-to-local, end
+.seealso DMCoarsen(), DMDestroy(), DMView(), DMCreateLocalVector(), DMCreateGlobalVector(), DMCreateInterpolation(), DMLocalToLocalBegin(), DMGlobalToLocalEnd(), DMLocalToGlobalBegin()
+
+@*/
+PetscErrorCode  DMLocalToLocalEnd(DM dm,Vec g,InsertMode mode,Vec l)
+{
+  PetscErrorCode          ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  ierr = (*dm->ops->localtolocalend)(dm,g,mode == INSERT_ALL_VALUES ? INSERT_VALUES : (mode == ADD_ALL_VALUES ? ADD_VALUES : mode),l);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 
 #undef __FUNCT__
 #define __FUNCT__ "DMCoarsen"

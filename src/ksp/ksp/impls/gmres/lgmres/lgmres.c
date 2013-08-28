@@ -57,7 +57,7 @@ PetscErrorCode    KSPSetUp_LGMRES(KSP ksp)
 
   ierr = PetscMalloc((2* aug_dim + AUG_OFFSET)*sizeof(void*),&lgmres->augvecs_user_work);CHKERRQ(ierr);
   ierr = PetscMalloc(aug_dim*sizeof(PetscInt),&lgmres->aug_order);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(ksp,(aug_dim)*(4*sizeof(void*) + sizeof(PetscInt)) + AUG_OFFSET*2*sizeof(void*));CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory((PetscObject)ksp,(aug_dim)*(4*sizeof(void*) + sizeof(PetscInt)) + AUG_OFFSET*2*sizeof(void*));CHKERRQ(ierr);
 
   /*  for now we will preallocate the augvecs - because aug_dim << restart
      ... also keep in mind that we need to keep augvecs from cycle to cycle*/
@@ -670,14 +670,14 @@ PetscErrorCode KSPBuildSolution_LGMRES(KSP ksp,Vec ptr,Vec *result)
   if (!ptr) {
     if (!lgmres->sol_temp) {
       ierr = VecDuplicate(ksp->vec_sol,&lgmres->sol_temp);CHKERRQ(ierr);
-      ierr = PetscLogObjectParent(ksp,lgmres->sol_temp);CHKERRQ(ierr);
+      ierr = PetscLogObjectParent((PetscObject)ksp,(PetscObject)lgmres->sol_temp);CHKERRQ(ierr);
     }
     ptr = lgmres->sol_temp;
   }
   if (!lgmres->nrs) {
     /* allocate the work area */
     ierr = PetscMalloc(lgmres->max_k*sizeof(PetscScalar),&lgmres->nrs);CHKERRQ(ierr);
-    ierr = PetscLogObjectMemory(ksp,lgmres->max_k*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscLogObjectMemory((PetscObject)ksp,lgmres->max_k*sizeof(PetscScalar));CHKERRQ(ierr);
   }
 
   ierr = KSPLGMRESBuildSoln(lgmres->nrs,ksp->vec_sol,ptr,ksp,lgmres->it);CHKERRQ(ierr);

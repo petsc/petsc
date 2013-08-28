@@ -62,7 +62,7 @@ static PetscErrorCode  SNESLineSearchApply_L2(SNESLineSearch linesearch)
         fnrm_mid = gnorm;
         ierr     = (*linesearch->ops->vinorm)(snes, F, W, &fnrm_mid);CHKERRQ(ierr);
       } else {
-        ierr = VecNormBegin(F, NORM_2, &fnrm_mid);CHKERRQ(ierr);
+        ierr = VecNorm(F,NORM_2,&fnrm_mid);CHKERRQ(ierr);
       }
 
       /* compute the norm at lambda */
@@ -76,11 +76,7 @@ static PetscErrorCode  SNESLineSearchApply_L2(SNESLineSearch linesearch)
         fnrm = gnorm;
         ierr = (*linesearch->ops->vinorm)(snes, F, W, &fnrm);CHKERRQ(ierr);
       } else {
-        ierr = VecNormBegin(F, NORM_2, &fnrm);CHKERRQ(ierr);
-      }
-      if (!linesearch->ops->vinorm) {
-        ierr = VecNormEnd(F, NORM_2, &fnrm_mid);CHKERRQ(ierr);
-        ierr = VecNormEnd(F, NORM_2, &fnrm);CHKERRQ(ierr);
+        ierr = VecNorm(F,NORM_2,&fnrm);CHKERRQ(ierr);
       }
       fnrm_mid = fnrm_mid*fnrm_mid;
       fnrm = fnrm*fnrm;

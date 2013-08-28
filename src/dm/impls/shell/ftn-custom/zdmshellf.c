@@ -7,12 +7,14 @@
 #define dmshellsetcreatelocalvector_           DMSHELLSETCREATELOCALVECTOR_
 #define dmshellsetglobaltolocal_               DMSHELLSETGLOBALTOLOCAL_
 #define dmshellsetlocaltoglobal_               DMSHELLSETLOCALTOGLOBAL_
+#define dmshellsetlocaltolocal_                DMSHELLSETLOCALTOLOCAL_
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define dmshellsetcreatematrix_                dmshellsetcreatematrix
 #define dmshellsetcreateglobalvector_          dmshellsetcreateglobalvector
 #define dmshellsetcreatelocalvector_           dmshellsetcreatelocalvector
 #define dmshellsetglobaltolocal_               dmshellsetglobaltolocal
 #define dmshellsetlocaltoglobal_               dmshellsetlocaltoglobal
+#define dmshellsetlocaltolocal_                dmshellsetlocaltolocal_
 #endif
 
 /*
@@ -28,6 +30,8 @@ static struct {
   PetscFortranCallbackId globaltolocalend;
   PetscFortranCallbackId localtoglobalbegin;
   PetscFortranCallbackId localtoglobalend;
+  PetscFortranCallbackId localtolocalbegin;
+  PetscFortranCallbackId localtolocalend;
 } _cb;
 
 #undef __FUNCT__
@@ -97,6 +101,23 @@ static PetscErrorCode ourlocaltoglobalend(DM dm,Vec l,InsertMode mode,Vec g)
   return 0;
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "ourlocaltolocalbegin"
+static PetscErrorCode ourlocaltolocalbegin(DM dm,Vec g,InsertMode mode,Vec l)
+{
+  PetscObjectUseFortranCallbackSubType(dm,_cb.localtolocalbegin,(DM*,Vec*,InsertMode*,Vec*,PetscErrorCode*),(&dm,&g,&mode,&l,&ierr));
+  return 0;
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "ourlocaltolocalend"
+static PetscErrorCode ourlocaltolocalend(DM dm,Vec g,InsertMode mode,Vec l)
+{
+  PetscObjectUseFortranCallbackSubType(dm,_cb.localtolocalend,(DM*,Vec*,InsertMode*,Vec*,PetscErrorCode*),(&dm,&g,&mode,&l,&ierr));
+  return 0;
+}
+
+
 PETSC_EXTERN void PETSC_STDCALL dmshellsetcreatematrix_(DM *dm,void (PETSC_STDCALL *func)(DM*,CHAR type PETSC_MIXED_LEN(len),Mat*,PetscErrorCode* PETSC_END_LEN(len)),PetscErrorCode *ierr)
 {
   *ierr = PetscObjectSetFortranCallback((PetscObject)*dm,PETSC_FORTRAN_CALLBACK_SUBTYPE,&_cb.creatematrix,(PetscVoidFunction)func,NULL);
@@ -134,4 +155,13 @@ PETSC_EXTERN void PETSC_STDCALL dmshellsetlocaltoglobal_(DM *dm,void (PETSC_STDC
   *ierr = PetscObjectSetFortranCallback((PetscObject)*dm,PETSC_FORTRAN_CALLBACK_SUBTYPE,&_cb.localtoglobalend,(PetscVoidFunction)end,NULL);
   if (*ierr) return;
   *ierr = DMShellSetLocalToGlobal(*dm,ourlocaltoglobalbegin,ourlocaltoglobalend);
+}
+
+PETSC_EXTERN void PETSC_STDCALL dmshellsetlocaltolocal_(DM *dm,void (PETSC_STDCALL *begin)(DM*,Vec*,InsertMode*,Vec*,PetscErrorCode*),void (PETSC_STDCALL *end)(DM*,Vec*,InsertMode*,Vec*,PetscErrorCode*),PetscErrorCode *ierr)
+{
+  *ierr = PetscObjectSetFortranCallback((PetscObject)*dm,PETSC_FORTRAN_CALLBACK_SUBTYPE,&_cb.localtolocalbegin,(PetscVoidFunction)begin,NULL);
+  if (*ierr) return;
+  *ierr = PetscObjectSetFortranCallback((PetscObject)*dm,PETSC_FORTRAN_CALLBACK_SUBTYPE,&_cb.localtolocalend,(PetscVoidFunction)end,NULL);
+  if (*ierr) return;
+  *ierr = DMShellSetLocalToLocal(*dm,ourlocaltolocalbegin,ourlocaltolocalend);
 }

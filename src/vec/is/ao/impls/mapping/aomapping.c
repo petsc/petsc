@@ -257,7 +257,6 @@ PetscErrorCode  AOCreateMapping(MPI_Comm comm,PetscInt napp,const PetscInt myapp
   PetscMPIInt    size, rank,*lens, *disp,nnapp;
   PetscInt       N, start;
   PetscInt       i;
-  PetscBool      opt;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -304,7 +303,7 @@ PetscErrorCode  AOCreateMapping(MPI_Comm comm,PetscInt napp,const PetscInt myapp
 
   /* generate a list of application and PETSc node numbers */
   ierr = PetscMalloc4(N,PetscInt, &aomap->app,N,PetscInt,&aomap->appPerm,N,PetscInt,&aomap->petsc,N,PetscInt,&aomap->petscPerm);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(ao, 4*N * sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory((PetscObject)ao, 4*N * sizeof(PetscInt));CHKERRQ(ierr);
   for (i = 0; i < N; i++) {
     appPerm[i]   = i;
     petscPerm[i] = i;
@@ -340,11 +339,7 @@ PetscErrorCode  AOCreateMapping(MPI_Comm comm,PetscInt napp,const PetscInt myapp
   }
   ierr = PetscFree4(allapp,appPerm,allpetsc,petscPerm);CHKERRQ(ierr);
 
-  opt  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL, "-ao_view", &opt,NULL);CHKERRQ(ierr);
-  if (opt) {
-    ierr = AOView(ao, PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-  }
+  ierr = AOViewFromOptions(ao,NULL,"-ao_view");CHKERRQ(ierr);
 
   *aoout = ao;
   PetscFunctionReturn(0);

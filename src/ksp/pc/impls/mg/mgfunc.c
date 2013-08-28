@@ -461,7 +461,7 @@ PetscErrorCode  PCMGGetSmootherUp(PC pc,PetscInt l,KSP *ksp)
     ierr = KSPSetConvergenceTest(mglevels[l]->smoothu,KSPSkipConverged,NULL,NULL);CHKERRQ(ierr);
     ierr = KSPGetPC(mglevels[l]->smoothu,&ipc);CHKERRQ(ierr);
     ierr = PCSetType(ipc,pctype);CHKERRQ(ierr);
-    ierr = PetscLogObjectParent(pc,mglevels[l]->smoothu);CHKERRQ(ierr);
+    ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)mglevels[l]->smoothu);CHKERRQ(ierr);
   }
   if (ksp) *ksp = mglevels[l]->smoothu;
   PetscFunctionReturn(0);

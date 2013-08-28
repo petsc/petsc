@@ -173,7 +173,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ_MSR(Mat F,Mat A,IS perm,const 
   /* put together the new matrix */
   ierr = MatSeqSBAIJSetPreallocation_SeqSBAIJ(F,bs,MAT_SKIP_ALLOCATION,NULL);CHKERRQ(ierr);
 
-  /* ierr = PetscLogObjectParent(B,iperm);CHKERRQ(ierr); */
+  /* ierr = PetscLogObjectParent((PetscObject)B,(PetscObject)iperm);CHKERRQ(ierr); */
   b                = (Mat_SeqSBAIJ*)(F)->data;
   b->singlemalloc  = PETSC_FALSE;
   b->free_a        = PETSC_TRUE;
@@ -196,7 +196,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ_MSR(Mat F,Mat A,IS perm,const 
   ierr    = PetscMalloc((bs*mbs+bs)*sizeof(PetscScalar),&b->solve_work);CHKERRQ(ierr);
   /* In b structure:  Free imax, ilen, old a, old j.
      Allocate idnew, solve_work, new a, new j */
-  ierr     = PetscLogObjectMemory(F,(iu[mbs]-mbs)*(sizeof(PetscInt)+sizeof(MatScalar)));CHKERRQ(ierr);
+  ierr     = PetscLogObjectMemory((PetscObject)F,(iu[mbs]-mbs)*(sizeof(PetscInt)+sizeof(MatScalar)));CHKERRQ(ierr);
   b->maxnz = b->nz = iu[mbs];
 
   (F)->info.factor_mallocs   = reallocs;
@@ -358,7 +358,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ(Mat fact,Mat A,IS perm,const M
   b->pivotinblocks = PETSC_FALSE; /* need to get from MatFactorInfo */
 
   ierr = PetscMalloc((mbs+1)*sizeof(PetscScalar),&b->solve_work);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(fact,ui[mbs]*(sizeof(PetscInt)+sizeof(MatScalar)));CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory((PetscObject)fact,ui[mbs]*(sizeof(PetscInt)+sizeof(MatScalar)));CHKERRQ(ierr);
 
   b->maxnz = b->nz = ui[mbs];
 
@@ -544,7 +544,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ_inplace(Mat fact,Mat A,IS perm
   b->icol  = perm;
   ierr     = PetscObjectReference((PetscObject)perm);CHKERRQ(ierr);
   ierr     = PetscMalloc((mbs+1)*sizeof(PetscScalar),&b->solve_work);CHKERRQ(ierr);
-  ierr     = PetscLogObjectMemory(fact,(ui[mbs]-mbs)*(sizeof(PetscInt)+sizeof(MatScalar)));CHKERRQ(ierr);
+  ierr     = PetscLogObjectMemory((PetscObject)fact,(ui[mbs]-mbs)*(sizeof(PetscInt)+sizeof(MatScalar)));CHKERRQ(ierr);
   b->maxnz = b->nz = ui[mbs];
 
   fact->info.factor_mallocs   = reallocs;

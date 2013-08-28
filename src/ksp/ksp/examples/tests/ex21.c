@@ -17,6 +17,7 @@ PetscErrorCode Create(MPI_Comm comm,Mat *inA,IS *is0,IS *is1)
   ierr = MatCreate(comm,&A);CHKERRQ(ierr);
   ierr = MatSetSizes(A,4,4,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
+  ierr = MatSetUp(A);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(A,&r,&rend);CHKERRQ(ierr);
   ierr = MatGetSize(A,&M,NULL);CHKERRQ(ierr);
 
@@ -50,14 +51,14 @@ PetscErrorCode Create(MPI_Comm comm,Mat *inA,IS *is0,IS *is1)
 
 #undef __FUNCT__
 #define __FUNCT__ "Destroy"
-PetscErrorCode Destroy(Mat A,IS is0,IS is1)
+PetscErrorCode Destroy(Mat *A,IS *is0,IS *is1)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = ISDestroy(&is0);CHKERRQ(ierr);
-  ierr = ISDestroy(&is1);CHKERRQ(ierr);
+  ierr = MatDestroy(A);CHKERRQ(ierr);
+  ierr = ISDestroy(is0);CHKERRQ(ierr);
+  ierr = ISDestroy(is1);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -80,7 +81,7 @@ int main(int argc,char *argv[])
   ierr = MatComputeExplicitOperator(S,&Sexplicit);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"\nExplicit Schur complement of (0,0) in (1,1)\n");CHKERRQ(ierr);
   ierr = MatView(Sexplicit,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = Destroy(&A,is0,is1);CHKERRQ(ierr);
+  ierr = Destroy(&A,&is0,&is1);CHKERRQ(ierr);
   ierr = MatDestroy(&S);CHKERRQ(ierr);
   ierr = MatDestroy(&Sexplicit);CHKERRQ(ierr);
 
@@ -90,7 +91,7 @@ int main(int argc,char *argv[])
   ierr = MatComputeExplicitOperator(S,&Sexplicit);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"\nExplicit Schur complement of (1,1) in (0,0)\n");CHKERRQ(ierr);
   ierr = MatView(Sexplicit,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = Destroy(&A,is0,is1);CHKERRQ(ierr);
+  ierr = Destroy(&A,&is0,&is1);CHKERRQ(ierr);
   ierr = MatDestroy(&S);CHKERRQ(ierr);
   ierr = MatDestroy(&Sexplicit);CHKERRQ(ierr);
 
@@ -104,7 +105,7 @@ int main(int argc,char *argv[])
   ierr = MatGetSchurComplement(A,is0,is0,is1,is1,MAT_IGNORE_MATRIX,NULL,MAT_REUSE_MATRIX,&S);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"\nAfter update\n");CHKERRQ(ierr);
   ierr = MatView(S,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = Destroy(&A,is0,is1);CHKERRQ(ierr);
+  ierr = Destroy(&A,&is0,&is1);CHKERRQ(ierr);
   ierr = MatDestroy(&S);CHKERRQ(ierr);
 
   ierr = PetscFinalize();

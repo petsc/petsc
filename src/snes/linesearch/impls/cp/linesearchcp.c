@@ -30,12 +30,10 @@ static PetscErrorCode SNESLineSearchApply_CP(SNESLineSearch linesearch)
   ierr       = SNESLineSearchPreCheck(linesearch,X,Y,&changed_y);CHKERRQ(ierr);
   lambda_old = 0.0;
 
+  ierr = VecDot(F,Y,&fty_old);CHKERRQ(ierr);
+  fty_init = fty_old;
 
   for (i = 0; i < max_its; i++) {
-    if (i == 0) {
-      ierr = VecDotBegin(F,Y,&fty_old);CHKERRQ(ierr);
-      fty_init = fty_old;
-    }
     /* compute the norm at lambda */
     ierr = VecCopy(X, W);CHKERRQ(ierr);
     ierr = VecAXPY(W, -lambda, Y);CHKERRQ(ierr);
@@ -43,11 +41,7 @@ static PetscErrorCode SNESLineSearchApply_CP(SNESLineSearch linesearch)
       ierr = (*linesearch->ops->viproject)(snes, W);CHKERRQ(ierr);
     }
     ierr = (*linesearch->ops->snesfunc)(snes,W,F);CHKERRQ(ierr);
-    ierr = VecDotBegin(F,Y,&fty);CHKERRQ(ierr);
-    if (i == 0) {
-      ierr = VecDotEnd(F,Y,&fty_old);CHKERRQ(ierr);
-    }
-    ierr = VecDotEnd(F,Y,&fty);CHKERRQ(ierr);
+    ierr = VecDot(F,Y,&fty);CHKERRQ(ierr);
 
     delLambda = lambda - lambda_old;
 
@@ -80,16 +74,14 @@ static PetscErrorCode SNESLineSearchApply_CP(SNESLineSearch linesearch)
         ierr = (*linesearch->ops->viproject)(snes, W);CHKERRQ(ierr);
       }
       ierr = (*linesearch->ops->snesfunc)(snes,W,F);CHKERRQ(ierr);
-      ierr = VecDotBegin(F, Y, &fty_mid1);CHKERRQ(ierr);
+      ierr = VecDot(F, Y, &fty_mid1);CHKERRQ(ierr);
       ierr = VecCopy(X, W);CHKERRQ(ierr);
       ierr = VecAXPY(W, -(lambda + 0.5*(lambda - lambda_old)), Y);CHKERRQ(ierr);
       if (linesearch->ops->viproject) {
         ierr = (*linesearch->ops->viproject)(snes, W);CHKERRQ(ierr);
       }
       ierr = (*linesearch->ops->snesfunc)(snes, W, F);CHKERRQ(ierr);
-      ierr = VecDotBegin(F, Y, &fty_mid2);CHKERRQ(ierr);
-      ierr = VecDotEnd(F, Y, &fty_mid1);CHKERRQ(ierr);
-      ierr = VecDotEnd(F, Y, &fty_mid2);CHKERRQ(ierr);
+      ierr = VecDot(F, Y, &fty_mid2);CHKERRQ(ierr);
       s    = (2.*fty_mid2 + 3.*fty - 6.*fty_mid1 + fty_old) / (3.*delLambda);
     }
     /* if the solve is going in the wrong direction, fix it */

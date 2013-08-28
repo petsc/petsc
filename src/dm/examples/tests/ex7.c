@@ -1,5 +1,5 @@
 
-static char help[] = "Tests DMDALocalToLocalxxx().\n\n";
+static char help[] = "Tests DMLocalToLocalxxx() for DMDA.\n\n";
 
 #include <petscdmda.h>
 
@@ -35,8 +35,8 @@ int main(int argc,char **argv)
 
   stencil_type = (DMDAStencilType) st;
 
-  ierr = PetscOptionsHasName(NULL,"-2d",&flg2);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(NULL,"-3d",&flg3);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,"-grid2d",&flg2);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(NULL,"-grid3d",&flg3);CHKERRQ(ierr);
   if (flg2) {
     ierr = DMDACreate2d(PETSC_COMM_WORLD,periodic,periodic,stencil_type,M,N,m,n,dof,stencil_width,
                         NULL,NULL,&da);CHKERRQ(ierr);
@@ -69,8 +69,8 @@ int main(int argc,char **argv)
   ierr = DMGlobalToLocalEnd(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
 
 
-  ierr = DMDALocalToLocalBegin(da,local,INSERT_VALUES,local_copy);CHKERRQ(ierr);
-  ierr = DMDALocalToLocalEnd(da,local,INSERT_VALUES,local_copy);CHKERRQ(ierr);
+  ierr = DMLocalToLocalBegin(da,local,INSERT_VALUES,local_copy);CHKERRQ(ierr);
+  ierr = DMLocalToLocalEnd(da,local,INSERT_VALUES,local_copy);CHKERRQ(ierr);
 
 
   ierr = PetscOptionsGetBool(NULL,"-save",&flg,NULL);CHKERRQ(ierr);

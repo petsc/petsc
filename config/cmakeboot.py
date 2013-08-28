@@ -98,7 +98,7 @@ class PETScMaker(script.Script):
      langlist.append(('FC','Fortran'))
    if hasattr(self.compilers,'CUDAC'):
      langlist.append(('CUDA','CUDA'))
-   if (self.languages.clanguage == 'Cxx'):
+   if hasattr(self.compilers,'CXX'):
      langlist.append(('Cxx','CXX'))
    win32fe = None
    for petsclanguage,cmakelanguage in langlist:

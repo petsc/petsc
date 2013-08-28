@@ -13,10 +13,14 @@ PETSC_EXTERN PetscErrorCode DMShellSetGlobalToLocal(DM,PetscErrorCode (*)(DM,Vec
 PETSC_EXTERN PetscErrorCode DMShellSetGlobalToLocalVecScatter(DM,VecScatter);
 PETSC_EXTERN PetscErrorCode DMShellSetLocalToGlobal(DM,PetscErrorCode (*)(DM,Vec,InsertMode,Vec),PetscErrorCode (*)(DM,Vec,InsertMode,Vec));
 PETSC_EXTERN PetscErrorCode DMShellSetLocalToGlobalVecScatter(DM,VecScatter);
+PETSC_EXTERN PetscErrorCode DMShellSetLocalToLocal(DM,PetscErrorCode (*)(DM,Vec,InsertMode,Vec),PetscErrorCode (*)(DM,Vec,InsertMode,Vec));
+PETSC_EXTERN PetscErrorCode DMShellSetLocalToLocalVecScatter(DM,VecScatter);
 PETSC_EXTERN PetscErrorCode DMShellSetCreateMatrix(DM,PetscErrorCode (*)(DM,MatType,Mat*));
 PETSC_EXTERN PetscErrorCode DMGlobalToLocalBeginDefaultShell(DM,Vec,InsertMode,Vec);
 PETSC_EXTERN PetscErrorCode DMGlobalToLocalEndDefaultShell(DM,Vec,InsertMode,Vec);
 PETSC_EXTERN PetscErrorCode DMLocalToGlobalBeginDefaultShell(DM,Vec,InsertMode,Vec);
 PETSC_EXTERN PetscErrorCode DMLocalToGlobalEndDefaultShell(DM,Vec,InsertMode,Vec);
+PETSC_EXTERN PetscErrorCode DMLocalToLocalBeginDefaultShell(DM,Vec,InsertMode,Vec);
+PETSC_EXTERN PetscErrorCode DMLocalToLocalEndDefaultShell(DM,Vec,InsertMode,Vec);
 
 #endif
