@@ -126,7 +126,9 @@ PetscErrorCode DMPlexVTKWriteCells_ASCII(DM dm, FILE *fp, PetscInt *totalCells)
   ierr     = PetscFPrintf(comm, fp, "CELLS %d %d\n", totCells, totCorners+totCells);CHKERRQ(ierr);
   if (!rank) {
     PetscInt *remoteVertices;
+    int      *vertices;
 
+    ierr = PetscMalloc(maxCorners * sizeof(int), &vertices);CHKERRQ(ierr);
     for (c = cStart, numCells = 0; c < cEnd; ++c) {
       PetscInt *closure = NULL;
       PetscInt closureSize, nC = 0;
@@ -141,17 +143,17 @@ PetscErrorCode DMPlexVTKWriteCells_ASCII(DM dm, FILE *fp, PetscInt *totalCells)
       for (v = 0; v < closureSize*2; v += 2) {
         if ((closure[v] >= vStart) && (closure[v] < vEnd)) {
           const PetscInt gv = gvertex[closure[v] - vStart];
-          closure[nC++] = gv < 0 ? -(gv+1) : gv;
+          vertices[nC++] = gv < 0 ? -(gv+1) : gv;
         }
       }
+      ierr = DMPlexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
       corners[numCells++] = nC;
       ierr = PetscFPrintf(comm, fp, "%d ", nC);CHKERRQ(ierr);
-      ierr = DMPlexInvertCell(dim, nC, closure);CHKERRQ(ierr);
+      ierr = DMPlexInvertCell(dim, nC, vertices);CHKERRQ(ierr);
       for (v = 0; v < nC; ++v) {
-        ierr = PetscFPrintf(comm, fp, " %d", closure[v]);CHKERRQ(ierr);
+        ierr = PetscFPrintf(comm, fp, " %d", vertices[v]);CHKERRQ(ierr);
       }
       ierr = PetscFPrintf(comm, fp, "\n");CHKERRQ(ierr);
-      ierr = DMPlexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
     }
     if (numProcs > 1) {ierr = PetscMalloc((maxCorners+maxCells) * sizeof(PetscInt), &remoteVertices);CHKERRQ(ierr);}
     for (proc = 1; proc < numProcs; ++proc) {
@@ -162,14 +164,19 @@ PetscErrorCode DMPlexVTKWriteCells_ASCII(DM dm, FILE *fp, PetscInt *totalCells)
       for (c = 0; c < numCorners;) {
         PetscInt nC = remoteVertices[c++];
 
-        ierr = PetscFPrintf(comm, fp, "%d ", nC);CHKERRQ(ierr);
         for (v = 0; v < nC; ++v, ++c) {
-          ierr = PetscFPrintf(comm, fp, " %d", remoteVertices[c]);CHKERRQ(ierr);
+          vertices[v] = remoteVertices[c];
+        }
+        ierr = DMPlexInvertCell(dim, nC, vertices);CHKERRQ(ierr);
+        ierr = PetscFPrintf(comm, fp, "%d ", nC);CHKERRQ(ierr);
+        for (v = 0; v < nC; ++v) {
+          ierr = PetscFPrintf(comm, fp, " %d", vertices[v]);CHKERRQ(ierr);
         }
         ierr = PetscFPrintf(comm, fp, "\n");CHKERRQ(ierr);
       }
     }
     if (numProcs > 1) {ierr = PetscFree(remoteVertices);CHKERRQ(ierr);}
+    ierr = PetscFree(vertices);CHKERRQ(ierr);
   } else {
     PetscInt *localVertices, numSend = numCells+numCorners, k = 0;
 
