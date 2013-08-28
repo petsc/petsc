@@ -564,6 +564,7 @@ int main(int argc, char **argv)
   if (user.runType == RUN_FULL) {
     PetscViewer viewer;
     Vec         uLocal;
+    const char *name;
 
     ierr = PetscViewerCreate(PETSC_COMM_WORLD, &viewer);CHKERRQ(ierr);
     ierr = PetscViewerSetType(viewer, PETSCVIEWERVTK);CHKERRQ(ierr);
