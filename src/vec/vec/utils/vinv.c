@@ -1411,5 +1411,76 @@ PetscErrorCode  VecEqual(Vec vec1,Vec vec2,PetscBool  *flg)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "VecUniqueEntries"
+/*@
+   VecUniqueEntries - Compute the number of unique entries, and those entries
+
+   Collective on Vec
+
+   Input Parameter:
+.  vec - the vector
+
+   Output Parameters:
++  n - The number of unique entries
+-  e - The entries
+
+   Level: intermediate
+
+@*/
+PetscErrorCode  VecUniqueEntries(Vec vec, PetscInt *n, PetscScalar **e)
+{
+  PetscScalar   *v, *tmp, *vals;
+  PetscInt      *N, *displs;
+  PetscInt       ng, l, m, i, j, p;
+  PetscMPIInt    size;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(vec,VEC_CLASSID,1);
+  PetscValidIntPointer(n,2);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject) vec), &size);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(vec, &m);CHKERRQ(ierr);
+  ierr = VecGetArray(vec, &v);CHKERRQ(ierr);
+  ierr = PetscMalloc2(m,PetscScalar,&tmp,size,PetscInt,&N);CHKERRQ(ierr);
+  for (i = 0, j = 0, l = 0; i < m; ++i) {
+    /* Can speed this up with sorting */
+    for (j = 0; j < l; ++j) {
+      if (v[i] == tmp[j]) break;
+    }
+    if (j == l) {
+      tmp[j] = v[i];
+      ++l;
+    }
+  }
+  /* Gather serial results */
+  ierr = MPI_Allgather(&l, 1, MPIU_INT, N, 1, MPIU_INT, PetscObjectComm((PetscObject) vec));CHKERRQ(ierr);
+  for (p = 0, ng = 0; p < size; ++p) {
+    ng += N[p];
+  }
+  ierr = PetscMalloc2(ng,PetscScalar,&vals,size+1,PetscInt,&displs);CHKERRQ(ierr);
+  for (p = 1, displs[0] = 0; p <= size; ++p) {
+    displs[p] = displs[p-1] + N[p-1];
+  }
+  ierr = MPI_Allgatherv(tmp, l, MPIU_SCALAR, vals, N, displs, MPIU_SCALAR, PetscObjectComm((PetscObject) vec));CHKERRQ(ierr);
+  /* Find unique entries */
+#ifdef PETSC_USE_COMPLEX
+  SETERRQ(PetscObjectComm((PetscObject) vec), PETSC_ERR_SUP, "Does not work with complex numbers");
+#else
+  *n = displs[size];
+  ierr = PetscSortRemoveDupsReal(n, (PetscReal *) vals);CHKERRQ(ierr);
+#endif
+  if (e) {
+    PetscValidPointer(e,3);
+    ierr = PetscMalloc((*n) * sizeof(PetscScalar), e);CHKERRQ(ierr);
+    for (i = 0; i < *n; ++i) {
+      (*e)[i] = vals[i];
+    }
+  }
+  ierr = PetscFree2(vals,displs);CHKERRQ(ierr);
+  ierr = PetscFree2(tmp,N);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 
 

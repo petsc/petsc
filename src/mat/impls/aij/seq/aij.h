@@ -413,4 +413,24 @@ PETSC_INTERN PetscErrorCode MatDestroy_SeqAIJ(Mat);
     for (__i=0; __i<nnz; __i++) sum += xv[__i] * r[xi[__i]];}
 #endif
 
+
+/*
+    PetscSparseDenseMaxDot - The inner kernel of a modified matrix-vector product \max_i xv[i] * r[xi[i]] for CSR storage
+
+  Input Parameters:
++  nnz - the number of entries
+.  r - the array of vector values
+.  xv - the matrix values for the row
+-  xi - the column indices of the nonzeros in the row
+
+  Output Parameter:
+.  max - the max of results
+
+.seealso: PetscSparseDensePlusDot(), PetscSparseDenseMinusDot()
+
+*/
+#define PetscSparseDenseMaxDot(max,r,xv,xi,nnz) { \
+    PetscInt __i; \
+    for (__i=0; __i<nnz; __i++) max = PetscMax(max, xv[__i] * r[xi[__i]]);}
+
 #endif

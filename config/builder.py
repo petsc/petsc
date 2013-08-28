@@ -16,6 +16,11 @@ regressionParameters = {'src/dm/impls/patch/examples/tests/ex1': [{'numProcs': 1
                                                                   {'numProcs': 4, 'args': '-patch_size 2 -grid_size 4 -comm_size 1'},
                                                                   {'numProcs': 4, 'args': '-patch_size 2 -grid_size 4 -comm_size 2'},
                                                                   {'numProcs': 16, 'args': '-patch_size 2 -grid_size 8 -comm_size 2'}],
+                        'src/mat/examples/tests/ex170':          [{'numProcs': 1, 'args': ''},
+                                                                  {'numProcs': 1, 'args': '-testnum 1'},
+                                                                  {'numProcs': 2, 'args': '-testnum 1'},
+                                                                  {'numProcs': 1, 'args': '-testnum 2'},
+                                                                  {'numProcs': 2, 'args': '-testnum 2'}],
                         'src/dm/impls/plex/examples/tests/ex1': [# CTetGen tests 0-1
                                                                  {'numProcs': 1, 'args': '-dim 3 -ctetgen_verbose 4 -dm_view ::ascii_info_detail -info -info_exclude null'},
                                                                  {'numProcs': 1, 'args': '-dim 3 -ctetgen_verbose 4 -refinement_limit 0.0625 -dm_view ::ascii_info_detail -info -info_exclude null'},
