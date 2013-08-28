@@ -1431,8 +1431,8 @@ PetscErrorCode  VecEqual(Vec vec1,Vec vec2,PetscBool  *flg)
 PetscErrorCode  VecUniqueEntries(Vec vec, PetscInt *n, PetscScalar **e)
 {
   PetscScalar   *v, *tmp, *vals;
-  PetscInt      *N, *displs;
-  PetscInt       ng, l, m, i, j, p;
+  PetscMPIInt   *N, *displs, l;
+  PetscInt       ng, m, i, j, p;
   PetscMPIInt    size;
   PetscErrorCode ierr;
 
@@ -1442,7 +1442,7 @@ PetscErrorCode  VecUniqueEntries(Vec vec, PetscInt *n, PetscScalar **e)
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject) vec), &size);CHKERRQ(ierr);
   ierr = VecGetLocalSize(vec, &m);CHKERRQ(ierr);
   ierr = VecGetArray(vec, &v);CHKERRQ(ierr);
-  ierr = PetscMalloc2(m,PetscScalar,&tmp,size,PetscInt,&N);CHKERRQ(ierr);
+  ierr = PetscMalloc2(m,PetscScalar,&tmp,size,PetscMPIInt,&N);CHKERRQ(ierr);
   for (i = 0, j = 0, l = 0; i < m; ++i) {
     /* Can speed this up with sorting */
     for (j = 0; j < l; ++j) {
@@ -1454,11 +1454,11 @@ PetscErrorCode  VecUniqueEntries(Vec vec, PetscInt *n, PetscScalar **e)
     }
   }
   /* Gather serial results */
-  ierr = MPI_Allgather(&l, 1, MPIU_INT, N, 1, MPIU_INT, PetscObjectComm((PetscObject) vec));CHKERRQ(ierr);
+  ierr = MPI_Allgather(&l, 1, MPI_INT, N, 1, MPI_INT, PetscObjectComm((PetscObject) vec));CHKERRQ(ierr);
   for (p = 0, ng = 0; p < size; ++p) {
     ng += N[p];
   }
-  ierr = PetscMalloc2(ng,PetscScalar,&vals,size+1,PetscInt,&displs);CHKERRQ(ierr);
+  ierr = PetscMalloc2(ng,PetscScalar,&vals,size+1,PetscMPIInt,&displs);CHKERRQ(ierr);
   for (p = 1, displs[0] = 0; p <= size; ++p) {
     displs[p] = displs[p-1] + N[p-1];
   }
