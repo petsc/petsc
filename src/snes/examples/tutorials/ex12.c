@@ -627,6 +627,7 @@ int main(int argc, char **argv)
   if (user.runType == RUN_FULL) {
     PetscViewer viewer;
     Vec         uLocal;
+    const char *name;
 
     ierr = PetscViewerCreate(PETSC_COMM_WORLD, &viewer);CHKERRQ(ierr);
     ierr = PetscViewerSetType(viewer, PETSCVIEWERVTK);CHKERRQ(ierr);
@@ -634,13 +635,13 @@ int main(int argc, char **argv)
     ierr = PetscViewerFileSetName(viewer, "ex12_sol.vtk");CHKERRQ(ierr);
 
     ierr = DMGetLocalVector(user.dm, &uLocal);CHKERRQ(ierr);
+    ierr = PetscObjectGetName((PetscObject) u, &name);CHKERRQ(ierr);
+    ierr = PetscObjectSetName((PetscObject) uLocal, name);CHKERRQ(ierr);
     ierr = DMGlobalToLocalBegin(user.dm, u, INSERT_VALUES, uLocal);CHKERRQ(ierr);
     ierr = DMGlobalToLocalEnd(user.dm, u, INSERT_VALUES, uLocal);CHKERRQ(ierr);
-
-    ierr = PetscObjectReference((PetscObject) user.dm);CHKERRQ(ierr); /* Needed because viewer destroys the DM */
-    ierr = PetscObjectReference((PetscObject) uLocal);CHKERRQ(ierr); /* Needed because viewer destroys the Vec */
-    ierr = PetscViewerVTKAddField(viewer, (PetscObject) user.dm, DMPlexVTKWriteAll, PETSC_VTK_POINT_FIELD, (PetscObject) uLocal);CHKERRQ(ierr);
+    ierr = VecView(uLocal, viewer);CHKERRQ(ierr);
     ierr = DMRestoreLocalVector(user.dm, &uLocal);CHKERRQ(ierr);
+
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   }
 
