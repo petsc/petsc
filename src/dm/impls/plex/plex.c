@@ -1252,101 +1252,11 @@ PetscErrorCode DMSetUp_Plex(DM dm)
 #define __FUNCT__ "DMCreateSubDM_Plex"
 PetscErrorCode DMCreateSubDM_Plex(DM dm, PetscInt numFields, PetscInt fields[], IS *is, DM *subdm)
 {
-  PetscSection   section, sectionGlobal;
-  PetscInt      *subIndices;
-  PetscInt       subSize = 0, subOff = 0, nF, f, pStart, pEnd, p;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!numFields) PetscFunctionReturn(0);
-  ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
-  ierr = DMGetDefaultGlobalSection(dm, &sectionGlobal);CHKERRQ(ierr);
-  if (!section) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Must set default section for DMPlex before splitting fields");
-  if (!sectionGlobal) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Must set default global section for DMPlex before splitting fields");
-  ierr = PetscSectionGetNumFields(section, &nF);CHKERRQ(ierr);
-  if (numFields > nF) SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Number of requested fields %d greater than number of DM fields %d", numFields, nF);
-  ierr = PetscSectionGetChart(sectionGlobal, &pStart, &pEnd);CHKERRQ(ierr);
-  for (p = pStart; p < pEnd; ++p) {
-    PetscInt gdof;
-
-    ierr = PetscSectionGetDof(sectionGlobal, p, &gdof);CHKERRQ(ierr);
-    if (gdof > 0) {
-      for (f = 0; f < numFields; ++f) {
-        PetscInt fdof, fcdof;
-
-        ierr     = PetscSectionGetFieldDof(section, p, fields[f], &fdof);CHKERRQ(ierr);
-        ierr     = PetscSectionGetFieldConstraintDof(section, p, fields[f], &fcdof);CHKERRQ(ierr);
-        subSize += fdof-fcdof;
-      }
-    }
-  }
-  ierr = PetscMalloc(subSize * sizeof(PetscInt), &subIndices);CHKERRQ(ierr);
-  for (p = pStart; p < pEnd; ++p) {
-    PetscInt gdof, goff;
-
-    ierr = PetscSectionGetDof(sectionGlobal, p, &gdof);CHKERRQ(ierr);
-    if (gdof > 0) {
-      ierr = PetscSectionGetOffset(sectionGlobal, p, &goff);CHKERRQ(ierr);
-      for (f = 0; f < numFields; ++f) {
-        PetscInt fdof, fcdof, fc, f2, poff = 0;
-
-        /* Can get rid of this loop by storing field information in the global section */
-        for (f2 = 0; f2 < fields[f]; ++f2) {
-          ierr  = PetscSectionGetFieldDof(section, p, f2, &fdof);CHKERRQ(ierr);
-          ierr  = PetscSectionGetFieldConstraintDof(section, p, f2, &fcdof);CHKERRQ(ierr);
-          poff += fdof-fcdof;
-        }
-        ierr = PetscSectionGetFieldDof(section, p, fields[f], &fdof);CHKERRQ(ierr);
-        ierr = PetscSectionGetFieldConstraintDof(section, p, fields[f], &fcdof);CHKERRQ(ierr);
-        for (fc = 0; fc < fdof-fcdof; ++fc, ++subOff) {
-          subIndices[subOff] = goff+poff+fc;
-        }
-      }
-    }
-  }
-  if (is) {ierr = ISCreateGeneral(PetscObjectComm((PetscObject)dm), subSize, subIndices, PETSC_OWN_POINTER, is);CHKERRQ(ierr);}
-  if (subdm) {
-    PetscSection subsection;
-    PetscBool    haveNull = PETSC_FALSE;
-    PetscInt     f, nf = 0;
-
-    ierr = DMPlexClone(dm, subdm);CHKERRQ(ierr);
-    ierr = PetscSectionCreateSubsection(section, numFields, fields, &subsection);CHKERRQ(ierr);
-    ierr = DMSetDefaultSection(*subdm, subsection);CHKERRQ(ierr);
-    ierr = PetscSectionDestroy(&subsection);CHKERRQ(ierr);
-    for (f = 0; f < numFields; ++f) {
-      (*subdm)->nullspaceConstructors[f] = dm->nullspaceConstructors[fields[f]];
-      if ((*subdm)->nullspaceConstructors[f]) {
-        haveNull = PETSC_TRUE;
-        nf       = f;
-      }
-    }
-    if (haveNull) {
-      MatNullSpace nullSpace;
-
-      ierr = (*(*subdm)->nullspaceConstructors[nf])(*subdm, nf, &nullSpace);CHKERRQ(ierr);
-      ierr = PetscObjectCompose((PetscObject) *is, "nullspace", (PetscObject) nullSpace);CHKERRQ(ierr);
-      ierr = MatNullSpaceDestroy(&nullSpace);CHKERRQ(ierr);
-    }
-    if (dm->fields) {
-      if (nF != dm->numFields) SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "The number of DM fields %d does not match the number of Section fields %d", dm->numFields, nF);
-      ierr = DMSetNumFields(*subdm, numFields);CHKERRQ(ierr);
-      for (f = 0; f < numFields; ++f) {
-        ierr = PetscObjectListDuplicate(dm->fields[fields[f]]->olist, &(*subdm)->fields[f]->olist);CHKERRQ(ierr);
-      }
-      if (numFields == 1) {
-        MatNullSpace space;
-        Mat          pmat;
-
-        ierr = PetscObjectQuery((*subdm)->fields[0], "nullspace", (PetscObject*) &space);CHKERRQ(ierr);
-        if (space) {ierr = PetscObjectCompose((PetscObject) *is, "nullspace", (PetscObject) space);CHKERRQ(ierr);}
-        ierr = PetscObjectQuery((*subdm)->fields[0], "nearnullspace", (PetscObject*) &space);CHKERRQ(ierr);
-        if (space) {ierr = PetscObjectCompose((PetscObject) *is, "nearnullspace", (PetscObject) space);CHKERRQ(ierr);}
-        ierr = PetscObjectQuery((*subdm)->fields[0], "pmat", (PetscObject*) &pmat);CHKERRQ(ierr);
-        if (pmat) {ierr = PetscObjectCompose((PetscObject) *is, "pmat", (PetscObject) pmat);CHKERRQ(ierr);}
-      }
-    }
-  }
+  if (subdm) {ierr = DMClone(dm, subdm);CHKERRQ(ierr);}
+  ierr = DMCreateSubDM_Section_Private(dm, numFields, fields, is, subdm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -6334,7 +6244,7 @@ PetscErrorCode DMCreateCoordinateDM_Plex(DM dm, DM *cdm)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMPlexClone(dm, cdm);CHKERRQ(ierr);
+  ierr = DMClone(dm, cdm);CHKERRQ(ierr);
   ierr = PetscSectionCreate(PetscObjectComm((PetscObject)dm), &section);CHKERRQ(ierr);
   ierr = DMSetDefaultSection(*cdm, section);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&section);CHKERRQ(ierr);
