@@ -1296,6 +1296,122 @@ PetscErrorCode MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
 }
 #endif
 
+#undef __FUNCT__
+#define __FUNCT__ "MatMultMax_SeqAIJ"
+PetscErrorCode MatMultMax_SeqAIJ(Mat A,Vec xx,Vec yy)
+{
+  Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
+  PetscScalar       *y;
+  const PetscScalar *x;
+  const MatScalar   *aa;
+  PetscErrorCode    ierr;
+  PetscInt          m=A->rmap->n;
+  const PetscInt    *aj,*ii,*ridx=NULL;
+  PetscInt          n,i,nonzerorow=0;
+  PetscScalar       sum;
+  PetscBool         usecprow=a->compressedrow.use;
+
+#if defined(PETSC_HAVE_PRAGMA_DISJOINT)
+#pragma disjoint(*x,*y,*aa)
+#endif
+
+  PetscFunctionBegin;
+  ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
+  aj   = a->j;
+  aa   = a->a;
+  ii   = a->i;
+  if (usecprow) { /* use compressed row format */
+    m    = a->compressedrow.nrows;
+    ii   = a->compressedrow.i;
+    ridx = a->compressedrow.rindex;
+    for (i=0; i<m; i++) {
+      n           = ii[i+1] - ii[i];
+      aj          = a->j + ii[i];
+      aa          = a->a + ii[i];
+      sum         = 0.0;
+      nonzerorow += (n>0);
+      PetscSparseDenseMaxDot(sum,x,aa,aj,n);
+      /* for (j=0; j<n; j++) sum += (*aa++)*x[*aj++]; */
+      y[*ridx++] = sum;
+    }
+  } else { /* do not use compressed row format */
+    for (i=0; i<m; i++) {
+      n           = ii[i+1] - ii[i];
+      aj          = a->j + ii[i];
+      aa          = a->a + ii[i];
+      sum         = 0.0;
+      nonzerorow += (n>0);
+      PetscSparseDenseMaxDot(sum,x,aa,aj,n);
+      y[i] = sum;
+    }
+  }
+  ierr = PetscLogFlops(2.0*a->nz - nonzerorow);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatMultAddMax_SeqAIJ"
+PetscErrorCode MatMultAddMax_SeqAIJ(Mat A,Vec xx,Vec yy,Vec zz)
+{
+  Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
+  PetscScalar       *y,*z;
+  const PetscScalar *x;
+  const MatScalar   *aa;
+  PetscErrorCode    ierr;
+  PetscInt          m = A->rmap->n,*aj,*ii;
+  PetscInt          n,i,*ridx=NULL;
+  PetscScalar       sum;
+  PetscBool         usecprow=a->compressedrow.use;
+
+  PetscFunctionBegin;
+  ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
+  if (zz != yy) {
+    ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
+  } else {
+    z = y;
+  }
+
+  aj = a->j;
+  aa = a->a;
+  ii = a->i;
+  if (usecprow) { /* use compressed row format */
+    if (zz != yy) {
+      ierr = PetscMemcpy(z,y,m*sizeof(PetscScalar));CHKERRQ(ierr);
+    }
+    m    = a->compressedrow.nrows;
+    ii   = a->compressedrow.i;
+    ridx = a->compressedrow.rindex;
+    for (i=0; i<m; i++) {
+      n   = ii[i+1] - ii[i];
+      aj  = a->j + ii[i];
+      aa  = a->a + ii[i];
+      sum = y[*ridx];
+      PetscSparseDenseMaxDot(sum,x,aa,aj,n);
+      z[*ridx++] = sum;
+    }
+  } else { /* do not use compressed row format */
+    for (i=0; i<m; i++) {
+      n   = ii[i+1] - ii[i];
+      aj  = a->j + ii[i];
+      aa  = a->a + ii[i];
+      sum = y[i];
+      PetscSparseDenseMaxDot(sum,x,aa,aj,n);
+      z[i] = sum;
+    }
+  }
+  ierr = PetscLogFlops(2.0*a->nz);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
+  if (zz != yy) {
+    ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
 #include <../src/mat/impls/aij/seq/ftn-kernels/fmultadd.h>
 #undef __FUNCT__
 #define __FUNCT__ "MatMultAdd_SeqAIJ"
