@@ -4,7 +4,7 @@
 PETSc for Python
 ================
 
-Python bindings for PETSc libraries.
+Python bindings for PETSc.
 
 .. tip::
 
@@ -12,7 +12,7 @@ Python bindings for PETSc libraries.
 
     $ pip install petsc==dev petsc4py==dev 
 
-  .. _petsc4py-dev: git+https://bitbucket.org/petsc/petsc4py.git#egg=petsc4py-dev
+  .. _petsc4py-dev: https://bitbucket.org/petsc/petsc4py/get/master.tar.gz#egg=petsc4py-dev
 """
 
 ## try:
