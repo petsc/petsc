@@ -3967,7 +3967,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_aij_clique(Mat,MatFactorType,Mat*);
 
    Level: intermediate
 
-.seealso: MatSeqAIJRestoreArray()
+.seealso: MatSeqAIJRestoreArray(), MatSeqAIJGetArrayF90()
 @*/
 PetscErrorCode  MatSeqAIJGetArray(Mat A,PetscScalar **array)
 {
@@ -3991,7 +3991,7 @@ PetscErrorCode  MatSeqAIJGetArray(Mat A,PetscScalar **array)
 
    Level: intermediate
 
-.seealso: MatSeqAIJGetArray()
+.seealso: MatSeqAIJGetArray(), MatSeqAIJRestoreArrayF90()
 @*/
 PetscErrorCode  MatSeqAIJRestoreArray(Mat A,PetscScalar **array)
 {
