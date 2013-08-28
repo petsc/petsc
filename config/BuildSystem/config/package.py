@@ -281,17 +281,24 @@ class Package(config.base.Configure):
     if 'with-'+self.package+'-include-dir' in self.framework.argDB:
         raise RuntimeError('Use --with-'+self.package+'-include; not --with-'+self.package+'-include-dir')
 
-    if 'with-'+self.package+'-include' in self.framework.argDB and 'with-'+self.package+'-lib' in self.framework.argDB:
-      inc = self.framework.argDB['with-'+self.package+'-include']
+    if 'with-'+self.package+'-include' in self.framework.argDB or 'with-'+self.package+'-lib' in self.framework.argDB:
       libs = self.framework.argDB['with-'+self.package+'-lib']
+      inc  = []
+      if self.includes:
+        inc = self.framework.argDB['with-'+self.package+'-include']
+      # hope that package root is one level above first include directory specified
+        d   = os.path.dirname(inc[0])
+      else:
+        d   = None
       if not isinstance(inc, list): inc = inc.split(' ')
       if not isinstance(libs, list): libs = libs.split(' ')
       inc = [os.path.abspath(i) for i in inc]
-      # hope that package root is one level above first include directory specified
-      d = os.path.dirname(inc[0])
       yield('User specified '+self.PACKAGE+' libraries', d, libs, inc)
-      raise RuntimeError('--with-'+self.package+'-lib='+str(self.framework.argDB['with-'+self.package+'-lib'])+' and \n'+\
-                         '--with-'+self.package+'-include='+str(self.framework.argDB['with-'+self.package+'-include'])+' did not work')
+      msg = '--with-'+self.package+'-lib='+str(self.framework.argDB['with-'+self.package+'-lib'])
+      if self.includes:
+        msg += ' and \n'+'--with-'+self.package+'-include='+str(self.framework.argDB['with-'+self.package+'-include'])
+      msg += ' did not work'
+      raise RuntimeError(msg)
 
     for d in self.getSearchDirectories():
       for libdir in [self.libdir, self.altlibdir]:
