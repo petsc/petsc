@@ -2384,10 +2384,10 @@ PetscErrorCode PetscFEIntegrateBdResidual_Basic(PetscFE fem, PetscInt Ne, PetscI
 #endif
     }
     for (q = 0; q < Nq; ++q) {
-      if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "  quad point %d\n", q);CHKERRQ(ierr);}
       PetscInt         fOffset = 0,       fOffsetAux = 0;
       PetscInt         dOffset = cOffset, dOffsetAux = cOffsetAux;
       PetscInt         Ncomp, d, d2, f, i;
+      if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "  quad point %d\n", q);CHKERRQ(ierr);}
 
       ierr = PetscFEGetNumComponents(fe[field], &Ncomp);CHKERRQ(ierr);
       for (d = 0; d < numComponents; ++d)       {u[d]     = 0.0;}
