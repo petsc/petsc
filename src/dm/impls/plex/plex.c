@@ -2470,8 +2470,10 @@ PetscErrorCode DMPlexEnlargePartition(DM dm, const PetscInt start[], const Petsc
 
 .seealso DMPlexDistribute()
 */
-PetscErrorCode DMPlexCreatePartition(DM dm, PetscInt height, PetscBool enlarge, PetscSection *partSection, IS *partition, PetscSection *origPartSection, IS *origPartition)
+PetscErrorCode DMPlexCreatePartition(DM dm, const char name[], PetscInt height, PetscBool enlarge, PetscSection *partSection, IS *partition, PetscSection *origPartSection, IS *origPartition)
 {
+  char           partname[1024];
+  PetscBool      isChaco = PETSC_FALSE, isMetis = PETSC_FALSE, flg;
   PetscMPIInt    size;
   PetscErrorCode ierr;
 
@@ -2494,21 +2496,29 @@ PetscErrorCode DMPlexCreatePartition(DM dm, PetscInt height, PetscBool enlarge, 
     ierr = ISCreateGeneral(PetscObjectComm((PetscObject)dm), cEnd-cStart, points, PETSC_OWN_POINTER, partition);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
+  ierr = PetscOptionsGetString(((PetscObject) dm)->prefix, "-dm_plex_partitioner", partname, 1024, &flg);CHKERRQ(ierr);
+  if (flg) name = partname;
+  if (name) {
+    ierr = PetscStrcmp(name, "chaco", &isChaco);CHKERRQ(ierr);
+    ierr = PetscStrcmp(name, "metis", &isMetis);CHKERRQ(ierr);
+  }
   if (height == 0) {
     PetscInt  numVertices;
     PetscInt *start     = NULL;
     PetscInt *adjacency = NULL;
 
     ierr = DMPlexCreateNeighborCSR(dm, 0, &numVertices, &start, &adjacency);CHKERRQ(ierr);
-    if (1) {
+    if (!name || isChaco) {
 #if defined(PETSC_HAVE_CHACO)
       ierr = DMPlexPartition_Chaco(dm, numVertices, start, adjacency, partSection, partition);CHKERRQ(ierr);
+#else
+      SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "Mesh partitioning needs external package support.\nPlease reconfigure with --download-chaco.");
 #endif
-    } else {
+    } else if (isMetis) {
 #if defined(PETSC_HAVE_PARMETIS)
       ierr = DMPlexPartition_ParMetis(dm, numVertices, start, adjacency, partSection, partition);CHKERRQ(ierr);
 #endif
-    }
+    } else SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "Unknown mesh partitioning package %s", name);
     if (enlarge) {
       *origPartSection = *partSection;
       *origPartition   = *partition;
@@ -2693,7 +2703,7 @@ PetscErrorCode DMPlexDistribute(DM dm, const char partitioner[], PetscInt overla
   ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
   /* Create cell partition - We need to rewrite to use IS, use the MatPartition stuff */
   if (overlap > 1) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Overlap > 1 not yet implemented");
-  ierr = DMPlexCreatePartition(dm, height, overlap > 0 ? PETSC_TRUE : PETSC_FALSE, &cellPartSection, &cellPart, &origCellPartSection, &origCellPart);CHKERRQ(ierr);
+  ierr = DMPlexCreatePartition(dm, partitioner, height, overlap > 0 ? PETSC_TRUE : PETSC_FALSE, &cellPartSection, &cellPart, &origCellPartSection, &origCellPart);CHKERRQ(ierr);
   /* Create SF assuming a serial partition for all processes: Could check for IS length here */
   if (!rank) numRemoteRanks = numProcs;
   else       numRemoteRanks = 0;
