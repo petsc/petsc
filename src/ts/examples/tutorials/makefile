@@ -396,6 +396,12 @@ runex26_3:
 	   ${DIFF} output/ex26_3.out ex26_3.tmp || echo  ${PWD} "\nPossible problem with ex26_3, diffs above \n=========================================";  \
 	   ${RM} -f ex26_3.tmp
 
+runex26_4:
+	-@${MPIEXEC} -n 2 ./ex26 -da_refine 1 -lidvelocity 100 -grashof 1e3 -ts_max_steps 10 -ts_rtol 1e-3 -ts_atol 1e-3 \
+        -ts_type beuler -ts_monitor -snes_monitor_short -snes_fd_color -pc_type mg  > ex26_4.tmp 2>&1; \
+	   ${DIFF} output/ex26_4.out ex26_4.tmp || echo  ${PWD} "\nPossible problem with ex26_4, diffs above \n=========================================";  \
+	   ${RM} -f ex26_4.tmp
+
 runex29:
 	-@${MPIEXEC} -n 16 ./ex29 -da_refine 4 -ts_max_steps 10 -ts_rtol 1e-3 -ts_atol 1e-3 \
         -ts_type arkimex -ts_monitor -snes_monitor -snes_type ngmres \
@@ -421,7 +427,7 @@ TESTEXAMPLES_C		  = ex1.PETSc runex1 runex1_2 ex1.rm ex2.PETSc runex2 ex2.rm ex3
                             ex12.PETSc ex12.rm ex13.PETSc runex13 runex13_2 runex13_3 ex13.rm\
                             ex15.PETSc runex15 runex15_2 runex15_3 runex15_4 runex15_5 ex15.rm \
                             ex17.PETSc runex17 runex17_2 ex17.rm ex22.PETSc runex22 runex22_2 runex22_3 ex22.rm \
-                            ex25.PETSc runex25 ex25.rm ex26.PETSc runex26 runex26_2 runex26_3 ex26.rm
+                            ex25.PETSc runex25 ex25.rm ex26.PETSc runex26 runex26_2 runex26_3 runex26_4 ex26.rm
 TESTEXAMPLES_C_NOCOMPLEX  = ex9.PETSc runex9 runex9_2 runex9_3 ex9.rm
 TESTEXAMPLES_C_X	  =
 TESTEXAMPLES_FORTRAN	  = ex1f.PETSc runex1f ex1f.rm ex2f.PETSc runex2f ex2f.rm ex22f.PETSc ex22f.rm # ex22f_mf.PETSc ex22f_mf.rm
