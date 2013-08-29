@@ -2377,12 +2377,85 @@ PetscErrorCode DMPlexPartition_Chaco(DM dm, PetscInt numVertices, PetscInt start
 #endif
 
 #if defined(PETSC_HAVE_PARMETIS)
+#include <parmetis.h>
+
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexPartition_ParMetis"
 PetscErrorCode DMPlexPartition_ParMetis(DM dm, PetscInt numVertices, PetscInt start[], PetscInt adjacency[], PetscSection *partSection, IS *partition)
 {
+  MPI_Comm       comm;
+  PetscInt       nvtxs      = numVertices; // The number of vertices in full graph
+  PetscInt      *vtxdist;                  // Distribution of vertices across processes
+  PetscInt      *xadj       = start;       // Start of edge list for each vertex
+  PetscInt      *adjncy     = adjacency;   // Edge lists for all vertices
+  PetscInt      *vwgt       = NULL;        // Vertex weights
+  PetscInt      *adjwgt     = NULL;        // Edge weights
+  PetscInt       wgtflag    = 0;           // Indicates which weights are present
+  PetscInt       numflag    = 0;           // Indicates initial offset (0 or 1)
+  PetscInt       ncon       = 1;           // The number of weights per vertex
+  PetscInt       nparts;                   // The number of partitions
+  PetscReal     *tpwgts;                   // The fraction of vertex weights assigned to each partition
+  PetscReal     *ubvec;                    // The balance intolerance for vertex weights
+  PetscInt       options[5];               // Options
+  // Outputs
+  PetscInt       edgeCut;                  // The number of edges cut by the partition
+  PetscInt      *assignment, *points;
+  PetscMPIInt    commSize, rank, p, v, i;
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
-  SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "ParMetis not yet supported");
+  ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm, &commSize);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  if (!numVertices) {
+    ierr = PetscSectionCreate(comm, partSection);CHKERRQ(ierr);
+    ierr = PetscSectionSetChart(*partSection, 0, commSize);CHKERRQ(ierr);
+    ierr = PetscSectionSetUp(*partSection);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(comm, 0, NULL, PETSC_OWN_POINTER, partition);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
+  nparts = commSize;
+  options[0] = 0; /* Use all defaults */
+  /* Calculate vertex distribution */
+  ierr = PetscMalloc4(nparts+1,PetscInt,&vtxdist,nparts*ncon,PetscReal,&tpwgts,ncon,PetscReal,&ubvec,nvtxs,PetscInt,&assignment);CHKERRQ(ierr);
+  vtxdist[0] = 0;
+  ierr = MPI_Allgather(&nvtxs, 1, MPIU_INT, &vtxdist[1], 1, MPIU_INT, comm);CHKERRQ(ierr);
+  for (p = 2; p <= nparts; ++p) {
+    vtxdist[p] += vtxdist[p-1];
+  }
+  /* Calculate weights */
+  for (p = 0; p < nparts; ++p) {
+    tpwgts[p] = 1.0/nparts;
+  }
+  ubvec[0] = 1.05;
+
+  if (nparts == 1) {
+    ierr = PetscMemzero(assignment, nvtxs * sizeof(PetscInt));
+  } else {
+    if (vtxdist[1] == vtxdist[nparts]) {
+      if (!rank) {
+        PetscStackCallStandard(METIS_PartGraphKway, (&nvtxs, &ncon, xadj, adjncy, vwgt, NULL, adjwgt, &nparts, tpwgts, ubvec, NULL, &edgeCut, assignment));
+      }
+    } else {
+      PetscStackCallStandard(ParMETIS_V3_PartKway, (vtxdist, xadj, adjncy, vwgt, adjwgt, &wgtflag, &numflag, &ncon, &nparts, tpwgts, ubvec, options, &edgeCut, assignment, &comm));
+    }
+  }
+  /* Convert to PetscSection+IS */
+  ierr = PetscSectionCreate(comm, partSection);CHKERRQ(ierr);
+  ierr = PetscSectionSetChart(*partSection, 0, commSize);CHKERRQ(ierr);
+  for (v = 0; v < nvtxs; ++v) {
+    ierr = PetscSectionAddDof(*partSection, assignment[v], 1);CHKERRQ(ierr);
+  }
+  ierr = PetscSectionSetUp(*partSection);CHKERRQ(ierr);
+  ierr = PetscMalloc(nvtxs * sizeof(PetscInt), &points);CHKERRQ(ierr);
+  for (p = 0, i = 0; p < commSize; ++p) {
+    for (v = 0; v < nvtxs; ++v) {
+      if (assignment[v] == p) points[i++] = v;
+    }
+  }
+  if (i != nvtxs) SETERRQ2(comm, PETSC_ERR_PLIB, "Number of points %D should be %D", i, nvtxs);
+  ierr = ISCreateGeneral(comm, nvtxs, points, PETSC_OWN_POINTER, partition);CHKERRQ(ierr);
+  ierr = PetscFree4(vtxdist,tpwgts,ubvec,assignment);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 #endif
