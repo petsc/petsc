@@ -2503,13 +2503,6 @@ PetscErrorCode DMPlexPartition_ParMetis(DM dm, PetscInt numVertices, PetscInt st
   ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm, &commSize);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-  if (!numVertices) {
-    ierr = PetscSectionCreate(comm, partSection);CHKERRQ(ierr);
-    ierr = PetscSectionSetChart(*partSection, 0, commSize);CHKERRQ(ierr);
-    ierr = PetscSectionSetUp(*partSection);CHKERRQ(ierr);
-    ierr = ISCreateGeneral(comm, 0, NULL, PETSC_OWN_POINTER, partition);CHKERRQ(ierr);
-    PetscFunctionReturn(0);
-  }
   nparts = commSize;
   options[0] = 0; /* Use all defaults */
   /* Calculate vertex distribution */
@@ -2530,10 +2523,16 @@ PetscErrorCode DMPlexPartition_ParMetis(DM dm, PetscInt numVertices, PetscInt st
   } else {
     if (vtxdist[1] == vtxdist[nparts]) {
       if (!rank) {
-        PetscStackCallStandard(METIS_PartGraphKway, (&nvtxs, &ncon, xadj, adjncy, vwgt, NULL, adjwgt, &nparts, tpwgts, ubvec, NULL, &edgeCut, assignment));
+        PetscStackPush("METIS_PartGraphKway");
+        ierr = METIS_PartGraphKway(&nvtxs, &ncon, xadj, adjncy, vwgt, NULL, adjwgt, &nparts, tpwgts, ubvec, NULL, &edgeCut, assignment);
+        PetscStackPop;
+        if (ierr != METIS_OK) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in METIS_PartGraphKway()");
       }
     } else {
-      PetscStackCallStandard(ParMETIS_V3_PartKway, (vtxdist, xadj, adjncy, vwgt, adjwgt, &wgtflag, &numflag, &ncon, &nparts, tpwgts, ubvec, options, &edgeCut, assignment, &comm));
+      PetscStackPush("ParMETIS_V3_PartKway");
+      ierr = ParMETIS_V3_PartKway(vtxdist, xadj, adjncy, vwgt, adjwgt, &wgtflag, &numflag, &ncon, &nparts, tpwgts, ubvec, options, &edgeCut, assignment, &comm);
+      PetscStackPop;
+      if (ierr != METIS_OK) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in ParMETIS_V3_PartKway()");
     }
   }
   /* Convert to PetscSection+IS */
