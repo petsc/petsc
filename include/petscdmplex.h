@@ -127,7 +127,7 @@ PETSC_EXTERN PetscErrorCode DMPlexInvertCell(PetscInt, PetscInt, int []);
 
 /* Mesh Partitioning and Distribution */
 PETSC_EXTERN PetscErrorCode DMPlexCreateNeighborCSR(DM, PetscInt, PetscInt *, PetscInt **, PetscInt **);
-PETSC_EXTERN PetscErrorCode DMPlexCreatePartition(DM, PetscInt, PetscBool, PetscSection *, IS *, PetscSection *, IS *);
+PETSC_EXTERN PetscErrorCode DMPlexCreatePartition(DM, const char[], PetscInt, PetscBool, PetscSection *, IS *, PetscSection *, IS *);
 PETSC_EXTERN PetscErrorCode DMPlexCreatePartitionClosure(DM, PetscSection, IS, PetscSection *, IS *);
 PETSC_EXTERN PetscErrorCode DMPlexDistribute(DM, const char[], PetscInt, DM*);
 
