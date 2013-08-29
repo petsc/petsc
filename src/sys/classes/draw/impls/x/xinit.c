@@ -405,7 +405,7 @@ PetscErrorCode PetscDrawSave_X(PetscDraw draw)
       gif  = gif->next;
     }
     ierr = PetscStrcat(body,"<br>\n");CHKERRQ(ierr);
-    ierr = SAWs_Set_Default_Body(1,body);CHKERRQ(ierr);
+    ierr = SAWs_Set_Body("index.html",1,body);CHKERRQ(ierr);
   }
 #endif
 
