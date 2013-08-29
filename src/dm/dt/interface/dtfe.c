@@ -3386,6 +3386,16 @@ PetscErrorCode PetscFEIntegrateResidual_OpenCL(PetscFE fem, PetscInt Ne, PetscIn
   ierr = PetscInfo7(fem, "GPU layout grid(%d,%d,%d) block(%d,%d,%d) with %d batches\n", x, y, z, local_work_size[0], local_work_size[1], local_work_size[2], N_cb);CHKERRQ(ierr);
   ierr = PetscInfo2(fem, " N_t: %d, N_cb: %d\n", N_t, N_cb);
   /* Generate code */
+  if (NfAux) {
+    PetscSpace P;
+    PetscInt   order, f;
+
+    for (f = 0; f < NfAux; ++f) {
+      ierr = PetscFEGetBasisSpace(feAux[f], &P);CHKERRQ(ierr);
+      ierr = PetscSpaceGetOrder(P, &order);CHKERRQ(ierr);
+      if (order > 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Can only handle P0 coefficient fields");
+    }
+  }
   ierr = PetscFEOpenCLGetIntegrationKernel(fem, coefficientsAux ? PETSC_TRUE : PETSC_FALSE, &ocl_prog, &ocl_kernel);CHKERRQ(ierr);
   /* Create buffers on the device and send data over */
   ierr = PetscDataTypeGetSize(ocl->realType, &realSize);CHKERRQ(ierr);
