@@ -577,7 +577,7 @@ int main(int argc, char **argv)
     ierr = DMGlobalToLocalBegin(dm, u, INSERT_VALUES, uLocal);CHKERRQ(ierr);
     ierr = DMGlobalToLocalEnd(dm, u, INSERT_VALUES, uLocal);CHKERRQ(ierr);
     ierr = VecView(uLocal, viewer);CHKERRQ(ierr);
-    ierr = DMRestoreLocalVector(user.dm, &uLocal);CHKERRQ(ierr);
+    ierr = DMRestoreLocalVector(dm, &uLocal);CHKERRQ(ierr);
 
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   }
