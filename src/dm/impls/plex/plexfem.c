@@ -844,17 +844,21 @@ PetscErrorCode DMPlexComputeJacobianActionFEM(DM dm, Mat Jac, Vec X, Vec F, void
 @*/
 PetscErrorCode DMPlexComputeJacobianFEM(DM dm, Vec X, Mat Jac, Mat JacP, MatStructure *str,void *user)
 {
-  DM_Plex          *mesh = (DM_Plex *) dm->data;
-  PetscFEM         *fem  = (PetscFEM *) user;
-  PetscFE          *fe   = fem->fe;
-  const char       *name = "Jacobian";
+  DM_Plex          *mesh  = (DM_Plex *) dm->data;
+  PetscFEM         *fem   = (PetscFEM *) user;
+  PetscFE          *fe    = fem->fe;
+  PetscFE          *feAux = fem->feAux;
+  const char       *name  = "Jacobian";
+  DM                dmAux;
+  Vec               A;
   PetscQuadrature   quad;
   PetscCellGeometry geom;
-  PetscSection      section, globalSection;
+  PetscSection      section, globalSection, sectionAux;
   PetscReal        *v0, *J, *invJ, *detJ;
-  PetscScalar      *elemMat, *u;
-  PetscInt          dim, numFields, f, fieldI, fieldJ, numCells, cStart, cEnd, c;
+  PetscScalar      *elemMat, *u, *a;
+  PetscInt          dim, Nf, NfAux = 0, f, fieldI, fieldJ, numCells, cStart, cEnd, c;
   PetscInt          cellDof = 0, numComponents = 0;
+  PetscInt          cellDofAux = 0, numComponentsAux = 0;
   PetscBool         isShell;
   PetscErrorCode    ierr;
 
@@ -863,10 +867,10 @@ PetscErrorCode DMPlexComputeJacobianFEM(DM dm, Vec X, Mat Jac, Mat JacP, MatStru
   ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
   ierr = DMGetDefaultGlobalSection(dm, &globalSection);CHKERRQ(ierr);
-  ierr = PetscSectionGetNumFields(section, &numFields);CHKERRQ(ierr);
+  ierr = PetscSectionGetNumFields(section, &Nf);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   numCells = cEnd - cStart;
-  for (f = 0; f < numFields; ++f) {
+  for (f = 0; f < Nf; ++f) {
     PetscInt Nb, Nc;
 
     ierr = PetscFEGetDimension(fe[f], &Nb);CHKERRQ(ierr);
@@ -874,9 +878,24 @@ PetscErrorCode DMPlexComputeJacobianFEM(DM dm, Vec X, Mat Jac, Mat JacP, MatStru
     cellDof       += Nb*Nc;
     numComponents += Nc;
   }
+  ierr = PetscObjectQuery((PetscObject) dm, "dmAux", (PetscObject *) &dmAux);CHKERRQ(ierr);
+  ierr = PetscObjectQuery((PetscObject) dm, "A", (PetscObject *) &A);CHKERRQ(ierr);
+  if (dmAux) {
+    ierr = DMGetDefaultSection(dmAux, &sectionAux);CHKERRQ(ierr);
+    ierr = PetscSectionGetNumFields(sectionAux, &NfAux);CHKERRQ(ierr);
+  }
+  for (f = 0; f < NfAux; ++f) {
+    PetscInt Nb, Nc;
+
+    ierr = PetscFEGetDimension(feAux[f], &Nb);CHKERRQ(ierr);
+    ierr = PetscFEGetNumComponents(feAux[f], &Nc);CHKERRQ(ierr);
+    cellDofAux       += Nb*Nc;
+    numComponentsAux += Nc;
+  }
   ierr = DMPlexProjectFunctionLocal(dm, numComponents, fem->bcFuncs, INSERT_BC_VALUES, X);CHKERRQ(ierr);
   ierr = MatZeroEntries(JacP);CHKERRQ(ierr);
   ierr = PetscMalloc6(numCells*cellDof,PetscScalar,&u,numCells*dim,PetscReal,&v0,numCells*dim*dim,PetscReal,&J,numCells*dim*dim,PetscReal,&invJ,numCells,PetscReal,&detJ,numCells*cellDof*cellDof,PetscScalar,&elemMat);CHKERRQ(ierr);
+  if (dmAux) {ierr = PetscMalloc(numCells*cellDofAux * sizeof(PetscScalar), &a);CHKERRQ(ierr);}
   for (c = cStart; c < cEnd; ++c) {
     PetscScalar *x = NULL;
     PetscInt     i;
@@ -886,40 +905,46 @@ PetscErrorCode DMPlexComputeJacobianFEM(DM dm, Vec X, Mat Jac, Mat JacP, MatStru
     ierr = DMPlexVecGetClosure(dm, section, X, c, NULL, &x);CHKERRQ(ierr);
     for (i = 0; i < cellDof; ++i) u[c*cellDof+i] = x[i];
     ierr = DMPlexVecRestoreClosure(dm, section, X, c, NULL, &x);CHKERRQ(ierr);
+    if (dmAux) {
+      ierr = DMPlexVecGetClosure(dmAux, sectionAux, A, c, NULL, &x);CHKERRQ(ierr);
+      for (i = 0; i < cellDofAux; ++i) a[c*cellDofAux+i] = x[i];
+      ierr = DMPlexVecRestoreClosure(dmAux, sectionAux, A, c, NULL, &x);CHKERRQ(ierr);
+    }
   }
   ierr = PetscMemzero(elemMat, numCells*cellDof*cellDof * sizeof(PetscScalar));CHKERRQ(ierr);
-  for (fieldI = 0; fieldI < numFields; ++fieldI) {
+  for (fieldI = 0; fieldI < Nf; ++fieldI) {
     PetscInt Nb;
+    /* Conforming batches */
+    PetscInt numChunks, numBatches, numBlocks, Ne, blockSize, batchSize;
+    /* Remainder */
+    PetscInt Nr, offset;
+
     ierr = PetscFEGetQuadrature(fe[fieldI], &quad);CHKERRQ(ierr);
     ierr = PetscFEGetDimension(fe[fieldI], &Nb);CHKERRQ(ierr);
-    for (fieldJ = 0; fieldJ < numFields; ++fieldJ) {
-      void   (*g0)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]) = fem->g0Funcs[fieldI*numFields+fieldJ];
-      void   (*g1)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]) = fem->g1Funcs[fieldI*numFields+fieldJ];
-      void   (*g2)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]) = fem->g2Funcs[fieldI*numFields+fieldJ];
-      void   (*g3)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]) = fem->g3Funcs[fieldI*numFields+fieldJ];
-      /* Conforming batches */
-      PetscInt numBlocks  = 1;
-      PetscInt numBatches = 1;
-      PetscInt numChunks, Ne, blockSize, batchSize;
-      /* Remainder */
-      PetscInt Nr, offset;
+    ierr = PetscFEGetTileSizes(fe[fieldI], NULL, &numBlocks, NULL, &numBatches);CHKERRQ(ierr);
+    blockSize = Nb*quad.numQuadPoints;
+    batchSize = numBlocks * blockSize;
+    ierr = PetscFESetTileSizes(fe[fieldI], blockSize, numBlocks, batchSize, numBatches);CHKERRQ(ierr);
+    numChunks = numCells / (numBatches*batchSize);
+    Ne        = numChunks*numBatches*batchSize;
+    Nr        = numCells % (numBatches*batchSize);
+    offset    = numCells - Nr;
+    for (fieldJ = 0; fieldJ < Nf; ++fieldJ) {
+      void   (*g0)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]) = fem->g0Funcs[fieldI*Nf+fieldJ];
+      void   (*g1)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]) = fem->g1Funcs[fieldI*Nf+fieldJ];
+      void   (*g2)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]) = fem->g2Funcs[fieldI*Nf+fieldJ];
+      void   (*g3)(const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]) = fem->g3Funcs[fieldI*Nf+fieldJ];
 
-      blockSize = Nb*quad.numQuadPoints;
-      batchSize = numBlocks * blockSize;
-      numChunks = numCells / (numBatches*batchSize);
-      Ne        = numChunks*numBatches*batchSize;
-      Nr        = numCells % (numBatches*batchSize);
-      offset    = numCells - Nr;
       geom.v0   = v0;
       geom.J    = J;
       geom.invJ = invJ;
       geom.detJ = detJ;
-      ierr = PetscFEIntegrateJacobian(fe[fieldI], Ne, numFields, fe, fieldI, fieldJ, geom, u, g0, g1, g2, g3, elemMat);CHKERRQ(ierr);
+      ierr = PetscFEIntegrateJacobian(fe[fieldI], Ne, Nf, fe, fieldI, fieldJ, geom, u, NfAux, feAux, a, g0, g1, g2, g3, elemMat);CHKERRQ(ierr);
       geom.v0   = &v0[offset*dim];
       geom.J    = &J[offset*dim*dim];
       geom.invJ = &invJ[offset*dim*dim];
       geom.detJ = &detJ[offset];
-      ierr = PetscFEIntegrateJacobian(fe[fieldI], Nr, numFields, fe, fieldI, fieldJ, geom, &u[offset*cellDof], g0, g1, g2, g3, &elemMat[offset*cellDof*cellDof]);CHKERRQ(ierr);
+      ierr = PetscFEIntegrateJacobian(fe[fieldI], Nr, Nf, fe, fieldI, fieldJ, geom, &u[offset*cellDof], NfAux, feAux, &a[offset*cellDofAux], g0, g1, g2, g3, &elemMat[offset*cellDof*cellDof]);CHKERRQ(ierr);
     }
   }
   for (c = cStart; c < cEnd; ++c) {
@@ -927,6 +952,7 @@ PetscErrorCode DMPlexComputeJacobianFEM(DM dm, Vec X, Mat Jac, Mat JacP, MatStru
     ierr = DMPlexMatSetClosure(dm, section, globalSection, JacP, c, &elemMat[c*cellDof*cellDof], ADD_VALUES);CHKERRQ(ierr);
   }
   ierr = PetscFree6(u,v0,J,invJ,detJ,elemMat);CHKERRQ(ierr);
+  if (dmAux) {ierr = PetscFree(a);CHKERRQ(ierr);}
   ierr = MatAssemblyBegin(JacP, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(JacP, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   if (mesh->printFEM) {
