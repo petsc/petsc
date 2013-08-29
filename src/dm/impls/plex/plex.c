@@ -2493,7 +2493,6 @@ PetscErrorCode DMPlexPartition_ParMetis(DM dm, PetscInt numVertices, PetscInt st
   PetscReal     *tpwgts;                   // The fraction of vertex weights assigned to each partition
   PetscReal     *ubvec;                    // The balance intolerance for vertex weights
   PetscInt       options[5];               // Options
-  PetscInt       maxSize    = 0;
   // Outputs
   PetscInt       edgeCut;                  // The number of edges cut by the partition
   PetscInt      *assignment, *points;
