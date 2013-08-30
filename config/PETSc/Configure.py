@@ -92,7 +92,7 @@ class Configure(config.base.Configure):
                                             'sys/systeminfo', 'sys/times', 'sys/utsname','string', 'stdlib','memory',
                                             'sys/socket','sys/wait','netinet/in','netdb','Direct','time','Ws2tcpip','sys/types',
                                             'WindowsX', 'cxxabi','float','ieeefp','stdint','fenv','sched','pthread','mathimf'])
-    functions = ['access', '_access', 'clock', 'drand48', 'getcwd', '_getcwd', 'getdomainname', 'gethostname', 'getpwuid',
+    functions = ['access', '_access', 'clock', 'drand48', 'getcwd', '_getcwd', 'getdomainname', 'gethostname',
                  'gettimeofday', 'getwd', 'memalign', 'memmove', 'mkstemp', 'popen', 'PXFGETARG', 'rand', 'getpagesize',
                  'readlink', 'realpath',  'sigaction', 'signal', 'sigset', 'usleep', 'sleep', '_sleep', 'socket',
                  'times', 'gethostbyname', 'uname','snprintf','_snprintf','_fullpath','lseek','_lseek','time','fork','stricmp',
