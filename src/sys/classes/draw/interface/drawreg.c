@@ -3,15 +3,15 @@
        Provides the registration process for PETSc PetscDraw routines
 */
 #include <petsc-private/drawimpl.h>  /*I "petscdraw.h" I*/
+#include <petscviewer.h>             /*I "petscviewer.h" I*/
+#if defined(PETSC_HAVE_SAWS)
+#include <petscviewersaws.h>
+#endif
 
 /*
    Contains the list of registered PetscDraw routines
 */
 PetscFunctionList PetscDrawList = 0;
-
-#if defined(PETSC_HAVE_SAWS)
-#include <petscviewersaws.h>
-#endif
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDrawView"
