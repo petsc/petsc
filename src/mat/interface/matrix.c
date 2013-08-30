@@ -4846,7 +4846,7 @@ PetscErrorCode  MatAssembled(Mat mat,PetscBool  *assembled)
 
   Input Parameters:
 + mat   - the matrix
-. prefix - prefix to use for viewing, or NULL to use prefix of 'rnd'
+. prefix - prefix to use for viewing, or NULL to use prefix of 'mat'
 - optionname - option to activate viewing
 
   Level: intermediate

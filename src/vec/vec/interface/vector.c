@@ -233,7 +233,7 @@ PetscErrorCode  VecAssemblyBegin(Vec vec)
 
   Input Parameters:
 + vec   - the vector
-. prefix - prefix to use for viewing, or NULL to use prefix of 'rnd'
+. prefix - prefix to use for viewing, or NULL to use prefix of 'vec'
 - optionname - option to activate viewing
 
   Level: intermediate
