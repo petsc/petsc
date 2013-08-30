@@ -128,6 +128,9 @@ PetscErrorCode  PetscSetDisplay(void)
   flag = PETSC_FALSE;
   ierr = PetscOptionsGetBool(NULL,"-x_virtual",&flag,NULL);CHKERRQ(ierr);
   if (flag) {
+    /*  this is a crude hack, but better than nothing */
+    ierr = PetscPOpen(PETSC_COMM_WORLD,NULL,"pkill -9 Xvfb","r",NULL);CHKERRQ(ierr);
+    ierr = PetscSleep(1);CHKERRQ(ierr);
     ierr = PetscPOpen(PETSC_COMM_WORLD,NULL,"Xvfb :15 -screen 0 1600x1200x24","r",NULL);CHKERRQ(ierr);
     ierr = PetscSleep(5);CHKERRQ(ierr);
     str  = ":15";

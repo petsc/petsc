@@ -51,8 +51,8 @@
 
       <p>
         SAWs is a software library that uses threads, sockets, and locks to
-        allow a running program (called the accessor) to read (and change when
-        desired) variables in another running code (called the publisher
+        allow a client program to read (and change when
+        desired) variables in the server (PETSc)
         application).
       </p>
 
@@ -78,8 +78,8 @@
 
         <li>
           To examine options in a browser, run PETSc applications with
-          <code>-server &lt;port&gt; -saws_publish_objects</code> and point your
-          brower to <code>http://localhost:8080</code> 
+          <code>-server &lt;port&gt; -saws_view saws -ts_view_pre saws</code> and point your
+          brower to <code>http://localhost:8080</code>
         </li>
       </ul>
 

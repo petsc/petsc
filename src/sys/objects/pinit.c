@@ -22,7 +22,7 @@ PetscFPT PetscFPTData = 0;
 #endif
 
 #if defined(PETSC_HAVE_SAWS)
-#include <SAWs.h>
+#include <petscviewersaws.h>
 #endif
 /* -----------------------------------------------------------------------------------------*/
 
@@ -808,22 +808,22 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
 
       ierr = PetscOptionsGetString(NULL,"-saws_log",sawslog,PETSC_MAX_PATH_LEN,NULL);CHKERRQ(ierr);
       if (sawslog[0]) {
-        ierr = SAWs_Set_Use_Logfile(sawslog);CHKERRQ(ierr);
+        PetscStackCallSAWs(SAWs_Set_Use_Logfile,(sawslog));
       } else {
-        ierr = SAWs_Set_Use_Logfile(NULL);CHKERRQ(ierr);
+        PetscStackCallSAWs(SAWs_Set_Use_Logfile,(NULL));
       }
     }
     ierr = PetscOptionsGetString(NULL,"-saws_https",cert,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = SAWs_Set_Use_HTTPS(cert);CHKERRQ(ierr);
+      PetscStackCallSAWs(SAWs_Set_Use_HTTPS,(cert));
     }
     ierr = PetscOptionsGetInt(NULL,"-saws_port",&port,&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = SAWs_Set_Port(port);CHKERRQ(ierr);
+      PetscStackCallSAWs(SAWs_Set_Port,(port));
     }
     ierr = PetscOptionsGetString(NULL,"-saws_root",root,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = SAWs_Set_Document_Root(root);CHKERRQ(ierr);
+      PetscStackCallSAWs(SAWs_Set_Document_Root,(root));CHKERRQ(ierr);
       ierr = PetscStrcmp(root,".",&rootlocal);CHKERRQ(ierr);
     }
     ierr = PetscGetProgramName(programname,64);CHKERRQ(ierr);
@@ -843,8 +843,8 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
                                     "<center><h2> <a href=\"http://www.mcs.anl.gov/petsc\">PETSc</a> Application Web server powered by <a href=\"https://bitbucket.org/saws/saws\">SAWs</a> </h2></center>\n"
                                     "%s"
                                     "<center>This is the default PETSc application dashboard, from it you can access any published PETSc objects or logging data</center><br>\n",appline);
-    ierr = SAWs_Set_Body("index.html",0,intro);CHKERRQ(ierr);
-    ierr = SAWs_Initialize();CHKERRQ(ierr);
+    PetscStackCallSAWs(SAWs_Set_Body,("index.html",0,intro));
+    PetscStackCallSAWs(SAWs_Initialize,());
   }
 
 #endif
@@ -1182,7 +1182,7 @@ PetscErrorCode  PetscFinalize(void)
 
 #if defined(PETSC_HAVE_SAWS)
   ierr = PetscStackSAWsViewOff();CHKERRQ(ierr);
-  ierr = SAWs_Finalize();CHKERRQ(ierr);
+  PetscStackCallSAWs(SAWs_Finalize,());
 #endif
 
   {

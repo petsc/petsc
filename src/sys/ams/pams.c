@@ -25,6 +25,7 @@
 PetscErrorCode  PetscObjectSAWsTakeAccess(PetscObject obj)
 {
   if (obj->amsmem) {
+    /* cannot wrap with PetscPushStack() because that also deals with the locks */
     SAWs_Lock();
   }
   return 0;
@@ -52,6 +53,7 @@ PetscErrorCode  PetscObjectSAWsTakeAccess(PetscObject obj)
 PetscErrorCode  PetscObjectSAWsGrantAccess(PetscObject obj)
 {
   if (obj->amsmem) {
+    /* cannot wrap with PetscPushStack() because that also deals with the locks */
     SAWs_Unlock();
   }
   return 0;
@@ -136,8 +138,9 @@ PetscErrorCode PetscObjectSAWsViewOff(PetscObject obj)
 
   PetscFunctionBegin;
   if (obj->classid == PETSC_VIEWER_CLASSID) PetscFunctionReturn(0);
+  if (!obj->amsmem) PetscFunctionReturn(0);
   ierr = PetscSNPrintf(dir,1024,"/PETSc/Objects/%s",obj->name);CHKERRQ(ierr);
-  SAWs_Delete(dir);
+  PetscStackCallSAWs(SAWs_Delete,(dir));
   PetscFunctionReturn(0);
 }
 

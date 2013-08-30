@@ -300,7 +300,7 @@ PetscErrorCode  PetscDrawSetSave_X(PetscDraw draw,const char *filename)
 #include <afterimage.h>
 
 #if defined(PETSC_HAVE_SAWS)
-#include <SAWs.h>
+#include <petscviewersaws.h>
 typedef struct _P_PetscGif *PetscGif;
 struct _P_PetscGif {
   PetscGif next;
@@ -405,7 +405,7 @@ PetscErrorCode PetscDrawSave_X(PetscDraw draw)
       gif  = gif->next;
     }
     ierr = PetscStrcat(body,"<br>\n");CHKERRQ(ierr);
-    ierr = SAWs_Set_Body("index.html",1,body);CHKERRQ(ierr);
+    PetscStackCallSAWs(SAWs_Set_Body,("index.html",1,body));
   }
 #endif
 
