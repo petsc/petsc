@@ -5,7 +5,7 @@ CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR          = src/sys/examples/tests/
 EXAMPLESC       = ex1.c ex2.c ex3.c ex7.c ex9.c ex10.c ex11.c ex12.c \
-                ex14.c ex15.c ex16.c ex18.c ex19.c ex20.c ex21.c \
+                ex13.c ex14.c ex15.c ex16.c ex18.c ex19.c ex20.c ex21.c \
                 ex22.c ex23.c ex24.c
 EXAMPLESF       = ex1f.F ex5f.F ex6f.F ex17f.F
 MANSEC          = Sys
@@ -60,6 +60,10 @@ ex11: ex11.o chkopts
 ex12: ex12.o chkopts
 	-${CLINKER} -o ex12 ex12.o  ${PETSC_SYS_LIB}
 	${RM} -f ex12.o
+
+ex13: ex13.o chkopts
+	-${CLINKER} -o ex13 ex13.o  ${PETSC_SYS_LIB}
+	${RM} -f ex13.o
 
 ex14: ex14.o chkopts
 	-${CLINKER} -o ex14 ex14.o  ${PETSC_SYS_LIB}
@@ -123,6 +127,11 @@ runex10:
 	   else echo "Error in PetscMemmove."; fi; \
 	   ${RM} -f ex10_1.tmp ex10_1.tmp
 
+runex13:
+	-@${MPIEXEC} -n 1 ./ex13 > ex13_1.tmp 2>&1;\
+	   ${DIFF} output/ex13_1.out ex13_1.tmp || printf "${PWD}\nPossible problem with with ex13_1, diffs above \n========================================="; \
+	   ${RM} ex13_1.tmp
+
 runex19:
 	-@${MPIEXEC} -n 1 ./ex19 > ex19_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex19_1.out ex19_1.tmp) then true; \
@@ -150,7 +159,7 @@ runex23:
 	   ${RM} -f ex23.tmp
 
 
-TESTEXAMPLES_C		       = ex19.PETSc runex19 ex19.rm \
+TESTEXAMPLES_C		       = ex13.PETSc runex13 ex13.rm ex19.PETSc runex19 ex19.rm \
                                  ex20.PETSc runex20 runex20_2 runex20_3 ex20.rm  ex21.PETSc ex21.rm \
                                  ex22.PETSc runex22 ex22.rm ex24.PETSc ex24.rm
 TESTEXAMPLES_C_X	       = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 ex3.rm
