@@ -1401,9 +1401,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_GAMG(PC pc)
   pc_gamg->data    = 0;
 
   /* register AMG type */
-#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = PCGAMGInitializePackage();CHKERRQ(ierr);
-#endif
 
   /* overwrite the pointers of PCMG by the functions of base class PCGAMG */
   pc->ops->setfromoptions = PCSetFromOptions_GAMG;

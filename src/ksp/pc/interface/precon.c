@@ -379,9 +379,7 @@ PetscErrorCode  PCCreate(MPI_Comm comm,PC *newpc)
   PetscFunctionBegin;
   PetscValidPointer(newpc,1);
   *newpc = 0;
-#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = PCInitializePackage();CHKERRQ(ierr);
-#endif
 
   ierr = PetscHeaderCreate(pc,_p_PC,struct _PCOps,PC_CLASSID,"PC","Preconditioner","PC",comm,PCDestroy,PCView);CHKERRQ(ierr);
 

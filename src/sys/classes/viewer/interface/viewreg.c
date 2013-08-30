@@ -167,9 +167,7 @@ PetscErrorCode  PetscViewerCreate(MPI_Comm comm,PetscViewer *inviewer)
 
   PetscFunctionBegin;
   *inviewer = 0;
-#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = PetscViewerInitializePackage();CHKERRQ(ierr);
-#endif
   ierr         = PetscHeaderCreate(viewer,_p_PetscViewer,struct _PetscViewerOps,PETSC_VIEWER_CLASSID,"PetscViewer","PetscViewer","Viewer",comm,PetscViewerDestroy,0);CHKERRQ(ierr);
   *inviewer    = viewer;
   viewer->data = 0;

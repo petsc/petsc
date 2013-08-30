@@ -72,11 +72,9 @@ PetscErrorCode  DMCreate(MPI_Comm comm,DM *dm)
   PetscFunctionBegin;
   PetscValidPointer(dm,2);
   *dm = NULL;
-#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = VecInitializePackage();CHKERRQ(ierr);
   ierr = MatInitializePackage();CHKERRQ(ierr);
   ierr = DMInitializePackage();CHKERRQ(ierr);
-#endif
 
   ierr = PetscHeaderCreate(v, _p_DM, struct _DMOps, DM_CLASSID, "DM", "Distribution Manager", "DM", comm, DMDestroy, DMView);CHKERRQ(ierr);
   ierr = PetscMemzero(v->ops, sizeof(struct _DMOps));CHKERRQ(ierr);
@@ -949,9 +947,7 @@ PetscErrorCode  DMCreateMatrix(DM dm,MatType mtype,Mat *mat)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = MatInitializePackage();CHKERRQ(ierr);
-#endif
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidPointer(mat,3);
   if (dm->mattype) {
