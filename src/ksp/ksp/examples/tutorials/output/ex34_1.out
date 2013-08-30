@@ -28,7 +28,7 @@ PC Object: 1 MPI processes
       type: lu
         LU: out-of-place factorization
         tolerance for zero pivot 2.22045e-14
-        using diagonal shift to prevent zero pivot
+        using diagonal shift to prevent zero pivot [NONZERO]
         matrix ordering: nd
         factor fill ratio given 5, needed 2.21481
           Factored matrix follows:

@@ -288,14 +288,8 @@ PetscErrorCode PCView_Factor(PC pc,PetscViewer viewer)
     }
 
     ierr = PetscViewerASCIIPrintf(viewer,"  tolerance for zero pivot %G\n",factor->info.zeropivot);CHKERRQ(ierr);
-    if (factor->info.shifttype==(PetscReal)MAT_SHIFT_POSITIVE_DEFINITE) {
-      ierr = PetscViewerASCIIPrintf(viewer,"  using Manteuffel shift\n");CHKERRQ(ierr);
-    }
-    if (factor->info.shifttype==(PetscReal)MAT_SHIFT_NONZERO) {
-      ierr = PetscViewerASCIIPrintf(viewer,"  using diagonal shift to prevent zero pivot\n");CHKERRQ(ierr);
-    }
-    if (factor->info.shifttype==(PetscReal)MAT_SHIFT_INBLOCKS) {
-      ierr = PetscViewerASCIIPrintf(viewer,"  using diagonal shift on blocks to prevent zero pivot\n");CHKERRQ(ierr);
+    if (MatFactorShiftTypesDetail[(int)factor->info.shifttype]) { /* Only print when using a nontrivial shift */
+      ierr = PetscViewerASCIIPrintf(viewer,"  using %s [%s]\n",MatFactorShiftTypesDetail[(int)factor->info.shifttype],MatFactorShiftTypes[(int)factor->info.shifttype]);CHKERRQ(ierr);
     }
 
     ierr = PetscViewerASCIIPrintf(viewer,"  matrix ordering: %s\n",factor->ordering);CHKERRQ(ierr);

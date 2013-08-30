@@ -243,7 +243,7 @@ PC Object:(fc_) 4 MPI processes
               type: icc
                 0 levels of fill
                 tolerance for zero pivot 1e-12
-                using Manteuffel shift
+                using Manteuffel shift [POSITIVE_DEFINITE]
                 matrix ordering: natural
                 factor fill ratio given 1, needed 1
                   Factored matrix follows:
