@@ -382,9 +382,7 @@ PetscErrorCode DMCreateMatrix_Mesh(DM dm, MatType mtype, Mat *J)
   PetscErrorCode         ierr;
 
   PetscFunctionBegin;
-#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = MatInitializePackage();CHKERRQ(ierr);
-#endif
   if (!mtype) mtype = MATAIJ;
   if (mesh->useNewImpl) {
     SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Not supported");
@@ -443,9 +441,7 @@ PetscErrorCode DMMeshCreateMatrix(DM dm, SectionReal section, MatType mtype, Mat
   PetscErrorCode                               ierr;
 
   PetscFunctionBegin;
-#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = MatInitializePackage();CHKERRQ(ierr);
-#endif
   if (!mtype) mtype = MATAIJ;
   ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
   ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);

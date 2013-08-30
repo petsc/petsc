@@ -221,9 +221,7 @@ PetscErrorCode  ISLocalToGlobalMappingCreate(MPI_Comm cm,PetscInt n,const PetscI
   PetscValidPointer(mapping,4);
 
   *mapping = NULL;
-#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = ISInitializePackage();CHKERRQ(ierr);
-#endif
 
   ierr = PetscHeaderCreate(*mapping,_p_ISLocalToGlobalMapping,int,IS_LTOGM_CLASSID,"ISLocalToGlobalMapping","Local to global mapping","IS",
                            cm,ISLocalToGlobalMappingDestroy,ISLocalToGlobalMappingView);CHKERRQ(ierr);

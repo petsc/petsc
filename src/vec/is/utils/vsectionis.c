@@ -40,9 +40,7 @@ PetscErrorCode PetscSectionCreate(MPI_Comm comm, PetscSection *s)
 
   PetscFunctionBegin;
   PetscValidPointer(s,2);
-#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = ISInitializePackage();CHKERRQ(ierr);
-#endif
 
   ierr = PetscHeaderCreate(*s,_p_PetscSection,int,PETSC_SECTION_CLASSID,"PetscSection","Section","IS",comm,PetscSectionDestroy,PetscSectionView);CHKERRQ(ierr);
 

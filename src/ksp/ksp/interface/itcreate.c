@@ -725,9 +725,7 @@ PetscErrorCode  KSPCreate(MPI_Comm comm,KSP *inksp)
   PetscFunctionBegin;
   PetscValidPointer(inksp,2);
   *inksp = 0;
-#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = KSPInitializePackage();CHKERRQ(ierr);
-#endif
 
   ierr = PetscHeaderCreate(ksp,_p_KSP,struct _KSPOps,KSP_CLASSID,"KSP","Krylov Method","KSP",comm,KSPDestroy,KSPView);CHKERRQ(ierr);
 

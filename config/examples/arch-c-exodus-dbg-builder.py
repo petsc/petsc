@@ -20,7 +20,6 @@ if __name__ == '__main__':
     '--download-triangle',
     '--with-cuda',
     '--with-cuda-only',
-    '--with-dynamic-loading',
     '--with-shared-libraries',
   ]
   configure.petsc_configure(configure_options)

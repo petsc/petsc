@@ -110,9 +110,7 @@ PetscErrorCode  PFCreate(MPI_Comm comm,PetscInt dimin,PetscInt dimout,PF *pf)
   PetscFunctionBegin;
   PetscValidPointer(pf,1);
   *pf = NULL;
-#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = PFInitializePackage();CHKERRQ(ierr);
-#endif
 
   ierr = PetscHeaderCreate(newpf,_p_PF,struct _PFOps,PF_CLASSID,"PF","Mathematical functions","Vec",comm,PFDestroy,PFView);CHKERRQ(ierr);
   newpf->data          = 0;

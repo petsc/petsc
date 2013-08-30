@@ -549,9 +549,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_MS(SNES snes)
   SNES_MS        *ms;
 
   PetscFunctionBegin;
-#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = SNESMSInitializePackage();CHKERRQ(ierr);
-#endif
 
   snes->ops->setup          = SNESSetUp_MS;
   snes->ops->solve          = SNESSolve_MS;
