@@ -15,6 +15,8 @@ typedef struct {
   Vec               *U;                   /* Stored past states (vary from method to method) */
   Vec               *V;                   /* Stored past states (vary from method to method) */
   PetscInt          m;                    /* The number of kept previous steps */
+  PetscReal         *lambda;              /* The line search history of the method */
+  PetscReal         *norm;                /* norms of the steps */
   PetscScalar       *alpha, *beta;
   PetscScalar       *dXtdF, *dFtdX, *YtdX;
   PetscBool         singlereduction;      /* Aggregated reduction implementation */
@@ -36,15 +38,25 @@ PetscErrorCode SNESQNApply_Broyden(SNES snes,PetscInt it,Vec Y,Vec X,Vec Xold, V
   SNES_QN            *qn = (SNES_QN*)snes->data;
   Vec                W   = snes->work[3];
   Vec                *U  = qn->U;
-  Vec                *V  = qn->V;
   KSPConvergedReason kspreason;
-  PetscInt           k,i,lits;
   PetscInt           m = qn->m;
+  PetscInt           k,i,j,lits,l = m;
+  PetscReal          unorm,a,b;
+  PetscReal          *lambda=qn->lambda;
   PetscScalar        gdot;
-  PetscInt           l = m;
 
   PetscFunctionBegin;
   if (it < m) l = it;
+  if (it > 0) {
+    k = (it-1)%l;
+    ierr = SNESLineSearchGetLambda(snes->linesearch,&lambda[k]);CHKERRQ(ierr);
+    ierr = VecScale(U[k],lambda[k]);CHKERRQ(ierr);
+    if (qn->monitor) {
+      ierr = PetscViewerASCIIAddTab(qn->monitor,((PetscObject)snes)->tablevel+2);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(qn->monitor, "scaling vector %d of %d by lambda: %14.12e \n",k,l,lambda[k]);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISubtractTab(qn->monitor,((PetscObject)snes)->tablevel+2);CHKERRQ(ierr);
+    }
+  }
   if (qn->scale_type == SNES_QN_SCALE_JACOBIAN) {
     ierr = KSPSolve(snes->ksp,D,W);CHKERRQ(ierr);
     ierr = KSPGetConvergedReason(snes->ksp,&kspreason);CHKERRQ(ierr);
@@ -64,40 +76,50 @@ PetscErrorCode SNESQNApply_Broyden(SNES snes,PetscInt it,Vec Y,Vec X,Vec Xold, V
   }
 
   /* inward recursion starting at the first update and working forward */
-  if (it > 1) {
-    for (i = 0; i < l-1; i++) {
-      k    = (it+i-l)%l;
-      ierr = VecDot(U[k],Y,&gdot);CHKERRQ(ierr);
-      ierr = VecAXPY(Y,gdot,V[k]);CHKERRQ(ierr);
-      if (qn->monitor) {
-        ierr = PetscViewerASCIIAddTab(qn->monitor,((PetscObject)snes)->tablevel+2);CHKERRQ(ierr);
-        ierr = PetscViewerASCIIPrintf(qn->monitor, "it: %d k: %d gdot: %14.12e\n", it, k, PetscRealPart(gdot));CHKERRQ(ierr);
-        ierr = PetscViewerASCIISubtractTab(qn->monitor,((PetscObject)snes)->tablevel+2);CHKERRQ(ierr);
-      }
-    }
-  }
-  if (it < m) l = it;
+  for (i = 0; i < l-1; i++) {
+    j = (it+i-l)%l;
+    k = (it+i-l+1)%l;
 
-  /* set W to be the last step, post-linesearch */
-  ierr = VecCopy(Xold,W);CHKERRQ(ierr);
-  ierr = VecAXPY(W,-1.0,X);CHKERRQ(ierr);
+    ierr = VecNorm(U[j],NORM_2,&unorm);CHKERRQ(ierr);
+    ierr = VecDot(U[j],Y,&gdot);CHKERRQ(ierr);
 
-  if (l > 0) {
-    k    = (it-1)%l;
-    ierr = VecCopy(W,U[k]);CHKERRQ(ierr);
-    ierr = VecAXPY(W,-1.0,Y);CHKERRQ(ierr);
-    ierr = VecDot(U[k],W,&gdot);CHKERRQ(ierr);
-    ierr = VecCopy(Y,V[k]);CHKERRQ(ierr);
-    ierr = VecScale(V[k],1.0/gdot);CHKERRQ(ierr);
-    ierr = VecDot(U[k],Y,&gdot);CHKERRQ(ierr);
-    ierr = VecAXPY(Y,gdot,V[k]);CHKERRQ(ierr);
+    /* ierr = VecAXPY(Y,gdot/PetscSqr(unorm),U[k]);CHKERRQ(ierr); */
+    a = (lambda[j]/lambda[k]);
+    b = -(1.-lambda[j]);
+    a *= gdot/PetscSqr(unorm);
+    b *= gdot/PetscSqr(unorm);
+    ierr = VecAXPBYPCZ(Y,a,b,1.,U[k],U[j]);CHKERRQ(ierr);
+
     if (qn->monitor) {
       ierr = PetscViewerASCIIAddTab(qn->monitor,((PetscObject)snes)->tablevel+2);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(qn->monitor, "update: %d k: %d gdot: %14.12e\n", it, k, PetscRealPart(gdot));CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(qn->monitor, "using vector %d and %d, gdot: %14.12e\n",k,j,gdot);CHKERRQ(ierr);
       ierr = PetscViewerASCIISubtractTab(qn->monitor,((PetscObject)snes)->tablevel+2);CHKERRQ(ierr);
     }
   }
-  PetscFunctionReturn(0);
+  if (l > 0) {
+    k = (it-1)%l;
+    ierr = VecDot(U[k],Y,&gdot);CHKERRQ(ierr);
+    ierr = VecNorm(U[k],NORM_2,&unorm);CHKERRQ(ierr);
+    if (qn->monitor) {
+      ierr = PetscViewerASCIIAddTab(qn->monitor,((PetscObject)snes)->tablevel+2);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(qn->monitor, "using vector %d: norm: %14.12e dot: %14.12e lambda: %14.12e scaling: %14.12e \n",k,gdot,unorm,lambda[k],1. - gdot/PetscSqr(unorm));CHKERRQ(ierr);
+      ierr = PetscViewerASCIISubtractTab(qn->monitor,((PetscObject)snes)->tablevel+2);CHKERRQ(ierr);
+    }
+    /* ierr = VecScale(Y,1./(1.-gdot/PetscSqr(unorm)));CHKERRQ(ierr); */
+    a = PetscSqr(unorm)/(PetscSqr(unorm)-lambda[k]*gdot);
+    b = -(1.-lambda[k])*gdot/(PetscSqr(unorm)-lambda[k]*gdot);
+    ierr = VecAXPBY(Y,b,a,U[k]);CHKERRQ(ierr);
+  }
+  l = m;
+  if (it+1<m)l=it+1;
+  k = it%l;
+  if (qn->monitor) {
+    ierr = PetscViewerASCIIAddTab(qn->monitor,((PetscObject)snes)->tablevel+2);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(qn->monitor, "setting vector %d of %d\n",k,l);CHKERRQ(ierr);
+    ierr = PetscViewerASCIISubtractTab(qn->monitor,((PetscObject)snes)->tablevel+2);CHKERRQ(ierr);
+  }
+  ierr = VecCopy(Y,U[k]);CHKERRQ(ierr);
+ PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
@@ -519,9 +541,10 @@ static PetscErrorCode SNESSetUp_QN(SNES snes)
   PetscFunctionBegin;
   ierr = VecDuplicateVecs(snes->vec_sol, qn->m, &qn->U);CHKERRQ(ierr);
   ierr = VecDuplicateVecs(snes->vec_sol, qn->m, &qn->V);CHKERRQ(ierr);
-  ierr = PetscMalloc3(qn->m, PetscScalar, &qn->alpha,
+  ierr = PetscMalloc4(qn->m, PetscScalar, &qn->alpha,
                       qn->m, PetscScalar, &qn->beta,
-                      qn->m, PetscScalar, &qn->dXtdF);CHKERRQ(ierr);
+                      qn->m, PetscScalar, &qn->dXtdF,
+                      qn->m, PetscReal, &qn->lambda);CHKERRQ(ierr);
 
   if (qn->singlereduction) {
     ierr = PetscMalloc3(qn->m*qn->m, PetscScalar, &qn->dXdFmat,
@@ -559,7 +582,7 @@ static PetscErrorCode SNESReset_QN(SNES snes)
     if (qn->singlereduction) {
       ierr = PetscFree3(qn->dXdFmat, qn->dFtdX, qn->YtdX);CHKERRQ(ierr);
     }
-    ierr = PetscFree3(qn->alpha, qn->beta, qn->dXtdF);CHKERRQ(ierr);
+    ierr = PetscFree4(qn->alpha,qn->beta,qn->dXtdF,qn->lambda);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
