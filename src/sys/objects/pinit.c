@@ -802,7 +802,7 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   if (!PetscGlobalRank) {
     char        cert[PETSC_MAX_PATH_LEN],root[PETSC_MAX_PATH_LEN],intro[4024],programname[64],appline[256];
     int         port;
-    PetscBool   rootlocal = PETSC_FALSE;
+    PetscBool   rootlocal = PETSC_FALSE,flg2;
 
     ierr = PetscOptionsHasName(NULL,"-saws_log",&flg);CHKERRQ(ierr);
     if (flg) {
@@ -827,6 +827,15 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
     if (flg) {
       PetscStackCallSAWs(SAWs_Set_Document_Root,(root));CHKERRQ(ierr);
       ierr = PetscStrcmp(root,".",&rootlocal);CHKERRQ(ierr);
+    }
+    ierr = PetscOptionsHasName(NULL,"-saws_local",&flg2);CHKERRQ(ierr);
+    if (flg2) {
+      char jsdir[PETSC_MAX_PATH_LEN];
+      if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"-saws_local option requires -saws_root option");
+      ierr = PetscSNPrintf(jsdir,PETSC_MAX_PATH_LEN,"%s/js",root);CHKERRQ(ierr);
+      ierr = PetscTestDirectory(jsdir,'r',&flg);CHKERRQ(ierr);
+      if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"-saws_local option requires js directory in root directory");   
+      PetscStackCallSAWs(SAWs_Set_Local_JSHeader,());CHKERRQ(ierr);
     }
     ierr = PetscGetProgramName(programname,64);CHKERRQ(ierr);
     if (rootlocal) {
