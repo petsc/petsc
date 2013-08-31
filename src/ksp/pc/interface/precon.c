@@ -1671,7 +1671,11 @@ PetscErrorCode  PCView(PC pc,PetscViewer viewer)
     ierr = PetscDrawPopCurrentPoint(draw);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_SAWS)
   } else if (isams) {
-    if (!((PetscObject)pc)->amsmem) {
+    PetscMPIInt rank;
+
+    ierr = PetscObjectName((PetscObject)pc);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+    if (!((PetscObject)pc)->amsmem && !rank) {
       ierr = PetscObjectViewSAWs((PetscObject)pc,viewer);CHKERRQ(ierr);
     }
     if (pc->mat) {ierr = MatView(pc->mat,viewer);CHKERRQ(ierr);}

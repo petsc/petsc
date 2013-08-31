@@ -316,10 +316,14 @@ PetscErrorCode  SNESView(SNES snes,PetscViewer viewer)
     }
 #if defined(PETSC_HAVE_SAWS)
   } else if (isams) {
-    if (!((PetscObject)snes)->amsmem) {
+    PetscMPIInt rank;
+    const char *name;
+
+    ierr = PetscObjectGetName((PetscObject)snes,&name);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+    if (!((PetscObject)snes)->amsmem && !rank) {
       char       dir[1024];
-      const char *name;
-      ierr = PetscObjectGetName((PetscObject)snes,&name);CHKERRQ(ierr);
+
       ierr = PetscObjectViewSAWs((PetscObject)snes,viewer);CHKERRQ(ierr);
       ierr = PetscSNPrintf(dir,1024,"/PETSc/Objects/%s/its",name);CHKERRQ(ierr);
       PetscStackCallSAWs(SAWs_Register,(dir,&snes->iter,1,SAWs_READ,SAWs_INT));

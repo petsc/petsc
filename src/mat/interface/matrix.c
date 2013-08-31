@@ -859,7 +859,11 @@ PetscErrorCode  MatView(Mat mat,PetscViewer viewer)
     }
 #if defined(PETSC_HAVE_SAWS)
   } else if (isams) {
-    if (!((PetscObject)mat)->amsmem) {
+    PetscMPIInt rank;
+
+    ierr = PetscObjectName((PetscObject)mat);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+    if (!((PetscObject)mat)->amsmem && !rank) {
       ierr = PetscObjectViewSAWs((PetscObject)mat,viewer);CHKERRQ(ierr);
     }
 #endif

@@ -76,7 +76,11 @@ PetscErrorCode  PetscDrawView(PetscDraw indraw,PetscViewer viewer)
     ierr = PetscDrawPushCurrentPoint(draw,x,bottom);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_SAWS)
   } else if (isams) {
-    if (!((PetscObject)indraw)->amsmem) {
+    PetscMPIInt rank;
+
+    ierr = PetscObjectName((PetscObject)indraw);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+    if (!((PetscObject)indraw)->amsmem && !rank) {
       ierr = PetscObjectViewSAWs((PetscObject)indraw,viewer);CHKERRQ(ierr);
     }
 #endif

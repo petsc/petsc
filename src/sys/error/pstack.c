@@ -68,7 +68,11 @@ void  PetscStackSAWsTakeAccess(void)
 PetscErrorCode PetscStackViewSAWs(void)
 {
   PetscStack*    petscstackp;
+  PetscMPIInt    rank;
+  PetscErrorCode ierr;
 
+  ierr  = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+  if (rank) return 0;
   petscstackp = (PetscStack*)PetscThreadLocalGetValue(petscstack);
   PetscStackCallSAWs(SAWs_Register,("/PETSc/Stack/functions",petscstackp->function,20,SAWs_READ,SAWs_STRING));
   PetscStackCallSAWs(SAWs_Register,("/PETSc/Stack/_current_size",&petscstackp->currentsize,1,SAWs_READ,SAWs_INT));
@@ -81,6 +85,7 @@ PetscErrorCode PetscStackViewSAWs(void)
 PetscErrorCode PetscStackSAWsViewOff(void)
 {
   PetscFunctionBegin;
+  if (!amsmemstack) PetscFunctionReturn(0);
   PetscStackCallSAWs(SAWs_Delete,("/PETSc/Stack"));
   amsmemstack = PETSC_FALSE;
   PetscFunctionReturn(0);

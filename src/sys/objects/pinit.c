@@ -796,11 +796,13 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   }
   ierr = PetscOptionsCheckInitial_Private();CHKERRQ(ierr);
 
+  ierr = PetscCitationsInitialize();CHKERRQ(ierr);
+
 #if defined(PETSC_HAVE_SAWS)
-  {
-    char      cert[PETSC_MAX_PATH_LEN],root[PETSC_MAX_PATH_LEN],intro[4024],programname[64],appline[256];
-    int       port;
-    PetscBool rootlocal = PETSC_FALSE;
+  if (!PetscGlobalRank) {
+    char        cert[PETSC_MAX_PATH_LEN],root[PETSC_MAX_PATH_LEN],intro[4024],programname[64],appline[256];
+    int         port;
+    PetscBool   rootlocal = PETSC_FALSE;
 
     ierr = PetscOptionsHasName(NULL,"-saws_log",&flg);CHKERRQ(ierr);
     if (flg) {
@@ -845,6 +847,11 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
                                     "<center>This is the default PETSc application dashboard, from it you can access any published PETSc objects or logging data</center><br>\n",appline);
     PetscStackCallSAWs(SAWs_Set_Body,("index.html",0,intro));
     PetscStackCallSAWs(SAWs_Initialize,());
+    ierr = PetscCitationsRegister("@TechReport{ saws,"
+                                  "Author = {Matt Otten and Jed Brown and Barry Smith},"
+                                  "Title  = {Scientific Application Web Server (SAWs) Users Manual},"
+                                  "Institution = {Argonne National Laboratory},"
+                                  "Year   = 2013}",NULL);CHKERRQ(ierr);
   }
 
 #endif
@@ -928,7 +935,6 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   ierr = PetscFPTCreate(10000);CHKERRQ(ierr);
 #endif
 
-  ierr = PetscCitationsInitialize();CHKERRQ(ierr);
 
   /*
       Once we are completedly initialized then we can set this variables
@@ -1181,8 +1187,10 @@ PetscErrorCode  PetscFinalize(void)
   }
 
 #if defined(PETSC_HAVE_SAWS)
-  ierr = PetscStackSAWsViewOff();CHKERRQ(ierr);
-  PetscStackCallSAWs(SAWs_Finalize,());
+  if (!PetscGlobalRank) {
+    ierr = PetscStackSAWsViewOff();CHKERRQ(ierr);
+    PetscStackCallSAWs(SAWs_Finalize,());
+  }
 #endif
 
   {

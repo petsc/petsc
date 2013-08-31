@@ -88,6 +88,7 @@ PetscErrorCode KSPMonitorSAWs(KSP ksp,PetscInt n,PetscReal rnorm,void *ctx)
   KSPMonitor_SAWs *mon   = (KSPMonitor_SAWs*)ctx;
   PetscViewer     viewer = mon->viewer;
   PetscReal       emax,emin;
+  PetscMPIInt     rank;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
@@ -99,13 +100,16 @@ PetscErrorCode KSPMonitorSAWs(KSP ksp,PetscInt n,PetscReal rnorm,void *ctx)
   mon->eigi = mon->eigr + n;
   if (n) {ierr = KSPComputeEigenvalues(ksp,n,mon->eigr,mon->eigi,&mon->neigs);CHKERRQ(ierr);}
 
-  PetscStackCallSAWs(SAWs_Register,("/PETSc/ksp_monitor_saws/rnorm",&ksp->rnorm,1,SAWs_READ,SAWs_DOUBLE));
-  PetscStackCallSAWs(SAWs_Register,("/PETSc/ksp_monitor_saws/neigs",&mon->neigs,1,SAWs_READ,SAWs_INT));
-  if (mon->neigs > 0) {
-    PetscStackCallSAWs(SAWs_Register,("/PETSc/ksp_monitor_saws/eigr",&mon->eigr,mon->neigs,SAWs_READ,SAWs_DOUBLE));
-    PetscStackCallSAWs(SAWs_Register,("/PETSc/ksp_monitor_saws/eigi",&mon->eigr,mon->neigs,SAWs_READ,SAWs_DOUBLE));
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+  if (!rank) {
+    PetscStackCallSAWs(SAWs_Register,("/PETSc/ksp_monitor_saws/rnorm",&ksp->rnorm,1,SAWs_READ,SAWs_DOUBLE));
+    PetscStackCallSAWs(SAWs_Register,("/PETSc/ksp_monitor_saws/neigs",&mon->neigs,1,SAWs_READ,SAWs_INT));
+    if (mon->neigs > 0) {
+      PetscStackCallSAWs(SAWs_Register,("/PETSc/ksp_monitor_saws/eigr",&mon->eigr,mon->neigs,SAWs_READ,SAWs_DOUBLE));
+      PetscStackCallSAWs(SAWs_Register,("/PETSc/ksp_monitor_saws/eigi",&mon->eigr,mon->neigs,SAWs_READ,SAWs_DOUBLE));
+    }
+    ierr = PetscObjectSAWsBlock((PetscObject)ksp);CHKERRQ(ierr);
   }
-  ierr = PetscObjectSAWsBlock((PetscObject)ksp);CHKERRQ(ierr);
   ierr = PetscInfo2(ksp,"KSP extreme singular values min=%G max=%G\n",emin,emax);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -5,7 +5,7 @@
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerSAWsOpen"
 /*@C
-    PetscViewerSAWsOpen - Opens an SAWs memory snooper PetscViewer.
+    PetscViewerSAWsOpen - Opens an SAWs PetscViewer.
 
     Collective on MPI_Comm
 
@@ -32,11 +32,7 @@
     one to view the object asynchronously as the program continues to run. One can remove SAWs access to the object with a call to
     PetscObjectSAWsViewOff().
 
-    Information about the SAWs is available via http://www.mcs.anl.gov/SAWs.
-
-   Concepts: AMS
-   Concepts: Argonne Memory Snooper
-   Concepts: Asynchronous Memory Snooper
+    Information about the SAWs is available via http://bitbucket.org/saws/saws
 
 .seealso: PetscViewerDestroy(), PetscViewerStringSPrintf(), PETSC_VIEWER_SAWS_(), PetscObjectSAWsBlock(),
           PetscObjectSAWsViewOff(), PetscObjectSAWsTakeAccess(), PetscObjectSAWsGrantAccess()
@@ -69,6 +65,12 @@ PetscErrorCode PetscViewerSAWsOpen(MPI_Comm comm,PetscViewer *lab)
 
    Concepts: publishing object
 
+   Developer Note: Currently this is called only on rank zero of PETSC_COMM_WORLD
+
+   The object must have already been named before calling this routine since naming an
+   object can be collective.
+
+
 .seealso: PetscObjectSetName(), PetscObjectSAWsViewOff()
 
 @*/
@@ -76,12 +78,14 @@ PetscErrorCode  PetscObjectViewSAWs(PetscObject obj,PetscViewer viewer)
 {
   PetscErrorCode ierr;
   char           dir[1024];
+  PetscMPIInt    rank;
 
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
   if (obj->amsmem) PetscFunctionReturn(0);
-  obj->amsmem = PETSC_TRUE;
-  ierr = PetscObjectName(obj);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+  if (rank) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Should only be being called on rank zero");
+  if (!obj->name) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Object must already have been named");
 
   ierr = PetscSNPrintf(dir,1024,"/PETSc/Objects/%s/Class",obj->name);CHKERRQ(ierr);
   PetscStackCallSAWs(SAWs_Register,(dir,&obj->class_name,1,SAWs_READ,SAWs_STRING));

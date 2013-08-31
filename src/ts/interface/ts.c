@@ -1393,11 +1393,14 @@ PetscErrorCode  TSView(TS ts,PetscViewer viewer)
     ierr = PetscDrawPopCurrentPoint(draw);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_SAWS)
   } else if (isams) {
-    if (!((PetscObject)ts)->amsmem) {
-      char       dir[1024];
-      const char *name;
+    PetscMPIInt rank;
+    const char  *name;
 
-      ierr = PetscObjectGetName((PetscObject)ts,&name);CHKERRQ(ierr);
+    ierr = PetscObjectGetName((PetscObject)ts,&name);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+    if (!((PetscObject)ts)->amsmem && !rank) {
+      char       dir[1024];
+
       ierr = PetscObjectViewSAWs((PetscObject)ts,viewer);CHKERRQ(ierr);
       ierr = PetscSNPrintf(dir,1024,"/PETSc/Objects/%s/time_step",name);CHKERRQ(ierr);
       PetscStackCallSAWs(SAWs_Register,(dir,&ts->steps,1,SAWs_READ,SAWs_INT));

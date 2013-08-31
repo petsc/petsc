@@ -186,11 +186,14 @@ PetscErrorCode  KSPView(KSP ksp,PetscViewer viewer)
     ierr = PetscDrawPushCurrentPoint(draw,x,bottom);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_SAWS)
   } else if (isams) {
-    if (!((PetscObject)ksp)->amsmem) {
-      char       dir[1024];
-      const char *name;
+    PetscMPIInt rank;
+    const char  *name;
 
-      ierr = PetscObjectGetName((PetscObject)ksp,&name);CHKERRQ(ierr);
+    ierr = PetscObjectGetName((PetscObject)ksp,&name);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+    if (!((PetscObject)ksp)->amsmem && !rank) {
+      char       dir[1024];
+
       ierr = PetscObjectViewSAWs((PetscObject)ksp,viewer);CHKERRQ(ierr);
       ierr = PetscSNPrintf(dir,1024,"/PETSc/Objects/%s/its",name);CHKERRQ(ierr);
       PetscStackCallSAWs(SAWs_Register,(dir,&ksp->its,1,SAWs_READ,SAWs_INT));

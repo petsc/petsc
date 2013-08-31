@@ -262,10 +262,14 @@ PetscErrorCode  PetscRandomView(PetscRandom rnd,PetscViewer viewer)
     ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_FALSE);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_SAWS)
   } else if (isams) {
-    if (!((PetscObject)rnd)->amsmem) {
+    PetscMPIInt rank;
+    const char  *name;
+
+    ierr = PetscObjectGetName((PetscObject)rnd,&name);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+    if (!((PetscObject)rnd)->amsmem && !rank) {
       char       dir[1024];
-      const char *name;
-      ierr = PetscObjectGetName((PetscObject)rnd,&name);CHKERRQ(ierr);
+
       ierr = PetscObjectViewSAWs((PetscObject)rnd,viewer);CHKERRQ(ierr);
       ierr = PetscSNPrintf(dir,1024,"/PETSc/Objects/%s/Low",name);CHKERRQ(ierr);
       PetscStackCallSAWs(SAWs_Register,(dir,&rnd->low,1,SAWs_READ,SAWs_DOUBLE));

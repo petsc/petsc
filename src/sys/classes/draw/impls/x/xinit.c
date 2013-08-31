@@ -274,9 +274,6 @@ PetscErrorCode  PetscDrawSetSave_X(PetscDraw draw,const char *filename)
   PetscErrorCode ierr;
 #if defined(PETSC_HAVE_POPEN)
   PetscMPIInt    rank;
-  char           command[PETSC_MAX_PATH_LEN];
-  FILE           *fd;
-  int            err;
 #endif
 
   PetscFunctionBegin;
@@ -284,6 +281,11 @@ PetscErrorCode  PetscDrawSetSave_X(PetscDraw draw,const char *filename)
 #if defined(PETSC_HAVE_POPEN)
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)draw),&rank);CHKERRQ(ierr);
   if (!rank) {
+    char  command[PETSC_MAX_PATH_LEN];
+    FILE  *fd;
+    int   err;
+
+    ierr = PetscMemzero(command,sizeof(command));CHKERRQ(ierr);
     ierr = PetscSNPrintf(command,PETSC_MAX_PATH_LEN,"rm -fr %s %s.m4v",draw->savefilename,draw->savefilename);CHKERRQ(ierr);
     ierr = PetscPOpen(PETSC_COMM_SELF,NULL,command,"r",&fd);CHKERRQ(ierr);
     ierr = PetscPClose(PETSC_COMM_SELF,fd,&err);CHKERRQ(ierr);
