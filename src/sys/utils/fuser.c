@@ -3,24 +3,9 @@
       Code for manipulating files.
 */
 #include <petscsys.h>
-#if defined(PETSC_HAVE_PWD_H)
-#include <pwd.h>
-#endif
-#include <ctype.h>
-#include <sys/stat.h>
-#if defined(PETSC_HAVE_SYS_UTSNAME_H)
-#include <sys/utsname.h>
-#endif
 #if defined(PETSC_HAVE_WINDOWS_H)
 #include <windows.h>
 #endif
-#if defined(PETSC_HAVE_SYS_SYSTEMINFO_H)
-#include <sys/systeminfo.h>
-#endif
-#if defined(PETSC_HAVE_UNISTD_H)
-#include <unistd.h>
-#endif
-
 
 #if defined(PETSC_HAVE_GET_USER_NAME)
 #undef __FUNCT__
