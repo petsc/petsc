@@ -541,15 +541,17 @@ static PetscErrorCode DMPlexVTKWriteAll_ASCII(DM dm, PetscViewer viewer)
         ierr = DMPlexGetSubpointMap(dm,  &subpointMap);CHKERRQ(ierr);
         ierr = DMPlexGetSubpointMap(dmX, &subpointMapX);CHKERRQ(ierr);
         if (((dim != dimX) || ((pEnd-pStart) < (qEnd-qStart))) && subpointMap && !subpointMapX) {
-          const PetscInt *ind;
+          const PetscInt *ind = NULL;
           IS              subpointIS;
-          PetscInt        n, q;
+          PetscInt        n = 0, q;
 
           ierr = PetscPrintf(PETSC_COMM_SELF, "Making translation PetscSection\n");CHKERRQ(ierr);
           ierr = PetscSectionGetChart(section, &qStart, &qEnd);CHKERRQ(ierr);
           ierr = DMPlexCreateSubpointIS(dm, &subpointIS);CHKERRQ(ierr);
-          ierr = ISGetLocalSize(subpointIS, &n);CHKERRQ(ierr);
-          ierr = ISGetIndices(subpointIS, &ind);CHKERRQ(ierr);
+          if (subpointIS) {
+            ierr = ISGetLocalSize(subpointIS, &n);CHKERRQ(ierr);
+            ierr = ISGetIndices(subpointIS, &ind);CHKERRQ(ierr);
+          }
           ierr = PetscSectionCreate(comm, &newSection);CHKERRQ(ierr);
           ierr = PetscSectionSetChart(newSection, pStart, pEnd);CHKERRQ(ierr);
           for (q = qStart; q < qEnd; ++q) {
@@ -565,8 +567,10 @@ static PetscErrorCode DMPlexVTKWriteAll_ASCII(DM dm, PetscViewer viewer)
               }
             }
           }
-          ierr = ISRestoreIndices(subpointIS, &ind);CHKERRQ(ierr);
-          ierr = ISDestroy(&subpointIS);CHKERRQ(ierr);
+          if (subpointIS) {
+            ierr = ISRestoreIndices(subpointIS, &ind);CHKERRQ(ierr);
+            ierr = ISDestroy(&subpointIS);CHKERRQ(ierr);
+          }
           /* No need to setup section */
           section = newSection;
         }

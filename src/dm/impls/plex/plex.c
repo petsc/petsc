@@ -4,7 +4,7 @@
 #include <petscsf.h>
 
 /* Logging support */
-PetscLogEvent DMPLEX_Distribute, DMPLEX_Stratify, DMPLEX_ResidualFEM, DMPLEX_JacobianFEM;
+PetscLogEvent DMPLEX_Partition, DMPLEX_Distribute, DMPLEX_DistributeLabels, DMPLEX_DistributeSF, DMPLEX_Stratify, DMPLEX_ResidualFEM, DMPLEX_JacobianFEM;
 
 PETSC_EXTERN PetscErrorCode VecView_Seq(Vec, PetscViewer);
 PETSC_EXTERN PetscErrorCode VecView_MPI(Vec, PetscViewer);
@@ -401,7 +401,7 @@ PetscErrorCode DMCreateMatrix_Plex(DM dm, MatType mtype, Mat *J)
   PetscSection   section, sectionGlobal;
   PetscInt       bs = -1;
   PetscInt       localSize;
-  PetscBool      isShell, isBlock, isSeqBlock, isMPIBlock, isSymBlock, isSymSeqBlock, isSymMPIBlock, isSymmetric;
+  PetscBool      isShell, isBlock, isSeqBlock, isMPIBlock, isSymBlock, isSymSeqBlock, isSymMPIBlock;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -424,11 +424,6 @@ PetscErrorCode DMCreateMatrix_Plex(DM dm, MatType mtype, Mat *J)
   ierr = PetscStrcmp(mtype, MATSBAIJ, &isSymBlock);CHKERRQ(ierr);
   ierr = PetscStrcmp(mtype, MATSEQSBAIJ, &isSymSeqBlock);CHKERRQ(ierr);
   ierr = PetscStrcmp(mtype, MATMPISBAIJ, &isSymMPIBlock);CHKERRQ(ierr);
-  /* Check for symmetric storage */
-  isSymmetric = (PetscBool) (isSymBlock || isSymSeqBlock || isSymMPIBlock);
-  if (isSymmetric) {
-    ierr = MatSetOption(*J, MAT_IGNORE_LOWER_TRIANGULAR, PETSC_TRUE);CHKERRQ(ierr);
-  }
   if (!isShell) {
     PetscBool fillMatrix = (PetscBool) !dm->prealloc_only;
     PetscInt *dnz, *onz, *dnzu, *onzu, bsLocal, bsMax, bsMin;
@@ -1351,29 +1346,6 @@ PetscErrorCode DMPlexSymmetrize(DM dm)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMPlexSetDepth_Private"
-PetscErrorCode DMPlexSetDepth_Private(DM dm, PetscInt p, PetscInt *depth)
-{
-  PetscInt       d;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = DMPlexGetLabelValue(dm, "depth", p, &d);CHKERRQ(ierr);
-  if (d < 0) {
-    /* We are guaranteed that the point has a cone since the depth was not yet set */
-    const PetscInt *cone = NULL;
-    PetscInt        dCone;
-
-    ierr = DMPlexGetCone(dm, p, &cone);CHKERRQ(ierr);
-    ierr = DMPlexSetDepth_Private(dm, cone[0], &dCone);CHKERRQ(ierr);
-    d    = dCone+1;
-    ierr = DMPlexSetLabelValue(dm, "depth", p, d);CHKERRQ(ierr);
-  }
-  *depth = d;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "DMPlexStratify"
 /*@
   DMPlexStratify - The Sieve DAG for most topologies is a graded poset (http://en.wikipedia.org/wiki/Graded_poset), and
@@ -1400,7 +1372,7 @@ PetscErrorCode DMPlexSetDepth_Private(DM dm, PetscInt p, PetscInt *depth)
 @*/
 PetscErrorCode DMPlexStratify(DM dm)
 {
-  DM_Plex       *mesh = (DM_Plex*) dm->data;
+  DMLabel        label;
   PetscInt       pStart, pEnd, p;
   PetscInt       numRoots = 0, numLeaves = 0;
   PetscErrorCode ierr;
@@ -1409,7 +1381,9 @@ PetscErrorCode DMPlexStratify(DM dm)
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   ierr = PetscLogEventBegin(DMPLEX_Stratify,dm,0,0,0);CHKERRQ(ierr);
   /* Calculate depth */
-  ierr = PetscSectionGetChart(mesh->coneSection, &pStart, &pEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
+  ierr = DMPlexCreateLabel(dm, "depth");CHKERRQ(ierr);
+  ierr = DMPlexGetDepthLabel(dm, &label);CHKERRQ(ierr);
   /* Initialize roots and count leaves */
   for (p = pStart; p < pEnd; ++p) {
     PetscInt coneSize, supportSize;
@@ -1418,12 +1392,12 @@ PetscErrorCode DMPlexStratify(DM dm)
     ierr = DMPlexGetSupportSize(dm, p, &supportSize);CHKERRQ(ierr);
     if (!coneSize && supportSize) {
       ++numRoots;
-      ierr = DMPlexSetLabelValue(dm, "depth", p, 0);CHKERRQ(ierr);
+      ierr = DMLabelSetValue(label, p, 0);CHKERRQ(ierr);
     } else if (!supportSize && coneSize) {
       ++numLeaves;
     } else if (!supportSize && !coneSize) {
       /* Isolated points */
-      ierr = DMPlexSetLabelValue(dm, "depth", p, 0);CHKERRQ(ierr);
+      ierr = DMLabelSetValue(label, p, 0);CHKERRQ(ierr);
     }
   }
   if (numRoots + numLeaves == (pEnd - pStart)) {
@@ -1433,16 +1407,38 @@ PetscErrorCode DMPlexStratify(DM dm)
       ierr = DMPlexGetConeSize(dm, p, &coneSize);CHKERRQ(ierr);
       ierr = DMPlexGetSupportSize(dm, p, &supportSize);CHKERRQ(ierr);
       if (!supportSize && coneSize) {
-        ierr = DMPlexSetLabelValue(dm, "depth", p, 1);CHKERRQ(ierr);
+        ierr = DMLabelSetValue(label, p, 1);CHKERRQ(ierr);
       }
     }
   } else {
-    /* This might be slow since lookup is not fast */
-    for (p = pStart; p < pEnd; ++p) {
-      PetscInt depth;
+    IS       pointIS;
+    PetscInt numPoints = 0, level = 0;
 
-      ierr = DMPlexSetDepth_Private(dm, p, &depth);CHKERRQ(ierr);
+    ierr = DMLabelGetStratumIS(label, level, &pointIS);CHKERRQ(ierr);
+    if (pointIS) {ierr = ISGetLocalSize(pointIS, &numPoints);CHKERRQ(ierr);}
+    while (numPoints) {
+      const PetscInt *points;
+      const PetscInt  newLevel = level+1;
+
+      ierr = ISGetIndices(pointIS, &points);CHKERRQ(ierr);
+      for (p = 0; p < numPoints; ++p) {
+        const PetscInt  point = points[p];
+        const PetscInt *support;
+        PetscInt        supportSize, s;
+
+        ierr = DMPlexGetSupportSize(dm, point, &supportSize);CHKERRQ(ierr);
+        ierr = DMPlexGetSupport(dm, point, &support);CHKERRQ(ierr);
+        for (s = 0; s < supportSize; ++s) {
+          ierr = DMLabelSetValue(label, support[s], newLevel);CHKERRQ(ierr);
+        }
+      }
+      ++level;
+      ierr = ISDestroy(&pointIS);CHKERRQ(ierr);
+      ierr = DMLabelGetStratumIS(label, level, &pointIS);CHKERRQ(ierr);
+      if (pointIS) {ierr = ISGetLocalSize(pointIS, &numPoints);CHKERRQ(ierr);}
+      else         {numPoints = 0;}
     }
+    ierr = ISDestroy(&pointIS);CHKERRQ(ierr);
   }
   ierr = PetscLogEventEnd(DMPLEX_Stratify,dm,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1995,7 +1991,7 @@ PetscErrorCode DMPlexOrient(DM dm)
   ierr = PetscMalloc((fEnd - fStart) * sizeof(PetscInt), &faceFIFO);CHKERRQ(ierr);
   fTop = fBottom = 0;
   /* Initialize FIFO with first cell */
-  {
+  if (cEnd > cStart) {
     const PetscInt *cone;
     PetscInt        coneSize;
 
@@ -2018,9 +2014,9 @@ PetscErrorCode DMPlexOrient(DM dm)
     if (supportSize < 2) continue;
     if (supportSize != 2) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Faces should separate only two cells, not %d", supportSize);
     seenA    = PetscBTLookup(seenCells,    support[0]-cStart);
-    flippedA = PetscBTLookup(flippedCells, support[0]-cStart);
+    flippedA = PetscBTLookup(flippedCells, support[0]-cStart) ? 1 : 0;
     seenB    = PetscBTLookup(seenCells,    support[1]-cStart);
-    flippedB = PetscBTLookup(flippedCells, support[1]-cStart);
+    flippedB = PetscBTLookup(flippedCells, support[1]-cStart) ? 1 : 0;
 
     ierr = DMPlexGetConeSize(dm, support[0], &coneSizeA);CHKERRQ(ierr);
     ierr = DMPlexGetConeSize(dm, support[1], &coneSizeB);CHKERRQ(ierr);
@@ -2060,7 +2056,7 @@ PetscErrorCode DMPlexOrient(DM dm)
       } else if (!seenB && !flippedB) {
         ierr = PetscBTSet(flippedCells, support[1]-cStart);CHKERRQ(ierr);
       } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Inconsistent mesh orientation: Fault mesh is non-orientable");
-    } else if (flippedA && flippedB) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Attempt to flip already flipped cell: Fault mesh is non-orientable");
+    } else if (mismatch && flippedA && flippedB) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Attempt to flip already flipped cell: Fault mesh is non-orientable");
     ierr = PetscBTSet(seenCells, support[0]-cStart);CHKERRQ(ierr);
     ierr = PetscBTSet(seenCells, support[1]-cStart);CHKERRQ(ierr);
   }
@@ -2069,8 +2065,8 @@ PetscErrorCode DMPlexOrient(DM dm)
   ierr = DMGetWorkArray(dm, maxConeSize, PETSC_INT, &revcone);CHKERRQ(ierr);
   ierr = DMGetWorkArray(dm, maxConeSize, PETSC_INT, &revconeO);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; ++c) {
-    const PetscInt *cone, *coneO;
-    PetscInt        coneSize, faceSize, cp;
+    const PetscInt *cone, *coneO, *support;
+    PetscInt        coneSize, supportSize, faceSize, cp, sp;
 
     if (!PetscBTLookup(flippedCells, c-cStart)) continue;
     ierr = DMPlexGetConeSize(dm, c, &coneSize);CHKERRQ(ierr);
@@ -2085,6 +2081,19 @@ PetscErrorCode DMPlexOrient(DM dm)
     }
     ierr = DMPlexSetCone(dm, c, revcone);CHKERRQ(ierr);
     ierr = DMPlexSetConeOrientation(dm, c, revconeO);CHKERRQ(ierr);
+    /* Reverse orientations of support */
+    faceSize = coneSize;
+    ierr = DMPlexGetSupportSize(dm, c, &supportSize);CHKERRQ(ierr);
+    ierr = DMPlexGetSupport(dm, c, &support);CHKERRQ(ierr);
+    for (sp = 0; sp < supportSize; ++sp) {
+      ierr = DMPlexGetConeSize(dm, support[sp], &coneSize);CHKERRQ(ierr);
+      ierr = DMPlexGetCone(dm, support[sp], &cone);CHKERRQ(ierr);
+      ierr = DMPlexGetConeOrientation(dm, support[sp], &coneO);CHKERRQ(ierr);
+      for (cp = 0; cp < coneSize; ++cp) {
+        if (cone[cp] != c) continue;
+        ierr = DMPlexInsertConeOrientation(dm, support[sp], cp, coneO[cp] >= 0 ? -(faceSize-coneO[cp]) : faceSize+coneO[cp]);CHKERRQ(ierr);
+      }
+    }
   }
   ierr = DMRestoreWorkArray(dm, maxConeSize, PETSC_INT, &revcone);CHKERRQ(ierr);
   ierr = DMRestoreWorkArray(dm, maxConeSize, PETSC_INT, &revconeO);CHKERRQ(ierr);
@@ -2709,6 +2718,7 @@ PetscErrorCode DMPlexDistribute(DM dm, const char partitioner[], PetscInt overla
 
   ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
   /* Create cell partition - We need to rewrite to use IS, use the MatPartition stuff */
+  ierr = PetscLogEventBegin(DMPLEX_Partition,dm,0,0,0);CHKERRQ(ierr);
   if (overlap > 1) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Overlap > 1 not yet implemented");
   ierr = DMPlexCreatePartition(dm, height, overlap > 0 ? PETSC_TRUE : PETSC_FALSE, &cellPartSection, &cellPart, &origCellPartSection, &origCellPart);CHKERRQ(ierr);
   /* Create SF assuming a serial partition for all processes: Could check for IS length here */
@@ -2752,6 +2762,7 @@ PetscErrorCode DMPlexDistribute(DM dm, const char partitioner[], PetscInt overla
     ierr = PetscPrintf(comm, "Point Renumbering after partition:\n");CHKERRQ(ierr);
     ierr = ISLocalToGlobalMappingView(renumbering, NULL);CHKERRQ(ierr);
   }
+  ierr = PetscLogEventEnd(DMPLEX_Partition,dm,0,0,0);CHKERRQ(ierr);
   /* Distribute cone section */
   ierr = DMPlexGetConeSection(dm, &originalConeSection);CHKERRQ(ierr);
   ierr = DMPlexGetConeSection(*dmParallel, &newConeSection);CHKERRQ(ierr);
@@ -2815,6 +2826,7 @@ PetscErrorCode DMPlexDistribute(DM dm, const char partitioner[], PetscInt overla
     ierr = VecDestroy(&newCoordinates);CHKERRQ(ierr);
   }
   /* Distribute labels */
+  ierr = PetscLogEventBegin(DMPLEX_DistributeLabels,dm,0,0,0);CHKERRQ(ierr);
   {
     DMLabel  next      = mesh->labels, newNext = pmesh->labels;
     PetscInt numLabels = 0, l;
@@ -2942,12 +2954,14 @@ PetscErrorCode DMPlexDistribute(DM dm, const char partitioner[], PetscInt overla
       if (!rank) next = next->next;
     }
   }
+  ierr = PetscLogEventEnd(DMPLEX_DistributeLabels,dm,0,0,0);CHKERRQ(ierr);
   /* Cleanup Partition */
   ierr = ISLocalToGlobalMappingDestroy(&renumbering);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&partSF);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&partSection);CHKERRQ(ierr);
   ierr = ISDestroy(&part);CHKERRQ(ierr);
   /* Create point SF for parallel mesh */
+  ierr = PetscLogEventBegin(DMPLEX_DistributeSF,dm,0,0,0);CHKERRQ(ierr);
   {
     const PetscInt *leaves;
     PetscSFNode    *remotePoints, *rowners, *lowners;
@@ -3017,6 +3031,7 @@ PetscErrorCode DMPlexDistribute(DM dm, const char partitioner[], PetscInt overla
     ierr = PetscSFSetGraph((*dmParallel)->sf, pEnd - pStart, numGhostPoints, ghostPoints, PETSC_OWN_POINTER, remotePoints, PETSC_OWN_POINTER);CHKERRQ(ierr);
     ierr = PetscSFSetFromOptions((*dmParallel)->sf);CHKERRQ(ierr);
   }
+  ierr = PetscLogEventEnd(DMPLEX_DistributeSF,dm,0,0,0);CHKERRQ(ierr);
   /* Cleanup */
   ierr = PetscSFDestroy(&pointSF);CHKERRQ(ierr);
   ierr = DMSetFromOptions(*dmParallel);CHKERRQ(ierr);
@@ -5817,35 +5832,67 @@ PetscErrorCode DMRefine_Plex(DM dm, MPI_Comm comm, DM *dmRefined)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMPlexGetDepth"
+#define __FUNCT__ "DMPlexGetDepthLabel"
 /*@
-  DMPlexGetDepth - get the number of strata
+  DMPlexGetDepthLabel - Get the DMLabel recording the depth of each point
 
   Not Collective
 
-  Input Parameters:
-. dm           - The DMPlex object
+  Input Parameter:
+. dm    - The DMPlex object
 
-  Output Parameters:
-. depth - number of strata
+  Output Parameter:
+. depthLabel - The DMLabel recording point depth
 
   Level: developer
 
-  Notes:
-  DMPlexGetHeightStratum(dm,0,..) should return the same points as DMPlexGetDepthStratum(dm,depth,..).
+.keywords: mesh, points
+.seealso: DMPlexGetDepth(), DMPlexGetHeightStratum(), DMPlexGetDepthStratum()
+@*/
+PetscErrorCode DMPlexGetDepthLabel(DM dm, DMLabel *depthLabel)
+{
+  DM_Plex       *mesh = (DM_Plex*) dm->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(depthLabel, 2);
+  if (!mesh->depthLabel) {
+    ierr = DMPlexGetLabel(dm, "depth", &mesh->depthLabel);CHKERRQ(ierr);
+  }
+  *depthLabel = mesh->depthLabel;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexGetDepth"
+/*@
+  DMPlexGetDepth - Get the depth of the DAG representing this mesh
+
+  Not Collective
+
+  Input Parameter:
+. dm    - The DMPlex object
+
+  Output Parameter:
+. depth - The number of strata (breadth first levels) in the DAG
+
+  Level: developer
 
 .keywords: mesh, points
-.seealso: DMPlexGetHeightStratum(), DMPlexGetDepthStratum()
+.seealso: DMPlexGetDepthLabel(), DMPlexGetHeightStratum(), DMPlexGetDepthStratum()
 @*/
 PetscErrorCode DMPlexGetDepth(DM dm, PetscInt *depth)
 {
-  PetscInt       d;
+  DMLabel        label;
+  PetscInt       d = 0;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(depth, 2);
-  ierr   = DMPlexGetLabelSize(dm, "depth", &d);CHKERRQ(ierr);
+  ierr = DMPlexGetDepthLabel(dm, &label);CHKERRQ(ierr);
+  if (label) {ierr = DMLabelGetNumValues(label, &d);CHKERRQ(ierr);}
   *depth = d-1;
   PetscFunctionReturn(0);
 }
@@ -5872,9 +5919,7 @@ PetscErrorCode DMPlexGetDepth(DM dm, PetscInt *depth)
 @*/
 PetscErrorCode DMPlexGetDepthStratum(DM dm, PetscInt stratumValue, PetscInt *start, PetscInt *end)
 {
-  DM_Plex       *mesh = (DM_Plex*) dm->data;
-  DMLabel        next  = mesh->labels;
-  PetscBool      flg   = PETSC_FALSE;
+  DMLabel        label;
   PetscInt       depth;
   PetscErrorCode ierr;
 
@@ -5891,22 +5936,16 @@ PetscErrorCode DMPlexGetDepthStratum(DM dm, PetscInt stratumValue, PetscInt *sta
     ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
     if (pStart == pEnd) PetscFunctionReturn(0);
   }
-  ierr = DMPlexHasLabel(dm, "depth", &flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "No label named depth was found");CHKERRQ(ierr);
-  /* We should have a generic GetLabel() and a Label class */
-  while (next) {
-    ierr = PetscStrcmp("depth", next->name, &flg);CHKERRQ(ierr);
-    if (flg) break;
-    next = next->next;
-  }
+  ierr = DMPlexGetDepthLabel(dm, &label);CHKERRQ(ierr);
+  if (!label) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "No label named depth was found");CHKERRQ(ierr);
   /* Strata are sorted and contiguous -- In addition, depth/height is either full or 1-level */
   depth = stratumValue;
-  if ((depth < 0) || (depth >= next->numStrata)) {
+  if ((depth < 0) || (depth >= label->numStrata)) {
     if (start) *start = 0;
     if (end)   *end   = 0;
   } else {
-    if (start) *start = next->points[next->stratumOffsets[depth]];
-    if (end)   *end   = next->points[next->stratumOffsets[depth]+next->stratumSizes[depth]-1]+1;
+    if (start) *start = label->points[label->stratumOffsets[depth]];
+    if (end)   *end   = label->points[label->stratumOffsets[depth]+label->stratumSizes[depth]-1]+1;
   }
   PetscFunctionReturn(0);
 }
@@ -5933,9 +5972,7 @@ PetscErrorCode DMPlexGetDepthStratum(DM dm, PetscInt stratumValue, PetscInt *sta
 @*/
 PetscErrorCode DMPlexGetHeightStratum(DM dm, PetscInt stratumValue, PetscInt *start, PetscInt *end)
 {
-  DM_Plex       *mesh = (DM_Plex*) dm->data;
-  DMLabel        next  = mesh->labels;
-  PetscBool      flg   = PETSC_FALSE;
+  DMLabel        label;
   PetscInt       depth;
   PetscErrorCode ierr;
 
@@ -5951,22 +5988,16 @@ PetscErrorCode DMPlexGetHeightStratum(DM dm, PetscInt stratumValue, PetscInt *st
     ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
     if (pStart == pEnd) PetscFunctionReturn(0);
   }
-  ierr = DMPlexHasLabel(dm, "depth", &flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "No label named depth was found");CHKERRQ(ierr);
-  /* We should have a generic GetLabel() and a Label class */
-  while (next) {
-    ierr = PetscStrcmp("depth", next->name, &flg);CHKERRQ(ierr);
-    if (flg) break;
-    next = next->next;
-  }
+  ierr = DMPlexGetDepthLabel(dm, &label);CHKERRQ(ierr);
+  if (!label) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "No label named depth was found");CHKERRQ(ierr);
   /* Strata are sorted and contiguous -- In addition, depth/height is either full or 1-level */
-  depth = next->stratumValues[next->numStrata-1] - stratumValue;
-  if ((depth < 0) || (depth >= next->numStrata)) {
+  depth = label->stratumValues[label->numStrata-1] - stratumValue;
+  if ((depth < 0) || (depth >= label->numStrata)) {
     if (start) *start = 0;
     if (end)   *end   = 0;
   } else {
-    if (start) *start = next->points[next->stratumOffsets[depth]];
-    if (end)   *end   = next->points[next->stratumOffsets[depth]+next->stratumSizes[depth]-1]+1;
+    if (start) *start = label->points[label->stratumOffsets[depth]];
+    if (end)   *end   = label->points[label->stratumOffsets[depth]+label->stratumSizes[depth]-1]+1;
   }
   PetscFunctionReturn(0);
 }
@@ -7000,8 +7031,8 @@ PetscErrorCode indicesPointFields_private(PetscSection section, PetscInt point, 
 
   Input Parameters:
 + dm - The DM
-. section - The section describing the layout in v, or NULL to use the default section
-. globalSection - The section describing the layout in v, or NULL to use the default section
+. section - The section describing the layout in v
+. globalSection - The section describing the layout in v
 . A - The matrix
 . point - The sieve point in the DM
 . values - The array of values
@@ -7021,23 +7052,13 @@ PetscErrorCode DMPlexMatSetClosure(DM dm, PetscSection section, PetscSection glo
   PetscInt      *indices;
   PetscInt       offsets[32];
   PetscInt       numFields, numPoints, numIndices, dof, off, globalOff, pStart, pEnd, p, q, f;
-  PetscBool      useDefault       =       !section ? PETSC_TRUE : PETSC_FALSE;
-  PetscBool      useGlobalDefault = !globalSection ? PETSC_TRUE : PETSC_FALSE;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidHeaderSpecific(A, MAT_CLASSID, 3);
-  if (useDefault) {
-    ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
-  }
-  if (useGlobalDefault) {
-    if (useDefault) {
-      ierr = DMGetDefaultGlobalSection(dm, &globalSection);CHKERRQ(ierr);
-    } else {
-      ierr = PetscSectionCreateGlobalSection(section, dm->sf, PETSC_FALSE, &globalSection);CHKERRQ(ierr);
-    }
-  }
+  PetscValidHeaderSpecific(section, PETSC_SECTION_CLASSID, 2);
+  PetscValidHeaderSpecific(globalSection, PETSC_SECTION_CLASSID, 3);
+  PetscValidHeaderSpecific(A, MAT_CLASSID, 4);
   ierr = PetscSectionGetNumFields(section, &numFields);CHKERRQ(ierr);
   if (numFields > 31) SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Number of fields %D limited to 31", numFields);
   ierr = PetscMemzero(offsets, 32 * sizeof(PetscInt));CHKERRQ(ierr);
@@ -7078,9 +7099,6 @@ PetscErrorCode DMPlexMatSetClosure(DM dm, PetscSection section, PetscSection glo
       ierr = PetscSectionGetOffset(globalSection, points[p], &globalOff);CHKERRQ(ierr);
       indicesPoint_private(section, points[p], globalOff < 0 ? -(globalOff+1) : globalOff, &off, PETSC_FALSE, o, indices);
     }
-  }
-  if (useGlobalDefault && !useDefault) {
-    ierr = PetscSectionDestroy(&globalSection);CHKERRQ(ierr);
   }
   if (mesh->printSetValues) {ierr = DMPlexPrintMatSetValues(PETSC_VIEWER_STDOUT_SELF, A, point, numIndices, indices, values);CHKERRQ(ierr);}
   ierr = MatSetValues(A, numIndices, indices, numIndices, indices, values, mode);
@@ -7253,7 +7271,7 @@ PetscErrorCode DMPlexGetVertexNumbering(DM dm, IS *globalVertexNumbers)
 @*/
 PetscErrorCode PetscSectionCreateGlobalSectionLabel(PetscSection s, PetscSF sf, PetscBool includeConstraints, DMLabel label, PetscInt labelValue, PetscSection *gsection)
 {
-  PetscInt      *neg;
+  PetscInt      *neg = NULL, *tmpOff = NULL;
   PetscInt       pStart, pEnd, p, dof, cdof, off, globalOff = 0, nroots;
   PetscErrorCode ierr;
 
@@ -7261,7 +7279,18 @@ PetscErrorCode PetscSectionCreateGlobalSectionLabel(PetscSection s, PetscSF sf, 
   ierr = PetscSectionCreate(s->atlasLayout.comm, gsection);CHKERRQ(ierr);
   ierr = PetscSectionGetChart(s, &pStart, &pEnd);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(*gsection, pStart, pEnd);CHKERRQ(ierr);
-  ierr = PetscMalloc((pEnd - pStart) * sizeof(PetscInt), &neg);CHKERRQ(ierr);
+  ierr = PetscSFGetGraph(sf, &nroots, NULL, NULL, NULL);CHKERRQ(ierr);
+  if (nroots >= 0) {
+    if (nroots < pEnd-pStart) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "PetscSF nroots %d < %d section size", nroots, pEnd-pStart);
+    ierr = PetscMalloc(nroots * sizeof(PetscInt), &neg);CHKERRQ(ierr);
+    ierr = PetscMemzero(neg, nroots * sizeof(PetscInt));CHKERRQ(ierr);
+    if (nroots > pEnd-pStart) {
+      ierr = PetscMalloc(nroots * sizeof(PetscInt), &tmpOff);CHKERRQ(ierr);
+      ierr = PetscMemzero(tmpOff, nroots * sizeof(PetscInt));CHKERRQ(ierr);
+    } else {
+      tmpOff = &(*gsection)->atlasDof[-pStart];
+    }
+  }
   /* Mark ghost points with negative dof */
   for (p = pStart; p < pEnd; ++p) {
     PetscInt value;
@@ -7272,58 +7301,37 @@ PetscErrorCode PetscSectionCreateGlobalSectionLabel(PetscSection s, PetscSF sf, 
     ierr = PetscSectionSetDof(*gsection, p, dof);CHKERRQ(ierr);
     ierr = PetscSectionGetConstraintDof(s, p, &cdof);CHKERRQ(ierr);
     if (!includeConstraints && cdof > 0) {ierr = PetscSectionSetConstraintDof(*gsection, p, cdof);CHKERRQ(ierr);}
-    neg[p-pStart] = -(dof+1);
+    if (neg) neg[p] = -(dof+1);
   }
   ierr = PetscSectionSetUpBC(*gsection);CHKERRQ(ierr);
-  ierr = PetscSFGetGraph(sf, &nroots, NULL, NULL, NULL);CHKERRQ(ierr);
   if (nroots >= 0) {
-    if (nroots > pEnd - pStart) {
-      PetscInt *tmpDof;
-      /* Help Jed: HAVE TO MAKE A BUFFER HERE THE SIZE OF THE COMPLETE SPACE AND THEN COPY INTO THE atlasDof FOR THIS SECTION */
-      ierr = PetscMalloc(nroots * sizeof(PetscInt), &tmpDof);CHKERRQ(ierr);
-      ierr = PetscSFBcastBegin(sf, MPIU_INT, &neg[-pStart], tmpDof);CHKERRQ(ierr);
-      ierr = PetscSFBcastEnd(sf, MPIU_INT, &neg[-pStart], tmpDof);CHKERRQ(ierr);
-      for (p = pStart; p < pEnd; ++p) {
-        if (tmpDof[p] < 0) (*gsection)->atlasDof[p-pStart] = tmpDof[p];
-      }
-      ierr = PetscFree(tmpDof);CHKERRQ(ierr);
-    } else {
-      ierr = PetscSFBcastBegin(sf, MPIU_INT, &neg[-pStart], &(*gsection)->atlasDof[-pStart]);CHKERRQ(ierr);
-      ierr = PetscSFBcastEnd(sf, MPIU_INT, &neg[-pStart], &(*gsection)->atlasDof[-pStart]);CHKERRQ(ierr);
+    ierr = PetscSFBcastBegin(sf, MPIU_INT, neg, tmpOff);CHKERRQ(ierr);
+    ierr = PetscSFBcastEnd(sf, MPIU_INT, neg, tmpOff);CHKERRQ(ierr);
+    if (nroots > pEnd-pStart) {
+      for (p = pStart; p < pEnd; ++p) {if (tmpOff[p] < 0) (*gsection)->atlasDof[p-pStart] = tmpOff[p];}
     }
   }
   /* Calculate new sizes, get proccess offset, and calculate point offsets */
   for (p = 0, off = 0; p < pEnd-pStart; ++p) {
     cdof = (!includeConstraints && s->bc) ? s->bc->atlasDof[p] : 0;
-
     (*gsection)->atlasOff[p] = off;
-
     off += (*gsection)->atlasDof[p] > 0 ? (*gsection)->atlasDof[p]-cdof : 0;
   }
   ierr       = MPI_Scan(&off, &globalOff, 1, MPIU_INT, MPI_SUM, s->atlasLayout.comm);CHKERRQ(ierr);
   globalOff -= off;
   for (p = 0, off = 0; p < pEnd-pStart; ++p) {
     (*gsection)->atlasOff[p] += globalOff;
-
-    neg[p] = -((*gsection)->atlasOff[p]+1);
+    if (neg) neg[p] = -((*gsection)->atlasOff[p]+1);
   }
   /* Put in negative offsets for ghost points */
   if (nroots >= 0) {
-    if (nroots > pEnd - pStart) {
-      PetscInt *tmpOff;
-      /* Help Jed: HAVE TO MAKE A BUFFER HERE THE SIZE OF THE COMPLETE SPACE AND THEN COPY INTO THE atlasDof FOR THIS SECTION */
-      ierr = PetscMalloc(nroots * sizeof(PetscInt), &tmpOff);CHKERRQ(ierr);
-      ierr = PetscSFBcastBegin(sf, MPIU_INT, &neg[-pStart], tmpOff);CHKERRQ(ierr);
-      ierr = PetscSFBcastEnd(sf, MPIU_INT, &neg[-pStart], tmpOff);CHKERRQ(ierr);
-      for (p = pStart; p < pEnd; ++p) {
-        if (tmpOff[p] < 0) (*gsection)->atlasOff[p-pStart] = tmpOff[p];
-      }
-      ierr = PetscFree(tmpOff);CHKERRQ(ierr);
-    } else {
-      ierr = PetscSFBcastBegin(sf, MPIU_INT, &neg[-pStart], &(*gsection)->atlasOff[-pStart]);CHKERRQ(ierr);
-      ierr = PetscSFBcastEnd(sf, MPIU_INT, &neg[-pStart], &(*gsection)->atlasOff[-pStart]);CHKERRQ(ierr);
+    ierr = PetscSFBcastBegin(sf, MPIU_INT, neg, tmpOff);CHKERRQ(ierr);
+    ierr = PetscSFBcastEnd(sf, MPIU_INT, neg, tmpOff);CHKERRQ(ierr);
+    if (nroots > pEnd-pStart) {
+      for (p = pStart; p < pEnd; ++p) {if (tmpOff[p] < 0) (*gsection)->atlasOff[p-pStart] = tmpOff[p];}
     }
   }
+  if (nroots >= 0 && nroots > pEnd-pStart) {ierr = PetscFree(tmpOff);CHKERRQ(ierr);}
   ierr = PetscFree(neg);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
