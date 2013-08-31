@@ -1351,29 +1351,6 @@ PetscErrorCode DMPlexSymmetrize(DM dm)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMPlexSetDepth_Private"
-PetscErrorCode DMPlexSetDepth_Private(DM dm, PetscInt p, PetscInt *depth)
-{
-  PetscInt       d;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = DMPlexGetLabelValue(dm, "depth", p, &d);CHKERRQ(ierr);
-  if (d < 0) {
-    /* We are guaranteed that the point has a cone since the depth was not yet set */
-    const PetscInt *cone = NULL;
-    PetscInt        dCone;
-
-    ierr = DMPlexGetCone(dm, p, &cone);CHKERRQ(ierr);
-    ierr = DMPlexSetDepth_Private(dm, cone[0], &dCone);CHKERRQ(ierr);
-    d    = dCone+1;
-    ierr = DMPlexSetLabelValue(dm, "depth", p, d);CHKERRQ(ierr);
-  }
-  *depth = d;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "DMPlexStratify"
 /*@
   DMPlexStratify - The Sieve DAG for most topologies is a graded poset (http://en.wikipedia.org/wiki/Graded_poset), and
@@ -1400,7 +1377,7 @@ PetscErrorCode DMPlexSetDepth_Private(DM dm, PetscInt p, PetscInt *depth)
 @*/
 PetscErrorCode DMPlexStratify(DM dm)
 {
-  DM_Plex       *mesh = (DM_Plex*) dm->data;
+  DMLabel        label;
   PetscInt       pStart, pEnd, p;
   PetscInt       numRoots = 0, numLeaves = 0;
   PetscErrorCode ierr;
@@ -1409,7 +1386,9 @@ PetscErrorCode DMPlexStratify(DM dm)
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   ierr = PetscLogEventBegin(DMPLEX_Stratify,dm,0,0,0);CHKERRQ(ierr);
   /* Calculate depth */
-  ierr = PetscSectionGetChart(mesh->coneSection, &pStart, &pEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
+  ierr = DMPlexCreateLabel(dm, "depth");CHKERRQ(ierr);
+  ierr = DMPlexGetDepthLabel(dm, &label);CHKERRQ(ierr);
   /* Initialize roots and count leaves */
   for (p = pStart; p < pEnd; ++p) {
     PetscInt coneSize, supportSize;
@@ -1418,12 +1397,12 @@ PetscErrorCode DMPlexStratify(DM dm)
     ierr = DMPlexGetSupportSize(dm, p, &supportSize);CHKERRQ(ierr);
     if (!coneSize && supportSize) {
       ++numRoots;
-      ierr = DMPlexSetLabelValue(dm, "depth", p, 0);CHKERRQ(ierr);
+      ierr = DMLabelSetValue(label, p, 0);CHKERRQ(ierr);
     } else if (!supportSize && coneSize) {
       ++numLeaves;
     } else if (!supportSize && !coneSize) {
       /* Isolated points */
-      ierr = DMPlexSetLabelValue(dm, "depth", p, 0);CHKERRQ(ierr);
+      ierr = DMLabelSetValue(label, p, 0);CHKERRQ(ierr);
     }
   }
   if (numRoots + numLeaves == (pEnd - pStart)) {
@@ -1433,16 +1412,38 @@ PetscErrorCode DMPlexStratify(DM dm)
       ierr = DMPlexGetConeSize(dm, p, &coneSize);CHKERRQ(ierr);
       ierr = DMPlexGetSupportSize(dm, p, &supportSize);CHKERRQ(ierr);
       if (!supportSize && coneSize) {
-        ierr = DMPlexSetLabelValue(dm, "depth", p, 1);CHKERRQ(ierr);
+        ierr = DMLabelSetValue(label, p, 1);CHKERRQ(ierr);
       }
     }
   } else {
-    /* This might be slow since lookup is not fast */
-    for (p = pStart; p < pEnd; ++p) {
-      PetscInt depth;
+    IS       pointIS;
+    PetscInt numPoints = 0, level = 0;
 
-      ierr = DMPlexSetDepth_Private(dm, p, &depth);CHKERRQ(ierr);
+    ierr = DMLabelGetStratumIS(label, level, &pointIS);CHKERRQ(ierr);
+    if (pointIS) {ierr = ISGetLocalSize(pointIS, &numPoints);CHKERRQ(ierr);}
+    while (numPoints) {
+      const PetscInt *points;
+      const PetscInt  newLevel = level+1;
+
+      ierr = ISGetIndices(pointIS, &points);CHKERRQ(ierr);
+      for (p = 0; p < numPoints; ++p) {
+        const PetscInt  point = points[p];
+        const PetscInt *support;
+        PetscInt        supportSize, s;
+
+        ierr = DMPlexGetSupportSize(dm, point, &supportSize);CHKERRQ(ierr);
+        ierr = DMPlexGetSupport(dm, point, &support);CHKERRQ(ierr);
+        for (s = 0; s < supportSize; ++s) {
+          ierr = DMLabelSetValue(label, support[s], newLevel);CHKERRQ(ierr);
+        }
+      }
+      ++level;
+      ierr = ISDestroy(&pointIS);CHKERRQ(ierr);
+      ierr = DMLabelGetStratumIS(label, level, &pointIS);CHKERRQ(ierr);
+      if (pointIS) {ierr = ISGetLocalSize(pointIS, &numPoints);CHKERRQ(ierr);}
+      else         {numPoints = 0;}
     }
+    ierr = ISDestroy(&pointIS);CHKERRQ(ierr);
   }
   ierr = PetscLogEventEnd(DMPLEX_Stratify,dm,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -5822,35 +5823,67 @@ PetscErrorCode DMRefine_Plex(DM dm, MPI_Comm comm, DM *dmRefined)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMPlexGetDepth"
+#define __FUNCT__ "DMPlexGetDepthLabel"
 /*@
-  DMPlexGetDepth - get the number of strata
+  DMPlexGetDepthLabel - Get the DMLabel recording the depth of each point
 
   Not Collective
 
-  Input Parameters:
-. dm           - The DMPlex object
+  Input Parameter:
+. dm    - The DMPlex object
 
-  Output Parameters:
-. depth - number of strata
+  Output Parameter:
+. depthLabel - The DMLabel recording point depth
 
   Level: developer
 
-  Notes:
-  DMPlexGetHeightStratum(dm,0,..) should return the same points as DMPlexGetDepthStratum(dm,depth,..).
+.keywords: mesh, points
+.seealso: DMPlexGetDepth(), DMPlexGetHeightStratum(), DMPlexGetDepthStratum()
+@*/
+PetscErrorCode DMPlexGetDepthLabel(DM dm, DMLabel *depthLabel)
+{
+  DM_Plex       *mesh = (DM_Plex*) dm->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(depthLabel, 2);
+  if (!mesh->depthLabel) {
+    ierr = DMPlexGetLabel(dm, "depth", &mesh->depthLabel);CHKERRQ(ierr);
+  }
+  *depthLabel = mesh->depthLabel;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexGetDepth"
+/*@
+  DMPlexGetDepth - Get the depth of the DAG representing this mesh
+
+  Not Collective
+
+  Input Parameter:
+. dm    - The DMPlex object
+
+  Output Parameter:
+. depth - The number of strata (breadth first levels) in the DAG
+
+  Level: developer
 
 .keywords: mesh, points
-.seealso: DMPlexGetHeightStratum(), DMPlexGetDepthStratum()
+.seealso: DMPlexGetDepthLabel(), DMPlexGetHeightStratum(), DMPlexGetDepthStratum()
 @*/
 PetscErrorCode DMPlexGetDepth(DM dm, PetscInt *depth)
 {
-  PetscInt       d;
+  DMLabel        label;
+  PetscInt       d = 0;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(depth, 2);
-  ierr   = DMPlexGetLabelSize(dm, "depth", &d);CHKERRQ(ierr);
+  ierr = DMPlexGetDepthLabel(dm, &label);CHKERRQ(ierr);
+  if (label) {ierr = DMLabelGetNumValues(label, &d);CHKERRQ(ierr);}
   *depth = d-1;
   PetscFunctionReturn(0);
 }
@@ -5877,9 +5910,7 @@ PetscErrorCode DMPlexGetDepth(DM dm, PetscInt *depth)
 @*/
 PetscErrorCode DMPlexGetDepthStratum(DM dm, PetscInt stratumValue, PetscInt *start, PetscInt *end)
 {
-  DM_Plex       *mesh = (DM_Plex*) dm->data;
-  DMLabel        next  = mesh->labels;
-  PetscBool      flg   = PETSC_FALSE;
+  DMLabel        label;
   PetscInt       depth;
   PetscErrorCode ierr;
 
@@ -5896,22 +5927,16 @@ PetscErrorCode DMPlexGetDepthStratum(DM dm, PetscInt stratumValue, PetscInt *sta
     ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
     if (pStart == pEnd) PetscFunctionReturn(0);
   }
-  ierr = DMPlexHasLabel(dm, "depth", &flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "No label named depth was found");CHKERRQ(ierr);
-  /* We should have a generic GetLabel() and a Label class */
-  while (next) {
-    ierr = PetscStrcmp("depth", next->name, &flg);CHKERRQ(ierr);
-    if (flg) break;
-    next = next->next;
-  }
+  ierr = DMPlexGetDepthLabel(dm, &label);CHKERRQ(ierr);
+  if (!label) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "No label named depth was found");CHKERRQ(ierr);
   /* Strata are sorted and contiguous -- In addition, depth/height is either full or 1-level */
   depth = stratumValue;
-  if ((depth < 0) || (depth >= next->numStrata)) {
+  if ((depth < 0) || (depth >= label->numStrata)) {
     if (start) *start = 0;
     if (end)   *end   = 0;
   } else {
-    if (start) *start = next->points[next->stratumOffsets[depth]];
-    if (end)   *end   = next->points[next->stratumOffsets[depth]+next->stratumSizes[depth]-1]+1;
+    if (start) *start = label->points[label->stratumOffsets[depth]];
+    if (end)   *end   = label->points[label->stratumOffsets[depth]+label->stratumSizes[depth]-1]+1;
   }
   PetscFunctionReturn(0);
 }
@@ -5938,9 +5963,7 @@ PetscErrorCode DMPlexGetDepthStratum(DM dm, PetscInt stratumValue, PetscInt *sta
 @*/
 PetscErrorCode DMPlexGetHeightStratum(DM dm, PetscInt stratumValue, PetscInt *start, PetscInt *end)
 {
-  DM_Plex       *mesh = (DM_Plex*) dm->data;
-  DMLabel        next  = mesh->labels;
-  PetscBool      flg   = PETSC_FALSE;
+  DMLabel        label;
   PetscInt       depth;
   PetscErrorCode ierr;
 
@@ -5956,22 +5979,16 @@ PetscErrorCode DMPlexGetHeightStratum(DM dm, PetscInt stratumValue, PetscInt *st
     ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
     if (pStart == pEnd) PetscFunctionReturn(0);
   }
-  ierr = DMPlexHasLabel(dm, "depth", &flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "No label named depth was found");CHKERRQ(ierr);
-  /* We should have a generic GetLabel() and a Label class */
-  while (next) {
-    ierr = PetscStrcmp("depth", next->name, &flg);CHKERRQ(ierr);
-    if (flg) break;
-    next = next->next;
-  }
+  ierr = DMPlexGetDepthLabel(dm, &label);CHKERRQ(ierr);
+  if (!label) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "No label named depth was found");CHKERRQ(ierr);
   /* Strata are sorted and contiguous -- In addition, depth/height is either full or 1-level */
-  depth = next->stratumValues[next->numStrata-1] - stratumValue;
-  if ((depth < 0) || (depth >= next->numStrata)) {
+  depth = label->stratumValues[label->numStrata-1] - stratumValue;
+  if ((depth < 0) || (depth >= label->numStrata)) {
     if (start) *start = 0;
     if (end)   *end   = 0;
   } else {
-    if (start) *start = next->points[next->stratumOffsets[depth]];
-    if (end)   *end   = next->points[next->stratumOffsets[depth]+next->stratumSizes[depth]-1]+1;
+    if (start) *start = label->points[label->stratumOffsets[depth]];
+    if (end)   *end   = label->points[label->stratumOffsets[depth]+label->stratumSizes[depth]-1]+1;
   }
   PetscFunctionReturn(0);
 }
