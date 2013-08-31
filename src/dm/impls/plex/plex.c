@@ -6521,7 +6521,7 @@ PetscErrorCode DMPlexVecGetClosure(DM dm, PetscSection section, Vec v, PetscInt 
     }
   }
   numPoints = q;
-  if (!*values) {
+  if (!values || !*values) {
     for (p = 0, size = 0; p < numPoints*2; p += 2) {
       PetscInt dof, fdof;
 
@@ -6531,6 +6531,10 @@ PetscErrorCode DMPlexVecGetClosure(DM dm, PetscSection section, Vec v, PetscInt 
         offsets[f+1] += fdof;
       }
       size += dof;
+    }
+    if (!values) {
+      if (csize) *csize = size;
+      PetscFunctionReturn(0);
     }
     ierr = DMGetWorkArray(dm, size, PETSC_SCALAR, &array);CHKERRQ(ierr);
   } else {
