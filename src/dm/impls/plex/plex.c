@@ -6522,19 +6522,27 @@ PetscErrorCode DMPlexVecGetClosure(DM dm, PetscSection section, Vec v, PetscInt 
     }
   }
   numPoints = q;
-  for (p = 0, size = 0; p < numPoints*2; p += 2) {
-    PetscInt dof, fdof;
+  if (!values || !*values) {
+    for (p = 0, size = 0; p < numPoints*2; p += 2) {
+      PetscInt dof, fdof;
 
-    ierr = PetscSectionGetDof(section, points[p], &dof);CHKERRQ(ierr);
-    for (f = 0; f < numFields; ++f) {
-      ierr          = PetscSectionGetFieldDof(section, points[p], f, &fdof);CHKERRQ(ierr);
-      offsets[f+1] += fdof;
+      ierr = PetscSectionGetDof(section, points[p], &dof);CHKERRQ(ierr);
+      for (f = 0; f < numFields; ++f) {
+        ierr          = PetscSectionGetFieldDof(section, points[p], f, &fdof);CHKERRQ(ierr);
+        offsets[f+1] += fdof;
+      }
+      size += dof;
     }
-    size += dof;
+    if (!values) {
+      if (csize) *csize = size;
+      PetscFunctionReturn(0);
+    }
+    ierr = DMGetWorkArray(dm, size, PETSC_SCALAR, &array);CHKERRQ(ierr);
+  } else {
+    array = *values;
   }
   for (f = 1; f < numFields; ++f) offsets[f+1] += offsets[f];
   if (numFields && offsets[numFields] != size) SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Invalid size for closure %d should be %d", offsets[numFields], size);
-  ierr = DMGetWorkArray(dm, size, PETSC_SCALAR, &array);CHKERRQ(ierr);
   ierr = VecGetArray(v, &vArray);CHKERRQ(ierr);
   for (p = 0; p < numPoints*2; p += 2) {
     PetscInt     o = points[p+1];
@@ -6577,8 +6585,13 @@ PetscErrorCode DMPlexVecGetClosure(DM dm, PetscSection section, Vec v, PetscInt 
   }
   ierr = DMPlexRestoreTransitiveClosure(dm, point, PETSC_TRUE, &numPoints, &points);CHKERRQ(ierr);
   ierr = VecRestoreArray(v, &vArray);CHKERRQ(ierr);
-  if (csize) *csize = size;
-  *values = array;
+  if (!*values) {
+    if (csize) *csize = size;
+    *values = array;
+  } else {
+    if (size > *csize) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Size of input array %d < actual size %d", *csize, size);
+    *csize = size;
+  }
   PetscFunctionReturn(0);
 }
 
