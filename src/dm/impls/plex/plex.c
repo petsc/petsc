@@ -3105,6 +3105,34 @@ PetscErrorCode DMPlexDistribute(DM dm, const char partitioner[], PetscInt overla
     }
   }
   ierr = PetscLogEventEnd(DMPLEX_DistributeLabels,dm,0,0,0);CHKERRQ(ierr);
+  /* Setup hybrid structure */
+  {
+    const PetscInt *gpoints;
+    PetscInt        depth, n, d;
+
+    for (d = 0; d <= dim; ++d) {pmesh->hybridPointMax[d] = mesh->hybridPointMax[d];}
+    ierr = MPI_Bcast(pmesh->hybridPointMax, dim+1, MPIU_INT, 0, comm);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingGetSize(renumbering, &n);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingGetIndices(renumbering, &gpoints);CHKERRQ(ierr);
+    ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
+    for (d = 0; d <= dim; ++d) {
+      PetscInt pmax = pmesh->hybridPointMax[d], newmax = 0, pEnd, stratum[2], p;
+
+      if (pmax < 0) continue;
+      ierr = DMPlexGetDepthStratum(dm, d > depth ? depth : d, &stratum[0], &stratum[1]);CHKERRQ(ierr);
+      /* This mesh is not interpolated, so there is still a problem here */
+      ierr = DMPlexGetDepthStratum(*dmParallel, d > 0 ? 1 : d, NULL, &pEnd);CHKERRQ(ierr);
+      ierr = MPI_Bcast(stratum, 2, MPIU_INT, 0, comm);CHKERRQ(ierr);
+      for (p = 0; p < n; ++p) {
+        const PetscInt point = gpoints[p];
+
+        if ((point >= stratum[0]) && (point < stratum[1]) && (point >= pmax)) ++newmax;
+      }
+      if (newmax > 0) pmesh->hybridPointMax[d] = pEnd - newmax;
+      else            pmesh->hybridPointMax[d] = -1;
+    }
+    ierr = ISLocalToGlobalMappingRestoreIndices(renumbering, &gpoints);CHKERRQ(ierr);
+  }
   /* Cleanup Partition */
   ierr = ISLocalToGlobalMappingDestroy(&renumbering);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&partSF);CHKERRQ(ierr);
