@@ -2285,7 +2285,7 @@ PetscErrorCode CellRefinerCreateSF(CellRefiner refiner, DM dm, PetscInt depthSiz
         remotePointsNew[m].index = rvStartNew[n] + (rp - rvStart[n]);
         remotePointsNew[m].rank  = rrank;
         ++m;
-      } else if ((p >= fStart) && (p < fEnd)) {
+      } else if ((p >= eStart) && (p < eEnd)) {
         /* Old edges add new edges and vertex */
         for (r = 0; r < 2; ++r, ++m) {
           localPointsNew[m]        = eStartNew     + (p  - eStart)*2     + r;
