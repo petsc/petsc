@@ -3381,7 +3381,7 @@ PetscErrorCode  SNESMonitorSet(SNES snes,PetscErrorCode (*SNESMonitorFunction)(S
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESMonitorCancel"
-/*@C
+/*@
    SNESMonitorCancel - Clears all the monitor functions for a SNES object.
 
    Logically Collective on SNES
