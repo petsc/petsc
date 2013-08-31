@@ -27,7 +27,7 @@ static PetscErrorCode DMPlexLocatePoint_General_2D_Internal(DM dm, const PetscSc
 {
   PetscSection       coordSection;
   Vec             coordsLocal;
-  PetscScalar    *coords;
+  PetscScalar    *coords = NULL;
   const PetscInt  faces[8]  = {0, 1, 1, 2, 2, 3, 3, 0};
   PetscReal       x         = PetscRealPart(point[0]);
   PetscReal       y         = PetscRealPart(point[1]);
@@ -461,7 +461,7 @@ static PetscErrorCode DMPlexComputeLineGeometry_Internal(DM dm, PetscInt e, Pets
 {
   PetscSection   coordSection;
   Vec            coordinates;
-  PetscScalar   *coords;
+  PetscScalar   *coords = NULL;
   PetscInt       numCoords, d;
   PetscErrorCode ierr;
 
@@ -504,7 +504,7 @@ static PetscErrorCode DMPlexComputeTriangleGeometry_Internal(DM dm, PetscInt e, 
 {
   PetscSection   coordSection;
   Vec            coordinates;
-  PetscScalar   *coords;
+  PetscScalar   *coords = NULL;
   PetscInt       numCoords, d, f, g;
   PetscErrorCode ierr;
 
@@ -565,7 +565,7 @@ static PetscErrorCode DMPlexComputeRectangleGeometry_Internal(DM dm, PetscInt e,
 {
   PetscSection   coordSection;
   Vec            coordinates;
-  PetscScalar   *coords;
+  PetscScalar   *coords = NULL;
   PetscInt       numCoords, d, f, g;
   PetscErrorCode ierr;
 
@@ -624,7 +624,7 @@ static PetscErrorCode DMPlexComputeTetrahedronGeometry_Internal(DM dm, PetscInt 
 {
   PetscSection   coordSection;
   Vec            coordinates;
-  PetscScalar   *coords;
+  PetscScalar   *coords = NULL;
   const PetscInt dim = 3;
   PetscInt       d;
   PetscErrorCode ierr;
@@ -656,7 +656,7 @@ static PetscErrorCode DMPlexComputeHexahedronGeometry_Internal(DM dm, PetscInt e
 {
   PetscSection   coordSection;
   Vec            coordinates;
-  PetscScalar   *coords;
+  PetscScalar   *coords = NULL;
   const PetscInt dim = 3;
   PetscInt       d;
   PetscErrorCode ierr;
@@ -792,7 +792,7 @@ static PetscErrorCode DMPlexComputeGeometryFVM_1D_Internal(DM dm, PetscInt dim, 
 {
   PetscSection   coordSection;
   Vec            coordinates;
-  PetscScalar   *coords;
+  PetscScalar   *coords = NULL;
   PetscInt       coordSize;
   PetscErrorCode ierr;
 

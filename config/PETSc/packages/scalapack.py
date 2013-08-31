@@ -31,6 +31,7 @@ class Configure(PETSc.package.NewPackage):
     g = open(os.path.join(self.packageDir,'SLmake.inc'),'w')
     g.write('SCALAPACKLIB = '+'libscalapack.'+self.setCompilers.AR_LIB_SUFFIX+' \n')
     g.write('LIBS         = '+self.libraries.toString(self.blasLapack.dlib)+'\n')
+    g.write('MPIINC       = '+self.headers.toString(self.mpi.include)+'\n')
     # this mangling information is for both BLAS and the Fortran compiler so cannot use the BlasLapack mangling flag
     if self.compilers.fortranManglingDoubleUnderscore:
       blah = 'f77IsF2C'
@@ -49,7 +50,7 @@ class Configure(PETSc.package.NewPackage):
     self.setCompilers.popLanguage()
     self.setCompilers.pushLanguage('C')
     g.write('CC           = '+self.setCompilers.getCompiler()+'\n')
-    g.write('CCFLAGS      = '+self.setCompilers.getCompilerFlags().replace('-Wall','').replace('-Wshadow','')+'\n')
+    g.write('CCFLAGS      = '+self.setCompilers.getCompilerFlags().replace('-Wall','').replace('-Wshadow','')+' $(MPIINC)\n')
     g.write('CCLOADER     = '+self.setCompilers.getLinker()+'\n')
     g.write('CCLOADFLAGS  = '+self.setCompilers.getLinkerFlags()+'\n')
     self.setCompilers.popLanguage()

@@ -216,9 +216,6 @@ Label 'marker':
 [1]: 20 (1)
 [1]: 21 (1)
 [1]: 22 (1)
-[1]: 23 (1)
-[1]: 24 (1)
-[1]: 25 (1)
 PetscSF Object: 2 MPI processes
   type: basic
     sort=rank-order
@@ -437,9 +434,6 @@ Label 'marker':
 [1]: 20 (1)
 [1]: 21 (1)
 [1]: 22 (1)
-[1]: 23 (1)
-[1]: 24 (1)
-[1]: 25 (1)
 PetscSF Object: 2 MPI processes
   type: basic
     sort=rank-order

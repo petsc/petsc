@@ -617,11 +617,9 @@ PetscErrorCode  PetscOptionsInsert(int *argc,char ***args,const char file[])
   ierr = PetscOptionsGetBool(NULL,"-skip_petscrc",&flag,NULL);CHKERRQ(ierr);
   if (!flag) {
     ierr = PetscGetHomeDirectory(pfile,PETSC_MAX_PATH_LEN-16);CHKERRQ(ierr);
-    /* warning: assumes all processes have a home directory or none, but nothing in between */
-    if (pfile[0]) {
-      ierr = PetscStrcat(pfile,"/.petscrc");CHKERRQ(ierr);
-      ierr = PetscOptionsInsertFile(PETSC_COMM_WORLD,pfile,PETSC_FALSE);CHKERRQ(ierr);
-    }
+    /* PetscOptionsInsertFile() does a fopen() on rank0 only - so only rank0 HomeDir value is relavent */
+    if (pfile[0]) { ierr = PetscStrcat(pfile,"/.petscrc");CHKERRQ(ierr); }
+    ierr = PetscOptionsInsertFile(PETSC_COMM_WORLD,pfile,PETSC_FALSE);CHKERRQ(ierr);
     ierr = PetscOptionsInsertFile(PETSC_COMM_WORLD,".petscrc",PETSC_FALSE);CHKERRQ(ierr);
     ierr = PetscOptionsInsertFile(PETSC_COMM_WORLD,"petscrc",PETSC_FALSE);CHKERRQ(ierr);
   }

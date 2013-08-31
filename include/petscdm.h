@@ -184,16 +184,16 @@ struct _DMInterpolationInfo {
 };
 typedef struct _DMInterpolationInfo *DMInterpolationInfo;
 
-PetscErrorCode DMInterpolationCreate(MPI_Comm, DMInterpolationInfo *);
-PetscErrorCode DMInterpolationSetDim(DMInterpolationInfo, PetscInt);
-PetscErrorCode DMInterpolationGetDim(DMInterpolationInfo, PetscInt *);
-PetscErrorCode DMInterpolationSetDof(DMInterpolationInfo, PetscInt);
-PetscErrorCode DMInterpolationGetDof(DMInterpolationInfo, PetscInt *);
-PetscErrorCode DMInterpolationAddPoints(DMInterpolationInfo, PetscInt, PetscReal[]);
-PetscErrorCode DMInterpolationSetUp(DMInterpolationInfo, DM, PetscBool);
-PetscErrorCode DMInterpolationGetCoordinates(DMInterpolationInfo, Vec *);
-PetscErrorCode DMInterpolationGetVector(DMInterpolationInfo, Vec *);
-PetscErrorCode DMInterpolationRestoreVector(DMInterpolationInfo, Vec *);
-PetscErrorCode DMInterpolationEvaluate(DMInterpolationInfo, DM, Vec, Vec);
-PetscErrorCode DMInterpolationDestroy(DMInterpolationInfo *);
+PETSC_EXTERN PetscErrorCode DMInterpolationCreate(MPI_Comm, DMInterpolationInfo *);
+PETSC_EXTERN PetscErrorCode DMInterpolationSetDim(DMInterpolationInfo, PetscInt);
+PETSC_EXTERN PetscErrorCode DMInterpolationGetDim(DMInterpolationInfo, PetscInt *);
+PETSC_EXTERN PetscErrorCode DMInterpolationSetDof(DMInterpolationInfo, PetscInt);
+PETSC_EXTERN PetscErrorCode DMInterpolationGetDof(DMInterpolationInfo, PetscInt *);
+PETSC_EXTERN PetscErrorCode DMInterpolationAddPoints(DMInterpolationInfo, PetscInt, PetscReal[]);
+PETSC_EXTERN PetscErrorCode DMInterpolationSetUp(DMInterpolationInfo, DM, PetscBool);
+PETSC_EXTERN PetscErrorCode DMInterpolationGetCoordinates(DMInterpolationInfo, Vec *);
+PETSC_EXTERN PetscErrorCode DMInterpolationGetVector(DMInterpolationInfo, Vec *);
+PETSC_EXTERN PetscErrorCode DMInterpolationRestoreVector(DMInterpolationInfo, Vec *);
+PETSC_EXTERN PetscErrorCode DMInterpolationEvaluate(DMInterpolationInfo, DM, Vec, Vec);
+PETSC_EXTERN PetscErrorCode DMInterpolationDestroy(DMInterpolationInfo *);
 #endif
