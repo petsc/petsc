@@ -745,7 +745,7 @@ PetscErrorCode DMPlexComputeJacobianFEM(DM dm, Vec X, Mat Jac, Mat JacP, MatStru
   DM_Plex         *mesh = (DM_Plex*) dm->data;
   PetscFEM        *fem  = (PetscFEM*) &((DM*) user)[1];
   PetscQuadrature *quad = fem->quad;
-  PetscSection     section;
+  PetscSection     section, globalSection;
   PetscReal       *v0, *J, *invJ, *detJ;
   PetscScalar     *elemMat, *u;
   PetscInt         dim, numFields, field, fieldI, numBatchesTmp = 1, numCells, cStart, cEnd, c;
@@ -757,6 +757,7 @@ PetscErrorCode DMPlexComputeJacobianFEM(DM dm, Vec X, Mat Jac, Mat JacP, MatStru
   /* ierr = PetscLogEventBegin(JacobianFEMEvent,0,0,0,0);CHKERRQ(ierr); */
   ierr     = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
   ierr     = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
+  ierr     = DMGetDefaultGlobalSection(dm, &globalSection);CHKERRQ(ierr);
   ierr     = PetscSectionGetNumFields(section, &numFields);CHKERRQ(ierr);
   ierr     = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   numCells = cEnd - cStart;
@@ -806,7 +807,7 @@ PetscErrorCode DMPlexComputeJacobianFEM(DM dm, Vec X, Mat Jac, Mat JacP, MatStru
   }
   for (c = cStart; c < cEnd; ++c) {
     if (mesh->printFEM > 1) {ierr = DMPrintCellMatrix(c, "Jacobian", cellDof, cellDof, &elemMat[c*cellDof*cellDof]);CHKERRQ(ierr);}
-    ierr = DMPlexMatSetClosure(dm, NULL, NULL, JacP, c, &elemMat[c*cellDof*cellDof], ADD_VALUES);CHKERRQ(ierr);
+    ierr = DMPlexMatSetClosure(dm, section, globalSection, JacP, c, &elemMat[c*cellDof*cellDof], ADD_VALUES);CHKERRQ(ierr);
   }
   ierr = PetscFree6(u,v0,J,invJ,detJ,elemMat);CHKERRQ(ierr);
 
