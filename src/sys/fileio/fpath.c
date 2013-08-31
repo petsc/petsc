@@ -49,19 +49,12 @@ PetscErrorCode  PetscGetFullPath(const char path[],char fullpath[],size_t flen)
     ierr = PetscStrncmp("/tmp_mnt/",path,9,&flg);CHKERRQ(ierr);
     if (flg) {ierr = PetscStrncpy(fullpath,path + 8,flen);CHKERRQ(ierr);}
     else     {ierr = PetscStrncpy(fullpath,path,flen);CHKERRQ(ierr);}
+    fullpath[flen-1] = 0;
     PetscFunctionReturn(0);
   }
-  ierr = PetscGetWorkingDirectory(fullpath,flen);CHKERRQ(ierr);
-  ierr = PetscStrlen(fullpath,&ln);CHKERRQ(ierr);
-  ierr = PetscStrncat(fullpath,"/",flen - ln);CHKERRQ(ierr);
-  if (path[0] == '.' && path[1] == '/') {
-    ierr = PetscStrlen(fullpath,&ln);CHKERRQ(ierr);
-    ierr = PetscStrncat(fullpath,path+2,flen - ln - 1);CHKERRQ(ierr);
-  } else {
-    ierr = PetscStrlen(fullpath,&ln);CHKERRQ(ierr);
-    ierr = PetscStrncat(fullpath,path,flen - ln - 1);CHKERRQ(ierr);
-  }
 
+  ierr = PetscStrncpy(fullpath,path,flen);CHKERRQ(ierr);
+  fullpath[flen-1] = 0;
   /* Remove the various "special" forms (~username/ and ~/) */
   if (fullpath[0] == '~') {
     char tmppath[PETSC_MAX_PATH_LEN],*rest;
@@ -91,7 +84,21 @@ PetscErrorCode  PetscGetFullPath(const char path[],char fullpath[],size_t flen)
     if (tmppath[ln-1] != '/') {ierr = PetscStrcat(tmppath+ln-1,"/");CHKERRQ(ierr);}
     ierr = PetscStrcat(tmppath,rest);CHKERRQ(ierr);
     ierr = PetscStrncpy(fullpath,tmppath,flen);CHKERRQ(ierr);
+    fullpath[flen-1] = 0;
+  } else {
+    ierr = PetscGetWorkingDirectory(fullpath,flen);CHKERRQ(ierr);
+    ierr = PetscStrlen(fullpath,&ln);CHKERRQ(ierr);
+    ierr = PetscStrncpy(fullpath+ln,"/",flen - ln);CHKERRQ(ierr);
+    fullpath[flen-1] = 0;
+    ierr = PetscStrlen(fullpath,&ln);CHKERRQ(ierr);
+    if (path[0] == '.' && path[1] == '/') {
+      ierr = PetscStrncat(fullpath,path+2,flen - ln - 1);CHKERRQ(ierr);
+    } else {
+      ierr = PetscStrncat(fullpath,path,flen - ln - 1);CHKERRQ(ierr);
+    }
+    fullpath[flen-1] = 0;
   }
+
   /* Remove the automounter part of the path */
   ierr = PetscStrncmp(fullpath,"/tmp_mnt/",9,&flg);CHKERRQ(ierr);
   if (flg) {
