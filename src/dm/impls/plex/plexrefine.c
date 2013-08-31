@@ -545,7 +545,7 @@ PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt depthSiz
 
       for (r = 0; r < 2; ++r) {
         const PetscInt  newp = fStartNew + (f - fStart)*2 + r;
-        const PetscInt *cone, *support;
+        const PetscInt *cone, *ornt, *support;
         PetscInt        coneNew[2], coneSize, c, supportSize, s;
 
         ierr             = DMPlexGetCone(dm, f, &cone);CHKERRQ(ierr);
@@ -564,10 +564,11 @@ PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt depthSiz
         for (s = 0; s < supportSize; ++s) {
           ierr = DMPlexGetConeSize(dm, support[s], &coneSize);CHKERRQ(ierr);
           ierr = DMPlexGetCone(dm, support[s], &cone);CHKERRQ(ierr);
+          ierr = DMPlexGetConeOrientation(dm, support[s], &ornt);CHKERRQ(ierr);
           for (c = 0; c < coneSize; ++c) {
             if (cone[c] == f) break;
           }
-          supportRef[s] = cStartNew + (support[s] - cStart)*4 + (c+r)%3;
+          supportRef[s] = cStartNew + (support[s] - cStart)*4 + (ornt[c] < 0 ? (c+1-r)%3 : (c+r)%3);
         }
         ierr = DMPlexSetSupport(rdm, newp, supportRef);CHKERRQ(ierr);
 #if 1
@@ -1017,7 +1018,7 @@ PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt depthSiz
 
       for (r = 0; r < 2; ++r) {
         const PetscInt  newp = fStartNew + (f - fStart)*2 + r;
-        const PetscInt *cone, *support;
+        const PetscInt *cone, *ornt, *support;
         PetscInt        coneNew[2], coneSize, c, supportSize, s;
 
         ierr             = DMPlexGetCone(dm, f, &cone);CHKERRQ(ierr);
@@ -1039,10 +1040,11 @@ PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt depthSiz
           } else {
             ierr = DMPlexGetConeSize(dm, support[s], &coneSize);CHKERRQ(ierr);
             ierr = DMPlexGetCone(dm, support[s], &cone);CHKERRQ(ierr);
+            ierr = DMPlexGetConeOrientation(dm, support[s], &ornt);CHKERRQ(ierr);
             for (c = 0; c < coneSize; ++c) {
               if (cone[c] == f) break;
             }
-            supportRef[s] = cStartNew + (support[s] - cStart)*4 + (c+r)%3;
+            supportRef[s] = cStartNew + (support[s] - cStart)*4 + (ornt[c] < 0 ? (c+1-r)%3 : (c+r)%3);
           }
         }
         ierr = DMPlexSetSupport(rdm, newp, supportRef);CHKERRQ(ierr);
@@ -2283,7 +2285,7 @@ PetscErrorCode CellRefinerCreateSF(CellRefiner refiner, DM dm, PetscInt depthSiz
         remotePointsNew[m].index = rvStartNew[n] + (rp - rvStart[n]);
         remotePointsNew[m].rank  = rrank;
         ++m;
-      } else if ((p >= fStart) && (p < fEnd)) {
+      } else if ((p >= eStart) && (p < eEnd)) {
         /* Old edges add new edges and vertex */
         for (r = 0; r < 2; ++r, ++m) {
           localPointsNew[m]        = eStartNew     + (p  - eStart)*2     + r;

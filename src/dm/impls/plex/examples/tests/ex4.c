@@ -35,6 +35,62 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 };
 
 #undef __FUNCT__
+#define __FUNCT__ "CreateSimplex_2D"
+/* Two triangles
+        4
+      / | \
+     8  |  10
+    /   |   \
+   2  0 7  1 5
+    \   |   /
+     6  |  9
+      \ | /
+        3
+
+Becomes
+           10
+          / | \
+        21  |  26
+        /   |   \
+      14 2 20 4  16
+      /|\   |   /|\
+    22 | 28 | 32 | 25
+    /  |  \ | /  | 6\
+   8  29 3 13  7 31  11
+    \0 |  / | \  |  /
+    17 | 27 | 30 | 24
+      \|/   |   \|/
+      12 1 19 5  15
+        \   |   /
+        18  |  23
+          \ | /
+            9
+*/
+PetscErrorCode CreateSimplex_2D(MPI_Comm comm, DM dm)
+{
+  PetscInt       depth = 2;
+  PetscMPIInt    rank;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  if (!rank) {
+    PetscInt    numPoints[3]         = {4, 5, 2};
+    PetscInt    coneSize[11]         = {3, 3, 0, 0, 0, 0, 2, 2, 2, 2, 2};
+    PetscInt    cones[16]            = {6, 7, 8,  7, 9, 10,  2, 3,  3, 4,  4, 2,  3, 5,  5, 4};
+    PetscInt    coneOrientations[16] = {0, 0, 0, -2, 0,  0,  0, 0,  0, 0,  0, 0,  0, 0,  0, 0};
+    PetscScalar vertexCoords[8]      = {-0.5, 0.0,  0.0, -0.5,  0.0, 0.5,  0.5, 0.0};
+
+    ierr = DMPlexCreateFromDAG(dm, depth, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
+  } else {
+    PetscInt numPoints[3] = {0, 0, 0};
+
+    ierr = DMPlexCreateFromDAG(dm, depth, numPoints, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "CreateSimplexHybrid_2D"
 /* Two triangles separated by a zero-volume cell with 4 vertices/2 edges
         5--16--8
@@ -287,7 +343,9 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     if (cellSimplex) {
       if (cellHybrid) {
         ierr = CreateSimplexHybrid_2D(comm, *dm);CHKERRQ(ierr);
-      } else SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "Cannot make non-hybrid meshes for triangles");
+      } else {
+        ierr = CreateSimplex_2D(comm, *dm);CHKERRQ(ierr);
+      }
     } else SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "Cannot make meshes for quadrilaterals");
     break;
   case 3:
@@ -309,14 +367,6 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     /* Distribute mesh over processes */
     ierr = DMPlexDistribute(*dm, partitioner, 0, &distributedMesh);CHKERRQ(ierr);
     if (distributedMesh) {
-      PetscInt cMax = PETSC_DETERMINE, fMax = PETSC_DETERMINE;
-
-      /* Do not know how to preserve this after distribution */
-      if (rank) {
-        cMax = 1;
-        fMax = 11;
-      }
-      ierr = DMPlexSetHybridBounds(distributedMesh, cMax, PETSC_DETERMINE, fMax, PETSC_DETERMINE);CHKERRQ(ierr);
       ierr = DMDestroy(dm);CHKERRQ(ierr);
       *dm  = distributedMesh;
     }
@@ -431,10 +481,6 @@ PetscErrorCode DMPlexEqualReordered(DM dmA, DM dmB, PetscBool *equal)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  //PetscValidHeaderSpecific(dmA, DM_CLASSID, 1);
-  //PetscValidHeaderSpecific(dmB, DM_CLASSID, 2);
-  //PetscValidPointer(equal, 3);
-
   *equal = PETSC_FALSE;
   ierr = DMPlexGetDepth(dmA, &depth);CHKERRQ(ierr);
   ierr = DMPlexGetDepth(dmB, &depthB);CHKERRQ(ierr);
@@ -509,7 +555,9 @@ int main(int argc, char **argv)
   ierr = PetscInitialize(&argc, &argv, NULL, help);CHKERRQ(ierr);
   ierr = ProcessOptions(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);
   ierr = CreateMesh(PETSC_COMM_WORLD, &user, &user.dm);CHKERRQ(ierr);
-  ierr = CheckSymmetry(user.dm);CHKERRQ(ierr);
+  if (!user.cellHybrid) {
+    ierr = CheckSymmetry(user.dm);CHKERRQ(ierr);
+  }
 #if 0
   ierr = CheckOrientation(user.dm);CHKERRQ(ierr);
 #endif
