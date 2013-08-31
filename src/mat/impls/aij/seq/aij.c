@@ -1700,35 +1700,56 @@ PetscErrorCode MatSOR_SeqAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscR
         if (xb == b) {
           x[i] = sum*idiag[i];
         } else {
-          x[i] = (1-omega)*x[i] + sum*idiag[i];
+          x[i] = (1-omega)*x[i] + sum*idiag[i];  /* omega in idiag */
         }
       }
-      ierr = PetscLogFlops(a->nz);CHKERRQ(ierr);
+      ierr = PetscLogFlops(a->nz);CHKERRQ(ierr); /* assumes 1/2 in upper */
     }
     its--;
   }
   while (its--) {
     if (flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP) {
       for (i=0; i<m; i++) {
-        n   = a->i[i+1] - a->i[i];
+        /* lower */
+        n   = diag[i] - a->i[i];
         idx = a->j + a->i[i];
         v   = a->a + a->i[i];
         sum = b[i];
         PetscSparseDenseMinusDot(sum,x,v,idx,n);
-        x[i] = (1. - omega)*x[i] + (sum + mdiag[i]*x[i])*idiag[i];
+        t[i] = sum;             /* save application of the lower-triangular part */
+        /* upper */
+        n   = a->i[i+1] - diag[i] - 1;
+        idx = a->j + diag[i] + 1;
+        v   = a->a + diag[i] + 1;
+        PetscSparseDenseMinusDot(sum,x,v,idx,n);
+        x[i] = (1. - omega)*x[i] + sum*idiag[i]; /* omega in idiag */
       }
+      xb   = t;
       ierr = PetscLogFlops(2.0*a->nz);CHKERRQ(ierr);
-    }
+    } else xb = b;
     if (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP) {
       for (i=m-1; i>=0; i--) {
-        n   = a->i[i+1] - a->i[i];
-        idx = a->j + a->i[i];
-        v   = a->a + a->i[i];
-        sum = b[i];
-        PetscSparseDenseMinusDot(sum,x,v,idx,n);
-        x[i] = (1. - omega)*x[i] + (sum + mdiag[i]*x[i])*idiag[i];
+        sum = xb[i];
+        if (xb == b) {
+          /* whole matrix (no checkpointing available) */
+          n   = a->i[i+1] - a->i[i];
+          idx = a->j + a->i[i];
+          v   = a->a + a->i[i];
+          PetscSparseDenseMinusDot(sum,x,v,idx,n);
+          x[i] = (1. - omega)*x[i] + (sum + mdiag[i]*x[i])*idiag[i];
+        } else { /* lower-triangular part has been saved, so only apply upper-triangular */
+          n   = a->i[i+1] - diag[i] - 1;
+          idx = a->j + diag[i] + 1;
+          v   = a->a + diag[i] + 1;
+          PetscSparseDenseMinusDot(sum,x,v,idx,n);
+          x[i] = (1. - omega)*x[i] + sum*idiag[i];  /* omega in idiag */
+        }
       }
-      ierr = PetscLogFlops(2.0*a->nz);CHKERRQ(ierr);
+      if (xb == b) {
+        ierr = PetscLogFlops(2.0*a->nz);CHKERRQ(ierr);
+      } else {
+        ierr = PetscLogFlops(a->nz);CHKERRQ(ierr); /* assumes 1/2 in upper */
+      }
     }
   }
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
