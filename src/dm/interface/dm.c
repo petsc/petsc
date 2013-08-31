@@ -73,6 +73,7 @@ PetscErrorCode  DMCreate(MPI_Comm comm,DM *dm)
   PetscValidPointer(dm,2);
   *dm = NULL;
 #if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
+  ierr = PetscSysInitializePackage();CHKERRQ(ierr);
   ierr = VecInitializePackage();CHKERRQ(ierr);
   ierr = MatInitializePackage();CHKERRQ(ierr);
   ierr = DMInitializePackage();CHKERRQ(ierr);
