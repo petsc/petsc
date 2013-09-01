@@ -301,7 +301,7 @@ PetscErrorCode PetscOptionsGetFromTextInput()
       if (str[0]) {
         next->set = PETSC_TRUE;
 
-        ierr = PetscStrcpy((char*)next->data,str);CHKERRQ(ierr);
+        ierr = PetscStrallocpy(str,(char**)&next->data);CHKERRQ(ierr);
       }
       break;
     case OPTION_LIST:
@@ -310,7 +310,7 @@ PetscErrorCode PetscOptionsGetFromTextInput()
       if (str[0]) {
         PetscOptionsObject.changedmethod = PETSC_TRUE;
         next->set = PETSC_TRUE;
-        ierr = PetscStrcpy((char*)next->data,str);CHKERRQ(ierr);
+        ierr = PetscStrallocpy(str,(char**)&next->data);CHKERRQ(ierr);
       }
       break;
     default:
@@ -346,7 +346,7 @@ PetscErrorCode PetscOptionsSAWsDestroy(void)
 
 
 */
-PetscErrorCode PetscOptionsAMSInput()
+PetscErrorCode PetscOptionsSAWsInput()
 {
   PetscErrorCode ierr;
   PetscOptions   next     = PetscOptionsObject.next;
@@ -463,8 +463,8 @@ PetscErrorCode PetscOptionsEnd_Private(void)
   PetscFunctionBegin;
   if (PetscOptionsObject.next) {
     if (!PetscOptionsPublishCount) {
-#if defined(PETSC_HAVE_SAWS)
-      ierr = PetscOptionsAMSInput();CHKERRQ(ierr);
+#if defined(PETSC_HAVE_SAWS) && defined(foo)
+      ierr = PetscOptionsSAWsInput();CHKERRQ(ierr);
 #else
       ierr = PetscOptionsGetFromTextInput();CHKERRQ(ierr);
 #endif
@@ -532,7 +532,7 @@ PetscErrorCode PetscOptionsEnd_Private(void)
         ierr = PetscStrcpy(value,*(char**)PetscOptionsObject.next->data);CHKERRQ(ierr);
         break;
       case OPTION_STRING:
-        ierr = PetscStrcpy(value,*(char**)PetscOptionsObject.next->data);CHKERRQ(ierr);
+        ierr = PetscStrcpy(value,(char*)PetscOptionsObject.next->data);CHKERRQ(ierr);
       case OPTION_STRING_ARRAY:
         sprintf(value,"%s",((char**)PetscOptionsObject.next->data)[0]);
         for (j=1; j<PetscOptionsObject.next->arraylength; j++) {
@@ -705,9 +705,7 @@ PetscErrorCode  PetscOptionsString(const char opt[],const char text[],const char
   PetscFunctionBegin;
   if (!PetscOptionsPublishCount) {
     ierr = PetscOptionsCreate_Private(opt,text,man,OPTION_STRING,&amsopt);CHKERRQ(ierr);
-    ierr = PetscMalloc(sizeof(char*),&amsopt->data);CHKERRQ(ierr);
-
-    *(const char**)amsopt->data = defaultv;
+    ierr = PetscStrallocpy(defaultv,(char**)&amsopt->data);CHKERRQ(ierr);
   }
   ierr = PetscOptionsGetString(PetscOptionsObject.prefix,opt,value,len,set);CHKERRQ(ierr);
   if (PetscOptionsObject.printhelp && PetscOptionsPublishCount == 1 && !PetscOptionsObject.alreadyprinted) {
@@ -904,10 +902,7 @@ PetscErrorCode  PetscOptionsList(const char opt[],const char ltext[],const char 
   PetscFunctionBegin;
   if (!PetscOptionsPublishCount) {
     ierr = PetscOptionsCreate_Private(opt,ltext,man,OPTION_LIST,&amsopt);CHKERRQ(ierr);
-    ierr = PetscMalloc(sizeof(char*),&amsopt->data);CHKERRQ(ierr);
-
-    *(const char**)amsopt->data = defaultv;
-
+    ierr = PetscStrallocpy(defaultv,(char**)&amsopt->data);CHKERRQ(ierr);
     amsopt->flist = list;
   }
   ierr = PetscOptionsGetString(PetscOptionsObject.prefix,opt,value,len,set);CHKERRQ(ierr);
@@ -960,10 +955,7 @@ PetscErrorCode  PetscOptionsEList(const char opt[],const char ltext[],const char
   PetscFunctionBegin;
   if (!PetscOptionsPublishCount) {
     ierr = PetscOptionsCreate_Private(opt,ltext,man,OPTION_ELIST,&amsopt);CHKERRQ(ierr);
-    ierr = PetscMalloc(sizeof(char*),&amsopt->data);CHKERRQ(ierr);
-
-    *(const char**)amsopt->data = defaultv;
-
+    ierr = PetscStrallocpy(defaultv,(char**)&amsopt->data);CHKERRQ(ierr);
     amsopt->list  = list;
     amsopt->nlist = ntext;
   }
@@ -1487,9 +1479,7 @@ PetscErrorCode  PetscOptionsViewer(const char opt[],const char text[],const char
   PetscFunctionBegin;
   if (!PetscOptionsPublishCount) {
     ierr = PetscOptionsCreate_Private(opt,text,man,OPTION_STRING,&amsopt);CHKERRQ(ierr);
-    ierr = PetscMalloc(sizeof(PetscInt),&amsopt->data);CHKERRQ(ierr);
-
-    *(const char**)amsopt->data = "";
+    ierr = PetscStrallocpy("",(char**)&amsopt->data);CHKERRQ(ierr);
   }
   ierr = PetscOptionsGetViewer(PetscOptionsObject.comm,PetscOptionsObject.prefix,opt,viewer,format,set);CHKERRQ(ierr);
   if (PetscOptionsObject.printhelp && PetscOptionsPublishCount == 1 && !PetscOptionsObject.alreadyprinted) {
