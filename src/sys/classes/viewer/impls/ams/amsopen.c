@@ -87,6 +87,7 @@ PetscErrorCode  PetscObjectViewSAWs(PetscObject obj,PetscViewer viewer)
   if (rank) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Should only be being called on rank zero");
   if (!obj->name) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Object must already have been named");
 
+  obj->amsmem = PETSC_TRUE;
   ierr = PetscSNPrintf(dir,1024,"/PETSc/Objects/%s/Class",obj->name);CHKERRQ(ierr);
   PetscStackCallSAWs(SAWs_Register,(dir,&obj->class_name,1,SAWs_READ,SAWs_STRING));
   ierr = PetscSNPrintf(dir,1024,"/PETSc/Objects/%s/Type",obj->name);CHKERRQ(ierr);

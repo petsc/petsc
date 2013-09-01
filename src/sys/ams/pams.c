@@ -89,14 +89,14 @@ PetscErrorCode  PetscObjectSAWsBlock(PetscObject obj)
   if (!obj->amspublishblock || !obj->amsmem) PetscFunctionReturn(0);
   ierr = PetscObjectSAWsTakeAccess(obj);CHKERRQ(ierr);
   while (obj->amsblock) {
-    ierr = PetscInfo(NULL,"Blocking on AMS\n");
     ierr = PetscObjectSAWsGrantAccess(obj);CHKERRQ(ierr);
+    ierr = PetscInfo(NULL,"Blocking on AMS\n");
     ierr = PetscSleep(2.0);CHKERRQ(ierr);
     ierr = PetscObjectSAWsTakeAccess(obj);CHKERRQ(ierr);
   }
-  ierr = PetscInfo(NULL,"Out of SAWs block\n");
   obj->amsblock = PETSC_TRUE;
   ierr = PetscObjectSAWsGrantAccess(obj);CHKERRQ(ierr);
+  ierr = PetscInfo(NULL,"Out of SAWs block\n");
   PetscFunctionReturn(0);
 }
 

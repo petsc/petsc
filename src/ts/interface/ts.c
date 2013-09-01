@@ -127,6 +127,17 @@ PetscErrorCode  TSSetFromOptions(TS ts)
   ierr = PetscOptionsReal("-ts_rtol","Relative tolerance for local truncation error","TSSetTolerances",ts->rtol,&ts->rtol,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-ts_atol","Absolute tolerance for local truncation error","TSSetTolerances",ts->atol,&ts->atol,NULL);CHKERRQ(ierr);
 
+#if defined(PETSC_HAVE_SAWS)
+  {
+  PetscBool set;
+  flg  = PETSC_FALSE;
+  ierr = PetscOptionsBool("-ts_saws_block","Block for SAWs memory snooper at end of TSSolve","PetscObjectSAWsBlock",((PetscObject)ts)->amspublishblock,&flg,&set);CHKERRQ(ierr);
+  if (set) {
+    ierr = PetscObjectSAWsSetBlock((PetscObject)ts,flg);CHKERRQ(ierr);
+  }
+  }
+#endif
+
   /* Monitor options */
   ierr = PetscOptionsString("-ts_monitor","Monitor timestep size","TSMonitorDefault","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
   if (flg) {
@@ -2657,6 +2668,7 @@ PetscErrorCode TSSolve(TS ts,Vec u)
     ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   }
+  ierr = PetscObjectSAWsBlock((PetscObject)ts);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
