@@ -6449,7 +6449,7 @@ PetscErrorCode DMPlexVecGetClosure(DM dm, PetscSection section, Vec v, PetscInt 
     ierr = DMPlexGetConeSize(dm, point, &numPoints);CHKERRQ(ierr);
     ierr = DMPlexGetCone(dm, point, &cone);CHKERRQ(ierr);
     ierr = DMPlexGetConeOrientation(dm, point, &coneO);CHKERRQ(ierr);
-    if (!*values) {
+    if (!values || !*values) {
       if ((point >= pStart) && (point < pEnd)) {
         PetscInt dof;
         ierr = PetscSectionGetDof(section, point, &dof);CHKERRQ(ierr);
@@ -6462,6 +6462,10 @@ PetscErrorCode DMPlexVecGetClosure(DM dm, PetscSection section, Vec v, PetscInt 
         if ((cp < pStart) || (cp >= pEnd)) continue;
         ierr = PetscSectionGetDof(section, cp, &dof);CHKERRQ(ierr);
         size += dof;
+      }
+      if (!values) {
+        if (csize) *csize = size;
+        PetscFunctionReturn(0);
       }
       ierr = DMGetWorkArray(dm, size, PETSC_SCALAR, &array);CHKERRQ(ierr);
     } else {
