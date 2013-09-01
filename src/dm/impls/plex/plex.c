@@ -6537,6 +6537,7 @@ PetscErrorCode DMPlexVecGetClosure(DM dm, PetscSection section, Vec v, PetscInt 
       size += dof;
     }
     if (!values) {
+      ierr = DMPlexRestoreTransitiveClosure(dm, point, PETSC_TRUE, &numPoints, &points);CHKERRQ(ierr);
       if (csize) *csize = size;
       PetscFunctionReturn(0);
     }
