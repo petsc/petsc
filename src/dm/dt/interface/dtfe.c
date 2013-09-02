@@ -1386,7 +1386,7 @@ PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
         sp->functional[f].quadPoints  = qpoints;
         sp->functional[f].quadWeights = qweights;
         ++f;
-        lag->numDof[0] = 1;
+        lag->numDof[depth] = 1;
       }
     }
     ierr = DMPlexRestoreTransitiveClosure(dm, pStart[depth], PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
