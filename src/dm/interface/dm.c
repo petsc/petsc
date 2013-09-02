@@ -509,7 +509,7 @@ PetscErrorCode  DMSetUp(DM dm)
 @*/
 PetscErrorCode  DMSetFromOptions(DM dm)
 {
-  char           typeName[256] = MATAIJ;
+  char           typeName[256];
   PetscBool      flg;
   PetscErrorCode ierr;
 

@@ -680,9 +680,6 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
   } else if (!((PetscObject)snes)->type_name) {
     ierr = SNESSetType(snes,deft);CHKERRQ(ierr);
   }
-  /* not used here, but called so will go into help messaage */
-  ierr = PetscOptionsName("-snes_view","Print detailed information on solver used","SNESView",0);CHKERRQ(ierr);
-
   ierr = PetscOptionsReal("-snes_stol","Stop if step length less than","SNESSetTolerances",snes->stol,&snes->stol,0);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-snes_atol","Stop if function norm less than","SNESSetTolerances",snes->abstol,&snes->abstol,0);CHKERRQ(ierr);
 

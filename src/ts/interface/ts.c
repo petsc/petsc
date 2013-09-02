@@ -296,6 +296,10 @@ PetscErrorCode  TSSetFromOptions(TS ts)
     ierr = TSMonitorSet(ts,TSMonitorDMDARay,rayctx,TSMonitorDMDARayDestroy);CHKERRQ(ierr);
   }
 
+  /*
+     This code is all wrong. One is creating objects inside the TSSetFromOptions() so if run with the options gui
+     will bleed memory. Also one is using a PetscOptionsBegin() inside a PetscOptionsBegin()
+  */
   ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
   ierr = TSAdaptSetFromOptions(adapt);CHKERRQ(ierr);
 
