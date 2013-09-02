@@ -1510,7 +1510,8 @@ class PETScMaker(script.Script):
        self.logPrint("MISCONFIGURATION: Regression output file %s (test %s) is missing" % (outputName, testNum), debugSection='screen')
    else:
      with file(outputName) as f:
-       validOutput = f.read().strip() # Jed is now stripping output it appears
+       output      = output.strip()
+       validOutput = f.read().strip().replace('\r', '') # Jed is now stripping output it appears
        if not validOutput == output:
          if replace:
            with file(outputName, 'w') as f:
