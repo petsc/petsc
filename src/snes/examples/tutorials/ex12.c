@@ -271,7 +271,11 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   ierr = PetscLogEventBegin(user->createMeshEvent,0,0,0,0);CHKERRQ(ierr);
   ierr = PetscStrlen(filename, &len);CHKERRQ(ierr);
   if (!len) {
+    DMLabel label;
+
     ierr = DMPlexCreateBoxMesh(comm, dim, interpolate, dm);CHKERRQ(ierr);
+    ierr = DMPlexGetLabel(*dm, "marker", &label);CHKERRQ(ierr);
+    if (label) {ierr = DMPlexLabelComplete(*dm, label);CHKERRQ(ierr);}
   } else {
 #if defined(PETSC_HAVE_EXODUSII)
     int        CPU_word_size = 0, IO_word_size = 0, exoid;
