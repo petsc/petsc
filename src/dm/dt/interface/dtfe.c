@@ -1221,7 +1221,7 @@ PetscErrorCode PetscDualSpaceCreateReferenceCell(PetscDualSpace sp, PetscInt dim
   {
     PetscInt    numPoints[2]        = {4, 1};
     PetscInt    coneSize[5]         = {4, 0, 0, 0, 0};
-    PetscInt    cones[4]            = {1, 2, 3, 4};
+    PetscInt    cones[4]            = {1, 3, 2, 4};
     PetscInt    coneOrientations[4] = {0, 0, 0, 0};
     PetscScalar vertexCoords[12]    = {-1.0, -1.0, -1.0,  1.0, -1.0, -1.0,  -1.0, 1.0, -1.0,  -1.0, -1.0, 1.0};
 
