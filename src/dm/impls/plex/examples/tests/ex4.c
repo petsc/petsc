@@ -246,6 +246,44 @@ PetscErrorCode CreateSimplexHybrid_2D(MPI_Comm comm, DM dm)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "CreateTensorProduct_2D"
+/* Two quadrilaterals
+
+  5----10-----4----14-----7
+  |           |           |
+  |           |           |
+  |           |           |
+ 11     0     9     1     13
+  |           |           |
+  |           |           |
+  |           |           |
+  2-----8-----3----12-----6
+*/
+PetscErrorCode CreateTensorProduct_2D(MPI_Comm comm, PetscInt testNum, DM *dm)
+{
+  PetscInt       depth = 2;
+  PetscMPIInt    rank;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  if (!rank) {
+    PetscInt    numPoints[3]         = {6, 7, 2};
+    PetscInt    coneSize[15]         = {4, 4, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2};
+    PetscInt    cones[22]            = {8, 9, 10, 11,  12, 13, 14,  9,  2, 3,  3, 4,  4, 5,  5, 2,  3, 6,  6, 7,  7, 4};
+    PetscInt    coneOrientations[22] = {0, 0,  0,  0,   0,  0,  0, -2,  0, 0,  0, 0,  0, 0,  0, 0,  0, 0,  0, 0,  0, 0};
+    PetscScalar vertexCoords[12]     = {-1.0, -0.5,  0.0, -0.5,  0.0, 0.5,  -1.0, 0.5,  1.0, -0.5,  1.0, 0.5};
+
+    ierr = DMPlexCreateFromDAG(*dm, depth, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
+  } else {
+    PetscInt numPoints[3] = {0, 0, 0};
+
+    ierr = DMPlexCreateFromDAG(*dm, depth, numPoints, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "CreateSimplex_3D"
 /* Two tetrahedrons
 
@@ -373,7 +411,13 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       } else {
         ierr = CreateSimplex_2D(comm, dm);CHKERRQ(ierr);
       }
-    } else SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "Cannot make meshes for quadrilaterals");
+    } else {
+      if (cellHybrid) {
+        SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "Cannot make hybrid meshes for quadrilaterals");
+      } else {
+        ierr = CreateTensorProduct_2D(comm, user->testNum, dm);CHKERRQ(ierr);
+      }
+    }
     break;
   case 3:
     if (cellSimplex) {

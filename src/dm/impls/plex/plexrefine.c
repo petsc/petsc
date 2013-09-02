@@ -759,7 +759,7 @@ PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt depthSiz
 
       for (r = 0; r < 2; ++r) {
         const PetscInt  newp = fStartNew + (f - fStart)*2 + r;
-        const PetscInt *cone, *support;
+        const PetscInt *cone, *ornt, *support;
         PetscInt        coneNew[2], coneSize, c, supportSize, s;
 
         ierr             = DMPlexGetCone(dm, f, &cone);CHKERRQ(ierr);
@@ -778,10 +778,11 @@ PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt depthSiz
         for (s = 0; s < supportSize; ++s) {
           ierr = DMPlexGetConeSize(dm, support[s], &coneSize);CHKERRQ(ierr);
           ierr = DMPlexGetCone(dm, support[s], &cone);CHKERRQ(ierr);
+          ierr = DMPlexGetConeOrientation(dm, support[s], &ornt);CHKERRQ(ierr);
           for (c = 0; c < coneSize; ++c) {
             if (cone[c] == f) break;
           }
-          supportRef[s] = cStartNew + (support[s] - cStart)*4 + (c+r)%4;
+          supportRef[s] = cStartNew + (support[s] - cStart)*4 + (ornt[c] < 0 ? (c+1-r)%4 : (c+r)%4);
         }
         ierr = DMPlexSetSupport(rdm, newp, supportRef);CHKERRQ(ierr);
 #if 1
@@ -2093,8 +2094,8 @@ PetscErrorCode CellRefinerCreateSF(CellRefiner refiner, DM dm, PetscInt depthSiz
         /* Old faces add new faces and vertex */
         numLeavesNew += 2 + 1;
       } else if ((p >= cStart) && (p < cEnd)) {
-        /* Old cells add new cells and interior faces */
-        numLeavesNew += 4 + 4;
+        /* Old cells add new cells, interior faces, and vertex */
+        numLeavesNew += 4 + 4 + 1;
       }
       break;
     case 5:
@@ -2214,7 +2215,7 @@ PetscErrorCode CellRefinerCreateSF(CellRefiner refiner, DM dm, PetscInt depthSiz
           remotePointsNew[m].rank  = rrank;
         }
       } else if ((p >= cStart) && (p < cEnd)) {
-        /* Old cells add new cells and interior faces */
+        /* Old cells add new cells, interior faces, and vertex */
         for (r = 0; r < 4; ++r, ++m) {
           localPointsNew[m]        = cStartNew     + (p  - cStart)*4     + r;
           remotePointsNew[m].index = rcStartNew[n] + (rp - rcStart[n])*4 + r;
@@ -2223,6 +2224,11 @@ PetscErrorCode CellRefinerCreateSF(CellRefiner refiner, DM dm, PetscInt depthSiz
         for (r = 0; r < 4; ++r, ++m) {
           localPointsNew[m]        = fStartNew     + (fEnd - fStart)*2                    + (p  - cStart)*4     + r;
           remotePointsNew[m].index = rfStartNew[n] + rdepthSizeOld[n*(depth+1)+depth-1]*2 + (rp - rcStart[n])*4 + r;
+          remotePointsNew[m].rank  = rrank;
+        }
+        for (r = 0; r < 1; ++r, ++m) {
+          localPointsNew[m]        = vStartNew     + (fEnd - fStart)                    + (p  - cStart)     + r;
+          remotePointsNew[m].index = rvStartNew[n] + rdepthSizeOld[n*(depth+1)+depth-1] + (rp - rcStart[n]) + r;
           remotePointsNew[m].rank  = rrank;
         }
       }
