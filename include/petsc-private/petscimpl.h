@@ -107,9 +107,8 @@ typedef struct _p_PetscObject {
   PetscPrecision       precision;
   PetscBool            optionsprinted;
 #if defined(PETSC_HAVE_SAWS)
-  PetscBool            amsmem;
+  PetscBool            amsmem;          /* if PETSC_TRUE then this object is registered with SAWs and visible to clients */
   PetscBool            amspublishblock; /* if PETSC_TRUE and publishing objects then will block at PetscObjectSAWsBlock() */
-  PetscBool            amsblock;
 #endif
 } _p_PetscObject;
 

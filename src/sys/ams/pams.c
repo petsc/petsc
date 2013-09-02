@@ -81,21 +81,24 @@ PetscErrorCode  PetscObjectSAWsGrantAccess(PetscObject obj)
 @*/
 PetscErrorCode  PetscObjectSAWsBlock(PetscObject obj)
 {
-  PetscErrorCode ierr;
+  PetscErrorCode     ierr;
+  volatile PetscBool block = PETSC_TRUE;
 
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
 
   if (!obj->amspublishblock || !obj->amsmem) PetscFunctionReturn(0);
+  PetscStackCallSAWs(SAWs_Register,("Block",(PetscBool*)&block,1,SAWs_WRITE,SAWs_BOOLEAN));
+
   ierr = PetscObjectSAWsTakeAccess(obj);CHKERRQ(ierr);
-  while (obj->amsblock) {
+  while (block) {
     ierr = PetscObjectSAWsGrantAccess(obj);CHKERRQ(ierr);
     ierr = PetscInfo(NULL,"Blocking on AMS\n");
     ierr = PetscSleep(2.0);CHKERRQ(ierr);
     ierr = PetscObjectSAWsTakeAccess(obj);CHKERRQ(ierr);
   }
-  obj->amsblock = PETSC_TRUE;
   ierr = PetscObjectSAWsGrantAccess(obj);CHKERRQ(ierr);
+  PetscStackCallSAWs(SAWs_Delete,("Block"));
   ierr = PetscInfo(NULL,"Out of SAWs block\n");
   PetscFunctionReturn(0);
 }
@@ -125,7 +128,6 @@ PetscErrorCode  PetscObjectSAWsSetBlock(PetscObject obj,PetscBool flg)
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
   obj->amspublishblock = flg;
-  obj->amsblock        = flg;
   PetscFunctionReturn(0);
 }
 
