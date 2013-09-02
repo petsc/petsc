@@ -31,8 +31,8 @@ class TestNullSpace(unittest.TestCase):
     def _remove(self):
         v = PETSc.Vec().createSeq(3);
         v[0], v[1], v[2] = [7,  8, 9]
-        w = v.duplicate()
-        self.nullsp.remove(v, w)
+        w = v.copy()
+        self.nullsp.remove(w)
         return (v, w)
 
     def testRemove(self):

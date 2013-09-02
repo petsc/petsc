@@ -20,10 +20,10 @@ cdef extern from * nogil:
     PetscSNESType SNESANDERSON
     PetscSNESType SNESASPIN
 
-    ctypedef enum PetscSNESNormType "SNESNormType":
+    ctypedef enum PetscSNESNormSchedule "SNESNormSchedule":
       SNES_NORM_DEFAULT
       SNES_NORM_NONE
-      SNES_NORM_FUNCTION
+      SNES_NORM_ALWAYS
       SNES_NORM_INITIAL_ONLY
       SNES_NORM_FINAL_ONLY
       SNES_NORM_INITIAL_FINAL_ONLY
@@ -120,8 +120,8 @@ cdef extern from * nogil:
     int SNESComputeJacobian(PetscSNES,PetscVec,PetscMat*,PetscMat*,PetscMatStructure*)
     int SNESComputeObjective(PetscSNES,PetscVec,PetscReal*)
 
-    int SNESSetNormType(PetscSNES,PetscSNESNormType)
-    int SNESGetNormType(PetscSNES,PetscSNESNormType*)
+    int SNESSetNormSchedule(PetscSNES,PetscSNESNormSchedule)
+    int SNESGetNormSchedule(PetscSNES,PetscSNESNormSchedule*)
 
     int SNESSetTolerances(PetscSNES,PetscReal,PetscReal,PetscReal,PetscInt,PetscInt)
     int SNESGetTolerances(PetscSNES,PetscReal*,PetscReal*,PetscReal*,PetscInt*,PetscInt*)

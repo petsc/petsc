@@ -3,7 +3,6 @@
 cdef extern from * nogil:
 
     int DMPlexCreate(MPI_Comm,PetscDM*)
-    int DMPlexClone(PetscDM,PetscDM*)
     int DMPlexCreateFromCellList(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscBool,int[],PetscInt,double[],PetscDM*)
 
     int DMPlexGetDimension(PetscDM,PetscInt*)

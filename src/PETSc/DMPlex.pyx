@@ -9,11 +9,6 @@ cdef class DMPlex(DM):
         PetscCLEAR(self.obj); self.dm = newdm
         return self
 
-    def clone(self):
-        cdef DMPlex dm = <DMPlex>type(self)()
-        CHKERR( DMPlexClone(self.dm, &dm.dm) )
-        return dm
-
     def createFromCellList(self, dim, cells, coords, interpolate=True, comm=None):
         cdef DMPlex    dm = <DMPlex>type(self)()
         cdef MPI_Comm  ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)

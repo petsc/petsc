@@ -11,6 +11,7 @@ cdef extern from * nogil:
     PetscDMType DMCARTESIAN
 
     int DMCreate(MPI_Comm,PetscDM*)
+    int DMClone(PetscDM,PetscDM*)
     int DMDestroy(PetscDM*)
     int DMView(PetscDM,PetscViewer)
     int DMSetType(PetscDM,PetscDMType)

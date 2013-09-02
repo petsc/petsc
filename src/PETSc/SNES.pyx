@@ -19,20 +19,20 @@ class SNESType(object):
     ANDERSON     = S_(SNESANDERSON)
     ASPIN        = S_(SNESASPIN)
 
-class SNESNormType(object):
+class SNESNormSchedule(object):
     # native
     NORM_DEFAULT            = SNES_NORM_DEFAULT
     NORM_NONE               = SNES_NORM_NONE
-    NORM_FUNCTION           = SNES_NORM_FUNCTION
+    NORM_ALWAYS             = SNES_NORM_ALWAYS
     NORM_INITIAL_ONLY       = SNES_NORM_INITIAL_ONLY
     NORM_FINAL_ONLY         = SNES_NORM_FINAL_ONLY
     NORM_INITIAL_FINAL_ONLY = SNES_NORM_INITIAL_FINAL_ONLY
     # aliases
-    DEFAULT            = NORM_DEFAULT           
-    NONE               = NORM_NONE              
-    FUNCTION           = NORM_FUNCTION          
-    INITIAL_ONLY       = NORM_INITIAL_ONLY      
-    FINAL_ONLY         = NORM_FINAL_ONLY        
+    DEFAULT            = NORM_DEFAULT
+    NONE               = NORM_NONE
+    ALWAYS             = NORM_ALWAYS
+    INITIAL_ONLY       = NORM_INITIAL_ONLY
+    FINAL_ONLY         = NORM_FINAL_ONLY
     INITIAL_FINAL_ONLY = NORM_INITIAL_FINAL_ONLY
 
 class SNESConvergedReason(object):
@@ -59,7 +59,7 @@ class SNESConvergedReason(object):
 cdef class SNES(Object):
 
     Type = SNESType
-    NormType = SNESNormType
+    NormSchedule = SNESNormSchedule
     ConvergedReason = SNESConvergedReason
 
     # --- xxx ---
@@ -249,13 +249,13 @@ cdef class SNES(Object):
                                   &cmaxit, NULL) )
         return (toReal(crtol), toReal(catol), toReal(cstol), toInt(cmaxit))
 
-    def setNormType(self, normtype):
-        CHKERR( SNESSetNormType(self.snes, normtype) )
+    def setNormSchedule(self, normsched):
+        CHKERR( SNESSetNormSchedule(self.snes, normsched) )
 
-    def getNormType(self):
-        cdef PetscSNESNormType normtype = SNES_NORM_NONE
-        CHKERR( SNESGetNormType(self.snes, &normtype) )
-        return normtype
+    def getNormSchedule(self):
+        cdef PetscSNESNormSchedule normsched = SNES_NORM_NONE
+        CHKERR( SNESGetNormSchedule(self.snes, &normsched) )
+        return normsched
 
     def setConvergenceTest(self, converged, args=None, kargs=None):
         if converged is not None:
@@ -695,7 +695,7 @@ cdef class SNES(Object):
 # --------------------------------------------------------------------
 
 del SNESType
-del SNESNormType
+del SNESNormSchedule
 del SNESConvergedReason
 
 # --------------------------------------------------------------------

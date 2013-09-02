@@ -36,6 +36,11 @@ cdef class DM(Object):
         PetscCLEAR(self.obj); self.dm = newdm
         return self
 
+    def clone(self):
+        cdef DM dm = type(self)()
+        CHKERR( DMClone(self.dm, &dm.dm) )
+        return dm
+
     def setType(self, dm_type):
         cdef const_char *cval = NULL
         dm_type = str2bytes(dm_type, &cval)

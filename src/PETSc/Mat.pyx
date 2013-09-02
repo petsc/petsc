@@ -1256,8 +1256,8 @@ cdef class NullSpace(Object):
         self.obj  = <PetscObject*> &self.nsp
         self.nsp = NULL
 
-    def __call__(self, vec, out=None):
-        self.remove(vec, out)
+    def __call__(self, vec):
+        self.remove(vec)
 
     #
 
@@ -1298,11 +1298,8 @@ cdef class NullSpace(Object):
     def getFunction(self):
         return self.get_attr('__function__')
 
-    def remove(self, Vec vec not None, Vec out=None):
-        cdef PetscVec v = NULL, *vp = NULL
-        if out is not None: vp = &v
-        CHKERR( MatNullSpaceRemove(self.nsp, vec.vec, vp) )
-        if out is not None: CHKERR( VecCopy(v, out.vec) )
+    def remove(self, Vec vec not None):
+        CHKERR( MatNullSpaceRemove(self.nsp, vec.vec) )
 
 # --------------------------------------------------------------------
 
