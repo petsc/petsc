@@ -1238,6 +1238,44 @@ PetscErrorCode PetscDualSpaceCreateReferenceCell(PetscDualSpace sp, PetscInt dim
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscDualSpaceApply"
+PetscErrorCode PetscDualSpaceApply(PetscDualSpace sp, PetscInt f, PetscCellGeometry geom, PetscInt numComp, void (*func)(const PetscReal [], PetscScalar *), PetscScalar *value)
+{
+  DM               dm;
+  PetscQuadrature  quad;
+  const PetscReal *v0 = geom.v0;
+  const PetscReal *J  = geom.J;
+  PetscReal        x[3];
+  PetscScalar     *val;
+  PetscInt         dim, q, c, d, d2;
+  PetscErrorCode   ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
+  PetscValidPointer(func, 4);
+  PetscValidPointer(value, 5);
+  ierr = PetscDualSpaceGetDM(sp, &dm);CHKERRQ(ierr);
+  ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = PetscDualSpaceGetFunctional(sp, f, &quad);CHKERRQ(ierr);
+  ierr = DMGetWorkArray(dm, numComp, PETSC_SCALAR, &val);CHKERRQ(ierr);
+  for (c = 0; c < numComp; ++c) value[c] = 0.0;
+  for (q = 0; q < quad.numQuadPoints; ++q) {
+    for (d = 0; d < dim; ++d) {
+      x[d] = v0[d];
+      for (d2 = 0; d2 < dim; ++d2) {
+        x[d] += J[d*dim+d2]*(quad.quadPoints[q*dim+d2] + 1.0);
+      }
+    }
+    (*func)(x, val);
+    for (c = 0; c < numComp; ++c) {
+      value[c] += val[c]*quad.quadWeights[q];
+    }
+  }
+  ierr = DMRestoreWorkArray(dm, numComp, PETSC_SCALAR, &val);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscDualSpaceSetUp_Lagrange"
 PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
 {
