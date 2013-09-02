@@ -194,6 +194,7 @@ SNES Object: 1 MPI processes
           rows=145, cols=145
           total: nonzeros=945, allocated nonzeros=945
           total number of mallocs used during MatSetValues calls =0
+            has attached null space
             not using I-node routines
     linear system matrix = precond matrix:
     Mat Object:     1 MPI processes
@@ -201,6 +202,7 @@ SNES Object: 1 MPI processes
       rows=1107, cols=1107
       total: nonzeros=29785, allocated nonzeros=29785
       total number of mallocs used during MatSetValues calls =0
+        has attached null space
         using I-node routines: found 513 nodes, limit used is 5
 Number of SNES iterations = 1
 L_2 Error: 1.14e-06

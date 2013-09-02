@@ -187,7 +187,8 @@ regressionParameters = {'src/dm/impls/patch/examples/tests/ex1': [{'numProcs': 1
                                                                {'numProcs': 1, 'args': '-run_type test -dim 3 -refinement_limit 0.0    -bc_type dirichlet -interpolate 0 -petscspace_order 1 -show_initial -dm_plex_print_fem 1 -dm_view'},
                                                                {'numProcs': 1, 'args': '-run_type test -dim 3 -refinement_limit 0.0    -bc_type dirichlet -interpolate 1 -petscspace_order 1 -show_initial -dm_plex_print_fem 1 -dm_view'},
                                                                {'numProcs': 1, 'args': '-run_type test -dim 3 -refinement_limit 0.0125 -bc_type dirichlet -interpolate 1 -petscspace_order 1 -show_initial -dm_plex_print_fem 1 -dm_view'},
-                                                               {'numProcs': 1, 'args': '-run_type test -dim 3 -refinement_limit 0.0    -bc_type neumann   -interpolate 1 -petscspace_order 1 -bd_petscspace_order 1 -snes_fd -show_initial -dm_plex_print_fem 1 -dm_view'},
+                                                               {'numProcs': 1, 'args': '-run_type test -dim 3 -refinement_limit 0.0    -bc_type neumann   -interpolate 1 -petscspace_order 1 -bd_petscspace_order 1 -snes_fd -show_initial -dm_plex_print_fem 1 -dm_view',
+                                                                'requires': ['Broken']},
                                                                # Analytic variable coefficient 13-20
                                                                {'numProcs': 1, 'args': '-run_type test -refinement_limit 0.0    -variable_coefficient analytic -interpolate 1 -petscspace_order 1 -show_initial -dm_plex_print_fem 1'},
                                                                {'numProcs': 1, 'args': '-run_type test -refinement_limit 0.0625 -variable_coefficient analytic -interpolate 1 -petscspace_order 1 -show_initial -dm_plex_print_fem 1'},
@@ -217,9 +218,9 @@ regressionParameters = {'src/dm/impls/patch/examples/tests/ex1': [{'numProcs': 1
                                                                {'numProcs': 1, 'args': '-run_type test -dim 3 -refinement_limit 0.0125 -variable_coefficient field    -interpolate 1 -petscspace_order 2 -show_initial -dm_plex_print_fem 1'},
                                                                # Using ExodusII mesh 37-38 BROKEN
                                                                {'numProcs': 1, 'args': '-run_type test -f %(meshes)s/sevenside.exo -refinement_limit 0.0    -bc_type dirichlet -interpolate 1 -show_initial -dm_plex_print_fem 1 -dm_view',
-                                                                'setup': './bin/pythonscripts/PetscGenerateFEMQuadrature.py 2 1 1 1 laplacian src/snes/examples/tutorials/ex12.h'},
+                                                                'requires': ['Exodus', 'Broken']},
                                                                {'numProcs': 1, 'args': '-run_type test -dim 3 -f /Users/knepley/Downloads/kis_modell_tet2.exo -refinement_limit 0.0    -bc_type dirichlet -interpolate 1 -show_initial -dm_plex_print_fem 1 -dm_view',
-                                                                'setup': './bin/pythonscripts/PetscGenerateFEMQuadrature.py 3 1 1 1 laplacian src/snes/examples/tutorials/ex12.h', 'requires': ['Exodus']},],
+                                                                'requires': ['Exodus', 'Broken']}],
                         'src/snes/examples/tutorials/ex31':   [# Decoupled field Dirichlet tests 0-6
                                                                {'numProcs': 1, 'args': '-run_type test -refinement_limit 0.0     -forcing_type constant -bc_type dirichlet -interpolate 1 -show_initial -dm_plex_print_fem 1',
                                                                 'setup': './bin/pythonscripts/PetscGenerateFEMQuadrature.py 2 2 2 1 laplacian 2 1 1 1 gradient 2 1 1 1 identity src/snes/examples/tutorials/ex31.h'},
