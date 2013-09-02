@@ -1349,6 +1349,7 @@ PETSC_EXTERN PetscErrorCode PetscRegisterFinalize(PetscErrorCode (*)(void));
 PETSC_EXTERN PetscErrorCode PetscRegisterFinalizeAll(void);
 
 #if defined(PETSC_HAVE_SAWS)
+PETSC_EXTERN PetscErrorCode PetscSAWsBlock(void);
 PETSC_EXTERN PetscErrorCode PetscObjectSAWsViewOff(PetscObject);
 PETSC_EXTERN PetscErrorCode PetscObjectSAWsSetBlock(PetscObject,PetscBool);
 PETSC_EXTERN PetscErrorCode PetscObjectSAWsBlock(PetscObject);
@@ -1360,6 +1361,7 @@ PETSC_EXTERN PetscErrorCode PetscStackViewSAWs(void);
 PETSC_EXTERN PetscErrorCode PetscStackSAWsViewOff(void);
 
 #else
+#define PetscSAWsBlock()                        0
 #define PetscObjectSAWsViewOff(obj)             0
 #define PetscObjectSAWsSetBlock(obj,flg)        0
 #define PetscObjectSAWsBlock(obj)               0

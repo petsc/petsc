@@ -363,7 +363,7 @@ PetscErrorCode PetscOptionsSAWsInput()
   PetscOptions   next     = PetscOptionsObject.next;
   static int     mancount = 0;
   char           options[16];
-  PetscBool      changedmethod = PETSC_FALSE, locked = PETSC_TRUE;
+  PetscBool      changedmethod = PETSC_FALSE;
   char           manname[16],setname[16],textname[16];
   char           dir[1024];
 
@@ -377,7 +377,6 @@ PetscErrorCode PetscOptionsSAWsInput()
   ierr = PetscSNPrintf(dir,1024,"/PETSc/Options/%s","prefix");CHKERRQ(ierr);
   PetscStackCallSAWs(SAWs_Register,(dir,&PetscOptionsObject.pprefix,1,SAWs_READ,SAWs_STRING));
   PetscStackCallSAWs(SAWs_Register,("/PETSc/Options/ChangedMethod",&changedmethod,1,SAWs_WRITE,SAWs_BOOLEAN));
-  PetscStackCallSAWs(SAWs_Register,("/PETSc/Options/Locked",&locked,1,SAWs_WRITE,SAWs_BOOLEAN));
 
   while (next) {
     sprintf(setname,"set_%d",mancount);
@@ -449,18 +448,11 @@ PetscErrorCode PetscOptionsSAWsInput()
   }
 
   /* wait until accessor has unlocked the memory */
-  SAWs_Lock();
-  while (locked) {
-    SAWs_Unlock();
-    ierr = PetscSleep(2);CHKERRQ(ierr);
-    SAWs_Lock();
-  }
-  SAWs_Unlock();
+  ierr = PetscSAWsBlock();CHKERRQ(ierr);
 
   /* reset counter to -2; this updates the screen with the new options for the selected method */
   if (changedmethod) PetscOptionsPublishCount = -2;
 
-  PetscStackCallSAWs(SAWs_Unlock,());
   PetscStackCallSAWs(SAWs_Delete,("/PETSc/Options"));
   PetscFunctionReturn(0);
 }

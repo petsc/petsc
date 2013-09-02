@@ -60,6 +60,38 @@ PetscErrorCode  PetscObjectSAWsGrantAccess(PetscObject obj)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscSAWsBlock"
+/*@C
+   PetscSAWsBlock - Blocks on SAWs until a client unblocks
+
+   Not Collective 
+
+   Level: advanced
+
+.seealso: PetscObjectSetName(), PetscObjectSAWsViewOff(), PetscObjectSAWsSetBlock(), PetscObjectSAWsBlock()
+
+@*/
+PetscErrorCode  PetscSAWsBlock(void)
+{
+  PetscErrorCode     ierr;
+  volatile PetscBool block = PETSC_TRUE;
+
+  PetscFunctionBegin;
+  PetscStackCallSAWs(SAWs_Register,("_Block",(PetscBool*)&block,1,SAWs_WRITE,SAWs_BOOLEAN));
+  SAWs_Lock();
+  while (block) {
+    SAWs_Unlock();
+    ierr = PetscInfo(NULL,"Blocking on SAWs\n");
+    ierr = PetscSleep(2.0);CHKERRQ(ierr);
+    SAWs_Lock();
+  }
+  SAWs_Unlock();
+  PetscStackCallSAWs(SAWs_Delete,("_Block"));
+  ierr = PetscInfo(NULL,"Out of SAWs block\n");
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscObjectSAWsBlock"
 /*@C
    PetscObjectSAWsBlock - Blocks the object if PetscObjectSAWsSetBlock() has been called
@@ -82,24 +114,12 @@ PetscErrorCode  PetscObjectSAWsGrantAccess(PetscObject obj)
 PetscErrorCode  PetscObjectSAWsBlock(PetscObject obj)
 {
   PetscErrorCode     ierr;
-  volatile PetscBool block = PETSC_TRUE;
 
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
 
   if (!obj->amspublishblock || !obj->amsmem) PetscFunctionReturn(0);
-  PetscStackCallSAWs(SAWs_Register,("Block",(PetscBool*)&block,1,SAWs_WRITE,SAWs_BOOLEAN));
-
-  ierr = PetscObjectSAWsTakeAccess(obj);CHKERRQ(ierr);
-  while (block) {
-    ierr = PetscObjectSAWsGrantAccess(obj);CHKERRQ(ierr);
-    ierr = PetscInfo(NULL,"Blocking on AMS\n");
-    ierr = PetscSleep(2.0);CHKERRQ(ierr);
-    ierr = PetscObjectSAWsTakeAccess(obj);CHKERRQ(ierr);
-  }
-  ierr = PetscObjectSAWsGrantAccess(obj);CHKERRQ(ierr);
-  PetscStackCallSAWs(SAWs_Delete,("Block"));
-  ierr = PetscInfo(NULL,"Out of SAWs block\n");
+  ierr = PetscSAWsBlock();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
