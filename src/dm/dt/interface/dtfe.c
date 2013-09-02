@@ -1221,7 +1221,7 @@ PetscErrorCode PetscDualSpaceCreateReferenceCell(PetscDualSpace sp, PetscInt dim
   {
     PetscInt    numPoints[2]        = {4, 1};
     PetscInt    coneSize[5]         = {4, 0, 0, 0, 0};
-    PetscInt    cones[4]            = {1, 2, 3, 4};
+    PetscInt    cones[4]            = {1, 3, 2, 4};
     PetscInt    coneOrientations[4] = {0, 0, 0, 0};
     PetscScalar vertexCoords[12]    = {-1.0, -1.0, -1.0,  1.0, -1.0, -1.0,  -1.0, 1.0, -1.0,  -1.0, -1.0, 1.0};
 
@@ -1234,6 +1234,44 @@ PetscErrorCode PetscDualSpaceCreateReferenceCell(PetscDualSpace sp, PetscInt dim
   ierr = DMPlexInterpolate(rdm, refdm);CHKERRQ(ierr);
   ierr = DMPlexCopyCoordinates(rdm, *refdm);CHKERRQ(ierr);
   ierr = DMDestroy(&rdm);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscDualSpaceApply"
+PetscErrorCode PetscDualSpaceApply(PetscDualSpace sp, PetscInt f, PetscCellGeometry geom, PetscInt numComp, void (*func)(const PetscReal [], PetscScalar *), PetscScalar *value)
+{
+  DM               dm;
+  PetscQuadrature  quad;
+  const PetscReal *v0 = geom.v0;
+  const PetscReal *J  = geom.J;
+  PetscReal        x[3];
+  PetscScalar     *val;
+  PetscInt         dim, q, c, d, d2;
+  PetscErrorCode   ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
+  PetscValidPointer(func, 4);
+  PetscValidPointer(value, 5);
+  ierr = PetscDualSpaceGetDM(sp, &dm);CHKERRQ(ierr);
+  ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = PetscDualSpaceGetFunctional(sp, f, &quad);CHKERRQ(ierr);
+  ierr = DMGetWorkArray(dm, numComp, PETSC_SCALAR, &val);CHKERRQ(ierr);
+  for (c = 0; c < numComp; ++c) value[c] = 0.0;
+  for (q = 0; q < quad.numQuadPoints; ++q) {
+    for (d = 0; d < dim; ++d) {
+      x[d] = v0[d];
+      for (d2 = 0; d2 < dim; ++d2) {
+        x[d] += J[d*dim+d2]*(quad.quadPoints[q*dim+d2] + 1.0);
+      }
+    }
+    (*func)(x, val);
+    for (c = 0; c < numComp; ++c) {
+      value[c] += val[c]*quad.quadWeights[q];
+    }
+  }
+  ierr = DMRestoreWorkArray(dm, numComp, PETSC_SCALAR, &val);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1348,7 +1386,7 @@ PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
         sp->functional[f].quadPoints  = qpoints;
         sp->functional[f].quadWeights = qweights;
         ++f;
-        lag->numDof[0] = 1;
+        lag->numDof[depth] = 1;
       }
     }
     ierr = DMPlexRestoreTransitiveClosure(dm, pStart[depth], PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
