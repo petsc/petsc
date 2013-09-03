@@ -323,7 +323,7 @@ PetscErrorCode CreateSimplex_3D(MPI_Comm comm, PetscInt testNum, DM *dm)
       DM          idm;
       PetscInt    numPoints[2]        = {5, 2};
       PetscInt    coneSize[7]         = {4, 4, 0, 0, 0, 0, 0};
-      PetscInt    cones[8]            = {3, 4, 5, 2,  3, 5, 4, 6};
+      PetscInt    cones[8]            = {4, 3, 5, 2,  5, 3, 4, 6};
       PetscInt    coneOrientations[8] = {0, 0, 0, 0,  0, 0, 0, 0};
       PetscScalar vertexCoords[15]    = {-1.0, 0.0, 0.0,  0.0, -1.0, 0.0,  0.0, 0.0, 1.0,  0.0, 1.0, 0.0,  1.0, 0.0, 0.0};
 
