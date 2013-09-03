@@ -58,8 +58,10 @@ int main(int argc,char **argv)
   ierr = PetscFree(ly);CHKERRQ(ierr);
   ierr = PetscFree(lz);CHKERRQ(ierr);
 
-  ierr = DMCreateColoring(da,IS_COLORING_GLOBAL,MATMPIAIJ,&coloring);CHKERRQ(ierr);
-  ierr = DMCreateMatrix(da,MATMPIAIJ,&mat);CHKERRQ(ierr);
+  ierr = DMSetMatType(da,MATMPIAIJ);CHKERRQ(ierr);
+  ierr = DMCreateColoring(da,IS_COLORING_GLOBAL,&coloring);CHKERRQ(ierr);
+  ierr = DMSetMatType(da,MATMPIAIJ);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(da,&mat);CHKERRQ(ierr);
   ierr = MatFDColoringCreate(mat,coloring,&fdcoloring);CHKERRQ(ierr);
 
   ierr = DMCreateGlobalVector(da,&dvec);CHKERRQ(ierr);

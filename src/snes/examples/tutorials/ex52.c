@@ -1032,7 +1032,8 @@ int main(int argc, char **argv)
     MatStructure flag;
 
     ierr = DMGetGlobalVector(dm, &X);CHKERRQ(ierr);
-    ierr = DMCreateMatrix(dm, MATAIJ, &J);CHKERRQ(ierr);
+    ierr = DMSetMatType(dm,MATAIJ);CHKERRQ(ierr);
+    ierr = DMCreateMatrix(dm, &J);CHKERRQ(ierr);
     if (user.batch) {
       ierr = DMSNESSetJacobianLocal(dm, (PetscErrorCode (*)(DM, Vec, Mat, Mat, MatStructure*, void*))FormJacobianLocalBatch, &user);CHKERRQ(ierr);
     } else {

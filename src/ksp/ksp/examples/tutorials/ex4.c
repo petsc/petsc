@@ -127,7 +127,8 @@ int main(int argc, char **argv)
   if (doGPU) {
     ierr = PetscLogStageRegister("GPU Stage", &gpuStage);CHKERRQ(ierr);
     ierr = PetscLogStagePush(gpuStage);CHKERRQ(ierr);
-    ierr = DMCreateMatrix(dm, MATAIJ, &A);CHKERRQ(ierr);
+    ierr = DMSetMatType(dm,MATAIJ);CHKERRQ(ierr);
+    ierr = DMCreateMatrix(dm, &A);CHKERRQ(ierr);
     ierr = MatSetType(A, MATAIJCUSP);CHKERRQ(ierr);
     ierr = MatSeqAIJSetPreallocation(A, 0, NULL);CHKERRQ(ierr);
     ierr = MatMPIAIJSetPreallocation(A, 0, NULL, 0, NULL);CHKERRQ(ierr);
@@ -148,7 +149,8 @@ int main(int argc, char **argv)
   if (doCPU) {
     ierr = PetscLogStageRegister("CPU Stage", &cpuStage);CHKERRQ(ierr);
     ierr = PetscLogStagePush(cpuStage);CHKERRQ(ierr);
-    ierr = DMCreateMatrix(dm, MATAIJ, &A);CHKERRQ(ierr);
+    ierr = DMSetMatType(dm,MATAIJ);CHKERRQ(ierr);
+    ierr = DMCreateMatrix(dm, &A);CHKERRQ(ierr);
     ierr = MatZeroEntries(A);CHKERRQ(ierr);
     ierr = MatSetValuesBatch(A, Ne, Nl, elemRows, elemMats);CHKERRQ(ierr);
     ierr = MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

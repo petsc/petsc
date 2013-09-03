@@ -1280,7 +1280,7 @@ static PetscErrorCode DMGetLocalToGlobalMapping_Composite(DM dm)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMCreateColoring_Composite"
-PetscErrorCode  DMCreateColoring_Composite(DM dm,ISColoringType ctype,MatType mtype,ISColoring *coloring)
+PetscErrorCode  DMCreateColoring_Composite(DM dm,ISColoringType ctype,ISColoring *coloring)
 {
   PetscErrorCode  ierr;
   PetscInt        n,i,cnt;
@@ -1312,7 +1312,7 @@ PetscErrorCode  DMCreateColoring_Composite(DM dm,ISColoringType ctype,MatType mt
     while (next) {
       ISColoring lcoloring;
 
-      ierr = DMCreateColoring(next->dm,IS_COLORING_GLOBAL,mtype,&lcoloring);CHKERRQ(ierr);
+      ierr = DMCreateColoring(next->dm,IS_COLORING_GLOBAL,&lcoloring);CHKERRQ(ierr);
       for (i=0; i<lcoloring->N; i++) {
         colors[cnt++] = maxcol + lcoloring->colors[i];
       }
