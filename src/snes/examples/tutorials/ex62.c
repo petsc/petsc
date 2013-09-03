@@ -677,6 +677,7 @@ int main(int argc, char **argv)
   ierr = SetupExactSolution(user.dm, &user);CHKERRQ(ierr);
   ierr = SetupQuadrature(&user);CHKERRQ(ierr);
   ierr = SetupSection(user.dm, &user);CHKERRQ(ierr);
+  ierr = DMPlexCreateClosureIndex(user.dm, NULL);CHKERRQ(ierr);
 
   ierr = DMCreateGlobalVector(user.dm, &u);CHKERRQ(ierr);
   ierr = VecDuplicate(u, &r);CHKERRQ(ierr);
