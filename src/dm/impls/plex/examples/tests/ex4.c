@@ -387,6 +387,40 @@ PetscErrorCode CreateSimplexHybrid_3D(MPI_Comm comm, DM *dm)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "CreateTensorProduct_3D"
+PetscErrorCode CreateTensorProduct_3D(MPI_Comm comm, PetscInt testNum, DM *dm)
+{
+  PetscInt       depth = 3;
+  PetscMPIInt    rank;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  if (!rank) {
+    DM          idm;
+    PetscInt    numPoints[2]         = {12, 2};
+    PetscInt    coneSize[14]         = {8, 8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    PetscInt    cones[16]            = {2, 3, 4, 5, 6, 7, 8, 9,  5, 4, 10, 11, 7, 12, 13, 8};
+    PetscInt    coneOrientations[96] = {0, 0, 0, 0, 0, 0, 0, 0,  0, 0,  0,  0, 0,  0,  0, 0};
+    PetscScalar vertexCoords[36]     = {-1.0, -0.5, -0.5,  -1.0,  0.5, -0.5,  0.0,  0.5, -0.5,   0.0, -0.5, -0.5,
+                                        -1.0, -0.5,  0.5,   0.0, -0.5,  0.5,  0.0,  0.5,  0.5,  -1.0,  0.5,  0.5,
+                                         1.0,  0.5, -0.5,   1.0, -0.5, -0.5,  1.0, -0.5,  0.5,   1.0,  0.5,  0.5};
+
+    depth = 1;
+    ierr = DMPlexCreateFromDAG(*dm, depth, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
+    ierr = DMPlexInterpolate(*dm, &idm);CHKERRQ(ierr);
+    ierr = DMPlexCopyCoordinates(*dm, idm);CHKERRQ(ierr);
+    ierr = DMDestroy(dm);CHKERRQ(ierr);
+    *dm  = idm;
+  } else {
+    PetscInt numPoints[4] = {0, 0, 0, 0};
+
+    ierr = DMPlexCreateFromDAG(*dm, depth, numPoints, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "CreateMesh"
 PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
@@ -426,7 +460,13 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       } else {
         ierr = CreateSimplex_3D(comm, user->testNum, dm);CHKERRQ(ierr);
       }
-    } else SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "Cannot make meshes for hexhedrals");
+    } else {
+      if (cellHybrid) {
+        SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "Cannot make hybrid meshes for hexhedrals");
+      } else {
+        ierr = CreateTensorProduct_3D(comm, user->testNum, dm);CHKERRQ(ierr);
+      }
+    }
     break;
   default:
     SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "Cannot make hybrid meshes for dimension %d", dim);
