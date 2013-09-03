@@ -839,7 +839,7 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
 #if defined(PETSC_HAVE_CUDA)
   flg  = PETSC_TRUE;
   ierr = PetscOptionsGetBool(NULL,"-cublas",&flg,NULL);CHKERRQ(ierr);
-  if (!flg) {
+  if (flg) {
     PetscMPIInt p;
     for (p = 0; p < PetscGlobalSize; ++p) {
       if (p == PetscGlobalRank) cublasInit();
@@ -1228,7 +1228,7 @@ PetscErrorCode  PetscFinalize(void)
 #if defined(PETSC_HAVE_CUDA)
   flg  = PETSC_TRUE;
   ierr = PetscOptionsGetBool(NULL,"-cublas",&flg,NULL);CHKERRQ(ierr);
-  if (!flg) {
+  if (flg) {
     PetscInt p;
     for (p = 0; p < PetscGlobalSize; ++p) {
       if (p == PetscGlobalRank) cublasShutdown();
