@@ -837,7 +837,9 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   }
 
 #if defined(PETSC_HAVE_CUDA)
-  {
+  flg  = PETSC_TRUE;
+  ierr = PetscOptionsGetBool(NULL,"-cublas",&flg,NULL);CHKERRQ(ierr);
+  if (flg) {
     PetscMPIInt p;
     for (p = 0; p < PetscGlobalSize; ++p) {
       if (p == PetscGlobalRank) cublasInit();
@@ -1222,6 +1224,19 @@ PetscErrorCode  PetscFinalize(void)
       ierr = PetscMallocDumpLog(stdout);CHKERRQ(ierr);
     }
   }
+
+#if defined(PETSC_HAVE_CUDA)
+  flg  = PETSC_TRUE;
+  ierr = PetscOptionsGetBool(NULL,"-cublas",&flg,NULL);CHKERRQ(ierr);
+  if (flg) {
+    PetscInt p;
+    for (p = 0; p < PetscGlobalSize; ++p) {
+      if (p == PetscGlobalRank) cublasShutdown();
+      ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
+    }
+  }
+#endif
+
   /* Can be destroyed only after all the options are used */
   ierr = PetscOptionsDestroy();CHKERRQ(ierr);
 
@@ -1293,16 +1308,6 @@ PetscErrorCode  PetscFinalize(void)
   ierr = MPI_Keyval_free(&Petsc_Counter_keyval);CHKERRQ(ierr);
   ierr = MPI_Keyval_free(&Petsc_InnerComm_keyval);CHKERRQ(ierr);
   ierr = MPI_Keyval_free(&Petsc_OuterComm_keyval);CHKERRQ(ierr);
-
-#if defined(PETSC_HAVE_CUDA)
-  {
-    PetscInt p;
-    for (p = 0; p < PetscGlobalSize; ++p) {
-      if (p == PetscGlobalRank) cublasShutdown();
-      ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
-    }
-  }
-#endif
 
   if (PetscBeganMPI) {
 #if defined(PETSC_HAVE_MPI_FINALIZED)
