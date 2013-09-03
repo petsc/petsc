@@ -362,8 +362,6 @@ PETSC_EXTERN PetscErrorCode DMCreate_DA(DM da)
 
   dd->elementtype = DMDA_ELEMENT_Q1;
 
-  ierr = PetscStrallocpy(VECSTANDARD,(char**)&da->vectype);CHKERRQ(ierr);
-
   da->ops->globaltolocalbegin          = DMGlobalToLocalBegin_DA;
   da->ops->globaltolocalend            = DMGlobalToLocalEnd_DA;
   da->ops->localtoglobalbegin          = DMLocalToGlobalBegin_DA;

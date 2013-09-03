@@ -130,7 +130,7 @@ PetscErrorCode DMPlexCreateSquareBoundary(DM dm, const PetscReal lower[], const 
   ierr = PetscSectionGetStorageSize(coordSection, &coordSize);CHKERRQ(ierr);
   ierr = VecCreate(PetscObjectComm((PetscObject)dm), &coordinates);CHKERRQ(ierr);
   ierr = VecSetSizes(coordinates, coordSize, PETSC_DETERMINE);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(coordinates);CHKERRQ(ierr);
+  ierr = VecSetType(coordinates,dm->vectype);CHKERRQ(ierr);
   ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
   for (vy = 0; vy <= edges[1]; ++vy) {
     for (vx = 0; vx <= edges[0]; ++vx) {
@@ -229,7 +229,7 @@ PetscErrorCode DMPlexCreateCubeBoundary(DM dm, const PetscReal lower[], const Pe
   ierr = VecCreate(PetscObjectComm((PetscObject)dm), &coordinates);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) coordinates, "coordinates");CHKERRQ(ierr);
   ierr = VecSetSizes(coordinates, coordSize, PETSC_DETERMINE);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(coordinates);CHKERRQ(ierr);
+  ierr = VecSetType(coordinates,dm->vectype);CHKERRQ(ierr);
   ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
   for (vz = 0; vz <= faces[2]; ++vz) {
     for (vy = 0; vy <= faces[1]; ++vy) {
@@ -382,7 +382,7 @@ PetscErrorCode DMPlexCreateSquareMesh(DM dm, const PetscReal lower[], const Pets
     ierr = PetscSectionGetStorageSize(coordSection, &coordSize);CHKERRQ(ierr);
     ierr = VecCreate(PetscObjectComm((PetscObject)dm), &coordinates);CHKERRQ(ierr);
     ierr = VecSetSizes(coordinates, coordSize, PETSC_DETERMINE);CHKERRQ(ierr);
-    ierr = VecSetFromOptions(coordinates);CHKERRQ(ierr);
+    ierr = VecSetType(coordinates,dm->vectype);CHKERRQ(ierr);
     ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
     for (vy = 0; vy < numYVertices; ++vy) {
       for (vx = 0; vx < numXVertices; ++vx) {
@@ -533,11 +533,7 @@ static PetscErrorCode DMCreateLocalVector_Plex(DM dm,Vec *vec)
 #define __FUNCT__ "DMInitialize_Plex"
 PetscErrorCode DMInitialize_Plex(DM dm)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = PetscStrallocpy(VECSTANDARD, (char**)&dm->vectype);CHKERRQ(ierr);
-
   dm->ops->view                            = DMView_Plex;
   dm->ops->setfromoptions                  = DMSetFromOptions_Plex;
   dm->ops->clone                           = DMClone_Plex;
@@ -727,7 +723,7 @@ PetscErrorCode DMPlexBuildCoordinates_Private(DM dm, PetscInt spaceDim, PetscInt
   ierr = VecCreate(PetscObjectComm((PetscObject)dm), &coordinates);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) coordinates, "coordinates");CHKERRQ(ierr);
   ierr = VecSetSizes(coordinates, coordSize, PETSC_DETERMINE);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(coordinates);CHKERRQ(ierr);
+  ierr = VecSetType(coordinates,dm->vectype);CHKERRQ(ierr);
   ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
   for (v = 0; v < numVertices; ++v) {
     for (d = 0; d < spaceDim; ++d) {
@@ -851,7 +847,7 @@ PetscErrorCode DMPlexCreateFromDAG(DM dm, PetscInt depth, const PetscInt numPoin
   ierr = VecCreate(PetscObjectComm((PetscObject)dm), &coordinates);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) coordinates, "coordinates");CHKERRQ(ierr);
   ierr = VecSetSizes(coordinates, coordSize, PETSC_DETERMINE);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(coordinates);CHKERRQ(ierr);
+  ierr = VecSetType(coordinates,dm->vectype);CHKERRQ(ierr);
   ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
   for (v = 0; v < numPoints[0]; ++v) {
     PetscInt off;

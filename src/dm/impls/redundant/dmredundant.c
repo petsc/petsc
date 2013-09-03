@@ -441,7 +441,6 @@ PETSC_EXTERN PetscErrorCode DMCreate_Redundant(DM dm)
   dm->ops->createinterpolation= DMCreateInterpolation_Redundant;
   dm->ops->getcoloring        = DMCreateColoring_Redundant;
 
-  ierr = PetscStrallocpy(VECSTANDARD,(char**)&dm->vectype);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)dm,"DMRedundantSetSize_C",DMRedundantSetSize_Redundant);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)dm,"DMRedundantGetSize_C",DMRedundantGetSize_Redundant);CHKERRQ(ierr);
   PetscFunctionReturn(0);

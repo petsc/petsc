@@ -2652,7 +2652,7 @@ PetscErrorCode DMPlexDistributeField(DM dm, PetscSF pointSF, PetscSection origin
 
   ierr = PetscSectionGetStorageSize(newSection, &fieldSize);CHKERRQ(ierr);
   ierr = VecSetSizes(newVec, fieldSize, PETSC_DETERMINE);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(newVec);CHKERRQ(ierr);
+  ierr = VecSetType(newVec,dm->vectype);CHKERRQ(ierr);
 
   ierr = VecGetArray(originalVec, &originalValues);CHKERRQ(ierr);
   ierr = VecGetArray(newVec, &newValues);CHKERRQ(ierr);
@@ -5116,7 +5116,7 @@ PetscErrorCode CellRefinerSetCoordinates(CellRefiner refiner, DM dm, PetscInt de
     ierr = VecCreate(PetscObjectComm((PetscObject)dm), &coordinatesNew);CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject) coordinatesNew, "coordinates");CHKERRQ(ierr);
     ierr = VecSetSizes(coordinatesNew, coordSizeNew, PETSC_DETERMINE);CHKERRQ(ierr);
-    ierr = VecSetFromOptions(coordinatesNew);CHKERRQ(ierr);
+    ierr = VecSetType(coordinatesNew,dm->vectype);CHKERRQ(ierr);
     ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
     ierr = VecGetArray(coordinatesNew, &coordsNew);CHKERRQ(ierr);
     /* Old vertices have the same coordinates */

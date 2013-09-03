@@ -98,6 +98,7 @@ PetscErrorCode  DMCreate(MPI_Comm comm,DM *dm)
   }
   v->numFields = 0;
   v->fields    = NULL;
+  ierr = DMSetVecType(v,VECSTANDARD);CHKERRQ(ierr);
   ierr = DMSetMatType(v,MATAIJ);CHKERRQ(ierr);
   *dm = v;
   PetscFunctionReturn(0);
@@ -164,7 +165,7 @@ PetscErrorCode DMClone(DM dm, DM *newdm)
 
    Level: intermediate
 
-.seealso: DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), DMDestroy(), DMDA, DMDAInterpolationType, VecType
+.seealso: DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), DMDestroy(), DMDA, DMDAInterpolationType, VecType, DMGetVecType()
 @*/
 PetscErrorCode  DMSetVecType(DM da,VecType ctype)
 {
@@ -174,6 +175,31 @@ PetscErrorCode  DMSetVecType(DM da,VecType ctype)
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   ierr = PetscFree(da->vectype);CHKERRQ(ierr);
   ierr = PetscStrallocpy(ctype,(char**)&da->vectype);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMGetVecType"
+/*@C
+       DMGetVecType - Gets the type of vector created with DMCreateLocalVector() and DMCreateGlobalVector()
+
+   Logically Collective on DMDA
+
+   Input Parameter:
+.  da - initial distributed array
+
+   Output Parameter:
+.  ctype - the vector type
+
+   Level: intermediate
+
+.seealso: DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), DMDestroy(), DMDA, DMDAInterpolationType, VecType
+@*/
+PetscErrorCode  DMGetVecType(DM da,VecType *ctype)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  *ctype = da->vectype;
   PetscFunctionReturn(0);
 }
 
@@ -247,7 +273,7 @@ PetscErrorCode VecSetDM(Vec v, DM dm)
 
    Level: intermediate
 
-.seealso: DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), DMCreateMatrix(), DMSetMatrixPreallocateOnly(), MatType
+.seealso: DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), DMCreateMatrix(), DMSetMatrixPreallocateOnly(), MatType, DMGetMatType()
 @*/
 PetscErrorCode  DMSetMatType(DM dm,MatType ctype)
 {
@@ -257,6 +283,34 @@ PetscErrorCode  DMSetMatType(DM dm,MatType ctype)
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   ierr = PetscFree(dm->mattype);CHKERRQ(ierr);
   ierr = PetscStrallocpy(ctype,(char**)&dm->mattype);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMGetMatType"
+/*@C
+       DMGetMatType - Gets the type of matrix created with DMCreateMatrix()
+
+   Logically Collective on DM
+
+   Input Parameter:
+.  dm - the DM context
+
+   Output Parameter:
+.  ctype - the matrix type
+
+   Options Database:
+.   -dm_mat_type ctype
+
+   Level: intermediate
+
+.seealso: DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), DMCreateMatrix(), DMSetMatrixPreallocateOnly(), MatType, DMSetMatType()
+@*/
+PetscErrorCode  DMGetMatType(DM dm,MatType *ctype)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  *ctype = dm->mattype;
   PetscFunctionReturn(0);
 }
 

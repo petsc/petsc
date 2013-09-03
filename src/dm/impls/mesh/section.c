@@ -980,7 +980,7 @@ PetscErrorCode  SectionRealNorm(SectionReal section, DM dm, NormType type, Petsc
   const ALE::Obj<PETSC_MESH_TYPE::order_type>& order = m->getFactory()->getGlobalOrder(m, s->getName(), s);
   ierr = VecCreate(m->comm(), &v);CHKERRQ(ierr);
   ierr = VecSetSizes(v, order->getLocalSize(), order->getGlobalSize());CHKERRQ(ierr);
-  ierr = VecSetFromOptions(v);CHKERRQ(ierr);
+  ierr = VecSetType(v,dm->vectype);CHKERRQ(ierr);
   ierr = SectionRealToVecDM(section, dm, SCATTER_FORWARD, v);CHKERRQ(ierr);
   ierr = VecNorm(v, type, val);CHKERRQ(ierr);
   ierr = VecDestroy(&v);CHKERRQ(ierr);
@@ -1022,7 +1022,7 @@ PetscErrorCode  SectionRealAXPY(SectionReal section, DM dm, PetscScalar alpha, S
   const ALE::Obj<PETSC_MESH_TYPE::order_type>& order = m->getFactory()->getGlobalOrder(m, s->getName(), s);
   ierr = VecCreate(m->comm(), &v);CHKERRQ(ierr);
   ierr = VecSetSizes(v, order->getLocalSize(), order->getGlobalSize());CHKERRQ(ierr);
-  ierr = VecSetFromOptions(v);CHKERRQ(ierr);
+  ierr = VecSetType(v,dm->vectype);CHKERRQ(ierr);
   ierr = VecDuplicate(v, &x);CHKERRQ(ierr);
   ierr = SectionRealToVecDM(section, dm, SCATTER_FORWARD, v);CHKERRQ(ierr);
   ierr = SectionRealToVecDM(X,       dm, SCATTER_FORWARD, x);CHKERRQ(ierr);
