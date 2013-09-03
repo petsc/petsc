@@ -82,7 +82,7 @@ PetscErrorCode  PetscSAWsBlock(void)
   while (block) {
     SAWs_Unlock();
     ierr = PetscInfo(NULL,"Blocking on SAWs\n");
-    ierr = PetscSleep(2.0);CHKERRQ(ierr);
+    ierr = PetscSleep(.3);CHKERRQ(ierr);
     SAWs_Lock();
   }
   SAWs_Unlock();
