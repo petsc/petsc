@@ -1538,8 +1538,8 @@ class PETScMaker(script.Script):
    else:
      with file(outputName) as f:
        output      = output.strip()
-       validOutput = f.read().strip() # Jed is now stripping output it appears
-       if not validOutput.replace("\r", "") == output:
+       validOutput = f.read().strip().replace('\r', '') # Jed is now stripping output it appears
+       if not validOutput == output:
          if replace:
            with file(outputName, 'w') as f:
              f.write(output)
