@@ -6508,6 +6508,8 @@ PetscErrorCode DMPlexGetConeOrientations(DM dm, PetscInt *coneOrientations[])
 @*/
 PetscErrorCode DMPlexVecGetClosure(DM dm, PetscSection section, Vec v, PetscInt point, PetscInt *csize, PetscScalar *values[])
 {
+  PetscSection   clSection;
+  IS             clIndices;
   PetscScalar   *array, *vArray;
   PetscInt      *points = NULL;
   PetscInt       offsets[32];
@@ -6517,8 +6519,29 @@ PetscErrorCode DMPlexVecGetClosure(DM dm, PetscSection section, Vec v, PetscInt 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidHeaderSpecific(v, VEC_CLASSID, 3);
-  if (!section) {
-    ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
+  if (!section) {ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);}
+  ierr = PetscSectionGetClosureIndex(section, (PetscObject) dm, &clSection, &clIndices);CHKERRQ(ierr);
+  if (clSection) {
+    const PetscInt *idx;
+    PetscInt        dof, off;
+
+    ierr = PetscSectionGetDof(clSection, point, &dof);CHKERRQ(ierr);
+    if (csize) *csize = dof;
+    if (values) {
+      if (!*values) {
+        ierr = DMGetWorkArray(dm, dof, PETSC_SCALAR, &array);CHKERRQ(ierr);
+        *values = array;
+      } else {
+        array = *values;
+      }
+      ierr = PetscSectionGetOffset(clSection, point, &off);CHKERRQ(ierr);
+      ierr = ISGetIndices(clIndices, &idx);CHKERRQ(ierr);
+      ierr = VecGetArray(v, &vArray);CHKERRQ(ierr);
+      for (p = 0; p < dof; ++p) array[p] = vArray[idx[off+p]];
+      ierr = VecRestoreArray(v, &vArray);CHKERRQ(ierr);
+      ierr = ISRestoreIndices(clIndices, &idx);CHKERRQ(ierr);
+    }
+    PetscFunctionReturn(0);
   }
   ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
   ierr = PetscSectionGetNumFields(section, &numFields);CHKERRQ(ierr);
