@@ -897,6 +897,8 @@ PetscErrorCode  PetscOptionsName(const char opt[],const char text[],const char m
    To get a listing of all currently specified options,
     see PetscOptionsView() or PetscOptionsGetAll()
 
+   Developer Note: This cannot check for invalid selection because of things like MATAIJ that are not included in the list
+
    Concepts: options database^list
 
 .seealso: PetscOptionsGetInt(), PetscOptionsGetReal(),
@@ -918,11 +920,6 @@ PetscErrorCode  PetscOptionsList(const char opt[],const char ltext[],const char 
     amsopt->flist = list;
   }
   ierr = PetscOptionsGetString(PetscOptionsObject.prefix,opt,value,len,set);CHKERRQ(ierr);
-  if (*set) {
-    PetscVoidFunction fptr;
-    ierr = PetscFunctionListFind(list,value,&fptr);CHKERRQ(ierr);
-    if (!fptr) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Unknown value %s for %s",value,opt);
-  }
   if (PetscOptionsObject.printhelp && PetscOptionsPublishCount == 1 && !PetscOptionsObject.alreadyprinted) {
     ierr = PetscFunctionListPrintTypes(PetscOptionsObject.comm,stdout,PetscOptionsObject.prefix,opt,ltext,man,list,defaultv);CHKERRQ(ierr);CHKERRQ(ierr);
   }
