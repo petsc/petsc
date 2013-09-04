@@ -517,6 +517,19 @@ PETSC_EXTERN PetscErrorCode KSPConvergedDefaultSetUMIRNorm(KSP);
 PETSC_EXTERN PetscErrorCode KSPConvergedSkip(KSP,PetscInt,PetscReal,KSPConvergedReason*,void *);
 PETSC_EXTERN PetscErrorCode KSPGetConvergedReason(KSP,KSPConvergedReason *);
 
+PETSC_DEPRECATED("Use KSPConvergedDefault()") PETSC_STATIC_INLINE void KSPDefaultConverged(void) { /* never called */ }
+#define KSPDefaultConverged (KSPDefaultConverged, KSPConvergedDefault)
+PETSC_DEPRECATED("Use KSPConvergedDefaultDestroy()") PETSC_STATIC_INLINE void KSPDefaultConvergedDestroy(void) { /* never called */ }
+#define KSPDefaultConvergedDestroy (KSPDefaultConvergedDestroy, KSPConvergedDefaultDestroy)
+PETSC_DEPRECATED("Use KSPConvergedDefaultCreate()") PETSC_STATIC_INLINE void KSPDefaultConvergedCreate(void) { /* never called */ }
+#define KSPDefaultConvergedCreate (KSPDefaultConvergedCreate, KSPConvergedDefaultCreate)
+PETSC_DEPRECATED("Use KSPConvergedDefaultSetUIRNorm()") PETSC_STATIC_INLINE void KSPDefaultConvergedSetUIRNorm(void) { /* never called */ }
+#define KSPDefaultConvergedSetUIRNorm (KSPDefaultConvergedSetUIRNorm, KSPConvergedDefaultSetUIRNorm)
+PETSC_DEPRECATED("Use KSPConvergedDefaultSetUMIRNorm()") PETSC_STATIC_INLINE void KSPDefaultConvergedSetUMIRNorm(void) { /* never called */ }
+#define KSPDefaultConvergedSetUMIRNorm (KSPDefaultConvergedSetUMIRNorm, KSPConvergedDefaultSetUMIRNorm)
+PETSC_DEPRECATED("Use KSPConvergedSkip()") PETSC_STATIC_INLINE void KSPSkipConverged(void) { /* never called */ }
+#define KSPSkipConverged (KSPSkipConverged, KSPConvergedSkip)
+
 PETSC_EXTERN PetscErrorCode KSPComputeExplicitOperator(KSP,Mat *);
 
 /*E
