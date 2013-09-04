@@ -49,6 +49,7 @@ PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool inter
   ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
   /* Open EXODUS II file and read basic informations on rank 0, then broadcast to all processors */
   if (!rank) {
+    ierr = PetscMemzero(title,(PETSC_MAX_PATH_LEN+1)*sizeof(char));CHKERRQ(ierr);
     ierr = ex_get_init(exoid, title, &dim, &numVertices, &numCells, &num_cs, &num_vs, &num_fs);
     if (ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ExodusII ex_get_init() failed with error code %D\n",ierr);
     if (!num_cs) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Exodus file does not contain any cell set\n");
@@ -169,7 +170,7 @@ PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool inter
   ierr = VecCreate(comm, &coordinates);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) coordinates, "coordinates");CHKERRQ(ierr);
   ierr = VecSetSizes(coordinates, coordSize, PETSC_DETERMINE);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(coordinates);CHKERRQ(ierr);
+  ierr = VecSetType(coordinates,dm->vectype);CHKERRQ(ierr);
   ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
   if (!rank) {
     float *x, *y, *z;

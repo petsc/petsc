@@ -460,7 +460,7 @@ PetscErrorCode FormFunctionLocal(DM dm, Vec X, Vec F, AppCtx *user)
   ierr = PetscMalloc3(dim,PetscReal,&coords,dim,PetscReal,&v0,jacSize,PetscReal,&J);CHKERRQ(ierr);
   ierr = PetscMalloc4(numCells*cellDof,PetscScalar,&u,numCells*jacSize,PetscReal,&invJ,numCells*maxQuad,PetscReal,&detJ,numCells*cellDof,PetscScalar,&elemVec);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; ++c) {
-    PetscScalar *x;
+    PetscScalar *x = NULL;
     PetscInt     i;
 
     ierr = DMDAComputeCellGeometry(dm, c, &user->q[0], v0, J, &invJ[c*jacSize], &detJ[c]);CHKERRQ(ierr);
@@ -570,7 +570,8 @@ int main(int argc, char **argv)
   ierr = DMCreateGlobalVector(user.dm, &u);CHKERRQ(ierr);
   ierr = VecDuplicate(u, &r);CHKERRQ(ierr);
 
-  ierr = DMCreateMatrix(user.dm, MATAIJ, &J);CHKERRQ(ierr);
+  ierr = DMSetMatType(user.dm,MATAIJ);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(user.dm, &J);CHKERRQ(ierr);
   A    = J;
 
   ierr = DMSNESSetFunctionLocal(user.dm,  (PetscErrorCode (*)(DM,Vec,Vec,void*))FormFunctionLocal,&user);CHKERRQ(ierr);

@@ -287,7 +287,7 @@ PetscErrorCode SNESCreateSubVectors_VINEWTONRSLS(SNES snes,PetscInt n,Vec *newv)
   PetscFunctionBegin;
   ierr  = VecCreate(PetscObjectComm((PetscObject)snes),&v);CHKERRQ(ierr);
   ierr  = VecSetSizes(v,n,PETSC_DECIDE);CHKERRQ(ierr);
-  ierr  = VecSetFromOptions(v);CHKERRQ(ierr);
+  ierr  = VecSetType(v,VECSTANDARD);CHKERRQ(ierr);
   *newv = v;
   PetscFunctionReturn(0);
 }
@@ -323,7 +323,7 @@ PetscErrorCode SNESVIResetPCandKSP(SNES snes,Mat Amat,Mat Pmat)
   ierr = PCFactorSetMatSolverPackage(kspnew->pc,stype);CHKERRQ(ierr);
   ierr = KSPDestroy(&snesksp);CHKERRQ(ierr);
   snes->ksp = kspnew;
-  ierr = PetscLogObjectParent(snes,kspnew);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)snes,(PetscObject)kspnew);CHKERRQ(ierr);
    ierr = KSPSetFromOptions(kspnew);CHKERRQ(ierr);*/
   PetscFunctionReturn(0);
 }

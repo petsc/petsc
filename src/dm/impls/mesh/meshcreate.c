@@ -378,7 +378,7 @@ extern PetscErrorCode DMCreateGlobalVector_Mesh(DM dm, Vec *gvec);
 extern PetscErrorCode DMCreateLocalVector_Mesh(DM dm, Vec *lvec);
 extern PetscErrorCode DMGetLocalToGlobalMapping_Mesh(DM dm);
 extern PetscErrorCode DMCreateInterpolation_Mesh(DM dmCoarse, DM dmFine, Mat *interpolation, Vec *scaling);
-extern PetscErrorCode DMCreateMatrix_Mesh(DM dm, MatType mtype, Mat *J);
+extern PetscErrorCode DMCreateMatrix_Mesh(DM dm, Mat *J);
 extern PetscErrorCode DMRefine_Mesh(DM dm, MPI_Comm comm, DM *dmRefined);
 extern PetscErrorCode DMCoarsenHierarchy_Mesh(DM dm, int numLevels, DM *coarseHierarchy);
 extern PetscErrorCode DMDestroy_Mesh(DM dm);

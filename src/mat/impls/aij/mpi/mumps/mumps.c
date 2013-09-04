@@ -94,6 +94,11 @@ extern PetscErrorCode MatDuplicate_MUMPS(Mat,MatDuplicateOption,Mat*);
   output:
     nnz     - dim of r, c, and v (number of local nonzero entries of A)
     r, c, v - row and col index, matrix values (matrix triples)
+
+  The returned values r, c, and sometimes v are obtained in a single PetscMalloc(). Then in MatDestroy_MUMPS() it is
+  freed with PetscFree((mumps->irn);  This is not ideal code, the fact that v is ONLY sometimes part of mumps->irn means
+  that the PetscMalloc() cannot easily be replaced with a PetscMalloc3(). 
+
  */
 
 #undef __FUNCT__
@@ -950,10 +955,7 @@ PetscErrorCode MatLUFactorSymbolic_AIJMUMPS(Mat F,Mat A,IS r,IS c,const MatFacto
       ierr = VecCreateSeq(PETSC_COMM_SELF,0,&mumps->b_seq);CHKERRQ(ierr);
       ierr = ISCreateStride(PETSC_COMM_SELF,0,0,1,&is_iden);CHKERRQ(ierr);
     }
-    ierr = VecCreate(PetscObjectComm((PetscObject)A),&b);CHKERRQ(ierr);
-    ierr = VecSetSizes(b,A->rmap->n,PETSC_DECIDE);CHKERRQ(ierr);
-    ierr = VecSetFromOptions(b);CHKERRQ(ierr);
-
+    ierr = MatGetVecs(A,NULL,&b);CHKERRQ(ierr);
     ierr = VecScatterCreate(b,is_iden,mumps->b_seq,is_iden,&mumps->scat_rhs);CHKERRQ(ierr);
     ierr = ISDestroy(&is_iden);CHKERRQ(ierr);
     ierr = VecDestroy(&b);CHKERRQ(ierr);
@@ -1031,10 +1033,7 @@ PetscErrorCode MatLUFactorSymbolic_BAIJMUMPS(Mat F,Mat A,IS r,IS c,const MatFact
       ierr = VecCreateSeq(PETSC_COMM_SELF,0,&mumps->b_seq);CHKERRQ(ierr);
       ierr = ISCreateStride(PETSC_COMM_SELF,0,0,1,&is_iden);CHKERRQ(ierr);
     }
-    ierr = VecCreate(PetscObjectComm((PetscObject)A),&b);CHKERRQ(ierr);
-    ierr = VecSetSizes(b,A->rmap->n,PETSC_DECIDE);CHKERRQ(ierr);
-    ierr = VecSetFromOptions(b);CHKERRQ(ierr);
-
+    ierr = MatGetVecs(A,NULL,&b);CHKERRQ(ierr);
     ierr = VecScatterCreate(b,is_iden,mumps->b_seq,is_iden,&mumps->scat_rhs);CHKERRQ(ierr);
     ierr = ISDestroy(&is_iden);CHKERRQ(ierr);
     ierr = VecDestroy(&b);CHKERRQ(ierr);
@@ -1111,10 +1110,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_MUMPS(Mat F,Mat A,IS r,const MatFactorI
       ierr = VecCreateSeq(PETSC_COMM_SELF,0,&mumps->b_seq);CHKERRQ(ierr);
       ierr = ISCreateStride(PETSC_COMM_SELF,0,0,1,&is_iden);CHKERRQ(ierr);
     }
-    ierr = VecCreate(PetscObjectComm((PetscObject)A),&b);CHKERRQ(ierr);
-    ierr = VecSetSizes(b,A->rmap->n,PETSC_DECIDE);CHKERRQ(ierr);
-    ierr = VecSetFromOptions(b);CHKERRQ(ierr);
-
+    ierr = MatGetVecs(A,NULL,&b);CHKERRQ(ierr);
     ierr = VecScatterCreate(b,is_iden,mumps->b_seq,is_iden,&mumps->scat_rhs);CHKERRQ(ierr);
     ierr = ISDestroy(&is_iden);CHKERRQ(ierr);
     ierr = VecDestroy(&b);CHKERRQ(ierr);

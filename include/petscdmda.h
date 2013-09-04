@@ -49,8 +49,8 @@ PETSC_EXTERN PetscErrorCode DMDAGlobalToNaturalBegin(DM,Vec,InsertMode,Vec);
 PETSC_EXTERN PetscErrorCode DMDAGlobalToNaturalEnd(DM,Vec,InsertMode,Vec);
 PETSC_EXTERN PetscErrorCode DMDANaturalToGlobalBegin(DM,Vec,InsertMode,Vec);
 PETSC_EXTERN PetscErrorCode DMDANaturalToGlobalEnd(DM,Vec,InsertMode,Vec);
-PETSC_EXTERN PetscErrorCode DMDALocalToLocalBegin(DM,Vec,InsertMode,Vec);
-PETSC_EXTERN PetscErrorCode DMDALocalToLocalEnd(DM,Vec,InsertMode,Vec);
+PETSC_DEPRECATED("Use DMLocalToLocalBegin()") PETSC_STATIC_INLINE PetscErrorCode DMDALocalToLocalBegin(DM dm,Vec g,InsertMode mode,Vec l) {return DMLocalToLocalBegin(dm,g,mode,l);}
+PETSC_DEPRECATED("Use DMLocalToLocalEnd()") PETSC_STATIC_INLINE PetscErrorCode DMDALocalToLocalEnd(DM dm,Vec g,InsertMode mode,Vec l) {return DMLocalToLocalEnd(dm,g,mode,l);}
 PETSC_EXTERN PetscErrorCode DMDACreateNaturalVector(DM,Vec *);
 
 PETSC_EXTERN PetscErrorCode DMDAGetCorners(DM,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*);
@@ -172,7 +172,7 @@ PETSC_EXTERN PetscErrorCode MatRegisterDAAD(void);
 PETSC_EXTERN PetscErrorCode MatCreateDAAD(DM,Mat*);
 PETSC_EXTERN PetscErrorCode MatCreateSeqUSFFT(Vec,DM,Mat*);
 
-PETSC_EXTERN PetscErrorCode DMDASetGetMatrix(DM,PetscErrorCode (*)(DM, MatType,Mat *));
+PETSC_EXTERN PetscErrorCode DMDASetGetMatrix(DM,PetscErrorCode (*)(DM, Mat *));
 PETSC_EXTERN PetscErrorCode DMDASetBlockFills(DM,const PetscInt*,const PetscInt*);
 PETSC_EXTERN PetscErrorCode DMDASetRefinementFactor(DM,PetscInt,PetscInt,PetscInt);
 PETSC_EXTERN PetscErrorCode DMDAGetRefinementFactor(DM,PetscInt*,PetscInt*,PetscInt*);

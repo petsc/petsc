@@ -32,7 +32,7 @@ PetscErrorCode VecViennaCLAllocateCheckHost(Vec v)
   ierr = VecViennaCLAllocateCheck(v);CHKERRQ(ierr);
   if (s->array == 0) {
     ierr               = PetscMalloc(n*sizeof(PetscScalar),&array);CHKERRQ(ierr);
-    ierr               = PetscLogObjectMemory(v,n*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr               = PetscLogObjectMemory((PetscObject)v,n*sizeof(PetscScalar));CHKERRQ(ierr);
     s->array           = array;
     s->array_allocated = array;
   }

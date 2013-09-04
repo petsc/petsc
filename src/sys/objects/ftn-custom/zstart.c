@@ -425,8 +425,8 @@ PETSC_EXTERN void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(l
   *ierr = PetscThreadCommInitializePackage();
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Calling PetscThreadCommInitialize()\n");return;}
 
+  PetscThreadLocalRegister((PetscThreadKey*)&petscstack); /* Creates pthread_key */
 #if defined(PETSC_USE_DEBUG)
-  PetscThreadLocalRegister((PetscThreadKey*)&petscstack); /* Creates petscstack_key if needed */
   *ierr = PetscStackCreate();
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:PetscStackCreate()\n");return;}
 #endif

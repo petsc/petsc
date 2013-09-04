@@ -1642,7 +1642,7 @@ int main(int argc,char *argv[])
   ierr = DMDestroy(&da3);CHKERRQ(ierr);
   ierr = DMDestroy(&da2);CHKERRQ(ierr);
   ierr = DMSetUp(pack);CHKERRQ(ierr);
-  ierr = DMCreateMatrix(pack,NULL,&B);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(pack,&B);CHKERRQ(ierr);
   ierr = MatSetOption(B,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
   ierr = MatSetOptionsPrefix(B,"thi_");CHKERRQ(ierr);
 

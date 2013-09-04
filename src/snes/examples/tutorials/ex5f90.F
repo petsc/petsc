@@ -304,7 +304,8 @@
       call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-snes_mf',         &
      &     matrix_free,ierr)
       if (.not. matrix_free) then
-        call DMCreateMatrix(da,MATAIJ,J,ierr)
+        call DMSetMatType(da,MATAIJ,ierr)
+        call DMCreateMatrix(da,J,ierr)
         call SNESSetJacobian(snes,J,J,FormJacobian,user,ierr)
       endif
 

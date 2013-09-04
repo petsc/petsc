@@ -856,6 +856,8 @@ PetscErrorCode  MatView(Mat mat,PetscViewer viewer)
         ierr = PetscViewerASCIIPrintf(viewer,"total: nonzeros=%lld, allocated nonzeros=%lld\n",(Petsc64bitInt)info.nz_used,(Petsc64bitInt)info.nz_allocated);CHKERRQ(ierr);
         ierr = PetscViewerASCIIPrintf(viewer,"total number of mallocs used during MatSetValues calls =%D\n",(PetscInt)info.mallocs);CHKERRQ(ierr);
       }
+      if (mat->nullsp) {ierr = PetscViewerASCIIPrintf(viewer,"  has attached null space\n");CHKERRQ(ierr);}
+      if (mat->nearnullsp) {ierr = PetscViewerASCIIPrintf(viewer,"  has attached near null space\n");CHKERRQ(ierr);}
     }
 #if defined(PETSC_HAVE_SAWS)
   } else if (isams) {
@@ -3478,7 +3480,7 @@ PetscErrorCode  MatSolveAdd(Mat mat,Vec b,Vec y,Vec x)
       ierr = VecAXPY(x,one,y);CHKERRQ(ierr);
     } else {
       ierr = VecDuplicate(x,&tmp);CHKERRQ(ierr);
-      ierr = PetscLogObjectParent(mat,tmp);CHKERRQ(ierr);
+      ierr = PetscLogObjectParent((PetscObject)mat,(PetscObject)tmp);CHKERRQ(ierr);
       ierr = VecCopy(x,tmp);CHKERRQ(ierr);
       ierr = MatSolve(mat,b,x);CHKERRQ(ierr);
       ierr = VecAXPY(x,one,tmp);CHKERRQ(ierr);
@@ -3605,7 +3607,7 @@ PetscErrorCode  MatSolveTransposeAdd(Mat mat,Vec b,Vec y,Vec x)
       ierr = VecAXPY(x,one,y);CHKERRQ(ierr);
     } else {
       ierr = VecDuplicate(x,&tmp);CHKERRQ(ierr);
-      ierr = PetscLogObjectParent(mat,tmp);CHKERRQ(ierr);
+      ierr = PetscLogObjectParent((PetscObject)mat,(PetscObject)tmp);CHKERRQ(ierr);
       ierr = VecCopy(x,tmp);CHKERRQ(ierr);
       ierr = MatSolveTranspose(mat,b,x);CHKERRQ(ierr);
       ierr = VecAXPY(x,one,tmp);CHKERRQ(ierr);
@@ -4912,7 +4914,7 @@ PetscErrorCode  MatAssembled(Mat mat,PetscBool  *assembled)
 
   Input Parameters:
 + mat   - the matrix
-. prefix - prefix to use for viewing, or NULL to use prefix of 'rnd'
+. prefix - prefix to use for viewing, or NULL to use prefix of 'mat'
 - optionname - option to activate viewing
 
   Level: intermediate
@@ -5175,8 +5177,10 @@ PetscErrorCode  MatSetOption(Mat mat,MatOption op,PetscBool flg)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidType(mat,1);
-  if (op > 0) PetscValidLogicalCollectiveEnum(mat,op,2);
-  PetscValidLogicalCollectiveBool(mat,flg,3);
+  if (op > 0) {
+    PetscValidLogicalCollectiveEnum(mat,op,2);
+    PetscValidLogicalCollectiveBool(mat,flg,3);
+  }
 
   if (((int) op) <= MAT_OPTION_MIN || ((int) op) >= MAT_OPTION_MAX) SETERRQ1(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_OUTOFRANGE,"Options %d is out of range",(int)op);
   if (!((PetscObject)mat)->type_name) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_TYPENOTSET,"Cannot set options until type and size have been set, see MatSetType() and MatSetSizes()");
@@ -7164,7 +7168,7 @@ PetscErrorCode  MatSetUnfactored(Mat mat)
 
     Level: advanced
 
-.seealso:  MatDenseRestoreArrayF90(), MatDenseGetArray(), MatDenseRestoreArray()
+.seealso:  MatDenseRestoreArrayF90(), MatDenseGetArray(), MatDenseRestoreArray(), MatSeqAIJGetArrayF90()
 
     Concepts: matrices^accessing array
 
@@ -7172,7 +7176,7 @@ M*/
 
 /*MC
     MatDenseRestoreArrayF90 - Restores a matrix array that has been
-    accessed with MatGetArrayF90().
+    accessed with MatDenseGetArrayF90().
 
     Synopsis:
     MatDenseRestoreArrayF90(Mat x,{Scalar, pointer :: xx_v(:)},integer ierr)
@@ -7197,7 +7201,71 @@ M*/
 
     Level: advanced
 
-.seealso:  MatDenseGetArrayF90(), MatDenseGetArray(), MatDenseRestoreArray()
+.seealso:  MatDenseGetArrayF90(), MatDenseGetArray(), MatDenseRestoreArray(), MatSeqAIJRestoreArrayF90()
+
+M*/
+
+
+/*MC
+    MatSeqAIJGetArrayF90 - Accesses a matrix array from Fortran90.
+
+    Synopsis:
+    MatSeqAIJGetArrayF90(Mat x,{Scalar, pointer :: xx_v(:,:)},integer ierr)
+
+    Not collective
+
+    Input Parameter:
+.   x - matrix
+
+    Output Parameters:
++   xx_v - the Fortran90 pointer to the array
+-   ierr - error code
+
+    Example of Usage:
+.vb
+      PetscScalar, pointer xx_v(:,:)
+      ....
+      call MatSeqAIJGetArrayF90(x,xx_v,ierr)
+      a = xx_v(3)
+      call MatSeqAIJRestoreArrayF90(x,xx_v,ierr)
+.ve
+
+    Level: advanced
+
+.seealso:  MatSeqAIJRestoreArrayF90(), MatSeqAIJGetArray(), MatSeqAIJRestoreArray(), MatDenseGetArrayF90()
+
+    Concepts: matrices^accessing array
+
+M*/
+
+/*MC
+    MatSeqAIJRestoreArrayF90 - Restores a matrix array that has been
+    accessed with MatSeqAIJGetArrayF90().
+
+    Synopsis:
+    MatSeqAIJRestoreArrayF90(Mat x,{Scalar, pointer :: xx_v(:)},integer ierr)
+
+    Not collective
+
+    Input Parameters:
++   x - matrix
+-   xx_v - the Fortran90 pointer to the array
+
+    Output Parameter:
+.   ierr - error code
+
+    Example of Usage:
+.vb
+       PetscScalar, pointer xx_v(:)
+       ....
+       call MatSeqAIJGetArrayF90(x,xx_v,ierr)
+       a = xx_v(3)
+       call MatSeqAIJRestoreArrayF90(x,xx_v,ierr)
+.ve
+
+    Level: advanced
+
+.seealso:  MatSeqAIJGetArrayF90(), MatSeqAIJGetArray(), MatSeqAIJRestoreArray(), MatDenseRestoreArrayF90()
 
 M*/
 
@@ -9067,8 +9135,7 @@ PetscErrorCode  MatMatMatMult(Mat A,Mat B,Mat C,MatReuse scall,PetscReal fill,Ma
    Input Parameters:
 +  mat - the matrix
 .  nsubcomm - the number of subcommunicators (= number of redundant parallel or sequential matrices)
-.  subcomm - MPI communicator split from the communicator where mat resides in
-.  mlocal_red - number of local rows of the redundant matrix
+.  subcomm - MPI communicator split from the communicator where mat resides in (or MPI_COMM_NULL if nsubcomm is used)
 -  reuse - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX
 
    Output Parameter:
@@ -9090,15 +9157,15 @@ PetscErrorCode  MatMatMatMult(Mat A,Mat B,Mat C,MatReuse scall,PetscReal fill,Ma
 
 .seealso: MatDestroy()
 @*/
-PetscErrorCode  MatGetRedundantMatrix(Mat mat,PetscInt nsubcomm,MPI_Comm subcomm,PetscInt mlocal_red,MatReuse reuse,Mat *matredundant)
+PetscErrorCode  MatGetRedundantMatrix(Mat mat,PetscInt nsubcomm,MPI_Comm subcomm,MatReuse reuse,Mat *matredundant)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   if (nsubcomm && reuse == MAT_REUSE_MATRIX) {
-    PetscValidPointer(*matredundant,6);
-    PetscValidHeaderSpecific(*matredundant,MAT_CLASSID,6);
+    PetscValidPointer(*matredundant,5);
+    PetscValidHeaderSpecific(*matredundant,MAT_CLASSID,5);
   }
   if (!mat->ops->getredundantmatrix) SETERRQ1(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
   if (!mat->assembled) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
@@ -9106,7 +9173,7 @@ PetscErrorCode  MatGetRedundantMatrix(Mat mat,PetscInt nsubcomm,MPI_Comm subcomm
   MatCheckPreallocated(mat,1);
 
   ierr = PetscLogEventBegin(MAT_GetRedundantMatrix,mat,0,0,0);CHKERRQ(ierr);
-  ierr = (*mat->ops->getredundantmatrix)(mat,nsubcomm,subcomm,mlocal_red,reuse,matredundant);CHKERRQ(ierr);
+  ierr = (*mat->ops->getredundantmatrix)(mat,nsubcomm,subcomm,reuse,matredundant);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_GetRedundantMatrix,mat,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

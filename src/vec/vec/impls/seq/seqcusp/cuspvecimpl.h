@@ -53,27 +53,12 @@ PETSC_INTERN PetscErrorCode VecSetRandom_SeqCUSP(Vec,PetscRandom);
 PETSC_INTERN PetscErrorCode VecCUSPCopyToGPU_Public(Vec);
 PETSC_INTERN PetscErrorCode VecCUSPAllocateCheck_Public(Vec);
 
-#if defined(PETSC_HAVE_TXPETSCGPU)
-#include "tx_vector_interface.h"
-#endif
-
 struct  _p_PetscCUSPIndices {
-#if defined(PETSC_HAVE_TXPETSCGPU)
-  GPU_Indices<PetscInt, PetscScalar> * sendIndices;
-  GPU_Indices<PetscInt, PetscScalar> * recvIndices;
-#else
-  CUSPINTARRAYCPU sendIndicesCPU;
-  CUSPINTARRAYGPU sendIndicesGPU;
-
-  CUSPINTARRAYCPU recvIndicesCPU;
-  CUSPINTARRAYGPU recvIndicesGPU;
-#endif
+  PetscInt ns;
+  PetscInt sendLowestIndex;
+  PetscInt nr;
+  PetscInt recvLowestIndex;
 };
-
-#if defined(PETSC_HAVE_TXPETSCGPU)
-PETSC_INTERN PetscErrorCode VecCUSPCopySomeToContiguousBufferGPU(Vec, PetscCUSPIndices);
-PETSC_INTERN PetscErrorCode VecCUSPCopySomeFromContiguousBufferGPU(Vec, PetscCUSPIndices);
-#endif
 
 #define CHKERRCUSP(err) if (((int)err) != (int)CUBLAS_STATUS_SUCCESS) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSP error %d",err)
 
@@ -83,9 +68,8 @@ PETSC_INTERN PetscErrorCode VecCUSPCopySomeFromContiguousBufferGPU(Vec, PetscCUS
 
 struct Vec_CUSP {
   CUSPARRAY *GPUarray;        /* this always holds the GPU data */
-#if defined(PETSC_HAVE_TXPETSCGPU)
-  GPU_Vector<PetscInt, PetscScalar> * GPUvector; /* this always holds the GPU data */
-#endif
+  cudaStream_t stream;        /* A stream for doing asynchronous data transfers */
+  PetscBool hostDataRegisteredAsPageLocked;
 };
 
 #endif

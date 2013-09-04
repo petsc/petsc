@@ -375,17 +375,17 @@ PetscErrorCode GetAdjacentDof_Private()
 
 #undef __FUNCT__
 #define __FUNCT__ "DMCreateMatrix_Mesh"
-PetscErrorCode DMCreateMatrix_Mesh(DM dm, MatType mtype, Mat *J)
+PetscErrorCode DMCreateMatrix_Mesh(DM dm, Mat *J)
 {
   DM_Mesh                *mesh = (DM_Mesh*) dm->data;
   ISLocalToGlobalMapping ltog;
   PetscErrorCode         ierr;
+  MatType                mtype = dm->mattype;
 
   PetscFunctionBegin;
 #if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = MatInitializePackage();CHKERRQ(ierr);
 #endif
-  if (!mtype) mtype = MATAIJ;
   if (mesh->useNewImpl) {
     SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Not supported");
   } else {
@@ -627,7 +627,7 @@ PetscErrorCode DMGetLocalToGlobalMapping_Mesh(DM dm)
     }
   }
   ierr = ISLocalToGlobalMappingCreate(PETSC_COMM_SELF, s->size(), ltog, PETSC_OWN_POINTER, &dm->ltogmap);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(dm, dm->ltogmap);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)dm, (PetscObject)dm->ltogmap);CHKERRQ(ierr);
   ierr = SectionRealDestroy(&section);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

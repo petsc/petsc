@@ -191,7 +191,7 @@ PetscErrorCode  MatMFFDResetHHistory_MFFD(Mat J)
    Then, your solver can be chosen with the procedural interface via
 $     MatMFFDSetType(mfctx,"my_h")
    or at runtime via the option
-$     -snes_mf_type my_h
+$     -mat_mffd_type my_h
 
 .keywords: MatMFFD, register
 

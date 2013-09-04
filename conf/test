@@ -51,7 +51,7 @@ testexamples_PTSCOTCH: ${TESTEXAMPLES_PTSCOTCH}
 testexamples_PASTIX: ${TESTEXAMPLES_PASTIX}
 testexamples_ML: ${TESTEXAMPLES_ML}
 testexamples_CUSP: ${TESTEXAMPLES_CUSP}
-testexamples_TXPETSCGPU: ${TESTEXAMPLES_TXPETSCGPU}
+testexamples_CUDA: ${TESTEXAMPLES_CUDA}
 testexamples_YAML: ${TESTEXAMPLES_YAML}
 testexamples_THREADCOMM: ${TESTEXAMPLES_THREADCOMM}
 testexamples_MOAB: ${TESTEXAMPLES_MOAB}
@@ -159,8 +159,8 @@ buildexamples_ML:
 	-@${OMAKE} testexamples_ML TESTEXAMPLES_ML=`echo ${TESTEXAMPLES_ML} | sed s/runex[0-9]*[a-z0-9_]*//g`
 buildexamples_CUSP:
 	-@${OMAKE} testexamples_CUSP TESTEXAMPLES_CUSP=`echo ${TESTEXAMPLES_CUSP} | sed s/runex[0-9]*[a-z0-9_]*//g`
-buildexamples_TXPETSCGPU:
-	-@${OMAKE} testexamples_TXPETSCGPU TESTEXAMPLES_TXPETSCGPU=`echo ${TESTEXAMPLES_TXPETSCGPU} | sed s/runex[0-9]*[a-z0-9_]*//g`
+buildexamples_CUDA:
+	-@${OMAKE} testexamples_CUDA TESTEXAMPLES_CUDA=`echo ${TESTEXAMPLES_CUDA} | sed s/runex[0-9]*[a-z0-9_]*//g`
 buildexamples_YAML:
 	-@${OMAKE} testexamples_YAML TESTEXAMPLES_YAML=`echo ${TESTEXAMPLES_YAML} | sed s/runex[0-9]*[a-z0-9_]*//g`
 buildexamples_THREADCOMM:

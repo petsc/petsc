@@ -210,11 +210,9 @@ PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqAIJ_SparseAxpy(Mat A,Mat P,Mat C)
 
   PetscFunctionBegin;
   /* Allocate temporary array for storage of one row of A*P (cn: non-scalable) */
-  ierr = PetscMalloc(cn*(sizeof(MatScalar)+sizeof(PetscInt))+c->rmax*sizeof(PetscInt),&apa);CHKERRQ(ierr);
-
-  apjdense = (PetscInt*)(apa + cn);
-  apj      = apjdense + cn;
-  ierr     = PetscMemzero(apa,cn*(sizeof(MatScalar)+sizeof(PetscInt)));CHKERRQ(ierr);
+  ierr = PetscMalloc3(cn,MatScalar,&apa,cn,PetscInt,&apjdense,c->rmax,PetscInt,&apj);CHKERRQ(ierr);
+  ierr = PetscMemzero(apa,cn*sizeof(MatScalar));CHKERRQ(ierr);
+  ierr = PetscMemzero(apjdense,cn*sizeof(PetscInt));CHKERRQ(ierr);
 
   /* Clear old values in C */
   ierr = PetscMemzero(ca,ci[cm]*sizeof(MatScalar));CHKERRQ(ierr);
@@ -274,7 +272,7 @@ PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqAIJ_SparseAxpy(Mat A,Mat P,Mat C)
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  ierr = PetscFree(apa);CHKERRQ(ierr);
+  ierr = PetscFree3(apa,apjdense,apj);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

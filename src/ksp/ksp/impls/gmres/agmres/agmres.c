@@ -105,7 +105,7 @@ PetscErrorCode KSPBuildSolution_AGMRES(KSP ksp,Vec ptr, Vec *result)
     if (!agmres->sol_temp) {
       ierr = VecDuplicate(ksp->vec_sol,&agmres->sol_temp);CHKERRQ(ierr);
       ierr = VecCopy(ksp->vec_sol,agmres->sol_temp);CHKERRQ(ierr);
-      ierr = PetscLogObjectParent(ksp,agmres->sol_temp);CHKERRQ(ierr);
+      ierr = PetscLogObjectParent((PetscObject)ksp,(PetscObject)agmres->sol_temp);CHKERRQ(ierr);
     }
     ptr = agmres->sol_temp;
   } else {

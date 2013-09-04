@@ -449,10 +449,7 @@ PetscErrorCode MatFactorNumeric_PaStiX(Mat F,Mat A,const MatFactorInfo *info)
       /* PaStiX only supports centralized rhs. Create scatter scat_rhs for repeated use in MatSolve() */
       ierr = VecCreateSeq(PETSC_COMM_SELF,A->cmap->N,&lu->b_seq);CHKERRQ(ierr);
       ierr = ISCreateStride(PETSC_COMM_SELF,A->cmap->N,0,1,&is_iden);CHKERRQ(ierr);
-      ierr = VecCreate(PetscObjectComm((PetscObject)A),&b);CHKERRQ(ierr);
-      ierr = VecSetSizes(b,A->rmap->n,PETSC_DECIDE);CHKERRQ(ierr);
-      ierr = VecSetFromOptions(b);CHKERRQ(ierr);
-
+      ierr = MatGetVecs(A,NULL,&b);CHKERRQ(ierr);
       ierr = VecScatterCreate(b,is_iden,lu->b_seq,is_iden,&lu->scat_rhs);CHKERRQ(ierr);
       ierr = VecScatterCreate(lu->b_seq,is_iden,b,is_iden,&lu->scat_sol);CHKERRQ(ierr);
       ierr = ISDestroy(&is_iden);CHKERRQ(ierr);

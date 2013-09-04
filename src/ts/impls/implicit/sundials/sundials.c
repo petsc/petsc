@@ -307,8 +307,8 @@ PetscErrorCode TSSetUp_Sundials(TS ts)
 
   ierr = VecDuplicate(ts->vec_sol,&cvode->update);CHKERRQ(ierr);
   ierr = VecDuplicate(ts->vec_sol,&cvode->ydot);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(ts,cvode->update);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(ts,cvode->ydot);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)ts,(PetscObject)cvode->update);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)ts,(PetscObject)cvode->ydot);CHKERRQ(ierr);
 
   /*
     Create work vectors for the TSPSolve_Sundials() routine. Note these are
@@ -317,8 +317,8 @@ PetscErrorCode TSSetUp_Sundials(TS ts)
   */
   ierr = VecCreateMPIWithArray(PetscObjectComm((PetscObject)ts),1,locsize,PETSC_DECIDE,0,&cvode->w1);CHKERRQ(ierr);
   ierr = VecCreateMPIWithArray(PetscObjectComm((PetscObject)ts),1,locsize,PETSC_DECIDE,0,&cvode->w2);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(ts,cvode->w1);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(ts,cvode->w2);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)ts,(PetscObject)cvode->w1);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)ts,(PetscObject)cvode->w2);CHKERRQ(ierr);
 
   /* Call CVodeCreate to create the solver memory and the use of a Newton iteration */
   mem = CVodeCreate(cvode->cvode_type, CV_NEWTON);

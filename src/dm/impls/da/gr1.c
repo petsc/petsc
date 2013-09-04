@@ -117,7 +117,7 @@ PetscErrorCode  DMDASetUniformCoordinates(DM da,PetscReal xmin,PetscReal xmax,Pe
     }
     ierr = VecRestoreArray(xcoor,&coors);CHKERRQ(ierr);
     ierr = DMSetCoordinates(da,xcoor);CHKERRQ(ierr);
-    ierr = PetscLogObjectParent(da,xcoor);CHKERRQ(ierr);
+    ierr = PetscLogObjectParent((PetscObject)da,(PetscObject)xcoor);CHKERRQ(ierr);
     ierr = VecDestroy(&xcoor);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
@@ -164,7 +164,7 @@ PetscErrorCode  DMDASetUniformCoordinates(DM da,PetscReal xmin,PetscReal xmax,Pe
     ierr = VecRestoreArray(xcoor,&coors);CHKERRQ(ierr);
   } else SETERRQ1(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Cannot create uniform coordinates for this dimension %D\n",dim);
   ierr = DMSetCoordinates(da,xcoor);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(da,xcoor);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)da,(PetscObject)xcoor);CHKERRQ(ierr);
   ierr = VecDestroy(&xcoor);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -308,7 +308,7 @@ PetscErrorCode VecView_MPI_Draw_DA1d(Vec xin,PetscViewer v)
       ierr = PetscDrawSynchronizedClear(draw);CHKERRQ(ierr);
     }
     ierr = PetscViewerDrawGetDrawAxis(v,k,&axis);CHKERRQ(ierr);
-    ierr = PetscLogObjectParent(draw,axis);CHKERRQ(ierr);
+    ierr = PetscLogObjectParent((PetscObject)draw,(PetscObject)axis);CHKERRQ(ierr);
     if (!rank) {
       const char *title;
 

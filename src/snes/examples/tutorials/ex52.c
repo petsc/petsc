@@ -272,7 +272,7 @@ PetscErrorCode FormFunctionLocalLaplacian(DM dm, Vec X, Vec F, AppCtx *user)
   ierr = PetscMalloc4(dim,PetscReal,&coords,dim,PetscReal,&v0,dim*dim,PetscReal,&J,dim*dim,PetscReal,&invJ);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; ++c) {
-    PetscScalar *x;
+    PetscScalar *x = NULL;
     PetscInt     q, f, d, e;
 
     ierr = PetscMemzero(elemVec, numBasisFuncs * sizeof(PetscScalar));CHKERRQ(ierr);
@@ -367,7 +367,7 @@ PetscErrorCode FormFunctionLocalElasticity(DM dm, Vec X, Vec F, AppCtx *user)
   ierr = PetscMalloc4(dim,PetscReal,&coords,dim,PetscReal,&v0,dim*dim,PetscReal,&J,dim*dim,PetscReal,&invJ);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; ++c) {
-    PetscScalar *x;
+    PetscScalar *x = NULL;
     PetscInt     q, d, e, f, comp;
 
     ierr = PetscMemzero(elemVec, numBasisFuncs*numBasisComps * sizeof(PetscScalar));CHKERRQ(ierr);
@@ -658,7 +658,7 @@ PetscErrorCode FormFunctionLocalBatch(DM dm, Vec X, Vec F, AppCtx *user)
 
   ierr = PetscMalloc4(numCells*numBasisFuncs*numBasisComps,PetscScalar,&u,numCells*dim*dim,PetscReal,&invJ,numCells,PetscReal,&detJ,numCells*numBasisFuncs*numBasisComps,PetscScalar,&elemVec);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; ++c) {
-    PetscScalar *x;
+    PetscScalar *x = NULL;
     PetscInt     f;
 
     ierr = DMPlexComputeCellGeometry(dm, c, v0, J, &invJ[c*dim*dim], &detJ[c]);CHKERRQ(ierr);
@@ -749,7 +749,7 @@ PetscErrorCode FormJacobianLocalLaplacian(DM dm, Vec X, Mat Jac, Mat JacPre, Mat
   ierr = PetscMalloc3(dim,PetscReal,&v0,dim*dim,PetscReal,&J,dim*dim,PetscReal,&invJ);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; ++c) {
-    PetscScalar *x;
+    PetscScalar *x = NULL;
     PetscInt     q;
 
     ierr = PetscMemzero(elemMat, numBasisFuncs*numBasisFuncs * sizeof(PetscScalar));CHKERRQ(ierr);
@@ -820,6 +820,7 @@ PetscErrorCode FormJacobianLocalElasticity(DM dm, Vec X, Mat Jac, Mat JacPre, Ma
   const PetscInt  numBasisFuncs = user->q.numBasisFuncs;
   const PetscReal *basis        = user->q.basis;
   const PetscReal *basisDer     = user->q.basisDer;
+  PetscSection    section, globalSection;
   PetscReal       *v0, *J, *invJ, detJ;
   PetscScalar     *realSpaceTestDer, *realSpaceBasisDer, *elemMat;
   PetscInt        cStart, cEnd, c;
@@ -827,12 +828,14 @@ PetscErrorCode FormJacobianLocalElasticity(DM dm, Vec X, Mat Jac, Mat JacPre, Ma
 
   PetscFunctionBeginUser;
   ierr = PetscLogEventBegin(user->jacobianEvent,0,0,0,0);CHKERRQ(ierr);
+  ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
+  ierr = DMGetDefaultGlobalSection(dm, &globalSection);CHKERRQ(ierr);
   ierr = MatZeroEntries(Jac);CHKERRQ(ierr);
   ierr = PetscMalloc3(dim,PetscScalar,&realSpaceTestDer,dim,PetscScalar,&realSpaceBasisDer,numBasisFuncs*numBasisFuncs,PetscScalar,&elemMat);CHKERRQ(ierr);
   ierr = PetscMalloc3(dim,PetscReal,&v0,dim*dim,PetscReal,&J,dim*dim,PetscReal,&invJ);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; ++c) {
-    PetscScalar *x;
+    PetscScalar *x = NULL;
     PetscInt     q;
 
     ierr = PetscMemzero(elemMat, numBasisFuncs*numBasisFuncs * sizeof(PetscScalar));CHKERRQ(ierr);
@@ -871,7 +874,7 @@ PetscErrorCode FormJacobianLocalElasticity(DM dm, Vec X, Mat Jac, Mat JacPre, Ma
     }
     ierr = DMPlexVecRestoreClosure(dm, NULL, X, c, NULL, &x);CHKERRQ(ierr);
     if (debug) {ierr = DMPrintCellMatrix(c, "Jacobian", numBasisFuncs, numBasisFuncs, elemMat);CHKERRQ(ierr);}
-    ierr = DMPlexMatSetClosure(dm, NULL, NULL, Jac, c, elemMat, ADD_VALUES);CHKERRQ(ierr);
+    ierr = DMPlexMatSetClosure(dm, section, globalSection, Jac, c, elemMat, ADD_VALUES);CHKERRQ(ierr);
   }
   ierr = PetscLogFlops((cEnd-cStart)*numQuadPoints*numBasisFuncs*(dim*(dim*5+4)+14));CHKERRQ(ierr);
   ierr = PetscFree3(realSpaceTestDer,realSpaceBasisDer,elemMat);CHKERRQ(ierr);
@@ -916,7 +919,7 @@ PetscErrorCode FormJacobianLocalBatch(DM dm, Vec X, Mat Jac, Mat JacPre, MatStru
   ierr = PetscMalloc3(dim,PetscReal,&v0,dim*dim,PetscReal,&J,dim*dim,PetscReal,&invJ);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; ++c) {
-    PetscScalar *x;
+    PetscScalar *x = NULL;
     PetscInt     q;
 
     ierr = PetscMemzero(elemMat, numBasisFuncs*numBasisFuncs * sizeof(PetscScalar));CHKERRQ(ierr);
@@ -1029,7 +1032,8 @@ int main(int argc, char **argv)
     MatStructure flag;
 
     ierr = DMGetGlobalVector(dm, &X);CHKERRQ(ierr);
-    ierr = DMCreateMatrix(dm, MATAIJ, &J);CHKERRQ(ierr);
+    ierr = DMSetMatType(dm,MATAIJ);CHKERRQ(ierr);
+    ierr = DMCreateMatrix(dm, &J);CHKERRQ(ierr);
     if (user.batch) {
       ierr = DMSNESSetJacobianLocal(dm, (PetscErrorCode (*)(DM, Vec, Mat, Mat, MatStructure*, void*))FormJacobianLocalBatch, &user);CHKERRQ(ierr);
     } else {

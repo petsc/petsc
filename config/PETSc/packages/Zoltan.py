@@ -14,7 +14,7 @@ class Configure(PETSc.package.NewPackage):
     PETSc.package.NewPackage.setupDependencies(self, framework)
     self.x        = framework.require('PETSc.packages.X',self)
     self.parmetis = framework.require('PETSc.packages.parmetis',self)
-    self.deps = [self.x, self.mpi, self.parmetis]
+    self.deps = [self.mpi, self.parmetis]
     return
 
   def Install(self):

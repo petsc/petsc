@@ -539,20 +539,18 @@
       PetscEnum MAT_CUSP_MULT_DIAG
       PetscEnum MAT_CUSP_MULT_OFFDIAG
       PetscEnum MAT_CUSP_MULT
-      PetscEnum MAT_CUSP_SOLVE
       PetscEnum MAT_CUSP_ALL
       parameter(MAT_CUSP_MULT_DIAG=0)
       parameter(MAT_CUSP_MULT_OFFDIAG=1)
       parameter(MAT_CUSP_MULT=2)
-      parameter(MAT_CUSP_SOLVE=3)
-      parameter(MAT_CUSP_ALL=4)
+      parameter(MAT_CUSP_ALL=3)
 #endif
 
 
 !
 !     CUSPARSE enumerated types
 !
-#if defined(PETSC_HAVE_TXPETSCGPU)
+#if defined(PETSC_HAVE_CUDA)
       PetscEnum MAT_CUSPARSE_CSR
       PetscEnum MAT_CUSPARSE_ELL
       PetscEnum MAT_CUSPARSE_HYB
@@ -561,13 +559,11 @@
       PetscEnum MAT_CUSPARSE_MULT_DIAG
       PetscEnum MAT_CUSPARSE_MULT_OFFDIAG
       PetscEnum MAT_CUSPARSE_MULT
-      PetscEnum MAT_CUSPARSE_SOLVE
       PetscEnum MAT_CUSPARSE_ALL
       parameter(MAT_CUSPARSE_MULT_DIAG=0)
       parameter(MAT_CUSPARSE_MULT_OFFDIAG=1)
       parameter(MAT_CUSPARSE_MULT=2)
-      parameter(MAT_CUSPARSE_SOLVE=3)
-      parameter(MAT_CUSPARSE_ALL=4)
+      parameter(MAT_CUSPARSE_ALL=3)
 #endif
 !
 !  End of Fortran include file for the Mat package in PETSc

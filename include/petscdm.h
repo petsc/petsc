@@ -33,6 +33,7 @@ typedef const char* DMType;
 PETSC_EXTERN PetscFunctionList DMList;
 PETSC_EXTERN PetscBool         DMRegisterAllCalled;
 PETSC_EXTERN PetscErrorCode DMCreate(MPI_Comm,DM*);
+PETSC_EXTERN PetscErrorCode DMClone(DM,DM*);
 PETSC_EXTERN PetscErrorCode DMSetType(DM, DMType);
 PETSC_EXTERN PetscErrorCode DMGetType(DM, DMType *);
 PETSC_EXTERN PetscErrorCode DMRegister(const char[],PetscErrorCode (*)(DM));
@@ -57,8 +58,8 @@ PETSC_EXTERN PetscErrorCode DMGetLocalToGlobalMapping(DM,ISLocalToGlobalMapping*
 PETSC_EXTERN PetscErrorCode DMGetLocalToGlobalMappingBlock(DM,ISLocalToGlobalMapping*);
 PETSC_EXTERN PetscErrorCode DMCreateFieldIS(DM,PetscInt*,char***,IS**);
 PETSC_EXTERN PetscErrorCode DMGetBlockSize(DM,PetscInt*);
-PETSC_EXTERN PetscErrorCode DMCreateColoring(DM,ISColoringType,MatType,ISColoring*);
-PETSC_EXTERN PetscErrorCode DMCreateMatrix(DM,MatType,Mat*);
+PETSC_EXTERN PetscErrorCode DMCreateColoring(DM,ISColoringType,ISColoring*);
+PETSC_EXTERN PetscErrorCode DMCreateMatrix(DM,Mat*);
 PETSC_EXTERN PetscErrorCode DMSetMatrixPreallocateOnly(DM,PetscBool);
 PETSC_EXTERN PetscErrorCode DMCreateInterpolation(DM,DM,Mat*,Vec*);
 PETSC_EXTERN PetscErrorCode DMCreateInjection(DM,DM,VecScatter*);
@@ -83,6 +84,8 @@ PETSC_EXTERN PetscErrorCode DMGlobalToLocalBegin(DM,Vec,InsertMode,Vec);
 PETSC_EXTERN PetscErrorCode DMGlobalToLocalEnd(DM,Vec,InsertMode,Vec);
 PETSC_EXTERN PetscErrorCode DMLocalToGlobalBegin(DM,Vec,InsertMode,Vec);
 PETSC_EXTERN PetscErrorCode DMLocalToGlobalEnd(DM,Vec,InsertMode,Vec);
+PETSC_EXTERN PetscErrorCode DMLocalToLocalBegin(DM,Vec,InsertMode,Vec);
+PETSC_EXTERN PetscErrorCode DMLocalToLocalEnd(DM,Vec,InsertMode,Vec);
 PETSC_EXTERN PetscErrorCode DMConvert(DM,DMType,DM*);
 
 PETSC_EXTERN PetscErrorCode DMGetCoordinateDM(DM,DM*);
@@ -98,7 +101,9 @@ PETSC_EXTERN PetscErrorCode DMSubDomainRestrict(DM,VecScatter,VecScatter,DM);
 
 PETSC_EXTERN PetscErrorCode DMSetOptionsPrefix(DM,const char []);
 PETSC_EXTERN PetscErrorCode DMSetVecType(DM,VecType);
+PETSC_EXTERN PetscErrorCode DMGetVecType(DM,VecType*);
 PETSC_EXTERN PetscErrorCode DMSetMatType(DM,MatType);
+PETSC_EXTERN PetscErrorCode DMGetMatType(DM,MatType*);
 PETSC_EXTERN PetscErrorCode DMSetApplicationContext(DM,void*);
 PETSC_EXTERN PetscErrorCode DMSetApplicationContextDestroy(DM,PetscErrorCode (*)(void**));
 PETSC_EXTERN PetscErrorCode DMGetApplicationContext(DM,void*);
@@ -181,16 +186,16 @@ struct _DMInterpolationInfo {
 };
 typedef struct _DMInterpolationInfo *DMInterpolationInfo;
 
-PetscErrorCode DMInterpolationCreate(MPI_Comm, DMInterpolationInfo *);
-PetscErrorCode DMInterpolationSetDim(DMInterpolationInfo, PetscInt);
-PetscErrorCode DMInterpolationGetDim(DMInterpolationInfo, PetscInt *);
-PetscErrorCode DMInterpolationSetDof(DMInterpolationInfo, PetscInt);
-PetscErrorCode DMInterpolationGetDof(DMInterpolationInfo, PetscInt *);
-PetscErrorCode DMInterpolationAddPoints(DMInterpolationInfo, PetscInt, PetscReal[]);
-PetscErrorCode DMInterpolationSetUp(DMInterpolationInfo, DM, PetscBool);
-PetscErrorCode DMInterpolationGetCoordinates(DMInterpolationInfo, Vec *);
-PetscErrorCode DMInterpolationGetVector(DMInterpolationInfo, Vec *);
-PetscErrorCode DMInterpolationRestoreVector(DMInterpolationInfo, Vec *);
-PetscErrorCode DMInterpolationEvaluate(DMInterpolationInfo, DM, Vec, Vec);
-PetscErrorCode DMInterpolationDestroy(DMInterpolationInfo *);
+PETSC_EXTERN PetscErrorCode DMInterpolationCreate(MPI_Comm, DMInterpolationInfo *);
+PETSC_EXTERN PetscErrorCode DMInterpolationSetDim(DMInterpolationInfo, PetscInt);
+PETSC_EXTERN PetscErrorCode DMInterpolationGetDim(DMInterpolationInfo, PetscInt *);
+PETSC_EXTERN PetscErrorCode DMInterpolationSetDof(DMInterpolationInfo, PetscInt);
+PETSC_EXTERN PetscErrorCode DMInterpolationGetDof(DMInterpolationInfo, PetscInt *);
+PETSC_EXTERN PetscErrorCode DMInterpolationAddPoints(DMInterpolationInfo, PetscInt, PetscReal[]);
+PETSC_EXTERN PetscErrorCode DMInterpolationSetUp(DMInterpolationInfo, DM, PetscBool);
+PETSC_EXTERN PetscErrorCode DMInterpolationGetCoordinates(DMInterpolationInfo, Vec *);
+PETSC_EXTERN PetscErrorCode DMInterpolationGetVector(DMInterpolationInfo, Vec *);
+PETSC_EXTERN PetscErrorCode DMInterpolationRestoreVector(DMInterpolationInfo, Vec *);
+PETSC_EXTERN PetscErrorCode DMInterpolationEvaluate(DMInterpolationInfo, DM, Vec, Vec);
+PETSC_EXTERN PetscErrorCode DMInterpolationDestroy(DMInterpolationInfo *);
 #endif

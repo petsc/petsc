@@ -291,7 +291,7 @@ static PetscErrorCode createLevel(const PC pc,const Mat Amat_fine,const PetscInt
     /* Create a vector to contain the newly ordered element information */
     ierr = VecCreate(comm, &dest_crd);CHKERRQ(ierr);
     ierr = VecSetSizes(dest_crd, node_data_sz*ncrs_prim_new, PETSC_DECIDE);CHKERRQ(ierr);
-    ierr = VecSetFromOptions(dest_crd);CHKERRQ(ierr); /* this is needed! */
+    ierr = VecSetType(dest_crd,VECSTANDARD);CHKERRQ(ierr); /* this is needed! */
     /*
      There are 'ndata_rows*ndata_cols' data items per node, (one can think of the vectors of having
      a block size of ...).  Note, ISs are expanded into equation space by 'cr_bs'.
@@ -501,7 +501,7 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
 
         for (level=pc_gamg->Nlevels-2; level>=0; level--) {
           /* the first time through the matrix structure has changed from repartitioning */
-          if (pc_gamg->setup_count==2 && (pc_gamg->repart || level==0)) {
+          if (pc_gamg->setup_count==2) {
             ierr = MatPtAP(dB,mglevels[level+1]->interpolate,MAT_INITIAL_MATRIX,1.0,&B);CHKERRQ(ierr);
             ierr = MatDestroy(&mglevels[level]->A);CHKERRQ(ierr);
 
@@ -550,7 +550,7 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
 
   /* get basic dims */
   ierr = MatGetBlockSize(Pmat, &bs);CHKERRQ(ierr);
-  
+
   ierr = MatGetSize(Pmat, &M, &qq);CHKERRQ(ierr);
   if (pc_gamg->verbose) {
     PetscInt NN = M;

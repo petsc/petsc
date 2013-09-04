@@ -7,7 +7,8 @@ LOCDIR          = src/dm/examples/tests/
 EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c ex10.c\
                   ex11.c ex12.c ex12.m ex13.c ex14.c ex15.c ex16.c ex17.c ex18.c ex19.c \
 	          ex21.c ex22.c ex23.c ex24.c ex25.c ex26.c ex27.c ex28.c ex30.c \
-	          ex31.c ex32.c ex34.c ex36.c ex37.c ex38.c ex39.c ex40.c ex41.c
+	          ex31.c ex32.c ex34.c ex36.c ex37.c ex38.c ex39.c ex40.c ex41.c \
+	          ex42.c
 EXAMPLESF       =
 MANSEC          = DM
 
@@ -168,6 +169,9 @@ ex40:ex40.o   chkopts
 ex41:ex41.o   chkopts
 	-${CLINKER} -o ex41 ex41.o  ${PETSC_DM_LIB}
 	${RM} -f ex41.o
+ex42:ex42.o   chkopts
+	-${CLINKER} -o ex42 ex42.o  ${PETSC_DM_LIB}
+	${RM} -f ex42.o
 #-------------------------------------------------------------------------------
 runex1:
 	-@${MPIEXEC} -n 2 ./ex1 -nox | grep -v -i Object > ex1_1.tmp 2>&1;	  \
@@ -338,6 +342,10 @@ runex37:
 	-@${MPIEXEC} -n 2 ./ex37 ;\
 	  ${RM} -f ex32_1.tmp
 
+runex42:
+	-@${MPIEXEC} -n 2 ./ex42 ;\
+	  ${RM} -f 2d_nocoord.vtr 2d.vtr 3d_nocoord.vtr 3d.vtr
+
 
 TESTEXAMPLES_C		  = ex1.PETSc runex1 ex1.rm ex4.PETSc runex4 ex4.rm ex15.PETSc ex15.rm ex16.PETSc ex16.rm \
                             ex21.PETSc runex21 ex21.rm ex24.PETSc runex24 ex24.rm ex25.PETSc \
@@ -350,7 +358,7 @@ TESTEXAMPLES_FORTRAN	  =
 TESTEXAMPLES_C_X_MPIUNI = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex3.PETSc ex3.rm ex4.PETSc ex4.rm ex5.PETSc ex5.rm\
                             ex6.PETSc ex6.rm ex12.PETSc ex12.rm
 TESTEXAMPLES_C_COMPLEX	  =
-TESTEXAMPLES_C_NOCOMPLEX  = ex16.PETSc runex16 runex16_2 ex16.rm
+TESTEXAMPLES_C_NOCOMPLEX  = ex16.PETSc runex16 runex16_2 ex16.rm ex42.PETSc runex42 ex42.rm
 TESTEXAMPLES_13		  = ex8.PETSc ex8.rm ex9.PETSc ex9.rm ex10.PETSc ex10.rm ex11.PETSc ex11.rm
 TESTEXAMPLES_MATLAB	  = ex12.PETSc runex12 ex12.rm
 

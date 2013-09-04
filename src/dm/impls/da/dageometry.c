@@ -553,7 +553,7 @@ PetscErrorCode DMDAComputeCellGeometry(DM dm, PetscInt cell, PetscQuadrature *qu
 {
   DM                cdm;
   Vec               coordinates;
-  const PetscScalar *vertices;
+  const PetscScalar *vertices = NULL;
   PetscInt          dim, d, q;
   PetscErrorCode    ierr;
 

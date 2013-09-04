@@ -56,14 +56,14 @@ PetscErrorCode    KSPSetUp_GMRES(KSP ksp)
   ierr = PetscMemzero(gmres->rs_origin,rs*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr = PetscMemzero(gmres->cc_origin,cc*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr = PetscMemzero(gmres->ss_origin,cc*sizeof(PetscScalar));CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(ksp,(hh + hes + rs + 2*cc)*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory((PetscObject)ksp,(hh + hes + rs + 2*cc)*sizeof(PetscScalar));CHKERRQ(ierr);
 
   if (ksp->calc_sings) {
     /* Allocate workspace to hold Hessenberg matrix needed by lapack */
     ierr = PetscMalloc((max_k + 3)*(max_k + 9)*sizeof(PetscScalar),&gmres->Rsvd);CHKERRQ(ierr);
-    ierr = PetscLogObjectMemory(ksp,(max_k + 3)*(max_k + 9)*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscLogObjectMemory((PetscObject)ksp,(max_k + 3)*(max_k + 9)*sizeof(PetscScalar));CHKERRQ(ierr);
     ierr = PetscMalloc(6*(max_k+2)*sizeof(PetscReal),&gmres->Dsvd);CHKERRQ(ierr);
-    ierr = PetscLogObjectMemory(ksp,6*(max_k+2)*sizeof(PetscReal));CHKERRQ(ierr);
+    ierr = PetscLogObjectMemory((PetscObject)ksp,6*(max_k+2)*sizeof(PetscReal));CHKERRQ(ierr);
   }
 
   /* Allocate array to hold pointers to user vectors.  Note that we need
@@ -73,7 +73,7 @@ PetscErrorCode    KSPSetUp_GMRES(KSP ksp)
   ierr = PetscMalloc((gmres->vecs_allocated)*sizeof(Vec),&gmres->vecs);CHKERRQ(ierr);
   ierr = PetscMalloc((VEC_OFFSET+2+max_k)*sizeof(Vec*),&gmres->user_work);CHKERRQ(ierr);
   ierr = PetscMalloc((VEC_OFFSET+2+max_k)*sizeof(PetscInt),&gmres->mwork_alloc);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(ksp,(VEC_OFFSET+2+max_k)*(sizeof(Vec*)+sizeof(PetscInt)) + gmres->vecs_allocated*sizeof(Vec));CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory((PetscObject)ksp,(VEC_OFFSET+2+max_k)*(sizeof(Vec*)+sizeof(PetscInt)) + gmres->vecs_allocated*sizeof(Vec));CHKERRQ(ierr);
 
   if (gmres->q_preallocate) {
     gmres->vv_allocated = VEC_OFFSET + 2 + max_k;
@@ -464,14 +464,14 @@ PetscErrorCode KSPBuildSolution_GMRES(KSP ksp,Vec ptr,Vec *result)
   if (!ptr) {
     if (!gmres->sol_temp) {
       ierr = VecDuplicate(ksp->vec_sol,&gmres->sol_temp);CHKERRQ(ierr);
-      ierr = PetscLogObjectParent(ksp,gmres->sol_temp);CHKERRQ(ierr);
+      ierr = PetscLogObjectParent((PetscObject)ksp,(PetscObject)gmres->sol_temp);CHKERRQ(ierr);
     }
     ptr = gmres->sol_temp;
   }
   if (!gmres->nrs) {
     /* allocate the work area */
     ierr = PetscMalloc(gmres->max_k*sizeof(PetscScalar),&gmres->nrs);CHKERRQ(ierr);
-    ierr = PetscLogObjectMemory(ksp,gmres->max_k*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscLogObjectMemory((PetscObject)ksp,gmres->max_k*sizeof(PetscScalar));CHKERRQ(ierr);
   }
 
   ierr = KSPGMRESBuildSoln(gmres->nrs,ksp->vec_sol,ptr,ksp,gmres->it);CHKERRQ(ierr);

@@ -16,6 +16,11 @@ regressionParameters = {'src/dm/impls/patch/examples/tests/ex1': [{'numProcs': 1
                                                                   {'numProcs': 4, 'args': '-patch_size 2 -grid_size 4 -comm_size 1'},
                                                                   {'numProcs': 4, 'args': '-patch_size 2 -grid_size 4 -comm_size 2'},
                                                                   {'numProcs': 16, 'args': '-patch_size 2 -grid_size 8 -comm_size 2'}],
+                        'src/mat/examples/tests/ex170':          [{'numProcs': 1, 'args': ''},
+                                                                  {'numProcs': 1, 'args': '-testnum 1'},
+                                                                  {'numProcs': 2, 'args': '-testnum 1'},
+                                                                  {'numProcs': 1, 'args': '-testnum 2'},
+                                                                  {'numProcs': 2, 'args': '-testnum 2'}],
                         'src/dm/impls/plex/examples/tests/ex1': [# CTetGen tests 0-1
                                                                  {'numProcs': 1, 'args': '-dim 3 -ctetgen_verbose 4 -dm_view ::ascii_info_detail -info -info_exclude null'},
                                                                  {'numProcs': 1, 'args': '-dim 3 -ctetgen_verbose 4 -refinement_limit 0.0625 -dm_view ::ascii_info_detail -info -info_exclude null'},
@@ -54,7 +59,9 @@ regressionParameters = {'src/dm/impls/patch/examples/tests/ex1': [{'numProcs': 1
                                                                  {'numProcs': 1, 'args': '-dim 3 -dm_view ::ascii_info_detail'},
                                                                  {'numProcs': 2, 'args': '-dim 3 -dm_view ::ascii_info_detail'},
                                                                  {'numProcs': 1, 'args': '-dim 3 -cell_simplex 0 -dm_view ::ascii_info_detail'},
-                                                                 {'numProcs': 2, 'args': '-dim 3 -cell_simplex 0 -dm_view ::ascii_info_detail'}],
+                                                                 {'numProcs': 2, 'args': '-dim 3 -cell_simplex 0 -dm_view ::ascii_info_detail'},
+                                                                 {'numProcs': 1, 'args': '-dim 2 -test_num 1 -dm_view ::ascii_info_detail'},
+                                                                 {'numProcs': 1, 'args': '-dim 3 -test_num 1 -dm_view ::ascii_info_detail'},],
                         'src/dm/impls/plex/examples/tests/ex6': [{'numProcs': 1, 'args': '-malloc_dump'},
                                                                  {'numProcs': 1, 'args': '-malloc_dump -pend 10000'},
                                                                  {'numProcs': 1, 'args': '-malloc_dump -pend 10000 -fill 0.05'},
@@ -79,7 +86,45 @@ regressionParameters = {'src/dm/impls/patch/examples/tests/ex1': [{'numProcs': 1
                                                                  #{'numProcs': 1, 'args': '-dim 3 -filename /PETSc3/petsc/blockcylinder-20.exo'},
                                                                  ],
                         'src/dm/impls/plex/examples/tests/ex8': [{'numProcs': 1, 'args': '-dm_view ::ascii_info_detail'},
-                                                                 {'numProcs': 1, 'args': '-transform'}],
+                                                                 {'numProcs': 1, 'args': '-interpolate -dm_view ::ascii_info_detail'},
+                                                                 {'numProcs': 1, 'args': '-transform'},
+                                                                 {'numProcs': 1, 'args': '-interpolate -transform'},
+                                                                 {'numProcs': 1, 'args': '-run_type file -filename %(meshes)s/simpleblock-100.exo -dm_view ::ascii_info_detail -v0 -1.5,-0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5 -J 0.0,0.0,0.5,0.0,0.5,0.0,-0.5,0.0,0.0,0.0,0.0,0.5,0.0,0.5,0.0,-0.5,0.0,0.0,0.0,0.0,0.5,0.0,0.5,0.0,-0.5,0.0,0.0 -invJ 0.0,0.0,-2.0,0.0,2.0,0.0,2.0,0.0,0.0,0.0,0.0,-2.0,0.0,2.0,0.0,2.0,0.0,0.0,0.0,0.0,-2.0,0.0,2.0,0.0,2.0,0.0,0.0 -detJ 0.125,0.125,0.125', 'requires': ['exodusii']},
+                                                                 {'numProcs': 1, 'args': '-interpolate -run_type file -filename %(meshes)s/simpleblock-100.exo -dm_view ::ascii_info_detail -v0 -1.5,-0.5,0.5,-0.5,-0.5,0.5,0.5,-0.5,0.5 -J 0.0,0.0,0.5,0.0,0.5,0.0,-0.5,0.0,0.0,0.0,0.0,0.5,0.0,0.5,0.0,-0.5,0.0,0.0,0.0,0.0,0.5,0.0,0.5,0.0,-0.5,0.0,0.0 -invJ 0.0,0.0,-2.0,0.0,2.0,0.0,2.0,0.0,0.0,0.0,0.0,-2.0,0.0,2.0,0.0,2.0,0.0,0.0,0.0,0.0,-2.0,0.0,2.0,0.0,2.0,0.0,0.0 -detJ 0.125,0.125,0.125 -centroid -1.0,0.0,0.0,0.0,0.0,0.0,1.0,0.0,0.0 -normal 0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0 -vol 1.0,1.0,1.0', 'requires': ['exodusii']}],
+                        'src/dm/impls/plex/examples/tests/ex9': [# 2D Simplex P_1 scalar tests
+                                                                 {'numProcs': 1, 'args': '-num_dof 1,0,0 -iterations 10000 \
+                                                                  -max_cone_time 1.1e-8 -max_closure_time 1.3e-7 -max_vec_closure_time 3.6e-7'},
+                                                                 {'numProcs': 1, 'args': '-refinement_limit 1.0e-5 -num_dof 1,0,0 -iterations 100 \
+                                                                  -max_cone_time 2.1e-8 -max_closure_time 1.5e-7 -max_vec_closure_time 3.6e-7'},
+                                                                 {'numProcs': 1, 'args': '-num_fields 1 -num_components 1 -num_dof 1,0,0 -iterations 10000 \
+                                                                  -max_cone_time 1.1e-8 -max_closure_time 1.3e-7 -max_vec_closure_time 4.5e-7'},
+                                                                 {'numProcs': 1, 'args': '-refinement_limit 1.0e-5 -num_fields 1 -num_components 1 -num_dof 1,0,0 -iterations 100 \
+                                                                  -max_cone_time 2.1e-8 -max_closure_time 1.5e-7 -max_vec_closure_time 4.7e-7'},
+                                                                 {'numProcs': 1, 'args': '-interpolate -num_dof 1,0,0 -iterations 10000 \
+                                                                  -max_cone_time 1.1e-8 -max_closure_time 6.5e-7 -max_vec_closure_time 1.0e-6'},
+                                                                 {'numProcs': 1, 'args': '-interpolate -refinement_limit 1.0e-5 -num_dof 1,0,0 -iterations 100 \
+                                                                  -max_cone_time 2.1e-8 -max_closure_time 6.5e-7 -max_vec_closure_time 1.0e-6'},
+                                                                 {'numProcs': 1, 'args': '-interpolate -num_fields 1 -num_components 1 -num_dof 1,0,0 -iterations 10000 \
+                                                                  -max_cone_time 1.1e-8 -max_closure_time 6.5e-7 -max_vec_closure_time 1.1e-6'},
+                                                                 {'numProcs': 1, 'args': '-interpolate -refinement_limit 1.0e-5 -num_fields 1 -num_components 1 -num_dof 1,0,0 -iterations 100 \
+                                                                  -max_cone_time 2.1e-8 -max_closure_time 6.5e-7 -max_vec_closure_time 1.2e-6'},
+                                                                 # 2D Simplex P_1 vector tests
+                                                                 # 2D Simplex P_2 scalar tests
+                                                                 # 2D Simplex P_2 vector tests
+                                                                 # 2D Simplex P_2/P_1 vector/scalar tests
+                                                                 # 2D Quad P_1 scalar tests
+                                                                 # 2D Quad P_1 vector tests
+                                                                 # 2D Quad P_2 scalar tests
+                                                                 # 2D Quad P_2 vector tests
+                                                                 # 3D Simplex P_1 scalar tests
+                                                                 # 3D Simplex P_1 vector tests
+                                                                 # 3D Simplex P_2 scalar tests
+                                                                 # 3D Simplex P_2 vector tests
+                                                                 # 3D Hex P_1 scalar tests
+                                                                 # 3D Hex P_1 vector tests
+                                                                 # 3D Hex P_2 scalar tests
+                                                                 # 3D Hex P_2 vector tests
+                                                                 ],
                         'src/dm/impls/plex/examples/tests/ex1f90': [{'numProcs': 1, 'args': ''}],
                         'src/dm/impls/plex/examples/tests/ex2f90': [{'numProcs': 1, 'args': ''}],
                         'src/dm/impls/plex/examples/tutorials/ex1': [{'numProcs': 1, 'args': ''},
@@ -168,51 +213,51 @@ regressionParameters = {'src/dm/impls/patch/examples/tests/ex1': [{'numProcs': 1
                         'src/snes/examples/tutorials/ex52':   [# 2D Laplacian 0-3
                                                                {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0 -compute_function',
                                                                 'setup': './bin/pythonscripts/PetscGenerateFEMQuadrature.py 2 1 1 1 laplacian src/snes/examples/tutorials/ex52.h',
-                                                                'source': ['src/snes/examples/tutorials/ex52_integrateElement.cu'], 'requires': ['Cuda']},
-                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0 -compute_function -batch', 'requires': ['Cuda']},
-                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0 -compute_function -batch -gpu', 'requires': ['Cuda']},
-                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0 -compute_function -batch -gpu -gpu_batches 2', 'requires': ['Cuda']},
+                                                                'source': ['src/snes/examples/tutorials/ex52_integrateElement.cu'], 'requires': ['cuda']},
+                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0 -compute_function -batch', 'requires': ['cuda']},
+                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0 -compute_function -batch -gpu', 'requires': ['cuda']},
+                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0 -compute_function -batch -gpu -gpu_batches 2', 'requires': ['cuda']},
                                                                # 2D Laplacian refined 4-8
-                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0625 -compute_function', 'requires': ['Cuda']},
-                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0625 -compute_function -batch', 'requires': ['Cuda']},
-                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0625 -compute_function -batch -gpu', 'requires': ['Cuda']},
-                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0625 -compute_function -batch -gpu -gpu_batches 2', 'requires': ['Cuda']},
-                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0625 -compute_function -batch -gpu -gpu_batches 4', 'requires': ['Cuda']},
+                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0625 -compute_function', 'requires': ['cuda']},
+                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0625 -compute_function -batch', 'requires': ['cuda']},
+                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0625 -compute_function -batch -gpu', 'requires': ['cuda']},
+                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0625 -compute_function -batch -gpu -gpu_batches 2', 'requires': ['cuda']},
+                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0625 -compute_function -batch -gpu -gpu_batches 4', 'requires': ['cuda']},
                                                                # 2D Elasticity 9-12
                                                                {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0 -compute_function -op_type elasticity',
                                                                 'setup': './bin/pythonscripts/PetscGenerateFEMQuadrature.py 2 1 2 1 elasticity src/snes/examples/tutorials/ex52.h',
-                                                                'requires': ['Cuda']},
-                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0 -compute_function -op_type elasticity -batch', 'requires': ['Cuda']},
-                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0 -compute_function -op_type elasticity -batch -gpu', 'requires': ['Cuda']},
-                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0 -compute_function -op_type elasticity -batch -gpu -gpu_batches 2', 'requires': ['Cuda']},
+                                                                'requires': ['cuda']},
+                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0 -compute_function -op_type elasticity -batch', 'requires': ['cuda']},
+                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0 -compute_function -op_type elasticity -batch -gpu', 'requires': ['cuda']},
+                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0 -compute_function -op_type elasticity -batch -gpu -gpu_batches 2', 'requires': ['cuda']},
                                                                # 2D Elasticity refined 13-17
-                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0625 -compute_function -op_type elasticity', 'requires': ['Cuda']},
-                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0625 -compute_function -op_type elasticity -batch', 'requires': ['Cuda']},
-                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0625 -compute_function -op_type elasticity -batch -gpu', 'requires': ['Cuda']},
-                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0625 -compute_function -op_type elasticity -batch -gpu -gpu_batches 2', 'requires': ['Cuda']},
-                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0625 -compute_function -op_type elasticity -batch -gpu -gpu_batches 4', 'requires': ['Cuda']},
+                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0625 -compute_function -op_type elasticity', 'requires': ['cuda']},
+                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0625 -compute_function -op_type elasticity -batch', 'requires': ['cuda']},
+                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0625 -compute_function -op_type elasticity -batch -gpu', 'requires': ['cuda']},
+                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0625 -compute_function -op_type elasticity -batch -gpu -gpu_batches 2', 'requires': ['cuda']},
+                                                               {'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0625 -compute_function -op_type elasticity -batch -gpu -gpu_batches 4', 'requires': ['cuda']},
                                                                # 3D Laplacian 18-20
                                                                {'numProcs': 1, 'args': '-dim 3 -dm_view -refinement_limit 0.0 -compute_function',
                                                                 'setup': './bin/pythonscripts/PetscGenerateFEMQuadrature.py 3 1 1 1 laplacian src/snes/examples/tutorials/ex52.h',
-                                                                'requires': ['Cuda']},
-                                                               {'numProcs': 1, 'args': '-dim 3 -dm_view -refinement_limit 0.0 -compute_function -batch', 'requires': ['Cuda']},
-                                                               {'numProcs': 1, 'args': '-dim 3 -dm_view -refinement_limit 0.0 -compute_function -batch -gpu', 'requires': ['Cuda']},
+                                                                'requires': ['cuda']},
+                                                               {'numProcs': 1, 'args': '-dim 3 -dm_view -refinement_limit 0.0 -compute_function -batch', 'requires': ['cuda']},
+                                                               {'numProcs': 1, 'args': '-dim 3 -dm_view -refinement_limit 0.0 -compute_function -batch -gpu', 'requires': ['cuda']},
                                                                # 3D Laplacian refined 21-24
-                                                               {'numProcs': 1, 'args': '-dim 3 -dm_view -refinement_limit 0.0125 -compute_function', 'requires': ['Cuda']},
-                                                               {'numProcs': 1, 'args': '-dim 3 -dm_view -refinement_limit 0.0125 -compute_function -batch', 'requires': ['Cuda']},
-                                                               {'numProcs': 1, 'args': '-dim 3 -dm_view -refinement_limit 0.0125 -compute_function -batch -gpu', 'requires': ['Cuda']},
-                                                               {'numProcs': 1, 'args': '-dim 3 -dm_view -refinement_limit 0.0125 -compute_function -batch -gpu -gpu_batches 2', 'requires': ['Cuda']},
+                                                               {'numProcs': 1, 'args': '-dim 3 -dm_view -refinement_limit 0.0125 -compute_function', 'requires': ['cuda']},
+                                                               {'numProcs': 1, 'args': '-dim 3 -dm_view -refinement_limit 0.0125 -compute_function -batch', 'requires': ['cuda']},
+                                                               {'numProcs': 1, 'args': '-dim 3 -dm_view -refinement_limit 0.0125 -compute_function -batch -gpu', 'requires': ['cuda']},
+                                                               {'numProcs': 1, 'args': '-dim 3 -dm_view -refinement_limit 0.0125 -compute_function -batch -gpu -gpu_batches 2', 'requires': ['cuda']},
                                                                # 3D Elasticity 25-27
                                                                {'numProcs': 1, 'args': '-dim 3 -dm_view -refinement_limit 0.0 -compute_function -op_type elasticity',
                                                                 'setup': './bin/pythonscripts/PetscGenerateFEMQuadrature.py 3 1 3 1 elasticity src/snes/examples/tutorials/ex52.h',
-                                                                'requires': ['Cuda']},
-                                                               {'numProcs': 1, 'args': '-dim 3 -dm_view -refinement_limit 0.0 -compute_function -op_type elasticity -batch', 'requires': ['Cuda']},
-                                                               {'numProcs': 1, 'args': '-dim 3 -dm_view -refinement_limit 0.0 -compute_function -op_type elasticity -batch -gpu', 'requires': ['Cuda']},
+                                                                'requires': ['cuda']},
+                                                               {'numProcs': 1, 'args': '-dim 3 -dm_view -refinement_limit 0.0 -compute_function -op_type elasticity -batch', 'requires': ['cuda']},
+                                                               {'numProcs': 1, 'args': '-dim 3 -dm_view -refinement_limit 0.0 -compute_function -op_type elasticity -batch -gpu', 'requires': ['cuda']},
                                                                # 3D Elasticity refined 28-31
-                                                               {'numProcs': 1, 'args': '-dim 3 -dm_view -refinement_limit 0.0125 -compute_function -op_type elasticity', 'requires': ['Cuda']},
-                                                               {'numProcs': 1, 'args': '-dim 3 -dm_view -refinement_limit 0.0125 -compute_function -op_type elasticity -batch', 'requires': ['Cuda']},
-                                                               {'numProcs': 1, 'args': '-dim 3 -dm_view -refinement_limit 0.0125 -compute_function -op_type elasticity -batch -gpu', 'requires': ['Cuda']},
-                                                               {'numProcs': 1, 'args': '-dim 3 -dm_view -refinement_limit 0.0125 -compute_function -op_type elasticity -batch -gpu -gpu_batches 2', 'requires': ['Cuda']},
+                                                               {'numProcs': 1, 'args': '-dim 3 -dm_view -refinement_limit 0.0125 -compute_function -op_type elasticity', 'requires': ['cuda']},
+                                                               {'numProcs': 1, 'args': '-dim 3 -dm_view -refinement_limit 0.0125 -compute_function -op_type elasticity -batch', 'requires': ['cuda']},
+                                                               {'numProcs': 1, 'args': '-dim 3 -dm_view -refinement_limit 0.0125 -compute_function -op_type elasticity -batch -gpu', 'requires': ['cuda']},
+                                                               {'numProcs': 1, 'args': '-dim 3 -dm_view -refinement_limit 0.0125 -compute_function -op_type elasticity -batch -gpu -gpu_batches 2', 'requires': ['cuda']},
                                                                # 'source': ['src/snes/examples/tutorials/ex52_integrateElement.cu']},
                                                                ],
                         'src/snes/examples/tutorials/ex62':   [# 2D serial P1 tests 0-3
@@ -377,7 +422,7 @@ class MakeParser(object):
     '''Parses a PETSc action
     - Return a dictionary for the portions of a run'''
     import re
-    m = re.match('-@\$\{MPIEXEC\} -n (?P<numProcs>\d+) ./(?P<ex>ex\w+)(?P<args>[-.,\w ]+)>', lines[0])
+    m = re.match('-@\$\{MPIEXEC\} -n (?P<numProcs>\d+) ./(?P<ex>ex\w+)(?P<args>[\'%-.,\w ]+)>', lines[0])
     if not m:
       raise RuntimeError('Could not parse launch sequence:\n'+lines[0])
     comparison = 'Not present'
@@ -800,12 +845,13 @@ class DependencyBuilder(logger.Logger):
     '''
     with file(depFile) as f:
       try:
-        target, deps = f.read().split(':')
+        target, deps = f.read().split(':', 1)
       except ValueError as e:
         self.logPrint('ERROR in dependency file %s: %s' % (depFile, str(e)))
     target = target.split()[0]
     if (target != self.sourceManager.getObjectName(source)): print target, self.sourceManager.getObjectName(source)
     assert(target == self.sourceManager.getObjectName(source))
+    deps = deps.split('\n\n')[0]
     deps = [d for d in deps.replace('\\','').split() if not os.path.splitext(d)[1] == '.mod']
     if not os.path.basename(deps[0]) == source:
       raise RuntimeError('ERROR: first dependency %s should be %s' % (deps[0], source))
@@ -1450,7 +1496,7 @@ class PETScMaker(script.Script):
        self.logPrint("MISCONFIGURATION: Regression output file %s (test %s) is missing" % (outputName, testNum), debugSection='screen')
    else:
      with file(outputName) as f:
-       validOutput = f.read()
+       validOutput = f.read().strip() # Jed is now stripping output it appears
        if not validOutput == output:
          if replace:
            with file(outputName, 'w') as f:
@@ -1472,7 +1518,10 @@ class PETScMaker(script.Script):
 
  def getTestCommand(self, executable, **params):
    numProcs = params.get('numProcs', 1)
-   args     = params.get('args', '') % dict(meshes=os.path.join(self.petscDir,'share','petsc','datafiles','meshes'))
+   try:
+     args   = params.get('args', '') % dict(meshes=os.path.join(self.petscDir,'share','petsc','datafiles','meshes'))
+   except ValueError:
+     args   = params.get('args', '')
    hosts    = ','.join(['localhost']*int(numProcs))
    return ' '.join([self.configInfo.mpi.mpiexec, '-hosts', hosts, '-n', str(numProcs), os.path.abspath(executable), args])
 

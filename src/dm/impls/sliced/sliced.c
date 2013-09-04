@@ -15,7 +15,7 @@ typedef struct  {
 
 #undef __FUNCT__
 #define __FUNCT__ "DMCreateMatrix_Sliced"
-PetscErrorCode  DMCreateMatrix_Sliced(DM dm, MatType mtype,Mat *J)
+PetscErrorCode  DMCreateMatrix_Sliced(DM dm, Mat *J)
 {
   PetscErrorCode         ierr;
   PetscInt               *globals,*sd_nnz,*so_nnz,rstart,bs,i;
@@ -28,7 +28,7 @@ PetscErrorCode  DMCreateMatrix_Sliced(DM dm, MatType mtype,Mat *J)
   ierr = MatCreate(PetscObjectComm((PetscObject)dm),J);CHKERRQ(ierr);
   ierr = MatSetSizes(*J,slice->n*bs,slice->n*bs,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = MatSetBlockSize(*J,bs);CHKERRQ(ierr);
-  ierr = MatSetType(*J,mtype);CHKERRQ(ierr);
+  ierr = MatSetType(*J,dm->mattype);CHKERRQ(ierr);
   ierr = MatSeqBAIJSetPreallocation(*J,bs,slice->d_nz,slice->d_nnz);CHKERRQ(ierr);
   ierr = MatMPIBAIJSetPreallocation(*J,bs,slice->d_nz,slice->d_nnz,slice->o_nz,slice->o_nnz);CHKERRQ(ierr);
   /* In general, we have to do extra work to preallocate for scalar (AIJ) matrices so we check whether it will do any

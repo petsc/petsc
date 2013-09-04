@@ -120,7 +120,7 @@ PetscErrorCode MatMarkDiagonal_MPIAdj(Mat A)
 
   PetscFunctionBegin;
   ierr = PetscMalloc(m*sizeof(PetscInt),&a->diag);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(A,m*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory((PetscObject)A,m*sizeof(PetscInt));CHKERRQ(ierr);
   for (i=0; i<A->rmap->n; i++) {
     for (j=a->i[i]; j<a->i[i+1]; j++) {
       if (a->j[j] == i) {

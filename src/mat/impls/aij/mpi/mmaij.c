@@ -113,14 +113,14 @@ PetscErrorCode MatSetUpMultiply_MPIAIJ(Mat mat)
 
   /* generate the scatter context */
   ierr = VecScatterCreate(gvec,from,aij->lvec,to,&aij->Mvctx);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(mat,aij->Mvctx);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(mat,aij->lvec);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(mat,from);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(mat,to);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)mat,(PetscObject)aij->Mvctx);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)mat,(PetscObject)aij->lvec);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)mat,(PetscObject)from);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)mat,(PetscObject)to);CHKERRQ(ierr);
 
   aij->garray = garray;
 
-  ierr = PetscLogObjectMemory(mat,(ec+1)*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory((PetscObject)mat,(ec+1)*sizeof(PetscInt));CHKERRQ(ierr);
   ierr = ISDestroy(&from);CHKERRQ(ierr);
   ierr = ISDestroy(&to);CHKERRQ(ierr);
   ierr = VecDestroy(&gvec);CHKERRQ(ierr);
@@ -158,7 +158,7 @@ PetscErrorCode MatDisAssemble_MPIAIJ(Mat A)
     ierr = PetscTableDestroy(&aij->colmap);CHKERRQ(ierr);
 #else
     ierr = PetscFree(aij->colmap);CHKERRQ(ierr);
-    ierr = PetscLogObjectMemory(A,-aij->B->cmap->n*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscLogObjectMemory((PetscObject)A,-aij->B->cmap->n*sizeof(PetscInt));CHKERRQ(ierr);
 #endif
   }
 
@@ -188,9 +188,9 @@ PetscErrorCode MatDisAssemble_MPIAIJ(Mat A)
     }
   }
   ierr = PetscFree(aij->garray);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(A,-ec*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory((PetscObject)A,-ec*sizeof(PetscInt));CHKERRQ(ierr);
   ierr = MatDestroy(&B);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(A,Bnew);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)A,(PetscObject)Bnew);CHKERRQ(ierr);
 
   aij->B           = Bnew;
   A->was_assembled = PETSC_FALSE;

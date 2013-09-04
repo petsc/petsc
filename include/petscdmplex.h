@@ -9,10 +9,9 @@
 
 PETSC_EXTERN PetscErrorCode DMPlexCreate(MPI_Comm, DM*);
 PETSC_EXTERN PetscErrorCode DMPlexCreateSubmesh(DM, const char[], PetscInt, DM*);
-PETSC_EXTERN PetscErrorCode DMPlexCreateCohesiveSubmesh(DM, PetscBool, DM *);
+PETSC_EXTERN PetscErrorCode DMPlexCreateCohesiveSubmesh(DM, PetscBool, const char [], PetscInt, DM *);
 PETSC_EXTERN PetscErrorCode DMPlexCreateFromCellList(MPI_Comm, PetscInt, PetscInt, PetscInt, PetscInt, PetscBool, const int[], PetscInt, const double[], DM*);
 PETSC_EXTERN PetscErrorCode DMPlexCreateFromDAG(DM, PetscInt, const PetscInt [], const PetscInt [], const PetscInt [], const PetscInt [], const PetscScalar []);
-PETSC_EXTERN PetscErrorCode DMPlexClone(DM, DM*);
 PETSC_EXTERN PetscErrorCode DMPlexGetDimension(DM, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMPlexSetDimension(DM, PetscInt);
 PETSC_EXTERN PetscErrorCode DMPlexGetChart(DM, PetscInt *, PetscInt *);
@@ -113,6 +112,7 @@ PETSC_EXTERN PetscErrorCode DMPlexGetRefinementLimit(DM, PetscReal *);
 PETSC_EXTERN PetscErrorCode DMPlexSetRefinementLimit(DM, PetscReal);
 PETSC_EXTERN PetscErrorCode DMPlexGetRefinementUniform(DM, PetscBool *);
 PETSC_EXTERN PetscErrorCode DMPlexSetRefinementUniform(DM, PetscBool);
+PETSC_EXTERN PetscErrorCode DMPlexInvertCell(PetscInt, PetscInt, int []);
 PETSC_EXTERN PetscErrorCode DMPlexInterpolate(DM, DM *);
 PETSC_EXTERN PetscErrorCode DMPlexCopyCoordinates(DM, DM);
 PETSC_EXTERN PetscErrorCode DMPlexDistribute(DM, const char[], PetscInt, DM*);
@@ -125,16 +125,18 @@ PETSC_EXTERN PetscErrorCode DMPlexCreateCubeBoundary(DM, const PetscReal [], con
 PETSC_EXTERN PetscErrorCode DMPlexCreateBoxMesh(MPI_Comm, PetscInt, PetscBool, DM *);
 PETSC_EXTERN PetscErrorCode DMPlexCreateHexBoxMesh(MPI_Comm,PetscInt,const PetscInt[],DM *);
 PETSC_EXTERN PetscErrorCode DMPlexGetDepth(DM, PetscInt *);
+PETSC_EXTERN PetscErrorCode DMPlexGetDepthLabel(DM, DMLabel *);
 PETSC_EXTERN PetscErrorCode DMPlexGetDepthStratum(DM, PetscInt, PetscInt *, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMPlexGetHeightStratum(DM, PetscInt, PetscInt *, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMPlexCreateSection(DM, PetscInt, PetscInt,const PetscInt [],const PetscInt [], PetscInt,const PetscInt [],const IS [], PetscSection *);
 PETSC_EXTERN PetscErrorCode DMPlexCreateConeSection(DM, PetscSection *);
-PETSC_EXTERN PetscErrorCode DMPlexLabelCohesiveComplete(DM, DMLabel);
+PETSC_EXTERN PetscErrorCode DMPlexLabelCohesiveComplete(DM, DMLabel, PetscBool, DM);
 PETSC_EXTERN PetscErrorCode DMPlexMarkBoundaryFaces(DM, DMLabel);
 PETSC_EXTERN PetscErrorCode DMPlexLabelComplete(DM, DMLabel);
 
 /* Support for cell-vertex meshes */
 PETSC_EXTERN PetscErrorCode DMPlexGetNumFaceVertices(DM, PetscInt, PetscInt, PetscInt *);
+PETSC_EXTERN PetscErrorCode DMPlexGetOrientedFace(DM, PetscInt, PetscInt, const PetscInt [], PetscInt, PetscInt [], PetscInt [], PetscInt [], PetscBool *);
 
 /* FVM Support */
 PETSC_EXTERN PetscErrorCode DMPlexComputeCellGeometryFVM(DM, PetscInt, PetscReal *, PetscReal [], PetscReal []);

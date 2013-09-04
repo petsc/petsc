@@ -146,7 +146,7 @@ PetscErrorCode DMMeshInterpolationSetUp(DM dm, DMMeshInterpolationInfo ctx, Pets
   ierr = VecCreate(comm, &ctx->coords);CHKERRQ(ierr);
   ierr = VecSetSizes(ctx->coords, ctx->n*ctx->dim, PETSC_DECIDE);CHKERRQ(ierr);
   ierr = VecSetBlockSize(ctx->coords, ctx->dim);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(ctx->coords);CHKERRQ(ierr);
+  ierr = VecSetType(ctx->coords,dm->vectype);CHKERRQ(ierr);
   ierr = VecGetArray(ctx->coords, &a);CHKERRQ(ierr);
   for (p = 0, q = 0, i = 0; p < N; ++p) {
     if (globalProcs[p] == rank) {
@@ -190,7 +190,7 @@ PetscErrorCode DMMeshInterpolationGetVector(DM dm, Vec *v, DMMeshInterpolationIn
   ierr = VecCreate(((PetscObject) dm)->comm, v);CHKERRQ(ierr);
   ierr = VecSetSizes(*v, ctx->n*ctx->dof, PETSC_DECIDE);CHKERRQ(ierr);
   ierr = VecSetBlockSize(*v, ctx->dof);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(*v);CHKERRQ(ierr);
+  ierr = VecSetType(*v,dm->vectype);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -353,7 +353,7 @@ PETSC_STATIC_INLINE PetscErrorCode DMMeshInterpolate_Quad_Private(DM dm, Section
   ierr = SNESSetOptionsPrefix(snes, "quad_interp_");CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_SELF, &r);CHKERRQ(ierr);
   ierr = VecSetSizes(r, 2, 2);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(r);CHKERRQ(ierr);
+  ierr = VecSetType(r,dm->vectype);CHKERRQ(ierr);
   ierr = VecDuplicate(r, &ref);CHKERRQ(ierr);
   ierr = VecDuplicate(r, &real);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_SELF, &J);CHKERRQ(ierr);
@@ -574,7 +574,7 @@ PETSC_STATIC_INLINE PetscErrorCode DMMeshInterpolate_Hex_Private(DM dm, SectionR
   ierr = SNESSetOptionsPrefix(snes, "hex_interp_");CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_SELF, &r);CHKERRQ(ierr);
   ierr = VecSetSizes(r, 3, 3);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(r);CHKERRQ(ierr);
+  ierr = VecSetType(r,dm->vectype);CHKERRQ(ierr);
   ierr = VecDuplicate(r, &ref);CHKERRQ(ierr);
   ierr = VecDuplicate(r, &real);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_SELF, &J);CHKERRQ(ierr);

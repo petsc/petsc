@@ -847,7 +847,7 @@ PetscErrorCode FormFunctionLocal(DM dm, Vec X, Vec F, AppCtx *user)
   }
   ierr = PetscMalloc4(numCells*cellDof,PetscScalar,&u,numCells*dim*dim,PetscReal,&invJ,numCells,PetscReal,&detJ,numCells*cellDof,PetscScalar,&elemVec);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; ++c) {
-    PetscScalar *x;
+    PetscScalar *x = NULL;
     PetscInt     i;
 
     ierr = DMPlexComputeCellGeometry(dm, c, v0, J, &invJ[c*dim*dim], &detJ[c]);CHKERRQ(ierr);
@@ -1140,7 +1140,7 @@ PetscErrorCode FormJacobianActionLocal(DM dm, Mat Jac, Vec X, Vec F, AppCtx *use
   }
   ierr = PetscMalloc5(numCells*cellDof,PetscScalar,&u,numCells*cellDof,PetscScalar,&a,numCells*dim*dim,PetscReal,&invJ,numCells,PetscReal,&detJ,numCells*cellDof,PetscScalar,&elemVec);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; ++c) {
-    PetscScalar *x;
+    PetscScalar *x = NULL;
     PetscInt     i;
 
     ierr = DMPlexComputeCellGeometry(dm, c, v0, J, &invJ[c*dim*dim], &detJ[c]);CHKERRQ(ierr);
@@ -1456,6 +1456,7 @@ PetscErrorCode FormJacobianLocal(DM dm, Vec X, Mat Jac, Mat JacP, MatStructure *
 {
   const PetscInt debug = user->debug;
   const PetscInt dim   = user->dim;
+  PetscSection   section, globalSection;
   PetscReal      *v0, *J, *invJ, *detJ;
   PetscScalar    *elemMat, *u;
   PetscInt       numCells, cStart, cEnd, c, field, fieldI;
@@ -1464,6 +1465,8 @@ PetscErrorCode FormJacobianLocal(DM dm, Vec X, Mat Jac, Mat JacP, MatStructure *
 
   PetscFunctionBeginUser;
   ierr = PetscLogEventBegin(user->jacobianEvent,0,0,0,0);CHKERRQ(ierr);
+  ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
+  ierr = DMGetDefaultGlobalSection(dm, &globalSection);CHKERRQ(ierr);
   ierr = MatZeroEntries(JacP);CHKERRQ(ierr);
   ierr = PetscMalloc2(dim,PetscReal,&v0,dim*dim,PetscReal,&J);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
@@ -1474,7 +1477,7 @@ PetscErrorCode FormJacobianLocal(DM dm, Vec X, Mat Jac, Mat JacP, MatStructure *
   }
   ierr = PetscMalloc4(numCells*cellDof,PetscScalar,&u,numCells*dim*dim,PetscReal,&invJ,numCells,PetscReal,&detJ,numCells*cellDof*cellDof,PetscScalar,&elemMat);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; ++c) {
-    PetscScalar *x;
+    PetscScalar *x = NULL;
     PetscInt     i;
 
     ierr = DMPlexComputeCellGeometry(dm, c, v0, J, &invJ[c*dim*dim], &detJ[c]);CHKERRQ(ierr);
@@ -1510,7 +1513,7 @@ PetscErrorCode FormJacobianLocal(DM dm, Vec X, Mat Jac, Mat JacP, MatStructure *
   }
   for (c = cStart; c < cEnd; ++c) {
     if (debug) {ierr = DMPrintCellMatrix(c, "Jacobian", cellDof, cellDof, &elemMat[c*cellDof*cellDof]);CHKERRQ(ierr);}
-    ierr = DMPlexMatSetClosure(dm, NULL, NULL, JacP, c, &elemMat[c*cellDof*cellDof], ADD_VALUES);CHKERRQ(ierr);
+    ierr = DMPlexMatSetClosure(dm, section, globalSection, JacP, c, &elemMat[c*cellDof*cellDof], ADD_VALUES);CHKERRQ(ierr);
   }
   ierr = PetscFree4(u,invJ,detJ,elemMat);CHKERRQ(ierr);
   ierr = PetscFree2(v0,J);CHKERRQ(ierr);
@@ -1563,7 +1566,8 @@ int main(int argc, char **argv)
   ierr = DMCreateGlobalVector(user.dm, &u);CHKERRQ(ierr);
   ierr = VecDuplicate(u, &r);CHKERRQ(ierr);
 
-  ierr = DMCreateMatrix(user.dm, MATAIJ, &J);CHKERRQ(ierr);
+  ierr = DMSetMatType(user.dm,MATAIJ);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(user.dm, &J);CHKERRQ(ierr);
   if (user.jacobianMF) {
     PetscInt M, m, N, n;
 
@@ -1677,24 +1681,23 @@ int main(int argc, char **argv)
   }
 
   if (user.runType == RUN_FULL) {
-    PetscContainer c;
-    PetscSection   s;
-    PetscViewer    viewer;
+    PetscViewer viewer;
+    Vec         uLocal;
+    const char *name;
 
     ierr = PetscViewerCreate(PETSC_COMM_WORLD, &viewer);CHKERRQ(ierr);
     ierr = PetscViewerSetType(viewer, PETSCVIEWERVTK);CHKERRQ(ierr);
     ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
     ierr = PetscViewerFileSetName(viewer, "ex72_sol.vtk");CHKERRQ(ierr);
 
-    ierr = DMGetDefaultSection(user.dm, &s);CHKERRQ(ierr);
-    ierr = PetscContainerCreate(PetscObjectComm((PetscObject)u), &c);CHKERRQ(ierr);
-    ierr = PetscContainerSetPointer(c, s);CHKERRQ(ierr);
-    ierr = PetscObjectCompose((PetscObject) u, "section", (PetscObject) c);CHKERRQ(ierr);
-    ierr = PetscContainerDestroy(&c);CHKERRQ(ierr);
+    ierr = DMGetLocalVector(user.dm, &uLocal);CHKERRQ(ierr);
+    ierr = PetscObjectGetName((PetscObject) u, &name);CHKERRQ(ierr);
+    ierr = PetscObjectSetName((PetscObject) uLocal, name);CHKERRQ(ierr);
+    ierr = DMGlobalToLocalBegin(user.dm, u, INSERT_VALUES, uLocal);CHKERRQ(ierr);
+    ierr = DMGlobalToLocalEnd(user.dm, u, INSERT_VALUES, uLocal);CHKERRQ(ierr);
+    ierr = VecView(uLocal, viewer);CHKERRQ(ierr);
+    ierr = DMRestoreLocalVector(user.dm, &uLocal);CHKERRQ(ierr);
 
-    ierr = PetscObjectReference((PetscObject) user.dm);CHKERRQ(ierr); /* Needed because viewer destroys the DM */
-    ierr = PetscObjectReference((PetscObject) u);CHKERRQ(ierr); /* Needed because viewer destroys the Vec */
-    ierr = PetscViewerVTKAddField(viewer, (PetscObject) user.dm, DMPlexVTKWriteAll, PETSC_VTK_POINT_FIELD, (PetscObject) u);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   }
 

@@ -67,11 +67,8 @@ int main(int Argc,char **Args)
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&comm_size);CHKERRQ(ierr);
 
   /* construct matrix */
-  if (comm_size == 1) {
-    ierr = DMCreateMatrix(adda, MATSEQAIJ, &H);CHKERRQ(ierr);
-  } else {
-    ierr = DMCreateMatrix(adda, MATMPIAIJ, &H);CHKERRQ(ierr);
-  }
+  ierr = DMSetMatType(adda,MATAIJ);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(adda, &H);CHKERRQ(ierr);
 
   /* get local corners for this processor, user is responsible for freeing lcs,lce */
   ierr = DMADDAGetCorners(adda, &lcs, &lce);CHKERRQ(ierr);
