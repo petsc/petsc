@@ -662,8 +662,19 @@ prepend-path PATH %s
   def configureDeprecated(self):
     '''Check if __attribute((deprecated)) is supported'''
     self.pushLanguage(self.languages.clanguage)
-    if self.checkCompile("""__attribute((deprecated("Why you shouldn't use myfunc"))) static int myfunc(void) { return 1;}""", ''):
-      self.addDefine('DEPRECATED(why)', '__attribute((deprecated(why)))')
+    ## Recent versions of gcc and clang support __attribute((deprecated("string argument"))), which is very useful, but
+    ## Intel has conspired to make a supremely environment-sensitive compiler.  The Intel compiler looks at the gcc
+    ## executable in the environment to determine the language compatibility that it should attempt to emulate.  Some
+    ## important Cray installations have built PETSc using the Intel compiler, but with a newer gcc module loaded (e.g.,
+    ## 4.7).  Thus at PETSc configure time, the Intel compiler decides to support the string argument, but the the gcc
+    ## found in the default user environment is older and does not support the argument.  If GCC and Intel were cool
+    ## like Clang and supported __has_attribute, we could avoid configure tests entirely, but they don't.  And that is
+    ## why we can't have nice things.
+    #
+    # if self.checkCompile("""__attribute((deprecated("Why you shouldn't use myfunc"))) static int myfunc(void) { return 1;}""", ''):
+    #   self.addDefine('DEPRECATED(why)', '__attribute((deprecated(why)))')
+    if self.checkCompile("""__attribute((deprecated)) static int myfunc(void) { return 1;}""", ''):
+      self.addDefine('DEPRECATED(why)', '__attribute((deprecated))')
     else:
       self.addDefine('DEPRECATED(why)', ' ')
     self.popLanguage()
