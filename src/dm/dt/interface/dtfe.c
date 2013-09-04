@@ -441,7 +441,7 @@ PetscErrorCode PetscSpaceSetFromOptions_Polynomial(PetscSpace sp)
 
   PetscFunctionBegin;
   ierr = PetscObjectOptionsBegin((PetscObject) sp);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-petscspace_num_variables", "The number of different variables, e.g. x and y", "PetscSpacePolynomialSetNumVariables", poly->numVariables, &poly->numVariables, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-petscspace_poly_num_variables", "The number of different variables, e.g. x and y", "PetscSpacePolynomialSetNumVariables", poly->numVariables, &poly->numVariables, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-petscspace_poly_sym", "Use only symmetric polynomials", "PetscSpacePolynomialSetSymmetric", poly->symmetric, &poly->symmetric, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -741,6 +741,158 @@ PetscErrorCode PetscSpacePolynomialGetNumVariables(PetscSpace sp, PetscInt *n)
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
   PetscValidPointer(n, 2);
   *n = poly->numVariables;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSpaceSetFromOptions_DG"
+PetscErrorCode PetscSpaceSetFromOptions_DG(PetscSpace sp)
+{
+  PetscSpace_DG *dg = (PetscSpace_DG *) sp->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectOptionsBegin((PetscObject) sp);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-petscspace_dg_num_variables", "The number of different variables, e.g. x and y", "PetscSpaceDGSetNumVariables", dg->numVariables, &dg->numVariables, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSpaceDGView_Ascii"
+PetscErrorCode PetscSpaceDGView_Ascii(PetscSpace sp, PetscViewer viewer)
+{
+  PetscSpace_DG    *dg = (PetscSpace_DG *) sp->data;
+  PetscViewerFormat format;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscViewerGetFormat(viewer, &format);CHKERRQ(ierr);
+  if (format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
+    ierr = PetscViewerASCIIPrintf(viewer, "DG space in dimension %d:\n", dg->numVariables);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+    ierr = PetscQuadratureView(dg->quad, viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+  } else {
+    ierr = PetscViewerASCIIPrintf(viewer, "DG space in dimension %d on %d points\n", dg->numVariables, dg->quad.numPoints);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSpaceView_DG"
+PetscErrorCode PetscSpaceView_DG(PetscSpace sp, PetscViewer viewer)
+{
+  PetscBool      iascii;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
+  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
+  if (iascii) {ierr = PetscSpaceDGView_Ascii(sp, viewer);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSpaceSetUp_DG"
+PetscErrorCode PetscSpaceSetUp_DG(PetscSpace sp)
+{
+  PetscSpace_DG *dg = (PetscSpace_DG *) sp->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!dg->quad.points && sp->order) {
+    ierr = PetscDTGaussJacobiQuadrature(dg->numVariables, sp->order, -1.0, 1.0, &dg->quad);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSpaceDestroy_DG"
+PetscErrorCode PetscSpaceDestroy_DG(PetscSpace sp)
+{
+  PetscSpace_DG *dg = (PetscSpace_DG *) sp->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscQuadratureDestroy(&dg->quad);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSpaceGetDimension_DG"
+PetscErrorCode PetscSpaceGetDimension_DG(PetscSpace sp, PetscInt *dim)
+{
+  PetscSpace_DG *dg = (PetscSpace_DG *) sp->data;
+
+  PetscFunctionBegin;
+  *dim = dg->quad.numPoints;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSpaceEvaluate_DG"
+PetscErrorCode PetscSpaceEvaluate_DG(PetscSpace sp, PetscInt npoints, const PetscReal points[], PetscReal B[], PetscReal D[], PetscReal H[])
+{
+  PetscSpace_DG *dg  = (PetscSpace_DG *) sp->data;
+  PetscInt       dim = dg->numVariables, d, p;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (D || H) SETERRQ(PetscObjectComm((PetscObject) sp), PETSC_ERR_SUP, "Cannot calculate derivatives for a DG space");
+  if (npoints != dg->quad.numPoints) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot evaluate DG space on %d points != %d size", npoints, dg->quad.numPoints);
+  ierr = PetscMemzero(B, npoints*npoints * sizeof(PetscReal));CHKERRQ(ierr);
+  for (p = 0; p < npoints; ++p) {
+    for (d = 0; d < dim; ++d) {
+      if (PetscAbsReal(points[p*dim+d] - dg->quad.points[p*dim+d]) > 1.0e-10) SETERRQ4(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cannot evaluate DG point (%d, %d) %g != %g", p, d, points[p*dim+d], dg->quad.points[p*dim+d]);
+    }
+    B[p*npoints+p] = 1.0;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSpaceInitialize_DG"
+PetscErrorCode PetscSpaceInitialize_DG(PetscSpace sp)
+{
+  PetscFunctionBegin;
+  sp->ops->setfromoptions = PetscSpaceSetFromOptions_DG;
+  sp->ops->setup          = PetscSpaceSetUp_DG;
+  sp->ops->view           = PetscSpaceView_DG;
+  sp->ops->destroy        = PetscSpaceDestroy_DG;
+  sp->ops->getdimension   = PetscSpaceGetDimension_DG;
+  sp->ops->evaluate       = PetscSpaceEvaluate_DG;
+  PetscFunctionReturn(0);
+}
+
+/*MC
+  PETSCSPACEDG = "dg" - A PetscSpace object that encapsulates functions defined on a set of quadrature points.
+
+  Level: intermediate
+
+.seealso: PetscSpaceType, PetscSpaceCreate(), PetscSpaceSetType()
+M*/
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSpaceCreate_DG"
+PETSC_EXTERN PetscErrorCode PetscSpaceCreate_DG(PetscSpace sp)
+{
+  PetscSpace_DG *dg;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
+  ierr     = PetscNewLog(sp, PetscSpace_DG, &dg);CHKERRQ(ierr);
+  sp->data = dg;
+
+  dg->numVariables   = 0;
+  dg->quad.dim       = 0;
+  dg->quad.numPoints = 0;
+  dg->quad.points    = NULL;
+  dg->quad.weights   = NULL;
+
+  ierr = PetscSpaceInitialize_DG(sp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
