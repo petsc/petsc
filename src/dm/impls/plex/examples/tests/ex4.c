@@ -657,6 +657,35 @@ PetscErrorCode CheckOrientation(DM dm)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "CheckSkeleton"
+PetscErrorCode CheckSkeleton(DM dm, AppCtx *user)
+{
+  DM             udm;
+  PetscInt       dim, numCorners, coneSize, cStart, cEnd, c;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (user->cellHybrid) PetscFunctionReturn(0);
+  ierr = DMPlexGetDimension(dm, &dim);CHKERRQ(ierr);
+  switch (dim) {
+  case 2: numCorners = user->cellSimplex ? 3 : 4; break;
+  case 3: numCorners = user->cellSimplex ? 4 : 8; break;
+  default:
+    SETERRQ1(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_OUTOFRANGE, "Cannot handle meshes of dimension %d", dim);
+  }
+  ierr = DMPlexUninterpolate(dm, &udm);CHKERRQ(ierr);
+  ierr = PetscObjectSetOptionsPrefix((PetscObject) udm, "un_");CHKERRQ(ierr);
+  ierr = DMSetFromOptions(udm);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  for (c = cStart; c < cEnd; ++c) {
+    ierr = DMPlexGetConeSize(udm, c, &coneSize);CHKERRQ(ierr);
+    if (coneSize != numCorners) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cell %d has  %d vertices != %d", c, coneSize, numCorners);
+  }
+  ierr = DMDestroy(&udm);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
@@ -669,6 +698,7 @@ int main(int argc, char **argv)
   if (!user.cellHybrid) {
     ierr = CheckSymmetry(user.dm);CHKERRQ(ierr);
   }
+  ierr = CheckSkeleton(user.dm, &user);CHKERRQ(ierr);
 #if 0
   ierr = CheckOrientation(user.dm);CHKERRQ(ierr);
 #endif
