@@ -750,8 +750,8 @@ PetscErrorCode  KSPCreate(MPI_Comm comm,KSP *inksp)
   ksp->res_hist_reset = PETSC_TRUE;
   ksp->numbermonitors = 0;
 
-  ierr                    = KSPDefaultConvergedCreate(&ctx);CHKERRQ(ierr);
-  ierr                    = KSPSetConvergenceTest(ksp,KSPDefaultConverged,ctx,KSPDefaultConvergedDestroy);CHKERRQ(ierr);
+  ierr                    = KSPConvergedDefaultCreate(&ctx);CHKERRQ(ierr);
+  ierr                    = KSPSetConvergenceTest(ksp,KSPConvergedDefault,ctx,KSPConvergedDefaultDestroy);CHKERRQ(ierr);
   ksp->ops->buildsolution = KSPBuildSolutionDefault;
   ksp->ops->buildresidual = KSPBuildResidualDefault;
 

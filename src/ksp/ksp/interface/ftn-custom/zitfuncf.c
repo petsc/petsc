@@ -61,7 +61,7 @@ PETSC_EXTERN void PETSC_STDCALL dmkspsetcomputeoperators_(DM *dm,void (PETSC_STD
 PETSC_EXTERN void kspdefaultconverged_(KSP *ksp,PetscInt *n,PetscReal *rnorm,KSPConvergedReason *flag,void *dummy,PetscErrorCode *ierr)
 {
   CHKFORTRANNULLOBJECT(dummy);
-  *ierr = KSPDefaultConverged(*ksp,*n,*rnorm,flag,dummy);
+  *ierr = KSPConvergedDefault(*ksp,*n,*rnorm,flag,dummy);
 }
 
 PETSC_EXTERN void kspskipconverged_(KSP *ksp,PetscInt *n,PetscReal *rnorm,KSPConvergedReason *flag,void *dummy,PetscErrorCode *ierr)
@@ -186,7 +186,7 @@ PETSC_EXTERN void PETSC_STDCALL kspsetconvergencetest_(KSP *ksp,
   CHKFORTRANNULLFUNCTION(destroy);
 
   if ((PetscVoidFunction)converge == (PetscVoidFunction)kspdefaultconverged_) {
-    *ierr = KSPSetConvergenceTest(*ksp,KSPDefaultConverged,*cctx,KSPDefaultConvergedDestroy);
+    *ierr = KSPSetConvergenceTest(*ksp,KSPConvergedDefault,*cctx,KSPConvergedDefaultDestroy);
   } else if ((PetscVoidFunction)converge == (PetscVoidFunction)kspskipconverged_) {
     *ierr = KSPSetConvergenceTest(*ksp,KSPConvergedSkip,0,0);
   } else {
@@ -202,12 +202,12 @@ PETSC_EXTERN void PETSC_STDCALL kspsetconvergencetest_(KSP *ksp,
 
 PETSC_EXTERN void PETSC_STDCALL kspdefaultconvergedcreate_(PetscFortranAddr *ctx,PetscErrorCode *ierr)
 {
-  *ierr = KSPDefaultConvergedCreate((void**)ctx);
+  *ierr = KSPConvergedDefaultCreate((void**)ctx);
 }
 
 PETSC_EXTERN void PETSC_STDCALL kspdefaultconvergeddestroy_(PetscFortranAddr *ctx,PetscErrorCode *ierr)
 {
-  *ierr = KSPDefaultConvergedDestroy(*(void**)ctx);
+  *ierr = KSPConvergedDefaultDestroy(*(void**)ctx);
 }
 
 PETSC_EXTERN void PETSC_STDCALL kspgetresidualhistory_(KSP *ksp,PetscInt *na,PetscErrorCode *ierr)

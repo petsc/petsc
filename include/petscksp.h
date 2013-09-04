@@ -508,12 +508,12 @@ M*/
 
 PETSC_EXTERN PetscErrorCode KSPSetConvergenceTest(KSP,PetscErrorCode (*)(KSP,PetscInt,PetscReal,KSPConvergedReason*,void*),void *,PetscErrorCode (*)(void*));
 PETSC_EXTERN PetscErrorCode KSPGetConvergenceContext(KSP,void **);
-PETSC_EXTERN PetscErrorCode KSPDefaultConverged(KSP,PetscInt,PetscReal,KSPConvergedReason*,void *);
+PETSC_EXTERN PetscErrorCode KSPConvergedDefault(KSP,PetscInt,PetscReal,KSPConvergedReason*,void *);
 PETSC_EXTERN PetscErrorCode KSPConvergedLSQR(KSP,PetscInt,PetscReal,KSPConvergedReason*,void *);
-PETSC_EXTERN PetscErrorCode KSPDefaultConvergedDestroy(void *);
-PETSC_EXTERN PetscErrorCode KSPDefaultConvergedCreate(void **);
-PETSC_EXTERN PetscErrorCode KSPDefaultConvergedSetUIRNorm(KSP);
-PETSC_EXTERN PetscErrorCode KSPDefaultConvergedSetUMIRNorm(KSP);
+PETSC_EXTERN PetscErrorCode KSPConvergedDefaultDestroy(void *);
+PETSC_EXTERN PetscErrorCode KSPConvergedDefaultCreate(void **);
+PETSC_EXTERN PetscErrorCode KSPConvergedDefaultSetUIRNorm(KSP);
+PETSC_EXTERN PetscErrorCode KSPConvergedDefaultSetUMIRNorm(KSP);
 PETSC_EXTERN PetscErrorCode KSPConvergedSkip(KSP,PetscInt,PetscReal,KSPConvergedReason*,void *);
 PETSC_EXTERN PetscErrorCode KSPGetConvergedReason(KSP,KSPConvergedReason *);
 
