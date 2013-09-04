@@ -566,8 +566,8 @@ PetscErrorCode DMDAComputeCellGeometry(DM dm, PetscInt cell, PetscQuadrature *qu
   for (d = 0; d < dim; ++d) v0[d] = PetscRealPart(vertices[d]);
   switch (dim) {
   case 2:
-    for (q = 0; q < quad->numQuadPoints; ++q) {
-      ierr = DMDAComputeCellGeometry_2D(dm, vertices, &quad->quadPoints[q*dim], J, invJ, detJ);CHKERRQ(ierr);
+    for (q = 0; q < quad->numPoints; ++q) {
+      ierr = DMDAComputeCellGeometry_2D(dm, vertices, &quad->points[q*dim], J, invJ, detJ);CHKERRQ(ierr);
     }
     break;
   default:

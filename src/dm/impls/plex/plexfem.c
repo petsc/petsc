@@ -317,9 +317,9 @@ PetscErrorCode DMPlexComputeL2Diff(DM dm, PetscFE fe[], void (**funcs)(const Pet
     ierr = DMPlexVecGetClosure(dm, NULL, localX, c, NULL, &x);CHKERRQ(ierr);
 
     for (field = 0, comp = 0, fieldOffset = 0; field < numFields; ++field) {
-      const PetscInt   numQuadPoints = quad.numQuadPoints;
-      const PetscReal *quadPoints    = quad.quadPoints;
-      const PetscReal *quadWeights   = quad.quadWeights;
+      const PetscInt   numQuadPoints = quad.numPoints;
+      const PetscReal *quadPoints    = quad.points;
+      const PetscReal *quadWeights   = quad.weights;
       PetscReal       *basis;
       PetscInt         numBasisFuncs, numBasisComps, q, d, e, fc, f;
 
@@ -548,7 +548,7 @@ PetscErrorCode DMPlexComputeResidualFEM(DM dm, Vec X, Vec F, void *user)
     ierr = PetscFEGetQuadrature(fe[f], &q);CHKERRQ(ierr);
     ierr = PetscFEGetDimension(fe[f], &Nb);CHKERRQ(ierr);
     ierr = PetscFEGetTileSizes(fe[f], NULL, &numBlocks, NULL, &numBatches);CHKERRQ(ierr);
-    blockSize = Nb*q.numQuadPoints;
+    blockSize = Nb*q.numPoints;
     batchSize = numBlocks * blockSize;
     ierr =  PetscFESetTileSizes(fe[f], blockSize, numBlocks, batchSize, numBatches);CHKERRQ(ierr);
     numChunks = numCells / (numBatches*batchSize);
@@ -616,7 +616,7 @@ PetscErrorCode DMPlexComputeResidualFEM(DM dm, Vec X, Vec F, void *user)
       ierr = PetscFEGetQuadrature(feBd[f], &q);CHKERRQ(ierr);
       ierr = PetscFEGetDimension(feBd[f], &Nb);CHKERRQ(ierr);
       ierr = PetscFEGetTileSizes(feBd[f], NULL, &numBlocks, NULL, &numBatches);CHKERRQ(ierr);
-      blockSize = Nb*q.numQuadPoints;
+      blockSize = Nb*q.numPoints;
       batchSize = numBlocks * blockSize;
       ierr =  PetscFESetTileSizes(feBd[f], blockSize, numBlocks, batchSize, numBatches);CHKERRQ(ierr);
       numChunks = numPoints / (numBatches*batchSize);
@@ -733,7 +733,7 @@ PetscErrorCode DMPlexComputeJacobianActionFEM(DM dm, Mat Jac, Vec X, Vec F, void
 
     ierr = PetscFEGetQuadrature(fe[field], &quad);CHKERRQ(ierr);
     ierr = PetscFEGetDimension(fe[field], &Nb);CHKERRQ(ierr);
-    blockSize = Nb*quad.numQuadPoints;
+    blockSize = Nb*quad.numPoints;
     batchSize = numBlocks * blockSize;
     numChunks = numCells / (numBatches*batchSize);
     Ne        = numChunks*numBatches*batchSize;
@@ -875,7 +875,7 @@ PetscErrorCode DMPlexComputeJacobianFEM(DM dm, Vec X, Mat Jac, Mat JacP, MatStru
     ierr = PetscFEGetQuadrature(fe[fieldI], &quad);CHKERRQ(ierr);
     ierr = PetscFEGetDimension(fe[fieldI], &Nb);CHKERRQ(ierr);
     ierr = PetscFEGetTileSizes(fe[fieldI], NULL, &numBlocks, NULL, &numBatches);CHKERRQ(ierr);
-    blockSize = Nb*quad.numQuadPoints;
+    blockSize = Nb*quad.numPoints;
     batchSize = numBlocks * blockSize;
     ierr = PetscFESetTileSizes(fe[fieldI], blockSize, numBlocks, batchSize, numBatches);CHKERRQ(ierr);
     numChunks = numCells / (numBatches*batchSize);

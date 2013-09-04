@@ -56,6 +56,7 @@ PetscErrorCode  DMRegisterAll()
 #include <petscfe.h>     /*I  "petscfe.h"  I*/
 
 PETSC_EXTERN PetscErrorCode PetscSpaceCreate_Polynomial(PetscSpace);
+PETSC_EXTERN PetscErrorCode PetscSpaceCreate_DG(PetscSpace);
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSpaceRegisterAll"
@@ -80,6 +81,7 @@ PetscErrorCode PetscSpaceRegisterAll()
   PetscSpaceRegisterAllCalled = PETSC_TRUE;
 
   ierr = PetscSpaceRegister(PETSCSPACEPOLYNOMIAL, PetscSpaceCreate_Polynomial);CHKERRQ(ierr);
+  ierr = PetscSpaceRegister(PETSCSPACEDG,         PetscSpaceCreate_DG);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
