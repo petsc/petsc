@@ -83,6 +83,8 @@ PetscErrorCode  DMInitializePackage(void)
   ierr = PetscLogEventRegister("DMPlexDistributeLabels", DM_CLASSID,&DMPLEX_DistributeLabels);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("DMPlexDistributeSF",     DM_CLASSID,&DMPLEX_DistributeSF);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("DMPlexStratify",         DM_CLASSID,&DMPLEX_Stratify);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("DMPlexResidualFEM",      DM_CLASSID,&DMPLEX_ResidualFEM);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("DMPlexJacobianFEM",      DM_CLASSID,&DMPLEX_JacobianFEM);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_SIEVE)
   ierr = PetscLogEventRegister("DMMeshView",             DM_CLASSID,&DMMesh_View);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("DMMeshGetGlobalScatter", DM_CLASSID,&DMMesh_GetGlobalScatter);CHKERRQ(ierr);
@@ -133,8 +135,87 @@ PetscErrorCode  DMInitializePackage(void)
   ierr = PetscRegisterFinalize(DMFinalizePackage);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+#include <petscfe.h>
 
+static PetscBool PetscFEPackageInitialized = PETSC_FALSE;
+#undef __FUNCT__
+#define __FUNCT__ "PetscFEFinalizePackage"
+/*@C
+  PetscFEFinalizePackage - This function finalizes everything in the PetscFE package. It is called
+  from PetscFinalize().
 
+  Level: developer
+
+.keywords: PetscFE, initialize, package
+.seealso: PetscInitialize()
+@*/
+PetscErrorCode PetscFEFinalizePackage(void)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscFunctionListDestroy(&PetscSpaceList);CHKERRQ(ierr);
+  ierr = PetscFunctionListDestroy(&PetscDualSpaceList);CHKERRQ(ierr);
+  ierr = PetscFunctionListDestroy(&PetscFEList);CHKERRQ(ierr);
+  PetscFEPackageInitialized       = PETSC_FALSE;
+  PetscSpaceRegisterAllCalled     = PETSC_FALSE;
+  PetscDualSpaceRegisterAllCalled = PETSC_FALSE;
+  PetscFERegisterAllCalled        = PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscFEInitializePackage"
+/*@C
+  PetscFEInitializePackage - This function initializes everything in the FE package. It is called
+  from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to PetscSpaceCreate()
+  when using static libraries.
+
+  Level: developer
+
+.keywords: PetscFE, initialize, package
+.seealso: PetscInitialize()
+@*/
+PetscErrorCode PetscFEInitializePackage(void)
+{
+  char           logList[256];
+  char          *className;
+  PetscBool      opt;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (PetscFEPackageInitialized) PetscFunctionReturn(0);
+  PetscFEPackageInitialized = PETSC_TRUE;
+
+  /* Register Classes */
+  ierr = PetscClassIdRegister("Linear Space", &PETSCSPACE_CLASSID);CHKERRQ(ierr);
+  ierr = PetscClassIdRegister("Dual Space",   &PETSCDUALSPACE_CLASSID);CHKERRQ(ierr);
+  ierr = PetscClassIdRegister("FE Space",     &PETSCFE_CLASSID);CHKERRQ(ierr);
+
+  /* Register Constructors */
+  ierr = PetscSpaceRegisterAll();CHKERRQ(ierr);
+  ierr = PetscDualSpaceRegisterAll();CHKERRQ(ierr);
+  ierr = PetscFERegisterAll();CHKERRQ(ierr);
+  /* Register Events */
+  /* Process info exclusions */
+  ierr = PetscOptionsGetString(NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  if (opt) {
+    ierr = PetscStrstr(logList, "fe", &className);CHKERRQ(ierr);
+    if (className) {
+      ierr = PetscInfoDeactivateClass(PETSCFE_CLASSID);CHKERRQ(ierr);
+    }
+  }
+  /* Process summary exclusions */
+  ierr = PetscOptionsGetString(NULL, "-log_summary_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  if (opt) {
+    ierr = PetscStrstr(logList, "da", &className);CHKERRQ(ierr);
+    if (className) {
+      ierr = PetscLogEventDeactivateClass(DM_CLASSID);CHKERRQ(ierr);
+    }
+  }
+  ierr = PetscRegisterFinalize(PetscFEFinalizePackage);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
 #undef __FUNCT__
@@ -153,6 +234,7 @@ PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscdm(void)
   PetscFunctionBegin;
   ierr = AOInitializePackage();CHKERRQ(ierr);
   ierr = DMInitializePackage();CHKERRQ(ierr);
+  ierr = PetscFEInitializePackage();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
