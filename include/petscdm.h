@@ -131,6 +131,7 @@ typedef struct NLF_DAAD* NLF;
 /* FEM support */
 PETSC_EXTERN PetscErrorCode DMPrintCellVector(PetscInt, const char [], PetscInt, const PetscScalar []);
 PETSC_EXTERN PetscErrorCode DMPrintCellMatrix(PetscInt, const char [], PetscInt, PetscInt, const PetscScalar []);
+PETSC_EXTERN PetscErrorCode DMPrintLocalVec(DM, const char [], PetscReal, Vec);
 
 PETSC_EXTERN PetscErrorCode DMGetDefaultSection(DM, PetscSection *);
 PETSC_EXTERN PetscErrorCode DMSetDefaultSection(DM, PetscSection);
@@ -145,30 +146,6 @@ PETSC_EXTERN PetscErrorCode DMSetPointSF(DM, PetscSF);
 PETSC_EXTERN PetscErrorCode DMGetNumFields(DM, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMSetNumFields(DM, PetscInt);
 PETSC_EXTERN PetscErrorCode DMGetField(DM, PetscInt, PetscObject *);
-
-typedef struct {
-  PetscInt         numQuadPoints; /* The number of quadrature points on an element */
-  const PetscReal *quadPoints;    /* The quadrature point coordinates */
-  const PetscReal *quadWeights;   /* The quadrature weights */
-  PetscInt         numBasisFuncs; /* The number of finite element basis functions on an element */
-  PetscInt         numComponents; /* The number of components for each basis function */
-  const PetscReal *basis;         /* The basis functions tabulated at the quadrature points */
-  const PetscReal *basisDer;      /* The basis function derivatives tabulated at the quadrature points */
-} PetscQuadrature;
-
-typedef struct {
-  PetscQuadrature *quad;
-  void (**f0Funcs)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]); /* The f_0 functions for each field */
-  void (**f1Funcs)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]); /* The f_1 functions for each field */
-  void (**g0Funcs)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]); /* The g_0 functions for each field pair */
-  void (**g1Funcs)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]); /* The g_1 functions for each field pair */
-  void (**g2Funcs)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]); /* The g_2 functions for each field pair */
-  void (**g3Funcs)(const PetscScalar[], const PetscScalar[], const PetscReal[], PetscScalar[]); /* The g_3 functions for each field pair */
-  void (**bcFuncs)(const PetscReal[], PetscScalar *); /* The boundary condition function for each field component */
-  PetscQuadrature *quadBd;
-  void (**f0BdFuncs)(const PetscScalar[], const PetscScalar[], const PetscReal[], const PetscReal[], PetscScalar[]); /* The f_0 functions for each field */
-  void (**f1BdFuncs)(const PetscScalar[], const PetscScalar[], const PetscReal[], const PetscReal[], PetscScalar[]); /* The f_1 functions for each field */
-} PetscFEM;
 
 typedef enum {PETSC_UNIT_LENGTH, PETSC_UNIT_MASS, PETSC_UNIT_TIME, PETSC_UNIT_CURRENT, PETSC_UNIT_TEMPERATURE, PETSC_UNIT_AMOUNT, PETSC_UNIT_LUMINOSITY, NUM_PETSC_UNITS} PetscUnit;
 
