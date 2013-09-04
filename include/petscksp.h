@@ -438,7 +438,7 @@ M*/
 
 /*MC
      KSP_CONVERGED_ITS - Used by the KSPPREONLY solver after the single iteration of
-           the preconditioner is applied. Also used when the KSPSkipConverged() convergence
+           the preconditioner is applied. Also used when the KSPConvergedSkip() convergence
            test routine is set in KSP.
 
 
@@ -514,7 +514,7 @@ PETSC_EXTERN PetscErrorCode KSPDefaultConvergedDestroy(void *);
 PETSC_EXTERN PetscErrorCode KSPDefaultConvergedCreate(void **);
 PETSC_EXTERN PetscErrorCode KSPDefaultConvergedSetUIRNorm(KSP);
 PETSC_EXTERN PetscErrorCode KSPDefaultConvergedSetUMIRNorm(KSP);
-PETSC_EXTERN PetscErrorCode KSPSkipConverged(KSP,PetscInt,PetscReal,KSPConvergedReason*,void *);
+PETSC_EXTERN PetscErrorCode KSPConvergedSkip(KSP,PetscInt,PetscReal,KSPConvergedReason*,void *);
 PETSC_EXTERN PetscErrorCode KSPGetConvergedReason(KSP,KSPConvergedReason *);
 
 PETSC_EXTERN PetscErrorCode KSPComputeExplicitOperator(KSP,Mat *);

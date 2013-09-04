@@ -67,7 +67,7 @@ PETSC_EXTERN void kspdefaultconverged_(KSP *ksp,PetscInt *n,PetscReal *rnorm,KSP
 PETSC_EXTERN void kspskipconverged_(KSP *ksp,PetscInt *n,PetscReal *rnorm,KSPConvergedReason *flag,void *dummy,PetscErrorCode *ierr)
 {
   CHKFORTRANNULLOBJECT(dummy);
-  *ierr = KSPSkipConverged(*ksp,*n,*rnorm,flag,dummy);
+  *ierr = KSPConvergedSkip(*ksp,*n,*rnorm,flag,dummy);
 }
 
 PETSC_EXTERN void kspgmresmonitorkrylov_(KSP *ksp,PetscInt *it,PetscReal *norm,void *ctx,PetscErrorCode *ierr)
@@ -188,7 +188,7 @@ PETSC_EXTERN void PETSC_STDCALL kspsetconvergencetest_(KSP *ksp,
   if ((PetscVoidFunction)converge == (PetscVoidFunction)kspdefaultconverged_) {
     *ierr = KSPSetConvergenceTest(*ksp,KSPDefaultConverged,*cctx,KSPDefaultConvergedDestroy);
   } else if ((PetscVoidFunction)converge == (PetscVoidFunction)kspskipconverged_) {
-    *ierr = KSPSetConvergenceTest(*ksp,KSPSkipConverged,0,0);
+    *ierr = KSPSetConvergenceTest(*ksp,KSPConvergedSkip,0,0);
   } else {
     *ierr = PetscObjectSetFortranCallback((PetscObject)*ksp,PETSC_FORTRAN_CALLBACK_CLASS,&_cb.test,(PetscVoidFunction)converge,cctx); if (*ierr) return;
     if (!destroy) {

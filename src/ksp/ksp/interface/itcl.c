@@ -402,7 +402,7 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
       ierr = KSPDefaultConvergedCreate(&ctx);CHKERRQ(ierr);
       ierr = KSPSetConvergenceTest(ksp,KSPDefaultConverged,ctx,KSPDefaultConvergedDestroy);CHKERRQ(ierr);
       break;
-    case 1: ierr = KSPSetConvergenceTest(ksp,KSPSkipConverged,NULL,NULL);CHKERRQ(ierr);    break;
+    case 1: ierr = KSPSetConvergenceTest(ksp,KSPConvergedSkip,NULL,NULL);CHKERRQ(ierr);    break;
     }
   }
 
