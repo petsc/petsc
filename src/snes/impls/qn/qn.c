@@ -171,7 +171,6 @@ PetscErrorCode SNESQNApply_BadBroyden(SNES snes,PetscInt it,Vec Y,Vec X,Vec Xold
       }
     }
   }
-
   if (qn->scale_type == SNES_QN_SCALE_JACOBIAN) {
     ierr = KSPSolve(snes->ksp,Y,W);CHKERRQ(ierr);
     ierr = KSPGetConvergedReason(snes->ksp,&kspreason);CHKERRQ(ierr);
@@ -756,11 +755,13 @@ PetscErrorCode SNESQNSetRestartType_QN(SNES snes, SNESQNRestartType rtype)
 
       References:
 
-      L-Broyden Methods: a generalization of the L-BFGS method to the limited memory Broyden family, M. B. Reed,
-      International Journal of Computer Mathematics, vol. 86, 2009.
+      Kelley, C.T., Iterative Methods for Linear and Nonlinear Equations, Chapter 8, SIAM, 1995.
 
-      Experiments with Quasi-Newton Methods in Solving Stiff ODE Systems, Peter N. Brown, Alan C. Hindmarsh, Homer F. Walker
-      SIAM J. Sci. Stat. Comput. Vol 6(2), April 1985.
+      R. Byrd, J. Nocedal, R. Schnabel, Representations of Quasi-Newton Matrices and their use in Limited Memory Methods,
+      Technical Report, Northwestern University, June 1992.
+
+      Peter N. Brown, Alan C. Hindmarsh, Homer F. Walker, Experiments with Quasi-Newton Methods in Solving Stiff ODE
+      Systems, SIAM J. Sci. Stat. Comput. Vol 6(2), April 1985.
 
 
       Level: beginner
