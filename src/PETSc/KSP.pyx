@@ -215,13 +215,13 @@ cdef class KSP(Object):
         else:
             CHKERR( KSPGetNormType(self.ksp, &normtype) )
             if normtype != KSP_NORM_NONE:
-                CHKERR( KSPDefaultConvergedCreate(&cctx) )
+                CHKERR( KSPConvergedDefaultCreate(&cctx) )
                 CHKERR( KSPSetConvergenceTest(
-                        self.ksp, KSPDefaultConverged,
-                        cctx, KSPDefaultConvergedDestroy) )
+                        self.ksp, KSPConvergedDefault,
+                        cctx, KSPConvergedDefaultDestroy) )
             else:
                 CHKERR( KSPSetConvergenceTest(
-                        self.ksp, KSPSkipConverged,
+                        self.ksp, KSPConvergedSkip,
                         NULL, NULL) )
             self.set_attr('__converged__', None)
 

@@ -96,10 +96,10 @@ cdef extern from * nogil:
     int KSPSetResidualHistory(PetscKSP,PetscReal[],PetscInt,PetscBool)
     int KSPGetResidualHistory(PetscKSP,PetscReal*[],PetscInt*)
     int KSPLogResidualHistory(PetscKSP,PetscReal)
-    int KSPDefaultConvergedCreate(void**)
-    int KSPDefaultConvergedDestroy(void*)
-    int KSPDefaultConverged(PetscKSP,PetscInt,PetscReal,PetscKSPConvergedReason*,void*) except PETSC_ERR_PYTHON
-    int KSPSkipConverged(PetscKSP,PetscInt,PetscReal,PetscKSPConvergedReason*,void*) except PETSC_ERR_PYTHON
+    int KSPConvergedDefaultCreate(void**)
+    int KSPConvergedDefaultDestroy(void*)
+    int KSPConvergedDefault(PetscKSP,PetscInt,PetscReal,PetscKSPConvergedReason*,void*) except PETSC_ERR_PYTHON
+    int KSPConvergedSkip(PetscKSP,PetscInt,PetscReal,PetscKSPConvergedReason*,void*) except PETSC_ERR_PYTHON
 
     int KSPMonitorSet(PetscKSP,PetscKSPMonitorFunction,void*,PetscKSPCtxDel)
     int KSPMonitorCancel(PetscKSP)

@@ -75,8 +75,8 @@ PetscErrorCode KSPConverged(KSP ksp,
   if (ksp->converged) {
     ierr = (*ksp->converged)(ksp,iter,rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
   } else {
-    ierr = KSPSkipConverged(ksp,iter,rnorm,&ksp->reason,NULL);CHKERRQ(ierr);
-    /*ierr = KSPDefaultConverged(ksp,iter,rnorm,&ksp->reason,NULL);CHKERRQ(ierr);*/
+    ierr = KSPConvergedSkip(ksp,iter,rnorm,&ksp->reason,NULL);CHKERRQ(ierr);
+    /*ierr = KSPConvergedDefault(ksp,iter,rnorm,&ksp->reason,NULL);CHKERRQ(ierr);*/
   }
   ksp->rnorm = rnorm;
   if (reason) *reason = ksp->reason;

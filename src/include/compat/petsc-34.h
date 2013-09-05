@@ -11,6 +11,7 @@
 #include "petsc-private/tsimpl.h"
 
 #include "petsc-34/petscmat.h"
+#include "petsc-34/petscksp.h"
 #include "petsc-34/petscsnes.h"
 #include "petsc-34/petscdm.h"
 
