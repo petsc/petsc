@@ -463,8 +463,9 @@ struct  _p_MatFDColoring{
   PetscInt       **vscaleforrow;   /* location in vscale for each columnsforrow[] entry */
   Vec            vscale;           /* holds FD scaling, i.e. 1/dx for each perturbed column */
   PetscInt       currentcolor;     /* color for which function evaluation is being done now */
-  const char     *htype;            /* "wp" or "ds" */
+  const char     *htype;           /* "wp" or "ds" */
   ISColoringType ctype;            /* IS_COLORING_GLOBAL or IS_COLORING_GHOSTED */
+  PetscInt       *den2sp;          /* maps (row,color) in the dense matrix to index of sparse matrix array a->a */
 
   void           *ftn_func_pointer,*ftn_func_cntx; /* serve the same purpose as *fortran_func_pointers in PETSc objects */
 };

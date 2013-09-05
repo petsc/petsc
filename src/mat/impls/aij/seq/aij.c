@@ -2624,9 +2624,187 @@ PetscErrorCode MatSeqAIJRestoreArray_SeqAIJ(Mat A,PetscScalar *array[])
   PetscFunctionReturn(0);
 }
 
+/*---------------------------------------------*/
+/* #define JACOBIANCOLOROPT */
+#if defined(JACOBIANCOLOROPT)
+#include <petsctime.h>
+#endif
 #undef __FUNCT__
 #define __FUNCT__ "MatFDColoringApply_SeqAIJ"
-PetscErrorCode MatFDColoringApply_SeqAIJ(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,void *sctx)
+PetscErrorCode  MatFDColoringApply_SeqAIJ(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,void *sctx)
+{
+  PetscErrorCode (*f)(void*,Vec,Vec,void*) = (PetscErrorCode (*)(void*,Vec,Vec,void*))coloring->f;
+  PetscErrorCode ierr;
+  PetscInt       k,start,end,l,row,col,**vscaleforrow;
+  PetscScalar    dx,*y,*xx,*w3_array;
+  PetscScalar    *vscale_array;
+  PetscReal      epsilon = coloring->error_rel,umin = coloring->umin,unorm;
+  Vec            w1      = coloring->w1,w2=coloring->w2,w3;
+  void           *fctx   = coloring->fctx;
+  PetscBool      flg     = PETSC_FALSE;
+  PetscInt       ctype   = coloring->ctype,N,col_start=0,col_end=0;
+  Vec            x1_tmp;
+  Mat_SeqAIJ     *csp = (Mat_SeqAIJ*)J->data;
+  PetscInt       *den2sp=coloring->den2sp,*idx=den2sp;
+  PetscScalar    *ca=csp->a;
+#if defined(JACOBIANCOLOROPT)
+  PetscLogDouble t0,t1,time_setvalues=0.0;
+#endif
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(J,MAT_CLASSID,1);
+  PetscValidHeaderSpecific(coloring,MAT_FDCOLORING_CLASSID,2);
+  PetscValidHeaderSpecific(x1,VEC_CLASSID,3);
+  if (!f) SETERRQ(PetscObjectComm((PetscObject)J),PETSC_ERR_ARG_WRONGSTATE,"Must call MatFDColoringSetFunction()");
+
+  ierr = PetscLogEventBegin(MAT_FDColoringApply,coloring,J,x1,0);CHKERRQ(ierr);
+  ierr = MatSetUnfactored(J);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-mat_fd_coloring_dont_rezero",&flg,NULL);CHKERRQ(ierr);
+  if (flg) {
+    ierr = PetscInfo(coloring,"Not calling MatZeroEntries()\n");CHKERRQ(ierr);
+  } else {
+    PetscBool assembled;
+    ierr = MatAssembled(J,&assembled);CHKERRQ(ierr);
+    if (assembled) {
+      ierr = MatZeroEntries(J);CHKERRQ(ierr);
+    }
+  }
+
+  x1_tmp = x1;
+  if (!coloring->vscale) {
+    ierr = VecDuplicate(x1_tmp,&coloring->vscale);CHKERRQ(ierr);
+  }
+
+  if (coloring->htype[0] == 'w') { /* tacky test; need to make systematic if we add other approaches to computing h*/
+    ierr = VecNorm(x1_tmp,NORM_2,&unorm);CHKERRQ(ierr);
+  }
+  ierr = VecGetOwnershipRange(w1,&start,&end);CHKERRQ(ierr); /* OwnershipRange is used by ghosted x! */
+
+  /* Set w1 = F(x1) */
+  if (!coloring->fset) {
+    ierr = PetscLogEventBegin(MAT_FDColoringFunction,0,0,0,0);CHKERRQ(ierr);
+    ierr = (*f)(sctx,x1_tmp,w1,fctx);CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(MAT_FDColoringFunction,0,0,0,0);CHKERRQ(ierr);
+  } else {
+    coloring->fset = PETSC_FALSE;
+  }
+
+  if (!coloring->w3) {
+    ierr = VecDuplicate(x1_tmp,&coloring->w3);CHKERRQ(ierr);
+    ierr = PetscLogObjectParent((PetscObject)coloring,(PetscObject)coloring->w3);CHKERRQ(ierr);
+  }
+  w3 = coloring->w3;
+
+  /* Compute all the local scale factors, including ghost points */
+  ierr = VecGetLocalSize(x1_tmp,&N);CHKERRQ(ierr);
+  ierr = VecGetArray(x1_tmp,&xx);CHKERRQ(ierr);
+  ierr = VecGetArray(coloring->vscale,&vscale_array);CHKERRQ(ierr);
+  if (ctype == IS_COLORING_GHOSTED) {
+    col_start = 0; col_end = N;
+  } else if (ctype == IS_COLORING_GLOBAL) {
+    xx           = xx - start;
+    vscale_array = vscale_array - start;
+    col_start    = start; col_end = N + start;
+  }
+  for (col=col_start; col<col_end; col++) {
+    /* Loop over each local column, vscale[col] = 1./(epsilon*dx[col]) */
+    if (coloring->htype[0] == 'w') {
+      dx = 1.0 + unorm;
+    } else {
+      dx = xx[col];
+    }
+    if (dx == (PetscScalar)0.0) dx = 1.0;
+    if (PetscAbsScalar(dx) < umin && PetscRealPart(dx) >= 0.0)     dx = umin;
+    else if (PetscRealPart(dx) < 0.0 && PetscAbsScalar(dx) < umin) dx = -umin;
+    dx               *= epsilon;
+    vscale_array[col] = (PetscScalar)1.0/dx;
+  }
+  if (ctype == IS_COLORING_GLOBAL) vscale_array = vscale_array + start;
+  ierr = VecRestoreArray(coloring->vscale,&vscale_array);CHKERRQ(ierr);
+  if (ctype == IS_COLORING_GLOBAL) {
+    ierr = VecGhostUpdateBegin(coloring->vscale,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecGhostUpdateEnd(coloring->vscale,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  }
+
+  if (coloring->vscaleforrow) {
+    vscaleforrow = coloring->vscaleforrow;
+  } else SETERRQ(PetscObjectComm((PetscObject)J),PETSC_ERR_ARG_NULL,"Null Object: coloring->vscaleforrow");
+
+  /*
+    Loop over each color
+  */
+  ierr = VecGetArray(coloring->vscale,&vscale_array);CHKERRQ(ierr);
+  for (k=0; k<coloring->ncolors; k++) { /* loop over colors */
+    coloring->currentcolor = k;
+
+    ierr = VecCopy(x1_tmp,w3);CHKERRQ(ierr);
+    ierr = VecGetArray(w3,&w3_array);CHKERRQ(ierr);
+    if (ctype == IS_COLORING_GLOBAL) w3_array = w3_array - start;
+    /*
+      Loop over each column associated with color
+      adding the perturbation to the vector w3.
+    */
+    for (l=0; l<coloring->ncolumns[k]; l++) { /* loop over columns */
+      col = coloring->columns[k][l];    /* local column of the matrix we are probing for */
+      if (coloring->htype[0] == 'w') {
+        dx = 1.0 + unorm;
+      } else {
+        dx = xx[col];
+      }
+      if (dx == (PetscScalar)0.0) dx = 1.0;
+      if (PetscAbsScalar(dx) < umin && PetscRealPart(dx) >= 0.0)     dx = umin;
+      else if (PetscRealPart(dx) < 0.0 && PetscAbsScalar(dx) < umin) dx = -umin;
+      dx            *= epsilon;
+      if (!PetscAbsScalar(dx)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Computed 0 differencing parameter");
+      w3_array[col] += dx;
+    }
+    if (ctype == IS_COLORING_GLOBAL) w3_array = w3_array + start;
+    ierr = VecRestoreArray(w3,&w3_array);CHKERRQ(ierr);
+
+    /*
+      Evaluate function at w3 = x1 + dx (here dx is a vector of perturbations)
+                           w2 = F(x1 + dx) - F(x1)
+    */
+    ierr = PetscLogEventBegin(MAT_FDColoringFunction,0,0,0,0);CHKERRQ(ierr);
+    ierr = (*f)(sctx,w3,w2,fctx);CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(MAT_FDColoringFunction,0,0,0,0);CHKERRQ(ierr);
+    ierr = VecAXPY(w2,-1.0,w1);CHKERRQ(ierr);
+
+    /*
+      Loop over rows of vector, putting results into Jacobian matrix
+    */
+#if defined(JACOBIANCOLOROPT)
+    ierr = PetscTime(&t0);CHKERRQ(ierr);
+#endif
+    ierr = VecGetArray(w2,&y);CHKERRQ(ierr);
+    for (l=0; l<coloring->nrows[k]; l++) { /* loop over rows */
+      row     = coloring->rows[k][l];            /* local row index */
+      y[row] *= vscale_array[vscaleforrow[k][l]];
+      ca[idx[l]] = y[row];
+    }
+    idx = idx + coloring->nrows[k];
+    ierr = VecRestoreArray(w2,&y);CHKERRQ(ierr);
+#if defined(JACOBIANCOLOROPT)
+    ierr = PetscTime(&t1);CHKERRQ(ierr);
+    time_setvalues += t1-t0;
+#endif
+  } /* endof for each color */
+#if defined(JACOBIANCOLOROPT)
+  printf("     MatFDColoringApply_SeqAIJ: time_setvalues %g\n",time_setvalues);
+#endif
+  if (ctype == IS_COLORING_GLOBAL) xx = xx + start;
+  ierr = VecRestoreArray(coloring->vscale,&vscale_array);CHKERRQ(ierr);
+  ierr = VecRestoreArray(x1_tmp,&xx);CHKERRQ(ierr);
+
+  coloring->currentcolor = -1;
+  ierr = PetscLogEventEnd(MAT_FDColoringApply,coloring,J,x1,0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+/* --------------------------------------------------------*/
+
+#undef __FUNCT__
+#define __FUNCT__ "MatFDColoringApply_SeqAIJ_old"
+PetscErrorCode MatFDColoringApply_SeqAIJ_old(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,void *sctx)
 {
   PetscErrorCode (*f)(void*,Vec,Vec,void*) = (PetscErrorCode (*)(void*,Vec,Vec,void*))coloring->f;
   PetscErrorCode ierr;
@@ -2639,6 +2817,7 @@ PetscErrorCode MatFDColoringApply_SeqAIJ(Mat J,MatFDColoring coloring,Vec x1,Mat
   PetscBool      flg   = PETSC_FALSE;
 
   PetscFunctionBegin;
+  printf("MatFDColoringApply_SeqAIJ ...\n");
   if (!coloring->w1) {
     ierr = VecDuplicate(x1,&coloring->w1);CHKERRQ(ierr);
     ierr = PetscLogObjectParent((PetscObject)coloring,(PetscObject)coloring->w1);CHKERRQ(ierr);
@@ -3231,7 +3410,7 @@ static struct _MatOps MatOps_Values = { MatSetValues_SeqAIJ,
                                         MatSetColoring_SeqAIJ,
                                         0,
                                 /* 74*/ MatSetValuesAdifor_SeqAIJ,
-                                        MatFDColoringApply_AIJ,
+                                        MatFDColoringApply_AIJ, 
                                         0,
                                         0,
                                         0,

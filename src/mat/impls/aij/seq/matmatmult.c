@@ -1531,13 +1531,11 @@ PetscErrorCode MatTransposeColoringCreate_SeqAIJ(Mat mat,ISColoring iscoloring,M
     /* fast, crude version requires O(N*N) work */
     ierr = PetscMemzero(rowhit,cm*sizeof(PetscInt));CHKERRQ(ierr);
 
-    /* loop over columns*/
-    for (j=0; j<n; j++) {
+    for (j=0; j<n; j++) { /* loop over columns*/
       col     = is[j];
       row_idx = cj + ci[col];
       m       = ci[col+1] - ci[col];
-      /* loop over columns marking them in rowhit */
-      for (k=0; k<m; k++) {
+      for (k=0; k<m; k++) { /* loop over columns marking them in rowhit */
         idxhit[*row_idx]   = spidx[ci[col] + k];
         rowhit[*row_idx++] = col + 1;
       }
@@ -1551,7 +1549,7 @@ PetscErrorCode MatTransposeColoringCreate_SeqAIJ(Mat mat,ISColoring iscoloring,M
     colorforrow[i+1] = colorforrow[i] + nrows;
 
     nrows = 0;
-    for (j=0; j<cm; j++) {
+    for (j=0; j<cm; j++) { /* loop over rows */
       if (rowhit[j]) {
         rows_i[nrows]   = j;
         den2sp_i[nrows] = idxhit[j];
