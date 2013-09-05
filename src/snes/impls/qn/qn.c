@@ -44,6 +44,7 @@ PetscErrorCode SNESQNApply_Broyden(SNES snes,PetscInt it,Vec Y,Vec X,Vec Xold, V
   PetscReal          unorm,a,b;
   PetscReal          *lambda=qn->lambda;
   PetscScalar        gdot;
+  PetscReal          udot;
 
   PetscFunctionBegin;
   if (it < m) l = it;
@@ -82,12 +83,12 @@ PetscErrorCode SNESQNApply_Broyden(SNES snes,PetscInt it,Vec Y,Vec X,Vec Xold, V
 
     ierr = VecNorm(U[j],NORM_2,&unorm);CHKERRQ(ierr);
     ierr = VecDot(U[j],Y,&gdot);CHKERRQ(ierr);
-
-    /* ierr = VecAXPY(Y,gdot/PetscSqr(unorm),U[k]);CHKERRQ(ierr); */
+    unorm *= unorm;
+    udot = PetscRealPart(gdot);
     a = (lambda[j]/lambda[k]);
     b = -(1.-lambda[j]);
-    a *= gdot/PetscSqr(unorm);
-    b *= gdot/PetscSqr(unorm);
+    a *= udot/unorm;
+    b *= udot/unorm;
     ierr = VecAXPBYPCZ(Y,a,b,1.,U[k],U[j]);CHKERRQ(ierr);
 
     if (qn->monitor) {
@@ -100,14 +101,15 @@ PetscErrorCode SNESQNApply_Broyden(SNES snes,PetscInt it,Vec Y,Vec X,Vec Xold, V
     k = (it-1)%l;
     ierr = VecDot(U[k],Y,&gdot);CHKERRQ(ierr);
     ierr = VecNorm(U[k],NORM_2,&unorm);CHKERRQ(ierr);
+    unorm *= unorm;
+    udot = PetscRealPart(gdot);
+    a = unorm/(unorm-lambda[k]*udot);
+    b = -(1.-lambda[k])*udot/(unorm-lambda[k]*udot);
     if (qn->monitor) {
       ierr = PetscViewerASCIIAddTab(qn->monitor,((PetscObject)snes)->tablevel+2);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(qn->monitor, "using vector %d: norm: %14.12e dot: %14.12e lambda: %14.12e scaling: %14.12e \n",k,gdot,unorm,lambda[k],1. - gdot/PetscSqr(unorm));CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(qn->monitor, "using vector %d: a: %14.12e b: %14.12e \n",k,a,b);CHKERRQ(ierr);
       ierr = PetscViewerASCIISubtractTab(qn->monitor,((PetscObject)snes)->tablevel+2);CHKERRQ(ierr);
     }
-    /* ierr = VecScale(Y,1./(1.-gdot/PetscSqr(unorm)));CHKERRQ(ierr); */
-    a = PetscSqr(unorm)/(PetscSqr(unorm)-lambda[k]*gdot);
-    b = -(1.-lambda[k])*gdot/(PetscSqr(unorm)-lambda[k]*gdot);
     ierr = VecAXPBY(Y,b,a,U[k]);CHKERRQ(ierr);
   }
   l = m;
@@ -539,7 +541,7 @@ static PetscErrorCode SNESSetUp_QN(SNES snes)
 
   PetscFunctionBegin;
   ierr = VecDuplicateVecs(snes->vec_sol, qn->m, &qn->U);CHKERRQ(ierr);
-  ierr = VecDuplicateVecs(snes->vec_sol, qn->m, &qn->V);CHKERRQ(ierr);
+  if (qn->type != SNES_QN_BROYDEN) ierr = VecDuplicateVecs(snes->vec_sol, qn->m, &qn->V);CHKERRQ(ierr);
   ierr = PetscMalloc4(qn->m, PetscScalar, &qn->alpha,
                       qn->m, PetscScalar, &qn->beta,
                       qn->m, PetscScalar, &qn->dXtdF,
