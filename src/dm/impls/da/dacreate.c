@@ -280,6 +280,7 @@ PetscErrorCode DMClone_DA(DM dm, DM *newdm)
   ierr = DMDASetStencilType(*newdm, da->stencil_type);CHKERRQ(ierr);
   ierr = DMDASetStencilWidth(*newdm, da->s);CHKERRQ(ierr);
   ierr = DMDASetOwnershipRanges(*newdm, da->lx, da->ly, da->lz);CHKERRQ(ierr);
+  ierr = DMSetUp(*newdm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
