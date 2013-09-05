@@ -134,6 +134,7 @@ PetscErrorCode DMClone(DM dm, DM *newdm)
   if (dm->ops->clone) {
     ierr = (*dm->ops->clone)(dm, newdm);CHKERRQ(ierr);
   }
+  (*newdm)->setupcalled = PETSC_TRUE;
   ierr = DMGetPointSF(dm, &sf);CHKERRQ(ierr);
   ierr = DMSetPointSF(*newdm, sf);CHKERRQ(ierr);
   ierr = DMGetApplicationContext(dm, &ctx);CHKERRQ(ierr);
