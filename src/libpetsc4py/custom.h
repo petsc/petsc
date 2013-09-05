@@ -101,8 +101,8 @@ PetscErrorCode SNESConverged(SNES snes,
   if (snes->ops->converged) {
     ierr = (*snes->ops->converged)(snes,iter,xnorm,ynorm,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
   } else {
-    ierr = SNESSkipConverged(snes,iter,xnorm,ynorm,fnorm,&snes->reason,0);CHKERRQ(ierr);
-    /*ierr = SNESDefaultConverged(snes,iter,xnorm,ynorm,fnorm,&snes->reason,0);CHKERRQ(ierr);*/
+    ierr = SNESConvergedSkip(snes,iter,xnorm,ynorm,fnorm,&snes->reason,0);CHKERRQ(ierr);
+    /*ierr = SNESConvergedDefault(snes,iter,xnorm,ynorm,fnorm,&snes->reason,0);CHKERRQ(ierr);*/
   }
   snes->norm = fnorm;
   if (reason) *reason = snes->reason;

@@ -129,7 +129,7 @@ cdef extern from * nogil:
     int SNESSetConvergenceTest(PetscSNES,PetscSNESConvergedFunction,void*,PetscSNESCtxDel*)
     int SNESConvergedDefault(PetscSNES,PetscInt,PetscReal,PetscReal,PetscReal,
                              PetscSNESConvergedReason*,void*) except PETSC_ERR_PYTHON
-    int SNESSkipConverged(PetscSNES,PetscInt,PetscReal,PetscReal,PetscReal,
+    int SNESConvergedSkip(PetscSNES,PetscInt,PetscReal,PetscReal,PetscReal,
                           PetscSNESConvergedReason*,void*) except PETSC_ERR_PYTHON
     int SNESSetConvergenceHistory(PetscSNES,PetscReal[],PetscInt[],PetscInt,PetscBool)
     int SNESGetConvergenceHistory(PetscSNES,PetscReal*[],PetscInt*[],PetscInt*)
