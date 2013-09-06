@@ -492,10 +492,15 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
     powell = PETSC_FALSE;
     if (qn->restart_type == SNES_QN_RESTART_POWELL) {
       /* check restart by Powell's Criterion: |F^T H_0 Fold| > 0.2 * |Fold^T H_0 Fold| */
-      ierr = VecDotBegin(Dold, Dold, &DolddotDold);CHKERRQ(ierr);
-      ierr = VecDotBegin(Dold, D, &DolddotD);CHKERRQ(ierr);
-      ierr = VecDotEnd(Dold, Dold, &DolddotDold);CHKERRQ(ierr);
-      ierr = VecDotEnd(Dold, D, &DolddotD);CHKERRQ(ierr);
+      if (qn->scale_type == SNES_QN_SCALE_JACOBIAN) {
+        ierr = MatMult(snes->jacobian_pre,Dold,W);CHKERRQ(ierr);
+      } else {
+        ierr = VecCopy(Dold,W);CHKERRQ(ierr);
+      }
+      ierr = VecDotBegin(W, Dold, &DolddotDold);CHKERRQ(ierr);
+      ierr = VecDotBegin(W, D, &DolddotD);CHKERRQ(ierr);
+      ierr = VecDotEnd(W, Dold, &DolddotDold);CHKERRQ(ierr);
+      ierr = VecDotEnd(W, D, &DolddotD);CHKERRQ(ierr);
       if (PetscAbs(PetscRealPart(DolddotD)) > qn->powell_gamma*PetscAbs(PetscRealPart(DolddotDold))) powell = PETSC_TRUE;
     }
     periodic = PETSC_FALSE;
