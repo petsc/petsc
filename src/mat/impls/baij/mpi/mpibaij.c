@@ -2268,7 +2268,6 @@ PetscErrorCode MatFDColoringCreate_MPIBAIJ(Mat mat,ISColoring iscoloring,MatFDCo
   PetscInt               ctype=c->ctype;
 
   PetscFunctionBegin;
-  if (!mat->assembled) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Matrix must be assembled first; MatAssemblyBegin/End();");
   if (ctype == IS_COLORING_GHOSTED && !map) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_INCOMP,"When using ghosted differencing matrix must have local to global mapping provided with MatSetLocalToGlobalMappingBlock");
 
   if (map) {ierr = ISLocalToGlobalMappingGetIndices(map,&ltog);CHKERRQ(ierr);}

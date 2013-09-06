@@ -365,6 +365,7 @@ PetscErrorCode  MatFDColoringCreate(Mat mat,ISColoring iscoloring,MatFDColoring 
   PetscInt       M,N;
 
   PetscFunctionBegin;
+  if (!mat->assembled) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Matrix must be assembled by calls to MatAssemblyBegin/End();");
   ierr = PetscLogEventBegin(MAT_FDColoringCreate,mat,0,0,0);CHKERRQ(ierr);
   ierr = MatGetSize(mat,&M,&N);CHKERRQ(ierr);
   if (M != N) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Only for square matrices");
