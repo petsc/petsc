@@ -1,74 +1,6 @@
 
 #include <../src/mat/impls/aij/seq/aij.h>
 
-/*
- Redundant - remove later!
-*/
-#undef __FUNCT__
-#define __FUNCT__ "MatGetColumnIJ_SeqAIJ_Color_Redundant"
-PetscErrorCode MatGetColumnIJ_SeqAIJ_Color_Redundant(Mat A,PetscInt oshift,PetscBool symmetric,PetscBool inodecompressed,PetscInt *nn,const PetscInt *ia[],const PetscInt *ja[],PetscInt *spidx[],PetscBool  *done)
-{
-  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
-  PetscErrorCode ierr;
-  PetscInt       i,*collengths,*cia,*cja,n = A->cmap->n,m = A->rmap->n;
-  PetscInt       nz = a->i[m],row,*jj,mr,col;
-  PetscInt       *cspidx;
-
-  PetscFunctionBegin;
-  *nn = n;
-  if (!ia) PetscFunctionReturn(0);
-  if (symmetric) {
-    SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"MatGetColumnIJ_SeqAIJ_Color() not supported for the case symmetric");
-    ierr = MatToSymmetricIJ_SeqAIJ(A->rmap->n,a->i,a->j,0,oshift,(PetscInt**)ia,(PetscInt**)ja);CHKERRQ(ierr);
-  } else {
-    ierr = PetscMalloc((n+1)*sizeof(PetscInt),&collengths);CHKERRQ(ierr);
-    ierr = PetscMemzero(collengths,n*sizeof(PetscInt));CHKERRQ(ierr);
-    ierr = PetscMalloc((n+1)*sizeof(PetscInt),&cia);CHKERRQ(ierr);
-    ierr = PetscMalloc((nz+1)*sizeof(PetscInt),&cja);CHKERRQ(ierr);
-    ierr = PetscMalloc((nz+1)*sizeof(PetscInt),&cspidx);CHKERRQ(ierr);
-    jj   = a->j;
-    for (i=0; i<nz; i++) {
-      collengths[jj[i]]++;
-    }
-    cia[0] = oshift;
-    for (i=0; i<n; i++) {
-      cia[i+1] = cia[i] + collengths[i];
-    }
-    ierr = PetscMemzero(collengths,n*sizeof(PetscInt));CHKERRQ(ierr);
-    jj   = a->j;
-    for (row=0; row<m; row++) {
-      mr = a->i[row+1] - a->i[row];
-      for (i=0; i<mr; i++) {
-        col = *jj++;
-
-        cspidx[cia[col] + collengths[col] - oshift] = a->i[row] + i; /* index of a->j */
-        cja[cia[col] + collengths[col]++ - oshift]  = row + oshift;
-      }
-    }
-    ierr   = PetscFree(collengths);CHKERRQ(ierr);
-    *ia    = cia; *ja = cja;
-    *spidx = cspidx;
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "MatRestoreColumnIJ_SeqAIJ_Color_Redundant"
-PetscErrorCode MatRestoreColumnIJ_SeqAIJ_Color_Redundant(Mat A,PetscInt oshift,PetscBool symmetric,PetscBool inodecompressed,PetscInt *n,const PetscInt *ia[],const PetscInt *ja[],PetscInt *spidx[],PetscBool  *done)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  if (!ia) PetscFunctionReturn(0);
-
-  ierr = PetscFree(*ia);CHKERRQ(ierr);
-  ierr = PetscFree(*ja);CHKERRQ(ierr);
-  ierr = PetscFree(*spidx);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-/* -------------------------------------------*/
-
 #undef __FUNCT__
 #define __FUNCT__ "MatFDColoringCreate_SeqAIJ_den2sp"
 /*
@@ -85,7 +17,6 @@ PetscErrorCode MatFDColoringCreate_SeqAIJ_den2sp(Mat mat,ISColoring iscoloring,M
   Mat_SeqAIJ     *csp = (Mat_SeqAIJ*)mat->data;
 
   PetscFunctionBegin;
-  printf("MatFDColoringCreate_SeqAIJ_den2sp ...\n");
   if (!mat->assembled) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Matrix must be assembled by calls to MatAssemblyBegin/End();");
 
   ierr = ISColoringGetIS(iscoloring,PETSC_IGNORE,&isa);CHKERRQ(ierr);
@@ -111,7 +42,7 @@ PetscErrorCode MatFDColoringCreate_SeqAIJ_den2sp(Mat mat,ISColoring iscoloring,M
   ierr       = PetscMalloc((csp->nz+1)*sizeof(PetscInt),&den2sp);CHKERRQ(ierr);
   den2sp_i   = den2sp;
 
-  ierr = MatGetColumnIJ_SeqAIJ_Color_Redundant(mat,0,PETSC_FALSE,PETSC_FALSE,&ncols,&ci,&cj,&spidx,NULL);CHKERRQ(ierr);
+  ierr = MatGetColumnIJ_SeqAIJ_Color(mat,0,PETSC_FALSE,PETSC_FALSE,&ncols,&ci,&cj,&spidx,NULL);CHKERRQ(ierr);
  
   ierr = PetscMalloc((c->m+1)*sizeof(PetscInt),&rowhit);CHKERRQ(ierr); 
   ierr = PetscMemzero(rowhit,c->m*sizeof(PetscInt));CHKERRQ(ierr);
@@ -162,7 +93,7 @@ PetscErrorCode MatFDColoringCreate_SeqAIJ_den2sp(Mat mat,ISColoring iscoloring,M
     den2sp_i += nrows;
     ierr = ISRestoreIndices(isa[i],&is);CHKERRQ(ierr);
   }
-  ierr = MatRestoreColumnIJ_SeqAIJ_Color_Redundant(mat,0,PETSC_FALSE,PETSC_FALSE,&ncols,&ci,&cj,&spidx,NULL);CHKERRQ(ierr);
+  ierr = MatRestoreColumnIJ_SeqAIJ_Color(mat,0,PETSC_FALSE,PETSC_FALSE,&ncols,&ci,&cj,&spidx,NULL);CHKERRQ(ierr);
 
   ierr = PetscFree(rowhit);CHKERRQ(ierr);
   ierr = PetscFree(columnsforrow);CHKERRQ(ierr);
@@ -208,7 +139,6 @@ PetscErrorCode MatFDColoringCreate_SeqAIJ(Mat mat,ISColoring iscoloring,MatFDCol
   PetscBool      new_impl=PETSC_FALSE;
 
   PetscFunctionBegin;
-  printf("MatFDColoringCreate_SeqAIJ ...\n");
   ierr = PetscOptionsName("-new","using new impls","",&new_impl);CHKERRQ(ierr);
   if (new_impl){
     ierr =  MatFDColoringCreate_SeqAIJ_den2sp(mat,iscoloring,c);CHKERRQ(ierr);
