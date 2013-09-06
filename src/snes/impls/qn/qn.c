@@ -51,7 +51,7 @@ PetscErrorCode SNESQNApply_Broyden(SNES snes,PetscInt it,Vec Y,Vec X,Vec Xold,Ve
   if (it > 0) {
     k = (it-1)%l;
     ierr = SNESLineSearchGetLambda(snes->linesearch,&lambda[k]);CHKERRQ(ierr);
-    ierr = VecCopy(U[k],Xold);CHKERRQ(ierr);
+    ierr = VecCopy(Xold,U[k]);CHKERRQ(ierr);
     ierr = VecAXPY(U[k],-1.0,X);CHKERRQ(ierr);
     if (qn->monitor) {
       ierr = PetscViewerASCIIAddTab(qn->monitor,((PetscObject)snes)->tablevel+2);CHKERRQ(ierr);
@@ -81,7 +81,6 @@ PetscErrorCode SNESQNApply_Broyden(SNES snes,PetscInt it,Vec Y,Vec X,Vec Xold,Ve
   for (i = 0; i < l-1; i++) {
     j = (it+i-l)%l;
     k = (it+i-l+1)%l;
-
     ierr = VecNorm(U[j],NORM_2,&unorm);CHKERRQ(ierr);
     ierr = VecDot(U[j],Y,&gdot);CHKERRQ(ierr);
     unorm *= unorm;
@@ -121,7 +120,6 @@ PetscErrorCode SNESQNApply_Broyden(SNES snes,PetscInt it,Vec Y,Vec X,Vec Xold,Ve
     ierr = PetscViewerASCIIPrintf(qn->monitor, "setting vector %d of %d\n",k,l);CHKERRQ(ierr);
     ierr = PetscViewerASCIISubtractTab(qn->monitor,((PetscObject)snes)->tablevel+2);CHKERRQ(ierr);
   }
-  ierr = VecCopy(Y,U[k]);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
