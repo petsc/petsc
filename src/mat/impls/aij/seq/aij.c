@@ -2790,7 +2790,8 @@ PetscErrorCode MatFDColoringApply_SeqAIJ(Mat J,MatFDColoring coloring,Vec x1,Mat
     if (PetscAbsScalar(dx) < umin && PetscRealPart(dx) >= 0.0)     dx = umin;
     else if (PetscRealPart(dx) < 0.0 && PetscAbsScalar(dx) < umin) dx = -umin;
     dx               *= epsilon;
-    vscale_array[col] = (PetscScalar)1.0/dx;
+    //vscale_array[col] = (PetscScalar)1.0/dx;
+    vscale_array[col] = (PetscScalar)dx;
   }
  
   idx = den2sp;
@@ -2806,7 +2807,8 @@ PetscErrorCode MatFDColoringApply_SeqAIJ(Mat J,MatFDColoring coloring,Vec x1,Mat
     ncolumns_k = ncolumns[k];
     for (l=0; l<ncolumns_k; l++) { /* loop over columns */
       col = columns[k][l];   
-      w3_array[col] += 1/vscale_array[col]; 
+      //w3_array[col] += 1/vscale_array[col]; 
+      w3_array[col] += vscale_array[col]; 
     }
     ierr = VecRestoreArray(w3,&w3_array);CHKERRQ(ierr);
 
@@ -2829,7 +2831,8 @@ PetscErrorCode MatFDColoringApply_SeqAIJ(Mat J,MatFDColoring coloring,Vec x1,Mat
     nrows_k = nrows[k];
     for (l=0; l<nrows_k; l++) { /* loop over rows */
       row     = rows[k][l];     /* row index */
-      y[row] *= vscale_array[columnsforrow[k][l]];
+      //y[row] *= vscale_array[columnsforrow[k][l]];
+      y[row] /= vscale_array[columnsforrow[k][l]];
       ca[idx[l]] = y[row];
     }
     idx += nrows_k;
