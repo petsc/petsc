@@ -11,17 +11,17 @@ PetscErrorCode MatFDColoringCreate_SeqAIJ_den2sp(Mat mat,ISColoring iscoloring,M
   PetscErrorCode ierr;
   PetscInt       i,n,nrows,N,j,k,m,ncols,col;
   const PetscInt *is,*rows,*ci,*cj;
-  PetscInt       nis = iscoloring->n,*rowhit,*columnsforrow,l,bs = 1,*spidx,*spidxhit,*den2sp,*den2sp_i;
+  PetscInt       nis=iscoloring->n,*rowhit,*columnsforrow,bs=1,*spidx,*spidxhit,*den2sp,*den2sp_i;
   IS             *isa;
-  PetscBool      flg1,flg2;     
+  PetscBool      flg1;     
   Mat_SeqAIJ     *csp = (Mat_SeqAIJ*)mat->data;
 
   PetscFunctionBegin;
   ierr = ISColoringGetIS(iscoloring,PETSC_IGNORE,&isa);CHKERRQ(ierr);
-  /* this is ugly way to get blocksize but cannot call MatGetBlockSize() because AIJ can have bs > 1 */
+  /* this is ugly way to get blocksize but cannot call MatGetBlockSize() because AIJ can have bs > 1.
+     SeqBAIJ calls this routine, thus check it */
   ierr = PetscObjectTypeCompare((PetscObject)mat,MATSEQBAIJ,&flg1);CHKERRQ(ierr);
-  ierr = PetscObjectTypeCompare((PetscObject)mat,MATMPIBAIJ,&flg2);CHKERRQ(ierr);
-  if (flg1 || flg2) {
+  if (flg1) {
     ierr = MatGetBlockSize(mat,&bs);CHKERRQ(ierr);
   }
 
@@ -42,10 +42,8 @@ PetscErrorCode MatFDColoringCreate_SeqAIJ_den2sp(Mat mat,ISColoring iscoloring,M
 
   ierr = MatGetColumnIJ_SeqAIJ_Color(mat,0,PETSC_FALSE,PETSC_FALSE,&ncols,&ci,&cj,&spidx,NULL);CHKERRQ(ierr);
  
-  ierr = PetscMalloc((c->m+1)*sizeof(PetscInt),&rowhit);CHKERRQ(ierr); 
+  ierr = PetscMalloc3(c->m,PetscInt,&rowhit,N,PetscInt,&columnsforrow,c->m,PetscInt,&spidxhit);CHKERRQ(ierr);
   ierr = PetscMemzero(rowhit,c->m*sizeof(PetscInt));CHKERRQ(ierr);
-  ierr = PetscMalloc((N+1)*sizeof(PetscInt),&columnsforrow);CHKERRQ(ierr); // N=mat->cmap->N/bs or c->M ?
-  ierr = PetscMalloc((c->m+1)*sizeof(PetscInt),&spidxhit);CHKERRQ(ierr);
 
   for (i=0; i<nis; i++) { /* loop over colors */
     ierr = ISGetLocalSize(isa[i],&n);CHKERRQ(ierr);
@@ -60,23 +58,19 @@ PetscErrorCode MatFDColoringCreate_SeqAIJ_den2sp(Mat mat,ISColoring iscoloring,M
     }
 
     /* fast, crude version requires O(N*N) work */
+    nrows = 0;
     for (j=0; j<n; j++) {  /* loop over columns */
       col  = is[j];
       rows = cj + ci[col];
       m    = ci[col+1] - ci[col];  
       for (k=0; k<m; k++) {  /* loop over columns marking them in rowhit */
-        rowhit[*rows]   = col + 1;
-        spidxhit[*rows] = spidx[ci[col] + k];
-        rows++;
+        rowhit[*rows]     = col + 1;
+        spidxhit[*rows++] = spidx[ci[col] + k];
+        nrows++;
       }
     }
-    /* get num of rows by counting the number of hits */
-    nrows = 0;
-    for (j=0; j<N; j++) {
-      if (rowhit[j]) nrows++;
-    }
-    c->nrows[i] = nrows;
-
+    c->nrows[i] = nrows; /* total num of rows for this color */
+   
     ierr = PetscMalloc((nrows+1)*sizeof(PetscInt),&c->rows[i]);CHKERRQ(ierr);
     ierr = PetscMalloc((nrows+1)*sizeof(PetscInt),&c->columnsforrow[i]);CHKERRQ(ierr);
     nrows = 0;
@@ -92,26 +86,9 @@ PetscErrorCode MatFDColoringCreate_SeqAIJ_den2sp(Mat mat,ISColoring iscoloring,M
     ierr = ISRestoreIndices(isa[i],&is);CHKERRQ(ierr);
   }
   ierr = MatRestoreColumnIJ_SeqAIJ_Color(mat,0,PETSC_FALSE,PETSC_FALSE,&ncols,&ci,&cj,&spidx,NULL);CHKERRQ(ierr);
-
-  ierr = PetscFree(rowhit);CHKERRQ(ierr);
-  ierr = PetscFree(columnsforrow);CHKERRQ(ierr);
-  ierr = PetscFree(spidxhit);CHKERRQ(ierr);
-
-  /* Optimize by adding the vscale, and scaleforrow[][] fields -- needed for seqaij??? */
-  /*
-       see the version for MPIAIJ
-  */
-  ierr = VecCreateGhost(PetscObjectComm((PetscObject)mat),mat->rmap->n,PETSC_DETERMINE,0,NULL,&c->vscale);CHKERRQ(ierr);
-  ierr = PetscMalloc(c->ncolors*sizeof(PetscInt*),&c->vscaleforrow);CHKERRQ(ierr);
-  for (k=0; k<c->ncolors; k++) {
-    ierr = PetscMalloc((c->nrows[k]+1)*sizeof(PetscInt),&c->vscaleforrow[k]);CHKERRQ(ierr);
-    for (l=0; l<c->nrows[k]; l++) {
-      col = c->columnsforrow[k][l];
-
-      c->vscaleforrow[k][l] = col;
-    }
-  }
+  ierr = PetscFree3(rowhit,columnsforrow,spidxhit);CHKERRQ(ierr);
   ierr = ISColoringRestoreIS(iscoloring,&isa);CHKERRQ(ierr);
+
   c->den2sp                 = den2sp;
   c->ctype                  = IS_COLORING_GHOSTED;
   mat->ops->fdcoloringapply = MatFDColoringApply_SeqAIJ;
@@ -134,7 +111,7 @@ PetscErrorCode MatFDColoringCreate_SeqAIJ(Mat mat,ISColoring iscoloring,MatFDCol
   PetscInt       nis = iscoloring->n,*rowhit,*columnsforrow,l,bs = 1;
   IS             *isa;
   PetscBool      done,flg = PETSC_FALSE;
-  PetscBool      flg1,flg2;
+  PetscBool      flg1;
   PetscBool      new_impl=PETSC_FALSE;
 
   PetscFunctionBegin;
@@ -146,10 +123,10 @@ PetscErrorCode MatFDColoringCreate_SeqAIJ(Mat mat,ISColoring iscoloring,MatFDCol
   if (!mat->assembled) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Matrix must be assembled by calls to MatAssemblyBegin/End();");
 
   ierr = ISColoringGetIS(iscoloring,PETSC_IGNORE,&isa);CHKERRQ(ierr);
-  /* this is ugly way to get blocksize but cannot call MatGetBlockSize() because AIJ can have bs > 1 */
+  /* this is ugly way to get blocksize but cannot call MatGetBlockSize() because AIJ can have bs > 1.
+     SeqBAIJ calls this routine, thus check it */
   ierr = PetscObjectTypeCompare((PetscObject)mat,MATSEQBAIJ,&flg1);CHKERRQ(ierr);
-  ierr = PetscObjectTypeCompare((PetscObject)mat,MATMPIBAIJ,&flg2);CHKERRQ(ierr);
-  if (flg1 || flg2) {
+  if (flg1) {
     ierr = MatGetBlockSize(mat,&bs);CHKERRQ(ierr);
   }
 
