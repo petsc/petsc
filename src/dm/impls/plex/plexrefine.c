@@ -124,6 +124,15 @@ PetscErrorCode CellRefinerGetSizes(CellRefiner refiner, DM dm, PetscInt depthSiz
   PetscFunctionReturn(0);
 }
 
+/* Return triangle edge for orientation o, if it is r for o == 0 */
+PETSC_STATIC_INLINE PetscInt GetTriEdge_Static(PetscInt o, PetscInt r) {
+  return (o < 0 ? 1-(o+r) : o+r)%3;
+}
+
+PETSC_STATIC_INLINE PetscInt GetRefHexFace_Static(PetscInt o, PetscInt r) {
+  return (o < 0 ? (-(o+1)+4-r)%4 : (o+r)%4);
+}
+
 #undef __FUNCT__
 #define __FUNCT__ "CellRefinerSetConeSizes"
 PetscErrorCode CellRefinerSetConeSizes(CellRefiner refiner, DM dm, PetscInt depthSize[], DM rdm)
@@ -420,12 +429,12 @@ PetscErrorCode CellRefinerSetConeSizes(CellRefiner refiner, DM dm, PetscInt dept
           ierr = DMPlexGetCone(dm, star[s], &cone);CHKERRQ(ierr);
           ierr = DMPlexGetConeOrientation(dm, star[s], &ornt);CHKERRQ(ierr);
           ierr = DMPlexGetCone(dm, cone[0], &cone);CHKERRQ(ierr);
-          e01  = cone[ornt[0] < 0 ? (-(ornt[0]+1) + 0)%3 : ornt[0]];
+          e01  = cone[GetTriEdge_Static(ornt[0], 0)];
           /* Check edge 2-3 */
           ierr = DMPlexGetCone(dm, star[s], &cone);CHKERRQ(ierr);
           ierr = DMPlexGetConeOrientation(dm, star[s], &ornt);CHKERRQ(ierr);
-          ierr = DMPlexGetCone(dm, cone[3], &cone);CHKERRQ(ierr);
-          e23  = cone[ornt[3] < 0 ? (-(ornt[3]+1) + 2)%3 : (ornt[3] + 2)%3];
+          ierr = DMPlexGetCone(dm, cone[2], &cone);CHKERRQ(ierr);
+          e23  = cone[GetTriEdge_Static(ornt[2], 1)];
           if ((e01 == e) || (e23 == e)) ++cellSize;
         }
       }
@@ -529,10 +538,6 @@ PetscErrorCode CellRefinerSetConeSizes(CellRefiner refiner, DM dm, PetscInt dept
     SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unknown cell refiner %d", refiner);
   }
   PetscFunctionReturn(0);
-}
-
-PETSC_STATIC_INLINE PetscInt GetRefHexFace_Static(PetscInt o, PetscInt r) {
-  return (o < 0 ? (-(o+1)+4-r)%4 : (o+r)%4);
 }
 
 #undef __FUNCT__
@@ -1865,10 +1870,10 @@ PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt depthSiz
       ierr = DMPlexGetCone(dm, c, &cone);CHKERRQ(ierr);
       ierr = DMPlexGetConeOrientation(dm, c, &ornt);CHKERRQ(ierr);
       ierr = DMPlexGetCone(dm, cone[0], &fcone);CHKERRQ(ierr);
-      find = ornt[0] < 0 ? (-(ornt[0]+1) + 0)%3 : ornt[0];
+      find = GetTriEdge_Static(ornt[0], 0);
       coneNew[0] = vStartNew + (vEnd - vStart) + (fcone[find] - eStart);
       ierr = DMPlexGetCone(dm, cone[2], &fcone);CHKERRQ(ierr);
-      find = ornt[2] < 0 ? (-(ornt[2]+1) + 1)%3 : (ornt[2]+1)%3;
+      find = GetTriEdge_Static(ornt[2], 1);
       coneNew[1] = vStartNew + (vEnd - vStart) + (fcone[find] - eStart);
       ierr = DMPlexSetCone(rdm, newp, coneNew);CHKERRQ(ierr);
 #if 1
@@ -1941,12 +1946,12 @@ PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt depthSiz
           ierr = DMPlexGetCone(dm, star[s], &cone);CHKERRQ(ierr);
           ierr = DMPlexGetConeOrientation(dm, star[s], &ornt);CHKERRQ(ierr);
           ierr = DMPlexGetCone(dm, cone[0], &cone);CHKERRQ(ierr);
-          e01  = cone[ornt[0] < 0 ? (-(ornt[0]+1) + 0)%3 : ornt[0]];
+          e01  = cone[GetTriEdge_Static(ornt[0], 0)];
           /* Check edge 2-3 */
           ierr = DMPlexGetCone(dm, star[s], &cone);CHKERRQ(ierr);
           ierr = DMPlexGetConeOrientation(dm, star[s], &ornt);CHKERRQ(ierr);
-          ierr = DMPlexGetCone(dm, cone[3], &cone);CHKERRQ(ierr);
-          e23  = cone[ornt[3] < 0 ? (-(ornt[3]+1) + 2)%3 : (ornt[3] + 2)%3];
+          ierr = DMPlexGetCone(dm, cone[2], &cone);CHKERRQ(ierr);
+          e23  = cone[GetTriEdge_Static(ornt[2], 1)];
           if ((e01 == e) || (e23 == e)) {supportRef[2+size*2+cellSize++] = eStartNew + (eEnd - eStart)*2 + (fEnd - fStart)*3 + (star[s] - cStart);}
         }
       }
