@@ -2713,7 +2713,7 @@ PetscErrorCode MatSeqAIJRestoreArray_SeqAIJ(Mat A,PetscScalar *array[])
   PetscFunctionReturn(0);
 }
 
-/*---------------------------------------------*/
+/* Optimize MatFDColoringApply_AIJ() by using array den2sp to skip calling MatSetValues() */
 /* #define JACOBIANCOLOROPT */
 #if defined(JACOBIANCOLOROPT)
 #include <petsctime.h>
@@ -2736,6 +2736,8 @@ PetscErrorCode MatFDColoringApply_SeqAIJ(Mat J,MatFDColoring coloring,Vec x1,Mat
   Mat_SeqAIJ     *csp = (Mat_SeqAIJ*)J->data;
   PetscInt       *den2sp=coloring->den2sp,*idx=den2sp;
   PetscScalar    *ca=csp->a;
+  const PetscInt ncolors=coloring->ncolors,*ncolumns=coloring->ncolumns,*nrows=coloring->nrows;
+  PetscInt       **rows=coloring->rows,**columns=coloring->columns,ncolumns_k,nrows_k;
 #if defined(JACOBIANCOLOROPT)
   PetscLogDouble t0,t1,time_setvalues=0.0;
 #endif
@@ -2823,7 +2825,7 @@ PetscErrorCode MatFDColoringApply_SeqAIJ(Mat J,MatFDColoring coloring,Vec x1,Mat
     Loop over each color
   */
   ierr = VecGetArray(coloring->vscale,&vscale_array);CHKERRQ(ierr);
-  for (k=0; k<coloring->ncolors; k++) { /* loop over colors */
+  for (k=0; k<ncolors; k++) { /* loop over colors */
     coloring->currentcolor = k;
 
     ierr = VecCopy(x1_tmp,w3);CHKERRQ(ierr);
@@ -2833,8 +2835,9 @@ PetscErrorCode MatFDColoringApply_SeqAIJ(Mat J,MatFDColoring coloring,Vec x1,Mat
       Loop over each column associated with color
       adding the perturbation to the vector w3.
     */
-    for (l=0; l<coloring->ncolumns[k]; l++) { /* loop over columns */
-      col = coloring->columns[k][l];    /* local column of the matrix we are probing for */
+    ncolumns_k = ncolumns[k];
+    for (l=0; l<ncolumns_k; l++) { /* loop over columns */
+      col = columns[k][l];    /* local column of the matrix we are probing for */
       if (coloring->htype[0] == 'w') {
         dx = 1.0 + unorm;
       } else {
@@ -2866,12 +2869,13 @@ PetscErrorCode MatFDColoringApply_SeqAIJ(Mat J,MatFDColoring coloring,Vec x1,Mat
     ierr = PetscTime(&t0);CHKERRQ(ierr);
 #endif
     ierr = VecGetArray(w2,&y);CHKERRQ(ierr);
-    for (l=0; l<coloring->nrows[k]; l++) { /* loop over rows */
-      row     = coloring->rows[k][l];            /* local row index */
+    nrows_k = nrows[k];
+    for (l=0; l<nrows_k; l++) { /* loop over rows */
+      row     = rows[k][l]; /* local row index */
       y[row] *= vscale_array[vscaleforrow[k][l]];
       ca[idx[l]] = y[row];
     }
-    idx = idx + coloring->nrows[k];
+    idx += nrows_k;
     ierr = VecRestoreArray(w2,&y);CHKERRQ(ierr);
 #if defined(JACOBIANCOLOROPT)
     ierr = PetscTime(&t1);CHKERRQ(ierr);
