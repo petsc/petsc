@@ -2722,12 +2722,6 @@ PetscErrorCode MatFDColoringApply_SeqAIJ(Mat J,MatFDColoring coloring,Vec x1,Mat
 #endif
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(J,MAT_CLASSID,1);
-  PetscValidHeaderSpecific(coloring,MAT_FDCOLORING_CLASSID,2);
-  PetscValidHeaderSpecific(x1,VEC_CLASSID,3);
-  if (!f) SETERRQ(PetscObjectComm((PetscObject)J),PETSC_ERR_ARG_WRONGSTATE,"Must call MatFDColoringSetFunction()");
-
-  ierr = PetscLogEventBegin(MAT_FDColoringApply,coloring,J,x1,0);CHKERRQ(ierr);
   ierr = MatSetUnfactored(J);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,"-mat_fd_coloring_dont_rezero",&flg,NULL);CHKERRQ(ierr);
   if (flg) {
@@ -2869,7 +2863,6 @@ PetscErrorCode MatFDColoringApply_SeqAIJ(Mat J,MatFDColoring coloring,Vec x1,Mat
   ierr = VecRestoreArray(x1_tmp,&xx);CHKERRQ(ierr);
 
   coloring->currentcolor = -1;
-  ierr = PetscLogEventEnd(MAT_FDColoringApply,coloring,J,x1,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /* --------------------------------------------------------*/
