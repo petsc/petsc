@@ -113,6 +113,7 @@ PetscErrorCode MatFDColoringCreate_SeqAIJ_den2sp(Mat mat,ISColoring iscoloring,M
   }
   ierr = ISColoringRestoreIS(iscoloring,&isa);CHKERRQ(ierr);
   c->den2sp                 = den2sp;
+  c->ctype                  = IS_COLORING_GHOSTED;
   mat->ops->fdcoloringapply = MatFDColoringApply_SeqAIJ;
   PetscFunctionReturn(0);
 }
