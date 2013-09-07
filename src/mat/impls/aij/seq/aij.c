@@ -2714,7 +2714,7 @@ PetscErrorCode MatSeqAIJRestoreArray_SeqAIJ(Mat A,PetscScalar *array[])
 }
 
 /* Optimize MatFDColoringApply_AIJ() by using array den2sp to skip calling MatSetValues() */
-//#define JACOBIANCOLOROPT 
+/* #define JACOBIANCOLOROPT */
 #if defined(JACOBIANCOLOROPT)
 #include <petsctime.h>
 #endif
@@ -2734,12 +2734,13 @@ PetscErrorCode MatFDColoringApply_SeqAIJ(Mat J,MatFDColoring coloring,Vec x1,Mat
   Mat_SeqAIJ     *csp=(Mat_SeqAIJ*)J->data;
   PetscScalar    *ca=csp->a;
   const PetscInt ncolors=coloring->ncolors,*ncolumns=coloring->ncolumns,*nrows=coloring->nrows;
-  PetscInt       *den2sp=coloring->den2sp,*idx;
-  PetscInt       **rows=coloring->rows,**columns=coloring->columns,ncolumns_k,nrows_k,**columnsforrow=coloring->columnsforrow;
+  //const PetscInt *colorforrow=coloring->colorforrow,*colorforcolumn=coloring->colorforcolumn;
+  PetscInt       *den2sp=coloring->den2sp,*idx,idx_tmp;
+  PetscInt       **columns=coloring->columns,ncolumns_k,nrows_k;
 #if defined(JACOBIANCOLOROPT)
   PetscLogDouble t0,t1,t_init=0.0,t_setvals=0.0,t_func=0.0,t_dx=0.0,t_kl=0.0,t00,t11;
 #endif
-  PetscInt       kl;
+  PetscInt       nz;
 
   PetscFunctionBegin;
 #if defined(JACOBIANCOLOROPT)
@@ -2816,6 +2817,7 @@ PetscErrorCode MatFDColoringApply_SeqAIJ(Mat J,MatFDColoring coloring,Vec x1,Mat
 #endif
  
   idx = den2sp;
+  nz  = 0;
   for (k=0; k<ncolors; k++) { /* loop over colors */
 #if defined(JACOBIANCOLOROPT)
     ierr = PetscTime(&t0);CHKERRQ(ierr);
@@ -2868,14 +2870,16 @@ PetscErrorCode MatFDColoringApply_SeqAIJ(Mat J,MatFDColoring coloring,Vec x1,Mat
 #if defined(JACOBIANCOLOROPT)
     ierr = PetscTime(&t00);CHKERRQ(ierr);
 #endif
-      row     = rows[k][l];     /* row index */
-      kl      = columnsforrow[k][l];
+      row = coloring->rowcolden2sp3[3*nz];
+      col = coloring->rowcolden2sp3[3*nz+1];
+      idx_tmp = coloring->rowcolden2sp3[3*nz+2];
 #if defined(JACOBIANCOLOROPT)
-    ierr = PetscTime(&t11);CHKERRQ(ierr);
-    t_kl += t11 - t00;
+      ierr = PetscTime(&t11);CHKERRQ(ierr);
+      t_kl += t11 - t00;
 #endif
-
-      ca[idx[l]] = y[row]/vscale_array[kl];//y[row]/vscale_array[columnsforrow[k][l]];
+      //ca[idx[l]] = y[row]/vscale_array[col];
+      ca[idx_tmp] = y[row]/vscale_array[col];
+      nz++;
     }
     idx += nrows_k;
     ierr = VecRestoreArray(w2,&y);CHKERRQ(ierr);
