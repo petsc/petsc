@@ -2759,7 +2759,8 @@ PetscErrorCode DMPlexDistributeField(DM dm, PetscSF pointSF, PetscSection origin
 - overlap - The overlap of partitions, 0 is the default
 
   Output Parameter:
-. parallelMesh - The distributed DMPlex object, or NULL
++ sf - The PetscSF used for point distribution
+- parallelMesh - The distributed DMPlex object, or NULL
 
   Note: If the mesh was not distributed, the return value is NULL
 
@@ -2768,7 +2769,7 @@ PetscErrorCode DMPlexDistributeField(DM dm, PetscSF pointSF, PetscSection origin
 .keywords: mesh, elements
 .seealso: DMPlexCreate(), DMPlexDistributeByFace()
 @*/
-PetscErrorCode DMPlexDistribute(DM dm, const char partitioner[], PetscInt overlap, DM *dmParallel)
+PetscErrorCode DMPlexDistribute(DM dm, const char partitioner[], PetscInt overlap, PetscSF *sf, DM *dmParallel)
 {
   DM_Plex               *mesh   = (DM_Plex*) dm->data, *pmesh;
   MPI_Comm               comm;
@@ -2788,7 +2789,8 @@ PetscErrorCode DMPlexDistribute(DM dm, const char partitioner[], PetscInt overla
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(dmParallel,4);
+  if (sf) PetscValidPointer(sf,4);
+  PetscValidPointer(dmParallel,5);
 
   ierr = PetscLogEventBegin(DMPLEX_Distribute,dm,0,0,0);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);
@@ -3150,7 +3152,8 @@ PetscErrorCode DMPlexDistribute(DM dm, const char partitioner[], PetscInt overla
   }
   ierr = PetscLogEventEnd(DMPLEX_DistributeSF,dm,0,0,0);CHKERRQ(ierr);
   /* Cleanup */
-  ierr = PetscSFDestroy(&pointSF);CHKERRQ(ierr);
+  if (sf) {*sf = pointSF;}
+  else    {ierr = PetscSFDestroy(&pointSF);CHKERRQ(ierr);}
   ierr = DMSetFromOptions(*dmParallel);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(DMPLEX_Distribute,dm,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
