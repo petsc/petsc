@@ -432,6 +432,8 @@ PetscErrorCode  MatFDColoringDestroy(MatFDColoring *c)
   ierr = PetscFree((*c)->columnsforrow);CHKERRQ(ierr);
   ierr = PetscFree((*c)->vscaleforrow);CHKERRQ(ierr);
   ierr = PetscFree((*c)->den2sp);CHKERRQ(ierr);
+  ierr = PetscFree2((*c)->colorforrow,(*c)->colorforcolumn);CHKERRQ(ierr);
+  ierr = PetscFree((*c)->rowcolden2sp3);CHKERRQ(ierr);
   ierr = VecDestroy(&(*c)->vscale);CHKERRQ(ierr);
   ierr = VecDestroy(&(*c)->w1);CHKERRQ(ierr);
   ierr = VecDestroy(&(*c)->w2);CHKERRQ(ierr);

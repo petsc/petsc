@@ -454,6 +454,10 @@ struct  _p_MatFDColoring{
   PetscInt       *nrows;           /* number of local rows for each color */
   PetscInt       **rows;           /* lists the local rows for each color (using the local row numbering) */
   PetscInt       **columnsforrow;  /* lists the corresponding columns for those rows (using the global column) */
+
+  PetscInt       *colorforrow,*colorforcolumn;  /* pointer to rows and columns -- will replace 2d arrays rows and columnsforrow */
+  PetscInt       *rowcolden2sp3;   /* nested array for row, col and den2sp indices -- will replace rows, columnsforrow and den2sp */
+
   PetscReal      error_rel;        /* square root of relative error in computing function */
   PetscReal      umin;             /* minimum allowable u'dx value */
   Vec            w1,w2,w3;         /* work vectors used in computing Jacobian */
