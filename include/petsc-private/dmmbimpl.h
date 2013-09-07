@@ -21,6 +21,8 @@ typedef struct {
   PetscInt            tag_size;
   PetscBool           new_tag;
   PetscBool           is_global_vec;
+  PetscBool           is_native_vec;
+  Vec                 local;
 } Vec_MOAB;
 
 
