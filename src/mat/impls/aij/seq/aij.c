@@ -2714,7 +2714,7 @@ PetscErrorCode MatSeqAIJRestoreArray_SeqAIJ(Mat A,PetscScalar *array[])
 }
 
 /* Optimize MatFDColoringApply_AIJ() by using array den2sp to skip calling MatSetValues() */
-/* #define JACOBIANCOLOROPT */
+//#define JACOBIANCOLOROPT 
 #if defined(JACOBIANCOLOROPT)
 #include <petsctime.h>
 #endif
@@ -2737,10 +2737,14 @@ PetscErrorCode MatFDColoringApply_SeqAIJ(Mat J,MatFDColoring coloring,Vec x1,Mat
   PetscInt       *den2sp=coloring->den2sp,*idx;
   PetscInt       **rows=coloring->rows,**columns=coloring->columns,ncolumns_k,nrows_k,**columnsforrow=coloring->columnsforrow;
 #if defined(JACOBIANCOLOROPT)
-  PetscLogDouble t0,t1,time_setvalues=0.0;
+  PetscLogDouble t0,t1,t_init=0.0,t_setvals=0.0,t_func=0.0,t_dx=0.0,t_kl=0.0,t00,t11;
 #endif
+  PetscInt       kl;
 
   PetscFunctionBegin;
+#if defined(JACOBIANCOLOROPT)
+    ierr = PetscTime(&t0);CHKERRQ(ierr);
+#endif
   ierr = MatSetUnfactored(J);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,"-mat_fd_coloring_dont_rezero",&flg,NULL);CHKERRQ(ierr);
   if (flg) {
@@ -2760,8 +2764,15 @@ PetscErrorCode MatFDColoringApply_SeqAIJ(Mat J,MatFDColoring coloring,Vec x1,Mat
   if (coloring->htype[0] == 'w') { /* tacky test; need to make systematic if we add other approaches to computing h*/
     ierr = VecNorm(x1,NORM_2,&unorm);CHKERRQ(ierr);
   }
+#if defined(JACOBIANCOLOROPT)
+    ierr = PetscTime(&t1);CHKERRQ(ierr);
+    t_init += t1 - t0;
+#endif
 
   /* Set w1 = F(x1) */
+#if defined(JACOBIANCOLOROPT)
+    ierr = PetscTime(&t0);CHKERRQ(ierr);
+#endif
   if (!coloring->fset) {
     ierr = PetscLogEventBegin(MAT_FDColoringFunction,0,0,0,0);CHKERRQ(ierr);
     ierr = (*f)(sctx,x1,w1,fctx);CHKERRQ(ierr);
@@ -2769,7 +2780,14 @@ PetscErrorCode MatFDColoringApply_SeqAIJ(Mat J,MatFDColoring coloring,Vec x1,Mat
   } else {
     coloring->fset = PETSC_FALSE;
   }
+#if defined(JACOBIANCOLOROPT)
+    ierr = PetscTime(&t1);CHKERRQ(ierr);
+    t_setvals += t1 - t0;
+#endif
 
+#if defined(JACOBIANCOLOROPT)
+    ierr = PetscTime(&t0);CHKERRQ(ierr);
+#endif
   if (!coloring->w3) {
     ierr = VecDuplicate(x1,&coloring->w3);CHKERRQ(ierr);
     ierr = PetscLogObjectParent((PetscObject)coloring,(PetscObject)coloring->w3);CHKERRQ(ierr);
@@ -2790,12 +2808,18 @@ PetscErrorCode MatFDColoringApply_SeqAIJ(Mat J,MatFDColoring coloring,Vec x1,Mat
     if (PetscAbsScalar(dx) < umin && PetscRealPart(dx) >= 0.0)     dx = umin;
     else if (PetscRealPart(dx) < 0.0 && PetscAbsScalar(dx) < umin) dx = -umin;
     dx               *= epsilon;
-    //vscale_array[col] = (PetscScalar)1.0/dx;
     vscale_array[col] = (PetscScalar)dx;
   }
+#if defined(JACOBIANCOLOROPT)
+    ierr = PetscTime(&t1);CHKERRQ(ierr);
+    t_init += t1 - t0;
+#endif
  
   idx = den2sp;
   for (k=0; k<ncolors; k++) { /* loop over colors */
+#if defined(JACOBIANCOLOROPT)
+    ierr = PetscTime(&t0);CHKERRQ(ierr);
+#endif
     coloring->currentcolor = k;
 
     /*
@@ -2807,43 +2831,63 @@ PetscErrorCode MatFDColoringApply_SeqAIJ(Mat J,MatFDColoring coloring,Vec x1,Mat
     ncolumns_k = ncolumns[k];
     for (l=0; l<ncolumns_k; l++) { /* loop over columns */
       col = columns[k][l];   
-      //w3_array[col] += 1/vscale_array[col]; 
       w3_array[col] += vscale_array[col]; 
     }
     ierr = VecRestoreArray(w3,&w3_array);CHKERRQ(ierr);
+#if defined(JACOBIANCOLOROPT)
+    ierr = PetscTime(&t1);CHKERRQ(ierr);
+    t_dx += t1 - t0;
+#endif
 
     /*
       Evaluate function at w3 = x1 + dx (here dx is a vector of perturbations)
                            w2 = F(x1 + dx) - F(x1)
     */
+#if defined(JACOBIANCOLOROPT)
+    ierr = PetscTime(&t0);CHKERRQ(ierr);
+#endif
     ierr = PetscLogEventBegin(MAT_FDColoringFunction,0,0,0,0);CHKERRQ(ierr);
     ierr = (*f)(sctx,w3,w2,fctx);CHKERRQ(ierr);
     ierr = PetscLogEventEnd(MAT_FDColoringFunction,0,0,0,0);CHKERRQ(ierr);
+#if defined(JACOBIANCOLOROPT)
+    ierr = PetscTime(&t1);CHKERRQ(ierr);
+    t_func += t1 - t0;
+#endif
+
+#if defined(JACOBIANCOLOROPT)
+    ierr = PetscTime(&t0);CHKERRQ(ierr);
+#endif
     ierr = VecAXPY(w2,-1.0,w1);CHKERRQ(ierr);
 
     /*
       Loop over rows of vector, putting w2/dx into Jacobian matrix
     */
-#if defined(JACOBIANCOLOROPT)
-    ierr = PetscTime(&t0);CHKERRQ(ierr);
-#endif
     ierr = VecGetArray(w2,&y);CHKERRQ(ierr);
     nrows_k = nrows[k];
     for (l=0; l<nrows_k; l++) { /* loop over rows */
+#if defined(JACOBIANCOLOROPT)
+    ierr = PetscTime(&t00);CHKERRQ(ierr);
+#endif
       row     = rows[k][l];     /* row index */
-      //y[row] *= vscale_array[columnsforrow[k][l]];
-      y[row] /= vscale_array[columnsforrow[k][l]];
-      ca[idx[l]] = y[row];
+      kl      = columnsforrow[k][l];
+#if defined(JACOBIANCOLOROPT)
+    ierr = PetscTime(&t11);CHKERRQ(ierr);
+    t_kl += t11 - t00;
+#endif
+
+      ca[idx[l]] = y[row]/vscale_array[kl];//y[row]/vscale_array[columnsforrow[k][l]];
     }
     idx += nrows_k;
     ierr = VecRestoreArray(w2,&y);CHKERRQ(ierr);
+
 #if defined(JACOBIANCOLOROPT)
     ierr = PetscTime(&t1);CHKERRQ(ierr);
-    time_setvalues += t1-t0;
+    t_setvals += t1 - t0;
 #endif
   } /* endof for each color */
 #if defined(JACOBIANCOLOROPT)
-  printf("     MatFDColoringApply_SeqAIJ: time_setvalues %g\n",time_setvalues);
+  printf("     FDColorApply time: init %g + func %g + setvalues %g + dx %g= %g\n",t_init,t_func,t_setvals,t_dx,t_init+t_func+t_setvals+t_dx);
+  printf("     FDColorApply time: kl %g\n",t_kl);
 #endif
   ierr = VecRestoreArray(coloring->vscale,&vscale_array);CHKERRQ(ierr);
   ierr = VecRestoreArray(x1,&xx);CHKERRQ(ierr);
