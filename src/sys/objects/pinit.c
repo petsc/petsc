@@ -845,7 +845,7 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
       ierr = PetscTestFile(appline,'r',&rootlocal);CHKERRQ(ierr);
     }
     if (rootlocal && help) {
-      ierr = PetscSNPrintf(appline,applinelen,"<center> Running <a href=\"%s.c.html\">%s</a> which %s </center><br>\n",programname,programname,help);
+      ierr = PetscSNPrintf(appline,applinelen,"<center> Running <a href=\"%s.c.html\">%s</a></center><br><pre>%s</pre><br>\n",programname,programname,help);
     } else if (help) {
       ierr = PetscSNPrintf(appline,applinelen,"<center>Running %s </center><br><pre>%s</pre><br>\n",programname,help);
     } else {

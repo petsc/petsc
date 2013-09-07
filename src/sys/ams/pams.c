@@ -77,7 +77,7 @@ PetscErrorCode  PetscSAWsBlock(void)
   volatile PetscBool block = PETSC_TRUE;
 
   PetscFunctionBegin;
-  PetscStackCallSAWs(SAWs_Register,("_Block",(PetscBool*)&block,1,SAWs_WRITE,SAWs_BOOLEAN));
+  PetscStackCallSAWs(SAWs_Register,("__Block",(PetscBool*)&block,1,SAWs_WRITE,SAWs_BOOLEAN));
   SAWs_Lock();
   while (block) {
     SAWs_Unlock();
@@ -86,7 +86,7 @@ PetscErrorCode  PetscSAWsBlock(void)
     SAWs_Lock();
   }
   SAWs_Unlock();
-  PetscStackCallSAWs(SAWs_Delete,("_Block"));
+  PetscStackCallSAWs(SAWs_Delete,("__Block"));
   ierr = PetscInfo(NULL,"Out of SAWs block\n");
   PetscFunctionReturn(0);
 }

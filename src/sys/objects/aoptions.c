@@ -372,7 +372,7 @@ PetscErrorCode PetscOptionsSAWsInput()
 
   PetscOptionsObject.pprefix = PetscOptionsObject.prefix; /* SAWs will change this, so cannot pass prefix directly */
 
-  ierr = PetscSNPrintf(dir,1024,"/PETSc/Options/%s","title");CHKERRQ(ierr);
+  ierr = PetscSNPrintf(dir,1024,"/PETSc/Options/%s","_title");CHKERRQ(ierr);
   PetscStackCallSAWs(SAWs_Register,(dir,&PetscOptionsObject.title,1,SAWs_READ,SAWs_STRING));
   ierr = PetscSNPrintf(dir,1024,"/PETSc/Options/%s","prefix");CHKERRQ(ierr);
   PetscStackCallSAWs(SAWs_Register,(dir,&PetscOptionsObject.pprefix,1,SAWs_READ,SAWs_STRING));
@@ -382,10 +382,10 @@ PetscErrorCode PetscOptionsSAWsInput()
     sprintf(setname,"set_%d",mancount);
     ierr = PetscSNPrintf(dir,1024,"/PETSc/Options/%s",setname);CHKERRQ(ierr);
     PetscStackCallSAWs(SAWs_Register,(dir,&next->set,1,SAWs_WRITE,SAWs_INT));
-    sprintf(manname,"man_%d",mancount);
+    sprintf(manname,"_man_%d",mancount);
     ierr = PetscSNPrintf(dir,1024,"/PETSc/Options/%s",manname);CHKERRQ(ierr);
     PetscStackCallSAWs(SAWs_Register,(dir,&next->man,1,SAWs_READ,SAWs_STRING));
-    sprintf(textname,"text_%d",mancount++);
+    sprintf(textname,"_text_%d",mancount++);
     ierr = PetscSNPrintf(dir,1024,"/PETSc/Options/%s",textname);CHKERRQ(ierr);
     PetscStackCallSAWs(SAWs_Register,(dir,&next->text,1,SAWs_READ,SAWs_STRING));
 

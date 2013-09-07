@@ -92,9 +92,9 @@ PetscErrorCode  PetscObjectViewSAWs(PetscObject obj,PetscViewer viewer)
   PetscStackCallSAWs(SAWs_Register,(dir,&obj->class_name,1,SAWs_READ,SAWs_STRING));
   ierr = PetscSNPrintf(dir,1024,"/PETSc/Objects/%s/Type",obj->name);CHKERRQ(ierr);
   PetscStackCallSAWs(SAWs_Register,(dir,&obj->type_name,1,SAWs_READ,SAWs_STRING));
-  ierr = PetscSNPrintf(dir,1024,"/PETSc/Objects/%s/_Id",obj->name);CHKERRQ(ierr);
+  ierr = PetscSNPrintf(dir,1024,"/PETSc/Objects/%s/__Id",obj->name);CHKERRQ(ierr);
   PetscStackCallSAWs(SAWs_Register,(dir,&obj->id,1,SAWs_READ,SAWs_INT));
-  ierr = PetscSNPrintf(dir,1024,"/PETSc/Objects/%s/_ParentID",obj->name);CHKERRQ(ierr);
+  ierr = PetscSNPrintf(dir,1024,"/PETSc/Objects/%s/__ParentID",obj->name);CHKERRQ(ierr);
   PetscStackCallSAWs(SAWs_Register,(dir,&obj->parentid,1,SAWs_READ,SAWs_INT));
   PetscFunctionReturn(0);
 }
