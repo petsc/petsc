@@ -540,6 +540,7 @@ PetscErrorCode PetscOptionsEnd_Private(void)
         break;
       case OPTION_STRING:
         ierr = PetscStrcpy(value,(char*)PetscOptionsObject.next->data);CHKERRQ(ierr);
+        break;
       case OPTION_STRING_ARRAY:
         sprintf(value,"%s",((char**)PetscOptionsObject.next->data)[0]);
         for (j=1; j<PetscOptionsObject.next->arraylength; j++) {
