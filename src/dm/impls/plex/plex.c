@@ -2712,15 +2712,25 @@ PetscErrorCode DMPlexCreatePartitionClosure(DM dm, PetscSection pointSection, IS
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexDistributeField"
-/*
+/*@
+  DMPlexDistributeField - Distribute field data to match a given PetscSF, usually the SF from mesh distribution
+
+  Collective on DM
+
   Input Parameters:
-. originalSection
-, originalVec
++ dm - The DMPlex object
+. pointSF - The PetscSF describing the communication pattern
+. originalSection - The PetscSection for existing data layout
+- originalVec - The existing data
 
   Output Parameters:
-. newSection
-. newVec
-*/
++ newSection - The PetscSF describing the new data layout
+- newVec - The new data
+
+  Level: developer
+
+.seealso: DMPlexDistribute(), DMPlexDistributeData()
+@*/
 PetscErrorCode DMPlexDistributeField(DM dm, PetscSF pointSF, PetscSection originalSection, Vec originalVec, PetscSection newSection, Vec newVec)
 {
   PetscSF        fieldSF;
@@ -2743,6 +2753,49 @@ PetscErrorCode DMPlexDistributeField(DM dm, PetscSF pointSF, PetscSection origin
   ierr = PetscSFDestroy(&fieldSF);CHKERRQ(ierr);
   ierr = VecRestoreArray(newVec, &newValues);CHKERRQ(ierr);
   ierr = VecRestoreArray(originalVec, &originalValues);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPlexDistributeData"
+/*@
+  DMPlexDistributeData - Distribute field data to match a given PetscSF, usually the SF from mesh distribution
+
+  Collective on DM
+
+  Input Parameters:
++ dm - The DMPlex object
+. pointSF - The PetscSF describing the communication pattern
+. originalSection - The PetscSection for existing data layout
+. datatype - The type of data
+- originalData - The existing data
+
+  Output Parameters:
++ newSection - The PetscSF describing the new data layout
+- newData - The new data
+
+  Level: developer
+
+.seealso: DMPlexDistribute(), DMPlexDistributeField()
+@*/
+PetscErrorCode DMPlexDistributeData(DM dm, PetscSF pointSF, PetscSection originalSection, MPI_Datatype datatype, void *originalData, PetscSection newSection, void **newData)
+{
+  PetscSF        fieldSF;
+  PetscInt      *remoteOffsets, fieldSize;
+  PetscMPIInt    dataSize;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscSFDistributeSection(pointSF, originalSection, &remoteOffsets, newSection);CHKERRQ(ierr);
+
+  ierr = PetscSectionGetStorageSize(newSection, &fieldSize);CHKERRQ(ierr);
+  ierr = MPI_Type_size(datatype, &dataSize);CHKERRQ(ierr);
+  ierr = PetscMalloc(fieldSize * dataSize, newData);CHKERRQ(ierr);
+
+  ierr = PetscSFCreateSectionSF(pointSF, originalSection, remoteOffsets, newSection, &fieldSF);CHKERRQ(ierr);
+  ierr = PetscSFBcastBegin(fieldSF, datatype, originalData, *newData);CHKERRQ(ierr);
+  ierr = PetscSFBcastEnd(fieldSF, datatype, originalData, *newData);CHKERRQ(ierr);
+  ierr = PetscSFDestroy(&fieldSF);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
