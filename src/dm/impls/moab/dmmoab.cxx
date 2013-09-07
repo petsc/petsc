@@ -55,15 +55,39 @@ PetscErrorCode DMSetUp_Moab(DM dm)
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   /* Get the local and shared vertices and cache it */
   if (dmmoab->mbiface == PETSC_NULL || dmmoab->pcomm == PETSC_NULL) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ORDER, "Set the MOAB Interface and ParallelComm objects before calling SetUp.");
-  if (!dmmoab->vlocal->empty()) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ORDER, "DMMoab already initialized.");
  
   /* Get the entities recursively in the current part of the mesh, if user did not set the local vertices explicitly */
+  if (dmmoab->vlocal->empty())
   {
     merr = dmmoab->mbiface->get_entities_by_type(dmmoab->fileset,moab::MBVERTEX,*dmmoab->vlocal,true);MBERRNM(merr);
 
     /* filter based on parallel status */
     merr = dmmoab->pcomm->filter_pstatus(*dmmoab->vlocal,PSTATUS_NOT_OWNED,PSTATUS_NOT,-1,dmmoab->vowned);MBERRNM(merr);
 
+    /* filter all the non-owned and shared entities out of the list */
+    adjs = moab::subtract(*dmmoab->vlocal, *dmmoab->vowned);
+    merr = dmmoab->pcomm->filter_pstatus(adjs,PSTATUS_INTERFACE,PSTATUS_OR,-1,dmmoab->vghost);MBERRNM(merr);
+    adjs = moab::subtract(adjs, *dmmoab->vghost);
+    *dmmoab->vlocal = moab::subtract(*dmmoab->vlocal, adjs);
+
+    /* compute and cache the sizes of local and ghosted entities */
+    dmmoab->nloc = dmmoab->vowned->size();
+    dmmoab->nghost = dmmoab->vghost->size();
+    ierr = MPI_Allreduce(&dmmoab->nloc, &dmmoab->n, 1, MPI_INTEGER, MPI_SUM, ((PetscObject)dm)->comm);CHKERRQ(ierr);
+
+#if 0
+    if(dmmoab->pcomm->rank() || dmmoab->pcomm->size()==1) {
+      PetscPrintf(PETSC_COMM_SELF, "Vertices: global: %D, local: %D", dmmoab->n, dmmoab->nloc+dmmoab->nghost);
+      dmmoab->vlocal->print(0);
+      PetscPrintf(PETSC_COMM_SELF, "Vertices: owned: %D", dmmoab->nloc);
+      dmmoab->vowned->print(0);
+      PetscPrintf(PETSC_COMM_SELF, "Vertices: ghost: %D", dmmoab->nghost);
+      dmmoab->vghost->print(0);
+    }
+#endif
+  }
+
+  {
     /* get the information about the local elements in the mesh */
     dmmoab->eghost->clear();
 
@@ -84,31 +108,8 @@ PetscErrorCode DMSetUp_Moab(DM dm)
     merr = dmmoab->pcomm->filter_pstatus(*dmmoab->elocal,PSTATUS_NOT_OWNED,PSTATUS_NOT);MBERRNM(merr);
     *dmmoab->eghost = moab::subtract(*dmmoab->eghost, *dmmoab->elocal);
 
-    /* filter all the non-owned and shared entities out of the list */
-    adjs = moab::subtract(*dmmoab->vlocal, *dmmoab->vowned);
-    merr = dmmoab->pcomm->filter_pstatus(adjs,PSTATUS_INTERFACE,PSTATUS_OR,-1,dmmoab->vghost);MBERRNM(merr);
-    adjs = moab::subtract(adjs, *dmmoab->vghost);
-    *dmmoab->vlocal = moab::subtract(*dmmoab->vlocal, adjs);
-
-    /* compute and cache the sizes of local and ghosted entities */
-    dmmoab->nloc = dmmoab->vowned->size();
-    dmmoab->nghost = dmmoab->vghost->size();
-    ierr = MPI_Allreduce(&dmmoab->nloc, &dmmoab->n, 1, MPI_INTEGER, MPI_SUM, ((PetscObject)dm)->comm);CHKERRQ(ierr);
-
     dmmoab->neleloc = dmmoab->elocal->size();
     ierr = MPI_Allreduce(&dmmoab->neleloc, &dmmoab->nele, 1, MPI_INTEGER, MPI_SUM, ((PetscObject)dm)->comm);CHKERRQ(ierr);
-
-#if 0
-    if(dmmoab->pcomm->rank() || dmmoab->pcomm->size()==1) {
-      PetscPrintf(PETSC_COMM_SELF, "Vertices: global: %D, local: %D", dmmoab->n, dmmoab->nloc+dmmoab->nghost);
-      dmmoab->vlocal->print(0);
-      PetscPrintf(PETSC_COMM_SELF, "Vertices: owned: %D", dmmoab->nloc);
-      dmmoab->vowned->print(0);
-      PetscPrintf(PETSC_COMM_SELF, "Vertices: ghost: %D", dmmoab->nghost);
-      dmmoab->vghost->print(0);
-    }
-#endif
-
   }
 
   bs = dmmoab->bs;
@@ -520,18 +521,28 @@ PetscErrorCode DMMoabSetLocalVertices(DM dm,moab::Range *range)
 {
   moab::ErrorCode merr;
   PetscErrorCode  ierr;
+  moab::Range     tmpvtxs;
   DM_Moab        *dmmoab = (DM_Moab*)(dm)->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   dmmoab->vlocal->clear();
   dmmoab->vowned->clear();
+
   dmmoab->vlocal->insert(range->begin(), range->end());
-  *dmmoab->vowned = *dmmoab->vlocal;
-  merr = dmmoab->pcomm->filter_pstatus(*dmmoab->vowned,PSTATUS_NOT_OWNED,PSTATUS_NOT);MBERRNM(merr);
-  *dmmoab->vghost = moab::subtract(*range, *dmmoab->vowned);
-  dmmoab->nloc=dmmoab->vowned->size();
-  dmmoab->nghost=dmmoab->vghost->size();
+
+  /* filter based on parallel status */
+  merr = dmmoab->pcomm->filter_pstatus(*dmmoab->vlocal,PSTATUS_NOT_OWNED,PSTATUS_NOT,-1,dmmoab->vowned);MBERRNM(merr);
+
+  /* filter all the non-owned and shared entities out of the list */
+  tmpvtxs = moab::subtract(*dmmoab->vlocal, *dmmoab->vowned);
+  merr = dmmoab->pcomm->filter_pstatus(tmpvtxs,PSTATUS_INTERFACE,PSTATUS_OR,-1,dmmoab->vghost);MBERRNM(merr);
+  tmpvtxs = moab::subtract(tmpvtxs, *dmmoab->vghost);
+  *dmmoab->vlocal = moab::subtract(*dmmoab->vlocal, tmpvtxs);
+
+  /* compute and cache the sizes of local and ghosted entities */
+  dmmoab->nloc = dmmoab->vowned->size();
+  dmmoab->nghost = dmmoab->vghost->size();
   ierr = MPI_Allreduce(&dmmoab->nloc, &dmmoab->n, 1, MPI_INTEGER, MPI_SUM, ((PetscObject)dm)->comm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
