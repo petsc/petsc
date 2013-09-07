@@ -795,9 +795,10 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
 
 #if defined(PETSC_HAVE_SAWS)
   if (!PetscGlobalRank) {
-    char        cert[PETSC_MAX_PATH_LEN],root[PETSC_MAX_PATH_LEN],intro[4024],programname[64],appline[256];
+    char        cert[PETSC_MAX_PATH_LEN],root[PETSC_MAX_PATH_LEN],*intro,programname[64],*appline;
     int         port;
     PetscBool   rootlocal = PETSC_FALSE,flg2;
+    size_t      applinelen,introlen;
 
     ierr = PetscOptionsHasName(NULL,"-saws_log",&flg);CHKERRQ(ierr);
     if (flg) {
@@ -833,23 +834,31 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
       PetscStackCallSAWs(SAWs_Set_Local_JSHeader,());CHKERRQ(ierr);
     }
     ierr = PetscGetProgramName(programname,64);CHKERRQ(ierr);
+    ierr = PetscStrlen(help,&applinelen);CHKERRQ(ierr);
+    introlen   = 4096 + applinelen;
+    applinelen += 256;
+    ierr = PetscMalloc(applinelen,&appline);CHKERRQ(ierr);
+    ierr = PetscMalloc(introlen,&intro);CHKERRQ(ierr);
+
     if (rootlocal) {
-      ierr = PetscSNPrintf(appline,256,"%s.c.html",programname);CHKERRQ(ierr);
+      ierr = PetscSNPrintf(appline,applinelen,"%s.c.html",programname);CHKERRQ(ierr);
       ierr = PetscTestFile(appline,'r',&rootlocal);CHKERRQ(ierr);
     }
     if (rootlocal && help) {
-      ierr = PetscSNPrintf(appline,256,"<center> Running <a href=\"%s.c.html\">%s</a> which %s </center><br>\n",programname,programname,help);
+      ierr = PetscSNPrintf(appline,applinelen,"<center> Running <a href=\"%s.c.html\">%s</a> which %s </center><br>\n",programname,programname,help);
     } else if (help) {
-      ierr = PetscSNPrintf(appline,256,"<center> Running %s which %s </center><br>\n",programname,help);
+      ierr = PetscSNPrintf(appline,applinelen,"<center>Running %s </center><br><pre>%s</pre><br>\n",programname,help);
     } else {
-      ierr = PetscSNPrintf(appline,256,"<center> Running %s</center><br>\n",programname);
+      ierr = PetscSNPrintf(appline,applinelen,"<center> Running %s</center><br>\n",programname);
     }
 
-    ierr = PetscSNPrintf(intro,4024,"<body>\n"
+    ierr = PetscSNPrintf(intro,introlen,"<body>\n"
                                     "<center><h2> <a href=\"http://www.mcs.anl.gov/petsc\">PETSc</a> Application Web server powered by <a href=\"https://bitbucket.org/saws/saws\">SAWs</a> </h2></center>\n"
                                     "%s"
                                     "<center>This is the default PETSc application dashboard, from it you can access any published PETSc objects or logging data</center><br>\n",appline);
     PetscStackCallSAWs(SAWs_Set_Body,("index.html",0,intro));
+    ierr = PetscFree(intro);CHKERRQ(ierr);
+    ierr = PetscFree(appline);CHKERRQ(ierr);
     PetscStackCallSAWs(SAWs_Initialize,());
     ierr = PetscCitationsRegister("@TechReport{ saws,"
                                   "Author = {Matt Otten and Jed Brown and Barry Smith},"
@@ -1023,7 +1032,7 @@ PetscErrorCode  PetscFinalize(void)
 
 #if defined(PETSC_HAVE_SAWS)
   flg = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,"-options_gui",&flg,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-saw_options",&flg,NULL);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscOptionsSAWsDestroy();CHKERRQ(ierr);
   }

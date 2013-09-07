@@ -505,7 +505,7 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
   }
 #endif
 
-  ierr = PetscOptionsGetBool(NULL,"-options_gui",&PetscOptionsPublish,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,"-saws_options",&PetscOptionsPublish,NULL);CHKERRQ(ierr);
 
 #if defined(PETSC_HAVE_CUDA)
   ierr = PetscOptionsHasName(NULL,"-cuda_show_devices",&flg1);CHKERRQ(ierr);
