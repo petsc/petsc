@@ -226,7 +226,8 @@ PetscErrorCode DMDAGetHeightStratum(DM dm, PetscInt height, PetscInt *pStart, Pe
 @*/
 PetscErrorCode DMDACreateSection(DM dm, PetscInt numComp[], PetscInt numVertexDof[], PetscInt numFaceDof[], PetscInt numCellDof[])
 {
-  DM_DA             *da = (DM_DA*) dm->data;
+  DM_DA            *da  = (DM_DA*) dm->data;
+  PetscSection      section;
   const PetscInt    dim = da->dim;
   PetscInt          numFields, numVertexTotDof = 0, numCellTotDof = 0, numFaceTotDof[3] = {0, 0, 0};
   PetscSF           sf;
@@ -265,59 +266,59 @@ PetscErrorCode DMDACreateSection(DM dm, PetscInt numComp[], PetscInt numVertexDo
       numFaceTotDof[2] += dim > 2 ? numFaceDof[f*dim+2] : 0;
     }
   }
-  ierr = PetscSectionCreate(PetscObjectComm((PetscObject)dm), &dm->defaultSection);CHKERRQ(ierr);
+  ierr = PetscSectionCreate(PetscObjectComm((PetscObject)dm), &section);CHKERRQ(ierr);
   if (numFields > 1) {
-    ierr = PetscSectionSetNumFields(dm->defaultSection, numFields);CHKERRQ(ierr);
+    ierr = PetscSectionSetNumFields(section, numFields);CHKERRQ(ierr);
     for (f = 0; f < numFields; ++f) {
       const char *name;
 
       ierr = DMDAGetFieldName(dm, f, &name);CHKERRQ(ierr);
-      ierr = PetscSectionSetFieldName(dm->defaultSection, f, name);CHKERRQ(ierr);
+      ierr = PetscSectionSetFieldName(section, f, name);CHKERRQ(ierr);
       if (numComp) {
-        ierr = PetscSectionSetFieldComponents(dm->defaultSection, f, numComp[f]);CHKERRQ(ierr);
+        ierr = PetscSectionSetFieldComponents(section, f, numComp[f]);CHKERRQ(ierr);
       }
     }
   } else {
     numFields = 0;
   }
-  ierr = PetscSectionSetChart(dm->defaultSection, pStart, pEnd);CHKERRQ(ierr);
+  ierr = PetscSectionSetChart(section, pStart, pEnd);CHKERRQ(ierr);
   if (numVertexDof) {
     for (v = vStart; v < vEnd; ++v) {
       for (f = 0; f < numFields; ++f) {
-        ierr = PetscSectionSetFieldDof(dm->defaultSection, v, f, numVertexDof[f]);CHKERRQ(ierr);
+        ierr = PetscSectionSetFieldDof(section, v, f, numVertexDof[f]);CHKERRQ(ierr);
       }
-      ierr = PetscSectionSetDof(dm->defaultSection, v, numVertexTotDof);CHKERRQ(ierr);
+      ierr = PetscSectionSetDof(section, v, numVertexTotDof);CHKERRQ(ierr);
     }
   }
   if (numFaceDof) {
     for (xf = xfStart; xf < xfEnd; ++xf) {
       for (f = 0; f < numFields; ++f) {
-        ierr = PetscSectionSetFieldDof(dm->defaultSection, xf, f, numFaceDof[f*dim+0]);CHKERRQ(ierr);
+        ierr = PetscSectionSetFieldDof(section, xf, f, numFaceDof[f*dim+0]);CHKERRQ(ierr);
       }
-      ierr = PetscSectionSetDof(dm->defaultSection, xf, numFaceTotDof[0]);CHKERRQ(ierr);
+      ierr = PetscSectionSetDof(section, xf, numFaceTotDof[0]);CHKERRQ(ierr);
     }
     for (yf = yfStart; yf < yfEnd; ++yf) {
       for (f = 0; f < numFields; ++f) {
-        ierr = PetscSectionSetFieldDof(dm->defaultSection, yf, f, numFaceDof[f*dim+1]);CHKERRQ(ierr);
+        ierr = PetscSectionSetFieldDof(section, yf, f, numFaceDof[f*dim+1]);CHKERRQ(ierr);
       }
-      ierr = PetscSectionSetDof(dm->defaultSection, yf, numFaceTotDof[1]);CHKERRQ(ierr);
+      ierr = PetscSectionSetDof(section, yf, numFaceTotDof[1]);CHKERRQ(ierr);
     }
     for (zf = zfStart; zf < zfEnd; ++zf) {
       for (f = 0; f < numFields; ++f) {
-        ierr = PetscSectionSetFieldDof(dm->defaultSection, zf, f, numFaceDof[f*dim+2]);CHKERRQ(ierr);
+        ierr = PetscSectionSetFieldDof(section, zf, f, numFaceDof[f*dim+2]);CHKERRQ(ierr);
       }
-      ierr = PetscSectionSetDof(dm->defaultSection, zf, numFaceTotDof[2]);CHKERRQ(ierr);
+      ierr = PetscSectionSetDof(section, zf, numFaceTotDof[2]);CHKERRQ(ierr);
     }
   }
   if (numCellDof) {
     for (c = cStart; c < cEnd; ++c) {
       for (f = 0; f < numFields; ++f) {
-        ierr = PetscSectionSetFieldDof(dm->defaultSection, c, f, numCellDof[f]);CHKERRQ(ierr);
+        ierr = PetscSectionSetFieldDof(section, c, f, numCellDof[f]);CHKERRQ(ierr);
       }
-      ierr = PetscSectionSetDof(dm->defaultSection, c, numCellTotDof);CHKERRQ(ierr);
+      ierr = PetscSectionSetDof(section, c, numCellTotDof);CHKERRQ(ierr);
     }
   }
-  ierr = PetscSectionSetUp(dm->defaultSection);CHKERRQ(ierr);
+  ierr = PetscSectionSetUp(section);CHKERRQ(ierr);
   /* Create mesh point SF */
   ierr = DMDAGetNeighbors(dm, &neighbors);CHKERRQ(ierr);
   for (zn = 0; zn < (dim > 2 ? 3 : 1); ++zn) {
@@ -707,11 +708,10 @@ PetscErrorCode DMDACreateSection(DM dm, PetscInt numComp[], PetscInt numVertexDo
   if (nleaves != nleavesCheck) SETERRQ2(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "The number of leaves %d did not match the number of remote leaves %d", nleaves, nleavesCheck);
   ierr = PetscSFCreate(PetscObjectComm((PetscObject)dm), &sf);CHKERRQ(ierr);
   ierr = PetscSFSetGraph(sf, pEnd, nleaves, localPoints, PETSC_OWN_POINTER, remotePoints, PETSC_OWN_POINTER);CHKERRQ(ierr);
-  /* Create global section */
-  ierr = PetscSectionCreateGlobalSection(dm->defaultSection, sf, PETSC_FALSE, &dm->defaultGlobalSection);CHKERRQ(ierr);
+  ierr = DMSetPointSF(dm, sf);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
-  /* Create default SF */
-  ierr = DMCreateDefaultSF(dm, dm->defaultSection, dm->defaultGlobalSection);CHKERRQ(ierr);
+  ierr = DMSetDefaultSection(dm, section);CHKERRQ(ierr);
+  ierr = PetscSectionDestroy(&section);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
