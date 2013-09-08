@@ -2307,6 +2307,7 @@ PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt depthSiz
         supportRef[0] = fStartNew + (f - fStart)*4 + r;
         supportRef[1] = fStartNew + (f - fStart)*4 + (r+1)%4;
         for (s = 0; s < supportSize; ++s) {
+          ierr = DMPlexGetConeSize(dm, f, &coneSize);CHKERRQ(ierr);
           ierr = DMPlexGetCone(dm, f, &coneCell);CHKERRQ(ierr);
           for (c = 0; c < coneSize; ++c) if (coneCell[c] == f) break;
           supportRef[2+s] = fStartNew + (f - fStart)*4 + newFaces[c*4+r];
