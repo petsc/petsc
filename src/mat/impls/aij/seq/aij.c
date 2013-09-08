@@ -2713,13 +2713,10 @@ PetscErrorCode MatFDColoringApply_SeqAIJ(Mat J,MatFDColoring coloring,Vec x1,Mat
   Mat_SeqAIJ     *csp=(Mat_SeqAIJ*)J->data;
   PetscScalar    *ca=csp->a;
   const PetscInt ncolors=coloring->ncolors,*ncolumns=coloring->ncolumns,*nrows=coloring->nrows;
-  //const PetscInt *colorforrow=coloring->colorforrow,*colorforcolumn=coloring->colorforcolumn;
-  PetscInt       *den2sp=coloring->den2sp,*idx,idx_tmp;
-  PetscInt       **columns=coloring->columns,ncolumns_k,nrows_k;
+  PetscInt       **columns=coloring->columns,ncolumns_k,nrows_k,nz,spidx;
 #if defined(JACOBIANCOLOROPT)
   PetscLogDouble t0,t1,t_init=0.0,t_setvals=0.0,t_func=0.0,t_dx=0.0,t_kl=0.0,t00,t11;
 #endif
-  PetscInt       nz;
 
   PetscFunctionBegin;
 #if defined(JACOBIANCOLOROPT)
@@ -2795,7 +2792,6 @@ PetscErrorCode MatFDColoringApply_SeqAIJ(Mat J,MatFDColoring coloring,Vec x1,Mat
     t_init += t1 - t0;
 #endif
  
-  idx = den2sp;
   nz  = 0;
   for (k=0; k<ncolors; k++) { /* loop over colors */
 #if defined(JACOBIANCOLOROPT)
@@ -2849,18 +2845,15 @@ PetscErrorCode MatFDColoringApply_SeqAIJ(Mat J,MatFDColoring coloring,Vec x1,Mat
 #if defined(JACOBIANCOLOROPT)
     ierr = PetscTime(&t00);CHKERRQ(ierr);
 #endif
-      row = coloring->rowcolden2sp3[3*nz];
-      col = coloring->rowcolden2sp3[3*nz+1];
-      idx_tmp = coloring->rowcolden2sp3[3*nz+2];
+      row   = coloring->rowcolden2sp3[nz++];
+      col   = coloring->rowcolden2sp3[nz++];
+      spidx = coloring->rowcolden2sp3[nz++];
 #if defined(JACOBIANCOLOROPT)
       ierr = PetscTime(&t11);CHKERRQ(ierr);
       t_kl += t11 - t00;
 #endif
-      //ca[idx[l]] = y[row]/vscale_array[col];
-      ca[idx_tmp] = y[row]/vscale_array[col];
-      nz++;
+      ca[spidx] = y[row]/vscale_array[col];
     }
-    idx += nrows_k;
     ierr = VecRestoreArray(w2,&y);CHKERRQ(ierr);
 
 #if defined(JACOBIANCOLOROPT)

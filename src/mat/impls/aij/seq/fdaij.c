@@ -11,11 +11,10 @@ PetscErrorCode MatFDColoringCreate_SeqAIJ_den2sp(Mat mat,ISColoring iscoloring,M
   PetscErrorCode ierr;
   PetscInt       i,n,nrows,N,j,k,m,ncols,col;
   const PetscInt *is,*rows,*ci,*cj;
-  PetscInt       nis=iscoloring->n,*rowhit,*columnsforrow,bs=1,*spidx,*spidxhit;
+  PetscInt       nis=iscoloring->n,*rowhit,*columnsforrow,bs=1,*spidx,*spidxhit,nz;
   IS             *isa;
   PetscBool      flg1;     
   Mat_SeqAIJ     *csp = (Mat_SeqAIJ*)mat->data;
-  PetscInt       nz_den;
 
   PetscFunctionBegin;
   ierr = ISColoringGetIS(iscoloring,PETSC_IGNORE,&isa);CHKERRQ(ierr);
@@ -43,7 +42,7 @@ PetscErrorCode MatFDColoringCreate_SeqAIJ_den2sp(Mat mat,ISColoring iscoloring,M
   ierr = PetscMalloc3(c->m,PetscInt,&rowhit,N,PetscInt,&columnsforrow,c->m,PetscInt,&spidxhit);CHKERRQ(ierr);
   ierr = PetscMemzero(rowhit,c->m*sizeof(PetscInt));CHKERRQ(ierr);
 
-  nz_den = 0;
+  nz = 0;
   for (i=0; i<nis; i++) { /* loop over colors */
     ierr = ISGetLocalSize(isa[i],&n);CHKERRQ(ierr);
     ierr = ISGetIndices(isa[i],&is);CHKERRQ(ierr);
@@ -73,16 +72,15 @@ PetscErrorCode MatFDColoringCreate_SeqAIJ_den2sp(Mat mat,ISColoring iscoloring,M
     nrows = 0;
     for (j=0; j<N; j++) { /* loop over rows */
       if (rowhit[j]) {
-        c->rowcolden2sp3[3*nz_den]   = j;             /* row index */
-        c->rowcolden2sp3[3*nz_den+1] = rowhit[j] - 1; /* column index */
-        c->rowcolden2sp3[3*nz_den+2] = spidxhit[j];   /* den2sp index */
-        nz_den++;
-        rowhit[j] = 0.0; /* zero rowhit for reuse */
+        c->rowcolden2sp3[nz++]   = j;             /* row index */
+        c->rowcolden2sp3[nz++] = rowhit[j] - 1;   /* column index */
+        c->rowcolden2sp3[nz++] = spidxhit[j];     /* den2sp index */
+        rowhit[j] = 0.0;                          /* zero rowhit for reuse */
       }
     } 
     ierr = ISRestoreIndices(isa[i],&is);CHKERRQ(ierr);
   }
-  if (nz_den != csp->nz) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"nz_den %d != mat->nz %d\n",nz_den,csp->nz); 
+  if (nz/3 != csp->nz) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"nz %d != mat->nz %d\n",nz/3,csp->nz); 
 
   ierr = MatRestoreColumnIJ_SeqAIJ_Color(mat,0,PETSC_FALSE,PETSC_FALSE,&ncols,&ci,&cj,&spidx,NULL);CHKERRQ(ierr);
   ierr = PetscFree3(rowhit,columnsforrow,spidxhit);CHKERRQ(ierr);
