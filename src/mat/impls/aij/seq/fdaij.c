@@ -11,20 +11,21 @@ PetscErrorCode MatFDColoringCreate_SeqAIJ_den2sp(Mat mat,ISColoring iscoloring,M
   PetscErrorCode ierr;
   PetscInt       i,n,nrows,N,j,k,m,ncols,col;
   const PetscInt *is,*rows,*ci,*cj;
-  PetscInt       nis=iscoloring->n,*rowhit,*columnsforrow,bs=1,*spidx,*spidxhit,nz;
+  PetscInt       nis=iscoloring->n,*rowhit,*columnsforrow,bs,*spidx,*spidxhit,nz;
   IS             *isa;
   PetscBool      flg1;     
   Mat_SeqAIJ     *csp = (Mat_SeqAIJ*)mat->data;
 
   PetscFunctionBegin;
   ierr = ISColoringGetIS(iscoloring,PETSC_IGNORE,&isa);CHKERRQ(ierr);
+
   /* this is ugly way to get blocksize but cannot call MatGetBlockSize() because AIJ can have bs > 1.
      SeqBAIJ calls this routine, thus check it */
+  ierr = MatGetBlockSize(mat,&bs);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)mat,MATSEQBAIJ,&flg1);CHKERRQ(ierr);
-  if (flg1) {
-    ierr = MatGetBlockSize(mat,&bs);CHKERRQ(ierr);
+  if (!flg1) {
+    bs = 1; /* only bs=1 is supported for non SEQBAIJ matrix */
   }
-
   N         = mat->cmap->N/bs;
   c->M      = mat->rmap->N/bs;   /* set total rows, columns and local rows */
   c->N      = mat->cmap->N/bs;
@@ -88,6 +89,7 @@ PetscErrorCode MatFDColoringCreate_SeqAIJ_den2sp(Mat mat,ISColoring iscoloring,M
 
   c->ctype                  = IS_COLORING_GHOSTED;
   mat->ops->fdcoloringapply = MatFDColoringApply_SeqAIJ;
+  ierr = VecCreateGhost(PetscObjectComm((PetscObject)mat),mat->rmap->n,PETSC_DETERMINE,0,NULL,&c->vscale);CHKERRQ(ierr); 
   PetscFunctionReturn(0);
 }
 
