@@ -233,7 +233,7 @@ struct _n_PetscOptions {
   char              nlist;         /* number of entries in list */
   char              *man;
   size_t            arraylength;   /* number of entries in data in the case that it is an array (of PetscInt etc) */
-  PetscBool         set;           /* the user has changed this value in the GUI */
+  int               set;           /* the user has changed this value in the GUI */
   PetscOptionType   type;
   PetscOptions      next;
   char              *pman;

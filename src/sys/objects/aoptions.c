@@ -364,7 +364,7 @@ PetscErrorCode PetscOptionsSAWsInput()
   static int     mancount = 0;
   char           options[16];
   PetscBool      changedmethod = PETSC_FALSE;
-  char           manname[16],setname[16],textname[16];
+  char           manname[16],textname[16];
   char           dir[1024];
 
   /* the next line is a bug, this will only work if all processors are here, the comm passed in is ignored!!! */
@@ -379,9 +379,6 @@ PetscErrorCode PetscOptionsSAWsInput()
   PetscStackCallSAWs(SAWs_Register,("/PETSc/Options/ChangedMethod",&changedmethod,1,SAWs_WRITE,SAWs_BOOLEAN));
 
   while (next) {
-    sprintf(setname,"set_%d",mancount);
-    ierr = PetscSNPrintf(dir,1024,"/PETSc/Options/%s",setname);CHKERRQ(ierr);
-    PetscStackCallSAWs(SAWs_Register,(dir,&next->set,1,SAWs_WRITE,SAWs_INT));
     sprintf(manname,"_man_%d",mancount);
     ierr = PetscSNPrintf(dir,1024,"/PETSc/Options/%s",manname);CHKERRQ(ierr);
     PetscStackCallSAWs(SAWs_Register,(dir,&next->man,1,SAWs_READ,SAWs_STRING));
@@ -449,6 +446,15 @@ PetscErrorCode PetscOptionsSAWsInput()
 
   /* wait until accessor has unlocked the memory */
   ierr = PetscSAWsBlock();CHKERRQ(ierr);
+
+  /* determine if any values have been set in GUI */
+  next = PetscOptionsObject.next;
+  while (next) {
+    ierr = PetscSNPrintf(dir,1024,"/PETSc/Options/%s",next->option);CHKERRQ(ierr);
+    PetscStackCallSAWs(SAWs_Selected,(dir,&next->set));
+    printf("%d set \n",next->set);
+    next = next->next;
+  }
 
   /* reset counter to -2; this updates the screen with the new options for the selected method */
   if (changedmethod) PetscOptionsPublishCount = -2;
