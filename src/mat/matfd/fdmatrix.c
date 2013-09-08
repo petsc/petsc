@@ -421,18 +421,22 @@ PetscErrorCode  MatFDColoringDestroy(MatFDColoring *c)
 
   for (i=0; i<(*c)->ncolors; i++) {
     ierr = PetscFree((*c)->columns[i]);CHKERRQ(ierr);
-    ierr = PetscFree((*c)->rows[i]);CHKERRQ(ierr);
-    ierr = PetscFree((*c)->columnsforrow[i]);CHKERRQ(ierr);
+    if ((*c)->rows) {
+      ierr = PetscFree((*c)->rows[i]);CHKERRQ(ierr);
+      ierr = PetscFree((*c)->columnsforrow[i]);CHKERRQ(ierr);
+    }
     if ((*c)->vscaleforrow) {ierr = PetscFree((*c)->vscaleforrow[i]);CHKERRQ(ierr);}
   }
   ierr = PetscFree((*c)->ncolumns);CHKERRQ(ierr);
   ierr = PetscFree((*c)->columns);CHKERRQ(ierr);
   ierr = PetscFree((*c)->nrows);CHKERRQ(ierr);
-  ierr = PetscFree((*c)->rows);CHKERRQ(ierr);
-  ierr = PetscFree((*c)->columnsforrow);CHKERRQ(ierr);
+  if ((*c)->rows) {
+    ierr = PetscFree((*c)->rows);CHKERRQ(ierr);
+    ierr = PetscFree((*c)->columnsforrow);CHKERRQ(ierr);
+  } else {
+    ierr = PetscFree((*c)->rowcolden2sp3);CHKERRQ(ierr);
+  }
   ierr = PetscFree((*c)->vscaleforrow);CHKERRQ(ierr);
-  ierr = PetscFree((*c)->den2sp);CHKERRQ(ierr);
-  ierr = PetscFree2((*c)->colorforrow,(*c)->colorforcolumn);CHKERRQ(ierr);
   ierr = PetscFree((*c)->rowcolden2sp3);CHKERRQ(ierr);
   ierr = VecDestroy(&(*c)->vscale);CHKERRQ(ierr);
   ierr = VecDestroy(&(*c)->w1);CHKERRQ(ierr);
