@@ -2520,6 +2520,70 @@ PetscErrorCode MatRestoreColumnIJ_SeqBAIJ(Mat A,PetscInt oshift,PetscBool symmet
   PetscFunctionReturn(0);
 }
 
+/*
+ MatGetColumnIJ_SeqBAIJ_Color() and MatRestoreColumnIJ_SeqBAIJ_Color() are customized from
+ MatGetColumnIJ_SeqBAIJ() and MatRestoreColumnIJ_SeqBAIJ() by adding an output
+ spidx[], index of a->a, to be used in MatTransposeColoringCreate_SeqBAIJ() and MatFDColoringCreate_SeqBAIJ()
+*/
+#undef __FUNCT__
+#define __FUNCT__ "MatGetColumnIJ_SeqBAIJ_Color"
+PetscErrorCode MatGetColumnIJ_SeqBAIJ_Color(Mat A,PetscInt oshift,PetscBool symmetric,PetscBool inodecompressed,PetscInt *nn,const PetscInt *ia[],const PetscInt *ja[],PetscInt *spidx[],PetscBool  *done)
+{
+  Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data;
+  PetscErrorCode ierr;
+  PetscInt       i,*collengths,*cia,*cja,n=a->nbs,m=a->mbs; //n = A->cmap->n,m = A->rmap->n;
+  PetscInt       nz = a->i[m],row,*jj,mr,col;
+  PetscInt       *cspidx;
+
+  PetscFunctionBegin;
+  *nn = n;
+  if (!ia) PetscFunctionReturn(0);
+  if (symmetric) {
+    SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"MatGetColumnIJ_SeqAIJ_Color() not supported for the case symmetric");
+    ierr = MatToSymmetricIJ_SeqAIJ(A->rmap->n,a->i,a->j,0,oshift,(PetscInt**)ia,(PetscInt**)ja);CHKERRQ(ierr);
+  } else {
+    ierr = PetscMalloc((n+1)*sizeof(PetscInt),&collengths);CHKERRQ(ierr);
+    ierr = PetscMemzero(collengths,n*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscMalloc((n+1)*sizeof(PetscInt),&cia);CHKERRQ(ierr);
+    ierr = PetscMalloc((nz+1)*sizeof(PetscInt),&cja);CHKERRQ(ierr);
+    ierr = PetscMalloc((nz+1)*sizeof(PetscInt),&cspidx);CHKERRQ(ierr);
+    jj   = a->j;
+    for (i=0; i<nz; i++) {
+      collengths[jj[i]]++;
+    }
+    cia[0] = oshift;
+    for (i=0; i<n; i++) {
+      cia[i+1] = cia[i] + collengths[i];
+    }
+    ierr = PetscMemzero(collengths,n*sizeof(PetscInt));CHKERRQ(ierr);
+    jj   = a->j;
+    for (row=0; row<m; row++) {
+      mr = a->i[row+1] - a->i[row];
+      for (i=0; i<mr; i++) {
+        col = *jj++;
+        cspidx[cia[col] + collengths[col] - oshift] = a->i[row] + i; /* index of a->j */
+        cja[cia[col] + collengths[col]++ - oshift]  = row + oshift;
+      }
+    }
+    ierr   = PetscFree(collengths);CHKERRQ(ierr);
+    *ia    = cia; *ja = cja;
+    *spidx = cspidx;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatRestoreColumnIJ_SeqBAIJ_Color"
+PetscErrorCode MatRestoreColumnIJ_SeqBAIJ_Color(Mat A,PetscInt oshift,PetscBool symmetric,PetscBool inodecompressed,PetscInt *n,const PetscInt *ia[],const PetscInt *ja[],PetscInt *spidx[],PetscBool  *done)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatRestoreColumnIJ_SeqBAIJ(A,oshift,symmetric,inodecompressed,n,ia,ja,done);CHKERRQ(ierr);
+  ierr = PetscFree(*spidx);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__
 #define __FUNCT__ "MatFDColoringApply_BAIJ"
 PetscErrorCode  MatFDColoringApply_BAIJ(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,void *sctx)
