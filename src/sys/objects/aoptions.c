@@ -452,7 +452,6 @@ PetscErrorCode PetscOptionsSAWsInput()
   while (next) {
     ierr = PetscSNPrintf(dir,1024,"/PETSc/Options/%s",next->option);CHKERRQ(ierr);
     PetscStackCallSAWs(SAWs_Selected,(dir,&next->set));
-    printf("%d set \n",next->set);
     next = next->next;
   }
 
@@ -476,7 +475,7 @@ PetscErrorCode PetscOptionsEnd_Private(void)
   PetscFunctionBegin;
   if (PetscOptionsObject.next) {
     if (!PetscOptionsPublishCount) {
-#if defined(PETSC_HAVE_SAWS)
+#if defined(PETSC_HAVE_SAWS) && defined(foo)
       ierr = PetscOptionsSAWsInput();CHKERRQ(ierr);
 #else
       ierr = PetscOptionsGetFromTextInput();CHKERRQ(ierr);
