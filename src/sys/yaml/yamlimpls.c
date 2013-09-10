@@ -91,7 +91,7 @@ PetscErrorCode PetscParseLayerYAML(yaml_parser_t *parser,int *lvl)
           PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
           PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
-          PetscOptionsList(), PetscOptionsEList(), PetscOptionsInsertFile()
+          PetscOptionsFList(), PetscOptionsEList(), PetscOptionsInsertFile()
 C*/
 extern PetscErrorCode PetscOptionsInsertFileYAML(MPI_Comm comm,const char file[],PetscBool require)
 {

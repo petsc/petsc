@@ -374,7 +374,7 @@ PetscErrorCode  PetscDrawSetFromOptions(PetscDraw draw)
 #endif
   }
   ierr = PetscObjectOptionsBegin((PetscObject)draw);CHKERRQ(ierr);
-  ierr = PetscOptionsList("-draw_type","Type of graphical output","PetscDrawSetType",PetscDrawList,def,vtype,256,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsFList("-draw_type","Type of graphical output","PetscDrawSetType",PetscDrawList,def,vtype,256,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscDrawSetType(draw,vtype);CHKERRQ(ierr);
   } else if (!((PetscObject)draw)->type_name) {

@@ -1865,22 +1865,22 @@ static PetscErrorCode PCSetFromOptions_ASA(PC pc)
   ierr = PetscOptionsInt("-pc_asa_direct_solver","For which matrix size should we use the direct solver?","No manual page yet",asa->direct_solver,&(asa->direct_solver),&flg);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_asa_scale_diag","Should we scale the matrix with the inverse of its diagonal?","No manual page yet",asa->scale_diag,&(asa->scale_diag),&flg);CHKERRQ(ierr);
   /* type of smoother used */
-  ierr = PetscOptionsList("-pc_asa_smoother_ksp_type","The type of KSP to be used in the smoothers","No manual page yet",KSPList,asa->ksptype_smooth,type,20,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsFList("-pc_asa_smoother_ksp_type","The type of KSP to be used in the smoothers","No manual page yet",KSPList,asa->ksptype_smooth,type,20,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscFree(asa->ksptype_smooth);CHKERRQ(ierr);
     ierr = PetscStrallocpy(type,&(asa->ksptype_smooth));CHKERRQ(ierr);
   }
-  ierr = PetscOptionsList("-pc_asa_smoother_pc_type","The type of PC to be used in the smoothers","No manual page yet",PCList,asa->pctype_smooth,type,20,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsFList("-pc_asa_smoother_pc_type","The type of PC to be used in the smoothers","No manual page yet",PCList,asa->pctype_smooth,type,20,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscFree(asa->pctype_smooth);CHKERRQ(ierr);
     ierr = PetscStrallocpy(type,&(asa->pctype_smooth));CHKERRQ(ierr);
   }
-  ierr = PetscOptionsList("-pc_asa_direct_ksp_type","The type of KSP to be used in the direct solver","No manual page yet",KSPList,asa->ksptype_direct,type,20,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsFList("-pc_asa_direct_ksp_type","The type of KSP to be used in the direct solver","No manual page yet",KSPList,asa->ksptype_direct,type,20,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscFree(asa->ksptype_direct);CHKERRQ(ierr);
     ierr = PetscStrallocpy(type,&(asa->ksptype_direct));CHKERRQ(ierr);
   }
-  ierr = PetscOptionsList("-pc_asa_direct_pc_type","The type of PC to be used in the direct solver","No manual page yet",PCList,asa->pctype_direct,type,20,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsFList("-pc_asa_direct_pc_type","The type of PC to be used in the direct solver","No manual page yet",PCList,asa->pctype_direct,type,20,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscFree(asa->pctype_direct);CHKERRQ(ierr);
     ierr = PetscStrallocpy(type,&(asa->pctype_direct));CHKERRQ(ierr);

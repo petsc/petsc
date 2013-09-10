@@ -1347,7 +1347,7 @@ static PetscErrorCode VecSetTypeFromOptions_Private(Vec vec)
   }
 
   if (!VecRegisterAllCalled) {ierr = VecRegisterAll();CHKERRQ(ierr);}
-  ierr = PetscOptionsList("-vec_type","Vector type","VecSetType",VecList,defaultType,typeName,256,&opt);CHKERRQ(ierr);
+  ierr = PetscOptionsFList("-vec_type","Vector type","VecSetType",VecList,defaultType,typeName,256,&opt);CHKERRQ(ierr);
   if (opt) {
     ierr = VecSetType(vec, typeName);CHKERRQ(ierr);
   } else {

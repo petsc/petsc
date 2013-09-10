@@ -54,7 +54,7 @@ int main(int argc,char **args)
     view_exact_sol   = PETSC_FALSE;
     ierr             = PetscOptionsBool("-view_exact_sol","View exact solution","",view_exact_sol,&view_exact_sol,NULL);CHKERRQ(ierr);
     permute          = PETSC_FALSE;
-    ierr             = PetscOptionsList("-permute","Permute matrix and vector to solving in new ordering","",MatOrderingList,ordering,ordering,sizeof(ordering),&permute);CHKERRQ(ierr);
+    ierr             = PetscOptionsFList("-permute","Permute matrix and vector to solving in new ordering","",MatOrderingList,ordering,ordering,sizeof(ordering),&permute);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

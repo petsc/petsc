@@ -315,7 +315,7 @@ PetscErrorCode PetscOptionsGetFromTextInput()
         next->data = (void*)strdup(str);
       }
       break;
-    case OPTION_LIST:
+    case OPTION_FLIST:
       ierr = PetscFunctionListPrintTypes(PETSC_COMM_WORLD,stdout,PetscOptionsObject.prefix,next->option,next->text,next->man,next->flist,(char*)next->data);CHKERRQ(ierr);
       ierr = PetscScanString(PETSC_COMM_WORLD,512,str);CHKERRQ(ierr);
       if (str[0]) {
@@ -421,23 +421,25 @@ PetscErrorCode PetscOptionsSAWsInput()
     ierr = PetscSNPrintf(dir,1024,"/PETSc/Options/%s",next->option);CHKERRQ(ierr);
       PetscStackCallSAWs(SAWs_Register,(dir,next->data,next->arraylength,SAWs_WRITE,SAWs_STRING));
       break;
-    case OPTION_LIST:
-      {/*PetscInt ntext;*/
+    case OPTION_FLIST:
+      {
+      PetscInt ntext;
       ierr = PetscSNPrintf(dir,1024,"/PETSc/Options/%s",next->option);CHKERRQ(ierr);
       PetscStackCallSAWs(SAWs_Register,(dir,&next->data,1,SAWs_WRITE,SAWs_STRING));
-      /*ierr = PetscFunctionListGet(next->flist,(const char***)&next->edata,&ntext);CHKERRQ(ierr);
-      ierr = PetscSNPrintf(dir,1024,"/PETSc/Options/%s",next->option);CHKERRQ(ierr);
-       PetscStackCallSAWs(SAWs_Register,(dir,next->edata,ntext-1,SAWs_READ,SAWs_STRING));*/
-      break;}
+      ierr = PetscFunctionListGet(next->flist,(const char***)&next->edata,&ntext);CHKERRQ(ierr);
+      PetscStackCallSAWs(SAWs_Set_Legal_Variable_Values,(dir,ntext,next->edata));
+      }
+      break;
     case OPTION_ELIST:
-      {/*PetscInt ntext = next->nlist; */
+      {
+      PetscInt ntext = next->nlist;
       ierr = PetscSNPrintf(dir,1024,"/PETSc/Options/%s",next->option);CHKERRQ(ierr);
       PetscStackCallSAWs(SAWs_Register,(dir,&next->data,1,SAWs_WRITE,SAWs_STRING));
-      /*ierr = PetscMalloc((ntext+1)*sizeof(char**),&next->edata);CHKERRQ(ierr);
+      ierr = PetscMalloc((ntext+1)*sizeof(char*),&next->edata);CHKERRQ(ierr);
       ierr = PetscMemcpy(next->edata,next->list,ntext*sizeof(char*));CHKERRQ(ierr);
-      ierr = PetscSNPrintf(dir,1024,"/PETSc/Options/%s",next->text);CHKERRQ(ierr);
-       PetscStackCallSAWs(SAWs_Register,(dir,next->edata,ntext,SAWs_READ,SAWs_STRING));*/
-      break;}
+      PetscStackCallSAWs(SAWs_Set_Legal_Variable_Values,(dir,ntext,next->edata));
+      }
+      break;
     default:
       break;
     }
@@ -475,7 +477,7 @@ PetscErrorCode PetscOptionsEnd_Private(void)
   PetscFunctionBegin;
   if (PetscOptionsObject.next) {
     if (!PetscOptionsPublishCount) {
-#if defined(PETSC_HAVE_SAWS) && defined(foo)
+#if defined(PETSC_HAVE_SAWS)
       ierr = PetscOptionsSAWsInput();CHKERRQ(ierr);
 #else
       ierr = PetscOptionsGetFromTextInput();CHKERRQ(ierr);
@@ -539,7 +541,7 @@ PetscErrorCode PetscOptionsEnd_Private(void)
           ierr = PetscStrcat(value,tmp);CHKERRQ(ierr);
         }
         break;
-      case OPTION_LIST:
+      case OPTION_FLIST:
       case OPTION_ELIST:
         ierr = PetscStrcpy(value,(char*)PetscOptionsObject.next->data);CHKERRQ(ierr);
         break;
@@ -562,7 +564,7 @@ PetscErrorCode PetscOptionsEnd_Private(void)
     ierr   = PetscFree(PetscOptionsObject.next->man);CHKERRQ(ierr);
     ierr   = PetscFree(PetscOptionsObject.next->edata);CHKERRQ(ierr);
 
-    if ((PetscOptionsObject.next->type == OPTION_STRING) || (PetscOptionsObject.next->type == OPTION_LIST) || (PetscOptionsObject.next->type == OPTION_ELIST)){
+    if ((PetscOptionsObject.next->type == OPTION_STRING) || (PetscOptionsObject.next->type == OPTION_FLIST) || (PetscOptionsObject.next->type == OPTION_ELIST)){
       free(PetscOptionsObject.next->data);
     } else {
       ierr   = PetscFree(PetscOptionsObject.next->data);CHKERRQ(ierr);
@@ -608,7 +610,7 @@ PetscErrorCode PetscOptionsEnd_Private(void)
           PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
           PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
-          PetscOptionsList(), PetscOptionsEList()
+          PetscOptionsFList(), PetscOptionsEList()
 @*/
 PetscErrorCode  PetscOptionsEnum(const char opt[],const char text[],const char man[],const char *const *list,PetscEnum defaultv,PetscEnum *value,PetscBool  *set)
 {
@@ -660,7 +662,7 @@ PetscErrorCode  PetscOptionsEnum(const char opt[],const char text[],const char m
           PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
           PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
-          PetscOptionsList(), PetscOptionsEList()
+          PetscOptionsFList(), PetscOptionsEList()
 @*/
 PetscErrorCode  PetscOptionsInt(const char opt[],const char text[],const char man[],PetscInt defaultv,PetscInt *value,PetscBool  *set)
 {
@@ -713,7 +715,7 @@ PetscErrorCode  PetscOptionsInt(const char opt[],const char text[],const char ma
           PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
           PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
-          PetscOptionsList(), PetscOptionsEList()
+          PetscOptionsFList(), PetscOptionsEList()
 @*/
 PetscErrorCode  PetscOptionsString(const char opt[],const char text[],const char man[],const char defaultv[],char value[],size_t len,PetscBool  *set)
 {
@@ -761,7 +763,7 @@ PetscErrorCode  PetscOptionsString(const char opt[],const char text[],const char
           PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
           PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
-          PetscOptionsList(), PetscOptionsEList()
+          PetscOptionsFList(), PetscOptionsEList()
 @*/
 PetscErrorCode  PetscOptionsReal(const char opt[],const char text[],const char man[],PetscReal defaultv,PetscReal *value,PetscBool  *set)
 {
@@ -811,7 +813,7 @@ PetscErrorCode  PetscOptionsReal(const char opt[],const char text[],const char m
           PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
           PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
-          PetscOptionsList(), PetscOptionsEList()
+          PetscOptionsFList(), PetscOptionsEList()
 @*/
 PetscErrorCode  PetscOptionsScalar(const char opt[],const char text[],const char man[],PetscScalar defaultv,PetscScalar *value,PetscBool  *set)
 {
@@ -854,7 +856,7 @@ PetscErrorCode  PetscOptionsScalar(const char opt[],const char text[],const char
           PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
           PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
-          PetscOptionsList(), PetscOptionsEList()
+          PetscOptionsFList(), PetscOptionsEList()
 @*/
 PetscErrorCode  PetscOptionsName(const char opt[],const char text[],const char man[],PetscBool  *flg)
 {
@@ -876,9 +878,9 @@ PetscErrorCode  PetscOptionsName(const char opt[],const char text[],const char m
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscOptionsList"
+#define __FUNCT__ "PetscOptionsFList"
 /*@C
-     PetscOptionsList - Puts a list of option values that a single one may be selected from
+     PetscOptionsFList - Puts a list of option values that a single one may be selected from
 
    Logically Collective on the communicator passed in PetscOptionsBegin()
 
@@ -912,16 +914,16 @@ PetscErrorCode  PetscOptionsName(const char opt[],const char text[],const char m
           PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
           PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
-          PetscOptionsList(), PetscOptionsEList(), PetscOptionsEnum()
+          PetscOptionsFList(), PetscOptionsEList(), PetscOptionsEnum()
 @*/
-PetscErrorCode  PetscOptionsList(const char opt[],const char ltext[],const char man[],PetscFunctionList list,const char defaultv[],char value[],size_t len,PetscBool  *set)
+PetscErrorCode  PetscOptionsFList(const char opt[],const char ltext[],const char man[],PetscFunctionList list,const char defaultv[],char value[],size_t len,PetscBool  *set)
 {
   PetscErrorCode ierr;
   PetscOptions   amsopt;
 
   PetscFunctionBegin;
   if (!PetscOptionsPublishCount) {
-    ierr = PetscOptionsCreate_Private(opt,ltext,man,OPTION_LIST,&amsopt);CHKERRQ(ierr);
+    ierr = PetscOptionsCreate_Private(opt,ltext,man,OPTION_FLIST,&amsopt);CHKERRQ(ierr);
     amsopt->data = (void*)strdup(defaultv ? defaultv : "");
     amsopt->flist = list;
   }
@@ -943,7 +945,7 @@ PetscErrorCode  PetscOptionsList(const char opt[],const char ltext[],const char 
 +  opt - option name
 .  ltext - short string that describes the option
 .  man - manual page with additional information on option
-.  list - the possible choices
+.  list - the possible choices (one of these must be selected, anything else is invalid)
 .  ntext - number of choices
 -  defaultv - the default (current) value
 
@@ -955,7 +957,7 @@ PetscErrorCode  PetscOptionsList(const char opt[],const char ltext[],const char 
 
    Notes: Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
 
-   See PetscOptionsList() for when the choices are given in a PetscFunctionList()
+   See PetscOptionsFList() for when the choices are given in a PetscFunctionList()
 
    Concepts: options database^list
 
@@ -964,7 +966,7 @@ PetscErrorCode  PetscOptionsList(const char opt[],const char ltext[],const char 
           PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
           PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
-          PetscOptionsList(), PetscOptionsEnum()
+          PetscOptionsFList(), PetscOptionsEnum()
 @*/
 PetscErrorCode  PetscOptionsEList(const char opt[],const char ltext[],const char man[],const char *const *list,PetscInt ntext,const char defaultv[],PetscInt *value,PetscBool  *set)
 {
@@ -1019,7 +1021,7 @@ PetscErrorCode  PetscOptionsEList(const char opt[],const char ltext[],const char
           PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
           PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
-          PetscOptionsList(), PetscOptionsEList()
+          PetscOptionsFList(), PetscOptionsEList()
 @*/
 PetscErrorCode  PetscOptionsBoolGroupBegin(const char opt[],const char text[],const char man[],PetscBool  *flg)
 {
@@ -1071,7 +1073,7 @@ PetscErrorCode  PetscOptionsBoolGroupBegin(const char opt[],const char text[],co
           PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
           PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
-          PetscOptionsList(), PetscOptionsEList()
+          PetscOptionsFList(), PetscOptionsEList()
 @*/
 PetscErrorCode  PetscOptionsBoolGroup(const char opt[],const char text[],const char man[],PetscBool  *flg)
 {
@@ -1122,7 +1124,7 @@ PetscErrorCode  PetscOptionsBoolGroup(const char opt[],const char text[],const c
           PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
           PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
-          PetscOptionsList(), PetscOptionsEList()
+          PetscOptionsFList(), PetscOptionsEList()
 @*/
 PetscErrorCode  PetscOptionsBoolGroupEnd(const char opt[],const char text[],const char man[],PetscBool  *flg)
 {
@@ -1172,7 +1174,7 @@ PetscErrorCode  PetscOptionsBoolGroupEnd(const char opt[],const char text[],cons
           PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
           PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
-          PetscOptionsList(), PetscOptionsEList()
+          PetscOptionsFList(), PetscOptionsEList()
 @*/
 PetscErrorCode  PetscOptionsBool(const char opt[],const char text[],const char man[],PetscBool deflt,PetscBool  *flg,PetscBool  *set)
 {
@@ -1233,7 +1235,7 @@ PetscErrorCode  PetscOptionsBool(const char opt[],const char text[],const char m
           PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
           PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
-          PetscOptionsList(), PetscOptionsEList()
+          PetscOptionsFList(), PetscOptionsEList()
 @*/
 PetscErrorCode  PetscOptionsRealArray(const char opt[],const char text[],const char man[],PetscReal value[],PetscInt *n,PetscBool  *set)
 {
@@ -1302,7 +1304,7 @@ PetscErrorCode  PetscOptionsRealArray(const char opt[],const char text[],const c
           PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
           PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
-          PetscOptionsList(), PetscOptionsEList(), PetscOptionsRealArray()
+          PetscOptionsFList(), PetscOptionsEList(), PetscOptionsRealArray()
 @*/
 PetscErrorCode  PetscOptionsIntArray(const char opt[],const char text[],const char man[],PetscInt value[],PetscInt *n,PetscBool  *set)
 {
@@ -1369,7 +1371,7 @@ PetscErrorCode  PetscOptionsIntArray(const char opt[],const char text[],const ch
           PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
           PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
-          PetscOptionsList(), PetscOptionsEList()
+          PetscOptionsFList(), PetscOptionsEList()
 @*/
 PetscErrorCode  PetscOptionsStringArray(const char opt[],const char text[],const char man[],char *value[],PetscInt *nmax,PetscBool  *set)
 {
@@ -1424,7 +1426,7 @@ PetscErrorCode  PetscOptionsStringArray(const char opt[],const char text[],const
           PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
           PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
-          PetscOptionsList(), PetscOptionsEList()
+          PetscOptionsFList(), PetscOptionsEList()
 @*/
 PetscErrorCode  PetscOptionsBoolArray(const char opt[],const char text[],const char man[],PetscBool value[],PetscInt *n,PetscBool *set)
 {
@@ -1489,7 +1491,7 @@ $       socket[:port]    defaults to the standard output port
           PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
           PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
-          PetscOptionsList(), PetscOptionsEList()
+          PetscOptionsFList(), PetscOptionsEList()
 @*/
 PetscErrorCode  PetscOptionsViewer(const char opt[],const char text[],const char man[],PetscViewer *viewer,PetscViewerFormat *format,PetscBool  *set)
 {
@@ -1534,7 +1536,7 @@ PetscErrorCode  PetscOptionsViewer(const char opt[],const char text[],const char
           PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
           PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
-          PetscOptionsList(), PetscOptionsEList()
+          PetscOptionsFList(), PetscOptionsEList()
 @*/
 PetscErrorCode  PetscOptionsHead(const char head[])
 {
