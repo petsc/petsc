@@ -1,6 +1,6 @@
 /* ------------------------------------------------------------------------- */
 
-#if PETSC_VERSION_LE(3,3,0)
+#if PETSC_VERSION_LT(3,4,0)
 #define PetscSysInitializePackage()    PetscSysInitializePackage(0)
 #define PetscViewerInitializePackage() PetscViewerInitializePackage(0)
 #define PetscRandomInitializePackage() PetscRandomInitializePackage(0)

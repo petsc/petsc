@@ -11,12 +11,11 @@
   (!PETSC_VERSION_LT(MAJOR,MINOR,SUBMINOR))
 #endif
 
-//#if PETSC_VERSION_LE(3,4,0)
 #if PETSC_VERSION_LT(3,5,0)
 #include "compat/petsc-34.h"
 #endif
 
-#if PETSC_VERSION_LE(3,3,0)
+#if PETSC_VERSION_LT(3,4,0)
 #include "compat/petsc-33.h"
 #endif
 

@@ -560,7 +560,7 @@ SNESSetUseMFFD(SNES snes,PetscBool flag)
   PetscFunctionReturn(0);
 }
 
-#if PETSC_VERSION_LE(3,3,0)
+#if PETSC_VERSION_LT(3,4,0)
 #undef  __FUNCT__
 #define __FUNCT__ "SNESComputeJacobianDefaultColor"
 PETSC_EXTERN PetscErrorCode SNESComputeJacobianDefaultColor(SNES snes,Vec x,Mat *J,Mat *B,MatStructure *flag,void *ctx)

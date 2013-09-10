@@ -5,7 +5,7 @@
 #include "petsc-private/snesimpl.h"
 #include "petsc-private/tsimpl.h"
 
-#if PETSC_VERSION_LE(3,3,0)
+#if PETSC_VERSION_LT(3,4,0)
 #define PetscObjectComposeFunction(o,n,f) \
         PetscObjectComposeFunction(o,n,"",(PetscVoidFunction)(f))
 #define MatRegister(s,f)  MatRegister(s,0,0,f)
@@ -19,7 +19,7 @@ EXTERN_C_BEGIN
 extern PetscErrorCode (*PetscPythonMonitorSet_C)(PetscObject,const char*);
 EXTERN_C_END
 
-#if PETSC_VERSION_LE(3,3,0)
+#if PETSC_VERSION_LT(3,4,0)
 #define KSPBuildSolutionDefault KSPDefaultBuildSolution
 #define KSPBuildResidualDefault KSPDefaultBuildResidual
 #endif
@@ -32,7 +32,7 @@ PetscErrorCode KSPLogHistory(KSP ksp,PetscReal rnorm)
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-#if PETSC_VERSION_LE(3,3,0)
+#if PETSC_VERSION_LT(3,4,0)
   ierr=0;KSPLogResidualHistory(ksp,rnorm);CHKERRQ(ierr);
 #else
   ierr = KSPLogResidualHistory(ksp,rnorm);CHKERRQ(ierr);
@@ -48,7 +48,7 @@ PetscErrorCode SNESLogHistory(SNES snes,PetscReal rnorm,PetscInt lits)
     PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
-#if PETSC_VERSION_LE(3,3,0)
+#if PETSC_VERSION_LT(3,4,0)
   ierr=0;SNESLogConvHistory(snes,rnorm,lits);CHKERRQ(ierr);
 #else
   ierr = SNESLogConvergenceHistory(snes,rnorm,lits);CHKERRQ(ierr);
