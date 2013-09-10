@@ -2531,7 +2531,7 @@ PetscErrorCode MatGetColumnIJ_SeqBAIJ_Color(Mat A,PetscInt oshift,PetscBool symm
 {
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data;
   PetscErrorCode ierr;
-  PetscInt       i,*collengths,*cia,*cja,n=a->nbs,m=a->mbs; //n = A->cmap->n,m = A->rmap->n;
+  PetscInt       i,*collengths,*cia,*cja,n=a->nbs,m=a->mbs; 
   PetscInt       nz = a->i[m],row,*jj,mr,col;
   PetscInt       *cspidx;
 
@@ -2719,9 +2719,9 @@ PetscErrorCode  MatFDColoringApply_BAIJ(Mat J,MatFDColoring coloring,Vec x1,MatS
       ierr = VecGetArray(w2,&y);CHKERRQ(ierr);
       for (l=0; l<coloring->nrows[k]; l++) {
         row = bs*coloring->rows[k][l];                /* local row index */
-        col = i + bs*coloring->columnsforrow[k][l];       /* global column index */
+        col = i + bs*coloring->columnsforrow[k][l];   /* global column index */
         for (j=0; j<bs; j++) {
-          y[row+j] *= vscale_array[j+bs*vscaleforrow[k][l]];
+          y[row+j] *= vscale_array[col];
           srows[j]  = row + start + j;
         }
         ierr = MatSetValues(J,bs,srows,1,&col,y+row,INSERT_VALUES);CHKERRQ(ierr);
