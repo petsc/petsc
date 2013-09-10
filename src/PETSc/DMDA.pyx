@@ -387,11 +387,6 @@ cdef class DMDA(DM):
         CHKERR( DMDANaturalToGlobalBegin(self.dm, vn.vec, im, vg.vec) )
         CHKERR( DMDANaturalToGlobalEnd  (self.dm, vn.vec, im, vg.vec) )
 
-    def localToLocal(self, Vec vl not None, Vec vlg not None, addv=None):
-        cdef PetscInsertMode im = insertmode(addv)
-        CHKERR( DMDALocalToLocalBegin(self.dm, vl.vec, im, vlg.vec) )
-        CHKERR( DMDALocalToLocalEnd  (self.dm, vl.vec, im, vlg.vec) )
-
     #
 
     def getAO(self):

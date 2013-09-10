@@ -1,4 +1,4 @@
-#undef __FUNCT__
+#undef  __FUNCT__
 #define __FUNCT__ "DMClone"
 static PetscErrorCode
 DMClone(DM dm, DM *newdm)
@@ -44,6 +44,43 @@ DMClone(DM dm, DM *newdm)
     ierr = DMPlexClone(dm,newdm);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
-  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,__FUNCT__"() not supported in this PETSc version"); \
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,__FUNCT__"() not supported in this PETSc version");
   PetscFunctionReturn(PETSC_ERR_SUP);
+}
+
+#undef  __FUNCT__
+#define __FUNCT__ "DMLocalToLocalBegin"
+static PetscErrorCode
+DMLocalToLocalBegin(DM dm,Vec g,InsertMode mode,Vec l)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidType(dm,1);
+  ierr = PetscObjectTypeCompare((PetscObject)dm,DMDA,&match);CHKERRQ(ierr);
+  if (!match) {
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,__FUNCT__"() not supported in this PETSc version");
+    PetscFunctionReturn(PETSC_ERR_SUP);
+  }
+  ierr = DMDALocalToLocalBegin(dm,g,mode,l);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef  __FUNCT__
+#define __FUNCT__ "DMLocalToLocalEnd"
+static PetscErrorCode
+DMLocalToLocalEnd(DM dm,Vec g,InsertMode mode,Vec l)
+{
+  PetscBool      match;
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidType(dm,1);
+  ierr = PetscObjectTypeCompare((PetscObject)dm,DMDA,&match);CHKERRQ(ierr);
+  if (!match) {
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,__FUNCT__"() not supported in this PETSc version");
+    PetscFunctionReturn(PETSC_ERR_SUP);
+  }
+  ierr = DMDALocalToLocalEnd(dm,g,mode,l);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }

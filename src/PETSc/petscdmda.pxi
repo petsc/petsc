@@ -72,8 +72,6 @@ cdef extern from * nogil:
     int DMDAGlobalToNaturalEnd(PetscDM,PetscVec,PetscInsertMode,PetscVec)
     int DMDANaturalToGlobalBegin(PetscDM,PetscVec,PetscInsertMode,PetscVec)
     int DMDANaturalToGlobalEnd(PetscDM,PetscVec,PetscInsertMode,PetscVec)
-    int DMDALocalToLocalBegin(PetscDM,PetscVec,PetscInsertMode,PetscVec)
-    int DMDALocalToLocalEnd(PetscDM,PetscVec,PetscInsertMode,PetscVec)
 
     int DMDAGetAO(PetscDM,PetscAO*)
     int DMDAGetScatter(PetscDM,PetscScatter*,PetscScatter*,PetscScatter*)

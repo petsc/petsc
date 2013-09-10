@@ -108,6 +108,11 @@ cdef class DM(Object):
         CHKERR( DMLocalToGlobalBegin(self.dm, vl.vec, im, vg.vec) )
         CHKERR( DMLocalToGlobalEnd(self.dm, vl.vec, im, vg.vec) )
 
+    def localToLocal(self, Vec vl not None, Vec vlg not None, addv=None):
+        cdef PetscInsertMode im = insertmode(addv)
+        CHKERR( DMLocalToLocalBegin(self.dm, vl.vec, im, vlg.vec) )
+        CHKERR( DMLocalToLocalEnd  (self.dm, vl.vec, im, vlg.vec) )
+
     def getLGMap(self):
         cdef LGMap lgm = LGMap()
         CHKERR( DMGetLocalToGlobalMapping(self.dm, &lgm.lgm) )
