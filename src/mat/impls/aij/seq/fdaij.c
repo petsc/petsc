@@ -2,13 +2,14 @@
 #include <../src/mat/impls/aij/seq/aij.h>
 #include <../src/mat/impls/baij/seq/baij.h>
 
+/* #define STOREVALS */
 #undef __FUNCT__
 #define __FUNCT__ "MatFDColoringApply_SeqBAIJ"
 PetscErrorCode  MatFDColoringApply_SeqBAIJ(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,void *sctx)
 {
   PetscErrorCode (*f)(void*,Vec,Vec,void*)=(PetscErrorCode (*)(void*,Vec,Vec,void*))coloring->f;
   PetscErrorCode ierr;
-  PetscInt       bs=J->rmap->bs,bs2=bs*bs,i,j,k,start,end,l,row,col,N;
+  PetscInt       bs=J->rmap->bs,bs2=bs*bs,i,j,k,l,row,col,N;
   PetscScalar    dx,*y,*xx,*w3_array;
   PetscScalar    *vscale_array;
   PetscReal      epsilon = coloring->error_rel,umin = coloring->umin,unorm;
@@ -16,8 +17,12 @@ PetscErrorCode  MatFDColoringApply_SeqBAIJ(Mat J,MatFDColoring coloring,Vec x1,M
   void           *fctx   = coloring->fctx;
   PetscBool      flg     = PETSC_FALSE;
   Mat_SeqBAIJ    *csp=(Mat_SeqBAIJ*)J->data;
-  PetscScalar    *ca = csp->a;
+  PetscScalar    *ca = csp->a,*ca_l;
   PetscInt       brow,bcol,bspidx,spidx,nz,nz_i;
+#if defined(STOREVALS)
+  PetscScalar   *vals,*vals_l;
+#endif
+
 
   PetscFunctionBegin;
   ierr = MatSetUnfactored(J);CHKERRQ(ierr);
@@ -39,7 +44,6 @@ PetscErrorCode  MatFDColoringApply_SeqBAIJ(Mat J,MatFDColoring coloring,Vec x1,M
   if (coloring->htype[0] == 'w') { /* tacky test; need to make systematic if we add other approaches to computing h*/
     ierr = VecNorm(x1,NORM_2,&unorm);CHKERRQ(ierr);
   }
-  ierr = VecGetOwnershipRange(w1,&start,&end);CHKERRQ(ierr); /* OwnershipRange is used by ghosted x! */
 
   /* Set w1 = F(x1) */
   if (!coloring->fset) {
@@ -74,13 +78,16 @@ PetscErrorCode  MatFDColoringApply_SeqBAIJ(Mat J,MatFDColoring coloring,Vec x1,M
     dx               *= epsilon;
     vscale_array[col] = (PetscScalar)dx;
   }
+
+#if defined(STOREVALS)
+  ierr = PetscMalloc(N*bs*sizeof(PetscScalar),&vals);CHKERRQ(ierr);
+#endif
   
   nz = 0;
   for (k=0; k<coloring->ncolors; k++) { /*  Loop over each color */
     coloring->currentcolor = k;
     nz_i = nz;
     for (i=0; i<bs; i++) {
-      //printf(" color= %d, i= %d, nz_i= %d ----------------\n",k,i,nz_i);
       nz = nz_i;
       ierr = VecCopy(x1,w3);CHKERRQ(ierr);
       ierr = VecGetArray(w3,&w3_array);CHKERRQ(ierr);
@@ -112,21 +119,44 @@ PetscErrorCode  MatFDColoringApply_SeqBAIJ(Mat J,MatFDColoring coloring,Vec x1,M
         brow   = coloring->rowcolden2sp3[nz++];
         bcol   = coloring->rowcolden2sp3[nz++];
         bspidx = coloring->rowcolden2sp3[nz++];
-     
-        row = bs*brow;
-        col = bs*bcol+i;
-        spidx = bs2*bspidx+i*bs;
-
+#if defined(STOREVALS)
+        vals_l = vals + l*bs2;
+#endif
+        row   = bs*brow;
+        col   = bs*bcol + i;
+#if !defined(STOREVALS)
+        ca_l  = ca + bs2*bspidx + i*bs; 
+#endif
         for (j=0; j<bs; j++) {
-          ca[spidx+j] = y[row+j]/vscale_array[col];
-          //printf("(%d %d %g) nz= %d\n",row+j,col,ca[spidx],nz-3);
+#if defined(STOREVALS)
+          vals_l[i*bs+j] = y[row+j]/vscale_array[col];
+#else
+          ca_l[j] = y[row+j]/vscale_array[col];
+#endif
         }
       }
       ierr = VecRestoreArray(w2,&y);CHKERRQ(ierr);
-    }
+    } /* endof for (i=0; i<bs; i++) */
+
+#if defined(STOREVALS)
+    /* insert vals to J */
+    nz = nz_i;
+    for (l=0; l<coloring->nrows[k]; l++) { 
+      nz += 2;
+      bspidx = coloring->rowcolden2sp3[nz++];
+      vals_l  = vals + l*bs2;
+      ca_l    = ca + bs2*bspidx;
+      for (i=0; i<bs2; i++) {
+        ca_l[i] = vals_l[i];
+      }
+    }   
+#endif
   } /* endof for each color */
   ierr = VecRestoreArray(coloring->vscale,&vscale_array);CHKERRQ(ierr);
   ierr = VecRestoreArray(x1,&xx);CHKERRQ(ierr);
+#if defined(STOREVALS)
+  ierr = PetscFree(vals);CHKERRQ(ierr);
+#endif
  
   coloring->currentcolor = -1;
   PetscFunctionReturn(0);
