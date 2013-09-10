@@ -75,6 +75,11 @@ PetscErrorCode DMGetCoordinatesLocal(DM dm,Vec *c)
 
 /* --- */
 
+#define DMPATCH "patch"
+#define DMMOAB  "moab"
+
+/* --- */
+
 #undef  __FUNCT__
 #define __FUNCT__ "DMCompositeScatterArray"
 PetscErrorCode DMCompositeScatterArray(DM dm,Vec g,Vec *lvecs)
@@ -120,6 +125,8 @@ PetscErrorCode DMCompositeRestoreAccessArray(DM dm,Vec g,PetscInt n,const PetscI
 }
 
 /* --- */
+
+#define DMPLEX "plex"
 
 #define DMPlexError do {                                                \
     PetscFunctionBegin;                                                 \

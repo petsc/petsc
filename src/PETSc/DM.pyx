@@ -5,8 +5,13 @@ class DMType(object):
     ADDA      = S_(DMADDA_type)
     COMPOSITE = S_(DMCOMPOSITE)
     SLICED    = S_(DMSLICED)
+    SHELL     = S_(DMSHELL)
     MESH      = S_(DMMESH)
+    PLEX      = S_(DMPLEX)
     CARTESIAN = S_(DMCARTESIAN)
+    REDUNDANT = S_(DMREDUNDANT)
+    PATCH     = S_(DMPATCH)
+    MOAB      = S_(DMMOAB)
 
 # --------------------------------------------------------------------
 
