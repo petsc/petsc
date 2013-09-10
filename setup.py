@@ -82,7 +82,7 @@ def bootstrap():
     if ('setuptools' in sys.modules):
         metadata['zip_safe'] = False
         if not PETSC_DIR:
-            metadata['install_requires']= ['petsc>=3.3,<3.4']
+            metadata['install_requires']= ['petsc>=3.4,<3.5']
 
 def get_petsc_dir():
     PETSC_DIR = os.environ.get('PETSC_DIR')
@@ -251,8 +251,8 @@ def version():
         v = "%d.%d" % (major, minor)
         if micro > 0:
             v += ".%d" % micro
-        if patch > 0:
-            v += ".%d" % patch
+        #if patch > 0:
+        #    v += ".%d" % patch
     else:
         v = "%d.%d.dev%d" % (major, minor+1, 0)
     return v
@@ -263,7 +263,7 @@ def tarball():
         return None
     bits = VERSION.split('.')
     if len(bits) == 2: bits.append('0')
-    TAO_VERSION = '.'.join(bits[:-1]) + '-p' + bits[-1]
+    TAO_VERSION = '.'.join(bits[:3])
     return ('http://www.mcs.anl.gov/research/projects/tao/download/'
             'tao-%s.tar.gz#egg=tao-%s' % (TAO_VERSION, VERSION))
 
