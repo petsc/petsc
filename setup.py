@@ -18,7 +18,7 @@ architectures.
     $ pip install petsc==dev tao==dev
 
   .. _tao-dev: http://bitbucket.org/sarich/tao-devel/
-               get/tip.tar.gz#egg=tao-dev
+               get/default.tar.gz#egg=tao-dev
 """
 
 import sys, os
