@@ -2,7 +2,6 @@
 #include <../src/mat/impls/aij/seq/aij.h>
 #include <../src/mat/impls/baij/seq/baij.h>
 
-/* #define STOREVALS */
 #undef __FUNCT__
 #define __FUNCT__ "MatFDColoringApply_SeqBAIJ"
 PetscErrorCode  MatFDColoringApply_SeqBAIJ(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,void *sctx)
@@ -19,10 +18,6 @@ PetscErrorCode  MatFDColoringApply_SeqBAIJ(Mat J,MatFDColoring coloring,Vec x1,M
   Mat_SeqBAIJ    *csp=(Mat_SeqBAIJ*)J->data;
   PetscScalar    *ca = csp->a,*ca_l;
   PetscInt       brow,bcol,bspidx,spidx,nz,nz_i;
-#if defined(STOREVALS)
-  PetscScalar   *vals,*vals_l;
-#endif
-
 
   PetscFunctionBegin;
   ierr = MatSetUnfactored(J);CHKERRQ(ierr);
@@ -79,10 +74,6 @@ PetscErrorCode  MatFDColoringApply_SeqBAIJ(Mat J,MatFDColoring coloring,Vec x1,M
     vscale_array[col] = (PetscScalar)dx;
   }
 
-#if defined(STOREVALS)
-  ierr = PetscMalloc(N*bs*sizeof(PetscScalar),&vals);CHKERRQ(ierr);
-#endif
-  
   nz = 0;
   for (k=0; k<coloring->ncolors; k++) { /*  Loop over each color */
     coloring->currentcolor = k;
@@ -119,44 +110,19 @@ PetscErrorCode  MatFDColoringApply_SeqBAIJ(Mat J,MatFDColoring coloring,Vec x1,M
         brow   = coloring->rowcolden2sp3[nz++];
         bcol   = coloring->rowcolden2sp3[nz++];
         bspidx = coloring->rowcolden2sp3[nz++];
-#if defined(STOREVALS)
-        vals_l = vals + l*bs2;
-#endif
         row   = bs*brow;
         col   = bs*bcol + i;
-#if !defined(STOREVALS)
+
         ca_l  = ca + bs2*bspidx + i*bs; 
-#endif
         for (j=0; j<bs; j++) {
-#if defined(STOREVALS)
-          vals_l[i*bs+j] = y[row+j]/vscale_array[col];
-#else
           ca_l[j] = y[row+j]/vscale_array[col];
-#endif
         }
       }
       ierr = VecRestoreArray(w2,&y);CHKERRQ(ierr);
     } /* endof for (i=0; i<bs; i++) */
-
-#if defined(STOREVALS)
-    /* insert vals to J */
-    nz = nz_i;
-    for (l=0; l<coloring->nrows[k]; l++) { 
-      nz += 2;
-      bspidx = coloring->rowcolden2sp3[nz++];
-      vals_l  = vals + l*bs2;
-      ca_l    = ca + bs2*bspidx;
-      for (i=0; i<bs2; i++) {
-        ca_l[i] = vals_l[i];
-      }
-    }   
-#endif
   } /* endof for each color */
   ierr = VecRestoreArray(coloring->vscale,&vscale_array);CHKERRQ(ierr);
   ierr = VecRestoreArray(x1,&xx);CHKERRQ(ierr);
-#if defined(STOREVALS)
-  ierr = PetscFree(vals);CHKERRQ(ierr);
-#endif
  
   coloring->currentcolor = -1;
   PetscFunctionReturn(0);
