@@ -2590,7 +2590,7 @@ PetscErrorCode  MatFDColoringApply_BAIJ(Mat J,MatFDColoring coloring,Vec x1,MatS
 {
   PetscErrorCode (*f)(void*,Vec,Vec,void*) = (PetscErrorCode (*)(void*,Vec,Vec,void*))coloring->f;
   PetscErrorCode ierr;
-  PetscInt       bs = J->rmap->bs,i,j,k,start,end,l,row,col,*srows,**vscaleforrow;
+  PetscInt       bs = J->rmap->bs,i,j,k,start,end,l,row,col,*srows;
   PetscScalar    dx,*y,*xx,*w3_array;
   PetscScalar    *vscale_array;
   PetscReal      epsilon = coloring->error_rel,umin = coloring->umin,unorm;
@@ -2668,9 +2668,6 @@ PetscErrorCode  MatFDColoringApply_BAIJ(Mat J,MatFDColoring coloring,Vec x1,MatS
     ierr = VecGhostUpdateBegin(coloring->vscale,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecGhostUpdateEnd(coloring->vscale,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   }
-  if (coloring->vscaleforrow) {
-    vscaleforrow = coloring->vscaleforrow;
-  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Null Object: coloring->vscaleforrow");
 
   ierr = PetscMalloc(bs*sizeof(PetscInt),&srows);CHKERRQ(ierr);
   /*
