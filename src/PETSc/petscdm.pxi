@@ -7,8 +7,13 @@ cdef extern from * nogil:
     PetscDMType DMADDA_type "DMADDA"
     PetscDMType DMCOMPOSITE
     PetscDMType DMSLICED
+    PetscDMType DMSHELL
     PetscDMType DMMESH
+    PetscDMType DMPLEX
     PetscDMType DMCARTESIAN
+    PetscDMType DMREDUNDANT
+    PetscDMType DMPATCH
+    PetscDMType DMMOAB
 
     int DMCreate(MPI_Comm,PetscDM*)
     int DMClone(PetscDM,PetscDM*)
