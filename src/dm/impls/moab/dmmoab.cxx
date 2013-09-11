@@ -109,6 +109,7 @@ PetscErrorCode DMSetUp_Moab(DM dm)
     *dmmoab->eghost = moab::subtract(*dmmoab->eghost, *dmmoab->elocal);
 
     dmmoab->neleloc = dmmoab->elocal->size();
+    dmmoab->neleghost = dmmoab->eghost->size();
     ierr = MPI_Allreduce(&dmmoab->neleloc, &dmmoab->nele, 1, MPI_INTEGER, MPI_SUM, ((PetscObject)dm)->comm);CHKERRQ(ierr);
   }
 
@@ -276,9 +277,10 @@ PETSC_EXTERN PetscErrorCode DMCreate_Moab(DM dm)
   ((DM_Moab*)dm->data)->nfields = 1;
   ((DM_Moab*)dm->data)->n = 0;
   ((DM_Moab*)dm->data)->nloc = 0;
+  ((DM_Moab*)dm->data)->nghost = 0;
   ((DM_Moab*)dm->data)->nele = 0;
   ((DM_Moab*)dm->data)->neleloc = 0;
-  ((DM_Moab*)dm->data)->nghost = 0;
+  ((DM_Moab*)dm->data)->neleghost = 0;
   ((DM_Moab*)dm->data)->ltog_map = PETSC_NULL;
   ((DM_Moab*)dm->data)->ltog_sendrecv = PETSC_NULL;
 
@@ -678,6 +680,7 @@ PetscErrorCode DMMoabSetLocalElements(DM dm,moab::Range *range)
   merr = dmmoab->pcomm->filter_pstatus(*dmmoab->elocal,PSTATUS_NOT_OWNED,PSTATUS_NOT);MBERRNM(merr);
   *dmmoab->eghost = moab::subtract(*range, *dmmoab->elocal);
   dmmoab->neleloc=dmmoab->elocal->size();
+  dmmoab->neleghost=dmmoab->eghost->size();
   ierr = MPI_Allreduce(&dmmoab->nele, &dmmoab->neleloc, 1, MPI_INTEGER, MPI_SUM, ((PetscObject)dm)->comm);CHKERRQ(ierr);
   PetscInfo2(dm, "Created %D local and %D global elements.\n", dmmoab->neleloc, dmmoab->nele);
   PetscFunctionReturn(0);
@@ -801,11 +804,12 @@ PetscErrorCode DMMoabGetBlockSize(DM dm,PetscInt *bs)
 
 .keywords: DMMoab, create
 @*/
-PetscErrorCode DMMoabGetSize(DM dm,PetscInt *ng)
+PetscErrorCode DMMoabGetSize(DM dm,PetscInt *neg,PetscInt *nvg)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  if(ng) *ng = ((DM_Moab*)dm->data)->n;
+  if(neg) *neg = ((DM_Moab*)dm->data)->nele;
+  if(nvg) *nvg = ((DM_Moab*)dm->data)->n;
   PetscFunctionReturn(0);
 }
 
@@ -828,12 +832,14 @@ PetscErrorCode DMMoabGetSize(DM dm,PetscInt *ng)
 
 .keywords: DMMoab, create
 @*/
-PetscErrorCode DMMoabGetLocalSize(DM dm,PetscInt *nl,PetscInt *ng)
+PetscErrorCode DMMoabGetLocalSize(DM dm,PetscInt *nel,PetscInt *neg,PetscInt *nvl,PetscInt *nvg)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  if(nl) *nl = ((DM_Moab*)dm->data)->nloc;
-  if(ng) *ng = ((DM_Moab*)dm->data)->nghost;
+  if(nel) *nel = ((DM_Moab*)dm->data)->neleloc;
+  if(neg) *neg = ((DM_Moab*)dm->data)->neleghost;
+  if(nvl) *nvl = ((DM_Moab*)dm->data)->nloc;
+  if(nvg) *nvg = ((DM_Moab*)dm->data)->nghost;
   PetscFunctionReturn(0);
 }
 
