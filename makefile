@@ -23,7 +23,9 @@ include ${PETSC_DIR}/conf/test
 all: chk_makej
 	@${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} chk_petscdir chk_upgrade | tee ${PETSC_ARCH}/conf/make.log
 	@ln -sf ${PETSC_ARCH}/conf/make.log make.log
-	@if [ "${PETSC_BUILD_USING_CMAKE}" != "" ]; then \
+	@if [ "${PETSC_BUILD_USING_GNUMAKE}" != "" ]; then \
+	   ${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} all-gnumake-local 2>&1 | tee -a ${PETSC_ARCH}/conf/make.log; \
+	elif [ "${PETSC_BUILD_USING_CMAKE}" != "" ]; then \
 	   ${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} all-cmake-local 2>&1 | tee -a ${PETSC_ARCH}/conf/make.log \
 		| egrep -v '( --check-build-system |cmake -E | -o CMakeFiles/petsc[[:lower:]]*.dir/| -o lib/libpetsc|CMakeFiles/petsc[[:lower:]]*\.dir/(build|depend|requires)|-f CMakeFiles/Makefile2|Dependee .* is newer than depender |provides\.build. is up to date)'; \
 	 else \
@@ -41,13 +43,20 @@ all: chk_makej
         fi #solaris make likes to print the whole command that gave error. So split this up into the smallest chunk below
 	@if test -s ${PETSC_ARCH}/conf/error.log; then exit 1; fi
 
+all-gnumake:
+	@if [ "${PETSC_BUILD_USING_GNUMAKE}" != "" ]; then \
+          ${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} PETSC_BUILD_USING_CMAKE="" all;\
+        else printf ${PETSC_TEXT_HILIGHT}"Build not configured for GNUMAKE. Quiting"${PETSC_TEXT_NORMAL}"\n"; exit 1; fi
+
 all-cmake:
 	@if [ "${PETSC_BUILD_USING_CMAKE}" != "" ]; then \
-          ${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} all;\
+          ${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} PETSC_BUILD_USING_GNUMAKE="" all;\
         else printf ${PETSC_TEXT_HILIGHT}"Build not configured for CMAKE. Quiting"${PETSC_TEXT_NORMAL}"\n"; exit 1; fi
 
 all-legacy:
-	@${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} PETSC_BUILD_USING_CMAKE="" all
+	@${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} PETSC_BUILD_USING_CMAKE="" PETSC_BUILD_USING_GNUMAKE="" all
+
+all-gnumake-local: chk_makej info gnumake
 
 all-cmake-local: chk_makej info cmakegen cmake
 

@@ -75,6 +75,7 @@ class Configure(config.package.Package):
     self.compilers = framework.require('config.compilers', self)
     self.compilerFlags = framework.require('config.compilerFlags', self)
     self.types = framework.require('config.types', self)
+    #self.make = framework.require('config.packages.make',self)
     return
 
   # search many obscure locations for MPI
@@ -437,10 +438,10 @@ class Configure(config.package.Package):
         raise RuntimeError('Error running configure on OPENMPI/MPI: '+str(e))
       try:
         self.logPrintBox('Compiling OPENMPI/MPI; this may take several minutes')
-        output,err,ret  = config.base.Configure.executeShellCommand('cd '+openmpiDir+' && '+self.programs.make+' clean', timeout=200, log = self.framework.log)
-        output,err,ret  = config.base.Configure.executeShellCommand('cd '+openmpiDir+' && '+self.programs.make+' -j ' + str(self.programs.make_np)+' all', timeout=6000, log = self.framework.log)
-        output,err,ret  = config.base.Configure.executeShellCommand('cd '+openmpiDir+' && '+self.programs.make+' install', timeout=6000, log = self.framework.log)
-        output,err,ret  = config.base.Configure.executeShellCommand('cd '+openmpiDir+' && '+self.programs.make+' clean', timeout=200, log = self.framework.log)
+        output,err,ret  = config.base.Configure.executeShellCommand('cd '+openmpiDir+' && '+self.make.make+' clean', timeout=200, log = self.framework.log)
+        output,err,ret  = config.base.Configure.executeShellCommand('cd '+openmpiDir+' && '+self.make.make_jnp+' all', timeout=6000, log = self.framework.log)
+        output,err,ret  = config.base.Configure.executeShellCommand('cd '+openmpiDir+' && '+self.make.make+' install', timeout=6000, log = self.framework.log)
+        output,err,ret  = config.base.Configure.executeShellCommand('cd '+openmpiDir+' && '+self.make.make+' clean', timeout=200, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running make on OPENMPI/MPI: '+str(e))
       if not os.path.isdir(os.path.join(installDir,'lib')):
@@ -555,11 +556,10 @@ class Configure(config.package.Package):
         raise RuntimeError('Error running configure on MPICH: '+str(e))
       try:
         self.logPrintBox('Running make on MPICH; this may take several minutes')
-        output,err,ret  = config.base.Configure.executeShellCommand('cd '+mpichDir+' && '+self.programs.make+' clean', timeout=200, log = self.framework.log)
-        makej_cmd = self.programs.make+' -j ' + str(self.programs.make_np)
-        output,err,ret  = config.base.Configure.executeShellCommand('cd '+mpichDir+' && '+makej_cmd+' all', timeout=6000, log = self.framework.log)
-        output,err,ret  = config.base.Configure.executeShellCommand('cd '+mpichDir+' && '+self.programs.make+' install', timeout=6000, log = self.framework.log)
-        output,err,ret  = config.base.Configure.executeShellCommand('cd '+mpichDir+' && '+self.programs.make+' clean', timeout=200, log = self.framework.log)
+        output,err,ret  = config.base.Configure.executeShellCommand('cd '+mpichDir+' && '+self.make.make+' clean', timeout=200, log = self.framework.log)
+        output,err,ret  = config.base.Configure.executeShellCommand('cd '+mpichDir+' && '+self.make.make_jnp+' all', timeout=6000, log = self.framework.log)
+        output,err,ret  = config.base.Configure.executeShellCommand('cd '+mpichDir+' && '+self.make.make+' install', timeout=6000, log = self.framework.log)
+        output,err,ret  = config.base.Configure.executeShellCommand('cd '+mpichDir+' && '+self.make.make+' clean', timeout=200, log = self.framework.log)
       except RuntimeError, e:
         import sys
         if sys.platform.startswith('cygwin'):
