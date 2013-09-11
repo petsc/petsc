@@ -20,7 +20,9 @@ class Configure(config.base.Configure):
   def __str2__(self):
     desc = []
     desc.append('xxx=========================================================================xxx')
-    if self.getMakeMacro('PETSC_BUILD_USING_CMAKE'):
+    if self.make.getMakeMacro('PETSC_BUILD_USING_GNUMAKE'):
+      build_type = 'gnumake build'
+    elif self.getMakeMacro('PETSC_BUILD_USING_CMAKE'):
       build_type = 'cmake build'
     else:
       build_type = 'legacy build'
@@ -54,6 +56,7 @@ class Configure(config.base.Configure):
     self.functions     = framework.require('config.functions',          self)
     self.libraries     = framework.require('config.libraries',          self)
     self.atomics       = framework.require('config.atomics',            self)
+    self.make          = framework.require('config.packages.make',      self)
     self.blasLapack    = framework.require('config.packages.BlasLapack',self)
     if os.path.isdir(os.path.join('config', 'PETSc')):
       for d in ['utilities', 'packages']:
