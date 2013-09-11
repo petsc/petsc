@@ -47,8 +47,8 @@ PETSC_EXTERN PetscErrorCode DMMoabGetBlockSize(DM dm,PetscInt *bs);
 PETSC_EXTERN PetscErrorCode DMMoabGetDimension(DM dm,PetscInt *dim);
 PETSC_EXTERN PetscErrorCode DMMoabGetBoundaryEntities(DM dm,moab::Range *bdvtx,moab::Range* bdfaces,moab::Range* bdelems);
 
-PETSC_EXTERN PetscErrorCode DMMoabGetSize(DM dm,PetscInt *ng);
-PETSC_EXTERN PetscErrorCode DMMoabGetLocalSize(DM dm,PetscInt *nl,PetscInt *ng);
+PETSC_EXTERN PetscErrorCode DMMoabGetSize(DM dm,PetscInt*,PetscInt*);
+PETSC_EXTERN PetscErrorCode DMMoabGetLocalSize(DM dm,PetscInt*,PetscInt*,PetscInt*,PetscInt*);
 
 PETSC_EXTERN PetscErrorCode DMMoabVecGetArrayRead(DM,Vec,void*);
 PETSC_EXTERN PetscErrorCode DMMoabVecRestoreArrayRead(DM,Vec,void*);

@@ -27,18 +27,17 @@ typedef struct {
 
 
 typedef struct {
-  PetscInt                bs;                     /* Number of degrees of freedom on each entity, aka tag size in moab */
+  PetscInt                bs;                      /* Number of degrees of freedom on each entity, aka tag size in moab */
   PetscInt                dim;
-  PetscInt                n,nloc,nghost;           /* Number of global, local only and shared degrees of freedom for current partition */
-  PetscInt                nele,neleloc;           /* Number of global, local only and shared degrees of freedom for current partition */
-  PetscBool               icreatedinstance;       /* true if DM created moab instance internally, will destroy instance in DMDestroy */
+  PetscInt                n,nloc,nghost;           /* Number of global, local only and shared vertices for current partition */
+  PetscInt                nele,neleloc,neleghost;  /* Number of global, local only and shared elements for current partition */
   PetscInt                *gsindices;
   PetscInt                *gidmap,*lidmap,*llmap,*lgmap;
   PetscInt                vstart,vend;
 
   moab::ParallelComm      *pcomm;
   moab::Interface         *mbiface;
-  moab::Tag               ltog_tag;               /* moab supports "global id" tags, which are usually local to global numbering */
+  moab::Tag               ltog_tag;                /* moab supports "global id" tags, which are usually local to global numbering */
   ISLocalToGlobalMapping  ltog_map;
   VecScatter              ltog_sendrecv;
   moab::Range             *vlocal, *vowned, *vghost;
@@ -48,6 +47,7 @@ typedef struct {
 
   PetscInt                nfields;
   const char**            fields;
+  PetscBool               icreatedinstance;        /* true if DM created moab instance internally, will destroy instance in DMDestroy */
 } DM_Moab;
 
 
