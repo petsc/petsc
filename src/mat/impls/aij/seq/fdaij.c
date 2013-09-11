@@ -8,8 +8,8 @@ PetscErrorCode  MatFDColoringApply_SeqBAIJ(Mat J,MatFDColoring coloring,Vec x1,M
 {
   PetscErrorCode (*f)(void*,Vec,Vec,void*)=(PetscErrorCode (*)(void*,Vec,Vec,void*))coloring->f;
   PetscErrorCode ierr;
-  PetscInt       bs=J->rmap->bs,bs2=bs*bs,i,j,k,l,row,col,N;
-  PetscScalar    dx,*y,*xx,*w3_array;
+  PetscInt       bs=J->rmap->bs,bs2=bs*bs,i,j,k,l,row,col,N=J->cmap->n,spidx,nz;
+  PetscScalar    dx,*dy_i,*xx,*w3_array,*dy=coloring->dy; 
   PetscScalar    *vscale_array;
   PetscReal      epsilon = coloring->error_rel,umin = coloring->umin,unorm;
   Vec            w1      = coloring->w1,w2=coloring->w2,w3;
@@ -17,7 +17,6 @@ PetscErrorCode  MatFDColoringApply_SeqBAIJ(Mat J,MatFDColoring coloring,Vec x1,M
   PetscBool      flg     = PETSC_FALSE;
   Mat_SeqBAIJ    *csp=(Mat_SeqBAIJ*)J->data;
   PetscScalar    *ca = csp->a,*ca_l;
-  PetscInt       brow,bcol,bspidx,spidx,nz;
 
   PetscFunctionBegin;
   ierr = MatSetUnfactored(J);CHKERRQ(ierr);
@@ -31,13 +30,8 @@ PetscErrorCode  MatFDColoringApply_SeqBAIJ(Mat J,MatFDColoring coloring,Vec x1,M
       ierr = MatZeroEntries(J);CHKERRQ(ierr);
     }
   }
-
   if (!coloring->vscale) {
     ierr = VecDuplicate(x1,&coloring->vscale);CHKERRQ(ierr);
-  }
-
-  if (coloring->htype[0] == 'w') { /* tacky test; need to make systematic if we add other approaches to computing h*/
-    ierr = VecNorm(x1,NORM_2,&unorm);CHKERRQ(ierr);
   }
 
   /* Set w1 = F(x1) */
@@ -55,75 +49,73 @@ PetscErrorCode  MatFDColoringApply_SeqBAIJ(Mat J,MatFDColoring coloring,Vec x1,M
   }
   w3 = coloring->w3;
 
-  /* Compute all the local scale factors: vscale = 1./dx = 1./(epsilon*xx) */
-  ierr = VecGetLocalSize(x1,&N);CHKERRQ(ierr);
-  ierr = VecGetArray(x1,&xx);CHKERRQ(ierr);
-  ierr = VecGetArray(coloring->vscale,&vscale_array);CHKERRQ(ierr);
- 
-  /* Loop over each local column, vscale[col] = 1./(epsilon*dx[col]) */
-  for (col=0; col<N; col++) {
-    if (coloring->htype[0] == 'w') {
-      dx = 1.0 + unorm;
-    } else {
+  /* Compute local scale factors: vscale = dx */
+  if (coloring->htype[0] == 'w') {
+    /* tacky test; need to make systematic if we add other approaches to computing h*/
+    ierr = VecNorm(x1,NORM_2,&unorm);CHKERRQ(ierr);
+    dx = (1.0 + unorm)*epsilon;
+    ierr = VecSet(coloring->vscale,dx);CHKERRQ(ierr);
+  } else {
+    ierr = VecGetArray(coloring->vscale,&vscale_array);CHKERRQ(ierr);
+    ierr = VecGetArray(x1,&xx);CHKERRQ(ierr);
+    for (col=0; col<N; col++) {
       dx = xx[col];
+      if (dx == 0.0) dx = 1.0;
+      if (PetscAbsScalar(dx) < umin && PetscRealPart(dx) >= 0.0)     dx = umin;
+      else if (PetscRealPart(dx) < 0.0 && PetscAbsScalar(dx) < umin) dx = -umin;
+      dx               *= epsilon;
+      vscale_array[col] = dx;
     }
-    if (dx == (PetscScalar)0.0) dx = 1.0;
-    if (PetscAbsScalar(dx) < umin && PetscRealPart(dx) >= 0.0)     dx = umin;
-    else if (PetscRealPart(dx) < 0.0 && PetscAbsScalar(dx) < umin) dx = -umin;
-    dx               *= epsilon;
-    vscale_array[col] = (PetscScalar)dx;
-  }
-
-  /* Create bs vectors w2s and w3s */
-  Vec w2s[bs];
-  for (i=0; i<bs; i++) {
-    ierr = VecDuplicate(w2,&w2s[i]);CHKERRQ(ierr);
+    ierr = VecRestoreArray(coloring->vscale,&vscale_array);CHKERRQ(ierr);
+    ierr = VecRestoreArray(x1,&xx);CHKERRQ(ierr);
   }
 
   nz = 0;
+  ierr = VecGetArray(coloring->vscale,&vscale_array);CHKERRQ(ierr);
   for (k=0; k<coloring->ncolors; k++) { /*  Loop over each color */
     coloring->currentcolor = k;
 
     /* Compute w3 = x1 + dx */
-    for (i=0; i<bs; i++) {
-      ierr = VecCopy(x1,w3);CHKERRQ(ierr);
+    ierr = VecCopy(x1,w3);CHKERRQ(ierr);
+    dy_i = dy;
+    for (i=0; i<bs; i++) {              /* Loop over a block of columns */
       ierr = VecGetArray(w3,&w3_array);CHKERRQ(ierr);
       for (l=0; l<coloring->ncolumns[k]; l++) {
-        col = i + bs*coloring->columns[k][l];    
+        col            = i + bs*coloring->columns[k][l];  
         w3_array[col] += vscale_array[col];
+        if (i) {
+          w3_array[col-1] -= vscale_array[col-1]; /* resume original w3[col-1] */
+        }
       }
       ierr = VecRestoreArray(w3,&w3_array);CHKERRQ(ierr);
     
-      /* Evaluate function w2s = F(w3) - F(x1) */
+      /* Evaluate function w2 = F(w3) - F(x1) */
       ierr = PetscLogEventBegin(MAT_FDColoringFunction,0,0,0,0);CHKERRQ(ierr);
-      ierr = (*f)(sctx,w3,w2s[i],fctx);CHKERRQ(ierr);
+      ierr = VecPlaceArray(w2,dy_i);CHKERRQ(ierr); /* place w2 to the array dy_i */
+      ierr = (*f)(sctx,w3,w2,fctx);CHKERRQ(ierr); 
       ierr = PetscLogEventEnd(MAT_FDColoringFunction,0,0,0,0);CHKERRQ(ierr);
-      ierr = VecAXPY(w2s[i],-1.0,w1);CHKERRQ(ierr);
+      ierr = VecAXPY(w2,-1.0,w1);CHKERRQ(ierr);
+      ierr = VecResetArray(w2);CHKERRQ(ierr);
+      dy_i += N; /* points to dy+i*N */
     }
 
-    /* Loop over rows of vector, putting results into Jacobian matrix */
-    for (l=0; l<coloring->nrows[k]; l++) { 
-        brow   = coloring->rowcolden2sp3[nz++];
-        bcol   = coloring->rowcolden2sp3[nz++];
-        bspidx = coloring->rowcolden2sp3[nz++];
-        ca_l   = ca + bs2*bspidx;
-        spidx  = 0;
-        for (i=0; i<bs; i++) {   /* column of the block */
-          ierr = VecGetArray(w2s[i],&y);CHKERRQ(ierr);
-          col  = bs*bcol + i;
-          for (j=0; j<bs; j++) { /* row of the block */
-            row = bs*brow + j;
-            ca_l[spidx++] = y[row]/vscale_array[col];
-          }
-          ierr = VecRestoreArray(w2s[i],&y);CHKERRQ(ierr);
+    /* Loop over row blocks, putting dy/dx into Jacobian matrix */
+    for (l=0; l<coloring->nrows[k]; l++) {  
+      row   = bs*coloring->rowcolden2sp3[nz++];
+      col   = bs*coloring->rowcolden2sp3[nz++];
+      ca_l  = ca + bs2*coloring->rowcolden2sp3[nz++];           
+      spidx = 0;
+      dy_i  = dy;
+      for (i=0; i<bs; i++) {   /* column of the block */
+        for (j=0; j<bs; j++) { /* row of the block */
+          ca_l[spidx++] = dy_i[row+j]/vscale_array[col+i];
         }
+        dy_i += N; /* points to dy+i*N */
+      }
     }
   } /* endof for each color */
   ierr = VecRestoreArray(coloring->vscale,&vscale_array);CHKERRQ(ierr);
-  ierr = VecRestoreArray(x1,&xx);CHKERRQ(ierr);
-  for (i=0; i<bs; i++) {
-    ierr = VecDestroy(&w2s[i]);CHKERRQ(ierr);
-  }
+
   coloring->currentcolor = -1;
   PetscFunctionReturn(0);
 }
@@ -416,6 +408,7 @@ PetscErrorCode MatFDColoringCreate_SeqAIJ_den2sp(Mat mat,ISColoring iscoloring,M
   c->ctype                  = IS_COLORING_GHOSTED;
   if (isBAIJ) {
     mat->ops->fdcoloringapply = MatFDColoringApply_SeqBAIJ;
+    ierr = PetscMalloc(bs*mat->cmap->N*sizeof(PetscScalar),&c->dy);CHKERRQ(ierr);
   } else {
     mat->ops->fdcoloringapply = MatFDColoringApply_SeqAIJ;
   }
