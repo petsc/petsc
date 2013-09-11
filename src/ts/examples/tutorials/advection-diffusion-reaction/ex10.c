@@ -379,32 +379,21 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec C,Vec Cdot,Vec F,void *ptr)
       }
     }
     /*  He[He]-V[V] + V[v] -> He[He][V+v] */
+    /*  Jay says this only holds for v = 1  */
     for (He=1; He<N+1; He++) {
       for (V=1; V<N; V++) {
-        for (v=1; v<N-V+1; v++) {
+        v = 1;
           f[xi].HeV[He][V+v] -= ctx->reactionScale*c[xi].HeV[He][V]*c[xi].V[v];
           /* remove the two clusters that merged to form the larger cluster */
           f[xi].V[v]       += ctx->reactionScale*c[xi].HeV[He][V]*c[xi].V[v];
           f[xi].HeV[He][V] += ctx->reactionScale*c[xi].HeV[He][V]*c[xi].V[v];
-        }
       }
     }
     /*  He[He]-V[V]  + He[he]-V[v] -> He[He+he][V+v]  */
     /*  Currently the reaction rates for this are zero */
-    for (He=1; He<N; He++) {
-      for (V=1; V<N; V++) {
-        for (he=1; he<N-He+1; he++) {
-          for (v=1; v<N-V+1; v++) {
-            f[xi].HeV[He+he][V+v] -= 0.0*c[xi].HeV[He][V]*c[xi].HeV[he][v];
-            /* remove the two clusters that merged to form the larger cluster */
-            f[xi].HeV[he][V] += 0.0*c[xi].HeV[He][V]*c[xi].HeV[he][v];
-            f[xi].HeV[He][V] += 0.0*c[xi].HeV[He][V]*c[xi].HeV[he][v];
-          }
-        }
-      }
-    }
+
+
     /*  V[V] + I[I]  ->   V[V-I] if V > I else I[I-V] */
-    /*  What should the correct reaction rate should be? */
     for (V=1; V<N+1; V++) {
       for (I=1; I<V; I++) {
         f[xi].V[V-I] -= ctx->reactionScale*c[xi].V[V]*c[xi].I[I];
@@ -477,7 +466,6 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec C,Vec Cdot,Vec F,void *ptr)
       }
     }
     /*   He[He]-V[V] ->  He[He]-V[V+1] + I[1]  */
-    /* Again, what is the reasonable dissociation rate? */
     for (He=1; He<N+1; He++) {
       for (V=1; V<N; V++) {
         f[xi].HeV[He][V+1] -= 1000*ctx->reactionScale*c[xi].HeV[He][V];
@@ -502,13 +490,13 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec C,Vec Cdot,Vec F,void *ptr)
 #undef __FUNCT__
 #define __FUNCT__ "GetDfill"
 
-PetscErrorCode GetDfill(PetscInt *dfill, void *ptr) 
+PetscErrorCode GetDfill(PetscInt *dfill, void *ptr)
 {
   AppCtx         *ctx = (AppCtx*) ptr;
   PetscInt       He,he,V,v,I,i,dof = 3*N+N*N,reactants[3],row,col1,col2,j;
 
   if (!ctx->noreactions) {
-    
+
     for (He=2; He<N+1; He++) {
       /* compute all pairs of clusters of smaller size that can combine to create a cluster of size He,
        remove the upper half since they are symmetric to the lower half of the pairs. For example
@@ -546,7 +534,7 @@ PetscErrorCode GetDfill(PetscInt *dfill, void *ptr)
         }
       }
     }
-  
+
     /* He[1] +  V[1]  ->  He[1]-V[1] */
     reactants[0] = 1, reactants[1] = N+1, reactants[2] = 3*N+1;
     for (j=0; j<3; j++) {
@@ -566,36 +554,22 @@ PetscErrorCode GetDfill(PetscInt *dfill, void *ptr)
         }
       }
     }
-    /*  He[He]-V[V] + V[v] -> He[He][V+v] */
+    /*  He[He]-V[V] + V[1] -> He[He][V+1] */
     for (He=1; He<N+1; He++) {
       for (V=1; V<N; V++) {
-        for (v=1; v<N-V+1; v++) {
+        v = 1;
           reactants[0] = 3*N+(He-1)*N+V, reactants[1] = N+v, reactants[2] = 3*N+(He-1)*N+V+v;
           for (j=0; j<3; j++) {
             row = reactants[j], col1 = reactants[0], col2 = reactants[1];
             dfill[(row-1)*dof + col1 - 1] = 1, dfill[(row-1)*dof + col2 - 1] = 1;
           }
-        }
       }
     }
 
     /*  He[He]-V[V]  + He[he]-V[v] -> He[He+he][V+v]  */
     /*  Currently the reaction rates for this are zero */
-    for (He=1; He<N; He++) {
-      for (V=1; V<N; V++) {
-        for (he=1; he<N-He+1; he++) {
-          for (v=1; v<N-V+1; v++) {
-            reactants[0] = 3*N+(He-1)*N+V, reactants[1] = 3*N+(he-1)*N+V, reactants[2] = 3*N + (He+he-1)*N + V+v;
-            for (j=0; j<3; j++) {
-              row = reactants[j], col1 = reactants[0], col2 = reactants[1];
-              dfill[(row-1)*dof + col1 - 1] = 1, dfill[(row-1)*dof + col2 - 1] = 1;
-            }
-          }
-        }
-      }
-    }
+
     /*  V[V] + I[I]  ->   V[V-I] if V > I else I[I-V] */
-    /*  What should the correct reaction rate should be? */
     for (V=1; V<N+1; V++) {
       for (I=1; I<V; I++) {
         reactants[0] = N+V, reactants[1] = 2*N+I, reactants[2] = N+V-I;
@@ -655,7 +629,7 @@ PetscErrorCode GetDfill(PetscInt *dfill, void *ptr)
       row = reactants[j], col1 = reactants[0];
       dfill[(row-1)*dof + col1 - 1] = 1;
     }
-    
+
     /*   He[He]-V[1] ->  He[He] + V[1]  */
     for (He=2; He<N+1; He++) {
       reactants[0] = 3*N+(He-1)*N+1, reactants[1] = He, reactants[2] = N+1;
@@ -687,7 +661,7 @@ PetscErrorCode GetDfill(PetscInt *dfill, void *ptr)
         }
       }
     }
-    
+
     /*   He[He]-V[V] ->  He[He]-V[V-1] + V[1]  */
     for (He=2; He<N+1; He++) {
       for (V=2; V<N+1; V++) {
@@ -701,7 +675,6 @@ PetscErrorCode GetDfill(PetscInt *dfill, void *ptr)
     }
 
     /*   He[He]-V[V] ->  He[He]-V[V+1] + I[1]  */
-    /* Again, what is the reasonable dissociation rate? */
     for (He=1; He<N+1; He++) {
       for (V=1; V<N; V++) {
         reactants[0] = 3*N+(He-1)*N+V, reactants[1] = 3*N+(He-1)*N+V+1, reactants[2] = 2*N+1;
