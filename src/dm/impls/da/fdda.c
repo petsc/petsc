@@ -1158,7 +1158,7 @@ PetscErrorCode DMCreateMatrix_DA_1d_MPIAIJ_Fill(DM da,Mat J)
   DM_DA                  *dd = (DM_DA*)da->data;
   PetscInt               xs,nx,i,j,gxs,gnx,row,k,l;
   PetscInt               m,dim,s,*cols = NULL,nc,col,cnt,*ocols;
-  PetscInt               *ofill = dd->ofill;
+  PetscInt               *ofill = dd->ofill,*dfill = dd->dfill;
   PetscScalar            *values;
   DMDABoundaryType       bx;
   ISLocalToGlobalMapping ltog,ltogb;
@@ -1194,13 +1194,13 @@ PetscErrorCode DMCreateMatrix_DA_1d_MPIAIJ_Fill(DM da,Mat J)
   for (i=0; i<s; i++) {
     for (j=0; j<nc; j++) {
       ocols[cnt] = ((!rank) ? 0 : (s - i)*(ofill[j+1] - ofill[j]));
-      cols[cnt]  = nc + (s + i)*(ofill[j+1] - ofill[j]);
+      cols[cnt]  = dfill[j+1] - dfill[j] + (s + i)*(ofill[j+1] - ofill[j]);
       cnt++;
     }
   }
   for (i=s; i<nx-s; i++) {
     for (j=0; j<nc; j++) {
-      cols[cnt] = nc + 2*s*(ofill[j+1] - ofill[j]);
+      cols[cnt] = dfill[j+1] - dfill[j] + 2*s*(ofill[j+1] - ofill[j]);
       cnt++;
     }
   }
@@ -1208,7 +1208,7 @@ PetscErrorCode DMCreateMatrix_DA_1d_MPIAIJ_Fill(DM da,Mat J)
   for (i=nx-s; i<nx; i++) {
     for (j=0; j<nc; j++) {
       ocols[cnt] = ((rank == (size-1)) ? 0 : (i - nx + s + 1)*(ofill[j+1] - ofill[j]));
-      cols[cnt]  = nc + (s + nx - i - 1)*(ofill[j+1] - ofill[j]);
+      cols[cnt]  = dfill[j+1] - dfill[j] + (s + nx - i - 1)*(ofill[j+1] - ofill[j]);
       cnt++;
     }
   }
@@ -1242,8 +1242,14 @@ PetscErrorCode DMCreateMatrix_DA_1d_MPIAIJ_Fill(DM da,Mat J)
             for (k=ofill[j]; k<ofill[j+1]; k++) cols[cnt++] = (i - s + l)*nc + ofill[k];
           }
         }
-        for (k=0; k<nc; k++) {
-          cols[cnt++] = i*nc + k;
+        if (dfill) {
+          for (k=dfill[j]; k<dfill[j+1]; k++) {
+            cols[cnt++] = i*nc + dfill[k];
+          }
+        } else {
+          for (k=0; k<nc; k++) {
+            cols[cnt++] = i*nc + k;
+          }
         }
         for (l=0; l<s; l++) {
           for (k=ofill[j]; k<ofill[j+1]; k++) cols[cnt++] = (i + s - l)*nc + ofill[k];
@@ -1258,8 +1264,14 @@ PetscErrorCode DMCreateMatrix_DA_1d_MPIAIJ_Fill(DM da,Mat J)
         for (l=0; l<s; l++) {
           for (k=ofill[j]; k<ofill[j+1]; k++) cols[cnt++] = (i - s + l)*nc + ofill[k];
         }
-        for (k=0; k<nc; k++) {
-          cols[cnt++] = i*nc + k;
+        if (dfill) {
+          for (k=dfill[j]; k<dfill[j+1]; k++) {
+            cols[cnt++] = i*nc + dfill[k];
+          }
+        } else {
+          for (k=0; k<nc; k++) {
+            cols[cnt++] = i*nc + k;
+          }
         }
         for (l=0; l<s; l++) {
           for (k=ofill[j]; k<ofill[j+1]; k++) cols[cnt++] = (i + s - l)*nc + ofill[k];
@@ -1275,8 +1287,14 @@ PetscErrorCode DMCreateMatrix_DA_1d_MPIAIJ_Fill(DM da,Mat J)
         for (l=0; l<s; l++) {
           for (k=ofill[j]; k<ofill[j+1]; k++) cols[cnt++] = (i - s + l)*nc + ofill[k];
         }
-        for (k=0; k<nc; k++) {
-          cols[cnt++] = i*nc + k;
+        if (dfill) {
+          for (k=dfill[j]; k<dfill[j+1]; k++) {
+            cols[cnt++] = i*nc + dfill[k];
+          }
+        } else {
+          for (k=0; k<nc; k++) {
+            cols[cnt++] = i*nc + k;
+          }
         }
         if (rank < size-1) {
           for (l=0; l<s; l++) {

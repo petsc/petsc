@@ -25,7 +25,7 @@ static char help[] = "Solves C_t =  -D*C_xx + F(C) + R(C) + D(C) from Brian Wirt
 #include <petscts.h>
 
 /*    Hard wire the number of cluster sizes for He, V, and I */
-#define N 15
+#define N 3
 
 /*
      Define all the concentrations (there is one of these unions at each grid point)
@@ -120,12 +120,10 @@ int main(int argc,char **argv)
   for (He=0; He<PetscMin(N,5); He++) ofill[He*dof + He] = 1;
   ofill[N*dof + N] = ofill[2*N*dof + 2*N] = 1;
 
-  ierr = DMDASetBlockFills(da,NULL,ofill);CHKERRQ(ierr);
-  ierr = PetscFree(ofill);CHKERRQ(ierr);
   ierr = GetDfill(dfill,&ctx);CHKERRQ(ierr);
+  ierr = DMDASetBlockFills(da,dfill,ofill);CHKERRQ(ierr);
+  ierr = PetscFree(ofill);CHKERRQ(ierr);
   ierr = PetscFree(dfill);CHKERRQ(ierr);
-
- 
 
   /*  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    Extract global vector from DMDA to hold solution
@@ -489,7 +487,6 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec C,Vec Cdot,Vec F,void *ptr)
 
 #undef __FUNCT__
 #define __FUNCT__ "GetDfill"
-
 PetscErrorCode GetDfill(PetscInt *dfill, void *ptr)
 {
   AppCtx         *ctx = (AppCtx*) ptr;
