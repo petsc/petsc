@@ -101,7 +101,7 @@ ccmake: chk_makej
 cmake: chk_makej
 	@${OMAKE} ccmake VERBOSE=1
 
-ggnumake: chk_makej
+gnumake: chk_makej
 	@echo "Building PETSc using GNU Make with ${MAKE_NP} build threads"
 	@echo "=========================================="
 	@cd ${PETSC_DIR} && ${OMAKE} -f gmakefile -j ${MAKE_NP} V=${V}
@@ -109,9 +109,6 @@ ggnumake: chk_makej
         echo "Running ${DSYMUTIL} on ${SHLIBS}";\
         for LIBNAME in ${SHLIBS}; do ${DSYMUTIL} ${INSTALL_LIB_DIR}/$$LIBNAME.${SL_LINKER_SUFFIX}; done; fi
 	@echo "========================================="
-
-gnumake: chk_makej
-	@${OMAKE} ggnumake V=1
 
 # Does nothing; needed for some rules that require actions.
 foo:
