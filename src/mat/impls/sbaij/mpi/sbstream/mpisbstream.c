@@ -159,7 +159,7 @@ PetscErrorCode MatCreateMPISBSTRM(MPI_Comm comm,PetscInt bs,PetscInt m,PetscInt 
 }
 
 PETSC_EXTERN PetscErrorCode MatConvert_SeqSBAIJ_SeqSBSTRM(Mat,MatType,MatReuse,Mat*);
-extern PetscErrorCode MatMPISBAIJSetPreallocation_MPISBAIJ(Mat,PetscInt,PetscInt,const PetscInt[],PetscInt,const PetscInt[]);
+extern PetscErrorCode MatMPISBAIJSetPreallocation_MPISBAIJ(Mat,PetscInt,PetscInt,const PetscInt *,PetscInt,const PetscInt*);
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMPISBAIJSetPreallocation_MPISBSTRM"
@@ -202,7 +202,7 @@ PETSC_EXTERN PetscErrorCode MatConvert_MPISBAIJ_MPISBSTRM(Mat A,MatType type,Mat
   }
 
   ierr = PetscObjectChangeTypeName((PetscObject) B, MATMPISBSTRM);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMPISBAIJSetPreallocation_C","MatMPISBAIJSetPreallocation_MPISBSTRM",MatMPISBAIJSetPreallocation_MPISBSTRM);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMPISBAIJSetPreallocation_C",MatMPISBAIJSetPreallocation_MPISBSTRM);CHKERRQ(ierr);
   *newmat = B;
   PetscFunctionReturn(0);
 }

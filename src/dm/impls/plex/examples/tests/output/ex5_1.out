@@ -95,9 +95,7 @@ Label 'marker':
 [1]: 6 (1)
 [1]: 7 (1)
 [1]: 9 (1)
-[1]: 11 (1)
-[1]: 12 (1)
-Star Forest Object: 2 MPI processes
+PetscSF Object: 2 MPI processes
   type: basic
     sort=rank-order
   [0] Number of roots=7, leaves=3, remote ranks=1
@@ -198,9 +196,7 @@ Label 'marker':
 [1]: 6 (1)
 [1]: 7 (1)
 [1]: 9 (1)
-[1]: 11 (1)
-[1]: 12 (1)
-Star Forest Object: 2 MPI processes
+PetscSF Object: 2 MPI processes
   type: basic
     sort=rank-order
   [0] Number of roots=7, leaves=3, remote ranks=1

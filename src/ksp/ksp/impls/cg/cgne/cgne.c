@@ -44,7 +44,7 @@ PetscErrorCode KSPSetUp_CGNE(KSP ksp)
   if (ksp->calc_sings) {
     /* get space to store tridiagonal matrix for Lanczos */
     ierr = PetscMalloc4(maxit+1,PetscScalar,&cgP->e,maxit+1,PetscScalar,&cgP->d,maxit+1,PetscReal,&cgP->ee,maxit+1,PetscReal,&cgP->dd);CHKERRQ(ierr);
-    ierr = PetscLogObjectMemory(ksp,2*(maxit+1)*(sizeof(PetscScalar)+sizeof(PetscReal)));CHKERRQ(ierr);
+    ierr = PetscLogObjectMemory((PetscObject)ksp,2*(maxit+1)*(sizeof(PetscScalar)+sizeof(PetscReal)));CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -119,7 +119,7 @@ PetscErrorCode  KSPSolve_CGNE(KSP ksp)
     ierr = VecXDot(Z,R,&beta);CHKERRQ(ierr);
     dp   = PetscSqrtReal(PetscAbsScalar(beta));
   } else dp = 0.0;
-  KSPLogResidualHistory(ksp,dp);
+  ierr       = KSPLogResidualHistory(ksp,dp);CHKERRQ(ierr);
   ierr       = KSPMonitor(ksp,0,dp);CHKERRQ(ierr);
   ksp->rnorm = dp;
   ierr       = (*ksp->converged)(ksp,0,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr); /* test for convergence */
@@ -175,7 +175,7 @@ PetscErrorCode  KSPSolve_CGNE(KSP ksp)
       dp = 0.0;
     }
     ksp->rnorm = dp;
-    KSPLogResidualHistory(ksp,dp);
+    ierr = KSPLogResidualHistory(ksp,dp);CHKERRQ(ierr);
     ierr = KSPMonitor(ksp,i+1,dp);CHKERRQ(ierr);
     ierr = (*ksp->converged)(ksp,i+1,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
     if (ksp->reason) break;
@@ -276,7 +276,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_CGNE(KSP ksp)
       KSPCGSetType() checks for this attached function and calls it if it finds
       it. (Sort of like a dynamic member function that can be added at run time
   */
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPCGSetType_C","KSPCGSetType_CGNE",KSPCGSetType_CGNE);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPCGSetType_C",KSPCGSetType_CGNE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

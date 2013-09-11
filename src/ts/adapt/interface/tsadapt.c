@@ -13,18 +13,39 @@ PETSC_EXTERN PetscErrorCode TSAdaptCreate_CFL(TSAdapt);
 #undef __FUNCT__
 #define __FUNCT__ "TSAdaptRegister"
 /*@C
-   TSAdaptRegister - see TSAdaptRegisterDynamic()
+   TSAdaptRegister -  adds a TSAdapt implementation
+
+   Not Collective
+
+   Input Parameters:
++  name_scheme - name of user-defined adaptivity scheme
+-  routine_create - routine to create method context
+
+   Notes:
+   TSAdaptRegister() may be called multiple times to add several user-defined families.
+
+   Sample usage:
+.vb
+   TSAdaptRegister("my_scheme",MySchemeCreate);
+.ve
+
+   Then, your scheme can be chosen with the procedural interface via
+$     TSAdaptSetType(ts,"my_scheme")
+   or at runtime via the option
+$     -ts_adapt_type my_scheme
 
    Level: advanced
+
+.keywords: TSAdapt, register
+
+.seealso: TSAdaptRegisterAll()
 @*/
-PetscErrorCode  TSAdaptRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(TSAdapt))
+PetscErrorCode  TSAdaptRegister(const char sname[],PetscErrorCode (*function)(TSAdapt))
 {
   PetscErrorCode ierr;
-  char           fullname[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListConcat(path,name,fullname);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&TSAdaptList,sname,fullname,(void(*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&TSAdaptList,sname,function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -41,14 +62,14 @@ PetscErrorCode  TSAdaptRegister(const char sname[],const char path[],const char 
 
 .seealso: TSAdaptRegisterDestroy()
 @*/
-PetscErrorCode  TSAdaptRegisterAll(const char path[])
+PetscErrorCode  TSAdaptRegisterAll(void)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = TSAdaptRegisterDynamic(TSADAPTBASIC,path,"TSAdaptCreate_Basic",TSAdaptCreate_Basic);CHKERRQ(ierr);
-  ierr = TSAdaptRegisterDynamic(TSADAPTNONE, path,"TSAdaptCreate_None", TSAdaptCreate_None);CHKERRQ(ierr);
-  ierr = TSAdaptRegisterDynamic(TSADAPTCFL,  path,"TSAdaptCreate_CFL",  TSAdaptCreate_CFL);CHKERRQ(ierr);
+  ierr = TSAdaptRegister(TSADAPTBASIC,TSAdaptCreate_Basic);CHKERRQ(ierr);
+  ierr = TSAdaptRegister(TSADAPTNONE, TSAdaptCreate_None);CHKERRQ(ierr);
+  ierr = TSAdaptRegister(TSADAPTCFL,  TSAdaptCreate_CFL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -65,10 +86,12 @@ PetscErrorCode  TSAdaptRegisterAll(const char path[])
 @*/
 PetscErrorCode  TSAdaptFinalizePackage(void)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
+  ierr = PetscFunctionListDestroy(&TSAdaptList);CHKERRQ(ierr);
   TSAdaptPackageInitialized = PETSC_FALSE;
   TSAdaptRegisterAllCalled  = PETSC_FALSE;
-  TSAdaptList               = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -79,15 +102,12 @@ PetscErrorCode  TSAdaptFinalizePackage(void)
   called from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to
   TSCreate_GL() when using static libraries.
 
-  Input Parameter:
-  path - The dynamic library path, or NULL
-
   Level: developer
 
 .keywords: TSAdapt, initialize, package
 .seealso: PetscInitialize()
 @*/
-PetscErrorCode  TSAdaptInitializePackage(const char path[])
+PetscErrorCode  TSAdaptInitializePackage(void)
 {
   PetscErrorCode ierr;
 
@@ -95,33 +115,10 @@ PetscErrorCode  TSAdaptInitializePackage(const char path[])
   if (TSAdaptPackageInitialized) PetscFunctionReturn(0);
   TSAdaptPackageInitialized = PETSC_TRUE;
   ierr = PetscClassIdRegister("TSAdapt",&TSADAPT_CLASSID);CHKERRQ(ierr);
-  ierr = TSAdaptRegisterAll(path);CHKERRQ(ierr);
+  ierr = TSAdaptRegisterAll();CHKERRQ(ierr);
   ierr = PetscRegisterFinalize(TSAdaptFinalizePackage);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-#undef __FUNCT__
-#define __FUNCT__ "TSAdaptRegisterDestroy"
-/*@C
-   TSAdaptRegisterDestroy - Frees the list of adaptivity schemes that were registered by TSAdaptRegister()/TSAdaptRegisterDynamic().
-
-   Not Collective
-
-   Level: advanced
-
-.keywords: TSAdapt, register, destroy
-.seealso: TSAdaptRegister(), TSAdaptRegisterAll(), TSAdaptRegisterDynamic()
-@*/
-PetscErrorCode  TSAdaptRegisterDestroy(void)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscFunctionListDestroy(&TSAdaptList);CHKERRQ(ierr);
-  TSAdaptRegisterAllCalled = PETSC_FALSE;
-  PetscFunctionReturn(0);
-}
-
 
 #undef __FUNCT__
 #define __FUNCT__ "TSAdaptSetType"
@@ -130,7 +127,7 @@ PetscErrorCode  TSAdaptSetType(TSAdapt adapt,TSAdaptType type)
   PetscErrorCode ierr,(*r)(TSAdapt);
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListFind(PetscObjectComm((PetscObject)adapt),TSAdaptList,type,PETSC_TRUE,(void(**)(void))&r);CHKERRQ(ierr);
+  ierr = PetscFunctionListFind(TSAdaptList,type,&r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown TSAdapt type \"%s\" given",type);
   if (((PetscObject)adapt)->type_name) {ierr = (*adapt->ops->destroy)(adapt);CHKERRQ(ierr);}
   ierr = (*r)(adapt);CHKERRQ(ierr);
@@ -209,7 +206,7 @@ PetscErrorCode  TSAdaptView(TSAdapt adapt,PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
   if (iascii) {
-    ierr = PetscObjectPrintClassNamePrefixType((PetscObject)adapt,viewer,"TSAdapt Object");CHKERRQ(ierr);
+    ierr = PetscObjectPrintClassNamePrefixType((PetscObject)adapt,viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  number of candidates %D\n",adapt->candidates.n);CHKERRQ(ierr);
     if (adapt->ops->view) {
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
@@ -311,7 +308,7 @@ PetscErrorCode TSAdaptSetCheckStage(TSAdapt adapt,PetscErrorCode (*func)(TSAdapt
    Logically Collective
 
    Input Arguments:
-+  adapt - time step adaptivity context, usually gotten with TSGetTSAdapt()
++  adapt - time step adaptivity context, usually gotten with TSGetAdapt()
 .  hmin - minimum time step
 -  hmax - maximum time step
 
@@ -350,7 +347,7 @@ PetscErrorCode TSAdaptSetStepLimits(TSAdapt adapt,PetscReal hmin,PetscReal hmax)
    Notes:
    This function is automatically called by TSSetFromOptions()
 
-.keywords: TS, TSGetTSAdapt(), TSAdaptSetType()
+.keywords: TS, TSGetAdapt(), TSAdaptSetType()
 
 .seealso: TSGetType()
 @*/
@@ -410,7 +407,7 @@ PetscErrorCode TSAdaptCandidatesClear(TSAdapt adapt)
    Logically Collective
 
    Input Arguments:
-+  adapt - time step adaptivity context, obtained with TSGetTSAdapt() or TSAdaptCreate()
++  adapt - time step adaptivity context, obtained with TSGetAdapt() or TSAdaptCreate()
 .  name - name of the candidate scheme to add
 .  order - order of the candidate scheme
 .  stageorder - stage order of the candidate scheme
@@ -622,7 +619,7 @@ PetscErrorCode TSAdaptCheckStage(TSAdapt adapt,TS ts,PetscBool *accept)
   TSAdapt creation is handled by TS, so users should not need to call this function.
 
 .keywords: TSAdapt, create
-.seealso: TSGetTSAdapt(), TSAdaptSetType(), TSAdaptDestroy()
+.seealso: TSGetAdapt(), TSAdaptSetType(), TSAdaptDestroy()
 @*/
 PetscErrorCode  TSAdaptCreate(MPI_Comm comm,TSAdapt *inadapt)
 {

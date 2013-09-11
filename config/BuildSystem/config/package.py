@@ -30,10 +30,12 @@ class Package(config.base.Configure):
                                  # this flag being one so hope user never requires it. Needs to be fixed in an overhaul of
                                  # args database so it keeps track of what the user set vs what the program set
     self.useddirectly     = 1    # 1 indicates used by PETSc directly, 0 indicates used by a package used by PETSc
-    self.download         = []   # urls where repository or tarballs may be found
+    self.gitcommit        = None # Git commit to use for downloads (used in preference to tarball downloads)
+    self.giturls          = []   # list of Git repository URLs to be used for downloads
+    self.download         = []   # list of URLs where repository or tarballs may be found
     self.deps             = []   # other packages whose dlib or include we depend on, usually we also use self.framework.require()
     self.defaultLanguage  = 'C'  # The language in which to run tests
-    self.liblist          = [[]] # list of libraries we wish to check for (override with your own generateLibraryList())
+    self.liblist          = [[]] # list of libraries we wish to check for (override with your own generateLibList())
     self.extraLib         = []   # additional libraries needed to link
     self.includes         = []   # headers to check for
     self.functions        = []   # functions we wish to check for in the libraries
@@ -279,18 +281,24 @@ class Package(config.base.Configure):
     if 'with-'+self.package+'-include-dir' in self.framework.argDB:
         raise RuntimeError('Use --with-'+self.package+'-include; not --with-'+self.package+'-include-dir')
 
-    if 'with-'+self.package+'-include' in self.framework.argDB and 'with-'+self.package+'-lib' in self.framework.argDB:
-      inc = self.framework.argDB['with-'+self.package+'-include']
+    if 'with-'+self.package+'-include' in self.framework.argDB or 'with-'+self.package+'-lib' in self.framework.argDB:
       libs = self.framework.argDB['with-'+self.package+'-lib']
+      inc  = []
+      if self.includes:
+        inc = self.framework.argDB['with-'+self.package+'-include']
+      # hope that package root is one level above first include directory specified
+        d   = os.path.dirname(inc[0])
+      else:
+        d   = None
       if not isinstance(inc, list): inc = inc.split(' ')
       if not isinstance(libs, list): libs = libs.split(' ')
       inc = [os.path.abspath(i) for i in inc]
-      print inc
-      # hope that package root is one level above first include directory specified
-      d = os.path.dirname(inc[0])
       yield('User specified '+self.PACKAGE+' libraries', d, libs, inc)
-      raise RuntimeError('--with-'+self.package+'-lib='+str(self.framework.argDB['with-'+self.package+'-lib'])+' and \n'+\
-                         '--with-'+self.package+'-include='+str(self.framework.argDB['with-'+self.package+'-include'])+' did not work')
+      msg = '--with-'+self.package+'-lib='+str(self.framework.argDB['with-'+self.package+'-lib'])
+      if self.includes:
+        msg += ' and \n'+'--with-'+self.package+'-include='+str(self.framework.argDB['with-'+self.package+'-include'])
+      msg += ' did not work'
+      raise RuntimeError(msg)
 
     for d in self.getSearchDirectories():
       for libdir in [self.libdir, self.altlibdir]:
@@ -389,6 +397,14 @@ class Package(config.base.Configure):
         os.mkdir(os.path.join(packages, Dir, self.arch))
     return os.path.join(packages, Dir)
 
+  def gitPreReqCheck(self):
+    '''Check for git prerequisites. This is intended to be overwritten by a subclass'''
+    return 1
+
+  def gitPreInstallCheck(self):
+    '''Perhaps configure need to be built before install. This is intended to be overwritten by a subclass'''
+    return
+
   def downLoad(self):
     '''Downloads a package; using hg or ftp; opens it in the with-external-packages-dir directory'''
     import retrieval
@@ -404,6 +420,17 @@ class Package(config.base.Configure):
         download_urls.append(url.replace('http://','ftp://'))
     # now attempt to download each url until any one succeeds.
     err =''
+    if hasattr(self.sourceControl, 'git') and self.gitcommit and self.gitPreReqCheck():
+      for giturl in self.giturls: # First try to fetch using Git
+        try:
+          gitrepo = os.path.join(self.externalPackagesDir, self.downloadname)
+          self.executeShellCommand([self.sourceControl.git, 'clone', giturl, gitrepo])
+          self.executeShellCommand([self.sourceControl.git, 'checkout', '-f', self.gitcommit], cwd=gitrepo)
+          self.framework.actions.addArgument(self.PACKAGE, 'Download', 'Git cloned '+self.name+' into '+self.getDir(0))
+          return
+        except RuntimeError, e:
+          self.logPrint('ERROR: '+str(e))
+          err += str(e)
     for url in download_urls:
       try:
         retriever.genericRetrieve(url, self.externalPackagesDir, self.downloadname)
@@ -523,7 +550,7 @@ class Package(config.base.Configure):
         raise RuntimeError('Cannot use '+self.name+' with MPIUNI, you need a real MPI')
       if not self.worksonWindows and self.setCompilers.isCygwin():
         raise RuntimeError('External package '+self.name+' does not work on Microsoft Windows')
-      if self.download and self.framework.argDB.has_key('download-'+self.downloadname.lower()) and self.framework.argDB['download-'+self.downloadname.lower()] and not self.downloadonWindows and self.setCompilers.isCygwin():
+      if self.download and self.framework.argDB.get('download-'+self.downloadname.lower()) and not self.downloadonWindows and self.setCompilers.isCygwin():
         raise RuntimeError('External package '+self.name+' does not support --download-'+self.downloadname.lower()+' on Microsoft Windows')
     if not self.download and self.framework.argDB.has_key('download-'+self.downloadname.lower()) and self.framework.argDB['download-'+self.downloadname.lower()]:
       raise RuntimeError('External package '+self.name+' does not support --download-'+self.downloadname.lower())
@@ -919,7 +946,12 @@ class GNUPackage(Package):
         args.append('--with-'+d.package+'='+d.directory)
     for d in self.odeps:
       if hasattr(d,'found') and d.found:
-        args.append('--with-'+d.package+'='+d.directory)
+        if d.directory:
+          args.append('--with-'+d.package+'='+d.directory)
+        else:
+          args.append('--with-'+d.package)
+      else:
+        args.append('--without-'+d.package)
     return args
 
   def formGNUConfigureArgs(self):
@@ -960,22 +992,18 @@ class GNUPackage(Package):
         args.append('--disable-f90')
       args.append('F77="'+fc+'"')
       args.append('FFLAGS="'+self.getCompilerFlags().replace('-Mfree','')+'"')
+      args.append('FC="'+fc+'"')
+      args.append('FCLAGS="'+self.getCompilerFlags().replace('-Mfree','')+'"')
       self.popLanguage()
     else:
+      args.append('--disable-fortran')
+      args.append('--disable-fc')
       args.append('--disable-f77')
       args.append('--disable-f90')
     if self.framework.argDB['with-shared-libraries'] or self.framework.argDB['download-'+self.package+'-shared']:
-      if self.compilers.isGCC or config.setCompilers.Configure.isIntel(compiler):
-        if config.setCompilers.Configure.isDarwin():
-          args.append('--enable-sharedlibs=gcc-osx')
-        else:
-          args.append('--enable-sharedlibs=gcc')
-      elif config.setCompilers.Configure.isSun(compiler):
-        args.append('--enable-sharedlibs=solaris-cc')
-      else:
-        args.append('--enable-sharedlibs=libtool')
+      args.append('--enable-shared')
     else:
-        args.append('--disable-shared')
+      args.append('--disable-shared')
     args.extend(self.formGNUConfigureDepArgs())
     args.extend(self.formGNUConfigureExtraArgs())
     return args
@@ -995,6 +1023,7 @@ class GNUPackage(Package):
     if not self.installNeeded(conffile):
       return self.installDir
     ### Configure and Build package
+    self.gitPreInstallCheck()
     try:
       self.logPrintBox('Running configure on ' +self.PACKAGE+'; this may take several minutes')
       output1,err1,ret1  = config.base.Configure.executeShellCommand('cd '+self.packageDir+' && ./configure '+args, timeout=2000, log = self.framework.log)

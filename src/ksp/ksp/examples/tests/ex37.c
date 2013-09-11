@@ -1,5 +1,5 @@
 
-static char help[] = "Test MatGetMultiProcBlock() \n\
+static char help[] = "Test MatGetMultiProcBlock() and MatGetRedundantMatrix() \n\
 Reads a PETSc matrix and vector from a file and solves a linear system.\n\n";
 /*
   Example:
@@ -67,27 +67,25 @@ int main(int argc,char **args)
     if (subsize*nsubcomm != size) SETERRQ2(comm,PETSC_ERR_SUP,"This example requires nsubcomm %D divides nproc %D",nsubcomm,size);
     color   = duprank/subsize;
     subrank = duprank - color*subsize;
-    ierr    = PetscSubcommSetTypeGeneral(psubcomm,color,subrank,duprank);CHKERRQ(ierr);
+    ierr    = PetscSubcommSetTypeGeneral(psubcomm,color,subrank);CHKERRQ(ierr);
   } else if (type == PETSC_SUBCOMM_CONTIGUOUS) {
     ierr = PetscSubcommSetType(psubcomm,PETSC_SUBCOMM_CONTIGUOUS);CHKERRQ(ierr);
   } else if (type == PETSC_SUBCOMM_INTERLACED) {
     ierr = PetscSubcommSetType(psubcomm,PETSC_SUBCOMM_INTERLACED);CHKERRQ(ierr);
   } else SETERRQ1(psubcomm->parent,PETSC_ERR_SUP,"PetscSubcommType %D is not supported yet",type);
+  ierr = PetscSubcommSetFromOptions(psubcomm);CHKERRQ(ierr);
   subcomm = psubcomm->comm;
 
-  ierr = PetscOptionsHasName(NULL, "-subcomm_view", &flg);CHKERRQ(ierr);
-  if (flg) {
-    PetscMPIInt subsize,subrank,duprank;
-    ierr = MPI_Comm_size((MPI_Comm)subcomm,&subsize);CHKERRQ(ierr);
-    ierr = MPI_Comm_rank((MPI_Comm)subcomm,&subrank);CHKERRQ(ierr);
-    ierr = MPI_Comm_rank((MPI_Comm)psubcomm->dupparent,&duprank);CHKERRQ(ierr);
-
-    ierr = PetscSynchronizedPrintf(comm,"[%D], color %D, sub-size %D, sub-rank %D, duprank %D\n",rank,psubcomm->color,subsize,subrank,duprank);
-    ierr = PetscSynchronizedFlush(comm);CHKERRQ(ierr);
+  /* Test MatGetRedundantMatrix() */
+  if (size > 1) {
+    ierr = MatGetRedundantMatrix(A,nsubcomm,subcomm,MAT_INITIAL_MATRIX,&subA);CHKERRQ(ierr);
+    ierr = MatGetRedundantMatrix(A,nsubcomm,subcomm,MAT_REUSE_MATRIX,&subA);CHKERRQ(ierr);
+    ierr = MatDestroy(&subA);CHKERRQ(ierr);
   }
 
   /* Create subA */
   ierr = MatGetMultiProcBlock(A,subcomm,MAT_INITIAL_MATRIX,&subA);CHKERRQ(ierr);
+  ierr = MatGetMultiProcBlock(A,subcomm,MAT_REUSE_MATRIX,&subA);CHKERRQ(ierr);
 
   /* Create sub vectors without arrays. Place b's and x's local arrays into subb and subx */
   ierr = MatGetLocalSize(subA,&m,&n);CHKERRQ(ierr);

@@ -2,6 +2,7 @@
 #define __PETSCDMDA_H
 
 #include <petscdm.h>
+#include <petscdt.h>
 #include <petscdmdatypes.h>
 #include <petscpf.h>
 #include <petscao.h>
@@ -49,8 +50,8 @@ PETSC_EXTERN PetscErrorCode DMDAGlobalToNaturalBegin(DM,Vec,InsertMode,Vec);
 PETSC_EXTERN PetscErrorCode DMDAGlobalToNaturalEnd(DM,Vec,InsertMode,Vec);
 PETSC_EXTERN PetscErrorCode DMDANaturalToGlobalBegin(DM,Vec,InsertMode,Vec);
 PETSC_EXTERN PetscErrorCode DMDANaturalToGlobalEnd(DM,Vec,InsertMode,Vec);
-PETSC_EXTERN PetscErrorCode DMDALocalToLocalBegin(DM,Vec,InsertMode,Vec);
-PETSC_EXTERN PetscErrorCode DMDALocalToLocalEnd(DM,Vec,InsertMode,Vec);
+PETSC_DEPRECATED("Use DMLocalToLocalBegin()") PETSC_STATIC_INLINE PetscErrorCode DMDALocalToLocalBegin(DM dm,Vec g,InsertMode mode,Vec l) {return DMLocalToLocalBegin(dm,g,mode,l);}
+PETSC_DEPRECATED("Use DMLocalToLocalEnd()") PETSC_STATIC_INLINE PetscErrorCode DMDALocalToLocalEnd(DM dm,Vec g,InsertMode mode,Vec l) {return DMLocalToLocalEnd(dm,g,mode,l);}
 PETSC_EXTERN PetscErrorCode DMDACreateNaturalVector(DM,Vec *);
 
 PETSC_EXTERN PetscErrorCode DMDAGetCorners(DM,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*);
@@ -87,8 +88,12 @@ PETSC_EXTERN PetscErrorCode DMDASetBoundaryType(DM,DMDABoundaryType,DMDABoundary
 PETSC_EXTERN PetscErrorCode DMDASetDof(DM, PetscInt);
 PETSC_EXTERN PetscErrorCode DMDASetOverlap(DM,PetscInt,PetscInt,PetscInt);
 PETSC_EXTERN PetscErrorCode DMDAGetOverlap(DM,PetscInt*,PetscInt*,PetscInt*);
+PETSC_EXTERN PetscErrorCode DMDASetNumLocalSubDomains(DM,PetscInt);
+PETSC_EXTERN PetscErrorCode DMDAGetNumLocalSubDomains(DM,PetscInt*);
 PETSC_EXTERN PetscErrorCode DMDAGetOffset(DM,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*);
 PETSC_EXTERN PetscErrorCode DMDASetOffset(DM,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt);
+PETSC_EXTERN PetscErrorCode DMDAGetNonOverlappingRegion(DM,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*);
+PETSC_EXTERN PetscErrorCode DMDASetNonOverlappingRegion(DM,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt);
 PETSC_EXTERN PetscErrorCode DMDASetStencilWidth(DM, PetscInt);
 PETSC_EXTERN PetscErrorCode DMDASetOwnershipRanges(DM,const PetscInt[],const PetscInt[],const PetscInt[]);
 PETSC_EXTERN PetscErrorCode DMDAGetOwnershipRanges(DM,const PetscInt**,const PetscInt**,const PetscInt**);

@@ -14,10 +14,12 @@ static PetscBool CharacteristicPackageInitialized = PETSC_FALSE;
 @*/
 PetscErrorCode CharacteristicFinalizePackage(void)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
+  ierr = PetscFunctionListDestroy(&CharacteristicList);CHKERRQ(ierr);
   CharacteristicPackageInitialized = PETSC_FALSE;
   CharacteristicRegisterAllCalled  = PETSC_FALSE;
-  CharacteristicList               = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -28,15 +30,12 @@ PetscErrorCode CharacteristicFinalizePackage(void)
   from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to CharacteristicCreate()
   when using static libraries.
 
-  Input Parameter:
-  path - The dynamic library path, or NULL
-
   Level: developer
 
 .keywords: Characteristic, initialize, package
 .seealso: PetscInitialize()
 @*/
-PetscErrorCode CharacteristicInitializePackage(const char path[])
+PetscErrorCode CharacteristicInitializePackage(void)
 {
   char           logList[256];
   char           *className;
@@ -49,7 +48,7 @@ PetscErrorCode CharacteristicInitializePackage(const char path[])
   /* Register Classes */
   ierr = PetscClassIdRegister("Method of Characteristics",&CHARACTERISTIC_CLASSID);CHKERRQ(ierr);
   /* Register Constructors */
-  ierr = CharacteristicRegisterAll(path);CHKERRQ(ierr);
+  ierr = CharacteristicRegisterAll();CHKERRQ(ierr);
   /* Register Events */
   ierr = PetscLogEventRegister("MOCSetUp",         CHARACTERISTIC_CLASSID,&CHARACTERISTIC_SetUp);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MOCSolve",         CHARACTERISTIC_CLASSID,&CHARACTERISTIC_Solve);CHKERRQ(ierr);
@@ -89,15 +88,13 @@ PetscErrorCode CharacteristicInitializePackage(const char path[])
 
   This one registers the method of characteristics code
 
-  Input Parameter:
-  path - library path
  */
-PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petsccharacteristic(const char path[])
+PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petsccharacteristic(void)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = CharacteristicInitializePackage(path);CHKERRQ(ierr);
+  ierr = CharacteristicInitializePackage();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

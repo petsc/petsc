@@ -51,8 +51,10 @@ testexamples_PTSCOTCH: ${TESTEXAMPLES_PTSCOTCH}
 testexamples_PASTIX: ${TESTEXAMPLES_PASTIX}
 testexamples_ML: ${TESTEXAMPLES_ML}
 testexamples_CUSP: ${TESTEXAMPLES_CUSP}
+testexamples_CUDA: ${TESTEXAMPLES_CUDA}
 testexamples_YAML: ${TESTEXAMPLES_YAML}
 testexamples_THREADCOMM: ${TESTEXAMPLES_THREADCOMM}
+testexamples_MOAB: ${TESTEXAMPLES_MOAB}
 testexamples_X:
 testexamples_OPENGL:
 testexamples_MPE:
@@ -63,12 +65,13 @@ testexamples_SOWING:
 testexamples_C2HTML:
 testexamples_BLACS:
 testexamples_SCALAPACK:
-testexamples_TXPETSCGPU:
 testexamples_CMAKE:
 testexamples_AFTERIMAGE:
 testexamples_PTHREADCLASSES:
 testexamples_OPENMP:
 testexamples_NETCDF:
+testexamples_EXODUSII:
+testexamples_PCBDDC:
 
 buildexamples_C:
 	-@${OMAKE} testexamples_C TESTEXAMPLES_C=`echo ${TESTEXAMPLES_C} | sed s/runex[0-9]*[a-z0-9_]*//g`
@@ -156,10 +159,14 @@ buildexamples_ML:
 	-@${OMAKE} testexamples_ML TESTEXAMPLES_ML=`echo ${TESTEXAMPLES_ML} | sed s/runex[0-9]*[a-z0-9_]*//g`
 buildexamples_CUSP:
 	-@${OMAKE} testexamples_CUSP TESTEXAMPLES_CUSP=`echo ${TESTEXAMPLES_CUSP} | sed s/runex[0-9]*[a-z0-9_]*//g`
+buildexamples_CUDA:
+	-@${OMAKE} testexamples_CUDA TESTEXAMPLES_CUDA=`echo ${TESTEXAMPLES_CUDA} | sed s/runex[0-9]*[a-z0-9_]*//g`
 buildexamples_YAML:
 	-@${OMAKE} testexamples_YAML TESTEXAMPLES_YAML=`echo ${TESTEXAMPLES_YAML} | sed s/runex[0-9]*[a-z0-9_]*//g`
 buildexamples_THREADCOMM:
 	-@${OMAKE} testexamples_THREADCOMM TESTEXAMPLES_THREADCOMM=`echo ${TESTEXAMPLES_THREADCOMM} | sed s/runex[0-9]*[a-z0-9_]*//g`
+buildexamples_MOAB:
+	-@${OMAKE} testexamples_MOAB TESTEXAMPLES_MOAB=`echo ${TESTEXAMPLES_MOAB} | sed s/runex[0-9]*[a-z0-9_]*//g`
 buildexamples_X:
 buildexamples_OPENGL:
 buildexamples_MPE:
@@ -170,7 +177,6 @@ buildexamples_SOWING:
 buildexamples_C2HTML:
 buildexamples_BLACS:
 buildexamples_SCALAPACK:
-buildexamples_TXPETSCGPU:
 buildexamples_CMAKE:
 buildexamples_AFTERIMAGE:
 buildexamples_PTHREADCLASSES:
@@ -185,6 +191,7 @@ alltests:
 
 alltest:
 	-@for i in ${TEST_RUNS} ; do \
+          echo "******* Testing: ${TESTMODE}_$$i *******"; \
 	  ${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ACTION=${TESTMODE}_$$i MPIEXEC="${MPIEXEC}" NO_PRINT_DIR=yes tree ; \
 	done
 

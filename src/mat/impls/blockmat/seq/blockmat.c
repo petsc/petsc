@@ -407,7 +407,6 @@ PetscErrorCode MatLoad_BlockMat(Mat newmat, PetscViewer viewer)
     }
     amat->ilen[i] = lens[i];
   }
-  CHKMEMQ;
 
   ierr = PetscFree3(lens,ii,ilens);CHKERRQ(ierr);
   ierr = PetscFree(llens);CHKERRQ(ierr);
@@ -483,7 +482,6 @@ PetscErrorCode MatMult_BlockMat(Mat A,Vec x,Vec y)
   Mat            *aa;
 
   PetscFunctionBegin;
-  CHKMEMQ;
   /*
      Standard CSR multiply except each entry is a Mat
   */
@@ -508,7 +506,6 @@ PetscErrorCode MatMult_BlockMat(Mat A,Vec x,Vec y)
   }
   ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
   ierr = VecRestoreArray(y,&yy);CHKERRQ(ierr);
-  CHKMEMQ;
   PetscFunctionReturn(0);
 }
 
@@ -523,7 +520,6 @@ PetscErrorCode MatMult_BlockMat_Symmetric(Mat A,Vec x,Vec y)
   Mat            *aa;
 
   PetscFunctionBegin;
-  CHKMEMQ;
   /*
      Standard CSR multiply except each entry is a Mat
   */
@@ -562,7 +558,6 @@ PetscErrorCode MatMult_BlockMat_Symmetric(Mat A,Vec x,Vec y)
   }
   ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
   ierr = VecRestoreArray(y,&yy);CHKERRQ(ierr);
-  CHKMEMQ;
   PetscFunctionReturn(0);
 }
 
@@ -727,7 +722,6 @@ PetscErrorCode MatAssemblyEnd_BlockMat(Mat A,MatAssemblyType mode)
     ierr = MatAssemblyBegin(aa[i],MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(aa[i],MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
-  CHKMEMQ;
   ierr = PetscInfo4(A,"Matrix size: %D X %D; storage space: %D unneeded,%D used\n",m,A->cmap->n/A->cmap->bs,fshift,a->nz);CHKERRQ(ierr);
   ierr = PetscInfo1(A,"Number of mallocs during MatSetValues() is %D\n",a->reallocs);CHKERRQ(ierr);
   ierr = PetscInfo1(A,"Maximum nonzeros in any row is %D\n",rmax);CHKERRQ(ierr);
@@ -970,7 +964,7 @@ PetscErrorCode  MatBlockMatSetPreallocation_BlockMat(Mat A,PetscInt bs,PetscInt 
 
   if (!bmat->imax) {
     ierr = PetscMalloc2(A->rmap->n,PetscInt,&bmat->imax,A->rmap->n,PetscInt,&bmat->ilen);CHKERRQ(ierr);
-    ierr = PetscLogObjectMemory(A,2*A->rmap->n*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscLogObjectMemory((PetscObject)A,2*A->rmap->n*sizeof(PetscInt));CHKERRQ(ierr);
   }
   if (nnz) {
     nz = 0;
@@ -986,7 +980,7 @@ PetscErrorCode  MatBlockMatSetPreallocation_BlockMat(Mat A,PetscInt bs,PetscInt 
   /* allocate the matrix space */
   ierr       = MatSeqXAIJFreeAIJ(A,(PetscScalar**)&bmat->a,&bmat->j,&bmat->i);CHKERRQ(ierr);
   ierr       = PetscMalloc3(nz,Mat,&bmat->a,nz,PetscInt,&bmat->j,A->rmap->n+1,PetscInt,&bmat->i);CHKERRQ(ierr);
-  ierr       = PetscLogObjectMemory(A,(A->rmap->n+1)*sizeof(PetscInt)+nz*(sizeof(PetscScalar)+sizeof(PetscInt)));CHKERRQ(ierr);
+  ierr       = PetscLogObjectMemory((PetscObject)A,(A->rmap->n+1)*sizeof(PetscInt)+nz*(sizeof(PetscScalar)+sizeof(PetscInt)));CHKERRQ(ierr);
   bmat->i[0] = 0;
   for (i=1; i<bmat->mbs+1; i++) {
     bmat->i[i] = bmat->i[i-1] + bmat->imax[i-1];
@@ -1028,7 +1022,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_BlockMat(Mat A)
   A->preallocated = PETSC_FALSE;
   ierr            = PetscObjectChangeTypeName((PetscObject)A,MATBLOCKMAT);CHKERRQ(ierr);
 
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatBlockMatSetPreallocation_C","MatBlockMatSetPreallocation_BlockMat",MatBlockMatSetPreallocation_BlockMat);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatBlockMatSetPreallocation_C",MatBlockMatSetPreallocation_BlockMat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

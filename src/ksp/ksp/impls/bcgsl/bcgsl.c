@@ -53,10 +53,10 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
 
   ierr = (*ksp->converged)(ksp, 0, zeta0, &ksp->reason, ksp->cnvP);CHKERRQ(ierr);
   if (ksp->reason) {
-    ierr       = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
+    ierr       = PetscObjectAMSTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
     ksp->its   = 0;
     ksp->rnorm = zeta0;
-    ierr       = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
+    ierr       = PetscObjectAMSGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
 
@@ -82,7 +82,7 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
     ksp->its   = k;
     ksp->rnorm = zeta;
 
-    KSPLogResidualHistory(ksp, zeta);
+    ierr = KSPLogResidualHistory(ksp, zeta);CHKERRQ(ierr);
     ierr = KSPMonitor(ksp, ksp->its, zeta);CHKERRQ(ierr);
 
     ierr = (*ksp->converged)(ksp, k, zeta, &ksp->reason, ksp->cnvP);CHKERRQ(ierr);
@@ -135,12 +135,12 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
       /* NEW: check for early exit */
       ierr = (*ksp->converged)(ksp, k+j, nrm0, &ksp->reason, ksp->cnvP);CHKERRQ(ierr);
       if (ksp->reason) {
-        ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
+        ierr = PetscObjectAMSTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
 
         ksp->its   = k+j;
         ksp->rnorm = nrm0;
 
-        ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
+        ierr = PetscObjectAMSGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
         if (ksp->reason < 0) PetscFunctionReturn(0);
       }
     }
@@ -168,9 +168,9 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
         SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"GESVD - Lapack routine is unavailable.");
 #else
 #  if defined(PETSC_USE_COMPLEX)
-        PetscStackCall("LAPACKgesvd",LAPACKgesvd_("A","A",&bell,&bell,&MZa[1+ldMZ],&ldMZ,bcgsl->s,bcgsl->u,&bell,bcgsl->v,&bell,bcgsl->work,&bcgsl->lwork,bcgsl->realwork,&bierr));
+        PetscStackCallBLAS("LAPACKgesvd",LAPACKgesvd_("A","A",&bell,&bell,&MZa[1+ldMZ],&ldMZ,bcgsl->s,bcgsl->u,&bell,bcgsl->v,&bell,bcgsl->work,&bcgsl->lwork,bcgsl->realwork,&bierr));
 #  else
-        PetscStackCall("LAPACKgesvd",LAPACKgesvd_("A","A",&bell,&bell,&MZa[1+ldMZ],&ldMZ,bcgsl->s,bcgsl->u,&bell,bcgsl->v,&bell,bcgsl->work,&bcgsl->lwork,&bierr));
+        PetscStackCallBLAS("LAPACKgesvd",LAPACKgesvd_("A","A",&bell,&bell,&MZa[1+ldMZ],&ldMZ,bcgsl->s,bcgsl->u,&bell,bcgsl->v,&bell,bcgsl->work,&bcgsl->lwork,&bierr));
 #  endif
 #endif
         if (bierr!=0) {
@@ -203,14 +203,14 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
 #if defined(PETSC_MISSING_LAPACK_POTRF)
         SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"POTRF - Lapack routine is unavailable.");
 #else
-        PetscStackCall("LAPACKpotrf",LAPACKpotrf_("Lower", &bell, &MZa[1+ldMZ], &ldMZ, &bierr));
+        PetscStackCallBLAS("LAPACKpotrf",LAPACKpotrf_("Lower", &bell, &MZa[1+ldMZ], &ldMZ, &bierr));
 #endif
         if (bierr!=0) {
           ksp->reason = KSP_DIVERGED_BREAKDOWN;
           PetscFunctionReturn(0);
         }
         ierr = PetscMemcpy(&AY0c[1],&MZb[1],bcgsl->ell*sizeof(PetscScalar));CHKERRQ(ierr);
-        PetscStackCall("LAPACKpotrs",LAPACKpotrs_("Lower", &bell, &ione, &MZa[1+ldMZ], &ldMZ, &AY0c[1], &ldMZ, &bierr));
+        PetscStackCallBLAS("LAPACKpotrs",LAPACKpotrs_("Lower", &bell, &ione, &MZa[1+ldMZ], &ldMZ, &AY0c[1], &ldMZ, &bierr));
       }
     } else {
       PetscBLASInt ione = 1;
@@ -221,24 +221,24 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
 #if defined(PETSC_MISSING_LAPACK_POTRF)
       SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"POTRF - Lapack routine is unavailable.");
 #else
-      PetscStackCall("LAPACKpotrf",LAPACKpotrf_("Lower", &neqs, &MZa[1+ldMZ], &ldMZ, &bierr));
+      PetscStackCallBLAS("LAPACKpotrf",LAPACKpotrf_("Lower", &neqs, &MZa[1+ldMZ], &ldMZ, &bierr));
 #endif
       if (bierr!=0) {
         ksp->reason = KSP_DIVERGED_BREAKDOWN;
         PetscFunctionReturn(0);
       }
       ierr = PetscMemcpy(&AY0c[1],&MZb[1],(bcgsl->ell-1)*sizeof(PetscScalar));CHKERRQ(ierr);
-      PetscStackCall("LAPACKpotrs",LAPACKpotrs_("Lower", &neqs, &ione, &MZa[1+ldMZ], &ldMZ, &AY0c[1], &ldMZ, &bierr));
+      PetscStackCallBLAS("LAPACKpotrs",LAPACKpotrs_("Lower", &neqs, &ione, &MZa[1+ldMZ], &ldMZ, &AY0c[1], &ldMZ, &bierr));
       AY0c[0]          = -1;
       AY0c[bcgsl->ell] = 0.;
 
       ierr = PetscMemcpy(&AYlc[1],&MZb[1+ldMZ*(bcgsl->ell)],(bcgsl->ell-1)*sizeof(PetscScalar));CHKERRQ(ierr);
-      PetscStackCall("LAPACKpotrs",LAPACKpotrs_("Lower", &neqs, &ione, &MZa[1+ldMZ], &ldMZ, &AYlc[1], &ldMZ, &bierr));
+      PetscStackCallBLAS("LAPACKpotrs",LAPACKpotrs_("Lower", &neqs, &ione, &MZa[1+ldMZ], &ldMZ, &AYlc[1], &ldMZ, &bierr));
 
       AYlc[0]          = 0.;
       AYlc[bcgsl->ell] = -1;
 
-      PetscStackCall("BLASgemv",BLASgemv_("NoTr", &ldMZ, &ldMZ, &aone, MZb, &ldMZ, AY0c, &ione, &azero, AYtc, &ione));
+      PetscStackCallBLAS("BLASgemv",BLASgemv_("NoTr", &ldMZ, &ldMZ, &aone, MZb, &ldMZ, AY0c, &ione, &azero, AYtc, &ione));
 
       kappa0 = PetscRealPart(BLASdot_(&ldMZ, AY0c, &ione, AYtc, &ione));
 
@@ -248,7 +248,7 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
 
       kappaA = PetscRealPart(BLASdot_(&ldMZ, AYlc, &ione, AYtc, &ione));
 
-      PetscStackCall("BLASgemv",BLASgemv_("noTr", &ldMZ, &ldMZ, &aone, MZb, &ldMZ, AYlc, &ione, &azero, AYtc, &ione));
+      PetscStackCallBLAS("BLASgemv",BLASgemv_("noTr", &ldMZ, &ldMZ, &aone, MZb, &ldMZ, AYlc, &ione, &azero, AYtc, &ione));
 
       kappa1 = PetscRealPart(BLASdot_(&ldMZ, AYlc, &ione, AYtc, &ione));
 

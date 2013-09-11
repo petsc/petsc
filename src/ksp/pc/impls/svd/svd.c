@@ -50,10 +50,8 @@ static PetscErrorCode PCSetUp_SVD(PC pc)
   ierr = MatDestroy(&jac->A);CHKERRQ(ierr);
   ierr = MPI_Comm_size(((PetscObject)pc->pmat)->comm,&size);CHKERRQ(ierr);
   if (size > 1) {
-    Mat      redmat;
-    PetscInt M;
-    ierr = MatGetSize(pc->pmat,&M,NULL);CHKERRQ(ierr);
-    ierr = MatGetRedundantMatrix(pc->pmat,size,PETSC_COMM_SELF,M,MAT_INITIAL_MATRIX,&redmat);CHKERRQ(ierr);
+    Mat          redmat;
+    ierr = MatGetRedundantMatrix(pc->pmat,size,PETSC_COMM_SELF,MAT_INITIAL_MATRIX,&redmat);CHKERRQ(ierr);
     ierr = MatConvert(redmat,MATSEQDENSE,MAT_INITIAL_MATRIX,&jac->A);CHKERRQ(ierr);
     ierr = MatDestroy(&redmat);CHKERRQ(ierr);
   } else {
@@ -78,7 +76,7 @@ static PetscErrorCode PCSetUp_SVD(PC pc)
   {
     PetscBLASInt lierr;
     ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
-    PetscStackCall("LAPACKgesvd",LAPACKgesvd_("A","A",&nb,&nb,a,&nb,d,u,&nb,v,&nb,work,&lwork,&lierr));
+    PetscStackCallBLAS("LAPACKgesvd",LAPACKgesvd_("A","A",&nb,&nb,a,&nb,d,u,&nb,v,&nb,work,&lwork,&lierr));
     if (lierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"gesv() error %d",lierr);
     ierr = PetscFPTrapPop();CHKERRQ(ierr);
   }

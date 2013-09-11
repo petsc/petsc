@@ -22,6 +22,16 @@
       End Interface
 
       Interface
+        Subroutine DMPlexRestoreCone(m,p,cone,ierr)
+          USE_DMPLEX_HIDE
+          PetscInt     p
+          PetscInt, pointer :: cone(:)
+          PetscErrorCode ierr
+          DM_HIDE m
+        End Subroutine
+      End Interface
+
+      Interface
         Subroutine DMPlexGetConeOrientation(m,p,coneOrient,ierr)
           USE_DMPLEX_HIDE
           PetscInt     p
@@ -33,6 +43,16 @@
 
       Interface
         Subroutine DMPlexGetSupport(m,p,support,ierr)
+          USE_DMPLEX_HIDE
+          PetscInt     p
+          PetscInt, pointer :: support(:)
+          PetscErrorCode ierr
+          DM_HIDE m
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine DMPlexRestoreSupport(m,p,support,ierr)
           USE_DMPLEX_HIDE
           PetscInt     p
           PetscInt, pointer :: support(:)
@@ -170,6 +190,21 @@
       End Interface
 
       Interface
+        Subroutine DMPlexMatSetClosure(m,section,globalSection,A,point, &
+     &  values,mode,ierr)
+          USE_DMPLEX_HIDE
+          PETSCSECTION_HIDE section
+          PETSCSECTION_HIDE globalSection
+          MAT_HIDE     A
+          PetscInt     point
+          InsertMode   mode
+          PetscScalar, pointer :: values(:)
+          PetscErrorCode ierr
+          DM_HIDE m
+        End Subroutine
+      End Interface
+
+      Interface
         Subroutine DMPlexCreateSection(m,dim,numFields,numComp,         &
      &  numDof,numBC,bcField,bcPoints,section,ierr)
           USE_DMPLEX_HIDE
@@ -179,6 +214,19 @@
           PetscInt, pointer :: numDof(:)
           PetscInt, pointer :: bcField(:)
           IS_HIDE,  pointer :: bcPoints(:)
+          PetscErrorCode ierr
+          DM_HIDE m
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine DMPlexComputeCellGeometry(m,cell,v0,J,invJ,detJ,ierr)
+          USE_DMPLEX_HIDE
+          PetscInt   cell
+          PetscReal, pointer :: v0(:)
+          PetscReal, pointer :: J(:)
+          PetscReal, pointer :: invJ(:)
+          PetscReal  detJ
           PetscErrorCode ierr
           DM_HIDE m
         End Subroutine

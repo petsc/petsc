@@ -1,5 +1,5 @@
 
-static char help[] = "Demonstrates using PetscWebServe().\nRun with -ams_publish_objects\n\n";
+static char help[] = "Demonstrates using PetscWebServe().\nRun with -random_view ams\n\n";
 
 /*T
    Concepts: introduction to PETSc;
@@ -8,7 +8,7 @@ static char help[] = "Demonstrates using PetscWebServe().\nRun with -ams_publish
 T*/
 
 #include <petscsys.h>
-#include <petscksp.h>
+
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;

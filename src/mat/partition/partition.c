@@ -88,38 +88,37 @@ PetscBool         MatPartitioningRegisterAllCalled = PETSC_FALSE;
 
 #undef __FUNCT__
 #define __FUNCT__ "MatPartitioningRegister"
-PetscErrorCode  MatPartitioningRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(MatPartitioning))
-{
-  PetscErrorCode ierr;
-  char           fullname[PETSC_MAX_PATH_LEN];
-
-  PetscFunctionBegin;
-  ierr = PetscFunctionListConcat(path,name,fullname);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&MatPartitioningList,sname,fullname,(void (*)(void))function);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "MatPartitioningRegisterDestroy"
 /*@C
-   MatPartitioningRegisterDestroy - Frees the list of partitioning routines.
+   MatPartitioningRegister - Adds a new sparse matrix partitioning to the  matrix package.
 
-  Not Collective
+   Not Collective
 
-  Level: developer
+   Input Parameters:
++  sname - name of partitioning (for example MATPARTITIONINGCURRENT) or parmetis
+-  function - function pointer that creates the partitioning type
 
-.keywords: matrix, register, destroy
+   Level: developer
 
-.seealso: MatPartitioningRegisterDynamic(), MatPartitioningRegisterAll()
+   Sample usage:
+.vb
+   MatPartitioningRegister("my_part",MyPartCreate);
+.ve
+
+   Then, your partitioner can be chosen with the procedural interface via
+$     MatPartitioningSetType(part,"my_part")
+   or at runtime via the option
+$     -mat_partitioning_type my_part
+
+.keywords: matrix, partitioning, register
+
+.seealso: MatPartitioningRegisterDestroy(), MatPartitioningRegisterAll()
 @*/
-PetscErrorCode  MatPartitioningRegisterDestroy(void)
+PetscErrorCode  MatPartitioningRegister(const char sname[],PetscErrorCode (*function)(MatPartitioning))
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  MatPartitioningRegisterAllCalled = PETSC_FALSE;
-
-  ierr = PetscFunctionListDestroy(&MatPartitioningList);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&MatPartitioningList,sname,function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -203,11 +202,11 @@ $    -mat_partitioning_view
 
    Level: beginner
 
-   The user can define additional partitionings; see MatPartitioningRegisterDynamic().
+   The user can define additional partitionings; see MatPartitioningRegister().
 
 .keywords: matrix, get, partitioning
 
-.seealso:  MatPartitioningRegisterDynamic(), MatPartitioningCreate(),
+.seealso:  MatPartitioningRegister(), MatPartitioningCreate(),
            MatPartitioningDestroy(), MatPartitioningSetAdjacency(), ISPartitioningToNumbering(),
            ISPartitioningCount()
 @*/
@@ -401,7 +400,7 @@ PetscErrorCode  MatPartitioningCreate(MPI_Comm comm,MatPartitioning *newp)
   *newp = 0;
 
 #if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
-  ierr = MatInitializePackage(NULL);CHKERRQ(ierr);
+  ierr = MatInitializePackage();CHKERRQ(ierr);
 #endif
   ierr = PetscHeaderCreate(part,_p_MatPartitioning,struct _MatPartitioningOps,MAT_PARTITIONING_CLASSID,"MatPartitioning","Matrix/graph partitioning","MatOrderings",comm,MatPartitioningDestroy,MatPartitioningView);CHKERRQ(ierr);
   part->vertex_weights = NULL;
@@ -457,7 +456,7 @@ PetscErrorCode  MatPartitioningView(MatPartitioning part,PetscViewer viewer)
 
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
-    ierr = PetscObjectPrintClassNamePrefixType((PetscObject)part,viewer,"MatPartitioning Object");CHKERRQ(ierr);
+    ierr = PetscObjectPrintClassNamePrefixType((PetscObject)part,viewer);CHKERRQ(ierr);
     if (part->vertex_weights) {
       ierr = PetscViewerASCIIPrintf(viewer,"  Using vertex weights\n");CHKERRQ(ierr);
     }
@@ -513,7 +512,7 @@ PetscErrorCode  MatPartitioningSetType(MatPartitioning part,MatPartitioningType 
     part->setupcalled  = 0;
   }
 
-  ierr = PetscFunctionListFind(PetscObjectComm((PetscObject)part),MatPartitioningList,type,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
+  ierr = PetscFunctionListFind(MatPartitioningList,type,&r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PetscObjectComm((PetscObject)part),PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown partitioning type %s",type);
 
   part->ops->destroy = (PetscErrorCode (*)(MatPartitioning)) 0;

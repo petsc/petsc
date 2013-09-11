@@ -4,7 +4,7 @@ FFLAGS	        =
 CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR          = src/ts/examples/tests/
-EXAMPLESC       = ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c ex10.c
+EXAMPLESC       = ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c ex10.c ex25.c
 EXAMPLESF       =
 EXAMPLESFH      =
 MANSEC          = TS
@@ -56,6 +56,10 @@ ex10: ex10.o  chkopts
 	-${CLINKER} -o ex10 ex10.o ${PETSC_TS_LIB}
 	${RM} ex10.o
 
+ex25: ex25.o  chkopts
+	-${CLINKER} -o ex25 ex25.o ${PETSC_TS_LIB}
+	${RM} ex25.o
+
 #----------------------------------------------------------------------------------
 NPROCS    = 1  3
 
@@ -79,7 +83,7 @@ runex3:
 	   ${DIFF} output/ex3.out ex3.tmp || echo  ${PWD} "\nPossible problem with ex3, diffs above \n========================================="; \
 	   ${RM} -f ex3.tmp
 
-runex3_2:
+runex3_2:                       # Broken because SNESComputeJacobianDefault is incompatible with TSComputeIJacobianConstant.
 	-@${MPIEXEC} -n 1 ./ex3 -useAlhs > ex3.tmp 2>&1;	  \
 	   ${DIFF} output/ex3.out ex3.tmp || echo  ${PWD} "\nPossible problem with ex3_2, diffs above \n========================================="; \
 	   ${RM} -f ex3.tmp
@@ -115,19 +119,29 @@ runex4_7:
 	   ${RM} -f ex4.tmp
 
 runex5:
-	-@${MPIEXEC} -n 1 ./ex5 -ts_max_steps 130 > ex5.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 1 ./ex5 -ts_max_steps 130 -monitor_interval 60 > ex5.tmp 2>&1;	  \
 	   ${DIFF} output/ex5.out ex5.tmp || echo  ${PWD} "\nPossible problem with ex5_1, diffs above \n========================================="; \
 	   ${RM} -f ex5.tmp
 
 runex5_2:
-	-@${MPIEXEC} -n 4 ./ex5 -ts_max_steps 130 > ex5.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 4 ./ex5 -ts_max_steps 130 -monitor_interval 60 > ex5.tmp 2>&1;	  \
 	   ${DIFF} output/ex5.out ex5.tmp || echo  ${PWD} "\nPossible problem with ex5_2, diffs above \n========================================="; \
 	   ${RM} -f ex5.tmp
 
-TESTEXAMPLES_C		  = ex4.PETSc runex4 runex4_2 runex4_3 runex4_4 runex4_5 runex4_6 \
-                            runex4_7 ex4.rm
+runex25:
+	-@${MPIEXEC} -n 1 ./ex25 -ts_exact_final_time INTERPOLATE > ex25_1.tmp 2>&1;	  \
+	   ${DIFF} output/ex25_1.out ex25_1.tmp || printf "${PWD}\nPossible problem with ex25_1, diffs above \n=========================================\n"; \
+	   ${RM} -f ex25_1.tmp
 
-testexamples_C_NoComplex  = ex3.PETSc runex3 runex3_2 ex3.rm ex5.PETSc runex5 runex5_2 ex5.rm
+runex25_2:
+	-@${MPIEXEC} -n 2 ./ex25 -ts_exact_final_time INTERPOLATE > ex25_2.tmp 2>&1;	  \
+	   ${DIFF} output/ex25_2.out ex25_2.tmp || printf "${PWD}\nPossible problem with ex25_2, diffs above \n=========================================\n"; \
+	   ${RM} -f ex25_2.tmp
+
+TESTEXAMPLES_C		  = ex4.PETSc runex4 runex4_2 runex4_3 runex4_4 runex4_5 runex4_6 \
+                            runex4_7 ex4.rm ex25.PETSc runex25 runex25_2 ex25.rm
+
+TESTEXAMPLES_C_NOCOMPLEX  = ex3.PETSc runex3 ex3.rm ex5.PETSc runex5 runex5_2 ex5.rm
 TESTEXAMPLES_C_X	  =
 TESTEXAMPLES_FORTRAN	  =
 TESTEXAMPLES_C_X_MPIUNI =

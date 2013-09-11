@@ -1120,9 +1120,7 @@
      &         fun3d_class,flux_event,ierr)
           flag = 1
        endif
-       call PetscLogEventBegin(flux_event,PETSC_NULL_OBJECT,            &
-     &                         PETSC_NULL_OBJECT,PETSC_NULL_OBJECT,     &
-     &                         PETSC_NULL_OBJECT,ierr)
+       call PetscLogEventBegin(flux_event,ierr)
        flops = 0.0
        second = 1.0d0
 !      if(ntt.le.nitfo)second = 0.0
@@ -1456,9 +1454,7 @@
 #else
 #endif
       call PetscLogFlops(flops,ierr)
-      call PetscLogEventEnd(flux_event,PETSC_NULL_OBJECT,               &
-     &                      PETSC_NULL_OBJECT,PETSC_NULL_OBJECT,        &
-     &                      PETSC_NULL_OBJECT,ierr)
+      call PetscLogEventEnd(flux_event,ierr)
 !     c68 = 6./8.
 !     c18 = 1./8.
       c68 = 0.75d0

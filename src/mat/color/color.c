@@ -95,8 +95,8 @@ PETSC_EXTERN PetscErrorCode MatGetColoring_SL_Minpack(Mat mat,MatColoringType na
 
   ierr = PetscFree2(list,work);CHKERRQ(ierr);
   ierr = PetscFree(seq);CHKERRQ(ierr);
-  ierr = MatRestoreRowIJ(mat_seq,1,PETSC_FALSE,PETSC_TRUE,&n,&ria,&rja,&done);CHKERRQ(ierr);
-  ierr = MatRestoreColumnIJ(mat_seq,1,PETSC_FALSE,PETSC_TRUE,&n,&cia,&cja,&done);CHKERRQ(ierr);
+  ierr = MatRestoreRowIJ(mat_seq,1,PETSC_FALSE,PETSC_TRUE,NULL,&ria,&rja,&done);CHKERRQ(ierr);
+  ierr = MatRestoreColumnIJ(mat_seq,1,PETSC_FALSE,PETSC_TRUE,NULL,&cia,&cja,&done);CHKERRQ(ierr);
 
   /* shift coloring numbers to start at zero and shorten */
   if (ncolors > IS_COLORING_MAX-1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Maximum color size exceeded");
@@ -183,8 +183,8 @@ PETSC_EXTERN PetscErrorCode MatGetColoring_LF_Minpack(Mat mat,MatColoringType na
   ierr = PetscFree2(list,work);CHKERRQ(ierr);
   ierr = PetscFree(seq);CHKERRQ(ierr);
 
-  ierr = MatRestoreRowIJ(mat_seq,1,PETSC_FALSE,PETSC_TRUE,&n,&ria,&rja,&done);CHKERRQ(ierr);
-  ierr = MatRestoreColumnIJ(mat_seq,1,PETSC_FALSE,PETSC_TRUE,&n,&cia,&cja,&done);CHKERRQ(ierr);
+  ierr = MatRestoreRowIJ(mat_seq,1,PETSC_FALSE,PETSC_TRUE,NULL,&ria,&rja,&done);CHKERRQ(ierr);
+  ierr = MatRestoreColumnIJ(mat_seq,1,PETSC_FALSE,PETSC_TRUE,NULL,&cia,&cja,&done);CHKERRQ(ierr);
 
   /* shift coloring numbers to start at zero and shorten */
   if (ncolors > IS_COLORING_MAX-1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Maximum color size exceeded");
@@ -267,8 +267,8 @@ PETSC_EXTERN PetscErrorCode MatGetColoring_ID_Minpack(Mat mat,MatColoringType na
   ierr = PetscFree2(list,work);CHKERRQ(ierr);
   ierr = PetscFree(seq);CHKERRQ(ierr);
 
-  ierr = MatRestoreRowIJ(mat_seq,1,PETSC_FALSE,PETSC_TRUE,&n,&ria,&rja,&done);CHKERRQ(ierr);
-  ierr = MatRestoreColumnIJ(mat_seq,1,PETSC_FALSE,PETSC_TRUE,&n,&cia,&cja,&done);CHKERRQ(ierr);
+  ierr = MatRestoreRowIJ(mat_seq,1,PETSC_FALSE,PETSC_TRUE,NULL,&ria,&rja,&done);CHKERRQ(ierr);
+  ierr = MatRestoreColumnIJ(mat_seq,1,PETSC_FALSE,PETSC_TRUE,NULL,&cia,&cja,&done);CHKERRQ(ierr);
 
   /* shift coloring numbers to start at zero and shorten */
   if (ncolors > IS_COLORING_MAX-1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Maximum color size exceeded");
@@ -377,38 +377,37 @@ PetscBool         MatColoringRegisterAllCalled = PETSC_FALSE;
 
 #undef __FUNCT__
 #define __FUNCT__ "MatColoringRegister"
-PetscErrorCode  MatColoringRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(Mat,MatColoringType,ISColoring*))
-{
-  PetscErrorCode ierr;
-  char           fullname[PETSC_MAX_PATH_LEN];
-
-  PetscFunctionBegin;
-  ierr = PetscFunctionListConcat(path,name,fullname);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&MatColoringList,sname,fullname,(void (*)(void))function);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "MatColoringRegisterDestroy"
 /*@C
-   MatColoringRegisterDestroy - Frees the list of coloringing routines.
+   MatColoringRegister - Adds a new sparse matrix coloring to the  matrix package.
 
    Not Collective
 
+   Input Parameters:
++  sname - name of Coloring (for example MATCOLORINGSL)
+-  function - function pointer that creates the coloring
+
    Level: developer
 
-.keywords: matrix, register, destroy
+   Sample usage:
+.vb
+   MatColoringRegister("my_color",MyColor);
+.ve
 
-.seealso: MatColoringRegisterDynamic(), MatColoringRegisterAll()
+   Then, your partitioner can be chosen with the procedural interface via
+$     MatColoringSetType(part,"my_color")
+   or at runtime via the option
+$     -mat_coloring_type my_color
+
+.keywords: matrix, Coloring, register
+
+.seealso: MatColoringRegisterDestroy(), MatColoringRegisterAll()
 @*/
-PetscErrorCode  MatColoringRegisterDestroy(void)
+PetscErrorCode  MatColoringRegister(const char sname[],PetscErrorCode (*function)(Mat,MatColoringType,ISColoring*))
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListDestroy(&MatColoringList);CHKERRQ(ierr);
-
-  MatColoringRegisterAllCalled = PETSC_FALSE;
+  ierr = PetscFunctionListAdd(&MatColoringList,sname,function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -447,7 +446,7 @@ $    A suitable coloring for a  smoother  is simply C(A).
 $    A suitable coloring for efficient Jacobian computation is a division of the columns so that two columns of the same color do not share any common rows.
 $         This corresponds to C(A^{T} A).  This is what MatGetColoring() computes.
 
-   The user can define additional colorings; see MatColoringRegisterDynamic().
+   The user can define additional colorings; see MatColoringRegister().
 
    For parallel matrices currently converts to sequential matrix and uses the sequential coloring
    on that.
@@ -466,7 +465,7 @@ $         Sources and Development of Mathematical Software, Wayne R. Cowell edit
 
 .keywords: matrix, get, coloring
 
-.seealso:  MatGetColoringTypeFromOptions(), MatColoringRegisterDynamic(), MatFDColoringCreate(),
+.seealso:  MatGetColoringTypeFromOptions(), MatColoringRegister(), MatFDColoringCreate(),
            SNESComputeJacobianDefaultColor()
 @*/
 PetscErrorCode  MatGetColoring(Mat mat,MatColoringType type,ISColoring *iscoloring)
@@ -483,12 +482,12 @@ PetscErrorCode  MatGetColoring(Mat mat,MatColoringType type,ISColoring *iscolori
   if (mat->factortype) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
 
   /* look for type on command line */
-  if (!MatColoringRegisterAllCalled) {ierr = MatColoringRegisterAll(NULL);CHKERRQ(ierr);}
+  if (!MatColoringRegisterAllCalled) {ierr = MatColoringRegisterAll();CHKERRQ(ierr);}
   ierr = PetscOptionsGetString(((PetscObject)mat)->prefix,"-mat_coloring_type",tname,256,&flag);CHKERRQ(ierr);
   if (flag) type = tname;
 
   ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
-  ierr = PetscFunctionListFind(comm,MatColoringList,type,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
+  ierr = PetscFunctionListFind(MatColoringList,type,&r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_OUTOFRANGE,"Unknown or unregistered type: %s",type);
 
   ierr = PetscLogEventBegin(MAT_GetColoring,mat,0,0,0);CHKERRQ(ierr);

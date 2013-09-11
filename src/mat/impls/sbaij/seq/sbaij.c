@@ -55,7 +55,7 @@ PetscErrorCode MatMarkDiagonal_SeqSBAIJ(Mat A)
   PetscFunctionBegin;
   if (!a->diag) {
     ierr         = PetscMalloc(a->mbs*sizeof(PetscInt),&a->diag);CHKERRQ(ierr);
-    ierr         = PetscLogObjectMemory(A,a->mbs*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr         = PetscLogObjectMemory((PetscObject)A,a->mbs*sizeof(PetscInt));CHKERRQ(ierr);
     a->free_diag = PETSC_TRUE;
   }
   for (i=0; i<a->mbs; i++) a->diag[i] = a->i[i];
@@ -149,13 +149,13 @@ PetscErrorCode MatDestroy_SeqSBAIJ(Mat A)
   ierr = PetscFree(A->data);CHKERRQ(ierr);
 
   ierr = PetscObjectChangeTypeName((PetscObject)A,0);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatStoreValues_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatRetrieveValues_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatSeqSBAIJSetColumnIndices_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_seqsbaij_seqaij_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_seqsbaij_seqbaij_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatSeqSBAIJSetPreallocation_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_seqsbaij_seqsbstrm_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatStoreValues_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatRetrieveValues_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatSeqSBAIJSetColumnIndices_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_seqsbaij_seqaij_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_seqsbaij_seqbaij_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatSeqSBAIJSetPreallocation_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_seqsbaij_seqsbstrm_C",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -398,7 +398,7 @@ static PetscErrorCode MatView_SeqSBAIJ_ASCII(Mat A,PetscViewer viewer)
     PetscFunctionReturn(0);
   } else {
     ierr = PetscViewerASCIIUseTabs(viewer,PETSC_FALSE);CHKERRQ(ierr);
-    ierr = PetscObjectPrintClassNamePrefixType((PetscObject)A,viewer,"Matrix Object");CHKERRQ(ierr);
+    ierr = PetscObjectPrintClassNamePrefixType((PetscObject)A,viewer);CHKERRQ(ierr);
     if (A->factortype) { /* for factored matrix */
       if (bs>1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"matrix is factored with bs>1. Not implemented yet");
 
@@ -796,7 +796,7 @@ PetscErrorCode MatAssemblyEnd_SeqSBAIJ_SeqAIJ_Inode(Mat A)
     a->inode.node_count = node_count;
 
     ierr = PetscMalloc(node_count*sizeof(PetscInt),&a->inode.size);CHKERRQ(ierr);
-    ierr = PetscLogObjectMemory(A,node_count*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscLogObjectMemory((PetscObject)A,node_count*sizeof(PetscInt));CHKERRQ(ierr);
     ierr = PetscMemcpy(a->inode.size,ns,node_count*sizeof(PetscInt));CHKERRQ(ierr);
     ierr = PetscFree(ns);CHKERRQ(ierr);
     ierr = PetscInfo3(A,"Found %D nodes of %D. Limit used: %D. Using Inode routines\n",node_count,m,a->inode.limit);CHKERRQ(ierr);
@@ -818,23 +818,17 @@ PetscErrorCode MatAssemblyEnd_SeqSBAIJ_SeqAIJ_Inode(Mat A)
     row  = 0;
     for (i=0; i<node_count; i++) {
       cols = aj + ai[row] + a->inode.size[i];
-      CHKMEMQ;
       counts[2*cnt] = cols[0];
-      CHKMEMQ;
       nz   = ai[row+1] - ai[row] - a->inode.size[i];
       cnt2 = 1;
       for (j=1; j<nz; j++) {
         if (cols[j] != cols[j-1]+1) {
-          CHKMEMQ;
           counts[2*(cnt++)+1] = cnt2;
           counts[2*cnt]       = cols[j];
-          CHKMEMQ;
           cnt2 = 1;
         } else cnt2++;
       }
-      CHKMEMQ;
       counts[2*(cnt++)+1] = cnt2;
-      CHKMEMQ;
       row += a->inode.size[i];
     }
     ierr = PetscIntView(2*cnt,counts,0);CHKERRQ(ierr);
@@ -902,7 +896,7 @@ PetscErrorCode MatAssemblyEnd_SeqSBAIJ(Mat A,MatAssemblyType mode)
       ierr = PetscFree(a->jshort);CHKERRQ(ierr);
     }
     ierr = PetscMalloc(a->i[A->rmap->n]*sizeof(unsigned short),&a->jshort);CHKERRQ(ierr);
-    ierr = PetscLogObjectMemory(A,a->i[A->rmap->n]*sizeof(unsigned short));CHKERRQ(ierr);
+    ierr = PetscLogObjectMemory((PetscObject)A,a->i[A->rmap->n]*sizeof(unsigned short));CHKERRQ(ierr);
     for (i=0; i<a->i[A->rmap->n]; i++) a->jshort[i] = a->j[i];
     A->ops->mult   = MatMult_SeqSBAIJ_1_ushort;
     A->ops->sor    = MatSOR_SeqSBAIJ_ushort;
@@ -1084,11 +1078,11 @@ PetscErrorCode MatICCFactor_SeqSBAIJ(Mat inA,IS row,const MatFactorInfo *info)
 
   /* Create the invert permutation so that it can be used in MatCholeskyFactorNumeric() */
   if (a->icol) {ierr = ISInvertPermutation(row,PETSC_DECIDE, &a->icol);CHKERRQ(ierr);}
-  ierr = PetscLogObjectParent(inA,a->icol);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)inA,(PetscObject)a->icol);CHKERRQ(ierr);
 
   if (!a->solve_work) {
     ierr = PetscMalloc((inA->rmap->N+inA->rmap->bs)*sizeof(PetscScalar),&a->solve_work);CHKERRQ(ierr);
-    ierr = PetscLogObjectMemory(inA,(inA->rmap->N+inA->rmap->bs)*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscLogObjectMemory((PetscObject)inA,(inA->rmap->N+inA->rmap->bs)*sizeof(PetscScalar));CHKERRQ(ierr);
   }
 
   ierr = MatCholeskyFactorNumeric(outA,inA,info);CHKERRQ(ierr);
@@ -1216,7 +1210,7 @@ PetscErrorCode MatAXPY_SeqSBAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
     PetscScalar  alpha = a;
     PetscBLASInt bnz;
     ierr = PetscBLASIntCast(x->nz*bs2,&bnz);CHKERRQ(ierr);
-    PetscStackCall("BLASaxpy",BLASaxpy_(&bnz,&alpha,x->a,&one,y->a,&one));
+    PetscStackCallBLAS("BLASaxpy",BLASaxpy_(&bnz,&alpha,x->a,&one,y->a,&one));
   } else if (str == SUBSET_NONZERO_PATTERN) { /* nonzeros of X is a subset of Y's */
     if (y->xtoy && y->XtoY != X) {
       ierr = PetscFree(y->xtoy);CHKERRQ(ierr);
@@ -1659,7 +1653,7 @@ PetscErrorCode  MatSeqSBAIJSetPreallocation_SeqSBAIJ(Mat B,PetscInt bs,PetscInt 
 
       b->free_imax_ilen = PETSC_TRUE;
 
-      ierr = PetscLogObjectMemory(B,2*mbs*sizeof(PetscInt));CHKERRQ(ierr);
+      ierr = PetscLogObjectMemory((PetscObject)B,2*mbs*sizeof(PetscInt));CHKERRQ(ierr);
     }
     if (!nnz) {
       if (nz == PETSC_DEFAULT || nz == PETSC_DECIDE) nz = 5;
@@ -1677,7 +1671,7 @@ PetscErrorCode  MatSeqSBAIJSetPreallocation_SeqSBAIJ(Mat B,PetscInt bs,PetscInt 
     /* allocate the matrix space */
     ierr = MatSeqXAIJFreeAIJ(B,&b->a,&b->j,&b->i);CHKERRQ(ierr);
     ierr = PetscMalloc3(bs2*nz,PetscScalar,&b->a,nz,PetscInt,&b->j,B->rmap->N+1,PetscInt,&b->i);CHKERRQ(ierr);
-    ierr = PetscLogObjectMemory(B,(B->rmap->N+1)*sizeof(PetscInt)+nz*(bs2*sizeof(PetscScalar)+sizeof(PetscInt)));CHKERRQ(ierr);
+    ierr = PetscLogObjectMemory((PetscObject)B,(B->rmap->N+1)*sizeof(PetscInt)+nz*(bs2*sizeof(PetscScalar)+sizeof(PetscInt)));CHKERRQ(ierr);
     ierr = PetscMemzero(b->a,nz*bs2*sizeof(MatScalar));CHKERRQ(ierr);
     ierr = PetscMemzero(b->j,nz*sizeof(PetscInt));CHKERRQ(ierr);
 
@@ -1906,24 +1900,24 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqSBAIJ(Mat B)
   ierr = PetscOptionsGetBool(((PetscObject)B)->prefix,"-mat_getrow_uppertriangular",&b->getrow_utriangular,NULL);CHKERRQ(ierr);
 
 #if defined(PETSC_HAVE_PASTIX)
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatGetFactor_pastix_C","MatGetFactor_seqsbaij_pastix",MatGetFactor_seqsbaij_pastix);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatGetFactor_pastix_C",MatGetFactor_seqsbaij_pastix);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_MUMPS)
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatGetFactor_mumps_C","MatGetFactor_sbaij_mumps",MatGetFactor_sbaij_mumps);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatGetFactor_mumps_C",MatGetFactor_sbaij_mumps);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_CHOLMOD)
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatGetFactor_cholmod_C","MatGetFactor_seqsbaij_cholmod",MatGetFactor_seqsbaij_cholmod);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatGetFactor_cholmod_C",MatGetFactor_seqsbaij_cholmod);CHKERRQ(ierr);
 #endif
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatGetFactorAvailable_petsc_C","MatGetFactorAvailable_seqsbaij_petsc",MatGetFactorAvailable_seqsbaij_petsc);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatGetFactor_petsc_C","MatGetFactor_seqsbaij_petsc",MatGetFactor_seqsbaij_petsc);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatGetFactor_sbstrm_C","MatGetFactor_seqsbaij_sbstrm",MatGetFactor_seqsbaij_sbstrm);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatStoreValues_C","MatStoreValues_SeqSBAIJ",MatStoreValues_SeqSBAIJ);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatRetrieveValues_C","MatRetrieveValues_SeqSBAIJ",MatRetrieveValues_SeqSBAIJ);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatSeqSBAIJSetColumnIndices_C","MatSeqSBAIJSetColumnIndices_SeqSBAIJ",MatSeqSBAIJSetColumnIndices_SeqSBAIJ);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqsbaij_seqaij_C","MatConvert_SeqSBAIJ_SeqAIJ",MatConvert_SeqSBAIJ_SeqAIJ);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqsbaij_seqbaij_C","MatConvert_SeqSBAIJ_SeqBAIJ",MatConvert_SeqSBAIJ_SeqBAIJ);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatSeqSBAIJSetPreallocation_C","MatSeqSBAIJSetPreallocation_SeqSBAIJ",MatSeqSBAIJSetPreallocation_SeqSBAIJ);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqsbaij_seqsbstrm_C","MatConvert_SeqSBAIJ_SeqSBSTRM",MatConvert_SeqSBAIJ_SeqSBSTRM);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatGetFactorAvailable_petsc_C",MatGetFactorAvailable_seqsbaij_petsc);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatGetFactor_petsc_C",MatGetFactor_seqsbaij_petsc);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatGetFactor_sbstrm_C",MatGetFactor_seqsbaij_sbstrm);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatStoreValues_C",MatStoreValues_SeqSBAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatRetrieveValues_C",MatRetrieveValues_SeqSBAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatSeqSBAIJSetColumnIndices_C",MatSeqSBAIJSetColumnIndices_SeqSBAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqsbaij_seqaij_C",MatConvert_SeqSBAIJ_SeqAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqsbaij_seqbaij_C",MatConvert_SeqSBAIJ_SeqBAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatSeqSBAIJSetPreallocation_C",MatSeqSBAIJSetPreallocation_SeqSBAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqsbaij_seqsbstrm_C",MatConvert_SeqSBAIJ_SeqSBSTRM);CHKERRQ(ierr);
 
   B->symmetric                  = PETSC_TRUE;
   B->structurally_symmetric     = PETSC_TRUE;
@@ -2096,7 +2090,7 @@ PetscErrorCode MatDuplicate_SeqSBAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
     c->free_imax_ilen = PETSC_FALSE;
   } else {
     ierr = PetscMalloc2((mbs+1),PetscInt,&c->imax,(mbs+1),PetscInt,&c->ilen);CHKERRQ(ierr);
-    ierr = PetscLogObjectMemory(C,2*(mbs+1)*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscLogObjectMemory((PetscObject)C,2*(mbs+1)*sizeof(PetscInt));CHKERRQ(ierr);
     for (i=0; i<mbs; i++) {
       c->imax[i] = a->imax[i];
       c->ilen[i] = a->ilen[i];
@@ -2107,7 +2101,7 @@ PetscErrorCode MatDuplicate_SeqSBAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
   /* allocate the matrix space */
   if (cpvalues == MAT_SHARE_NONZERO_PATTERN) {
     ierr            = PetscMalloc(bs2*nz*sizeof(MatScalar),&c->a);CHKERRQ(ierr);
-    ierr            = PetscLogObjectMemory(C,nz*bs2*sizeof(MatScalar));CHKERRQ(ierr);
+    ierr            = PetscLogObjectMemory((PetscObject)C,nz*bs2*sizeof(MatScalar));CHKERRQ(ierr);
     c->i            = a->i;
     c->j            = a->j;
     c->singlemalloc = PETSC_FALSE;
@@ -2120,7 +2114,7 @@ PetscErrorCode MatDuplicate_SeqSBAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
   } else {
     ierr            = PetscMalloc3(bs2*nz,MatScalar,&c->a,nz,PetscInt,&c->j,mbs+1,PetscInt,&c->i);CHKERRQ(ierr);
     ierr            = PetscMemcpy(c->i,a->i,(mbs+1)*sizeof(PetscInt));CHKERRQ(ierr);
-    ierr            = PetscLogObjectMemory(C,(mbs+1)*sizeof(PetscInt) + nz*(bs2*sizeof(MatScalar) + sizeof(PetscInt)));CHKERRQ(ierr);
+    ierr            = PetscLogObjectMemory((PetscObject)C,(mbs+1)*sizeof(PetscInt) + nz*(bs2*sizeof(MatScalar) + sizeof(PetscInt)));CHKERRQ(ierr);
     c->singlemalloc = PETSC_TRUE;
     c->free_a       = PETSC_TRUE;
     c->free_ij      = PETSC_TRUE;
@@ -2138,7 +2132,7 @@ PetscErrorCode MatDuplicate_SeqSBAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
       /* cannot share jshort, it is reallocated in MatAssemblyEnd_SeqSBAIJ() */
       /* if the parent matrix is reassembled, this child matrix will never notice */
       ierr = PetscMalloc(nz*sizeof(unsigned short),&c->jshort);CHKERRQ(ierr);
-      ierr = PetscLogObjectMemory(C,nz*sizeof(unsigned short));CHKERRQ(ierr);
+      ierr = PetscLogObjectMemory((PetscObject)C,nz*sizeof(unsigned short));CHKERRQ(ierr);
       ierr = PetscMemcpy(c->jshort,a->jshort,nz*sizeof(unsigned short));CHKERRQ(ierr);
 
       c->free_jshort = PETSC_TRUE;
@@ -2154,7 +2148,7 @@ PetscErrorCode MatDuplicate_SeqSBAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
       c->free_diag = PETSC_FALSE;
     } else {
       ierr = PetscMalloc(mbs*sizeof(PetscInt),&c->diag);CHKERRQ(ierr);
-      ierr = PetscLogObjectMemory(C,mbs*sizeof(PetscInt));CHKERRQ(ierr);
+      ierr = PetscLogObjectMemory((PetscObject)C,mbs*sizeof(PetscInt));CHKERRQ(ierr);
       for (i=0; i<mbs; i++) c->diag[i] = a->diag[i];
       c->free_diag = PETSC_TRUE;
     }
@@ -2375,7 +2369,7 @@ PetscErrorCode  MatCreateSeqSBAIJWithArrays(MPI_Comm comm,PetscInt bs,PetscInt m
   ierr  = MatSeqSBAIJSetPreallocation_SeqSBAIJ(*mat,bs,MAT_SKIP_ALLOCATION,0);CHKERRQ(ierr);
   sbaij = (Mat_SeqSBAIJ*)(*mat)->data;
   ierr  = PetscMalloc2(m,PetscInt,&sbaij->imax,m,PetscInt,&sbaij->ilen);CHKERRQ(ierr);
-  ierr  = PetscLogObjectMemory(*mat,2*m*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr  = PetscLogObjectMemory((PetscObject)*mat,2*m*sizeof(PetscInt));CHKERRQ(ierr);
 
   sbaij->i = i;
   sbaij->j = j;

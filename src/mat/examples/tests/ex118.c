@@ -12,7 +12,8 @@ int main(int argc,char **args)
 #if !defined(PETSC_USE_COMPLEX)
   PetscErrorCode ierr;
   PetscReal      *work,tols[2];
-  PetscInt       i,j,n,il=1,iu=5,*iblock,*isplit,*iwork,nevs,*ifail,cklvl=2;
+  PetscInt       i,j;
+  PetscBLASInt   n,il=1,iu=5,*iblock,*isplit,*iwork,nevs,*ifail,cklvl=2;
   PetscMPIInt    size;
   PetscBool      flg;
   Vec            *evecs;
@@ -20,7 +21,7 @@ int main(int argc,char **args)
   Mat            T;
 #if !defined(PETSC_MISSING_LAPACK_DSTEBZ)
   PetscReal vl=0.0,vu=4.0,tol=1.e-10;
-  PetscInt  nsplit,info;
+  PetscBLASInt  nsplit,info;
 #endif
 #endif
 
@@ -37,8 +38,8 @@ int main(int argc,char **args)
   E      = D + n;
   evals  = E + n;
   ierr   = PetscMalloc((5*n+1)*sizeof(PetscReal),&work);CHKERRQ(ierr);
-  ierr   = PetscMalloc((3*n+1)*sizeof(PetscInt),&iwork);CHKERRQ(ierr);
-  ierr   = PetscMalloc((3*n+1)*sizeof(PetscInt),&iblock);CHKERRQ(ierr);
+  ierr   = PetscMalloc((3*n+1)*sizeof(PetscBLASInt),&iwork);CHKERRQ(ierr);
+  ierr   = PetscMalloc((3*n+1)*sizeof(PetscBLASInt),&iblock);CHKERRQ(ierr);
   isplit = iblock + n;
 
   /* Set symmetric tridiagonal matrix */
@@ -58,7 +59,7 @@ int main(int argc,char **args)
 
   printf(" LAPACKstein_: compute %d found eigenvectors...\n",nevs);
   ierr = PetscMalloc(n*nevs*sizeof(PetscScalar),&evecs_array);CHKERRQ(ierr);
-  ierr = PetscMalloc(nevs*sizeof(PetscInt),&ifail);CHKERRQ(ierr);
+  ierr = PetscMalloc(nevs*sizeof(PetscBLASInt),&ifail);CHKERRQ(ierr);
 #if defined(PETSC_MISSING_LAPACK_STEIN)
   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"STEIN - Lapack routine is unavailable.");
 #else
@@ -77,6 +78,7 @@ int main(int argc,char **args)
   ierr = MatSetSizes(T,PETSC_DECIDE,PETSC_DECIDE,n,n);CHKERRQ(ierr);
   ierr = MatSetType(T,MATSBAIJ);CHKERRQ(ierr);
   ierr = MatSetFromOptions(T);CHKERRQ(ierr);
+  ierr = MatSetUp(T);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     ierr = MatSetValues(T,1,&i,1,&i,&D[i],INSERT_VALUES);CHKERRQ(ierr);
     if (i != n-1) {

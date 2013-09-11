@@ -71,9 +71,8 @@
         <li><a href="#logging-overhead">Does all the PETSc error checking and logging reduce PETSc's efficiency?</a></li>
         <li><a href="#work-efficiently">How do such a small group of people manage to write and maintain such a large and marvelous package as PETSc?</a></li>
         <li><a href="#complex">For complex numbers will I get better performance using C or C++?</a></li>
-        <li><a href="#different">How come when I run the same program on the same number of processes I get "different" answers"?</a></li>
+        <li><a href="#different">How come when I run the same program on the same number of processes I get "different" answers?</a></li>
         <li><a href="#differentiterations">How come when I run the same linear solver with different number of processes it takes a different number of iterations?</a></li>
-        <li><a href="#newremotebranches">How come I get an hg error indicating "new remote branches" might be created when I try to push?</a></li>
         <li><a href="#gpus">Can PETSc use GPUs to speed up the computation time?</a></li>
         <li><a href="#precision">Can I run PETSc with extended precision?</a></li>
         <li><a href="#qd">Why doesn't PETSc use QD to implement support for extended precision?</a></li>
@@ -133,6 +132,7 @@
         <li><a href="#datafiles">Where do I get the input matrices for the examples?</a></li>
         <li><a href="#info">When I dump some matrices and vectors to binary, I seem to be generating some empty files with .info extensions. What's the deal with these?</a></li>
         <li><a href="#slowerparallel">Why is my parallel <b>solver slower</b> than the sequential solver, or I have poor speed-up?</a></li>
+        <li><a href="#pipelined">What steps are necessary to make the pipelined solvers execute efficiently?</a></li>
         <li><a href="#singleprecision">When using PETSc in single precision mode (--with-precision=single when running ./configure) are the operations done in single or double precision?</a></li>
         <li><a href="#newton">Why is Newton's method (SNES) not converging, or converges slowly?</a></li>
         <li><a href="#kspdiverged">Why is the linear solver (KSP) not converging, or converges slowly?</a></li>
@@ -401,36 +401,6 @@
       more "older" information is used in the solution process hence slower
       convergence.
 
-      <h3><a name="newremotebranches">How come I get an hg error indicating "new remote branches" might be created when I try to push?</a></h3>
-
-      <p>Here is an example:</p>
-      <code>
-        [linux]% hg push<br>
-        pushing to https://bitbucket.org/petsc/petsc-dev<br>
-        searching for changes<br>
-        abort: push creates new remote branches!<br>
-      </code>
-
-      <p>
-        This is almost always an indication that you have done serious harm to
-        your local repo. If you run hg heads and there are more than 1 (which
-        causes this), then you know its true.
-      </p>
-
-      <p>
-        Here is how it happens. You make some local changes, but do not commit.
-        You pull down and it aborts part way because you have "uncommitted local
-        changes". However, you do not hg rollback. Instead you just hg commit,
-        which creates another head. This is supposed to be a feature. I think it
-        should have a user disable.
-      </p>
-
-      <p>
-        Fixing this is complicated. Basically, you clone the repo before you made
-        head #2, then create the diff for the bad changeset that made head #2.
-        Apply it to the clone and checkin, then pull the master.
-      </p>
-
       <h3><a name="gpus">Can PETSc use GPUs to speedup computations?</a></h3>
 
       PETSc-dev has some support for running portions of the computation on
@@ -602,11 +572,8 @@
       <h3><a name="gfortran">What Fortran compiler do you recommend for the Apple Mac OS X?</a></h3>
 
       <p>
-        (as of 11/6/2010) We recommend installing gfortran from <a
-          href="http://hpc.sourceforge.net/">http://hpc.sourceforge.net</a>.  They
-        have gfortran-4.6.0 (experimental) for Snow Leopard (10.6) and gfortran
-        4.4.1 (prerelease) for Leopard (10.5).
-      </p>
+        (as of 04/29/2013) We recommend installing gfortran from <a
+          href="http://hpc.sourceforge.net/">http://hpc.sourceforge.net</a>. They have gfortran-4.7.0 for Lion (10.7) and gfortran 4.8 for Mountain Lion (10.8). </p>
 
       <p>
         Please contact Apple at <a
@@ -728,7 +695,7 @@ PetscErrorCode mypetscvfprintf(FILE *fd, const char format[], va_list Argp) {
 
       <h3><a name="nosaij">You have AIJ and BAIJ matrix formats, and SBAIJ for symmetric storage, how come no SAIJ?</a></h3>
 
-      Just for historical reasons, the SBAIJ format with blocksize one is just as
+        Just for historical reasons; the SBAIJ format with blocksize one is just as
       efficient as an SAIJ would be.
 
       <h3><a name="domaindecomposition">How do I use PETSc for Domain Decomposition?</a></h3>
@@ -1078,23 +1045,23 @@ MPI_COMM_WORLD as default)
 PETSC_COMM_WORLD = NewComm;
     </pre>
 
-      <h3><a name="redistribute">The When solving a system with Dirichlet boundary conditions I can use MatZeroRows() to eliminate the Dirichlet rows but this results in a non-symmetric system. How can I apply Dirichlet boundary conditions but keep the matrix symmetric?</a></h3>
+      <h3><a name="redistribute">When solving a system with Dirichlet boundary conditions I can use MatZeroRows() to eliminate the Dirichlet rows but this results in a non-symmetric system. How can I apply Dirichlet boundary conditions but keep the matrix symmetric?</a></h3>
 
       <p>
         For nonsymmetric systems put the appropriate boundary solutions in the
-        x vector and use MatZeroRows() followed by KSPSetOperators(). For symmetric
-        problems use MatZeroRowsColumns() instead.  If you have many Dirichlet
+        x vector and use <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Mat/MatZeroRows.html">MatZeroRows()</a> followed by <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPSetOperators.html">KSPSetOperators()</a>. For symmetric
+        problems use <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Mat/MatZeroRowsColumns.html">MatZeroRowsColumns()</a> instead.  If you have many Dirichlet
         locations you can use MatZeroRows() (not MatZeroRowsColumns()) and
-        -ksp_type preonly -pc_type redistribute, see the manual page for
-        PCREDISTRIBUTE) and PETSc will repartition the parallel matrix for load
+        -ksp_type preonly -pc_type redistribute; see <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/PC/PCREDISTRIBUTE.html">
+        PCREDISTRIBUTE</a>) and PETSc will repartition the parallel matrix for load
         balancing; in this case the new matrix solved remains symmetric even though
         MatZeroRows() is used.
       </p>
 
       <p>
-        An alternative approach is when assemblying the matrix, (generating values
-        and passing them to the matrix), never include locations for the Dirichlet
-        grid points in the vector and matrix, instead take them into account as you
+        An alternative approach is, when assemblying the matrix (generating values
+        and passing them to the matrix), never to include locations for the Dirichlet
+        grid points in the vector and matrix, instead taking them into account as you
         put the other values into the load.
       </p>
 
@@ -1104,14 +1071,14 @@ PETSC_COMM_WORLD = NewComm;
 
       <ol>
         <li>
-          Using the MATLAB Engine, this allows PETSc to automatically call MATLAB
-          to perform some specific computations. It does not allow MATLAB to be
+          Using the MATLAB Engine, allowing PETSc to automatically call MATLAB
+          to perform some specific computations. This does not allow MATLAB to be
           used interactively by the user. See the <a
             href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Sys/PetscMatlabEngine.html">PetscMatlabEngine</a>.
         </li>
 
         <li>
-          To save PETSc Mat and Vecs to files that can be read from MATLAB use <a
+          To save PETSc Mats and Vecs to files that can be read from MATLAB use <a
             href="http://www.mcs.anl.gov/petsc/petsc-dev/docs/manualpages/Viewer/PetscViewerBinaryOpen.html">PetscViewerBinaryOpen()</a>
           viewer and VecView() or MatView() to save objects for MATLAB and
           VecLoad() and MatLoad() to get the objects that MATLAB has saved. See
@@ -1134,7 +1101,7 @@ PETSC_COMM_WORLD = NewComm;
           viewer that saves .mat files can then be loaded into MATLAB.
         </li>
         <li>
-          We are just being to develop in <a
+          We are just beginning to develop in <a
             href="../developers/index.html">petsc-dev</a> an API to call most of
           the PETSc function directly from MATLAB; we could use help in
           developing this. See bin/matlab/classes/PetscInitialize.m
@@ -1303,6 +1270,29 @@ PETSC_COMM_WORLD = NewComm;
         </li>
       </ul>
 
+      <h3><a name="pipelined">What steps are necessary to make the pipelined solvers execute efficiently?</a></h3>
+
+      Pipelined solvers like
+      <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPPGMRES.html">KSPPGMRES</a>,
+      <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPPIPECG.html">KSPPIPECG</a>,
+      <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPPIPECR.html">KSPPIPECR</a>, and
+      <a href="http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPGROPPCG.html">KSPGROPPCG</a>
+      may require special MPI configuration to effectively overlap reductions with computation.
+      In general, this requires an MPI-3 implementation, an implementation that supports multiple threads, and use of a "progress thread".
+      Consult the documentation from your vendor or computing facility for more.
+
+      <dl>
+        <dt>MPICH</dt>
+        <dd>
+          MPICH version 3.0 and later implements the MPI-3 standard and the default configuration supports use of threads.
+          Use of a progress thread is configured by setting the environment variable <tt>MPICH_ASYNC_PROGRESS=1</tt>.
+        </dd>
+        <dt>Cray MPI</dt>
+        <dd>
+          Cray MPT-5.6 supports MPI-3, but requires the environment variable <tt>MPICH_MAX_THREAD_SAFETY=multiple</tt> for threads, plus either <tt>MPICH_ASYNC_PROGRESS=1</tt> or <tt>MPICH_NEMESIS_ASYNC_PROGRESS=1</tt>.
+        </dd>
+      </dl>
+
       <h3><a name="singleprecision">When using PETSc in single precision mode (--with-precision=single when running ./configure) are the operations done in single or double precision?</a></h3>
 
       PETSc does NOT do any explicit conversion of single precision to double
@@ -1382,9 +1372,10 @@ PETSC_COMM_WORLD = NewComm;
         <li>Run on one processor to see if the problem is only in parallel.</li>
 
         <li>
-          Run with <code>-snes_ls_monitor</code> to see if the line search is failing
-          (this is usually a sign of a bad Jacobian) use -info in PETSc 3.1 and
-          older versions and <code>-snes_linesearch_monitor</code> in PETSc-dev.
+          Run with <code>-snes_linesearch_monitor</code> to see if the line search
+          is failing (this is usually a sign of a bad Jacobian). Use -info in PETSc 3.1
+          and older versions, <code>-snes_ls_monitor</code> in PETSc 3.2
+          and <code>-snes_linesearch_monitor</code> in PETSc 3.3 and later.
         </li>
 
         <li>
@@ -1808,7 +1799,7 @@ source /opt/intel/idb/10.1.012/bin/idbvars.sh
         matrix-vector product via differencing, the residual norms computed by
         GMRES start to "drift" from the correct values. At the restart, we compute
         the residual norm directly, hence the "strange stuff," the difference
-        printed. The drifting, if it remains small, is harmless (doesn't effect the
+        printed. The drifting, if it remains small, is harmless (doesn't affect the
         accuracy of the solution that GMRES computes).
       </p>
 
@@ -1852,81 +1843,55 @@ source /opt/intel/idb/10.1.012/bin/idbvars.sh
       that might have caused this behavior. This is achieved by:
 
       <ul>
-        <li>using <a href="http://mercurial.selenic.com/">Mercurial</a> DVCS to access petsc-dev sources [and BuildSystem sources]</li>
+        <li>using <a href="http://git-scm.com/">Git</a> to access PETSc sources</li>
 
-        <li>knowing the changeset number [in mercurial] for the <b>known working</b> version of petsc</li>
+        <li>knowing the Git commit for the <b>known working</b> version of PETSc</li>
 
-        <li>knowing the changeset number [in mercurial] for the <b>known broken</b> version of petsc</li>
+        <li>knowing the Git commit for the <b>known broken</b> version of PETSc</li>
 
-        <li>using <a href="http://mercurial.selenic.com/wiki/BisectExtension">bisect</a> functionality of mercurial</li>
+        <li>using the <a href="https://www.kernel.org/pub/software/scm/git/docs/git-bisect.html">bisect</a> functionality of Git</li>
       </ul>
 
       This process can be as follows:
 
       <ul>
-        <li>get petsc-dev and BuildSystem sources:
+        <li>get petsc-dev sources:
           <ul>
-            <li><code>hg clone https://bitbucket.org/petsc/petsc-dev</code></li>
-            <li><code>hg clone https://bitbucket.org/petsc/buildsystem petsc-dev/config/BuildSystem</code></li>
+            <li><code>git clone https://bitbucket.org/petsc/petsc</code></li>
           </ul>
         </li>
 
         <li>
           Find the <b>good</b> and <b>bad</b> markers to
           start the bisection process. This can be done either by checking
-          <code>hg log</code> or <code>hg view</code> or <a href="https://bitbucket.org/petsc/petsc-dev">https://bitbucket.org/petsc/petsc-dev</a>
-          or <a href="https://bitbucket.org/petsc/buildsystem">https://bitbucket.org/petsc/buildsystem</a>
+          <code>git log</code> or <code>gitk</code> or <a href="https://bitbucket.org/petsc/petsc">https://bitbucket.org/petsc/petsc</a>
           or the web history of petsc-release clones. Lets say the known bad
-          changeset is 21af4baa815c and known good changeset is 5ae5ab319844
+          commit is 21af4baa815c and known good commit is 5ae5ab319844
         </li>
 
         <li>
           Now start the bisection process with these known revisions. [build PETSc, and test your code to confirm known good/bad behavior]
           <ul>
-            <li><code>hg update -C 21af4baa815c</code></li>
-            <li><code>hg update -C --date "&lt;`hg parent --template '{date|date}'`" -R config/BuildSystem</code></li>
+            <li><code>git bisect start 21af4baa815c 5ae5ab319844</code></li>
             <li>&lt;build/test/confirm-bad&gt;</li>
-            <li><code>hg bisect --bad</code></li>
-            <li><code>hg update -C 5ae5ab319844</code></li>
-            <li><code>hg update -C --date "&lt;`hg parent --template '{date|date}'`" -R config/BuildSystem</code></li>
+            <li><code>git bisect bad</code></li>
             <li>&lt;build/test/confirm-good&gt;</li>
-            <li><code>hg bisect --good</code></li>
-            <li><code>hg update -C --date "&lt;`hg parent --template '{date|date}'`" -R config/BuildSystem</code></li>
+            <li><code>git bisect good</code></li>
           </ul>
         </li>
 
         <li>
-          Now until done - keep bisecting, building PETSc, and testing your code with it and determine if the code is working or not. i.e:
-          <ul>
-            <li>
-              if &lt;build&gt; broken:
-              <ul>
-                <li><code>hg bisect --skip</code></li>
-                <li><code>hg update -C --date "&lt;`hg parent --template '{date|date}'`" -R config/BuildSystem</code></li>
-              </ul>
-            </li>
-
-            <li>
-              if &lt;test&gt; good:
-              <ul>
-                <li><code>hg bisect --bad</code></li>
-                <li><code>hg update -C --date "&lt;`hg parent --template '{date|date}'`" -R config/BuildSystem</code></li>
-              </ul>
-            </li>
-          </ul>
-
-          Notice the <code>hg update -C --date "&lt;`hg parent --template '{date|date}'`" -R config/BuildSystem</code>
-          after each <code>hg update</code> or <code>hg bisect</code>. This is to update
-          BuildSystem to be in sync to petsc-dev. If this is not done - and
-          BuildSystem is out of sync with petsc-dev - configure will keep
-          failing.
-        </li>
-
-        <li>
-          After something like 5-15 iterations - <code>hg bisect</code> will
+          Now until done - keep bisecting, building PETSc, and testing your code with it and determine if the code is working or not.
+          After something like 5-15 iterations, <code>git bisect</code> will
           pin-point the exact code change that resulted in the difference in
-          application behavior
+          application behavior.
         </li>
+
+        <li>
+          See <a href="https://www.kernel.org/pub/software/scm/git/docs/git-bisect.html">git-bisect(1)</a>
+          and the <a href="http://git-scm.com/book/en/Git-Tools-Debugging-with-Git">debugging
+          section of the Git Book</a> for more debugging tips.
+        <li>
       </ul>
 
       <hr>

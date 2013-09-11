@@ -154,7 +154,7 @@ PetscErrorCode SNESMatrixFreeMult2_Private(Mat mat,Vec a,Vec y)
   ierr = eval_fct(snes,w,y);CHKERRQ(ierr);
   ierr = VecAXPY(y,-1.0,F);CHKERRQ(ierr);
   ierr = VecScale(y,1.0/hs);CHKERRQ(ierr);
-  if (ctx->sp) {ierr = MatNullSpaceRemove(ctx->sp,y,NULL);CHKERRQ(ierr);}
+  if (ctx->sp) {ierr = MatNullSpaceRemove(ctx->sp,y);CHKERRQ(ierr);}
 
   ierr = PetscLogEventEnd(MATMFFD_Mult,a,y,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -272,8 +272,8 @@ PetscErrorCode  SNESDefaultMatrixFreeCreate2(SNES snes,Vec x,Mat *J)
   ierr = MatShellSetOperation(*J,MATOP_DESTROY,(void (*)(void))SNESMatrixFreeDestroy2_Private);CHKERRQ(ierr);
   ierr = MatShellSetOperation(*J,MATOP_VIEW,(void (*)(void))SNESMatrixFreeView2_Private);CHKERRQ(ierr);
 
-  ierr = PetscLogObjectParent(*J,mfctx->w);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(snes,*J);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)*J,(PetscObject)mfctx->w);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)snes,(PetscObject)*J);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

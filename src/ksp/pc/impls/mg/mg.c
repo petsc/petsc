@@ -195,7 +195,7 @@ PetscErrorCode  PCMGSetLevels(PC pc,PetscInt levels,MPI_Comm *comms)
   mg->nlevels = levels;
 
   ierr = PetscMalloc(levels*sizeof(PC_MG*),&mglevels);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(pc,levels*(sizeof(PC_MG*)));CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory((PetscObject)pc,levels*(sizeof(PC_MG*)));CHKERRQ(ierr);
 
   ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
 
@@ -248,7 +248,7 @@ PetscErrorCode  PCMGSetLevels(PC pc,PetscInt levels,MPI_Comm *comms)
       sprintf(tprefix,"mg_levels_%d_",(int)i);
       ierr = KSPAppendOptionsPrefix(mglevels[i]->smoothd,tprefix);CHKERRQ(ierr);
     }
-    ierr = PetscLogObjectParent(pc,mglevels[i]->smoothd);CHKERRQ(ierr);
+    ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)mglevels[i]->smoothd);CHKERRQ(ierr);
 
     mglevels[i]->smoothu = mglevels[i]->smoothd;
     mg->rtol             = 0.0;
@@ -450,7 +450,7 @@ PetscErrorCode PCView_MG(PC pc,PetscViewer viewer)
   PC_MG          *mg        = (PC_MG*)pc->data;
   PC_MG_Levels   **mglevels = mg->levels;
   PetscErrorCode ierr;
-  PetscInt       levels = mglevels[0]->levels,i;
+  PetscInt       levels = mglevels ? mglevels[0]->levels : 0,i;
   PetscBool      iascii,isbinary,isdraw;
 
   PetscFunctionBegin;
@@ -458,7 +458,8 @@ PetscErrorCode PCView_MG(PC pc,PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw);CHKERRQ(ierr);
   if (iascii) {
-    ierr = PetscViewerASCIIPrintf(viewer,"  MG: type is %s, levels=%D cycles=%s\n", PCMGTypes[mg->am],levels,(mglevels[0]->cycles == PC_MG_CYCLE_V) ? "v" : "w");CHKERRQ(ierr);
+    const char *cyclename = levels ? (mglevels[0]->cycles == PC_MG_CYCLE_V ? "v" : "w") : "unknown";
+    ierr = PetscViewerASCIIPrintf(viewer,"  MG: type is %s, levels=%D cycles=%s\n", PCMGTypes[mg->am],levels,cyclename);CHKERRQ(ierr);
     if (mg->am == PC_MG_MULTIPLICATIVE) {
       ierr = PetscViewerASCIIPrintf(viewer,"    Cycles per PCApply=%d\n",mg->cyclesperpcapply);CHKERRQ(ierr);
     }
@@ -731,7 +732,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
     if (!mglevels[i]->residual) {
       Mat mat;
       ierr = KSPGetOperators(mglevels[i]->smoothd,NULL,&mat,NULL);CHKERRQ(ierr);
-      ierr = PCMGSetResidual(pc,i,PCMGResidual_Default,mat);CHKERRQ(ierr);
+      ierr = PCMGSetResidual(pc,i,PCMGResidualDefault,mat);CHKERRQ(ierr);
     }
   }
   for (i=1; i<n; i++) {
@@ -1152,6 +1153,8 @@ PETSC_EXTERN PetscErrorCode PCCreate_MG(PC pc)
   ierr        = PetscNewLog(pc,PC_MG,&mg);CHKERRQ(ierr);
   pc->data    = (void*)mg;
   mg->nlevels = -1;
+
+  pc->useAmat = PETSC_TRUE;
 
   pc->ops->apply          = PCApply_MG;
   pc->ops->setup          = PCSetUp_MG;

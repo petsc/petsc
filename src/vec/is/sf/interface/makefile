@@ -2,7 +2,7 @@ ALL: lib
 
 SOURCEH	 =
 SOURCEC  = dlregissf.c sfregi.c sf.c sftype.c
-LIBBASE	 = libpetscsys
+LIBBASE	 = libpetscvec
 DIRS	 =
 LOCDIR   = src/vec/is/sf/interface/
 MANSEC   = PetscSF

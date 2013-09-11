@@ -157,13 +157,11 @@ PetscErrorCode PCSetFromOptions_GAMG_AGG(PC pc)
   PetscBool      flag;
 
   PetscFunctionBegin;
-  /* call base class */
-  ierr = PCSetFromOptions_GAMG(pc);CHKERRQ(ierr);
 
   ierr = PetscOptionsHead("GAMG-AGG options");CHKERRQ(ierr);
   {
     /* -pc_gamg_agg_nsmooths */
-    pc_gamg_agg->nsmooths = 0;
+    pc_gamg_agg->nsmooths = 1;
 
     ierr = PetscOptionsInt("-pc_gamg_agg_nsmooths",
                            "smoothing steps for smoothed aggregation, usually 1 (0)",
@@ -204,22 +202,15 @@ PetscErrorCode PCSetFromOptions_GAMG_AGG(PC pc)
    . pc -
 */
 #undef __FUNCT__
-#define __FUNCT__ "PCDestroy_AGG"
-PetscErrorCode PCDestroy_AGG(PC pc)
+#define __FUNCT__ "PCDestroy_GAMG_AGG"
+PetscErrorCode PCDestroy_GAMG_AGG(PC pc)
 {
   PetscErrorCode ierr;
   PC_MG          *mg          = (PC_MG*)pc->data;
   PC_GAMG        *pc_gamg     = (PC_GAMG*)mg->innerctx;
-  PC_GAMG_AGG    *pc_gamg_agg = (PC_GAMG_AGG*)pc_gamg->subctx;
 
   PetscFunctionBegin;
-  if (pc_gamg_agg) {
-    ierr        = PetscFree(pc_gamg_agg);CHKERRQ(ierr);
-    pc_gamg_agg = 0;
-  }
-
-  /* call base class */
-  ierr = PCDestroy_GAMG(pc);CHKERRQ(ierr);
+  ierr = PetscFree(pc_gamg->subctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -778,7 +769,7 @@ static PetscErrorCode formProl0(const PetscCoarsenData *agg_llists, /* list from
   out_data_stride = nSelected*nSAvec;
 
   ierr = PetscMalloc(out_data_stride*nSAvec*sizeof(PetscReal), &out_data);CHKERRQ(ierr);
-  for (ii=0;ii<out_data_stride*nSAvec;ii++) out_data[ii]=1.e300;
+  for (ii=0;ii<out_data_stride*nSAvec;ii++) out_data[ii]=PETSC_MAX_REAL;
   *a_data_out = out_data; /* output - stride nSelected*nSAvec */
 
   /* find points and set prolongation */
@@ -851,7 +842,7 @@ static PetscErrorCode formProl0(const PetscCoarsenData *agg_llists, /* list from
       ndone += aggID;
       /* QR */
       ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
-      PetscStackCall("LAPACKgeqrf",LAPACKgeqrf_(&Mdata, &N, qqc, &LDA, TAU, WORK, &LWORK, &INFO));
+      PetscStackCallBLAS("LAPACKgeqrf",LAPACKgeqrf_(&Mdata, &N, qqc, &LDA, TAU, WORK, &LWORK, &INFO));
       ierr = PetscFPTrapPop();CHKERRQ(ierr);
       if (INFO != 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"xGEQRF error");
       /* get R - column oriented - output B_{i+1} */
@@ -859,7 +850,7 @@ static PetscErrorCode formProl0(const PetscCoarsenData *agg_llists, /* list from
         PetscReal *data = &out_data[clid*nSAvec];
         for (jj = 0; jj < nSAvec; jj++) {
           for (ii = 0; ii < nSAvec; ii++) {
-           if (data[jj*out_data_stride + ii] != 1.e300) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"data[jj*out_data_stride + ii] != 1.e300");
+            if (data[jj*out_data_stride + ii] != PETSC_MAX_REAL) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"data[jj*out_data_stride + ii] != %e",PETSC_MAX_REAL);
            if (ii <= jj) data[jj*out_data_stride + ii] = PetscRealPart(qqc[jj*Mdata + ii]);
            else data[jj*out_data_stride + ii] = 0.;
           }
@@ -867,7 +858,7 @@ static PetscErrorCode formProl0(const PetscCoarsenData *agg_llists, /* list from
       }
 
       /* get Q - row oriented */
-      PetscStackCall("LAPACKungqr",LAPACKungqr_(&Mdata, &N, &N, qqc, &LDA, TAU, WORK, &LWORK, &INFO));
+      PetscStackCallBLAS("LAPACKungqr",LAPACKungqr_(&Mdata, &N, &N, qqc, &LDA, TAU, WORK, &LWORK, &INFO));
       if (INFO != 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"xORGQR error arg %d",-INFO);
 
       for (ii = 0; ii < M; ii++) {
@@ -1355,122 +1346,6 @@ PetscErrorCode PCGAMGOptprol_AGG(PC pc,const Mat Amat,Mat *a_P)
 
 /* -------------------------------------------------------------------------- */
 /*
-   PCGAMGKKTProl_AGG
-
-  Input Parameter:
-   . pc - this
-   . Prol11 - matrix on this fine level
-   . A21 - matrix on this fine level
- In/Output Parameter:
-   . a_P22 - prolongation operator to the next level
-*/
-#undef __FUNCT__
-#define __FUNCT__ "PCGAMGKKTProl_AGG"
-PetscErrorCode PCGAMGKKTProl_AGG(PC pc,const Mat Prol11,const Mat A21,Mat *a_P22)
-{
-  PetscErrorCode   ierr;
-  PC_MG            *mg      = (PC_MG*)pc->data;
-  PC_GAMG          *pc_gamg = (PC_GAMG*)mg->innerctx;
-  const PetscInt   verbose  = pc_gamg->verbose;
-  /* PC_GAMG_AGG    *pc_gamg_agg = (PC_GAMG_AGG*)pc_gamg->subctx;  */
-  PetscMPIInt      rank,size;
-  Mat              Prol22,Tmat,Gmat;
-  MPI_Comm         comm;
-  PetscCoarsenData *agg_lists;
-
-  PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject)pc,&comm);CHKERRQ(ierr);
-#if defined PETSC_USE_LOG
-  ierr = PetscLogEventBegin(PC_GAMGKKTProl_AGG,0,0,0,0);CHKERRQ(ierr);
-#endif
-  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
-
-  /* form C graph */
-  ierr = MatMatMult(A21, Prol11, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &Tmat);CHKERRQ(ierr);
-  ierr = MatMatTransposeMult(Tmat, Tmat, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &Gmat);CHKERRQ(ierr);
-  ierr = MatDestroy(&Tmat);CHKERRQ(ierr);
-  ierr = PCGAMGFilterGraph(&Gmat, 0.0, PETSC_FALSE, verbose);CHKERRQ(ierr);
-
-  /* coarsen constraints */
-  {
-    MatCoarsen crs;
-    ierr = MatCoarsenCreate(comm, &crs);CHKERRQ(ierr);
-    ierr = MatCoarsenSetType(crs, MATCOARSENMIS);CHKERRQ(ierr);
-    ierr = MatCoarsenSetAdjacency(crs, Gmat);CHKERRQ(ierr);
-    ierr = MatCoarsenSetVerbose(crs, verbose);CHKERRQ(ierr);
-    ierr = MatCoarsenSetStrictAggs(crs, PETSC_TRUE);CHKERRQ(ierr);
-    ierr = MatCoarsenApply(crs);CHKERRQ(ierr);
-    ierr = MatCoarsenGetData(crs, &agg_lists);CHKERRQ(ierr);
-    ierr = MatCoarsenDestroy(&crs);CHKERRQ(ierr);
-  }
-
-  /* form simple prolongation 'Prol22' */
-  {
-    PetscInt    ii,mm,clid,my0,nloc,nLocalSelected;
-    PetscScalar val = 1.0;
-    /* get 'nLocalSelected' */
-    ierr = MatGetLocalSize(Gmat, &nloc, &ii);CHKERRQ(ierr);
-    for (ii=0, nLocalSelected = 0; ii < nloc; ii++) {
-      PetscBool ise;
-      /* filter out singletons 0 or 1? */
-      ierr = PetscCDEmptyAt(agg_lists, ii, &ise);CHKERRQ(ierr);
-      if (!ise) nLocalSelected++;
-    }
-
-    ierr = MatCreate(comm,&Prol22);CHKERRQ(ierr);
-    ierr = MatSetSizes(Prol22,nloc, nLocalSelected,PETSC_DETERMINE, PETSC_DETERMINE);CHKERRQ(ierr);
-    ierr = MatSetType(Prol22, MATAIJ);CHKERRQ(ierr);
-    ierr = MatSeqAIJSetPreallocation(Prol22,1,NULL);CHKERRQ(ierr);
-    ierr = MatMPIAIJSetPreallocation(Prol22,1,NULL,1,NULL);CHKERRQ(ierr);
-    /* ierr = MatCreateAIJ(comm, */
-    /*                      nloc, nLocalSelected, */
-    /*                      PETSC_DETERMINE, PETSC_DETERMINE, */
-    /*                      1, NULL, 1, NULL, */
-    /*                      &Prol22); */
-
-    ierr = MatGetOwnershipRange(Prol22, &my0, &ii);CHKERRQ(ierr);
-    nloc = ii - my0;
-
-    /* make aggregates */
-    for (mm = clid = 0; mm < nloc; mm++) {
-      ierr = PetscCDSizeAt(agg_lists, mm, &ii);CHKERRQ(ierr);
-      if (ii > 0) {
-        PetscInt   asz=ii,cgid=my0+clid,rids[1000];
-        PetscCDPos pos;
-        if (asz>1000) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Very large aggregate: %d",asz);
-        ii   = 0;
-        ierr = PetscCDGetHeadPos(agg_lists,mm,&pos);CHKERRQ(ierr);
-        while (pos) {
-          PetscInt gid1;
-          ierr = PetscLLNGetID(pos, &gid1);CHKERRQ(ierr);
-          ierr = PetscCDGetNextPos(agg_lists,mm,&pos);CHKERRQ(ierr);
-
-          rids[ii++] = gid1;
-        }
-        if (ii != asz) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"ii %D != asz %D",ii,asz);
-        /* add diagonal block of P0 */
-        ierr = MatSetValues(Prol22,asz,rids,1,&cgid,&val,INSERT_VALUES);CHKERRQ(ierr);
-
-        clid++;
-      } /* coarse agg */
-    } /* for all fine nodes */
-    ierr = MatAssemblyBegin(Prol22,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(Prol22,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  }
-
-  /* clean up */
-  ierr = MatDestroy(&Gmat);CHKERRQ(ierr);
-  ierr = PetscCDDestroy(agg_lists);CHKERRQ(ierr);
-#if defined PETSC_USE_LOG
-  ierr = PetscLogEventEnd(PC_GAMGKKTProl_AGG,0,0,0,0);CHKERRQ(ierr);
-#endif
-  *a_P22 = Prol22;
-  PetscFunctionReturn(0);
-}
-
-/* -------------------------------------------------------------------------- */
-/*
    PCCreateGAMG_AGG
 
   Input Parameter:
@@ -1486,28 +1361,22 @@ PetscErrorCode  PCCreateGAMG_AGG(PC pc)
   PC_GAMG_AGG    *pc_gamg_agg;
 
   PetscFunctionBegin;
-  if (pc_gamg->subctx) {
-    /* call base class */
-    ierr = PCDestroy_GAMG(pc);CHKERRQ(ierr);
-  }
-
   /* create sub context for SA */
   ierr            = PetscNewLog(pc, PC_GAMG_AGG, &pc_gamg_agg);CHKERRQ(ierr);
   pc_gamg->subctx = pc_gamg_agg;
 
-  pc->ops->setfromoptions = PCSetFromOptions_GAMG_AGG;
-  pc->ops->destroy        = PCDestroy_AGG;
+  pc_gamg->ops->setfromoptions = PCSetFromOptions_GAMG_AGG;
+  pc_gamg->ops->destroy        = PCDestroy_GAMG_AGG;
   /* reset does not do anything; setup not virtual */
 
   /* set internal function pointers */
-  pc_gamg->graph       = PCGAMGgraph_AGG;
-  pc_gamg->coarsen     = PCGAMGCoarsen_AGG;
-  pc_gamg->prolongator = PCGAMGProlongator_AGG;
-  pc_gamg->optprol     = PCGAMGOptprol_AGG;
-  pc_gamg->formkktprol = PCGAMGKKTProl_AGG;
+  pc_gamg->ops->graph       = PCGAMGgraph_AGG;
+  pc_gamg->ops->coarsen     = PCGAMGCoarsen_AGG;
+  pc_gamg->ops->prolongator = PCGAMGProlongator_AGG;
+  pc_gamg->ops->optprol     = PCGAMGOptprol_AGG;
 
-  pc_gamg->createdefaultdata = PCSetData_AGG;
+  pc_gamg->ops->createdefaultdata = PCSetData_AGG;
 
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCSetCoordinates_C","PCSetCoordinates_AGG",PCSetCoordinates_AGG);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCSetCoordinates_C",PCSetCoordinates_AGG);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -274,8 +274,8 @@ PetscErrorCode MatDestroy_SuperLU(Mat A)
   ierr = PetscFree(A->spptr);CHKERRQ(ierr);
 
   /* clear composed functions */
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatFactorGetSolverPackage_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatSuperluSetILUDropTol_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatFactorGetSolverPackage_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatSuperluSetILUDropTol_C",NULL);CHKERRQ(ierr);
 
   ierr = MatDestroy_SeqAIJ(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -305,14 +305,16 @@ PetscErrorCode MatView_SuperLU(Mat A,PetscViewer viewer)
 #define __FUNCT__ "MatSolve_SuperLU_Private"
 PetscErrorCode MatSolve_SuperLU_Private(Mat A,Vec b,Vec x)
 {
-  Mat_SuperLU    *lu = (Mat_SuperLU*)A->spptr;
-  PetscScalar    *barray,*xarray;
-  PetscErrorCode ierr;
-  PetscInt       info,i,n;
-  PetscReal      ferr,berr;
+  Mat_SuperLU      *lu = (Mat_SuperLU*)A->spptr;
+  PetscScalar      *barray,*xarray;
+  PetscErrorCode   ierr;
+  PetscInt         info,i,n;
+  PetscReal        ferr,berr;
+  static PetscBool cite = PETSC_FALSE;
 
   PetscFunctionBegin;
   if (lu->lwork == -1) PetscFunctionReturn(0);
+  ierr = PetscCitationsRegister("@article{superlu99,\n  author  = {James W. Demmel and Stanley C. Eisenstat and\n             John R. Gilbert and Xiaoye S. Li and Joseph W. H. Liu},\n  title = {A supernodal approach to sparse partial pivoting},\n  journal = {SIAM J. Matrix Analysis and Applications},\n  year = {1999},\n  volume  = {20},\n  number = {3},\n  pages = {720-755}\n}\n",&cite);CHKERRQ(ierr);
 
   ierr = VecGetLocalSize(x,&n);CHKERRQ(ierr);
   lu->B.ncol = 1;   /* Set the number of right-hand side */
@@ -687,11 +689,8 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_superlu(Mat A,MatFactorType ftyp
 #endif
 #endif
 
-#if defined(SUPERLU2)
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatCreateNull","MatCreateNull_SuperLU",(void (*)(void))MatCreateNull_SuperLU);CHKERRQ(ierr);
-#endif
-  ierr     = PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverPackage_C","MatFactorGetSolverPackage_seqaij_superlu",MatFactorGetSolverPackage_seqaij_superlu);CHKERRQ(ierr);
-  ierr     = PetscObjectComposeFunction((PetscObject)B,"MatSuperluSetILUDropTol_C","MatSuperluSetILUDropTol_SuperLU",MatSuperluSetILUDropTol_SuperLU);CHKERRQ(ierr);
+  ierr     = PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverPackage_C",MatFactorGetSolverPackage_seqaij_superlu);CHKERRQ(ierr);
+  ierr     = PetscObjectComposeFunction((PetscObject)B,"MatSuperluSetILUDropTol_C",MatSuperluSetILUDropTol_SuperLU);CHKERRQ(ierr);
   B->spptr = lu;
   *F       = B;
   PetscFunctionReturn(0);

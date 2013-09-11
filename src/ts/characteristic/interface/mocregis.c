@@ -22,13 +22,13 @@ extern PetscBool CharacteristicRegisterAllCalled;
 
 .seealso:  CharacteristicRegisterDestroy()
 @*/
-PetscErrorCode CharacteristicRegisterAll(const char path[])
+PetscErrorCode CharacteristicRegisterAll(void)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   CharacteristicRegisterAllCalled = PETSC_TRUE;
 
-  ierr = CharacteristicRegisterDynamic(CHARACTERISTICDA, path, "CharacteristicCreate_DA", CharacteristicCreate_DA);CHKERRQ(ierr);
+  ierr = CharacteristicRegister(CHARACTERISTICDA,  CharacteristicCreate_DA);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

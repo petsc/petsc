@@ -71,7 +71,7 @@ PetscErrorCode KSPSetUp_CG(KSP ksp)
   if (ksp->calc_sings) {
     /* get space to store tridiagonal matrix for Lanczos */
     ierr = PetscMalloc4(maxit+1,PetscScalar,&cgP->e,maxit+1,PetscScalar,&cgP->d,maxit+1,PetscReal,&cgP->ee,maxit+1,PetscReal,&cgP->dd);CHKERRQ(ierr);
-    ierr = PetscLogObjectMemory(ksp,2*(maxit+1)*(sizeof(PetscScalar)+sizeof(PetscReal)));CHKERRQ(ierr);
+    ierr = PetscLogObjectMemory((PetscObject)ksp,2*(maxit+1)*(sizeof(PetscScalar)+sizeof(PetscReal)));CHKERRQ(ierr);
 
     ksp->ops->computeextremesingularvalues = KSPComputeExtremeSingularValues_CG;
     ksp->ops->computeeigenvalues           = KSPComputeEigenvalues_CG;
@@ -164,7 +164,7 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
     break;
   default: SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"%s",KSPNormTypes[ksp->normtype]);
   }
-  KSPLogResidualHistory(ksp,dp);
+  ierr       = KSPLogResidualHistory(ksp,dp);CHKERRQ(ierr);
   ierr       = KSPMonitor(ksp,0,dp);CHKERRQ(ierr);
   ksp->rnorm = dp;
 
@@ -272,7 +272,7 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
       dp = 0.0;
     }
     ksp->rnorm = dp;
-    KSPLogResidualHistory(ksp,dp);
+    CHKERRQ(ierr);KSPLogResidualHistory(ksp,dp);CHKERRQ(ierr);
     ierr = KSPMonitor(ksp,i+1,dp);CHKERRQ(ierr);
     ierr = (*ksp->converged)(ksp,i+1,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
     if (ksp->reason) break;
@@ -321,8 +321,8 @@ PetscErrorCode KSPDestroy_CG(KSP ksp)
     ierr = PetscFree4(cg->e,cg->d,cg->ee,cg->dd);CHKERRQ(ierr);
   }
   ierr = KSPDestroyDefault(ksp);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPCGSetType_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPCGUseSingleReduction_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPCGSetType_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPCGUseSingleReduction_C",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -433,7 +433,7 @@ static PetscErrorCode  KSPCGUseSingleReduction_CG(KSP ksp,PetscBool flg)
    pp. 409--436.
 
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP,
-           KSPCGSetType(), KSPCGUseSingleReduction()
+           KSPCGSetType(), KSPCGUseSingleReduction(), KSPPIPECG, KSPGROPPCG
 
 M*/
 #undef __FUNCT__
@@ -474,8 +474,8 @@ PETSC_EXTERN PetscErrorCode KSPCreate_CG(KSP ksp)
       KSPCGSetType() checks for this attached function and calls it if it finds
       it. (Sort of like a dynamic member function that can be added at run time
   */
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPCGSetType_C","KSPCGSetType_CG", KSPCGSetType_CG);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPCGUseSingleReduction_C","KSPCGUseSingleReduction_CG", KSPCGUseSingleReduction_CG);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPCGSetType_C",KSPCGSetType_CG);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPCGUseSingleReduction_C",KSPCGUseSingleReduction_CG);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

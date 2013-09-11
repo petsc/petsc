@@ -8,7 +8,7 @@ SOURCEF  =
 SOURCEH  =
 LIBBASE  = libpetscsys
 DIRS     = rand rand48 sprng
-LOCDIR   = src/sys/random/impls/
+LOCDIR   = src/sys/classes/random/impls/
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

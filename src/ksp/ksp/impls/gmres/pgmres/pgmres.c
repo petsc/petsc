@@ -64,11 +64,11 @@ static PetscErrorCode KSPPGMRESCycle(PetscInt *itcount,KSP ksp)
   *RS(0) = res_norm;
 
   /* check for the convergence */
-  ierr       = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
+  ierr       = PetscObjectAMSTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
   ksp->rnorm = res;
-  ierr       = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
+  ierr       = PetscObjectAMSGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
   pgmres->it = it-2;
-  KSPLogResidualHistory(ksp,res);
+  ierr = KSPLogResidualHistory(ksp,res);CHKERRQ(ierr);
   ierr = KSPMonitor(ksp,ksp->its,res);CHKERRQ(ierr);
   if (!res) {
     ksp->reason = KSP_CONVERGED_ATOL;
@@ -110,7 +110,7 @@ static PetscErrorCode KSPPGMRESCycle(PetscInt *itcount,KSP ksp)
 
       ierr = (*ksp->converged)(ksp,ksp->its,res,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
       if (it < pgmres->max_k+1 || ksp->reason || ksp->its == ksp->max_it) {  /* Monitor if we are done or still iterating, but not before a restart. */
-        KSPLogResidualHistory(ksp,res);
+        ierr = KSPLogResidualHistory(ksp,res);CHKERRQ(ierr);
         ierr = KSPMonitor(ksp,ksp->its,res);CHKERRQ(ierr);
       }
       if (ksp->reason) break;
@@ -216,9 +216,9 @@ static PetscErrorCode KSPSolve_PGMRES(KSP ksp)
 
   PetscFunctionBegin;
   if (ksp->calc_sings && !pgmres->Rsvd) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ORDER,"Must call KSPSetComputeSingularValues() before KSPSetUp() is called");
-  ierr     = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
+  ierr     = PetscObjectAMSTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
   ksp->its = 0;
-  ierr     = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
+  ierr     = PetscObjectAMSGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
 
   itcount     = 0;
   ksp->reason = KSP_CONVERGED_ITERATING;
@@ -420,14 +420,14 @@ PetscErrorCode KSPBuildSolution_PGMRES(KSP ksp,Vec ptr,Vec *result)
   if (!ptr) {
     if (!pgmres->sol_temp) {
       ierr = VecDuplicate(ksp->vec_sol,&pgmres->sol_temp);CHKERRQ(ierr);
-      ierr = PetscLogObjectParent(ksp,pgmres->sol_temp);CHKERRQ(ierr);
+      ierr = PetscLogObjectParent((PetscObject)ksp,(PetscObject)pgmres->sol_temp);CHKERRQ(ierr);
     }
     ptr = pgmres->sol_temp;
   }
   if (!pgmres->nrs) {
     /* allocate the work area */
     ierr = PetscMalloc(pgmres->max_k*sizeof(PetscScalar),&pgmres->nrs);CHKERRQ(ierr);
-    ierr = PetscLogObjectMemory(ksp,pgmres->max_k*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscLogObjectMemory((PetscObject)ksp,pgmres->max_k*sizeof(PetscScalar));CHKERRQ(ierr);
   }
 
   ierr = KSPPGMRESBuildSoln(pgmres->nrs,ksp->vec_sol,ptr,ksp,pgmres->it);CHKERRQ(ierr);
@@ -475,12 +475,16 @@ PetscErrorCode KSPReset_PGMRES(KSP ksp)
 
    Level: beginner
 
+   Notes:
+   MPI configuration may be necessary for reductions to make asynchronous progress, which is important for performance of pipelined methods.
+   See the FAQ on the PETSc website for details.
+
    Reference:
    Ghysels, Ashby, Meerbergen, Vanroose, Hiding global communication latencies in the GMRES algorithm on massively parallel machines, 2012.
 
    Developer Notes: This object is subclassed off of KSPGMRES
 
-.seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPGMRES, KSPLGMRES,
+.seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPGMRES, KSPLGMRES, KSPPIPECG, KSPPIPECR,
            KSPGMRESSetRestart(), KSPGMRESSetHapTol(), KSPGMRESSetPreAllocateVectors(), KSPGMRESSetOrthogonalization(), KSPGMRESGetOrthogonalization(),
            KSPGMRESClassicalGramSchmidtOrthogonalization(), KSPGMRESModifiedGramSchmidtOrthogonalization(),
            KSPGMRESCGSRefinementType, KSPGMRESSetCGSRefinementType(),  KSPGMRESGetCGSRefinementType(), KSPGMRESMonitorKrylov()
@@ -510,13 +514,13 @@ PETSC_EXTERN PetscErrorCode KSPCreate_PGMRES(KSP ksp)
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_RIGHT,1);CHKERRQ(ierr);
 
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESSetPreAllocateVectors_C","KSPGMRESSetPreAllocateVectors_GMRES",KSPGMRESSetPreAllocateVectors_GMRES);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESSetOrthogonalization_C","KSPGMRESSetOrthogonalization_GMRES",KSPGMRESSetOrthogonalization_GMRES);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESGetOrthogonalization_C","KSPGMRESGetOrthogonalization_GMRES",KSPGMRESGetOrthogonalization_GMRES);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESSetRestart_C","KSPGMRESSetRestart_GMRES",KSPGMRESSetRestart_GMRES);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESGetRestart_C","KSPGMRESGetRestart_GMRES",KSPGMRESGetRestart_GMRES);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESSetCGSRefinementType_C","KSPGMRESSetCGSRefinementType_GMRES",KSPGMRESSetCGSRefinementType_GMRES);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESGetCGSRefinementType_C","KSPGMRESGetCGSRefinementType_GMRES",KSPGMRESGetCGSRefinementType_GMRES);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESSetPreAllocateVectors_C",KSPGMRESSetPreAllocateVectors_GMRES);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESSetOrthogonalization_C",KSPGMRESSetOrthogonalization_GMRES);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESGetOrthogonalization_C",KSPGMRESGetOrthogonalization_GMRES);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESSetRestart_C",KSPGMRESSetRestart_GMRES);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESGetRestart_C",KSPGMRESGetRestart_GMRES);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESSetCGSRefinementType_C",KSPGMRESSetCGSRefinementType_GMRES);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESGetCGSRefinementType_C",KSPGMRESGetCGSRefinementType_GMRES);CHKERRQ(ierr);
 
   pgmres->nextra_vecs    = 1;
   pgmres->haptol         = 1.0e-30;

@@ -269,7 +269,7 @@ int main(int argc,char *argv[])
 static double Second()
 {
   double t;
-  PetscTime(t);
+  PetscTime(&t);
   return t;
 }
 

@@ -36,15 +36,16 @@ PetscErrorCode PetscViewerDestroy_HDF5(PetscViewer viewer)
 
   PetscFunctionBegin;
   ierr = PetscViewerFileClose_HDF5(viewer);CHKERRQ(ierr);
-  if (hdf5->groups)
-    while (hdf5->groups) {
-      GroupList *tmp = hdf5->groups->next;
+  while (hdf5->groups) {
+    GroupList *tmp = hdf5->groups->next;
 
-      ierr         = PetscFree(hdf5->groups->name);CHKERRQ(ierr);
-      ierr         = PetscFree(hdf5->groups);CHKERRQ(ierr);
-      hdf5->groups = tmp;
-    }
+    ierr         = PetscFree(hdf5->groups->name);CHKERRQ(ierr);
+    ierr         = PetscFree(hdf5->groups);CHKERRQ(ierr);
+    hdf5->groups = tmp;
+  }
   ierr = PetscFree(hdf5);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerFileSetName_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerFileSetMode_C",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -94,7 +95,6 @@ PetscErrorCode  PetscViewerFileSetName_HDF5(PetscViewer viewer, const char name[
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER, "Must call PetscViewerFileSetMode() before PetscViewerFileSetName()");
   }
   if (hdf5->file_id < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB, "H5Fcreate failed for %s", name);
-  viewer->format = PETSC_VIEWER_NOFORMAT;
   H5Pclose(plist_id);
   PetscFunctionReturn(0);
 }
@@ -112,14 +112,13 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_HDF5(PetscViewer v)
   v->data         = (void*) hdf5;
   v->ops->destroy = PetscViewerDestroy_HDF5;
   v->ops->flush   = 0;
-  v->iformat      = 0;
   hdf5->btype     = (PetscFileMode) -1;
   hdf5->filename  = 0;
   hdf5->timestep  = -1;
   hdf5->groups    = NULL;
 
-  ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerFileSetName_C","PetscViewerFileSetName_HDF5",PetscViewerFileSetName_HDF5);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerFileSetMode_C","PetscViewerFileSetMode_HDF5",PetscViewerFileSetMode_HDF5);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerFileSetName_C",PetscViewerFileSetName_HDF5);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerFileSetMode_C",PetscViewerFileSetMode_HDF5);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -226,7 +225,7 @@ PetscErrorCode  PetscViewerHDF5PushGroup(PetscViewer viewer, const char *name)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerHDF5PopGroup"
-/*@C
+/*@
   PetscViewerHDF5PopGroup - Return the current HDF5 group for output to the previous value
 
   Not collective
@@ -285,7 +284,7 @@ PetscErrorCode  PetscViewerHDF5GetGroup(PetscViewer viewer, const char **name)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerHDF5IncrementTimestep"
-/*@C
+/*@
   PetscViewerHDF5IncrementTimestep - Increments the current timestep for the HDF5 output. Fields are stacked in time.
 
   Not collective
@@ -309,7 +308,7 @@ PetscErrorCode PetscViewerHDF5IncrementTimestep(PetscViewer viewer)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerHDF5SetTimestep"
-/*@C
+/*@
   PetscViewerHDF5SetTimestep - Set the current timestep for the HDF5 output. Fields are stacked in time. A timestep
   of -1 disables blocking with timesteps.
 
@@ -335,7 +334,7 @@ PetscErrorCode  PetscViewerHDF5SetTimestep(PetscViewer viewer, PetscInt timestep
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerHDF5GetTimestep"
-/*@C
+/*@
   PetscViewerHDF5GetTimestep - Get the current timestep for the HDF5 output. Fields are stacked in time.
 
   Not collective

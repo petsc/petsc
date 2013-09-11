@@ -3,7 +3,7 @@ ALL: lib
 
 SOURCEH  = randomimpl.h
 DIRS     = interface examples impls
-LOCDIR   = src/sys/random/
+LOCDIR   = src/sys/classes/random/
 MANSEC   = Sys
 
 include ${PETSC_DIR}/conf/variables

@@ -5,6 +5,7 @@
 
 #include <../src/mat/impls/aij/seq/aij.h>
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
+#include <petsctime.h>
 #if defined(PETSC_HAVE_STDLIB_H) /* This is to get around weird problem with SuperLU on cray */
 #include <stdlib.h>
 #endif
@@ -116,8 +117,10 @@ PetscErrorCode MatSolve_SuperLU_DIST(Mat A,Vec b_mpi,Vec x)
   IS               iden;
   VecScatter       scat;
   int              info; /* SuperLU_Dist info code is ALWAYS an int, even with long long indices */
+  static PetscBool cite = PETSC_FALSE;
 
   PetscFunctionBegin;
+  ierr = PetscCitationsRegister("@article{lidemmel03,\n  author = {Xiaoye S. Li and James W. Demmel},\n  title = {{SuperLU_DIST}: A Scalable Distributed-Memory Sparse Direct\n           Solver for Unsymmetric Linear Systems},\n  journal = {ACM Trans. Mathematical Software},\n  volume = {29},\n  number = {2},\n  pages = {110-140},\n  year = 2003\n}\n",&cite);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRQ(ierr);
   if (size > 1 && lu->MatInputMode == GLOBAL) {
     /* global mat input, convert b to x_seq */
@@ -274,7 +277,7 @@ PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat F,Mat A,const MatFactorInfo *
 
   if (lu->options.PrintStat) { /* collect time for mat conversion */
     ierr = MPI_Barrier(PetscObjectComm((PetscObject)A));CHKERRQ(ierr);
-    ierr = PetscGetTime(&time0);CHKERRQ(ierr);
+    ierr = PetscTime(&time0);CHKERRQ(ierr);
   }
 
   if (lu->MatInputMode == GLOBAL) { /* global mat input */
@@ -393,7 +396,7 @@ PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat F,Mat A,const MatFactorInfo *
 #endif
   }
   if (lu->options.PrintStat) {
-    ierr  = PetscGetTime(&time);CHKERRQ(ierr);
+    ierr  = PetscTime(&time);CHKERRQ(ierr);
     time0 = time - time0;
   }
 
@@ -496,7 +499,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A,MatFactorType ft
   B->ops->view             = MatView_SuperLU_DIST;
   B->ops->destroy          = MatDestroy_SuperLU_DIST;
 
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverPackage_C","MatFactorGetSolverPackage_aij_superlu_dist",MatFactorGetSolverPackage_aij_superlu_dist);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverPackage_C",MatFactorGetSolverPackage_aij_superlu_dist);CHKERRQ(ierr);
 
   B->factortype = MAT_FACTOR_LU;
 

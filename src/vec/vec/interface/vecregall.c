@@ -9,6 +9,11 @@ PETSC_EXTERN PetscErrorCode VecCreate_SeqCUSP(Vec);
 PETSC_EXTERN PetscErrorCode VecCreate_MPICUSP(Vec);
 PETSC_EXTERN PetscErrorCode VecCreate_CUSP(Vec);
 #endif
+#if defined(PETSC_HAVE_VIENNACL)
+PETSC_EXTERN PetscErrorCode VecCreate_SeqViennaCL(Vec);
+PETSC_EXTERN PetscErrorCode VecCreate_MPIViennaCL(Vec);
+PETSC_EXTERN PetscErrorCode VecCreate_ViennaCL(Vec);
+#endif
 #if 0
 #if defined(PETSC_HAVE_SIEVE)
 PETSC_EXTERN PetscErrorCode VecCreate_Sieve(Vec);
@@ -22,33 +27,35 @@ PETSC_EXTERN PetscErrorCode VecCreate_Sieve(Vec);
 
   Not Collective
 
-  Input parameter:
-. path - The dynamic library path
-
   Level: advanced
 
 .keywords: Vec, register, all
-.seealso:  VecRegister(), VecRegisterDestroy(), VecRegisterDynamic()
+.seealso:  VecRegister(), VecRegisterDestroy(), VecRegister()
 @*/
-PetscErrorCode  VecRegisterAll(const char path[])
+PetscErrorCode  VecRegisterAll(void)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   VecRegisterAllCalled = PETSC_TRUE;
 
-  ierr = VecRegisterDynamic(VECSEQ,       path, "VecCreate_Seq",       VecCreate_Seq);CHKERRQ(ierr);
-  ierr = VecRegisterDynamic(VECMPI,       path, "VecCreate_MPI",       VecCreate_MPI);CHKERRQ(ierr);
-  ierr = VecRegisterDynamic(VECSTANDARD,  path, "VecCreate_Standard",  VecCreate_Standard);CHKERRQ(ierr);
-  ierr = VecRegisterDynamic(VECSHARED,    path, "VecCreate_Shared",    VecCreate_Shared);CHKERRQ(ierr);
+  ierr = VecRegister(VECSEQ,        VecCreate_Seq);CHKERRQ(ierr);
+  ierr = VecRegister(VECMPI,        VecCreate_MPI);CHKERRQ(ierr);
+  ierr = VecRegister(VECSTANDARD,   VecCreate_Standard);CHKERRQ(ierr);
+  ierr = VecRegister(VECSHARED,     VecCreate_Shared);CHKERRQ(ierr);
 #if defined PETSC_HAVE_CUSP
-  ierr = VecRegisterDynamic(VECSEQCUSP,  path, "VecCreate_SeqCUSP",  VecCreate_SeqCUSP);CHKERRQ(ierr);
-  ierr = VecRegisterDynamic(VECMPICUSP,  path, "VecCreate_MPICUSP",  VecCreate_MPICUSP);CHKERRQ(ierr);
-  ierr = VecRegisterDynamic(VECCUSP,     path, "VecCreate_CUSP",     VecCreate_CUSP);CHKERRQ(ierr);
+  ierr = VecRegister(VECSEQCUSP,    VecCreate_SeqCUSP);CHKERRQ(ierr);
+  ierr = VecRegister(VECMPICUSP,    VecCreate_MPICUSP);CHKERRQ(ierr);
+  ierr = VecRegister(VECCUSP,       VecCreate_CUSP);CHKERRQ(ierr);
+#endif
+#if defined PETSC_HAVE_VIENNACL
+  ierr = VecRegister(VECSEQVIENNACL,  VecCreate_SeqViennaCL);CHKERRQ(ierr);
+  ierr = VecRegister(VECMPIVIENNACL,  VecCreate_MPIViennaCL);CHKERRQ(ierr);
+  ierr = VecRegister(VECVIENNACL,     VecCreate_ViennaCL);CHKERRQ(ierr);
 #endif
 #if 0
 #if defined(PETSC_HAVE_SIEVE)
-  ierr = VecRegisterDynamic(VECSIEVE,    path, "VecCreate_Sieve",    VecCreate_Sieve);CHKERRQ(ierr);
+  ierr = VecRegister(VECSIEVE,      VecCreate_Sieve);CHKERRQ(ierr);
 #endif
 #endif
   PetscFunctionReturn(0);

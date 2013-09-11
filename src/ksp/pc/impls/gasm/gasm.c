@@ -299,10 +299,12 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
           if (subdomain_names)    {ierr = PetscFree(subdomain_names[d]);CHKERRQ(ierr);}
           if (inner_subdomain_is) {ierr = ISDestroy(&inner_subdomain_is[d]);CHKERRQ(ierr);}
           if (outer_subdomain_is) {ierr = ISDestroy(&outer_subdomain_is[d]);CHKERRQ(ierr);}
+          if (subdomain_dm)       {ierr = DMDestroy(&subdomain_dm[d]);CHKERRQ(ierr);}
         }
         ierr = PetscFree(subdomain_names);CHKERRQ(ierr);
         ierr = PetscFree(inner_subdomain_is);CHKERRQ(ierr);
         ierr = PetscFree(outer_subdomain_is);CHKERRQ(ierr);
+        ierr = PetscFree(subdomain_dm);CHKERRQ(ierr);
       }
       if (osm->n == PETSC_DECIDE) { /* still no subdomains; use one per processor */
         osm->nmax = osm->n = 1;
@@ -433,7 +435,7 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
     ierr = PetscMalloc(osm->n*sizeof(KSP*),&osm->ksp);CHKERRQ(ierr);
     for (i=0; i<osm->n; i++) { /* KSPs are local */
       ierr        = KSPCreate(((PetscObject)(osm->ois[i]))->comm,&ksp);CHKERRQ(ierr);
-      ierr        = PetscLogObjectParent(pc,ksp);CHKERRQ(ierr);
+      ierr        = PetscLogObjectParent((PetscObject)pc,(PetscObject)ksp);CHKERRQ(ierr);
       ierr        = PetscObjectIncrementTabLevel((PetscObject)ksp,(PetscObject)pc,1);CHKERRQ(ierr);
       ierr        = KSPSetType(ksp,KSPPREONLY);CHKERRQ(ierr);
       ierr        = KSPGetPC(ksp,&subpc);CHKERRQ(ierr);
@@ -465,7 +467,7 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
   if (scall == MAT_INITIAL_MATRIX) {
     ierr = PetscObjectGetOptionsPrefix((PetscObject)pc->pmat,&pprefix);CHKERRQ(ierr);
     for (i=0; i<osm->n; i++) {
-      ierr = PetscLogObjectParent(pc,osm->pmat[i]);CHKERRQ(ierr);
+      ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)osm->pmat[i]);CHKERRQ(ierr);
       ierr = PetscObjectSetOptionsPrefix((PetscObject)osm->pmat[i],pprefix);CHKERRQ(ierr);
     }
   }
@@ -1177,12 +1179,12 @@ PETSC_EXTERN PetscErrorCode PCCreate_GASM(PC pc)
   pc->ops->view            = PCView_GASM;
   pc->ops->applyrichardson = 0;
 
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGASMSetSubdomains_C","PCGASMSetSubdomains_GASM",PCGASMSetSubdomains_GASM);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGASMSetTotalSubdomains_C","PCGASMSetTotalSubdomains_GASM",PCGASMSetTotalSubdomains_GASM);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGASMSetOverlap_C","PCGASMSetOverlap_GASM",PCGASMSetOverlap_GASM);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGASMSetType_C","PCGASMSetType_GASM",PCGASMSetType_GASM);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGASMSetSortIndices_C","PCGASMSetSortIndices_GASM",PCGASMSetSortIndices_GASM);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGASMGetSubKSP_C","PCGASMGetSubKSP_GASM",PCGASMGetSubKSP_GASM);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGASMSetSubdomains_C",PCGASMSetSubdomains_GASM);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGASMSetTotalSubdomains_C",PCGASMSetTotalSubdomains_GASM);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGASMSetOverlap_C",PCGASMSetOverlap_GASM);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGASMSetType_C",PCGASMSetType_GASM);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGASMSetSortIndices_C",PCGASMSetSortIndices_GASM);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGASMGetSubKSP_C",PCGASMGetSubKSP_GASM);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1241,7 +1243,7 @@ PetscErrorCode  PCGASMCreateLocalSubdomains(Mat A, PetscInt overlap, PetscInt n,
 
   /* Get diagonal block from matrix if possible */
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRQ(ierr);
-  ierr = PetscObjectQueryFunction((PetscObject)A,"MatGetDiagonalBlock_C",(void (**)(void))&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)A,"MatGetDiagonalBlock_C",&f);CHKERRQ(ierr);
   if (f) {
     ierr = MatGetDiagonalBlock(A,&Ad);CHKERRQ(ierr);
   } else if (size == 1) {

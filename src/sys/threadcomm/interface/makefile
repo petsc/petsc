@@ -5,7 +5,7 @@ SOURCEH	 =
 SOURCEC  = dlregisthreadcomm.c threadcomm.c threadcommregi.c threadcommred.c
 LIBBASE	 = libpetscsys
 DIRS	 =
-LOCDIR   = src/sys/threadcomm/
+LOCDIR   = src/sys/threadcomm/interface/
 MANSEC   = PetscThreadComm
 
 include ${PETSC_DIR}/conf/variables

@@ -11,7 +11,7 @@ PetscInt    PetscObjectsCounts = 0, PetscObjectsMaxCounts = 0;
 extern PetscErrorCode PetscObjectGetComm_Petsc(PetscObject,MPI_Comm*);
 extern PetscErrorCode PetscObjectCompose_Petsc(PetscObject,const char[],PetscObject);
 extern PetscErrorCode PetscObjectQuery_Petsc(PetscObject,const char[],PetscObject*);
-extern PetscErrorCode PetscObjectComposeFunction_Petsc(PetscObject,const char[],const char[],void (*)(void));
+extern PetscErrorCode PetscObjectComposeFunction_Petsc(PetscObject,const char[],void (*)(void));
 extern PetscErrorCode PetscObjectQueryFunction_Petsc(PetscObject,const char[],void (**)(void));
 
 #undef __FUNCT__
@@ -92,13 +92,9 @@ PetscErrorCode  PetscHeaderDestroy_Private(PetscObject h)
 
   PetscFunctionBegin;
   PetscValidHeader(h,1);
+  ierr = PetscObjectAMSViewOff(h);CHKERRQ(ierr);
   ierr = PetscLogObjectDestroy(h);CHKERRQ(ierr);
   ierr = PetscComposedQuantitiesDestroy(h);
-#if defined(PETSC_HAVE_AMS)
-  if (PetscAMSPublishAll) {
-    ierr = PetscObjectAMSUnPublish((PetscObject)h);CHKERRQ(ierr);
-  }
-#endif
   if (PetscMemoryCollectMaximumUsage) {
     PetscLogDouble usage;
     ierr = PetscMemoryGetCurrentUsage(&usage);CHKERRQ(ierr);
@@ -113,6 +109,7 @@ PetscErrorCode  PetscHeaderDestroy_Private(PetscObject h)
 
     ierr = (*python_destroy)(python_context);CHKERRQ(ierr);
   }
+  ierr = PetscObjectDestroyOptionsHandlers(h);CHKERRQ(ierr);
   ierr = PetscObjectListDestroy(&h->olist);CHKERRQ(ierr);
   ierr = PetscCommDestroy(&h->comm);CHKERRQ(ierr);
   /* next destroy other things */
@@ -294,23 +291,24 @@ PetscErrorCode  PetscObjectsDump(FILE *fd,PetscBool all)
         ierr = PetscObjectName(h);CHKERRQ(ierr);
         {
 #if defined(PETSC_USE_DEBUG)
-        PetscStack *stack;
+        PetscStack *stack = 0;
         char       *create,*rclass;
 
         /* if the PETSc function the user calls is not a create then this object was NOT directly created by them */
         ierr = PetscMallocGetStack(h,&stack);CHKERRQ(ierr);
-        k    = stack->currentsize-2;
-        if (!all) {
-          k = 0;
-          while (!stack->petscroutine[k]) k++;
-          ierr = PetscStrstr(stack->function[k],"Create",&create);CHKERRQ(ierr);
-          if (!create) {
-            ierr = PetscStrstr(stack->function[k],"Get",&create);CHKERRQ(ierr);
+        if (stack) {
+          k = stack->currentsize-2;
+          if (!all) {
+            k = 0;
+            while (!stack->petscroutine[k]) k++;
+            ierr = PetscStrstr(stack->function[k],"Create",&create);CHKERRQ(ierr);
+            if (!create) {
+              ierr = PetscStrstr(stack->function[k],"Get",&create);CHKERRQ(ierr);
+            }
+            ierr = PetscStrstr(stack->function[k],h->class_name,&rclass);CHKERRQ(ierr);
+            if (!create) continue;
+            if (!rclass) continue;
           }
-          ierr = PetscStrstr(stack->function[k],h->class_name,&rclass);CHKERRQ(ierr);
-
-          if (!create) continue;
-          if (!rclass) continue;
         }
 #endif
 
@@ -318,8 +316,10 @@ PetscErrorCode  PetscObjectsDump(FILE *fd,PetscBool all)
 
 #if defined(PETSC_USE_DEBUG)
         ierr = PetscMallocGetStack(h,&stack);CHKERRQ(ierr);
-        for (j=k; j>=0; j--) {
-          fprintf(fd,"      [%d]  %s() in %s%s\n",PetscGlobalRank,stack->function[j],stack->directory[j],stack->file[j]);
+        if (stack) {
+          for (j=k; j>=0; j--) {
+            fprintf(fd,"      [%d]  %s() in %s%s\n",PetscGlobalRank,stack->function[j],stack->directory[j],stack->file[j]);
+          }
         }
 #endif
         }
@@ -487,7 +487,7 @@ PetscErrorCode  PetscObjectProcessOptionsHandlers(PetscObject obj)
 #undef __FUNCT__
 #define __FUNCT__ "PetscObjectDestroyOptionsHandlers"
 /*@C
-    PetscObjectDestroyOptionsHandlers - Destroys all the option handlers attached to an objeft
+    PetscObjectDestroyOptionsHandlers - Destroys all the option handlers attached to an object
 
     Not Collective
 
@@ -508,7 +508,9 @@ PetscErrorCode  PetscObjectDestroyOptionsHandlers(PetscObject obj)
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
   for (i=0; i<obj->noptionhandler; i++) {
-    ierr = (*obj->optiondestroy[i])(obj,obj->optionctx[i]);CHKERRQ(ierr);
+    if (obj->optiondestroy[i]) {
+      ierr = (*obj->optiondestroy[i])(obj,obj->optionctx[i]);CHKERRQ(ierr);
+    }
   }
   obj->noptionhandler = 0;
   PetscFunctionReturn(0);
@@ -658,13 +660,13 @@ PetscErrorCode PetscObjectQuery_Petsc(PetscObject obj,const char name[],PetscObj
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscObjectComposeFunction_Petsc"
-PetscErrorCode PetscObjectComposeFunction_Petsc(PetscObject obj,const char name[],const char fname[],void (*ptr)(void))
+PetscErrorCode PetscObjectComposeFunction_Petsc(PetscObject obj,const char name[],void (*ptr)(void))
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
-  ierr = PetscFunctionListAdd(obj->comm,&obj->qlist,name,fname,ptr);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&obj->qlist,name,ptr);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -676,7 +678,7 @@ PetscErrorCode PetscObjectQueryFunction_Petsc(PetscObject obj,const char name[],
 
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
-  ierr = PetscFunctionListFind(obj->comm,obj->qlist,name,PETSC_FALSE,ptr);CHKERRQ(ierr);
+  ierr = PetscFunctionListFind(obj->qlist,name,ptr);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -789,23 +791,58 @@ PetscErrorCode  PetscObjectQuery(PetscObject obj,const char name[],PetscObject *
   PetscFunctionReturn(0);
 }
 
+/*MC
+   PetscObjectComposeFunction - Associates a function with a given PETSc object.
+
+    Synopsis:
+    #include "petscsys.h"
+    PetscErrorCode PetscObjectComposeFunction(PetscObject obj,const char name[],void (*fptr)(void))
+
+   Logically Collective on PetscObject
+
+   Input Parameters:
++  obj - the PETSc object; this must be cast with a (PetscObject), for example,
+         PetscObjectCompose((PetscObject)mat,...);
+.  name - name associated with the child function
+.  fname - name of the function
+-  fptr - function pointer
+
+   Level: advanced
+
+   Notes:
+   To remove a registered routine, pass in NULL for fptr().
+
+   PetscObjectComposeFunction() can be used with any PETSc object (such as
+   Mat, Vec, KSP, SNES, etc.) or any user-provided object.
+
+   Concepts: objects^composing functions
+   Concepts: composing functions
+   Concepts: functions^querying
+   Concepts: objects^querying
+   Concepts: querying objects
+
+.seealso: PetscObjectQueryFunction(), PetscContainerCreate()
+M*/
+
 #undef __FUNCT__
 #define __FUNCT__ "PetscObjectComposeFunction_Private"
-PetscErrorCode  PetscObjectComposeFunction_Private(PetscObject obj,const char name[],const char fname[],void (*ptr)(void))
+PetscErrorCode  PetscObjectComposeFunction_Private(PetscObject obj,const char name[],void (*fptr)(void))
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
   PetscValidCharPointer(name,2);
-  ierr = (*obj->bops->composefunction)(obj,name,fname,ptr);CHKERRQ(ierr);
+  ierr = (*obj->bops->composefunction)(obj,name,fptr);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscObjectQueryFunction"
-/*@C
+/*MC
    PetscObjectQueryFunction - Gets a function associated with a given object.
+
+    Synopsis:
+    #include "petscsys.h"
+    PetscErrorCode PetscObjectQueryFunction(PetscObject obj,const char name[],void (**fptr)(void))
 
    Logically Collective on PetscObject
 
@@ -815,7 +852,7 @@ PetscErrorCode  PetscObjectComposeFunction_Private(PetscObject obj,const char na
 -  name - name associated with the child function
 
    Output Parameter:
-.  ptr - function pointer
+.  fptr - function pointer
 
    Level: advanced
 
@@ -825,9 +862,11 @@ PetscErrorCode  PetscObjectComposeFunction_Private(PetscObject obj,const char na
    Concepts: objects^querying
    Concepts: querying objects
 
-.seealso: PetscObjectComposeFunctionDynamic()
-@*/
-PetscErrorCode  PetscObjectQueryFunction(PetscObject obj,const char name[],void (**ptr)(void))
+.seealso: PetscObjectComposeFunction(), PetscFunctionListFind()
+M*/
+#undef __FUNCT__
+#define __FUNCT__ "PetscObjectQueryFunction_Private"
+PETSC_EXTERN PetscErrorCode PetscObjectQueryFunction_Private(PetscObject obj,const char name[],void (**ptr)(void))
 {
   PetscErrorCode ierr;
 

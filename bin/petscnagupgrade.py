@@ -6,39 +6,45 @@
 import os
 import os.path, time,sys
 import re
+from distutils.version import LooseVersion as Version
 
 def naggedtoday(file):
   if not os.path.exists(file): return 0
   if time.time() - os.path.getmtime(file) > 60*60*24: return 0
   return 1
 
+def parse_version_h(pv):
+  major    = int(re.compile(' PETSC_VERSION_MAJOR[ ]*([0-9]*)').search(pv).group(1))
+  minor    = int(re.compile(' PETSC_VERSION_MINOR[ ]*([0-9]*)').search(pv).group(1))
+  subminor = int(re.compile(' PETSC_VERSION_SUBMINOR[ ]*([0-9]*)').search(pv).group(1))
+  patch    = int(re.compile(' PETSC_VERSION_PATCH[ ]*([0-9]*)').search(pv).group(1))
+  if patch != 0:                # Patch number was used prior to 3.4
+    return Version('%d.%d.%dp%d' % (major, minor, subminor, patch))
+  elif subminor != 0:           # Maintenance releases are numbered x.y.z
+    return Version('%d.%d.%d' % (major, minor, subminor))
+  else:                         # Feature releases are x.y
+    return Version('%d.%d' % (major, minor))
+
 def currentversion(petscdir):
   try:
     fd  = open(os.path.join(petscdir, 'include', 'petscversion.h'))
     pv = fd.read()
     fd.close()
-    majorversion = int(re.compile(' PETSC_VERSION_MAJOR[ ]*([0-9]*)').search(pv).group(1))
-    minorversion = int(re.compile(' PETSC_VERSION_MINOR[ ]*([0-9]*)').search(pv).group(1))
-    patchversion = int(re.compile(' PETSC_VERSION_PATCH[ ]*([0-9]*)').search(pv).group(1))
+    version = parse_version_h(pv)
   except:
     return
-  version=str(majorversion)+'.'+str(minorversion)+'.'+str(patchversion)
   try:
     import urllib
     fd = urllib.urlopen("http://www.mcs.anl.gov/petsc/petsc-dev/include/petscversion.h")
     pv = fd.read()
     fd.close()
-    amajorversion = int(re.compile(' PETSC_VERSION_MAJOR[ ]*([0-9]*)').search(pv).group(1))
-    aminorversion = int(re.compile(' PETSC_VERSION_MINOR[ ]*([0-9]*)').search(pv).group(1))
-    apatchversion = int(re.compile(' PETSC_VERSION_PATCH[ ]*([0-9]*)').search(pv).group(1))
+    aversion = parse_version_h(pv)
   except:
     return
-  aversion = str(amajorversion)+'.'+str(aminorversion)+'.'+str(apatchversion)
-  if (amajorversion > majorversion) or ((amajorversion ==  majorversion) and (aminorversion > minorversion)) or \
-  ((amajorversion ==  majorversion) and (aminorversion == minorversion) and (apatchversion > patchversion)):
+  if aversion > version:
     print("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
     print("The version of PETSc you are using is out-of-date, we recommend updating to the new release")
-    print(" Available Version: "+aversion+"   Installed Version: "+version)
+    print(" Available Version: "+str(aversion)+"   Installed Version: "+str(version))
     print("http://www.mcs.anl.gov/petsc/download/index.html")
     print("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
   try:

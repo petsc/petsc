@@ -101,7 +101,7 @@
       call TSSetIJacobian(ts,J,J,FormIJacobian,user,ierr)
 
       call TSGetSNES(ts,snes,ierr)
-      call SNESGetSNESLineSearch(snes,linesearch,ierr)
+      call SNESGetLineSearch(snes,linesearch,ierr)
       call SNESLineSearchSetType(linesearch,SNESLINESEARCHBASIC,ierr)
 
       ftime = 1.0
@@ -152,7 +152,7 @@
      &     PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,    &
      &     PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                       &
      &     PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,    &
-     &     PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr)
+     &     PETSC_NULL_INTEGER,ierr)
       call DMDAGetCorners(da,xs,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,  &
      &     xm,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr)
       call DMDAGetGhostCorners(da,                                      &

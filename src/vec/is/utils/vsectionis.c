@@ -3,6 +3,7 @@
 */
 
 #include <petsc-private/isimpl.h>   /*I  "petscvec.h"   I*/
+#include <petscsf.h>
 #include <petscviewer.h>
 
 PetscClassId PETSC_SECTION_CLASSID;
@@ -40,7 +41,7 @@ PetscErrorCode PetscSectionCreate(MPI_Comm comm, PetscSection *s)
   PetscFunctionBegin;
   PetscValidPointer(s,2);
 #if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
-  ierr = ISInitializePackage(NULL);CHKERRQ(ierr);
+  ierr = ISInitializePackage();CHKERRQ(ierr);
 #endif
 
   ierr = PetscHeaderCreate(*s,_p_PetscSection,int,PETSC_SECTION_CLASSID,"PetscSection","Section","IS",comm,PetscSectionDestroy,PetscSectionView);CHKERRQ(ierr);
@@ -547,6 +548,22 @@ PetscErrorCode PetscSectionAddFieldDof(PetscSection s, PetscInt point, PetscInt 
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSectionGetConstraintDof"
+/*@
+  PetscSectionGetConstraintDof - Return the number of constrained degrees of freedom associated with a given point.
+
+  Not collective
+
+  Input Parameters:
++ s - the PetscSection
+- point - the point
+
+  Output Parameter:
+. numDof - the number of dof which are fixed by constraints
+
+  Level: intermediate
+
+.seealso: PetscSectionGetDof(), PetscSectionSetConstraintDof(), PetscSectionCreate()
+@*/
 PetscErrorCode PetscSectionGetConstraintDof(PetscSection s, PetscInt point, PetscInt *numDof)
 {
   PetscErrorCode ierr;
@@ -560,6 +577,20 @@ PetscErrorCode PetscSectionGetConstraintDof(PetscSection s, PetscInt point, Pets
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSectionSetConstraintDof"
+/*@
+  PetscSectionSetConstraintDof - Set the number of constrained degrees of freedom associated with a given point.
+
+  Not collective
+
+  Input Parameters:
++ s - the PetscSection
+. point - the point
+- numDof - the number of dof which are fixed by constraints
+
+  Level: intermediate
+
+.seealso: PetscSectionSetDof(), PetscSectionGetConstraintDof(), PetscSectionCreate()
+@*/
 PetscErrorCode PetscSectionSetConstraintDof(PetscSection s, PetscInt point, PetscInt numDof)
 {
   PetscErrorCode ierr;
@@ -574,6 +605,20 @@ PetscErrorCode PetscSectionSetConstraintDof(PetscSection s, PetscInt point, Pets
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSectionAddConstraintDof"
+/*@
+  PetscSectionAddConstraintDof - Increment the number of constrained degrees of freedom associated with a given point.
+
+  Not collective
+
+  Input Parameters:
++ s - the PetscSection
+. point - the point
+- numDof - the number of additional dof which are fixed by constraints
+
+  Level: intermediate
+
+.seealso: PetscSectionAddDof(), PetscSectionGetConstraintDof(), PetscSectionCreate()
+@*/
 PetscErrorCode PetscSectionAddConstraintDof(PetscSection s, PetscInt point, PetscInt numDof)
 {
   PetscErrorCode ierr;
@@ -588,6 +633,23 @@ PetscErrorCode PetscSectionAddConstraintDof(PetscSection s, PetscInt point, Pets
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSectionGetFieldConstraintDof"
+/*@
+  PetscSectionGetFieldConstraintDof - Return the number of constrained degrees of freedom associated with a given field on a point.
+
+  Not collective
+
+  Input Parameters:
++ s - the PetscSection
+. point - the point
+- field - the field
+
+  Output Parameter:
+. numDof - the number of dof which are fixed by constraints
+
+  Level: intermediate
+
+.seealso: PetscSectionGetDof(), PetscSectionSetFieldConstraintDof(), PetscSectionCreate()
+@*/
 PetscErrorCode PetscSectionGetFieldConstraintDof(PetscSection s, PetscInt point, PetscInt field, PetscInt *numDof)
 {
   PetscErrorCode ierr;
@@ -600,6 +662,21 @@ PetscErrorCode PetscSectionGetFieldConstraintDof(PetscSection s, PetscInt point,
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSectionSetFieldConstraintDof"
+/*@
+  PetscSectionSetFieldConstraintDof - Set the number of constrained degrees of freedom associated with a given field on a point.
+
+  Not collective
+
+  Input Parameters:
++ s - the PetscSection
+. point - the point
+. field - the field
+- numDof - the number of dof which are fixed by constraints
+
+  Level: intermediate
+
+.seealso: PetscSectionSetDof(), PetscSectionGetFieldConstraintDof(), PetscSectionCreate()
+@*/
 PetscErrorCode PetscSectionSetFieldConstraintDof(PetscSection s, PetscInt point, PetscInt field, PetscInt numDof)
 {
   PetscErrorCode ierr;
@@ -612,6 +689,21 @@ PetscErrorCode PetscSectionSetFieldConstraintDof(PetscSection s, PetscInt point,
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSectionAddFieldConstraintDof"
+/*@
+  PetscSectionAddFieldConstraintDof - Increment the number of constrained degrees of freedom associated with a given field on a point.
+
+  Not collective
+
+  Input Parameters:
++ s - the PetscSection
+. point - the point
+. field - the field
+- numDof - the number of additional dof which are fixed by constraints
+
+  Level: intermediate
+
+.seealso: PetscSectionAddDof(), PetscSectionGetFieldConstraintDof(), PetscSectionCreate()
+@*/
 PetscErrorCode PetscSectionAddFieldConstraintDof(PetscSection s, PetscInt point, PetscInt field, PetscInt numDof)
 {
   PetscErrorCode ierr;
@@ -853,7 +945,7 @@ PetscErrorCode PetscSectionCreateGlobalSection(PetscSection s, PetscSF sf, Petsc
 @*/
 PetscErrorCode PetscSectionCreateGlobalSectionCensored(PetscSection s, PetscSF sf, PetscBool includeConstraints, PetscInt numExcludes, const PetscInt excludes[], PetscSection *gsection)
 {
-  PetscInt       *neg;
+  PetscInt      *neg = NULL, *tmpOff = NULL;
   PetscInt       pStart, pEnd, p, e, dof, cdof, off, globalOff = 0, nroots;
   PetscErrorCode ierr;
 
@@ -861,7 +953,18 @@ PetscErrorCode PetscSectionCreateGlobalSectionCensored(PetscSection s, PetscSF s
   ierr = PetscSectionCreate(s->atlasLayout.comm, gsection);CHKERRQ(ierr);
   ierr = PetscSectionGetChart(s, &pStart, &pEnd);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(*gsection, pStart, pEnd);CHKERRQ(ierr);
-  ierr = PetscMalloc((pEnd - pStart) * sizeof(PetscInt), &neg);CHKERRQ(ierr);
+  ierr = PetscSFGetGraph(sf, &nroots, NULL, NULL, NULL);CHKERRQ(ierr);
+  if (nroots >= 0) {
+    if (nroots < pEnd-pStart) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "PetscSF nroots %d < %d section size", nroots, pEnd-pStart);
+    ierr = PetscMalloc(nroots * sizeof(PetscInt), &neg);CHKERRQ(ierr);
+    ierr = PetscMemzero(neg, nroots * sizeof(PetscInt));CHKERRQ(ierr);
+    if (nroots > pEnd-pStart) {
+      ierr = PetscMalloc(nroots * sizeof(PetscInt), &tmpOff);CHKERRQ(ierr);
+      ierr = PetscMemzero(tmpOff, nroots * sizeof(PetscInt));CHKERRQ(ierr);
+    } else {
+      tmpOff = &(*gsection)->atlasDof[-pStart];
+    }
+  }
   /* Mark ghost points with negative dof */
   for (p = pStart; p < pEnd; ++p) {
     for (e = 0; e < numExcludes; ++e) {
@@ -875,24 +978,14 @@ PetscErrorCode PetscSectionCreateGlobalSectionCensored(PetscSection s, PetscSF s
     ierr = PetscSectionSetDof(*gsection, p, dof);CHKERRQ(ierr);
     ierr = PetscSectionGetConstraintDof(s, p, &cdof);CHKERRQ(ierr);
     if (!includeConstraints && cdof > 0) {ierr = PetscSectionSetConstraintDof(*gsection, p, cdof);CHKERRQ(ierr);}
-    neg[p-pStart] = -(dof+1);
+    if (neg) neg[p] = -(dof+1);
   }
   ierr = PetscSectionSetUpBC(*gsection);CHKERRQ(ierr);
-  ierr = PetscSFGetGraph(sf, &nroots, NULL, NULL, NULL);CHKERRQ(ierr);
   if (nroots >= 0) {
+    ierr = PetscSFBcastBegin(sf, MPIU_INT, neg, tmpOff);CHKERRQ(ierr);
+    ierr = PetscSFBcastEnd(sf, MPIU_INT, neg, tmpOff);CHKERRQ(ierr);
     if (nroots > pEnd - pStart) {
-      PetscInt *tmpDof;
-      /* Help Jed: HAVE TO MAKE A BUFFER HERE THE SIZE OF THE COMPLETE SPACE AND THEN COPY INTO THE atlasDof FOR THIS SECTION */
-      ierr = PetscMalloc(nroots * sizeof(PetscInt), &tmpDof);CHKERRQ(ierr);
-      ierr = PetscSFBcastBegin(sf, MPIU_INT, &neg[-pStart], tmpDof);CHKERRQ(ierr);
-      ierr = PetscSFBcastEnd(sf, MPIU_INT, &neg[-pStart], tmpDof);CHKERRQ(ierr);
-      for (p = pStart; p < pEnd; ++p) {
-        if (tmpDof[p] < 0) (*gsection)->atlasDof[p-pStart] = tmpDof[p];
-      }
-      ierr = PetscFree(tmpDof);CHKERRQ(ierr);
-    } else {
-      ierr = PetscSFBcastBegin(sf, MPIU_INT, &neg[-pStart], &(*gsection)->atlasDof[-pStart]);CHKERRQ(ierr);
-      ierr = PetscSFBcastEnd(sf, MPIU_INT, &neg[-pStart], &(*gsection)->atlasDof[-pStart]);CHKERRQ(ierr);
+      for (p = pStart; p < pEnd; ++p) {if (tmpOff[p] < 0) (*gsection)->atlasDof[p-pStart] = tmpOff[p];}
     }
   }
   /* Calculate new sizes, get proccess offset, and calculate point offsets */
@@ -905,25 +998,17 @@ PetscErrorCode PetscSectionCreateGlobalSectionCensored(PetscSection s, PetscSF s
   globalOff -= off;
   for (p = 0, off = 0; p < pEnd-pStart; ++p) {
     (*gsection)->atlasOff[p] += globalOff;
-    neg[p] = -((*gsection)->atlasOff[p]+1);
+    if (neg) neg[p] = -((*gsection)->atlasOff[p]+1);
   }
   /* Put in negative offsets for ghost points */
   if (nroots >= 0) {
+    ierr = PetscSFBcastBegin(sf, MPIU_INT, neg, tmpOff);CHKERRQ(ierr);
+    ierr = PetscSFBcastEnd(sf, MPIU_INT, neg, tmpOff);CHKERRQ(ierr);
     if (nroots > pEnd - pStart) {
-      PetscInt *tmpOff;
-      /* Help Jed: HAVE TO MAKE A BUFFER HERE THE SIZE OF THE COMPLETE SPACE AND THEN COPY INTO THE atlasDof FOR THIS SECTION */
-      ierr = PetscMalloc(nroots * sizeof(PetscInt), &tmpOff);CHKERRQ(ierr);
-      ierr = PetscSFBcastBegin(sf, MPIU_INT, &neg[-pStart], tmpOff);CHKERRQ(ierr);
-      ierr = PetscSFBcastEnd(sf, MPIU_INT, &neg[-pStart], tmpOff);CHKERRQ(ierr);
-      for (p = pStart; p < pEnd; ++p) {
-        if (tmpOff[p] < 0) (*gsection)->atlasOff[p-pStart] = tmpOff[p];
-      }
-      ierr = PetscFree(tmpOff);CHKERRQ(ierr);
-    } else {
-      ierr = PetscSFBcastBegin(sf, MPIU_INT, &neg[-pStart], &(*gsection)->atlasOff[-pStart]);CHKERRQ(ierr);
-      ierr = PetscSFBcastEnd(sf, MPIU_INT, &neg[-pStart], &(*gsection)->atlasOff[-pStart]);CHKERRQ(ierr);
+      for (p = pStart; p < pEnd; ++p) {if (tmpOff[p] < 0) (*gsection)->atlasOff[p-pStart] = tmpOff[p];}
     }
   }
+  if (nroots >= 0 && nroots > pEnd-pStart) {ierr = PetscFree(tmpOff);CHKERRQ(ierr);}
   ierr = PetscFree(neg);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1220,8 +1305,8 @@ PetscErrorCode PetscSectionCreateSubsection(PetscSection s, PetscInt numFields, 
 #define __FUNCT__ "PetscSectionCreateSubmeshSection"
 PetscErrorCode PetscSectionCreateSubmeshSection(PetscSection s, IS subpointMap, PetscSection *subs)
 {
-  const PetscInt *points, *indices = NULL;
-  PetscInt       numFields, f, numSubpoints, pStart, pEnd, p, subp;
+  const PetscInt *points = NULL, *indices = NULL;
+  PetscInt       numFields, f, numSubpoints = 0, pStart, pEnd, p, subp;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -1238,8 +1323,10 @@ PetscErrorCode PetscSectionCreateSubmeshSection(PetscSection s, IS subpointMap, 
     ierr = PetscSectionSetFieldComponents(*subs, f, numComp);CHKERRQ(ierr);
   }
   /* For right now, we do not try to squeeze the subchart */
-  ierr = ISGetSize(subpointMap, &numSubpoints);CHKERRQ(ierr);
-  ierr = ISGetIndices(subpointMap, &points);CHKERRQ(ierr);
+  if (subpointMap) {
+    ierr = ISGetSize(subpointMap, &numSubpoints);CHKERRQ(ierr);
+    ierr = ISGetIndices(subpointMap, &points);CHKERRQ(ierr);
+  }
   ierr = PetscSectionGetChart(s, &pStart, &pEnd);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(*subs, 0, numSubpoints);CHKERRQ(ierr);
   for (p = pStart; p < pEnd; ++p) {
@@ -1286,7 +1373,7 @@ PetscErrorCode PetscSectionCreateSubmeshSection(PetscSection s, IS subpointMap, 
       ierr = PetscSectionSetConstraintIndices(*subs, subp, indices);CHKERRQ(ierr);
     }
   }
-  ierr = ISRestoreIndices(subpointMap, &points);CHKERRQ(ierr);
+  if (subpointMap) {ierr = ISRestoreIndices(subpointMap, &points);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 

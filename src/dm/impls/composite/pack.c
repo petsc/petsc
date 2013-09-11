@@ -893,6 +893,18 @@ PetscErrorCode  DMCompositeGetGlobalISs(DM dm,IS *is[])
     ierr = PetscMalloc(next->n*sizeof(PetscInt),&idx);CHKERRQ(ierr);
     for (i=0; i<next->n; i++) idx[i] = next->grstart + i;
     ierr = ISCreateGeneral(PetscObjectComm((PetscObject)dm),next->n,idx,PETSC_OWN_POINTER,&(*is)[cnt]);CHKERRQ(ierr);
+    if (dm->fields) {
+      MatNullSpace space;
+      Mat          pmat;
+
+      if (cnt >= dm->numFields) continue;
+      ierr = PetscObjectQuery(dm->fields[cnt], "nullspace", (PetscObject*) &space);CHKERRQ(ierr);
+      if (space) {ierr = PetscObjectCompose((PetscObject) (*is)[cnt], "nullspace", (PetscObject) space);CHKERRQ(ierr);}
+      ierr = PetscObjectQuery(dm->fields[cnt], "nearnullspace", (PetscObject*) &space);CHKERRQ(ierr);
+      if (space) {ierr = PetscObjectCompose((PetscObject) (*is)[cnt], "nearnullspace", (PetscObject) space);CHKERRQ(ierr);}
+      ierr = PetscObjectQuery(dm->fields[cnt], "pmat", (PetscObject*) &pmat);CHKERRQ(ierr);
+      if (pmat) {ierr = PetscObjectCompose((PetscObject) (*is)[cnt], "pmat", (PetscObject) pmat);CHKERRQ(ierr);}
+    }
     cnt++;
     next = next->next;
   }
@@ -1248,8 +1260,8 @@ PetscErrorCode  DMCreateInterpolation_Composite(DM coarse,DM fine,Mat *A,Vec *v)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMCreateLocalToGlobalMapping_Composite"
-static PetscErrorCode DMCreateLocalToGlobalMapping_Composite(DM dm)
+#define __FUNCT__ "DMGetLocalToGlobalMapping_Composite"
+static PetscErrorCode DMGetLocalToGlobalMapping_Composite(DM dm)
 {
   DM_Composite           *com = (DM_Composite*)dm->data;
   ISLocalToGlobalMapping *ltogs;
@@ -1397,8 +1409,8 @@ PETSC_EXTERN PetscErrorCode DMCreate_Composite(DM p)
 
   p->ops->createglobalvector              = DMCreateGlobalVector_Composite;
   p->ops->createlocalvector               = DMCreateLocalVector_Composite;
-  p->ops->createlocaltoglobalmapping      = DMCreateLocalToGlobalMapping_Composite;
-  p->ops->createlocaltoglobalmappingblock = 0;
+  p->ops->getlocaltoglobalmapping         = DMGetLocalToGlobalMapping_Composite;
+  p->ops->getlocaltoglobalmappingblock    = 0;
   p->ops->createfieldis                   = DMCreateFieldIS_Composite;
   p->ops->createfielddecomposition        = DMCreateFieldDecomposition_Composite;
   p->ops->refine                          = DMRefine_Composite;

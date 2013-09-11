@@ -611,7 +611,7 @@ PetscErrorCode TSRosWRegisterAll(void)
    Level: advanced
 
 .keywords: TSRosW, register, destroy
-.seealso: TSRosWRegister(), TSRosWRegisterAll(), TSRosWRegisterDynamic()
+.seealso: TSRosWRegister(), TSRosWRegisterAll()
 @*/
 PetscErrorCode TSRosWRegisterDestroy(void)
 {
@@ -640,15 +640,12 @@ PetscErrorCode TSRosWRegisterDestroy(void)
   from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to TSCreate_RosW()
   when using static libraries.
 
-  Input Parameter:
-  path - The dynamic library path, or NULL
-
   Level: developer
 
 .keywords: TS, TSRosW, initialize, package
 .seealso: PetscInitialize()
 @*/
-PetscErrorCode TSRosWInitializePackage(const char path[])
+PetscErrorCode TSRosWInitializePackage(void)
 {
   PetscErrorCode ierr;
 
@@ -1031,7 +1028,7 @@ static PetscErrorCode TSStep_RosW(TS ts)
         ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
         ierr = SNESGetLinearSolveIterations(snes,&lits);CHKERRQ(ierr);
         ts->snes_its += its; ts->ksp_its += lits;
-        ierr = TSGetTSAdapt(ts,&adapt);CHKERRQ(ierr);
+        ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
         ierr = TSAdaptCheckStage(adapt,ts,&accept);CHKERRQ(ierr);
         if (!accept) goto reject_step;
       } else {
@@ -1059,7 +1056,7 @@ static PetscErrorCode TSStep_RosW(TS ts)
     ros->status = TS_STEP_PENDING;
 
     /* Register only the current method as a candidate because we're not supporting multiple candidates yet. */
-    ierr = TSGetTSAdapt(ts,&adapt);CHKERRQ(ierr);
+    ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
     ierr = TSAdaptCandidatesClear(adapt);CHKERRQ(ierr);
     ierr = TSAdaptCandidateAdd(adapt,tab->name,tab->order,1,tab->ccfl,1.*tab->s,PETSC_TRUE);CHKERRQ(ierr);
     ierr = TSAdaptChoose(adapt,ts,ts->time_step,&next_scheme,&next_time_step,&accept);CHKERRQ(ierr);
@@ -1171,9 +1168,9 @@ static PetscErrorCode TSDestroy_RosW(TS ts)
   PetscFunctionBegin;
   ierr = TSReset_RosW(ts);CHKERRQ(ierr);
   ierr = PetscFree(ts->data);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSRosWGetType_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSRosWSetType_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSRosWSetRecomputeJacobian_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSRosWGetType_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSRosWSetType_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSRosWSetRecomputeJacobian_C",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1475,7 +1472,7 @@ static PetscErrorCode TSView_RosW(TS ts,PetscViewer viewer)
     ierr = PetscFormatRealArray(buf,sizeof(buf),"% 8.6f",tab->s,abscissa);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Abscissa of A+Gamma = %s\n",buf);CHKERRQ(ierr);
   }
-  ierr = TSGetTSAdapt(ts,&adapt);CHKERRQ(ierr);
+  ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
   ierr = TSAdaptView(adapt,viewer);CHKERRQ(ierr);
   ierr = SNESView(ts->snes,viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1678,7 +1675,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_RosW(TS ts)
 
   PetscFunctionBegin;
 #if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
-  ierr = TSRosWInitializePackage(NULL);CHKERRQ(ierr);
+  ierr = TSRosWInitializePackage();CHKERRQ(ierr);
 #endif
 
   ts->ops->reset          = TSReset_RosW;
@@ -1695,8 +1692,8 @@ PETSC_EXTERN PetscErrorCode TSCreate_RosW(TS ts)
   ierr = PetscNewLog(ts,TS_RosW,&ros);CHKERRQ(ierr);
   ts->data = (void*)ros;
 
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSRosWGetType_C","TSRosWGetType_RosW",TSRosWGetType_RosW);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSRosWSetType_C","TSRosWSetType_RosW",TSRosWSetType_RosW);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSRosWSetRecomputeJacobian_C","TSRosWSetRecomputeJacobian_RosW",TSRosWSetRecomputeJacobian_RosW);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSRosWGetType_C",TSRosWGetType_RosW);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSRosWSetType_C",TSRosWSetType_RosW);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSRosWSetRecomputeJacobian_C",TSRosWSetRecomputeJacobian_RosW);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -4,12 +4,13 @@ import os
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.download     = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/hdf5-1.8.8-p1.tar.gz']
+    self.download     = ['http://www.hdfgroup.org/ftp/HDF5/current/src/hdf5-1.8.10-patch1.tar.gz',
+                         'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/hdf5-1.8.10-patch1.tar.gz']
     self.functions = ['H5T_init']
     self.includes  = ['hdf5.h']
-    self.liblist   = [['libhdf5.a','libhdf5_hl.a']]
+    self.liblist   = [['libhdf5_hl.a', 'libhdf5.a']]
     self.needsMath = 1
-    self.needsCompression = 1
+    self.needsCompression = 0
     self.complex   = 1
     self.worksonWindows = 1
     return
@@ -18,6 +19,17 @@ class Configure(config.package.Package):
     config.package.Package.setupDependencies(self, framework)
     self.deps = [self.mpi]
     return
+
+  def generateLibList(self, framework):
+    '''First try library list without compression libraries (zlib) then try with'''
+    list = []
+    for l in self.liblist:
+      list.append(l)
+    if self.libraries.compression:
+      for l in self.liblist:
+        list.append(l + self.libraries.compression)
+    self.liblist = list
+    return config.package.Package.generateLibList(self,framework)
 
   def Install(self):
     import os
@@ -37,6 +49,10 @@ class Configure(config.package.Package):
       args.append('F9X="'+self.setCompilers.getCompiler()+'"')
       args.append('F90="'+self.setCompilers.getCompiler()+'"')
       self.setCompilers.popLanguage()
+    if self.framework.argDB['with-shared-libraries']:
+      args.append('--enable-shared')
+    else:
+      args.append('--disable-shared')
 
     args = ' '.join(args)
     fd = file(os.path.join(self.packageDir,'hdf5'), 'w')
@@ -58,9 +74,11 @@ class Configure(config.package.Package):
     return self.installDir
 
   def configureLibrary(self):
-    self.extraLib = self.libraries.compression
     if hasattr(self.compilers, 'FC'):
-      self.liblist   = [['libhdf5_fortran.a', 'libhdf5.a', 'libhdf5hl_fortran.la', 'libhdf5_hl.la']]
+      # PETSc does not need the Fortran interface, but some users will call the Fortran interface
+      # and expect our standard linking to be sufficient.  Thus we try to link the Fortran
+      # libraries, but fall back to linking only C.
+      self.liblist = [['libhdf5_fortran.a'] + libs for libs in self.liblist] + self.liblist
     config.package.Package.configureLibrary(self)
     if self.libraries.check(self.dlib, 'H5Pset_fapl_mpio'):
       self.addDefine('HAVE_H5PSET_FAPL_MPIO', 1)

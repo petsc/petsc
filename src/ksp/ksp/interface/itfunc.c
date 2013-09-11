@@ -223,11 +223,11 @@ PetscErrorCode  KSPSetUp(KSP ksp)
     }
 
     if (ksp->setupstage != KSP_SETUP_NEWRHS) {
-      ierr = KSPGetOperators(ksp,&A,&B,NULL);CHKERRQ(ierr);
       if (kdm->ops->computeoperators) {
+        ierr = KSPGetOperators(ksp,&A,&B,NULL);CHKERRQ(ierr);
         ierr = (*kdm->ops->computeoperators)(ksp,A,B,&stflg,kdm->operatorsctx);CHKERRQ(ierr);
-      }
-      ierr = KSPSetOperators(ksp,A,B,stflg);CHKERRQ(ierr);
+        ierr = KSPSetOperators(ksp,A,B,stflg);CHKERRQ(ierr);
+      } else SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_WRONGSTATE,"You called KSPSetDM() but did not use DMKSPSetComputeOperators() or KSPSetDMActive(dm,PETSC_FALSE);");
     }
   }
 
@@ -374,6 +374,14 @@ PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
     ksp->vec_sol = x;
   }
 
+  ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject)ksp),((PetscObject)ksp)->prefix,"-ksp_view_pre",&viewer,&format,&flg);CHKERRQ(ierr);
+  if (flg && !PetscPreLoadingOn) {
+    ierr = PetscViewerPushFormat(viewer,format);CHKERRQ(ierr);
+    ierr = KSPView(ksp,viewer);CHKERRQ(ierr);
+    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+  }
+
   if (ksp->presolve) {
     ierr = (*ksp->presolve)(ksp,ksp->vec_rhs,ksp->vec_sol,ksp->prectx);CHKERRQ(ierr);
   }
@@ -473,9 +481,9 @@ PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)ksp),&rank);CHKERRQ(ierr);
 
   ierr = PCGetOperators(ksp->pc,&mat,&premat,NULL);CHKERRQ(ierr);
-  ierr = MatViewFromOptions(mat,"-ksp_view_mat");CHKERRQ(ierr);
-  ierr = MatViewFromOptions(premat,"-ksp_view_pmat");CHKERRQ(ierr);
-  ierr = VecViewFromOptions(ksp->vec_rhs,"-ksp_view_rhs");CHKERRQ(ierr);
+  ierr = MatViewFromOptions(mat,((PetscObject)ksp)->prefix,"-ksp_view_mat");CHKERRQ(ierr);
+  ierr = MatViewFromOptions(premat,((PetscObject)ksp)->prefix,"-ksp_view_pmat");CHKERRQ(ierr);
+  ierr = VecViewFromOptions(ksp->vec_rhs,((PetscObject)ksp)->prefix,"-ksp_view_rhs");CHKERRQ(ierr);
 
   flag1 = PETSC_FALSE;
   flag2 = PETSC_FALSE;
@@ -493,8 +501,7 @@ PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
     if (!nits) {
       ierr = PetscPrintf(PetscObjectComm((PetscObject)ksp),"Zero iterations in solver, cannot approximate any eigenvalues\n");CHKERRQ(ierr);
     } else {
-      ierr = PetscMalloc(2*n*sizeof(PetscReal),&r);CHKERRQ(ierr);
-      c    = r + n;
+      ierr = PetscMalloc2(n,PetscReal,&r,n,PetscReal,&c);CHKERRQ(ierr);
       ierr = KSPComputeEigenvalues(ksp,n,r,c,&neig);CHKERRQ(ierr);
       if (flag1) {
         ierr = PetscPrintf(PetscObjectComm((PetscObject)ksp),"Iteratively computed eigenvalues\n");CHKERRQ(ierr);
@@ -525,7 +532,7 @@ PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
       if (flag3 && !rank) {
         ierr = KSPPlotEigenContours_Private(ksp,neig,r,c);CHKERRQ(ierr);
       }
-      ierr = PetscFree(r);CHKERRQ(ierr);
+      ierr = PetscFree2(r,c);CHKERRQ(ierr);
     }
   }
 
@@ -590,14 +597,14 @@ PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
     Mat A,B;
     ierr = PCGetOperators(ksp->pc,&A,NULL,NULL);CHKERRQ(ierr);
     ierr = MatComputeExplicitOperator(A,&B);CHKERRQ(ierr);
-    ierr = MatViewFromOptions(B,"-ksp_view_mat_explicit");CHKERRQ(ierr);
+    ierr = MatViewFromOptions(B,((PetscObject)ksp)->prefix,"-ksp_view_mat_explicit");CHKERRQ(ierr);
     ierr = MatDestroy(&B);CHKERRQ(ierr);
   }
   ierr = PetscOptionsHasName(((PetscObject)ksp)->prefix,"-ksp_view_preconditioned_operator_explicit",&flag2);CHKERRQ(ierr);
   if (flag2) {
     Mat B;
     ierr = KSPComputeExplicitOperator(ksp,&B);CHKERRQ(ierr);
-    ierr = MatViewFromOptions(B,"-ksp_view_preconditioned_operator_explicit");CHKERRQ(ierr);
+    ierr = MatViewFromOptions(B,((PetscObject)ksp)->prefix,"-ksp_view_preconditioned_operator_explicit");CHKERRQ(ierr);
     ierr = MatDestroy(&B);CHKERRQ(ierr);
   }
   ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject)ksp),((PetscObject)ksp)->prefix,"-ksp_view",&viewer,&format,&flg);CHKERRQ(ierr);
@@ -623,12 +630,13 @@ PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
     ierr = VecDestroy(&t);CHKERRQ(ierr);
     ierr = PetscPrintf(PetscObjectComm((PetscObject)ksp),"KSP final norm of residual %G\n",norm);CHKERRQ(ierr);
   }
-  ierr = VecViewFromOptions(ksp->vec_sol,"-ksp_view_solution");CHKERRQ(ierr);
+  ierr = VecViewFromOptions(ksp->vec_sol,((PetscObject)ksp)->prefix,"-ksp_view_solution");CHKERRQ(ierr);
 
   if (inXisinB) {
     ierr = VecCopy(x,b);CHKERRQ(ierr);
     ierr = VecDestroy(&x);CHKERRQ(ierr);
   }
+  ierr = PetscObjectAMSBlock((PetscObject)ksp);CHKERRQ(ierr);
   if (ksp->errorifnotconverged && ksp->reason < 0) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"KSPSolve has not converged");
   PetscFunctionReturn(0);
 }
@@ -763,6 +771,7 @@ PetscErrorCode  KSPDestroy(KSP *ksp)
   PetscValidHeaderSpecific((*ksp),KSP_CLASSID,1);
   if (--((PetscObject)(*ksp))->refct > 0) {*ksp = 0; PetscFunctionReturn(0);}
 
+  ierr = PetscObjectAMSViewOff((PetscObject)*ksp);CHKERRQ(ierr);
   /*
    Avoid a cascading call to PCReset(ksp->pc) from the following call:
    PCReset() shouldn't be called from KSPDestroy() as it is unprotected by pc's
@@ -772,8 +781,7 @@ PetscErrorCode  KSPDestroy(KSP *ksp)
   (*ksp)->pc = NULL;
   ierr       = KSPReset((*ksp));CHKERRQ(ierr);
   (*ksp)->pc = pc;
-  ierr       = PetscObjectDepublish((*ksp));CHKERRQ(ierr);
-  if ((*ksp)->ops->destroy) {ierr = (*(*ksp)->ops->destroy)(*ksp);CHKERRQ(ierr);}
+    if ((*ksp)->ops->destroy) {ierr = (*(*ksp)->ops->destroy)(*ksp);CHKERRQ(ierr);}
 
   ierr = DMDestroy(&(*ksp)->dm);CHKERRQ(ierr);
   ierr = PCDestroy(&(*ksp)->pc);CHKERRQ(ierr);
@@ -1385,7 +1393,7 @@ PetscErrorCode  KSPSetPC(KSP ksp,PC pc)
   ierr    = PetscObjectReference((PetscObject)pc);CHKERRQ(ierr);
   ierr    = PCDestroy(&ksp->pc);CHKERRQ(ierr);
   ksp->pc = pc;
-  ierr    = PetscLogObjectParent(ksp,ksp->pc);CHKERRQ(ierr);
+  ierr    = PetscLogObjectParent((PetscObject)ksp,(PetscObject)ksp->pc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1419,7 +1427,7 @@ PetscErrorCode  KSPGetPC(KSP ksp,PC *pc)
   if (!ksp->pc) {
     ierr = PCCreate(PetscObjectComm((PetscObject)ksp),&ksp->pc);CHKERRQ(ierr);
     ierr = PetscObjectIncrementTabLevel((PetscObject)ksp->pc,(PetscObject)ksp,0);CHKERRQ(ierr);
-    ierr = PetscLogObjectParent(ksp,ksp->pc);CHKERRQ(ierr);
+    ierr = PetscLogObjectParent((PetscObject)ksp,(PetscObject)ksp->pc);CHKERRQ(ierr);
   }
   *pc = ksp->pc;
   PetscFunctionReturn(0);
@@ -1868,11 +1876,11 @@ PetscErrorCode  KSPBuildResidual(KSP ksp,Vec t,Vec v,Vec *V)
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   if (!w) {
     ierr = VecDuplicate(ksp->vec_rhs,&w);CHKERRQ(ierr);
-    ierr = PetscLogObjectParent((PetscObject)ksp,w);CHKERRQ(ierr);
+    ierr = PetscLogObjectParent((PetscObject)ksp,(PetscObject)w);CHKERRQ(ierr);
   }
   if (!tt) {
     ierr = VecDuplicate(ksp->vec_sol,&tt);CHKERRQ(ierr); flag = PETSC_TRUE;
-    ierr = PetscLogObjectParent((PetscObject)ksp,tt);CHKERRQ(ierr);
+    ierr = PetscLogObjectParent((PetscObject)ksp,(PetscObject)tt);CHKERRQ(ierr);
   }
   ierr = (*ksp->ops->buildresidual)(ksp,tt,w,V);CHKERRQ(ierr);
   if (flag) {ierr = VecDestroy(&tt);CHKERRQ(ierr);}
@@ -2056,7 +2064,7 @@ $  func(KSP ksp,Mat *A,Mat *B,MatStructure *mstruct,void *ctx)
 
    Level: beginner
 
-.seealso: KSPSetOperators()
+.seealso: KSPSetOperators(), DMKSPSetComputeOperators()
 @*/
 PetscErrorCode KSPSetComputeOperators(KSP ksp,PetscErrorCode (*func)(KSP,Mat,Mat,MatStructure*,void*),void *ctx)
 {
@@ -2092,7 +2100,7 @@ $  func(KSP ksp,Vec b,void *ctx)
 
    Level: beginner
 
-.seealso: KSPSolve()
+.seealso: KSPSolve(), DMKSPSetComputeRHS()
 @*/
 PetscErrorCode KSPSetComputeRHS(KSP ksp,PetscErrorCode (*func)(KSP,Vec,void*),void *ctx)
 {
@@ -2127,7 +2135,7 @@ $  func(KSP ksp,Vec x,void *ctx)
 
    Level: beginner
 
-.seealso: KSPSolve()
+.seealso: KSPSolve(), DMKSPSetComputeInitialGuess()
 @*/
 PetscErrorCode KSPSetComputeInitialGuess(KSP ksp,PetscErrorCode (*func)(KSP,Vec,void*),void *ctx)
 {

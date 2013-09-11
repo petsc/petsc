@@ -155,7 +155,7 @@ int main(int argc,char **argv)
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
 
   ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
-  ierr = SNESGetSNESLineSearch(snes,&linesearch);CHKERRQ(ierr);
+  ierr = SNESGetLineSearch(snes,&linesearch);CHKERRQ(ierr);
   ierr = SNESLineSearchSetPostCheck(linesearch, ReactingFlowPostCheck, (void*)&ctx);CHKERRQ(ierr);
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
   ierr = TSSolve(ts,x);CHKERRQ(ierr);

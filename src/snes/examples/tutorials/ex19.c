@@ -100,14 +100,11 @@ int main(int argc,char **argv)
   DM             da;
   Vec            x;
 
-#define PetscTestingVariadicMacros(...) SNESCreate(__VA_ARGS__)
-
-
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return(1);
 
   PetscFunctionBeginUser;
   comm = PETSC_COMM_WORLD;
-  ierr = PetscTestingVariadicMacros(comm,&snes);CHKERRQ(ierr);
+  ierr = SNESCreate(comm,&snes);CHKERRQ(ierr);
 
   /*
       Create distributed array object to manage parallel grid and vectors

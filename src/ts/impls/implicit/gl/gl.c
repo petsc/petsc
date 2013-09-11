@@ -177,7 +177,7 @@ static PetscErrorCode TSGLSchemeCreate(PetscInt p,PetscInt q,PetscInt r,PetscInt
     }
     ierr = PetscBLASIntCast(r-1,&m);CHKERRQ(ierr);
     ierr = PetscBLASIntCast(r,&n);CHKERRQ(ierr);
-    PetscStackCall("LAPACKgesv",LAPACKgesv_(&m,&one,ImV,&n,ipiv,scheme->alpha+1,&n,&info));
+    PetscStackCallBLAS("LAPACKgesv",LAPACKgesv_(&m,&one,ImV,&n,ipiv,scheme->alpha+1,&n,&info));
     if (info < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Bad argument to GESV");
     if (info > 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Bad LU factorization");
 
@@ -186,7 +186,7 @@ static PetscErrorCode TSGLSchemeCreate(PetscInt p,PetscInt q,PetscInt r,PetscInt
       scheme->beta[i] = 1./Factorial(p+2-i) - scheme->alpha[i];
       for (j=0; j<s; j++) scheme->beta[i] -= b[i*s+j]*CPowF(c[j],p+1);
     }
-    PetscStackCall("LAPACKgetrs",LAPACKgetrs_("No transpose",&m,&one,ImV,&n,ipiv,scheme->beta+1,&n,&info));
+    PetscStackCallBLAS("LAPACKgetrs",LAPACKgetrs_("No transpose",&m,&one,ImV,&n,ipiv,scheme->beta+1,&n,&info));
     if (info < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Bad argument to GETRS");
     if (info > 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Should not happen");
 
@@ -211,7 +211,7 @@ static PetscErrorCode TSGLSchemeCreate(PetscInt p,PetscInt q,PetscInt r,PetscInt
       scheme->gamma[i] = (i==1 ? -1. : 0)*scheme->alpha[0];
       for (j=0; j<s; j++) scheme->gamma[i] += b[i*s+j]*scheme->stage_error[j];
     }
-    PetscStackCall("LAPACKgetrs",LAPACKgetrs_("No transpose",&m,&one,ImV,&n,ipiv,scheme->gamma+1,&n,&info));
+    PetscStackCallBLAS("LAPACKgetrs",LAPACKgetrs_("No transpose",&m,&one,ImV,&n,ipiv,scheme->gamma+1,&n,&info));
     if (info < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Bad argument to GETRS");
     if (info > 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Should not happen");
 
@@ -265,10 +265,10 @@ static PetscErrorCode TSGLSchemeCreate(PetscInt p,PetscInt q,PetscInt r,PetscInt
 #else
 #if defined(PETSC_USE_COMPLEX)
     /* ZGELSS( M, N, NRHS, A, LDA, B, LDB, S, RCOND, RANK, WORK, LWORK, RWORK, INFO) */
-    PetscStackCall("LAPACKgelss",LAPACKgelss_(&m,&n,&m,H,&m,bmat,&ldb,sing,&rcond,&rank,workscalar,&lwork,workreal,&info));
+    PetscStackCallBLAS("LAPACKgelss",LAPACKgelss_(&m,&n,&m,H,&m,bmat,&ldb,sing,&rcond,&rank,workscalar,&lwork,workreal,&info));
 #else
     /* DGELSS( M, N, NRHS, A, LDA, B, LDB, S, RCOND, RANK, WORK, LWORK, INFO) */
-    PetscStackCall("LAPACKgelss",LAPACKgelss_(&m,&n,&m,H,&m,bmat,&ldb,sing,&rcond,&rank,workscalar,&lwork,&info));
+    PetscStackCallBLAS("LAPACKgelss",LAPACKgelss_(&m,&n,&m,H,&m,bmat,&ldb,sing,&rcond,&rank,workscalar,&lwork,&info));
 #endif
     if (info < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Bad argument to GELSS");
     if (info > 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"SVD failed to converge");
@@ -684,7 +684,7 @@ PetscErrorCode  TSGLSetType(TS ts,TSGLType type)
 
    Level: intermediate
 
-.seealso: TS, TSGL, TSGLAcceptRegisterDynamic(), TSGLAdapt, set type
+.seealso: TS, TSGL, TSGLAcceptRegister(), TSGLAdapt, set type
 @*/
 PetscErrorCode  TSGLSetAcceptType(TS ts,TSGLAcceptType type)
 {
@@ -716,7 +716,7 @@ PetscErrorCode  TSGLSetAcceptType(TS ts,TSGLAcceptType type)
 
    Level: advanced
 
-.seealso: TSGLAdapt, TSGLAdaptRegisterDynamic()
+.seealso: TSGLAdapt, TSGLAdaptRegister()
 @*/
 PetscErrorCode  TSGLGetAdapt(TS ts,TSGLAdapt *adapt)
 {
@@ -795,7 +795,7 @@ PetscErrorCode  TSGLSetType_GL(TS ts,TSGLType type)
     ierr = (*gl->Destroy)(gl);CHKERRQ(ierr);
   }
 
-  ierr = PetscFunctionListFind(PetscObjectComm((PetscObject)ts),TSGLList,type,PETSC_TRUE,(PetscVoidStarFunction)&r);CHKERRQ(ierr);
+  ierr = PetscFunctionListFind(TSGLList,type,&r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown TSGL type \"%s\" given",type);
   ierr = (*r)(ts);CHKERRQ(ierr);
   ierr = PetscStrcpy(gl->type_name,type);CHKERRQ(ierr);
@@ -811,7 +811,7 @@ PetscErrorCode  TSGLSetAcceptType_GL(TS ts,TSGLAcceptType type)
   TS_GL              *gl = (TS_GL*)ts->data;
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListFind(PetscObjectComm((PetscObject)ts),TSGLAcceptList,type,PETSC_TRUE,(PetscVoidStarFunction)&r);CHKERRQ(ierr);
+  ierr = PetscFunctionListFind(TSGLAcceptList,type,&r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown TSGLAccept type \"%s\" given",type);
   gl->Accept = r;
   ierr = PetscStrncpy(gl->accept_name,type,sizeof(gl->accept_name));CHKERRQ(ierr);
@@ -829,7 +829,7 @@ PetscErrorCode  TSGLGetAdapt_GL(TS ts,TSGLAdapt *adapt)
   if (!gl->adapt) {
     ierr = TSGLAdaptCreate(PetscObjectComm((PetscObject)ts),&gl->adapt);CHKERRQ(ierr);
     ierr = PetscObjectIncrementTabLevel((PetscObject)gl->adapt,(PetscObject)ts,1);CHKERRQ(ierr);
-    ierr = PetscLogObjectParent(ts,gl->adapt);CHKERRQ(ierr);
+    ierr = PetscLogObjectParent((PetscObject)ts,(PetscObject)gl->adapt);CHKERRQ(ierr);
   }
   *adapt = gl->adapt;
   PetscFunctionReturn(0);
@@ -1023,7 +1023,7 @@ static PetscErrorCode TSSolve_GL(TS ts)
         ierr = VecScale(X[i],PetscPowRealInt(0.5,i));CHKERRQ(ierr);
       }
     }
-    SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_CONV_FAILED,"Time step %D (t=%g) not accepted after %D failures\n",k,gl->stage_time,rejections);CHKERRQ(ierr);
+    SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_CONV_FAILED,"Time step %D (t=%g) not accepted after %D failures\n",k,gl->stage_time,rejections);
 
 accepted:
     /* This term is not error, but it *would* be the leading term for a lower order method */
@@ -1098,9 +1098,9 @@ static PetscErrorCode TSDestroy_GL(TS ts)
   if (gl->adapt) {ierr = TSGLAdaptDestroy(&gl->adapt);CHKERRQ(ierr);}
   if (gl->Destroy) {ierr = (*gl->Destroy)(gl);CHKERRQ(ierr);}
   ierr = PetscFree(ts->data);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSGLSetType_C",      "",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSGLSetAcceptType_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSGLGetAdapt_C",     "",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSGLSetType_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSGLSetAcceptType_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSGLGetAdapt_C",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1282,36 +1282,78 @@ static PetscErrorCode TSView_GL(TS ts,PetscViewer viewer)
 #undef __FUNCT__
 #define __FUNCT__ "TSGLRegister"
 /*@C
-   TSGLRegister - see TSGLRegisterDynamic()
+   TSGLRegister -  adds a TSGL implementation
+
+   Not Collective
+
+   Input Parameters:
++  name_scheme - name of user-defined general linear scheme
+-  routine_create - routine to create method context
+
+   Notes:
+   TSGLRegister() may be called multiple times to add several user-defined families.
+
+   Sample usage:
+.vb
+   TSGLRegister("my_scheme",MySchemeCreate);
+.ve
+
+   Then, your scheme can be chosen with the procedural interface via
+$     TSGLSetType(ts,"my_scheme")
+   or at runtime via the option
+$     -ts_gl_type my_scheme
 
    Level: advanced
+
+.keywords: TSGL, register
+
+.seealso: TSGLRegisterAll()
 @*/
-PetscErrorCode  TSGLRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(TS))
+PetscErrorCode  TSGLRegister(const char sname[],PetscErrorCode (*function)(TS))
 {
   PetscErrorCode ierr;
-  char           fullname[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListConcat(path,name,fullname);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&TSGLList,sname,fullname,(void(*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&TSGLList,sname,function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "TSGLAcceptRegister"
 /*@C
-   TSGLAcceptRegister - see TSGLAcceptRegisterDynamic()
+   TSGLAcceptRegister -  adds a TSGL acceptance scheme
+
+   Not Collective
+
+   Input Parameters:
++  name_scheme - name of user-defined acceptance scheme
+-  routine_create - routine to create method context
+
+   Notes:
+   TSGLAcceptRegister() may be called multiple times to add several user-defined families.
+
+   Sample usage:
+.vb
+   TSGLAcceptRegister("my_scheme",MySchemeCreate);
+.ve
+
+   Then, your scheme can be chosen with the procedural interface via
+$     TSGLSetAcceptType(ts,"my_scheme")
+   or at runtime via the option
+$     -ts_gl_accept_type my_scheme
 
    Level: advanced
+
+.keywords: TSGL, TSGLAcceptType, register
+
+.seealso: TSGLRegisterAll()
 @*/
-PetscErrorCode  TSGLAcceptRegister(const char sname[],const char path[],const char name[],TSGLAcceptFunction function)
+PetscErrorCode  TSGLAcceptRegister(const char sname[],TSGLAcceptFunction function)
 {
   PetscErrorCode ierr;
-  char           fullname[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListConcat(path,name,fullname);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&TSGLAcceptList,sname,fullname,(void(*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&TSGLAcceptList,sname,function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1328,7 +1370,7 @@ PetscErrorCode  TSGLAcceptRegister(const char sname[],const char path[],const ch
 
 .seealso:  TSGLRegisterDestroy()
 @*/
-PetscErrorCode  TSGLRegisterAll(const char path[])
+PetscErrorCode  TSGLRegisterAll(void)
 {
   PetscErrorCode ierr;
 
@@ -1336,33 +1378,10 @@ PetscErrorCode  TSGLRegisterAll(const char path[])
   if (TSGLRegisterAllCalled) PetscFunctionReturn(0);
   TSGLRegisterAllCalled = PETSC_TRUE;
 
-  ierr = TSGLRegisterDynamic(TSGL_IRKS,path,"TSGLCreate_IRKS",TSGLCreate_IRKS);CHKERRQ(ierr);
-  ierr = TSGLAcceptRegisterDynamic(TSGLACCEPT_ALWAYS,path,"TSGLAccept_Always",TSGLAccept_Always);CHKERRQ(ierr);
+  ierr = TSGLRegister(TSGL_IRKS,              TSGLCreate_IRKS);CHKERRQ(ierr);
+  ierr = TSGLAcceptRegister(TSGLACCEPT_ALWAYS,TSGLAccept_Always);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-#undef __FUNCT__
-#define __FUNCT__ "TSGLRegisterDestroy"
-/*@C
-   TSGLRegisterDestroy - Frees the list of schemes that were registered by TSGLRegister()/TSGLRegisterDynamic().
-
-   Not Collective
-
-   Level: advanced
-
-.keywords: TSGL, register, destroy
-.seealso: TSGLRegister(), TSGLRegisterAll(), TSGLRegisterDynamic()
-@*/
-PetscErrorCode  TSGLRegisterDestroy(void)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscFunctionListDestroy(&TSGLList);CHKERRQ(ierr);
-  TSGLRegisterAllCalled = PETSC_FALSE;
-  PetscFunctionReturn(0);
-}
-
 
 #undef __FUNCT__
 #define __FUNCT__ "TSGLInitializePackage"
@@ -1371,22 +1390,19 @@ PetscErrorCode  TSGLRegisterDestroy(void)
   from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to TSCreate_GL()
   when using static libraries.
 
-  Input Parameter:
-  path - The dynamic library path, or NULL
-
   Level: developer
 
 .keywords: TS, TSGL, initialize, package
 .seealso: PetscInitialize()
 @*/
-PetscErrorCode  TSGLInitializePackage(const char path[])
+PetscErrorCode  TSGLInitializePackage(void)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (TSGLPackageInitialized) PetscFunctionReturn(0);
   TSGLPackageInitialized = PETSC_TRUE;
-  ierr = TSGLRegisterAll(NULL);CHKERRQ(ierr);
+  ierr = TSGLRegisterAll();CHKERRQ(ierr);
   ierr = PetscRegisterFinalize(TSGLFinalizePackage);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1404,11 +1420,13 @@ PetscErrorCode  TSGLInitializePackage(const char path[])
 @*/
 PetscErrorCode  TSGLFinalizePackage(void)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
+  ierr = PetscFunctionListDestroy(&TSGLList);CHKERRQ(ierr);
+  ierr = PetscFunctionListDestroy(&TSGLAcceptList);CHKERRQ(ierr);
   TSGLPackageInitialized = PETSC_FALSE;
   TSGLRegisterAllCalled  = PETSC_FALSE;
-  TSGLList               = NULL;
-  TSGLAcceptList         = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -1515,7 +1533,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_GL(TS ts)
 
   PetscFunctionBegin;
 #if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
-  ierr = TSGLInitializePackage(NULL);CHKERRQ(ierr);
+  ierr = TSGLInitializePackage();CHKERRQ(ierr);
 #endif
 
   ierr = PetscNewLog(ts,TS_GL,&gl);CHKERRQ(ierr);
@@ -1540,8 +1558,8 @@ PETSC_EXTERN PetscErrorCode TSCreate_GL(TS ts)
   gl->wrms_atol = 1e-8;
   gl->wrms_rtol = 1e-5;
 
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSGLSetType_C",      "TSGLSetType_GL",      &TSGLSetType_GL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSGLSetAcceptType_C","TSGLSetAcceptType_GL",&TSGLSetAcceptType_GL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSGLGetAdapt_C",     "TSGLGetAdapt_GL",     &TSGLGetAdapt_GL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSGLSetType_C",      &TSGLSetType_GL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSGLSetAcceptType_C",&TSGLSetAcceptType_GL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSGLGetAdapt_C",     &TSGLGetAdapt_GL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

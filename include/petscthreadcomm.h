@@ -39,7 +39,7 @@ PETSC_EXTERN const char* const PetscThreadCommReductionOps[];
 
 PETSC_EXTERN PetscErrorCode PetscGetNCores(PetscInt*);
 PETSC_EXTERN PetscErrorCode PetscCommGetThreadComm(MPI_Comm,PetscThreadComm*);
-PETSC_EXTERN PetscErrorCode PetscThreadCommInitializePackage(const char *path);
+PETSC_EXTERN PetscErrorCode PetscThreadCommInitializePackage(void);
 PETSC_EXTERN PetscErrorCode PetscThreadCommFinalizePackage(void);
 PETSC_EXTERN PetscErrorCode PetscThreadCommInitialize(void);
 PETSC_EXTERN PetscErrorCode PetscThreadCommGetNThreads(MPI_Comm,PetscInt*);
@@ -56,7 +56,6 @@ PETSC_EXTERN PetscErrorCode PetscThreadCommRunKernel4(MPI_Comm,PetscErrorCode (*
 PETSC_EXTERN PetscErrorCode PetscThreadCommRunKernel6(MPI_Comm,PetscErrorCode (*)(PetscInt,...),void*,void*,void*,void*,void*,void*);
 PETSC_EXTERN PetscErrorCode PetscThreadCommBarrier(MPI_Comm);
 PETSC_EXTERN PetscErrorCode PetscThreadCommGetOwnershipRanges(MPI_Comm,PetscInt,PetscInt*[]);
-PETSC_EXTERN PetscErrorCode PetscThreadCommRegisterDestroy(void);
 PETSC_EXTERN PetscErrorCode PetscThreadCommGetRank(PetscThreadComm,PetscInt*);
 PETSC_EXTERN PetscErrorCode PetscThreadCommAttach(MPI_Comm,PetscThreadComm);
 PETSC_EXTERN PetscErrorCode PetscThreadCommDestroy(PetscThreadComm*);

@@ -39,12 +39,12 @@ PetscErrorCode  KSPDGMRESSetMaxEigen(KSP ksp,PetscInt max_neig)
 }
 #undef __FUNCT__
 #define __FUNCT__  "KSPDGMRESForce"
-PetscErrorCode  KSPDGMRESForce(KSP ksp,PetscInt force)
+PetscErrorCode  KSPDGMRESForce(KSP ksp,PetscBool force)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscTryMethod((ksp),"KSPDGMRESForce_C",(KSP,PetscInt),(ksp,force));CHKERRQ(ierr);
+  ierr = PetscTryMethod((ksp),"KSPDGMRESForce_C",(KSP,PetscBool),(ksp,force));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 #undef __FUNCT__
@@ -174,9 +174,9 @@ PetscErrorCode KSPDGMRESCycle(PetscInt *itcount,KSP ksp)
   *GRS(0) = res_norm;
 
   /* check for the convergence */
-  ierr       = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
+  ierr       = PetscObjectAMSTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
   ksp->rnorm = res;
-  ierr       = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
+  ierr       = PetscObjectAMSGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
   dgmres->it = (it - 1);
   ierr       = KSPLogResidualHistory(ksp,res);CHKERRQ(ierr);
   ierr       = KSPMonitor(ksp,ksp->its,res);CHKERRQ(ierr);
@@ -285,14 +285,15 @@ PetscErrorCode KSPSolve_DGMRES(KSP ksp)
   PetscInt       its,itcount;
   KSP_DGMRES     *dgmres    = (KSP_DGMRES*) ksp->data;
   PetscBool      guess_zero = ksp->guess_zero;
+  PetscBool      flag;
 
   PetscFunctionBegin;
   if (ksp->calc_sings && !dgmres->Rsvd) SETERRQ(PetscObjectComm((PetscObject)ksp), PETSC_ERR_ORDER,"Must call KSPSetComputeSingularValues() before KSPSetUp() is called");
 
-  ierr            = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
+  ierr            = PetscObjectAMSTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
   ksp->its        = 0;
   dgmres->matvecs = 0;
-  ierr            = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
+  ierr            = PetscObjectAMSGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
 
   itcount     = 0;
   ksp->reason = KSP_CONVERGED_ITERATING;
@@ -315,6 +316,15 @@ PetscErrorCode KSPSolve_DGMRES(KSP ksp)
     ksp->guess_zero = PETSC_FALSE; /* every future call to KSPInitialResidual() will have nonzero guess */
   }
   ksp->guess_zero = guess_zero; /* restore if user provided nonzero initial guess */
+
+  ierr = PetscOptionsHasName(((PetscObject)ksp)->prefix,"-ksp_dgmres_view_deflation_vecs",&flag);CHKERRQ(ierr);
+  if (flag) {
+    PetscInt i;
+
+    for (i = 0; i < dgmres->r; i++) {
+      ierr = VecViewFromOptions(UU[i],((PetscObject)ksp)->prefix,"-ksp_dgmres_view_deflation_vecs");CHKERRQ(ierr);
+    }
+  }
   PetscFunctionReturn(0);
 }
 
@@ -519,14 +529,14 @@ PetscErrorCode KSPBuildSolution_DGMRES(KSP ksp,Vec ptr,Vec *result)
   if (!ptr) {
     if (!dgmres->sol_temp) {
       ierr = VecDuplicate(ksp->vec_sol,&dgmres->sol_temp);CHKERRQ(ierr);
-      ierr = PetscLogObjectParent(ksp,dgmres->sol_temp);CHKERRQ(ierr);
+      ierr = PetscLogObjectParent((PetscObject)ksp,(PetscObject)dgmres->sol_temp);CHKERRQ(ierr);
     }
     ptr = dgmres->sol_temp;
   }
   if (!dgmres->nrs) {
     /* allocate the work area */
     ierr = PetscMalloc(dgmres->max_k*sizeof(PetscScalar),&dgmres->nrs);CHKERRQ(ierr);
-    ierr = PetscLogObjectMemory(ksp,dgmres->max_k*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscLogObjectMemory((PetscObject)ksp,dgmres->max_k*sizeof(PetscScalar));CHKERRQ(ierr);
   }
 
   ierr = KSPDGMRESBuildSoln(dgmres->nrs,ksp->vec_sol,ptr,ksp,dgmres->it);CHKERRQ(ierr);
@@ -602,13 +612,12 @@ static PetscErrorCode  KSPDGMRESSetRatio_DGMRES(KSP ksp,PetscReal ratio)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPDGMRESForce_DGMRES"
-static PetscErrorCode  KSPDGMRESForce_DGMRES(KSP ksp,PetscInt force)
+static PetscErrorCode  KSPDGMRESForce_DGMRES(KSP ksp,PetscBool force)
 {
   KSP_DGMRES *dgmres = (KSP_DGMRES*) ksp->data;
 
   PetscFunctionBegin;
-  if (force != 0 && force != 1) SETERRQ(PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_OUTOFRANGE,"Value must be 0 or 1");
-  dgmres->force = 1;
+  dgmres->force = force;
   PetscFunctionReturn(0);
 }
 
@@ -623,8 +632,6 @@ PetscErrorCode KSPSetFromOptions_DGMRES(KSP ksp)
   PetscInt       max_neig;
   KSP_DGMRES     *dgmres = (KSP_DGMRES*) ksp->data;
   PetscBool      flg;
-  PetscReal      smv;
-  PetscInt       input;
 
   PetscFunctionBegin;
   ierr = KSPSetFromOptions_GMRES(ksp);CHKERRQ(ierr);
@@ -637,12 +644,9 @@ PetscErrorCode KSPSetFromOptions_DGMRES(KSP ksp)
   if (flg) {
     ierr = KSPDGMRESSetMaxEigen(ksp, max_neig);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsReal("-ksp_dgmres_ratio", "Relaxation parameter for the smaller number of matrix-vectors product allowed", "KSPDGMRESSetRatio", dgmres->smv, &smv, &flg);CHKERRQ(ierr);
-  if (flg) dgmres->smv = smv;
-  ierr = PetscOptionsInt("-ksp_dgmres_improve", "Improve the computation of eigenvalues by solving a new generalized eigenvalue problem (experimental - not stable at this time)", NULL, dgmres->improve, &input, &flg);CHKERRQ(ierr);
-  if (flg) dgmres->improve = input;
-  ierr = PetscOptionsInt("-ksp_dgmres_force", "Sets DGMRES always at restart active, i.e do not use the adaptive strategy", "KSPDGMRESForce", dgmres->force, &input, &flg);CHKERRQ(ierr);
-  if (flg) dgmres->force = input;
+  ierr = PetscOptionsReal("-ksp_dgmres_ratio","Relaxation parameter for the smaller number of matrix-vectors product allowed","KSPDGMRESSetRatio",dgmres->smv,&dgmres->smv,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-ksp_dgmres_improve","Improve the computation of eigenvalues by solving a new generalized eigenvalue problem (experimental - not stable at this time)",NULL,dgmres->improve,&dgmres->improve,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-ksp_dgmres_force","Sets DGMRES always at restart active, i.e do not use the adaptive strategy","KSPDGMRESForce",dgmres->force,&dgmres->force,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -775,7 +779,7 @@ static PetscErrorCode  KSPDGMRESComputeDeflationData_DGMRES(KSP ksp, PetscInt *E
 #if defined(PETSC_MISSING_LAPACK_GETRF)
   SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"GETRF - Lapack routine is unavailable.");
 #else
-  PetscStackCall("LAPACKgetrf",LAPACKgetrf_(&nr, &nr, TTF, &bmax, INVP, &info));
+  PetscStackCallBLAS("LAPACKgetrf",LAPACKgetrf_(&nr, &nr, TTF, &bmax, INVP, &info));
   if (info) SETERRQ1(PetscObjectComm((PetscObject)ksp), PETSC_ERR_LIB,"Error in LAPACK routine XGETRF INFO=%d",(int) info);
 #endif
 
@@ -870,7 +874,7 @@ static PetscErrorCode  KSPDGMRESComputeSchurForm_DGMRES(KSP ksp, PetscInt *neig)
 #if   defined(PETSC_MISSING_LAPACK_GESV)
     SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"GESV - Lapack routine is unavailable.");
 #else
-    PetscStackCall("LAPACKgesv",LAPACKgesv_(&bn, &nrhs, Ht, &bn, ipiv, t, &bn, &info));
+    PetscStackCallBLAS("LAPACKgesv",LAPACKgesv_(&bn, &nrhs, Ht, &bn, ipiv, t, &bn, &info));
     if (info) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB, "Error while calling the Lapack routine DGESV");
 #endif
     /* Now form H + H^{-T}*h^2_{m+1,m}e_m*e_m^T */
@@ -882,7 +886,7 @@ static PetscErrorCode  KSPDGMRESComputeSchurForm_DGMRES(KSP ksp, PetscInt *neig)
 #if defined(PETSC_MISSING_LAPACK_HSEQR)
   SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"HSEQR - Lapack routine is unavailable.");
 #else
-  PetscStackCall("LAPACKhseqr",LAPACKhseqr_("S", "I", &bn, &ilo, &ihi, A, &ldA, wr, wi, Q, &ldQ, work, &lwork, &info));
+  PetscStackCallBLAS("LAPACKhseqr",LAPACKhseqr_("S", "I", &bn, &ilo, &ihi, A, &ldA, wr, wi, Q, &ldQ, work, &lwork, &info));
   if (info) SETERRQ1(PetscObjectComm((PetscObject)ksp), PETSC_ERR_LIB,"Error in LAPACK routine XHSEQR %d",(int) info);
 #endif
   ierr = PetscFree(work);CHKERRQ(ierr);
@@ -918,7 +922,7 @@ static PetscErrorCode  KSPDGMRESComputeSchurForm_DGMRES(KSP ksp, PetscInt *neig)
 #if defined(PETSC_MISSING_LAPACK_TRSEN)
   SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"TRSEN - Lapack routine is unavailable.");
 #else
-  PetscStackCall("LAPACKtrsen",LAPACKtrsen_("B", "V", select, &bn, A, &ldA, Q, &ldQ, wr, wi, &NbrEig, &CondEig, &CondSub, work, &lwork, iwork, &liwork, &info));
+  PetscStackCallBLAS("LAPACKtrsen",LAPACKtrsen_("B", "V", select, &bn, A, &ldA, Q, &ldQ, wr, wi, &NbrEig, &CondEig, &CondSub, work, &lwork, iwork, &liwork, &info));
   if (info == 1) SETERRQ(PetscObjectComm((PetscObject)ksp), PETSC_ERR_LIB, "UNABLE TO REORDER THE EIGENVALUES WITH THE LAPACK ROUTINE : ILL-CONDITIONED PROBLEM");
 #endif
   ierr = PetscFree(select);CHKERRQ(ierr);
@@ -949,7 +953,7 @@ static PetscErrorCode  KSPDGMRESApplyDeflation_DGMRES(KSP ksp, Vec x, Vec y)
   PetscReal      alpha    = 1.0;
   PetscInt       max_neig = dgmres->max_neig;
   PetscBLASInt   br,bmax;
-  PetscInt       lambda = dgmres->lambdaN;
+  PetscReal      lambda = dgmres->lambdaN;
 #if !defined(PETSC_MISSING_LAPACK_GERFS)
   PetscReal    berr, ferr;
   PetscBLASInt info;
@@ -975,7 +979,7 @@ static PetscErrorCode  KSPDGMRESApplyDeflation_DGMRES(KSP ksp, Vec x, Vec y)
 #if defined(PETSC_MISSING_LAPACK_GETRS)
   SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"GETRS - Lapack routine is unavailable.");
 #else
-  PetscStackCall("LAPACKgetrs",LAPACKgetrs_("N", &br, &nrhs, TTF, &bmax, INVP, X1, &bmax, &info));
+  PetscStackCallBLAS("LAPACKgetrs",LAPACKgetrs_("N", &br, &nrhs, TTF, &bmax, INVP, X1, &bmax, &info));
   if (info) SETERRQ1(PetscObjectComm((PetscObject)ksp), PETSC_ERR_LIB,"Error in LAPACK routine XGETRS %d", (int) info);
 #endif
   /* Iterative refinement -- is it really necessary ?? */
@@ -986,7 +990,7 @@ static PetscErrorCode  KSPDGMRESApplyDeflation_DGMRES(KSP ksp, Vec x, Vec y)
 #if defined(PETSC_MISSING_LAPACK_GERFS)
   SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"GERFS - Lapack routine is unavailable.");
 #else
-  PetscStackCall("LAPACKgerfs",LAPACKgerfs_("N", &br, &nrhs, TT, &bmax, TTF, &bmax, INVP, X2, &bmax,X1, &bmax, &ferr, &berr, WORK, IWORK, &info));
+  PetscStackCallBLAS("LAPACKgerfs",LAPACKgerfs_("N", &br, &nrhs, TT, &bmax, TTF, &bmax, INVP, X2, &bmax,X1, &bmax, &ferr, &berr, WORK, IWORK, &info));
   if (info) SETERRQ1(PetscObjectComm((PetscObject)ksp), PETSC_ERR_LIB,"Error in LAPACK routine XGERFS %d", (int) info);
 #endif
 
@@ -1089,7 +1093,7 @@ static PetscErrorCode  KSPDGMRESImproveEig_DGMRES(KSP ksp, PetscInt neig)
 #if defined(PETSC_MISSING_LAPACK_GGES)
   SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"GGES - Lapack routine is unavailable.");
 #else
-  PetscStackCall("LAPACKgges",LAPACKgges_("V", "V", "N", NULL, &N, AUAU, &ldA, AUU, &ldA, &i, wr, wi, beta, Q, &N, Z, &N, work, &lwork, NULL, &info));
+  PetscStackCallBLAS("LAPACKgges",LAPACKgges_("V", "V", "N", NULL, &N, AUAU, &ldA, AUU, &ldA, &i, wr, wi, beta, Q, &N, Z, &N, work, &lwork, NULL, &info));
   if (info) SETERRQ1 (PetscObjectComm((PetscObject)ksp), PETSC_ERR_LIB,"Error in LAPACK routine XGGES %d", (int) info);
 #endif
   for (i=0; i<N; i++) {
@@ -1134,7 +1138,7 @@ static PetscErrorCode  KSPDGMRESImproveEig_DGMRES(KSP ksp, PetscInt neig)
 #if defined(PETSC_MISSING_LAPACK_TGSEN)
   SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"TGSEN - Lapack routine is unavailable.");
 #else
-  PetscStackCall("LAPACKtgsen",LAPACKtgsen_(&ijob, &wantQ, &wantZ, select, &N, AUAU, &ldA, AUU, &ldA, wr, wi, beta, Q, &N, Z, &N, &NbrEig, NULL, NULL, &(Dif[0]), work, &lwork, iwork, &liwork, &info));
+  PetscStackCallBLAS("LAPACKtgsen",LAPACKtgsen_(&ijob, &wantQ, &wantZ, select, &N, AUAU, &ldA, AUU, &ldA, wr, wi, beta, Q, &N, Z, &N, &NbrEig, NULL, NULL, &(Dif[0]), work, &lwork, iwork, &liwork, &info));
   if (info == 1) SETERRQ(PetscObjectComm((PetscObject)ksp), -1, "UNABLE TO REORDER THE EIGENVALUES WITH THE LAPACK ROUTINE : ILL-CONDITIONED PROBLEM");
 #endif
   ierr = PetscFree(select);CHKERRQ(ierr);
@@ -1166,7 +1170,7 @@ static PetscErrorCode  KSPDGMRESImproveEig_DGMRES(KSP ksp, PetscInt neig)
 #if defined(PETSC_MISSING_LAPACK_GETRF)
   SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"GETRF - Lapack routine is unavailable.");
 #else
-  PetscStackCall("LAPACKgetrf",LAPACKgetrf_(&nr, &nr, TTF, &bm, INVP, &info));
+  PetscStackCallBLAS("LAPACKgetrf",LAPACKgetrf_(&nr, &nr, TTF, &bm, INVP, &info));
   if (info) SETERRQ1(PetscObjectComm((PetscObject)ksp), PETSC_ERR_LIB,"Error in LAPACK routine XGETRF INFO=%d",(int) info);
 #endif
   /* Free Memory */
@@ -1185,21 +1189,36 @@ static PetscErrorCode  KSPDGMRESImproveEig_DGMRES(KSP ksp, PetscInt neig)
 /* end new DGMRES functions */
 
 /*MC
- KSPDGMRES - Implements the deflated GMRES as defined in [1,2]; In this implementation, the adaptive strategy allows to switch to the deflated GMRES when the stagnation occurs.
- GMRES Options Database Keys:
- +   -ksp_gmres_restart <restart> - the number of Krylov directions to orthogonalize against
- .   -ksp_gmres_haptol <tol> - sets the tolerance for "happy ending" (exact convergence)
- .   -ksp_gmres_preallocate - preallocate all the Krylov search directions initially (otherwise groups of
- vectors are allocated as needed)
- .   -ksp_gmres_classicalgramschmidt - use classical (unmodified) Gram-Schmidt to orthogonalize against the Krylov space (fast) (the default)
- .   -ksp_gmres_modifiedgramschmidt - use modified Gram-Schmidt in the orthogonalization (more stable, but slower)
- .   -ksp_gmres_cgs_refinement_type <never,ifneeded,always> - determine if iterative refinement is used to increase the
- stability of the classical Gram-Schmidt  orthogonalization.
- -   -ksp_gmres_krylov_monitor - plot the Krylov space generated
- DGMRES Options Database Keys:
- -ksp_dgmres_eigen <neig> - Number of smallest eigenvalues to extract at each restart
- -ksp_dgmres_max_eigen <max_neig> - Maximum number of eigenvalues that can be extracted during the iterative process
- -ksp_dgmres_force <0, 1> - Use the deflation at each restart; switch off the adaptive strategy.
+     KSPDGMRES - Implements the deflated GMRES as defined in [1,2].
+                 In this implementation, the adaptive strategy allows to switch to the deflated GMRES when the
+                 stagnation occurs.
+
+   Options Database Keys:
+   GMRES Options (inherited):
++   -ksp_gmres_restart <restart> - the number of Krylov directions to orthogonalize against
+.   -ksp_gmres_haptol <tol> - sets the tolerance for "happy ending" (exact convergence)
+.   -ksp_gmres_preallocate - preallocate all the Krylov search directions initially (otherwise groups of
+                             vectors are allocated as needed)
+.   -ksp_gmres_classicalgramschmidt - use classical (unmodified) Gram-Schmidt to orthogonalize against the Krylov space (fast) (the default)
+.   -ksp_gmres_modifiedgramschmidt - use modified Gram-Schmidt in the orthogonalization (more stable, but slower)
+.   -ksp_gmres_cgs_refinement_type <never,ifneeded,always> - determine if iterative refinement is used to increase the
+                                   stability of the classical Gram-Schmidt  orthogonalization.
+-   -ksp_gmres_krylov_monitor - plot the Krylov space generated
+
+   DGMRES Options Database Keys:
++   -ksp_dgmres_eigen <neig> - number of smallest eigenvalues to extract at each restart
+.   -ksp_dgmres_max_eigen <max_neig> - maximum number of eigenvalues that can be extracted during the iterative
+                                       process
+.   -ksp_dgmres_force - use the deflation at each restart; switch off the adaptive strategy.
+-   -ksp_dgmres_view_deflation_vecs <viewerspec> - View the deflation vectors, where viewerspec is a key that can be
+                                                   parsed by PetscOptionsGetViewer().  If neig > 1, viewerspec should
+                                                   end with ":append".  No vectors will be viewed if the adaptive
+                                                   strategy chooses not to deflate, so -ksp_dgmres_force should also
+                                                   be given.
+                                                   The deflation vectors span a subspace that may be a good
+                                                   approximation of the subspace of smallest eigenvectors of the
+                                                   preconditioned operator, so this option can aid in understanding
+                                                   the performance of a preconditioner.
 
  Level: beginner
 
@@ -1243,20 +1262,20 @@ PETSC_EXTERN PetscErrorCode KSPCreate_DGMRES(KSP ksp)
   ksp->ops->computeextremesingularvalues = KSPComputeExtremeSingularValues_GMRES;
   ksp->ops->computeeigenvalues           = KSPComputeEigenvalues_GMRES;
 
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESSetPreAllocateVectors_C","KSPGMRESSetPreAllocateVectors_GMRES",KSPGMRESSetPreAllocateVectors_GMRES);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESSetOrthogonalization_C","KSPGMRESSetOrthogonalization_GMRES",KSPGMRESSetOrthogonalization_GMRES);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESSetRestart_C","KSPGMRESSetRestart_GMRES",KSPGMRESSetRestart_GMRES);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESSetHapTol_C","KSPGMRESSetHapTol_GMRES",KSPGMRESSetHapTol_GMRES);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESSetCGSRefinementType_C","KSPGMRESSetCGSRefinementType_GMRES",KSPGMRESSetCGSRefinementType_GMRES);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESSetPreAllocateVectors_C",KSPGMRESSetPreAllocateVectors_GMRES);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESSetOrthogonalization_C",KSPGMRESSetOrthogonalization_GMRES);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESSetRestart_C",KSPGMRESSetRestart_GMRES);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESSetHapTol_C",KSPGMRESSetHapTol_GMRES);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESSetCGSRefinementType_C",KSPGMRESSetCGSRefinementType_GMRES);CHKERRQ(ierr);
   /* -- New functions defined in DGMRES -- */
-  ierr = PetscObjectComposeFunction((PetscObject)ksp, "KSPDGMRESSetEigen_C","KSPDGMRESSetEigen_DGMRES",KSPDGMRESSetEigen_DGMRES);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ksp, "KSPDGMRESSetMaxEigen_C","KSPDGMRESSetMaxEigen_DGMRES",KSPDGMRESSetMaxEigen_DGMRES);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ksp, "KSPDGMRESSetRatio_C","KSPDGMRESSetRatio_DGMRES",KSPDGMRESSetRatio_DGMRES);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ksp, "KSPDGMRESForce_C","KSPDGMRESForce_DGMRES",KSPDGMRESForce_DGMRES);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ksp, "KSPDGMRESComputeSchurForm_C","KSPDGMRESComputeSchurForm_DGMRES",KSPDGMRESComputeSchurForm_DGMRES);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ksp, "KSPDGMRESComputeDeflationData_C","KSPDGMRESComputeDeflationData_DGMRES",KSPDGMRESComputeDeflationData_DGMRES);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ksp, "KSPDGMRESApplyDeflation_C","KSPDGMRESApplyDeflation_DGMRES",KSPDGMRESApplyDeflation_DGMRES);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ksp, "KSPDGMRESImproveEig_C", "KSPDGMRESImproveEig_DGMRES", KSPDGMRESImproveEig_DGMRES);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp, "KSPDGMRESSetEigen_C",KSPDGMRESSetEigen_DGMRES);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp, "KSPDGMRESSetMaxEigen_C",KSPDGMRESSetMaxEigen_DGMRES);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp, "KSPDGMRESSetRatio_C",KSPDGMRESSetRatio_DGMRES);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp, "KSPDGMRESForce_C",KSPDGMRESForce_DGMRES);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp, "KSPDGMRESComputeSchurForm_C",KSPDGMRESComputeSchurForm_DGMRES);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp, "KSPDGMRESComputeDeflationData_C",KSPDGMRESComputeDeflationData_DGMRES);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp, "KSPDGMRESApplyDeflation_C",KSPDGMRESApplyDeflation_DGMRES);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp, "KSPDGMRESImproveEig_C", KSPDGMRESImproveEig_DGMRES);CHKERRQ(ierr);
 
   ierr = PetscLogEventRegister("DGMRESComputeDefl", KSP_CLASSID, &KSP_DGMRESComputeDeflationData);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("DGMRESApplyDefl", KSP_CLASSID, &KSP_DGMRESApplyDeflation);CHKERRQ(ierr);
@@ -1278,9 +1297,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_DGMRES(KSP ksp)
   dgmres->max_neig    = DGMRES_DEFAULT_MAXEIG-1;
   dgmres->lambdaN     = 0.0;
   dgmres->smv         = SMV;
-  dgmres->force       = 0;
   dgmres->matvecs     = 0;
-  dgmres->improve     = 0;
   dgmres->GreatestEig = PETSC_FALSE; /* experimental */
   dgmres->HasSchur    = PETSC_FALSE;
   PetscFunctionReturn(0);

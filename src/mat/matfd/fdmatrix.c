@@ -118,7 +118,7 @@ PetscErrorCode  MatFDColoringView(MatFDColoring c,PetscViewer viewer)
   if (isdraw) {
     ierr = MatFDColoringView_Draw(c,viewer);CHKERRQ(ierr);
   } else if (iascii) {
-    ierr = PetscObjectPrintClassNamePrefixType((PetscObject)c,viewer,"MatFDColoring Object");CHKERRQ(ierr);
+    ierr = PetscObjectPrintClassNamePrefixType((PetscObject)c,viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Error tolerance=%G\n",c->error_rel);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Umin=%G\n",c->umin);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Number of colors=%D\n",c->ncolors);CHKERRQ(ierr);
@@ -314,7 +314,7 @@ PetscErrorCode  MatFDColoringSetFromOptions(MatFDColoring matfd)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatFDColoringViewFromOptions"
-PetscErrorCode MatFDColoringViewFromOptions(MatFDColoring fd,const char optionname[])
+PetscErrorCode MatFDColoringViewFromOptions(MatFDColoring fd,const char prefix[],const char optionname[])
 {
   PetscErrorCode    ierr;
   PetscBool         flg;
@@ -322,7 +322,11 @@ PetscErrorCode MatFDColoringViewFromOptions(MatFDColoring fd,const char optionna
   PetscViewerFormat format;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject)fd),((PetscObject)fd)->prefix,optionname,&viewer,&format,&flg);CHKERRQ(ierr);
+  if (prefix) {
+    ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject)fd),prefix,optionname,&viewer,&format,&flg);CHKERRQ(ierr);
+  } else {
+    ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject)fd),((PetscObject)fd)->prefix,optionname,&viewer,&format,&flg);CHKERRQ(ierr);
+  }
   if (flg) {
     ierr = PetscViewerPushFormat(viewer,format);CHKERRQ(ierr);
     ierr = MatFDColoringView(fd,viewer);CHKERRQ(ierr);
@@ -374,9 +378,9 @@ PetscErrorCode  MatFDColoringCreate(Mat mat,ISColoring iscoloring,MatFDColoring 
   } else SETERRQ1(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Code not yet written for matrix type %s",((PetscObject)mat)->type_name);
 
   ierr = MatGetVecs(mat,NULL,&c->w1);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(c,c->w1);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)c,(PetscObject)c->w1);CHKERRQ(ierr);
   ierr = VecDuplicate(c->w1,&c->w2);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(c,c->w2);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)c,(PetscObject)c->w2);CHKERRQ(ierr);
 
   c->error_rel    = PETSC_SQRT_MACHINE_EPSILON;
   c->umin         = 100.0*PETSC_SQRT_MACHINE_EPSILON;
@@ -563,7 +567,7 @@ PetscErrorCode  MatFDColoringApply_AIJ(Mat J,MatFDColoring coloring,Vec x1,MatSt
 
   if (!coloring->w3) {
     ierr = VecDuplicate(x1_tmp,&coloring->w3);CHKERRQ(ierr);
-    ierr = PetscLogObjectParent(coloring,coloring->w3);CHKERRQ(ierr);
+    ierr = PetscLogObjectParent((PetscObject)coloring,(PetscObject)coloring->w3);CHKERRQ(ierr);
   }
   w3 = coloring->w3;
 
@@ -665,6 +669,6 @@ PetscErrorCode  MatFDColoringApply_AIJ(Mat J,MatFDColoring coloring,Vec x1,MatSt
   ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_FDColoringApply,coloring,J,x1,0);CHKERRQ(ierr);
 
-  ierr = MatFDColoringViewFromOptions(coloring,"-mat_fd_coloring_view");CHKERRQ(ierr);
+  ierr = MatFDColoringViewFromOptions(coloring,NULL,"-mat_fd_coloring_view");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

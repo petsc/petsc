@@ -1,25 +1,28 @@
 
 #include <petsc-private/isimpl.h>    /*I "petscis.h"  I*/
+#include <petscsf.h>
 #include <petscviewer.h>
 
 PetscClassId IS_LTOGM_CLASSID;
 
 #undef __FUNCT__
-#define __FUNCT__ "ISL2GMapApply"
+#define __FUNCT__ "ISG2LMapApply"
 PetscErrorCode ISG2LMapApply(ISLocalToGlobalMapping mapping,PetscInt n,const PetscInt in[],PetscInt out[])
 {
   PetscErrorCode ierr;
-  PetscInt       i,*globals = mapping->globals,start = mapping->globalstart,end = mapping->globalend;
+  PetscInt       i,start,end;
 
   PetscFunctionBegin;
   if (!mapping->globals) {
     ierr = ISGlobalToLocalMappingApply(mapping,IS_GTOLM_MASK,0,0,0,0);CHKERRQ(ierr);
   }
+  start = mapping->globalstart;
+  end = mapping->globalend;
   for (i=0; i<n; i++) {
     if (in[i] < 0)          out[i] = in[i];
     else if (in[i] < start) out[i] = -1;
     else if (in[i] > end)   out[i] = -1;
-    else                    out[i] = globals[in[i] - start];
+    else                    out[i] = mapping->globals[in[i] - start];
   }
   PetscFunctionReturn(0);
 }
@@ -219,7 +222,7 @@ PetscErrorCode  ISLocalToGlobalMappingCreate(MPI_Comm cm,PetscInt n,const PetscI
 
   *mapping = NULL;
 #if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
-  ierr = ISInitializePackage(NULL);CHKERRQ(ierr);
+  ierr = ISInitializePackage();CHKERRQ(ierr);
 #endif
 
   ierr = PetscHeaderCreate(*mapping,_p_ISLocalToGlobalMapping,int,IS_LTOGM_CLASSID,"ISLocalToGlobalMapping","Local to global mapping","IS",
@@ -233,7 +236,7 @@ PetscErrorCode  ISLocalToGlobalMappingCreate(MPI_Comm cm,PetscInt n,const PetscI
   if (mode == PETSC_COPY_VALUES) {
     ierr = PetscMalloc(n*sizeof(PetscInt),&in);CHKERRQ(ierr);
     ierr = PetscMemcpy(in,indices,n*sizeof(PetscInt));CHKERRQ(ierr);
-    ierr = PetscLogObjectMemory(*mapping,n*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscLogObjectMemory((PetscObject)*mapping,n*sizeof(PetscInt));CHKERRQ(ierr);
     (*mapping)->indices = in;
   } else if (mode == PETSC_OWN_POINTER) (*mapping)->indices = (PetscInt*)indices;
   else SETERRQ(cm,PETSC_ERR_SUP,"Cannot currently use PETSC_USE_POINTER");
@@ -479,7 +482,7 @@ static PetscErrorCode ISGlobalToLocalMappingSetUp_Private(ISLocalToGlobalMapping
     globals[idx[i] - start] = i;
   }
 
-  ierr = PetscLogObjectMemory(mapping,(end-start+1)*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory((PetscObject)mapping,(end-start+1)*sizeof(PetscInt));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

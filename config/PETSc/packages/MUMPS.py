@@ -3,6 +3,8 @@ import PETSc.package
 class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
     PETSc.package.NewPackage.__init__(self, framework)
+    self.gitcommit = '2b5fae9daa82ab197303ac8a9a87891f89a5cf07'
+    self.giturls   = ['https://bitbucket.org/petsc/pkg-mumps.git']
     self.download  = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/MUMPS_4.10.0-p3.tar.gz']
     self.liblist   = [['libcmumps.a','libdmumps.a','libsmumps.a','libzmumps.a','libmumps_common.a','libpord.a'],
                      ['libcmumps.a','libdmumps.a','libsmumps.a','libzmumps.a','libmumps_common.a','libpord.a','libpthread.a'],

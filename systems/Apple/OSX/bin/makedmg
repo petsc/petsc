@@ -24,15 +24,13 @@ echo '
            set current view of container window to icon view
            set toolbar visible of container window to false
            set statusbar visible of container window to false
-           set the bounds of container window to {400, 100, 685, 430}
+           set the bounds of container window to {400, 100, 885, 430}
            set theViewOptions to the icon view options of container window
            set arrangement of theViewOptions to not arranged
            set icon size of theViewOptions to 72
            make new alias file at container window to POSIX file "/Library/Frameworks" with properties {name:"Frameworks"}
            set position of item "'PETSc.framework'" of container window to {100, 100}
            set position of item "Frameworks" of container window to {375, 100}
-           update without registering applications
-           delay 5
            eject
      end tell
    end tell
@@ -40,6 +38,7 @@ echo '
 sleep 8
 sync
 sync
+echo 'Completed osascript'
 #hdiutil detach ${device}
 hdiutil convert "pack.temp.dmg" -format UDZO -imagekey zlib-level=9 -o ${PETSC_DIR}/${PETSC_ARCH}/PETSc.dmg
 rm -rf pack.temp.dmg tempsource

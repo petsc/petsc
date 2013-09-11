@@ -9,6 +9,13 @@
 #if !defined(_BLASLAPACK_H)
 #define _BLASLAPACK_H
 
+/* Do not use PetscStackPush/PetscStackPop because  */
+#define PetscStackCallBLAS(name,routine) do {                   \
+    PetscStackPushNoCheck(name,PETSC_FALSE);                    \
+    routine;                                                    \
+    PetscStackPop;                                              \
+  } while(0)
+
 #if defined(PETSC_BLASLAPACK_STDCALL)
 #include <petscblaslapack_stdcall.h>
 #else
@@ -22,6 +29,7 @@
 #endif
 
 PETSC_EXTERN void LAPACKgetrf_(PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*,PetscBLASInt*);
+PETSC_EXTERN void LAPACKgetri_(PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
 PETSC_EXTERN void LAPACKungqr_(PetscBLASInt*,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
 PETSC_EXTERN void LAPACKgeqrf_(PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
 PETSC_EXTERN PetscReal BLASnrm2_(const PetscBLASInt*,const PetscScalar*,const PetscBLASInt*);

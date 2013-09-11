@@ -336,7 +336,7 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
     break;
   }
 
-  KSPLogResidualHistory(ksp, norm_r);
+  ierr       = KSPLogResidualHistory(ksp, norm_r);CHKERRQ(ierr);
   ierr       = KSPMonitor(ksp, ksp->its, norm_r);CHKERRQ(ierr);
   ksp->rnorm = norm_r;
 
@@ -633,7 +633,7 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
       break;
     }
 
-    KSPLogResidualHistory(ksp, norm_r);
+    ierr       = KSPLogResidualHistory(ksp, norm_r);CHKERRQ(ierr);
     ierr       = KSPMonitor(ksp, ksp->its, norm_r);CHKERRQ(ierr);
     ksp->rnorm = norm_r;
 
@@ -834,7 +834,7 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
       break;
     }
 
-    KSPLogResidualHistory(ksp, norm_r);
+    ierr       = KSPLogResidualHistory(ksp, norm_r);CHKERRQ(ierr);
     ierr       = KSPMonitor(ksp, ksp->its, norm_r);CHKERRQ(ierr);
     ksp->rnorm = norm_r;
 
@@ -933,7 +933,7 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
 #if defined(PETSC_MISSING_LAPACK_STEBZ)
   SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"STEBZ - Lapack routine is unavailable.");
 #else
-  PetscStackCall("LAPACKstebz",LAPACKstebz_("I", "E", &t_size, &vl, &vu, &il, &iu, &cg->eigen_tol,cg->diag, cg->offd + 1, &e_valus, &e_splts, e_valu,e_iblk, e_splt, e_rwrk, e_iwrk, &info));
+  PetscStackCallBLAS("LAPACKstebz",LAPACKstebz_("I", "E", &t_size, &vl, &vu, &il, &iu, &cg->eigen_tol,cg->diag, cg->offd + 1, &e_valus, &e_splts, e_valu,e_iblk, e_splt, e_rwrk, e_iwrk, &info));
 
   if ((0 != info) || (1 != e_valus)) {
     /*************************************************************************/
@@ -966,7 +966,7 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
 #if defined(PETSC_MISSING_LAPACK_PTTRF)
     SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"PTTRF - Lapack routine is unavailable.");
 #else
-    PetscStackCall("LAPACKpttrf",LAPACKpttrf_(&t_size, t_diag, t_offd + 1, &info));
+    PetscStackCallBLAS("LAPACKpttrf",LAPACKpttrf_(&t_size, t_diag, t_offd + 1, &info));
 
     if (0 == info) break;
 
@@ -988,7 +988,7 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
 #if defined(PETSC_MISSING_LAPACK_PTTRS)
   SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"PTTRS - Lapack routine is unavailable.");
 #else
-  PetscStackCall("LAPACKpttrs",LAPACKpttrs_(&t_size, &nrhs, t_diag, t_offd + 1, t_soln, &nldb, &info));
+  PetscStackCallBLAS("LAPACKpttrs",LAPACKpttrs_(&t_size, &nrhs, t_diag, t_offd + 1, t_soln, &nldb, &info));
 #endif
 
   if (0 != info) {
@@ -1026,7 +1026,7 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
 #if defined(PETSC_MISSING_LAPACK_STEIN)
       SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"STEIN - Lapack routine is unavailable.");
 #else
-      PetscStackCall("LAPACKstein",LAPACKstein_(&t_size, cg->diag, cg->offd + 1, &e_valus, e_valu,e_iblk, e_splt, e_vect, &nldb,e_rwrk, e_iwrk, e_iwrk + t_size, &info));
+      PetscStackCallBLAS("LAPACKstein",LAPACKstein_(&t_size, cg->diag, cg->offd + 1, &e_valus, e_valu,e_iblk, e_splt, e_vect, &nldb,e_rwrk, e_iwrk, e_iwrk + t_size, &info));
 #endif
 
       if (0 != info) {
@@ -1131,7 +1131,7 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
 #if defined(PETSC_MISSING_LAPACK_PTTRS)
       SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"PTTRS - Lapack routine is unavailable.");
 #else
-      PetscStackCall("LAPACKpttrs",LAPACKpttrs_(&t_size, &nrhs, t_diag, t_offd + 1, e_rwrk, &nldb, &info));
+      PetscStackCallBLAS("LAPACKpttrs",LAPACKpttrs_(&t_size, &nrhs, t_diag, t_offd + 1, e_rwrk, &nldb, &info));
 #endif
 
       if (0 != info) {
@@ -1166,7 +1166,7 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
 #if defined(PETSC_MISSING_LAPACK_PTTRF)
       SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"PTTRF - Lapack routine is unavailable.");
 #else
-      PetscStackCall("LAPACKpttrf",LAPACKpttrf_(&t_size, t_diag, t_offd + 1, &info));
+      PetscStackCallBLAS("LAPACKpttrf",LAPACKpttrf_(&t_size, t_diag, t_offd + 1, &info));
 #endif
 
       if (0 != info) {
@@ -1190,7 +1190,7 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
 #if defined(PETSC_MISSING_LAPACK_PTTRS)
       SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"PTTRS - Lapack routine is unavailable.");
 #else
-      PetscStackCall("LAPACKpttrs",LAPACKpttrs_(&t_size, &nrhs, t_diag, t_offd + 1, t_soln, &nldb, &info));
+      PetscStackCallBLAS("LAPACKpttrs",LAPACKpttrs_(&t_size, &nrhs, t_diag, t_offd + 1, t_soln, &nldb, &info));
 #endif
 
       if (0 != info) {
@@ -1344,7 +1344,7 @@ PetscErrorCode KSPSetUp_GLTR(KSP ksp)
   ierr = PetscMemzero(cg->alpha, max_its*sizeof(PetscReal));CHKERRQ(ierr);
   ierr = PetscMemzero(cg->beta, max_its*sizeof(PetscReal));CHKERRQ(ierr);
   ierr = PetscMemzero(cg->norm_r, max_its*sizeof(PetscReal));CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(ksp, 5*max_its*sizeof(PetscReal));CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory((PetscObject)ksp, 5*max_its*sizeof(PetscReal));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1369,11 +1369,11 @@ PetscErrorCode KSPDestroy_GLTR(KSP ksp)
   /* Clear composed functions                                                */
   /***************************************************************************/
 
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGLTRSetRadius_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGLTRGetNormD_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGLTRGetObjFcn_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGLTRGetMinEig_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGLTRGetLambda_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGLTRSetRadius_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGLTRGetNormD_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGLTRGetObjFcn_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGLTRGetMinEig_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGLTRGetLambda_C",NULL);CHKERRQ(ierr);
 
   /***************************************************************************/
   /* Destroy KSP object.                                                     */
@@ -1541,10 +1541,10 @@ PETSC_EXTERN PetscErrorCode KSPCreate_GLTR(KSP ksp)
   ksp->ops->buildresidual  = KSPBuildResidualDefault;
   ksp->ops->view           = 0;
 
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGLTRSetRadius_C","KSPGLTRSetRadius_GLTR",KSPGLTRSetRadius_GLTR);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGLTRGetNormD_C","KSPGLTRGetNormD_GLTR",KSPGLTRGetNormD_GLTR);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGLTRGetObjFcn_C","KSPGLTRGetObjFcn_GLTR",KSPGLTRGetObjFcn_GLTR);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGLTRGetMinEig_C","KSPGLTRGetMinEig_GLTR",KSPGLTRGetMinEig_GLTR);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGLTRGetLambda_C","KSPGLTRGetLambda_GLTR",KSPGLTRGetLambda_GLTR);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGLTRSetRadius_C",KSPGLTRSetRadius_GLTR);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGLTRGetNormD_C", KSPGLTRGetNormD_GLTR);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGLTRGetObjFcn_C",KSPGLTRGetObjFcn_GLTR);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGLTRGetMinEig_C",KSPGLTRGetMinEig_GLTR);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGLTRGetLambda_C",KSPGLTRGetLambda_GLTR);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

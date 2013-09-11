@@ -94,6 +94,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_ASPIN(SNES snes)
   /* set up the solver */
   ierr = SNESSetType(snes,SNESNEWTONLS);CHKERRQ(ierr);
   ierr = SNESSetPCSide(snes,PC_LEFT);CHKERRQ(ierr);
+  ierr = SNESSetFunctionType(snes,SNES_FUNCTION_PRECONDITIONED);CHKERRQ(ierr);
   ierr = SNESGetPC(snes,&npc);CHKERRQ(ierr);
   ierr = SNESSetType(npc,SNESNASM);CHKERRQ(ierr);
   ierr = SNESNASMSetComputeFinalJacobian(npc,PETSC_TRUE);CHKERRQ(ierr);
@@ -101,7 +102,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_ASPIN(SNES snes)
   ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
   ierr = PCSetType(pc,PCNONE);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)snes,&comm);CHKERRQ(ierr);
-  ierr = SNESGetSNESLineSearch(snes,&linesearch);CHKERRQ(ierr);
+  ierr = SNESGetLineSearch(snes,&linesearch);CHKERRQ(ierr);
   ierr = SNESLineSearchSetType(linesearch,SNESLINESEARCHBT);CHKERRQ(ierr);
 
   /* set up the shell matrix */

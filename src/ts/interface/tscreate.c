@@ -10,16 +10,6 @@ const char *const TSConvergedReasons_Shifted[] = {
   "TSConvergedReason","TS_",0};
 const char *const*TSConvergedReasons = TSConvergedReasons_Shifted + 2;
 
-#if 0
-#undef __FUNCT__
-#define __FUNCT__ "TSPublish_Petsc"
-static PetscErrorCode TSPublish_Petsc(PetscObject obj)
-{
-  PetscFunctionBegin;
-  PetscFunctionReturn(0);
-}
-#endif
-
 #undef  __FUNCT__
 #define __FUNCT__ "TSCreate"
 /*@C
@@ -48,7 +38,7 @@ PetscErrorCode  TSCreate(MPI_Comm comm, TS *ts)
   PetscValidPointer(ts,1);
   *ts = NULL;
 #if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
-  ierr = TSInitializePackage(NULL);CHKERRQ(ierr);
+  ierr = TSInitializePackage();CHKERRQ(ierr);
 #endif
 
   ierr = PetscHeaderCreate(t, _p_TS, struct _TSOps, TS_CLASSID, "TS", "Time stepping", "TS", comm, TSDestroy, TSView);CHKERRQ(ierr);
@@ -76,7 +66,8 @@ PetscErrorCode  TSCreate(MPI_Comm comm, TS *ts)
   t->max_reject        = 10;
   t->errorifstepfailed = PETSC_TRUE;
   t->rhsjacobian.time  = -1e20;
-  t->ijacobian.time    = -1e20;
+  t->rhsjacobian.scale = 1.;
+  t->ijacobian.shift   = 1.;
   t->equation_type     = TS_EQ_UNSPECIFIED;
 
   t->atol             = 1e-4;

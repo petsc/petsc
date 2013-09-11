@@ -17,9 +17,11 @@ static PetscBool PetscViewerPackageInitialized = PETSC_FALSE;
 @*/
 PetscErrorCode  PetscViewerFinalizePackage(void)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
+  ierr = PetscFunctionListDestroy(&PetscViewerList);CHKERRQ(ierr);
   PetscViewerPackageInitialized = PETSC_FALSE;
-  PetscViewerList               = 0;
   PetscFunctionReturn(0);
 }
 
@@ -28,15 +30,12 @@ PetscErrorCode  PetscViewerFinalizePackage(void)
 /*@C
   PetscViewerInitializePackage - This function initializes everything in the main PetscViewer package.
 
-  Input Parameter:
-  path - The dynamic library path, or NULL
-
   Level: developer
 
 .keywords: Petsc, initialize, package
 .seealso: PetscInitialize()
 @*/
-PetscErrorCode  PetscViewerInitializePackage(const char path[])
+PetscErrorCode  PetscViewerInitializePackage(void)
 {
   char           logList[256];
   char           *className;
@@ -50,7 +49,7 @@ PetscErrorCode  PetscViewerInitializePackage(const char path[])
   ierr = PetscClassIdRegister("Viewer",&PETSC_VIEWER_CLASSID);CHKERRQ(ierr);
 
   /* Register Constructors */
-  ierr = PetscViewerRegisterAll(path);CHKERRQ(ierr);
+  ierr = PetscViewerRegisterAll();CHKERRQ(ierr);
 
   /* Process info exclusions */
   ierr = PetscOptionsGetString(NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
@@ -69,7 +68,7 @@ PetscErrorCode  PetscViewerInitializePackage(const char path[])
     }
   }
 #if defined(PETSC_HAVE_MATHEMATICA)
-  ierr = PetscViewerMathematicaInitializePackage(NULL);CHKERRQ(ierr);
+  ierr = PetscViewerMathematicaInitializePackage();CHKERRQ(ierr);
 #endif
   ierr = PetscRegisterFinalize(PetscViewerFinalizePackage);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -101,8 +100,7 @@ PetscErrorCode  PetscViewerDestroy(PetscViewer *viewer)
   ierr = PetscViewerFlush(*viewer);CHKERRQ(ierr);
   if (--((PetscObject)(*viewer))->refct > 0) {*viewer = 0; PetscFunctionReturn(0);}
 
-  ierr = PetscObjectDepublish(*viewer);CHKERRQ(ierr);
-
+  ierr = PetscObjectAMSViewOff((PetscObject)*viewer);CHKERRQ(ierr);
   if ((*viewer)->ops->destroy) {
     ierr = (*(*viewer)->ops->destroy)(*viewer);CHKERRQ(ierr);
   }
@@ -317,7 +315,7 @@ PetscErrorCode  PetscViewerView(PetscViewer v,PetscViewer viewer)
   if (iascii) {
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
     if (format == PETSC_VIEWER_DEFAULT || format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
-      ierr = PetscObjectPrintClassNamePrefixType((PetscObject)v,viewer,"PetscViewer Object");CHKERRQ(ierr);
+      ierr = PetscObjectPrintClassNamePrefixType((PetscObject)v,viewer);CHKERRQ(ierr);
       if (v->format) {
         ierr = PetscViewerASCIIPrintf(viewer,"  Viewer format = %s\n",PetscViewerFormats[v->format]);CHKERRQ(ierr);
       }

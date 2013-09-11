@@ -1204,11 +1204,23 @@ doi = {10.1190/1.3628198}
   school = {ETH Z{\"u}rich},
   year = 2011
 }
-@article{brown2012tmeice,
+@article{brown2013tmeice,
   title={Achieving textbook multigrid efficiency for hydrostatic ice flow},
   author={Jed Brown and Barry F. Smith and Aron Ahmadia},
   journal={SIAM Journal on Scientific Computing},
-  year={\emph{accepted} 2012}
+  volume=35,
+  number=2,
+  year={2013},
+  pages={359--375},
+  doi={10.1137/110834512},
+  note={Also preprint ANL/MCS-P743-1298}
+}
+@inproceedings{brown2013quasinewton,
+  author    = {Jed Brown and Peter Brune},
+  title     = {Low-rank quasi-{N}ewton updates for robust {J}acobian lagging in {N}ewton-type methods},
+  year      = {2013},
+  booktitle = {International Conference on Mathematics and Computational Methods Applied to Nuclear Science and Engineering},
+  pages     = {2554--2565},
 }
 @misc{spiegelman-siampp10,
    title = "Block Preconditioners and Advanced Software for Multiphysics Problems in Solid Earth Geodynamics",
@@ -1298,6 +1310,15 @@ doi = {10.1190/1.3628198}
  doi =          {10.1098/rspa.2009.0434},
  url = {http://www.earth.ox.ac.uk/~richardk/publications/Katz_Worster_PRSA10.pdf}
 }
+@article{kyrkesmith2013stress,
+  title={Stress balances of ice streams in a vertically integrated, higher-order formulation},
+  author={Kyrke-Smith, T.M. and Katz, R.F. and Fowler, A.C.},
+  journal={Journal of Glaciology},
+  volume={59},
+  number={215},
+  pages={449},
+  year={2013}
+}
 @article{bueler2009shallow,
   title={{Shallow shelf approximation as a ``sliding law'' in a thermomechanically coupled ice sheet model}},
   author={Bueler, E. and Brown, J.},
@@ -1345,10 +1366,18 @@ doi = {10.1190/1.3628198}
 @article{AagaardKnepleyWilliams13,
   title   = {A Domain Decomposition Approach to Implementing Fault Slip in Finite-Element Models of Quasi-static and Dynamic Crustal Deformation},
   author  = {Brad T. Aagaard and Matthew G. Knepley and Charles A. Williams},
-  journal = {Journal of Geophysical Research},
-  note    = {In review},
+  journal = {Journal of Geophysical Research: Solid Earth},
+  volume  = {118},
+  number  = {6},
+  pages   = {3059--3079},
+  issn    = {2169-9356},
+  url     = {http://dx.doi.org/10.1002/jgrb.50217},
+  note    = {\url{http://dx.doi.org/10.1002/jgrb.50217}},
+  doi     = {10.1002/jgrb.50217},
+  keywords = {fault slip, finite-element modeling, crustal deformation, earthquake physics},
   year    = {2013}
 }
+
 @inproceedings{AagaardKnepleyWilliams11,
   author       = {Charles A. Williams and Brad Aagaard and Matthew G. Knepley},
   title        = {{PyLith}: A Finite-Element Code for Modeling Quasi-Static and Dynamic Crustal Deformation},
@@ -2915,7 +2944,7 @@ title =     {Finite-difference lattice Boltzmann model with flux limiters for li
 }
 @article{CruzKnepleyBarba10,
   author  = {Felipe A Cruz and Matthew G Knepley and L A Barba},
-  title   = {PetFMM -- A dynamically load-balancing parallel fast multipole library},
+  title   = {{PetFMM} -- A dynamically load-balancing parallel fast multipole library},
   journal = {International Journal of Numerical Methods in Engineering},
   volume  = {85},
   number  = {4},
@@ -2928,6 +2957,30 @@ title =     {Finite-difference lattice Boltzmann model with flux limiters for li
 % LiteralHTML:  <a name="otherapps"><H3><center>Other Application Areas</center></H3>
 % LiteralHTML:
 
+@Article{Hakansson2013MDStochasticLiouville,
+  author ="Hakansson, Par and Nguyen, ThaoNguyen and Nair, Prasanth B. and Edge, Ruth and Stulz, Eugen",
+  title  ="Cu(ii)-porphyrin molecular dynamics as seen in a novel EPR/Stochastic Liouville equation study",
+  journal  ="Phys. Chem. Chem. Phys.",
+  year  ="2013",
+  volume  ="15",
+  issue  ="26",
+  pages  ="10930-10941",
+  publisher  ="The Royal Society of Chemistry",
+  doi  ="10.1039/C3CP50788B",
+  url  ="http://dx.doi.org/10.1039/C3CP50788B",
+}
+@Article{Hakansson2011StochasticLiouville,
+  author ="Hakansson, Par and Nair, Prasanth B.",
+  title  ="Implicit numerical schemes for the stochastic Liouville equation in Langevin form",
+  journal  ="Phys. Chem. Chem. Phys.",
+  year  ="2011",
+  volume  ="13",
+  issue  ="20",
+  pages  ="9578-9589",
+  publisher  ="The Royal Society of Chemistry",
+  doi  ="10.1039/C1CP20400A",
+  url  ="http://dx.doi.org/10.1039/C1CP20400A",
+}
 @INPROCEEDINGS{wang:lee:scidac2011,
  author = "Lei Wang and Jungho Lee and Mihai Anitescu and Anter El Azab and Lois Curfman McInnes and Todd Munson and Barry Smith",
  title = "A Differential Variational Inequality Approach for the Simulation of Heterogeneous Materials",
@@ -4156,7 +4209,7 @@ url    = "http://lyre.mit.edu/\~{ }powell/rheoplast.html"
   title =	 {{PETS}c {W}eb page},
   url =		 {http://www.mcs.anl.gov/petsc},
   howpublished = {\url{http://www.mcs.anl.gov/petsc}},
-  year = {2012}
+  year = {2013}
 }
 @Unpublished{petsc-debian-package,
     author = "Adam C. Powell, IV",
@@ -4281,7 +4334,7 @@ url    = "http://lyre.mit.edu/\~{ }powell/rheoplast.html"
 }
 @incollection{KnepleyYuen13,
   author    = {Matthew G. Knepley and David A. Yuen},
-  title     = {Why Scientists and Engineers need GPUs today},
+  title     = {Why Scientists and Engineers need {GPU}s today},
   booktitle = {GPU Solutions to Multi-scale Problems in Science and Engineering},
   series    = {Lecture Notes in Earth System Sciences},
   editor    = {David A. Yuen and Long Wang and Xuebin Chi and Lennart Johnsson and Wei Ge and Yaolin Shi},
@@ -4306,7 +4359,7 @@ url    = "http://lyre.mit.edu/\~{ }powell/rheoplast.html"
   isbn      = {978-3-642-16404-0},
 }
 @incollection{ZhengEtAl13,
-  title     = {GPU Implementation of Multigrid Solver for Stokes Equation with Strongly Variable Viscosity},
+  title     = {{GPU} Implementation of Multigrid Solver for Stokes Equation with Strongly Variable Viscosity},
   author    = {Liang Zheng and Taras Gerya and Matthew G. Knepley and David A. Yuen and Huai Zhang and Yaolin Shi},
   booktitle = {GPU Solutions to Multi-scale Problems in Science and Engineering},
   series    = {Lecture Notes in Earth System Sciences},
@@ -4317,6 +4370,14 @@ url    = "http://lyre.mit.edu/\~{ }powell/rheoplast.html"
   pages     = {321--333},
   year      = {2013},
   isbn      = {978-3-642-16404-0},
+}
+@article{ZhengEtAl13b,
+  title     = {Implementation of a multigrid solver on {GPU} for Stokes equations with strongly variable viscosity based on Matlab and CUDA},
+  author    = {Liang Zheng and Taras Gerya and Matthew G. Knepley and David A. Yuen and Huai Zhang and Yaolin Shi},
+  journal   = {IJHPCA},
+  url       = {http://hpc.sagepub.com/content/early/2013/03/03/1094342013478640.abstract},
+  note      = {\url{http://hpc.sagepub.com/content/early/2013/03/03/1094342013478640.abstract}},
+  year      = {2013}
 }
 @inbook{s2011,
   author = "B. Smith",
@@ -4506,8 +4567,8 @@ url    = "http://lyre.mit.edu/\~{ }powell/rheoplast.html"
             Lois Curfman McInnes and Barry~F. Smith and Hong Zhang},
   title  = {{PETS}c Users Manual},
   institution = {Argonne National Laboratory},
-  year   = 2012,
-  number = {ANL-95/11 - Revision 3.3},
+  year   = 2013,
+  number = {ANL-95/11 - Revision 3.4},
   url    = {http://www.mcs.anl.gov/petsc}
 }
 @TechReport{petsc-developers,
@@ -4679,11 +4740,19 @@ url    = "http://lyre.mit.edu/\~{ }powell/rheoplast.html"
               GTX285, which has a nominal single precision peak flop
               rate of 1 TF/s and bandwidth of 159 GB/s, corresponding
               to a bandwidth limited peak of 40 GF/s.},
+  url       = {http://arxiv.org/abs/1103.0066},
+  note      = {\url{http://arxiv.org/abs/1103.0066}}
+}
+@Misc{KnepleyRuppTerrel2013,
+  author = {Matthew G. Knepley and Karl Rupp and Andy R. Terrel},
+  title  = {Finite Element Integration with Quadrature on Accelerators},
+  note   = {Submitted to IPDPS},
+  year   = {2013}
 }
 @techreport{pbmkbsxt2012,
   title = "Composing Scalable Nonlinear Solvers",
   author = "Peter Brune and Mathew Knepley and Barry Smith and  Xuemin Tu",
-  year = 2012,
+  year = 2013,
   type = "Preprint",
   number = "ANL/MCS-P2010-0112",
   institution = "Argonne National Laboratory"
@@ -5403,6 +5472,13 @@ url    = "http://lyre.mit.edu/\~{ }powell/rheoplast.html"
    url = {http://dx.doi.org/10.1007/s10915-011-9540-0},
    doi = {10.1007/s10915-011-9540-0}
 }
+
+@article{KnepleyRuppTerrel13,
+  author = {Matthew G. Knepley and Karl Rupp and Andy R. Terrel},
+  title  = {Finite Element Integration with Quadrature on Accelerators},
+  year   = {2013}
+}
+
 
 % LiteralHTML:
 % LiteralHTML:  <a name="books"><H3><center>Books</center></H3>

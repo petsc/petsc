@@ -23,8 +23,10 @@ PETSC_EXTERN void PETSC_STDCALL aocreatebasic_(MPI_Comm *comm,PetscInt *napp,Pet
 
 PETSC_EXTERN void PETSC_STDCALL aocreatebasicis_(IS *isapp,IS *ispetsc,AO *aoout,PetscErrorCode *ierr)
 {
+  IS cispetsc = NULL;
   CHKFORTRANNULLOBJECT(ispetsc);
-  *ierr = AOCreateBasicIS(*isapp,*ispetsc,aoout);
+  if (ispetsc) cispetsc = *ispetsc;
+  *ierr = AOCreateBasicIS(*isapp,cispetsc,aoout);
 }
 
 PETSC_EXTERN void PETSC_STDCALL aocreatememoryscalable_(MPI_Comm *comm,PetscInt *napp,PetscInt *myapp,PetscInt *mypetsc,AO *aoout,PetscErrorCode *ierr)
@@ -36,6 +38,8 @@ PETSC_EXTERN void PETSC_STDCALL aocreatememoryscalable_(MPI_Comm *comm,PetscInt 
 
 PETSC_EXTERN void PETSC_STDCALL aocreatememoryscalableis_(IS *isapp,IS *ispetsc,AO *aoout,PetscErrorCode *ierr)
 {
+  IS cispetsc = NULL;
   CHKFORTRANNULLOBJECT(ispetsc);
-  *ierr = AOCreateMemoryScalableIS(*isapp,*ispetsc,aoout);
+  if (ispetsc) cispetsc = *ispetsc;
+  *ierr = AOCreateMemoryScalableIS(*isapp,cispetsc,aoout);
 }

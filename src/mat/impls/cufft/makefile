@@ -11,7 +11,7 @@ SOURCEH   =
 LIBBASE   = libpetscmat
 DIRS      =
 MANSEC    = Mat
-LOCDIR    = src/mat/impls/cufft
+LOCDIR    = src/mat/impls/cufft/
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

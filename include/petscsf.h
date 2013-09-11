@@ -4,24 +4,9 @@
 #if !defined(__PETSCSF_H)
 #define __PETSCSF_H
 #include <petscsys.h>
+#include <petscsftypes.h>
 
 PETSC_EXTERN PetscClassId PETSCSF_CLASSID;
-
-/*S
-   PetscSF - PETSc object for setting up and managing the communication of certain entries of arrays and Vecs between MPI processes.
-
-   Level: intermediate
-
-  Concepts: star forest
-
-       PetscSF uses the concept of star forests to indicate and determine the communication patterns concisely and efficiently.
-  A star  http://en.wikipedia.org/wiki/Star_(graph_theory) forest is simply a collection of trees of height 1. The leave nodes represent
-  "ghost locations" for the root nodes.
-
-.seealso: PetscSFCreate(), VecScatter, VecScatterCreate()
-S*/
-typedef struct _p_PetscSF* PetscSF;
-
 
 /*J
     PetscSFType - String with the name of a PetscSF method or the creation function
@@ -84,62 +69,11 @@ E*/
 typedef enum {PETSCSF_DUPLICATE_CONFONLY,PETSCSF_DUPLICATE_RANKS,PETSCSF_DUPLICATE_GRAPH} PetscSFDuplicateOption;
 PETSC_EXTERN const char *const PetscSFDuplicateOptions[];
 
-PETSC_EXTERN PetscFunctionList PetscSFunctionList;
-PETSC_EXTERN PetscErrorCode PetscSFRegisterDestroy(void);
-PETSC_EXTERN PetscErrorCode PetscSFRegisterAll(const char[]);
-PETSC_EXTERN PetscErrorCode PetscSFRegister(const char[],const char[],const char[],PetscErrorCode (*)(PetscSF));
+PETSC_EXTERN PetscFunctionList PetscSFList;
+PETSC_EXTERN PetscErrorCode PetscSFRegisterAll(void);
+PETSC_EXTERN PetscErrorCode PetscSFRegister(const char[],PetscErrorCode (*)(PetscSF));
 
-/*MC
-   PetscSFRegisterDynamic - Adds an implementation of the PetscSF communication protocol.
-
-   Synopsis:
-    #include "petscsf.h"
-   PetscErrorCode PetscSFRegisterDynamic(const char *name_method,const char *path,const char *name_create,PetscErrorCode (*routine_create)(PetscSF))
-
-   Not collective
-
-   Input Parameters:
-+  name_impl - name of a new user-defined implementation
-.  path - path (either absolute or relative) the library containing this solver
-.  name_create - name of routine to create method context
--  routine_create - routine to create method context
-
-   Notes:
-   PetscSFRegisterDynamic() may be called multiple times to add several user-defined implementations.
-
-   If dynamic libraries are used, then the fourth input argument (routine_create)
-   is ignored.
-
-   Environmental variables such as ${PETSC_ARCH}, ${PETSC_DIR}, ${PETSC_LIB_DIR},
-   and others of the form ${any_environmental_variable} occuring in pathname will be
-   replaced with appropriate values.
-
-   Sample usage:
-.vb
-   PetscSFRegisterDynamic("my_impl",/home/username/my_lib/lib/libg/solaris/mylib.a,
-                "MyImplCreate",MyImplCreate);
-.ve
-
-   Then, this implementation can be chosen with the procedural interface via
-$     PetscSFSetType(sf,"my_impl")
-   or at runtime via the option
-$     -snes_type my_solver
-
-   Level: advanced
-
-    Note: If your function is not being put into a shared library then use PetscSFRegister() instead
-
-.keywords: PetscSF, register
-
-.seealso: PetscSFRegisterAll(), PetscSFRegisterDestroy()
-M*/
-#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
-#define PetscSFRegisterDynamic(a,b,c,d) PetscSFRegister(a,b,c,0)
-#else
-#define PetscSFRegisterDynamic(a,b,c,d) PetscSFRegister(a,b,c,d)
-#endif
-
-PETSC_EXTERN PetscErrorCode PetscSFInitializePackage(const char*);
+PETSC_EXTERN PetscErrorCode PetscSFInitializePackage(void);
 PETSC_EXTERN PetscErrorCode PetscSFFinalizePackage(void);
 PETSC_EXTERN PetscErrorCode PetscSFCreate(MPI_Comm comm,PetscSF*);
 PETSC_EXTERN PetscErrorCode PetscSFDestroy(PetscSF*);
@@ -189,5 +123,15 @@ PETSC_EXTERN PetscErrorCode PetscSFScatterBegin(PetscSF,MPI_Datatype,const void 
   PetscAttrMPIPointerWithType(3,2) PetscAttrMPIPointerWithType(4,2);
 PETSC_EXTERN PetscErrorCode PetscSFScatterEnd(PetscSF,MPI_Datatype,const void *multirootdata,void *leafdata)
   PetscAttrMPIPointerWithType(3,2) PetscAttrMPIPointerWithType(4,2);
+
+#if defined(MPI_REPLACE)
+#  define MPIU_REPLACE MPI_REPLACE
+#else
+/* When using an old MPI such that MPI_REPLACE is not defined, we do not pass MPI_REPLACE to MPI at all.  Instead, we
+ * use it as a flag for our own reducer in the PETSCSFBASIC implementation.  This could be any unique value unlikely to
+ * collide with another MPI_Op so we'll just use the value that has been used by every version of MPICH since
+ * MPICH2-1.0.6. */
+#  define MPIU_REPLACE (MPI_Op)(0x5800000d)
+#endif
 
 #endif

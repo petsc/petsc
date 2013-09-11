@@ -4,7 +4,7 @@
 */
 
 #include <petsc-private/dmdaimpl.h>    /*I   "petscdmda.h"   I*/
-extern PetscErrorCode DMDALocalToLocalCreate(DM);
+extern PetscErrorCode DMLocalToLocalCreate_DA(DM);
 
 #undef __FUNCT__
 #define __FUNCT__ "DMDAGetScatter"
@@ -44,7 +44,7 @@ PetscErrorCode  DMDAGetScatter(DM da,VecScatter *ltog,VecScatter *gtol,VecScatte
   if (gtol) *gtol = dd->gtol;
   if (ltol) {
     if (!dd->ltol) {
-      ierr = DMDALocalToLocalCreate(da);CHKERRQ(ierr);
+      ierr = DMLocalToLocalCreate_DA(da);CHKERRQ(ierr);
     }
     *ltol = dd->ltol;
   }

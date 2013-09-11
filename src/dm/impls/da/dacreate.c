@@ -36,10 +36,13 @@ PetscErrorCode  DMSetFromOptions_DA(DM da)
 
   ierr = PetscOptionsInt("-da_overlap","Decomposition overlap in all directions","DMDASetOverlap",dd->xol,&dd->xol,&flg);CHKERRQ(ierr);
   if (flg) {ierr = DMDASetOverlap(da,dd->xol,dd->xol,dd->xol);CHKERRQ(ierr);}
-
   ierr = PetscOptionsInt("-da_overlap_x","Decomposition overlap in x direction","DMDASetOverlap",dd->xol,&dd->xol,NULL);CHKERRQ(ierr);
   if (dd->dim > 1) {ierr = PetscOptionsInt("-da_overlap_y","Decomposition overlap in y direction","DMDASetOverlap",dd->yol,&dd->yol,NULL);CHKERRQ(ierr);}
   if (dd->dim > 2) {ierr = PetscOptionsInt("-da_overlap_z","Decomposition overlap in z direction","DMDASetOverlap",dd->zol,&dd->zol,NULL);CHKERRQ(ierr);}
+
+  ierr = PetscOptionsInt("-da_local_subdomains","","DMDASetNumLocalSubdomains",dd->Nsub,&dd->Nsub,&flg);CHKERRQ(ierr);
+  if (flg) {ierr = DMDASetNumLocalSubDomains(da,dd->Nsub);CHKERRQ(ierr);}
+
   /* Handle DMDA parallel distibution */
   ierr = PetscOptionsInt("-da_processors_x","Number of processors in x direction","DMDASetNumProcs",dd->m,&dd->m,NULL);CHKERRQ(ierr);
   if (dd->dim > 1) {ierr = PetscOptionsInt("-da_processors_y","Number of processors in y direction","DMDASetNumProcs",dd->n,&dd->n,NULL);CHKERRQ(ierr);}
@@ -116,6 +119,8 @@ extern PetscErrorCode  DMGlobalToLocalBegin_DA(DM,Vec,InsertMode,Vec);
 extern PetscErrorCode  DMGlobalToLocalEnd_DA(DM,Vec,InsertMode,Vec);
 extern PetscErrorCode  DMLocalToGlobalBegin_DA(DM,Vec,InsertMode,Vec);
 extern PetscErrorCode  DMLocalToGlobalEnd_DA(DM,Vec,InsertMode,Vec);
+extern PetscErrorCode  DMLocalToLocalBegin_DA(DM,Vec,InsertMode,Vec);
+extern PetscErrorCode  DMLocalToLocalEnd_DA(DM,Vec,InsertMode,Vec);
 extern PetscErrorCode  DMCreateInterpolation_DA(DM,DM,Mat*,Vec*);
 extern PetscErrorCode  DMCreateColoring_DA(DM,ISColoringType,MatType,ISColoring*);
 extern PetscErrorCode  DMCreateMatrix_DA(DM,MatType,Mat*);
@@ -178,24 +183,56 @@ PetscErrorCode DMLoad_DA(DM da,PetscViewer viewer)
 #define __FUNCT__ "DMCreateSubDM_DA"
 PetscErrorCode DMCreateSubDM_DA(DM dm, PetscInt numFields, PetscInt fields[], IS *is, DM *subdm)
 {
+  DM_DA         *da = (DM_DA*) dm->data;
+  PetscSection   section;
   PetscErrorCode ierr;
-  DM_DA          *da = (DM_DA*)dm->data;
 
   PetscFunctionBegin;
-  if (da->dim != 2) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Support only implemented for 2d");
   if (subdm) {
-    ierr = DMDACreate2d(PetscObjectComm((PetscObject)dm),da->bx,da->by,da->stencil_type,da->M,da->N,da->m,da->n,numFields,da->s,da->lx,da->ly,subdm);CHKERRQ(ierr);
-  }
-  if (is) {
-    PetscInt *indices,cnt = 0, dof = da->w,i,j;
-    ierr = PetscMalloc(sizeof(PetscInt)*da->Nlocal*numFields/dof,&indices);CHKERRQ(ierr);
-    for (i=da->base/dof; i<(da->base+da->Nlocal)/dof; i++) {
-      for (j=0; j<numFields; j++) {
-        indices[cnt++] = dof*i + fields[j];
-      }
+    PetscSF sf;
+    Vec     coords;
+    void   *ctx;
+    /* Cannot use DMClone since the dof stuff is mixed in. Ugh
+    ierr = DMClone(dm, subdm);CHKERRQ(ierr); */
+    ierr = DMCreate(PetscObjectComm((PetscObject)dm), subdm);CHKERRQ(ierr);
+    ierr = DMGetPointSF(dm, &sf);CHKERRQ(ierr);
+    ierr = DMSetPointSF(*subdm, sf);CHKERRQ(ierr);
+    ierr = DMGetApplicationContext(dm, &ctx);CHKERRQ(ierr);
+    ierr = DMSetApplicationContext(*subdm, ctx);CHKERRQ(ierr);
+    ierr = DMGetCoordinatesLocal(dm, &coords);CHKERRQ(ierr);
+    if (coords) {
+      ierr = DMSetCoordinatesLocal(*subdm, coords);CHKERRQ(ierr);
+    } else {
+      ierr = DMGetCoordinates(dm, &coords);CHKERRQ(ierr);
+      if (coords) {ierr = DMSetCoordinates(*subdm, coords);CHKERRQ(ierr);}
     }
-    if (cnt != da->Nlocal*numFields/dof) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Count does not equal expected value");
-    ierr = ISCreateGeneral(PetscObjectComm((PetscObject)dm),da->Nlocal*numFields/dof,indices,PETSC_OWN_POINTER,is);CHKERRQ(ierr);
+
+    ierr = DMSetType(*subdm, DMDA);CHKERRQ(ierr);
+    ierr = DMDASetDim(*subdm, da->dim);CHKERRQ(ierr);
+    ierr = DMDASetSizes(*subdm, da->M, da->N, da->P);CHKERRQ(ierr);
+    ierr = DMDASetNumProcs(*subdm, da->m, da->n, da->p);CHKERRQ(ierr);
+    ierr = DMDASetBoundaryType(*subdm, da->bx, da->by, da->bz);CHKERRQ(ierr);
+    ierr = DMDASetDof(*subdm, numFields);CHKERRQ(ierr);
+    ierr = DMDASetStencilType(*subdm, da->stencil_type);CHKERRQ(ierr);
+    ierr = DMDASetStencilWidth(*subdm, da->s);CHKERRQ(ierr);
+    ierr = DMDASetOwnershipRanges(*subdm, da->lx, da->ly, da->lz);CHKERRQ(ierr);
+  }
+  ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
+  if (section) {
+    ierr = DMCreateSubDM_Section_Private(dm, numFields, fields, is, subdm);CHKERRQ(ierr);
+  } else {
+    if (is) {
+      PetscInt *indices, cnt = 0, dof = da->w, i, j;
+
+      ierr = PetscMalloc(da->Nlocal*numFields/dof * sizeof(PetscInt), &indices);CHKERRQ(ierr);
+      for (i = da->base/dof; i < (da->base+da->Nlocal)/dof; ++i) {
+        for (j = 0; j < numFields; ++j) {
+          indices[cnt++] = dof*i + fields[j];
+        }
+      }
+      if (cnt != da->Nlocal*numFields/dof) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Count %d does not equal expected value %d", cnt, da->Nlocal*numFields/dof);
+      ierr = ISCreateGeneral(PetscObjectComm((PetscObject) dm), cnt, indices, PETSC_OWN_POINTER, is);CHKERRQ(ierr);
+    }
   }
   PetscFunctionReturn(0);
 }
@@ -251,6 +288,27 @@ PetscErrorCode DMCreateFieldDecomposition_DA(DM dm, PetscInt *len,char ***nameli
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "DMClone_DA"
+PetscErrorCode DMClone_DA(DM dm, DM *newdm)
+{
+  DM_DA         *da = (DM_DA *) dm->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMSetType(*newdm, DMDA);CHKERRQ(ierr);
+  ierr = DMDASetDim(*newdm, da->dim);CHKERRQ(ierr);
+  ierr = DMDASetSizes(*newdm, da->M, da->N, da->P);CHKERRQ(ierr);
+  ierr = DMDASetNumProcs(*newdm, da->m, da->n, da->p);CHKERRQ(ierr);
+  ierr = DMDASetBoundaryType(*newdm, da->bx, da->by, da->bz);CHKERRQ(ierr);
+  ierr = DMDASetDof(*newdm, da->w);CHKERRQ(ierr);
+  ierr = DMDASetStencilType(*newdm, da->stencil_type);CHKERRQ(ierr);
+  ierr = DMDASetStencilWidth(*newdm, da->s);CHKERRQ(ierr);
+  ierr = DMDASetOwnershipRanges(*newdm, da->lx, da->ly, da->lz);CHKERRQ(ierr);
+  ierr = DMSetUp(*newdm);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*MC
    DMDA = "da" - A DM object that is used to manage data for a structured grid in 1, 2, or 3 dimensions.
          In the global representation of the vector each process stores a non-overlapping rectangular (or slab in 3d) portion of the grid points.
@@ -301,6 +359,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_DA(DM da)
   dd->xs = -1; dd->xe = -1; dd->ys = -1; dd->ye = -1; dd->zs = -1; dd->ze = -1;
   dd->Xs = -1; dd->Xe = -1; dd->Ys = -1; dd->Ye = -1; dd->Zs = -1; dd->Ze = -1;
 
+  dd->Nsub            = 1;
   dd->xol             = 0;
   dd->yol             = 0;
   dd->zol             = 0;
@@ -335,6 +394,8 @@ PETSC_EXTERN PetscErrorCode DMCreate_DA(DM da)
   da->ops->globaltolocalend            = DMGlobalToLocalEnd_DA;
   da->ops->localtoglobalbegin          = DMLocalToGlobalBegin_DA;
   da->ops->localtoglobalend            = DMLocalToGlobalEnd_DA;
+  da->ops->localtolocalbegin           = DMLocalToLocalBegin_DA;
+  da->ops->localtolocalend             = DMLocalToLocalEnd_DA;
   da->ops->createglobalvector          = DMCreateGlobalVector_DA;
   da->ops->createlocalvector           = DMCreateLocalVector_DA;
   da->ops->createinterpolation         = DMCreateInterpolation_DA;
@@ -350,6 +411,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_DA(DM da)
   da->ops->view                        = 0;
   da->ops->setfromoptions              = DMSetFromOptions_DA;
   da->ops->setup                       = DMSetUp_DA;
+  da->ops->clone                       = DMClone_DA;
   da->ops->load                        = DMLoad_DA;
   da->ops->createcoordinatedm          = DMCreateCoordinateDM_DA;
   da->ops->createsubdm                 = DMCreateSubDM_DA;

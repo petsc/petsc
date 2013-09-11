@@ -4,6 +4,31 @@
 %
 %   DO NOT DEFINE ANY ABREVIATIONS TO USE IN ENTRIES BELOW: Always write out the names of journels etc
 
+@inproceedings{hartono2009annotation,
+  title={Annotation-based empirical performance tuning using {Orio}},
+  author={Hartono, Albert and Norris, Boyana and Sadayappan, Ponnuswamy},
+  booktitle={Parallel \& Distributed Processing, 2009. IPDPS 2009. IEEE International Symposium on},
+  pages={1--11},
+  year={2009},
+  organization={IEEE}
+}
+
+@book{toselli2005domain,
+  title="Domain Decomposition Methods: Algorithms and Theory",
+  author={Toselli, Andrea and Widlund, Olof B},
+  volume={34},
+  year={2005},
+  publisher={Springer}
+}
+
+@inbook{st2013,
+  author = "B. F. Smith and X. Tu",
+  chapter = "Domain Decomposition",
+  title = "Encyclopedia of Applied and Computational Mathematics",
+  bookeditor = "B. Engquist",
+  publisher = "Springer",
+  year = "2013"
+}
 
 @article{smith1997domain,
   title={Domain Decomposition Methods for Partial Differential Equations},
@@ -2613,7 +2638,7 @@ Booktitle = "Supercomputing '95 Proceedings",
 @misc {fenics-web-page,
    author = "Todd Dupont and Johan Hoffman and Johan Jansson and Claes Johnson and Robert C. Kirby and Matthew Knepley and Mats Larson and Anders Logg and Ridgway Scott",
    title  = "{FEniCS Web Page}",
-   note   = "\url{http://www.fenics.org}",
+   note   = "\url{http://www.fenicsproject.org}",
    year   = "2005"
 }
 
@@ -3241,7 +3266,15 @@ mesh refinement",
    howpublished  = "\url{http://acts.nersc.gov}",
    key = "{Advanced CompuTational Software (ACTS) Web page}",
 }
-
+@article{superlu99,
+  author  = {James W. Demmel and Stanley C. Eisenstat and John R. Gilbert and Xiaoye S. Li and Joseph W. H. Liu},
+  title = {A supernodal approach to sparse partial pivoting},
+  journal = {SIAM J. Matrix Analysis and Applications},
+  year = {1999},
+  volume  = {20},
+  number = {3},
+  pages = {720-755}
+}
 @misc{superlu:homepage,
    author = "J. Demmel and J. Gilbert and X. Li",
    title = "{SuperLU Web page}",
@@ -3738,6 +3771,12 @@ year = 2003}
   author =	 "{C.S.} {Chang (PI)}",
   title =	 "{Center for Plasma Edge Simulation (CPES)}",
   note = "Proto-FSP project, see \url{http://www.cims.nyu.edu/cpes}"
+}
+
+@misc{epsi:homepage,
+  author =	 "{C.S.} {Chang (PI)}",
+  title =	 "{Center for Edge Physics Simulation (EPSI)}",
+  note = "\url{http://epsi.pppl.gov}"
 }
 
 @unpublished{groundwater-scidac2:web,
@@ -4833,11 +4872,11 @@ It begins with a general introduction to bundles, including such topics as diffe
 
 @book{BriggsHensonMcCormick00,
  author = {Briggs,, William L. and Henson,, Van Emden and McCormick,, Steve F.},
- title = {A multigrid tutorial (2nd ed.)},
+ title = "A Multigrid Tutorial (2nd ed.)",
  year = {2000},
  isbn = {0-89871-462-1},
  publisher = {Society for Industrial and Applied Mathematics},
- address = {Philadelphia, PA, USA}
+ address = {Philadelphia, PA}
 }
 
 @book{BrennerScott02,
@@ -5880,7 +5919,7 @@ summarize challenges and forecast opportunities.}
 
 @ARTICLE{DongarraBeckman11,
    AUTHOR={J. Dongarra and P. Beckman and et al.},
-   TITLE={The International Exascale Software Roadmap},
+   TITLE={The {I}nternational {E}xascale {S}oftware {P}roject {R}oadmap},
    JOURNAL={Int. J. High Perf. Comput. Applics.},
    VOLUME={25},
    YEAR={2011},
@@ -6163,8 +6202,9 @@ keywords = "Parallelization"
   author  = {Jack Poulson and Bryan Marker and Jeff R. Hammond and Nichols A. Romero and Robert {v}an~{d}e~{G}eijn},
   title   = {Elemental: A New Framework for Distributed Memory Dense Matrix Computations},
   journal = {{ACM} Transactions on Mathematical Software},
-  note    = {submitted},
-  year    = {2012}
+  volume  = {39},
+  number  = {2},
+  year    = {2013}
 }
 
 @misc{elemental-web-page,
@@ -6536,7 +6576,7 @@ year = {2010}
 
 @article{Minimax2000,
   author  = {Minimax Collaboration},
-  title   = {Search for disoriented chiral condensate at the Fermilab Tevatron},
+  title   = {Search for disoriented chiral condensate at the {Fermilab} {Tevatron}},
   journal = {Physical Review D},
   volume  = {61},
   number  = {3},
@@ -6588,7 +6628,7 @@ year = {2010}
 
 @article{YokotaBardhanKnepleyBarbaHamada2011,
   author  = {Rio Yokota and Jaydeep P. Bardhan and Matthew G. Knepley and L.A. Barba and Tsuyoshi Hamada},
-  title   = {Biomolecular electrostatics using a fast multipole {BEM} on up to 512 gpus and a billion unknowns},
+  title   = {Biomolecular electrostatics using a fast multipole {BEM} on up to 512 {GPU}s and a billion unknowns},
   journal = {Computer Physics Communications},
   volume  = {182},
   number  = {6},
@@ -6636,12 +6676,17 @@ year = {2010}
   year    = {2012}
 }
 
-@article{KreienkampEtAl2012,
+@article{KreienkampEtAl2013,
   author  = {Amy Kreienkamp and Lucy Y. Liu and Mona S. Minkara and Matthew G. Knepley and Jaydeep P. Bardhan and Mala L. Radhakrishnan},
   title   = {Analysis of fast boundary-integral approximations for modeling electrostatic contributions of molecular binding},
   journal = {Molecular Based Mathematical Biology},
-  note    = {Submitted},
-  year    = {2012}
+  volume  = {1},
+  pages   = {124--150},
+  doi     = {10.2478/mlbmb-2013-0007},
+  issn    = {2299-3266},
+  month   = {June},
+  note    = {\url{http://www.degruyter.com/view/j/mlbmb.2012.1.issue/mlbmb-2013-0007/mlbmb-2013-0007.xml}},
+  year    = {2013}
 }
 
 @article{BardhanKnepleyBrune2012,
@@ -6759,7 +6804,7 @@ part I: Theory},
 
 @article{Golub_Varga_1961,
  title={{Chebyshev} semi-iterative methods, successive overrelaxation iterative methods, and
-        second-order Richardson iterative methods, parts {I} and {II}},
+        second-order {Richardson} iterative methods, parts {I} and {II}},
  volume={3},
  url={},
  number={},
@@ -6972,7 +7017,7 @@ part I: Theory},
   pages={3--96},
   publisher={Springer Verlag}
 }
-@inbook{brandt2003multigrid,
+@incollection{brandt2003multigrid,
   title={Multigrid solvers and multilevel optimization strategies},
   author={Brandt, A. and Ron, D.},
   booktitle={Multilevel Optimization and VLSICAD},
@@ -7555,4 +7600,58 @@ part I: Theory},
   series    = {Texts in Applied Mathematics},
   year      = {2008},
   publisher = {Springer-Verlag}
+}
+
+@book{ortega1987iterative,
+  title     = {Iterative solution of nonlinear equations in several variables},
+  author    = {Ortega, James M and Rheinboldt, Werner C},
+  volume    = {30},
+  publisher = {Society for Industrial and Applied Mathematics},
+  year      = {1987}
+}
+
+@inbook{RheinboldtCh6,
+  author    = {Werner C. Rheinboldt},
+  title     = {6. Combinations of Processes},
+  booktitle = {Methods for Solving Systems of Nonlinear Equations},
+  chapter   = {6},
+  pages     = {59--74},
+  doi       = {10.1137/1.9781611970012.ch6},
+  URL       = {http://epubs.siam.org/doi/abs/10.1137/1.9781611970012.ch6},
+  eprint    = {http://epubs.siam.org/doi/pdf/10.1137/1.9781611970012.ch6},
+  year      = {1998}
+}
+
+@article{AllgowerBohmerPotraRheinboldt86,
+  author  = {E. Allgower and K. B\"ohmer and F. Potra and W.~C. Rheinboldt},
+  title   = {A Mesh-Independence Principle for Operator Equations and Their Discretizations},
+  journal = {SIAM Journal on Numerical Analysis},
+  volume  = {23},
+  number  = {1},
+  pages   = {160-169},
+  year    = {1986},
+  doi     = {10.1137/0723011},
+  URL     = {http://epubs.siam.org/doi/abs/10.1137/0723011},
+  eprint  = {http://epubs.siam.org/doi/pdf/10.1137/0723011}
+}
+
+@article{Rheinboldt76,
+  author  = {Werner C. Rheinboldt},
+  title   = {On measures of ill-conditioning for nonlinear equations},
+  journal = {Mathematics of Computation},
+  volume  = {30},
+  number  = {133},
+  pages   = {104--111},
+  year    = {1976}
+}
+
+@article{Little61,
+  author  = {John D. C. Little},
+  title   = {A Proof for the Queuing Formula: {$L = \lambda W$}},
+  journal = {Operations Research},
+  volume  = {9},
+  number  = {3},
+  pages   = {383--387},
+  note    = {\url{http://www.jstor.org/stable/167570}},
+  year    = {1961}
 }

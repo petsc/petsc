@@ -262,10 +262,10 @@ PetscErrorCode SNESSolve_VINEWTONSSLS(SNES snes)
   F      = snes->vec_func;              /* residual vector */
   Y      = snes->work[0];               /* work vectors */
 
-  ierr       = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
+  ierr       = PetscObjectAMSTakeAccess((PetscObject)snes);CHKERRQ(ierr);
   snes->iter = 0;
   snes->norm = 0.0;
-  ierr       = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
+  ierr       = PetscObjectAMSGrantAccess((PetscObject)snes);CHKERRQ(ierr);
 
   ierr = SNESVIProjectOntoBounds(snes,X);CHKERRQ(ierr);
   ierr = SNESComputeFunction(snes,X,vi->phi);CHKERRQ(ierr);
@@ -281,9 +281,9 @@ PetscErrorCode SNESSolve_VINEWTONSSLS(SNES snes)
   ierr = VecNormEnd(X,NORM_2,&xnorm);CHKERRQ(ierr);
   if (PetscIsInfOrNanReal(vi->merit)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
 
-  ierr       = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
+  ierr       = PetscObjectAMSTakeAccess((PetscObject)snes);CHKERRQ(ierr);
   snes->norm = vi->phinorm;
-  ierr       = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
+  ierr       = PetscObjectAMSGrantAccess((PetscObject)snes);CHKERRQ(ierr);
   ierr       = SNESLogConvergenceHistory(snes,vi->phinorm,0);CHKERRQ(ierr);
   ierr       = SNESMonitor(snes,0,vi->phinorm);CHKERRQ(ierr);
 
@@ -346,8 +346,8 @@ PetscErrorCode SNESSolve_VINEWTONSSLS(SNES snes)
     */
     ierr  = VecCopy(Y,snes->vec_sol_update);CHKERRQ(ierr);
     ynorm = 1; gnorm = vi->phinorm;
-    /* ierr = (*snes->ops->linesearch)(snes,snes->lsP,X,vi->phi,Y,vi->phinorm,xnorm,G,W,&ynorm,&gnorm,&lssucceed);CHKERRQ(ierr); */
     ierr = SNESLineSearchApply(snes->linesearch, X, vi->phi, &gnorm, Y);CHKERRQ(ierr);
+    ierr = SNESLineSearchGetSuccess(snes->linesearch, &lssucceed);CHKERRQ(ierr);
     ierr = SNESLineSearchGetNorms(snes->linesearch, &xnorm, &gnorm, &ynorm);CHKERRQ(ierr);
     ierr = PetscInfo4(snes,"fnorm=%18.16e, gnorm=%18.16e, ynorm=%18.16e, lssucceed=%d\n",(double)vi->phinorm,(double)gnorm,(double)ynorm,(int)lssucceed);CHKERRQ(ierr);
     if (snes->reason == SNES_DIVERGED_FUNCTION_COUNT) break;
@@ -356,7 +356,6 @@ PetscErrorCode SNESSolve_VINEWTONSSLS(SNES snes)
       sdm->ops->computefunction = vi->computeuserfunction;
       PetscFunctionReturn(0);
     }
-    ierr = SNESLineSearchGetSuccess(snes->linesearch, &lssucceed);CHKERRQ(ierr);
     if (!lssucceed) {
       if (++snes->numFailures >= snes->maxFailures) {
         PetscBool ismin;
@@ -370,10 +369,10 @@ PetscErrorCode SNESSolve_VINEWTONSSLS(SNES snes)
     vi->phinorm = gnorm;
     vi->merit   = 0.5*vi->phinorm*vi->phinorm;
     /* Monitor convergence */
-    ierr       = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
+    ierr       = PetscObjectAMSTakeAccess((PetscObject)snes);CHKERRQ(ierr);
     snes->iter = i+1;
     snes->norm = vi->phinorm;
-    ierr       = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
+    ierr       = PetscObjectAMSGrantAccess((PetscObject)snes);CHKERRQ(ierr);
     ierr       = SNESLogConvergenceHistory(snes,snes->norm,lits);CHKERRQ(ierr);
     ierr       = SNESMonitor(snes,snes->iter,snes->norm);CHKERRQ(ierr);
     /* Test for convergence, xnorm = || X || */
@@ -463,7 +462,7 @@ static PetscErrorCode SNESSetFromOptions_VINEWTONSSLS(SNES snes)
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   /* set up the default line search */
   if (!snes->linesearch) {
-    ierr = SNESGetSNESLineSearch(snes, &linesearch);CHKERRQ(ierr);
+    ierr = SNESGetLineSearch(snes, &linesearch);CHKERRQ(ierr);
     ierr = SNESLineSearchSetType(linesearch, SNESLINESEARCHBT);CHKERRQ(ierr);
     ierr = SNESLineSearchBTSetAlpha(linesearch, 0.0);CHKERRQ(ierr);
   }
@@ -511,8 +510,8 @@ PETSC_EXTERN PetscErrorCode SNESCreate_VINEWTONSSLS(SNES snes)
   ierr       = PetscNewLog(snes,SNES_VINEWTONSSLS,&vi);CHKERRQ(ierr);
   snes->data = (void*)vi;
 
-  ierr = PetscObjectComposeFunction((PetscObject)snes,"SNESVISetVariableBounds_C","SNESVISetVariableBounds_VI",SNESVISetVariableBounds_VI);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)snes,"SNESVISetComputeVariableBounds_C","SNESVISetComputeVariableBounds_VI",SNESVISetComputeVariableBounds_VI);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)snes,"SNESVISetVariableBounds_C",SNESVISetVariableBounds_VI);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)snes,"SNESVISetComputeVariableBounds_C",SNESVISetComputeVariableBounds_VI);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

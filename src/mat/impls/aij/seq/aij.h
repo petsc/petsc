@@ -46,6 +46,12 @@ typedef struct {
   PetscErrorCode (*destroy)(Mat);
 } Mat_MatMatTransMult;
 
+typedef struct { /* for MatTransposeMatMult_SeqAIJ_SeqDense() */
+  Mat          mA;           /* maij matrix of A */
+  Vec          bt,ct;        /* vectors to hold locally transposed arrays of B and C */
+  PetscErrorCode (*destroy)(Mat);
+} Mat_MatTransMatMult;
+
 typedef struct {
   PetscInt    *api,*apj;       /* symbolic structure of A*P */
   PetscScalar *apa;            /* temporary array for storing one row of A*P */
@@ -54,8 +60,9 @@ typedef struct {
 
 typedef struct {
   MatTransposeColoring matcoloring;
-  Mat                  Rt;    /* dense matrix of R^T */
+  Mat                  Rt;    /* sparse or dense matrix of R^T */
   Mat                  RARt;  /* dense matrix of R*A*R^T */
+  Mat                  ARt;   /* A*R^T used for the case -matrart_color_art */
   MatScalar            *work; /* work array to store columns of A*R^T used in MatMatMatMultNumeric_SeqAIJ_SeqAIJ_SeqDense() */
   PetscErrorCode (*destroy)(Mat);
 } Mat_RARt;
@@ -64,6 +71,17 @@ typedef struct {
   Mat BC;               /* temp matrix for storing B*C */
   PetscErrorCode (*destroy)(Mat);
 } Mat_MatMatMatMult;
+
+typedef struct { /* used by MatGetRedundantMatrix() for reusing matredundant */
+  PetscInt     nzlocal,nsends,nrecvs;
+  PetscMPIInt  *send_rank,*recv_rank;
+  PetscInt     *sbuf_nz,*rbuf_nz,*sbuf_j,**rbuf_j;
+  PetscScalar  *sbuf_a,**rbuf_a;
+  PetscSubcomm psubcomm;
+  IS           isrow,iscol;
+  Mat          *matseq;
+  PetscErrorCode (*Destroy)(Mat);
+} Mat_Redundant;
 
 /*
   MATSEQAIJ format - Compressed row storage (also called Yale sparse matrix
@@ -112,6 +130,9 @@ typedef struct {
   PetscScalar       *matmult_abdense;    /* used by MatMatMult() */
   Mat_PtAP          *ptap;               /* used by MatPtAP() */
   Mat_MatMatMatMult *matmatmatmult;      /* used by MatMatMatMult() */
+  Mat_RARt          *rart;               /* used by MatRARt() */
+  Mat_MatMatTransMult *abt;              /* used by MatMatTransposeMult() */
+  Mat_Redundant       *redundant;        /* used by MatGetRedundantMatrix() */
 } Mat_SeqAIJ;
 
 /*
@@ -201,6 +222,7 @@ PETSC_INTERN PetscErrorCode MatGetSymbolicTranspose_SeqAIJ(Mat,PetscInt *[],Pets
 PETSC_INTERN PetscErrorCode MatGetSymbolicTransposeReduced_SeqAIJ(Mat,PetscInt,PetscInt,PetscInt *[],PetscInt *[]);
 PETSC_INTERN PetscErrorCode MatRestoreSymbolicTranspose_SeqAIJ(Mat,PetscInt *[],PetscInt *[]);
 PETSC_INTERN PetscErrorCode MatTransposeSymbolic_SeqAIJ(Mat,Mat*);
+PETSC_INTERN PetscErrorCode MatTranspose_SeqAIJ(Mat,MatReuse,Mat*);
 PETSC_INTERN PetscErrorCode MatToSymmetricIJ_SeqAIJ(PetscInt,PetscInt*,PetscInt*,PetscInt,PetscInt,PetscInt**,PetscInt**);
 PETSC_INTERN PetscErrorCode MatLUFactorSymbolic_SeqAIJ_inplace(Mat,Mat,IS,IS,const MatFactorInfo*);
 PETSC_INTERN PetscErrorCode MatLUFactorSymbolic_SeqAIJ(Mat,Mat,IS,IS,const MatFactorInfo*);
@@ -238,17 +260,26 @@ PETSC_INTERN PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqAIJ(Mat,Mat,Mat);
 PETSC_INTERN PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqAIJ_Scalable(Mat,Mat,Mat);
 
 PETSC_INTERN PetscErrorCode MatPtAP_SeqAIJ_SeqAIJ(Mat,Mat,MatReuse,PetscReal,Mat*);
-PETSC_INTERN PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqAIJ(Mat,Mat,PetscReal,Mat*);
+PETSC_INTERN PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqAIJ_DenseAxpy(Mat,Mat,PetscReal,Mat*);
 PETSC_INTERN PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqAIJ_SparseAxpy(Mat,Mat,PetscReal,Mat*);
 PETSC_INTERN PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqAIJ(Mat,Mat,Mat);
 PETSC_INTERN PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqAIJ_SparseAxpy(Mat,Mat,Mat);
 
 PETSC_INTERN PetscErrorCode MatRARtSymbolic_SeqAIJ_SeqAIJ(Mat,Mat,PetscReal,Mat*);
+PETSC_INTERN PetscErrorCode MatRARtSymbolic_SeqAIJ_SeqAIJ_matmattransposemult(Mat,Mat,PetscReal,Mat*);
+PETSC_INTERN PetscErrorCode MatRARtSymbolic_SeqAIJ_SeqAIJ_colorrart(Mat,Mat,PetscReal,Mat*);
 PETSC_INTERN PetscErrorCode MatRARtNumeric_SeqAIJ_SeqAIJ(Mat,Mat,Mat);
+PETSC_INTERN PetscErrorCode MatRARtNumeric_SeqAIJ_SeqAIJ_matmattransposemult(Mat,Mat,Mat);
+PETSC_INTERN PetscErrorCode MatRARtNumeric_SeqAIJ_SeqAIJ_colorrart(Mat,Mat,Mat);
 
 PETSC_INTERN PetscErrorCode MatTransposeMatMult_SeqAIJ_SeqAIJ(Mat,Mat,MatReuse,PetscReal,Mat*);
 PETSC_INTERN PetscErrorCode MatTransposeMatMultSymbolic_SeqAIJ_SeqAIJ(Mat,Mat,PetscReal,Mat*);
 PETSC_INTERN PetscErrorCode MatTransposeMatMultNumeric_SeqAIJ_SeqAIJ(Mat,Mat,Mat);
+
+PETSC_INTERN PetscErrorCode MatTransposeMatMult_SeqAIJ_SeqDense(Mat,Mat,MatReuse,PetscReal,Mat*);
+PETSC_INTERN PetscErrorCode MatTransposeMatMultSymbolic_SeqAIJ_SeqDense(Mat,Mat,PetscReal,Mat*);
+PETSC_INTERN PetscErrorCode MatTransposeMatMultNumeric_SeqAIJ_SeqDense(Mat,Mat,Mat);
+
 PETSC_INTERN PetscErrorCode MatMatTransposeMult_SeqAIJ_SeqAIJ(Mat,Mat,MatReuse,PetscReal,Mat*);
 PETSC_INTERN PetscErrorCode MatMatTransposeMultSymbolic_SeqAIJ_SeqAIJ(Mat,Mat,PetscReal,Mat*);
 PETSC_INTERN PetscErrorCode MatMatTransposeMultNumeric_SeqAIJ_SeqAIJ(Mat,Mat,Mat);
@@ -381,5 +412,25 @@ PETSC_INTERN PetscErrorCode MatDestroy_SeqAIJ(Mat);
     PetscInt __i; \
     for (__i=0; __i<nnz; __i++) sum += xv[__i] * r[xi[__i]];}
 #endif
+
+
+/*
+    PetscSparseDenseMaxDot - The inner kernel of a modified matrix-vector product \max_i xv[i] * r[xi[i]] for CSR storage
+
+  Input Parameters:
++  nnz - the number of entries
+.  r - the array of vector values
+.  xv - the matrix values for the row
+-  xi - the column indices of the nonzeros in the row
+
+  Output Parameter:
+.  max - the max of results
+
+.seealso: PetscSparseDensePlusDot(), PetscSparseDenseMinusDot()
+
+*/
+#define PetscSparseDenseMaxDot(max,r,xv,xi,nnz) { \
+    PetscInt __i; \
+    for (__i=0; __i<nnz; __i++) max = PetscMax(PetscRealPart(max), PetscRealPart(xv[__i] * r[xi[__i]]));}
 
 #endif

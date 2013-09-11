@@ -86,7 +86,7 @@ PetscErrorCode VecScatterView_MPI(VecScatter ctx,PetscViewer viewer)
   then know that we need not perform that portion of the scatter when the vector is
   scattering to itself with INSERT_VALUES.
 
-     This is currently not used but would speed up, for example DMDALocalToLocalBegin/End()
+     This is currently not used but would speed up, for example DMLocalToLocalBegin/End()
 
 */
 #undef __FUNCT__

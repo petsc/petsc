@@ -24,7 +24,7 @@
   Level: beginner
 
 .keywords: mesh,ExodusII
-.seealso: MeshCreate(), MeshCreateExodus()
+.seealso: DMPLEX, DMCreate()
 @*/
 PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool interpolate, DM *dm)
 {
@@ -49,6 +49,7 @@ PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool inter
   ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
   /* Open EXODUS II file and read basic informations on rank 0, then broadcast to all processors */
   if (!rank) {
+    ierr = PetscMemzero(title,(PETSC_MAX_PATH_LEN+1)*sizeof(char));CHKERRQ(ierr);
     ierr = ex_get_init(exoid, title, &dim, &numVertices, &numCells, &num_cs, &num_vs, &num_fs);
     if (ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"ExodusII ex_get_init() failed with error code %D\n",ierr);
     if (!num_cs) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Exodus file does not contain any cell set\n");
@@ -92,6 +93,20 @@ PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool inter
       for (c_loc = 0, v = 0; c_loc < num_cell_in_set; ++c_loc, ++c) {
         for (v_loc = 0; v_loc < num_vertex_per_cell; ++v_loc, ++v) {
           cone[v_loc] = cs_connect[v]+numCells-1;
+        }
+        if (dim == 3) {
+          /* Tetrahedra are inverted */
+          if (num_vertex_per_cell == 4) {
+            PetscInt tmp = cone[0];
+            cone[0] = cone[1];
+            cone[1] = tmp;
+          }
+          /* Hexahedra are inverted */
+          if (num_vertex_per_cell == 8) {
+            PetscInt tmp = cone[1];
+            cone[1] = cone[3];
+            cone[3] = tmp;
+          }
         }
         ierr = DMPlexSetCone(*dm, c, cone);CHKERRQ(ierr);
         ierr = DMPlexSetLabelValue(*dm, "Cell Sets", c, cs_id[cs]);CHKERRQ(ierr);

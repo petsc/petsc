@@ -17,6 +17,7 @@
          PetscInt  :: nxc
          PetscReal :: rarray(3)
          PetscBool  :: t
+         PetscBool  :: tarray(3)
          PetscEnum :: enum
          character*(80) :: c
          type(tuple) :: pos
@@ -87,12 +88,14 @@
 ! register the data within the bag, grabbing values from the options database
       call PetscBagRegisterInt(bag,data%nxc ,56,'nxc',                   &
      &      'nxc_variable help message',ierr)
-      call PetscBagRegisterRealArray(bag,data%rarray ,3,'rarray',        &
+      call PetscBagRegisterRealArray(bag,data%rarray,3,'rarray',         &
      &      'rarray help message',ierr)
       call PetscBagRegisterScalar(bag,data%x ,103.2d0,'x',               &
      &      'x variable help message',ierr)
       call PetscBagRegisterBool(bag,data%t ,PETSC_TRUE,'t',              &
      &      't boolean help message',ierr)
+      call PetscBagRegisterBoolArray(bag,data%tarray,3,'tarray',         &
+     &      'tarray help message',ierr)
       call PetscBagRegisterString(bag,data%c,'hello','c',                &
      &      'string help message',ierr)
       call PetscBagRegisterReal(bag,data%y ,-11.0d0,'y',                 &
@@ -112,6 +115,7 @@
       data%x   = 155.4
       data%c   = 'a whole new string'
       data%t   = PETSC_TRUE
+      data%tarray   = (/PETSC_TRUE,PETSC_FALSE,PETSC_TRUE/)
       call PetscBagView(bag,PETSC_VIEWER_BINARY_WORLD,ierr)
 
       call PetscViewerBinaryOpen(PETSC_COMM_WORLD,'binaryoutput',        &

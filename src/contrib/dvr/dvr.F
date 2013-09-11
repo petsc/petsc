@@ -43,9 +43,9 @@
          enddo
       enddo
       print *, 'Norm of w is ',dsqrt(sum)
-!      call PetscGetTime(starttime,ierr)
+!      call PetscTime(starttime,ierr)
       call product3DNEW(A,B,v,w)
-!      call PetscGetTime(endtime,ierr)
+!      call PetscTime(endtime,ierr)
 
 !      print*,'Total Flop rate ',3*2.0d-6*n**(dim+1)/(endtime-starttime)
       sum = 0.0d0
@@ -75,7 +75,7 @@
 ! First do I x I x A
       elap1 = 0.0d0
       do itest = 1,ntest
-         call PetscGetTime(st1,ierr)
+         call PetscTime(st1,ierr)
          do p=1,n
             do q=1,n
                do r=1,n
@@ -87,14 +87,14 @@
                enddo
             enddo
          enddo
-         call PetscGetTime(et1,ierr)
+         call PetscTime(et1,ierr)
          elap1 = elap1 + (et1-st1)
       enddo
       elap1 = elap1/ntest
 ! Next do I x A x I
       elap2 = 0.0d0
       do itest = 1,ntest
-         call PetscGetTime(st2,ierr)
+         call PetscTime(st2,ierr)
          do p=1,n
             do q=1,n
                do r=1,n
@@ -106,14 +106,14 @@
                enddo
             enddo
          enddo
-         call PetscGetTime(et2,ierr)
+         call PetscTime(et2,ierr)
          elap2 = elap2 + (et2-st2)
       enddo
       elap2 = elap2/ntest
 ! Finally do A x I x I
       elap3 = 0.0d0
       do itest = 1,ntest
-         call PetscGetTime(st3,ierr)
+         call PetscTime(st3,ierr)
          do p=1,n
             do q=1,n
                do r=1,n
@@ -125,7 +125,7 @@
                enddo
             enddo
          enddo
-         call PetscGetTime(et3,ierr)
+         call PetscTime(et3,ierr)
          elap3 = elap3 + (et3-st3)
       enddo
       elap3 = elap3/ntest
@@ -156,29 +156,29 @@
 ! First do I x I x A
       elap1 = 0.0d0
       do itest = 1,ntest
-         call PetscGetTime(st1,ierr)
+         call PetscTime(st1,ierr)
          call mxm(A(1,1,1),n,v,n,w,n*n)
-         call PetscGetTime(et1,ierr)
+         call PetscTime(et1,ierr)
          elap1 = elap1 + (et1-st1)
       enddo
       elap1 = elap1/ntest
 ! Next do I x A x I
       elap2 = 0.0d0
       do itest = 1,ntest
-         call PetscGetTime(st2,ierr)
+         call PetscTime(st2,ierr)
          do p=1,n
             call mxm(v(1,1,p),n,B((n*n+1)),n,w1(1,1,p),n)
          enddo
-         call PetscGetTime(et2,ierr)
+         call PetscTime(et2,ierr)
          elap2 = elap2 + (et2-st2)
       enddo
       elap2 = elap2/ntest
 ! Finally do A x I x I
       elap3 = 0.0d0
       do itest = 1,ntest
-         call PetscGetTime(st3,ierr)
+         call PetscTime(st3,ierr)
          call mxm(v,n*n,B((2*n*n+1)),n,w2,n)
-         call PetscGetTime(et3,ierr)
+         call PetscTime(et3,ierr)
          elap3 = elap3 + (et3-st3)
       enddo
       elap3 = elap3/ntest
@@ -216,27 +216,27 @@
 ! First do I x I x A
       elap1 = 0.0d0
       do itest = 1,ntest
-         call PetscGetTime(st1,ierr)
+         call PetscTime(st1,ierr)
          call productIA(n,n*n,A(1,1,1),v,w)
-         call PetscGetTime(et1,ierr)
+         call PetscTime(et1,ierr)
          elap1 = elap1 + (et1-st1)
       enddo
       elap1 = elap1/ntest
 ! Next do I x A x I
       elap2 = 0.0d0
       do itest = 1,ntest
-         call PetscGetTime(st2,ierr)
+         call PetscTime(st2,ierr)
          call productIAI(n,n,n,B((n*n+1)),v,w1)
-         call PetscGetTime(et2,ierr)
+         call PetscTime(et2,ierr)
          elap2 = elap2 + (et2-st2)
       enddo
       elap2 = elap2/ntest
 ! Finally do A x I x I
       elap3 = 0.0d0
       do itest = 1,ntest
-         call PetscGetTime(st3,ierr)
+         call PetscTime(st3,ierr)
          call productAI(n,n*n,B((2*n*n+1)),v,w2)
-         call PetscGetTime(et3,ierr)
+         call PetscTime(et3,ierr)
          elap3 = elap3 + (et3-st3)
       enddo
       elap3 = elap3/ntest

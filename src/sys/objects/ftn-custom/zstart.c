@@ -130,7 +130,8 @@ extern MPI_Op PetscMaxSum_Op;
 
 PETSC_EXTERN void MPIAPI PetscMaxSum_Local(void*,void*,PetscMPIInt*,MPI_Datatype*);
 PETSC_EXTERN PetscMPIInt MPIAPI Petsc_DelCounter(MPI_Comm,PetscMPIInt,void*,void*);
-PETSC_EXTERN PetscMPIInt MPIAPI Petsc_DelComm(MPI_Comm,PetscMPIInt,void*,void*);
+PETSC_EXTERN PetscMPIInt MPIAPI Petsc_DelComm_Inner(MPI_Comm,PetscMPIInt,void*,void*);
+PETSC_EXTERN PetscMPIInt MPIAPI Petsc_DelComm_Outer(MPI_Comm,PetscMPIInt,void*,void*);
 
 extern PetscErrorCode  PetscOptionsCheckInitial_Private(void);
 extern PetscErrorCode  PetscOptionsCheckInitial_Components(void);
@@ -283,7 +284,11 @@ PETSC_EXTERN void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(l
 
     if (f_petsc_comm_world) {(*PetscErrorPrintf)("You cannot set PETSC_COMM_WORLD if you have not initialized MPI first\n");return;}
     /* MPI requires calling Fortran mpi_init() if main program is Fortran */
+#if defined(PETSC_HAVE_MPIUNI) && defined(MPIUNI_AVOID_MPI_NAMESPACE)
+    mierr = MPI_Init((int*)0, (char***)0);
+#else
     mpi_init_(&mierr);
+#endif
     if (mierr) {
       *ierr = mierr;
       (*PetscErrorPrintf)("PetscInitialize: Calling Fortran MPI_Init()\n");
@@ -377,9 +382,9 @@ PETSC_EXTERN void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(l
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating MPI ops\n");return;}
   *ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,Petsc_DelCounter,&Petsc_Counter_keyval,(void*)0);
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating MPI keyvals\n");return;}
-  *ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,Petsc_DelComm,&Petsc_InnerComm_keyval,(void*)0);
+  *ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,Petsc_DelComm_Outer,&Petsc_InnerComm_keyval,(void*)0);
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating MPI keyvals\n");return;}
-  *ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,Petsc_DelComm,&Petsc_OuterComm_keyval,(void*)0);
+  *ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,Petsc_DelComm_Inner,&Petsc_OuterComm_keyval,(void*)0);
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating MPI keyvals\n");return;}
 
   /*
@@ -417,14 +422,17 @@ PETSC_EXTERN void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(l
   *ierr = PetscOptionsCheckInitial_Components();
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Checking initial options\n");return;}
 
-  *ierr = PetscThreadCommInitializePackage(NULL);
+  *ierr = PetscThreadCommInitializePackage();
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Calling PetscThreadCommInitialize()\n");return;}
 
+  PetscThreadLocalRegister((PetscThreadKey*)&petscstack); /* Creates pthread_key */
 #if defined(PETSC_USE_DEBUG)
-  PetscThreadLocalRegister((PetscThreadKey*)&petscstack); /* Creates petscstack_key if needed */
   *ierr = PetscStackCreate();
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:PetscStackCreate()\n");return;}
 #endif
+
+  *ierr = PetscCitationsInitialize();
+  if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:PetscCitationsInitialize()\n");return;}
 
   *ierr = PetscOptionsGetInt(NULL,"-hmpi_spawn_size",&nodesize,&flg);
   if (flg) {

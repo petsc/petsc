@@ -18,9 +18,11 @@ static PetscBool ISPackageInitialized = PETSC_FALSE;
 @*/
 PetscErrorCode  ISFinalizePackage(void)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
+  ierr = PetscFunctionListDestroy(&ISList);CHKERRQ(ierr);
   ISPackageInitialized = PETSC_FALSE;
-  ISList               = NULL;
   ISRegisterAllCalled  = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
@@ -32,15 +34,12 @@ PetscErrorCode  ISFinalizePackage(void)
   from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to ISCreateXXXX()
   when using static libraries.
 
-  Input Parameter:
-. path - The dynamic library path, or NULL
-
   Level: developer
 
 .keywords: Vec, initialize, package
 .seealso: PetscInitialize()
 @*/
-PetscErrorCode  ISInitializePackage(const char path[])
+PetscErrorCode  ISInitializePackage(void)
 {
   char           logList[256];
   char           *className;
@@ -51,7 +50,7 @@ PetscErrorCode  ISInitializePackage(const char path[])
   if (ISPackageInitialized) PetscFunctionReturn(0);
   ISPackageInitialized = PETSC_TRUE;
   /* Register Constructors */
-  ierr = ISRegisterAll(path);CHKERRQ(ierr);
+  ierr = ISRegisterAll();CHKERRQ(ierr);
   /* Register Classes */
   ierr = PetscClassIdRegister("Index Set",&IS_CLASSID);CHKERRQ(ierr);
   ierr = PetscClassIdRegister("IS L to G Mapping",&IS_LTOGM_CLASSID);CHKERRQ(ierr);
@@ -99,15 +98,12 @@ static PetscBool  VecPackageInitialized = PETSC_FALSE;
   from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to VecCreate()
   when using static libraries.
 
-  Input Parameter:
-. path - The dynamic library path, or NULL
-
   Level: developer
 
 .keywords: Vec, initialize, package
 .seealso: PetscInitialize()
 @*/
-PetscErrorCode  VecInitializePackage(const char path[])
+PetscErrorCode  VecInitializePackage(void)
 {
   char           logList[256];
   char           *className;
@@ -122,7 +118,7 @@ PetscErrorCode  VecInitializePackage(const char path[])
   ierr = PetscClassIdRegister("Vector",&VEC_CLASSID);CHKERRQ(ierr);
   ierr = PetscClassIdRegister("Vector Scatter",&VEC_SCATTER_CLASSID);CHKERRQ(ierr);
   /* Register Constructors */
-  ierr = VecRegisterAll(path);CHKERRQ(ierr);
+  ierr = VecRegisterAll();CHKERRQ(ierr);
   /* Register Events */
   ierr = PetscLogEventRegister("VecView",          VEC_CLASSID,&VEC_View);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("VecMax",           VEC_CLASSID,&VEC_Max);CHKERRQ(ierr);
@@ -167,6 +163,10 @@ PetscErrorCode  VecInitializePackage(const char path[])
   ierr = PetscLogEventRegister("VecCUSPCopyFrom",   VEC_CLASSID,&VEC_CUSPCopyFromGPU);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("VecCopyToSome",     VEC_CLASSID,&VEC_CUSPCopyToGPUSome);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("VecCopyFromSome",   VEC_CLASSID,&VEC_CUSPCopyFromGPUSome);CHKERRQ(ierr);
+#endif
+#if defined(PETSC_HAVE_VIENNACL)
+  ierr = PetscLogEventRegister("VecViennaCLCopyTo",     VEC_CLASSID,&VEC_ViennaCLCopyToGPU);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("VecViennaCLCopyFrom",   VEC_CLASSID,&VEC_ViennaCLCopyFromGPU);CHKERRQ(ierr);
 #endif
   /* Turn off high traffic events by default */
   ierr = PetscLogEventSetActiveAll(VEC_DotBarrier, PETSC_FALSE);CHKERRQ(ierr);
@@ -237,11 +237,11 @@ PetscErrorCode  VecFinalizePackage(void)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscFunctionListDestroy(&VecList);CHKERRQ(ierr);
   ierr = MPI_Op_free(&PetscSplitReduction_Op);CHKERRQ(ierr);
   ierr = MPI_Op_free(&VecMax_Local_Op);CHKERRQ(ierr);
   ierr = MPI_Op_free(&VecMin_Local_Op);CHKERRQ(ierr);
   VecPackageInitialized = PETSC_FALSE;
-  VecList               = NULL;
   VecRegisterAllCalled  = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
@@ -254,19 +254,17 @@ PetscErrorCode  VecFinalizePackage(void)
 
   This one registers all the methods that are in the basic PETSc Vec library.
 
-  Input Parameter:
-  path - library path
  */
-PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscvec(const char path[])
+PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscvec(void)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscSFInitializePackage(path);CHKERRQ(ierr);
-  ierr = ISInitializePackage(path);CHKERRQ(ierr);
-  ierr = AOInitializePackage(path);CHKERRQ(ierr);
-  ierr = VecInitializePackage(path);CHKERRQ(ierr);
-  ierr = PFInitializePackage(path);CHKERRQ(ierr);
+  ierr = PetscSFInitializePackage();CHKERRQ(ierr);
+  ierr = ISInitializePackage();CHKERRQ(ierr);
+  ierr = AOInitializePackage();CHKERRQ(ierr);
+  ierr = VecInitializePackage();CHKERRQ(ierr);
+  ierr = PFInitializePackage();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

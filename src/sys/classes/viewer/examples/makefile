@@ -1,5 +1,5 @@
 
-LOCDIR	 = src/sys/viewer/examples/
+LOCDIR	 = src/sys/classes/viewer/examples/
 LIBBASE	 = libpetscsys
 DIRS	 = tutorials tests
 

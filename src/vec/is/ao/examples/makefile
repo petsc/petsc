@@ -2,7 +2,7 @@
 ALL:
 
 LOCDIR   = src/vec/is/ao/examples/
-DIRS     = tests tutorials
+DIRS     = tests
 MANSEC   = AO
 
 include ${PETSC_DIR}/conf/variables

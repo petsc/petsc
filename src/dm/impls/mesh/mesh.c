@@ -1,6 +1,7 @@
 #include <petsc-private/meshimpl.h>   /*I      "petscdmmesh.h"   I*/
 #include <petscdmmesh_viewers.hh>
 #include <petscdmmesh_formats.hh>
+#include <petscsf.h>
 
 /* Logging support */
 PetscLogEvent DMMesh_View, DMMesh_GetGlobalScatter, DMMesh_restrictVector, DMMesh_assembleVector, DMMesh_assembleVectorComplete, DMMesh_assembleMatrix, DMMesh_updateOperator;
@@ -382,7 +383,7 @@ PetscErrorCode DMCreateMatrix_Mesh(DM dm, MatType mtype, Mat *J)
 
   PetscFunctionBegin;
 #if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
-  ierr = MatInitializePackage(NULL);CHKERRQ(ierr);
+  ierr = MatInitializePackage();CHKERRQ(ierr);
 #endif
   if (!mtype) mtype = MATAIJ;
   if (mesh->useNewImpl) {
@@ -443,7 +444,7 @@ PetscErrorCode DMMeshCreateMatrix(DM dm, SectionReal section, MatType mtype, Mat
 
   PetscFunctionBegin;
 #if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
-  ierr = MatInitializePackage(NULL);CHKERRQ(ierr);
+  ierr = MatInitializePackage();CHKERRQ(ierr);
 #endif
   if (!mtype) mtype = MATAIJ;
   ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
@@ -599,8 +600,8 @@ PetscErrorCode DMCreateLocalVector_Mesh(DM dm, Vec *lvec)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMCreateLocalToGlobalMapping_Mesh"
-PetscErrorCode DMCreateLocalToGlobalMapping_Mesh(DM dm)
+#define __FUNCT__ "DMGetLocalToGlobalMapping_Mesh"
+PetscErrorCode DMGetLocalToGlobalMapping_Mesh(DM dm)
 {
   ALE::Obj<PETSC_MESH_TYPE>                    m;
   ALE::Obj<PETSC_MESH_TYPE::real_section_type> s;
@@ -626,7 +627,7 @@ PetscErrorCode DMCreateLocalToGlobalMapping_Mesh(DM dm)
     }
   }
   ierr = ISLocalToGlobalMappingCreate(PETSC_COMM_SELF, s->size(), ltog, PETSC_OWN_POINTER, &dm->ltogmap);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(dm, dm->ltogmap);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)dm, (PetscObject)dm->ltogmap);CHKERRQ(ierr);
   ierr = SectionRealDestroy(&section);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

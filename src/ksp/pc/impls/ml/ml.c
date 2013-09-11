@@ -566,23 +566,26 @@ extern PetscErrorCode PCReset_MG(PC);
 #define __FUNCT__ "PCSetUp_ML"
 PetscErrorCode PCSetUp_ML(PC pc)
 {
-  PetscErrorCode ierr;
-  PetscMPIInt    size;
-  FineGridCtx    *PetscMLdata;
-  ML             *ml_object;
-  ML_Aggregate   *agg_object;
-  ML_Operator    *mlmat;
-  PetscInt       nlocal_allcols,Nlevels,mllevel,level,level1,m,fine_level,bs;
-  Mat            A,Aloc;
-  GridCtx        *gridctx;
-  PC_MG          *mg    = (PC_MG*)pc->data;
-  PC_ML          *pc_ml = (PC_ML*)mg->innerctx;
-  PetscBool      isSeq, isMPI;
-  KSP            smoother;
-  PC             subpc;
-  PetscInt       mesh_level, old_mesh_level;
+  PetscErrorCode   ierr;
+  PetscMPIInt      size;
+  FineGridCtx      *PetscMLdata;
+  ML               *ml_object;
+  ML_Aggregate     *agg_object;
+  ML_Operator      *mlmat;
+  PetscInt         nlocal_allcols,Nlevels,mllevel,level,level1,m,fine_level,bs;
+  Mat              A,Aloc;
+  GridCtx          *gridctx;
+  PC_MG            *mg    = (PC_MG*)pc->data;
+  PC_ML            *pc_ml = (PC_ML*)mg->innerctx;
+  PetscBool        isSeq, isMPI;
+  KSP              smoother;
+  PC               subpc;
+  PetscInt         mesh_level, old_mesh_level;
+  MatInfo          info;
+  static PetscBool cite = PETSC_FALSE;
 
   PetscFunctionBegin;
+  ierr = PetscCitationsRegister("@TechReport{ml_users_guide,\n  author = {M. Sala and J.J. Hu and R.S. Tuminaro},\n  title = {{ML}3.1 {S}moothed {A}ggregation {U}ser's {G}uide},\n  institution =  {Sandia National Laboratories},\n  number = {SAND2004-4821},\n  year = 2004\n}\n",&cite);CHKERRQ(ierr);
   A    = pc->pmat;
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRQ(ierr);
 
@@ -644,11 +647,11 @@ PetscErrorCode PCSetUp_ML(PC pc)
 
       for (level=0; level<fine_level; level++) {
         if (level > 0) {
-          ierr = PCMGSetResidual(pc,level,PCMGResidual_Default,gridctx[level].A);CHKERRQ(ierr);
+          ierr = PCMGSetResidual(pc,level,PCMGResidualDefault,gridctx[level].A);CHKERRQ(ierr);
         }
         ierr = KSPSetOperators(gridctx[level].ksp,gridctx[level].A,gridctx[level].A,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
       }
-      ierr = PCMGSetResidual(pc,fine_level,PCMGResidual_Default,gridctx[fine_level].A);CHKERRQ(ierr);
+      ierr = PCMGSetResidual(pc,fine_level,PCMGResidualDefault,gridctx[fine_level].A);CHKERRQ(ierr);
       ierr = KSPSetOperators(gridctx[fine_level].ksp,gridctx[level].A,gridctx[fine_level].A,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
 
       ierr = PCSetUp_MG(pc);CHKERRQ(ierr);
@@ -798,6 +801,9 @@ PetscErrorCode PCSetUp_ML(PC pc)
     ml_object->Amat[0].num_PDEs            = bs;
   }
 
+  ierr = MatGetInfo(A,MAT_LOCAL,&info);CHKERRQ(ierr);
+  ml_object->Amat[0].N_nonzeros = (int) info.nz_used;
+
   if (pc_ml->dim) {
     PetscInt               i,dim = pc_ml->dim;
     ML_Aggregate_Viz_Stats *grid_info;
@@ -942,11 +948,11 @@ PetscErrorCode PCSetUp_ML(PC pc)
     ierr   = PCMGSetInterpolation(pc,level1,gridctx[level].P);CHKERRQ(ierr);
     ierr   = PCMGSetRestriction(pc,level1,gridctx[level].R);CHKERRQ(ierr);
     if (level > 0) {
-      ierr = PCMGSetResidual(pc,level,PCMGResidual_Default,gridctx[level].A);CHKERRQ(ierr);
+      ierr = PCMGSetResidual(pc,level,PCMGResidualDefault,gridctx[level].A);CHKERRQ(ierr);
     }
     ierr = KSPSetOperators(gridctx[level].ksp,gridctx[level].A,gridctx[level].A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
   }
-  ierr = PCMGSetResidual(pc,fine_level,PCMGResidual_Default,gridctx[fine_level].A);CHKERRQ(ierr);
+  ierr = PCMGSetResidual(pc,fine_level,PCMGResidualDefault,gridctx[fine_level].A);CHKERRQ(ierr);
   ierr = KSPSetOperators(gridctx[fine_level].ksp,gridctx[level].A,gridctx[fine_level].A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
 
   /* put coordinate info in levels */
@@ -1016,7 +1022,7 @@ PetscErrorCode PCDestroy_ML(PC pc)
   ierr = PCReset_ML(pc);CHKERRQ(ierr);
   ierr = PetscFree(pc_ml);CHKERRQ(ierr);
   ierr = PCDestroy_MG(pc);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCSetCoordinates_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCSetCoordinates_C",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1220,7 +1226,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_ML(PC pc)
   pc_ml->AuxThreshold             = 0.0;
 
   /* allow for coordinates to be passed */
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCSetCoordinates_C","PCSetCoordinates_ML",PCSetCoordinates_ML);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCSetCoordinates_C",PCSetCoordinates_ML);CHKERRQ(ierr);
 
   /* overwrite the pointers of PCMG by the functions of PCML */
   pc->ops->setfromoptions = PCSetFromOptions_ML;

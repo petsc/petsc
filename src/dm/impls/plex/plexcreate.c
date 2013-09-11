@@ -1,6 +1,7 @@
 #define PETSCDM_DLL
 #include <petsc-private/dmpleximpl.h>    /*I   "petscdmplex.h"   I*/
 #include <petscdmda.h>
+#include <petscsf.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "DMSetFromOptions_Plex"
@@ -17,6 +18,7 @@ PetscErrorCode  DMSetFromOptions_Plex(DM dm)
   /* Handle viewing */
   ierr = PetscOptionsBool("-dm_plex_print_set_values", "Output all set values info", "DMView", PETSC_FALSE, &mesh->printSetValues, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-dm_plex_print_fem", "Debug output level all fem computations", "DMView", 0, &mesh->printFEM, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-dm_plex_print_tol", "Tolerance for FEM output", "DMView", PETSC_FALSE, &mesh->printTol, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -496,6 +498,7 @@ extern PetscErrorCode DMCreateInterpolation_Plex(DM dmCoarse, DM dmFine, Mat *in
 extern PetscErrorCode DMCreateMatrix_Plex(DM dm, MatType mtype, Mat *J);
 extern PetscErrorCode DMCreateCoordinateDM_Plex(DM dm, DM *cdm);
 extern PetscErrorCode DMRefine_Plex(DM dm, MPI_Comm comm, DM *dmRefined);
+extern PetscErrorCode DMClone_Plex(DM dm, DM *newdm);
 extern PetscErrorCode DMSetUp_Plex(DM dm);
 extern PetscErrorCode DMDestroy_Plex(DM dm);
 extern PetscErrorCode DMView_Plex(DM dm, PetscViewer viewer);
@@ -527,7 +530,6 @@ static PetscErrorCode DMCreateLocalVector_Plex(DM dm,Vec *vec)
   PetscFunctionReturn(0);
 }
 
-
 #undef __FUNCT__
 #define __FUNCT__ "DMInitialize_Plex"
 PetscErrorCode DMInitialize_Plex(DM dm)
@@ -539,11 +541,12 @@ PetscErrorCode DMInitialize_Plex(DM dm)
 
   dm->ops->view                            = DMView_Plex;
   dm->ops->setfromoptions                  = DMSetFromOptions_Plex;
+  dm->ops->clone                           = DMClone_Plex;
   dm->ops->setup                           = DMSetUp_Plex;
   dm->ops->createglobalvector              = DMCreateGlobalVector_Plex;
   dm->ops->createlocalvector               = DMCreateLocalVector_Plex;
-  dm->ops->createlocaltoglobalmapping      = NULL;
-  dm->ops->createlocaltoglobalmappingblock = NULL;
+  dm->ops->getlocaltoglobalmapping         = NULL;
+  dm->ops->getlocaltoglobalmappingblock    = NULL;
   dm->ops->createfieldis                   = NULL;
   dm->ops->createcoordinatedm              = DMCreateCoordinateDM_Plex;
   dm->ops->getcoloring                     = 0;
@@ -562,6 +565,21 @@ PetscErrorCode DMInitialize_Plex(DM dm)
   dm->ops->destroy                         = DMDestroy_Plex;
   dm->ops->createsubdm                     = DMCreateSubDM_Plex;
   dm->ops->locatepoints                    = DMLocatePoints_Plex;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMClone_Plex"
+PetscErrorCode DMClone_Plex(DM dm, DM *newdm)
+{
+  DM_Plex        *mesh = (DM_Plex *) dm->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  mesh->refct++;
+  (*newdm)->data = mesh;
+  ierr = PetscObjectChangeTypeName((PetscObject) *newdm, DMPLEX);CHKERRQ(ierr);
+  ierr = DMInitialize_Plex(*newdm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -608,18 +626,16 @@ PETSC_EXTERN PetscErrorCode DMCreate_Plex(DM dm)
   for (unit = 0; unit < NUM_PETSC_UNITS; ++unit) mesh->scale[unit] = 1.0;
 
   mesh->labels              = NULL;
+  mesh->depthLabel          = NULL;
   mesh->globalVertexNumbers = NULL;
   mesh->globalCellNumbers   = NULL;
   for (d = 0; d < 8; ++d) mesh->hybridPointMax[d] = PETSC_DETERMINE;
   mesh->vtkCellHeight     = 0;
   mesh->preallocCenterDim = -1;
 
-  mesh->integrateResidualFEM       = NULL;
-  mesh->integrateJacobianActionFEM = NULL;
-  mesh->integrateJacobianFEM       = NULL;
-
   mesh->printSetValues = PETSC_FALSE;
   mesh->printFEM       = 0;
+  mesh->printTol       = 1.0e-10;
 
   ierr = DMInitialize_Plex(dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -650,46 +666,6 @@ PetscErrorCode DMPlexCreate(MPI_Comm comm, DM *mesh)
   PetscValidPointer(mesh,2);
   ierr = DMCreate(comm, mesh);CHKERRQ(ierr);
   ierr = DMSetType(*mesh, DMPLEX);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexClone"
-/*@
-  DMPlexClone - Creates a DMPlex object with the same mesh as the original.
-
-  Collective on MPI_Comm
-
-  Input Parameter:
-. dm - The original DMPlex object
-
-  Output Parameter:
-. newdm  - The new DMPlex object
-
-  Level: beginner
-
-.keywords: DMPlex, create
-@*/
-PetscErrorCode DMPlexClone(DM dm, DM *newdm)
-{
-  DM_Plex        *mesh;
-  void           *ctx;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(newdm,2);
-  ierr         = DMCreate(PetscObjectComm((PetscObject)dm), newdm);CHKERRQ(ierr);
-  ierr         = PetscSFDestroy(&(*newdm)->sf);CHKERRQ(ierr);
-  ierr         = PetscObjectReference((PetscObject) dm->sf);CHKERRQ(ierr);
-  (*newdm)->sf = dm->sf;
-  mesh         = (DM_Plex*) dm->data;
-  mesh->refct++;
-  (*newdm)->data = mesh;
-  ierr           = PetscObjectChangeTypeName((PetscObject) *newdm, DMPLEX);CHKERRQ(ierr);
-  ierr           = DMInitialize_Plex(*newdm);CHKERRQ(ierr);
-  ierr           = DMGetApplicationContext(dm, &ctx);CHKERRQ(ierr);
-  ierr           = DMSetApplicationContext(*newdm, ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

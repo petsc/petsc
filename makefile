@@ -305,12 +305,12 @@ docsetdate: chk_petscdir
         version_release=`grep '^#define PETSC_VERSION_RELEASE ' include/petscversion.h |tr -s ' ' | cut -d ' ' -f 3`; \
         version_major=`grep '^#define PETSC_VERSION_MAJOR ' include/petscversion.h |tr -s ' ' | cut -d ' ' -f 3`; \
         version_minor=`grep '^#define PETSC_VERSION_MINOR ' include/petscversion.h |tr -s ' ' | cut -d ' ' -f 3`; \
-        version_patch=`grep '^#define PETSC_VERSION_PATCH ' include/petscversion.h |tr -s ' ' | cut -d ' ' -f 3`; \
+        version_subminor=`grep '^#define PETSC_VERSION_SUBMINOR ' include/petscversion.h |tr -s ' ' | cut -d ' ' -f 3`; \
         if  [ $${version_release} = 0 ]; then \
           petscversion=petsc-dev; \
           export petscversion; \
         elif [ $${version_release} = 1 ]; then \
-          petscversion=petsc-$${version_major}.$${version_minor}-p$${version_patch}; \
+          petscversion=petsc-$${version_major}.$${version_minor}.$${version_subminor}; \
           export petscversion; \
         else \
           echo "Unknown PETSC_VERSION_RELEASE: $${version_release}"; \
@@ -319,6 +319,7 @@ docsetdate: chk_petscdir
         datestr=`git log -1 --pretty=format:%ci | cut -d ' ' -f 1`; \
         export datestr; \
         find * -type d -wholename src/docs/website -prune -o -type d -wholename src/benchmarks/results -prune -o \
+          -type d -wholename config/BuildSystem/docs/website -prune -o -type d -wholename include/web -prune -o \
           -type d -wholename 'arch-*' -prune -o -type d -wholename src/tops -prune -o -type d -wholename externalpackages -prune -o \
           -type f -wholename tutorials/multiphysics/tutorial.html -prune -o -type f -name \*.html \
           -exec perl -pi -e 's^(<body.*>)^$$1\n   <div id=\"version\" align=right><b>$$ENV{petscversion} $$ENV{datestr}</b></div>^i' {} \; \

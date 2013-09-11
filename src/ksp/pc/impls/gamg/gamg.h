@@ -5,6 +5,16 @@
 #include <../src/mat/impls/aij/seq/aij.h>
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
 
+struct _PCGAMGOps {
+  PetscErrorCode (*graph)(PC, const Mat, Mat*);
+  PetscErrorCode (*coarsen)(PC, Mat*, PetscCoarsenData**);
+  PetscErrorCode (*prolongator)(PC, const Mat, const Mat, PetscCoarsenData*, Mat*);
+  PetscErrorCode (*optprol)(PC, const Mat, Mat*);
+  PetscErrorCode (*createdefaultdata)(PC, Mat); /* for data methods that have a default (SA) */
+  PetscErrorCode (*setfromoptions)(PC);
+  PetscErrorCode (*destroy)(PC);
+};
+
 /* Private context for the GAMG preconditioner */
 typedef struct gamg_TAG {
   PetscInt  Nlevels;
@@ -28,18 +38,11 @@ typedef struct gamg_TAG {
   PetscReal *data;          /* [data_sz] blocked vector of vertex data on fine grid (coordinates/nullspace) */
   PetscReal *orig_data;          /* cache data */
 
-  PetscErrorCode (*graph)(PC, const Mat, Mat*);
-  PetscErrorCode (*coarsen)(PC, Mat*, PetscCoarsenData**);
-  PetscErrorCode (*prolongator)(PC, const Mat, const Mat, PetscCoarsenData*, Mat*);
-  PetscErrorCode (*optprol)(PC, const Mat, Mat*);
-  PetscErrorCode (*formkktprol)(PC, const Mat, const Mat, Mat*);
-  PetscErrorCode (*createdefaultdata)(PC, Mat); /* for data methods that have a default (SA) */
+  struct _PCGAMGOps *ops;
+  char *gamg_type_name;
 
   void *subctx;
 } PC_GAMG;
-
-#define GAMGAGG "agg"
-#define GAMGGEO "geo"
 
 PetscErrorCode PCSetFromOptions_MG(PC);
 PetscErrorCode PCReset_MG(PC);
@@ -47,6 +50,7 @@ PetscErrorCode PCReset_MG(PC);
 /* hooks create derivied classes */
 PetscErrorCode  PCCreateGAMG_GEO(PC pc);
 PetscErrorCode  PCCreateGAMG_AGG(PC pc);
+PetscErrorCode  PCCreateGAMG_Classical(PC pc);
 
 PetscErrorCode PCSetFromOptions_GAMG(PC pc);
 PetscErrorCode PCDestroy_GAMG(PC pc);
@@ -69,7 +73,6 @@ PETSC_INTERN PetscLogEvent PC_GAMGCoarsen_GEO;
 PETSC_INTERN PetscLogEvent PC_GAMGProlongator_AGG;
 PETSC_INTERN PetscLogEvent PC_GAMGProlongator_GEO;
 PETSC_INTERN PetscLogEvent PC_GAMGOptprol_AGG;
-PETSC_INTERN PetscLogEvent PC_GAMGKKTProl_AGG;
 #endif
 
 typedef struct _GAMGHashTable {

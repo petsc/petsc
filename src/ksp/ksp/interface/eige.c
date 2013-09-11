@@ -153,7 +153,7 @@ PetscErrorCode  KSPComputeEigenvaluesExplicitly(KSP ksp,PetscInt nmax,PetscReal 
     }
     ierr = MatSetType(A,MATMPIDENSE);CHKERRQ(ierr);
     ierr = MatMPIDenseSetPreallocation(A,NULL);CHKERRQ(ierr);
-    ierr = PetscLogObjectParent(BA,A);CHKERRQ(ierr);
+    ierr = PetscLogObjectParent((PetscObject)BA,(PetscObject)A);CHKERRQ(ierr);
 
     ierr = MatGetOwnershipRange(BA,&row,&dummy);CHKERRQ(ierr);
     ierr = MatGetLocalSize(BA,&m,&dummy);CHKERRQ(ierr);
@@ -191,7 +191,7 @@ PetscErrorCode  KSPComputeEigenvaluesExplicitly(KSP ksp,PetscInt nmax,PetscReal 
     ierr   = PetscMalloc(lwork*sizeof(PetscReal),&work);CHKERRQ(ierr);
     ierr   = PetscMalloc(n*sizeof(PetscReal),&realpart);CHKERRQ(ierr);
     ierr   = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
-    PetscStackCall("LAPACKgeev",LAPACKgeev_(&zero,array,&bn,cwork,&sdummy,&idummy,&idummy,&bn,work,&lwork));
+    PetscStackCallBLAS("LAPACKgeev",LAPACKgeev_(&zero,array,&bn,cwork,&sdummy,&idummy,&idummy,&bn,work,&lwork));
     ierr = PetscFPTrapPop();CHKERRQ(ierr);
     ierr = PetscFree(work);CHKERRQ(ierr);
 
@@ -233,8 +233,7 @@ PetscErrorCode  KSPComputeEigenvaluesExplicitly(KSP ksp,PetscInt nmax,PetscReal 
 
     idummy   = n;
     lwork    = 5*n;
-    ierr     = PetscMalloc(2*n*sizeof(PetscReal),&realpart);CHKERRQ(ierr);
-    imagpart = realpart + n;
+    ierr     = PetscMalloc2(n,PetscReal,&realpart,n,PetscReal,&imagpart);CHKERRQ(ierr);
     ierr     = PetscMalloc(5*n*sizeof(PetscReal),&work);CHKERRQ(ierr);
 #if defined(PETSC_MISSING_LAPACK_GEEV)
     SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"GEEV - Lapack routine is unavailable\nNot able to provide eigen values.");
@@ -246,7 +245,7 @@ PetscErrorCode  KSPComputeEigenvaluesExplicitly(KSP ksp,PetscInt nmax,PetscReal 
 
       ierr = PetscBLASIntCast(n,&bn);CHKERRQ(ierr);
       ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
-      PetscStackCall("LAPACKgeev",LAPACKgeev_("N","N",&bn,array,&bn,realpart,imagpart,&sdummy,&idummy,&sdummy,&idummy,work,&lwork,&lierr));
+      PetscStackCallBLAS("LAPACKgeev",LAPACKgeev_("N","N",&bn,array,&bn,realpart,imagpart,&sdummy,&idummy,&sdummy,&idummy,work,&lwork,&lierr));
       if (lierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in LAPACK routine %d",(int)lierr);
       ierr = PetscFPTrapPop();CHKERRQ(ierr);
     }
@@ -261,7 +260,7 @@ PetscErrorCode  KSPComputeEigenvaluesExplicitly(KSP ksp,PetscInt nmax,PetscReal 
       c[i] = imagpart[perm[i]];
     }
     ierr = PetscFree(perm);CHKERRQ(ierr);
-    ierr = PetscFree(realpart);CHKERRQ(ierr);
+    ierr = PetscFree2(realpart,imagpart);CHKERRQ(ierr);
   }
 #else
   if (!rank) {
@@ -284,7 +283,7 @@ PetscErrorCode  KSPComputeEigenvaluesExplicitly(KSP ksp,PetscInt nmax,PetscReal 
       PetscBLASInt nb;
       ierr = PetscBLASIntCast(n,&nb);CHKERRQ(ierr);
       ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
-      PetscStackCall("LAPACKgeev",LAPACKgeev_("N","N",&nb,array,&nb,eigs,&sdummy,&idummy,&sdummy,&idummy,work,&lwork,rwork,&lierr));
+      PetscStackCallBLAS("LAPACKgeev",LAPACKgeev_("N","N",&nb,array,&nb,eigs,&sdummy,&idummy,&sdummy,&idummy,work,&lwork,rwork,&lierr));
       if (lierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in LAPACK routine %d",(int)lierr);
       ierr = PetscFPTrapPop();CHKERRQ(ierr);
     }
@@ -377,7 +376,7 @@ PetscErrorCode KSPPlotEigenContours_Private(KSP ksp,PetscInt neig,const PetscRea
       if (tmod > 0.2 && tmod < 0.5) tmod = 0.2;
       if (tmod > 0.05 && tmod < 0.2) tmod = 0.05;
       if (tmod < 1e-3) tmod = 1e-3;
-      value[i+j*M] = PetscLogScalar(tmod) / PetscLogScalar(10.0);
+      value[i+j*M] = PetscLogReal(tmod) / PetscLogReal(10.0);
     }
   }
   ierr = PetscViewerDrawOpen(PETSC_COMM_SELF,0,"Iteratively Computed Eigen-contours",PETSC_DECIDE,PETSC_DECIDE,450,450,&viewer);CHKERRQ(ierr);

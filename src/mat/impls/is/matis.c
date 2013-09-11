@@ -15,6 +15,34 @@
 #include <../src/mat/impls/is/matis.h>      /*I "petscmat.h" I*/
 
 #undef __FUNCT__
+#define __FUNCT__ "MatIsHermitian_IS"
+PetscErrorCode MatIsHermitian_IS(Mat A,PetscReal tol,PetscBool  *flg)
+{
+  PetscErrorCode ierr;
+  Mat_IS         *matis = (Mat_IS*)A->data;
+  PetscBool      local_sym;
+
+  PetscFunctionBegin;
+  ierr = MatIsHermitian(matis->A,tol,&local_sym);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&local_sym,flg,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)A));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatIsSymmetric_IS"
+PetscErrorCode MatIsSymmetric_IS(Mat A,PetscReal tol,PetscBool  *flg)
+{
+  PetscErrorCode ierr;
+  Mat_IS         *matis = (Mat_IS*)A->data;
+  PetscBool      local_sym;
+
+  PetscFunctionBegin;
+  ierr = MatIsSymmetric(matis->A,tol,&local_sym);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&local_sym,flg,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)A));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MatDestroy_IS"
 PetscErrorCode MatDestroy_IS(Mat A)
 {
@@ -29,7 +57,7 @@ PetscErrorCode MatDestroy_IS(Mat A)
   ierr = ISLocalToGlobalMappingDestroy(&b->mapping);CHKERRQ(ierr);
   ierr = PetscFree(A->data);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)A,0);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatISGetLocalMat_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatISGetLocalMat_C",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -213,6 +241,18 @@ PetscErrorCode MatSetValuesLocal_IS(Mat A,PetscInt m,const PetscInt *rows, Petsc
 
   PetscFunctionBegin;
   ierr = MatSetValues(is->A,m,rows,n,cols,values,addv);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatSetValuesBlockedLocal_IS"
+PetscErrorCode MatSetValuesBlockedLocal_IS(Mat A,PetscInt m,const PetscInt *rows, PetscInt n,const PetscInt *cols,const PetscScalar *values,InsertMode addv)
+{
+  PetscErrorCode ierr;
+  Mat_IS         *is = (Mat_IS*)A->data;
+
+  PetscFunctionBegin;
+  ierr = MatSetValuesBlocked(is->A,m,rows,n,cols,values,addv);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -543,6 +583,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_IS(Mat A)
   A->ops->setlocaltoglobalmapping = MatSetLocalToGlobalMapping_IS;
   A->ops->setvalues               = MatSetValues_IS;
   A->ops->setvalueslocal          = MatSetValuesLocal_IS;
+  A->ops->setvaluesblockedlocal   = MatSetValuesBlockedLocal_IS;
   A->ops->zerorows                = MatZeroRows_IS;
   A->ops->zerorowslocal           = MatZeroRowsLocal_IS;
   A->ops->assemblybegin           = MatAssemblyBegin_IS;
@@ -552,6 +593,8 @@ PETSC_EXTERN PetscErrorCode MatCreate_IS(Mat A)
   A->ops->scale                   = MatScale_IS;
   A->ops->getdiagonal             = MatGetDiagonal_IS;
   A->ops->setoption               = MatSetOption_IS;
+  A->ops->ishermitian             = MatIsHermitian_IS;
+  A->ops->issymmetric             = MatIsSymmetric_IS;
 
   ierr = PetscLayoutSetUp(A->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(A->cmap);CHKERRQ(ierr);
@@ -560,8 +603,8 @@ PETSC_EXTERN PetscErrorCode MatCreate_IS(Mat A)
   b->ctx = 0;
   b->x   = 0;
   b->y   = 0;
-  ierr   = PetscObjectComposeFunction((PetscObject)A,"MatISGetLocalMat_C","MatISGetLocalMat_IS",MatISGetLocalMat_IS);CHKERRQ(ierr);
-  ierr   = PetscObjectComposeFunction((PetscObject)A,"MatISSetLocalMat_C","MatISSetLocalMat_IS",MatISSetLocalMat_IS);CHKERRQ(ierr);
+  ierr   = PetscObjectComposeFunction((PetscObject)A,"MatISGetLocalMat_C",MatISGetLocalMat_IS);CHKERRQ(ierr);
+  ierr   = PetscObjectComposeFunction((PetscObject)A,"MatISSetLocalMat_C",MatISSetLocalMat_IS);CHKERRQ(ierr);
   ierr   = PetscObjectChangeTypeName((PetscObject)A,MATIS);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

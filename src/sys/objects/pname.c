@@ -39,22 +39,21 @@ PetscErrorCode  PetscObjectSetName(PetscObject obj,const char name[])
 
    Input Parameters:
 +     obj - the PETSc object
-.     viewer - ASCII viewer where the information is printed
--     string - for example "Matrix Object"
+-     viewer - ASCII viewer where the information is printed
 
    Level: developer
 
 .seealso: PetscObjectSetName(), PetscObjectName()
 
 @*/
-PetscErrorCode PetscObjectPrintClassNamePrefixType(PetscObject obj,PetscViewer viewer,const char string[])
+PetscErrorCode PetscObjectPrintClassNamePrefixType(PetscObject obj,PetscViewer viewer)
 {
   PetscErrorCode ierr;
   MPI_Comm       comm;
   PetscMPIInt    size;
 
   PetscFunctionBegin;
-  ierr = PetscViewerASCIIPrintf(viewer,"%s:",string);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"%s Object:",obj->class_name);CHKERRQ(ierr);
   if (obj->name) {
     ierr = PetscViewerASCIIPrintf(viewer,"%s",obj->name);CHKERRQ(ierr);
   }
@@ -108,12 +107,16 @@ PetscErrorCode  PetscObjectName(PetscObject obj)
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
   if (!obj->name) {
-    void *commp = 0;
+    union {MPI_Comm comm; void *ptr; char raw[sizeof(MPI_Comm)]; } ucomm;
     ierr = MPI_Attr_get(obj->comm,Petsc_Counter_keyval,(void*)&counter,&flg);CHKERRQ(ierr);
     if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"Bad MPI communicator supplied; must be a PETSc communicator");
-    ierr = PetscMemcpy(&commp,&obj->comm,PetscMin(sizeof(commp),sizeof(obj->comm)));CHKERRQ(ierr);
-    ierr = MPI_Bcast((PETSC_UINTPTR_T*)&commp,1,MPIU_SIZE_T,0,obj->comm);CHKERRQ(ierr);
-    ierr = PetscSNPrintf(name,64,"%s_%p_%D",obj->class_name,commp,counter->namecount++);CHKERRQ(ierr);
+    ucomm.ptr = NULL;
+    ucomm.comm = obj->comm;
+    ierr = MPI_Bcast(ucomm.raw,sizeof(MPI_Comm),MPI_BYTE,0,obj->comm);CHKERRQ(ierr);
+    /* If the union has extra bytes, their value is implementation-dependent, but they will normally be what we set last
+     * in 'ucomm.ptr = NULL'.  This output is always implementation-defined (and varies from run to run) so the union
+     * abuse acceptable. */
+    ierr = PetscSNPrintf(name,64,"%s_%p_%D",obj->class_name,ucomm.ptr,counter->namecount++);CHKERRQ(ierr);
     ierr = PetscStrallocpy(name,&obj->name);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -129,12 +132,10 @@ PetscErrorCode  PetscObjectChangeTypeName(PetscObject obj,const char type_name[]
 
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
-  ierr = PetscObjectTakeAccess(obj);CHKERRQ(ierr);
   ierr = PetscFree(obj->type_name);CHKERRQ(ierr);
   ierr = PetscStrallocpy(type_name,&obj->type_name);CHKERRQ(ierr);
   /* Clear all the old subtype callbacks so they can't accidentally be called (shouldn't happen anyway) */
   ierr = PetscMemzero(obj->fortrancallback[PETSC_FORTRAN_CALLBACK_SUBTYPE],obj->num_fortrancallback[PETSC_FORTRAN_CALLBACK_SUBTYPE]*sizeof(PetscFortranCallback));CHKERRQ(ierr);
-  ierr = PetscObjectGrantAccess(obj);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

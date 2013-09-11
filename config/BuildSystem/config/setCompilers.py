@@ -352,6 +352,14 @@ class Configure(config.base.Configure):
     return 0
   isDarwin = staticmethod(isDarwin)
 
+  def isFreeBSD():
+    '''Returns true if system is FreeBSD'''
+    (output, error, status) = config.base.Configure.executeShellCommand('uname -s')
+    if not status:
+      return output.lower().strip() == 'freebsd'
+    return 0
+  isFreeBSD = staticmethod(isFreeBSD)
+
   def isWindows(compiler):
     '''Returns true if the compiler is a Windows compiler'''
     if compiler in ['icl', 'cl', 'bcc32', 'ifl', 'df']:
@@ -382,7 +390,9 @@ class Configure(config.base.Configure):
       return 0
     if ('with-fc' in self.argDB and self.argDB['with-fc'] != '0') or 'FC' in self.argDB:
       return 0
-    if 'with-mpi' in self.argDB and self.argDB['with-mpi'] and self.argDB['with-mpi-compilers'] and not self.argDB['download-mpich'] == 1 and not self.argDB['download-openmpi'] == 1:
+    if self.argDB['download-mpich'] or self.argDB['download-openmpi']:
+      return 0
+    if 'with-mpi' in self.argDB and self.argDB['with-mpi'] and self.argDB['with-mpi-compilers']:
       return 1
     return 0
 
@@ -1467,7 +1477,7 @@ if (dlclose(handle)) {
     '''Check if --with-mpi-dir is used along with CC CXX or FC compiler options.
     This usually prevents mpi compilers from being used - so issue a warning'''
 
-    if 'with-mpi-dir' in self.argDB:
+    if 'with-mpi-dir' in self.argDB and self.argDB['with-mpi-compilers']:
       optcplrs = [(['with-cc','CC'],['mpicc','mpcc','hcc','mpcc_r']),
               (['with-fc','FC'],['mpif90','mpif77','mpxlf95_r','mpxlf90_r','mpxlf_r','mpf90','mpf77']),
               (['with-cxx','CXX'],['mpicxx','hcp','mpic++','mpiCC','mpCC_r'])]

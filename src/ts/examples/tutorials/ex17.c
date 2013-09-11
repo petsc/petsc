@@ -86,7 +86,6 @@ int main(int argc,char **argv)
 
   ierr = DMCreateMatrix(da,MATAIJ,&J);CHKERRQ(ierr);
   jacType = JACOBIAN_ANALYTIC; /* use user-provide Jacobian */
-  ierr = TSSetIJacobian(ts,J,J,FormIJacobian,&user);CHKERRQ(ierr);
 
   ierr = TSSetDM(ts,da);CHKERRQ(ierr); /* Use TSGetDM() to access. Setting here allows easy use of geometric multigrid. */
 
@@ -101,17 +100,15 @@ int main(int argc,char **argv)
   dt   = .01;
   ierr = TSSetInitialTimeStep(ts,0.0,dt);CHKERRQ(ierr);
 
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Set runtime options
-   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
 
   /* Use slow fd Jacobian or fast fd Jacobian with colorings.
      Note: this requirs snes which is not created until TSSetUp()/TSSetFromOptions() is called */
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Options for Jacobian evaluation",NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnum("-jac_type","Type of Jacobian","",JacobianTypes,(PetscEnum)jacType,(PetscEnum*)&jacType,0);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
-  if (jacType == JACOBIAN_FD_COLORING) {
+  if (jacType == JACOBIAN_ANALYTIC) {
+    ierr = TSSetIJacobian(ts,J,J,FormIJacobian,&user);CHKERRQ(ierr);
+  } else if (jacType == JACOBIAN_FD_COLORING) {
     SNES snes;
     ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
     ierr = SNESSetJacobian(snes,J,J,SNESComputeJacobianDefaultColor,0);CHKERRQ(ierr);
@@ -120,6 +117,11 @@ int main(int argc,char **argv)
     ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
     ierr = SNESSetJacobian(snes,J,J,SNESComputeJacobianDefault,&user);CHKERRQ(ierr);
   }
+
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+     Set runtime options
+   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+  ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Integrate ODE system
@@ -143,7 +145,6 @@ int main(int argc,char **argv)
   ierr = VecDestroy(&u);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
   ierr = DMDestroy(&da);CHKERRQ(ierr);
-
   ierr = PetscFinalize();
   PetscFunctionReturn(0);
 }

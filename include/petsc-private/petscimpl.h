@@ -32,7 +32,6 @@
                           with the first object using a name.
       composefunction() - Attaches an a function to a PETSc object with a name.
       queryfunction()   - Requests a registered function that has been attached to a PETSc object.
-      publish()         - Not currently used
 */
 
 typedef struct {
@@ -41,9 +40,8 @@ typedef struct {
    PetscErrorCode (*destroy)(PetscObject*);
    PetscErrorCode (*compose)(PetscObject,const char[],PetscObject);
    PetscErrorCode (*query)(PetscObject,const char[],PetscObject *);
-   PetscErrorCode (*composefunction)(PetscObject,const char[],const char[],void (*)(void));
+   PetscErrorCode (*composefunction)(PetscObject,const char[],void (*)(void));
    PetscErrorCode (*queryfunction)(PetscObject,const char[],void (**)(void));
-   PetscErrorCode (*publish)(PetscObject);
 } PetscOps;
 
 typedef enum {PETSC_FORTRAN_CALLBACK_CLASS,PETSC_FORTRAN_CALLBACK_SUBTYPE,PETSC_FORTRAN_CALLBACK_MAXTYPE} PetscFortranCallbackType;
@@ -69,7 +67,7 @@ typedef struct _p_PetscObject {
   PetscOps             *bops;
   MPI_Comm             comm;
   PetscInt             type;
-  PetscLogDouble       flops,time,mem;
+  PetscLogDouble       flops,time,mem,memchildren;
   PetscInt             id;
   PetscInt             refct;
   PetscMPIInt          tag;
@@ -111,6 +109,7 @@ typedef struct _p_PetscObject {
 #if defined(PETSC_HAVE_AMS)
   PetscInt             amsmem;
   PetscBool            amspublishblock; /* if PETSC_TRUE and publishing objects then will block at PetscObjectAMSBlock() */
+  PetscBool            amsblock;
 #endif
 } _p_PetscObject;
 
@@ -151,7 +150,7 @@ PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*PetscObjectViewerFunction)(PetscOb
    PetscNew(pops,&((h)->ops)) ||                                                \
    PetscHeaderCreate_Private((PetscObject)h,classid,class_name,descr,mansec,com,(PetscObjectFunction)des,(PetscObjectViewerFunction)vie) || \
    PetscLogObjectCreate(h) ||                                                   \
-   PetscLogObjectMemory(h, sizeof(struct tp) + sizeof(PetscOps) + sizeof(pops)))
+   PetscLogObjectMemory((PetscObject)h, sizeof(struct tp) + sizeof(PetscOps) + sizeof(pops)))
 
 PETSC_EXTERN PetscErrorCode PetscComposedQuantitiesDestroy(PetscObject obj);
 PETSC_EXTERN PetscErrorCode PetscHeaderCreate_Private(PetscObject,PetscClassId,const char[],const char[],const char[],MPI_Comm,PetscErrorCode (*)(PetscObject*),PetscErrorCode (*)(PetscObject,PetscViewer));
@@ -178,88 +177,10 @@ PETSC_EXTERN PetscErrorCode PetscObjectCopyFortranFunctionPointers(PetscObject,P
 PETSC_EXTERN PetscErrorCode PetscObjectSetFortranCallback(PetscObject,PetscFortranCallbackType,PetscFortranCallbackId*,void(*)(void),void *ctx);
 PETSC_EXTERN PetscErrorCode PetscObjectGetFortranCallback(PetscObject,PetscFortranCallbackType,PetscFortranCallbackId,void(**)(void),void **ctx);
 
+PETSC_INTERN PetscErrorCode PetscCitationsInitialize(void);
 PETSC_INTERN PetscErrorCode PetscOptionsFindPair_Private(const char[],const char[],char**,PetscBool*);
 
-/* ---------------------------------------------------------------------------------------*/
-#if defined(PETSC_HAVE_SETJMP_H) && defined(PETSC_HAVE_SIGINFO_T)
-#include <signal.h>
-#include <setjmp.h>
-PETSC_EXTERN jmp_buf PetscSegvJumpBuf;
-PETSC_EXTERN void PetscSegv_sigaction(int, siginfo_t*, void *);
-/*@C
-     PetscCheckPointer - Returns PETSC_TRUE if a pointer points to accessible data
-
-   Not Collective
-
-   Input Parameters:
-+     ptr - the pointer
--     dtype - the type of data the pointer is suppose to point to
-
-   Level: developer
-
-@*/
-PETSC_STATIC_INLINE PetscBool PetscCheckPointer(const void *ptr,PetscDataType dtype)
-{
-  struct sigaction sa,oldsa;
-
-  if (PETSC_RUNNING_ON_VALGRIND) return PETSC_TRUE;
-  if (!ptr) return PETSC_FALSE;
-
-  sigemptyset(&sa.sa_mask);
-  sa.sa_sigaction = PetscSegv_sigaction;
-  sa.sa_flags   = SA_SIGINFO;
-  sigaction(SIGSEGV, &sa, &oldsa);
-
-  if (setjmp(PetscSegvJumpBuf)) {
-    /* A segv was triggered in the code below hence we return with an error code */
-    sigaction(SIGSEGV, &oldsa, NULL);/* reset old signal hanlder */
-    return PETSC_FALSE;
-  } else {
-    switch (dtype) {
-    case PETSC_INT:{
-      PETSC_UNUSED PetscInt x = (PetscInt)*(volatile PetscInt*)ptr;
-      break;
-    }
-#if defined(PETSC_USE_COMPLEX)
-    case PETSC_SCALAR:{         /* C++ is seriously dysfunctional with volatile std::complex. */
-      PetscReal xreal = ((volatile PetscReal*)ptr)[0],ximag = ((volatile PetscReal*)ptr)[1];
-      PETSC_UNUSED volatile PetscScalar x = xreal + PETSC_i*ximag;
-      break;
-    }
-#endif
-    case PETSC_REAL:{
-      PETSC_UNUSED PetscReal x = *(volatile PetscReal*)ptr;
-      break;
-    }
-    case PETSC_BOOL:{
-      PETSC_UNUSED PetscBool x = *(volatile PetscBool*)ptr;
-      break;
-    }
-    case PETSC_ENUM:{
-      PETSC_UNUSED PetscEnum x = *(volatile PetscEnum*)ptr;
-      break;
-    }
-    case PETSC_CHAR:{
-      PETSC_UNUSED char *x = *(char*volatile*)ptr;
-      break;
-    }
-    case PETSC_OBJECT:{
-      PETSC_UNUSED volatile PetscClassId classid = ((PetscObject)ptr)->classid;
-      break;
-    }
-    default:;
-    }
-  }
-  sigaction(SIGSEGV, &oldsa, NULL); /* reset old signal hanlder */
-  return PETSC_TRUE;
-}
-#else
-PETSC_STATIC_INLINE PetscBool PetscCheckPointer(const void *ptr,PETSC_UNUSED PetscDataType dtype)
-{
-  if (!ptr) return PETSC_FALSE;
-  return PETSC_TRUE;
-}
-#endif
+PETSC_EXTERN PetscBool PetscCheckPointer(const void*,PetscDataType);
 
 /*
     Macros to test if a PETSc object is valid and if pointers are valid
@@ -424,7 +345,7 @@ PETSC_STATIC_INLINE PetscBool PetscCheckPointer(const void *ptr,PETSC_UNUSED Pet
 */
 #define  PetscTryMethod(obj,A,B,C) \
   0;{ PetscErrorCode (*f)B, __ierr; \
-    __ierr = PetscObjectQueryFunction((PetscObject)obj,A,(PetscVoidStarFunction)&f);CHKERRQ(__ierr); \
+    __ierr = PetscObjectQueryFunction((PetscObject)obj,A,&f);CHKERRQ(__ierr); \
     if (f) {__ierr = (*f)C;CHKERRQ(__ierr);}\
   }
 
@@ -438,7 +359,7 @@ PETSC_STATIC_INLINE PetscBool PetscCheckPointer(const void *ptr,PETSC_UNUSED Pet
 */
 #define  PetscUseMethod(obj,A,B,C) \
   0;{ PetscErrorCode (*f)B, __ierr; \
-    __ierr = PetscObjectQueryFunction((PetscObject)obj,A,(PetscVoidStarFunction)&f);CHKERRQ(__ierr); \
+    __ierr = PetscObjectQueryFunction((PetscObject)obj,A,&f);CHKERRQ(__ierr); \
     if (f) {__ierr = (*f)C;CHKERRQ(__ierr);}\
     else SETERRQ1(PetscObjectComm((PetscObject)obj),PETSC_ERR_SUP,"Cannot locate function %s in object",A); \
   }
@@ -857,6 +778,20 @@ typedef struct {
    Level: developer
 E*/
 typedef enum {PETSC_CUSP_UNALLOCATED,PETSC_CUSP_GPU,PETSC_CUSP_CPU,PETSC_CUSP_BOTH} PetscCUSPFlag;
+#endif
+
+#if defined(PETSC_HAVE_VIENNACL)
+/*E
+    PetscViennaCLFlag - indicates which memory (CPU, GPU, or none contains valid vector
+
+   PETSC_VIENNACL_UNALLOCATED  - no memory contains valid matrix entries; NEVER used for vectors
+   PETSC_VIENNACL_GPU - GPU has valid vector/matrix entries
+   PETSC_VIENNACL_CPU - CPU has valid vector/matrix entries
+   PETSC_VIENNACL_BOTH - Both GPU and CPU have valid vector/matrix entries and they match
+
+   Level: developer
+E*/
+typedef enum {PETSC_VIENNACL_UNALLOCATED,PETSC_VIENNACL_GPU,PETSC_VIENNACL_CPU,PETSC_VIENNACL_BOTH} PetscViennaCLFlag;
 #endif
 
 #endif /* _PETSCHEAD_H */

@@ -71,7 +71,7 @@ have been written by
 These are all optional packages and do not need to be installed to use PETSc.
 
 %PETSc software is developed and maintained with
-  - \link http://mercurial.selenic.com/ Mecurial \endlink revision control system
+  - \link http://git-scm.com/ Git \endlink revision control system
   - Emacs editor
 
 

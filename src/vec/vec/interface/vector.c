@@ -14,6 +14,7 @@ PetscLogEvent VEC_AssemblyEnd, VEC_PointwiseMult, VEC_SetValues, VEC_Load, VEC_S
 PetscLogEvent VEC_SetRandom, VEC_ReduceArithmetic, VEC_ReduceBarrier, VEC_ReduceCommunication,VEC_ReduceBegin,VEC_ReduceEnd,VEC_Ops;
 PetscLogEvent VEC_DotNormBarrier, VEC_DotNorm, VEC_AXPBYPCZ, VEC_CUSPCopyFromGPU, VEC_CUSPCopyToGPU;
 PetscLogEvent VEC_CUSPCopyFromGPUSome, VEC_CUSPCopyToGPUSome;
+PetscLogEvent VEC_ViennaCLCopyFromGPU, VEC_ViennaCLCopyToGPU;
 
 extern PetscErrorCode VecStashGetInfo_Private(VecStash*,PetscInt*,PetscInt*);
 #undef __FUNCT__
@@ -227,13 +228,21 @@ PetscErrorCode  VecAssemblyBegin(Vec vec)
 #undef __FUNCT__
 #define __FUNCT__ "VecViewFromOptions"
 /*
-  Processes command line options to determine if/how a matrix
-  is to be viewed. Called by VecAssemblyEnd() and VecLoad()
+  VecViewFromOptions - Processes command line options to determine if/how a vector is to be viewed. Called from higher level packages.
 
+  Collective on Vec
+
+  Input Parameters:
++ vec   - the vector
+. prefix - prefix to use for viewing, or NULL to use prefix of 'vec'
+- optionname - option to activate viewing
+
+  Level: intermediate
+
+.keywords: Vec, view, options, database
 .seealso: MatViewFromOptions()
-
 */
-PetscErrorCode  VecViewFromOptions(Vec vec,const char optionname[])
+PetscErrorCode  VecViewFromOptions(Vec vec,const char prefix[],const char optionname[])
 {
   PetscErrorCode    ierr;
   PetscBool         flg;
@@ -241,7 +250,11 @@ PetscErrorCode  VecViewFromOptions(Vec vec,const char optionname[])
   PetscViewerFormat format;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject)vec),((PetscObject)vec)->prefix,optionname,&viewer,&format,&flg);CHKERRQ(ierr);
+  if (prefix) {
+    ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject)vec),prefix,optionname,&viewer,&format,&flg);CHKERRQ(ierr);
+  } else {
+    ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject)vec),((PetscObject)vec)->prefix,optionname,&viewer,&format,&flg);CHKERRQ(ierr);
+  }
   if (flg) {
     ierr = PetscViewerPushFormat(viewer,format);CHKERRQ(ierr);
     ierr = VecView(vec,viewer);CHKERRQ(ierr);
@@ -527,6 +540,7 @@ PetscErrorCode  VecDestroy(Vec *v)
   PetscValidHeaderSpecific((*v),VEC_CLASSID,1);
   if (--((PetscObject)(*v))->refct > 0) {*v = 0; PetscFunctionReturn(0);}
 
+  ierr = PetscObjectAMSViewOff((PetscObject)*v);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&(*v)->viewonassembly);CHKERRQ(ierr);
   /* destroy the internal part */
   if ((*v)->ops->destroy) {
@@ -689,7 +703,7 @@ PetscErrorCode  VecView(Vec vec,PetscViewer viewer)
 
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
     if (format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
-      ierr = PetscObjectPrintClassNamePrefixType((PetscObject)vec,viewer,"Vector Object");CHKERRQ(ierr);
+      ierr = PetscObjectPrintClassNamePrefixType((PetscObject)vec,viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
       ierr = VecGetSize(vec,&rows);CHKERRQ(ierr);
       ierr = VecGetBlockSize(vec,&bs);CHKERRQ(ierr);
@@ -1027,13 +1041,14 @@ and PetscBinaryWrite() to see how this may be done.
 PetscErrorCode  VecLoad(Vec newvec, PetscViewer viewer)
 {
   PetscErrorCode ierr;
-  PetscBool      isbinary;
+  PetscBool      isbinary,ishdf5;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(newvec,VEC_CLASSID,1);
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
-  if (!isbinary) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid viewer; open viewer with PetscViewerBinaryOpen()");
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERHDF5,&ishdf5);CHKERRQ(ierr);
+  if (!isbinary && !ishdf5) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid viewer; open viewer with PetscViewerBinaryOpen()");
 
   ierr = PetscLogEventBegin(VEC_Load,viewer,0,0,0);CHKERRQ(ierr);
   if (!((PetscObject)newvec)->type_name && !newvec->ops->create) {
@@ -1331,7 +1346,7 @@ static PetscErrorCode VecSetTypeFromOptions_Private(Vec vec)
     else defaultType = VECSEQ;
   }
 
-  if (!VecRegisterAllCalled) {ierr = VecRegisterAll(NULL);CHKERRQ(ierr);}
+  if (!VecRegisterAllCalled) {ierr = VecRegisterAll();CHKERRQ(ierr);}
   ierr = PetscOptionsList("-vec_type","Vector type","VecSetType",VecList,defaultType,typeName,256,&opt);CHKERRQ(ierr);
   if (opt) {
     ierr = VecSetType(vec, typeName);CHKERRQ(ierr);

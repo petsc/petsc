@@ -58,8 +58,8 @@ PetscErrorCode MatDestroy_SeqAIJ_Inode(Mat A)
   PetscFunctionBegin;
   ierr = PetscFree(a->inode.size);CHKERRQ(ierr);
   ierr = PetscFree3(a->inode.ibdiag,a->inode.bdiag,a->inode.ssor_work);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatInodeAdjustForInodes_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatInodeGetInodeSizes_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatInodeAdjustForInodes_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatInodeGetInodeSizes_C",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -102,8 +102,8 @@ PetscErrorCode MatCreate_SeqAIJ_Inode(Mat B)
   b->inode.use = (PetscBool)(!(no_unroll || no_inode));
   if (b->inode.limit > b->inode.max_limit) b->inode.limit = b->inode.max_limit;
 
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatInodeAdjustForInodes_C","MatInodeAdjustForInodes_SeqAIJ_Inode",MatInodeAdjustForInodes_SeqAIJ_Inode);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatInodeGetInodeSizes_C","MatInodeGetInodeSizes_SeqAIJ_Inode",MatInodeGetInodeSizes_SeqAIJ_Inode);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatInodeAdjustForInodes_C",MatInodeAdjustForInodes_SeqAIJ_Inode);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatInodeGetInodeSizes_C",MatInodeGetInodeSizes_SeqAIJ_Inode);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

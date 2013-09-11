@@ -268,8 +268,7 @@ PetscErrorCode PCNNCreateCoarseMatrix(PC pc)
   {
     PetscMPIInt tag;
     ierr         = PetscObjectGetNewTag((PetscObject)pc,&tag);CHKERRQ(ierr);
-    ierr         = PetscMalloc((2*(n_neigh)+1)*sizeof(MPI_Request),&send_request);CHKERRQ(ierr);
-    recv_request = send_request + (n_neigh);
+    ierr         = PetscMalloc2(n_neigh+1,MPI_Request,&send_request,n_neigh+1,MPI_Request,&recv_request);CHKERRQ(ierr);
     for (i=1; i<n_neigh; i++) {
       ierr = MPI_Isend((void*)(DZ_OUT[i]),n_shared[i],MPIU_SCALAR,neigh[i],tag,PetscObjectComm((PetscObject)pc),&(send_request[i]));CHKERRQ(ierr);
       ierr = MPI_Irecv((void*)(DZ_IN [i]),n_shared[i],MPIU_SCALAR,neigh[i],tag,PetscObjectComm((PetscObject)pc),&(recv_request[i]));CHKERRQ(ierr);
@@ -314,7 +313,7 @@ PetscErrorCode PCNNCreateCoarseMatrix(PC pc)
   }
 
   /* Free the memory for the MPI requests */
-  ierr = PetscFree(send_request);CHKERRQ(ierr);
+  ierr = PetscFree2(send_request,recv_request);CHKERRQ(ierr);
 
   /* Free the memory for DZ_OUT */
   if (DZ_OUT) {
@@ -333,7 +332,9 @@ PetscErrorCode PCNNCreateCoarseMatrix(PC pc)
     ierr = MatSetSizes(pcnn->coarse_mat,1,1,size,size);CHKERRQ(ierr);
     ierr = MatSetType(pcnn->coarse_mat,MATAIJ);CHKERRQ(ierr);
     ierr = MatSeqAIJSetPreallocation(pcnn->coarse_mat,1,NULL);CHKERRQ(ierr);
-    ierr = MatMPIAIJSetPreallocation(pcnn->coarse_mat,1,NULL,1,NULL);CHKERRQ(ierr);
+    ierr = MatMPIAIJSetPreallocation(pcnn->coarse_mat,1,NULL,n_neigh,NULL);CHKERRQ(ierr);
+    ierr = MatSetOption(pcnn->coarse_mat,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = MatSetOption(pcnn->coarse_mat,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
     ierr = MatSetValues(pcnn->coarse_mat,n_neigh,neigh,n_neigh,neigh,mat,ADD_VALUES);CHKERRQ(ierr);
     ierr = MatAssemblyBegin(pcnn->coarse_mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd  (pcnn->coarse_mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

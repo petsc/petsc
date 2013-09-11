@@ -7,7 +7,7 @@ SOURCEC  = adda.c
 SOURCEF  =
 LIBBASE  = libpetscdm
 DIRS     = examples
-LOCDIR   = src/dm/adda/
+LOCDIR   = src/dm/impls/adda/
 MANSEC   = DM
 SUBMANSEC= DMADDA
 

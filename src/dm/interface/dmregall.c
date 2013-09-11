@@ -12,6 +12,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Patch(DM);
 PETSC_EXTERN PetscErrorCode DMCreate_Mesh(DM);
 PETSC_EXTERN PetscErrorCode DMCreate_Cartesian(DM);
 #endif
+PETSC_EXTERN PetscErrorCode  DMCreate_Moab(DM);
 
 #undef __FUNCT__
 #define __FUNCT__ "DMRegisterAll"
@@ -26,27 +27,120 @@ PETSC_EXTERN PetscErrorCode DMCreate_Cartesian(DM);
   Level: advanced
 
 .keywords: DM, register, all
-.seealso:  DMRegister(), DMRegisterDestroy(), DMRegisterDynamic()
+.seealso:  DMRegister(), DMRegisterDestroy()
 @*/
-PetscErrorCode  DMRegisterAll(const char path[])
+PetscErrorCode  DMRegisterAll()
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   DMRegisterAllCalled = PETSC_TRUE;
 
-  ierr = DMRegisterDynamic(DMDA,        path, "DMCreate_DA",        DMCreate_DA);CHKERRQ(ierr);
-  ierr = DMRegisterDynamic(DMCOMPOSITE, path, "DMCreate_Composite", DMCreate_Composite);CHKERRQ(ierr);
-  ierr = DMRegisterDynamic(DMSLICED,    path, "DMCreate_Sliced",    DMCreate_Sliced);CHKERRQ(ierr);
-  ierr = DMRegisterDynamic(DMSHELL,     path, "DMCreate_Shell",     DMCreate_Shell);CHKERRQ(ierr);
-  ierr = DMRegisterDynamic(DMADDA,      path, "DMCreate_ADDA",      DMCreate_ADDA);CHKERRQ(ierr);
-  ierr = DMRegisterDynamic(DMREDUNDANT, path, "DMCreate_Redundant", DMCreate_Redundant);CHKERRQ(ierr);
-  ierr = DMRegisterDynamic(DMPLEX,      path, "DMCreate_Plex",      DMCreate_Plex);CHKERRQ(ierr);
-  ierr = DMRegisterDynamic(DMPATCH,     path, "DMCreate_Patch",     DMCreate_Patch);CHKERRQ(ierr);
+  ierr = DMRegister(DMDA,         DMCreate_DA);CHKERRQ(ierr);
+  ierr = DMRegister(DMCOMPOSITE,  DMCreate_Composite);CHKERRQ(ierr);
+  ierr = DMRegister(DMSLICED,     DMCreate_Sliced);CHKERRQ(ierr);
+  ierr = DMRegister(DMSHELL,      DMCreate_Shell);CHKERRQ(ierr);
+  ierr = DMRegister(DMADDA,       DMCreate_ADDA);CHKERRQ(ierr);
+  ierr = DMRegister(DMREDUNDANT,  DMCreate_Redundant);CHKERRQ(ierr);
+  ierr = DMRegister(DMPLEX,       DMCreate_Plex);CHKERRQ(ierr);
+  ierr = DMRegister(DMPATCH,      DMCreate_Patch);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_SIEVE)
-  ierr = DMRegisterDynamic(DMMESH,      path, "DMCreate_Mesh",      DMCreate_Mesh);CHKERRQ(ierr);
-  ierr = DMRegisterDynamic(DMCARTESIAN, path, "DMCreate_Cartesian", DMCreate_Cartesian);CHKERRQ(ierr);
+  ierr = DMRegister(DMMESH,       DMCreate_Mesh);CHKERRQ(ierr);
+  ierr = DMRegister(DMCARTESIAN,  DMCreate_Cartesian);CHKERRQ(ierr);
+#endif
+#if defined(PETSC_HAVE_MOAB)
+  ierr = DMRegister(DMMOAB,       DMCreate_Moab);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
 }
+#include <petscfe.h>     /*I  "petscfe.h"  I*/
 
+PETSC_EXTERN PetscErrorCode PetscSpaceCreate_Polynomial(PetscSpace);
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSpaceRegisterAll"
+/*@C
+  PetscSpaceRegisterAll - Registers all of the PetscSpace components in the PetscFE package.
+
+  Not Collective
+
+  Input parameter:
+. path - The dynamic library path
+
+  Level: advanced
+
+.keywords: PetscSpace, register, all
+.seealso:  PetscSpaceRegister(), PetscSpaceRegisterDestroy()
+@*/
+PetscErrorCode PetscSpaceRegisterAll()
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscSpaceRegisterAllCalled = PETSC_TRUE;
+
+  ierr = PetscSpaceRegister(PETSCSPACEPOLYNOMIAL, PetscSpaceCreate_Polynomial);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PETSC_EXTERN PetscErrorCode PetscDualSpaceCreate_Lagrange(PetscDualSpace);
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscDualSpaceRegisterAll"
+/*@C
+  PetscDualSpaceRegisterAll - Registers all of the PetscDualSpace components in the PetscFE package.
+
+  Not Collective
+
+  Input parameter:
+. path - The dynamic library path
+
+  Level: advanced
+
+.keywords: PetscDualSpace, register, all
+.seealso:  PetscDualSpaceRegister(), PetscDualSpaceRegisterDestroy()
+@*/
+PetscErrorCode PetscDualSpaceRegisterAll()
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscDualSpaceRegisterAllCalled = PETSC_TRUE;
+
+  ierr = PetscDualSpaceRegister(PETSCDUALSPACELAGRANGE, PetscDualSpaceCreate_Lagrange);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PETSC_EXTERN PetscErrorCode PetscFECreate_Basic(PetscFE);
+#ifdef PETSC_HAVE_OPENCL
+PETSC_EXTERN PetscErrorCode PetscFECreate_OpenCL(PetscFE);
+#endif
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscFERegisterAll"
+/*@C
+  PetscFERegisterAll - Registers all of the PetscFE components in the PetscFE package.
+
+  Not Collective
+
+  Input parameter:
+. path - The dynamic library path
+
+  Level: advanced
+
+.keywords: PetscFE, register, all
+.seealso:  PetscFERegister(), PetscFERegisterDestroy()
+@*/
+PetscErrorCode PetscFERegisterAll()
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscFERegisterAllCalled = PETSC_TRUE;
+
+  ierr = PetscFERegister(PETSCFEBASIC,  PetscFECreate_Basic);CHKERRQ(ierr);
+#ifdef PETSC_HAVE_OPENCL
+  ierr = PetscFERegister(PETSCFEOPENCL, PetscFECreate_OpenCL);CHKERRQ(ierr);
+#endif
+  PetscFunctionReturn(0);
+}

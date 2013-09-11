@@ -21,9 +21,11 @@ static PetscBool PetscDrawPackageInitialized = PETSC_FALSE;
 @*/
 PetscErrorCode  PetscDrawFinalizePackage(void)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
+  ierr = PetscFunctionListDestroy(&PetscDrawList);CHKERRQ(ierr);
   PetscDrawPackageInitialized = PETSC_FALSE;
-  PetscDrawList               = 0;
   PetscFunctionReturn(0);
 }
 
@@ -34,15 +36,12 @@ PetscErrorCode  PetscDrawFinalizePackage(void)
   from PetscDLLibraryRegister() when using dynamic libraries, and on the call to PetscInitialize()
   when using static libraries.
 
-  Input Parameter:
-  path - The dynamic library path, or NULL
-
   Level: developer
 
 .keywords: Petsc, initialize, package
 .seealso: PetscInitialize()
 @*/
-PetscErrorCode  PetscDrawInitializePackage(const char path[])
+PetscErrorCode  PetscDrawInitializePackage(void)
 {
   char           logList[256];
   char           *className;
@@ -59,7 +58,7 @@ PetscErrorCode  PetscDrawInitializePackage(const char path[])
   ierr = PetscClassIdRegister("Histogram",&PETSC_DRAWHG_CLASSID);CHKERRQ(ierr);
   ierr = PetscClassIdRegister("Scatter Plot",&PETSC_DRAWSP_CLASSID);CHKERRQ(ierr);
   /* Register Constructors */
-  ierr = PetscDrawRegisterAll(path);CHKERRQ(ierr);
+  ierr = PetscDrawRegisterAll();CHKERRQ(ierr);
   /* Process info exclusions */
   ierr = PetscOptionsGetString(NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt) {
@@ -275,7 +274,7 @@ PetscErrorCode  PetscDrawDestroy(PetscDraw *draw)
   }
 
   /* if memory was published then destroy it */
-  ierr = PetscObjectDepublish(*draw);CHKERRQ(ierr);
+  ierr = PetscObjectAMSViewOff((PetscObject)*draw);CHKERRQ(ierr);
 
   if ((*draw)->ops->destroy) {
     ierr = (*(*draw)->ops->destroy)(*draw);CHKERRQ(ierr);

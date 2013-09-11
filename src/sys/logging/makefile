@@ -9,7 +9,7 @@ SOURCEH	  = ../../../include/petsc-private/logimpl.h ../../../include/petsclog.h
 MANSEC	  = Profiling
 LIBBASE	  = libpetscsys
 DIRS	  = utils
-LOCDIR	  = src/sys/plog/
+LOCDIR	  = src/sys/logging/
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

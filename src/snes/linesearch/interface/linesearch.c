@@ -110,6 +110,7 @@ PetscErrorCode SNESLineSearchSetUp(SNESLineSearch linesearch)
     if (linesearch->ops->setup) {
       ierr = (*linesearch->ops->setup)(linesearch);CHKERRQ(ierr);
     }
+    if (!linesearch->ops->snesfunc) {ierr = SNESLineSearchSetFunction(linesearch,SNESComputeFunction);CHKERRQ(ierr);}
     linesearch->lambda      = linesearch->damping;
     linesearch->setupcalled = PETSC_TRUE;
   }
@@ -150,6 +151,32 @@ PetscErrorCode SNESLineSearchReset(SNESLineSearch linesearch)
   linesearch->setupcalled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "SNESLineSearchSetFunction"
+/*@C
+   SNESLineSearchSetPreCheck - Sets the function evaluation context on the
+
+   Input Parameters:
+.  linesearch - the SNESLineSearch context
+
+   Output Parameters:
++  func       - [optional] function evaluation routine
+
+   Level: developer
+
+.keywords: get, linesearch, pre-check
+
+.seealso: SNESLineSearchGetPostCheck(), SNESLineSearchSetPreCheck()
+@*/
+PetscErrorCode  SNESLineSearchSetFunction(SNESLineSearch linesearch, PetscErrorCode (*func)(SNES,Vec,Vec))
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(linesearch,SNESLINESEARCH_CLASSID,1);
+  linesearch->ops->snesfunc = func;
+  PetscFunctionReturn(0);
+}
+
 
 /*MC
     SNESLineSearchPreCheckFunction - functional form passed to check before line search is called
@@ -554,7 +581,7 @@ PetscErrorCode SNESLineSearchDestroy(SNESLineSearch * linesearch)
   if (!*linesearch) PetscFunctionReturn(0);
   PetscValidHeaderSpecific((*linesearch),SNESLINESEARCH_CLASSID,1);
   if (--((PetscObject)(*linesearch))->refct > 0) {*linesearch = 0; PetscFunctionReturn(0);}
-  ierr = PetscObjectDepublish((*linesearch));CHKERRQ(ierr);
+  ierr = PetscObjectAMSViewOff((PetscObject)*linesearch);CHKERRQ(ierr);
   ierr = SNESLineSearchReset(*linesearch);CHKERRQ(ierr);
   if ((*linesearch)->ops->destroy) (*linesearch)->ops->destroy(*linesearch);
   ierr = PetscViewerDestroy(&(*linesearch)->monitor);CHKERRQ(ierr);
@@ -665,7 +692,7 @@ PetscErrorCode SNESLineSearchSetFromOptions(SNESLineSearch linesearch)
   PetscBool      flg, set;
 
   PetscFunctionBegin;
-  if (!SNESLineSearchRegisterAllCalled) {ierr = SNESLineSearchRegisterAll(NULL);CHKERRQ(ierr);}
+  if (!SNESLineSearchRegisterAllCalled) {ierr = SNESLineSearchRegisterAll();CHKERRQ(ierr);}
 
   ierr = PetscObjectOptionsBegin((PetscObject)linesearch);CHKERRQ(ierr);
   if (((PetscObject)linesearch)->type_name) deft = ((PetscObject)linesearch)->type_name;
@@ -748,7 +775,7 @@ PetscErrorCode SNESLineSearchView(SNESLineSearch linesearch, PetscViewer viewer)
 
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
-    ierr = PetscObjectPrintClassNamePrefixType((PetscObject)linesearch,viewer,"SNESLineSearch Object");CHKERRQ(ierr);
+    ierr = PetscObjectPrintClassNamePrefixType((PetscObject)linesearch,viewer);CHKERRQ(ierr);
     if (linesearch->ops->view) {
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
       ierr = (*linesearch->ops->view)(linesearch,viewer);CHKERRQ(ierr);
@@ -806,7 +833,7 @@ PetscErrorCode SNESLineSearchSetType(SNESLineSearch linesearch, SNESLineSearchTy
   ierr = PetscObjectTypeCompare((PetscObject)linesearch,type,&match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
 
-  ierr = PetscFunctionListFind(PetscObjectComm((PetscObject)linesearch),SNESLineSearchList,type,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
+  ierr = PetscFunctionListFind(SNESLineSearchList,type,&r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested Line Search type %s",type);
   /* Destroy the previous private linesearch context */
   if (linesearch->ops->destroy) {
@@ -822,11 +849,6 @@ PetscErrorCode SNESLineSearchSetType(SNESLineSearch linesearch, SNESLineSearchTy
 
   ierr = PetscObjectChangeTypeName((PetscObject)linesearch,type);CHKERRQ(ierr);
   ierr = (*r)(linesearch);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_AMS)
-  if (PetscAMSPublishAll) {
-    ierr = PetscObjectAMSPublish((PetscObject)linesearch);CHKERRQ(ierr);
-  }
-#endif
   PetscFunctionReturn(0);
 }
 
@@ -843,7 +865,7 @@ PetscErrorCode SNESLineSearchSetType(SNESLineSearch linesearch, SNESLineSearchTy
 
    Notes:
    This happens automatically when the line search is gotten/created with
-   SNESGetSNESLineSearch().  This routine is therefore mainly called within SNES
+   SNESGetLineSearch().  This routine is therefore mainly called within SNES
    implementations.
 
    Level: developer
@@ -1313,11 +1335,17 @@ PetscErrorCode SNESLineSearchSetComputeNorms(SNESLineSearch linesearch, PetscBoo
 .  linesearch - linesearch context
 
    Output Parameters:
-+  X - The old solution
-.  F - The old function
-.  Y - The search direction
-.  W - The new solution
--  G - The new function
++  X - Solution vector
+.  F - Function vector
+.  Y - Search direction vector
+.  W - Solution work vector
+-  G - Function work vector
+
+   Notes:
+   At the beginning of a line search application, X should contain a
+   solution and the vector F the function computed at X.  At the end of the
+   line search application, X should contain the new solution, and F the
+   function evaluated at the new solution.
 
    Level: advanced
 
@@ -1357,11 +1385,11 @@ PetscErrorCode SNESLineSearchGetVecs(SNESLineSearch linesearch,Vec *X,Vec *F, Ve
 
    Input Parameters:
 +  linesearch - linesearch context
-.  X - The old solution
-.  F - The old function
-.  Y - The search direction
-.  W - The new solution
--  G - The new function
+.  X - Solution vector
+.  F - Function vector
+.  Y - Search direction vector
+.  W - Solution work vector
+-  G - Function work vector
 
    Level: advanced
 
@@ -1630,17 +1658,15 @@ extern PetscErrorCode SNESLineSearchGetVIFunctions(SNESLineSearch linesearch, SN
 #undef __FUNCT__
 #define __FUNCT__ "SNESLineSearchRegister"
 /*@C
-  SNESLineSearchRegister - See SNESLineSearchRegisterDynamic()
+  SNESLineSearchRegister - See SNESLineSearchRegister()
 
   Level: advanced
 @*/
-PetscErrorCode  SNESLineSearchRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(SNESLineSearch))
+PetscErrorCode  SNESLineSearchRegister(const char sname[],PetscErrorCode (*function)(SNESLineSearch))
 {
-  char           fullname[PETSC_MAX_PATH_LEN];
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListConcat(path,name,fullname);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&SNESLineSearchList,sname,fullname,(void (*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&SNESLineSearchList,sname,function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

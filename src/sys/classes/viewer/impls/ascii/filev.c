@@ -178,24 +178,6 @@ PetscErrorCode  PetscViewerFileGetMode_ASCII(PetscViewer viewer, PetscFileMode *
   PetscFunctionReturn(0);
 }
 
-/*@C
-    PetscViewerFileSetMode - Sets the mode in which to open the file.
-
-    Not Collective
-
-+   viewer - viewer context, obtained from PetscViewerCreate()
--   mode   - The file mode
-
-    Level: intermediate
-
-    Fortran Note:
-    This routine is not supported in Fortran.
-
-.keywords: Viewer, file, get, pointer
-
-.seealso: PetscViewerASCIIOpen(), PetscViewerBinaryOpen()
-@*/
-
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerFileSetMode_ASCII"
 PetscErrorCode  PetscViewerFileSetMode_ASCII(PetscViewer viewer, PetscFileMode mode)
@@ -572,7 +554,7 @@ PetscErrorCode  PetscViewerASCIIPrintf(PetscViewer viewer,const char format[],..
       va_start(Argp,format);
       tab = ascii->tab;
       while (tab--) {
-        ierr = PetscFPrintf(PETSC_COMM_SELF,fd,"  ");CHKERRQ(ierr);
+        ierr = PetscFPrintf(PETSC_COMM_SELF,petsc_history,"  ");CHKERRQ(ierr);
       }
       ierr = (*PetscVFPrintf)(petsc_history,format,Argp);CHKERRQ(ierr);
       err  = fflush(petsc_history);
@@ -745,7 +727,6 @@ PetscErrorCode PetscViewerGetSingleton_ASCII(PetscViewer viewer,PetscViewer *out
   vascii->sviewer = *outviewer;
 
   (*outviewer)->format  = viewer->format;
-  (*outviewer)->iformat = viewer->iformat;
 
   ierr = PetscObjectGetName((PetscObject)viewer,&name);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)(*outviewer),name);CHKERRQ(ierr);
@@ -801,7 +782,6 @@ PetscErrorCode PetscViewerGetSubcomm_ASCII(PetscViewer viewer,MPI_Comm subcomm,P
   vascii->sviewer = *outviewer;
 
   (*outviewer)->format  = viewer->format;
-  (*outviewer)->iformat = viewer->iformat;
 
   ierr = PetscObjectGetName((PetscObject)viewer,&name);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)(*outviewer),name);CHKERRQ(ierr);
@@ -871,17 +851,15 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_ASCII(PetscViewer viewer)
   vascii->mode      = FILE_MODE_WRITE;
   vascii->bviewer   = 0;
   vascii->sviewer   = 0;
-  viewer->format    = PETSC_VIEWER_DEFAULT;
-  viewer->iformat   = 0;
   vascii->tab       = 0;
   vascii->tab_store = 0;
   vascii->filename  = 0;
   vascii->closefile = PETSC_TRUE;
 
-  ierr = PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerFileSetName_C","PetscViewerFileSetName_ASCII",PetscViewerFileSetName_ASCII);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerFileGetName_C","PetscViewerFileGetName_ASCII",PetscViewerFileGetName_ASCII);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerFileGetMode_C","PetscViewerFileGetMode_ASCII",PetscViewerFileGetMode_ASCII);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerFileSetMode_C","PetscViewerFileSetMode_ASCII",PetscViewerFileSetMode_ASCII);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerFileSetName_C",PetscViewerFileSetName_ASCII);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerFileGetName_C",PetscViewerFileGetName_ASCII);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerFileGetMode_C",PetscViewerFileGetMode_ASCII);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerFileSetMode_C",PetscViewerFileSetMode_ASCII);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

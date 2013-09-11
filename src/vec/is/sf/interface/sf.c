@@ -37,7 +37,7 @@ PetscErrorCode PetscSFCreate(MPI_Comm comm,PetscSF *sf)
   PetscFunctionBegin;
   PetscValidPointer(sf,2);
 #if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
-  ierr = PetscSFInitializePackage(NULL);CHKERRQ(ierr);
+  ierr = PetscSFInitializePackage();CHKERRQ(ierr);
 #endif
 
   ierr = PetscHeaderCreate(b,_p_PetscSF,struct _PetscSFOps,PETSCSF_CLASSID,"PetscSF","Star Forest","PetscSF",comm,PetscSFDestroy,PetscSFView);CHKERRQ(ierr);
@@ -127,7 +127,7 @@ PetscErrorCode PetscSFSetType(PetscSF sf,PetscSFType type)
   ierr = PetscObjectTypeCompare((PetscObject)sf,type,&match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
 
-  ierr = PetscFunctionListFind(PetscObjectComm((PetscObject)sf),PetscSFunctionList,type,PETSC_TRUE,(void (**)(void))&r);CHKERRQ(ierr);
+  ierr = PetscFunctionListFind(PetscSFList,type,&r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested PetscSF type %s",type);
   /* Destroy the previous private PetscSF context */
   if (sf->ops->Destroy) {
@@ -223,7 +223,7 @@ PetscErrorCode PetscSFSetFromOptions(PetscSF sf)
   PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
   ierr = PetscObjectOptionsBegin((PetscObject)sf);CHKERRQ(ierr);
   deft = ((PetscObject)sf)->type_name ? ((PetscObject)sf)->type_name : PETSCSFBASIC;
-  ierr = PetscOptionsList("-sf_type","PetscSF implementation type","PetscSFSetType",PetscSFunctionList,deft,type,256,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsList("-sf_type","PetscSF implementation type","PetscSFSetType",PetscSFList,deft,type,256,&flg);CHKERRQ(ierr);
   ierr = PetscSFSetType(sf,flg ? type : deft);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-sf_rank_order","sort composite points for gathers and scatters in rank order, gathers are non-deterministic otherwise","PetscSFSetRankOrder",sf->rankorder,&sf->rankorder,NULL);CHKERRQ(ierr);
   if (sf->ops->SetFromOptions) {ierr = (*sf->ops->SetFromOptions)(sf);CHKERRQ(ierr);}
@@ -453,8 +453,8 @@ PetscErrorCode PetscSFCreateInverseSF(PetscSF sf,PetscSF *isf)
     roots[i].rank  = -1;
     roots[i].index = -1;
   }
-  ierr = PetscSFReduceBegin(sf,MPIU_2INT,leaves,roots,MPI_REPLACE);CHKERRQ(ierr);
-  ierr = PetscSFReduceEnd(sf,MPIU_2INT,leaves,roots,MPI_REPLACE);CHKERRQ(ierr);
+  ierr = PetscSFReduceBegin(sf,MPIU_2INT,leaves,roots,MPIU_REPLACE);CHKERRQ(ierr);
+  ierr = PetscSFReduceEnd(sf,MPIU_2INT,leaves,roots,MPIU_REPLACE);CHKERRQ(ierr);
 
   /* Check whether our leaves are sparse */
   for (i=0,count=0; i<nroots; i++) if (roots[i].rank >= 0) count++;
@@ -606,7 +606,7 @@ PetscErrorCode PetscSFView(PetscSF sf,PetscViewer viewer)
     PetscMPIInt rank;
     PetscInt    i,j;
 
-    ierr = PetscObjectPrintClassNamePrefixType((PetscObject)sf,viewer,"Star Forest Object");CHKERRQ(ierr);
+    ierr = PetscObjectPrintClassNamePrefixType((PetscObject)sf,viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
     if (sf->ops->View) {ierr = (*sf->ops->View)(sf,viewer);CHKERRQ(ierr);}
     ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)sf),&rank);CHKERRQ(ierr);
@@ -806,8 +806,8 @@ PetscErrorCode PetscSFGetMultiSF(PetscSF sf,PetscSF *multi)
       for (i=0,maxdegree=0; i<sf->nroots; i++) maxdegree = PetscMax(maxdegree,indegree[i]);
       ierr = PetscMalloc5(sf->multi->nroots,PetscInt,&inranks,sf->multi->nroots,PetscInt,&newoffset,sf->nleaves,PetscInt,&outranks,sf->nleaves,PetscInt,&newoutoffset,maxdegree,PetscInt,&tmpoffset);CHKERRQ(ierr);
       for (i=0; i<sf->nleaves; i++) outranks[i] = rank;
-      ierr = PetscSFReduceBegin(sf->multi,MPIU_INT,outranks,inranks,MPI_REPLACE);CHKERRQ(ierr);
-      ierr = PetscSFReduceEnd(sf->multi,MPIU_INT,outranks,inranks,MPI_REPLACE);CHKERRQ(ierr);
+      ierr = PetscSFReduceBegin(sf->multi,MPIU_INT,outranks,inranks,MPIU_REPLACE);CHKERRQ(ierr);
+      ierr = PetscSFReduceEnd(sf->multi,MPIU_INT,outranks,inranks,MPIU_REPLACE);CHKERRQ(ierr);
       /* Sort the incoming ranks at each vertex, build the inverse map */
       for (i=0; i<sf->nroots; i++) {
         PetscInt j;
@@ -1184,7 +1184,7 @@ PetscErrorCode PetscSFGatherBegin(PetscSF sf,MPI_Datatype unit,const void *leafd
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
   ierr = PetscSFGetMultiSF(sf,&multi);CHKERRQ(ierr);
-  ierr = PetscSFReduceBegin(multi,unit,leafdata,multirootdata,MPI_REPLACE);CHKERRQ(ierr);
+  ierr = PetscSFReduceBegin(multi,unit,leafdata,multirootdata,MPIU_REPLACE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1217,7 +1217,7 @@ PetscErrorCode PetscSFGatherEnd(PetscSF sf,MPI_Datatype unit,const void *leafdat
   PetscSFCheckGraphSet(sf,1);
   ierr = PetscSFSetUp(sf);CHKERRQ(ierr);
   ierr = PetscSFGetMultiSF(sf,&multi);CHKERRQ(ierr);
-  ierr = PetscSFReduceEnd(multi,unit,leafdata,multirootdata,MPI_REPLACE);CHKERRQ(ierr);
+  ierr = PetscSFReduceEnd(multi,unit,leafdata,multirootdata,MPIU_REPLACE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

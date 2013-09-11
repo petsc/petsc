@@ -210,10 +210,11 @@ class Configure(script.Script):
       useDefaultPath = 1
 
     def getNames(name, resultName):
-      index = name.find(' ')
-      if index >= 0:
-        options = name[index:]
-        name    = name[:index]
+      import re
+      prog = re.match(r'(.*?)(?<!\\)(\s.*)',name)
+      if prog:
+        name = prog.group(1)
+        options = prog.group(2)
       else:
         options = ''
       if not resultName:

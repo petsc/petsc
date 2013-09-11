@@ -160,6 +160,33 @@ PetscErrorCode  PCFactorSetDropTolerance(PC pc,PetscReal dt,PetscReal dtcol,Pets
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PCFactorGetLevels"
+/*@
+   PCFactorGetLevels - Gets the number of levels of fill to use.
+
+   Logically Collective on PC
+
+   Input Parameters:
+.  pc - the preconditioner context
+
+   Output Parameter:
+.  levels - number of levels of fill
+
+   Level: intermediate
+
+.keywords: PC, levels, fill, factorization, incomplete, ILU
+@*/
+PetscErrorCode  PCFactorGetLevels(PC pc,PetscInt *levels)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  ierr = PetscTryMethod(pc,"PCFactorGetLevels_C",(PC,PetscInt*),(pc,levels));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PCFactorSetLevels"
 /*@
    PCFactorSetLevels - Sets the number of levels of fill to use.
@@ -313,7 +340,7 @@ PetscErrorCode  PCFactorGetMatSolverPackage(PC pc,const MatSolverPackage *stype)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCFactorGetMatSolverPackage_C",(void(**)(void))&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCFactorGetMatSolverPackage_C",&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,stype);CHKERRQ(ierr);
   } else {

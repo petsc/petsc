@@ -1,7 +1,7 @@
 ALL: lib
 
-DIRS     = da adda sliced composite mesh cartesian redundant plex shell patch
-LOCDIR   = src/dm/impls
+DIRS     = da adda sliced composite mesh cartesian redundant plex shell patch moab
+LOCDIR   = src/dm/impls/
 MANSEC   = DM
 
 include ${PETSC_DIR}/conf/variables

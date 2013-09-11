@@ -46,6 +46,11 @@ PetscErrorCode  MatAXPY(Mat Y,PetscScalar a,Mat X,MatStructure str)
     Y->valid_GPU_matrix = PETSC_CUSP_CPU;
   }
 #endif
+#if defined(PETSC_HAVE_VIENNACL)
+  if (Y->valid_GPU_matrix != PETSC_VIENNACL_UNALLOCATED) {
+    Y->valid_GPU_matrix = PETSC_VIENNACL_CPU;
+  }
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -171,6 +176,11 @@ PetscErrorCode  MatShift(Mat Y,PetscScalar a)
 #if defined(PETSC_HAVE_CUSP)
   if (Y->valid_GPU_matrix != PETSC_CUSP_UNALLOCATED) {
     Y->valid_GPU_matrix = PETSC_CUSP_CPU;
+  }
+#endif
+#if defined(PETSC_HAVE_VIENNACL)
+  if (Y->valid_GPU_matrix != PETSC_VIENNACL_UNALLOCATED) {
+    Y->valid_GPU_matrix = PETSC_VIENNACL_CPU;
   }
 #endif
   PetscFunctionReturn(0);
@@ -424,12 +434,12 @@ PetscErrorCode MatChop(Mat A, PetscReal tol)
     ierr   = MatRestoreRow(A, r, &ncols, NULL, NULL);CHKERRQ(ierr);
   }
   numRows = rEnd - rStart;
-  ierr    = MPI_Allreduce(&numRows, &maxRows, 1, MPIU_INT, MPI_MAX, PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr    = MPI_Allreduce(&numRows, &maxRows, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)A));CHKERRQ(ierr);
   ierr    = PetscMalloc2(colMax,PetscInt,&newCols,colMax,PetscScalar,&newVals);CHKERRQ(ierr);
   for (r = rStart; r < rStart+maxRows; ++r) {
     const PetscScalar *vals;
     const PetscInt    *cols;
-    PetscInt          ncols, c;
+    PetscInt           ncols, newcols, c;
 
     if (r < rEnd) {
       ierr = MatGetRow(A, r, &ncols, &cols, &vals);CHKERRQ(ierr);
@@ -437,8 +447,9 @@ PetscErrorCode MatChop(Mat A, PetscReal tol)
         newCols[c] = cols[c];
         newVals[c] = PetscAbsScalar(vals[c]) < tol ? 0.0 : vals[c];
       }
+      newcols = ncols;
       ierr = MatRestoreRow(A, r, &ncols, &cols, &vals);CHKERRQ(ierr);
-      ierr = MatSetValues(A, 1, &r, ncols, newCols, newVals, INSERT_VALUES);CHKERRQ(ierr);
+      ierr = MatSetValues(A, 1, &r, newcols, newCols, newVals, INSERT_VALUES);CHKERRQ(ierr);
     }
     ierr = MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

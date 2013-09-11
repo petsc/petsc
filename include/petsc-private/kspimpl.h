@@ -135,10 +135,14 @@ typedef struct {
 #define __FUNCT__ "KSPLogResidualHistory"
 PETSC_STATIC_INLINE PetscErrorCode KSPLogResidualHistory(KSP ksp,PetscReal norm)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
+  ierr = PetscObjectAMSTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
   if (ksp->res_hist && ksp->res_hist_max > ksp->res_hist_len) {
     ksp->res_hist[ksp->res_hist_len++] = norm;
   }
+  ierr = PetscObjectAMSGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -187,7 +191,7 @@ PETSC_STATIC_INLINE PetscErrorCode KSP_RemoveNullSpace(KSP ksp,Vec y)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  if (ksp->nullsp && ksp->pc_side == PC_LEFT) {ierr = MatNullSpaceRemove(ksp->nullsp,y,NULL);CHKERRQ(ierr);}
+  if (ksp->nullsp && ksp->pc_side == PC_LEFT) {ierr = MatNullSpaceRemove(ksp->nullsp,y);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 

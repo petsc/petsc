@@ -28,7 +28,7 @@ extern FILE *petsc_history;
 
 extern PetscErrorCode PetscInitialize_DynamicLibraries(void);
 extern PetscErrorCode PetscFinalize_DynamicLibraries(void);
-extern PetscErrorCode PetscFunctionListDestroyAll(void);
+extern PetscErrorCode PetscFunctionListPrintAll(void);
 extern PetscErrorCode PetscSequentialPhaseBegin_Private(MPI_Comm,int);
 extern PetscErrorCode PetscSequentialPhaseEnd_Private(MPI_Comm,int);
 extern PetscErrorCode PetscCloseHistoryFile(FILE**);
@@ -50,11 +50,6 @@ const char *const PetscDataTypes[] = {"INT","DOUBLE","COMPLEX","LONG","SHORT","F
 
 PetscBool PetscPreLoadingUsed = PETSC_FALSE;
 PetscBool PetscPreLoadingOn   = PETSC_FALSE;
-
-/* pthread_key for PetscStack */
-#if defined(PETSC_HAVE_PTHREADCLASSES) && !defined(PETSC_PTHREAD_LOCAL)
-pthread_key_t petscstack;
-#endif
 
 /*
        Checks the options database for initializations related to the
@@ -151,16 +146,14 @@ PetscErrorCode  PetscInitializeNoArguments(void)
 /*@
       PetscInitialized - Determine whether PETSc is initialized.
 
-7   Level: beginner
+   Level: beginner
 
 .seealso: PetscInitialize(), PetscInitializeNoArguments(), PetscInitializeFortran()
 @*/
-PetscErrorCode  PetscInitialized(PetscBool  *isInitialized)
+PetscErrorCode PetscInitialized(PetscBool  *isInitialized)
 {
-  PetscFunctionBegin;
-  PetscValidPointer(isInitialized, 1);
   *isInitialized = PetscInitializeCalled;
-  PetscFunctionReturn(0);
+  return 0;
 }
 
 #undef __FUNCT__
@@ -174,10 +167,8 @@ PetscErrorCode  PetscInitialized(PetscBool  *isInitialized)
 @*/
 PetscErrorCode  PetscFinalized(PetscBool  *isFinalized)
 {
-  PetscFunctionBegin;
-  PetscValidPointer(isFinalized, 1);
   *isFinalized = PetscFinalizeCalled;
-  PetscFunctionReturn(0);
+  return 0;
 }
 
 extern PetscErrorCode PetscOptionsCheckInitial_Private(void);
@@ -390,35 +381,47 @@ PETSC_EXTERN PetscMPIInt MPIAPI Petsc_DelCounter(MPI_Comm comm,PetscMPIInt keyva
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "Petsc_DelComm"
+#define __FUNCT__ "Petsc_DelComm_Outer"
 /*
-  This does not actually free anything, it simply marks when a reference count to an internal or external MPI_Comm reaches zero and the
-  the external MPI_Comm drops its reference to the internal or external MPI_Comm
+  This is invoked on the outer comm as a result of either PetscCommDestroy() (via MPI_Attr_delete) or when the user
+  calls MPI_Comm_free().
+
+  This is the only entry point for breaking the links between inner and outer comms.
 
   This is called by MPI, not by users. This is called when MPI_Comm_free() is called on the communicator.
 
   Note: this is declared extern "C" because it is passed to MPI_Keyval_create()
 
 */
-PETSC_EXTERN PetscMPIInt MPIAPI Petsc_DelComm(MPI_Comm comm,PetscMPIInt keyval,void *attr_val,void *extra_state)
+PETSC_EXTERN PetscMPIInt MPIAPI Petsc_DelComm_Outer(MPI_Comm comm,PetscMPIInt keyval,void *attr_val,void *extra_state)
 {
   PetscErrorCode ierr;
   PetscMPIInt    flg;
-  MPI_Comm       icomm;
-  void           *ptr;
+  union {MPI_Comm comm; void *ptr;} icomm,ocomm;
 
   PetscFunctionBegin;
-  ierr = MPI_Attr_get(comm,Petsc_InnerComm_keyval,&ptr,&flg);CHKERRQ(ierr);
-  if (flg) {
-    /*  Use PetscMemcpy() because casting from pointer to integer of different size is not allowed with some compilers  */
-    ierr = PetscMemcpy(&icomm,&ptr,sizeof(MPI_Comm));CHKERRQ(ierr);
-    ierr = MPI_Attr_get(icomm,Petsc_OuterComm_keyval,&ptr,&flg);CHKERRQ(ierr);
-    if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"Inner MPI_Comm does not have expected reference to outer comm");
-    ierr = MPI_Attr_delete(icomm,Petsc_OuterComm_keyval);CHKERRQ(ierr);
-    ierr = PetscInfo1(0,"User MPI_Comm m %ld is being freed, removing reference from inner PETSc comm to this outer comm\n",(long)comm);if (ierr) PetscFunctionReturn((PetscMPIInt)ierr);
-  } else {
-    ierr = PetscInfo1(0,"Removing reference to PETSc communicator imbedded in a user MPI_Comm m %ld\n",(long)comm);if (ierr) PetscFunctionReturn((PetscMPIInt)ierr);
-  }
+  if (keyval != Petsc_InnerComm_keyval) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"Unexpected keyval");
+  icomm.ptr = attr_val;
+
+  ierr = MPI_Attr_get(icomm.comm,Petsc_OuterComm_keyval,&ocomm,&flg);CHKERRQ(ierr);
+  if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"Inner MPI_Comm does not have expected reference to outer comm");
+  if (ocomm.comm != comm) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"Inner MPI_Comm has reference to non-matching outer comm");
+  ierr = MPI_Attr_delete(icomm.comm,Petsc_OuterComm_keyval);CHKERRQ(ierr); /* Calls Petsc_DelComm_Inner */
+  ierr = PetscInfo1(0,"User MPI_Comm %ld is being freed after removing reference from inner PETSc comm to this outer comm\n",(long)comm);if (ierr) PetscFunctionReturn((PetscMPIInt)ierr);
+  PetscFunctionReturn(MPI_SUCCESS);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "Petsc_DelComm_Inner"
+/*
+ * This is invoked on the inner comm when Petsc_DelComm_Outer calls MPI_Attr_delete.  It should not be reached any other way.
+ */
+PETSC_EXTERN PetscMPIInt MPIAPI Petsc_DelComm_Inner(MPI_Comm comm,PetscMPIInt keyval,void *attr_val,void *extra_state)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscInfo1(0,"Removing reference to PETSc communicator embedded in a user MPI_Comm %ld\n",(long)comm);if (ierr) PetscFunctionReturn((PetscMPIInt)ierr);
   PetscFunctionReturn(MPI_SUCCESS);
 }
 
@@ -432,6 +435,20 @@ PETSC_EXTERN PetscMPIInt PetscDataRep_write_conv_fn(void*, MPI_Datatype,PetscMPI
 
 int  PetscGlobalArgc   = 0;
 char **PetscGlobalArgs = 0;
+PetscSegBuffer PetscCitationsList; 
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscCitationsInitialize"
+PetscErrorCode PetscCitationsInitialize()
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscSegBufferCreate(1,10000,&PetscCitationsList);CHKERRQ(ierr);
+  ierr = PetscCitationsRegister("@TechReport{petsc-user-ref,\n  Author = {Satish Balay and Jed Brown and and Kris Buschelman and Victor Eijkhout\n            and William D.  Gropp and Dinesh Kaushik and Matthew G. Knepley\n            and Lois Curfman McInnes and Barry F. Smith and Hong Zhang},\n  Title = {{PETS}c Users Manual},\n  Number = {ANL-95/11 - Revision 3.4},\n  Institution = {Argonne National Laboratory},\n  Year = {2013}\n}\n",NULL);CHKERRQ(ierr);
+  ierr = PetscCitationsRegister("@InProceedings{petsc-efficient,\n  Author = {Satish Balay and William D. Gropp and Lois Curfman McInnes and Barry F. Smith},\n  Title = {Efficient Management of Parallelism in Object Oriented Numerical Software Libraries},\n  Booktitle = {Modern Software Tools in Scientific Computing},\n  Editor = {E. Arge and A. M. Bruaset and H. P. Langtangen},\n  Pages = {163--202},\n  Publisher = {Birkh{\\\"{a}}user Press},\n  Year = {1997}\n}\n",NULL);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscGetArgs"
@@ -752,8 +769,8 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
      Attributes to be set on PETSc communicators
   */
   ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,Petsc_DelCounter,&Petsc_Counter_keyval,(void*)0);CHKERRQ(ierr);
-  ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,Petsc_DelComm,&Petsc_InnerComm_keyval,(void*)0);CHKERRQ(ierr);
-  ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,Petsc_DelComm,&Petsc_OuterComm_keyval,(void*)0);CHKERRQ(ierr);
+  ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,Petsc_DelComm_Outer,&Petsc_InnerComm_keyval,(void*)0);CHKERRQ(ierr);
+  ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,Petsc_DelComm_Inner,&Petsc_OuterComm_keyval,(void*)0);CHKERRQ(ierr);
 
   /*
      Build the options database
@@ -820,7 +837,9 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   }
 
 #if defined(PETSC_HAVE_CUDA)
-  {
+  flg  = PETSC_TRUE;
+  ierr = PetscOptionsGetBool(NULL,"-cublas",&flg,NULL);CHKERRQ(ierr);
+  if (flg) {
     PetscMPIInt p;
     for (p = 0; p < PetscGlobalSize; ++p) {
       if (p == PetscGlobalRank) cublasInit();
@@ -829,30 +848,27 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   }
 #endif
 
-#if defined(PETSC_HAVE_AMS)
-  ierr = PetscOptionsHasName(NULL,"-ams_publish_objects",&flg);CHKERRQ(ierr);
-  if (flg) PetscAMSPublishAll = PETSC_TRUE;
-#endif
-
   ierr = PetscOptionsHasName(NULL,"-python",&flg);CHKERRQ(ierr);
   if (flg) {
     PetscInitializeCalled = PETSC_TRUE;
     ierr = PetscPythonInitialize(NULL,NULL);CHKERRQ(ierr);
   }
 
-  ierr = PetscThreadCommInitializePackage(NULL);CHKERRQ(ierr);
+  ierr = PetscThreadCommInitializePackage();CHKERRQ(ierr);
 
   /*
       Setup building of stack frames for all function calls
   */
+  PetscThreadLocalRegister((PetscThreadKey*)&petscstack); /* Creates pthread_key */
 #if defined(PETSC_USE_DEBUG)
-  PetscThreadLocalRegister((PetscThreadKey*)&petscstack); /* Creates petscstack_key if needed */
   ierr = PetscStackCreate();CHKERRQ(ierr);
 #endif
 
 #if defined(PETSC_SERIALIZE_FUNCTIONS)
   ierr = PetscFPTCreate(10000);CHKERRQ(ierr);
 #endif
+
+  ierr = PetscCitationsInitialize();CHKERRQ(ierr);
 
   /*
       Once we are completedly initialized then we can set this variables
@@ -895,9 +911,7 @@ PetscErrorCode  PetscFinalize(void)
   PetscMPIInt    rank;
   PetscInt       nopt;
   PetscBool      flg1 = PETSC_FALSE,flg2 = PETSC_FALSE,flg3 = PETSC_FALSE;
-#if defined(PETSC_HAVE_AMS)
-  PetscBool      flg = PETSC_FALSE;
-#endif
+  PetscBool      flg;
 #if defined(PETSC_USE_LOG)
   char           mname[PETSC_MAX_PATH_LEN];
 #endif
@@ -909,21 +923,53 @@ PetscErrorCode  PetscFinalize(void)
   }
   ierr = PetscInfo(NULL,"PetscFinalize() called\n");CHKERRQ(ierr);
 
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+
+  ierr = PetscOptionsHasName(NULL,"-citations",&flg);CHKERRQ(ierr);
+  if (flg) {
+    char  *cits, filename[PETSC_MAX_PATH_LEN];
+    FILE  *fd = PETSC_STDOUT;
+
+    ierr = PetscOptionsGetString(NULL,"-citations",filename,PETSC_MAX_PATH_LEN,NULL);CHKERRQ(ierr);
+    if (filename[0]) {
+      ierr = PetscFOpen(PETSC_COMM_WORLD,filename,"w",&fd);CHKERRQ(ierr);
+    }
+    ierr = PetscSegBufferGet(PetscCitationsList,1,&cits);CHKERRQ(ierr);
+    cits[0] = 0;
+    ierr = PetscSegBufferExtractAlloc(PetscCitationsList,&cits);CHKERRQ(ierr);
+    ierr = PetscFPrintf(PETSC_COMM_WORLD,fd,"If you publish results based on this computation please cite the following:\n");CHKERRQ(ierr);
+    ierr = PetscFPrintf(PETSC_COMM_WORLD,fd,"===========================================================================\n");CHKERRQ(ierr);
+    ierr = PetscFPrintf(PETSC_COMM_WORLD,fd,"%s",cits);CHKERRQ(ierr);
+    ierr = PetscFPrintf(PETSC_COMM_WORLD,fd,"===========================================================================\n");CHKERRQ(ierr);
+    ierr = PetscFClose(PETSC_COMM_WORLD,fd);CHKERRQ(ierr);
+    ierr = PetscFree(cits);CHKERRQ(ierr);
+  }
+  ierr = PetscSegBufferDestroy(&PetscCitationsList);CHKERRQ(ierr);
+
 #if defined(PETSC_SERIALIZE_FUNCTIONS)
   ierr = PetscFPTDestroy();CHKERRQ(ierr);
 #endif
 
 
 #if defined(PETSC_HAVE_AMS)
+  flg = PETSC_FALSE;
   ierr = PetscOptionsGetBool(NULL,"-options_gui",&flg,NULL);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscOptionsAMSDestroy();CHKERRQ(ierr);
   }
 #endif
 
+#if defined(PETSC_HAVE_SERVER)
+  flg1 = PETSC_FALSE;
+  ierr = PetscOptionsGetBool(NULL,"-server",&flg1,NULL);CHKERRQ(ierr);
+  if (flg1) {
+    /*  this is a crude hack, but better than nothing */
+    ierr = PetscPOpen(PETSC_COMM_WORLD,NULL,"pkill -9 petscwebserver","r",NULL);CHKERRQ(ierr);
+  }
+#endif
+
   ierr = PetscHMPIFinalize();CHKERRQ(ierr);
 
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,"-malloc_info",&flg2,NULL);CHKERRQ(ierr);
   if (!flg2) {
     flg2 = PETSC_FALSE;
@@ -1005,16 +1051,8 @@ PetscErrorCode  PetscFinalize(void)
   */
   ierr = PetscObjectRegisterDestroyAll();CHKERRQ(ierr);
 
-  {
-    PetscThreadComm tcomm_world;
-    ierr = PetscGetThreadCommWorld(&tcomm_world);CHKERRQ(ierr);
-    /* Free global thread communicator */
-    ierr = PetscThreadCommDestroy(&tcomm_world);CHKERRQ(ierr);
-  }
-
-#if defined(PETSC_USE_DEBUG)
   ierr = PetscStackDestroy();CHKERRQ(ierr);
-#endif
+  PetscThreadLocalDestroy((PetscThreadKey)petscstack); /* Deletes pthread_key */
 
   flg1 = PETSC_FALSE;
   ierr = PetscOptionsGetBool(NULL,"-no_signal_handler",&flg1,NULL);CHKERRQ(ierr);
@@ -1074,6 +1112,13 @@ PetscErrorCode  PetscFinalize(void)
     }
   }
 
+  {
+    PetscThreadComm tcomm_world;
+    ierr = PetscGetThreadCommWorld(&tcomm_world);CHKERRQ(ierr);
+    /* Free global thread communicator */
+    ierr = PetscThreadCommDestroy(&tcomm_world);CHKERRQ(ierr);
+  }
+
   /*
        List all objects the user may have forgot to free
   */
@@ -1099,11 +1144,6 @@ PetscErrorCode  PetscFinalize(void)
 #endif
 
   /*
-       Free all the registered create functions, such as KSPList, VecList, SNESList, etc
-  */
-  ierr = PetscFunctionListDestroyAll();CHKERRQ(ierr);
-
-  /*
      Destroy any packages that registered a finalize
   */
   ierr = PetscRegisterFinalizeAll();CHKERRQ(ierr);
@@ -1112,6 +1152,12 @@ PetscErrorCode  PetscFinalize(void)
      Destroy all the function registration lists created
   */
   ierr = PetscFinalize_DynamicLibraries();CHKERRQ(ierr);
+
+  /*
+     Print PetscFunctionLists that have not been properly freed
+
+  ierr = PetscFunctionListPrintAll();CHKERRQ(ierr);
+  */
 
   if (petsc_history) {
     ierr = PetscCloseHistoryFile(&petsc_history);CHKERRQ(ierr);
@@ -1178,6 +1224,19 @@ PetscErrorCode  PetscFinalize(void)
       ierr = PetscMallocDumpLog(stdout);CHKERRQ(ierr);
     }
   }
+
+#if defined(PETSC_HAVE_CUDA)
+  flg  = PETSC_TRUE;
+  ierr = PetscOptionsGetBool(NULL,"-cublas",&flg,NULL);CHKERRQ(ierr);
+  if (flg) {
+    PetscInt p;
+    for (p = 0; p < PetscGlobalSize; ++p) {
+      if (p == PetscGlobalRank) cublasShutdown();
+      ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
+    }
+  }
+#endif
+
   /* Can be destroyed only after all the options are used */
   ierr = PetscOptionsDestroy();CHKERRQ(ierr);
 
@@ -1223,11 +1282,10 @@ PetscErrorCode  PetscFinalize(void)
     PetscCommCounter *counter;
     PetscMPIInt      flg;
     MPI_Comm         icomm;
-    void             *ptr;
-    ierr = MPI_Attr_get(PETSC_COMM_SELF,Petsc_InnerComm_keyval,&ptr,&flg);CHKERRQ(ierr);
+    union {MPI_Comm comm; void *ptr;} ucomm;
+    ierr = MPI_Attr_get(PETSC_COMM_SELF,Petsc_InnerComm_keyval,&ucomm,&flg);CHKERRQ(ierr);
     if (flg) {
-      /*  Use PetscMemcpy() because casting from pointer to integer of different size is not allowed with some compilers  */
-      ierr = PetscMemcpy(&icomm,&ptr,sizeof(MPI_Comm));CHKERRQ(ierr);
+      icomm = ucomm.comm;
       ierr = MPI_Attr_get(icomm,Petsc_Counter_keyval,&counter,&flg);CHKERRQ(ierr);
       if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"Inner MPI_Comm does not have expected tag/name counter, problem with corrupted memory");
 
@@ -1235,10 +1293,9 @@ PetscErrorCode  PetscFinalize(void)
       ierr = MPI_Attr_delete(icomm,Petsc_Counter_keyval);CHKERRQ(ierr);
       ierr = MPI_Comm_free(&icomm);CHKERRQ(ierr);
     }
-    ierr = MPI_Attr_get(PETSC_COMM_WORLD,Petsc_InnerComm_keyval,&ptr,&flg);CHKERRQ(ierr);
+    ierr = MPI_Attr_get(PETSC_COMM_WORLD,Petsc_InnerComm_keyval,&ucomm,&flg);CHKERRQ(ierr);
     if (flg) {
-      /*  Use PetscMemcpy() because casting from pointer to integer of different size is not allowed with some compilers  */
-      ierr = PetscMemcpy(&icomm,&ptr,sizeof(MPI_Comm));CHKERRQ(ierr);
+      icomm = ucomm.comm;
       ierr = MPI_Attr_get(icomm,Petsc_Counter_keyval,&counter,&flg);CHKERRQ(ierr);
       if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_CORRUPT,"Inner MPI_Comm does not have expected tag/name counter, problem with corrupted memory");
 
@@ -1251,16 +1308,6 @@ PetscErrorCode  PetscFinalize(void)
   ierr = MPI_Keyval_free(&Petsc_Counter_keyval);CHKERRQ(ierr);
   ierr = MPI_Keyval_free(&Petsc_InnerComm_keyval);CHKERRQ(ierr);
   ierr = MPI_Keyval_free(&Petsc_OuterComm_keyval);CHKERRQ(ierr);
-
-#if defined(PETSC_HAVE_CUDA)
-  {
-    PetscInt p;
-    for (p = 0; p < PetscGlobalSize; ++p) {
-      if (p == PetscGlobalRank) cublasShutdown();
-      ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
-    }
-  }
-#endif
 
   if (PetscBeganMPI) {
 #if defined(PETSC_HAVE_MPI_FINALIZED)

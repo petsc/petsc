@@ -71,7 +71,12 @@ Process 1:
   (   4) dim  2 offset   4 -0.2 1
   (   5) dim  2 offset   6 0.2 0
   (   6) dim  2 offset   8 0.2 1
-Star Forest Object: 2 MPI processes
+Label 'marker':
+[0]: 4 (1)
+[0]: 5 (1)
+[1]: 7 (1)
+[1]: 9 (1)
+PetscSF Object: 2 MPI processes
   type: basic
     sort=rank-order
   [0] Number of roots=7, leaves=3, remote ranks=1
@@ -158,7 +163,12 @@ Process 1:
   (   4) dim  2 offset   4 -0.2 1
   (   5) dim  2 offset   6 0.2 0
   (   6) dim  2 offset   8 0.2 1
-Star Forest Object: 2 MPI processes
+Label 'marker':
+[0]: 4 (1)
+[0]: 5 (1)
+[1]: 7 (1)
+[1]: 9 (1)
+PetscSF Object: 2 MPI processes
   type: basic
     sort=rank-order
   [0] Number of roots=7, leaves=3, remote ranks=1

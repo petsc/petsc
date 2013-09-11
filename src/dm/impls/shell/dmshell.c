@@ -6,8 +6,9 @@ typedef struct  {
   Vec        Xglobal;
   Vec        Xlocal;
   Mat        A;
-  VecScatter *gtol;
-  VecScatter *ltog;
+  VecScatter gtol;
+  VecScatter ltog;
+  VecScatter ltol;
 } DM_Shell;
 
 #undef __FUNCT__
@@ -35,7 +36,7 @@ PetscErrorCode DMGlobalToLocalBeginDefaultShell(DM dm,Vec g,InsertMode mode,Vec 
 
   PetscFunctionBegin;
   if (!shell->gtol) SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_ARG_WRONGSTATE, "Cannot be used without first setting the scatter context via DMShellSetGlobalToLocalVecScatter()");
-  ierr = VecScatterBegin(*(shell->gtol),g,l,mode,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterBegin(shell->gtol,g,l,mode,SCATTER_FORWARD);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -62,7 +63,123 @@ PetscErrorCode DMGlobalToLocalEndDefaultShell(DM dm,Vec g,InsertMode mode,Vec l)
 
   PetscFunctionBegin;
    if (!shell->gtol) SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_ARG_WRONGSTATE, "Cannot be used without first setting the scatter context via DMShellSetGlobalToLocalVecScatter()");
-  ierr = VecScatterEnd(*(shell->gtol),g,l,mode,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd(shell->gtol,g,l,mode,SCATTER_FORWARD);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMLocalToGlobalBeginDefaultShell"
+/*@
+   DMLocalToGlobalBeginDefaultShell - Uses the LocalToGlobal VecScatter context set by the user to begin a local to global scatter
+   Collective
+
+   Input Arguments:
++  dm - shell DM
+.  l - local vector
+.  mode - InsertMode
+-  g - global vector
+
+   Level: advanced
+
+   Note:  This is not normally called directly by user code, generally user code calls DMLocalToGlobalBegin() and DMLocalToGlobalEnd(). If the user provides their own custom routines to DMShellSetLocalToGlobal() then those routines might have reason to call this function. 
+
+.seealso: DMLocalToGlobalEndDefaultShell()
+@*/
+PetscErrorCode DMLocalToGlobalBeginDefaultShell(DM dm,Vec l,InsertMode mode,Vec g)
+{
+  PetscErrorCode ierr;
+  DM_Shell       *shell = (DM_Shell*)dm->data;
+
+  PetscFunctionBegin;
+  if (!shell->ltog) SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_ARG_WRONGSTATE, "Cannot be used without first setting the scatter context via DMShellSetLocalToGlobalVecScatter()");
+  ierr = VecScatterBegin(shell->ltog,l,g,mode,SCATTER_FORWARD);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMLocalToGlobalEndDefaultShell"
+/*@
+   DMLocalToGlobalEndDefaultShell - Uses the LocalToGlobal VecScatter context set by the user to end a local to global scatter
+   Collective
+
+   Input Arguments:
++  dm - shell DM
+.  l - local vector
+.  mode - InsertMode
+-  g - global vector
+
+   Level: advanced
+
+.seealso: DMLocalToGlobalBeginDefaultShell()
+@*/
+PetscErrorCode DMLocalToGlobalEndDefaultShell(DM dm,Vec l,InsertMode mode,Vec g)
+{
+  PetscErrorCode ierr;
+  DM_Shell       *shell = (DM_Shell*)dm->data;
+
+  PetscFunctionBegin;
+   if (!shell->ltog) SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_ARG_WRONGSTATE, "Cannot be used without first setting the scatter context via DMShellSetLocalToGlobalVecScatter()");
+  ierr = VecScatterEnd(shell->ltog,l,g,mode,SCATTER_FORWARD);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMLocalToLocalBeginDefaultShell"
+/*@
+   DMLocalToLocalBeginDefaultShell - Uses the LocalToLocal VecScatter context set by the user to begin a local to local scatter
+   Collective
+
+   Input Arguments:
++  dm - shell DM
+.  g - the original local vector
+-  mode - InsertMode
+
+   Output Parameter:
+.  l  - the local vector with correct ghost values
+
+   Level: advanced
+
+   Note:  This is not normally called directly by user code, generally user code calls DMLocalToLocalBegin() and DMLocalToLocalEnd(). If the user provides their own custom routines to DMShellSetLocalToLocal() then those routines might have reason to call this function. 
+
+.seealso: DMLocalToLocalEndDefaultShell()
+@*/
+PetscErrorCode DMLocalToLocalBeginDefaultShell(DM dm,Vec g,InsertMode mode,Vec l)
+{
+  PetscErrorCode ierr;
+  DM_Shell       *shell = (DM_Shell*)dm->data;
+
+  PetscFunctionBegin;
+  if (!shell->ltol) SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_ARG_WRONGSTATE, "Cannot be used without first setting the scatter context via DMShellSetLocalToLocalVecScatter()");
+  ierr = VecScatterBegin(shell->ltol,g,l,mode,SCATTER_FORWARD);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMLocalToLocalEndDefaultShell"
+/*@
+   DMLocalToLocalEndDefaultShell - Uses the LocalToLocal VecScatter context set by the user to end a local to local scatter
+   Collective
+
+   Input Arguments:
++  dm - shell DM
+.  g - the original local vector
+-  mode - InsertMode
+
+   Output Parameter:
+.  l  - the local vector with correct ghost values
+
+   Level: advanced
+
+.seealso: DMLocalToLocalBeginDefaultShell()
+@*/
+PetscErrorCode DMLocalToLocalEndDefaultShell(DM dm,Vec g,InsertMode mode,Vec l)
+{
+  PetscErrorCode ierr;
+  DM_Shell       *shell = (DM_Shell*)dm->data;
+
+  PetscFunctionBegin;
+   if (!shell->ltol) SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_ARG_WRONGSTATE, "Cannot be used without first setting the scatter context via DMShellSetGlobalToLocalVecScatter()");
+  ierr = VecScatterEnd(shell->ltol,g,l,mode,SCATTER_FORWARD);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -98,7 +215,7 @@ static PetscErrorCode DMCreateMatrix_Shell(DM dm,MatType mtype,Mat *J)
     ierr = PetscObjectTypeCompare((PetscObject)A,MATMPIAIJ,&mpiaij);CHKERRQ(ierr);
     ierr = PetscStrcmp(mtype,MATAIJ,&aij);CHKERRQ(ierr);
     if (!flg) {
-      if (!(aij & (seqaij || mpiaij))) SETERRQ2(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_NOTSAMETYPE,"Requested matrix of type %s, but only %s available",mtype,((PetscObject)A)->type_name);
+      if (!(aij && (seqaij || mpiaij))) SETERRQ2(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_NOTSAMETYPE,"Requested matrix of type %s, but only %s available",mtype,((PetscObject)A)->type_name);
     }
   }
   if (((PetscObject)A)->refct < 2) { /* We have an exclusive reference so we can give it out */
@@ -345,7 +462,7 @@ PetscErrorCode DMShellSetCreateLocalVector(DM dm,PetscErrorCode (*func)(DM,Vec*)
 -  end - the routine that ends the global to local scatter
 
    Notes: If these functions are not provided but DMShellSetGlobalToLocalVecScatter() is called then
-   DMGlobalToLocalBeginDefaultShell() are used to to perform the transfers DMGlobalToLocalEndDefaultShell()
+   DMGlobalToLocalBeginDefaultShell()/DMGlobalToLocalEndDefaultShell() are used to to perform the transfers 
 
    Level: advanced
 
@@ -370,6 +487,9 @@ PetscErrorCode DMShellSetGlobalToLocal(DM dm,PetscErrorCode (*begin)(DM,Vec,Inse
 .  begin - the routine that begins the local to global scatter
 -  end - the routine that ends the local to global scatter
 
+   Notes: If these functions are not provided but DMShellSetLocalToGlobalVecScatter() is called then
+   DMLocalToGlobalBeginDefaultShell()/DMLocalToGlobalEndDefaultShell() are used to to perform the transfers 
+
    Level: advanced
 
 .seealso: DMShellSetGlobalToLocal()
@@ -378,6 +498,32 @@ PetscErrorCode DMShellSetLocalToGlobal(DM dm,PetscErrorCode (*begin)(DM,Vec,Inse
   PetscFunctionBegin;
   dm->ops->localtoglobalbegin = begin;
   dm->ops->localtoglobalend = end;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMShellSetLocalToLocal"
+/*@C
+   DMShellSetLocalToLocal - Sets the routines used to perform a local to local scatter
+
+   Logically Collective on DM
+
+   Input Arguments
++  dm - the shell DM
+.  begin - the routine that begins the local to local scatter
+-  end - the routine that ends the local to local scatter
+
+   Notes: If these functions are not provided but DMShellSetLocalToLocalVecScatter() is called then
+   DMLocalToLocalBeginDefaultShell()/DMLocalToLocalEndDefaultShell() are used to to perform the transfers 
+
+   Level: advanced
+
+.seealso: DMShellSetGlobalToLocal(), DMLocalToLocalBeginDefaultShell(), DMLocalToLocalEndDefaultShell()
+@*/
+PetscErrorCode DMShellSetLocalToLocal(DM dm,PetscErrorCode (*begin)(DM,Vec,InsertMode,Vec),PetscErrorCode (*end)(DM,Vec,InsertMode,Vec)) {
+  PetscFunctionBegin;
+  dm->ops->localtolocalbegin = begin;
+  dm->ops->localtolocalend = end;
   PetscFunctionReturn(0);
 }
 
@@ -394,14 +540,74 @@ PetscErrorCode DMShellSetLocalToGlobal(DM dm,PetscErrorCode (*begin)(DM,Vec,Inse
 
    Level: advanced
 
-.seealso: DMShellSetGlobalToLocal()
+.seealso: DMShellSetGlobalToLocal(), DMGlobalToLocalBeginDefaultShell(), DMGlobalToLocalEndDefaultShell()
 @*/
-PetscErrorCode DMShellSetGlobalToLocalVecScatter(DM dm, VecScatter *gtol)
+PetscErrorCode DMShellSetGlobalToLocalVecScatter(DM dm, VecScatter gtol)
 {
   DM_Shell       *shell = (DM_Shell*)dm->data;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscObjectReference((PetscObject)gtol);CHKERRQ(ierr);
+  /* Call VecScatterDestroy() to avoid a memory leak in case of re-setting. */
+  ierr = VecScatterDestroy(&shell->gtol);CHKERRQ(ierr);
   shell->gtol = gtol;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMShellSetLocalToGlobalVecScatter"
+/*@
+   DMShellSetLocalToGlobalVecScatter - Sets a VecScatter context for local to global communication
+
+   Logically Collective on DM
+
+   Input Arguments
++  dm - the shell DM
+-  ltog - the local to global VecScatter context
+
+   Level: advanced
+
+.seealso: DMShellSetLocalToGlobal(), DMLocalToGlobalBeginDefaultShell(), DMLocalToGlobalEndDefaultShell()
+@*/
+PetscErrorCode DMShellSetLocalToGlobalVecScatter(DM dm, VecScatter ltog)
+{
+  DM_Shell       *shell = (DM_Shell*)dm->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectReference((PetscObject)ltog);CHKERRQ(ierr);
+  /* Call VecScatterDestroy() to avoid a memory leak in case of re-setting. */
+  ierr = VecScatterDestroy(&shell->ltog);CHKERRQ(ierr);
+  shell->ltog = ltog;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMShellSetLocalToLocalVecScatter"
+/*@
+   DMShellSetLocalToLocalVecScatter - Sets a VecScatter context for local to local communication
+
+   Logically Collective on DM
+
+   Input Arguments
++  dm - the shell DM
+-  ltol - the local to local VecScatter context
+
+   Level: advanced
+
+.seealso: DMShellSetLocalToLocal(), DMLocalToLocalBeginDefaultShell(), DMLocalToLocalEndDefaultShell()
+@*/
+PetscErrorCode DMShellSetLocalToLocalVecScatter(DM dm, VecScatter ltol)
+{
+  DM_Shell       *shell = (DM_Shell*)dm->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectReference((PetscObject)ltol);CHKERRQ(ierr);
+  /* Call VecScatterDestroy() to avoid a memory leak in case of re-setting. */
+  ierr = VecScatterDestroy(&shell->ltol);CHKERRQ(ierr);
+  shell->ltol = ltol;
   PetscFunctionReturn(0);
 }
 
@@ -416,6 +622,8 @@ static PetscErrorCode DMDestroy_Shell(DM dm)
   ierr = MatDestroy(&shell->A);CHKERRQ(ierr);
   ierr = VecDestroy(&shell->Xglobal);CHKERRQ(ierr);
   ierr = VecDestroy(&shell->Xlocal);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(&shell->gtol);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(&shell->ltog);CHKERRQ(ierr);
   /* This was originally freed in DMDestroy(), but that prevents reference counting of backend objects */
   ierr = PetscFree(shell);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -467,6 +675,10 @@ PETSC_EXTERN PetscErrorCode DMCreate_Shell(DM dm)
   dm->ops->load               = DMLoad_Shell;
   dm->ops->globaltolocalbegin = DMGlobalToLocalBeginDefaultShell;
   dm->ops->globaltolocalend   = DMGlobalToLocalEndDefaultShell;
+  dm->ops->localtoglobalbegin = DMLocalToGlobalBeginDefaultShell;
+  dm->ops->localtoglobalend   = DMLocalToGlobalEndDefaultShell;
+  dm->ops->localtolocalbegin  = DMLocalToLocalBeginDefaultShell;
+  dm->ops->localtolocalend    = DMLocalToLocalEndDefaultShell;
   PetscFunctionReturn(0);
 }
 

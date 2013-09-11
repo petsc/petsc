@@ -4,7 +4,7 @@
 #include <../src/vec/pf/pfimpl.h>            /*I "petscpf.h" I*/
 
 PetscClassId      PF_CLASSID          = 0;
-PetscFunctionList PFunctionList       = NULL;   /* list of all registered PD functions */
+PetscFunctionList PFList              = NULL;   /* list of all registered PD functions */
 PetscBool         PFRegisterAllCalled = PETSC_FALSE;
 
 #undef __FUNCT__
@@ -74,7 +74,7 @@ PetscErrorCode  PFDestroy(PF *pf)
   }
 
   /* if memory was published with AMS then destroy it */
-  ierr = PetscObjectDepublish((*pf));CHKERRQ(ierr);
+  ierr = PetscObjectAMSViewOff((PetscObject)*pf);CHKERRQ(ierr);
 
   if ((*pf)->ops->destroy) {ierr =  (*(*pf)->ops->destroy)((*pf)->data);CHKERRQ(ierr);}
   ierr = PetscHeaderDestroy(pf);CHKERRQ(ierr);
@@ -111,7 +111,7 @@ PetscErrorCode  PFCreate(MPI_Comm comm,PetscInt dimin,PetscInt dimout,PF *pf)
   PetscValidPointer(pf,1);
   *pf = NULL;
 #if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
-  ierr = PFInitializePackage(NULL);CHKERRQ(ierr);
+  ierr = PFInitializePackage();CHKERRQ(ierr);
 #endif
 
   ierr = PetscHeaderCreate(newpf,_p_PF,struct _PFOps,PF_CLASSID,"PF","Mathematical functions","Vec",comm,PFDestroy,PFView);CHKERRQ(ierr);
@@ -287,7 +287,7 @@ PetscErrorCode  PFView(PF pf,PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
-    ierr = PetscObjectPrintClassNamePrefixType((PetscObject)pf,viewer,"PF Object");CHKERRQ(ierr);
+    ierr = PetscObjectPrintClassNamePrefixType((PetscObject)pf,viewer);CHKERRQ(ierr);
     if (pf->ops->view) {
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
       ierr = (*pf->ops->view)(pf->data,viewer);CHKERRQ(ierr);
@@ -297,31 +297,24 @@ PetscErrorCode  PFView(PF pf,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-/*MC
-   PFRegisterDynamic - Adds a method to the mathematical function package.
 
-   Synopsis:
-   #include "petscpf.h"
-   PetscErrorCode PFRegisterDynamic(char *name_solver,char *path,char *name_create,PetscErrorCode (*routine_create)(PF))
+#undef __FUNCT__
+#define __FUNCT__ "PFRegister"
+/*@C
+   PFRegister - Adds a method to the mathematical function package.
 
    Not collective
 
    Input Parameters:
 +  name_solver - name of a new user-defined solver
-.  path - path (either absolute or relative) the library containing this solver
-.  name_create - name of routine to create method context
 -  routine_create - routine to create method context
 
    Notes:
-   PFRegisterDynamic() may be called multiple times to add several user-defined functions
-
-   If dynamic libraries are used, then the fourth input argument (routine_create)
-   is ignored.
+   PFRegister() may be called multiple times to add several user-defined functions
 
    Sample usage:
 .vb
-   PFRegisterDynamic("my_function","/home/username/my_lib/lib/libO/solaris/mylib",
-              "MyFunctionCreate",MyFunctionSetCreate);
+   PFRegister("my_function",MyFunctionSetCreate);
 .ve
 
    Then, your solver can be chosen with the procedural interface via
@@ -331,24 +324,16 @@ $     -pf_type my_function
 
    Level: advanced
 
-   ${PETSC_ARCH}, ${PETSC_DIR}, ${PETSC_LIB_DIR}, or ${any environmental variable}
- occuring in pathname will be replaced with appropriate values.
-
 .keywords: PF, register
 
 .seealso: PFRegisterAll(), PFRegisterDestroy(), PFRegister()
-M*/
-
-#undef __FUNCT__
-#define __FUNCT__ "PFRegister"
-PetscErrorCode  PFRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(PF,void*))
+@*/
+PetscErrorCode  PFRegister(const char sname[],PetscErrorCode (*function)(PF,void*))
 {
   PetscErrorCode ierr;
-  char           fullname[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListConcat(path,name,fullname);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&PFunctionList,sname,fullname,(void (*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&PFList,sname,function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -407,7 +392,7 @@ PetscErrorCode  PFGetType(PF pf,PFType *type)
 
 .keywords: PF, set, method, type
 
-.seealso: PFSet(), PFRegisterDynamic(), PFCreate(), DMDACreatePF()
+.seealso: PFSet(), PFRegister(), PFCreate(), DMDACreatePF()
 
 @*/
 PetscErrorCode  PFSetType(PF pf,PFType type,void *ctx)
@@ -426,7 +411,7 @@ PetscErrorCode  PFSetType(PF pf,PFType type,void *ctx)
   pf->data = 0;
 
   /* Determine the PFCreateXXX routine for a particular function */
-  ierr = PetscFunctionListFind(PetscObjectComm((PetscObject)pf),PFunctionList,type,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
+  ierr = PetscFunctionListFind(PFList,type,&r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested PF type %s",type);
   pf->ops->destroy  = 0;
   pf->ops->view     = 0;
@@ -472,7 +457,7 @@ PetscErrorCode  PFSetFromOptions(PF pf)
   PetscValidHeaderSpecific(pf,PF_CLASSID,1);
 
   ierr = PetscObjectOptionsBegin((PetscObject)pf);CHKERRQ(ierr);
-  ierr = PetscOptionsList("-pf_type","Type of function","PFSetType",PFunctionList,0,type,256,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsList("-pf_type","Type of function","PFSetType",PFList,0,type,256,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PFSetType(pf,type,NULL);CHKERRQ(ierr);
   }
@@ -500,9 +485,11 @@ static PetscBool PFPackageInitialized = PETSC_FALSE;
 @*/
 PetscErrorCode  PFFinalizePackage(void)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
+  ierr = PetscFunctionListDestroy(&PFList);CHKERRQ(ierr);
   PFPackageInitialized = PETSC_FALSE;
-  PFunctionList        = NULL;
   PFRegisterAllCalled  = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
@@ -514,15 +501,12 @@ PetscErrorCode  PFFinalizePackage(void)
   from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to PFCreate()
   when using static libraries.
 
-  Input Parameter:
-. path - The dynamic library path, or NULL
-
   Level: developer
 
 .keywords: Vec, initialize, package
 .seealso: PetscInitialize()
 @*/
-PetscErrorCode  PFInitializePackage(const char path[])
+PetscErrorCode  PFInitializePackage(void)
 {
   char           logList[256];
   char           *className;
@@ -535,7 +519,7 @@ PetscErrorCode  PFInitializePackage(const char path[])
   /* Register Classes */
   ierr = PetscClassIdRegister("PointFunction",&PF_CLASSID);CHKERRQ(ierr);
   /* Register Constructors */
-  ierr = PFRegisterAll(path);CHKERRQ(ierr);
+  ierr = PFRegisterAll();CHKERRQ(ierr);
   /* Process info exclusions */
   ierr = PetscOptionsGetString(NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt) {

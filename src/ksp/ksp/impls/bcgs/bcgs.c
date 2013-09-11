@@ -62,11 +62,11 @@ PetscErrorCode KSPSolve_BCGS(KSP ksp)
   if (ksp->normtype != KSP_NORM_NONE) {
     ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);
   }
-  ierr       = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
+  ierr       = PetscObjectAMSTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
   ksp->its   = 0;
   ksp->rnorm = dp;
-  ierr       = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
-  KSPLogResidualHistory(ksp,dp);
+  ierr       = PetscObjectAMSGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
+  ierr = KSPLogResidualHistory(ksp,dp);CHKERRQ(ierr);
   ierr = KSPMonitor(ksp,0,dp);CHKERRQ(ierr);
   ierr = (*ksp->converged)(ksp,0,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
   if (ksp->reason) PetscFunctionReturn(0);
@@ -107,12 +107,12 @@ PetscErrorCode KSPSolve_BCGS(KSP ksp)
         break;
       }
       ierr = VecAXPY(X,alpha,P);CHKERRQ(ierr);   /*   x <- x + a p       */
-      ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
+      ierr = PetscObjectAMSTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
       ksp->its++;
       ksp->rnorm  = 0.0;
       ksp->reason = KSP_CONVERGED_RTOL;
-      ierr        = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
-      KSPLogResidualHistory(ksp,dp);
+      ierr = PetscObjectAMSGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
+      ierr = KSPLogResidualHistory(ksp,dp);CHKERRQ(ierr);
       ierr = KSPMonitor(ksp,i+1,0.0);CHKERRQ(ierr);
       break;
     }
@@ -126,11 +126,11 @@ PetscErrorCode KSPSolve_BCGS(KSP ksp)
     rhoold   = rho;
     omegaold = omega;
 
-    ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
+    ierr = PetscObjectAMSTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
     ksp->its++;
     ksp->rnorm = dp;
-    ierr       = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
-    KSPLogResidualHistory(ksp,dp);
+    ierr = PetscObjectAMSGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
+    ierr = KSPLogResidualHistory(ksp,dp);CHKERRQ(ierr);
     ierr = KSPMonitor(ksp,i+1,dp);CHKERRQ(ierr);
     ierr = (*ksp->converged)(ksp,i+1,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
     if (ksp->reason) break;

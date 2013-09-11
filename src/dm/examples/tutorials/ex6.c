@@ -564,7 +564,6 @@ PetscErrorCode DrawFA(FA fa,Vec v)
   PetscErrorCode ierr;
   PetscScalar    *va;
   ZoomCtx        zctx;
-  PetscDraw      draw;
   PetscReal      xmint = 10000.0,xmaxt = -10000.0,ymint = 100000.0,ymaxt = -10000.0;
   PetscReal      xmin,xmax,ymin,ymax;
   PetscInt       i,vn,ln,j;
@@ -599,12 +598,16 @@ PetscErrorCode DrawFA(FA fa,Vec v)
   ymin = ymint - .2*(ymaxt - ymint);
   ymax = ymaxt + .2*(ymaxt - ymint);
 #if defined(PETSC_HAVE_X) || defined(PETSC_HAVE_OPENGL)
-  ierr = PetscDrawCreate(PETSC_COMM_WORLD,0,"meshes",PETSC_DECIDE,PETSC_DECIDE,700,700,&draw);CHKERRQ(ierr);
-  ierr = PetscDrawSetFromOptions(draw);CHKERRQ(ierr);
-  ierr = PetscDrawSetCoordinates(draw,xmin,ymin,xmax,ymax);CHKERRQ(ierr);
-  ierr = PetscDrawZoom(draw,DrawPatch,&zctx);CHKERRQ(ierr);
-  ierr = VecRestoreArray(v,&va);CHKERRQ(ierr);
-  ierr = PetscDrawDestroy(&draw);CHKERRQ(ierr);
+  {
+    PetscDraw      draw;
+
+    ierr = PetscDrawCreate(PETSC_COMM_WORLD,0,"meshes",PETSC_DECIDE,PETSC_DECIDE,700,700,&draw);CHKERRQ(ierr);
+    ierr = PetscDrawSetFromOptions(draw);CHKERRQ(ierr);
+    ierr = PetscDrawSetCoordinates(draw,xmin,ymin,xmax,ymax);CHKERRQ(ierr);
+    ierr = PetscDrawZoom(draw,DrawPatch,&zctx);CHKERRQ(ierr);
+    ierr = VecRestoreArray(v,&va);CHKERRQ(ierr);
+    ierr = PetscDrawDestroy(&draw);CHKERRQ(ierr);
+  }
 #endif
   PetscFunctionReturn(0);
 }

@@ -105,7 +105,7 @@ PetscErrorCode KSPBuildSolution_AGMRES(KSP ksp,Vec ptr, Vec *result)
     if (!agmres->sol_temp) {
       ierr = VecDuplicate(ksp->vec_sol,&agmres->sol_temp);CHKERRQ(ierr);
       ierr = VecCopy(ksp->vec_sol,agmres->sol_temp);CHKERRQ(ierr);
-      ierr = PetscLogObjectParent(ksp,agmres->sol_temp);CHKERRQ(ierr);
+      ierr = PetscLogObjectParent((PetscObject)ksp,(PetscObject)agmres->sol_temp);CHKERRQ(ierr);
     }
     ptr = agmres->sol_temp;
   } else {
@@ -476,7 +476,7 @@ static PetscErrorCode KSPAGMRESBuildSoln(KSP ksp,PetscInt it)
 #if defined(PETSC_MISSING_LAPACK_GEQRF)
   SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"GEQRF - Lapack routine is unavailable.");
 #else
-  PetscStackCall("LAPACKgeqrf",LAPACKgeqrf_(&lC, &KspSize, agmres->hh_origin, &ldH, agmres->tau, agmres->work, &lwork, &info));
+  PetscStackCallBLAS("LAPACKgeqrf",LAPACKgeqrf_(&lC, &KspSize, agmres->hh_origin, &ldH, agmres->tau, agmres->work, &lwork, &info));
   if (info) SETERRQ1(PetscObjectComm((PetscObject)ksp), PETSC_ERR_LIB,"Error in LAPACK routine XGEQRF INFO=%d", info);
 #endif
   /* Update the right hand side of the least square problem */
@@ -486,7 +486,7 @@ static PetscErrorCode KSPAGMRESBuildSoln(KSP ksp,PetscInt it)
 #if defined(PETSC_MISSING_LAPACK_ORMQR)
   SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"GEQRF - Lapack routine is unavailable.");
 #else
-  PetscStackCall("LAPACKormqr",LAPACKormqr_("L", "T", &lC, &nrhs, &KspSize, agmres->hh_origin, &ldH, agmres->tau, agmres->nrs, &N, agmres->work, &lwork, &info));
+  PetscStackCallBLAS("LAPACKormqr",LAPACKormqr_("L", "T", &lC, &nrhs, &KspSize, agmres->hh_origin, &ldH, agmres->tau, agmres->nrs, &N, agmres->work, &lwork, &info));
   if (info) SETERRQ1(PetscObjectComm((PetscObject)ksp), PETSC_ERR_LIB,"Error in LAPACK routine XORMQR INFO=%d",info);
 #endif
   ksp->rnorm = PetscAbsScalar(agmres->nrs[KspSize]);
@@ -494,7 +494,7 @@ static PetscErrorCode KSPAGMRESBuildSoln(KSP ksp,PetscInt it)
 #if defined(PETSC_MISSING_LAPACK_TRTRS)
   SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"TRTRS - Lapack routine is unavailable.");
 #else
-  PetscStackCall("LAPACKtrtrs",LAPACKtrtrs_("U", "N", "N", &KspSize, &nrhs, agmres->hh_origin, &ldH, agmres->nrs, &N, &info));
+  PetscStackCallBLAS("LAPACKtrtrs",LAPACKtrtrs_("U", "N", "N", &KspSize, &nrhs, agmres->hh_origin, &ldH, agmres->nrs, &N, &info));
   if (info) SETERRQ1(PetscObjectComm((PetscObject)ksp), PETSC_ERR_LIB,"Error in LAPACK routine XTRTRS INFO=%d",info);
 #endif
   /* Accumulate the correction to the solution of the preconditioned problem in VEC_TMP */
@@ -559,8 +559,8 @@ static PetscErrorCode KSPAGMRESCycle(PetscInt *itcount,KSP ksp)
   agmres->it = KspSize-1;
   /*  Test for the convergence */
   ierr = (*ksp->converged)(ksp,ksp->its,res,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
-  KSPLogResidualHistory(ksp,res);
-  KSPMonitor(ksp,ksp->its,res);
+  ierr = KSPLogResidualHistory(ksp,res);CHKERRQ(ierr);
+  ierr = KSPMonitor(ksp,ksp->its,res);CHKERRQ(ierr);
 
 
   *itcount = KspSize;
@@ -579,9 +579,9 @@ PetscErrorCode KSPSolve_AGMRES(KSP ksp)
   PetscInt       test;
 
   PetscFunctionBegin;
-  ierr     = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
+  ierr     = PetscObjectAMSTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
   ksp->its = 0;
-  ierr     = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
+  ierr     = PetscObjectAMSGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
 
   ksp->reason = KSP_CONVERGED_ITERATING;
   if (!agmres->HasShifts) { /* Compute Shifts for the Newton basis */
@@ -807,16 +807,16 @@ PETSC_EXTERN PetscErrorCode KSPCreate_AGMRES(KSP ksp)
   ksp->ops->computeeigenvalues           = KSPComputeEigenvalues_GMRES;
 
 
-  ierr = PetscObjectComposeFunction((PetscObject) ksp,"KSPGMRESSetPreAllocateVectors_C","KSPGMRESSetPreAllocateVectors_GMRES",KSPGMRESSetPreAllocateVectors_GMRES);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject) ksp,"KSPGMRESSetOrthogonalization_C","KSPGMRESSetOrthogonalization_GMRES",KSPGMRESSetOrthogonalization_GMRES);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject) ksp,"KSPGMRESSetRestart_C","KSPGMRESSetRestart_GMRES",KSPGMRESSetRestart_GMRES);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject) ksp,"KSPGMRESSetHapTol_C","KSPGMRESSetHapTol_GMRES",KSPGMRESSetHapTol_GMRES);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject) ksp,"KSPGMRESSetCGSRefinementType_C","KSPGMRESSetCGSRefinementType_GMRES",KSPGMRESSetCGSRefinementType_GMRES);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject) ksp,"KSPGMRESSetPreAllocateVectors_C",KSPGMRESSetPreAllocateVectors_GMRES);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject) ksp,"KSPGMRESSetOrthogonalization_C",KSPGMRESSetOrthogonalization_GMRES);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject) ksp,"KSPGMRESSetRestart_C",KSPGMRESSetRestart_GMRES);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject) ksp,"KSPGMRESSetHapTol_C",KSPGMRESSetHapTol_GMRES);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject) ksp,"KSPGMRESSetCGSRefinementType_C",KSPGMRESSetCGSRefinementType_GMRES);CHKERRQ(ierr);
   /* -- New functions defined in DGMRES -- */
-  ierr=PetscObjectComposeFunction((PetscObject) ksp, "KSPDGMRESSetEigen_C","KSPDGMRESSetEigen_DGMRES",KSPDGMRESSetEigen_DGMRES);CHKERRQ(ierr);
-  ierr=PetscObjectComposeFunction((PetscObject) ksp, "KSPDGMRESComputeSchurForm_C","KSPDGMRESComputeSchurForm_DGMRES",KSPDGMRESComputeSchurForm_DGMRES);CHKERRQ(ierr);
-  ierr=PetscObjectComposeFunction((PetscObject) ksp, "KSPDGMRESComputeDeflationData_C","KSPDGMRESComputeDeflationData_DGMRES",KSPDGMRESComputeDeflationData_DGMRES);CHKERRQ(ierr);
-  ierr=PetscObjectComposeFunction((PetscObject) ksp, "KSPDGMRESApplyDeflation_C","KSPDGMRESApplyDeflation_DGMRES",KSPDGMRESApplyDeflation_DGMRES);CHKERRQ(ierr);
+  ierr=PetscObjectComposeFunction((PetscObject) ksp, "KSPDGMRESSetEigen_C",KSPDGMRESSetEigen_DGMRES);CHKERRQ(ierr);
+  ierr=PetscObjectComposeFunction((PetscObject) ksp, "KSPDGMRESComputeSchurForm_C",KSPDGMRESComputeSchurForm_DGMRES);CHKERRQ(ierr);
+  ierr=PetscObjectComposeFunction((PetscObject) ksp, "KSPDGMRESComputeDeflationData_C",KSPDGMRESComputeDeflationData_DGMRES);CHKERRQ(ierr);
+  ierr=PetscObjectComposeFunction((PetscObject) ksp, "KSPDGMRESApplyDeflation_C",KSPDGMRESApplyDeflation_DGMRES);CHKERRQ(ierr);
 
   PetscInt KSP_CLASSID = 1;
   ierr = PetscLogEventRegister("AGMRESComputeDefl", KSP_CLASSID, &KSP_AGMRESComputeDeflationData);CHKERRQ(ierr);

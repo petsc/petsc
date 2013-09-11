@@ -9,6 +9,7 @@
 #  define LAPACKgeqrf_ sgeqrf_
 #  define LAPACKungqr_ sorgqr_
 #  define LAPACKgetrf_ sgetrf_
+#  define LAPACKgetri_ sgetri_
 #  define BLASdot_     sdot_
 #  define BLASdotu_    sdot_
 #  define BLASnrm2_    snrm2_
@@ -43,6 +44,7 @@
 #  define LAPACKgeqrf_ cgeqrf_
 #  define LAPACKungqr_ cungqr_
 #  define LAPACKgetrf_ cgetrf_
+#  define LAPACKgetri_ cgetri_
 /* #  define BLASdot_     cdotc_ */
 /* #  define BLASdotu_    cdotu_ */
 #  define BLASnrm2_    scnrm2_

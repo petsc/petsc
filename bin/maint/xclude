@@ -1,3 +1,7 @@
+petsc-dist/.git
+petsc-dist/.mailmap
+petsc-dist/.gitignore
+petsc-dist/.nagged
 petsc-dist/.hg
 petsc-dist/.hgignore
 petsc-dist/.hgtags

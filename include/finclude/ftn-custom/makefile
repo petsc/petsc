@@ -1,4 +1,4 @@
-LOCDIR   = include/finclude/ftn-custom
+LOCDIR   = include/finclude/ftn-custom/
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

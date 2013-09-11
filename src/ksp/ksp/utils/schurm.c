@@ -176,6 +176,9 @@ PetscErrorCode  MatCreateSchurComplement(Mat A00,Mat Ap00,Mat A01,Mat A10,Mat A1
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
+  ierr = KSPInitializePackage();CHKERRQ(ierr);
+#endif
   ierr = MatCreate(((PetscObject)A00)->comm,N);CHKERRQ(ierr);
   ierr = MatSetType(*N,MATSCHURCOMPLEMENT);CHKERRQ(ierr);
   ierr = MatSchurComplementSet(*N,A00,Ap00,A01,A10,A11);CHKERRQ(ierr);
@@ -316,6 +319,7 @@ PetscErrorCode MatSchurComplementSetKSP(Mat A, KSP ksp)
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,2);
   Na      = (Mat_SchurComplement*) A->data;
+  ierr    = PetscObjectReference((PetscObject)ksp);CHKERRQ(ierr);
   ierr    = KSPDestroy(&Na->ksp);CHKERRQ(ierr);
   Na->ksp = ksp;
   ierr    = KSPSetOperators(Na->ksp, Na->A, Na->Ap, SAME_NONZERO_PATTERN);CHKERRQ(ierr);
@@ -559,7 +563,7 @@ PetscErrorCode MatGetSchurComplement_Basic(Mat mat,IS isrow0,IS iscol0,IS isrow1
     which will rarely produce a scalable algorithm.
 
     Sometimes users would like to provide problem-specific data in the Schur complement, usually only for special row
-    and column index sets.  In that case, the user should call PetscObjectComposeFunctionDynamic() to set
+    and column index sets.  In that case, the user should call PetscObjectComposeFunction() to set
     "MatNestGetSubMat_C" to their function.  If their function needs to fall back to the default implementation, it
     should call MatGetSchurComplement_Basic().
 
@@ -584,7 +588,7 @@ PetscErrorCode  MatGetSchurComplement(Mat mat,IS isrow0,IS iscol0,IS isrow1,IS i
   PetscValidType(mat,1);
   if (mat->factortype) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
 
-  ierr = PetscObjectQueryFunction((PetscObject)mat,"MatGetSchurComplement_C",(void (**)(void))&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)mat,"MatGetSchurComplement_C",&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(mat,isrow0,iscol0,isrow1,iscol1,mreuse,newmat,preuse,newpmat);CHKERRQ(ierr);
   } else {
@@ -633,13 +637,13 @@ static PetscBool KSPMatRegisterAllCalled;
 
 .seealso: MatRegisterAll(), MatRegisterDestroy(), KSPInitializePackage()
 @*/
-PetscErrorCode KSPMatRegisterAll(const char path[])
+PetscErrorCode KSPMatRegisterAll()
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (KSPMatRegisterAllCalled) PetscFunctionReturn(0);
   KSPMatRegisterAllCalled = PETSC_TRUE;
-  ierr = MatRegisterDynamic(MATSCHURCOMPLEMENT,path,"MatCreate_SchurComplement",MatCreate_SchurComplement);CHKERRQ(ierr);
+  ierr = MatRegister(MATSCHURCOMPLEMENT,MatCreate_SchurComplement);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

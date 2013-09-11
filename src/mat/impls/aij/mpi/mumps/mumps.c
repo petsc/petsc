@@ -94,6 +94,11 @@ extern PetscErrorCode MatDuplicate_MUMPS(Mat,MatDuplicateOption,Mat*);
   output:
     nnz     - dim of r, c, and v (number of local nonzero entries of A)
     r, c, v - row and col index, matrix values (matrix triples)
+
+  The returned values r, c, and sometimes v are obtained in a single PetscMalloc(). Then in MatDestroy_MUMPS() it is
+  freed with PetscFree((mumps->irn);  This is not ideal code, the fact that v is ONLY sometimes part of mumps->irn means
+  that the PetscMalloc() cannot easily be replaced with a PetscMalloc3(). 
+
  */
 
 #undef __FUNCT__
@@ -540,8 +545,9 @@ PetscErrorCode MatDestroy_MUMPS(Mat A)
   ierr = PetscFree(A->spptr);CHKERRQ(ierr);
 
   /* clear composed functions */
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatFactorGetSolverPackage_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatMumpsSetIcntl_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatFactorGetSolverPackage_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatMumpsSetIcntl_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatMumpsSetCntl_C",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -549,14 +555,17 @@ PetscErrorCode MatDestroy_MUMPS(Mat A)
 #define __FUNCT__ "MatSolve_MUMPS"
 PetscErrorCode MatSolve_MUMPS(Mat A,Vec b,Vec x)
 {
-  Mat_MUMPS      *mumps=(Mat_MUMPS*)A->spptr;
-  PetscScalar    *array;
-  Vec            b_seq;
-  IS             is_iden,is_petsc;
-  PetscErrorCode ierr;
-  PetscInt       i;
+  Mat_MUMPS        *mumps=(Mat_MUMPS*)A->spptr;
+  PetscScalar      *array;
+  Vec              b_seq;
+  IS               is_iden,is_petsc;
+  PetscErrorCode   ierr;
+  PetscInt         i;
+  static PetscBool cite1 = PETSC_FALSE,cite2 = PETSC_FALSE;
 
   PetscFunctionBegin;
+  ierr = PetscCitationsRegister("@article{MUMPS01,\n  author = {P.~R. Amestoy and I.~S. Duff and J.-Y. L'Excellent and J. Koster},\n  title = {A fully asynchronous multifrontal solver using distributed dynamic scheduling},\n  journal = {SIAM Journal on Matrix Analysis and Applications},\n  volume = {23},\n  number = {1},\n  pages = {15--41},\n  year = {2001}\n}\n",&cite1);CHKERRQ(ierr);
+  ierr = PetscCitationsRegister("@article{MUMPS02,\n  author = {P.~R. Amestoy and A. Guermouche and J.-Y. L'Excellent and S. Pralet},\n  title = {Hybrid scheduling for the parallel solution of linear systems},\n  journal = {Parallel Computing},\n  volume = {32},\n  number = {2},\n  pages = {136--156},\n  year = {2006}\n}\n",&cite2);CHKERRQ(ierr);
   mumps->id.nrhs = 1;
   b_seq          = mumps->b_seq;
   if (mumps->size > 1) {
@@ -1321,6 +1330,50 @@ PetscErrorCode MatMumpsSetIcntl(Mat F,PetscInt icntl,PetscInt ival)
   PetscFunctionReturn(0);
 }
 
+/* -------------------------------------------------------------------------------------------*/
+#undef __FUNCT__
+#define __FUNCT__ "MatMumpsSetCntl_MUMPS"
+PetscErrorCode MatMumpsSetCntl_MUMPS(Mat F,PetscInt icntl,PetscReal val)
+{
+  Mat_MUMPS *mumps =(Mat_MUMPS*)F->spptr;
+
+  PetscFunctionBegin;
+  mumps->id.CNTL(icntl) = val;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatMumpsSetCntl"
+/*@
+  MatMumpsSetCntl - Set MUMPS parameter CNTL()
+
+   Logically Collective on Mat
+
+   Input Parameters:
++  F - the factored matrix obtained by calling MatGetFactor() from PETSc-MUMPS interface
+.  icntl - index of MUMPS parameter array CNTL()
+-  val - value of MUMPS CNTL(icntl)
+
+  Options Database:
+.   -mat_mumps_cntl_<icntl> <val>
+
+   Level: beginner
+
+   References: MUMPS Users' Guide
+
+.seealso: MatGetFactor()
+@*/
+PetscErrorCode MatMumpsSetCntl(Mat F,PetscInt icntl,PetscReal val)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidLogicalCollectiveInt(F,icntl,2);
+  PetscValidLogicalCollectiveInt(F,val,3);
+  ierr = PetscTryMethod(F,"MatMumpsSetCntl_C",(Mat,PetscInt,PetscReal),(F,icntl,val));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*MC
   MATSOLVERMUMPS -  A matrix type providing direct solvers (LU and Cholesky) for
   distributed and sequential matrices via the external package MUMPS.
@@ -1384,8 +1437,9 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_aij_mumps(Mat A,MatFactorType ftype,Mat
   B->ops->view    = MatView_MUMPS;
   B->ops->getinfo = MatGetInfo_MUMPS;
 
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverPackage_C","MatFactorGetSolverPackage_mumps",MatFactorGetSolverPackage_mumps);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsSetIcntl_C","MatMumpsSetIcntl_MUMPS",MatMumpsSetIcntl_MUMPS);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverPackage_C",MatFactorGetSolverPackage_mumps);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsSetIcntl_C",MatMumpsSetIcntl_MUMPS);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsSetCntl_C",MatMumpsSetCntl_MUMPS);CHKERRQ(ierr);
   if (ftype == MAT_FACTOR_LU) {
     B->ops->lufactorsymbolic = MatLUFactorSymbolic_AIJMUMPS;
     B->factortype            = MAT_FACTOR_LU;
@@ -1444,8 +1498,9 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_sbaij_mumps(Mat A,MatFactorType ftype,M
   B->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_MUMPS;
   B->ops->view                   = MatView_MUMPS;
 
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverPackage_C","MatFactorGetSolverPackage_mumps",MatFactorGetSolverPackage_mumps);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsSetIcntl_C","MatMumpsSetIcntl",MatMumpsSetIcntl);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverPackage_C",MatFactorGetSolverPackage_mumps);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsSetIcntl_C",MatMumpsSetIcntl);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsSetCntl_C",MatMumpsSetCntl);CHKERRQ(ierr);
 
   B->factortype = MAT_FACTOR_CHOLESKY;
   if (A->spd_set && A->spd) mumps->sym = 1;
@@ -1494,8 +1549,9 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_baij_mumps(Mat A,MatFactorType ftype,Ma
 
   B->ops->view = MatView_MUMPS;
 
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverPackage_C","MatFactorGetSolverPackage_mumps",MatFactorGetSolverPackage_mumps);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsSetIcntl_C","MatMumpsSetIcntl_MUMPS",MatMumpsSetIcntl_MUMPS);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatFactorGetSolverPackage_C",MatFactorGetSolverPackage_mumps);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsSetIcntl_C",MatMumpsSetIcntl_MUMPS);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMumpsSetCntl_C",MatMumpsSetCntl_MUMPS);CHKERRQ(ierr);
 
   mumps->isAIJ    = PETSC_TRUE;
   mumps->Destroy  = B->ops->destroy;

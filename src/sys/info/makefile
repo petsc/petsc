@@ -10,7 +10,7 @@ SOURCEH	  =
 MANSEC	  = Profiling
 LIBBASE	  = libpetscsys
 DIRS	  =
-LOCDIR	  = src/sys/verbose/
+LOCDIR	  = src/sys/info/
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

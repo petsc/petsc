@@ -511,10 +511,10 @@ PetscErrorCode  PetscViewerBinaryGetInfoPointer_Binary(PetscViewer viewer,FILE *
   if (viewer->format == PETSC_VIEWER_BINARY_MATLAB && !vbinary->matlabheaderwritten) {
     vbinary->matlabheaderwritten = PETSC_TRUE;
     ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
-    ierr = PetscFPrintf(comm,*file,"%%--- begin code written by PetscViewerBinary for MATLAB format ---%\n");CHKERRQ(ierr);
-    ierr = PetscFPrintf(comm,*file,"%%$$ Set.filename = '%s';\n",vbinary->filename);CHKERRQ(ierr);
-    ierr = PetscFPrintf(comm,*file,"%%$$ fd = PetscOpenFile(Set.filename);\n");CHKERRQ(ierr);
-    ierr = PetscFPrintf(comm,*file,"%%--- end code written by PetscViewerBinary for MATLAB format ---%\n\n");CHKERRQ(ierr);
+    ierr = PetscFPrintf(comm,*file,"#--- begin code written by PetscViewerBinary for MATLAB format ---#\n");CHKERRQ(ierr);
+    ierr = PetscFPrintf(comm,*file,"#$$ Set.filename = '%s';\n",vbinary->filename);CHKERRQ(ierr);
+    ierr = PetscFPrintf(comm,*file,"#$$ fd = PetscOpenFile(Set.filename);\n");CHKERRQ(ierr);
+    ierr = PetscFPrintf(comm,*file,"#--- end code written by PetscViewerBinary for MATLAB format ---#\n\n");CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -606,9 +606,9 @@ PetscErrorCode PetscViewerDestroy_Binary(PetscViewer v)
 
     ierr = PetscObjectGetComm((PetscObject)v,&comm);CHKERRQ(ierr);
     ierr = PetscViewerBinaryGetInfoPointer(v,&info);CHKERRQ(ierr);
-    ierr = PetscFPrintf(comm,info,"%%--- begin code written by PetscViewerBinary for MATLAB format ---%\n");CHKERRQ(ierr);
-    ierr = PetscFPrintf(comm,info,"%%$$ close(fd);\n");CHKERRQ(ierr);
-    ierr = PetscFPrintf(comm,info,"%%--- end code written by PetscViewerBinary for MATLAB format ---%\n\n");CHKERRQ(ierr);
+    ierr = PetscFPrintf(comm,info,"#--- begin code written by PetscViewerBinary for MATLAB format ---#\n");CHKERRQ(ierr);
+    ierr = PetscFPrintf(comm,info,"#$$ close(fd);\n");CHKERRQ(ierr);
+    ierr = PetscFPrintf(comm,info,"#--- end code written by PetscViewerBinary for MATLAB format ---#\n\n");CHKERRQ(ierr);
   }
   ierr = PetscViewerFileClose_Binary(v);CHKERRQ(ierr);
   ierr = PetscFree(vbinary);CHKERRQ(ierr);
@@ -965,8 +965,6 @@ PetscErrorCode  PetscViewerFileGetMode(PetscViewer viewer,PetscFileMode *type)
     Options Database:
     -viewer_binary_mpiio : Flag for using MPI-IO
 
-   Notes: turns off the default usage of the .info file since that is not scalable
-
   Level: advanced
 
 .seealso: PetscViewerFileSetMode(), PetscViewerCreate(), PetscViewerSetType(), PetscViewerBinaryOpen()
@@ -1109,7 +1107,6 @@ PetscErrorCode PetscViewerFileSetName_Binary(PetscViewer viewer,const char name[
     } else if (fname) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Unknown file type");
 #endif
   } else vbinary->fdes = -1;
-  viewer->format = PETSC_VIEWER_NOFORMAT;
 
   /*
       try to open info file: all processors open this file if read only
@@ -1172,7 +1169,6 @@ PetscErrorCode PetscViewerFileSetName_MPIIO(PetscViewer viewer,const char name[]
   } else if (type == FILE_MODE_WRITE) {
     MPI_File_open(PetscObjectComm((PetscObject)viewer),vbinary->filename,MPI_MODE_WRONLY | MPI_MODE_CREATE,MPI_INFO_NULL,&vbinary->mfdes);CHKERRQ(ierr);
   }
-  viewer->format = PETSC_VIEWER_NOFORMAT;
 
   /*
       try to open info file: all processors open this file if read only
@@ -1218,8 +1214,7 @@ PetscErrorCode PetscViewerBinarySetMPIIO_Binary(PetscViewer viewer)
   if (vbinary->filename) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call before calling PetscViewerFileSetName()");
   viewer->ops->destroy = PetscViewerDestroy_MPIIO;
   vbinary->MPIIO       = PETSC_TRUE;
-  /*  vbinary->skipinfo    = PETSC_TRUE; */
-  ierr = PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerFileSetName_C","PetscViewerFileSetName_MPIIO",PetscViewerFileSetName_MPIIO);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)viewer,"PetscViewerFileSetName_C",PetscViewerFileSetName_MPIIO);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 #endif
@@ -1254,7 +1249,6 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_Binary(PetscViewer v)
   v->ops->destroy          = PetscViewerDestroy_Binary;
   v->ops->view             = PetscViewerView_Binary;
   v->ops->flush            = 0;
-  v->iformat               = 0;
   vbinary->fdes_info       = 0;
   vbinary->fdes            = 0;
   vbinary->skipinfo        = PETSC_FALSE;
@@ -1267,17 +1261,17 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_Binary(PetscViewer v)
   vbinary->filename        = 0;
   vbinary->flowcontrol     = 256; /* seems a good number for Cray XT-5 */
 
-  ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerBinaryGetFlowControl_C","PetscViewerBinaryGetFlowControl_Binary",PetscViewerBinaryGetFlowControl_Binary);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerBinarySetFlowControl_C","PetscViewerBinarySetFlowControl_Binary",PetscViewerBinarySetFlowControl_Binary);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerBinarySetSkipHeader_C","PetscViewerBinarySetSkipHeader_Binary",PetscViewerBinarySetSkipHeader_Binary);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerBinaryGetSkipHeader_C","PetscViewerBinaryGetSkipHeader_Binary",PetscViewerBinaryGetSkipHeader_Binary);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerBinaryGetInfoPointer_C","PetscViewerBinaryGetInfoPointer_Binary",PetscViewerBinaryGetInfoPointer_Binary);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerFileSetName_C","PetscViewerFileSetName_Binary",PetscViewerFileSetName_Binary);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerFileSetMode_C","PetscViewerFileSetMode_Binary",PetscViewerFileSetMode_Binary);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerFileGetMode_C","PetscViewerFileGetMode_Binary",PetscViewerFileGetMode_Binary);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerFileGetName_C","PetscViewerFileGetName_Binary",PetscViewerFileGetName_Binary);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerBinaryGetFlowControl_C",PetscViewerBinaryGetFlowControl_Binary);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerBinarySetFlowControl_C",PetscViewerBinarySetFlowControl_Binary);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerBinarySetSkipHeader_C",PetscViewerBinarySetSkipHeader_Binary);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerBinaryGetSkipHeader_C",PetscViewerBinaryGetSkipHeader_Binary);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerBinaryGetInfoPointer_C",PetscViewerBinaryGetInfoPointer_Binary);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerFileSetName_C",PetscViewerFileSetName_Binary);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerFileSetMode_C",PetscViewerFileSetMode_Binary);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerFileGetMode_C",PetscViewerFileGetMode_Binary);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerFileGetName_C",PetscViewerFileGetName_Binary);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MPIIO)
-  ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerBinarySetMPIIO_C","PetscViewerBinarySetMPIIO_Binary",PetscViewerBinarySetMPIIO_Binary);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)v,"PetscViewerBinarySetMPIIO_C",PetscViewerBinarySetMPIIO_Binary);CHKERRQ(ierr);
 
   ierr = PetscOptionsGetBool(NULL,"-viewer_binary_mpiio",&useMPIIO,NULL);CHKERRQ(ierr);
   if (useMPIIO) {

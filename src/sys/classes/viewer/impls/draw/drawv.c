@@ -221,7 +221,7 @@ PetscErrorCode  PetscViewerDrawGetDrawLG(PetscViewer viewer,PetscInt windownumbe
   }
   if (!vdraw->drawlg[windownumber+vdraw->draw_base]) {
     ierr = PetscDrawLGCreate(vdraw->draw[windownumber+vdraw->draw_base],1,&vdraw->drawlg[windownumber+vdraw->draw_base]);CHKERRQ(ierr);
-    ierr = PetscLogObjectParent(viewer,vdraw->drawlg[windownumber+vdraw->draw_base]);CHKERRQ(ierr);
+    ierr = PetscLogObjectParent((PetscObject)viewer,(PetscObject)vdraw->drawlg[windownumber+vdraw->draw_base]);CHKERRQ(ierr);
   }
   *drawlg = vdraw->drawlg[windownumber+vdraw->draw_base];
   PetscFunctionReturn(0);
@@ -267,7 +267,7 @@ PetscErrorCode  PetscViewerDrawGetDrawAxis(PetscViewer viewer,PetscInt windownum
   }
   if (!vdraw->drawaxis[windownumber+vdraw->draw_base]) {
     ierr = PetscDrawAxisCreate(vdraw->draw[windownumber+vdraw->draw_base],&vdraw->drawaxis[windownumber+vdraw->draw_base]);CHKERRQ(ierr);
-    ierr = PetscLogObjectParent(viewer,vdraw->drawaxis[windownumber+vdraw->draw_base]);CHKERRQ(ierr);
+    ierr = PetscLogObjectParent((PetscObject)viewer,(PetscObject)vdraw->drawaxis[windownumber+vdraw->draw_base]);CHKERRQ(ierr);
   }
   *drawaxis = vdraw->drawaxis[windownumber+vdraw->draw_base];
   PetscFunctionReturn(0);
@@ -453,7 +453,6 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_Draw(PetscViewer viewer)
   viewer->ops->setfromoptions   = PetscViewerSetFromOptions_Draw;
   viewer->ops->getsingleton     = PetscViewerGetSingleton_Draw;
   viewer->ops->restoresingleton = PetscViewerRestoreSingleton_Draw;
-  viewer->format                = PETSC_VIEWER_NOFORMAT;
 
   /* these are created on the fly if requested */
   vdraw->draw_max  = 5;

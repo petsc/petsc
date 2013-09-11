@@ -2,6 +2,7 @@
 static char help[] = "Tests dynamic loading of viewer.\n\n";
 
 #include <petscsys.h>
+#include <petscviewer.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

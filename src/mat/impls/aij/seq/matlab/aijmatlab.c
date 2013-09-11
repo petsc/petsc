@@ -20,7 +20,7 @@ PETSC_EXTERN mxArray *MatSeqAIJToMatlab(Mat B)
 
   PetscFunctionBegin;
   mat  = mxCreateSparse(B->cmap->n,B->rmap->n,aij->nz,mxREAL);
-  ierr = PetscMemcpy(mxGetPr(mat),aij->a,aij->nz*sizeof(PetscScalar));
+  ierr = PetscMemcpy(mxGetPr(mat),aij->a,aij->nz*sizeof(PetscScalar));CHKERRQ(ierr);
   /* MATLAB stores by column, not row so we pass in the transpose of the matrix */
   jj = mxGetIr(mat);
   for (i=0; i<aij->nz; i++) jj[i] = aij->j[i];
@@ -219,7 +219,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_matlab(Mat A,MatFactorType ftype
   (*F)->ops->lufactorsymbolic  = MatLUFactorSymbolic_Matlab;
   (*F)->ops->ilufactorsymbolic = MatLUFactorSymbolic_Matlab;
 
-  ierr = PetscObjectComposeFunction((PetscObject)(*F),"MatFactorGetSolverPackage_C","MatFactorGetSolverPackage_seqaij_matlab",MatFactorGetSolverPackage_seqaij_matlab);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)(*F),"MatFactorGetSolverPackage_C",MatFactorGetSolverPackage_seqaij_matlab);CHKERRQ(ierr);
 
   (*F)->factortype = ftype;
   PetscFunctionReturn(0);

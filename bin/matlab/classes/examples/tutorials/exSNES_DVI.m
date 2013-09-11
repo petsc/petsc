@@ -11,7 +11,7 @@ PetscInitialize({'-snes_vi_monitor','-ksp_monitor','-snes_vi_type','ss'});
 %%
 %  Create DM to manage the grid and get work vectors
 user.mx = 10;user.my = 10;
-user.dm = PetscDMDACreate2d(PetscDM.NONPERIODIC,PetscDM.STENCIL_BOX,user.mx,user.my,Petsc.DECIDE,Petsc.DECIDE,1,1);
+user.dm = PetscDMDACreate2d(PetscDM.BOUNDARY_GHOSTED,PetscDM.BOUNDARY_GHOSTED,PetscDM.STENCIL_BOX,user.mx,user.my,Petsc.DECIDE,Petsc.DECIDE,1,1);
 x  = user.dm.CreateGlobalVector();
 r  = x.Duplicate();
 J  = user.dm.CreateMatrix('aij');

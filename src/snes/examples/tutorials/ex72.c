@@ -88,13 +88,6 @@ typedef struct {
   BCType        bcType;            /* The type of boundary conditions */
 } AppCtx;
 
-typedef struct {
-  DM     dm;
-  Vec    u;  /* The base vector for the Jacbobian action J(u) x */
-  Mat    J;  /* Preconditioner for testing */
-  AppCtx *user;
-} JacActionCtx;
-
 PetscScalar zero(const PetscReal coords[])
 {
   return 0.0;
@@ -307,66 +300,6 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 };
 
 #undef __FUNCT__
-#define __FUNCT__ "VecChop"
-PetscErrorCode VecChop(Vec v, PetscReal tol)
-{
-  PetscScalar    *a;
-  PetscInt       n, i;
-  PetscErrorCode ierr;
-
-  PetscFunctionBeginUser;
-  ierr = VecGetLocalSize(v, &n);CHKERRQ(ierr);
-  ierr = VecGetArray(v, &a);CHKERRQ(ierr);
-  for (i = 0; i < n; ++i) {
-    if (PetscAbsScalar(a[i]) < tol) a[i] = 0.0;
-  }
-  ierr = VecRestoreArray(v, &a);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "MatChop"
-PetscErrorCode MatChop(Mat A, PetscReal tol)
-{
-  PetscScalar    *newVals;
-  PetscInt       *newCols;
-  PetscInt       rStart, rEnd, numRows, maxRows, r, colMax = 0;
-  PetscErrorCode ierr;
-
-  PetscFunctionBeginUser;
-  ierr = MatGetOwnershipRange(A, &rStart, &rEnd);CHKERRQ(ierr);
-  for (r = rStart; r < rEnd; ++r) {
-    PetscInt ncols;
-
-    ierr   = MatGetRow(A, r, &ncols, NULL, NULL);CHKERRQ(ierr);
-    colMax = PetscMax(colMax, ncols);CHKERRQ(ierr);
-    ierr   = MatRestoreRow(A, r, &ncols, NULL, NULL);CHKERRQ(ierr);
-  }
-  numRows = rEnd - rStart;
-  ierr    = MPI_Allreduce(&numRows, &maxRows, 1, MPIU_INT, MPI_MAX, PETSC_COMM_WORLD);CHKERRQ(ierr);
-  ierr    = PetscMalloc2(colMax,PetscInt,&newCols,colMax,PetscScalar,&newVals);CHKERRQ(ierr);
-  for (r = rStart; r < rStart+maxRows; ++r) {
-    const PetscScalar *vals;
-    const PetscInt    *cols;
-    PetscInt          ncols, c;
-
-    if (r < rEnd) {
-      ierr = MatGetRow(A, r, &ncols, &cols, &vals);CHKERRQ(ierr);
-      for (c = 0; c < ncols; ++c) {
-        newCols[c] = cols[c];
-        newVals[c] = PetscAbsScalar(vals[c]) < tol ? 0.0 : vals[c];
-      }
-      ierr = MatRestoreRow(A, r, &ncols, &cols, &vals);CHKERRQ(ierr);
-      ierr = MatSetValues(A, 1, &r, ncols, newCols, newVals, INSERT_VALUES);CHKERRQ(ierr);
-    }
-    ierr = MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  }
-  ierr = PetscFree2(newCols,newVals);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "CreateMesh"
 PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
@@ -386,7 +319,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     DM distributedMesh = NULL;
 
     /* Distribute mesh over processes */
-    ierr = DMPlexDistribute(*dm, partitioner, &distributedMesh);CHKERRQ(ierr);
+    ierr = DMPlexDistribute(*dm, partitioner, 0, &distributedMesh);CHKERRQ(ierr);
     if (distributedMesh) {
       ierr = DMDestroy(dm);CHKERRQ(ierr);
       *dm  = distributedMesh;
@@ -527,8 +460,8 @@ PetscErrorCode ComputeError(Vec X, PetscReal *error, AppCtx *user)
   ierr = PetscMalloc4(dim,PetscReal,&coords,dim,PetscReal,&v0,dim*dim,PetscReal,&J,dim*dim,PetscReal,&invJ);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(user->dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; ++c) {
-    const PetscScalar *x;
-    PetscReal         elemError = 0.0;
+    PetscScalar *x = NULL;
+    PetscReal    elemError = 0.0;
 
     ierr = DMPlexComputeCellGeometry(user->dm, c, v0, J, invJ, &detJ);CHKERRQ(ierr);
     if (detJ <= 0.0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJ, c);
@@ -606,7 +539,7 @@ PetscErrorCode DMComputeVertexFunction(DM dm, InsertMode mode, Vec X, PetscInt n
   ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
   ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
   ierr = DMPlexGetCoordinateSection(dm, &cSection);CHKERRQ(ierr);
-  ierr = DMPlexGetCoordinateVec(dm, &coordinates);CHKERRQ(ierr);
+  ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
   ierr = PetscMalloc(numComp * sizeof(PetscScalar), &values);CHKERRQ(ierr);
   for (v = vStart; v < vEnd; ++v) {
     PetscScalar *coords;
@@ -914,7 +847,7 @@ PetscErrorCode FormFunctionLocal(DM dm, Vec X, Vec F, AppCtx *user)
   }
   ierr = PetscMalloc4(numCells*cellDof,PetscScalar,&u,numCells*dim*dim,PetscReal,&invJ,numCells,PetscReal,&detJ,numCells*cellDof,PetscScalar,&elemVec);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; ++c) {
-    PetscScalar *x;
+    PetscScalar *x = NULL;
     PetscInt     i;
 
     ierr = DMPlexComputeCellGeometry(dm, c, v0, J, &invJ[c*dim*dim], &detJ[c]);CHKERRQ(ierr);
@@ -1207,7 +1140,7 @@ PetscErrorCode FormJacobianActionLocal(DM dm, Mat Jac, Vec X, Vec F, AppCtx *use
   }
   ierr = PetscMalloc5(numCells*cellDof,PetscScalar,&u,numCells*cellDof,PetscScalar,&a,numCells*dim*dim,PetscReal,&invJ,numCells,PetscReal,&detJ,numCells*cellDof,PetscScalar,&elemVec);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; ++c) {
-    PetscScalar *x;
+    PetscScalar *x = NULL;
     PetscInt     i;
 
     ierr = DMPlexComputeCellGeometry(dm, c, v0, J, &invJ[c*dim*dim], &detJ[c]);CHKERRQ(ierr);
@@ -1263,9 +1196,6 @@ PetscErrorCode FormJacobianAction(Mat J, Vec X,  Vec Y)
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  PetscValidHeaderSpecific(J, MAT_CLASSID, 1);
-  PetscValidHeaderSpecific(X, VEC_CLASSID, 2);
-  PetscValidHeaderSpecific(Y, VEC_CLASSID, 3);
   ierr = MatShellGetContext(J, &ctx);CHKERRQ(ierr);
   dm   = ctx->dm;
 
@@ -1526,6 +1456,7 @@ PetscErrorCode FormJacobianLocal(DM dm, Vec X, Mat Jac, Mat JacP, MatStructure *
 {
   const PetscInt debug = user->debug;
   const PetscInt dim   = user->dim;
+  PetscSection   section, globalSection;
   PetscReal      *v0, *J, *invJ, *detJ;
   PetscScalar    *elemMat, *u;
   PetscInt       numCells, cStart, cEnd, c, field, fieldI;
@@ -1534,6 +1465,8 @@ PetscErrorCode FormJacobianLocal(DM dm, Vec X, Mat Jac, Mat JacP, MatStructure *
 
   PetscFunctionBeginUser;
   ierr = PetscLogEventBegin(user->jacobianEvent,0,0,0,0);CHKERRQ(ierr);
+  ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
+  ierr = DMGetDefaultGlobalSection(dm, &globalSection);CHKERRQ(ierr);
   ierr = MatZeroEntries(JacP);CHKERRQ(ierr);
   ierr = PetscMalloc2(dim,PetscReal,&v0,dim*dim,PetscReal,&J);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
@@ -1544,7 +1477,7 @@ PetscErrorCode FormJacobianLocal(DM dm, Vec X, Mat Jac, Mat JacP, MatStructure *
   }
   ierr = PetscMalloc4(numCells*cellDof,PetscScalar,&u,numCells*dim*dim,PetscReal,&invJ,numCells,PetscReal,&detJ,numCells*cellDof*cellDof,PetscScalar,&elemMat);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; ++c) {
-    PetscScalar *x;
+    PetscScalar *x = NULL;
     PetscInt     i;
 
     ierr = DMPlexComputeCellGeometry(dm, c, v0, J, &invJ[c*dim*dim], &detJ[c]);CHKERRQ(ierr);
@@ -1580,7 +1513,7 @@ PetscErrorCode FormJacobianLocal(DM dm, Vec X, Mat Jac, Mat JacP, MatStructure *
   }
   for (c = cStart; c < cEnd; ++c) {
     if (debug) {ierr = DMPrintCellMatrix(c, "Jacobian", cellDof, cellDof, &elemMat[c*cellDof*cellDof]);CHKERRQ(ierr);}
-    ierr = DMPlexMatSetClosure(dm, NULL, NULL, JacP, c, &elemMat[c*cellDof*cellDof], ADD_VALUES);CHKERRQ(ierr);
+    ierr = DMPlexMatSetClosure(dm, section, globalSection, JacP, c, &elemMat[c*cellDof*cellDof], ADD_VALUES);CHKERRQ(ierr);
   }
   ierr = PetscFree4(u,invJ,detJ,elemMat);CHKERRQ(ierr);
   ierr = PetscFree2(v0,J);CHKERRQ(ierr);
@@ -1673,7 +1606,7 @@ int main(int argc, char **argv)
 
     ierr = SNESGetKSP(snes, &ksp);CHKERRQ(ierr);
     ierr = KSPGetPC(ksp, &pc);CHKERRQ(ierr);
-    ierr = DMPlexGetCoordinateVec(user.dm, &crd_vec);CHKERRQ(ierr);
+    ierr = DMGetCoordinatesLocal(user.dm, &crd_vec);CHKERRQ(ierr);
     ierr = VecGetLocalSize(crd_vec,&mlocal);CHKERRQ(ierr);
     ierr = PetscMalloc(SPATIAL_DIM_0*mlocal*sizeof(*coords),&coords);CHKERRQ(ierr);
     ierr = VecGetArrayRead(crd_vec,&v);CHKERRQ(ierr);
@@ -1747,24 +1680,23 @@ int main(int argc, char **argv)
   }
 
   if (user.runType == RUN_FULL) {
-    PetscContainer c;
-    PetscSection   s;
-    PetscViewer    viewer;
+    PetscViewer viewer;
+    Vec         uLocal;
+    const char *name;
 
     ierr = PetscViewerCreate(PETSC_COMM_WORLD, &viewer);CHKERRQ(ierr);
     ierr = PetscViewerSetType(viewer, PETSCVIEWERVTK);CHKERRQ(ierr);
     ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
     ierr = PetscViewerFileSetName(viewer, "ex72_sol.vtk");CHKERRQ(ierr);
 
-    ierr = DMGetDefaultSection(user.dm, &s);CHKERRQ(ierr);
-    ierr = PetscContainerCreate(PetscObjectComm((PetscObject)u), &c);CHKERRQ(ierr);
-    ierr = PetscContainerSetPointer(c, s);CHKERRQ(ierr);
-    ierr = PetscObjectCompose((PetscObject) u, "section", (PetscObject) c);CHKERRQ(ierr);
-    ierr = PetscContainerDestroy(&c);CHKERRQ(ierr);
+    ierr = DMGetLocalVector(user.dm, &uLocal);CHKERRQ(ierr);
+    ierr = PetscObjectGetName((PetscObject) u, &name);CHKERRQ(ierr);
+    ierr = PetscObjectSetName((PetscObject) uLocal, name);CHKERRQ(ierr);
+    ierr = DMGlobalToLocalBegin(user.dm, u, INSERT_VALUES, uLocal);CHKERRQ(ierr);
+    ierr = DMGlobalToLocalEnd(user.dm, u, INSERT_VALUES, uLocal);CHKERRQ(ierr);
+    ierr = VecView(uLocal, viewer);CHKERRQ(ierr);
+    ierr = DMRestoreLocalVector(user.dm, &uLocal);CHKERRQ(ierr);
 
-    ierr = PetscObjectReference((PetscObject) user.dm);CHKERRQ(ierr); /* Needed because viewer destroys the DM */
-    ierr = PetscObjectReference((PetscObject) u);CHKERRQ(ierr); /* Needed because viewer destroys the Vec */
-    ierr = PetscViewerVTKAddField(viewer, (PetscObject) user.dm, DMPlexVTKWriteAll, PETSC_VTK_POINT_FIELD, (PetscObject) u);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   }
 

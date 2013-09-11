@@ -77,8 +77,8 @@ PetscErrorCode MatDestroy_MPIAdj(Mat mat)
   }
   ierr = PetscFree(mat->data);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)mat,0);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMPIAdjSetPreallocation_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMPIAdjCreateNonemptySubcommMat_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMPIAdjSetPreallocation_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMPIAdjCreateNonemptySubcommMat_C",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -120,7 +120,7 @@ PetscErrorCode MatMarkDiagonal_MPIAdj(Mat A)
 
   PetscFunctionBegin;
   ierr = PetscMalloc(m*sizeof(PetscInt),&a->diag);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(A,m*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory((PetscObject)A,m*sizeof(PetscInt));CHKERRQ(ierr);
   for (i=0; i<A->rmap->n; i++) {
     for (j=a->i[i]; j<a->i[i+1]; j++) {
       if (a->j[j] == i) {
@@ -252,8 +252,8 @@ PetscErrorCode  MatConvertFrom_MPIAdj(Mat A,MatType type,MatReuse reuse,Mat *new
     for (j=0; j<len; j++) {
       if (rj[j] == i+rstart) {len--; break;}    /* don't count diagonal */
     }
-    ierr    = MatRestoreRow(A,i+rstart,&len,&rj,NULL);CHKERRQ(ierr);
     nzeros += len;
+    ierr    = MatRestoreRow(A,i+rstart,&len,&rj,NULL);CHKERRQ(ierr);
   }
 
   /* malloc space for nonzeros */
@@ -577,8 +577,8 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAdj(Mat B)
   ierr         = PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
   B->assembled = PETSC_FALSE;
 
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMPIAdjSetPreallocation_C","MatMPIAdjSetPreallocation_MPIAdj",MatMPIAdjSetPreallocation_MPIAdj);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMPIAdjCreateNonemptySubcommMat_C","MatMPIAdjCreateNonemptySubcommMat_MPIAdj",MatMPIAdjCreateNonemptySubcommMat_MPIAdj);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMPIAdjSetPreallocation_C",MatMPIAdjSetPreallocation_MPIAdj);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatMPIAdjCreateNonemptySubcommMat_C",MatMPIAdjCreateNonemptySubcommMat_MPIAdj);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATMPIADJ);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

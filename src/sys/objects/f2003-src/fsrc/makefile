@@ -8,7 +8,7 @@ SOURCEH  =
 DIRS     =
 LIBBASE  = libpetscsys
 MANSEC   = Sys
-LOCDIR   = src/sys/f2003-src/fsrc/
+LOCDIR   = src/sys/objects/f2003-src/fsrc/
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

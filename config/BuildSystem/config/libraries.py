@@ -203,9 +203,11 @@ extern "C" {
         self.setCompilers.LIBS = ' '+self.toString(otherLibs) +' '+ self.setCompilers.LIBS
       elif libName:
         self.setCompilers.LIBS = ' '+self.toString(libName) +' '+ self.setCompilers.LIBS
+      if cxxMangle: compileLang = 'Cxx'
+      else:         compileLang = self.language[-1]
       if cxxLink: linklang = 'Cxx'
       else: linklang = self.language[-1]
-      self.pushLanguage(self.language[-1])
+      self.pushLanguage(compileLang)
       found = 0
       if self.checkLink(includes, body, linkLanguage=linklang):
         found = 1
@@ -242,6 +244,15 @@ extern "C" {
       self.addDefine('HAVE_ERF', 1)
     else:
       self.logPrint('Warning: erf() not found')
+    return
+
+  def checkMathTgamma(self):
+    '''Check for tgama() in libm, the math library'''
+    if not self.math is None and self.check(self.math, ['tgamma'], prototype = ['double tgamma(double);'], call = ['double x = 0,y; y = tgamma(x);\n']):
+      self.logPrint('tgamma() found')
+      self.addDefine('HAVE_TGAMMA', 1)
+    else:
+      self.logPrint('Warning: tgamma() not found')
     return
 
   def checkCompression(self):
@@ -428,6 +439,7 @@ int checkInit(void) {
     map(lambda args: self.executeTest(self.check, list(args)), self.libraries)
     self.executeTest(self.checkMath)
     self.executeTest(self.checkMathErf)
+    self.executeTest(self.checkMathTgamma)
     self.executeTest(self.checkCompression)
     self.executeTest(self.checkRealtime)
     self.executeTest(self.checkDynamic)

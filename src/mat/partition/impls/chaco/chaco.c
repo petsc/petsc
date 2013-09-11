@@ -328,15 +328,12 @@ PetscErrorCode MatPartitioningChacoSetLocal_Chaco(MatPartitioning part,MPChacoLo
   MatPartitioning_Chaco *chaco = (MatPartitioning_Chaco*)part->data;
 
   PetscFunctionBegin;
-  if (method==PETSC_DEFAULT) chaco->local_method = MP_CHACO_KERNIGHAN;
-  else {
-    switch (method) {
-    case MP_CHACO_KERNIGHAN:
-    case MP_CHACO_NONE:
-      chaco->local_method = method; break;
-    default:
-      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Chaco: Unknown or unsupported option");
-    }
+  switch (method) {
+  case MP_CHACO_KERNIGHAN:
+  case MP_CHACO_NONE:
+    chaco->local_method = method; break;
+  default:
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Chaco: Unknown or unsupported option");
   }
   PetscFunctionReturn(0);
 }
@@ -726,17 +723,17 @@ PetscErrorCode MatPartitioningDestroy_Chaco(MatPartitioning part)
   PetscFunctionBegin;
   ierr = PetscFree(chaco);CHKERRQ(ierr);
   /* clear composed functions */
-  ierr = PetscObjectComposeFunction((PetscObject)part,"MatPartitioningChacoSetGlobal_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)part,"MatPartitioningChacoGetGlobal_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)part,"MatPartitioningChacoSetLocal_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)part,"MatPartitioningChacoGetLocal_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)part,"MatPartitioningChacoSetCoarseLevel_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)part,"MatPartitioningChacoSetEigenSolver_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)part,"MatPartitioningChacoGetEigenSolver_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)part,"MatPartitioningChacoSetEigenTol_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)part,"MatPartitioningChacoGetEigenTol_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)part,"MatPartitioningChacoSetEigenNumber_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)part,"MatPartitioningChacoGetEigenNumber_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)part,"MatPartitioningChacoSetGlobal_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)part,"MatPartitioningChacoGetGlobal_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)part,"MatPartitioningChacoSetLocal_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)part,"MatPartitioningChacoGetLocal_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)part,"MatPartitioningChacoSetCoarseLevel_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)part,"MatPartitioningChacoSetEigenSolver_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)part,"MatPartitioningChacoGetEigenSolver_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)part,"MatPartitioningChacoSetEigenTol_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)part,"MatPartitioningChacoGetEigenTol_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)part,"MatPartitioningChacoSetEigenNumber_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)part,"MatPartitioningChacoGetEigenNumber_C",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -776,16 +773,16 @@ PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Chaco(MatPartitioning part)
   part->ops->destroy        = MatPartitioningDestroy_Chaco;
   part->ops->setfromoptions = MatPartitioningSetFromOptions_Chaco;
 
-  ierr = PetscObjectComposeFunction((PetscObject)part,"MatPartitioningChacoSetGlobal_C","MatPartitioningChacoSetGlobal_Chaco",MatPartitioningChacoSetGlobal_Chaco);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)part,"MatPartitioningChacoGetGlobal_C","MatPartitioningChacoGetGlobal_Chaco",MatPartitioningChacoGetGlobal_Chaco);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)part,"MatPartitioningChacoSetLocal_C","MatPartitioningChacoSetLocal_Chaco",MatPartitioningChacoSetLocal_Chaco);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)part,"MatPartitioningChacoGetLocal_C","MatPartitioningChacoGetLocal_Chaco",MatPartitioningChacoGetLocal_Chaco);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)part,"MatPartitioningChacoSetCoarseLevel_C","MatPartitioningChacoSetCoarseLevel_Chaco",MatPartitioningChacoSetCoarseLevel_Chaco);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)part,"MatPartitioningChacoSetEigenSolver_C","MatPartitioningChacoSetEigenSolver_Chaco",MatPartitioningChacoSetEigenSolver_Chaco);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)part,"MatPartitioningChacoGetEigenSolver_C","MatPartitioningChacoGetEigenSolver_Chaco",MatPartitioningChacoGetEigenSolver_Chaco);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)part,"MatPartitioningChacoSetEigenTol_C","MatPartitioningChacoSetEigenTol_Chaco",MatPartitioningChacoSetEigenTol_Chaco);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)part,"MatPartitioningChacoGetEigenTol_C","MatPartitioningChacoGetEigenTol_Chaco",MatPartitioningChacoGetEigenTol_Chaco);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)part,"MatPartitioningChacoSetEigenNumber_C","MatPartitioningChacoSetEigenNumber_Chaco",MatPartitioningChacoSetEigenNumber_Chaco);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)part,"MatPartitioningChacoGetEigenNumber_C","MatPartitioningChacoGetEigenNumber_Chaco",MatPartitioningChacoGetEigenNumber_Chaco);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)part,"MatPartitioningChacoSetGlobal_C",MatPartitioningChacoSetGlobal_Chaco);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)part,"MatPartitioningChacoGetGlobal_C",MatPartitioningChacoGetGlobal_Chaco);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)part,"MatPartitioningChacoSetLocal_C",MatPartitioningChacoSetLocal_Chaco);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)part,"MatPartitioningChacoGetLocal_C",MatPartitioningChacoGetLocal_Chaco);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)part,"MatPartitioningChacoSetCoarseLevel_C",MatPartitioningChacoSetCoarseLevel_Chaco);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)part,"MatPartitioningChacoSetEigenSolver_C",MatPartitioningChacoSetEigenSolver_Chaco);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)part,"MatPartitioningChacoGetEigenSolver_C",MatPartitioningChacoGetEigenSolver_Chaco);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)part,"MatPartitioningChacoSetEigenTol_C",MatPartitioningChacoSetEigenTol_Chaco);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)part,"MatPartitioningChacoGetEigenTol_C",MatPartitioningChacoGetEigenTol_Chaco);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)part,"MatPartitioningChacoSetEigenNumber_C",MatPartitioningChacoSetEigenNumber_Chaco);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)part,"MatPartitioningChacoGetEigenNumber_C",MatPartitioningChacoGetEigenNumber_Chaco);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

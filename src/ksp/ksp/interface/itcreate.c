@@ -70,6 +70,9 @@ PetscErrorCode  KSPLoad(KSP newdm, PetscViewer viewer)
 }
 
 #include <petscdraw.h>
+#if defined(PETSC_HAVE_AMS)
+#include <petscviewerams.h>
+#endif
 #undef __FUNCT__
 #define __FUNCT__ "KSPView"
 /*@C
@@ -105,6 +108,9 @@ PetscErrorCode  KSPView(KSP ksp,PetscViewer viewer)
 {
   PetscErrorCode ierr;
   PetscBool      iascii,isbinary,isdraw;
+#if defined(PETSC_HAVE_AMS)
+  PetscBool      isams;
+#endif
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
@@ -115,8 +121,11 @@ PetscErrorCode  KSPView(KSP ksp,PetscViewer viewer)
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_AMS)
+  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERAMS,&isams);CHKERRQ(ierr);
+#endif
   if (iascii) {
-    ierr = PetscObjectPrintClassNamePrefixType((PetscObject)ksp,viewer,"KSP Object");CHKERRQ(ierr);
+    ierr = PetscObjectPrintClassNamePrefixType((PetscObject)ksp,viewer);CHKERRQ(ierr);
     if (ksp->ops->view) {
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
       ierr = (*ksp->ops->view)(ksp,viewer);CHKERRQ(ierr);
@@ -175,8 +184,21 @@ PetscErrorCode  KSPView(KSP ksp,PetscViewer viewer)
       bottom = y;
     }
     ierr = PetscDrawPushCurrentPoint(draw,x,bottom);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_AMS)
+  } else if (isams) {
+    if (((PetscObject)ksp)->amsmem == -1) {
+      ierr = PetscObjectViewAMS((PetscObject)ksp,viewer);CHKERRQ(ierr);
+      PetscStackCallAMS(AMS_Memory_take_access,(((PetscObject)ksp)->amsmem));
+      PetscStackCallAMS(AMS_Memory_add_field,(((PetscObject)ksp)->amsmem,"its",&ksp->its,1,AMS_INT,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF));
+      if (!ksp->res_hist) {
+        ierr = KSPSetResidualHistory(ksp,NULL,PETSC_DECIDE,PETSC_FALSE);CHKERRQ(ierr);
+      }
+      PetscStackCallAMS(AMS_Memory_add_field,(((PetscObject)ksp)->amsmem,"res_hist",ksp->res_hist,10,AMS_DOUBLE,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF));
+      PetscStackCallAMS(AMS_Memory_grant_access,(((PetscObject)ksp)->amsmem));
+    }
+#endif
   } else if (ksp->ops->view) {
-      ierr = (*ksp->ops->view)(ksp,viewer);CHKERRQ(ierr);
+    ierr = (*ksp->ops->view)(ksp,viewer);CHKERRQ(ierr);
   }
   if (!ksp->pc) {ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr);}
   ierr = PCView(ksp->pc,viewer);CHKERRQ(ierr);
@@ -423,22 +445,7 @@ PetscErrorCode  KSPGetNormType(KSP ksp, KSPNormType *normtype)
 }
 
 #if defined(PETSC_HAVE_AMS)
-#undef __FUNCT__
-#define __FUNCT__ "KSPPublish_Petsc"
-static PetscErrorCode KSPPublish_Petsc(PetscObject obj)
-{
-  KSP            ksp = (KSP) obj;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = AMS_Memory_add_field(obj->amsmem,"its",&ksp->its,1,AMS_INT,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
-
-  if (!ksp->res_hist) {
-    ierr = KSPSetResidualHistory((KSP)obj,NULL,PETSC_DECIDE,PETSC_FALSE);CHKERRQ(ierr);
-  }
-  ierr = AMS_Memory_add_field(obj->amsmem,"res_hist",ksp->res_hist,10,AMS_DOUBLE,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
+#include <petscviewerams.h>
 #endif
 
 #undef __FUNCT__
@@ -662,13 +669,13 @@ PetscErrorCode  KSPSetPreSolve(KSP ksp,PetscErrorCode (*presolve)(KSP,Vec,Vec,vo
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetPostSolve"
 /*@C
-   KSPSetPostSolve - Sets a function that is called before every KSPSolve() is started
+   KSPSetPostSolve - Sets a function that is called after every KSPSolve() completes (whether it converges or not)
 
    Logically Collective on KSP
 
    Input Parameters:
 +   ksp - the solver object
-.   postsolve - the function to call before the solve
+.   postsolve - the function to call after the solve
 -   postctx - any context needed by the function
 
    Level: developer
@@ -719,7 +726,7 @@ PetscErrorCode  KSPCreate(MPI_Comm comm,KSP *inksp)
   PetscValidPointer(inksp,2);
   *inksp = 0;
 #if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
-  ierr = KSPInitializePackage(NULL);CHKERRQ(ierr);
+  ierr = KSPInitializePackage();CHKERRQ(ierr);
 #endif
 
   ierr = PetscHeaderCreate(ksp,_p_KSP,struct _KSPOps,KSP_CLASSID,"KSP","Krylov Method","KSP",comm,KSPDestroy,KSPView);CHKERRQ(ierr);
@@ -747,9 +754,6 @@ PetscErrorCode  KSPCreate(MPI_Comm comm,KSP *inksp)
   ierr                    = KSPSetConvergenceTest(ksp,KSPDefaultConverged,ctx,KSPDefaultConvergedDestroy);CHKERRQ(ierr);
   ksp->ops->buildsolution = KSPBuildSolutionDefault;
   ksp->ops->buildresidual = KSPBuildResidualDefault;
-#if defined(PETSC_HAVE_AMS)
-  ((PetscObject)ksp)->bops->publish = KSPPublish_Petsc;
-#endif
 
   ksp->vec_sol    = 0;
   ksp->vec_rhs    = 0;
@@ -799,9 +803,12 @@ PetscErrorCode  KSPCreate(MPI_Comm comm,KSP *inksp)
 
   Level: intermediate
 
+  Developer Note: KSPRegister() is used to add Krylov types to KSPList from which they
+  are accessed by KSPSetType().
+
 .keywords: KSP, set, method
 
-.seealso: PCSetType(), KSPType
+.seealso: PCSetType(), KSPType, KSPRegister(), KSPCreate()
 
 @*/
 PetscErrorCode  KSPSetType(KSP ksp, KSPType type)
@@ -816,7 +823,7 @@ PetscErrorCode  KSPSetType(KSP ksp, KSPType type)
   ierr = PetscObjectTypeCompare((PetscObject)ksp,type,&match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
 
-  ierr =  PetscFunctionListFind(PetscObjectComm((PetscObject)ksp),KSPList,type,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
+  ierr =  PetscFunctionListFind(KSPList,type,&r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested KSP type %s",type);
   /* Destroy the previous private KSP context */
   if (ksp->ops->destroy) {
@@ -832,35 +839,6 @@ PetscErrorCode  KSPSetType(KSP ksp, KSPType type)
   ksp->setupstage = KSP_SETUP_NEW;
   ierr            = PetscObjectChangeTypeName((PetscObject)ksp,type);CHKERRQ(ierr);
   ierr            = (*r)(ksp);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_AMS)
-  if (PetscAMSPublishAll) {
-    ierr = PetscObjectAMSPublish((PetscObject)ksp);CHKERRQ(ierr);
-  }
-#endif
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "KSPRegisterDestroy"
-/*@
-   KSPRegisterDestroy - Frees the list of KSP methods that were
-   registered by KSPRegisterDynamic().
-
-   Not Collective
-
-   Level: advanced
-
-.keywords: KSP, register, destroy
-
-.seealso: KSPRegisterDynamic(), KSPRegisterAll()
-@*/
-PetscErrorCode  KSPRegisterDestroy(void)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr                 = PetscFunctionListDestroy(&KSPList);CHKERRQ(ierr);
-  KSPRegisterAllCalled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -895,18 +873,40 @@ PetscErrorCode  KSPGetType(KSP ksp,KSPType *type)
 #undef __FUNCT__
 #define __FUNCT__ "KSPRegister"
 /*@C
-  KSPRegister - See KSPRegisterDynamic()
+  KSPRegister -  Adds a method to the Krylov subspace solver package.
 
-  Level: advanced
+   Not Collective
+
+   Input Parameters:
++  name_solver - name of a new user-defined solver
+-  routine_create - routine to create method context
+
+   Notes:
+   KSPRegister() may be called multiple times to add several user-defined solvers.
+
+   Sample usage:
+.vb
+   KSPRegister("my_solver",MySolverCreate);
+.ve
+
+   Then, your solver can be chosen with the procedural interface via
+$     KSPSetType(ksp,"my_solver")
+   or at runtime via the option
+$     -ksp_type my_solver
+
+   Level: advanced
+
+.keywords: KSP, register
+
+.seealso: KSPRegisterAll(), KSPRegisterDestroy()
+
 @*/
-PetscErrorCode  KSPRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(KSP))
+PetscErrorCode  KSPRegister(const char sname[],PetscErrorCode (*function)(KSP))
 {
   PetscErrorCode ierr;
-  char           fullname[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListConcat(path,name,fullname);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&KSPList,sname,fullname,(void (*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&KSPList,sname,function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -920,6 +920,9 @@ PetscErrorCode  KSPRegister(const char sname[],const char path[],const char name
   Input Parameters:
 +  ksp - the Krylov space object
 -  nullsp - the null space of the operator
+
+  Notes: If the Mat provided to KSP has a nullspace added to it with MatSetNullSpace() then
+         KSP will automatically use the MatNullSpace and you don't need to call KSPSetNullSpace().
 
   Level: advanced
 

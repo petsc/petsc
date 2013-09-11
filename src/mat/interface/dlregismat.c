@@ -14,12 +14,13 @@ const char       *MatOptions[] = {"ROW_ORIENTED","NEW_NONZERO_LOCATIONS",
                                   "CHECK_COMPRESSED_ROW",
                                   "IGNORE_LOWER_TRIANGULAR","ERROR_LOWER_TRIANGULAR","GETROW_UPPERTRIANGULAR","SPD","NO_OFF_PROC_ENTRIES","NO_OFF_PROC_ZERO_ROWS","MatOption","MAT_",0};
 const char *const MatFactorShiftTypes[] = {"NONE","NONZERO","POSITIVE_DEFINITE","INBLOCKS","MatFactorShiftType","PC_FACTOR_",0};
+const char *const MatFactorShiftTypesDetail[] = {NULL,"diagonal shift to prevent zero pivot","Manteuffel shift","diagonal shift on blocks to prevent zero pivot"};
 const char *const MPPTScotchStrategyTypes[] = {"QUALITY","SPEED","BALANCE","SAFETY","SCALABILITY","MPPTScotchStrategyType","MP_PTSCOTCH_",0};
 const char *const MPChacoGlobalTypes[] = {"","MULTILEVEL","SPECTRAL","","LINEAR","RANDOM","SCATTERED","MPChacoGlobalType","MP_CHACO_",0};
 const char *const MPChacoLocalTypes[] = {"","KERNIGHAN","NONE","MPChacoLocalType","MP_CHACO_",0};
 const char *const MPChacoEigenTypes[] = {"LANCZOS","RQI","MPChacoEigenType","MP_CHACO_",0};
 
-extern PetscErrorCode  MatMFFDInitializePackage(const char[]);
+extern PetscErrorCode  MatMFFDInitializePackage(void);
 static PetscBool MatPackageInitialized = PETSC_FALSE;
 #undef __FUNCT__
 #define __FUNCT__ "MatFinalizePackage"
@@ -46,17 +47,17 @@ PetscErrorCode  MatFinalizePackage(void)
     ierr   = PetscFree(names);CHKERRQ(ierr);
     names  = nnames;
   }
+  ierr = PetscFunctionListDestroy(&MatList);CHKERRQ(ierr);
+  ierr = PetscFunctionListDestroy(&MatOrderingList);CHKERRQ(ierr);
+  ierr = PetscFunctionListDestroy(&MatColoringList);CHKERRQ(ierr);
+  ierr = PetscFunctionListDestroy(&MatPartitioningList);CHKERRQ(ierr);
+  ierr = PetscFunctionListDestroy(&MatCoarsenList);CHKERRQ(ierr);
   MatBaseNameList                  = NULL;
   MatPackageInitialized            = PETSC_FALSE;
   MatRegisterAllCalled             = PETSC_FALSE;
-  MatList                          = NULL;
   MatOrderingRegisterAllCalled     = PETSC_FALSE;
-  MatOrderingList                  = NULL;
-  MatColoringList                  = NULL;
   MatColoringRegisterAllCalled     = PETSC_FALSE;
-  MatPartitioningList              = NULL;
   MatPartitioningRegisterAllCalled = PETSC_FALSE;
-  MatCoarsenList                   = NULL;
   MatCoarsenRegisterAllCalled      = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
@@ -68,15 +69,12 @@ PetscErrorCode  MatFinalizePackage(void)
   from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to MatCreate()
   when using static libraries.
 
-  Input Parameter:
-  path - The dynamic library path, or NULL
-
   Level: developer
 
 .keywords: Mat, initialize, package
 .seealso: PetscInitialize()
 @*/
-PetscErrorCode  MatInitializePackage(const char path[])
+PetscErrorCode  MatInitializePackage(void)
 {
   char           logList[256];
   char           *className;
@@ -87,7 +85,7 @@ PetscErrorCode  MatInitializePackage(const char path[])
   if (MatPackageInitialized) PetscFunctionReturn(0);
   MatPackageInitialized = PETSC_TRUE;
   /* Inialize subpackage */
-  ierr = MatMFFDInitializePackage(path);CHKERRQ(ierr);
+  ierr = MatMFFDInitializePackage();CHKERRQ(ierr);
   /* Register Classes */
   ierr = PetscClassIdRegister("Matrix",&MAT_CLASSID);CHKERRQ(ierr);
   ierr = PetscClassIdRegister("Matrix FD Coloring",&MAT_FDCOLORING_CLASSID);CHKERRQ(ierr);
@@ -96,11 +94,11 @@ PetscErrorCode  MatInitializePackage(const char path[])
   ierr = PetscClassIdRegister("Matrix Coarsen",&MAT_COARSEN_CLASSID);CHKERRQ(ierr);
   ierr = PetscClassIdRegister("Matrix Null Space",&MAT_NULLSPACE_CLASSID);CHKERRQ(ierr);
   /* Register Constructors */
-  ierr = MatRegisterAll(path);CHKERRQ(ierr);
-  ierr = MatOrderingRegisterAll(path);CHKERRQ(ierr);
-  ierr = MatColoringRegisterAll(path);CHKERRQ(ierr);
-  ierr = MatPartitioningRegisterAll(path);CHKERRQ(ierr);
-  ierr = MatCoarsenRegisterAll(path);CHKERRQ(ierr);
+  ierr = MatRegisterAll();CHKERRQ(ierr);
+  ierr = MatOrderingRegisterAll();CHKERRQ(ierr);
+  ierr = MatColoringRegisterAll();CHKERRQ(ierr);
+  ierr = MatPartitioningRegisterAll();CHKERRQ(ierr);
+  ierr = MatCoarsenRegisterAll();CHKERRQ(ierr);
   /* Register Events */
   ierr = PetscLogEventRegister("MatMult",          MAT_CLASSID,&MAT_Mult);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatMults",         MAT_CLASSID,&MAT_Mults);CHKERRQ(ierr);
@@ -160,8 +158,8 @@ PetscErrorCode  MatInitializePackage(const char path[])
   ierr = PetscLogEventRegister("MatPtAPSymbolic",  MAT_CLASSID,&MAT_PtAPSymbolic);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatPtAPNumeric",   MAT_CLASSID,&MAT_PtAPNumeric);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatRARt",          MAT_CLASSID,&MAT_RARt);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatRARtSymbolic",  MAT_CLASSID,&MAT_RARtSymbolic);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatRARtNumeric",   MAT_CLASSID,&MAT_RARtNumeric);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatRARtSym",       MAT_CLASSID,&MAT_RARtSymbolic);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatRARtNum",       MAT_CLASSID,&MAT_RARtNumeric);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatMatTransMult",  MAT_CLASSID,&MAT_MatTransposeMult);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatMatTrnMultSym", MAT_CLASSID,&MAT_MatTransposeMultSymbolic);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatMatTrnMultNum", MAT_CLASSID,&MAT_MatTransposeMultNumeric);CHKERRQ(ierr);
@@ -193,6 +191,7 @@ PetscErrorCode  MatInitializePackage(const char path[])
   ierr = PetscLogEventRegister("MatTranspose_SeqAIJ_FAST",MAT_CLASSID,&MAT_Transpose_SeqAIJ);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatCUSPCopyTo",MAT_CLASSID,&MAT_CUSPCopyToGPU);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatCUSPARSECopyTo",MAT_CLASSID,&MAT_CUSPARSECopyToGPU);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatViennaCLCopyTo",MAT_CLASSID,&MAT_ViennaCLCopyToGPU);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatSetValBatch",MAT_CLASSID,&MAT_SetValuesBatch);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatSetValBatch1",MAT_CLASSID,&MAT_SetValuesBatchI);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatSetValBatch2",MAT_CLASSID,&MAT_SetValuesBatchII);CHKERRQ(ierr);
@@ -229,15 +228,13 @@ PetscErrorCode  MatInitializePackage(const char path[])
 
   This one registers all the matrix methods that are in the basic PETSc Matrix library.
 
-  Input Parameter:
-  path - library path
  */
-PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscmat(const char path[])
+PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscmat(void)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatInitializePackage(path);CHKERRQ(ierr);
+  ierr = MatInitializePackage();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -754,7 +754,7 @@ PetscErrorCode PCSetFromOptions_Exotic(PC pc)
       const char *prefix;
       ierr = KSPCreate(PETSC_COMM_SELF,&ctx->ksp);CHKERRQ(ierr);
       ierr = PetscObjectIncrementTabLevel((PetscObject)ctx->ksp,(PetscObject)pc,1);CHKERRQ(ierr);
-      ierr = PetscLogObjectParent(pc,ctx->ksp);CHKERRQ(ierr);
+      ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)ctx->ksp);CHKERRQ(ierr);
       ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
       ierr = KSPSetOptionsPrefix(ctx->ksp,prefix);CHKERRQ(ierr);
       ierr = KSPAppendOptionsPrefix(ctx->ksp,"exotic_");CHKERRQ(ierr);
@@ -841,6 +841,6 @@ PETSC_EXTERN PetscErrorCode PCCreate_Exotic(PC pc)
   pc->ops->destroy        = PCDestroy_Exotic;
   pc->ops->setup          = PCSetUp_Exotic;
 
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCExoticSetType_C","PCExoticSetType_Exotic",PCExoticSetType_Exotic);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCExoticSetType_C",PCExoticSetType_Exotic);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

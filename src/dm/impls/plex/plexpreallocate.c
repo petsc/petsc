@@ -1,5 +1,6 @@
 #include <petsc-private/dmpleximpl.h>   /*I      "petscdmplex.h"   I*/
 #include <petsc-private/isimpl.h>
+#include <petscsf.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexGetAdjacency_Internal"
@@ -46,6 +47,7 @@ PetscErrorCode DMPlexPreallocateOperator(DM dm, PetscInt bs, PetscSection sectio
 {
   DM_Plex           *mesh = (DM_Plex*) dm->data;
   MPI_Comm           comm;
+  MatType            mtype;
   PetscSF            sf, sfDof, sfAdj;
   PetscSection       leafSectionAdj, rootSectionAdj, sectionAdj;
   PetscInt           nleaves, l, p;
@@ -57,7 +59,7 @@ PetscErrorCode DMPlexPreallocateOperator(DM dm, PetscInt bs, PetscSection sectio
   PetscLayout        rLayout;
   PetscInt           locRows, rStart, rEnd, r;
   PetscMPIInt        size;
-  PetscBool          useClosure, debug = PETSC_FALSE;
+  PetscBool          useClosure, debug = PETSC_FALSE, isSymBlock, isSymSeqBlock, isSymMPIBlock;
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
@@ -102,8 +104,8 @@ PetscErrorCode DMPlexPreallocateOperator(DM dm, PetscInt bs, PetscSection sectio
   ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
   ierr = DMPlexGetMaxSizes(dm, &maxConeSize, &maxSupportSize);CHKERRQ(ierr);
 
-  maxClosureSize = 2*PetscMax(PetscPowInt(mesh->maxConeSize,depth),PetscPowInt(mesh->maxSupportSize,depth)) + 2;
-  maxAdjSize     = PetscPowInt(mesh->maxConeSize,depth) * PetscPowInt(mesh->maxSupportSize,depth) + 1;
+  maxClosureSize = 2*PetscMax(PetscPowInt(mesh->maxConeSize,depth+1),PetscPowInt(mesh->maxSupportSize,depth+1));
+  maxAdjSize     = PetscPowInt(mesh->maxConeSize,depth+1) * PetscPowInt(mesh->maxSupportSize,depth+1) + 1;
 
   ierr = PetscMalloc2(maxClosureSize,PetscInt,&tmpClosure,maxAdjSize,PetscInt,&tmpAdj);CHKERRQ(ierr);
 
@@ -461,6 +463,12 @@ PetscErrorCode DMPlexPreallocateOperator(DM dm, PetscInt bs, PetscSection sectio
   /* Set matrix pattern */
   ierr = MatXAIJSetPreallocation(A, bs, dnz, onz, dnzu, onzu);CHKERRQ(ierr);
   ierr = MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
+  /* Check for symmetric storage */
+  ierr = MatGetType(A, &mtype);CHKERRQ(ierr);
+  ierr = PetscStrcmp(mtype, MATSBAIJ, &isSymBlock);CHKERRQ(ierr);
+  ierr = PetscStrcmp(mtype, MATSEQSBAIJ, &isSymSeqBlock);CHKERRQ(ierr);
+  ierr = PetscStrcmp(mtype, MATMPISBAIJ, &isSymMPIBlock);CHKERRQ(ierr);
+  if (isSymBlock || isSymSeqBlock || isSymMPIBlock) {ierr = MatSetOption(A, MAT_IGNORE_LOWER_TRIANGULAR, PETSC_TRUE);CHKERRQ(ierr);}
   /* Fill matrix with zeros */
   if (fillMatrix) {
     PetscScalar *values;
@@ -504,7 +512,7 @@ PetscErrorCode DMPlexPreallocateOperator_2(DM dm, PetscInt bs, PetscSection sect
   ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
   ierr = DMPlexGetMaxSizes(dm, &maxConeSize, &maxSupportSize);CHKERRQ(ierr);
 
-  maxClosureSize = 2*PetscMax(PetscPowInt(mesh->maxConeSize,depth),PetscPowInt(mesh->maxSupportSize,depth));
+  maxClosureSize = 2*PetscMax(PetscPowInt(mesh->maxConeSize,depth+1),PetscPowInt(mesh->maxSupportSize,depth+1));
 
   ierr    = PetscSectionGetChart(section, &pStart, &pEnd);CHKERRQ(ierr);
   npoints = pEnd - pStart;

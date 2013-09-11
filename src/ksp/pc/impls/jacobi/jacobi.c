@@ -130,7 +130,7 @@ static PetscErrorCode PCSetUp_Jacobi(PC pc)
 
   if (pc->setupcalled == 0) { allocate space the first time this is ever called
     ierr = MatGetVecs(pc->mat,&jac->diag);CHKERRQ(ierr);
-    PetscLogObjectParent(pc,jac->diag);
+    PetscLogObjectParent((PetscObject)pc,(PetscObject)jac->diag);
   }
 
     But for this preconditioner we want to support use of both the matrix' diagonal
@@ -213,7 +213,7 @@ static PetscErrorCode PCSetUp_Jacobi_Symmetric(PC pc)
 
   PetscFunctionBegin;
   ierr = MatGetVecs(pc->pmat,&jac->diagsqrt,0);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(pc,jac->diagsqrt);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)jac->diagsqrt);CHKERRQ(ierr);
   ierr = PCSetUp_Jacobi(pc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -235,7 +235,7 @@ static PetscErrorCode PCSetUp_Jacobi_NonSymmetric(PC pc)
 
   PetscFunctionBegin;
   ierr = MatGetVecs(pc->pmat,&jac->diag,0);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(pc,jac->diag);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)jac->diag);CHKERRQ(ierr);
   ierr = PCSetUp_Jacobi(pc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -430,9 +430,9 @@ PETSC_EXTERN PetscErrorCode PCCreate_Jacobi(PC pc)
   pc->ops->applysymmetricleft  = PCApplySymmetricLeftOrRight_Jacobi;
   pc->ops->applysymmetricright = PCApplySymmetricLeftOrRight_Jacobi;
 
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCJacobiSetUseRowMax_C","PCJacobiSetUseRowMax_Jacobi",PCJacobiSetUseRowMax_Jacobi);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCJacobiSetUseRowSum_C","PCJacobiSetUseRowSum_Jacobi",PCJacobiSetUseRowSum_Jacobi);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCJacobiSetUseAbs_C","PCJacobiSetUseAbs_Jacobi",PCJacobiSetUseAbs_Jacobi);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCJacobiSetUseRowMax_C",PCJacobiSetUseRowMax_Jacobi);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCJacobiSetUseRowSum_C",PCJacobiSetUseRowSum_Jacobi);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCJacobiSetUseAbs_C",PCJacobiSetUseAbs_Jacobi);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

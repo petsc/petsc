@@ -5,7 +5,7 @@ PETSC_EXTERN PetscErrorCode PetscSFCreate_Window(PetscSF);
 #endif
 PETSC_EXTERN PetscErrorCode PetscSFCreate_Basic(PetscSF);
 
-PetscFunctionList PetscSFunctionList;
+PetscFunctionList PetscSFList;
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSFRegisterAll"
@@ -20,57 +20,55 @@ PetscFunctionList PetscSFunctionList;
 
 .seealso:  PetscSFRegisterDestroy()
 @*/
-PetscErrorCode  PetscSFRegisterAll(const char path[])
+PetscErrorCode  PetscSFRegisterAll(void)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscSFRegisterAllCalled = PETSC_TRUE;
 #if defined(PETSC_HAVE_MPI_WIN_CREATE) && defined(PETSC_HAVE_MPI_TYPE_DUP)
-  ierr = PetscSFRegisterDynamic(PETSCSFWINDOW,       path,"PetscSFCreate_Window",       PetscSFCreate_Window);CHKERRQ(ierr);
+  ierr = PetscSFRegister(PETSCSFWINDOW, PetscSFCreate_Window);CHKERRQ(ierr);
 #endif
-  ierr = PetscSFRegisterDynamic(PETSCSFBASIC,        path,"PetscSFCreate_Basic",        PetscSFCreate_Basic);CHKERRQ(ierr);
+  ierr = PetscSFRegister(PETSCSFBASIC,  PetscSFCreate_Basic);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSFRegister"
 /*@C
-  PetscSFRegister - See PetscSFRegisterDynamic()
+  PetscSFRegister  - Adds an implementation of the PetscSF communication protocol.
 
-  Level: advanced
-@*/
-PetscErrorCode  PetscSFRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(PetscSF))
-{
-  char           fullname[PETSC_MAX_PATH_LEN];
-  PetscErrorCode ierr;
+   Not collective
 
-  PetscFunctionBegin;
-  ierr = PetscFunctionListConcat(path,name,fullname);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(PETSC_COMM_WORLD,&PetscSFunctionList,sname,fullname,(void (*)(void))function);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
+   Input Parameters:
++  name_impl - name of a new user-defined implementation
+-  routine_create - routine to create method context
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscSFRegisterDestroy"
-/*@
-   PetscSFRegisterDestroy - Frees the list of communication implementations registered by PetscSFRegisterDynamic()
+   Notes:
+   PetscSFRegister() may be called multiple times to add several user-defined implementations.
 
-   Not Collective
+   Sample usage:
+.vb
+   PetscSFRegister("my_impl",MyImplCreate);
+.ve
+
+   Then, this implementation can be chosen with the procedural interface via
+$     PetscSFSetType(sf,"my_impl")
+   or at runtime via the option
+$     -snes_type my_solver
 
    Level: advanced
 
-.keywords: PetscSF, register, destroy
+.keywords: PetscSF, register
 
-.seealso: PetscSFRegisterAll()
+.seealso: PetscSFRegisterAll(), PetscSFRegisterDestroy()
 @*/
-PetscErrorCode  PetscSFRegisterDestroy(void)
+PetscErrorCode  PetscSFRegister(const char sname[],PetscErrorCode (*function)(PetscSF))
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListDestroy(&PetscSFunctionList);CHKERRQ(ierr);
-
-  PetscSFRegisterAllCalled = PETSC_FALSE;
+  ierr = PetscFunctionListAdd(&PetscSFList,sname,function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+

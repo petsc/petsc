@@ -49,7 +49,7 @@ extern PetscErrorCode PetscVFPrintfiPhone(FILE *,const char *,va_list);
     /* this example is silly because it just runs a PETSc example when the graphics window appears
         but it does test the use of the PETSc framework */
     
-    PetscStrToArray("ex19 -ksp_monitor",&argc,&args);
+    PetscStrToArray("ex19 -ksp_monitor",' ',&argc,&args);
     ex19(argc,args);
     
     

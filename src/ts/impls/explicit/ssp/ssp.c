@@ -4,6 +4,7 @@
 #include <petsc-private/tsimpl.h>                /*I   "petscts.h"   I*/
 
 PetscFunctionList TSSSPList = 0;
+static PetscBool TSSSPPackageInitialized;
 
 typedef struct {
   PetscErrorCode (*onestep)(TS,PetscReal,PetscReal,Vec);
@@ -49,7 +50,6 @@ static PetscErrorCode TSSSPRestoreWorkVectors(TS ts,PetscInt n,Vec **work)
   *work = NULL;
   PetscFunctionReturn(0);
 }
-
 
 #undef __FUNCT__
 #define __FUNCT__ "TSSSPStep_RK_2"
@@ -245,10 +245,10 @@ static PetscErrorCode TSDestroy_SSP(TS ts)
   ierr = TSReset_SSP(ts);CHKERRQ(ierr);
   ierr = PetscFree(ssp->type_name);CHKERRQ(ierr);
   ierr = PetscFree(ts->data);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSSSPGetType_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSSSPSetType_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSSSPGetNumStages_C","",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSSSPSetNumStages_C","",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSSSPGetType_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSSSPSetType_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSSSPGetNumStages_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSSSPSetNumStages_C",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /*------------------------------------------------------------*/
@@ -373,7 +373,7 @@ PETSC_EXTERN PetscErrorCode TSSSPSetType_SSP(TS ts,TSSSPType type)
   TS_SSP         *ssp = (TS_SSP*)ts->data;
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListFind(PetscObjectComm((PetscObject)ts),TSSSPList,type,PETSC_TRUE,(PetscVoidStarFunction)&r);CHKERRQ(ierr);
+  ierr = PetscFunctionListFind(TSSSPList,type,&r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown TS_SSP type %s given",type);
   ssp->onestep = r;
   ierr = PetscFree(ssp->type_name);CHKERRQ(ierr);
@@ -494,11 +494,9 @@ PETSC_EXTERN PetscErrorCode TSCreate_SSP(TS ts)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!TSSSPList) {
-    ierr = PetscFunctionListAdd(PetscObjectComm((PetscObject)ts),&TSSSPList,TSSSPRKS2,  "TSSSPStep_RK_2",   (void(*)(void))TSSSPStep_RK_2);CHKERRQ(ierr);
-    ierr = PetscFunctionListAdd(PetscObjectComm((PetscObject)ts),&TSSSPList,TSSSPRKS3,  "TSSSPStep_RK_3",   (void(*)(void))TSSSPStep_RK_3);CHKERRQ(ierr);
-    ierr = PetscFunctionListAdd(PetscObjectComm((PetscObject)ts),&TSSSPList,TSSSPRK104, "TSSSPStep_RK_10_4",(void(*)(void))TSSSPStep_RK_10_4);CHKERRQ(ierr);
-  }
+#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
+  ierr = TSSSPInitializePackage();CHKERRQ(ierr);
+#endif
 
   ts->ops->setup          = TSSetUp_SSP;
   ts->ops->step           = TSStep_SSP;
@@ -510,12 +508,59 @@ PETSC_EXTERN PetscErrorCode TSCreate_SSP(TS ts)
   ierr = PetscNewLog(ts,TS_SSP,&ssp);CHKERRQ(ierr);
   ts->data = (void*)ssp;
 
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSSSPGetType_C","TSSSPGetType_SSP",TSSSPGetType_SSP);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSSSPSetType_C","TSSSPSetType_SSP",TSSSPSetType_SSP);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSSSPGetNumStages_C","TSSSPGetNumStages_SSP",TSSSPGetNumStages_SSP);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSSSPSetNumStages_C","TSSSPSetNumStages_SSP",TSSSPSetNumStages_SSP);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSSSPGetType_C",TSSSPGetType_SSP);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSSSPSetType_C",TSSSPSetType_SSP);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSSSPGetNumStages_C",TSSSPGetNumStages_SSP);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSSSPSetNumStages_C",TSSSPSetNumStages_SSP);CHKERRQ(ierr);
 
   ierr = TSSSPSetType(ts,TSSSPRKS2);CHKERRQ(ierr);
   ssp->nstages = 5;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSSSPInitializePackage"
+/*@C
+  TSSSPInitializePackage - This function initializes everything in the TSSSP package. It is called
+  from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to TSCreate_SSP()
+  when using static libraries.
+
+  Level: developer
+
+.keywords: TS, TSSSP, initialize, package
+.seealso: PetscInitialize()
+@*/
+PetscErrorCode TSSSPInitializePackage(void)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (TSSSPPackageInitialized) PetscFunctionReturn(0);
+  TSSSPPackageInitialized = PETSC_TRUE;
+  ierr = PetscFunctionListAdd(&TSSSPList,TSSSPRKS2, TSSSPStep_RK_2);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&TSSSPList,TSSSPRKS3, TSSSPStep_RK_3);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&TSSSPList,TSSSPRK104,TSSSPStep_RK_10_4);CHKERRQ(ierr);
+  ierr = PetscRegisterFinalize(TSSSPFinalizePackage);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSSSPFinalizePackage"
+/*@C
+  TSSSPFinalizePackage - This function destroys everything in the TSSSP package. It is
+  called from PetscFinalize().
+
+  Level: developer
+
+.keywords: Petsc, destroy, package
+.seealso: PetscFinalize()
+@*/
+PetscErrorCode TSSSPFinalizePackage(void)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  TSSSPPackageInitialized = PETSC_FALSE;
+  ierr = PetscFunctionListDestroy(&TSSSPList);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

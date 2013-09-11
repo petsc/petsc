@@ -6,16 +6,16 @@
 #include <petscmat.h>
 #include <petscdmtypes.h>
 
-PETSC_EXTERN PetscErrorCode PCInitializePackage(const char[]);
+PETSC_EXTERN PetscErrorCode PCInitializePackage(void);
 
 /*
     PCList contains the list of preconditioners currently registered
-   These are added with the PCRegisterDynamic() macro
+   These are added with PCRegister()
 */
 PETSC_EXTERN PetscFunctionList PCList;
 
 /*S
-     PC - Abstract PETSc object that manages all preconditioners
+     PC - Abstract PETSc object that manages all preconditioners including direct solvers such as PCLU
 
    Level: beginner
 
@@ -26,15 +26,15 @@ S*/
 typedef struct _p_PC* PC;
 
 /*J
-    PCType - String with the name of a PETSc preconditioner method or the creation function
-       with an optional dynamic library name, for example
-       http://www.mcs.anl.gov/petsc/lib.a:mypccreate()
+    PCType - String with the name of a PETSc preconditioner method.
 
    Level: beginner
 
    Notes: Click on the links below to see details on a particular solver
 
-.seealso: PCSetType(), PC, PCCreate()
+          PCRegister() is used to register preconditioners that are then accessible via PCSetType()
+
+.seealso: PCSetType(), PC, PCCreate(), PCRegister(), PCSetFromOptions()
 J*/
 typedef const char* PCType;
 #define PCNONE            "none"
@@ -132,59 +132,10 @@ PETSC_EXTERN PetscErrorCode PCSetInitialGuessNonzero(PC,PetscBool );
 PETSC_EXTERN PetscErrorCode PCSetUseAmat(PC,PetscBool);
 PETSC_EXTERN PetscErrorCode PCGetUseAmat(PC,PetscBool*);
 
-PETSC_EXTERN PetscErrorCode PCRegisterDestroy(void);
-PETSC_EXTERN PetscErrorCode PCRegisterAll(const char[]);
+PETSC_EXTERN PetscErrorCode PCRegisterAll(void);
 PETSC_EXTERN PetscBool PCRegisterAllCalled;
 
-PETSC_EXTERN PetscErrorCode PCRegister(const char[],const char[],const char[],PetscErrorCode(*)(PC));
-
-/*MC
-   PCRegisterDynamic - Adds a method to the preconditioner package.
-
-   Synopsis:
-    #include "petscpc.h"
-   PetscErrorCode PCRegisterDynamic(const char *name_solver,const char *path,const char *name_create,PetscErrorCode (*routine_create)(PC))
-
-   Not collective
-
-   Input Parameters:
-+  name_solver - name of a new user-defined solver
-.  path - path (either absolute or relative) the library containing this solver
-.  name_create - name of routine to create method context
--  routine_create - routine to create method context
-
-   Notes:
-   PCRegisterDynamic() may be called multiple times to add several user-defined preconditioners.
-
-   If dynamic libraries are used, then the fourth input argument (routine_create)
-   is ignored.
-
-   Sample usage:
-.vb
-   PCRegisterDynamic("my_solver","/home/username/my_lib/lib/libO/solaris/mylib",
-              "MySolverCreate",MySolverCreate);
-.ve
-
-   Then, your solver can be chosen with the procedural interface via
-$     PCSetType(pc,"my_solver")
-   or at runtime via the option
-$     -pc_type my_solver
-
-   Level: advanced
-
-   Notes: ${PETSC_ARCH}, ${PETSC_DIR}, ${PETSC_LIB_DIR},  or ${any environmental variable}
-           occuring in pathname will be replaced with appropriate values.
-         If your function is not being put into a shared library then use PCRegister() instead
-
-.keywords: PC, register
-
-.seealso: PCRegisterAll(), PCRegisterDestroy()
-M*/
-#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
-#define PCRegisterDynamic(a,b,c,d) PCRegister(a,b,c,0)
-#else
-#define PCRegisterDynamic(a,b,c,d) PCRegister(a,b,c,d)
-#endif
+PETSC_EXTERN PetscErrorCode PCRegister(const char[],PetscErrorCode(*)(PC));
 
 PETSC_EXTERN PetscErrorCode PCReset(PC);
 PETSC_EXTERN PetscErrorCode PCDestroy(PC*);
@@ -264,6 +215,7 @@ PETSC_EXTERN PetscErrorCode PCFactorSetUseInPlace(PC);
 PETSC_EXTERN PetscErrorCode PCFactorSetAllowDiagonalFill(PC);
 PETSC_EXTERN PetscErrorCode PCFactorSetPivotInBlocks(PC,PetscBool );
 
+PETSC_EXTERN PetscErrorCode PCFactorGetLevels(PC,PetscInt*);
 PETSC_EXTERN PetscErrorCode PCFactorSetLevels(PC,PetscInt);
 PETSC_EXTERN PetscErrorCode PCFactorSetDropTolerance(PC,PetscReal,PetscReal,PetscInt);
 
@@ -476,6 +428,10 @@ PETSC_EXTERN PetscErrorCode PCPARMSSetSolveRestart(PC pc,PetscInt restart);
 PETSC_EXTERN PetscErrorCode PCPARMSSetNonsymPerm(PC pc,PetscBool nonsym);
 PETSC_EXTERN PetscErrorCode PCPARMSSetFill(PC pc,PetscInt lfil0,PetscInt lfil1,PetscInt lfil2);
 
+typedef const char *PCGAMGType;
+#define PCGAMGAGG         "agg"
+#define PCGAMGGEO         "geo"
+#define PCGAMGCLASSICAL   "classical"
 PETSC_EXTERN PetscErrorCode PCGAMGSetProcEqLim(PC,PetscInt);
 PETSC_EXTERN PetscErrorCode PCGAMGSetRepartitioning(PC,PetscBool);
 PETSC_EXTERN PetscErrorCode PCGAMGSetUseASMAggs(PC,PetscBool);
@@ -483,24 +439,23 @@ PETSC_EXTERN PetscErrorCode PCGAMGSetSolverType(PC,char[],PetscInt);
 PETSC_EXTERN PetscErrorCode PCGAMGSetThreshold(PC,PetscReal);
 PETSC_EXTERN PetscErrorCode PCGAMGSetCoarseEqLim(PC,PetscInt);
 PETSC_EXTERN PetscErrorCode PCGAMGSetNlevels(PC,PetscInt);
-typedef const char* PCGAMGType;
 PETSC_EXTERN PetscErrorCode PCGAMGSetType( PC,PCGAMGType );
 PETSC_EXTERN PetscErrorCode PCGAMGSetNSmooths(PC pc, PetscInt n);
 PETSC_EXTERN PetscErrorCode PCGAMGSetSymGraph(PC pc, PetscBool n);
 PETSC_EXTERN PetscErrorCode PCGAMGSetSquareGraph(PC,PetscBool);
 PETSC_EXTERN PetscErrorCode PCGAMGSetReuseProl(PC,PetscBool);
+PETSC_EXTERN PetscErrorCode PCGAMGFinalizePackage(void);
+PETSC_EXTERN PetscErrorCode PCGAMGInitializePackage(void);
 
 #if defined(PETSC_HAVE_PCBDDC)
-/* Enum defining how to treat the coarse problem */
-typedef enum {SEQUENTIAL_BDDC,REPLICATED_BDDC,PARALLEL_BDDC,MULTILEVEL_BDDC} CoarseProblemType;
+PETSC_EXTERN PetscErrorCode PCBDDCSetPrimalVerticesLocalIS(PC,IS);
 PETSC_EXTERN PetscErrorCode PCBDDCSetCoarseningRatio(PC,PetscInt);
-PETSC_EXTERN PetscErrorCode PCBDDCSetMaxLevels(PC,PetscInt);
+PETSC_EXTERN PetscErrorCode PCBDDCSetLevels(PC,PetscInt);
 PETSC_EXTERN PetscErrorCode PCBDDCSetNullSpace(PC,MatNullSpace);
 PETSC_EXTERN PetscErrorCode PCBDDCSetDirichletBoundaries(PC,IS);
 PETSC_EXTERN PetscErrorCode PCBDDCGetDirichletBoundaries(PC,IS*);
 PETSC_EXTERN PetscErrorCode PCBDDCSetNeumannBoundaries(PC,IS);
 PETSC_EXTERN PetscErrorCode PCBDDCGetNeumannBoundaries(PC,IS*);
-PETSC_EXTERN PetscErrorCode PCBDDCSetCoarseProblemType(PC,CoarseProblemType);
 PETSC_EXTERN PetscErrorCode PCBDDCSetDofsSplitting(PC,PetscInt,IS[]);
 PETSC_EXTERN PetscErrorCode PCBDDCSetLocalAdjacencyGraph(PC,PetscInt,const PetscInt[],const PetscInt[],PetscCopyMode);
 PETSC_EXTERN PetscErrorCode PCBDDCCreateFETIDPOperators(PC,Mat*,PC*);
@@ -577,6 +532,7 @@ PETSC_EXTERN PetscErrorCode PCMGGetInterpolation(PC,PetscInt,Mat*);
 PETSC_EXTERN PetscErrorCode PCMGSetRScale(PC,PetscInt,Vec);
 PETSC_EXTERN PetscErrorCode PCMGGetRScale(PC,PetscInt,Vec*);
 PETSC_EXTERN PetscErrorCode PCMGSetResidual(PC,PetscInt,PetscErrorCode (*)(Mat,Vec,Vec,Vec),Mat);
+PETSC_EXTERN PetscErrorCode PCMGResidualDefault(Mat,Vec,Vec,Vec);
 
 /*E
     PCExoticType - Face based or wirebasket based coarse grid space

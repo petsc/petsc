@@ -86,13 +86,11 @@ M*/
 M*/
 
 /*J
-    VecType - String with the name of a PETSc vector or the creation function
-       with an optional dynamic library name, for example
-       http://www.mcs.anl.gov/petsc/lib.a:myveccreate()
+    VecType - String with the name of a PETSc vector
 
    Level: beginner
 
-.seealso: VecSetType(), Vec
+.seealso: VecSetType(), Vec, VecCreate(), VecDestroy()
 J*/
 typedef const char* VecType;
 #define VECSEQ         "seq"
@@ -103,6 +101,9 @@ typedef const char* VecType;
 #define VECSEQCUSP     "seqcusp"
 #define VECMPICUSP     "mpicusp"
 #define VECCUSP        "cusp"       /* seqcusp on one process and mpicusp on several */
+#define VECSEQVIENNACL "seqviennacl"
+#define VECMPIVIENNACL "mpiviennacl"
+#define VECVIENNACL    "viennacl"   /* seqviennacl on one process and mpiviennacl on several */
 #define VECNEST        "nest"
 #define VECSEQPTHREAD  "seqpthread"
 #define VECMPIPTHREAD  "mpipthread"
@@ -115,7 +116,7 @@ PETSC_EXTERN PetscClassId VEC_CLASSID;
 PETSC_EXTERN PetscClassId VEC_SCATTER_CLASSID;
 
 
-PETSC_EXTERN PetscErrorCode VecInitializePackage(const char[]);
+PETSC_EXTERN PetscErrorCode VecInitializePackage(void);
 PETSC_EXTERN PetscErrorCode VecFinalizePackage(void);
 
 PETSC_EXTERN PetscErrorCode VecCreate(MPI_Comm,Vec*);
@@ -125,7 +126,7 @@ PETSC_EXTERN PetscErrorCode VecCreateSeqWithArray(MPI_Comm,PetscInt,PetscInt,con
 PETSC_EXTERN PetscErrorCode VecCreateMPIWithArray(MPI_Comm,PetscInt,PetscInt,PetscInt,const PetscScalar[],Vec*);
 PETSC_EXTERN PetscErrorCode VecCreateShared(MPI_Comm,PetscInt,PetscInt,Vec*);
 PETSC_EXTERN PetscErrorCode VecSetFromOptions(Vec);
-PETSC_EXTERN PetscErrorCode VecViewFromOptions(Vec,const char[]);
+PETSC_EXTERN PetscErrorCode VecViewFromOptions(Vec,const char[],const char[]);
 
 PETSC_EXTERN PetscErrorCode VecSetUp(Vec);
 PETSC_EXTERN PetscErrorCode VecDestroy(Vec*);
@@ -250,6 +251,7 @@ PETSC_EXTERN PetscErrorCode VecStrideNormAll(Vec,NormType,PetscReal[]);
 PETSC_EXTERN PetscErrorCode VecStrideMaxAll(Vec,PetscInt [],PetscReal []);
 PETSC_EXTERN PetscErrorCode VecStrideMinAll(Vec,PetscInt [],PetscReal []);
 PETSC_EXTERN PetscErrorCode VecStrideScaleAll(Vec,const PetscScalar[]);
+PETSC_EXTERN PetscErrorCode VecUniqueEntries(Vec,PetscInt*,PetscScalar**);
 
 PETSC_EXTERN PetscErrorCode VecStrideNorm(Vec,PetscInt,NormType,PetscReal*);
 PETSC_EXTERN PetscErrorCode VecStrideMax(Vec,PetscInt,PetscInt *,PetscReal *);
@@ -311,59 +313,8 @@ PETSC_EXTERN PetscFunctionList VecList;
 PETSC_EXTERN PetscBool         VecRegisterAllCalled;
 PETSC_EXTERN PetscErrorCode VecSetType(Vec, VecType);
 PETSC_EXTERN PetscErrorCode VecGetType(Vec, VecType *);
-PETSC_EXTERN PetscErrorCode VecRegister(const char[],const char[],const char[],PetscErrorCode (*)(Vec));
-PETSC_EXTERN PetscErrorCode VecRegisterAll(const char []);
-PETSC_EXTERN PetscErrorCode VecRegisterDestroy(void);
-
-/*MC
-  VecRegisterDynamic - Adds a new vector component implementation
-
-  Synopsis:
-  #include "petscvec.h"
-  PetscErrorCode VecRegisterDynamic(const char *name, const char *path, const char *func_name, PetscErrorCode (*create_func)(Vec))
-
-  Not Collective
-
-  Input Parameters:
-+ name        - The name of a new user-defined creation routine
-. path        - The path (either absolute or relative) of the library containing this routine
-. func_name   - The name of routine to create method context
-- create_func - The creation routine itself
-
-  Notes:
-  VecRegisterDynamic() may be called multiple times to add several user-defined vectors
-
-  If dynamic libraries are used, then the fourth input argument (routine_create) is ignored.
-
-  Sample usage:
-.vb
-    VecRegisterDynamic("my_vec","/home/username/my_lib/lib/libO/solaris/libmy.a", "MyVectorCreate", MyVectorCreate);
-.ve
-
-  Then, your vector type can be chosen with the procedural interface via
-.vb
-    VecCreate(MPI_Comm, Vec *);
-    VecSetType(Vec,"my_vector_name");
-.ve
-   or at runtime via the option
-.vb
-    -vec_type my_vector_name
-.ve
-
-  Notes: $PETSC_ARCH occuring in pathname will be replaced with appropriate values.
-         If your function is not being put into a shared library then use VecRegister() instead
-
-  Level: advanced
-
-.keywords: Vec, register
-.seealso: VecRegisterAll(), VecRegisterDestroy(), VecRegister()
-M*/
-#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
-#define VecRegisterDynamic(a,b,c,d) VecRegister(a,b,c,0)
-#else
-#define VecRegisterDynamic(a,b,c,d) VecRegister(a,b,c,d)
-#endif
-
+PETSC_EXTERN PetscErrorCode VecRegister(const char[],PetscErrorCode (*)(Vec));
+PETSC_EXTERN PetscErrorCode VecRegisterAll(void);
 
 PETSC_EXTERN PetscErrorCode VecScatterCreate(Vec,IS,Vec,IS,VecScatter *);
 PETSC_EXTERN PetscErrorCode VecScatterCreateEmpty(MPI_Comm,VecScatter *);
@@ -522,17 +473,20 @@ PETSC_EXTERN PetscErrorCode PetscCUSPIndicesCreate(PetscInt, PetscInt*,PetscInt,
 PETSC_EXTERN PetscErrorCode PetscCUSPIndicesDestroy(PetscCUSPIndices*);
 PETSC_EXTERN PetscErrorCode VecCUSPCopyToGPUSome_Public(Vec,PetscCUSPIndices);
 PETSC_EXTERN PetscErrorCode VecCUSPCopyFromGPUSome_Public(Vec,PetscCUSPIndices);
-
-#if defined(PETSC_HAVE_TXPETSCGPU)
-PETSC_EXTERN PetscErrorCode VecCUSPResetIndexBuffersFlagsGPU_Public(PetscCUSPIndices);
-PETSC_EXTERN PetscErrorCode VecCUSPCopySomeToContiguousBufferGPU_Public(Vec,PetscCUSPIndices);
-PETSC_EXTERN PetscErrorCode VecCUSPCopySomeFromContiguousBufferGPU_Public(Vec,PetscCUSPIndices);
 PETSC_EXTERN PetscErrorCode VecScatterInitializeForGPU(VecScatter,Vec,ScatterMode);
 PETSC_EXTERN PetscErrorCode VecScatterFinalizeForGPU(VecScatter);
-#endif
-
 PETSC_EXTERN PetscErrorCode VecCreateSeqCUSP(MPI_Comm,PetscInt,Vec*);
 PETSC_EXTERN PetscErrorCode VecCreateMPICUSP(MPI_Comm,PetscInt,PetscInt,Vec*);
+#endif
+
+#if defined(PETSC_HAVE_VIENNACL)
+typedef struct _p_PetscViennaCLIndices* PetscViennaCLIndices;
+PETSC_EXTERN PetscErrorCode PetscViennaCLIndicesCreate(PetscInt, PetscInt*,PetscInt, PetscInt*,PetscViennaCLIndices*);
+PETSC_EXTERN PetscErrorCode PetscViennaCLIndicesDestroy(PetscViennaCLIndices*);
+PETSC_EXTERN PetscErrorCode VecViennaCLCopyToGPUSome_Public(Vec,PetscViennaCLIndices);
+PETSC_EXTERN PetscErrorCode VecViennaCLCopyFromGPUSome_Public(Vec,PetscViennaCLIndices);
+PETSC_EXTERN PetscErrorCode VecCreateSeqViennaCL(MPI_Comm,PetscInt,Vec*);
+PETSC_EXTERN PetscErrorCode VecCreateMPIViennaCL(MPI_Comm,PetscInt,PetscInt,Vec*);
 #endif
 
 PETSC_EXTERN PetscErrorCode VecNestGetSubVecs(Vec,PetscInt*,Vec**);

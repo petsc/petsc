@@ -41,7 +41,7 @@ SED=sed
 TAR=tar
 
 # Some vars
-FBLASLAPACK=f2cblaslapack-3.4.1.q
+FBLASLAPACK=f2cblaslapack-3.4.2.q
 BIN=${TMP}/bin
 PAC=${TMP}/${FBLASLAPACK}
 BLASDIR=${PAC}/blas

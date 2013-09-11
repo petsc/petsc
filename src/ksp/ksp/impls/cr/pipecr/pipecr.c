@@ -1,18 +1,3 @@
-/*
- author: Pieter Ghysels, Universiteit Antwerpen, Intel Exascience lab Flanders
-
- This file implements a preconditioned pipelined CR. There is only a single
- non-blocking reduction per iteration, compared to 2 blocking for standard CR.
- The non-blocking reduction is overlapped by the matrix-vector product.
-
- See "Hiding global synchronization latency in the
- preconditioned Conjugate Gradient algorithm", P. Ghysels and W. Vanroose.
- Submitted to Parallel Computing, 2012
-
- See also pipecg.c, where the reduction can be overlapped with both the
- matrix-vector product and the preconditioner.
- */
-
 #include <petsc-private/kspimpl.h>
 
 /*
@@ -92,7 +77,7 @@ PetscErrorCode  KSPSolve_PIPECR(KSP ksp)
     break;
   default: SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"%s",KSPNormTypes[ksp->normtype]);
   }
-  KSPLogResidualHistory(ksp,dp);
+  ierr       = KSPLogResidualHistory(ksp,dp);CHKERRQ(ierr);
   ierr       = KSPMonitor(ksp,0,dp);CHKERRQ(ierr);
   ksp->rnorm = dp;
   ierr       = (*ksp->converged)(ksp,0,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr); /* test for convergence */
@@ -120,7 +105,7 @@ PetscErrorCode  KSPSolve_PIPECR(KSP ksp)
     if (i > 0) {
       if (ksp->normtype == KSP_NORM_NONE) dp = 0.0;
       ksp->rnorm = dp;
-      KSPLogResidualHistory(ksp,dp);
+      ierr = KSPLogResidualHistory(ksp,dp);CHKERRQ(ierr);
       ierr = KSPMonitor(ksp,i,dp);CHKERRQ(ierr);
       ierr = (*ksp->converged)(ksp,i,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
       if (ksp->reason) break;
@@ -156,6 +141,31 @@ PetscErrorCode  KSPSolve_PIPECR(KSP ksp)
   if (i >= ksp->max_it) ksp->reason = KSP_DIVERGED_ITS;
   PetscFunctionReturn(0);
 }
+
+/*MC
+   KSPPIPECR - Pipelined conjugate residual method
+
+   There method has only a single non-blocking reduction per iteration, compared to 2 blocking for standard CR.  The
+   non-blocking reduction is overlapped by the matrix-vector product, but not preconditioner application.
+
+   See also KSPPIPECG, where the reduction is only overlapped with the matrix-vector product.
+
+   Level:
+   beginner
+
+   Notes:
+   MPI configuration may be necessary for reductions to make asynchronous progress, which is important for performance of pipelined methods.
+   See the FAQ on the PETSc website for details.
+
+   Contributed by:
+   Pieter Ghysels, Universiteit Antwerpen, Intel Exascience lab Flanders
+
+   Reference:
+   P. Ghysels and W. Vanroose, "Hiding global synchronization latency in the preconditioned Conjugate Gradient algorithm",
+   Submitted to Parallel Computing, 2012.
+
+.seealso: KSPCreate(), KSPSetType(), KSPPIPECG, KSPGROPPCG, KSPPGMRES, KSPCG, KSPCGUseSingleReduction()
+M*/
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPCreate_PIPECR"

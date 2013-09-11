@@ -1,9 +1,28 @@
 /* Discretization tools */
 
+#include <petscconf.h>
+#if defined(PETSC_HAVE_MATHIMF_H)
+#include <mathimf.h>           /* this needs to be included before math.h */
+#endif
+
 #include <petscdt.h>            /*I "petscdt.h" I*/
 #include <petscblaslapack.h>
 #include <petsc-private/petscimpl.h>
 #include <petscviewer.h>
+#include <petscdmplex.h>
+#include <petscdmshell.h>
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscQuadratureDestroy"
+PetscErrorCode PetscQuadratureDestroy(PetscQuadrature *q)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscFree(q->quadPoints);CHKERRQ(ierr);
+  ierr = PetscFree(q->quadWeights);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDTLegendreEval"
@@ -114,7 +133,7 @@ PetscErrorCode PetscDTGaussQuadrature(PetscInt npoints,PetscReal a,PetscReal b,P
   ierr = PetscBLASIntCast(npoints,&N);CHKERRQ(ierr);
   LDZ  = N;
   ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
-  PetscStackCall("LAPACKsteqr",LAPACKsteqr_("I",&N,x,w,Z,&LDZ,work,&info));
+  PetscStackCallBLAS("LAPACKsteqr",LAPACKsteqr_("I",&N,x,w,Z,&LDZ,work,&info));
   ierr = PetscFPTrapPop();CHKERRQ(ierr);
   if (info) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"xSTEQR error");
 
@@ -126,6 +145,214 @@ PetscErrorCode PetscDTGaussQuadrature(PetscInt npoints,PetscReal a,PetscReal b,P
     w[i] = w[npoints-1-i] = (b-a)*PetscSqr(0.5*PetscAbsScalar(Z[i*npoints] + Z[(npoints-i-1)*npoints]));
   }
   ierr = PetscFree2(Z,work);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscDTFactorial_Internal"
+/* Evaluates the nth jacobi polynomial with weight parameters a,b at a point x.
+   Recurrence relations implemented from the pseudocode given in Karniadakis and Sherwin, Appendix B */
+PETSC_STATIC_INLINE PetscErrorCode PetscDTFactorial_Internal(PetscInt n, PetscReal *factorial)
+{
+  PetscReal f = 1.0;
+  PetscInt  i;
+
+  PetscFunctionBegin;
+  for (i = 1; i < n+1; ++i) f *= i;
+  *factorial = f;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscDTComputeJacobi"
+/* Evaluates the nth jacobi polynomial with weight parameters a,b at a point x.
+   Recurrence relations implemented from the pseudocode given in Karniadakis and Sherwin, Appendix B */
+PETSC_STATIC_INLINE PetscErrorCode PetscDTComputeJacobi(PetscReal a, PetscReal b, PetscInt n, PetscReal x, PetscReal *P)
+{
+  PetscReal apb, pn1, pn2;
+  PetscInt  k;
+
+  PetscFunctionBegin;
+  if (!n) {*P = 1.0; PetscFunctionReturn(0);}
+  if (n == 1) {*P = 0.5 * (a - b + (a + b + 2.0) * x); PetscFunctionReturn(0);}
+  apb = a + b;
+  pn2 = 1.0;
+  pn1 = 0.5 * (a - b + (apb + 2.0) * x);
+  *P  = 0.0;
+  for (k = 2; k < n+1; ++k) {
+    PetscReal a1 = 2.0 * k * (k + apb) * (2.0*k + apb - 2.0);
+    PetscReal a2 = (2.0 * k + apb - 1.0) * (a*a - b*b);
+    PetscReal a3 = (2.0 * k + apb - 2.0) * (2.0 * k + apb - 1.0) * (2.0 * k + apb);
+    PetscReal a4 = 2.0 * (k + a - 1.0) * (k + b - 1.0) * (2.0 * k + apb);
+
+    a2  = a2 / a1;
+    a3  = a3 / a1;
+    a4  = a4 / a1;
+    *P  = (a2 + a3 * x) * pn1 - a4 * pn2;
+    pn2 = pn1;
+    pn1 = *P;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscDTComputeJacobiDerivative"
+/* Evaluates the first derivative of P_{n}^{a,b} at a point x. */
+PETSC_STATIC_INLINE PetscErrorCode PetscDTComputeJacobiDerivative(PetscReal a, PetscReal b, PetscInt n, PetscReal x, PetscReal *P)
+{
+  PetscReal      nP;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!n) {*P = 0.0; PetscFunctionReturn(0);}
+  ierr = PetscDTComputeJacobi(a+1, b+1, n-1, x, &nP);CHKERRQ(ierr);
+  *P   = 0.5 * (a + b + n + 1) * nP;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscDTMapSquareToTriangle_Internal"
+/* Maps from [-1,1]^2 to the (-1,1) reference triangle */
+PETSC_STATIC_INLINE PetscErrorCode PetscDTMapSquareToTriangle_Internal(PetscReal x, PetscReal y, PetscReal *xi, PetscReal *eta)
+{
+  PetscFunctionBegin;
+  *xi  = 0.5 * (1.0 + x) * (1.0 - y) - 1.0;
+  *eta = y;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscDTMapCubeToTetrahedron_Internal"
+/* Maps from [-1,1]^2 to the (-1,1) reference triangle */
+PETSC_STATIC_INLINE PetscErrorCode PetscDTMapCubeToTetrahedron_Internal(PetscReal x, PetscReal y, PetscReal z, PetscReal *xi, PetscReal *eta, PetscReal *zeta)
+{
+  PetscFunctionBegin;
+  *xi   = 0.25 * (1.0 + x) * (1.0 - y) * (1.0 - z) - 1.0;
+  *eta  = 0.5  * (1.0 + y) * (1.0 - z) - 1.0;
+  *zeta = z;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscDTGaussJacobiQuadrature1D_Internal"
+static PetscErrorCode PetscDTGaussJacobiQuadrature1D_Internal(PetscInt npoints, PetscReal a, PetscReal b, PetscReal *x, PetscReal *w)
+{
+  PetscInt       maxIter = 100;
+  PetscReal      eps     = 1.0e-8;
+  PetscReal      a1, a2, a3, a4, a5, a6;
+  PetscInt       k;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+
+  a1      = pow(2, a+b+1);
+#if defined(PETSC_HAVE_TGAMMA)
+  a2      = tgamma(a + npoints + 1);
+  a3      = tgamma(b + npoints + 1);
+  a4      = tgamma(a + b + npoints + 1);
+#else
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"tgamma() - math routine is unavailable.");
+#endif
+
+  ierr = PetscDTFactorial_Internal(npoints, &a5);CHKERRQ(ierr);
+  a6   = a1 * a2 * a3 / a4 / a5;
+  /* Computes the m roots of P_{m}^{a,b} on [-1,1] by Newton's method with Chebyshev points as initial guesses.
+   Algorithm implemented from the pseudocode given by Karniadakis and Sherwin and Python in FIAT */
+  for (k = 0; k < npoints; ++k) {
+    PetscReal r = -cos((2.0*k + 1.0) * PETSC_PI / (2.0 * npoints)), dP;
+    PetscInt  j;
+
+    if (k > 0) r = 0.5 * (r + x[k-1]);
+    for (j = 0; j < maxIter; ++j) {
+      PetscReal s = 0.0, delta, f, fp;
+      PetscInt  i;
+
+      for (i = 0; i < k; ++i) s = s + 1.0 / (r - x[i]);
+      ierr = PetscDTComputeJacobi(a, b, npoints, r, &f);CHKERRQ(ierr);
+      ierr = PetscDTComputeJacobiDerivative(a, b, npoints, r, &fp);CHKERRQ(ierr);
+      delta = f / (fp - f * s);
+      r     = r - delta;
+      if (fabs(delta) < eps) break;
+    }
+    x[k] = r;
+    ierr = PetscDTComputeJacobiDerivative(a, b, npoints, x[k], &dP);CHKERRQ(ierr);
+    w[k] = a6 / (1.0 - PetscSqr(x[k])) / PetscSqr(dP);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscDTGaussJacobiQuadrature"
+/*@C
+  PetscDTGaussJacobiQuadrature - create Gauss-Jacobi quadrature for a simplex
+
+  Not Collective
+
+  Input Arguments:
++ dim - The simplex dimension
+. order - The quadrature order
+. a - left end of interval (often-1)
+- b - right end of interval (often +1)
+
+  Output Arguments:
+. q - A PetscQuadrature object
+
+  Level: intermediate
+
+  References:
+  Karniadakis and Sherwin.
+  FIAT
+
+.seealso: PetscDTGaussQuadrature()
+@*/
+PetscErrorCode PetscDTGaussJacobiQuadrature(PetscInt dim, PetscInt order, PetscReal a, PetscReal b, PetscQuadrature *q)
+{
+  PetscInt       npoints = dim > 1 ? dim > 2 ? order*PetscSqr(order) : PetscSqr(order) : order;
+  PetscReal     *px, *wx, *py, *wy, *pz, *wz, *x, *w;
+  PetscInt       i, j, k;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if ((a != -1.0) || (b != 1.0)) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Must use default internal right now");
+  ierr = PetscMalloc(npoints*dim * sizeof(PetscReal), &x);CHKERRQ(ierr);
+  ierr = PetscMalloc(npoints     * sizeof(PetscReal), &w);CHKERRQ(ierr);
+  switch (dim) {
+  case 1:
+    ierr = PetscDTGaussJacobiQuadrature1D_Internal(order, 0.0, 0.0, x, w);CHKERRQ(ierr);
+    break;
+  case 2:
+    ierr = PetscMalloc4(order,PetscReal,&px,order,PetscReal,&wx,order,PetscReal,&py,order,PetscReal,&wy);CHKERRQ(ierr);
+    ierr = PetscDTGaussJacobiQuadrature1D_Internal(order, 0.0, 0.0, px, wx);CHKERRQ(ierr);
+    ierr = PetscDTGaussJacobiQuadrature1D_Internal(order, 1.0, 0.0, py, wy);CHKERRQ(ierr);
+    for (i = 0; i < order; ++i) {
+      for (j = 0; j < order; ++j) {
+        ierr = PetscDTMapSquareToTriangle_Internal(px[i], py[j], &x[(i*order+j)*2+0], &x[(i*order+j)*2+1]);CHKERRQ(ierr);
+        w[i*order+j] = 0.5 * wx[i] * wy[j];
+      }
+    }
+    ierr = PetscFree4(px,wx,py,wy);CHKERRQ(ierr);
+    break;
+  case 3:
+    ierr = PetscMalloc6(order,PetscReal,&px,order,PetscReal,&wx,order,PetscReal,&py,order,PetscReal,&wy,order,PetscReal,&pz,order,PetscReal,&wz);CHKERRQ(ierr);
+    ierr = PetscDTGaussJacobiQuadrature1D_Internal(order, 0.0, 0.0, px, wx);CHKERRQ(ierr);
+    ierr = PetscDTGaussJacobiQuadrature1D_Internal(order, 1.0, 0.0, py, wy);CHKERRQ(ierr);
+    ierr = PetscDTGaussJacobiQuadrature1D_Internal(order, 2.0, 0.0, pz, wz);CHKERRQ(ierr);
+    for (i = 0; i < order; ++i) {
+      for (j = 0; j < order; ++j) {
+        for (k = 0; k < order; ++k) {
+          ierr = PetscDTMapCubeToTetrahedron_Internal(px[i], py[j], pz[k], &x[((i*order+j)*order+k)*3+0], &x[((i*order+j)*order+k)*3+1], &x[((i*order+j)*order+k)*3+2]);CHKERRQ(ierr);
+          w[(i*order+j)*order+k] = 0.125 * wx[i] * wy[j] * wz[k];
+        }
+      }
+    }
+    ierr = PetscFree6(px,wx,py,wy,pz,wz);CHKERRQ(ierr);
+    break;
+  default:
+    SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cannot construct quadrature rule for dimension %d", dim);
+  }
+  q->numQuadPoints = npoints;
+  q->quadPoints    = x;
+  q->quadWeights   = w;
   PetscFunctionReturn(0);
 }
 

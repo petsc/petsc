@@ -11,10 +11,9 @@ from stat import *
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.download_openmpi   = ['http://www.open-mpi.org/software/ompi/v1.6/downloads/openmpi-1.6.3.tar.gz']
-    self.download_mpich     = ['http://www.mpich.org/static/tarballs/3.0.2/mpich-3.0.2.tar.gz',
-                               'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/mpich-3.0.2.tar.gz']
-    self.download_mpich_sol = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/mpich2-1.5.tar.gz']
+    self.download_openmpi   = ['http://www.open-mpi.org/software/ompi/v1.6/downloads/openmpi-1.6.4.tar.gz',
+                               'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/openmpi-1.6.4.tar.gz']
+    self.download_mpich     = ['http://ftp.mcs.anl.gov/pub/petsc/tmp/mpich-master-v3.0.4-106-g3adb59c.tar.gz']
     self.download           = ['redefine']
     self.functions          = ['MPI_Init', 'MPI_Comm_create']
     self.includes           = ['mpi.h']
@@ -346,10 +345,7 @@ class Configure(config.package.Package):
       if config.setCompilers.Configure.isCygwin() and not config.setCompilers.Configure.isGNU(self.setCompilers.CC):
         raise RuntimeError('Sorry, cannot download-install MPICH on Windows. Sugest installing windows version of MPICH manually')
       self.liblist      = [[]]
-      if config.setCompilers.Configure.isSolaris():
-        self.download         = self.download_mpich_sol
-      else:
-        self.download         = self.download_mpich
+      self.download         = self.download_mpich
       self.downloadname     = 'mpich'
       self.downloadfilename = 'mpich'
       return config.package.Package.checkDownload(self, requireDownload)
@@ -770,6 +766,13 @@ class Configure(config.package.Package):
     for f in funcs:
       if self.libraries.check(self.dlib, f):
         self.addDefine('HAVE_' + f.upper(),1)
+
+    oldFlags = self.compilers.CPPFLAGS # Disgusting save and restore
+    self.compilers.CPPFLAGS += ' '+self.headers.toString(self.include)
+    if self.checkCompile('#include <mpi.h>', 'int combiner = MPI_COMBINER_DUP;'):
+      self.addDefine('HAVE_MPI_COMBINER_DUP',1)
+    self.compilers.CPPFLAGS = oldFlags
+
     if self.libraries.check(self.dlib, "MPIDI_CH3I_sock_set"):
       self.addDefine('HAVE_MPICH_CH3_SOCK', 1)
     if self.libraries.check(self.dlib, "MPIDI_CH3I_sock_fixed_nbc_progress"):

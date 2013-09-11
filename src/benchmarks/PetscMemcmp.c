@@ -1,5 +1,6 @@
 
 #include <petscsys.h>
+#include <petsctime.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -18,9 +19,9 @@ int main(int argc,char **argv)
   }
   /* To take care of paging effects */
   PetscMemcmp(A,B,sizeof(PetscScalar)*0,&flg);
-  ierr = PetscGetTime(&x);CHKERRQ(ierr);
+  ierr = PetscTime(&x);CHKERRQ(ierr);
 
-  ierr = PetscGetTime(&x);CHKERRQ(ierr);
+  ierr = PetscTime(&x);CHKERRQ(ierr);
   PetscMemcmp(A,B,sizeof(PetscScalar)*10000,&flg);
   PetscMemcmp(A,B,sizeof(PetscScalar)*10000,&flg);
   PetscMemcmp(A,B,sizeof(PetscScalar)*10000,&flg);
@@ -31,7 +32,7 @@ int main(int argc,char **argv)
   PetscMemcmp(A,B,sizeof(PetscScalar)*10000,&flg);
   PetscMemcmp(A,B,sizeof(PetscScalar)*10000,&flg);
   PetscMemcmp(A,B,sizeof(PetscScalar)*10000,&flg);
-  ierr = PetscGetTime(&y);CHKERRQ(ierr);
+  ierr = PetscTime(&y);CHKERRQ(ierr);
   PetscMemcmp(A,B,sizeof(PetscScalar)*0,&flg);
   PetscMemcmp(A,B,sizeof(PetscScalar)*0,&flg);
   PetscMemcmp(A,B,sizeof(PetscScalar)*0,&flg);
@@ -42,7 +43,7 @@ int main(int argc,char **argv)
   PetscMemcmp(A,B,sizeof(PetscScalar)*0,&flg);
   PetscMemcmp(A,B,sizeof(PetscScalar)*0,&flg);
   PetscMemcmp(A,B,sizeof(PetscScalar)*0,&flg);
-  ierr = PetscGetTime(&z);CHKERRQ(ierr);
+  ierr = PetscTime(&z);CHKERRQ(ierr);
 
   fprintf(stdout,"%s : \n","PetscMemcmp");
   fprintf(stdout,"    %-15s : %e sec\n","Latency",(z-y)/10.0);

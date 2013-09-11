@@ -14,18 +14,16 @@
 
   Concepts: nonlinear solvers
 
-.seealso:  SNESCreate(), SNESSetType(), SNESType, TS, KSP, KSP, PC
+.seealso:  SNESCreate(), SNESSetType(), SNESType, TS, KSP, KSP, PC, SNESDestroy()
 S*/
 typedef struct _p_SNES* SNES;
 
 /*J
-    SNESType - String with the name of a PETSc SNES method or the creation function
-       with an optional dynamic library name, for example
-       http://www.mcs.anl.gov/petsc/lib.a:mysnescreate()
+    SNESType - String with the name of a PETSc SNES method.
 
    Level: beginner
 
-.seealso: SNESSetType(), SNES
+.seealso: SNESSetType(), SNES, SNESCreate(), SNESDestroy(), SNESSetFromOptions()
 J*/
 typedef const char* SNESType;
 #define SNESNEWTONLS     "newtonls"
@@ -46,12 +44,13 @@ typedef const char* SNESType;
 #define SNESNASM         "nasm"
 #define SNESANDERSON     "anderson"
 #define SNESASPIN        "aspin"
+#define SNESCOMPOSITE    "composite"
 
 /* Logging support */
 PETSC_EXTERN PetscClassId SNES_CLASSID;
 PETSC_EXTERN PetscClassId DMSNES_CLASSID;
 
-PETSC_EXTERN PetscErrorCode SNESInitializePackage(const char[]);
+PETSC_EXTERN PetscErrorCode SNESInitializePackage(void);
 
 PETSC_EXTERN PetscErrorCode SNESCreate(MPI_Comm,SNES*);
 PETSC_EXTERN PetscErrorCode SNESReset(SNES);
@@ -73,60 +72,9 @@ PETSC_EXTERN PetscErrorCode SNESAddOptionsChecker(PetscErrorCode (*)(SNES));
 
 PETSC_EXTERN PetscErrorCode SNESSetUpdate(SNES, PetscErrorCode (*)(SNES, PetscInt));
 
-PETSC_EXTERN PetscErrorCode SNESRegisterDestroy(void);
-PETSC_EXTERN PetscErrorCode SNESRegisterAll(const char[]);
+PETSC_EXTERN PetscErrorCode SNESRegisterAll(void);
 
-PETSC_EXTERN PetscErrorCode SNESRegister(const char[],const char[],const char[],PetscErrorCode (*)(SNES));
-
-/*MC
-   SNESRegisterDynamic - Adds a method to the nonlinear solver package.
-
-   Synopsis:
-    #include "petscsnes.h"
-   PetscErrorCode SNESRegisterDynamic(const char *name_solver,const char *path,const char *name_create,PetscErrorCode (*routine_create)(SNES))
-
-   Not collective
-
-   Input Parameters:
-+  name_solver - name of a new user-defined solver
-.  path - path (either absolute or relative) the library containing this solver
-.  name_create - name of routine to create method context
--  routine_create - routine to create method context
-
-   Notes:
-   SNESRegisterDynamic() may be called multiple times to add several user-defined solvers.
-
-   If dynamic libraries are used, then the fourth input argument (routine_create)
-   is ignored.
-
-   Environmental variables such as ${PETSC_ARCH}, ${PETSC_DIR}, ${PETSC_LIB_DIR},
-   and others of the form ${any_environmental_variable} occuring in pathname will be
-   replaced with appropriate values.
-
-   Sample usage:
-.vb
-   SNESRegisterDynamic("my_solver",/home/username/my_lib/lib/libg/solaris/mylib.a,
-                "MySolverCreate",MySolverCreate);
-.ve
-
-   Then, your solver can be chosen with the procedural interface via
-$     SNESSetType(snes,"my_solver")
-   or at runtime via the option
-$     -snes_type my_solver
-
-   Level: advanced
-
-    Note: If your function is not being put into a shared library then use SNESRegister() instead
-
-.keywords: SNES, nonlinear, register
-
-.seealso: SNESRegisterAll(), SNESRegisterDestroy()
-M*/
-#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
-#define SNESRegisterDynamic(a,b,c,d) SNESRegister(a,b,c,0)
-#else
-#define SNESRegisterDynamic(a,b,c,d) SNESRegister(a,b,c,d)
-#endif
+PETSC_EXTERN PetscErrorCode SNESRegister(const char[],PetscErrorCode (*)(SNES));
 
 PETSC_EXTERN PetscErrorCode SNESGetKSP(SNES,KSP*);
 PETSC_EXTERN PetscErrorCode SNESSetKSP(SNES,KSP);
@@ -175,12 +123,15 @@ PETSC_EXTERN PetscErrorCode SNESSetLagPreconditioner(SNES,PetscInt);
 PETSC_EXTERN PetscErrorCode SNESGetLagPreconditioner(SNES,PetscInt*);
 PETSC_EXTERN PetscErrorCode SNESSetLagJacobian(SNES,PetscInt);
 PETSC_EXTERN PetscErrorCode SNESGetLagJacobian(SNES,PetscInt*);
+PETSC_EXTERN PetscErrorCode SNESSetLagPreconditionerPersists(SNES,PetscBool);
+PETSC_EXTERN PetscErrorCode SNESSetLagJacobianPersists(SNES,PetscBool);
 PETSC_EXTERN PetscErrorCode SNESSetGridSequence(SNES,PetscInt);
 
 PETSC_EXTERN PetscErrorCode SNESGetLinearSolveIterations(SNES,PetscInt*);
 PETSC_EXTERN PetscErrorCode SNESGetLinearSolveFailures(SNES,PetscInt*);
 PETSC_EXTERN PetscErrorCode SNESSetMaxLinearSolveFailures(SNES,PetscInt);
 PETSC_EXTERN PetscErrorCode SNESGetMaxLinearSolveFailures(SNES,PetscInt*);
+PETSC_EXTERN PetscErrorCode SNESSetCountersReset(SNES,PetscBool);
 
 PETSC_EXTERN PetscErrorCode SNESKSPSetUseEW(SNES,PetscBool );
 PETSC_EXTERN PetscErrorCode SNESKSPGetUseEW(SNES,PetscBool *);
@@ -369,6 +320,7 @@ PETSC_EXTERN PetscErrorCode SNESDMMeshComputeJacobian(SNES,Vec,Mat*,Mat*,MatStru
 PETSC_EXTERN PetscErrorCode SNESSetFunction(SNES,Vec,PetscErrorCode (*SNESFunction)(SNES,Vec,Vec,void*),void*);
 PETSC_EXTERN PetscErrorCode SNESGetFunction(SNES,Vec*,PetscErrorCode (**SNESFunction)(SNES,Vec,Vec,void*),void**);
 PETSC_EXTERN PetscErrorCode SNESComputeFunction(SNES,Vec,Vec);
+
 PETSC_EXTERN PetscErrorCode SNESSetJacobian(SNES,Mat,Mat,PetscErrorCode (*SNESJacobianFunction)(SNES,Vec,Mat*,Mat*,MatStructure*,void*),void*);
 PETSC_EXTERN PetscErrorCode SNESGetJacobian(SNES,Mat*,Mat*,PetscErrorCode (**SNESJacobianFunction)(SNES,Vec,Mat*,Mat*,MatStructure*,void*),void**);
 PETSC_EXTERN PetscErrorCode SNESObjectiveComputeFunctionDefaultFD(SNES,Vec,Vec,void*);
@@ -378,15 +330,13 @@ PETSC_EXTERN PetscErrorCode SNESSetComputeInitialGuess(SNES,PetscErrorCode (*)(S
 PETSC_EXTERN PetscErrorCode SNESSetPicard(SNES,Vec,PetscErrorCode (*SNESFunction)(SNES,Vec,Vec,void*),Mat,Mat,PetscErrorCode (*SNESJacobianFunction)(SNES,Vec,Mat*,Mat*,MatStructure*,void*),void*);
 PETSC_EXTERN PetscErrorCode SNESGetPicard(SNES,Vec*,PetscErrorCode (**SNESFunction)(SNES,Vec,Vec,void*),Mat*,Mat*,PetscErrorCode (**SNESJacobianFunction)(SNES,Vec,Mat*,Mat*,MatStructure*,void*),void**);
 PETSC_EXTERN PetscErrorCode SNESSetInitialFunction(SNES,Vec);
-PETSC_EXTERN PetscErrorCode SNESSetInitialFunctionNorm(SNES,PetscReal);
 
 PETSC_EXTERN PetscErrorCode SNESSetObjective(SNES,PetscErrorCode (*SNESObjectiveFunction)(SNES,Vec,PetscReal *,void*),void*);
 PETSC_EXTERN PetscErrorCode SNESGetObjective(SNES,PetscErrorCode (**SNESObjectiveFunction)(SNES,Vec,PetscReal *,void*),void**);
 PETSC_EXTERN PetscErrorCode SNESComputeObjective(SNES,Vec,PetscReal *);
 
 /*E
-    SNESNormType - Norm that is passed in the Krylov convergence
-       test routines.
+    SNESNormSchedule - Frequency with which the norm is computed
 
    Level: advanced
 
@@ -402,11 +352,11 @@ E*/
 
 typedef enum {SNES_NORM_DEFAULT            = -1,
               SNES_NORM_NONE               =  0,
-              SNES_NORM_FUNCTION           =  1,
+              SNES_NORM_ALWAYS             =  1,
               SNES_NORM_INITIAL_ONLY       =  2,
               SNES_NORM_FINAL_ONLY         =  3,
-              SNES_NORM_INITIAL_FINAL_ONLY =  4} SNESNormType;
-PETSC_EXTERN const char *const*const SNESNormTypes;
+              SNES_NORM_INITIAL_FINAL_ONLY =  4} SNESNormSchedule;
+PETSC_EXTERN const char *const*const SNESNormSchedules;
 /*MC
     SNES_NORM_NONE - Don't compute function and its L2 norm.
 
@@ -415,18 +365,18 @@ PETSC_EXTERN const char *const*const SNESNormTypes;
     Notes:
     This is most useful for stationary solvers with a fixed number of iterations used as smoothers.
 
-.seealso: SNESNormType, SNESSetNormType(), SNES_NORM_DEFAULT
+.seealso: SNESNormSchedule, SNESSetNormSchedule(), SNES_NORM_DEFAULT
 M*/
 
 /*MC
-    SNES_NORM_FUNCTION - Compute the function and its L2 norm at each iteration.
+    SNES_NORM_ALWAYS - Compute the function and its L2 norm at each iteration.
 
    Level: advanced
 
     Notes:
     Most solvers will use this no matter what norm type is passed to them.
 
-.seealso: SNESNormType, SNESSetNormType(), SNES_NORM_NONE
+.seealso: SNESNormSchedule, SNESSetNormSchedule(), SNES_NORM_NONE
 M*/
 
 /*MC
@@ -441,7 +391,7 @@ M*/
    For solvers that require the computation of the L2 norm of the function as part of the method, this merely cancels
    the norm computation at the last iteration (if possible).
 
-.seealso: SNESNormType, SNESSetNormType(), SNES_NORM_FINAL_ONLY, SNES_NORM_INITIAL_FINAL_ONLY
+.seealso: SNESNormSchedule, SNESSetNormSchedule(), SNES_NORM_FINAL_ONLY, SNES_NORM_INITIAL_FINAL_ONLY
 M*/
 
 /*MC
@@ -455,7 +405,7 @@ M*/
    used in subsequent computation for methods that do not need the norm computed during the rest of the
    solution procedure.
 
-.seealso: SNESNormType, SNESSetNormType(), SNES_NORM_INITIAL_ONLY, SNES_NORM_INITIAL_FINAL_ONLY
+.seealso: SNESNormSchedule, SNESSetNormSchedule(), SNES_NORM_INITIAL_ONLY, SNES_NORM_INITIAL_FINAL_ONLY
 M*/
 
 /*MC
@@ -466,12 +416,30 @@ M*/
    Notes:
    This method combines the benefits of SNES_NORM_INITIAL_ONLY and SNES_NORM_FINAL_ONLY.
 
-.seealso: SNESNormType, SNESSetNormType(), SNES_NORM_SNES_NORM_INITIAL_ONLY, SNES_NORM_FINAL_ONLY
+.seealso: SNESNormSchedule, SNESSetNormSchedule(), SNES_NORM_SNES_NORM_INITIAL_ONLY, SNES_NORM_FINAL_ONLY
 M*/
 
 
-PETSC_EXTERN PetscErrorCode SNESSetNormType(SNES,SNESNormType);
-PETSC_EXTERN PetscErrorCode SNESGetNormType(SNES,SNESNormType*);
+PETSC_EXTERN PetscErrorCode SNESSetNormSchedule(SNES,SNESNormSchedule);
+PETSC_EXTERN PetscErrorCode SNESGetNormSchedule(SNES,SNESNormSchedule*);
+
+/*E
+    SNESFunctionType - Type of function computed
+
+   Level: advanced
+
+   Support for these is highly dependent on the solver.
+
+.seealso: SNESSolve(), SNESGetConvergedReason(), KSPSetNormType(),
+          KSPSetConvergenceTest(), KSPSetPCSide()
+E*/
+typedef enum {SNES_FUNCTION_DEFAULT          = -1,
+              SNES_FUNCTION_UNPRECONDITIONED =  0,
+              SNES_FUNCTION_PRECONDITIONED   =  1} SNESFunctionType;
+PETSC_EXTERN const char *const*const SNESFunctionTypes;
+
+PETSC_EXTERN PetscErrorCode SNESSetFunctionType(SNES,SNESFunctionType);
+PETSC_EXTERN PetscErrorCode SNESGetFunctionType(SNES,SNESFunctionType*);
 
 PETSC_EXTERN PetscErrorCode SNESSetGS(SNES,PetscErrorCode (*SNESGSFunction)(SNES,Vec,Vec,void*),void*);
 PETSC_EXTERN PetscErrorCode SNESGetGS(SNES,PetscErrorCode (**SNESGSFunction)(SNES,Vec,Vec,void*),void**);
@@ -541,6 +509,7 @@ PETSC_EXTERN PetscErrorCode SNESLineSearchView(SNESLineSearch,PetscViewer);
 PETSC_EXTERN PetscErrorCode SNESLineSearchDestroy(SNESLineSearch *);
 PETSC_EXTERN PetscErrorCode SNESLineSearchSetType(SNESLineSearch, SNESLineSearchType);
 PETSC_EXTERN PetscErrorCode SNESLineSearchSetFromOptions(SNESLineSearch);
+PETSC_EXTERN PetscErrorCode SNESLineSearchSetFunction(SNESLineSearch,PetscErrorCode (*)(SNES,Vec,Vec));
 PETSC_EXTERN PetscErrorCode SNESLineSearchSetUp(SNESLineSearch);
 PETSC_EXTERN PetscErrorCode SNESLineSearchApply(SNESLineSearch, Vec, Vec, PetscReal *, Vec);
 PETSC_EXTERN PetscErrorCode SNESLineSearchPreCheck(SNESLineSearch,Vec,Vec,PetscBool *);
@@ -606,15 +575,8 @@ PETSC_EXTERN PetscErrorCode SNESLineSearchBTSetAlpha(SNESLineSearch, PetscReal);
 PETSC_EXTERN PetscErrorCode SNESLineSearchBTGetAlpha(SNESLineSearch, PetscReal*);
 
 /*register line search types */
-PETSC_EXTERN PetscErrorCode SNESLineSearchRegister(const char[],const char[],const char[],PetscErrorCode(*)(SNESLineSearch));
-PETSC_EXTERN PetscErrorCode SNESLineSearchRegisterAll(const char path[]);
-PETSC_EXTERN PetscErrorCode SNESLineSearchRegisterDestroy(void);
-
-#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
-#define SNESLineSearchRegisterDynamic(a,b,c,d) SNESLineSearchRegister(a,b,c,0)
-#else
-#define SNESLineSearchRegisterDynamic(a,b,c,d) SNESLineSearchRegister(a,b,c,d)
-#endif
+PETSC_EXTERN PetscErrorCode SNESLineSearchRegister(const char[],PetscErrorCode(*)(SNESLineSearch));
+PETSC_EXTERN PetscErrorCode SNESLineSearchRegisterAll(void);
 
 /* Routines for VI solver */
 PETSC_EXTERN PetscErrorCode SNESVISetVariableBounds(SNES,Vec,Vec);
@@ -635,12 +597,18 @@ PETSC_EXTERN PetscErrorCode SNESSetDM(SNES,DM);
 PETSC_EXTERN PetscErrorCode SNESGetDM(SNES,DM*);
 PETSC_EXTERN PetscErrorCode SNESSetPC(SNES,SNES);
 PETSC_EXTERN PetscErrorCode SNESGetPC(SNES,SNES*);
+PETSC_EXTERN PetscErrorCode SNESApplyPC(SNES,Vec,Vec,PetscReal*,Vec);
+PETSC_EXTERN PetscErrorCode SNESGetPCFunction(SNES,Vec,PetscReal*);
+PETSC_EXTERN PetscErrorCode SNESComputeFunctionDefaultPC(SNES,Vec,Vec);
 PETSC_EXTERN PetscErrorCode SNESSetPCSide(SNES,PCSide);
 PETSC_EXTERN PetscErrorCode SNESGetPCSide(SNES,PCSide*);
-PETSC_EXTERN PetscErrorCode SNESSetSNESLineSearch(SNES,SNESLineSearch);
-PETSC_EXTERN PetscErrorCode SNESGetSNESLineSearch(SNES,SNESLineSearch*);
+PETSC_EXTERN PetscErrorCode SNESSetLineSearch(SNES,SNESLineSearch);
+PETSC_EXTERN PetscErrorCode SNESGetLineSearch(SNES,SNESLineSearch*);
 PETSC_EXTERN PetscErrorCode SNESRestrictHookAdd(SNES,PetscErrorCode (*)(SNES,SNES,void*),void*);
 PETSC_EXTERN PetscErrorCode SNESRestrictHooksRun(SNES,SNES);
+
+PETSC_DEPRECATED("Use SNESGetLineSearch()") PETSC_STATIC_INLINE PetscErrorCode SNESGetSNESLineSearch(SNES snes,SNESLineSearch *ls) {return SNESGetLineSearch(snes,ls);}
+PETSC_DEPRECATED("Use SNESSetLineSearch()") PETSC_STATIC_INLINE PetscErrorCode SNESSetSNESLineSearch(SNES snes,SNESLineSearch ls) {return SNESSetLineSearch(snes,ls);}
 
 PETSC_EXTERN PetscErrorCode SNESSetUpMatrices(SNES);
 PETSC_EXTERN PetscErrorCode DMSNESSetFunction(DM,PetscErrorCode(*SNESFunction)(SNES,Vec,Vec,void*),void*);
@@ -692,7 +660,7 @@ typedef const char* SNESMSType;
 PETSC_EXTERN PetscErrorCode SNESMSRegister(SNESMSType,PetscInt,PetscInt,PetscReal,const PetscReal[],const PetscReal[],const PetscReal[]);
 PETSC_EXTERN PetscErrorCode SNESMSSetType(SNES,SNESMSType);
 PETSC_EXTERN PetscErrorCode SNESMSFinalizePackage(void);
-PETSC_EXTERN PetscErrorCode SNESMSInitializePackage(const char path[]);
+PETSC_EXTERN PetscErrorCode SNESMSInitializePackage(void);
 PETSC_EXTERN PetscErrorCode SNESMSRegisterDestroy(void);
 PETSC_EXTERN PetscErrorCode SNESMSRegisterAll(void);
 
@@ -740,7 +708,17 @@ PETSC_EXTERN PetscErrorCode SNESQNSetRestartType(SNES, SNESQNRestartType);
 
 PETSC_EXTERN PetscErrorCode SNESNASMGetSubdomains(SNES,PetscInt*,SNES**,VecScatter**,VecScatter**,VecScatter**);
 PETSC_EXTERN PetscErrorCode SNESNASMSetSubdomains(SNES,PetscInt,SNES*,VecScatter*,VecScatter*,VecScatter*);
+PETSC_EXTERN PetscErrorCode SNESNASMSetDamping(SNES,PetscReal);
+PETSC_EXTERN PetscErrorCode SNESNASMGetDamping(SNES,PetscReal*);
 PETSC_EXTERN PetscErrorCode SNESNASMGetSubdomainVecs(SNES,PetscInt*,Vec**,Vec**,Vec**,Vec**);
 PETSC_EXTERN PetscErrorCode SNESNASMSetComputeFinalJacobian(SNES,PetscBool);
+
+typedef enum {SNES_COMPOSITE_ADDITIVE,SNES_COMPOSITE_MULTIPLICATIVE,SNES_COMPOSITE_ADDITIVEOPTIMAL} SNESCompositeType;
+PETSC_EXTERN const char *const SNESCompositeTypes[];
+
+PETSC_EXTERN PetscErrorCode SNESCompositeSetType(SNES,SNESCompositeType);
+PETSC_EXTERN PetscErrorCode SNESCompositeAddSNES(SNES,SNESType);
+PETSC_EXTERN PetscErrorCode SNESCompositeGetSNES(SNES,PetscInt,SNES *);
+PETSC_EXTERN PetscErrorCode SNESCompositeSetDamping(SNES,PetscInt,PetscReal);
 
 #endif
