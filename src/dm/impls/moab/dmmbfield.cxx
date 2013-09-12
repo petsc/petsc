@@ -148,6 +148,39 @@ PetscErrorCode DMMoabSetFields(DM dm,PetscInt numFields,const char** fields)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "DMMoabSetFieldName"
+/*@C
+  DMMoabSetFieldName - Sets the name of a field in the DM
+
+  Not Collective
+
+  Input Parameters:
++ dm     - the DM object
+. field - the field number
+- fieldName - the field name
+
+  Level: developer
+  Note: Needs to be called after DMMoabSetFields with correct numFields
+
+.seealso: DMMoabSetFields()
+@*/
+PetscErrorCode DMMoabSetFieldName(DM dm, PetscInt field, const char fieldName[])
+{
+  PetscErrorCode ierr;
+  DM_Moab        *dmmoab;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidCharPointer(fieldName,3);
+  dmmoab = (DM_Moab*)(dm)->data;
+
+  if ((field < 0) || (field >= dmmoab->numFields)) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "DM field %d should be in [%d, %d)", field, 0, dmmoab->numFields);
+  ierr = PetscFree(dmmoab->fieldNames[field]);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(fieldName, (char**) &dmmoab->fieldNames[field]);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMoabGetFieldDof"
