@@ -51,6 +51,8 @@ const char *const PetscDataTypes[] = {"INT","DOUBLE","COMPLEX","LONG","SHORT","F
 PetscBool PetscPreLoadingUsed = PETSC_FALSE;
 PetscBool PetscPreLoadingOn   = PETSC_FALSE;
 
+PetscInt PetscHotRegionDepth;
+
 /*
        Checks the options database for initializations related to the
     PETSc components

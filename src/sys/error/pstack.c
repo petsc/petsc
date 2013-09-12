@@ -127,6 +127,7 @@ PetscErrorCode PetscStackCreate(void)
 
   petscstack_in              = (PetscStack*)malloc(sizeof(PetscStack));
   petscstack_in->currentsize = 0;
+  petscstack_in->hotdepth    = 0;
   PetscThreadLocalSetValue((PetscThreadKey*)&petscstack,petscstack_in);
 
 #if defined(PETSC_HAVE_AMS)

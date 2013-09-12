@@ -22,9 +22,14 @@ PETSC_INTERN void PetscSegv_sigaction(int, siginfo_t*, void *);
 PetscBool PetscCheckPointer(const void *ptr,PetscDataType dtype)
 {
   struct sigaction sa,oldsa;
+  PetscStack *stackp;
 
   if (PETSC_RUNNING_ON_VALGRIND) return PETSC_TRUE;
   if (!ptr) return PETSC_FALSE;
+
+  /* Skip the verbose check if we are inside a hot function. */
+  stackp = (PetscStack*)PetscThreadLocalGetValue(petscstack);
+  if (stackp && stackp->hotdepth > 0) return PETSC_TRUE;
 
   sigemptyset(&sa.sa_mask);
   sa.sa_sigaction = PetscSegv_sigaction;

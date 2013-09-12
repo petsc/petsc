@@ -863,7 +863,7 @@ PetscErrorCode  VecSetValues(Vec x,PetscInt ni,const PetscInt ix[],const PetscSc
 {
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginHot;
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   PetscValidIntPointer(ix,3);
   PetscValidScalarPointer(y,4);
@@ -969,7 +969,7 @@ PetscErrorCode  VecSetValuesBlocked(Vec x,PetscInt ni,const PetscInt ix[],const 
 {
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginHot;
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   PetscValidIntPointer(ix,3);
   PetscValidScalarPointer(y,4);
@@ -1023,7 +1023,7 @@ PetscErrorCode  VecSetValuesLocal(Vec x,PetscInt ni,const PetscInt ix[],const Pe
   PetscErrorCode ierr;
   PetscInt       lixp[128],*lix = lixp;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginHot;
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   PetscValidIntPointer(ix,3);
   PetscValidScalarPointer(y,4);
@@ -1091,7 +1091,7 @@ PetscErrorCode  VecSetValuesBlockedLocal(Vec x,PetscInt ni,const PetscInt ix[],c
   PetscErrorCode ierr;
   PetscInt       lixp[128],*lix = lixp;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginHot;
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   PetscValidIntPointer(ix,3);
   PetscValidScalarPointer(y,4);
