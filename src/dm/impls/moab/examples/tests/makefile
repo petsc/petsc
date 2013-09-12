@@ -4,7 +4,7 @@ FFLAGS	        =
 CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR          = src/dm/impls/moab/examples/tests/
-EXAMPLESC       = ex1.cxx ex2.cxx ex4.c
+EXAMPLESC       = ex1.cxx ex2.cxx ex3.c ex4.c ex5.c
 EXAMPLESF       =
 MANSEC          = DM
 
@@ -19,9 +19,18 @@ ex2: ex2.o  chkopts
 	-${CLINKER} -o ex2 ex2.o ${PETSC_DM_LIB}
 	${RM} -f ex2.o
 
+ex3: ex3.o  chkopts
+	-${CLINKER} -o ex3 ex3.o ${PETSC_DM_LIB}
+	${RM} -f ex3.o
+
 ex4: ex4.o  chkopts
 	-${CLINKER} -o ex4 ex4.o ${PETSC_DM_LIB}
 	${RM} -f ex4.o
+
+ex5: ex5.o  chkopts
+	-${CLINKER} -o ex5 ex5.o ${PETSC_DM_LIB}
+	${RM} -f ex5.o
+
 
 #--------------------------------------------------------------------------
 runex1:
@@ -35,6 +44,12 @@ runex2:
 	   if (${DIFF} output/ex2_1.out ex2_1.tmp) then true ;  \
 	   else echo ${PWD} ; echo "Possible problem with with runex2, diffs above \n========================================="; fi ;\
 	   ${RM} -f ex2_1.tmp
+
+runex3:
+	-@${MPIEXEC} -n 1 ./ex3 -nele 10 > ex3_1.tmp 2>&1;\
+	   if (${DIFF} output/ex3_1.out ex3_1.tmp) then true ;  \
+	   else echo ${PWD} ; echo "Possible problem with with runex4, diffs above \n========================================="; fi ;\
+	   ${RM} -f ex3_1.tmp
 
 runex4:
 	-@${MPIEXEC} -n 1 ./ex4 -n 50 > ex4_1.tmp 2>&1;\
