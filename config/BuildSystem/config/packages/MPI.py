@@ -75,7 +75,6 @@ class Configure(config.package.Package):
     self.compilers = framework.require('config.compilers', self)
     self.compilerFlags = framework.require('config.compilerFlags', self)
     self.types = framework.require('config.types', self)
-    #self.make = framework.require('config.packages.make',self)
     return
 
   # search many obscure locations for MPI

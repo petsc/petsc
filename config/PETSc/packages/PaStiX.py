@@ -19,7 +19,6 @@ class Configure(PETSc.package.NewPackage):
     PETSc.package.NewPackage.setupDependencies(self, framework)
     self.blasLapack = framework.require('config.packages.BlasLapack',self)
     self.scotch     = framework.require('PETSc.packages.PTScotch',self)
-    self.make       = framework.require('config.programs', self)
     self.deps       = [self.mpi,self.blasLapack, self.scotch]
     return
 
