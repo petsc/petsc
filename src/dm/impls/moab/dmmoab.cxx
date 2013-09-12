@@ -155,8 +155,8 @@ PetscErrorCode DMSetUp_Moab(DM dm)
 
     ierr = PetscMalloc(((PetscInt)(dmmoab->vlocal->back())+1)*sizeof(PetscInt), &dmmoab->gidmap);CHKERRQ(ierr);
     ierr = PetscMalloc(((PetscInt)(dmmoab->vlocal->back())+1)*sizeof(PetscInt), &dmmoab->lidmap);CHKERRQ(ierr);
-    ierr = PetscMalloc(totsize*dmmoab->nfields*sizeof(PetscInt), &dmmoab->llmap);CHKERRQ(ierr);
-    ierr = PetscMalloc(totsize*dmmoab->nfields*sizeof(PetscInt), &dmmoab->lgmap);CHKERRQ(ierr);
+    ierr = PetscMalloc(totsize*dmmoab->numFields*sizeof(PetscInt), &dmmoab->llmap);CHKERRQ(ierr);
+    ierr = PetscMalloc(totsize*dmmoab->numFields*sizeof(PetscInt), &dmmoab->lgmap);CHKERRQ(ierr);
 
     i=j=0;
     /* set the owned vertex data first */
@@ -165,14 +165,14 @@ PetscErrorCode DMSetUp_Moab(DM dm)
       dmmoab->gidmap[vent]=dmmoab->gsindices[i];
       dmmoab->lidmap[vent]=i;
       if (bs > 1) {
-        for (f=0;f<dmmoab->nfields;f++,j++) {
-          dmmoab->lgmap[j]=dmmoab->gsindices[i]*dmmoab->nfields+f;
-          dmmoab->llmap[j]=i*dmmoab->nfields+f;
-          PetscInfo4(NULL, "Owned Vertex: %D,  Field: %D \t  LID = %D \t GID = %D.\n", *iter, f, i*dmmoab->nfields+f, dmmoab->gsindices[i]*dmmoab->nfields+f);
+        for (f=0;f<dmmoab->numFields;f++,j++) {
+          dmmoab->lgmap[j]=dmmoab->gsindices[i]*dmmoab->numFields+f;
+          dmmoab->llmap[j]=i*dmmoab->numFields+f;
+          PetscInfo4(NULL, "Owned Vertex: %D,  Field: %D \t  LID = %D \t GID = %D.\n", *iter, f, i*dmmoab->numFields+f, dmmoab->gsindices[i]*dmmoab->numFields+f);
         }
       }
       else {
-        for (f=0;f<dmmoab->nfields;f++,j++) {
+        for (f=0;f<dmmoab->numFields;f++,j++) {
           dmmoab->lgmap[j]=totsize*f+dmmoab->gsindices[i];
           dmmoab->llmap[j]=totsize*f+i;
           PetscInfo4(NULL, "Owned Vertex: %D,  Field: %D \t  LID = %D \t GID = %D.\n", *iter, f, totsize*f+i, totsize*f+dmmoab->gsindices[i]);
@@ -185,14 +185,14 @@ PetscErrorCode DMSetUp_Moab(DM dm)
       dmmoab->gidmap[vent]=dmmoab->gsindices[i];
       dmmoab->lidmap[vent]=i;
       if (bs > 1) {
-        for (f=0;f<dmmoab->nfields;f++,j++) {
-          dmmoab->lgmap[j]=dmmoab->gsindices[i]*dmmoab->nfields+f;
-          dmmoab->llmap[j]=i*dmmoab->nfields+f;
-          PetscInfo4(NULL, "Ghost Vertex: %D,  Field: %D \t  LID = %D \t GID = %D.\n", vent, f, i*dmmoab->nfields+f, dmmoab->gsindices[i]*dmmoab->nfields+f);
+        for (f=0;f<dmmoab->numFields;f++,j++) {
+          dmmoab->lgmap[j]=dmmoab->gsindices[i]*dmmoab->numFields+f;
+          dmmoab->llmap[j]=i*dmmoab->numFields+f;
+          PetscInfo4(NULL, "Ghost Vertex: %D,  Field: %D \t  LID = %D \t GID = %D.\n", vent, f, i*dmmoab->numFields+f, dmmoab->gsindices[i]*dmmoab->numFields+f);
         }
       }
       else {
-        for (f=0;f<dmmoab->nfields;f++,j++) {
+        for (f=0;f<dmmoab->numFields;f++,j++) {
           dmmoab->lgmap[j]=totsize*f+dmmoab->gsindices[i];
           dmmoab->llmap[j]=totsize*f+i;
           PetscInfo4(NULL, "Ghost Vertex: %D,  Field: %D \t  LID = %D \t GID = %D.\n", vent, f, totsize*f+i, totsize*f+dmmoab->gsindices[i]);
@@ -213,15 +213,15 @@ PetscErrorCode DMSetUp_Moab(DM dm)
     PetscInfo3(NULL, "Total-size = %D\t Owned = %D, Ghosted = %D.\n", totsize, dmmoab->nloc, dmmoab->nghost);
 
     /* global to local must retrieve ghost points */
-    ierr = ISCreateStride(((PetscObject)dm)->comm,dmmoab->nloc*dmmoab->nfields,dmmoab->vstart,1,&from);CHKERRQ(ierr);
+    ierr = ISCreateStride(((PetscObject)dm)->comm,dmmoab->nloc*dmmoab->numFields,dmmoab->vstart,1,&from);CHKERRQ(ierr);
     ierr = ISSetBlockSize(from,bs);CHKERRQ(ierr);
 
-    ierr = ISCreateGeneral(((PetscObject)dm)->comm,dmmoab->nloc*dmmoab->nfields,&dmmoab->lgmap[0],PETSC_COPY_VALUES,&to);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(((PetscObject)dm)->comm,dmmoab->nloc*dmmoab->numFields,&dmmoab->lgmap[0],PETSC_COPY_VALUES,&to);CHKERRQ(ierr);
     ierr = ISSetBlockSize(to,bs);CHKERRQ(ierr);
 
     if (!dmmoab->ltog_map) {
       /* create to the local to global mapping for vectors in order to use VecSetValuesLocal */
-      ierr = ISLocalToGlobalMappingCreate(((PetscObject)dm)->comm,totsize*dmmoab->nfields,dmmoab->lgmap,
+      ierr = ISLocalToGlobalMappingCreate(((PetscObject)dm)->comm,totsize*dmmoab->numFields,dmmoab->lgmap,
                                           PETSC_COPY_VALUES,&dmmoab->ltog_map);CHKERRQ(ierr);
     }
 
@@ -274,7 +274,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Moab(DM dm)
   ierr = PetscNewLog(dm,&dm->data);CHKERRQ(ierr);
 
   ((DM_Moab*)dm->data)->bs = 1;
-  ((DM_Moab*)dm->data)->nfields = 1;
+  ((DM_Moab*)dm->data)->numFields = 1;
   ((DM_Moab*)dm->data)->n = 0;
   ((DM_Moab*)dm->data)->nloc = 0;
   ((DM_Moab*)dm->data)->nghost = 0;
@@ -394,7 +394,7 @@ PetscErrorCode DMMoabCreateMoab(MPI_Comm comm, moab::Interface *mbiface, moab::P
 
   /* do the remaining initializations for DMMoab */
   dmmoab->bs = 1;
-  dmmoab->nfields = 1;
+  dmmoab->numFields = 1;
 
   /* set global ID tag handle */
   if (!ltog_tag) {

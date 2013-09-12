@@ -44,7 +44,7 @@ PetscErrorCode DMCreateMatrix_Moab(DM dm, MatType mtype,Mat *J)
 
   /* create the Matrix and set its type as specified by user */
   ierr = MatCreate(dmmoab->pcomm->comm(), J);CHKERRQ(ierr);
-  ierr = MatSetSizes(*J, dmmoab->nloc*dmmoab->nfields, dmmoab->nloc*dmmoab->nfields, PETSC_DETERMINE, PETSC_DETERMINE);CHKERRQ(ierr);
+  ierr = MatSetSizes(*J, dmmoab->nloc*dmmoab->numFields, dmmoab->nloc*dmmoab->numFields, PETSC_DETERMINE, PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = MatSetBlockSize(*J, dmmoab->bs);CHKERRQ(ierr);
   ierr = MatSetType(*J, mtype);CHKERRQ(ierr);
   ierr = MatSetFromOptions(*J);CHKERRQ(ierr);
@@ -120,9 +120,9 @@ PetscErrorCode DMMoab_Compute_NNZ_From_Connectivity(DM dm,PetscInt* innz,PetscIn
       if (onz) onz[ivtx]=n_onz;  /* add ghost non-owned nodes */
     }
     else {
-      for (f=0;f<dmmoab->nfields;f++) {
-        nnz[dmmoab->nfields*ivtx+f]=n_nnz;      /* leave out self to avoid repeats -> node shared by multiple elements */
-        if (onz) onz[dmmoab->nfields*ivtx+f]=n_onz;  /* add ghost non-owned nodes */
+      for (f=0;f<dmmoab->numFields;f++) {
+        nnz[dmmoab->numFields*ivtx+f]=n_nnz;      /* leave out self to avoid repeats -> node shared by multiple elements */
+        if (onz) onz[dmmoab->numFields*ivtx+f]=n_onz;  /* add ghost non-owned nodes */
       }
     }
   }

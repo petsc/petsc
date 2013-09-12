@@ -52,10 +52,10 @@ PetscErrorCode DMMoab_CreateVector_Private(DM dm,moab::Tag tag,moab::Range* user
       is_newtag = PETSC_TRUE;
 
       /* Create the default value for the tag (all zeros) */
-      std::vector<PetscScalar> default_value(dmmoab->nfields, 0.0);
+      std::vector<PetscScalar> default_value(dmmoab->numFields, 0.0);
 
       /* Create the tag */
-      merr = mbiface->tag_get_handle(tag_name,dmmoab->nfields,moab::MB_TYPE_DOUBLE,tag,
+      merr = mbiface->tag_get_handle(tag_name,dmmoab->numFields,moab::MB_TYPE_DOUBLE,tag,
                                     moab::MB_TAG_DENSE|moab::MB_TAG_CREAT,default_value.data());MBERRNM(merr);
       ierr = PetscFree(tag_name);CHKERRQ(ierr);
     }
@@ -80,13 +80,13 @@ PetscErrorCode DMMoab_CreateVector_Private(DM dm,moab::Tag tag,moab::Range* user
     /* Create the PETSc Vector directly and attach our functions accordingly */
     if (!is_global_vec) {
       /* This is an MPI Vector with ghosted padding */
-      ierr = VecCreateGhostBlock(pcomm->comm(),dmmoab->bs,dmmoab->nfields*dmmoab->nloc,
-                                 dmmoab->nfields*dmmoab->n,dmmoab->nghost,&dmmoab->gsindices[dmmoab->nloc],vec);CHKERRQ(ierr);
+      ierr = VecCreateGhostBlock(pcomm->comm(),dmmoab->bs,dmmoab->numFields*dmmoab->nloc,
+                                 dmmoab->numFields*dmmoab->n,dmmoab->nghost,&dmmoab->gsindices[dmmoab->nloc],vec);CHKERRQ(ierr);
     }
     else {
       /* This is an MPI/SEQ Vector */
       ierr = VecCreate(pcomm->comm(),vec);CHKERRQ(ierr);
-      ierr = VecSetSizes(*vec,dmmoab->nfields*dmmoab->nloc,PETSC_DECIDE);CHKERRQ(ierr);
+      ierr = VecSetSizes(*vec,dmmoab->numFields*dmmoab->nloc,PETSC_DECIDE);CHKERRQ(ierr);
       ierr = VecSetBlockSize(*vec,dmmoab->bs);CHKERRQ(ierr);
       ierr = VecSetType(*vec, VECMPI);CHKERRQ(ierr);
     }
@@ -98,7 +98,7 @@ PetscErrorCode DMMoab_CreateVector_Private(DM dm,moab::Tag tag,moab::Range* user
 
     /* set the reference for vector range */
     vmoab->tag_range = new moab::Range(*range);
-    merr = mbiface->tag_get_length(tag,dmmoab->nfields);MBERRNM(merr);
+    merr = mbiface->tag_get_length(tag,dmmoab->numFields);MBERRNM(merr);
 
     /* Create the PETSc Vector
       Query MOAB mesh to check if there are any ghosted entities
@@ -106,12 +106,12 @@ PetscErrorCode DMMoab_CreateVector_Private(DM dm,moab::Tag tag,moab::Range* user
         -> else, create a non-ghosted parallel vector */
     if (!is_global_vec) {
       /* This is an MPI Vector with ghosted padding */
-      ierr = VecCreateGhostBlockWithArray(pcomm->comm(),dmmoab->bs,dmmoab->nfields*dmmoab->nloc,
-                                dmmoab->nfields*dmmoab->n,dmmoab->nghost,&dmmoab->gsindices[dmmoab->nloc],data_ptr,vec);CHKERRQ(ierr);
+      ierr = VecCreateGhostBlockWithArray(pcomm->comm(),dmmoab->bs,dmmoab->numFields*dmmoab->nloc,
+                                dmmoab->numFields*dmmoab->n,dmmoab->nghost,&dmmoab->gsindices[dmmoab->nloc],data_ptr,vec);CHKERRQ(ierr);
     }
     else {
       /* This is an MPI Vector without ghosted padding */
-      ierr = VecCreateMPIWithArray(pcomm->comm(),dmmoab->bs,dmmoab->nfields*range->size(),
+      ierr = VecCreateMPIWithArray(pcomm->comm(),dmmoab->bs,dmmoab->numFields*range->size(),
                                 PETSC_DECIDE,data_ptr,vec);CHKERRQ(ierr);
     }
   }
@@ -435,7 +435,7 @@ PetscErrorCode  DMMoabVecGetArray(DM dm,Vec vec,void* array)
     /* exchange the data into ghost cells first */
     merr = dmmoab->pcomm->exchange_tags(vtag,*dmmoab->vlocal);MBERRNM(merr);
 
-    ierr = PetscMalloc(sizeof(PetscScalar)*(dmmoab->nloc+dmmoab->nghost)*dmmoab->nfields,varray);CHKERRQ(ierr);
+    ierr = PetscMalloc(sizeof(PetscScalar)*(dmmoab->nloc+dmmoab->nghost)*dmmoab->numFields,varray);CHKERRQ(ierr);
 
     /* Get the array data for local entities */
     merr = dmmoab->mbiface->tag_iterate(vtag,dmmoab->vlocal->begin(),dmmoab->vlocal->end(),count,reinterpret_cast<void*&>(marray),false);MBERRNM(merr);
@@ -443,8 +443,8 @@ PetscErrorCode  DMMoabVecGetArray(DM dm,Vec vec,void* array)
 
     i=0;
     for(moab::Range::iterator iter = dmmoab->vlocal->begin(); iter != dmmoab->vlocal->end(); iter++) {
-      for (f=0;f<dmmoab->nfields;f++,i++)
-        (*varray)[dmmoab->lidmap[(PetscInt)*iter]*dmmoab->nfields+f]=marray[i];
+      for (f=0;f<dmmoab->numFields;f++,i++)
+        (*varray)[dmmoab->lidmap[(PetscInt)*iter]*dmmoab->numFields+f]=marray[i];
     }
 
   }
@@ -524,8 +524,8 @@ PetscErrorCode  DMMoabVecRestoreArray(DM dm,Vec vec,void* array)
 
     i=0;
     for(moab::Range::iterator iter = dmmoab->vlocal->begin(); iter != dmmoab->vlocal->end(); iter++) {
-      for (f=0;f<dmmoab->nfields;f++,i++)
-      marray[i] = (*varray)[dmmoab->lidmap[(PetscInt)*iter]*dmmoab->nfields+f];
+      for (f=0;f<dmmoab->numFields;f++,i++)
+      marray[i] = (*varray)[dmmoab->lidmap[(PetscInt)*iter]*dmmoab->numFields+f];
     }
 
     /* reduce the tags correctly -> should probably let the user choose how to reduce in the future
@@ -609,7 +609,7 @@ PetscErrorCode  DMMoabVecGetArrayRead(DM dm,Vec vec,void* array)
     /* exchange the data into ghost cells first */
     merr = dmmoab->pcomm->exchange_tags(vtag,*dmmoab->vlocal);MBERRNM(merr);
 
-    ierr = PetscMalloc(sizeof(PetscScalar)*(dmmoab->nloc+dmmoab->nghost)*dmmoab->nfields,varray);CHKERRQ(ierr);
+    ierr = PetscMalloc(sizeof(PetscScalar)*(dmmoab->nloc+dmmoab->nghost)*dmmoab->numFields,varray);CHKERRQ(ierr);
 
     /* Get the array data for local entities */
     merr = dmmoab->mbiface->tag_iterate(vtag,dmmoab->vlocal->begin(),dmmoab->vlocal->end(),count,reinterpret_cast<void*&>(marray),false);MBERRNM(merr);
@@ -617,8 +617,8 @@ PetscErrorCode  DMMoabVecGetArrayRead(DM dm,Vec vec,void* array)
 
     i=0;
     for(moab::Range::iterator iter = dmmoab->vlocal->begin(); iter != dmmoab->vlocal->end(); iter++) {
-      for (f=0;f<dmmoab->nfields;f++,i++)
-        (*varray)[dmmoab->lidmap[(PetscInt)*iter]*dmmoab->nfields+f]=marray[i];
+      for (f=0;f<dmmoab->numFields;f++,i++)
+        (*varray)[dmmoab->lidmap[(PetscInt)*iter]*dmmoab->numFields+f]=marray[i];
     }
 
   }
