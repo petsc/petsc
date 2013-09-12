@@ -457,6 +457,7 @@ struct  _p_MatFDColoring{
   PetscInt       *rowcolden2sp3;   /* nested array for row, col and 
                                       den2sp: maps (row,color) in the dense matrix to index of J values,
                                       replace rows and columnsforrow above */
+  PetscScalar    **spaddr;         /* maps (row,color) in the dense matrix to address of J values */
   PetscScalar    *dy;              /* store a block of F(x+dx)-F(x) when J uses BAIJ format */
   PetscReal      error_rel;        /* square root of relative error in computing function */
   PetscReal      umin;             /* minimum allowable u'dx value */
