@@ -377,6 +377,7 @@ class Configure(config.package.Package):
     installDir = os.path.join(self.defaultInstallDir,self.arch)
     confDir = os.path.join(self.defaultInstallDir,self.arch,'conf')
     args = ['--prefix='+installDir,'--with-rsh=ssh']
+    args.append('MAKE='+self.make.make)
     # Configure and Build OPENMPI
     self.pushLanguage('C')
     flags = self.getCompilerFlags()
@@ -477,6 +478,7 @@ class Configure(config.package.Package):
     # Configure and Build MPICH
     self.pushLanguage('C')
     args = ['--prefix='+installDir]
+    args.append('MAKE='+self.make.make)
     compiler = self.getCompiler()
     args.append('CC="'+self.getCompiler()+'"')
     args.append('CFLAGS="'+self.getCompilerFlags().replace('-fvisibility=hidden','')+'"')
