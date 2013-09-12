@@ -102,13 +102,12 @@ PetscErrorCode DMPlexCreateCGNS(MPI_Comm comm, PetscInt cgid, PetscBool interpol
         ierr = PetscMalloc(elementDataSize * sizeof(cgsize_t), &elements);CHKERRQ(ierr);
         ierr = cg_elements_read(cgid, 1, z, 1, elements, NULL);CHKERRQ(ierr);
         for (c_loc = start, off = 0; c_loc < end; ++c_loc, ++c) {
-          cellType = elements[off];
-          switch (cellType) {
+          switch (elements[off]) {
           case TRI_3:   numCorners = 3;break;
           case QUAD_4:  numCorners = 4;break;
           case TETRA_4: numCorners = 4;break;
           case HEXA_8:  numCorners = 8;break;
-          default: SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid cell type %d", (int) cellType);
+          default: SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid cell type %d", (int) elements[off]);
           }
           ierr = DMPlexSetConeSize(*dm, c, numCorners);CHKERRQ(ierr);
           off += numCorners+1;
@@ -143,14 +142,14 @@ PetscErrorCode DMPlexCreateCGNS(MPI_Comm comm, PetscInt cgid, PetscBool interpol
       if (cellType == MIXED) {
         /* CGNS uses Fortran-based indexing, sieve uses C-style and numbers cell first then vertices. */
         for (c_loc = 0, v = 0; c_loc < numc; ++c_loc, ++c) {
-          cellType = elements[v]; ++v;
-          switch (cellType) {
+          switch (elements[v]) {
           case TRI_3:   numCorners = 3;break;
           case QUAD_4:  numCorners = 4;break;
           case TETRA_4: numCorners = 4;break;
           case HEXA_8:  numCorners = 8;break;
-          default: SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid cell type %d", (int) cellType);
+          default: SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid cell type %d", (int) elements[v]);
           }
+          ++v;
           for (v_loc = 0; v_loc < numCorners; ++v_loc, ++v) {
             cone[v_loc] = elements[v]+numCells-1;
           }
