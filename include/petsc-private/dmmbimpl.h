@@ -45,8 +45,8 @@ typedef struct {
   moab::Range             *bndyvtx,*bndyfaces,*bndyelems;
   moab::EntityHandle      fileset;
 
-  PetscInt                nfields;
-  const char**            fields;
+  PetscInt                numFields;
+  const char              **fieldNames;
   PetscBool               icreatedinstance;        /* true if DM created moab instance internally, will destroy instance in DMDestroy */
 } DM_Moab;
 
