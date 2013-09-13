@@ -25,10 +25,10 @@ static char help[] = "Solves C_t =  -D*C_xx + F(C) + R(C) + D(C) from Brian Wirt
 #include <petscts.h>
 
 /*    Hard wire the number of cluster sizes for He, V, and I, and He-V */
-#define NHe  3
-#define NV   3
-#define NI   3
-#define NHeV 3
+#define NHe  8
+#define NV   1
+#define NI   8
+#define NHeV 12
 
 
 /*
