@@ -522,10 +522,6 @@ PetscErrorCode  MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStruct
   PetscFunctionReturn(0);
 }
 
-/* #define JACOBIANCOLOROPT */
-#if defined(JACOBIANCOLOROPT)
-#include <petsctime.h>
-#endif
 #undef __FUNCT__
 #define __FUNCT__ "MatFDColoringApply_AIJ"
 PetscErrorCode  MatFDColoringApply_AIJ(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,void *sctx)
@@ -541,9 +537,6 @@ PetscErrorCode  MatFDColoringApply_AIJ(Mat J,MatFDColoring coloring,Vec x1,MatSt
   PetscBool      flg     = PETSC_FALSE;
   PetscInt       ctype   = coloring->ctype,N,col_start=0,col_end=0;
   Vec            x1_tmp;
-#if defined(JACOBIANCOLOROPT)
-  PetscLogDouble t0,t1,time_setvalues=0.0;
-#endif
 
   PetscFunctionBegin;
   ierr = MatSetUnfactored(J);CHKERRQ(ierr);
@@ -661,9 +654,6 @@ PetscErrorCode  MatFDColoringApply_AIJ(Mat J,MatFDColoring coloring,Vec x1,MatSt
     /*
       Loop over rows of vector, putting results into Jacobian matrix
     */
-#if defined(JACOBIANCOLOROPT)
-    ierr = PetscTime(&t0);CHKERRQ(ierr);
-#endif
     ierr = VecGetArray(w2,&y);CHKERRQ(ierr);
     for (l=0; l<coloring->nrows[k]; l++) {
       row     = coloring->rows[k][l];            /* local row index */
@@ -673,14 +663,8 @@ PetscErrorCode  MatFDColoringApply_AIJ(Mat J,MatFDColoring coloring,Vec x1,MatSt
       ierr    = MatSetValues(J,1,&srow,1,&col,y+row,INSERT_VALUES);CHKERRQ(ierr);
     }
     ierr = VecRestoreArray(w2,&y);CHKERRQ(ierr);
-#if defined(JACOBIANCOLOROPT)
-    ierr = PetscTime(&t1);CHKERRQ(ierr);
-    time_setvalues += t1-t0;
-#endif
   } /* endof for each color */
-#if defined(JACOBIANCOLOROPT)
-  printf("     MatFDColoringApply_AIJ: time_setvalues %g\n",time_setvalues);
-#endif
+
   if (ctype == IS_COLORING_GLOBAL) xx = xx + start;
   ierr = VecRestoreArray(coloring->vscale,&vscale_array);CHKERRQ(ierr);
   ierr = VecRestoreArray(x1_tmp,&xx);CHKERRQ(ierr);

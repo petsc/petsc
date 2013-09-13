@@ -96,9 +96,7 @@ PetscErrorCode  MatFDColoringApply_MPIAIJ(Mat J,MatFDColoring coloring,Vec x1,Ma
     vscaleforrow = coloring->vscaleforrow;
   } else SETERRQ(PetscObjectComm((PetscObject)J),PETSC_ERR_ARG_NULL,"Null Object: coloring->vscaleforrow");
 
-  /*
-    Loop over each color
-  */
+  /* Loop over each color */
   nz = 0;
   ierr = VecGetArray(coloring->vscale,&vscale_array);CHKERRQ(ierr);
   for (k=0; k<coloring->ncolors; k++) {
@@ -137,11 +135,9 @@ PetscErrorCode  MatFDColoringApply_MPIAIJ(Mat J,MatFDColoring coloring,Vec x1,Ma
     ierr = PetscLogEventEnd(MAT_FDColoringFunction,0,0,0,0);CHKERRQ(ierr);
     ierr = VecAXPY(w2,-1.0,w1);CHKERRQ(ierr);
 
-    /*
-      Loop over rows of vector, putting results into Jacobian matrix
-    */
+    /* Loop over rows of vector, putting results into Jacobian matrix */
     ierr = VecGetArray(w2,&y);CHKERRQ(ierr);
-    for (l=0; l<coloring->nrows[k]; l++) {
+    for (l=0; l<coloring->nrows[k]; l++) { 
       row     = coloring->rows[k][l];            /* local row index */
       *(coloring->spaddr[nz++]) = vscale_array[vscaleforrow[k][l]]*y[row];
     }
@@ -172,12 +168,14 @@ PetscErrorCode MatFDColoringCreate_MPIAIJ_new(Mat mat,ISColoring iscoloring,MatF
   PetscInt               *rowhit,M,cstart,cend,colb;
   PetscInt               *columnsforrow,l;
   IS                     *isa;
-  ISLocalToGlobalMapping map   = mat->cmap->mapping;
+  ISLocalToGlobalMapping map = mat->cmap->mapping;
   PetscInt               ctype=c->ctype;
   Mat                    A=aij->A,B=aij->B;
   Mat_SeqAIJ             *cspA=(Mat_SeqAIJ*)A->data, *cspB=(Mat_SeqAIJ*)B->data;
   PetscScalar            *A_val=cspA->a,*B_val=cspB->a;
   PetscInt               spidx;
+  PetscInt               *spidxA,*spidxB,nz;
+  PetscScalar            **spaddrhit;
 
   PetscFunctionBegin;
   if (ctype == IS_COLORING_GHOSTED && !map) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_INCOMP,"When using ghosted differencing matrix must have local to global mapping provided with MatSetLocalToGlobalMapping");
@@ -206,8 +204,6 @@ PetscErrorCode MatFDColoringCreate_MPIAIJ_new(Mat mat,ISColoring iscoloring,MatF
   if (!aij->colmap) {
     ierr = MatCreateColmap_MPIAIJ_Private(mat);CHKERRQ(ierr);
   }
-  PetscInt    *spidxA,*spidxB,nz;
-  PetscScalar **spaddrhit;
   ierr = MatGetColumnIJ_SeqAIJ_Color(aij->A,0,PETSC_FALSE,PETSC_FALSE,&ncols,&A_ci,&A_cj,&spidxA,NULL);CHKERRQ(ierr);
   ierr = MatGetColumnIJ_SeqAIJ_Color(aij->B,0,PETSC_FALSE,PETSC_FALSE,&ncols,&B_ci,&B_cj,&spidxB,NULL);CHKERRQ(ierr);
 
@@ -259,14 +255,9 @@ PetscErrorCode MatFDColoringCreate_MPIAIJ_new(Mat mat,ISColoring iscoloring,MatF
       ierr  = PetscMemcpy(cols,is,n*sizeof(PetscInt));CHKERRQ(ierr);
     } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not provided for this MatFDColoring type");
 
-    /*
-       Mark all rows affect by these columns
-    */
-   /*-----------------------------------------------------------------------------*/
-    /* crude, fast version */
+    /* Mark all rows affect by these columns */
     ierr = PetscMemzero(rowhit,M*sizeof(PetscInt));CHKERRQ(ierr);
-    /* loop over columns*/
-    for (j=0; j<nctot; j++) {
+    for (j=0; j<nctot; j++) { /* loop over columns*/
       if (ctype == IS_COLORING_GHOSTED) {
         col = ltog[cols[j]];
       } else {
