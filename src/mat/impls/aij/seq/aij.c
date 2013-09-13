@@ -4208,7 +4208,9 @@ PetscErrorCode MatDuplicate_SeqAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
   PetscFunctionBegin;
   ierr = MatCreate(PetscObjectComm((PetscObject)A),B);CHKERRQ(ierr);
   ierr = MatSetSizes(*B,A->rmap->n,A->cmap->n,A->rmap->n,A->cmap->n);CHKERRQ(ierr);
-  ierr = MatSetBlockSizes(*B,A->rmap->bs,A->cmap->bs);CHKERRQ(ierr);
+  if (!(A->rmap->n % A->rmap->bs) && !(A->cmap->n % A->cmap->bs)) {
+    ierr = MatSetBlockSizes(*B,A->rmap->bs,A->cmap->bs);CHKERRQ(ierr);
+  }
   ierr = MatSetType(*B,((PetscObject)A)->type_name);CHKERRQ(ierr);
   ierr = MatDuplicateNoCreate_SeqAIJ(*B,A,cpvalues,PETSC_TRUE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
