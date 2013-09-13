@@ -792,13 +792,14 @@ PetscErrorCode DMMoabGetBlockSize(DM dm,PetscInt *bs)
 /*@
   DMMoabGetSize - Get the global vertex size used with this DMMoab
 
-  Collective on MPI_Comm
+  Collective on DM
 
   Input Parameter:
 . dm - The DMMoab object being set
 
   Output Parameter:
-. ng - The global size of the DMMoab instance
+. neg - The number of global elements in the DMMoab instance
+. nvg - The number of global vertices in the DMMoab instance
 
   Level: beginner
 
@@ -819,14 +820,16 @@ PetscErrorCode DMMoabGetSize(DM dm,PetscInt *neg,PetscInt *nvg)
 /*@
   DMMoabGetLocalSize - Get the local and ghosted vertex size used with this DMMoab
 
-  Collective on MPI_Comm
+  Collective on DM
 
   Input Parameter:
 . dm - The DMMoab object being set
 
   Output Parameter:
-. nl - The local size of the DMMoab instance
-. ng - The ghosted size of the DMMoab instance
+. nel - The number of owned elements in this processor
+. neg - The number of ghosted elements in this processor
+. nvl - The number of owned vertices in this processor
+. nvg - The number of ghosted vertices in this processor
 
   Level: beginner
 
@@ -840,6 +843,32 @@ PetscErrorCode DMMoabGetLocalSize(DM dm,PetscInt *nel,PetscInt *neg,PetscInt *nv
   if(neg) *neg = ((DM_Moab*)dm->data)->neleghost;
   if(nvl) *nvl = ((DM_Moab*)dm->data)->nloc;
   if(nvg) *nvg = ((DM_Moab*)dm->data)->nghost;
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
+#define __FUNCT__ "DMMoabGetOffset"
+/*@
+  DMMoabGetOffset - Get the local offset for the global vector
+
+  Collective on MPI_Comm
+
+  Input Parameter:
+. dm - The DMMoab object being set
+
+  Output Parameter:
+. offset - The local offset for the global vector
+
+  Level: beginner
+
+.keywords: DMMoab, create
+@*/
+PetscErrorCode DMMoabGetOffset(DM dm,PetscInt *offset)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  *offset = ((DM_Moab*)dm->data)->vstart;
   PetscFunctionReturn(0);
 }
 
