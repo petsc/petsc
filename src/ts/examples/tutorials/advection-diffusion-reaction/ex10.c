@@ -68,6 +68,7 @@ extern PetscErrorCode RHSJacobian(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*,void*
 extern PetscErrorCode InitialConditions(DM,Vec);
 extern PetscErrorCode MyMonitorSetUp(TS);
 extern PetscErrorCode GetDfill(PetscInt*,void*);
+extern PetscErrorCode MyLoadData(MPI_Comm,const char*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -79,7 +80,8 @@ int main(int argc,char **argv)
   DM             da;                  /* manages the grid data */
   AppCtx         ctx;                 /* holds problem specific paramters */
   PetscInt       He,dof = 3*N+N*N,*ofill,*dfill;
-  
+  char           filename[PETSC_MAX_PATH_LEN];
+  PetscBool      flg;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
@@ -92,6 +94,11 @@ int main(int argc,char **argv)
 
   ierr = PetscOptionsHasName(NULL,"-noreactions",&ctx.noreactions);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(NULL,"-nodissociations",&ctx.nodissociations);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(NULL,"-file",filename,PETSC_MAX_PATH_LEN,&flg);
+  if (flg) {
+    ierr = MyLoadData(PETSC_COMM_WORLD,filename);CHKERRQ(ierr);
+  }
+
 
   ctx.HeDiffusion[1]    = 1000*2.95e-4; /* From Tibo's notes times 1,000 */
   ctx.HeDiffusion[2]    = 1000*3.24e-4;
@@ -1286,6 +1293,38 @@ PetscErrorCode MyMonitorSetUp(TS ts)
   ierr = PetscViewerDrawSetBounds(ctx->viewer,2,valuebounds);CHKERRQ(ierr);
 
   ierr = TSMonitorSet(ts,MyMonitorMonitor,ctx,MyMonitorDestroy);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+
+#include <stdlib.h>
+#undef __FUNCT__
+#define __FUNCT__ "MyLoadData"
+PetscErrorCode MyLoadData(MPI_Comm comm,const char *filename)
+{
+  PetscErrorCode ierr;
+  FILE           *fp;
+  char           buff[256];
+  int            He,V,I;
+  char           Hebindstr[32],Vbindstr[32],Ibindstr[32],trapbindstr[32],*sharp;
+  PetscReal      Hebind,Vbind,Ibind,trapbind;
+  
+  PetscFunctionBegin;
+  ierr = PetscFOpen(comm,filename,"r",&fp);CHKERRQ(ierr);
+  ierr = PetscSynchronizedFGets(comm,fp,256,buff);CHKERRQ(ierr);
+  while (buff[0]) {
+    printf("%s",buff);
+    ierr = PetscStrchr(buff,'#',&sharp);CHKERRQ(ierr);
+    if (!sharp) {
+      sscanf(buff,"%d %d %d %s %s %s %s",&He,&V,&I,Hebindstr,Vbindstr,Ibindstr,trapbindstr);
+      Hebind = strtod(Hebindstr,NULL);
+      Vbind = strtod(Vbindstr,NULL);
+      Ibind = strtod(Ibindstr,NULL);
+      trapbind = strtod(trapbindstr,NULL);
+      printf("%d %d %d %g %g %g %g\n",He,V,I,Hebind,Vbind,Ibind,trapbind);
+    }
+    ierr = PetscSynchronizedFGets(comm,fp,256,buff);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 

@@ -639,7 +639,7 @@ PetscErrorCode  PetscHelpPrintfDefault(MPI_Comm comm,const char format[],...)
 -   len - the length of the output buffer
 
     Output Parameter:
-.   string - the line read from the file
+.   string - the line read from the file, at end of file string[0] == 0
 
     Level: intermediate
 
@@ -656,6 +656,7 @@ PetscErrorCode  PetscSynchronizedFGets(MPI_Comm comm,FILE *fp,size_t len,char st
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
   if (!rank) {
+    string[0] = 0;
     char *ptr = fgets(string, len, fp);
 
     if (!ptr) {

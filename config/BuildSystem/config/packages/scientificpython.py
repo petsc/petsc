@@ -1,4 +1,4 @@
-import config.package
+ import config.package
 import os, sys
 
 class Configure(config.package.Package):
