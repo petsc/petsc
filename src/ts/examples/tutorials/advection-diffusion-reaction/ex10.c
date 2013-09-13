@@ -16,9 +16,6 @@ static char help[] = "Solves C_t =  -D*C_xx + F(C) + R(C) + D(C) from Brian Wirt
           -ts_max_steps maxsteps                  -- maximum number of time-steps to take
           -ts_final_time time                     -- maximum time to compute to
 
-    Rules for maximum number of He allowed for V in cluster are missing
-
-
 */
 
 #include <petscdmda.h>
@@ -29,7 +26,6 @@ static char help[] = "Solves C_t =  -D*C_xx + F(C) + R(C) + D(C) from Brian Wirt
 #define NV   1
 #define NI   8
 #define NHeV 12
-
 
 /*
      Define all the concentrations (there is one of these structs at each grid point)
@@ -50,6 +46,13 @@ typedef struct {
   PetscScalar HeV[NHeV][NHeV];
 } Concentrations;
 
+/*
+   cHeV is "trick" to allow easy accessing of the values in the HeV portion of the Concentrations.
+   cHeV[i] points to the beginning of each row of HeV[] with indexing starting a 1.
+
+   Eventually there will be support for HeV[][] where it is a triangular matrix with different maximum
+   number of V for each He
+*/
 #undef __FUNCT__
 #define __FUNCT__ "cHeVCreate"
 PetscErrorCode cHeVCreate(PetscReal ***cHeV)
@@ -149,32 +152,33 @@ int main(int argc,char **argv)
   ctx.forcingScale      = 100.;         /* made up numbers */
   ctx.reactionScale     = .001;
   ctx.dissociationScale = .0001;
+
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = DMDACreate1d(PETSC_COMM_WORLD, DMDA_BOUNDARY_MIRROR,-2,dof,1,NULL,&da);CHKERRQ(ierr);
 
   /* The only spatial coupling in the Jacobian (diffusion) is for the first 5 He, the first V, and the first I.
-     The ofill (thought of as a dof by dof 2d (row-oriented) array represents the nonzero coupling between degrees
+     The ofill (thought of as a dof by dof 2d (row-oriented) array) represents the nonzero coupling between degrees
      of freedom at one point with degrees of freedom on the adjacent point to the left or right. A 1 at i,j in the
      ofill array indicates that the degree of freedom i at a point is coupled to degree of freedom j at the
-     adjacent point. In this case ofill has only a few diagonal entries since the only spatial coupling is regular diffusion. */
+     adjacent point. In this case ofill has only a few diagonal entries since the only spatial coupling is regular diffusion */
   ierr = PetscMalloc(dof*dof*sizeof(PetscInt),&ofill);CHKERRQ(ierr);
-  ierr = PetscMalloc(dof*dof*sizeof(PetscInt),&dfill);CHKERRQ(ierr);
   ierr = PetscMemzero(ofill,dof*dof*sizeof(PetscInt));CHKERRQ(ierr);
-  ierr = PetscMemzero(dfill,dof*dof*sizeof(PetscInt));CHKERRQ(ierr);
-
   for (He=0; He<PetscMin(NHe,5); He++) ofill[He*dof + He] = 1;
   ofill[NHe*dof + NHe] = ofill[(NHe+NV)*dof + NHe + NV] = 1;
 
+  /*
+    dfil (thought of as a dof by dof 2d (row-oriented) array) repesents the nonzero coupling between degrees of
+   freedom within a single grid point, i.e. the reaction and dissassociation interactions. */
+  ierr = PetscMalloc(dof*dof*sizeof(PetscInt),&dfill);CHKERRQ(ierr);
+  ierr = PetscMemzero(dfill,dof*dof*sizeof(PetscInt));CHKERRQ(ierr);
   ierr = GetDfill(dfill,&ctx);CHKERRQ(ierr);
   ierr = DMDASetBlockFills(da,dfill,ofill);CHKERRQ(ierr);
   ierr = PetscFree(ofill);CHKERRQ(ierr);
   ierr = PetscFree(dfill);CHKERRQ(ierr);
 
-  /*  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-   Extract global vector from DMDA to hold solution
-   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+  /*  Extract global vector to hold solution */
   ierr = DMCreateGlobalVector(da,&C);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -197,9 +201,6 @@ int main(int argc,char **argv)
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
   ierr = MyMonitorSetUp(ts);CHKERRQ(ierr);
 
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Set initial conditions
-   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = InitialConditions(da,C);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -311,7 +312,7 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec C,Vec Cdot,Vec F,void *ptr)
   PetscReal      hx,sx,x,**cHeV,**fHeV;
   Concentrations *c,*f;
   Vec            localC;
- 
+
   PetscFunctionBeginUser;
   ierr = TSGetDM(ts,&da);CHKERRQ(ierr);
   ierr = DMGetLocalVector(da,&localC);CHKERRQ(ierr);
@@ -543,7 +544,7 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec C,Vec Cdot,Vec F,void *ptr)
 #undef __FUNCT__
 #define __FUNCT__ "RHSJacobian"
 /*
-    This is a duplicate of IFunction() except the Jacobian entries are computed (that go into the computation of the function) rather than the function.
+    Compute the Jacobian entries based on IFuction() and insert them into the matrix
 */
 PetscErrorCode RHSJacobian(TS ts,PetscReal ftime,Vec C,Mat *A,Mat *J,MatStructure *str,void *ptr)
 {
@@ -566,19 +567,11 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal ftime,Vec C,Mat *A,Mat *J,MatStructur
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
   hx   = 8.0/(PetscReal)(Mx-1); sx = 1.0/(hx*hx);
 
-  /*
-     Scatter ghost points to local vector,using the 2-step process
-        DMGlobalToLocalBegin(),DMGlobalToLocalEnd().
-     By placing code between these two statements, computations can be
-     done while messages are in transition.
-  */
   ierr = DMGlobalToLocalBegin(da,C,INSERT_VALUES,localC);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(da,C,INSERT_VALUES,localC);CHKERRQ(ierr);
 
   /*
-    Get pointers to vector data
-
-    The f[] is dummy, values are never set into it. It is only used to determine the 
+    The f[] is dummy, values are never set into it. It is only used to determine the
     local row for the entries in the Jacobian
   */
   ierr = DMDAVecGetArray(da,localC,&c);CHKERRQ(ierr);
@@ -587,16 +580,13 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal ftime,Vec C,Mat *A,Mat *J,MatStructur
   ierr = DMDAVecGetArray(da,C,&f);CHKERRQ(ierr);
   f    = (Concentrations*)(((PetscScalar*)f)-1);
 
-  /*
-     Get local grid boundaries
-  */
   ierr = DMDAGetCorners(da,&xs,NULL,NULL,&xm,NULL,NULL);CHKERRQ(ierr);
 
   rowstart = &f[xs].He[1] -  dof;
   colstart = &c[xs-1].He[1];
 
   /*
-     Loop over grid points computing ODE terms for each grid point
+     Loop over grid points computing Jacobian terms for each grid point
   */
   for (xi=xs; xi<xs+xm; xi++) {
     x = xi*hx;
@@ -637,7 +627,6 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal ftime,Vec C,Mat *A,Mat *J,MatStructur
     val[1] = -2.0*ctx->IDiffusion[1]*sx;
     val[2] = ctx->IDiffusion[1]*sx;
     ierr = MatSetValuesLocal(*J,1,row,3,col,val,ADD_VALUES);CHKERRQ(ierr);
-
 
     /* Mixed He - V clusters are immobile  */
 
@@ -982,8 +971,6 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal ftime,Vec C,Mat *A,Mat *J,MatStructur
 /*
     Determines the nonzero structure within the diagonal blocks of the Jacobian that represent coupling resulting from reactions and
     dissasociations of the clusters
-
-    The coupling between the blocks is very simple and is due to the diffusion of a few terms.
 */
 PetscErrorCode GetDfill(PetscInt *dfill, void *ptr)
 {
@@ -1010,7 +997,6 @@ PetscErrorCode GetDfill(PetscInt *dfill, void *ptr)
 
   if (!ctx->noreactions) {
 
-
     for (He=2; He<NHe+1; He++) {
       /* compute all pairs of clusters of smaller size that can combine to create a cluster of size He,
        remove the upper half since they are symmetric to the lower half of the pairs. For example
@@ -1028,7 +1014,6 @@ PetscErrorCode GetDfill(PetscInt *dfill, void *ptr)
         for (j=0; j<3; j++) {
           for (k=0; k<2; k++) {
             dfill[rows[j]*dof + cols[k]] = 1;
-  CHKMEMQ;
           }
         }
       }
@@ -1044,7 +1029,6 @@ PetscErrorCode GetDfill(PetscInt *dfill, void *ptr)
         for (j=0; j<3; j++) {
           for (k=0; k<2; k++) {
             dfill[rows[j]*dof + cols[k]] = 1;
-  CHKMEMQ;
           }
         }
       }
@@ -1061,7 +1045,6 @@ PetscErrorCode GetDfill(PetscInt *dfill, void *ptr)
         for (j=0; j<3; j++) {
           for (k=0; k<2; k++) {
             dfill[rows[j]*dof + cols[k]] = 1;
-  CHKMEMQ;
           }
         }
       }
@@ -1076,7 +1059,6 @@ PetscErrorCode GetDfill(PetscInt *dfill, void *ptr)
     for (j=0; j<3; j++) {
       for (k=0; k<2; k++) {
         dfill[rows[j]*dof + cols[k]] = 1;
-  CHKMEMQ;
       }
     }
 
@@ -1092,7 +1074,6 @@ PetscErrorCode GetDfill(PetscInt *dfill, void *ptr)
           for (j=0; j<3; j++) {
             for (k=0; k<2; k++) {
               dfill[rows[j]*dof + cols[k]] = 1;
-  CHKMEMQ;
             }
           }
         }
@@ -1110,7 +1091,6 @@ PetscErrorCode GetDfill(PetscInt *dfill, void *ptr)
           for (j=0; j<3; j++) {
             for (k=0; k<2; k++) {
               dfill[rows[j]*dof + cols[k]] = 1;
-  CHKMEMQ;
             }
           }
       }
@@ -1130,7 +1110,6 @@ PetscErrorCode GetDfill(PetscInt *dfill, void *ptr)
         for (j=0; j<3; j++) {
           for (k=0; k<2; k++) {
             dfill[rows[j]*dof + cols[k]] = 1;
-  CHKMEMQ;
           }
         }
       }
@@ -1143,7 +1122,6 @@ PetscErrorCode GetDfill(PetscInt *dfill, void *ptr)
         for (j=0; j<3; j++) {
           for (k=0; k<2; k++) {
             dfill[rows[j]*dof + cols[k]] = 1;
-  CHKMEMQ;
           }
         }
       }
@@ -1163,7 +1141,6 @@ PetscErrorCode GetDfill(PetscInt *dfill, void *ptr)
       cols[0] = &c->He[He] - idxstart;
       for (j=0; j<3; j++) {
         dfill[rows[j]*dof + cols[0]] = 1;
-  CHKMEMQ;
       }
     }
     /*   V[V] ->  V[V-1] + V[1] */
@@ -1174,7 +1151,6 @@ PetscErrorCode GetDfill(PetscInt *dfill, void *ptr)
       cols[0] = &c->V[V] - idxstart;
       for (j=0; j<3; j++) {
         dfill[rows[j]*dof + cols[0]] = 1;
-  CHKMEMQ;
       }
     }
 
@@ -1186,7 +1162,6 @@ PetscErrorCode GetDfill(PetscInt *dfill, void *ptr)
       cols[0] = &c->I[I] - idxstart;
       for (j=0; j<3; j++) {
         dfill[rows[j]*dof + cols[0]] = 1;
-  CHKMEMQ;
       }
     }
 
@@ -1197,7 +1172,6 @@ PetscErrorCode GetDfill(PetscInt *dfill, void *ptr)
     cols[0] = &cHeV[1][1] - idxstart;
     for (j=0; j<3; j++) {
       dfill[rows[j]*dof + cols[0]] = 1;
-  CHKMEMQ;
     }
 
     /*   He[He]-V[1] ->  He[He] + V[1]  */
@@ -1208,7 +1182,6 @@ PetscErrorCode GetDfill(PetscInt *dfill, void *ptr)
       cols[0] = &cHeV[He][1] - idxstart;
       for (j=0; j<3; j++) {
         dfill[rows[j]*dof + cols[0]] = 1;
-  CHKMEMQ;
       }
     }
 
@@ -1220,7 +1193,6 @@ PetscErrorCode GetDfill(PetscInt *dfill, void *ptr)
       cols[0] = &cHeV[1][V] - idxstart;
       for (j=0; j<3; j++) {
         dfill[rows[j]*dof + cols[0]] = 1;
-  CHKMEMQ;
       }
     }
 
@@ -1233,7 +1205,6 @@ PetscErrorCode GetDfill(PetscInt *dfill, void *ptr)
         cols[0] = &cHeV[He][V] - idxstart;
         for (j=0; j<3; j++) {
           dfill[rows[j]*dof + cols[0]] = 1;
-  CHKMEMQ;
         }
       }
     }
@@ -1247,7 +1218,6 @@ PetscErrorCode GetDfill(PetscInt *dfill, void *ptr)
         cols[0] = &cHeV[He][V] - idxstart;
         for (j=0; j<3; j++) {
           dfill[rows[j]*dof + cols[0]] = 1;
-  CHKMEMQ;
         }
       }
     }
@@ -1261,7 +1231,6 @@ PetscErrorCode GetDfill(PetscInt *dfill, void *ptr)
         cols[0] = &cHeV[He][V] - idxstart;
         for (j=0; j<3; j++) {
           dfill[rows[j]*dof + cols[0]] = 1;
-  CHKMEMQ;
         }
       }
     }
@@ -1373,8 +1342,6 @@ PetscErrorCode MyMonitorSetUp(TS ts)
   PetscFunctionReturn(0);
 }
 
-
-#include <stdlib.h>
 #undef __FUNCT__
 #define __FUNCT__ "MyLoadData"
 PetscErrorCode MyLoadData(MPI_Comm comm,const char *filename)
@@ -1385,7 +1352,7 @@ PetscErrorCode MyLoadData(MPI_Comm comm,const char *filename)
   int            He,V,I;
   char           Hebindstr[32],Vbindstr[32],Ibindstr[32],trapbindstr[32],*sharp;
   PetscReal      Hebind,Vbind,Ibind,trapbind;
-  
+
   PetscFunctionBegin;
   ierr = PetscFOpen(comm,filename,"r",&fp);CHKERRQ(ierr);
   ierr = PetscSynchronizedFGets(comm,fp,256,buff);CHKERRQ(ierr);
