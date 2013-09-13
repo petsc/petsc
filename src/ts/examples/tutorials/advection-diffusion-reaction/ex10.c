@@ -485,29 +485,6 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec C,Vec Cdot,Vec F,void *ptr)
   PetscFunctionReturn(0);
 }
 
-PetscReal  *rowstart,*colstart;
-
-/*
-    Set values into a matrix using the virtual memory addresses of the rows and columns instead of the usual row and column indices.
-
-    This is done because it is much easier to determine the virtual address of things like HeV[He][V] etc then the global matrix row or column associated with that location.
-
-*/
-PETSC_STATIC_INLINE PetscErrorCode MatSetValuesP(Mat J,PetscInt nrow,PetscScalar **rows,PetscInt ncol, PetscScalar** cols,PetscScalar *vals)
-{
-  PetscErrorCode ierr;
-  PetscInt       i,row[3],col[3];
-
-  for (i=0; i<nrow; i++) {
-    row[i] = rows[i] - rowstart;
-  }
-  for (i=0; i<ncol; i++) {
-    col[i] = cols[i] - colstart;
-  }
-  ierr = MatSetValuesLocal(J,nrow,row,ncol,col,vals,ADD_VALUES);
-  return ierr;
-}
-
 #undef __FUNCT__
 #define __FUNCT__ "RHSJacobian"
 /*
@@ -519,10 +496,11 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal ftime,Vec C,Mat *A,Mat *J,MatStructur
   DM             da;
   PetscErrorCode ierr;
   PetscInt       xi,Mx,xs,xm,He,he,V,v,I,i;
-  PetscReal      *row[3],*col[3];
+  PetscInt       row[3],col[3];
   PetscReal      hx,sx,x,val[6];
   Concentrations *c,*f;
   Vec            localC;
+  PetscReal      *rowstart,*colstart;
 
   PetscFunctionBeginUser;
   ierr = MatZeroEntries(*J);CHKERRQ(ierr);
@@ -572,36 +550,36 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal ftime,Vec C,Mat *A,Mat *J,MatStructur
     /* He clusters larger than 5 do not diffuse -- are immobile */
     for (He=1; He<PetscMin(N+1,6); He++) {
       /* f[xi].He[He] -=  ctx->HeDiffusion[He]*(-2.0*c[xi].He[He] + c[xi-1].He[He] + c[xi+1].He[He])*sx; */
-      row[0] = &f[xi].He[He];
-      col[0] = &c[xi-1].He[He];
-      col[1] = &c[xi].He[He];
-      col[2] = &c[xi+1].He[He];
+      row[0] = &f[xi].He[He] - rowstart;
+      col[0] = &c[xi-1].He[He] - colstart;
+      col[1] = &c[xi].He[He] - colstart;
+      col[2] = &c[xi+1].He[He] - colstart;
       val[0] = ctx->HeDiffusion[He]*sx;
       val[1] = -2.0*ctx->HeDiffusion[He]*sx;
       val[2] = ctx->HeDiffusion[He]*sx;
-      ierr = MatSetValuesP(*J,1,row,3,col,val);CHKERRQ(ierr);
+      ierr = MatSetValuesLocal(*J,1,row,3,col,val,ADD_VALUES);CHKERRQ(ierr);
     }
 
     /* V and I clusters ONLY of size 1 diffuse */
     /* f[xi].V[1] -=  ctx->VDiffusion[1]*(-2.0*c[xi].V[1] + c[xi-1].V[1] + c[xi+1].V[1])*sx; */
-    row[0] = &f[xi].V[1];
-    col[0] = &c[xi-1].V[1];
-    col[1] = &c[xi].V[1];
-    col[2] = &c[xi+1].V[1];
+    row[0] = &f[xi].V[1] - rowstart;
+    col[0] = &c[xi-1].V[1] - colstart;
+    col[1] = &c[xi].V[1] - colstart;
+    col[2] = &c[xi+1].V[1] - colstart;
     val[0] = ctx->VDiffusion[1]*sx;
     val[1] = -2.0*ctx->VDiffusion[1]*sx;
     val[2] = ctx->VDiffusion[1]*sx;
-    ierr = MatSetValuesP(*J,1,row,3,col,val);CHKERRQ(ierr);
+    ierr = MatSetValuesLocal(*J,1,row,3,col,val,ADD_VALUES);CHKERRQ(ierr);
 
     /* f[xi].I[1] -=  ctx->IDiffusion[1]*(-2.0*c[xi].I[1] + c[xi-1].I[1] + c[xi+1].I[1])*sx; */
-    row[0] = &f[xi].I[1];
-    col[0] = &c[xi-1].I[1];
-    col[1] = &c[xi].I[1];
-    col[2] = &c[xi+1].I[1];
+    row[0] = &f[xi].I[1] - rowstart;
+    col[0] = &c[xi-1].I[1] - colstart;
+    col[1] = &c[xi].I[1] - colstart;
+    col[2] = &c[xi+1].I[1] - colstart;
     val[0] = ctx->IDiffusion[1]*sx;
     val[1] = -2.0*ctx->IDiffusion[1]*sx;
     val[2] = ctx->IDiffusion[1]*sx;
-    ierr = MatSetValuesP(*J,1,row,3,col,val);CHKERRQ(ierr);
+    ierr = MatSetValuesLocal(*J,1,row,3,col,val,ADD_VALUES);CHKERRQ(ierr);
 
 
     /* Mixed He - V clusters are immobile  */
@@ -624,18 +602,18 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal ftime,Vec C,Mat *A,Mat *J,MatStructur
         /* f[xi].He[he]    += ctx->reactionScale*c[xi].He[he]*c[xi].He[He-he];*/
         /* f[xi].He[He-he] += ctx->reactionScale*c[xi].He[he]*c[xi].He[He-he];*/
 
-        row[0] = &f[xi].He[He];
-        row[1] = &f[xi].He[he];
-        row[2] = &f[xi].He[He-he];
-        col[0] = &c[xi].He[he];
-        col[1] = &c[xi].He[He-he];
+        row[0] = &f[xi].He[He] - rowstart;
+        row[1] = &f[xi].He[he] - rowstart;
+        row[2] = &f[xi].He[He-he] - rowstart;
+        col[0] = &c[xi].He[he] - colstart;
+        col[1] = &c[xi].He[He-he] - colstart;
         val[0] = ctx->reactionScale*c[xi].He[He-he];
         val[1] = ctx->reactionScale*c[xi].He[he];
         val[2] = -ctx->reactionScale*c[xi].He[He-he];
         val[3] = -ctx->reactionScale*c[xi].He[he];
         val[4] = -ctx->reactionScale*c[xi].He[He-he];
         val[5] = -ctx->reactionScale*c[xi].He[he];
-        ierr = MatSetValuesP(*J,3,row,2,col,val);CHKERRQ(ierr);
+        ierr = MatSetValuesLocal(*J,3,row,2,col,val,ADD_VALUES);CHKERRQ(ierr);
       }
     }
     /*   V[V]  +  V[v] ->  V[V+v]  */
@@ -644,18 +622,18 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal ftime,Vec C,Mat *A,Mat *J,MatStructur
         /* f[xi].V[V] -= ctx->reactionScale*c[xi].V[v]*c[xi].V[V-v];*/
         /* f[xi].V[v]   += ctx->reactionScale*c[xi].V[v]*c[xi].V[V-v];*/
         /* f[xi].V[V-v] += ctx->reactionScale*c[xi].V[v]*c[xi].V[V-v];*/
-        row[0] = &f[xi].V[V];
-        row[1] = &f[xi].V[v];
-        row[2] = &f[xi].V[V-v];
-        col[0] = &c[xi].V[v];
-        col[1] = &c[xi].V[V-v];
+        row[0] = &f[xi].V[V] - rowstart;
+        row[1] = &f[xi].V[v] - rowstart;
+        row[2] = &f[xi].V[V-v] - rowstart;
+        col[0] = &c[xi].V[v] - colstart;
+        col[1] = &c[xi].V[V-v] - colstart;
         val[0] = ctx->reactionScale*c[xi].V[V-v];
         val[1] = ctx->reactionScale*c[xi].V[v];
         val[2] = -ctx->reactionScale*c[xi].V[V-v];
         val[3] = -ctx->reactionScale*c[xi].V[v];
         val[4] = -ctx->reactionScale*c[xi].V[V-v];
         val[5] = -ctx->reactionScale*c[xi].V[v];
-        ierr = MatSetValuesP(*J,3,row,2,col,val);CHKERRQ(ierr);
+        ierr = MatSetValuesLocal(*J,3,row,2,col,val,ADD_VALUES);CHKERRQ(ierr);
       }
     }
     /*   I[I] +  I[i] -> I[I+i] */
@@ -664,36 +642,36 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal ftime,Vec C,Mat *A,Mat *J,MatStructur
         /* f[xi].I[I] -= ctx->reactionScale*c[xi].I[i]*c[xi].I[I-i];*/
         /* f[xi].I[i]   += ctx->reactionScale*c[xi].I[i]*c[xi].I[I-i];*/
         /* f[xi].I[I-i] += ctx->reactionScale*c[xi].I[i]*c[xi].I[I-i];*/
-        row[0] = &f[xi].I[I];
-        row[1] = &f[xi].I[i];
-        row[2] = &f[xi].I[I-i];
-        col[0] = &c[xi].I[i];
-        col[1] = &c[xi].I[I-i];
+        row[0] = &f[xi].I[I] - rowstart;
+        row[1] = &f[xi].I[i] - rowstart;
+        row[2] = &f[xi].I[I-i] - rowstart;
+        col[0] = &c[xi].I[i] - colstart;
+        col[1] = &c[xi].I[I-i] - colstart;
         val[0] = ctx->reactionScale*c[xi].I[I-i];
         val[1] = ctx->reactionScale*c[xi].I[i];
         val[2] = -ctx->reactionScale*c[xi].I[I-i];
         val[3] = -ctx->reactionScale*c[xi].I[i];
         val[4] = -ctx->reactionScale*c[xi].I[I-i];
         val[5] = -ctx->reactionScale*c[xi].I[i];
-        ierr = MatSetValuesP(*J,3,row,2,col,val);CHKERRQ(ierr);
+        ierr = MatSetValuesLocal(*J,3,row,2,col,val,ADD_VALUES);CHKERRQ(ierr);
       }
     }
     /* He[1] +  V[1]  ->  He[1]-V[1] */
     /*f[xi].HeV[1][1] -= 1000*ctx->reactionScale*c[xi].He[1]*c[xi].V[1];*/
     /*f[xi].He[1] += 1000*ctx->reactionScale*c[xi].He[1]*c[xi].V[1];*/
     /*f[xi].V[1]  += 1000*ctx->reactionScale*c[xi].He[1]*c[xi].V[1];*/
-    row[0] = &f[xi].HeV[1][1];
-    row[1] = &f[xi].He[1];
-    row[2] = &f[xi].V[1];
-    col[0] = &c[xi].He[1];
-    col[1] = &c[xi].V[1];
+    row[0] = &f[xi].HeV[1][1] - rowstart;
+    row[1] = &f[xi].He[1] - rowstart;
+    row[2] = &f[xi].V[1] - rowstart;
+    col[0] = &c[xi].He[1] - colstart;
+    col[1] = &c[xi].V[1] - colstart;
     val[0] = 1000*ctx->reactionScale*c[xi].V[1];
     val[1] = 1000*ctx->reactionScale*c[xi].He[1];
     val[2] = -1000*ctx->reactionScale*c[xi].V[1];
     val[3] = -1000*ctx->reactionScale*c[xi].He[1];
     val[4] = -1000*ctx->reactionScale*c[xi].V[1];
     val[5] = -1000*ctx->reactionScale*c[xi].He[1];
-    ierr = MatSetValuesP(*J,3,row,2,col,val);CHKERRQ(ierr);
+    ierr = MatSetValuesLocal(*J,3,row,2,col,val,ADD_VALUES);CHKERRQ(ierr);
 
     /*  He[He]-V[V] + He[he] -> He[He+he]-V[V]  */
     for (He=1; He<N; He++) {
@@ -702,18 +680,18 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal ftime,Vec C,Mat *A,Mat *J,MatStructur
           /* f[xi].HeV[He+he][V] -= ctx->reactionScale*c[xi].HeV[He][V]*c[xi].He[he];*/
           /* f[xi].He[he]     += ctx->reactionScale*c[xi].HeV[He][V]*c[xi].He[he];*/
           /* f[xi].HeV[He][V] += ctx->reactionScale*c[xi].HeV[He][V]*c[xi].He[he];*/
-          row[0] = &f[xi].HeV[He+he][V];
-          row[1] = &f[xi].He[he];
-          row[2] = &f[xi].HeV[He][V];
-          col[0] = &c[xi].HeV[He][V];
-          col[1] = &c[xi].He[he];
+          row[0] = &f[xi].HeV[He+he][V] - rowstart;
+          row[1] = &f[xi].He[he] - rowstart;
+          row[2] = &f[xi].HeV[He][V] - rowstart;
+          col[0] = &c[xi].HeV[He][V] - colstart;
+          col[1] = &c[xi].He[he] - colstart;
           val[0] = ctx->reactionScale*c[xi].He[he];
           val[1] = ctx->reactionScale*c[xi].HeV[He][V];
           val[2] = -ctx->reactionScale*c[xi].He[he];
           val[3] = -ctx->reactionScale*c[xi].HeV[He][V];
           val[4] = -ctx->reactionScale*c[xi].He[he];
           val[5] = -ctx->reactionScale*c[xi].HeV[He][V];
-          ierr = MatSetValuesP(*J,3,row,2,col,val);CHKERRQ(ierr);
+          ierr = MatSetValuesLocal(*J,3,row,2,col,val,ADD_VALUES);CHKERRQ(ierr);
         }
       }
     }
@@ -725,18 +703,18 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal ftime,Vec C,Mat *A,Mat *J,MatStructur
         /* f[xi].HeV[He][V+v] -= ctx->reactionScale*c[xi].HeV[He][V]*c[xi].V[v];*/
         /* f[xi].V[v]       += ctx->reactionScale*c[xi].HeV[He][V]*c[xi].V[v];*/
         /* f[xi].HeV[He][V] += ctx->reactionScale*c[xi].HeV[He][V]*c[xi].V[v];*/
-        row[0] = &f[xi].HeV[He][V+v];
-        row[1] = &f[xi].V[v];
-        row[2] = &f[xi].HeV[He][V];
-        col[0] = &c[xi].HeV[He][V];
-        col[1] = &c[xi].V[v];
+        row[0] = &f[xi].HeV[He][V+v] - rowstart;
+        row[1] = &f[xi].V[v] - rowstart;
+        row[2] = &f[xi].HeV[He][V] - rowstart;
+        col[0] = &c[xi].HeV[He][V] - colstart;
+        col[1] = &c[xi].V[v] - colstart;
         val[0] = ctx->reactionScale*c[xi].V[v];
         val[1] = ctx->reactionScale*c[xi].HeV[He][V];
         val[2] = -ctx->reactionScale*c[xi].V[v];
         val[3] = -ctx->reactionScale*c[xi].HeV[He][V];
         val[4] = -ctx->reactionScale*c[xi].V[v];
         val[5] = -ctx->reactionScale*c[xi].HeV[He][V];
-        ierr = MatSetValuesP(*J,3,row,2,col,val);CHKERRQ(ierr);
+        ierr = MatSetValuesLocal(*J,3,row,2,col,val,ADD_VALUES);CHKERRQ(ierr);
      }
     }
     /*  He[He]-V[V]  + He[he]-V[v] -> He[He+he][V+v]  */
@@ -749,35 +727,35 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal ftime,Vec C,Mat *A,Mat *J,MatStructur
         /*f[xi].V[V-I] -= ctx->reactionScale*c[xi].V[V]*c[xi].I[I];*/
         /*f[xi].V[V] += ctx->reactionScale*c[xi].V[V]*c[xi].I[I];*/
         /*f[xi].I[I] += ctx->reactionScale*c[xi].V[V]*c[xi].I[I];*/
-        row[0] = &f[xi].V[V-I];
-        row[1] = &f[xi].V[V];
-        row[2] = &f[xi].I[I];
-        col[0] = &c[xi].V[V];
-        col[1] = &c[xi].I[I];
+        row[0] = &f[xi].V[V-I] - rowstart;
+        row[1] = &f[xi].V[V] - rowstart;
+        row[2] = &f[xi].I[I] - rowstart;
+        col[0] = &c[xi].V[V] - colstart;
+        col[1] = &c[xi].I[I]  - colstart;
         val[0] = ctx->reactionScale*c[xi].I[I];
         val[1] = ctx->reactionScale*c[xi].V[V];
         val[2] = -ctx->reactionScale*c[xi].I[I];
         val[3] = -ctx->reactionScale*c[xi].V[V];
         val[4] = -ctx->reactionScale*c[xi].I[I];
         val[5] = -ctx->reactionScale*c[xi].V[V];
-        ierr = MatSetValuesP(*J,3,row,2,col,val);CHKERRQ(ierr);
+        ierr = MatSetValuesLocal(*J,3,row,2,col,val,ADD_VALUES);CHKERRQ(ierr);
       }
       for (I=V+1; I<N+1; I++) {
         /* f[xi].I[I-V] -= ctx->reactionScale*c[xi].V[V]*c[xi].I[I];*/
         /*  f[xi].V[V] += ctx->reactionScale*c[xi].V[V]*c[xi].I[I];*/
         /*  f[xi].I[I] += ctx->reactionScale*c[xi].V[V]*c[xi].I[I];*/
-        row[0] = &f[xi].I[I-V];
-        row[1] = &f[xi].V[V];
-        row[2] = &f[xi].I[I];
-        col[0] = &c[xi].V[V];
-        col[1] = &c[xi].I[I];
+        row[0] = &f[xi].I[I-V] - rowstart;
+        row[1] = &f[xi].V[V] - rowstart;
+        row[2] = &f[xi].I[I] - rowstart;
+        col[0] = &c[xi].V[V] - colstart;
+        col[1] = &c[xi].I[I] - colstart;
         val[0] = ctx->reactionScale*c[xi].I[I];
         val[1] = ctx->reactionScale*c[xi].V[V];
         val[2] = -ctx->reactionScale*c[xi].I[I];
         val[3] = -ctx->reactionScale*c[xi].V[V];
         val[4] = -ctx->reactionScale*c[xi].I[I];
         val[5] = -ctx->reactionScale*c[xi].V[V];
-        ierr = MatSetValuesP(*J,3,row,2,col,val);CHKERRQ(ierr);
+        ierr = MatSetValuesLocal(*J,3,row,2,col,val,ADD_VALUES);CHKERRQ(ierr);
       }
     }
 
@@ -792,82 +770,82 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal ftime,Vec C,Mat *A,Mat *J,MatStructur
       /*f[xi].He[He-1] -= ctx->dissociationScale*c[xi].He[He];
         f[xi].He[1]    -= ctx->dissociationScale*c[xi].He[He];
         f[xi].He[He]   += ctx->dissociationScale*c[xi].He[He];*/
-      row[0] = &f[xi].He[He-1];
-      row[1] = &f[xi].He[1];
-      row[2] = &f[xi].He[He];
-      col[0] = &c[xi].He[He];
+      row[0] = &f[xi].He[He-1] - rowstart;
+      row[1] = &f[xi].He[1] - rowstart;
+      row[2] = &f[xi].He[He] - rowstart;
+      col[0] = &c[xi].He[He] - colstart;
       val[0] = ctx->dissociationScale;
       val[1] = ctx->dissociationScale;
       val[2] = -ctx->dissociationScale;
-      ierr = MatSetValuesP(*J,3,row,1,col,val);CHKERRQ(ierr);
+      ierr = MatSetValuesLocal(*J,3,row,1,col,val,ADD_VALUES);CHKERRQ(ierr);
     }
     /*   V[V] ->  V[V-1] + V[1] */
     for (V=2; V<N+1; V++) {
       /*f[xi].V[V-1] -= ctx->dissociationScale*c[xi].V[V];
         f[xi].V[1]   -= ctx->dissociationScale*c[xi].V[V];
         f[xi].V[V]   += ctx->dissociationScale*c[xi].V[V];*/
-      row[0] = &f[xi].V[V-1];
-      row[1] = &f[xi].V[1];
-      row[2] = &f[xi].V[V];
-      col[0] = &c[xi].V[V];
+      row[0] = &f[xi].V[V-1] - rowstart;
+      row[1] = &f[xi].V[1] - rowstart;
+      row[2] = &f[xi].V[V] - rowstart;
+      col[0] = &c[xi].V[V] - colstart;
       val[0] = ctx->dissociationScale;
       val[1] = ctx->dissociationScale;
       val[2] = -ctx->dissociationScale;
-      ierr = MatSetValuesP(*J,3,row,1,col,val);CHKERRQ(ierr);
+      ierr = MatSetValuesLocal(*J,3,row,1,col,val,ADD_VALUES);CHKERRQ(ierr);
     }
     /*   I[I] ->  I[I-1] + I[1] */
     for (I=2; I<N+1; I++) {
       /*f[xi].I[I-1] -= ctx->dissociationScale*c[xi].I[I];
         f[xi].I[1]   -= ctx->dissociationScale*c[xi].I[I];
         f[xi].I[I]   += ctx->dissociationScale*c[xi].I[I];*/
-      row[0] = &f[xi].I[I-1];
-      row[1] = &f[xi].I[1];
-      row[2] = &f[xi].I[I];
-      col[0] = &c[xi].I[I];
+      row[0] = &f[xi].I[I-1] - rowstart;
+      row[1] = &f[xi].I[1] - rowstart;
+      row[2] = &f[xi].I[I] - rowstart;
+      col[0] = &c[xi].I[I] - colstart;
       val[0] = ctx->dissociationScale;
       val[1] = ctx->dissociationScale;
       val[2] = -ctx->dissociationScale;
-      ierr = MatSetValuesP(*J,3,row,1,col,val);CHKERRQ(ierr);
+      ierr = MatSetValuesLocal(*J,3,row,1,col,val,ADD_VALUES);CHKERRQ(ierr);
     }
     /* He[1]-V[1]  ->  He[1] + V[1] */
     /*f[xi].He[1]     -= 1000*ctx->dissociationScale*c[xi].HeV[1][1];
       f[xi].V[1]      -= 1000*ctx->dissociationScale*c[xi].HeV[1][1];
       f[xi].HeV[1][1] += 1000*ctx->dissociationScale*c[xi].HeV[1][1];*/
-    row[0] = &f[xi].He[1];
-    row[1] = &f[xi].V[1];
-    row[2] = &f[xi].HeV[1][1];
-    col[0] = &c[xi].HeV[1][1];
+    row[0] = &f[xi].He[1] - rowstart;
+    row[1] = &f[xi].V[1] - rowstart;
+    row[2] = &f[xi].HeV[1][1] - rowstart;
+    col[0] = &c[xi].HeV[1][1] - colstart;
     val[0] = 1000*ctx->dissociationScale;
     val[1] = 1000*ctx->dissociationScale;
     val[2] = -1000*ctx->dissociationScale;
-    ierr = MatSetValuesP(*J,3,row,1,col,val);CHKERRQ(ierr);
+    ierr = MatSetValuesLocal(*J,3,row,1,col,val,ADD_VALUES);CHKERRQ(ierr);
     /*   He[He]-V[1] ->  He[He] + V[1]  */
     for (He=2; He<N+1; He++) {
       /*f[xi].He[He]     -= 1000*ctx->dissociationScale*c[xi].HeV[He][1];
         f[xi].V[1]       -= 1000*ctx->dissociationScale*c[xi].HeV[He][1];
         f[xi].HeV[He][1] += 1000*ctx->dissociationScale*c[xi].HeV[He][1];*/
-      row[0] = &f[xi].He[He];
-      row[1] = &f[xi].V[1];
-      row[2] = &f[xi].HeV[He][1];
-      col[0] = &c[xi].HeV[He][1];
+      row[0] = &f[xi].He[He] - rowstart;
+      row[1] = &f[xi].V[1] - rowstart;
+      row[2] = &f[xi].HeV[He][1] - rowstart;
+      col[0] = &c[xi].HeV[He][1] - colstart;
       val[0] = 1000*ctx->dissociationScale;
       val[1] = 1000*ctx->dissociationScale;
       val[2] = -1000*ctx->dissociationScale;
-      ierr = MatSetValuesP(*J,3,row,1,col,val);CHKERRQ(ierr);
+      ierr = MatSetValuesLocal(*J,3,row,1,col,val,ADD_VALUES);CHKERRQ(ierr);
     }
     /*   He[1]-V[V] ->  He[1] + V[V]  */
     for (V=2; V<N+1; V++) {
       /*f[xi].He[1]     -= 1000*ctx->dissociationScale*c[xi].HeV[1][V];
         f[xi].V[V]      -= 1000*ctx->dissociationScale*c[xi].HeV[1][V];
         f[xi].HeV[1][V] += 1000*ctx->dissociationScale*c[xi].HeV[1][V];*/
-      row[0] = &f[xi].He[1];
-      row[1] = &f[xi].V[V];
-      row[2] = &f[xi].HeV[1][V];
-      col[0] = &c[xi].HeV[1][V];
+      row[0] = &f[xi].He[1] - rowstart;
+      row[1] = &f[xi].V[V] - rowstart;
+      row[2] = &f[xi].HeV[1][V] - rowstart;
+      col[0] = &c[xi].HeV[1][V] - colstart;
       val[0] = 1000*ctx->dissociationScale;
       val[1] = 1000*ctx->dissociationScale;
       val[2] = -1000*ctx->dissociationScale;
-      ierr = MatSetValuesP(*J,3,row,1,col,val);CHKERRQ(ierr);
+      ierr = MatSetValuesLocal(*J,3,row,1,col,val,ADD_VALUES);CHKERRQ(ierr);
     }
     /*   He[He]-V[V] ->  He[He-1]-V[V] + He[1]  */
     for (He=2; He<N+1; He++) {
@@ -875,14 +853,14 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal ftime,Vec C,Mat *A,Mat *J,MatStructur
         /*f[xi].He[1]        -= 1000*ctx->dissociationScale*c[xi].HeV[He][V];
           f[xi].HeV[He-1][V] -= 1000*ctx->dissociationScale*c[xi].HeV[He][V];
           f[xi].HeV[He][V]   += 1000*ctx->dissociationScale*c[xi].HeV[He][V];*/
-      row[0] = &f[xi].He[1];
-      row[1] = &f[xi].HeV[He-1][V];
-      row[2] = &f[xi].HeV[He][V];
-      col[0] = &c[xi].HeV[He][V];
+      row[0] = &f[xi].He[1] - rowstart;
+      row[1] = &f[xi].HeV[He-1][V] - rowstart;
+      row[2] = &f[xi].HeV[He][V] - rowstart;
+      col[0] = &c[xi].HeV[He][V] - colstart;
       val[0] = 1000*ctx->dissociationScale;
       val[1] = 1000*ctx->dissociationScale;
       val[2] = -1000*ctx->dissociationScale;
-      ierr = MatSetValuesP(*J,3,row,1,col,val);CHKERRQ(ierr);
+      ierr = MatSetValuesLocal(*J,3,row,1,col,val,ADD_VALUES);CHKERRQ(ierr);
       }
     }
     /*   He[He]-V[V] ->  He[He]-V[V-1] + V[1]  */
@@ -891,14 +869,14 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal ftime,Vec C,Mat *A,Mat *J,MatStructur
         /*f[xi].V[1]         -= 1000*ctx->dissociationScale*c[xi].HeV[He][V];
           f[xi].HeV[He][V-1] -= 1000*ctx->dissociationScale*c[xi].HeV[He][V];
           f[xi].HeV[He][V]   += 1000*ctx->dissociationScale*c[xi].HeV[He][V];*/
-      row[0] = &f[xi].V[1];
-      row[1] = &f[xi].HeV[He][V-1];
-      row[2] = &f[xi].HeV[He][V];
-      col[0] = &c[xi].HeV[He][V];
+      row[0] = &f[xi].V[1] - rowstart;
+      row[1] = &f[xi].HeV[He][V-1] - rowstart;
+      row[2] = &f[xi].HeV[He][V] - rowstart;
+      col[0] = &c[xi].HeV[He][V] - colstart;
       val[0] = 1000*ctx->dissociationScale;
       val[1] = 1000*ctx->dissociationScale;
       val[2] = -1000*ctx->dissociationScale;
-      ierr = MatSetValuesP(*J,3,row,1,col,val);CHKERRQ(ierr);
+      ierr = MatSetValuesLocal(*J,3,row,1,col,val,ADD_VALUES);CHKERRQ(ierr);
       }
     }
     /*   He[He]-V[V] ->  He[He]-V[V+1] + I[1]  */
@@ -907,14 +885,14 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal ftime,Vec C,Mat *A,Mat *J,MatStructur
         /*f[xi].HeV[He][V+1] -= 1000*ctx->dissociationScale*c[xi].HeV[He][V];
           f[xi].I[1]         -= 1000*ctx->dissociationScale*c[xi].HeV[He][V];
           f[xi].HeV[He][V]   += 1000*ctx->dissociationScale*c[xi].HeV[He][V];*/
-      row[0] = &f[xi].HeV[He][V+1];
-      row[1] = &f[xi].I[1];
-      row[2] = &f[xi].HeV[He][V];
-      col[0] = &c[xi].HeV[He][V];
+      row[0] = &f[xi].HeV[He][V+1] - rowstart;
+      row[1] = &f[xi].I[1] - rowstart;
+      row[2] = &f[xi].HeV[He][V] - rowstart;
+      col[0] = &c[xi].HeV[He][V] - colstart;
       val[0] = 1000*ctx->dissociationScale;
       val[1] = 1000*ctx->dissociationScale;
       val[2] = -1000*ctx->dissociationScale;
-      ierr = MatSetValuesP(*J,3,row,1,col,val);CHKERRQ(ierr);
+      ierr = MatSetValuesLocal(*J,3,row,1,col,val,ADD_VALUES);CHKERRQ(ierr);
       }
     }
   }
