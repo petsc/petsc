@@ -16,7 +16,7 @@ static char help[] = "Solves C_t =  -D*C_xx + F(C) + R(C) + D(C) from Brian Wirt
           -ts_max_steps maxsteps                  -- maximum number of time-steps to take
           -ts_final_time time                     -- maximum time to compute to
 
-    Rules for maximum number of He allowed for V in cluster
+    Rules for maximum number of He allowed for V in cluster are missing
 
 
 */
@@ -408,8 +408,6 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec C,Vec Cdot,Vec F,void *ptr)
       }
     }
 
-
-
     if (ctx->nodissociations) continue;
     /* -------------------------------------------------------------------------
      ---- Compute dissociation terms that removes an item from a cluster
@@ -474,7 +472,6 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec C,Vec Cdot,Vec F,void *ptr)
         f[xi].HeV[He][V]   += 1000*ctx->dissociationScale*c[xi].HeV[He][V];
       }
     }
-
   }
 
   /*
@@ -494,8 +491,6 @@ PetscReal  *rowstart,*colstart;
     Set values into a matrix using the virtual memory addresses of the rows and columns instead of the usual row and column indices.
 
     This is done because it is much easier to determine the virtual address of things like HeV[He][V] etc then the global matrix row or column associated with that location.
-
-    Note that GetDFill() should be rewritten using this paradgm to eliminate the horrid index chasing.
 
 */
 PETSC_STATIC_INLINE PetscErrorCode MatSetValuesP(Mat J,PetscInt nrow,PetscScalar **rows,PetscInt ncol, PetscScalar** cols,PetscScalar *vals)
@@ -786,8 +781,6 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal ftime,Vec C,Mat *A,Mat *J,MatStructur
       }
     }
 
-
-
     if (ctx->nodissociations) continue;
     /* -------------------------------------------------------------------------
      ---- Compute dissociation terms that removes an item from a cluster
@@ -924,7 +917,6 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal ftime,Vec C,Mat *A,Mat *J,MatStructur
       ierr = MatSetValuesP(*J,3,row,1,col,val);CHKERRQ(ierr);
       }
     }
-
   }
 
   /*
@@ -947,10 +939,16 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal ftime,Vec C,Mat *A,Mat *J,MatStructur
 
 #undef __FUNCT__
 #define __FUNCT__ "GetDfill"
+/*
+    Determines the nonzero structure within the diagonal blocks of the Jacobian that represent coupling resulting from reactions and
+    dissasociations of the clusters
+
+    The coupling between the blocks is very simple and is due to the diffusion of a few terms.
+*/
 PetscErrorCode GetDfill(PetscInt *dfill, void *ptr)
 {
   AppCtx         *ctx = (AppCtx*) ptr;
-  PetscInt       He,he,V,v,I,i,dof = 3*N+N*N,reactants[3],row,col1,col2,j,k,rows[3],cols[2];
+  PetscInt       He,he,V,v,I,i,dof = 3*N+N*N,j,k,rows[3],cols[2];
   Concentrations *c;
   PetscScalar    *idxstart;
   PetscErrorCode ierr;
@@ -961,6 +959,10 @@ PetscErrorCode GetDfill(PetscInt *dfill, void *ptr)
   }
 
   if (!ctx->noreactions) {
+    /*
+       c is never used except for computing offsets between variables which are used to fill the non-zero
+       structure of the matrix
+    */
     ierr     = PetscMalloc(sizeof(Concentrations),&c);CHKERRQ(ierr);
     c        = (Concentrations*)(((PetscScalar*)c)-1);
     idxstart = (PetscScalar*)&c->He[1];
@@ -974,16 +976,11 @@ PetscErrorCode GetDfill(PetscInt *dfill, void *ptr)
        3   2  these last two are not needed in the sum since they repeat from above
        4   1  this is why he < (He/2) + 1            */
       for (he=1; he<(He/2)+1; he++) {
-        reactants[0] = he; reactants[1] = He-he; reactants[2] = He;
-        for (j=0; j<3; j++) {
-          row = reactants[j]; col1 = reactants[0]; col2 = reactants[1];
-          // dfill[(row-1)*dof + col1 - 1] = 1; dfill[(row-1)*dof + col2 - 1] = 1;
-        }
-        cols[0] = &c->He[he] - idxstart;
-        cols[1] = &c->He[He-he] - idxstart;
         rows[0] = &c->He[He] - idxstart;
         rows[1] = &c->He[he] - idxstart;
         rows[2] = &c->He[He-he] - idxstart;
+        cols[0] = &c->He[he] - idxstart;
+        cols[1] = &c->He[He-he] - idxstart;
         for (j=0; j<3; j++) {
           for (k=0; k<2; k++) {
             dfill[rows[j]*dof + cols[k]] = 1;
@@ -994,16 +991,11 @@ PetscErrorCode GetDfill(PetscInt *dfill, void *ptr)
     /*   V[V]  +  V[v] ->  V[V+v]  */
     for (V=2; V<N+1; V++) {
       for (v=1; v<(V/2)+1; v++) {
-        reactants[0] = N+v; reactants[1] = N+V-v; reactants[2] = N+V;
-        for (j=0; j<3; j++) {
-          row = reactants[j]; col1 = reactants[0]; col2 = reactants[1];
-          //    dfill[(row-1)*dof + col1 - 1] = 1; dfill[(row-1)*dof + col2 - 1] = 1;
-        }
-        cols[0] = &c->V[v] - idxstart;
-        cols[1] = &c->V[V-v] - idxstart;
         rows[0] = &c->V[V] - idxstart;
         rows[1] = &c->V[v] - idxstart;
         rows[2] = &c->V[V-v] - idxstart;
+        cols[0] = &c->V[v] - idxstart;
+        cols[1] = &c->V[V-v] - idxstart;
         for (j=0; j<3; j++) {
           for (k=0; k<2; k++) {
             dfill[rows[j]*dof + cols[k]] = 1;
@@ -1015,16 +1007,11 @@ PetscErrorCode GetDfill(PetscInt *dfill, void *ptr)
     /*   I[I] +  I[i] -> I[I+i] */
     for (I=2; I<N+1; I++) {
       for (i=1; i<(I/2)+1; i++) {
-        reactants[0] = 2*N+i; reactants[1] = 2*N+I-i; reactants[2] = 2*N+I;
-        for (j=0; j<3; j++) {
-          row = reactants[j]; col1 = reactants[0]; col2 = reactants[1];
-          //          dfill[(row-1)*dof + col1 - 1] = 1; dfill[(row-1)*dof + col2 - 1] = 1;
-        }
-        cols[0] = &c->I[i] - idxstart;
-        cols[1] = &c->I[I-i] - idxstart;
         rows[0] = &c->I[I] - idxstart;
         rows[1] = &c->I[i] - idxstart;
         rows[2] = &c->I[I-i] - idxstart;
+        cols[0] = &c->I[i] - idxstart;
+        cols[1] = &c->I[I-i] - idxstart;
         for (j=0; j<3; j++) {
           for (k=0; k<2; k++) {
             dfill[rows[j]*dof + cols[k]] = 1;
@@ -1034,16 +1021,11 @@ PetscErrorCode GetDfill(PetscInt *dfill, void *ptr)
     }
 
     /* He[1] +  V[1]  ->  He[1]-V[1] */
-    reactants[0] = 1; reactants[1] = N+1; reactants[2] = 3*N+1;
-    for (j=0; j<3; j++) {
-      row = reactants[j]; col1 = reactants[0]; col2 = reactants[1];
-      //      dfill[(row-1)*dof + col1 - 1] = 1; dfill[(row-1)*dof + col2 - 1] = 1;
-    }
-    cols[0] = &c->He[1] - idxstart;
-    cols[1] = &c->V[1] - idxstart;
     rows[0] = &c->HeV[1][1] - idxstart;
     rows[1] = &c->He[1] - idxstart;
     rows[2] = &c->V[1] - idxstart;
+    cols[0] = &c->He[1] - idxstart;
+    cols[1] = &c->V[1] - idxstart;
     for (j=0; j<3; j++) {
       for (k=0; k<2; k++) {
         dfill[rows[j]*dof + cols[k]] = 1;
@@ -1054,16 +1036,11 @@ PetscErrorCode GetDfill(PetscInt *dfill, void *ptr)
     for (He=1; He<N; He++) {
       for (V=1; V<N+1; V++) {
         for (he=1; he<N-He+1; he++) {
-          reactants[0] = 3*N + (He-1)*N + V; reactants[1] = he; reactants[2] = 3*N+(He+he-1)*N+V;
-          for (j=0; j<3; j++) {
-            row = reactants[j]; col1 = reactants[0]; col2 = reactants[1];
-            // dfill[(row-1)*dof + col1 - 1] = 1; dfill[(row-1)*dof + col2 - 1] = 1;
-          }
-          cols[0] = &c->HeV[He][V] - idxstart;
-          cols[1] = &c->He[he] - idxstart;
           rows[0] = &c->HeV[He+he][V] - idxstart;
           rows[1] = &c->He[he] - idxstart;
           rows[2] = &c->HeV[He][V] - idxstart;
+          cols[0] = &c->HeV[He][V] - idxstart;
+          cols[1] = &c->He[he] - idxstart;
           for (j=0; j<3; j++) {
             for (k=0; k<2; k++) {
               dfill[rows[j]*dof + cols[k]] = 1;
@@ -1076,16 +1053,11 @@ PetscErrorCode GetDfill(PetscInt *dfill, void *ptr)
     for (He=1; He<N+1; He++) {
       for (V=1; V<N; V++) {
         v = 1;
-          reactants[0] = 3*N+(He-1)*N+V; reactants[1] = N+v; reactants[2] = 3*N+(He-1)*N+V+v;
-          for (j=0; j<3; j++) {
-            row = reactants[j]; col1 = reactants[0]; col2 = reactants[1];
-            //dfill[(row-1)*dof + col1 - 1] = 1; dfill[(row-1)*dof + col2 - 1] = 1;
-          }
-          cols[0] = &c->HeV[He][V] - idxstart;
-          cols[1] = &c->V[v] - idxstart;
           rows[0] = &c->HeV[He][V+v] - idxstart;
           rows[1] = &c->V[v] - idxstart;
           rows[2] = &c->HeV[He][V] - idxstart;
+          cols[0] = &c->HeV[He][V] - idxstart;
+          cols[1] = &c->V[v] - idxstart;
           for (j=0; j<3; j++) {
             for (k=0; k<2; k++) {
               dfill[rows[j]*dof + cols[k]] = 1;
@@ -1100,16 +1072,11 @@ PetscErrorCode GetDfill(PetscInt *dfill, void *ptr)
     /*  V[V] + I[I]  ->   V[V-I] if V > I else I[I-V] */
     for (V=1; V<N+1; V++) {
       for (I=1; I<V; I++) {
-        reactants[0] = N+V; reactants[1] = 2*N+I; reactants[2] = N+V-I;
-        for (j=0; j<3; j++) {
-          row = reactants[j]; col1 = reactants[0]; col2 = reactants[1];
-          //          dfill[(row-1)*dof + col1 - 1] = 1; dfill[(row-1)*dof + col2 - 1] = 1;
-        }
-        cols[0] = &c->V[V] - idxstart;
-        cols[1] = &c->I[I] - idxstart;
         rows[0] = &c->V[V-I] - idxstart;
         rows[1] = &c->V[V] - idxstart;
         rows[2] = &c->I[I] - idxstart;
+        cols[0] = &c->V[V] - idxstart;
+        cols[1] = &c->I[I] - idxstart;
         for (j=0; j<3; j++) {
           for (k=0; k<2; k++) {
             dfill[rows[j]*dof + cols[k]] = 1;
@@ -1117,16 +1084,11 @@ PetscErrorCode GetDfill(PetscInt *dfill, void *ptr)
         }
       }
       for (I=V+1; I<N+1; I++) {
-        reactants[0] = N+V; reactants[1] = 2*N+I; reactants[2] = 2*N+I-V;
-        for (j=0; j<3; j++) {
-          row = reactants[j]; col1 = reactants[0]; col2 = reactants[1];
-          //  dfill[(row-1)*dof + col1 - 1] = 1; dfill[(row-1)*dof + col2 - 1] = 1;
-        }
-        cols[0] = &c->V[V] - idxstart;
-        cols[1] = &c->I[I] - idxstart;
         rows[0] = &c->I[I-V] - idxstart;
         rows[1] = &c->V[V] - idxstart;
         rows[2] = &c->I[I] - idxstart;
+        cols[0] = &c->V[V] - idxstart;
+        cols[1] = &c->I[I] - idxstart;
         for (j=0; j<3; j++) {
           for (k=0; k<2; k++) {
             dfill[rows[j]*dof + cols[k]] = 1;
@@ -1143,32 +1105,20 @@ PetscErrorCode GetDfill(PetscInt *dfill, void *ptr)
   if (!ctx->nodissociations) {
     /*   He[He] ->  He[He-1] + He[1] */
     for (He=2; He<N+1; He++) {
-      reactants[0] = He; reactants[1] = He-1; reactants[2] = 1;
-
-      for (j=0; j<3; j++) {
-        row = reactants[j]; col1 = reactants[0];
-        //        dfill[(row-1)*dof + col1 - 1] = 1;
-      }
-      cols[0] = &c->He[He] - idxstart;
       rows[0] = &c->He[He-1] - idxstart;
       rows[1] = &c->He[1] - idxstart;
       rows[2] = &c->He[He] - idxstart;
+      cols[0] = &c->He[He] - idxstart;
       for (j=0; j<3; j++) {
         dfill[rows[j]*dof + cols[0]] = 1;
       }
     }
     /*   V[V] ->  V[V-1] + V[1] */
     for (V=2; V<N+1; V++) {
-      reactants[0] = N+V; reactants[1] = N+V-1; reactants[2] = N+1;
-
-      for (j=0; j<3; j++) {
-        row = reactants[j]; col1 = reactants[0];
-        //        dfill[(row-1)*dof + col1 - 1] = 1;
-      }
-      cols[0] = &c->V[V] - idxstart;
       rows[0] = &c->V[V] - idxstart;
       rows[1] = &c->V[1] - idxstart;
       rows[2] = &c->V[V-1] - idxstart;
+      cols[0] = &c->V[V] - idxstart;
       for (j=0; j<3; j++) {
         dfill[rows[j]*dof + cols[0]] = 1;
       }
@@ -1176,48 +1126,30 @@ PetscErrorCode GetDfill(PetscInt *dfill, void *ptr)
 
     /*   I[I] ->  I[I-1] + I[1] */
     for (I=2; I<N+1; I++) {
-      reactants[0] = 2*N+I; reactants[1] = 2*N+I-1; reactants[2] = 2*N+1;
-
-      for (j=0; j<3; j++) {
-        row = reactants[j]; col1 = reactants[0];
-        //   dfill[(row-1)*dof + col1 - 1] = 1;
-      }
-      cols[0] = &c->I[I] - idxstart;
       rows[0] = &c->I[I] - idxstart;
       rows[1] = &c->I[1] - idxstart;
       rows[2] = &c->I[I-1] - idxstart;
+      cols[0] = &c->I[I] - idxstart;
       for (j=0; j<3; j++) {
         dfill[rows[j]*dof + cols[0]] = 1;
       }
     }
 
     /* He[1]-V[1]  ->  He[1] + V[1] */
-    reactants[0] = 3*N+1; reactants[1] = 1; reactants[2] = N+1;
-
-    for (j=0; j<3; j++) {
-      row = reactants[j]; col1 = reactants[0];
-      //      dfill[(row-1)*dof + col1 - 1] = 1;
-    }
-    cols[0] = &c->HeV[1][1] - idxstart;
     rows[0] = &c->He[1] - idxstart;
     rows[1] = &c->V[1] - idxstart;
     rows[2] = &c->HeV[1][1] - idxstart;
+    cols[0] = &c->HeV[1][1] - idxstart;
     for (j=0; j<3; j++) {
       dfill[rows[j]*dof + cols[0]] = 1;
     }
 
     /*   He[He]-V[1] ->  He[He] + V[1]  */
     for (He=2; He<N+1; He++) {
-      reactants[0] = 3*N+(He-1)*N+1; reactants[1] = He; reactants[2] = N+1;
-
-      for (j=0; j<3; j++) {
-        row = reactants[j]; col1 = reactants[0];
-        //      dfill[(row-1)*dof + col1 - 1] = 1;
-      }
-      cols[0] = &c->HeV[He][1] - idxstart;
       rows[0] = &c->He[He] - idxstart;
       rows[1] = &c->V[1] - idxstart;
       rows[2] = &c->HeV[He][1] - idxstart;
+      cols[0] = &c->HeV[He][1] - idxstart;
       for (j=0; j<3; j++) {
         dfill[rows[j]*dof + cols[0]] = 1;
       }
@@ -1225,16 +1157,10 @@ PetscErrorCode GetDfill(PetscInt *dfill, void *ptr)
 
     /*   He[1]-V[V] ->  He[1] + V[V]  */
     for (V=2; V<N+1; V++) {
-      reactants[0] = 3*N+V; reactants[1] = 1; reactants[2] = N+V;
-
-      for (j=0; j<3; j++) {
-        row = reactants[j]; col1 = reactants[0];
-        //        dfill[(row-1)*dof + col1 - 1] = 1;
-      }
-      cols[0] = &c->HeV[1][V] - idxstart;
       rows[0] = &c->He[1] - idxstart;
       rows[1] = &c->V[V] - idxstart;
       rows[2] = &c->HeV[1][V] - idxstart;
+      cols[0] = &c->HeV[1][V] - idxstart;
       for (j=0; j<3; j++) {
         dfill[rows[j]*dof + cols[0]] = 1;
       }
@@ -1243,16 +1169,10 @@ PetscErrorCode GetDfill(PetscInt *dfill, void *ptr)
     /*   He[He]-V[V] ->  He[He-1]-V[V] + He[1]  */
     for (He=2; He<N+1; He++) {
       for (V=2; V<N+1; V++) {
-        reactants[0] = 3*N+(He-1)*N+V; reactants[1] = 3*N+(He-2)*N+V; reactants[2] = 1;
-
-        for (j=0; j<3; j++) {
-          row = reactants[j]; col1 = reactants[0];
-          //          dfill[(row-1)*dof + col1 - 1] = 1;
-        }
-        cols[0] = &c->HeV[He][V] - idxstart;
         rows[0] = &c->He[1] - idxstart;
         rows[1] = &c->HeV[He][V] - idxstart;
         rows[2] = &c->HeV[He-1][V] - idxstart;
+        cols[0] = &c->HeV[He][V] - idxstart;
         for (j=0; j<3; j++) {
           dfill[rows[j]*dof + cols[0]] = 1;
         }
@@ -1262,16 +1182,10 @@ PetscErrorCode GetDfill(PetscInt *dfill, void *ptr)
     /*   He[He]-V[V] ->  He[He]-V[V-1] + V[1]  */
     for (He=2; He<N+1; He++) {
       for (V=2; V<N+1; V++) {
-        reactants[0] = 3*N+(He-1)*N+V; reactants[1] = 3*N+(He-1)*N+V-1; reactants[2] = N+1;
-
-        for (j=0; j<3; j++) {
-          row = reactants[j]; col1 = reactants[0];
-          //          dfill[(row-1)*dof + col1 - 1] = 1;
-        }
-        cols[0] = &c->HeV[He][V] - idxstart;
         rows[0] = &c->V[1] - idxstart;
         rows[1] = &c->HeV[He][V] - idxstart;
         rows[2] = &c->HeV[He][V-1] - idxstart;
+        cols[0] = &c->HeV[He][V] - idxstart;
         for (j=0; j<3; j++) {
           dfill[rows[j]*dof + cols[0]] = 1;
         }
@@ -1281,16 +1195,10 @@ PetscErrorCode GetDfill(PetscInt *dfill, void *ptr)
     /*   He[He]-V[V] ->  He[He]-V[V+1] + I[1]  */
     for (He=1; He<N+1; He++) {
       for (V=1; V<N; V++) {
-        reactants[0] = 3*N+(He-1)*N+V; reactants[1] = 3*N+(He-1)*N+V+1; reactants[2] = 2*N+1;
-
-        for (j=0; j<3; j++) {
-          row = reactants[j]; col1 = reactants[0];
-          //          dfill[(row-1)*dof + col1 - 1] = 1;
-        }
-        cols[0] = &c->HeV[He][V] - idxstart;
         rows[0] = &c->I[1] - idxstart;
         rows[1] = &c->HeV[He][V+1] - idxstart;
         rows[2] = &c->HeV[He][V] - idxstart;
+        cols[0] = &c->HeV[He][V] - idxstart;
         for (j=0; j<3; j++) {
           dfill[rows[j]*dof + cols[0]] = 1;
         }
@@ -1299,7 +1207,6 @@ PetscErrorCode GetDfill(PetscInt *dfill, void *ptr)
   }
   c    = (Concentrations*)(((PetscScalar*)c)+1);
   ierr = PetscFree(c);CHKERRQ(ierr);
-  PetscIntView((N*N + 3*N)*(N*N + 3*N),dfill,0);
   PetscFunctionReturn(0);
 }
 /* ------------------------------------------------------------------- */
