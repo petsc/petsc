@@ -142,10 +142,10 @@ int main(int argc,char **argv)
 
   ierr = PetscInitialize(&argc,&argv,(char *)0,help);CHKERRQ(ierr);
 
-  // Initialize the user context struct
+  /* Initialize the user context struct */
   ierr = Initialize_AppContext(&user);CHKERRQ(ierr);
 
-  // Fill in the user defined work context:
+  /* Fill in the user defined work context: */
   ierr = DMMoabCreateBoxMesh(PETSC_COMM_WORLD, 1, user->n, 1, &dm);CHKERRQ(ierr);
   ierr = DMMoabSetBlockSize(dm, user->nvars);CHKERRQ(ierr);
   ierr = DMMoabSetFields(dm, user->nvars, fields);CHKERRQ(ierr);
@@ -155,8 +155,8 @@ int main(int argc,char **argv)
   ierr = DMSetUp(dm);CHKERRQ(ierr);
 
   ierr = DMMoabGetInterface(dm, &mbImpl);CHKERRQ(ierr);
-  
-  //  Create timestepping solver context
+
+  /*  Create timestepping solver context */
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
   ierr = TSSetDM(ts, dm);CHKERRQ(ierr);
   ierr = TSSetType(ts,TSARKIMEX);CHKERRQ(ierr);
@@ -220,14 +220,14 @@ int main(int argc,char **argv)
     ierr = DMMoabOutput(dm, "ex2.h5m", "");CHKERRQ(ierr);
   }
 
-  // Free work space.
-  // Free all PETSc related resources:
+  /* Free work space.
+     Free all PETSc related resources: */
   ierr = MatDestroy(&J);CHKERRQ(ierr);
   ierr = VecDestroy(&X);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
   ierr = DMDestroy(&dm);CHKERRQ(ierr);
 
-  // Free all MOAB related resources:
+  /* Free all MOAB related resources: */
   ierr = Destroy_AppContext(&user);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
@@ -313,7 +313,6 @@ PetscErrorCode FormIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat *J
   /* compute local element sizes - structured grid */
   hx = 1.0/user->n;
 
-//  ierr = DMMoabGetVertexDofsBlocked(dm, &dofs);CHKERRQ(ierr);
   const int& idl = dof_indices[0];
   const int& idr = dof_indices[1];
   const PetscScalar dxxL = user->alpha/hx,dxxR = -user->alpha/hx;
@@ -430,7 +429,6 @@ static PetscErrorCode FormIFunctionMOAB(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,v
   PetscReal       hx,vpos[2*3];
   PetscErrorCode  ierr;
   PetscInt        dof_indices[2],bc_indices[2];
-//  PetscInt        *dofs;
   const moab::EntityHandle *connect;
   PetscInt        vpere=2,nloc,ngh;
   PetscBool       elem_on_boundary;
@@ -446,7 +444,7 @@ static PetscErrorCode FormIFunctionMOAB(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,v
   /* get the essential MOAB mesh related quantities needed for FEM assembly */
   ierr = DMMoabGetInterface(dm, &mbImpl);CHKERRQ(ierr);
   ierr = DMMoabGetLocalElements(dm, &elocal);CHKERRQ(ierr);
-  ierr = DMMoabGetLocalSize(dm, &nloc, &ngh);
+  ierr = DMMoabGetLocalSize(dm, NULL, NULL, &nloc, &ngh);
 
   /* reset the residual vector */
   ierr = VecSet(F,0.0);CHKERRQ(ierr);
@@ -460,8 +458,6 @@ static PetscErrorCode FormIFunctionMOAB(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,v
   ierr = DMMoabVecGetArrayRead(dm, X, &x);CHKERRQ(ierr);
   ierr = DMMoabVecGetArrayRead(dm, Xdot, &xdot);CHKERRQ(ierr);
   ierr = DMMoabVecGetArray(dm, F, &f);CHKERRQ(ierr);
-
-//  ierr = DMMoabGetVertexDofsBlocked(dm, &dofs);CHKERRQ(ierr);
 
   /* loop over local elements */
   for(moab::Range::iterator iter = elocal.begin(); iter != elocal.end(); iter++) {
@@ -481,15 +477,13 @@ static PetscErrorCode FormIFunctionMOAB(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,v
 
     if (elem_on_boundary) {
       ierr = DMMoabGetDofsBlocked(dm, vpere, connect, bc_indices);CHKERRQ(ierr);
-      if (bc_indices[0] == 0) {
-        // Apply left BC
+      if (bc_indices[0] == 0) {      /* Apply left BC */
         f[idx_left].u = hx * (x[idx_left].u - user->leftbc.u);
         f[idx_left].v = hx * (x[idx_left].v - user->leftbc.v);
         f[idx_right].u += user->alpha*(x[idx_right].u-x[idx_left].u)/hx;
         f[idx_right].v += user->alpha*(x[idx_right].v-x[idx_left].v)/hx;
       }
-      else {
-        // Apply right BC
+      else {                        /* Apply right BC */
         f[idx_left].u += hx * xdot[idx_left].u + user->alpha*(x[idx_left].u - x[idx_right].u)/hx;
         f[idx_left].v += hx * xdot[idx_left].v + user->alpha*(x[idx_left].v - x[idx_right].v)/hx;
         f[idx_right].u = hx * (x[idx_right].u - user->rightbc.u);
@@ -504,7 +498,7 @@ static PetscErrorCode FormIFunctionMOAB(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,v
     }
   }
 
-  // Add tags on shared vertexes:
+  /* Restore data */
   ierr = DMMoabVecRestoreArrayRead(dm, X, &x);CHKERRQ(ierr);
   ierr = DMMoabVecRestoreArrayRead(dm, Xdot, &xdot);CHKERRQ(ierr);
   ierr = DMMoabVecRestoreArray(dm, F, &f);CHKERRQ(ierr);
@@ -522,20 +516,22 @@ static PetscErrorCode FormIFunctionMOAB(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,v
 static PetscErrorCode FormIFunctionGlobalBlocked(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ptr)
 {
   UserCtx             user = (UserCtx)ptr;
-  PetscInt            rank;
+  PetscInt            rank,xs;
   Field               *x,*xdot;
   Vec                 xltmp, xdtmp, xlocal,xdotlocal,flocal;
   PetscReal           hx;
   PetscErrorCode      ierr;
   DM                  dm;
-  PetscBool          elem_on_boundary;
+  PetscBool           elem_on_boundary;
 
-  PetscInt            dof_indices[2];
-  PetscInt            vpere=2;
+  PetscInt            dof_indices[2],gdof[2];
+  PetscInt            i,vpere=2;
   const moab::EntityHandle *connect;
-
   moab::Interface*  mbImpl;
   moab::Range       elocal;
+  PetscInt           *dofs;
+  const int& idl = dof_indices[0];
+  const int& idr = dof_indices[1];
 
   PetscFunctionBegin;
   hx = 1.0/user->n;
@@ -571,8 +567,8 @@ static PetscErrorCode FormIFunctionGlobalBlocked(TS ts,PetscReal t,Vec X,Vec Xdo
   ierr = DMGetLocalVector(dm,&flocal);CHKERRQ(ierr);
   ierr = VecSet(flocal, 0.0);CHKERRQ(ierr);
 
-  const int& idl = dof_indices[0];
-  const int& idr = dof_indices[1];
+  ierr = DMMoabGetOffset(dm,&xs);CHKERRQ(ierr);
+  ierr = DMMoabGetVertexDofsBlocked(dm, &dofs);CHKERRQ(ierr);
 
   /* Compute function over the locally owned part of the grid 
      Assemble the operator by looping over edges and computing
@@ -586,9 +582,9 @@ static PetscErrorCode FormIFunctionGlobalBlocked(TS ts,PetscReal t,Vec X,Vec Xdo
     ierr = DMMoabGetElementConnectivity(dm, ehandle, &vpere, &connect);CHKERRQ(ierr);
     if (vpere != 2) SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Only EDGE2 element bases are supported in the current example. Connectivity=%D.\n", vpere);
     
-    ierr = /*DMMoabGetDofsBlocked*/DMMoabGetDofsBlockedLocal(dm, vpere, connect, dof_indices);CHKERRQ(ierr);
-
-    // PetscPrintf(PETSC_COMM_SELF, "[%D] Element %D: Left %D\t Right %D\n", rank, ehandle, idl, idr);
+    ierr = DMMoabGetDofsBlockedLocal(dm, vpere, connect, dof_indices);CHKERRQ(ierr);
+    for (i=0; i<2; i++)
+      gdof[i] = dofs[dof_indices[i]];
 
     /* check if element is on the boundary */
     ierr = DMMoabIsEntityOnBoundary(dm,ehandle,&elem_on_boundary);CHKERRQ(ierr);
@@ -600,7 +596,7 @@ static PetscErrorCode FormIFunctionGlobalBlocked(TS ts,PetscReal t,Vec X,Vec Xdo
                                  hx/2 * xdot[idr].u + user->alpha * ( x[idr].u - x[idl].u ) / hx,
                                  hx/2 * xdot[idr].v + user->alpha * ( x[idr].v - x[idl].v ) / hx};
 
-        ierr = VecSetValuesBlocked(flocal, vpere, dof_indices, vals, ADD_VALUES);CHKERRQ(ierr);
+        ierr = VecSetValuesBlocked(flocal, vpere, gdof, vals, ADD_VALUES);CHKERRQ(ierr);
       }
       else {
         const double vals[4] = { hx/2 * xdot[idl].u + user->alpha * ( x[idl].u - x[idr].u ) / hx,
@@ -608,7 +604,7 @@ static PetscErrorCode FormIFunctionGlobalBlocked(TS ts,PetscReal t,Vec X,Vec Xdo
                                  hx * (x[idr].u - user->rightbc.u),
                                  hx * (x[idr].v - user->rightbc.v) };
 
-        ierr = VecSetValuesBlocked(flocal, vpere, dof_indices, vals, ADD_VALUES);CHKERRQ(ierr);
+        ierr = VecSetValuesBlocked(flocal, vpere, gdof, vals, ADD_VALUES);CHKERRQ(ierr);
       }
     }
     else {
@@ -617,7 +613,7 @@ static PetscErrorCode FormIFunctionGlobalBlocked(TS ts,PetscReal t,Vec X,Vec Xdo
                                hx/2 * xdot[idr].u + user->alpha * (x[idr].u - x[idl].u)/ hx,
                                hx/2 * xdot[idr].v + user->alpha * (x[idr].v - x[idl].v)/ hx };
 
-      ierr = VecSetValuesBlocked(flocal, vpere, dof_indices, vals, ADD_VALUES);CHKERRQ(ierr);
+      ierr = VecSetValuesBlocked(flocal, vpere, gdof, vals, ADD_VALUES);CHKERRQ(ierr);
     }
   }
 
@@ -637,9 +633,11 @@ static PetscErrorCode FormIFunctionGlobalBlocked(TS ts,PetscReal t,Vec X,Vec Xdo
   ierr = DMLocalToGlobalBegin(dm,flocal,ADD_VALUES,F);CHKERRQ(ierr);
   ierr = DMLocalToGlobalEnd(dm,flocal,ADD_VALUES,F);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(dm, &flocal);CHKERRQ(ierr);
-
-  ierr = VecAssemblyBegin(F);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(F);CHKERRQ(ierr);
+  if (user->debug) {
+    PetscPrintf(PETSC_COMM_WORLD,"FormIFunctionGlobalBlocked:: PRINTING RESIDUAL\n");
+    VecView(F,0);
+    std::cin.get();
+  }
   PetscFunctionReturn(0);
 }
 
