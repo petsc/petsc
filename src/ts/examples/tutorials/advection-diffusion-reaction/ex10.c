@@ -24,11 +24,15 @@ static char help[] = "Solves C_t =  -D*C_xx + F(C) + R(C) + D(C) from Brian Wirt
 #include <petscdmda.h>
 #include <petscts.h>
 
-/*    Hard wire the number of cluster sizes for He, V, and I */
-#define N 3
+/*    Hard wire the number of cluster sizes for He, V, and I, and He-V */
+#define NHe  3
+#define NV   3
+#define NI   3
+#define NHeV 3
+
 
 /*
-     Define all the concentrations (there is one of these unions at each grid point)
+     Define all the concentrations (there is one of these structs at each grid point)
 
       He[He] represents the clusters of pure Helium of size He
       V[V] the Vacencies of size V,
@@ -37,17 +41,52 @@ static char help[] = "Solves C_t =  -D*C_xx + F(C) + R(C) + D(C) from Brian Wirt
 
       The variables He, V, I are always used to index into the concentrations of He, V, and I respectively
       Note that unlike in traditional C code the indices for He[], V[] and I[] run from 1 to N, NOT 0 to N-1
-      (the use of the union below "tricks" the C compiler to allow the indices to start at 1.)
 
 */
 typedef struct {
-  PetscScalar He[N];
-  PetscScalar V[N];
-  union {
-    PetscScalar I[N];
-    PetscScalar HeV[N+1][N]; /* actual size is N by N, the N+1 is there only to "trick" the compiler to have indices start at 1.*/
-  };
+  PetscScalar He[NHe];
+  PetscScalar V[NV];
+  PetscScalar I[NI];
+  PetscScalar HeV[NHeV][NHeV];
 } Concentrations;
+
+#undef __FUNCT__
+#define __FUNCT__ "cHeVCreate"
+PetscErrorCode cHeVCreate(PetscReal ***cHeV)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscMalloc(NHeV*sizeof(PetscScalar),cHeV);CHKERRQ(ierr);
+  (*cHeV)--;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "cHeVInitialize"
+PetscErrorCode cHeVInitialize(PetscScalar *start,PetscReal **cHeV)
+{
+  PetscInt       i;
+
+  PetscFunctionBegin;
+  cHeV[1] = start - 1 + NHe + NV + NI;
+  for (i=1; i<NHeV; i++) {
+    cHeV[i+1] = cHeV[i] + NHeV;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "cHeVDestroy"
+PetscErrorCode cHeVDestroy(PetscReal **cHeV)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  cHeV++;
+  ierr = PetscFree(cHeV);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 /*
      Holds problem specific options and data
@@ -79,7 +118,7 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
   DM             da;                  /* manages the grid data */
   AppCtx         ctx;                 /* holds problem specific paramters */
-  PetscInt       He,dof = 3*N+N*N,*ofill,*dfill;
+  PetscInt       He,dof = NHe + NV + NI + NHeV*NHeV,*ofill,*dfill;
   char           filename[PETSC_MAX_PATH_LEN];
   PetscBool      flg;
 
@@ -125,8 +164,8 @@ int main(int argc,char **argv)
   ierr = PetscMemzero(ofill,dof*dof*sizeof(PetscInt));CHKERRQ(ierr);
   ierr = PetscMemzero(dfill,dof*dof*sizeof(PetscInt));CHKERRQ(ierr);
 
-  for (He=0; He<PetscMin(N,5); He++) ofill[He*dof + He] = 1;
-  ofill[N*dof + N] = ofill[2*N*dof + 2*N] = 1;
+  for (He=0; He<PetscMin(NHe,5); He++) ofill[He*dof + He] = 1;
+  ofill[NHe*dof + NHe] = ofill[(NHe+NV)*dof + NHe + NV] = 1;
 
   ierr = GetDfill(dfill,&ctx);CHKERRQ(ierr);
   ierr = DMDASetBlockFills(da,dfill,ofill);CHKERRQ(ierr);
@@ -186,7 +225,7 @@ PetscErrorCode InitialConditions(DM da,Vec C)
   PetscErrorCode ierr;
   PetscInt       i,I,He,V,xs,xm,Mx,cnt = 0;
   Concentrations *c;
-  PetscReal      hx,x;
+  PetscReal      hx,x,**cHeV;
   char           string[16];
 
   PetscFunctionBeginUser;
@@ -194,20 +233,20 @@ PetscErrorCode InitialConditions(DM da,Vec C)
   hx   = 1.0/(PetscReal)(Mx-1);
 
   /* Name each of the concentrations */
-  for (He=1; He<N+1; He++) {
+  for (He=1; He<NHe+1; He++) {
     ierr = PetscSNPrintf(string,16,"%d-He",He);CHKERRQ(ierr);
     ierr = DMDASetFieldName(da,cnt++,string);CHKERRQ(ierr);
   }
-  for (V=1; V<N+1; V++) {
+  for (V=1; V<NV+1; V++) {
     ierr = PetscSNPrintf(string,16,"%d-V",V);CHKERRQ(ierr);
     ierr = DMDASetFieldName(da,cnt++,string);CHKERRQ(ierr);
   }
-  for (I=1; I<N+1; I++) {
+  for (I=1; I<NI+1; I++) {
     ierr = PetscSNPrintf(string,16,"%d-I",I);CHKERRQ(ierr);
     ierr = DMDASetFieldName(da,cnt++,string);CHKERRQ(ierr);
   }
-  for (He=1; He<N+1; He++) {
-    for (V=1; V<N+1; V++) {
+  for (He=1; He<NHeV+1; He++) {
+    for (V=1; V<NHeV+1; V++) {
       ierr = PetscSNPrintf(string,16,"%d-He-%d-V",He,V);CHKERRQ(ierr);
       ierr = DMDASetFieldName(da,cnt++,string);CHKERRQ(ierr);
     }
@@ -228,15 +267,18 @@ PetscErrorCode InitialConditions(DM da,Vec C)
   /*
      Compute function over the locally owned part of the grid
   */
+  ierr = cHeVCreate(&cHeV);CHKERRQ(ierr);
   for (i=xs; i<xs+xm; i++) {
     x = i*hx;
-    for (He=1; He<N+1; He++) c[i].He[He] = 0.0;
-    for (V=1; V<N+1; V++)    c[i].V[V]   = 1.0;
-    for (I=1; I<N+1; I++)    c[i].I[I]   = 1.0;
-    for (He=1; He<N+1; He++) {
-      for (V=1; V<N+1; V++)  c[i].HeV[He][V] = 0.0;
+    for (He=1; He<NHe+1; He++) c[i].He[He] = 0.0;
+    for (V=1;  V<NV+1;   V++)  c[i].V[V]   = 1.0;
+    for (I=1; I <NI+1;   I++)  c[i].I[I]   = 1.0;
+    ierr = cHeVInitialize(&c[i].He[1],cHeV);CHKERRQ(ierr);
+    for (He=1; He<NHeV+1; He++) {
+      for (V=1; V<NHeV+1; V++)  cHeV[He][V] = 0.0;
     }
   }
+  ierr = cHeVDestroy(cHeV);CHKERRQ(ierr);
 
   /*
      Restore vectors
@@ -266,15 +308,17 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec C,Vec Cdot,Vec F,void *ptr)
   DM             da;
   PetscErrorCode ierr;
   PetscInt       xi,Mx,xs,xm,He,he,V,v,I,i;
-  PetscReal      hx,sx,x;
+  PetscReal      hx,sx,x,**cHeV,**fHeV;
   Concentrations *c,*f;
   Vec            localC;
-
+ 
   PetscFunctionBeginUser;
   ierr = TSGetDM(ts,&da);CHKERRQ(ierr);
   ierr = DMGetLocalVector(da,&localC);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
   hx   = 8.0/(PetscReal)(Mx-1); sx = 1.0/(hx*hx);
+  ierr = cHeVCreate(&cHeV);CHKERRQ(ierr);
+  ierr = cHeVCreate(&fHeV);CHKERRQ(ierr);
 
   /*
        F  = Cdot +  all the diffusion and reaction terms added below
@@ -314,7 +358,7 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec C,Vec Cdot,Vec F,void *ptr)
      ---- Compute diffusion over the locally owned part of the grid
     */
     /* He clusters larger than 5 do not diffuse -- are immobile */
-    for (He=1; He<PetscMin(N+1,6); He++) {
+    for (He=1; He<PetscMin(NHe+1,6); He++) {
       f[xi].He[He] -=  ctx->HeDiffusion[He]*(-2.0*c[xi].He[He] + c[xi-1].He[He] + c[xi+1].He[He])*sx;
     }
 
@@ -332,11 +376,13 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec C,Vec Cdot,Vec F,void *ptr)
     /* Are V or I produced? */
 
     if (ctx->noreactions) continue;
+    ierr = cHeVInitialize(&c[xi].He[1],cHeV);CHKERRQ(ierr);
+    ierr = cHeVInitialize(&f[xi].He[1],fHeV);CHKERRQ(ierr);
     /* ----------------------------------------------------------------
      ---- Compute reaction terms that can create a cluster of given size
     */
     /*   He[He] + He[he] -> He[He+he]  */
-    for (He=2; He<N+1; He++) {
+    for (He=2; He<NHe+1; He++) {
       /* compute all pairs of clusters of smaller size that can combine to create a cluster of size He,
          remove the upper half since they are symmetric to the lower half of the pairs. For example
               when He = 5 (cluster size 5) the pairs are
@@ -353,7 +399,7 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec C,Vec Cdot,Vec F,void *ptr)
       }
     }
     /*   V[V]  +  V[v] ->  V[V+v]  */
-    for (V=2; V<N+1; V++) {
+    for (V=2; V<NV+1; V++) {
       for (v=1; v<(V/2)+1; v++) {
         f[xi].V[V] -= ctx->reactionScale*c[xi].V[v]*c[xi].V[V-v];
         /* remove the clusters that merged to form the larger cluster */
@@ -362,7 +408,7 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec C,Vec Cdot,Vec F,void *ptr)
       }
     }
     /*   I[I] +  I[i] -> I[I+i] */
-    for (I=2; I<N+1; I++) {
+    for (I=2; I<NI+1; I++) {
       for (i=1; i<(I/2)+1; i++) {
         f[xi].I[I] -= ctx->reactionScale*c[xi].I[i]*c[xi].I[I-i];
         /* remove the clusters that merged to form the larger cluster */
@@ -371,30 +417,30 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec C,Vec Cdot,Vec F,void *ptr)
       }
     }
     /* He[1] +  V[1]  ->  He[1]-V[1] */
-    f[xi].HeV[1][1] -= 1000*ctx->reactionScale*c[xi].He[1]*c[xi].V[1];
+    fHeV[1][1] -= 1000*ctx->reactionScale*c[xi].He[1]*c[xi].V[1];
     /* remove the He and V  that merged to form the He-V cluster */
     f[xi].He[1] += 1000*ctx->reactionScale*c[xi].He[1]*c[xi].V[1];
     f[xi].V[1]  += 1000*ctx->reactionScale*c[xi].He[1]*c[xi].V[1];
     /*  He[He]-V[V] + He[he] -> He[He+he]-V[V]  */
-    for (He=1; He<N; He++) {
-      for (V=1; V<N+1; V++) {
-        for (he=1; he<N-He+1; he++) {
-          f[xi].HeV[He+he][V] -= ctx->reactionScale*c[xi].HeV[He][V]*c[xi].He[he];
+    for (He=1; He<NHe; He++) {
+      for (V=1; V<NV+1; V++) {
+        for (he=1; he<NHeV-He+1; he++) {
+          fHeV[He+he][V] -= ctx->reactionScale*cHeV[He][V]*c[xi].He[he];
           /* remove the two clusters that merged to form the larger cluster */
-          f[xi].He[he]     += ctx->reactionScale*c[xi].HeV[He][V]*c[xi].He[he];
-          f[xi].HeV[He][V] += ctx->reactionScale*c[xi].HeV[He][V]*c[xi].He[he];
+          f[xi].He[he]     += ctx->reactionScale*cHeV[He][V]*c[xi].He[he];
+          fHeV[He][V] += ctx->reactionScale*cHeV[He][V]*c[xi].He[he];
         }
       }
     }
     /*  He[He]-V[V] + V[v] -> He[He][V+v] */
     /*  Jay says this only holds for v = 1  */
-    for (He=1; He<N+1; He++) {
-      for (V=1; V<N; V++) {
+    for (He=1; He<NHeV+1; He++) {
+      for (V=1; V<NV; V++) {
         v = 1;
-          f[xi].HeV[He][V+v] -= ctx->reactionScale*c[xi].HeV[He][V]*c[xi].V[v];
+          fHeV[He][V+v] -= ctx->reactionScale*cHeV[He][V]*c[xi].V[v];
           /* remove the two clusters that merged to form the larger cluster */
-          f[xi].V[v]       += ctx->reactionScale*c[xi].HeV[He][V]*c[xi].V[v];
-          f[xi].HeV[He][V] += ctx->reactionScale*c[xi].HeV[He][V]*c[xi].V[v];
+          f[xi].V[v]       += ctx->reactionScale*cHeV[He][V]*c[xi].V[v];
+          fHeV[He][V] += ctx->reactionScale*cHeV[He][V]*c[xi].V[v];
       }
     }
     /*  He[He]-V[V]  + He[he]-V[v] -> He[He+he][V+v]  */
@@ -402,13 +448,13 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec C,Vec Cdot,Vec F,void *ptr)
 
 
     /*  V[V] + I[I]  ->   V[V-I] if V > I else I[I-V] */
-    for (V=1; V<N+1; V++) {
-      for (I=1; I<V; I++) {
+    for (V=1; V<NV+1; V++) {
+      for (I=1; I<PetscMin(V,NI); I++) {
         f[xi].V[V-I] -= ctx->reactionScale*c[xi].V[V]*c[xi].I[I];
         f[xi].V[V] += ctx->reactionScale*c[xi].V[V]*c[xi].I[I];
         f[xi].I[I] += ctx->reactionScale*c[xi].V[V]*c[xi].I[I];
       }
-      for (I=V+1; I<N+1; I++) {
+      for (I=V+1; I<NI+1; I++) {
           f[xi].I[I-V] -= ctx->reactionScale*c[xi].V[V]*c[xi].I[I];
           f[xi].V[V] += ctx->reactionScale*c[xi].V[V]*c[xi].I[I];
           f[xi].I[I] += ctx->reactionScale*c[xi].V[V]*c[xi].I[I];
@@ -422,61 +468,61 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec C,Vec Cdot,Vec F,void *ptr)
           I cannot tell from the notes if clusters can break up into any sub-size.
     */
     /*   He[He] ->  He[He-1] + He[1] */
-    for (He=2; He<N+1; He++) {
+    for (He=2; He<NHe+1; He++) {
       f[xi].He[He-1] -= ctx->dissociationScale*c[xi].He[He];
       f[xi].He[1]    -= ctx->dissociationScale*c[xi].He[He];
       f[xi].He[He]   += ctx->dissociationScale*c[xi].He[He];
     }
     /*   V[V] ->  V[V-1] + V[1] */
-    for (V=2; V<N+1; V++) {
+    for (V=2; V<NV+1; V++) {
       f[xi].V[V-1] -= ctx->dissociationScale*c[xi].V[V];
       f[xi].V[1]   -= ctx->dissociationScale*c[xi].V[V];
       f[xi].V[V]   += ctx->dissociationScale*c[xi].V[V];
     }
     /*   I[I] ->  I[I-1] + I[1] */
-    for (I=2; I<N+1; I++) {
+    for (I=2; I<NI+1; I++) {
       f[xi].I[I-1] -= ctx->dissociationScale*c[xi].I[I];
       f[xi].I[1]   -= ctx->dissociationScale*c[xi].I[I];
       f[xi].I[I]   += ctx->dissociationScale*c[xi].I[I];
     }
     /* He[1]-V[1]  ->  He[1] + V[1] */
-    f[xi].He[1]     -= 1000*ctx->dissociationScale*c[xi].HeV[1][1];
-    f[xi].V[1]      -= 1000*ctx->dissociationScale*c[xi].HeV[1][1];
-    f[xi].HeV[1][1] += 1000*ctx->dissociationScale*c[xi].HeV[1][1];
+    f[xi].He[1]     -= 1000*ctx->dissociationScale*cHeV[1][1];
+    f[xi].V[1]      -= 1000*ctx->dissociationScale*cHeV[1][1];
+    fHeV[1][1] += 1000*ctx->dissociationScale*cHeV[1][1];
     /*   He[He]-V[1] ->  He[He] + V[1]  */
-    for (He=2; He<N+1; He++) {
-      f[xi].He[He]     -= 1000*ctx->dissociationScale*c[xi].HeV[He][1];
-      f[xi].V[1]       -= 1000*ctx->dissociationScale*c[xi].HeV[He][1];
-      f[xi].HeV[He][1] += 1000*ctx->dissociationScale*c[xi].HeV[He][1];
+    for (He=2; He<NHeV+1; He++) {
+      f[xi].He[He]     -= 1000*ctx->dissociationScale*cHeV[He][1];
+      f[xi].V[1]       -= 1000*ctx->dissociationScale*cHeV[He][1];
+      fHeV[He][1] += 1000*ctx->dissociationScale*cHeV[He][1];
     }
     /*   He[1]-V[V] ->  He[1] + V[V]  */
-    for (V=2; V<N+1; V++) {
-      f[xi].He[1]     -= 1000*ctx->dissociationScale*c[xi].HeV[1][V];
-      f[xi].V[V]      -= 1000*ctx->dissociationScale*c[xi].HeV[1][V];
-      f[xi].HeV[1][V] += 1000*ctx->dissociationScale*c[xi].HeV[1][V];
+    for (V=2; V<NV+1; V++) {
+      f[xi].He[1]     -= 1000*ctx->dissociationScale*cHeV[1][V];
+      f[xi].V[V]      -= 1000*ctx->dissociationScale*cHeV[1][V];
+      fHeV[1][V] += 1000*ctx->dissociationScale*cHeV[1][V];
     }
     /*   He[He]-V[V] ->  He[He-1]-V[V] + He[1]  */
-    for (He=2; He<N+1; He++) {
-      for (V=2; V<N+1; V++) {
-        f[xi].He[1]        -= 1000*ctx->dissociationScale*c[xi].HeV[He][V];
-        f[xi].HeV[He-1][V] -= 1000*ctx->dissociationScale*c[xi].HeV[He][V];
-        f[xi].HeV[He][V]   += 1000*ctx->dissociationScale*c[xi].HeV[He][V];
+    for (He=2; He<NHeV+1; He++) {
+      for (V=2; V<NHeV+1; V++) {
+        f[xi].He[1]        -= 1000*ctx->dissociationScale*cHeV[He][V];
+        fHeV[He-1][V] -= 1000*ctx->dissociationScale*cHeV[He][V];
+        fHeV[He][V]   += 1000*ctx->dissociationScale*cHeV[He][V];
       }
     }
     /*   He[He]-V[V] ->  He[He]-V[V-1] + V[1]  */
-    for (He=2; He<N+1; He++) {
-      for (V=2; V<N+1; V++) {
-        f[xi].V[1]         -= 1000*ctx->dissociationScale*c[xi].HeV[He][V];
-        f[xi].HeV[He][V-1] -= 1000*ctx->dissociationScale*c[xi].HeV[He][V];
-        f[xi].HeV[He][V]   += 1000*ctx->dissociationScale*c[xi].HeV[He][V];
+    for (He=2; He<NHeV+1; He++) {
+      for (V=2; V<NHeV+1; V++) {
+        f[xi].V[1]         -= 1000*ctx->dissociationScale*cHeV[He][V];
+        fHeV[He][V-1] -= 1000*ctx->dissociationScale*cHeV[He][V];
+        fHeV[He][V]   += 1000*ctx->dissociationScale*cHeV[He][V];
       }
     }
     /*   He[He]-V[V] ->  He[He]-V[V+1] + I[1]  */
-    for (He=1; He<N+1; He++) {
-      for (V=1; V<N; V++) {
-        f[xi].HeV[He][V+1] -= 1000*ctx->dissociationScale*c[xi].HeV[He][V];
-        f[xi].I[1]         -= 1000*ctx->dissociationScale*c[xi].HeV[He][V];
-        f[xi].HeV[He][V]   += 1000*ctx->dissociationScale*c[xi].HeV[He][V];
+    for (He=1; He<NHeV+1; He++) {
+      for (V=1; V<NHeV; V++) {
+        fHeV[He][V+1] -= 1000*ctx->dissociationScale*cHeV[He][V];
+        f[xi].I[1]         -= 1000*ctx->dissociationScale*cHeV[He][V];
+        fHeV[He][V]   += 1000*ctx->dissociationScale*cHeV[He][V];
       }
     }
   }
@@ -489,6 +535,8 @@ PetscErrorCode IFunction(TS ts,PetscReal ftime,Vec C,Vec Cdot,Vec F,void *ptr)
   f    = (Concentrations*)(((PetscScalar*)f)+1);
   ierr = DMDAVecRestoreArray(da,F,&f);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(da,&localC);CHKERRQ(ierr);
+  ierr = cHeVDestroy(cHeV);CHKERRQ(ierr);
+  ierr = cHeVDestroy(fHeV);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -502,14 +550,16 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal ftime,Vec C,Mat *A,Mat *J,MatStructur
   AppCtx         *ctx = (AppCtx*) ptr;
   DM             da;
   PetscErrorCode ierr;
-  PetscInt       xi,Mx,xs,xm,He,he,V,v,I,i;
+  PetscInt       xi,Mx,xs,xm,He,he,V,v,I,i, dof = NHe + NV + NI + NHeV*NHeV;
   PetscInt       row[3],col[3];
   PetscReal      hx,sx,x,val[6];
   Concentrations *c,*f;
   Vec            localC;
-  PetscReal      *rowstart,*colstart;
+  PetscReal      *rowstart,*colstart,**cHeV,**fHeV;
 
   PetscFunctionBeginUser;
+  ierr = cHeVCreate(&cHeV);CHKERRQ(ierr);
+  ierr = cHeVCreate(&fHeV);CHKERRQ(ierr);
   ierr = MatZeroEntries(*J);CHKERRQ(ierr);
   ierr = TSGetDM(ts,&da);CHKERRQ(ierr);
   ierr = DMGetLocalVector(da,&localC);CHKERRQ(ierr);
@@ -542,7 +592,7 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal ftime,Vec C,Mat *A,Mat *J,MatStructur
   */
   ierr = DMDAGetCorners(da,&xs,NULL,NULL,&xm,NULL,NULL);CHKERRQ(ierr);
 
-  rowstart = &f[xs].He[1] -  N*N - 3*N;
+  rowstart = &f[xs].He[1] -  dof;
   colstart = &c[xs-1].He[1];
 
   /*
@@ -555,7 +605,7 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal ftime,Vec C,Mat *A,Mat *J,MatStructur
      ---- Compute diffusion over the locally owned part of the grid
     */
     /* He clusters larger than 5 do not diffuse -- are immobile */
-    for (He=1; He<PetscMin(N+1,6); He++) {
+    for (He=1; He<PetscMin(NHe+1,6); He++) {
       /* f[xi].He[He] -=  ctx->HeDiffusion[He]*(-2.0*c[xi].He[He] + c[xi-1].He[He] + c[xi+1].He[He])*sx; */
       row[0] = &f[xi].He[He] - rowstart;
       col[0] = &c[xi-1].He[He] - colstart;
@@ -592,11 +642,13 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal ftime,Vec C,Mat *A,Mat *J,MatStructur
     /* Mixed He - V clusters are immobile  */
 
     if (ctx->noreactions) continue;
+    ierr = cHeVInitialize(&c[xi].He[1],cHeV);CHKERRQ(ierr);
+    ierr = cHeVInitialize(&f[xi].He[1],fHeV);CHKERRQ(ierr);
     /* ----------------------------------------------------------------
      ---- Compute reaction terms that can create a cluster of given size
     */
     /*   He[He] + He[he] -> He[He+he]  */
-    for (He=2; He<N+1; He++) {
+    for (He=2; He<NHe+1; He++) {
       /* compute all pairs of clusters of smaller size that can combine to create a cluster of size He,
          remove the upper half since they are symmetric to the lower half of the pairs. For example
               when He = 5 (cluster size 5) the pairs are
@@ -624,7 +676,7 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal ftime,Vec C,Mat *A,Mat *J,MatStructur
       }
     }
     /*   V[V]  +  V[v] ->  V[V+v]  */
-    for (V=2; V<N+1; V++) {
+    for (V=2; V<NV+1; V++) {
       for (v=1; v<(V/2)+1; v++) {
         /* f[xi].V[V] -= ctx->reactionScale*c[xi].V[v]*c[xi].V[V-v];*/
         /* f[xi].V[v]   += ctx->reactionScale*c[xi].V[v]*c[xi].V[V-v];*/
@@ -644,7 +696,7 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal ftime,Vec C,Mat *A,Mat *J,MatStructur
       }
     }
     /*   I[I] +  I[i] -> I[I+i] */
-    for (I=2; I<N+1; I++) {
+    for (I=2; I<NI+1; I++) {
       for (i=1; i<(I/2)+1; i++) {
         /* f[xi].I[I] -= ctx->reactionScale*c[xi].I[i]*c[xi].I[I-i];*/
         /* f[xi].I[i]   += ctx->reactionScale*c[xi].I[i]*c[xi].I[I-i];*/
@@ -667,7 +719,7 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal ftime,Vec C,Mat *A,Mat *J,MatStructur
     /*f[xi].HeV[1][1] -= 1000*ctx->reactionScale*c[xi].He[1]*c[xi].V[1];*/
     /*f[xi].He[1] += 1000*ctx->reactionScale*c[xi].He[1]*c[xi].V[1];*/
     /*f[xi].V[1]  += 1000*ctx->reactionScale*c[xi].He[1]*c[xi].V[1];*/
-    row[0] = &f[xi].HeV[1][1] - rowstart;
+    row[0] = &fHeV[1][1] - rowstart;
     row[1] = &f[xi].He[1] - rowstart;
     row[2] = &f[xi].V[1] - rowstart;
     col[0] = &c[xi].He[1] - colstart;
@@ -681,46 +733,46 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal ftime,Vec C,Mat *A,Mat *J,MatStructur
     ierr = MatSetValuesLocal(*J,3,row,2,col,val,ADD_VALUES);CHKERRQ(ierr);
 
     /*  He[He]-V[V] + He[he] -> He[He+he]-V[V]  */
-    for (He=1; He<N; He++) {
-      for (V=1; V<N+1; V++) {
-        for (he=1; he<N-He+1; he++) {
+    for (He=1; He<NHeV; He++) {
+      for (V=1; V<NHeV+1; V++) {
+        for (he=1; he<NHe-He+1; he++) {
           /* f[xi].HeV[He+he][V] -= ctx->reactionScale*c[xi].HeV[He][V]*c[xi].He[he];*/
           /* f[xi].He[he]     += ctx->reactionScale*c[xi].HeV[He][V]*c[xi].He[he];*/
           /* f[xi].HeV[He][V] += ctx->reactionScale*c[xi].HeV[He][V]*c[xi].He[he];*/
-          row[0] = &f[xi].HeV[He+he][V] - rowstart;
+          row[0] = &fHeV[He+he][V] - rowstart;
           row[1] = &f[xi].He[he] - rowstart;
-          row[2] = &f[xi].HeV[He][V] - rowstart;
-          col[0] = &c[xi].HeV[He][V] - colstart;
+          row[2] = &fHeV[He][V] - rowstart;
+          col[0] = &cHeV[He][V] - colstart;
           col[1] = &c[xi].He[he] - colstart;
           val[0] = ctx->reactionScale*c[xi].He[he];
-          val[1] = ctx->reactionScale*c[xi].HeV[He][V];
+          val[1] = ctx->reactionScale*cHeV[He][V];
           val[2] = -ctx->reactionScale*c[xi].He[he];
-          val[3] = -ctx->reactionScale*c[xi].HeV[He][V];
+          val[3] = -ctx->reactionScale*cHeV[He][V];
           val[4] = -ctx->reactionScale*c[xi].He[he];
-          val[5] = -ctx->reactionScale*c[xi].HeV[He][V];
+          val[5] = -ctx->reactionScale*cHeV[He][V];
           ierr = MatSetValuesLocal(*J,3,row,2,col,val,ADD_VALUES);CHKERRQ(ierr);
         }
       }
     }
     /*  He[He]-V[V] + V[v] -> He[He][V+v] */
     /*  Jay says this only holds for v = 1  */
-    for (He=1; He<N+1; He++) {
-      for (V=1; V<N; V++) {
+    for (He=1; He<NHeV+1; He++) {
+      for (V=1; V<NV; V++) {
         v = 1;
         /* f[xi].HeV[He][V+v] -= ctx->reactionScale*c[xi].HeV[He][V]*c[xi].V[v];*/
         /* f[xi].V[v]       += ctx->reactionScale*c[xi].HeV[He][V]*c[xi].V[v];*/
         /* f[xi].HeV[He][V] += ctx->reactionScale*c[xi].HeV[He][V]*c[xi].V[v];*/
-        row[0] = &f[xi].HeV[He][V+v] - rowstart;
+        row[0] = &fHeV[He][V+v] - rowstart;
         row[1] = &f[xi].V[v] - rowstart;
-        row[2] = &f[xi].HeV[He][V] - rowstart;
-        col[0] = &c[xi].HeV[He][V] - colstart;
+        row[2] = &fHeV[He][V] - rowstart;
+        col[0] = &cHeV[He][V] - colstart;
         col[1] = &c[xi].V[v] - colstart;
         val[0] = ctx->reactionScale*c[xi].V[v];
-        val[1] = ctx->reactionScale*c[xi].HeV[He][V];
+        val[1] = ctx->reactionScale*cHeV[He][V];
         val[2] = -ctx->reactionScale*c[xi].V[v];
-        val[3] = -ctx->reactionScale*c[xi].HeV[He][V];
+        val[3] = -ctx->reactionScale*cHeV[He][V];
         val[4] = -ctx->reactionScale*c[xi].V[v];
-        val[5] = -ctx->reactionScale*c[xi].HeV[He][V];
+        val[5] = -ctx->reactionScale*cHeV[He][V];
         ierr = MatSetValuesLocal(*J,3,row,2,col,val,ADD_VALUES);CHKERRQ(ierr);
      }
     }
@@ -729,8 +781,8 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal ftime,Vec C,Mat *A,Mat *J,MatStructur
 
 
     /*  V[V] + I[I]  ->   V[V-I] if V > I else I[I-V] */
-    for (V=1; V<N+1; V++) {
-      for (I=1; I<V; I++) {
+    for (V=1; V<NV+1; V++) {
+      for (I=1; I<PetscMin(V,NI); I++) {
         /*f[xi].V[V-I] -= ctx->reactionScale*c[xi].V[V]*c[xi].I[I];*/
         /*f[xi].V[V] += ctx->reactionScale*c[xi].V[V]*c[xi].I[I];*/
         /*f[xi].I[I] += ctx->reactionScale*c[xi].V[V]*c[xi].I[I];*/
@@ -747,7 +799,7 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal ftime,Vec C,Mat *A,Mat *J,MatStructur
         val[5] = -ctx->reactionScale*c[xi].V[V];
         ierr = MatSetValuesLocal(*J,3,row,2,col,val,ADD_VALUES);CHKERRQ(ierr);
       }
-      for (I=V+1; I<N+1; I++) {
+      for (I=V+1; I<NI+1; I++) {
         /* f[xi].I[I-V] -= ctx->reactionScale*c[xi].V[V]*c[xi].I[I];*/
         /*  f[xi].V[V] += ctx->reactionScale*c[xi].V[V]*c[xi].I[I];*/
         /*  f[xi].I[I] += ctx->reactionScale*c[xi].V[V]*c[xi].I[I];*/
@@ -773,7 +825,7 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal ftime,Vec C,Mat *A,Mat *J,MatStructur
           I cannot tell from the notes if clusters can break up into any sub-size.
     */
     /*   He[He] ->  He[He-1] + He[1] */
-    for (He=2; He<N+1; He++) {
+    for (He=2; He<NHe+1; He++) {
       /*f[xi].He[He-1] -= ctx->dissociationScale*c[xi].He[He];
         f[xi].He[1]    -= ctx->dissociationScale*c[xi].He[He];
         f[xi].He[He]   += ctx->dissociationScale*c[xi].He[He];*/
@@ -787,7 +839,7 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal ftime,Vec C,Mat *A,Mat *J,MatStructur
       ierr = MatSetValuesLocal(*J,3,row,1,col,val,ADD_VALUES);CHKERRQ(ierr);
     }
     /*   V[V] ->  V[V-1] + V[1] */
-    for (V=2; V<N+1; V++) {
+    for (V=2; V<NV+1; V++) {
       /*f[xi].V[V-1] -= ctx->dissociationScale*c[xi].V[V];
         f[xi].V[1]   -= ctx->dissociationScale*c[xi].V[V];
         f[xi].V[V]   += ctx->dissociationScale*c[xi].V[V];*/
@@ -801,7 +853,7 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal ftime,Vec C,Mat *A,Mat *J,MatStructur
       ierr = MatSetValuesLocal(*J,3,row,1,col,val,ADD_VALUES);CHKERRQ(ierr);
     }
     /*   I[I] ->  I[I-1] + I[1] */
-    for (I=2; I<N+1; I++) {
+    for (I=2; I<NI+1; I++) {
       /*f[xi].I[I-1] -= ctx->dissociationScale*c[xi].I[I];
         f[xi].I[1]   -= ctx->dissociationScale*c[xi].I[I];
         f[xi].I[I]   += ctx->dissociationScale*c[xi].I[I];*/
@@ -820,50 +872,50 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal ftime,Vec C,Mat *A,Mat *J,MatStructur
       f[xi].HeV[1][1] += 1000*ctx->dissociationScale*c[xi].HeV[1][1];*/
     row[0] = &f[xi].He[1] - rowstart;
     row[1] = &f[xi].V[1] - rowstart;
-    row[2] = &f[xi].HeV[1][1] - rowstart;
-    col[0] = &c[xi].HeV[1][1] - colstart;
+    row[2] = &fHeV[1][1] - rowstart;
+    col[0] = &cHeV[1][1] - colstart;
     val[0] = 1000*ctx->dissociationScale;
     val[1] = 1000*ctx->dissociationScale;
     val[2] = -1000*ctx->dissociationScale;
     ierr = MatSetValuesLocal(*J,3,row,1,col,val,ADD_VALUES);CHKERRQ(ierr);
     /*   He[He]-V[1] ->  He[He] + V[1]  */
-    for (He=2; He<N+1; He++) {
+    for (He=2; He<NHeV+1; He++) {
       /*f[xi].He[He]     -= 1000*ctx->dissociationScale*c[xi].HeV[He][1];
         f[xi].V[1]       -= 1000*ctx->dissociationScale*c[xi].HeV[He][1];
         f[xi].HeV[He][1] += 1000*ctx->dissociationScale*c[xi].HeV[He][1];*/
       row[0] = &f[xi].He[He] - rowstart;
       row[1] = &f[xi].V[1] - rowstart;
-      row[2] = &f[xi].HeV[He][1] - rowstart;
-      col[0] = &c[xi].HeV[He][1] - colstart;
+      row[2] = &fHeV[He][1] - rowstart;
+      col[0] = &cHeV[He][1] - colstart;
       val[0] = 1000*ctx->dissociationScale;
       val[1] = 1000*ctx->dissociationScale;
       val[2] = -1000*ctx->dissociationScale;
       ierr = MatSetValuesLocal(*J,3,row,1,col,val,ADD_VALUES);CHKERRQ(ierr);
     }
     /*   He[1]-V[V] ->  He[1] + V[V]  */
-    for (V=2; V<N+1; V++) {
+    for (V=2; V<NHeV+1; V++) {
       /*f[xi].He[1]     -= 1000*ctx->dissociationScale*c[xi].HeV[1][V];
         f[xi].V[V]      -= 1000*ctx->dissociationScale*c[xi].HeV[1][V];
         f[xi].HeV[1][V] += 1000*ctx->dissociationScale*c[xi].HeV[1][V];*/
       row[0] = &f[xi].He[1] - rowstart;
       row[1] = &f[xi].V[V] - rowstart;
-      row[2] = &f[xi].HeV[1][V] - rowstart;
-      col[0] = &c[xi].HeV[1][V] - colstart;
+      row[2] = &fHeV[1][V] - rowstart;
+      col[0] = &cHeV[1][V] - colstart;
       val[0] = 1000*ctx->dissociationScale;
       val[1] = 1000*ctx->dissociationScale;
       val[2] = -1000*ctx->dissociationScale;
       ierr = MatSetValuesLocal(*J,3,row,1,col,val,ADD_VALUES);CHKERRQ(ierr);
     }
     /*   He[He]-V[V] ->  He[He-1]-V[V] + He[1]  */
-    for (He=2; He<N+1; He++) {
-      for (V=2; V<N+1; V++) {
+    for (He=2; He<NHeV+1; He++) {
+      for (V=2; V<NHeV+1; V++) {
         /*f[xi].He[1]        -= 1000*ctx->dissociationScale*c[xi].HeV[He][V];
           f[xi].HeV[He-1][V] -= 1000*ctx->dissociationScale*c[xi].HeV[He][V];
           f[xi].HeV[He][V]   += 1000*ctx->dissociationScale*c[xi].HeV[He][V];*/
       row[0] = &f[xi].He[1] - rowstart;
-      row[1] = &f[xi].HeV[He-1][V] - rowstart;
-      row[2] = &f[xi].HeV[He][V] - rowstart;
-      col[0] = &c[xi].HeV[He][V] - colstart;
+      row[1] = &fHeV[He-1][V] - rowstart;
+      row[2] = &fHeV[He][V] - rowstart;
+      col[0] = &cHeV[He][V] - colstart;
       val[0] = 1000*ctx->dissociationScale;
       val[1] = 1000*ctx->dissociationScale;
       val[2] = -1000*ctx->dissociationScale;
@@ -871,15 +923,15 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal ftime,Vec C,Mat *A,Mat *J,MatStructur
       }
     }
     /*   He[He]-V[V] ->  He[He]-V[V-1] + V[1]  */
-    for (He=2; He<N+1; He++) {
-      for (V=2; V<N+1; V++) {
+    for (He=2; He<NHeV+1; He++) {
+      for (V=2; V<NHeV+1; V++) {
         /*f[xi].V[1]         -= 1000*ctx->dissociationScale*c[xi].HeV[He][V];
           f[xi].HeV[He][V-1] -= 1000*ctx->dissociationScale*c[xi].HeV[He][V];
           f[xi].HeV[He][V]   += 1000*ctx->dissociationScale*c[xi].HeV[He][V];*/
       row[0] = &f[xi].V[1] - rowstart;
-      row[1] = &f[xi].HeV[He][V-1] - rowstart;
-      row[2] = &f[xi].HeV[He][V] - rowstart;
-      col[0] = &c[xi].HeV[He][V] - colstart;
+      row[1] = &fHeV[He][V-1] - rowstart;
+      row[2] = &fHeV[He][V] - rowstart;
+      col[0] = &cHeV[He][V] - colstart;
       val[0] = 1000*ctx->dissociationScale;
       val[1] = 1000*ctx->dissociationScale;
       val[2] = -1000*ctx->dissociationScale;
@@ -887,15 +939,15 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal ftime,Vec C,Mat *A,Mat *J,MatStructur
       }
     }
     /*   He[He]-V[V] ->  He[He]-V[V+1] + I[1]  */
-    for (He=1; He<N+1; He++) {
-      for (V=1; V<N; V++) {
+    for (He=1; He<NHeV+1; He++) {
+      for (V=1; V<NHeV; V++) {
         /*f[xi].HeV[He][V+1] -= 1000*ctx->dissociationScale*c[xi].HeV[He][V];
           f[xi].I[1]         -= 1000*ctx->dissociationScale*c[xi].HeV[He][V];
           f[xi].HeV[He][V]   += 1000*ctx->dissociationScale*c[xi].HeV[He][V];*/
-      row[0] = &f[xi].HeV[He][V+1] - rowstart;
+      row[0] = &fHeV[He][V+1] - rowstart;
       row[1] = &f[xi].I[1] - rowstart;
-      row[2] = &f[xi].HeV[He][V] - rowstart;
-      col[0] = &c[xi].HeV[He][V] - colstart;
+      row[2] = &fHeV[He][V] - rowstart;
+      col[0] = &cHeV[He][V] - colstart;
       val[0] = 1000*ctx->dissociationScale;
       val[1] = 1000*ctx->dissociationScale;
       val[2] = -1000*ctx->dissociationScale;
@@ -912,6 +964,9 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal ftime,Vec C,Mat *A,Mat *J,MatStructur
   f    = (Concentrations*)(((PetscScalar*)f)+1);
   ierr = DMDAVecRestoreArray(da,C,&f);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(da,&localC);CHKERRQ(ierr);
+  ierr = cHeVDestroy(cHeV);CHKERRQ(ierr);
+  ierr = cHeVDestroy(fHeV);CHKERRQ(ierr);
+
   *str = SAME_NONZERO_PATTERN;
   ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -933,26 +988,30 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal ftime,Vec C,Mat *A,Mat *J,MatStructur
 PetscErrorCode GetDfill(PetscInt *dfill, void *ptr)
 {
   AppCtx         *ctx = (AppCtx*) ptr;
-  PetscInt       He,he,V,v,I,i,dof = 3*N+N*N,j,k,rows[3],cols[2];
+  PetscInt       He,he,V,v,I,i,dof = NHe + NV + NI + NHeV*NHeV,j,k,rows[3],cols[2];
   Concentrations *c;
-  PetscScalar    *idxstart;
+  PetscScalar    *idxstart,**cHeV;
   PetscErrorCode ierr;
 
   /* ensure fill for the diagonal of matrix */
-  for (i=0; i<(3*N+N*N); i++) {
+  for (i=0; i<(dof); i++) {
     dfill[i*dof + i] = 1;
   }
 
-  if (!ctx->noreactions) {
-    /*
-       c is never used except for computing offsets between variables which are used to fill the non-zero
-       structure of the matrix
-    */
-    ierr     = PetscMalloc(sizeof(Concentrations),&c);CHKERRQ(ierr);
-    c        = (Concentrations*)(((PetscScalar*)c)-1);
-    idxstart = (PetscScalar*)&c->He[1];
+  /*
+   c is never used except for computing offsets between variables which are used to fill the non-zero
+   structure of the matrix
+   */
+  ierr     = PetscMalloc(sizeof(Concentrations),&c);CHKERRQ(ierr);
+  c        = (Concentrations*)(((PetscScalar*)c)-1);
+  ierr     = cHeVCreate(&cHeV);CHKERRQ(ierr);
+  ierr     = cHeVInitialize(&c->He[1],cHeV);CHKERRQ(ierr);
+  idxstart = (PetscScalar*)&c->He[1];
 
-    for (He=2; He<N+1; He++) {
+  if (!ctx->noreactions) {
+
+
+    for (He=2; He<NHe+1; He++) {
       /* compute all pairs of clusters of smaller size that can combine to create a cluster of size He,
        remove the upper half since they are symmetric to the lower half of the pairs. For example
        when He = 5 (cluster size 5) the pairs are
@@ -969,12 +1028,13 @@ PetscErrorCode GetDfill(PetscInt *dfill, void *ptr)
         for (j=0; j<3; j++) {
           for (k=0; k<2; k++) {
             dfill[rows[j]*dof + cols[k]] = 1;
+  CHKMEMQ;
           }
         }
       }
     }
     /*   V[V]  +  V[v] ->  V[V+v]  */
-    for (V=2; V<N+1; V++) {
+    for (V=2; V<NV+1; V++) {
       for (v=1; v<(V/2)+1; v++) {
         rows[0] = &c->V[V] - idxstart;
         rows[1] = &c->V[v] - idxstart;
@@ -984,13 +1044,14 @@ PetscErrorCode GetDfill(PetscInt *dfill, void *ptr)
         for (j=0; j<3; j++) {
           for (k=0; k<2; k++) {
             dfill[rows[j]*dof + cols[k]] = 1;
+  CHKMEMQ;
           }
         }
       }
     }
 
     /*   I[I] +  I[i] -> I[I+i] */
-    for (I=2; I<N+1; I++) {
+    for (I=2; I<NI+1; I++) {
       for (i=1; i<(I/2)+1; i++) {
         rows[0] = &c->I[I] - idxstart;
         rows[1] = &c->I[i] - idxstart;
@@ -1000,13 +1061,14 @@ PetscErrorCode GetDfill(PetscInt *dfill, void *ptr)
         for (j=0; j<3; j++) {
           for (k=0; k<2; k++) {
             dfill[rows[j]*dof + cols[k]] = 1;
+  CHKMEMQ;
           }
         }
       }
     }
 
     /* He[1] +  V[1]  ->  He[1]-V[1] */
-    rows[0] = &c->HeV[1][1] - idxstart;
+    rows[0] = &cHeV[1][1] - idxstart;
     rows[1] = &c->He[1] - idxstart;
     rows[2] = &c->V[1] - idxstart;
     cols[0] = &c->He[1] - idxstart;
@@ -1014,38 +1076,41 @@ PetscErrorCode GetDfill(PetscInt *dfill, void *ptr)
     for (j=0; j<3; j++) {
       for (k=0; k<2; k++) {
         dfill[rows[j]*dof + cols[k]] = 1;
+  CHKMEMQ;
       }
     }
 
     /*  He[He]-V[V] + He[he] -> He[He+he]-V[V]  */
-    for (He=1; He<N; He++) {
-      for (V=1; V<N+1; V++) {
-        for (he=1; he<N-He+1; he++) {
-          rows[0] = &c->HeV[He+he][V] - idxstart;
+    for (He=1; He<NHeV; He++) {
+      for (V=1; V<NHeV+1; V++) {
+        for (he=1; he<NHeV-He+1; he++) {
+          rows[0] = &cHeV[He+he][V] - idxstart;
           rows[1] = &c->He[he] - idxstart;
-          rows[2] = &c->HeV[He][V] - idxstart;
-          cols[0] = &c->HeV[He][V] - idxstart;
+          rows[2] = &cHeV[He][V] - idxstart;
+          cols[0] = &cHeV[He][V] - idxstart;
           cols[1] = &c->He[he] - idxstart;
           for (j=0; j<3; j++) {
             for (k=0; k<2; k++) {
               dfill[rows[j]*dof + cols[k]] = 1;
+  CHKMEMQ;
             }
           }
         }
       }
     }
     /*  He[He]-V[V] + V[1] -> He[He][V+1] */
-    for (He=1; He<N+1; He++) {
-      for (V=1; V<N; V++) {
+    for (He=1; He<NHeV+1; He++) {
+      for (V=1; V<NHeV; V++) {
         v = 1;
-          rows[0] = &c->HeV[He][V+v] - idxstart;
+          rows[0] = &cHeV[He][V+v] - idxstart;
           rows[1] = &c->V[v] - idxstart;
-          rows[2] = &c->HeV[He][V] - idxstart;
-          cols[0] = &c->HeV[He][V] - idxstart;
+          rows[2] = &cHeV[He][V] - idxstart;
+          cols[0] = &cHeV[He][V] - idxstart;
           cols[1] = &c->V[v] - idxstart;
           for (j=0; j<3; j++) {
             for (k=0; k<2; k++) {
               dfill[rows[j]*dof + cols[k]] = 1;
+  CHKMEMQ;
             }
           }
       }
@@ -1055,8 +1120,8 @@ PetscErrorCode GetDfill(PetscInt *dfill, void *ptr)
     /*  Currently the reaction rates for this are zero */
 
     /*  V[V] + I[I]  ->   V[V-I] if V > I else I[I-V] */
-    for (V=1; V<N+1; V++) {
-      for (I=1; I<V; I++) {
+    for (V=1; V<NV+1; V++) {
+      for (I=1; I<PetscMin(V,NI); I++) {
         rows[0] = &c->V[V-I] - idxstart;
         rows[1] = &c->V[V] - idxstart;
         rows[2] = &c->I[I] - idxstart;
@@ -1065,10 +1130,11 @@ PetscErrorCode GetDfill(PetscInt *dfill, void *ptr)
         for (j=0; j<3; j++) {
           for (k=0; k<2; k++) {
             dfill[rows[j]*dof + cols[k]] = 1;
+  CHKMEMQ;
           }
         }
       }
-      for (I=V+1; I<N+1; I++) {
+      for (I=V+1; I<NI+1; I++) {
         rows[0] = &c->I[I-V] - idxstart;
         rows[1] = &c->V[V] - idxstart;
         rows[2] = &c->I[I] - idxstart;
@@ -1077,6 +1143,7 @@ PetscErrorCode GetDfill(PetscInt *dfill, void *ptr)
         for (j=0; j<3; j++) {
           for (k=0; k<2; k++) {
             dfill[rows[j]*dof + cols[k]] = 1;
+  CHKMEMQ;
           }
         }
       }
@@ -1089,108 +1156,118 @@ PetscErrorCode GetDfill(PetscInt *dfill, void *ptr)
     */
   if (!ctx->nodissociations) {
     /*   He[He] ->  He[He-1] + He[1] */
-    for (He=2; He<N+1; He++) {
+    for (He=2; He<NHe+1; He++) {
       rows[0] = &c->He[He-1] - idxstart;
       rows[1] = &c->He[1] - idxstart;
       rows[2] = &c->He[He] - idxstart;
       cols[0] = &c->He[He] - idxstart;
       for (j=0; j<3; j++) {
         dfill[rows[j]*dof + cols[0]] = 1;
+  CHKMEMQ;
       }
     }
     /*   V[V] ->  V[V-1] + V[1] */
-    for (V=2; V<N+1; V++) {
+    for (V=2; V<NV+1; V++) {
       rows[0] = &c->V[V] - idxstart;
       rows[1] = &c->V[1] - idxstart;
       rows[2] = &c->V[V-1] - idxstart;
       cols[0] = &c->V[V] - idxstart;
       for (j=0; j<3; j++) {
         dfill[rows[j]*dof + cols[0]] = 1;
+  CHKMEMQ;
       }
     }
 
     /*   I[I] ->  I[I-1] + I[1] */
-    for (I=2; I<N+1; I++) {
+    for (I=2; I<NI+1; I++) {
       rows[0] = &c->I[I] - idxstart;
       rows[1] = &c->I[1] - idxstart;
       rows[2] = &c->I[I-1] - idxstart;
       cols[0] = &c->I[I] - idxstart;
       for (j=0; j<3; j++) {
         dfill[rows[j]*dof + cols[0]] = 1;
+  CHKMEMQ;
       }
     }
 
     /* He[1]-V[1]  ->  He[1] + V[1] */
     rows[0] = &c->He[1] - idxstart;
     rows[1] = &c->V[1] - idxstart;
-    rows[2] = &c->HeV[1][1] - idxstart;
-    cols[0] = &c->HeV[1][1] - idxstart;
+    rows[2] = &cHeV[1][1] - idxstart;
+    cols[0] = &cHeV[1][1] - idxstart;
     for (j=0; j<3; j++) {
       dfill[rows[j]*dof + cols[0]] = 1;
+  CHKMEMQ;
     }
 
     /*   He[He]-V[1] ->  He[He] + V[1]  */
-    for (He=2; He<N+1; He++) {
+    for (He=2; He<NHeV+1; He++) {
       rows[0] = &c->He[He] - idxstart;
       rows[1] = &c->V[1] - idxstart;
-      rows[2] = &c->HeV[He][1] - idxstart;
-      cols[0] = &c->HeV[He][1] - idxstart;
+      rows[2] = &cHeV[He][1] - idxstart;
+      cols[0] = &cHeV[He][1] - idxstart;
       for (j=0; j<3; j++) {
         dfill[rows[j]*dof + cols[0]] = 1;
+  CHKMEMQ;
       }
     }
 
     /*   He[1]-V[V] ->  He[1] + V[V]  */
-    for (V=2; V<N+1; V++) {
+    for (V=2; V<NHeV+1; V++) {
       rows[0] = &c->He[1] - idxstart;
       rows[1] = &c->V[V] - idxstart;
-      rows[2] = &c->HeV[1][V] - idxstart;
-      cols[0] = &c->HeV[1][V] - idxstart;
+      rows[2] = &cHeV[1][V] - idxstart;
+      cols[0] = &cHeV[1][V] - idxstart;
       for (j=0; j<3; j++) {
         dfill[rows[j]*dof + cols[0]] = 1;
+  CHKMEMQ;
       }
     }
 
     /*   He[He]-V[V] ->  He[He-1]-V[V] + He[1]  */
-    for (He=2; He<N+1; He++) {
-      for (V=2; V<N+1; V++) {
+    for (He=2; He<NHeV+1; He++) {
+      for (V=2; V<NHeV+1; V++) {
         rows[0] = &c->He[1] - idxstart;
-        rows[1] = &c->HeV[He][V] - idxstart;
-        rows[2] = &c->HeV[He-1][V] - idxstart;
-        cols[0] = &c->HeV[He][V] - idxstart;
+        rows[1] = &cHeV[He][V] - idxstart;
+        rows[2] = &cHeV[He-1][V] - idxstart;
+        cols[0] = &cHeV[He][V] - idxstart;
         for (j=0; j<3; j++) {
           dfill[rows[j]*dof + cols[0]] = 1;
+  CHKMEMQ;
         }
       }
     }
 
     /*   He[He]-V[V] ->  He[He]-V[V-1] + V[1]  */
-    for (He=2; He<N+1; He++) {
-      for (V=2; V<N+1; V++) {
+    for (He=2; He<NHeV+1; He++) {
+      for (V=2; V<NHeV+1; V++) {
         rows[0] = &c->V[1] - idxstart;
-        rows[1] = &c->HeV[He][V] - idxstart;
-        rows[2] = &c->HeV[He][V-1] - idxstart;
-        cols[0] = &c->HeV[He][V] - idxstart;
+        rows[1] = &cHeV[He][V] - idxstart;
+        rows[2] = &cHeV[He][V-1] - idxstart;
+        cols[0] = &cHeV[He][V] - idxstart;
         for (j=0; j<3; j++) {
           dfill[rows[j]*dof + cols[0]] = 1;
+  CHKMEMQ;
         }
       }
     }
 
     /*   He[He]-V[V] ->  He[He]-V[V+1] + I[1]  */
-    for (He=1; He<N+1; He++) {
-      for (V=1; V<N; V++) {
+    for (He=1; He<NHeV+1; He++) {
+      for (V=1; V<NHeV; V++) {
         rows[0] = &c->I[1] - idxstart;
-        rows[1] = &c->HeV[He][V+1] - idxstart;
-        rows[2] = &c->HeV[He][V] - idxstart;
-        cols[0] = &c->HeV[He][V] - idxstart;
+        rows[1] = &cHeV[He][V+1] - idxstart;
+        rows[2] = &cHeV[He][V] - idxstart;
+        cols[0] = &cHeV[He][V] - idxstart;
         for (j=0; j<3; j++) {
           dfill[rows[j]*dof + cols[0]] = 1;
+  CHKMEMQ;
         }
       }
     }
   }
   c    = (Concentrations*)(((PetscScalar*)c)+1);
+  ierr = cHeVDestroy(cHeV);CHKERRQ(ierr);
   ierr = PetscFree(c);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1248,7 +1325,7 @@ PetscErrorCode MyMonitorSetUp(TS ts)
 {
   DM             da;
   PetscErrorCode ierr;
-  PetscInt       xi,xs,xm,*idx,M,xj,cnt = 0,dof = 3*N + N*N;
+  PetscInt       xi,xs,xm,*idx,M,xj,cnt = 0,dof = NHe + NV + NI + NHeV*NHeV,N;
   const PetscInt *lx;
   Vec            C;
   MyMonitorCtx   *ctx;
