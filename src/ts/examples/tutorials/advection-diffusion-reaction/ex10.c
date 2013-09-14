@@ -46,38 +46,6 @@ typedef struct {
   PetscScalar HeV[NHeV][NHeV];
 } Concentrations;
 
-/*
-   cHeV is "trick" to allow easy accessing of the values in the HeV portion of the Concentrations.
-   cHeV[i] points to the beginning of each row of HeV[] with indexing starting a 1.
-
-   Eventually there will be support for HeV[][] where it is a triangular matrix with different maximum
-   number of V for each He
-*/
-#undef __FUNCT__
-#define __FUNCT__ "cHeVCreate"
-PetscErrorCode cHeVCreate(PetscReal ***cHeV)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscMalloc(NHeV*sizeof(PetscScalar),cHeV);CHKERRQ(ierr);
-  (*cHeV)--;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "cHeVInitialize"
-PetscErrorCode cHeVInitialize(PetscScalar *start,PetscReal **cHeV)
-{
-  PetscInt       i;
-
-  PetscFunctionBegin;
-  cHeV[1] = start - 1 + NHe + NV + NI;
-  for (i=1; i<NHeV; i++) {
-    cHeV[i+1] = cHeV[i] + NHeV;
-  }
-  PetscFunctionReturn(0);
-}
 
 #undef __FUNCT__
 #define __FUNCT__ "cHeVDestroy"
@@ -215,6 +183,39 @@ int main(int argc,char **argv)
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
   ierr = DMDestroy(&da);CHKERRQ(ierr);
   ierr = PetscFinalize();
+  PetscFunctionReturn(0);
+}
+
+/*
+   cHeV is "trick" to allow easy accessing of the values in the HeV portion of the Concentrations.
+   cHeV[i] points to the beginning of each row of HeV[] with indexing starting a 1.
+
+   Eventually there will be support for HeV[][] where it is a triangular matrix with different maximum
+   number of V for each He
+*/
+#undef __FUNCT__
+#define __FUNCT__ "cHeVCreate"
+PetscErrorCode cHeVCreate(PetscReal ***cHeV)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscMalloc(NHeV*sizeof(PetscScalar),cHeV);CHKERRQ(ierr);
+  (*cHeV)--;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "cHeVInitialize"
+PetscErrorCode cHeVInitialize(PetscScalar *start,PetscReal **cHeV)
+{
+  PetscInt       i;
+
+  PetscFunctionBegin;
+  cHeV[1] = start - 1 + NHe + NV + NI;
+  for (i=1; i<NHeV; i++) {
+    cHeV[i+1] = cHeV[i] + NHeV;
+  }
   PetscFunctionReturn(0);
 }
 
