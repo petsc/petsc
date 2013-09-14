@@ -317,6 +317,14 @@ PetscErrorCode PetscDTGaussJacobiQuadrature(PetscInt dim, PetscInt order, PetscR
   ierr = PetscMalloc(npoints*dim * sizeof(PetscReal), &x);CHKERRQ(ierr);
   ierr = PetscMalloc(npoints     * sizeof(PetscReal), &w);CHKERRQ(ierr);
   switch (dim) {
+  case 0:
+    ierr = PetscFree(x);CHKERRQ(ierr);
+    ierr = PetscFree(w);CHKERRQ(ierr);
+    ierr = PetscMalloc(1 * sizeof(PetscReal), &x);CHKERRQ(ierr);
+    ierr = PetscMalloc(1 * sizeof(PetscReal), &w);CHKERRQ(ierr);
+    x[0] = 0.0;
+    w[0] = 1.0;
+    break;
   case 1:
     ierr = PetscDTGaussJacobiQuadrature1D_Internal(order, 0.0, 0.0, x, w);CHKERRQ(ierr);
     break;
