@@ -1195,6 +1195,17 @@ PetscErrorCode PetscDualSpaceCreateReferenceCell(PetscDualSpace sp, PetscInt dim
   ierr = DMSetType(rdm, DMPLEX);CHKERRQ(ierr);
   ierr = DMPlexSetDimension(rdm, dim);CHKERRQ(ierr);
   switch (dim) {
+  case 0:
+  {
+    PetscInt    numPoints[1]        = {1};
+    PetscInt    coneSize[1]         = {0};
+    PetscInt    cones[1]            = {0};
+    PetscInt    coneOrientations[1] = {0};
+    PetscScalar vertexCoords[1]     = {0.0};
+
+    ierr = DMPlexCreateFromDAG(rdm, 0, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
+  }
+  break;
   case 1:
   {
     PetscInt    numPoints[2]        = {2, 1};
@@ -1389,6 +1400,16 @@ PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
       }
     }
     ierr = DMPlexRestoreTransitiveClosure(dm, pStart[depth], PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+  } else if (!dim) {
+    sp->functional[f].numQuadPoints = 1;
+    ierr = PetscMalloc(sp->functional[f].numQuadPoints * sizeof(PetscReal), &qpoints);CHKERRQ(ierr);
+    ierr = PetscMalloc(sp->functional[f].numQuadPoints * sizeof(PetscReal), &qweights);CHKERRQ(ierr);
+    qpoints[0]  = 0.0;
+    qweights[0] = 1.0;
+    sp->functional[f].quadPoints  = qpoints;
+    sp->functional[f].quadWeights = qweights;
+    ++f;
+    lag->numDof[0] = 1;
   } else SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cannot handle cells with cone size %d", coneSize);
   ierr = PetscFree2(pStart,pEnd);CHKERRQ(ierr);
   if (f != pdim) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of dual basis vectors %d not equal to dimension %d", f, pdim);
