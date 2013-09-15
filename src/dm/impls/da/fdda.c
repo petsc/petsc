@@ -1185,6 +1185,7 @@ PetscErrorCode DMCreateMatrix_DA_1d_MPIAIJ_Fill(DM da,Mat J)
   ierr = PetscMemzero(cols,nx*nc*sizeof(PetscInt));CHKERRQ(ierr);
   ierr = PetscMemzero(ocols,nx*nc*sizeof(PetscInt));CHKERRQ(ierr);
 
+  if (nx < 2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Need at least two grid points per process");
   /*
         note should be smaller for first and last process with no periodic
         does not handle dfill
