@@ -1553,13 +1553,13 @@ PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
     }
     ierr = DMPlexRestoreTransitiveClosure(dm, pStart[depth], PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
   } else if (!dim) {
-    sp->functional[f].numQuadPoints = 1;
-    ierr = PetscMalloc(sp->functional[f].numQuadPoints * sizeof(PetscReal), &qpoints);CHKERRQ(ierr);
-    ierr = PetscMalloc(sp->functional[f].numQuadPoints * sizeof(PetscReal), &qweights);CHKERRQ(ierr);
+    sp->functional[f].numPoints = 1;
+    ierr = PetscMalloc(sp->functional[f].numPoints * sizeof(PetscReal), &qpoints);CHKERRQ(ierr);
+    ierr = PetscMalloc(sp->functional[f].numPoints * sizeof(PetscReal), &qweights);CHKERRQ(ierr);
     qpoints[0]  = 0.0;
     qweights[0] = 1.0;
-    sp->functional[f].quadPoints  = qpoints;
-    sp->functional[f].quadWeights = qweights;
+    sp->functional[f].points  = qpoints;
+    sp->functional[f].weights = qweights;
     ++f;
     lag->numDof[0] = 1;
   } else SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cannot handle cells with cone size %d", coneSize);
