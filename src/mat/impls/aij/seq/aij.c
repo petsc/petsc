@@ -328,7 +328,7 @@ PetscErrorCode MatSetValues_SeqAIJ(Mat A,PetscInt m,const PetscInt im[],PetscInt
       } else {
         value = 0.;
       }
-      if (value == 0.0 && ignorezeroentries && (is == ADD_VALUES)) continue;
+      if ((value == 0.0 && ignorezeroentries) && (is == ADD_VALUES)) continue;
 
       if (col <= lastcol) low = 0;
       else high = nrow;
