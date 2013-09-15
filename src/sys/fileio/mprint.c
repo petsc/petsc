@@ -653,7 +653,6 @@ PetscErrorCode  PetscSynchronizedFGets(MPI_Comm comm,FILE *fp,size_t len,char st
   PetscMPIInt    rank;
 
   PetscFunctionBegin;
-  string[0] = 0;
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
   if (!rank) {
@@ -661,8 +660,7 @@ PetscErrorCode  PetscSynchronizedFGets(MPI_Comm comm,FILE *fp,size_t len,char st
 
     if (!ptr) {
       string[0] = 0;
-      if (feof(fp)) len = 0;
-      else SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_FILE_READ, "Error reading from file: %d", errno);
+      if (!feof(fp)) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_FILE_READ, "Error reading from file: %d", errno);
     }
   }
   ierr = MPI_Bcast(string,len,MPI_BYTE,0,comm);CHKERRQ(ierr);
