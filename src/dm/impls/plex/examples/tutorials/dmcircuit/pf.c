@@ -11,409 +11,281 @@ Run this program: mpiexec -n <n> ./PF\n\
 
 PetscMPIInt rank;
 
+#define MAX_DATA_AT_POINT 10
+
+typedef PetscInt DataArrayType;
+
+typedef struct _p_PetscCircuitComponentHeader *PetscCircuitComponentHeader;
+struct _p_PetscCircuitComponentHeader {
+  PetscInt ndata; 
+  PetscInt size[MAX_DATA_AT_POINT];
+  PetscInt key[MAX_DATA_AT_POINT];
+  PetscInt offset[MAX_DATA_AT_POINT];
+};
+
+typedef struct _p_PetscCircuitComponentValue *PetscCircuitComponentValue;
+struct _p_PetscCircuitComponentValue {
+  void* data[MAX_DATA_AT_POINT];
+};
+
+typedef struct {
+  char name[20];
+  PetscInt size;
+}PetscCircuitComponent;
+
 typedef struct{
   PFDATA *pfdata;
-  PetscSection EdgeSection;
-  PetscSection VertexSection;
-  PetscSection GenSection;
-  PetscSection LoadSection;
-  PetscSection DofSection;
 }UserCtx;
 
-/* Returns PETSC_TRUE if the topological point is a ghost point */
-#undef __FUNCT__
-#define __FUNCT__ "DMPlexIsGhostPoint"
-PetscErrorCode DMPlexIsGhostPoint(DM dm,PetscInt p,PetscBool *isghost)
+struct _p_PetscCircuit{
+  PetscInt              NEdges; /* Number of global edges */
+  PetscInt              NNodes; /* Number of global nodes */
+  PetscInt              nEdges; /* Number of local edges */
+  PetscInt              nNodes; /* Number of local nodes */
+  PetscInt              *edges; /* Edge list */
+  PetscInt              pStart,pEnd,vStart,vEnd,eStart,eEnd;
+  DM                    dm;     /* DM */
+  PetscSection          DataSection; /* Section for managing parameter distribution */
+  PetscSection          DofSection;  /* Section for managing data distribution */
+  PetscInt              *arr; /* Array for holding and distributing the data */
+  PetscInt              ncomponent;
+  PetscCircuitComponent  component[10];
+  PetscCircuitComponentHeader header;  
+  PetscCircuitComponentValue  cvalue;
+  PetscInt               dataheadersize;
+  DataArrayType         *dataarray; /* Array to hold the data */
+};
+
+typedef struct _p_PetscCircuit *PetscCircuit;
+
+/* The interface needs a major rehaul. This is a quick implementation of the PetscCircuit interface */
+/* Creates an empty PetscCircuit object */
+#undef __FUNCT__ 
+#define __FUNCT__ "PetscCircuitCreate"
+PetscErrorCode PetscCircuitCreate(PetscCircuit *circuit)
 {
   PetscErrorCode ierr;
-  PetscInt       offsetg;
-  PetscSection   sectiong;
+  PetscCircuit   circ;
+  PetscFunctionBegin;
+  ierr = PetscNew(struct _p_PetscCircuit,&circ);CHKERRQ(ierr);
+  circ->NNodes = 0;
+  circ->nNodes = 0;
+  circ->NEdges = 0;
+  circ->nEdges = 0;
+  *circuit = circ;
+  PetscFunctionReturn(0);
+}
+
+/* Set the number of local/global edges and nodes */
+#undef __FUNCT__
+#define __FUNCT__ "PetscCircuitSetSizes"
+PetscErrorCode PetscCircuitSetSizes(PetscCircuit circuit,PetscInt nNodes,PetscInt nEdges,PetscInt NNodes,PetscInt NEdges)
+{
 
   PetscFunctionBegin;
-  *isghost = PETSC_FALSE;
-  ierr = DMGetDefaultGlobalSection(dm,&sectiong);CHKERRQ(ierr);
-  ierr = PetscSectionGetOffset(sectiong,p,&offsetg);CHKERRQ(ierr);
-  if (offsetg < 0) *isghost = PETSC_TRUE;
+  circuit->nNodes = nNodes;
+  circuit->nEdges = nEdges;
+  circuit->NNodes = NNodes;
+  circuit->NEdges = NEdges;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "SetInitialValues"
-PetscErrorCode SetInitialValues(DM dm,Vec X,void* appctx)
+#define __FUNCT__ "PetscCircuitSetEdges"
+PetscErrorCode PetscCircuitSetEdges(PetscCircuit circuit,PetscInt *edges)
 {
-  PetscErrorCode ierr;
-  UserCtx        *User=(UserCtx*)appctx;
-  PFDATA         *pfdata=(PFDATA*)User->pfdata;
-  VERTEXDATA     bus;
-  GEN            gen;
-  PetscInt       v,vstart,vend,offset,i;
-  PetscBool      ghostvtex;
-  Vec            localX;
-  PetscScalar    *xarr;
-  PetscSection  section;
-
   PetscFunctionBegin;
-
-  ierr = DMPlexGetHeightStratum(dm,1,&vstart,&vend);CHKERRQ(ierr);
-  ierr = DMGetDefaultSection(dm,&section);CHKERRQ(ierr);
-
-  ierr = DMGetLocalVector(dm,&localX);CHKERRQ(ierr);
-  ierr = VecSet(X,0.0);CHKERRQ(ierr);
-
-  ierr = DMGlobalToLocalBegin(dm,X,INSERT_VALUES,localX);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalEnd(dm,X,INSERT_VALUES,localX);CHKERRQ(ierr);
-  ierr = VecGetArray(localX,&xarr);CHKERRQ(ierr);
-  for (v = vstart; v < vend; v++) {
-    ierr = DMPlexIsGhostPoint(dm,v,&ghostvtex);CHKERRQ(ierr);
-    if (ghostvtex) continue;
-
-    ierr = PetscSectionGetOffset(section,v,&offset);CHKERRQ(ierr);
-    bus = &pfdata->bus[v-vstart];
-    xarr[offset] = bus->va*PETSC_PI/180.0;
-    xarr[offset+1] = bus->vm;
-    PetscInt dofg,offsetg;
-    ierr = PetscSectionGetDof(User->GenSection,v,&dofg);CHKERRQ(ierr);
-    if (dofg) {
-      ierr = PetscSectionGetOffset(User->GenSection,v,&offsetg);CHKERRQ(ierr);
-      offsetg = offsetg*sizeof(PetscInt)/sizeof(struct _p_GEN);
-      for (i = 0; i < bus->ngen;i++) {
-	gen = &pfdata->gen[offsetg+i];
-	if (!gen->status) continue;
-	xarr[offset+1] = gen->vs; 
-	break;
-      }
-    }
-  }
-  ierr = VecRestoreArray(localX,&xarr);CHKERRQ(ierr);
-  ierr = DMLocalToGlobalBegin(dm,localX,ADD_VALUES,X);CHKERRQ(ierr);
-  ierr = DMLocalToGlobalEnd(dm,localX,ADD_VALUES,X);CHKERRQ(ierr);
-  ierr = DMRestoreLocalVector(dm,&localX);CHKERRQ(ierr);
+  circuit->edges = edges;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "FormFunction"
-PetscErrorCode FormFunction(SNES snes,Vec X, Vec F,void *appctx)
+#define __FUNCT__ "PetscCircuitLayoutSetUp"
+PetscErrorCode PetscCircuitLayoutSetUp(PetscCircuit circuit)
 {
   PetscErrorCode ierr;
-  DM             dm;
-  UserCtx       *User=(UserCtx*)appctx;
-  PFDATA        *pfdata=(PFDATA*)User->pfdata;
-  Vec           localX,localF;
-  PetscInt      e;
-  PetscInt      v,vStart,vEnd,vfrom,vto;
-  PetscSection  section;
-  const PetscScalar *xarr;
-  PetscScalar   *farr;
-  PetscInt      offsetfrom,offsetto;
+  PetscInt       dim = 1; /* One dimensional circuit */
+  PetscInt       numCorners=2;
+  PetscInt       spacedim=2;
+  double         *vertexcoords=NULL;
+  PetscInt       i;
 
   PetscFunctionBegin;
-  ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
-  ierr = DMGetLocalVector(dm,&localX);CHKERRQ(ierr);
-  ierr = DMGetLocalVector(dm,&localF);CHKERRQ(ierr);
-  ierr = VecSet(F,0.0);CHKERRQ(ierr);
-
-  ierr = DMGlobalToLocalBegin(dm,X,INSERT_VALUES,localX);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalEnd(dm,X,INSERT_VALUES,localX);CHKERRQ(ierr);
-
-  ierr = DMGlobalToLocalBegin(dm,F,INSERT_VALUES,localF);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalEnd(dm,F,INSERT_VALUES,localF);CHKERRQ(ierr);
-
-  ierr = DMGetDefaultSection(dm,&section);CHKERRQ(ierr);
-
-  ierr = VecGetArrayRead(localX,&xarr);CHKERRQ(ierr);
-  ierr = VecGetArray(localF,&farr);CHKERRQ(ierr);
-
-  ierr = DMPlexGetHeightStratum(dm,1,&vStart,&vEnd);CHKERRQ(ierr);
-  for (v=vStart; v < vEnd; v++) {
-    PetscInt    offset,i;
-    PetscScalar Vm;
-    PetscScalar Sbase=pfdata->sbase;
-    VERTEXDATA  bus;
-    GEN         gen;
-    LOAD        load;
-    PetscBool   ghostvtex;
-
-    ierr = DMPlexIsGhostPoint(dm,v,&ghostvtex);CHKERRQ(ierr);
-    ierr = PetscSectionGetOffset(section,v,&offset);CHKERRQ(ierr);
-
-    bus = &pfdata->bus[v-vStart];
-    /* Handle reference bus constrained dofs */
-    if (bus->ide == REF_BUS || bus->ide == ISOLATED_BUS) {
-      farr[offset] = 0.0;
-      farr[offset+1] = 0.0;
-      continue;
-    }
-
-    if (!ghostvtex) {
-      Vm = xarr[offset+1];
-
-      /* Shunt injections */
-      farr[offset] += Vm*Vm*bus->gl/Sbase;
-      farr[offset+1] += -Vm*Vm*bus->bl/Sbase;
-
-      PetscInt dofg, offsetg;
-      /* Generators */
-      ierr = PetscSectionGetDof(User->GenSection,v,&dofg);CHKERRQ(ierr);
-      if (dofg) {
-	ierr = PetscSectionGetOffset(User->GenSection,v,&offsetg);CHKERRQ(ierr);
-	offsetg = offsetg*sizeof(PetscInt)/sizeof(struct _p_GEN);
-	for (i = 0; i < bus->ngen;i++) {
-	  gen = &pfdata->gen[offsetg+i];
-	  if (!gen->status) continue;
-	  farr[offset] += -gen->pg/Sbase;
-	  farr[offset+1] += -gen->qg/Sbase;
-	}
-      }
-      /* Const power loads */
-      PetscInt dofl,offsetl;
-      ierr = PetscSectionGetDof(User->LoadSection,v,&dofl);CHKERRQ(ierr);
-      if (dofl) {
-	ierr = PetscSectionGetOffset(User->LoadSection,v,&offsetl);CHKERRQ(ierr);
-	offsetl = offsetl*sizeof(PetscInt)/sizeof(struct _p_LOAD);
-	for (i = 0; i < bus->nload; i++) {
-	  load = &pfdata->load[offsetl+i];
-	  farr[offset] += load->pl/Sbase;
-	  farr[offset+1] += load->ql/Sbase;
-	}
-      }
-    }
-    PetscInt nconnedges;
-    const PetscInt *connedges;
-
-    ierr = DMPlexGetSupportSize(dm,v,&nconnedges);CHKERRQ(ierr);
-    ierr = DMPlexGetSupport(dm,v,&connedges);CHKERRQ(ierr);
-
-    for (i=0; i < nconnedges; i++) {
-      EDGEDATA branch;
-      e = connedges[i];
-      branch = &pfdata->branch[e];
-      if (!branch->status) continue;
-      PetscScalar Gff,Bff,Gft,Bft,Gtf,Btf,Gtt,Btt;
-      Gff = branch->yff[0];
-      Bff = branch->yff[1];
-      Gft = branch->yft[0];
-      Bft = branch->yft[1];
-      Gtf = branch->ytf[0];
-      Btf = branch->ytf[1];
-      Gtt = branch->ytt[0];
-      Btt = branch->ytt[1];
-
-      const PetscInt *cone;
-      ierr = DMPlexGetCone(dm,e,&cone);CHKERRQ(ierr);
-      vfrom = cone[0];
-      vto   = cone[1];
-
-      ierr = PetscSectionGetOffset(section,vfrom,&offsetfrom);CHKERRQ(ierr);
-      ierr = PetscSectionGetOffset(section,vto,&offsetto);CHKERRQ(ierr);
-
-      PetscScalar Vmf,Vmt,thetaf,thetat,thetaft,thetatf;
-
-      thetaf = xarr[offsetfrom];
-      Vmf     = xarr[offsetfrom+1];
-      thetat = xarr[offsetto];
-      Vmt     = xarr[offsetto+1];
-      thetaft = thetaf - thetat;
-      thetatf = thetat - thetaf;
-
-      if (vfrom == v) {
-	farr[offsetfrom]   += Gff*Vmf*Vmf + Vmf*Vmt*(Gft*cos(thetaft) + Bft*sin(thetaft));
-	farr[offsetfrom+1] += -Bff*Vmf*Vmf + Vmf*Vmt*(-Bft*cos(thetaft) + Gft*sin(thetaft));
-      } else {
-	farr[offsetto]   += Gtt*Vmt*Vmt + Vmt*Vmf*(Gtf*cos(thetatf) + Btf*sin(thetatf));
-	farr[offsetto+1] += -Btt*Vmt*Vmt + Vmt*Vmf*(-Btf*cos(thetatf) + Gtf*sin(thetatf));
-      }
-    }
-
-    /* Handle PV bus constrained dofs */
-    if (bus->ide == PV_BUS) {
-      farr[offset+1] = 0.0;
-    }						    
+  if (circuit->nNodes) {
+    ierr = PetscMalloc(numCorners*circuit->nNodes*sizeof(PetscInt),&vertexcoords);CHKERRQ(ierr);
   }
+  ierr = DMPlexCreateFromCellList(PETSC_COMM_WORLD,dim,circuit->nEdges,circuit->nNodes,numCorners,PETSC_FALSE,circuit->edges,spacedim,vertexcoords,&circuit->dm);CHKERRQ(ierr);
+  ierr = DMPlexGetChart(circuit->dm,&circuit->pStart,&circuit->pEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(circuit->dm,0,&circuit->eStart,&circuit->eEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(circuit->dm,1,&circuit->vStart,&circuit->vEnd);CHKERRQ(ierr);
+  
+  ierr = PetscSectionCreate(PETSC_COMM_WORLD,&circuit->DataSection);CHKERRQ(ierr);
+  ierr = PetscSectionCreate(PETSC_COMM_WORLD,&circuit->DofSection);CHKERRQ(ierr);
+  ierr = PetscSectionSetChart(circuit->DataSection,circuit->pStart,circuit->pEnd);CHKERRQ(ierr);
+  ierr = PetscSectionSetChart(circuit->DofSection,circuit->pStart,circuit->pEnd);CHKERRQ(ierr);
 
-  ierr = VecRestoreArrayRead(localX,&xarr);CHKERRQ(ierr);
-  ierr = VecRestoreArray(localF,&farr);CHKERRQ(ierr);
-  ierr = DMRestoreLocalVector(dm,&localX);CHKERRQ(ierr);
-
-  ierr = DMLocalToGlobalBegin(dm,localF,ADD_VALUES,F);CHKERRQ(ierr);
-  ierr = DMLocalToGlobalEnd(dm,localF,ADD_VALUES,F);CHKERRQ(ierr);
-  ierr = DMRestoreLocalVector(dm,&localF);CHKERRQ(ierr);
+  circuit->dataheadersize = sizeof(struct _p_PetscCircuitComponentHeader)/sizeof(DataArrayType);
+  ierr = PetscMalloc((circuit->pEnd-circuit->pStart)*sizeof(struct _p_PetscCircuitComponentHeader),&circuit->header);CHKERRQ(ierr);
+  for (i = circuit->pStart; i < circuit->pEnd; i++) {
+    PetscInt ndata;
+    circuit->header[i].ndata = 0;
+    ndata = circuit->header[i].ndata;
+    ierr = PetscSectionAddDof(circuit->DataSection,i,circuit->dataheadersize);CHKERRQ(ierr);
+    circuit->header[i].offset[ndata] = 0;
+  }
+  ierr = PetscMalloc((circuit->pEnd-circuit->pStart)*sizeof(struct _p_PetscCircuitComponentValue),&circuit->cvalue);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "FormJacobian"
-PetscErrorCode FormJacobian(SNES snes,Vec X, Mat *J,Mat *Jpre,MatStructure *flg,void *appctx)
+#define __FUNCT__ "PetscCircuitRegisterComponent"
+PetscErrorCode PetscCircuitRegisterComponent(PetscCircuit circuit,const char *name,PetscInt size,PetscInt *componentkey)
 {
   PetscErrorCode ierr;
-  DM             dm;
-  UserCtx       *User=(UserCtx*)appctx;
-  PFDATA        *pfdata=(PFDATA*)User->pfdata;
-  Vec           localX;
-  PetscInt      e;
-  PetscInt      v,vStart,vEnd,vfrom,vto;
-  PetscSection  section,gsection;
-  const PetscScalar *xarr;
-  PetscInt      offsetfrom,offsetto,goffsetfrom,goffsetto;
-  PetscInt      row[2],col[8];
-  PetscScalar   values[8];
+  PetscCircuitComponent *component=&circuit->component[circuit->ncomponent];
+  PetscFunctionBegin;
+
+  /* Skipping string comparison for now to check if the parameter already exists */
+  ierr = PetscStrcpy(component->name,name);CHKERRQ(ierr);
+  component->size = size/sizeof(DataArrayType);
+  *componentkey = circuit->ncomponent;
+  circuit->ncomponent++;
+  PetscFunctionReturn(0);
+}
+  
+#undef __FUNCT__
+#define __FUNCT__ "PetscCircuitGetVertexRange"
+PetscErrorCode PetscCircuitGetVertexRange(PetscCircuit circuit,PetscInt *vStart,PetscInt *vEnd)
+{
 
   PetscFunctionBegin;
-  *flg = SAME_NONZERO_PATTERN;
-  ierr = MatZeroEntries(*J);CHKERRQ(ierr);
+  if (vStart) *vStart = circuit->vStart;
+  if (vEnd) *vEnd = circuit->vEnd;
+  PetscFunctionReturn(0);
+}
 
-  ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
-  ierr = DMGetLocalVector(dm,&localX);CHKERRQ(ierr);
+#undef __FUNCT__
+#define __FUNCT__ "PetscCircuitGetEdgeRange"
+PetscErrorCode PetscCircuitGetEdgeRange(PetscCircuit circuit,PetscInt *eStart,PetscInt *eEnd)
+{
 
-  ierr = DMGlobalToLocalBegin(dm,X,INSERT_VALUES,localX);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalEnd(dm,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  PetscFunctionBegin;
+  if (eStart) *eStart = circuit->eStart;
+  if (eEnd) *eEnd = circuit->eEnd;
+  PetscFunctionReturn(0);
+}
 
-  ierr = DMGetDefaultSection(dm,&section);CHKERRQ(ierr);
-  ierr = DMGetDefaultGlobalSection(dm,&gsection);CHKERRQ(ierr);
+#undef __FUNCT__
+#define __FUNCT__ "PetscCircuitAddComponent"
+PetscErrorCode PetscCircuitAddComponent(PetscCircuit circuit, PetscInt p,PetscInt componentkey,void* compvalue)
+{
+  PetscCircuitComponent component=circuit->component[componentkey];
+  PetscCircuitComponentHeader header=&circuit->header[p];
+  PetscCircuitComponentValue  cvalue=&circuit->cvalue[p];
+  PetscErrorCode         ierr;
+  
+  PetscFunctionBegin;
+  header->size[header->ndata] = component.size;
+  ierr = PetscSectionAddDof(circuit->DataSection,p,component.size);CHKERRQ(ierr);
+  header->key[header->ndata] = componentkey;
+  if (header->ndata != 0) header->offset[header->ndata] = header->offset[header->ndata-1] + header->size[header->ndata-1]; 
 
-  ierr = VecGetArrayRead(localX,&xarr);CHKERRQ(ierr);
+  cvalue->data[header->ndata] = (void*)compvalue;
+  header->ndata++;
+  PetscFunctionReturn(0);
+}
 
-  ierr = DMPlexGetHeightStratum(dm,1,&vStart,&vEnd);CHKERRQ(ierr);
-  for (v=vStart; v < vEnd; v++) {
-    PetscInt offset,goffset,i;
-    PetscScalar Vm;
-    PetscScalar Sbase=pfdata->sbase;
-    VERTEXDATA         bus;
-    PetscBool   ghostvtex;
+#undef __FUNCT__
+#define __FUNCT__ "PetscCircuitGetNumComponents"
+PetscErrorCode PetscCircuitGetNumComponents(PetscCircuit circuit,PetscInt p,PetscInt *numcomponents)
+{
+  PetscErrorCode ierr;
+  PetscInt       offset;
+  PetscFunctionBegin;
+  ierr = PetscSectionGetOffset(circuit->DataSection,p,&offset);CHKERRQ(ierr);
+  *numcomponents = ((PetscCircuitComponentHeader)(circuit->dataarray+offset))->ndata;
+  PetscFunctionReturn(0);
+}
 
-    ierr = DMPlexIsGhostPoint(dm,v,&ghostvtex);CHKERRQ(ierr);
-    ierr = PetscSectionGetOffset(section,v,&offset);CHKERRQ(ierr);
-    ierr = PetscSectionGetOffset(gsection,v,&goffset);CHKERRQ(ierr);
+#undef __FUNCT__
+#define __FUNCT__ "PetscCircuitGetComponentTypeOffset"
+PetscErrorCode PetscCircuitGetComponentTypeOffset(PetscCircuit circuit,PetscInt p, PetscInt compnum, PetscInt *compkey, PetscInt *offset)
+{
+  PetscErrorCode ierr;
+  PetscInt       offsetp;
+  PetscCircuitComponentHeader header;
+  PetscFunctionBegin;
+  ierr = PetscSectionGetOffset(circuit->DataSection,p,&offsetp);CHKERRQ(ierr);
+  header = (PetscCircuitComponentHeader)(circuit->dataarray+offsetp);
+  *compkey = header->key[compnum];
+  *offset  = header->offset[compnum];
+  PetscFunctionReturn(0);
+}
 
-    bus = &pfdata->bus[v-vStart];
-    if (!ghostvtex) {
-      /* Handle reference bus constrained dofs */
-      if (bus->ide == REF_BUS || bus->ide == ISOLATED_BUS) {
-	row[0] = goffset; row[1] = goffset+1;
-	col[0] = goffset; col[1] = goffset+1; col[2] = goffset; col[3] = goffset+1;
-	values[0] = 1.0; values[1] = 0.0; values[2] = 0.0; values[3] = 1.0;
-	ierr = MatSetValues(*J,2,row,2,col,values,ADD_VALUES);CHKERRQ(ierr);
-	continue;
-      }
+#undef __FUNCT__
+#define __FUNCT__ "PetscCircuitAddNumVariables"
+PetscErrorCode PetscCircuitAddNumVariables(PetscCircuit circuit,PetscInt p,PetscInt nvar)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  ierr = PetscSectionAddDof(circuit->DofSection,p,nvar);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
-      Vm = xarr[offset+1];
-
-      /* Shunt injections */
-      row[0] = goffset; row[1] = goffset+1;
-      col[0] = goffset; col[1] = goffset+1; col[2] = goffset; col[3] = goffset+1;
-      values[0] = 2*Vm*bus->gl/Sbase;
-      values[1] = values[2] = 0.0;
-      values[3] = -2*Vm*bus->bl/Sbase;
-
-      ierr = MatSetValues(*J,2,row,2,col,values,ADD_VALUES);CHKERRQ(ierr);
-
-    }
-    PetscInt nconnedges;
-    const PetscInt *connedges;
-
-    ierr = DMPlexGetSupportSize(dm,v,&nconnedges);CHKERRQ(ierr);
-    ierr = DMPlexGetSupport(dm,v,&connedges);CHKERRQ(ierr);
-
-    for (i=0; i < nconnedges; i++) {
-      EDGEDATA branch;
-      e = connedges[i];
-      branch = &pfdata->branch[e];
-      if (!branch->status) continue;
-      PetscScalar Gff,Bff,Gft,Bft,Gtf,Btf,Gtt,Btt;
-      Gff = branch->yff[0];
-      Bff = branch->yff[1];
-      Gft = branch->yft[0];
-      Bft = branch->yft[1];
-      Gtf = branch->ytf[0];
-      Btf = branch->ytf[1];
-      Gtt = branch->ytt[0];
-      Btt = branch->ytt[1];
-
-      const PetscInt *cone;
-      ierr = DMPlexGetCone(dm,e,&cone);CHKERRQ(ierr);
-      vfrom = cone[0];
-      vto   = cone[1];
-
-      ierr = PetscSectionGetOffset(section,vfrom,&offsetfrom);CHKERRQ(ierr);
-      ierr = PetscSectionGetOffset(section,vto,&offsetto);CHKERRQ(ierr);
-      ierr = PetscSectionGetOffset(gsection,vfrom,&goffsetfrom);CHKERRQ(ierr);
-      ierr = PetscSectionGetOffset(gsection,vto,&goffsetto);CHKERRQ(ierr);
-
-      if (goffsetfrom < 0) goffsetfrom = -goffsetfrom - 1; /* Convert to actual global offset for ghost nodes, global offset is -(gstart+1) */
-      if (goffsetto < 0) goffsetto = -goffsetto - 1;
-      PetscScalar Vmf,Vmt,thetaf,thetat,thetaft,thetatf;
-
-      thetaf = xarr[offsetfrom];
-      Vmf     = xarr[offsetfrom+1];
-      thetat = xarr[offsetto];
-      Vmt     = xarr[offsetto+1];
-      thetaft = thetaf - thetat;
-      thetatf = thetat - thetaf;
-
-      VERTEXDATA busf,bust;
-      busf = &pfdata->bus[vfrom-vStart];
-      bust = &pfdata->bus[vto-vStart];
-
-      if (vfrom == v) {
-	/*    farr[offsetfrom]   += Gff*Vmf*Vmf + Vmf*Vmt*(Gft*cos(thetaft) + Bft*sin(thetaft));  */
-	row[0]  = goffsetfrom;
-	col[0]  = goffsetfrom; col[1] = goffsetfrom+1; col[2] = goffsetto; col[3] = goffsetto+1;
-	values[0] =  Vmf*Vmt*(Gft*-sin(thetaft) + Bft*cos(thetaft)); /* df_dthetaf */    
-	values[1] =  2*Gff*Vmf + Vmt*(Gft*cos(thetaft) + Bft*sin(thetaft)); /* df_dVmf */
-	values[2] =  Vmf*Vmt*(Gft*sin(thetaft) + Bft*-cos(thetaft)); /* df_dthetat */
-	values[3] =  Vmf*(Gft*cos(thetaft) + Bft*sin(thetaft)); /* df_dVmt */
-
-	ierr = MatSetValues(*J,1,row,4,col,values,ADD_VALUES);CHKERRQ(ierr);
-
-	if (busf->ide != PV_BUS) {
-	  row[0] = goffsetfrom+1;
-	  col[0]  = goffsetfrom; col[1] = goffsetfrom+1; col[2] = goffsetto; col[3] = goffsetto+1;
-	  /*    farr[offsetfrom+1] += -Bff*Vmf*Vmf + Vmf*Vmt*(-Bft*cos(thetaft) + Gft*sin(thetaft)); */
-	  values[0] =  Vmf*Vmt*(Bft*sin(thetaft) + Gft*cos(thetaft));
-	  values[1] =  -2*Bff*Vmf + Vmt*(-Bft*cos(thetaft) + Gft*sin(thetaft));
-	  values[2] =  Vmf*Vmt*(-Bft*sin(thetaft) + Gft*-cos(thetaft));
-	  values[3] =  Vmf*(-Bft*cos(thetaft) + Gft*sin(thetaft));
-	  
-	  ierr = MatSetValues(*J,1,row,4,col,values,ADD_VALUES);CHKERRQ(ierr);
-	}
-
-      } else {
-	row[0] = goffsetto;
-	col[0] = goffsetto; col[1] = goffsetto+1; col[2] = goffsetfrom; col[3] = goffsetfrom+1;
-	/*    farr[offsetto]   += Gtt*Vmt*Vmt + Vmt*Vmf*(Gtf*cos(thetatf) + Btf*sin(thetatf)); */
-	values[0] =  Vmt*Vmf*(Gtf*-sin(thetatf) + Btf*cos(thetaft)); /* df_dthetat */
-        values[1] =  2*Gtt*Vmt + Vmf*(Gtf*cos(thetatf) + Btf*sin(thetatf)); /* df_dVmt */
-	values[2] =  Vmt*Vmf*(Gtf*sin(thetatf) + Btf*-cos(thetatf)); /* df_dthetaf */
-	values[3] =  Vmt*(Gtf*cos(thetatf) + Btf*sin(thetatf)); /* df_dVmf */
-
-	ierr = MatSetValues(*J,1,row,4,col,values,ADD_VALUES);CHKERRQ(ierr);
-
-	if (bust->ide != PV_BUS) {
-	  row[0] = goffsetto+1;
-	  col[0] = goffsetto; col[1] = goffsetto+1; col[2] = goffsetfrom; col[3] = goffsetfrom+1;
-	  /*    farr[offsetto+1] += -Btt*Vmt*Vmt + Vmt*Vmf*(-Btf*cos(thetatf) + Gtf*sin(thetatf)); */
-	  values[0] =  Vmt*Vmf*(Btf*sin(thetatf) + Gtf*cos(thetatf));
-	  values[1] =  -2*Btt*Vmt + Vmf*(-Btf*cos(thetatf) + Gtf*sin(thetatf));
-	  values[2] =  Vmt*Vmf*(-Btf*sin(thetatf) + Gtf*-cos(thetatf));
-	  values[3] =  Vmt*(-Btf*cos(thetatf) + Gtf*sin(thetatf));
-	  
-	  ierr = MatSetValues(*J,1,row,4,col,values,ADD_VALUES);CHKERRQ(ierr);
-	}
-      }
-    }
-
-    if (bus->ide == PV_BUS) {
-      row[0] = goffset+1; col[0] = goffset+1;
-      values[0]  = 1.0;
-      ierr = MatSetValues(*J,1,row,1,col,values,ADD_VALUES);CHKERRQ(ierr);
+/* This can be removed later */
+#undef __FUNCT__
+#define __FUNCT__ "PetscCircuitComponentSetUp"
+PetscErrorCode PetscCircuitComponentSetUp(PetscCircuit circuit)
+{
+  PetscErrorCode              ierr;
+  PetscInt                    arr_size;
+  PetscInt                    p,offset;
+  PetscCircuitComponentHeader header;
+  PetscCircuitComponentValue  cvalue;
+  DataArrayType               *dataarray;
+  PetscFunctionBegin;
+  ierr = PetscSectionSetUp(circuit->DataSection);CHKERRQ(ierr);
+  ierr = PetscSectionGetStorageSize(circuit->DataSection,&arr_size);CHKERRQ(ierr);
+  ierr = PetscMalloc(arr_size*sizeof(DataArrayType),&circuit->dataarray);CHKERRQ(ierr);
+  dataarray = circuit->dataarray;
+  for (p = circuit->pStart; p < circuit->pEnd; p++) {
+    ierr = PetscSectionGetOffset(circuit->DataSection,p,&offset);CHKERRQ(ierr);
+    /* Copy header */
+    header = &circuit->header[p];
+    ierr = PetscMemcpy(dataarray+offset,header,circuit->dataheadersize*sizeof(DataArrayType));
+    /* Copy data */
+    offset += circuit->dataheadersize;
+    cvalue = &circuit->cvalue[p];
+    PetscInt ncomp=header->ndata,i;
+    for (i = 0; i < ncomp; i++) {
+      offset += header->offset[i];
+      ierr = PetscMemcpy(dataarray+offset,cvalue->data[i],header->size[i]*sizeof(DataArrayType));
     }
   }
 
-  ierr = VecRestoreArrayRead(localX,&xarr);CHKERRQ(ierr);
-  ierr = DMRestoreLocalVector(dm,&localX);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
-  ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+#undef __FUNCT__
+#define __FUNCT__ "PetscCircuitVariablesSetUp"
+PetscErrorCode PetscCircuitVariablesSetUp(PetscCircuit circuit)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+
+  ierr = PetscSectionSetUp(circuit->DofSection);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscCircuitGetDataArray"
+PetscErrorCode PetscCircuitGetDataArray(PetscCircuit circuit,PetscInt p, DataArrayType **dataarray)
+{
+  PetscErrorCode ierr;
+  PetscInt       offset;
+  PetscFunctionBegin;
+  ierr = PetscSectionGetOffset(circuit->DataSection,p,&offset);CHKERRQ(ierr);
+  *dataarray = circuit->dataarray+offset+circuit->dataheadersize;
   PetscFunctionReturn(0);
 }
 
@@ -436,28 +308,26 @@ PetscErrorCode GetListofEdges(PetscInt nbranches, EDGEDATA branch,PetscInt *edge
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
-
 int main(int argc,char ** argv)
 {
   PetscErrorCode       ierr;
   char                 pfdata_file[PETSC_MAX_PATH_LEN]="datafiles/case9.m";
   UserCtx              User;
   PFDATA               pfdata;
-  DM                   dm;
-  DM                   distributedmesh;
-  const char *partitioner = "chaco";
-  PetscInt             dim=1,numEdges=0,numVertices=0,numCorners=0,spaceDim=2;
+  PetscInt             numEdges=0,numVertices=0;
   PetscInt             *edges = NULL;
-  double               *vertexCoords = NULL;
   PetscInt             i;  
-  SNES                 snes;
+  PetscCircuit         circuit;
+  PetscInt             componentkey[4];
 
   PetscInitialize(&argc,&argv,"pfoptions",help);
 
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
+  ierr = PetscCircuitCreate(&circuit);CHKERRQ(ierr);
+  /* READ THE DATA */
   if (!rank) {
-    /*    READ PARAMETERS */
+    /*    READ DATA */
     /* Only rank 0 reads the data */
     ierr = PetscOptionsGetString(PETSC_NULL,"-pfdata",pfdata_file,PETSC_MAX_PATH_LEN-1,NULL);CHKERRQ(ierr);
     ierr = PFReadMatPowerData(&pfdata,pfdata_file);CHKERRQ(ierr);
@@ -485,115 +355,62 @@ int main(int argc,char ** argv)
     numEdges = pfdata.nbranch;
     
     numVertices = pfdata.nbus;
-    numCorners = 2; /* Each edge is connected to two vertices */
-    ierr = PetscMalloc(numCorners*numEdges*sizeof(PetscInt),&edges);CHKERRQ(ierr);
+    ierr = PetscMalloc(2*numEdges*sizeof(PetscInt),&edges);CHKERRQ(ierr);
     ierr = GetListofEdges(pfdata.nbranch,pfdata.branch,edges);CHKERRQ(ierr);
-
-    ierr = PetscMalloc(numCorners*numVertices*sizeof(PetscInt),&vertexCoords);CHKERRQ(ierr);
   }
+  ierr = PetscCircuitSetSizes(circuit,numVertices,numEdges,numVertices,numEdges);CHKERRQ(ierr);
+  ierr = PetscCircuitSetEdges(circuit,edges);CHKERRQ(ierr);
+  ierr = PetscCircuitLayoutSetUp(circuit);CHKERRQ(ierr);
 
-  /* ENTIRE MESH CREATED ON PROCESS 0 */
-  ierr = DMPlexCreateFromCellList(PETSC_COMM_WORLD,dim,numEdges,numVertices,numCorners,PETSC_FALSE,edges,spaceDim,vertexCoords,&dm);CHKERRQ(ierr);
+  ierr = PetscCircuitRegisterComponent(circuit,"branchstruct",sizeof(struct _p_EDGEDATA),&componentkey[0]);CHKERRQ(ierr);
+  ierr = PetscCircuitRegisterComponent(circuit,"busstruct",sizeof(struct _p_VERTEXDATA),&componentkey[1]);CHKERRQ(ierr);
+  ierr = PetscCircuitRegisterComponent(circuit,"genstruct",sizeof(struct _p_GEN),&componentkey[2]);CHKERRQ(ierr);
+  ierr = PetscCircuitRegisterComponent(circuit,"loadstruct",sizeof(struct _p_LOAD),&componentkey[3]);CHKERRQ(ierr);
 
-  PetscInt eStart,eEnd,vStart,vEnd,pStart,pEnd;
-  ierr = DMPlexGetChart(dm,&pStart,&pEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetHeightStratum(dm,0,&eStart,&eEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetHeightStratum(dm,1,&vStart,&vEnd);CHKERRQ(ierr);
-
-  PetscSection oldEdgeSection, oldVertexSection,oldGenSection,oldLoadSection,oldDofSection;
-  ierr = PetscSectionCreate(PETSC_COMM_WORLD,&oldEdgeSection);CHKERRQ(ierr);
-  ierr = PetscSectionCreate(PETSC_COMM_WORLD,&oldDofSection);CHKERRQ(ierr);
-  ierr = PetscSectionSetChart(oldDofSection,pStart,pEnd);CHKERRQ(ierr);
-  ierr = PetscSectionSetChart(oldEdgeSection,eStart,eEnd);CHKERRQ(ierr);
-
+  PetscInt eStart, eEnd, vStart, vEnd,j;
+  PetscInt genj=0,loadj=0;
+  ierr = PetscCircuitGetEdgeRange(circuit,&eStart,&eEnd);CHKERRQ(ierr);
   for (i = eStart; i < eEnd; i++) {
-    ierr = PetscSectionSetDof(oldEdgeSection,i,sizeof(struct _p_EDGEDATA)/sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscCircuitAddComponent(circuit,i,componentkey[0],&pfdata.branch[i-eStart]);CHKERRQ(ierr);
   }
-  ierr = PetscSectionSetUp(oldEdgeSection);CHKERRQ(ierr);
-
-  ierr = PetscSectionCreate(PETSC_COMM_WORLD,&oldVertexSection);CHKERRQ(ierr);
-  ierr = PetscSectionCreate(PETSC_COMM_WORLD,&oldGenSection);CHKERRQ(ierr);
-  ierr = PetscSectionCreate(PETSC_COMM_WORLD,&oldLoadSection);CHKERRQ(ierr);
-  ierr = PetscSectionSetChart(oldVertexSection,vStart,vEnd);CHKERRQ(ierr);
-  ierr = PetscSectionSetChart(oldGenSection,vStart,vEnd);CHKERRQ(ierr);
-  ierr = PetscSectionSetChart(oldLoadSection,vStart,vEnd);CHKERRQ(ierr);
-
+  ierr = PetscCircuitGetVertexRange(circuit,&vStart,&vEnd);CHKERRQ(ierr);
   for (i = vStart; i < vEnd; i++) {
-    ierr = PetscSectionSetDof(oldVertexSection,i,sizeof(struct _p_VERTEXDATA)/sizeof(PetscInt));CHKERRQ(ierr);
-    ierr = PetscSectionSetDof(oldGenSection,i,pfdata.bus[i-vStart].ngen*sizeof(struct _p_GEN)/sizeof(PetscInt));CHKERRQ(ierr);
-    ierr = PetscSectionSetDof(oldLoadSection,i,pfdata.bus[i-vStart].nload*sizeof(struct _p_LOAD)/sizeof(PetscInt));CHKERRQ(ierr);
-    ierr = PetscSectionSetDof(oldDofSection,i,2);CHKERRQ(ierr);
-  }
-  ierr = PetscSectionSetUp(oldVertexSection);CHKERRQ(ierr);
-  ierr = PetscSectionSetUp(oldGenSection);CHKERRQ(ierr);
-  ierr = PetscSectionSetUp(oldLoadSection);CHKERRQ(ierr);
-  ierr = PetscSectionSetUp(oldDofSection);CHKERRQ(ierr);
-
-
-  PetscSF pointsf;
-  EDGEDATA  localedgedata;
-  VERTEXDATA localvertexdata;
-  GEN        localgendata;
-  LOAD       localloaddata;
-
-  /* DISTRIBUTE MESH */
-  ierr = DMPlexDistribute(dm,partitioner,0,&pointsf,&distributedmesh);CHKERRQ(ierr);
-  if (distributedmesh) {
-    ierr = DMDestroy(&dm);CHKERRQ(ierr);
-    dm = distributedmesh;
-    ierr = PetscSectionCreate(PETSC_COMM_WORLD,&User.EdgeSection);CHKERRQ(ierr);
-    ierr = PetscSectionCreate(PETSC_COMM_WORLD,&User.VertexSection);CHKERRQ(ierr);
-    ierr = PetscSectionCreate(PETSC_COMM_WORLD,&User.GenSection);CHKERRQ(ierr);
-    ierr = PetscSectionCreate(PETSC_COMM_WORLD,&User.LoadSection);CHKERRQ(ierr);
-    ierr = PetscSectionCreate(PETSC_COMM_WORLD,&User.DofSection);CHKERRQ(ierr);
-
-    ierr = DMPlexDistributeData(dm,pointsf,oldEdgeSection,MPI_INT,(void*)pfdata.branch,User.EdgeSection,(void**)&localedgedata);CHKERRQ(ierr);
-    ierr = DMPlexDistributeData(dm,pointsf,oldVertexSection,MPI_INT,(void*)pfdata.bus,User.VertexSection,(void**)&localvertexdata);CHKERRQ(ierr);
-    ierr = DMPlexDistributeData(dm,pointsf,oldGenSection,MPI_INT,(void*)pfdata.gen,User.GenSection,(void**)&localgendata);CHKERRQ(ierr);
-    ierr = DMPlexDistributeData(dm,pointsf,oldLoadSection,MPI_INT,(void*)pfdata.load,User.LoadSection,(void**)&localloaddata);CHKERRQ(ierr);
-
-    ierr = PetscSFDistributeSection(pointsf,oldDofSection,NULL,User.DofSection);CHKERRQ(ierr);
-    if (!rank) {
-      ierr = PetscFree(pfdata.branch);CHKERRQ(ierr);
-      ierr = PetscFree(pfdata.bus);CHKERRQ(ierr);
-      ierr = PetscFree(pfdata.gen);CHKERRQ(ierr);
-      ierr = PetscFree(pfdata.load);CHKERRQ(ierr);
+    ierr = PetscCircuitAddComponent(circuit,i,componentkey[1],&pfdata.bus[i-vStart]);CHKERRQ(ierr);
+    if (pfdata.bus[i-vStart].ngen) {
+      for (j = 0; j < pfdata.bus[i-vStart].ngen; j++) {
+	ierr = PetscCircuitAddComponent(circuit,i,componentkey[2],&pfdata.gen[genj++]);CHKERRQ(ierr);
+      }
     }
-    pfdata.branch = localedgedata;
-    pfdata.bus    = localvertexdata;
-    pfdata.gen    = localgendata;
-    pfdata.load   = localloaddata;
-  } else {
-    User.EdgeSection = oldEdgeSection;
-    User.VertexSection = oldVertexSection;
-    User.GenSection    = oldGenSection;
-    User.LoadSection  = oldLoadSection;
-    User.DofSection   = oldDofSection;
+    if (pfdata.bus[i-vStart].nload) {
+      for (j=0; j < pfdata.bus[i-vStart].nload; j++) {
+	ierr = PetscCircuitAddComponent(circuit,i,componentkey[3],&pfdata.load[loadj++]);CHKERRQ(ierr);
+      }
+    }
+    /* Add number of variables */
+    ierr = PetscCircuitAddNumVariables(circuit,i,2);CHKERRQ(ierr);
   }
-  ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
+  ierr = PetscCircuitComponentSetUp(circuit);CHKERRQ(ierr);
+  ierr = PetscCircuitVariablesSetUp(circuit);CHKERRQ(ierr);
+
+  PetscInt numComponents;
+  EDGEDATA edge;
+  for (i = eStart; i < eEnd; i++) {
+    ierr = PetscCircuitGetDataArray(circuit,i,(DataArrayType**)&edge);CHKERRQ(ierr);
+    ierr = PetscCircuitGetNumComponents(circuit,i,&numComponents);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"Rank %d ncomps = %d Line %d ---- %d\n",rank,numComponents,edge->internal_i,edge->internal_j);CHKERRQ(ierr);
+  }    
+
+  VERTEXDATA bus;
+  for (i = vStart; i < vEnd; i++) {
+    ierr = PetscCircuitGetDataArray(circuit,i,(DataArrayType**)&bus);CHKERRQ(ierr);
+    ierr = PetscCircuitGetNumComponents(circuit,i,&numComponents);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"Rank %d ncomps = %d Bus %d\n",rank,numComponents,bus->internal_i);CHKERRQ(ierr);
+  }    
+
+  
   /* Broadcast Sbase to all processors */
   ierr = MPI_Bcast(&pfdata.sbase,1,MPI_DOUBLE,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
 
-  ierr = DMSetDefaultSection(dm,User.DofSection);CHKERRQ(ierr);
-
-  User.pfdata = &pfdata;
-  Vec X,F;
-  ierr = DMCreateGlobalVector(dm,&X);CHKERRQ(ierr);
-  ierr = VecDuplicate(X,&F);CHKERRQ(ierr);
-  ierr = SetInitialValues(dm,X,&User);CHKERRQ(ierr);
-
-  Mat J;
-  ierr = DMCreateMatrix(dm,MATAIJ,&J);CHKERRQ(ierr);
-
-  /* HOOK UP SOLVER */
-  ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
-  ierr = SNESSetDM(snes,dm);CHKERRQ(ierr);
-  ierr = SNESSetFunction(snes,F,FormFunction,&User);CHKERRQ(ierr);
-  ierr = SNESSetJacobian(snes,J,J,FormJacobian,&User);CHKERRQ(ierr);
-
-  ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
-
-  ierr = SNESSolve(snes,NULL,X);CHKERRQ(ierr);
   PetscFinalize();
   return 0;
 }
