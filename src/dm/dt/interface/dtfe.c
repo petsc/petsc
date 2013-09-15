@@ -441,7 +441,7 @@ PetscErrorCode PetscSpaceSetFromOptions_Polynomial(PetscSpace sp)
 
   PetscFunctionBegin;
   ierr = PetscObjectOptionsBegin((PetscObject) sp);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-petscspace_num_variables", "The number of different variables, e.g. x and y", "PetscSpacePolynomialSetNumVariables", poly->numVariables, &poly->numVariables, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-petscspace_poly_num_variables", "The number of different variables, e.g. x and y", "PetscSpacePolynomialSetNumVariables", poly->numVariables, &poly->numVariables, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-petscspace_poly_sym", "Use only symmetric polynomials", "PetscSpacePolynomialSetSymmetric", poly->symmetric, &poly->symmetric, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -741,6 +741,158 @@ PetscErrorCode PetscSpacePolynomialGetNumVariables(PetscSpace sp, PetscInt *n)
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
   PetscValidPointer(n, 2);
   *n = poly->numVariables;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSpaceSetFromOptions_DG"
+PetscErrorCode PetscSpaceSetFromOptions_DG(PetscSpace sp)
+{
+  PetscSpace_DG *dg = (PetscSpace_DG *) sp->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectOptionsBegin((PetscObject) sp);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-petscspace_dg_num_variables", "The number of different variables, e.g. x and y", "PetscSpaceDGSetNumVariables", dg->numVariables, &dg->numVariables, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSpaceDGView_Ascii"
+PetscErrorCode PetscSpaceDGView_Ascii(PetscSpace sp, PetscViewer viewer)
+{
+  PetscSpace_DG    *dg = (PetscSpace_DG *) sp->data;
+  PetscViewerFormat format;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscViewerGetFormat(viewer, &format);CHKERRQ(ierr);
+  if (format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
+    ierr = PetscViewerASCIIPrintf(viewer, "DG space in dimension %d:\n", dg->numVariables);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+    ierr = PetscQuadratureView(dg->quad, viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+  } else {
+    ierr = PetscViewerASCIIPrintf(viewer, "DG space in dimension %d on %d points\n", dg->numVariables, dg->quad.numPoints);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSpaceView_DG"
+PetscErrorCode PetscSpaceView_DG(PetscSpace sp, PetscViewer viewer)
+{
+  PetscBool      iascii;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
+  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
+  if (iascii) {ierr = PetscSpaceDGView_Ascii(sp, viewer);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSpaceSetUp_DG"
+PetscErrorCode PetscSpaceSetUp_DG(PetscSpace sp)
+{
+  PetscSpace_DG *dg = (PetscSpace_DG *) sp->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!dg->quad.points && sp->order) {
+    ierr = PetscDTGaussJacobiQuadrature(dg->numVariables, sp->order, -1.0, 1.0, &dg->quad);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSpaceDestroy_DG"
+PetscErrorCode PetscSpaceDestroy_DG(PetscSpace sp)
+{
+  PetscSpace_DG *dg = (PetscSpace_DG *) sp->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscQuadratureDestroy(&dg->quad);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSpaceGetDimension_DG"
+PetscErrorCode PetscSpaceGetDimension_DG(PetscSpace sp, PetscInt *dim)
+{
+  PetscSpace_DG *dg = (PetscSpace_DG *) sp->data;
+
+  PetscFunctionBegin;
+  *dim = dg->quad.numPoints;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSpaceEvaluate_DG"
+PetscErrorCode PetscSpaceEvaluate_DG(PetscSpace sp, PetscInt npoints, const PetscReal points[], PetscReal B[], PetscReal D[], PetscReal H[])
+{
+  PetscSpace_DG *dg  = (PetscSpace_DG *) sp->data;
+  PetscInt       dim = dg->numVariables, d, p;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (D || H) SETERRQ(PetscObjectComm((PetscObject) sp), PETSC_ERR_SUP, "Cannot calculate derivatives for a DG space");
+  if (npoints != dg->quad.numPoints) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot evaluate DG space on %d points != %d size", npoints, dg->quad.numPoints);
+  ierr = PetscMemzero(B, npoints*npoints * sizeof(PetscReal));CHKERRQ(ierr);
+  for (p = 0; p < npoints; ++p) {
+    for (d = 0; d < dim; ++d) {
+      if (PetscAbsReal(points[p*dim+d] - dg->quad.points[p*dim+d]) > 1.0e-10) SETERRQ4(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cannot evaluate DG point (%d, %d) %g != %g", p, d, points[p*dim+d], dg->quad.points[p*dim+d]);
+    }
+    B[p*npoints+p] = 1.0;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSpaceInitialize_DG"
+PetscErrorCode PetscSpaceInitialize_DG(PetscSpace sp)
+{
+  PetscFunctionBegin;
+  sp->ops->setfromoptions = PetscSpaceSetFromOptions_DG;
+  sp->ops->setup          = PetscSpaceSetUp_DG;
+  sp->ops->view           = PetscSpaceView_DG;
+  sp->ops->destroy        = PetscSpaceDestroy_DG;
+  sp->ops->getdimension   = PetscSpaceGetDimension_DG;
+  sp->ops->evaluate       = PetscSpaceEvaluate_DG;
+  PetscFunctionReturn(0);
+}
+
+/*MC
+  PETSCSPACEDG = "dg" - A PetscSpace object that encapsulates functions defined on a set of quadrature points.
+
+  Level: intermediate
+
+.seealso: PetscSpaceType, PetscSpaceCreate(), PetscSpaceSetType()
+M*/
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSpaceCreate_DG"
+PETSC_EXTERN PetscErrorCode PetscSpaceCreate_DG(PetscSpace sp)
+{
+  PetscSpace_DG *dg;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
+  ierr     = PetscNewLog(sp, PetscSpace_DG, &dg);CHKERRQ(ierr);
+  sp->data = dg;
+
+  dg->numVariables   = 0;
+  dg->quad.dim       = 0;
+  dg->quad.numPoints = 0;
+  dg->quad.points    = NULL;
+  dg->quad.weights   = NULL;
+
+  ierr = PetscSpaceInitialize_DG(sp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1269,16 +1421,16 @@ PetscErrorCode PetscDualSpaceApply(PetscDualSpace sp, PetscInt f, PetscCellGeome
   ierr = PetscDualSpaceGetFunctional(sp, f, &quad);CHKERRQ(ierr);
   ierr = DMGetWorkArray(dm, numComp, PETSC_SCALAR, &val);CHKERRQ(ierr);
   for (c = 0; c < numComp; ++c) value[c] = 0.0;
-  for (q = 0; q < quad.numQuadPoints; ++q) {
+  for (q = 0; q < quad.numPoints; ++q) {
     for (d = 0; d < dim; ++d) {
       x[d] = v0[d];
       for (d2 = 0; d2 < dim; ++d2) {
-        x[d] += J[d*dim+d2]*(quad.quadPoints[q*dim+d2] + 1.0);
+        x[d] += J[d*dim+d2]*(quad.points[q*dim+d2] + 1.0);
       }
     }
     (*func)(x, val);
     for (c = 0; c < numComp; ++c) {
-      value[c] += val[c]*quad.quadWeights[q];
+      value[c] += val[c]*quad.weights[q];
     }
   }
   ierr = DMRestoreWorkArray(dm, numComp, PETSC_SCALAR, &val);CHKERRQ(ierr);
@@ -1327,17 +1479,17 @@ PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
         PetscInt           dof, off, d;
 
         if (order < 1) continue;
-        sp->functional[f].numQuadPoints = 1;
-        ierr = PetscMalloc(sp->functional[f].numQuadPoints*dim * sizeof(PetscReal), &qpoints);CHKERRQ(ierr);
-        ierr = PetscMalloc(sp->functional[f].numQuadPoints     * sizeof(PetscReal), &qweights);CHKERRQ(ierr);
+        sp->functional[f].numPoints = 1;
+        ierr = PetscMalloc(sp->functional[f].numPoints*dim * sizeof(PetscReal), &qpoints);CHKERRQ(ierr);
+        ierr = PetscMalloc(sp->functional[f].numPoints     * sizeof(PetscReal), &qweights);CHKERRQ(ierr);
         ierr = VecGetArrayRead(coordinates, &coords);CHKERRQ(ierr);
         ierr = PetscSectionGetDof(csection, p, &dof);CHKERRQ(ierr);
         ierr = PetscSectionGetOffset(csection, p, &off);CHKERRQ(ierr);
         if (dof != dim) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Number of coordinates %d does not match spatial dimension %d", dof, dim);
         for (d = 0; d < dof; ++d) {qpoints[d] = PetscRealPart(coords[off+d]);}
         qweights[0] = 1.0;
-        sp->functional[f].quadPoints  = qpoints;
-        sp->functional[f].quadWeights = qweights;
+        sp->functional[f].points  = qpoints;
+        sp->functional[f].weights = qweights;
         ++f;
         ierr = VecRestoreArrayRead(coordinates, &coords);CHKERRQ(ierr);
         lag->numDof[0] = 1;
@@ -1351,13 +1503,13 @@ PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
         ierr = DMPlexVecGetClosure(dm, csection, coordinates, p, &n, &coords);CHKERRQ(ierr);
         if (n != dim*2) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Point %d has %d coordinate values instead of %d", p, n, dim*2);
         for (k = 1; k < order; ++k) {
-          sp->functional[f].numQuadPoints = 1;
-          ierr = PetscMalloc(sp->functional[f].numQuadPoints*dim * sizeof(PetscReal), &qpoints);CHKERRQ(ierr);
-          ierr = PetscMalloc(sp->functional[f].numQuadPoints     * sizeof(PetscReal), &qweights);CHKERRQ(ierr);
+          sp->functional[f].numPoints = 1;
+          ierr = PetscMalloc(sp->functional[f].numPoints*dim * sizeof(PetscReal), &qpoints);CHKERRQ(ierr);
+          ierr = PetscMalloc(sp->functional[f].numPoints     * sizeof(PetscReal), &qweights);CHKERRQ(ierr);
           for (d = 0; d < dim; ++d) {qpoints[d] = k*PetscRealPart(coords[1*dim+d] - coords[0*dim+d])/order + PetscRealPart(coords[0*dim+d]);}
           qweights[0] = 1.0;
-          sp->functional[f].quadPoints  = qpoints;
-          sp->functional[f].quadWeights = qweights;
+          sp->functional[f].points  = qpoints;
+          sp->functional[f].weights = qweights;
           ++f;
         }
         ierr = DMPlexVecRestoreClosure(dm, csection, coordinates, p, &n, &coords);CHKERRQ(ierr);
@@ -1377,9 +1529,9 @@ PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
         lag->numDof[depth] = 0;
         if (order) {SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Too lazy to implement cells");}
 
-        sp->functional[f].numQuadPoints = 1;
-        ierr = PetscMalloc(sp->functional[f].numQuadPoints*dim * sizeof(PetscReal), &qpoints);CHKERRQ(ierr);
-        ierr = PetscMalloc(sp->functional[f].numQuadPoints     * sizeof(PetscReal), &qweights);CHKERRQ(ierr);
+        sp->functional[f].numPoints = 1;
+        ierr = PetscMalloc(sp->functional[f].numPoints*dim * sizeof(PetscReal), &qpoints);CHKERRQ(ierr);
+        ierr = PetscMalloc(sp->functional[f].numPoints     * sizeof(PetscReal), &qweights);CHKERRQ(ierr);
         ierr = DMPlexVecGetClosure(dm, csection, coordinates, p, &csize, &coords);CHKERRQ(ierr);
         if (csize%dim) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Coordinate size %d is not divisible by spatial dimension %d", csize, dim);
         for (d = 0; d < dim; ++d) {
@@ -1393,8 +1545,8 @@ PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
         }
         ierr = DMPlexVecRestoreClosure(dm, csection, coordinates, p, &csize, &coords);CHKERRQ(ierr);
         qweights[0] = 1.0;
-        sp->functional[f].quadPoints  = qpoints;
-        sp->functional[f].quadWeights = qweights;
+        sp->functional[f].points  = qpoints;
+        sp->functional[f].weights = qweights;
         ++f;
         lag->numDof[depth] = 1;
       }
@@ -2042,8 +2194,8 @@ PetscErrorCode PetscFEGetNumDof(PetscFE fem, const PetscInt **numDof)
 #define __FUNCT__ "PetscFEGetDefaultTabulation"
 PetscErrorCode PetscFEGetDefaultTabulation(PetscFE fem, PetscReal **B, PetscReal **D, PetscReal **H)
 {
-  PetscInt         npoints = fem->quadrature.numQuadPoints;
-  const PetscReal *points  = fem->quadrature.quadPoints;
+  PetscInt         npoints = fem->quadrature.numPoints;
+  const PetscReal *points  = fem->quadrature.points;
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
@@ -2101,16 +2253,16 @@ PetscErrorCode PetscFEGetTabulation(PetscFE fem, PetscInt npoints, const PetscRe
     PetscInt        q;
 
     ierr = PetscDualSpaceGetFunctional(fem->dualSpace, j, &f);
-    ierr = DMGetWorkArray(dm, f.numQuadPoints*pdim, PETSC_REAL, &Bf);CHKERRQ(ierr);
-    ierr = PetscSpaceEvaluate(fem->basisSpace, f.numQuadPoints, f.quadPoints, Bf, NULL, NULL);CHKERRQ(ierr);
+    ierr = DMGetWorkArray(dm, f.numPoints*pdim, PETSC_REAL, &Bf);CHKERRQ(ierr);
+    ierr = PetscSpaceEvaluate(fem->basisSpace, f.numPoints, f.points, Bf, NULL, NULL);CHKERRQ(ierr);
     for (k = 0; k < pdim; ++k) {
       /* n_j \cdot \phi_k */
       invV[j*pdim+k] = 0.0;
-      for (q = 0; q < f.numQuadPoints; ++q) {
-        invV[j*pdim+k] += Bf[q*pdim+k]*f.quadWeights[q];
+      for (q = 0; q < f.numPoints; ++q) {
+        invV[j*pdim+k] += Bf[q*pdim+k]*f.weights[q];
       }
     }
-    ierr = DMRestoreWorkArray(dm, f.numQuadPoints*pdim, PETSC_REAL, &Bf);CHKERRQ(ierr);
+    ierr = DMRestoreWorkArray(dm, f.numPoints*pdim, PETSC_REAL, &Bf);CHKERRQ(ierr);
   }
   {
     PetscReal    *work;
@@ -2217,7 +2369,7 @@ PetscErrorCode PetscFEIntegrateResidual_Basic(PetscFE fem, PetscInt Ne, PetscInt
     numComponents += Nc;
   }
   ierr = PetscFEGetQuadrature(fe[field], &quad);CHKERRQ(ierr);
-  ierr = PetscMalloc6(quad.numQuadPoints*dim,PetscScalar,&f0,quad.numQuadPoints*dim*dim,PetscScalar,&f1,numComponents,PetscScalar,&u,numComponents*dim,PetscScalar,&gradU,dim,PetscReal,&x,dim,PetscReal,&realSpaceDer);
+  ierr = PetscMalloc6(quad.numPoints*dim,PetscScalar,&f0,quad.numPoints*dim*dim,PetscScalar,&f1,numComponents,PetscScalar,&u,numComponents*dim,PetscScalar,&gradU,dim,PetscReal,&x,dim,PetscReal,&realSpaceDer);
   for (f = 0; f < NfAux; ++f) {
     PetscInt Nc;
     ierr = PetscFEGetNumComponents(feAux[f], &Nc);CHKERRQ(ierr);
@@ -2229,9 +2381,9 @@ PetscErrorCode PetscFEIntegrateResidual_Basic(PetscFE fem, PetscInt Ne, PetscInt
     const PetscReal *v0          = &geom.v0[e*dim];
     const PetscReal *J           = &geom.J[e*dim*dim];
     const PetscReal *invJ        = &geom.invJ[e*dim*dim];
-    const PetscInt   Nq          = quad.numQuadPoints;
-    const PetscReal *quadPoints  = quad.quadPoints;
-    const PetscReal *quadWeights = quad.quadWeights;
+    const PetscInt   Nq          = quad.numPoints;
+    const PetscReal *quadPoints  = quad.points;
+    const PetscReal *quadWeights = quad.weights;
     PetscInt         q, f;
 
     if (debug > 1) {
@@ -2417,7 +2569,7 @@ PetscErrorCode PetscFEIntegrateBdResidual_Basic(PetscFE fem, PetscInt Ne, PetscI
     numComponents += Nc;
   }
   ierr = PetscFEGetQuadrature(fe[field], &quad);CHKERRQ(ierr);
-  ierr = PetscMalloc6(quad.numQuadPoints*dim,PetscScalar,&f0,quad.numQuadPoints*dim*dim,PetscScalar,&f1,numComponents,PetscScalar,&u,numComponents*dim,PetscScalar,&gradU,dim,PetscReal,&x,dim,PetscReal,&realSpaceDer);
+  ierr = PetscMalloc6(quad.numPoints*dim,PetscScalar,&f0,quad.numPoints*dim*dim,PetscScalar,&f1,numComponents,PetscScalar,&u,numComponents*dim,PetscScalar,&gradU,dim,PetscReal,&x,dim,PetscReal,&realSpaceDer);
   for (f = 0; f < NfAux; ++f) {
     PetscInt Nc;
     ierr = PetscFEGetNumComponents(feAux[f], &Nc);CHKERRQ(ierr);
@@ -2430,9 +2582,9 @@ PetscErrorCode PetscFEIntegrateBdResidual_Basic(PetscFE fem, PetscInt Ne, PetscI
     const PetscReal *n           = &geom.n[e*dim];
     const PetscReal *J           = &geom.J[e*dim*dim];
     const PetscReal *invJ        = &geom.invJ[e*dim*dim];
-    const PetscInt   Nq          = quad.numQuadPoints;
-    const PetscReal *quadPoints  = quad.quadPoints;
-    const PetscReal *quadWeights = quad.quadWeights;
+    const PetscInt   Nq          = quad.numPoints;
+    const PetscReal *quadPoints  = quad.points;
+    const PetscReal *quadWeights = quad.weights;
     PetscInt         q, f;
 
     if (debug > 1) {
@@ -2650,9 +2802,9 @@ PetscErrorCode PetscFEIntegrateJacobian_Basic(PetscFE fem, PetscInt Ne, PetscInt
     const PetscReal *v0          = &geom.v0[e*dim];
     const PetscReal *J           = &geom.J[e*dim*dim];
     const PetscReal *invJ        = &geom.invJ[e*dim*dim];
-    const PetscInt   Nq          = quad.numQuadPoints;
-    const PetscReal *quadPoints  = quad.quadPoints;
-    const PetscReal *quadWeights = quad.quadWeights;
+    const PetscInt   Nq          = quad.numPoints;
+    const PetscReal *quadPoints  = quad.points;
+    const PetscReal *quadWeights = quad.weights;
     PetscInt         f, g, q;
 
     for (f = 0; f < NbI; ++f) {
@@ -2920,7 +3072,7 @@ PetscErrorCode PetscFEOpenCLGenerateIntegrationCode(PetscFE fem, char **string_b
   ierr = PetscFEGetDimension(fem, &N_b);CHKERRQ(ierr);
   ierr = PetscFEGetNumComponents(fem, &N_c);CHKERRQ(ierr);
   ierr = PetscFEGetQuadrature(fem, &q);CHKERRQ(ierr);
-  N_q  = q.numQuadPoints;
+  N_q  = q.numPoints;
   N_t  = N_b * N_c * N_q * N_bl;
   /* Enable device extension for double precision */
   if (ocl->realType == PETSC_DOUBLE) {
@@ -2949,7 +3101,7 @@ PetscErrorCode PetscFEOpenCLGenerateIntegrationCode(PetscFE fem, char **string_b
                        &count, N_q, numeric_str, N_q*dim);STRING_ERROR_CHECK("Message to short");
   for (p = 0; p < N_q; ++p) {
     for (d = 0; d < dim; ++d) {
-      ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "%g,\n", &count, q.quadPoints[p*dim+d]);STRING_ERROR_CHECK("Message to short");
+      ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "%g,\n", &count, q.points[p*dim+d]);STRING_ERROR_CHECK("Message to short");
     }
   }
   ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "};\n", &count);STRING_ERROR_CHECK("Message to short");
@@ -2959,7 +3111,7 @@ PetscErrorCode PetscFEOpenCLGenerateIntegrationCode(PetscFE fem, char **string_b
 "  const %s weights[%d] = {\n",
                        &count, numeric_str, N_q);STRING_ERROR_CHECK("Message to short");
   for (p = 0; p < N_q; ++p) {
-    ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "%g,\n", &count, q.quadWeights[p]);STRING_ERROR_CHECK("Message to short");
+    ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "%g,\n", &count, q.weights[p]);STRING_ERROR_CHECK("Message to short");
   }
   ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "};\n", &count);STRING_ERROR_CHECK("Message to short");
   /* Basis Functions */
@@ -3425,7 +3577,7 @@ PetscErrorCode PetscFEIntegrateResidual_OpenCL(PetscFE fem, PetscInt Ne, PetscIn
   ierr = PetscFEGetQuadrature(fem, &q);CHKERRQ(ierr);
   ierr = PetscFEGetTileSizes(fem, NULL, &N_bl, &N_bc, &N_cb);CHKERRQ(ierr);
   N_bt  = N_b*N_comp;
-  N_q   = q.numQuadPoints;
+  N_q   = q.numPoints;
   N_bst = N_bt*N_q;
   N_t   = N_bst*N_bl;
   if (N_bc*N_comp != N_t) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of threads %d should be %d * %d", N_t, N_bc, N_comp);

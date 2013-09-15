@@ -28,6 +28,11 @@ typedef struct {
   PetscInt  *degrees;      /* Degrees of single variable which we need to compute */
 } PetscSpace_Poly;
 
+typedef struct {
+  PetscInt        numVariables; /* The spatial dimension */
+  PetscQuadrature quad;         /* The points defining the space */
+} PetscSpace_DG;
+
 typedef struct _PetscDualSpaceOps *PetscDualSpaceOps;
 struct _PetscDualSpaceOps {
   PetscErrorCode (*setfromoptions)(PetscDualSpace);
