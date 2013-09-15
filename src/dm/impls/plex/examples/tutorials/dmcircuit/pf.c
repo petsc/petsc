@@ -290,6 +290,45 @@ PetscErrorCode PetscCircuitGetDataArray(PetscCircuit circuit,PetscInt p, DataArr
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscCircuitDistribute"
+PetscErrorCode PetscCircuitDistribute(PetscCircuit oldCircuit,PetscCircuit *distCircuit)
+{
+  PetscErrorCode ierr;
+  PetscInt       size;
+  const char*    partitioner="chaco";
+  PetscSF        pointsf;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
+  if (size == 1) {
+    *distCircuit = (PetscCircuit)NULL;
+    PetscFunctionReturn(0);
+  }
+  PetscCircuit Circuitout;
+  ierr = PetscCircuitCreate(&Circuitout);CHKERRQ(ierr);
+  Circuitout->dataheadersize = sizeof(struct _p_PetscCircuitComponentHeader)/sizeof(DataArrayType);
+  /* Distribute dm */
+  ierr = DMPlexDistribute(oldCircuit->dm,partitioner,0,&pointsf,&Circuitout->dm);CHKERRQ(ierr);
+  /* Distribute dof section */
+  ierr = PetscSectionCreate(PETSC_COMM_WORLD,&Circuitout->DofSection);CHKERRQ(ierr);
+  ierr = PetscSFDistributeSection(pointsf,oldCircuit->DofSection,NULL,Circuitout->DofSection);CHKERRQ(ierr);
+  ierr = PetscSectionCreate(PETSC_COMM_WORLD,&Circuitout->DataSection);CHKERRQ(ierr);
+  /* Distribute data */
+  ierr = DMPlexDistributeData(Circuitout->dm,pointsf,oldCircuit->DataSection,MPI_INT,(void*)oldCircuit->dataarray,Circuitout->DataSection,(void**)&Circuitout->dataarray);CHKERRQ(ierr);
+
+  ierr = PetscSectionGetChart(Circuitout->DataSection,&Circuitout->pStart,&Circuitout->pEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(Circuitout->dm,0, &Circuitout->eStart,&Circuitout->eEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(Circuitout->dm,1,&Circuitout->vStart,&Circuitout->vEnd);CHKERRQ(ierr);
+  Circuitout->nEdges = Circuitout->eEnd - Circuitout->eStart;
+  Circuitout->nNodes = Circuitout->vEnd - Circuitout->vStart;
+
+  /* Set Dof section as the default section for dm */
+  ierr = DMSetDefaultSection(Circuitout->dm,Circuitout->DofSection);CHKERRQ(ierr);
+  *distCircuit = Circuitout;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "GetListofEdges"
 PetscErrorCode GetListofEdges(PetscInt nbranches, EDGEDATA branch,PetscInt *edges)
 {
@@ -346,7 +385,6 @@ int main(int argc,char ** argv)
       for (j = 0; j < pfdata.bus[i].nload; j++) {
 	ierr = PetscMemcpy(&newload[loadj++],&pfdata.load[pfdata.bus[i].lidx[j]],sizeof(struct _p_LOAD));
       }
-      
     }
     ierr = PetscFree(pfdata.gen);CHKERRQ(ierr);
     ierr = PetscFree(pfdata.load);CHKERRQ(ierr);
@@ -392,6 +430,15 @@ int main(int argc,char ** argv)
   ierr = PetscCircuitComponentSetUp(circuit);CHKERRQ(ierr);
   ierr = PetscCircuitVariablesSetUp(circuit);CHKERRQ(ierr);
 
+  PetscCircuit distributedcircuit=NULL;
+  ierr = PetscCircuitDistribute(circuit,&distributedcircuit);CHKERRQ(ierr);
+  if (distributedcircuit) {
+    circuit = distributedcircuit;
+  }
+
+  ierr = PetscCircuitGetEdgeRange(circuit,&eStart,&eEnd);CHKERRQ(ierr);
+  ierr = PetscCircuitGetVertexRange(circuit,&vStart,&vEnd);CHKERRQ(ierr);
+
   PetscInt numComponents;
   EDGEDATA edge;
   for (i = eStart; i < eEnd; i++) {
@@ -407,7 +454,6 @@ int main(int argc,char ** argv)
     ierr = PetscPrintf(PETSC_COMM_SELF,"Rank %d ncomps = %d Bus %d\n",rank,numComponents,bus->internal_i);CHKERRQ(ierr);
   }    
 
-  
   /* Broadcast Sbase to all processors */
   ierr = MPI_Bcast(&pfdata.sbase,1,MPI_DOUBLE,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
 
