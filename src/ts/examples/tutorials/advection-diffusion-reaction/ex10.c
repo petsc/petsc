@@ -1185,16 +1185,16 @@ PetscErrorCode GetDfill(PetscInt *dfill, void *ptr)
 /* ------------------------------------------------------------------- */
 
 typedef struct {
-  DM          da;       /* defines the 2d layout of the He subvector */
-  Vec         He;
-  VecScatter  scatter;
-  PetscViewer viewer;
+  DM          Heda,Vda,HeVda;       /* defines the 2d layout of the He subvector */
+  Vec         He,V,HeV;
+  VecScatter  Hescatter,Vscatter,HeVscatter;
+  PetscViewer Heviewer,Vviewer,HeVviewer;
 } MyMonitorCtx;
 
 #undef __FUNCT__
 #define __FUNCT__ "MyMonitorMonitor"
 /*
-   Display He and V as a function of space and cluster size for each time step
+   Display He as a function of space and cluster size for each time step
 */
 PetscErrorCode MyMonitorMonitor(TS ts,PetscInt timestep,PetscReal time,Vec solution, void *ictx)
 {
@@ -1202,9 +1202,17 @@ PetscErrorCode MyMonitorMonitor(TS ts,PetscInt timestep,PetscReal time,Vec solut
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = VecScatterBegin(ctx->scatter,solution,ctx->He,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterEnd(ctx->scatter,solution,ctx->He,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecView(ctx->He,ctx->viewer);CHKERRQ(ierr);
+  ierr = VecScatterBegin(ctx->Hescatter,solution,ctx->He,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd(ctx->Hescatter,solution,ctx->He,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecView(ctx->He,ctx->Heviewer);CHKERRQ(ierr);
+
+  ierr = VecScatterBegin(ctx->Vscatter,solution,ctx->V,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd(ctx->Vscatter,solution,ctx->V,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecView(ctx->V,ctx->Vviewer);CHKERRQ(ierr);
+
+  ierr = VecScatterBegin(ctx->HeVscatter,solution,ctx->HeV,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd(ctx->HeVscatter,solution,ctx->HeV,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecView(ctx->HeV,ctx->HeVviewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1219,10 +1227,20 @@ PetscErrorCode MyMonitorDestroy(void **ictx)
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = VecScatterDestroy(&(*ctx)->scatter);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(&(*ctx)->Hescatter);CHKERRQ(ierr);
   ierr = VecDestroy(&(*ctx)->He);CHKERRQ(ierr);
-  ierr = DMDestroy(&(*ctx)->da);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&(*ctx)->viewer);CHKERRQ(ierr);
+  ierr = DMDestroy(&(*ctx)->Heda);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&(*ctx)->Heviewer);CHKERRQ(ierr);
+
+  ierr = VecScatterDestroy(&(*ctx)->Vscatter);CHKERRQ(ierr);
+  ierr = VecDestroy(&(*ctx)->V);CHKERRQ(ierr);
+  ierr = DMDestroy(&(*ctx)->Vda);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&(*ctx)->Vviewer);CHKERRQ(ierr);
+
+  ierr = VecScatterDestroy(&(*ctx)->HeVscatter);CHKERRQ(ierr);
+  ierr = VecDestroy(&(*ctx)->HeV);CHKERRQ(ierr);
+  ierr = DMDestroy(&(*ctx)->HeVda);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&(*ctx)->HeVviewer);CHKERRQ(ierr);
   ierr = PetscFree(*ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1236,7 +1254,7 @@ PetscErrorCode MyMonitorSetUp(TS ts)
 {
   DM             da;
   PetscErrorCode ierr;
-  PetscInt       xi,xs,xm,*idx,M,xj,cnt = 0,N;
+  PetscInt       xi,xs,xm,*idx,M,xj,cnt = 0;
   const PetscInt *lx;
   Vec            C;
   MyMonitorCtx   *ctx;
@@ -1251,34 +1269,81 @@ PetscErrorCode MyMonitorSetUp(TS ts)
 
   ierr = TSGetDM(ts,&da);CHKERRQ(ierr);
   ierr = PetscNew(MyMonitorCtx,&ctx);CHKERRQ(ierr);
-  ierr = PetscViewerDrawOpen(PetscObjectComm((PetscObject)da),NULL,"",PETSC_DECIDE,PETSC_DECIDE,600,400,&ctx->viewer);CHKERRQ(ierr);
 
+  /* setup visualization for He */
+  ierr = PetscViewerDrawOpen(PetscObjectComm((PetscObject)da),NULL,"",PETSC_DECIDE,PETSC_DECIDE,600,400,&ctx->Heviewer);CHKERRQ(ierr);
   ierr = DMDAGetCorners(da,&xs,NULL,NULL,&xm,NULL,NULL);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&M,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
   ierr = DMDAGetOwnershipRanges(da,&lx,NULL,NULL);CHKERRQ(ierr);
-  ierr = DMDACreate2d(PetscObjectComm((PetscObject)da),DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,M,N,PETSC_DETERMINE,1,2,1,lx,NULL,&ctx->da);CHKERRQ(ierr);
-  ierr = DMDASetFieldName(ctx->da,0,"He");CHKERRQ(ierr);
-  ierr = DMDASetFieldName(ctx->da,1,"V");CHKERRQ(ierr);
-  ierr = DMDASetCoordinateName(ctx->da,0,"X coordinate direction");CHKERRQ(ierr);
-  ierr = PetscSNPrintf(ycoor,32,"%D ... Cluster size ... 1",N);CHKERRQ(ierr);
-  ierr = DMDASetCoordinateName(ctx->da,1,ycoor);CHKERRQ(ierr);
-
-  ierr = DMCreateGlobalVector(ctx->da,&ctx->He);CHKERRQ(ierr);
-  ierr = PetscMalloc(2*N*xm*sizeof(PetscInt),&idx);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PetscObjectComm((PetscObject)da),DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,M,NHe,PETSC_DETERMINE,1,1,1,lx,NULL,&ctx->Heda);CHKERRQ(ierr);
+  ierr = DMDASetFieldName(ctx->Heda,0,"He");CHKERRQ(ierr);
+  ierr = DMDASetCoordinateName(ctx->Heda,0,"X coordinate direction");CHKERRQ(ierr);
+  ierr = PetscSNPrintf(ycoor,32,"%D ... Cluster size ... 1",NHe);CHKERRQ(ierr);
+  ierr = DMDASetCoordinateName(ctx->Heda,1,ycoor);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(ctx->Heda,&ctx->He);CHKERRQ(ierr);
+  ierr = PetscMalloc(NHe*xm*sizeof(PetscInt),&idx);CHKERRQ(ierr);
   cnt  = 0;
-  for (xj=0; xj<N; xj++) {
+  for (xj=0; xj<NHe; xj++) {
     for (xi=xs; xi<xs+xm; xi++) {
       idx[cnt++] = DOF*xi + xj;
-      idx[cnt++] = DOF*xi + xj + N;
     }
   }
-  ierr = ISCreateGeneral(PetscObjectComm((PetscObject)ts),2*N*xm,idx,PETSC_OWN_POINTER,&is);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PetscObjectComm((PetscObject)ts),NHe*xm,idx,PETSC_OWN_POINTER,&is);CHKERRQ(ierr);
   ierr = TSGetSolution(ts,&C);CHKERRQ(ierr);
-  ierr = VecScatterCreate(C,is,ctx->He,NULL,&ctx->scatter);CHKERRQ(ierr);
+  ierr = VecScatterCreate(C,is,ctx->He,NULL,&ctx->Hescatter);CHKERRQ(ierr);
   ierr = ISDestroy(&is);CHKERRQ(ierr);
-
   /* sets the bounds on the contour plot values so the colors mean the same thing for different timesteps */
-  ierr = PetscViewerDrawSetBounds(ctx->viewer,2,valuebounds);CHKERRQ(ierr);
+  ierr = PetscViewerDrawSetBounds(ctx->Heviewer,2,valuebounds);CHKERRQ(ierr);
+
+  /* setup visualization for V */
+  ierr = PetscViewerDrawOpen(PetscObjectComm((PetscObject)da),NULL,"",PETSC_DECIDE,PETSC_DECIDE,600,400,&ctx->Vviewer);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,NULL,NULL,&xm,NULL,NULL);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,PETSC_IGNORE,&M,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
+  ierr = DMDAGetOwnershipRanges(da,&lx,NULL,NULL);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PetscObjectComm((PetscObject)da),DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,M,NV,PETSC_DETERMINE,1,1,1,lx,NULL,&ctx->Vda);CHKERRQ(ierr);
+  ierr = DMDASetFieldName(ctx->Vda,0,"V");CHKERRQ(ierr);
+  ierr = DMDASetCoordinateName(ctx->Vda,0,"X coordinate direction");CHKERRQ(ierr);
+  ierr = PetscSNPrintf(ycoor,32,"%D ... Cluster size ... 1",NV);CHKERRQ(ierr);
+  ierr = DMDASetCoordinateName(ctx->Vda,1,ycoor);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(ctx->Vda,&ctx->V);CHKERRQ(ierr);
+  ierr = PetscMalloc(NV*xm*sizeof(PetscInt),&idx);CHKERRQ(ierr);
+  cnt  = 0;
+  for (xj=0; xj<NV; xj++) {
+    for (xi=xs; xi<xs+xm; xi++) {
+      idx[cnt++] = NHe + DOF*xi + xj;
+    }
+  }
+  ierr = ISCreateGeneral(PetscObjectComm((PetscObject)ts),NV*xm,idx,PETSC_OWN_POINTER,&is);CHKERRQ(ierr);
+  ierr = TSGetSolution(ts,&C);CHKERRQ(ierr);
+  ierr = VecScatterCreate(C,is,ctx->V,NULL,&ctx->Vscatter);CHKERRQ(ierr);
+  ierr = ISDestroy(&is);CHKERRQ(ierr);
+  /* sets the bounds on the contour plot values so the colors mean the same thing for different timesteps */
+  ierr = PetscViewerDrawSetBounds(ctx->Vviewer,2,valuebounds);CHKERRQ(ierr);
+
+  /* setup visualization for HeV[1][] */
+  ierr = PetscViewerDrawOpen(PetscObjectComm((PetscObject)da),NULL,"",PETSC_DECIDE,PETSC_DECIDE,600,400,&ctx->HeVviewer);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,NULL,NULL,&xm,NULL,NULL);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,PETSC_IGNORE,&M,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
+  ierr = DMDAGetOwnershipRanges(da,&lx,NULL,NULL);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PetscObjectComm((PetscObject)da),DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,M,NHeV[1],PETSC_DETERMINE,1,1,1,lx,NULL,&ctx->HeVda);CHKERRQ(ierr);
+  ierr = DMDASetFieldName(ctx->HeVda,0,"HeV[1][]");CHKERRQ(ierr);
+  ierr = DMDASetCoordinateName(ctx->HeVda,0,"X coordinate direction");CHKERRQ(ierr);
+  ierr = PetscSNPrintf(ycoor,32,"%D ... Cluster size ... 1",NHeV[1]);CHKERRQ(ierr);
+  ierr = DMDASetCoordinateName(ctx->HeVda,1,ycoor);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(ctx->HeVda,&ctx->HeV);CHKERRQ(ierr);
+  ierr = PetscMalloc(NHeV[1]*xm*sizeof(PetscInt),&idx);CHKERRQ(ierr);
+  cnt  = 0;
+  for (xj=0; xj<NHeV[1]; xj++) {
+    for (xi=xs; xi<xs+xm; xi++) {
+      idx[cnt++] = NHe + NV + NI + DOF*xi + xj;
+    }
+  }
+  ierr = ISCreateGeneral(PetscObjectComm((PetscObject)ts),NHeV[1]*xm,idx,PETSC_OWN_POINTER,&is);CHKERRQ(ierr);
+  ierr = TSGetSolution(ts,&C);CHKERRQ(ierr);
+  ierr = VecScatterCreate(C,is,ctx->HeV,NULL,&ctx->HeVscatter);CHKERRQ(ierr);
+  ierr = ISDestroy(&is);CHKERRQ(ierr);
+  /* sets the bounds on the contour plot values so the colors mean the same thing for different timesteps */
+  ierr = PetscViewerDrawSetBounds(ctx->HeVviewer,2,valuebounds);CHKERRQ(ierr);
 
   ierr = TSMonitorSet(ts,MyMonitorMonitor,ctx,MyMonitorDestroy);CHKERRQ(ierr);
   PetscFunctionReturn(0);
