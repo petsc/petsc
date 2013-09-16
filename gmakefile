@@ -4,7 +4,7 @@
 include ./$(PETSC_ARCH)/conf/petscvariables
 include ./conf/variables
 
-OBJDIR := $(PETSC_ARCH)/obj-gmake
+OBJDIR := $(PETSC_ARCH)/obj
 LIBDIR := $(abspath $(PETSC_ARCH)/lib)
 
 pkgs := sys vec mat dm ksp snes ts
