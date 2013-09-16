@@ -155,5 +155,25 @@ PetscErrorCode PFReadMatPowerData(PFDATA *pf,char *filename)
     }
   }
   fclose(fp);
+    /* Reorder the generator data structure according to bus numbers */
+    GEN  newgen;
+    LOAD newload;
+    PetscInt genj=0,loadj=0;
+    ierr = PetscMalloc(pf->ngen*sizeof(struct _p_GEN),&newgen);CHKERRQ(ierr);
+    ierr = PetscMalloc(pf->nload*sizeof(struct _p_LOAD),&newload);CHKERRQ(ierr);
+    for (i = 0; i < pf->nbus; i++) {
+      for (j = 0; j < pf->bus[i].ngen; j++) {
+	ierr = PetscMemcpy(&newgen[genj++],&pf->gen[pf->bus[i].gidx[j]],sizeof(struct _p_GEN));
+      }
+      for (j = 0; j < pf->bus[i].nload; j++) {
+	ierr = PetscMemcpy(&newload[loadj++],&pf->load[pf->bus[i].lidx[j]],sizeof(struct _p_LOAD));
+      }
+    }
+    ierr = PetscFree(pf->gen);CHKERRQ(ierr);
+    ierr = PetscFree(pf->load);CHKERRQ(ierr);
+    pf->gen = newgen;
+    pf->load = newload;
+
+
   PetscFunctionReturn(0);
 }

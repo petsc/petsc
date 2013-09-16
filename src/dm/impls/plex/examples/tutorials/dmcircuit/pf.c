@@ -13,7 +13,7 @@ PetscMPIInt rank;
 
 #define MAX_DATA_AT_POINT 10
 
-typedef PetscInt DataArrayType;
+typedef PetscInt ComponentDataArrayType;
 
 typedef struct _p_PetscCircuitComponentHeader *PetscCircuitComponentHeader;
 struct _p_PetscCircuitComponentHeader {
@@ -33,10 +33,6 @@ typedef struct {
   PetscInt size;
 }PetscCircuitComponent;
 
-typedef struct{
-  PFDATA *pfdata;
-}UserCtx;
-
 struct _p_PetscCircuit{
   PetscInt              NEdges; /* Number of global edges */
   PetscInt              NNodes; /* Number of global nodes */
@@ -53,7 +49,7 @@ struct _p_PetscCircuit{
   PetscCircuitComponentHeader header;  
   PetscCircuitComponentValue  cvalue;
   PetscInt               dataheadersize;
-  DataArrayType         *dataarray; /* Array to hold the data */
+  ComponentDataArrayType         *componentdataarray; /* Array to hold the data */
 };
 
 typedef struct _p_PetscCircuit *PetscCircuit;
@@ -124,7 +120,7 @@ PetscErrorCode PetscCircuitLayoutSetUp(PetscCircuit circuit)
   ierr = PetscSectionSetChart(circuit->DataSection,circuit->pStart,circuit->pEnd);CHKERRQ(ierr);
   ierr = PetscSectionSetChart(circuit->DofSection,circuit->pStart,circuit->pEnd);CHKERRQ(ierr);
 
-  circuit->dataheadersize = sizeof(struct _p_PetscCircuitComponentHeader)/sizeof(DataArrayType);
+  circuit->dataheadersize = sizeof(struct _p_PetscCircuitComponentHeader)/sizeof(ComponentDataArrayType);
   ierr = PetscMalloc((circuit->pEnd-circuit->pStart)*sizeof(struct _p_PetscCircuitComponentHeader),&circuit->header);CHKERRQ(ierr);
   for (i = circuit->pStart; i < circuit->pEnd; i++) {
     PetscInt ndata;
@@ -147,7 +143,7 @@ PetscErrorCode PetscCircuitRegisterComponent(PetscCircuit circuit,const char *na
 
   /* Skipping string comparison for now to check if the parameter already exists */
   ierr = PetscStrcpy(component->name,name);CHKERRQ(ierr);
-  component->size = size/sizeof(DataArrayType);
+  component->size = size/sizeof(ComponentDataArrayType);
   *componentkey = circuit->ncomponent;
   circuit->ncomponent++;
   PetscFunctionReturn(0);
@@ -203,7 +199,7 @@ PetscErrorCode PetscCircuitGetNumComponents(PetscCircuit circuit,PetscInt p,Pets
   PetscInt       offset;
   PetscFunctionBegin;
   ierr = PetscSectionGetOffset(circuit->DataSection,p,&offset);CHKERRQ(ierr);
-  *numcomponents = ((PetscCircuitComponentHeader)(circuit->dataarray+offset))->ndata;
+  *numcomponents = ((PetscCircuitComponentHeader)(circuit->componentdataarray+offset))->ndata;
   PetscFunctionReturn(0);
 }
 
@@ -216,7 +212,7 @@ PetscErrorCode PetscCircuitGetComponentTypeOffset(PetscCircuit circuit,PetscInt 
   PetscCircuitComponentHeader header;
   PetscFunctionBegin;
   ierr = PetscSectionGetOffset(circuit->DataSection,p,&offsetp);CHKERRQ(ierr);
-  header = (PetscCircuitComponentHeader)(circuit->dataarray+offsetp);
+  header = (PetscCircuitComponentHeader)(circuit->componentdataarray+offsetp);
   *compkey = header->key[compnum];
   *offset  = header->offset[compnum];
   PetscFunctionReturn(0);
@@ -242,24 +238,24 @@ PetscErrorCode PetscCircuitComponentSetUp(PetscCircuit circuit)
   PetscInt                    p,offset;
   PetscCircuitComponentHeader header;
   PetscCircuitComponentValue  cvalue;
-  DataArrayType               *dataarray;
+  ComponentDataArrayType               *componentdataarray;
   PetscFunctionBegin;
   ierr = PetscSectionSetUp(circuit->DataSection);CHKERRQ(ierr);
   ierr = PetscSectionGetStorageSize(circuit->DataSection,&arr_size);CHKERRQ(ierr);
-  ierr = PetscMalloc(arr_size*sizeof(DataArrayType),&circuit->dataarray);CHKERRQ(ierr);
-  dataarray = circuit->dataarray;
+  ierr = PetscMalloc(arr_size*sizeof(ComponentDataArrayType),&circuit->componentdataarray);CHKERRQ(ierr);
+  componentdataarray = circuit->componentdataarray;
   for (p = circuit->pStart; p < circuit->pEnd; p++) {
     ierr = PetscSectionGetOffset(circuit->DataSection,p,&offset);CHKERRQ(ierr);
     /* Copy header */
     header = &circuit->header[p];
-    ierr = PetscMemcpy(dataarray+offset,header,circuit->dataheadersize*sizeof(DataArrayType));
+    ierr = PetscMemcpy(componentdataarray+offset,header,circuit->dataheadersize*sizeof(ComponentDataArrayType));
     /* Copy data */
     offset += circuit->dataheadersize;
     cvalue = &circuit->cvalue[p];
     PetscInt ncomp=header->ndata,i;
     for (i = 0; i < ncomp; i++) {
       offset += header->offset[i];
-      ierr = PetscMemcpy(dataarray+offset,cvalue->data[i],header->size[i]*sizeof(DataArrayType));
+      ierr = PetscMemcpy(componentdataarray+offset,cvalue->data[i],header->size[i]*sizeof(ComponentDataArrayType));
     }
   }
 
@@ -278,14 +274,14 @@ PetscErrorCode PetscCircuitVariablesSetUp(PetscCircuit circuit)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscCircuitGetDataArray"
-PetscErrorCode PetscCircuitGetDataArray(PetscCircuit circuit,PetscInt p, DataArrayType **dataarray)
+#define __FUNCT__ "PetscCircuitGetComponentDataArray"
+PetscErrorCode PetscCircuitGetComponentDataArray(PetscCircuit circuit,PetscInt p, ComponentDataArrayType **componentdataarray)
 {
   PetscErrorCode ierr;
   PetscInt       offset;
   PetscFunctionBegin;
   ierr = PetscSectionGetOffset(circuit->DataSection,p,&offset);CHKERRQ(ierr);
-  *dataarray = circuit->dataarray+offset+circuit->dataheadersize;
+  *componentdataarray = circuit->componentdataarray+offset+circuit->dataheadersize;
   PetscFunctionReturn(0);
 }
 
@@ -306,7 +302,7 @@ PetscErrorCode PetscCircuitDistribute(PetscCircuit oldCircuit,PetscCircuit *dist
   }
   PetscCircuit Circuitout;
   ierr = PetscCircuitCreate(&Circuitout);CHKERRQ(ierr);
-  Circuitout->dataheadersize = sizeof(struct _p_PetscCircuitComponentHeader)/sizeof(DataArrayType);
+  Circuitout->dataheadersize = sizeof(struct _p_PetscCircuitComponentHeader)/sizeof(ComponentDataArrayType);
   /* Distribute dm */
   ierr = DMPlexDistribute(oldCircuit->dm,partitioner,0,&pointsf,&Circuitout->dm);CHKERRQ(ierr);
   /* Distribute dof section */
@@ -314,7 +310,7 @@ PetscErrorCode PetscCircuitDistribute(PetscCircuit oldCircuit,PetscCircuit *dist
   ierr = PetscSFDistributeSection(pointsf,oldCircuit->DofSection,NULL,Circuitout->DofSection);CHKERRQ(ierr);
   ierr = PetscSectionCreate(PETSC_COMM_WORLD,&Circuitout->DataSection);CHKERRQ(ierr);
   /* Distribute data */
-  ierr = DMPlexDistributeData(Circuitout->dm,pointsf,oldCircuit->DataSection,MPI_INT,(void*)oldCircuit->dataarray,Circuitout->DataSection,(void**)&Circuitout->dataarray);CHKERRQ(ierr);
+  ierr = DMPlexDistributeData(Circuitout->dm,pointsf,oldCircuit->DataSection,MPI_INT,(void*)oldCircuit->componentdataarray,Circuitout->DataSection,(void**)&Circuitout->componentdataarray);CHKERRQ(ierr);
 
   ierr = PetscSectionGetChart(Circuitout->DataSection,&Circuitout->pStart,&Circuitout->pEnd);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(Circuitout->dm,0, &Circuitout->eStart,&Circuitout->eEnd);CHKERRQ(ierr);
@@ -351,7 +347,6 @@ int main(int argc,char ** argv)
 {
   PetscErrorCode       ierr;
   char                 pfdata_file[PETSC_MAX_PATH_LEN]="datafiles/case9.m";
-  UserCtx              User;
   PFDATA               pfdata;
   PetscInt             numEdges=0,numVertices=0;
   PetscInt             *edges = NULL;
@@ -363,48 +358,35 @@ int main(int argc,char ** argv)
 
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
+  /* Create an empty circuit object */
   ierr = PetscCircuitCreate(&circuit);CHKERRQ(ierr);
+  /* Register the components in the circuit */
+  ierr = PetscCircuitRegisterComponent(circuit,"branchstruct",sizeof(struct _p_EDGEDATA),&componentkey[0]);CHKERRQ(ierr);
+  ierr = PetscCircuitRegisterComponent(circuit,"busstruct",sizeof(struct _p_VERTEXDATA),&componentkey[1]);CHKERRQ(ierr);
+  ierr = PetscCircuitRegisterComponent(circuit,"genstruct",sizeof(struct _p_GEN),&componentkey[2]);CHKERRQ(ierr);
+  ierr = PetscCircuitRegisterComponent(circuit,"loadstruct",sizeof(struct _p_LOAD),&componentkey[3]);CHKERRQ(ierr);
+
   /* READ THE DATA */
   if (!rank) {
     /*    READ DATA */
     /* Only rank 0 reads the data */
     ierr = PetscOptionsGetString(PETSC_NULL,"-pfdata",pfdata_file,PETSC_MAX_PATH_LEN-1,NULL);CHKERRQ(ierr);
     ierr = PFReadMatPowerData(&pfdata,pfdata_file);CHKERRQ(ierr);
-    User.pfdata = &pfdata;
 
-    /* Reorder the generator data structure according to bus numbers */
-    GEN  newgen;
-    LOAD newload;
-    PetscInt genj=0,loadj=0,j;
-    ierr = PetscMalloc(pfdata.ngen*sizeof(struct _p_GEN),&newgen);CHKERRQ(ierr);
-    ierr = PetscMalloc(pfdata.nload*sizeof(struct _p_LOAD),&newload);CHKERRQ(ierr);
-    for (i = 0; i < pfdata.nbus; i++) {
-      for (j = 0; j < pfdata.bus[i].ngen; j++) {
-	ierr = PetscMemcpy(&newgen[genj++],&pfdata.gen[pfdata.bus[i].gidx[j]],sizeof(struct _p_GEN));
-      }
-      for (j = 0; j < pfdata.bus[i].nload; j++) {
-	ierr = PetscMemcpy(&newload[loadj++],&pfdata.load[pfdata.bus[i].lidx[j]],sizeof(struct _p_LOAD));
-      }
-    }
-    ierr = PetscFree(pfdata.gen);CHKERRQ(ierr);
-    ierr = PetscFree(pfdata.load);CHKERRQ(ierr);
-    pfdata.gen = newgen;
-    pfdata.load = newload;
     numEdges = pfdata.nbranch;
-    
     numVertices = pfdata.nbus;
+
     ierr = PetscMalloc(2*numEdges*sizeof(PetscInt),&edges);CHKERRQ(ierr);
     ierr = GetListofEdges(pfdata.nbranch,pfdata.branch,edges);CHKERRQ(ierr);
   }
+  /* Set number of nodes/edges */
   ierr = PetscCircuitSetSizes(circuit,numVertices,numEdges,numVertices,numEdges);CHKERRQ(ierr);
+  /* Add edge connectivity */
   ierr = PetscCircuitSetEdges(circuit,edges);CHKERRQ(ierr);
+  /* Set up the circuit layout */
   ierr = PetscCircuitLayoutSetUp(circuit);CHKERRQ(ierr);
 
-  ierr = PetscCircuitRegisterComponent(circuit,"branchstruct",sizeof(struct _p_EDGEDATA),&componentkey[0]);CHKERRQ(ierr);
-  ierr = PetscCircuitRegisterComponent(circuit,"busstruct",sizeof(struct _p_VERTEXDATA),&componentkey[1]);CHKERRQ(ierr);
-  ierr = PetscCircuitRegisterComponent(circuit,"genstruct",sizeof(struct _p_GEN),&componentkey[2]);CHKERRQ(ierr);
-  ierr = PetscCircuitRegisterComponent(circuit,"loadstruct",sizeof(struct _p_LOAD),&componentkey[3]);CHKERRQ(ierr);
-
+  /* Add circuit components */
   PetscInt eStart, eEnd, vStart, vEnd,j;
   PetscInt genj=0,loadj=0;
   ierr = PetscCircuitGetEdgeRange(circuit,&eStart,&eEnd);CHKERRQ(ierr);
@@ -427,9 +409,11 @@ int main(int argc,char ** argv)
     /* Add number of variables */
     ierr = PetscCircuitAddNumVariables(circuit,i,2);CHKERRQ(ierr);
   }
+  /* Set up components and variables */
   ierr = PetscCircuitComponentSetUp(circuit);CHKERRQ(ierr);
   ierr = PetscCircuitVariablesSetUp(circuit);CHKERRQ(ierr);
 
+  /* Circuit partitioning and distribution of data */
   PetscCircuit distributedcircuit=NULL;
   ierr = PetscCircuitDistribute(circuit,&distributedcircuit);CHKERRQ(ierr);
   if (distributedcircuit) {
@@ -442,14 +426,14 @@ int main(int argc,char ** argv)
   PetscInt numComponents;
   EDGEDATA edge;
   for (i = eStart; i < eEnd; i++) {
-    ierr = PetscCircuitGetDataArray(circuit,i,(DataArrayType**)&edge);CHKERRQ(ierr);
+    ierr = PetscCircuitGetComponentDataArray(circuit,i,(ComponentDataArrayType**)&edge);CHKERRQ(ierr);
     ierr = PetscCircuitGetNumComponents(circuit,i,&numComponents);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_SELF,"Rank %d ncomps = %d Line %d ---- %d\n",rank,numComponents,edge->internal_i,edge->internal_j);CHKERRQ(ierr);
   }    
 
   VERTEXDATA bus;
   for (i = vStart; i < vEnd; i++) {
-    ierr = PetscCircuitGetDataArray(circuit,i,(DataArrayType**)&bus);CHKERRQ(ierr);
+    ierr = PetscCircuitGetComponentDataArray(circuit,i,(ComponentDataArrayType**)&bus);CHKERRQ(ierr);
     ierr = PetscCircuitGetNumComponents(circuit,i,&numComponents);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_SELF,"Rank %d ncomps = %d Bus %d\n",rank,numComponents,bus->internal_i);CHKERRQ(ierr);
   }    
