@@ -23,11 +23,11 @@ static char help[] = "Solves C_t =  -D*C_xx + F(C) + R(C) + D(C) from Brian Wirt
 
 /*    Hard wire the number of cluster sizes for He, V, and I, and He-V */
 #define  NHe          9
-#define  NV           50
+#define  NV           10   /* 50 */
 #define  NI           2
-#define  MHeV         50   /* maximum V size in He-V */
+#define  MHeV         10  /* 50 */  /* maximum V size in He-V */
 PetscInt NHeV[MHeV+1];     /* maximum He size in an He-V with given V */
-#define  MNHeV        6778
+#define  MNHeV        451  /* 6778 */
 #define  DOF          (NHe + NV + NI + MNHeV)
 
 /*
@@ -739,6 +739,7 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal ftime,Vec C,Mat *A,Mat *J,MatStructur
     ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatSetOption(*J,MAT_NEW_NONZERO_LOCATIONS,PETSC_FALSE);CHKERRQ(ierr);
     ierr = MatStoreValues(*J);CHKERRQ(ierr);
+    MatSetFromOptions(*J);
     initialized = PETSC_TRUE;
   } else {
     ierr = MatRetrieveValues(*J);CHKERRQ(ierr);
@@ -922,7 +923,6 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal ftime,Vec C,Mat *A,Mat *J,MatStructur
     ierr = MatAssemblyBegin(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
-  MatSetFromOptions(*J);
   PetscFunctionReturn(0);
 }
 
@@ -1302,16 +1302,18 @@ PetscErrorCode MyLoadData(MPI_Comm comm,const char *filename)
     ierr = PetscStrchr(buff,'#',&sharp);CHKERRQ(ierr);
     if (!sharp) {
       sscanf(buff,"%d %d %d %s %s %s %s",&He,&V,&I,Hebindstr,Vbindstr,Ibindstr,trapbindstr);
-      if (lc++ > DOF) SETERRQ4(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Recompile with correct NHe %d NV %d NI %d MNHeV %",NHe,NV,NI,MNHeV);
       Hebind = strtod(Hebindstr,NULL);
       Vbind = strtod(Vbindstr,NULL);
       Ibind = strtod(Ibindstr,NULL);
       trapbind = strtod(trapbindstr,NULL);
-      if (He > NHe && V == 0 && I == 0) SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Recompile with correct NHe %d %d",He,NHe);
-      if (He == 0  && V > NV && I == 0) SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Recompile with correct V %d %d",V,NV);
-      if (He == 0  && V == 0 && I > NI) SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Recompile with correct NI %d %d",I,NI);
-      if (He > 0 && V > 0) {  /* assumes the He are sorted in increasing order */
-        NHeV[V] = He;
+      if (V <= NV) {
+        if (He > NHe && V == 0 && I == 0) SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Recompile with correct NHe %d %d",He,NHe);
+        if (He == 0  && V > NV && I == 0) SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Recompile with correct V %d %d",V,NV);
+        if (He == 0  && V == 0 && I > NI) SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Recompile with correct NI %d %d",I,NI);
+        if (lc++ > DOF) SETERRQ4(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Recompile with correct NHe %d NV %d NI %d MNHeV %",NHe,NV,NI,MNHeV);
+        if (He > 0 && V > 0) {  /* assumes the He are sorted in increasing order */
+          NHeV[V] = He;
+        }
       }
     }
     ierr = PetscSynchronizedFGets(comm,fp,256,buff);CHKERRQ(ierr);
