@@ -332,11 +332,6 @@ PetscErrorCode  DMDestroy(DM *dm)
     if ((*dm)->globalin[i]) cnt++;
   }
   for (nlink=(*dm)->namedglobal; nlink; nlink=nlink->next) cnt++;
-  if ((*dm)->x) {
-    DM obj;
-    ierr = VecGetDM((*dm)->x, &obj);CHKERRQ(ierr);
-    if (obj == *dm) cnt++;
-  }
   for (nlink=(*dm)->namedlocal; nlink; nlink=nlink->next) cnt++;
   if ((*dm)->x) {
     DM obj;
