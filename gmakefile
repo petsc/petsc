@@ -153,7 +153,7 @@ endif
 .PHONY: clean all print
 
 clean:
-	rm -rf $(OBJDIR) $(LIBDIR)/libpetsc* $(PETSC_ARCH)/include/*.mod $(generated)
+	rm -rf $(OBJDIR) $(LIBDIR)/libpetsc* $(PETSC_ARCH)/include/petsc*.mod $(generated)
 
 # make print VAR=the-variable
 print:
