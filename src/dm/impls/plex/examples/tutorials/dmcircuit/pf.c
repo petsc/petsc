@@ -43,7 +43,6 @@ struct _p_PetscCircuit{
   DM                    dm;     /* DM */
   PetscSection          DataSection; /* Section for managing parameter distribution */
   PetscSection          DofSection;  /* Section for managing data distribution */
-  PetscInt              *arr; /* Array for holding and distributing the data */
   PetscInt              ncomponent;
   PetscCircuitComponent  component[10];
   PetscCircuitComponentHeader header;  
@@ -321,6 +320,28 @@ PetscErrorCode PetscCircuitDistribute(PetscCircuit oldCircuit,PetscCircuit *dist
   /* Set Dof section as the default section for dm */
   ierr = DMSetDefaultSection(Circuitout->dm,Circuitout->DofSection);CHKERRQ(ierr);
   *distCircuit = Circuitout;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscCircuitGetSupportingEdges"
+PetscErrorCode PetscCircuitGetSupportingEdges(PetscCircuit circuit,PetscInt vertex,PetscInt *nedges,const PetscInt **edges)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMPlexGetSupportSize(circuit->dm,vertex,nedges);CHKERRQ(ierr);
+  ierr = DMPlexGetSupport(circuit->dm,vertex,edges);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscCircuitGetConnectedNodes"
+PetscErrorCode PetscCircuitGetConnectedNodes(PetscCircuit circuit,PetscInt edge,const PetscInt **vertices)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  ierr = DMPlexGetCone(circuit->dm,edge,vertices);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
