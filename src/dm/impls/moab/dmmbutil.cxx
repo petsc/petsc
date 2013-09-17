@@ -345,7 +345,7 @@ PetscErrorCode DMMoabCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscInt nele, P
 
   /* resolve the shared entities by exchanging information to adjacent processors */
   merr = mbiface->get_entities_by_type(dmmoab->fileset,etype,ownedelms,true);MBERRNM(merr);
-  merr = pcomm->resolve_shared_ents(dmmoab->fileset,ownedelms,dim,dim-1,&id_tag);MBERRV(mbiface,merr);
+  merr = pcomm->resolve_shared_ents(dmmoab->fileset,ownedelms,dim,dim-1,NULL,&id_tag);MBERRV(mbiface,merr);
 
   /* Reassign global IDs on all entities. */
   merr = pcomm->assign_global_ids(dmmoab->fileset,dim,1,true,true,true);MBERRNM(merr);
