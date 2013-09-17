@@ -5,9 +5,9 @@
 #include <petsc-private/petscimpl.h>  /*I   "petscsys.h"    I*/
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscObjectStateQuery"
+#define __FUNCT__ "PetscObjectStateGet"
 /*@C
-   PetscObjectStateQuery - Gets the state of any PetscObject,
+   PetscObjectStateGet - Gets the state of any PetscObject,
    regardless of the type.
 
    Not Collective
@@ -15,7 +15,7 @@
    Input Parameter:
 .  obj - any PETSc object, for example a Vec, Mat or KSP. This must be
          cast with a (PetscObject), for example,
-         PetscObjectStateQuery((PetscObject)mat,&state);
+         PetscObjectStateGet((PetscObject)mat,&state);
 
    Output Parameter:
 .  state - the object state
@@ -27,12 +27,12 @@
 
    Level: advanced
 
-   seealso: PetscObjectStateIncrease(), PetscObjectSetState()
+   seealso: PetscObjectStateIncrease(), PetscObjectStateSet()
 
    Concepts: state
 
 @*/
-PetscErrorCode  PetscObjectStateQuery(PetscObject obj,PetscInt *state)
+PetscErrorCode  PetscObjectStateGet(PetscObject obj,PetscInt *state)
 {
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
@@ -42,9 +42,9 @@ PetscErrorCode  PetscObjectStateQuery(PetscObject obj,PetscInt *state)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscObjectSetState"
+#define __FUNCT__ "PetscObjectStateSet"
 /*@C
-   PetscObjectSetState - Sets the state of any PetscObject,
+   PetscObjectStateSet - Sets the state of any PetscObject,
    regardless of the type.
 
    Not Collective
@@ -52,7 +52,7 @@ PetscErrorCode  PetscObjectStateQuery(PetscObject obj,PetscInt *state)
    Input Parameter:
 +  obj - any PETSc object, for example a Vec, Mat or KSP. This must be
          cast with a (PetscObject), for example,
-         PetscObjectSetState((PetscObject)mat,state);
+         PetscObjectStateSet((PetscObject)mat,state);
 -  state - the object state
 
    Notes: This function should be used with extreme caution. There is
@@ -62,12 +62,12 @@ PetscErrorCode  PetscObjectStateQuery(PetscObject obj,PetscInt *state)
 
    Level: advanced
 
-   seealso: PetscObjectStateQuery(),PetscObjectStateIncrease()
+   seealso: PetscObjectStateGet(),PetscObjectStateIncrease()
 
    Concepts: state
 
 @*/
-PetscErrorCode  PetscObjectSetState(PetscObject obj,PetscInt state)
+PetscErrorCode  PetscObjectStateSet(PetscObject obj,PetscInt state)
 {
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
