@@ -142,6 +142,18 @@ else
 	$(PETSC_COMPILE.F) $< -o $@ $(FC_MODULE_OUTPUT_FLAG)$(MODDIR)
 endif
 
+# Hack: manual dependencies on object files
+ifeq ($(MPI_IS_MPIUNI),1)
+  MPIUNI_MOD := $(MODDIR)/mpi.mod
+endif
+$(OBJDIR)/src/sys/f90-mod/petscsysmod.o   : $(if $(MPIUNI_MOD),$(OBJDIR)/src/sys/mpiuni/f90-mod/mpiunimod.o)
+$(OBJDIR)/src/vec/f90-mod/petscvecmod.o   : $(OBJDIR)/src/sys/f90-mod/petscsysmod.o
+$(OBJDIR)/src/mat/f90-mod/petscmatmod.o   : $(OBJDIR)/src/vec/f90-mod/petscvecmod.o
+$(OBJDIR)/src/dm/f90-mod/petscdmmod.o     : $(OBJDIR)/src/mat/f90-mod/petscmatmod.o
+$(OBJDIR)/src/ksp/f90-mod/petsckspmod.o   : $(OBJDIR)/src/dm/f90-mod/petscdmmod.o
+$(OBJDIR)/src/snes/f90-mod/petscsnesmod.o : $(OBJDIR)/src/ksp/f90-mod/petsckspmod.o
+$(OBJDIR)/src/ts/f90-mod/petsctsmod.o     : $(OBJDIR)/src/snes/f90-mod/petscsnesmod.o
+
 %/.DIR :
 	@mkdir -p $(@D)
 	@touch $@
