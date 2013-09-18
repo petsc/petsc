@@ -612,9 +612,24 @@ runex16_2:
 	   > ex16_2.tmp 2>&1; ${DIFF} output/ex16_2.out ex16_2.tmp || echo  ${PWD} "\nPossible problem with with ex16_2, diffs above \n========================================="; \
            ${RM} -f ex16_2.tmp
 runex19:
-	-@${MPIEXEC} -n 2 ./ex19 -da_refine 3 -snes_monitor_short -pc_type mg -ksp_type fgmres -pc_mg_type full > ex19_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ./ex19 -da_refine 3 -snes_monitor_short -pc_type mg -ksp_type fgmres -pc_mg_type full -new > ex19_1.tmp 2>&1; \
 	   if (${DIFF} output/ex19_1.out ex19_1.tmp) then true; \
 	   else  echo  ${PWD} "\nPossible problem with with ex19, diffs above \n========================================="; fi; \
+	   ${RM} -f ex19_1.tmp
+runex19_2:
+	-@${MPIEXEC} -n 4 ./ex19 -da_refine 3 -snes_monitor_short -pc_type mg -mat_fd_type ds -new > ex19_1.tmp 2>&1; \
+	   if (${DIFF} output/ex19_2.out ex19_1.tmp) then true; \
+	   else  echo  ${PWD} "\nPossible problem with with ex19_2, diffs above \n========================================="; fi; \
+	   ${RM} -f ex19_1.tmp
+runex19_fdcoloring_wp:
+	-@${MPIEXEC} -n 1 ./ex19 -da_refine 3 -snes_monitor_short -pc_type mg -new > ex19_1.tmp 2>&1; \
+	   if (${DIFF} output/ex19_fdcoloring_wp.out ex19_1.tmp) then true; \
+	   else  echo  ${PWD} "\nPossible problem with with ex19_fdcoloring_wp, diffs above \n========================================="; fi; \
+	   ${RM} -f ex19_1.tmp
+runex19_fdcoloring_ds:
+	-@${MPIEXEC} -n 1 ./ex19 -da_refine 3 -snes_monitor_short -pc_type mg -new > ex19_1.tmp 2>&1; \
+	   if (${DIFF} output/ex19_fdcoloring_ds.out ex19_1.tmp) then true; \
+	   else  echo  ${PWD} "\nPossible problem with with ex19_fdcoloring_ds, diffs above \n========================================="; fi; \
 	   ${RM} -f ex19_1.tmp
 runex19_3: #test pc_redundant
 	-@${MPIEXEC} -n 4 ./ex19 -da_refine 3 -snes_monitor_short -pc_type redundant -mat_type mpiaij -redundant_ksp_type preonly -redundant_pc_factor_mat_solver_package mumps -pc_redundant_number 2 > ex19_3.tmp 2>&1; \
