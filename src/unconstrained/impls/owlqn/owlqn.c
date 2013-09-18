@@ -345,14 +345,15 @@ static PetscErrorCode TaoDestroy_OWLQN(TaoSolver tao)
 static PetscErrorCode TaoSetFromOptions_OWLQN(TaoSolver tao)
 {
 
+  TAO_OWLQN *lmP = (TAO_OWLQN *)tao->data;
+  PetscBool flg;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("Limited-memory variable-metric method for unconstrained optimization"); CHKERRQ(ierr);
-  ierr = TaoLineSearchSetFromOptions(tao->linesearch); CHKERRQ(ierr);
+  ierr = PetscOptionsHead("Orthant-Wise Limited-memory method for Quasi-Newton unconstrained optimization"); CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_owlqn_lambda", "regulariser weight","", 100,&lmP->lambda,&flg);  CHKERRQ(ierr);
   ierr = PetscOptionsTail(); CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-
+  ierr = TaoLineSearchSetFromOptions(tao->linesearch); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -421,8 +422,6 @@ PetscErrorCode TaoCreate_OWLQN(TaoSolver tao)
   ierr = TaoLineSearchSetType(tao->linesearch,owarmijo_type); CHKERRQ(ierr);
   ierr = TaoLineSearchUseTaoSolverRoutines(tao->linesearch,tao); CHKERRQ(ierr);
   
-  ierr = PetscOptionsGetString(PETSC_NULL,"-tao_owlqn_lambda",lambda_str,20,&flg);
-  lmP->lambda = atof(lambda_str); 
 
   PetscFunctionReturn(0);
 }

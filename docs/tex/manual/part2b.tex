@@ -699,6 +699,22 @@ $0 < \eta_1 < \eta_2 < \eta_3 < \eta_4$ are constants.  The {\tt interpolation}
 method uses the same interpolation mechanism as in the initialization to
 compute a new value for the trust-region radius.
 
+\subsection{BMRM}\sindex{BMRM}
+The Bundle Method for Regularized Risk Minimization (BMRM)\cite{brmrm} is a 
+numerical approach to optimizing an unconstrained objective in the form of 
+$f(x) + 0.5 * \lambda \| x \|^2$.  Here $f$ is a convex function that is finite on 
+the whole space.  $\lambda$ is a positive 
+weight parameter, and $\| x \|$ is the Euclidean norm of x.  The algorithm only 
+requires a routine which, given an x, returns the value of f(x) and the 
+gradient of f at x.
+
+\subsection{OWL-QN}\sindex{OWLQN}
+The Orthant-Wise Limited-memory Quasi-Newton algorithm (OWL-QN)\cite{owlqn}
+is a numerical approach to optimizing an unconstrained objective in the 
+form of $f(x) + \lambda \|x\|_1$.  Here f is a convex and differentiable 
+function, $\lambda$ is a positive weight parameter, and $\| x \|_1$ is the 
+L1 norm of x: $\sum_i |x_i|$.  The algorithm only requires evaluating the 
+value of f and its gradient
 
 \section{Bound-Constrained Optimization}\sindex{bounds}
 \label{chapter:bound}
