@@ -631,7 +631,7 @@ runex19_fdcoloring_wp:
 	   else  echo  ${PWD} "\nPossible problem with with ex19_fdcoloring_wp, diffs above \n========================================="; fi; \
 	   ${RM} -f ex19_1.tmp
 runex19_fdcoloring_ds:
-	-@${MPIEXEC} -n 1 ./ex19 -da_refine 3 -snes_monitor_short -pc_type mg -new > ex19_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex19 -da_refine 3 -snes_monitor_short -pc_type mg -mat_fd_type ds -new > ex19_1.tmp 2>&1; \
 	   if (${DIFF} output/ex19_fdcoloring_ds.out ex19_1.tmp) then true; \
 	   else  echo  ${PWD} "\nPossible problem with with ex19_fdcoloring_ds, diffs above \n========================================="; fi; \
 	   ${RM} -f ex19_1.tmp
