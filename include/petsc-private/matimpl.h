@@ -443,6 +443,11 @@ PETSC_EXTERN PetscErrorCode PetscCDGetASMBlocks(const PetscCoarsenData*,const Pe
     to compute the Jacobian.
 
 */
+typedef struct {
+  PetscInt     row;
+  PetscInt     col;     
+  PetscScalar  *valaddr;   /* address of value */
+} MatEntry;
 
 struct  _p_MatFDColoring{
   PETSCHEADER(int);
@@ -458,6 +463,7 @@ struct  _p_MatFDColoring{
                                       den2sp: maps (row,color) in the dense matrix to index of J values,
                                       replace rows and columnsforrow above */
   PetscScalar    **valaddr;        /* maps (row,color) in the dense matrix to address of J values */
+  MatEntry       *matentry;        /* holds (row, column, address of value) for Jacobian matrix entry */
   PetscScalar    *dy;              /* store a block of F(x+dx)-F(x) when J uses BAIJ format */
   PetscReal      error_rel;        /* square root of relative error in computing function */
   PetscReal      umin;             /* minimum allowable u'dx value */

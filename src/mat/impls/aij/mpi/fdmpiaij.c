@@ -21,6 +21,7 @@ PetscErrorCode  MatFDColoringApply_MPIAIJ(Mat J,MatFDColoring coloring,Vec x1,Ma
   Mat            A=aij->A,B=aij->B;
   Mat_SeqAIJ     *cspA=(Mat_SeqAIJ*)A->data, *cspB=(Mat_SeqAIJ*)B->data;
   PetscMPIInt    rank;
+  MatEntry       *Jentry=coloring->matentry;
   
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)J), &rank);CHKERRQ(ierr);
@@ -132,8 +133,9 @@ PetscErrorCode  MatFDColoringApply_MPIAIJ(Mat J,MatFDColoring coloring,Vec x1,Ma
     /* Loop over rows of vector, putting results into Jacobian matrix */
     ierr = VecGetArray(w2,&y);CHKERRQ(ierr);
     for (l=0; l<coloring->nrows[k]; l++) { 
-      row                        = coloring->rows[k][l];   /* local row index */
-      *(coloring->valaddr[nz++]) = y[row]*vscale_array[columnsforrow[k][l]];
+      row                     = Jentry[nz].row;   /* local row index */
+      *(Jentry[nz].valaddr)   = y[row]*vscale_array[Jentry[nz].col];
+      nz++;
     }
     ierr = VecRestoreArray(w2,&y);CHKERRQ(ierr);
   } /* endof for each color */
@@ -166,6 +168,7 @@ PetscErrorCode MatFDColoringCreate_MPIAIJ_new(Mat mat,ISColoring iscoloring,MatF
   PetscInt               spidx;
   PetscInt               *spidxA,*spidxB,nz;
   PetscScalar            **valaddrhit;
+  MatEntry               *Jentry;
 
   PetscFunctionBegin;
   if (ctype == IS_COLORING_GHOSTED) {
@@ -191,6 +194,7 @@ PetscErrorCode MatFDColoringCreate_MPIAIJ_new(Mat mat,ISColoring iscoloring,MatF
 
   nz         = cspA->nz + cspB->nz; /* total nonzero entries of mat */                                  
   ierr       = PetscMalloc(nz*sizeof(PetscScalar*),&c->valaddr);CHKERRQ(ierr);
+  ierr       = PetscMalloc(nz*sizeof(MatEntry),&Jentry);CHKERRQ(ierr);
   ierr       = PetscLogObjectMemory((PetscObject)c,nz*sizeof(PetscScalar*));CHKERRQ(ierr);
 
   /* Allow access to data structures of local part of matrix 
@@ -299,9 +303,14 @@ PetscErrorCode MatFDColoringCreate_MPIAIJ_new(Mat mat,ISColoring iscoloring,MatF
     nrows       = 0;
     for (j=0; j<m; j++) {
       if (rowhit[j]) {
+        Jentry[nz].row             = j;              /* local row index */
+        Jentry[nz].col             = rowhit[j] - 1;  /* local column index */
+        Jentry[nz].valaddr         = valaddrhit[j];  /* address of mat value for this entry */ 
+
         c->rows[i][nrows]          = j;              /* local row index */
         c->columnsforrow[i][nrows] = rowhit[j] - 1;  /* local column index */
-        c->valaddr[nz++]           = valaddrhit[j];  /* address of mat value for this entry */ 
+        c->valaddr[nz]             = valaddrhit[j];    /* address of mat value for this entry */ 
+        nz++;
         nrows++;
       }
     }
@@ -316,6 +325,7 @@ PetscErrorCode MatFDColoringCreate_MPIAIJ_new(Mat mat,ISColoring iscoloring,MatF
 
   ierr = ISColoringRestoreIS(iscoloring,&isa);CHKERRQ(ierr);
 
+  c->matentry = Jentry;
   ierr = PetscFree2(rowhit,valaddrhit);CHKERRQ(ierr);
   ierr = MatRestoreColumnIJ_SeqAIJ_Color(aij->A,0,PETSC_FALSE,PETSC_FALSE,&ncols,&A_ci,&A_cj,&spidxA,NULL);CHKERRQ(ierr);
   ierr = MatRestoreColumnIJ_SeqAIJ_Color(aij->B,0,PETSC_FALSE,PETSC_FALSE,&ncols,&B_ci,&B_cj,&spidxB,NULL);CHKERRQ(ierr);
