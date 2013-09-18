@@ -203,12 +203,16 @@ class TaoTests(ExampleList):
                  
         # Unconstrained
         self.add(Example(example="minsurf1",nprocs=1,options="-tao_smonitor -mx 10 -my 8",method="nls",tags=["minsurf","single","unconstrained","c","nls"],name="minsurf1",section="unconstrained"))
+        self.add(Example(example="minsurf1",nprocs=1,options="-tao_smonitor -mx 10 -my 8",method="bmrm",tags=["minsurf","single","unconstrained","c","bmrm"],name="minsurf1_2",section="unconstrained"))
+        self.add(Example(example="minsurf1",nprocs=1,options="-tao_smonitor -mx 10 -my 8",method="owlqn",tags=["minsurf","single","unconstrained","c","owlqn"],name="minsurf1_3",section="unconstrained"))
         self.add(Example(example="minsurf2",nprocs=1,options="-tao_smonitor -mx 10 -my 8",method="lmvm",tags=["minsurf","single","unconstrained","dm","c","lmvm"],name="minsurf2",section="unconstrained"))
         self.add(Example(example="minsurf2",nprocs=2,options="-tao_smonitor",method="nls",tags=["minsurf","multiprocessor","unconstrained","dm","c","nls"],name="minsurf2_2",section="unconstrained"))
         self.add(Example(example="minsurf2",nprocs=3,options="-tao_smonitor -mx 10 -my 10 -tao_cg_type fr",method="cg",tags=["minsurf","multiprocessor","unconstrained","dm","c","cg"],name="minsurf2_3",section="unconstrained"))
         self.add(Example(example="minsurf2",nprocs=2,options="-tao_smonitor -my 6 -my 8",method="ntr",tags=["minsurf","multiprocessor","unconstrained","dm","c","ntr"],name="minsurf2_4",section="unconstrained"))
         self.add(Example(example="minsurf2",nprocs=3,options="-tao_smonitor -my 23 -my 17",method="nls",tags=["minsurf","multiprocessor","unconstrained","dm","c","nls"],name="minsurf2_5",section="unconstrained"))
         self.add(Example(example="minsurf2",nprocs=1,options="-tao_smonitor -mx 4 -my 20 -random 2",method="ntr",tags=["minsurf","single","unconstrained","dm","c","ntr"],name="minsurf2_6",section="unconstrained"))
+        self.add(Example(example="minsurf2",nprocs=2,options="-tao_smonitor -mx 10 -my 8",method="bmrm",tags=["minsurf","multiprocessor","unconstrained","dm","c","bmrm"],name="minsurf2_7",section="unconstrained"))
+        self.add(Example(example="minsurf2",nprocs=2,options="-tao_smonitor -mx 10 -my 8",method="owlqn",tags=["minsurf","multiprocessor","unconstrained","dm","c","owlqn"],name="minsurf2_8",section="unconstrained"))
 
 
         self.add(Example(example="rosenbrock1",nprocs=1,options="-tao_smonitor",method="lmvm",tags=["rosenbrock","single","unconstrained","c","lmvm"],name="rosenbrock1",section="unconstrained"))
