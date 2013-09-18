@@ -289,6 +289,7 @@ class Configure(config.package.Package):
   def alternateConfigureLibrary(self):
     '''Setup MPIUNI, our uniprocessor version of MPI'''
     self.addDefine('HAVE_MPIUNI', 1)
+    self.addMakeMacro('MPI_IS_MPIUNI', 1)
     #
     #  Even though MPI-Uni is not an external package (it is in PETSc source) we need to stick the
     #  include path for its mpi.h and mpif.h so that external packages that are built with PETSc to
