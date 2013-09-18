@@ -20,7 +20,7 @@ class Configure(config.base.Configure):
   def __str2__(self):
     desc = []
     desc.append('xxx=========================================================================xxx')
-    if self.make.getMakeMacro('PETSC_BUILD_USING_GNUMAKE'):
+    if self.make.getMakeMacro('MAKE_IS_GNUMAKE'):
       build_type = 'gnumake build'
     elif self.getMakeMacro('PETSC_BUILD_USING_CMAKE'):
       build_type = 'cmake build'

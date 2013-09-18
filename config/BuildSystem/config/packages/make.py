@@ -104,7 +104,7 @@ class Configure(config.package.Package):
     # Setup make flags
     if self.haveGNUMake:
       self.flags += ' --no-print-directory'
-      self.addMakeMacro('PETSC_BUILD_USING_GNUMAKE',1)
+      self.addMakeMacro('MAKE_IS_GNUMAKE',1)
 
     # Check to see if make allows rules which look inside archives
     if self.haveGNUMake:
