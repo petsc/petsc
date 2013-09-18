@@ -2733,6 +2733,90 @@ PetscErrorCode MatSOR_MPIBAIJ(Mat matin,Vec bb,PetscReal omega,MatSORType flag,P
 extern PetscErrorCode  MatFDColoringApply_BAIJ(Mat,MatFDColoring,Vec,MatStructure*,void*);
 
 #undef __FUNCT__
+#define __FUNCT__ "MatGetColumnNorms_MPIBAIJ"
+PetscErrorCode MatGetColumnNorms_MPIBAIJ(Mat A,NormType type,PetscReal *norms)
+{
+  PetscErrorCode ierr;
+  Mat_MPIBAIJ    *aij = (Mat_MPIBAIJ*)A->data;
+  PetscInt       N,i,*garray = aij->garray;
+  PetscInt       ib,jb,bs = A->rmap->bs;
+  Mat_SeqBAIJ    *a_aij = (Mat_SeqBAIJ*) aij->A->data;
+  MatScalar      *a_val = a_aij->a;
+  Mat_SeqBAIJ    *b_aij = (Mat_SeqBAIJ*) aij->B->data;
+  MatScalar      *b_val = b_aij->a;
+  PetscReal      *work;
+
+  PetscFunctionBegin;
+  ierr = MatGetSize(A,NULL,&N);CHKERRQ(ierr);
+  ierr = PetscMalloc(N*sizeof(PetscReal),&work);CHKERRQ(ierr);
+  ierr = PetscMemzero(work,N*sizeof(PetscReal));CHKERRQ(ierr);
+  if (type == NORM_2) {
+    for (i=a_aij->i[0]; i<a_aij->i[aij->A->rmap->n/bs]; i++) {
+      for (jb=0; jb<bs; jb++) {
+        for (ib=0; ib<bs; ib++) {
+          work[A->cmap->rstart + a_aij->j[i] * bs + jb] += PetscAbsScalar(*a_val * *a_val);
+          a_val++;
+        }
+      }
+    }
+    for (i=b_aij->i[0]; i<b_aij->i[aij->B->rmap->n/bs]; i++) {
+      for (jb=0; jb<bs; jb++) {
+        for (ib=0; ib<bs; ib++) {
+          work[garray[b_aij->j[i]] * bs + jb] += PetscAbsScalar(*b_val * *b_val);
+          b_val++;
+        }
+      }
+    }
+  } else if (type == NORM_1) {
+    for (i=a_aij->i[0]; i<a_aij->i[aij->A->rmap->n/bs]; i++) {
+      for (jb=0; jb<bs; jb++) {
+        for (ib=0; ib<bs; ib++) {
+          work[A->cmap->rstart + a_aij->j[i] * bs + jb] += PetscAbsScalar(*a_val);
+          a_val++;
+        }
+      }
+    }
+    for (i=b_aij->i[0]; i<b_aij->i[aij->B->rmap->n/bs]; i++) {
+      for (jb=0; jb<bs; jb++) {
+       for (ib=0; ib<bs; ib++) {
+          work[garray[b_aij->j[i]] * bs + jb] += PetscAbsScalar(*b_val);
+          b_val++;
+        }
+      }
+    }
+  } else if (type == NORM_INFINITY) {
+    for (i=a_aij->i[0]; i<a_aij->i[aij->A->rmap->n/bs]; i++) {
+      for (jb=0; jb<bs; jb++) {
+        for (ib=0; ib<bs; ib++) {
+          int col = A->cmap->rstart + a_aij->j[i] * bs + jb;
+          work[col] = PetscMax(PetscAbsScalar(*a_val), work[col]);
+          a_val++;
+        }
+      }
+    }
+    for (i=b_aij->i[0]; i<b_aij->i[aij->B->rmap->n/bs]; i++) {
+      for (jb=0; jb<bs; jb++) {
+        for (ib=0; ib<bs; ib++) {
+          int col = garray[b_aij->j[i]] * bs + jb;
+          work[col] = PetscMax(PetscAbsScalar(*b_val), work[col]);
+          b_val++;
+        }
+      }
+    }
+  } else SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Unknown NormType");
+  if (type == NORM_INFINITY) {
+    ierr = MPI_Allreduce(work,norms,N,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)A));CHKERRQ(ierr);
+  } else {
+    ierr = MPI_Allreduce(work,norms,N,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)A));CHKERRQ(ierr);
+  }
+  ierr = PetscFree(work);CHKERRQ(ierr);
+  if (type == NORM_2) {
+    for (i=0; i<N; i++) norms[i] = PetscSqrtReal(norms[i]);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MatInvertBlockDiagonal_MPIBAIJ"
 PetscErrorCode  MatInvertBlockDiagonal_MPIBAIJ(Mat A,const PetscScalar **values)
 {
@@ -2871,7 +2955,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIBAIJ,
                                        0,
                                        MatGetMultiProcBlock_MPIBAIJ,
                                 /*124*/0,
-                                       0,
+                                       MatGetColumnNorms_MPIBAIJ,
                                        MatInvertBlockDiagonal_MPIBAIJ,
                                        0,
                                        0,
