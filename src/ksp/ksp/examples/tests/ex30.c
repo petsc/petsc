@@ -26,7 +26,6 @@ It is copied and intended to move dirty codes from ksp/examples/tutorials/ex10.c
 T*/
 
 #include <petscksp.h>
-#include <petsctime.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -42,7 +41,6 @@ int main(int argc,char **args)
   PetscErrorCode ierr;
   PetscInt       its,num_numfac,n,M;
   PetscReal      rnorm,enorm;
-  PetscLogDouble tsetup,tsetup1,tsetup2,tsolve,tsolve1,tsolve2;
   PetscBool      preload=PETSC_TRUE,diagonalscale,isSymmetric,ckrnorm=PETSC_TRUE,Test_MatDuplicate=PETSC_FALSE,ckerror=PETSC_FALSE;
   PetscMPIInt    rank;
   PetscScalar    sigma;
@@ -267,11 +265,6 @@ int main(int argc,char **args)
   }
 
   /*
-     We also explicitly time this stage via PetscTime()
-  */
-  ierr = PetscTime(&tsetup1);CHKERRQ(ierr);
-
-  /*
      Create linear solver; set operators; set runtime options.
   */
   ierr       = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
@@ -291,8 +284,6 @@ int main(int argc,char **args)
     */
     ierr   = KSPSetUp(ksp);CHKERRQ(ierr);
     ierr   = KSPSetUpOnBlocks(ksp);CHKERRQ(ierr);
-    ierr   = PetscTime(&tsetup2);CHKERRQ(ierr);
-    tsetup = tsetup2 - tsetup1;
 
     /*
      Tests "diagonal-scaling of preconditioned residual norm" as used
@@ -323,9 +314,8 @@ int main(int argc,char **args)
                          Solve system
       - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
     /*
-     Solve linear system; we also explicitly time this stage.
+     Solve linear system; 
     */
-    ierr = PetscTime(&tsolve1);CHKERRQ(ierr);
     if (trans) {
       ierr = KSPSolveTranspose(ksp,b,x);CHKERRQ(ierr);
       ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
@@ -356,8 +346,6 @@ int main(int argc,char **args)
       }
 
     }   /* while (num_rhs--) */
-    ierr   = PetscTime(&tsolve2);CHKERRQ(ierr);
-    tsolve = tsolve2 - tsolve1;
 
 
     /*
@@ -376,8 +364,7 @@ int main(int argc,char **args)
       ierr = PetscViewerStringOpen(PETSC_COMM_WORLD,kspinfo,120,&viewer);CHKERRQ(ierr);
       ierr = KSPView(ksp,viewer);CHKERRQ(ierr);
       ierr = PetscStrrchr(file[PetscPreLoadIt],'/',&matrixname);CHKERRQ(ierr);
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"%-8.8s %3D %2.0e %2.1e %2.1e %2.1e %s \n",
-                         matrixname,its,rnorm,tsetup+tsolve,tsetup,tsolve,kspinfo);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"%-8.8s %3D %2.0e %s \n", matrixname,its,rnorm,kspinfo);CHKERRQ(ierr);
 
       /*
         Destroy the viewer

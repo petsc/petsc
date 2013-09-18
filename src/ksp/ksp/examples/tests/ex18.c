@@ -5,7 +5,6 @@ Input arguments are:\n\
 
 #include <petscmat.h>
 #include <petscksp.h>
-#include <petsctime.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -13,7 +12,6 @@ int main(int argc,char **args)
 {
   PetscErrorCode ierr;
   PetscInt       its,m,n,mvec;
-  PetscLogDouble time1,time2,time;
   PetscReal      norm;
   Vec            x,b,u;
   Mat            A;
@@ -65,10 +63,7 @@ int main(int argc,char **args)
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
   ierr = KSPSetOperators(ksp,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
-  ierr = PetscTime(&time1);CHKERRQ(ierr);
   ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
-  ierr = PetscTime(&time2);CHKERRQ(ierr);
-  time = time2 - time1;
   ierr = PetscLogStagePop();CHKERRQ(ierr);
 
   /* Show result */
@@ -78,7 +73,6 @@ int main(int argc,char **args)
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3D\n",its);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm %G\n",norm);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Time for solve = %5.2f seconds\n",time);CHKERRQ(ierr);
 
   /* Cleanup */
   ierr = KSPDestroy(&ksp);CHKERRQ(ierr);

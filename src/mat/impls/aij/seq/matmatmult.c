@@ -9,7 +9,6 @@
 #include <../src/mat/utils/petscheap.h>
 #include <petscbt.h>
 #include <../src/mat/impls/dense/seq/dense.h>
-#include <petsctime.h>
 
 static PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_LLCondensed(Mat,Mat,PetscReal,Mat*);
 
