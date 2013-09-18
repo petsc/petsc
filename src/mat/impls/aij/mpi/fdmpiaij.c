@@ -101,25 +101,29 @@ PetscErrorCode  MatFDColoringApply_MPIAIJ(Mat J,MatFDColoring coloring,Vec x1,Ma
     ierr = VecCopy(x1,w3);CHKERRQ(ierr);
     ierr = VecGetArray(w3,&w3_array);CHKERRQ(ierr);
     if (ctype == IS_COLORING_GLOBAL) w3_array = w3_array - cstart; /* shift pointer so global index can be used */
-    for (l=0; l<ncolumns[k]; l++) {
-      col = coloring->columns[k][l]; /* local column (in global index!) of the matrix we are probing for */
-      if (coloring->htype[0] == 'w') {
+
+    if (coloring->htype[0] == 'w') {
+      for (l=0; l<ncolumns[k]; l++) {
+        col = coloring->columns[k][l]; /* local column (in global index!) of the matrix we are probing for */
         w3_array[col] += 1.0/dx;
-        continue;
       } 
-      /* convert global col to local colb */
-      if (col >= cstart && col < cend) {
-        colb = col - cstart;
-      } else {
+    } else { /* htype == 'ds' */
+      for (l=0; l<ncolumns[k]; l++) {
+        col = coloring->columns[k][l]; /* local column (in global index!) of the matrix we are probing for */
+        /* convert global col to local colb */
+        if (col >= cstart && col < cend) {
+          colb = col - cstart;
+        } else {
 #if defined(PETSC_USE_CTABLE)
-        ierr = PetscTableFind(aij->colmap,col+1,&colb);CHKERRQ(ierr);
-        colb--;
+          ierr = PetscTableFind(aij->colmap,col+1,&colb);CHKERRQ(ierr);
+          colb--;
 #else
-        colb = aij->colmap[col] - 1; /* local column index */
+          colb = aij->colmap[col] - 1; /* local column index */
 #endif
-        colb += cend - cstart;
+          colb += cend - cstart;
+        }
+        w3_array[col] += 1.0/vscale_array[colb];
       }
-      w3_array[col] += 1.0/vscale_array[colb];
     }
     if (ctype == IS_COLORING_GLOBAL) w3_array = w3_array + cstart;
     ierr = VecRestoreArray(w3,&w3_array);CHKERRQ(ierr);
@@ -137,14 +141,17 @@ PetscErrorCode  MatFDColoringApply_MPIAIJ(Mat J,MatFDColoring coloring,Vec x1,Ma
      (3-3) Loop over rows of vector, putting results into Jacobian matrix 
     */
     ierr = VecGetArray(w2,&y);CHKERRQ(ierr);
-    for (l=0; l<nrows[k]; l++) { 
-      row                   = Jentry[nz].row;   /* local row index */
-      if (coloring->htype[0] == 'w') {
-        *(Jentry[nz].valaddr) = y[row]*dx;
-      } else {
-        *(Jentry[nz].valaddr) = y[row]*vscale_array[Jentry[nz].col];
+    if (coloring->htype[0] == 'w') {
+      for (l=0; l<nrows[k]; l++) { 
+        row                     = Jentry[nz].row;   /* local row index */
+        *(Jentry[nz++].valaddr) = y[row]*dx;
       }
-      nz++;
+    } else { /* htype == 'ds' */
+      for (l=0; l<nrows[k]; l++) { 
+        row                   = Jentry[nz].row;   /* local row index */
+        *(Jentry[nz].valaddr) = y[row]*vscale_array[Jentry[nz].col];
+        nz++;
+      }
     }
     ierr = VecRestoreArray(w2,&y);CHKERRQ(ierr);
   } 
