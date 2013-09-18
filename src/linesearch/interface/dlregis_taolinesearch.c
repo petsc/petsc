@@ -43,14 +43,11 @@ PetscErrorCode TaoLineSearchFinalizePackage(void)
   first entry to TaoCreate(); when using shared libraries, it is called
   from PetscDLLibraryRegister()
 
-  Input parameter:
-. path - The dynamic library path or PETSC_NULL
-
   Level: developer
 
 .seealso: TaoLineSearchCreate()
 @*/
-PetscErrorCode TaoLineSearchInitializePackage(const char path[])
+PetscErrorCode TaoLineSearchInitializePackage()
 {
     PetscErrorCode ierr;
 
