@@ -391,44 +391,15 @@ PETSC_EXTERN PetscBool PetscCheckPointer(const void*,PetscDataType);
 
    Level: developer
 
-   seealso: PetscObjectStateQuery(), PetscObjectStateDecrease()
+   seealso: PetscObjectStateGet()
 
    Concepts: state
 
 M*/
 #define PetscObjectStateIncrease(obj) ((obj)->state++,0)
 
-/*MC
-   PetscObjectStateDecrease - Decreases the state of any PetscObject,
-   regardless of the type.
-
-   Synopsis:
-   #include "petscsys.h"
-   PetscErrorCode PetscObjectStateDecrease(PetscObject obj)
-
-   Not Collective
-
-   Input Parameter:
-.  obj - any PETSc object, for example a Vec, Mat or KSP. This must be
-         cast with a (PetscObject), for example,
-         PetscObjectStateIncrease((PetscObject)mat);
-
-   Notes: object state is an integer which gets increased every time
-   the object is changed. By saving and later querying the object state
-   one can determine whether information about the object is still current.
-   Currently, state is maintained for Vec and Mat objects.
-
-   Level: developer
-
-   seealso: PetscObjectStateQuery(), PetscObjectStateIncrease()
-
-   Concepts: state
-
-M*/
-#define PetscObjectStateDecrease(obj) ((obj)->state--,0)
-
-PETSC_EXTERN PetscErrorCode PetscObjectStateQuery(PetscObject,PetscInt*);
-PETSC_EXTERN PetscErrorCode PetscObjectSetState(PetscObject,PetscInt);
+PETSC_EXTERN PetscErrorCode PetscObjectStateGet(PetscObject,PetscInt*);
+PETSC_EXTERN PetscErrorCode PetscObjectStateSet(PetscObject,PetscInt);
 PETSC_EXTERN PetscErrorCode PetscObjectComposedDataRegister(PetscInt*);
 PETSC_EXTERN PetscErrorCode PetscObjectComposedDataIncreaseInt(PetscObject);
 PETSC_EXTERN PetscErrorCode PetscObjectComposedDataIncreaseIntstar(PetscObject);

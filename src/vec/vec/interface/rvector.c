@@ -1335,7 +1335,7 @@ PetscErrorCode  VecGetSubVector(Vec X,IS is,Vec *Y)
   }
   /* Record the state when the subvector was gotten so we know whether its values need to be put back */
   if (VecGetSubVectorSavedStateId < 0) {ierr = PetscObjectComposedDataRegister(&VecGetSubVectorSavedStateId);CHKERRQ(ierr);}
-  ierr = PetscObjectStateQuery((PetscObject)Z,&state);CHKERRQ(ierr);
+  ierr = PetscObjectStateGet((PetscObject)Z,&state);CHKERRQ(ierr);
   ierr = PetscObjectComposedDataSetInt((PetscObject)Z,VecGetSubVectorSavedStateId,state);CHKERRQ(ierr);
   *Y   = Z;
   PetscFunctionReturn(0);
@@ -1372,7 +1372,7 @@ PetscErrorCode  VecRestoreSubVector(Vec X,IS is,Vec *Y)
     PetscInt  savedstate=0,newstate;
     PetscBool valid;
     ierr = PetscObjectComposedDataGetInt((PetscObject)*Y,VecGetSubVectorSavedStateId,savedstate,valid);CHKERRQ(ierr);
-    ierr = PetscObjectStateQuery((PetscObject)*Y,&newstate);CHKERRQ(ierr);
+    ierr = PetscObjectStateGet((PetscObject)*Y,&newstate);CHKERRQ(ierr);
     if (valid && savedstate < newstate) {
       /* We might need to copy entries back, first check whether we have no-copy view */
       PetscInt  gstart,gend,start;
