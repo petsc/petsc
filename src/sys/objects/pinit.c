@@ -787,6 +787,7 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   }
   ierr = PetscOptionsCheckInitial_Private();CHKERRQ(ierr);
 
+
   /* SHOULD PUT IN GUARDS: Make sure logging is initialized, even if we do not print it out */
 #if defined(PETSC_USE_LOG)
   ierr = PetscLogBegin_Private();CHKERRQ(ierr);
@@ -959,7 +960,7 @@ PetscErrorCode  PetscFinalize(void)
   }
 #endif
 
-#if defined(PETSC_HAVE_SERVER)
+#if defined(PETSC_USE_SERVER)
   flg1 = PETSC_FALSE;
   ierr = PetscOptionsGetBool(NULL,"-server",&flg1,NULL);CHKERRQ(ierr);
   if (flg1) {
