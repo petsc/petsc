@@ -337,7 +337,7 @@ PetscErrorCode  TSSetFromOptions(TS ts)
 PetscErrorCode  TSComputeRHSJacobian(TS ts,PetscReal t,Vec U,Mat *A,Mat *B,MatStructure *flg)
 {
   PetscErrorCode ierr;
-  PetscInt       Ustate;
+  PetscObjectState Ustate;
   DM             dm;
   DMTS           tsdm;
   TSRHSJacobian  rhsjacobianfunc;

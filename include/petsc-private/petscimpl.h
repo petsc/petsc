@@ -83,15 +83,15 @@ typedef struct _p_PetscObject {
   char                 *prefix;
   PetscInt             tablevel;
   void                 *cpp;
-  PetscInt             state;
+  PetscObjectState     state;
   PetscInt             int_idmax,        intstar_idmax;
-  PetscInt             *intcomposedstate,*intstarcomposedstate;
+  PetscObjectState     *intcomposedstate,*intstarcomposedstate;
   PetscInt             *intcomposeddata, **intstarcomposeddata;
   PetscInt             real_idmax,        realstar_idmax;
-  PetscInt             *realcomposedstate,*realstarcomposedstate;
+  PetscObjectState     *realcomposedstate,*realstarcomposedstate;
   PetscReal            *realcomposeddata, **realstarcomposeddata;
   PetscInt             scalar_idmax,        scalarstar_idmax;
-  PetscInt             *scalarcomposedstate,*scalarstarcomposedstate;
+  PetscObjectState     *scalarcomposedstate,*scalarstarcomposedstate;
   PetscScalar          *scalarcomposeddata, **scalarstarcomposeddata;
   void                 (**fortran_func_pointers)(void);                  /* used by Fortran interface functions to stash user provided Fortran functions */
   PetscInt             num_fortran_func_pointers;                        /* number of Fortran function pointers allocated */
@@ -398,8 +398,8 @@ PETSC_EXTERN PetscBool PetscCheckPointer(const void*,PetscDataType);
 M*/
 #define PetscObjectStateIncrease(obj) ((obj)->state++,0)
 
-PETSC_EXTERN PetscErrorCode PetscObjectStateGet(PetscObject,PetscInt*);
-PETSC_EXTERN PetscErrorCode PetscObjectStateSet(PetscObject,PetscInt);
+PETSC_EXTERN PetscErrorCode PetscObjectStateGet(PetscObject,PetscObjectState*);
+PETSC_EXTERN PetscErrorCode PetscObjectStateSet(PetscObject,PetscObjectState);
 PETSC_EXTERN PetscErrorCode PetscObjectComposedDataRegister(PetscInt*);
 PETSC_EXTERN PetscErrorCode PetscObjectComposedDataIncreaseInt(PetscObject);
 PETSC_EXTERN PetscErrorCode PetscObjectComposedDataIncreaseIntstar(PetscObject);

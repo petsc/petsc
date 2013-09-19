@@ -1289,9 +1289,9 @@ PetscErrorCode  VecMAXPY(Vec y,PetscInt nv,const PetscScalar alpha[],Vec x[])
 @*/
 PetscErrorCode  VecGetSubVector(Vec X,IS is,Vec *Y)
 {
-  PetscErrorCode ierr;
-  Vec            Z;
-  PetscInt       state;
+  PetscErrorCode   ierr;
+  Vec              Z;
+  PetscObjectState state;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(X,VEC_CLASSID,1);
@@ -1369,7 +1369,7 @@ PetscErrorCode  VecRestoreSubVector(Vec X,IS is,Vec *Y)
   if (X->ops->restoresubvector) {
     ierr = (*X->ops->restoresubvector)(X,is,Y);CHKERRQ(ierr);
   } else {
-    PetscInt  savedstate=0,newstate;
+    PetscObjectState savedstate=0,newstate;
     PetscBool valid;
     ierr = PetscObjectComposedDataGetInt((PetscObject)*Y,VecGetSubVectorSavedStateId,savedstate,valid);CHKERRQ(ierr);
     ierr = PetscObjectStateGet((PetscObject)*Y,&newstate);CHKERRQ(ierr);

@@ -19,8 +19,8 @@
 */
 static PetscErrorCode VecGhostStateSync_Private(Vec g,Vec l)
 {
-  PetscErrorCode ierr;
-  PetscInt       gstate,lstate;
+  PetscErrorCode   ierr;
+  PetscObjectState gstate,lstate;
 
   PetscFunctionBegin;
   ierr = PetscObjectStateGet((PetscObject)g,&gstate);CHKERRQ(ierr);
