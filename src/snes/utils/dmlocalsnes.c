@@ -108,7 +108,7 @@ static PetscErrorCode SNESComputeJacobian_DMLocal(SNES snes,Vec X,Mat *A,Mat *B,
     if (!fdcoloring) {
       ISColoring coloring;
 
-      ierr = DMCreateColoring(dm,dm->coloringtype,dm->mattype,&coloring);CHKERRQ(ierr);
+      ierr = DMCreateColoring(dm,dm->coloringtype,&coloring);CHKERRQ(ierr);
       ierr = MatFDColoringCreate(*B,coloring,&fdcoloring);CHKERRQ(ierr);
       ierr = ISColoringDestroy(&coloring);CHKERRQ(ierr);
       switch (dm->coloringtype) {

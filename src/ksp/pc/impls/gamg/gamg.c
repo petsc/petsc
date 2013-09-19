@@ -291,7 +291,7 @@ static PetscErrorCode createLevel(const PC pc,const Mat Amat_fine,const PetscInt
     /* Create a vector to contain the newly ordered element information */
     ierr = VecCreate(comm, &dest_crd);CHKERRQ(ierr);
     ierr = VecSetSizes(dest_crd, node_data_sz*ncrs_prim_new, PETSC_DECIDE);CHKERRQ(ierr);
-    ierr = VecSetFromOptions(dest_crd);CHKERRQ(ierr); /* this is needed! */
+    ierr = VecSetType(dest_crd,VECSTANDARD);CHKERRQ(ierr); /* this is needed! */
     /*
      There are 'ndata_rows*ndata_cols' data items per node, (one can think of the vectors of having
      a block size of ...).  Note, ISs are expanded into equation space by 'cr_bs'.

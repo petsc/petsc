@@ -49,7 +49,8 @@ int main(int argc,char **argv)
   ierr = DMCreateGlobalVector(da,&x);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(da,&b);CHKERRQ(ierr);
   ierr = ComputeRHS(da,b);CHKERRQ(ierr);
-  ierr = DMCreateMatrix(da,MATBAIJ,&A);CHKERRQ(ierr);
+  ierr = DMSetMatType(da,MATBAIJ);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(da,&A);CHKERRQ(ierr);
   ierr = ComputeMatrix(da,A);CHKERRQ(ierr);
 
 

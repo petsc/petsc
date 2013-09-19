@@ -393,7 +393,7 @@ int main(int argc, char *argv[])
   case 0:
     ierr = DMCompositeGetAccess(pack,X,&Xu,0);CHKERRQ(ierr);
     ierr = DMCompositeGetAccess(pack,F,&Fu,0);CHKERRQ(ierr);
-    ierr = DMCreateMatrix(dau,NULL,&B);CHKERRQ(ierr);
+    ierr = DMCreateMatrix(dau,&B);CHKERRQ(ierr);
     ierr = SNESSetFunction(snes,Fu,FormFunction_All,user);CHKERRQ(ierr);
     ierr = SNESSetJacobian(snes,B,B,FormJacobian_All,user);CHKERRQ(ierr);
     ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
@@ -405,7 +405,7 @@ int main(int argc, char *argv[])
   case 1:
     ierr = DMCompositeGetAccess(pack,X,0,&Xk);CHKERRQ(ierr);
     ierr = DMCompositeGetAccess(pack,F,0,&Fk);CHKERRQ(ierr);
-    ierr = DMCreateMatrix(dak,NULL,&B);CHKERRQ(ierr);
+    ierr = DMCreateMatrix(dak,&B);CHKERRQ(ierr);
     ierr = SNESSetFunction(snes,Fk,FormFunction_All,user);CHKERRQ(ierr);
     ierr = SNESSetJacobian(snes,B,B,FormJacobian_All,user);CHKERRQ(ierr);
     ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
@@ -415,7 +415,7 @@ int main(int argc, char *argv[])
     ierr = DMCompositeRestoreAccess(pack,F,0,&Fk);CHKERRQ(ierr);
     break;
   case 2:
-    ierr = DMCreateMatrix(pack,NULL,&B);CHKERRQ(ierr);
+    ierr = DMCreateMatrix(pack,&B);CHKERRQ(ierr);
     /* This example does not correctly allocate off-diagonal blocks. These options allows new nonzeros (slow). */
     ierr = MatSetOption(B,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
     ierr = MatSetOption(B,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);

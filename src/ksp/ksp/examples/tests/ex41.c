@@ -88,7 +88,8 @@ int main(int argc,char **argv)
   }
 
   /* Create and set A at fine grids */
-  ierr = DMCreateMatrix(user.fine.da,MATAIJ,&A);CHKERRQ(ierr);
+  ierr = DMSetMatType(user.fine.da,MATAIJ);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(user.fine.da,&A);CHKERRQ(ierr);
   ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
   ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
 
