@@ -47,7 +47,7 @@ PetscErrorCode PetscObjectStateGet(PetscObject obj,PetscObjectState *state)
    PetscObjectStateSet - Sets the state of any PetscObject,
    regardless of the type.
 
-   Not Collective
+   Logically Collective
 
    Input Parameter:
 +  obj - any PETSc object, for example a Vec, Mat or KSP. This must be
@@ -58,7 +58,7 @@ PetscErrorCode PetscObjectStateGet(PetscObject obj,PetscObjectState *state)
    Notes: This function should be used with extreme caution. There is
    essentially only one use for it: if the user calls Mat(Vec)GetRow(Array),
    which increases the state, but does not alter the data, then this
-   routine can be used to reset the state.
+   routine can be used to reset the state.  Such a reset must be collective.
 
    Level: advanced
 

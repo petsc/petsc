@@ -372,7 +372,7 @@ PETSC_EXTERN PetscBool PetscCheckPointer(const void*,PetscDataType);
    #include "petscsys.h"
    PetscErrorCode PetscObjectStateIncrease(PetscObject obj)
 
-   Not Collective
+   Logically Collective
 
    Input Parameter:
 .  obj - any PETSc object, for example a Vec, Mat or KSP. This must be
@@ -388,6 +388,8 @@ PETSC_EXTERN PetscBool PetscCheckPointer(const void*,PetscDataType);
    call it after explicit access to an object's internals. Routines such
    as VecSet() or MatScale() already call this routine. It is also called, as a
    precaution, in VecRestoreArray(), MatRestoreRow(), MatDenseRestoreArray().
+
+   This routine is logically collective because state equality comparison needs to be possible without communication.
 
    Level: developer
 
