@@ -132,7 +132,7 @@ PetscErrorCode TaoLineSearchCreate(MPI_Comm comm, TaoLineSearch *newls)
      *newls = PETSC_NULL;
 
  #ifndef PETSC_USE_DYNAMIC_LIBRARIES
-     ierr = TaoLineSearchInitializePackage(PETSC_NULL); CHKERRQ(ierr);
+     ierr = TaoLineSearchInitializePackage(); CHKERRQ(ierr);
  #endif 
 
      ierr = PetscHeaderCreate(ls,_p_TaoLineSearch,struct _TaoLineSearchOps,
@@ -550,7 +550,7 @@ PetscErrorCode TaoLineSearchSetFromOptions(TaoLineSearch ls)
    ierr = PetscObjectOptionsBegin((PetscObject)ls); CHKERRQ(ierr);
    {
      if (!TaoLineSearchInitialized) {
-       ierr = TaoLineSearchInitializePackage(PETSC_NULL); CHKERRQ(ierr);
+       ierr = TaoLineSearchInitializePackage(); CHKERRQ(ierr);
      }
      if (((PetscObject)ls)->type_name) {
        default_type = ((PetscObject)ls)->type_name;
