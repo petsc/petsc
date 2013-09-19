@@ -394,8 +394,6 @@ PetscErrorCode TaoCreate_OWLQN(TaoSolver tao)
   TAO_OWLQN *lmP;
   const char *owarmijo_type = TAOLINESEARCH_OWARMIJO;
   PetscErrorCode ierr;
-  char lambda_str[20];
-  PetscBool flg;
 
   PetscFunctionBegin;
   tao->ops->setup = TaoSetUp_OWLQN;
