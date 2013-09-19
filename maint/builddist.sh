@@ -1,6 +1,6 @@
 #!/bin/bash
 export BUILDDIR=$HOME/working/taobuild
-export VERSION=2.2-p0
+export VERSION=2.2.0
 export REVISION=default
 export HERE=$PWD
 export C2HTML=c2html
