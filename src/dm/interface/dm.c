@@ -135,6 +135,7 @@ PetscErrorCode DMClone(DM dm, DM *newdm)
   if (dm->ops->clone) {
     ierr = (*dm->ops->clone)(dm, newdm);CHKERRQ(ierr);
   }
+  (*newdm)->setupcalled = PETSC_TRUE;
   ierr = DMGetPointSF(dm, &sf);CHKERRQ(ierr);
   ierr = DMSetPointSF(*newdm, sf);CHKERRQ(ierr);
   ierr = DMGetApplicationContext(dm, &ctx);CHKERRQ(ierr);
@@ -2849,6 +2850,34 @@ PetscErrorCode DMPrintCellMatrix(PetscInt c, const char name[], PetscInt rows, P
       ierr = PetscPrintf(PETSC_COMM_SELF, " % 9.5G", PetscRealPart(A[f*cols+g]));CHKERRQ(ierr);
     }
     ierr = PetscPrintf(PETSC_COMM_SELF, " |\n");CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMPrintLocalVec"
+PetscErrorCode DMPrintLocalVec(DM dm, const char name[], PetscReal tol, Vec X)
+{
+  PetscMPIInt    rank, numProcs;
+  PetscInt       p;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject) dm), &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject) dm), &numProcs);CHKERRQ(ierr);
+  ierr = PetscPrintf(PetscObjectComm((PetscObject) dm), "%s:\n", name);CHKERRQ(ierr);
+  for (p = 0; p < numProcs; ++p) {
+    if (p == rank) {
+      Vec x;
+
+      ierr = VecDuplicate(X, &x);CHKERRQ(ierr);
+      ierr = VecCopy(X, x);CHKERRQ(ierr);
+      ierr = VecChop(x, tol);CHKERRQ(ierr);
+      ierr = VecView(x, PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+      ierr = VecDestroy(&x);CHKERRQ(ierr);
+      ierr = PetscViewerFlush(PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+    }
+    ierr = PetscBarrier((PetscObject) dm);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

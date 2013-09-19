@@ -9,6 +9,20 @@
 #include <petscblaslapack.h>
 #include <petsc-private/petscimpl.h>
 #include <petscviewer.h>
+#include <petscdmplex.h>
+#include <petscdmshell.h>
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscQuadratureDestroy"
+PetscErrorCode PetscQuadratureDestroy(PetscQuadrature *q)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscFree(q->quadPoints);CHKERRQ(ierr);
+  ierr = PetscFree(q->quadWeights);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDTLegendreEval"
@@ -276,13 +290,12 @@ static PetscErrorCode PetscDTGaussJacobiQuadrature1D_Internal(PetscInt npoints, 
 
   Input Arguments:
 + dim - The simplex dimension
-. npoints - number of points
+. order - The quadrature order
 . a - left end of interval (often-1)
 - b - right end of interval (often +1)
 
   Output Arguments:
-+ points - quadrature points
-- weights - quadrature weights
+. q - A PetscQuadrature object
 
   Level: intermediate
 
@@ -292,46 +305,43 @@ static PetscErrorCode PetscDTGaussJacobiQuadrature1D_Internal(PetscInt npoints, 
 
 .seealso: PetscDTGaussQuadrature()
 @*/
-PetscErrorCode PetscDTGaussJacobiQuadrature(PetscInt dim, PetscInt npoints, PetscReal a, PetscReal b, PetscReal *points[], PetscReal *weights[])
+PetscErrorCode PetscDTGaussJacobiQuadrature(PetscInt dim, PetscInt order, PetscReal a, PetscReal b, PetscQuadrature *q)
 {
+  PetscInt       npoints = dim > 1 ? dim > 2 ? order*PetscSqr(order) : PetscSqr(order) : order;
   PetscReal     *px, *wx, *py, *wy, *pz, *wz, *x, *w;
   PetscInt       i, j, k;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if ((a != -1.0) || (b != 1.0)) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Must use default internal right now");
+  ierr = PetscMalloc(npoints*dim * sizeof(PetscReal), &x);CHKERRQ(ierr);
+  ierr = PetscMalloc(npoints     * sizeof(PetscReal), &w);CHKERRQ(ierr);
   switch (dim) {
   case 1:
-    ierr = PetscMalloc(npoints * sizeof(PetscReal), &x);CHKERRQ(ierr);
-    ierr = PetscMalloc(npoints * sizeof(PetscReal), &w);CHKERRQ(ierr);
-    ierr = PetscDTGaussJacobiQuadrature1D_Internal(npoints, 0.0, 0.0, x, w);CHKERRQ(ierr);
+    ierr = PetscDTGaussJacobiQuadrature1D_Internal(order, 0.0, 0.0, x, w);CHKERRQ(ierr);
     break;
   case 2:
-    ierr = PetscMalloc(npoints*npoints*2 * sizeof(PetscReal), &x);CHKERRQ(ierr);
-    ierr = PetscMalloc(npoints*npoints   * sizeof(PetscReal), &w);CHKERRQ(ierr);
-    ierr = PetscMalloc4(npoints,PetscReal,&px,npoints,PetscReal,&wx,npoints,PetscReal,&py,npoints,PetscReal,&wy);CHKERRQ(ierr);
-    ierr = PetscDTGaussJacobiQuadrature1D_Internal(npoints, 0.0, 0.0, px, wx);CHKERRQ(ierr);
-    ierr = PetscDTGaussJacobiQuadrature1D_Internal(npoints, 1.0, 0.0, py, wy);CHKERRQ(ierr);
-    for (i = 0; i < npoints; ++i) {
-      for (j = 0; j < npoints; ++j) {
-        ierr = PetscDTMapSquareToTriangle_Internal(px[i], py[j], &x[(i*npoints+j)*2+0], &x[(i*npoints+j)*2+1]);CHKERRQ(ierr);
-        w[i*npoints+j] = 0.5 * wx[i] * wy[j];
+    ierr = PetscMalloc4(order,PetscReal,&px,order,PetscReal,&wx,order,PetscReal,&py,order,PetscReal,&wy);CHKERRQ(ierr);
+    ierr = PetscDTGaussJacobiQuadrature1D_Internal(order, 0.0, 0.0, px, wx);CHKERRQ(ierr);
+    ierr = PetscDTGaussJacobiQuadrature1D_Internal(order, 1.0, 0.0, py, wy);CHKERRQ(ierr);
+    for (i = 0; i < order; ++i) {
+      for (j = 0; j < order; ++j) {
+        ierr = PetscDTMapSquareToTriangle_Internal(px[i], py[j], &x[(i*order+j)*2+0], &x[(i*order+j)*2+1]);CHKERRQ(ierr);
+        w[i*order+j] = 0.5 * wx[i] * wy[j];
       }
     }
     ierr = PetscFree4(px,wx,py,wy);CHKERRQ(ierr);
     break;
   case 3:
-    ierr = PetscMalloc(npoints*npoints*3 * sizeof(PetscReal), &x);CHKERRQ(ierr);
-    ierr = PetscMalloc(npoints*npoints   * sizeof(PetscReal), &w);CHKERRQ(ierr);
-    ierr = PetscMalloc6(npoints,PetscReal,&px,npoints,PetscReal,&wx,npoints,PetscReal,&py,npoints,PetscReal,&wy,npoints,PetscReal,&pz,npoints,PetscReal,&wz);CHKERRQ(ierr);
-    ierr = PetscDTGaussJacobiQuadrature1D_Internal(npoints, 0.0, 0.0, px, wx);CHKERRQ(ierr);
-    ierr = PetscDTGaussJacobiQuadrature1D_Internal(npoints, 1.0, 0.0, py, wy);CHKERRQ(ierr);
-    ierr = PetscDTGaussJacobiQuadrature1D_Internal(npoints, 2.0, 0.0, pz, wz);CHKERRQ(ierr);
-    for (i = 0; i < npoints; ++i) {
-      for (j = 0; j < npoints; ++j) {
-        for (k = 0; k < npoints; ++k) {
-          ierr = PetscDTMapCubeToTetrahedron_Internal(px[i], py[j], pz[k], &x[((i*npoints+j)*npoints+k)*3+0], &x[((i*npoints+j)*npoints+k)*3+1], &x[((i*npoints+j)*npoints+k)*3+2]);CHKERRQ(ierr);
-          w[(i*npoints+j)*npoints+k] = 0.125 * wx[i] * wy[j] * wz[k];
+    ierr = PetscMalloc6(order,PetscReal,&px,order,PetscReal,&wx,order,PetscReal,&py,order,PetscReal,&wy,order,PetscReal,&pz,order,PetscReal,&wz);CHKERRQ(ierr);
+    ierr = PetscDTGaussJacobiQuadrature1D_Internal(order, 0.0, 0.0, px, wx);CHKERRQ(ierr);
+    ierr = PetscDTGaussJacobiQuadrature1D_Internal(order, 1.0, 0.0, py, wy);CHKERRQ(ierr);
+    ierr = PetscDTGaussJacobiQuadrature1D_Internal(order, 2.0, 0.0, pz, wz);CHKERRQ(ierr);
+    for (i = 0; i < order; ++i) {
+      for (j = 0; j < order; ++j) {
+        for (k = 0; k < order; ++k) {
+          ierr = PetscDTMapCubeToTetrahedron_Internal(px[i], py[j], pz[k], &x[((i*order+j)*order+k)*3+0], &x[((i*order+j)*order+k)*3+1], &x[((i*order+j)*order+k)*3+2]);CHKERRQ(ierr);
+          w[(i*order+j)*order+k] = 0.125 * wx[i] * wy[j] * wz[k];
         }
       }
     }
@@ -340,8 +350,9 @@ PetscErrorCode PetscDTGaussJacobiQuadrature(PetscInt dim, PetscInt npoints, Pets
   default:
     SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cannot construct quadrature rule for dimension %d", dim);
   }
-  if (points)  *points  = x;
-  if (weights) *weights = w;
+  q->numQuadPoints = npoints;
+  q->quadPoints    = x;
+  q->quadWeights   = w;
   PetscFunctionReturn(0);
 }
 

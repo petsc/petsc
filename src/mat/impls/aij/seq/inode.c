@@ -3163,17 +3163,16 @@ PetscErrorCode MatSOR_SeqAIJ_Inode(Mat A,Vec bb,PetscReal omega,MatSORType flag,
   while (its--) {
 
     if (flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP) {
-      ibdiag = a->inode.ibdiag;
+      for (i=0, row=0, ibdiag = a->inode.ibdiag;
+           i<m;
+           row += sizes[i], ibdiag += sizes[i]*sizes[i], i++) {
 
-      for (i=0, row=0; i<m; i++) {
-        sz  = ii[row + 1] - ii[row];
+        sz  = diag[row] - ii[row];
         v1  = a->a + ii[row];
         idx = a->j + ii[row];
-
         /* see comments for MatMult_SeqAIJ_Inode() for how this is coded */
         switch (sizes[i]) {
         case 1:
-
           sum1 = b[row];
           for (n = 0; n<sz-1; n+=2) {
             i1    = idx[0];
@@ -3183,25 +3182,37 @@ PetscErrorCode MatSOR_SeqAIJ_Inode(Mat A,Vec bb,PetscReal omega,MatSORType flag,
             tmp1  = x[i2];
             sum1 -= v1[0] * tmp0 + v1[1] * tmp1; v1 += 2;
           }
-
           if (n == sz-1) {
-            tmp0  = x[*idx];
+            tmp0  = x[*idx++];
+            sum1 -= *v1 * tmp0;
+            v1++;
+          }
+          t[row]   = sum1;
+          sz      = ii[row+1] - diag[row] - 1;
+          idx     = a->j + diag[row] + 1;
+          v1 += 1;
+          for (n = 0; n<sz-1; n+=2) {
+            i1    = idx[0];
+            i2    = idx[1];
+            idx  += 2;
+            tmp0  = x[i1];
+            tmp1  = x[i2];
+            sum1 -= v1[0] * tmp0 + v1[1] * tmp1; v1 += 2;
+          }
+          if (n == sz-1) {
+            tmp0  = x[*idx++];
             sum1 -= *v1 * tmp0;
           }
-
           /* in MatSOR_SeqAIJ this line would be
            *
            * x[row] = (1-omega)*x[row]+(sum1+(*bdiag++)*x[row])*(*ibdiag++);
            *
            * but omega == 1, so this becomes
            *
-           * x[row] = (sum1+(*bdiag++)*x[row])*(*ibdiag++);
+           * x[row] = sum1*(*ibdiag++);
            *
-           * but bdiag and ibdiag cancel each other, so we can change this
-           * to adding sum1*(*ibdiag++).  We can skip bdiag for the larger
-           * block sizes as well
            */
-          x[row++] += sum1*(*ibdiag++);
+          x[row] = sum1*(*ibdiag);
           break;
         case 2:
           v2   = a->a + ii[row+1];
@@ -3216,15 +3227,34 @@ PetscErrorCode MatSOR_SeqAIJ_Inode(Mat A,Vec bb,PetscReal omega,MatSORType flag,
             sum1 -= v1[0] * tmp0 + v1[1] * tmp1; v1 += 2;
             sum2 -= v2[0] * tmp0 + v2[1] * tmp1; v2 += 2;
           }
-
+          if (n == sz-1) {
+            tmp0  = x[*idx++];
+            sum1 -= v1[0] * tmp0;
+            sum2 -= v2[0] * tmp0;
+            v1++; v2++;
+          }
+          t[row]   = sum1;
+          t[row+1] = sum2;
+          sz      = ii[row+1] - diag[row] - 2;
+          idx     = a->j + diag[row] + 2;
+          v1 += 2;
+          v2 += 2;
+          for (n = 0; n<sz-1; n+=2) {
+            i1    = idx[0];
+            i2    = idx[1];
+            idx  += 2;
+            tmp0  = x[i1];
+            tmp1  = x[i2];
+            sum1 -= v1[0] * tmp0 + v1[1] * tmp1; v1 += 2;
+            sum2 -= v2[0] * tmp0 + v2[1] * tmp1; v2 += 2;
+          }
           if (n == sz-1) {
             tmp0  = x[*idx];
             sum1 -= v1[0] * tmp0;
             sum2 -= v2[0] * tmp0;
           }
-          x[row++] += sum1*ibdiag[0] + sum2*ibdiag[2];
-          x[row++] += sum1*ibdiag[1] + sum2*ibdiag[3];
-          ibdiag   += 4;
+          x[row] = sum1*ibdiag[0] + sum2*ibdiag[2];
+          x[row+1] = sum1*ibdiag[1] + sum2*ibdiag[3];
           break;
         case 3:
           v2   = a->a + ii[row+1];
@@ -3242,17 +3272,40 @@ PetscErrorCode MatSOR_SeqAIJ_Inode(Mat A,Vec bb,PetscReal omega,MatSORType flag,
             sum2 -= v2[0] * tmp0 + v2[1] * tmp1; v2 += 2;
             sum3 -= v3[0] * tmp0 + v3[1] * tmp1; v3 += 2;
           }
-
+          if (n == sz-1) {
+            tmp0  = x[*idx++];
+            sum1 -= v1[0] * tmp0;
+            sum2 -= v2[0] * tmp0;
+            sum3 -= v3[0] * tmp0;
+            v1++; v2++; v3++;
+          }
+          t[row]   = sum1;
+          t[row+1] = sum2;
+          t[row+2] = sum3;
+          sz      = ii[row+1] - diag[row] - 3;
+          idx     = a->j + diag[row] + 3;
+          v1 += 3;
+          v2 += 3;
+          v3 += 3;
+          for (n = 0; n<sz-1; n+=2) {
+            i1    = idx[0];
+            i2    = idx[1];
+            idx  += 2;
+            tmp0  = x[i1];
+            tmp1  = x[i2];
+            sum1 -= v1[0] * tmp0 + v1[1] * tmp1; v1 += 2;
+            sum2 -= v2[0] * tmp0 + v2[1] * tmp1; v2 += 2;
+            sum3 -= v3[0] * tmp0 + v3[1] * tmp1; v3 += 2;
+          }
           if (n == sz-1) {
             tmp0  = x[*idx];
             sum1 -= v1[0] * tmp0;
             sum2 -= v2[0] * tmp0;
             sum3 -= v3[0] * tmp0;
           }
-          x[row++] += sum1*ibdiag[0] + sum2*ibdiag[3] + sum3*ibdiag[6];
-          x[row++] += sum1*ibdiag[1] + sum2*ibdiag[4] + sum3*ibdiag[7];
-          x[row++] += sum1*ibdiag[2] + sum2*ibdiag[5] + sum3*ibdiag[8];
-          ibdiag   += 9;
+          x[row] = sum1*ibdiag[0] + sum2*ibdiag[3] + sum3*ibdiag[6];
+          x[row+1] = sum1*ibdiag[1] + sum2*ibdiag[4] + sum3*ibdiag[7];
+          x[row+2] = sum1*ibdiag[2] + sum2*ibdiag[5] + sum3*ibdiag[8];
           break;
         case 4:
           v2   = a->a + ii[row+1];
@@ -3273,7 +3326,35 @@ PetscErrorCode MatSOR_SeqAIJ_Inode(Mat A,Vec bb,PetscReal omega,MatSORType flag,
             sum3 -= v3[0] * tmp0 + v3[1] * tmp1; v3 += 2;
             sum4 -= v4[0] * tmp0 + v4[1] * tmp1; v4 += 2;
           }
-
+          if (n == sz-1) {
+            tmp0  = x[*idx++];
+            sum1 -= v1[0] * tmp0;
+            sum2 -= v2[0] * tmp0;
+            sum3 -= v3[0] * tmp0;
+            sum4 -= v4[0] * tmp0;
+            v1++; v2++; v3++; v4++;
+          }
+          t[row]   = sum1;
+          t[row+1] = sum2;
+          t[row+2] = sum3;
+          t[row+3] = sum4;
+          sz      = ii[row+1] - diag[row] - 4;
+          idx     = a->j + diag[row] + 4;
+          v1 += 4;
+          v2 += 4;
+          v3 += 4;
+          v4 += 4;
+          for (n = 0; n<sz-1; n+=2) {
+            i1    = idx[0];
+            i2    = idx[1];
+            idx  += 2;
+            tmp0  = x[i1];
+            tmp1  = x[i2];
+            sum1 -= v1[0] * tmp0 + v1[1] * tmp1; v1 += 2;
+            sum2 -= v2[0] * tmp0 + v2[1] * tmp1; v2 += 2;
+            sum3 -= v3[0] * tmp0 + v3[1] * tmp1; v3 += 2;
+            sum4 -= v4[0] * tmp0 + v4[1] * tmp1; v4 += 2;
+          }
           if (n == sz-1) {
             tmp0  = x[*idx];
             sum1 -= v1[0] * tmp0;
@@ -3281,11 +3362,10 @@ PetscErrorCode MatSOR_SeqAIJ_Inode(Mat A,Vec bb,PetscReal omega,MatSORType flag,
             sum3 -= v3[0] * tmp0;
             sum4 -= v4[0] * tmp0;
           }
-          x[row++] += sum1*ibdiag[0] + sum2*ibdiag[4] + sum3*ibdiag[8] + sum4*ibdiag[12];
-          x[row++] += sum1*ibdiag[1] + sum2*ibdiag[5] + sum3*ibdiag[9] + sum4*ibdiag[13];
-          x[row++] += sum1*ibdiag[2] + sum2*ibdiag[6] + sum3*ibdiag[10] + sum4*ibdiag[14];
-          x[row++] += sum1*ibdiag[3] + sum2*ibdiag[7] + sum3*ibdiag[11] + sum4*ibdiag[15];
-          ibdiag   += 16;
+          x[row] =   sum1*ibdiag[0] + sum2*ibdiag[4] + sum3*ibdiag[8] + sum4*ibdiag[12];
+          x[row+1] = sum1*ibdiag[1] + sum2*ibdiag[5] + sum3*ibdiag[9] + sum4*ibdiag[13];
+          x[row+2] = sum1*ibdiag[2] + sum2*ibdiag[6] + sum3*ibdiag[10] + sum4*ibdiag[14];
+          x[row+3] = sum1*ibdiag[3] + sum2*ibdiag[7] + sum3*ibdiag[11] + sum4*ibdiag[15];
           break;
         case 5:
           v2   = a->a + ii[row+1];
@@ -3309,155 +3389,27 @@ PetscErrorCode MatSOR_SeqAIJ_Inode(Mat A,Vec bb,PetscReal omega,MatSORType flag,
             sum4 -= v4[0] * tmp0 + v4[1] * tmp1; v4 += 2;
             sum5 -= v5[0] * tmp0 + v5[1] * tmp1; v5 += 2;
           }
-
           if (n == sz-1) {
-            tmp0  = x[*idx];
+            tmp0  = x[*idx++];
             sum1 -= v1[0] * tmp0;
             sum2 -= v2[0] * tmp0;
             sum3 -= v3[0] * tmp0;
             sum4 -= v4[0] * tmp0;
             sum5 -= v5[0] * tmp0;
+            v1++; v2++; v3++; v4++; v5++;
           }
-          x[row++] += sum1*ibdiag[0] + sum2*ibdiag[5] + sum3*ibdiag[10] + sum4*ibdiag[15] + sum5*ibdiag[20];
-          x[row++] += sum1*ibdiag[1] + sum2*ibdiag[6] + sum3*ibdiag[11] + sum4*ibdiag[16] + sum5*ibdiag[21];
-          x[row++] += sum1*ibdiag[2] + sum2*ibdiag[7] + sum3*ibdiag[12] + sum4*ibdiag[17] + sum5*ibdiag[22];
-          x[row++] += sum1*ibdiag[3] + sum2*ibdiag[8] + sum3*ibdiag[13] + sum4*ibdiag[18] + sum5*ibdiag[23];
-          x[row++] += sum1*ibdiag[4] + sum2*ibdiag[9] + sum3*ibdiag[14] + sum4*ibdiag[19] + sum5*ibdiag[24];
-          ibdiag   += 25;
-          break;
-        default:
-          SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Inode size %D not supported",sizes[i]);
-        }
-      }
-
-      ierr = PetscLogFlops(2.0*a->nz);CHKERRQ(ierr);
-    }
-    if (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP) {
-
-      ibdiag = a->inode.ibdiag+a->inode.bdiagsize;
-      for (i=m-1, row=A->rmap->n-1; i>=0; i--) {
-        ibdiag -= sizes[i]*sizes[i];
-        sz      = ii[row+1] - ii[row];
-        v1      = a->a + ii[row];
-        idx     = a->j + ii[row];
-
-        /* see comments for MatMult_SeqAIJ_Inode() for how this is coded */
-        switch (sizes[i]) {
-        case 1:
-
-          sum1 = b[row];
-          for (n = 0; n<sz-1; n+=2) {
-            i1    = idx[0];
-            i2    = idx[1];
-            idx  += 2;
-            tmp0  = x[i1];
-            tmp1  = x[i2];
-            sum1 -= v1[0] * tmp0 + v1[1] * tmp1; v1 += 2;
-          }
-
-          if (n == sz-1) {
-            tmp0  = x[*idx];
-            sum1 -= *v1*tmp0;
-          }
-          x[row--] += sum1*(*ibdiag);
-          break;
-
-        case 2:
-
-          sum1 = b[row];
-          sum2 = b[row-1];
-          /* note that sum1 is associated with the second of the two rows */
-          v2 = a->a + ii[row - 1];
-          for (n = 0; n<sz-1; n+=2) {
-            i1    = idx[0];
-            i2    = idx[1];
-            idx  += 2;
-            tmp0  = x[i1];
-            tmp1  = x[i2];
-            sum1 -= v1[0] * tmp0 + v1[1] * tmp1; v1 += 2;
-            sum2 -= v2[0] * tmp0 + v2[1] * tmp1; v2 += 2;
-          }
-
-          if (n == sz-1) {
-            tmp0  = x[*idx];
-            sum1 -= *v1*tmp0;
-            sum2 -= *v2*tmp0;
-          }
-          x[row--] += sum2*ibdiag[1] + sum1*ibdiag[3];
-          x[row--] += sum2*ibdiag[0] + sum1*ibdiag[2];
-          break;
-        case 3:
-
-          sum1 = b[row];
-          sum2 = b[row-1];
-          sum3 = b[row-2];
-          v2   = a->a + ii[row-1];
-          v3   = a->a + ii[row-2];
-          for (n = 0; n<sz-1; n+=2) {
-            i1    = idx[0];
-            i2    = idx[1];
-            idx  += 2;
-            tmp0  = x[i1];
-            tmp1  = x[i2];
-            sum1 -= v1[0] * tmp0 + v1[1] * tmp1; v1 += 2;
-            sum2 -= v2[0] * tmp0 + v2[1] * tmp1; v2 += 2;
-            sum3 -= v3[0] * tmp0 + v3[1] * tmp1; v3 += 2;
-          }
-
-          if (n == sz-1) {
-            tmp0  = x[*idx];
-            sum1 -= *v1*tmp0;
-            sum2 -= *v2*tmp0;
-            sum3 -= *v3*tmp0;
-          }
-          x[row--] += sum3*ibdiag[2] + sum2*ibdiag[5] + sum1*ibdiag[8];
-          x[row--] += sum3*ibdiag[1] + sum2*ibdiag[4] + sum1*ibdiag[7];
-          x[row--] += sum3*ibdiag[0] + sum2*ibdiag[3] + sum1*ibdiag[6];
-          break;
-        case 4:
-
-          sum1 = b[row];
-          sum2 = b[row-1];
-          sum3 = b[row-2];
-          sum4 = b[row-3];
-          v2   = a->a + ii[row-1];
-          v3   = a->a + ii[row-2];
-          v4   = a->a + ii[row-3];
-          for (n = 0; n<sz-1; n+=2) {
-            i1    = idx[0];
-            i2    = idx[1];
-            idx  += 2;
-            tmp0  = x[i1];
-            tmp1  = x[i2];
-            sum1 -= v1[0] * tmp0 + v1[1] * tmp1; v1 += 2;
-            sum2 -= v2[0] * tmp0 + v2[1] * tmp1; v2 += 2;
-            sum3 -= v3[0] * tmp0 + v3[1] * tmp1; v3 += 2;
-            sum4 -= v4[0] * tmp0 + v4[1] * tmp1; v4 += 2;
-          }
-
-          if (n == sz-1) {
-            tmp0  = x[*idx];
-            sum1 -= *v1*tmp0;
-            sum2 -= *v2*tmp0;
-            sum3 -= *v3*tmp0;
-            sum4 -= *v4*tmp0;
-          }
-          x[row--] += sum4*ibdiag[3] + sum3*ibdiag[7] + sum2*ibdiag[11] + sum1*ibdiag[15];
-          x[row--] += sum4*ibdiag[2] + sum3*ibdiag[6] + sum2*ibdiag[10] + sum1*ibdiag[14];
-          x[row--] += sum4*ibdiag[1] + sum3*ibdiag[5] + sum2*ibdiag[9] + sum1*ibdiag[13];
-          x[row--] += sum4*ibdiag[0] + sum3*ibdiag[4] + sum2*ibdiag[8] + sum1*ibdiag[12];
-          break;
-        case 5:
-
-          sum1 = b[row];
-          sum2 = b[row-1];
-          sum3 = b[row-2];
-          sum4 = b[row-3];
-          sum5 = b[row-4];
-          v2   = a->a + ii[row-1];
-          v3   = a->a + ii[row-2];
-          v4   = a->a + ii[row-3];
-          v5   = a->a + ii[row-4];
+          t[row]   = sum1;
+          t[row+1] = sum2;
+          t[row+2] = sum3;
+          t[row+3] = sum4;
+          t[row+4] = sum5;
+          sz      = ii[row+1] - diag[row] - 5;
+          idx     = a->j + diag[row] + 5;
+          v1 += 5;
+          v2 += 5;
+          v3 += 5;
+          v4 += 5;
+          v5 += 5;
           for (n = 0; n<sz-1; n+=2) {
             i1    = idx[0];
             i2    = idx[1];
@@ -3470,27 +3422,187 @@ PetscErrorCode MatSOR_SeqAIJ_Inode(Mat A,Vec bb,PetscReal omega,MatSORType flag,
             sum4 -= v4[0] * tmp0 + v4[1] * tmp1; v4 += 2;
             sum5 -= v5[0] * tmp0 + v5[1] * tmp1; v5 += 2;
           }
-
           if (n == sz-1) {
             tmp0  = x[*idx];
-            sum1 -= *v1*tmp0;
-            sum2 -= *v2*tmp0;
-            sum3 -= *v3*tmp0;
-            sum4 -= *v4*tmp0;
-            sum5 -= *v5*tmp0;
+            sum1 -= v1[0] * tmp0;
+            sum2 -= v2[0] * tmp0;
+            sum3 -= v3[0] * tmp0;
+            sum4 -= v4[0] * tmp0;
+            sum5 -= v5[0] * tmp0;
           }
-          x[row--] += sum5*ibdiag[4] + sum4*ibdiag[9] + sum3*ibdiag[14] + sum2*ibdiag[19] + sum1*ibdiag[24];
-          x[row--] += sum5*ibdiag[3] + sum4*ibdiag[8] + sum3*ibdiag[13] + sum2*ibdiag[18] + sum1*ibdiag[23];
-          x[row--] += sum5*ibdiag[2] + sum4*ibdiag[7] + sum3*ibdiag[12] + sum2*ibdiag[17] + sum1*ibdiag[22];
-          x[row--] += sum5*ibdiag[1] + sum4*ibdiag[6] + sum3*ibdiag[11] + sum2*ibdiag[16] + sum1*ibdiag[21];
-          x[row--] += sum5*ibdiag[0] + sum4*ibdiag[5] + sum3*ibdiag[10] + sum2*ibdiag[15] + sum1*ibdiag[20];
+          x[row]   = sum1*ibdiag[0] + sum2*ibdiag[5] + sum3*ibdiag[10] + sum4*ibdiag[15] + sum5*ibdiag[20];
+          x[row+1] = sum1*ibdiag[1] + sum2*ibdiag[6] + sum3*ibdiag[11] + sum4*ibdiag[16] + sum5*ibdiag[21];
+          x[row+2] = sum1*ibdiag[2] + sum2*ibdiag[7] + sum3*ibdiag[12] + sum4*ibdiag[17] + sum5*ibdiag[22];
+          x[row+3] = sum1*ibdiag[3] + sum2*ibdiag[8] + sum3*ibdiag[13] + sum4*ibdiag[18] + sum5*ibdiag[23];
+          x[row+4] = sum1*ibdiag[4] + sum2*ibdiag[9] + sum3*ibdiag[14] + sum4*ibdiag[19] + sum5*ibdiag[24];
           break;
         default:
           SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Inode size %D not supported",sizes[i]);
         }
       }
+      xb   = t;
+      ierr = PetscLogFlops(2.0*a->nz);CHKERRQ(ierr);  /* undercounts diag inverse */
+    } else xb = b;
 
-      ierr = PetscLogFlops(2.0*a->nz);CHKERRQ(ierr);
+    if (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP) {
+
+      ibdiag = a->inode.ibdiag+a->inode.bdiagsize;
+      for (i=m-1, row=A->rmap->n-1; i>=0; i--) {
+        ibdiag -= sizes[i]*sizes[i];
+
+        /* set RHS */
+        if (xb == b) {
+          /* whole (old way) */
+          sz      = ii[row+1] - ii[row];
+          idx     = a->j + ii[row];
+          switch (sizes[i]) {
+          case 5:
+            v5      = a->a + ii[row-4];
+          case 4: /* fall through */
+            v4      = a->a + ii[row-3];
+          case 3:
+            v3      = a->a + ii[row-2];
+          case 2:
+            v2      = a->a + ii[row-1];
+          case 1:
+            v1      = a->a + ii[row];
+            break;
+          default:
+            SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Inode size %D not supported",sizes[i]);
+          }
+        } else {
+          /* upper, no diag */
+          sz      = ii[row+1] - diag[row] - 1;
+          idx     = a->j + diag[row] + 1;
+          switch (sizes[i]) {
+          case 5:
+            v5      = a->a + diag[row-4] + 5;
+          case 4: /* fall through */
+            v4      = a->a + diag[row-3] + 4;
+          case 3:
+            v3      = a->a + diag[row-2] + 3;
+          case 2:
+            v2      = a->a + diag[row-1] + 2;
+          case 1:
+            v1      = a->a + diag[row] + 1;
+          }
+        }
+        /* set sum */
+        switch (sizes[i]) {
+        case 5:
+          sum5 = xb[row-4];
+        case 4: /* fall through */
+          sum4 = xb[row-3];
+        case 3:
+          sum3 = xb[row-2];
+        case 2:
+          sum2 = xb[row-1];
+        case 1:
+          /* note that sum1 is associated with the last row */
+          sum1 = xb[row];
+        }
+        /* do sums */
+        for (n = 0; n<sz-1; n+=2) {
+            i1    = idx[0];
+            i2    = idx[1];
+            idx  += 2;
+            tmp0  = x[i1];
+            tmp1  = x[i2];
+            switch (sizes[i]) {
+            case 5:
+              sum5 -= v5[0] * tmp0 + v5[1] * tmp1; v5 += 2;
+            case 4: /* fall through */
+              sum4 -= v4[0] * tmp0 + v4[1] * tmp1; v4 += 2;
+            case 3:
+              sum3 -= v3[0] * tmp0 + v3[1] * tmp1; v3 += 2;
+            case 2:
+              sum2 -= v2[0] * tmp0 + v2[1] * tmp1; v2 += 2;
+            case 1:
+              sum1 -= v1[0] * tmp0 + v1[1] * tmp1; v1 += 2;
+            }
+        }
+        /* ragged edge */
+        if (n == sz-1) {
+          tmp0  = x[*idx];
+          switch (sizes[i]) {
+          case 5:
+            sum5 -= *v5*tmp0;
+          case 4: /* fall through */
+            sum4 -= *v4*tmp0;
+          case 3:
+            sum3 -= *v3*tmp0;
+          case 2:
+            sum2 -= *v2*tmp0;
+          case 1:
+            sum1 -= *v1*tmp0;
+          }
+        }
+        /* update */
+        if (xb == b) {
+          /* whole (old way) w/ diag */
+          switch (sizes[i]) {
+          case 5:
+            x[row--] += sum5*ibdiag[4] + sum4*ibdiag[9] + sum3*ibdiag[14] + sum2*ibdiag[19] + sum1*ibdiag[24];
+            x[row--] += sum5*ibdiag[3] + sum4*ibdiag[8] + sum3*ibdiag[13] + sum2*ibdiag[18] + sum1*ibdiag[23];
+            x[row--] += sum5*ibdiag[2] + sum4*ibdiag[7] + sum3*ibdiag[12] + sum2*ibdiag[17] + sum1*ibdiag[22];
+            x[row--] += sum5*ibdiag[1] + sum4*ibdiag[6] + sum3*ibdiag[11] + sum2*ibdiag[16] + sum1*ibdiag[21];
+            x[row--] += sum5*ibdiag[0] + sum4*ibdiag[5] + sum3*ibdiag[10] + sum2*ibdiag[15] + sum1*ibdiag[20];
+            break;
+          case 4:
+            x[row--] += sum4*ibdiag[3] + sum3*ibdiag[7] + sum2*ibdiag[11] + sum1*ibdiag[15];
+            x[row--] += sum4*ibdiag[2] + sum3*ibdiag[6] + sum2*ibdiag[10] + sum1*ibdiag[14];
+            x[row--] += sum4*ibdiag[1] + sum3*ibdiag[5] + sum2*ibdiag[9] + sum1*ibdiag[13];
+            x[row--] += sum4*ibdiag[0] + sum3*ibdiag[4] + sum2*ibdiag[8] + sum1*ibdiag[12];
+            break;
+          case 3:
+            x[row--] += sum3*ibdiag[2] + sum2*ibdiag[5] + sum1*ibdiag[8];
+            x[row--] += sum3*ibdiag[1] + sum2*ibdiag[4] + sum1*ibdiag[7];
+            x[row--] += sum3*ibdiag[0] + sum2*ibdiag[3] + sum1*ibdiag[6];
+            break;
+          case 2:
+            x[row--] += sum2*ibdiag[1] + sum1*ibdiag[3];
+            x[row--] += sum2*ibdiag[0] + sum1*ibdiag[2];
+            break;
+          case 1:
+            x[row--] += sum1*(*ibdiag);
+            break;
+          }
+        } else {
+          /* no diag so set =  */
+          switch (sizes[i]) {
+          case 5:
+            x[row--] = sum5*ibdiag[4] + sum4*ibdiag[9] + sum3*ibdiag[14] + sum2*ibdiag[19] + sum1*ibdiag[24];
+            x[row--] = sum5*ibdiag[3] + sum4*ibdiag[8] + sum3*ibdiag[13] + sum2*ibdiag[18] + sum1*ibdiag[23];
+            x[row--] = sum5*ibdiag[2] + sum4*ibdiag[7] + sum3*ibdiag[12] + sum2*ibdiag[17] + sum1*ibdiag[22];
+            x[row--] = sum5*ibdiag[1] + sum4*ibdiag[6] + sum3*ibdiag[11] + sum2*ibdiag[16] + sum1*ibdiag[21];
+            x[row--] = sum5*ibdiag[0] + sum4*ibdiag[5] + sum3*ibdiag[10] + sum2*ibdiag[15] + sum1*ibdiag[20];
+            break;
+          case 4:
+            x[row--] = sum4*ibdiag[3] + sum3*ibdiag[7] + sum2*ibdiag[11] + sum1*ibdiag[15];
+            x[row--] = sum4*ibdiag[2] + sum3*ibdiag[6] + sum2*ibdiag[10] + sum1*ibdiag[14];
+            x[row--] = sum4*ibdiag[1] + sum3*ibdiag[5] + sum2*ibdiag[9] + sum1*ibdiag[13];
+            x[row--] = sum4*ibdiag[0] + sum3*ibdiag[4] + sum2*ibdiag[8] + sum1*ibdiag[12];
+            break;
+          case 3:
+            x[row--] = sum3*ibdiag[2] + sum2*ibdiag[5] + sum1*ibdiag[8];
+            x[row--] = sum3*ibdiag[1] + sum2*ibdiag[4] + sum1*ibdiag[7];
+            x[row--] = sum3*ibdiag[0] + sum2*ibdiag[3] + sum1*ibdiag[6];
+            break;
+          case 2:
+            x[row--] = sum2*ibdiag[1] + sum1*ibdiag[3];
+            x[row--] = sum2*ibdiag[0] + sum1*ibdiag[2];
+            break;
+          case 1:
+            x[row--] = sum1*(*ibdiag);
+            break;
+          }
+        }
+      }
+      if (xb == b) {
+        ierr = PetscLogFlops(2.0*a->nz);CHKERRQ(ierr);
+      } else {
+        ierr = PetscLogFlops(a->nz);CHKERRQ(ierr); /* assumes 1/2 in upper, undercounts diag inverse */
+      }
     }
   }
   if (flag & SOR_EISENSTAT) {

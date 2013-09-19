@@ -828,7 +828,7 @@ static PetscErrorCode DMPlexConstructCohesiveCells_Internal(DM dm, DMLabel label
       const PetscInt  newp = depthOffset[dep] + oldp;
       const PetscInt *cone;
       PetscInt        coneSize, c;
-      PetscBool       replaced = PETSC_FALSE;
+      /* PetscBool       replaced = PETSC_FALSE; */
 
       /* Negative edge: replace split vertex */
       /* Negative cell: replace split face */
@@ -844,7 +844,7 @@ static PetscErrorCode DMPlexConstructCohesiveCells_Internal(DM dm, DMLabel label
           if (cp < 0) SETERRQ2(comm, PETSC_ERR_ARG_WRONG, "Point %d is not a split point of dimension %d", oldp, dep-1);
           csplitp  = pMaxNew[dep-1] + cp;
           ierr     = DMPlexInsertCone(sdm, newp, c, csplitp);CHKERRQ(ierr);
-          replaced = PETSC_TRUE;
+          /* replaced = PETSC_TRUE; */
         }
       }
       /* Cells with only a vertex or edge on the submesh have no replacement */

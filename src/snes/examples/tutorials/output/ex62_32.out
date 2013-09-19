@@ -1,28 +1,28 @@
-  0 SNES Function norm 27.5941 
+0 SNES Function norm 27.5941 
     0 KSP Residual norm 27.5941 
     1 KSP Residual norm 0.0157297 
     2 KSP Residual norm 0.00555887 
     3 KSP Residual norm 0.00240459 
     4 KSP Residual norm 0.00131775 
-    5 KSP Residual norm 0.000643859 
-    6 KSP Residual norm 0.000633078 
-    7 KSP Residual norm 0.000355479 
+    5 KSP Residual norm 0.000642173 
+    6 KSP Residual norm 0.000633081 
+    7 KSP Residual norm 0.000355481 
     8 KSP Residual norm 0.000232607 
     9 KSP Residual norm 0.000182536 
-   10 KSP Residual norm 0.000128418 
-   11 KSP Residual norm 8.96795e-05 
-   12 KSP Residual norm 8.9379e-05 
-   13 KSP Residual norm 4.50222e-05 
-   14 KSP Residual norm 1.96312e-05 
-   15 KSP Residual norm 5.69146e-06 
-   16 KSP Residual norm 2.9384e-06 
-   17 KSP Residual norm 1.15383e-06 
-   18 KSP Residual norm 1.14782e-06 
-   19 KSP Residual norm 5.77907e-07 
-   20 KSP Residual norm 1.69636e-07 
-   21 KSP Residual norm 7.01746e-08 
-   22 KSP Residual norm 2.02303e-08 
-  1 SNES Function norm 2.02303e-08 
+   10 KSP Residual norm 0.000128417 
+   11 KSP Residual norm 8.97691e-05 
+   12 KSP Residual norm 8.95485e-05 
+   13 KSP Residual norm 4.50218e-05 
+   14 KSP Residual norm 1.96314e-05 
+   15 KSP Residual norm 5.6914e-06 
+   16 KSP Residual norm 2.93835e-06 
+   17 KSP Residual norm 1.24902e-06 
+   18 KSP Residual norm 1.14868e-06 
+   19 KSP Residual norm 5.77905e-07 
+   20 KSP Residual norm 1.69638e-07 
+   21 KSP Residual norm 7.01741e-08 
+   22 KSP Residual norm 2.02305e-08 
+  1 SNES Function norm 2.02305e-08 
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 SNES Object: 1 MPI processes
   type: newtonls
@@ -94,6 +94,7 @@ SNES Object: 1 MPI processes
           rows=145, cols=145
           total: nonzeros=945, allocated nonzeros=945
           total number of mallocs used during MatSetValues calls =0
+            has attached null space
             not using I-node routines
     linear system matrix = precond matrix:
     Mat Object:     1 MPI processes
@@ -101,6 +102,7 @@ SNES Object: 1 MPI processes
       rows=1107, cols=1107
       total: nonzeros=29785, allocated nonzeros=29785
       total number of mallocs used during MatSetValues calls =0
+        has attached null space
         using I-node routines: found 513 nodes, limit used is 5
 Number of SNES iterations = 1
 L_2 Error: 6.47e-07

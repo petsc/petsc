@@ -189,8 +189,33 @@ PetscErrorCode DMCreateSubDM_DA(DM dm, PetscInt numFields, PetscInt fields[], IS
 
   PetscFunctionBegin;
   if (subdm) {
-    ierr = DMClone(dm, subdm);CHKERRQ(ierr);
+    PetscSF sf;
+    Vec     coords;
+    void   *ctx;
+    /* Cannot use DMClone since the dof stuff is mixed in. Ugh
+    ierr = DMClone(dm, subdm);CHKERRQ(ierr); */
+    ierr = DMCreate(PetscObjectComm((PetscObject)dm), subdm);CHKERRQ(ierr);
+    ierr = DMGetPointSF(dm, &sf);CHKERRQ(ierr);
+    ierr = DMSetPointSF(*subdm, sf);CHKERRQ(ierr);
+    ierr = DMGetApplicationContext(dm, &ctx);CHKERRQ(ierr);
+    ierr = DMSetApplicationContext(*subdm, ctx);CHKERRQ(ierr);
+    ierr = DMGetCoordinatesLocal(dm, &coords);CHKERRQ(ierr);
+    if (coords) {
+      ierr = DMSetCoordinatesLocal(*subdm, coords);CHKERRQ(ierr);
+    } else {
+      ierr = DMGetCoordinates(dm, &coords);CHKERRQ(ierr);
+      if (coords) {ierr = DMSetCoordinates(*subdm, coords);CHKERRQ(ierr);}
+    }
+
+    ierr = DMSetType(*subdm, DMDA);CHKERRQ(ierr);
+    ierr = DMDASetDim(*subdm, da->dim);CHKERRQ(ierr);
+    ierr = DMDASetSizes(*subdm, da->M, da->N, da->P);CHKERRQ(ierr);
+    ierr = DMDASetNumProcs(*subdm, da->m, da->n, da->p);CHKERRQ(ierr);
+    ierr = DMDASetBoundaryType(*subdm, da->bx, da->by, da->bz);CHKERRQ(ierr);
     ierr = DMDASetDof(*subdm, numFields);CHKERRQ(ierr);
+    ierr = DMDASetStencilType(*subdm, da->stencil_type);CHKERRQ(ierr);
+    ierr = DMDASetStencilWidth(*subdm, da->s);CHKERRQ(ierr);
+    ierr = DMDASetOwnershipRanges(*subdm, da->lx, da->ly, da->lz);CHKERRQ(ierr);
   }
   ierr = DMGetDefaultSection(dm, &section);CHKERRQ(ierr);
   if (section) {
@@ -280,6 +305,7 @@ PetscErrorCode DMClone_DA(DM dm, DM *newdm)
   ierr = DMDASetStencilType(*newdm, da->stencil_type);CHKERRQ(ierr);
   ierr = DMDASetStencilWidth(*newdm, da->s);CHKERRQ(ierr);
   ierr = DMDASetOwnershipRanges(*newdm, da->lx, da->ly, da->lz);CHKERRQ(ierr);
+  ierr = DMSetUp(*newdm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

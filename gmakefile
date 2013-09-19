@@ -1,0 +1,168 @@
+# -*- mode: makefile-gmake -*-
+
+# If $(PETSC_ARCH) is empty, this defines it and PETSC_DIR
+include ./$(PETSC_ARCH)/conf/petscvariables
+include ./conf/variables
+
+OBJDIR := $(PETSC_ARCH)/obj
+LIBDIR := $(abspath $(PETSC_ARCH)/lib)
+
+pkgs := sys vec mat dm ksp snes ts
+
+libpetsc_shared := $(LIBDIR)/libpetsc.$(SL_LINKER_SUFFIX)
+libpetsc_static := $(LIBDIR)/libpetsc.$(AR_LIB_SUFFIX)
+libpetscpkgs_shared := $(foreach pkg, $(pkgs), $(LIBDIR)/libpetsc$(pkg).$(SL_LINKER_SUFFIX))
+libpetscpkgs_static := $(foreach pkg, $(pkgs), $(LIBDIR)/libpetsc$(pkg).$(AR_LIB_SUFFIX))
+
+ifeq ($(PETSC_WITH_EXTERNAL_LIB),)
+  libpetscall_shared := $(libpetscpkgs_shared)
+  libpetscall_static := $(libpetscpkgs_static)
+else
+  libpetscall_shared := $(libpetsc_shared)
+  libpetscall_static := $(libpetsc_static)
+endif
+libpetscall := $(if $(filter-out no,$(BUILDSHAREDLIB)),$(libpetscall_shared),$(libpetscall_static))
+
+generated := $(PETSC_ARCH)/conf/files
+
+all : $(generated) $(libpetscall)
+
+.SECONDEXPANSION:		# to expand $$(@D)/.DIR
+
+#workarround old cygwin versions
+ifeq ($(PETSC_CYGWIN_BROKEN_PIPE),1)
+ifeq ($(shell basename $(AR)),ar)
+  V ?=1
+endif
+endif
+ifeq ($(V),)
+  quiet_HELP := "Use \"$(MAKE) V=1\" to see the verbose compile lines.\n"
+  quiet = @printf $(quiet_HELP)$(eval quiet_HELP:=)"  %10s %s\n" "$1$2" "$@"; $($1)
+else ifeq ($(V),0)		# Same, but do not print any help
+  quiet = @printf "  %10s %s\n" "$1$2" "$@"; $($1)
+else				# Show the full command line
+  quiet = $($1)
+endif
+
+$(PETSC_ARCH)/conf/files :
+	$(PYTHON) conf/gmakegen.py --petsc-arch=$(PETSC_ARCH)
+
+-include $(generated)
+
+ifeq ($(PETSC_LANGUAGE),CXXONLY)
+  cc_name := CXX
+else
+  cc_name := CC
+endif
+
+PETSC_COMPILE.c = $(call quiet,$(cc_name)) -c $(PCC_FLAGS) $(CFLAGS) $(CCPPFLAGS) $(C_DEPFLAGS)
+PETSC_COMPILE.cxx = $(call quiet,CXX) -c $(PCC_FLAGS) $(CFLAGS) $(CCPPFLAGS) $(CXX_DEPFLAGS)
+PETSC_COMPILE.cu = $(call quiet,CUDAC) -c $(CUDAC_FLAGS) --compiler-options="$(PCC_FLAGS) $(CXXFLAGS) $(CCPPFLAGS)"
+PETSC_GENDEPS.cu = $(call quiet,CUDAC,.dep) --generate-dependencies $(CUDAC_FLAGS) --compiler-options="$(PCC_FLAGS) $(CXXFLAGS) $(CCPPFLAGS)"
+PETSC_COMPILE.F = $(call quiet,FC) -c $(FC_FLAGS) $(FFLAGS) $(FCPPFLAGS) $(FC_DEPFLAGS)
+
+langs := c cu cxx F
+concatlang = $(foreach lang, $(langs), $(srcs-$(1).$(lang):%.$(lang)=$(OBJDIR)/%.o))
+srcs.o := $(foreach pkg, $(pkgs), $(call concatlang,$(pkg)))
+
+# with-single-library=1 (default)
+$(libpetsc_shared) : $(srcs.o) | $$(@D)/.DIR
+	$(call quiet,CLINKER) -shared -o $@ $^ $(PETSC_EXTERNAL_LIB_BASIC)
+
+$(libpetsc_static) : obj := $(srcs.o)
+
+define ARCHIVE_RECIPE_WIN32FE_LIB
+  @$(RM) $@ $@.args
+  @cygpath -w $^ > $@.args
+  $(call quiet,AR) $(AR_FLAGS) $@ @$@.args
+  @$(RM) $@.args
+endef
+
+define ARCHIVE_RECIPE_DEFAULT
+  @$(RM) $@
+  $(call quiet,AR) $(AR_FLAGS) $@ $^
+  $(call quiet,RANLIB) $@
+endef
+
+%.$(AR_LIB_SUFFIX) : $$(obj) | $$(@D)/.DIR
+	$(if $(findstring win32fe lib,$(AR)),$(ARCHIVE_RECIPE_WIN32FE_LIB),$(ARCHIVE_RECIPE_DEFAULT))
+
+# with-single-library=0
+libpkg = $(foreach pkg, $1, $(LIBDIR)/libpetsc$(pkg).$(SL_LINKER_SUFFIX))
+$(LIBDIR)/libpetscsys.$(SL_LINKER_SUFFIX)  : obj    := $(call concatlang,sys)
+$(LIBDIR)/libpetscvec.$(SL_LINKER_SUFFIX)  : obj    := $(call concatlang,vec)
+$(LIBDIR)/libpetscvec.$(SL_LINKER_SUFFIX)  : libdep := $(call libpkg,sys)
+$(LIBDIR)/libpetscmat.$(SL_LINKER_SUFFIX)  : obj    := $(call concatlang,mat)
+$(LIBDIR)/libpetscmat.$(SL_LINKER_SUFFIX)  : libdep := $(call libpkg,vec sys)
+$(LIBDIR)/libpetscdm.$(SL_LINKER_SUFFIX)   : obj    := $(call concatlang,dm)
+$(LIBDIR)/libpetscdm.$(SL_LINKER_SUFFIX)   : libdep := $(call libpkg,mat vec sys)
+$(LIBDIR)/libpetscksp.$(SL_LINKER_SUFFIX)  : obj    := $(call concatlang,ksp)
+$(LIBDIR)/libpetscksp.$(SL_LINKER_SUFFIX)  : libdep := $(call libpkg,dm mat vec sys)
+$(LIBDIR)/libpetscsnes.$(SL_LINKER_SUFFIX) : obj    := $(call concatlang,snes)
+$(LIBDIR)/libpetscsnes.$(SL_LINKER_SUFFIX) : libdep := $(call libpkg,ksp dm mat vec sys)
+$(LIBDIR)/libpetscts.$(SL_LINKER_SUFFIX)   : obj    := $(call concatlang,ts)
+$(LIBDIR)/libpetscts.$(SL_LINKER_SUFFIX)   : libdep := $(call libpkg,snes ksp dm mat vec sys)
+$(LIBDIR)/libpetscsys.$(AR_LIB_SUFFIX)  : $(call concatlang,sys)
+$(LIBDIR)/libpetscvec.$(AR_LIB_SUFFIX)  : $(call concatlang,vec)
+$(LIBDIR)/libpetscmat.$(AR_LIB_SUFFIX)  : $(call concatlang,mat)
+$(LIBDIR)/libpetscdm.$(AR_LIB_SUFFIX)   : $(call concatlang,dm)
+$(LIBDIR)/libpetscksp.$(AR_LIB_SUFFIX)  : $(call concatlang,ksp)
+$(LIBDIR)/libpetscsnes.$(AR_LIB_SUFFIX) : $(call concatlang,snes)
+$(LIBDIR)/libpetscts.$(AR_LIB_SUFFIX)   : $(call concatlang,ts)
+
+# The package libraries technically depend on each other (not just in an order-only way), but only
+# ABI changes like new or removed symbols requires relinking the dependent libraries.  ABI should
+# only occur when a header is changed, which would trigger recompilation and relinking anyway.
+# RELINK=1 causes dependent libraries to be relinked anyway.
+ifeq ($(RELINK),1)
+  libdep_true = $$(libdep)
+  libdep_order =
+else
+  libdep_true =
+  libdep_order = $$(libdep)
+endif
+$(libpetscpkgs_shared) : $$(obj) $(libdep_true) | $(libdep_order) $$(@D)/.DIR
+	$(call quiet,CLINKER) -shared -o $@ $(obj) $(libdep) $(PETSC_EXTERNAL_LIB_BASIC)
+
+$(OBJDIR)/%.o : %.c | $$(@D)/.DIR
+	$(PETSC_COMPILE.c) $< -o $@
+
+$(OBJDIR)/%.o : %.cxx | $$(@D)/.DIR
+	$(PETSC_COMPILE.cxx) $< -o $@
+
+$(OBJDIR)/%.o : %.cu | $$(@D)/.DIR
+	$(PETSC_COMPILE.cu) $< -o $@ # Compile first so that if there is an error, it comes from a normal compile
+	@$(PETSC_GENDEPS.cu) $< -o $(@:%.o=%.d) # Generate the dependencies for later
+
+$(OBJDIR)/%.o : %.F | $$(@D)/.DIR
+ifeq ($(FC_MODULE_OUTPUT_FLAG),)
+	cd $(PETSC_ARCH)/include && $(FC) -c $(FC_FLAGS) $(FFLAGS) $(FCPPFLAGS) $(FC_DEPFLAGS) ../../$< -o ../../$@
+else
+	$(PETSC_COMPILE.F) $< -o $@ $(FC_MODULE_OUTPUT_FLAG)$(PETSC_ARCH)/include
+endif
+
+%/.DIR :
+	@mkdir -p $(@D)
+	@touch $@
+
+.PRECIOUS: %/.DIR
+
+.SUFFIXES: # Clear .SUFFIXES because we don't use implicit rules
+.DELETE_ON_ERROR:               # Delete likely-corrupt target file if rule fails
+
+.PHONY: clean all print
+
+clean:
+	rm -rf $(OBJDIR) $(LIBDIR)/libpetsc* $(PETSC_ARCH)/include/*.mod $(generated)
+
+# make print VAR=the-variable
+print:
+	@echo $($(VAR))
+
+allobj.d := $(srcs.o:%.o=%.d)
+# Tell make that allobj.d are all up to date.  Without this, the include
+# below has quadratic complexity, taking more than one second for a
+# do-nothing build of PETSc (much worse for larger projects)
+$(allobj.d) : ;
+
+-include $(allobj.d)
