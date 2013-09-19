@@ -263,3 +263,30 @@ PetscErrorCode  PetscObjectComposedDataIncreaseScalarstar(PetscObject obj)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "PetscObjectGetId"
+/*@
+   PetscObjectGetId - get unique object ID
+
+   Not Collective
+
+   Input Arguments:
+.  obj - object
+
+   Output Arguments:
+.  id - integer ID
+
+   Level: developer
+
+   Notes:
+   The object ID may be different on different processes, but object IDs are never reused so local equality implies global equality.
+
+.seealso: PetscObjectStateQuery()
+@*/
+PetscErrorCode PetscObjectGetId(PetscObject obj,PetscObjectId *id)
+{
+
+  PetscFunctionBegin;
+  *id = obj->id;
+  PetscFunctionReturn(0);
+}

@@ -68,7 +68,7 @@ typedef struct _p_PetscObject {
   MPI_Comm             comm;
   PetscInt             type;
   PetscLogDouble       flops,time,mem,memchildren;
-  PetscInt             id;
+  PetscObjectId        id;
   PetscInt             refct;
   PetscMPIInt          tag;
   PetscFunctionList    qlist;
@@ -78,7 +78,7 @@ typedef struct _p_PetscObject {
   char                 *mansec;
   char                 *type_name;     /*  this is the subclass, for example VECSEQ which equals "seq" */
   PetscObject          parent;
-  PetscInt             parentid;
+  PetscObjectId        parentid;
   char*                name;
   char                 *prefix;
   PetscInt             tablevel;
@@ -722,6 +722,8 @@ M*/
 #define PetscObjectComposedDataGetScalarstar(obj,id,data,flag)         \
         PetscObjectComposedDataGetRealstar(obj,id,data,flag)
 #endif
+
+PETSC_EXTERN PetscErrorCode PetscObjectGetId(PetscObject,PetscObjectId*);
 
 PETSC_EXTERN PetscMPIInt Petsc_Counter_keyval;
 PETSC_EXTERN PetscMPIInt Petsc_InnerComm_keyval;
