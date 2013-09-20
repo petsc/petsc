@@ -30,7 +30,7 @@ class PETSc(object):
     '''Return the path to the executable for a given example number'''
     return os.path.join(self.dir(), self.arch(), 'lib', 'ex'+str(num)+'-obj', 'ex'+str(num))
 
-  def source(self, library, num):
+  def source(self, library, num, filenametail):
     '''Return the path to the sources for a given example number'''
     d = os.path.join(self.dir(), 'src', library.lower(), 'examples', 'tutorials')
     name = 'ex'+str(num)
@@ -38,7 +38,7 @@ class PETSc(object):
     for f in os.listdir(d):
       if f == name+'.c':
         sources.insert(0, f)
-      elif f.startswith(name) and f.endswith('.cu'):
+      elif f.startswith(name) and f.endswith(filenametail):
         sources.append(f)
     return map(lambda f: os.path.join(d, f), sources)
 
@@ -388,6 +388,7 @@ if __name__ == '__main__':
   parser.add_argument('--events',  nargs='+',                          help='Events to process')
   parser.add_argument('--batch',   action='store_true', default=False, help='Generate batch files for the runs instead')
   parser.add_argument('--daemon',  action='store_true', default=False, help='Run as a daemon')
+  parser.add_argument('--gpulang', default='OpenCL',                   help='GPU Language to use: Either CUDA or OpenCL (default)')
   subparsers = parser.add_subparsers(help='DM types')
 
   parser_dmda = subparsers.add_parser('DMDA', help='Use a DMDA for the problem geometry')
@@ -411,7 +412,10 @@ if __name__ == '__main__':
     args.dmType = 'DMComplex'
 
   ex     = PETScExample(args.library, args.num, log_summary='summary.dat', log_summary_python = None if args.batch else args.module+'.py', preload='off')
-  source = ex.petsc.source(args.library, args.num)
+  if args.gpulang == 'CUDA':
+    source = ex.petsc.source(args.library, args.num, '.cu')
+  else:
+    source = ex.petsc.source(args.library, args.num, 'OpenCL.c')  # Using the convention of OpenCL code residing in source files ending in 'OpenCL.c' (at least for snes/ex52)
   sizes  = {}
   times  = {}
   events = {}
