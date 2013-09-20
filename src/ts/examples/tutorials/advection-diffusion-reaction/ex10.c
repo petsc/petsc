@@ -552,7 +552,7 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal ftime,Vec C,Mat *A,Mat *J,MatStructur
   Vec                  localC;
   const PetscReal      *rowstart,*colstart;
   const PetscReal      **cHeV,**fHeV;
-  PetscBool            initialized = PETSC_FALSE;
+  static PetscBool     initialized = PETSC_FALSE;
 
   PetscFunctionBeginUser;
   ierr = cHeVCreate((PetscScalar***)&cHeV);CHKERRQ(ierr);
