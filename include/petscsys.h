@@ -1207,6 +1207,30 @@ PETSC_EXTERN PetscErrorCode MPIULong_Recv(void*,PetscInt,MPI_Datatype,PetscMPIIn
 S*/
 typedef struct _p_PetscObject* PetscObject;
 
+/*MC
+    PetscObjectId - unique integer Id for a PetscObject
+
+    Level: developer
+
+    Notes: Unlike pointer values, object ids are never reused.
+
+.seealso: PetscObjectState, PetscObjectGetId()
+M*/
+typedef Petsc64bitInt PetscObjectId;
+
+/*MC
+    PetscObjectState - integer state for a PetscObject
+
+    Level: developer
+
+    Notes:
+    Object state is always-increasing and (for objects that track state) can be used to determine if an object has
+    changed since the last time you interacted with it.  It is 64-bit so that it will not overflow for a very long time.
+
+.seealso: PetscObjectId, PetscObjectStateQuery(), PetscObjectStateIncrease(), PetscObjectStateSet()
+M*/
+typedef Petsc64bitInt PetscObjectState;
+
 /*S
      PetscFunctionList - Linked list of functions, possibly stored in dynamic libraries, accessed
       by string name
