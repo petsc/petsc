@@ -1,8 +1,8 @@
-  0 SNES Function norm 27.5941 
+0 SNES Function norm 27.5941 
     0 KSP Residual norm 27.5941 
     1 KSP Residual norm 0.070164 
-    2 KSP Residual norm 4.842e-11 
-  1 SNES Function norm 4.842e-11 
+    2 KSP Residual norm 6.077e-11 
+  1 SNES Function norm 6.077e-11 
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 SNES Object: 1 MPI processes
   type: newtonls
@@ -79,6 +79,7 @@ SNES Object: 1 MPI processes
           Mat Object:           1 MPI processes
             type: schurcomplement
             rows=145, cols=145
+              has attached null space
               Schur complement A11 - A10 inv(A00) A01
               A11
                 Mat Object:                 1 MPI processes
@@ -86,6 +87,7 @@ SNES Object: 1 MPI processes
                   rows=145, cols=145
                   total: nonzeros=945, allocated nonzeros=945
                   total number of mallocs used during MatSetValues calls =0
+                    has attached null space
                     not using I-node routines
               A10
                 Mat Object:                 1 MPI processes
@@ -136,6 +138,7 @@ SNES Object: 1 MPI processes
             rows=145, cols=145
             total: nonzeros=945, allocated nonzeros=945
             total number of mallocs used during MatSetValues calls =0
+              has attached null space
               not using I-node routines
     linear system matrix = precond matrix:
     Mat Object:     1 MPI processes
@@ -143,6 +146,7 @@ SNES Object: 1 MPI processes
       rows=1107, cols=1107
       total: nonzeros=29785, allocated nonzeros=29785
       total number of mallocs used during MatSetValues calls =0
+        has attached null space
         using I-node routines: found 513 nodes, limit used is 5
 Number of SNES iterations = 1
-L_2 Error: 2.88e-11
+L_2 Error: 1.05e-12

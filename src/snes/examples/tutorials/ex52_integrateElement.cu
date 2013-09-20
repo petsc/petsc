@@ -289,9 +289,9 @@ PetscErrorCode calculateGrid(const int N, const int blockSize, unsigned int& x, 
   Output Parameter:
 . elemVec - An array of the element vectors for each cell
 */
-PETSC_EXTERN PetscErrorCode IntegrateElementBatchGPU(PetscInt Ne, PetscInt Ncb, PetscInt Nbc, PetscInt Nbl, const PetscScalar coefficients[],
-                                        const PetscReal jacobianInverses[], const PetscReal jacobianDeterminants[], PetscScalar elemVec[],
-                                        PetscLogEvent event, PetscInt debug)
+PETSC_EXTERN PetscErrorCode IntegrateElementBatchGPU(PetscInt spatial_dim, PetscInt Ne, PetscInt Ncb, PetscInt Nbc, PetscInt Nbl, const PetscScalar coefficients[],
+                                                     const PetscReal jacobianInverses[], const PetscReal jacobianDeterminants[], PetscScalar elemVec[],
+                                                     PetscLogEvent event, PetscInt debug, PetscInt pde_op)
 {
   #include "ex52_gpu_inline.h"
   const int dim    = SPATIAL_DIM_0;
@@ -309,7 +309,8 @@ PETSC_EXTERN PetscErrorCode IntegrateElementBatchGPU(PetscInt Ne, PetscInt Ncb, 
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (Nbl != N_bl) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Inconsisten block size %d should be %d", Nbl, N_bl);
+  if (spatial_dim != dim) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Inconsistent spatial dimension %d should be %d", spatial_dim, dim);
+  if (Nbl != N_bl) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Inconsistent block size %d should be %d", Nbl, N_bl);
   if (Nbc*N_comp != N_t) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of threads %d should be %d * %d", N_t, Nbc, N_comp);
   if (!Ne) {
     PetscStageLog     stageLog;
