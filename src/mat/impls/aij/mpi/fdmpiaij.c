@@ -9,7 +9,7 @@ PetscErrorCode  MatFDColoringApply_MPIAIJ(Mat J,MatFDColoring coloring,Vec x1,Ma
 {
   PetscErrorCode (*f)(void*,Vec,Vec,void*) = (PetscErrorCode (*)(void*,Vec,Vec,void*))coloring->f;
   PetscErrorCode ierr;
-  PetscInt       k,cstart,cend,l,row,col,colb,nz;
+  PetscInt       k,cstart,cend,l,row,col,nz;
   PetscScalar    dx=0.0,*y,*xx,*w3_array;
   PetscScalar    *vscale_array;
   PetscReal      epsilon=coloring->error_rel,umin=coloring->umin,unorm;
@@ -100,32 +100,21 @@ PetscErrorCode  MatFDColoringApply_MPIAIJ(Mat J,MatFDColoring coloring,Vec x1,Ma
     */
     ierr = VecCopy(x1,w3);CHKERRQ(ierr);
     ierr = VecGetArray(w3,&w3_array);CHKERRQ(ierr);
-    if (ctype == IS_COLORING_GLOBAL) w3_array = w3_array - cstart; /* shift pointer so global index can be used */
-
+    if (ctype == IS_COLORING_GLOBAL) w3_array -= cstart; /* shift pointer so global index can be used */
     if (coloring->htype[0] == 'w') {
       for (l=0; l<ncolumns[k]; l++) {
         col = coloring->columns[k][l]; /* local column (in global index!) of the matrix we are probing for */
         w3_array[col] += 1.0/dx;
       } 
     } else { /* htype == 'ds' */
+      vscale_array -= cstart; /* shift pointer so global index can be used */
       for (l=0; l<ncolumns[k]; l++) {
         col = coloring->columns[k][l]; /* local column (in global index!) of the matrix we are probing for */
-        /* convert global col to local colb */
-        if (col >= cstart && col < cend) {
-          colb = col - cstart;
-        } else {
-#if defined(PETSC_USE_CTABLE)
-          ierr = PetscTableFind(aij->colmap,col+1,&colb);CHKERRQ(ierr);
-          colb--;
-#else
-          colb = aij->colmap[col] - 1; /* local column index */
-#endif
-          colb += cend - cstart;
-        }
-        w3_array[col] += 1.0/vscale_array[colb];
+        w3_array[col] += 1.0/vscale_array[col];
       }
+      vscale_array += cstart;
     }
-    if (ctype == IS_COLORING_GLOBAL) w3_array = w3_array + cstart;
+    if (ctype == IS_COLORING_GLOBAL) w3_array += cstart;
     ierr = VecRestoreArray(w3,&w3_array);CHKERRQ(ierr);
 
     /*
@@ -232,6 +221,8 @@ PetscErrorCode MatFDColoringCreate_MPIAIJ_new(Mat mat,ISColoring iscoloring,MatF
       ierr = PetscMalloc(n*sizeof(PetscInt),&c->columns[i]);CHKERRQ(ierr);
       ierr = PetscLogObjectMemory((PetscObject)c,n*sizeof(PetscInt));CHKERRQ(ierr);
       ierr = PetscMemcpy(c->columns[i],is,n*sizeof(PetscInt));CHKERRQ(ierr);
+      /* convert global column indices to local ones! */
+
     } else {
       c->columns[i] = 0;
     }

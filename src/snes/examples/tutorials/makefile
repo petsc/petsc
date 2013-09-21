@@ -635,6 +635,16 @@ runex19_fdcoloring_ds:
 	   if (${DIFF} output/ex19_fdcoloring_ds.out ex19_1.tmp) then true; \
 	   else  echo  ${PWD} "\nPossible problem with with ex19_fdcoloring_ds, diffs above \n========================================="; fi; \
 	   ${RM} -f ex19_1.tmp
+runex19_fdcoloring_wp_baij:
+	-@${MPIEXEC} -n 1 ./ex19 -da_refine 3 -snes_monitor_short -pc_type mg -dm_mat_type baij -new > ex19_1.tmp 2>&1; \
+	   if (${DIFF} output/ex19_fdcoloring_wp.out ex19_1.tmp) then true; \
+	   else  echo  ${PWD} "\nPossible problem with with ex19_fdcoloring_wp, diffs above \n========================================="; fi; \
+	   ${RM} -f ex19_1.tmp
+runex19_fdcoloring_ds_baij:
+	-@${MPIEXEC} -n 1 ./ex19 -da_refine 3 -snes_monitor_short -pc_type mg -mat_fd_type ds -dm_mat_type baij -new > ex19_1.tmp 2>&1; \
+	   if (${DIFF} output/ex19_fdcoloring_ds.out ex19_1.tmp) then true; \
+	   else  echo  ${PWD} "\nPossible problem with with ex19_fdcoloring_ds, diffs above \n========================================="; fi; \
+	   ${RM} -f ex19_1.tmp
 runex19_3: #test pc_redundant
 	-@${MPIEXEC} -n 4 ./ex19 -da_refine 3 -snes_monitor_short -pc_type redundant -mat_type mpiaij -redundant_ksp_type preonly -redundant_pc_factor_mat_solver_package mumps -pc_redundant_number 2 > ex19_3.tmp 2>&1; \
 	   if (${DIFF} output/ex19_3.out ex19_3.tmp) then true; \
