@@ -178,7 +178,7 @@ PetscErrorCode MatFDColoringCreate_MPIAIJ_new(Mat mat,ISColoring iscoloring,MatF
 
   PetscFunctionBegin;
   if (ctype == IS_COLORING_GHOSTED) {
-    if(!map) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_INCOMP,"When using ghosted differencing matrix must have local to global mapping provided with MatSetLocalToGlobalMapping");
+    if (!map) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_INCOMP,"When using ghosted differencing matrix must have local to global mapping provided with MatSetLocalToGlobalMapping");
     ierr = ISLocalToGlobalMappingGetIndices(map,&ltog);CHKERRQ(ierr);
   }
 

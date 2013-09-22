@@ -459,10 +459,6 @@ struct  _p_MatFDColoring{
   PetscInt       *nrows;           /* number of local rows for each color */
   PetscInt       **rows;           /* lists the local rows for each color (using the local row numbering) */
   PetscInt       **columnsforrow;  /* lists the corresponding columns for those rows (using the global column) */
-  PetscInt       *rowcolden2sp3;   /* nested array for row, col and 
-                                      den2sp: maps (row,color) in the dense matrix to index of J values,
-                                      replace rows and columnsforrow above */
-  PetscScalar    **valaddr;        /* maps (row,color) in the dense matrix to address of J values */
   MatEntry       *matentry;        /* holds (row, column, address of value) for Jacobian matrix entry */
   PetscScalar    *dy;              /* store a block of F(x+dx)-F(x) when J uses BAIJ format */
   PetscReal      error_rel;        /* square root of relative error in computing function */
