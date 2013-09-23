@@ -161,7 +161,7 @@ PetscErrorCode MatFDColoringCreate_MPIAIJ_new(Mat mat,ISColoring iscoloring,MatF
   Mat_MPIAIJ             *aij=(Mat_MPIAIJ*)mat->data;
   PetscErrorCode         ierr;
   PetscMPIInt            size,*ncolsonproc,*disp,nn;
-  PetscInt               i,n,nrows,j,k,m,ncols,col;
+  PetscInt               i,n,nrows,nrows_i,j,k,m,ncols,col;
   const PetscInt         *is,*A_ci,*A_cj,*B_ci,*B_cj,*row = NULL,*ltog=NULL;
   PetscInt               nis=iscoloring->n,nctot,*cols;
   PetscInt               *rowhit,cstart,cend,colb;
@@ -258,6 +258,7 @@ PetscErrorCode MatFDColoringCreate_MPIAIJ_new(Mat mat,ISColoring iscoloring,MatF
 
     /* Mark all rows affect by these columns */
     ierr = PetscMemzero(rowhit,m*sizeof(PetscInt));CHKERRQ(ierr);
+    nrows_i = 0;
     for (j=0; j<nctot; j++) { /* loop over columns*/
       if (ctype == IS_COLORING_GHOSTED) {
         col = ltog[cols[j]];
@@ -265,8 +266,9 @@ PetscErrorCode MatFDColoringCreate_MPIAIJ_new(Mat mat,ISColoring iscoloring,MatF
         col = cols[j];
       }
       if (col >= cstart && col < cend) { /* column is in diagonal block of matrix A */
-        row = A_cj + A_ci[col-cstart];
-        nrows = A_ci[col-cstart+1] - A_ci[col-cstart];
+        row      = A_cj + A_ci[col-cstart];
+        nrows    = A_ci[col-cstart+1] - A_ci[col-cstart];
+        nrows_i += nrows;
         /* loop over columns of A marking them in rowhit */
         for (k=0; k<nrows; k++) {
           /* set valaddrhit for part A */
@@ -287,6 +289,7 @@ PetscErrorCode MatFDColoringCreate_MPIAIJ_new(Mat mat,ISColoring iscoloring,MatF
           row   = B_cj + B_ci[colb];
           nrows = B_ci[colb+1] - B_ci[colb];
         }
+        nrows_i += nrows;
         /* loop over columns of B marking them in rowhit */
         for (k=0; k<nrows; k++) {
           /* set valaddrhit for part B */
@@ -296,13 +299,7 @@ PetscErrorCode MatFDColoringCreate_MPIAIJ_new(Mat mat,ISColoring iscoloring,MatF
         }
       }
     }
-
-    /* count the number of hits */
-    nrows = 0;
-    for (j=0; j<m; j++) {
-      if (rowhit[j]) nrows++;
-    }
-    c->nrows[i] = nrows;
+    c->nrows[i] = nrows_i;
     
     for (j=0; j<m; j++) {
       if (rowhit[j]) {
