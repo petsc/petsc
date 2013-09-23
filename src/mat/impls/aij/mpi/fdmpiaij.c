@@ -4,8 +4,8 @@
 extern PetscErrorCode MatCreateColmap_MPIAIJ_Private(Mat);
 
 #undef __FUNCT__
-#define __FUNCT__ "MatFDColoringApply_MPIAIJ"
-PetscErrorCode  MatFDColoringApply_MPIAIJ(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,void *sctx)
+#define __FUNCT__ "MatFDColoringApply_AIJ_new"
+PetscErrorCode  MatFDColoringApply_AIJ_new(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,void *sctx)
 {
   PetscErrorCode (*f)(void*,Vec,Vec,void*) = (PetscErrorCode (*)(void*,Vec,Vec,void*))coloring->f;
   PetscErrorCode ierr;
@@ -16,7 +16,7 @@ PetscErrorCode  MatFDColoringApply_MPIAIJ(Mat J,MatFDColoring coloring,Vec x1,Ma
   Vec            w1=coloring->w1,w2=coloring->w2,w3,vscale=coloring->vscale;
   void           *fctx=coloring->fctx;
   PetscBool      flg=PETSC_FALSE;
-  PetscInt       ctype=coloring->ctype,nxloc;
+  PetscInt       ctype=coloring->ctype,nxloc,nrows_k;
   Mat_MPIAIJ     *aij=(Mat_MPIAIJ*)J->data;
   MatEntry       *Jentry=coloring->matentry;
   const PetscInt ncolors=coloring->ncolors,*ncolumns=coloring->ncolumns,*nrows=coloring->nrows;
@@ -57,7 +57,7 @@ PetscErrorCode  MatFDColoringApply_MPIAIJ(Mat J,MatFDColoring coloring,Vec x1,Ma
   if (coloring->htype[0] == 'w') { 
     /* vscale = dx is a constant scalar */
     ierr = VecNorm(x1,NORM_2,&unorm);CHKERRQ(ierr);
-    dx = 1.0/((1.0 + unorm)*epsilon); 
+    dx = 1.0/(PetscSqrtReal(1.0 + unorm)*epsilon); 
   } else { 
     ierr = VecGetLocalSize(x1,&nxloc);CHKERRQ(ierr);
     ierr = VecGetArray(x1,&xx);CHKERRQ(ierr);
@@ -129,14 +129,15 @@ PetscErrorCode  MatFDColoringApply_MPIAIJ(Mat J,MatFDColoring coloring,Vec x1,Ma
     /* 
      (3-3) Loop over rows of vector, putting results into Jacobian matrix 
     */
+    nrows_k = nrows[k];
     ierr = VecGetArray(w2,&y);CHKERRQ(ierr);
     if (coloring->htype[0] == 'w') {
-      for (l=0; l<nrows[k]; l++) { 
+      for (l=0; l<nrows_k; l++) { 
         row                     = Jentry[nz].row;   /* local row index */
         *(Jentry[nz++].valaddr) = y[row]*dx;
       }
     } else { /* htype == 'ds' */
-      for (l=0; l<nrows[k]; l++) { 
+      for (l=0; l<nrows_k; l++) { 
         row                   = Jentry[nz].row;   /* local row index */
         *(Jentry[nz].valaddr) = y[row]*vscale_array[Jentry[nz].col];
         nz++;
@@ -321,7 +322,7 @@ PetscErrorCode MatFDColoringCreate_MPIAIJ_new(Mat mat,ISColoring iscoloring,MatF
     ierr = ISLocalToGlobalMappingRestoreIndices(map,&ltog);CHKERRQ(ierr);
   }
 
-  mat->ops->fdcoloringapply = MatFDColoringApply_MPIAIJ;
+  mat->ops->fdcoloringapply = MatFDColoringApply_AIJ_new;
   PetscFunctionReturn(0);
 }
 
