@@ -19,20 +19,34 @@ static char help[] = "Solves C_t =  -D*C_xx + F(C) + R(C) + D(C) from Brian Wirt
     Rules for maximum number of He allowed for V in cluster
 
     Usage: ./ex3 -nele 10 -snes_mf -mymonitor -ts_monitor
+           ./ex3 -file <$XOLOTL_DIR/xolotl/tests/reactants/testfiles/tungsten.txt> -snes_mf -mymonitor -ts_monitor
 
 */
 
 #include <petscdmmoab.h>
 #include <petscts.h>
 
+#define TINY_CLUSTER_CONFIG
+
+#ifndef TINY_CLUSTER_CONFIG
 /*    Hard wire the number of cluster sizes for He, V, and I, and He-V */
 #define  NHe          9
 #define  NV           10   /* 50 */
 #define  NI           2
-#define  MHeV         10  /* 50 */  /* maximum V size in He-V */
+#define  MHeV         10   /* 50 */  /* maximum V size in He-V */
 PetscInt NHeV[MHeV+1];     /* maximum He size in an He-V with given V */
 #define  MNHeV        451  /* 6778 */
 #define  DOF          (NHe + NV + NI + MNHeV)
+#else
+/*    Hard wire the number of cluster sizes for He, V, and I, and He-V */
+#define  NHe          5
+#define  NV           1   /* 50 */
+#define  NI           2
+#define  MHeV         1   /* 50 */  /* maximum V size in He-V */
+PetscInt NHeV[MHeV+1];     /* maximum He size in an He-V with given V */
+#define  MNHeV        3  /* 6778 */
+#define  DOF          (NHe + NV + NI + MNHeV)
+#endif
 
 /*
      Define all the concentrations (there is one of these unions at each grid point)
@@ -86,6 +100,7 @@ int main(int argc,char **argv)
   AppCtx         ctx;                 /* holds problem specific paramters */
   PetscInt       He,*ofill,*dfill;
   char           filename[PETSC_MAX_PATH_LEN];
+  const PetscReal   bounds[2] = {0.0,8.0};
   PetscBool      flg;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -100,7 +115,7 @@ int main(int argc,char **argv)
   }
 
   ctx.nelements      = 10;
-  ierr = PetscOptionsGetInt(NULL,"-nele",&ctx.nelements,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-n",&ctx.nelements,PETSC_NULL);CHKERRQ(ierr);
 
   ctx.HeDiffusion[1]    = 1000*2.95e-4; /* From Tibo's notes times 1,000 */
   ctx.HeDiffusion[2]    = 1000*3.24e-4;
@@ -116,7 +131,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMMoabCreateBoxMesh(PETSC_COMM_WORLD, 1, ctx.nelements, 1, &dm);CHKERRQ(ierr);
+  ierr = DMMoabCreateBoxMesh(PETSC_COMM_WORLD, 1, bounds, ctx.nelements, 1, &dm);CHKERRQ(ierr);
   ierr = InitializeVariableSystem(dm);CHKERRQ(ierr);
   ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
 
@@ -345,7 +360,7 @@ PetscErrorCode RHSFunction(TS ts,PetscReal ftime,Vec C,Vec F,void *ptr)
   PetscReal      hx,sx,x,vpos[3],**cHeV,**fHeV;
   Concentrations *c,*f;
   Vec            localC;
-  moab::Range    vowned;
+  moab::Range    vowned,elocal;
 
   PetscFunctionBeginUser;
   ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
@@ -379,6 +394,7 @@ PetscErrorCode RHSFunction(TS ts,PetscReal ftime,Vec C,Vec F,void *ptr)
      Get local grid boundaries
   */
   ierr = DMMoabGetLocalVertices(dm, &vowned, NULL);CHKERRQ(ierr);
+  ierr = DMMoabGetLocalElements(dm, &elocal);CHKERRQ(ierr);
 
   /*
      Loop over grid points computing ODE terms for each grid point
@@ -574,10 +590,13 @@ PetscErrorCode RHSFunction(TS ts,PetscReal ftime,Vec C,Vec F,void *ptr)
   ierr = DMRestoreLocalVector(dm,&localC);CHKERRQ(ierr);
   ierr = cHeVDestroy(cHeV);CHKERRQ(ierr);
   ierr = cHeVDestroy(fHeV);CHKERRQ(ierr);
+//  VecView(F,0);
+//  std::cin.get();
   PetscFunctionReturn(0);
 }
 /* ------------------------------------------------------------------- */
 
+#define BARRY_IMPL
 
 #undef __FUNCT__
 #define __FUNCT__ "RHSJacobian"
@@ -590,14 +609,16 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal ftime,Vec C,Mat *A,Mat *J,MatStructur
   DM                   dm;
   PetscErrorCode       ierr;
   PetscInt             xi,Mx,/*xs,xm,*/He,he,V,v,I,i;
-  PetscInt             row[3],col[3];
-  PetscReal            hx,sx,x,val[6],vpos[3];
+  PetscInt             row[3],col[3],dof_indices[2*DOF],lcols[2],rcols[2],left,right;
+  PetscReal            hx,sx,x,val[6],vpos[3],lvals[2],rvals[2];
   const Concentrations *c,*f;
   Vec                  localC;
-  moab::Range          vowned;
+  const moab::EntityHandle *connect;
+  PetscInt             vpere=2;
+  moab::Range          elocal;
   const PetscReal      *rowstart,*colstart;
   const PetscReal      **cHeV,**fHeV;
-  PetscBool            initialized = PETSC_FALSE;
+  static PetscBool     initialized = PETSC_FALSE;
 
   PetscFunctionBeginUser;
   ierr = cHeVCreate((PetscScalar***)&cHeV);CHKERRQ(ierr);
@@ -632,24 +653,44 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal ftime,Vec C,Mat *A,Mat *J,MatStructur
   /*
      Get local grid boundaries
   */
-  ierr = DMMoabGetLocalVertices(dm, &vowned, NULL);CHKERRQ(ierr);
+  ierr = DMMoabGetLocalElements(dm, &elocal);CHKERRQ(ierr);
+//  ierr = DMMoabGetLocalVertices(dm, &vowned, NULL);CHKERRQ(ierr);
 //  ierr = DMDAGetCorners(dm,&xs,NULL,NULL,&xm,NULL,NULL);CHKERRQ(ierr);
 //  rowstart = &f[xs].He[1] -  N*N - 3*N;
 //  colstart = &c[xs-1].He[1];
 
-  rowstart = &f[0].He[1];
+#ifdef BARRY_IMPL
+  rowstart = &f[1].He[1] - DOF;
+  colstart = &c[0].He[1];
+#else
+  rowstart = &f[-1].He[1] - DOF*0;
   colstart = &c[-1].He[1];
+#endif
 
   if (!initialized) {
-    /*
-       Loop over grid points computing ODE terms for each grid point
-    */
-    for(moab::Range::iterator iter = vowned.begin(); iter != vowned.end(); iter++) {
-      const moab::EntityHandle vhandle = *iter;
-      ierr = DMMoabGetDofsBlockedLocal(dm, 1, &vhandle, &xi);CHKERRQ(ierr);
+    /* Compute ODE terms over the locally owned part of the grid 
+      Assemble the operator by looping over edges and computing
+      contribution for each vertex dof                         */
+    for(moab::Range::iterator iter = elocal.begin(); iter != elocal.end(); iter++) {
+      const moab::EntityHandle ehandle = *iter;
 
-      ierr = DMMoabGetVertexCoordinates(dm,1,&vhandle,vpos);CHKERRQ(ierr);
-      x = vpos[0];
+      // Get connectivity information in canonical order
+      ierr = DMMoabGetElementConnectivity(dm, ehandle, &vpere, &connect);CHKERRQ(ierr);
+      if (vpere != 2) SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Only EDGE2 element bases are supported in the current example. n(Connectivity)=%D.\n", vpere);
+
+      ierr = DMMoabGetDofsBlockedLocal(dm, 1, &connect[0], &xi);CHKERRQ(ierr);
+      ierr = DMMoabGetDofsBlockedLocal(dm, vpere, connect, dof_indices);CHKERRQ(ierr);
+//      ierr = DMMoabGetDofsLocal(dm, vpere, connect, dof_indices);CHKERRQ(ierr);
+
+//      const PetscInt lcols[] = {idl,idr}, rcols[] = {idr, idl};
+
+//      const PetscInt lcols[] = {idl,idr}, rcols[] = {idr, idl};
+//      ierr = MatSetValuesLocal(*Jpre,1,&idr,2,rcols,&e_vals[0][0][0],ADD_VALUES);CHKERRQ(ierr);
+//      ierr = MatSetValuesLocal(*Jpre,1,&idl,2,lcols,&e_vals[0][0][0],ADD_VALUES);CHKERRQ(ierr);
+
+      const int& idl = dof_indices[0]-1;
+      const int& idr = dof_indices[1]-1;
+      PetscPrintf(PETSC_COMM_WORLD,"\t [%D, %D] dof_indices [%D %D]\n", idl,idr,dof_indices[0],dof_indices[1]);
 
       ierr = cHeVInitialize(&c[xi].He[1],(PetscScalar**)cHeV);CHKERRQ(ierr);
       ierr = cHeVInitialize(&f[xi].He[1],(PetscScalar**)fHeV);CHKERRQ(ierr);
@@ -659,6 +700,7 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal ftime,Vec C,Mat *A,Mat *J,MatStructur
        */
       /* He clusters larger than 5 do not diffuse -- are immobile */
       for (He=1; He<PetscMin(NHe+1,6); He++) {
+#ifdef BARRY_IMPL
         row[0] = &f[xi].He[He] - rowstart;
         col[0] = &c[xi-1].He[He] - colstart;
         col[1] = &c[xi].He[He] - colstart;
@@ -666,10 +708,22 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal ftime,Vec C,Mat *A,Mat *J,MatStructur
         val[0] = ctx->HeDiffusion[He]*sx;
         val[1] = -2.0*ctx->HeDiffusion[He]*sx;
         val[2] = ctx->HeDiffusion[He]*sx;
+        PetscPrintf(PETSC_COMM_WORLD,"[1] Setting row %D: Col = [%D, %D, %D]\n", row[0],col[0],col[1],col[2]);
         ierr = MatSetValuesLocal(*J,1,row,3,col,val,ADD_VALUES);CHKERRQ(ierr);
+#else
+        left = &f[idl].He[He] - rowstart; right = &f[idr].He[He] - rowstart;
+        lcols[0] = &c[idl].He[He] - colstart; lcols[1] = &c[idr].He[He] - colstart;
+        rcols[0] = lcols[1]; rcols[1] = lcols[0];
+        lvals[0] = ctx->HeDiffusion[He]*sx; lvals[1] = -ctx->HeDiffusion[He]*sx;
+        rvals[0] = lvals[1]; rvals[1] = lvals[0];
+        PetscPrintf(PETSC_COMM_WORLD,"\t [1] row [%D %D]: Left Cols = [%D, %D]  Right Cols = [%D, %D]\n", left,right,lcols[0],lcols[1],rcols[0],rcols[1]);
+        ierr = MatSetValuesLocal(*J,1,&left,2,lcols,lvals,ADD_VALUES);CHKERRQ(ierr);
+        ierr = MatSetValuesLocal(*J,1,&right,2,rcols,rvals,ADD_VALUES);CHKERRQ(ierr);
+#endif
       }
 
       /* V and I clusters ONLY of size 1 diffuse */
+#ifdef BARRY_IMPL
       row[0] = &f[xi].V[1] - rowstart;
       col[0] = &c[xi-1].V[1] - colstart;
       col[1] = &c[xi].V[1] - colstart;
@@ -677,8 +731,20 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal ftime,Vec C,Mat *A,Mat *J,MatStructur
       val[0] = ctx->VDiffusion[1]*sx;
       val[1] = -2.0*ctx->VDiffusion[1]*sx;
       val[2] = ctx->VDiffusion[1]*sx;
+      PetscPrintf(PETSC_COMM_WORLD,"[2] Setting row %D: Col = [%D, %D, %D]\n", row[0],col[0],col[1],col[2]);
       ierr = MatSetValuesLocal(*J,1,row,3,col,val,ADD_VALUES);CHKERRQ(ierr);
-      
+#else
+      left = &f[idl].V[1] - rowstart; right = &f[idr].V[1] - rowstart;
+      lcols[0] = &c[idl].V[1] - colstart; lcols[1] = &c[idr].V[1] - colstart;
+      rcols[0] = lcols[1]; rcols[1] = lcols[0];
+      lvals[0] = ctx->VDiffusion[1]*sx; lvals[1] = -ctx->VDiffusion[1]*sx;
+      rvals[0] = lvals[1]; rvals[1] = lvals[0];
+      PetscPrintf(PETSC_COMM_WORLD,"\t [2] row [%D %D]: Left Cols = [%D, %D]  Right Cols = [%D, %D]\n", left,right,lcols[0],lcols[1],rcols[0],rcols[1]);
+      ierr = MatSetValuesLocal(*J,1,&left,2,lcols,lvals,ADD_VALUES);CHKERRQ(ierr);
+      //ierr = MatSetValuesLocal(*J,1,&right,2,rcols,rvals,ADD_VALUES);CHKERRQ(ierr);
+#endif
+
+#ifdef BARRY_IMPL
       row[0] = &f[xi].I[1] - rowstart;
       col[0] = &c[xi-1].I[1] - colstart;
       col[1] = &c[xi].I[1] - colstart;
@@ -686,7 +752,19 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal ftime,Vec C,Mat *A,Mat *J,MatStructur
       val[0] = ctx->IDiffusion[1]*sx;
       val[1] = -2.0*ctx->IDiffusion[1]*sx;
       val[2] = ctx->IDiffusion[1]*sx;
+      PetscPrintf(PETSC_COMM_WORLD,"[3] Setting row %D: Col = [%D, %D, %D]\n", row[0],col[0],col[1],col[2]);
       ierr = MatSetValuesLocal(*J,1,row,3,col,val,ADD_VALUES);CHKERRQ(ierr);
+#else
+      left = &f[idl].I[1] - rowstart; right = &f[idr].I[1] - rowstart;
+      lcols[0] = &c[idl].I[1] - colstart; lcols[1] = &c[idr].I[1] - colstart;
+      rcols[0] = lcols[1]; rcols[1] = lcols[0];
+      lvals[0] = ctx->IDiffusion[1]*sx; lvals[1] = -ctx->IDiffusion[1]*sx;
+      rvals[0] = lvals[1]; rvals[1] = lvals[0];
+      PetscPrintf(PETSC_COMM_WORLD,"\t [3] row [%D %D]: Left Cols = [%D, %D]  Right Cols = [%D, %D]\n", left,right,lcols[0],lcols[1],rcols[0],rcols[1]);
+      ierr = MatSetValuesLocal(*J,1,&left,2,lcols,lvals,ADD_VALUES);CHKERRQ(ierr);
+      //ierr = MatSetValuesLocal(*J,1,&right,2,rcols,rvals,ADD_VALUES);CHKERRQ(ierr);
+#endif
+
       /* Mixed He - V clusters are immobile  */
       
       /* -------------------------------------------------------------------------
@@ -812,12 +890,15 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal ftime,Vec C,Mat *A,Mat *J,MatStructur
   /*
      Loop over grid points computing Jacobian terms for each grid point for reaction terms
   */
-  for(moab::Range::iterator iter = vowned.begin(); iter != vowned.end(); iter++) {
-    const moab::EntityHandle vhandle = *iter;
-    ierr = DMMoabGetDofsBlockedLocal(dm, 1, &vhandle, &xi);CHKERRQ(ierr);
+  for(moab::Range::iterator iter = elocal.begin(); iter != elocal.end(); iter++) {
+    const moab::EntityHandle ehandle = *iter;
 
-    ierr = DMMoabGetVertexCoordinates(dm,1,&vhandle,vpos);CHKERRQ(ierr);
-    x = vpos[0];
+    // Get connectivity information in canonical order
+    ierr = DMMoabGetElementConnectivity(dm, ehandle, &vpere, &connect);CHKERRQ(ierr);
+    if (vpere != 2) SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Only EDGE2 element bases are supported in the current example. n(Connectivity)=%D.\n", vpere);
+
+//      ierr = DMMoabGetDofsBlockedLocal(dm, 1, &vhandle, &xi);CHKERRQ(ierr);
+    ierr = DMMoabGetDofsLocal(dm, vpere, connect, dof_indices);CHKERRQ(ierr);
 
     ierr = cHeVInitialize(&c[xi].He[1],(PetscScalar**)cHeV);CHKERRQ(ierr);
     ierr = cHeVInitialize(&f[xi].He[1],(PetscScalar**)fHeV);CHKERRQ(ierr);
@@ -1455,7 +1536,7 @@ PetscErrorCode MyLoadData(MPI_Comm comm,const char *filename)
         if (He > NHe && V == 0 && I == 0) SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Recompile with correct NHe %d %d",He,NHe);
         if (He == 0  && V > NV && I == 0) SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Recompile with correct V %d %d",V,NV);
         if (He == 0  && V == 0 && I > NI) SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Recompile with correct NI %d %d",I,NI);
-        if (lc++ > DOF) SETERRQ4(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Recompile with correct NHe %d NV %d NI %d MNHeV %",NHe,NV,NI,MNHeV);
+        if (lc++ > DOF) SETERRQ6(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Recompile with correct NHe %d NV %d NI %d MNHeV % lc=%D and DOF=%D",NHe,NV,NI,MNHeV,lc,DOF);
         if (He > 0 && V > 0) {  /* assumes the He are sorted in increasing order */
           NHeV[V] = He;
         }
@@ -1464,7 +1545,7 @@ PetscErrorCode MyLoadData(MPI_Comm comm,const char *filename)
     ierr = PetscMemzero(buff,sizeof(char)*256);CHKERRQ(ierr);
     ierr = PetscSynchronizedFGets(comm,fp,256,buff);CHKERRQ(ierr);
   }
-  if (lc != DOF) SETERRQ5(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Recompile with correct NHe %d NV %d NI %d MNHeV %d Actual DOF %d",NHe,NV,NI,MNHeV,lc);
+  if (lc != DOF) SETERRQ6(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Recompile with correct NHe %d NV %d NI %d MNHeV %d Actual DOF %d User DOF %d",NHe,NV,NI,MNHeV,lc,DOF);
   PetscFunctionReturn(0);
 }
 
