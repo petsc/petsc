@@ -2114,6 +2114,33 @@ PetscErrorCode MatGetInfo_SeqBAIJ(Mat A,MatInfoType flag,MatInfo *info)
 }
 
 
+#if defined(PETSC_THREADCOMM_ACTIVE)
+PetscErrorCode MatZeroEntries_SeqBAIJ_Kernel(PetscInt thread_id,Mat A)
+{
+  PetscErrorCode ierr;
+  PetscInt       *trstarts=A->rmap->trstarts;
+  PetscInt       n,start,end;
+  Mat_SeqBAIJ     *a = (Mat_SeqBAIJ*)A->data;
+
+  start = trstarts[thread_id];
+  end   = trstarts[thread_id+1];
+  n     = a->i[end] - a->i[start];
+  ierr  = PetscMemzero(a->a+a->bs2*a->i[start],a->bs2*n*sizeof(PetscScalar));CHKERRQ(ierr);
+  return 0;
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatZeroEntries_SeqBAIJ"
+PetscErrorCode MatZeroEntries_SeqBAIJ(Mat A)
+{
+  PetscErrorCode ierr;
+
+ 
+  PetscFunctionBegin;
+  ierr = PetscThreadCommRunKernel(PetscObjectComm((PetscObject)A),(PetscThreadKernel)MatZeroEntries_SeqBAIJ_Kernel,1,A);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+#else
 #undef __FUNCT__
 #define __FUNCT__ "MatZeroEntries_SeqBAIJ"
 PetscErrorCode MatZeroEntries_SeqBAIJ(Mat A)
@@ -2125,3 +2152,4 @@ PetscErrorCode MatZeroEntries_SeqBAIJ(Mat A)
   ierr = PetscMemzero(a->a,a->bs2*a->i[a->mbs]*sizeof(MatScalar));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+#endif
