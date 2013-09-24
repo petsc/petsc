@@ -127,6 +127,7 @@ PetscErrorCode  MatInitializePackage(void)
   ierr = PetscLogEventRegister("MatCopy",          MAT_CLASSID,&MAT_Copy);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatConvert",       MAT_CLASSID,&MAT_Convert);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatScale",         MAT_CLASSID,&MAT_Scale);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatResidual",      MAT_CLASSID,&MAT_Residual);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatAssemblyBegin", MAT_CLASSID,&MAT_AssemblyBegin);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatAssemblyEnd",   MAT_CLASSID,&MAT_AssemblyEnd);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatSetValues",     MAT_CLASSID,&MAT_SetValues);CHKERRQ(ierr);
