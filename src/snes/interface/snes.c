@@ -712,7 +712,7 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
   if (flg) {
     switch (indx) {
     case 0: ierr = SNESSetConvergenceTest(snes,SNESConvergedDefault,NULL,NULL);CHKERRQ(ierr); break;
-    case 1: ierr = SNESSetConvergenceTest(snes,SNESSkipConverged,NULL,NULL);CHKERRQ(ierr);    break;
+    case 1: ierr = SNESSetConvergenceTest(snes,SNESConvergedSkip,NULL,NULL);CHKERRQ(ierr);    break;
     }
   }
 
@@ -3457,7 +3457,7 @@ M*/
 
 .keywords: SNES, nonlinear, set, convergence, test
 
-.seealso: SNESConvergedDefault(), SNESSkipConverged(), SNESConvergenceTestFunction
+.seealso: SNESConvergedDefault(), SNESConvergedSkip(), SNESConvergenceTestFunction
 @*/
 PetscErrorCode  SNESSetConvergenceTest(SNES snes,PetscErrorCode (*SNESConvergenceTestFunction)(SNES,PetscInt,PetscReal,PetscReal,PetscReal,SNESConvergedReason*,void*),void *cctx,PetscErrorCode (*destroy)(void*))
 {
@@ -3465,7 +3465,7 @@ PetscErrorCode  SNESSetConvergenceTest(SNES snes,PetscErrorCode (*SNESConvergenc
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
-  if (!SNESConvergenceTestFunction) SNESConvergenceTestFunction = SNESSkipConverged;
+  if (!SNESConvergenceTestFunction) SNESConvergenceTestFunction = SNESConvergedSkip;
   if (snes->ops->convergeddestroy) {
     ierr = (*snes->ops->convergeddestroy)(snes->cnvP);CHKERRQ(ierr);
   }
@@ -4478,8 +4478,8 @@ PetscErrorCode  SNESKSPGetParametersEW(SNES snes,PetscInt *version,PetscReal *rt
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "SNESKSPEW_PreSolve"
- PetscErrorCode SNESKSPEW_PreSolve(KSP ksp, Vec b, Vec x, SNES snes)
+#define __FUNCT__ "KSPPreSolve_SNESEW"
+ PetscErrorCode KSPPreSolve_SNESEW(KSP ksp, Vec b, Vec x, SNES snes)
 {
   PetscErrorCode ierr;
   SNESKSPEW      *kctx = (SNESKSPEW*)snes->kspconvctx;
@@ -4487,7 +4487,10 @@ PetscErrorCode  SNESKSPGetParametersEW(SNES snes,PetscInt *version,PetscReal *rt
 
   PetscFunctionBegin;
   if (!snes->ksp_ewconv) PetscFunctionReturn(0);
-  if (!snes->iter) rtol = kctx->rtol_0; /* first time in, so use the original user rtol */
+  if (!snes->iter) {
+    rtol = kctx->rtol_0; /* first time in, so use the original user rtol */
+    ierr = VecNorm(snes->vec_func,NORM_2,&kctx->norm_first);CHKERRQ(ierr);
+  }
   else {
     if (kctx->version == 1) {
       rtol = (snes->norm - kctx->lresid_last)/kctx->norm_last;
@@ -4505,7 +4508,7 @@ PetscErrorCode  SNESKSPGetParametersEW(SNES snes,PetscInt *version,PetscReal *rt
       stol = PetscMax(rtol,stol);
       rtol = PetscMin(kctx->rtol_0,stol);
       /* safeguard: avoid oversolving */
-      stol = kctx->gamma*(snes->ttol)/snes->norm;
+      stol = kctx->gamma*(kctx->norm_first*snes->rtol)/snes->norm;
       stol = PetscMax(rtol,stol);
       rtol = PetscMin(kctx->rtol_0,stol);
     } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Only versions 1, 2 or 3 are supported: %D",kctx->version);
@@ -4518,8 +4521,8 @@ PetscErrorCode  SNESKSPGetParametersEW(SNES snes,PetscInt *version,PetscReal *rt
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "SNESKSPEW_PostSolve"
-PetscErrorCode SNESKSPEW_PostSolve(KSP ksp, Vec b, Vec x, SNES snes)
+#define __FUNCT__ "KSPPostSolve_SNESEW"
+PetscErrorCode KSPPostSolve_SNESEW(KSP ksp, Vec b, Vec x, SNES snes)
 {
   PetscErrorCode ierr;
   SNESKSPEW      *kctx = (SNESKSPEW*)snes->kspconvctx;
@@ -4585,8 +4588,8 @@ PetscErrorCode  SNESGetKSP(SNES snes,KSP *ksp)
     ierr = PetscObjectIncrementTabLevel((PetscObject)snes->ksp,(PetscObject)snes,1);CHKERRQ(ierr);
     ierr = PetscLogObjectParent((PetscObject)snes,(PetscObject)snes->ksp);CHKERRQ(ierr);
 
-    ierr = KSPSetPreSolve(snes->ksp,(PetscErrorCode (*)(KSP,Vec,Vec,void*))SNESKSPEW_PreSolve,snes);CHKERRQ(ierr);
-    ierr = KSPSetPostSolve(snes->ksp,(PetscErrorCode (*)(KSP,Vec,Vec,void*))SNESKSPEW_PostSolve,snes);CHKERRQ(ierr);
+    ierr = KSPSetPreSolve(snes->ksp,(PetscErrorCode (*)(KSP,Vec,Vec,void*))KSPPreSolve_SNESEW,snes);CHKERRQ(ierr);
+    ierr = KSPSetPostSolve(snes->ksp,(PetscErrorCode (*)(KSP,Vec,Vec,void*))KSPPostSolve_SNESEW,snes);CHKERRQ(ierr);
   }
   *ksp = snes->ksp;
   PetscFunctionReturn(0);

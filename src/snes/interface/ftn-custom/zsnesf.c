@@ -237,7 +237,7 @@ PETSC_EXTERN void snesconvergeddefault_(SNES *snes,PetscInt *it,PetscReal *a,Pet
 
 PETSC_EXTERN void snesskipconverged_(SNES *snes,PetscInt *it,PetscReal *a,PetscReal *b,PetscReal *c,SNESConvergedReason *r,void *ct,PetscErrorCode *ierr)
 {
-  *ierr = SNESSkipConverged(*snes,*it,*a,*b,*c,r,ct);
+  *ierr = SNESConvergedSkip(*snes,*it,*a,*b,*c,r,ct);
 }
 
 PETSC_EXTERN void PETSC_STDCALL snessetconvergencetest_(SNES *snes,void (PETSC_STDCALL *func)(SNES*,PetscInt*,PetscReal*,PetscReal*,PetscReal*,SNESConvergedReason*,void*,PetscErrorCode*), void *cctx,void (PETSC_STDCALL *destroy)(void*),PetscErrorCode *ierr)
@@ -248,7 +248,7 @@ PETSC_EXTERN void PETSC_STDCALL snessetconvergencetest_(SNES *snes,void (PETSC_S
   if ((PetscVoidFunction)func == (PetscVoidFunction)snesconvergeddefault_) {
     *ierr = SNESSetConvergenceTest(*snes,SNESConvergedDefault,0,0);
   } else if ((PetscVoidFunction)func == (PetscVoidFunction)snesskipconverged_) {
-    *ierr = SNESSetConvergenceTest(*snes,SNESSkipConverged,0,0);
+    *ierr = SNESSetConvergenceTest(*snes,SNESConvergedSkip,0,0);
   } else {
     *ierr = PetscObjectSetFortranCallback((PetscObject)*snes,PETSC_FORTRAN_CALLBACK_CLASS,&_cb.test,(PetscVoidFunction)func,cctx);
     if (*ierr) return;

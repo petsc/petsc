@@ -223,7 +223,7 @@ PetscErrorCode  KSPView(KSP ksp,PetscViewer viewer)
 -  normtype - one of
 $   KSP_NORM_NONE - skips computing the norm, this should only be used if you are using
 $                 the Krylov method as a smoother with a fixed small number of iterations.
-$                 Implicitly sets KSPSkipConverged as KSP convergence test.
+$                 Implicitly sets KSPConvergedSkip as KSP convergence test.
 $                 Supported only by CG, Richardson, Bi-CG-stab, CR, and CGS methods.
 $   KSP_NORM_PRECONDITIONED - the default for left preconditioned solves, uses the l2 norm
 $                 of the preconditioned residual
@@ -243,7 +243,7 @@ $   KSP_NORM_NATURAL - supported  by KSPCG, KSPCR, KSPCGNE, KSPCGS
 
 .keywords: KSP, create, context, norms
 
-.seealso: KSPSetUp(), KSPSolve(), KSPDestroy(), KSPSkipConverged(), KSPSetCheckNormIteration()
+.seealso: KSPSetUp(), KSPSolve(), KSPDestroy(), KSPConvergedSkip(), KSPSetCheckNormIteration()
 @*/
 PetscErrorCode  KSPSetNormType(KSP ksp,KSPNormType normtype)
 {
@@ -254,9 +254,9 @@ PetscErrorCode  KSPSetNormType(KSP ksp,KSPNormType normtype)
   PetscValidLogicalCollectiveEnum(ksp,normtype,2);
   ksp->normtype = normtype;
   if (normtype == KSP_NORM_NONE) {
-    ierr = KSPSetConvergenceTest(ksp,KSPSkipConverged,0,0);CHKERRQ(ierr);
+    ierr = KSPSetConvergenceTest(ksp,KSPConvergedSkip,0,0);CHKERRQ(ierr);
     ierr = PetscInfo(ksp,"Warning: setting KSPNormType to skip computing the norm\n\
- KSP convergence test is implicitly set to KSPSkipConverged\n");CHKERRQ(ierr);
+ KSP convergence test is implicitly set to KSPConvergedSkip\n");CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -284,7 +284,7 @@ PetscErrorCode  KSPSetNormType(KSP ksp,KSPNormType normtype)
 
 .keywords: KSP, create, context, norms
 
-.seealso: KSPSetUp(), KSPSolve(), KSPDestroy(), KSPSkipConverged(), KSPSetNormType()
+.seealso: KSPSetUp(), KSPSolve(), KSPDestroy(), KSPConvergedSkip(), KSPSetNormType()
 @*/
 PetscErrorCode  KSPSetCheckNormIteration(KSP ksp,PetscInt it)
 {
@@ -322,7 +322,7 @@ PetscErrorCode  KSPSetCheckNormIteration(KSP ksp,PetscInt it)
 
 .keywords: KSP, create, context, norms
 
-.seealso: KSPSetUp(), KSPSolve(), KSPDestroy(), KSPSkipConverged(), KSPSetNormType(), KSPSetCheckNormIteration()
+.seealso: KSPSetUp(), KSPSolve(), KSPDestroy(), KSPConvergedSkip(), KSPSetNormType(), KSPSetCheckNormIteration()
 @*/
 PetscErrorCode  KSPSetLagNorm(KSP ksp,PetscBool flg)
 {
@@ -430,7 +430,7 @@ PetscErrorCode KSPSetUpNorms_Private(KSP ksp,KSPNormType *normtype,PCSide *pcsid
 
 .keywords: KSP, create, context, norms
 
-.seealso: KSPNormType, KSPSetNormType(), KSPSkipConverged()
+.seealso: KSPNormType, KSPSetNormType(), KSPConvergedSkip()
 @*/
 PetscErrorCode  KSPGetNormType(KSP ksp, KSPNormType *normtype)
 {
@@ -750,8 +750,8 @@ PetscErrorCode  KSPCreate(MPI_Comm comm,KSP *inksp)
   ksp->res_hist_reset = PETSC_TRUE;
   ksp->numbermonitors = 0;
 
-  ierr                    = KSPDefaultConvergedCreate(&ctx);CHKERRQ(ierr);
-  ierr                    = KSPSetConvergenceTest(ksp,KSPDefaultConverged,ctx,KSPDefaultConvergedDestroy);CHKERRQ(ierr);
+  ierr                    = KSPConvergedDefaultCreate(&ctx);CHKERRQ(ierr);
+  ierr                    = KSPSetConvergenceTest(ksp,KSPConvergedDefault,ctx,KSPConvergedDefaultDestroy);CHKERRQ(ierr);
   ksp->ops->buildsolution = KSPBuildSolutionDefault;
   ksp->ops->buildresidual = KSPBuildResidualDefault;
 

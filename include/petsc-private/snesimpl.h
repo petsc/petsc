@@ -137,7 +137,8 @@ struct _p_SNES {
   PetscBool   ksp_ewconv;        /* flag indicating use of Eisenstat-Walker KSP convergence criteria */
   void        *kspconvctx;       /* Eisenstat-Walker KSP convergence context */
 
-  PetscReal   ttol;           /* used by default convergence test routine */
+  /* SNESConvergedDefault context: split it off into a separate var/struct to be passed as context to SNESConvergedDefault? */
+  PetscReal   ttol;              /* rtol*initial_residual_norm */
 
   Vec         *vwork;            /* more work vectors for Jacobian approx */
   PetscInt    nvwork;
@@ -210,6 +211,7 @@ typedef struct {
   PetscReal threshold;           /* threshold for imposing safeguard */
   PetscReal lresid_last;         /* linear residual from last iteration */
   PetscReal norm_last;           /* function norm from last iteration */
+  PetscReal norm_first;          /* function norm from the beginning of the first iteration. */
 } SNESKSPEW;
 
 #undef __FUNCT__
