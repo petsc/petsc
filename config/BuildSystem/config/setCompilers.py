@@ -1196,6 +1196,7 @@ class Configure(config.base.Configure):
     yield (self.CC, ['-shared'], 'so')
     yield (self.CC, ['-dynamic'], 'so')
     yield (self.CC, ['-qmkshrobj'], 'so')
+    yield (self.CC, ['-shared'], 'dll')
     # Solaris default
     if Configure.isSolaris():
       if hasattr(self, 'CXX') and self.mainLanguage == 'Cxx':
