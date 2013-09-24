@@ -16,7 +16,6 @@ PetscErrorCode  MatFDColoringApply_BAIJ_new(Mat J,MatFDColoring coloring,Vec x1,
   void           *fctx=coloring->fctx;
   PetscBool      flg=PETSC_FALSE;
   PetscInt       ctype=coloring->ctype,nxloc,nrows_k;
-  Mat_MPIBAIJ    *aij=(Mat_MPIBAIJ*)J->data;
   PetscScalar    *valaddr;
   MatEntry       *Jentry=coloring->matentry;
   const PetscInt ncolors=coloring->ncolors,*ncolumns=coloring->ncolumns,*nrows=coloring->nrows;
@@ -38,8 +37,17 @@ PetscErrorCode  MatFDColoringApply_BAIJ_new(Mat J,MatFDColoring coloring,Vec x1,
   /* create vscale for storing dx */
   if (!vscale) {
     if (ctype == IS_COLORING_GLOBAL && coloring->htype[0] == 'd') {
-      ierr = VecCreateGhost(PetscObjectComm((PetscObject)J),J->cmap->n,PETSC_DETERMINE,aij->B->cmap->n,aij->garray,&vscale);CHKERRQ(ierr);
-      
+      /* contain the "diagonal" on processor scalings followed by the off processor* - garray must be non-bloced! */
+      Mat_MPIBAIJ    *baij=(Mat_MPIBAIJ*)J->data;
+      PetscInt       *garray;
+      ierr = PetscMalloc(baij->B->cmap->n*sizeof(PetscInt),&garray);CHKERRQ(ierr);
+      for (i=0; i<baij->B->cmap->n/bs; i++) {
+        for (j=0; j<bs; j++) {
+          garray[i*bs+j] = bs*baij->garray[i]+j;
+        }
+      }
+      ierr = VecCreateGhost(PetscObjectComm((PetscObject)J),J->cmap->n,PETSC_DETERMINE,baij->B->cmap->n,garray,&vscale);CHKERRQ(ierr);
+      ierr = PetscFree(garray);CHKERRQ(ierr);
     } else if (ctype == IS_COLORING_GHOSTED) {
       ierr = VecDuplicate(x1,&vscale);CHKERRQ(ierr);
     }
@@ -57,9 +65,6 @@ PetscErrorCode  MatFDColoringApply_BAIJ_new(Mat J,MatFDColoring coloring,Vec x1,
   
   /* (2) Compute vscale = 1./dx - the local scale factors, including ghost points */
   ierr = VecGetLocalSize(x1,&nxloc);CHKERRQ(ierr);
-  //PetscMPIInt rank;
-  //ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
-  //printf("[%d] nxloc %d\n",rank,nxloc);
   if (coloring->htype[0] == 'w') { 
     /* vscale = dx is a constant scalar */
     ierr = VecNorm(x1,NORM_2,&unorm);CHKERRQ(ierr);
@@ -211,7 +216,6 @@ PetscErrorCode  MatFDColoringApply_AIJ_new(Mat J,MatFDColoring coloring,Vec x1,M
   void           *fctx=coloring->fctx;
   PetscBool      flg=PETSC_FALSE;
   PetscInt       ctype=coloring->ctype,nxloc,nrows_k;
-  Mat_MPIAIJ     *aij=(Mat_MPIAIJ*)J->data;
   MatEntry       *Jentry=coloring->matentry;
   const PetscInt ncolors=coloring->ncolors,*ncolumns=coloring->ncolumns,*nrows=coloring->nrows;
   
@@ -231,6 +235,7 @@ PetscErrorCode  MatFDColoringApply_AIJ_new(Mat J,MatFDColoring coloring,Vec x1,M
   /* create vscale for storing dx */
   if (!vscale) {
     if (ctype == IS_COLORING_GLOBAL && coloring->htype[0] == 'd') {
+      Mat_MPIAIJ     *aij=(Mat_MPIAIJ*)J->data;
       ierr = VecCreateGhost(PetscObjectComm((PetscObject)J),J->cmap->n,PETSC_DETERMINE,aij->B->cmap->n,aij->garray,&vscale);CHKERRQ(ierr);
     } else if (ctype == IS_COLORING_GHOSTED) {
       ierr = VecDuplicate(x1,&vscale);CHKERRQ(ierr);
@@ -353,7 +358,6 @@ PetscErrorCode  MatFDColoringApply_AIJ_new(Mat J,MatFDColoring coloring,Vec x1,M
 #define __FUNCT__ "MatFDColoringCreate_MPIAIJ_new"
 PetscErrorCode MatFDColoringCreate_MPIAIJ_new(Mat mat,ISColoring iscoloring,MatFDColoring c)
 {
-  //Mat_MPIAIJ             *aij=(Mat_MPIAIJ*)mat->data;
   PetscErrorCode         ierr;
   PetscMPIInt            size,*ncolsonproc,*disp,nn;
   PetscInt               i,n,nrows,nrows_i,j,k,m,ncols,col;
@@ -364,9 +368,6 @@ PetscErrorCode MatFDColoringCreate_MPIAIJ_new(Mat mat,ISColoring iscoloring,MatF
   ISLocalToGlobalMapping map=mat->cmap->mapping;
   PetscInt               ctype=c->ctype;
   Mat                    A,B;
-  //Mat                    A=aij->A,B=aij->B;
-  //Mat_SeqAIJ             *spA=(Mat_SeqAIJ*)A->data,*spB=(Mat_SeqAIJ*)B->data;
-  //PetscScalar            *A_val=spA->a,*B_val=spB->a;
   PetscScalar            *A_val,*B_val;
   PetscInt               spidx;
   PetscInt               *spidxA,*spidxB,nz,bs,bs2;
@@ -388,13 +389,15 @@ PetscErrorCode MatFDColoringCreate_MPIAIJ_new(Mat mat,ISColoring iscoloring,MatF
   ierr = MatGetBlockSize(mat,&bs);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)mat,MATMPIBAIJ,&isBAIJ);CHKERRQ(ierr);
   if (!isBAIJ) {
-    bs = 1; /* only bs=1 is supported for non MPIBAIJ matrix */
     Mat_MPIAIJ             *aij=(Mat_MPIAIJ*)mat->data;
-    A=aij->A; B=aij->B;
-    Mat_SeqAIJ             *spA=(Mat_SeqAIJ*)A->data,*spB=(Mat_SeqAIJ*)B->data;
-    A_val=spA->a; B_val=spB->a;
-    nz         = spA->nz + spB->nz; /* total nonzero entries of mat */  
+    Mat_SeqAIJ             *spA,*spB;
+    bs = 1; /* only bs=1 is supported for non MPIBAIJ matrix */
+    A=aij->A;  spA=(Mat_SeqAIJ*)A->data; A_val=spA->a;
+    B=aij->B;  spB=(Mat_SeqAIJ*)B->data; B_val=spB->a;
+    nz = spA->nz + spB->nz; /* total nonzero entries of mat */  
     if (!aij->colmap) {
+      /* Allow access to data structures of local part of matrix 
+       - creates aij->colmap which maps global column number to local number in part B */
       ierr = MatCreateColmap_MPIAIJ_Private(mat);CHKERRQ(ierr);
       colmap = aij->colmap;
     }
@@ -402,10 +405,10 @@ PetscErrorCode MatFDColoringCreate_MPIAIJ_new(Mat mat,ISColoring iscoloring,MatF
     ierr = MatGetColumnIJ_SeqAIJ_Color(B,0,PETSC_FALSE,PETSC_FALSE,&ncols,&B_ci,&B_cj,&spidxB,NULL);CHKERRQ(ierr);
   } else {
     Mat_MPIBAIJ             *aij=(Mat_MPIBAIJ*)mat->data;
-    A=aij->A; B=aij->B;
-    Mat_SeqBAIJ             *spA=(Mat_SeqBAIJ*)A->data,*spB=(Mat_SeqBAIJ*)B->data;
-    A_val=spA->a; B_val=spB->a;
-    nz         = spA->nz + spB->nz; /* total nonzero entries of mat */  
+    Mat_SeqBAIJ             *spA,*spB;
+    A=aij->A;  spA=(Mat_SeqBAIJ*)A->data; A_val=spA->a;
+    B=aij->B;  spB=(Mat_SeqBAIJ*)B->data; B_val=spB->a;
+    nz = spA->nz + spB->nz; /* total nonzero entries of mat */  
     if (!aij->colmap) {
       ierr = MatCreateColmap_MPIBAIJ_Private(mat);CHKERRQ(ierr);
       colmap = aij->colmap;
@@ -427,19 +430,10 @@ PetscErrorCode MatFDColoringCreate_MPIAIJ_new(Mat mat,ISColoring iscoloring,MatF
   ierr       = PetscMalloc(nis*sizeof(PetscInt*),&c->columns);CHKERRQ(ierr);
   ierr       = PetscMalloc(nis*sizeof(PetscInt),&c->nrows);CHKERRQ(ierr);
   ierr       = PetscLogObjectMemory((PetscObject)c,3*nis*sizeof(PetscInt));CHKERRQ(ierr);
-
-  //nz         = spA->nz + spB->nz; /* total nonzero entries of mat */                                  
+                        
   ierr       = PetscMalloc(nz*sizeof(MatEntry),&Jentry);CHKERRQ(ierr);
   ierr       = PetscLogObjectMemory((PetscObject)c,nz*sizeof(MatEntry));CHKERRQ(ierr);
   c->matentry = Jentry;
-
-  /* Allow access to data structures of local part of matrix 
-   - creates aij->colmap which maps global column number to local number in part B */
-  //if (!aij->colmap) {
-  //  ierr = MatCreateColmap_MPIAIJ_Private(mat);CHKERRQ(ierr);
-  //}
-  //ierr = MatGetColumnIJ_SeqAIJ_Color(aij->A,0,PETSC_FALSE,PETSC_FALSE,&ncols,&A_ci,&A_cj,&spidxA,NULL);CHKERRQ(ierr);
-  //ierr = MatGetColumnIJ_SeqAIJ_Color(aij->B,0,PETSC_FALSE,PETSC_FALSE,&ncols,&B_ci,&B_cj,&spidxB,NULL);CHKERRQ(ierr);
 
   ierr = PetscMalloc2(m+1,PetscInt,&rowhit,m+1,PetscScalar*,&valaddrhit);CHKERRQ(ierr);
   nz = 0;
@@ -489,7 +483,7 @@ PetscErrorCode MatFDColoringCreate_MPIAIJ_new(Mat mat,ISColoring iscoloring,MatF
     } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not provided for this MatFDColoring type");
 
     /* Mark all rows affect by these columns */
-    ierr = PetscMemzero(rowhit,m*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr    = PetscMemzero(rowhit,m*sizeof(PetscInt));CHKERRQ(ierr);
     bs2     = bs*bs;
     nrows_i = 0;
     for (j=0; j<nctot; j++) { /* loop over columns*/
@@ -511,11 +505,9 @@ PetscErrorCode MatFDColoringCreate_MPIAIJ_new(Mat mat,ISColoring iscoloring,MatF
         }
       } else { /* column is in off-diagonal block of matrix B */
 #if defined(PETSC_USE_CTABLE)
-        //ierr = PetscTableFind(aij->colmap,col+1,&colb);CHKERRQ(ierr);
         ierr = PetscTableFind(colmap,col+1,&colb);CHKERRQ(ierr);
         colb--;
 #else
-        //colb = aij->colmap[col] - 1; /* local column index */
         colb = colmap[col] - 1; /* local column index */
 #endif
         if (colb == -1) {
@@ -548,7 +540,6 @@ PetscErrorCode MatFDColoringCreate_MPIAIJ_new(Mat mat,ISColoring iscoloring,MatF
     ierr = PetscFree(cols);CHKERRQ(ierr);
   }
   ierr = ISColoringRestoreIS(iscoloring,&isa);CHKERRQ(ierr);
-  //if (nz != spA->nz + spB->nz) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"nz %d != mat->nz %d\n",nz,spA->nz+spB->nz); 
 
   ierr = PetscFree2(rowhit,valaddrhit);CHKERRQ(ierr);
   if (isBAIJ) {
