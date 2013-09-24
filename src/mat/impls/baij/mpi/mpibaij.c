@@ -2246,11 +2246,11 @@ PetscErrorCode  MatGetGhosts_MPIBAIJ(Mat mat,PetscInt *nghosts,const PetscInt *g
 }
 
 extern PetscErrorCode MatCreateColmap_MPIBAIJ_Private(Mat);
-
+#include <../src/mat/impls/aij/mpi/mpiaij.h>   /*I  "petscmat.h"  I*/
 #undef __FUNCT__
 #define __FUNCT__ "MatFDColoringCreate_MPIBAIJ"
 /*
-    This routine is almost identical to MatFDColoringCreate_MPIBAIJ()!
+    This routine is almost identical to MatFDColoringCreate_MPIAIJ()!
 */
 PetscErrorCode MatFDColoringCreate_MPIBAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
 {
@@ -2266,8 +2266,14 @@ PetscErrorCode MatFDColoringCreate_MPIBAIJ(Mat mat,ISColoring iscoloring,MatFDCo
   PetscBool              done,flg;
   ISLocalToGlobalMapping map = mat->cmap->bmapping;
   PetscInt               ctype=c->ctype;
+  PetscBool              new_impl=PETSC_FALSE;
 
   PetscFunctionBegin;
+  ierr = PetscOptionsName("-new","using new impls","",&new_impl);CHKERRQ(ierr);
+  if (new_impl){
+    ierr =  MatFDColoringCreate_MPIAIJ(mat,iscoloring,c);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
   if (ctype == IS_COLORING_GHOSTED && !map) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_INCOMP,"When using ghosted differencing matrix must have local to global mapping provided with MatSetLocalToGlobalMappingBlock");
 
   if (map) {ierr = ISLocalToGlobalMappingGetIndices(map,&ltog);CHKERRQ(ierr);}

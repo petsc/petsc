@@ -706,9 +706,14 @@ runex19_13: #test pc_fieldsplit with -snes_mf_operator
 	   else  echo  ${PWD} "\nPossible problem with with ex19_13, diffs above \n========================================="; fi; \
 	   ${RM} -f ex19_13.tmp
 runex19_14:
-	-@${MPIEXEC} -n 2 ./ex19 -snes_monitor_short -pc_type mg -dm_mat_type baij -mg_coarse_pc_type bjacobi -da_refine 3 -ksp_type fgmres > ex19_14.tmp 2>&1; \
+	-@${MPIEXEC} -n 4 ./ex19 -snes_monitor_short -pc_type mg -dm_mat_type baij -mg_coarse_pc_type bjacobi -da_refine 3 -ksp_type fgmres -new > ex19_14.tmp 2>&1; \
 	   if (${DIFF} output/ex19_14.out ex19_14.tmp) then true; \
 	   else  echo  ${PWD} "\nPossible problem with with ex19_14, diffs above \n========================================="; fi; \
+	   ${RM} -f ex19_14.tmp
+runex19_14_ds: #hangs!
+	-@${MPIEXEC} -n 4 ./ex19 -snes_monitor_short -pc_type mg -dm_mat_type baij -mg_coarse_pc_type bjacobi -da_refine 3 -ksp_type fgmres -mat_fd_type ds > ex19_14.tmp 2>&1; \
+	   if (${DIFF} output/ex19_14.out ex19_14.tmp) then true; \
+	   else  echo  ${PWD} "\nPossible problem with with ex19_14_ds, diffs above \n========================================="; fi; \
 	   ${RM} -f ex19_14.tmp
 runex19_superlu:
 	-@${MPIEXEC} -n 1 ./ex19 -da_grid_x 20 -da_grid_y 20 -pc_type lu -pc_factor_mat_solver_package superlu > ex19.tmp 2>&1; \
