@@ -122,6 +122,7 @@ PetscErrorCode  MatFDColoringApply_SeqBAIJ(Mat J,MatFDColoring coloring,Vec x1,M
 }
                                  
 extern PetscErrorCode  MatFDColoringApply_AIJ_new(Mat,MatFDColoring,Vec,MatStructure*,void*);
+extern PetscErrorCode  MatFDColoringApply_BAIJ_new(Mat,MatFDColoring,Vec,MatStructure*,void *);
 /* also used for SeqBAIJ matrices */
 #undef __FUNCT__
 #define __FUNCT__ "MatFDColoringCreate_SeqAIJ_new"
@@ -225,7 +226,7 @@ PetscErrorCode MatFDColoringCreate_SeqAIJ_new(Mat mat,ISColoring iscoloring,MatF
 
   c->ctype                  = IS_COLORING_GHOSTED;
   if (isBAIJ) {
-    mat->ops->fdcoloringapply = MatFDColoringApply_SeqBAIJ;
+    mat->ops->fdcoloringapply = MatFDColoringApply_BAIJ_new; 
     ierr = PetscMalloc(bs*mat->cmap->N*sizeof(PetscScalar),&c->dy);CHKERRQ(ierr);
   } else {
     mat->ops->fdcoloringapply = MatFDColoringApply_AIJ_new; 

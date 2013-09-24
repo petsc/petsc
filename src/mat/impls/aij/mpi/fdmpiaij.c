@@ -122,7 +122,7 @@ PetscErrorCode  MatFDColoringApply_BAIJ_new(Mat J,MatFDColoring coloring,Vec x1,
       } else { /* htype == 'ds' */
         vscale_array -= cstart; /* shift pointer so global index can be used */
         for (l=0; l<ncolumns[k]; l++) {
-          col = coloring->columns[k][l]; /* local column (in global index!) of the matrix we are probing for */
+          col = i + bs*coloring->columns[k][l]; /* local column (in global index!) of the matrix we are probing for */
           w3_array[col] += 1.0/vscale_array[col];
 
           if (i) {
@@ -165,15 +165,23 @@ PetscErrorCode  MatFDColoringApply_BAIJ_new(Mat J,MatFDColoring coloring,Vec x1,
           for (j=0; j<bs; j++) { /* row of the block */
             valaddr[spidx++] = dy_i[row+j]*dx;
           }
-          dy_i += nxloc; /* points to dy+i*N */
+          dy_i += nxloc; /* points to dy+i*nxloc */
         }
       }
     } else { /* htype == 'ds' */
       for (l=0; l<nrows_k; l++) { 
-        row                   = bs*Jentry[nz].row;   /* local row index */
-        col                   = bs*Jentry[nz].col;   /* local column index */
-        //*(Jentry[nz].valaddr) = y[row]*vscale_array[col];
+        row     = bs*Jentry[nz].row;   /* local row index */
+        col     = bs*Jentry[nz].col;   /* local column index */
+        valaddr = Jentry[nz].valaddr;
         nz++;
+        spidx = 0;
+        dy_i  = dy;
+        for (i=0; i<bs; i++) {   /* column of the block */
+          for (j=0; j<bs; j++) { /* row of the block */
+            valaddr[spidx++] = dy_i[row+j]*vscale_array[col+i];
+          }
+          dy_i += nxloc; /* points to dy+i*nxloc */
+        }
       }
     }
     ierr = VecRestoreArray(w2,&y);CHKERRQ(ierr);
