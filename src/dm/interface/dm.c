@@ -3444,7 +3444,7 @@ PetscErrorCode DMGetCoordinatesLocal(DM dm, Vec *c)
 #undef __FUNCT__
 #define __FUNCT__ "DMGetCoordinateDM"
 /*@
-  DMGetCoordinateDM - Gets the DM that scatters between global and local coordinates
+  DMGetCoordinateDM - Gets the DM that prescribes coordinate layout and scatters between global and local coordinates
 
   Collective on DM
 
@@ -3457,7 +3457,7 @@ PetscErrorCode DMGetCoordinatesLocal(DM dm, Vec *c)
   Level: intermediate
 
 .keywords: distributed array, get, corners, nodes, local indices, coordinates
-.seealso: DMSetCoordinates(), DMSetCoordinatesLocal(), DMGetCoordinates(), DMGetCoordinatesLocal()
+.seealso: DMSetCoordinateDM(), DMSetCoordinates(), DMSetCoordinatesLocal(), DMGetCoordinates(), DMGetCoordinatesLocal()
 @*/
 PetscErrorCode DMGetCoordinateDM(DM dm, DM *cdm)
 {
@@ -3471,6 +3471,35 @@ PetscErrorCode DMGetCoordinateDM(DM dm, DM *cdm)
     ierr = (*dm->ops->createcoordinatedm)(dm, &dm->coordinateDM);CHKERRQ(ierr);
   }
   *cdm = dm->coordinateDM;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMSetCoordinateDM"
+/*@
+  DMSetCoordinateDM - Sets the DM that prescribes coordinate layout and scatters between global and local coordinates
+
+  Logically Collective on DM
+
+  Input Parameters:
++ dm - the DM
+- cdm - coordinate DM
+
+  Level: intermediate
+
+.keywords: distributed array, get, corners, nodes, local indices, coordinates
+.seealso: DMGetCoordinateDM(), DMSetCoordinates(), DMSetCoordinatesLocal(), DMGetCoordinates(), DMGetCoordinatesLocal()
+@*/
+PetscErrorCode DMSetCoordinateDM(DM dm, DM cdm)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidHeaderSpecific(cdm,DM_CLASSID,2);
+  ierr = DMDestroy(&dm->coordinateDM);CHKERRQ(ierr);
+  dm->coordinateDM = cdm;
+  ierr = PetscObjectReference((PetscObject) dm->coordinateDM);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
