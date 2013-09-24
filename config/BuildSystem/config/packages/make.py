@@ -12,7 +12,8 @@ class Configure(config.package.Package):
     self.downloadonWindows = 1
     self.useddirectly      = 0
 
-    self.flags             = ''
+    self.printdirflag      = ''
+    self.noprintdirflag    = ''
     self.haveGNUMake       = 0
     return
 
@@ -103,7 +104,8 @@ class Configure(config.package.Package):
 
     # Setup make flags
     if self.haveGNUMake:
-      self.flags += ' --no-print-directory'
+      self.printdirflag = ' --print-directory'
+      self.noprintdirflag = ' --no-print-directory'
       self.addMakeMacro('MAKE_IS_GNUMAKE',1)
 
     # Check to see if make allows rules which look inside archives
@@ -158,5 +160,6 @@ class Configure(config.package.Package):
       self.executeTest(self.configureMake)
     self.executeTest(self.configureCheckGNUMake)
     self.executeTest(self.configureMakeNP)
-    self.addMakeMacro('OMAKE ', self.make+' '+self.flags)
+    self.addMakeMacro('OMAKE ', self.make+' '+self.printdirflag)
+    self.addMakeMacro('OMAKE_NOPRINTDIR ', self.make+' '+self.noprintdirflag)
     return
