@@ -38,6 +38,7 @@ tao_info:
 	-@echo "-----------------------------------------"
 	-@grep -e "TAO_VERSION_MAJOR" ${TAO_DIR}/include/tao_version.h | grep -v "&&" | sed "s/........//"
 	-@grep -e "TAO_VERSION_MINOR" ${TAO_DIR}/include/tao_version.h | grep -v "&&" | sed "s/........//"
+	-@grep -e "TAO_VERSION_SUBMINOR" ${TAO_DIR}/include/tao_version.h | grep -v "&&" | sed "s/........//"
 	-@grep -e "TAO_VERSION_PATCH" ${TAO_DIR}/include/tao_version.h | grep -v "&&" | sed "s/........//"
 	-@grep "define PETSC_VERSION" ${PETSC_DIR}/include/petscversion.h | ${SED} "s/........//" 
 	-@echo "-----------------------------------------"
@@ -138,12 +139,12 @@ tao_docsetdate:
         version_release=`grep '^#define TAO_VERSION_RELEASE ' include/tao_version.h |tr -s ' ' | cut -d ' ' -f 3`; \
         version_major=`grep '^#define TAO_VERSION_MAJOR ' include/tao_version.h |tr -s ' ' | cut -d ' ' -f 3`; \
         version_minor=`grep '^#define TAO_VERSION_MINOR ' include/tao_version.h |tr -s ' ' | cut -d ' ' -f 3`; \
-        version_patch=`grep '^#define TAO_VERSION_PATCH ' include/tao_version.h |tr -s ' ' | cut -d ' ' -f 3`; \
+        version_subminor=`grep '^#define TAO_VERSION_SUBMINOR ' include/tao_version.h |tr -s ' ' | cut -d ' ' -f 3`; \
         if  [ $${version_release} = 0 ]; then \
           taoversion=tao-devel; \
           export taoversion; \
         elif [ $${version_release} = 1 ]; then \
-          taoversion=tao-$${version_major}.$${version_minor}-p$${version_patch}; \
+          taoversion=tao-$${version_major}.$${version_minor}.$${version_subminor}; \
           export taoversion; \
         else \
           echo "Unknown TAO_VERSION_RELEASE: $${version_release}"; \
