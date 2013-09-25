@@ -14,7 +14,6 @@ PetscErrorCode  MatFDColoringApply_BAIJ(Mat J,MatFDColoring coloring,Vec x1,MatS
   PetscReal      epsilon=coloring->error_rel,umin=coloring->umin,unorm;
   Vec            w1=coloring->w1,w2=coloring->w2,w3,vscale=coloring->vscale;
   void           *fctx=coloring->fctx;
-  PetscBool      flg=PETSC_FALSE;
   PetscInt       ctype=coloring->ctype,nxloc,nrows_k;
   PetscScalar    *valaddr;
   MatEntry       *Jentry=coloring->matentry;
@@ -22,18 +21,6 @@ PetscErrorCode  MatFDColoringApply_BAIJ(Mat J,MatFDColoring coloring,Vec x1,MatS
   PetscInt       bs=J->rmap->bs;
 
   PetscFunctionBegin;
-  ierr = MatSetUnfactored(J);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,"-mat_fd_coloring_dont_rezero",&flg,NULL);CHKERRQ(ierr);
-  if (flg) {
-    ierr = PetscInfo(coloring,"Not calling MatZeroEntries()\n");CHKERRQ(ierr);
-  } else {
-    PetscBool assembled;
-    ierr = MatAssembled(J,&assembled);CHKERRQ(ierr);
-    if (assembled) {
-      ierr = MatZeroEntries(J);CHKERRQ(ierr);
-    }
-  }
-
   /* create vscale for storing dx */
   if (!vscale) {
     if (ctype == IS_COLORING_GLOBAL && coloring->htype[0] == 'd') {
@@ -84,7 +71,7 @@ PetscErrorCode  MatFDColoringApply_BAIJ(Mat J,MatFDColoring coloring,Vec x1,MatS
     ierr = VecRestoreArray(x1,&xx);CHKERRQ(ierr);
     ierr = VecRestoreArray(vscale,&vscale_array);CHKERRQ(ierr);
   }
-  if (ctype == IS_COLORING_GLOBAL && coloring->htype[0] != 'w') {
+  if (ctype == IS_COLORING_GLOBAL && coloring->htype[0] == 'd') {
     ierr = VecGhostUpdateBegin(vscale,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecGhostUpdateEnd(vscale,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   }
@@ -117,22 +104,14 @@ PetscErrorCode  MatFDColoringApply_BAIJ(Mat J,MatFDColoring coloring,Vec x1,MatS
         for (l=0; l<ncolumns[k]; l++) {
           col            = i + bs*coloring->columns[k][l];  /* local column (in global index!) of the matrix we are probing for */
           w3_array[col] += 1.0/dx;
-
-          if (i) {
-            w3_array[col-1] -= 1.0/dx; /* resume original w3[col-1] */
-          }
-
+          if (i) w3_array[col-1] -= 1.0/dx; /* resume original w3[col-1] */
         } 
       } else { /* htype == 'ds' */
         vscale_array -= cstart; /* shift pointer so global index can be used */
         for (l=0; l<ncolumns[k]; l++) {
           col = i + bs*coloring->columns[k][l]; /* local column (in global index!) of the matrix we are probing for */
           w3_array[col] += 1.0/vscale_array[col];
-
-          if (i) {
-            w3_array[col-1] -=  1.0/vscale_array[col-1]; /* resume original w3[col-1] */
-          }
-
+          if (i) w3_array[col-1] -=  1.0/vscale_array[col-1]; /* resume original w3[col-1] */
         }
         vscale_array += cstart;
       }
@@ -160,10 +139,9 @@ PetscErrorCode  MatFDColoringApply_BAIJ(Mat J,MatFDColoring coloring,Vec x1,MatS
     if (coloring->htype[0] == 'w') {
       for (l=0; l<nrows_k; l++) { 
         row     = bs*Jentry[nz].row;   /* local row index */
-        valaddr = Jentry[nz].valaddr;
-        nz++;
-        spidx = 0;
-        dy_i  = dy;
+        valaddr = Jentry[nz++].valaddr;
+        spidx   = 0;
+        dy_i    = dy;
         for (i=0; i<bs; i++) {   /* column of the block */
           for (j=0; j<bs; j++) { /* row of the block */
             valaddr[spidx++] = dy_i[row+j]*dx;
@@ -175,10 +153,9 @@ PetscErrorCode  MatFDColoringApply_BAIJ(Mat J,MatFDColoring coloring,Vec x1,MatS
       for (l=0; l<nrows_k; l++) { 
         row     = bs*Jentry[nz].row;   /* local row index */
         col     = bs*Jentry[nz].col;   /* local column index */
-        valaddr = Jentry[nz].valaddr;
-        nz++;
-        spidx = 0;
-        dy_i  = dy;
+        valaddr = Jentry[nz++].valaddr;
+        spidx   = 0;
+        dy_i    = dy;
         for (i=0; i<bs; i++) {   /* column of the block */
           for (j=0; j<bs; j++) { /* row of the block */
             valaddr[spidx++] = dy_i[row+j]*vscale_array[col+i];
@@ -211,24 +188,11 @@ PetscErrorCode  MatFDColoringApply_AIJ(Mat J,MatFDColoring coloring,Vec x1,MatSt
   PetscReal      epsilon=coloring->error_rel,umin=coloring->umin,unorm;
   Vec            w1=coloring->w1,w2=coloring->w2,w3,vscale=coloring->vscale;
   void           *fctx=coloring->fctx;
-  PetscBool      flg=PETSC_FALSE;
   PetscInt       ctype=coloring->ctype,nxloc,nrows_k;
   MatEntry       *Jentry=coloring->matentry;
   const PetscInt ncolors=coloring->ncolors,*ncolumns=coloring->ncolumns,*nrows=coloring->nrows;
   
   PetscFunctionBegin;
-  ierr = MatSetUnfactored(J);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,"-mat_fd_coloring_dont_rezero",&flg,NULL);CHKERRQ(ierr);
-  if (flg) {
-    ierr = PetscInfo(coloring,"Not calling MatZeroEntries()\n");CHKERRQ(ierr);
-  } else {
-    PetscBool assembled;
-    ierr = MatAssembled(J,&assembled);CHKERRQ(ierr);
-    if (assembled) {
-      ierr = MatZeroEntries(J);CHKERRQ(ierr);
-    }
-  }
-
   /* create vscale for storing dx */
   if (!vscale) {
     if (ctype == IS_COLORING_GLOBAL && coloring->htype[0] == 'd') {
@@ -251,7 +215,7 @@ PetscErrorCode  MatFDColoringApply_AIJ(Mat J,MatFDColoring coloring,Vec x1,MatSt
   
   /* (2) Compute vscale = 1./dx - the local scale factors, including ghost points */
   if (coloring->htype[0] == 'w') { 
-    /* vscale = dx is a constant scalar */
+    /* vscale = 1./dx is a constant scalar */
     ierr = VecNorm(x1,NORM_2,&unorm);CHKERRQ(ierr);
     dx = 1.0/(PetscSqrtReal(1.0 + unorm)*epsilon); 
   } else { 
@@ -270,7 +234,7 @@ PetscErrorCode  MatFDColoringApply_AIJ(Mat J,MatFDColoring coloring,Vec x1,MatSt
     ierr = VecRestoreArray(x1,&xx);CHKERRQ(ierr);
     ierr = VecRestoreArray(vscale,&vscale_array);CHKERRQ(ierr);
   }
-  if (ctype == IS_COLORING_GLOBAL && coloring->htype[0] != 'w') {
+  if (ctype == IS_COLORING_GLOBAL && coloring->htype[0] == 'd') {
     ierr = VecGhostUpdateBegin(vscale,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecGhostUpdateEnd(vscale,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   }
