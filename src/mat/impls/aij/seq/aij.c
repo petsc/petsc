@@ -278,7 +278,7 @@ PetscErrorCode MatRestoreColumnIJ_SeqAIJ(Mat A,PetscInt oshift,PetscBool symmetr
 /*
  MatGetColumnIJ_SeqAIJ_Color() and MatRestoreColumnIJ_SeqAIJ_Color() are customized from
  MatGetColumnIJ_SeqAIJ() and MatRestoreColumnIJ_SeqAIJ() by adding an output
- spidx[], index of a->a, to be used in MatTransposeColoringCreate_SeqAIJ() and MatFDColoringCreate_SeqAIJ()
+ spidx[], index of a->a, to be used in MatTransposeColoringCreate_SeqAIJ() and MatFDColoringCreate_SeqXAIJ()
 */
 #undef __FUNCT__
 #define __FUNCT__ "MatGetColumnIJ_SeqAIJ_Color"
@@ -3102,7 +3102,6 @@ static PetscErrorCode  MatSetRandom_SeqAIJ(Mat x,PetscRandom rctx)
   PetscFunctionReturn(0);
 }
 
-extern PetscErrorCode  MatFDColoringApply_AIJ(Mat,MatFDColoring,Vec,MatStructure*,void*);
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps_Values = { MatSetValues_SeqAIJ,
                                         MatGetRow_SeqAIJ,
@@ -3158,7 +3157,7 @@ static struct _MatOps MatOps_Values = { MatSetValues_SeqAIJ,
                                         MatRestoreRowIJ_SeqAIJ,
                                         MatGetColumnIJ_SeqAIJ,
                                         MatRestoreColumnIJ_SeqAIJ,
-                                /* 54*/ MatFDColoringCreate_SeqAIJ,
+                                /* 54*/ MatFDColoringCreate_SeqXAIJ,
                                         0,
                                         0,
                                         MatPermute_SeqAIJ,

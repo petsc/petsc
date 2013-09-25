@@ -616,32 +616,32 @@ runex16_2:
 	   > ex16_2.tmp 2>&1; ${DIFF} output/ex16_2.out ex16_2.tmp || echo  ${PWD} "\nPossible problem with with ex16_2, diffs above \n========================================="; \
            ${RM} -f ex16_2.tmp
 runex19:
-	-@${MPIEXEC} -n 2 ./ex19 -da_refine 3 -snes_monitor_short -pc_type mg -ksp_type fgmres -pc_mg_type full -new > ex19_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ./ex19 -da_refine 3 -snes_monitor_short -pc_type mg -ksp_type fgmres -pc_mg_type full > ex19_1.tmp 2>&1; \
 	   if (${DIFF} output/ex19_1.out ex19_1.tmp) then true; \
 	   else  echo  ${PWD} "\nPossible problem with with ex19, diffs above \n========================================="; fi; \
 	   ${RM} -f ex19_1.tmp
 runex19_2:
-	-@${MPIEXEC} -n 4 ./ex19 -da_refine 3 -snes_monitor_short -pc_type mg -mat_fd_type ds -new > ex19_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 4 ./ex19 -da_refine 3 -snes_monitor_short -pc_type mg -mat_fd_type ds > ex19_1.tmp 2>&1; \
 	   if (${DIFF} output/ex19_2.out ex19_1.tmp) then true; \
 	   else  echo  ${PWD} "\nPossible problem with with ex19_2, diffs above \n========================================="; fi; \
 	   ${RM} -f ex19_1.tmp
 runex19_fdcoloring_wp:
-	-@${MPIEXEC} -n 1 ./ex19 -da_refine 3 -snes_monitor_short -pc_type mg -new > ex19_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex19 -da_refine 3 -snes_monitor_short -pc_type mg > ex19_1.tmp 2>&1; \
 	   if (${DIFF} output/ex19_fdcoloring_wp.out ex19_1.tmp) then true; \
 	   else  echo  ${PWD} "\nPossible problem with with ex19_fdcoloring_wp, diffs above \n========================================="; fi; \
 	   ${RM} -f ex19_1.tmp
 runex19_fdcoloring_ds:
-	-@${MPIEXEC} -n 1 ./ex19 -da_refine 3 -snes_monitor_short -pc_type mg -mat_fd_type ds -new > ex19_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex19 -da_refine 3 -snes_monitor_short -pc_type mg -mat_fd_type ds > ex19_1.tmp 2>&1; \
 	   if (${DIFF} output/ex19_fdcoloring_ds.out ex19_1.tmp) then true; \
 	   else  echo  ${PWD} "\nPossible problem with with ex19_fdcoloring_ds, diffs above \n========================================="; fi; \
 	   ${RM} -f ex19_1.tmp
 runex19_fdcoloring_wp_baij:
-	-@${MPIEXEC} -n 1 ./ex19 -da_refine 3 -snes_monitor_short -pc_type mg -dm_mat_type baij -new > ex19_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex19 -da_refine 3 -snes_monitor_short -pc_type mg -dm_mat_type baij > ex19_1.tmp 2>&1; \
 	   if (${DIFF} output/ex19_fdcoloring_wp.out ex19_1.tmp) then true; \
 	   else  echo  ${PWD} "\nPossible problem with with ex19_fdcoloring_wp, diffs above \n========================================="; fi; \
 	   ${RM} -f ex19_1.tmp
 runex19_fdcoloring_ds_baij:
-	-@${MPIEXEC} -n 1 ./ex19 -da_refine 3 -snes_monitor_short -pc_type mg -mat_fd_type ds -dm_mat_type baij -new > ex19_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex19 -da_refine 3 -snes_monitor_short -pc_type mg -mat_fd_type ds -dm_mat_type baij > ex19_1.tmp 2>&1; \
 	   if (${DIFF} output/ex19_fdcoloring_ds.out ex19_1.tmp) then true; \
 	   else  echo  ${PWD} "\nPossible problem with with ex19_fdcoloring_ds, diffs above \n========================================="; fi; \
 	   ${RM} -f ex19_1.tmp
@@ -706,12 +706,12 @@ runex19_13: #test pc_fieldsplit with -snes_mf_operator
 	   else  echo  ${PWD} "\nPossible problem with with ex19_13, diffs above \n========================================="; fi; \
 	   ${RM} -f ex19_13.tmp
 runex19_14:
-	-@${MPIEXEC} -n 4 ./ex19 -snes_monitor_short -pc_type mg -dm_mat_type baij -mg_coarse_pc_type bjacobi -da_refine 3 -ksp_type fgmres -new > ex19_14.tmp 2>&1; \
+	-@${MPIEXEC} -n 4 ./ex19 -snes_monitor_short -pc_type mg -dm_mat_type baij -mg_coarse_pc_type bjacobi -da_refine 3 -ksp_type fgmres > ex19_14.tmp 2>&1; \
 	   if (${DIFF} output/ex19_14.out ex19_14.tmp) then true; \
 	   else  echo  ${PWD} "\nPossible problem with with ex19_14, diffs above \n========================================="; fi; \
 	   ${RM} -f ex19_14.tmp
 runex19_14_ds: 
-	-@${MPIEXEC} -n 4 ./ex19 -snes_monitor_short -pc_type mg -dm_mat_type baij -mg_coarse_pc_type bjacobi -da_refine 3 -ksp_type fgmres -mat_fd_type ds -new > ex19_14.tmp 2>&1; \
+	-@${MPIEXEC} -n 4 ./ex19 -snes_monitor_short -pc_type mg -dm_mat_type baij -mg_coarse_pc_type bjacobi -da_refine 3 -ksp_type fgmres -mat_fd_type ds > ex19_14.tmp 2>&1; \
 	   if (${DIFF} output/ex19_14.out ex19_14.tmp) then true; \
 	   else  echo  ${PWD} "\nPossible problem with with ex19_14_ds, diffs above \n========================================="; fi; \
 	   ${RM} -f ex19_14.tmp
