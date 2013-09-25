@@ -1167,11 +1167,8 @@ PetscErrorCode DMPlexGetTransitiveClosure(DM dm, PetscInt p, PetscBool useCone, 
 + mesh - The DMPlex
 . p - The Sieve point, which must lie in the chart set with DMPlexSetChart()
 . useCone - PETSC_TRUE for in-edges,  otherwise use out-edges
-- points - If points is NULL on input, internal storage will be returned, otherwise the provided array is used
-
-  Output Parameters:
-+ numPoints - The number of points in the closure, so points[] is of size 2*numPoints
-- points - The points and point orientations, interleaved as pairs [p0, o0, p1, o1, ...]
+. numPoints - The number of points in the closure, so points[] is of size 2*numPoints, zeroed on exit
+- points - The points and point orientations, interleaved as pairs [p0, o0, p1, o1, ...], zeroed on exit
 
   Note:
   If not using internal storage (points is not NULL on input), this call is unnecessary
@@ -1192,7 +1189,10 @@ PetscErrorCode DMPlexRestoreTransitiveClosure(DM dm, PetscInt p, PetscBool useCo
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  if (numPoints) PetscValidIntPointer(numPoints,4);
+  if (points) PetscValidPointer(points,5);
   ierr = DMRestoreWorkArray(dm, 0, PETSC_INT, points);CHKERRQ(ierr);
+  if (numPoints) *numPoints = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -1851,8 +1851,11 @@ PetscErrorCode DMPlexRestoreMeet(DM dm, PetscInt numPoints, const PetscInt point
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(coveredPoints, 4);
+  PetscValidIntPointer(points,3);
+  PetscValidIntPointer(numCoveredPoints,4);
+  PetscValidPointer(coveredPoints,5);
   ierr = DMRestoreWorkArray(dm, 0, PETSC_INT, (void*) coveredPoints);CHKERRQ(ierr);
+  *numCoveredPoints = NULL;
   PetscFunctionReturn(0);
 }
 
