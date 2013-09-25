@@ -24,4 +24,4 @@ TaoSolver: 1 MPI processes
   Solution converged:   estimated f(x)-f(X*) <= fatol
 WARNING! There are options you set that were not used!
 WARNING! could be spelling mistake, etc!
-Option left: name:-mask no value 
+Option left: name:-mask (no value)
