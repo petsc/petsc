@@ -11,14 +11,11 @@
 PetscErrorCode MatFDColoringCreate_SeqXAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
 {
   PetscErrorCode ierr;
-  PetscInt       i,n,nrows,N,j,k,m,ncols,col;
+  PetscInt       i,n,nrows,N,j,k,m,ncols,col,nis=iscoloring->n,*rowhit,bs,bs2,*spidx,nz;
   const PetscInt *is,*row,*ci,*cj;
-  PetscInt       nis=iscoloring->n,*rowhit,bs,bs2,*spidx,nz;
   IS             *isa;
   PetscBool      isBAIJ;     
-  Mat_SeqAIJ     *spA = (Mat_SeqAIJ*)mat->data;
-  PetscScalar    *A_val=spA->a;
-  PetscScalar    **valaddrhit;
+  PetscScalar    *A_val,**valaddrhit;
   MatEntry       *Jentry;
 
   PetscFunctionBegin;
@@ -27,9 +24,17 @@ PetscErrorCode MatFDColoringCreate_SeqXAIJ(Mat mat,ISColoring iscoloring,MatFDCo
   /* this is ugly way to get blocksize but cannot call MatGetBlockSize() because AIJ can have bs > 1 */
   ierr = MatGetBlockSize(mat,&bs);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)mat,MATSEQBAIJ,&isBAIJ);CHKERRQ(ierr);
-  if (!isBAIJ) {
-    bs = 1; /* only bs=1 is supported for non SEQBAIJ matrix */
-  }
+  if (isBAIJ) { 
+    Mat_SeqBAIJ *spA = (Mat_SeqBAIJ*)mat->data;
+    A_val = spA->a;
+    nz    = spA->nz;
+  } else {
+    Mat_SeqAIJ  *spA = (Mat_SeqAIJ*)mat->data;
+    A_val = spA->a;
+    nz    = spA->nz;
+    bs    = 1; /* only bs=1 is supported for SeqAIJ matrix */
+  } 
+
   N         = mat->cmap->N/bs;
   c->M      = mat->rmap->N/bs;   /* set total rows, columns and local rows */
   c->N      = mat->cmap->N/bs;
@@ -42,8 +47,8 @@ PetscErrorCode MatFDColoringCreate_SeqXAIJ(Mat mat,ISColoring iscoloring,MatFDCo
   ierr       = PetscMalloc(nis*sizeof(PetscInt),&c->nrows);CHKERRQ(ierr);
   ierr       = PetscLogObjectMemory((PetscObject)c,3*nis*sizeof(PetscInt));CHKERRQ(ierr);
 
-  ierr       = PetscMalloc(spA->nz*sizeof(MatEntry),&Jentry);CHKERRQ(ierr);
-  ierr       = PetscLogObjectMemory((PetscObject)c,spA->nz*sizeof(MatEntry));CHKERRQ(ierr);
+  ierr       = PetscMalloc(nz*sizeof(MatEntry),&Jentry);CHKERRQ(ierr);
+  ierr       = PetscLogObjectMemory((PetscObject)c,nz*sizeof(MatEntry));CHKERRQ(ierr);
   c->matentry = Jentry;
 
   if (isBAIJ) {
@@ -95,10 +100,10 @@ PetscErrorCode MatFDColoringCreate_SeqXAIJ(Mat mat,ISColoring iscoloring,MatFDCo
     } 
     ierr = ISRestoreIndices(isa[i],&is);CHKERRQ(ierr);
   }
-  if (nz != spA->nz) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"nz %d != mat->nz %d\n",nz,spA->nz); 
 
   if (isBAIJ) {
     ierr = MatRestoreColumnIJ_SeqBAIJ_Color(mat,0,PETSC_FALSE,PETSC_FALSE,&ncols,&ci,&cj,&spidx,NULL);CHKERRQ(ierr);
+    ierr = PetscMalloc(bs*mat->cmap->N*sizeof(PetscScalar),&c->dy);CHKERRQ(ierr);
   } else {
     ierr = MatRestoreColumnIJ_SeqAIJ_Color(mat,0,PETSC_FALSE,PETSC_FALSE,&ncols,&ci,&cj,&spidx,NULL);CHKERRQ(ierr);
   }
@@ -106,9 +111,6 @@ PetscErrorCode MatFDColoringCreate_SeqXAIJ(Mat mat,ISColoring iscoloring,MatFDCo
   ierr = ISColoringRestoreIS(iscoloring,&isa);CHKERRQ(ierr);
 
   c->ctype = IS_COLORING_GHOSTED;
-  if (isBAIJ) {
-    ierr = PetscMalloc(bs*mat->cmap->N*sizeof(PetscScalar),&c->dy);CHKERRQ(ierr);
-  } 
   ierr = VecCreateGhost(PetscObjectComm((PetscObject)mat),mat->rmap->n,PETSC_DETERMINE,0,NULL,&c->vscale);CHKERRQ(ierr); 
   PetscFunctionReturn(0);
 }
