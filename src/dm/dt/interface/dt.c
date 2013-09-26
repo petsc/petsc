@@ -19,8 +19,27 @@ PetscErrorCode PetscQuadratureDestroy(PetscQuadrature *q)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFree(q->quadPoints);CHKERRQ(ierr);
-  ierr = PetscFree(q->quadWeights);CHKERRQ(ierr);
+  ierr = PetscFree(q->points);CHKERRQ(ierr);
+  ierr = PetscFree(q->weights);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscQuadratureView"
+PetscErrorCode PetscQuadratureView(PetscQuadrature quad, PetscViewer viewer)
+{
+  PetscInt       q, d;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscViewerASCIIPrintf(viewer, "Quadrature on %d points\n  (", quad.numPoints);CHKERRQ(ierr);
+  for (q = 0; q < quad.numPoints; ++q) {
+    for (d = 0; d < quad.dim; ++d) {
+      if (d) ierr = PetscViewerASCIIPrintf(viewer, ", ");CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer, "%g\n", quad.points[q*quad.dim+d]);CHKERRQ(ierr);
+    }
+    ierr = PetscViewerASCIIPrintf(viewer, ") %g\n", quad.weights[q]);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -317,6 +336,14 @@ PetscErrorCode PetscDTGaussJacobiQuadrature(PetscInt dim, PetscInt order, PetscR
   ierr = PetscMalloc(npoints*dim * sizeof(PetscReal), &x);CHKERRQ(ierr);
   ierr = PetscMalloc(npoints     * sizeof(PetscReal), &w);CHKERRQ(ierr);
   switch (dim) {
+  case 0:
+    ierr = PetscFree(x);CHKERRQ(ierr);
+    ierr = PetscFree(w);CHKERRQ(ierr);
+    ierr = PetscMalloc(1 * sizeof(PetscReal), &x);CHKERRQ(ierr);
+    ierr = PetscMalloc(1 * sizeof(PetscReal), &w);CHKERRQ(ierr);
+    x[0] = 0.0;
+    w[0] = 1.0;
+    break;
   case 1:
     ierr = PetscDTGaussJacobiQuadrature1D_Internal(order, 0.0, 0.0, x, w);CHKERRQ(ierr);
     break;
@@ -350,9 +377,10 @@ PetscErrorCode PetscDTGaussJacobiQuadrature(PetscInt dim, PetscInt order, PetscR
   default:
     SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cannot construct quadrature rule for dimension %d", dim);
   }
-  q->numQuadPoints = npoints;
-  q->quadPoints    = x;
-  q->quadWeights   = w;
+  q->dim       = dim;
+  q->numPoints = npoints;
+  q->points    = x;
+  q->weights   = w;
   PetscFunctionReturn(0);
 }
 
