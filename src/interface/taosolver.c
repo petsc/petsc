@@ -546,7 +546,7 @@ PetscErrorCode TaoView(TaoSolver tao, PetscViewer viewer)
     ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii); CHKERRQ(ierr);
     ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring); CHKERRQ(ierr);
     if (isascii) {
-        ierr = PetscObjectPrintClassNamePrefixType((PetscObject)tao,viewer); CHKERRQ(ierr);
+      ierr = PetscObjectPrintClassNamePrefixType((PetscObject)tao,viewer,"TaoSolver"); CHKERRQ(ierr);
 	ierr = PetscViewerASCIIPushTab(viewer); CHKERRQ(ierr);
 
 	if (tao->ops->view) {
@@ -555,10 +555,10 @@ PetscErrorCode TaoView(TaoSolver tao, PetscViewer viewer)
 	    ierr = PetscViewerASCIIPopTab(viewer); CHKERRQ(ierr);
 	}
 	if (tao->linesearch) {
-	  ierr = PetscObjectPrintClassNamePrefixType((PetscObject)(tao->linesearch),viewer); CHKERRQ(ierr);
+	  ierr = PetscObjectPrintClassNamePrefixType((PetscObject)(tao->linesearch),viewer,"TaoLineSearch"); CHKERRQ(ierr);
 	}
 	if (tao->ksp) {
-	  ierr = PetscObjectPrintClassNamePrefixType((PetscObject)(tao->ksp),viewer); CHKERRQ(ierr);
+	  ierr = PetscObjectPrintClassNamePrefixType((PetscObject)(tao->ksp),viewer,"KSP Solver"); CHKERRQ(ierr);
 	  ierr = PetscViewerASCIIPrintf(viewer,"total KSP iterations: %D\n",tao->ksp_its); CHKERRQ(ierr);
 	}
 	if (tao->XL || tao->XU) {
