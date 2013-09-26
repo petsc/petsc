@@ -546,7 +546,7 @@ PetscErrorCode TaoView(TaoSolver tao, PetscViewer viewer)
     ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii); CHKERRQ(ierr);
     ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring); CHKERRQ(ierr);
     if (isascii) {
-      ierr = PetscObjectPrintClassNamePrefixType((PetscObject)tao,viewer,"TaoSolver"); CHKERRQ(ierr);
+      ierr = PetscObjectPrintClassNamePrefixType((PetscObject)tao,viewer,"TAO Solver Object"); CHKERRQ(ierr);
 	ierr = PetscViewerASCIIPushTab(viewer); CHKERRQ(ierr);
 
 	if (tao->ops->view) {
