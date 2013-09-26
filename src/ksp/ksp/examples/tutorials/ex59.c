@@ -371,11 +371,16 @@ static PetscErrorCode ComputeSubdomainMatrix(DomainData dd, GLLData glldata, Mat
   localsize = dd.xm_l*dd.ym_l*dd.zm_l;
   ierr      = MatCreate(PETSC_COMM_SELF,&temp_local_mat);CHKERRQ(ierr);
   ierr      = MatSetSizes(temp_local_mat,localsize,localsize,localsize,localsize);CHKERRQ(ierr);
-  ierr      = MatSetType(temp_local_mat,MATSEQAIJ);CHKERRQ(ierr);
+  if (dd.DBC_zerorows) { /* in this case, we need to zero out the some rows, so use seqaij */
+    ierr      = MatSetType(temp_local_mat,MATSEQAIJ);CHKERRQ(ierr);
+  } else {
+    ierr      = MatSetType(temp_local_mat,MATSEQSBAIJ);CHKERRQ(ierr);
+  }
 
   i = PetscPowScalar(3.0*(dd.p+1.0),dd.dim);
 
   ierr = MatSeqAIJSetPreallocation(temp_local_mat,i,NULL);CHKERRQ(ierr);      /* very overestimated */
+  ierr = MatSeqSBAIJSetPreallocation(temp_local_mat,1,i,NULL);CHKERRQ(ierr);      /* very overestimated */
   ierr = MatSetOption(temp_local_mat,MAT_KEEP_NONZERO_PATTERN,PETSC_TRUE);CHKERRQ(ierr);
 
   yloc = dd.p+1;
