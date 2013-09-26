@@ -274,6 +274,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     DMLabel label;
 
     ierr = DMPlexCreateBoxMesh(comm, dim, interpolate, dm);CHKERRQ(ierr);
+    ierr = PetscObjectSetName((PetscObject) *dm, "Mesh");CHKERRQ(ierr);
     ierr = DMPlexGetLabel(*dm, "marker", &label);CHKERRQ(ierr);
     if (label) {ierr = DMPlexLabelComplete(*dm, label);CHKERRQ(ierr);}
   } else {
@@ -301,6 +302,10 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     ierr = DMPlexSetRefinementLimit(*dm, refinementLimit);CHKERRQ(ierr);
     ierr = DMRefine(*dm, comm, &refinedMesh);CHKERRQ(ierr);
     if (refinedMesh) {
+      const char *name;
+
+      ierr = PetscObjectGetName((PetscObject) *dm,         &name);CHKERRQ(ierr);
+      ierr = PetscObjectSetName((PetscObject) refinedMesh,  name);CHKERRQ(ierr);
       ierr = DMDestroy(dm);CHKERRQ(ierr);
       *dm  = refinedMesh;
     }
