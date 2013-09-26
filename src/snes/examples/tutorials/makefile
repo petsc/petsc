@@ -427,7 +427,7 @@ runex5_5_qn:
 	   ${RM} -f ex5_5_qn.tmp
 
 runex5_5_broyden:
-	-@${CSD_BASIC_COMMAND_LINE} -snes_type qn -snes_qn_type broyden -snes_linesearch_type cp -snes_qn_m ${N_RESTART} \
+	-@${CSD_BASIC_COMMAND_LINE} -snes_type qn -snes_qn_type broyden -snes_qn_m ${N_RESTART} \
         > ex5_5_broyden.tmp 2>&1; \
 	   if (${DIFF} output/ex5_5_broyden.out ex5_5_broyden.tmp) then true; \
 	   else  echo  ${PWD} "\nPossible problem with with ex5_5_broyden, diffs above \n========================================="; fi; \

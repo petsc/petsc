@@ -4,7 +4,7 @@
 
 const char *const SNESQNScaleTypes[] =        {"NONE","SHANNO","LINESEARCH","JACOBIAN","SNESQNScaleType","SNES_QN_SCALING_",0};
 const char *const SNESQNRestartTypes[] =      {"NONE","POWELL","PERIODIC","SNESQNRestartType","SNES_QN_RESTART_",0};
-const char *const SNESQNTypes[] =             {"LBFGS","BROYDEN","BADBROYDEN","SNESQNType","SNES_QN_RESTART_",0};
+const char *const SNESQNTypes[] =             {"LBFGS","BROYDEN","BADBROYDEN","SNESQNType","SNES_QN_",0};
 
 typedef enum {SNES_QN_LBFGS      = 0,
               SNES_QN_BROYDEN    = 1,
@@ -557,7 +557,22 @@ static PetscErrorCode SNESSetUp_QN(SNES snes)
                         qn->m, PetscScalar, &qn->YtdX);CHKERRQ(ierr);
   }
   ierr = SNESSetWorkVecs(snes,4);CHKERRQ(ierr);
-  /* set up the line search */
+  /* set method defaults */
+  if (qn->scale_type == -1) {
+    if (qn->type == SNES_QN_BADBROYDEN) {
+      qn->scale_type = SNES_QN_SCALE_NONE;
+    } else {
+      qn->scale_type = SNES_QN_SCALE_SHANNO;
+    }
+  }
+  if (qn->restart_type == -1) {
+    if (qn->type == SNES_QN_LBFGS) {
+      qn->restart_type = SNES_QN_RESTART_POWELL;
+    } else {
+      qn->restart_type = SNES_QN_RESTART_PERIODIC;
+    }
+  }
+
   if (qn->scale_type == SNES_QN_SCALE_JACOBIAN) {
     ierr = SNESSetUpMatrices(snes);CHKERRQ(ierr);
   }
@@ -632,7 +647,13 @@ static PetscErrorCode SNESSetFromOptions_QN(SNES snes)
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   if (!snes->linesearch) {
     ierr = SNESGetLineSearch(snes, &linesearch);CHKERRQ(ierr);
-    ierr = SNESLineSearchSetType(linesearch, SNESLINESEARCHCP);CHKERRQ(ierr);
+    if (qn->type == SNES_QN_LBFGS) {
+      ierr = SNESLineSearchSetType(linesearch, SNESLINESEARCHCP);CHKERRQ(ierr);
+    } else if (qn->type == SNES_QN_BROYDEN) {
+      ierr = SNESLineSearchSetType(linesearch, SNESLINESEARCHBASIC);CHKERRQ(ierr);
+    } else {
+      ierr = SNESLineSearchSetType(linesearch, SNESLINESEARCHL2);CHKERRQ(ierr);
+    }
   }
   if (monflg) {
     qn->monitor = PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)snes));CHKERRQ(ierr);
@@ -809,8 +830,8 @@ PETSC_EXTERN PetscErrorCode SNESCreate_QN(SNES snes)
   qn->monitor         = NULL;
   qn->singlereduction = PETSC_TRUE;
   qn->powell_gamma    = 0.9999;
-  qn->scale_type      = SNES_QN_SCALE_SHANNO;
-  qn->restart_type    = SNES_QN_RESTART_POWELL;
+  qn->scale_type      = SNES_QN_SCALE_DEFAULT;
+  qn->restart_type    = SNES_QN_RESTART_DEFAULT;
   qn->type            = SNES_QN_LBFGS;
 
   ierr = PetscObjectComposeFunction((PetscObject)snes,"SNESQNSetScaleType_C",SNESQNSetScaleType_QN);CHKERRQ(ierr);
