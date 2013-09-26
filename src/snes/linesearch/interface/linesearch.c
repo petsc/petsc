@@ -33,6 +33,7 @@ PetscErrorCode SNESLineSearchCreate(MPI_Comm comm, SNESLineSearch *outlinesearch
 
   PetscFunctionBegin;
   PetscValidPointer(outlinesearch,2);
+  ierr = SNESInitializePackage();CHKERRQ(ierr);
   *outlinesearch = NULL;
 
   ierr = PetscHeaderCreate(linesearch,_p_LineSearch,struct _LineSearchOps,SNESLINESEARCH_CLASSID, "SNESLineSearch","Linesearch","SNESLineSearch",comm,SNESLineSearchDestroy,SNESLineSearchView);CHKERRQ(ierr);
