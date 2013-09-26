@@ -71,6 +71,7 @@ PetscErrorCode FormEqualityJacobian(TaoSolver,Vec,Mat*,Mat*, MatStructure *,void
 PetscErrorCode main(int argc,char **argv)
 {
   PetscErrorCode ierr;                /* used to check for functions returning nonzeros */
+  PetscMPIInt size;
   Vec         x;                   /* solution */
   KSP         ksp;
   PC          pc;
@@ -83,7 +84,7 @@ PetscErrorCode main(int argc,char **argv)
   /* Initialize TAO,PETSc */
   PetscInitialize(&argc,&argv,(char *)0,help);
   TaoInitialize(&argc,&argv,(char *)0,help);
-
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size); CHKERRQ(ierr);
   /* Specify default parameters for the problem, check for command-line overrides */
   ierr = PetscStrncpy(user.name,"HS21",8); CHKERRQ(ierr);
   ierr = PetscOptionsGetString(PETSC_NULL,"-cutername",user.name,24,&flg);CHKERRQ(ierr);
@@ -109,7 +110,11 @@ PetscErrorCode main(int argc,char **argv)
   ierr = KSPGetPC(ksp,&pc); CHKERRQ(ierr);
   ierr = PCFactorSetMatSolverPackage(pc,MATSOLVERSUPERLU); CHKERRQ(ierr);
   /* TODO -- why didn't that work? */
-  ierr = PetscOptionsSetValue("-pc_factor_mat_solver_package","superlu");CHKERRQ(ierr);
+  if (size == 1) {
+    ierr = PetscOptionsSetValue("-pc_factor_mat_solver_package","superlu");CHKERRQ(ierr);
+  } else {
+    ierr = PetscOptionsSetValue("-pc_factor_mat_solver_package","superlu_dist");CHKERRQ(ierr);
+  }
   ierr = PCSetType(pc,PCLU); CHKERRQ(ierr);
   ierr = KSPSetType(ksp,KSPPREONLY); CHKERRQ(ierr);
   ierr = TaoSetTolerances(tao,1e-12,0,0,0,0); CHKERRQ(ierr);
@@ -237,9 +242,9 @@ PetscErrorCode InitializeProblem(AppCtx *user)
   /* Ain = eye(n,n) */
   ierr = MatCreate(comm,&user->Ain);CHKERRQ(ierr);
   ierr = MatSetType(user->Ain,MATAIJ); CHKERRQ(ierr);
-  ierr = MatSetSizes(user->Ain,user->mi,user->mi,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
+  ierr = MatSetSizes(user->Ain,PETSC_DECIDE,PETSC_DECIDE,user->mi,user->mi);CHKERRQ(ierr);
 
-  ierr = MatMPIAIJSetPreallocation(user->Ain,1,0,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(user->Ain,1,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(user->Ain,1,PETSC_NULL);CHKERRQ(ierr);
 
   for (i=0;i<user->mi;i++) {
@@ -252,7 +257,7 @@ PetscErrorCode InitializeProblem(AppCtx *user)
   /* bin = [0,0 ... 0]' */
   ierr = VecCreate(comm,&user->bin);CHKERRQ(ierr);
   ierr = VecSetType(user->bin,VECMPI);CHKERRQ(ierr);
-  ierr = VecSetSizes(user->bin,user->mi,PETSC_DETERMINE);CHKERRQ(ierr);
+  ierr = VecSetSizes(user->bin,PETSC_DECIDE,user->mi);CHKERRQ(ierr);
   ierr = VecSet(user->bin,0.0);CHKERRQ(ierr);
   ierr = VecSetFromOptions(user->bin); CHKERRQ(ierr);
   user->m = user->me + user->mi;
@@ -282,6 +287,7 @@ PetscErrorCode FormFunctionGradient(TaoSolver tao, Vec x, PetscReal *f, Vec g, v
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = VecView(x,0);CHKERRQ(ierr);
   ierr = MatMult(user->H,x,g);CHKERRQ(ierr);
   ierr = VecDot(x,g,&xtHx);CHKERRQ(ierr);
   ierr = VecDot(x,user->d,f);CHKERRQ(ierr);

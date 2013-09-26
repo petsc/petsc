@@ -70,6 +70,10 @@ PetscErrorCode TaoCreate(MPI_Comm comm, TaoSolver *newtao)
     tao->ops->computeseparableobjective=0;
     tao->ops->computeconstraints=0;
     tao->ops->computejacobian=0;
+    tao->ops->computejacobianequality=0;
+    tao->ops->computejacobianinequality=0;
+    tao->ops->computeequalityconstraints=0;
+    tao->ops->computeinequalityconstraints=0;
     tao->ops->convergencetest=TaoDefaultConvergenceTest;
     tao->ops->convergencedestroy=0;
     tao->ops->computedual=0;
@@ -83,11 +87,15 @@ PetscErrorCode TaoCreate(MPI_Comm comm, TaoSolver *newtao)
     tao->gradient=PETSC_NULL;
     tao->sep_objective = PETSC_NULL;
     tao->constraints=PETSC_NULL;
+    tao->constraints_equality=PETSC_NULL;
+    tao->constraints_inequality=PETSC_NULL;
     tao->stepdirection=PETSC_NULL;
     tao->XL = PETSC_NULL;
     tao->XU = PETSC_NULL;
     tao->IL = PETSC_NULL;
     tao->IU = PETSC_NULL;
+    tao->DI = PETSC_NULL;
+    tao->DE = PETSC_NULL;
     tao->hessian = PETSC_NULL;
     tao->hessian_pre = PETSC_NULL;
     tao->jacobian = PETSC_NULL;
@@ -287,6 +295,10 @@ PetscErrorCode TaoDestroy(TaoSolver *tao)
   ierr = VecDestroy(&(*tao)->XU); CHKERRQ(ierr);
   ierr = VecDestroy(&(*tao)->IL); CHKERRQ(ierr);
   ierr = VecDestroy(&(*tao)->IU); CHKERRQ(ierr);
+  ierr = VecDestroy(&(*tao)->DE); CHKERRQ(ierr);
+  ierr = VecDestroy(&(*tao)->DI); CHKERRQ(ierr);
+  ierr = VecDestroy(&(*tao)->constraints_equality); CHKERRQ(ierr);
+  ierr = VecDestroy(&(*tao)->constraints_inequality); CHKERRQ(ierr);
   ierr = VecDestroy(&(*tao)->stepdirection); CHKERRQ(ierr);
   ierr = MatDestroy(&(*tao)->hessian_pre); CHKERRQ(ierr);
   ierr = MatDestroy(&(*tao)->hessian); CHKERRQ(ierr);

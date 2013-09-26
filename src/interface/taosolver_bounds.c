@@ -364,8 +364,16 @@ $      func (TaoSolver tao, Vec x, Vec ce, void *ctx);
 @*/
 PetscErrorCode TaoSetEqualityConstraintsRoutine(TaoSolver tao, Vec ce, PetscErrorCode (*func)(TaoSolver, Vec, Vec, void*), void *ctx)
 {
+    PetscErrorCode ierr;
+
     PetscFunctionBegin;
     PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);
+    if (ce) {
+      PetscValidHeaderSpecific(ce,VEC_CLASSID,2);
+      PetscObjectReference((PetscObject)ce);
+    }
+    ierr = VecDestroy(&tao->constraints_equality); CHKERRQ(ierr);
+
     tao->constraints_equality = ce;
     tao->user_con_equalityP = ctx;
     tao->ops->computeequalityconstraints = func;
@@ -401,9 +409,17 @@ $      func (TaoSolver tao, Vec x, Vec ci, void *ctx);
 @*/
 PetscErrorCode TaoSetInequalityConstraintsRoutine(TaoSolver tao, Vec ci, PetscErrorCode (*func)(TaoSolver, Vec, Vec, void*), void *ctx)
 {
+    PetscErrorCode ierr;
+
     PetscFunctionBegin;
     PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);
+    if (ci) {
+      PetscValidHeaderSpecific(ci,VEC_CLASSID,2);
+      PetscObjectReference((PetscObject)ci);
+    }
+    ierr = VecDestroy(&tao->constraints_inequality); CHKERRQ(ierr);
     tao->constraints_inequality = ci;
+
     tao->user_con_inequalityP = ctx;
     tao->ops->computeinequalityconstraints = func;
     PetscFunctionReturn(0);

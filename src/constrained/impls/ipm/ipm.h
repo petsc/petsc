@@ -13,12 +13,12 @@ typedef struct {
   PetscScalar sig,mu,taumin,dec;
   PetscScalar muaff;
   TaoLineSearch lag_ls;
-  Vec work, dx, rhs_x,save_x; 
+  Vec work, rhs_x,save_x; 
   Vec lamdai, dlamdai, rhs_lamdai, save_lamdai;
   Vec lamdae, dlamdae, rhs_lamdae, save_lamdae;
   Vec s,ds,rhs_s,save_s;
-  Vec ci, di;
-  Vec Zero_nb, One_nb,Inf_nb,worknb;
+  Vec ci;
+  Vec Zero_nb, One_nb,Inf_nb;
   PetscScalar kkt_f; /* d'*x + (1/2)*x'*H*x; */
   Vec rd;            /* H*x + d + Ae'*lamdae - Ai'*lamdai */
   Vec rpe; /* residual  Ae*x - be */
@@ -44,6 +44,9 @@ typedef struct {
   PetscScalar alpha1,alpha2;
   PetscScalar pushs,pushnu;
   IS isxl,isxu,isil,isiu;
+  VecScatter ci_scat,xl_scat,xu_scat;
+  VecScatter step1,step2,step3,step4;
+  VecScatter rhs1,rhs2,rhs3,rhs4;
 } TAO_IPM;
 
 #endif /* ifndef __TAO_IPM_H */
