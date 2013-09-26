@@ -1,9 +1,10 @@
 /* TODOLIST
-   Better management for BAIJ local mats. How to deal with SBAIJ?
+   Better management for block size > 1 for idx_R_local and others
    Provide PCApplyTranpose
    make runexe59
    Man pages
    Propagate nearnullspace info among levels
+   Change of basis approach does not work with my nonlinear mechanics example. why? maybe an issue with l2gmap?
    Move FETIDP code
    Provide general case for subassembling
    Preallocation routines in MatConvert_IS_AIJ
@@ -530,6 +531,7 @@ static PetscErrorCode PCBDDCSetDofsSplitting_BDDC(PC pc,PetscInt n_is, IS ISForD
     pcbddc->ISForDofs[i]=ISForDofs[i];
   }
   pcbddc->n_ISForDofs=n_is;
+  pcbddc->user_provided_isfordofs = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
@@ -1322,6 +1324,8 @@ PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC pc)
   pcbddc->ksp_D                      = 0;
   pcbddc->ksp_R                      = 0;
   pcbddc->NeumannBoundaries          = 0;
+  pcbddc->user_provided_isfordofs    = PETSC_FALSE;
+  pcbddc->n_ISForDofs                = 0;
   pcbddc->ISForDofs                  = 0;
   pcbddc->ConstraintMatrix           = 0;
   pcbddc->use_exact_dirichlet_trick  = PETSC_TRUE;
