@@ -375,14 +375,14 @@ static PetscErrorCode PhysicsFunctional_Advect(Model mod,PetscReal time,const Pe
 #define __FUNCT__ "PhysicsCreate_Advect"
 static PetscErrorCode PhysicsCreate_Advect(Model mod,Physics phys)
 {
-  Physics_Advect *advect = (Physics_Advect*)phys->data;
+  Physics_Advect *advect;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   phys->field_desc = PhysicsFields_Advect;
   phys->riemann = PhysicsRiemann_Advect;
   ierr = PetscNew(Physics_Advect,&phys->data);CHKERRQ(ierr);
-  advect = phys->data;
+  advect = (Physics_Advect*)phys->data;
   ierr = PetscOptionsHead("Advect options");CHKERRQ(ierr);
   {
     PetscInt two = 2,dof = 1;
@@ -550,7 +550,7 @@ static PetscErrorCode PhysicsCreate_SW(Model mod,Physics phys)
   phys->field_desc = PhysicsFields_SW;
   phys->riemann = PhysicsRiemann_SW;
   ierr          = PetscNew(Physics_SW,&phys->data);CHKERRQ(ierr);
-  sw            = phys->data;
+  sw            = (Physics_SW*)phys->data;
   ierr          = PetscOptionsHead("SW options");CHKERRQ(ierr);
   {
     sw->gravity = 1.0;
@@ -732,7 +732,7 @@ static PetscErrorCode PhysicsCreate_Euler(Model mod,Physics phys)
   phys->field_desc = PhysicsFields_Euler;
   phys->riemann = PhysicsRiemann_Euler_Rusanov;
   ierr = PetscNew(PhysicsEuler,&phys->data);CHKERRQ(ierr);
-  eu   = phys->data;
+  eu   = (PhysicsEuler*)phys->data;
   ierr = PetscOptionsHead("Euler options");CHKERRQ(ierr);
   {
     eu->pars[0] = 3.0;
