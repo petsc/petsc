@@ -138,27 +138,27 @@ build: chk_makej
 #
 check: test
 test:
-	-@${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} test_build 2>&1 | tee ./${PETSC_ARCH}/conf/test.log
+	-@${OMAKE_NOPRINTDIR} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} test_build 2>&1 | tee ./${PETSC_ARCH}/conf/test.log
 testx:
-	-@${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} testx_build 2>&1 | tee ./${PETSC_ARCH}/conf/testx.log
+	-@${OMAKE_NOPRINTDIR} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} testx_build 2>&1 | tee ./${PETSC_ARCH}/conf/testx.log
 test_build:
 	-@echo "Running test examples to verify correct installation"
 	-@echo "Using PETSC_DIR=${PETSC_DIR} and PETSC_ARCH=${PETSC_ARCH}"
-	@cd src/snes/examples/tutorials >/dev/null; ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} clean
-	@cd src/snes/examples/tutorials >/dev/null; ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} testex19
+	@cd src/snes/examples/tutorials >/dev/null; ${OMAKE_NOPRINTDIR} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} clean
+	@cd src/snes/examples/tutorials >/dev/null; ${OMAKE_NOPRINTDIR} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} testex19
 	@if [ "${FC}" != "" ]; then \
           egrep "^#define PETSC_USE_FORTRAN_DATATYPES 1" ${PETSC_DIR}/${PETSC_ARCH}/include/petscconf.h | tee .ftn-dtype.log > /dev/null; \
           if test -s .ftn-dtype.log; then F90TEST="testex5f90t"; else F90TEST="testex5f"; fi; ${RM} .ftn-dtype.log; \
-          cd src/snes/examples/tutorials >/dev/null; ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} $${F90TEST}; \
+          cd src/snes/examples/tutorials >/dev/null; ${OMAKE_NOPRINTDIR} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} $${F90TEST}; \
          fi;
-	@cd src/snes/examples/tutorials >/dev/null; ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} clean
+	@cd src/snes/examples/tutorials >/dev/null; ${OMAKE_NOPRINTDIR} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} clean
 	-@echo "Completed test examples"
 testx_build:
 	-@echo "Running graphics test example to verify correct X11 installation"
 	-@echo "Using PETSC_DIR=${PETSC_DIR} and PETSC_ARCH=${PETSC_ARCH}"
-	@cd src/snes/examples/tutorials; ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} clean
-	@cd src/snes/examples/tutorials; ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} testxex19
-	@cd src/snes/examples/tutorials; ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} clean
+	@cd src/snes/examples/tutorials; ${OMAKE_NOPRINTDIR} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} clean
+	@cd src/snes/examples/tutorials; ${OMAKE_NOPRINTDIR} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} testxex19
+	@cd src/snes/examples/tutorials; ${OMAKE_NOPRINTDIR} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} clean
 	-@echo "Completed graphics test example"
 
 testexamples: info
