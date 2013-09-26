@@ -173,7 +173,6 @@ PetscErrorCode DMPlexCreateCubeBoundary(DM dm, const PetscReal lower[], const Pe
   PetscFunctionBegin;
   if ((faces[0] < 1) || (faces[1] < 1) || (faces[2] < 1)) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Must have at least 1 face per side");
   if ((faces[0] > 1) || (faces[1] > 1) || (faces[2] > 1)) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Currently can't handle more than 1 face per side");
-  ierr = PetscMalloc(numVertices*2 * sizeof(PetscReal), &coords);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm), &rank);CHKERRQ(ierr);
   if (!rank) {
     PetscInt f;

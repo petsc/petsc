@@ -225,6 +225,7 @@ PetscErrorCode DMPlexProjectFunctionLocal(DM dm, PetscFE fe[], void (**funcs)(co
     ierr = DMPlexVecSetClosure(dm, section, localX, c, values, mode);CHKERRQ(ierr);
   }
   ierr = DMRestoreWorkArray(dm, numValues, PETSC_SCALAR, &values);CHKERRQ(ierr);
+  ierr = PetscFree2(v0,J);CHKERRQ(ierr);
   ierr = PetscFree(sp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
