@@ -54,6 +54,7 @@ static PetscErrorCode
 DMLocalToLocalBegin(DM dm,Vec g,InsertMode mode,Vec l)
 {
   PetscErrorCode ierr;
+  PetscBool match;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidType(dm,1);
