@@ -16,7 +16,7 @@
 #define snesgetgs_                       SNESGETGS
 #define snessetconvergencetest_          SNESSETCONVERGENCETEST
 #define snesconvergeddefault_            SNESCONVERGEDDEFAULT
-#define snesskipconverged_               SNESSKIPCONVERGED
+#define snesconvergedskip_               SNESCONVERGEDSKIP
 #define snesview_                        SNESVIEW
 #define snesgetconvergencehistory_       SNESGETCONVERGENCEHISTORY
 #define snesgetjacobian_                 SNESGETJACOBIAN
@@ -42,7 +42,7 @@
 #define snesgetgs_                       snesgetgs
 #define snessetconvergencetest_          snessetconvergencetest
 #define snesconvergeddefault_            snesconvergeddefault
-#define snesskipconverged_               snesskipconverged
+#define snesconvergedskip_               snesconvergedskip
 #define snesview_                        snesview
 #define snesgetjacobian_                 snesgetjacobian
 #define snesgetconvergencehistory_       snesgetconvergencehistory
@@ -235,7 +235,7 @@ PETSC_EXTERN void snesconvergeddefault_(SNES *snes,PetscInt *it,PetscReal *a,Pet
   *ierr = SNESConvergedDefault(*snes,*it,*a,*b,*c,r,ct);
 }
 
-PETSC_EXTERN void snesskipconverged_(SNES *snes,PetscInt *it,PetscReal *a,PetscReal *b,PetscReal *c,SNESConvergedReason *r,void *ct,PetscErrorCode *ierr)
+PETSC_EXTERN void snesconvergedskip_(SNES *snes,PetscInt *it,PetscReal *a,PetscReal *b,PetscReal *c,SNESConvergedReason *r,void *ct,PetscErrorCode *ierr)
 {
   *ierr = SNESConvergedSkip(*snes,*it,*a,*b,*c,r,ct);
 }
@@ -247,7 +247,7 @@ PETSC_EXTERN void PETSC_STDCALL snessetconvergencetest_(SNES *snes,void (PETSC_S
 
   if ((PetscVoidFunction)func == (PetscVoidFunction)snesconvergeddefault_) {
     *ierr = SNESSetConvergenceTest(*snes,SNESConvergedDefault,0,0);
-  } else if ((PetscVoidFunction)func == (PetscVoidFunction)snesskipconverged_) {
+  } else if ((PetscVoidFunction)func == (PetscVoidFunction)snesconvergedskip_) {
     *ierr = SNESSetConvergenceTest(*snes,SNESConvergedSkip,0,0);
   } else {
     *ierr = PetscObjectSetFortranCallback((PetscObject)*snes,PETSC_FORTRAN_CALLBACK_CLASS,&_cb.test,(PetscVoidFunction)func,cctx);
