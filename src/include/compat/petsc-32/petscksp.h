@@ -19,3 +19,8 @@ KSPLogResidualHistory_Compat(KSP ksp,PetscReal norm)
 }
 #undef  KSPLogResidualHistory
 #define KSPLogResidualHistory KSPLogResidualHistory_Compat
+
+#define KSPConvergedSkip           KSPSkipConverged
+#define KSPConvergedDefault        KSPDefaultConverged
+#define KSPConvergedDefaultCreate  KSPDefaultConvergedCreate
+#define KSPConvergedDefaultDestroy KSPDefaultConvergedDestroy

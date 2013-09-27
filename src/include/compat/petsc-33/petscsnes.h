@@ -9,6 +9,7 @@
 #define SNESASPIN        "aspin"
 
 #define SNESConvergedDefault SNESDefaultConverged
+#define SNESConvergedSkip    SNESConvergedSkip
 
 #undef  __FUNCT__
 #define __FUNCT__ "SNESLogConvergenceHistory"

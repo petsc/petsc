@@ -75,8 +75,8 @@ PetscErrorCode KSPConverged(KSP ksp,
   if (ksp->converged) {
     ierr = (*ksp->converged)(ksp,iter,rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
   } else {
-    ierr = KSPSkipConverged(ksp,iter,rnorm,&ksp->reason,NULL);CHKERRQ(ierr);
-    /*ierr = KSPDefaultConverged(ksp,iter,rnorm,&ksp->reason,NULL);CHKERRQ(ierr);*/
+    ierr = KSPConvergedSkip(ksp,iter,rnorm,&ksp->reason,NULL);CHKERRQ(ierr);
+    /*ierr = KSPConvergedDefault(ksp,iter,rnorm,&ksp->reason,NULL);CHKERRQ(ierr);*/
   }
   ksp->rnorm = rnorm;
   if (reason) *reason = ksp->reason;
@@ -101,8 +101,8 @@ PetscErrorCode SNESConverged(SNES snes,
   if (snes->ops->converged) {
     ierr = (*snes->ops->converged)(snes,iter,xnorm,ynorm,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
   } else {
-    ierr = SNESSkipConverged(snes,iter,xnorm,ynorm,fnorm,&snes->reason,0);CHKERRQ(ierr);
-    /*ierr = SNESDefaultConverged(snes,iter,xnorm,ynorm,fnorm,&snes->reason,0);CHKERRQ(ierr);*/
+    ierr = SNESConvergedSkip(snes,iter,xnorm,ynorm,fnorm,&snes->reason,0);CHKERRQ(ierr);
+    /*ierr = SNESConvergedDefault(snes,iter,xnorm,ynorm,fnorm,&snes->reason,0);CHKERRQ(ierr);*/
   }
   snes->norm = fnorm;
   if (reason) *reason = snes->reason;

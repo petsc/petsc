@@ -18,6 +18,7 @@
 #define SNESASPIN        "aspin"
 
 #define SNESConvergedDefault SNESDefaultConverged
+#define SNESConvergedSkip    SNESConvergedSkip
 
 #define SNES_CONVERGED_SNORM_RELATIVE SNES_CONVERGED_FNORM_RELATIVE
 #define SNES_DIVERGED_INNER           SNES_DIVERGED_FUNCTION_DOMAIN
