@@ -6,10 +6,10 @@
 #define kspsetconvergencetest_     KSPSETCONVERGENCETEST
 #define kspgetresidualhistory_     KSPGETRESIDUALHISTORY
 
-#define kspdefaultconverged_       KSPDEFAULTCONVERGED
-#define kspdefaultconvergedcreate_  KSPDEFAULTCONVERGEDCREATE
-#define kspdefaultconvergeddestroy_  KSPDEFAULTCONVERGEDDESTROY
-#define kspskipconverged_          KSPSKIPCONVERGED
+#define kspconvergeddefault_         KSPCONVERGEDDEFAULT
+#define kspconvergeddefaultcreate_   KSPCONVERGEDDEFAULTCREATE
+#define kspconvergeddefaultdestroy_  KSPCONVERGEDDEFAULTDESTROY
+#define kspconvergedskip_            KSPCONVERGEDSKIP
 #define kspgmresmonitorkrylov_     KSPGMRESMONITORKRYLOV
 #define kspmonitordefault_         KSPMONITORDEFAULT
 #define kspmonitortrueresidualnorm_    KSPMONITORTRUERESIDUALNORM
@@ -27,10 +27,10 @@
 #define kspmonitorset_                 kspmonitorset
 #define kspsetconvergencetest_         kspsetconvergencetest
 #define kspgetresidualhistory_         kspgetresidualhistory
-#define kspdefaultconverged_           kspdefaultconverged
-#define kspdefaultconvergedcreate_     kspdefaultconvergedcreate
-#define kspdefaultconvergeddestroy_    kspdefaultconvergeddestroy
-#define kspskipconverged_              kspskipconverged
+#define kspconvergeddefault_           kspconvergeddefault
+#define kspconvergeddefaultcreate_     kspconvergeddefaultcreate
+#define kspconvergeddefaultdestroy_    kspconvergeddefaultdestroy
+#define kspconvergedskip_              kspconvergedskip
 #define kspmonitorsingularvalue_       kspmonitorsingularvalue
 #define kspgmresmonitorkrylov_         kspgmresmonitorkrylov
 #define kspmonitordefault_             kspmonitordefault
@@ -58,13 +58,13 @@ PETSC_EXTERN void PETSC_STDCALL dmkspsetcomputeoperators_(DM *dm,void (PETSC_STD
    functions, hence no STDCALL
 */
 
-PETSC_EXTERN void kspdefaultconverged_(KSP *ksp,PetscInt *n,PetscReal *rnorm,KSPConvergedReason *flag,void *dummy,PetscErrorCode *ierr)
+PETSC_EXTERN void kspconvergeddefault_(KSP *ksp,PetscInt *n,PetscReal *rnorm,KSPConvergedReason *flag,void *dummy,PetscErrorCode *ierr)
 {
   CHKFORTRANNULLOBJECT(dummy);
   *ierr = KSPConvergedDefault(*ksp,*n,*rnorm,flag,dummy);
 }
 
-PETSC_EXTERN void kspskipconverged_(KSP *ksp,PetscInt *n,PetscReal *rnorm,KSPConvergedReason *flag,void *dummy,PetscErrorCode *ierr)
+PETSC_EXTERN void kspconvergedskip_(KSP *ksp,PetscInt *n,PetscReal *rnorm,KSPConvergedReason *flag,void *dummy,PetscErrorCode *ierr)
 {
   CHKFORTRANNULLOBJECT(dummy);
   *ierr = KSPConvergedSkip(*ksp,*n,*rnorm,flag,dummy);
@@ -185,9 +185,9 @@ PETSC_EXTERN void PETSC_STDCALL kspsetconvergencetest_(KSP *ksp,
   CHKFORTRANNULLOBJECT(cctx);
   CHKFORTRANNULLFUNCTION(destroy);
 
-  if ((PetscVoidFunction)converge == (PetscVoidFunction)kspdefaultconverged_) {
+  if ((PetscVoidFunction)converge == (PetscVoidFunction)kspconvergeddefault_) {
     *ierr = KSPSetConvergenceTest(*ksp,KSPConvergedDefault,*cctx,KSPConvergedDefaultDestroy);
-  } else if ((PetscVoidFunction)converge == (PetscVoidFunction)kspskipconverged_) {
+  } else if ((PetscVoidFunction)converge == (PetscVoidFunction)kspconvergedskip_) {
     *ierr = KSPSetConvergenceTest(*ksp,KSPConvergedSkip,0,0);
   } else {
     *ierr = PetscObjectSetFortranCallback((PetscObject)*ksp,PETSC_FORTRAN_CALLBACK_CLASS,&_cb.test,(PetscVoidFunction)converge,cctx); if (*ierr) return;
@@ -200,12 +200,12 @@ PETSC_EXTERN void PETSC_STDCALL kspsetconvergencetest_(KSP *ksp,
   }
 }
 
-PETSC_EXTERN void PETSC_STDCALL kspdefaultconvergedcreate_(PetscFortranAddr *ctx,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL kspconvergeddefaultcreate_(PetscFortranAddr *ctx,PetscErrorCode *ierr)
 {
   *ierr = KSPConvergedDefaultCreate((void**)ctx);
 }
 
-PETSC_EXTERN void PETSC_STDCALL kspdefaultconvergeddestroy_(PetscFortranAddr *ctx,PetscErrorCode *ierr)
+PETSC_EXTERN void PETSC_STDCALL kspconvergeddefaultdestroy_(PetscFortranAddr *ctx,PetscErrorCode *ierr)
 {
   *ierr = KSPConvergedDefaultDestroy(*(void**)ctx);
 }
