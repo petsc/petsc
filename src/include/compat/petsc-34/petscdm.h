@@ -85,3 +85,14 @@ DMLocalToLocalEnd(DM dm,Vec g,InsertMode mode,Vec l)
   ierr = DMDALocalToLocalEnd(dm,g,mode,l);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "DMCreateMatrix_Compat"
+static PetscErrorCode DMCreateMatrix_Compat(DM dm,Mat *A)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  ierr = DMCreateMatrix(dm,NULL,A);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+#define DMCreateMatrix DMCreateMatrix_Compat

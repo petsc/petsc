@@ -152,12 +152,15 @@ cdef class DM(Object):
 
     #
 
-    def createMat(self, mat_type=None):
-        cdef PetscMatType mtype = MATAIJ
-        mat_type = str2bytes(mat_type, &mtype)
-        if mtype == NULL: mtype = MATAIJ
+    def setMatType(self, mat_type):
+        """Set matrix type to be used by DM.createMat"""
+        cdef PetscMatType mtype = NULL
+        vec_type = str2bytes(mat_type, &mtype)
+        CHKERR( DMSetMatType(self.dm, mtype) )
+
+    def createMat(self):
         cdef Mat mat = Mat()
-        CHKERR( DMCreateMatrix(self.dm, mtype, &mat.mat) )
+        CHKERR( DMCreateMatrix(self.dm, &mat.mat) )
         return mat
 
     def createInterpolation(self, DM dm not None):
