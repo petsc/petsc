@@ -130,6 +130,7 @@ PetscErrorCode DMPlexPreallocateOperator(DM dm, PetscInt bs, PetscSection sectio
     PetscInt dof, off, d, q;
     PetscInt p = leaves[l], numAdj = maxAdjSize;
 
+    if ((p < pStart) || (p >= pEnd)) continue;
     ierr = PetscSectionGetDof(section, p, &dof);CHKERRQ(ierr);
     ierr = PetscSectionGetOffset(section, p, &off);CHKERRQ(ierr);
     ierr = DMPlexGetAdjacency_Internal(dm, p, useClosure, tmpClosure, &numAdj, tmpAdj);CHKERRQ(ierr);
@@ -203,6 +204,7 @@ PetscErrorCode DMPlexPreallocateOperator(DM dm, PetscInt bs, PetscSection sectio
     PetscInt dof, off, d, q;
     PetscInt p = leaves[l], numAdj = maxAdjSize;
 
+    if ((p < pStart) || (p >= pEnd)) continue;
     ierr = PetscSectionGetDof(section, p, &dof);CHKERRQ(ierr);
     ierr = PetscSectionGetOffset(section, p, &off);CHKERRQ(ierr);
     ierr = DMPlexGetAdjacency_Internal(dm, p, useClosure, tmpClosure, &numAdj, tmpAdj);CHKERRQ(ierr);
