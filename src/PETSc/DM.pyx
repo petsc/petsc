@@ -83,7 +83,7 @@ cdef class DM(Object):
         return toInt(bs)
 
     def setVecType(self, vec_type):
-        cdef PetscMatType vtype = NULL
+        cdef PetscVecType vtype = NULL
         vec_type = str2bytes(vec_type, &vtype)
         CHKERR( DMSetVecType(self.dm, vtype) )
 
