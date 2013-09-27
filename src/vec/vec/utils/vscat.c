@@ -7,6 +7,12 @@
 
 #include <petsc-private/vecimpl.h>    /*I   "petscvec.h"    I*/
 
+#if defined(PETSC_HAVE_CUSP)
+PETSC_INTERN PetscErrorCode VecScatterCUSPIndicesCreate_StoS(PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt*,PetscInt*,PetscCUSPIndices*);
+PETSC_INTERN PetscErrorCode VecScatterCUSPIndicesDestroy(PetscCUSPIndices*);
+PETSC_INTERN PetscErrorCode VecScatterCUSP_StoS(Vec,Vec,PetscCUSPIndices,InsertMode,ScatterMode);
+#endif
+
 /* Logging support */
 PetscClassId VEC_SCATTER_CLASSID;
 
@@ -333,6 +339,21 @@ PetscErrorCode VecScatterBegin_SGToSG(VecScatter ctx,Vec x,Vec y,InsertMode addv
   PetscScalar            *xv,*yv;
 
   PetscFunctionBegin;
+#if defined(PETSC_HAVE_CUSP)
+  if (x->valid_GPU_array == PETSC_CUSP_GPU) {
+    /* create the scatter indices if not done already */
+    if (!ctx->spptr) {
+      PetscInt tofirst = 0,tostep = 0,fromfirst = 0,fromstep = 0;
+      fslots = gen_from->vslots;
+      tslots = gen_to->vslots;
+      ierr = VecScatterCUSPIndicesCreate_StoS(n,tofirst,fromfirst,tostep,fromstep,tslots,fslots,(PetscCUSPIndices*)&(ctx->spptr));CHKERRQ(ierr);
+    }
+    /* next do the scatter */
+    ierr = VecScatterCUSP_StoS(x,y,(PetscCUSPIndices)ctx->spptr,addv,mode);
+    PetscFunctionReturn(0);
+  }
+#endif
+
   ierr = VecGetArray(x,&xv);CHKERRQ(ierr);
   if (x != y) {
     ierr = VecGetArray(y,&yv);CHKERRQ(ierr);
@@ -374,6 +395,20 @@ PetscErrorCode VecScatterBegin_SGToSS_Stride1(VecScatter ctx,Vec x,Vec y,InsertM
   PetscScalar            *xv,*yv;
 
   PetscFunctionBegin;
+#if defined(PETSC_HAVE_CUSP)
+  if (x->valid_GPU_array == PETSC_CUSP_GPU) {
+    /* create the scatter indices if not done already */
+    if (!ctx->spptr) {
+      PetscInt tofirst = first,tostep = 1,fromfirst = 0,fromstep = 0;
+      PetscInt *tslots = 0;
+      ierr = VecScatterCUSPIndicesCreate_StoS(n,tofirst,fromfirst,tostep,fromstep,tslots,fslots,(PetscCUSPIndices*)&(ctx->spptr));CHKERRQ(ierr);
+    }
+    /* next do the scatter */
+    ierr = VecScatterCUSP_StoS(x,y,(PetscCUSPIndices)ctx->spptr,addv,mode);
+    PetscFunctionReturn(0);
+  }
+#endif
+
   ierr = VecGetArray(x,&xv);CHKERRQ(ierr);
   if (x != y) {
     ierr = VecGetArray(y,&yv);CHKERRQ(ierr);
@@ -421,6 +456,20 @@ PetscErrorCode VecScatterBegin_SGToSS(VecScatter ctx,Vec x,Vec y,InsertMode addv
   PetscScalar            *xv,*yv;
 
   PetscFunctionBegin;
+#if defined(PETSC_HAVE_CUSP)
+  if (x->valid_GPU_array == PETSC_CUSP_GPU) {
+    /* create the scatter indices if not done already */
+    if (!ctx->spptr) {
+      PetscInt tofirst = first,tostep = step,fromfirst = 0,fromstep = 0;
+      PetscInt * tslots = 0;
+      ierr = VecScatterCUSPIndicesCreate_StoS(n,tofirst,fromfirst,tostep,fromstep,tslots,fslots,(PetscCUSPIndices*)&(ctx->spptr));CHKERRQ(ierr);
+    }
+    /* next do the scatter */
+    ierr = VecScatterCUSP_StoS(x,y,(PetscCUSPIndices)ctx->spptr,addv,mode);
+    PetscFunctionReturn(0);
+  }
+#endif
+
   ierr = VecGetArray(x,&xv);CHKERRQ(ierr);
   if (x != y) {
     ierr = VecGetArray(y,&yv);CHKERRQ(ierr);
@@ -467,6 +516,20 @@ PetscErrorCode VecScatterBegin_SSToSG_Stride1(VecScatter ctx,Vec x,Vec y,InsertM
   PetscScalar            *xv,*yv;
 
   PetscFunctionBegin;
+#if defined(PETSC_HAVE_CUSP)
+  if (x->valid_GPU_array == PETSC_CUSP_GPU) {
+    /* create the scatter indices if not done already */
+    if (!ctx->spptr) {
+      PetscInt tofirst = 0,tostep = 0,fromfirst = first,fromstep = 1;
+      PetscInt * tslots = 0;
+      ierr = VecScatterCUSPIndicesCreate_StoS(n,tofirst,fromfirst,tostep,fromstep,tslots,fslots,(PetscCUSPIndices*)&(ctx->spptr));CHKERRQ(ierr);
+    }
+    /* next do the scatter */
+    ierr = VecScatterCUSP_StoS(x,y,(PetscCUSPIndices)ctx->spptr,addv,mode);
+    PetscFunctionReturn(0);
+  }
+#endif
+
   ierr = VecGetArray(x,&xv);CHKERRQ(ierr);
   if (x != y) {
     ierr = VecGetArray(y,&yv);CHKERRQ(ierr);
@@ -515,6 +578,20 @@ PetscErrorCode VecScatterBegin_SSToSG(VecScatter ctx,Vec x,Vec y,InsertMode addv
   PetscScalar            *xv,*yv;
 
   PetscFunctionBegin;
+#if defined(PETSC_HAVE_CUSP)
+  if (x->valid_GPU_array == PETSC_CUSP_GPU) {
+    /* create the scatter indices if not done already */
+    if (!ctx->spptr) {
+      PetscInt tofirst = 0,tostep = 0,fromfirst = first,fromstep = step;
+      PetscInt * tslots = 0;
+      ierr = VecScatterCUSPIndicesCreate_StoS(n,tofirst,fromfirst,tostep,fromstep,fslots,tslots,(PetscCUSPIndices*)&(ctx->spptr));CHKERRQ(ierr);
+    }
+    /* next do the scatter */
+    ierr = VecScatterCUSP_StoS(x,y,(PetscCUSPIndices)ctx->spptr,addv,mode);
+    PetscFunctionReturn(0);
+  }
+#endif
+
   ierr = VecGetArray(x,&xv);CHKERRQ(ierr);
   if (x != y) {
     ierr = VecGetArray(y,&yv);CHKERRQ(ierr);
@@ -581,6 +658,19 @@ PetscErrorCode VecScatterBegin_SSToSS(VecScatter ctx,Vec x,Vec y,InsertMode addv
   PetscScalar           *xv,*yv;
 
   PetscFunctionBegin;
+#if defined(PETSC_HAVE_CUSP)
+  if (x->valid_GPU_array == PETSC_CUSP_GPU) {
+    /* create the scatter indices if not done already */
+    if (!ctx->spptr) {
+      PetscInt *tslots = 0,*fslots;
+      ierr = VecScatterCUSPIndicesCreate_StoS(n,to_first,from_first,to_step,from_step,tslots,fslots,(PetscCUSPIndices*)&(ctx->spptr));CHKERRQ(ierr);
+    }
+    /* next do the scatter */
+    ierr = VecScatterCUSP_StoS(x,y,(PetscCUSPIndices)ctx->spptr,addv,mode);
+    PetscFunctionReturn(0);
+  }
+#endif
+
   ierr = VecGetArrayRead(x,(const PetscScalar **)&xv);CHKERRQ(ierr);
   if (x != y) {
     ierr = VecGetArray(y,&yv);CHKERRQ(ierr);
@@ -1721,6 +1811,9 @@ PetscErrorCode  VecScatterDestroy(VecScatter *ctx)
   /* if memory was published with AMS then destroy it */
   ierr = PetscObjectAMSViewOff((PetscObject)(*ctx));CHKERRQ(ierr);
   ierr = (*(*ctx)->destroy)(*ctx);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_CUSP)
+  ierr = VecScatterCUSPIndicesDestroy((PetscCUSPIndices*)&((*ctx)->spptr));CHKERRQ(ierr);
+#endif
   ierr = PetscHeaderDestroy(ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
