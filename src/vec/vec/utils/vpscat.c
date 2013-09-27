@@ -234,9 +234,6 @@ PetscErrorCode VecScatterDestroy_PtoP(VecScatter ctx)
   ierr = PetscFree4(from->values,from->indices,from->starts,from->procs);CHKERRQ(ierr);
   ierr = PetscFree(from);CHKERRQ(ierr);
   ierr = PetscFree(to);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_CUSP)
-  ierr = PetscCUSPIndicesDestroy((PetscCUSPIndices*)&ctx->spptr);CHKERRQ(ierr);
-#endif
   PetscFunctionReturn(0);
 }
 
