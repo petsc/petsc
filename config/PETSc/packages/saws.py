@@ -12,6 +12,7 @@ class Configure(PETSc.package.NewPackage):
     self.liblist   = [['libSAWs.a']]
     self.libdir           = 'lib' # location of libraries in the package directory tree
     self.includedir       = 'include' # location of includes in the package directory tree    return
+    self.needsMath        = 1;
 
   def setupDependencies(self, framework):
     PETSc.package.NewPackage.setupDependencies(self, framework)
