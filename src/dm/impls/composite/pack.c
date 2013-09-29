@@ -877,7 +877,7 @@ PetscErrorCode  DMCompositeGetLocalISs(DM dm,IS **is)
 PetscErrorCode  DMCompositeGetGlobalISs(DM dm,IS *is[])
 {
   PetscErrorCode         ierr;
-  PetscInt               cnt = 0,*idx,i;
+  PetscInt               cnt = 0;
   struct DMCompositeLink *next;
   PetscMPIInt            rank;
   DM_Composite           *com = (DM_Composite*)dm->data;
@@ -890,9 +890,7 @@ PetscErrorCode  DMCompositeGetGlobalISs(DM dm,IS *is[])
 
   /* loop over packed objects, handling one at at time */
   while (next) {
-    ierr = PetscMalloc(next->n*sizeof(PetscInt),&idx);CHKERRQ(ierr);
-    for (i=0; i<next->n; i++) idx[i] = next->grstart + i;
-    ierr = ISCreateGeneral(PetscObjectComm((PetscObject)dm),next->n,idx,PETSC_OWN_POINTER,&(*is)[cnt]);CHKERRQ(ierr);
+    ierr = ISCreateStride(PetscObjectComm((PetscObject)dm),next->n,next->grstart,1,&(*is)[cnt]);CHKERRQ(ierr);
     if (dm->fields) {
       MatNullSpace space;
       Mat          pmat;
