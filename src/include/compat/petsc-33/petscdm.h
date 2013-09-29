@@ -1,3 +1,14 @@
+#undef __FUNCT__
+#define __FUNCT__ "DMCreateMatrix_Compat"
+static PetscErrorCode DMCreateMatrix_Compat(DM dm,Mat *A)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  ierr = DMCreateMatrix(dm,NULL,A);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+#define DMCreateMatrix DMCreateMatrix_Compat
+
 #undef  __FUNCT__
 #define __FUNCT__ "DMGetCoordinateDM"
 PetscErrorCode DMGetCoordinateDM(DM dm,DM *cdm)
