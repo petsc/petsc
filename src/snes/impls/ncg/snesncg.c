@@ -9,7 +9,7 @@ PetscErrorCode SNESReset_NCG(SNES snes)
   PetscFunctionReturn(0);
 }
 
-#define SNESLINESEARCHNCGLINEAR "linear"
+#define SNESLINESEARCHNCGLINEAR "ncglinear"
 
 /*
   SNESDestroy_NCG - Destroys the private SNES_NCG context that was created with SNESCreate_NCG().
@@ -51,8 +51,6 @@ PetscErrorCode SNESSetUp_NCG(SNES snes)
 
   PetscFunctionBegin;
   ierr = SNESSetWorkVecs(snes,2);CHKERRQ(ierr);
-  ierr = SNESSetUpMatrices(snes);CHKERRQ(ierr);
-  ierr = SNESLineSearchRegister(SNESLINESEARCHNCGLINEAR, SNESLineSearchCreate_NCGLinear);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /*
@@ -90,6 +88,7 @@ static PetscErrorCode SNESSetFromOptions_NCG(SNES snes)
       ierr = SNESLineSearchSetType(linesearch, SNESLINESEARCHL2);CHKERRQ(ierr);
     }
   }
+  ierr = SNESLineSearchRegister(SNESLINESEARCHNCGLINEAR, SNESLineSearchCreate_NCGLinear);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -137,6 +136,10 @@ PetscErrorCode SNESLineSearchApply_NCGLinear(SNESLineSearch linesearch)
   xnorm = &linesearch->xnorm;
   ynorm = &linesearch->ynorm;
 
+  if (!snes->jacobian) {
+    ierr = SNESSetUpMatrices(snes);CHKERRQ(ierr);
+  }
+
   /*
 
    The exact step size for unpreconditioned linear CG is just:
@@ -147,13 +150,12 @@ PetscErrorCode SNESLineSearchApply_NCGLinear(SNESLineSearch linesearch)
   ierr  = MatMult(snes->jacobian, Y, W);CHKERRQ(ierr);
   ierr  = VecDot(Y, W, &ptAp);CHKERRQ(ierr);
   alpha = alpha / ptAp;
-  ierr  = PetscPrintf(PetscObjectComm((PetscObject)snes), "alpha: %G\n", PetscRealPart(alpha));CHKERRQ(ierr);
-  ierr  = VecAXPY(X, alpha, Y);CHKERRQ(ierr);
-  ierr  = SNESComputeFunction(snes, X, F);CHKERRQ(ierr);
+  ierr  = VecAXPY(X,-alpha,Y);CHKERRQ(ierr);
+  ierr  = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
 
-  ierr = VecNorm(F, NORM_2, fnorm);CHKERRQ(ierr);
-  ierr = VecNorm(X, NORM_2, xnorm);CHKERRQ(ierr);
-  ierr = VecNorm(Y, NORM_2, ynorm);CHKERRQ(ierr);
+  ierr = VecNorm(F,NORM_2,fnorm);CHKERRQ(ierr);
+  ierr = VecNorm(X,NORM_2,xnorm);CHKERRQ(ierr);
+  ierr = VecNorm(Y,NORM_2,ynorm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
