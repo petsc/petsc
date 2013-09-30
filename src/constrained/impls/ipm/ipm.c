@@ -381,6 +381,7 @@ static PetscErrorCode IPMInitializeBounds(TaoSolver tao)
   
   comm = ((PetscObject)(tao->solution))->comm;
 
+  bigsize = ipmP->n+2*ipmP->nb+ipmP->me;
   if (ipmP->nb > 0) {
     ierr = VecCreate(comm,&ipmP->s); CHKERRQ(ierr);
     ierr = VecSetSizes(ipmP->s,PETSC_DECIDE,ipmP->nb); CHKERRQ(ierr);
@@ -405,7 +406,6 @@ static PetscErrorCode IPMInitializeBounds(TaoSolver tao)
     ierr = VecDuplicate(ipmP->s,&ipmP->Inf_nb); CHKERRQ(ierr);
     ierr = VecSet(ipmP->Inf_nb,TAO_INFINITY); CHKERRQ(ierr);
     
-    bigsize = ipmP->n+2*ipmP->nb+ipmP->me;
     ierr = PetscMalloc(bigsize*sizeof(PetscInt),&stepind); CHKERRQ(ierr);
     ierr = PetscMalloc(ipmP->nb*sizeof(PetscInt),&cind); CHKERRQ(ierr);
     ierr = PetscMalloc(ipmP->mi*sizeof(PetscInt),&ucind); CHKERRQ(ierr);
@@ -433,7 +433,7 @@ static PetscErrorCode IPMInitializeBounds(TaoSolver tao)
       ierr = ISAllGather(ipmP->isxl,&bigxl);CHKERRQ(ierr);
       ierr = ISGetIndices(bigxl,&xli);CHKERRQ(ierr);
       /* find offsets for this processor */
-      xl_offset = 0;
+      xl_offset = ipmP->mi;
       for (i=0;i<ipmP->nxlb;i++) {
 	if (xli[i] < xstart) {
 	  xl_offset++;
@@ -443,15 +443,14 @@ static PetscErrorCode IPMInitializeBounds(TaoSolver tao)
     
       ierr = ISGetIndices(ipmP->isxl,&xli);CHKERRQ(ierr);
       ierr = ISGetLocalSize(ipmP->isxl,&nloc);CHKERRQ(ierr);
-      counter=0;
       for (i=0;i<nloc;i++) {
-	xind[counter] = xli[i];
-	cind[counter] = xl_offset+i;
+	xind[i] = xli[i];
+	cind[i] = xl_offset+i;
       }
 
       ierr = ISCreateGeneral(comm,nloc,xind,PETSC_COPY_VALUES,&isx); CHKERRQ(ierr);
       ierr = ISCreateGeneral(comm,nloc,cind,PETSC_COPY_VALUES,&isc);CHKERRQ(ierr);
-      ierr = VecScatterCreate(tao->constraints_inequality,isx,ipmP->ci,isc,&ipmP->xl_scat); CHKERRQ(ierr);
+      ierr = VecScatterCreate(tao->XL,isx,ipmP->ci,isc,&ipmP->xl_scat); CHKERRQ(ierr);
       ierr = ISDestroy(&isx);CHKERRQ(ierr);
       ierr = ISDestroy(&isc);CHKERRQ(ierr);
       ierr = ISDestroy(&bigxl);CHKERRQ(ierr);
@@ -462,7 +461,7 @@ static PetscErrorCode IPMInitializeBounds(TaoSolver tao)
       ierr = ISAllGather(ipmP->isxu,&bigxu);CHKERRQ(ierr);
       ierr = ISGetIndices(bigxu,&xui);CHKERRQ(ierr);
       /* find offsets for this processor */
-      xu_offset = 0;
+      xu_offset = ipmP->mi + ipmP->nxlb;
       for (i=0;i<ipmP->nxub;i++) {
 	if (xui[i] < xstart) {
 	  xu_offset++;
@@ -472,15 +471,14 @@ static PetscErrorCode IPMInitializeBounds(TaoSolver tao)
 
       ierr = ISGetIndices(ipmP->isxu,&xui);CHKERRQ(ierr);
       ierr = ISGetLocalSize(ipmP->isxu,&nloc);CHKERRQ(ierr);
-      counter=0;
       for (i=0;i<nloc;i++) {
-	xind[counter] = xui[i];
-	cind[counter] = xu_offset+i;
+	xind[i] = xui[i];
+	cind[i] = xu_offset+i;
       }
 
       ierr = ISCreateGeneral(comm,nloc,xind,PETSC_COPY_VALUES,&isx); CHKERRQ(ierr);
       ierr = ISCreateGeneral(comm,nloc,cind,PETSC_COPY_VALUES,&isc);CHKERRQ(ierr);
-      ierr = VecScatterCreate(tao->constraints_inequality,isx,ipmP->ci,isc,&ipmP->xu_scat); CHKERRQ(ierr);
+      ierr = VecScatterCreate(tao->XU,isx,ipmP->ci,isc,&ipmP->xu_scat); CHKERRQ(ierr);
       ierr = ISDestroy(&isx);CHKERRQ(ierr);
       ierr = ISDestroy(&isc);CHKERRQ(ierr);
       ierr = ISDestroy(&bigxu);CHKERRQ(ierr);
@@ -516,14 +514,12 @@ static PetscErrorCode IPMInitializeBounds(TaoSolver tao)
     ierr = ISCreateGeneral(comm,send-sstart,cind,PETSC_COPY_VALUES,&is1); CHKERRQ(ierr);
     ierr = VecScatterCreate(ipmP->bigstep,sis,ipmP->s,is1,&ipmP->step2); CHKERRQ(ierr);
     ierr = ISDestroy(&sis); CHKERRQ(ierr);
-    ierr = ISDestroy(&is1); CHKERRQ(ierr);
 
     for (i=sstart;i<send;i++) {
-      stepind[i-sstart] = i+ipmP->n+ipmP->nb;
+      stepind[i-sstart] = i+ipmP->n+ipmP->me;
       cind[i-sstart] = i;
     }
     ierr = ISCreateGeneral(comm,send-sstart,stepind,PETSC_COPY_VALUES,&sis); CHKERRQ(ierr);
-    ierr = ISCreateGeneral(comm,send-sstart,cind,PETSC_COPY_VALUES,&is1); CHKERRQ(ierr);
     ierr = VecScatterCreate(ipmP->s,is1,ipmP->bigrhs,sis,&ipmP->rhs3); CHKERRQ(ierr);
     ierr = ISDestroy(&sis); CHKERRQ(ierr);
     ierr = ISDestroy(&is1); CHKERRQ(ierr);
@@ -544,7 +540,7 @@ static PetscErrorCode IPMInitializeBounds(TaoSolver tao)
 
 
     for (i=ucestart;i<uceend;i++) {
-      stepind[i-ucestart] = i + ipmP->n+ipmP->me;
+      stepind[i-ucestart] = i + ipmP->n;
     }
     
     ierr = ISCreateGeneral(comm,uceend-ucestart,stepind,PETSC_COPY_VALUES,&sis); CHKERRQ(ierr);
@@ -558,8 +554,8 @@ static PetscErrorCode IPMInitializeBounds(TaoSolver tao)
       stepind[i-sstart] = i + ipmP->n + ipmP->nb + ipmP->me;
       cind[i-sstart] = i;
     }
-    ierr = ISCreateGeneral(comm,uceend-ucestart,cind,PETSC_COPY_VALUES,&is1);
-    ierr = ISCreateGeneral(comm,uceend-ucestart,stepind,PETSC_COPY_VALUES,&sis); CHKERRQ(ierr);
+    ierr = ISCreateGeneral(comm,send-sstart,cind,PETSC_COPY_VALUES,&is1);
+    ierr = ISCreateGeneral(comm,send-sstart,stepind,PETSC_COPY_VALUES,&sis); CHKERRQ(ierr);
     ierr = VecScatterCreate(ipmP->bigstep,sis,ipmP->s,is1,&ipmP->step4); CHKERRQ(ierr);
     ierr = VecScatterCreate(ipmP->s,is1,ipmP->bigrhs,sis,&ipmP->rhs4); CHKERRQ(ierr);
     ierr = ISDestroy(&sis); CHKERRQ(ierr);
