@@ -1064,6 +1064,11 @@ runex56_ml:
          ${DIFF} output/ex56_ml.out ex56.tmp || echo ${PWD} "\nPossible problem with with ex56_2, diffs above \n========================================="; \
         ${RM} -f ex56.tmp
 
+runex56_nns:
+	-@${MPIEXEC} -n 1 ./ex56 -ne 9 -alpha 1.e-3 -ksp_monitor_short -ksp_type cg -ksp_max_it 50 -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -pc_gamg_coarse_eq_limit 1000 -mg_levels_ksp_type chebyshev -mg_levels_pc_type sor -pc_gamg_reuse_interpolation true -two_solves -use_mat_nearnullspace > ex56.tmp 2>&1;	\
+         ${DIFF} output/ex56_nns.out ex56.tmp || printf "${PWD}\nPossible problem with with ex56_nns, diffs above \n=========================================\n"; \
+         ${RM} -f ex56.tmp
+
 runex58:
 	-@${MPIEXEC} -n 1 ./ex58 -mat_type aij > ex58.tmp 2>&1;         \
 	${DIFF} output/ex58.out ex58.tmp || echo ${PWD} "\nPossible problem with with ex58, diffs above \n========================================="; \
@@ -1090,6 +1095,7 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PETSc run
                                  ex43.PETSc runex43 runex43_2 runex43_3 ex43.rm \
                                  ex45.PETSc runex45 runex45_2 ex45.rm \
                                  ex49.PETSc runex49 runex49_2 runex49_3 ex49.rm ex53.PETSc runex53 ex53.rm ex55.PETSc runex55_SA ex55.rm\
+                                 ex56.PETSc runex56_nns runex56 ex56.rm \
                                  ex58.PETSc runex58 runex58_baij runex58_sbaij ex58.rm
 TESTEXAMPLES_C_X	       = ex2.PETSc runex2_5 ex2.rm ex5.PETSc runex5_5 ex5.rm ex8.PETSc ex8.rm ex28.PETSc runex28 ex28.rm
 TESTEXAMPLES_FORTRAN	       = ex1f.PETSc runex1f ex1f.rm ex2f.PETSc runex2f ex2f.rm ex6f.PETSc ex6f.rm \

@@ -676,6 +676,7 @@ PetscErrorCode PCSetData_AGG(PC pc, Mat a_A)
     const Vec *vecs; const PetscScalar *v;
     ierr = MatGetLocalSize(a_A,&mlocal,NULL);CHKERRQ(ierr);
     ierr = MatNullSpaceGetVecs(mnull, &has_const, &nvec, &vecs);CHKERRQ(ierr);
+    pc_gamg->data_sz = (nvec+!!has_const)*mlocal;
     ierr = PetscMalloc((nvec+!!has_const)*mlocal*sizeof(*nullvec),&nullvec);CHKERRQ(ierr);
     if (has_const) for (i=0; i<mlocal; i++) nullvec[i] = 1.0;
     for (i=0; i<nvec; i++) {

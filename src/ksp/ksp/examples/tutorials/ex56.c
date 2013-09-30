@@ -19,7 +19,7 @@ int main(int argc,char **args)
   PetscErrorCode ierr;
   PetscInt       m,nn,M,Istart,Iend,i,j,k,ii,jj,kk,ic,ne=4,id;
   PetscReal      x,y,z,h,*coords,soft_alpha=1.e-3;
-  PetscBool      two_solves = PETSC_FALSE,test_nonzero_cols = PETSC_FALSE;
+  PetscBool      two_solves=PETSC_FALSE,test_nonzero_cols=PETSC_FALSE,use_nearnullspace=PETSC_FALSE;
   Vec            xx,bb;
   KSP            ksp;
   MPI_Comm       comm;
@@ -44,6 +44,7 @@ int main(int argc,char **args)
     ierr = PetscOptionsReal("-alpha","material coefficient inside circle","",soft_alpha,&soft_alpha,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-two_solves","solve additional variant of the problem","",two_solves,&two_solves,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-test_nonzero_cols","nonzero test","",test_nonzero_cols,&test_nonzero_cols,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-use_mat_nearnullspace","MatNearNullSpace API test","",use_nearnullspace,&use_nearnullspace,NULL);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
@@ -255,7 +256,17 @@ int main(int argc,char **args)
 
   /* finish KSP/PC setup */
   ierr = KSPSetOperators(ksp, Amat, Amat, SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-  ierr = PCSetCoordinates(pc, 3, m/3, coords);CHKERRQ(ierr);
+  if (use_nearnullspace) {
+    MatNullSpace matnull;
+    Vec vec_coords;
+    ierr = VecCreateSeqWithArray(MPI_COMM_SELF,3,m,coords,&vec_coords);CHKERRQ(ierr);
+    ierr = MatNullSpaceCreateRigidBody(vec_coords,&matnull);CHKERRQ(ierr);
+    ierr = MatSetNearNullSpace(Amat,matnull);CHKERRQ(ierr);
+    ierr = MatNullSpaceDestroy(&matnull);CHKERRQ(ierr);
+    ierr = VecDestroy(&vec_coords);CHKERRQ(ierr);
+  } else {
+    ierr = PCSetCoordinates(pc, 3, m/3, coords);CHKERRQ(ierr);
+  }
 
   ierr = MaybeLogStagePush(stage[0]);CHKERRQ(ierr);
 
