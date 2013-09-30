@@ -686,7 +686,7 @@ PetscErrorCode PCSetData_AGG(PC pc, Mat a_A)
     pc_gamg->data           = nullvec;
     pc_gamg->data_cell_cols = (nvec+!!has_const);
 
-    ierr = MatGetBlockSize(a_A, &bs);CHKERRQ(ierr); /* this does not work for Stokes */
+    ierr = MatGetBlockSize(a_A, &bs);CHKERRQ(ierr);
 
     pc_gamg->data_cell_rows = bs;
   }
