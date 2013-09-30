@@ -576,7 +576,7 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
     Publish convergence information using AMS
   */
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsBool("-ksp_monitor_saws","Publish KSP progress using AMS","KSPMonitorSet",flg,&flg,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-ksp_monitor_saws","Publish KSP progress using SAWs","KSPMonitorSet",flg,&flg,NULL);CHKERRQ(ierr);
   if (flg) {
     void *ctx;
     ierr = KSPMonitorSAWsCreate(ksp,&ctx);CHKERRQ(ierr);
@@ -604,7 +604,7 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
   {
   PetscBool set;
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsBool("-ksp_saws_block","Block for SAWs memory snooper at end of KSPSolve","PetscObjectSAWsBlock",((PetscObject)ksp)->amspublishblock,&flg,&set);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-ksp_saws_block","Block for SAWs at end of KSPSolve","PetscObjectSAWsBlock",((PetscObject)ksp)->amspublishblock,&flg,&set);CHKERRQ(ierr);
   if (set) {
     ierr = PetscObjectSAWsSetBlock((PetscObject)ksp,flg);CHKERRQ(ierr);
   }
