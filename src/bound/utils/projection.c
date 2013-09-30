@@ -75,7 +75,7 @@ PetscErrorCode VecStepMaxBounded(Vec X, Vec DX, Vec XL, Vec XU, PetscReal *stepm
   PetscInt i,nn;
   PetscReal *xx,*dx,*xl,*xu;
   PetscReal localmax=0;
-  PetscMPIInt comm;
+  MPI_Comm comm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(X,VEC_CLASSID,2);
@@ -167,7 +167,7 @@ PetscErrorCode VecStepMax(Vec X, Vec DX, PetscReal *step){
   PetscInt i, nn;
   PetscReal stepmax=TAO_INFINITY;
   PetscReal *xx, *dx;
-  PetscMPIInt comm;
+  MPI_Comm comm;
     
   PetscFunctionBegin;
   PetscValidHeaderSpecific(X,VEC_CLASSID,1);
