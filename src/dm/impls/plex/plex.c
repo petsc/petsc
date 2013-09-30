@@ -1206,7 +1206,7 @@ PetscErrorCode DMPlexRestoreTransitiveClosure(DM dm, PetscInt p, PetscBool useCo
   if (numPoints) PetscValidIntPointer(numPoints,4);
   if (points) PetscValidPointer(points,5);
   ierr = DMRestoreWorkArray(dm, 0, PETSC_INT, points);CHKERRQ(ierr);
-  if (numPoints) *numPoints = NULL;
+  if (numPoints) *numPoints = 0;
   PetscFunctionReturn(0);
 }
 
@@ -1780,7 +1780,7 @@ PetscErrorCode DMPlexRestoreMeet(DM dm, PetscInt numPoints, const PetscInt point
   PetscValidIntPointer(numCoveredPoints,4);
   PetscValidPointer(coveredPoints,5);
   ierr = DMRestoreWorkArray(dm, 0, PETSC_INT, (void*) coveredPoints);CHKERRQ(ierr);
-  *numCoveredPoints = NULL;
+  *numCoveredPoints = 0;
   PetscFunctionReturn(0);
 }
 
