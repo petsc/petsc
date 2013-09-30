@@ -54,20 +54,19 @@ PetscErrorCode PCGAMGClassicalGraphSplitting_Private(Mat G,Mat *Gd, Mat *Go)
 #define __FUNCT__ "PCGAMGGraph_Classical"
 PetscErrorCode PCGAMGGraph_Classical(PC pc,const Mat A,Mat *G)
 {
-  PetscInt          s,f,idx;
+  PetscInt          s,f,n,idx,lidx,gidx;
   PetscInt          r,c,ncols;
   const PetscInt    *rcol;
   const PetscScalar *rval;
   PetscInt          *gcol;
   PetscScalar       *gval;
   PetscReal         rmax;
-  PetscInt          ncolstotal,cmax = 0;
+  PetscInt          cmax = 0;
   PC_MG             *mg;
   PC_GAMG           *gamg;
   PetscErrorCode    ierr;
   PetscInt          *gsparse,*lsparse;
   PetscScalar       *Amax;
-  Mat               lA,gA;
   MatType           mtype;
 
   PetscFunctionBegin;
@@ -75,68 +74,42 @@ PetscErrorCode PCGAMGGraph_Classical(PC pc,const Mat A,Mat *G)
   gamg = (PC_GAMG *)mg->innerctx;
 
   ierr = MatGetOwnershipRange(A,&s,&f);CHKERRQ(ierr);
+  n=f-s;
+  ierr = PetscMalloc(sizeof(PetscInt)*n,&lsparse);CHKERRQ(ierr);
+  ierr = PetscMalloc(sizeof(PetscInt)*n,&gsparse);CHKERRQ(ierr);
+  ierr = PetscMalloc(sizeof(PetscScalar)*n,&Amax);CHKERRQ(ierr);
 
-  ierr = PCGAMGClassicalGraphSplitting_Private(A,&lA,&gA);CHKERRQ(ierr);
-
-  ierr = PetscMalloc(sizeof(PetscInt)*(f - s),&lsparse);CHKERRQ(ierr);
-  if (gA) {ierr = PetscMalloc(sizeof(PetscInt)*(f - s),&gsparse);CHKERRQ(ierr);}
-  else {
-    gsparse = NULL;
-  }
-  ierr = PetscMalloc(sizeof(PetscScalar)*(f - s),&Amax);CHKERRQ(ierr);
-
-  for (r = 0;r < f-s;r++) {
+  for (r = 0;r < n;r++) {
     lsparse[r] = 0;
-    if (gsparse) gsparse[r] = 0;
+    gsparse[r] = 0;
   }
 
-  for (r = 0;r < f-s;r++) {
+  for (r = s;r < f;r++) {
     /* determine the maximum off-diagonal in each row */
     rmax = 0.;
-    ierr = MatGetRow(lA,r,&ncols,&rcol,&rval);CHKERRQ(ierr);
-    ncolstotal = ncols;
+    ierr = MatGetRow(A,r,&ncols,&rcol,&rval);CHKERRQ(ierr);
     for (c = 0; c < ncols; c++) {
       if (PetscAbsScalar(rval[c]) > rmax && rcol[c] != r) {
         rmax = PetscAbsScalar(rval[c]);
       }
     }
-    ierr = MatRestoreRow(lA,r,&ncols,&rcol,&rval);CHKERRQ(ierr);
-
-    if (gA) {
-      ierr = MatGetRow(gA,r,&ncols,&rcol,&rval);CHKERRQ(ierr);
-      ncolstotal += ncols;
-      for (c = 0; c < ncols; c++) {
-        if (PetscAbsScalar(rval[c]) > rmax) {
-          rmax = PetscAbsScalar(rval[c]);
-        }
-      }
-      ierr = MatRestoreRow(gA,r,&ncols,&rcol,&rval);CHKERRQ(ierr);
-    }
-    Amax[r] = rmax;
-    if (ncolstotal > cmax) cmax = ncolstotal;
-
-    ierr = MatGetRow(lA,r,&ncols,&rcol,&rval);CHKERRQ(ierr);
-    idx = 0;
-
+    Amax[r-s] = rmax;
+    if (ncols > cmax) cmax = ncols;
+    lidx = 0;
+    gidx = 0;
     /* create the local and global sparsity patterns */
     for (c = 0; c < ncols; c++) {
-      if (PetscAbsScalar(rval[c]) > gamg->threshold*PetscRealPart(Amax[r])) {
-        idx++;
-      }
-    }
-    ierr = MatRestoreRow(lA,r,&ncols,&rcol,&rval);CHKERRQ(ierr);
-    lsparse[r] = idx;
-    if (gA) {
-      idx = 0;
-      ierr = MatGetRow(gA,r,&ncols,&rcol,&rval);CHKERRQ(ierr);
-      for (c = 0; c < ncols; c++) {
-        if (PetscAbsScalar(rval[c]) > gamg->threshold*PetscRealPart(Amax[r])) {
-          idx++;
+      if (PetscAbsScalar(rval[c]) > gamg->threshold*PetscRealPart(Amax[r-s])) {
+        if (rcol[c] < f && rcol[c] >= s) {
+          lidx++;
+        } else {
+          gidx++;
         }
       }
-      ierr = MatRestoreRow(gA,r,&ncols,&rcol,&rval);CHKERRQ(ierr);
-      gsparse[r] = idx;
     }
+    ierr = MatRestoreRow(A,r,&ncols,&rcol,&rval);CHKERRQ(ierr);
+    lsparse[r-s] = lidx;
+    gsparse[r-s] = gidx;
   }
   ierr = PetscMalloc(sizeof(PetscScalar)*cmax,&gval);CHKERRQ(ierr);
   ierr = PetscMalloc(sizeof(PetscInt)*cmax,&gcol);CHKERRQ(ierr);
@@ -144,7 +117,7 @@ PetscErrorCode PCGAMGGraph_Classical(PC pc,const Mat A,Mat *G)
   ierr = MatCreate(PetscObjectComm((PetscObject)A),G); CHKERRQ(ierr);
   ierr = MatGetType(A,&mtype);CHKERRQ(ierr);
   ierr = MatSetType(*G,mtype);CHKERRQ(ierr);
-  ierr = MatSetSizes(*G,f-s,f-s,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
+  ierr = MatSetSizes(*G,n,n,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(*G,0,lsparse,0,gsparse);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(*G,0,lsparse);CHKERRQ(ierr);
   for (r = s;r < f;r++) {
