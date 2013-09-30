@@ -275,7 +275,7 @@ PetscErrorCode PCGAMGProlongator_Classical(PC pc, const Mat A, const Mat G, Pets
     } else {
       lcid[i] = -1;
     }
-    c_scalar = (PetscScalar)lcid[i];
+    *((PetscInt *)&c_scalar) = lcid[i];
     c_indx = fs+i;
     ierr = VecSetValues(F,1,&c_indx,&c_scalar,INSERT_VALUES);CHKERRQ(ierr);
   }
@@ -283,7 +283,7 @@ PetscErrorCode PCGAMGProlongator_Classical(PC pc, const Mat A, const Mat G, Pets
   ierr = VecAssemblyBegin(F);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(F);CHKERRQ(ierr);
 
-  /* split the graph into two */
+  /* split the operator into two */
   ierr = PCGAMGClassicalGraphSplitting_Private(G,&lG,&gG);CHKERRQ(ierr);
   ierr = PCGAMGClassicalGraphSplitting_Private(A,&lA,&gA);CHKERRQ(ierr);
 
@@ -296,7 +296,7 @@ PetscErrorCode PCGAMGProlongator_Classical(PC pc, const Mat A, const Mat G, Pets
     ierr = PetscMalloc(sizeof(PetscInt)*gn,&gcid);CHKERRQ(ierr);
     for (i=0;i<gn;i++) {
       ierr = VecGetValues(gF,1,&i,&c_scalar);CHKERRQ(ierr);
-      gcid[i] = (PetscInt)PetscRealPart(c_scalar);
+      gcid[i] = *((PetscInt *)&c_scalar);
     }
   }
 
@@ -308,7 +308,6 @@ PetscErrorCode PCGAMGProlongator_Classical(PC pc, const Mat A, const Mat G, Pets
 
   for (i=0;i<fn;i++) {
     /* on */
-    ierr = MatGetRow(lG,i,&ncols,&icols,&vcols);CHKERRQ(ierr);
     ncolstotal = ncols;
     lsparse[i] = 0;
     gsparse[i] = 0;
@@ -316,6 +315,7 @@ PetscErrorCode PCGAMGProlongator_Classical(PC pc, const Mat A, const Mat G, Pets
       lsparse[i] = 1;
       gsparse[i] = 0;
     } else {
+      ierr = MatGetRow(lG,i,&ncols,&icols,&vcols);CHKERRQ(ierr);
       for (j = 0;j < ncols;j++) {
         col = icols[j];
         if (lcid[col] >= 0 && vcols[j] != 0.) {
@@ -333,7 +333,7 @@ PetscErrorCode PCGAMGProlongator_Classical(PC pc, const Mat A, const Mat G, Pets
             gsparse[i] += 1;
           }
         }
-        ierr = MatRestoreRow(gG,i,&ncols,NULL,NULL);CHKERRQ(ierr);
+        ierr = MatRestoreRow(gG,i,&ncols,&icols,&vcols);CHKERRQ(ierr);
       }
       if (ncolstotal > cmax) cmax = ncolstotal;
     }
