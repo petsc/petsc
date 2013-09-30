@@ -2909,7 +2909,7 @@ PetscErrorCode MatMPIBAIJSetPreallocationCSR_MPIBAIJ(Mat B,PetscInt bs,const Pet
   PetscInt       i,j,d,nz,nz_max=0,*d_nnz=0,*o_nnz=0;
   const PetscInt *JJ    =0;
   PetscScalar    *values=0;
-  PetscBool      roworiented = ((Mat_MPIBAIJ*)A->data)->roworiented;
+  PetscBool      roworiented = ((Mat_MPIBAIJ*)B->data)->roworiented;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -4092,8 +4092,8 @@ PetscErrorCode  MatCreateMPIBAIJWithArrays(MPI_Comm comm,PetscInt bs,PetscInt m,
   ierr = MatCreate(comm,mat);CHKERRQ(ierr);
   ierr = MatSetSizes(*mat,m,n,M,N);CHKERRQ(ierr);
   ierr = MatSetType(*mat,MATMPISBAIJ);CHKERRQ(ierr);
-  ierr = MatSetOption(B,MAT_ROW_ORIENTED,PETSC_FALSE);CHKERRQ(ierr);
+  ierr = MatSetOption(*mat,MAT_ROW_ORIENTED,PETSC_FALSE);CHKERRQ(ierr);
   ierr = MatMPIBAIJSetPreallocationCSR(*mat,bs,i,j,a);CHKERRQ(ierr);
-  ierr = MatSetOption(B,MAT_ROW_ORIENTED,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = MatSetOption(*mat,MAT_ROW_ORIENTED,PETSC_TRUE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
