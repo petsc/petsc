@@ -555,6 +555,88 @@ PetscErrorCode  PetscFreeArguments(char **args)
   PetscFunctionReturn(0);
 }
 
+#if defined(PETSC_HAVE_SAWS)
+#undef __FUNCT__
+#define __FUNCT__ "PetscInitializeSAWs"
+PetscErrorCode  PetscInitializeSAWs(const char help[])
+{
+  if (!PetscGlobalRank) {
+    char           cert[PETSC_MAX_PATH_LEN],root[PETSC_MAX_PATH_LEN],*intro,programname[64],*appline;
+    int            port;
+    PetscBool      flg,rootlocal = PETSC_FALSE,flg2;
+    size_t         applinelen,introlen;
+    PetscErrorCode ierr;
+
+    ierr = PetscOptionsHasName(NULL,"-saws_log",&flg);CHKERRQ(ierr);
+    if (flg) {
+      char  sawslog[PETSC_MAX_PATH_LEN];
+
+      ierr = PetscOptionsGetString(NULL,"-saws_log",sawslog,PETSC_MAX_PATH_LEN,NULL);CHKERRQ(ierr);
+      if (sawslog[0]) {
+        PetscStackCallSAWs(SAWs_Set_Use_Logfile,(sawslog));
+      } else {
+        PetscStackCallSAWs(SAWs_Set_Use_Logfile,(NULL));
+      }
+    }
+    ierr = PetscOptionsGetString(NULL,"-saws_https",cert,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+    if (flg) {
+      PetscStackCallSAWs(SAWs_Set_Use_HTTPS,(cert));
+    }
+    ierr = PetscOptionsGetInt(NULL,"-saws_port",&port,&flg);CHKERRQ(ierr);
+    if (flg) {
+      PetscStackCallSAWs(SAWs_Set_Port,(port));
+    }
+    ierr = PetscOptionsGetString(NULL,"-saws_root",root,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+    if (flg) {
+      PetscStackCallSAWs(SAWs_Set_Document_Root,(root));CHKERRQ(ierr);
+      ierr = PetscStrcmp(root,".",&rootlocal);CHKERRQ(ierr);
+    }
+    ierr = PetscOptionsHasName(NULL,"-saws_local",&flg2);CHKERRQ(ierr);
+    if (flg2) {
+      char jsdir[PETSC_MAX_PATH_LEN];
+      if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"-saws_local option requires -saws_root option");
+      ierr = PetscSNPrintf(jsdir,PETSC_MAX_PATH_LEN,"%s/js",root);CHKERRQ(ierr);
+      ierr = PetscTestDirectory(jsdir,'r',&flg);CHKERRQ(ierr);
+      if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"-saws_local option requires js directory in root directory");
+      PetscStackCallSAWs(SAWs_Set_Local_JSHeader,());CHKERRQ(ierr);
+    }
+    ierr = PetscGetProgramName(programname,64);CHKERRQ(ierr);
+    ierr = PetscStrlen(help,&applinelen);CHKERRQ(ierr);
+    introlen   = 4096 + applinelen;
+    applinelen += 256;
+    ierr = PetscMalloc(applinelen,&appline);CHKERRQ(ierr);
+    ierr = PetscMalloc(introlen,&intro);CHKERRQ(ierr);
+
+    if (rootlocal) {
+      ierr = PetscSNPrintf(appline,applinelen,"%s.c.html",programname);CHKERRQ(ierr);
+      ierr = PetscTestFile(appline,'r',&rootlocal);CHKERRQ(ierr);
+    }
+    if (rootlocal && help) {
+      ierr = PetscSNPrintf(appline,applinelen,"<center> Running <a href=\"%s.c.html\">%s</a></center><br><pre>%s</pre><br>\n",programname,programname,help);
+    } else if (help) {
+      ierr = PetscSNPrintf(appline,applinelen,"<center>Running %s </center><br><pre>%s</pre><br>\n",programname,help);
+    } else {
+      ierr = PetscSNPrintf(appline,applinelen,"<center> Running %s</center><br>\n",programname);
+    }
+
+    ierr = PetscSNPrintf(intro,introlen,"<body>\n"
+                                    "<center><h2> <a href=\"http://www.mcs.anl.gov/petsc\">PETSc</a> Application Web server powered by <a href=\"https://bitbucket.org/saws/saws\">SAWs</a> </h2></center>\n"
+                                    "<center>This is the default PETSc application dashboard, from it you can access any published PETSc objects or logging data</center><br>\n"
+                                    "%s",appline);
+    PetscStackCallSAWs(SAWs_Set_Body,("index.html",0,intro));
+    ierr = PetscFree(intro);CHKERRQ(ierr);
+    ierr = PetscFree(appline);CHKERRQ(ierr);
+    PetscStackCallSAWs(SAWs_Initialize,());
+    ierr = PetscCitationsRegister("@TechReport{ saws,"
+                                  "Author = {Matt Otten and Jed Brown and Barry Smith},"
+                                  "Title  = {Scientific Application Web Server (SAWs) Users Manual},"
+                                  "Institution = {Argonne National Laboratory},"
+                                  "Year   = 2013}",NULL);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+#endif
+
 #undef __FUNCT__
 #define __FUNCT__ "PetscInitialize"
 /*@C
@@ -794,79 +876,7 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   ierr = PetscCitationsInitialize();CHKERRQ(ierr);
 
 #if defined(PETSC_HAVE_SAWS)
-  if (!PetscGlobalRank) {
-    char        cert[PETSC_MAX_PATH_LEN],root[PETSC_MAX_PATH_LEN],*intro,programname[64],*appline;
-    int         port;
-    PetscBool   rootlocal = PETSC_FALSE,flg2;
-    size_t      applinelen,introlen;
-
-    ierr = PetscOptionsHasName(NULL,"-saws_log",&flg);CHKERRQ(ierr);
-    if (flg) {
-      char  sawslog[PETSC_MAX_PATH_LEN];
-
-      ierr = PetscOptionsGetString(NULL,"-saws_log",sawslog,PETSC_MAX_PATH_LEN,NULL);CHKERRQ(ierr);
-      if (sawslog[0]) {
-        PetscStackCallSAWs(SAWs_Set_Use_Logfile,(sawslog));
-      } else {
-        PetscStackCallSAWs(SAWs_Set_Use_Logfile,(NULL));
-      }
-    }
-    ierr = PetscOptionsGetString(NULL,"-saws_https",cert,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
-    if (flg) {
-      PetscStackCallSAWs(SAWs_Set_Use_HTTPS,(cert));
-    }
-    ierr = PetscOptionsGetInt(NULL,"-saws_port",&port,&flg);CHKERRQ(ierr);
-    if (flg) {
-      PetscStackCallSAWs(SAWs_Set_Port,(port));
-    }
-    ierr = PetscOptionsGetString(NULL,"-saws_root",root,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
-    if (flg) {
-      PetscStackCallSAWs(SAWs_Set_Document_Root,(root));CHKERRQ(ierr);
-      ierr = PetscStrcmp(root,".",&rootlocal);CHKERRQ(ierr);
-    }
-    ierr = PetscOptionsHasName(NULL,"-saws_local",&flg2);CHKERRQ(ierr);
-    if (flg2) {
-      char jsdir[PETSC_MAX_PATH_LEN];
-      if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"-saws_local option requires -saws_root option");
-      ierr = PetscSNPrintf(jsdir,PETSC_MAX_PATH_LEN,"%s/js",root);CHKERRQ(ierr);
-      ierr = PetscTestDirectory(jsdir,'r',&flg);CHKERRQ(ierr);
-      if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"-saws_local option requires js directory in root directory");   
-      PetscStackCallSAWs(SAWs_Set_Local_JSHeader,());CHKERRQ(ierr);
-    }
-    ierr = PetscGetProgramName(programname,64);CHKERRQ(ierr);
-    ierr = PetscStrlen(help,&applinelen);CHKERRQ(ierr);
-    introlen   = 4096 + applinelen;
-    applinelen += 256;
-    ierr = PetscMalloc(applinelen,&appline);CHKERRQ(ierr);
-    ierr = PetscMalloc(introlen,&intro);CHKERRQ(ierr);
-
-    if (rootlocal) {
-      ierr = PetscSNPrintf(appline,applinelen,"%s.c.html",programname);CHKERRQ(ierr);
-      ierr = PetscTestFile(appline,'r',&rootlocal);CHKERRQ(ierr);
-    }
-    if (rootlocal && help) {
-      ierr = PetscSNPrintf(appline,applinelen,"<center> Running <a href=\"%s.c.html\">%s</a></center><br><pre>%s</pre><br>\n",programname,programname,help);
-    } else if (help) {
-      ierr = PetscSNPrintf(appline,applinelen,"<center>Running %s </center><br><pre>%s</pre><br>\n",programname,help);
-    } else {
-      ierr = PetscSNPrintf(appline,applinelen,"<center> Running %s</center><br>\n",programname);
-    }
-
-    ierr = PetscSNPrintf(intro,introlen,"<body>\n"
-                                    "<center><h2> <a href=\"http://www.mcs.anl.gov/petsc\">PETSc</a> Application Web server powered by <a href=\"https://bitbucket.org/saws/saws\">SAWs</a> </h2></center>\n"
-                                    "<center>This is the default PETSc application dashboard, from it you can access any published PETSc objects or logging data</center><br>\n"
-                                    "%s",appline);
-    PetscStackCallSAWs(SAWs_Set_Body,("index.html",0,intro));
-    ierr = PetscFree(intro);CHKERRQ(ierr);
-    ierr = PetscFree(appline);CHKERRQ(ierr);
-    PetscStackCallSAWs(SAWs_Initialize,());
-    ierr = PetscCitationsRegister("@TechReport{ saws,"
-                                  "Author = {Matt Otten and Jed Brown and Barry Smith},"
-                                  "Title  = {Scientific Application Web Server (SAWs) Users Manual},"
-                                  "Institution = {Argonne National Laboratory},"
-                                  "Year   = 2013}",NULL);CHKERRQ(ierr);
-  }
-
+  ierr = PetscInitializeSAWs(help);CHKERRQ(ierr);
 #endif
 
   /* SHOULD PUT IN GUARDS: Make sure logging is initialized, even if we do not print it out */
