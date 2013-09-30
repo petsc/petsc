@@ -2949,7 +2949,6 @@ PetscErrorCode MatMPIBAIJSetPreallocationCSR_MPIBAIJ(Mat B,PetscInt bs,const Pet
     ierr = PetscMalloc(bs*bs*nz_max*sizeof(PetscScalar),&values);CHKERRQ(ierr);
     ierr = PetscMemzero(values,bs*bs*nz_max*sizeof(PetscScalar));CHKERRQ(ierr);
   }
-  ierr = MatSetOption(B,MAT_ROW_ORIENTED,PETSC_FALSE);CHKERRQ(ierr);
   for (i=0; i<m; i++) {
     PetscInt          row    = i + rstart;
     PetscInt          ncols  = ii[i+1] - ii[i];
@@ -2982,12 +2981,9 @@ PetscErrorCode MatMPIBAIJSetPreallocationCSR_MPIBAIJ(Mat B,PetscInt bs,const Pet
 
    Level: developer
 
-   Notes: the order of the entries in values is the same as the block compressed sparse row storage format; that is, it is the same as a three dimensional array
-     in Fortran values(bs,bs,nnz) that contains the first column of the first block, followed by the second column of the first block etc etc.
-
 .keywords: matrix, aij, compressed row, sparse, parallel
 
-.seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues(), MatMPIBAIJSetPreallocation(), MatCreateAIJ(), MPIAIJ, MatCreateMPIBAIJWithArrays(), MPIBAIJ
+.seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues(), MatMPIBAIJSetPreallocation(), MatCreateAIJ(), MPIAIJ
 @*/
 PetscErrorCode  MatMPIBAIJSetPreallocationCSR(Mat B,PetscInt bs,const PetscInt i[],const PetscInt j[], const PetscScalar v[])
 {
@@ -4058,9 +4054,6 @@ PetscErrorCode matmpibaijsetvaluesblocked_(Mat *matin,PetscInt *min,const PetscI
        The i, j, and a arrays ARE copied by this routine into the internal format used by PETSc;
      thus you CANNOT change the matrix entries by changing the values of a[] after you have
      called this routine. Use MatCreateMPIAIJWithSplitArrays() to avoid needing to copy the arrays.
-
-     The order of the entries in values is the same as the block compressed sparse row storage format; that is, it is the same as a three dimensional array
-     in Fortran values(bs,bs,nnz) that contains the first column of the first block, followed by the second column of the first block etc etc.
 
        The i and j indices are 0 based, and i indices are indices corresponding to the local j array.
 
