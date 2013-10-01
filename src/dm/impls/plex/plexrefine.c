@@ -995,6 +995,7 @@ PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt depthSiz
       }
       ierr = DMPlexSetSupport(rdm, newp, supportNew);CHKERRQ(ierr);
     }
+    ierr = PetscFree(supportRef);CHKERRQ(ierr);
     break;
   case 3:
     if (cMax < 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "No cell maximum specified in hybrid mesh");
@@ -2433,6 +2434,7 @@ PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt depthSiz
       }
       ierr = DMPlexSetSupport(rdm, newp, supportNew);CHKERRQ(ierr);
     }
+    ierr = PetscFree(supportRef);CHKERRQ(ierr);
     break;
   default:
     SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unknown cell refiner %d", refiner);
