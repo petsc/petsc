@@ -1827,11 +1827,14 @@ source /opt/intel/idb/10.1.012/bin/idbvars.sh
 
       <h3><a name="dylib">Unable to locate PETSc dynamic library /home/balay/spetsc/lib/libg/linux/libpetsc</a></h3>
 
-      When using DYNAMIC libraries - the libraries cannot be moved after they are
-      installed. This could also happen on clusters - where the paths are
-      different on the (run) nodes - than on the (compile) front-end. Do not use
-      dynamic libraries &amp; shared libraries. Run ./configure with
-      <code>--with-shared-libraries=0 --with-dynamic-loading=0</code>
+      <p>
+        When using DYNAMIC libraries - the libraries cannot be moved after they are
+        installed. This could also happen on clusters - where the paths are
+        different on the (run) nodes - than on the (compile) front-end. Do not use
+        dynamic libraries &amp; shared libraries. Run ./configure with
+        <code>--with-shared-libraries=0 --with-dynamic-loading=0</code>.
+        This option has been removed in petsc-3.5.
+      </p>
 
       <h3><a name="bisect">How do I determine what update to PETSc broke my code?</a></h3>
 

@@ -366,9 +366,7 @@ PetscErrorCode PetscSpaceCreate(MPI_Comm comm, PetscSpace *sp)
   PetscFunctionBegin;
   PetscValidPointer(sp, 2);
   *sp = NULL;
-#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = PetscFEInitializePackage();CHKERRQ(ierr);
-#endif
 
   ierr = PetscHeaderCreate(s, _p_PetscSpace, struct _PetscSpaceOps, PETSCSPACE_CLASSID, "PetscSpace", "Linear Space", "PetscSpace", comm, PetscSpaceDestroy, PetscSpaceView);CHKERRQ(ierr);
   ierr = PetscMemzero(s->ops, sizeof(struct _PetscSpaceOps));CHKERRQ(ierr);
@@ -1230,9 +1228,7 @@ PetscErrorCode PetscDualSpaceCreate(MPI_Comm comm, PetscDualSpace *sp)
   PetscFunctionBegin;
   PetscValidPointer(sp, 2);
   *sp = NULL;
-#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = PetscFEInitializePackage();CHKERRQ(ierr);
-#endif
 
   ierr = PetscHeaderCreate(s, _p_PetscDualSpace, struct _PetscDualSpaceOps, PETSCDUALSPACE_CLASSID, "PetscDualSpace", "Dual Space", "PetscDualSpace", comm, PetscDualSpaceDestroy, PetscDualSpaceView);CHKERRQ(ierr);
   ierr = PetscMemzero(s->ops, sizeof(struct _PetscDualSpaceOps));CHKERRQ(ierr);
@@ -1985,9 +1981,7 @@ PetscErrorCode PetscFECreate(MPI_Comm comm, PetscFE *fem)
   PetscFunctionBegin;
   PetscValidPointer(fem, 2);
   *fem = NULL;
-#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = PetscFEInitializePackage();CHKERRQ(ierr);
-#endif
 
   ierr = PetscHeaderCreate(f, _p_PetscFE, struct _PetscFEOps, PETSCFE_CLASSID, "PetscFE", "Finite Element", "PetscFE", comm, PetscFEDestroy, PetscFEView);CHKERRQ(ierr);
   ierr = PetscMemzero(f->ops, sizeof(struct _PetscFEOps));CHKERRQ(ierr);
