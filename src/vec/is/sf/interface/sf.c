@@ -36,9 +36,7 @@ PetscErrorCode PetscSFCreate(MPI_Comm comm,PetscSF *sf)
 
   PetscFunctionBegin;
   PetscValidPointer(sf,2);
-#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = PetscSFInitializePackage();CHKERRQ(ierr);
-#endif
 
   ierr = PetscHeaderCreate(b,_p_PetscSF,struct _PetscSFOps,PETSCSF_CLASSID,"PetscSF","Star Forest","PetscSF",comm,PetscSFDestroy,PetscSFView);CHKERRQ(ierr);
 

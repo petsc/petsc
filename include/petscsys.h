@@ -1447,8 +1447,6 @@ PETSC_EXTERN PetscErrorCode PetscFunctionListGet(PetscFunctionList,const char **
 
    Level: advanced
 
-   --with-shared-libraries --with-dynamic-loading must be used with ./configure to use dynamic libraries
-
 .seealso:  PetscDLLibraryOpen()
 S*/
 typedef struct _n_PetscDLLibrary *PetscDLLibrary;

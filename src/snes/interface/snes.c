@@ -1462,9 +1462,7 @@ PetscErrorCode  SNESCreate(MPI_Comm comm,SNES *outsnes)
   PetscFunctionBegin;
   PetscValidPointer(outsnes,2);
   *outsnes = NULL;
-#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = SNESInitializePackage();CHKERRQ(ierr);
-#endif
 
   ierr = PetscHeaderCreate(snes,_p_SNES,struct _SNESOps,SNES_CLASSID,"SNES","Nonlinear solver","SNES",comm,SNESDestroy,SNESView);CHKERRQ(ierr);
 
