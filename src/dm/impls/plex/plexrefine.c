@@ -2389,7 +2389,7 @@ PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt depthSiz
         PetscInt r;
 
         ierr = DMPlexGetCone(dm, support[s], &cone);CHKERRQ(ierr);
-        for (r = 0; r < 4; ++r) if (cone[r] == f) break;
+        for (r = 0; r < 4; ++r) if (cone[r] == e) break;
         supportRef[2+s] = eStartNew + (eEnd - eStart)*2 + (support[s] - fStart)*4 + r;
       }
       ierr = DMPlexSetSupport(rdm, newp, supportRef);CHKERRQ(ierr);
