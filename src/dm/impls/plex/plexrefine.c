@@ -134,8 +134,14 @@ PETSC_STATIC_INLINE PetscInt GetTriSubface_Static(PetscInt o, PetscInt r) {
   return (o < 0 ? 0-(o+r) : o+r)%3;
 }
 
-PETSC_STATIC_INLINE PetscInt GetRefHexFace_Static(PetscInt o, PetscInt r) {
-  return (o < 0 ? (-(o+1)+4-r)%4 : (o+r)%4);
+/* Return quad edge for orientation o, if it is r for o == 0 */
+PETSC_STATIC_INLINE PetscInt GetQuadEdge_Static(PetscInt o, PetscInt r) {
+  return (o < 0 ? 3-(o+r) : o+r)%4;
+}
+
+/* Return quad subface for orientation o, if it is r for o == 0 */
+PETSC_STATIC_INLINE PetscInt GetQuadSubface_Static(PetscInt o, PetscInt r) {
+  return (o < 0 ? 0-(o+r) : o+r)%4;
 }
 
 #undef __FUNCT__
@@ -1996,17 +2002,17 @@ PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt depthSiz
       ierr = DMPlexGetCone(dm, c, &cone);CHKERRQ(ierr);
       ierr = DMPlexGetConeOrientation(dm, c, &ornt);CHKERRQ(ierr);
       /* A hex */
-      coneNew[0] = fStartNew + (cone[0] - fStart)*4 + GetRefHexFace_Static(ornt[0], 0);
+      coneNew[0] = fStartNew + (cone[0] - fStart)*4 + GetQuadSubface_Static(ornt[0], 0);
       orntNew[0] = ornt[0];
       coneNew[1] = fStartNew + (fEnd    - fStart)*4 + (c - cStart)*12 +  8; /* AE */
       orntNew[1] = 0;
-      coneNew[2] = fStartNew + (cone[2] - fStart)*4 + GetRefHexFace_Static(ornt[2], 0);
+      coneNew[2] = fStartNew + (cone[2] - fStart)*4 + GetQuadSubface_Static(ornt[2], 0);
       orntNew[2] = ornt[2];
       coneNew[3] = fStartNew + (fEnd    - fStart)*4 + (c - cStart)*12 +  3; /* AB */
       orntNew[3] = 0;
       coneNew[4] = fStartNew + (fEnd    - fStart)*4 + (c - cStart)*12 +  0; /* AD */
       orntNew[4] = 0;
-      coneNew[5] = fStartNew + (cone[5] - fStart)*4 + GetRefHexFace_Static(ornt[5], 0);
+      coneNew[5] = fStartNew + (cone[5] - fStart)*4 + GetQuadSubface_Static(ornt[5], 0);
       orntNew[5] = ornt[5];
       ierr       = DMPlexSetCone(rdm, newp+0, coneNew);CHKERRQ(ierr);
       ierr       = DMPlexSetConeOrientation(rdm, newp+0, orntNew);CHKERRQ(ierr);
@@ -2017,17 +2023,17 @@ PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt depthSiz
       }
 #endif
       /* B hex */
-      coneNew[0] = fStartNew + (cone[0] - fStart)*4 + GetRefHexFace_Static(ornt[0], 1);
+      coneNew[0] = fStartNew + (cone[0] - fStart)*4 + GetQuadSubface_Static(ornt[0], 1);
       orntNew[0] = ornt[0];
       coneNew[1] = fStartNew + (fEnd    - fStart)*4 + (c - cStart)*12 + 11; /* BH */
       orntNew[1] = 0;
       coneNew[2] = fStartNew + (fEnd    - fStart)*4 + (c - cStart)*12 +  3; /* AB */
       orntNew[2] = -3;
-      coneNew[3] = fStartNew + (cone[3] - fStart)*4 + GetRefHexFace_Static(ornt[3], 1);
+      coneNew[3] = fStartNew + (cone[3] - fStart)*4 + GetQuadSubface_Static(ornt[3], 1);
       orntNew[3] = ornt[3];
       coneNew[4] = fStartNew + (fEnd    - fStart)*4 + (c - cStart)*12 +  2; /* BC */
       orntNew[4] = 0;
-      coneNew[5] = fStartNew + (cone[5] - fStart)*4 + GetRefHexFace_Static(ornt[5], 3);
+      coneNew[5] = fStartNew + (cone[5] - fStart)*4 + GetQuadSubface_Static(ornt[5], 3);
       orntNew[5] = ornt[5];
       ierr       = DMPlexSetCone(rdm, newp+1, coneNew);CHKERRQ(ierr);
       ierr       = DMPlexSetConeOrientation(rdm, newp+1, orntNew);CHKERRQ(ierr);
@@ -2038,15 +2044,15 @@ PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt depthSiz
       }
 #endif
       /* C hex */
-      coneNew[0] = fStartNew + (cone[0] - fStart)*4 + GetRefHexFace_Static(ornt[0], 2);
+      coneNew[0] = fStartNew + (cone[0] - fStart)*4 + GetQuadSubface_Static(ornt[0], 2);
       orntNew[0] = ornt[0];
       coneNew[1] = fStartNew + (fEnd    - fStart)*4 + (c - cStart)*12 + 10; /* CG */
       orntNew[1] = 0;
       coneNew[2] = fStartNew + (fEnd    - fStart)*4 + (c - cStart)*12 +  1; /* CD */
       orntNew[2] = 0;
-      coneNew[3] = fStartNew + (cone[3] - fStart)*4 + GetRefHexFace_Static(ornt[3], 1);
+      coneNew[3] = fStartNew + (cone[3] - fStart)*4 + GetQuadSubface_Static(ornt[3], 0);
       orntNew[3] = ornt[3];
-      coneNew[4] = fStartNew + (cone[4] - fStart)*4 + GetRefHexFace_Static(ornt[4], 1);
+      coneNew[4] = fStartNew + (cone[4] - fStart)*4 + GetQuadSubface_Static(ornt[4], 1);
       orntNew[4] = ornt[4];
       coneNew[5] = fStartNew + (fEnd    - fStart)*4 + (c - cStart)*12 +  2; /* BC */
       orntNew[5] = -3;
@@ -2059,15 +2065,15 @@ PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt depthSiz
       }
 #endif
       /* D hex */
-      coneNew[0] = fStartNew + (cone[0] - fStart)*4 + GetRefHexFace_Static(ornt[0], 3);
+      coneNew[0] = fStartNew + (cone[0] - fStart)*4 + GetQuadSubface_Static(ornt[0], 3);
       orntNew[0] = ornt[0];
       coneNew[1] = fStartNew + (fEnd    - fStart)*4 + (c - cStart)*12 +  9; /* DF */
       orntNew[1] = 0;
-      coneNew[2] = fStartNew + (cone[2] - fStart)*4 + GetRefHexFace_Static(ornt[2], 1);
+      coneNew[2] = fStartNew + (cone[2] - fStart)*4 + GetQuadSubface_Static(ornt[2], 1);
       orntNew[2] = ornt[2];
       coneNew[3] = fStartNew + (fEnd    - fStart)*4 + (c - cStart)*12 +  1; /* CD */
       orntNew[3] = -3;
-      coneNew[4] = fStartNew + (cone[4] - fStart)*4 + GetRefHexFace_Static(ornt[4], 0);
+      coneNew[4] = fStartNew + (cone[4] - fStart)*4 + GetQuadSubface_Static(ornt[4], 0);
       orntNew[4] = ornt[4];
       coneNew[5] = fStartNew + (fEnd    - fStart)*4 + (c - cStart)*12 +  0; /* AD */
       orntNew[5] = -3;
@@ -2082,15 +2088,15 @@ PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt depthSiz
       /* E hex */
       coneNew[0] = fStartNew + (fEnd    - fStart)*4 + (c - cStart)*12 +  8; /* AE */
       orntNew[0] = -3;
-      coneNew[1] = fStartNew + (cone[1] - fStart)*4 + GetRefHexFace_Static(ornt[1], 0);
+      coneNew[1] = fStartNew + (cone[1] - fStart)*4 + GetQuadSubface_Static(ornt[1], 0);
       orntNew[1] = ornt[1];
-      coneNew[2] = fStartNew + (cone[2] - fStart)*4 + GetRefHexFace_Static(ornt[2], 3);
+      coneNew[2] = fStartNew + (cone[2] - fStart)*4 + GetQuadSubface_Static(ornt[2], 3);
       orntNew[2] = ornt[2];
       coneNew[3] = fStartNew + (fEnd    - fStart)*4 + (c - cStart)*12 +  7; /* EH */
       orntNew[3] = 0;
       coneNew[4] = fStartNew + (fEnd    - fStart)*4 + (c - cStart)*12 +  4; /* EF */
       orntNew[4] = 0;
-      coneNew[5] = fStartNew + (cone[5] - fStart)*4 + GetRefHexFace_Static(ornt[5], 1);
+      coneNew[5] = fStartNew + (cone[5] - fStart)*4 + GetQuadSubface_Static(ornt[5], 1);
       orntNew[5] = ornt[5];
       ierr       = DMPlexSetCone(rdm, newp+0, coneNew);CHKERRQ(ierr);
       ierr       = DMPlexSetConeOrientation(rdm, newp+0, orntNew);CHKERRQ(ierr);
@@ -2103,13 +2109,13 @@ PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt depthSiz
       /* F hex */
       coneNew[0] = fStartNew + (fEnd    - fStart)*4 + (c - cStart)*12 +  9; /* DF */
       orntNew[0] = -3;
-      coneNew[1] = fStartNew + (cone[1] - fStart)*4 + GetRefHexFace_Static(ornt[1], 1);
+      coneNew[1] = fStartNew + (cone[1] - fStart)*4 + GetQuadSubface_Static(ornt[1], 1);
       orntNew[1] = ornt[1];
-      coneNew[2] = fStartNew + (cone[2] - fStart)*4 + GetRefHexFace_Static(ornt[2], 2);
+      coneNew[2] = fStartNew + (cone[2] - fStart)*4 + GetQuadSubface_Static(ornt[2], 2);
       orntNew[2] = ornt[2];
       coneNew[3] = fStartNew + (fEnd    - fStart)*4 + (c - cStart)*12 +  5; /* FG */
       orntNew[3] = 0;
-      coneNew[4] = fStartNew + (cone[4] - fStart)*4 + GetRefHexFace_Static(ornt[4], 3);
+      coneNew[4] = fStartNew + (cone[4] - fStart)*4 + GetQuadSubface_Static(ornt[4], 3);
       orntNew[4] = ornt[4];
       coneNew[5] = fStartNew + (fEnd    - fStart)*4 + (c - cStart)*12 +  4; /* EF */
       orntNew[5] = -3;
@@ -2124,13 +2130,13 @@ PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt depthSiz
       /* G hex */
       coneNew[0] = fStartNew + (fEnd    - fStart)*4 + (c - cStart)*12 + 10; /* CG */
       orntNew[0] = -3;
-      coneNew[1] = fStartNew + (cone[1] - fStart)*4 + GetRefHexFace_Static(ornt[1], 2);
+      coneNew[1] = fStartNew + (cone[1] - fStart)*4 + GetQuadSubface_Static(ornt[1], 2);
       orntNew[1] = ornt[1];
       coneNew[2] = fStartNew + (fEnd    - fStart)*4 + (c - cStart)*12 +  5; /* FG */
       orntNew[2] = -3;
-      coneNew[3] = fStartNew + (cone[3] - fStart)*4 + GetRefHexFace_Static(ornt[3], 3);
+      coneNew[3] = fStartNew + (cone[3] - fStart)*4 + GetQuadSubface_Static(ornt[3], 3);
       orntNew[3] = ornt[3];
-      coneNew[4] = fStartNew + (cone[4] - fStart)*4 + GetRefHexFace_Static(ornt[4], 2);
+      coneNew[4] = fStartNew + (cone[4] - fStart)*4 + GetQuadSubface_Static(ornt[4], 2);
       orntNew[4] = ornt[4];
       coneNew[5] = fStartNew + (fEnd    - fStart)*4 + (c - cStart)*12 +  6; /* GH */
       orntNew[5] = 0;
@@ -2145,15 +2151,15 @@ PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt depthSiz
       /* H hex */
       coneNew[0] = fStartNew + (fEnd    - fStart)*4 + (c - cStart)*12 + 11; /* BH */
       orntNew[0] = -3;
-      coneNew[1] = fStartNew + (cone[1] - fStart)*4 + GetRefHexFace_Static(ornt[1], 3);
+      coneNew[1] = fStartNew + (cone[1] - fStart)*4 + GetQuadSubface_Static(ornt[1], 3);
       orntNew[1] = ornt[1];
       coneNew[2] = fStartNew + (fEnd    - fStart)*4 + (c - cStart)*12 +  7; /* EH */
       orntNew[2] = -3;
-      coneNew[3] = fStartNew + (cone[3] - fStart)*4 + GetRefHexFace_Static(ornt[3], 2);
+      coneNew[3] = fStartNew + (cone[3] - fStart)*4 + GetQuadSubface_Static(ornt[3], 2);
       orntNew[3] = ornt[3];
       coneNew[4] = fStartNew + (fEnd    - fStart)*4 + (c - cStart)*12 +  6; /* GH */
       orntNew[4] = -3;
-      coneNew[5] = fStartNew + (cone[5] - fStart)*4 + GetRefHexFace_Static(ornt[5], 2);
+      coneNew[5] = fStartNew + (cone[5] - fStart)*4 + GetQuadSubface_Static(ornt[5], 2);
       orntNew[5] = ornt[5];
       ierr       = DMPlexSetCone(rdm, newp+3, coneNew);CHKERRQ(ierr);
       ierr       = DMPlexSetConeOrientation(rdm, newp+3, orntNew);CHKERRQ(ierr);
