@@ -2175,19 +2175,24 @@ PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt depthSiz
     ierr = PetscMalloc((4 + maxSupportSize*2) * sizeof(PetscInt), &supportRef);CHKERRQ(ierr);
     for (f = fStart; f < fEnd; ++f) {
       for (r = 0; r < 4; ++r) {
-        /* This can come from GetFaces_Internal() */
+        /* TODO: This can come from GetFaces_Internal() */
         const PetscInt  newCells[24] = {0, 1, 2, 3,  4, 5, 6, 7,  0, 3, 5, 4,  2, 1, 7, 6,  3, 2, 6, 5,  0, 4, 7, 1};
         const PetscInt  newp = fStartNew + (f - fStart)*4 + r;
         const PetscInt *cone, *ornt, *support;
-        PetscInt        coneNew[4], coneSize, c, supportSize, s;
+        PetscInt        coneNew[4], orntNew[4], coneSize, c, supportSize, s;
 
         ierr = DMPlexGetCone(dm, f, &cone);CHKERRQ(ierr);
-        /* TODO: Redo using orientation information */
-        coneNew[0] = eStartNew + (cone[(r+3)%4] - eStart)*2 + 1;
-        coneNew[1] = eStartNew + (cone[r]       - eStart)*2 + 0;
+        ierr = DMPlexGetConeOrientation(dm, f, &ornt);CHKERRQ(ierr);
+        coneNew[0] = eStartNew + (cone[(r+3)%4] - eStart)*2 + (ornt[(r+3)%4] < 0 ? 0 : 1);
+        orntNew[0] = ornt[(r+3)%4];
+        coneNew[1] = eStartNew + (cone[r]       - eStart)*2 + (ornt[r] < 0 ? 1 : 0);
+        orntNew[1] = ornt[r];
         coneNew[2] = eStartNew + (eEnd - eStart)*2 + (f - fStart)*4 + r;
+        orntNew[2] = 0;
         coneNew[3] = eStartNew + (eEnd - eStart)*2 + (f - fStart)*4 + (r+3)%4;
+        orntNew[3] = -2;
         ierr       = DMPlexSetCone(rdm, newp, coneNew);CHKERRQ(ierr);
+        ierr       = DMPlexSetConeOrientation(rdm, newp, orntNew);CHKERRQ(ierr);
 #if 1
         if ((newp < fStartNew) || (newp >= fEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not a face [%d, %d)", newp, fStartNew, fEndNew);
         for (p = 0; p < 4; ++p) {
