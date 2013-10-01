@@ -2222,24 +2222,229 @@ PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt depthSiz
     /* Interior faces have 4 edges and 2 cells */
     for (c = cStart; c < cEnd; ++c) {
       const PetscInt  newCells[24] = {0, 3,  2, 3,  1, 2,  0, 1,  4, 5,  5, 6,  6, 7,  4, 7,  0, 4,  3, 5,  2, 6,  1, 7};
-      const PetscInt *cone;
-      PetscInt        coneNew[4], supportNew[2];
+      const PetscInt *cone, *ornt;
+      PetscInt        newp, coneNew[4], orntNew[4], supportNew[2];
 
       ierr = DMPlexGetCone(dm, c, &cone);CHKERRQ(ierr);
-      for (r = 0; r < 12; ++r) {
-        const PetscInt newp = fStartNew + (fEnd - fStart)*4 + (c - cStart)*12 + r;
-
-        coneNew[0] = eStartNew + (eEnd - eStart)*2 + (cone[r] - fStart);
-        coneNew[1] = eStartNew + (eEnd - eStart)*2 + (fEnd    - fStart) + (c - cStart);
-        coneNew[2] = eStartNew + (eEnd - eStart)*2 + (cone[r] - fStart);
-        coneNew[3] = eStartNew + (eEnd - eStart)*2 + (cone[r] - fStart);
-        ierr       = DMPlexSetCone(rdm, newp, coneNew);CHKERRQ(ierr);
+      ierr = DMPlexGetConeOrientation(dm, c, &ornt);CHKERRQ(ierr);
+      /* A-D face */
+      newp = fStartNew + (fEnd - fStart)*4 + (c - cStart)*12 + 0;
+      coneNew[0] = eStartNew + (eEnd - eStart)*2 + (cone[2] - fStart)*4 + GetQuadEdge_Static(ornt[2], 0);
+      orntNew[0] = -2;
+      coneNew[1] = eStartNew + (eEnd - eStart)*2 + (cone[0] - fStart)*4 + GetQuadEdge_Static(ornt[0], 3);
+      orntNew[1] = 0;
+      coneNew[2] = eStartNew + (eEnd - eStart)*2 + (fEnd    - fStart)*4 + (c - cStart)*6 + 0;
+      orntNew[2] = 0;
+      coneNew[3] = eStartNew + (eEnd - eStart)*2 + (fEnd    - fStart)*4 + (c - cStart)*6 + 2;
+      orntNew[3] = -2;
+      ierr       = DMPlexSetCone(rdm, newp, coneNew);CHKERRQ(ierr);
+      ierr       = DMPlexSetConeOrientation(rdm, newp, orntNew);CHKERRQ(ierr);
 #if 1
-        if ((newp < fStartNew) || (newp >= fEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not a face [%d, %d)", newp, fStartNew, fEndNew);
-        for (p = 0; p < 4; ++p) {
-          if ((coneNew[p] < eStartNew) || (coneNew[p] >= eEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not an edge [%d, %d)", coneNew[p], eStartNew, eEndNew);
-        }
+      if ((newp < fStartNew) || (newp >= fEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not a face [%d, %d)", newp, fStartNew, fEndNew);
+      for (p = 0; p < 4; ++p) {
+        if ((coneNew[p] < eStartNew) || (coneNew[p] >= eEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not an edge [%d, %d)", coneNew[p], eStartNew, eEndNew);
+      }
 #endif
+      /* C-D face */
+      newp = fStartNew + (fEnd - fStart)*4 + (c - cStart)*12 + 1;
+      coneNew[0] = eStartNew + (eEnd - eStart)*2 + (cone[4] - fStart)*4 + GetQuadEdge_Static(ornt[4], 0);
+      orntNew[0] = -2;
+      coneNew[1] = eStartNew + (eEnd - eStart)*2 + (cone[0] - fStart)*4 + GetQuadEdge_Static(ornt[0], 2);
+      orntNew[1] = 0;
+      coneNew[2] = eStartNew + (eEnd - eStart)*2 + (fEnd    - fStart)*4 + (c - cStart)*6 + 0;
+      orntNew[2] = 0;
+      coneNew[3] = eStartNew + (eEnd - eStart)*2 + (fEnd    - fStart)*4 + (c - cStart)*6 + 4;
+      orntNew[3] = -2;
+      ierr       = DMPlexSetCone(rdm, newp, coneNew);CHKERRQ(ierr);
+      ierr       = DMPlexSetConeOrientation(rdm, newp, orntNew);CHKERRQ(ierr);
+#if 1
+      if ((newp < fStartNew) || (newp >= fEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not a face [%d, %d)", newp, fStartNew, fEndNew);
+      for (p = 0; p < 4; ++p) {
+        if ((coneNew[p] < eStartNew) || (coneNew[p] >= eEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not an edge [%d, %d)", coneNew[p], eStartNew, eEndNew);
+      }
+#endif
+      /* B-C face */
+      newp = fStartNew + (fEnd - fStart)*4 + (c - cStart)*12 + 2;
+      coneNew[0] = eStartNew + (eEnd - eStart)*2 + (cone[0] - fStart)*4 + GetQuadEdge_Static(ornt[0], 1);
+      orntNew[0] = -2;
+      coneNew[1] = eStartNew + (eEnd - eStart)*2 + (cone[3] - fStart)*4 + GetQuadEdge_Static(ornt[3], 0);
+      orntNew[1] = 0;
+      coneNew[2] = eStartNew + (eEnd - eStart)*2 + (fEnd    - fStart)*4 + (c - cStart)*6 + 3;
+      orntNew[2] = 0;
+      coneNew[3] = eStartNew + (eEnd - eStart)*2 + (fEnd    - fStart)*4 + (c - cStart)*6 + 0;
+      orntNew[3] = -2;
+      ierr       = DMPlexSetCone(rdm, newp, coneNew);CHKERRQ(ierr);
+      ierr       = DMPlexSetConeOrientation(rdm, newp, orntNew);CHKERRQ(ierr);
+#if 1
+      if ((newp < fStartNew) || (newp >= fEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not a face [%d, %d)", newp, fStartNew, fEndNew);
+      for (p = 0; p < 4; ++p) {
+        if ((coneNew[p] < eStartNew) || (coneNew[p] >= eEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not an edge [%d, %d)", coneNew[p], eStartNew, eEndNew);
+      }
+#endif
+      /* A-B face */
+      newp = fStartNew + (fEnd - fStart)*4 + (c - cStart)*12 + 3;
+      coneNew[0] = eStartNew + (eEnd - eStart)*2 + (cone[0] - fStart)*4 + GetQuadEdge_Static(ornt[0], 0);
+      orntNew[0] = -2;
+      coneNew[1] = eStartNew + (eEnd - eStart)*2 + (cone[5] - fStart)*4 + GetQuadEdge_Static(ornt[5], 3);
+      orntNew[1] = 0;
+      coneNew[2] = eStartNew + (eEnd - eStart)*2 + (fEnd    - fStart)*4 + (c - cStart)*6 + 5;
+      orntNew[2] = 0;
+      coneNew[3] = eStartNew + (eEnd - eStart)*2 + (fEnd    - fStart)*4 + (c - cStart)*6 + 0;
+      orntNew[3] = -2;
+      ierr       = DMPlexSetCone(rdm, newp, coneNew);CHKERRQ(ierr);
+      ierr       = DMPlexSetConeOrientation(rdm, newp, orntNew);CHKERRQ(ierr);
+#if 1
+      if ((newp < fStartNew) || (newp >= fEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not a face [%d, %d)", newp, fStartNew, fEndNew);
+      for (p = 0; p < 4; ++p) {
+        if ((coneNew[p] < eStartNew) || (coneNew[p] >= eEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not an edge [%d, %d)", coneNew[p], eStartNew, eEndNew);
+      }
+#endif
+      /* E-F face */
+      newp = fStartNew + (fEnd - fStart)*4 + (c - cStart)*12 + 4;
+      coneNew[0] = eStartNew + (eEnd - eStart)*2 + (cone[2] - fStart)*4 + GetQuadEdge_Static(ornt[2], 2);
+      orntNew[0] = -2;
+      coneNew[1] = eStartNew + (eEnd - eStart)*2 + (cone[1] - fStart)*4 + GetQuadEdge_Static(ornt[1], 0);
+      orntNew[1] = 0;
+      coneNew[2] = eStartNew + (eEnd - eStart)*2 + (fEnd    - fStart)*4 + (c - cStart)*6 + 1;
+      orntNew[2] = 0;
+      coneNew[3] = eStartNew + (eEnd - eStart)*2 + (fEnd    - fStart)*4 + (c - cStart)*6 + 2;
+      orntNew[3] = -2;
+      ierr       = DMPlexSetCone(rdm, newp, coneNew);CHKERRQ(ierr);
+      ierr       = DMPlexSetConeOrientation(rdm, newp, orntNew);CHKERRQ(ierr);
+#if 1
+      if ((newp < fStartNew) || (newp >= fEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not a face [%d, %d)", newp, fStartNew, fEndNew);
+      for (p = 0; p < 4; ++p) {
+        if ((coneNew[p] < eStartNew) || (coneNew[p] >= eEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not an edge [%d, %d)", coneNew[p], eStartNew, eEndNew);
+      }
+#endif
+      /* F-G face */
+      newp = fStartNew + (fEnd - fStart)*4 + (c - cStart)*12 + 5;
+      coneNew[0] = eStartNew + (eEnd - eStart)*2 + (cone[4] - fStart)*4 + GetQuadEdge_Static(ornt[4], 2);
+      orntNew[0] = -2;
+      coneNew[1] = eStartNew + (eEnd - eStart)*2 + (cone[1] - fStart)*4 + GetQuadEdge_Static(ornt[1], 1);
+      orntNew[1] = 0;
+      coneNew[2] = eStartNew + (eEnd - eStart)*2 + (fEnd    - fStart)*4 + (c - cStart)*6 + 1;
+      orntNew[2] = 0;
+      coneNew[3] = eStartNew + (eEnd - eStart)*2 + (fEnd    - fStart)*4 + (c - cStart)*6 + 4;
+      orntNew[3] = -2;
+      ierr       = DMPlexSetCone(rdm, newp, coneNew);CHKERRQ(ierr);
+      ierr       = DMPlexSetConeOrientation(rdm, newp, orntNew);CHKERRQ(ierr);
+#if 1
+      if ((newp < fStartNew) || (newp >= fEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not a face [%d, %d)", newp, fStartNew, fEndNew);
+      for (p = 0; p < 4; ++p) {
+        if ((coneNew[p] < eStartNew) || (coneNew[p] >= eEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not an edge [%d, %d)", coneNew[p], eStartNew, eEndNew);
+      }
+#endif
+      /* G-H face */
+      newp = fStartNew + (fEnd - fStart)*4 + (c - cStart)*12 + 6;
+      coneNew[0] = eStartNew + (eEnd - eStart)*2 + (cone[3] - fStart)*4 + GetQuadEdge_Static(ornt[3], 2);
+      orntNew[0] = -2;
+      coneNew[1] = eStartNew + (eEnd - eStart)*2 + (cone[1] - fStart)*4 + GetQuadEdge_Static(ornt[1], 2);
+      orntNew[1] = 0;
+      coneNew[2] = eStartNew + (eEnd - eStart)*2 + (fEnd    - fStart)*4 + (c - cStart)*6 + 1;
+      orntNew[2] = 0;
+      coneNew[3] = eStartNew + (eEnd - eStart)*2 + (fEnd    - fStart)*4 + (c - cStart)*6 + 3;
+      orntNew[3] = -2;
+      ierr       = DMPlexSetCone(rdm, newp, coneNew);CHKERRQ(ierr);
+      ierr       = DMPlexSetConeOrientation(rdm, newp, orntNew);CHKERRQ(ierr);
+#if 1
+      if ((newp < fStartNew) || (newp >= fEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not a face [%d, %d)", newp, fStartNew, fEndNew);
+      for (p = 0; p < 4; ++p) {
+        if ((coneNew[p] < eStartNew) || (coneNew[p] >= eEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not an edge [%d, %d)", coneNew[p], eStartNew, eEndNew);
+      }
+#endif
+      /* E-H face */
+      newp = fStartNew + (fEnd - fStart)*4 + (c - cStart)*12 + 7;
+      coneNew[0] = eStartNew + (eEnd - eStart)*2 + (cone[5] - fStart)*4 + GetQuadEdge_Static(ornt[5], 1);
+      orntNew[0] = -2;
+      coneNew[1] = eStartNew + (eEnd - eStart)*2 + (cone[1] - fStart)*4 + GetQuadEdge_Static(ornt[1], 3);
+      orntNew[1] = 0;
+      coneNew[2] = eStartNew + (eEnd - eStart)*2 + (fEnd    - fStart)*4 + (c - cStart)*6 + 1;
+      orntNew[2] = 0;
+      coneNew[3] = eStartNew + (eEnd - eStart)*2 + (fEnd    - fStart)*4 + (c - cStart)*6 + 5;
+      orntNew[3] = -2;
+      ierr       = DMPlexSetCone(rdm, newp, coneNew);CHKERRQ(ierr);
+      ierr       = DMPlexSetConeOrientation(rdm, newp, orntNew);CHKERRQ(ierr);
+#if 1
+      if ((newp < fStartNew) || (newp >= fEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not a face [%d, %d)", newp, fStartNew, fEndNew);
+      for (p = 0; p < 4; ++p) {
+        if ((coneNew[p] < eStartNew) || (coneNew[p] >= eEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not an edge [%d, %d)", coneNew[p], eStartNew, eEndNew);
+      }
+#endif
+      /* A-E face */
+      newp = fStartNew + (fEnd - fStart)*4 + (c - cStart)*12 + 8;
+      coneNew[0] = eStartNew + (eEnd - eStart)*2 + (cone[5] - fStart)*4 + GetQuadEdge_Static(ornt[5], 0);
+      orntNew[0] = -2;
+      coneNew[1] = eStartNew + (eEnd - eStart)*2 + (cone[2] - fStart)*4 + GetQuadEdge_Static(ornt[2], 3);
+      orntNew[1] = 0;
+      coneNew[2] = eStartNew + (eEnd - eStart)*2 + (fEnd    - fStart)*4 + (c - cStart)*6 + 2;
+      orntNew[2] = 0;
+      coneNew[3] = eStartNew + (eEnd - eStart)*2 + (fEnd    - fStart)*4 + (c - cStart)*6 + 5;
+      orntNew[3] = -2;
+      ierr       = DMPlexSetCone(rdm, newp, coneNew);CHKERRQ(ierr);
+      ierr       = DMPlexSetConeOrientation(rdm, newp, orntNew);CHKERRQ(ierr);
+#if 1
+      if ((newp < fStartNew) || (newp >= fEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not a face [%d, %d)", newp, fStartNew, fEndNew);
+      for (p = 0; p < 4; ++p) {
+        if ((coneNew[p] < eStartNew) || (coneNew[p] >= eEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not an edge [%d, %d)", coneNew[p], eStartNew, eEndNew);
+      }
+#endif
+      /* D-F face */
+      newp = fStartNew + (fEnd - fStart)*4 + (c - cStart)*12 + 9;
+      coneNew[0] = eStartNew + (eEnd - eStart)*2 + (cone[2] - fStart)*4 + GetQuadEdge_Static(ornt[2], 1);
+      orntNew[0] = -2;
+      coneNew[1] = eStartNew + (eEnd - eStart)*2 + (cone[4] - fStart)*4 + GetQuadEdge_Static(ornt[4], 3);
+      orntNew[1] = 0;
+      coneNew[2] = eStartNew + (eEnd - eStart)*2 + (fEnd    - fStart)*4 + (c - cStart)*6 + 4;
+      orntNew[2] = 0;
+      coneNew[3] = eStartNew + (eEnd - eStart)*2 + (fEnd    - fStart)*4 + (c - cStart)*6 + 2;
+      orntNew[3] = -2;
+      ierr       = DMPlexSetCone(rdm, newp, coneNew);CHKERRQ(ierr);
+      ierr       = DMPlexSetConeOrientation(rdm, newp, orntNew);CHKERRQ(ierr);
+#if 1
+      if ((newp < fStartNew) || (newp >= fEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not a face [%d, %d)", newp, fStartNew, fEndNew);
+      for (p = 0; p < 4; ++p) {
+        if ((coneNew[p] < eStartNew) || (coneNew[p] >= eEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not an edge [%d, %d)", coneNew[p], eStartNew, eEndNew);
+      }
+#endif
+      /* C-G face */
+      newp = fStartNew + (fEnd - fStart)*4 + (c - cStart)*12 + 10;
+      coneNew[0] = eStartNew + (eEnd - eStart)*2 + (cone[4] - fStart)*4 + GetQuadEdge_Static(ornt[4], 1);
+      orntNew[0] = -2;
+      coneNew[1] = eStartNew + (eEnd - eStart)*2 + (cone[3] - fStart)*4 + GetQuadEdge_Static(ornt[3], 3);
+      orntNew[1] = 0;
+      coneNew[2] = eStartNew + (eEnd - eStart)*2 + (fEnd    - fStart)*4 + (c - cStart)*6 + 3;
+      orntNew[2] = 0;
+      coneNew[3] = eStartNew + (eEnd - eStart)*2 + (fEnd    - fStart)*4 + (c - cStart)*6 + 4;
+      orntNew[3] = -2;
+      ierr       = DMPlexSetCone(rdm, newp, coneNew);CHKERRQ(ierr);
+      ierr       = DMPlexSetConeOrientation(rdm, newp, orntNew);CHKERRQ(ierr);
+#if 1
+      if ((newp < fStartNew) || (newp >= fEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not a face [%d, %d)", newp, fStartNew, fEndNew);
+      for (p = 0; p < 4; ++p) {
+        if ((coneNew[p] < eStartNew) || (coneNew[p] >= eEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not an edge [%d, %d)", coneNew[p], eStartNew, eEndNew);
+      }
+#endif
+      /* B-H face */
+      newp = fStartNew + (fEnd - fStart)*4 + (c - cStart)*12 + 11;
+      coneNew[0] = eStartNew + (eEnd - eStart)*2 + (cone[3] - fStart)*4 + GetQuadEdge_Static(ornt[3], 1);
+      orntNew[0] = -2;
+      coneNew[1] = eStartNew + (eEnd - eStart)*2 + (cone[5] - fStart)*4 + GetQuadEdge_Static(ornt[5], 2);
+      orntNew[1] = 0;
+      coneNew[2] = eStartNew + (eEnd - eStart)*2 + (fEnd    - fStart)*4 + (c - cStart)*6 + 5;
+      orntNew[2] = 0;
+      coneNew[3] = eStartNew + (eEnd - eStart)*2 + (fEnd    - fStart)*4 + (c - cStart)*6 + 3;
+      orntNew[3] = -2;
+      ierr       = DMPlexSetCone(rdm, newp, coneNew);CHKERRQ(ierr);
+      ierr       = DMPlexSetConeOrientation(rdm, newp, orntNew);CHKERRQ(ierr);
+#if 1
+      if ((newp < fStartNew) || (newp >= fEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not a face [%d, %d)", newp, fStartNew, fEndNew);
+      for (p = 0; p < 4; ++p) {
+        if ((coneNew[p] < eStartNew) || (coneNew[p] >= eEndNew)) SETERRQ3(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Point %d is not an edge [%d, %d)", coneNew[p], eStartNew, eEndNew);
+      }
+#endif
+      for (r = 0; r < 12; ++r) {
+        newp = fStartNew + (fEnd - fStart)*4 + (c - cStart)*12 + r;
         supportNew[0] = cStartNew + (c - cStart)*8 + newCells[r*2+0];
         supportNew[1] = cStartNew + (c - cStart)*8 + newCells[r*2+1];
         ierr          = DMPlexSetSupport(rdm, newp, supportNew);CHKERRQ(ierr);
