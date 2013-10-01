@@ -64,8 +64,8 @@ regressionParameters = {'src/dm/impls/patch/examples/tests/ex1': [{'numProcs': 1
                                                                  {'numProcs': 1, 'args': '-dim 2 -cell_simplex 0 -cell_hybrid 0 -refinement_uniform 1 -dm_view ::ascii_info_detail'},
                                                                  {'numProcs': 2, 'args': '-dim 2 -cell_simplex 0 -cell_hybrid 0 -refinement_uniform 1 -dm_view ::ascii_info_detail'},
                                                                  # 3D Hex 14-15
-                                                                 {'numProcs': 1, 'args': '-dim 3 -cell_simplex 0 -cell_hybrid 0 -refinement_uniform 1 -dm_view ::ascii_info_detail', 'requires': ['Broken']},
-                                                                 {'numProcs': 2, 'args': '-dim 3 -cell_simplex 0 -cell_hybrid 0 -refinement_uniform 1 -dm_view ::ascii_info_detail', 'requires': ['Broken']},
+                                                                 {'numProcs': 1, 'args': '-dim 3 -cell_simplex 0 -cell_hybrid 0 -refinement_uniform 1 -dm_view ::ascii_info_detail'},
+                                                                 {'numProcs': 2, 'args': '-dim 3 -cell_simplex 0 -cell_hybrid 0 -refinement_uniform 1 -dm_view ::ascii_info_detail'},
 ],
                         'src/dm/impls/plex/examples/tests/ex5': [{'numProcs': 1, 'args': '-dim 2 -dm_view ::ascii_info_detail'},
                                                                  {'numProcs': 2, 'args': '-dim 2 -dm_view ::ascii_info_detail'},

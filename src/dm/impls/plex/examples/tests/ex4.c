@@ -402,6 +402,7 @@ PetscErrorCode CreateSimplexHybrid_3D(MPI_Comm comm, DM *dm)
 #define __FUNCT__ "CreateTensorProduct_3D"
 PetscErrorCode CreateTensorProduct_3D(MPI_Comm comm, PetscInt testNum, DM *dm)
 {
+  DM             idm;
   PetscInt       depth = 3;
   PetscMPIInt    rank;
   PetscErrorCode ierr;
@@ -409,7 +410,6 @@ PetscErrorCode CreateTensorProduct_3D(MPI_Comm comm, PetscInt testNum, DM *dm)
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   if (!rank) {
-    DM          idm;
     PetscInt    numPoints[2]         = {12, 2};
     PetscInt    coneSize[14]         = {8, 8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     PetscInt    cones[16]            = {2, 3, 4, 5, 6, 7, 8, 9,  5, 4, 10, 11, 7, 12, 13, 8};
@@ -428,6 +428,12 @@ PetscErrorCode CreateTensorProduct_3D(MPI_Comm comm, PetscInt testNum, DM *dm)
     PetscInt numPoints[4] = {0, 0, 0, 0};
 
     ierr = DMPlexCreateFromDAG(*dm, depth, numPoints, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
+    ierr = DMPlexInterpolate(*dm, &idm);CHKERRQ(ierr);
+    ierr = DMPlexCopyCoordinates(*dm, idm);CHKERRQ(ierr);
+    ierr = PetscObjectSetOptionsPrefix((PetscObject) idm, "in_");CHKERRQ(ierr);
+    ierr = DMSetFromOptions(idm);CHKERRQ(ierr);
+    ierr = DMDestroy(dm);CHKERRQ(ierr);
+    *dm  = idm;
   }
   PetscFunctionReturn(0);
 }
