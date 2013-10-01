@@ -264,7 +264,7 @@ PetscErrorCode DMDASNESSetFunctionLocal(DM dm,InsertMode imode,PetscErrorCode (*
 #undef __FUNCT__
 #define __FUNCT__ "DMDASNESSetJacobianLocal"
 /*@C
-   DMDASNESSetJacobianLocal - set a local residual evaluation function
+   DMDASNESSetJacobianLocal - set a local Jacobian evaluation function
 
    Logically Collective
 
