@@ -2487,7 +2487,7 @@ PetscErrorCode CellRefinerSetCoordinates(CellRefiner refiner, DM dm, PetscInt de
   case 6: /* Hex 3D */
     /* Face vertices have the average of corner coordinates */
     for (f = fStart; f < fEnd; ++f) {
-      const PetscInt newv = vStartNew + (vEnd - vStart) + (eEnd - eStart) + (cEnd - cStart) + (f - fStart);
+      const PetscInt newv = vStartNew + (vEnd - vStart) + (eEnd - eStart) + (f - fStart);
       PetscInt      *cone = NULL;
       PetscInt       closureSize, coneSize = 0, off[8], offnew, p, d;
 
@@ -2510,7 +2510,7 @@ PetscErrorCode CellRefinerSetCoordinates(CellRefiner refiner, DM dm, PetscInt de
   case 2: /* Hex 2D */
     /* Cell vertices have the average of corner coordinates */
     for (c = cStart; c < cEnd; ++c) {
-      const PetscInt newv = vStartNew + (vEnd - vStart) + (eEnd - eStart) + (c - cStart);
+      const PetscInt newv = vStartNew + (vEnd - vStart) + (eEnd - eStart) + (c - cStart) + (dim > 2 ? (fEnd - fStart) : 0);
       PetscInt      *cone = NULL;
       PetscInt       closureSize, coneSize = 0, off[8], offnew, p, d;
 
