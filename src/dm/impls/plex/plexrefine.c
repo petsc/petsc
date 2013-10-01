@@ -2500,9 +2500,9 @@ PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt depthSiz
     }
     /* Face edges have 2 vertices and 2+cells faces */
     for (f = fStart; f < fEnd; ++f) {
-      const PetscInt  newFaces[24] = {0, 1, 2, 3,  4, 5, 6, 7,  0, 9, 4, 8,  2, 11, 6, 10,  1, 10, 5, 9,  3, 8, 7, 11};
+      const PetscInt  newFaces[24] = {3, 2, 1, 0,  4, 5, 6, 7,  0, 9, 4, 8,  2, 11, 6, 10,  1, 10, 5, 9,  8, 7, 11, 3};
       const PetscInt  newv = vStartNew + (vEnd - vStart) + (eEnd - eStart) + (f - fStart);
-      const PetscInt *cone, *coneCell, *support;
+      const PetscInt *cone, *coneCell, *orntCell, *support;
       PetscInt        coneNew[2], coneSize, c, supportSize, s;
 
       ierr = DMPlexGetCone(dm, f, &cone);CHKERRQ(ierr);
@@ -2523,10 +2523,11 @@ PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt depthSiz
         supportRef[0] = fStartNew + (f - fStart)*4 + r;
         supportRef[1] = fStartNew + (f - fStart)*4 + (r+1)%4;
         for (s = 0; s < supportSize; ++s) {
-          ierr = DMPlexGetConeSize(dm, f, &coneSize);CHKERRQ(ierr);
-          ierr = DMPlexGetCone(dm, f, &coneCell);CHKERRQ(ierr);
+          ierr = DMPlexGetConeSize(dm, support[s], &coneSize);CHKERRQ(ierr);
+          ierr = DMPlexGetCone(dm, support[s], &coneCell);CHKERRQ(ierr);
+          ierr = DMPlexGetConeOrientation(dm, support[s], &orntCell);CHKERRQ(ierr);
           for (c = 0; c < coneSize; ++c) if (coneCell[c] == f) break;
-          supportRef[2+s] = fStartNew + (f - fStart)*4 + newFaces[c*4+r];
+          supportRef[2+s] = fStartNew + (fEnd - fStart)*4 + (support[s] - cStart)*12 + newFaces[c*4 + GetQuadEdge_Static(orntCell[c], r)];
         }
         ierr = DMPlexSetSupport(rdm, newp, supportRef);CHKERRQ(ierr);
 #if 1
