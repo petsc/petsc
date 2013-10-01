@@ -2208,8 +2208,7 @@ PetscErrorCode CellRefinerSetCones(CellRefiner refiner, DM dm, PetscInt depthSiz
           for (c = 0; c < coneSize; ++c) {
             if (cone[c] == f) break;
           }
-          /* TODO: Redo using orientation information */
-          supportRef[s] = cStartNew + (support[s] - cStart)*8 + newCells[c*4+r];
+          supportRef[s] = cStartNew + (support[s] - cStart)*8 + newCells[c*4+GetQuadSubface_Static(ornt[c], r)];
         }
         ierr = DMPlexSetSupport(rdm, newp, supportRef);CHKERRQ(ierr);
 #if 1
