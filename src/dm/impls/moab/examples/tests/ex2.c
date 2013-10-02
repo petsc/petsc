@@ -136,7 +136,7 @@ int main(int argc,char **argv)
   moab::ErrorCode   merr;
   moab::Interface*  mbImpl;
   moab::Tag         solndofs;
-  moab::Range       ownedvtx;
+  const moab::Range *ownedvtx;
   const PetscReal   bounds[2] = {0.0,1.0};
   const char        *fields[2] = {"U","V"};
   PetscScalar       deflt[2]={0.0,0.0};
@@ -189,7 +189,7 @@ int main(int argc,char **argv)
   merr = mbImpl->tag_get_handle("UNKNOWNS",2,moab::MB_TYPE_DOUBLE,solndofs,
                                   moab::MB_TAG_DENSE|moab::MB_TAG_CREAT,deflt);MBERRNM(merr);
 
-  ierr = DMMoabCreateVector(dm, solndofs, &ownedvtx, PETSC_TRUE, PETSC_FALSE, &X);CHKERRQ(ierr);
+  ierr = DMMoabCreateVector(dm, solndofs, ownedvtx, PETSC_TRUE, PETSC_FALSE, &X);CHKERRQ(ierr);
 
   ierr = FormInitialSolution(ts,X,user);CHKERRQ(ierr);
   ierr = TSSetSolution(ts,X);CHKERRQ(ierr);
@@ -245,7 +245,7 @@ static PetscErrorCode FormRHSFunction(TS ts,PetscReal t,Vec X,Vec F,void *ptr)
   const Field       *x;
   Field             *f;
   PetscInt          dof_index;
-  moab::Range       ownedvtx;
+  const moab::Range *ownedvtx;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
@@ -261,7 +261,7 @@ static PetscErrorCode FormRHSFunction(TS ts,PetscReal t,Vec X,Vec F,void *ptr)
   ierr = DMMoabGetLocalVertices(dm, &ownedvtx, NULL);CHKERRQ(ierr);
 
   /* Compute function over the locally owned part of the grid */
-  for(moab::Range::iterator iter = ownedvtx.begin(); iter != ownedvtx.end(); iter++) {
+  for(moab::Range::iterator iter = ownedvtx->begin(); iter != ownedvtx->end(); iter++) {
     const moab::EntityHandle vhandle = *iter;
     ierr = DMMoabGetDofsBlockedLocal(dm, 1, &vhandle, &dof_index);CHKERRQ(ierr);
 
@@ -296,7 +296,7 @@ PetscErrorCode FormIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat *J
   PetscInt            rank;
   DM                  dm;
   moab::Interface*    mbImpl;
-  moab::Range         elocal;
+  const moab::Range   *elocal;
   PetscInt            dof_indices[2];
   PetscBool           elem_on_boundary;
 
@@ -324,7 +324,7 @@ PetscErrorCode FormIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat *J
   /* Compute function over the locally owned part of the grid 
      Assemble the operator by looping over edges and computing
      contribution for each vertex dof                         */
-  for(moab::Range::iterator iter = elocal.begin(); iter != elocal.end(); iter++) {
+  for(moab::Range::iterator iter = elocal->begin(); iter != elocal->end(); iter++) {
     const moab::EntityHandle ehandle = *iter;
 
     // Get connectivity information in canonical order
@@ -380,7 +380,7 @@ PetscErrorCode FormInitialSolution(TS ts,Vec X,void *ctx)
   Field             *x;
   PetscErrorCode    ierr;
   moab::Interface*  mbImpl;
-  moab::Range       vowned;
+  const moab::Range *vowned;
   PetscInt          dof_index;
   moab::Range::iterator iter;
 
@@ -398,7 +398,7 @@ PetscErrorCode FormInitialSolution(TS ts,Vec X,void *ctx)
   ierr = DMMoabVecGetArray(dm, X, &x);CHKERRQ(ierr);
 
   /* Compute function over the locally owned part of the grid */
-  for(moab::Range::iterator iter = vowned.begin(); iter != vowned.end(); iter++) {
+  for(moab::Range::iterator iter = vowned->begin(); iter != vowned->end(); iter++) {
     const moab::EntityHandle vhandle = *iter;
     ierr = DMMoabGetDofsBlockedLocal(dm, 1, &vhandle, &dof_index);CHKERRQ(ierr);
 
@@ -436,7 +436,7 @@ static PetscErrorCode FormIFunctionMOAB(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,v
   const int& idx_left = dof_indices[0];
   const int& idx_right = dof_indices[1];
   moab::Interface*  mbImpl;
-  moab::Range       elocal;
+  const moab::Range   *elocal;
 
   PetscFunctionBegin;
   hx = 1.0/user->n;
@@ -461,7 +461,7 @@ static PetscErrorCode FormIFunctionMOAB(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,v
   ierr = DMMoabVecGetArray(dm, F, &f);CHKERRQ(ierr);
 
   /* loop over local elements */
-  for(moab::Range::iterator iter = elocal.begin(); iter != elocal.end(); iter++) {
+  for(moab::Range::iterator iter = elocal->begin(); iter != elocal->end(); iter++) {
     const moab::EntityHandle ehandle = *iter;
 
     // Get connectivity information in canonical order
@@ -529,7 +529,7 @@ static PetscErrorCode FormIFunctionGlobalBlocked(TS ts,PetscReal t,Vec X,Vec Xdo
   PetscInt            i,vpere=2;
   const moab::EntityHandle *connect;
   moab::Interface*  mbImpl;
-  moab::Range       elocal;
+  const moab::Range   *elocal;
   PetscInt           *dofs;
   const int& idl = dof_indices[0];
   const int& idr = dof_indices[1];
@@ -576,7 +576,7 @@ static PetscErrorCode FormIFunctionGlobalBlocked(TS ts,PetscReal t,Vec X,Vec Xdo
      contribution for each vertex dof                         */
 
   /* loop over local elements */
-  for(moab::Range::iterator iter = elocal.begin(); iter != elocal.end(); iter++) {
+  for(moab::Range::iterator iter = elocal->begin(); iter != elocal->end(); iter++) {
     const moab::EntityHandle ehandle = *iter;
 
     // Get connectivity information in canonical order
@@ -662,7 +662,7 @@ static PetscErrorCode FormIFunctionGhosted(TS ts,PetscReal t,Vec X,Vec Xdot,Vec 
   PetscInt            dof_indices[2];
 
   moab::Interface*  mbImpl;
-  moab::Range       elocal;
+  const moab::Range *elocal;
 
   PetscFunctionBegin;
   hx = 1.0/user->n;
@@ -707,7 +707,7 @@ static PetscErrorCode FormIFunctionGhosted(TS ts,PetscReal t,Vec X,Vec Xdot,Vec 
   const int& idr = dof_indices[1];
 
   /* loop over local elements */
-  for(moab::Range::iterator iter = elocal.begin(); iter != elocal.end(); iter++) {
+  for(moab::Range::iterator iter = elocal->begin(); iter != elocal->end(); iter++) {
     const moab::EntityHandle ehandle = *iter;
 
     // Get connectivity information in canonical order

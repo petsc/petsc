@@ -11,12 +11,12 @@ static PetscErrorCode DMMoab_VecCreateTagName_Private(moab::ParallelComm *pcomm,
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMoab_CreateVector_Private"
-PetscErrorCode DMMoab_CreateVector_Private(DM dm,moab::Tag tag,moab::Range* userrange,PetscBool is_global_vec,PetscBool destroy_tag,Vec *vec)
+PetscErrorCode DMMoab_CreateVector_Private(DM dm,moab::Tag tag,const moab::Range* userrange,PetscBool is_global_vec,PetscBool destroy_tag,Vec *vec)
 {
   PetscErrorCode         ierr;
   moab::ErrorCode        merr;
   PetscBool              is_newtag;
-  moab::Range           *range;
+  const moab::Range      *range;
   PetscInt               count,lnative_vec,gnative_vec;
   std::string ttname;
   PetscScalar *data_ptr;
@@ -160,7 +160,7 @@ PetscErrorCode DMMoab_CreateVector_Private(DM dm,moab::Tag tag,moab::Range* user
 
 .keywords: DMMoab, create
 @*/
-PetscErrorCode DMMoabCreateVector(DM dm,moab::Tag tag,moab::Range* range,PetscBool is_global_vec,PetscBool destroy_tag,Vec *vec)
+PetscErrorCode DMMoabCreateVector(DM dm,moab::Tag tag,const moab::Range* range,PetscBool is_global_vec,PetscBool destroy_tag,Vec *vec)
 {
   PetscErrorCode     ierr;
 

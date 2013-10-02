@@ -166,7 +166,7 @@ PetscErrorCode ComputeRHS_MOAB(KSP ksp,Vec b,void *ptr)
   PetscScalar       vpos[VPERE*3],quadrature[NQPTS*3],jxw[NQPTS];
   PetscInt          i,q,num_conn;
   const moab::EntityHandle *connect;
-  moab::Range       elocal;
+  const moab::Range *elocal;
   moab::Interface*  mbImpl;
   PetscScalar       phi[VPERE*NQPTS],localv[VPERE];
   PetscBool         elem_on_boundary;
@@ -183,7 +183,7 @@ PetscErrorCode ComputeRHS_MOAB(KSP ksp,Vec b,void *ptr)
   ierr = DMMoabGetLocalElements(dm, &elocal);CHKERRQ(ierr);
 
   /* loop over local elements */
-  for(moab::Range::iterator iter = elocal.begin(); iter != elocal.end(); iter++) {
+  for(moab::Range::iterator iter = elocal->begin(); iter != elocal->end(); iter++) {
     const moab::EntityHandle ehandle = *iter;
 
     ierr = PetscMemzero(localv,sizeof(PetscScalar)*VPERE);CHKERRQ(ierr);
@@ -265,21 +265,20 @@ PetscErrorCode ComputeRHS_MOAB(KSP ksp,Vec b,void *ptr)
 #define __FUNCT__ "ComputeMatrix_MOAB"
 PetscErrorCode ComputeMatrix_MOAB(KSP ksp,Mat J,Mat jac,MatStructure *str,void *ctx)
 {
-  UserContext    *user = (UserContext*)ctx;
-  DM            dm;
- 
-  PetscInt       i,j,q,num_conn;
-  PetscInt dof_indices[VPERE];
-  PetscScalar vpos[VPERE*3],quadrature[NQPTS*3],jxw[NQPTS];
-  PetscBool dbdry[VPERE];
+  UserContext       *user = (UserContext*)ctx;
+  DM                dm;
+  PetscInt          i,j,q,num_conn;
+  PetscInt          dof_indices[VPERE];
+  PetscScalar       vpos[VPERE*3],quadrature[NQPTS*3],jxw[NQPTS];
+  PetscBool         dbdry[VPERE];
   const moab::EntityHandle *connect;
-  moab::Range elocal;
+  const moab::Range *elocal;
   moab::Interface*  mbImpl;
   PetscBool         elem_on_boundary;
-  PetscScalar  array[VPERE*VPERE];
-  PetscScalar phi[VPERE*NQPTS], dphidx[VPERE*NQPTS], dphidy[VPERE*NQPTS];
-  PetscReal      rho;
-  PetscErrorCode ierr;
+  PetscScalar       array[VPERE*VPERE];
+  PetscScalar       phi[VPERE*NQPTS], dphidx[VPERE*NQPTS], dphidy[VPERE*NQPTS];
+  PetscReal         rho;
+  PetscErrorCode    ierr;
  
   PetscFunctionBeginUser;
   ierr      = KSPGetDM(ksp,&dm);CHKERRQ(ierr);
@@ -289,7 +288,7 @@ PetscErrorCode ComputeMatrix_MOAB(KSP ksp,Mat J,Mat jac,MatStructure *str,void *
   ierr = DMMoabGetLocalElements(dm, &elocal);CHKERRQ(ierr);
 
   /* loop over local elements */
-  for(moab::Range::iterator iter = elocal.begin(); iter != elocal.end(); iter++) {
+  for(moab::Range::iterator iter = elocal->begin(); iter != elocal->end(); iter++) {
     const moab::EntityHandle ehandle = *iter;
 
     // Get connectivity information:
