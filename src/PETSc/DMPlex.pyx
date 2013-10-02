@@ -49,6 +49,35 @@ cdef class DMPlex(DM):
         PetscCLEAR(self.obj); self.dm = newdm
         return self
 
+    def createCGNS(self, cgid, interpolate=True, comm=None):
+        cdef DMPlex    dm = <DMPlex>type(self)()
+        cdef MPI_Comm  ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
+        cdef PetscBool interp = interpolate
+        cdef PetscDM   newdm = NULL
+        cdef PetscInt  ccgid = asInt(cgid)
+        CHKERR( DMPlexCreateCGNS(ccomm, ccgid, interp, &newdm) )
+        PetscCLEAR(self.obj); self.dm = newdm
+        return self
+
+    def createExodus(self, exoid, interpolate=True, comm=None):
+        cdef DMPlex    dm = <DMPlex>type(self)()
+        cdef MPI_Comm  ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
+        cdef PetscBool interp = interpolate
+        cdef PetscDM   newdm = NULL
+        cdef PetscInt  cexoid = asInt(exoid)
+        CHKERR( DMPlexCreateExodus(ccomm, cexoid, interp, &newdm) )
+        PetscCLEAR(self.obj); self.dm = newdm
+        return self
+
+    def createGmsh(self, Viewer viewer, interpolate=True, comm=None):
+        cdef DMPlex    dm = <DMPlex>type(self)()
+        cdef MPI_Comm  ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
+        cdef PetscBool interp = interpolate
+        cdef PetscDM   newdm = NULL
+        CHKERR( DMPlexCreateGmsh(ccomm, viewer.vwr, interp, &newdm) )
+        PetscCLEAR(self.obj); self.dm = newdm
+        return self
+
     def createCohesiveSubmesh(self, hasLagrange, value):
         cdef PetscBool hasL = hasLagrange
         cdef PetscInt cvalue = asInt(value)
@@ -222,6 +251,13 @@ cdef class DMPlex(DM):
         CHKERR( DMPlexGetLabelName(self.dm,cn,&cname) )
         return bytes2str(cname)
 
+    def hasLabel(self, label):
+        cdef PetscBool flag = PETSC_FALSE
+        cdef const_char *cval = NULL
+        label = str2bytes(label, &cval)
+        CHKERR( DMPlexHasLabel(self.dm, cval, &flag) )
+        return <bint> flag
+
     def getCellNumbering(self):
         cdef IS globalCellNumbers = IS()
         CHKERR( DMPlexGetCellNumbering(self.dm,&globalCellNumbers.iset) )
@@ -356,6 +392,59 @@ cdef class DMPlex(DM):
         finally:
             CHKERR( DMPlexVecRestoreClosure(self.dm, sec.sec, vec.vec, cp, &csize, &cvals) )
         return closure
+
+    def generate(self, DMPlex boundary, name=None, interpolate=True):
+        cdef DMPlex    dm = <DMPlex>type(self)()
+        cdef PetscBool interp = PETSC_FALSE
+        if interpolate: interp = PETSC_TRUE
+        cdef const_char *cname = NULL
+        if name: name = str2bytes(name, &cname)
+        cdef PetscDM   newdm = NULL
+        CHKERR( DMPlexGenerate(boundary.dm, cname, interp, &newdm) )
+        PetscCLEAR(self.obj); self.dm = newdm
+        return self
+
+    def createSquareBoundary(self, lower, upper, edges):
+        cdef DMPlex    dm = <DMPlex>type(self)()
+        cdef PetscInt nlow = 0, nup = 0, nedg = 0
+        cdef PetscInt *iedg = NULL
+        cdef PetscReal *ilow = NULL, *iup = NULL
+        lower = iarray_r(lower, &nlow, &ilow)
+        upper = iarray_r(upper, &nup,  &iup)
+        edges = iarray_i(edges, &nedg, &iedg)
+        CHKERR( DMPlexCreateSquareBoundary(self.dm, ilow, iup, iedg) )
+        return self
+
+    def createCubeBoundary(self, lower, upper, faces):
+        cdef DMPlex    dm = <DMPlex>type(self)()
+        cdef PetscInt nlow = 0, nup = 0, nfac = 0
+        cdef PetscInt *ifac = NULL
+        cdef PetscReal *ilow = NULL, *iup = NULL
+        lower = iarray_r(lower, &nlow, &ilow)
+        upper = iarray_r(upper, &nup,  &iup)
+        edges = iarray_i(faces, &nfac, &ifac)
+        CHKERR( DMPlexCreateCubeBoundary(self.dm, ilow, iup, ifac) )
+        return self
+
+    def markBoundaryFaces(self, label):
+        if not self.hasLabel(label):
+            self.createLabel(label)
+        cdef const_char *cval = NULL
+        label = str2bytes(label, &cval)
+        cdef PetscDMLabel clbl = NULL
+        CHKERR( DMPlexGetLabel(self.dm, cval, &clbl) )
+        CHKERR( DMPlexMarkBoundaryFaces(self.dm, clbl) )
+
+    def distribute(self, partitioner=None, overlap=0):
+        cdef PetscDM pardm = NULL
+        cdef PetscSF sf = NULL
+        cdef const_char *cpart = NULL
+        if partitioner: partitioner = str2bytes(partitioner, &cpart)
+        cdef PetscInt coverlap = asInt(overlap)
+        cdef SF pointsf = SF()
+        CHKERR( DMPlexDistribute(self.dm, cpart, coverlap, &pointsf.sf, &pardm) )
+        self.dm = pardm
+        return pointsf
 
     def createSection(self, numFields, numComp, numDof, numBC=0, bcField=None, bcPoints=None):
         cdef PetscInt dim = 0

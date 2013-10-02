@@ -56,6 +56,9 @@ cdef extern from "petsc.h":
     struct _p_DM
     ctypedef _p_DM* PetscDM "DM"
 
+    struct _n_DMLabel
+    ctypedef _n_DMLabel* PetscDMLabel "DMLabel"
+
     struct _p_PetscSF
     ctypedef _p_PetscSF* PetscSF "PetscSF"
 

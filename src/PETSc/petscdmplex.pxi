@@ -6,6 +6,7 @@ cdef extern from * nogil:
     int DMPlexCreateCohesiveSubmesh(PetscDM,PetscBool,const char [],PetscInt,PetscDM*)
     int DMPlexCreateFromCellList(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscBool,const int[],PetscInt,const double[],PetscDM*)
     #int DMPlexCreateFromDAG(PetscDM,PetscInt,const PetscInt [],const PetscInt [],const PetscInt [],const PetscInt [],const PetscScalar [])
+
     int DMPlexGetDimension(PetscDM,PetscInt *)
     int DMPlexSetDimension(PetscDM,PetscInt)
     int DMPlexGetChart(PetscDM,PetscInt *,PetscInt *)
@@ -58,8 +59,8 @@ cdef extern from * nogil:
 
     int DMPlexGetNumLabels(PetscDM,PetscInt *)
     int DMPlexGetLabelName(PetscDM,PetscInt,const char **)
-    #int DMPlexHasLabel(PetscDM,const char [],PetscBool *)
-    #int DMPlexGetLabel(PetscDM,const char *,PetscDMLabel *)
+    int DMPlexHasLabel(PetscDM,const char [],PetscBool *)
+    int DMPlexGetLabel(PetscDM,const char *,PetscDMLabel *)
     #int DMPlexAddLabel(PetscDM,PetscDMLabel)
     #int DMPlexRemoveLabel(PetscDM,const char [],PetscDMLabel *)
     int DMPlexGetCellNumbering(PetscDM,PetscIS*)
@@ -81,13 +82,18 @@ cdef extern from * nogil:
     int DMPlexVecGetClosure(PetscDM,PetscSection,PetscVec,PetscInt,PetscInt*,PetscScalar*[])
     int DMPlexVecRestoreClosure(PetscDM,PetscSection,PetscVec,PetscInt,PetscInt*,PetscScalar*[])
 
-    #int DMPlexGenerate(PetscDM,const char [],PetscBool ,PetscDM*)
+    int DMPlexGenerate(PetscDM,const char [],PetscBool ,PetscDM*)
     #int DMPlexCopyCoordinates(PetscDM,PetscDM)
     #int DMPlexCopyLabels(PetscDM,PetscDM)
     #int DMPlexCreateDoublet(MPI_Comm,PetscInt,PetscBool,PetscBool,PetscBool,PetscReal,PetscDM*)
-    #int DMPlexCreateCubeBoundary(PetscDM,const PetscReal [],const PetscReal [],const PetscInt [])
+    int DMPlexCreateSquareBoundary(PetscDM,const_PetscReal[],const_PetscReal[],const_PetscInt[])
+    int DMPlexCreateCubeBoundary(PetscDM,const PetscReal [],const PetscReal [],const PetscInt [])
     int DMPlexCreateBoxMesh(MPI_Comm,PetscInt,PetscBool,PetscDM*)
     #int DMPlexCreateHexBoxMesh(MPI_Comm,PetscInt,const PetscInt[],PetscDM*)
+    int DMPlexCreateCGNS(MPI_Comm,PetscInt,PetscBool,PetscDM*)
+    int DMPlexCreateExodus(MPI_Comm,PetscInt,PetscBool,PetscDM*)
+    int DMPlexCreateGmsh(MPI_Comm,PetscViewer,PetscBool,PetscDM*)
+
     #int DMPlexCreateConeSection(PetscDM,PetscSection *)
     #int DMPlexInvertCell(PetscInt,PetscInt,int [])
     #int DMPlexCheckSymmetry(PetscDM)
@@ -97,7 +103,7 @@ cdef extern from * nogil:
     #int DMPlexCreateNeighborCSR(PetscDM,PetscInt,PetscInt *,PetscInt **,PetscInt **)
     #int DMPlexCreatePartition(PetscDM,const char[],PetscInt,PetscBool,PetscSection *,PetscIS*,PetscSection *,PetscIS*)
     #int DMPlexCreatePartitionClosure(PetscDM,PetscSection,PetscIS,PetscSection *,PetscIS*)
-    #int DMPlexDistribute(PetscDM,const char[],PetscInt,PetscSF*,PetscDM*)
+    int DMPlexDistribute(PetscDM,const char[],PetscInt,PetscSF*,PetscDM*)
     #int DMPlexDistributeField(PetscDM,PetscSF,PetscSection,Vec,PetscSection,Vec)
     #int DMPlexDistributeData(PetscDM,PetscSF,PetscSection,MPI_Datatype,void*,PetscSection,void**)
 
@@ -110,7 +116,7 @@ cdef extern from * nogil:
     #int DMPlexSetSubpointMap(PetscDM,PetscDMLabel)
     #int DMPlexCreateSubpointIS(PetscDM,PetscIS*)
 
-    #int DMPlexMarkBoundaryFaces(PetscDM,PetscDMLabel)
+    int DMPlexMarkBoundaryFaces(PetscDM,PetscDMLabel)
     #int DMPlexLabelComplete(PetscDM,PetscDMLabel)
     #int DMPlexLabelCohesiveComplete(PetscDM,PetscDMLabel,PetscBool,PetscDM)
 
