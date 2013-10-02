@@ -1,6 +1,6 @@
 
 #include <petscmat.h>
-#include <../src/mat/color/color.h>
+#include <../src/mat/color/impls/minpack/color.h>
 
 PETSC_EXTERN PetscErrorCode MatGetColoring_Natural(Mat,MatColoringType,ISColoring*);
 PETSC_EXTERN PetscErrorCode MatGetColoring_SL_Minpack(Mat,MatColoringType,ISColoring*);
