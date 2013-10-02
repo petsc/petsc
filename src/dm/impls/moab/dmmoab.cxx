@@ -616,12 +616,12 @@ PetscErrorCode DMMoabGetAllVertices(DM dm,moab::Range *local)
 
 .keywords: DMMoab, create
 @*/
-PetscErrorCode DMMoabGetLocalVertices(DM dm,moab::Range *owned,moab::Range *ghost)
+PetscErrorCode DMMoabGetLocalVertices(DM dm,const moab::Range **owned,const moab::Range **ghost)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  if (owned) *owned = *((DM_Moab*)dm->data)->vowned;
-  if (ghost) *ghost = *((DM_Moab*)dm->data)->vghost;
+  if (owned) *owned = ((DM_Moab*)dm->data)->vowned;
+  if (ghost) *ghost = ((DM_Moab*)dm->data)->vghost;
   PetscFunctionReturn(0);
 }
 
@@ -642,11 +642,11 @@ PetscErrorCode DMMoabGetLocalVertices(DM dm,moab::Range *owned,moab::Range *ghos
 
 .keywords: DMMoab, create
 @*/
-PetscErrorCode DMMoabGetLocalElements(DM dm,moab::Range *range)
+PetscErrorCode DMMoabGetLocalElements(DM dm,const moab::Range **range)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  if (range) *range = *((DM_Moab*)dm->data)->elocal;
+  if (range) *range = ((DM_Moab*)dm->data)->elocal;
   PetscFunctionReturn(0);
 }
 
