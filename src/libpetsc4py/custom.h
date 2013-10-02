@@ -24,6 +24,11 @@ EXTERN_C_END
 #define KSPBuildResidualDefault KSPDefaultBuildResidual
 #endif
 
+#if PETSC_VERSION_LT(3,5,0)
+#define KSPConvergedSkip  KSPSkipConverged
+#define SNESConvergedSkip SNESSkipConverged
+#endif
+
 #undef __FUNCT__
 #define __FUNCT__ "KSPLogHistory"
 PETSC_STATIC_INLINE
