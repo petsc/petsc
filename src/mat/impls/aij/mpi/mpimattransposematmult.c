@@ -66,10 +66,10 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIDense(Mat A,Mat B,PetscReal
   /* create vectors bt and ct to hold locally transposed arrays of B and C */
   ierr = VecCreate(PetscObjectComm((PetscObject)A),&bt);CHKERRQ(ierr);
   ierr = VecSetSizes(bt,m*BN,PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(bt);CHKERRQ(ierr);
+  ierr = VecSetType(bt,VECSTANDARD);CHKERRQ(ierr);
   ierr = VecCreate(PetscObjectComm((PetscObject)A),&ct);CHKERRQ(ierr);
   ierr = VecSetSizes(ct,n*BN,PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(ct);CHKERRQ(ierr);
+  ierr = VecSetType(ct,VECSTANDARD);CHKERRQ(ierr);
   atb->bt = bt;
   atb->ct = ct;
 

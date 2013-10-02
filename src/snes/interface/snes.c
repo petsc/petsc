@@ -568,7 +568,7 @@ PetscErrorCode SNESSetUpMatrices(SNES snes)
     ierr = MatCreateSNESMF(snes,&J);CHKERRQ(ierr);
     ierr = MatMFFDSetOptionsPrefix(J,((PetscObject)snes)->prefix);CHKERRQ(ierr);
     ierr = MatSetFromOptions(J);CHKERRQ(ierr);
-    ierr = DMCreateMatrix(snes->dm,MATAIJ,&B);CHKERRQ(ierr);
+    ierr = DMCreateMatrix(snes->dm,&B);CHKERRQ(ierr);
     /* sdm->computejacobian was already set to reach here */
     ierr = SNESSetJacobian(snes,J,B,NULL,NULL);CHKERRQ(ierr);
     ierr = MatDestroy(&J);CHKERRQ(ierr);
@@ -576,7 +576,7 @@ PetscErrorCode SNESSetUpMatrices(SNES snes)
   } else if (!snes->jacobian_pre) {
     Mat J,B;
     J    = snes->jacobian;
-    ierr = DMCreateMatrix(snes->dm,MATAIJ,&B);CHKERRQ(ierr);
+    ierr = DMCreateMatrix(snes->dm,&B);CHKERRQ(ierr);
     ierr = SNESSetJacobian(snes,J ? J : B,B,NULL,NULL);CHKERRQ(ierr);
     ierr = MatDestroy(&B);CHKERRQ(ierr);
   }

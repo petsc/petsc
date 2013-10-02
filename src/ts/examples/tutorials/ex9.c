@@ -1580,7 +1580,7 @@ int main(int argc,char *argv[])
   ierr = VecDuplicate(X,&X0);CHKERRQ(ierr);
   ierr = VecDuplicate(X,&R);CHKERRQ(ierr);
 
-  ierr = DMCreateMatrix(da,NULL,&B);CHKERRQ(ierr);
+  ierr = DMCreateMatrix(da,&B);CHKERRQ(ierr);
 
   /* Create a time-stepping object */
   ierr = TSCreate(comm,&ts);CHKERRQ(ierr);
