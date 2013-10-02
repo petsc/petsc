@@ -2,7 +2,7 @@
 ALL: lib
 
 DIRS     = natural minpack
-LOCDIR   = src/snes/impls/
+LOCDIR   = src/mat/impls/
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

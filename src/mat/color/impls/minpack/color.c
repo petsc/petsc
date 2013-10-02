@@ -44,19 +44,16 @@ PetscErrorCode MatFDColoringMinimumNumberofColors_Private(PetscInt m,PetscInt *i
   PetscFunctionReturn(0);
 }
 
-/* ----------------------------------------------------------------------------*/
-/*
-    MatGetColoring_SL_Minpack - Uses the smallest-last (SL) coloring of minpack
-*/
 #undef __FUNCT__
-#define __FUNCT__ "MatGetColoring_SL_Minpack"
-PETSC_EXTERN PetscErrorCode MatGetColoring_SL_Minpack(Mat mat,MatColoringType name,ISColoring *iscoloring)
+#define __FUNCT__ "MatColoringApply_SL"
+PETSC_EXTERN PetscErrorCode MatColoringApply_SL(MatColoring mc,ISColoring *iscoloring)
 {
   PetscErrorCode  ierr;
   PetscInt        *list,*work,clique,*seq,*coloring,n;
   const PetscInt  *ria,*rja,*cia,*cja;
   PetscInt        ncolors,i;
   PetscBool       done;
+  Mat             mat = mc->mat;
   Mat             mat_seq = mat;
   PetscMPIInt     size;
   MPI_Comm        comm;
@@ -66,6 +63,7 @@ PETSC_EXTERN PetscErrorCode MatGetColoring_SL_Minpack(Mat mat,MatColoringType na
   PetscBool       flg1,flg2;
 
   PetscFunctionBegin;
+  if (mc->dist != 2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"SL may only do distance 2 coloring");
   /* this is ugly way to get blocksize but cannot call MatGetBlockSize() because AIJ can have bs > 1 */
   ierr = PetscObjectTypeCompare((PetscObject)mat,MATSEQBAIJ,&flg1);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)mat,MATMPIBAIJ,&flg2);CHKERRQ(ierr);
@@ -130,19 +128,30 @@ PETSC_EXTERN PetscErrorCode MatGetColoring_SL_Minpack(Mat mat,MatColoringType na
   PetscFunctionReturn(0);
 }
 
-/* ----------------------------------------------------------------------------*/
-/*
-    MatGetColoring_LF_Minpack -
-*/
 #undef __FUNCT__
-#define __FUNCT__ "MatGetColoring_LF_Minpack"
-PETSC_EXTERN PetscErrorCode MatGetColoring_LF_Minpack(Mat mat,MatColoringType name,ISColoring *iscoloring)
+#define __FUNCT__ "MatColoringCreate_SL"
+PETSC_EXTERN PetscErrorCode MatColoringCreate_SL(MatColoring mc)
+{
+    PetscFunctionBegin;
+    mc->dist                = 2;
+    mc->data                = NULL;
+    mc->ops->apply          = MatColoringApply_SL;
+    mc->ops->view           = NULL;
+    mc->ops->destroy        = NULL;
+    mc->ops->setfromoptions = NULL;
+    PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatColoringApply_LF"
+PETSC_EXTERN PetscErrorCode MatColoringApply_LF(MatColoring mc,ISColoring *iscoloring)
 {
   PetscErrorCode  ierr;
   PetscInt        *list,*work,*seq,*coloring,n;
   const PetscInt  *ria,*rja,*cia,*cja;
   PetscInt        n1, none,ncolors,i;
   PetscBool       done;
+  Mat             mat = mc->mat;
   Mat             mat_seq = mat;
   PetscMPIInt     size;
   MPI_Comm        comm;
@@ -152,6 +161,7 @@ PETSC_EXTERN PetscErrorCode MatGetColoring_LF_Minpack(Mat mat,MatColoringType na
   PetscBool       flg1,flg2;
 
   PetscFunctionBegin;
+  if (mc->dist != 2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"LF may only do distance 2 coloring");
   /* this is ugly way to get blocksize but cannot call MatGetBlockSize() because AIJ can have bs > 1 */
   ierr = PetscObjectTypeCompare((PetscObject)mat,MATSEQBAIJ,&flg1);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)mat,MATMPIBAIJ,&flg2);CHKERRQ(ierr);
@@ -215,19 +225,30 @@ PETSC_EXTERN PetscErrorCode MatGetColoring_LF_Minpack(Mat mat,MatColoringType na
   PetscFunctionReturn(0);
 }
 
-/* ----------------------------------------------------------------------------*/
-/*
-    MatGetColoring_ID_Minpack -
-*/
 #undef __FUNCT__
-#define __FUNCT__ "MatGetColoring_ID_Minpack"
-PETSC_EXTERN PetscErrorCode MatGetColoring_ID_Minpack(Mat mat,MatColoringType name,ISColoring *iscoloring)
+#define __FUNCT__ "MatColoringCreate_LF"
+PETSC_EXTERN PetscErrorCode MatColoringCreate_LF(MatColoring mc)
+{
+    PetscFunctionBegin;
+    mc->dist                = 2;
+    mc->data                = NULL;
+    mc->ops->apply          = MatColoringApply_SL;
+    mc->ops->view           = NULL;
+    mc->ops->destroy        = NULL;
+    mc->ops->setfromoptions = NULL;
+    PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatColoringApply_ID"
+PETSC_EXTERN PetscErrorCode MatColoringApply_ID(MatColoring mc,ISColoring *iscoloring)
 {
   PetscErrorCode  ierr;
   PetscInt        *list,*work,clique,*seq,*coloring,n;
   const PetscInt  *ria,*rja,*cia,*cja;
   PetscInt        ncolors,i;
   PetscBool       done;
+  Mat             mat = mc->mat;
   Mat             mat_seq = mat;
   PetscMPIInt     size;
   MPI_Comm        comm;
@@ -237,6 +258,7 @@ PETSC_EXTERN PetscErrorCode MatGetColoring_ID_Minpack(Mat mat,MatColoringType na
   PetscBool       flg1,flg2;
 
   PetscFunctionBegin;
+  if (mc->dist != 2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"LF may only do distance 2 coloring");
   /* this is ugly way to get blocksize but cannot call MatGetBlockSize() because AIJ can have bs > 1 */
   ierr = PetscObjectTypeCompare((PetscObject)mat,MATSEQBAIJ,&flg1);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)mat,MATMPIBAIJ,&flg2);CHKERRQ(ierr);
@@ -300,4 +322,19 @@ PETSC_EXTERN PetscErrorCode MatGetColoring_ID_Minpack(Mat mat,MatColoringType na
     ierr = ISColoringDestroy(&iscoloring_seq);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
+#define __FUNCT__ "MatColoringCreate_ID"
+PETSC_EXTERN PetscErrorCode MatColoringCreate_ID(MatColoring mc)
+{
+    PetscFunctionBegin;
+    mc->dist                = 2;
+    mc->data                = NULL;
+    mc->ops->apply          = MatColoringApply_ID;
+    mc->ops->view           = NULL;
+    mc->ops->destroy        = NULL;
+    mc->ops->setfromoptions = NULL;
+    PetscFunctionReturn(0);
 }
